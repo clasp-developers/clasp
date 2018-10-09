@@ -99,6 +99,12 @@ public: // instance member functions here
   Character_sp convert_case(Character_sp c);
 };
 
+T_sp cl__readtable_case(T_sp);
+Symbol_sp core__syntax_type(T_sp, Character_sp);
+ T_sp core__reader_list_allow_consing_dot(T_sp sin, Character_sp ch); 
+ T_sp core__reader_double_quote_string(T_sp sin, Character_sp ch); 
+ T_sp core__reader_quote(T_sp sin, Character_sp ch); 
+
 }; /* core */
 
 

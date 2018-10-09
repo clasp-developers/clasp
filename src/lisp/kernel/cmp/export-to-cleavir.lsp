@@ -3,7 +3,6 @@
 (export '(
           *cleavir-compile-file-hook*
           *cleavir-compile-hook*
-          *current-form-lineno*
           *compile-print*
           *compile-counter*
           *compile-duration-ns*
@@ -12,8 +11,6 @@
           *debug-compile-file*
           *generate-compile-file-load-time-values*
           *gv-current-function-name*
-          *gv-source-file-info-handle*
-          *gv-source-namestring*
           *implicit-compile-hook*
           *irbuilder*
           *llvm-context*
@@ -21,8 +18,8 @@
           *low-level-trace*
           *low-level-trace-print*
           *run-time-literal-holder*
-          *run-time-values-table-name*
-          *run-time-values-table-global-var*
+          #+(or)*run-time-values-table-name*
+          #+(or)*run-time-values-table-global-var*
           *the-module*
           +cons-tag+
           +fixnum-tag+
@@ -53,13 +50,12 @@
           cmp-log-dump-function
           codegen-literal
           reference-literal
-          codegen-rtv
+          codegen-rtv-cclasp
           compile-error-if-not-enough-arguments
           compile-in-env
           compile-lambda-function
           compile-lambda-list-code
-          cclasp-maybe-alloc-cc-setup
-          cclasp-setup-calling-convention
+          setup-calling-convention
           bclasp-compile-form
           compile-form
           compiler-error
@@ -67,7 +63,6 @@
           compiler-message-file
           compiler-message-file-position
           safe-system
-          dbg-set-current-debug-location-here
           irc-verify-module-safe
           irc-add
           irc-add-clause
@@ -145,4 +140,5 @@
           compile-error-if-wrong-number-of-arguments
           compile-error-if-too-many-arguments
           compile-throw-if-excess-keyword-arguments
+          compute-rest-alloc
           ))

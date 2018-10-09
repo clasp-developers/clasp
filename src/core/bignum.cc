@@ -31,6 +31,7 @@ THE SOFTWARE.
 #include <clasp/core/common.h>
 #include <clasp/core/numbers.h>
 #include <clasp/core/symbol.h>
+#include <clasp/core/evaluator.h>
 #include <clasp/core/hashTable.h>
 #include <clasp/core/bignum.h>
 #include <clasp/core/wrappers.h>
@@ -307,9 +308,16 @@ void Bignum_O::setFromString(const string &strVal) {
 gc::Fixnum Bignum_O::bit_length_() const {
   Bignum x = this->_value;
   if (this->sign() < 0) {
-    x = -x;
+    // issue #536
+    // from ECL: logxor(2,x,ecl_make_fixnum(-1)); before calling mpz_sizeinbase on x
+    mpz_class temp;
+    mpz_xor(temp.get_mpz_t(),clasp_to_mpz(clasp_make_fixnum(2)).get_mpz_t(), x.get_mpz_t());
+    mpz_class temp1;
+    mpz_xor(temp1.get_mpz_t(), temp.get_mpz_t(), clasp_to_mpz(clasp_make_fixnum(-1)).get_mpz_t());
+    return mpz_sizeinbase(temp1.get_mpz_t(), 2);
+  } else {
+    return mpz_sizeinbase(x.get_mpz_t(), 2);
   }
-  return mpz_sizeinbase(x.get_mpz_t(), 2);
 }
 
 /*! Return the value shifted by BITS bits.
@@ -427,7 +435,7 @@ CL_DEFUN void core__test_bignum_to_int64(Bignum_sp b) {
     if (sgn<0) {
       val = -val;
     }
-    printf("%s:%d Converted bignum sgn -> %d  val -> %lld\n", __FILE__, __LINE__, sgn, val);
+    SIMPLE_WARN(BF("Converted bignum sgn -> %d  val -> %d\n") % sgn % val);
     return;
   }
  BAD:

@@ -99,9 +99,18 @@ CL_DEFUN Integer_sp cl__gcd(List_sp nums) {
   return gcd;
 }
 
+gc::Fixnum gcd(gc::Fixnum a, gc::Fixnum b)
+{
+    if (a == 0)
+      return (abs(b));
+    return gcd(b % a, a);
+}
+
 Integer_sp clasp_gcd(Integer_sp x, Integer_sp y, int yidx) {
   switch (clasp_t_of(x)) {
   case number_Fixnum: {
+    if (clasp_t_of(y) == number_Fixnum)
+      return clasp_make_fixnum(gcd(x.unsafe_fixnum(), y.unsafe_fixnum()));
     Bignum_sp big(Bignum_O::create(clasp_fixnum(x)));
     x = big;
   }
@@ -120,7 +129,10 @@ Integer_sp clasp_gcd(Integer_sp x, Integer_sp y, int yidx) {
   default:
     QERROR_WRONG_TYPE_NTH_ARG(1 + yidx, y, cl::_sym_Integer_O);
   }
-  return _clasp_big_gcd(gc::As<Bignum_sp>(x), gc::As<Bignum_sp>(y));
+  Bignum_sp temp = _clasp_big_gcd(gc::As<Bignum_sp>(x), gc::As<Bignum_sp>(y));
+  if (temp->fits_sint_p())
+    return clasp_make_fixnum(temp->as_int());
+  else return temp;                                 
 }
 
 CL_LAMBDA(&rest args);

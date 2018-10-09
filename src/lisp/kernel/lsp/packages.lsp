@@ -30,6 +30,9 @@
             proper-list-p
             expand-associative
             expand-compare
+            expand-uncompare
+            with-memory-ramp
+            with-dtrace-trigger
             ))
 
   (export '( ;;;;MISSING SYMBOLS!!!!!
@@ -68,8 +71,6 @@
             integer32
             byte64
             integer64
-            cl-fixnum
-            cl-index
             assume-no-errors
             sequence-stream
             all-encodings
@@ -98,6 +99,11 @@
             system
             float-nan-string
             float-infinity-string
+            package-local-nicknames
+            add-package-local-nickname
+            remove-package-local-nickname
+            package-locally-nicknamed-by-list
+            keep-old change-nick ; restarts for add-package-local-nicknames
             )))
 
 

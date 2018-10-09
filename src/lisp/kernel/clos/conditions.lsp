@@ -99,6 +99,8 @@
 				     :function f)))
 	  *restart-clusters*)))
 
+(defparameter *handler-clusters* nil)
+
 (defun bind-simple-handlers (tag names)
   (flet ((simple-handler-function (tag code)
 	   #'(lambda (c) (throw tag (values code c)))))
@@ -150,8 +152,9 @@
 	     (when test
 	       (setq keywords (list :TEST-FUNCTION `#',test)))				    
 	     (when interactive
-	       (setq keywords (list :INTERACTIVE-FUNCTION
-				    `#',interactive)))
+	       (setq keywords (list* :INTERACTIVE-FUNCTION
+                                     `#',interactive
+                                     keywords)))
 	     (when report
 	       (setq keywords (list* :REPORT-FUNCTION
 				     (if (stringp report)
@@ -397,8 +400,6 @@
 |#
 
 
-(defparameter *handler-clusters* nil)
-
 (defmacro handler-bind (bindings &body forms)
   (unless (every #'(lambda (x) (and (listp x) (= (length x) 2))) bindings)
     (error "Ill-formed handler bindings."))
@@ -425,6 +426,47 @@
 
 
 
+(defmacro handler-case (form &rest cases)
+  (let ((no-error-clause (assoc ':NO-ERROR cases)))
+    (if no-error-clause
+	(let* ((normal-return (make-symbol "NORMAL-RETURN"))
+	       (error-return  (make-symbol "ERROR-RETURN")))
+	  `(block ,error-return
+	    (multiple-value-call #'(lambda ,@(cdr no-error-clause))
+	      (block ,normal-return
+		(return-from ,error-return
+		  (handler-case (return-from ,normal-return ,form)
+		     ,@(remove no-error-clause cases)))))))
+	(let* ((tag (gensym))
+	       (var (gensym))
+	       (annotated-cases (mapcar #'(lambda (case) (cons (gensym) case))
+					cases)))
+	  `(block ,tag
+	     (let ((,var nil))
+	       (declare (ignorable ,var))
+	       (tagbody
+		 (handler-bind ,(mapcar #'(lambda (annotated-case)
+					    (list (cadr annotated-case)
+						  `#'(lambda (temp)
+                                (declare (ignorable temp))
+						       ,@(if (caddr annotated-case)
+							     `((setq ,var temp)))
+						       (go ,(car annotated-case)))))
+					annotated-cases)
+			       (return-from ,tag ,form))
+		 ,@(mapcan #'(lambda (annotated-case)
+			       (list (car annotated-case)
+				     (let ((body (cdddr annotated-case)))
+				       `(return-from ,tag
+					  ,(if (caddr annotated-case)
+					       `(let ((,(caaddr annotated-case)
+						       ,var))
+						 ,@body)
+					       ;; We must allow declarations!
+					       `(locally ,@body))))))
+			   annotated-cases))))))))
+			   
+			   
 ;;; COERCE-TO-CONDITION
 ;;;  Internal routine used in ERROR, CERROR, BREAK, and WARN for parsing the
 ;;;  hairy argument conventions into a single argument that's directly usable 
@@ -507,8 +549,13 @@ returns with NIL."
 		     :ACCESSOR simple-condition-format-arguments))
   (:REPORT
    (lambda (condition stream)
-     (format stream "~?" (simple-condition-format-control condition)
-	     (simple-condition-format-arguments condition)))))
+     (handler-case 
+         (format stream "~?"
+                 (simple-condition-format-control condition)
+                 (simple-condition-format-arguments condition))
+       (format-error (p)
+         (declare (ignore p))
+         (format stream "~%#<Error while printing condition>~%"))))))
 
 (define-condition simple-warning (simple-condition warning) ())
 
@@ -529,8 +576,8 @@ returns with NIL."
    (type :initarg :type :initform nil :reader ext:stack-overflow-type))
   (:REPORT
    (lambda (condition stream)
-     (let* ((type (ext::stack-overflow-type condition))
-	    (size (ext::stack-overflow-size condition)))
+     (let* ((type (ext:stack-overflow-type condition))
+	    (size (ext:stack-overflow-size condition)))
        (if size
 	   (format stream "~A overflow at size ~D. Stack can probably be resized."
 		   type size)
@@ -603,6 +650,11 @@ memory limits before executing the program again."))
   ((stream :initarg :stream :reader stream-error-stream)))
 
 (define-condition core:simple-stream-error (simple-condition stream-error) ())
+
+;;; #define CLOSED_STREAM_ERROR(st) ERROR(core::_sym_closedStream, core::lisp_createList(kw::_sym_stream, st))
+
+(define-condition core:closed-stream (core:simple-stream-error)
+  ())
 
 (define-condition end-of-file (stream-error)
   ()
@@ -751,48 +803,7 @@ memory limits before executing the program again."))
                                                       :format-arguments format-args args)
       (apply #'error condition-type :format-control format-control
                                     :format-arguments format-args args)))
-
 
-
-(defmacro handler-case (form &rest cases)
-  (let ((no-error-clause (assoc ':NO-ERROR cases)))
-    (if no-error-clause
-	(let* ((normal-return (make-symbol "NORMAL-RETURN"))
-	       (error-return  (make-symbol "ERROR-RETURN")))
-	  `(block ,error-return
-	    (multiple-value-call #'(lambda ,@(cdr no-error-clause))
-	      (block ,normal-return
-		(return-from ,error-return
-		  (handler-case (return-from ,normal-return ,form)
-		     ,@(remove no-error-clause cases)))))))
-	(let* ((tag (gensym))
-	       (var (gensym))
-	       (annotated-cases (mapcar #'(lambda (case) (cons (gensym) case))
-					cases)))
-	  `(block ,tag
-	     (let ((,var nil))
-	       (declare (ignorable ,var))
-	       (tagbody
-		 (handler-bind ,(mapcar #'(lambda (annotated-case)
-					    (list (cadr annotated-case)
-						  `#'(lambda (temp)
-                                                       (declare (ignorable temp))
-						       ,@(if (caddr annotated-case)
-							     `((setq ,var temp)))
-						       (go ,(car annotated-case)))))
-					annotated-cases)
-			       (return-from ,tag ,form))
-		 ,@(mapcan #'(lambda (annotated-case)
-			       (list (car annotated-case)
-				     (let ((body (cdddr annotated-case)))
-				       `(return-from ,tag
-					  ,(if (caddr annotated-case)
-					       `(let ((,(caaddr annotated-case)
-						       ,var))
-						 ,@body)
-					       ;; We must allow declarations!
-					       `(locally ,@body))))))
-			   annotated-cases))))))))
 
 (defmacro ignore-errors (&rest forms)
   `(handler-case (progn ,@forms)
@@ -836,15 +847,17 @@ memory limits before executing the program again."))
       value))
 
 (defvar *assert-failure-test-form* nil)
+
+(define-condition ext:assert-error (simple-error) ())
+
 (defun assert-failure (test-form &optional place-names values
                        &rest arguments)
   (setq *assert-failure-test-form* test-form)
   (unless arguments
-    (setf arguments (list 'SIMPLE-TYPE-ERROR
-			  :DATUM test-form
-			  :EXPECTED-TYPE nil ; This needs some work in revision
-			  :FORMAT-CONTROL "The assertion ~S failed"
-			  :FORMAT-ARGUMENTS (list test-form))))
+    (setf arguments
+          ;;; issue #499
+          (list 'ext:assert-error :FORMAT-CONTROL "The assertion ~S failed"
+                               :FORMAT-ARGUMENTS (list test-form))))
   (restart-case (error (si::coerce-to-condition (first arguments)
                                                 (rest arguments)
                                                 'simple-error

@@ -94,6 +94,7 @@
     (primitive         "ltvc_enclose" %ltvc-return% (list %gcroots-in-module*%
                                                           %size_t%
                                                           %t*%
+                                                          %i8*%
                                                           %fn-prototype*%
                                                           %i32*%
                                                           %size_t%
@@ -111,19 +112,15 @@
     (primitive         "valueOrNilIfZero" %t*% (list %return_type%))
     
     (primitive         "makeCompiledFunction" %t*% (list %fn-prototype*% ; funcPtr
-                                                             %i32*%   ; sourceFileInfoHandleP
-                                                             %size_t% ; filePos
-                                                             %size_t% ; lineno
-                                                             %size_t% ; column
-                                                             %t*%   ; functionNameP
-                                                             %t*%  ; renv
-                                                             %t*%)) ; lambdaListP
+                                                         %i8*% ; function-description
+                                                         %t*% ; environment
+                                                         ))
     
     (primitive-unwinds "symbolValueRead" %t*% (list %t*%))
     (primitive         "symbolValueReference" %t**% (list %t*%))
     (primitive         "lexicalValueReference" %t**% (list %size_t% %size_t% %t*%))
     (primitive         "registerReference" %t**% (list %t**%))
-    (primitive         "symbolFunctionRead" %t*% (list %t*%))
+;;;    (primitive         "symbolFunctionRead" %t*% (list %t*%))
     (primitive         "setfSymbolFunctionRead" %t*% (list %t*%))
     
     (primitive         "activationFrameReferenceFromClosure" %t**% (list %t*%))
@@ -143,11 +140,13 @@
     (primitive-unwinds "makeFunctionFrame" %t*% (list %i32% %t*%))
     (primitive-unwinds "functionFrameReference" %t**% (list %t*% %i32%))
     
-    (primitive-unwinds "invokeTopLevelFunction" %void% (list %tmv*% %fn-prototype*% %i8*% %i32*% %size_t% %size_t% %size_t% %ltv**%))
+;;;    (primitive-unwinds "invokeTopLevelFunction" %void% (list %tmv*% %fn-prototype*% %i8*% %i32*% %size_t% %size_t% %size_t% %ltv**%))
     (primitive-unwinds "cc_register_startup_function" %void% (list %fn-start-up*%))
     (primitive-unwinds "cc_invoke_sub_run_all_function" %void% (list %fn-start-up*%))
     
     (primitive         "cc_trackFirstUnexpectedKeyword" %size_t% (list %size_t% %size_t%))
+    (primitive-unwinds "bc_function_from_function_designator" %t*% (list %t*%))
+    
     (primitive-unwinds "gdb" %void% nil)
     (primitive         "debugInspectTPtr" %void% (list %t*%))
     (primitive         "debugInspectT_mv" %void% (list %tmv*%))
@@ -157,6 +156,7 @@
     (primitive         "debug_vaslistPtr" %void% (list %vaslist*%))
     (primitive         "debug_va_list" %void% (list %va_list*%))
     (primitive         "debugMessage" %void% (list %i8*%))
+    (primitive         "debugBreak" %void% ())
     (primitive         "debugPrintI32" %void% (list %i32%))
     (primitive         "debugPrint_blockFrame" %void% (list %t*%))
     (primitive         "debugPrint_blockHandleReturnFrom" %void% (list %i8*% %t*%))
@@ -171,9 +171,10 @@
     (primitive-unwinds "va_symbolFunction" %t*% (list %t*%))
     (primitive         "va_lexicalFunction" %t*% (list %size_t% %size_t% %t*%))
     
-    (primitive         "cc_gatherRestArguments" %t*% (list %va_list*% %size_t*%))
-    (primitive         "cc_gatherVaRestArguments" %t*% (list %va_list*% %size_t*% %vaslist*%))
-    (primitive-unwinds "cc_ifBadKeywordArgumentException" %void% (list %size_t% %size_t% %t*%))
+    (primitive         "cc_gatherRestArguments" %t*% (list %va_list*% %size_t%))
+    (primitive         "cc_gatherDynamicExtentRestArguments" %t*% (list %va_list*% %size_t% %t**%))
+    (primitive         "cc_gatherVaRestArguments" %t*% (list %va_list*% %size_t% %vaslist*%))
+    (primitive-unwinds "cc_ifBadKeywordArgumentException" %void% (list %t*% %t*% %function-description*%))
     
     (primitive         "initializeBlockClosure" %t*% (list %t**%))
     (primitive         "ignore_initializeBlockClosure" %t*% (list %t**%))
@@ -211,12 +212,8 @@
     
     (primitive         "saveToMultipleValue0" %void% (list %tmv*%))
     (primitive         "restoreFromMultipleValue0" %return_type% nil)
-    (primitive         "saveValues" %t*% (list %tmv*%))
-    (primitive         "loadValues" %void% (list %tmv*% %t*%))
-    
-   
-    (primitive         "progvSaveSpecials" %void% (list %i8**% %t*% %t*%))
-    (primitive         "progvRestoreSpecials" %void% (list %i8**%))
+;;;    (primitive         "saveValues" %t*% (list %tmv*%))
+;;;    (primitive         "loadValues" %void% (list %tmv*% %t*%))
     
     (primitive         "pushDynamicBinding" %void% (list %t*%))
     (primitive         "popDynamicBinding" %void% (list %t*%))
@@ -241,7 +238,7 @@
     (primitive-unwinds "cc_bound_or_error" %t*% (list %t*% %t*% %t*%)) ; optimized-data instance value
     (primitive         "cc_vaslist_end" %void% (list %t*%))
 
-    (primitive-unwinds "cc_check_if_wrong_number_of_arguments" %void% (list %size_t% %size_t% %size_t%))
+    (primitive-unwinds "cc_check_if_wrong_number_of_arguments" %void% (list %size_t% %size_t% %size_t% %function-description*%))
     (primitive         "cc_ensure_valid_object" %t*% (list %t*%))
     (primitive         "cc_getPointer" %i8*% (list %t*%))
     (primitive         "cc_setTmvToNil" %void% (list %tmv*%))
@@ -267,27 +264,24 @@
     (primitive         "cc_initialize_gcroots_in_module" %void% (list %gcroots-in-module*% %t**% %size_t% %t*%))
     (primitive         "cc_shutdown_gcroots_in_module" %void% (list %gcroots-in-module*% ))
 
-    (primitive-unwinds  "cc_enclose" %t*% (list %t*%
-                                                %fn-prototype*%
-                                                %i32*%
-                                                %size_t%
-                                                %size_t%
-                                                %size_t%
-                                                %size_t% ) :varargs t)
-    (primitive         "cc_stack_enclose" %t*% (list %i8*% %t*% %fn-prototype*% %i32*% %size_t% %size_t% %size_t% %size_t% ) :varargs t)
+    (primitive-unwinds "cc_enclose" %t*% (list %fn-prototype*%
+                                               %i8*%
+                                               %size_t% ) :varargs t)
+    (primitive         "cc_stack_enclose" %t*% (list %i8*%
+                                                     %fn-prototype*%
+                                                     %i8*%
+                                                     %size_t% ) :varargs t)
     (primitive         "cc_saveThreadLocalMultipleValues" %void% (list %tmv*% %mv-struct*%))
     (primitive         "cc_loadThreadLocalMultipleValues" %void% (list %tmv*% %mv-struct*%))
-    (primitive-unwinds "cc_safe_fdefinition" %t*% (list %t*%))
-    (primitive         "cc_unsafe_fdefinition" %t*% (list %t*%))
-    (primitive-unwinds "cc_safe_setfdefinition" %t*% (list %t*%))
-    (primitive         "cc_unsafe_setfdefinition" %t*% (list %t*%))
+    (primitive         "cc_fdefinition" %t*% (list %t*%))
+    (primitive         "cc_setfdefinition" %t*% (list %t*%))
     (primitive-unwinds "cc_safe_symbol_value" %t*% (list %t*%))
     (primitive         "cc_unsafe_symbol_value" %t*% (list %t*%))
     (primitive         "cc_setSymbolValue" %void% (list %t*% %t*%))
 
     (primitive         "cc_setup_vaslist" %t*% (list %vaslist*% %va_list*% %size_t%))
     (primitive         "cc_setup_vaslist_internal" %t*% (list %vaslist*% %size_t%))
-    (primitive         "cc_rewind_va_list" %void% (list %va_list*% %size_t*% %register-save-area*%))
+    (primitive         "cc_rewind_va_list" %void% (list %va_list*% %register-save-area*%))
     (primitive         "cc_rewind_vaslist" %t*% (list %vaslist*% %va_list*% %register-save-area*%))
     (primitive         "cc_push_InvocationHistoryFrame" %void% (list %t*% %InvocationHistoryFrame*% %va_list*% %size_t%))
     (primitive         "cc_pop_InvocationHistoryFrame" %void% (list %t*% %InvocationHistoryFrame*%))
@@ -302,9 +296,8 @@
                                                                          (make-list core:+number-of-fixed-arguments+
                                                                                     :initial-element %t*%))
                         :varargs t)
-    (primitive         "cc_allowOtherKeywords" %i64% (list %i64% %t*%))
     (primitive         "cc_matchKeywordOnce" %size_t% (list %t*% %t*% %t*%))
-    (primitive-unwinds "cc_ifNotKeywordException" %void% (list %t*% %size_t% %va_list*%))
+    (primitive-unwinds "cc_oddKeywordException" %void% (list %function-description*%))
     (primitive         "cc_multipleValuesArrayAddress" %t*[0]*% nil)
     (primitive-unwinds "cc_unwind" %void% (list %t*% %size_t%))
     (primitive-unwinds "cc_throw" %void% (list %t*%) :does-not-return t)

@@ -72,10 +72,11 @@ public:
   const_iterator end() const { return this->_Vector.end(); };
   size_t size() const { return this->_Vector.size(); };
   inline void unsafe_set_end(size_t e) { this->_Vector.unsafe_set_end(e); };
+  void ensure_initialized() { return this->_Vector.ensure_initialized(); };
   size_t capacity() const { return this->_Vector.capacity(); };
   //  pointer_type data() const { return this->_Vector.data(); };
-  ALWAYS_INLINE reference operator[](size_t i) { return this->_Vector[i]; };
-  ALWAYS_INLINE const_reference operator[](size_t i) const { return this->_Vector[i]; };
+  inline reference operator[](size_t i) { return this->_Vector[i]; };
+  inline const_reference operator[](size_t i) const { return this->_Vector[i]; };
   void resize(size_t n, const value_type &initialElement = value_type()) {
     this->_Vector.resize(n, initialElement);
   };
@@ -131,8 +132,8 @@ public:
   const_iterator end() const { return this->_Array.end(); };
   size_t capacity() const { return this->_Array.capacity(); };
   pointer_type data() const { return this->_Array.data(); };
-  ALWAYS_INLINE reference operator[](size_t i) { return this->_Array[i]; };
-  ALWAYS_INLINE const_reference operator[](size_t i) const { return this->_Array[i]; };
+  inline reference operator[](size_t i) { return this->_Array[i]; };
+  inline const_reference operator[](size_t i) const { return this->_Array[i]; };
   void clear() { this->_Array.clear(); };
 };
 

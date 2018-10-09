@@ -27,6 +27,7 @@ THE SOFTWARE.
 #ifndef clbind_wrappers_H
 #define clbind_wrappers_H
 
+#include <llvm/ADT/Optional.h>
 #include <clasp/core/wrappedPointer.h>
 #include <clasp/core/instance.h>
 #include <clasp/clbind/adapter.fwd.h>
@@ -526,6 +527,22 @@ struct from_object<std::unique_ptr<T>> {
     }
   }
 };
+
+
+
+ template <typename T>
+struct from_object<llvm::Optional<T>> {
+   typedef llvm::Optional<T> DeclareType;
+   DeclareType _v;
+   from_object(core::T_sp o) {
+     if (o.unboundp()) {
+       return;
+     }
+     llvm::Optional<T> val(from_object<T>(o)._v);
+     this->_v = val;
+     return;
+   }
+ };
 
 #if 0
  template <typename T>

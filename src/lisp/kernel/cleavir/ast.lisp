@@ -29,10 +29,20 @@
 ;;; down to the HIR->MIR.
 
 (defclass named-function-ast (cleavir-ast:function-ast)
-  ((%lambda-name :initarg :lambda-name :initform "lambda-ast" :reader lambda-name)))
+  ((%lambda-name :initarg :lambda-name :initform "lambda-ast" :reader lambda-name)
+   (%original-lambda-list :initarg :original-lambda-list :initform nil :reader original-lambda-list)
+   (%docstring :initarg :docstring :initform nil :reader docstring)
+   ;; We can avoid or dx-allocate the &rest list sometimes- controlled here,
+   ;; and set up from declarations in convert-form.lisp.
+   ;; NIL indicates the general case (i.e. full heap allocation).
+   (%rest-alloc :initarg :rest-alloc :initform nil :reader rest-alloc
+                     :type (member nil ignore dynamic-extent))))
 
 (cleavir-io:define-save-info named-function-ast
-    (:lambda-name lambda-name))
+    (:lambda-name lambda-name)
+  (:original-lambda-list original-lambda-list)
+  (:docstring docstring)
+  (:rest-alloc rest-alloc))
 
 (defmethod cleavir-ast-graphviz::label ((ast named-function-ast))
   (with-output-to-string (s)
@@ -50,10 +60,11 @@
   ((%tag-ast :initarg :tag-ast :reader tag-ast)
    (%result-ast :initarg :result-ast :reader result-ast)))
 
-(defun make-throw-ast (tag-ast result-ast)
+(defun make-throw-ast (tag-ast result-ast &optional origin)
   (make-instance 'throw-ast
     :tag-ast tag-ast
-    :result-ast result-ast))
+    :result-ast result-ast
+    :origin origin))
 
 (cleavir-io:define-save-info throw-ast
   (:tag-ast tag-ast)
@@ -80,6 +91,25 @@
     (format s "debug-message (~a)" (debug-message ast))))
 
 (defmethod cleavir-ast:children ((ast debug-message-ast)) nil)
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Class DEBUG-BREAK-AST
+;;;
+;;; This AST is used to represent a debugging break inserted into the generated code.
+
+(defclass debug-break-ast (cleavir-ast:ast cleavir-ast:no-value-ast-mixin)
+  ())
+
+(cleavir-io:define-save-info debug-break-ast
+    ())
+
+(defmethod cleavir-ast-graphviz::label ((ast debug-break-ast))
+  (with-output-to-string (s)
+    (format s "debug-break")))
+
+(defmethod cleavir-ast:children ((ast debug-break-ast)) nil)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -294,13 +324,14 @@
 (defclass precalc-vector-function-ast (cleavir-ast:top-level-function-ast)
   ((%precalc-asts :initarg :precalc-asts :reader precalc-asts)))
 
-(defun make-precalc-vector-function-ast (body-ast precalc-asts forms policy)
+(defun make-precalc-vector-function-ast (body-ast precalc-asts forms policy &key origin)
   (make-instance 'precalc-vector-function-ast
-		 :body-ast body-ast
-		 :lambda-list nil
-		 :precalc-asts precalc-asts
-		 :forms forms
-                 :policy policy))
+                 :body-ast body-ast
+                 :lambda-list nil
+                 :precalc-asts precalc-asts
+                 :forms forms
+                 :policy policy
+                 :origin origin))
 
 (cleavir-io:define-save-info precalc-vector-function-ast
     (:precalc-asts precalc-asts))
@@ -317,12 +348,12 @@
 ;;;
 
 (defclass precalc-value-reference-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin cleavir-ast:side-effect-free-ast-mixin) 
-  ((%ref-index :initarg :index :accessor precalc-value-reference-index)
+  ((%ref-index :initarg :index :accessor precalc-value-reference-ast-index)
    (%original-object :initarg :original-object :accessor precalc-value-reference-ast-original-object)))
 
 
 (cleavir-io:define-save-info precalc-value-reference-ast
-  (:index precalc-value-reference-index)
+  (:index precalc-value-reference-ast-index)
   (:original-object precalc-value-reference-ast-original-object))
 
 (defmethod cleavir-ast:children ((ast precalc-value-reference-ast))
@@ -338,17 +369,21 @@
 (defclass bind-va-list-ast (cleavir-ast:ast)
   ((%lambda-list :initarg :lambda-list :reader cleavir-ast:lambda-list)
    (%va-list-ast :initarg :va-list :reader va-list-ast)
-   (%body-ast :initarg :body-ast :reader cleavir-ast:body-ast)))
+   (%body-ast :initarg :body-ast :reader cleavir-ast:body-ast)
+   ;; as for named-function-ast
+   (%rest-alloc :initarg :rest-alloc :reader rest-alloc)))
 
-(defun make-bind-va-list-ast (lambda-list va-list-ast body-ast &key origin (policy cleavir-ast:*policy*))
+(defun make-bind-va-list-ast (lambda-list va-list-ast body-ast rest-alloc
+                              &key origin (policy cleavir-ast:*policy*))
   (make-instance 'bind-va-list-ast
-    :origin origin :policy policy
+    :origin origin :policy policy :rest-alloc rest-alloc
     :va-list va-list-ast :body-ast body-ast :lambda-list lambda-list))
 
 (cleavir-io:define-save-info bind-va-list-ast
     (:lambda-list cleavir-ast:lambda-list)
   (:va-list va-list-ast)
-  (:body-ast cleavir-ast:body-ast))
+  (:body-ast cleavir-ast:body-ast)
+  (:rest-alloc rest-alloc))
 
 (defmethod cleavir-ast:children ((ast bind-va-list-ast))
   (list* (va-list-ast ast)
@@ -367,7 +402,7 @@
 
 (defmethod cleavir-ast-graphviz::label ((ast precalc-value-reference-ast))
   (with-output-to-string (s)
-    (format s "precalc-val-ref(~a) ; " (precalc-value-reference-index ast))
+    (format s "precalc-val-ref(~a) ; " (clasp-cleavir:literal-label (precalc-value-reference-ast-index ast)))
     (let ((original-object (escaped-string (format nil "~s" (precalc-value-reference-ast-original-object ast)))))
       (if (> (length original-object) 10)
 	  (format s "~a..." (subseq original-object 0 10))
@@ -390,15 +425,25 @@ If this form has already been precalculated then just return the precalculated-v
          ;; COMPLE-FILE will generate a function for the form in the Module
          ;; and arrange for it's evaluation at load time
          ;; and to make its result available as a value
-         (literal:with-load-time-value-cleavir
-             (clasp-cleavir:compile-form form env)
-           #+(or)(literal:compile-load-time-value-thunk form))
+         (let* ((index (literal:with-load-time-value-cleavir
+                           (clasp-cleavir::compile-form form env)))
+                (result (make-instance 'clasp-cleavir:arrayed-literal :value form :index index)))
+           (check-type result clasp-cleavir:literal)
+           result)
          ;; COMPILE on the other hand evaluates the form and puts its
          ;; value in the run-time environment.
          ;; We use cleavir-env:eval rather than cclasp-eval-with-env so that it works
          ;; more correctly with alternate global environments.
-         (let ((value (cleavir-env:eval form env env)))
-           (cmp:codegen-rtv nil value))))))
+         (let* ((value (cleavir-env:eval form env env)))
+           (multiple-value-bind (index-or-immediate index-p)
+               (cmp:codegen-rtv-cclasp value)
+             (let ((result (if index-p
+                               (let ((index index-or-immediate))
+                                 (make-instance 'clasp-cleavir:arrayed-literal :value form :index index :literal-name "NIL"))
+                               (let ((immediate index-or-immediate))
+                                 (make-instance 'clasp-cleavir:immediate-literal :tagged-value immediate)))))
+               (check-type result clasp-cleavir:literal)
+               result)))))))
 
 
 (defun find-load-time-value-asts (ast)
@@ -420,16 +465,19 @@ If this form has already been precalculated then just return the precalculated-v
 
 (defun hoist-load-time-value (ast env)
   (let* ((load-time-value-asts (find-load-time-value-asts ast))
-	 (forms (mapcar (lambda (ast-parent)
+         (forms (mapcar (lambda (ast-parent)
                           (cleavir-ast:form (first ast-parent)))
                         load-time-value-asts)))
     (loop for (ast parent) in load-time-value-asts
+          for index = (let ((index (generate-new-precalculated-value-index env (cleavir-ast:form ast) (cleavir-ast:read-only-p ast))))
+                        (check-type index clasp-cleavir:literal)
+                        index)
        do (change-class ast 'precalc-value-reference-ast ; 'cleavir-ast:t-aref-ast
-                        :index (generate-new-precalculated-value-index env
-                                (cleavir-ast:form ast) (cleavir-ast:read-only-p ast))
+                        :index index
                         :original-object (cleavir-ast:form ast)))
     (clasp-cleavir-ast:make-precalc-vector-function-ast
-     ast (mapcar #'first load-time-value-asts) forms (cleavir-ast:policy ast))))
+     ast (mapcar #'first load-time-value-asts) forms (cleavir-ast:policy ast)
+     :origin (cleavir-ast:origin ast))))
 
 
 

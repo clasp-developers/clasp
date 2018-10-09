@@ -29,10 +29,11 @@ extern "C" {
 #define MAX_STACK_SIZE_FLOW_TRACKER 16
 extern void initialize_flow_tracker();
 extern size_t next_flow_tracker_counter();
-extern void flow_tracker_about_to_throw();
+extern void flow_tracker_about_to_throw(Fixnum tracker);
 extern void flow_tracker_last_throw_backtrace_dump();
 extern void flow_tracker_flush();
 extern void flow_tracker_close();
+extern bool global_flow_tracker_on;
 #endif
 };
 

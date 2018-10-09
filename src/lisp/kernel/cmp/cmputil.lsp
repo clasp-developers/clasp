@@ -166,8 +166,8 @@
 
 (defun print-compiler-message (c stream)
   (let ((msg (core:bformat nil (compiler-message-format c) (compiler-message-message c))))
-    (bformat stream ";;; %s\n" msg)
-    (bformat stream ";;;     at %s \n" (describe-source-location (compiler-message-source-pos-info c)))))
+    (bformat stream ";;; %s%N" msg)
+    (bformat stream ";;;     at %s %N" (describe-source-location (compiler-message-source-pos-info c)))))
 
 (defmacro with-compiler-env ( (conditions &rest options) &rest body )
   "Initialize the environment to protect nested compilations from each other"
@@ -209,13 +209,17 @@
 (defun register-global-function-def (type name)
   (when (boundp '*global-function-defs*)
     (let ((existing (gethash name *global-function-defs*)))
-      (if existing
-          (compiler-warning name "The %s %s was previously defined as a %s at %s\n"
-                            type
-                            name
-                            (global-function-def-type existing)
+      (if (and existing
+               ;; defmethod can define a gf, so we still want to note it-
+               ;; but multiple defmethods, or a defmethod after a defgeneric,
+               ;; shouldn't cause a warning.
+               (not (and (eq type 'defmethod)
+                         (or (eq (global-function-def-type existing) 'defgeneric)
+                             (eq (global-function-def-type existing) 'defmethod)))))
+          (compiler-warning name "The %s %s was previously defined as a %s at %s%N"
+                            type name (global-function-def-type existing)
                             (describe-source-location (global-function-def-source-pos-info existing)))
-          (setf (gethash name *global-function-defs*) 
+          (setf (gethash name *global-function-defs*)
                 (make-global-function-def :type type
                                        :name name
                                        :source-pos-info (ext:current-source-location)))))))
@@ -244,25 +248,22 @@
         ;; We treat constants pretty much identically to specials in bclasp.
         ;; It's not the best way to compile constants.
         (setq info (cons 'ext:special-var var))
-        (unless (or (core:specialp var) (core:symbol-constantp var))
+        (unless (or (ext:specialp var) (core:symbol-constantp var))
           (when (not *code-walking*)
             (compiler-warning-undefined-global-variable var))))
       info)))
 
 (defun compilation-unit-finished (messages)
-  (when messages
-    (bformat t "Compilation-unit finished \n\n")
-    ;; Add messages for global function references that were never satisfied
-    (maphash (lambda (name references)
-               (unless (or (fboundp name)
-                           (gethash name *global-function-defs*))
-                 (dolist (ref references)
-                   (pushnew (make-compiler-style-warning
-                             :message (core:bformat nil "Undefined function %s" name)
-                             :source-pos-info (global-function-ref-source-pos-info ref)
-                             :form name)
-                            messages :test #'equalp))))
-             *global-function-refs*)
-    (dolist (m (reverse messages))
-      (print-compiler-message m *debug-io*))))
-
+  ;; Add messages for global function references that were never satisfied
+  (maphash (lambda (name references)
+             (unless (or (fboundp name)
+                         (gethash name *global-function-defs*))
+               (dolist (ref references)
+                 (pushnew (make-compiler-style-warning
+                           :message (core:bformat nil "Undefined function %s" name)
+                           :source-pos-info (global-function-ref-source-pos-info ref)
+                           :form name)
+                          messages :test #'equalp))))
+           *global-function-refs*)
+  (dolist (m (reverse messages))
+    (print-compiler-message m *debug-io*)))

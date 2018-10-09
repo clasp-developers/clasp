@@ -28,7 +28,6 @@
 	  cmp-log-dump-function
 	  irc-environment-activation-frame
 	  *run-time-values-table-name*
-	  *block-name-prefix*
 	  irc-switch
 	  %t*%
 	  %i1%
@@ -45,6 +44,5 @@
 	  calling-convention-copy-args
 	  calling-convention-args.gep
 	  compile-error-if-not-enough-arguments
-	  dbg-set-current-debug-location-here
 	  irc-t
 	  ))

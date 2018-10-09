@@ -44,14 +44,33 @@ namespace core {
 CL_LAMBDA(destination control &rest args);
 CL_DECLARE();
 CL_DOCSTRING("Like CL format but uses C/boost format strings");
-CL_DEFUN T_sp core__bformat(T_sp destination, const string &control, List_sp args) {
+CL_DEFUN T_sp core__bformat(T_sp destination, const string &original_control, List_sp args) {
   T_sp output;
   if (destination.nilp()) {
-    output = my_thread->bformatStringOutputStream();
+    output = my_thread->_BFormatStringOutputStream;
   } else if (destination == _sym_printf) {
     output = destination;
+  } else if (destination == _lisp->_true()) {
+    output = cl::_sym_STARstandard_outputSTAR->symbolValue();
+  } else if (cl__streamp(destination)) {
+    output = destination;
   } else {
-    output = coerce::outputStreamDesignator(destination);
+    TYPE_ERROR(destination,cl::_sym_streamError);
+  }
+  std::stringstream scontrol;
+  std::string control;
+  if (original_control.size()>1) {
+    for ( int i(0); i<original_control.size(); ++i ) {
+      if (original_control[i] == '%' && original_control[i+1] == 'N') {
+        scontrol << '\n';
+        ++i;
+      } else {
+        scontrol << original_control[i];
+      }
+    }
+    control = scontrol.str();
+  } else {
+    control = original_control;
   }
   boost::format fmter(control);
   string fmter_str;
@@ -105,8 +124,9 @@ CL_DEFUN T_sp core__bformat(T_sp destination, const string &control, List_sp arg
     clasp_write_string(fmter_str, output);
   }
   if (destination.nilp()) {
-    StringOutputStream_sp sout = gc::As<StringOutputStream_sp>(output);
-    return sout->getAndReset();
+    StringOutputStream_sp sout = gc::As_unsafe<StringOutputStream_sp>(output);
+    String_sp result = sout->getAndReset();
+    return result;
   }
   return _Nil<T_O>();
 }

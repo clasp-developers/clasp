@@ -1,18 +1,34 @@
 (in-package :clasp-cleavir)
 
-#+(or)
-(eval-when (:execute)
-  (setq core:*echo-repl-read* t))
+(defpackage "PRIMOP"
+  (:export #:inlined-two-arg-+
+           #:inlined-two-arg--
+           #:inlined-two-arg-*
+           #:inlined-two-arg-/
+           #:inlined-two-arg-<
+           #:inlined-two-arg-<=
+           #:inlined-two-arg-=
+           #:inlined-two-arg->
+           #:inlined-two-arg->=
+           ))
 
-#+(or)
-(defmacro debug-inline (msg &rest msg-args)
-  `(progn
-     (format t "debug-inline>> ")
-     (format t ,msg ,@msg-args)
-     (format t "~%")
-     (finish-output)))
-(defmacro debug-inline (msg &rest msg-args)
-  nil)
+(eval-when (:compile-toplevel :execute :load-toplevel)
+  (setq core:*defun-inline-hook* 'defun-inline-hook))
+
+(progn
+  #+(or)
+  (eval-when (:execute)
+    (setq core:*echo-repl-read* t))
+  
+  #+(or)
+  (defmacro debug-inline (msg &rest msg-args)
+    `(progn
+       (core:bformat t "debug-inline>> ")
+       (core:bformat t ,msg ,@msg-args)
+       (core:bformat t "%N")
+       (finish-output)))
+  (defmacro debug-inline (msg &rest msg-args)
+    nil))
 
 (progn
   (debug-inline "eq")
@@ -20,8 +36,6 @@
   (defun cl:eq (x y)
     (if (cleavir-primop:eq x y) t nil)))
 
-;;; FIXME: it would be nicer if this was just an inline definition
-;;; referring to core:eql or something.
 (progn
   (debug-inline "eql")
   (declaim (inline cl:eql))
@@ -36,56 +50,56 @@
 
 #+(or)
 (progn
-;; Really want a bit-vector-equal intrinsic here.
-;; Maybe even separate simple and not vectors.
-
-(defmacro type2case (x y fail &rest cases)
-  (let ((sx (gensym "X")) (sy (gensym "Y")))
-    `(let ((,sx ,x) (,sy ,y))
-       (cond ,@(loop for (type . body) in cases
-                     collect `((typep ,sx ',type)
-                               (if (typep ,sy ',type)
-                                   (progn ,@body)
-                                   ,fail))
-                     collect `((typep ,sy ',type) ,fail))
-             (t ,fail)))))
-
-(defun equal (x y)
-  (or (eql x y)
-      (type2case x y nil
-        (cons (and (equal (car x) (car y))
-                   (equal (cdr x) (cdr y))))
-        (string (string= x y))
-        (bit-vector (bit-vector-equal x y))
-        (pathname (pathname-equal x y)))))
-
-(defun hash-table-equalp (x y)
-  (and (eq (hash-table-count x) (hash-table-count y))
-       (eq (hash-table-test x) (hash-table-test y))
-       ;; since the number of entries is the same,
-       ;; we don't need to check for extra keys in y.
-       (maphash (lambda (k v)
-                  (multiple-value-bind (otherv present)
-                      (gethash k y)
-                    (unless present
-                      (return-from hash-table-equalp nil))
-                    (unless (equalp v otherv)
-                      (return-from hash-table-equalp nil))))
-                x)
-       t))
-
-(defun equalp (x y)
-  (or (eq x y)
-      (type2case x y nil
-        (character (char-equal x y))
-        (number (= x y))
-        (cons (and (equalp (car x) (car y))
-                   (equalp (cdr x) (cdr y))))
-        (array (array-equalp x y))
-        (structure-object (structure-equalp x y))
-        (hash-table (hash-table-equalp x y))
-        (pathname (pathname-equal x y)))))
-)
+  ;; Really want a bit-vector-equal intrinsic here.
+  ;; Maybe even separate simple and not vectors.
+  
+  (defmacro type2case (x y fail &rest cases)
+    (let ((sx (gensym "X")) (sy (gensym "Y")))
+      `(let ((,sx ,x) (,sy ,y))
+         (cond ,@(loop for (type . body) in cases
+                       collect `((typep ,sx ',type)
+                                 (if (typep ,sy ',type)
+                                     (progn ,@body)
+                                     ,fail))
+                       collect `((typep ,sy ',type) ,fail))
+               (t ,fail)))))
+  
+  (defun equal (x y)
+    (or (eql x y)
+        (type2case x y nil
+                   (cons (and (equal (car x) (car y))
+                              (equal (cdr x) (cdr y))))
+                   (string (string= x y))
+                   (bit-vector (bit-vector-equal x y))
+                   (pathname (pathname-equal x y)))))
+  
+  (defun hash-table-equalp (x y)
+    (and (eq (hash-table-count x) (hash-table-count y))
+         (eq (hash-table-test x) (hash-table-test y))
+         ;; since the number of entries is the same,
+         ;; we don't need to check for extra keys in y.
+         (maphash (lambda (k v)
+                    (multiple-value-bind (otherv present)
+                        (gethash k y)
+                      (unless present
+                        (return-from hash-table-equalp nil))
+                      (unless (equalp v otherv)
+                        (return-from hash-table-equalp nil))))
+                  x)
+         t))
+  
+  (defun equalp (x y)
+    (or (eq x y)
+        (type2case x y nil
+                   (character (char-equal x y))
+                   (number (= x y))
+                   (cons (and (equalp (car x) (car y))
+                              (equalp (cdr x) (cdr y))))
+                   (array (array-equalp x y))
+                   (structure-object (structure-equalp x y))
+                   (hash-table (hash-table-equalp x y))
+                   (pathname (pathname-equal x y)))))
+  )
 
 (progn
   (debug-inline "not")
@@ -286,29 +300,12 @@
           (cleavir-primop:rplacd p v)
           p)
         (error 'type-error :datum p :expected-type 'cons))))
-                                        
+
 
 (debug-inline "primop")
 
-(defpackage "PRIMOP"
-  (:export #:convert-to-bignum
-           #:inlined-two-arg-+
-           #:inlined-two-arg--
-           #:inlined-two-arg-*
-           #:inlined-two-arg-/
-           #:inlined-two-arg-<
-           #:inlined-two-arg-<=
-           #:inlined-two-arg-=
-           #:inlined-two-arg->
-           #:inlined-two-arg->=
-           ))
-
 #-use-boehmdc
 (progn
-  (defun convert-to-bignum (z)
-    (if (> z 0)
-        (- z (expt 2 cl-fixnum-bits))
-        (+ z (expt 2 cl-fixnum-bits))))
   (defmacro define-with-contagion (inlined-name comparison (x y) fixnum single-float double-float generic)
     (declare (ignore comparison)) ; this will be used to control fp behavior, see CLHS 12.1.4.1
     `(progn
@@ -344,27 +341,27 @@
           generic (return-from ,inlined-name ,@generic)))))
   (define-with-contagion primop:inlined-two-arg-+ nil (x y)
     ((cleavir-primop:let-uninitialized (z)
-       (if (cleavir-primop:fixnum-add x y z)
-           z
-           (core:convert-overflow-result-to-bignum z))))
+                                       (if (cleavir-primop:fixnum-add x y z)
+                                           z
+                                           (core:convert-overflow-result-to-bignum z))))
     ((cleavir-primop:float-add single-float x y))
     ((cleavir-primop:float-add double-float x y))
     ((core:two-arg-+ x y)))
   (define-with-contagion primop:inlined-two-arg-- nil (x y)
     ((cleavir-primop:let-uninitialized (z)
-       (if (cleavir-primop:fixnum-sub x y z)
-           z
-           (core:convert-overflow-result-to-bignum z))))
+                                       (if (cleavir-primop:fixnum-sub x y z)
+                                           z
+                                           (core:convert-overflow-result-to-bignum z))))
     ((cleavir-primop:float-sub single-float x y))
     ((cleavir-primop:float-sub double-float x y))
     ((core:two-arg-- x y)))
   (define-with-contagion primop:inlined-two-arg-* nil (x y)
-    ((go generic)) ; FIXME: fixnum arithmetic!
+    ((go generic))             ; FIXME: fixnum arithmetic!
     ((cleavir-primop:float-mul single-float x y))
     ((cleavir-primop:float-mul double-float x y))
     ((core:two-arg-* x y)))
   (define-with-contagion primop:inlined-two-arg-/ nil (x y)
-    ((go generic)) ; FIXME: fixnum arithmetic!
+    ((go generic))             ; FIXME: fixnum arithmetic!
     ((cleavir-primop:float-div single-float x y))
     ((cleavir-primop:float-div double-float x y))
     ((core:two-arg-/ x y)))
@@ -403,16 +400,18 @@
             `(primop:inlined-two-arg-/ ,dividend (* ,@divisors))
             `(primop:inlined-two-arg-/ 1 ,dividend))
         (error "The / operator can not be part of a form that is a dotted list.")))
-  (define-compiler-macro < (&rest numbers)
-    (core:expand-compare 'primop:inlined-two-arg-< numbers))
-  (define-compiler-macro <= (&rest numbers)
-    (core:expand-compare 'primop:inlined-two-arg-<= numbers))
-  (define-compiler-macro = (&rest numbers)
-    (core:expand-compare 'primop:inlined-two-arg-= numbers))
-  (define-compiler-macro > (&rest numbers)
-    (core:expand-compare 'primop:inlined-two-arg-> numbers))
-  (define-compiler-macro >= (&rest numbers)
-    (core:expand-compare 'primop:inlined-two-arg->= numbers))
+  (define-compiler-macro < (&whole form &rest numbers)
+    (core:expand-compare form 'primop:inlined-two-arg-< numbers))
+  (define-compiler-macro <= (&whole form &rest numbers)
+    (core:expand-compare form 'primop:inlined-two-arg-<= numbers))
+  (define-compiler-macro = (&whole form &rest numbers)
+    (core:expand-compare form 'primop:inlined-two-arg-= numbers))
+  (define-compiler-macro /= (&whole form &rest numbers)
+    (core:expand-uncompare form 'primop:inlined-two-arg-= numbers))
+  (define-compiler-macro > (&whole form &rest numbers)
+    (core:expand-compare form 'primop:inlined-two-arg-> numbers))
+  (define-compiler-macro >= (&whole form &rest numbers)
+    (core:expand-compare form 'primop:inlined-two-arg->= numbers))
   (define-compiler-macro 1+ (x)
     `(primop:inlined-two-arg-+ ,x 1))
   (define-compiler-macro 1- (x)
@@ -430,12 +429,12 @@
   (defun minusp (number)
     (< number 0)))
 
-
 ;;; ------------------------------------------------------------
 ;;;
 ;;; Array functions
 ;;;
 
+(debug-inline "array-total-size")
 (declaim (inline array-total-size))
 (defun array-total-size (array)
   (etypecase array
@@ -443,12 +442,14 @@
     ;; MDArray
     (array (core::%array-total-size array))))
 
+(debug-inline "array-rank")
 (declaim (inline array-rank))
 (defun array-rank (array)
   (etypecase array
     ((simple-array * (*)) 1)
     (array (core::%array-rank array))))
 
+(debug-inline "array-dimension")
 (declaim (inline array-dimension))
 (defun array-dimension (array axis-number)
   (etypecase array
@@ -462,6 +463,7 @@
          (error "Invalid axis number ~d for array of rank ~d" axis-number (core::%array-rank array))))))
 
 ;; Unsafe version for array-row-major-index
+(debug-inline "%array-dimension")
 (declaim (inline %array-dimension))
 (defun %array-dimension (array axis-number)
   (etypecase array
@@ -469,6 +471,7 @@
      (core::vector-length array))
     (array (core::array-dimension array axis-number))))
 
+(debug-inline "svref")
 (declaim (inline svref))
 (defun svref (vector index)
   (if (typep vector 'simple-vector)
@@ -492,6 +495,7 @@
           (error 'type-error :datum index :expected-type 'fixnum))
       (error 'type-error :datum vector :expected-type 'simple-vector)))
 
+(debug-inline "%unsafe-vector-ref")
 (declaim (inline %unsafe-vector-ref))
 (defun %unsafe-vector-ref (array index)
   ;; FIXME: type inference should be able to remove the redundant
@@ -501,7 +505,9 @@
                   ,@(loop for (type boxed) in specs
                           collect `((simple-array ,type (*))
                                     (cleavir-primop:aref array index ,type t ,boxed)))
-                  (t (error "BUG: Unknown vector ~a" array)))))
+                  (t
+                   (core:bformat t "unsafe-vector-ref array-element-type: %s%N" (array-element-type array))
+                   (error "BUG: unsafe-vector-ref unknown vector ~a" array)))))
     (mycase (t t) (base-char nil) (character nil)
             (double-float nil) (single-float nil)
             (fixnum nil)
@@ -616,6 +622,7 @@
                           for subsym in (reverse subsyms)
                           collect `(* ,sub ,subsym)))))))))
 
+#-use-boehmdc
 (define-compiler-macro array-row-major-index (&whole form array &rest subscripts)
   ;; FIXME: Cleavir arithmetic is not yet clever enough for this to be fast in the
   ;; >1dimensional case. We need wrapped fixnum multiplication and addition, basically,
@@ -652,6 +659,7 @@
              ;; Now we know we're good, do the actual computation
              ,(row-major-index-computer sarray dimsyms ssubscripts))))))
 
+#-use-boehmdc
 (define-compiler-macro aref (&whole form array &rest subscripts)
   ;; FIXME: See tragic comment above in array-row-major-index.
   (if (> (length subscripts) 1)
@@ -670,34 +678,40 @@
 ;;; Sequence functions
 ;;;
 
-(declaim (inline length))
-(defun length (sequence)
-  (etypecase sequence
-    (cons
-     (locally
-         (declare ;(optimize speed)
-                  (type cons sequence))
-       (let ((length 1))
-         (loop (let ((next (cdr sequence)))
-                 (etypecase next
-                   (cons (setf sequence next length (1+ length)))
-                   (null (return-from length length))))))))
-    (vector (core::vector-length sequence))
-    (null 0)))
+(progn
+  (debug-inline "length")
+  (declaim (inline length))
+  (defun length (sequence)
+    (etypecase sequence
+      (cons
+       (locally
+           (declare      ;(optimize speed)
+            (type cons sequence))
+         (let ((length 1))
+           (loop (let ((next (cdr sequence)))
+                   (etypecase next
+                     (cons (setf sequence next length (1+ length)))
+                     (null (return-from length length))))))))
+      (vector (core::vector-length sequence))
+      (null 0))))
 
-(declaim (inline elt))
-(defun elt (sequence index)
-  (etypecase sequence
-    (list (nth index sequence))
-    (vector (row-major-aref sequence index))
-    (t (error 'type-error :datum sequence :expected-type 'sequence))))
+(progn
+  (debug-inline "elt")
+  (declaim (inline elt))
+  (defun elt (sequence index)
+    (etypecase sequence
+      (list (nth index sequence))
+      (vector (row-major-aref sequence index))
+      (t (error 'type-error :datum sequence :expected-type 'sequence))))
 
-(declaim (inline core:setf-elt))
-(defun core:setf-elt (sequence index new-value)
-  (etypecase sequence
-    (list (setf (nth index sequence) new-value))
-    (vector (setf (row-major-aref sequence index) new-value))
-    (t (error 'type-error :datum sequence :expected-type 'sequence))))
+
+  (debug-inline "core:setf-elt")
+  (declaim (inline core:setf-elt))
+  (defun core:setf-elt (sequence index new-value)
+    (etypecase sequence
+      (list (setf (nth index sequence) new-value))
+      (vector (setf (row-major-aref sequence index) new-value))
+      (t (error 'type-error :datum sequence :expected-type 'sequence)))))
 
 ;;; ------------------------------------------------------------
 ;;;
@@ -705,7 +719,7 @@
 ;;;    and put here so that the inline definition is available
 ;;;
 (declaim (inline core::coerce-fdesignator)
-	 (ftype (function ((or function symbol)) function)
+         (ftype (function ((or function symbol)) function)
                 core::coerce-fdesignator))
 (defun core::coerce-fdesignator (fdesignator)
   "Take a CL function designator and spit out a function."
@@ -713,24 +727,23 @@
     (function fdesignator)
     (symbol (fdefinition fdesignator))))
 
-
 ;;; ------------------------------------------------------------
 ;;;
 ;;;  Copied from clasp/src/lisp/kernel/lsp/pprint.lsp
 ;;;    and put here so that the inline definition is available
 ;;;
-(in-package "SI")
+                 (in-package "SI")
 
-(declaim (inline index-posn posn-index posn-column))
-(defun index-posn (index stream)
-  (declare (type index index) (type pretty-stream stream))
-  (+ index (pretty-stream-buffer-offset stream)))
-(defun posn-index (posn stream)
-  (declare (type posn posn) (type pretty-stream stream))
-  (- posn (pretty-stream-buffer-offset stream)))
-(defun posn-column (posn stream)
-  (declare (type posn posn) (type pretty-stream stream))
-  (index-column (posn-index posn stream) stream))
+                 (declaim (inline index-posn posn-index posn-column))
+                 (defun index-posn (index stream)
+                   (declare (type index index) (type pretty-stream stream))
+                   (+ index (pretty-stream-buffer-offset stream)))
+                 (defun posn-index (posn stream)
+                   (declare (type posn posn) (type pretty-stream stream))
+                   (- posn (pretty-stream-buffer-offset stream)))
+                 (defun posn-column (posn stream)
+                   (declare (type posn posn) (type pretty-stream stream))
+                   (index-column (posn-index posn stream) stream))
 
 
 ;;; --------------------------------------------------
@@ -747,15 +760,15 @@
     ;; nothing cleavir-specific here
     (let ((sfunction (gensym "MAPCAR-FUNCTION"))
           (syms (loop repeat (length lists)
-                   collect (gensym "MAPCAR-ARGUMENT"))))
+                      collect (gensym "MAPCAR-ARGUMENT"))))
       `(loop named ,(gensym "UNUSED-BLOCK")
-          ;; the loop needs a (gensym) name so that ,function
-          ;; can't refer to it.
-          with ,sfunction = ,function
-            ,@(loop for sym in syms
-                 for list in lists
-                 append `(for ,sym ,iter ,list))
-            ,accum (funcall ,sfunction ,@syms))))
+             ;; the loop needs a (gensym) name so that ,function
+             ;; can't refer to it.
+             with ,sfunction = ,function
+             ,@(loop for sym in syms
+                     for list in lists
+                     append `(for ,sym ,iter ,list))
+             ,accum (funcall ,sfunction ,@syms))))
 
   (define-compiler-macro mapc (function list &rest more-lists)
     (mapfoo-macro 'in 'do function (cons list more-lists)))
@@ -771,6 +784,7 @@
     (mapfoo-macro 'on 'nconc function (cons list more-lists)))
   )
 
+#-use-boehmdc
 (define-compiler-macro funcall (&whole form function &rest arguments &environment env)
   ;; If we have (funcall #'foo ...), we might be able to apply the FOO compiler macro.
   (when (and (consp function) (eq (first function) 'function)
@@ -797,8 +811,12 @@
 (define-compiler-macro values (&rest values)
   `(cleavir-primop:values ,@values))
 
-#++
-(defun symbol-value (symbol)
-  (if (cleavir-primop:typeq symbol symbol)
-      (cleavir-primop:symbol-value symbol)
-      (error 'type-error :datum symbol :expected-type 'symbol)))
+;;; Written as a compiler macro to avoid confusing bclasp.
+(define-compiler-macro multiple-value-bind (vars form &body body)
+  (let ((syms (loop for var in vars collecting (gensym (symbol-name var)))))
+    `(cleavir-primop:let-uninitialized (,@syms)
+       (cleavir-primop:multiple-value-setq (,@syms) ,form)
+       (let (,@(loop for var in vars for sym in syms
+                     collecting `(,var ,sym)))
+         ,@body))))
+

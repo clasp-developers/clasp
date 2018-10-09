@@ -5,7 +5,6 @@ from cleavir_file_list import cleavir_file_list
 SRC_CORE_FILES = \
     [
         'dummy',
-        'clcenv',
         'mpPackage',
         'nativeVector',
         'environment',
@@ -112,7 +111,7 @@ SRC_CORE_FILES = \
         'designators',
         'sequence',
         'loadTimeValues',
-        'reader',
+#        'reader',
         'lightProfiler',
         'fileSystem',
         'intArray',
@@ -185,6 +184,9 @@ def collect_clasp_c_source_files(bld):
                  'llvmoExpose',
                  'llvmoPackage',
                  'clbindLlvmExpose']) + \
+             collect_c_source_files(bld, 'src/mpip/', [
+                 'claspMpi'
+             ]) + \
              collect_c_source_files(bld, 'src/asttooling/', [
                  'astVisitor',
                  'astExpose',
@@ -279,10 +281,13 @@ def collect_bclasp_lisp_files(**kwargs):
         "src/lisp/kernel/lsp/module",
         "src/lisp/kernel/lsp/loop2",
         "src/lisp/kernel/cmp/opt", # need loop
+        "src/lisp/kernel/cmp/opt-character",
+        "src/lisp/kernel/cmp/opt-number",
         "src/lisp/kernel/cmp/opt-type",
         "src/lisp/kernel/cmp/opt-sequence",
         "src/lisp/kernel/cmp/opt-cons",
         "src/lisp/kernel/cmp/opt-array",
+        "src/lisp/kernel/cmp/opt-object",
         "src/lisp/kernel/lsp/shiftf-rotatef",
         "src/lisp/kernel/lsp/assorted",
         "src/lisp/kernel/lsp/packlib",
@@ -310,15 +315,14 @@ def collect_bclasp_lisp_files(**kwargs):
         "src/lisp/kernel/clos/stdmethod",
         "src/lisp/kernel/clos/generic",
         "src/lisp/kernel/clos/fixup",
-        "src/lisp/kernel/clos/extraclasses",
         "src/lisp/kernel/lsp/source-location",
         "src/lisp/kernel/lsp/defvirtual",
         "src/lisp/kernel/clos/conditions",
         "src/lisp/kernel/clos/print",
         "src/lisp/kernel/clos/streams",
         "src/lisp/kernel/lsp/pprint",
+        "src/lisp/kernel/lsp/packlib2",
         "src/lisp/kernel/clos/inspect",
-        "src/lisp/kernel/clos/install-documentation",
         "src/lisp/kernel/lsp/fli",
         "src/lisp/modules/sockets/sockets",
         "src/lisp/kernel/lsp/top",

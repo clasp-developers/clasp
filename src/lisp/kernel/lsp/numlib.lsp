@@ -66,24 +66,21 @@
 	(not (= (float 1 E) (- (float 1 E) E)))")
     ))
 
-#+ieee-floating-point
+;;; This needs to be loaded, used in ext::float-infinity-string 
 (locally (declare (notinline -))
-  (let ((bits (si::trap-fpe 'last nil)))
-    (unwind-protect
-         (progn
-           (let ((a (/ (coerce 1 'short-float) (coerce 0.0 'short-float))))
-             (defconstant short-float-positive-infinity a)
-             (defconstant short-float-negative-infinity (- a)))
-           (let ((a (/ (coerce 1 'single-float) (coerce 0.0 'single-float))))
-             (defconstant single-float-positive-infinity a)
-             (defconstant single-float-negative-infinity (- a)))
-           (let ((a (/ (coerce 1 'double-float) (coerce 0.0 'double-float))))
-             (defconstant double-float-positive-infinity a)
-             (defconstant double-float-negative-infinity (- a)))
-           (let ((a (/ (coerce 1 'long-float) (coerce 0.0 'long-float))))
-             (defconstant long-float-positive-infinity a)
-             (defconstant long-float-negative-infinity (- a))))
-      (si::trap-fpe bits t))))
+  (progn
+    (let ((a (/ (coerce 1 'short-float) (coerce 0.0 'short-float))))
+      (defconstant ext:short-float-positive-infinity a)
+      (defconstant ext:short-float-negative-infinity (- a)))
+    (let ((a (/ (coerce 1 'single-float) (coerce 0.0 'single-float))))
+      (defconstant ext:single-float-positive-infinity a)
+      (defconstant ext:single-float-negative-infinity (- a)))
+    (let ((a (/ (coerce 1 'double-float) (coerce 0.0 'double-float))))
+      (defconstant ext:double-float-positive-infinity a)
+      (defconstant ext::double-float-negative-infinity (- a)))
+    (let ((a (/ (coerce 1 'long-float) (coerce 0.0 'long-float))))
+      (defconstant ext:long-float-positive-infinity a)
+      (defconstant ext:long-float-negative-infinity (- a)))))
 
 (defun isqrt (i)
   "Args: (integer)

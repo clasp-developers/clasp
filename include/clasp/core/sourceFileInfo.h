@@ -39,7 +39,9 @@ THE SOFTWARE.
 namespace core {
 class SourceFileInfo_O : public General_O {
   LISP_CLASS(core, CorePkg, SourceFileInfo_O, "SourceFileInfo",General_O);
-
+ public:
+  bool fieldsp() const { return true; };
+  void fields(Record_sp node);
 public:
   static SourceFileInfo_sp create(Pathname_sp path, int handle, T_sp truename = _Nil<T_O>(), size_t offset = 0, bool useLineno = true);
   static SourceFileInfo_sp create(const string &fileNamePath, int handle, T_sp truename = _Nil<T_O>(), size_t offset = 0, bool useLineno = true);
@@ -54,14 +56,19 @@ GCPRIVATE: // instance variables here
   char *_PermanentPathName;
   char *_PermanentFileName;
   int _FileHandle;
-  T_sp _SourceDebugNamestring;
+  /* These next two are used for compiling from a temp file like SLIME does.
+   * In that case, the actual tempfile is the pathname, but the file it's
+   * excerpted from has its namestring stored here. The offset is the offset
+   * of the tempfile in that file.
+   */
+  T_sp _SourceDebugPathname;
   size_t _SourceDebugOffset;
   bool _TrackLineno;
 
 public: // Functions here
   int fileHandle() const { return this->_FileHandle; };
-  /*! Return the value of _Truename unless nil then return fileName */
-  string sourceDebugNamestring() const;
+  /*! Return the value of _SourceDebugPathname unless nil then return _pathname */
+  Pathname_sp sourceDebugPathname() const;
   string fileName() const;
   string parentPathName() const;
   string namestring() const;
@@ -79,12 +86,12 @@ CL_DEFMETHOD   size_t sourceDebugOffset() const { return this->_SourceDebugOffse
 
 FORWARD(SourcePosInfo);
 class SourcePosInfo_O : public General_O {
-  friend class SourceManager_O;
   friend T_mv core__source_file_info(T_sp sourceFile, T_sp truename, size_t offset, bool useLineno);
 
   LISP_CLASS(core, CorePkg, SourcePosInfo_O, "SourcePosInfo",General_O);
-
-public:
+ public:
+  bool fieldsp() const { return true; };
+  void fields(Record_sp node);
 public:                                                                                    // ctor/dtor for classes with shared virtual base
   explicit SourcePosInfo_O() : _FileId(UNDEF_UINT), _Filepos(0), _Lineno(0), _Column(0){}; //, _Filepos(0) {};
 public:                                                                                    // instance variables here
@@ -152,55 +159,6 @@ struct gctools::GCInfo<core::SourcePosInfo_O> {
 };
 
 namespace core {
-class SourceManager_O : public General_O {
-  LISP_CLASS(core, CorePkg, SourceManager_O, "ClaspSourceManager",General_O);
-  void initialize();
-
-public: // ctor/dtor for classes with shared virtual base
-  explicit SourceManager_O(){};
-  virtual ~SourceManager_O(){};
-
-public: // instance variables here
-#ifdef USE_WEAK_HASH_TABLE_FOR_SOURCE_POS_INFO
-  typedef WeakKeyHashTable_sp HashTableType;
-#else
-  typedef HashTableEq_sp HashTableType;
-#endif
-  HashTableType _SourcePosInfo;
-
-public: // Functions here
-  /*! Return true if the SourceManager is available */
-  bool availablep() const { return true; };
-
-  /*! Register the object with the source manager */
-  T_sp registerSourceInfo(T_sp obj, T_sp sourceFile, size_t filepos, uint lineno, uint column);
-
-  void dump();
-
-  T_sp registerSourcePosInfo(T_sp obj, SourcePosInfo_sp spi);
-
-  //        SourceFileInfo_sp sourceFileInfoFromIndex(int idx) const;
-
-  //	SourcePosInfo_sp registerSourceInfoFromStream(T_sp obj, T_sp stream);
-
-  /*! Duplicate the source code information associated with orig_obj for new_obj 
-	 In the future I could do something more sophisticated with macroExpansionFunction*/
-  T_sp duplicateSourcePosInfo(T_sp orig_obj, T_sp new_obj, T_sp macroExpansionFunction = _Nil<T_O>());
-
-  T_sp lookupSourcePosInfo(T_sp obj);
-
-  void empty() {
-    this->_SourcePosInfo->clrhash();
-  }
-
-}; // SourceManager class
-
-
- T_sp core__source_manager_lookup(T_sp source_manager, T_sp form);
- 
-T_mv core__walk_to_find_source_info(T_sp obj);
-T_sp core__walk_to_find_source_pos_info(T_sp obj, T_sp defaultSpi = _Nil<T_O>());
-//    SourceFileInfo_mv af_lookupSourceFileInfo(T_sp obj);
 
 T_mv core__source_file_info(T_sp sourceFile, T_sp truename = _Nil<T_O>(), size_t offset = 0, bool useLineno = true);
 

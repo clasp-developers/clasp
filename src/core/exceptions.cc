@@ -557,10 +557,6 @@ void _stackTraceDump() {
   IMPLEMENT_ME();
 }
 
-#ifdef USEBOOSTPYTHON
-
-#endif
-
 #define ARGS_af_wrongTypeKeyArg "(source-file lineno function narg value type)"
 #define DECL_af_wrongTypeKeyArg ""
 #define DOCS_af_wrongTypeKeyArg "wrongTypeKeyArg"
@@ -750,10 +746,10 @@ CL_DEFUN void core__wrong_index(const string &sourceFile, int lineno, Symbol_sp 
   }
 };
 
-CL_LAMBDA(sourceFileName lineno functionName fmt fmtargs stream);
+CL_LAMBDA(sourceFileName lineno fmt fmtargs stream);
 CL_DECLARE();
 CL_DOCSTRING("readerError");
-CL_DEFUN void cl__reader_error(const string &sourceFile, uint lineno,
+CL_DEFUN void core__reader_error(const string &sourceFile, uint lineno,
                     String_sp fmt, List_sp fmtargs, T_sp stream) {
   ASSERT(cl__stringp(fmt));
   if (stream.nilp()) {
@@ -841,8 +837,7 @@ void CEpackage_error(const char *fmt,
   clasp_va_start(args, nargs);
   List_sp fmtargs = clasp_grab_rest_args(args, nargs);
   clasp_va_end(args);
-  if (fmtargs.nilp())
-    fmtargs = Cons_O::create(package);
+  if (fmtargs.nilp()) fmtargs = Cons_O::create(package,_Nil<T_O>());
   eval::funcall(core::_sym_signalSimpleError,
                 core::_sym_simplePackageError,
                 SimpleBaseString_O::make(continue_message),
@@ -859,8 +854,7 @@ void FEpackage_error(const char *fmt,
   clasp_va_start(args, nargs);
   List_sp fmtargs = clasp_grab_rest_args(args, nargs);
   clasp_va_end(args);
-  if (fmtargs.nilp())
-    fmtargs = Cons_O::create(package);
+  if (fmtargs.nilp()) fmtargs = Cons_O::create(package,_Nil<T_O>());
   eval::funcall(core::_sym_signalSimpleError,
                 core::_sym_simplePackageError,
                 _Nil<T_O>(),

@@ -6,6 +6,16 @@
 
 (defparameter *number-of-jobs* 1)
 
+#+(not bclasp cclasp)
+(core:fset 'cmp::with-compiler-timer
+           (let ((body (gensym)))
+             (core:bformat t "body = %s%N" body)
+             #'(lambda (whole env)
+                 (let ((body (cddr whole)))
+                   `(progn
+                      ,@body))))
+           t)
+
 (defun strip-root (pn-dir)
   "Remove the SOURCE-DIR: part of the path in l and then
 search for the string 'src', or 'generated' and return the rest of the list that starts with that"
@@ -151,8 +161,8 @@ Return files."
   path)
 
 (defun compile-kernel-file (entry &key (reload nil) load-bitcode (force-recompile nil) counter total-files (output-type core:*clasp-build-mode*) verbose print silent)
-  #+dbg-print(bformat t "DBG-PRINT compile-kernel-file: %s\n" entry)
-;;  (if *target-backend* nil (error "*target-backend* is undefined"))
+  #+dbg-print(bformat t "DBG-PRINT compile-kernel-file: %s%N" entry)
+  ;;  (if *target-backend* nil (error "*target-backend* is undefined"))
   (let* ((filename (entry-filename entry))
          (source-path (build-pathname filename :lisp))
          (output-path (build-pathname filename output-type))
@@ -160,18 +170,18 @@ Return files."
     (if (and load-bitcode (not force-recompile))
         (progn
           (unless silent
-            (bformat t "Skipping compilation of %s - its bitcode file %s is more recent\n" source-path output-path))
-          ;;      (bformat t "   Loading the compiled file: %s\n" (path-file-name output-path))
+            (bformat t "Skipping compilation of %s - its bitcode file %s is more recent%N" source-path output-path))
+          ;;      (bformat t "   Loading the compiled file: %s%N" (path-file-name output-path))
           ;;      (load-bitcode (as-string output-path))
           )
         (progn
           (unless silent
-            (bformat t "\n")
+            (bformat t "%N")
             (if (and counter total-files)
-                (bformat t "Compiling [%d of %d] %s\n    to %s - will reload: %s\n" counter total-files source-path output-path reload)
-                (bformat t "Compiling %s\n   to %s - will reload: %s\n" source-path output-path reload)))
+                (bformat t "Compiling [%d of %d] %s%N    to %s - will reload: %s%N" counter total-files source-path output-path reload)
+                (bformat t "Compiling %s%N   to %s - will reload: %s%N" source-path output-path reload)))
           (let ((cmp::*module-startup-prefix* "kernel"))
-            #+dbg-print(bformat t "DBG-PRINT  source-path = %s\n" source-path)
+            #+dbg-print(bformat t "DBG-PRINT  source-path = %s%N" source-path)
             (apply #'compile-file
                    (probe-file source-path)
                    :output-file output-path
@@ -183,7 +193,8 @@ Return files."
                 (let ((reload-file (if (eq output-type :object)
                                        (make-pathname :type (bitcode-extension) :defaults output-path)
                                        output-path)))
-                  (bformat t "    Loading newly compiled file: %s\n" reload-file)
+		  (unless silent
+		    (bformat t "    Loading newly compiled file: %s%N" reload-file))
                   (load-kernel-file reload-file output-type))))))
     output-path))
 (export 'compile-kernel-file)
@@ -200,86 +211,159 @@ Return files."
   (let* ((filename (entry-filename entry))
          (pathname (probe-file (build-pathname filename :lisp)))
          (name (namestring pathname)))
-    (bformat t "Compiling/loading source: %s\n" (namestring name))
+    (bformat t "Compiling/loading source: %s%N" (namestring name))
     (let ((m (cmp::compile-file-to-module name :print nil)))
       (progn
         (cmp::link-builtins-module m)
         (cmp::optimize-module-for-compile m))
       (llvm-sys:load-module m))))
 
+(defun interpreter-iload (entry)
+  (let* ((filename (entry-filename entry))
+         (pathname (probe-file (build-pathname filename :lisp)))
+         (name (namestring pathname)))
+    (if cmp:*implicit-compile-hook*
+        (bformat t "Loading/compiling source: %s%N" (namestring name))
+        (bformat t "Loading/interpreting source: %s%N" (namestring name)))
+    (cmp::with-compiler-timer (:message "Compiler" :verbose t)
+     (load pathname))))
+
+(defun iload (entry &key load-bitcode )
+  #+dbg-print(bformat t "DBG-PRINT iload fn: %s%N" fn)
+  (let* ((fn (entry-filename entry))
+         (lsp-path (build-pathname fn))
+         (bc-path (build-pathname fn :bitcode))
+         (load-bc (if (not (probe-file lsp-path))
+                      t
+                      (if (not (probe-file bc-path))
+                          nil
+                          (if load-bitcode
+                              t
+                              (let ((bc-newer (> (file-write-date bc-path) (file-write-date lsp-path))))
+                                bc-newer))))))
+    (if load-bc
+        (progn
+          (bformat t "Loading bitcode file: %s%N" bc-path)
+          (cmp::with-compiler-timer (:message "Loaded bitcode" :verbose t)
+            (cmp:load-bitcode bc-path)))
+        (if (probe-file lsp-path)
+            (progn
+              (if cmp:*implicit-compile-hook*
+                  (bformat t "Loading/compiling source: %s%N" lsp-path)
+                  (bformat t "Loading/interpreting source: %s%N" lsp-path))
+              (cmp::with-compiler-timer (:message "Compiler" :verbose t)
+               (load lsp-path)))
+            (bformat t "No interpreted or bitcode file for %s could be found%N" lsp-path)))))
+
 (defun load-system (files &key compile-file-load interp load-bitcode (target-backend *target-backend*) system)
-  #+dbg-print(bformat t "DBG-PRINT  load-system: %s - %s\n" first-file last-file )
+  #+dbg-print(bformat t "DBG-PRINT  load-system: %s - %s%N" first-file last-file )
   (let* ((*target-backend* target-backend)
+         (*compile-verbose* t)
 	 (cur files))
     (tagbody
      top
        (if (endp cur) (go done))
-       (if (not interp)
-	   (if (bitcode-exists-and-up-to-date (car cur))
-               (iload (car cur) :load-bitcode load-bitcode)
-               (if compile-file-load
-                   (compile-file-and-load (car cur))
-                   (progn
-                     (setq load-bitcode nil)
-                     (interpreter-iload (car cur)))))
-	   (interpreter-iload (car cur)))
+       (cmp::with-compiler-timer (:message "Compiler" :verbose t)
+         (if (not interp)
+             (if (bitcode-exists-and-up-to-date (car cur))
+                 (iload (car cur) :load-bitcode load-bitcode)
+                 (if compile-file-load
+                     (compile-file-and-load (car cur))
+                     (progn
+                       (setq load-bitcode nil)
+                       (interpreter-iload (car cur)))))
+             (interpreter-iload (car cur))))
        (gctools:cleanup)
        (setq cur (cdr cur))
        (go top)
      done)))
 
-(defun compile-system-serial (files &key reload (output-type core:*clasp-build-mode*) parallel-jobs)
+(defun compile-system-serial (files &key reload (output-type core:*clasp-build-mode*) parallel-jobs batch-min batch-max)
   (declare (ignore parallel-jobs))
-  #+dbg-print(bformat t "DBG-PRINT compile-system files: %s\n" files)
-  (with-compilation-unit ()
-    (let* ((cur files)
+  #+dbg-print(bformat t "DBG-PRINT compile-system files: %s%N" files)
+  (let* ((cur files)
            (counter 1)
            (total (length files)))
       (tagbody
        top
          (if (endp cur) (go done))
-         (compile-kernel-file (car cur) :reload reload :output-type output-type :counter counter :total-files total)
+         (compile-kernel-file (car cur) :reload reload :output-type output-type :counter counter :total-files total :print t :verbose t)
          (setq cur (cdr cur))
          (setq counter (+ 1 counter))
          (go top)
-       done))))
+       done)))
 
 
-(defun compile-system-parallel (files &key reload (output-type core:*clasp-build-mode*) (parallel-jobs *number-of-jobs*))
+(defun compile-system-parallel (files &key reload (output-type core:*clasp-build-mode*) (parallel-jobs *number-of-jobs*) (batch-min 1) (batch-max 1))
   #+dbg-print(bformat t "DBG-PRINT compile-system files: %s\n" files)
   (let ((total (length files))
-        (counter 0)
+        (counter 1)
+        (job-counter 0)
+        (batch-size 0)
         (child-count 0)
         (jobs (make-hash-table :test #'eql)))
-    (flet ((started-one (entry counter child-pid)
+    (labels ((started-one (entry counter child-pid)
              (let* ((filename (entry-filename entry))
                     (source-path (build-pathname filename :lisp))
                     (output-path (build-pathname filename output-type)))
                (format t "Compiling [~d of ~d (child-pid: ~d)] ~a~%    to ~a~%" counter total child-pid source-path output-path)))
-           (finished-one (entry counter child-pid result-stream)
+           (started-some (entries counter child-pid)
+             (let ((count counter))
+               (dolist (entry entries)
+                 (started-one entry count child-pid)
+                 (incf count))))
+           (finished-report-one (entry counter child-pid)
              (let* ((filename (entry-filename entry))
                     (source-path (build-pathname filename :lisp)))
-               (format t "Finished [~d of ~d (child pid: ~d)] ~a output follows...~%" counter total child-pid source-path)
+               (format t "Finished [~d of ~d (child pid: ~d)] ~a output follows...~%" counter total child-pid source-path)))
+           (report-result-stream (result-stream)
+             (when result-stream  ;;;can be empty
                (with-open-stream (sin result-stream)
                  (do ((line (read-line sin nil nil) (read-line sin nil nil)))
                      ((null line))
                    (princ "--> ")
                    (princ line)
                    (terpri)))))
+           (finished-one (entry counter child-pid result-stream)
+             (finished-report-one entry counter child-pid)
+             (report-result-stream result-stream))
+           (finished-some (entries counter child-pid result-stream)
+             (let ((count counter))
+               (dolist (entry entries)
+                 (finished-report-one entry count child-pid)
+                 (incf count)))
+             (report-result-stream result-stream))
            (reload-one (entry)
              (let* ((filename (entry-filename entry))
                     (source-path (build-pathname filename :lisp))
                     (output-path (build-pathname filename output-type)))
                (format t "Loading ~a~%" output-path)
                (load-kernel-file output-path output-type)))
+           (reload-some (entries)
+             (dolist (entry entries)
+               (reload-one entry)))
            (one-compile-kernel-file (entry counter)
-             (compile-kernel-file entry :reload reload :output-type output-type :counter counter :total-files total :silent t)))
-      (let (entry job-counter wpid status)
+             (compile-kernel-file entry :reload reload :output-type output-type :counter counter :total-files total :silent t :verbose t))  ;; Yeah silent and verbose
+           (some-compile-kernel-files (entries counter)
+             (let ((count counter))
+               (dolist (entry entries)
+                 (one-compile-kernel-file entry count)
+                 (incf count)))))
+      (gctools:garbage-collect)
+      (let (entries wpid status)
         (tagbody
          top
-           (setq entry (if files (pop files) nil))
-           (setq job-counter (incf counter))
-           (when (> counter parallel-jobs)
+           (setq counter (+ counter batch-size))
+           (setq batch-size (let ((remaining (length files)))
+                              (min remaining
+                                   batch-max
+                                   (max batch-min
+                                        (ceiling remaining
+                                                 parallel-jobs)))))
+           (setq entries (subseq files 0 batch-size))
+           (setq files (nthcdr batch-size files))
+           (incf job-counter)
+           (when (> job-counter parallel-jobs)
              (block wait-loop
                (tagbody
                 top
@@ -293,19 +377,19 @@ Return files."
                 done
                   ))
              (if (>= wpid 0)
-                 (let* ((finished-entry-triplet (gethash wpid jobs))
-                        (finished-entry (first finished-entry-triplet))
-                        (finished-job-counter (second finished-entry-triplet))
-                        (result-stream (third finished-entry-triplet)))
-                   (finished-one finished-entry finished-job-counter wpid result-stream)
-                   (when reload (reload-one finished-entry))
+                 (let* ((finished-entries-triplet (gethash wpid jobs))
+                        (finished-entries (first finished-entries-triplet))
+                        (finished-counter (second finished-entries-triplet))
+                        (result-stream (third finished-entries-triplet)))
+                   (finished-some finished-entries finished-counter wpid result-stream)
+                   (when reload (reload-some finished-entries))
                    (decf child-count))
                  (error "wait returned ~d  status ~d~%" wpid status)))
-           (when entry
+           (when entries
              (multiple-value-bind (maybe-error pid-or-error result-stream)
                  (core:fork t)
                (if maybe-error
-                   (error "Could not fork when trying to build ~a" entry)
+                   (error "Could not fork when trying to build ~a" entries)
                    (let ((pid pid-or-error))
                      (if (= pid 0)
                          (progn
@@ -317,23 +401,25 @@ Return files."
                              (core:sigset-sigaddset new-sigset 'core:signal-sigchld)
                              (multiple-value-bind (fail errno)
                                  (core:sigthreadmask :sig-setmask new-sigset old-sigset)
-                               (one-compile-kernel-file entry job-counter)
+                               (some-compile-kernel-files entries counter)
                                (core:sigthreadmask :sig-setmask old-sigset nil)
                                (when fail
                                  (error "sigthreadmask has an error errno = ~a" errno))
                                (core:exit))))
                          (progn
-                           (started-one entry job-counter pid)
-                           (setf (gethash pid jobs) (list entry job-counter result-stream))
+                           (started-some entries counter pid)
+                           (setf (gethash pid jobs) (list entries counter result-stream))
                            (incf child-count)))))))
            (when (> child-count 0) (go top))))))
   (format t "Leaving compile-system-parallel~%"))
 
 (defun compile-system (&rest args)
-  (apply (if (or core:*use-parallel-build* (> *number-of-jobs* 1))
-             'compile-system-parallel
-             'compile-system-serial)
-         args))
+  (let ((compile-function (if (and core:*use-parallel-build* (> *number-of-jobs* 1))
+                              'compile-system-parallel
+                              'compile-system-serial)))
+    (format t "Compiling with ~a / core:*use-parallel-build* -> ~a  core:*number-of-jobs* -> ~a~%" compile-function core:*use-parallel-build* *number-of-jobs*)
+    
+    (apply compile-function args)))
 
 (export '(compile-system-serial compile-system compile-system-parallel))
 
@@ -343,8 +429,8 @@ Return files."
 (defun clean-system (after-file &key no-prompt stage system)
   (let* ((files (select-trailing-source-files after-file :system system))
 	 (cur files))
-    (bformat t "Will remove modules: %s\n" files)
-    (bformat t "cur=%s\n" cur)
+    (bformat t "Will remove modules: %s%N" files)
+    (bformat t "cur=%s%N" cur)
     (let ((proceed (or no-prompt
 		       (progn
 			 (bformat *query-io* "Delete? (Y or N) ")
@@ -357,7 +443,7 @@ Return files."
 	     (setq cur (cdr cur))
 	     (go top)
 	   done)
-	  (bformat t "Not deleting\n")))))
+	  (bformat t "Not deleting%N")))))
 
 
 (export 'select-source-files)
@@ -445,7 +531,6 @@ Return files."
                       #P"src/lisp/kernel/tag/after-init"
                       #P"src/lisp/kernel/tag/min-pre-epilogue" :system system)))))
 
-
 (defun generate-loader (output-file all-compiled-files)
   (let ((output-file (make-pathname :type "lfasl" :defaults output-file)))
     (with-open-file (fout output-file :direction :output :if-exists :supersede)
@@ -487,15 +572,12 @@ Return files."
                (pre-files (butlast (out-of-date-bitcodes #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/min-start" :system system)))
                (files (out-of-date-bitcodes #P"src/lisp/kernel/tag/min-start" #P"src/lisp/kernel/tag/min-pre-epilogue" :system system))
                (files-with-epilogue (out-of-date-bitcodes #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/min-end" :system system)))
-          (with-compilation-unit ()
-            (let ((cmp::*activation-frame-optimize* nil))
-              ;; It's better to compile aclasp with fewer cores because then more of the compilations
-              ;; make use of compiled code.
-              ;;  Compiling and reloading the following files will speed things up
-              (compile-system files :reload t :parallel-jobs (min *number-of-jobs* 16))
-              ;;  Just compile the following files and don't reload, they are needed to link
-              (compile-system pre-files :reload nil :parallel-jobs (min *number-of-jobs* 16))
-              (if files-with-epilogue (compile-system (output-object-pathnames #P"src/lisp/kernel/tag/min-pre-epilogue" #P"src/lisp/kernel/tag/min-end" :system system) :reload nil))))
+          (let ((cmp::*activation-frame-optimize* t)
+                (core:*cache-macroexpand* (make-hash-table :test #'equal)))
+            (compile-system files :reload t :parallel-jobs (min *number-of-jobs* 16))
+            ;;  Just compile the following files and don't reload, they are needed to link
+            (compile-system pre-files :reload nil)
+            (if files-with-epilogue (compile-system (output-object-pathnames #P"src/lisp/kernel/tag/min-pre-epilogue" #P"src/lisp/kernel/tag/min-end" :system system) :reload nil)))
           (let ((all-output (output-object-pathnames #P"src/lisp/kernel/tag/min-start" #P"src/lisp/kernel/tag/min-end" :system system)))
             (if (out-of-date-target output-file all-output)
                 (link-modules output-file all-output)))))))
@@ -568,7 +650,6 @@ Return files."
                        (select-source-files #P"src/lisp/kernel/cleavir/auto-compile"
                                             #P"src/lisp/kernel/tag/cclasp"
                                             :system system))))
-    (format t "files: ~a~%" files)
     ;; Inline ASTs refer to various classes etc that are not available while earlier files are loaded.
     ;; Therefore we can't have the compiler save inline definitions for files earlier than we're able
     ;; to load inline definitions. We wait for the source code to turn it back on.
@@ -593,7 +674,8 @@ Return files."
       ((error #'build-failure))
     (cclasp-features)
     (if clean (clean-system #P"src/lisp/kernel/tag/start" :no-prompt t :system system))
-    (let ((*target-backend* (default-target-backend)))
+    (let ((*target-backend* (default-target-backend))
+          (*trace-output* *standard-output*))
       (time
        (progn
          (unwind-protect
@@ -617,10 +699,11 @@ Return files."
 
 
 (eval-when (:execute)
-  (bformat t "Loaded clasp-builder.lsp\n")
+  (bformat t "Loaded clasp-builder.lsp%N")
+  (bformat t "*features* -> %s%N" *features*)
   (if (member :clasp-builder-repl *features*)
       (progn
-        (core:bformat t "Starting low-level repl\n")
+        (core:bformat t "Starting low-level repl%N")
         (unwind-protect
              (core:low-level-repl)
-          (core:bformat t "Exiting low-level-repl\n")))))
+          (core:bformat t "Exiting low-level-repl%N")))))

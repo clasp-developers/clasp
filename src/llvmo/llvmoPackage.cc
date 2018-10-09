@@ -56,16 +56,6 @@ THE SOFTWARE.
 
 using namespace core;
 
-namespace llvmo {
-#define EXPOSE_TO_CANDO
-#define Use_LlvmoPkg
-#define EXTERN_REGISTER
-//#include <clasp/core/initClasses.h>
-#undef EXTERN_REGISTER
-#undef Use_LlvmoPkg
-#undef EXPOSE_TO_CANDO
-};
-
 //
 // Load the gctools::GcInfo<core-classes>::Kind specializers
 //
@@ -135,7 +125,7 @@ CL_DEFUN bool llvm_sys__load_bitcode_ll(core::Pathname_sp filename, bool verbose
 }
 
 
- CL_LAMBDA(filename &optional verbose print external_format);
+CL_LAMBDA(filename &optional verbose print external_format);
 CL_DEFUN bool llvm_sys__load_bitcode(core::Pathname_sp filename, bool verbose, bool print, core::T_sp externalFormat )
 {
   core::DynamicScopeManager scope(::cl::_sym_STARpackageSTAR, ::cl::_sym_STARpackageSTAR->symbolValue());
@@ -249,7 +239,8 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   ENTRY(list, "CLASS-REP-STAMP", make_fixnum(global_TheClassRep_stamp));
   ENTRY(list, "FIXNUM-STAMP", make_fixnum(gctools::STAMP_FIXNUM));
   ENTRY(list, "FIXNUM-SHIFT", make_fixnum(gctools::fixnum_shift));
-  ENTRY(list, "STAMP-SHIFT", make_fixnum(gctools::Header_s::stamp_shift));
+//  ENTRY(list, "STAMP-SHIFT", make_fixnum(gctools::Header_s::stamp_shift));
+  ENTRY(list, "STAMP-MASK", make_fixnum(gctools::Header_s::stamp_mask));
 #if 0
   ENTRY(list, "STAMP-IN-RACK-MASK", make_fixnum(gctools::Header_s::stamp_in_rack_mask));
   ENTRY(list, "STAMP-NEEDS-CALL-MASK", make_fixnum(gctools::Header_s::stamp_needs_call_mask));
@@ -268,8 +259,8 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   return list;
 }
 
-CL_LAMBDA(&key tsp tmv ihf contab valist register-save-area);
-CL_DEFUN void llvm_sys__throwIfMismatchedStructureSizes(core::Fixnum_sp tspSize, core::Fixnum_sp tmvSize, gc::Nilable<core::Fixnum_sp> givenIhfSize, core::T_sp contabSize, core::T_sp tvalistsize, core::T_sp tRegisterSaveAreaSize ) {
+CL_LAMBDA(&key tsp tmv ihf contab valist register-save-area function-description);
+CL_DEFUN void llvm_sys__throwIfMismatchedStructureSizes(core::Fixnum_sp tspSize, core::Fixnum_sp tmvSize, gc::Nilable<core::Fixnum_sp> givenIhfSize, core::T_sp contabSize, core::T_sp tvalistsize, core::T_sp tRegisterSaveAreaSize, core::T_sp tFunctionDescriptionSize ) {
   int T_sp_size = sizeof(core::T_sp);
   if (unbox_fixnum(tspSize) != T_sp_size) {
     SIMPLE_ERROR(BF("Mismatch between tsp size[%d] and core::T_sp size[%d]") % unbox_fixnum(tspSize) % T_sp_size);
@@ -304,6 +295,18 @@ CL_DEFUN void llvm_sys__throwIfMismatchedStructureSizes(core::Fixnum_sp tspSize,
     size_t registerSaveAreaSize = tRegisterSaveAreaSize.unsafe_fixnum();
     if (registerSaveAreaSize != (sizeof(void*)*LCC_ABI_ARGS_IN_REGISTERS)) {
       SIMPLE_ERROR(BF("register-save-area size %lu mismatch with Common Lisp code %lu") % (sizeof(void*)*LCC_ABI_ARGS_IN_REGISTERS) % registerSaveAreaSize );
+    }
+  }
+  if (tRegisterSaveAreaSize.fixnump()) {
+    size_t registerSaveAreaSize = tRegisterSaveAreaSize.unsafe_fixnum();
+    if (registerSaveAreaSize != (sizeof(void*)*LCC_ABI_ARGS_IN_REGISTERS)) {
+      SIMPLE_ERROR(BF("register-save-area size %lu mismatch with Common Lisp code %lu") % (sizeof(void*)*LCC_ABI_ARGS_IN_REGISTERS) % registerSaveAreaSize );
+    }
+  }
+  if (tFunctionDescriptionSize.fixnump()) {
+    size_t functionDescriptionSize = tFunctionDescriptionSize.unsafe_fixnum();
+    if (functionDescriptionSize != sizeof(core::FunctionDescription)) {
+      SIMPLE_ERROR(BF("function-description size %lu mismatch with Common Lisp code %lu") % sizeof(core::FunctionDescription) % functionDescriptionSize );
     }
   }
 }
@@ -385,7 +388,7 @@ void dump_funcs(core::Function_sp compiledFunction) {
 }
 #endif
 
-CL_LAMBDA(module &optional (stream t))
+CL_LAMBDA(module &optional (stream t));
 CL_DEFUN void dump_module(Module_sp module, core::T_sp tstream) {
   core::T_sp stream = core::coerce::outputStreamDesignator(tstream);
   string outstr;
@@ -394,7 +397,7 @@ CL_DEFUN void dump_module(Module_sp module, core::T_sp tstream) {
   core::clasp_write_string(outstr,stream);
 }
 
-CL_LAMBDA(function &optional (stream t))
+CL_LAMBDA(func &optional (stream t));
 CL_DEFUN void dump_function(Function_sp function, core::T_sp tstream) {
   core::T_sp stream = core::coerce::outputStreamDesignator(tstream);
   string outstr;
@@ -427,17 +430,6 @@ void LlvmoExposer_O::expose(core::Lisp_sp lisp, core::Exposer_O::WhatToExpose wh
 
   switch (what) {
   case candoClasses: {
-#if 0
-#define ALL_STAGES
-#define Use_LlvmoPkg
-#define INVOKE_REGISTER
-#define LOOKUP_SYMBOL(pkg, name) _lisp->internUniqueWithPackageName(pkg, name)
-//#include <clasp/core/initClasses.h>
-#undef LOOKUP_SYMBOL
-#undef INVOKE_REGISTER
-#undef Use_LlvmoPkg
-#undef ALL_STAGES
-#endif
   } break;
   case candoFunctions: {
     SYMBOL_EXPORT_SC_(LlvmoPkg, getOrCreateExternalGlobal);

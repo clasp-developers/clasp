@@ -731,7 +731,7 @@ void initialize_clangTooling() {
   initialize_matchers();
   // overloaded functions that had trouble resolving
   clang::ASTContext &(clang::ASTUnit::*clang_ASTUnit_getASTContext)() = &clang::ASTUnit::getASTContext;
-  package(AstToolingPkg, {"CLANG"}, {"CL", "CORE", "AST-TOOLING"})
+  package(AstToolingPkg, {"CLANG"}, {}) // , {"CL", "CORE", "AST-TOOLING"})
     [
      class_<clang::tooling::CompilationDatabase>("CompilationDatabase", no_default_constructor)
      .def("getAllFiles", &clang::tooling::CompilationDatabase::getAllFiles)
@@ -760,7 +760,7 @@ void initialize_clangTooling() {
      .def("getCommentForDecl", &clang::ASTContext::getCommentForDecl)
      .def("getASTRecordLayout",&clang::ASTContext::getASTRecordLayout),
      class_<clang::SourceManager>("SourceManager", no_default_constructor)
-     .def("getPresumedLoc", &clang::SourceManager::getPresumedLoc, policies<>(), "((self ast-tooling:source-manager) source-location &optional (use-line-directives t))")
+      .def("getPresumedLoc", &clang::SourceManager::getPresumedLoc, policies<>(), "((self ast-tooling:source-manager) source-location &optional (use-line-directives t))")
      .def("getFilename", &clang::SourceManager::getFilename)
      .def("getExpansionLoc", &clang::SourceManager::getExpansionLoc)
      .def("getExpansionLineNumber", &clang::SourceManager::getExpansionLineNumber, policies<pureOutValue<2>>())

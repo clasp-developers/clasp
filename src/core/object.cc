@@ -26,8 +26,6 @@ THE SOFTWARE.
 /* -^- */
 //#define DEBUG_LEVEL_FULL
 
-#include <clasp/core/useBoostPython.h>
-
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>
@@ -146,7 +144,7 @@ CL_DEFUN T_sp core__load_cxx_object(T_sp class_or_name, T_sp args) {
   {
     T_sp instance = theClass->make_instance();
     if (args.notnilp()) {
-      args = alist_from_plist(args);
+//      args = alist_from_plist(args);
       //      printf("%s:%d initializer alist = %s\n", __FILE__, __LINE__, _rep_(args).c_str());
       if ( instance.generalp() ) {
         General_sp ginstance(instance.unsafe_general());
@@ -310,45 +308,44 @@ CL_DEFUN T_sp core__instance_ref(T_sp obj, int idx) {
   IMPLEMENT_MEF("Implement for non-general objects");
 };
 
-CL_LAMBDA(obj);
-CL_DECLARE();
-CL_DOCSTRING("instancep");
-CL_DEFUN T_sp core__instancep(T_sp obj) {
-  if (obj.generalp()) return obj.unsafe_general()->oinstancep();
-  else return _Nil<T_O>();
-};
-
 void General_O::initialize() {
   // do nothing
 }
 
 void General_O::initialize(core::List_sp alist) {
   Record_sp record = Record_O::create_initializer(alist);
-  this->fields(record);
+  if (this->fieldsp()) this->fields(record);
   record->errorIfInvalidArguments();
 }
 
 void General_O::fields(Record_sp record) {
-  if (record->stage() == Record_O::saving && record->data().nilp()) {
-    // Signal that the subclass should implement fields
-    // if nothing has been saved yet
-    SUBIMP();
-  } else if ( record->stage() == Record_O::loading && record->seen().nilp() ) {
-    // Signal that the subclass should implement fields
-    // if nothing has been seen
-    SUBIMP();
-  }
+  // Do nothing here
+  // Any subclass that has slots that need to be (de)serialized must, MUST, MUST!
+  // implement fieldsp() and fields(Record_sp node)
+  // subclasses must also invoke their Base::fields(node) method so that base classes can
+  // (de)serialize their fields.
+  // Direct base classes of General_O or CxxObject_O don't need to call Base::fields(Record_sp node)
+  //  because the base methods don't do anything.
+  // But it's convenient to always call the this->Base::fields(node) in case the class hierarchy changes
+  //  you don't want to be caught not calling a this->Base::fields(node) because the system will silently
+  //  fail to (de)serialize any base class fields.
+  // If subclasses don't implement these methods - then serialization will fail SILENTLY!!!!!
 }
 
 List_sp General_O::encode() {
-  Record_sp record = Record_O::create_encoder();
-  this->fields(record);
-  return record->data();
+  if (this->fieldsp()) {
+    Record_sp record = Record_O::create_encoder();
+    this->fields(record);
+    return record->data();
+  }
+  return _Nil<T_O>();
 }
 
 void General_O::decode(core::List_sp alist) {
-  Record_sp record = Record_O::create_decoder(alist);
-  this->fields(record);
+  if (this->fieldsp()) {
+    Record_sp record = Record_O::create_decoder(alist);
+    this->fields(record);
+  }
 }
 
 string General_O::className() const {
@@ -451,12 +448,16 @@ CL_DEFUN bool core__sl_boundp(T_sp obj) {
 };
 
 void General_O::describe(T_sp stream) {
-  clasp_write_string(this->__str__(), stream);
+  clasp_write_string(this->__repr__(), stream);
 }
 
 void General_O::__write__(T_sp strm) const {
   if (clasp_print_readably() && this->fieldsp()) {
-    core__print_cxx_object(this->asSmartPtr(), strm);
+    if (cl::_sym_printObject->fboundp()) {
+      core::eval::funcall(cl::_sym_printObject,this->asSmartPtr(),strm);
+    } else {
+      core__print_cxx_object(this->asSmartPtr(), strm);
+    }
   } else {
     clasp_write_string(this->__repr__(), strm);
   }
@@ -512,7 +513,7 @@ Instance_sp instance_class(T_sp obj)
 SYMBOL_SC_(CorePkg, slBoundp);
 SYMBOL_SC_(CorePkg, instanceRef);
 SYMBOL_SC_(CorePkg, instanceSet);
-SYMBOL_SC_(CorePkg, instancep);
+SYMBOL_EXPORT_SC_(CorePkg, instancep); // move to predicates.cc?
 SYMBOL_SC_(CorePkg, instanceSigSet);
 SYMBOL_SC_(CorePkg, instanceSig);
 SYMBOL_EXPORT_SC_(CorePkg, instanceClass);

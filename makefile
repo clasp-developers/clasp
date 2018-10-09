@@ -7,6 +7,10 @@ PREFIX	?= /opt/clasp
 all:
 	./waf build_dboehm
 
+cando-jupyter:
+	./waf build_cboehm && ~/Development/cando/build/boehm/iclasp-boehm -l "source-dir:extensions;cando;src;lisp;load-cando-jupyter.lisp" -e "(core:quit)"
+	echo "Build done"
+
 configure:
 	./waf update_dependencies
 	./waf configure --prefix=$(PREFIX)
@@ -99,6 +103,22 @@ push-cando-to-testing:
 	(cd extensions/cando; git push origin dev)
 	(cd extensions/cando; git fetch origin dev:testing)
 	(cd extensions/cando; git push origin testing)
+
+push-cando-to-master:
+	git push origin dev
+	git fetch origin dev:testing
+	git push origin testing
+	git fetch origin dev:preview
+	git push origin preview
+	git fetch origin dev:master
+	git push origin master
+	(cd extensions/cando; git push origin dev)
+	(cd extensions/cando; git fetch origin dev:testing)
+	(cd extensions/cando; git push origin testing)
+	(cd extensions/cando; git fetch origin dev:preview)
+	(cd extensions/cando; git push origin preview)
+	(cd extensions/cando; git fetch origin dev:master)
+	(cd extensions/cando; git push origin master)
 
 cando-deploy:
 	aws s3 cp s3://clasp-cando/docker-cando/cando-build.tgz cando-build.tgz

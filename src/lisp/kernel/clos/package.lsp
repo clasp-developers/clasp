@@ -20,7 +20,7 @@
 
 
 #+clasp (in-package "CLOS")
-#+clasp (use-package '(:CORE :ext) :clos)
+#+clasp (use-package '(:CORE) :clos)
 #+clasp (import '(unbound get-sysprop put-sysprop rem-sysprop simple-program-error
 		 slot-descriptions
 		 SLOT-NAMES SLOT-NAME CLASS-PRECEDENCE-LIST PRINT-FUNCTION
@@ -107,7 +107,8 @@
           SLOT-DEFINITION-WRITERS 
           METHOD-LAMBDA-LIST 
           SLOT-VALUE-USING-CLASS 
-          GENERIC-FUNCTION-LAMBDA-LIST 
+          GENERIC-FUNCTION-LAMBDA-LIST
+          generic-function-min-max-args
           FUNCALLABLE-STANDARD-OBJECT 
           COMPUTE-EFFECTIVE-METHOD-FUNCTION 
           VALIDATE-SUPERCLASS 
@@ -146,10 +147,13 @@
           +THE-T-CLASS+ 
           CLASS-DIRECT-DEFAULT-INITARGS 
           SLOT-DEFINITION-INITFUNCTION 
-          SLOT-DEFINITION-INITFORM )
+          SLOT-DEFINITION-INITFORM
+          class-source-position)
         )
 #+clasp
 (export '(invalidate-generic-functions-with-class-selector
+          satiate
+          satiate-initialization
           ))
 
 (export '*environment-contains-closure-hook*)

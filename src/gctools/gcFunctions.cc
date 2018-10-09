@@ -37,6 +37,8 @@ int gcFunctions_after;
 #include <clasp/gctools/gctoolsPackage.h>
 #include <clasp/gctools/gcFunctions.h>
 #include <clasp/llvmo/intrinsics.h>
+#include <clasp/gctools/gc_interface.h>
+#include <clasp/gctools/threadlocal.h>
 #include <clasp/core/wrappers.h>
 
 #ifdef DEBUG_TRACK_UNWINDS
@@ -53,10 +55,11 @@ extern "C" {
 FILE* global_flow_tracker_file;
 
 mp::Mutex global_flow_tracker_mutex;
-size_t global_flow_tracker_counter;
+size_t global_flow_tracker_counter = 0;
 bool global_flow_tracker_on = false;
 #define FLOW_TRACKER_LAST_THROW_BACKTRACE_SIZE 4096
 void* global_flow_tracker_last_throw_backtrace[FLOW_TRACKER_LAST_THROW_BACKTRACE_SIZE];
+Fixnum global_flow_tracker_last_throw_tracker_counter = 0;
 size_t global_flow_tracker_last_throw_backtrace_size;
 void initialize_flow_tracker()
 {
@@ -69,12 +72,17 @@ void initialize_flow_tracker()
   global_flow_tracker_on = false;
 };
 
-void flow_tracker_about_to_throw() {
+void flow_tracker_about_to_throw(Fixnum tracker_counter) {
+  global_flow_tracker_last_throw_tracker_counter = tracker_counter;
   global_flow_tracker_last_throw_backtrace_size = backtrace(global_flow_tracker_last_throw_backtrace,FLOW_TRACKER_LAST_THROW_BACKTRACE_SIZE);
 }
 
 void flow_tracker_last_throw_backtrace_dump() {
+  if (!global_flow_tracker_on) {
+    printf("!!!!! Turn the flow-tracker on   Use: (gctools:flow-tracker-on)\n");
+  }
   printf("flow_tracker_last_throw_backtrace_dump %lu frames\n", global_flow_tracker_last_throw_backtrace_size);
+  printf("global_flow_tracker_last_throw_tracker_counter -> %lld\n", global_flow_tracker_last_throw_tracker_counter );
   for ( int i=0; i<global_flow_tracker_last_throw_backtrace_size; ++i ) {
     printf("dis -s %p\n", global_flow_tracker_last_throw_backtrace[i]);
   }
@@ -186,16 +194,29 @@ CL_DEFUN size_t gctools__catch_throw_counter() {
 }
 #endif
 
+CL_DEFUN void gctools__change_sigchld_sigport_handlers()
+{
+  void* old = (void*)signal(SIGCHLD, SIG_DFL);
+  signal(SIGPIPE, SIG_DFL);
+  printf("%s:%d old signal handler for SIGCHLD = %p   SIG_DFL = %p\n", __FILE__, __LINE__, old, SIG_DFL);
+}
+
+CL_DEFUN core::T_sp gctools__known_signals()
+{
+  return _lisp->_Roots._KnownSignals;
+}
+
 CL_DEFUN void gctools__deallocate_unmanaged_instance(core::T_sp obj) {
   obj_deallocate_unmanaged_instance(obj);
 }
 
 CL_DOCSTRING("Return bytes allocated (values clasp-calculated-bytes)");
 CL_DEFUN core::T_sp gctools__bytes_allocated() {
-  size_t my_bytes = globalBytesAllocated;
+  size_t my_bytes = my_thread_low_level->_Allocations._BytesAllocated;
   ASSERT(my_bytes < gc::most_positive_fixnum);
   return core::clasp_make_fixnum(my_bytes);
 }
+
 
 
 CL_DOCSTRING("Return the next unused kind");
@@ -267,7 +288,7 @@ CL_DEFUN core::T_mv core__instance_stamp(core::T_sp obj)
   if (obj.generalp()) {
     Header_s* header = reinterpret_cast<Header_s*>(ClientPtrToBasePtr(obj.unsafe_general()));
     return Values(core::make_fixnum(stamp),
-                  core::make_fixnum(static_cast<Fixnum>(header->header._value)>>gctools::Header_s::stamp_shift));
+                  core::make_fixnum(static_cast<Fixnum>(header->header.stamp())));
   }
   return Values(core::make_fixnum(stamp),_Nil<core::T_O>());
 }
@@ -321,8 +342,9 @@ struct ReachableClass {
     } else {
       className << "??CONS??";
     }
-    BFORMAT_T(BF("%s: total_size: %10d count: %8d avg.sz: %8d kind: %s/%d\n")
-              % shortName % this->totalSize % this->instances % (this->totalSize / this->instances) % className.str().c_str() % k);
+    core::write_bf_stream(BF("%s: total_size: %10d count: %8d avg.sz: %8d kind: %s/%d\n")
+                          % shortName % this->totalSize % this->instances
+                          % (this->totalSize / this->instances) % className.str().c_str() % k);
     return this->totalSize;
   }
 };
@@ -381,15 +403,15 @@ size_t dumpResults(const std::string &name, const std::string &shortName, T *dat
 
 #ifdef USE_MPS
 struct ReachableMPSObject {
-  ReachableMPSObject(int k) : kind(k){};
-  int kind = 0;
+  ReachableMPSObject(int k) : stamp(k) {};
+  size_t stamp = 0;
   size_t instances = 0;
   size_t totalMemory = 0;
   size_t largest = 0;
-  size_t print(const std::string &shortName) {
+  size_t print(const std::string &shortName,const vector<std::string> stampNames) {
     if (this->instances > 0) {
-      printf("%s: totalMemory: %10lu count: %8lu largest: %8lu avg.sz: %8lu %s/%d\n", shortName.c_str(),
-             this->totalMemory, this->instances, this->largest, this->totalMemory / this->instances, obj_name((gctools::GCStampEnum) this->kind), this->kind);
+      printf("%s: totalMemory: %10lu count: %8lu largest: %8lu avg.sz: %8lu %s/%lu\n", shortName.c_str(),
+             this->totalMemory, this->instances, this->largest, this->totalMemory / this->instances, stampNames[this->stamp].c_str(), this->stamp);
     }
     return this->totalMemory;
   }
@@ -417,9 +439,14 @@ size_t dumpMPSResults(const std::string &name, const std::string &shortName, vec
             return (x.totalMemory > y.totalMemory);
   });
   size_t idx = 0;
+  vector<std::string> stampNames;
+  stampNames.resize(gctools::global_NextStamp.load());
+  for ( auto it : global_stamp_name_map ) {
+    stampNames[it.second] = it.first;
+  }
   for (auto it : values) {
     // Does that print? If so should go to the OutputStream
-    totalSize += it.print(shortName);
+    totalSize += it.print(shortName,stampNames);
     idx += 1;
 #if 0
     if ( idx % 100 == 0 ) {
@@ -446,6 +473,7 @@ CL_DEFUN core::T_mv gctools__gc_info(core::T_sp x, core::Fixnum_sp marker) {
 
 CL_LAMBDA(on &key (backtrace-start 0) (backtrace-count 0) (backtrace-depth 6));
 CL_DEFUN void gctools__monitor_allocations(bool on, core::Fixnum_sp backtraceStart, core::Fixnum_sp backtraceCount, core::Fixnum_sp backtraceDepth) {
+#ifdef DEBUG_MONITOR_ALLOCATIONS
   global_monitorAllocations.on = on;
   global_monitorAllocations.counter = 0;
   if (backtraceStart.unsafe_fixnum() < 0 ||
@@ -457,6 +485,7 @@ CL_DEFUN void gctools__monitor_allocations(bool on, core::Fixnum_sp backtraceSta
   global_monitorAllocations.end = backtraceStart.unsafe_fixnum() + backtraceCount.unsafe_fixnum();
   global_monitorAllocations.backtraceDepth = backtraceDepth.unsafe_fixnum();
   printf("%s:%d  monitorAllocations set to %d\n", __FILE__, __LINE__, on);
+#endif
 };
 
 CL_LAMBDA(&optional marker);
@@ -484,18 +513,20 @@ SYMBOL_EXPORT_SC_(GcToolsPkg, rampCollectAll);
 
 CL_DEFUN void gctools__alloc_pattern_begin(core::Symbol_sp pattern) {
 #ifdef USE_MPS
-  if (pattern == _sym_ramp || pattern == _sym_rampCollectAll) {
-    core::List_sp patternStack = gctools::_sym_STARallocPatternStackSTAR->symbolValue();
-    patternStack = core::Cons_O::create(pattern, patternStack);
-    gctools::_sym_STARallocPatternStackSTAR->setf_symbolValue(patternStack);
-    if (pattern == _sym_ramp) {
-      mps_ap_alloc_pattern_begin(my_thread_allocation_points._automatic_mostly_copying_allocation_point, mps_alloc_pattern_ramp());
-    } else {
-      mps_ap_alloc_pattern_begin(my_thread_allocation_points._automatic_mostly_copying_allocation_point, mps_alloc_pattern_ramp_collect_all());
-    }
-    return;
+  mps_alloc_pattern_t mps_pat;
+  if (pattern == _sym_ramp) {
+    mps_pat = mps_alloc_pattern_ramp();
+  } else if (pattern == _sym_rampCollectAll) {
+    mps_pat = mps_alloc_pattern_ramp_collect_all();
+  } else {
+    TYPE_ERROR(pattern, core::Cons_O::createList(cl::_sym_or, _sym_ramp, _sym_rampCollectAll));
   }
-  SIMPLE_ERROR(BF("Only options for alloc-pattern-begin is %s@%p and %s@%p - you passed: %s@%p") % _rep_(_sym_ramp) % _sym_rampCollectAll.raw_() % _rep_(_sym_rampCollectAll) % _sym_rampCollectAll.raw_() % _rep_(pattern) % pattern.raw_());
+  core::List_sp patternStack = gctools::_sym_STARallocPatternStackSTAR->symbolValue();
+  patternStack = core::Cons_O::create(pattern, patternStack);
+  gctools::_sym_STARallocPatternStackSTAR->setf_symbolValue(patternStack);
+  mps_ap_alloc_pattern_begin(my_thread_allocation_points._automatic_mostly_copying_allocation_point, mps_pat);
+  mps_ap_alloc_pattern_begin(my_thread_allocation_points._amc_cons_allocation_point, mps_pat);
+  mps_ap_alloc_pattern_begin(my_thread_allocation_points._automatic_mostly_copying_zero_rank_allocation_point,mps_pat);
 #endif
 };
 
@@ -507,11 +538,15 @@ CL_DEFUN core::Symbol_sp gctools__alloc_pattern_end() {
     return _Nil<core::Symbol_O>();
   pattern = gc::As<core::Symbol_sp>(oCar(patternStack));
   gctools::_sym_STARallocPatternStackSTAR->setf_symbolValue(oCdr(patternStack));
+  mps_alloc_pattern_t mps_pat;
   if (pattern == _sym_ramp) {
-    mps_ap_alloc_pattern_end(my_thread_allocation_points._automatic_mostly_copying_allocation_point, mps_alloc_pattern_ramp());
+    mps_pat = mps_alloc_pattern_ramp();
   } else {
-    mps_ap_alloc_pattern_end(my_thread_allocation_points._automatic_mostly_copying_allocation_point, mps_alloc_pattern_ramp_collect_all());
+    mps_pat = mps_alloc_pattern_ramp_collect_all();
   }
+  mps_ap_alloc_pattern_end(my_thread_allocation_points._automatic_mostly_copying_zero_rank_allocation_point,mps_pat);
+  mps_ap_alloc_pattern_end(my_thread_allocation_points._amc_cons_allocation_point, mps_pat);
+  mps_ap_alloc_pattern_end(my_thread_allocation_points._automatic_mostly_copying_allocation_point, mps_pat);
 #endif
   return pattern;
 };
@@ -531,10 +566,11 @@ CL_DEFUN core::T_mv cl__room(core::T_sp x, core::Fixnum_sp marker, core::T_sp tm
   size_t arena_committed = mps_arena_committed(global_arena);
   size_t arena_reserved = mps_arena_reserved(global_arena);
   vector<ReachableMPSObject> reachables;
-  for (int i = 0; i < gctools::STAMP_max; ++i) {
+  for (int i = 0; i < global_NextStamp.load(); ++i) {
     reachables.push_back(ReachableMPSObject(i));
   }
   mps_amc_apply(global_amc_pool, amc_apply_stepper, &reachables, 0);
+  mps_amc_apply(global_amcz_pool, amc_apply_stepper, &reachables, 0);
   OutputStream << "-------------------- Reachable Kinds -------------------\n";
   dumpMPSResults("Reachable Kinds", "AMCpool", reachables);
   OutputStream << std::setw(12) << numCollections << " collections\n";
@@ -551,6 +587,9 @@ CL_DEFUN core::T_mv cl__room(core::T_sp x, core::Fixnum_sp marker, core::T_sp tm
   OutputStream << std::setw(12) << globalMpsMetrics.movingZeroRankAllocations.load() << "    moving zero-rank(AMCZ) allocations\n";
   OutputStream << std::setw(12) << globalMpsMetrics.unknownAllocations.load() << "    unknown(configurable) allocations\n";
   OutputStream << std::setw(12) << globalMpsMetrics.totalMemoryAllocated.load() << " total memory allocated\n";
+  OutputStream << std::setw(12) << global_NumberOfRootTables.load() << " module root tables\n";
+  OutputStream << std::setw(12) << global_TotalRootTableSize.load() << " words - total module root table size\n";
+                                                                
 #endif
 #ifdef USE_BOEHM
   globalSearchMarker = core::unbox_fixnum(marker);
@@ -725,6 +764,19 @@ void dbg_room() {
 }
 namespace gctools {
 
+#ifdef DEBUG_COUNT_ALLOCATIONS
+CL_DOCSTRING("Start collecting backtraces for allocations of a particular stamp. Write the bactraces into the file specified by filename.");
+CL_DEFUN void gctools__start_collecting_backtraces_for_allocations_by_stamp(const std::string& filename, Fixnum stamp) {
+  gctools::start_backtrace_allocations(filename,stamp);
+}
+
+CL_DOCSTRING("Stop collecting backtraces for allocations of a particular stamp.");
+CL_DEFUN void gctools__stop_collecting_backtraces_for_allocations_by_stamp() {
+  gctools::stop_backtrace_allocations();
+}
+#endif
+
+
 CL_DEFUN void gctools__telemetryFlush() {
 #ifdef USE_BOEHM
   IMPLEMENT_ME();
@@ -753,10 +805,10 @@ CL_DEFUN void gctools__telemetryReset(core::Fixnum_sp flags) {
 };
 
 CL_DEFUN core::T_mv gctools__memory_profile_status() {
-  int64_t allocationNumberCounter = global_AllocationProfiler._AllocationNumberCounter;
-  size_t allocationNumberThreshold = global_AllocationProfiler._AllocationNumberThreshold;
-  int64_t allocationSizeCounter = global_AllocationProfiler._AllocationSizeCounter;
-  size_t allocationSizeThreshold = global_AllocationProfiler._AllocationSizeThreshold;
+  int64_t allocationNumberCounter = my_thread_low_level->_Allocations._AllocationNumberCounter;
+  size_t allocationNumberThreshold = my_thread_low_level->_Allocations._AllocationNumberThreshold;
+  int64_t allocationSizeCounter = my_thread_low_level->_Allocations._AllocationSizeCounter;
+  size_t allocationSizeThreshold = my_thread_low_level->_Allocations._AllocationSizeThreshold;
   return Values(core::make_fixnum(allocationNumberCounter),
                 core::make_fixnum(allocationNumberThreshold),
                 core::make_fixnum(allocationSizeCounter),
@@ -774,7 +826,7 @@ CL_DEFUN core::T_sp gctools__stack_depth() {
 CL_DEFUN void gctools__garbage_collect() {
 #ifdef USE_BOEHM
   GC_gcollect();
-//  BFORMAT_T(BF("GC_invoke_finalizers\n"));
+//  write_bf_stream(BF("GC_invoke_finalizers\n"));
   GC_invoke_finalizers();
 #endif
 //        printf("%s:%d Starting garbage collection of arena\n", __FILE__, __LINE__ );
@@ -787,11 +839,14 @@ CL_DEFUN void gctools__garbage_collect() {
   //        printf("Garbage collection done\n");
 };
 
+CL_DEFUN void gctools__register_stamp_name(const std::string& name,size_t stamp_num)
+{
+  register_stamp_name(name,stamp_num);
+}
 
-
-CL_DEFUN core::T_sp gctools__get_builtin_stamps() {
+CL_DEFUN core::T_sp gctools__get_stamp_name_map() {
   core::List_sp l = _Nil<core::T_O>();
-  for ( auto it : _global_stamp_names ) {
+  for ( auto it : global_stamp_name_map ) {
     l = core::Cons_O::create(core::Cons_O::create(core::SimpleBaseString_O::make(it.first),core::make_fixnum(it.second)),l);
   }
   return l;
@@ -804,7 +859,7 @@ CL_DEFUN void gctools__cleanup(bool verbose) {
   size_t finalizations;
   size_t messages = processMpsMessages(finalizations);
   if (verbose) {
-    BFORMAT_T(BF("Processed %d finalization messages and %d total messages\n") % messages % finalizations );
+    core::write_bf_stream(BF("Processed %d finalization messages and %d total messages\n") % messages % finalizations );
   }
 #endif
 }
@@ -1013,23 +1068,6 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #endif
   if (buildReport) ss << (BF("DEBUG_FASTGF = %s\n") % (debug_fastgf ? "**DEFINED**" : "undefined") ).str();
  
-  bool debug_flow_control = false;
-#ifdef DEBUG_FLOW_CONTROL
-  debug_flow_control = true;
-  debugging = true;
-  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-FLOW_CONTROL"),features);
-#endif
-  if (buildReport) ss << (BF("DEBUG_FLOW_CONTROL = %s\n") % (debug_flow_control ? "**DEFINED**" : "undefined") ).str();
-
-  bool debug_return_from = false;
-#ifdef DEBUG_RETURN_FROM
-  debug_return_from = true;
-  debugging = true;
-  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-RETURN_FROM"),features);
-#endif
-  if (buildReport) ss << (BF("DEBUG_RETURN_FROM = %s\n") % (debug_return_from ? "**DEFINED**" : "undefined") ).str();
-
-
  bool debug_rehash_count = false;
 #ifdef DEBUG_REHASH_COUNT
   debug_rehash_count = true;
@@ -1037,7 +1075,17 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-REHASH_COUNT"),features);
 #endif
   if (buildReport) ss << (BF("DEBUG_REHASH_COUNT = %s\n") % (debug_rehash_count ? "**DEFINED**" : "undefined") ).str();
-  
+
+    
+  bool debug_jit_log_symbols = false;
+#ifdef DEBUG_JIT_LOG_SYMBOLS
+  printf("%s:%d  Setting JIT-LOG-SYMBOLS *feature*\n", __FILE__, __LINE__ );
+  debug_jit_log_symbols = true;
+  debugging = true;
+  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("JIT-LOG-SYMBOLS"),features);
+#endif
+  if (buildReport) ss << (BF("DEBUG_JIT_LOG_SYMBOLS = %s\n") % (debug_jit_log_symbols ? "**DEFINED**" : "undefined") ).str();
+
   bool debug_monitor = false;
 #ifdef DEBUG_MONITOR
   debug_monitor = true;
@@ -1079,6 +1127,14 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #endif
   if (buildReport) ss << (BF("DEBUG_TRACK_UNWINDS = %s\n") % (debug_track_unwinds ? "**DEFINED**" : "undefined") ).str();
 
+  bool track_allocations = false;
+#ifdef DEBUG_TRACK_ALLOCATIONS
+  track_allocations = true;
+  debugging = true;
+  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("TRACK-ALLOCATIONS"),features);
+#endif
+  if (buildReport) ss << (BF("TRACK_ALLOCATIONS = %s\n") % (track_allocations ? "**DEFINED**" : "undefined") ).str();
+
     bool debug_lexical_depth = false;
 #ifdef DEBUG_LEXICAL_DEPTH
   debug_lexical_depth = true;
@@ -1112,14 +1168,37 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #endif
   if (buildReport) ss << (BF("DEBUG_MEMORY_PROFILE = %s\n") % (debug_memory_profile ? "**DEFINED**" : "undefined") ).str();
 
-
-  bool dont_optimize_bclasp = false;
-#ifdef DONT_OPTIMIZE_BCLASP
-  dont_optimize_bclasp = true;
+  bool debug_compiler = false;
+#ifdef DEBUG_COMPILER
+  debug_compiler = true;
   debugging = true;
-  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DONT-OPTIMIZE-BCLASP"),features);
+  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-COMPILER"),features);
 #endif
-  if (buildReport) ss << (BF("DONT_OPTIMIZE_BCLASP = %s\n") % (dont_optimize_bclasp ? "**DEFINED**" : "undefined") ).str();
+  if (buildReport) ss << (BF("DEBUG_COMPILER = %s\n") % (debug_compiler ? "**DEFINED**" : "undefined") ).str();
+
+  bool debug_llvm_optimization_level_0 = false;
+#ifdef DEBUG_LLVM_OPTIMIZATION_LEVEL_0
+  debug_llvm_optimization_level_0 = true;
+  debugging = true;
+  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-LLVM-OPTIMIZATION-LEVEL-0"),features);
+#endif
+  if (buildReport) ss << (BF("DEBUG_LLVM_OPTIMIZATION_LEVEL_0 = %s\n") % (debug_llvm_optimization_level_0 ? "**DEFINED**" : "undefined") ).str();
+
+  bool debug_count_allocations = false;
+#ifdef DEBUG_COUNT_ALLOCATIONS
+  debug_count_allocations = true;
+  debugging = true;
+  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-COUNT-ALLOCATIONS"),features);
+#endif
+  if (buildReport) ss << (BF("DEBUG_COUNT_ALLOCATIONS = %s\n") % (debug_count_allocations ? "**DEFINED**" : "undefined") ).str();
+
+  bool debug_dont_optimize_bclasp = false;
+#ifdef DEBUG_DONT_OPTIMIZE_BCLASP
+  debug_dont_optimize_bclasp = true;
+  debugging = true;
+  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-DONT-OPTIMIZE-BCLASP"),features);
+#endif
+  if (buildReport) ss << (BF("DEBUG_DONT_OPTIMIZE_BCLASP = %s\n") % (debug_dont_optimize_bclasp ? "**DEFINED**" : "undefined") ).str();
 
   bool disable_type_inference = false;
 #ifdef DISABLE_TYPE_INFERENCE

@@ -27,6 +27,7 @@ THE SOFTWARE.
 #ifndef gctoolsPackage_fwd_H
 #define gctoolsPackage_fwd_H
 
+PACKAGE_USE("COMMON-LISP");
 NAMESPACE_PACKAGE_ASSOCIATION(gctools, GcToolsPkg, "GCTOOLS")
 
 

@@ -38,6 +38,9 @@
 (defvar *verify-llvm-modules* nil)
 (defvar *verify-llvm-functions* nil)
 
+(defvar *default-code-model* 'llvm-sys:code-model-small
+  "The default code-model")
+
 ;; Turn on all sorts of debug printing within the compiler
 ;;
 (defvar *debug-compiler* nil)
@@ -78,12 +81,6 @@ Options are :tagbody :go :all :eh-landing-pads
 ;;
 (defparameter *next-try-id* 0)
 
-
-;; 
-;; Name basic-blocks according to what with-try block they are in
-;;
-(defparameter *block-name-prefix* "")
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Turn off compiler debugging code once we are confident it works
@@ -92,7 +89,7 @@ Options are :tagbody :go :all :eh-landing-pads
 (when *debug-compiler*
   (setq *compile-file-debug-dump-module* t)
   (setq *compile-debug-dump-module* t)
-  (bformat t "!\n!\n!\n!  Turning on compiler debugging\n!\n!\n!\n"))
+  (bformat t "!%N!%N!\n!  Turning on compiler debugging\n!\n!\n!\n"))
 
 
 ;;#+(or)
@@ -103,6 +100,8 @@ Options are :tagbody :go :all :eh-landing-pads
   (defmacro cmp-log (fmt &rest args ) nil)
   (defun is-debug-compiler-on () nil))
 
+(defvar *suppress-llvm-output* nil)
+
 #+optimize-bclasp
 (progn
   (defvar *tagbody-frame-info*)
@@ -111,7 +110,7 @@ Options are :tagbody :go :all :eh-landing-pads
 #+(or)
 (progn
   (eval-when (:compile-toplevel :load-toplevel :execute)
-    (core:bformat *debug-io* "!\n!\n!   WARNING - cmp-log (bclasp compiler debugging) is on - Disable the macros in cmpsetup.lsp\n!\n!\n!\n"))
+    (core:bformat *debug-io* "!%N!%N!   WARNING - cmp-log (bclasp compiler debugging) is on - Disable the macros in cmpsetup.lsp\n!\n!\n!\n"))
   (defun is-debug-compiler-on ()
     *debug-compiler*)
   (defmacro debug-print-i32 (num)

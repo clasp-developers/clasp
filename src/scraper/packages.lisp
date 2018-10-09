@@ -1,7 +1,8 @@
 (defpackage "CSCRAPE"
   (:use :cl)
   (:import-from :alexandria
-                #:define-constant)
+                #:define-constant
+                #:starts-with-subseq)
   (:export
    #:+begin-tag+
    #:+end-tag+
@@ -74,6 +75,9 @@
    #:lambda-list%
    #:cl-docstring-tag
    #:docstring%
+   #:cl-priority-tag
+   #:priority%
+   #:maybe-priority
    #:cl-declare-tag
    #:declare-form%
    #:source-tag

@@ -1,0 +1,17 @@
+#! /bin/bash
+PID=$1
+PPIDO=$2
+echo PID = $PID   PPIDO = $PPIDO
+if [ "$PPIDO" == "" ]
+then
+    echo IM CHANGING PPDIO to $PID
+    PPIDO=$PID
+fi
+echo PID = $PID   PPIDO = $PPIDO
+FRAMES=${3:-4000}
+sudo ./trigger.d -x ustackframes=${FRAMES} -p $PID -o /tmp/out-$PID.raw.stacks
+sudo chown $USER /tmp/out-$PID.raw.stacks
+./symbolicate.lisp -i /tmp/out-$PID.raw.stacks -o /tmp/out-$PID.sym.stacks -s /tmp/clasp-symbols-$PPIDO
+./cleanup-stacks -i /tmp/out-$PID.sym.stacks -o /tmp/out-$PID.strip.stacks -O cleavir
+./flame /tmp/out-$PID.strip.stacks
+open -a /Applications/Google\ Chrome.app/ /tmp/out-flame.svg -F

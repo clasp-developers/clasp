@@ -68,7 +68,6 @@ THE SOFTWARE.
 #include <clasp/core/array.h>
 #include <clasp/core/designators.h>
 #include <clasp/core/unixfsys.h>
-#include <clasp/core/reader.h>
 #include <clasp/core/lispReader.h>
 #include <clasp/core/fileSystem.h>
 #include <clasp/core/wrappers.h>
@@ -183,6 +182,7 @@ String_sp &StringOutputStreamOutputString(T_sp strm) {
   return sout->_Contents;
 }
 
+
 Fixnum StringFillp(String_sp s) {
   ASSERT(core__non_simple_stringp(s));
   if (!s->arrayHasFillPointerP()) {
@@ -197,6 +197,26 @@ void SetStringFillp(String_sp s, Fixnum fp) {
     SIMPLE_ERROR(BF("The vector does not have a fill pointer"));
   }
   s->fillPointerSet(fp);
+}
+
+
+CL_DEFUN StringOutputStream_sp core__thread_local_write_to_string_output_stream()
+{
+  return my_thread->_WriteToStringOutputStream;
+}
+
+CL_DEFUN String_sp core__get_thread_local_write_to_string_output_stream_string(StringOutputStream_sp my_stream)
+{
+  // This is like get-string-output-stream-string but it checks the size of the
+  // buffer string and if it is too large it knocks it down to 128 characters
+  String_sp buffer = StringOutputStreamOutputString(my_stream);
+  T_sp result = cl__copy_seq(buffer);
+  if (buffer->length()>1024) {
+    StringOutputStreamOutputString(my_stream) = Str8Ns_O::createBufferString(128);
+  } else {
+    SetStringFillp(buffer,core::make_fixnum(0));
+  }
+  return result;
 }
 
 gctools::Fixnum &StringInputStreamInputPosition(T_sp strm) {
@@ -1842,7 +1862,7 @@ T_sp clasp_make_string_input_stream(T_sp strng, cl_index istart, cl_index iend) 
 CL_LAMBDA(strng &optional (istart 0) iend);
 CL_DECLARE();
 CL_DOCSTRING("make_string_input_stream");
-CL_DEFUN T_sp cl__make_string_input_stream(String_sp strng, Fixnum_sp istart, T_sp iend) {
+CL_DEFUN T_sp cl__make_string_input_stream(String_sp strng, cl_index istart, T_sp iend) {
   ASSERT(cl__stringp(strng));
   size_t_pair p = sequenceStartEnd(cl::_sym_make_string_input_stream,
                                    strng->length(), istart, iend);
@@ -2166,6 +2186,18 @@ CL_DECLARE();
 CL_DOCSTRING("makeBroadcastStream");
 CL_DEFUN T_sp cl__make_broadcast_stream(List_sp ap) {
   T_sp x, streams;
+  // we need to verify that ap are all streams
+  // currently (make-broadcast-stream 1 2 3) works fine
+  if (ap.notnilp()) {
+    T_sp acons = oCar(ap);
+    Stream_sp aStream =acons.asOrNull<Stream_O>();
+    if (!aStream) TYPE_ERROR(acons, cl::_sym_Stream_O);
+    for (auto cur : (List_sp)oCdr(ap)) {
+      T_sp acons1 = oCar(ap);
+      Stream_sp aStream1 =acons1.asOrNull<Stream_O>();
+      if (!aStream1) TYPE_ERROR(acons1, cl::_sym_Stream_O);
+    }
+  }
   streams = ap;
   x = BroadcastStream_O::create();
   StreamFormat(x) = kw::_sym_default;
@@ -2494,7 +2526,7 @@ CL_DEFUN T_sp cl__make_concatenated_stream(List_sp ap) {
   }
   StreamMode(x) = clasp_smm_concatenated;
   StreamOps(x) = duplicate_dispatch_table(concatenated_ops);
-  // used to be nreverse, but this gives wrong results, since it han reads first from the last stream past
+  // used to be nreverse, but this gives wrong results, since it than reads first from the last stream passed
   // stick with the original list
   ConcatenatedStreamList(x) = streams;
   return x;
@@ -3188,7 +3220,8 @@ set_stream_elt_type(T_sp tstream, gctools::Fixnum byte_size, int flags,
   case CLASP_STREAM_BINARY:
     // e.g. (T size) is not a valid type, use (UnsignedByte size)
     // This is better than (T Size), but not necesarily the right type
-    FileStreamEltType(stream) = Cons_O::createList(cl::_sym_UnsignedByte, make_fixnum(byte_size));
+    // Probably the value of the vriable t was meant, use it now!
+    FileStreamEltType(stream) = Cons_O::createList(t, make_fixnum(byte_size));
     StreamFormat(stream) = t;
     StreamOps(stream).read_char = not_character_read_char;
     StreamOps(stream).write_char = not_character_write_char;
@@ -4354,6 +4387,10 @@ void clasp_finish_output(T_sp strm) {
   stream_dispatch_table(strm).finish_output(strm);
 }
 
+void clasp_finish_output_t() {
+  clasp_finish_output(cl::_sym_STARstandard_outputSTAR->symbolValue());
+}
+
 int clasp_file_column(T_sp strm) {
   return stream_dispatch_table(strm).column(strm);
 }
@@ -5498,7 +5535,7 @@ namespace core {
 
 string FileStream_O::__repr__() const {
   stringstream ss;
-  ss << "#<" << this->_instanceClass()->_classNameAsString() << " " << _rep_(FileStreamFilename(this->asSmartPtr())) << ">";
+  ss << "#<" << this->_instanceClass()->_classNameAsString() << " " << _rep_(FileStreamFilename(this->asSmartPtr())) <<  " file-pos " << _rep_(clasp_file_position(this->asSmartPtr())) << ">";
   return ss.str();
 }
 
@@ -5559,13 +5596,13 @@ CL_DEFUN T_sp cl__peek_char(T_sp peek_type, T_sp strm, T_sp eof_errorp, T_sp eof
   if (peek_type != _lisp->_true()) {
     SIMPLE_ERROR(BF("Illegal first argument for PEEK-CHAR %s") % _rep_(peek_type));
   } else {
-    ReadTable_sp readtable = gc::As<ReadTable_sp>(cl::_sym_STARreadtableSTAR->symbolValue());
+    T_sp readtable = cl::_sym_STARreadtableSTAR->symbolValue();
     while (1) {
       int c = clasp_peek_char(strm);
       if (c == EOF)
         goto HANDLE_EOF;
       Character_sp charc = clasp_make_character(c);
-      if (readtable->syntax_type(charc) != kw::_sym_whitespace_character)
+      if (core__syntax_type(readtable, charc) != kw::_sym_whitespace)
         return charc;
       clasp_read_char(strm);
     }
@@ -5665,6 +5702,7 @@ CL_DECLARE();
 CL_DOCSTRING("See clhs");
 CL_DEFUN T_mv cl__read_line(T_sp sin, T_sp eof_error_p, T_sp eof_value, T_sp recursive_p) {
   // TODO Handle encodings from sin - currently only Str8Ns is supported
+  bool eofErrorP = eof_error_p.isTrue();
   sin = coerce::inputStreamDesignator(sin);
   if (!AnsiStreamP(sin)) {
     T_mv results = eval::funcall(gray::_sym_stream_read_line, sin);
@@ -5676,7 +5714,6 @@ CL_DEFUN T_mv cl__read_line(T_sp sin, T_sp eof_error_p, T_sp eof_value, T_sp rec
       }
     }
   }
-  bool eofErrorP = eof_error_p.isTrue();
   //    bool recursiveP = translate::from_object<bool>::convert(env->lookup(_sym_recursive_p));
   Str8Ns_sp sbuf = Str8Ns_O::createBufferString();
   while (1) {
@@ -5727,9 +5764,10 @@ void clasp_terpri(T_sp s) {
 CL_LAMBDA(&optional output-stream);
 CL_DECLARE();
 CL_DOCSTRING("Send a newline to the output stream");
-CL_DEFUN void cl__terpri(T_sp outputStreamDesig) {
+CL_DEFUN T_sp cl__terpri(T_sp outputStreamDesig) {
   // outputStreamDesign in clasp_terpri
   clasp_terpri(outputStreamDesig);
+  return _Nil<T_O>();
 };
 
 bool clasp_freshLine(T_sp s) {
@@ -5829,17 +5867,19 @@ CL_DEFUN Character_sp cl__write_char(Character_sp chr, T_sp stream) {
 CL_LAMBDA(&optional dstrm);
 CL_DECLARE();
 CL_DOCSTRING("clearInput");
-CL_DEFUN void cl__clear_input(T_sp dstrm) {
+CL_DEFUN T_sp cl__clear_input(T_sp dstrm) {
   dstrm = coerce::inputStreamDesignator(dstrm);
   clasp_clear_input(dstrm);
+  return _Nil<T_O>();
 }
 
 CL_LAMBDA(&optional dstrm);
 CL_DECLARE();
 CL_DOCSTRING("clearOutput");
-CL_DEFUN void cl__clear_output(T_sp dstrm) {
+CL_DEFUN T_sp cl__clear_output(T_sp dstrm) {
   dstrm = coerce::outputStreamDesignator(dstrm);
   clasp_clear_output(dstrm);
+  return _Nil<T_O>();
 }
 
 CL_LAMBDA(&optional dstrm);
@@ -5847,31 +5887,37 @@ CL_DECLARE();
 CL_DOCSTRING("listen");
 CL_DEFUN bool cl__listen(T_sp strm) {
   strm = coerce::inputStreamDesignator(strm);
-  return clasp_listen_stream(strm);
+  int result = clasp_listen_stream(strm);
+  if (result == CLASP_LISTEN_EOF)
+    return 0;
+  else return result;
 }
 
 CL_LAMBDA(&optional strm);
 CL_DECLARE();
 CL_DOCSTRING("force_output");
-CL_DEFUN void cl__force_output(T_sp ostrm) {
+CL_DEFUN T_sp cl__force_output(T_sp ostrm) {
   ostrm = coerce::outputStreamDesignator(ostrm);
   clasp_force_output(ostrm);
+  return _Nil<T_O>();
 };
 
 CL_LAMBDA(&optional strm);
 CL_DECLARE();
 CL_DOCSTRING("finish_output");
-CL_DEFUN void cl__finish_output(T_sp ostrm) {
+CL_DEFUN T_sp cl__finish_output(T_sp ostrm) {
   ostrm = coerce::outputStreamDesignator(ostrm);
   clasp_finish_output(ostrm);
+  return _Nil<T_O>();
 };
 
 CL_LAMBDA(char &optional strm);
 CL_DECLARE();
 CL_DOCSTRING("unread_char");
-CL_DEFUN void cl__unread_char(Character_sp ch, T_sp dstrm) {
+CL_DEFUN T_sp cl__unread_char(Character_sp ch, T_sp dstrm) {
   dstrm = coerce::inputStreamDesignator(dstrm);
   clasp_unread_char(clasp_as_claspCharacter(ch), dstrm);
+  return _Nil<T_O>();
 };
 
 CL_LAMBDA(arg);

@@ -4,7 +4,7 @@ MAINTAINER Christian Schafmeister <meister@temple.edu>
 # add LLVM repo
 RUN apt-get update && apt-get -y upgrade && apt-get install -y wget curl
 RUN curl http://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -
-RUN echo 'deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-5.0 main'\
+RUN echo 'deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-6.0 main'\
   >/etc/apt/sources.list.d/llvm4.list
 
 # Copied from the original dependencies
@@ -16,15 +16,15 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
 #  libncurses-dev libboost-filesystem-dev libboost-regex-dev \
 #  libboost-date-time-dev libboost-program-options-dev libboost-system-dev \
 #  libboost-iostreams-dev csh flex gfortran \
-#  clang-5.0 libclang-common-5.0-dev libclang-5.0-dev libclang1-5.0 clang1-5.0-dbg \
-#  libllvm5.0 libllvm5.0-dbg lldb-5.0 llvm-5.0 llvm-5.0-dev llvm-5.0-doc \
-#  llvm-5.0-runtime clang-format-5.0 python-clang-5.0 lld-5.0
+#  clang-6.0 libclang-common-6.0-dev libclang-6.0-dev libclang1-6.0 clang1-6.0-dbg \
+#  libllvm5.0 libllvm5.0-dbg lldb-6.0 llvm-6.0 llvm-6.0-dev llvm-6.0-doc \
+#  llvm-6.0-runtime clang-format-6.0 python-clang-6.0 lld-6.0
 
 # install clasp runtime dependencies
 RUN apt-get -y install \
   libboost-filesystem1.62.0 libboost-date-time1.62.0 libboost-program-options1.62.0 \
-  libboost-iostreams1.62.0 libgc1c2 llvm-5.0-runtime libgmpxx4ldbl \
-  clang-5.0 binutils python-clang-5.0 lld-5.0 libzmq3-dev \
+  libboost-iostreams1.62.0 libgc1c2 llvm-6.0-runtime libgmpxx4ldbl \
+  clang-6.0 binutils python-clang-6.0 lld-6.0 libzmq3-dev \
   && apt-get clean
 
 # add app user
@@ -63,11 +63,12 @@ RUN /bin/bash -c "source activate lab"
 RUN conda install ipywidgets -c conda-forge -y
 RUN pip install nglview==1.1.2
 RUN nglview enable # might need this to enable nglview-js-widgets extension for notebook
-RUN conda install jupyterlab -y -c conda-forge
-RUN jupyter-labextension install @jupyter-widgets/jupyterlab-manager nglview-js-widgets@1.1.2
+RUN conda install jupyterlab=0.32 -y -c conda-forge
+RUN pip install bqplot
+RUN jupyter-labextension install @jupyter-widgets/jupyterlab-manager nglview-js-widgets@1.1.2 bqplot
 #RUN jupyter-labextension install nglview-js-widgets@1.1.2
 
-ADD cando-build.tgz /home/app/clasp
+ADD build/cando-build.tgz /home/app/clasp
 ADD tools/dockerfiles/jupyter/kernels /home/app/.local/share/jupyter/kernels
 ADD tools/dockerfiles/jupyter/jupyter_notebook_config.py /home/app/.jupyter/jupyter_notebook_config.py
 # RUN chown -R app:app /home/app/.jupyter /home/app/.local
@@ -89,6 +90,7 @@ RUN cd $HOME/quicklisp/local-projects \
   && git clone --depth=1 https://github.com/clasp-developers/cl-nglview.git \
   && git clone --depth=1 https://github.com/clasp-developers/cl-bqplot.git \
   && git clone --depth=1 https://github.com/clasp-developers/uuid.git \
+  && git clone --depth=1 https://github.com/clasp-developers/trivial-backtrace.git \
   && git clone --depth=1 https://github.com/clasp-developers/bordeaux-threads.git \
   && git clone --depth=1 https://github.com/clasp-developers/cffi.git
 
@@ -101,7 +103,7 @@ RUN clasp -l "/home/app/quicklisp/setup.lisp" \
            -e "(swank-loader:init :delete nil :reload nil :load-contribs nil)"\
            -e "(core:quit)"
 
-ADD --chown=app:app ambertools18-docker.tar.gz /home/app
+ADD --chown=app:app build/ambertools18-docker.tar.gz /home/app
 ENV AMBERHOME=/home/app/amber18/
 
 RUN cp /home/app/clasp/lib/clasp/extensions/cando/src/data/force-field/ATOMTYPE_SYBYL.DEF /home/app/clasp/lib/clasp/extensions/cando/src/data/force-field/atomtype_sybyl.def

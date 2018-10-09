@@ -1,5 +1,6 @@
 (in-package :cmp)
 (export '(
+          with-interpreter
           *debug-link-options* ;; A list of strings to inject into link commands
           *compile-file-debug-dump-module*  ;; Dump intermediate modules
           *compile-debug-dump-module*  ;; Dump intermediate modules
@@ -11,6 +12,7 @@
           %ltv*%
           irc-function-create
           irc-bclasp-function-create
+          irc-cclasp-function-create
           %fn-prototype%
           *cleavir-compile-file-hook*
           *cleavir-compile-hook*
@@ -19,12 +21,13 @@
           *compile-duration-ns*
           *current-function*
           *current-function-name*
+          *current-function-description*
           *debug-compile-file*
           *debug-compile-file-counter*
           *generate-compile-file-load-time-values*
+          module-literal-table
           *load-time-initializer-environment*
           *gv-current-function-name*
-          *gv-source-file-info-handle*
           *gv-source-namestring*
           *implicit-compile-hook*
           *irbuilder*
@@ -35,7 +38,7 @@
           *run-time-literal-holder*
           *run-time-values-table-name*
 ;;          *run-time-values-table*
-          *run-time-values-table-global-var*
+          #+(or)*run-time-values-table-global-var*
           *the-module*
           +header-size+
           +cons-tag+
@@ -65,6 +68,8 @@
           null-t-ptr
           %gcroots-in-module%
           %gcroots-in-module*%
+          %function-description%
+          %function-description*%
           function-type-create-on-the-fly
           evaluate-foreign-arguments
           jit-remove-module
@@ -76,13 +81,16 @@
           calling-convention-register-save-area*
           calling-convention-invocation-history-frame*
           calling-convention-nargs
-          calling-convention-remaining-nargs*
           calling-convention-register-args
           calling-convention-write-registers-to-multiple-values
           describe-constants-table
           cmp-log
           cmp-log-dump-module
           cmp-log-dump-function
+          make-file-metadata
+          make-function-metadata
+          function-info
+          make-function-info
           irc-create-call
           irc-create-invoke
           compile-file-to-module
@@ -90,7 +98,6 @@
           link-object-files
           optimize-module-for-compile
           optimize-module-for-compile-file
-          codegen-rtv
           codegen
           compile-error-if-not-enough-arguments
           compile-in-env
@@ -106,13 +113,16 @@
           register-global-function-ref
           analyze-top-level-form
           safe-system
-          dbg-set-current-debug-location-here
           jit-constant-uintptr_t
           irc-int-to-ptr
           irc-verify-module-safe
           irc-verify-function
+          *suppress-llvm-output*
+          *optimization-level*
+          with-track-llvm-time
           irc-add
           irc-alloca-tmv
+          irc-alloca-mv-struct
           irc-add-clause
           irc-basic-block-create
           irc-begin-block
@@ -123,6 +133,7 @@
           irc-intrinsic-invoke
           irc-bit-cast
           irc-pointer-cast
+          irc-maybe-cast-integer-to-t*
           irc-create-invoke
           irc-create-invoke-default-unwind
           irc-create-landing-pad
@@ -154,6 +165,8 @@
           jit-constant-i8
           jit-constant-i32
           jit-constant-i64
+          *default-function-attributes*
+          ensure-jit-constant-i64
           jit-constant-size_t
           jit-constant-unique-string-ptr
           jit-function-name
@@ -168,6 +181,7 @@
           walk-form-for-source-info
           with-begin-end-catch
           preserve-exception-info
+          *dbg-generate-dwarf*
           with-new-function
           with-dbg-function
           with-dbg-lexical-block
@@ -178,8 +192,6 @@
           with-debug-info-generator
           with-irbuilder
           with-landing-pad
-          compile-reference-to-literal
-          ltv-global
           bclasp-compile
           make-uintptr_t
           +cons-car-offset+
@@ -197,9 +209,8 @@
           *irbuilder-function-alloca*
           irc-get-cleanup-landing-pad-block
           irc-constant-string-ptr
-          *gv-source-debug-namestring*
+          *source-debug-pathname*
           *source-debug-offset*
-          *source-debug-use-lineno*
           irc-get-terminate-landing-pad-block
           irc-function-cleanup-and-return
           %RUN-AND-LOAD-TIME-VALUE-HOLDER-GLOBAL-VAR-TYPE%
@@ -211,14 +222,13 @@
           with-make-new-run-all
           with-run-all-entry-codegen
           with-run-all-body-codegen
-          ltv-global
           generate-load-time-values
           ))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (if (find-package "LITERAL")
       nil
-      (make-package "LITERAL" :use (list :CL :CMP :CORE))))
+      (make-package "LITERAL" :use (list :CL :CORE))))
 
 (in-package :literal)
 
@@ -246,7 +256,8 @@
           number-of-entries
           reference-literal
           load-time-reference-literal
-          codegen-rtv
+          codegen-rtv-bclasp
+          codegen-rtv-cclasp
           codegen-literal
           codegen-quote
           compile-reference-to-literal

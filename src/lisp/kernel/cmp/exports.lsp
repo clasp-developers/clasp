@@ -2,7 +2,6 @@ irc-branch-to-and-begin-block
 irc-basic-block-create
 compile-error-if-not-enough-arguments
 calling-convention-nargs
-dbg-set-current-debug-location-here
 irc-low-level-trace
 irc-load
 irc-add
@@ -41,6 +40,7 @@ irc-basic-block-create
 irc-basic-block-create
 irc-basic-block-create
 irc-basic-block-create
+irc-maybe-cast-integer-to-t*
 irc-load
 irc-branch-to-and-begin-block
 irc-icmp-slt
@@ -146,7 +146,6 @@ bclasp-compile-form
 irc-intrinsic
 irc-renv
 jit-constant-unique-string-ptr
-*gv-source-file-info-handle*
 *load-time-value-holder-global-var*
 *cleavir-compile-hook*
 *cleavir-compile-file-hook*
@@ -234,7 +233,7 @@ codegen-literal
 irc-intrinsic
 *generate-compile-file-load-time-values*
 *load-time-value-holder-global-var*
-*run-time-values-table-global-var*
+#+(or)*run-time-values-table-global-var*
 irc-unreachable
 irc-br
 *current-function-name*
@@ -355,7 +354,6 @@ cmp-log
 irc-intrinsic
 irc-renv
 jit-constant-unique-string-ptr
-*gv-source-file-info-handle*
 *load-time-value-holder-global-var*
 *cleavir-compile-hook*
 *cleavir-compile-file-hook*

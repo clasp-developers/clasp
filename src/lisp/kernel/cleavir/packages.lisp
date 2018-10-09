@@ -10,10 +10,16 @@
   (:use #:common-lisp #:core)
   (:nicknames #:cc)
   (:export
+   #:*use-cst*
+   #:literal
+   #:literal-label
+   #:immediate-literal
+   #:arrayed-literal
    #:%literal-index
+   #:*clasp-ordinary-lambda-list-grammar*
    #:*use-type-inference*
    #:cleavir-compile-eval
-   #:compile-form
+   #:compile-cst-or-form
    #:clasp
    #:invoke-instruction
    #:invoke-multiple-value-call-instruction
@@ -39,6 +45,7 @@
    #:*clasp-system*
    #:*code-walker*
    #:alloca-i8
+   #:inline-ast
 ))
 
 (defpackage #:cc-generate-ast)
@@ -52,7 +59,11 @@
    #:precalculated-value-ast
    #:make-precalc-vector-function-ast
    #:named-function-ast
+   #:original-lambda-list
+   #:docstring
+   #:rest-alloc
    #:debug-message-ast
+   #:debug-break-ast
    #:multiple-value-foreign-call-ast
    #:foreign-call-ast
    #:foreign-call-pointer-ast
@@ -64,8 +75,9 @@
    #:make-setf-fdefinition-ast
    #:lambda-name
    #:debug-message
+   #:debug-break
    #:precalc-value-reference-ast
-   #:precalc-value-reference-index
+   #:precalc-value-reference-ast-index
    #:precalc-value-reference-ast-original-object
    #:setf-fdefinition-ast
    #:throw-ast
@@ -87,14 +99,15 @@
    #:precalc-reference-instruction
    #:named-enter-instruction
    #:frame-holder
-   #:indexed-unwind-instruction
-   #:landing-pad-instruction
-   #:landing-pad-return-instruction
    #:landing-pad
    #:jump-id
    #:lambda-list
+   #:original-lambda-list
+   #:docstring
+   #:rest-alloc
    #:make-named-enter-instruction
    #:debug-message-instruction
+   #:debug-break-instruction
    #:multiple-value-foreign-call-instruction
    #:foreign-call-instruction
    #:foreign-call-pointer-instruction
@@ -110,6 +123,7 @@
    #:lambda-name
    #:precalc-value-instruction
    #:debug-message
+   #:debug-break
    #:setf-fdefinition-instruction
    #:throw-instruction
    #:precalc-value-instruction-original-object
@@ -153,6 +167,9 @@
    #:headerq-instruction
    #:header-value-min-max
    #:make-headerq-instruction
+   #:save-frame-instruction
+   #:make-save-frame-instruction
+   #:assign-catch-instruction #:go-index
    #:enter-instruction
    #:typed-lexical-location #:lexical-location-type
    #:closure-pointer-dynamic-lexical-location

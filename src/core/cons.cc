@@ -114,8 +114,6 @@ CL_LAMBDA(object1 object2);
 CL_DECLARE();
 CL_DOCSTRING("cons");
 CL_DEFUN Cons_sp cl__cons(T_sp obj1, T_sp obj2) {
-  ASSERTNOTNULL(obj1);
-  ASSERTNOTNULL(obj2);
   return Cons_O::create(obj1, obj2);
 };
 
@@ -137,12 +135,18 @@ CL_LAMBDA(osize &key initial-element);
 CL_DECLARE();
 CL_DOCSTRING("make_list");
 CL_DEFUN List_sp cl__make_list(Fixnum_sp osize, T_sp initial_element) {
-  size_t size = osize.unsafe_fixnum();
-  ql::list result;
-  for (size_t i = 0; i < size; i++) {
-    result << initial_element;
+  // Might be a negative Fixnum, take the right type, size_t is unsigned
+  gc::Fixnum size = osize.unsafe_fixnum();
+  // osize must be 0 or positive
+  if (size < 0)
+    TYPE_ERROR(osize, cl::_sym_UnsignedByte);
+  else {
+    ql::list result;
+    for (size_t i = 0; i < size; i++) {
+      result << initial_element;
+    }
+    return (result.cons());
   }
-  return (result.cons());
 };
 
 Cons_sp Cons_O::createList(T_sp o1) {
@@ -150,7 +154,7 @@ Cons_sp Cons_O::createList(T_sp o1) {
 }
 
 Cons_sp Cons_O::createList(T_sp o1, T_sp o2) {
-  return (Cons_O::create(o1, Cons_O::create(o2)));
+  return (Cons_O::create(o1, Cons_O::create(o2,_Nil<T_O>())));
 }
 
 Cons_sp Cons_O::createList(T_sp o1, T_sp o2, T_sp o3) {
@@ -188,7 +192,7 @@ void Cons_O::appendInto(T_sp head, T_sp *&tailP, T_sp l) {
     TYPE_ERROR_PROPER_LIST(head);
   }
   while ((l).consp()) {
-    Cons_sp cons = Cons_O::create(cons_car(l));
+    Cons_sp cons = Cons_O::create(cons_car(l),_Nil<T_O>());
     *tailP = cons;
     tailP = &(cons->_Cdr);
     l = cons_cdr(l);
@@ -310,12 +314,16 @@ List_sp Cons_O::assoc(T_sp item, T_sp key, T_sp test, T_sp testNot) const {
   Tester t(item, key, test, testNot, false);
   for (auto cur : (List_sp) this->asSmartPtr()) {
     LOG(BF("Testing for assoc with item=%s entry = %s") % item % oCar(cur));
-    if (CONS_CAR(cur).consp()) {
-      T_sp obj = CONS_CAR(CONS_CAR(cur));
-      if (t.test(obj))
-        return (coerce_to_list(CONS_CAR(cur)));
-    } else {
-      TYPE_ERROR(cur, cl::_sym_list);
+    T_sp obj = CONS_CAR(cur);
+    if (!obj.nilp()) {
+      if (obj.consp()) {
+        T_sp obj1 = CONS_CAR(obj);
+        if (t.test(obj1))
+          return (coerce_to_list(obj));
+      } else {
+        // Real error is that (car cur) is not a list, not that cur is not a list
+        TYPE_ERROR(obj, cl::_sym_list);
+      }
     }
   }
   return coerce_to_list(_Nil<T_O>());
@@ -650,7 +658,11 @@ List_sp Cons_O::copyTreeCar() const {
 
 size_t Cons_O::length() const {
   size_t sz = 1;
-  for (T_sp cur = this->_Cdr; cur.consp(); cur = gc::As_unsafe<Cons_sp>(cur)->_Cdr) ++sz; 
+  T_sp cur = _Nil<T_O>();
+  for (cur = this->_Cdr; cur.consp(); cur = gc::As_unsafe<Cons_sp>(cur)->_Cdr) ++sz;
+  if (cur.notnilp()) {
+    TYPE_ERROR_PROPER_LIST(cur->asSmartPtr());
+  }
   return sz;
 };
 

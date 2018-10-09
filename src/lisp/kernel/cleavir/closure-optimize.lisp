@@ -29,32 +29,45 @@ PROGN."
          (when ,(caar binding-list)
            ,@(bind (cdr binding-list) forms))))))
 
-;;; This function finds uses of CLEAVIR-PRIMOP:CALL-WITH-VARIABLE-BOUND and marks the
-;;; closure arguments as stack allocatable (dynamic extent). But TODO/FIXME: c-w-v-b is
-;;; a normal function, and Cleavir's dynamic extent analysis ought to be informed that
-;;; c-w-v-b doesn't save its argument, so that it can mark the argument DX itself and
-;;; this function can be removed.
+(defun maybe-mark-enclose (input)
+  (when-let* ((definers (cleavir-ir:defining-instructions input))
+              (only-one-definer (= (length definers) 1))
+              (definer (first definers))
+              (is-enclose (typep definer 'cleavir-ir:enclose-instruction)))
+    (setf (cleavir-ir:dynamic-extent-p definer) t)))
+
+;;; This function finds calls to certain functions that we generate for special operators,
+;;; and marks their thunk arguments as stack allocatable (dynamic extent).
+;;; TODO/FIXME: A more principled way to do this, in Cleavir.
+;;; Current functions: cleavir-primop:call-with-variable-bound,
+;;;                    core:progv-function,
+;;;                    core:catch-function, core:throw-function,
+;;;                    core:funwind-protect, core:multiple-value-prog1-function
 (defun optimize-stack-enclose (top-instruction)
-  (let (encloses)
-    (cleavir-ir:map-instructions
-     (lambda (i)
-       (when-let*
-        ((is-funcall-inst (typep i 'cleavir-ir:funcall-instruction))
-         (input1 (car (cleavir-ir:inputs i)))
-         (input4 (fourth (cleavir-ir:inputs i)))
-         (fdefs (cleavir-ir:defining-instructions input1))
-         (fenclose (and input4 (cleavir-ir:defining-instructions input4)))
-         (fdef (car fdefs))
-         (enclose (car fenclose))
-         (only-one-fdefs (= (length fdefs) 1))
-         (is-fdef-ins (typep fdef 'cleavir-ir:fdefinition-instruction))
-         (only-one-enclose (= (length fenclose) 1))
-         (fdef-found (typep enclose 'cleavir-ir:enclose-instruction))
-         (fdef-input (car (cleavir-ir:inputs fdef)))
-         (cwvb (car (cleavir-ir:defining-instructions fdef-input)))
-         (precalc (typep cwvb 'clasp-cleavir-hir:precalc-value-instruction))
-         (orig (cadr (clasp-cleavir-hir:precalc-value-instruction-original-object cwvb)))
-         (is-precalc (typep cwvb 'clasp-cleavir-hir:precalc-value-instruction))
-         (found-cwvb (eq orig 'cleavir-primop:call-with-variable-bound)))
-        (setf (cleavir-ir:dynamic-extent-p enclose) t)))
-     top-instruction)))
+  (cleavir-ir:map-instructions-arbitrary-order
+   (lambda (i)
+     (when-let* ((is-funcall (typep i 'cleavir-ir:funcall-instruction))
+                 (input1 (first (cleavir-ir:inputs i)))
+                 (fdefs (cleavir-ir:defining-instructions input1))
+                 (only-one-fdef (= (length fdefs) 1))
+                 (fdef (first fdefs))
+                 (is-fdef (typep fdef 'cleavir-ir:fdefinition-instruction))
+                 (fdef-input (first (cleavir-ir:inputs fdef)))
+                 (fdef-input-definers (cleavir-ir:defining-instructions fdef-input))
+                 (only-one-fdef-input-definer (= (length fdef-input-definers) 1))
+                 (precalc (first fdef-input-definers))
+                 (is-precalc (typep precalc 'clasp-cleavir-hir:precalc-value-instruction))
+                 (callee (second
+                          (clasp-cleavir-hir:precalc-value-instruction-original-object precalc))))
+      (case callee
+        ((core:progv-function
+          cleavir-primop:call-with-variable-bound)
+         (maybe-mark-enclose (fourth (cleavir-ir:inputs i))))
+        ((core:catch-function
+          core:throw-function)
+         (maybe-mark-enclose (third (cleavir-ir:inputs i))))
+        ((core:funwind-protect
+          core:multiple-value-prog1-function)
+         (maybe-mark-enclose (second (cleavir-ir:inputs i)))
+         (maybe-mark-enclose (third (cleavir-ir:inputs i)))))))
+   top-instruction))

@@ -48,7 +48,6 @@ THE SOFTWARE.
 #include <clasp/core/lambdaListHandler.h>
 #include <clasp/core/functor.h>
 #include <clasp/clbind/class_rep.h>
-#include <clasp/core/reader.h>
 #include <clasp/core/pointer.h>
 #include <clasp/core/singleDispatchGenericFunction.h>
 #include <clasp/core/singleDispatchMethod.h>
@@ -59,6 +58,7 @@ THE SOFTWARE.
 #include <clasp/core/documentation.h>
 #include <clasp/core/array.h>
 #include <clasp/core/pointer.h>
+#include <clasp/core/lispReader.h>
 #include <clasp/core/wrappedPointer.h>
 #include <clasp/core/debugger.h>
 //#i n c l u d e "setfExpander.h"
@@ -625,6 +625,10 @@ string lispify_symbol_name(const string &s) {
       stream_pass1 << ">=";
       continue;
     }
+    if (lispify_match(cur, "_UNDERSCORE_")) {
+      stream_pass1 << "_";
+      continue;
+    }
     if (lispify_match(cur, "STAR")) {
       stream_pass1 << "*";
       continue;
@@ -673,10 +677,6 @@ string symbol_packageName(Symbol_sp sym) {
     return "";
   }
   return gc::As<Package_sp>(p)->packageName();
-}
-
-string symbol_repr(Symbol_sp sym) {
-  return _rep_(sym);
 }
 
 /* If o is an instance of Instance_O or Instance_O then it returns o->_instanceClass()
@@ -798,18 +798,6 @@ T_sp lisp_false() {
   return _lisp->_false();
 }
 
-T_sp lisp_ocar(List_sp args) {
-  return oCar(args);
-}
-
-T_sp lisp_ocadr(List_sp args) {
-  return oCadr(args);
-}
-
-T_sp lisp_ocaddr(List_sp args) {
-  return oCaddr(args);
-}
-
 string lisp_rep(T_sp obj) {
   return _rep_(obj);
 }
@@ -852,9 +840,13 @@ List_sp lisp_parse_arguments(const string &packageName, const string &args) {
   Package_sp pkg = gc::As<Package_sp>(_lisp->findPackage(packageName, true));
   ChangePackage changePackage(pkg);
   SimpleBaseString_sp ss = SimpleBaseString_O::make(args);
-  Stream_sp str = cl__make_string_input_stream(ss, make_fixnum(0), _Nil<T_O>());
+  Stream_sp str = cl__make_string_input_stream(ss, 0, _Nil<T_O>());
+#if 0  
   Reader_sp reader = Reader_O::create(str);
   T_sp osscons = reader->primitive_read(true, _Nil<T_O>(), false);
+#else
+  T_sp osscons = read_lisp_object(str,true,_Nil<T_O>(), false);
+#endif
   List_sp sscons = osscons;
   return sscons;
 }
@@ -865,9 +857,13 @@ List_sp lisp_parse_declares(const string &packageName, const string &declarestri
   Package_sp pkg = gc::As<Package_sp>(_lisp->findPackage(packageName, true));
   ChangePackage changePackage(pkg);
   SimpleBaseString_sp ss = SimpleBaseString_O::make(declarestring);
-  Stream_sp str = cl__make_string_input_stream(ss, make_fixnum(0), _Nil<T_O>());
+  Stream_sp str = cl__make_string_input_stream(ss, 0, _Nil<T_O>());
+#if 0
   Reader_sp reader = Reader_O::create(str);
   List_sp sscons = reader->primitive_read(true, _Nil<T_O>(), false);
+#else
+  List_sp sscons = read_lisp_object(str,true,_Nil<T_O>(), false);
+#endif
   return sscons;
 }
 
@@ -953,11 +949,16 @@ void lisp_defineSingleDispatchMethod(T_sp name,
     SIMPLE_ERROR(BF("Mismatch between single_dispatch_argument_index[%d] from lambda_list and TemplateDispatchOn[%d] for class %s  method: %s  lambda_list: %s") % single_dispatch_argument_index % TemplateDispatchOn % _rep_(classSymbol) % _rep_(name) % arguments);
   }
   LOG(BF("Interned method in class[%s]@%p with symbol[%s] arguments[%s] - autoexport[%d]") % receiver_class->instanceClassName() % (receiver_class.get()) % sym->fullName() % arguments % autoExport);
-  SimpleBaseString_sp docStr = SimpleBaseString_O::make(docstring);
+  
+  T_sp docStr = _Nil<T_O>();
+  if (docstring!="") docStr = SimpleBaseString_O::make(docstring);
   T_sp gfn = core__ensure_single_dispatch_generic_function(name, llhandler,autoExport,single_dispatch_argument_index); // Ensure the single dispatch generic function exists
   (void)gfn;                                                         // silence compiler warning
-  LOG(BF("Attaching single_dispatch_method symbol[%s] receiver_class[%s]  method_body@%p") % _rep_(sym) % _rep_(receiver_class) % ((void *)(method_body)));
-  method_body->finishSetup(llhandler, kw::_sym_function);
+  method_body->finishSetup(llhandler);
+  method_body->setf_sourcePathname(_Nil<T_O>());
+  method_body->setf_lambdaList(llhandler->lambdaList());
+  method_body->setf_docstring(docStr);
+  method_body->setf_declares(ldeclares);
   ASSERT(llhandler || llhandler.notnilp());
 #ifdef DEBUG_PROGRESS
   printf("%s:%d lisp_defineSingleDispatchMethod sym: %s\n", __FILE__, __LINE__, _rep_(sym).c_str());
@@ -1008,13 +1009,18 @@ void lisp_defun(Symbol_sp sym,
     List_sp ll = lisp_parse_arguments(packageName, arguments);
     llh = lisp_function_lambda_list_handler(ll, _Nil<T_O>(), skipIndices);
   }
-  fc->finishSetup(llh, kw::_sym_function);
+  fc->finishSetup(llh);
   fc->setSourcePosInfo(SimpleBaseString_O::make(sourceFile), 0, lineNumber, 0);
   Function_sp func = fc;
   sym->setf_symbolFunction(func);
   sym->exportYourself();
-  core::ext__annotate(sym,cl::_sym_documentation,cl::_sym_function, core::SimpleBaseString_O::make(docstring));
-  core::ext__annotate(func,cl::_sym_documentation,cl::_sym_function, core::SimpleBaseString_O::make(docstring));
+  T_sp tdocstring = _Nil<T_O>();
+  if (docstring!="") tdocstring = core::SimpleBaseString_O::make(docstring);
+  fc->setf_lambdaList(llh->lambdaList());
+  fc->setf_declares(ldeclares);
+  fc->setf_docstring(tdocstring);
+  core::ext__annotate(sym,cl::_sym_documentation,cl::_sym_function, tdocstring);
+  core::ext__annotate(func,cl::_sym_documentation,cl::_sym_function, tdocstring);
 }
 
 // identical to above except for using setSetfFdefinition.
@@ -1037,13 +1043,19 @@ void lisp_defun_setf(Symbol_sp sym,
     List_sp ll = lisp_parse_arguments(packageName, arguments);
     llh = lisp_function_lambda_list_handler(ll, _Nil<T_O>(), skipIndices);
   }
-  fc->finishSetup(llh, kw::_sym_function);
+  fc->finishSetup(llh);
   fc->setSourcePosInfo(SimpleBaseString_O::make(sourceFile), 0, lineNumber, 0);
+  T_sp tdocstring = _Nil<T_O>();
+  if (docstring!="") tdocstring = core::SimpleBaseString_O::make(docstring);
+  fc->setf_sourcePathname(_Nil<T_O>());
+  fc->setf_lambdaList(llh->lambdaList());
+  fc->setf_declares(ldeclares);
+  fc->setf_docstring(tdocstring);
   Function_sp func = fc;
   sym->setSetfFdefinition(func);
   sym->exportYourself();
-  core::ext__annotate(sym,cl::_sym_documentation,cl::_sym_function, core::SimpleBaseString_O::make(docstring));
-  core::ext__annotate(func,cl::_sym_documentation,cl::_sym_function, core::SimpleBaseString_O::make(docstring));
+  core::ext__annotate(sym,cl::_sym_documentation,cl::_sym_function, tdocstring);
+  core::ext__annotate(func,cl::_sym_documentation,cl::_sym_function, tdocstring);
 }
 
 void lisp_defmacro(Symbol_sp sym,
@@ -1057,13 +1069,21 @@ void lisp_defmacro(Symbol_sp sym,
   List_sp ldeclares = lisp_parse_declares(packageName, declarestring);
   (void)ldeclares;
   LambdaListHandler_sp llh = lisp_function_lambda_list_handler(ll, _Nil<T_O>());
-  f->finishSetup(llh, kw::_sym_macro);
+  f->finishSetup(llh);
+  sym->setf_macroP(true);
+  f->setf_sourcePathname(_Nil<T_O>());
+  f->setf_lambdaList(llh->lambdaList());
+  f->setf_declares(ldeclares);
+  T_sp tdocstring = _Nil<T_O>();
+  if (docstring!="") tdocstring = core::SimpleBaseString_O::make(docstring);
+  f->setf_docstring(tdocstring);
   Function_sp func = f;
   //    Package_sp package = lisp->getPackage(packageName);
   //    package->addFunctionForLambdaListHandlerCreation(func);
   sym->setf_symbolFunction(func);
   sym->exportYourself();
 }
+
 
 Symbol_sp lisp_internKeyword(const string &name) {
   if (name == "")
@@ -1085,22 +1105,6 @@ Symbol_sp lisp_intern(const string &name, const string &pkg) {
 
 string symbol_fullName(Symbol_sp s) {
   return s->fullName();
-}
-
-core::T_sp lisp_registerSourceInfo(T_sp obj, SourceFileInfo_sp sfo, size_t filePos, int lineno, int column) {
-  T_sp tdb = _lisp->sourceDatabase();
-  if (SourceManager_sp db = tdb.asOrNull<SourceManager_O>()) {
-    return db->registerSourceInfo(obj, sfo, filePos, lineno, column);
-  }
-  return _Nil<T_O>();
-}
-
-core::T_sp lisp_registerSourcePosInfo(T_sp obj, SourcePosInfo_sp spi) {
-  T_sp tdb = _lisp->sourceDatabase();
-  if (SourceManager_sp db = tdb.asOrNull<SourceManager_O>()) {
-    return db->registerSourcePosInfo(obj, spi);
-  }
-  return _Nil<T_O>();
 }
 
 void lisp_installGlobalInitializationCallback(InitializationCallback initGlobals) {
@@ -1419,7 +1423,7 @@ T_sp lisp_ArgArrayToCons(int nargs, ArgArray args) {
   Cons_O::CdrType_sp *curP = &first;
   //        gctools::StackRootedPointerToSmartPtr<Cons_O::CdrType_O> cur(&first);
   for (int i(0); i < nargs; ++i) {
-    Cons_sp one = Cons_O::create(gctools::smart_ptr<core::T_O>((gctools::Tagged)(args[i])));
+    Cons_sp one = Cons_O::create(gctools::smart_ptr<core::T_O>((gctools::Tagged)(args[i])),_Nil<T_O>());
     *curP = one;          // cur.setPointee(one); //*cur = one;
     curP = one->cdrPtr(); // cur.setPointer(one->cdrPtr()); // cur = one->cdrPtr();
   }

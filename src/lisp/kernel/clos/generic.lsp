@@ -26,8 +26,11 @@
     ;; process options
     (multiple-value-bind (option-list method-list)
 	(parse-generic-options options lambda-list)
-      (let* ((output `(ensure-generic-function ',function-specifier
-		       :delete-methods t ,@option-list)))
+      (let* ((output `(progn
+                        (eval-when (:compile-toplevel)
+                          (cmp:register-global-function-def 'defgeneric ',function-specifier))
+                        (ensure-generic-function ',function-specifier
+                                                 :delete-methods t ,@option-list))))
         (if method-list
             `(progn
                ,output
@@ -198,7 +201,6 @@
     (initialize-generic-function-specializer-profile gfun))
   gfun)
 
-
 (defmethod shared-initialize :after ((gfun standard-generic-function) slot-names
                                      &rest initargs)
   (declare (ignore slot-names)
@@ -206,6 +208,14 @@
   (when (generic-function-methods gfun)
     (compute-g-f-spec-list gfun))
   (update-dependents gfun initargs))
+
+(defmethod reinitialize-instance :after ((gfun standard-generic-function) &rest initargs)
+  (declare (ignore initargs))
+  ;; erase any call history and invalidate
+  (loop for call-history = (generic-function-call-history gfun)
+        for exchange = (generic-function-call-history-compare-exchange gfun call-history nil)
+        until (null exchange))
+  (invalidate-discriminating-function gfun))
 
 (defun associate-methods-to-gfun (name &rest methods)
   (let ((gfun (fdefinition name)))
@@ -220,7 +230,7 @@
        (method-class 'STANDARD-METHOD method-class-p)
        (generic-function-class (class-of gfun))
        (delete-methods nil))
-  (mlog "In ensure-generic-function-using-class (gfun generic-function) gfun -> %s  name -> %s args -> %s\n" gfun name args)
+  (mlog "In ensure-generic-function-using-class (gfun generic-function) gfun -> %s  name -> %s args -> %s%N" gfun name args)
   ;; modify the existing object
   (setf args (copy-list args))
   (remf args :generic-function-class)
@@ -253,7 +263,7 @@
                                    (generic-function-class 'STANDARD-GENERIC-FUNCTION)
                                    (delete-methods nil))
   (declare (ignore delete-methods gfun))
-  (mlog "In ensure-generic-function-using-class (gfun generic-function) gfun -> %s  name -> %s args -> %s\n" gfun name args)
+  (mlog "In ensure-generic-function-using-class (gfun generic-function) gfun -> %s  name -> %s args -> %s%N" gfun name args)
   ;; else create a new generic function object
   (setf args (copy-list args))
   (remf args :generic-function-class)
@@ -263,3 +273,15 @@
   (when (and method-class-p (symbolp generic-function-class))
     (setf args (list* :method-class (find-class method-class) args)))
   (apply #'make-instance generic-function-class :name name args))
+
+;;; Miscellany
+
+;;; Kind of badly placed, but- returns minimum and maximum number of args allowed as values.
+;;; max is NIL if infinite. Used by fastgf.
+(defun generic-function-min-max-args (gf)
+  ;; since we call this from fastgf, it can't use generic functions (like g-f-l-l)
+  ;; but FIXME: this may be a problem if g-f-l-l being generic is relevant, e.g. for a user subclass.
+  (with-early-accessors (+standard-generic-function-slots+)
+    (multiple-value-bind (req opt restvar keyflag) ; rest are irrelevant
+        (core:process-lambda-list (generic-function-lambda-list gf) 'function)
+      (values (car req) (if (or restvar keyflag) nil (+ (car req) (car opt)))))))

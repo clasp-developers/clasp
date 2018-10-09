@@ -35,21 +35,21 @@
 
 (defun bclasp-implicit-compile-repl-form (form &optional environment)
   (declare (core:lambda-name cmp-repl-implicit-compile))
-  (gctools:garbage-collect)
   (unwind-protect
        (progn
          (when *print-implicit-compile-form* 
-           (bformat t "Compiling form: %s\n" form)
-           (bformat t "*active-protection* --> %s\n" cmp::*active-protection*))
+           (bformat t "Compiling form: %s%N" form)
+           (bformat t "*active-protection* --> %s%N" cmp::*active-protection*))
          (with-compilation-unit (:override nil)
            (multiple-value-bind (compiled-function warn fail)
-               (compile-in-env 'repl
-                               `(lambda () 
-                                  (declare (core:lambda-name from-bclasp-implicit-compile-repl-form))
-                                  ,form)
-                               environment
-                               nil
-                               'llvm-sys:external-linkage)
+               (core:with-memory-ramp (:pattern 'gctools:ramp)
+                 (compile-in-env 'repl
+                                 `(lambda () 
+                                    (declare (core:lambda-name from-bclasp-implicit-compile-repl-form))
+                                    ,form)
+                                 environment
+                                 nil
+                                 'llvm-sys:external-linkage))
              (funcall compiled-function))))))
 
 ;;;
@@ -74,6 +74,11 @@
 
 #+(or)
 (eval-when (:execute)
-  (bformat t "!\n!\n!\n! cmprepl.lsp has (setq cmp:*debug-dump-module* t)\n!\n!\n!  TURN IT OFF AGAIN\n!\n")
+  (bformat t "!%N!%N!\n! cmprepl.lsp has (setq cmp:*debug-dump-module* t)\n!\n!\n!  TURN IT OFF AGAIN\n!\n")
   (setq cmp:*debug-dump-module* t)
   )
+
+(defmacro with-interpreter (&body body)
+  "Run the body using the interpreter"
+  `(let ((core:*eval-with-env-hook* #'core:eval-with-env-default))
+    ,@body))

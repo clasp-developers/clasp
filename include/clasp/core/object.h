@@ -47,26 +47,6 @@ THE SOFTWARE.
 #include <clasp/core/lisp.fwd.h>
 #include <clasp/core/lispStream.fwd.h>
 
-/*!Use the _Class static class variable instead of findClass */
-#define USE_STATIC_METACLASS 1
-
-//
-// When debugging how a lisp environment is created set this to 1 otherwise 0
-//
-#define DEBUG_ENVIRONMENT_CREATION 1
-
-//
-// Try using Plug_Os directly rather than O_RequiredPlugs
-//
-#define USE_PLUGS 1
-
-// I need nil, wxWidgets defines it as NULL - stupid
-#ifdef nil
-#undef nil
-#endif
-
-#define NO_CLASS_ID 0
-
 /*! State that a class has an external base class.
   This is scraped out by registerClasses.py
 */
@@ -101,13 +81,9 @@ namespace core {
   FORWARD(LambdaListHandler);
   FORWARD(Binder);
   FORWARD(Symbol);
-  FORWARD(CandoDatabase);
   FORWARD(Cons);
   FORWARD(General);
 };
-
-#define NO_BASE_CLASS "-NOBASE-"
-
 
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
@@ -419,13 +395,9 @@ namespace core {
   //! Just describe the contents
     virtual string descriptionOfContents() const;
   //! A pretty-print representation
-    virtual string descriptionNoConst() { return this->description(); };
-  //! A pretty-print representation
     virtual string __repr__() const { return this->description(); };
   //! Common Lisp __write__(T_sp strm)
     virtual void __write__(T_sp strm) const;
-  //! A pretty-print representation
-    virtual string __str__() { return _rep_(this->sharedThis<T_O>()); };
     virtual void describe(T_sp stream);
     virtual void dump() { this->describe(lisp_true()); };
 
@@ -477,12 +449,6 @@ namespace core {
   /*! Get the signature (metaclass slot definitions) for the instance */
     virtual T_sp instanceSig() const;
 
-  /*! Return number of slots if instance of Instance_O otherwise return nil */
-    virtual T_sp oinstancep() const { return _Nil<T_O>(); }; //
-    bool instancep() const { return oinstancep().isTrue(); };
-  /*! Return number of slots if instance of Instance_O otherwise return nil */
-    virtual T_sp ofuncallableInstanceP() const { return _Nil<T_O>(); }; //
-    bool funcallableInstanceP() const { return ofuncallableInstanceP().isTrue(); };
     virtual Fixnum get_stamp_() const { lisp_error_no_stamp((void*)this); };
   };
 };

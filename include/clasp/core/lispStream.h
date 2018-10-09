@@ -135,6 +135,7 @@ void clasp_clear_output(T_sp strm);
 void clasp_force_output(T_sp strm);
 
 void clasp_finish_output(T_sp strm);
+void clasp_finish_output_t(); // finish output to *standard-output*
 int clasp_file_column(T_sp strm);
 size_t clasp_input_filePos(T_sp strm);
 int clasp_input_lineno(T_sp strm);
@@ -145,8 +146,8 @@ Pathname_sp clasp_input_pathname(T_sp strm);
 /*! Return the filename of the stream if possible, error if errorp=true and no name can be determined */
 T_sp clasp_filename(T_sp strm, bool errorp = false);
 
- void cl__unread_char(Character_sp ch, T_sp dstrm);
-  T_sp cl__get_output_stream_string(T_sp strm);
+T_sp cl__unread_char(Character_sp ch, T_sp dstrm);
+T_sp cl__get_output_stream_string(T_sp strm);
 
 T_sp clasp_file_length(T_sp strm);
 T_sp clasp_file_position(T_sp strm);
@@ -170,7 +171,7 @@ T_sp clasp_make_file_stream_from_fd(T_sp fname, int fd, enum StreamMode smm, gct
 T_sp cl__make_synonym_stream(T_sp sym);
 T_sp cl__make_two_way_stream(T_sp in, T_sp out);
 
-T_sp cl__make_string_input_stream(String_sp strng, Fixnum_sp istart, T_sp iend);
+T_sp cl__make_string_input_stream(String_sp strng, cl_index istart, T_sp iend);
 T_sp clasp_make_string_output_stream(cl_index line_length = 128, bool extended = false);
  T_sp cl__make_string_output_stream(Symbol_sp elementType);
 T_sp cl__get_output_stream_string(T_sp strm);

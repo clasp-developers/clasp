@@ -16,22 +16,13 @@ namespace cl {
 
 namespace core {
   FORWARD(Function);
-  FORWARD(NamedFunction);
   FORWARD(Closure);
   FORWARD(BuiltinClosure);
-  FORWARD(FunctionClosure);
-  FORWARD(Closure);
   FORWARD(ClosureWithSlots);
 };
 
 template <>
 struct gctools::GCInfo<core::Function_O> {
-  static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = false;
-  static GCInfo_policy constexpr Policy = normal;
-};
-template <>
-struct gctools::GCInfo<core::FunctionClosure_O> {
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
@@ -49,25 +40,58 @@ struct gctools::GCInfo<core::BuiltinClosure_O> {
 #define INCREMENT_FUNCTION_CALL_COUNTER(x)
 #endif
 namespace core {
+
+  /*! Set to something other than NIL to dump functions as they are defined at startup */
+  
+  extern char* global_dump_functions;
+  
+  /* The following MUST MATCH %function-description% in cmpintrinsics.lsp
+Each thread maintains a current GCRootsInModule structure that stores roots
+used by the FunctionDescription objects.  Every time a Function_O object is created
+a FunctionDescription is allocated using 'new' and if the GCRootsInModule can still fit
+all of the slots (six currently) indicated by the fields that end in 'Index' then that
+GCRootsInModule* is written into the FunctionDescription and the indices into the
+GCRootsInModule are written into the FunctionDescription.  Then the function description
+objects that need to be managed by the GC are written into the GCRootsInModule object.
+A pointer to the new FunctionDescription object is then written into the instance
+of the Function_O subclass.  A virtual function in the Function_O is used to
+recover the pointer to the FunctionDescription object for the Function_O.
+I used a virtual function because different subclasses store the FunctionDescription*
+pointer at different offsets so that FuncallableInstance_O can have its _Class and _Rack
+fields at the same offset as Instance_O.
+   */ 
+  struct FunctionDescription {
+// There are six slots below that end with Index
+    // They need space opened up in the GCRoots vector
+    static const size_t Roots = 6;
+    void* functionPrototype;
+    gctools::GCRootsInModule* gcrootsInModule;
+    int sourcePathnameIndex;
+    int functionNameIndex;
+    int lambdaListIndex;
+    int docstringIndex;
+    int declareIndex;
+    int lineno;
+    int column;
+    int filepos;
+  };
+
+  FunctionDescription* makeFunctionDescription(T_sp functionName, T_sp lambda_list=_Unbound<T_O>(), T_sp docstring=_Unbound<T_O>(), T_sp sourcePathname=_Unbound<T_O>(), int lineno=-1, int column=-1, int filePos=-1, T_sp declares = _Nil<core::T_O>());
+
+  void validateFunctionDescription(const char* filename, size_t lineno, Function_sp function);
+
   /*! Function_O is a Funcallable object that adds no fields to anything that inherits from it
 */
   class Function_O : public General_O {
     LISP_ABSTRACT_CLASS(core,ClPkg,Function_O,"FUNCTION",General_O);
   public:
     std::atomic<claspFunction>    entry;
-#ifdef DEBUG_FUNCTION_CALL_COUNTER
-#error "Create an API to keep track of function calls using virtual functions"
-//    size_t _TimesCalled;  Do not use tho
-#endif
   public:
     virtual const char *describe() const { return "Function - subclass must implement describe()"; };
     virtual size_t templatedSizeof() const { return sizeof(*this); };
   public:
-    Function_O(claspFunction ptr)
-      : entry(ptr)
-#ifdef DEBUG_FUNCTION_CALL_COUNTER
-      , _TimesCalled(0)
-#endif
+  Function_O(claspFunction ptr)
+    : entry(ptr)
     {
 #ifdef _DEBUG_BUILD
       if (((uintptr_t)ptr)&0x7 || !ptr) {
@@ -76,45 +100,85 @@ namespace core {
       }
 #endif
     };
+    virtual FunctionDescription* fdesc() const = 0;
+    // Rewrite the function-description pointer - used in direct-calls.lsp
+    
+    virtual void set_fdesc(FunctionDescription* address) = 0;
+    
+    T_sp fdescInfo(int index) const {
+      T_sp result((gctools::Tagged)this->fdesc()->gcrootsInModule->get(this->fdesc()->functionNameIndex));
+      return result;
+    }
+    CL_LISPIFY_NAME("core:functionName");
+    CL_DEFMETHOD T_sp functionName() const {
+      return this->fdescInfo(this->fdesc()->functionNameIndex);
+    }
+    T_sp docstring() const {
+      T_sp result((gctools::Tagged)this->fdesc()->gcrootsInModule->get(this->fdesc()->docstringIndex));
+      return result;
+    }
+    T_sp declares() const {
+      T_sp result((gctools::Tagged)this->fdesc()->gcrootsInModule->get(this->fdesc()->declareIndex));
+      return result;
+    }
+    CL_DEFMETHOD void setf_lambdaList(T_sp lambda_list) {
+      this->fdesc()->gcrootsInModule->set(this->fdesc()->lambdaListIndex,lambda_list.tagged_());
+    }
+    CL_DEFMETHOD T_sp sourcePathname() const {
+      T_sp result((gctools::Tagged)this->fdesc()->gcrootsInModule->get(this->fdesc()->sourcePathnameIndex));
+      return result;
+    }
+    void setf_sourcePathname(T_sp sourceFileName) const {
+      this->fdesc()->gcrootsInModule->set(this->fdesc()->sourcePathnameIndex,sourceFileName.tagged_());
+    }
+    void setf_docstring(T_sp x) const {
+      this->fdesc()->gcrootsInModule->set(this->fdesc()->docstringIndex,x.tagged_());
+    }
+    void setf_declares(T_sp x) const {
+      this->fdesc()->gcrootsInModule->set(this->fdesc()->declareIndex,x.tagged_());
+    }
+    size_t filePos() const {
+      return this->fdesc()->filepos;
+    }
+    void setf_filePos(int filePos) { this->fdesc()->filepos = filePos; };
+    int lineNumber() const {
+      return this->fdesc()->lineno;
+    }
+    int lineno() const {
+      return this->fdesc()->lineno;
+    }
+    void setf_lineno(int lineno) { this->fdesc()->lineno = lineno; };
+    virtual int column() const {
+      return this->fdesc()->column;
+    }
+    void setf_column(int x) { this->fdesc()->column = x; };
+
+    Pointer_sp function_description_address() const;
+    void setf_function_description_address(Pointer_sp address);
+    
+    T_mv function_description() const;
+    virtual void __write__(T_sp) const;
+    
     Pointer_sp function_pointer() const;
-    virtual string nameAsString() const {SUBIMP();};
     virtual bool compiledP() const { return false; };
     virtual bool interpretedP() const { return false; };
     virtual bool builtinP() const { return false; };
     virtual T_sp sourcePosInfo() const { return _Nil<T_O>(); };
-    CL_DEFMETHOD virtual T_sp functionName() const = 0;
-    CL_DEFMETHOD Symbol_sp functionKind() const { return this->getKind(); };
     CL_DEFMETHOD List_sp function_declares() const { return this->declares(); };
     CL_DEFMETHOD T_sp functionLambdaListHandler() const {
       return this->lambdaListHandler();
     }
-    CL_DEFMETHOD virtual void setf_lambda_list(List_sp lambda_list) = 0;
-    virtual T_sp closedEnvironment() const = 0;
-    virtual T_sp setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column) = 0;
+    virtual T_sp closedEnvironment() const {SUBIMP();};
+    T_sp setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column);
     virtual T_mv functionSourcePos() const;
-    CL_DEFMETHOD virtual T_sp cleavir_ast() const = 0;
-    CL_DEFMETHOD virtual void setf_cleavir_ast(T_sp ast) = 0;
-    virtual List_sp declares() const = 0;
-    CL_DEFMETHOD virtual T_sp docstring() const = 0;
-    CL_DEFMETHOD virtual bool macroP() const = 0;
-    virtual void set_kind(Symbol_sp k) = 0;
-    virtual Symbol_sp getKind() const = 0;
-    virtual int sourceFileInfoHandle() const = 0;
-    virtual size_t filePos() const { return 0; }
-    virtual int lineNumber() const { return 0; }
-    virtual int column() const { return 0; };
-    virtual LambdaListHandler_sp lambdaListHandler() const = 0;
-    virtual T_sp lambda_list() const = 0;
+    virtual LambdaListHandler_sp lambdaListHandler() const {SUBIMP();};
+    virtual T_sp lambdaList() const {
+      T_sp result((gctools::Tagged)this->fdesc()->gcrootsInModule->get(this->fdesc()->lambdaListIndex));
+      return result;
+    }
     virtual string __repr__() const;
     virtual ~Function_O() {};
   };
-};
-
-template <>
-struct gctools::GCInfo<core::NamedFunction_O> {
-  static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = false;
-  static GCInfo_policy constexpr Policy = normal;
 };
 
 namespace core {
@@ -122,30 +186,6 @@ namespace core {
   extern void lisp_error_sprintf(const char* file, int line, const char* fmt, ...);
   
 SMART(LambdaListHandler);
-SMART(NamedFunction);
-/*! NamedFunction_O inherits from Function_O and
- *  adds a function name field to anything that inherits from it.
- */
- class NamedFunction_O : public Function_O {
-  LISP_ABSTRACT_CLASS(core, CorePkg, NamedFunction_O, "NamedFunction",Function_O);
-public:
-  T_sp _name;
- NamedFunction_O(claspFunction fptr,T_sp name) : Function_O(fptr), _name(name) {
-    if (cl__stringp(name)) {
-      printf("%s:%d   function name is a string: %s\n", __FILE__, __LINE__, _rep_(name).c_str());
-      lisp_error_sprintf(__FILE__, __LINE__, "Function name is string %s", _rep_(name).c_str());
-    }
-  };
-  virtual ~NamedFunction_O(){};
-public:
-  CL_LISPIFY_NAME("core:functionName");
-  CL_DEFMETHOD T_sp functionName() const {
-    return this->_name;
-  }
-  // defined in write_ugly.cc
-  virtual void __write__(T_sp) const;
-
-};
 };
 
 template <>
@@ -159,96 +199,55 @@ namespace core {
   /*! Closure_O
    *  Can have an environment associated with it 
    */
-class Closure_O : public NamedFunction_O {
-    LISP_CLASS(core,CorePkg,Closure_O,"Closure",NamedFunction_O);
-public:
- Closure_O(claspFunction fptr, T_sp name ) : Base(fptr,name) {};
-public:
-  virtual const char *describe() const { return "Closure"; };
-  virtual string nameAsString() const;
-};
+class Closure_O : public Function_O {
+    LISP_CLASS(core,CorePkg,Closure_O,"Closure",Function_O);
+  public:
+    FunctionDescription* _FunctionDescription;
+  public:
+  Closure_O(claspFunction fptr, FunctionDescription* fdesc ) : Base(fptr), _FunctionDescription(fdesc) {
+      describeFunction();
+    };
+  public:
+    virtual FunctionDescription* fdesc() const { return this->_FunctionDescription; };
+    virtual void set_fdesc(FunctionDescription* fdesc) { this->_FunctionDescription = fdesc; };
+    virtual const char *describe() const { return "Closure"; };
+    void describeFunction() const;
+  };
 };
 
 
 namespace core {
-  /*! This is the class that stores source info */
-  class FunctionClosure_O : public Closure_O {
-    LISP_CLASS(core,CorePkg,FunctionClosure_O,"FunctionClosure",Closure_O);
-  public:
-  //  T_sp _SourcePosInfo;
-    T_sp _cleavir_ast;
-    Symbol_sp kind;
-    Fixnum _sourceFileInfoHandle;
-    Fixnum _filePos;
-    Fixnum _lineno;
-    Fixnum _column;
-  public:
 #define SOURCE_INFO core::Fixnum sourceFileInfoHandle, core::Fixnum filePos, core::Fixnum lineno, core::Fixnum column
 #define SOURCE_INFO_PASS sourceFileInfoHandle, filePos, lineno, column
-  FunctionClosure_O(claspFunction fptr, T_sp name, Symbol_sp k, SOURCE_INFO)
-    : Closure_O(fptr,name), kind(k), _cleavir_ast(_Nil<T_O>()), _sourceFileInfoHandle(sourceFileInfoHandle), _filePos(filePos), _lineno(lineno), _column(column){};
-  FunctionClosure_O(claspFunction fptr, T_sp name)
-    : Closure_O(fptr,name), kind(kw::_sym_function), _cleavir_ast(_Nil<T_O>()), _sourceFileInfoHandle(0), _filePos(0), _lineno(0), _column(0){};
-    static FunctionClosure_sp create(fnLispCallingConvention fptr, T_sp name, T_sp function_kind, SOURCE_INFO ) {
-      FunctionClosure_sp fc = gctools::GC<FunctionClosure_O>::allocate(fptr,name,function_kind,SOURCE_INFO_PASS);
-      return fc;
-    }
-    CL_DEFMETHOD List_sp source_info() const;
-    CL_DEFMETHOD void set_source_info(List_sp source_info);
-    virtual size_t templatedSizeof() const { return sizeof(*this); };
-    virtual const char *describe() const { return "FunctionClosure"; };
-    void set_kind(Symbol_sp k) { this->kind = k; };
-    Symbol_sp getKind() const { return this->kind; };
-    bool macroP() const;
-    T_sp sourcePosInfo() const; // { return this->_SourcePosInfo; };
-    virtual T_sp setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column);
-    virtual int sourceFileInfoHandle() const;
-    virtual size_t filePos() const;
-    virtual int lineNumber() const;
-    virtual int column() const;
-    virtual T_sp cleavir_ast() const { return this->_cleavir_ast; };
-    virtual void setf_cleavir_ast(T_sp ast) { this->_cleavir_ast = ast; };
-    virtual LambdaListHandler_sp lambdaListHandler() const {SUBIMP();};
-    virtual T_sp lambda_list() const {SUBIMP();};
-    virtual void setf_lambda_list(List_sp lambda_list) {SUBIMP();};
-    virtual List_sp declares() const {NOT_APPLICABLE();};
-    virtual T_sp docstring() const {NOT_APPLICABLE();};
-    virtual T_sp closedEnvironment() const { return _Nil<T_O>();};
-  };
-
-  class BuiltinClosure_O : public FunctionClosure_O {
-    LISP_CLASS(core,CorePkg,BuiltinClosure_O,"BuiltinClosure",FunctionClosure_O);
+  
+  class BuiltinClosure_O : public Closure_O {
+    LISP_CLASS(core,CorePkg,BuiltinClosure_O,"BuiltinClosure",Closure_O);
   public:
     LambdaListHandler_sp _lambdaListHandler;
-    List_sp _declares;
-    T_sp _docstring;
   public:
-  BuiltinClosure_O(claspFunction fptr, T_sp name, Symbol_sp k, SOURCE_INFO)
-    : FunctionClosure_O(fptr, name, k, SOURCE_INFO_PASS){};
-  BuiltinClosure_O(claspFunction fptr, T_sp name )
-    : FunctionClosure_O(fptr,name) {}
-    void finishSetup(LambdaListHandler_sp llh, Symbol_sp k) {
+  BuiltinClosure_O(claspFunction fptr, FunctionDescription* fdesc)
+    : Closure_O(fptr, fdesc), _lambdaListHandler(_Unbound<LambdaListHandler_O>())  {};
+  BuiltinClosure_O(claspFunction fptr, FunctionDescription* fdesc, LambdaListHandler_sp llh)
+    : Closure_O(fptr, fdesc), _lambdaListHandler(llh)  {};
+    void finishSetup(LambdaListHandler_sp llh) {
       this->_lambdaListHandler = llh;
-      this->kind = k;
     }
     T_sp closedEnvironment() const { return _Nil<T_O>(); };
-    virtual T_sp lambda_list() const;
-    virtual void setf_lambda_list(List_sp lambda_list);
     virtual size_t templatedSizeof() const { return sizeof(*this); };
     virtual const char *describe() const { return "BuiltinClosure"; };
     bool builtinP() const { return true; };
     LambdaListHandler_sp lambdaListHandler() const { return this->_lambdaListHandler; };
-    T_sp docstring() const { return this->_docstring; };
-    List_sp declares() const { return this->_declares; };
   };
 
 }
 
 namespace core {
   extern LCC_RETURN interpretedClosureEntryPoint(LCC_ARGS_FUNCALL_ELLIPSIS);
+  extern LCC_RETURN unboundFunctionEntryPoint(LCC_ARGS_FUNCALL_ELLIPSIS);
+  extern LCC_RETURN unboundSetfFunctionEntryPoint(LCC_ARGS_FUNCALL_ELLIPSIS);
    
-  class ClosureWithSlots_O final : public core::FunctionClosure_O {
-    LISP_CLASS(core,CorePkg,ClosureWithSlots_O,"ClosureWithSlots",core::FunctionClosure_O);
+  class ClosureWithSlots_O final : public core::Closure_O {
+    LISP_CLASS(core,CorePkg,ClosureWithSlots_O,"ClosureWithSlots",core::Closure_O);
     typedef enum { interpretedClosure, bclaspClosure, cclaspClosure } ClosureType;
 #define ENVIRONMENT_SLOT 0
 #define INTERPRETED_CLOSURE_SLOTS  3
@@ -257,7 +256,7 @@ namespace core {
 #define INTERPRETED_CLOSURE_LAMBDA_LIST_HANDLER_SLOT 2
 #define BCLASP_CLOSURE_SLOTS  1
 #define BCLASP_CLOSURE_ENVIRONMENT_SLOT ENVIRONMENT_SLOT
-public:
+  public:
     core::T_sp _lambdaList;
     ClosureType   closureType;
   //! Slots must be the last field
@@ -270,61 +269,20 @@ public:
       return sizeof(*this);
     };
   public:
-    static ClosureWithSlots_sp make_interpreted_closure(T_sp name, T_sp type, T_sp lambda_list, LambdaListHandler_sp lambda_list_handler, T_sp declares, T_sp docstring, T_sp form, T_sp environment, SOURCE_INFO) {
-      ClosureWithSlots_sp closure =
-        gctools::GC<core::ClosureWithSlots_O>::allocate_container(INTERPRETED_CLOSURE_SLOTS,
-                                                                  &interpretedClosureEntryPoint,
-                                                                  name,
-                                                                  type,
-                                                                  lambda_list,
-                                                                  SOURCE_INFO_PASS);
-      closure->closureType = interpretedClosure;
-      (*closure)[INTERPRETED_CLOSURE_FORM_SLOT] = form;
-      (*closure)[INTERPRETED_CLOSURE_ENVIRONMENT_SLOT] = environment;
-      if (lambda_list_handler.nilp()) {
-        printf("%s:%d  A NIL lambda-list-handler was passed for %s lambdalist: %s\n", __FILE__, __LINE__, _rep_(name).c_str(), _rep_(lambda_list).c_str());
-        abort();
-      }
-      (*closure)[INTERPRETED_CLOSURE_LAMBDA_LIST_HANDLER_SLOT] = lambda_list_handler;
-      return closure;
-    }
-    static ClosureWithSlots_sp make_bclasp_closure(T_sp name, claspFunction ptr, T_sp type, T_sp lambda_list, T_sp environment, SOURCE_INFO) {
-      ClosureWithSlots_sp closure = 
-        gctools::GC<core::ClosureWithSlots_O>::allocate_container(BCLASP_CLOSURE_SLOTS,
-                                                                         ptr,
-                                                                         name,
-                                                                         type,
-                                                                         lambda_list,
-                                                                         SOURCE_INFO_PASS);
-      closure->closureType = bclaspClosure;
-      (*closure)[BCLASP_CLOSURE_ENVIRONMENT_SLOT] = environment;
-      return closure;
-    }
-    static ClosureWithSlots_sp make_cclasp_closure(T_sp name, claspFunction ptr, T_sp type, T_sp lambda_list, SOURCE_INFO) {
-      ClosureWithSlots_sp closure = 
-        gctools::GC<core::ClosureWithSlots_O>::allocate_container(0,
-                                                                  ptr,
-                                                                  name,
-                                                                  type,
-                                                                  lambda_list,
-                                                                  SOURCE_INFO_PASS);
-      closure->closureType = cclaspClosure;
-      return closure;
-    }
+    static ClosureWithSlots_sp make_interpreted_closure(T_sp name, T_sp type, T_sp lambda_list, LambdaListHandler_sp lambda_list_handler, T_sp declares, T_sp docstring, T_sp form, T_sp environment, SOURCE_INFO);
+    
+    static ClosureWithSlots_sp make_bclasp_closure(T_sp name, claspFunction ptr, T_sp type, T_sp lambda_list, T_sp environment);
+    
+    static ClosureWithSlots_sp make_cclasp_closure(T_sp name, claspFunction ptr, T_sp type, T_sp lambda_list, SOURCE_INFO);
   public:
   ClosureWithSlots_O(size_t capacity,
                      claspFunction ptr,
-                     core::T_sp functionName,
-                     core::Symbol_sp type,
-                     core::T_sp ll,
-                     SOURCE_INFO)
-    : Base(ptr,functionName, type, SOURCE_INFO_PASS),
-      _lambdaList(ll),
-      closureType(cclaspClosure),
+                     FunctionDescription* functionDescription,
+                     ClosureType nclosureType)
+    : Base(ptr, functionDescription),
+      closureType(nclosureType),
       _Slots(capacity,_Unbound<T_O>(),true) {};
     virtual string __repr__() const;
-    core::T_sp lambda_list() const { return this->_lambdaList; };
-    void setf_lambda_list(core::List_sp lambda_list) { this->_lambdaList = lambda_list; };
     core::LambdaListHandler_sp lambdaListHandler() const {
       switch (this->closureType) {
       case interpretedClosure:

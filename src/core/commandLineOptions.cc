@@ -36,6 +36,7 @@ namespace core {
 CommandLineOptions::CommandLineOptions(int argc, char *argv[])
     : _DontLoadImage(false),
       _DontLoadInitLsp(false),
+      _DisableMpi(false),
       _HasImageFile(false),
       _ImageFile(""),
       _GotRandomNumberSeed(false),
@@ -63,6 +64,7 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
              "-I/--ignore-image    - Don't load the boot image/start with init.lsp\n"
              "-i/--image file      - Use the file as the boot image\n"
              "-N/--non-interactive - Suppress all repls\n"
+             "-m/--disable-mpi     - Don't use mpi even if built with mpi\n"
              "-v/--version         - Print version\n"
              "-R/--resource-dir    - This directory is treated as the executable directory\n"
              "                       and it is used to start the search for resource directories\n"
@@ -85,16 +87,26 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
              " clasp-builder-repl  - Stop in the clasp builder repl to debug bootstrapping\n"
              " use-human-readable-bitcode - Write .ll files instead of .bc files\n"
              " disable-profiling   - Set cmp::*enable-profiling* to NIL and \n"
-             "                       disable generation of counting-function function attribute\n"
+             " disable-dbg-generate-dwarf   - Set cmp::*dbg-generate-dwarf* to NIL \n"
+             "                       disable generation of DWARF metadata during compilations\n"
              "Environment variables:\n"
              "export CLASP_DEBUG=<file-names-space-or-comma-separated>  Define files that\n"
              "                        generate log info when DEBUG_LEVEL_FULL is set at top of file.\n"
              "export CLASP_HOME=<dir>   Define where clasp source code lives\n"
+             "export CLASP_OPTIMIZATION_LEVEL=0|1|2|3 Set the llvm optimization level for compiled code\n"
              "export CLASP_TRAP_INTERN=PKG:SYMBOL Trap the intern of the symbol\n"
              "export CLASP_VERBOSE_BUNDLE_SETUP   Dump info during bundle setup\n"
+             "export CLASP_PAUSE_STARTUP (set to anything)  Pause right at startup\n"
+             "export CLASP_DUMP_FUNCTIONS (set to anything)  Dump all function definitions at startup\n"
              "export CLASP_TELEMETRY_MASK=1  #turn on telemetry for (1=gc,2=stack)\n"
              "export CLASP_TELEMETRY_FILE=/tmp/clasp.tel # (file to write telemetry)\n"
+             "export CLASP_QUICKLISP_DIRECTORY=<dir> # (directory that contains quicklisp setup.lisp)\n"
              "export CLASP_FEATURES=clasp-builder-repl  # Set *features* (separate multiple features with spaces)\n"
+             "export CLASP_MEMORY_PROFILE <size-threshold> <number-theshold> # This means call \n"
+             "                      # HitAllocationSizeThreshold every time 16000000 bytes are allocated\n"
+             "                      # and call HitAllocationNumberThreshold every time 1024 allocations take place\n"
+             "export CLASP_BACKTRACE_ALLOCATIONS <stamp-val> # generate a backtrace to /tmp/stamp<stamp-val>.backtraces\n"
+             "                      # everytime a <stamp-val> object is allocates (VERY EXPENSIVE)\n"
              "# to control MPS\n"
              "export CLASP_MPS_CONFIG=\"32 32 16 80 32 80 64\" # for lots of GC's\n");
       exit(0);
@@ -109,6 +121,8 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
       this->_NoRc = true;
     } else if (arg == "-w" || arg == "--wait") {
       this->_PauseForDebugger = true;
+    } else if (arg == "-m" || arg == "--disable-mpi") {
+      this->_DisableMpi = true;
     } else if (arg == "-n" || arg == "--noinit") {
       this->_DontLoadInitLsp = true;
     } else if (arg == "-v" || arg == "--version") {

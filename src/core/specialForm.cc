@@ -40,7 +40,8 @@ namespace core {
 
 
 SpecialForm_sp SpecialForm_O::create(Symbol_sp symbol, SpecialFormCallback fptr) {
-  SpecialForm_sp sf = gctools::GC<SpecialForm_O>::allocate(symbol);
+  FunctionDescription* fdesc = makeFunctionDescription(symbol);
+  SpecialForm_sp sf = gctools::GC<SpecialForm_O>::allocate(fdesc);
   sf->_fptr = fptr;
   return sf;
 }

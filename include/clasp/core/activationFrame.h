@@ -59,7 +59,11 @@ public:
   T_sp &parentFrameRef_() { return this->_Parent; };
   T_sp parentFrame() const { return this->_Parent; };
 public:
- ActivationFrame_O() : Base(), _Parent(_Nil<T_O>()){};
+ ActivationFrame_O() : Base(), _Parent(_Nil<T_O>())
+#ifdef DEBUG_LEXICAL_DEPTH
+    , _UniqueId((size_t)-1)
+#endif
+  {};
  ActivationFrame_O(T_sp p) : Base(), _Parent(p) {};
   virtual ~ActivationFrame_O(){};
 
@@ -109,19 +113,6 @@ public:
   /*! Access a function */
   Function_sp function(int idx) const { throw_hard_error("Subclass must implement function(idx)"); };
 
-#if 0
-  List_sp asCons(int start = 0) const {
-    _G();
-    Cons_sp dummy = Cons_O::create(_Nil<T_O>());
-    Cons_sp cur = dummy;
-    for (int i = start; i < (int)this->length(); i++) {
-      Cons_sp one = Cons_O::create(this->entry(i));
-      cur->setCdr(one);
-      cur = one;
-    }
-    return coerce_to_list(oCdr(dummy));
-  }
-#endif
 
 }; // ActivationFrame class
 }; // core namespace
@@ -325,7 +316,7 @@ namespace core {
   void error_frame_range(const char* type, int index, int capacity );
   void error_end_of_frame_list(const char* message);
 
-  inline ALWAYS_INLINE ActivationFrame_sp value_frame_lookup(ActivationFrame_sp af, int depth)
+  inline ActivationFrame_sp value_frame_lookup(ActivationFrame_sp af, int depth)
   {
     while (true) {
       if (depth == 0 ) return af;
@@ -334,7 +325,7 @@ namespace core {
     }
   };
   
-  inline ALWAYS_INLINE T_sp& value_frame_lookup_reference(ActivationFrame_sp activationFrame, int depth, int index )
+  inline T_sp& value_frame_lookup_reference(ActivationFrame_sp activationFrame, int depth, int index )
   {
     while (true) {
       if ( depth == 0 ) {
@@ -351,7 +342,7 @@ namespace core {
     }
   };
 
-  inline ALWAYS_INLINE T_sp& function_frame_lookup(ActivationFrame_sp activationFrame, int depth, int index )
+  inline T_sp& function_frame_lookup(ActivationFrame_sp activationFrame, int depth, int index )
   {
     while (true) {
       if ( depth == 0 ) {
@@ -370,7 +361,7 @@ namespace core {
     }
   };
 
-  DONT_OPTIMIZE_WHEN_DEBUG_RELEASE inline /*ALWAYS_INLINE*/ T_sp tagbody_frame_lookup(ActivationFrame_sp activationFrame, int depth, int index )
+  DONT_OPTIMIZE_WHEN_DEBUG_RELEASE inline T_sp tagbody_frame_lookup(ActivationFrame_sp activationFrame, int depth, int index )
   {
     while (true) {
       if ( depth == 0 ) {

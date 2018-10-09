@@ -82,5 +82,15 @@ void Record_O::errorIfInvalidArguments() {
   }
 }
 
+CL_DEFUN Record_sp core__make_record_patcher(HashTable_sp circle_table)
+{
+  return Record_O::create_patcher(circle_table);
+}
+
+CL_DEFUN void core__patch_object(General_sp tree, Record_sp record) {
+  if (tree->fieldsp()) {
+    tree->fields(record);
+  }
+}
 
 };

@@ -55,12 +55,6 @@ successfully, T is returned, else error."
 (defun do-time (closure)
   (let* ((real-start (get-internal-real-time))
 	 (run-start (get-internal-run-time))
-	 (llvm-finalization-time-start llvm-sys:*accumulated-llvm-finalization-time*)
-	 (llvm-finalization-number-start llvm-sys:*number-of-llvm-finalizations*)
-	 llvm-finalization-time-end
-	 llvm-finalization-number-end
-	 (clang-link-time-start llvm-sys:*accumulated-clang-link-time*)
-	 (clang-link-number-start llvm-sys:*number-of-clang-links*)
          #+(and debug-track-unwinds) (start-unwinds (gctools:unwind-counter))
          #+(and debug-track-unwinds) end-unwinds
          #+(and debug-track-unwinds) (start-return-from (gctools:return-from-counter))
@@ -89,42 +83,30 @@ successfully, T is returned, else error."
       (setq run-end (get-internal-run-time)
 	    real-end (get-internal-real-time)
             interpreted-calls-end (core:interpreted-closure-calls)
-	    llvm-finalization-time-end llvm-sys:*accumulated-llvm-finalization-time*
-	    llvm-finalization-number-end llvm-sys:*number-of-llvm-finalizations*
-	    clang-link-time-end llvm-sys:*accumulated-clang-link-time*
-	    clang-link-number-end llvm-sys:*number-of-clang-links*
             )
       #+(and debug-track-unwinds) (setf end-unwinds (gctools:unwind-counter))
       #+(and debug-track-unwinds) (setf end-return-from (gctools:return-from-counter))
       #+(and debug-track-unwinds) (setf end-dynamic-go (gctools:dynamic-go-counter))
       #+(and debug-track-unwinds) (setf end-catch-throw (gctools:catch-throw-counter))
-      (format *trace-output*
-              "Real time           : ~,3F secs~%~
-              Run time            : ~,3F secs~%~
-              Bytes consed        : ~a bytes~%~
-              LLVM time           : ~,3F secs~%~
-              LLVM compiles       : ~A~%~
-              clang link time     : ~,3F secs~%~
-              clang links         : ~A~%~
-              Interpreted closures: ~A~%"
-              (float (/ (- real-end real-start) internal-time-units-per-second))
-              (float (/ (- run-end run-start) internal-time-units-per-second))
-              (- clasp-bytes-end clasp-bytes-start)
-              (- llvm-finalization-time-end llvm-finalization-time-start)
-              (- llvm-finalization-number-end llvm-finalization-number-start)
-              (- clang-link-time-end clang-link-time-start)
-              (- clang-link-number-end clang-link-number-start)
-              (- interpreted-calls-end interpreted-calls-start))
+      (if (= interpreted-calls-end interpreted-calls-start)
+          (core:bformat *trace-output*
+                        "Time real(%.3f secs) run(%.3f secs) consed(%d bytes)%N"
+                        (float (/ (- real-end real-start) internal-time-units-per-second))
+                        (float (/ (- run-end run-start) internal-time-units-per-second))
+                        (- clasp-bytes-end clasp-bytes-start))
+          (core:bformat *trace-output*
+                        "Time real(%.3f secs) run(%.3f secs) consed(%d bytes) interps(%d)%N"
+                        (float (/ (- real-end real-start) internal-time-units-per-second))
+                        (float (/ (- run-end run-start) internal-time-units-per-second))
+                        (- clasp-bytes-end clasp-bytes-start)
+                        (- interpreted-calls-end interpreted-calls-start)))
       #+(and debug-track-unwinds)
-      (format *trace-output*
-              "Unwinds             : ~A~%~
-              ReturnFrom unwinds  : ~A~%~
-              DynamicGo unwinds   : ~A~%~
-              CatchThrow unwinds  : ~A~%"
-              (- end-unwinds start-unwinds)
-              (- end-return-from start-return-from)
-              (- end-dynamic-go start-dynamic-go)
-              (- end-catch-throw start-catch-throw))))
+      (core:bformat *trace-output*
+                    "Unwinds(%d) ReturnFrom(%d) DynamicGo(%d) CatchThrow(%d)%N"
+                    (- end-unwinds start-unwinds)
+                    (- end-return-from start-return-from)
+                    (- end-dynamic-go start-dynamic-go)
+                    (- end-catch-throw start-catch-throw))))
   #+boehm-gc
   (let* ((*do-time-level* (1+ *do-time-level*))
          real-start
@@ -183,14 +165,19 @@ Evaluates FORM, outputs the realtime and runtime used for the evaluation to
 #-clasp-min
 (defun get-local-time-zone ()
   "Returns the number of hours West of Greenwich for the local time zone."
-  (core:unix-get-local-time-zone))
+  (let ((ratio (core:unix-get-local-time-zone)))
+    (if (= 1 (denominator ratio))
+        (numerator ratio)
+        ratio)))
 
+;;; Need to treat tz as ratio and still return an integer
+;;; (+ sec (* 60 (+ min (* 60 (+ tz dst hour (* 24 days)))))) will return a ratio
 (defun recode-universal-time (sec min hour day month year tz dst)
   (let ((days (+ (if (and (leap-year-p year) (> month 2)) 1 0)
 		 (1- day)
 		 (svref month-startdays (1- month))
 		 (number-of-days-from-1900 year))))
-    (+ sec (* 60 (+ min (* 60 (+ tz dst hour (* 24 days))))))))
+    (+ sec (* (+ min (* (+ (+ hour (* days 24)) tz) 60)) 60))))
 
 #-clasp-min
 (defun decode-universal-time (orig-ut &optional (tz nil tz-p) &aux (dstp nil))
@@ -338,3 +325,62 @@ hash table; otherwise it signals that we have reached the end of the hash table.
 
 (defun si::simple-program-error (message &rest datum)
   (signal-simple-error 'simple-program-error nil message datum))
+
+#+debug-count-allocations
+(defun do-allocations (closure)
+  (let ((start-memory (gctools:allocation-counts)))
+    (multiple-value-prog1
+        (funcall closure)
+      (let ((end-memory (gctools:allocation-counts)))
+        (let* ((number-of-stamps (gctools:next-stamp-value))
+               (stamp-names (make-array number-of-stamps))
+               (stamp-name-alist (gctools:get-stamp-name-map))
+               (allocs-stamp-name nil))
+          (dolist (name-stamp stamp-name-alist)
+            (let ((name (car name-stamp))
+                  (stamp (cdr name-stamp)))
+              (setf (aref stamp-names stamp) name)))
+          (dotimes (i (length end-memory))
+            (let* ((start-count (if (>= i (length start-memory)) 0 (svref start-memory i)))
+                   (end-count (if (>= i (length end-memory)) 0 (svref end-memory i)))
+                   (allocs (- end-count start-count)))
+              (when (> allocs 0)
+                (push (list allocs (svref stamp-names i) i) allocs-stamp-name))))
+          (setf allocs-stamp-name (sort allocs-stamp-name #'< :key #'car))
+          (terpri *trace-output*)
+          (core:bformat *trace-output* "Allocations  Stamp-name/Stamp%N")
+          (dolist (part allocs-stamp-name)
+            (core:bformat *trace-output* "%10d %s/%d%N"
+                          (first part)
+                          (second part)
+                          (third part))))))))
+
+#+debug-count-allocations
+(defmacro allocations (form)
+  "Syntax: (allocations form)
+Evaluates FORM, outputs the allocations that took place for the evaluation to
+*TRACE-OUTPUT*, and then returns all values of FORM."
+  `(do-allocations #'(lambda () ,form)))
+
+              
+#+debug-count-allocations
+(defun do-collect-backtraces-for-allocations-by-stamp (backtrace-filename stamp closure)
+  (unless (and (>= stamp 0) (< stamp (gctools:next-stamp-value)))
+    (error "Stamp value ~d must be less than maximum stamp value ~d" stamp (gctools:next-stamp-value)))
+  (unwind-protect
+       (progn
+         (gctools:start-collecting-backtraces-for-allocations-by-stamp backtrace-filename stamp)
+         (funcall closure))
+    (gctools:stop-collecting-backtraces-for-allocations-by-stamp)))
+
+
+#+debug-count-allocations
+(defmacro collect-backtraces-for-allocations-by-stamp (backtrace-filename stamp form)
+  "Syntax: (allocations form)
+Evaluates FORM, outputs the allocations that took place for the evaluation to
+*TRACE-OUTPUT*, and then returns all values of FORM."
+  `(do-collect-backtraces-for-allocations-by-stamp ,backtrace-filename ,stamp #'(lambda () ,form)))
+
+
+#+debug-count-allocations
+(export '(allocations collect-backtraces-for-allocations-by-stamp))

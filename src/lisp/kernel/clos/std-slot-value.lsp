@@ -210,7 +210,17 @@
 		      value
 		      (values (slot-unbound class self slot-name))))
 		(slot-missing class self slot-name 'SLOT-VALUE)))
-	  (let ((slotd (find slot-name (class-slots class) :key #'slot-definition-name)))
+	  (let ((slotd
+                  ;;; with-early-accessors defines local macros, not functions,
+                  ;;; so we can't do this.
+                  ;;; The fully correct thing to do would be having it define
+                  ;;; local functions which are then inlined.
+                  ;;; Anyway, so we loop more manually instead.
+                  #+(or) (find slot-name (class-slots class) :key #'slot-definition-name)
+                  (loop for prospect in (class-slots class)
+                        for prospect-name = (slot-definition-name prospect)
+                        when (eql slot-name prospect-name)
+                          return prospect)))
 	    (if slotd
 		(slot-value-using-class class self slotd)
 		(values (slot-missing class self slot-name 'SLOT-VALUE))))))))
@@ -229,7 +239,14 @@
 	    (if location
 		(si:sl-boundp (standard-instance-access self location))
 		(values (slot-missing class self slot-name 'SLOT-BOUNDP))))
-	  (let ((slotd (find slot-name (class-slots class) :key #'slot-definition-name)))
+	  (let ((slotd
+                  #+(or) (find slot-name (class-slots class) :key #'slot-definition-name)
+                  ;; Can't break this out into a function because again, local macro.
+                  ;; FIXME
+                  (loop for prospect in (class-slots class)
+                        for prospect-name = (slot-definition-name prospect)
+                        when (eql slot-name prospect-name)
+                          return prospect)))
 	    (if slotd
 		(slot-boundp-using-class class self slotd)
 		(values (slot-missing class self slot-name 'SLOT-BOUNDP))))))))
@@ -245,7 +262,12 @@
 	    (if location
                 (setf (standard-instance-access self location) value)
 		(slot-missing class self slot-name 'SETF value)))
-	  (let ((slotd (find slot-name (class-slots class) :key #'slot-definition-name)))
+	  (let ((slotd
+                  #+(or) (find slot-name (class-slots class) :key #'slot-definition-name)
+                  (loop for prospect in (class-slots class)
+                        for prospect-name = (slot-definition-name prospect)
+                        when (eql slot-name prospect-name)
+                          return prospect)))
 	    (if slotd
 		(setf (slot-value-using-class class self slotd) value)
 		(slot-missing class self slot-name 'SETF value)))))))

@@ -44,6 +44,7 @@ THE SOFTWARE.
 #include <clasp/core/hashTableEqual.h>
 #include <clasp/core/primitives.h>
 #include <clasp/core/array.h>
+#include <clasp/core/bformat.h>
 #include <clasp/core/write_ugly.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/llvmo/llvmoExpose.h>
@@ -73,9 +74,9 @@ void LispDebugger::printExpression() {
   if (frame->isValid()) {
     stringstream ss;
     ss << frame->frame()->asString(index);
-    _lisp->print(BF("%s\n") % ss.str());
+    write_bf_stream(BF("%s\n") % ss.str());
   } else {
-    _lisp->print(BF("No frame.\n"));
+    write_bf_stream(BF("No frame.\n"));
   }
 }
 
@@ -102,11 +103,11 @@ T_sp LispDebugger::invoke() {
   }
   //	DebuggerIHF debuggerStack(my_thread->invocationHistoryStack(),_Nil<ActivationFrame_O>());
   if (this->_Condition.notnilp()) {
-    _lisp->print(BF("Debugger entered with condition: %s") % _rep_(this->_Condition));
+    write_bf_stream(BF("Debugger entered with condition: %s") % _rep_(this->_Condition));
   }
   this->printExpression();
-  _lisp->print(BF("The following restarts are available:"));
-  _lisp->print(BF("ABORT      a    Abort to REPL"));
+  write_bf_stream(BF("The following restarts are available:"));
+  write_bf_stream(BF("ABORT      a    Abort to REPL"));
   while (1) {
     string line;
     stringstream sprompt;
@@ -131,20 +132,20 @@ T_sp LispDebugger::invoke() {
     switch (cmd) {
     case '?':
     case 'h': {
-      _lisp->print(BF(":?      - help"));
-      _lisp->print(BF(":h      - help"));
-      _lisp->print(BF("sexp - evaluate sexp"));
-      _lisp->print(BF(":c sexp - continue - return values of evaluating sexp"));
-      _lisp->print(BF(":v      - list local environment"));
-      _lisp->print(BF(":x      - print current expression"));
-      _lisp->print(BF(":e      - evaluate an expression with interpreter"));
-      _lisp->print(BF(":b      - print backtrace"));
-      _lisp->print(BF(":p      - goto previous frame"));
-      _lisp->print(BF(":n      - goto next frame"));
-      _lisp->print(BF(":D      - dissasemble current function"));
-      _lisp->print(BF(":a      - abort and return to top repl"));
-      _lisp->print(BF(":l      - invoke debugger by calling core::dbg_hook (set break point in gdb"));
-      _lisp->print(BF(":g ##   - jump to frame ##"));
+      write_bf_stream(BF(":?      - help"));
+      write_bf_stream(BF(":h      - help"));
+      write_bf_stream(BF("sexp - evaluate sexp"));
+      write_bf_stream(BF(":c sexp - continue - return values of evaluating sexp"));
+      write_bf_stream(BF(":v      - list local environment"));
+      write_bf_stream(BF(":x      - print current expression"));
+      write_bf_stream(BF(":e      - evaluate an expression with interpreter"));
+      write_bf_stream(BF(":b      - print backtrace"));
+      write_bf_stream(BF(":p      - goto previous frame"));
+      write_bf_stream(BF(":n      - goto next frame"));
+      write_bf_stream(BF(":D      - dissasemble current function"));
+      write_bf_stream(BF(":a      - abort and return to top repl"));
+      write_bf_stream(BF(":l      - invoke debugger by calling core::dbg_hook (set break point in gdb"));
+      write_bf_stream(BF(":g ##   - jump to frame ##"));
       break;
     }
     case 'l':
@@ -164,11 +165,11 @@ T_sp LispDebugger::invoke() {
         if (frameIdx > core__ihs_top()) {
           frameIdx = core__ihs_top();
         }
-        _lisp->print(BF("Switching to frame: %d") % frameIdx);
+        write_bf_stream(BF("Switching to frame: %d") % frameIdx);
         core__set_ihs_current_frame(frameIdx);
         this->printExpression();
       } else {
-        _lisp->print(BF("You must provide a frame number\n"));
+        write_bf_stream(BF("You must provide a frame number\n"));
       }
       break;
     }
@@ -182,7 +183,7 @@ T_sp LispDebugger::invoke() {
       break;
     case 'D': {
       T_sp func = core__ihs_fun(core__ihs_current_frame());
-      _lisp->print(BF("Current function: %s\n") % _rep_(func));
+      write_bf_stream(BF("Current function: %s\n") % _rep_(func));
       eval::funcall(cl::_sym_disassemble, func);
       break;
     }
@@ -197,11 +198,11 @@ T_sp LispDebugger::invoke() {
     case 'v': {
       this->printExpression();
       T_sp env = core__ihs_env(core__ihs_current_frame());
-      _lisp->print(BF("activationFrame->%p    .nilp()->%d  .nilp()->%d") % env.raw_() % env.nilp() % env.nilp());
+      write_bf_stream(BF("activationFrame->%p    .nilp()->%d  .nilp()->%d") % env.raw_() % env.nilp() % env.nilp());
       if (env.notnilp()) {
-        _lisp->print(BF("%s") % gc::As<Environment_sp>(env)->environmentStackAsString());
+        write_bf_stream(BF("%s") % gc::As<Environment_sp>(env)->environmentStackAsString());
       } else {
-        _lisp->print(BF("-- Only global environment available --"));
+        write_bf_stream(BF("-- Only global environment available --"));
       }
       break;
     }
@@ -220,11 +221,11 @@ T_sp LispDebugger::invoke() {
         if (!result) {
           result = Values(_Nil<T_O>());
         }
-        _lisp->print(BF("Continuing with result: %s") % _rep_(result));
+        write_bf_stream(BF("Continuing with result: %s") % _rep_(result));
         return result;
         //		    throw(DebuggerSaysContinue(result));
       }
-      _lisp->print(BF("You cannot resume after condition thrown"));
+      write_bf_stream(BF("You cannot resume after condition thrown"));
       break;
     };
     case 'e': {
@@ -251,7 +252,7 @@ T_sp LispDebugger::invoke() {
       break;
     }
     default: {
-      _lisp->print(BF("Unknown command[%c] - try '?'") % cmd);
+      write_bf_stream(BF("Unknown command[%c] - try '?'") % cmd);
     }
     }
   }
@@ -382,7 +383,7 @@ void low_level_backtrace(bool with_args) {
             name = "-BAD-NAME-";
           }
         }
-        /*Nilable?*/ T_sp sfi = core__source_file_info(make_fixnum(func->sourceFileInfoHandle()));
+        /*Nilable?*/ T_sp sfi = core__source_file_info(func->sourcePathname());
         string sourceName = "cannot-determine";
         if (sfi.notnilp()) {
           sourceName = gc::As<SourceFileInfo_sp>(sfi)->fileName();
@@ -500,7 +501,7 @@ CL_DEFUN T_sp core__clib_backtrace_as_list() {
   char *funcname = (char *)malloc(1024);
   size_t funcnamesize = 1024;
   void** buffer = NULL;
-  uintptr_t stackTop = (uintptr_t)my_thread->_StackTop;
+  uintptr_t stackTop = (uintptr_t)my_thread_low_level->_StackTop;
   int nptrs = safe_backtrace(buffer);
   char **strings = backtrace_symbols(buffer, nptrs);
   if (strings == NULL) {
@@ -645,10 +646,10 @@ CL_DEFUN void core__print_current_ihs_frame_environment() {
   if (args.notnilp()) {
     VectorObjects_sp vargs = gc::As<VectorObjects_sp>(args);
     for (int i = 0; i < cl__length(vargs); ++i) {
-      _lisp->print(BF("arg%s --> %s") % i % _rep_(vargs->rowMajorAref(i)));
+      write_bf_stream(BF("arg%s --> %s") % i % _rep_(vargs->rowMajorAref(i)));
     }
   } else {
-    _lisp->print(BF("Args not available"));
+    write_bf_stream(BF("Args not available"));
   }
   T_sp env = core__ihs_env(core__ihs_current_frame());
   if (env.notnilp()) {

@@ -31,12 +31,13 @@ THE SOFTWARE.
 // All class forward declarations
 //
 namespace core {
-class T_O;
-class WrappedPointer_O;
-class Function_O;
-class Creator_O;
-class Iterator_O;
-class SequenceStepper_O;
+  class T_O;
+  class WrappedPointer_O;
+  class Function_O;
+  class Closure_O;
+  class Creator_O;
+  class Iterator_O;
+  class SequenceStepper_O;
 };
 namespace asttooling {
 namespace internal {
@@ -158,7 +159,9 @@ void initialize_classes_and_methods();
 void initialize_typeq_map();
 
 
-extern std::map<std::string,size_t> _global_stamp_names;
-extern size_t _global_last_stamp;
+extern std::map<std::string,size_t> global_stamp_name_map;
+extern std::vector<std::string> global_stamp_names;
+extern size_t global_last_stamp;
+extern void register_stamp_name(const std::string& stamp_name, size_t stamp_num);
 
 #endif

@@ -64,10 +64,6 @@ void FuncallableInstance_O::initializeClassSlots(Creator_sp creator, gctools::St
   DEPRECATED();
 }
 
-T_sp FuncallableInstance_O::oinstancep() const {
-  return make_fixnum((gctools::Fixnum)(this->numberOfSlots()));
-}
-
 // Identical to allocate_new_instance in instance.cc, except for the type.
 CL_DEFUN T_sp core__allocate_new_funcallable_instance(Instance_sp cl, size_t numberOfSlots) {
   // cl is known to be a funcallable-standard-class.
@@ -209,12 +205,6 @@ LCC_RETURN FuncallableInstance_O::not_funcallable_entry_point(LCC_ARGS_ELLIPSIS)
 Instance_sp FuncallableInstance_O::create(Symbol_sp symbol, Instance_sp metaClass, Creator_sp creator ) {
   DEPRECATED();
 };
-
-void FuncallableInstance_O::set_kind(Symbol_sp k) {
-  if (k == kw::_sym_macro) {
-    SIMPLE_ERROR(BF("You cannot set a generic-function (instance) to macro"));
-  }
-}
 
 T_sp FuncallableInstance_O::copyInstance() const {
   DEPRECATED();

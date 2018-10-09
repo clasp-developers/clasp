@@ -14,54 +14,45 @@
 
 ;;;;                                setf routines
 
-(in-package "SYSTEM")
+;;;; A SETF expander is a function. It is called, as seen in GET-SETF-EXPANSION,
+;;;; as (apply expander env (cdr place)), so it had better accept that.
 
-(defun check-stores-number (context stores-list n)
-  (unless (= (length stores-list) n)
-    (error "~d store-variables expected in setf form ~a." n context)))
+;;; NOTE: At present, source info for setf expanders is simply obtained from the
+;;; setf expander function (in source-location.lsp). This has the unintuitive
+;;; consequence that for things to work correctly, each DEFSETF or
+;;; DEFINE-SETF-EXPANDER or whatever must expand into its own function. This was
+;;; not always done.
 
-(defun do-setf-method-expansion (name lambda args &optional (stores-no 1))
-  (let* ((vars '())
-         (inits '())
-         (all '())
-         (stores '()))
-    (dolist (item args)
-      (unless (or (fixnump item) (keywordp item))
-	(push item inits)
-	(setq item (gensym))
-	(push item vars))
-      (push item all))
-    (dotimes (i stores-no)
-      (declare (ignore i))
-      (push (gensym) stores))
-    (let* ((all (nreverse all)))
-      (values (nreverse vars)
-              (nreverse inits)
-              stores
-              (if lambda
-                  (apply lambda (append stores all))
-                  `(funcall #'(setf ,name) ,@stores ,@all))
-              (cons name all)))))
-
-(defun do-defsetf (access-fn function &optional (stores-no 1))
-  (declare (type-assertions nil))
-  (if (symbolp function)
-      (do-defsetf access-fn
-        #'(lambda (store &rest args)
-            `(,function ,@args ,store))
-        stores-no)
-      (funcall #'(setf setf-expander)
-               #'(lambda (env &rest args)
-                   (declare (ignore env))
-                   (do-setf-method-expansion access-fn function args stores-no))
-               access-fn)))
+(in-package "EXT")
 
 (defun setf-expander (symbol)
-  (get-sysprop symbol 'setf-method))
+  (core:get-sysprop symbol 'setf-method))
 (defun (setf setf-expander) (expander symbol)
-  (put-sysprop symbol 'setf-method expander))
+  (core:put-sysprop symbol 'setf-method expander))
+(export 'setf-expander)
 
-;;; DEFSETF macro.
+(in-package "SYSTEM")
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; DEFSETF
+;;;
+;;; Actually kind of complicated to implement.
+
+;;; As I understand CLHS 3.4.7, a defsetf lambda list is an ordinary lambda list,
+;;; except it can have &environment [name] on the end and no &aux.
+;;; This function therefore hackily returns an ordinary lambda list, and
+;;; the environment variable if there was one.
+;;; FIXME: This is not very error-tolerant. In particular we don't check for &aux.
+;;; But fixing it will require a more robust lambda list system.
+(defun extract-defsetf-lambda-list (lambda-list)
+  (if (or (null lambda-list) (null (rest lambda-list))) ; trivial case
+      (values lambda-list nil)
+      (let ((last-two (last lambda-list 2)))
+        (if (eq (first last-two) '&environment)
+            (values (ldiff lambda-list last-two) (second last-two))
+            (values lambda-list nil)))))
+
 (defmacro defsetf (&whole whole access-fn &rest rest)
   "Syntax: (defsetf symbol update-fun [doc])
         or
@@ -78,27 +69,56 @@ where REST is the value of the last FORM with parameters in
 LAMBDA-LIST bound to the symbols TEMP* and with STORE-VAR* bound to
 the symbols TEMP-S*.  The doc-string DOC, if supplied, is saved as a
 SETF doc and can be retrieved by (documentation 'SYMBOL 'setf)."
-  (let (function documentation stores)
-    (if (and (car rest) (or (symbolp (car rest)) (functionp (car rest))))
-        (setq function `',(car rest)
-              documentation (cadr rest)
-              stores `(,(gensym)))
-        (let* ((args (first rest))
-               (body (cddr rest)))
-          (multiple-value-bind (decls body doc)
-              (core:process-declarations body t)
-            (setq stores (second rest)
-                  documentation doc
-                  function `#'(lambda (,@stores ,@args)
-                                (declare (core:lambda-name ,access-fn) ,@decls)
-                                (block ,access-fn
-                                  ,@body))))))
-    `(eval-when (:compile-toplevel :load-toplevel :execute)
-       (do-defsetf ',access-fn ,function ,(length stores))
-       ,@(si::expand-set-documentation access-fn 'setf documentation)
-       ',access-fn)))
+  ;; Here's how this works. We return an expander that receives any number
+  ;; of arguments and makes gensyms for them, sets them up as the temps
+  ;; and such. The only difference between the short and long form is in
+  ;; the storing form and how many stores there are, which is set up by
+  ;; this multiple-value-bind here.
+  (let ((tempsvar (gensym "TEMPS")) (storesvar (gensym "STORES")))
+    (multiple-value-bind (store-form-maker env-var doc nstores)
+        (if (and (car rest) (symbolp (car rest)))
+            ;; Short form. Easy.
+            (let ((update-fn (first rest))
+                  (documentation (second rest)))
+              (values `(append '(,update-fn) ,tempsvar ,storesvar)
+                      nil documentation 1))
+            ;; Long form. DEFSETF lambda lists are basically ordinary
+            ;; lambda lists, so we use an inner function to parse it.
+            ;; The inner function has (,@stores ,@provided-lambda-list)
+            ;; as its lambda list (after stripping &environment) so it's
+            ;; passed (append stores temps).
+            (let ((lambda-list (first rest))
+                  (stores (second rest))
+                  (body (cddr rest)))
+              (multiple-value-bind (lambda-list env-var)
+                  (extract-defsetf-lambda-list lambda-list)
+                (multiple-value-bind (decls body doc)
+                    (core:process-declarations body t)
+                  (values `(apply (lambda (,@stores ,@lambda-list)
+                                    (declare (core:lambda-name ,access-fn) ,@decls)
+                                    ,@(when doc (list doc))
+                                    (block ,access-fn ,@body))
+                                  (append ,storesvar ,tempsvar))
+                          env-var doc (length stores))))))
+      (let ((real-env-var (or env-var (gensym "ENV")))
+            (argssym (gensym "ARGS")))
+        `(eval-when (:compile-toplevel :load-toplevel :execute)
+           (funcall #'(setf ext:setf-expander)
+                    (lambda (,real-env-var &rest ,argssym)
+                      (declare (core:lambda-name ,access-fn)
+                               ,@(unless env-var `((ignore ,real-env-var))))
+                      (let ((,tempsvar (mapcar (lambda (f) (declare (ignore f)) (gensym)) ,argssym))
+                            (,storesvar (list ,@(make-list nstores :initial-element '(gensym "STORE")))))
+                        (values ,tempsvar ,argssym ,storesvar ,store-form-maker
+                                (list* ',access-fn ,tempsvar))))
+                    ',access-fn)
+           ,@(core::expand-set-documentation access-fn 'setf doc)
+           ',access-fn)))))
 
-;;; DEFINE-SETF-METHOD macro.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Operators for general SETF expansions. Protocol explained at top of file.
+
 (defmacro define-setf-expander (access-fn args &rest lambda-body)
   "Syntax: (define-setf-expander symbol defmacro-lambda-list {decl | doc}*
           {form}*)
@@ -129,10 +149,10 @@ by (DOCUMENTATION 'SYMBOL 'SETF)."
 	  (setq args (cons env-part args))
 	  (push `(declare (ignore ,env-part)) lambda-body)))
     (multiple-value-bind (decls body doc)
-	(si::process-declarations lambda-body t)
+	(core:process-declarations lambda-body t)
       (let ((listdoc (when doc (list doc))))
 	`(eval-when (:compile-toplevel :load-toplevel :execute)
-           (funcall #'(setf setf-expander)
+           (funcall #'(setf ext:setf-expander)
                     #'(lambda ,args ,@listdoc
                         (declare (core:lambda-name ,access-fn)
                                  ,@decls)
@@ -141,37 +161,42 @@ by (DOCUMENTATION 'SYMBOL 'SETF)."
 	   ,@(si::expand-set-documentation access-fn 'setf doc)
 	   ',access-fn)))))
 
-
-;;;; get-setf-expansion.
-
-(defun get-setf-expansion (form &optional env &aux f)
-  "Args: (form)
-Returns the 'five gangs' (see DEFINE-SETF-EXPANDER) for PLACE as five values.
-Does not check if the third gang is a single-element list."
-  (declare (check-arguments-type nil))
+(defun get-setf-expansion (place &optional env &aux f)
+  "Returns the 'five gangs' (see DEFINE-SETF-EXPANDER) for PLACE as five values."
   ;; Note that macroexpansion of SETF arguments can only be done via
   ;; MACROEXPAND-1 [ANSI 5.1.2.7]
-  (cond ((symbolp form)
-         (if (and (setq f (macroexpand-1 form env)) (not (equal f form)))
-             (get-setf-expansion f env)
-             (let ((store (gensym)))
-               (values nil nil (list store) `(setq ,form ,store) form))))
-        ((or (not (consp form)) (not (symbolp (car form))))
-         (error "Cannot get the setf-method of ~S." form))
-        ((setq f (setf-expander (car form)))
-         (apply f env (cdr form)))
-        ((and (setq f (macroexpand-1 form env)) (not (equal f form)))
+  (cond ((symbolp place)
+         ;; Could be a symbol macro.
+         (multiple-value-bind (expansion expanded) (macroexpand-1 place env)
+           (if expanded
+               ;; It is. Recur.
+               (get-setf-expansion expansion env)
+               ;; It's not. Simple variable set.
+               (let ((store (gensym "STORE")))
+                 (values nil nil (list store) `(setq ,place ,store) place)))))
+        ((or (not (consp place)) (not (symbolp (car place))))
+         (error "Invalid syntax: ~S is not a place." place))
+        ;; Compound place. Check for SETF expander.
+        ((setq f (ext:setf-expander (car place)))
+         (apply f env (cdr place)))
+        ;; Check for macro definition.
+        ((and (setq f (macroexpand-1 place env)) (not (equal f place)))
          (get-setf-expansion f env))
+        ;; Default expansion.
         (t
-         (do-setf-method-expansion (car form) nil (cdr form)))))
+         (let* ((operator (car place))
+                (arguments (cdr place))
+                (temps (mapcar (lambda (f) (declare (ignore f)) (gensym "TEMP")) arguments))
+                (store (gensym "STORE")))
+           (values temps arguments (list store)
+                   `(funcall #'(setf ,operator) ,store ,@temps)
+                   `(,operator ,@temps))))))
 
-;;;; SETF definitions.
-
-
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Built-in SETF expansions.
 
 (defsetf car (x) (y) `(progn (rplaca ,x ,y) ,y))
-
 (defsetf cdr (x) (y) `(progn (rplacd ,x ,y), y))
 (defsetf caar (x) (y) `(progn (rplaca (car ,x) ,y) ,y))
 (defsetf cdar (x) (y) `(progn (rplacd (car ,x) ,y) ,y))
@@ -222,8 +247,6 @@ Does not check if the third gang is a single-element list."
 (defsetf nth (n l) (v) `(progn (rplaca (nthcdr ,n ,l) ,v) ,v))
 (defsetf fill-pointer sys:fill-pointer-set)
 (defsetf gethash (k h &optional d) (v) (declare (ignore d)) `(core::hash-table-setf-gethash ,h ,k ,v))
-;;#-clos
-(defsetf documentation sys::set-documentation)
 #+clos
 (defsetf instance-ref instance-set)
 
@@ -252,40 +275,21 @@ Does not check if the third gang is a single-element list."
             (subst `(THE ,type ,(first stores)) (first stores) store-form)
             `(THE ,type ,access-form))))
 
-#|
-(define-setf-expander apply (&environment env fn &rest rest)
-  (unless (and (consp fn) (eq (car fn) 'FUNCTION) (symbolp (cadr fn))
-	       (null (cddr fn)))
-	  (error "Can't get the setf-method of ~S." fn))
-  (multiple-value-bind (vars vals stores store-form access-form)
-      (get-setf-expansion (cons (cadr fn) rest) env)
-    (unless (eq (car (last store-form)) (car (last vars)))
-            (error "Can't get the setf-method of ~S." fn))
-    (values vars vals stores
-	    `(apply #',(car store-form) ,@(cdr store-form))
-	    `(apply #',(cadr fn) ,@(cdr access-form)))))
-|#
-
 (define-setf-expander apply (&environment env fn &rest rest)
   (unless (and (consp fn)
-               (or (eq (car fn) 'FUNCTION) (eq (car fn) 'QUOTE))
-               (symbolp (cadr fn))
+               (eq (first fn) 'function)
+               (symbolp (second fn))
                (null (cddr fn)))
-    (error "Can't get the setf-method of ~S." fn))
-  (multiple-value-bind (vars vals stores store-form access-form)
-      (get-setf-expansion (cons (cadr fn) rest) env)
-    (cond ((eq (car (last store-form)) (car (last vars)))
-           (values vars vals stores
-                   `(apply #',(car store-form) ,@(cdr store-form))
-                   `(apply #',(cadr fn) ,@(cdr access-form))))
-          ((eq (car (last (butlast store-form))) (car (last vars)))
-           (values vars vals stores
-                   `(apply #',(car store-form)
-                           ,@(cdr (butlast store-form 2))
-                           (append ,(car (last (butlast store-form)))
-                                   (list ,(car (last store-form)))))
-                   `(apply #',(cadr fn) ,@(cdr access-form))))
-          (t (error "Can't get the setf-method of ~S." fn)))))
+    (error "(apply ~s ...) is not a valid place." fn))
+  (let ((name (second fn))
+        (temps (mapcar (lambda (f) (declare (ignore f)) (gensym "TEMP")) rest))
+        (store (gensym "STORE")))
+    ;; We don't have (setf bit) or (setf sbit) defined, so we have to do this
+    ;; manually. FIXME: Probably just define those functions.
+    (when (or (eq name 'bit) (eq name 'sbit)) (setf name 'aref))
+    (values temps rest (list store)
+            `(apply #'(setf ,name) ,store ,@rest)
+            `(apply ,fn ,@rest))))
 
 (define-setf-expander ldb (&environment env bytespec int)
   (multiple-value-bind (temps vals stores store-form access-form)
@@ -312,6 +316,34 @@ Does not check if the third gang is a single-element list."
 	      `(let ((,stemp (deposit-field ,store ,btemp ,access-form)))
 	         ,store-form ,store)
 	      `(mask-field ,btemp ,access-form)))))
+
+(define-setf-expander values (&rest values &environment env)
+  (let ((all-vars '())
+	(all-vals '())
+	(all-stores '())
+	(all-storing-forms '())
+	(all-get-forms '()))
+    (dolist (item (reverse values))
+      (multiple-value-bind (vars vals stores storing-form get-form)
+	  (get-setf-expansion item env)
+	;; If a place has more than one store variable, the other ones
+	;; are set to nil.
+	(let ((extra (rest stores)))
+	  (unless (endp extra)
+	    (setf vars (append extra vars)
+		  vals (append (make-list (length extra)) vals)
+		  stores (list (first stores)))))
+	(setf all-vars (append vars all-vars)
+	      all-vals (append vals all-vals)
+	      all-stores (append stores all-stores)
+	      all-storing-forms (cons storing-form all-storing-forms)
+	      all-get-forms (cons get-form all-get-forms))))
+    (values all-vars all-vals all-stores `(values ,@all-storing-forms)
+	    `(values ,@all-get-forms))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; SETF itself, and related standard macros.
 
 (defun trivial-setf-form (place vars stores store-form access-form)
   (declare (optimize (speed 3) (safety 0)))
@@ -582,58 +614,3 @@ Returns the car of the old value in PLACE."
          (prog1 (car ,store-var)
            (setq ,store-var (cdr (the list ,store-var)))
            ,store-form)))))
-
-(define-setf-expander values (&rest values &environment env)
-  (let ((all-vars '())
-	(all-vals '())
-	(all-stores '())
-	(all-storing-forms '())
-	(all-get-forms '()))
-    (dolist (item (reverse values))
-      (multiple-value-bind (vars vals stores storing-form get-form)
-	  (get-setf-expansion item env)
-	;; If a place has more than one store variable, the other ones
-	;; are set to nil.
-	(let ((extra (rest stores)))
-	  (unless (endp extra)
-	    (setf vars (append extra vars)
-		  vals (append (make-list (length extra)) vals)
-		  stores (list (first stores)))))
-	(setf all-vars (append vars all-vars)
-	      all-vals (append vals all-vals)
-	      all-stores (append stores all-stores)
-	      all-storing-forms (cons storing-form all-storing-forms)
-	      all-get-forms (cons get-form all-get-forms))))
-    (values all-vars all-vals all-stores `(values ,@all-storing-forms)
-	    `(values ,@all-get-forms))))
-#|
-;;; Proposed extension:
-; Expansion of (SETF (VALUES place1 ... placek) form)
-; --> (MULTIPLE-VALUE-BIND (dummy1 ... dummyk) form
-;       (SETF place1 dummy1 ... placek dummyk)
-;       (VALUES dummy1 ... dummyk))
-(define-setf-expander VALUES (&environment env &rest subplaces)
-  (do ((temps) (vals) (stores)
-       (storeforms) (accessforms)
-       (placesr subplaces))
-      ((atom placesr)
-       (setq temps (nreverse temps)
-	     vals (nreverse vals)
-	     stores (nreverse stores)
-	     storeforms (nreverse storeforms)
-	     accessforms (nreverse accessforms))
-       (values temps
-            vals
-            stores
-            `(VALUES ,@storeforms)
-            `(VALUES ,@accessforms)))
-    (multiple-value-bind (SM1 SM2 SM3 SM4 SM5)
-        (get-setf-expansion (pop placesr) env)
-      (setq temps (revappend SM1 temps)
-	    vals (revappend SM2 vals)
-	    stores (revappend SM3 stores)
-	    storeforms (cons SM4 storeforms)
-	    accessforms (cons SM5 accessforms)))))
-|#
-
-

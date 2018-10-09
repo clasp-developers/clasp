@@ -76,9 +76,6 @@ inline double radians(double deg) { return deg * 0.0174533; };
 
 void exposeCando_Numerics();
 
-#ifdef USEBOOSTPYTHON
-void exposePython_Numerics();
-#endif
 };
 
 #endif

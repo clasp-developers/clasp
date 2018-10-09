@@ -10,8 +10,9 @@
 #define CL_LISPIFY_NAME(...) BEGIN_TAG CL_LISPIFY_NAME_TAG ( :FILE __FILE__ :LINE __LINE__ :CL-NAME #__VA_ARGS__ )
 #define CL_PKG_NAME(pkg,name) BEGIN_TAG CL_PKG_NAME_TAG ( :FILE __FILE__ :LINE __LINE__ :CL-PKG #pkg :CL-NAME #name )
 #define CL_LAMBDA(...) BEGIN_TAG CL_LAMBDA_TAG ( :FILE __FILE__ :LINE __LINE__ :LAMBDA-LIST  #__VA_ARGS__ )
-#define CL_DOCSTRING(...) BEGIN_TAG CL_DOCSTRING_TAG ( :FILE __FILE__ :LINE __LINE__ )  __VA_ARGS__ END_TAG
 #define CL_DECLARE(...) BEGIN_TAG CL_DECLARE_TAG ( :FILE __FILE__ :LINE __LINE__ :DECLARE #__VA_ARGS__ )
+#define CL_DOCSTRING(...) BEGIN_TAG CL_DOCSTRING_TAG ( :FILE __FILE__ :LINE __LINE__ )  __VA_ARGS__ END_TAG
+#define CL_PRIORITY(...) BEGIN_TAG CL_PRIORITY_TAG ( :FILE __FILE__ :LINE __LINE__ )  __VA_ARGS__ END_TAG
 #define CL_PRE_GC_STARTUP BEGIN_TAG CL_PRE_GC_STARTUP_TAG ( :FILE __FILE__ :LINE __LINE__ )
 #define CL_INITIALIZER BEGIN_TAG CL_INITIALIZER_TAG ( :FILE __FILE__ :LINE __LINE__ )
 #define CL_DEFUN BEGIN_TAG CL_DEFUN_TAG ( :FILE __FILE__ :LINE __LINE__ )
@@ -53,8 +54,9 @@
 #define CL_LISPIFY_NAME(...)
 #define CL_PKG_NAME(pkgid,name)
 #define CL_LAMBDA(...)
-#define CL_DOCSTRING(...)
 #define CL_DECLARE(...)
+#define CL_DOCSTRING(...)
+#define CL_PRIORITY(...)
 #define CL_TYPE(...)
 #define CL_EXTERN_DEFMETHOD(type,pointer)
 #define CL_EXTERN_DEFUN(pointer)
@@ -74,3 +76,29 @@
     static const char* /*std::string*/ CurrentPkg = z;     \
   }
 #endif
+
+// Define a translator for the enum
+#define CL_ENUM_TRANSLATOR(_sym_,_type_) \
+namespace translate { \
+template <> struct to_object<_type_> \
+{								 \
+  typedef	_type_	GivenType;	 \
+  static core::T_sp convert(const GivenType& val) \
+  {_G(); \
+    core::SymbolToEnumConverter_sp converter = _sym_->symbolValue().as<core::SymbolToEnumConverter_O>(); \
+    return (converter->symbolForEnum(val)); \
+  } \
+}; \
+template <> \
+struct from_object<_type_> \
+{								 \
+  typedef	_type_ 	ExpectedType; \
+  typedef	ExpectedType 	DeclareType; \
+  DeclareType _v; \
+  from_object(gctools::smart_ptr<core::T_O> o) { \
+    core::SymbolToEnumConverter_sp converter = _sym_->symbolValue().as<core::SymbolToEnumConverter_O>(); \
+    _v = converter->enumForSymbol<_type_>(o.as<core::Symbol_O>()); \
+  } \
+}; \
+};
+

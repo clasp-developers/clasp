@@ -195,40 +195,22 @@ ALWAYS_INLINE T_O *cc_safe_symbol_value(core::T_O *sym) {
   return sv;
 }
 
-ALWAYS_INLINE T_O *cc_unsafe_fdefinition(core::T_O *sym)
+ALWAYS_INLINE T_O *cc_fdefinition(core::T_O *sym)
 {NO_UNWIND_BEGIN();
   core::Symbol_O *symP = reinterpret_cast<core::Symbol_O *>(gctools::untag_general<core::T_O *>(sym));
   return symP->_Function.raw_();
   NO_UNWIND_END();
 }
 
-ALWAYS_INLINE T_O *cc_safe_fdefinition(core::T_O *sym) {
-  core::Symbol_O *symP = reinterpret_cast<core::Symbol_O *>(gctools::untag_general<core::T_O *>(sym));
-  T_O *sv = symP->_Function.raw_();
-  unlikely_if (sv == gctools::global_tagged_Symbol_OP_unbound) {
-    intrinsic_error(llvmo::unboundSymbolFunction, gc::smart_ptr<core::Symbol_O>((gc::Tagged)sym));
-  }
-  return symP->_Function.raw_();
-}
-
-ALWAYS_INLINE T_O *cc_unsafe_setfdefinition(core::T_O *sym)
+ALWAYS_INLINE T_O *cc_setfdefinition(core::T_O *sym)
 {NO_UNWIND_BEGIN();
   core::Symbol_O *symP = reinterpret_cast<core::Symbol_O *>(gctools::untag_general<core::T_O *>(sym));
   return symP->_SetfFunction.raw_();
   NO_UNWIND_END();
-}
-
-ALWAYS_INLINE T_O *cc_safe_setfdefinition(core::T_O *sym) {
-  core::Symbol_O *symP = reinterpret_cast<core::Symbol_O *>(gctools::untag_general<core::T_O *>(sym));
-  T_O *sv = symP->_SetfFunction.raw_();
-  if (sv == gctools::global_tagged_Symbol_OP_unbound) {
-    intrinsic_error(llvmo::unboundSymbolSetfFunction, gc::smart_ptr<core::Symbol_O>((gc::Tagged)sym));
-  }
-  return symP->_SetfFunction.raw_();
 }
 
 ALWAYS_INLINE gc::return_type cc_call(LCC_ARGS_CC_CALL_ELLIPSIS) {
-  //	core::Function_O* func = gctools::DynamicCast<core::NamedFunction_O*,core::T_O*>::castOrNULL(tfunc);
+  //	core::Function_O* func = gctools::DynamicCast<core::Function_O*,core::T_O*>::castOrNULL(tfunc);
   core::Closure_O *tagged_closure = reinterpret_cast<core::Closure_O *>(lcc_closure);
   core::Closure_O* closure = gc::untag_general<core::Closure_O *>(tagged_closure);
 #ifdef ENABLE_BACKTRACE_ARGS
@@ -241,7 +223,7 @@ ALWAYS_INLINE gc::return_type cc_call(LCC_ARGS_CC_CALL_ELLIPSIS) {
 }
 
 ALWAYS_INLINE gc::return_type cc_call_callback(LCC_ARGS_CC_CALL_ELLIPSIS) {
-  //	core::Function_O* func = gctools::DynamicCast<core::NamedFunction_O*,core::T_O*>::castOrNULL(tfunc);
+  //	core::Function_O* func = gctools::DynamicCast<core::Function_O*,core::T_O*>::castOrNULL(tfunc);
   auto closure = reinterpret_cast<CompiledClosure_fptr_type>(lcc_closure);
   Vaslist lcc_arglist_s;
   va_start(lcc_arglist_s._Args, LCC_VA_START_ARG);
@@ -251,15 +233,6 @@ ALWAYS_INLINE gc::return_type cc_call_callback(LCC_ARGS_CC_CALL_ELLIPSIS) {
   core::T_O *lcc_arglist = lcc_arglist_s.asTaggedPtr();
   lcc_closure = NULL;
   return closure(LCC_PASS_ARGS);
-}
-
-
-ALWAYS_INLINE size_t cc_allowOtherKeywords(size_t saw_aok, core::T_O *kw_arg)
-{NO_UNWIND_BEGIN();
-  if (saw_aok) return saw_aok;
-  bool aokTrue = !(gctools::tagged_nilp(kw_arg));
-  return aokTrue ? 2 : 1;
-  NO_UNWIND_END();
 }
 
 size_t cc_matchKeywordOnce(core::T_O *xP, core::T_O *yP, core::T_O *sawKeyAlreadyP)
@@ -273,20 +246,22 @@ size_t cc_matchKeywordOnce(core::T_O *xP, core::T_O *yP, core::T_O *sawKeyAlread
 }
 
 
-ALWAYS_INLINE core::T_O *cc_gatherVaRestArguments(va_list vargs, std::size_t* nargs, Vaslist* untagged_vargs_rest)
+ALWAYS_INLINE core::T_O *cc_gatherVaRestArguments(va_list vargs, std::size_t nargs, Vaslist untagged_vargs_rest[2])
 {NO_UNWIND_BEGIN();
-  va_copy(untagged_vargs_rest->_Args,vargs);
+  va_copy(untagged_vargs_rest[0]._Args,vargs);
+  va_copy(untagged_vargs_rest[1]._Args,vargs);
 #ifdef DEBUG_ENSURE_VALID_OBJECT
   // Validate the arguments in the va_list
   va_list validate_vargs;
   va_copy(validate_vargs,vargs);
-  for ( size_t i(0),iEnd(*nargs); i<iEnd; ++i ) {
+  for ( size_t i(0); i<nargs; ++i ) {
     core::T_O* tobj = va_arg(validate_vargs,core::T_O*);
     ENSURE_VALID_OBJECT(tobj);
   }
   va_end(validate_vargs);
 #endif
-  untagged_vargs_rest->_remaining_nargs = *nargs;
+  untagged_vargs_rest[0]._remaining_nargs = nargs;
+  untagged_vargs_rest[1]._remaining_nargs = nargs;
   T_O* result = untagged_vargs_rest->asTaggedPtr();
   return result;
   NO_UNWIND_END();
@@ -322,33 +297,9 @@ ALWAYS_INLINE void cc_writeCell(core::T_O *cell, core::T_O* val)
 
 ALWAYS_INLINE void cc_push_InvocationHistoryFrame(core::T_O* tagged_closure, InvocationHistoryFrame* frame, va_list va_args, size_t nargs)
 {NO_UNWIND_BEGIN();
+  core::core__stack_monitor(_Nil<core::T_O>());
   new (frame) InvocationHistoryFrame(va_args, nargs);
   core::push_InvocationHistoryStack(frame);
-#if 0
-  if (core::debug_InvocationHistoryFrame) {
-    Closure_sp closure((gc::Tagged)tagged_closure);
-    if ( strcmp(_rep_(frame->function()->name()).c_str(),debug_InvocationHistoryFrame_name)==0) {
-      printf("%s:%d !!!!!!!!!!!!!!!!!!!!!!   Saw %s\n", __FILE__, __LINE__, debug_InvocationHistoryFrame_name);
-      core::debug_InvocationHistoryFrame = 2;
-    }
-    if (core::debug_InvocationHistoryFrame >= 2) {
-//      printf("%s:%d  --------   Entering closure %s\n", __FILE__, __LINE__, _rep_(closure).c_str());
-//      printf("%s:%d:%s  push    frame @%p   stack @%p\n", __FILE__, __LINE__, __FUNCTION__, frame, my_thread->_InvocationHistoryStack );
-      if (_rep_(frame->function()->name()) == std::string("THROW-FUNCTION")) {
-        core::debug_InvocationHistoryFrame = 3;
-      }
-      if (core::debug_InvocationHistoryFrame == 3) {
-        printf("%s:%d:%s  push    frame @%p     stack @%p\n", __FILE__, __LINE__, __FUNCTION__, frame, my_thread->_InvocationHistoryStack );
-        printf("%s:%d:%s          name: %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(frame->function()->name()).c_str());
-      }
-//      printf("          %s\n", frame->asString(0).c_str());
-    }
-  }
-  if (frame==NULL || nargsP==NULL) {
-    printf("%s:%d   Bad call to cc_push_InvocationHistoryFrame\n", __FILE__, __LINE__);
-    abort();
-  }
-#endif
   NO_UNWIND_END();
 }
 
@@ -425,12 +376,10 @@ ALWAYS_INLINE void setParentOfActivationFrame(core::T_O *resultP, core::T_O *par
 
 
 ALWAYS_INLINE core::T_O *cc_stack_enclose(void* closure_address,
-                            core::T_O *lambdaName, fnLispCallingConvention llvm_func,
-                            int *sourceFileInfoHandleP,
-                            size_t filePos, size_t lineno, size_t column,
-                            std::size_t numCells, ...)
+                                          fnLispCallingConvention llvm_func,
+                                          core::FunctionDescription* functionDescription,
+                                          std::size_t numCells, ...)
 {NO_UNWIND_BEGIN();
-  core::T_sp tlambdaName = gctools::smart_ptr<core::T_O>((gc::Tagged)lambdaName);
   gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(closure_address);
   const gctools::Header_s::Value closure_header = gctools::Header_s::Value::make<core::ClosureWithSlots_O>();
   size_t size = gctools::sizeof_container_with_header<core::ClosureWithSlots_O>(numCells);
@@ -445,10 +394,8 @@ ALWAYS_INLINE core::T_O *cc_stack_enclose(void* closure_address,
   auto obj = gctools::BasePtrToMostDerivedPtr<typename gctools::smart_ptr<core::ClosureWithSlots_O>::Type>(closure_address);
   new (obj) (typename gctools::smart_ptr<core::ClosureWithSlots_O>::Type)( numCells,
                                                                            llvm_func,
-                                                                           tlambdaName,
-                                                                           core::_sym_stack_closure,
-                                                                           _Nil<T_O>(),
-                                                                           *sourceFileInfoHandleP, filePos, lineno, column);
+                                                                           functionDescription,
+                                                                           core::ClosureWithSlots_O::cclaspClosure);
 
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid = gctools::smart_ptr<core::ClosureWithSlots_O>(obj);
   core::T_O *p;
@@ -466,19 +413,22 @@ ALWAYS_INLINE core::T_O *cc_stack_enclose(void* closure_address,
   NO_UNWIND_END();
 }
 
-
+// Used by fastgf, and not in implementing cl:eql.
 int cc_eql(core::T_O* x, core::T_O* y)
 {NO_UNWIND_BEGIN();
   // The eql part of the test only eq part was handled by caller
   T_sp tx((gctools::Tagged)x);
   T_sp ty((gctools::Tagged)y);
+  // single floats could hypothetically not be eq, if their (otherwise ignored)
+  // high bits are distinct.
   if (tx.single_floatp()) {
     if (ty.single_floatp()) {
       if (tx.unsafe_single_float()==ty.unsafe_single_float()) return 1;
+      else return 0;
     }
   } else if (tx.generalp()) {
     if (ty.generalp()) {
-      return cl__eql(tx,ty) ? 1 : 0;
+      return tx.unsafe_general()->equal(ty) ? 1 : 0;
     }
   }
   return 0;

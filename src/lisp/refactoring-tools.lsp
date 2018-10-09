@@ -847,6 +847,7 @@ and the inheritance hierarchy that the garbage collector will need"
 
 (defvar *tooling-base-dir*
   #+target-os-linux "/home/meister/Development/cando/brcl/src/main"
+  #+target-os-freebsd "/home/meister/Development/cando/brcl/src/main"
   #+target-os-darwin "/Users/meister/Development/cando/brcl/src/main"
   "Directory where compile-commands database lives")
 (defvar *compile-commands-path*

@@ -109,7 +109,6 @@ typedef int mode_t;
 #endif
 
 
-
 SYMBOL_EXPORT_SC_(KeywordPkg, absolute);
 SYMBOL_EXPORT_SC_(KeywordPkg, default);
 SYMBOL_EXPORT_SC_(KeywordPkg, defaults);
@@ -131,7 +130,6 @@ SYMBOL_EXPORT_SC_(KeywordPkg, version);
 SYMBOL_EXPORT_SC_(KeywordPkg, wild);
 
 
-
 #if defined( _TARGET_OS_DARWIN ) || defined( _TARGET_OS_FREEBSD )
 #define sigthreadmask(HOW,NEW,OLD) sigprocmask((HOW),(NEW),(OLD))
 #endif
@@ -139,7 +137,6 @@ SYMBOL_EXPORT_SC_(KeywordPkg, wild);
 #if defined( _TARGET_OS_LINUX )
 #define sigthreadmask(HOW,NEW,OLD) sigprocmask((HOW),(NEW),(OLD))
 #endif
-
 
 namespace core {
 
@@ -390,7 +387,7 @@ CL_DEFUN T_sp ext__chdir(T_sp dir, T_sp change_default_pathname_defaults) {
     String_sp sdir = gc::As_unsafe<String_sp>(tdir);
     Integer_sp result = Integer_O::create((gc::Fixnum)safe_chdir(sdir->get_std_string().c_str(), _Nil<T_O>()));
     if (change_default_pathname_defaults.notnilp()) {
-      BFORMAT_T(BF("Changing *default-pathname-defaults* because change-default-pathname-defaults -> %s\n") % _rep_(change_default_pathname_defaults));
+      write_bf_stream(BF("Changing *default-pathname-defaults* because change-default-pathname-defaults -> %s\n") % _rep_(change_default_pathname_defaults));
       core::getcwd(true); // get the current working directory and change *default-pathname-defaults* to it
     }
     return result;
@@ -430,8 +427,7 @@ ecl_cstring_to_pathname(char *s)
 }
 #endif
 
-
-};
+}; // namespace core
 
 namespace ext {
 /*
@@ -440,35 +436,44 @@ namespace ext {
  */
 
 CL_DOCSTRING("Return the unix current working directory");
-CL_DEFUN core::String_sp ext__getcwd() {
+CL_DEFUN core::Str8Ns_sp ext__getcwd() {
   // TESTME :   Test this function with the new code
-#if 1
   const char *ok = ::getcwd(NULL,0);
+  
+  // Take into account what the shell, if any, might think about
+  // the current working directory.  This is important in symlinked
+  // trees.  However, we need to make sure that the information is
+  // not outdated.
+  const char *spwd = getenv("PWD");
+  if (spwd) {
+    if (::chdir(spwd) != -1) {
+      // We make sure $PWD is not outdated by chdir'ing into it,
+      // which resolves all symlinks, and make sure that the
+      // directory ends up being the same as getcwd
+      //
+      // Performance optimization: we want to avoid this system
+      // call on repeated calls to this function in the future.
+      // However, I don't want to make it a non-const function
+      // at this time.
+      const char *nowpwd = ::getcwd(NULL,0);
+      if (strcmp(ok, nowpwd) == 0) {
+        // OK, we should use the shell's/user's idea of "cd"
+        ::free((void*)ok);
+        ok = strdup(spwd);
+      }
+    }
+  } else {
+    // was found to be invalid, save us re-testing on next call
+    unsetenv("PWD");
+  }
+
   size_t cwdsize = strlen(ok);
   // Pad with 4 characters for / and terminator \0
   core::Str8Ns_sp output = core::Str8Ns_O::make(cwdsize+2,'\0',true,core::clasp_make_fixnum(0));
   StringPushStringCharStar(output, ok);
   ::free((void*)ok);
-#else
-  DEPRECATED();
-  size_t size = 128;
-  core::String_sp output(core::Str8Ns_O::create_with_fill_pointer(' ', 32, 0, true));
-  do {
-    output->internalAdjustSize_(core::clasp_make_character(' '),size);
-    clasp_disable_interrupts();
-    ok = ::getcwd((char *)output->addressOfBuffer(), size - 1);
-    clasp_enable_interrupts();
-    size += 256;
-  } while (ok == NULL);
-  size = strlen((char *)output->addressOfBuffer());
-  if ((size + 1 /* / */ + 1 /* 0 */) >= output->arrayTotalSize()) {
-    /* Too large to host the trailing '/' */
-    output->adjust(core::clasp_make_character(' '),output->arrayTotalSize()+2);
-  }
-  output->fillPointerSet(size-1);
-#endif
-#if defined(_TARGET_OS_DARWIN) || defined(_TARGET_OS_LINUX)
-  // Add a terminal '/' if there is none
+#if defined(_TARGET_OS_DARWIN) || defined(_TARGET_OS_LINUX) || defined(_TARGET_OS_FREEBSD)
+  // Add a terminal '/' if there is none.
   if ((*output)[output->fillPointer() - 1] != DIR_SEPARATOR_CHAR) {
     output->vectorPushExtend(core::clasp_make_character(DIR_SEPARATOR_CHAR));
   }
@@ -480,7 +485,7 @@ CL_DEFUN core::String_sp ext__getcwd() {
 #endif
   return output;
 }
-};
+}; // namespace ext
 
 namespace core {
 /*
@@ -670,7 +675,7 @@ enter_directory(Pathname_sp base_dir, T_sp subdir, bool ignore_if_failure) {
 
 static Pathname_sp
 make_absolute_pathname(T_sp orig_pathname) {
-  Pathname_sp base_dir = getcwd(false);
+  Pathname_sp base_dir = core::getcwd(false); // FIXME
   if (orig_pathname.nilp()) {
     SIMPLE_ERROR(BF("In make_absolute_pathname NIL is about to be passed to core__coerce_to_file_pathname"));
   }
@@ -1553,7 +1558,7 @@ dir_files(T_sp base_dir, T_sp tpathname, int flags) {
   T_sp name = pathname->_Name;
   T_sp type = pathname->_Type;
   if (name.nilp() && type.nilp()) {
-    return Cons_O::create(base_dir);
+    return Cons_O::create(base_dir,_Nil<T_O>());
   }
   mask = cl__make_pathname(_Nil<T_O>(), false,
                          _Nil<T_O>(), false,
@@ -2034,14 +2039,11 @@ CL_DEFUN T_sp ext__getenv(String_sp arg) {
   return SimpleBaseString_O::make(sres);
 };
 
-
-
-   SYMBOL_EXPORT_SC_(CorePkg, currentDir);
-  SYMBOL_EXPORT_SC_(CorePkg, file_kind);
-  SYMBOL_EXPORT_SC_(ClPkg, truename);
-  SYMBOL_EXPORT_SC_(ClPkg, probe_file);
-  SYMBOL_EXPORT_SC_(ClPkg, deleteFile);
-  SYMBOL_EXPORT_SC_(ClPkg, file_write_date);
-  SYMBOL_EXPORT_SC_(ClPkg, userHomedirPathname);
-
-};
+SYMBOL_EXPORT_SC_(CorePkg, currentDir);
+SYMBOL_EXPORT_SC_(CorePkg, file_kind);
+SYMBOL_EXPORT_SC_(ClPkg, truename);
+SYMBOL_EXPORT_SC_(ClPkg, probe_file);
+SYMBOL_EXPORT_SC_(ClPkg, deleteFile);
+SYMBOL_EXPORT_SC_(ClPkg, file_write_date);
+SYMBOL_EXPORT_SC_(ClPkg, userHomedirPathname);
+}; // namespace core

@@ -57,6 +57,7 @@ THE SOFTWARE.
 //  CLASP INCLUDES
 // ---------------------------------------------------------------------------
 
+#include <clasp/gctools/gcFunctions.h>
 #include <clasp/core/bundle.h>
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>
@@ -262,8 +263,10 @@ static void clasp_terminate_handler( void )
 
   if( abort_flag() )
     abort();
-
-  printf("%s:%d There was an unhandled exception - do something about it.\n", __FILE__, __LINE__ );
+#if DEBUG_FLOW_TRACKER
+  flow_tracker_last_throw_backtrace_dump();
+#endif
+  fprintf(stderr, "%s:%d There was an unhandled exception - do something about it.\n", __FILE__, __LINE__ );
   abort();
 }
 
@@ -292,9 +295,29 @@ void handle_unhandled_exception( void )
 
 static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &mpiSize)
 {
+
+    // Read the memory profiling settings <size-threshold> <number-theshold>
+  // as in export CLASP_MEMORY_PROFILE="16000000 1024"
+  // This means call HitAllocationSizeThreshold every time 16000000 bytes are allocated
+  //        and call HitAllocationNumberThreshold every time 1024 allocations take place
+  char *cur = getenv("CLASP_MEMORY_PROFILE");
+  size_t values[2];
+  int numValues = 0;
+  if (cur) {
+    while (*cur && numValues < 2) {
+      values[numValues] = strtol(cur, &cur, 10);
+      ++numValues;
+    }
+    if (numValues == 2) {
+      my_thread_low_level->_Allocations._AllocationNumberThreshold = values[1];
+    }
+    if (numValues >= 1) {
+      my_thread_low_level->_Allocations._AllocationSizeThreshold = values[0];
+    }
+  }
   core::LispHolder lispHolder(mpiEnabled, mpiRank, mpiSize);
   int exit_code = 0;
-  
+
   gctools::GcToolsExposer_O GcToolsPkg(_lisp);
   clbind::ClbindExposer_O ClbindPkg(_lisp);
   llvmo::LlvmoExposer_O llvmopkg(_lisp);
@@ -311,8 +334,11 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
   _lisp->installPackage(&ServeEventPkg);
   _lisp->installPackage(&AsttoolingPkg);
 
+  core::_sym_STARmpi_rankSTAR->defparameter(core::make_fixnum(0));
+  core::_sym_STARmpi_sizeSTAR->defparameter(core::make_fixnum(1));
+
 #ifdef USE_MPI
-  mpip::MpiExposer TheMpiPkg(_lisp);
+  mpip::MpiExposer_O TheMpiPkg(_lisp);
   _lisp->installPackage(&TheMpiPkg);
   if (mpiEnabled) {
     core::Symbol_sp mpi = _lisp->internKeyword("MPI-ENABLED");
@@ -320,12 +346,7 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
     cl::_sym_STARfeaturesSTAR->defparameter(core::Cons_O::create(mpi, features));
     core::_sym_STARmpi_rankSTAR->defparameter(core::make_fixnum(mpiRank));
     core::_sym_STARmpi_sizeSTAR->defparameter(core::make_fixnum(mpiSize));
-  } else {
-    SIMPLE_ERROR(BF("USE_MPI is true but mpiEnabled is false!!!!"));
   }
-#else
-  core::_sym_STARmpi_rankSTAR->defparameter(core::make_fixnum(0));
-  core::_sym_STARmpi_sizeSTAR->defparameter(core::make_fixnum(1));
 #endif
   
     // printf("%s:%d About to _lisp->run() - ExitProgram typeid %p;\n",
@@ -400,26 +421,32 @@ int main( int argc, char *argv[] )
              exe_name().c_str(), __FILE__, __LINE__, EXIT_FAILURE, (unsigned long)rl_new.rlim_max );
   }
 
+  
+  // - COMMAND LINE OPTONS HANDLING
+
+  core::CommandLineOptions options(argc, argv);
+
   // - MPI ENABLEMENT
 
 #ifdef USE_MPI
-  try
-  {
-    mpip::Mpi_O::Init(argc, argv, mpiEnabled, mpiRank, mpiSize);
-  }
-  catch ( core::HardError &err )
-  {
-    fprintf( stderr, "**** %s (%s:%d): ERROR: Could not start MPI - ABORTING!\n",
-             exe_name().c_str(), __FILE__, __LINE__ );
-    abort();
+  if (!options._DisableMpi) {
+    printf("%s:%d Enabling MPI\n", __FILE__, __LINE__ );
+    try
+    {
+      mpip::Mpi_O::Init(argc, argv, mpiEnabled, mpiRank, mpiSize);
+    }
+    catch ( HardError &err )
+    {
+      fprintf( stderr, "**** %s (%s:%d): ERROR: Could not start MPI - ABORTING!\n",
+               exe_name().c_str(), __FILE__, __LINE__ );
+      abort();
+    }
+  } else {
+    mpiEnabled = false;
   }
 #endif
 
   fflush( stderr );
-
-  // - COMMAND LINE OPTONS HANDLING
-
-  core::CommandLineOptions options(argc, argv);
 
   // CALL LISP STARTUP
 
@@ -447,7 +474,9 @@ int main( int argc, char *argv[] )
 #endif
   
 #ifdef USE_MPI
-  mpip::Mpi_O::Finalize();
+  if (!options._DisableMpi) {
+    mpip::Mpi_O::Finalize();
+  }
 #endif
 
 //  std::terminate(); // This calls the terminate handler and then exits or aborts!

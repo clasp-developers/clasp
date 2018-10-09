@@ -88,7 +88,7 @@
                  (core:bformat sout "%s" (namestring clang))
                  (dolist (arg args)
                    (core:bformat sout " %s" arg)))))
-      (core:bformat t "run-clang:  %s\n" cmd)))
+      (core:bformat t "run-clang:  %s%N" cmd)))
   (let ((start-time (get-internal-run-time)))
     (cmp::safe-system (list* (namestring clang) args) :output-file-name output-file-name)
     (setf llvm-sys:*accumulated-clang-link-time* (+ llvm-sys:*accumulated-clang-link-time* (* (/ 1.0 internal-time-units-per-second) (- (get-internal-run-time) start-time))))

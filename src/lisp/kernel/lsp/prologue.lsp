@@ -23,4 +23,4 @@
   (if (member :cclasp *features*) nil (setq *features* (cons :cclasp *features*)))
   (if (core:is-interactive-lisp) 
       (format t "Starting ~a cclasp ~a ... loading image... it takes a few seconds~%"
-                    (if (member :use-mps *features*) "MPS" "Boehm" ) (software-version))))
+              (if (member :use-mps *features*) "MPS" "Boehm" ) (software-version))))

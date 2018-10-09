@@ -129,7 +129,7 @@ extern core::Symbol_sp& _sym_name;
                               kw::_sym_expectedType, cl::_sym_cons,                             \
                               kw::_sym_datum, _lst_));
 
-#define TYPE_ERROR(_datum_, _expectedType_) ERROR(cl::_sym_typeError, core::lisp_createList(kw::_sym_datum, _datum_, kw::_sym_expectedType, _expectedType_))
+#define TYPE_ERROR(_datum_, _expectedType_) ERROR(::cl::_sym_typeError, core::lisp_createList(kw::_sym_datum, _datum_, kw::_sym_expectedType, _expectedType_))
 #define PROGRAM_ERROR() ERROR(cl::_sym_programError, (_Nil<T_O>()))
 #define SIMPLE_PROGRAM_ERROR(message, datum)                                                     \
         ERROR(core::_sym_simpleProgramError,                                                     \
@@ -142,15 +142,25 @@ extern core::Symbol_sp& _sym_name;
 #define CANNOT_OPEN_FILE_ERROR(_file_) FILE_ERROR(_file_)
 #define TOO_FEW_ARGUMENTS_ERROR() NO_INITIALIZERS_ERROR(core::_sym_tooFewArgumentsError)
 //#define TOO_MANY_ARGUMENTS_ERROR() NO_INITIALIZERS_ERROR(core::_sym_tooManyArgumentsError)
-//#define UNRECOGNIZED_KEYWORD_ARGUMENTS_ERROR(obj) ERROR(core::_sym_unrecognizedKeywordArgumentsError,obj)
-#define INVALID_KEYWORD_ARGUMENT_ERROR(obj) ERROR(core::_sym_invalidKeywordArgumentError, obj)
+#define UNRECOGNIZED_KEYWORD_ARGUMENTS_ERROR(obj) ERROR(core::_sym_unrecognizedKeywordArgumentsError,obj)
+// the following class does not exist in conditions.lsp and is not used
+// #define INVALID_KEYWORD_ARGUMENT_ERROR(obj) ERROR(core::_sym_invalidKeywordArgumentError, obj)
 #define STREAM_ERROR(st) ERROR(cl::_sym_streamError, core::lisp_createList(kw::_sym_stream, st))
+// core::_sym_simplePackageError with message and datum
+#define SIMPLE_PACKAGE_ERROR(message, datum)                                                     \
+        ERROR(core::_sym_simplePackageError,                                                     \
+              core::lisp_createList(kw::_sym_formatControl, core::lisp_createStr(message),kw::_sym_formatArguments, core::lisp_createList(core::lisp_createStr(datum))))
+#define SIMPLE_PACKAGE_ERROR_2_args(message, datum1, datum2)                                     \
+        ERROR(core::_sym_simplePackageError,                                                     \
+              core::lisp_createList(kw::_sym_formatControl, core::lisp_createStr(message),       \
+              kw::_sym_formatArguments, core::lisp_createList(core::lisp_createStr(datum1), core::lisp_createStr(datum2))))
+
 #define PACKAGE_ERROR(p) ERROR(cl::_sym_package_error, core::lisp_createList(kw::_sym_package, p))
 #define ERROR_END_OF_FILE(st) ERROR(cl::_sym_endOfFile, core::lisp_createList(kw::_sym_stream, st))
 #define CLOSED_STREAM_ERROR(st) ERROR(core::_sym_closedStream, core::lisp_createList(kw::_sym_stream, st))
 
-#define READER_ERROR(_fmt_, _fmtArgs_, _stream_) cl__reader_error(__FILE__, __LINE__, _fmt_, _fmtArgs_, _stream_)
-#define PARSE_ERROR(_fmt_, _fmtArgs_) cl__reader_error(__FILE__, __LINE__, _fmt_, _fmtArgs_, _Nil<Stream_O>())
+#define READER_ERROR(_fmt_, _fmtArgs_, _stream_) core__reader_error(__FILE__, __LINE__, _fmt_, _fmtArgs_, _stream_)
+#define PARSE_ERROR(_fmt_, _fmtArgs_) core__reader_error(__FILE__, __LINE__, _fmt_, _fmtArgs_, _Nil<Stream_O>())
 
 #define PRINT_NOT_READABLE_ERROR(obj) ERROR(cl::_sym_printNotReadable, core::lisp_createList(kw::_sym_object, obj));
 #define CELL_ERROR(name) ERROR(cl::_sym_cellError, core::lisp_createList(kw::_sym_name, name))
@@ -170,7 +180,7 @@ extern core::Symbol_sp& _sym_name;
 
 #define QERROR_WRONG_TYPE_NTH_ARG(_nth_, _datum_, _expectedType_) core__wrong_type_nth_arg(__FILE__, __LINE__, core::lisp_intern(__FUNCTION__, CurrentPkg), _nth_, _datum_, _expectedType_)
 
-#define ARITHMATIC_ERROR(_operation_, _operands_) ERROR(cl::_sym_arithmaticError, core::lisp_createList(kw::_sym_operation, _operation_, kw::_sym_operands, _operands_))
+#define ARITHMETIC_ERROR(_operation_, _operands_) ERROR(cl::_sym_arithmeticError, core::lisp_createList(kw::_sym_operation, _operation_, kw::_sym_operands, _operands_))
 
 #define ERROR_DIVISION_BY_ZERO(_x_, _y_) ERROR(cl::_sym_divisionByZero, core::lisp_createList(kw::_sym_operation, cl::_sym__DIVIDE_, kw::_sym_operands, core::lisp_createList(_x_, _y_)))
 
@@ -386,12 +396,12 @@ FORWARD(Cons);
 #define HARD_ASSERT(t)                                                                   \
   if (!(t)) {                                                                            \
     core::errorFormatted("HARD_ASSERT failed");                                          \
-    throw(HardError(__FILE__, __FUNCTION__, __LINE__, "Assertion " #t " failed")); \
+    abort(); \
   };
 #define HARD_ASSERTF(t, fmt) \
   if (!(t)) { \
     core::errorFormatted(fmt); \
-    throw(core::HardError(__FILE__, __FUNCTION__, __LINE__, BF("Assertion %s failed: %s") % #t % (fmt).str())); \
+    abort(); \
   };
 #else
 #define HARD_ASSERT(t) \
@@ -656,10 +666,26 @@ extern string _stackTraceAsString();
 #define LOG_CXX_FUNCTION_INVOCATION() core::CxxFunctionInvocationLogger __cxxFunctionInvocationLogger(__FILE__, __FUNCTION__, __LINE__);
 
 #ifdef CALLSTACK_ON //[
-#define _G()
+#define LOG_CXX_FUNCTION_INVOCATION() core::CxxFunctionInvocationLogger __cxxFunctionInvocationLogger(__FILE__, __FUNCTION__, __LINE__);
+
+struct _StackTrace {
+  const char* _Filename;
+  _StackTrace(const char* filename, const char* kind, size_t line, size_t col, const boost::format& fmt) :_Filename(filename) {
+    if (core::lisp_debugIsOn(filename)) { 
+      lisp_debugLog()->beginNode(DEBUG_CPP_BLOCK,filename,kind,line,col,fmt.str());
+    } 
+  }
+  ~_StackTrace() {
+    if (core::lisp_debugIsOn(this->_Filename)) {
+      lisp_debugLog()->endNode(DEBUG_CPP_BLOCK);
+    } 
+  }
+};
+
+#define _G()                     \
+  LOG_CXX_FUNCTION_INVOCATION(); 
 #define _OF() _G();
-#define _lisp_BLOCK_TRACEF(__f) \
-  {} // core::_StackTrace _B_stackTrace(__FILE__,"LexicalScope",__LINE__,0,DEBUG_CPP_BLOCK,__f)
+#define _lisp_BLOCK_TRACEF(__f) core::_StackTrace _B_stackTrace(__FILE__,"LexicalScope",__LINE__,0,__f)
 #define _lisp_BLOCK_TRACE(__s) _lisp_BLOCK_TRACEF(BF("%s") % (__s))
 #define _BLOCK_TRACEF(f) _lisp_BLOCK_TRACEF(f)
 #define _BLOCK_TRACE(s) _lisp_BLOCK_TRACEF(BF("%s") % (s))
@@ -704,7 +730,7 @@ void af_wrongTypeOnlyArg(const string &sourceFile, int lineno, Symbol_sp functio
 
 void core__wrong_index(const string &sourceFile, int lineno, Symbol_sp function, T_sp array, int which, T_sp index, int noninc_index);
 
- void cl__reader_error(const string &sourceFile, uint lineno,
+void core__reader_error(const string &sourceFile, uint lineno,
                     String_sp fmt, List_sp fmtargs, T_sp stream = _Nil<T_O>());
 
 void assert_type_integer(T_sp p, int idx);

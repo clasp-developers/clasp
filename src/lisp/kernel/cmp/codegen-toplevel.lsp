@@ -5,10 +5,10 @@
 ;;; t1expr is called by compile-file. Eventually this file will call
 ;;; compile-thunk (in codegen.lsp) to do the actual compiling.
 
-(defun compile-top-level (form)
+(defun compile-top-level (form env)
   (literal:with-top-level-form
    (dbg-set-current-source-pos form)
-    (compile-thunk 'repl form nil t)
+    (compile-thunk 'repl form env t)
     ;; After this literals are codegen'd into the RUN-ALL function
     ;; by with-top-level-form
     ))
@@ -22,16 +22,16 @@
   (let ((situations (car rest))
 	(body (cdr rest)))
     (when (or (member 'cl:compile situations) (member :compile-toplevel situations))
-      (cmp-log "Performing eval-when :compile-toplevel side-effects\n")
-      (cmp-log "Evaluating: %s\n" body)
+      (cmp-log "Performing eval-when :compile-toplevel side-effects%N")
+      (cmp-log "Evaluating: %s%N" body)
       (funcall core:*eval-with-env-hook* `(progn ,@body) env)
-      (cmp-log "Done eval-when compile-toplevel side-effects\n"))
+      (cmp-log "Done eval-when compile-toplevel side-effects%N"))
     (when (or (member 'cl:load situations) (member :load-toplevel situations))
-      (cmp-log "Compiling body due to :load-toplevel --> %s\n" body)
+      (cmp-log "Compiling body due to :load-toplevel --> %s%N" body)
       ;; Each subform is a top-level form
       (dolist (subform body)
 	(t1expr subform env))
-      (cmp-log "Done compiling body due to :load-toplevel\n"))))
+      (cmp-log "Done compiling body due to :load-toplevel%N"))))
 
 (defun t1locally (rest env)
   (multiple-value-bind (declares code docstring specials)
@@ -45,7 +45,7 @@
                         (let ((macro-fn (eval (ext:parse-macro (car macro-def)
                                                                (cadr macro-def)
                                                                (cddr macro-def)))))
-                          (set-kind macro-fn :macro)
+;;;                          (set-kind macro-fn :macro)
                           (cons (car macro-def) macro-fn)))
                       (car body))))
     (multiple-value-bind (decls macrolet-body)
@@ -84,7 +84,7 @@
 
 
 (defun t1expr (form &optional env)
-  (cmp-log "t1expr-> %s\n" form)
+  (cmp-log "t1expr-> %s%N" form)
   (push form core:*top-level-form-stack*)
   (unwind-protect
        (let ((head (if (atom form) form (car form))))
@@ -105,8 +105,9 @@
                        (progn
                          (t1expr expansion env)
                          t)))))
-           ((macro-function head env)
+           ((and (symbolp head) ; it's unlikely, but we could have a constant toplevel form.
+                 (macro-function head env))
             (let ((expanded (macroexpand form env)))
               (t1expr expanded env)))
-           (t (compile-top-level form))))
+           (t (compile-top-level form env))))
     (pop core:*top-level-form-stack*)))

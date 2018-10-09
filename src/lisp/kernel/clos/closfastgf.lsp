@@ -22,7 +22,7 @@
 ;;; Debugging code
 ;;;
 ;;; Add :LOG-CMPGF to log fastgf messages during the slow path.
-;;;    
+;;;
 #+(or)
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (pushnew :debug-fastgf *features*))
@@ -41,8 +41,8 @@
   (defvar *dispatch-history-dir*
     (let ((dir (core:bformat nil "/tmp/dispatch-history-%d/" (core:getpid))))
       (ensure-directories-exist dir)
-      (core:bformat *debug-io*  "!!!!  Created gf dispatch monitor directory: %s\n" dir)
-      (core:bformat *debug-io*  "!!!!     Run clasp with --feature fastgf-dump-module to write dispatchers to this directory\n")
+      (core:bformat *debug-io*  "!!!!  Created gf dispatch monitor directory: %s%N" dir)
+      (core:bformat *debug-io*  "!!!!     Run clasp with --feature fastgf-dump-module to write dispatchers to this directory%N")
       (dolist (f (directory (core:bformat nil "%s/*.*" dir)))
         (delete-file f))
       dir))
@@ -107,10 +107,10 @@
     `(bformat-indent ,msg ,@args))
   (defmacro gf-log-sorted-roots (roots)
     `(progn
-       (bformat-indent ">>> sorted roots\n")
+       (bformat-indent ">>> sorted roots%N")
        (let ((x 0))
          (mapc (lambda (root)
-                 (bformat-indent "  root[%d]: %s\n" (prog1 x (incf x)) root))))))
+                 (bformat-indent "  root[%d]: %s%N" (prog1 x (incf x)) root))))))
   (defun pretty-selector-as-string (selector)
     (cond
       ((consp selector)
@@ -127,32 +127,32 @@
       `(progn
          (bformat-indent "        entry#%3d: (" (prog1 ,index (incf ,index)))
          (let ((,key (car ,entry)))
-           ;;(bformat-indent "          ----> %s\n" history-entry)
+           ;;(bformat-indent "          ----> %s%N" history-entry)
            (dolist (,selector (coerce ,key 'list))
              (bformat-noindent " %s" (pretty-selector-as-string ,selector)))
-           (bformat-noindent ")\n")))))
+           (bformat-noindent ")%N")))))
   (defmacro gf-log-dispatch-miss (msg gf va-args)
     `(progn
        (incf-debug-fastgf-didx)
        (incf-debug-fastgf-miss-count ,gf)
-       (bformat-indent "------- DIDX:%d %s\n" (debug-fastgf-didx) ,msg)
-       (bformat-indent "Dispatch miss #%d for %s\n" (debug-fastgf-miss-count ,gf) (clos::generic-function-name ,gf))
+       (bformat-indent "------- DIDX:%d %s%N" (debug-fastgf-didx) ,msg)
+       (bformat-indent "Dispatch miss #%d for %s%N" (debug-fastgf-miss-count ,gf) (clos::generic-function-name ,gf))
        (let* ((args-as-list (core:list-from-va-list ,va-args))
               (call-history (clos::generic-function-call-history ,gf))
               (specializer-profile (clos::generic-function-specializer-profile ,gf)))
-         (bformat-indent "    args (num args -> %d):  \n" (length args-as-list))
+         (bformat-indent "    args (num args -> %d):  %N" (length args-as-list))
          (let ((arg-index -1))
            (dolist (arg args-as-list)
-             (bformat-indent "argument# %d: %s[%s/%d] \n" (incf arg-index) arg (class-of arg) (core:instance-stamp arg))))
+             (bformat-indent "argument# %d: %s[%s/%d] %N" (incf arg-index) arg (class-of arg) (core:instance-stamp arg))))
          (let ((index 0))
-           (bformat-indent " raw call-history (length -> %d):\n" (length call-history))
+           (bformat-indent " raw call-history (length -> %d):%N" (length call-history))
            (dolist (entry call-history)
              (gf-print-entry index entry)))
          (let* ((call-history (generic-function-call-history generic-function))
                 (specializer-profile (generic-function-specializer-profile generic-function))
                 (optimized-call-history (cmp::optimized-call-history call-history specializer-profile))
                 (index 0))
-           (bformat-indent "    optimized call-history (length -> %d):\n" (length optimized-call-history))
+           (bformat-indent "    optimized call-history (length -> %d):%N" (length optimized-call-history))
            (dolist (entry optimized-call-history)
              (gf-print-entry index entry))))
        (finish-output (debug-fastgf-stream))))
@@ -248,15 +248,15 @@
 (defun maybe-update-instances (arguments)
   (let ((invalid-instance nil))
     (dolist (x arguments)
-      (when (core:cxx-instance-p x)
+      (when (core:instancep x)
         (let* ((i x)
                (s (si::instance-sig i)))
           (clos::with-early-accessors (clos::+standard-class-slots+)
             (when (si::sl-boundp s)
               (unless (= (core:instance-stamp i) (core:class-stamp-for-instances (core:instance-class i)))
-                (gf-log "   instance-stamp matches that of class -> %s\n"  (= (core:instance-stamp i) (core:class-stamp-for-instances (core:instance-class i))))
-                (gf-log "(core:instance-stamp i) -> %s\n" (core:instance-stamp i))
-                (gf-log "(core:class-stamp-for-instances (core:instance-class i)) -> %s\n" (core:class-stamp-for-instances (core:instance-class i)))
+                (gf-log "   instance-stamp matches that of class -> %s%N"  (= (core:instance-stamp i) (core:class-stamp-for-instances (core:instance-class i))))
+                (gf-log "(core:instance-stamp i) -> %s%N" (core:instance-stamp i))
+                (gf-log "(core:class-stamp-for-instances (core:instance-class i)) -> %s%N" (core:class-stamp-for-instances (core:instance-class i)))
                 (setf invalid-instance t)
                 (clos::update-instance i)
                 (core:instance-stamp-set i (core:class-stamp-for-instances (si:instance-class i)))))))))
@@ -375,10 +375,10 @@
          (optimized
            (cond ((not standard-slotd-p)
                   (cond (fmf
-                         (gf-log "Using fast method %s function as emf\n" method)
+                         (gf-log "Using fast method %s function as emf%N" method)
                          (cmp::make-fast-method-call :function fmf))
                         (leafp
-                         (gf-log "Using method %s function as emf\n" method)
+                         (gf-log "Using method %s function as emf%N" method)
                          (method-function method))
                         (nrm-group-name ; missing a required (probably primary) method.
                          ;; FIXME: this is kind of ugly, to say the least. inlining would be nice.
@@ -388,17 +388,17 @@
                            (apply #'no-required-method generic-function nrm-group-name vaslist-args)))
                         ((setf existing-emf (find-existing-emf (generic-function-call-history generic-function)
                                                                methods))
-                         (gf-log "Using existing effective method function\n")
+                         (gf-log "Using existing effective method function%N")
                          existing-emf)
                         (t
-                         (gf-log "Using default effective method function\n")
-                         (gf-log "(compute-effective-method generic-function method-combination methods) -> \n")
-                         (gf-log "%s\n" em)
+                         (gf-log "Using default effective method function%N")
+                         (gf-log "(compute-effective-method generic-function method-combination methods) -> %N")
+                         (gf-log "%s%N" em)
                          (cmp::make-effective-method-outcome
                           :applicable-methods methods
                           :function (effective-method-function em)))))
                  (readerp
-                  (gf-log "make-optimized-slot-reader index: %s slot-name: %s class: %s\n"
+                  (gf-log "make-optimized-slot-reader index: %s slot-name: %s class: %s%N"
                           (slot-definition-location slotd)
                           (slot-definition-name slotd)
                           class)
@@ -406,7 +406,7 @@
                                                    :slot-name (slot-definition-name slotd)
                                                    :method method :class class))
                  (writerp
-                  (gf-log "make-optimized-slot-writer index: %s slot-name: %s class: %s\n"
+                  (gf-log "make-optimized-slot-writer index: %s slot-name: %s class: %s%N"
                           (slot-definition-location slotd)
                           (slot-definition-name slotd)
                           class)
@@ -416,25 +416,25 @@
                  ;; I think these are unreachable, but better safe than sorry.
                  ((setf existing-emf (find-existing-emf (generic-function-call-history generic-function)
                                                         methods))
-                  (gf-log "Using !SUPPOSEDLY UNREACHABLE! existing effective method function\n")
+                  (gf-log "Using !SUPPOSEDLY UNREACHABLE! existing effective method function%N")
                   existing-emf)
                  (t
-                  (gf-log "Using !SUPPOSEDLY UNREACHABLE! default effective method function\n")
-                  (gf-log "(compute-effective-method generic-function method-combination methods) -> \n")
-                  (gf-log "%s\n" em)
+                  (gf-log "Using !SUPPOSEDLY UNREACHABLE! default effective method function%N")
+                  (gf-log "(compute-effective-method generic-function method-combination methods) -> %N")
+                  (gf-log "%s%N" em)
                   (cmp::make-effective-method-outcome
                    :applicable-methods methods
                    :function (effective-method-function em))))))
     #+debug-fastgf
     (when log
-      (gf-log "vvv************************vvv\n")
-      (gf-log "compute-effective-method-function for %s\n" (generic-function-name generic-function))
-      (gf-log "There are %d methods...\n" (length methods))
+      (gf-log "vvv************************vvv%N")
+      (gf-log "compute-effective-method-function for %s%N" (generic-function-name generic-function))
+      (gf-log "There are %d methods...%N" (length methods))
       (dolist (m methods)
-        (gf-log "Method: %s %s %s\n" (clos::method-specializers m) (clos::method-qualifiers m) m))
-      (gf-log "Effective method function -> %s\n" optimized)
-      (gf-log "Effective method function address -> %s\n" (core:object-address optimized))
-      (gf-log "^^^************************^^^\n"))
+        (gf-log "Method: %s %s %s%N" (clos::method-specializers m) (clos::method-qualifiers m) m))
+      (gf-log "Effective method function -> %s%N" optimized)
+      (gf-log "Effective method function address -> %s%N" (core:object-address optimized))
+      (gf-log "^^^************************^^^%N"))
     optimized))
 
 (defun update-call-history-for-add-method (generic-function orig-call-history method)
@@ -601,6 +601,17 @@ FIXME!!!! This code will have problems with multithreading if a generic function
   "This effectively does what compute-discriminator-function does and maybe memoizes the result 
 and calls the effective-method-function that is calculated.
 It takes the arguments in two forms, as a vaslist and as a list of arguments."
+  (multiple-value-bind (min max) (generic-function-min-max-args generic-function)
+    (cond ((< (length arguments) min)
+           (error 'simple-program-error
+                  :format-control "Not enough arguments when calling ~a - you provided ~d and ~d are required"
+                  :format-arguments (list (generic-function-name generic-function)
+                                          (length arguments) min)))
+          ((and max (> (length arguments) max))
+           (error 'simple-program-error
+                  :format-control "Too many arguments when calling ~a - you provided ~d and ~d are allowed"
+                  :format-arguments (list (generic-function-name generic-function)
+                                          (length arguments) max)))))
   (let ((argument-classes (mapcar #'class-of arguments))
         #+debug-fastgf
         (*dispatch-miss-start-time* (get-internal-real-time)))
@@ -608,7 +619,7 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
     (multiple-value-bind (method-list ok)
         (compute-applicable-methods-using-classes generic-function argument-classes)
       (declare (core:lambda-name do-dispatch-miss.multiple-value-bind.lambda))
-      (gf-log "Called compute-applicable-methods-using-classes - returned method-list: %s  ok: %s\n" method-list ok)
+      (gf-log "Called compute-applicable-methods-using-classes - returned method-list: %s  ok: %s%N" method-list ok)
       (let* ((method-list (if ok
                               method-list
                               (compute-applicable-methods generic-function arguments)))
@@ -661,12 +672,12 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
                ;; No more options: we just don't memoize.
                ;; This only occurs with eql specializers, at least with the standard c-a-m/-u-c methods.
                (gf-log-dispatch-miss "Cannot memoize call" generic-function vaslist-arguments)))
-        (gf-log "Performing outcome %s\n" outcome)
+        (gf-log "Performing outcome %s%N" outcome)
         #+debug-fastgf
         (let ((results (multiple-value-list
                         (perform-outcome outcome arguments vaslist-arguments))))
-          (gf-log "+-+-+-+-+-+-+-+-+ do-dispatch-miss done real time: %f seconds\n" (/ (float (- (get-internal-real-time) *dispatch-miss-start-time*)) internal-time-units-per-second))
-          (gf-log "----}---- Completed call to effective-method-function for %s results -> %s\n" (clos::generic-function-name generic-function) results)
+          (gf-log "+-+-+-+-+-+-+-+-+ do-dispatch-miss done real time: %f seconds%N" (/ (float (- (get-internal-real-time) *dispatch-miss-start-time*)) internal-time-units-per-second))
+          (gf-log "----}---- Completed call to effective-method-function for %s results -> %s%N" (clos::generic-function-name generic-function) results)
           (values-list results))
         #-debug-fastgf
         (perform-outcome outcome arguments vaslist-arguments)))))
@@ -683,10 +694,10 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
            (if invalid-instance
                (apply generic-function valist-args)
                (progn
-                 (gf-log "----{---- A dispatch-miss occurred -> %s  \n" (clos::generic-function-name generic-function))
+                 (gf-log "----{---- A dispatch-miss occurred -> %s  %N" (clos::generic-function-name generic-function))
                  (dolist (arg (core:list-from-va-list valist-args))
                    (gf-log "%s[%s/%d] " arg (class-of arg) (core:instance-stamp arg)))
-                 (gf-log-noindent "\n")
+                 (gf-log-noindent "%N")
                  (do-dispatch-miss generic-function valist-args arguments)))))
     (decf-debug-fastgf-indent)))
 
@@ -713,15 +724,15 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
   ;;   - it must be a simple-vector with size number-of-requred-arguments
   ;;     Each element is T if the corresponding argument is specialized on
   ;;        and NIL if it is not (all specializers are T).
-  (gf-log "compute-and-set-specializer-profile\n")
+  (gf-log "compute-and-set-specializer-profile%N")
   (unless (vectorp (generic-function-specializer-profile generic-function))
-    (gf-log "compute-and-set-specializer-profile2\n")
+    (gf-log "compute-and-set-specializer-profile2%N")
     (initialize-generic-function-specializer-profile generic-function :errorp t))
-  (gf-log "compute-and-set-specializer-profile1\n")
+  (gf-log "compute-and-set-specializer-profile1%N")
   (let ((vec (make-array (length (generic-function-specializer-profile generic-function))
                          :initial-element nil))
         (methods (clos:generic-function-methods generic-function)))
-    (gf-log "compute-and-set-specializer-profile1.5\n")
+    (gf-log "compute-and-set-specializer-profile1.5%N")
     (initialize-generic-function-specializer-profile generic-function :initial-vec vec)
     (when methods
       (loop for method in methods
@@ -746,6 +757,21 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
 (defun not-funcallable-dispatch-function (generic-function valist-args)
   (error "The funcallable-instance ~s is not funcallable" generic-function))
 
+(defun force-dispatcher (generic-function)
+  (let (log-output)
+    #+debug-fastgf
+    (progn
+      (if (eq (class-of generic-function) (find-class 'standard-generic-function))
+          (let ((generic-function-name (core:low-level-standard-generic-function-name generic-function)))
+            (setf log-output (log-cmpgf-filename generic-function-name "func" "ll"))
+            (gf-log "Writing dispatcher to %s%N" log-output))
+          (setf log-output (log-cmpgf-filename (generic-function-name generic-function) "func" "ll")))
+      (incf-debug-fastgf-didx))
+    (set-funcallable-instance-function generic-function
+                                       (calculate-fastgf-dispatch-function
+                                        generic-function
+                                        :output-path log-output))))
+
 (defun invalidated-dispatch-function (generic-function valist-args)
   (declare (optimize (debug 3)))
   ;;; If there is a call history then compile a dispatch function
@@ -754,23 +780,13 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
   ;;; If there is no call history then treat this like a dispatch-miss.
   #+debug-fastgf
   (if (eq (class-of generic-function) (find-class 'standard-generic-function))
-      (gf-log "Entered invalidated-dispatch-function for %s - avoiding generic function calls until return!!!\n"
+      (gf-log "Entered invalidated-dispatch-function for %s - avoiding generic function calls until return!!!%N"
               (core:low-level-standard-generic-function-name generic-function))
-      (gf-log "Entered invalidated-dispatch-function - avoiding generic function calls until return!!!\n"))
-  (gf-log "Specializer profile is %s\n" (generic-function-specializer-profile generic-function))
+      (gf-log "Entered invalidated-dispatch-function - avoiding generic function calls until return!!!%N"))
+  (gf-log "Specializer profile is %s%N" (generic-function-specializer-profile generic-function))
   (if (generic-function-call-history generic-function)
-      (let (log-output)
-        #+debug-fastgf(progn
-                        (if (eq (class-of generic-function) (find-class 'standard-generic-function))
-                            (let ((generic-function-name (core:low-level-standard-generic-function-name generic-function)))
-                              (setf log-output (log-cmpgf-filename generic-function-name "func" "ll"))
-                              (gf-log "Writing dispatcher to %s\n" log-output))
-                            (setf log-output (log-cmpgf-filename (generic-function-name generic-function) "func" "ll")))
-                        (incf-debug-fastgf-didx))
-        (set-funcallable-instance-function generic-function
-                                           (calculate-fastgf-dispatch-function
-                                            generic-function
-                                            :output-path log-output))
+      (progn
+        (force-dispatcher generic-function)
         (apply generic-function valist-args))
       (dispatch-miss generic-function valist-args)))
 
@@ -849,43 +865,43 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
     (values keep removed)))
 
 (defun invalidate-generic-functions-with-class-selector (top-class)
-  (gf-log "invalidate-generic-functions-with-class-specializer %s\n" top-class)
+  (gf-log "invalidate-generic-functions-with-class-specializer %s%N" top-class)
   (let* ((all-subclasses (subclasses* top-class))
-         (_ (gf-log "  %d subclasses*\n" (length all-subclasses)))
-         (_ (gf-log "        %s\n" all-subclasses))
+         (_ (gf-log "  %d subclasses*%N" (length all-subclasses)))
+         (_ (gf-log "        %s%N" all-subclasses))
          (generic-functions
            (loop for subclass in all-subclasses
                  for spec-generic-functions = (specializer-call-history-generic-functions subclass)
-                 do (gf-log "   for subclass %s there are %d spec-generic-functions\n" subclass (length spec-generic-functions))
-                 do (gf-log "         spec-generic-functions -> %s\n" spec-generic-functions)
+                 do (gf-log "   for subclass %s there are %d spec-generic-functions%N" subclass (length spec-generic-functions))
+                 do (gf-log "         spec-generic-functions -> %s%N" spec-generic-functions)
                  append spec-generic-functions))
-         (_ (gf-log "  %d generic-functions...\n" (length generic-functions)))
-         (_ (gf-log "        %s\n" generic-functions))
+         (_ (gf-log "  %d generic-functions...%N" (length generic-functions)))
+         (_ (gf-log "        %s%N" generic-functions))
          (unique-generic-functions (remove-duplicates generic-functions))
-         (_ (gf-log "  unique-generic-functions...\n"))
-         (_ (gf-log "        %s\n" unique-generic-functions))
+         (_ (gf-log "  unique-generic-functions...%N"))
+         (_ (gf-log "        %s%N" unique-generic-functions))
          edited)
-    (gf-log "   subclasses* -> %s\n" all-subclasses)
+    (gf-log "   subclasses* -> %s%N" all-subclasses)
     ;;(when core:*debug-dispatch* (format t "    generic-functions: ~a~%" generic-functions))
     (loop for gf in unique-generic-functions
           do (let (edited-call-history)
-               (gf-log "generic function: %s\n" (clos:generic-function-name gf))
-               (gf-log "    (clos:get-funcallable-instance-function gf) -> %s\n" (clos:get-funcallable-instance-function gf))
-               (gf-log "   NOT  editing call history and invalidating dispatch function due to metastability issues\n")
+               (gf-log "generic function: %s%N" (clos:generic-function-name gf))
+               (gf-log "    (clos:get-funcallable-instance-function gf) -> %s%N" (clos:get-funcallable-instance-function gf))
+               (gf-log "   NOT  editing call history and invalidating dispatch function due to metastability issues%N")
                (loop for call-history = (generic-function-call-history gf)
                      for new-call-history = (generic-function-call-history-separate-entries-with-specializers gf call-history all-subclasses)
                      for exchange = (generic-function-call-history-compare-exchange gf call-history new-call-history)
                      until (eq exchange new-call-history)
                      do (setf edited-call-history exchange))
-               (gf-log "    edited call history\n")
-               (gf-log "%s\n" edited-call-history)
-               (gf-log "Generating a new discriminating function\n")
+               (gf-log "    edited call history%N")
+               (gf-log "%s%N" edited-call-history)
+               (gf-log "Generating a new discriminating function%N")
                (let (log-output)
                  #+debug-fastgf(progn
                                  (if (eq (class-of gf) (find-class 'standard-generic-function))
                                      (let ((generic-function-name (core:low-level-standard-generic-function-name gf)))
                                        (setf log-output (log-cmpgf-filename generic-function-name "func" "ll"))
-                                       (gf-log "Writing dispatcher to %s\n" log-output))
+                                       (gf-log "Writing dispatcher to %s%N" log-output))
                                      (setf log-output (log-cmpgf-filename (generic-function-name gf) "func" "ll")))
                                  (incf-debug-fastgf-didx))
                  (if edited-call-history

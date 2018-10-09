@@ -16,9 +16,6 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (setq *echo-repl-read* t))
 
-(defvar +builtin-classes-pre-array+
-  (make-array (1+ #.(length +builtin-classes-list+))))
-
 ;;; ----------------------------------------------------------------------
 ;;; Building basic classes.
 ;;; We have to work carefully because the system is obviously not yet
@@ -36,22 +33,22 @@
 ;; properly, and furthermore that it's only done once
 ;; (Because if ensure-boot-class is called again with the same name,
 ;;  it'll just find-class the existing one.)
-(defun allocate-boot-class (metaclass slot-count)
+(defun allocate-boot-class (metaclass slot-count name)
   (let ((class (core:allocate-new-instance metaclass slot-count)))
-    (core:class-new-stamp class)
+    (core:class-new-stamp class name)
     class))
 
 (defun ensure-boot-class (name &key (metaclass 'standard-class)
-                                 direct-superclasses direct-slots index)
-  (debug-boot "!!ensure-boot-class for ~s metaclass: ~s direct-superclasses: ~s :direct-slots ~s :index ~s~%"
-              name metaclass direct-superclasses direct-slots index)
+                                 direct-superclasses direct-slots)
+  (debug-boot "!!ensure-boot-class for ~s metaclass: ~s direct-superclasses: ~s :direct-slots ~s~%"
+              name metaclass direct-superclasses direct-slots)
   (let* ((the-metaclass (progn
                           (debug-boot "    About to do the~%")
                           (the class (find-class metaclass nil))))
          (class (progn
                   (debug-boot "    About to allocate-boot-class~%")
                   (or (find-class name nil)
-                      (allocate-boot-class the-metaclass #.(length +standard-class-slots+))))))
+                      (allocate-boot-class the-metaclass #.(length +standard-class-slots+) name)))))
     ;;    (debug-boot "About to with-early-accessors -> macroexpand = ~a~%" (macroexpand '(with-early-accessors (+standard-class-slots+) (setf (class-id                  class) name))))
     (debug-boot "    About to with-early-accessors~%")
     (with-early-accessors (+standard-class-slots+)
@@ -79,7 +76,8 @@
             ;; direct-slots also by add-slots
             (class-direct-default-initargs class) nil
             (class-default-initargs    class) nil
-            (class-finalized-p         class) t)
+            (class-finalized-p         class) t
+            (class-source-position     class) nil)
       (debug-boot "    About to setf class name -> ~a  class -> ~a~%" name class)
       (core:setf-find-class class name)
       (debug-boot "    Done setf class name -> ~a  class -> ~a~%" name class)
@@ -105,9 +103,6 @@
         (let ((cpl (compute-clos-class-precedence-list class superclasses)))
           (debug-boot "      computed")
           (setf (class-precedence-list class) cpl)))
-      (debug-boot "      maybe add index~%")
-      (when index
-        (setf (aref +builtin-classes-pre-array+ index) class))
       class)))
 
 (defun add-slots (class slots)
@@ -157,7 +152,7 @@
   `(progn
      ,@(loop for (class . options) in +class-hierarchy+
           for direct-slots = (getf options :direct-slots)
-;;;          do (core:bformat t "boot-hierarchy  class->%s\n" class)
+;;;          do (core:bformat t "boot-hierarchy  class->%s%N" class)
           collect
             (if direct-slots
                 `(apply #'ensure-boot-class ',class
@@ -170,7 +165,7 @@
 (boot-hierarchy)
 
 (progn
-  (dbg-boot "About to setq stuff\n")
+  (dbg-boot "About to setq stuff%N")
   (setq +the-t-class+ (find-class 't nil))
   (setq +the-class+ (find-class 'class nil))
   (setq +the-std-class+ (find-class 'std-class nil))

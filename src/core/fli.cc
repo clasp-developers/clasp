@@ -617,7 +617,6 @@ core::Pointer_sp PERCENTcore_pointer_from_foreign_data( ForeignData_sp fd_ptr )
 core::T_sp PERCENTforeign_data_pointerp( core::T_sp obj )
 {
   ForeignData_sp sp_foreign_data = obj.asOrNull<ForeignData_O>();
-
   if( sp_foreign_data )
   {
     if( sp_foreign_data.nilp() )
@@ -645,7 +644,6 @@ core::T_sp PERCENTpointerp( core::T_sp obj )
 core::T_sp PERCENTnull_pointer_p( core::T_sp obj )
 {
   ForeignData_sp sp_foreign_data = obj.asOrNull<ForeignData_O>();
-
   if( sp_foreign_data )
   {
     if( sp_foreign_data->null_pointer_p() )
@@ -688,7 +686,7 @@ int64_t foreign_type_size( core::Symbol_sp atype )
   for ( ; iterator != it_end; iterator++ )
   {
     ForeignTypeSpec_sp sp_fts = iterator->asOrNull< ForeignTypeSpec_O >();
-    if ( sp_fts.notnilp() )
+    if ( sp_fts )
     {
       if ( sp_fts->PERCENTlisp_symbol()->eql_( atype ) )
       {
@@ -917,7 +915,7 @@ core::Integer_sp PERCENToffset_address_as_integer( core::T_sp address_or_foreign
     ForeignData_sp sp_fd = _Nil<core::T_O>();
 
     sp_fd = address_or_foreign_data_ptr.asOrNull<ForeignData_O>();
-    if( sp_fd.notnilp() && PERCENTpointerp( address_or_foreign_data_ptr ) )
+    if( sp_fd && PERCENTpointerp( address_or_foreign_data_ptr ) )
     {
       core::Integer_sp sp_address = _Nil<core::T_O>();
 

@@ -28,7 +28,6 @@ THE SOFTWARE.
 #define CORE_H
 
 // Debug flow control
-//#define DEBUG_FLOW_CONTROL 1
 
 /*! Turn this on to force turn on xxx_ASSERT messages in release code*/
 //#ifndef DEBUG_ASSERT
@@ -879,7 +878,6 @@ namespace core {
   T_sp lisp_symbolValue(Symbol_sp sym);
   string symbol_symbolName(Symbol_sp);
   string symbol_packageName(Symbol_sp);
-  string symbol_repr(Symbol_sp);
   Symbol_sp lisp_symbolNil();
   bool lisp_boundp(Symbol_sp s);
   T_sp lisp_adjust_array(T_sp array, T_sp new_size, T_sp fill_pointer);
@@ -913,6 +911,20 @@ namespace core {
   List_sp lisp_parse_arguments(const string &packageName, const string &args);
   List_sp lisp_parse_declares(const string &packageName, const string &declarestring);
   LambdaListHandler_sp lisp_function_lambda_list_handler(List_sp lambda_list, List_sp declares, std::set<int> pureOutValues = std::set<int>());
+
+  void lisp_defineSingleDispatchMethod(T_sp name,
+                                       Symbol_sp classSymbol,
+                                       BuiltinClosure_sp,
+                                       size_t TemplateDispatchOn = 0,
+                                       bool useTemplateDispatchOn = false,
+                                       const string &lambda_list = "",
+                                       const string &declares = "",
+                                       const string &docstring = "",
+                                       bool autoExport = true,
+                                       int number_of_required_arguments = -1,
+                                       std::set<int> pureOutIndices = std::set<int>());
+
+
   void lisp_defmacro(Symbol_sp name, const string &packageName,
                      BuiltinClosure_sp, const string &arguments = "", const string &declarestring = "",
                      const string &docstring = "");
@@ -928,24 +940,13 @@ namespace core {
                        const std::set<int> &skipIndices = std::set<int>());
   void lisp_defmethod(Symbol_sp gfSymbol, Function_sp, const string &arguments, const string &docstring);
 
-  void lisp_defineSingleDispatchMethod(T_sp name,
-                                       Symbol_sp classSymbol,
-                                       BuiltinClosure_sp,
-                                       size_t TemplateDispatchOn = 0,
-                                       bool useTemplateDispatchOn = false,
-                                       const string &lambda_list = "",
-                                       const string &declares = "",
-                                       const string &docstring = "",
-                                       bool autoExport = true,
-                                       int number_of_required_arguments = -1,
-                                       std::set<int> pureOutIndices = std::set<int>());
-
   void lisp_defsetfSingleDispatchMethod(Lisp_sp lisp, const string &name, Symbol_sp classSymbol,
                                         Function_sp, const string &arguments = "", const string &declares = "", const string &docstring = "", bool autoExport = true);
 
   void lisp_defsetf(const string &name, Symbol_sp classSymbol,
                     Function_sp, const string &arguments = "", const string &docstring = "", bool autoExport = true);
 
+  
   core::T_sp lisp_hiddenBinderLookup(Symbol_sp sym);
 
 //
@@ -988,9 +989,6 @@ namespace core {
   bool lisp_debugIsOn(const char *fileName, uint debugFlag = DEBUG_CPP_FUNCTION);
 
   DebugStream *lisp_debugLog();
-  T_sp lisp_ocar(List_sp args);
-  T_sp lisp_ocadr(List_sp args);
-  T_sp lisp_ocaddr(List_sp args);
 /*! Return a string representation of the object */
   string lisp_rep(T_sp obj);
   Symbol_sp lisp_internKeyword(const string &name);
@@ -1006,14 +1004,6 @@ namespace core {
   size_t lisp_pushCatchThrowException(T_sp throwTag, T_sp value);
   int lisp_lookupEnumForSymbol(Symbol_sp predefSymId, T_sp symbol);
   core::Symbol_sp lisp_lookupSymbolForEnum(Symbol_sp predefSymId, int enumVal);
-
-/*! Register source info for the object in the current source database */
-  core::T_sp lisp_registerSourceInfo(T_sp obj, SourceFileInfo_sp sfo, size_t filePos, int lineno, int column);
-  core::T_sp lisp_registerSourcePosInfo(T_sp obj, SourcePosInfo_sp spi);
-
-
-
-
 };
 
 #include <clasp/gctools/interrupt.h>

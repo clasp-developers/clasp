@@ -43,6 +43,7 @@ THE SOFTWARE.
 #include <clasp/core/bignum.h>
 #include <clasp/core/array.h>
 #include <clasp/core/multipleValues.h>
+#include <clasp/core/evaluator.h> // for eval::funcall
 
 // last include is wrappers.h
 #include <clasp/core/wrappers.h>
@@ -83,6 +84,38 @@ CL_DEFUN T_sp cl__package_nicknames(T_sp pkg) {
   Package_sp package = coerce::packageDesignator(pkg);
   return package->getNicknames();
 };
+
+CL_LAMBDA(pkg);
+CL_DECLARE();
+CL_DOCSTRING("Grab the (local-nickname . package) alist without locking. No coercion.");
+CL_DEFUN T_sp core__package_local_nicknames_internal(Package_sp package) {
+  return package->getLocalNicknames();
+}
+
+CL_LISPIFY_NAME("core:package-local-nicknames-internal");
+CL_LAMBDA(nicks pkg);
+CL_DECLARE();
+CL_DOCSTRING("Set the local nicknames of PKG to be NICKS. Internal, unlocked, no coercion. Be careful.");
+CL_DEFUN_SETF void set_package_local_nicknames_internal(T_sp nicks, Package_sp package) {
+  package->setLocalNicknames(nicks);
+}
+
+// FIXME: Maybe we can just grab the lock in CL?
+CL_LAMBDA(pkg thunk);
+CL_DECLARE();
+CL_DOCSTRING("Call THUNK while holding the read lock for PKG, and return the result.");
+CL_DEFUN T_sp core__call_with_package_read_lock(Package_sp pkg, Function_sp thunk) {
+  WITH_PACKAGE_READ_LOCK(pkg);
+  return eval::funcall(thunk);
+}
+
+CL_LAMBDA(pkg thunk);
+CL_DECLARE();
+CL_DOCSTRING("Call THUNK while holding the read-write lock for PKG, and return the result.");
+CL_DEFUN T_sp core__call_with_package_read_write_lock(Package_sp pkg, Function_sp thunk) {
+  WITH_PACKAGE_READ_WRITE_LOCK(pkg);
+  return eval::funcall(thunk);
+}
 
 CL_LAMBDA(symbol &optional (package *package*));
 CL_DECLARE();
@@ -252,15 +285,19 @@ CL_DEFUN T_mv cl__shadow(T_sp symbol_names_desig, T_sp package_desig) {
   return (Values(_lisp->_true()));
 }
 
-CL_LAMBDA(symbol-names-desig &optional (package-desig *package*));
-CL_DOCSTRING("This was my old CL:SHADOW function - if called with (core:broken-shadow \"FOO\" :bar) will signal an error but the wrong one.  I need to debug why when passing a string to a function that expects a list the error generates a second error");
-CL_DEFUN T_mv core__broken_shadow(List_sp symbol_names_desig, T_sp package_desig) {
-  List_sp symbolNames = coerce::listOfStringDesignators(symbol_names_desig);
-  Package_sp package = coerce::packageDesignator(package_desig);
-  package->shadow(symbolNames);
-  return Values(_lisp->_true());
+CL_LAMBDA(package);
+CL_DOCSTRING("Retrieve the documentation of a package.");
+CL_DEFUN T_sp core__package_documentation(Package_sp package) {
+  return package->documentation();
 }
 
+CL_LISPIFY_NAME("core:package-documentation");
+CL_LAMBDA(documentation package);
+CL_DOCSTRING("Set the documentation of a package.");
+CL_DEFUN_SETF T_sp set_package_documentation(T_sp documentation, Package_sp package) {
+  package->setDocumentation(documentation);
+  return documentation;
+}
 
 CL_LAMBDA(symbol-names-desig &optional (package-desig *package*));
 CL_DECLARE();
@@ -388,7 +425,7 @@ CL_DEFMETHOD T_mv Package_O::hashTables() const {
 string Package_O::__repr__() const {
   WITH_PACKAGE_READ_LOCK(this);
   stringstream ss;
-  ss << "#<" << this->_Name->get_std_string() << ">";
+  ss << "#<PACKAGE " << this->_Name->get_std_string() << ">";
   return ss.str();
 }
 
@@ -514,6 +551,20 @@ bool Package_O::usingPackageP_no_lock(Package_sp usePackage) const {
 bool Package_O::usingPackageP(Package_sp usePackage) const {
   WITH_PACKAGE_READ_LOCK(this);
   return this->usingPackageP_no_lock(usePackage);
+}
+
+// Find a package by local nickname, or return NIL.
+T_sp Package_O::findPackageByLocalNickname(String_sp name) {
+  WITH_PACKAGE_READ_LOCK(this);
+  List_sp nicks = this->getLocalNicknames();
+  // This is used by findPackage, which happens pretty early,
+  // so we use underlying stuff instead of cl:assoc.
+  if (nicks.notnilp()) {
+    T_sp pair = nicks.asCons()->assoc(name, _Nil<T_O>(), cl::_sym_string_EQ_, _Nil<T_O>());
+    if (pair.nilp())
+      return pair; // no result
+    else return oCdr(pair);
+  } else return nicks;
 }
 
   //

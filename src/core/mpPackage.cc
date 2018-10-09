@@ -36,6 +36,7 @@ THE SOFTWARE.
 #include <clasp/core/mpPackage.h>
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/primitives.h>
+#include <clasp/core/compiler.h>
 #include <clasp/core/package.h>
 #include <clasp/core/lispList.h>
 #include <clasp/gctools/interrupt.h>
@@ -127,13 +128,16 @@ void start_thread_inner(Process_sp process, void* cold_end_of_stack) {
     abort();
   };
 #endif
-  core::ThreadLocalState my_thread_local_state(cold_end_of_stack);
+  gctools::ThreadLocalStateLowLevel thread_local_state_low_level(cold_end_of_stack);
+  core::ThreadLocalState thread_local_state;
+  my_thread_low_level = &thread_local_state_low_level;
+  my_thread = &thread_local_state;
 //  printf("%s:%d entering start_thread  &my_thread -> %p \n", __FILE__, __LINE__, (void*)&my_thread);
 #ifdef USE_MPS
   gctools::my_thread_allocation_points.initializeAllocationPoints();
 #endif
-  my_thread = &my_thread_local_state;
-  my_thread->initialize_thread(process);
+  my_thread->initialize_thread(process,true);
+  my_thread->create_sigaltstack();
   process->_ThreadInfo = my_thread;
   // Set the mp:*current-process* variable to the current process
   core::DynamicScopeManager scope(_sym_STARcurrent_processSTAR,process);
@@ -177,6 +181,7 @@ void start_thread_inner(Process_sp process, void* cold_end_of_stack) {
   }
   result_list = core::Cons_O::create(result0,result_list);
   process->_ReturnValuesList = result_list;
+  
 //  gctools::unregister_thread(process);
 //  printf("%s:%d leaving start_thread\n", __FILE__, __LINE__);
 
@@ -191,7 +196,7 @@ void* start_thread(void* claspProcess) {
   // MPS setup of thread
   //
   start_thread_inner(process,cold_end_of_stack);
-  
+
 #if 0
 #ifdef USE_BOEHM
   GC_unregister_my_thread();
@@ -202,6 +207,7 @@ void* start_thread(void* claspProcess) {
   mps_root_destroy(process->root);
   mps_thread_dereg(process->thr_o);
 #endif
+  my_thread->destroy_sigaltstack();
 //  printf("%s:%d  really leaving start_thread\n", __FILE__, __LINE__ );
   return NULL;
 }
@@ -327,19 +333,37 @@ CL_DEFUN core::T_sp mp__process_active_p(Process_sp p) {
   return p->_Phase ? _lisp->_true() : _Nil<core::T_O>();
 }
 
+SYMBOL_EXPORT_SC_(MpPkg,suspend_loop);
+SYMBOL_EXPORT_SC_(MpPkg,break_suspend_loop);
+CL_DEFUN void mp__suspend_loop() {
+  printf("%s:%d %s\n", __FILE__, __LINE__, __FUNCTION__);
+  SafeExceptionStackPush save(&my_thread->exceptionStack(), core::CatchFrame,_sym_suspend_loop);
+  for ( ; ; ) {
+    core::cl__sleep(core::make_fixnum(100));
+  }
+};
+
+CL_DEFUN void mp__break_suspend_loop() {
+  printf("%s:%d %s\n", __FILE__, __LINE__, __FUNCTION__);
+  core::core__throw_function(_sym_suspend_loop,_Nil<core::T_O>());
+};
 
 CL_DEFUN void mp__process_suspend(Process_sp process) {
-  printf("%s:%d  process_suspend - implement me\n", __FILE__, __LINE__ );
+  printf("%s:%d %s\n", __FILE__, __LINE__, __FUNCTION__);
+  mp__interrupt_process(process,_sym_suspend_loop);
 };
 
 CL_DEFUN void mp__process_resume(Process_sp process) {
-  printf("%s:%d  process_resume - implement me\n", __FILE__, __LINE__ );
+  printf("%s:%d %s\n", __FILE__, __LINE__, __FUNCTION__);
+  mp__interrupt_process(process,_sym_break_suspend_loop);
 };
 
 CL_DEFUN void mp__process_yield() {
   // There doesn't appear to be any way to exit sched_yield()
+  // On success, sched_yield() returns 0.
+  // On error, -1 is returned, and errno is set appropriately.
   int res = sched_yield();
-  if (!res) {
+  if (res == -1) {
     SIMPLE_ERROR(BF("sched_yield returned the error %d") % res);
   }
 //  core::clasp_musleep(0.5,true);
@@ -441,7 +465,7 @@ CL_DEFUN core::List_sp mp__process_initial_special_bindings(Process_sp p) {
 }
 
 CL_DEFUN void mp__check_pending_interrupts() {
-  gctools::lisp_check_pending_interrupts(my_thread);
+  gctools::handle_all_queued_interrupts();
 }
 
 };

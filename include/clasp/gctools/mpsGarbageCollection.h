@@ -68,21 +68,13 @@ namespace gctools {
 
 struct MpsMetrics {
   std::atomic<size_t> finalizationRequests;
-  std::atomic<size_t> movingAllocations;
-  std::atomic<size_t> consAllocations;
-  std::atomic<size_t> movingZeroRankAllocations;
   std::atomic<size_t> nonMovingAllocations;
+  std::atomic<size_t> movingAllocations;
+  std::atomic<size_t> movingZeroRankAllocations;
+  std::atomic<size_t> consAllocations;
   std::atomic<size_t> unknownAllocations;
   std::atomic<size_t> totalMemoryAllocated;
   
-  void movingAllocation(size_t sz) {
-    this->totalMemoryAllocated += sz;
-    ++this->movingAllocations;
-  }
-  void movingZeroRankAllocation(size_t sz) {
-    this->totalMemoryAllocated += sz;
-    ++this->movingZeroRankAllocations;
-  }
   void unknownAllocation(size_t sz) {
     this->totalMemoryAllocated += sz;
     ++this->unknownAllocations;
@@ -98,11 +90,6 @@ extern MpsMetrics globalMpsMetrics;
 #define GC_RESULT mps_res_t
 #define GC_SCAN_STATE_TYPE mps_ss_t
 #define GC_SCAN_STATE ss
-};
-
-namespace gctools {
-template <class T>
-GC_RESULT obj_scan_helper(mps_ss_t _ss, mps_word_t _mps_zs, mps_word_t _mps_w, mps_word_t &_mps_ufs, mps_word_t _mps_wt, mps_addr_t &client);
 };
 
 extern "C" {
@@ -183,42 +170,32 @@ template <typename T>
 class smart_ptr;
 };
 
-inline mps_res_t taggedPtrFix(mps_ss_t _ss, mps_word_t _mps_zs, mps_word_t _mps_w, mps_word_t &_mps_ufs, mps_word_t _mps_wt, gctools::Tagged *taggedP) {
-  if (gctools::tagged_objectp(*taggedP)) {
-    gctools::Tagged tagged_obj = *taggedP;
-    if (MPS_FIX1(_ss, tagged_obj)) {
-      gctools::Tagged obj = gctools::untag_object<gctools::Tagged>(tagged_obj);
-      gctools::Tagged tag = gctools::tag<gctools::Tagged>(tagged_obj);
-      mps_res_t res = MPS_FIX2(_ss, reinterpret_cast<mps_addr_t *>(&obj));
-      if (res != MPS_RES_OK) return res;
-      obj = obj | tag;
-      *taggedP = obj;
-    }
-  };
-  return MPS_RES_OK;
-};
+// Notes: tagged_objectp cuts out nonpointers (e.g. immediate fixnums)
+// The macro assumes that the mps_ss_t is called "ss".
+// MPS_FIX2 alters the pointer if the object has moved, so it must be retagged and propagated.
+// MPS docs say to return ASAP if RES is not MPS_RES_OK.
+#define PTRFIX(_ptr_)\
+  {\
+    gctools::Tagged *taggedP = _ptr_;\
+    if (gctools::tagged_objectp(*taggedP)) {\
+      gctools::Tagged tagged_obj = *taggedP;\
+      if (MPS_FIX1(ss, tagged_obj)) {\
+        gctools::Tagged obj = gctools::untag_object<gctools::Tagged>(tagged_obj);\
+        gctools::Tagged tag = gctools::tag<gctools::Tagged>(tagged_obj);\
+        mps_res_t res = MPS_FIX2(ss, reinterpret_cast<mps_addr_t *>(&obj));\
+        if (res != MPS_RES_OK) return res;\
+        obj = obj | tag;\
+        *taggedP = obj;\
+      };\
+    };\
+  }
 
-#define SMART_PTR_FIX(_smartptr_) taggedPtrFix(_ss, _mps_zs, _mps_w, _mps_ufs, _mps_wt, reinterpret_cast<gctools::Tagged *>(&((_smartptr_).rawRef_())))
-
-inline mps_res_t ptrFix(mps_ss_t _ss, mps_word_t _mps_zs, mps_word_t _mps_w, mps_word_t &_mps_ufs, mps_word_t _mps_wt, gctools::Tagged *taggedP) {
-  if (gctools::tagged_objectp(*taggedP)) {
-    gctools::Tagged tagged_obj = *taggedP;
-    if (MPS_FIX1(_ss, tagged_obj)) {
-      gctools::Tagged obj = gctools::untag_object<gctools::Tagged>(tagged_obj);
-      gctools::Tagged tag = gctools::tag<gctools::Tagged>(tagged_obj);
-      mps_res_t res = MPS_FIX2(_ss, reinterpret_cast<mps_addr_t *>(&obj));
-      if (res != MPS_RES_OK) return res;
-      obj = obj | tag;
-      *taggedP = obj;
-    };
-  };
-  return MPS_RES_OK;
-};
-#define TAGGED_POINTER_FIX(_ptr_) ptrFix(_ss, _mps_zs, _mps_w, _mps_ufs, _mps_wt, reinterpret_cast<gctools::Tagged *>(&(_ptr_).rawRef_()))
+#define SMART_PTR_FIX(_smartptr_) PTRFIX(reinterpret_cast<gctools::Tagged *>(&((_smartptr_).rawRef_())))
+#define TAGGED_POINTER_FIX(_ptr_) PTRFIX(reinterpret_cast<gctools::Tagged *>(&(_ptr_).rawRef_()))
 // Get rid of SIMPLE_POINTER_FIX - its a terrible name
-#define SIMPLE_POINTER_FIX(_ptr_) ptrFix(_ss, _mps_zs, _mps_w, _mps_ufs, _mps_wt, reinterpret_cast<gctools::Tagged *>(&(_ptr_)))
-#define POINTER_REF_FIX(_ptr_) ptrFix(_ss, _mps_zs, _mps_w, _mps_ufs, _mps_wt, reinterpret_cast<gctools::Tagged *>(&(_ptr_)))
-#define POINTER_FIX(_ptr_) ptrFix(_ss, _mps_zs, _mps_w, _mps_ufs, _mps_wt, reinterpret_cast<gctools::Tagged *>(_ptr_))
+#define SIMPLE_POINTER_FIX(_ptr_) PTRFIX(reinterpret_cast<gctools::Tagged *>(&(_ptr_)))
+#define POINTER_REF_FIX(_ptr_) PTRFIX(reinterpret_cast<gctools::Tagged *>(&(_ptr_)))
+#define POINTER_FIX(_ptr_) PTRFIX(reinterpret_cast<gctools::Tagged *>(_ptr_))
 
 namespace gctools {
 

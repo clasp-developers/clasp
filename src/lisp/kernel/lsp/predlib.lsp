@@ -45,18 +45,17 @@ Builds a new function which accepts any number of arguments but always outputs N
     (error "Symbol ~s is a declaration specifier and cannot be used to name a new type" name)))
 (export 'create-type-name)
 
-(defun type-expander (name)
+(export 'ext::type-expander "EXT")
+(defun ext:type-expander (name)
   (get-sysprop name 'deftype-definition))
 
-(defun (setf type-expander) (function name)
+(defun (setf ext:type-expander) (function name)
   (unless (symbolp name)
     (error "~s is not a valid type specifier" name))
   (create-type-name name)
   (put-sysprop name 'DEFTYPE-DEFINITION function)
   (subtypep-clear-cache)
   function)
-
-
 
 
 ;;; DEFTYPE macro.
@@ -87,7 +86,7 @@ by (documentation 'NAME 'type)."
     ;; FIXME: Use FORMAT to produce a default docstring. Maybe.
     `(eval-when (:compile-toplevel :load-toplevel :execute)
        ,@(si::expand-set-documentation name 'type doc)
-       (funcall #'(setf type-expander)
+       (funcall #'(setf ext:type-expander)
                 #'(lambda ,lambda-list
                     (declare (core:lambda-name ,name) ,@decls)
                     ,@(when doc (list doc))
@@ -121,8 +120,6 @@ bignums."
 (deftype ext::integer32 () '(INTEGER #x-80000000 #x7FFFFFFF))
 (deftype ext::byte64 () '(INTEGER 0 #xFFFFFFFFFFFFFFFF))
 (deftype ext::integer64 () '(INTEGER #x-8000000000000000 #x7FFFFFFFFFFFFFFF))
-(deftype ext::cl-fixnum () '(SIGNED-BYTE #.sys:CL-FIXNUM-BITS))  ;; Clasp change
-(deftype ext::cl-index () '(UNSIGNED-BYTE #.cmp::+size_t-bits+)) ;; Clasp change
 
 (deftype real (&optional (start '* start-p) (end '*))
   (if start-p
@@ -294,7 +291,7 @@ fill-pointer, and is not adjustable."
 and is not adjustable."
   (if size `(simple-array bit (,size)) '(simple-array bit (*))))
 
-(deftype array-index ()
+(deftype ext:array-index ()
   '(integer 0 #.(1- array-dimension-limit)))
 
 ;;************************************************************
@@ -364,11 +361,8 @@ and is not adjustable."
   '#.(append '(NIL BASE-CHAR #+unicode CHARACTER BIT EXT:BYTE8 EXT:INTEGER8)
              '(EXT:BYTE16 EXT:INTEGER16)
              '(EXT:BYTE32 EXT:INTEGER32)
-             (when (= 32 cmp::+size_t-bits+) '(ext:cl-index))
-             (when (< 32 core:cl-fixnum-bits 64) '(FIXNUM))
+             '(fixnum)
              '(EXT:BYTE64 EXT:INTEGER64)
-             (when (= 64 cmp::+size_t-bits+) '(ext:cl-index))
-             (when (< 64 core:cl-fixnum-bits) '(ext::CL-INDEX FIXNUM))
              '(SINGLE-FLOAT DOUBLE-FLOAT T)))
 
 (defun upgraded-array-element-type (element-type &optional env)
@@ -548,8 +542,8 @@ Returns T if X belongs to TYPE; NIL otherwise."
           (or (endp (cdr i)) (match-dimensions object (second i)))))
     (t
      (cond
-           ((type-expander tp)
-            (typep object (apply (type-expander tp) i)))
+           ((ext:type-expander tp)
+            (typep object (apply (ext:type-expander tp) i)))
 	   ((consp i)
 	    (error-type-specifier type))
 	   ((setq c (find-class type nil))
@@ -568,7 +562,7 @@ Returns T if X belongs to TYPE; NIL otherwise."
 (defun normalize-type (type &aux tp i fd)
   ;; Loops until the car of type has no DEFTYPE definition.
   (cond ((symbolp type)
-	 (if (setq fd (type-expander type))
+	 (if (setq fd (ext:type-expander type))
              (normalize-type (funcall fd))
              (values type nil)))
 	#+clos
@@ -577,7 +571,7 @@ Returns T if X belongs to TYPE; NIL otherwise."
 	 (error-type-specifier type))
 	((progn
 	   (setq tp (car type) i (cdr type))
-	   (setq fd (type-expander tp)))
+	   (setq fd (ext:type-expander tp)))
 	 (normalize-type (apply fd i)))
 	((and (eq tp 'INTEGER) (consp (cadr i)))
 	 (values tp (list (car i) (1- (caadr i)))))
@@ -585,15 +579,15 @@ Returns T if X belongs to TYPE; NIL otherwise."
 
 (defun expand-deftype (type)
   (cond ((symbolp type)
-	 (let ((fd (type-expander type)))
+	 (let ((fd (ext:type-expander type)))
 	   (if fd
 	       (expand-deftype (funcall fd))
 	       type)))
 	((and (consp type)
 	      (symbolp (first type)))
-	 (let ((fd (type-expander (first type))))
+	 (let ((fd (ext:type-expander (first type))))
 	   (if fd
-	       (expand-deftype (funcall fd (rest type)))
+	       (expand-deftype (apply fd (rest type)))
 	       type)))
 	(t type)))
 
@@ -1141,8 +1135,7 @@ if not possible."
       #+clasp(core:simple-vector-int16-t (simple-array ext::integer16 (*)))
       #+clasp(core:simple-vector-int32-t (simple-array ext::integer32 (*)))
       #+clasp(core:simple-vector-int64-t (simple-array ext::integer64 (*)))
-      #+clasp(core:simple-vector-size-t (simple-array ext::cl-index (*)))
-      #+clasp(core:simple-vector-fixnum (simple-array ext::cl-fixnum (*)))
+      #+clasp(core:simple-vector-fixnum (simple-array fixnum (*)))
       #+clasp(core:simple-vector-double (simple-array double-float (*)))
       #+clasp(core:simple-vector-float (simple-array single-float (*)))
       #+clasp(core:MDARRAY-BASE-CHAR (array base-char (*)))
@@ -1153,13 +1146,12 @@ if not possible."
       #+clasp(core:MDARRAY-BYTE8-T (array ext::BYTE8 (*)))
       #+clasp(core:MDARRAY-CHARACTER (array character (*)))
       #+clasp(core:MDARRAY-DOUBLE (array double-float (*)))
-      #+clasp(core:MDARRAY-FIXNUM (array ext::cl-fixnum (*)))
+      #+clasp(core:MDARRAY-FIXNUM (array fixnum (*)))
       #+clasp(core:MDARRAY-FLOAT (array single-float (*)))
       #+clasp(core:MDARRAY-INT16-T (array ext::integer16 (*)))
       #+clasp(core:MDARRAY-INT32-T (array ext::integer32 (*)))
       #+clasp(core:MDARRAY-INT64-T (array ext::integer64 (*)))
       #+clasp(core:MDARRAY-INT8-T (array ext::integer8 (*)))
-      #+clasp(core:MDARRAY-SIZE-T (array ext::cl-index (*)))
       #+clasp(core:MDARRAY-T (array T (*)))
       #+clasp(core:SIMPLE-MDARRAY-BASE-CHAR (simple-array base-char (*)))
       #+clasp(core:SIMPLE-MDARRAY-BIT (simple-array bit (*)))
@@ -1169,13 +1161,12 @@ if not possible."
       #+clasp(core:SIMPLE-MDARRAY-BYTE8-T (simple-array ext::BYTE8 (*)))
       #+clasp(core:SIMPLE-MDARRAY-CHARACTER (simple-array CHARACTER (*)))
       #+clasp(core:SIMPLE-MDARRAY-DOUBLE (simple-array DOUBLE-FLOAT (*)))
-      #+clasp(core:SIMPLE-MDARRAY-FIXNUM (simple-array ext::cl-fixnum (*)))
+      #+clasp(core:SIMPLE-MDARRAY-FIXNUM (simple-array fixnum (*)))
       #+clasp(core:SIMPLE-MDARRAY-FLOAT (simple-array SINGLE-FLOAT (*)))
       #+clasp(core:SIMPLE-MDARRAY-INT16-T (simple-array ext::INTEGER16 (*)))
       #+clasp(core:SIMPLE-MDARRAY-INT32-T (simple-array ext::INTEGER32 (*)))
       #+clasp(core:SIMPLE-MDARRAY-INT64-T (simple-array ext::INTEGER64 (*)))
       #+clasp(core:SIMPLE-MDARRAY-INT8-T (simple-array  ext::INTEGER8 (*)))
-      #+clasp(core:SIMPLE-MDARRAY-SIZE-T (simple-array ext::cl-index (*)))
       #+clasp(core:SIMPLE-MDARRAY-T (simple-array T (*)))
       (STRING (ARRAY CHARACTER (*)))
       #+unicode
@@ -1275,7 +1266,7 @@ if not possible."
 	((eq type 'T) -1)
 	((eq type 'NIL) 0)
         ((symbolp type)
-	 (let ((expander (type-expander type)))
+	 (let ((expander (ext:type-expander type)))
 	   (cond (expander
 		  (canonical-type (funcall expander)))
 		 ((find-built-in-tag type))
@@ -1318,7 +1309,7 @@ if not possible."
 			  (register-array-type `(SIMPLE-ARRAY ,@(rest type)))))
 	   ((COMPLEX-ARRAY SIMPLE-ARRAY) (register-array-type type))
 	   (FUNCTION (canonical-type 'FUNCTION))
-	   (t (let ((expander (type-expander (first type))))
+	   (t (let ((expander (ext:type-expander (first type))))
 		(if expander
 		    (canonical-type (apply expander (rest type)))
 		    (unless (assoc (first type) *elementary-types*)

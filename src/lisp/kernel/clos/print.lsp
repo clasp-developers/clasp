@@ -15,8 +15,9 @@
 ;;; ----------------------------------------------------------------------
 ;;; Load forms
 ;;;
-;;; ECL extends the ANSI specification by allowing to use
+;;; Clasp extends the ANSI specification by allowing to use
 ;;; MAKE-LOAD-FORM on almost any kind of lisp object.
+;;; But it doesn't necessarily use those methods in the compiler. see cmpliteral.lsp
 ;;;
 
 (defun make-load-form-saving-slots (object &key slot-names environment)
@@ -227,21 +228,21 @@ printer and we should rather use MAKE-LOAD-FORM."
   (when (and *print-readably* (null *read-eval*))
     (error 'print-not-readable :object x))
   (let* ((negative-infinities '((single-float .
-                                 "#.ext::single-float-negative-infinity")
+                                 "#.ext:single-float-negative-infinity")
                                 (double-float .
-                                 "#.ext::double-float-negative-infinity")
+                                 "#.ext:double-float-negative-infinity")
                                 (long-float .
-                                 "#.ext::long-float-negative-infinity")
+                                 "#.ext:long-float-negative-infinity")
                                 (short-float .
-                                 "#.ext::short-float-negative-infinity")))
+                                 "#.ext:short-float-negative-infinity")))
          (positive-infinities '((single-float .
-                                 "#.ext::single-float-positive-infinity")
+                                 "#.ext:single-float-positive-infinity")
                                 (double-float .
-                                 "#.ext::double-float-positive-infinity")
+                                 "#.ext:double-float-positive-infinity")
                                 (long-float .
-                                 "#.ext::long-float-positive-infinity")
+                                 "#.ext:long-float-positive-infinity")
                                 (short-float .
-                                 "#.ext::short-float-positive-infinity")))
+                                 "#.ext:short-float-positive-infinity")))
          (record (assoc (type-of x)
                         (if (plusp x) positive-infinities negative-infinities))))
     (unless record
@@ -297,3 +298,12 @@ printer and we should rather use MAKE-LOAD-FORM."
   obj)
 
 ;;; ----------------------------------------------------------------------
+;;; Clasp specific methods
+
+(defmethod cl:print-object ((object core:general) stream)
+  (if (and *print-readably* (core:fieldsp object))
+      (progn
+        (write-string "#i" stream)
+        (write (cons (class-name (class-of object)) (core:encode object)) :stream stream))
+      (call-next-method)))
+                          

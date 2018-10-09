@@ -32,14 +32,6 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (core:select-package :cmp))
 
-
-;;;
-;;; Until we have proper source tracking set this to the current source line number
-;;; whenever we read a new form in compile-file or evaluate the DEFUN macro.
-;;; This should give us at least some level of source location information
-;;;
-(defvar *current-form-lineno* 0)
-
 (defconstant +debug-dwarf-version+ 4)
 
 ;; bound when a new thread is created
@@ -120,6 +112,7 @@ using features defined in corePackage.cc"
         (get-builtin-target-triple-and-data-layout)
       (llvm-sys:set-target-triple m target-triple)
       (llvm-sys:set-data-layout.string m data-layout)
+      (llvm-sys:emit-version-ident-metadata m)
       m)))
 
 (defvar *run-time-module-counter* 1)
@@ -151,6 +144,11 @@ No DIBuilder is defined for the default module")
 (defun jit-constant-pointer-null-get (type)
   (llvm-sys:constant-pointer-null-get type))
 
+(defun jit-constant-true ()
+  (llvm-sys:get-true *llvm-context*))
+
+(defun jit-constant-false ()
+  (llvm-sys:get-false *llvm-context*))
 
 (defun jit-constant-i1 (val)
   "Create an i1 constant in the current context"
@@ -188,6 +186,13 @@ No DIBuilder is defined for the default module")
   "Create an i64 constant in the current context"
   (let ((ap-arg (llvm-sys:make-apint-width val 64 t)))
     (llvm-sys:constant-int-get *llvm-context* ap-arg)))
+
+(defun ensure-jit-constant-i64 (val)
+  "Create an i64 constant in the current context if the val is a fixnum - otherwise it should already be a value"
+  (if (fixnump val)
+      (let ((ap-arg (llvm-sys:make-apint-width val 64 t)))
+        (llvm-sys:constant-int-get *llvm-context* ap-arg))
+      val))
 
 (defun jit-constant-ui32 (val)
   "Create an unsigned i32 constant in the current context"
@@ -293,7 +298,7 @@ No DIBuilder is defined for the default module")
     (tagbody
      top
        (let ((c (aref name i))
-             (cnext (if (< i len-1) (aref name (+ i 1)) #\nul)))
+             (cnext (if (< i len-1) (aref name (+ i 1)) #.(code-char 0))))
          (if (char= c #\\)
              (if (char= cnext #\\)
                  (progn
@@ -328,18 +333,26 @@ No DIBuilder is defined for the default module")
       (t raw-name))))
 
 (export 'print-name-from-unescaped-split-name)
+;;; FIXME: Get the filename from source-pos-info also.
 (defun function-name-from-source-info (lname)
-  (cond
-    ((and *compile-file-pathname*
-          *current-form-lineno*)
-     (core:bformat nil "%s.%s^%d^TOP-COMPILE-FILE" (pathname-name *compile-file-pathname*) (pathname-type *compile-file-pathname*) *current-form-lineno*))
-    ((and *load-pathname*
-          *current-form-lineno*)
-     (core:bformat nil "%s.%s^%d^TOP-LOAD" (pathname-name *load-pathname*) (pathname-type *load-pathname*) *current-form-lineno*))
-    (*current-form-lineno*
-     (core:bformat nil "UNKNOWN^%d^TOP-UNKNOWN" *current-form-lineno*))
-    (t "UNKNOWN??LINE^TOP-UNKNOWN")))
-  
+  (if *current-source-pos-info*
+      (let ((lineno (core:source-pos-info-lineno *current-source-pos-info*)))
+        (cond
+          (*compile-file-pathname*
+           (core:bformat nil "%s.%s^%d^TOP-COMPILE-FILE"
+                         (pathname-name *compile-file-pathname*)
+                         (pathname-type *compile-file-pathname*)
+                         lineno))
+          ;; Is this even possible?
+          (*load-pathname*
+           (core:bformat nil "%s.%s^%d^TOP-LOAD"
+                         (pathname-name *load-pathname*)
+                         (pathname-type *load-pathname*)
+                         lineno))
+          (t
+           (core:bformat nil "UNKNOWN^%d^TOP-UNKNOWN" lineno))))
+      "UNKNOWN??LINE^TOP-UNKNOWN"))
+
 (defun jit-function-name (lname)
   "Depending on the type of LNAME an actual LLVM name is generated"
   ;;  (break "Check backtrace")
@@ -355,7 +368,7 @@ No DIBuilder is defined for the default module")
        ((string= lname "lambda") lname)         ; this one is ok
        ((string= lname "ltv-literal") lname)    ; this one is ok
        ((string= lname "disassemble") lname)    ; this one is ok
-       (t (bformat t "jit-function-name lname = %s\n" lname)
+       (t (bformat t "jit-function-name lname = %s%N" lname)
           (break "Always pass symbol as name") lname)))
     ((symbolp lname)
      (cond ((eq lname 'core::top-level)
@@ -373,7 +386,7 @@ No DIBuilder is defined for the default module")
                                  "KEYWORD")))
               (escape-and-join-jit-name (list sym-name pkg-name "FN"))))))
     ((and (consp lname) (eq (car lname) 'setf) (symbolp (second lname)))
-;;;     (core:bformat t "jit-function-name handling SETF: %s\n" lname)
+;;;     (core:bformat t "jit-function-name handling SETF: %s%N" lname)
      (let* ((sn (cadr lname))
             (sym-pkg (symbol-package sn))
             (sym-name (symbol-name sn))
@@ -382,7 +395,7 @@ No DIBuilder is defined for the default module")
                           "KEYWORD")))
        (escape-and-join-jit-name (list sym-name pkg-name "SETF"))))
     ((and (consp lname) (eq (car lname) 'setf) (consp (second lname)))
-;;;     (core:bformat t "jit-function-name handling SETFCONS: %s\n" lname)
+;;;     (core:bformat t "jit-function-name handling SETFCONS: %s%N" lname)
      ;; (setf (something ...))
      (let* ((sn (second lname))
             (sn-sym (first sn))
@@ -408,7 +421,7 @@ No DIBuilder is defined for the default module")
             (specializers (core:bformat nil "%s" (cddr lname))))
        (escape-and-join-jit-name (list (string setf-name-symbol) pkg-name specializers "SETFMETHOD"))))
     ((consp lname)
-;;;     (core:bformat t "jit-function-name handling UNKNOWN: %s\n" lname)
+;;;     (core:bformat t "jit-function-name handling UNKNOWN: %s%N" lname)
      ;; What is this????
      (bformat nil "%s_CONS-LNAME?" lname))
     (t (error "Illegal lisp function name[~a]" lname))))
@@ -425,9 +438,8 @@ No DIBuilder is defined for the default module")
 
 
 (defun link-builtins-module (module)
-  "Merge the intrinsics module with the passed module.
+  "Merge the builtins module with the passed module.
 The passed module is modified as a side-effect."
-  (get-builtins-module)
   ;; Clone the intrinsics module and link it in
   (quick-module-dump module "module before linking builtins-clone")
   (let ((linker (llvm-sys:make-linker module))
@@ -437,7 +449,7 @@ The passed module is modified as a side-effect."
     (llvm-sys:link-in-module linker builtins-clone))
   module)
 
-(defun jit-link-fastgf-module (module)
+(defun link-fastgf-module (module)
   "Merge the intrinsics module with the passed module.
 The passed module is modified as a side-effect."
   (unless *thread-local-fastgf-module*
@@ -460,26 +472,16 @@ The passed module is modified as a side-effect."
       *thread-local-jit-engine*
       (setf *thread-local-jit-engine* (make-cxx-object 'llvm-sys:clasp-jit))))
 
-(defvar *optimizations-on* t)
-(defvar *optimization-level* :-O3)
 (defvar *size-level* 1)
-
 
 (defun optimize-module-for-compile-file (module &optional (optimize-level *optimization-level*) (size-level *size-level*))
   (declare (type (or null llvm-sys:module) module))
-  (when (and *optimizations-on* module)
-    #+(or)(let ((call-sites (call-sites-to-always-inline module)))
-            (bformat t "Call-sites -> %s\n" call-sites))
+  (when (> *optimization-level* 0)
     (quick-module-dump module "in-optimize-module-for-compile-file-after-link-builtins")
     (let* ((pass-manager-builder (llvm-sys:make-pass-manager-builder))
            (mpm (llvm-sys:make-pass-manager))
            (fpm (llvm-sys:make-function-pass-manager module))
-           (olevel (cond
-                     ((eq optimize-level :-O3) 3)
-                     ((eq optimize-level :-O2) 2)
-                     ((eq optimize-level :-O1) 1)
-                     ((eq optimize-level :-O0) 0)
-                     (t (error "Unsupported optimize-level ~a - only :-O3 :-O2 :-O1 :-O0 are allowed" optimize-level)))))
+           (olevel optimize-level))
       (llvm-sys:pass-manager-builder-setf-opt-level pass-manager-builder olevel)
       (llvm-sys:pass-manager-builder-setf-size-level pass-manager-builder size-level)
       (progn
@@ -493,25 +495,20 @@ The passed module is modified as a side-effect."
 
 
 (defun optimize-module-for-compile (module)
-  #+(or)(bformat *debug-io* "In optimize-module-for-compile\n")
+  #+(or)(bformat *debug-io* "In optimize-module-for-compile%N")
   #+(or)(llvm-sys:dump-module module)
   module)
 
 #+(or)
 (defun optimize-module-for-compile (module &optional (optimize-level *optimization-level*) (size-level *size-level*))
   (declare (type (or null llvm-sys:module) module))
-  (when (and *optimizations-on* module)
+  (when (> *optimization-level* 0)
     #++(let ((call-sites (call-sites-to-always-inline module)))
-      (bformat t "Call-sites -> %s\n" call-sites))
+      (bformat t "Call-sites -> %s%N" call-sites))
     (let* ((pass-manager-builder (llvm-sys:make-pass-manager-builder))
            (mpm (llvm-sys:make-pass-manager))
            (fpm (llvm-sys:make-function-pass-manager module))
-           (olevel (cond
-                     ((eq optimize-level :-O3) 3)
-                     ((eq optimize-level :-O2) 2)
-                     ((eq optimize-level :-O1) 1)
-                     ((eq optimize-level :-O0) 0)
-                     (t (error "Unsupported optimize-level ~a - only :-O3 :-O2 :-O1 :-O0 are allowed" optimize-level)))))
+           (olevel optimize-level))
       (llvm-sys:pass-manager-builder-setf-opt-level pass-manager-builder olevel)
       (llvm-sys:pass-manager-builder-setf-size-level pass-manager-builder size-level)
       (llvm-sys:pass-manager-builder-setf-inliner pass-manager-builder (llvm-sys:create-always-inliner-legacy-pass))
@@ -538,13 +535,39 @@ The passed module is modified as a side-effect."
             (setf inline-functions (cons f inline-functions)))))
     inline-functions))
 
+(defun do-track-llvm-time (closure)
+  "Run the closure in and keep track of the time, adding it to this threads accumulated llvm time"
+  (let ((start-llvm-time (get-internal-run-time)))
+    (unwind-protect
+         (funcall closure)
+      (let ((llvm-time (/ (- (get-internal-run-time) start-llvm-time) (float internal-time-units-per-second))))
+        (llvm-sys:accumulate-llvm-usage-seconds llvm-time)))))
+
+(si::fset 'with-track-llvm-time
+	   #'(lambda (args env)
+               (declare (core:lambda-name with-track-llvm-time))
+               (let ((code (cdr args)))
+                 `(do-track-llvm-time
+                      (function
+                       (lambda ()
+                        ,@code)))))
+	  t)
 
 
 (defun link-inline-remove-builtins (module)
-  (link-builtins-module module)
-  (optimize-module-for-compile-file module)
-  (llvm-sys:remove-always-inline-functions module))
+  (when (>= *optimization-level* 2)
+    (with-track-llvm-time
+        (link-builtins-module module)
+      (optimize-module-for-compile-file module)
+      (llvm-sys:remove-always-inline-functions module))))
 
+
+(defun link-inline-remove-fastgf (module)
+  (when (>= *optimization-level* 2)
+    (with-track-llvm-time
+        (link-fastgf-module module)
+      (optimize-module-for-compile-file module)
+      (llvm-sys:remove-always-inline-functions module))))
 
 (defun switch-always-inline-to-inline (module)
   (let ((functions (llvm-sys:module-get-function-list module))
@@ -593,7 +616,7 @@ The passed module is modified as a side-effect."
              #+threads(mp:lock *jit-log-lock* t)
              (if (not (boundp '*jit-log-stream*))
                  (let ((filename (core:bformat nil "/tmp/clasp-symbols-%s" (core:getpid))))
-                   (core:bformat *debug-io* "Writing jitted symbols to %s\n" filename)
+                   (core:bformat *debug-io* "Writing jitted symbols to %s%N" filename)
                    (setq *jit-log-stream* (open filename :direction :output))))
              (write-string (core:pointer-as-string (cadr symbol-info)) *jit-log-stream*)
              (write-char #\space *jit-log-stream*)
@@ -614,22 +637,23 @@ The passed module is modified as a side-effect."
     (if (null dispatcher)
         (progn
           (quick-module-dump original-module "before-link-builtins")
-          (link-builtins-module original-module)
+          (link-inline-remove-builtins original-module)
           (quick-module-dump original-module "module-before-optimize"))
         (progn
-          (jit-link-fastgf-module original-module)))
+          (link-inline-remove-fastgf original-module)))
     (let ((module original-module))
-      (irc-verify-module-safe module)
+      ;; (irc-verify-module-safe module)
       (let ((jit-engine (jit-engine))
             (repl-name (llvm-sys:get-name main-fn))
             (startup-name (llvm-sys:get-name startup-fn))
             (shutdown-name (llvm-sys:get-name shutdown-fn)))
-        (unwind-protect
-             (progn
-               (mp:lock *jit-lock* t)
-               (let ((handle (llvm-sys:clasp-jit-add-module jit-engine module)))
-                 (llvm-sys:jit-finalize-repl-function jit-engine handle repl-name startup-name shutdown-name literals-list)))
-          (mp:unlock *jit-lock*)))))
+        (with-track-llvm-time
+            (unwind-protect
+                 (progn
+                   (mp:lock *jit-lock* t)
+                   (let ((handle (llvm-sys:clasp-jit-add-module jit-engine module)))
+                     (llvm-sys:jit-finalize-repl-function jit-engine handle repl-name startup-name shutdown-name literals-list)))
+              (mp:unlock *jit-lock*))))))
 
   (defun jit-add-module-return-dispatch-function (original-module dispatch-fn startup-fn shutdown-fn literals-list)
     (jit-add-module-return-function original-module dispatch-fn startup-fn shutdown-fn literals-list :dispatch))

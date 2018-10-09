@@ -35,33 +35,13 @@ THE SOFTWARE.
 #include <clasp/core/array.h>
 #include <clasp/core/wrappers.h>
 
-namespace sockets {
-
-#define EXPOSE_TO_CANDO
-#define Use_SocketsPkg
-#define EXTERN_REGISTER
-//#include <clasp/core/initClasses.h>
-#undef EXTERN_REGISTER
-#undef Use_SocketsPkg
-#undef EXPOSE_TO_CANDO
-};
-
 using namespace core;
 
 namespace sockets {
 
-
 void SocketsExposer_O::expose(core::Lisp_sp lisp, core::Exposer_O::WhatToExpose what) const {
   switch (what) {
   case candoClasses: {
-#define ALL_STAGES
-#define Use_SocketsPkg
-#define INVOKE_REGISTER
-//#include <clasp/core/initClasses.h>
-#undef INVOKE_REGISTER
-#undef Use_SocketsPkg
-#undef ALL_STAGES
-
   } break;
   case candoFunctions: {
     //nothing
@@ -69,7 +49,7 @@ void SocketsExposer_O::expose(core::Lisp_sp lisp, core::Exposer_O::WhatToExpose 
       break;
   case candoGlobals: {
     list<string> nicknames;
-    list<string> usePackages = {"COMMON-LISP", "CLOS", SocketsPkg};
+    list<string> usePackages = {"COMMON-LISP" /*, "CLOS"*/ , SocketsPkg};
     _lisp->makePackage("SB-BSD-SOCKETS", nicknames, usePackages);
     initialize_sockets_globals();
   };

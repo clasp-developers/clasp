@@ -123,28 +123,13 @@
   vaslist*
   methods-vaslist-t*
   invocation-history-frame*
-  cleanup-action
   continue-after-dispatch
   miss-basic-block)
 
 (defun argument-get (arguments index)
   (elt (argument-holder-dispatch-arguments arguments) index))
 
-(defun argument-next (arguments)
-  (if (argument-holder-remaining-register-arguments arguments)
-      (pop (argument-holder-remaining-register-arguments arguments))
-      (irc-va_arg (argument-holder-dispatch-va-list* arguments) %t*%)))
-
 (defstruct (dtree (:type vector) :named) root)
-
-(defstruct (spec-vec-iterator (:type vector))
-  index vector)
-
-(defun spec-vec-iterator-value (spec-vec)
-  (svref (spec-vec-iterator-vector spec-vec) (spec-vec-iterator-index spec-vec)))
-
-(defun spec-vec-iterator-advance (spec-vec)
-  (incf (spec-vec-iterator-index spec-vec)))
 
 (defun dtree-add-call-history (dtree call-history)
   "Add call-history for one generic-function to the dtree"
@@ -368,7 +353,7 @@
 
 (defun compile-node (node args orig-args)
   (let ((arg (gensym "ARG")))
-    `(let ((,arg (va-arg ,args)))
+    `(let ((,arg (core:vaslist-pop ,args))) ;; was (va-arg ,args)
        ,@(compile-eql-specializers node arg args orig-args)
        ,(compile-class-specializers node arg args orig-args))))
 
@@ -397,13 +382,13 @@
   (cond
     ((null node)
      #+(or)(let ((nodeid (gensym)))
-	     (core:bformat fout "%s [shape = circle];\n" (string nodeid))
-	     (core:bformat fout "%s [label = \"nil\"];\n" (string nodeid))
+	     (core:bformat fout "%s [shape = circle];%N" (string nodeid))
+	     (core:bformat fout "%s [label = \"nil\"];%N" (string nodeid))
 	     nodeid)
      nil)
     ((outcome-p node)
      (let ((nodeid (gensym)))
-       (core:bformat fout "%s [shape=ellipse,label=\"HIT-%s\"];\n" (string nodeid) (core:object-address (outcome-outcome node)))
+       (core:bformat fout "%s [shape=ellipse,label=\"HIT-%s\"];%N" (string nodeid) (core:object-address (outcome-outcome node)))
        nodeid))
     ((node-p node)
      (let* ((nodeid (gensym))
@@ -447,16 +432,16 @@
                (setq first-one nil)
                (core:bformat fout "| "))
            (core:bformat fout " <f%s> %s " (first x) (second x)))
-         (core:bformat fout "\" ];\n"))
+         (core:bformat fout "\" ];%N"))
        (mapc (lambda (x)
-               (core:bformat fout "%s:<f%s> -> %s;\n" (string nodeid) (first x) (string (third x))))
+               (core:bformat fout "%s:<f%s> -> %s;%N" (string nodeid) (first x) (string (third x))))
              entries)
        #+(or)(loop for x in entries
-                do (core:bformat fout "~a:<f~a> -> ~a;\n" (string nodeid) (first x) (string (third x))))
+                do (core:bformat fout "~a:<f~a> -> ~a;%N" (string nodeid) (first x) (string (third x))))
        nodeid))
     (t (error "Handle draw-node for ~a" node )
        #+(or)(let ((id (gensym)))
-	       (core:bformat fout "~a [ label = \"%s\"];\n" id node)
+	       (core:bformat fout "~a [ label = \"%s\"];%N" id node)
 	       id))))
 
 
@@ -467,16 +452,16 @@
 
 (defmacro with-graph ((name fout &rest open-args) &body body)
   `(with-open-file (,fout ,@open-args)
-     (core:bformat ,fout "digraph %s {\n" ,name)
+     (core:bformat ,fout "digraph %s {%N" ,name)
      ,@body
-     (core:bformat ,fout "}\n")))
+     (core:bformat ,fout "}%N")))
 
 (defun draw-graph (pathname dtree)
   (with-graph ("G" fout pathname :direction :output)
-    (core:bformat fout "graph [ rankdir = \"LR\"];\n")
+    (core:bformat fout "graph [ rankdir = \"LR\"];%N")
     (let ((startid (gensym)))
-      (core:bformat fout "%s [ label = \"Start\", shape = diamond ];\n" (string startid))
-      (core:bformat fout "%s -> %s;\n" (string startid) (string (draw-node fout (dtree-root dtree)))))))
+      (core:bformat fout "%s [ label = \"Start\", shape = diamond ];%N" (string startid))
+      (core:bformat fout "%s -> %s;%N" (string startid) (string (draw-node fout (dtree-root dtree)))))))
 
 (defun register-runtime-data (value table)
   "Register a integer index into the run time literal table for the discriminating function.
@@ -507,7 +492,7 @@
 ;;;
 
 (defun codegen-remaining-eql-tests (arguments cur-arg eql-tests eql-fail-branch)
-  (cf-log "codegen-remaining-eql-tests\n")
+  (cf-log "codegen-remaining-eql-tests%N")
   (if (null eql-tests)
       (irc-br eql-fail-branch)
       (let* ((eql-test (car eql-tests))
@@ -530,7 +515,7 @@
 	(codegen-node-or-outcome arguments cur-arg eql-outcome))))
 
 (defun codegen-eql-specializers (arguments cur-arg node)
-  (cf-log "codegen-eql-specializers\n")
+  (cf-log "codegen-eql-specializers%N")
   (let ((eql-tests (let (result)
                      (maphash (lambda (key value)
                                 (push (list key value) result))
@@ -554,7 +539,7 @@
       (irc-intrinsic-call-or-invoke "cc_vaslist_end" (list vaslist)))))
 
 (defun codegen-slot-reader (arguments cur-arg outcome)
-  (cf-log "entered codegen-slot-reader\n")
+  (cf-log "entered codegen-slot-reader%N")
 ;;; If the (cdr outcome) is a fixnum then we can generate code to read the slot
 ;;;    directly and remhash the outcome from the *outcomes* hash table.
 ;;; otherwise create an entry for the outcome and call the slot reader.
@@ -574,7 +559,7 @@
                                                          (list (jit-constant-size_t opt-data) (first (argument-holder-dispatch-arguments arguments))))))
                           (irc-intrinsic-call-or-invoke "cc_bound_or_error" (list slot-read-info (first (argument-holder-dispatch-arguments arguments)) value))))
                        ((consp opt-data)
-                        (cf-log "Generating slot reader for cons at %s\n" (core:object-address opt-data))
+                        (cf-log "Generating slot reader for cons at %s%N" (core:object-address opt-data))
                         (let* ((value (irc-intrinsic-call-or-invoke "cc_dispatch_slot_reader_cons" (list slot-read-info))))
                           (irc-intrinsic-call-or-invoke "cc_bound_or_error" (list slot-read-info (first (argument-holder-dispatch-arguments arguments)) value))))
                        (t (error "Unknown opt-data type ~a" opt-data)))))
@@ -582,7 +567,7 @@
         (irc-br (argument-holder-continue-after-dispatch arguments))))))
 
 (defun codegen-slot-writer (arguments cur-arg outcome)
-  (cf-log "codegen-slot-writer\n")
+  (cf-log "codegen-slot-writer%N")
 ;;; If the (optimized-slot-writer-data outcome) is a fixnum then we can generate code to read the slot
 ;;;    directly and remhash the outcome from the *outcomes* hash table.
 ;;; otherwise create an entry for the outcome and call the slot reader.
@@ -612,7 +597,7 @@
         (irc-br (argument-holder-continue-after-dispatch arguments))))))
 
 (defun codegen-fast-method-call (arguments cur-arg outcome)
-  (cf-log "codegen-fast-method-call\n")
+  (cf-log "codegen-fast-method-call%N")
   (let* ((fmf (fast-method-call-function outcome))
          (gf-data-id (register-runtime-data fmf *outcomes*))
          (effective-method-block (irc-basic-block-create "effective-method")))
@@ -636,7 +621,7 @@
       (irc-br (argument-holder-continue-after-dispatch arguments)))))
 
 (defun codegen-effective-method-call (arguments cur-arg outcome)
-  (cf-log "codegen-effective-method-call %s\n" outcome)
+  (cf-log "codegen-effective-method-call %s%N" outcome)
   (let ((gf-data-id (register-runtime-data outcome *outcomes*))
 	(effective-method-block (irc-basic-block-create "effective-method")))
     (irc-branch-to-and-begin-block effective-method-block)
@@ -659,12 +644,12 @@
       (irc-br (argument-holder-continue-after-dispatch arguments)))))
 
 (defun codegen-outcome (arguments cur-arg node)
-  (cf-log "codegen-outcome\n")
+  (cf-log "codegen-outcome%N")
   ;; The effective method will be found in a slot in the modules *gf-data* array
   ;;    the slot index will be in gf-data-id
   (let ((outcome (outcome-outcome node)))
     #+(or)(when *log-gf*
-            (core:bformat *log-gf* "About to codegen-outcome -> %s\n" outcome))
+            (core:bformat *log-gf* "About to codegen-outcome -> %s%N" outcome))
     (cond
       ((optimized-slot-reader-p outcome)
        (codegen-slot-reader arguments cur-arg outcome))
@@ -679,7 +664,7 @@
       (t (error "BUG: Bad thing to be an outcome: ~a~s" outcome)))))
 
 (defun codegen-class-binary-search (arguments cur-arg matches stamp-var)
-  (cf-log "codegen-class-binary-search\n")
+  (cf-log "codegen-class-binary-search%N")
   (cond
     ((null matches)
      (irc-br (argument-holder-miss-basic-block arguments)))
@@ -720,7 +705,7 @@
 	 (codegen-class-binary-search arguments cur-arg right-matches stamp-var))))))
 
 (defun codegen-arg-stamp (arguments cur-arg)
-  (cf-log "codegen-arg-stamp\n")
+  (cf-log "codegen-arg-stamp%N")
   "Return a uintptr_t llvm::Value that contains the stamp for this object"
   ;; First check the tag
   (let ((stamp (irc-intrinsic-call-or-invoke "cc_read_stamp" (list (irc-bit-cast (argument-get arguments cur-arg)  %i8*% "header*")))))
@@ -728,12 +713,12 @@
     stamp))
 
 (defun codegen-class-specializers (arguments cur-arg node)
-  (cf-log "entered codegen-class-specializer\n")
+  (cf-log "entered codegen-class-specializer%N")
       (let ((arg-stamp (codegen-arg-stamp arguments cur-arg)))
         (codegen-class-binary-search arguments cur-arg (node-class-specializers node) arg-stamp)))
 
 (defun codegen-skip-node (arguments cur-arg node)
-  (cf-log "entered codegen-skip-node\n")
+  (cf-log "entered codegen-skip-node%N")
   ;;;
   ;;; Here I could do an optimization.
   ;;;   If it's skip-nodes all the way to the outcome
@@ -742,7 +727,7 @@
     (codegen-node-or-outcome arguments cur-arg (skip-outcome skip-node))))
 
 (defun codegen-node (arguments cur-arg node)
-  (cf-log "entered codegen-node\n")
+  (cf-log "entered codegen-node%N")
   (let ((cur-arg (1+ cur-arg)))
     (debug-call "debugPointer" (list (irc-bit-cast (argument-get arguments cur-arg) %i8*%)))
     (if (skip-node-p node)
@@ -752,7 +737,7 @@
           (codegen-class-specializers arguments cur-arg node)))))
 
 (defun codegen-node-or-outcome (arguments cur-arg node-or-outcome)
-  (cf-log "entered codegen-node-or-outcome\n")
+  (cf-log "entered codegen-node-or-outcome%N")
   (if (outcome-p node-or-outcome)
       (codegen-outcome arguments cur-arg node-or-outcome)
       (codegen-node arguments cur-arg node-or-outcome)))
@@ -761,9 +746,8 @@
 ;;;
 ;;; Debugging a generic function dispatcher
 ;;;
-(defun debug-save-dispatcher (gf module disp-fn startup-fn shutdown-fn sorted-roots &optional (output-path #P"/tmp/dispatcher.ll"))
+(defun debug-save-dispatcher (module &optional (output-path #P"/tmp/dispatcher.ll"))
   "Save everything about the generic function so that it can be saved to a file and then edited and re-installed"
-  ;;  (cmp::gf-log-sorted-roots sorted-roots)
   (when (wild-pathname-p output-path)
     (setf output-path (pathname (substitute #\_ #\* (namestring output-path)))))
   (let ((fout (open output-path :direction :output)))
@@ -860,12 +844,7 @@
                                                          ihs*
                                                          va-list*
                                                          number-of-arguments-passed)
-                                          ihs*)))
-           (cleanup-action (when need-debug-frame
-                             #'(lambda (arguments)
-                                 (irc-intrinsic "cc_pop_InvocationHistoryFrame"
-                                                (first (argument-holder-register-arguments arguments))
-                                                (argument-holder-invocation-history-frame* arguments))))))
+                                          ihs*))))
       ;; We have va-list* and register-arguments for the arguments
       ;; We also have specializer-profile - now we can gather up the arguments we need to dispatch on.
       (flet ((next-argument (idx dispatch-register-arguments)
@@ -889,7 +868,6 @@
                                 :dispatch-va-list* va-list*
                                 :vaslist* vaslist*
                                 :methods-vaslist-t* vaslist-t*
-                                :cleanup-action cleanup-action
                                 :invocation-history-frame* invocation-history-frame*
                                 :miss-basic-block miss-basic-block))))))
 
@@ -925,148 +903,152 @@
     
 (defun codegen-dispatcher-from-dtree (generic-function dtree &key (generic-function-name "discriminator") output-path log-gf (debug-on t debug-on-p))
   (let ((debug-on (if debug-on-p
-                       debug-on
-                       (core:get-funcallable-instance-debug-on generic-function)))
+                      debug-on
+                      (core:get-funcallable-instance-debug-on generic-function)))
         (*the-module* (create-run-time-module-for-compile)))
     #+(or)(unless call-history
-            (core:bformat t "codegen-dispatcher %s  optimized-call-history -> %s\n" generic-function-name call-history)
-            (core:bformat t "  raw-call-history -> %s\n" raw-call-history)
-            (core:bformat t "  specializer-profile -> %s\n" specializer-profile))
+            (core:bformat t "codegen-dispatcher %s  optimized-call-history -> %s%N" generic-function-name call-history)
+            (core:bformat t "  raw-call-history -> %s%N" raw-call-history)
+            (core:bformat t "  specializer-profile -> %s%N" specializer-profile))
     (with-module (:module *the-module*
-                  :optimize nil
-                  :source-namestring "dispatcher"
-                  :source-file-info-handle 0)
-      (let* ((dispatcher-name (jit-function-name generic-function-name))
-             (disp-fn (irc-simple-function-create dispatcher-name
-                                                  %fn-registers-prototype% #| was %fn-gf% |#
-                                                  'llvm-sys::External-linkage
-                                                  *the-module*
-                                                  :argument-names +fn-registers-prototype-argument-names+ #| was %fn-gf-arguments% |# )))
-	;;(1) Create a function with a regular signature
-	;;(2) Allocate space for a va_list and copy the va_list passed into it.
-	;;(3) compile the dispatch function to llvm-ir refering to the eql specializers and stamps and
-	;;      the va_list passed.
-	;;(4) Reach an outcome and either call the effective method with the saved va_list
-	;;      or call the miss function with the saved va_list
-        (let* ((irbuilder-alloca (llvm-sys:make-irbuilder *llvm-context*))
-               (irbuilder-body (llvm-sys:make-irbuilder *llvm-context*))
-               (*irbuilder-function-alloca* irbuilder-alloca)
-               (*irbuilder-function-body* irbuilder-body)
-               (*current-function* disp-fn)
-               (*gf-data* 
-                 (llvm-sys:make-global-variable *the-module*
-                                                cmp:%t*[DUMMY]% ; type
-                                                nil ; isConstant
-                                                'llvm-sys:internal-linkage
-                                                (llvm-sys:undef-value-get cmp:%t*[DUMMY]%)
-                                                ;; nil ; initializer
-                                                (next-value-table-holder-name "dummy")))
-               (*gcroots-in-module* 
-                 (llvm-sys:make-global-variable *the-module*
-                                                cmp:%gcroots-in-module% ; type
-                                                nil ; isConstant
-                                                'llvm-sys:internal-linkage
-                                                (llvm-sys:undef-value-get cmp:%gcroots-in-module%)
-                                                ;; nil ; initializer
-                                                "GCRootsHolder"))
-               (*gf-data-id* 0)
-               (*message-counter* 0)
-               (*eql-selectors* (make-hash-table :test #'eql))
-               (*outcomes* (make-hash-table))
-               (entry-bb (irc-basic-block-create "entry" disp-fn))
-               (*bad-tag-bb* (irc-basic-block-create "bad-tag" disp-fn))
-               (register-arguments (llvm-sys:get-argument-list disp-fn))
-               (gf (first register-arguments))
-               (num-args (second register-arguments)))
-          (cmp:irc-set-insert-point-basic-block entry-bb irbuilder-alloca)
-          (let ((body-bb (irc-basic-block-create "body" disp-fn))
-                (miss-bb (irc-basic-block-create "miss" disp-fn)))
-            (irc-set-insert-point-basic-block body-bb irbuilder-body)
-            (with-irbuilder (irbuilder-body)
-              ;; Analyze the call history to see if there are optimizations that we can
-              ;; use when doing gf dispatch.
-              ;;  (1) If none of the methods need the arguments in a vaslist - then we
-              ;;      don't need to allocate or rewind a vaslist.
-              ;;  (2) If there are more required arguments than the number of register arguments
-              ;;      then we need to allocate a va_list to use when we run out of register arguments.
-              ;; Setup exception handling and cleanup landing pad
-              (let* ((arguments (analyze-generic-function-make-arguments generic-function register-arguments debug-on miss-bb)))
-                (flet ((codegen-rest-of-dispatcher ()
-                         (with-irbuilder (*irbuilder-function-alloca*)
-                           (irc-br body-bb))
-                         (irc-begin-block *bad-tag-bb*)
-                         (irc-intrinsic-call-or-invoke "cc_bad_tag" (list gf))
-                         (irc-unreachable)
-                         (irc-begin-block miss-bb)
-                         (let* ((vaslist-t* (or (argument-holder-methods-vaslist-t* arguments)
-                                                (let ((vaslist* (argument-holder-vaslist* arguments)))
-                                                  (irc-intrinsic-call-or-invoke
-                                                   "llvm.va_start"
-                                                   (list
-                                                    (irc-bit-cast
-                                                     (argument-holder-dispatch-va-list* arguments)
-                                                     %i8*%)))
-                                                  (maybe-spill-to-register-save-area
-                                                   (argument-holder-register-arguments arguments)
-                                                   (argument-holder-register-save-area* arguments))
-                                                  (prog1
-                                                      (irc-intrinsic
-                                                       "cc_rewind_vaslist"
-                                                       vaslist*
-                                                       (argument-holder-dispatch-va-list* arguments)
-                                                       (argument-holder-register-save-area* arguments))
+                  :optimize nil)
+      (with-source-pathnames (:source-pathname nil)
+        (let* ((*current-function-name* (jit-function-name generic-function-name))
+               (*gv-current-function-name* (module-make-global-string *current-function-name* "fn-name"))
+               (disp-fn (irc-simple-function-create *current-function-name*
+                                                    %fn-registers-prototype% #| was %fn-gf% |#
+                                                    'llvm-sys::External-linkage
+                                                    *the-module*
+                                                    :argument-names +fn-registers-prototype-argument-names+)))
+          ;;(1) Create a function with a regular signature
+          ;;(2) Allocate space for a va_list and copy the va_list passed into it.
+          ;;(3) compile the dispatch function to llvm-ir refering to the eql specializers and stamps and
+          ;;      the va_list passed.
+          ;;(4) Reach an outcome and either call the effective method with the saved va_list
+          ;;      or call the miss function with the saved va_list
+          (let* ((irbuilder-alloca (llvm-sys:make-irbuilder *llvm-context*))
+                 (irbuilder-body (llvm-sys:make-irbuilder *llvm-context*))
+                 (*irbuilder-function-alloca* irbuilder-alloca)
+                 (*irbuilder-function-body* irbuilder-body)
+                 (*current-function* disp-fn)
+                 (*gf-data* 
+                   (llvm-sys:make-global-variable *the-module*
+                                                  cmp:%t*[DUMMY]% ; type
+                                                  nil ; isConstant
+                                                  'llvm-sys:internal-linkage
+                                                  (llvm-sys:undef-value-get cmp:%t*[DUMMY]%)
+                                                  ;; nil ; initializer
+                                                  (next-value-table-holder-name "dummy")))
+                 (*gcroots-in-module* 
+                   (llvm-sys:make-global-variable *the-module*
+                                                  cmp:%gcroots-in-module% ; type
+                                                  nil ; isConstant
+                                                  'llvm-sys:internal-linkage
+                                                  (llvm-sys:undef-value-get cmp:%gcroots-in-module%)
+                                                  ;; nil ; initializer
+                                                  "GCRootsHolder"))
+                 (*gf-data-id* 0)
+                 (*message-counter* 0)
+                 (*eql-selectors* (make-hash-table :test #'eql))
+                 (*outcomes* (make-hash-table))
+                 (entry-bb (irc-basic-block-create "entry" disp-fn))
+                 (*bad-tag-bb* (irc-basic-block-create "bad-tag" disp-fn))
+                 (register-arguments (llvm-sys:get-argument-list disp-fn))
+                 (gf (first register-arguments))
+                 (num-args (second register-arguments)))
+            (cmp:irc-set-insert-point-basic-block entry-bb irbuilder-alloca)
+            (let ((body-bb (irc-basic-block-create "body" disp-fn))
+                  (miss-bb (irc-basic-block-create "miss" disp-fn)))
+              (irc-set-insert-point-basic-block body-bb irbuilder-body)
+              (with-irbuilder (irbuilder-body)
+                ;; Analyze the call history to see if there are optimizations that we can
+                ;; use when doing gf dispatch.
+                ;;  (1) If none of the methods need the arguments in a vaslist - then we
+                ;;      don't need to allocate or rewind a vaslist.
+                ;;  (2) If there are more required arguments than the number of register arguments
+                ;;      then we need to allocate a va_list to use when we run out of register arguments.
+                ;; Setup exception handling and cleanup landing pad
+                (let* ((arguments (analyze-generic-function-make-arguments generic-function register-arguments debug-on miss-bb)))
+                  (flet ((codegen-rest-of-dispatcher ()
+                           (with-irbuilder (*irbuilder-function-alloca*)
+                             (irc-br body-bb))
+                           (irc-begin-block *bad-tag-bb*)
+                           (irc-intrinsic-call-or-invoke "cc_bad_tag" (list gf))
+                           (irc-unreachable)
+                           (irc-begin-block miss-bb)
+                           (let* ((vaslist-t* (or (argument-holder-methods-vaslist-t* arguments)
+                                                  (let ((vaslist* (argument-holder-vaslist* arguments)))
                                                     (irc-intrinsic-call-or-invoke
-                                                     "llvm.va_end"
+                                                     "llvm.va_start"
                                                      (list
                                                       (irc-bit-cast
                                                        (argument-holder-dispatch-va-list* arguments)
-                                                       %i8*%))))))))
-                           (irc-store (irc-intrinsic "cc_dispatch_miss" gf vaslist-t*)
-                                      (argument-holder-return-value arguments))
-                           (argument-holder-return-value arguments))
-                         (irc-br (argument-holder-continue-after-dispatch arguments))))
-                  (if (argument-holder-invocation-history-frame* arguments)
-                      (with-new-function-prepare-for-try (disp-fn irbuilder-alloca)
-                        (with-try
-                            (progn
-                              (codegen-node-or-outcome arguments -1 (dtree-root dtree))
-                              (codegen-rest-of-dispatcher)
-                              (irc-begin-block (argument-holder-continue-after-dispatch arguments)))
-                          ((cleanup)
-                           (funcall (argument-holder-cleanup-action arguments) arguments))))
-                      (with-landing-pad nil
-                        (codegen-node-or-outcome arguments -1 (dtree-root dtree))
-                        (codegen-rest-of-dispatcher)
-                        (irc-begin-block (argument-holder-continue-after-dispatch arguments)))))
-                (irc-ret (irc-load (argument-holder-return-value arguments))))))
-          (let* ((array-type (llvm-sys:array-type-get cmp:%t*% *gf-data-id*))
-                 (correct-size-holder (llvm-sys:make-global-variable *the-module*
-                                                                     array-type
-                                                                     nil ; isConstant
-                                                                     'llvm-sys:internal-linkage
-                                                                     (llvm-sys:undef-value-get array-type)
-                                                                     (bformat nil "CONSTANTS-%d" (increment-dispatcher-count))))
-                 (bitcast-correct-size-holder (irc-bit-cast correct-size-holder %t*[DUMMY]*% "bitcast-table")))
-            (multiple-value-bind (startup-fn shutdown-fn)
-                (codegen-startup-shutdown *gcroots-in-module* correct-size-holder *gf-data-id* nil)
-              (llvm-sys:replace-all-uses-with *gf-data* bitcast-correct-size-holder)
-              (llvm-sys:erase-from-parent *gf-data*)
-              #+debug-cmpgf(progn
-                             (core:bformat t "Dumping the module from codegen-dispatcher\n")
-                             (llvm-sys:dump-module *the-module*))
-              (let ((sorted-roots (gather-sorted-outcomes *eql-selectors* *outcomes*)))
-                ;; REMOVE THE FOLLOWING IN PRODUCTION CODE
-                #||                #+debug-cmpgf
-                (progn
-                (let ((before-disp-name (llvm-sys:get-name disp-fn)))
-                (debug-save-dispatcher the-gf *the-module* disp-fn startup-fn shutdown-fn sorted-roots)
-                (let ((after-disp-name (llvm-sys:get-name disp-fn)))
-                (format t "Saved dispatcher  before-disp-name -> ~a     after-disp-name -> ~a~%" before-disp-name after-disp-name))))
-                ||#
-                (when output-path
-                  (debug-save-dispatcher generic-function *the-module* disp-fn startup-fn shutdown-fn sorted-roots output-path))
-                (let* ((compiled-dispatcher (jit-add-module-return-dispatch-function *the-module* disp-fn startup-fn shutdown-fn sorted-roots)))
-                  compiled-dispatcher)))))))))
+                                                       %i8*%)))
+                                                    (maybe-spill-to-register-save-area
+                                                     (argument-holder-register-arguments arguments)
+                                                     (argument-holder-register-save-area* arguments))
+                                                    (prog1
+                                                        (irc-intrinsic
+                                                         "cc_rewind_vaslist"
+                                                         vaslist*
+                                                         (argument-holder-dispatch-va-list* arguments)
+                                                         (argument-holder-register-save-area* arguments))
+                                                      (irc-intrinsic-call-or-invoke
+                                                       "llvm.va_end"
+                                                       (list
+                                                        (irc-bit-cast
+                                                         (argument-holder-dispatch-va-list* arguments)
+                                                         %i8*%))))))))
+                             (irc-store (irc-intrinsic "cc_dispatch_miss" gf vaslist-t*)
+                                        (argument-holder-return-value arguments))
+                             (argument-holder-return-value arguments))
+                           (irc-br (argument-holder-continue-after-dispatch arguments))))
+                    (multiple-value-bind (min max)
+                        (clos:generic-function-min-max-args generic-function)
+                      (if (argument-holder-invocation-history-frame* arguments)
+                          (with-new-function-prepare-for-try (disp-fn irbuilder-alloca)
+                            (with-try
+                                (progn
+                                  (unless (zerop min)
+                                    (compile-error-if-not-enough-arguments min num-args))
+                                  (unless (null max)
+                                    (compile-error-if-too-many-arguments max num-args))
+                                  (codegen-node-or-outcome arguments -1 (dtree-root dtree))
+                                  (codegen-rest-of-dispatcher)
+                                  (irc-begin-block (argument-holder-continue-after-dispatch arguments)))
+                              ((cleanup)
+                               (irc-intrinsic "cc_pop_InvocationHistoryFrame"
+                                              (first (argument-holder-register-arguments arguments))
+                                              (argument-holder-invocation-history-frame* arguments)))))
+                          (with-landing-pad nil
+                            (unless (zerop min)
+                              (compile-error-if-not-enough-arguments min num-args))
+                            (unless (null max)
+                              (compile-error-if-too-many-arguments max num-args))
+                            (codegen-node-or-outcome arguments -1 (dtree-root dtree))
+                            (codegen-rest-of-dispatcher)
+                            (irc-begin-block (argument-holder-continue-after-dispatch arguments))))))
+                  (irc-ret (irc-load (argument-holder-return-value arguments))))))
+            (let* ((array-type (llvm-sys:array-type-get cmp:%t*% *gf-data-id*))
+                   (correct-size-holder (llvm-sys:make-global-variable *the-module*
+                                                                       array-type
+                                                                       nil ; isConstant
+                                                                       'llvm-sys:internal-linkage
+                                                                       (llvm-sys:undef-value-get array-type)
+                                                                       (bformat nil "CONSTANTS-%d" (increment-dispatcher-count))))
+                   (bitcast-correct-size-holder (irc-bit-cast correct-size-holder %t*[DUMMY]*% "bitcast-table")))
+              (multiple-value-bind (startup-fn shutdown-fn)
+                  (codegen-startup-shutdown *gcroots-in-module* correct-size-holder *gf-data-id* nil)
+                (llvm-sys:replace-all-uses-with *gf-data* bitcast-correct-size-holder)
+                (llvm-sys:erase-from-parent *gf-data*)
+                #+debug-cmpgf(progn
+                               (core:bformat t "Dumping the module from codegen-dispatcher%N")
+                               (llvm-sys:dump-module *the-module*))
+                (let ((sorted-roots (gather-sorted-outcomes *eql-selectors* *outcomes*)))
+                  (when output-path
+                    (debug-save-dispatcher *the-module* output-path))
+                  (jit-add-module-return-dispatch-function
+                   *the-module* disp-fn startup-fn shutdown-fn sorted-roots))))))))))
 
 (defun codegen-dispatcher (raw-call-history specializer-profile generic-function &rest args &key generic-function-name output-path log-gf (debug-on t debug-on-p))
   (let* ((*log-gf* log-gf)
@@ -1090,8 +1072,8 @@
              (module cmp:*saved-module-from-clasp-jit*))
         (if module
             (llvm-sys:dump-module module)
-            (core:bformat t "Could not obtain module for disassemble of generic-function %s dispatcher -> %s\n" generic-function dispatcher))))
-  (core:bformat t "The dispatcher cannot be built because there is no call history\n"))
+            (core:bformat t "Could not obtain module for disassemble of generic-function %s dispatcher -> %s%N" generic-function dispatcher))))
+  (core:bformat t "The dispatcher cannot be built because there is no call history%N"))
 
 (defun generate-dot-file (generic-function output)
   (let* ((raw-call-history (clos:generic-function-call-history generic-function))

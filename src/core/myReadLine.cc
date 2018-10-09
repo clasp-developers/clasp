@@ -26,6 +26,7 @@ THE SOFTWARE.
 /* -^- */
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
+#include <clasp/core/bformat.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/myReadLine.h>
 
@@ -57,7 +58,7 @@ string myReadLine(const string &prompt, bool &end_of_transmission) {
   }
 #else
   if (prompt != "") {
-    _lisp->print(BF("%s ") % prompt);
+    write_bf_stream(BF("%s ") % prompt);
   }
   ws(std::cin);
   getline(std::cin, res);

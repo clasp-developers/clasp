@@ -15,6 +15,7 @@
 #include <clasp/gctools/interrupt.h>
 
 SYMBOL_EXPORT_SC_(CorePkg,terminal_interrupt);
+SYMBOL_EXPORT_SC_(CorePkg,wake_up_thread);
 SYMBOL_EXPORT_SC_(ExtPkg,illegal_instruction);
 SYMBOL_EXPORT_SC_(ExtPkg,segmentation_violation);
 SYMBOL_EXPORT_SC_(CorePkg,wait_for_all_processes);
@@ -23,7 +24,7 @@ namespace gctools {
 
 
 /*! The value of the signal that clasp uses to interrupt threads */
-int global_signal = 0;
+int global_signal = SIGUSR2;
 
 static void queue_signal(core::ThreadLocalState* thread, core::T_sp code, bool allocate);
 
@@ -97,6 +98,8 @@ static bool do_interrupt_thread(mp::Process_sp process)
   return ok;
 # else
   int signal = global_signal;
+  printf("%s:%d Sending signal %d to thread\n", __FILE__, __LINE__, signal);
+  fflush(stdout);
   if (pthread_kill(process->_Thread,signal)) {
     FElibc_error("Unable to interrupt process ~A", 1,
                  process);
@@ -137,21 +140,13 @@ void clasp_interrupt_process(mp::Process_sp process, core::T_sp function)
 
 
 
-void lisp_enable_interrupts(core::ThreadLocalState* thread) {
-  thread->_DisableInterrupts = false;
+inline bool interrupts_disabled_by_C() {
+  return my_thread_low_level->_DisableInterrupts;
 }
 
-void lisp_disable_interrupts(core::ThreadLocalState* thread) {
-  thread->_DisableInterrupts = true;
-}
-
-inline bool interrupts_disabled_by_C(core::ThreadLocalState* thread) {
-  return thread->_DisableInterrupts;
-}
-
-inline bool interrupts_disabled_by_lisp(core::ThreadLocalState* thread) {
-  return thread->_Bindings.value(core::_sym_STARinterrupts_enabledSTAR,
-                                 &core::_sym_STARinterrupts_enabledSTAR->_GlobalValue).notnilp();
+inline bool interrupts_disabled_by_lisp() {
+  return my_thread->_Bindings.value(core::_sym_STARinterrupts_enabledSTAR,
+                                    &core::_sym_STARinterrupts_enabledSTAR->_GlobalValue).notnilp();
 }
 
 void handle_signal_now( core::T_sp signal_code, core::T_sp process ) {
@@ -216,18 +211,11 @@ core::T_sp pop_signal(core::ThreadLocalState* thread) {
   }
   return value;
 }
-static void handle_all_queued(core::ThreadLocalState* thread)
+void handle_all_queued_interrupts()
 {
-  unlikely_if (!thread->_PendingInterrupts) {
-    // While initializing thread->_PendingInterrupts will be 0x00
-    // and we will ignore it until it is set up properly
-    return;
-  }
-  while (thread->_PendingInterrupts.notnilp()) {
-    core::T_sp sig = pop_signal(thread);
-//    printf("%s:%d  handle_all_queued \n", __FILE__, __LINE__);
-//    core::dbg_lowLevelDescribe(sig);
-    handle_signal_now(sig, thread->_Process);
+  while (my_thread->_PendingInterrupts.consp()) {
+    core::T_sp sig = pop_signal(my_thread);
+    handle_signal_now(sig, my_thread->_Process);
   }
 }
 
@@ -236,11 +224,11 @@ void handle_or_queue(core::ThreadLocalState* thread, core::T_sp signal_code ) {
     printf("%s:%d handle_or_queue   signal_code is NULL\n", __FILE__, __LINE__ );
   }
   if (signal_code.nilp() || !signal_code) return;
-  if (interrupts_disabled_by_lisp(thread)) {
+  if (interrupts_disabled_by_lisp()) {
     queue_signal(thread,signal_code,false);
   }
-  else if(interrupts_disabled_by_C(thread)) {
-    thread->_DisableInterrupts = 3;
+  else if(interrupts_disabled_by_C()) {
+    my_thread_low_level->_DisableInterrupts = 3;
     queue_signal(thread,signal_code,false);
 //    set_guard_page(thread);
   }
@@ -306,19 +294,9 @@ void interrupt_handle_signals(int signo) {
   handle_or_queue(my_thread,core::clasp_make_fixnum(signo));
 }
 
-
-
-
-void lisp_check_pending_interrupts(core::ThreadLocalState* thread)
-{
-  handle_all_queued(thread);
-}
-
-
 CL_DEFUN void core__check_pending_interrupts() {
-  handle_all_queued(my_thread);
+  handle_all_queued_interrupts();
 }
-
 
 void fatal_error_handler(void *user_data, const std::string &reason, bool gen_crash_diag) {
   printf("%s:%d Hit a fatal error in llvm: %s\n", __FILE__, __LINE__, reason.c_str());
@@ -367,21 +345,28 @@ mysignal(int code, void *handler)
 static void
 handler_fn_prototype(non_evil_signal_handler, int sig, siginfo_t *siginfo, void *data)
 {
-        int old_errno = errno;
-        cl_env_ptr the_env;
-        cl_object signal_object;
-        reinstall_signal(sig, non_evil_signal_handler);
+  int old_errno = errno;
+  cl_env_ptr the_env;
+  cl_object signal_object;
+  reinstall_signal(sig, non_evil_signal_handler);
         /* The lisp environment might not be installed. */
-        the_env = ecl_process_env();
-        unlikely_if (zombie_process(the_env))
-                return;
-        signal_object = ecl_gethash_safe(ecl_make_fixnum(sig),
-                                         cl_core.known_signals,
-                                         ECL_NIL);
-        handle_or_queue(the_env, signal_object, sig);
-        errno = old_errno;
+  the_env = ecl_process_env();
+  unlikely_if (zombie_process(the_env))
+    return;
+  signal_object = ecl_gethash_safe(ecl_make_fixnum(sig),
+                                   cl_core.known_signals,
+                                   ECL_NIL);
+  handle_or_queue(the_env, signal_object, sig);
+  errno = old_errno;
 }
 #endif
+
+void wake_up_thread(int sig)
+{
+  const char* msg = "In wake_up_thread interrupt.cc\n";
+  int len = strlen(msg);
+  write(1,msg,len);
+}
 
 
 void initialize_signals(int clasp_signal) {
@@ -389,9 +374,15 @@ void initialize_signals(int clasp_signal) {
   /* Set up the structure to specify the new action. */
   new_action.sa_handler = interrupt_handle_signals;
   sigemptyset (&new_action.sa_mask);
-  new_action.sa_flags = SA_RESTART;
+  new_action.sa_flags = SA_RESTART | SA_ONSTACK;
   if (sigaction (clasp_signal, &new_action, NULL) != 0) {
     printf("failed to register clasp_signal signal-handler with kernel error: %s\n", strerror(errno));
+  }
+  new_action.sa_handler = wake_up_thread;
+  sigemptyset (&new_action.sa_mask);
+  new_action.sa_flags = SA_RESTART;
+  if (sigaction (SIGUSR2, &new_action, NULL) != 0) {
+    printf("failed to register SIGUSR2 signal-handler with kernel error: %s\n", strerror(errno));
   }
   new_action.sa_handler = handle_signals;
   sigemptyset (&new_action.sa_mask);
@@ -401,9 +392,15 @@ void initialize_signals(int clasp_signal) {
   }
   new_action.sa_handler = handle_signals;
   sigemptyset (&new_action.sa_mask);
-  new_action.sa_flags = SA_RESTART;
+  new_action.sa_flags = SA_RESTART | SA_ONSTACK;
   if (sigaction (SIGABRT, &new_action, NULL) != 0) {
     printf("failed to register SIGABRT signal-handler with kernel error: %s\n", strerror(errno));
+  }
+  new_action.sa_handler = handle_signals;
+  sigemptyset (&new_action.sa_mask);
+  new_action.sa_flags = SA_RESTART | SA_ONSTACK;
+  if (sigaction (SIGSEGV, &new_action, NULL) != 0) {
+    printf("failed to register SIGSEGV signal-handler with kernel error: %s\n", strerror(errno));
   }
 #if 0
   if (signal(SIGCHLD, handle_signals) == SIG_ERR) {
@@ -426,8 +423,8 @@ void initialize_signals(int clasp_signal) {
 
 
 
-
 void initialize_signal_constants() {
+  return;
   _lisp->_Roots._KnownSignals = core::HashTableEq_O::create_default();
 #define ADD_SIGNAL(sig,name,handler) {\
     core::Symbol_sp sigsym = _lisp->intern(name,CorePkg); \

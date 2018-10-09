@@ -67,11 +67,25 @@ extern "C" {
 #include <clasp/gctools/gc_interface.fwd.h>
 #include <clasp/core/exceptions.h>
 
-using namespace core;
-
 #pragma GCC visibility push(default)
 
+using namespace core;
 namespace llvmo {
+
+core::T_sp functionNameOrNilFromFunctionDescription(core::FunctionDescription* functionDescription)
+{
+  if (functionDescription==NULL) {
+    return _Nil<core::T_O>();
+  }
+  core::T_sp functionName((gctools::Tagged)functionDescription->gcrootsInModule->get(functionDescription->functionNameIndex));
+  return functionName;
+}
+  
+
+[[noreturn]] __attribute__((optnone)) void not_function_designator_error(core::T_sp arg) {
+  TYPE_ERROR(arg,core::Cons_O::createList(::cl::_sym_or,::cl::_sym_function,::cl::_sym_symbol));
+}
+
 [[noreturn]] __attribute__((optnone))  void intrinsic_error(ErrorCode err, core::T_sp arg0, core::T_sp arg1, core::T_sp arg2) {
   switch (err) {
   case noFunctionBoundToSymbol:
@@ -80,8 +94,6 @@ namespace llvmo {
       ERROR_UNDEFINED_FUNCTION(sym); 
     }
     break;
-  case badKeywordArgument:
-      SIMPLE_ERROR(BF("Bad keyword argument %s") % _rep_(arg0));
   case couldNotCoerceToClosure:
       SIMPLE_ERROR(BF(" symbol %s") % _rep_(arg0));
   case destinationMustBeActivationFrame:
@@ -187,7 +199,8 @@ LtvcReturn ltvc_make_complex(gctools::GCRootsInModule* holder, size_t index, gct
 {NO_UNWIND_BEGIN();
   core::Number_sp nreal((gctools::Tagged)real);
   core::Number_sp nimag((gctools::Tagged)imag);
-  core::T_sp val = core::Complex_O::create(clasp_to_double(nreal),clasp_to_double(nimag));
+  // Do not convert nreal and nimag to double, can be all types of Real_sp
+  core::T_sp val = core::Complex_O::create(nreal,nimag);
   LTVCRETURN holder->set(index,val.tagged_());
   NO_UNWIND_END();
 }
@@ -401,18 +414,16 @@ gctools::Tagged ltvc_lookup_value( gctools::GCRootsInModule* holder, size_t inde
 }
 
 LtvcReturn ltvc_enclose(gctools::GCRootsInModule* holder, size_t index, gctools::Tagged lambdaName,
-                        fnLispCallingConvention llvm_func, int *sourceFileInfoHandleP,
+                        fnLispCallingConvention llvm_func, void* functionDescription,
+                        int *sourceFileInfoHandleP,
                         size_t filePos, size_t lineno, size_t column)
 {NO_UNWIND_BEGIN();
   core::T_sp tlambdaName = gctools::smart_ptr<core::T_O>((gc::Tagged)lambdaName);
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid =
     gctools::GC<core::ClosureWithSlots_O>::allocate_container(0,
                                                               llvm_func,
-                                                              tlambdaName,
-                                                              kw::_sym_function,
-                                                              _Nil<T_O>(), // lambdaList
-                                                              *sourceFileInfoHandleP,
-                                                              filePos, lineno, column);
+                                                              (core::FunctionDescription*)functionDescription,
+                                                              core::ClosureWithSlots_O::cclaspClosure);
   LTVCRETURN holder->set(index, functoid.tagged_());
   NO_UNWIND_END();
 }
@@ -420,7 +431,7 @@ LtvcReturn ltvc_enclose(gctools::GCRootsInModule* holder, size_t index, gctools:
 LtvcReturn ltvc_set_mlf_creator_funcall(gctools::GCRootsInModule* holder, size_t index, fnLispCallingConvention fptr, const char* name) {
   core::T_O *lcc_arglist = _Nil<core::T_O>().raw_();
   Symbol_sp sname = Symbol_O::create_from_string(std::string(name));
-  core::ClosureWithSlots_sp toplevel_closure = core::ClosureWithSlots_O::make_bclasp_closure(sname, fptr, kw::_sym_function, _Nil<core::T_O>(),  _Nil<core::T_O>(), 0, 0, 0, 0 );
+  core::ClosureWithSlots_sp toplevel_closure = core::ClosureWithSlots_O::make_bclasp_closure(sname, fptr, kw::_sym_function, _Nil<core::T_O>(),  _Nil<core::T_O>() );
   LCC_RETURN ret = fptr(LCC_PASS_ARGS0_VA_LIST(toplevel_closure.raw_()));
   core::T_sp res((gctools::Tagged)ret.ret0[0]);
   core::T_sp val = res;
@@ -430,7 +441,7 @@ LtvcReturn ltvc_set_mlf_creator_funcall(gctools::GCRootsInModule* holder, size_t
 LtvcReturn ltvc_mlf_init_funcall(fnLispCallingConvention fptr, const char* name) {
   core::T_O *lcc_arglist = _Nil<core::T_O>().raw_();
   Symbol_sp sname = Symbol_O::create_from_string(std::string(name));
-  core::ClosureWithSlots_sp toplevel_closure = core::ClosureWithSlots_O::make_bclasp_closure(sname, fptr, kw::_sym_function, _Nil<core::T_O>(), _Nil<core::T_O>(), 0, 0, 0, 0 );
+  core::ClosureWithSlots_sp toplevel_closure = core::ClosureWithSlots_O::make_bclasp_closure(sname, fptr, kw::_sym_function, _Nil<core::T_O>(), _Nil<core::T_O>());
   LCC_RETURN ret = fptr(LCC_PASS_ARGS0_VA_LIST(toplevel_closure.raw_()));
 //  LTVCRETURN reinterpret_cast<gctools::Tagged>(ret.ret0[0]);
 }
@@ -439,7 +450,7 @@ LtvcReturn ltvc_mlf_init_funcall(fnLispCallingConvention fptr, const char* name)
 LtvcReturn ltvc_set_ltv_funcall(gctools::GCRootsInModule* holder, size_t index, fnLispCallingConvention fptr, const char* name) {
   core::T_O *lcc_arglist = _Nil<core::T_O>().raw_();
   Symbol_sp sname = Symbol_O::create_from_string(std::string(name));
-  core::ClosureWithSlots_sp toplevel_closure = core::ClosureWithSlots_O::make_bclasp_closure(sname, fptr, kw::_sym_function, _Nil<core::T_O>(), _Nil<core::T_O>(), 0, 0, 0, 0 );
+  core::ClosureWithSlots_sp toplevel_closure = core::ClosureWithSlots_O::make_bclasp_closure(sname, fptr, kw::_sym_function, _Nil<core::T_O>(), _Nil<core::T_O>());
   LCC_RETURN ret = fptr(LCC_PASS_ARGS0_VA_LIST(toplevel_closure.raw_()));
   core::T_sp res((gctools::Tagged)ret.ret0[0]);
   core::T_sp val = res;
@@ -452,7 +463,7 @@ LtvcReturn ltvc_set_ltv_funcall_cleavir(gctools::GCRootsInModule* holder, size_t
   // FIXME: Remove this function and use the ltvc_set_ltv_funcall instead
   core::T_O *lcc_arglist = _Nil<core::T_O>().raw_();
   Symbol_sp sname = Symbol_O::create_from_string(std::string(name));
-  core::ClosureWithSlots_sp toplevel_closure = core::ClosureWithSlots_O::make_bclasp_closure(sname, fptr, kw::_sym_function, _Nil<core::T_O>(), _Nil<core::T_O>(), 0, 0, 0, 0 );
+  core::ClosureWithSlots_sp toplevel_closure = core::ClosureWithSlots_O::make_bclasp_closure(sname, fptr, kw::_sym_function, _Nil<core::T_O>(), _Nil<core::T_O>());
   LCC_RETURN ret = fptr(LCC_PASS_ARGS0_VA_LIST(toplevel_closure.raw_()));
   core::T_sp tret((gctools::Tagged)ret.ret0);
 //  printf("%s:%d:%s     ret -> %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(tret).c_str());
@@ -501,7 +512,7 @@ LtvcReturn ltvc_toplevel_funcall(fnLispCallingConvention fptr, const char* name)
 #endif
   core::T_O *lcc_arglist = _Nil<core::T_O>().raw_();
   Symbol_sp sname = Symbol_O::create_from_string(std::string(name));
-  core::ClosureWithSlots_sp toplevel_closure = core::ClosureWithSlots_O::make_bclasp_closure(sname, fptr, kw::_sym_function, _Nil<core::T_O>(), _Nil<core::T_O>(),  0, 0, 0, 0 );
+  core::ClosureWithSlots_sp toplevel_closure = core::ClosureWithSlots_O::make_bclasp_closure(sname, fptr, kw::_sym_function, _Nil<core::T_O>(), _Nil<core::T_O>());
   LCC_RETURN ret = fptr(LCC_PASS_ARGS0_VA_LIST(toplevel_closure.raw_()));
 //  LTVCRETURN reinterpret_cast<gctools::Tagged>(ret.ret0[0]);
 }
@@ -606,32 +617,62 @@ ALWAYS_INLINE T_O *va_lexicalFunction(size_t depth, size_t index, core::T_O* eva
   NO_UNWIND_END();
 }
 
-
-__attribute__((visibility("default"))) core::T_O *cc_gatherRestArguments(va_list vargs, std::size_t* remainingP)
+/* Conses up a &rest argument from the passed valist.
+ * Used in cmp/arguments.lsp for the general case of functions with a &rest in their lambda list. */
+__attribute__((visibility("default"))) core::T_O *cc_gatherRestArguments(va_list vargs, std::size_t nargs)
 {NO_UNWIND_BEGIN();
   va_list rargs;
-  va_copy(rargs, vargs);
+  va_copy(rargs, vargs); // the original valist is needed for &key processing elsewhere.
   core::List_sp result = _Nil<core::T_O>();
   core::Cons_sp *cur = reinterpret_cast<Cons_sp *>(&result);
-  size_t nargs = *remainingP;
   for (int i = 0; i<nargs; ++i ) {
     core::T_O* tagged_obj = ENSURE_VALID_OBJECT(va_arg(rargs,core::T_O*));
     *cur = core::Cons_O::create(gc::smart_ptr<core::T_O>((gc::Tagged)tagged_obj), _Nil<core::T_O>());
     cur = reinterpret_cast<Cons_sp *>(&(*cur)->_Cdr);
   }
+  va_end(rargs);
   return result.raw_();
   NO_UNWIND_END();
 }
 
-void cc_ifBadKeywordArgumentException(size_t allowOtherKeys, std::size_t badKwIdx, core::T_O *kw)
-{
-  if (allowOtherKeys == 2) {
-    return;
+/* Like cc_gatherRestArguments, but uses a vector of conses provided by the caller-
+ * intended to be stack space, for &rest parameters declared dynamic-extent. */
+__attribute__((visibility("default"))) core::T_O *cc_gatherDynamicExtentRestArguments(va_list vargs, std::size_t nargs, core::Cons_O* cur)
+{NO_UNWIND_BEGIN();
+  va_list rargs;
+  va_copy(rargs, vargs);
+  core::List_sp result = Cons_sp((gctools::Tagged)gctools::tag_cons((core::Cons_O*)cur));
+  if (nargs) {
+    for (int i = 0; i<nargs-1; ++i ) {
+      core::T_O* tagged_obj = ENSURE_VALID_OBJECT(va_arg(rargs,core::T_O*));
+      Cons_O* next = cur+1;
+      new (cur) Cons_O(T_sp((gctools::Tagged)tagged_obj),T_sp((gctools::Tagged)gctools::tag_cons((core::Cons_O*)next)));
+      cur = next;
+    }
+    core::T_O* tagged_obj = ENSURE_VALID_OBJECT(va_arg(rargs,core::T_O*));
+    new (cur) Cons_O(T_sp((gctools::Tagged)tagged_obj),_Nil<T_O>());
+    va_end(rargs);
+    return result.raw_();
   }
-  if (badKwIdx != 65536)
-    intrinsic_error(llvmo::badKeywordArgument, core::T_sp((gc::Tagged)kw));
+  va_end(rargs);
+  return _Nil<T_O>().raw_();
+  NO_UNWIND_END();
 }
 
+void badKeywordArgumentError(core::T_sp keyword, core::FunctionDescription* functionDescription)
+{
+  core::T_sp functionName = llvmo::functionNameOrNilFromFunctionDescription(functionDescription);
+  if (functionName.nilp()) {
+    SIMPLE_ERROR(BF("When calling an unnamed function the bad keyword argument %s was passed") % _rep_(keyword) );
+  }
+  SIMPLE_ERROR(BF("When calling %s the bad keyword argument %s was passed") % _rep_(functionName) % _rep_(keyword) );
+}
+
+void cc_ifBadKeywordArgumentException(core::T_O *allowOtherKeys, core::T_O *kw,
+                                      core::FunctionDescription* functionDescription) {
+  if (gctools::tagged_nilp(allowOtherKeys))
+    badKeywordArgumentError(core::T_sp((gc::Tagged)kw), functionDescription);
+}
 
 extern void mv_copyTmv(core::T_mv *destP, core::T_mv *sourceP)
 {NO_UNWIND_BEGIN();
@@ -655,26 +696,25 @@ extern "C" {
 
 
 DONT_OPTIMIZE_WHEN_DEBUG_RELEASE core::T_O* makeCompiledFunction(fnLispCallingConvention funcPtr,
-                                int *sourceFileInfoHandleP,
-                                size_t filePos,
-                                size_t lineno,
-                                size_t column,
-                                core::T_O* functionNameP,
-                                core::T_O* frameP,
-                                core::T_O* lambdaListP)
+                                                                 void* functionDescription,
+                                                                 core::T_O* frameP
+                                                                 )
 {NO_UNWIND_BEGIN();
   // TODO: If a pointer to an integer was passed here we could write the sourceName SourceFileInfo_sp index into it for source line debugging
-  core::T_sp functionName((gctools::Tagged)functionNameP);
   core::T_sp frame((gctools::Tagged)frameP);
-  core::T_sp lambdaList((gctools::Tagged)lambdaListP);
-//  printf("%s:%d In makeCompiledFunction     frame -> %s\n", __FILE__, __LINE__, _rep_(frame).c_str());
-  core::ClosureWithSlots_sp toplevel_closure = core::ClosureWithSlots_O::make_bclasp_closure(functionName, funcPtr, kw::_sym_function, lambdaList, frame, *sourceFileInfoHandleP, filePos, lineno, column);
+  core::ClosureWithSlots_sp toplevel_closure =
+    gctools::GC<core::ClosureWithSlots_O>::allocate_container(BCLASP_CLOSURE_SLOTS,
+                                                              funcPtr,
+                                                              (core::FunctionDescription*)functionDescription,
+                                                              core::ClosureWithSlots_O::bclaspClosure);
+  (*toplevel_closure)[BCLASP_CLOSURE_ENVIRONMENT_SLOT] = frame;
   return toplevel_closure.raw_();
   NO_UNWIND_END();
 };
 };
 
 extern "C" {
+#if 0
 void invokeTopLevelFunction(core::T_mv *resultP,
                             fnLispCallingConvention fptr,
                             char *cpname,
@@ -685,7 +725,7 @@ void invokeTopLevelFunction(core::T_mv *resultP,
                             core::LoadTimeValues_O **ltvPP) {
   ASSERT(ltvPP != NULL);
   core::SimpleBaseString_sp name = core::SimpleBaseString_O::make(cpname);
-  FunctionClosure_sp tc = FunctionClosure_O::create(fptr,name, kw::_sym_function, *sourceFileInfoHandleP, filePos, lineno, column);
+  Closure_sp tc = Closure_O::create(fptr,name, kw::_sym_function, *sourceFileInfoHandleP, filePos, lineno, column);
 #define TIME_TOP_LEVEL_FUNCTIONS
 #ifdef TIME_TOP_LEVEL_FUNCTIONS
   core::Number_sp startTime;
@@ -712,6 +752,9 @@ void invokeTopLevelFunction(core::T_mv *resultP,
 #endif
   ASSERTNOTNULL(*resultP);
 };
+#endif
+
+
 
 /*! Invoke the main functions from the main function array.
 If isNullTerminatedArray is 1 then there is a NULL terminated array of functions to call.
@@ -786,29 +829,6 @@ void mv_prependMultipleValues(core::T_mv *resultP, core::T_mv *multipleValuesP) 
 
 extern "C" {
 
-/*! Invoke a symbol function with the given arguments and put the result in (*resultP) */
-core::T_O* symbolFunctionRead(const core::T_O *tsymP)
-{NO_UNWIND_BEGIN();
-  const core::Symbol_sp sym((gc::Tagged)tsymP);
-  ASSERTF((sym)->fboundp(), BF("There is no function bound to symbol[%s]") % _rep_(sym));
-  return sym->symbolFunction().raw_();
-  NO_UNWIND_END();
-}
-
-/*! Invoke a symbol function with the given arguments and put the result in (*resultP) */
-extern core::T_O* setfSymbolFunctionRead(const core::T_O *tsymP)
-{NO_UNWIND_BEGIN();
- const core::Symbol_sp sym((gctools::Tagged)tsymP);
- core::Function_sp setfFunc = sym->getSetfFdefinition(); //_lisp->get_setfDefinition(*symP);
- ASSERTF(setfFunc, BF("There is no setf function bound to symbol[%s]") % _rep_(sym));
- return setfFunc.raw_();
-  NO_UNWIND_END();
-}
-};
-
-
-extern "C" {
-
 void gdb() {
   printf("%s:%d Set a breakpoint here to invoke gdb\n", __FILE__, __LINE__);
 }
@@ -869,7 +889,7 @@ void debugInspect_return_type(gctools::return_type rt)
 
 void debugMessage(const char *msg)
 {NO_UNWIND_BEGIN();
-  printf("++++++ debug-message: %s", msg);
+  printf("++++++ debug-message: %s3", msg);
   NO_UNWIND_END();
 }
 
@@ -971,21 +991,9 @@ DONT_OPTIMIZE_WHEN_DEBUG_RELEASE void throwReturnFrom(size_t depth, core::Activa
 #endif
   core::ActivationFrame_sp af((gctools::Tagged)(frameP));
   core::T_sp handle = *const_cast<core::T_sp *>(&core::value_frame_lookup_reference(af, depth, 0));
-#if defined(DEBUG_FLOW_CONTROL) || defined(DEBUG_RETURN_FROM)
-  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-    printf("About to throw core::ReturnFrom exception handle[%p]\n", handle.raw_());
-    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
-      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
-  }
-#endif
-#if defined(DEBUG_FLOW_CONTROL) || defined(DEBUG_RETURN_FROM)
-  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-    printf("Throwing core::ReturnFrom exception frame[%p]\n", handle.raw_());
-  }
-#endif
   core::ReturnFrom returnFrom(handle.raw_());
 #if defined(DEBUG_FLOW_TRACKER)
-  flow_tracker_about_to_throw();
+  flow_tracker_about_to_throw(CONS_CAR(handle).unsafe_fixnum());
 #endif
   throw returnFrom;
 }
@@ -996,11 +1004,6 @@ extern "C" {
 DONT_OPTIMIZE_WHEN_DEBUG_RELEASE gctools::return_type blockHandleReturnFrom_or_rethrow(unsigned char *exceptionP, core::T_O* handle) {
   core::ReturnFrom &returnFrom = (core::ReturnFrom &)*((core::ReturnFrom *)(exceptionP));
   if (returnFrom.getHandle() == handle) {
-#if defined(DEBUG_FLOW_CONTROL) || defined(DEBUG_RETURN_FROM)
-    if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-      printf("Caught core::ReturnFrom exception frame[%p]\n", returnFrom.getHandle());
-    }
-#endif
     core::MultipleValues &mv = core::lisp_multipleValues();
     gctools::return_type result(mv.operator[](0),mv.getSize());
     return result;
@@ -1020,13 +1023,11 @@ DONT_OPTIMIZE_WHEN_DEBUG_RELEASE gctools::return_type blockHandleReturnFrom_or_r
     }
   }
 #endif
-#if defined(DEBUG_FLOW_CONTROL) || defined(DEBUG_RETURN_FROM)
-  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-    printf("Re-throwing core::ReturnFrom exception handle[%p]\n", returnFrom.getHandle());
-  }
-#endif
 #if defined(DEBUG_FLOW_TRACKER)
-  flow_tracker_about_to_throw();
+  Cons_sp throwHandleCons((gc::Tagged)returnFrom.getHandle());
+  if (!throwHandleCons.consp()) printf("%s:%d The throwHandleCons is not a CONS -> %p\n", __FILE__, __LINE__, (void*)throwHandleCons.raw_() );
+  Fixnum throwFlowCounter = CONS_CAR(throwHandleCons).unsafe_fixnum();
+  flow_tracker_about_to_throw(throwFlowCounter);
 #endif
   throw; // throw returnFrom;
 }
@@ -1039,7 +1040,8 @@ DONT_OPTIMIZE_WHEN_DEBUG_RELEASE core::T_O* initializeBlockClosure(core::T_O** a
 {NO_UNWIND_BEGIN();
   ValueFrame_sp vf = ValueFrame_sp((gc::Tagged)*reinterpret_cast<ValueFrame_O**>(afP));
 #ifdef DEBUG_FLOW_TRACKER
-  Cons_sp unique = Cons_O::create(make_fixnum(next_flow_tracker_counter()),_Nil<T_O>());
+  Fixnum counter = next_flow_tracker_counter();
+  Cons_sp unique = Cons_O::create(make_fixnum(counter),_Nil<T_O>());
 #else
   Cons_sp unique = Cons_O::create(_Nil<T_O>(),_Nil<T_O>());
 #endif
@@ -1053,7 +1055,8 @@ core::T_O* initializeTagbodyClosure(core::T_O *afP)
   core::T_sp tagbodyId((gctools::Tagged)afP);
   ValueFrame_sp vf = ValueFrame_sp((gc::Tagged)*reinterpret_cast<ValueFrame_O**>(afP));
 #ifdef DEBUG_FLOW_TRACKER
-  Cons_sp unique = Cons_O::create(make_fixnum(next_flow_tracker_counter()),_Nil<T_O>());
+  Fixnum counter = next_flow_tracker_counter();
+  Cons_sp unique = Cons_O::create(make_fixnum(counter),_Nil<T_O>());
 #else
   Cons_sp unique = Cons_O::create(_Nil<T_O>(),_Nil<T_O>());
 #endif
@@ -1069,13 +1072,6 @@ core::T_mv proto_ifCatchFrameMatchesStoreResultElseRethrow(size_t catchFrame, un
     return gctools::multiple_values<core::T_O>::createFromValues(); // ctExceptionP->getReturnedObject();
   }
 // rethrow the exception
-#ifdef DEBUG_FLOW_CONTROL
-  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-    printf("Re-throwing CatchThrow frame[%d]\n", ctExceptionP->getFrame());
-    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
-      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
-  }
-#endif
   throw * ctExceptionP;
 }
 
@@ -1093,11 +1089,6 @@ void mv_ifCatchFrameMatchesStoreResultElseRethrow(core::T_mv *resultP, size_t ca
 extern "C" {
 void exceptionStackUnwind(size_t frame)
 {NO_UNWIND_BEGIN();
-#if defined(DEBUG_FLOW_CONTROL)||defined(DEBUG_RETURN_FROM)
-  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-    printf("Unwinding to exception frame[%lu]\n", frame);
-  }
-#endif
   my_thread->exceptionStack().unwind(frame);
   NO_UNWIND_END();
 }
@@ -1115,12 +1106,11 @@ void throwDynamicGo(size_t depth, size_t index, core::T_O *afP) {
   ValueFrame_sp tagbody = core::tagbody_frame_lookup(af,depth,index);
   T_O* handle = tagbody->operator[](0).raw_();
   core::DynamicGo dgo(handle, index);
-#ifdef DEBUG_FLOW_CONTROL
-  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-    printf("Throwing core::DynamicGo tagbodyIdP[%zu] index[%zu]\n", dgo.getFrame(), dgo.index());
-    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
-      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
-  }
+#if defined(DEBUG_FLOW_TRACKER)
+  Cons_sp throwHandleCons((gc::Tagged)dgo.getHandle());
+  if (!throwHandleCons.consp()) printf("%s:%d The throwHandleCons is not a CONS -> %p\n", __FILE__, __LINE__, (void*)throwHandleCons.raw_() );
+  Fixnum throwFlowCounter = CONS_CAR(throwHandleCons).unsafe_fixnum();
+  flow_tracker_about_to_throw(throwFlowCounter);
 #endif
   throw dgo;
 }
@@ -1166,6 +1156,7 @@ void mv_restoreFromMultipleValue0(core::T_mv *resultP)
   NO_UNWIND_END();
 }
 
+#if 0
 /*! Copy the current MultipleValues in _lisp->values() into a SimpleVector */
 extern core::T_O* saveValues(core::T_mv *mvP)
 {NO_UNWIND_BEGIN();
@@ -1209,6 +1200,8 @@ extern void loadValues(core::T_mv *resultP, core::T_O* simpleVectorP)
   }
   NO_UNWIND_END();
 }
+#endif
+
 
 size_t cc_trackFirstUnexpectedKeyword(size_t badKwIdx, size_t newBadKwIdx)
 {NO_UNWIND_BEGIN();
@@ -1216,30 +1209,6 @@ size_t cc_trackFirstUnexpectedKeyword(size_t badKwIdx, size_t newBadKwIdx)
   if (badKwIdx != 65536)
     return badKwIdx;
   return newBadKwIdx;
-  NO_UNWIND_END();
-}
-};
-
-extern "C" {
-
-void progvSaveSpecials(void **saveSpecialsP, core::T_O *symbolsP, core::T_O *valuesP)
-{NO_UNWIND_BEGIN();
-  core::DynamicScopeManager *managerP = new core::DynamicScopeManager();
-  (*saveSpecialsP) = (void *)managerP;
-  core::List_sp symbols((gctools::Tagged)symbolsP);
-  core::List_sp values((gctools::Tagged)valuesP);
-  for (; symbols.notnilp(); symbols = oCdr(symbols), values = oCdr(values)) {
-    core::Symbol_sp symbol = gc::As<Symbol_sp>(oCar(symbols));
-    core::T_sp value = oCar(values);
-    managerP->pushSpecialVariableAndSet(symbol, value);
-  }
-  NO_UNWIND_END();
-}
-
-void progvRestoreSpecials(void **saveSpecialsP)
-{NO_UNWIND_BEGIN();
-  core::DynamicScopeManager *managerP = (core::DynamicScopeManager *)(*saveSpecialsP);
-  delete (managerP);
   NO_UNWIND_END();
 }
 };
@@ -1339,22 +1308,15 @@ void cc_setSymbolValue(core::T_O *sym, core::T_O *val)
   NO_UNWIND_END();
 }
 
-core::T_O *cc_enclose(core::T_O *lambdaName,
-                      fnLispCallingConvention llvm_func,
-                      int *sourceFileInfoHandleP,
-                      size_t filePos,
-                      size_t lineno,
-                      size_t column,
+core::T_O *cc_enclose(fnLispCallingConvention llvm_func,
+                      void* functionDescription,
                       std::size_t numCells, ...)
 {
-  core::T_sp tlambdaName = gctools::smart_ptr<core::T_O>((gc::Tagged)lambdaName);
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid =
     gctools::GC<core::ClosureWithSlots_O>::allocate_container( numCells
                                                               , llvm_func
-                                                              , tlambdaName
-                                                              , kw::_sym_function
-                                                              , _Nil<T_O>() // lambdaList
-                                                              , *sourceFileInfoHandleP, filePos, lineno, column);
+                                                               , (core::FunctionDescription*)functionDescription,
+                                                               core::ClosureWithSlots_O::cclaspClosure);
   core::T_O *p;
   va_list argp;
   va_start(argp, numCells);
@@ -1435,13 +1397,12 @@ void cc_loadThreadLocalMultipleValues(core::T_mv *result, core::MultipleValues *
   NO_UNWIND_END();
 }
 
-
-
-void cc_ifNotKeywordException(core::T_O *obj, size_t argIdx, va_list valist) {
-  T_sp vobj((gc::Tagged)obj);
-  if (!cl__symbolp(vobj)) {
-    SIMPLE_ERROR(BF("Expected keyword argument at argument %d got %s") % argIdx % _rep_(gctools::smart_ptr<core::T_O>((gc::Tagged)obj)));
-  }
+void cc_oddKeywordException(core::FunctionDescription* functionDescription) {
+  T_sp functionName = llvmo::functionNameOrNilFromFunctionDescription(functionDescription);
+  if (functionName.nilp())
+    SIMPLE_ERROR(BF("Odd number of keyword arguments"));
+  else
+    SIMPLE_ERROR(BF("In call to %s got odd number of keyword arguments") % _rep_(functionName));
 }
 
 T_O **cc_multipleValuesArrayAddress()
@@ -1454,22 +1415,7 @@ void cc_unwind(T_O *targetFrame, size_t index) {
 #ifdef DEBUG_TRACK_UNWINDS
   global_unwind_count++;
 #endif
-#ifdef DEBUG_FLOW_CONTROL
-  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-    printf("%s:%d In cc_unwind targetFrame: %ld  index: %" PRu "\n", __FILE__, __LINE__, gc::untag_fixnum(targetFrame), index);
-    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
-      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
-  }
-#endif
   core::Unwind unwind(targetFrame, index);
-#ifdef DEBUG_FLOW_CONTROL
-  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-    printf("- - - - in cc_unwind throwing unwind to reach targetFrame: %ld   unwind=@%p\n", gc::untag_fixnum(targetFrame), &unwind);
-  }
-  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-    printf("- - - -  unwind event address = %p\n", &unwind);
-  }
-#endif
     throw unwind;
 }
 
@@ -1482,11 +1428,6 @@ void cc_saveMultipleValue0(core::T_mv *result)
 void cc_restoreMultipleValue0(core::T_mv *result)
 {NO_UNWIND_BEGIN();
   (*result).readFromMultipleValue0();
-#ifdef DEBUG_FLOW_CONTROL
-  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-    printf("%s:%d In cc_restoreMultipleValue0\n", __FILE__, __LINE__);
-  }
-#endif
   NO_UNWIND_END();
 }
 
@@ -1501,27 +1442,12 @@ T_O *cc_pushLandingPadFrame()
   NO_UNWIND_END();
 }
 
-void cc_popLandingPadFrame(T_O *frameFixnum)
-{NO_UNWIND_BEGIN();
-  NO_UNWIND_END();
-}
-
 size_t cc_landingpadUnwindMatchFrameElseRethrow(char *exceptionP, core::T_O *thisFrame) {
   ASSERT(gctools::tagged_fixnump(thisFrame));
   core::Unwind *unwindP = reinterpret_cast<core::Unwind *>(exceptionP);
   if (unwindP->getFrame() == thisFrame) {
-#ifdef DEBUG_FLOW_CONTROL
-    if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-      printf("- - - - - Matched Unwind to targetFrame: %" PRu "  index: %lu\n", gc::untag_fixnum(unwindP->getFrame()), unwindP->index());
-    }
-#endif
     return unwindP->index();
   }
-#ifdef DEBUG_FLOW_CONTROL
-  if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-    printf("- - - - - Rethrowing core::Unwind targetFrame[%" PRu "] index[%zu] (thisFrame is: %lu)\n", gc::untag_fixnum(unwindP->getFrame()), unwindP->index(), frameIndex);
-  }
-#endif
   // throw * unwindP;
   throw;
 }
@@ -1535,6 +1461,7 @@ T_mv cc_multiple_value_funcall(core::T_mv* result, T_O* funcDesignator, std::siz
   va_start(argp,numFuns);
   for (; numFuns; --numFuns) {
     core::T_O* tfunc = va_arg(argp,core::T_O*);
+#error "Check the return value of tfunc.asOrNull"
     core::Function_sp func = tfunc.asOrNull<core::Function_O>();
     ASSERT(func);
     auto closure = func->closure;
@@ -1550,6 +1477,7 @@ T_mv cc_multiple_value_funcall(core::T_mv* result, T_O* funcDesignator, std::siz
   va_end(argp);
   ASSERT(idx < MultipleValues::MultipleValuesLimit);
   mvAccumulate._Size = idx;
+#error "Check the return value of tfunc.asOrNull"
   core::Function_sp func = funcDesignator.asOrNull<core::Function_O>();
   ASSERT(func);
   auto closure = gc::untag_general<core::Function_O *>(func)->closure.as<core::Closure>();
@@ -1563,6 +1491,7 @@ T_mv cc_multiple_value_funcall(core::T_mv* result, T_O* funcDesignator, std::siz
 
 T_mv cc_multiple_value_prog1_function(core::T_mv* result, core::T_O* tfunc1, core::T_O* tfunc2) {
   MultipleValues mvFunc1;
+#error "Check the return value of tfunc.asOrNull"
   core::Function_sp func1 = tfunc1.asOrNull<core::Function_O>();
   ASSERT(func1);
   core::Closure_sp closure1 = func1->closure;
@@ -1572,6 +1501,7 @@ T_mv cc_multiple_value_prog1_function(core::T_mv* result, core::T_O* tfunc1, cor
   MultipleValues &mvThreadLocal = lisp_multipleValues();
   for (size_t i(1), iEnd(mvFunc1._Size); i < iEnd; ++i) mvFunc1[i] = mvThreadLocal[i];
   T_mv resultTemp;
+#error "Check the return value of tfunc.asOrNull"
   core::Function_sp func2 = tfunc2.asOrNull<core::Function_O>();
   ASSERT(func2);
   core::Closure_sp closure2 = func2->closure;
@@ -1615,32 +1545,32 @@ void cc_dispatch_debug(int msg_id, uintptr_clasp_t val)
   //         7 - print the value as a pointer to a dispatch function
   switch (msg_id) {
   case 0:
-      BFORMAT_T(BF("Step %d\n") % val);
+      write_bf_stream(BF("Step %d\n") % val);
 //      printf("%s:%d    cc_dispatch_debug step %d\n", __FILE__, __LINE__, val );
       break;
   case 1:
-      BFORMAT_T(BF("Arg val[%d]") % val);
+      write_bf_stream(BF("Arg val[%d]") % val);
 //      printf("%s:%d    cc_dispatch_debug arg val[%d]\n", __FILE__, __LINE__, val );
       break;
   case 2:
-      BFORMAT_T(BF(" tag = %d\n") % val); 
+      write_bf_stream(BF(" tag = %d\n") % val); 
 //      printf("%s:%d    cc_dispatch_debug tag [%d]\n", __FILE__, __LINE__, val );
      break;
   case 3: {
     VaList_sp vls((gc::Tagged)val);
 //    printf("%s:%d    vaList_sp.raw_() = %p\n", __FILE__, __LINE__, vls.raw_());
-    BFORMAT_T(BF("Arg VaList_sp.raw_() = %p list -> %s\n") % (void*)vls.raw_() % _rep_(vls) );
+    write_bf_stream(BF("Arg VaList_sp.raw_() = %p list -> %s\n") % (void*)vls.raw_() % _rep_(vls) );
     dump_Vaslist_ptr(&*vls);
     break;
   }
   case 4: {
 //      printf("%s:%d     ptr: %p\n", __FILE__, __LINE__, (void*)val);
-      BFORMAT_T(BF("Ptr: %p\n") % (void*)val );
+      write_bf_stream(BF("Ptr: %p\n") % (void*)val );
   }
       break;
   case 5: {
 //      printf("%s:%d     ptr: %p\n", __FILE__, __LINE__, (void*)val);
-      BFORMAT_T(BF("va_list: %p\n") % (void*)val );
+      write_bf_stream(BF("va_list: %p\n") % (void*)val );
       void* dump_va_list_voidSTAR = (void*)&dump_va_list;
       typedef void (*fptr)(uintptr_t);
       fptr my_fptr = reinterpret_cast<fptr>(dump_va_list_voidSTAR);
@@ -1648,10 +1578,10 @@ void cc_dispatch_debug(int msg_id, uintptr_clasp_t val)
       break;
   }
   case 6:
-      BFORMAT_T(BF("Argument stamp: %lu\n") % val);
+      write_bf_stream(BF("Argument stamp: %lu\n") % val);
       break;
   case 7:
-      BFORMAT_T(BF("Dispatch to: %p\n") % val);
+      write_bf_stream(BF("Dispatch to: %p\n") % val);
       break;
   }
   fflush(stdout);
@@ -1702,12 +1632,20 @@ gctools::return_type cc_dispatch_slot_writer_index_debug(core::T_O* toptimized_s
 }
 
 
-void cc_error_too_few_arguments(size_t nargs, size_t minargs) {
-  SIMPLE_ERROR(BF("Not enough arguments - you provided %lu and %lu are required") % nargs % minargs );
+void cc_error_too_few_arguments(size_t nargs, size_t minargs, core::FunctionDescription* functionDescription) {
+  T_sp functionName = llvmo::functionNameOrNilFromFunctionDescription(functionDescription);
+  if (functionName.nilp()) {
+    SIMPLE_ERROR(BF("Not enough arguments when calling an unknown function - you provided %lu and %lu are required") % nargs % minargs );
+  }
+  SIMPLE_ERROR(BF("Not enough arguments when calling %s - you provided %lu and %lu are required") % _rep_(functionName) % nargs % minargs );
 }
 
-void cc_error_too_many_arguments(size_t nargs, size_t maxargs) {
-  SIMPLE_ERROR(BF("Too many arguments - you provided %lu and %lu are allowed") % nargs % maxargs );
+void cc_error_too_many_arguments(size_t nargs, size_t maxargs, core::FunctionDescription* functionDescription) {
+  T_sp functionName = llvmo::functionNameOrNilFromFunctionDescription(functionDescription);
+  if (functionName.nilp()) {
+        SIMPLE_ERROR(BF("Too many arguments when calling an unknown function - you provided %lu and %lu are required") % nargs % maxargs );
+  }
+  SIMPLE_ERROR(BF("Too many arguments when calling %s - you provided %lu and %lu are allowed") % _rep_(functionName) % nargs % maxargs );
 }
 
 };

@@ -1,0 +1,66 @@
+#-*- mode: python; coding: utf-8-unix -*-
+
+### Configure for Debian 10
+#### Clasp build configuration file.
+###
+### This file has to be named `wscript.config` to be
+### recognised by the build system.
+
+# Define where the llvm/clang is that will be used for building clasp.
+# LLVM_CONFIG_BINARY = '/path/to/llvm-config-4.0'
+
+# To link to the debug versions of the LLVM libraries, set a path here to the llvm-config binary of the LLVM debug build
+# LLVM_CONFIG_BINARY_FOR_LIBS = "/full/path/externals-clasp/build/debug/bin/llvm-config"
+
+# Use Parallel building
+#  COMPILE-FILE during Clasp building will run in fork'd children
+#  You can specify the number of children that can run in parallel using -j #
+#
+#  This option requires a special build of the Boehm garbage collector
+#  built with the option --enable-handle-fork
+#
+USE_PARALLEL_BUILD = True
+
+# Use lld linker
+#  The llvm linker is supposed to be faster than ld
+#  Currently this option only works on linux
+USE_LLD = True
+
+# Where to install clasp. Defaults to '/usr/local/'.
+PREFIX = '/opt/clasp/'
+
+# SBCL is used at build time. Defaults to 'sbcl'.
+#SBCL                = '/path/sbcl/run-sbcl.sh'
+
+# Optional clasp binary. It is used only when rebuilding
+# clasp, e.g. with the './waf rebuild_cboehm' command.
+#CLASP               = '/path/cclasp-boehm'
+
+# This is how you can specify non-standard locations
+#INCLUDES = "/opt/boost_1_62_0/include"
+#LINKFLAGS = ["-L/opt/boost_1_62_0/lib", "-Wl,-rpath=/opt/boost_1_62_0/lib"]
+
+# This turns on build with address sanitizer
+# ADDRESS_SANITIZER = True
+
+# Set if on macOS libffi is required.   On macOS we can build with brew installed llvm
+# but brew installed llvm has libffi as a dependency and doesn't report that when you invoke llvm-config --libs!!!
+# This is a bug in llvm-config and has to be fixed upstream.
+# Default = True
+# REQUIRE_LIBFFI = True
+
+
+# CLASP_BUILD_MODE (which replaced LTO_OPTION) can be "bitcode" or "object" (default)
+# This controls if object files are generated and linked (fast build time)
+# or bitcode is generated and lto linked (slow build time).
+#
+# CLASP_BUILD_MODE = "bitcode"
+
+# Turn on debug options that slow down clasp while checking for various things.
+# info on the various options is in wscript
+DEBUG_OPTIONS = [ "DEBUG_RELEASE",
+                  "DEBUG_BCLASP_LISP",
+                  "DEBUG_CCLASP_LISP",
+#                  "DEBUG_COMPILER",
+                  "DEBUG_SLOW"
+                  ]

@@ -37,7 +37,7 @@ For sbcl
 generate a block for each exception and return a list of conses of the blocks with the clauses.
 eg: '(block ((exception var) code...))"
   (mapcar #'(lambda (x)
-	      (cons (irc-basic-block-create "dispatch") x)) clauses))
+	      (cons (irc-basic-block-create "TRY.dispatch") x)) clauses))
 
 
 (defun try.separate-clauses (clauses)
@@ -136,7 +136,7 @@ eg: '(block ((exception var) code...))"
                  #+debug-eh(_          (irc-intrinsic "debugPrintI32" ,sel-gs))
                  #+debug-eh(_          (irc-intrinsic "debugPrintI32" ,typeid-gs))
 		 (,matches-type-gs (irc-icmp-eq ,sel-gs ,typeid-gs))
-		 (,handler-block-gs (irc-basic-block-create ,(symbol-name handler-block-gs)))
+		 (,handler-block-gs (irc-basic-block-create (concatenate 'base-string "TRY." ,(symbol-name handler-block-gs))))
 		 )
 ;;	    (irc-intrinsic "debugPrintI32" ,sel-gs)
 ;;	    (irc-intrinsic "debugPrintI32" ,typeid-gs)
@@ -178,7 +178,7 @@ eg: '(block ((exception var) code...))"
                                      previous-exception-clause-types-to-handle
                                      exn.slot
                                      ehselector.slot)
-  (let* ((rethrow-cleanup       (irc-basic-block-create "rethrow-cleanup" function))
+  (let* ((rethrow-cleanup       (irc-basic-block-create "TRY.rethrow-cleanup" function))
          (_                     (irc-begin-block rethrow-cleanup))
          (lp                    (irc-create-landing-pad (length previous-exception-clause-types-to-handle) "rethrow-cleanup"))
          (_                     (try.add-landing-pad-clauses lp previous-exception-clause-types-to-handle))
@@ -192,8 +192,8 @@ eg: '(block ((exception var) code...))"
 
 (defun generate-ehcleanup-and-resume-code (function exn.slot ehselector.slot &optional cleanup-lambda)
   (let* ((ehbuilder       (llvm-sys:make-irbuilder *llvm-context*))
-         (ehcleanup       (irc-basic-block-create "ehcleanup" function))
-         (ehresume        (irc-basic-block-create "ehresume" function))
+         (ehcleanup       (irc-basic-block-create "TRY.ehcleanup" function))
+         (ehresume        (irc-basic-block-create "TRY.ehresume" function))
          (_               (irc-set-insert-point-basic-block ehcleanup ehbuilder))
          (_               (and cleanup-lambda
                                (with-irbuilder (ehbuilder)
@@ -210,13 +210,12 @@ eg: '(block ((exception var) code...))"
 
 
 (defun generate-terminate-code (function)
-  (let* ((terminate-basic-block     (irc-basic-block-create "terminate" function))
+  (let* ((terminate-basic-block     (irc-basic-block-create "TRY.terminate" function))
          (ehbuilder                 (llvm-sys:make-irbuilder *llvm-context*))
          (_                         (irc-set-insert-point-basic-block terminate-basic-block ehbuilder)))
     (with-irbuilder (ehbuilder)
       (let* ((landpad                   (irc-create-landing-pad 1))
              (_                         (llvm-sys:add-clause landpad (llvm-sys:constant-pointer-null-get %i8*%)))
-             (_                         (dbg-set-current-debug-location-here))
              (_                         (irc-intrinsic "clasp_terminate"))
              (_                         (irc-unreachable)))))
     terminate-basic-block))
@@ -251,16 +250,6 @@ eg: '(block ((exception var) code...))"
     (llvm-sys:create-store *irbuilder* exception-structure exn.slot nil))
   (let ((exception-selector (llvm-sys:create-extract-value *irbuilder* lpad (list 1) "")))
     (llvm-sys:create-store *irbuilder* exception-selector ehselector.slot nil)))
-
-(defvar *next-try-id* 0)
-#+threads (defvar *next-try-id-mutex* (mp:make-mutex 'next-try-id))
-(defun next-try-id ()
-  #-threads (incf *next-try-id*)
-  #+threads (unwind-protect
-                 (progn
-                   (mp:lock *next-try-id-mutex* nil)
-                   (incf *next-try-id*))
-              (mp:unlock *next-try-id-mutex*)))
 
 (defmacro with-try* (code &rest catch-clauses)
   "with-try macro sets up exception handling for a block of code.
@@ -304,36 +293,35 @@ exceptions to higher levels of the code and unwinding the stack.
                        exception-clauses))
 	     (first-dispatcher-block-gs (car dispatcher-block-gensyms)))
 	;;	     (cleanup-clause-list (cons cleanup-clause-body (make-list (- (length exception-clauses) 1)))))
-	`(with-block-name-prefix (bformat nil "(TRY%d)." (next-try-id))
-           (irc-branch-to-and-begin-block (irc-basic-block-create "top"))
+	`(progn
+           (irc-branch-to-and-begin-block (irc-basic-block-create "TRY.top"))
            (let* ((,all-clause-types-gs (if ',my-clause-types
                                             (append ',my-clause-types *exception-clause-types-to-handle*)
                                             *exception-clause-types-to-handle*))
                   (,previous-exception-clause-types-to-handle-gs *exception-clause-types-to-handle*)
                   (*exception-clause-types-to-handle* ,all-clause-types-gs)
                   (,parent-cleanup-block-gs *exception-handler-cleanup-block*)
-                  (,landing-pad-block-gs (irc-basic-block-create "landing-pad"))
-                  (,dispatch-header-gs (irc-basic-block-create "dispatch-header"))
-                  (,cont-block-gs (irc-basic-block-create "try-cont"))
+                  (,landing-pad-block-gs (irc-basic-block-create "TRY.landing-pad"))
+                  (,dispatch-header-gs (irc-basic-block-create "TRY.dispatch-header"))
+                  (,cont-block-gs (irc-basic-block-create "TRY.try-cont"))
                   (,previous-exception-handler-cleanup-block-gs *exception-handler-cleanup-block*)
                   (*exception-handler-cleanup-block* ,dispatch-header-gs ))
-             (cmp-log "====>> In TRY --> parent-cleanup-block: %s\n" ,parent-cleanup-block-gs)
+             (cmp-log "====>> In TRY --> parent-cleanup-block: %s%N" ,parent-cleanup-block-gs)
              (let ,(mapcar #'(lambda (var-name)
-                               (list var-name `(irc-basic-block-create ,(symbol-name var-name))))
+                               (list var-name `(irc-basic-block-create (concatenate 'base-string "TRY." ,(symbol-name var-name)))))
                     dispatcher-block-gensyms)
                (multiple-value-prog1
                    (with-landing-pad ,landing-pad-block-gs
                      ,code)
                  ,(when cleanup-clause-body
                     `(progn
-                       (irc-branch-to-and-begin-block (irc-basic-block-create "normal-cleanup"))
+                       (irc-branch-to-and-begin-block (irc-basic-block-create "TRY.normal-cleanup"))
                        ,@cleanup-clause-body))
                  (irc-branch-if-no-terminator-inst ,cont-block-gs)
                  (irc-begin-landing-pad-block ,landing-pad-block-gs)
                  (let* ((,unique-clause-types-gs (try.identify-all-unique-clause-types ,all-clause-types-gs))
                         (,landpad-gs (irc-create-landing-pad (length ,unique-clause-types-gs) "")))
                    (try.add-landing-pad-clauses ,landpad-gs ,unique-clause-types-gs)
-                   (dbg-set-current-debug-location-here)
                    (irc-low-level-trace :eh-landing-pads)
                    ,(when cleanup-clause-body
                       `(irc-set-cleanup ,landpad-gs t))

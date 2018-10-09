@@ -56,8 +56,11 @@ insert_char(StrNs_sp buffer, cl_index where, gc::Fixnum c) {
 
 static T_sp
 push_base_string(T_sp buffer, StrNs_sp s) {
-    ASSERT(s->arrayHasFillPointerP());
-    buffer = _clasp_ensure_buffer(buffer, s->fillPointer());
+    //There is no reason why s should have a mandatory fill-pointer
+    if (s->arrayHasFillPointerP())
+       buffer = _clasp_ensure_buffer(buffer, s->fillPointer());
+    else
+       buffer = _clasp_ensure_buffer(buffer, s->length());
     StrNs_sp sbuffer = gc::As<StrNs_sp>(buffer);
     for ( size_t i(0),iEnd(s->length()); i<iEnd; ++i ) {
 	sbuffer->vectorPush(s->rowMajorAref(i));

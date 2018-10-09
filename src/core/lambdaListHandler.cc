@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#define DEBUG_LEVEL_FULL
+//#define DEBUG_LEVEL_FULL
 
 #include <string.h>
 #include <clasp/core/foundation.h>
@@ -125,7 +125,7 @@ ftype           inline     special
 ignorable       notinline  type
 And my own special one:    core:_sym_lambda_name
 */
-CL_DEFUN List_sp canonicalize_declarations(List_sp decls)
+CL_DEFUN List_sp core__canonicalize_declarations(List_sp decls)
 {
   List_sp canon = _Nil<T_O>();
   for ( auto decl : decls ) {
@@ -157,9 +157,9 @@ CL_DEFUN List_sp canonicalize_declarations(List_sp decls)
       if (more_than_one.nilp()) {
         canon = Cons_O::create(d,canon);
       } else {
-        T_sp ftype = oCadr(d);
+        T_sp ttype = oCadr(d);
         for ( auto fp : static_cast<List_sp>(oCddr(d)) ) {
-          canon = Cons_O::create(Cons_O::createList(cl::_sym_ftype,ftype,oCar(fp)),canon);
+          canon = Cons_O::create(Cons_O::createList(cl::_sym_type,ttype,oCar(fp)),canon);
         }
       }
     } else if ( head == core::_sym_c_local ) {
@@ -391,16 +391,19 @@ T_mv LambdaListHandler_O::process_single_dispatch_lambda_list(List_sp llraw, boo
   List_sp llprocessed = cl__copy_list(llraw);
   Symbol_sp sd_symbol = _Nil<Symbol_O>();
   Symbol_sp sd_class = _Nil<Symbol_O>();
-  bool saw_amp = false;
   int dispatchIndex = 0;
   int idx = 0;
   for (auto cur : llprocessed) {
     T_sp arg = oCar(cur);
     if (cl__symbolp(arg)) {
-      if (gc::As<Symbol_sp>(arg)->amp_symbol_p()) {
-        saw_amp = true;
+      // Originally checked if the symbol started with an ampersand.
+      // Unfortunately, I don't fully understand the logic here.
+      if (arg == cl::_sym_AMPoptional ||
+          arg == cl::_sym_AMPrest || arg == cl::_sym_AMPbody ||
+          arg == core::_sym_AMPva_rest ||
+          arg == cl::_sym_AMPkey || arg == cl::_sym_AMPallow_other_keys ||
+          arg == cl::_sym_AMPaux)
         break;
-      }
     } else if ((arg).consp()) {
       List_sp carg = arg;
       if (cl__length(carg) != 2) {
@@ -410,6 +413,8 @@ T_mv LambdaListHandler_O::process_single_dispatch_lambda_list(List_sp llraw, boo
               Cons_O::createList(kw::_sym_arguments, carg));
       }
       if (sd_symbol.notnilp()) {
+        // There is already a sd_symbol defined -
+        // This means there are too many specialized arguments
         SYMBOL_SC_(CorePkg, singleDispatchTooManyArgumentsError);
         ERROR(_sym_singleDispatchTooManyArgumentsError,
               Cons_O::createList(kw::_sym_arguments, llraw));
@@ -475,11 +480,6 @@ List_sp LambdaListHandler_O::process_macro_lambda_list(List_sp lambda_list) {
   ql::list sclist; // (af_lineNumber(lambda_list),af_column(lambda_list),core__source_file_info(lambda_list));
   sclist << whole_symbol << environment_symbol << Cons_O::create(name_symbol, new_lambda_list);
   List_sp macro_ll = sclist.cons();
-#if 0
-  if (_lisp->sourceDatabase().notnilp()) {
-    gc::As<SourceManager_sp>(_lisp->sourceDatabase())->duplicateSourcePosInfo(lambda_list, macro_ll);
-  }
-#endif
   return macro_ll;
 }
 
@@ -682,17 +682,8 @@ string argument_mode_as_string(ArgumentMode mode) {
 
 bool switch_add_argument_mode(T_sp context, T_sp symbol, ArgumentMode &mode, T_sp &key_flag) {
   LOG(BF("In switch_add_argument_mode argument is a symbol: %s %X") % _rep_(symbol) % symbol.get());
-  bool isAmpSymbol = false;
-  if (symbol.notnilp()) {
-    if (Symbol_sp sym = symbol.asOrNull<Symbol_O>()) {
-      isAmpSymbol = (sym == _sym_DOT || sym->amp_symbol_p());
-    }
-  }
-  //	bool isAmpSymbol = ( symbol == _sym_DOT || (symbol.notnilp() && symbol->amp_symbol_p()) );
-  if (isAmpSymbol) {
-    LOG(BF("It is an amp symbol"));
-    switch (mode) {
-    case required:
+  switch (mode) {
+  case required:
       LOG(BF("Was in required mode"));
       if (symbol == cl::_sym_AMPoptional) {
         mode = optional;
@@ -709,15 +700,18 @@ bool switch_add_argument_mode(T_sp context, T_sp symbol, ArgumentMode &mode, T_s
       } else if (symbol == cl::_sym_AMPaux) {
         mode = aux;
         goto NEWMODE;
+      } else if (symbol == cl::_sym_AMPallow_other_keys) {
+        goto BADMODE;
       } else if (symbol == _sym_DOT) {
         mode = dot_rest;
         goto NEWMODE;
       }
-      goto BADMODE;
       break;
-    case optional:
+  case optional:
       LOG(BF("Was in optional mode"));
-      if (symbol == cl::_sym_AMPrest || symbol == cl::_sym_AMPbody) {
+      if (symbol == cl::_sym_AMPoptional) {
+        goto BADMODE;
+      } else if (symbol == cl::_sym_AMPrest || symbol == cl::_sym_AMPbody) {
         mode = rest;
         goto NEWMODE;
       } else if (symbol == core::_sym_AMPva_rest) {
@@ -729,70 +723,123 @@ bool switch_add_argument_mode(T_sp context, T_sp symbol, ArgumentMode &mode, T_s
       } else if (symbol == cl::_sym_AMPaux) {
         mode = aux;
         goto NEWMODE;
+      } else if (symbol == cl::_sym_AMPallow_other_keys) {
+        goto BADMODE;
       } else if (symbol == _sym_DOT) {
         mode = dot_rest;
         goto NEWMODE;
       }
-      goto BADMODE;
       break;
-    case rest:
+  case rest:
       LOG(BF("Was in rest mode"));
-      if (symbol == cl::_sym_AMPkey) {
+      if (symbol == cl::_sym_AMPoptional) {
+        goto BADMODE;
+      } else if (symbol == cl::_sym_AMPrest || symbol == cl::_sym_AMPbody) {
+        goto BADMODE;
+      } else if (symbol == core::_sym_AMPva_rest) {
+        goto BADMODE;
+      } else if (symbol == cl::_sym_AMPkey) {
         mode = keyword;
         goto NEWMODE;
       } else if (symbol == cl::_sym_AMPaux) {
         mode = aux;
         goto NEWMODE;
+      } else if (symbol == cl::_sym_AMPallow_other_keys) {
+        goto BADMODE;
       } else if (symbol == _sym_DOT) {
         mode = dot_rest;
         goto NEWMODE;
       }
-      goto BADMODE;
       break;
-    case va_rest:
+  case va_rest:
       LOG(BF("Was in va_rest mode"));
-      if (symbol == cl::_sym_AMPkey) {
+      if (symbol == cl::_sym_AMPoptional) {
+        goto BADMODE;
+      } else if (symbol == cl::_sym_AMPrest || symbol == cl::_sym_AMPbody) {
+        goto BADMODE;
+      } else if (symbol == core::_sym_AMPva_rest) {
+        goto BADMODE;
+      } else if (symbol == cl::_sym_AMPkey) {
         mode = keyword;
         goto NEWMODE;
       } else if (symbol == cl::_sym_AMPaux) {
         mode = aux;
         goto NEWMODE;
+      } else if (symbol == cl::_sym_AMPallow_other_keys) {
+        goto BADMODE;
       } else if (symbol == _sym_DOT) {
         mode = dot_rest;
         goto NEWMODE;
       }
-      goto BADMODE;
       break;
-    case keyword:
+  case keyword:
       LOG(BF("Was in keyword mode"));
-      if (symbol == cl::_sym_AMPaux) {
+      if (symbol == cl::_sym_AMPoptional) {
+        goto BADMODE;
+      } else if (symbol == cl::_sym_AMPrest || symbol == cl::_sym_AMPbody) {
+        goto BADMODE;
+      } else if (symbol == core::_sym_AMPva_rest) {
+        goto BADMODE;
+      } else if (symbol == cl::_sym_AMPkey) {
+        goto BADMODE;
+      } else if (symbol == cl::_sym_AMPaux) {
         mode = aux;
         goto NEWMODE;
       } else if (symbol == cl::_sym_AMPallow_other_keys) {
         mode = allowOtherKeys;
         goto NEWMODE;
       }
-      goto BADMODE;
       break;
-    case allowOtherKeys:
-        LOG(BF("Did not recognize symbol(%s)") % _rep_(symbol));
-      if (symbol == cl::_sym_AMPaux) {
+  case allowOtherKeys:
+      LOG(BF("Did not recognize symbol(%s)") % _rep_(symbol));
+      if (symbol == cl::_sym_AMPoptional) {
+        goto BADMODE;
+      } else if (symbol == cl::_sym_AMPrest || symbol == cl::_sym_AMPbody) {
+        goto BADMODE;
+      } else if (symbol == core::_sym_AMPva_rest) {
+        goto BADMODE;
+      } else if (symbol == cl::_sym_AMPkey) {
+        goto BADMODE;
+      } else if (symbol == cl::_sym_AMPaux) {
         mode = aux;
         goto NEWMODE;
+      } else if (symbol == cl::_sym_AMPallow_other_keys) {
+        goto BADMODE;
       }
-      goto BADMODE;
       break;
-    case aux:
+  case aux:
       LOG(BF("Was in aux mode"));
-      goto BADMODE;
+      if (symbol == cl::_sym_AMPoptional) {
+        goto BADMODE;
+      } else if (symbol == cl::_sym_AMPrest || symbol == cl::_sym_AMPbody) {
+        goto BADMODE;
+      } else if (symbol == core::_sym_AMPva_rest) {
+        goto BADMODE;
+      } else if (symbol == cl::_sym_AMPkey) {
+        goto BADMODE;
+      } else if (symbol == cl::_sym_AMPaux) {
+        goto BADMODE;
+      } else if (symbol == cl::_sym_AMPallow_other_keys) {
+        goto BADMODE;
+      }
       break;
-    case dot_rest:
-      goto BADMODE;
+  case dot_rest:
+      if (symbol == cl::_sym_AMPoptional) {
+        goto BADMODE;
+      } else if (symbol == cl::_sym_AMPrest || symbol == cl::_sym_AMPbody) {
+        goto BADMODE;
+      } else if (symbol == core::_sym_AMPva_rest) {
+        goto BADMODE;
+      } else if (symbol == cl::_sym_AMPkey) {
+        goto BADMODE;
+      } else if (symbol == cl::_sym_AMPaux) {
+        goto BADMODE;
+      } else if (symbol == cl::_sym_AMPallow_other_keys) {
+        goto BADMODE;
+      }
+
       break;
-    };
-  } else {
-    LOG(BF("It is not an amp symbol"));
-  }
+  };
   return false;
 BADMODE:
   SIMPLE_ERROR(BF("While in lambda-list mode %s encountered illegal symbol[%s]") % argument_mode_as_string(mode) % _rep_(symbol));
@@ -845,6 +892,8 @@ bool contextSupportsEnvironment(T_sp context) {
   }
   return false;
 }
+
+
 
 /*! Process the arguments and return the components
  * context may be: ordinary, macro, destructuring, deftype,
@@ -1044,6 +1093,7 @@ DONE:
   return true;
 }
 
+  
 CL_LAMBDA(vl context);
 CL_DECLARE();
 CL_DOCSTRING("processLambdaList - this is like ECL::process-lambda-list except auxs are returned as nil or a list of 2*n elements of the form (sym1 init1 sym2 init2 ...) In ECL they say you need to prepend the number of auxs - that breaks the destructure macro. ECL process-lambda-list says context may be MACRO, FTYPE, FUNCTION, METHOD or DESTRUCTURING-BIND but in ECL>>clos/method.lsp they pass T!!!");
@@ -1056,6 +1106,7 @@ CL_DEFUN T_mv core__process_lambda_list(List_sp lambdaList, T_sp context) {
   RestArgument restarg;
   T_sp key_flag;
   T_sp allow_other_keys;
+  T_sp decl_dict = _Nil<T_O>();
   parse_lambda_list(lambdaList,
                     context,
                     reqs,
@@ -1088,7 +1139,7 @@ CL_DEFUN T_mv core__process_lambda_list(List_sp lambdaList, T_sp context) {
   }
   ql::list lauxs;
   if (auxs.size() != 0) { // auxes arguments   auxs = (num aux1 init1 ...)
-    // !!!! The above is not true auxs = nil or (aux1 init1 aux2 init 2)
+    // !!!! The above is not true auxs = nil or (aux1 init1 aux2 init2)
     //	    lauxs << make_fixnum((int)auxs.size());
     for (auto &it : auxs) {
       lauxs << it._ArgTarget << it._Expression;
@@ -1102,8 +1153,7 @@ CL_DEFUN T_mv core__process_lambda_list(List_sp lambdaList, T_sp context) {
                 lkeys.cons(),
                 allow_other_keys,
                 lauxs.cons(),
-                _lisp->_boolean(restarg.VaRest)
-                );
+                _lisp->_boolean(restarg.VaRest));
 };
 
 /*
@@ -1178,6 +1228,7 @@ void LambdaListHandler_O::parse_lambda_list_declares(List_sp lambda_list, List_s
                                              this->_KeywordArguments,
                                              this->_AllowOtherKeys,
                                              this->_AuxArguments);
+//  printf("%s:%d parse_lambda_list_declares lambda_list -> %s  handler -> %s\n", __FILE__, __LINE__, _rep_(lambda_list).c_str(), _rep_(this->asSmartPtr()).c_str());
   if (this->_CreatesBindings) {
     this->recursively_build_handlers_count_arguments(declareSpecifierList, context, classifier);
     this->_ClassifiedSymbolList = classifier.finalClassifiedSymbols();

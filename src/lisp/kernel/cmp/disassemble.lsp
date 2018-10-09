@@ -27,14 +27,17 @@
 ;;
 (in-package :cmp)
 
+(defun safe-llvm-get-name (what)
+  (llvm-sys:get-name what))
+
 (defun disassemble-assembly-for-llvm-functions (llvm-function-list)
   "Given a list of llvm::Functions that were JITted - generate disassembly for them.
 Return T if disassembly was achieved - otherwise NIL"
-  (bformat t "There are %d associated functions - disassembling them.\n" (length llvm-function-list))
+  (bformat t "There are %d associated functions - disassembling them.%N" (length llvm-function-list))
   (let ((success nil))
     (dolist (llvm-func llvm-function-list)
-      (bformat t "\n%s-----\n" (llvm-sys:get-name llvm-func))
-      (let* ((llvm-function-name (bformat nil "_%s" (llvm-sys:get-name llvm-func)))
+      (bformat t "%N%s-----%N" (safe-llvm-get-name llvm-func))
+      (let* ((llvm-function-name (bformat nil "_%s" (safe-llvm-get-name llvm-func)))
              (symbol-info (gethash llvm-function-name *jit-saved-symbol-info*)))
         (if symbol-info
             (let ((bytes (first symbol-info))
@@ -45,7 +48,7 @@ Return T if disassembly was achieved - otherwise NIL"
                                                  :end-byte-offset bytes)
               (setf success t))
             (progn
-              (bformat t "Could not disassemble associated function\n")))))
+              (bformat t "Could not disassemble associated function%N")))))
     success))
 
 (defun disassemble-assembly (module-or-func &optional (start-instruction-index 0) (num-instructions 16))
@@ -54,7 +57,10 @@ Return T if disassembly was achieved - otherwise NIL"
      (unless (disassemble-assembly-for-llvm-functions (llvm-sys:module-get-function-list module-or-func))
        (error "Cannot disassemble module ~s" module-or-func)))
     ((functionp module-or-func)
-     (let ((success (disassemble-assembly-for-llvm-functions (list module-or-func))))
+     ;;; What is the type for a jitted function? For sure not CORE:CLOSURE-WITH-SLOTS, so test that 
+     (let ((success (unless (or (typep module-or-func 'CORE:CLOSURE-WITH-SLOTS)
+				(typep module-or-func 'STANDARD-GENERIC-FUNCTION))       
+		      (disassemble-assembly-for-llvm-functions (list module-or-func)))))
        (if success
            t
            (progn
@@ -73,13 +79,13 @@ Return T if disassembly was achieved - otherwise NIL"
                                      :start-byte-offset start-byte-offset
                                      :end-byte-offset end-byte-offset))
 
-(defun disassemble (desig &key ((:start start-instruction-index) 0) ((:num num-instructions) 16) (type :IR))
+(defun disassemble (desig &key ((:start start-instruction-index) 0) ((:num num-instructions) 16) (type :asm))
   "If type is :ASM then disassemble to assembly language from the START instruction, disassembling NUM instructions
    if type is :IR then dump the llvm-ir for all of the associated functions and ignore START and NUM"
   (check-type type (member :ir :asm))
   (multiple-value-bind (func-or-lambda name)
       (cond
-        ((null desig) (error "No function provided"))
+        ((null desig) (error 'type-error :datum desig :expected-type '(or symbol function (CONS (EQL SETF) (CONS SYMBOL NULL)))))
         ((symbolp desig) (if (fboundp desig)
                              (values (fdefinition desig) desig)
                              (error "No function bound to ~A" desig)))
@@ -95,15 +101,15 @@ Return T if disassembly was achieved - otherwise NIL"
                  (cond
                    ((eq type :ir) (llvm-sys:dump-module module))
                    ((eq type :asm) (warn "Handle disassemble of lambda-form to assembly"))
-                   (t (error "Illegal type ~a - only :ir and :asm allowed" type )))
+                   (t (error 'type-error :datum type :expected-type '(or :ir :asm))))
                  (error "Could not recover jitted module -> ~a" module))))
          (return-from disassemble nil))
          ;; treat setf functions
          ((and (consp desig) (eq (car desig) 'setf)(fdefinition desig))
          (values (fdefinition desig) desig))
-        (t (error "Unknown argument ~a passed to disassemble" desig)))
+        (t (error 'type-error :datum desig :expected-type '(or symbol function (CONS (EQL SETF) (CONS SYMBOL NULL))))))
     (setq name (if name name 'lambda))
-    (bformat t "Disassembling function: %s\n" (repr func-or-lambda))
+    (bformat t "Disassembling function: %s%N" (repr func-or-lambda))
     (cond
       ((functionp func-or-lambda)
        (let ((fn func-or-lambda))
@@ -112,13 +118,14 @@ Return T if disassembly was achieved - otherwise NIL"
             (if (eq type :asm)
                 (progn
                   (disassemble-assembly fn start-instruction-index num-instructions)
-                  (bformat t "Done\n"))
-                ;;; This not not defined! See issue #459
-                (llvm-sys:disassemble* fn)))
+                  (bformat t "Done%N"))
+                (error "LLVM-IR is not saved for functions - use :type :asm to disassemble to native code")))
            ((interpreted-function-p fn)
-            (format t "This is a interpreted function - compile it first~%"))
+            (format t "This is a interpreted function - compile it first~%")
+	        (error 'type-error :datum fn :expected-type '(or symbol function (CONS (EQL SETF) (CONS SYMBOL NULL)))))
            ((eq type :asm)
+	        ;;; How is it possible to come to this branch
             (llvm-sys:disassemble-instructions (get-builtin-target-triple-and-data-layout) (core:function-pointer fn) :start-instruction-index start-instruction-index :num-instructions num-instructions))
-           (t (error "Unknown target for disassemble: ~a" fn)))))
-      (t (error "Cannot disassemble"))))
+           (t (error 'type-error :datum fn :expected-type '(or symbol function (CONS (EQL SETF) (CONS SYMBOL NULL))))))))
+      (t (error 'type-error :datum func-or-lambda :expected-type '(or symbol function (CONS (EQL SETF) (CONS SYMBOL NULL)))))))
   nil)

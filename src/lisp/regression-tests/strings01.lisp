@@ -16,7 +16,37 @@
       (string= (substitute #\X #\Nul
                            (subseq (concatenate 'string "a" (make-string 3 :initial-element #\Nul) "bcd") 0))
                "aXXXbcd"))
-(test parse-integer0 (multiple-value-bind (val pos) (parse-integer "123 456") (and (= val 123) (= pos 3))))
+;;; previous test does not seem to be as specified in http://www.lispworks.com/documentation/HyperSpec/Body/f_parse_.htm
+;;; if something follows space, signal an error
+(test-expect-error parse-integer0 (multiple-value-bind (val pos)
+                                      (parse-integer "123 456"))
+                   :type parse-error)
+(test parse-integer1 (multiple-value-bind (val pos)
+                         (parse-integer " 123 ")
+                       (and (= val 123) (= pos 5))))
+
+(test-expect-error parse-integer2 (multiple-value-bind (val pos)
+                                      (parse-integer "   123a"))
+                   :type parse-error)
+(test parse-integer3
+      (multiple-value-bind (val pos)
+          (parse-integer " +123 ")
+        (and (= val 123) (= pos 6))))
+
+(test parse-integer3
+      (multiple-value-bind (val pos)
+          (parse-integer " -123 ")
+        (and (= val -123) (= pos 6))))
+
+(test-expect-error parse-integer4
+      (multiple-value-bind (val pos)
+          (parse-integer " +-123 "))
+      :type parse-error)
+
+(test parse-integer5 (multiple-value-bind (val pos)
+                                      (parse-integer " 123a" :junk-allowed t)
+                                    (and (= val 123) (= pos 4))))
+
 (test type-of-string (subtypep (type-of "abc") '(simple-array base-char (3))))
 
 
@@ -44,3 +74,7 @@
 
 (test closest-sequence-type0 (eq (core::closest-sequence-type 'simple-base-string) 'base-char))
 (test closest-sequence-type1 (eq (core::closest-sequence-type 'simple-string) 'character))
+
+;;; These should not return t, but the first index, where it is different
+(test eql-1 (eql 0 (string/= "a" "b")))
+(test eql-2 (eql 0 (string-not-equal "a" "b")))

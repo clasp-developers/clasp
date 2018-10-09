@@ -137,11 +137,11 @@ contiguous block."
 Returns T if INDEXes are valid indexes of ARRAY; NIL otherwise.  The number of
 INDEXes must be equal to the rank of ARRAY."
   (declare (type array array)
-	   (optimize (safety 0))
-           (ext:check-arguments-type))
+           (optimize (safety 0))
+           #+(or)(ext:check-arguments-type))
   (do* ((indices indices (cons-cdr indices))
-	(r (array-rank array))
-	(i 0 (1+ i)))
+        (r (array-rank array))
+        (i 0 (1+ i)))
        ((>= i r) t)
     (declare (type index r i))
     (if indices
@@ -153,7 +153,7 @@ INDEXes must be equal to the rank of ARRAY."
 	(error "The rank of the array is ~R,~%~
                ~7@Tbut ~R ~:*~[indices are~;index is~:;indices are~] ~
                supplied."
-		 r i))))
+                 r i))))
 
 (defun row-major-index-inner (array indices)
   (declare (optimize speed)

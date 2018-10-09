@@ -24,8 +24,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef BrclScriptMpi_H //[
-#define BrclScriptMpi_H
+#ifndef claspMpi_H //[
+#define claspMpi_H
 
 #include <stdio.h>
 #include <string>
@@ -103,6 +103,8 @@ public:
 
   DEFAULT_CTOR_DTOR(Mpi_O);
 };
+
+extern Mpi_sp _MpiWorld;
 };
 
 #endif //]

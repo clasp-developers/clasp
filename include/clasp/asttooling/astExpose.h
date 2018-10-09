@@ -30,6 +30,7 @@ THE SOFTWARE.
 #include <clasp/core/common.h>
 #include <clang/AST/DeclBase.h>
 
+PACKAGE_USE("COMMON-LISP");
 PACKAGE_NICKNAME("CAST");
 NAMESPACE_PACKAGE_ASSOCIATION(clang_ast,ClangAstPkg,"CLANG-AST");
 

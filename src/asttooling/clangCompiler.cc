@@ -83,7 +83,7 @@ namespace clang_compile {
 void initialize_clang_compile() {
   printf("%s:%d  initialize_clang_compile\n", __FILE__, __LINE__ );
   // overloaded functions that had trouble resolving
-  package(ClangCompilePkg, {"CLANG-COMPILER"}, {"CL", "CORE"})
+  package(ClangCompilePkg, {"CLANG-COMPILER"}, {}) // "CL", "CORE"})
     [
     /* -- */
      class_<clang::DiagnosticOptions>("DiagnosticOptions") //, no_default_constructor)

@@ -72,7 +72,7 @@ CL_DEFUN T_sp cl__reverse(T_sp seq) {
 };
 
 CL_LAMBDA(seq);
-CL_DECLARE((declare (locked)));
+CL_DECLARE();
 CL_DOCSTRING("nreverse");
 CL_DEFUN T_sp cl__nreverse(T_sp seq) {
   if (seq.consp()) {

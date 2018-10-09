@@ -89,17 +89,17 @@ typedef int64_t    Fixnum; // Signed Fixnum immediate value
 #define PRsize_t "lu"
 #endif
 #if defined( _TARGET_OS_LINUX ) || defined( _TARGET_OS_FREEBSD)
-#define Puintptr_clasp_t "llu"
+#define Puintptr_clasp_t "lu"
 #define Ptagged_stamp_t "lu"
 #define PFixnum "ld"
 #define Plu "lu"
-#define PRu "llu"
-#define PRi "lld"
-#define PRF "lld"
-#define PRFoctal "llo"
+#define PRu "lu"
+#define PRi "ld"
+#define PRF "ld"
+#define PRFoctal "lo"
 #define Puint "u"
 #define PXuintptr_t "llX"
-#define PRFhex "llX"
+#define PRFhex "lX"
 #define PRsize_t "lu"
 #endif
 

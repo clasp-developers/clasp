@@ -29,15 +29,16 @@ THE SOFTWARE.
 
 #include <clasp/core/lisp.h>
 
+PACKAGE_USE("COMMON-LISP");
 NAMESPACE_PACKAGE_ASSOCIATION(mpip, MpiPkg, "MPI");
 
 namespace mpip {
 
-class MpiExposer : public core::Exposer {
+class MpiExposer_O : public core::Exposer_O {
 private:
 public:
-  MpiExposer(core::Lisp_sp lisp) : Exposer(lisp, MpiPkg){};
-  virtual void expose(core::Lisp_sp lisp, WhatToExpose what) const;
+  MpiExposer_O(core::Lisp_sp lisp) : Exposer_O(lisp, MpiPkg){};
+  virtual void expose(core::Lisp_sp lisp, WhatToExpose what) const {};
 };
 };
 
