@@ -27,11 +27,27 @@
                   (let* ((old (row-major-aref tree i))
                          (new (circle-subst circle-table old)))
                     (unless (eq old new)
-                      (setf (row-major-aref tree i) new))))
-		)
-               #| TODO: MUST PROVIDE FIXUP FOR HASH-TABLES!!!! |#
+                      (setf (row-major-aref tree i) new)))))
                ((hash-table-p tree)
-                (error "Handle hash-tables in circle-subst"))
+                (let ((to-add nil))
+                  (maphash (lambda (key value)
+                             (let ((subst-key (circle-subst circle-table key))
+                                   (subst-value (circle-subst circle-table value)))
+                               (cond ((eq subst-key key)
+                                      ;; easy case - just alter the value.
+                                      (setf (gethash key tree) subst-value))
+                                     (t
+                                      ;; if the key needed substitution, though,
+                                      ;; things are trickier. We can't alter the
+                                      ;; key of a k-v pair in-place, so we have
+                                      ;; to remove the old pair and add a new one.
+                                      ;; And we can't add the new one during maphash.
+                                      (remhash key tree)
+                                      (push (cons subst-key subst-value) to-add)))))
+                           tree)
+                  ;; Add new pairs from the key-subst case.
+                  (dolist (pair to-add)
+                    (setf (gethash (car pair) tree) (cdr pair)))))
                ;; Do something for builtin objects
                ((typep tree 'cxx-object)
                 #+(or)(error "Handle cxx-object in circle-subst tree: ~s" tree)
