@@ -53,33 +53,21 @@
                 #+(or)(error "Handle cxx-object in circle-subst tree: ~s" tree)
                 (let ((record (make-record-patcher circle-table)))
                   (patch-object tree record)))
-               #+clos ((typep tree 'instance)
-                       (error "Handle instance in circle-subst")
-                       #+(or)(let* ((n-untagged (layout-n-untagged-slots (%instance-layout tree)))
-                                    (n-tagged (- (%instance-length tree) n-untagged)))
-                               ;; N-TAGGED includes the layout as well (at index 0), which ; ;
-                               ;; we don't grovel. ; ;
-                               (do ((i 1 (1+ i)))
-                                   ((= i n-tagged))
-                                 (let* ((old (%instance-ref tree i))
-                                        (new (circle-subst circle-table old)))
-                                   (unless (eq old new)
-                                     (setf (%instance-ref tree i) new))))
-                               (do ((i 0 (1+ i)))
-                                   ((= i n-untagged))
-                                 (let* ((old (%raw-instance-ref/word tree i))
-                                        (new (circle-subst circle-table old)))
-                                   (unless (= old new)
-                                     (setf (%raw-instance-ref/word tree i) new))))))
-               #+(or) ((typep tree 'funcallable-instance)
-                       (error "Handle funcallable-instance in circle-subst")
-                       #+(or)(do ((i 1 (1+ i))
-                                  (end (- (1+ (get-closure-length tree)) %funcallable-instance-info-offset)))
-                                 ((= i end))
-                               (let* ((old (%funcallable-instance-info tree i))
-                                      (new (circle-subst circle-table old)))
-                                 (unless (eq old new)
-                                   (setf (%funcallable-instance-info tree i) new))))))
+               ;; These next two are #+cclasp since they need the classes to be defined, etc.
+               ;; For structure objects use raw slots.
+               #+cclasp
+               ((typep tree 'structure-object)
+                (dotimes (i (clos::class-size (class-of tree)))
+                  (si:instance-set tree i (circle-subst circle-table (si:instance-ref tree i)))))
+               ;; For general objects go full MOP
+               #+cclasp
+               ((typep tree 'standard-object)
+                (let ((class (class-of tree)))
+                  (dolist (slotd (clos:class-slots class))
+                    (when (clos:slot-boundp-using-class class tree slotd)
+                      (setf (clos:slot-value-using-class class tree slotd)
+                            (circle-subst circle-table
+                                          (clos:slot-value-using-class class tree slotd))))))))
          tree)
         (t tree)))
 
