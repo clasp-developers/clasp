@@ -115,7 +115,10 @@ CL_DECLARE();
 CL_DOCSTRING("sourcePosInfoFilepos");
 CL_DEFUN Integer_sp core__source_pos_info_filepos(T_sp info) {
   if (info.nilp() ) return make_fixnum(0);
-  return Integer_O::create((gc::Fixnum)clasp_sourcePosInfo_filepos(info));
+  if (gc::IsA<SourcePosInfo_sp>(info)) {
+    return Integer_O::create((gc::Fixnum)clasp_sourcePosInfo_filepos(gc::As_unsafe<SourcePosInfo_sp>(info)));
+  }
+  SIMPLE_ERROR(BF("Argument %s must be a source-pos-info object") % _rep_(info));
 }
 
 uint clasp_sourcePosInfo_lineno(SourcePosInfo_sp info) {
@@ -127,7 +130,10 @@ CL_DECLARE();
 CL_DOCSTRING("sourcePosInfoLineno");
 CL_DEFUN Fixnum_sp core__source_pos_info_lineno(T_sp info) {
   if (info.nilp() ) return make_fixnum(0);
-  return make_fixnum(clasp_sourcePosInfo_lineno(info));
+  if (gc::IsA<SourcePosInfo_sp>(info)) {
+    return Integer_O::create((gc::Fixnum)clasp_sourcePosInfo_lineno(gc::As_unsafe<SourcePosInfo_sp>(info)));
+  }
+  SIMPLE_ERROR(BF("Argument %s must be a source-pos-info object") % _rep_(info));
 }
 
 uint clasp_sourcePosInfo_column(SourcePosInfo_sp info) {
@@ -139,7 +145,10 @@ CL_DECLARE();
 CL_DOCSTRING("sourcePosInfoColumn");
 CL_DEFUN Fixnum_sp core__source_pos_info_column(T_sp info) {
   if (info.nilp() ) return make_fixnum(0);
-  return make_fixnum(clasp_sourcePosInfo_column(info));
+  if (gc::IsA<SourcePosInfo_sp>(info)) {
+    return make_fixnum(clasp_sourcePosInfo_column(gc::As_unsafe<SourcePosInfo_sp>(info)));
+  }
+  SIMPLE_ERROR(BF("Argument %s must be a source-pos-info object") % _rep_(info));
 }
 };
 
@@ -236,7 +245,7 @@ string SourceFileInfo_O::__repr__() const {
 CL_LISPIFY_NAME("SourceFileInfo-sourceDebugPathname");
 CL_DEFMETHOD Pathname_sp SourceFileInfo_O::sourceDebugPathname() const {
   if (this->_SourceDebugPathname.notnilp()) {
-    return this->_SourceDebugPathname;
+    return gc::As<Pathname_sp>(this->_SourceDebugPathname);
   }
   return this->_pathname;
 }
@@ -303,7 +312,7 @@ void SourcePosInfo_O::fields(Record_sp node)
     this->_FileId = sfi->_FileHandle;
   } break;
   case Record_O::saving: {
-    SourceFileInfo_sp sfi = core__source_file_info(make_fixnum(this->_FileId));
+    SourceFileInfo_sp sfi = gc::As<SourceFileInfo_sp>(core__source_file_info(make_fixnum(this->_FileId)));
     node->field(INTERN_(kw,sfi),sfi);
   } break;
   case Record_O::patching: {

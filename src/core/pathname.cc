@@ -278,18 +278,14 @@ BEGIN:
         return kw::_sym_error;
       }
     } else if (cl__stringp(item)) {
-      size_t l = cl__length(item);
-#ifdef CLASP_UNICODE
-      if (core__fits_in_base_string(item)) {
-        item = core__copy_to_simple_base_string(item);
-      } else
-#endif
-      item = cl__copy_seq(gc::As<T_sp>(item));
-      gc::As<Cons_sp>(ptr)->rplaca(item);
-      if (logical) {
-        continue;
-      }
-      if (l && cl__char(item, 0).unsafe_character() == '.') {
+      String_sp sitem = gc::As_unsafe<String_sp>(item);
+      size_t l = cl__length(sitem);
+      if (core__fits_in_base_string(sitem)) {
+        sitem = gc::As_unsafe<SimpleBaseString_sp>(core__copy_to_simple_base_string(sitem));
+      } else sitem = gc::As_unsafe<String_sp>(cl__copy_seq(sitem));
+      gc::As<Cons_sp>(ptr)->rplaca(sitem);
+      if (logical) continue;
+      if (l && cl__char(sitem, 0).unsafe_character() == '.') {
         if (l == 1) {
           /* Single dot */
           if (i == 0) {
@@ -297,7 +293,7 @@ BEGIN:
             return kw::_sym_error;
           }
           gc::As<Cons_sp>(cl__nthcdr(clasp_make_integer(--i), directory))->rplacd(oCdr(ptr));
-        } else if (l == 2 && cl__char(item, 1).unsafe_character() == '.') {
+        } else if (l == 2 && cl__char(sitem, 1).unsafe_character() == '.') {
           gc::As<Cons_sp>(ptr)->rplaca(kw::_sym_up);
           goto BEGIN;
         }
@@ -494,7 +490,7 @@ Pathname_sp Pathname_O::tilde_expand(Pathname_sp pathname) {
   }
   head = oCadr(directory);
   if (cl__stringp(head) && cl__length(head) > 0 &&
-      cl__char(head, 0).unsafe_character() == '~') {
+      cl__char(gc::As_unsafe<String_sp>(head), 0).unsafe_character() == '~') {
     /* Remove the tilde component */
     gc::As<Cons_sp>(directory)->rplacd(oCddr(directory));
     pathname = cl__merge_pathnames(pathname, homedirPathname(head), kw::_sym_default);
@@ -535,15 +531,15 @@ static int is_null(int c) { return c == '\0'; }
  *	5) A non empty string
  */
 static T_sp
-parse_word(T_sp s, delim_fn delim, int flags, size_t start,
+parse_word(T_sp st, delim_fn delim, int flags, size_t start,
            size_t end, size_t *end_of_word) {
   size_t i, j, last_delim = end;
   bool wild_inferiors = false;
-
+  String_sp ss = gc::As<String_sp>(st);
   i = j = start;
   for (; i < end; i++) {
     bool valid_char;
-    size_t c = cl__char(s, i).unsafe_character();
+    size_t c = cl__char(ss, i).unsafe_character();
     if (delim(c)) {
       if ((i == start) && (flags & WORD_ALLOW_LEADING_DOT)) {
         /* Leading dot is included */
@@ -558,7 +554,7 @@ parse_word(T_sp s, delim_fn delim, int flags, size_t start,
       if (!(flags & WORD_ALLOW_ASTERISK))
         valid_char = false; /* Asterisks not allowed in this word */
       else {
-        wild_inferiors = (i > start && cl__char(s, i - 1).unsafe_character() == '*');
+        wild_inferiors = (i > start && cl__char(ss, i - 1).unsafe_character() == '*');
         valid_char = true; /* single "*" */
       }
     } else if (c == ';' && (flags & WORD_DISALLOW_SEMICOLON)) {
@@ -594,12 +590,12 @@ parse_word(T_sp s, delim_fn delim, int flags, size_t start,
       return _Nil<T_O>();
     return SimpleBaseString_O::make(""); // cl_core.null_string;
   case 1:
-      if (cl__char(s, j).unsafe_character() == '*')
+      if (cl__char(ss, j).unsafe_character() == '*')
       return kw::_sym_wild;
     break;
   case 2: {
-    size_t c0 = cl__char(s, j).unsafe_character();
-    size_t c1 = cl__char(s, j + 1).unsafe_character();
+    size_t c0 = cl__char(ss, j).unsafe_character();
+    size_t c1 = cl__char(ss, j + 1).unsafe_character();
     if (c0 == '*' && c1 == '*')
       return kw::_sym_wild_inferiors;
     if (!(flags & WORD_LOGICAL) && c0 == '.' && c1 == '.')
@@ -610,7 +606,7 @@ parse_word(T_sp s, delim_fn delim, int flags, size_t start,
     if (wild_inferiors) /* '**' surrounded by other characters */
       return kw::_sym_error;
   }
-  return make_one(s, j, i);
+  return make_one(ss, j, i);
 }
 
 /*
@@ -773,7 +769,7 @@ clasp_parseNamestring(T_sp s, size_t start, size_t end, size_t *ep,
                       T_sp default_host) {
   T_sp host, device, path, name, type, aux, version;
   bool logical = false;
-
+  
   if (start == end) {
     host = device = path = name = type = aux = version = _Nil<T_O>();
     logical = false;
@@ -817,14 +813,14 @@ clasp_parseNamestring(T_sp s, size_t start, size_t end, size_t *ep,
     return _Nil<Pathname_O>();
   type = _Nil<T_O>();
   version = _Nil<T_O>();
-  if (*ep == start || cl__char(s, *ep - 1).unsafe_character() != '.')
+  if (*ep == start || cl__char(gc::As<String_sp>(s), *ep - 1).unsafe_character() != '.')
     goto make_it;
   type = parse_word(s, is_dot, WORD_LOGICAL | WORD_ALLOW_ASTERISK |
                                    WORD_EMPTY_IS_NIL,
                     *ep, end, ep);
   if (type == kw::_sym_error)
     return _Nil<Pathname_O>();
-  if (*ep == start || cl__char(s, *ep - 1).unsafe_character() != '.')
+  if (*ep == start || cl__char(gc::As<String_sp>(s), *ep - 1).unsafe_character() != '.')
     goto make_it;
   aux = parse_word(s, is_null, WORD_LOGICAL | WORD_ALLOW_ASTERISK |
                                    WORD_EMPTY_IS_NIL,
@@ -884,8 +880,8 @@ maybe_parse_host:
     device = _Nil<T_O>();
   start = *ep;
   host = _Nil<T_O>();
-  if ((start + 2) <= end && is_slash(cl__char(s, start).unsafe_character()) &&
-      is_slash(cl__char(s, start + 1).unsafe_character())) {
+  if ((start + 2) <= end && is_slash(cl__char(gc::As<String_sp>(s), start).unsafe_character()) &&
+      is_slash(cl__char(gc::As<String_sp>(s), start + 1).unsafe_character())) {
     host = parse_word(s, is_slash, WORD_EMPTY_IS_NIL,
                       start + 2, end, ep);
     if (host == kw::_sym_error) {
@@ -894,7 +890,7 @@ maybe_parse_host:
       if (!cl__stringp(host))
         return _Nil<Pathname_O>();
       start = *ep;
-      if (is_slash(cl__char(s, --start).unsafe_character()))
+      if (is_slash(cl__char(gc::As<String_sp>(s), --start).unsafe_character()))
         *ep = start;
     }
   }
@@ -917,7 +913,7 @@ done_device_and_host:
                     start, end, ep);
   if (name == kw::_sym_error)
     return _Nil<Pathname_O>();
-  if ((*ep - start) <= 1 || cl__char(s, *ep - 1).unsafe_character() != '.') {
+  if ((*ep - start) <= 1 || cl__char(gc::As<String_sp>(s), *ep - 1).unsafe_character() != '.') {
     type = _Nil<T_O>();
   } else {
     type = parse_word(s, is_null, WORD_ALLOW_ASTERISK, *ep, end, ep);
@@ -1021,7 +1017,7 @@ Pathname_sp clasp_mergePathnames(T_sp tpath, T_sp tdefaults, T_sp defaultVersion
 
   if (tdefaults.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
   Pathname_sp defaults = cl__pathname(tdefaults);
-  Pathname_sp path = cl__parse_namestring(tpath, _Nil<T_O>(), defaults);
+  Pathname_sp path = gc::As<Pathname_sp>(cl__parse_namestring(tpath, _Nil<T_O>(), defaults));
   host = path->_Host;
   if (host.nilp())
     host = defaults->_Host;
@@ -1314,9 +1310,9 @@ NO_DIRECTORY:
   core::T_sp fp = clasp_file_position(buffer);
   if (unbox_fixnum(gc::As<Fixnum_sp>(fp)) == 0 ) {
     if ((cl__stringp(x->_Name) &&
-         clasp_memberChar(':', x->_Name)) ||
+         clasp_memberChar(':', gc::As_unsafe<String_sp>(x->_Name))) ||
         (cl__stringp(x->_Type) &&
-         clasp_memberChar(':', x->_Type)))
+         clasp_memberChar(':', gc::As_unsafe<String_sp>(x->_Type))))
       clasp_write_string(":", buffer);
   }
   y = x->_Name;
@@ -1668,7 +1664,7 @@ bool clasp_wild_string_p(T_sp item) {
   if (cl__stringp(item)) {
     size_t i, l = cl__length(item);
     for (i = 0; i < l; i++) {
-      claspChar c = cl__char(item, i).unsafe_character();
+      claspChar c = cl__char(gc::As<String_sp>(item), i).unsafe_character();
       if (c == '\\' || c == '*' || c == '?')
         return 1;
     }
@@ -1684,7 +1680,7 @@ bool clasp_wild_string_p(T_sp item) {
 bool clasp_stringMatch(T_sp s, size_t j, size_t ls,
                        T_sp p, size_t i, size_t lp) {
   while (i < lp) {
-    size_t cp = cl__char(p, i).unsafe_character();
+    size_t cp = cl__char(gc::As<String_sp>(p), i).unsafe_character();
     switch (cp) {
     case '*': {
       /* An asterisk in the pattern matches any
@@ -1692,7 +1688,7 @@ bool clasp_stringMatch(T_sp s, size_t j, size_t ls,
 		 * sequence that matches. */
       size_t cn = 0, next;
       for (next = i + 1;
-           next < lp && ((cn = cl__char(p, next).unsafe_character()) == '*');
+           next < lp && ((cn = cl__char(gc::As<String_sp>(p), next).unsafe_character()) == '*');
            next++)
         ;
       if (next == lp) {
@@ -1720,7 +1716,7 @@ bool clasp_stringMatch(T_sp s, size_t j, size_t ls,
       if (++i >= lp)
         i--;
     default:
-        if ((j >= ls) || (cp != cl__char(s, j).unsafe_character())) {
+        if ((j >= ls) || (cp != cl__char(gc::As<String_sp>(s), j).unsafe_character())) {
         /* Either there are no characters left in "s"
 		     * or the next character does not match. */
         return false;
@@ -1845,17 +1841,17 @@ find_wilds(T_sp l, T_sp source, T_sp match) {
   ls = cl__length(source);
   lm = cl__length(match);
   for (i = j = 0; i < ls && j < lm;) {
-    size_t pattern_char = cl__char(match, j).unsafe_character();
+    size_t pattern_char = cl__char(gc::As<String_sp>(match), j).unsafe_character();
     if (pattern_char == '*') {
       for (j++, k = i;
-           k < ls && cl__char(source, k).unsafe_character() != pattern_char;
+           k < ls && cl__char(gc::As<String_sp>(source), k).unsafe_character() != pattern_char;
            k++)
         ;
       l = Cons_O::create(make_one(source, i, k), l);
       i = k;
       continue;
     }
-    if (cl__char(source, i).unsafe_character() != pattern_char)
+    if (cl__char(gc::As<String_sp>(source), i).unsafe_character() != pattern_char)
       return kw::_sym_error;
     i++, j++;
   }
@@ -1918,9 +1914,9 @@ copy_wildcards(T_sp *wilds_list, T_sp pattern) {
 
   new_string = false;
   l = cl__length(pattern);
-  SafeBuffer token;
+  SafeBufferStr8Ns token;
   for (j = i = 0; i < l;) {
-    size_t c = cl__char(pattern, i).unsafe_character();
+    size_t c = cl__char(gc::As<String_sp>(pattern), i).unsafe_character();
     if (c != '*') {
       i++;
       continue;
@@ -1932,7 +1928,7 @@ copy_wildcards(T_sp *wilds_list, T_sp pattern) {
     if (cl__endp(wilds)) {
       return kw::_sym_error;
     }
-    StringPushString(token._Buffer,CAR(wilds));
+    StringPushString(token._Buffer,gc::As<String_sp>(CAR(wilds)));
     wilds = CDR(wilds);
     j = i++;
   }

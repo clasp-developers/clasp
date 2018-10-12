@@ -2461,9 +2461,9 @@ CL_DOCSTRING("char_name");
 CL_DEFUN SimpleBaseString_sp cl__char_name(Character_sp och) {
   claspCharacter ch = clasp_as_claspCharacter(och);
   if (ch<_lisp->characterInfo().gCharacterNames.size()) {
-    return _lisp->characterInfo().gCharacterNames[ch];
+    return gc::As<SimpleBaseString_sp>(_lisp->characterInfo().gCharacterNames[ch]);
   }
-  SafeBuffer buffer;
+  SafeBufferStr8Ns buffer;
   buffer._Buffer->fillPointerSet(0);
   buffer._Buffer->vectorPushExtend(clasp_make_character('U'));
   core__integer_to_string(buffer._Buffer,Integer_O::create((Fixnum)ch),clasp_make_fixnum(16));

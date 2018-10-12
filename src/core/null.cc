@@ -42,7 +42,7 @@ Null_sp Null_O::create_at_boot(const string &nm) {
   // to by global variable _sym_XXX  and will never be collected
   Symbol_sp n = gctools::GC<Null_O>::root_allocate();
   n->_Name = SimpleBaseString_O::make(nm.size(),'\0',true,nm.size(),(const claspChar*)nm.c_str());
-  return n;
+  return gc::As_unsafe<Null_sp>(n);
 };
 
 string Null_O::__repr__() const {

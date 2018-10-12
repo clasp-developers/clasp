@@ -660,7 +660,7 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
     
     Real_sp bits = gc::As<Real_sp>(clasp_make_fixnum(gc::fixnum_bits));
     Real_sp two = gc::As<Real_sp>(clasp_make_fixnum(2));
-    this->_Roots._IntegerOverflowAdjust = cl__expt(two, bits); // clasp_make_fixnum(2),clasp_make_fixnum(gc::fixnum_bits));
+    this->_Roots._IntegerOverflowAdjust = gc::As<Integer_sp>(cl__expt(two, bits)); // clasp_make_fixnum(2),clasp_make_fixnum(gc::fixnum_bits));
     core::getcwd(true);                                        // set *default-pathname-defaults*
   };
   //
@@ -795,7 +795,7 @@ void Lisp_O::remove_process(mp::Process_sp process) {
     dbg_lowLevelDescribe(this->_Roots._ActiveThreads);
 #endif
     while ((*cur).consp()) {
-      mp::Process_sp p = oCar(*cur);
+      mp::Process_sp p = gc::As<mp::Process_sp>(oCar(*cur));
 #ifdef DEBUG_ADD_PROCESS
       printf("        cur->%p   comparing to process: %s @%p\n", (void*)cur, _rep_(p).c_str(), (void*)p.raw_());
 #endif
@@ -909,7 +909,7 @@ Symbol_sp Lisp_O::defineSpecialOperator(const string &packageName, const string 
   string formName = lispify_symbol_name(rawFormName);
   Symbol_sp sym = _lisp->internWithPackageName(packageName, formName);
   sym->exportYourself();
-  sym->setf_symbolFunction(_lisp->_true());
+//  sym->setf_symbolFunction(_lisp->_true());
   SpecialForm_sp special = SpecialForm_O::create(sym, cb);
   if (this->_Roots._SpecialForms.unboundp()) {
     this->_Roots._SpecialForms = HashTableEq_O::create_default();
@@ -1061,7 +1061,7 @@ void Lisp_O::finishPackageSetup(const string &pkgname, list<string> const &nickn
   {
     ql::list sn;
     for ( auto name : usePackages ) {
-      Package_sp other = _lisp->findPackage(name,true);
+      Package_sp other = gc::As<Package_sp>(_lisp->findPackage(name,true));
       pkg->usePackage(other);
     }
   }
@@ -1482,7 +1482,7 @@ T_mv Lisp_O::readEvalPrint(T_sp stream, T_sp environ, bool printResults, bool pr
 
 T_mv Lisp_O::readEvalPrintString(const string &code, T_sp environ, bool printResults) {
   _OF();
-  StringInputStream_sp sin = StringInputStream_O::make(code);
+  StringInputStream_sp sin = gc::As_unsafe<StringInputStream_sp>(StringInputStream_O::make(code));
   T_mv result = this->readEvalPrint(sin, environ, printResults, false);
   cl__close(sin);
   return result;
@@ -2065,7 +2065,7 @@ CL_DEFUN T_sp cl__sort(List_sp sequence, T_sp predicate, T_sp key) {
     return _Nil<T_O>();
   fillVec0FromCons(sorted, sequence);
   LOG(BF("Sort function: %s") % _rep_(sortProc));
-  OrderBySortFunction orderer(sortProc,key);
+  OrderBySortFunction orderer(sortProc,gc::As<Function_sp>(key));
 //  sort::quickSort(sorted.begin(), sorted.end(), orderer);
   sort::quickSortVec0(sorted,0,sorted.size(),orderer);
   List_sp result = asCons(sorted);
@@ -2146,7 +2146,12 @@ CL_DECLARE();
 CL_DOCSTRING("See CLHS: intern");
 CL_DEFUN T_mv cl__intern(String_sp symbol_name, T_sp package_desig) {
   Package_sp package = coerce::packageDesignator(package_desig);
-  return (package->intern(symbol_name));
+  if (gc::IsA<StrNs_sp>(symbol_name)) {
+    return package->intern(gc::As_unsafe<StrNs_sp>(symbol_name)->asMinimalSimpleString());
+  } else if (gc::IsA<SimpleString_sp>(symbol_name)) {
+    return package->intern(gc::As_unsafe<SimpleString_sp>(symbol_name));
+  }
+  TYPE_ERROR(symbol_name,cl::_sym_string);
 }
 
 CL_LAMBDA(continue-string datum initializers);
@@ -2282,7 +2287,7 @@ void Lisp_O::switchToClassNameHashTable() {
 }
 
 CL_LAMBDA(gf-symbol &optional errorp);
-CL_DOCSTRING("Lookup a single dispatch generic function. If errorp is truen and the generic function isn't found throw an exception");
+CL_DOCSTRING("Lookup a single dispatch generic function. If errorp is true and the generic function isn't found throw an exception - otherwise return _Unbound<SingleDispatchGenericFunctionClosure_O>()");
 CL_LISPIFY_NAME(find_single_dispatch_generic_function);
 CL_DEFUN SingleDispatchGenericFunctionClosure_sp Lisp_O::find_single_dispatch_generic_function(T_sp gfName, bool errorp) {
   WITH_READ_LOCK(_lisp->_Roots._SingleDispatchGenericFunctionHashTableEqualMutex);
@@ -2291,7 +2296,7 @@ CL_DEFUN SingleDispatchGenericFunctionClosure_sp Lisp_O::find_single_dispatch_ge
     if (errorp) {
       SIMPLE_ERROR(BF("No single-dispatch-generic-function named %s") % _rep_(gfName));
     }
-    return _Nil<T_O>();
+    return _Unbound<SingleDispatchGenericFunctionClosure_O>();
   }
   return gc::As<SingleDispatchGenericFunctionClosure_sp>(tfn);
 }
@@ -2487,7 +2492,7 @@ int Lisp_O::run() {
   }
   // The system is fully up now
   globalTheSystemIsUp = true;
-  Package_sp cluser = _lisp->findPackage("COMMON-LISP-USER");
+  Package_sp cluser = gc::As<Package_sp>(_lisp->findPackage("COMMON-LISP-USER"));
   cl::_sym_STARpackageSTAR->defparameter(cluser);
   try {
     if (!this->_IgnoreInitImage) {

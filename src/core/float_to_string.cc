@@ -76,7 +76,7 @@ static void
 print_float_exponent(T_sp buffer, T_sp number, gc::Fixnum exp) {
   T_sp r = cl::_sym_STARreadDefaultFloatFormatSTAR->symbolValue();
   gc::Fixnum e;
-  switch (clasp_t_of(number)) {
+  switch (clasp_t_of(gc::As<Number_sp>(number))) {
   case number_SingleFloat:
     e = (r == cl::_sym_single_float || r == cl::_sym_ShortFloat_O) ? 'e' : 'f';
     break;
@@ -96,7 +96,7 @@ print_float_exponent(T_sp buffer, T_sp number, gc::Fixnum exp) {
     break;
 #endif
   default:
-    SIMPLE_ERROR(BF("Handle additional enumeration values value=%s t_of=%d") % _rep_(number).c_str() % clasp_t_of(number));
+                  SIMPLE_ERROR(BF("Handle additional enumeration values value=%s t_of=%d") % _rep_(number).c_str() % clasp_t_of(gc::As<Number_sp>(number)));
   }
   if (e != 'e' || exp != 0) {
     StrNs_sp sbuffer = gc::As<StrNs_sp>(buffer);
@@ -107,20 +107,20 @@ print_float_exponent(T_sp buffer, T_sp number, gc::Fixnum exp) {
 }
 
 T_sp core_float_to_string_free(T_sp buffer_or_nil, Float_sp number,
-                          T_sp e_min, T_sp e_max) {
+                          Number_sp e_min, Number_sp e_max) {
   gc::Fixnum base, e;
   if (clasp_float_nan_p(number)) {
     T_sp s = eval::funcall(ext::_sym_float_nan_string, number);
-    return push_base_string(buffer_or_nil, s);
+    return push_base_string(buffer_or_nil, gc::As<StrNs_sp>(s));
   } else if (clasp_float_infinity_p(number)) {
     T_sp s = eval::funcall(ext::_sym_float_infinity_string, number);
-    return push_base_string(buffer_or_nil, s);
+    return push_base_string(buffer_or_nil, gc::As<StrNs_sp>(s));
   }
   base = cl__length(buffer_or_nil);
   T_mv mv_exp = core__float_to_digits(buffer_or_nil, number, _Nil<T_O>(), _Nil<T_O>());
-  T_sp exp = mv_exp;
+  Fixnum_sp exp = gc::As_unsafe<Fixnum_sp>(mv_exp);
   StrNs_sp buffer = gc::As<StrNs_sp>(mv_exp.second());
-  e = clasp_to_fixnum(exp);
+  e = exp.unsafe_fixnum();
   if (clasp_signbit(number)) {
     insert_char(buffer, base++, '-');
   }

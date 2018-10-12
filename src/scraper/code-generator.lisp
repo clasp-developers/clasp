@@ -322,7 +322,6 @@ Convert colons to underscores"
         (y-name (class-key% y)))
     (inherits-from* x-name y-name inheritance)))
 
-(defparameter *classes* nil)
 (defparameter *inheritance* nil)
 (defun sort-classes-by-inheritance (exposed-classes)
   (declare (optimize debug))
@@ -333,29 +332,30 @@ Convert colons to underscores"
                  (when base (setf (gethash k inheritance) base))
                  (push v classes)))
              exposed-classes)
-    (setf *classes* classes)
     (setf *inheritance* inheritance)
     (handler-case
-        (sort classes (lambda (x y)
-                        (not (inherits-from x y inheritance))))
+        (setf classes (sort classes (lambda (x y)
+                                      (not (inherits-from x y inheritance)))))
       (broken-inheritance (e)
         (print-object e t)
         (let ((x (starting-possible-child-class e)))
           (error "~a~%    The info for ~a is ~a"
                  (with-output-to-string (sout) (print-object e sout))
                  x
-                 (gethash x exposed-classes)))))))
+                 (gethash x exposed-classes)))))
+    (values classes inheritance)))
 
 (defun generate-code-for-init-class-kinds (exposed-classes sout)
   (declare (optimize (speed 3)))
-  (let ((sorted-classes (sort-classes-by-inheritance exposed-classes))
-        cur-package)
+  (multiple-value-bind (sorted-classes inheritance)
+      (sort-classes-by-inheritance exposed-classes)
+    (let (cur-package)
     (format sout "#ifdef SET_CLASS_KINDS~%")
     (dolist (exposed-class sorted-classes)
       (format sout "set_one_static_class_Header<~a::~a>();~%"
               (tags:namespace% (class-tag% exposed-class))
               (tags:name% (class-tag% exposed-class))))
-    (format sout "#endif // SET_CLASS_KINDS~%")))
+    (format sout "#endif // SET_CLASS_KINDS~%"))))
 
 (defun generate-code-for-init-classes-class-symbols (exposed-classes sout)
   (declare (optimize (speed 3)))
@@ -410,12 +410,33 @@ Convert colons to underscores"
   (format sout "  #error \"Do not include this section when USE_MPS is defined - use the section from clasp_gc_xxx.cc\"~%")
   (format sout " #endif // USE_MPS~%"))
 
+(defun gather-all-subclasses-for (class-key inheritance)
+  (loop for x in (gethash class-key inheritance)
+        append (cons x
+                     (gather-all-subclasses-for x inheritance))))
+(defparameter *deep-inheritance* nil)
+(defun gather-all-subclasses (inheritance)
+  (let ((reverse-inheritance (make-hash-table :test #'equal))
+        (deep-inheritance (make-hash-table :test #'equal)))
+    (maphash (lambda (key value)
+               (push key (gethash value reverse-inheritance)))
+             inheritance)
+    (maphash (lambda (key value)
+               (loop for subclasses in value
+                     do (loop for sub in (gather-all-subclasses-for key reverse-inheritance)
+                              do (pushnew sub (gethash key deep-inheritance) :test #'string=))))
+             reverse-inheritance)
+    (setf *deep-inheritance* deep-inheritance)
+    deep-inheritance))
+
+
+(defparameter *all-subclasses* nil)
 (defun generate-code-for-init-classes-and-methods (exposed-classes gc-managed-types)
-  (declare (optimize (speed 3)))
+  (declare (optimize (speed 0) (debug 3)))
   (with-output-to-string (sout)
-    (let ((sorted-classes (sort-classes-by-inheritance exposed-classes))
-          cur-package)
-      (progn
+    (multiple-value-bind (sorted-classes inheritance)
+        (sort-classes-by-inheritance exposed-classes)
+      (let (cur-package)
         (format sout "#ifdef DECLARE_FORWARDS~%")
         (generate-mps-poison sout)
         (let ((forwards (extract-forwards exposed-classes)))
@@ -426,6 +447,19 @@ Convert colons to underscores"
                      (format sout "};~%"))
                    forwards))
         (format sout "#endif // DECLARE_FORWARDS~%")
+        (format sout "#ifdef DECLARE_INHERITANCE~%")
+        (let ((reverse-inheritance (make-hash-table :test #'equal))
+              (reverse-classes (reverse sorted-classes))
+              (all-subclasses (gather-all-subclasses inheritance)))
+          (format t "all-subclasses = ~a~%" all-subclasses)
+          (setf *all-subclasses* all-subclasses)
+          (loop for class in reverse-classes
+                for subclasses = (gethash (class-key% class) all-subclasses)
+                until (string= (class-key% class) "core::T_O")
+                do (format sout "// ~a~%" (class-key% class))
+                   (loop for subclass in subclasses
+                         do (format sout " template <> struct Inherits<::~a,::~a> : public std::true_type  {};~%" (class-key% class) subclass))))
+        (format sout "#endif // DECLARE_INHERITANCE~%")
         (let ((stamp-max 0)
               (sorted-classes (let (sc)
                                 (maphash (lambda (key class)
@@ -488,125 +522,126 @@ Convert colons to underscores"
             (if (eq (stamp% c) high-stamp)
                 (format sout "    ADD_SINGLE_TYPEQ_TEST(~a,~a); ~%" (class-key% c) (stamp% c))
                 (format sout "    ADD_RANGE_TYPEQ_TEST(~a,~a,~a,~a);~%" (class-key% c) (class-key% high-class) (stamp% c) (stamp% high-class)))))
-        (format sout "#endif // GC_TYPEQ~%"))
-      (generate-code-for-init-class-kinds exposed-classes sout)
-      (generate-code-for-init-classes-class-symbols exposed-classes sout)
-      (progn
-        (format sout "#ifdef ALLOCATE_ALL_CLASSES~%")
-        (dolist (exposed-class sorted-classes)
-          (format sout "gctools::smart_ptr<core::Instance_O> ~a = allocate_one_class<~a::~a>(~a);~%"
-                  (as-var-name (tags:namespace% (class-tag% exposed-class))
-                               (tags:name% (class-tag% exposed-class)))
-                  (tags:namespace% (class-tag% exposed-class))
-                  (tags:name% (class-tag% exposed-class))
-                  (meta-class% exposed-class)))
-        (format sout "#endif // ALLOCATE_ALL_CLASSES~%"))
-      (progn
-        (format sout "#ifdef SET_BASES_ALL_CLASSES~%")
-        (dolist (exposed-class sorted-classes)
-          (unless (string= (base% exposed-class) +root-dummy-class+)
-            (format sout "~a->addInstanceBaseClassDoNotCalculateClassPrecedenceList(~a::static_classSymbol());~%"
-                    (as-var-name (tags:namespace% (class-tag% exposed-class))
-                                 (tags:name% (class-tag% exposed-class)))
-                    (base% exposed-class))))
-        (format sout "#endif // SET_BASES_ALL_CLASSES~%"))
-      (progn
-        (format sout "#ifdef CALCULATE_CLASS_PRECEDENCE_ALL_CLASSES~%")
-        (dolist (exposed-class sorted-classes)
-          (unless (string= (base% exposed-class) +root-dummy-class+)
-            (format sout "~a->__setupStage3NameAndCalculateClassPrecedenceList(~a::~a::static_classSymbol());~%"
+        (format sout "#endif // GC_TYPEQ~%")
+        (generate-code-for-init-class-kinds exposed-classes sout)
+        (generate-code-for-init-classes-class-symbols exposed-classes sout)
+        (progn
+          (format sout "#ifdef ALLOCATE_ALL_CLASSES~%")
+          (dolist (exposed-class sorted-classes)
+            (format sout "gctools::smart_ptr<core::Instance_O> ~a = allocate_one_class<~a::~a>(~a);~%"
                     (as-var-name (tags:namespace% (class-tag% exposed-class))
                                  (tags:name% (class-tag% exposed-class)))
                     (tags:namespace% (class-tag% exposed-class))
-                    (tags:name% (class-tag% exposed-class)))))
-        (format sout "#endif //#ifdef CALCULATE_CLASS_PRECEDENCE_ALL_CLASSES~%"))
-      (progn
-        (format sout "#ifdef EXPOSE_CLASSES_AND_METHODS~%")
-        (dolist (exposed-class sorted-classes)
-          (format sout "~a::~a::expose_to_clasp();~%"
-                  (tags:namespace% (class-tag% exposed-class))
-                  (tags:name% (class-tag% exposed-class))))
-        (format sout "#endif //#ifdef EXPOSE_CLASSES_AND_METHODS~%"))
-      (progn
-        (format sout "#ifdef EXPOSE_CLASSES~%")
-        (dolist (exposed-class sorted-classes)
-          (when (string/= cur-package (package% exposed-class))
-            (when cur-package (format sout "#endif~%"))
-            (setf cur-package (package% exposed-class))
-            (format sout "#ifdef Use_~a~%" cur-package))
-          (format sout "DO_CLASS(~a,~a,~a,~a,~a,~a);~%"
-                  (tags:namespace% (class-tag% exposed-class))
-                  (subseq (class-key% exposed-class) (+ 2 (search "::" (class-key% exposed-class))))
-                  (package% exposed-class)
-                  (lisp-name% exposed-class)
-                  (base% exposed-class)
-                  (meta-class% exposed-class)))
-        (format sout "#endif~%")
-        (format sout "#endif // EXPOSE_CLASSES~%"))
-      (progn
-        (format sout "#ifdef EXPOSE_STATIC_CLASS_VARIABLES~%")
-        (dolist (exposed-class sorted-classes)
-          (let ((class-tag (class-tag% exposed-class)))
-            (format sout "namespace ~a { ~%" (tags:namespace% class-tag))
-            (format sout "  core::Symbol_sp ~a::static_class_symbol;~%" (tags:name% class-tag))
-            (format sout "  core::Instance_sp ~a::static_class;~%" (tags:name% class-tag))
-            (format sout "  gctools::Header_s::Value ~a::static_HeaderValue;~%" (tags:name% class-tag))
-            (format sout "  gctools::smart_ptr<core::Creator_O> ~a::static_creator;~%" (tags:name% class-tag))
-            (format sout "};~%")))
-        (format sout "#endif // EXPOSE_STATIC_CLASS_VARIABLES~%"))
-      (progn
-        (format sout "#ifdef EXPOSE_METHODS~%")
-        (dolist (exposed-class sorted-classes)
-          (let ((class-tag (class-tag% exposed-class)))
-            (format sout "namespace ~a {~%" (tags:namespace% class-tag))
-            (format sout "void ~a::expose_to_clasp() {~%" (tags:name% class-tag))
-            (format sout "    ~a<~a>()~%"
-                    (if (typep exposed-class 'exposed-external-class)
-                        "core::externalClass_"
-                        "core::class_")
-                    (tags:name% class-tag))
-            (dolist (method (methods% exposed-class))
-              (if (typep method 'expose-defmethod)
-                  (let* ((lisp-name (lisp-name% method))
-                         (class-name (tags:name% class-tag))
-                         (method-name (method-name% method))
-                         (lambda-list (lambda-list% method))
-                         (declare-form (declare% method)))
-                    (format sout "        .def(~a,&~a::~a,R\"lambda(~a)lambda\",R\"decl(~a)decl\")~%"
-                            lisp-name
-                            class-name
-                            method-name
-                            (if (string/= lambda-list "")
-                                (format nil "(~a)" lambda-list)
-                                lambda-list)
-                            declare-form))
-                  (let* ((lisp-name (lisp-name% method))
-                         (pointer (pointer% method))
-                         (lambda-list (lambda-list% method))
-                         (declare-form (declare% method)))
-                    (format sout "        .def(~a,~a,R\"lambda(~a)lambda\",R\"decl(~a)decl\")~%"
-                            lisp-name
-                            pointer
-                            (if (string/= lambda-list "")
-                                (format nil "(~a)" lambda-list)
-                                lambda-list)
-                            declare-form))))
-            (format sout "     ;~%")
-            (dolist (class-method (class-methods% exposed-class))
-              (if (typep class-method 'expose-def-class-method)
-                  (let* ((lisp-name (lisp-name% class-method))
-                         (class-name (tags:name% class-tag))
-                         (method-name (method-name% class-method))
-                         (lambda-list (lambda-list% class-method))
-                         (declare-form (declare% class-method)))
-                    (format sout " expose_function(~a,&~a::~a,R\"lambda(~a)lambda\");~%"
-                            lisp-name
-                            class-name
-                            method-name
-                            (maybe-wrap-lambda-list lambda-list)))))
-            (format sout "}~%")
-            (format sout "};~%")))
-        (format sout "#endif // EXPOSE_METHODS~%")))))
+                    (tags:name% (class-tag% exposed-class))
+                    (meta-class% exposed-class)))
+          (format sout "#endif // ALLOCATE_ALL_CLASSES~%"))
+        (progn
+          (format sout "#ifdef SET_BASES_ALL_CLASSES~%")
+          (dolist (exposed-class sorted-classes)
+            (unless (string= (base% exposed-class) +root-dummy-class+)
+              (format sout "~a->addInstanceBaseClassDoNotCalculateClassPrecedenceList(~a::static_classSymbol());~%"
+                      (as-var-name (tags:namespace% (class-tag% exposed-class))
+                                   (tags:name% (class-tag% exposed-class)))
+                      (base% exposed-class))))
+          (format sout "#endif // SET_BASES_ALL_CLASSES~%"))
+        (progn
+          (format sout "#ifdef CALCULATE_CLASS_PRECEDENCE_ALL_CLASSES~%")
+          (dolist (exposed-class sorted-classes)
+            (unless (string= (base% exposed-class) +root-dummy-class+)
+              (format sout "~a->__setupStage3NameAndCalculateClassPrecedenceList(~a::~a::static_classSymbol());~%"
+                      (as-var-name (tags:namespace% (class-tag% exposed-class))
+                                   (tags:name% (class-tag% exposed-class)))
+                      (tags:namespace% (class-tag% exposed-class))
+                      (tags:name% (class-tag% exposed-class)))))
+          (format sout "#endif //#ifdef CALCULATE_CLASS_PRECEDENCE_ALL_CLASSES~%"))
+        (progn
+          (format sout "#ifdef EXPOSE_CLASSES_AND_METHODS~%")
+          (dolist (exposed-class sorted-classes)
+            (format sout "~a::~a::expose_to_clasp();~%"
+                    (tags:namespace% (class-tag% exposed-class))
+                    (tags:name% (class-tag% exposed-class))))
+          (format sout "#endif //#ifdef EXPOSE_CLASSES_AND_METHODS~%"))
+        (progn
+          (format sout "#ifdef EXPOSE_CLASSES~%")
+          (dolist (exposed-class sorted-classes)
+            (when (string/= cur-package (package% exposed-class))
+              (when cur-package (format sout "#endif~%"))
+              (setf cur-package (package% exposed-class))
+              (format sout "#ifdef Use_~a~%" cur-package))
+            (format sout "DO_CLASS(~a,~a,~a,~a,~a,~a);~%"
+                    (tags:namespace% (class-tag% exposed-class))
+                    (subseq (class-key% exposed-class) (+ 2 (search "::" (class-key% exposed-class))))
+                    (package% exposed-class)
+                    (lisp-name% exposed-class)
+                    (base% exposed-class)
+                    (meta-class% exposed-class)))
+          (format sout "#endif~%")
+          (format sout "#endif // EXPOSE_CLASSES~%"))
+        (progn
+          (format sout "#ifdef EXPOSE_STATIC_CLASS_VARIABLES~%")
+          (dolist (exposed-class sorted-classes)
+            (let ((class-tag (class-tag% exposed-class)))
+              (format sout "namespace ~a { ~%" (tags:namespace% class-tag))
+              (format sout "  core::Symbol_sp ~a::static_class_symbol;~%" (tags:name% class-tag))
+              (format sout "  core::Instance_sp ~a::static_class;~%" (tags:name% class-tag))
+              (format sout "  gctools::Header_s::Value ~a::static_HeaderValue;~%" (tags:name% class-tag))
+              (format sout "  gctools::smart_ptr<core::Creator_O> ~a::static_creator;~%" (tags:name% class-tag))
+              (format sout "};~%")))
+          (format sout "#endif // EXPOSE_STATIC_CLASS_VARIABLES~%"))
+        (progn
+          (format sout "#ifdef EXPOSE_METHODS~%")
+          (dolist (exposed-class sorted-classes)
+            (let ((class-tag (class-tag% exposed-class)))
+              (format sout "namespace ~a {~%" (tags:namespace% class-tag))
+              (format sout "void ~a::expose_to_clasp() {~%" (tags:name% class-tag))
+              (format sout "    ~a<~a>()~%"
+                      (if (typep exposed-class 'exposed-external-class)
+                          "core::externalClass_"
+                          "core::class_")
+                      (tags:name% class-tag))
+              (dolist (method (methods% exposed-class))
+                (if (typep method 'expose-defmethod)
+                    (let* ((lisp-name (lisp-name% method))
+                           (class-name (tags:name% class-tag))
+                           (method-name (method-name% method))
+                           (lambda-list (lambda-list% method))
+                           (declare-form (declare% method)))
+                      (format sout "        .def(~a,&~a::~a,R\"lambda(~a)lambda\",R\"decl(~a)decl\")~%"
+                              lisp-name
+                              class-name
+                              method-name
+                              (if (string/= lambda-list "")
+                                  (format nil "(~a)" lambda-list)
+                                  lambda-list)
+                              declare-form))
+                    (let* ((lisp-name (lisp-name% method))
+                           (pointer (pointer% method))
+                           (lambda-list (lambda-list% method))
+                           (declare-form (declare% method)))
+                      (format sout "        .def(~a,~a,R\"lambda(~a)lambda\",R\"decl(~a)decl\")~%"
+                              lisp-name
+                              pointer
+                              (if (string/= lambda-list "")
+                                  (format nil "(~a)" lambda-list)
+                                  lambda-list)
+                              declare-form))))
+              (format sout "     ;~%")
+              (dolist (class-method (class-methods% exposed-class))
+                (if (typep class-method 'expose-def-class-method)
+                    (let* ((lisp-name (lisp-name% class-method))
+                           (class-name (tags:name% class-tag))
+                           (method-name (method-name% class-method))
+                           (lambda-list (lambda-list% class-method))
+                           (declare-form (declare% class-method)))
+                      (declare (ignore declare-form))
+                      (format sout " expose_function(~a,&~a::~a,R\"lambda(~a)lambda\");~%"
+                              lisp-name
+                              class-name
+                              method-name
+                              (maybe-wrap-lambda-list lambda-list)))))
+              (format sout "}~%")
+              (format sout "};~%")))
+          (format sout "#endif // EXPOSE_METHODS~%"))))))
 
 (defparameter *symbols-by-package* nil)
 (defparameter *symbols-by-namespace* nil)

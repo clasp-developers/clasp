@@ -190,7 +190,7 @@ public:
     virtual T_sp closedEnvironment() const {SUBIMP();};
     T_sp setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column);
     virtual T_mv functionSourcePos() const;
-    virtual LambdaListHandler_sp lambdaListHandler() const {SUBIMP();};
+    virtual T_sp lambdaListHandler() const {SUBIMP();};
     virtual T_sp lambdaList() const {
       T_sp result((gctools::Tagged)this->fdesc()->gcrootsInModule->get(this->fdesc()->lambdaListIndex));
       return result;
@@ -258,7 +258,7 @@ namespace core {
     virtual size_t templatedSizeof() const { return sizeof(*this); };
     virtual const char *describe() const { return "BuiltinClosure"; };
     bool builtinP() const { return true; };
-    LambdaListHandler_sp lambdaListHandler() const { return this->_lambdaListHandler; };
+    T_sp lambdaListHandler() const { return this->_lambdaListHandler; };
   };
 
 }
@@ -305,7 +305,7 @@ namespace core {
       closureType(nclosureType),
       _Slots(capacity,_Unbound<T_O>(),true) {};
     virtual string __repr__() const;
-    core::LambdaListHandler_sp lambdaListHandler() const {
+    core::T_sp lambdaListHandler() const {
       switch (this->closureType) {
       case interpretedClosure:
           return (*this)[INTERPRETED_CLOSURE_LAMBDA_LIST_HANDLER_SLOT];

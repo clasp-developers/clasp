@@ -266,13 +266,13 @@ namespace core {
 
   inline Integer_sp _clasp_big_floor(Bignum_sp a, Bignum_sp b, Real_sp *rP) {
     Integer_mv res_mv = big_floor(a, b);
-    *rP = Real_sp(res_mv.valueGet_(1));
+    *rP = gc::As<Real_sp>(res_mv.valueGet_(1));
     return res_mv;
   };
 
   inline Integer_sp _clasp_big_ceiling(Bignum_sp a, Bignum_sp b, Real_sp *rP) {
     Integer_mv res_mv = big_ceiling(a, b);
-    *rP = Real_sp(res_mv.valueGet_(1));
+    *rP = gc::As<Real_sp>(res_mv.valueGet_(1));
     return res_mv;
   }
 

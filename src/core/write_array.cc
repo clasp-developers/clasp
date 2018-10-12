@@ -214,7 +214,7 @@ namespace core {
 
     void SimpleVector_byte8_t_O::__write__(T_sp stream) const {
             writestr_stream("#<SIMPLE-VECTOR-BYTE8-T ", stream);
-            SafeBuffer buffer;
+            SafeBufferStr8Ns buffer;
             clasp_write_string(" length:",stream);
             stringstream slen;
             slen << this->length();

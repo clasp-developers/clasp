@@ -294,7 +294,7 @@ T_sp clasp_boole(int op, T_sp x, T_sp y) {
       (bignum_operations[op])(x_copy, bnx, bny);
       clasp_big_register_free(bny);
     } else if (Bignum_sp bny = y.asOrNull<Bignum_O>()) {
-      (bignum_operations[op])(x_copy, x, bny);
+      (bignum_operations[op])(x_copy, bnx, bny);
     } else {
       ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_boole, 3, y, cl::_sym_integer);
     }
@@ -615,22 +615,23 @@ ERROR:
 }
 
 // I think none of these are called from Lisp
-CL_DEFUN T_sp core__bit_array_op_b_clr_op(T_sp tx, T_sp ty, T_sp tr) { return core__bit_array_op(b_clr_op_id,tx,ty,tr); };
-CL_DEFUN T_sp core__bit_array_op_and_op(T_sp tx, T_sp ty, T_sp tr) { return core__bit_array_op(and_op_id,tx,ty,tr); };
-CL_DEFUN T_sp core__bit_array_op_andc2_op(T_sp tx, T_sp ty, T_sp tr) { return core__bit_array_op(andc2_op_id,tx,ty,tr); };
-CL_DEFUN T_sp core__bit_array_op_b_1_op(T_sp tx, T_sp ty, T_sp tr) { return core__bit_array_op(b_1_op_id,tx,ty,tr); };
-CL_DEFUN T_sp core__bit_array_op_andc1_op(T_sp tx, T_sp ty, T_sp tr) { return core__bit_array_op(andc1_op_id,tx,ty,tr); };
-CL_DEFUN T_sp core__bit_array_op_b_2_op(T_sp tx, T_sp ty, T_sp tr) { return core__bit_array_op(b_2_op_id,tx,ty,tr); };
-CL_DEFUN T_sp core__bit_array_op_xor_op(T_sp tx, T_sp ty, T_sp tr) { return core__bit_array_op(xor_op_id,tx,ty,tr); };
-CL_DEFUN T_sp core__bit_array_op_ior_op(T_sp tx, T_sp ty, T_sp tr) { return core__bit_array_op(ior_op_id,tx,ty,tr); };
-CL_DEFUN T_sp core__bit_array_op_nor_op(T_sp tx, T_sp ty, T_sp tr) { return core__bit_array_op(nor_op_id,tx,ty,tr); };
-CL_DEFUN T_sp core__bit_array_op_eqv_op(T_sp tx, T_sp ty, T_sp tr) { return core__bit_array_op(eqv_op_id,tx,ty,tr); };
-CL_DEFUN T_sp core__bit_array_op_b_c2_op(T_sp tx, T_sp ty, T_sp tr) { return core__bit_array_op(b_c2_op_id,tx,ty,tr); };
-CL_DEFUN T_sp core__bit_array_op_orc2_op(T_sp tx, T_sp ty, T_sp tr) { return core__bit_array_op(orc2_op_id,tx,ty,tr); };
-CL_DEFUN T_sp core__bit_array_op_b_c1_op(T_sp tx, T_sp ty, T_sp tr) { return core__bit_array_op(b_c1_op_id,tx,ty,tr); };
-CL_DEFUN T_sp core__bit_array_op_orc1_op(T_sp tx, T_sp ty, T_sp tr) { return core__bit_array_op(orc1_op_id,tx,ty,tr); };
-CL_DEFUN T_sp core__bit_array_op_nand_op(T_sp tx, T_sp ty, T_sp tr) { return core__bit_array_op(nand_op_id,tx,ty,tr); };
-CL_DEFUN T_sp core__bit_array_op_b_set_op(T_sp tx, T_sp ty, T_sp tr) { return core__bit_array_op(b_set_op_id,tx,ty,tr); };
+#define UA(x) (gc::As_unsafe<Array_sp>(x))
+CL_DEFUN T_sp core__bit_array_op_b_clr_op(T_sp tx, T_sp ty, T_sp tr) { return core__bit_array_op(b_clr_op_id,UA(tx),UA(ty),tr); };
+CL_DEFUN T_sp core__bit_array_op_and_op(T_sp tx, T_sp ty, T_sp tr) { return core__bit_array_op(and_op_id,UA(tx),UA(ty),tr); };
+CL_DEFUN T_sp core__bit_array_op_andc2_op(T_sp tx, T_sp ty, T_sp tr) { return core__bit_array_op(andc2_op_id,UA(tx),UA(ty),tr); };
+CL_DEFUN T_sp core__bit_array_op_b_1_op(T_sp tx, T_sp ty, T_sp tr) { return core__bit_array_op(b_1_op_id,UA(tx),UA(ty),tr); };
+CL_DEFUN T_sp core__bit_array_op_andc1_op(T_sp tx, T_sp ty, T_sp tr) { return core__bit_array_op(andc1_op_id,UA(tx),UA(ty),tr); };
+CL_DEFUN T_sp core__bit_array_op_b_2_op(T_sp tx, T_sp ty, T_sp tr) { return core__bit_array_op(b_2_op_id,UA(tx),UA(ty),tr); };
+CL_DEFUN T_sp core__bit_array_op_xor_op(T_sp tx, T_sp ty, T_sp tr) { return core__bit_array_op(xor_op_id,UA(tx),UA(ty),tr); };
+CL_DEFUN T_sp core__bit_array_op_ior_op(T_sp tx, T_sp ty, T_sp tr) { return core__bit_array_op(ior_op_id,UA(tx),UA(ty),tr); };
+CL_DEFUN T_sp core__bit_array_op_nor_op(T_sp tx, T_sp ty, T_sp tr) { return core__bit_array_op(nor_op_id,UA(tx),UA(ty),tr); };
+CL_DEFUN T_sp core__bit_array_op_eqv_op(T_sp tx, T_sp ty, T_sp tr) { return core__bit_array_op(eqv_op_id,UA(tx),UA(ty),tr); };
+CL_DEFUN T_sp core__bit_array_op_b_c2_op(T_sp tx, T_sp ty, T_sp tr) { return core__bit_array_op(b_c2_op_id,UA(tx),UA(ty),tr); };
+CL_DEFUN T_sp core__bit_array_op_orc2_op(T_sp tx, T_sp ty, T_sp tr) { return core__bit_array_op(orc2_op_id,UA(tx),UA(ty),tr); };
+CL_DEFUN T_sp core__bit_array_op_b_c1_op(T_sp tx, T_sp ty, T_sp tr) { return core__bit_array_op(b_c1_op_id,UA(tx),UA(ty),tr); };
+CL_DEFUN T_sp core__bit_array_op_orc1_op(T_sp tx, T_sp ty, T_sp tr) { return core__bit_array_op(orc1_op_id,UA(tx),UA(ty),tr); };
+CL_DEFUN T_sp core__bit_array_op_nand_op(T_sp tx, T_sp ty, T_sp tr) { return core__bit_array_op(nand_op_id,UA(tx),UA(ty),tr); };
+CL_DEFUN T_sp core__bit_array_op_b_set_op(T_sp tx, T_sp ty, T_sp tr) { return core__bit_array_op(b_set_op_id,UA(tx),UA(ty),tr); };
 
 #else
 template <int OP> struct do_bit_op {};
@@ -785,7 +786,7 @@ CL_DEFUN T_sp cl__logbitp(Integer_sp p, Integer_sp x) {
   if (p.fixnump()) {
     cl_index n = clasp_to_size(p);
     if (x.fixnump()) {
-      gctools::Fixnum y = clasp_fixnum(x);
+      gctools::Fixnum y = x.unsafe_fixnum();
       if (n >= FIXNUM_BITS) {
         i = (y < 0);
       } else {
@@ -799,7 +800,7 @@ CL_DEFUN T_sp cl__logbitp(Integer_sp p, Integer_sp x) {
 #if 0
     assert_type_non_negative_integer(p);
     if (CLASP_FIXNUMP(x))
-      i = (clasp_fixnum(x) < 0);
+      i = x.unsafe_fixnum() < 0);
     else
       i = (_clasp_big_sign(x) < 0);
 #endif

@@ -331,7 +331,7 @@ CL_DEFUN T_mv cl__gentemp(T_sp prefix, T_sp package_designator) {
   ++static_gentemp_counter;
   T_mv mv = pkg->findSymbol(ss);
   if (mv.valueGet_(1).nilp()) {
-    retval = pkg->intern(ss);
+    retval = pkg->intern(ss->asMinimalSimpleString());
     return retval;
   }
   SIMPLE_ERROR(BF("Could not find unique gentemp"));

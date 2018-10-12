@@ -918,6 +918,8 @@ But no irbuilders or basic-blocks. Return the fn."
                        *source-debug-pathname* lineno column
                        (+ filepos *source-debug-offset*)))
 
+(defconstant +maxi32+ 4294967295)
+
 (defun irc-create-function-description (llvm-function-name fn module function-info)
   "If **generate-code** then create a function-description block from function info.
     Otherwise we are code-walking - and do something else that is appropriate."
@@ -939,7 +941,7 @@ But no irbuilders or basic-blocks. Return the fn."
         (when l (setf lineno l))
         (when c (setf column c))
         (when f (setf filepos f)))
- #+(or)
+      #+(or)
       (progn
         (core:bformat t "--------------------------%N")
         (core:bformat t "found-source-info: %s%N" found-source-info)
@@ -977,19 +979,30 @@ But no irbuilders or basic-blocks. Return the fn."
          t
          'llvm-sys:internal-linkage
          (llvm-sys:constant-struct-get %function-description%
-                                       (list
-                                        fn
-                                        literal::*gcroots-in-module*
-                                        (jit-constant-i32 source-pathname-index)
-                                        (jit-constant-i32 function-name-index)
-                                        (jit-constant-i32 lambda-list-index)
-                                        (jit-constant-i32 docstring-index)
-                                        (jit-constant-i32 declare-index)
-                                        (jit-constant-i32 lineno)
-                                        (jit-constant-i32 column)
-                                        (jit-constant-i32 filepos)
-                                        )
-                                       )
+                                       (progn
+                                         (progn
+                                           (when (> source-pathname-index +maxi32+) (error "source-pathname-index ~a out-of-bounds for i32" source-pathname-index))
+                                           (when (> source-pathname-index +maxi32+) (error "source-pathname-index ~a out of bounds for i32" source-pathname-index))
+                                           (when (> function-name-index +maxi32+) (error "function-name-index ~a out of bounds for i32" function-name-index))
+                                           (when (> lambda-list-index +maxi32+) (error "lambda-list-index ~a out of bounds for i32" lambda-list-index))
+                                           (when (> docstring-index +maxi32+) (error "docstring-index ~a out of bounds for i32" docstring-index))
+                                           (when (> declare-index +maxi32+) (error "declare-index ~a out of bounds for i32" declare-index))
+                                           (when (> lineno +maxi32+) (error "lineno ~a out of bounds for i32" lineno))
+                                           (when (> column +maxi32+) (error "column ~a out of bounds for i32" column))
+                                           (when (> filepos +maxi32+) (error "filepos ~a out of bounds for i32" filepos)))
+                                         (list
+                                          fn
+                                          literal::*gcroots-in-module*
+                                          (jit-constant-i32 source-pathname-index)
+                                          (jit-constant-i32 function-name-index)
+                                          (jit-constant-i32 lambda-list-index)
+                                          (jit-constant-i32 docstring-index)
+                                          (jit-constant-i32 declare-index)
+                                          (jit-constant-i32 lineno)
+                                          (jit-constant-i32 column)
+                                          (jit-constant-i32 filepos)
+                                          )
+                                         ))
          (function-description-name fn))))))
 
 

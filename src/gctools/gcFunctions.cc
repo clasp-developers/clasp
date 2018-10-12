@@ -1176,6 +1176,14 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #endif
   if (buildReport) ss << (BF("DEBUG_COMPILER = %s\n") % (debug_compiler ? "**DEFINED**" : "undefined") ).str();
 
+  bool debug_assert_type_cast = false;
+#ifdef DEBUG_ASSERT_TYPE_CAST
+  debug_assert_type_cast = true;
+  debugging = true;
+  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-ASSERT-TYPE-CAST"),features);
+#endif
+  if (buildReport) ss << (BF("DEBUG_ASSERT_TYPE_CAST = %s\n") % (debug_assert_type_cast ? "**DEFINED**" : "undefined") ).str();
+
   bool debug_llvm_optimization_level_0 = false;
 #ifdef DEBUG_LLVM_OPTIMIZATION_LEVEL_0
   debug_llvm_optimization_level_0 = true;

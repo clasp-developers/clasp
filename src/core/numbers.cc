@@ -166,9 +166,9 @@ CL_DECLARE();
 CL_DOCSTRING("convert_overflow_result_to_bignum");
 CL_DEFUN Integer_sp core__convert_overflow_result_to_bignum(Fixnum_sp z) {
   if ((Fixnum)z.raw_() > 0) {
-    return contagen_sub(z, _lisp->_Roots._IntegerOverflowAdjust);
+    return gc::As<Integer_sp>(contagen_sub(z, _lisp->_Roots._IntegerOverflowAdjust));
   } else {
-    return contagen_add(z, _lisp->_Roots._IntegerOverflowAdjust);
+    return gc::As<Integer_sp>(contagen_add(z, _lisp->_Roots._IntegerOverflowAdjust));
   }
 }
 
@@ -773,7 +773,7 @@ Complex_sp complex_divide(double ar, double ai,
   double z1 = (ar * br) + (ai * bi);
   double z2 = (ai * br) - (ar * bi);
   double absB = (br * br) + (bi * bi);
-  return clasp_make_complex(DoubleFloat_O::create(z1 / absB), DoubleFloat_O::create(z2 / absB));
+  return gc::As_unsafe<Complex_sp>(clasp_make_complex(DoubleFloat_O::create(z1 / absB), DoubleFloat_O::create(z2 / absB)));
 }
 
 CL_NAME("TWO-ARG-/");
@@ -1388,15 +1388,15 @@ CL_DEFUN T_sp cl___NE_(VaList_sp args) {
   if (args->remaining_nargs() == 1) return _lisp->_true();
   if (args->remaining_nargs()==0) return _lisp->_true();
   if (args->remaining_nargs() == 2) {
-    Number_sp a = args->next_arg();
-    Number_sp b = args->next_arg();
+    Number_sp a = gc::As<Number_sp>(args->next_arg());
+    Number_sp b = gc::As<Number_sp>(args->next_arg());
     if (basic_equalp(a, b)) return _Nil<T_O>();
     return _lisp->_true();
   }
   if (args->remaining_nargs() == 3) {
-    Number_sp a = args->next_arg();
-    Number_sp b = args->next_arg();
-    Number_sp c = args->next_arg();
+    Number_sp a = gc::As<Number_sp>(args->next_arg());
+    Number_sp b = gc::As<Number_sp>(args->next_arg());
+    Number_sp c = gc::As<Number_sp>(args->next_arg());
     if (basic_equalp(a, b)) return _Nil<T_O>();
     if (basic_equalp(a, c)) return _Nil<T_O>();
     if (basic_equalp(b, c)) return _Nil<T_O>();
@@ -1884,7 +1884,7 @@ mpz_class Ratio_O::denominator_as_mpz() const {
 }
 
 Number_sp Ratio_O::abs_() const {
-  return Ratio_O::create(clasp_abs(gc::As<Integer_sp>(this->_numerator)), this->_denominator);
+  return Ratio_O::create(gc::As_unsafe<Integer_sp>(clasp_abs(gc::As<Integer_sp>(this->_numerator))), this->_denominator);
 }
 
 bool Ratio_O::eql_(T_sp obj) const {
@@ -1961,8 +1961,8 @@ void Ratio_O::setFromString(const string &str) {
 // --------------------------------------------------------------------------------
 
 Number_sp Complex_O::signum_() const {
-  return clasp_make_complex(clasp_signum(this->_real),
-                           clasp_signum(this->_imaginary));
+  return clasp_make_complex(gc::As<Real_sp>(clasp_signum(this->_real)),
+                            gc::As<Real_sp>(clasp_signum(this->_imaginary)));
 }
 
 string Complex_O::__repr__() const {
@@ -2483,7 +2483,7 @@ Number_sp Complex_O::exp_() const {
   Real_sp x = gc::As<Real_sp>(clasp_exp(this->_real));
   y1 = gc::As<Real_sp>(clasp_cos(y)); // clasp_cos(y);
   y = gc::As<Real_sp>(clasp_sin(y));  // clasp_sin(y);
-  Complex_sp cy = clasp_make_complex(y1, y);
+  Complex_sp cy = gc::As_unsafe<Complex_sp>(clasp_make_complex(y1, y));
   return clasp_times(x, cy);
 }
 
@@ -2794,8 +2794,8 @@ CL_DEFUN T_sp cl__atan(Number_sp x, T_sp y) {
 */
 
 Number_sp clasp_log1_complex_inner(Number_sp r, Number_sp i) {
-  Real_sp a = clasp_abs(r);
-  Real_sp p = clasp_abs(i);
+  Real_sp a = gc::As<Real_sp>(clasp_abs(r));
+  Real_sp p = gc::As<Real_sp>(clasp_abs(i));
   int rel = clasp_number_compare(a, p);
   if (rel > 0) {
     Real_sp aux = p;

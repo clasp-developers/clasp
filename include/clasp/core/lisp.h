@@ -942,12 +942,12 @@ public:
 
  /*! Use RAII to safely allocate a buffer */
  
-struct SafeBuffer {
+struct SafeBufferStr8Ns {
   Str8Ns_sp _Buffer;
-  SafeBuffer() {
+  SafeBufferStr8Ns() {
     this->_Buffer = _lisp->get_Str8Ns_buffer_string();
   };
-  ~SafeBuffer() {
+  ~SafeBufferStr8Ns() {
     _lisp->put_Str8Ns_buffer_string(this->_Buffer);
   };
   Str8Ns_sp string() const {return this->_Buffer;};

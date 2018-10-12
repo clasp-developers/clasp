@@ -210,7 +210,7 @@ CL_DEFUN String_sp core__get_thread_local_write_to_string_output_stream_string(S
   // This is like get-string-output-stream-string but it checks the size of the
   // buffer string and if it is too large it knocks it down to 128 characters
   String_sp buffer = StringOutputStreamOutputString(my_stream);
-  T_sp result = cl__copy_seq(buffer);
+  String_sp result = gc::As_unsafe<String_sp>(cl__copy_seq(buffer));
   if (buffer->length()>1024) {
     StringOutputStreamOutputString(my_stream) = Str8Ns_O::createBufferString(128);
   } else {
@@ -585,7 +585,7 @@ generic_read_byte_le(T_sp strm) {
   read_byte8 = StreamOps(strm).read_byte8;
   bs = StreamByteSize(strm);
   for (nb = 0; bs >= 8; bs -= 8, nb += 8) {
-    T_sp aux;
+    Fixnum_sp aux;
     if (read_byte8(strm, &c, 1) < 1)
       return _Nil<T_O>();
     if (bs <= 8 && (StreamFlags(strm) & CLASP_STREAM_SIGNED_BYTES))
@@ -609,7 +609,7 @@ generic_write_byte_le(T_sp c, T_sp strm) {
     unsigned char aux = (unsigned char)(unbox_fixnum(b));
     if (write_byte8(strm, &aux, 1) < 1)
       break;
-    c = clasp_ash(c, -8);
+    c = clasp_ash(gc::As<Integer_sp>(c), -8);
     bs -= 8;
   } while (bs);
 }
@@ -627,7 +627,7 @@ generic_read_byte(T_sp strm) {
       return _Nil<T_O>();
     if (output.notnilp()) {
       output = cl__logior(Cons_O::createList(make_fixnum(c),
-                                            clasp_ash(output, 8)));
+                                             clasp_ash(gc::As<Integer_sp>(output), 8)));
     } else if (StreamFlags(strm) & CLASP_STREAM_SIGNED_BYTES) {
       output = make_fixnum((signed char)c);
     } else {
@@ -647,8 +647,8 @@ generic_write_byte(T_sp c, T_sp strm) {
     unsigned char aux;
     T_sp b;
     bs -= 8;
-    b = cl__logand(Cons_O::createList(make_fixnum(0xFF), bs ? gc::As<T_sp>(clasp_ash(c, -bs)) : c));
-    aux = (unsigned char)clasp_fixnum(b);
+    b = cl__logand(Cons_O::createList(make_fixnum(0xFF), bs ? gc::As<T_sp>(clasp_ash(gc::As<Integer_sp>(c), -bs)) : c));
+    aux = (unsigned char)b.unsafe_fixnum();
     if (write_byte8(strm, &aux, 1) < 1)
       break;
   } while (bs);
@@ -747,7 +747,7 @@ generic_write_vector(T_sp strm, T_sp data, cl_index start, cl_index end) {
       (elttype == clasp_aet_object && cl__elt(data, 0).characterp())) {
     claspCharacter (*write_char)(T_sp, claspCharacter) = ops.write_char;
     for (; start < end; start++) {
-      write_char(strm, clasp_as_claspCharacter(cl__elt(data, start)));
+      write_char(strm, clasp_as_claspCharacter(gc::As<Character_sp>(cl__elt(data, start))));
     }
   } else {
     void (*write_byte)(T_sp, T_sp) = ops.write_byte;
@@ -1203,7 +1203,7 @@ user_encoder(T_sp tstream, unsigned char *buffer, claspCharacter c) {
   if (byte.nilp()) {
     return ext__encoding_error(stream, buffer, c);
   } else {
-    gctools::Fixnum code = clasp_fixnum(byte);
+    gctools::Fixnum code = byte.unsafe_fixnum();
     if (code > 0xFF) {
       buffer[1] = code & 0xFF;
       code >>= 8;
@@ -1266,13 +1266,13 @@ user_multistate_encoder(T_sp tstream, unsigned char *buffer, claspCharacter c) {
     T_sp table = oCar(p);
     T_sp byte = clasp_gethash_safe(clasp_make_character(c), table, _Nil<T_O>());
     if (!byte.nilp()) {
-      gctools::Fixnum code = clasp_fixnum(byte);
+      gctools::Fixnum code = byte.unsafe_fixnum();
       claspCharacter n = 0;
       if (p != table_list) {
         /* Must output a escape sequence */
         T_sp x = clasp_gethash_safe(_lisp->_true(), table, _Nil<T_O>());
         while (!x.nilp()) {
-          buffer[0] = clasp_fixnum(oCar(x));
+          buffer[0] = (oCar(x)).unsafe_fixnum();
           buffer++;
           x = oCdr(x);
           n++;
@@ -1389,7 +1389,7 @@ clos_stream_read_byte8(T_sp strm, unsigned char *c, cl_index n) {
     T_sp byte = eval::funcall(gray::_sym_stream_read_byte, strm);
     if (!core__fixnump(byte))
       break;
-    c[i] = clasp_fixnum(byte);
+    c[i] = (byte).unsafe_fixnum();
   }
   return i;
 }
@@ -1426,7 +1426,7 @@ clos_stream_read_char(T_sp strm) {
   if (cl__characterp(output))
     value = output.unsafe_character();
   else if (core__fixnump(output))
-    value = clasp_fixnum(output);
+    value = (output).unsafe_fixnum();
   else if (output == _Nil<T_O>() || output == kw::_sym_eof)
     return EOF;
   else
@@ -1657,7 +1657,7 @@ CL_DEFUN T_sp core__make_string_output_stream_from_string(T_sp s) {
   }
   StreamOps(strm) = str_out_ops; // duplicate_dispatch_table(&str_out_ops);
   StreamMode(strm) = clasp_smm_string_output;
-  StringOutputStreamOutputString(strm) = s;
+  StringOutputStreamOutputString(strm) = gc::As<String_sp>(s);
   StreamOutputColumn(strm) = 0;
 #if !defined(CLASP_UNICODE)
   StreamFormat(strm) = kw::_sym_passThrough;
@@ -1838,7 +1838,7 @@ T_sp clasp_make_string_input_stream(T_sp strng, cl_index istart, cl_index iend) 
   strm = StringInputStream_O::create();
   StreamOps(strm) = duplicate_dispatch_table(str_in_ops);
   StreamMode(strm) = clasp_smm_string_input;
-  StringInputStreamInputString(strm) = strng;
+  StringInputStreamInputString(strm) = gc::As<String_sp>(strng);
   StringInputStreamInputPosition(strm) = istart;
   StringInputStreamInputLimit(strm) = iend;
 #if !defined(CLASP_UNICODE)
@@ -2786,7 +2786,7 @@ consume_byte_stack(T_sp strm, unsigned char *c, cl_index n) {
     l = StreamByteStack(strm);
     if (l.nilp())
       return out + StreamOps(strm).read_byte8(strm, c, n);
-    *(c++) = clasp_fixnum(oCar(l));
+    *(c++) = (oCar(l)).unsafe_fixnum();
     out++;
     n--;
     StreamByteStack(strm) = l = oCdr(l);
@@ -2907,10 +2907,10 @@ io_file_element_type(T_sp strm) {
 static T_sp
 io_file_length(T_sp strm) {
   int f = IOFileStreamDescriptor(strm);
-  T_sp output = clasp_file_len(f);
-  if (StreamByteSize(strm) != 8) {
+  T_sp output = clasp_file_len(f); // NIL or Integer_sp
+  if (StreamByteSize(strm) != 8 && output.notnilp()) {
     cl_index bs = StreamByteSize(strm);
-    Real_mv output_mv = clasp_floor2(output, make_fixnum(bs / 8));
+    Real_mv output_mv = clasp_floor2(gc::As_unsafe<Integer_sp>(output), make_fixnum(bs / 8));
     Fixnum_sp fn1 = gc::As<Fixnum_sp>(output_mv.valueGet_(1));
     unlikely_if(unbox_fixnum(fn1) != 0) {
       FEerror("File length is not on byte boundary", 0);
@@ -2940,12 +2940,12 @@ io_file_get_position(T_sp strm) {
              * these bytes begin! */
     T_sp l = StreamByteStack(strm);
     while ((l).consp()) {
-      output = clasp_one_minus(output);
+      output = clasp_one_minus(gc::As<Number_sp>(output));
       l = oCdr(l);
     }
   }
   if (StreamByteSize(strm) != 8) {
-    output = clasp_floor2(output, make_fixnum(StreamByteSize(strm) / 8));
+    output = clasp_floor2(gc::As<Real_sp>(output), make_fixnum(StreamByteSize(strm) / 8));
   }
   return output;
 }
@@ -2960,7 +2960,7 @@ io_file_set_position(T_sp strm, T_sp large_disp) {
     mode = SEEK_END;
   } else {
     if (StreamByteSize(strm) != 8) {
-      large_disp = clasp_times(large_disp,
+      large_disp = clasp_times(gc::As<Number_sp>(large_disp),
                                make_fixnum(StreamByteSize(strm) / 8));
     }
     disp = clasp_integer_to_off_t(large_disp);
@@ -3538,11 +3538,11 @@ io_stream_interactive_p(T_sp strm) {
 static T_sp
 io_stream_length(T_sp strm) {
   FILE *f = IOStreamStreamFile(strm);
-  T_sp output = clasp_file_len(fileno(f));
-  if (StreamByteSize(strm) != 8) {
+  T_sp output = clasp_file_len(fileno(f)); // NIL or Integer_sp
+  if (StreamByteSize(strm) != 8 && output.notnilp()) {
     //            const cl_env_ptr the_env = clasp_process_env();
     cl_index bs = StreamByteSize(strm);
-    T_mv output_mv = clasp_floor2(output, make_fixnum(bs / 8));
+    T_mv output_mv = clasp_floor2(gc::As_unsafe<Integer_sp>(output), make_fixnum(bs / 8));
     Fixnum_sp ofn1 = gc::As<Fixnum_sp>(output_mv.valueGet_(1));
     Fixnum fn = unbox_fixnum(ofn1);
     unlikely_if(fn != 0) {
@@ -3575,12 +3575,12 @@ io_stream_get_position(T_sp strm) {
              * these bytes begin! */
     T_sp l = StreamByteStack(strm);
     while ((l).consp()) {
-      output = clasp_one_minus(output);
+      output = clasp_one_minus(gc::As<Integer_sp>(output));
       l = oCdr(l);
     }
   }
   if (StreamByteSize(strm) != 8) {
-    output = clasp_floor2(output, make_fixnum(StreamByteSize(strm) / 8));
+    output = clasp_floor2(gc::As<Integer_sp>(output), make_fixnum(StreamByteSize(strm) / 8));
   }
   return output;
 }
@@ -3595,7 +3595,7 @@ io_stream_set_position(T_sp strm, T_sp large_disp) {
     mode = SEEK_END;
   } else {
     if (StreamByteSize(strm) != 8) {
-      large_disp = clasp_times(large_disp,
+      large_disp = clasp_times(gc::As<Integer_sp>(large_disp),
                                make_fixnum(StreamByteSize(strm) / 8));
     }
     disp = clasp_integer_to_off_t(large_disp);
@@ -4507,8 +4507,8 @@ BEGIN:
   if (cl__characterp(string)) {
     l = compute_char_size(stream, string.unsafe_character());
   } else if (cl__stringp(string)) {
-    for (int i(0), iEnd(StringFillp(string)); i < iEnd; ++i) {
-      l += compute_char_size(stream, cl__char(string, i).unsafe_character());
+    for (int i(0), iEnd(StringFillp(gc::As<String_sp>(string))); i < iEnd; ++i) {
+      l += compute_char_size(stream, cl__char(gc::As<String_sp>(string), i).unsafe_character());
     }
   } else {
     ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_file_string_length, 2, string, cl::_sym_string);
@@ -4530,7 +4530,7 @@ CL_DEFUN T_sp core__do_write_sequence(T_sp seq, T_sp stream, T_sp s, T_sp e) {
     ERROR_WRONG_TYPE_KEY_ARG(cl::_sym_write_sequence, kw::_sym_start, s,
                              Integer_O::makeIntegerType(0, limit - 1));
   }
-  start = clasp_fixnum(s);
+  start = (s).unsafe_fixnum();
   if ((start < 0) || (start > limit)) {
     ERROR_WRONG_TYPE_KEY_ARG(cl::_sym_write_sequence, kw::_sym_start, s,
                              Integer_O::makeIntegerType(0, limit - 1));
@@ -4541,7 +4541,7 @@ CL_DEFUN T_sp core__do_write_sequence(T_sp seq, T_sp stream, T_sp s, T_sp e) {
     ERROR_WRONG_TYPE_KEY_ARG(cl::_sym_write_sequence, kw::_sym_end, e,
                              Integer_O::makeIntegerType(0, limit));
   } else
-    end = clasp_fixnum(e);
+    end = (e).unsafe_fixnum();
   if ((end < 0) || (end > limit)) {
     ERROR_WRONG_TYPE_KEY_ARG(cl::_sym_write_sequence, kw::_sym_end, e,
                              Integer_O::makeIntegerType(0, limit));
@@ -4585,7 +4585,7 @@ T_sp si_do_read_sequence(T_sp seq, T_sp stream, T_sp s, T_sp e) {
     ERROR_WRONG_TYPE_KEY_ARG(cl::_sym_read_sequence, kw::_sym_start, s,
                              Integer_O::makeIntegerType(0, limit - 1));
   }
-  start = clasp_fixnum(s);
+  start = (s).unsafe_fixnum();
   if ((start < 0) || (start > limit)) {
     ERROR_WRONG_TYPE_KEY_ARG(cl::_sym_read_sequence, kw::_sym_start, s,
                              Integer_O::makeIntegerType(0, limit - 1));
@@ -4596,7 +4596,7 @@ T_sp si_do_read_sequence(T_sp seq, T_sp stream, T_sp s, T_sp e) {
     ERROR_WRONG_TYPE_KEY_ARG(cl::_sym_read_sequence, kw::_sym_end, e,
                              Integer_O::makeIntegerType(0, limit));
   } else {
-    end = clasp_fixnum(e);
+    end = (e).unsafe_fixnum();
   }
   if ((end < 0) || (end > limit)) {
     ERROR_WRONG_TYPE_KEY_ARG(cl::_sym_read_sequence, kw::_sym_end, e,
@@ -5459,7 +5459,7 @@ CL_DEFUN SourcePosInfo_sp core__input_stream_source_pos_info(T_sp strm) {
 
 SourceFileInfo_sp clasp_input_source_file_info(T_sp strm) {
   T_sp filename = clasp_filename(strm);
-  SourceFileInfo_sp sfi = core__source_file_info(filename);
+  SourceFileInfo_sp sfi = gc::As<SourceFileInfo_sp>(core__source_file_info(filename));
   return sfi;
 }
 };
@@ -5671,7 +5671,7 @@ CL_DEFUN T_mv cl__read_from_string(String_sp content, T_sp eof_error_p, T_sp eof
     iend = content->get().size();
   else
     iend = clasp_to_int(gc::As<Fixnum_sp>(end));
-  StringInputStream_sp sin = StringInputStream_O::make(content->get().substr(istart, iend - istart));
+  StringInputStream_sp sin = gc::As_unsafe<StringInputStream_sp>(StringInputStream_O::make(content->get().substr(istart, iend - istart)));
   if (iend - istart == 0) {
     if (eofErrorP) {
       ERROR_END_OF_FILE(sin);

@@ -501,7 +501,7 @@ GCPROTECTED: // instance variables here
 
 public:
   static SynonymStream_sp make(Symbol_sp symbol) {
-    return cl__make_synonym_stream(symbol);
+    return gc::As<SynonymStream_sp>(cl__make_synonym_stream(symbol));
   }
 
 public: // Functions here

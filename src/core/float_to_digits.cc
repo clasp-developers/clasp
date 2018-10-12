@@ -69,7 +69,7 @@ static float_approx *setup(Float_sp number, float_approx *approx) {
   Real_mv mv_f = cl__integer_decode_float(number);
   Integer_sp f = gc::As<Integer_sp>(mv_f);
   Fixnum_sp fne = gc::As<Fixnum_sp>(mv_f.valueGet_(1));
-  Fixnum e = clasp_fixnum(fne), min_e;
+  Fixnum e = fne.unsafe_fixnum(), min_e;
   bool limit_f = 0;
   switch (clasp_t_of(number)) {
   case number_SingleFloat:
@@ -171,16 +171,16 @@ static StrNs_sp generate(StrNs_sp digits, float_approx *approx) {
     if (tc1 || tc2) {
       break;
     }
-    digits->vectorPushExtend(clasp_make_character(clasp_digit_char(clasp_fixnum(d),10)));
+    digits->vectorPushExtend(clasp_make_character(clasp_digit_char(gc::As<Fixnum_sp>(d).unsafe_fixnum(),10)));
   } while (1);
   if (tc2 && !tc1) {
-    digit = clasp_fixnum(d) + 1;
+    digit = clasp_safe_fixnum(d) + 1;
   } else if (tc1 && !tc2) {
-    digit = clasp_fixnum(d);
+    digit = clasp_safe_fixnum(d);
   } else if (clasp_lower(times2(approx->r), approx->s)) {
-    digit = clasp_fixnum(d);
+    digit = clasp_safe_fixnum(d);
   } else {
-    digit = clasp_fixnum(d) + 1;
+    digit = clasp_safe_fixnum(d) + 1;
   }
   digits->vectorPushExtend(clasp_make_character(clasp_digit_char(digit, 10)));
   return digits;
@@ -192,7 +192,7 @@ change_precision(float_approx *approx, T_sp tposition, T_sp relativep) {
     return;
   gctools::Fixnum pos;
   Fixnum_sp position = gc::As<Fixnum_sp>(tposition);
-  pos = clasp_fixnum(position);
+  pos = position.unsafe_fixnum();
   if (!relativep.nilp()) {
     Real_sp k = clasp_make_fixnum(0);
     Real_sp l = clasp_make_fixnum(1);

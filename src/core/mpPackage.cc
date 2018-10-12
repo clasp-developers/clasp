@@ -284,7 +284,7 @@ string Process_O::__repr__() const {
 
 
 CL_DEFUN Process_sp mp__lock_owner(Mutex_sp m) {
-  return m->_Owner;
+  return gc::As<Process_sp>(m->_Owner);
 }
 
 CL_DEFUN int mp__process_enable(Process_sp process)

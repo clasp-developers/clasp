@@ -103,7 +103,7 @@ CL_DEFUN T_sp core__make_cxx_object(T_sp class_or_name, T_sp args) {
   } else if (class_or_name.nilp()) {
     goto BAD_ARG0;
   } else if (Symbol_sp name = class_or_name.asOrNull<Symbol_O>()) {
-    theClass = cl__find_class(name, true, _Nil<T_O>());
+    theClass = gc::As_unsafe<Instance_sp>(cl__find_class(name, true, _Nil<T_O>()));
   } else {
     goto BAD_ARG0;
   }
@@ -137,7 +137,7 @@ CL_DEFUN T_sp core__load_cxx_object(T_sp class_or_name, T_sp args) {
   } else if (class_or_name.nilp()) {
     goto BAD_ARG0;
   } else if (Symbol_sp name = class_or_name.asOrNull<Symbol_O>()) {
-    theClass = cl__find_class(name, true, _Nil<T_O>());
+    theClass = gc::As_unsafe<Instance_sp>(cl__find_class(name, true, _Nil<T_O>()));
   } else {
     goto BAD_ARG0;
   }
@@ -548,7 +548,7 @@ CL_DEFUN bool cl__equalp(T_sp x, T_sp y) {
       } else if (y.single_floatp()) {
         return (x.unsafe_fixnum() == y.unsafe_single_float());
       } else if (Number_sp ny = y.asOrNull<Number_O>()) {
-        return basic_compare(x, y) == 0;
+        return basic_compare(gc::As_unsafe<Fixnum_sp>(x), ny) == 0;
       }
       return false;
     } else if (x.single_floatp()) {
@@ -557,7 +557,7 @@ CL_DEFUN bool cl__equalp(T_sp x, T_sp y) {
       } else if (y.fixnump()) {
         return x.unsafe_single_float() == y.unsafe_fixnum();
       } else if (Number_sp ny = y.asOrNull<Number_O>()) {
-        return basic_compare(x, y);
+        return basic_compare(gc::As<SingleFloat_sp>(x), ny);
       }
       return false;
     } else if (x.characterp()) {

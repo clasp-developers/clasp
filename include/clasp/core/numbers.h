@@ -633,8 +633,8 @@ namespace core {
     // math routines shared by all numbers
     bool zerop_() const { return (clasp_zerop(this->_real) && clasp_zerop(this->_imaginary)); };
 
-    virtual Number_sp negate_() const { return Complex_O::create(gc::As<Real_sp>(clasp_negate(this->_real)),
-								 gc::As<Real_sp>(clasp_negate(this->_imaginary))); };
+    virtual Number_sp negate_() const { return Complex_O::create(gc::As<Real_sp>(gc::As<Integer_sp>(clasp_negate(this->_real))),
+								 gc::As<Real_sp>(gc::As<Integer_sp>(clasp_negate(this->_imaginary)))); };
 
     virtual Number_sp log1_() const;
     virtual Number_sp log1p_() const;
@@ -694,7 +694,7 @@ namespace core {
   public:
     NumberType number_type_() const { return number_Ratio; };
     virtual bool zerop_() const { return clasp_zerop(this->_numerator); };
-    virtual Number_sp negate_() const { return Ratio_O::create(clasp_negate(this->_numerator), this->_denominator); };
+    virtual Number_sp negate_() const { return Ratio_O::create(gc::As<Integer_sp>(clasp_negate(this->_numerator)), gc::As<Integer_sp>(this->_denominator)); };
     Integer_sp numerator() const { return this->_numerator; };
     Integer_sp denominator() const { return this->_denominator; };
     Integer_sp num() const { return this->_numerator; };
@@ -794,17 +794,25 @@ namespace core {
 
   Integer_sp clasp_ash(Integer_sp x, int bits);
 
+  inline gctools::Fixnum clasp_safe_fixnum(Number_sp x) {
+    return gc::As<Fixnum_sp>(x).unsafe_fixnum();
+  }
+
+#if 0
   inline gctools::Fixnum clasp_fixnum(Number_sp x) {
     return unbox_fixnum(Fixnum_sp(x));
   }
 
   inline float clasp_single_float(Number_sp x) {
-    return unbox_single_float(x);
+    if (x.single_floatp()) {
+      return unbox_single_float(x);
+    }
   }
 
   inline double clasp_double_float(Number_sp x) {
     return gc::As<DoubleFloat_sp>(x)->get();
   }
+#endif
 
 #ifdef CLASP_LONG_FLOAT
   inline LongFloat clasp_long_float(Number_sp x) {
@@ -1035,7 +1043,7 @@ namespace core {
         } else {
           y >>= bits;
         }
-        return immediate_fixnum<Number_O>(y);
+        return immediate_fixnum<Integer_O>(y);
       } else {
         Bignum val(static_cast<signed long>(n.unsafe_fixnum()));
         Bignum res;
@@ -1111,7 +1119,8 @@ namespace core {
     if (x.fixnump() ) {
       if (x.unsafe_fixnum() == 1) return x;
       if (x.unsafe_fixnum() == 0) clasp_report_divide_by_zero(x);
-      return Rational_O::create(clasp_make_fixnum((Fixnum)1),x);
+      return Rational_O::create(gc::As_unsafe<Integer_sp>(clasp_make_fixnum((Fixnum)1)),
+                                gc::As_unsafe<Integer_sp>(x));
     } else if (x.single_floatp()) {
       float f = x.unsafe_single_float();
       return clasp_make_single_float(1.0 / f);
