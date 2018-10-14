@@ -282,9 +282,9 @@ string Process_O::__repr__() const {
   return ss.str();
 }
 
-
-CL_DEFUN Process_sp mp__lock_owner(Mutex_sp m) {
-  return gc::As<Process_sp>(m->_Owner);
+CL_DOCSTRING("Return the owner of the lock - this may be NIL if it's not locked.");
+CL_DEFUN core::T_sp mp__lock_owner(Mutex_sp m) {
+  return m->_Owner;
 }
 
 CL_DEFUN int mp__process_enable(Process_sp process)
