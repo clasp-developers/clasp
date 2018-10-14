@@ -162,7 +162,7 @@ public:
       for (size_t i(0), iEnd(cl__length(vec_value)); i < iEnd; ++i) {
         T_sp val = vec_value->rowMajorAref(i);
         RECORD_LOG(BF("Loading vec0[%d] new@%p: %s\n") % i % (void *)(val.raw_()) % _rep_(val));
-        value[i] = val;
+        value[i].rawRef_() = reinterpret_cast<OT *>(val.raw_());
       }
       if (this->stage() == initializing)
         this->flagSeen(apair);
