@@ -342,9 +342,15 @@ struct ReachableClass {
     } else {
       className << "??CONS??";
     }
-    core::write_bf_stream(BF("%s: total_size: %10d count: %8d avg.sz: %8d kind: %s/%d\n")
+    BF("%s: total_size: %10d count: %8d avg.sz: %8d kind: %s/%d\n")
+      % shortName % this->totalSize % this->instances
+      % (this->totalSize / this->instances) % className.str().c_str() % k
+    
+      clasp_write_string((BF("%s: total_size: %10d count: %8d avg.sz: %8d kind: %s/%d\n")
                           % shortName % this->totalSize % this->instances
-                          % (this->totalSize / this->instances) % className.str().c_str() % k);
+                          % (this->totalSize / this->instances) % className.str().c_str() % k).str(),
+                         ,cl::_sym_STARstandard_outputSTAR->symbolValue());
+    core::cl__finish_output();
     return this->totalSize;
   }
 };
@@ -410,8 +416,11 @@ struct ReachableMPSObject {
   size_t largest = 0;
   size_t print(const std::string &shortName,const vector<std::string> stampNames) {
     if (this->instances > 0) {
-      printf("%s: totalMemory: %10lu count: %8lu largest: %8lu avg.sz: %8lu %s/%lu\n", shortName.c_str(),
-             this->totalMemory, this->instances, this->largest, this->totalMemory / this->instances, stampNames[this->stamp].c_str(), this->stamp);
+      clasp_write_string((BF("%s: total_size: %10d count: %8d avg.sz: %8d kind: %s/%d\n")
+                          % shortName % this->totalMemory % this->instances % (this->totalMemory/this->instances)
+                          % stampNames[this->stamp] % this->stamp).str(),
+                         cl::_sym_STARstandard_outputSTAR->symbolValue());
+      core::clasp_finish_output_t();
     }
     return this->totalMemory;
   }
