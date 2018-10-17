@@ -219,8 +219,10 @@
                            mdarray-check))))
                    (t ;; checking for some multidimensional type
                     (maybe-gen-primitive-type-check
-                     object mdarray-type
-                     (gen-rank-check object rank pro con) con))))))))
+                     object simple-mdarray-type pro
+                     (maybe-gen-primitive-type-check
+                      object mdarray-type
+                      (gen-rank-check object rank pro con) con)))))))))
 
 #-use-boehmdc
 (defun gen-interval-type-check (object head low high pro con)
