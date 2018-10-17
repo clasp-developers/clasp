@@ -1049,7 +1049,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
 
   int exit_code = 0;
 
-#define USE_main_thread_roots_scan
+//#define USE_main_thread_roots_scan
 #ifdef USE_main_thread_roots_scan
   mps_root_t global_scan_root;
   res = mps_root_create(&global_scan_root,
