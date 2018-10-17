@@ -55,9 +55,9 @@
                        (total-llvm-time (+ llvm-finalization-time (if report-link-time
                                                                       link-time
                                                                       0.0)))
-                       (percent-llvm-time (* 100.0 (/ total-llvm-time compiler-real-time)))
+                       (percent-llvm-time (* 100.0 (/ total-llvm-time (+ compiler-real-time (if report-link-time link-time 0.0)))))
                        (percent-time-string (if report-link-time
-                                                (core:bformat nil "(llvm+link)/real(%1.f%%)" percent-llvm-time)
+                                                (core:bformat nil "(llvm+link)/(real+link)(%1.f%%)" percent-llvm-time)
                                                 (core:bformat nil "llvm/real(%1.f%%)" percent-llvm-time))))
                    (core:bformat t "   %s seconds real(%.1f) run(%.1f) llvm(%.1f)%s %s%N"
                                  message
