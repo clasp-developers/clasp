@@ -82,14 +82,14 @@ public:                                                                         
   static gctools::smart_ptr<aClass> create() {                                                          \
     return gctools::GC<aClass>::allocate_with_default_constructor();                                    \
   };                                                                                                    \
+  virtual core::Instance_sp __class() const {                           \
+    return core::lisp_getStaticClass(aClass::static_HeaderValue);       \
+  }                                                                     \
   typedef wrappedClass WrappedClass;                                                                    \
                                                                                                         \
 public:                                                                                                 \
   /*Derived from StandardObject so it supports slots*/                                                  \
-  static bool static_supportsSlots() { return true; };                                                  \
-  virtual core::Instance_sp __class() const {                                                              \
-    return aClass::static_class;                                                                        \
-  }
+  static bool static_supportsSlots() { return true; }; 
 
 #endif // SCRAPING
 

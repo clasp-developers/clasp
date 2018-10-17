@@ -104,7 +104,6 @@ public:
   DEFAULT_CTOR_DTOR(Mpi_O);
 };
 
-extern Mpi_sp _MpiWorld;
 };
 
 #endif //]

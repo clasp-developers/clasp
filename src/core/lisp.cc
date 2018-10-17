@@ -186,6 +186,9 @@ Lisp_O::GCRoots::GCRoots() :
   _ActiveThreads(_Nil<T_O>()),
   _DefaultSpecialBindings(_Nil<T_O>()),
 #endif
+  _MpiEnabled(false),
+  _MpiRank(0),
+  _MpiSize(1),
   _SpecialForms(_Unbound<HashTableEq_O>()),
   _NullStream(_Nil<T_O>()),
   _ThePathnameTranslations(_Nil<T_O>()),
@@ -201,9 +204,6 @@ Lisp_O::Lisp_O() : _StackWarnSize(gctools::_global_stack_max_size * 0.9), // 6MB
                    _Bundle(NULL),
                    _DebugStream(NULL),
                    _SingleStepLevel(UndefinedUnsignedInt),
-                   _MpiEnabled(false),
-                   _MpiRank(0),
-                   _MpiSize(1),
                    _Interactive(true),
                    _BootClassTableIsValid(true),
                    _PathMax(CLASP_MAXPATHLEN) {
@@ -440,9 +440,9 @@ void monitor_message(const std::string& msg)
 }
 #endif
 void Lisp_O::setupMpi(bool mpiEnabled, int mpiRank, int mpiSize) {
-  this->_MpiEnabled = mpiEnabled;
-  this->_MpiRank = mpiRank;
-  this->_MpiSize = mpiSize;
+  this->_Roots._MpiEnabled = mpiEnabled;
+  this->_Roots._MpiRank = mpiRank;
+  this->_Roots._MpiSize = mpiSize;
 }
 
 #ifdef USE_REFCOUNT

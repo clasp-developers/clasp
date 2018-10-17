@@ -56,15 +56,12 @@ namespace clbind {
 namespace detail {
 class cast_graph;
 class class_id_map;
-class class_map;
 };
 
 //! Take the place of __clbind_cast_graph
 extern detail::cast_graph *globalCastGraph;
 //! Take the place of __clbind_class_id_map
 extern detail::class_id_map *globalClassIdMap;
-//! Take the place of __clbind_class_map
-extern gctools::tagged_pointer<detail::class_map> globalClassMap;
 
 CLBIND_API void initialize_clbind();
 }

@@ -107,7 +107,7 @@ public:
     if (theClass.nilp()) {
       LOG(BF("Adding class(%s) to environment") % OT::static_className());
       lisp_addClassSymbol(OT::static_classSymbol(),
-                          OT::static_creator,
+                          OT::staticCreator(),
                           OT::Bases::baseClass1Id() );
     }
   }

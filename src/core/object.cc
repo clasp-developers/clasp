@@ -44,6 +44,9 @@ THE SOFTWARE.
 #include <clasp/core/environment.h>
 #include <clasp/core/lambdaListHandler.h>
 #include <clasp/core/lispDefinitions.h>
+#include <clasp/core/symbol.h>
+#include <clasp/core/instance.h>
+#include <clasp/core/creator.h>
 #include <clasp/core/record.h>
 #include <clasp/core/print.h>
 #include <clasp/core/wrappers.h>
@@ -533,6 +536,51 @@ SYMBOL_EXPORT_SC_(ClPkg, eq);
 SYMBOL_EXPORT_SC_(ClPkg, eql);
 SYMBOL_EXPORT_SC_(ClPkg, equal);
 SYMBOL_EXPORT_SC_(ClPkg, equalp);
+};
+
+
+namespace core {
+
+void lisp_setStaticClass(gctools::Header_s::Value header, Instance_sp value)
+{
+  if (_lisp->_Roots.staticClasses.size() == 0) {
+    size_t size = (size_t)gctools::STAMP_max;
+    _lisp->_Roots.staticClasses.resize(size);
+  }
+//  printf("%s:%d:%s stamp: %u  value: %s\n", __FILE__, __LINE__, __FUNCTION__, header.stamp(), _rep_(value).c_str());
+  _lisp->_Roots.staticClasses[header.stamp()] = value;
+}
+
+void lisp_setStaticClassSymbol(gctools::Header_s::Value header, Symbol_sp value)
+{
+  if (_lisp->_Roots.staticClassSymbols.size() == 0) {
+    _lisp->_Roots.staticClassSymbols.resize((size_t)gctools::STAMP_max);
+  }
+//  printf("%s:%d:%s stamp: %u  value: %s\n", __FILE__, __LINE__, __FUNCTION__, header.stamp(), _rep_(value).c_str());
+  _lisp->_Roots.staticClassSymbols[header.stamp()] = value;
+}
+
+void lisp_setStaticInstanceCreator(gctools::Header_s::Value header, Creator_sp value)
+{ 
+  if (_lisp->_Roots.staticInstanceCreators.size() == 0) {
+    _lisp->_Roots.staticInstanceCreators.resize((size_t)gctools::STAMP_max);
+  }
+  _lisp->_Roots.staticInstanceCreators[header.stamp()] = value;
+}
+
+Instance_sp lisp_getStaticClass(gctools::Header_s::Value header)
+{
+  return _lisp->_Roots.staticClasses[header.stamp()];
+}
+Symbol_sp lisp_getStaticClassSymbol(gctools::Header_s::Value header)
+{
+  return _lisp->_Roots.staticClassSymbols[header.stamp()];
+}
+Creator_sp lisp_getStaticInstanceCreator(gctools::Header_s::Value header)
+{
+  return _lisp->_Roots.staticInstanceCreators[header.stamp()];
+}
+
 };
 
 

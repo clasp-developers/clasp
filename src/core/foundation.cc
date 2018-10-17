@@ -685,23 +685,23 @@ string symbol_packageName(Symbol_sp sym) {
 Instance_sp lisp_instance_class(T_sp o) {
   T_sp tc;
   if (o.fixnump()) {
-    tc = core::Fixnum_dummy_O::static_class;
+    tc = core::Fixnum_dummy_O::staticClass();
     //	    return core::Fixnum_O::___staticClass;
   } else if (o.characterp()) {
-    tc = core::Character_dummy_O::static_class;
+    tc = core::Character_dummy_O::staticClass();
   } else if (o.single_floatp()) {
-    tc = core::SingleFloat_dummy_O::static_class;
+    tc = core::SingleFloat_dummy_O::staticClass();
   } else if (o.consp()) {
-    tc = core::Cons_O::static_class;
+    tc = core::Cons_O::staticClass();
   } else if (o.generalp()) {
     General_sp go(o.unsafe_general());
     unlikely_if ( go.nilp() ) {
-      tc = core::Null_O::static_class;
+      tc = core::Null_O::staticClass();
     }
     tc = go->_instanceClass();
   } else if (o.valistp()) {
     // What do I tc = for this?
-    tc = core::VaList_dummy_O::static_class;
+    tc = core::VaList_dummy_O::staticClass();
   } else {
     SIMPLE_ERROR(BF("Add support for unknown (immediate?) object to lisp_instance_class obj = %p") % (void*)(o.raw_()));
   }
@@ -712,7 +712,7 @@ Instance_sp lisp_static_class(T_sp o) {
   if ( o.generalp() ) {
     General_sp go(o.unsafe_general());
     if (go.nilp()) {
-      return core::Null_O::static_class;
+      return core::Null_O::staticClass();
     }
     return go->__class();
   }

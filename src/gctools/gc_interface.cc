@@ -328,11 +328,14 @@ void obj_deallocate_unmanaged_instance(gctools::smart_ptr<core::T_O> obj ) {
 // Declare all global symbols
 //
 //
+
+
 #define DECLARE_ALL_SYMBOLS
 #ifndef SCRAPING
 #include SYMBOLS_SCRAPED_INC_H
 #endif
 #undef DECLARE_ALL_SYMBOLS
+
 
 
 
@@ -559,45 +562,14 @@ void obj_finalize(mps_addr_t client) {
 extern "C" {
 mps_res_t main_thread_roots_scan(mps_ss_t ss, void *gc__p, size_t gc__s) {
   MPS_SCAN_BEGIN(GC_SCAN_STATE) {
-#if 0
-    // We don't scan global load-time-value tables any more here
-    // they are added as tables of roots as they are created
-    for (auto &it : global_roots) {
-      POINTER_FIX(it);
-    }
-#endif
 #ifndef RUNNING_GC_BUILDER
 #define GC_GLOBALS
 #include CLASP_GC_FILENAME
 #undef GC_GLOBALS
 #endif
-
-#ifdef USE_SYMBOLS_IN_GLOBAL_ARRAY
     for ( int i=0; i<global_symbol_count; ++i ) {
       SMART_PTR_FIX(global_symbols[i]);
     }
-#else
-#if USE_STATIC_ANALYZER_GLOBAL_SYMBOLS
-  #ifndef RUNNING_GC_BUILDER
-  #define GC_GLOBAL_SYMBOLS
-  #include CLASP_GC_FILENAME
-  #undef GC_GLOBAL_SYMBOLS
-  #endif // if RUNNING_GC_BUILDER
-#else
-//
-// Ok, this looks nasty but it allows us to avoid running the static analyzer
-// every time we add or remove a symbol.  Every symbol that is scraped from
-// the source must be listed here and fixed for the garbage collector
-//
-  #define GARBAGE_COLLECT_ALL_SYMBOLS
-  #ifndef RUNNING_GC_BUILDER
-    #ifndef SCRAPING
-        #include SYMBOLS_SCRAPED_INC_H
-    #endif
-  #endif // ifndef RUNNING_GC_BUILDER
-  #undef GARBAGE_COLLECT_ALL_SYMBOLS
-#endif // else ifndef USE_STATIC_ANALYZER_GLOBAL_SYMBOLS
-#endif
   }
   MPS_SCAN_END(GC_SCAN_STATE);
   return MPS_RES_OK;
@@ -712,7 +684,7 @@ NOINLINE  gc::smart_ptr<core::Instance_O> allocate_one_class(core::Instance_sp m
   gc::smart_ptr<core::Instance_O> class_val = core::Instance_O::createClassUncollectable(TheClass::static_HeaderValue.stamp(),metaClass,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS,cb);
   class_val->__setup_stage1_with_sharedPtr_lisp_sid(class_val,TheClass::static_classSymbol());
   reg::lisp_associateClassIdWithClassSymbol(reg::registered_class<TheClass>::id,TheClass::static_classSymbol());
-  TheClass::static_class = class_val;
+  TheClass::setStaticClass(class_val);
 //  core::core__setf_find_class(class_val,TheClass::static_classSymbol()); //,true,_Nil<core::T_O>()
   _lisp->boot_setf_findClass(TheClass::static_classSymbol(),class_val);
   return class_val;
@@ -780,24 +752,24 @@ template <typename TSingle>
 void add_single_typeq_test(const string& cname, core::HashTable_sp theMap) {
   Fixnum header_val = gctools::Header_s::Value::GenerateHeaderValue<TSingle>();
 //  printf("%s:%d Header value for type %s -> %lld    stamp: %u  flags: %zu\n", __FILE__, __LINE__, _rep_(TSingle::static_class_symbol).c_str(), header_val, gctools::GCStamp<TSingle>::Stamp, gctools::GCStamp<TSingle>::Flags);
-  theMap->setf_gethash(TSingle::static_class_symbol,core::make_fixnum(gctools::Header_s::Value::GenerateHeaderValue<TSingle>()));
+  theMap->setf_gethash(TSingle::static_classSymbol(),core::make_fixnum(gctools::Header_s::Value::GenerateHeaderValue<TSingle>()));
 }
 
 template <typename TRangeFirst,typename TRangeLast>
 void add_range_typeq_test(const string& cname, core::HashTable_sp theMap) {
   
-  theMap->setf_gethash(TRangeFirst::static_class_symbol,
+  theMap->setf_gethash(TRangeFirst::static_classSymbol(),
                        core::Cons_O::create(core::make_fixnum(gctools::Header_s::Value::GenerateHeaderValue<TRangeFirst>()),
                                             core::make_fixnum(gctools::Header_s::Value::GenerateHeaderValue<TRangeLast>())));
 }
 template <typename TSingle>
 void add_single_typeq_test_instance(core::HashTable_sp theMap) {
-  theMap->setf_gethash(TSingle::static_class_symbol,core::make_fixnum(gctools::Header_s::Value::GenerateHeaderValue<TSingle>()));
+  theMap->setf_gethash(TSingle::static_classSymbol(),core::make_fixnum(gctools::Header_s::Value::GenerateHeaderValue<TSingle>()));
 }
 
 template <typename TRangeFirst,typename TRangeLast>
 void add_range_typeq_test_instance(core::HashTable_sp theMap) {
-  theMap->setf_gethash(TRangeFirst::static_class_symbol,
+  theMap->setf_gethash(TRangeFirst::static_classSymbol(),
                        core::Cons_O::create(core::make_fixnum(gctools::Header_s::Value::GenerateHeaderValue<TRangeFirst>()),
                                             core::make_fixnum(gctools::Header_s::Value::GenerateHeaderValue<TRangeLast>())));
 }
@@ -806,22 +778,22 @@ void initialize_typeq_map() {
   core::HashTableEqual_sp classNameToLispName = core::HashTableEqual_O::create_default();
   core::HashTableEq_sp theTypeqMap = core::HashTableEq_O::create_default();
 #define ADD_SINGLE_TYPEQ_TEST(type,stamp) { \
-    classNameToLispName->setf_gethash(core::SimpleBaseString_O::make(#type),type::static_class_symbol); \
-    theTypeqMap->setf_gethash(type::static_class_symbol,core::make_fixnum(gctools::Header_s::Value::GenerateHeaderValue<type>())); \
+    classNameToLispName->setf_gethash(core::SimpleBaseString_O::make(#type),type::static_classSymbol()); \
+    theTypeqMap->setf_gethash(type::static_classSymbol(),core::make_fixnum(gctools::Header_s::Value::GenerateHeaderValue<type>())); \
   }
 #define ADD_RANGE_TYPEQ_TEST(type_low,type_high,stamp_low,stamp_high) { \
-    classNameToLispName->setf_gethash(core::SimpleBaseString_O::make(#type_low),type_low::static_class_symbol); \
-    theTypeqMap->setf_gethash(type_low::static_class_symbol, \
+    classNameToLispName->setf_gethash(core::SimpleBaseString_O::make(#type_low),type_low::static_classSymbol()); \
+    theTypeqMap->setf_gethash(type_low::static_classSymbol(), \
                               core::Cons_O::create(core::make_fixnum(gctools::Header_s::Value::GenerateHeaderValue<type_low>()), \
                                                    core::make_fixnum(gctools::Header_s::Value::GenerateHeaderValue<type_high>()))); \
   }
 #define ADD_SINGLE_TYPEQ_TEST_INSTANCE(type,stamp) { \
-    classNameToLispName->setf_gethash(core::SimpleBaseString_O::make(#type),type::static_class_symbol); \
-    theTypeqMap->setf_gethash(type::static_class_symbol,core::make_fixnum(gctools::Header_s::Value::GenerateHeaderValue<type>())); \
+    classNameToLispName->setf_gethash(core::SimpleBaseString_O::make(#type),type::static_classSymbol()); \
+    theTypeqMap->setf_gethash(type::static_classSymbol(),core::make_fixnum(gctools::Header_s::Value::GenerateHeaderValue<type>())); \
   }
 #define ADD_RANGE_TYPEQ_TEST_INSTANCE(type_low,type_high,stamp_low,stamp_high) { \
-    classNameToLispName->setf_gethash(core::SimpleBaseString_O::make(#type_low),type_low::static_class_symbol); \
-    theTypeqMap->setf_gethash(type_low::static_class_symbol, \
+    classNameToLispName->setf_gethash(core::SimpleBaseString_O::make(#type_low),type_low::static_classSymbol()); \
+    theTypeqMap->setf_gethash(type_low::static_classSymbol(), \
                               core::Cons_O::create(core::make_fixnum(gctools::Header_s::Value::GenerateHeaderValue<type_low>()), \
                                                    core::make_fixnum(gctools::Header_s::Value::GenerateHeaderValue<type_high>()))); \
   }

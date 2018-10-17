@@ -342,16 +342,12 @@ struct ReachableClass {
     } else {
       className << "??CONS??";
     }
-    BF("%s: total_size: %10d count: %8d avg.sz: %8d kind: %s/%d\n")
-      % shortName % this->totalSize % this->instances
-      % (this->totalSize / this->instances) % className.str().c_str() % k
-    
       clasp_write_string((BF("%s: total_size: %10d count: %8d avg.sz: %8d kind: %s/%d\n")
                           % shortName % this->totalSize % this->instances
-                          % (this->totalSize / this->instances) % className.str().c_str() % k).str(),
+                          % (this->totalSize / this->instances) % className.str().c_str() % k).str()
                          ,cl::_sym_STARstandard_outputSTAR->symbolValue());
-    core::cl__finish_output();
-    return this->totalSize;
+      core::clasp_finish_output_t();
+      return this->totalSize;
   }
 };
 

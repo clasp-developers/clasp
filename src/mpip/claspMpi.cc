@@ -121,9 +121,6 @@ SYMBOL_EXPORT_SC_(MpiPkg, MpiTermConverter);
 #ifdef USE_MPI
 static boost::mpi::environment *_MpiEnvironment;
 #endif
-static bool _MpiInitialized = false;
-static bool _MpiWorldInitialized = false;
-Mpi_sp _MpiWorld;
 
 /*
   __BEGIN_DOC( mpi.commands, section, MPI Functions)
@@ -188,8 +185,8 @@ void Mpi_O::Init(int &argc, char **&argv, bool &mpiEnabled, int &rank, int &msiz
 #ifdef USE_MPI
   _MpiEnvironment = new boost::mpi::environment(argc, argv);
   HARD_ASSERTF(_MpiEnvironment, BF("Could not create MPI environment although mpi should be enabled"));
-  _MpiInitialized = _MpiEnvironment->initialized();
-  if (_MpiInitialized) {
+  _lisp->_MpiInitialized = _MpiEnvironment->initialized();
+  if (_lisp->_MpiInitialized) {
     boost::mpi::communicator world;
     mpiEnabled = true;
     rank = world.rank();
@@ -199,7 +196,7 @@ void Mpi_O::Init(int &argc, char **&argv, bool &mpiEnabled, int &rank, int &msiz
     exit(1);
   }
 #else
-  _MpiInitialized = false;
+  _lisp->_Roots._MpiInitialized = false;
 #endif
 }
 
@@ -212,18 +209,12 @@ void Mpi_O::Init(int &argc, char **&argv, bool &mpiEnabled, int &rank, int &msiz
 */
 Mpi_sp Mpi_O::mpiCommWorld() {
   _G();
-  if (!_MpiWorldInitialized) {
-    _MpiWorldInitialized = true;
+  if (!_lisp->_Roots._MpiWorldInitialized) {
+    _lisp->_Roots._MpiWorldInitialized = true;
     LOG(BF("_MpiWorld creating")); // vp0(( "_MpiWorld creating" ));
-    _MpiWorld = Mpi_O::create();
-    ANN(_MpiWorld);
-    LOG(BF("status")); // vp0(("status" ));
-    ASSERT(_MpiWorld.notnilp());
-    LOG(BF("status")); // vp0(("status" ));
+    _lisp->_Roots._MpiWorld = Mpi_O::create();
   }
-  ANN(_MpiWorld);
-  ASSERTP(_MpiWorld.notnilp(), "_MpiWorld is nil");
-  return _MpiWorld;
+  return _lisp->_Roots._MpiWorld;
 }
 
 void Mpi_O::Finalize() {
