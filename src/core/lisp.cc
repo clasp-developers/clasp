@@ -1756,7 +1756,7 @@ CL_DEFUN T_sp cl__find_class(Symbol_sp symbol, bool errorp, T_sp env) {
   }
   if (!foundp) {
     if (errorp) {
-      SIMPLE_ERROR(BF("Could not find class %s") % _rep_(symbol));
+      ERROR(ext::_sym_undefinedClass, Cons_O::createList(kw::_sym_name, symbol));
     }
     return _Nil<T_O>();
   }

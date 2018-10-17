@@ -702,6 +702,12 @@ memory limits before executing the program again."))
 	     (format stream "The function ~S is undefined."
 		     (cell-error-name condition)))))
 
+(define-condition ext:undefined-class (cell-error)
+  ()
+  (:report (lambda (condition stream)
+             (format stream "Could not find the class ~s."
+                     (cell-error-name condition)))))
+
 (define-condition arithmetic-error (error)
   ((operation :INITARG :OPERATION :READER arithmetic-error-operation)
    (operands :INITARG :OPERANDS :INITFORM '() :READER arithmetic-error-operands)))
@@ -881,6 +887,7 @@ memory limits before executing the program again."))
         (core:btcl)
         (core:exit))))
 
+;;; This is a redefinition, clobbering core__universal_error_handler in lisp.cc.
 (defun sys::universal-error-handler (continue-string datum args)
   "Args: (error-name continuable-p function-name
        continue-format-string error-format-string
