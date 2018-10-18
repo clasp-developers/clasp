@@ -1151,7 +1151,7 @@ def build(bld):
             bld.install_files(dest, files, relative_trick = True, cwd = cwd)
 
     if not bld.variant:
-        bld.fatal("Call waf with build_variant, e.g. 'nice -n19 ./waf --jobs 2 --verbose build_cboehm_d'")
+        bld.fatal("Call waf with build_variant, e.g. './waf --jobs 2 --verbose build_cboehm'")
 
     variant = eval(bld.variant + "()")
     bld.variant_obj = variant
