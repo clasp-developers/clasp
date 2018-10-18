@@ -2,7 +2,7 @@
 #--eval '(set-dispatch-macro-character #\# #\! (lambda (s c n)(declare (ignore c n)) (read-line s) (values)))' \
 #|
 SCRIPT_DIR="$(dirname "$0")"
-exec sbcl --noinform --disable-ldb --lose-on-corruption --disable-debugger \
+exec sbcl --dynamic-space-size 4096 --noinform --disable-ldb --lose-on-corruption --disable-debugger \
 --no-sysinit --no-userinit --noprint \
 --eval '(set-dispatch-macro-character #\# #\! (lambda (s c n)(declare (ignore c n)) (read-line s) (values)))' \
 --eval "(defvar *script-args* '( $# \"$0\" \"$1\" \"$2\" \"$3\" \"$4\" \"$5\" \"$6\" \"$7\" \"$8\" \"$9\" ))" \
@@ -131,18 +131,12 @@ Read the contents of the filename into memory and return a buffer-stream on it."
 
 (let* ((output-stream *standard-output*)
       (input-stream *standard-input*)
-<<<<<<< HEAD
       (symbol-table nil)
       (nargs (car *script-args*))
       (args (subseq (cddr *script-args*) 0 nargs)))
   (declare (optimize (debug 3)) (ignore nargs))
   (format t "nargs: ~a args: ~s~%" nargs args)
   (loop for cur = args then (cddr cur)
-=======
-      (symbol-table nil))
-  (declare (optimize (debug 3)))
-  (loop for cur = (cddr *script-args*) then (cddr cur)
->>>>>>> Fix shebang in symbolicate.lisp
         for option = (first cur)
         for value = (second cur)
         while cur
