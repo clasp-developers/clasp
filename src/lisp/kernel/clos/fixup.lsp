@@ -277,7 +277,7 @@ and cannot be added to ~A." method other-gf gf)))
 	(let ((old-lambda-list (generic-function-lambda-list gf)))
 	  (unless (congruent-lambda-p old-lambda-list new-lambda-list)
 	    (error "Cannot add the method ~A to the generic function ~A because their lambda lists ~A and ~A are not congruent."
-		   method gf old-lambda-list new-lambda-list)))
+		   method gf new-lambda-list old-lambda-list)))
 	(reinitialize-instance gf :lambda-list new-lambda-list)))
   ;;
   ;; 3) Finally, it is inserted in the list of methods, and the method is
