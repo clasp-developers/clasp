@@ -265,7 +265,7 @@ exec sbcl --dynamic-space-size 4096 --noinform --disable-ldb --lose-on-corruptio
                                    for name = (subseq line start end)
                                    while cur
                                    do (cond
-                                        ((and cleavir-p (search "ClaspJIT_O::addModule" name))
+                                        #+(or)((and cleavir-p (search "ClaspJIT_O::addModule" name))
                                          (pop-lines 6)
                                          (push-line "ORC::JIT-compiler")
                                          (setf cur nil) ; and we are done with this backtrace
