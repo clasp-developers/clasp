@@ -577,9 +577,9 @@ CL_DEFUN void core__evaluate_verbosity(Fixnum_sp level) {
 
 CL_LAMBDA(form &optional env);
 CL_DECLARE();
-CL_DOCSTRING("eval_with_env_default");
-CL_DEFUN T_mv core__eval_with_env_default(T_sp form, T_sp env) {
-  return eval::t1Evaluate(form, env);
+CL_DOCSTRING("Evaluate the form in the environment using the interpreter");
+CL_DEFUN T_mv core__interpret_eval_with_env(T_sp form, T_sp environment) {
+  return eval::t1Evaluate(form, environment);
 }
 
 };
@@ -2100,9 +2100,9 @@ void defineSpecialOperatorsAndMacros(Package_sp pkg) {
   SYMBOL_EXPORT_SC_(ClPkg, apply);
   SYMBOL_EXPORT_SC_(ClPkg, funcall);
   SYMBOL_EXPORT_SC_(CorePkg, STAReval_with_env_hookSTAR);
-  SYMBOL_EXPORT_SC_(CorePkg, eval_with_env_default);
+  SYMBOL_EXPORT_SC_(CorePkg, interpret_eval_with_env);
 //  af_def(CorePkg, "eval_with_env_default", &core__eval_with_env_default);
-  core::_sym_STAReval_with_env_hookSTAR->defparameter(core::_sym_eval_with_env_default->symbolFunction());
+  core::_sym_STAReval_with_env_hookSTAR->defparameter(core::_sym_interpret_eval_with_env->symbolFunction());
 };
 };
 };
