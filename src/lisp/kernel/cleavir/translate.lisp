@@ -133,10 +133,32 @@ when this is t a lot of graphs will be generated.")
            (fixnum value))))
       cmp:%t*%))
     (cleavir-ir:lexical-location
-     (%load (translate-datum datum) label))))
+;;     #+(or)
+     (%load (translate-datum datum) label)
+     #+(or)
+     (let ((existing (gethash datum *vars*)))
+       (if (consp existing) ; ssa
+           (car existing)
+           (%load (translate-datum datum) label))))))
+
+(defun ssablep (location)
+  (let ((defs (cleavir-ir:defining-instructions location)))
+    (and (= (length defs) 1)
+         ;; MTF translator does a phi kind of deal.
+         (not (typep (first defs) 'cleavir-ir:multiple-to-fixed-instruction)))))
 
 (defun out (value datum &optional (label ""))
-  (%store value (translate-datum datum) label))
+;;  (break "Datum: ~a" datum)
+;;  #+(or)
+  (%store value (translate-datum datum) label)
+  #+(or)
+  (let ((existing (gethash datum *vars*)))
+    (cond ((consp existing) (error "impossible"))
+          (existing (%store value existing label))
+          ((ssablep datum)
+           (setf (gethash datum *vars*) (list value)))
+          (t
+           (%store value (translate-datum datum) label)))))
 
 (defun translate-lambda-list-item (item)
   (cond ((symbolp item)
