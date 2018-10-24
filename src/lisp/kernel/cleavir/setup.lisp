@@ -29,48 +29,30 @@ when this is t a lot of graphs will be generated.")
 
 (defmethod cleavir-generate-ast:convert-constant-to-immediate ((n integer) environment (system clasp))
   ;; convert fixnum into immediate but bignums return nil
-  (let ((result (core:create-tagged-immediate-value-or-nil n)))
-    (if result
-        (make-instance 'immediate-literal :value n :tagged-value result)
-        nil)))
+ (core:create-tagged-immediate-value-or-nil n))
 
 (defmethod cleavir-generate-ast:convert-constant-to-immediate ((n character) environment (system clasp))
   ;; convert character to an immediate
-  (let ((result (core:create-tagged-immediate-value-or-nil n)))
-    (if result
-        (make-instance 'immediate-literal :value n :tagged-value result)
-        nil)))
+  (core:create-tagged-immediate-value-or-nil n))
 
 (defmethod cleavir-generate-ast:convert-constant-to-immediate ((n float) environment (system clasp))
   ;; single-float's can be converted to immediates, anything else will return nil
-  (let ((result (core:create-tagged-immediate-value-or-nil n)))
-    (if result
-        (make-instance 'immediate-literal :value n :tagged-value result)
-        nil)))
+  (core:create-tagged-immediate-value-or-nil n))
 
 ;;; ------------------------------------------------------------
 ;;;
 ;;; cst-to-ast methods for convert-constant-to-immediate
 (defmethod cleavir-cst-to-ast:convert-constant-to-immediate ((n integer) environment (system clasp))
   ;; convert fixnum into immediate but bignums return nil
-  (let ((result (core:create-tagged-immediate-value-or-nil n)))
-    (if result
-        (make-instance 'immediate-literal :value n :tagged-value result)
-        nil)))
+  (core:create-tagged-immediate-value-or-nil n))
 
 (defmethod cleavir-cst-to-ast:convert-constant-to-immediate ((n character) environment (system clasp))
   ;; convert character to an immediate
-  (let ((result (core:create-tagged-immediate-value-or-nil n)))
-    (if result
-        (make-instance 'immediate-literal :value n :tagged-value result)
-        nil)))
+  (core:create-tagged-immediate-value-or-nil n))
 
 (defmethod cleavir-cst-to-ast:convert-constant-to-immediate ((n float) environment (system clasp))
   ;; single-float's can be converted to immediates, anything else will return nil
-  (let ((result (core:create-tagged-immediate-value-or-nil n)))
-    (if result
-        (make-instance 'immediate-literal :value n :tagged-value result)
-        nil)))
+  (core:create-tagged-immediate-value-or-nil n))
 
 (defmethod cleavir-env:variable-info ((environment clasp-global-environment) symbol)
   (core:stack-monitor)

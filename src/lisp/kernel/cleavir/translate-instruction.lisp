@@ -57,21 +57,10 @@
 
 (defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir:precalc-value-instruction) return-value abi function-info)
-  ;; We treat our immediate input completely magically.
-  (let* ((input (first (cleavir-ir:inputs instruction)))
-         (_ (assert (typep input 'cleavir-ir:immediate-input)))
-         (literal (cleavir-ir:value input))
-         (output (first (cleavir-ir:outputs instruction)))
-         (value (etypecase literal
-                  (immediate-literal
-                   (immediate-literal-tagged-value literal))
-                  (arrayed-literal
-                   (let* ((idx (arrayed-literal-index literal))
-                          (label
-                            (safe-llvm-name
-                             (clasp-cleavir-hir:precalc-value-instruction-original-object instruction))))
-                     (%load (%gep-variable (cmp:ltv-global) (list (%size_t 0) (%i64 idx)) label)))))))
-    (out value output)))
+  (let* ((index (clasp-cleavir-hir:precalc-value-instruction-index instruction))
+         (label (safe-llvm-name (clasp-cleavir-hir:precalc-value-instruction-original-object instruction)))
+         (value (%load (%gep-variable (cmp:ltv-global) (list (%size_t 0) (%i64 index)) label))))
+    (out value (first (cleavir-ir:outputs instruction)))))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:fixed-to-multiple-instruction) return-value (abi abi-x86-64) function-info)

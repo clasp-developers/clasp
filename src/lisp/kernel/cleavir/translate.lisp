@@ -104,34 +104,22 @@ when this is t a lot of graphs will be generated.")
 
 ;;; KLUDGE: Kept mainly for enter-instruction. Rearrange.
 (defun translate-datum (datum)
-  (if (typep datum 'cleavir-ir:constant-input)
-      (let* ((value (cleavir-ir:value datum)))
-        (%literal-ref value t))
-      (or (gethash datum *vars*)
-          (setf (gethash datum *vars*)
-                (typecase datum
-                  (cleavir-ir:values-location) ; do nothing - we don't actually use them
-                  ;; note - NOT used for precalc-value-instruction, which works magically.
-                  (cleavir-ir:immediate-input (%i64 (cleavir-ir:value datum)))
-                  (cc-mir:typed-lexical-location
-                   (alloca (cc-mir:lexical-location-type datum) 1 (datum-name-as-string datum)))
-                  (cleavir-ir:lexical-location
-                   (alloca-t* (datum-name-as-string datum)))
-                  (t (error "add support for translate datum: ~a~%" datum)))))))
+  (or (gethash datum *vars*)
+      (setf (gethash datum *vars*)
+            (typecase datum
+              (cleavir-ir:values-location) ; do nothing - we don't actually use them
+              ;; note - NOT used for precalc-value-instruction, which works magically.
+              (cleavir-ir:immediate-input (%i64 (cleavir-ir:value datum)))
+              (cc-mir:typed-lexical-location
+               (alloca (cc-mir:lexical-location-type datum) 1 (datum-name-as-string datum)))
+              (cleavir-ir:lexical-location
+               (alloca-t* (datum-name-as-string datum)))
+              (t (error "add support for translate datum: ~a~%" datum))))))
 
 (defun in (datum &optional (label ""))
   (etypecase datum
-    ;; NOTE: precalc doesn't actually go through here. magic magic magic.
-    ;; Because of how literals can work, the value can be either a fixnum, or an
-    ;; immediate-literal object. If this sounds bad, it is. I'll fix it now that I know.
     (cleavir-ir:immediate-input
-     (cmp:irc-int-to-ptr
-      (%i64
-       (let ((value (cleavir-ir:value datum)))
-         (etypecase value
-           (immediate-literal (immediate-literal-tagged-value value))
-           (fixnum value))))
-      cmp:%t*%))
+     (cmp:irc-int-to-ptr (%i64 (cleavir-ir:value datum)) cmp:%t*%))
     (cleavir-ir:lexical-location
      (%load (translate-datum datum) label))))
 
@@ -547,6 +535,7 @@ Does not hoist."
   ;; Note: We should not have an env parameter. It is only required due to
   ;; how types work at the moment, and will be eliminated as soon as practical.
   (let ((system *clasp-system*))
+    (cleavir-ir-graphviz:draw-flowchart hir "/tmp/hir.dot")
     (my-hir-transformations hir system env)
     (quick-draw-hir hir "hir-pre-mir")
     (let ((function-info-map (make-function-info-map hir)))
