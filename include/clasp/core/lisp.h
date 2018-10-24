@@ -271,8 +271,6 @@ class Lisp_O {
     bool _MpiEnabled;
     int _MpiRank;
     int _MpiSize;
-    bool _MpiInitialized = false;
-    bool _MpiWorldInitialized = false;
     mpip::Mpi_sp  _MpiWorld;
     //! Class_map
     gctools::Vec0<clbind::ClassRep_sp> _ClassMap;
