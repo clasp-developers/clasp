@@ -268,13 +268,12 @@ ALWAYS_INLINE core::T_O *cc_gatherVaRestArguments(va_list vargs, std::size_t nar
 }
 
 ALWAYS_INLINE core::T_O *cc_makeCell()
-{NO_UNWIND_BEGIN();
+{
   core::Cons_sp res = core::Cons_O::create(_Nil<core::T_O>(),_Nil<core::T_O>());
 #ifdef DEBUG_CC
   printf("%s:%d makeCell res.px[%p]\n", __FILE__, __LINE__, res.px);
 #endif
   return res.raw_();
-  NO_UNWIND_END();
 }
 
 ALWAYS_INLINE void cc_writeCell(core::T_O *cell, core::T_O* val)
