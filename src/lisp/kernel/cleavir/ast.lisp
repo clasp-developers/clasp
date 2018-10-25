@@ -18,9 +18,6 @@
 (defmethod cleavir-ast:children ((ast setf-fdefinition-ast))
   (list (cleavir-ast:name-ast ast)))
 
-
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Class NAMED-FUNCTION-AST
@@ -48,8 +45,6 @@
   (with-output-to-string (s)
     (format s "named-function (~a)" (lambda-name ast))))
 
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Class THROW-AST
@@ -73,7 +68,6 @@
 (defmethod cleavir-ast:children ((ast throw-ast))
   (list (tag-ast ast) (result-ast ast)))
 
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Class DEBUG-MESSAGE-AST
@@ -91,7 +85,6 @@
     (format s "debug-message (~a)" (debug-message ast))))
 
 (defmethod cleavir-ast:children ((ast debug-message-ast)) nil)
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -466,3 +459,45 @@ precalculated-vector and returns the index."
         (push form forms)))
     (clasp-cleavir-ast:make-precalc-vector-function-ast
      ast ltvs forms (cleavir-ast:policy ast) :origin (cleavir-ast:origin ast))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Introducing invocations
+
+(defclass invoke-ast (cleavir-ast:call-ast)
+  ((%destinations :accessor destinations :initarg :destinations)))
+
+(defclass multiple-value-invoke-ast (cleavir-ast:multiple-value-call-ast)
+  ((%destinations :accessor destinations :initarg :destinations)))
+
+(defvar *invocation-context*)
+
+(defun introduce-invoke (ast)
+  (let ((visitedp (make-hash-table :test #'eq)))
+    (labels ((introduce-invoke-aux (ast)
+               (unless (gethash ast visitedp)
+                 (setf (gethash ast visitedp) t)
+                 (let ((new-context *invocation-context*))
+                   (typecase ast
+                     (cleavir-ast:block-ast (push ast new-context))
+                     (cleavir-ast:tagbody-ast
+                      (loop for item in (cleavir-ast:item-asts ast)
+                            when (typep item 'cleavir-ast:tag-ast)
+                              do (push item new-context)))
+                     (cleavir-ast:function-ast
+                      ;; Another level down, so reset.
+                      (setf new-context nil))
+                     (cleavir-ast:call-ast ; Mark, if it could unwind here.
+                      (unless (null *invocation-context*)
+                        (change-class ast 'clasp-cleavir-ast:invoke-ast
+                                      :destinations *invocation-context*)))
+                     (cleavir-ast:multiple-value-call-ast
+                      (unless (null *invocation-context*)
+                        (change-class ast 'clasp-cleavir-ast:multiple-value-invoke-ast
+                                      :destinations *invocation-context*))))
+                   ;; Recur.
+                   (let ((*invocation-context* new-context))
+                     (mapc #'introduce-invoke-aux (cleavir-ast:children ast)))))
+               (values)))
+      (let ((*invocation-context* nil))
+        (introduce-invoke-aux ast)))))

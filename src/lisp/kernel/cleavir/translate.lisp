@@ -515,6 +515,7 @@ Does not hoist."
            (cmp:register-global-function-ref (cleavir-environment:name condition))
            (invoke-restart 'cleavir-generate-ast:consider-global))))
     (let* ((ast (cleavir-generate-ast:generate-ast form env *clasp-system*)))
+      (clasp-cleavir-ast:introduce-invoke ast)
       (when *interactive-debug* (draw-ast ast))
       (cc-dbg-when *debug-log* (log-cst-to-ast ast))
       (setf *ct-generate-ast* (compiler-timer-elapsed))
