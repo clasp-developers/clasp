@@ -91,10 +91,10 @@ eg: '(block ((exception var) code...))"
 
 
 
-(defmacro with-begin-end-catch ((exn.slot exception-ptr rethrow-bb) &rest body)
+(defmacro with-begin-end-catch ((exn exception-ptr rethrow-bb) &rest body)
   (let ((cont-gs (gensym))
         (exn-gs (gensym)))
-    `(let ((,exn-gs (llvm-sys:create-load-value-twine *irbuilder* ,exn.slot "exn")))
+    `(let ((,exn-gs ,exn))
        (with-landing-pad ,rethrow-bb
          (let ((,exception-ptr (irc-intrinsic "__cxa_begin_catch" ,exn-gs)))
            #+debug-eh(irc-intrinsic "debugPrintI32" (jit-constant-i32 (incf *next-i32*)))
@@ -123,7 +123,7 @@ eg: '(block ((exception var) code...))"
       ((eq (caar clause) 'all-other-exceptions)
        `(progn
 	  (irc-begin-block ,cur-dispatcher-block)
-	  (with-begin-end-catch (,exn.slot dummy-exception ,rethrow-bb)
+	  (with-begin-end-catch ((irc-load ,exn.slot "exn") dummy-exception ,rethrow-bb)
 	    ,@clause-body
 	    ))
        )
@@ -142,7 +142,7 @@ eg: '(block ((exception var) code...))"
 ;;	    (irc-intrinsic "debugPrintI32" ,typeid-gs)
 	    (irc-cond-br ,matches-type-gs ,handler-block-gs ,next-dispatcher-block)
 	    (irc-begin-block ,handler-block-gs)
-	    (with-begin-end-catch (,exn.slot ,clause-exception-name ,rethrow-bb)
+	    (with-begin-end-catch ((irc-load ,exn.slot "exn") ,clause-exception-name ,rethrow-bb)
 	      ,@clause-body)
 	    (irc-branch-if-no-terminator-inst ,successful-catch-block) ;; Why is this commented out?
 	    ))

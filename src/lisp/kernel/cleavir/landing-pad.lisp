@@ -10,7 +10,7 @@
   ;; We do this weird thing to get the index while still generating the other code around it.
   ;; FIXME: with-begin-end-catch should maybe abstract away so it can return an actual thing.
   (let (go-index)
-    (cmp:with-begin-end-catch (exn.slot exception-ptr nil)
+    (cmp:with-begin-end-catch ((%load exn.slot "exn") exception-ptr nil)
       ;; Check if frame is correct against tagbody and jump to jumpid
       (cmp:with-landing-pad landing-pad-for-unwind-rethrow
         (setq go-index
