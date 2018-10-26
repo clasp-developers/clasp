@@ -209,7 +209,7 @@ when this is t a lot of graphs will be generated.")
           (cmp:with-dbg-lexical-block (*form*)
             (cmp:irc-set-insert-point-basic-block body-block body-irbuilder)
             (cmp:with-landing-pad
-                (maybe-generate-landing-pad the-function function-info *tags* return-value abi)
+                (maybe-generate-landing-pad function-info *tags* return-value abi)
               (cmp:irc-begin-block body-block)
               (when (debug-on function-info)
                 (generate-push-invocation-history-frame (calling-convention function-info)))
