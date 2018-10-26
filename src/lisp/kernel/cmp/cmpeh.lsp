@@ -190,14 +190,11 @@ eg: '(block ((exception var) code...))"
          (_                     (irc-br previous-exception-handler-cleanup-block)))
     rethrow-cleanup))
 
-(defun generate-ehcleanup-and-resume-code (function exn.slot ehselector.slot &optional cleanup-lambda)
+(defun generate-ehcleanup-and-resume-code (function exn.slot ehselector.slot)
   (let* ((ehbuilder       (llvm-sys:make-irbuilder *llvm-context*))
          (ehcleanup       (irc-basic-block-create "TRY.ehcleanup" function))
          (ehresume        (irc-basic-block-create "TRY.ehresume" function))
          (_               (irc-set-insert-point-basic-block ehcleanup ehbuilder))
-         (_               (and cleanup-lambda
-                               (with-irbuilder (ehbuilder)
-                                 (funcall cleanup-lambda))))
          (_               (llvm-sys:create-br ehbuilder ehresume))
          (_               (irc-set-insert-point-basic-block ehresume ehbuilder))
          (exn7            (llvm-sys:create-load-value-twine ehbuilder exn.slot "exn7"))
