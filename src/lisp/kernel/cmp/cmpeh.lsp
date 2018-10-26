@@ -292,9 +292,9 @@ exceptions to higher levels of the code and unwinding the stack.
 	;;	     (cleanup-clause-list (cons cleanup-clause-body (make-list (- (length exception-clauses) 1)))))
 	`(progn
            (irc-branch-to-and-begin-block (irc-basic-block-create "TRY.top"))
-           (let* ((,all-clause-types-gs (if ',my-clause-types
-                                            (append ',my-clause-types *exception-clause-types-to-handle*)
-                                            *exception-clause-types-to-handle*))
+           (let* ((,all-clause-types-gs ,(if my-clause-types
+                                            `(append ',my-clause-types *exception-clause-types-to-handle*)
+                                            '*exception-clause-types-to-handle*))
                   (,previous-exception-clause-types-to-handle-gs *exception-clause-types-to-handle*)
                   (*exception-clause-types-to-handle* ,all-clause-types-gs)
                   (,parent-cleanup-block-gs *exception-handler-cleanup-block*)
