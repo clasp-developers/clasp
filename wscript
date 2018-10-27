@@ -223,7 +223,8 @@ DEBUG_OPTIONS = [
     "DEBUG_RECURSIVE_ALLOCATIONS",
     "DEBUG_LLVM_OPTIMIZATION_LEVEL_0",
     "DEBUG_SLOW",    # Code runs slower due to checks - undefine to remove checks
-    "CONFIG_VAR_COOL" # mps setting
+    "CONFIG_VAR_COOL", # mps setting
+    "USE_HUMAN_READABLE_BITCODE"
 ]
 
 def build_extension(bld):
@@ -1042,18 +1043,13 @@ def configure(cfg):
         cfg.define("DEBUG_GUARD_VALIDATE",1)
     if (cfg.env.DEBUG_GUARD_EXHAUSTIVE_VALIDATE):
         cfg.define("DEBUG_GUARD_EXHAUSTIVE_VALIDATE",1)
+    cfg.env.USE_HUMAN_READABLE_BITCODE=False
     if (cfg.env.DEBUG_OPTIONS):
         for opt in cfg.env.DEBUG_OPTIONS:
             if (opt in DEBUG_OPTIONS):
                 cfg.define(opt,1)
             else:
                 raise Exception("Illegal DEBUG_OPTION %s - allowed options: %s" % (opt, DEBUG_OPTIONS))
-
-#    cfg.define("DISABLE_TYPE_INFERENCE",1)
-    cfg.env.USE_HUMAN_READABLE_BITCODE=False
-    if (cfg.env.USE_HUMAN_READABLE_BITCODE):
-        cfg.define("USE_HUMAN_READABLE_BITCODE",1)
-# ----------
 
 # --------------------------------------------------
 # --------------------------------------------------
