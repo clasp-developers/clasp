@@ -2106,7 +2106,7 @@ broadcast_element_type(T_sp strm) {
   T_sp l = BroadcastStreamList(strm);
   if (l.nilp())
     return _lisp->_true();
-  return clasp_stream_element_type(oCar(l));
+  return clasp_stream_element_type(oCar(cl__last(l, clasp_make_fixnum(1))));
 }
 
 static T_sp
@@ -2114,7 +2114,7 @@ broadcast_length(T_sp strm) {
   T_sp l = BroadcastStreamList(strm);
   if (l.nilp())
     return make_fixnum(0);
-  return clasp_file_length(oCar(l));
+  return clasp_file_length(oCar(cl__last(l, clasp_make_fixnum(1))));
 }
 
 static T_sp
@@ -2122,7 +2122,7 @@ broadcast_get_position(T_sp strm) {
   T_sp l = BroadcastStreamList(strm);
   if (l.nilp())
     return make_fixnum(0);
-  return clasp_file_position(oCar(l));
+  return clasp_file_position(oCar(cl__last(l, clasp_make_fixnum(1))));
 }
 
 static T_sp
@@ -2186,16 +2186,13 @@ CL_DECLARE();
 CL_DOCSTRING("makeBroadcastStream");
 CL_DEFUN T_sp cl__make_broadcast_stream(List_sp ap) {
   T_sp x, streams;
-  // we need to verify that ap are all streams
-  // currently (make-broadcast-stream 1 2 3) works fine
+  // we need to verify that ap are all streams and if so, also output-streams
+  // previously (make-broadcast-stream 1 2 3) worked fine
   if (ap.notnilp()) {
-    T_sp acons = oCar(ap);
-    Stream_sp aStream =acons.asOrNull<Stream_O>();
-    if (!aStream) TYPE_ERROR(acons, cl::_sym_Stream_O);
-    for (auto cur : (List_sp)oCdr(ap)) {
-      T_sp acons1 = oCar(ap);
-      Stream_sp aStream1 =acons1.asOrNull<Stream_O>();
-      if (!aStream1) TYPE_ERROR(acons1, cl::_sym_Stream_O);
+    for (T_sp l = ap; !l.nilp(); l = oCdr(l)) {
+      T_sp potentialstream = oCar(l);
+      if (!clasp_output_stream_p(potentialstream))
+        not_an_output_stream(potentialstream);
     }
   }
   streams = ap;
@@ -2203,7 +2200,9 @@ CL_DEFUN T_sp cl__make_broadcast_stream(List_sp ap) {
   StreamFormat(x) = kw::_sym_default;
   StreamOps(x) = duplicate_dispatch_table(broadcast_ops);
   StreamMode(x) = clasp_smm_broadcast;
-  BroadcastStreamList(x) = cl__nreverse(streams);
+  // nreverse is needed in ecl, since they freshly cons_up a list in reverse order
+  // but not here streams is in the original order
+  BroadcastStreamList(x) = streams;
   return x;
 }
 
@@ -2523,11 +2522,20 @@ CL_DEFUN T_sp cl__make_concatenated_stream(List_sp ap) {
     StreamFormat(x) = kw::_sym_passThrough;
   } else {
     StreamFormat(x) = cl__stream_external_format(oCar(streams));
+    // here we should test that the effectively we were passed a list of streams that satisfy INPUT-STREAM-P
+    // fixes MAKE-CONCATENATED-STREAM.ERROR.1, MAKE-CONCATENATED-STREAM.ERROR.2
+    for (T_sp l = streams; !l.nilp(); l = oCdr(l)) {
+      T_sp potentialstream = oCar(l);
+      //clasp_input_stream_p also verifies if is a stream at all
+      if (!clasp_input_stream_p(potentialstream))
+        not_an_input_stream(potentialstream);
+    }
   }
   StreamMode(x) = clasp_smm_concatenated;
   StreamOps(x) = duplicate_dispatch_table(concatenated_ops);
   // used to be nreverse, but this gives wrong results, since it than reads first from the last stream passed
   // stick with the original list
+  // in ecl there is nreverse, since the list of streams is consed up newly, so is in inverse order
   ConcatenatedStreamList(x) = streams;
   return x;
 }
@@ -4479,7 +4487,10 @@ compute_char_size(T_sp stream, claspCharacter c) {
   return l;
 }
 
-T_sp cl_file_string_length(T_sp stream, T_sp string) {
+CL_LAMBDA(stream string);
+CL_DECLARE();
+CL_DOCSTRING("file-string-length");
+CL_DEFUN T_sp cl__file_string_length(T_sp stream, T_sp string) {
   gctools::Fixnum l = 0;
 /* This is a stupid requirement from the spec. Why returning 1???
 	 * Why not simply leaving the value unspecified, as with other
@@ -4498,6 +4509,9 @@ BEGIN:
     if (stream.nilp()) {
       return make_fixnum(1);
     } else {
+      // stream is now a list of streams, but need a stream object
+      // http://www.lispworks.com/documentation/HyperSpec/Body/t_broadc.htm#broadcast-stream
+      stream = oCar(cl__last(stream, clasp_make_fixnum(1)));
       goto BEGIN;
     }
   }
@@ -4507,8 +4521,14 @@ BEGIN:
   if (cl__characterp(string)) {
     l = compute_char_size(stream, string.unsafe_character());
   } else if (cl__stringp(string)) {
-    for (int i(0), iEnd(StringFillp(gc::As<String_sp>(string))); i < iEnd; ++i) {
-      l += compute_char_size(stream, cl__char(gc::As<String_sp>(string), i).unsafe_character());
+    Fixnum iEnd;
+    String_sp sb = string.asOrNull<String_O>();
+    if (sb && (sb->arrayHasFillPointerP()))
+      iEnd = StringFillp(sb);
+    else
+      iEnd = cl__length(string);        
+    for (int i(0); i < iEnd; ++i) {
+      l += compute_char_size(stream, cl__char(string, i).unsafe_character());
     }
   } else {
     ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_file_string_length, 2, string, cl::_sym_string);
@@ -4601,6 +4621,10 @@ T_sp si_do_read_sequence(T_sp seq, T_sp stream, T_sp s, T_sp e) {
   if ((end < 0) || (end > limit)) {
     ERROR_WRONG_TYPE_KEY_ARG(cl::_sym_read_sequence, kw::_sym_end, e,
                              Integer_O::makeIntegerType(0, limit));
+  }
+  if (end < start) {
+    ERROR_WRONG_TYPE_KEY_ARG(cl::_sym_read_sequence, kw::_sym_end, e,
+                             Integer_O::makeIntegerType(start, limit));
   }
   if (start < end) {
     const FileOps &ops = stream_dispatch_table(stream);
@@ -5846,10 +5870,13 @@ CL_DEFUN String_sp cl__write_line(String_sp str, T_sp stream, Fixnum_sp start, T
   return str;
 };
 
-CL_LAMBDA(byte &optional output-stream);
+CL_LAMBDA(byte output-stream);
 CL_DECLARE();
 CL_DOCSTRING("writeByte");
 CL_DEFUN Integer_sp cl__write_byte(Integer_sp byte, T_sp stream) {
+  if (stream.nilp())
+    TYPE_ERROR(stream, cl::_sym_Stream_O);
+  // not sure whether this is correct, clhs in 21.2 says stream---a binary output stream.
   stream = coerce::outputStreamDesignator(stream);
   clasp_write_byte(byte, stream);
   return (byte);
@@ -5945,18 +5972,24 @@ CL_DEFUN T_sp cl__write_sequence(T_sp seq, T_sp stream, Fixnum_sp fstart, T_sp t
                              Integer_O::makeIntegerType(0, limit - 1));
   }
   int start = unbox_fixnum(fstart);
-  int end = limit;
+  int end;
   if (tend.notnilp()) {
+    end = unbox_fixnum(gc::As<Fixnum_sp>(tend));
     unlikely_if(!core__fixnump(tend) ||
                 (end < 0) ||
                 (end > limit)) {
       ERROR_WRONG_TYPE_KEY_ARG(cl::_sym_write_sequence, kw::_sym_end, tend,
                                Integer_O::makeIntegerType(0, limit - 1));
     }
-    end = unbox_fixnum(gc::As<Fixnum_sp>(tend));
   }
-  if (end <= start) {
+  else end = limit;
+  if (end == start)
     return seq;
+  else
+    if  (end < start) {
+    // I don't believe that we can silently return seq, sbcl throws an error
+    ERROR_WRONG_TYPE_KEY_ARG(cl::_sym_write_sequence, kw::_sym_end, tend,
+                               Integer_O::makeIntegerType(start, limit - 1));
   }
   const FileOps &ops = stream_dispatch_table(stream);
   if (cl__listp(seq)) {
