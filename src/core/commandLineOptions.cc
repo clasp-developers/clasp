@@ -36,6 +36,7 @@ namespace core {
 CommandLineOptions::CommandLineOptions(int argc, char *argv[])
     : _DontLoadImage(false),
       _DontLoadInitLsp(false),
+      _DisableMpi(false),
       _HasImageFile(false),
       _ImageFile(""),
       _GotRandomNumberSeed(false),
@@ -63,6 +64,7 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
              "-I/--ignore-image    - Don't load the boot image/start with init.lsp\n"
              "-i/--image file      - Use the file as the boot image\n"
              "-N/--non-interactive - Suppress all repls\n"
+             "-m/--disable-mpi     - Don't use mpi even if built with mpi\n"
              "-v/--version         - Print version\n"
              "-R/--resource-dir    - This directory is treated as the executable directory\n"
              "                       and it is used to start the search for resource directories\n"
@@ -119,6 +121,8 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
       this->_NoRc = true;
     } else if (arg == "-w" || arg == "--wait") {
       this->_PauseForDebugger = true;
+    } else if (arg == "-m" || arg == "--disable-mpi") {
+      this->_DisableMpi = true;
     } else if (arg == "-n" || arg == "--noinit") {
       this->_DontLoadInitLsp = true;
     } else if (arg == "-v" || arg == "--version") {

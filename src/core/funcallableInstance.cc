@@ -69,7 +69,7 @@ CL_DEFUN T_sp core__allocate_new_funcallable_instance(Instance_sp cl, size_t num
   // cl is known to be a funcallable-standard-class.
   ASSERT(cl->CLASS_has_creator());
   Creator_sp creator = gctools::As<Creator_sp>(cl->CLASS_get_creator());
-  FuncallableInstance_sp obj = creator->creator_allocate();
+  FuncallableInstance_sp obj = gc::As_unsafe<FuncallableInstance_sp>(creator->creator_allocate());
   obj->_Class = cl;
   obj->initializeSlots(cl->CLASS_stamp_for_instances(), numberOfSlots);
   obj->_Sig = cl->slots();
@@ -209,7 +209,7 @@ Instance_sp FuncallableInstance_O::create(Symbol_sp symbol, Instance_sp metaClas
 T_sp FuncallableInstance_O::copyInstance() const {
   DEPRECATED();
   Instance_sp cl = this->_Class;
-  FuncallableInstance_sp copy = cl->CLASS_get_creator()->creator_allocate();
+  FuncallableInstance_sp copy = gc::As_unsafe<FuncallableInstance_sp>(cl->CLASS_get_creator()->creator_allocate());
   copy->_Class = cl;
   copy->_Rack = this->_Rack;
   copy->_Sig = this->_Sig;

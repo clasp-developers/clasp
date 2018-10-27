@@ -122,7 +122,6 @@ llvm::Value* llvm_cast_error_ptr;
 
 namespace llvmo {
 
-
 CL_DEFUN bool llvm_sys__llvm_value_p(core::T_sp o) {
   if (o.nilp())
     return false;
@@ -791,7 +790,7 @@ CL_DEFUN void llvm_sys__writeBitcodeToFile(Module_sp module, core::String_sp pat
 
 CL_DEFUN Module_sp llvm_sys__parseIRFile(core::T_sp tfilename, LLVMContext_sp context) {
   if (tfilename.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
-  core::String_sp spathname = core::cl__namestring(core::cl__pathname(tfilename));
+  core::String_sp spathname = gc::As<core::String_sp>(core::cl__namestring(core::cl__pathname(tfilename)));
   llvm::ErrorOr<std::unique_ptr<llvm::MemoryBuffer>> eo_membuf = llvm::MemoryBuffer::getFile(spathname->get_std_string());
   if (std::error_code ec = eo_membuf.getError()) {
     SIMPLE_ERROR(BF("Could not read the file %s - error: %s") % spathname->get_std_string() % ec.message());
@@ -811,7 +810,7 @@ CL_DEFUN Module_sp llvm_sys__parseIRFile(core::T_sp tfilename, LLVMContext_sp co
 CL_LAMBDA("filename &optional (context cmp:*llvm-context*)");
 CL_DEFUN Module_sp llvm_sys__parseBitcodeFile(core::T_sp tfilename, LLVMContext_sp context) {
   if (tfilename.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
-  core::String_sp spathname = core::cl__namestring(core::cl__pathname(tfilename));
+  core::String_sp spathname = gc::As<core::String_sp>(core::cl__namestring(core::cl__pathname(tfilename)));
   llvm::ErrorOr<std::unique_ptr<llvm::MemoryBuffer>> eo_membuf = llvm::MemoryBuffer::getFile(spathname->get_std_string());
   if (std::error_code ec = eo_membuf.getError()) {
     SIMPLE_ERROR(BF("Could not load bitcode for file %s - error: %s") % spathname->get_std_string() % ec.message());
@@ -1244,7 +1243,7 @@ CL_DEFMETHOD bool ExecutionEngine_O::removeModule(Module_sp module) {
 
 CL_LISPIFY_NAME("find_function_named");
 CL_DEFMETHOD Function_sp ExecutionEngine_O::find_function_named(core::String_sp name) {
-  return translate::to_object<llvm::Function *>::convert(this->wrappedPtr()->FindFunctionNamed(name->get().c_str()));
+  return gc::As<Function_sp>(translate::to_object<llvm::Function *>::convert(this->wrappedPtr()->FindFunctionNamed(name->get().c_str())));
 }
 
 CL_LISPIFY_NAME(clearAllGlobalMappings);
@@ -2573,7 +2572,7 @@ CL_DEFMETHOD void Function_O::appendBasicBlock(BasicBlock_sp basicBlock) {
 
 CL_LISPIFY_NAME("getEntryBlock");
 CL_DEFMETHOD BasicBlock_sp Function_O::getEntryBlock() const {
-  return translate::to_object<llvm::BasicBlock*>::convert(&this->wrappedPtr()->getEntryBlock());
+  return gc::As<BasicBlock_sp>(translate::to_object<llvm::BasicBlock*>::convert(&this->wrappedPtr()->getEntryBlock()));
 }
 
 CL_LISPIFY_NAME("basic-blocks");
@@ -2681,7 +2680,7 @@ CL_LISPIFY_NAME(get_contained_type);
 CL_EXTERN_DEFMETHOD(Type_O,&llvm::Type::getContainedType);
 
 CL_DEFMETHOD LLVMContext_sp Type_O::getContext() const {
-  return translate::to_object<llvm::LLVMContext&>::convert(this->wrappedPtr()->getContext());
+  return gc::As<LLVMContext_sp>(translate::to_object<llvm::LLVMContext&>::convert(this->wrappedPtr()->getContext()));
 }
 
 bool Type_O::equal(core::T_sp obj) const {
@@ -3538,6 +3537,13 @@ CL_DEFMETHOD ModuleHandle_sp ClaspJIT_O::addModule(Module_sp cM) {
   Expected<ModuleHandle> expected_ModuleHandle = OptimizeLayer.addModule(std::move(uM), //std::move(Ms),
 //                                                                      make_unique<SectionMemoryManager>(),
                                                                          std::move(Resolver));
+
+//  ObjectFile objectFile = SimpleCompiler(*TM)(optimizeModule(M))
+    // Here get the start and the size of the objectFile
+    // objectFile->getMemoryBuffer()->getSize()
+    // objectFile->getMemoryBuffer()->getStart()
+    // How long will the objectFile->getMemoryBuffer() live?
+    
   ModuleHandle_sp mh;
   if (expected_ModuleHandle) {
     mh = ModuleHandle_O::create(*expected_ModuleHandle);

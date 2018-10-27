@@ -55,11 +55,6 @@ namespace clbind {
 // Forward declarations
 //
 //
-namespace clbind {
-  namespace detail {
-    class class_map;
-  }
-}
 namespace core {
   class KeywordArgument;
   class RequiredArgument;
@@ -143,6 +138,7 @@ extern void obj_deallocate_unmanaged_instance(gctools::smart_ptr<core::T_O> obj)
 
 extern int global_symbol_count;
 extern gctools::smart_ptr<core::Symbol_O> global_symbols[];
+
 
 extern void client_validate_internal(void* tagged_client);
 extern void client_validate_recursive(void* tagged_client, std::set<void*>& seen );

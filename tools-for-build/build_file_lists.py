@@ -184,6 +184,9 @@ def collect_clasp_c_source_files(bld):
                  'llvmoExpose',
                  'llvmoPackage',
                  'clbindLlvmExpose']) + \
+             collect_c_source_files(bld, 'src/mpip/', [
+                 'claspMpi'
+             ]) + \
              collect_c_source_files(bld, 'src/asttooling/', [
                  'astVisitor',
                  'astExpose',

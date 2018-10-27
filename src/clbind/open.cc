@@ -64,8 +64,6 @@ namespace clbind {
 detail::cast_graph *globalCastGraph;
 //! Take the place of __clbind_class_id_map
 detail::class_id_map *globalClassIdMap;
-//! Take the place of __clbind_class_map
-gctools::tagged_pointer<detail::class_map> globalClassMap;
 
 class Test {
 public:
@@ -131,7 +129,6 @@ CLBIND_API void initialize_clbind() {
   _sym_STARtheClassRegistrySTAR->defparameter(registry);
   globalClassIdMap = new detail::class_id_map();
   globalCastGraph = new detail::cast_graph();
-  globalClassMap = gctools::RootClassAllocator<detail::class_map>::allocate();
 #if 1
   package("CLBIND-TEST",{"CLBIND-TEST"}, {"CL"})
     [

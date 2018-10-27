@@ -157,3 +157,24 @@
                (with-output-to-string (*standard-output*)
                  (compile-file "sys:regression-tests;test-compile-file.lisp" :print t :verbose t)))))
                  
+(defun %%blah (&key foo bar)
+  (list foo bar))
+
+
+(test-expect-error
+ key-1
+ (%%blah :foo)
+ :type PROGRAM-ERROR)
+
+(test 
+ key-2
+ (%%blah :foo :bar))
+
+(test-expect-error
+ key-3
+ (%%blah :foo 1 :bar)
+ :type PROGRAM-ERROR)
+
+(test cl-symbols-1 (not (fboundp 'cl:reader-error)))
+
+                 

@@ -146,8 +146,8 @@ Pathname_sp clasp_input_pathname(T_sp strm);
 /*! Return the filename of the stream if possible, error if errorp=true and no name can be determined */
 T_sp clasp_filename(T_sp strm, bool errorp = false);
 
- void cl__unread_char(Character_sp ch, T_sp dstrm);
-  T_sp cl__get_output_stream_string(T_sp strm);
+T_sp cl__unread_char(Character_sp ch, T_sp dstrm);
+T_sp cl__get_output_stream_string(T_sp strm);
 
 T_sp clasp_file_length(T_sp strm);
 T_sp clasp_file_position(T_sp strm);
@@ -501,7 +501,7 @@ GCPROTECTED: // instance variables here
 
 public:
   static SynonymStream_sp make(Symbol_sp symbol) {
-    return cl__make_synonym_stream(symbol);
+    return gc::As<SynonymStream_sp>(cl__make_synonym_stream(symbol));
   }
 
 public: // Functions here

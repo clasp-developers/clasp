@@ -73,18 +73,18 @@ when this is t a lot of graphs will be generated.")
 ;;; single successor.  whether a go is required at the end of this
 ;;; function is determined by the code layout algorithm.  
 (defgeneric translate-simple-instruction
-    (instruction return-value inputs outputs abi current-function-info))
+    (instruction return-value abi current-function-info))
 
 (defmethod translate-simple-instruction :around
-    (instruction return-value inputs outputs abi current-function-info)
+    (instruction return-value abi current-function-info)
   (with-debug-info-source-position (cleavir-ir:origin instruction) (metadata current-function-info)
     (call-next-method)))
 
 (defgeneric translate-branch-instruction
-    (instruction return-value inputs outputs successors abi current-function-info))
+    (instruction return-value successors abi current-function-info))
 
 (defmethod translate-branch-instruction :around
-    (instruction return-value inputs outputs successors abi current-function-info)
+    (instruction return-value successors abi current-function-info)
   (with-debug-info-source-position (cleavir-ir:origin instruction) (metadata current-function-info)
     (call-next-method)))
 
@@ -102,24 +102,29 @@ when this is t a lot of graphs will be generated.")
                    :readably nil
                    :pretty nil))
 
-    
+;;; KLUDGE: Kept mainly for enter-instruction. Rearrange.
 (defun translate-datum (datum)
-  (declare (optimize (debug 3)))
-  (if (typep datum 'cleavir-ir:constant-input)
-      (let* ((value (cleavir-ir:value datum)))
-        (%literal-ref value t))
-      (let ((var (gethash datum *vars*)))
-	(when (null var)
-          (typecase datum
-            (cleavir-ir:values-location) ; do nothing - we don't actually use them
-            (cleavir-ir:immediate-input (setf var (cmp:ensure-jit-constant-i64 (cleavir-ir:value datum))))
-            ;; names may be (setf foo), so use write-to-string and not just string
-            (cc-mir:typed-lexical-location
-             (setf var (alloca (cc-mir:lexical-location-type datum) 1 (datum-name-as-string datum))))
-            (cleavir-ir:lexical-location (setf var (alloca-t* (datum-name-as-string datum))))
-            (t (error "add support to translate datum: ~a~%" datum)))
-	  (setf (gethash datum *vars*) var))
-	var)))
+  (or (gethash datum *vars*)
+      (setf (gethash datum *vars*)
+            (typecase datum
+              (cleavir-ir:values-location) ; do nothing - we don't actually use them
+              ;; note - NOT used for precalc-value-instruction, which works magically.
+              (cleavir-ir:immediate-input (%i64 (cleavir-ir:value datum)))
+              (cc-mir:typed-lexical-location
+               (alloca (cc-mir:lexical-location-type datum) 1 (datum-name-as-string datum)))
+              (cleavir-ir:lexical-location
+               (alloca-t* (datum-name-as-string datum)))
+              (t (error "add support for translate datum: ~a~%" datum))))))
+
+(defun in (datum &optional (label ""))
+  (etypecase datum
+    (cleavir-ir:immediate-input
+     (cmp:irc-int-to-ptr (%i64 (cleavir-ir:value datum)) cmp:%t*%))
+    (cleavir-ir:lexical-location
+     (%load (translate-datum datum) label))))
+
+(defun out (value datum &optional (label ""))
+  (%store value (translate-datum datum) label))
 
 (defun translate-lambda-list-item (item)
   (cond ((symbolp item)
@@ -152,10 +157,6 @@ when this is t a lot of graphs will be generated.")
                             do (format *debug-log* "     ~a~%" (cc-mir:describe-mir instruction))))
     (loop for instruction = first
             then (first (cleavir-ir:successors instruction))
-          for inputs = (cleavir-ir:inputs instruction)
-          for input-vars = (mapcar #'translate-datum inputs)
-          for outputs = (cleavir-ir:outputs instruction)
-          for output-vars = (mapcar #'translate-datum outputs)
           if (eq instruction last)
             ;; finish off the block
             do (let* ((successors (cleavir-ir:successors instruction))
@@ -165,16 +166,16 @@ when this is t a lot of graphs will be generated.")
                  (cond ((= (length successors) 1)
                         ;; one successor: we have to do branching ourselves.
                         (translate-simple-instruction
-                         instruction return-value input-vars output-vars abi current-function-info)
+                         instruction return-value abi current-function-info)
                         (cmp:irc-br (first successor-tags)))
                        (t ; 0 or 2 or more successors: it handles branching.
                         (translate-branch-instruction
-                         instruction return-value input-vars output-vars successor-tags
+                         instruction return-value successor-tags
                          abi current-function-info))))
                (loop-finish)
           else
             do (translate-simple-instruction
-                instruction return-value input-vars output-vars abi current-function-info))
+                instruction return-value abi current-function-info))
     (cc-dbg-when *debug-log*
                  #+stealth-gids(format *debug-log* "- - - -  END layout-basic-block  owner: ~a:~a   -->  ~a~%" (cleavir-ir-gml::label owner) (clasp-cleavir:instruction-gid owner) basic-block)
                  #-stealth-gids(format *debug-log* "- - - -  END layout-basic-block  owner: ~a   -->  ~a~%" (cleavir-ir-gml::label owner) basic-block))))
@@ -251,9 +252,13 @@ when this is t a lot of graphs will be generated.")
 (defun calculate-function-info (enter llvm-function-name)
   (let* ((origin (cleavir-ir:origin enter))
          (source-pos-info (if (consp origin) (car origin) origin))
-         (lineno (core:source-pos-info-lineno origin))
-         (column (1+ (core:source-pos-info-column origin)))
-         (filepos (core:source-pos-info-filepos origin)))
+         (lineno 0)
+         (column 0)
+         (filepos 0))
+    (when (and source-pos-info (typep source-pos-info 'core:source-pos-info))
+      (setf lineno (core:source-pos-info-lineno source-pos-info)
+            column (1+ (core:source-pos-info-column source-pos-info))
+            filepos (core:source-pos-info-filepos source-pos-info)))
     (cond
       ((typep enter 'clasp-cleavir-hir:named-enter-instruction)
        (cmp:make-function-info :function-name llvm-function-name
@@ -530,11 +535,12 @@ Does not hoist."
   ;; Note: We should not have an env parameter. It is only required due to
   ;; how types work at the moment, and will be eliminated as soon as practical.
   (let ((system *clasp-system*))
+    (cleavir-ir-graphviz:draw-flowchart hir "/tmp/hir.dot")
     (my-hir-transformations hir system env)
     (quick-draw-hir hir "hir-pre-mir")
     (let ((function-info-map (make-function-info-map hir)))
       (lower-catches function-info-map)
-      (cleavir-ir:hir-to-mir hir system env nil)
+      (cleavir-hir-to-mir:hir-to-mir hir system env nil)
       #+stealth-gids(cc-mir:assign-mir-instruction-datum-ids hir)
       (quick-draw-hir hir "mir")
       (when *interactive-debug*

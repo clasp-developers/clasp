@@ -160,7 +160,8 @@ void ltvc_assign_source_file_info_handle(const char *moduleName, const char *sou
   //	printf("%s:%d assignSourceFileInfoHandle %s\n", __FILE__, __LINE__, moduleName );
   core::SimpleBaseString_sp mname = core::SimpleBaseString_O::make(moduleName);
   core::SimpleBaseString_sp struename = core::SimpleBaseString_O::make(sourceDebugPathname);
-  SourceFileInfo_mv sfi_mv = core::core__source_file_info(mname, struename, sourceDebugOffset, useLineno ? true : false);
+  T_mv sfi_mv = core::core__source_file_info(mname, struename, sourceDebugOffset, useLineno ? true : false);
+  SourceFileInfo_sp sfi = gc::As<SourceFileInfo_sp>(sfi_mv);
   int sfindex = unbox_fixnum(gc::As<core::Fixnum_sp>(sfi_mv.valueGet_(1)));
   *sourceFileInfoHandleP = sfindex;
   NO_UNWIND_END();
@@ -190,15 +191,17 @@ LtvcReturn ltvc_make_t(gctools::GCRootsInModule* holder, size_t index)
 
 LtvcReturn ltvc_make_ratio(gctools::GCRootsInModule* holder, size_t index, gctools::Tagged num, gctools::Tagged denom )
 {NO_UNWIND_BEGIN();
-  core::T_sp val = core::Ratio_O::create(core::T_sp(num),core::T_sp(denom));
+  Integer_sp inum((gc::Tagged)num);
+  Integer_sp idenom((gc::Tagged)denom);
+  core::T_sp val = core::Ratio_O::create(inum,idenom);
   LTVCRETURN holder->set(index,val.tagged_());
   NO_UNWIND_END();
 }
 
 LtvcReturn ltvc_make_complex(gctools::GCRootsInModule* holder, size_t index, gctools::Tagged real, gctools::Tagged imag)
 {NO_UNWIND_BEGIN();
-  core::Number_sp nreal((gctools::Tagged)real);
-  core::Number_sp nimag((gctools::Tagged)imag);
+  core::Real_sp nreal((gctools::Tagged)real);
+  core::Real_sp nimag((gctools::Tagged)imag);
   // Do not convert nreal and nimag to double, can be all types of Real_sp
   core::T_sp val = core::Complex_O::create(nreal,nimag);
   LTVCRETURN holder->set(index,val.tagged_());
@@ -612,7 +615,7 @@ NOINLINE extern void va_ifExcessKeywordArgumentsException(char *fnName, std::siz
 ALWAYS_INLINE T_O *va_lexicalFunction(size_t depth, size_t index, core::T_O* evaluateFrameP)
 {NO_UNWIND_BEGIN();
   core::ActivationFrame_sp af((gctools::Tagged)evaluateFrameP);
-  core::Function_sp func = core::function_frame_lookup(af, depth, index);
+  core::Function_sp func = gc::As_unsafe<core::Function_sp>(core::function_frame_lookup(af, depth, index));
   return func.raw_();
   NO_UNWIND_END();
 }
@@ -1103,7 +1106,7 @@ void throwDynamicGo(size_t depth, size_t index, core::T_O *afP) {
   global_DynamicGo_count++;
 #endif
   T_sp af((gctools::Tagged)afP);
-  ValueFrame_sp tagbody = core::tagbody_frame_lookup(af,depth,index);
+  ValueFrame_sp tagbody = gc::As<ValueFrame_sp>(core::tagbody_frame_lookup(gc::As_unsafe<ValueFrame_sp>(af),depth,index));
   T_O* handle = tagbody->operator[](0).raw_();
   core::DynamicGo dgo(handle, index);
 #if defined(DEBUG_FLOW_TRACKER)
@@ -1128,7 +1131,7 @@ void debugSourceFileInfoHandle(int *sourceFileInfoHandleP)
 {NO_UNWIND_BEGIN();
   int sfindex = *sourceFileInfoHandleP;
   core::Fixnum_sp fn = core::make_fixnum(sfindex);
-  SourceFileInfo_sp sfi = core::core__source_file_info(fn);
+  SourceFileInfo_sp sfi = gc::As<SourceFileInfo_sp>(core::core__source_file_info(fn));
   printf("%s:%d debugSourceFileInfoHandle[%d] --> %s\n", __FILE__, __LINE__, sfindex, _rep_(sfi).c_str());
   NO_UNWIND_END();
 }

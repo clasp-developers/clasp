@@ -951,7 +951,7 @@ bool ValueEnvironment_O::_findValue(T_sp sym, int &depth, int &index, bool& cros
       valueKind = lexicalValue;
       env = this->asSmartPtr();
       LOG(BF(" Found binding %s") % fi->second);
-      ValueFrame_sp vframe = gctools::As_unsafe<ValueFrame_sp>(this->_ActivationFrame);
+      ValueFrame_sp vframe = this->_ActivationFrame;
       value = vframe->entry(index);
       return true;
     } else if (entry.consp()) {
@@ -994,7 +994,7 @@ bool ValueEnvironment_O::_findSymbolMacro(Symbol_sp sym, int &depth, int &index,
 }
 
 bool ValueEnvironment_O::activationFrameElementBoundP(int idx) const {
-  ValueFrame_sp vframe = gctools::As_unsafe<ValueFrame_sp>(this->_ActivationFrame);
+  ValueFrame_sp vframe = this->_ActivationFrame;
   return vframe->boundp_entry(idx);
 }
 
@@ -1012,7 +1012,7 @@ CL_DEFUN ValueEnvironment_sp ValueEnvironment_O::createForNumberOfEntries(int nu
   env->_Invisible = invisible;
   env->setupParent(parent);
   if (!invisible) env->_ActivationFrame = ValueFrame_O::create(numberOfArguments, clasp_getActivationFrame(clasp_currentVisibleEnvironment(parent,false)));
-  else env->_ActivationFrame = clasp_getActivationFrame(clasp_currentVisibleEnvironment(parent,false));
+  else env->_ActivationFrame = gc::As<ValueFrame_sp>(clasp_getActivationFrame(clasp_currentVisibleEnvironment(parent,false)));
   return env;
 }
 
@@ -1021,7 +1021,7 @@ CL_DEFUN ValueEnvironment_sp ValueEnvironment_O::createForLocallySpecialEntries(
   ValueEnvironment_sp env(ValueEnvironment_O::create());
   env->setupParent(parent);
   env->_Invisible = true; // What do we do with the activation frame?
-  env->_ActivationFrame = clasp_getActivationFrame(clasp_currentVisibleEnvironment(parent,false));
+  env->_ActivationFrame = _Unbound<ValueFrame_O>();
   for (auto cur : specials) {
     env->defineSpecialBinding(gc::As<Symbol_sp>(oCar(cur)));
   }
@@ -1052,7 +1052,7 @@ string ValueEnvironment_O::summaryOfContents() const {
   ss << string(tab, ' ') << "ValueEnvironment_O values @" << (void*)this;
   if (this->_Invisible) { ss << string(tab,' ') << " invisible "; };
   ss << std::endl;
-  ValueFrame_sp vframe = gctools::As_unsafe<ValueFrame_sp>(this->_ActivationFrame);
+  ValueFrame_sp vframe = this->_ActivationFrame;
   int numEntries = 0;
   for ( auto cur : this->_SymbolIndex_alist ) {
     T_sp entry = CONS_CAR(cur);
@@ -1138,7 +1138,7 @@ bool ValueEnvironment_O::_updateValue(Symbol_sp sym, T_sp obj) {
     //	    sym->setf_symbolValue(obj);
     return false;
   }
-  ValueFrame_sp vframe = gctools::As_unsafe<ValueFrame_sp>(this->_ActivationFrame);
+  ValueFrame_sp vframe = this->_ActivationFrame;
   vframe->set_entry(ivalue, obj);
   return true;
 }
@@ -1160,7 +1160,7 @@ T_sp ValueEnvironment_O::new_binding(Symbol_sp sym, int idx, T_sp obj) {
   }
 #endif
   this->_SymbolIndex_alist = Cons_O::create(Cons_O::create(sym,make_fixnum(idx)),this->_SymbolIndex_alist);
-  ValueFrame_sp vframe = gctools::As_unsafe<ValueFrame_sp>(this->_ActivationFrame);
+  ValueFrame_sp vframe = this->_ActivationFrame;
   vframe->set_entry(idx, obj);
   return obj;
 }
@@ -1332,7 +1332,7 @@ CL_DEFUN BlockEnvironment_sp BlockEnvironment_O::make(Symbol_sp blockSymbol, T_s
   environ->setBlockSymbol(blockSymbol);
   environ->_Invisible = false;
   if (!environ->_Invisible) environ->_ActivationFrame = ValueFrame_O::create(1,clasp_getActivationFrame(clasp_currentVisibleEnvironment(parent,false)));
-  else environ->_ActivationFrame = clasp_getActivationFrame(clasp_currentVisibleEnvironment(parent,false));
+  else environ->_ActivationFrame = gc::As<ValueFrame_sp>(clasp_getActivationFrame(clasp_currentVisibleEnvironment(parent,false)));
   return environ;
 }
 

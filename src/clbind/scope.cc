@@ -144,7 +144,7 @@ void package_::operator[](scope s) {
     }
     if (m_usePackageNames.size()!=0) {
       for ( auto usen : m_usePackageNames) {
-        core::Package_sp other = _lisp->findPackage(usen);
+        core::Package_sp other = gc::As<core::Package_sp>(_lisp->findPackage(usen));
         bool used = ppkg->usePackage(other);
         if (!used) {
           printf("There was a problem (conflicting symbols?) using package %s in package %s\n", usen.c_str(), packageName.c_str());

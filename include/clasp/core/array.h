@@ -496,7 +496,7 @@ namespace core {
   public:
     virtual T_sp array_type() const override { return cl::_sym_simple_array; };
   public:
-    virtual Array_sp data() { return this->asSmartPtr(); };
+    virtual Array_sp data() { return gc::As_unsafe<Array_sp>(this->asSmartPtr()); };
     virtual size_t arrayTotalSize() const { return this->length(); };
     virtual void rowMajorAset(size_t idx, T_sp value) = 0;
     virtual T_sp rowMajorAref(size_t idx) const = 0;
@@ -870,7 +870,7 @@ namespace core {
     virtual clasp_elttype elttype() const { return clasp_aet_bit; };
     virtual T_sp arrayElementType() const override { return cl::_sym_bit; };
   public:
-      Array_sp create_result_bitarray (SimpleBitVector_sp data) {
+      Array_sp create_result_bitarray(SimpleBitVector_sp data) {
         return data;
       }
 
@@ -1029,7 +1029,7 @@ namespace core {
       this->this_asAbstractSimpleVectorRange(basesv,start,end);
       gctools::smart_ptr<simple_type> sv = gc::As_unsafe<gctools::smart_ptr<simple_type>>(basesv);
       size_t initialContentsSize = MIN(this->length(),size);
-      my_smart_ptr_type newData = simple_type::make(size,simple_type::initial_element_from_object(initElement,initElementSupplied),true,initialContentsSize,&(*sv)[start]);
+      gctools::smart_ptr<simple_type> newData = simple_type::make(size,simple_type::initial_element_from_object(initElement,initElementSupplied),true,initialContentsSize,&(*sv)[start]);
       this->set_data(newData);
 //      printf("%s:%d:%s  original size=%lu new size=%lu  copied %lu elements\n", __FILE__, __LINE__, __FUNCTION__, this->_ArrayTotalSize, size, initialContentsSize );
       this->_ArrayTotalSize = size;
@@ -1124,7 +1124,7 @@ namespace core {
       this->this_asAbstractSimpleVectorRange(basesv,start,end);
       gctools::smart_ptr<simple_type> sv = gc::As_unsafe<gctools::smart_ptr<simple_type>>(basesv);
       size_t initialContentsSize = MIN(this->length(),size);
-      my_smart_ptr_type newData = simple_type::make(size,simple_type::initial_element_from_object(initElement,initElementSupplied),true,initialContentsSize,&(*sv)[start]);
+      gctools::smart_ptr<simple_type> newData = simple_type::make(size,simple_type::initial_element_from_object(initElement,initElementSupplied),true,initialContentsSize,&(*sv)[start]);
       this->set_data(newData);
 //      printf("%s:%d:%s  original size=%lu new size=%lu  copied %lu elements\n", __FILE__, __LINE__, __FUNCTION__, this->_ArrayTotalSize, size, initialContentsSize );
       this->_ArrayTotalSize = size;

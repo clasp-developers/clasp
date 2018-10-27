@@ -217,11 +217,9 @@
 
 (defmethod cleavir-ast-to-hir:compile-ast ((ast clasp-cleavir-ast:precalc-value-reference-ast) context)
   (cleavir-ast-to-hir::assert-context ast context 1 1)
-  (let* ((index (clasp-cleavir-ast:precalc-value-reference-ast-index ast))
-         (input (cleavir-ir:make-immediate-input index)))
-    (check-type index clasp-cleavir::literal)
+  (let ((index (clasp-cleavir-ast:precalc-value-reference-ast-index ast)))
     (clasp-cleavir-hir:make-precalc-value-instruction
-     input
+     index
      (first (cleavir-ast-to-hir::results context))
      :successor (first (cleavir-ast-to-hir::successors context))
      :original-object (clasp-cleavir-ast:precalc-value-reference-ast-original-object ast)

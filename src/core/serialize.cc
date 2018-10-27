@@ -60,7 +60,7 @@ CL_DEFUN BranchSNode_sp core__make_branch_snode() {
 }
 
 SNode_sp SNode_O::createBranchSNode(Symbol_sp kind) {
-  SNode_sp snode = BranchSNode_O::create(kind, _Nil<T_O>(), _Nil<T_O>());
+  SNode_sp snode = BranchSNode_O::create(kind, _Nil<T_O>(), _Unbound<Vector_O>());
   return snode;
 }
 

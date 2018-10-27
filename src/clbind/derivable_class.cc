@@ -114,8 +114,7 @@ void derivable_class_registration::register_() const {
   core__setf_find_class(crep, className);
   registry->add_class(m_type, crep);
 
-  detail::class_map &classes = *globalClassMap;
-  classes.put(m_id, crep);
+  class_map_put(m_id, crep);
 
   bool const has_wrapper = m_wrapper_id != reg::registered_class<reg::null_type>::id;
 #if 0
@@ -125,7 +124,7 @@ void derivable_class_registration::register_() const {
                 printf("%s:%d:%s   class[%s] does not have wrapper\n", __FILE__,__LINE__,__FUNCTION__,m_name);
             }
 #endif
-  classes.put(m_wrapper_id, crep);
+  class_map_put(m_wrapper_id, crep);
 
   m_members.register_();
 

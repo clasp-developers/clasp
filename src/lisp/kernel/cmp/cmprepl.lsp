@@ -77,3 +77,8 @@
   (bformat t "!%N!%N!\n! cmprepl.lsp has (setq cmp:*debug-dump-module* t)\n!\n!\n!  TURN IT OFF AGAIN\n!\n")
   (setq cmp:*debug-dump-module* t)
   )
+
+(defmacro with-interpreter (&body body)
+  "Run the body using the interpreter"
+  `(let ((core:*eval-with-env-hook* #'core:interpret-eval-with-env))
+    ,@body))

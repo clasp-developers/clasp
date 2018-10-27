@@ -117,27 +117,16 @@ inline void class_id_map::put(class_id id, type_id type) {
   result.first->second = id;
 }
 
-class class_map {
-  FRIEND_GC_SCANNER(clbind::detail::class_map);
-
-public:
-  ClassRep_sp get(class_id id) const;
-  void put(class_id id, ClassRep_sp cls);
-
-GCPRIVATE:
-  gctools::Vec0<ClassRep_sp> m_classes;
-};
-
-inline ClassRep_sp class_map::get(class_id id) const {
-  if (id >= m_classes.size())
+inline ClassRep_sp class_map_get(class_id id)  {
+  if (id >= _lisp->_Roots._ClassMap.size())
     return _Nil<ClassRep_O>();
-  return m_classes[id];
+  return _lisp->_Roots._ClassMap[id];
 }
 
-inline void class_map::put(class_id id, ClassRep_sp cls) {
-  if (id >= m_classes.size())
-    m_classes.resize(id + 1);
-  m_classes[id] = cls;
+inline void class_map_put(class_id id, ClassRep_sp cls) {
+  if (id >= _lisp->_Roots._ClassMap.size())
+    _lisp->_Roots._ClassMap.resize(id + 1);
+  _lisp->_Roots._ClassMap[id] = cls;
 }
 
 template <class S, class T>

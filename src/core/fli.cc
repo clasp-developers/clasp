@@ -288,11 +288,11 @@ void register_foreign_type_spec( core::VectorObjects_sp sp_tst,
                                core::make_fixnum(size),
                                core::make_fixnum(alignment),
                                core::Str_O::create( cxx_name ),
-                               _Nil<core::T_O>(),
+                               _Nil<core::Function_O>(),
                                core::Str_O::create( to_object_fn_name ),
                                core::Str_O::create( from_object_fn_name ),
-                               _Nil<core::T_O>(),
-                               _Nil<core::T_O>() );
+                               _Nil<clasp_ffi::ForeignData_O>(),
+                               _Nil<clasp_ffi::ForeignData_O>() );
 
   sp_tst->rowMajorAset( n_index, sp_fts->asSmartPtr() );
 
@@ -679,7 +679,7 @@ int64_t foreign_type_size( core::Symbol_sp atype )
 {
   int64_t result = -1;
 
-  core::VectorObjects_sp sp_tst = _sym_STARforeign_type_spec_tableSTAR->symbolValue();
+  core::VectorObjects_sp sp_tst = gc::As<core::VectorObjects_sp>(_sym_STARforeign_type_spec_tableSTAR->symbolValue());
   auto iterator = sp_tst->begin();
   auto it_end = sp_tst->end();
 
@@ -890,7 +890,6 @@ core::Integer_sp PERCENToffset_address_as_integer( core::T_sp address_or_foreign
   if( address_or_foreign_data_ptr.nilp() )
   {
     SIMPLE_ERROR(BF("Invalid parameter type for address!"));
-    return _Nil<core::T_O>();
   }
 
   // If offset is not NIL then get v
@@ -912,14 +911,10 @@ core::Integer_sp PERCENToffset_address_as_integer( core::T_sp address_or_foreign
   }
   else
   {
-    ForeignData_sp sp_fd = _Nil<core::T_O>();
-
-    sp_fd = address_or_foreign_data_ptr.asOrNull<ForeignData_O>();
+    ForeignData_sp sp_fd = address_or_foreign_data_ptr.asOrNull<ForeignData_O>();
     if( sp_fd && PERCENTpointerp( address_or_foreign_data_ptr ) )
     {
-      core::Integer_sp sp_address = _Nil<core::T_O>();
-
-      sp_address = sp_fd->PERCENTforeign_data_address();
+      core::Integer_sp sp_address = sp_fd->PERCENTforeign_data_address();
       if( sp_address.fixnump() )
       {
         n_address = unbox_fixnum( sp_address );
@@ -932,7 +927,6 @@ core::Integer_sp PERCENToffset_address_as_integer( core::T_sp address_or_foreign
     else
     {
       SIMPLE_ERROR(BF("Invalid parameter type for address!"));
-      return _Nil<core::T_O>();
     }
   }
 

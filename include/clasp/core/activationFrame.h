@@ -321,7 +321,7 @@ namespace core {
     while (true) {
       if (depth == 0 ) return af;
       --depth;
-      af = af->_Parent;
+      af = gc::As<ActivationFrame_sp>(af->_Parent);
     }
   };
   
@@ -338,7 +338,7 @@ namespace core {
         return vf->_Objects[index];
       }
       --depth;
-      activationFrame = activationFrame->_Parent;
+      activationFrame = gc::As<ActivationFrame_sp>(activationFrame->_Parent);
     }
   };
 
@@ -357,7 +357,7 @@ namespace core {
         error_end_of_frame_list("FunctionFrame");
       }
       --depth;
-      activationFrame = activationFrame->_Parent;
+      activationFrame = gc::As<ActivationFrame_sp>(activationFrame->_Parent);
     }
   };
 
@@ -372,7 +372,7 @@ namespace core {
         error_end_of_frame_list("TagbodyFrame");
       }
       --depth;
-      activationFrame = activationFrame->_Parent;
+      activationFrame = gc::As<ActivationFrame_sp>(activationFrame->_Parent);
     }
   };
 

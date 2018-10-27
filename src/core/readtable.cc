@@ -218,7 +218,7 @@ CL_LAMBDA(sin ch);
 CL_DECLARE();
 CL_DOCSTRING("Error signaler for when a comma (or splice) is outside a backquote.");
 CL_DEFUN T_mv core__reader_error_backquote_context(T_sp sin) {
-  SourceFileInfo_sp info = core__source_file_info(sin);
+  SourceFileInfo_sp info = gc::As<SourceFileInfo_sp>(core__source_file_info(sin));
   // FIXME: Use a real condition class.
   // SIMPLE_ERROR(BF("Comma outside of backquote in file: %s line: %s") % info->fileName() % clasp_input_lineno(sin));
   string fn = info->fileName();
@@ -276,7 +276,7 @@ CL_LAMBDA(sin ch);
 CL_DECLARE();
 CL_DOCSTRING("reader_error_unmatched_close_parenthesis");
 CL_DEFUN T_mv core__reader_error_unmatched_close_parenthesis(T_sp sin, Character_sp ch) {
-  SourceFileInfo_sp info = core__source_file_info(sin);
+  SourceFileInfo_sp info = gc::As<SourceFileInfo_sp>(core__source_file_info(sin));
   string fn = info->fileName();
   if (fn.compare("-no-name-") == 0) {
       	READER_ERROR(SimpleBaseString_O::make("Unmatched close parenthesis in stream at line: ~a column ~a."),
@@ -317,7 +317,7 @@ CL_DEFUN T_mv core__reader_skip_semicolon_comment(T_sp sin, Character_sp ch) {
     T_sp tc = cl__read_char(sin, _Nil<core::T_O>(), _sym_eof_value, _lisp->_true());
     if ( tc == _sym_eof_value ) break;
     ASSERT(tc.characterp());
-    Character_sp nc = gctools::reinterpret_cast_smart_ptr<Character_sp>(tc);
+    Character_sp nc = gc::As<Character_sp>(tc);
     claspCharacter cc = clasp_as_claspCharacter(nc);
     if (cc == '\n') break;
   }
@@ -350,7 +350,7 @@ CL_DEFUN T_mv core__dispatch_macro_character(T_sp sin, Character_sp ch) {
   if (macro_func.nilp()){
     //SIMPLE_ERROR(BF("Undefined reader macro for %s %s") % _rep_(ch) % _rep_(subchar));
     // Need to be a reader error
-    SourceFileInfo_sp info = core__source_file_info(sin);
+    SourceFileInfo_sp info = gc::As<SourceFileInfo_sp>(core__source_file_info(sin));
     string fn = info->fileName();	
     if (fn.compare("-no-name-") == 0) {
       	READER_ERROR(SimpleBaseString_O::make("Undefined reader macro for char '~a' subchar '~a' in stream at line: ~a column ~a."),
@@ -378,7 +378,7 @@ CL_LAMBDA(stream ch num);
 CL_DECLARE();
 CL_DOCSTRING("sharp_backslash");
 CL_DEFUN T_mv core__sharp_backslash(T_sp sin, Character_sp ch, T_sp num) {
-  SafeBuffer sslexemes;
+  SafeBufferStr8Ns sslexemes;
   List_sp lexemes = collect_lexemes(ch, sin);
   make_str_preserve_case(sslexemes.string(), lexemes);
   if (!cl::_sym_STARread_suppressSTAR->symbolValue().isTrue()) {
@@ -514,7 +514,7 @@ CL_DEFUN T_mv core__sharp_colon(T_sp sin, Character_sp ch, T_sp num) {
   make_str(sslexemes.string(), lexemes);
   SimpleString_sp lexeme_str = sslexemes.string()->asMinimalSimpleString();
   if (!cl::_sym_STARread_suppressSTAR->symbolValue().isTrue()) {
-    Symbol_sp new_symbol = Symbol_O::create(lexeme_str->unsafe_subseq(1,lexeme_str->length()));
+    Symbol_sp new_symbol = Symbol_O::create(gc::As<SimpleString_sp>(lexeme_str->unsafe_subseq(1,lexeme_str->length())));
     return Values(new_symbol);
   }
   return Values(_Nil<T_O>());
@@ -890,7 +890,7 @@ string ReadTable_O::__repr__() const {
   return ss.str();
 }
 
-Symbol_sp ReadTable_O::syntax_type(Character_sp ch) const {
+__attribute__((optnone)) Symbol_sp ReadTable_O::syntax_type(Character_sp ch) const {
   _OF();
   Symbol_sp result = this->_SyntaxTypes->gethash(ch, kw::_sym_constituent);
   LOG(BF("character[%s] syntax_type: %s") % _rep_(ch) % _rep_(result));

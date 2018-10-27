@@ -12,9 +12,6 @@
   (:export
    #:*use-cst*
    #:literal
-   #:literal-label
-   #:immediate-literal
-   #:arrayed-literal
    #:%literal-index
    #:*clasp-ordinary-lambda-list-grammar*
    #:*use-type-inference*
@@ -126,6 +123,7 @@
    #:debug-break
    #:setf-fdefinition-instruction
    #:throw-instruction
+   #:precalc-value-instruction-index
    #:precalc-value-instruction-original-object
    #:instruction-id
    #:push-special-binding-instruction

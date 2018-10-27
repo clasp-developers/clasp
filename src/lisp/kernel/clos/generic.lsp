@@ -201,7 +201,6 @@
     (initialize-generic-function-specializer-profile gfun))
   gfun)
 
-
 (defmethod shared-initialize :after ((gfun standard-generic-function) slot-names
                                      &rest initargs)
   (declare (ignore slot-names)
@@ -209,6 +208,14 @@
   (when (generic-function-methods gfun)
     (compute-g-f-spec-list gfun))
   (update-dependents gfun initargs))
+
+(defmethod reinitialize-instance :after ((gfun standard-generic-function) &rest initargs)
+  (declare (ignore initargs))
+  ;; erase any call history and invalidate
+  (loop for call-history = (generic-function-call-history gfun)
+        for exchange = (generic-function-call-history-compare-exchange gfun call-history nil)
+        until (null exchange))
+  (invalidate-discriminating-function gfun))
 
 (defun associate-methods-to-gfun (name &rest methods)
   (let ((gfun (fdefinition name)))

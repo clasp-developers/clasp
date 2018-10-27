@@ -654,9 +654,8 @@ namespace gctools {
 
   template <class OT>
     struct GCObjectDefaultConstructorAllocator<OT,false> {
-    static smart_ptr<OT> allocate(const Header_s::Value& kind) {
+    [[noreturn]] static smart_ptr<OT> allocate(const Header_s::Value& kind) {
       lisp_errorCannotAllocateInstanceWithMissingDefaultConstructor(OT::static_classSymbol());
-      return _Nil<core::T_O>(); // it should never get here but shut up the compiler about return values
     }
   };
 };

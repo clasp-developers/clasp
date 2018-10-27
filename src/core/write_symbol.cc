@@ -190,7 +190,7 @@ forced_print_package(T_sp package) {
 }
 
 void clasp_write_symbol(Symbol_sp x, T_sp stream) {
-  ReadTable_sp readtable = _lisp->getCurrentReadTable();
+  ReadTable_sp readtable = gc::As<ReadTable_sp>(_lisp->getCurrentReadTable());
   T_sp print_case = clasp_print_case();
   bool print_readably = clasp_print_readably();
   bool forced_package = 0;
@@ -231,10 +231,10 @@ void clasp_write_symbol(Symbol_sp x, T_sp stream) {
         print_package = true;
     }
     if (print_package) {
-      T_sp name = SimpleBaseString_O::make(gc::As<Package_sp>(package)->packageName());
+      SimpleBaseString_sp name = SimpleBaseString_O::make(gc::As<Package_sp>(package)->packageName());
       write_symbol_string(name, cl__readtable_case(readtable),
                           print_case, stream,
-                          needs_to_be_escaped(name, readtable));
+                          needs_to_be_escaped(gc::As<Array_sp>(name), readtable));
       if (!x.nilp()) {
         Symbol_mv sym2_mv = cl__find_symbol(x->symbolName(), package);
         Symbol_sp sym2 = sym2_mv;
