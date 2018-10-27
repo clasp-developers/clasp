@@ -153,7 +153,7 @@
   (let* ((inputs (cleavir-ir:inputs instruction))
          (output (first (cleavir-ir:outputs instruction)))
          (env (in (first inputs) "env"))
-         (idx (in (second inputs) "idx")))
+         (idx (cmp:irc-ptr-to-int (in (second inputs)) cmp:%size_t% "idx")))
     (out (%intrinsic-call "cc_fetch" (list env idx)) output)))
 
 (defmethod translate-simple-instruction
