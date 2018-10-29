@@ -165,6 +165,26 @@
   (when (class-finalized-p class)
     (remove-optional-slot-accessors class)))
 
+(defun slots-unchanged-p (old-slots new-slots)
+  ;; M-I-O is called "[when] the set of local slots accessible in an instance has changed
+  ;; or the order of slots in storage has changed", where "local" means accessible only
+  ;; in the instance it's allocated in, which we take as meaning :allocation :instance.
+  ;; However, because we're pretty aggressive with slot accessors, I think we need to be
+  ;; conscientious of class slots as well. Here we just deny identity if there are any
+  ;; class slots; better safe than sorry, but maybe could be improved. With custom
+  ;; allocations, who knows. We could define a slot-equivalent-p generic-function.
+  ;; NOTE/TODO?: We kind of don't actually care about the order of slots IN THE CLASS,
+  ;; just in the instance. So we could go through and do a real set comparison. But this
+  ;; is enough to cover an identical defclass being executed.
+  (and (= (length old-slots) (length new-slots))
+       (every (lambda (slot1 slot2)
+                (and
+                 (eq (slot-definition-name slot1) (slot-definition-name slot2))
+                 (eq (slot-definition-allocation slot1) :instance)
+                 (eq (slot-definition-allocation slot1) (slot-definition-allocation slot2))
+                 (= (slot-definition-location slot1) (slot-definition-location slot2))))
+              old-slots new-slots)))
+
 (defmethod reinitialize-instance :after ((class class) &rest initargs
                                          &key (direct-superclasses () direct-superclasses-p)
                                            (direct-slots nil direct-slots-p))
@@ -186,11 +206,19 @@
 		     direct-superclasses))
       (add-direct-subclass l class)))
 
-  ;; if there are no forward references, we can just finalize the class here
-  (setf (class-finalized-p class) nil)
-  (finalize-unless-forward class)
+  ;; if there are no forward references, we can just finalize the class here.
+  ;; We keep a list of the old slots to compare with the new. If there's been
+  ;; no substantial change (meaning we have slots with the same names and
+  ;; allocations in the same order), we skip MAKE-INSTANCES-OBSOLETE.
+  ;; This is explicitly allowed (see CLHS M-I-O). It reduces needless
+  ;; compilation in fastgf dispatch, and is actually required to support
+  ;; evaluating defstruct forms with no :type multiple times.
+  (let ((old-slots (class-slots class)))
+    (setf (class-finalized-p class) nil)
+    (finalize-unless-forward class)
 
-  (make-instances-obsolete class)
+    (unless (slots-unchanged-p old-slots (class-slots class))
+      (make-instances-obsolete class)))
 
   (update-dependents class initargs))
 
