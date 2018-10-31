@@ -57,21 +57,10 @@
 
 (defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir:precalc-value-instruction) return-value abi function-info)
-  ;; We treat our immediate input completely magically.
-  (let* ((input (first (cleavir-ir:inputs instruction)))
-         (_ (assert (typep input 'cleavir-ir:immediate-input)))
-         (literal (cleavir-ir:value input))
-         (output (first (cleavir-ir:outputs instruction)))
-         (value (etypecase literal
-                  (immediate-literal
-                   (immediate-literal-tagged-value literal))
-                  (arrayed-literal
-                   (let* ((idx (arrayed-literal-index literal))
-                          (label
-                            (safe-llvm-name
-                             (clasp-cleavir-hir:precalc-value-instruction-original-object instruction))))
-                     (%load (%gep-variable (cmp:ltv-global) (list (%size_t 0) (%i64 idx)) label)))))))
-    (out value output)))
+  (let* ((index (clasp-cleavir-hir:precalc-value-instruction-index instruction))
+         (label (safe-llvm-name (clasp-cleavir-hir:precalc-value-instruction-original-object instruction)))
+         (value (%load (%gep-variable (cmp:ltv-global) (list (%size_t 0) (%i64 index)) label))))
+    (out value (first (cleavir-ir:outputs instruction)))))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:fixed-to-multiple-instruction) return-value (abi abi-x86-64) function-info)
@@ -131,6 +120,13 @@
     ((instruction cleavir-ir:funcall-instruction) return-value (abi abi-x86-64) function-info)
   (let ((inputs (cleavir-ir:inputs instruction)))
     (closure-call-or-invoke (in (first inputs)) return-value (mapcar #'in (rest inputs)) abi)))
+
+(defmethod translate-simple-instruction
+    ((instruction clasp-cleavir-hir:invoke-instruction) return-value (abi abi-x86-64) function-info)
+  (cmp:with-landing-pad (catch-pad (clasp-cleavir-hir:destinations instruction)
+                                   return-value abi *tags*)
+    ;; funcall-instruction method
+    (call-next-method)))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:nop-instruction) return-value abi function-info)
@@ -245,6 +241,14 @@
                    (format *debug-log* "    translate-simple-instruction multiple-value-call-instruction: ~a~%" 
                            (cc-mir:describe-mir instruction))
                    (format *debug-log* "     instruction --> ~a~%" call-result)))))
+
+(defmethod translate-simple-instruction
+    ((instruction clasp-cleavir-hir:multiple-value-invoke-instruction)
+     return-value (abi abi-x86-64) function-info)
+  (cmp:with-landing-pad (catch-pad (clasp-cleavir-hir:destinations instruction)
+                                   return-value abi *tags*)
+    ;; funcall-instruction method
+    (call-next-method)))
 
 (defun gen-vector-effective-address (array index element-type fixnum-type)
   (let* ((type (llvm-sys:type-get-pointer-to (cmp::simple-vector-llvm-type element-type)))

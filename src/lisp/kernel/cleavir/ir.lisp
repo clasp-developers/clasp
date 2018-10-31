@@ -4,63 +4,18 @@
   (format t "About to compile-file ir.lsp~%"))
 
 (in-package :clasp-cleavir)
-
-(defgeneric literal-label (literal))
-
-(defclass literal ()
-  ((%value :initarg :value :reader literal-value)))
-
-(defclass immediate-literal (literal)
-  ((%tagged-value :initarg :tagged-value :reader immediate-literal-tagged-value)))
-
-(defmethod literal-label ((literal immediate-literal))
-  (format nil "~a" (immediate-literal-tagged-value literal)))
-
-(defmethod make-load-form ((thing clasp-cleavir::immediate-literal) &optional environment)
-  (make-load-form-saving-slots thing :environment environment))
-  
-(defmethod print-object ((object immediate-literal) stream)
-  (print-unreadable-object (object stream :type t :identity t)
-    (format stream ":value ~s" (literal-value object))))
-
-(defclass arrayed-literal (literal)
-  ((%index :initarg :index :reader arrayed-literal-index)
-   (%literal-name :initarg :literal-name :reader arrayed-literal-literal-name)))
-
-(defmethod literal-label ((literal arrayed-literal))
-  (if (arrayed-literal-literal-name literal)
-      (format nil "~a/~a" (arrayed-literal-index literal) (arrayed-literal-literal-name literal))
-      (format nil "~a" (arrayed-literal-index literal))))
-
-(defmethod print-object ((object arrayed-literal) stream)
-  (print-unreadable-object (object stream :type t :identity t)
-    (format stream ":value ~s :index ~s :literal-name ~s" (literal-value object)
-            (arrayed-literal-index object)
-            (arrayed-literal-literal-name object))))
-
-
-(defun %literal-index (value &optional read-only-p)
-  (let ((*debug-cleavir* *debug-cleavir-literals*))
-    (multiple-value-bind (data in-array literal-name)
-        (literal:reference-literal value read-only-p)
-      (if in-array
-          (make-instance 'arrayed-literal :value value :index data :literal-name literal-name)
-          (make-instance 'immediate-literal :value value :tagged-value data)))))
-
   
 (defun %literal-ref (value &optional read-only-p)
-  (let ((literal (%literal-index value read-only-p)))
-    (if (typep literal 'arrayed-literal)
-        (let* ((index (arrayed-literal-index literal))
-               (literal-label (if (arrayed-literal-literal-name literal)
-                                  (bformat nil "values-table[%d]/%s" index (arrayed-literal-literal-name literal))
-                                  (bformat nil "values-table[%d]" index)))
-               (gep (llvm-sys:create-const-gep2-64 cmp:*irbuilder*
-                                                   (cmp:ltv-global)
-                                                   0 index
-                                                   literal-label)))
-          gep)
-        (error "%literal-ref of immediate value ~s is illegal" value))))
+  (multiple-value-bind (index in-array)
+      (literal:reference-literal value read-only-p)
+    (unless in-array
+      (error "%literal-ref of immediate value ~s is illegal" value))
+    (let* ((literal-label (bformat nil "values-table[%d]" index))
+           (gep (llvm-sys:create-const-gep2-64 cmp:*irbuilder*
+                                               (cmp:ltv-global)
+                                               0 index
+                                               literal-label)))
+      gep)))
 
 (defun %literal-value (value &optional (label "literal"))
   (cmp:irc-load (%literal-ref value)))

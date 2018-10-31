@@ -12,9 +12,6 @@
   (:export
    #:*use-cst*
    #:literal
-   #:literal-label
-   #:immediate-literal
-   #:arrayed-literal
    #:%literal-index
    #:*clasp-ordinary-lambda-list-grammar*
    #:*use-type-inference*
@@ -91,6 +88,8 @@
    #:array-rank-ast #:array-rank-ast-mdarray
    #:array-dimension-ast #:array-dimension-ast-mdarray #:array-dimension-ast-axis
    #:bind-va-list-ast #:make-bind-va-list-ast #:va-list-ast
+   #:invoke-ast #:multiple-value-invoke-ast #:destinations
+   #:introduce-invoke
    ))
 
 (defpackage #:clasp-cleavir-hir
@@ -126,6 +125,7 @@
    #:debug-break
    #:setf-fdefinition-instruction
    #:throw-instruction
+   #:precalc-value-instruction-index
    #:precalc-value-instruction-original-object
    #:instruction-id
    #:push-special-binding-instruction
@@ -139,6 +139,7 @@
    #:make-array-rank-instruction
    #:make-array-dimension-instruction
    #:bind-va-list-instruction #:make-bind-va-list-instruction
+   #:invoke-instruction #:multiple-value-invoke-instruction #:destinations
    ))
 
 (defpackage #:clasp-cleavir-ast-to-hir

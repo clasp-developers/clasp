@@ -13,10 +13,6 @@
    ;; Used for source tracking.
    (%metadata :accessor metadata)))
 
-;;; Abstraction for elsewhere
-(defun catches-p (function-info)
-  (not (null (catches function-info))))
-
 (defun make-catch-map (initial-instruction)
   (let ((result (make-hash-table :test #'eq)))
     (cleavir-ir:map-instructions-with-owner

@@ -693,7 +693,7 @@ Return files."
   (let ((cmp:*cleavir-compile-hook* nil)
         (cmp:*cleavir-compile-file-hook* nil)
         (core:*use-cleavir-compiler* nil)
-        (core:*eval-with-env-hook* #'core:eval-with-env-default))
+        (core:*eval-with-env-hook* #'core:interpret-eval-with-env))
     (core:low-level-repl)))
 (export 'bclasp-repl)
 

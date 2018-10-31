@@ -388,6 +388,6 @@ Compile a lisp source file into an LLVM module."
     (let ((cmp:*cleavir-compile-hook* nil)
           (cmp:*cleavir-compile-file-hook* nil)
           (core:*use-cleavir-compiler* nil)
-          (core:*eval-with-env-hook* #'core:eval-with-env-default))
+          (core:*eval-with-env-hook* #'core:interpret-eval-with-env))
       (apply 'compile-file input-file args)))
   (export 'bclasp-compile-file))

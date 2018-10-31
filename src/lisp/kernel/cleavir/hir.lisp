@@ -300,23 +300,16 @@
 ;;; Represented as a vector containing an entry for each
 ;;; precalculated value.  
 ;;;
-;;; This instruction takes two inputs.  The first input is a simple vector
-;;; that holds the precalculated values.  The second
-;;; input is an immediate input containing a non-negative integer and
-;;; which serves as an index into the vector.  This
-;;; instruction has a single output, which is a dynamic lexical
-;;; location.
 
 (defclass precalc-value-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
-  ((%original-object :initarg :original-object :accessor precalc-value-instruction-original-object)))
+  ((%index :initarg :index :accessor precalc-value-instruction-index)
+   (%original-object :initarg :original-object :accessor precalc-value-instruction-original-object)))
 
-(defun make-precalc-value-instruction
-    (index-input output &key successor vector original-object)
-  (assert (typep (cleavir-ir:value index-input) 'clasp-cleavir::literal))
+(defun make-precalc-value-instruction (index output &key successor original-object)
   (make-instance 'precalc-value-instruction
-    :inputs (list index-input)
     :outputs (list output)
     :successors (if (null successor) nil (list successor))
+    :index index
     :original-object original-object))
 
 
@@ -373,6 +366,31 @@
 
 (defmethod cleavir-ir-graphviz:label ((instruction setf-fdefinition-instruction)) "setf-fdefinition")
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Instruction INVOKE-INSTRUCTION.
+
+(defclass invoke-instruction (cleavir-ir:funcall-instruction)
+  ((%destinations :accessor destinations :initarg :destinations)))
+
+(defmethod cleavir-ir-graphviz:label ((instruction invoke-instruction)) "invoke")
+
+(defmethod cleavir-ir-graphviz:draw-instruction :after ((instruction invoke-instruction) stream)
+  (loop with me = (cleavir-ir-graphviz::instruction-id instruction)
+        for dest in (clasp-cleavir-hir:destinations instruction)
+        for id = (cleavir-ir-graphviz::instruction-id dest)
+        when id
+          do (format stream "  ~a -> ~a [color = pink, style = dashed];~%"
+                     me id)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Instruction MULTIPLE-VALUE-INVOKE-INSTRUCTION.
+
+(defclass multiple-value-invoke-instruction (cleavir-ir:multiple-value-call-instruction)
+  ((%destinations :accessor destinations :initarg :destinations)))
+
+(defmethod cleavir-ir-graphviz:label ((instruction multiple-value-invoke-instruction)) "mv-invoke")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

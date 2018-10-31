@@ -76,6 +76,7 @@
           irc-create-invoke-default-unwind
           irc-create-landing-pad
           irc-exception-typeid*
+          irc-extract-value
           irc-generate-terminate-code
           irc-size_t-*current-source-pos-info*-filepos
           irc-size_t-*current-source-pos-info*-column

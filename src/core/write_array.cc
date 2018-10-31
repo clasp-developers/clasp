@@ -36,8 +36,8 @@ namespace core {
 	Fixnum print_level;
 	bool readably = clasp_print_readably();
 	if (vector) {
-	    adims = x->arrayDimensionsAsVector();
-	    n = 1;
+                adims.push_back(x->length());
+                n = 1;
 	} else {
 	    adims = x->arrayDimensionsAsVector();
 	    n = x->rank();
@@ -59,22 +59,24 @@ namespace core {
 	if (print_level == 0)
 	    return;
 	if (readably) {
-	    clasp_write_char('A', stream);
-	    clasp_write_char('(', stream);
-	    write_object(x->element_type(), stream);
-	    clasp_write_char(' ', stream);
-	    if (n > 0) {
-		clasp_write_char('(', stream);
-		for (j = 0; j < n; j++) {
-		    write_object(clasp_make_fixnum(adims[j]), stream);
-		    if (j < n - 1)
-			clasp_write_char(' ', stream);
-		}
-		clasp_write_char(')', stream);
-	    } else {
-		write_object(_Nil<T_O>(), stream);
-	    }
-	    clasp_write_char(' ', stream);
+                {
+                        clasp_write_char('A', stream);
+                        clasp_write_char('(', stream);
+                        write_object(x->element_type(), stream);
+                        clasp_write_char(' ', stream);
+                        if (n > 0) {
+                                clasp_write_char('(', stream);
+                                for (j = 0; j < n; j++) {
+                                        write_object(clasp_make_fixnum(adims[j]), stream);
+                                        if (j < n - 1)
+                                                clasp_write_char(' ', stream);
+                                }
+                                clasp_write_char(')', stream);
+                        } else {
+                                write_object(_Nil<T_O>(), stream);
+                        }
+                        clasp_write_char(' ', stream);
+                }
 	} else if (!vector) {
 	    _clasp_write_fixnum(n, stream);
 	    clasp_write_char('A', stream);

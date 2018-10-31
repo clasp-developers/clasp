@@ -108,6 +108,6 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
     (let ((cmp:*cleavir-compile-hook* nil)
           (cmp:*cleavir-compile-file-hook* nil)
           (core:*use-cleavir-compiler* nil)
-          (core:*eval-with-env-hook* #'core:eval-with-env-default))
+          (core:*eval-with-env-hook* #'core:interpret-eval-with-env))
       (compile form definition)))
   (export 'bclasp-compile))
