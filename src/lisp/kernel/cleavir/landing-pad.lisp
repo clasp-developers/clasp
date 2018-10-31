@@ -6,7 +6,7 @@
 ;;; An alternate strategy would be to test whether it's an unwind, and if not, cleanup and/or resume
 ;;; and if so, extract the go-index and jump table and so on in a catch block.
 ;;; Saves a landing pad and my comprehension.
-(defun generate-match-unwind (return-value abi frame-holder landing-pad-for-unwind-rethrow exn.slot)
+(defun generate-match-unwind (return-value abi frame landing-pad-for-unwind-rethrow exn.slot)
   ;; We do this weird thing to get the index while still generating the other code around it.
   ;; FIXME: with-begin-end-catch should maybe abstract away so it can return an actual thing.
   (let (go-index)
@@ -16,7 +16,7 @@
         (setq go-index
               (%intrinsic-invoke-if-landing-pad-or-call
                "cc_landingpadUnwindMatchFrameElseRethrow" 
-               (list exception-ptr (cmp:irc-load frame-holder))
+               (list exception-ptr frame)
                "go-index"))
         ;; Restore multiple values before going to whichever block.
         (with-return-values (return-vals return-value abi)
@@ -25,7 +25,7 @@
 
 ;;; Generates a landing pad and code to deal with unwinds to this function.
 (defun generate-catch-landing-pad (maybe-cleanup-landing-pad not-unwind-block exn.slot ehselector.slot
-                                   return-value abi tags catches)
+                                   return-value abi tags catches frame)
   (assert (not (null catches)))
   ;; Bind a fresh IRBuilder so we don't fuck with whatever our caller's been doing.
   (cmp:with-irbuilder ((llvm-sys:make-irbuilder cmp:*llvm-context*))
@@ -33,9 +33,7 @@
             (cmp::generate-rethrow-landing-pad cmp:*current-function* not-unwind-block
                                                nil ; '(cmp::typeid-core-unwind)
                                                exn.slot ehselector.slot))
-          (landing-pad-block (cmp:irc-basic-block-create "catch-landing-pad"))
-          ;; KLUDGE
-          (frame-holder (translate-datum (first (cleavir-ir:inputs (first catches))))))
+          (landing-pad-block (cmp:irc-basic-block-create "catch-landing-pad")))
       (cmp:irc-begin-block landing-pad-block)
       (let* ((lpad (cmp:irc-create-landing-pad 1 "lp"))
              (exception-structure (cmp:irc-extract-value lpad (list 0) "exception-structure"))
@@ -54,7 +52,7 @@
           (cmp:irc-cond-br matches-type is-unwind-block not-unwind-block)
           (cmp:irc-begin-block is-unwind-block)
           (let* ((go-index (generate-match-unwind
-                            return-value abi frame-holder landing-pad-for-unwind-rethrow exn.slot))
+                            return-value abi frame landing-pad-for-unwind-rethrow exn.slot))
                  (default-block (cmp:irc-basic-block-create "switch-default"))
                  (sw (cmp:irc-switch go-index default-block (length catches))))
             (loop for catch in catches
@@ -164,7 +162,7 @@
      ,@body))
 
 ;;; Note: NOT like LLVM "catchpad" instruction.
-(defun catch-pad (catches return-value abi tags)
+(defun catch-pad (catches return-value abi tags function-info)
   (or (gethash catches *catch-pads-table*)
       (setf (gethash catches *catch-pads-table*)
             (let ((real (real-catches catches)))
@@ -179,7 +177,14 @@
                   (let* ((exn.slot (or *exn.slot* (alloca-exn.slot)))
                          (ehselector.slot (or *ehselector.slot* (alloca-ehselector.slot)))
                          (cleanup-block (or *cleanup-block*
-                                            (generate-resume-block exn.slot ehselector.slot))))
+                                            (generate-resume-block exn.slot ehselector.slot)))
+                         (semiframe (translate-datum (frame-marker function-info))))
+                    ;; KLUDGE TIME
+                    ;; semiframe will have been assigned by a save-frame-instruction.
+                    ;; Nothing else writes to it, so it's an SSA variable.
+                    ;; (As indicated by being a cons in *vars*.)
+                    ;; We kind of magic our way into that here.
+                    (assert (consp semiframe))
                     (generate-catch-landing-pad
                      *cleanup-pad* cleanup-block exn.slot ehselector.slot
-                     return-value abi tags real)))))))
+                     return-value abi tags real (car semiframe))))))))

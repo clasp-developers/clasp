@@ -124,7 +124,7 @@
 (defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir:invoke-instruction) return-value (abi abi-x86-64) function-info)
   (cmp:with-landing-pad (catch-pad (clasp-cleavir-hir:destinations instruction)
-                                   return-value abi *tags*)
+                                   return-value abi *tags* function-info)
     ;; funcall-instruction method
     (call-next-method)))
 
@@ -246,7 +246,7 @@
     ((instruction clasp-cleavir-hir:multiple-value-invoke-instruction)
      return-value (abi abi-x86-64) function-info)
   (cmp:with-landing-pad (catch-pad (clasp-cleavir-hir:destinations instruction)
-                                   return-value abi *tags*)
+                                   return-value abi *tags* function-info)
     ;; funcall-instruction method
     (call-next-method)))
 

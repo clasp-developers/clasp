@@ -134,8 +134,7 @@ when this is t a lot of graphs will be generated.")
     (and (= (length defs) 1)
          ;; MTF translator does a phi kind of deal.
          ;; save-frame hits a KLUDGE in generate-catch-landing pad. FIXME
-         (not (typep (first defs) '(or cleavir-ir:multiple-to-fixed-instruction
-                                    cc-mir:save-frame-instruction))))))
+         (not (typep (first defs) '(or cleavir-ir:multiple-to-fixed-instruction))))))
 
 (defun out (value datum &optional (label ""))
   ;;  (break "Datum: ~a" datum)
