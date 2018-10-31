@@ -121,9 +121,9 @@ when this is t a lot of graphs will be generated.")
     (cleavir-ir:immediate-input
      (cmp:irc-int-to-ptr (%i64 (cleavir-ir:value datum)) cmp:%t*%))
     (cleavir-ir:lexical-location
-     ;;     #+(or)
-     (%load (translate-datum datum) label)
      #+(or)
+     (%load (translate-datum datum) label)
+;;     #+(or)
      (let ((existing (gethash datum *vars*)))
        (if (consp existing) ; ssa
            (car existing)
@@ -133,13 +133,15 @@ when this is t a lot of graphs will be generated.")
   (let ((defs (cleavir-ir:defining-instructions location)))
     (and (= (length defs) 1)
          ;; MTF translator does a phi kind of deal.
-         (not (typep (first defs) 'cleavir-ir:multiple-to-fixed-instruction)))))
+         ;; save-frame hits a KLUDGE in generate-catch-landing pad. FIXME
+         (not (typep (first defs) '(or cleavir-ir:multiple-to-fixed-instruction
+                                    cc-mir:save-frame-instruction))))))
 
 (defun out (value datum &optional (label ""))
   ;;  (break "Datum: ~a" datum)
-  ;;  #+(or)
-  (%store value (translate-datum datum) label)
   #+(or)
+  (%store value (translate-datum datum) label)
+;;  #+(or)
   (let ((existing (gethash datum *vars*)))
     (cond ((consp existing) (error "impossible"))
           (existing (%store value existing label))
