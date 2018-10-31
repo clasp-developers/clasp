@@ -131,10 +131,7 @@ when this is t a lot of graphs will be generated.")
 
 (defun ssablep (location)
   (let ((defs (cleavir-ir:defining-instructions location)))
-    (and (= (length defs) 1)
-         ;; MTF translator does a phi kind of deal.
-         ;; save-frame hits a KLUDGE in generate-catch-landing pad. FIXME
-         (not (typep (first defs) '(or cleavir-ir:multiple-to-fixed-instruction))))))
+    (= (length defs) 1)))
 
 (defun out (value datum &optional (label ""))
   ;;  (break "Datum: ~a" datum)
