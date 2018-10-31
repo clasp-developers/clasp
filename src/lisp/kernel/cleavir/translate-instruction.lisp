@@ -122,6 +122,13 @@
     (closure-call-or-invoke (in (first inputs)) return-value (mapcar #'in (rest inputs)) abi)))
 
 (defmethod translate-simple-instruction
+    ((instruction clasp-cleavir-hir:invoke-instruction) return-value (abi abi-x86-64) function-info)
+  (cmp:with-landing-pad (catch-pad (clasp-cleavir-hir:destinations instruction)
+                                   return-value abi *tags*)
+    ;; funcall-instruction method
+    (call-next-method)))
+
+(defmethod translate-simple-instruction
     ((instruction cleavir-ir:nop-instruction) return-value abi function-info)
   (declare (ignore return-value inputs outputs abi function-info)))
 
@@ -234,6 +241,14 @@
                    (format *debug-log* "    translate-simple-instruction multiple-value-call-instruction: ~a~%" 
                            (cc-mir:describe-mir instruction))
                    (format *debug-log* "     instruction --> ~a~%" call-result)))))
+
+(defmethod translate-simple-instruction
+    ((instruction clasp-cleavir-hir:multiple-value-invoke-instruction)
+     return-value (abi abi-x86-64) function-info)
+  (cmp:with-landing-pad (catch-pad (clasp-cleavir-hir:destinations instruction)
+                                   return-value abi *tags*)
+    ;; funcall-instruction method
+    (call-next-method)))
 
 (defun gen-vector-effective-address (array index element-type fixnum-type)
   (let* ((type (llvm-sys:type-get-pointer-to (cmp::simple-vector-llvm-type element-type)))

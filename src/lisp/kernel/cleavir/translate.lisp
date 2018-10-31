@@ -208,22 +208,22 @@ when this is t a lot of graphs will be generated.")
         (cmp:with-irbuilder (body-irbuilder)
           (cmp:with-dbg-lexical-block (*form*)
             (cmp:irc-set-insert-point-basic-block body-block body-irbuilder)
-            (cmp:with-landing-pad
-                (maybe-generate-landing-pad function-info *tags* return-value abi)
-              (cmp:irc-begin-block body-block)
-              (when (debug-on function-info)
-                (generate-push-invocation-history-frame (calling-convention function-info)))
-              (layout-basic-block first-basic-block return-value abi function-info)
-              (loop for block in rest-basic-blocks
-                    for instruction = (cleavir-basic-blocks:first-instruction block)
-                    do (cmp:irc-begin-block (gethash instruction *tags*))
-                       (layout-basic-block block return-value abi function-info)))
-            ;; finish up by jumping from the entry block to the body block
-            (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
-              (cmp:irc-br body-block))
-            (cc-dbg-when *debug-log* (format *debug-log* "----------end layout-procedure ~a~%"
-                                             (llvm-sys:get-name the-function)))
-            the-function)))))
+            (with-cleanup (function-info)
+              (with-catch-pad-prep
+                (cmp:irc-begin-block body-block)
+                (when (debug-on function-info)
+                  (generate-push-invocation-history-frame (calling-convention function-info)))
+                (layout-basic-block first-basic-block return-value abi function-info)
+                (loop for block in rest-basic-blocks
+                      for instruction = (cleavir-basic-blocks:first-instruction block)
+                      do (cmp:irc-begin-block (gethash instruction *tags*))
+                         (layout-basic-block block return-value abi function-info)))
+              ;; finish up by jumping from the entry block to the body block
+              (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
+                (cmp:irc-br body-block))
+              (cc-dbg-when *debug-log* (format *debug-log* "----------end layout-procedure ~a~%"
+                                               (llvm-sys:get-name the-function)))
+              the-function))))))
 
 ;;; Returns all basic blocks with the given owner.
 (defun function-basic-blocks (enter)

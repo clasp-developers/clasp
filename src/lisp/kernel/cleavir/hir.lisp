@@ -385,7 +385,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Instruction INVOKE-INSTRUCTION.
+;;; Instruction MULTIPLE-VALUE-INVOKE-INSTRUCTION.
 
 (defclass multiple-value-invoke-instruction (cleavir-ir:multiple-value-call-instruction)
   ((%destinations :accessor destinations :initarg :destinations)))
