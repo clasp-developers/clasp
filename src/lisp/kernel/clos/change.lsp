@@ -213,11 +213,17 @@
   ;; This is explicitly allowed (see CLHS M-I-O). It reduces needless
   ;; compilation in fastgf dispatch, and is actually required to support
   ;; evaluating defstruct forms with no :type multiple times.
-  (let ((old-slots (class-slots class)))
+  (let* (;; Grab the slots before finalization (may) change them.
+         ;; Of course there have to BE old slots - with e.g. forward references
+         ;; this may not be so.
+         (old-slots-p (slot-boundp class 'slots))
+         (old-slots (when old-slots-p (class-slots class))))
     (setf (class-finalized-p class) nil)
     (finalize-unless-forward class)
 
-    (unless (slots-unchanged-p old-slots (class-slots class))
+    (unless (and old-slots-p
+                 (slot-boundp class 'slots) ; new-slots-p
+                 (slots-unchanged-p old-slots (class-slots class)))
       (make-instances-obsolete class)))
 
   (update-dependents class initargs))
