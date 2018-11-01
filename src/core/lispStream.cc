@@ -4490,7 +4490,7 @@ compute_char_size(T_sp stream, claspCharacter c) {
 CL_LAMBDA(stream string);
 CL_DECLARE();
 CL_DOCSTRING("file-string-length");
-CL_DEFUN T_sp cl__file_string_length(T_sp stream, T_sp string) {
+CL_DEFUN T_sp cl__file_string_length(T_sp stream, T_sp tstring) {
   gctools::Fixnum l = 0;
 /* This is a stupid requirement from the spec. Why returning 1???
 	 * Why not simply leaving the value unspecified, as with other
@@ -4518,20 +4518,20 @@ BEGIN:
   unlikely_if(!FileStreamP(stream)) {
     not_a_file_stream(stream);
   }
-  if (cl__characterp(string)) {
-    l = compute_char_size(stream, string.unsafe_character());
-  } else if (cl__stringp(string)) {
+  if (cl__characterp(tstring)) {
+    l = compute_char_size(stream, tstring.unsafe_character());
+  } else if (cl__stringp(tstring)) {
     Fixnum iEnd;
-    String_sp sb = string.asOrNull<String_O>();
+    String_sp sb = tstring.asOrNull<String_O>();
     if (sb && (sb->arrayHasFillPointerP()))
       iEnd = StringFillp(sb);
     else
-      iEnd = cl__length(string);        
+      iEnd = cl__length(sb);        
     for (int i(0); i < iEnd; ++i) {
-      l += compute_char_size(stream, cl__char(string, i).unsafe_character());
+      l += compute_char_size(stream, cl__char(sb, i).unsafe_character());
     }
   } else {
-    ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_file_string_length, 2, string, cl::_sym_string);
+    ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_file_string_length, 2, tstring, cl::_sym_string);
   }
   return make_fixnum(l);
 }
