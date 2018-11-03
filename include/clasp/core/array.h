@@ -573,10 +573,12 @@ namespace core {
     CL_METHOD_OVERLOAD virtual void rowMajorAset(size_t idx, T_sp value) final {(*this)[idx] = leaf_type::from_object(value);}
     CL_METHOD_OVERLOAD virtual T_sp rowMajorAref(size_t idx) const final {return leaf_type::to_object((*this)[idx]);}
     virtual Array_sp unsafe_subseq(size_t start, size_t end) const final {
+      BOUNDS_ASSERT(0<=start&&start<end&&end<=this->length());
       return leaf_type::make(end-start,value_type(),true,end-start,&(*this)[start]);
     }
     virtual Array_sp unsafe_setf_subseq(size_t start, size_t end, Array_sp newSubseq) final {
       // TODO: Write specialized versions of this to speed it up
+      BOUNDS_ASSERT(0<=start&&start<end&&end<=this->length());
       for ( size_t i(start),ni(0); i<end; ++i,++ni ) {
         (*this)[i] = leaf_type::from_object(newSubseq->rowMajorAref(ni));
       }

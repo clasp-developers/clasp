@@ -2028,6 +2028,7 @@ SimpleBitVector_sp SimpleBitVector_copy(SimpleBitVector_sp orig_sbv)
 }
 
 Array_sp SimpleBitVector_O::unsafe_subseq(size_t start, size_t end) const {
+  BOUNDS_ASSERT(0<=start&&start<end&&end<=this->length());
   SimpleBitVector_sp sbv = SimpleBitVector_O::make(end-start);
   for (size_t i(0),iEnd(end-start);i<iEnd;++i) {
     sbv->setBit(i,this->testBit(start+i));
@@ -2036,6 +2037,7 @@ Array_sp SimpleBitVector_O::unsafe_subseq(size_t start, size_t end) const {
 }
 
 Array_sp SimpleBitVector_O::unsafe_setf_subseq(size_t start, size_t end, Array_sp other) {
+  BOUNDS_ASSERT(0<=start&&start<end&&end<=this->length());
   if (SimpleBitVector_sp sbv = other.asOrNull<SimpleBitVector_O>()) {
       // TODO: Write specialized versions of this to speed it up
     for ( size_t i(start),ni(0); i<end; ++i,++ni ) {
