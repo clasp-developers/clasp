@@ -139,9 +139,9 @@ namespace clasp_ffi {
     const void *orig_data_ptr( void ) { return m_orig_data_ptr; };
     void *raw_data( void ) { return m_raw_data; };
     void *ptr( void ) { return m_raw_data; };
-    
+
     CL_DEFMETHOD size_t foreign_data_size(void) { return m_size; };
-    
+
     // -- TRANSFORMING ACCESS --
     template <class T>
       T data() { return reinterpret_cast<T>(this->raw_data()); };
@@ -486,6 +486,18 @@ namespace clasp_ffi
     ForeignData_sp        m_from_object_fn_ptr;
 
   }; // ForeignTypeSpec_O
+
+  CL_DEFUN core::T_sp PERCENTget_section_data( core::String_sp segment_name,
+                                               core::String_sp section_name );
+  // This function returns 4 values:
+  // (values segment-start-address segment-end-address segment-size t)
+  // The sement-start-address and segment-end-address are give as ForeignData_sp
+  // pointers.
+  // If the segment and/or the section cannot be found the the values returne are
+  // (values nil nil 0 t)
+  // The 4th values indicates if the function is actually implemented on the
+  // current platform. It is NIL if the function is not actually working on the
+  // platform.
 
 }; // namespace clasp_ffi
 
