@@ -3304,8 +3304,7 @@ using namespace llvm::orc;
 //#define MONITOR_JIT_MEMORY_MANAGER 1    // monitor SectionMemoryManager
 //#define DUMP_OBJECT_FILES 1
 
-#ifdef DUMP_OBJECT_FILES
-size_t fileNum = 1;
+std::atomic<size_t> fileNum;
 void dumpObjectFile(size_t num, const char* start, size_t size) {
   std::stringstream filename;
   filename << "object-file-" << num << ".o";
@@ -3314,7 +3313,6 @@ void dumpObjectFile(size_t num, const char* start, size_t size) {
   fout.write(start,size);
   fout.close();
 }
-#endif
 
 
 ////////////////////////////////////////////////////////////
@@ -3358,23 +3356,222 @@ struct jit_descriptor __jit_debug_descriptor = { 1, 0, 0, 0 };
 
 
 
+};
+
+SYMBOL_EXPORT_SC_(LlvmoPkg,make_StkSizeRecord);
+SYMBOL_EXPORT_SC_(LlvmoPkg,make_StkMapRecord_Location);
+SYMBOL_EXPORT_SC_(LlvmoPkg,make_StkMapRecord_LiveOut);
+SYMBOL_EXPORT_SC_(LlvmoPkg,make_StkMapRecord);
+SYMBOL_EXPORT_SC_(LlvmoPkg,make_StackMap);
+SYMBOL_EXPORT_SC_(KeywordPkg,register);
+SYMBOL_EXPORT_SC_(KeywordPkg,direct);
+SYMBOL_EXPORT_SC_(KeywordPkg,indirect);
+SYMBOL_EXPORT_SC_(KeywordPkg,constant);
+SYMBOL_EXPORT_SC_(KeywordPkg,constant_index);
+
+
+namespace stackmap {
+struct Header {
+  uint8_t  version;
+  uint8_t  reserved0;
+  uint16_t reserved1;
+};
+
+struct StkSizeRecord {
+  uint64_t  FunctionAddress;
+  uint64_t  StackSize;
+  uint64_t  RecordCount;
+};
+
+struct Location{
+  uint8_t  Type;
+  uint8_t   Reserved0;
+  uint16_t  LocationSize;
+  uint16_t  DwarfRegNum;
+  uint16_t  Reserved1;
+  int32_t   OffsetOrSmallConstant;
+};
+
+    struct LiveOut {
+      uint16_t DwarfRegNum;
+      uint8_t  Reserved;
+      uint8_t SizeInBytes;
+    };
+
+struct StkMapRecord {
+  uint64_t PatchPointID;
+  uint32_t InstructionOffset;
+  uint16_t Reserved;
+  std::vector<Location> Locations;
+  std::vector<LiveOut> LiveOuts;
+};
+
+
+template <typename T>
+T read_then_advance(void*& address) {
+  void* original = address;
+  address = (void*)((char*)address+sizeof(T));
+  return *(T*)original;
+}
+
+void parse_header(void*& address, Header& header, size_t& NumFunctions, size_t& NumConstants, size_t& NumRecords)
+{
+  header.version = read_then_advance<uint8_t>(address);
+  header.reserved0 = read_then_advance<uint8_t>(address);
+  header.reserved1 = read_then_advance<uint16_t>(address);
+  NumFunctions = read_then_advance<uint32_t>(address);
+  NumConstants = read_then_advance<uint32_t>(address);
+  NumRecords = read_then_advance<uint32_t>(address);
+}
+
+void parse_function(void*& address, StkSizeRecord& function) {
+  function.FunctionAddress = read_then_advance<uint64_t>(address);
+  function.StackSize = read_then_advance<uint64_t>(address);
+  function.RecordCount = read_then_advance<uint64_t>(address);
+}
+
+void parse_constant(void*& address, uint64_t& constant) {
+  constant = read_then_advance<uint64_t>(address);
+}
+
+void parse_record(void*& address, StkMapRecord& record) {
+  record.PatchPointID = read_then_advance<uint64_t>(address);
+  record.InstructionOffset = read_then_advance<uint32_t>(address);
+  record.Reserved = read_then_advance<uint16_t>(address);
+  size_t NumLocations = read_then_advance<uint16_t>(address);
+  record.Locations.resize(NumLocations);
+  for ( size_t index=0; index<NumLocations; ++index ) {
+    record.Locations[index].Type = read_then_advance<uint8_t>(address);
+    record.Locations[index].Reserved0 = read_then_advance<uint8_t>(address);
+    record.Locations[index].LocationSize = read_then_advance<uint16_t>(address);
+    record.Locations[index].DwarfRegNum = read_then_advance<uint16_t>(address);
+    record.Locations[index].Reserved1 = read_then_advance<uint16_t>(address);
+    record.Locations[index].OffsetOrSmallConstant = read_then_advance<int32_t>(address);
+  }
+  if (((uintptr_t)address)&0x7) read_then_advance<uint32_t>(address);
+  if (((uintptr_t)address)&0x7) {
+    printf("%s:%d Address %p is not word aligned - it must be!!!\n", __FILE__, __LINE__, address );
+    abort();
+  }
+  /*Padding*/ read_then_advance<uint16_t>(address);
+  size_t NumLiveOuts = read_then_advance<uint16_t>(address);
+  record.LiveOuts.resize(NumLiveOuts);
+  for ( size_t index=0; index<NumLiveOuts; ++index ) {
+    record.LiveOuts[index].DwarfRegNum = read_then_advance<uint16_t>(address);
+    record.LiveOuts[index].Reserved = read_then_advance<uint8_t>(address);
+    record.LiveOuts[index].SizeInBytes = read_then_advance<uint8_t>(address);
+  }
+  if (((uintptr_t)address)&0x7) read_then_advance<uint32_t>(address);
+  if (((uintptr_t)address)&0x7) {
+    printf("%s:%d Address %p is not word aligned - it must be!!!\n", __FILE__, __LINE__, address );
+    abort();
+  }
+}  
+
+core::T_sp lispify_llvm_stackmap(void* address) {
+  core::Symbol_sp types[5] = {kw::_sym_register, kw::_sym_direct, kw::_sym_indirect, kw::_sym_constant, kw::_sym_constant_index};
+  Header header;
+  size_t NumFunctions;
+  size_t NumConstants;
+  size_t NumRecords;
+  parse_header(address,header,NumFunctions,NumConstants,NumRecords);
+  ql::list functionList;
+  for ( size_t index=0; index<NumFunctions; ++index ) {
+    StkSizeRecord function;
+    parse_function(address,function);
+    core::T_sp o = core::eval::funcall(llvmo::_sym_make_StkSizeRecord,
+                                       core::Pointer_O::create((void*)function.FunctionAddress),
+                                       core::Integer_O::create(function.StackSize),
+                                       core::Integer_O::create(function.RecordCount));
+    functionList << o;
+  }
+  ql::list constantList;
+  for ( size_t index=0; index<NumConstants; ++index ) {
+    uint64_t constant;
+    parse_constant(address,constant);
+    core::T_sp o = core::Integer_O::create(constant);
+    constantList << o;
+  }
+  ql::list recordList;
+  for ( size_t index=0; index<NumRecords; ++index ) {
+    StkMapRecord record;
+    parse_record(address,record);
+    ql::list locations;
+    ql::list liveOuts;
+    for ( auto location : record.Locations ) {
+      core::Symbol_sp type = types[location.Type];
+      locations << core::eval::funcall(llvmo::_sym_make_StkMapRecord_Location,
+                                       type,
+                                       core::make_fixnum(location.LocationSize),
+                                       core::make_fixnum(location.DwarfRegNum),
+                                       core::make_fixnum(location.OffsetOrSmallConstant));
+    }
+    for ( auto liveout : record.LiveOuts ) {
+      liveOuts << core::eval::funcall(llvmo::_sym_make_StkMapRecord_LiveOut,
+                                      core::make_fixnum(liveout.DwarfRegNum),
+                                      core::Integer_O::create((uint32_t)liveout.SizeInBytes));
+    }
+    recordList << core::eval::funcall(llvmo::_sym_make_StkMapRecord,
+                                      core::Integer_O::create(record.PatchPointID),
+                                      core::make_fixnum(record.InstructionOffset),
+                                      locations.cons(),
+                                      liveOuts.cons());
+  }
+  return core::eval::funcall(llvmo::_sym_make_StackMap,
+                             functionList.cons(),
+                             constantList.cons(),
+                             recordList.cons());
+}
+};
+
+namespace llvmo {
+#if 0
+CL_DEFUN core::T_sp llvm_sys__vmmap()
+{
+  auto task = task_for_pid();
+  return _Nil<core::T_O>();x
+}
+#endif
+
+
+SYMBOL_EXPORT_SC_(LlvmoPkg,library);
+#if 0
+CL_DEFUN llvm_sys__load_object_file(core::Pathname_sp name)
+{
+  core::T_sp filename = cl__namestring(name);
+  if (core::cl__stringp(filename)) {
+    core::String_sp str = gc::As_unsafe<core::String_sp>(filename);
+    int fd = open(str->get(),O_RDONLY);
+    if (fd<0) SIMPLE_ERROR(BF("Could not read file %s") % str->get());
+    GC_ALLOCATE(fli::ForeignData_O,data);
+    data.allocate(llvmo::_sym_library,data = 
+
+#endif
+};
+  
+namespace llvmo {
+
+CL_DEFUN core::T_sp llvm_sys__parse_stack_map(core::Pointer_sp address)
+{
+  return stackmap::lispify_llvm_stackmap(address->ptr());
+}
 
 class ClaspSectionMemoryManager : public SectionMemoryManager {
 
   void 	notifyObjectLoaded (RuntimeDyld &RTDyld, const object::ObjectFile &Obj) {
-#ifdef MONITOR_JIT_MEMORY_MANAGER
-    printf("%s:%d notifyObjectLoaded was invoked\n", __FILE__, __LINE__ );
     llvm::MemoryBufferRef mem = Obj.getMemoryBufferRef();
-    printf("%s:%d      --> sizeof(ObjectFile) -> %lu  MemoryBufferRef start: %p   size: %lu\n", __FILE__, __LINE__, sizeof(Obj), mem.getBufferStart(), mem.getBufferSize() );
-    void** words = (void**)(&Obj);
-    printf("%s:%d      --> ObjectFile words:\n", __FILE__, __LINE__ );
-    printf("%s:%d            0x00: %18p %18p\n", __FILE__, __LINE__, words[0], words[1]);
-    printf("%s:%d            0x10: %18p %18p\n", __FILE__, __LINE__, words[2], words[3]);
-    printf("%s:%d            0x20: %18p %18p\n", __FILE__, __LINE__, words[4], words[5]);
-#ifdef DUMP_OBJECT_FILES
-    dumpObjectFile(fileNum++,mem.getBufferStart(),mem.getBufferSize());
-#endif
-#endif
+    if (llvmo::_sym_STARdebugObjectFilesSTAR->symbolValue().notnilp()) {
+      core::write_bf_stream( BF("%s:%d notifyObjectLoaded was invoked\n") % __FILE__ % __LINE__ );
+      core::write_bf_stream( BF("%s:%d      --> sizeof(ObjectFile) -> %lu  MemoryBufferRef start: %p   size: %lu\n") % __FILE__ % __LINE__ % sizeof(Obj) % (void*) mem.getBufferStart() % mem.getBufferSize() );
+      void** words = (void**)(&Obj);
+      core::write_bf_stream( BF("%s:%d      --> ObjectFile words:\n") % __FILE__% __LINE__ );
+      core::write_bf_stream( BF("%s:%d            0x00: %18p %18p\n") % __FILE__% __LINE__% words[0]% words[1]);
+      core::write_bf_stream( BF("%s:%d            0x10: %18p %18p\n") % __FILE__% __LINE__% words[2]% words[3]);
+      core::write_bf_stream( BF("%s:%d            0x20: %18p %18p\n") % __FILE__% __LINE__% words[4]% words[5]);
+    }
+    if (llvmo::_sym_STARdumpObjectFilesSTAR->symbolValue().notnilp()) {
+      dumpObjectFile(fileNum++,mem.getBufferStart(),mem.getBufferSize());
+    }
   }
   
 
@@ -3382,9 +3579,9 @@ class ClaspSectionMemoryManager : public SectionMemoryManager {
                                 unsigned SectionID,
                                 StringRef SectionName ) {
     uint8_t* ptr = this->SectionMemoryManager::allocateCodeSection(Size,Alignment,SectionID,SectionName);
-#ifdef MONITOR_JIT_MEMORY_MANAGER
-    printf("%s:%d  allocateCodeSection Size: %lu  Alignment: %u SectionId: %u SectionName: %s --> allocated at: %p\n", __FILE__, __LINE__, Size, Alignment, SectionID, SectionName.str().c_str(), ptr );
-#endif
+    if (llvmo::_sym_STARdebugObjectFilesSTAR->symbolValue().notnilp()) {
+      core::write_bf_stream( BF("%s:%d  allocateCodeSection Size: %lu  Alignment: %u SectionId: %u SectionName: %s --> allocated at: %p\n") % __FILE__% __LINE__% Size% Alignment% SectionID% SectionName.str() % (void*)ptr );
+    }
     return ptr;
   }
 
@@ -3393,9 +3590,10 @@ class ClaspSectionMemoryManager : public SectionMemoryManager {
                                 StringRef SectionName,
                                 bool isReadOnly) {
     uint8_t* ptr = this->SectionMemoryManager::allocateDataSection(Size,Alignment,SectionID,SectionName,isReadOnly);
-#ifdef MONITOR_JIT_MEMORY_MANAGER
-    printf("%s:%d  allocateDataSection Size: %lu  Alignment: %u SectionId: %u SectionName: %s isReadOnly: %d --> allocated at: %p\n", __FILE__, __LINE__, Size, Alignment, SectionID, SectionName.str().c_str(), isReadOnly, ptr );
-#endif
+
+    if (llvmo::_sym_STARdebugObjectFilesSTAR->symbolValue().notnilp()) {
+      core::write_bf_stream( BF("%s:%d  allocateDataSection Size: %lu  Alignment: %u SectionId: %u SectionName: %s isReadOnly: %d --> allocated at: %p\n") % __FILE__% __LINE__% Size% Alignment% SectionID% SectionName.str() % isReadOnly% (void*)ptr );
+    }
     return ptr;
   }
 

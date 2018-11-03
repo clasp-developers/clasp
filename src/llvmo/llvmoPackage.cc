@@ -66,6 +66,8 @@ using namespace core;
 namespace llvmo {
 
 SYMBOL_EXPORT_SC_(LlvmoPkg, STARrunTimeExecutionEngineSTAR);
+SYMBOL_EXPORT_SC_(LlvmoPkg, STARdebugObjectFilesSTAR);
+SYMBOL_EXPORT_SC_(LlvmoPkg, STARdumpObjectFilesSTAR);
 
 void redirect_llvm_interface_addSymbol() {
   //	llvm_interface::addSymbol = &addSymbolAsGlobal;
@@ -454,6 +456,8 @@ void LlvmoExposer_O::expose(core::Lisp_sp lisp, core::Exposer_O::WhatToExpose wh
     llvm::InitializeAllTargetMCs();
     llvm::InitializeAllAsmParsers();
     llvm::InitializeAllDisassemblers();
+    llvmo::_sym_STARdebugObjectFilesSTAR->defparameter(_Nil<core::T_O>());
+    llvmo::_sym_STARdumpObjectFilesSTAR->defparameter(_Nil<core::T_O>());
     SYMBOL_EXPORT_SC_(LlvmoPkg, _PLUS_globalBootFunctionsName_PLUS_);
     SYMBOL_EXPORT_SC_(LlvmoPkg, _PLUS_globalEpilogueName_PLUS_);
   };

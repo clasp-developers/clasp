@@ -426,3 +426,29 @@ Set gather-all-frames to T and you can gather C++ and Common Lisp frames"
            (lambda ()
              ,@body)))
      (core:trigger-dtrace-stop)))
+
+
+(in-package :llvm-sys)
+
+(defstruct (stk-size-record (:type vector) :named
+                            (:constructor make-stk-size-record (function-address stack-size record-count)))
+  function-address stack-size record-count)
+
+(defstruct (stk-map-record-location (:type vector) :named
+                                    (:constructor make-stk-map-record-location (type location-size dwarf-reg-name offset-or-small-constant)))
+  type location-size dwarf-reg-name offset-or-small-constant)
+
+(defstruct (stk-map-record-live-out (:type vector) :named
+                                    (:constructor make-stk-map-record-live-out (dwarf-reg-num size-in-bytes)))
+  dwarf-reg-num size-in-bytes)
+
+(defstruct (stk-map-record
+            (:type vector) :named
+            (:constructor make-stk-map-record (patch-point-id instruction-offset locations live-outs)))
+  patch-point-id instruction-offset locations live-outs)
+
+(defstruct (stack-map
+            (:type vector) :named
+            (:constructor make-stack-map (functions constants records)))
+  functions constants records)
+

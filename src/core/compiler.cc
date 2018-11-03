@@ -636,8 +636,8 @@ CL_DEFUN void core__call_dl_main_function(Pointer_sp addr) {
 }
 
 CL_DOCSTRING("(call dladdr with the address and return nil if not found or the contents of the Dl_info structure as multiple values)");
-CL_DEFUN T_mv core__dladdr(Integer_sp addr) {
-  uint64_t val = clasp_to_uint64(addr);
+CL_DEFUN T_mv core__dladdr(Pointer_sp addr) {
+  uint64_t val = (uint64_t)addr->ptr();
   void *ptr = (void *)val;
   Dl_info info;
   int ret = dladdr(ptr, &info);

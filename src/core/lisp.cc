@@ -2198,6 +2198,16 @@ CL_DEFUN void core__invoke_internal_debugger_from_gdb() {
   SIMPLE_ERROR(BF("This should never happen"));
 };
 
+CL_DEFUN List_sp core__dynamic_library_handles() {
+  ql::list result;
+  for ( auto entry : _lisp->_OpenDynamicLibraryHandles ) {
+    result << Cons_O::create(SimpleBaseString_O::make(entry.first),
+                             Pointer_O::create(entry.second));
+  }
+  return result.cons();
+}
+
+
 CL_LAMBDA(datum &rest arguments);
 CL_DECLARE((optimize (debug 3)));
 __attribute__((optnone))
