@@ -132,7 +132,7 @@ void FuncallableInstance_O::__write__(T_sp stream) const {
 
 
 void Integer_O::__write__(T_sp stream) const {
-  SafeBuffer buffer;
+  SafeBufferStr8Ns buffer;
   int print_base = clasp_print_base();
   core__integer_to_string(buffer._Buffer, this->const_sharedThis<Integer_O>(),
                        make_fixnum(print_base),
@@ -159,7 +159,7 @@ void Function_O::__write__(T_sp stream) const {
 
 void
 _clasp_write_fixnum(gctools::Fixnum i, T_sp stream) {
-  SafeBuffer buffer;
+  SafeBufferStr8Ns buffer;
   core__integer_to_string(buffer._Buffer,
                        clasp_make_fixnum(i), clasp_make_fixnum(clasp_print_base()), cl::_sym_STARprint_radixSTAR->symbolValue().isTrue(), true);
   cl__write_sequence(buffer._Buffer, stream, make_fixnum(0), _Nil<T_O>());
@@ -167,7 +167,7 @@ _clasp_write_fixnum(gctools::Fixnum i, T_sp stream) {
 
 void write_fixnum(T_sp strm, T_sp i) {
   Fixnum_sp fn = gc::As<Fixnum_sp>(i);
-  SafeBuffer buffer;
+  SafeBufferStr8Ns buffer;
   int print_base = clasp_print_base();
   core__integer_to_string(buffer._Buffer, fn,
                        make_fixnum(print_base),
@@ -183,16 +183,16 @@ void write_single_float(T_sp strm, SingleFloat_sp i) {
 }
 
 void
-write_float(T_sp f, T_sp stream) {
-  SafeBuffer s;
-  StrNs_sp result = core_float_to_string_free(s.string(), f, clasp_make_fixnum(-3), clasp_make_fixnum(8));
+write_float(Float_sp f, T_sp stream) {
+  SafeBufferStr8Ns s;
+  StrNs_sp result = gc::As<StrNs_sp>(core_float_to_string_free(s.string(), f, clasp_make_fixnum(-3), clasp_make_fixnum(8)));
   cl__write_sequence(result, stream, clasp_make_fixnum(0), _Nil<T_O>());
 }
 
 void write_character(T_sp strm, T_sp chr) {
   ASSERT(chr.characterp());
   // could be a unicode char, don't assume a claspChar
-  claspCharacter i = clasp_as_claspCharacter(chr);
+  claspCharacter i = clasp_as_claspCharacter(gc::As<Character_sp>(chr));
   if (!clasp_print_escape() && !clasp_print_readably()) {
     clasp_write_char(i, strm);
   } else {

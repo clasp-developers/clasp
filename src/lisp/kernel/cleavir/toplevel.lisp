@@ -46,10 +46,8 @@
              (run-thunk thunk))))
     (let ((form (macroexpand form env)))
       (typecase form
-        (symbol
-         (symbol-value form))
-        (atom
-         form)
+        (symbol (symbol-value form))
+        (atom form)
         (cons
          (let* ((name (car form))
                 (body (cdr form))
@@ -71,6 +69,12 @@
                        (if (function-name-p name)
                            (fdefinition name)
                            (eval-compile form))))
+                    (if
+                     (destructuring-bind (condition then &optional else) body
+                       (cclasp-eval-with-env (if (cclasp-eval-with-env condition env)
+                                                 then
+                                                 else)
+                                             env)))
                     (progn
                       (eval-progn body))
                     (eval-when

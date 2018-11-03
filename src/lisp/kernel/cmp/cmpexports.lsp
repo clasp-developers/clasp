@@ -115,6 +115,7 @@
           safe-system
           jit-constant-uintptr_t
           irc-int-to-ptr
+          irc-ptr-to-int
           irc-verify-module-safe
           irc-verify-function
           *suppress-llvm-output*

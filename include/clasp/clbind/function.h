@@ -89,7 +89,7 @@ struct function_registration : registration {
   void register_() const {
     core::Symbol_sp symbol = core::lispify_intern(name, core::lisp_currentPackageName());
     core::FunctionDescription* fdesc = makeFunctionDescription(symbol);
-    core::BuiltinClosure_sp functoid = gc::GC<VariadicFunctor<FunctionPointerType, Policies>>::allocate(fdesc,functionPtr);
+    core::BuiltinClosure_sp functoid = gc::As_unsafe<core::BuiltinClosure_sp>(gc::GC<VariadicFunctor<FunctionPointerType, Policies>>::allocate(fdesc,functionPtr));
     core::lisp_defun(symbol, core::lisp_currentPackageName(), functoid, m_lambdalist, m_declares, m_docstring, "=external=", 0, (CountFunctionArguments<FunctionPointerType>::value), GatherPureOutValues<Policies, -1>::gather());
     core::validateFunctionDescription(__FILE__,__LINE__,functoid);
   }

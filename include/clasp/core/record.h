@@ -162,7 +162,7 @@ public:
       for (size_t i(0), iEnd(cl__length(vec_value)); i < iEnd; ++i) {
         T_sp val = vec_value->rowMajorAref(i);
         RECORD_LOG(BF("Loading vec0[%d] new@%p: %s\n") % i % (void *)(val.raw_()) % _rep_(val));
-        value[i] = val;
+        value[i].rawRef_() = reinterpret_cast<OT *>(val.raw_());
       }
       if (this->stage() == initializing)
         this->flagSeen(apair);
@@ -315,10 +315,8 @@ public:
         gc::smart_ptr<T_O> orig_value = pairi.second;
         T_sp patch_key = record_circle_subst(this->_replacement_table, orig_key);
         T_sp patch_value = record_circle_subst(this->_replacement_table, orig_value);
-        if (patch_value != orig_value) {
-          pairi.first = patch_key;
-          pairi.second = patch_value;
-        }
+        if (patch_key != orig_key) pairi.first = patch_key;
+        if (patch_value != orig_value) pairi.second = patch_value;
       }
     } break;
     }

@@ -798,7 +798,7 @@ CL_DECLARE();
 CL_DOCSTRING("string_upcase");
 CL_DEFUN SimpleString_sp cl__string_upcase(T_sp arg) {
   String_sp str = coerce::stringDesignator(arg);
-  SimpleString_sp result = core__make_vector(str->arrayElementType(),str->length(),false);
+  SimpleString_sp result = gc::As_unsafe<SimpleString_sp>(core__make_vector(str->arrayElementType(),str->length(),false));
   for ( size_t i(0), iEnd(str->length()); i<iEnd; ++i ) {
     T_sp cc = str->rowMajorAref(i);
     claspCharacter c = cc.unsafe_character();
@@ -815,7 +815,7 @@ CL_DECLARE();
 CL_DOCSTRING("string_downcase");
 CL_DEFUN SimpleString_sp cl__string_downcase(T_sp arg) {
   String_sp str = coerce::stringDesignator(arg);
-  SimpleString_sp result = core__make_vector(str->arrayElementType(),str->length(),false);
+  SimpleString_sp result = gc::As_unsafe<SimpleString_sp>(core__make_vector(str->arrayElementType(),str->length(),false));
   for ( size_t i(0), iEnd(str->length()); i<iEnd; ++i ) {
     claspCharacter c = str->rowMajorAref(i).unsafe_character();
     claspCharacter u = claspCharacter_downcase(c);
@@ -1732,7 +1732,7 @@ cl_index fsmInteger(mpz_class &result, cl_index &numDigits, bool &sawJunk, Strin
   numDigits = 0;
   cl_index cur = istart;
   while (1) {
-    claspCharacter c = clasp_as_claspCharacter(str->rowMajorAref(cur));
+    claspCharacter c = clasp_as_claspCharacter(gc::As_unsafe<Character_sp>(str->rowMajorAref(cur)));
     LOG(BF("fsmInteger str[%d] -> c = [%d/%c]") % cur  % c % c );
     switch (state) {
       LOG(BF("  top state = %d") % state);
@@ -2028,6 +2028,7 @@ SimpleBitVector_sp SimpleBitVector_copy(SimpleBitVector_sp orig_sbv)
 }
 
 Array_sp SimpleBitVector_O::unsafe_subseq(size_t start, size_t end) const {
+  BOUNDS_ASSERT(0<=start&&start<end&&end<=this->length());
   SimpleBitVector_sp sbv = SimpleBitVector_O::make(end-start);
   for (size_t i(0),iEnd(end-start);i<iEnd;++i) {
     sbv->setBit(i,this->testBit(start+i));
@@ -2036,6 +2037,7 @@ Array_sp SimpleBitVector_O::unsafe_subseq(size_t start, size_t end) const {
 }
 
 Array_sp SimpleBitVector_O::unsafe_setf_subseq(size_t start, size_t end, Array_sp other) {
+  BOUNDS_ASSERT(0<=start&&start<end&&end<=this->length());
   if (SimpleBitVector_sp sbv = other.asOrNull<SimpleBitVector_O>()) {
       // TODO: Write specialized versions of this to speed it up
     for ( size_t i(start),ni(0); i<end; ++i,++ni ) {
@@ -2078,7 +2080,7 @@ void SimpleBitVector_O::unsafe_fillArrayWithElt(T_sp initialElement, size_t star
 void SimpleBitVector_O::unsafe_fillArrayWithElt(T_sp initialElement, size_t start, size_t end) {
   if (CLASP_FIXNUMP (initialElement))
   {
-    Fixnum zero_or_one = clasp_fixnum(gc::As<core::Fixnum_sp>(initialElement));
+    Fixnum zero_or_one = gc::As<core::Fixnum_sp>(initialElement).unsafe_fixnum();
     if ((zero_or_one == 0) || (zero_or_one == 1)) {
       for (size_t i(start),iEnd(end); i<iEnd; ++i) {
         this->setBit(i, zero_or_one);
@@ -2519,8 +2521,8 @@ string string_get_std_string(T_sp str) {
   };
   return gc::As<String_sp>(str)->get_std_string();
 };
-T_sp str_create(const string &str) { return SimpleBaseString_O::make(str); };
-T_sp str_create(const char *str) { return SimpleBaseString_O::make(std::string(str)); };
+SimpleBaseString_sp str_create(const string &str) { return SimpleBaseString_O::make(str); };
+SimpleBaseString_sp str_create(const char *str) { return SimpleBaseString_O::make(std::string(str)); };
 
 
 };
@@ -3032,7 +3034,7 @@ CL_DEFUN Array_sp core__coerce_to_byte8_vector(T_sp object)
 }
 
 // Create a base-char simple vector from any array
-CL_DEFUN Array_sp core__coerce_memory_to_foreign_data(Array_sp source)
+CL_DEFUN clasp_ffi::ForeignData_sp core__coerce_memory_to_foreign_data(Array_sp source)
 {
   T_sp element_type = source->element_type();
   if (element_type == cl::_sym_single_float) {

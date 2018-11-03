@@ -601,7 +601,7 @@ CL_DEFUN core::T_sp sockets_internal__ll_makeStreamFromFd(const string &name,  /
     SIMPLE_ERROR(BF("Illegal stream mode %d") % streamMode);
   }
   }
-  core::Stream_sp stream = core::IOFileStream_O::make(name, fd, direction, elementType, externalFormat);
+  core::Stream_sp stream = gc::As_unsafe<core::Stream_sp>(core::IOFileStream_O::make(name, fd, direction, elementType, externalFormat));
   return stream;
 }
 

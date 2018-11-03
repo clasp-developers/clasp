@@ -1,58 +1,41 @@
 (in-package #:cc-hir-to-mir)
 
 
-(defmethod cleavir-ir:specialize ((instr cleavir-ir:instruction)
+(defmethod cleavir-hir-to-mir:specialize ((instr cleavir-ir:instruction)
 				  (impl clasp-cleavir:clasp) proc os)
   ;; By default just return the current instruction
   instr)
 
 
-#+(or)(defmethod cleavir-ir:specialize ((instr cleavir-ir:enter-instruction)
-				  (impl clasp-cleavir:clasp) proc os)
-  (change-class instr 'cc-mir:enter-instruction))
-
-
-
-(defmethod cleavir-ir:specialize ((instr cleavir-ir:car-instruction)
+(defmethod cleavir-hir-to-mir:specialize ((instr cleavir-ir:car-instruction)
                                   (impl clasp-cleavir:clasp) proc os)
   (change-class instr 'cleavir-ir:memref2-instruction
-                :inputs (list (first (cleavir-ir:inputs instr))
-                              (cleavir-ir:make-immediate-input (- cmp:+cons-car-offset+ cmp:+cons-tag+)))
+                :inputs (list (first (cleavir-ir:inputs instr)))
+                :offset (- cmp:+cons-car-offset+ cmp:+cons-tag+)
                 :outputs (cleavir-ir:outputs instr)))
 
-(defmethod cleavir-ir:specialize ((instr cleavir-ir:cdr-instruction)
+(defmethod cleavir-hir-to-mir:specialize ((instr cleavir-ir:cdr-instruction)
                                   (impl clasp-cleavir:clasp) proc os)
   (change-class instr 'cleavir-ir:memref2-instruction
-                :inputs (list (first (cleavir-ir:inputs instr))
-                              (cleavir-ir:make-immediate-input (- cmp:+cons-cdr-offset+ cmp:+cons-tag+)))
+                :inputs (list (first (cleavir-ir:inputs instr)))
+                :offset (- cmp:+cons-cdr-offset+ cmp:+cons-tag+)
                 :outputs (cleavir-ir:outputs instr)))
 
 
-(defmethod cleavir-ir:specialize ((instr cleavir-ir:rplaca-instruction)
+(defmethod cleavir-hir-to-mir:specialize ((instr cleavir-ir:rplaca-instruction)
                                   (impl clasp-cleavir:clasp) proc os)
-  #+(or)(cleavir-ir:insert-instruction-after
-         (cleavir-ir:make-assignment-instruction
-          (first (cleavir-ir:inputs instr))
-          (first (cleavir-ir:outputs instr)))
-         instr)
   (change-class instr 'cleavir-ir:memset2-instruction
                 :inputs (list (first (cleavir-ir:inputs instr))
-                              (cleavir-ir:make-immediate-input (- cmp:+cons-car-offset+ cmp:+cons-tag+))
                               (second (cleavir-ir:inputs instr)))
+                :offset (- cmp:+cons-car-offset+ cmp:+cons-tag+)
                 :outputs nil))
 
-
-(defmethod cleavir-ir:specialize ((instr cleavir-ir:rplacd-instruction)
+(defmethod cleavir-hir-to-mir:specialize ((instr cleavir-ir:rplacd-instruction)
                                   (impl clasp-cleavir:clasp) proc os)
-  #+(or)(cleavir-ir:insert-instruction-after
-         (cleavir-ir:make-assignment-instruction
-          (first (cleavir-ir:inputs instr))
-          (first (cleavir-ir:outputs instr)))
-         instr)
   (change-class instr 'cleavir-ir:memset2-instruction
                 :inputs (list (first (cleavir-ir:inputs instr))
-                              (cleavir-ir:make-immediate-input (- cmp:+cons-cdr-offset+ cmp:+cons-tag+))
                               (second (cleavir-ir:inputs instr)))
+                :offset (- cmp:+cons-cdr-offset+ cmp:+cons-tag+)
                 :outputs nil))
 
 #-use-boehmdc
@@ -236,8 +219,10 @@
                            mdarray-check))))
                    (t ;; checking for some multidimensional type
                     (maybe-gen-primitive-type-check
-                     object mdarray-type
-                     (gen-rank-check object rank pro con) con))))))))
+                     object simple-mdarray-type pro
+                     (maybe-gen-primitive-type-check
+                      object mdarray-type
+                      (gen-rank-check object rank pro con) con)))))))))
 
 #-use-boehmdc
 (defun gen-interval-type-check (object head low high pro con)
@@ -486,20 +471,20 @@
 (defun convert-tll-list (list type)
   (mapc (lambda (ll) (convert-to-tll ll type)) list))
 
-(defmethod cleavir-ir:specialize ((instruction cleavir-ir:box-instruction)
+(defmethod cleavir-hir-to-mir:specialize ((instruction cleavir-ir:box-instruction)
                                   (impl clasp-cleavir:clasp) proc os)
   (convert-tll-list (cleavir-ir:inputs instruction)
                     (cmp::element-type->llvm-type (cleavir-ir:element-type instruction)))
   instruction)
 
-(defmethod cleavir-ir:specialize ((instruction cleavir-ir:unbox-instruction)
+(defmethod cleavir-hir-to-mir:specialize ((instruction cleavir-ir:unbox-instruction)
                                   (impl clasp-cleavir:clasp) proc os)
   (convert-tll-list (cleavir-ir:outputs instruction)
                     (cmp::element-type->llvm-type (cleavir-ir:element-type instruction)))
   instruction)
 
 (defmacro define-float-specializer (instruction-class-name)
-  `(defmethod cleavir-ir:specialize ((instruction ,instruction-class-name)
+  `(defmethod cleavir-hir-to-mir:specialize ((instruction ,instruction-class-name)
                                      (impl clasp-cleavir:clasp) proc os)
      (declare (ignore proc os))
      ;; Could probably work out the llvm types ahead of time, but this shouldn't be a big deal.

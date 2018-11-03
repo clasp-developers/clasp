@@ -143,7 +143,7 @@ CL_DEFUN_SETF T_sp setf_function_docstring(T_sp doc, Function_sp func) {
 }
 
 ClosureWithSlots_sp ClosureWithSlots_O::make_interpreted_closure(T_sp name, T_sp type, T_sp lambda_list, LambdaListHandler_sp lambda_list_handler, T_sp declares, T_sp docstring, T_sp form, T_sp environment, SOURCE_INFO) {
-  SourceFileInfo_sp sfi = core__source_file_info(core::make_fixnum(sourceFileInfoHandle));
+  SourceFileInfo_sp sfi = gc::As<SourceFileInfo_sp>(core__source_file_info(core::make_fixnum(sourceFileInfoHandle)));
   FunctionDescription* interpretedFunctionDescription = makeFunctionDescription(name,lambda_list,docstring,sfi,lineno,column,filePos);
   ClosureWithSlots_sp closure =
     gctools::GC<core::ClosureWithSlots_O>::allocate_container(INTERPRETED_CLOSURE_SLOTS,
@@ -206,12 +206,13 @@ CL_DEFUN size_t core__function_call_counter(Function_sp f)
 #endif
 
 T_sp Function_O::setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column) {
-  SourceFileInfo_mv sfi = core__source_file_info(sourceFile);
+  T_mv sfi_mv = core__source_file_info(sourceFile);
+  SourceFileInfo_sp sfi = gc::As<SourceFileInfo_sp>(sfi_mv);
   this->setf_sourcePathname(sfi->pathname());
   this->setf_filePos(filePos);
   this->setf_lineno(lineno);
   this->setf_column(column);
-  SourcePosInfo_sp spi = SourcePosInfo_O::create(sfi, filePos, lineno, column);
+  SourcePosInfo_sp spi = SourcePosInfo_O::create(sfi->fileHandle(), filePos, lineno, column);
   return spi;
 }
 
@@ -234,6 +235,16 @@ string Function_O::__repr__() const {
   
   ss << ">";
   return ss.str();
+}
+
+ObjectFile_sp Function_O::objectFile() const
+{
+  SUBCLASS_MUST_IMPLEMENT();
+}
+
+void Function_O::setf_objectFile(ObjectFile_sp of)
+{
+  SUBCLASS_MUST_IMPLEMENT();
 }
 
 CL_DEFMETHOD Pointer_sp Function_O::function_description_address() const {
@@ -346,7 +357,7 @@ CL_DEFUN void core__closure_slots_dump(Closure_sp closure) {
   for ( int i=0; i<nslots; ++i ) {
     printf("    Slot[%d] --> %s\n", i, _rep_(core__closure_ref(closure,i)).c_str());
   }
-  SourcePosInfo_sp spi = closure->sourcePosInfo();
+  SourcePosInfo_sp spi = gc::As<SourcePosInfo_sp>(closure->sourcePosInfo());
   T_mv tsfi = core__source_file_info(spi);
   if ( SourceFileInfo_sp sfi = tsfi.asOrNull<SourceFileInfo_O>() ) {
     printf("Closure source: %s:%d\n", sfi->namestring().c_str(), spi->lineno() );
@@ -374,12 +385,12 @@ DONT_OPTIMIZE_WHEN_DEBUG_RELEASE LCC_RETURN interpretedClosureEntryPoint(LCC_ARG
   INCREMENT_FUNCTION_CALL_COUNTER(closure);
   INITIALIZE_VA_LIST();
   ++global_interpreted_closure_calls;
-  ValueEnvironment_sp newValueEnvironment = ValueEnvironment_O::createForLambdaListHandler((*closure)[INTERPRETED_CLOSURE_LAMBDA_LIST_HANDLER_SLOT], (*closure)[INTERPRETED_CLOSURE_ENVIRONMENT_SLOT]);
+  ValueEnvironment_sp newValueEnvironment = ValueEnvironment_O::createForLambdaListHandler(gc::As<LambdaListHandler_sp>((*closure)[INTERPRETED_CLOSURE_LAMBDA_LIST_HANDLER_SLOT]), (*closure)[INTERPRETED_CLOSURE_ENVIRONMENT_SLOT]);
 //  printf("%s:%d ValueEnvironment_O:createForLambdaListHandler llh: %s\n", __FILE__, __LINE__, _rep_(this->_lambdaListHandler).c_str());
 //  newValueEnvironment->dump();
   ValueEnvironmentDynamicScopeManager scope(newValueEnvironment);
   ALWAYS_INVOCATION_HISTORY_FRAME(); // InvocationHistoryFrame _frame(&lcc_arglist_s._Args);
-  lambdaListHandler_createBindings(closure->asSmartPtr(), (*closure)[INTERPRETED_CLOSURE_LAMBDA_LIST_HANDLER_SLOT], scope, LCC_PASS_ARGS_LLH);
+  lambdaListHandler_createBindings(closure->asSmartPtr(), gc::As<LambdaListHandler_sp>((*closure)[INTERPRETED_CLOSURE_LAMBDA_LIST_HANDLER_SLOT]), scope, LCC_PASS_ARGS_LLH);
 //  printf("%s:%d     after lambdaListHandler_createbindings\n", __FILE__, __LINE__);
 //  newValueEnvironment->dump();
   ValueFrame_sp newActivationFrame = gc::As<ValueFrame_sp>(newValueEnvironment->getActivationFrame());

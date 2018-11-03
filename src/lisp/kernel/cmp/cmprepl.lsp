@@ -80,5 +80,5 @@
 
 (defmacro with-interpreter (&body body)
   "Run the body using the interpreter"
-  `(let ((core:*eval-with-env-hook* #'core:eval-with-env-default))
+  `(let ((core:*eval-with-env-hook* #'core:interpret-eval-with-env))
     ,@body))

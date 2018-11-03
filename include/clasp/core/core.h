@@ -589,6 +589,8 @@ namespace dummy_namespace {
 namespace core {
 class Instance_O;
 typedef gc::smart_ptr<Instance_O> Instance_sp;
+class Creator_O;
+typedef gc::smart_ptr<Creator_O> Creator_sp;
 class FuncallableInstance_O;
 typedef gc::smart_ptr<FuncallableInstance_O> FuncallableInstance_sp;
 

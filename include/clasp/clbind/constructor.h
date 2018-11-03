@@ -87,7 +87,7 @@ public:
   }
   core::Creator_sp duplicateForClassName(core::Symbol_sp className) {
     printf("%s:%d  duplicateForClassName %s  this->_HeaderValue = %" Ptagged_stamp_t "\n", __FILE__, __LINE__, _rep_(className).c_str(), this->_HeaderValue._value);
-    core::Creator_sp allocator = gc::GC<DefaultConstructorCreator_O<T, Pointer>>::allocate(className, this->_HeaderValue, this->_duplicationLevel + 1);
+    core::Creator_sp allocator = gc::As<core::Creator_sp>(gc::GC<DefaultConstructorCreator_O<T, Pointer>>::allocate(className, this->_HeaderValue, this->_duplicationLevel + 1));
     return allocator;
   }
 };
@@ -128,7 +128,7 @@ public:
   }
   core::Creator_sp duplicateForClassName(core::Symbol_sp className) {
 //    printf("%s:%d DerivableDefaultConstructorCreator_O  duplicateForClassName %s  this->_Kind = %u\n", __FILE__, __LINE__, _rep_(className).c_str(), this->_Kind);
-    return gc::GC<DerivableDefaultConstructorCreator_O<T>>::allocate(className, this->_Header, this->_duplicationLevel + 1);
+    return gc::As_unsafe<core::Creator_sp>(gc::GC<DerivableDefaultConstructorCreator_O<T>>::allocate(className, this->_Header, this->_duplicationLevel + 1));
   }
 };
 };

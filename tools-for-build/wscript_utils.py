@@ -154,6 +154,7 @@ class clasp_task(Task.Task):
 
         cmd = [ clasp_exe_path,
                 "--norc",
+                "--disable-mpi",
         ]
 
         if resource_dir:
