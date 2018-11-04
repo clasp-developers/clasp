@@ -141,6 +141,7 @@
     (primitive-unwinds "functionFrameReference" %t**% (list %t*% %i32%))
     
 ;;;    (primitive-unwinds "invokeTopLevelFunction" %void% (list %tmv*% %fn-prototype*% %i8*% %i32*% %size_t% %size_t% %size_t% %ltv**%))
+    (primitive-unwinds "cc_register_library" %void% (list %i8*%))
     (primitive-unwinds "cc_register_startup_function" %void% (list %fn-start-up*%))
     (primitive-unwinds "cc_invoke_sub_run_all_function" %void% (list %fn-start-up*%))
     
