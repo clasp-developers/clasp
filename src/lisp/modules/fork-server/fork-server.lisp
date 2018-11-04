@@ -49,9 +49,6 @@
 
 
 (defun main-jupyterlab-fork-server (&optional (server-info-directory #P"/tmp/clasp-fork-server/"))
-  (format t "Warming up the compiler... #dispatchers -> ~d~%" cmp::*dispatcher-count*)
-  (compile-file "sys:kernel;lsp;foundation.lsp" :output-file (core:mkstemp "/tmp/foundation"))
-  (format t "The compiler is warmed up #dispatchers -> ~d~%" cmp::*dispatcher-count*)
   (let ((listen (make-instance 'sb-bsd-sockets:inet-socket
                                :type :stream
                                :protocol :tcp)))

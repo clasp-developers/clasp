@@ -44,6 +44,9 @@ THE SOFTWARE.
 #include <clasp/core/environment.h>
 #include <clasp/core/lambdaListHandler.h>
 #include <clasp/core/lispDefinitions.h>
+#include <clasp/core/symbol.h>
+#include <clasp/core/instance.h>
+#include <clasp/core/creator.h>
 #include <clasp/core/record.h>
 #include <clasp/core/print.h>
 #include <clasp/core/wrappers.h>
@@ -103,7 +106,7 @@ CL_DEFUN T_sp core__make_cxx_object(T_sp class_or_name, T_sp args) {
   } else if (class_or_name.nilp()) {
     goto BAD_ARG0;
   } else if (Symbol_sp name = class_or_name.asOrNull<Symbol_O>()) {
-    theClass = cl__find_class(name, true, _Nil<T_O>());
+    theClass = gc::As_unsafe<Instance_sp>(cl__find_class(name, true, _Nil<T_O>()));
   } else {
     goto BAD_ARG0;
   }
@@ -137,7 +140,7 @@ CL_DEFUN T_sp core__load_cxx_object(T_sp class_or_name, T_sp args) {
   } else if (class_or_name.nilp()) {
     goto BAD_ARG0;
   } else if (Symbol_sp name = class_or_name.asOrNull<Symbol_O>()) {
-    theClass = cl__find_class(name, true, _Nil<T_O>());
+    theClass = gc::As_unsafe<Instance_sp>(cl__find_class(name, true, _Nil<T_O>()));
   } else {
     goto BAD_ARG0;
   }
@@ -314,20 +317,22 @@ void General_O::initialize() {
 
 void General_O::initialize(core::List_sp alist) {
   Record_sp record = Record_O::create_initializer(alist);
-  this->fields(record);
+  if (this->fieldsp()) this->fields(record);
   record->errorIfInvalidArguments();
 }
 
 void General_O::fields(Record_sp record) {
-  if (record->stage() == Record_O::saving && record->data().nilp()) {
-    // Signal that the subclass should implement fields
-    // if nothing has been saved yet
-    SUBIMP();
-  } else if ( record->stage() == Record_O::loading && record->seen().nilp() ) {
-    // Signal that the subclass should implement fields
-    // if nothing has been seen
-    SUBIMP();
-  }
+  // Do nothing here
+  // Any subclass that has slots that need to be (de)serialized must, MUST, MUST!
+  // implement fieldsp() and fields(Record_sp node)
+  // subclasses must also invoke their Base::fields(node) method so that base classes can
+  // (de)serialize their fields.
+  // Direct base classes of General_O or CxxObject_O don't need to call Base::fields(Record_sp node)
+  //  because the base methods don't do anything.
+  // But it's convenient to always call the this->Base::fields(node) in case the class hierarchy changes
+  //  you don't want to be caught not calling a this->Base::fields(node) because the system will silently
+  //  fail to (de)serialize any base class fields.
+  // If subclasses don't implement these methods - then serialization will fail SILENTLY!!!!!
 }
 
 List_sp General_O::encode() {
@@ -340,8 +345,10 @@ List_sp General_O::encode() {
 }
 
 void General_O::decode(core::List_sp alist) {
-  Record_sp record = Record_O::create_decoder(alist);
-  this->fields(record);
+  if (this->fieldsp()) {
+    Record_sp record = Record_O::create_decoder(alist);
+    this->fields(record);
+  }
 }
 
 string General_O::className() const {
@@ -534,6 +541,51 @@ SYMBOL_EXPORT_SC_(ClPkg, equalp);
 
 namespace core {
 
+void lisp_setStaticClass(gctools::Header_s::Value header, Instance_sp value)
+{
+  if (_lisp->_Roots.staticClasses.size() == 0) {
+    size_t size = (size_t)gctools::STAMP_max;
+    _lisp->_Roots.staticClasses.resize(size);
+  }
+//  printf("%s:%d:%s stamp: %u  value: %s\n", __FILE__, __LINE__, __FUNCTION__, header.stamp(), _rep_(value).c_str());
+  _lisp->_Roots.staticClasses[header.stamp()] = value;
+}
+
+void lisp_setStaticClassSymbol(gctools::Header_s::Value header, Symbol_sp value)
+{
+  if (_lisp->_Roots.staticClassSymbols.size() == 0) {
+    _lisp->_Roots.staticClassSymbols.resize((size_t)gctools::STAMP_max);
+  }
+//  printf("%s:%d:%s stamp: %u  value: %s\n", __FILE__, __LINE__, __FUNCTION__, header.stamp(), _rep_(value).c_str());
+  _lisp->_Roots.staticClassSymbols[header.stamp()] = value;
+}
+
+void lisp_setStaticInstanceCreator(gctools::Header_s::Value header, Creator_sp value)
+{ 
+  if (_lisp->_Roots.staticInstanceCreators.size() == 0) {
+    _lisp->_Roots.staticInstanceCreators.resize((size_t)gctools::STAMP_max);
+  }
+  _lisp->_Roots.staticInstanceCreators[header.stamp()] = value;
+}
+
+Instance_sp lisp_getStaticClass(gctools::Header_s::Value header)
+{
+  return _lisp->_Roots.staticClasses[header.stamp()];
+}
+Symbol_sp lisp_getStaticClassSymbol(gctools::Header_s::Value header)
+{
+  return _lisp->_Roots.staticClassSymbols[header.stamp()];
+}
+Creator_sp lisp_getStaticInstanceCreator(gctools::Header_s::Value header)
+{
+  return _lisp->_Roots.staticInstanceCreators[header.stamp()];
+}
+
+};
+
+
+namespace core {
+
 CL_LAMBDA(x y);
 CL_DECLARE();
 CL_DOCSTRING("equalp");
@@ -544,7 +596,7 @@ CL_DEFUN bool cl__equalp(T_sp x, T_sp y) {
       } else if (y.single_floatp()) {
         return (x.unsafe_fixnum() == y.unsafe_single_float());
       } else if (Number_sp ny = y.asOrNull<Number_O>()) {
-        return basic_compare(x, y) == 0;
+        return basic_compare(gc::As_unsafe<Fixnum_sp>(x), ny) == 0;
       }
       return false;
     } else if (x.single_floatp()) {
@@ -553,7 +605,7 @@ CL_DEFUN bool cl__equalp(T_sp x, T_sp y) {
       } else if (y.fixnump()) {
         return x.unsafe_single_float() == y.unsafe_fixnum();
       } else if (Number_sp ny = y.asOrNull<Number_O>()) {
-        return basic_compare(x, y);
+        return basic_compare(gc::As<SingleFloat_sp>(x), ny);
       }
       return false;
     } else if (x.characterp()) {

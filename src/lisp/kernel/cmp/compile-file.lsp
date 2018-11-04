@@ -6,8 +6,8 @@
 ;;; if nil == bclasp. Code for the bclasp compiler is in codegen-toplevel.lsp;
 ;;; look for t1expr.
 
-(defvar *compile-verbose* nil)
-(defvar *compile-print* nil)
+(defvar *compile-verbose* t)
+(defvar *compile-print* t)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -55,9 +55,9 @@
                        (total-llvm-time (+ llvm-finalization-time (if report-link-time
                                                                       link-time
                                                                       0.0)))
-                       (percent-llvm-time (* 100.0 (/ total-llvm-time compiler-real-time)))
+                       (percent-llvm-time (* 100.0 (/ total-llvm-time (+ compiler-real-time (if report-link-time link-time 0.0)))))
                        (percent-time-string (if report-link-time
-                                                (core:bformat nil "(llvm+link)/real(%1.f%%)" percent-llvm-time)
+                                                (core:bformat nil "(llvm+link)/(real+link)(%1.f%%)" percent-llvm-time)
                                                 (core:bformat nil "llvm/real(%1.f%%)" percent-llvm-time))))
                    (core:bformat t "   %s seconds real(%.1f) run(%.1f) llvm(%.1f)%s %s%N"
                                  message
@@ -388,6 +388,6 @@ Compile a lisp source file into an LLVM module."
     (let ((cmp:*cleavir-compile-hook* nil)
           (cmp:*cleavir-compile-file-hook* nil)
           (core:*use-cleavir-compiler* nil)
-          (core:*eval-with-env-hook* #'core:eval-with-env-default))
+          (core:*eval-with-env-hook* #'core:interpret-eval-with-env))
       (apply 'compile-file input-file args)))
   (export 'bclasp-compile-file))

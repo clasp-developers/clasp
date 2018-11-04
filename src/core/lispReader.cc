@@ -197,8 +197,8 @@ T_sp read_ch(T_sp sin) {
 }
 
 /*! See SACLA reader.lisp::read-ch-or-die */
-T_sp read_ch_or_die(T_sp sin) {
-  T_sp nc = cl__read_char(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true());
+Character_sp read_ch_or_die(T_sp sin) {
+  Character_sp nc = gc::As_unsafe<Character_sp>(cl__read_char(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true()));
   return nc;
 }
 
@@ -209,7 +209,7 @@ void unread_ch(T_sp sin, Character_sp c) {
 
 /*! See SACLA reader.lisp::collect-escaped-lexemes */
 List_sp collect_escaped_lexemes(Character_sp c, T_sp sin) {
-  ReadTable_sp readTable = _lisp->getCurrentReadTable();
+  ReadTable_sp readTable = gc::As<ReadTable_sp>(_lisp->getCurrentReadTable());
   Symbol_sp syntax_type = readTable->syntax_type(c);
   if (syntax_type == kw::_sym_invalid) {
     SIMPLE_ERROR(BF("invalid-character-error: %s") % _rep_(c));
@@ -229,7 +229,7 @@ List_sp collect_escaped_lexemes(Character_sp c, T_sp sin) {
 List_sp collect_lexemes(/*Character_sp*/ T_sp tc, T_sp sin) {
   if (tc.notnilp()) {
     Character_sp c = gc::As<Character_sp>(tc);
-    ReadTable_sp readTable = _lisp->getCurrentReadTable();
+    ReadTable_sp readTable = gc::As<ReadTable_sp>(_lisp->getCurrentReadTable());
     Symbol_sp syntax_type = readTable->syntax_type(c);
     if (syntax_type == kw::_sym_invalid) {
       SIMPLE_ERROR(BF("invalid-character-error: %s") % _rep_(c));
@@ -302,7 +302,7 @@ Character_sp lexeme_character(T_sp lexeme) {
   SIMPLE_ERROR(BF("Unknown lexeme %s") % _rep_(lexeme));
 }
 
-void make_str_upcase(StrWNs_sp sout, List_sp cur_char) {
+void make_str_upcase(StrNs_sp sout, List_sp cur_char) {
   while (cur_char.notnilp()) {
     T_sp obj = oCar(cur_char);
     if (obj.consp()) {
@@ -318,7 +318,7 @@ void make_str_upcase(StrWNs_sp sout, List_sp cur_char) {
   }
 }
 
-void make_str_downcase(StrWNs_sp sout, List_sp cur_char) {
+void make_str_downcase(StrNs_sp sout, List_sp cur_char) {
   while (cur_char.notnilp()) {
     T_sp obj = oCar(cur_char);
     if (obj.consp()) {
@@ -334,7 +334,7 @@ void make_str_downcase(StrWNs_sp sout, List_sp cur_char) {
   }
 }
 
-void make_str_preserve_case(StrWNs_sp sout, List_sp cur_char) {
+void make_str_preserve_case(StrNs_sp sout, List_sp cur_char) {
   while (cur_char.notnilp()) {
     T_sp obj = oCar(cur_char);
     if (obj.consp()) {
@@ -350,7 +350,7 @@ void make_str_preserve_case(StrWNs_sp sout, List_sp cur_char) {
 
 /*! Works like SACLA readtable::make-str but accumulates the characters
       into a stringstream */
-void make_str(StrWNs_sp sout, List_sp cur_char) {
+void make_str(StrNs_sp sout, List_sp cur_char) {
   ReadTable_sp readtable = gc::As<ReadTable_sp>(cl::_sym_STARreadtableSTAR->symbolValue());
   if (readtable->_Case == kw::_sym_invert) {
     UnEscapedCase strcase = check_case(cur_char,undefined);
@@ -1080,7 +1080,7 @@ T_sp read_lisp_object(T_sp sin, bool eofErrorP, T_sp eofValue, bool recursiveP) 
       Read a character from the stream and based on what it is continue to process the
       stream until a complete symbol/number of macro is processed.
       Return the result in a MultipleValues object - if it is empty then nothing was read */
-T_mv lisp_object_query(T_sp sin, bool eofErrorP, T_sp eofValue, bool recursiveP) {
+__attribute__((optnone)) T_mv lisp_object_query(T_sp sin, bool eofErrorP, T_sp eofValue, bool recursiveP) {
 #if 0
   static int monitorReaderStep = 0;
   if ((monitorReaderStep % 1000) == 0 && cl__member(_sym_monitorReader, _sym_STARdebugMonitorSTAR->symbolValue(), _Nil<T_O>()).notnilp()) {
@@ -1090,7 +1090,7 @@ T_mv lisp_object_query(T_sp sin, bool eofErrorP, T_sp eofValue, bool recursiveP)
 #endif
   bool only_dots_ok = false;
   Token token;
-  ReadTable_sp readTable = _lisp->getCurrentReadTable();
+  ReadTable_sp readTable = gc::As<ReadTable_sp>(_lisp->getCurrentReadTable());
   Character_sp xxx, y, z, X, Y, Z;
 /* See the CLHS 2.2 Reader Algorithm  - continue has the effect of jumping to step 1 */
 step1:
@@ -1183,7 +1183,7 @@ step8:
       LOG_READ(BF("Hit eof"));
       goto step10;
     }
-    Character_sp y(ty);
+    Character_sp y(gc::As_unsafe<Character_sp>(ty));
     LOG_READ(BF("Step8: Read y[%s/%c]") % clasp_as_claspCharacter(y) % (char)clasp_as_claspCharacter(y));
     Symbol_sp y8_syntax_type = readTable->syntax_type(y);
     LOG_READ(BF("y8_syntax_type=%s") % _rep_(y8_syntax_type));

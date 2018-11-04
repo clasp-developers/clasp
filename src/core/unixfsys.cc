@@ -633,8 +633,8 @@ enter_directory(Pathname_sp base_dir, T_sp subdir, bool ignore_if_failure) {
                                              kw::_sym_directory, ldir,
                                              kw::_sym_defaults, base_dir));
   if (output.nilp()) SIMPLE_ERROR(BF("%s is about to pass NIL to clasp_namestring") % __FUNCTION__);
-  aux = clasp_namestring(output, CLASP_NAMESTRING_FORCE_BASE_STRING);
-  aux = aux->subseq(0, clasp_make_fixnum(aux->length() - 1));
+  aux = gc::As<String_sp>(clasp_namestring(output, CLASP_NAMESTRING_FORCE_BASE_STRING));
+  aux = gc::As<String_sp>(aux->subseq(0, clasp_make_fixnum(aux->length() - 1)));
   //    aux->_contents()[aux->base_string.fillp-1] = 0;
   kind = file_kind((const char *)aux->rowMajorAddressOfElement_(0), false);
   if (kind.nilp()) {
@@ -734,7 +734,7 @@ file_truename(T_sp pathname, T_sp filename, int flags) {
       return Values(pathname, kind);
     /* The link might be a relative pathname. In that case we have
 	 * to merge with the original pathname */
-    filename = core__readlink(filename);
+    filename = core__readlink(gc::As<String_sp>(filename));
     Pathname_sp pn = gc::As<Pathname_sp>(pathname);
     pathname = Pathname_O::makePathname(pn->_Host,
                                         pn->_Device,
@@ -756,7 +756,7 @@ file_truename(T_sp pathname, T_sp filename, int flags) {
     if (gc::As<Pathname_sp>(pathname)->_Name.notnilp() ||
         gc::As<Pathname_sp>(pathname)->_Type.notnilp()) {
       String_sp spathname = gc::As<String_sp>(filename);
-      SafeBuffer buffer;
+      SafeBufferStr8Ns buffer;
       StringPushString(buffer.string(),spathname);
       buffer.string()->vectorPushExtend(clasp_make_character(DIR_SEPARATOR_CHAR));
       pathname = cl__truename(buffer.string());
@@ -1113,7 +1113,7 @@ Pathname_sp clasp_homedir_pathname(T_sp tuser) {
   i = namestring->length();
   if (!IS_DIR_SEPARATOR(namestring->get_std_string().c_str()[i - 1]))
     namestring = SimpleBaseString_O::make(namestring->get() + DIR_SEPARATOR);
-  return cl__parse_namestring(namestring);
+  return gc::As<Pathname_sp>(cl__parse_namestring(namestring));
 }
 
 CL_LAMBDA(&optional host);
@@ -1650,7 +1650,7 @@ AGAIN:
          * 2.2) If CAR(DIRECTORY) is :ABSOLUTE, :RELATIVE or :UP we update
          * the directory to reflect the root, the current or the parent one.
          */
-    base_dir = enter_directory(base_dir, item, 1);
+    base_dir = enter_directory(gc::As<Pathname_sp>(base_dir), item, 1);
     /*
          * If enter_directory() fails, we simply ignore this path. This is
          * what other implementations do and is consistent with the behavior
@@ -1673,7 +1673,7 @@ CL_DEFUN T_sp cl__directory(T_sp mask, T_sp resolveSymlinks) {
   if (mask.nilp()) SIMPLE_ERROR(BF("In cl__directory NIL is about to be passed to core__coerce_to_file_pathname"));
   mask = core__coerce_to_file_pathname(mask);
   mask = make_absolute_pathname(mask); // in this file
-  base_dir = make_base_pathname(mask);
+  base_dir = make_base_pathname(gc::As<Pathname_sp>(mask));
   output = dir_recursive(base_dir, cl__pathname_directory(mask), mask,
                          resolveSymlinks.nilp() ? 0 : FOLLOW_SYMLINKS);
   return output;
@@ -1736,7 +1736,7 @@ CL_DEFUN T_sp core__mkdir(T_sp directory, T_sp mode) {
       if (IS_DIR_SEPARATOR(c))
         last--;
     }
-    filename = filename->subseq(0, make_fixnum(last));
+    filename = gc::As_unsafe<String_sp>(filename->subseq(0, make_fixnum(last)));
   }
 //    clasp_disable_interrupts();
 #if defined(CLASP_MS_WINDOWS_HOST)

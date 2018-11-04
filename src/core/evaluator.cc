@@ -525,9 +525,9 @@ T_mv core__classify_let_variables_and_declares(List_sp variables, List_sp declar
   for (auto cur : declaredSpecials)
     specialsSet->insert(oCar(cur)); //make(declaredSpecials);
   HashTableEq_sp specialInVariables(HashTableEq_O::create_default());
-  HashTable_sp indices = cl__make_hash_table(cl::_sym_eq, make_fixnum(8),
-                                             DoubleFloat_O::create(1.5),
-                                             DoubleFloat_O::create(1.0));
+  HashTable_sp indices = gc::As_unsafe<HashTable_sp>(cl__make_hash_table(cl::_sym_eq, make_fixnum(8),
+                                                                         DoubleFloat_O::create(1.5),
+                                                                         DoubleFloat_O::create(1.0)));
   ql::list classified;
   size_t indicesSize = 0;
   for (auto cur : variables) {
@@ -577,9 +577,9 @@ CL_DEFUN void core__evaluate_verbosity(Fixnum_sp level) {
 
 CL_LAMBDA(form &optional env);
 CL_DECLARE();
-CL_DOCSTRING("eval_with_env_default");
-CL_DEFUN T_mv core__eval_with_env_default(T_sp form, T_sp env) {
-  return eval::t1Evaluate(form, env);
+CL_DOCSTRING("Evaluate the form in the environment using the interpreter");
+CL_DEFUN T_mv core__interpret_eval_with_env(T_sp form, T_sp environment) {
+  return eval::t1Evaluate(form, environment);
 }
 
 };
@@ -1036,7 +1036,7 @@ T_mv sp_step(List_sp args, T_sp env) {
 T_mv sp_tagbody(List_sp args, T_sp env) {
   ASSERT(env.generalp());
   TagbodyEnvironment_sp tagbodyEnv = TagbodyEnvironment_O::make(env);
-  ValueFrame_sp vframe = tagbodyEnv->getActivationFrame();
+  ValueFrame_sp vframe = gc::As<ValueFrame_sp>(tagbodyEnv->getActivationFrame());
   Cons_sp thandle = Cons_O::create(_Nil<T_O>(),_Nil<T_O>());
   vframe->operator[](0) = thandle;
   T_O* handle = thandle.raw_();
@@ -1090,7 +1090,7 @@ DONT_OPTIMIZE_WHEN_DEBUG_RELEASE T_mv sp_go(List_sp args, T_sp env) {
   if (!foundTag) {
     SIMPLE_ERROR(BF("Could not find tag[%s] in the lexical environment: %s") % _rep_(tag) % _rep_(env));
   }
-  ValueFrame_sp af = Environment_O::clasp_getActivationFrame(env);
+  ValueFrame_sp af = gc::As<ValueFrame_sp>(Environment_O::clasp_getActivationFrame(env));
   T_sp thandle = af->operator[](0);
   T_sp tagbodyId = core::tagbody_frame_lookup(af,depth,index);
   DynamicGo go(thandle.raw_(), index);
@@ -1253,7 +1253,7 @@ T_mv sp_block(List_sp args, T_sp environment) {
   ASSERT(environment.generalp());
   Symbol_sp blockSymbol = gc::As<Symbol_sp>(oCar(args));
   BlockEnvironment_sp newEnvironment = BlockEnvironment_O::make(blockSymbol, environment);
-  ValueFrame_sp vframe = newEnvironment->getActivationFrame();
+  ValueFrame_sp vframe = gc::As<ValueFrame_sp>(newEnvironment->getActivationFrame());
   Cons_sp handle = Cons_O::create(_Nil<T_O>(),_Nil<T_O>());
   vframe->operator[](0) = handle;
   LOG(BF("sp_block has extended the environment to: %s") % newEnvironment->__repr__());
@@ -1915,7 +1915,7 @@ T_mv evaluate(T_sp exp, T_sp environment) {
   } else if (Symbol_sp headSym = head.asOrNull<Symbol_O>()) {
     T_sp specialForm = _lisp->specialFormOrNil(headSym);
     if (!specialForm.nilp()) {
-      return evaluate_specialForm(specialForm, form, environment);
+      return evaluate_specialForm(gc::As_unsafe<SpecialForm_sp>(specialForm), form, environment);
     }
 
     if (headSym == cl::_sym_cond) {
@@ -2100,9 +2100,9 @@ void defineSpecialOperatorsAndMacros(Package_sp pkg) {
   SYMBOL_EXPORT_SC_(ClPkg, apply);
   SYMBOL_EXPORT_SC_(ClPkg, funcall);
   SYMBOL_EXPORT_SC_(CorePkg, STAReval_with_env_hookSTAR);
-  SYMBOL_EXPORT_SC_(CorePkg, eval_with_env_default);
+  SYMBOL_EXPORT_SC_(CorePkg, interpret_eval_with_env);
 //  af_def(CorePkg, "eval_with_env_default", &core__eval_with_env_default);
-  core::_sym_STAReval_with_env_hookSTAR->defparameter(core::_sym_eval_with_env_default->symbolFunction());
+  core::_sym_STAReval_with_env_hookSTAR->defparameter(core::_sym_interpret_eval_with_env->symbolFunction());
 };
 };
 };

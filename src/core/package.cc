@@ -309,7 +309,7 @@ CL_DEFUN T_mv cl__shadowing_import(T_sp symbol_names_desig, T_sp package_desig) 
   return Values(_lisp->_true());
 }
 
-static uintptr_clasp_t static_gentemp_counter = 1;
+std::atomic<uintptr_clasp_t> static_gentemp_counter;
 CL_LAMBDA(&optional prefix (package *package*));
 CL_DECLARE();
 CL_DOCSTRING("See CLHS gentemp");
@@ -321,20 +321,29 @@ CL_DEFUN T_mv cl__gentemp(T_sp prefix, T_sp package_designator) {
     ss = Str8Ns_O::make(sbs->length(),'\0',true,clasp_make_fixnum(1),sbs,false,clasp_make_fixnum(0));
   } else if (cl__stringp(prefix)) {
     String_sp sprefix = gc::As_unsafe<String_sp>(prefix);
-    ss = gc::As_unsafe<StrNs_sp>(core__make_vector(sprefix->arrayElementType(),32,true,clasp_make_fixnum(sprefix->length())));
+    ss = gc::As_unsafe<StrNs_sp>(core__make_vector(sprefix->arrayElementType(),sprefix->length()+8,true,clasp_make_fixnum(sprefix->length())));
     ss->unsafe_setf_subseq(0,sprefix->length(),sprefix);
   } else {
     TYPE_ERROR(prefix,Cons_O::createList(cl::_sym_or,cl::_sym_string,cl::_sym_Null_O));
   }
   T_sp retval;
-  core__integer_to_string(ss,Integer_O::create(static_gentemp_counter),clasp_make_fixnum(10),false,false);
-  ++static_gentemp_counter;
-  T_mv mv = pkg->findSymbol(ss);
-  if (mv.valueGet_(1).nilp()) {
-    retval = pkg->intern(ss);
-    return retval;
+  size_t fillPointer = ss->fillPointer();
+#define GENTEMP_TRIES 1000000
+  size_t tries = GENTEMP_TRIES;
+  while (1) {
+    ++static_gentemp_counter;
+    core__integer_to_string(ss,Integer_O::create(static_gentemp_counter),clasp_make_fixnum(10),false,false);
+    T_mv mv = pkg->findSymbol(ss);
+    if (mv.valueGet_(1).nilp()) {
+      retval = pkg->intern(ss->asMinimalSimpleString());
+      return retval;
+    }
+    ss->fillPointerSet(fillPointer);
+    --tries;
+    if (tries==0) {
+      SIMPLE_ERROR(BF("gentemp tried %d times to generate a unique symbol and then gave up") % GENTEMP_TRIES);
+    }
   }
-  SIMPLE_ERROR(BF("Could not find unique gentemp"));
 };
 
 CL_LAMBDA(package-designator);

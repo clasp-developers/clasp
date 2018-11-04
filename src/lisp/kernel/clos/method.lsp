@@ -182,6 +182,7 @@ in the generic function lambda-list to the generic function lambda-list"
                  lambda-list))))
 
 (defun make-method-lambda (gf method method-lambda env)
+  (declare (ignore gf method))
   (multiple-value-bind (call-next-method-p next-method-p-p)
       (walk-method-lambda method-lambda env)
     (let ((leaf-method-p (null (or call-next-method-p next-method-p-p))))
@@ -381,6 +382,7 @@ have disappeared."
       (invalidate-discriminating-function gf)
       method)))
 
+;; Upgraded into method in fixup.
 (defun find-method (gf qualifiers specializers &optional (errorp t))
   (declare (notinline method-qualifiers))
   (flet ((filter-specializer (name)
@@ -432,11 +434,3 @@ have disappeared."
 		       (push `(,(caar scan) (,(cadar scan) ,temp)) res))))
     `(let ((,temp ,instance-form))
        (symbol-macrolet ,accessors ,@body))))
-
-
-;;; Force the compiler into optimizing use of gethash inside methods:
-(setf (symbol-function 'SLOT-INDEX) (symbol-function 'GETHASH))
-
-
-
-

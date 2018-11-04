@@ -83,7 +83,7 @@ public:
   friend class Lambda_method_function;
 
 public: // Simple default ctor/dtor
- SingleDispatchMethod_O(T_sp name, Instance_sp receiverClass, LambdaListHandler_sp llh, List_sp declares, T_sp docstring, Function_sp body) : _name(name), _receiver_class(receiverClass), _argument_handler(llh), _declares(declares), _docstring(docstring), _body(body) {};
+  SingleDispatchMethod_O(T_sp name, Instance_sp receiverClass, LambdaListHandler_sp llh, List_sp declares, T_sp docstring, Function_sp body) : _name(name), _receiver_class(receiverClass), _argument_handler(llh), _declares(declares), _docstring(docstring), _body(gc::As<SingleDispatchMethodFunction_sp>(body)) {};
  public:
            /*! Store the generic function name */
   T_sp _name;
@@ -135,7 +135,7 @@ namespace core {
       It creates a FunctionValueEnvironment that defines call-next-method and next-method-p 
       with the method environment as its parent and then invokes the method-function
       with (args next-emfun) */
-  void core__ensure_single_dispatch_method(SingleDispatchGenericFunctionClosure_sp gfunction, T_sp gfname, Instance_sp receiver_class, LambdaListHandler_sp lambda_list_handler, List_sp declares, gc::Nilable<String_sp> docstring, Function_sp body);
+void core__ensure_single_dispatch_method(SingleDispatchGenericFunctionClosure_sp gfunction, T_sp gfname, Instance_sp receiver_class, LambdaListHandler_sp lambda_list_handler, List_sp declares, core::T_sp docstring, Function_sp body);
 
 
 };

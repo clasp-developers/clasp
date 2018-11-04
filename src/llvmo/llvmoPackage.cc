@@ -66,6 +66,8 @@ using namespace core;
 namespace llvmo {
 
 SYMBOL_EXPORT_SC_(LlvmoPkg, STARrunTimeExecutionEngineSTAR);
+SYMBOL_EXPORT_SC_(LlvmoPkg, STARdebugObjectFilesSTAR);
+SYMBOL_EXPORT_SC_(LlvmoPkg, STARdumpObjectFilesSTAR);
 
 void redirect_llvm_interface_addSymbol() {
   //	llvm_interface::addSymbol = &addSymbolAsGlobal;
@@ -112,7 +114,7 @@ CL_DEFUN bool llvm_sys__load_bitcode_ll(core::Pathname_sp filename, bool verbose
     SIMPLE_ERROR(BF("The cmp:*llvm-context* is NIL"));
   }
   core::String_sp namestring = gctools::As<core::String_sp>(tnamestring);
-  Module_sp m = llvm_sys__parseIRFile(namestring,comp::_sym_STARllvm_contextSTAR->symbolValue());
+  Module_sp m = llvm_sys__parseIRFile(namestring,gc::As<LLVMContext_sp>(comp::_sym_STARllvm_contextSTAR->symbolValue()));
   EngineBuilder_sp engineBuilder = EngineBuilder_O::make(m);
   TargetOptions_sp targetOptions = TargetOptions_O::make();
   engineBuilder->setTargetOptions(targetOptions);
@@ -141,7 +143,7 @@ CL_DEFUN bool llvm_sys__load_bitcode(core::Pathname_sp filename, bool verbose, b
     SIMPLE_ERROR(BF("The cmp:*llvm-context* is NIL"));
   }
   core::String_sp namestring = gctools::As<core::String_sp>(tnamestring);
-  Module_sp m = llvm_sys__parseBitcodeFile(namestring,comp::_sym_STARllvm_contextSTAR->symbolValue());
+  Module_sp m = llvm_sys__parseBitcodeFile(namestring,gc::As<LLVMContext_sp>(comp::_sym_STARllvm_contextSTAR->symbolValue()));
   EngineBuilder_sp engineBuilder = EngineBuilder_O::make(m);
   TargetOptions_sp targetOptions = TargetOptions_O::make();
   engineBuilder->setTargetOptions(targetOptions);
@@ -454,6 +456,8 @@ void LlvmoExposer_O::expose(core::Lisp_sp lisp, core::Exposer_O::WhatToExpose wh
     llvm::InitializeAllTargetMCs();
     llvm::InitializeAllAsmParsers();
     llvm::InitializeAllDisassemblers();
+    llvmo::_sym_STARdebugObjectFilesSTAR->defparameter(_Nil<core::T_O>());
+    llvmo::_sym_STARdumpObjectFilesSTAR->defparameter(_Nil<core::T_O>());
     SYMBOL_EXPORT_SC_(LlvmoPkg, _PLUS_globalBootFunctionsName_PLUS_);
     SYMBOL_EXPORT_SC_(LlvmoPkg, _PLUS_globalEpilogueName_PLUS_);
   };

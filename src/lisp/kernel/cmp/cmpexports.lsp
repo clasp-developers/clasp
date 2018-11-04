@@ -1,5 +1,6 @@
 (in-package :cmp)
 (export '(
+          with-interpreter
           *debug-link-options* ;; A list of strings to inject into link commands
           *compile-file-debug-dump-module*  ;; Dump intermediate modules
           *compile-debug-dump-module*  ;; Dump intermediate modules
@@ -114,6 +115,7 @@
           safe-system
           jit-constant-uintptr_t
           irc-int-to-ptr
+          irc-ptr-to-int
           irc-verify-module-safe
           irc-verify-function
           *suppress-llvm-output*

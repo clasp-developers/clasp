@@ -10,20 +10,30 @@
 (test read-2
       (string-equal
        "
-#.ext::single-float-positive-infinity "
+#.ext:single-float-positive-infinity "
        (with-output-to-string (*standard-output*)
          (let ((*read-default-float-format* 'single-float)
                (*print-readably* nil))
            (print (read-from-string (format nil "12~40,2f" most-positive-single-float)))))))
 
-#+that-does-crash-the-lisp-in-printing
 (test read-3
       (string-equal
-       "
-#.exit::long-float-positive-infinity "
+       (concatenate 'string (string #\Newline)
+                    "#.ext:double-float-positive-infinity ")
        (with-output-to-string (*standard-output*)
-         (let ((*read-default-float-format* 'long-float)
+         (let ((*read-default-float-format* 'double-float)
                (*print-readably* nil))
-           (print (read-from-string (format nil "12~308,2f" most-positive-long-float)))))))
+           (print (read-from-string (format nil "12~308,2f" most-positive-double-float)))))))
+
+
+;;; Reader-errors
+
+(test-expect-error read-4 (READ-FROM-STRING ")") :type reader-error)
+(test-expect-error read-5 (READ-FROM-STRING ",1") :type reader-error)
+(test-expect-error read-6 (READ-FROM-STRING ",") :type reader-error)
+(test-expect-error read-7 (READ-FROM-STRING "#)" NIL NIL) :type reader-error)
+
+
+  
 
 

@@ -69,7 +69,7 @@ CL_DOCSTRING("copy-instance returns a shallow copy of the instance");
 CL_DEFUN T_sp core__copy_instance(T_sp obj) {
   if (gc::IsA<Instance_sp>(obj)) {
     Instance_sp iobj = gc::As_unsafe<Instance_sp>(obj);
-    Instance_sp cp = iobj->copyInstance();
+    Instance_sp cp = gc::As_unsafe<Instance_sp>(iobj->copyInstance());
     return cp;
   }
   SIMPLE_ERROR(BF("copy-instance doesn't support copying %s") % _rep_(obj));
@@ -148,7 +148,7 @@ CL_DEFUN T_sp core__allocate_new_instance(Instance_sp cl, size_t slot_count) {
   // cl is known to be a standard-class.
   ASSERT(cl->CLASS_has_creator());
   Creator_sp creator = gctools::As<Creator_sp>(cl->CLASS_get_creator());
-  Instance_sp obj = creator->creator_allocate();
+  Instance_sp obj = gc::As_unsafe<Instance_sp>(creator->creator_allocate());
   obj->_Class = cl;
   /* Unlike other slots, the stamp must be initialized in the allocator,
    * as it's required for dispatch. */
@@ -299,7 +299,7 @@ string Instance_O::__repr__() const {
 
 T_sp Instance_O::copyInstance() const {
   Instance_sp cl = this->_Class;
-  Instance_sp copy = cl->CLASS_get_creator()->creator_allocate();
+  Instance_sp copy = gc::As_unsafe<Instance_sp>(cl->CLASS_get_creator()->creator_allocate());
   copy->_Class = cl;
   copy->_Rack = this->_Rack;
   copy->_Sig = this->_Sig;

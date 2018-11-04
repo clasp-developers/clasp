@@ -271,10 +271,6 @@
      object
      #'(lambda (dep) (apply #'update-dependent object dep initargs)))))
 
-(defmethod reinitialize-instance :after ((class class) &rest initargs)
-  (declare (dynamic-extent initargs)) ; see NOTE in reinitialize-instance/T
-  (update-dependents class initargs))
-
 (defmethod add-direct-subclass ((parent class) child)
   (pushnew child (class-direct-subclasses parent)))
 

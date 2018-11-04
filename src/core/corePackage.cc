@@ -890,6 +890,7 @@ void testFeatures() {
 CoreExposer_O::CoreExposer_O(Lisp_sp lisp) : Exposer_O(lisp, CorePkg) {
 };
 
+__attribute((optnone))
 void CoreExposer_O::expose(core::Lisp_sp lisp, WhatToExpose what) const {
   switch (what) {
   case candoClasses:
@@ -899,6 +900,10 @@ void CoreExposer_O::expose(core::Lisp_sp lisp, WhatToExpose what) const {
     exposeCore_lisp_reader();
     {
       ReadTable_sp readtable = ReadTable_O::create_standard_readtable();
+      if (!readtable->_SyntaxTypes) {
+        printf("%s:%d The readtable->_SyntaxTypes is NULL\n", __FILE__, __LINE__ );
+        abort();
+      }
       cl::_sym_STARreadtableSTAR->defparameter(readtable);
     }
     break;
@@ -1030,7 +1035,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   cl::_sym_STARquery_ioSTAR->defparameter(TwoWayStream_O::make(stdin_stream, stdout_stream));
   _sym_STARdocumentation_poolSTAR->defparameter(Cons_O::createList(HashTableEql_O::create_default(), SimpleBaseString_O::make("help_file.dat")));
   _sym_STARdocumentation_poolSTAR->exportYourself();
-  TwoWayStream_sp terminal = TwoWayStream_O::make(stdin_stream, stdout_stream);
+  TwoWayStream_sp terminal = gc::As_unsafe<TwoWayStream_sp>(TwoWayStream_O::make(stdin_stream, stdout_stream));
   _lisp->_Roots._TerminalIO = terminal;
   cl::_sym_STARterminal_ioSTAR->defparameter(terminal);
   _sym_STARsystem_defsetf_update_functionsSTAR->defparameter(_Nil<T_O>());

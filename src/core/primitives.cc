@@ -1396,11 +1396,11 @@ CL_DEFUN Symbol_sp cl__gensym(T_sp x) {
     sym->setPackage(_Nil<T_O>());
     return sym;
   }
-  SafeBuffer ss;
+  SafeBufferStr8Ns ss;
   Fixnum counter;
   ss.string()->vectorPushExtend_claspChar('G');
   if (x.fixnump()||gc::IsA<Integer_sp>(x)) {
-    core__integer_to_string(ss.string(),x,clasp_make_fixnum(10));
+    core__integer_to_string(ss.string(),gc::As_unsafe<Integer_sp>(x),clasp_make_fixnum(10));
   } else if (x.nilp()) {
     counter = unbox_fixnum(gc::As<Fixnum_sp>(cl::_sym_STARgensym_counterSTAR->symbolValue()));
     core__integer_to_string(ss.string(),gc::As<Integer_sp>(cl::_sym_STARgensym_counterSTAR->symbolValue()),clasp_make_fixnum(10));
@@ -1644,7 +1644,7 @@ CL_DEFMETHOD T_sp InvocationHistoryFrameIterator_O::functionName() {
     return _Nil<T_O>();
   }
   if (this->_Frame->_Previous) {
-    Function_sp closure = this->_Frame->function();
+    Function_sp closure = gc::As_unsafe<Function_sp>(this->_Frame->function());
     if (!closure) {
       SIMPLE_ERROR(BF("Could not access closure of InvocationHistoryFrame"));
     }

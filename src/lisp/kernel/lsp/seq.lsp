@@ -114,6 +114,7 @@
 Creates and returns a sequence of the given TYPE and LENGTH.  If INITIAL-
 ELEMENT is given, then it becomes the elements of the created sequence.  The
 default value of INITIAL-ELEMENT depends on TYPE."
+  (if (and (integerp size)(>= size 0))
   (multiple-value-bind (element-type length success)
       (closest-sequence-type type)
     (cond ((not success)
@@ -123,7 +124,13 @@ default value of INITIAL-ELEMENT depends on TYPE."
           ((eq element-type 'LIST)
            (let ((result (make-list size :initial-element initial-element)))
              (if (or (eq length '*) (eql length size))
+                     ;;; ecl  tests instead for (or (and (subtypep type 'NULL) (plusp size))
+                     ;;;                            (and (subtypep type 'CONS) (zerop size)))
+                     (if (subtypep 'LIST type)
                  result
+                         (if (and (subtypep type 'CONS) (zerop size))
+                             (error-sequence-length result type 0)
+                             result))
                  (error-sequence-length result type size))))
           (t
            (let ((result (sys:make-vector (if (eq element-type '*) 't element-type)
@@ -133,7 +140,8 @@ default value of INITIAL-ELEMENT depends on TYPE."
                (si::fill-array-with-elt result initial-element 0 nil))
              (unless (or (eql length '*) (eql length size))
                (error-sequence-length result type size))
-             result)))))
+                 result))))
+      (error 'type-error :datum size :expected-type '(integer 0 *))))
 
 (defun make-seq-iterator (sequence &optional (start 0))
   (declare (optimize (safety 0)))

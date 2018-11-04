@@ -187,7 +187,7 @@
 	 (*package* *package*))
      (with-compilation-unit ()
        (unwind-protect (progn ,@body)
-         (setq conditions *compilation-messages*)))))
+         (setq ,conditions *compilation-messages*)))))
 
 
 (defstruct (global-function-def (:type vector) :named)

@@ -136,10 +136,10 @@ T_sp write_object(T_sp x, T_sp stream) {
     Fixnum code;
     T_sp circle_counter = _sym_STARcircle_counterSTAR->symbolValue();
     if (circle_counter.nilp()) {
-      HashTable_sp hash = cl__make_hash_table(cl::_sym_eq,
-                                             make_fixnum(1024),
-                                             _lisp->rehashSize(),
-                                             _lisp->rehashThreshold());
+      HashTable_sp hash = gc::As_unsafe<HashTable_sp>(cl__make_hash_table(cl::_sym_eq,
+                                                                          make_fixnum(1024),
+                                                                          _lisp->rehashSize(),
+                                                                          _lisp->rehashThreshold()));
       DynamicScopeManager scope;
       scope.pushSpecialVariableAndSet(_sym_STARcircle_counterSTAR, _lisp->_true());
       scope.pushSpecialVariableAndSet(_sym_STARcircle_stackSTAR, hash);

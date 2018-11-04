@@ -321,6 +321,7 @@ The type of the files to be linked is defined with **input-type** (:bitcode|:obj
 The **target-backend** indicates if we are linking for aclasp, bclasp or cclasp.
 Return the **output-pathname**."
   (let* ((*target-backend* target-backend)
+         (start-time (get-internal-real-time))
          (intrinsics-bitcode-path (core:build-inline-bitcode-pathname link-type :intrinsics))
          (builtins-bitcode-path (core:build-inline-bitcode-pathname link-type :builtins))
          (all-input-files (list* intrinsics-bitcode-path input-files))
@@ -340,6 +341,7 @@ Return the **output-pathname**."
          (bformat t "In llvm-link -> link-type :fasl all-input-files -> %s%N" all-input-files))
        (execute-link-fasl output-pathname all-input-files :input-type input-type))
       (t (error "Cannot link format ~a" link-type)))
+    (incf llvm-sys:*accumulated-clang-link-time* (/ (- (get-internal-real-time) start-time) (float internal-time-units-per-second)))
     output-pathname))
 
 (export '(llvm-link))

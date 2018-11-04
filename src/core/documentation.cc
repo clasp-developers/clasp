@@ -64,7 +64,7 @@ CL_DEFUN T_sp core__record_field(List_sp record, T_sp key, T_sp sub_key) {
 CL_LAMBDA(record key sub-key value);
 CL_DECLARE();
 CL_DOCSTRING("set_record_field");
-CL_DEFUN T_sp core__set_record_field(List_sp record, T_sp key, T_sp sub_key, String_sp value) {
+CL_DEFUN T_sp core__set_record_field(List_sp record, T_sp key, T_sp sub_key, T_sp value) {
   List_sp field = gc::As<List_sp>(core__record_cons(record, key, sub_key));
   if (field.notnilp()) {
     field.asCons()->setCdr(value);
@@ -97,7 +97,7 @@ CL_DEFUN T_sp core__rem_record_field(List_sp record, T_sp key, T_sp sub_key) {
 CL_LAMBDA(object key sub-key value);
 CL_DECLARE();
 CL_DOCSTRING("annotate - see ecl>>helpfile.lsp>>annotate; **key** is either 'documentation or 'setf-documentation **object** must be a symbol");
-CL_DEFUN T_mv ext__annotate(T_sp object, T_sp key, T_sp sub_key, String_sp value) {
+CL_DEFUN T_mv ext__annotate(T_sp object, T_sp key, T_sp sub_key, T_sp value) {
   HashTable_sp dict = gc::As<HashTable_sp>(oCar(_sym_STARdocumentation_poolSTAR->symbolValue()));
   List_sp record = coerce_to_list(dict->gethash(object, _Nil<T_O>()));
   record = coerce_to_list(core__set_record_field(record, key, sub_key, value));

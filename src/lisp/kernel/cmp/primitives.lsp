@@ -203,7 +203,8 @@
     (primitive         "llvm.sadd.with.overflow.i64" %{i64.i1}% (list %i64% %i64%))
     (primitive         "llvm.ssub.with.overflow.i32" %{i32.i1}% (list %i32% %i32%))
     (primitive         "llvm.ssub.with.overflow.i64" %{i64.i1}% (list %i64% %i64%))
-    
+
+    (primitive         "llvm.experimental.stackmap" %void% (list %i64% %i32%) :varargs t)
     (primitive         "llvm.va_copy" %void% (list %i8*% %i8*%))
     (primitive         "llvm.va_start" %void% (list %i8*%))
     (primitive         "llvm.va_end" %void% (list %i8*%))

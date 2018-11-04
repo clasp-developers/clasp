@@ -372,7 +372,7 @@ CL_DEFUN Symbol_sp core__magic_intern(const string& name, const string& package)
   std::string sym;
   std::string pkg;
   colon_split(pkg_sym,pkg,sym);
-  Package_sp p = _lisp->findPackage(pkg);
+  Package_sp p = gc::As<Package_sp>(_lisp->findPackage(pkg));
   return p->intern(SimpleBaseString_O::make(sym));
 }
 
@@ -685,23 +685,23 @@ string symbol_packageName(Symbol_sp sym) {
 Instance_sp lisp_instance_class(T_sp o) {
   T_sp tc;
   if (o.fixnump()) {
-    tc = core::Fixnum_dummy_O::static_class;
+    tc = core::Fixnum_dummy_O::staticClass();
     //	    return core::Fixnum_O::___staticClass;
   } else if (o.characterp()) {
-    tc = core::Character_dummy_O::static_class;
+    tc = core::Character_dummy_O::staticClass();
   } else if (o.single_floatp()) {
-    tc = core::SingleFloat_dummy_O::static_class;
+    tc = core::SingleFloat_dummy_O::staticClass();
   } else if (o.consp()) {
-    tc = core::Cons_O::static_class;
+    tc = core::Cons_O::staticClass();
   } else if (o.generalp()) {
     General_sp go(o.unsafe_general());
     unlikely_if ( go.nilp() ) {
-      tc = core::Null_O::static_class;
+      tc = core::Null_O::staticClass();
     }
     tc = go->_instanceClass();
   } else if (o.valistp()) {
     // What do I tc = for this?
-    tc = core::VaList_dummy_O::static_class;
+    tc = core::VaList_dummy_O::staticClass();
   } else {
     SIMPLE_ERROR(BF("Add support for unknown (immediate?) object to lisp_instance_class obj = %p") % (void*)(o.raw_()));
   }
@@ -712,7 +712,7 @@ Instance_sp lisp_static_class(T_sp o) {
   if ( o.generalp() ) {
     General_sp go(o.unsafe_general());
     if (go.nilp()) {
-      return core::Null_O::static_class;
+      return core::Null_O::staticClass();
     }
     return go->__class();
   }
@@ -840,7 +840,7 @@ List_sp lisp_parse_arguments(const string &packageName, const string &args) {
   Package_sp pkg = gc::As<Package_sp>(_lisp->findPackage(packageName, true));
   ChangePackage changePackage(pkg);
   SimpleBaseString_sp ss = SimpleBaseString_O::make(args);
-  Stream_sp str = cl__make_string_input_stream(ss, 0, _Nil<T_O>());
+  Stream_sp str = gc::As_unsafe<Stream_sp>(cl__make_string_input_stream(ss, 0, _Nil<T_O>()));
 #if 0  
   Reader_sp reader = Reader_O::create(str);
   T_sp osscons = reader->primitive_read(true, _Nil<T_O>(), false);
@@ -857,7 +857,7 @@ List_sp lisp_parse_declares(const string &packageName, const string &declarestri
   Package_sp pkg = gc::As<Package_sp>(_lisp->findPackage(packageName, true));
   ChangePackage changePackage(pkg);
   SimpleBaseString_sp ss = SimpleBaseString_O::make(declarestring);
-  Stream_sp str = cl__make_string_input_stream(ss, 0, _Nil<T_O>());
+  Stream_sp str = gc::As_unsafe<Stream_sp>(cl__make_string_input_stream(ss, 0, _Nil<T_O>()));
 #if 0
   Reader_sp reader = Reader_O::create(str);
   List_sp sscons = reader->primitive_read(true, _Nil<T_O>(), false);
@@ -952,7 +952,7 @@ void lisp_defineSingleDispatchMethod(T_sp name,
   
   T_sp docStr = _Nil<T_O>();
   if (docstring!="") docStr = SimpleBaseString_O::make(docstring);
-  T_sp gfn = core__ensure_single_dispatch_generic_function(name, llhandler,autoExport,single_dispatch_argument_index); // Ensure the single dispatch generic function exists
+  SingleDispatchGenericFunctionClosure_sp gfn = core__ensure_single_dispatch_generic_function(name, llhandler,autoExport,single_dispatch_argument_index); // Ensure the single dispatch generic function exists
   (void)gfn;                                                         // silence compiler warning
   method_body->finishSetup(llhandler);
   method_body->setf_sourcePathname(_Nil<T_O>());
@@ -1278,8 +1278,8 @@ T_sp lisp_createFixnum(int fn) {
 
 SourcePosInfo_sp lisp_createSourcePosInfo(const string &fileName, size_t filePos, int lineno) {
   SimpleBaseString_sp fn = SimpleBaseString_O::make(fileName);
-  SourceFileInfo_mv sfi_mv = core__source_file_info(fn);
-  SourceFileInfo_sp sfi = sfi_mv;
+  T_mv sfi_mv = core__source_file_info(fn);
+  SourceFileInfo_sp sfi = gc::As<SourceFileInfo_sp>(sfi_mv);
   Fixnum_sp handle = gc::As<Fixnum_sp>(sfi_mv.valueGet_(1));
   int sfindex = unbox_fixnum(handle);
   return SourcePosInfo_O::create(sfindex, filePos, lineno, 0);
