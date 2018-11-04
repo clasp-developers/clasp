@@ -2903,22 +2903,7 @@ CL_DEFUN void finalizeEngineAndRegisterWithGcAndRunMainFunctions(ExecutionEngine
     printf("%s:%d Entered %s\n", __FILE__, __LINE__, __FUNCTION__ );
 #endif
     finalizeEngineAndTime(engine);
-#if 1
     engine->runStaticConstructorsDestructors(false);
-#else
-    void (*clasp_ctor)() = reinterpret_cast<void(*)()>(engine->getGlobalValueAddress(CLASP_CTOR_FUNCTION_NAME));
-//  printf("%s:%d clasp_ctor --> %p\n", __FILE__, __LINE__, clasp_ctor );
-    if ( clasp_ctor == NULL ) {
-      SIMPLE_ERROR(BF("Could not get a pointer to %s in finalizeEngineAndRegisterWithGcAndRunMainFunctions") % CLASP_CTOR_FUNCTION_NAME );
-    }
-#ifdef DEBUG_STARTUP
-    printf("%s:%d About to call clasp_ctor\n", __FILE__, __LINE__ );
-#endif
-    (clasp_ctor)();
-#ifdef DEBUG_STARTUP
-    printf("%s:%d Returned from call clasp_ctor\n", __FILE__, __LINE__ );
-#endif
-#endif
     if ( core::startup_functions_are_waiting() ) {
       core::startup_functions_invoke();
     } else {
