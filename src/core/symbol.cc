@@ -250,14 +250,20 @@ Symbol_sp Symbol_O::create_from_string(const string &nm) {
 #endif
   return n;
 };
-
-
-CL_LISPIFY_NAME("makunbound");
-CL_DEFMETHOD Symbol_sp Symbol_O::makunbound() {
+   
+Symbol_sp Symbol_O::makunbound() {
   if (this->getReadOnly())
+    // would be a nice extension to make this a continuable error
     SIMPLE_ERROR(BF("Cannot make constant %s unbound") % this->__repr__());
   *my_thread->_Bindings.reference_raw(this,&this->_GlobalValue) = _Unbound<T_O>();
   return this->asSmartPtr();
+}
+
+CL_LAMBDA(function-name);
+CL_DECLARE();
+CL_DOCSTRING("makunbound");
+CL_DEFUN Symbol_sp cl__makunbound(Symbol_sp functionName) {
+  return functionName->makunbound();
 }
 
 bool Symbol_O::fboundp() const {
