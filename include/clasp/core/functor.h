@@ -90,7 +90,7 @@ fields at the same offset as Instance_O.
 
 FORWARD(ObjectFile);
 class ObjectFile_O : public General_O {
-  LISP_ABSTRACT_CLASS(core,ClPkg,ObjectFile_O,"OBJECT-FILE",General_O);
+  LISP_ABSTRACT_CLASS(core,CorePkg,ObjectFile_O,"OBJECT-FILE",General_O);
 public:
   void* ObjectFilePtr;
   size_t ObjectFileSize;
