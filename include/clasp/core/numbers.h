@@ -632,9 +632,8 @@ namespace core {
 
     // math routines shared by all numbers
     bool zerop_() const { return (clasp_zerop(this->_real) && clasp_zerop(this->_imaginary)); };
-
-    virtual Number_sp negate_() const { return Complex_O::create(gc::As<Real_sp>(gc::As<Integer_sp>(clasp_negate(this->_real))),
-								 gc::As<Real_sp>(gc::As<Integer_sp>(clasp_negate(this->_imaginary)))); };
+    virtual Number_sp negate_() const { return Complex_O::create(gc::As<Real_sp>(clasp_negate(this->_real)),
+								 gc::As<Real_sp>(clasp_negate(this->_imaginary))); };    
 
     virtual Number_sp log1_() const;
     virtual Number_sp log1p_() const;
