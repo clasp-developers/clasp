@@ -1615,12 +1615,17 @@ CL_DEFUN T_sp cl__type_of(T_sp x) {
 CL_LAMBDA(obj);
 CL_DECLARE();
 CL_DOCSTRING("sxhash");
-CL_DEFUN Integer_sp cl__sxhash(T_sp obj) {
+CL_DEFUN Fixnum_sp cl__sxhash(T_sp obj) {
   if (obj.nilp())
     return make_fixnum(1);
   HashGenerator hg;
   clasp_sxhash(obj, hg);
-  return Integer_O::create(hg.hash());
+  gc::Fixnum hash = hg.hash();
+  if (hash < 0)
+    hash = - hash;
+  if (hash > MOST_NEGATIVE_FIXNUM)
+    hash = hash >> 3;
+  return clasp_make_fixnum(hash);
 }
 
 // --------------------------------------------------
