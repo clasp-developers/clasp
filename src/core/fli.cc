@@ -421,9 +421,9 @@ inline string ForeignData_O::__repr__() const
      << " :size " << this->m_size
      << " :ownership-flags " << this->m_ownership_flags
      << " :data-ptr "
-     << (BF("%p") % this->m_raw_data)
+     << (BF("%p") % (void*)this->m_raw_data)
      << " :orig-ptr "
-     << (BF("%p") % this->m_orig_data_ptr)
+     << (BF("%p") % (void*)this->m_orig_data_ptr)
      << ">";
 
   return ss.str();
@@ -577,10 +577,11 @@ ForeignData_sp ForeignData_O::create( cl_intptr_t address )
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-ForeignData_sp ForeignData_O::create( void * p_address )
+ForeignData_sp ForeignData_O::create( void * p_address, size_t size )
 {
   GC_ALLOCATE(ForeignData_O, self);
   self->m_raw_data = p_address;
+  self->m_size = size;
   self->set_kind( kw::_sym_clasp_foreign_data_kind_pointer );
   return self;
 }
@@ -1386,12 +1387,13 @@ core::T_sp PERCENTmem_set_unsigned_char( core::Integer_sp address, core::T_sp va
   return mk_fixnum_uint8( tmp );
 }
 
-struct section_64 *get_section_data( std::string& segment_name,
-                                     std::string& section_name )
+const struct section_64 *get_section_data( const char* segment_name,
+                                           const char* section_name )
 {
   const struct section_64 * p_section = (struct section_64 *) NULL;
-
+  
 #if defined( __APPLE__ )
+  unsigned long section_size = 0;
   p_section = (struct section_64 *) getsectiondata( &_mh_execute_header,
                                                     segment_name,
                                                     section_name,
@@ -1401,7 +1403,7 @@ struct section_64 *get_section_data( std::string& segment_name,
   return p_section;
 }
 
-core::T_sp PERCENTget_section_data( core::String_sp sp_segment_name,
+core::T_mv PERCENTget_section_data( core::String_sp sp_segment_name,
                                     core::String_sp sp_section_name )
 {
 #if defined( __APPLE__ )
@@ -1409,33 +1411,22 @@ core::T_sp PERCENTget_section_data( core::String_sp sp_segment_name,
   const struct section_64 * p_section     = (struct section_64 *) NULL;
   unsigned long             section_size  = 0;
 
-  p_section = getsectiondata( &_mh_execute_header,
-                              sp_segment_name->get_std_string(),
-                              sp_section_name->get_std_string(),
-                              &section_size );
+  p_section = get_section_data(sp_segment_name->get_std_string().c_str(),
+                               sp_section_name->get_std_string().c_str());
   if( p_section != nullptr )
   {
     unsigned long long section_start_address = p_section->addr;
-    unsigned long long section_end_address   = section_start_address + section_size;
-    return Values( ForeignData_O::create( section_start_address ),
-                   ForeignData_O::create( section_end_address ),
-                   mk_integer_ulong( section_size ),
-                   core::lisp_true() );
+    ForeignData_sp fd = ForeignData_O::create((void*)section_start_address,section_size);
+    return Values( fd, core::lisp_true() );
   }
   else
   {
-    return Values( core::_Nil<T_O>(),
-                   core::_Nil<T_O>(),
-                   core::make_integer_ulong( 0 ),
-                   core::lisp_true());
+    return Values( _Nil<core::T_O>(), _lisp->_true());
   }
 
 #else
 
-  return Values( core::_Nil<T_O>(),
-                 core::_Nil<T_O>(),
-                 core::make_integer_ulong( 0 ),
-                 core::_Nil<T_O>() );
+  return Values( _Nil<core::T_O>(), _Nil<core::T_O>() );
 
 #endif
 

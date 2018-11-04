@@ -153,7 +153,7 @@ namespace clasp_ffi {
 
     // MAKE AND CREATE
     static ForeignData_sp create(const cl_intptr_t address = 0);
-    static ForeignData_sp create(void * p_address = nullptr);
+    static ForeignData_sp create(void * p_address = nullptr, size_t size = 0);
 
     CL_DEFMETHOD void PERCENTfree_foreign_object();
     CL_DEFMETHOD void PERCENTfree_foreign_data();
@@ -487,7 +487,7 @@ namespace clasp_ffi
 
   }; // ForeignTypeSpec_O
 
-  CL_DEFUN core::T_sp PERCENTget_section_data( core::String_sp segment_name,
+  CL_DEFUN core::T_mv PERCENTget_section_data( core::String_sp segment_name,
                                                core::String_sp section_name );
   // This function returns 4 values:
   // (values segment-start-address segment-end-address segment-size t)
