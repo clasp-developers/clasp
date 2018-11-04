@@ -25,6 +25,10 @@ THE SOFTWARE.
 */
 /* -^- */
 #define DEBUG_LANDING_PAD 1
+#if defined( __APPLE__ )
+#include <mach-o/ldsyms.h>
+#include <mach-o/getsect.h>
+#endif
 
 //#define DEBUG_LEVEL_FULL
 #ifdef USE_MPS
@@ -757,6 +761,72 @@ void invokeTopLevelFunction(core::T_mv *resultP,
 };
 #endif
 
+
+
+
+
+uint8_t * 
+mygetsectiondata(
+const struct mach_header_64 *mhp,
+const char *segname,
+const char *sectname,
+unsigned long *size)
+{
+    struct segment_command_64 *sgp;
+    struct section_64 *sp;
+    uint32_t i, j;
+    intptr_t slide;
+    
+	slide = 0;
+	sp = 0;
+	sgp = (struct segment_command_64 *)
+	      ((char *)mhp + sizeof(struct mach_header_64));
+	for(i = 0; i < mhp->ncmds; i++){
+	    if(sgp->cmd == LC_SEGMENT_64){
+		if(strcmp(sgp->segname, "__TEXT") == 0){
+		    slide = (uintptr_t)mhp - sgp->vmaddr;
+		}
+		if(strncmp(sgp->segname, segname, sizeof(sgp->segname)) == 0){
+		    sp = (struct section_64 *)((char *)sgp +
+			 sizeof(struct segment_command_64));
+		    for(j = 0; j < sgp->nsects; j++){
+			if(strncmp(sp->sectname, sectname,
+			   sizeof(sp->sectname)) == 0 &&
+			   strncmp(sp->segname, segname,
+			   sizeof(sp->segname)) == 0){
+			    *size = sp->size;
+//   return (uint8_t*)sp;
+                            uint8_t* addr = ((uint8_t *)(sp->addr) + slide);
+                            return addr;
+			}
+			sp = (struct section_64 *)((char *)sp +
+			     sizeof(struct section_64));
+		    }
+		}
+	    }
+	    sgp = (struct segment_command_64 *)((char *)sgp + sgp->cmdsize);
+	}
+	return(0);
+}
+
+void cc_register_library(const char* header) {
+  printf("%s:%d header -> %p\n", __FILE__, __LINE__, header );
+  if (header) {
+#if defined( __APPLE__ )
+    unsigned long section_size = 0;
+    uint8_t* p_section =  mygetsectiondata( (struct mach_header_64*)header,
+                                            "__LLVM_STACKMAPS",
+                                            "__llvm_stackmaps",
+                                            &section_size );
+    if (p_section!=nullptr) {
+      printf("%s:%d LLVM_STACKMAPS  p_section@%p section_size=%lu\n", __FILE__, __LINE__, (void*)p_section, section_size );
+    } else {
+      printf("%s:%d     Could not find LLVM_STACKMAPS\n", __FILE__, __LINE__ );
+    }
+#endif
+  }
+
+}
 
 
 /*! Invoke the main functions from the main function array.
