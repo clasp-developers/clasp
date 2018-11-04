@@ -67,6 +67,7 @@ class Package_O : public General_O {
   mutable mp::SharedMutex _Lock;
 #endif
   bool systemLockedP = false;
+  bool userLockedP = false;
  public: // Creation class functions
   static Package_sp create(const string &p);
 
@@ -202,8 +203,12 @@ class Package_O : public General_O {
     return this->systemLockedP;
   }
 
+  void setUserLockedP (bool value) {
+    this->userLockedP = value;
+  }
+
   bool getUserLockedP () {
-    return false;
+    return this->userLockedP;
   }
 
  public:
