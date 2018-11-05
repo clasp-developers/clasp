@@ -178,13 +178,7 @@
                          (ehselector.slot (or *ehselector.slot* (alloca-ehselector.slot)))
                          (cleanup-block (or *cleanup-block*
                                             (generate-resume-block exn.slot ehselector.slot)))
-                         (semiframe (translate-datum (frame-marker function-info))))
-                    ;; KLUDGE TIME
-                    ;; semiframe will have been assigned by a save-frame-instruction.
-                    ;; Nothing else writes to it, so it's an SSA variable.
-                    ;; (As indicated by being a cons in *vars*.)
-                    ;; We kind of magic our way into that here.
-                    (assert (consp semiframe))
+                         (frame (frame-value function-info)))
                     (generate-catch-landing-pad
                      *cleanup-pad* cleanup-block exn.slot ehselector.slot
-                     return-value abi tags real (car semiframe))))))))
+                     return-value abi tags real frame)))))))

@@ -102,7 +102,7 @@ when this is t a lot of graphs will be generated.")
                    :readably nil
                    :pretty nil))
 
-;;; KLUDGE: Kept mainly for enter-instruction. Rearrange.
+;;; KLUDGE: Kept mainly for enter-instruction. Rearrange things.
 (defun translate-datum (datum)
   (or (gethash datum *vars*)
       (setf (gethash datum *vars*)
@@ -116,35 +116,38 @@ when this is t a lot of graphs will be generated.")
                (alloca-t* (datum-name-as-string datum)))
               (t (error "add support for translate datum: ~a~%" datum))))))
 
+(defun ssablep (location)
+  (let ((defs (cleavir-ir:defining-instructions location)))
+    (and (= (length defs) 1)
+         ;; FIXME: cmp/arguments does weird things.
+         (not (typep (first defs) '(or cleavir-ir:enter-instruction
+                                    clasp-cleavir-hir:bind-va-list-instruction))))))
+
 (defun in (datum &optional (label ""))
   (etypecase datum
     (cleavir-ir:immediate-input
      (cmp:irc-int-to-ptr (%i64 (cleavir-ir:value datum)) cmp:%t*%))
     (cleavir-ir:lexical-location
-     #+(or)
-     (%load (translate-datum datum) label)
-;;     #+(or)
      (let ((existing (gethash datum *vars*)))
-       (if (consp existing) ; ssa
-           (car existing)
-           (%load (translate-datum datum) label))))))
-
-(defun ssablep (location)
-  (let ((defs (cleavir-ir:defining-instructions location)))
-    (= (length defs) 1)))
+       (if (null existing)
+           ;; KLUDGE: arguments.lsp doesn't assign sometimes.
+           (if (some (lambda (def)
+                       (typep def '(or cleavir-ir:enter-instruction
+                                    clasp-cleavir-hir:bind-va-list-instruction)))
+                     (cleavir-ir:defining-instructions datum))
+               (%load (translate-datum datum) label)
+               (error "Input ~a not previously defined" datum))
+           (if (ssablep datum)
+               existing
+               (%load existing label)))))))
 
 (defun out (value datum &optional (label ""))
-  ;;  (break "Datum: ~a" datum)
-  #+(or)
-  (%store value (translate-datum datum) label)
-;;  #+(or)
-  (let ((existing (gethash datum *vars*)))
-    (cond ((consp existing) (error "impossible"))
-          (existing (%store value existing label))
-          ((ssablep datum)
-           (setf (gethash datum *vars*) (list value)))
-          (t
-           (%store value (translate-datum datum) label)))))
+  (if (ssablep datum)
+      (progn
+        (unless (null (gethash datum *vars*))
+          (error "SSAable output ~a previously defined" datum))
+        (setf (gethash datum *vars*) value))
+      (%store value (translate-datum datum) label)))
 
 (defun translate-lambda-list-item (item)
   (cond ((symbolp item)
@@ -246,8 +249,17 @@ when this is t a lot of graphs will be generated.")
               the-function))))))
 
 ;;; Returns all basic blocks with the given owner.
+;;; They are sorted so that a block never appears before one of its dominators, for SSA reasons.
+;;; (I think both breadth and depth first orderings do this? Here it's depth for simplicity.)
 (defun function-basic-blocks (enter)
-  (remove enter *basic-blocks* :test-not #'eq :key #'cleavir-basic-blocks:owner))
+  (let (ret)
+    (labels ((aux (block)
+               (push block ret)
+               (loop for succ in (cleavir-basic-blocks:successors block)
+                     unless (member succ ret)
+                       do (aux succ))))
+      (aux (find enter *basic-blocks* :key #'cleavir-basic-blocks:first-instruction))
+      (nreverse ret))))
 
 (defun log-layout-procedure (the-function basic-blocks)
   (format *debug-log* "------------ begin layout-procedure ~a~%" (llvm-sys:get-name the-function))
@@ -305,10 +317,9 @@ when this is t a lot of graphs will be generated.")
          ;; Gather the basic blocks of this procedure in basic-blocks
          (basic-blocks (function-basic-blocks enter))
          ;; The basic block control starts in.
-         (first-basic-block (find enter basic-blocks
-                                  :test #'eq :key #'cleavir-basic-blocks:first-instruction))
+         (first-basic-block (first basic-blocks))
          ;; This gathers the rest of the basic blocks
-         (rest-basic-blocks (remove first-basic-block basic-blocks :test #'eq))
+         (rest-basic-blocks (rest basic-blocks))
          (cmp:*current-function-name* (cmp:jit-function-name lambda-name))
          (cmp:*gv-current-function-name*
            (cmp:module-make-global-string cmp:*current-function-name* "fn-name"))

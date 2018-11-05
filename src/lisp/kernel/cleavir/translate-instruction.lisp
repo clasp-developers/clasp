@@ -153,7 +153,9 @@
 (defmethod translate-simple-instruction
     ((instruction cc-mir:save-frame-instruction) return-value abi function-info)
   ;; FIXME: rename the intrinsic!!
-  (out (%intrinsic-call "cc_pushLandingPadFrame" nil) (first (cleavir-ir:outputs instruction))))
+  (let ((frame (%intrinsic-call "cc_pushLandingPadFrame" nil)))
+    (setf (frame-value function-info) frame)
+    (out frame (first (cleavir-ir:outputs instruction)))))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:create-cell-instruction) return-value abi function-info)
