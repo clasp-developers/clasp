@@ -74,7 +74,7 @@
         (unwind-protect
              (llvm-sys:dump-module module fout)
           (close fout)))
-      (llvm-sys:write-bitcode-to-file module output-path)))
+      (llvm-sys:write-bitcode-to-file module (namestring output-path))))
 
 (defun load-bitcode (filename)
   (if *use-human-readable-bitcode*
