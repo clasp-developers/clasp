@@ -635,7 +635,7 @@ and initialize it with an array consisting of one function pointer."
 
 (defun exception-typeid*-from-name (name)
   (let* ((cname (gethash name *exception-types-hash-table*))
-	 (i8* (llvm-sys:get-or-create-external-global *the-module* cname %i8%)))
+	 (i8* (llvm-sys:get-or-create-external-global *the-module* cname %i8% 'llvm-sys:external-linkage)))
     i8*))
 
 
