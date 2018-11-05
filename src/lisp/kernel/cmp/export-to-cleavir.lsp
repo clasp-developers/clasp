@@ -123,7 +123,6 @@
           irc-alloca-vaslist
           irc-alloca-va_list
           irc-alloca-register-save-area
-          irc-alloca-invocation-history-frame
           irc-alloca-size_t
           compile-reference-to-literal
           ltv-global

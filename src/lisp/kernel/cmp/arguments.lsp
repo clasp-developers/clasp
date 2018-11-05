@@ -579,8 +579,7 @@ if (seen_bad_keyword)
             :use-only-registers t)
            (make-calling-convention-configuration
             :use-only-registers may-use-only-registers ; if may-use-only-registers then debug-on is T and we could use only registers
-            :register-save-area* (irc-alloca-register-save-area :label "register-save-area")
-            :invocation-history-frame* (and debug-on (irc-alloca-invocation-history-frame :label "invocation-history-frame")))))))
+            :register-save-area* (irc-alloca-register-save-area :label "register-save-area"))))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

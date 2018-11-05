@@ -69,7 +69,6 @@ Could return more functions that provide lambda-list for swank for example"
                                                                     :lambda-list lambda-list
                                                                     :cleavir-lambda-list cleavir-lambda-list
                                                                     :rest-alloc rest-alloc)))
-                     (calling-convention-maybe-push-invocation-history-frame callconv)
                      (let ((new-env (bclasp-compile-lambda-list-code fn-env callconv)))
                        (cmp-log "Created new register environment -> %s%N" new-env)
                        (with-try
@@ -78,8 +77,6 @@ Could return more functions that provide lambda-list for swank for example"
                                  (codegen-block result (list* block-name (list new-body)) new-env)
                                  (codegen-progn result (list new-body) new-env)))
                          ((cleanup)
-                          (cmp-log "About to calling-convention-maybe-pop-invocation-history-frame%N")
-                          (calling-convention-maybe-pop-invocation-history-frame callconv)
                           (irc-unwind-environment new-env))))))))
         (cmp-log "About to dump the function constructed by generate-llvm-function-from-code%N")
         (cmp-log-dump-function fn)

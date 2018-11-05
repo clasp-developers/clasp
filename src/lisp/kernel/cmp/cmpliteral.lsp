@@ -591,7 +591,7 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
              (llvm-sys:replace-all-uses-with cmp:*load-time-value-holder-global-var* bitcast-constant-table)
              (llvm-sys:erase-from-parent cmp:*load-time-value-holder-global-var*)
              (multiple-value-bind (startup-fn shutdown-fn ordered-raw-constant-list)
-                 (cmp:codegen-startup-shutdown *gcroots-in-module* constant-table num-elements ordered-literals-list bitcast-constant-table)
+                 (cmp:codegen-startup-shutdown cmp:*the-module* *gcroots-in-module* constant-table num-elements ordered-literals-list bitcast-constant-table)
                (values ordered-raw-constant-list constant-table startup-fn shutdown-fn))))))))
 
 (defun load-time-reference-literal (object read-only-p)

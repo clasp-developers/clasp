@@ -1043,7 +1043,6 @@ def configure(cfg):
         cfg.define("DEBUG_GUARD_VALIDATE",1)
     if (cfg.env.DEBUG_GUARD_EXHAUSTIVE_VALIDATE):
         cfg.define("DEBUG_GUARD_EXHAUSTIVE_VALIDATE",1)
-    cfg.env.USE_HUMAN_READABLE_BITCODE=False
     if (cfg.env.DEBUG_OPTIONS):
         for opt in cfg.env.DEBUG_OPTIONS:
             if (opt in DEBUG_OPTIONS):
@@ -1178,9 +1177,8 @@ def build(bld):
     # not to instantiate tasks into the wrong group.
     bld.add_group('preprocessing')
     bld.add_group('compiling/c++')
-
-    bld.use_human_readable_bitcode = bld.env["USE_HUMAN_READABLE_BITCODE"]
-    log.debug("Using human readable bitcode: %s", bld.use_human_readable_bitcode)
+    bld.use_human_readable_bitcode = "USE_HUMAN_READABLE_BITCODE" in bld.env
+    log.info("Using human readable bitcode: %s", bld.use_human_readable_bitcode)
     bld.clasp_source_files = collect_clasp_c_source_files(bld)
 
     bld.clasp_aclasp = collect_aclasp_lisp_files(wrappers = False)

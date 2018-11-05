@@ -320,6 +320,7 @@ The type of file generated is specified by **link-type** (:fasl|:executable).
 The type of the files to be linked is defined with **input-type** (:bitcode|:object).
 The **target-backend** indicates if we are linking for aclasp, bclasp or cclasp.
 Return the **output-pathname**."
+  (format t "output-pathname -> ~s  input-files -> ~s~%" output-pathname input-files)
   (let* ((*target-backend* target-backend)
          (start-time (get-internal-real-time))
          (intrinsics-bitcode-path (core:build-inline-bitcode-pathname link-type :intrinsics))

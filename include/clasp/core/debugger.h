@@ -96,5 +96,11 @@ namespace core {
   };
 
   int safe_backtrace(void**& return_buffer);
+
+void register_stack_map_entry(uintptr_t stackMapAddress, uintptr_t functionPointer, int frameOffset, int frameSize);
+bool lookup_stack_map_entry(uintptr_t functionPointer, int& frameOffset, int& frameSize);
+void register_jitted_object(const std::string& name, uintptr_t address, int size);
+
+
 };
 #endif

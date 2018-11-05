@@ -1066,15 +1066,14 @@ and then the irbuilder-alloca, irbuilder-body."
     (cmp-log "About to irc-br return-block%N")
     (irc-br return-block)
     (irc-begin-block return-block)
-    (irc-cleanup-function-environment env #| invocation-history-frame |# ) ;; Why the hell was this commented out?
-    #|	  (irc-cleanup-function-environment env invocation-history-frame )  |#
+    (irc-cleanup-function-environment env )
     (if return-void
         (llvm-sys:create-ret-void *irbuilder*)
         (llvm-sys:create-ret *irbuilder* (irc-load result))))
   (irc-verify-function *current-function*))
   
 
-(defun irc-cleanup-function-environment (env #||invocation-history-frame||#)
+(defun irc-cleanup-function-environment (env)
   "Generate the code to cleanup the environment"
   (if env
       (progn
@@ -1212,12 +1211,6 @@ Within the _irbuilder_ dynamic environment...
   "Alloca space for an va_list"
   (with-alloca-insert-point-no-cleanup irbuilder
     :alloca (llvm-sys::create-alloca *irbuilder* %va_list% (jit-constant-size_t 1) label)
-    :init nil))
-
-(defun irc-alloca-invocation-history-frame (&key (irbuilder *irbuilder-function-alloca*) (label "va_list"))
-  "Alloca space for an va_list"
-  (with-alloca-insert-point-no-cleanup irbuilder
-    :alloca (llvm-sys::create-alloca *irbuilder* %InvocationHistoryFrame% (jit-constant-size_t 1) label)
     :init nil))
 
 (defun irc-alloca-size_t (&key (irbuilder *irbuilder-function-alloca*) (label "va_list"))

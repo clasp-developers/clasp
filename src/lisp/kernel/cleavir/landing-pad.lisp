@@ -73,11 +73,13 @@
                                 return-value abi frame-marker landing-pad-for-unwind-rethrow
                                 tags catches)))
 
+#+(or)
 (defun generate-cleanup-invocation-history (calling-convention)
   (%intrinsic-call "cc_pop_InvocationHistoryFrame"
                    (list (cmp:calling-convention-closure calling-convention)
                          (cmp:calling-convention-invocation-history-frame* calling-convention))))
 
+#+(or)
 (defun maybe-gen-cleanup-invocation-history (function-info)
   (when (debug-on function-info)
     (let ((cc (calling-convention function-info)))
@@ -99,7 +101,7 @@
         (ehbuilder                 (llvm-sys:make-irbuilder cmp:*llvm-context*)))
     (cmp:irc-set-insert-point-basic-block cleanup-block ehbuilder)
     (cmp:with-irbuilder (ehbuilder)
-      (generate-cleanup-invocation-history calling-convention)
+      #+(or)(generate-cleanup-invocation-history calling-convention)
       (cmp:irc-br ehresume-block))
     cleanup-block))
 
@@ -119,20 +121,21 @@
 ;;; Returns either NIL or a block to serve as a landing pad.
 (defun maybe-generate-landing-pad (function info tags return-value abi)
   ;; If we don't need to worry about unwinds, don't generate any code, and return NIL immediately.
-  (let* ((debug-on (debug-on info)) (catches (catches info))
+  (let* ((debug-on (debug-on info))
+         (catches (catches info))
          (calling-convention (calling-convention info))
          (catches-p (not (null catches))))
     (if (or (debug-on info) (catches-p info))
         (let* ((exn.slot (alloca-i8* "exn.slot"))
                (ehselector.slot (alloca-i32 "ehselector.slot"))
                (resume-block (generate-resume-block function exn.slot ehselector.slot))
-               (cleanup-block (if (debug-on info)
-                                  (generate-cleanup-block function calling-convention resume-block)
-                                  resume-block))
-               (cleanup-landing-pad (if (debug-on info)
-                                        (generate-cleanup-landing-pad
-                                         function exn.slot ehselector.slot cleanup-block)
-                                        nil)))
+               (cleanup-block resume-block #+(or)(if (debug-on info)
+                                                     (generate-cleanup-block function calling-convention resume-block)
+                                                     resume-block))
+               (cleanup-landing-pad nil #+(or)(if (debug-on info)
+                                                  (generate-cleanup-landing-pad
+                                                   function exn.slot ehselector.slot cleanup-block)
+                                                  nil)))
           (if catches-p
               (generate-catch-landing-pads
                function cleanup-landing-pad ehselector.slot exn.slot cleanup-block

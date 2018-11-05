@@ -156,7 +156,7 @@ Return files."
       (progn
         (cmp:load-bitcode path))
       (if (eq type :fasl)
-          (load path)
+          (load (make-pathname :type "fasl" :defaults path))
           (error "Illegal type ~a for load-kernel-file ~a" type path)))
   path)
 
@@ -188,14 +188,13 @@ Return files."
                    :output-type output-type
                    :print print
                    :verbose verbose
-                   :type :kernel (entry-compile-file-options entry))
+                   :type :kernel
+                   (entry-compile-file-options entry))
             (if reload
-                (let ((reload-file (if (eq output-type :object)
-                                       (make-pathname :type (bitcode-extension) :defaults output-path)
-                                       output-path)))
+                (let ((reload-file (make-pathname :type "fasl" :defaults output-path)))
 		  (unless silent
 		    (bformat t "    Loading newly compiled file: %s%N" reload-file))
-                  (load-kernel-file reload-file output-type))))))
+                  (load-kernel-file reload-file :fasl))))))
     output-path))
 (export 'compile-kernel-file)
 
@@ -243,9 +242,9 @@ Return files."
                                 bc-newer))))))
     (if load-bc
         (progn
-          (bformat t "Loading bitcode file: %s%N" bc-path)
+          (bformat t "Loading fasl bitcode file: %s%N" bc-path)
           (cmp::with-compiler-timer (:message "Loaded bitcode" :verbose t)
-            (cmp:load-bitcode bc-path)))
+            (load-kernel-file bc-path :fasl)))
         (if (probe-file lsp-path)
             (progn
               (if cmp:*implicit-compile-hook*
@@ -338,7 +337,7 @@ Return files."
                     (source-path (build-pathname filename :lisp))
                     (output-path (build-pathname filename output-type)))
                (format t "Loading ~a~%" output-path)
-               (load-kernel-file output-path output-type)))
+               (load-kernel-file output-path :fasl)))
            (reload-some (entries)
              (dolist (entry entries)
                (reload-one entry)))

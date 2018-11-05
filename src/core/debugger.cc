@@ -28,6 +28,7 @@ THE SOFTWARE.
 
 #include <csignal>
 #include <execinfo.h>
+#include <dlfcn.h>
 #include <clasp/core/foundation.h>
 #ifdef USE_LIBUNWIND
 #include <libunwind.h>
@@ -51,6 +52,101 @@ THE SOFTWARE.
 #include <clasp/core/wrappers.h>
 
 namespace core {
+
+struct JittedObject {
+  std::string _Name;
+  uintptr_t _ObjectPointer;
+  int       _Size;
+  JittedObject() {};
+  JittedObject(const std::string& name, uintptr_t fp, int fs) : _Name(name), _ObjectPointer(fp), _Size(fs) {};
+};
+
+
+struct StackMap {
+  uintptr_t _FunctionPointer;
+  int   _FrameOffset;
+  int   _FrameSize;
+  StackMap() {};
+  StackMap(uintptr_t fp, int fo, int fs) : _FunctionPointer(fp), _FrameOffset(fo), _FrameSize(fs) {};
+  StackMap(const StackMap& o) {
+    this->_FunctionPointer = o._FunctionPointer;
+    this->_FrameOffset = o._FrameOffset;
+    this->_FrameSize = o._FrameSize;
+  }
+};
+
+
+
+std::map<uintptr_t,StackMap> global_StackMaps;
+std::vector<JittedObject> global_JittedObjects;
+
+void register_stack_map_entry(uintptr_t stackMapAddress, uintptr_t functionPointer, int frameOffset, int frameSize) {
+  if (global_StackMaps.find((uintptr_t)stackMapAddress) == global_StackMaps.end()) {
+//    printf("%s:%d:%s Adding stackmap entry for %lx offset: %d  size: %d\n", __FILE__, __LINE__, __FUNCTION__, functionPointer, frameOffset, frameSize);
+    if (functionPointer!=0) {
+      StackMap stackmap(functionPointer,frameOffset,frameSize);
+      global_StackMaps[(uintptr_t)functionPointer] = stackmap;
+    } else {
+      printf("%s:%d:%s stackmap %p entry has a function 0x0 offset: %d  size: %d\n", __FILE__, __LINE__, __FUNCTION__, (void*)stackMapAddress, frameOffset, frameSize );
+    }
+  }
+}
+
+void register_jitted_object(const std::string& name, uintptr_t address, int size) {
+//  printf("%s:%d:%s function: %s %lX %d\n", __FILE__, __LINE__, __FUNCTION__, name.c_str(), address, size );
+  global_JittedObjects.emplace_back(JittedObject(name,address,size));
+}
+
+bool lookup_stack_map_entry(uintptr_t functionPointer, int& frameOffset, int& frameSize) {
+  std::map<uintptr_t,StackMap>::iterator find = global_StackMaps.find((uintptr_t)functionPointer);
+  if (find != global_StackMaps.end()) {
+    frameOffset = find->second._FrameOffset;
+    frameSize = find->second._FrameSize;
+    return true;
+  }
+  return false;
+}
+
+bool closest_function(uintptr_t returnAddress, uintptr_t& functionAddress, uintptr_t& instructionOffset, int& frameSize, int& frameOffset) {
+  instructionOffset = ~0;
+  bool result = false;
+  for ( auto entry : global_StackMaps ) {
+    if (entry.second._FunctionPointer<returnAddress) {
+      if ((returnAddress-entry.second._FunctionPointer)<instructionOffset) {
+        result = true;
+        instructionOffset = returnAddress-entry.second._FunctionPointer;
+        functionAddress = entry.second._FunctionPointer;
+        frameSize = entry.second._FrameSize;
+        frameOffset = entry.second._FrameOffset;
+      }
+    }
+  }
+  return result;
+}
+
+bool function_name(uintptr_t returnAddress, std::string& name, uintptr_t& realFunctionAddress ) {
+  for ( auto entry : global_JittedObjects ) {
+    if (entry._ObjectPointer <= returnAddress
+        && returnAddress <= (entry._ObjectPointer+entry._Size)) {
+      realFunctionAddress = entry._ObjectPointer;
+      name = entry._Name;
+//      printf("%s:%d:%s found address@%p in JittedObjects name: %s  realFunctionAddress: %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)returnAddress, name.c_str(), (void*)realFunctionAddress);
+      return true;
+    }
+  }
+  Dl_info dlinfo;
+  int res = dladdr((void*)returnAddress,&dlinfo);
+  if (res<=0) {
+    SIMPLE_ERROR(BF("dladdr failed: %s ") % dlerror());
+  }
+  name = dlinfo.dli_sname;
+  realFunctionAddress = (uintptr_t)dlinfo.dli_saddr;
+//  printf("%s:%d:%s found address@%p with dladdr name: %s  realFunctionAddress: %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)returnAddress, name.c_str(), (void*)realFunctionAddress);
+  return true;
+}
+  
+  
+  
 
 void start_debugger() {
   LispDebugger dbg(_Nil<T_O>());
@@ -514,6 +610,19 @@ CL_DEFUN T_sp core__clib_backtrace_as_list() {
       std::string str(strings[i]);
       SimpleBaseString_sp sstr = SimpleBaseString_O::make(str);
       Pointer_sp ptr = Pointer_O::create(buffer[i]);
+      uintptr_t functionAddress;
+      uintptr_t instructionOffset;
+      int frameSize;
+      int frameOffset;
+      bool stackmap_found = closest_function((uintptr_t)buffer[i],functionAddress,instructionOffset,frameSize,frameOffset);
+      std::string closest_name = "";
+      T_sp args = _Nil<T_O>();
+      uintptr_t realFunctionAddress = 0;
+      function_name((uintptr_t)buffer[i],closest_name,realFunctionAddress);
+//      printf("%s:%d:%s  closest_name = %s bp=%lX %d instructionOffset: %lu str: %s\n", __FILE__, __LINE__, __FUNCTION__, closest_name.c_str(), (uintptr_t)bp, frameOffset, instructionOffset, str.c_str());
+      if (stackmap_found && (functionAddress == realFunctionAddress)) {
+        args = capture_arguments((uintptr_t)bp,frameOffset);
+      }
       //printf("func: %s  bp = %p\n", str.c_str(), bp);
       T_sp frame;
       if (bp) {
@@ -525,7 +634,16 @@ CL_DEFUN T_sp core__clib_backtrace_as_list() {
       } else {
         frame = _Nil<T_O>();
       }
-      result << Cons_O::createList(ptr,sstr,frame);
+      T_sp tname = _Nil<T_O>();
+      if (closest_name != "") {
+        tname = core::SimpleBaseString_O::make(closest_name);
+      }
+      result << Cons_O::createList(ptr,sstr,frame,
+                                   tname,
+                                   core::make_fixnum(instructionOffset),
+                                   core::make_fixnum(frameSize),
+                                   core::make_fixnum(frameOffset),
+                                   args);
     }
     if (buffer) free(buffer);
     if (strings) free(strings);

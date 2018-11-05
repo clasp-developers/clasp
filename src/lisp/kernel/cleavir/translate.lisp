@@ -185,6 +185,7 @@ when this is t a lot of graphs will be generated.")
       (clasp-cleavir-hir:lambda-name instr)
       'TOP-LEVEL))
 
+#+(or)
 (defun generate-push-invocation-history-frame (cc)
   (%intrinsic-call "cc_push_InvocationHistoryFrame"
                    (list (cmp:calling-convention-closure cc)
@@ -211,8 +212,8 @@ when this is t a lot of graphs will be generated.")
             (cmp:with-landing-pad
                 (maybe-generate-landing-pad the-function function-info *tags* return-value abi)
               (cmp:irc-begin-block body-block)
-              (when (debug-on function-info)
-                (generate-push-invocation-history-frame (calling-convention function-info)))
+              #+(or)(when (debug-on function-info)
+                      (generate-push-invocation-history-frame (calling-convention function-info)))
               (layout-basic-block first-basic-block return-value abi function-info)
               (loop for block in rest-basic-blocks
                     for instruction = (cleavir-basic-blocks:first-instruction block)
