@@ -99,7 +99,7 @@ goto empty_rest_key_parsing;
 	   (rest (cond
                    ((eq rest-alloc 'ignore)
                     ;; &rest variable is ignored- allocate nothing
-                    nil)
+                    (irc-undef-value-get %t*%))
                    ((eq rest-alloc 'dynamic-extent)
                     ;; Do the dynamic extent thing- alloca, then an intrinsic to initialize it.
                     (let ((rrest
@@ -121,21 +121,7 @@ goto empty_rest_key_parsing;
                     (irc-intrinsic-call "cc_gatherRestArguments" 
                                         (list (cmp:calling-convention-va-list* calling-conv)
                                               nremaining))))))
-      (when rest
-        (funcall *argument-out* rest rest-var)))))
-
-;; a rest argument in the case where it's known no arguments remain.
-(defun compile-empty-rest-argument (rest-var varest-p calling-conv iNIL)
-  (unless (eq (calling-convention-rest-alloc calling-conv) 'ignore)
-    (funcall *argument-out*
-             (if varest-p
-                 ;; overcomplicated. FIXME
-                 (irc-intrinsic-call "cc_gatherVaRestArguments"
-                                     (list (calling-convention-va-list* calling-conv)
-                                           (irc-size_t 0)
-                                           (irc-alloca-vaslist :label "rest")))
-                 iNIL)
-             rest-var)))
+      (funcall *argument-out* rest rest-var))))
 
 ;;; Keyword processing is the most complicated part, unsurprisingly.
 #|
@@ -167,6 +153,8 @@ if (seen_bad_keyword)
 
 (defun compile-one-key-test (keyword key-arg suppliedp-phi cont-block false)
   (let* ((keystring (string keyword))
+         ;; NOTE: We might save a bit of time by moving this out of the loop.
+         ;; Or maybe LLVM can handle it. I don't know.
          (key-const (irc-literal keyword keystring))
          (match (irc-basic-block-create (core:bformat nil "matched-%s" keystring)))
          (mismatch (irc-basic-block-create (core:bformat nil "not-%s" keystring))))
@@ -342,12 +330,6 @@ if (seen_bad_keyword)
             (funcall *argument-out* top-param-phi var)
             (funcall *argument-out* top-suppliedp-phi suppliedp)))))))
 
-(defun compile-empty-key-arguments (keyargs calling-conv false)
-  (do* ((cur-key (cdr keyargs) (cddddr cur-key))
-        (suppliedp (cadddr cur-key) (cadddr cur-key)))
-       ((endp cur-key))
-    (funcall *argument-out* false suppliedp)))
-
 (defun compile-general-lambda-list-code (reqargs 
 					 optargs 
 					 rest-var
@@ -359,42 +341,54 @@ if (seen_bad_keyword)
                                          &key argument-out (safep t))
   (cmp-log "Entered compile-general-lambda-list-code%N")
   (let* ((*argument-out* argument-out)
+         (nargs (calling-convention-nargs calling-conv))
          (nreq (car reqargs))
          (nopt (car optargs))
          (nfixed (+ nreq nopt)))
     (unless (zerop nreq)
       (when safep
-        (compile-error-if-not-enough-arguments nreq (calling-convention-nargs calling-conv)))
+        (compile-error-if-not-enough-arguments nreq nargs))
       (compile-required-arguments reqargs calling-conv))
-    (let ((final (irc-basic-block-create "done-parsing-arguments"))
-          ;; note: atm, we won't be in this function if we only have required args,
-          ;; so we basically always need these. But that can (hopefully will) change.
+    (let (;; note: atm, we won't be in this function if we only have required args,
+          ;; so we basically always need these. But that can (hopefully will) change,
+          ;; once handling is uniform.
           (iNIL (irc-nil)) (iT (irc-t)))
-      (unless (zerop nopt)
-        ;; The optional parsing is a little more complicated, because if it
-        ;; runs out we can jump immediately to a block that just sets any rest and key
-        ;; to NIL, and we can skip the various not actually relevant arg count checks
-        ;; that the key parser does.
-        (let ((args-remain (irc-basic-block-create "optional-args-remain"))
-              (args-exhausted (irc-basic-block-create "optional-args-exhausted")))
-          (compile-optional-arguments optargs nreq calling-conv args-exhausted iNIL iT)
-          (irc-br args-remain)
-          (irc-begin-block args-exhausted)
-          (when rest-var
-            (compile-empty-rest-argument rest-var varest-p calling-conv iNIL))
-          (when key-flag
-            (compile-empty-key-arguments keyargs calling-conv iNIL))
-          (irc-br final)
-          (irc-begin-block args-remain)))
-      (let ((nremaining (irc-sub (calling-convention-nargs calling-conv) (irc-size_t nfixed))))
-        (when rest-var
-          (compile-rest-argument rest-var varest-p nremaining calling-conv))
-        (when key-flag
-          (compile-key-arguments keyargs (or allow-other-keys (not safep)) nremaining calling-conv iNIL iT)))
-      (unless (or rest-var key-flag)
-        (when safep
-          (compile-error-if-too-many-arguments nfixed (calling-convention-nargs calling-conv))))
-      (irc-branch-to-and-begin-block final))))
+      (if (or rest-var key-flag)
+          ;; We have &key and/or &rest, so parse with that expectation.
+          ;; Specifically, we have to get a variable for how many arguments are left after &optional.
+          (let ((nremaining
+                  (if (zerop nopt)
+                      ;; Having no optional arguments makes it easy.
+                      (irc-sub nargs (irc-size_t nreq) "nremaining")
+                      ;; But otherwise...
+                      (let ((args-remain (irc-basic-block-create "args-remain"))
+                            (args-exhausted (irc-basic-block-create "args-exhausted"))
+                            (after-optional (irc-basic-block-create "after-optional")))
+                        (compile-optional-arguments optargs nreq calling-conv args-exhausted iNIL iT)
+                        (irc-branch-to-and-begin-block args-remain)
+                        (let ((sub (irc-sub nargs (irc-size_t nfixed))))
+                          (irc-br after-optional)
+                          (irc-begin-block args-exhausted)
+                          (irc-br after-optional)
+                          (irc-begin-block after-optional)
+                          (let ((phi (irc-phi %size_t% 2 "nremaining")))
+                            ;; If we're out of arguments, we lie a bit and say there are zero args
+                            ;; remaining. &key and &rest parsing then do the right thing.
+                            (irc-phi-add-incoming phi (irc-size_t 0) args-exhausted)
+                            (irc-phi-add-incoming phi sub args-remain)
+                            phi))))))
+            ;; Note that we don't need to check for too many arguments here.
+            (when rest-var
+              (compile-rest-argument rest-var varest-p nremaining calling-conv))
+            (when key-flag
+              (compile-key-arguments keyargs (or allow-other-keys (not safep)) nremaining calling-conv iNIL iT)))
+          ;; We don't have &key or &rest, but we might still have &optional.
+          (progn
+            (let ((final (irc-basic-block-create "done-parsing-args")))
+              (unless (zerop nopt)
+                (compile-optional-arguments optargs nreq calling-conv final iNIL iT))
+              (compile-error-if-too-many-arguments nfixed nargs)
+              (irc-branch-to-and-begin-block final)))))))
 
 (defun compile-only-reg-and-opt-arguments (reqargs optargs cc &key argument-out (safep t))
   (let ((register-args (cmp:calling-convention-register-args cc))
