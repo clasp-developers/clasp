@@ -218,8 +218,6 @@
     (primitive         "pushDynamicBinding" %void% (list %t*%))
     (primitive         "popDynamicBinding" %void% (list %t*%))
     
-    (primitive         "matchKeywordOnce" %size_t% (list %t*% %t*% %i8*%))
-    
     ;; Primitives for Cleavir code
 
     (primitive         "cc_eql" %i32% (list %t*% %t*%)) ;; eql test
@@ -296,7 +294,6 @@
                                                                          (make-list core:+number-of-fixed-arguments+
                                                                                     :initial-element %t*%))
                         :varargs t)
-    (primitive         "cc_matchKeywordOnce" %size_t% (list %t*% %t*% %t*%))
     (primitive-unwinds "cc_oddKeywordException" %void% (list %function-description*%))
     (primitive         "cc_multipleValuesArrayAddress" %t*[0]*% nil)
     (primitive-unwinds "cc_unwind" %void% (list %t*% %size_t%))

@@ -1272,14 +1272,6 @@ void ignore_ensureFrameUniqueId() {
   // Do nothing
 }
 
-
-extern size_t matchKeywordOnce(core::T_O *xP, core::T_O *yP, unsigned char *sawKeyAlreadyP)
-{NO_UNWIND_BEGIN();
-  if (xP != yP) return 0;
-  if (*sawKeyAlreadyP) return 2;
-  return 1;
-  NO_UNWIND_END();
-}
 };
 
 // -----------------------------------------------------------
