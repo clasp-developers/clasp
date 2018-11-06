@@ -16,7 +16,7 @@
     ;; But it substantially complicates the code and it's not that important.
     ;; Better usage of INVOKE might be able to restore the situation.
     (cmp:compile-lambda-list-code lambda-list calling-convention
-                                  :translate-datum #'translate-datum)))
+                                  :argument-out #'out)))
 
 (defmethod translate-simple-instruction
     ((instr clasp-cleavir-hir:bind-va-list-instruction) return-value (abi abi-x86-64) function-info)
@@ -36,7 +36,7 @@
                                   ;; in method bodies. In that case the generic function does the
                                   ;; checking anyway, so there's no point in each method repeating.
                                   :safep nil
-                                  :translate-datum #'translate-datum)))
+                                  :argument-out #'out)))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:instruction) return-value abi function-info)

@@ -1,8 +1,10 @@
 (in-package :cmp)
 
-;; So that we can use this same code for both bclasp and cleavir.
-;; Note to self: Calling this function may generate instructions. Be careful with blocks.
-(defvar *translate-datum*)
+;; A function of two arguments, an LLVM Value and a variable.
+;; The "variable" is just whatever is provided to this code
+;; (so that it can work with either b or c clasp).
+;; The function should put the Value into the variable, possibly generating code to do so.
+(defvar *argument-out*)
 
 ;; Generate code to signal an error iff there weren't enough arguments provided.
 (defun compile-error-if-not-enough-arguments (minimum nargs)
@@ -39,9 +41,7 @@
   ;; reqargs is as returned from process-lambda-list- (# ...) where # is the count.
   ;; cc is the calling-convention object.
   (dolist (req (cdr reqargs))
-    (let ((target-alloca (funcall *translate-datum* req))
-          (val (calling-convention-args.va-arg cc)))
-      (irc-store val target-alloca))))
+    (funcall *argument-out* (calling-convention-args.va-arg cc) req)))
 
 (defun compile-optional-arguments (optargs nreq calling-conv args-exhausted-block false true)
   ;; optargs is (# var suppliedp default ...)
@@ -75,9 +75,10 @@ goto empty_rest_key_parsing;
               (j nreq (1+ j))
               (enough (< j i) (< j i)))
              ((endp cur-opt))
-          (irc-store (if enough true false) (funcall *translate-datum* suppliedp))
-          (irc-store (if enough (calling-convention-args.va-arg calling-conv) undef)
-                     (funcall *translate-datum* param)))
+          (funcall *argument-out* (if enough true false) suppliedp)
+          (funcall *argument-out*
+                   (if enough (calling-convention-args.va-arg calling-conv) undef)
+                   param))
         ;; Go on.
         (irc-br args-exhausted-block)))
     ;; For the default we just always store, and leave the insert point afterwards.
@@ -86,9 +87,10 @@ goto empty_rest_key_parsing;
           (param (car cur-opt) (car cur-opt))
           (suppliedp (cadr cur-opt) (cadr cur-opt)))
          ((endp cur-opt))
-      (irc-store true (funcall *translate-datum* suppliedp))
-      (irc-store (calling-convention-args.va-arg calling-conv)
-                 (funcall *translate-datum* param)))))
+      (funcall *argument-out* true suppliedp)
+      (funcall *argument-out*
+               (calling-convention-args.va-arg calling-conv)
+               param))))
 
 (defun compile-rest-argument (rest-var varest-p nremaining calling-conv)
   (cmp:irc-branch-to-and-begin-block (cmp:irc-basic-block-create "process-rest-argument"))
@@ -120,20 +122,20 @@ goto empty_rest_key_parsing;
                                         (list (cmp:calling-convention-va-list* calling-conv)
                                               nremaining))))))
       (when rest
-        (let ((rest-loc (funcall *translate-datum* rest-var)))
-          (irc-store rest rest-loc))))))
+        (funcall *argument-out* rest rest-var)))))
 
 ;; a rest argument in the case where it's known no arguments remain.
 (defun compile-empty-rest-argument (rest-var varest-p calling-conv iNIL)
   (unless (eq (calling-convention-rest-alloc calling-conv) 'ignore)
-    (irc-store (if varest-p
-                   ;; overcomplicated. FIXME
-                   (irc-intrinsic-call "cc_gatherVaRestArguments"
-                                       (list (calling-convention-va-list* calling-conv)
-                                             (irc-size_t 0)
-                                             (irc-alloca-vaslist :label "rest")))
-                   iNIL)
-               (funcall *translate-datum* rest-var))))
+    (funcall *argument-out*
+             (if varest-p
+                 ;; overcomplicated. FIXME
+                 (irc-intrinsic-call "cc_gatherVaRestArguments"
+                                     (list (calling-convention-va-list* calling-conv)
+                                           (irc-size_t 0)
+                                           (irc-alloca-vaslist :label "rest")))
+                 iNIL)
+             rest-var)))
 
 ;;; Keyword processing is the most complicated part, unsurprisingly.
 #|
@@ -163,192 +165,188 @@ if (seen_bad_keyword)
   cc_ifBadKeywordArgumentException(allow_other_keys, bad_keyword, [*current-function-description*]);
 |#
 
-(defun compile-one-key-test (keyword target-alloca suppliedp-alloca cont-block kw-key kw-value true)
-  ;; KEYWORD is the Lisp keyword we're matching.
-  ;; TARGET-ALLOCA and SUPPLIEDP-ALLOCA are the allocas for the var and its -p respectively.
-  ;; CONT-BLOCK is the block to jump to if the keyword matches.
-  ;; KW-KEY and KW-VALUE are the keyword-value pair to test against.
-
-  ;; FIXME: We could use a switch here, depending on how literals move.
-  (irc-branch-to-and-begin-block (irc-basic-block-create (core:bformat nil "kw-%s-test" (symbol-name keyword))))
-  (let* ((key-const (irc-literal keyword (string keyword)))
-         ;; matchKeywordOnce returns 0 if the keys don't match, 2 if suppliedp is T
-         ;; (i.e. the keyword has been seen already), and 1 otherwise.
-         (test-keyword (irc-intrinsic-call "cc_matchKeywordOnce"
-                                           (list key-const kw-key (irc-load-t* suppliedp-alloca))))
-         (mismatch-block (irc-basic-block-create (core:bformat nil "not-%s" (symbol-name keyword))))
-         (match-block (irc-basic-block-create (core:bformat nil "matched-%s" (symbol-name keyword))))
-         (switch (irc-switch test-keyword mismatch-block 3)))
-    (irc-add-case switch (irc-size_t 0) mismatch-block)
-    (irc-add-case switch (irc-size_t 1) match-block)
-    (irc-add-case switch (irc-size_t 2) cont-block) ; don't need to do any more tests here.
-    ;; Hit a keyword for the first time! Store it, set alloca, continue to the loop conclusion.
-    (irc-begin-block match-block)
-    (irc-store kw-value target-alloca)
-    (irc-store true suppliedp-alloca)
-    (irc-br cont-block)
-    ;; Keyword doesn't match- try the next.
-    (irc-begin-block mismatch-block)))
-
+(defun compile-one-key-test (keyword key-arg suppliedp-phi cont-block false)
+  (let* ((keystring (string keyword))
+         (key-const (irc-literal keyword keystring))
+         (match (irc-basic-block-create (core:bformat nil "matched-%s" keystring)))
+         (mismatch (irc-basic-block-create (core:bformat nil "not-%s" keystring))))
+    (let ((test (irc-icmp-eq key-arg key-const)))
+      (irc-cond-br test match mismatch))
+    (irc-begin-block match)
+    (let* ((new (irc-basic-block-create (core:bformat nil "new-%s" keystring)))
+           (old (irc-basic-block-create (core:bformat nil "old-%s" keystring))))
+      (let ((test (irc-icmp-eq suppliedp-phi false)))
+        (irc-cond-br test new old))
+      (irc-begin-block new) (irc-br cont-block)
+      (irc-begin-block old) (irc-br cont-block)
+      (irc-begin-block mismatch)
+      (values new old))))
+  
 (defun compile-key-arguments (keyargs lambda-list-aokp nremaining cc false true)
-  ;; keyargs is as returned from process-lambda-list, # and then four element cycles:
-  ;; (keyword initform variable suppliedp-variable)
-  ;; We ignore the initform here as the function bodies initialize those based on the suppliedp,
-  ;; same as with &optional.
-  ;; nreqopt is the llvm value with the number of arguments remaining to process.
-
-  ;; We treat allow-other-keys specially. You can do (&key allow-other-keys) if you want,
-  ;; and then allow-other-keys is both a regular variable and has its magic meaning per 3.4.1.4.
-  ;; So, we make sure to get allocas whether there's an allow-other-keys parameter or not,
-  ;; and use those in the internal check.
-  ;; We also initialize the aok to NIL, even before it's supplied. Body code will initialize it
-  ;; based on the suppliedp so there's no problem, and it means we can just use the aok as a flag.
-  ;; (With &allow-other-keys, we skip this stuff because we don't care.)
-  (irc-branch-to-and-begin-block (irc-basic-block-create "parse-key-arguments"))
-  ;; Set up all the blocks we need- except the ones for each keyword, those are later.
-  (let ((initialize-suppliedps (irc-basic-block-create "initialize-suppliedps")) ; set all suppliedp to nil
-        (kw-loop (irc-basic-block-create "kw-loop")) ; main processing loop
-        (odd-kw (irc-basic-block-create "odd-kw")) ; odd-number-of-arguments error
-        ;; Block we enter after traversing the whole arguments list.
-        (args-depleted (irc-basic-block-create "args-depleted"))
-        ;; Where we get one key-value pair from the arguments list.
-        (parse-arg (irc-basic-block-create "parse-arg"))
-        ;; Once we've taken care of a keyword, go here to decrement the count and continue.
-        (kw-loop-continue (irc-basic-block-create "kw-loop-continue"))
-        ;; Two used for phi wackiness (see below) if no &allow-other-keys
-        (kw-matched (irc-basic-block-create "kw-matched"))
-        (kw-unmatched (irc-basic-block-create "kw-unmatched"))
-        ;; The end.
-        (exit (irc-basic-block-create "kw-exit"))
-        )
-    ;; If the number of arguments remaining is odd, the call is invalid- error.
-    (let* ((rem (irc-srem nremaining (irc-size_t 2))) ; parity
-           (evenp (irc-icmp-eq rem (irc-size_t 0)))) ; is parity zero (is SUB even)?
-      (irc-cond-br evenp initialize-suppliedps odd-kw))
-    ;; There have been an odd number of arguments, so signal an error.
-    (irc-begin-block odd-kw)
-    (irc-intrinsic-invoke-if-landing-pad-or-call "cc_oddKeywordException"
-                                                 (list *current-function-description*))
-    (irc-unreachable)
-    ;; Initialize all suppliedps (and any other allocas while we're at it).
-    (irc-begin-block initialize-suppliedps)
-    (let ((aok-parameter-p nil) ; are we in the weird &key allow-other-keys situation?
-          aok-alloca aok-suppliedp-alloca
-          ;; The first bad keyword we see.
-          ;; We can't signal an error until the end, as :allow-other-keys T could suppress.
-          ;; FIXME: Hypothetically we could just store a list of all of them.
-          (bad-kw-alloca (unless lambda-list-aokp (irc-alloca-t* :label "bad-keyword"))))
-      ;; do the initializations.
-      (do* ((cur-key (cdr keyargs) (cddddr cur-key))
-            (key (car cur-key) (car cur-key))
-            (suppliedp (cadddr cur-key) (cadddr cur-key)))
-           ((null cur-key))
-        (let ((suppliedp-alloca (funcall *translate-datum* suppliedp)))
-          (irc-store false suppliedp-alloca)
-          (unless lambda-list-aokp
-            (when (eq key :allow-other-keys)
-              (setf aok-parameter-p t
-                    aok-alloca (funcall *translate-datum* (caddr cur-key))
-                    aok-suppliedp-alloca suppliedp-alloca)
-              (irc-store false aok-alloca)))))
+  (macrolet ((do-keys ((keyword) &body body)
+               `(do* ((cur-key (cdr keyargs) (cddddr cur-key))
+                      (,keyword (car cur-key) (car cur-key)))
+                     ((endp cur-key))
+                  ,@body)))
+    (let ((aok-parameter-p nil)
+          allow-other-keys
+          (nkeys (car keyargs))
+          (undef (irc-undef-value-get %t*%))
+          (start (irc-basic-block-create "parse-key-arguments"))
+          (matching (irc-basic-block-create "match-keywords"))
+          (after (irc-basic-block-create "after-kw-loop"))
+          (unknown-kw (irc-basic-block-create "unknown-kw"))
+          (kw-loop (irc-basic-block-create "kw-loop"))
+          (kw-loop-continue (irc-basic-block-create "kw-loop-continue")))
+      ;; Prepare for :allow-other-keys.
       (unless lambda-list-aokp
-        ;; No allow-other-keys parameter, so make allocas for it.
+        ;; Is there an allow-other-keys argument?
+        (do-keys (key)
+          (when (eq key :allow-other-keys) (setf aok-parameter-p t) (return)))
+        ;; If there's no allow-other-keys argument, add one.
         (unless aok-parameter-p
-          (setf aok-alloca (irc-alloca-t* :label "allow-other-keys")
-                aok-suppliedp-alloca (irc-alloca-t* :label "allow-other-keys-suppliedp"))
-          (irc-store false aok-suppliedp-alloca)
-          (irc-store false aok-alloca)))
-      (irc-br kw-loop)
-      ;; Main loop.
+          (setf keyargs (list* (1+ (car keyargs))
+                               ;; default, var, and suppliedp are of course dummies.
+                               ;; At the end we can check aok-parameter-p to avoid
+                               ;; actually assigning to them.
+                               :allow-other-keys nil nil nil
+                               (cdr keyargs)))))
+      (irc-branch-to-and-begin-block start)
+      ;; If the number of arguments remaining is odd, the call is invalid- error.
+      (let* ((odd-kw (irc-basic-block-create "odd-kw"))
+             (rem (irc-srem nremaining (irc-size_t 2))) ; parity
+             (evenp (irc-icmp-eq rem (irc-size_t 0)))) ; is parity zero (is SUB even)?
+        (irc-cond-br evenp kw-loop odd-kw)
+        ;; There have been an odd number of arguments, so signal an error.
+        (irc-begin-block odd-kw)
+        (irc-intrinsic-invoke-if-landing-pad-or-call "cc_oddKeywordException"
+                                                     (list *current-function-description*))
+        (irc-unreachable))
+      ;; Loop starts; welcome hell
       (irc-begin-block kw-loop)
-      (let (;; This variable holds the number of args we have left to process.
+      (let ((top-param-phis nil) (top-suppliedp-phis nil)
+            (new-blocks nil) (old-blocks nil)
             (nargs-remaining (irc-phi %size_t% 2 "nargs-remaining"))
-            ;; Whether we've seen an invalid or unrecognized keyword.
-            (seen-bad-kw (unless lambda-list-aokp (irc-phi %i1% 2 "seen-bad-kw"))))
-        ;; If we're just entering the loop, we have nremaining args left. (We subtract two each loop.)
-        (irc-phi-add-incoming nargs-remaining nremaining initialize-suppliedps)
-        ;; If we're just entering the loop, we haven't seen any bad keywords.
-        (unless lambda-list-aokp
-          (irc-phi-add-incoming seen-bad-kw (jit-constant-false) initialize-suppliedps))
-        ;; If there are no arguments remaining, we're done.
+            (sbkw (irc-phi %i1% 2 "seen-bad-keyword"))
+            (bad-keyword (irc-phi %t*% 2 "bad-keyword")))
+        (irc-phi-add-incoming nargs-remaining nremaining start)
+        (irc-phi-add-incoming sbkw (jit-constant-false) start)
+        (irc-phi-add-incoming bad-keyword undef start)
+        (do-keys (key)
+          (let ((var-phi (irc-phi %t*% 2 (core:bformat nil "%s-top" (string key)))))
+            (push var-phi top-param-phis)
+            ;; If we're paying attention to :allow-other-keys, track it specially
+            ;; and initialize it to NIL.
+            (cond ((and (not lambda-list-aokp) (eq key :allow-other-keys))
+                   (irc-phi-add-incoming var-phi false start)
+                   (setf allow-other-keys var-phi))
+                  (t (irc-phi-add-incoming var-phi undef start))))
+          (let ((suppliedp-phi (irc-phi %t*% 2 (core:bformat nil "%s-suppliedp-top" (string key)))))
+            (push suppliedp-phi top-suppliedp-phis)
+            (irc-phi-add-incoming suppliedp-phi false start)))
+        (setf top-param-phis (nreverse top-param-phis)
+              top-suppliedp-phis (nreverse top-suppliedp-phis))
+        ;; Are we done?
         (let ((zerop (irc-icmp-eq nargs-remaining (irc-size_t 0))))
-          (irc-cond-br zerop args-depleted parse-arg))
-        ;; Grab one key-value pair and start working on it.
-        (irc-begin-block parse-arg)
-        (let ((key-arg (calling-convention-args.va-arg cc)) (value-arg (calling-convention-args.va-arg cc)))
-          ;; Generate a test for each known keyword.
-          ;; FIXME: We could use a switch here, depending on how literals move.
+          (irc-cond-br zerop after matching))
+        (irc-begin-block matching)
+        ;; Start matching keywords
+        (let ((key-arg (calling-convention-args.va-arg cc))
+              (value-arg (calling-convention-args.va-arg cc)))
           (do* ((cur-key (cdr keyargs) (cddddr cur-key))
                 (key (car cur-key) (car cur-key))
-                (target (caddr cur-key) (caddr cur-key))
-                (suppliedp (cadddr cur-key) (cadddr cur-key)))
+                (suppliedp-phis top-suppliedp-phis (cdr suppliedp-phis))
+                (suppliedp-phi (car suppliedp-phis) (car suppliedp-phis)))
                ((endp cur-key))
-            (compile-one-key-test
-             key (funcall *translate-datum* target) (funcall *translate-datum* suppliedp)
-             kw-matched key-arg value-arg true))
-          ;; now :allow-other-keys and the miss.
-          (cond (lambda-list-aokp ; or just do nothing.
-                 (irc-br kw-unmatched)
-                 (irc-begin-block kw-unmatched)
-                 (irc-br kw-loop-continue))
-                (t
-                 ;; We've checked against all known keywords and come up short.
-                 ;; But if allow-other-keys isn't a parameter, we have to check that too.
-                 ;; (If it is a parameter we checked it in the loop.)
-                 (unless aok-parameter-p
-                   (compile-one-key-test :allow-other-keys aok-alloca aok-suppliedp-alloca
-                                         kw-matched key-arg value-arg true))
-                 ;; At this point the keyword is definitely unknown or invalid.
-                 ;; If we haven't yet seen such a keyword, store it and trip our flag (via phi)
-                 ;; FIXME: we could conditionalize on the flag so that we store only the first bad keyword,
-                 ;; but it doesn't matter too much whether we report the first or last.
-                 (irc-br kw-unmatched)
-                 (irc-begin-block kw-unmatched)
-                 (irc-store key-arg bad-kw-alloca)
-                 (irc-br kw-loop-continue))))
-        ;; This block is used for phi. It's basically empty. In more detail:
-        ;; there are N (= # of specified keywords) matched-foo that can hit the continue. For all of
-        ;; them, we don't want to alter the value of the seen-bad-keyword flag. But I don't want to
-        ;; make a phi with thirty clauses, so we shove all the matched-foo together.
-        ;; LLVM optimizations seem to make such a phi for us.
-        ;; If &allow-other-keys, it's used for nothing.
-        (irc-begin-block kw-matched) (irc-br kw-loop-continue)
-        ;; We're done with a pair. Move on.
-        (irc-begin-block kw-loop-continue)
-        (unless lambda-list-aokp
-          (let ((sbkw (irc-phi %i1% 2 "other-seen-bad-kw"))) ; phi silliness time.
-            (irc-phi-add-incoming sbkw seen-bad-kw kw-matched) ; don't change the existing value
-            (irc-phi-add-incoming sbkw (jit-constant-true) kw-unmatched) ; we've seen some shit.
-            (irc-phi-add-incoming seen-bad-kw sbkw kw-loop-continue)))
+            (multiple-value-bind (new-block old-block)
+                (compile-one-key-test key key-arg suppliedp-phi kw-loop-continue false)
+              (push new-block new-blocks) (push old-block old-blocks)))
+          (setf new-blocks (nreverse new-blocks) old-blocks (nreverse old-blocks))
+          ;; match failure - as usual, works through phi
+          (irc-branch-to-and-begin-block unknown-kw)
+          (irc-br kw-loop-continue)
+          ;; Go around again. And do most of the actual work in phis.
+          (irc-begin-block kw-loop-continue)
+          (let ((npreds (1+ (* 2 nkeys)))) ; two for each key, plus one for unknown-kw.
+            (let ((bot-sbkw (irc-phi %i1% npreds "seen-bad-keyword-bottom"))
+                  (bot-bad-keyword (irc-phi %t*% npreds "bad-keyword-bottom")))
+              ;; Set up the top to use these.
+              (irc-phi-add-incoming sbkw bot-sbkw kw-loop-continue)
+              (irc-phi-add-incoming bad-keyword bot-bad-keyword kw-loop-continue)
+              ;; If we're coming from unknown-kw, store that.
+              (irc-phi-add-incoming bot-sbkw (jit-constant-true) unknown-kw)
+              (irc-phi-add-incoming bot-bad-keyword key-arg unknown-kw)
+              ;; If we're coming from a match block, don't change anything.
+              (dolist (new-block new-blocks)
+                (irc-phi-add-incoming bot-sbkw sbkw new-block)
+                (irc-phi-add-incoming bot-bad-keyword bad-keyword new-block))
+              (dolist (old-block old-blocks)
+                (irc-phi-add-incoming bot-sbkw sbkw old-block)
+                (irc-phi-add-incoming bot-bad-keyword bad-keyword old-block)))
+            ;; OK now the actual keyword values.
+            (do* ((var-new-blocks new-blocks (cdr var-new-blocks))
+                  (var-new-block (car var-new-blocks) (car var-new-blocks))
+                  (top-param-phis top-param-phis (cdr top-param-phis))
+                  (top-param-phi (car top-param-phis) (car top-param-phis))
+                  (top-suppliedp-phis top-suppliedp-phis (cdr top-suppliedp-phis))
+                  (top-suppliedp-phi (car top-suppliedp-phis) (car top-suppliedp-phis)))
+                 ((endp var-new-blocks))
+              (let ((var-phi (irc-phi %t*% npreds))
+                    (suppliedp-phi (irc-phi %t*% npreds)))
+                ;; fix up the top part to take values from here
+                (irc-phi-add-incoming top-param-phi var-phi kw-loop-continue)
+                (irc-phi-add-incoming top-suppliedp-phi suppliedp-phi kw-loop-continue)
+                ;; If coming from unknown-kw we keep our values the same.
+                (irc-phi-add-incoming var-phi top-param-phi unknown-kw)
+                (irc-phi-add-incoming suppliedp-phi top-suppliedp-phi unknown-kw)
+                ;; All new-blocks other than this key's stick with what they have.
+                (dolist (new-block new-blocks)
+                  (cond ((eq var-new-block new-block)
+                         ;; Here, however, we get the new values
+                         (irc-phi-add-incoming var-phi value-arg new-block)
+                         (irc-phi-add-incoming suppliedp-phi true new-block))
+                        (t
+                         (irc-phi-add-incoming var-phi top-param-phi new-block)
+                         (irc-phi-add-incoming suppliedp-phi top-suppliedp-phi new-block))))
+                ;; All old-blocks stick with what they have.
+                (dolist (old-block old-blocks)
+                  (irc-phi-add-incoming var-phi top-param-phi old-block)
+                  (irc-phi-add-incoming suppliedp-phi top-suppliedp-phi old-block))))))
         (let ((dec (irc-sub nargs-remaining (irc-size_t 2))))
           (irc-phi-add-incoming nargs-remaining dec kw-loop-continue))
         (irc-br kw-loop)
-        ;; OK! Main loop over! All args processed! Hoo-ray.
-        (irc-begin-block args-depleted)
-        ;; Only thing left is to maybe signal an error about bad keywords.
-        (cond
-          (lambda-list-aokp (irc-br exit)) ; No one cares.
-          (t
-           ;; Check if we saw a bad keyword. If we did, call an intrinsic that tests our aokp thing.
-           ;; FIXME: change the jit-constants to getTrue and/or getFalse, mother fucker
-           (let ((aok-check (irc-basic-block-create "aok-check")))
-             (irc-cond-br seen-bad-kw aok-check exit)
-             (irc-begin-block aok-check)
-             (irc-intrinsic-invoke-if-landing-pad-or-call
-              "cc_ifBadKeywordArgumentException"
-              ;; aok was initialized to NIL, regardless of the suppliedp, so this is ok.
-              (list (irc-load-t* aok-alloca) (irc-load-t* bad-kw-alloca)
-                    *current-function-description*))
-             ;; if it returned :allow-other-keys was passed, so no error
-             (irc-br exit))))
-        ;; We saw a bad keyword. Call this intrinsic that tests our seen-aok-alloca.
-        (irc-begin-block exit)))))
+        ;; Loop over.
+        (irc-begin-block after)
+        ;; If we hit a bad keyword, and care, signal an error.
+        (unless lambda-list-aokp
+          (let ((aok-check (irc-basic-block-create "aok-check"))
+                (kw-assigns (irc-basic-block-create "kw-assigns")))
+            (irc-cond-br sbkw aok-check kw-assigns)
+            (irc-begin-block aok-check)
+            (irc-intrinsic-invoke-if-landing-pad-or-call
+             "cc_ifBadKeywordArgumentException"
+             ;; aok was initialized to NIL, regardless of the suppliedp, so this is ok.
+             (list allow-other-keys bad-keyword *current-function-description*))
+            (irc-br kw-assigns)
+            (irc-begin-block kw-assigns)))
+        (do* ((top-param-phis top-param-phis (cdr top-param-phis))
+              (top-param-phi (car top-param-phis) (car top-param-phis))
+              (top-suppliedp-phis top-suppliedp-phis (cdr top-suppliedp-phis))
+              (top-suppliedp-phi (car top-suppliedp-phis) (car top-suppliedp-phis))
+              (cur-key (cdr keyargs) (cddddr cur-key))
+              (key (car cur-key) (car cur-key))
+              (var (caddr cur-key) (caddr cur-key))
+              (suppliedp (cadddr cur-key) (cadddr cur-key)))
+             ((endp cur-key))
+          (when (or (not (eq key :allow-other-keys)) lambda-list-aokp aok-parameter-p)
+            (funcall *argument-out* top-param-phi var)
+            (funcall *argument-out* top-suppliedp-phi suppliedp)))))))
 
 (defun compile-empty-key-arguments (keyargs calling-conv false)
   (do* ((cur-key (cdr keyargs) (cddddr cur-key))
         (suppliedp (cadddr cur-key) (cadddr cur-key)))
        ((endp cur-key))
-    (irc-store false (funcall *translate-datum* suppliedp))))
+    (funcall *argument-out* false suppliedp)))
 
 (defun compile-general-lambda-list-code (reqargs 
 					 optargs 
@@ -358,9 +356,9 @@ if (seen_bad_keyword)
 					 keyargs 
 					 allow-other-keys
 					 calling-conv
-                                         &key translate-datum (safep t))
+                                         &key argument-out (safep t))
   (cmp-log "Entered compile-general-lambda-list-code%N")
-  (let* ((*translate-datum* (lambda (datum) (funcall translate-datum datum)))
+  (let* ((*argument-out* argument-out)
          (nreq (car reqargs))
          (nopt (car optargs))
          (nfixed (+ nreq nopt)))
@@ -398,62 +396,57 @@ if (seen_bad_keyword)
           (compile-error-if-too-many-arguments nfixed (calling-convention-nargs calling-conv))))
       (irc-branch-to-and-begin-block final))))
 
-(defun compile-only-reg-and-opt-arguments (reqargs optargs cc &key translate-datum (safep t))
-  (let ((*translate-datum* (lambda (datum) (funcall translate-datum datum))))
-    (let ((register-args (cmp:calling-convention-register-args cc))
-          (req-bb (irc-basic-block-create "req-bb")))
-      (if (> (first optargs) 0)
-          (let* ((true-val (irc-t))
-                 (false-val (irc-nil))
-                 (opt-rel-idx (irc-sub (cmp:calling-convention-nargs cc) (jit-constant-size_t (first reqargs))))
-                 (cases (let (cases)
-                          (dotimes (i (1+ (first optargs)))
-                            (push (irc-basic-block-create (core:bformat nil "case-opt%d-bb" i)) cases))
-                          (nreverse cases)))
-                 (sw (irc-switch opt-rel-idx (car cases) (first optargs))))
-            (dotimes (opti (1+ (first optargs)))
-              (let ((case-bb (elt cases opti)))
-                (irc-begin-block case-bb)
-                (if (= opti 0)
-                    (when safep
-                      (irc-intrinsic "cc_check_if_wrong_number_of_arguments"
-                                     (cmp:calling-convention-nargs cc)
-                                     (jit-constant-size_t (car reqargs))
-                                     (jit-constant-size_t (+ (car reqargs) (car optargs)))
-                                     *current-function-description*))
-                    (irc-add-case sw (jit-constant-size_t opti) case-bb))
-                (do* ((optj 0 (1+ optj))
-                      (cur-target (cdr optargs) (cdddr cur-target))
-                      (cur-register-args (nthcdr (first reqargs) register-args) (cdr cur-register-args))
-                      (target (first cur-target) (first cur-target))
-                      (targetp (second cur-target) (second cur-target))
-                      (arg (car cur-register-args) (car cur-register-args)))
-                     ((null cur-target))
-                  (let ((dest (funcall *translate-datum* target))
-                        (destp (funcall *translate-datum* targetp)))
-                    (if (>= optj opti)
-                        (progn
-                          (irc-store false-val destp))
-                        (progn
-                          (irc-store arg dest)
-                          (irc-store true-val destp)))))
-                (irc-br req-bb))))
-          (progn
-            (when safep
-              (irc-intrinsic "cc_check_if_wrong_number_of_arguments"
-                             (cmp:calling-convention-nargs cc)
-                             (jit-constant-size_t (car reqargs))
-                             (jit-constant-size_t (+ (car reqargs) (car optargs)))
-                             *current-function-description*))
-            (irc-br req-bb)))
-      (irc-begin-block req-bb)
-      (do* ((cur-target (cdr reqargs) (cdr cur-target))
-            (cur-register-args register-args (cdr cur-register-args))
-            (target (car cur-target) (car cur-target))
-            (arg (car cur-register-args) (car cur-register-args)))
-           ((null cur-target))
-        #+(or)(format t "compile-all-register-required-arguments store: ~a to ~a  target: ~a~%" arg dest target)
-        (irc-store arg (funcall *translate-datum* target))))))
+(defun compile-only-reg-and-opt-arguments (reqargs optargs cc &key argument-out (safep t))
+  (let ((register-args (cmp:calling-convention-register-args cc))
+        (req-bb (irc-basic-block-create "req-bb")))
+    (if (> (first optargs) 0)
+        (let* ((true-val (irc-t))
+               (false-val (irc-nil))
+               (opt-rel-idx (irc-sub (cmp:calling-convention-nargs cc) (jit-constant-size_t (first reqargs))))
+               (cases (let (cases)
+                        (dotimes (i (1+ (first optargs)))
+                          (push (irc-basic-block-create (core:bformat nil "case-opt%d-bb" i)) cases))
+                        (nreverse cases)))
+               (sw (irc-switch opt-rel-idx (car cases) (first optargs))))
+          (dotimes (opti (1+ (first optargs)))
+            (let ((case-bb (elt cases opti)))
+              (irc-begin-block case-bb)
+              (if (= opti 0)
+                  (when safep
+                    (irc-intrinsic "cc_check_if_wrong_number_of_arguments"
+                                   (cmp:calling-convention-nargs cc)
+                                   (jit-constant-size_t (car reqargs))
+                                   (jit-constant-size_t (+ (car reqargs) (car optargs)))
+                                   *current-function-description*))
+                  (irc-add-case sw (jit-constant-size_t opti) case-bb))
+              (do* ((optj 0 (1+ optj))
+                    (cur-target (cdr optargs) (cdddr cur-target))
+                    (cur-register-args (nthcdr (first reqargs) register-args) (cdr cur-register-args))
+                    (target (first cur-target) (first cur-target))
+                    (targetp (second cur-target) (second cur-target))
+                    (arg (car cur-register-args) (car cur-register-args)))
+                   ((null cur-target))
+                (if (>= optj opti)
+                    (funcall argument-out false-val targetp)
+                    (progn
+                      (funcall argument-out arg target)
+                      (funcall argument-out true-val targetp))))
+              (irc-br req-bb))))
+        (progn
+          (when safep
+            (irc-intrinsic "cc_check_if_wrong_number_of_arguments"
+                           (cmp:calling-convention-nargs cc)
+                           (jit-constant-size_t (car reqargs))
+                           (jit-constant-size_t (+ (car reqargs) (car optargs)))
+                           *current-function-description*))
+          (irc-br req-bb)))
+    (irc-begin-block req-bb)
+    (do* ((cur-target (cdr reqargs) (cdr cur-target))
+          (cur-register-args register-args (cdr cur-register-args))
+          (target (car cur-target) (car cur-target))
+          (arg (car cur-register-args) (car cur-register-args)))
+         ((null cur-target))
+      (funcall argument-out arg target))))
 
 (defun process-cleavir-lambda-list (lambda-list)
   ;; We assume that the lambda list is in its correct format:
@@ -512,7 +505,7 @@ if (seen_bad_keyword)
 ;;;   alloca-vaslist (label) that allocas a vaslist slot in the current function
 ;;;   translate-datum (datum) that translates a datum into an alloca in the current function
 (defun compile-lambda-list-code (lambda-list calling-conv
-                                 &key translate-datum (safep t))
+                                 &key argument-out (safep t))
   (cmp-log "About to process-cleavir-lambda-list lambda-list: %s%N" lambda-list)
   (multiple-value-bind (reqargs optargs rest-var key-flag keyargs allow-other-keys unused-auxs varest-p)
       (process-cleavir-lambda-list lambda-list)
@@ -525,7 +518,7 @@ if (seen_bad_keyword)
         ;; Special cases (foo) (foo x) (foo x y) (foo x y z)  - passed in registers
         (progn
           (compile-only-reg-and-opt-arguments reqargs optargs calling-conv
-                                              :translate-datum translate-datum
+                                              :argument-out argument-out
                                               :safep safep))
         ;; Test for
         ;; (x &optional y)
@@ -539,7 +532,7 @@ if (seen_bad_keyword)
                                             keyargs 
                                             allow-other-keys
                                             calling-conv
-                                            :translate-datum translate-datum
+                                            :argument-out argument-out
                                             :safep safep)))))
 
 (defun maybe-alloc-cc-setup (lambda-list debug-on)
@@ -652,12 +645,10 @@ if (seen_bad_keyword)
        cleavir-lambda-list
        callconv
        :safep safep
-       :translate-datum (lambda (datum)
-                          (let* ((info (assoc datum output-bindings))
-                                 (symbol (car info))
-                                 (index (cdr info))
-                                 (ref (codegen-lexical-var-reference symbol 0 index new-env new-env)))
-;;;(bformat *debug-io* "translate-datum %s -> %s%N" datum ref)
-                            ref)))
+       :argument-out (lambda (value datum)
+                       (let* ((info (assoc datum output-bindings))
+                              (symbol (car info))
+                              (index (cdr info))
+                              (ref (codegen-lexical-var-reference symbol 0 index new-env new-env)))
+                         (irc-store value ref))))
       new-env)))
-
