@@ -80,15 +80,21 @@
          (setf *sharp-equal-final-table* (make-hash-table)))
         ((gethash label *sharp-equal-final-table*)
          (simple-reader-error stream "multiply defined label: #~D=" label)))
-  (let ((tag (setf (gethash label *sharp-equal-final-table*)
-                   (core:make-sharp-equal-wrapper)))
+  (let ((tag (progn
+               #+(or)(format t "{{{ Handling sharp-equal label: ~a~%" label)
+               (setf (gethash label *sharp-equal-final-table*)
+                   (core:make-sharp-equal-wrapper label))))
         (obj (read stream t nil t)))
     (when (eq obj tag)
       (simple-reader-error stream
                            "must tag something more than just #~D#"
                            label))
+    #+(or)(format t "{{{ About to circle-subst for sharp-equal label: ~a~%" label)
     (setf (core:sharp-equal-wrapper-value tag) obj)
-    (circle-subst (make-hash-table :test 'eq) obj)))
+    (prog1
+        (circle-subst (make-hash-table :test 'eq) obj)
+      #+(or)(format t "Done circle-subst with sharp-equal label: ~a}}}~%" label)
+      #+(or)(format t "}}}Done handling sharp-equal label: ~a~%" label))))
 
 (defun sharp-sharp (stream ignore label)
   (declare (ignore ignore))
