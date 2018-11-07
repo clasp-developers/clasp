@@ -907,7 +907,7 @@ CL_DEFUN double cl__hash_table_rehash_threshold(HashTable_sp ht) {
 CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("hash-table-test");
-CL_DEFUN Number_sp cl__hash_table_test(HashTable_sp ht) {
+CL_DEFUN T_sp cl__hash_table_test(HashTable_sp ht) {
   return ht->hashTableTest();
 };
 

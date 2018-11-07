@@ -251,7 +251,7 @@ namespace core {
             if (clasp_print_array()) {
                     clasp_write_string(" data: ",stream);
                     for (size_t ndx=0; ndx<x->length(); ++ndx) {
-                            write_float(x->rowMajorAref(ndx), stream);
+                            write_float(gc::As<Float_sp>(x->rowMajorAref(ndx)), stream);
                             clasp_write_string(" ",stream);
                     }
             }
