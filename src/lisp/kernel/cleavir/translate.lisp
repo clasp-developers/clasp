@@ -114,14 +114,11 @@ when this is t a lot of graphs will be generated.")
                (alloca (cc-mir:lexical-location-type datum) 1 (datum-name-as-string datum)))
               (cleavir-ir:lexical-location
                (alloca-t* (datum-name-as-string datum)))
-              (t (error "add support for translate datum: ~a~%" datum))))))
+              (t (error "BUG: add support for translate datum: ~a~%" datum))))))
 
 (defun ssablep (location)
   (let ((defs (cleavir-ir:defining-instructions location)))
-    (and (= (length defs) 1)
-         ;; FIXME: cmp/arguments does weird things.
-         (not (typep (first defs) '(or cleavir-ir:enter-instruction
-                                    clasp-cleavir-hir:bind-va-list-instruction))))))
+    (= (length defs) 1)))
 
 (defun in (datum &optional (label ""))
   (etypecase datum
@@ -130,13 +127,7 @@ when this is t a lot of graphs will be generated.")
     (cleavir-ir:lexical-location
      (let ((existing (gethash datum *vars*)))
        (if (null existing)
-           ;; KLUDGE: arguments.lsp doesn't assign sometimes.
-           (if (some (lambda (def)
-                       (typep def '(or cleavir-ir:enter-instruction
-                                    clasp-cleavir-hir:bind-va-list-instruction)))
-                     (cleavir-ir:defining-instructions datum))
-               (%load (translate-datum datum) label)
-               (error "Input ~a not previously defined" datum))
+           (error "BUG: Input ~a not previously defined" datum)
            (if (ssablep datum)
                existing
                (%load existing label)))))))
@@ -145,7 +136,7 @@ when this is t a lot of graphs will be generated.")
   (if (ssablep datum)
       (progn
         (unless (null (gethash datum *vars*))
-          (error "SSAable output ~a previously defined" datum))
+          (error "BUG: SSAable output ~a previously defined" datum))
         (setf (gethash datum *vars*) value))
       (%store value (translate-datum datum) label)))
 

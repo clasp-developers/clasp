@@ -4,6 +4,7 @@
 ;; The "variable" is just whatever is provided to this code
 ;; (so that it can work with either b or c clasp).
 ;; The function should put the Value into the variable, possibly generating code to do so.
+;; In order to work with cclasp's SSA stuff, it must be called exactly once for each variable.
 (defvar *argument-out*)
 
 ;; Generate code to signal an error iff there weren't enough arguments provided.
