@@ -408,56 +408,80 @@ a_p = a_p_temp; a = a_temp;
               (compile-error-if-too-many-arguments nfixed nargs)))))))
 
 (defun compile-only-reg-and-opt-arguments (reqargs optargs cc &key argument-out (safep t))
-  (let ((register-args (cmp:calling-convention-register-args cc))
-        (req-bb (irc-basic-block-create "req-bb")))
-    (if (> (first optargs) 0)
-        (let* ((true-val (irc-t))
-               (false-val (irc-nil))
-               (opt-rel-idx (irc-sub (cmp:calling-convention-nargs cc) (jit-constant-size_t (first reqargs))))
-               (cases (let (cases)
-                        (dotimes (i (1+ (first optargs)))
-                          (push (irc-basic-block-create (core:bformat nil "case-opt%d-bb" i)) cases))
-                        (nreverse cases)))
-               (sw (irc-switch opt-rel-idx (car cases) (first optargs))))
-          (dotimes (opti (1+ (first optargs)))
-            (let ((case-bb (elt cases opti)))
-              (irc-begin-block case-bb)
-              (if (= opti 0)
-                  (when safep
-                    (irc-intrinsic "cc_check_if_wrong_number_of_arguments"
-                                   (cmp:calling-convention-nargs cc)
-                                   (jit-constant-size_t (car reqargs))
-                                   (jit-constant-size_t (+ (car reqargs) (car optargs)))
-                                   *current-function-description*))
-                  (irc-add-case sw (jit-constant-size_t opti) case-bb))
-              (do* ((optj 0 (1+ optj))
-                    (cur-target (cdr optargs) (cdddr cur-target))
-                    (cur-register-args (nthcdr (first reqargs) register-args) (cdr cur-register-args))
-                    (target (first cur-target) (first cur-target))
-                    (targetp (second cur-target) (second cur-target))
-                    (arg (car cur-register-args) (car cur-register-args)))
-                   ((null cur-target))
-                (if (>= optj opti)
-                    (funcall argument-out false-val targetp)
-                    (progn
-                      (funcall argument-out arg target)
-                      (funcall argument-out true-val targetp))))
-              (irc-br req-bb))))
-        (progn
-          (when safep
-            (irc-intrinsic "cc_check_if_wrong_number_of_arguments"
-                           (cmp:calling-convention-nargs cc)
-                           (jit-constant-size_t (car reqargs))
-                           (jit-constant-size_t (+ (car reqargs) (car optargs)))
-                           *current-function-description*))
-          (irc-br req-bb)))
-    (irc-begin-block req-bb)
-    (do* ((cur-target (cdr reqargs) (cdr cur-target))
-          (cur-register-args register-args (cdr cur-register-args))
-          (target (car cur-target) (car cur-target))
-          (arg (car cur-register-args) (car cur-register-args)))
-         ((null cur-target))
-      (funcall argument-out arg target))))
+  (let ((register-args (calling-convention-register-args cc))
+        (nargs (calling-convention-nargs cc))
+        (nreq (car reqargs))
+        (nopt (car optargs)))
+    ;; FIXME: It would probably be nicer to generate one switch such that not-enough-arguments
+    ;; goes to an error block and too-many goes to another. Then we'll only have one test on
+    ;; the argument count. LLVM might reduce it to that anyway, though.
+    
+    ;; Required arguments
+    (when (> nreq 0)
+      (when safep
+        (compile-error-if-not-enough-arguments nreq nargs))
+      (dolist (req (cdr reqargs))
+        ;; we POP the register-args so that the optionals below won't use em.
+        (funcall argument-out (pop register-args) req)))
+    ;; Optional arguments. Code is mostly the same as compile-optional-arguments (FIXME).
+    (if (> nopt 0)
+        (let* ((npreds (1+ nopt))
+               (undef (irc-undef-value-get %t*%))
+               (true (irc-t))
+               (false (irc-nil))
+               (default (irc-basic-block-create "enough-for-optional"))
+               (assn (irc-basic-block-create "optional-assignments"))
+               (after (irc-basic-block-create "argument-parsing-done"))
+               (sw (irc-switch nargs default nopt))
+               (var-phis nil) (suppliedp-phis nil))
+          (irc-begin-block assn)
+          (dotimes (i nopt)
+            (push (irc-phi %t*% npreds) var-phis)
+            (push (irc-phi %t*% npreds) suppliedp-phis))
+          (do ((cur-opt (cdr optargs) (cdddr cur-opt))
+               (var-phis var-phis (cdr var-phis))
+               (suppliedp-phis suppliedp-phis (cdr suppliedp-phis)))
+               ((endp cur-opt))
+            (funcall argument-out (car suppliedp-phis) (second cur-opt))
+            (funcall argument-out (car var-phis) (first cur-opt)))
+          (irc-br after)
+          ;; Each case
+          (dotimes (i nopt)
+            (let* ((opti (+ i nreq))
+                   (blck (irc-basic-block-create (core:bformat nil "supplied-%d-arguments" opti))))
+              (llvm-sys:add-case sw (irc-size_t opti) blck)
+              (do ((var-phis var-phis (cdr var-phis))
+                   (suppliedp-phis suppliedp-phis (cdr suppliedp-phis))
+                   (registers register-args (cdr registers))
+                   (optj nreq (1+ optj)))
+                  ((endp var-phis))
+                (cond ((< optj opti) ; enough arguments
+                       (irc-phi-add-incoming (car suppliedp-phis) true blck)
+                       (irc-phi-add-incoming (car var-phis) (car registers) blck))
+                      (t ; nope
+                       (irc-phi-add-incoming (car suppliedp-phis) false blck)
+                       (irc-phi-add-incoming (car var-phis) undef blck))))
+              (irc-begin-block blck) (irc-br assn)))
+          ;; Default
+          ;; Just use a register for each argument
+          ;; We have to use another block because compile-error-etc does an invoke
+          ;; and generates more blocks.
+          (let ((default-cont (irc-basic-block-create "enough-for-optional-continued")))
+            (do ((var-phis var-phis (cdr var-phis))
+                 (suppliedp-phis suppliedp-phis (cdr suppliedp-phis))
+                 (registers register-args (cdr registers)))
+                ((endp var-phis))
+              (irc-phi-add-incoming (car suppliedp-phis) true default-cont)
+              (irc-phi-add-incoming (car var-phis) (car registers) default-cont))
+            (irc-begin-block default)
+            ;; Test for too many arguments
+            (compile-error-if-too-many-arguments (+ nreq nopt) nargs)
+            (irc-branch-to-and-begin-block default-cont)
+            (irc-br assn)
+            ;; and, done.
+            (irc-begin-block after)))
+        ;; No optional arguments, so not much to do
+        (compile-error-if-too-many-arguments nreq nargs))))
 
 (defun process-cleavir-lambda-list (lambda-list)
   ;; We assume that the lambda list is in its correct format:
