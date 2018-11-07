@@ -194,6 +194,7 @@ DEBUG_OPTIONS = [
     "DEBUG_DYNAMIC_BINDING_STACK",  # dynamic variable binding debugging
     "DEBUG_VALUES",   # turn on printing (values x y z) values when core:*debug-values* is not nil
     "DEBUG_IHS",
+    "DEBUG_STACKMAPS", # turn on logging for stackmap code
     "DEBUG_TRACK_UNWINDS",  # Count cc_unwind calls and report in TIME
     "DEBUG_NO_UNWIND",   # debug intrinsics that say they don't unwind but actually do
     "DEBUG_STARTUP",

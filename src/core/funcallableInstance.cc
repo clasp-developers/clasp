@@ -202,10 +202,6 @@ LCC_RETURN FuncallableInstance_O::not_funcallable_entry_point(LCC_ARGS_ELLIPSIS)
   return core::eval::funcall(clos::_sym_not_funcallable_dispatch_function, closure->asSmartPtr(), lcc_vargs);
 }
 
-Instance_sp FuncallableInstance_O::create(Symbol_sp symbol, Instance_sp metaClass, Creator_sp creator ) {
-  DEPRECATED();
-};
-
 T_sp FuncallableInstance_O::copyInstance() const {
   DEPRECATED();
   Instance_sp cl = this->_Class;

@@ -418,13 +418,13 @@ eg:  (f closure-ptr nargs a b c d ...)
                           (reg-i8*       (irc-bit-cast reg %i8*% "reg-i8*"))
                           (_             (irc-store reg-i8* addr)))
                      addr)))
-          (let* (
-                 (addr-closure  (spill-reg 0 (elt registers 0) "closure0"))
+          (let* ((addr-closure  (spill-reg 0 (elt registers 0) "closure0"))
                  (addr-nargs    (spill-reg 1 (irc-int-to-ptr (elt registers 1) %i8*%) "nargs1"))
                  (addr-farg0    (spill-reg 2 (elt registers 2) "arg0")) ; this is the first fixed arg currently.
                  (addr-farg1    (spill-reg 3 (elt registers 3) "arg1"))
                  (addr-farg2    (spill-reg 4 (elt registers 4) "arg2"))
-                 (addr-farg3    (spill-reg 5 (elt registers 5) "arg3")))))
+                 (addr-farg3    (spill-reg 5 (elt registers 5) "arg3")))
+            (irc-intrinsic "cc_protect_alloca" (irc-bit-cast register-save-area* %i8*%))))
         (unless register-save-area*
           (error "If registers is NIL then register-save-area* also must be NIL"))))
 

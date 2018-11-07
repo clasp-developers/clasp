@@ -65,8 +65,8 @@
 
 
 (defmacro cf-log (fmt &body args)
-  nil
-  #+(or)`(core:bformat *debug-io* ,fmt ,@args))
+  #+(or)nil
+  `(core:bformat *log-gf* ,fmt ,@args))
 
 ;;; ------------------------------------------------------------
 ;;;
@@ -822,7 +822,6 @@
                              debug-on))
            (need-vaslist (or effective-methods-need-full-method-arguments
                              debug-on))
-           (need-debug-frame debug-on)
            (closure (first register-arguments))
            (number-of-arguments-passed (second register-arguments))
            (return-value (irc-alloca-return-type :label "return-value"))
@@ -831,11 +830,11 @@
                        (when need-va-list
                          (irc-intrinsic-call-or-invoke "llvm.va_start" (list (irc-bit-cast va-list* %i8*% "va-list*-i8*"))))
                        va-list*))
-           (reg-save-area* (irc-alloca-register-save-area :label "reg-save-area*"))
+           (register-save-area* (irc-alloca-register-save-area :label "reg-save-area*"))
            (vaslist* (irc-alloca-vaslist :label "vaslist*"))
            (vaslist-t* (when need-vaslist
-                         (maybe-spill-to-register-save-area register-arguments reg-save-area*)
-                         (irc-intrinsic "cc_rewind_vaslist" vaslist* va-list* reg-save-area*))))
+                         (maybe-spill-to-register-save-area register-arguments register-save-area*)
+                         (irc-intrinsic "cc_rewind_vaslist" vaslist* va-list* register-save-area*))))
       ;; We have va-list* and register-arguments for the arguments
       ;; We also have specializer-profile - now we can gather up the arguments we need to dispatch on.
       (flet ((next-argument (idx dispatch-register-arguments)
@@ -854,7 +853,7 @@
                                 :continue-after-dispatch continue-after-dispatch
                                 :dispatch-arguments (nreverse dispatch-args)
                                 :register-arguments register-arguments
-                                :register-save-area* reg-save-area*
+                                :register-save-area* register-save-area*
                                 :remaining-register-arguments (cddr register-arguments)
                                 :dispatch-va-list* va-list*
                                 :vaslist* vaslist*
@@ -905,6 +904,7 @@
       (with-source-pathnames (:source-pathname nil)
         (let* ((*current-function-name* (jit-function-name generic-function-name))
                (*gv-current-function-name* (module-make-global-string *current-function-name* "fn-name"))
+               (_ (cf-log "codegen-dispatcher-from-dtree dispatcher name %s generic function name %s%N" *current-function-name* generic-function-name))
                (disp-fn (irc-simple-function-create *current-function-name*
                                                     %fn-registers-prototype% #| was %fn-gf% |#
                                                     'llvm-sys::External-linkage
@@ -959,6 +959,10 @@
                 ;;      then we need to allocate a va_list to use when we run out of register arguments.
                 ;; Setup exception handling and cleanup landing pad
                 (let* ((arguments (analyze-generic-function-make-arguments generic-function register-arguments debug-on miss-bb)))
+                  ;; This will ALWAYS spill the arguments.  If we have simple accessors - we don't want to do this.
+                  (maybe-spill-to-register-save-area
+                   (argument-holder-register-arguments arguments)
+                   (argument-holder-register-save-area* arguments))
                   (flet ((codegen-rest-of-dispatcher ()
                            (with-irbuilder (*irbuilder-function-alloca*)
                              (irc-br body-bb))
@@ -974,9 +978,9 @@
                                                       (irc-bit-cast
                                                        (argument-holder-dispatch-va-list* arguments)
                                                        %i8*%)))
-                                                    (maybe-spill-to-register-save-area
-                                                     (argument-holder-register-arguments arguments)
-                                                     (argument-holder-register-save-area* arguments))
+                                                    #+(or)(maybe-spill-to-register-save-area
+                                                           (argument-holder-register-arguments arguments)
+                                                           (argument-holder-register-save-area* arguments))
                                                     (prog1
                                                         (irc-intrinsic
                                                          "cc_rewind_vaslist"

@@ -3455,7 +3455,7 @@ void parse_record(uintptr_t& address, StkMapRecord& record) {
 }  
 
 
-void register_one_llvm_stackmap(uintptr_t& address) {
+void register_one_llvm_stackmap(bool jit, uintptr_t& address) {
   uintptr_t stackMapAddress = address;
   core::Symbol_sp types[5] = {kw::_sym_register, kw::_sym_direct, kw::_sym_indirect, kw::_sym_constant, kw::_sym_constant_index};
   Header header;
@@ -3468,7 +3468,7 @@ void register_one_llvm_stackmap(uintptr_t& address) {
     StkSizeRecord function;
     parse_function(address,function);
     functions.push_back(function);
-//    printf("%s:%d:%s register function at 0x%llx\n", __FILE__, __LINE__, __FUNCTION__, function.FunctionAddress);
+    // printf("%s:%d:%s register function at 0x%llx\n", __FILE__, __LINE__, __FUNCTION__, function.FunctionAddress);
   }
   for ( size_t index=0; index<NumConstants; ++index ) {
     uint64_t constant;
@@ -3481,10 +3481,11 @@ void register_one_llvm_stackmap(uintptr_t& address) {
       parse_record(address,record);
 //      printf("%s:%d:%s function at %llX PatchPointId: %llu\n", __FILE__, __LINE__, __FUNCTION__, functions[functionIndex].FunctionAddress,record.PatchPointID);
       if (record.PatchPointID == 1234567 ) {
-        core::register_stack_map_entry(stackMapAddress,
-                                 functions[functionIndex].FunctionAddress,
-                                 record.Locations[0].OffsetOrSmallConstant,
-                                 functions[functionIndex].StackSize);
+        core::register_stack_map_entry(jit,
+                                       stackMapAddress,
+                                       functions[functionIndex].FunctionAddress,
+                                       record.Locations[0].OffsetOrSmallConstant,
+                                       functions[functionIndex].StackSize);
       }
     }
     ++functionIndex;
@@ -3497,10 +3498,10 @@ void register_one_llvm_stackmap(uintptr_t& address) {
 namespace llvmo {
 
 
-void register_llvm_stackmaps(uintptr_t startAddress, uintptr_t endAddress) {
+void register_llvm_stackmaps(bool jit, uintptr_t startAddress, uintptr_t endAddress) {
   while (startAddress<endAddress) {
 //    printf("%s:%d:%s startAddress: 0x%lx  endAddress: 0x%lx\n", __FILE__, __LINE__, __FUNCTION__, startAddress, endAddress);
-    stackmap::register_one_llvm_stackmap(startAddress);
+    stackmap::register_one_llvm_stackmap(jit, startAddress);
   }
 }
 
@@ -3550,10 +3551,11 @@ class ClaspSectionMemoryManager : public SectionMemoryManager {
     if (SectionName.str() == "__llvm_stackmaps") {
       my_thread->_stackmap = (uintptr_t)ptr;
       my_thread->_stackmap_size = (size_t)Size;
-//      printf( "%s", (BF("%s:%d  recorded __llvm_stackmap allocateDataSection Size: %lu  Alignment: %u SectionId: %u SectionName: %s isReadOnly: %d --> allocated at: %p\n") % __FILE__% __LINE__% Size% Alignment% SectionID% SectionName.str() % isReadOnly% (void*)ptr).str().c_str() );
+      STACKMAP_LOG(("%s:%d  recorded __llvm_stackmap allocateDataSection Size: %lu  Alignment: %u SectionId: %u SectionName: %s isReadOnly: %d --> allocated at: %p\n",
+                    __FILE__, __LINE__, Size, Alignment, SectionID, SectionName.str() , isReadOnly, (void*)ptr).str().c_str() );
     }
     if (llvmo::_sym_STARdebugObjectFilesSTAR->symbolValue().notnilp()) {
-      printf( "%s", ( BF("%s:%d  allocateDataSection Size: %lu  Alignment: %u SectionId: %u SectionName: %s isReadOnly: %d --> allocated at: %p\n") % __FILE__% __LINE__% Size% Alignment% SectionID% SectionName.str() % isReadOnly% (void*)ptr ).str().c_str());
+      core::write_bf_stream(BF(",s:%d  allocateDataSection Size: %lu  Alignment: %u SectionId: %u SectionName: %s isReadOnly: %d --> allocated at: %p\n") % __FILE__% __LINE__% Size% Alignment% SectionID% SectionName.str() % isReadOnly% (void*)ptr );
     }
     return ptr;
   }
@@ -3589,7 +3591,7 @@ class ClaspSectionMemoryManager : public SectionMemoryManager {
 #endif
     if (p_section!=nullptr) {
       printf("%s:%d LLVM_STACKMAPS  p_section@%p section_size=%lu\n", __FILE__, __LINE__, (void*)p_section, section_size );
-      llvmo::register_llvm_stackmaps((uintptr_t)p_section,(uintptr_t)p_section+section_size);
+      llvmo::register_llvm_stackmaps(true, (uintptr_t)p_section,(uintptr_t)p_section+section_size);
     } else {
 //      printf("%s:%d     Could not find LLVM_STACKMAPS\n", __FILE__, __LINE__ );
     }
@@ -3610,7 +3612,7 @@ class ClaspSectionMemoryManager : public SectionMemoryManager {
   }
 
   bool finalizeMemory(std::string* ErrMsg = nullptr) {
-//    printf("%s:%d:%s entered\n", __FILE__, __LINE__, __FUNCTION__ );
+    STACKMAP_LOG(("%s:%d:%s entered\n", __FILE__, __LINE__, __FUNCTION__ ));
     bool result = this->SectionMemoryManager::finalizeMemory(ErrMsg);
     unsigned long section_size = 0;
     void* p_section = NULL;
@@ -3620,8 +3622,8 @@ class ClaspSectionMemoryManager : public SectionMemoryManager {
       my_thread->_stackmap = 0;
     }
     if (p_section!=nullptr) {
-//      printf("%s:%d LLVM_STACKMAPS  p_section@%p section_size=%lu\n", __FILE__, __LINE__, (void*)p_section, section_size );
-      llvmo::register_llvm_stackmaps((uintptr_t)p_section,(uintptr_t)p_section+section_size);
+      STACKMAP_LOG(("%s:%d LLVM_STACKMAPS  p_section@%p section_size=%lu\n", __FILE__, __LINE__, (void*)p_section, section_size ));
+      llvmo::register_llvm_stackmaps(true, (uintptr_t)p_section,(uintptr_t)p_section+section_size);
     } else {
       printf("%s:%d     Could not find LLVM_STACKMAPS\n", __FILE__, __LINE__ );
     }

@@ -826,7 +826,7 @@ void cc_register_library(const void* fn) {
                                             &section_size );
     if (p_section!=nullptr) {
 //      printf("%s:%d LLVM_STACKMAPS  p_section@%p section_size=%lu\n", __FILE__, __LINE__, (void*)p_section, section_size );
-      llvmo::register_llvm_stackmaps((uintptr_t)p_section,(uintptr_t)p_section+section_size);
+      llvmo::register_llvm_stackmaps(false, (uintptr_t)p_section,(uintptr_t)p_section+section_size);
     } else {
 //      printf("%s:%d     Could not find LLVM_STACKMAPS\n", __FILE__, __LINE__ );
     }
@@ -840,6 +840,13 @@ Otherwise there is just one. */
 void cc_register_startup_function(fnStartUp fptr) {
   register_startup_function(fptr);
 }
+/*! Call this with an alloca pointer to keep the alloca from 
+being optimized away */
+__attribute__((optnone,noinline)) void cc_protect_alloca(char* ptr)
+{
+  ptr;
+}
+
 
 void cc_invoke_sub_run_all_function(fnStartUp fptr) {
   fptr();

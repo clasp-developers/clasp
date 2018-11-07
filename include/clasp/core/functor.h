@@ -126,7 +126,7 @@ public:
       return result;
     }
     CL_LISPIFY_NAME("core:functionName");
-    CL_DEFMETHOD T_sp functionName() const {
+    CL_DEFMETHOD virtual T_sp functionName() const {
       return this->fdescInfo(this->fdesc()->functionNameIndex);
     }
     T_sp docstring() const {

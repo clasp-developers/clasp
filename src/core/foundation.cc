@@ -1604,14 +1604,15 @@ CL_DEFUN void core__debug_invocation_history_frame(size_t v) {
 }
 
 
-core::T_sp capture_arguments(uintptr_t basePointer, int frameOffset)
+core::T_sp capture_arguments(uintptr_t functionAddress, uintptr_t basePointer, int frameOffset)
 {
   size_t argregs = (LCC_ABI_ARGS_IN_REGISTERS-2);
   T_O** register_save_area = (T_O**)(basePointer+frameOffset);
 //  printf("%s:%d:%s basePointer@%p frameOffset %d reg_save_area %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)basePointer, frameOffset, register_save_area);
   size_t nargs = (uintptr_t)register_save_area[1];
   if (nargs>256) {
-    SIMPLE_ERROR(BF("There are too many arguments %lu\n") % nargs);
+    printf("%s:%d:%s There are too many arguments %lu for function at %p in frame at %p offset: %d\n", __FILE__, __LINE__, __FUNCTION__, nargs, (void*)functionAddress, (void*)basePointer, frameOffset);
+    return _Nil<T_O>();
   }
   size_t reg_nargs = MIN(argregs,nargs);
   size_t mem_nargs = 0;

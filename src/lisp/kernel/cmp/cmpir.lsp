@@ -1223,7 +1223,8 @@ Within the _irbuilder_ dynamic environment...
   "Alloca space for an va_list"
   (with-alloca-insert-point-no-cleanup irbuilder
     :alloca (llvm-sys::create-alloca *irbuilder* %register-save-area% (jit-constant-size_t 1) label)
-    :init (lambda (alloca) (irc-intrinsic "llvm.experimental.stackmap" (jit-constant-i64 1234567) (jit-constant-i32 0) alloca))))
+    :init (lambda (alloca)
+            (irc-intrinsic "llvm.experimental.stackmap" (jit-constant-i64 1234567) (jit-constant-i32 0) alloca))))
 
 (defun irc-alloca-vaslist (&key (irbuilder *irbuilder-function-alloca*) (label "va_list"))
   "Alloca space for an vaslist and a backup so that it can be rewound"

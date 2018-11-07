@@ -95,11 +95,17 @@ For C/C++ frames - return (list 'c-function name)."
               (parts (cmp:unescape-and-split-jit-name name-with-parts))
               (symbol-name (first parts))
               (package-name (second parts))
-              (name (intern symbol-name (or package-name :keyword))))
+              (maybe-fn-or-specializers (third parts))
+              (maybe-method (fourth parts))
+              (name (intern symbol-name (or package-name :keyword)))
+              (print-name (cond
+                            ((string= maybe-method "METHOD")
+                             (format nil "(METHOD ~a ~a)" name maybe-fn-or-specializers))
+                            (t name))))
          (make-backtrace-frame :type :lisp
                                :return-address return-address
                                :function-name name
-                               :print-name name
+                               :print-name print-name
                                :raw-name common-lisp-name
                                :arguments maybe-arguments
                                :base-pointer base-pointer
