@@ -1009,8 +1009,8 @@ CL_DEFUN Module_sp Module_O::make(llvm::StringRef module_name, LLVMContext_sp co
 
 std::string Module_O::__repr__() const {
   stringstream ss;
-  ss << "#<MODULE ID:";
-  ss << this->_Id << ">";
+  ss << "#<MODULE ";
+  ss << (void*)this->wrappedPtr() << ">";
   return ss.str();
 }
 
@@ -2519,6 +2519,8 @@ CL_DEFUN Function_sp llvm_sys__FunctionCreate(FunctionType_sp tysp, llvm::Global
   return funcsp;
 };
 
+CL_LISPIFY_NAME(getParent);
+CL_EXTERN_DEFMETHOD(Function_O,(llvm::Module *(llvm::Function::*)())&llvm::Function::getParent);
 CL_LISPIFY_NAME("setHasUWTable");
 CL_EXTERN_DEFMETHOD(Function_O,&llvm::Function::setHasUWTable);
 CL_LISPIFY_NAME("setDoesNotThrow");

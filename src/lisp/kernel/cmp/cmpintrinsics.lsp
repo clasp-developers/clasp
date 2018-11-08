@@ -500,6 +500,8 @@ eg:  (f closure-ptr nargs a b c d ...)
 (defun add-global-ctor-function (module main-function &optional register-library)
   "Create a function with the name core:+clasp-ctor-function-name+ and
 have it call the main-function"
+  (unless (eql module (llvm-sys:get-parent main-function))
+    (error "The parent of the func-ptr ~a (a module) does not match the module ~a" (llvm-sys:get-parent main-function) module))
   (let* ((*the-module* module)
          (fn (irc-simple-function-create
               core::+clasp-ctor-function-name+
@@ -513,9 +515,7 @@ have it call the main-function"
       (irc-set-insert-point-basic-block entry-bb irbuilder-body)
       (with-irbuilder (irbuilder-body)
         (when register-library
-          (let (#+(or)(var (llvm-sys:get-or-create-external-global *the-module* "_mh_bundle_header" %i8% 'llvm-sys:external-weak-linkage))
-                  (var fn))
-            (irc-intrinsic "cc_register_library" var)))
+          (irc-intrinsic "cc_register_library" fn))
         (let* (
                (bc-bf (irc-bit-cast main-function %fn-start-up*% "fnptr-pointer"))
                (_     (irc-intrinsic "cc_register_startup_function" bc-bf))
@@ -578,6 +578,8 @@ have it call the main-function"
 * Description
 Add the global variable llvm.global_ctors to the Module (linkage appending)
 and initialize it with an array consisting of one function pointer."
+  (unless (eql module (llvm-sys:get-parent func-ptr))
+    (error "The parent of the func-ptr ~a (a module) does not match the module ~a" (llvm-sys:get-parent func-ptr) module))
   (let* ((global-ctor (add-global-ctor-function module func-ptr register-library)))
     (incf *compilation-unit-module-index*)
     (add-llvm.global_ctors module *compilation-unit-module-index* global-ctor)))
