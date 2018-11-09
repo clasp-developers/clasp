@@ -844,7 +844,7 @@ void cc_register_startup_function(fnStartUp fptr) {
 being optimized away */
 __attribute__((optnone,noinline)) void cc_protect_alloca(char* ptr)
 {
-  ptr;
+  (void)ptr;
 }
 
 
