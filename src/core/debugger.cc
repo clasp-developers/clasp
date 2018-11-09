@@ -926,6 +926,46 @@ void dbg_printTPtr(uintptr_clasp_t raw, bool print_pretty) {
   clasp_force_output(sout);
 }
 
+void dbg_safe_print(uintptr_clasp_t raw) {
+  core::T_sp obj((gc::Tagged)raw);
+  if (gc::IsA<core::Symbol_sp>(obj)) {
+    Symbol_sp sym = gc::As_unsafe<Symbol_sp>(obj);
+    printf(" %s", sym->formattedName(true).c_str());
+  } else if (obj.consp()) {
+    printf(" (");
+    while (obj.consp()) {
+      dbg_safe_print((uintptr_clasp_t)CONS_CAR(obj).raw_());
+      obj = CONS_CDR(obj);
+    }
+    if (obj.notnilp()) {
+      printf(" . ");
+      dbg_safe_print(obj);
+    }
+    printf(" )");
+  } else if (obj.fixnump()) {
+    printf(" %lld", obj.unsafe_fixnum());
+  } else if (obj.nilp()) {
+    printf(" NIL");
+  } else if (obj.unboundp()) {
+    printf(" #:UNBOUND");
+  } else if (obj.characterp()) {
+    printf(" #\\%c[%d]", obj.unsafe_character(), obj.unsafe_character());
+  } else if (obj.single_floatp()) {
+    printf(" %f", obj.unsafe_single_float());
+  } else if (obj.generalp()) {
+    General_sp gen = gc::As_unsafe<General_sp>(obj);
+    printf(" #<%s @%p>", gen->className().c_str(), gen.raw_());
+  } else {
+    printf(" #<RAW@%p\n", (void*)obj.raw_());
+  }
+}
+
+void dbg_safe_println(uintptr_clasp_t raw) {
+  dbg_safe_print(raw);
+  printf("\n");
+}
+
+
 #if 0
 /*! Sets the flag that controlC has been pressed so that when
       the process continues it will drop into the debugging repl */
