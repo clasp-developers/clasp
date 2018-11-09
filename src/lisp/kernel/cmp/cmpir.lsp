@@ -1159,9 +1159,9 @@ Within the _irbuilder_ dynamic environment...
 (defmacro with-irbuilder ((irbuilder) &rest code)
   "Set *irbuilder* to the given IRBuilder"
   `(let ((*irbuilder* ,irbuilder))
-     (cmp-log "Switching to irbuilder --> %s%N" (bformat nil "%s" ,irbuilder))
+     (cmp-log "Switching to irbuilder --> %s%N" (bformat nil "%s" *irbuilder*))
      (multiple-value-prog1 (progn ,@code)
-       (cmp-log "Leaving irbuilder --> %s%N" (bformat nil "%s" ,irbuilder)))))
+       (cmp-log "Leaving irbuilder --> %s%N" (bformat nil "%s" *irbuilder*)))))
 
 
 (defun irc-alloca-tmv (env &key (irbuilder *irbuilder-function-alloca*) (label ""))

@@ -366,6 +366,31 @@
 
 (defmethod cleavir-ir-graphviz:label ((instruction setf-fdefinition-instruction)) "setf-fdefinition")
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Instruction INVOKE-INSTRUCTION.
+
+(defclass invoke-instruction (cleavir-ir:funcall-instruction)
+  ((%destinations :accessor destinations :initarg :destinations)))
+
+(defmethod cleavir-ir-graphviz:label ((instruction invoke-instruction)) "invoke")
+
+(defmethod cleavir-ir-graphviz:draw-instruction :after ((instruction invoke-instruction) stream)
+  (loop with me = (cleavir-ir-graphviz::instruction-id instruction)
+        for dest in (clasp-cleavir-hir:destinations instruction)
+        for id = (cleavir-ir-graphviz::instruction-id dest)
+        when id
+          do (format stream "  ~a -> ~a [color = pink, style = dashed];~%"
+                     me id)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Instruction MULTIPLE-VALUE-INVOKE-INSTRUCTION.
+
+(defclass multiple-value-invoke-instruction (cleavir-ir:multiple-value-call-instruction)
+  ((%destinations :accessor destinations :initarg :destinations)))
+
+(defmethod cleavir-ir-graphviz:label ((instruction multiple-value-invoke-instruction)) "mv-invoke")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

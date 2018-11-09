@@ -16,7 +16,7 @@
     ;; But it substantially complicates the code and it's not that important.
     ;; Better usage of INVOKE might be able to restore the situation.
     (cmp:compile-lambda-list-code lambda-list calling-convention
-                                  :translate-datum #'translate-datum)))
+                                  :argument-out #'out)))
 
 (defmethod translate-simple-instruction
     ((instr clasp-cleavir-hir:bind-va-list-instruction) return-value (abi abi-x86-64) function-info)
@@ -36,7 +36,7 @@
                                   ;; in method bodies. In that case the generic function does the
                                   ;; checking anyway, so there's no point in each method repeating.
                                   :safep nil
-                                  :translate-datum #'translate-datum)))
+                                  :argument-out #'out)))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:instruction) return-value abi function-info)
@@ -73,22 +73,40 @@
 
 (defmethod translate-simple-instruction
     ((instr cleavir-ir:multiple-to-fixed-instruction) return-value (abi abi-x86-64) function-info)
-  ;; Create a basic block for each output
+  ;; We put in a switch on the number of return values. There's one case for each output, plus one.
+  ;; The blocks out of the switch branch to a final block which has a phi for each output.
+  ;; So if we have an MTF with one output, we'd have
+  ;; switch number-of-return-values { case 0: go zero; default: go default;}
+  ;; zero: out = nil; go final;
+  ;; default: out = return-value-0; go final;
   (with-return-values (return-vals return-value abi)
     (let* ((outputs (cleavir-ir:outputs instr))
-           (blocks (let (b) (dotimes (i (1+ (length outputs))) (push (cmp:irc-basic-block-create (format nil "mvn~a-" i)) b)) (nreverse b)))
-	   (final-block (cmp:irc-basic-block-create "mvn-final"))
-	   (switch (cmp:irc-switch (%load (number-of-return-values return-vals)) (car (last blocks)) (length blocks))))
-      (dotimes (n (length blocks))
-	(let ((block (elt blocks n)))
-	  (cmp:irc-begin-block block)
-	  (llvm-sys:add-case switch (%size_t n) block)
-	  (dotimes (i (length outputs))
-	    (if (< i n)
-		(out (%load (return-value-elt return-vals i)) (elt outputs i))
-		(out (%nil) (elt outputs i))))
-	  (cmp:irc-br final-block)))
-      (cmp:irc-begin-block final-block))))
+           (nouts (length outputs))
+           (rets (loop for i below nouts collect (return-value-elt return-vals i)))
+           (default (cmp:irc-basic-block-create "mtf-enough"))
+           (switch (cmp:irc-switch (%load (number-of-return-values return-vals)) default nouts))
+           (final (cmp:irc-basic-block-create "mtf-final"))
+           (default-vars (prog2 (cmp:irc-begin-block default)
+                             (mapcar #'%load rets)
+                           (cmp:irc-br final)))
+           (blocks-and-vars
+             (loop for retn below nouts
+                   for block = (cmp:irc-basic-block-create (format nil "mtf-~d" retn))
+                   do (llvm-sys:add-case switch (%size_t retn) block)
+                   do (cmp:irc-begin-block block)
+                   collect (cons block
+                                 (loop for ret in rets
+                                       for i below nouts
+                                       collect (if (< i retn) (%load ret) (%nil))))
+                   do (cmp:irc-br final))))
+      (cmp:irc-begin-block final)
+      (loop for out in outputs
+            for i from 0
+            for phi = (cmp:irc-phi cmp:%t*% (1+ nouts) (datum-name-as-string out))
+            do (loop for (block . vars) in blocks-and-vars
+                     do (cmp:irc-phi-add-incoming phi (elt vars i) block))
+               (cmp:irc-phi-add-incoming phi (elt default-vars i) default)
+               (out phi out)))))
 
 (defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir:multiple-value-foreign-call-instruction) return-value (abi abi-x86-64) function-info)
@@ -122,13 +140,22 @@
     (closure-call-or-invoke (in (first inputs)) return-value (mapcar #'in (rest inputs)) abi)))
 
 (defmethod translate-simple-instruction
+    ((instruction clasp-cleavir-hir:invoke-instruction) return-value (abi abi-x86-64) function-info)
+  (cmp:with-landing-pad (catch-pad (clasp-cleavir-hir:destinations instruction)
+                                   return-value abi *tags* function-info)
+    ;; funcall-instruction method
+    (call-next-method)))
+
+(defmethod translate-simple-instruction
     ((instruction cleavir-ir:nop-instruction) return-value abi function-info)
   (declare (ignore return-value inputs outputs abi function-info)))
 
 (defmethod translate-simple-instruction
     ((instruction cc-mir:save-frame-instruction) return-value abi function-info)
   ;; FIXME: rename the intrinsic!!
-  (out (%intrinsic-call "cc_pushLandingPadFrame" nil) (first (cleavir-ir:outputs instruction))))
+  (let ((frame (%intrinsic-call "cc_pushLandingPadFrame" nil)))
+    (setf (frame-value function-info) frame)
+    (out frame (first (cleavir-ir:outputs instruction)))))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:create-cell-instruction) return-value abi function-info)
@@ -234,6 +261,14 @@
                    (format *debug-log* "    translate-simple-instruction multiple-value-call-instruction: ~a~%" 
                            (cc-mir:describe-mir instruction))
                    (format *debug-log* "     instruction --> ~a~%" call-result)))))
+
+(defmethod translate-simple-instruction
+    ((instruction clasp-cleavir-hir:multiple-value-invoke-instruction)
+     return-value (abi abi-x86-64) function-info)
+  (cmp:with-landing-pad (catch-pad (clasp-cleavir-hir:destinations instruction)
+                                   return-value abi *tags* function-info)
+    ;; funcall-instruction method
+    (call-next-method)))
 
 (defun gen-vector-effective-address (array index element-type fixnum-type)
   (let* ((type (llvm-sys:type-get-pointer-to (cmp::simple-vector-llvm-type element-type)))

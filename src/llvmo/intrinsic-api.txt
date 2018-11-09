@@ -119,7 +119,6 @@ _loadValues
 _setjmp_set_jump_address
 _pushDynamicBinding
 _popDynamicBinding
-_matchKeywordOnce
 _cc_setTmvToNil
 _cc_precalcSymbol
 _cc_precalcValue
@@ -144,7 +143,6 @@ _cc_safe_symbol_value
 _cc_setSymbolValue
 _cc_call
 _cc_allowOtherKeywords
-_cc_matchKeywordOnce
 _cc_ifNotKeywordException
 _cc_multipleValuesArrayAddress
 _cc_unwind
