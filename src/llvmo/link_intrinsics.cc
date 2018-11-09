@@ -860,58 +860,6 @@ void cc_invoke_startup_functions() {
 
 };
 
-/*! Look for the keyword in (*frameP) after argIdx.
- */
-extern void throwIfExcessKeywordArguments(char *fnName, core::ActivationFrame_sp *frameP, int argIdx) {
-  ASSERT(frameP != NULL);
-  ASSERT(frameP->objectp());
-  ASSERT(argIdx >= 0);
-  core::ValueFrame_sp vframe = gctools::As_unsafe<core::ValueFrame_sp>(*frameP);
-  if (argIdx >= vframe->length()) return;
-  stringstream ss;
-  for (int i(0); i < (vframe)->length(); ++i) {
-    ss << _rep_(vframe->entry(i)) << " ";
-  }
-  SIMPLE_ERROR(BF("Excess keyword arguments fnName: %s argIdx: %d  args: %s") % fnName % argIdx % ss.str());
-}
-
-extern void throwIfExcessArguments(core::T_sp *frameP, int argIdx) {
-  ASSERT(frameP != NULL);
-  ASSERT(frameP->objectp());
-  ASSERT(argIdx >= 0);
-  core::ValueFrame_sp frame = gc::As_unsafe<core::ValueFrame_sp>((*frameP));
-  if (argIdx < frame->length()) {
-    stringstream serr;
-    for (int i = argIdx; i < frame->length(); i++) {
-      serr << _rep_(frame->entry(i)) << " ";
-    }
-    SIMPLE_ERROR(BF("extraneous arguments: %s") % serr.str());
-  }
-}
-
-inline core::T_sp prependMultipleValues(core::T_mv *multipleValuesP) {
-  core::List_sp result = _Nil<core::T_O>();
-  core::T_mv &mv = (*multipleValuesP);
-  if (mv.number_of_values() > 0) {
-    result = core::Cons_O::create(mv, result);
-    for (int i = 1; i < mv.number_of_values(); i++) {
-      result = core::Cons_O::create(mv.valueGet_(i), result);
-    }
-  }
-  return result;
-}
-
-extern "C" {
-void sp_prependMultipleValues(core::T_sp *resultP, core::T_mv *multipleValuesP) {
-  (*resultP) = prependMultipleValues(multipleValuesP);
-  ASSERTNOTNULL(*resultP);
-}
-void mv_prependMultipleValues(core::T_mv *resultP, core::T_mv *multipleValuesP) {
-  (*resultP) = Values(prependMultipleValues(multipleValuesP));
-  ASSERTNOTNULL(*resultP);
-}
-};
-
 extern "C" {
 
 void gdb() {

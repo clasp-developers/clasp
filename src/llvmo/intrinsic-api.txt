@@ -38,14 +38,12 @@ _attachDebuggingInfoToValueFrame
 _valueFrameReference
 _makeFunctionFrame
 _functionFrameReference
-_prependMultipleValues
 _invokeTopLevelFunction
 _cc_register_startup_function
 _activationFrameSize
 _copyArgs
 _throwTooManyArgumentsException
 _throwNotEnoughArgumentsException
-_throwIfExcessKeywordArguments
 _cc_trackFirstUnexpectedKeyword
 _gdb
 _debugInspectActivationFrame
