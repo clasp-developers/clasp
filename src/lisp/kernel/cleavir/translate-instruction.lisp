@@ -531,7 +531,6 @@
   (with-return-values (return-values return-value abi)
     ;; Save whatever is in return-vals in the multiple-value array
     (%intrinsic-call "cc_saveMultipleValue0" (list return-value))
-    #+(or)(maybe-gen-cleanup-invocation-history function-info)
     (let ((static-index (cc-mir:go-index (cleavir-ir:destination instruction))))
       (%intrinsic-call "cc_unwind" (list (in (first (cleavir-ir:inputs instruction)))
                                          (%size_t static-index))))
@@ -549,7 +548,6 @@
 (defmethod translate-branch-instruction
     ((instruction cleavir-ir:return-instruction) return-value successors abi function-info)
   (declare (ignore successors))
-  #+(or)(maybe-gen-cleanup-invocation-history function-info)
   (%ret (%load return-value)))
 
 (defmethod translate-branch-instruction
@@ -569,7 +567,6 @@
 (defmethod translate-branch-instruction
     ((instruction clasp-cleavir-hir:throw-instruction) return-value successors abi function-info)
   (declare (ignore successors))
-  #+(or)(maybe-gen-cleanup-invocation-history function-info)
   (let ((inputs (cleavir-ir:inputs instruction)))
     (%intrinsic-call "cc_throw" (list (in (first inputs)) (in (second inputs)))))
   (cmp:irc-unreachable))

@@ -73,38 +73,6 @@
                                 return-value abi frame-marker landing-pad-for-unwind-rethrow
                                 tags catches)))
 
-#+(or)
-(defun generate-cleanup-invocation-history (calling-convention)
-  (%intrinsic-call "cc_pop_InvocationHistoryFrame"
-                   (list (cmp:calling-convention-closure calling-convention)
-                         (cmp:calling-convention-invocation-history-frame* calling-convention))))
-
-#+(or)
-(defun maybe-gen-cleanup-invocation-history (function-info)
-  (when (debug-on function-info)
-    (let ((cc (calling-convention function-info)))
-      (generate-cleanup-invocation-history cc))))
-
-(defun generate-cleanup-landing-pad (function exn.slot ehselector.slot block)
-  (let ((cleanup-landing-pad       (cmp:irc-basic-block-create "cleanup-lpad" function))
-        (ehbuilder                 (llvm-sys:make-irbuilder cmp:*llvm-context*)))
-    (cmp:irc-set-insert-point-basic-block cleanup-landing-pad ehbuilder)
-    (cmp:with-irbuilder (ehbuilder)
-      (let ((landpad (cmp:irc-create-landing-pad 1)))
-        (llvm-sys:set-cleanup landpad t)
-        (cmp:preserve-exception-info landpad exn.slot ehselector.slot)
-        (cmp:irc-br block)))
-    cleanup-landing-pad))
-
-(defun generate-cleanup-block (function calling-convention ehresume-block)
-  (let ((cleanup-block             (cmp:irc-basic-block-create "cleanup" function))
-        (ehbuilder                 (llvm-sys:make-irbuilder cmp:*llvm-context*)))
-    (cmp:irc-set-insert-point-basic-block cleanup-block ehbuilder)
-    (cmp:with-irbuilder (ehbuilder)
-      #+(or)(generate-cleanup-invocation-history calling-convention)
-      (cmp:irc-br ehresume-block))
-    cleanup-block))
-
 (defun generate-resume-block (function exn.slot ehselector.slot)
   (let* ((ehbuilder       (llvm-sys:make-irbuilder cmp:*llvm-context*))
          (ehresume        (cmp:irc-basic-block-create "ehresume" function))
@@ -128,17 +96,10 @@
     (if (or (debug-on info) (catches-p info))
         (let* ((exn.slot (alloca-i8* "exn.slot"))
                (ehselector.slot (alloca-i32 "ehselector.slot"))
-               (resume-block (generate-resume-block function exn.slot ehselector.slot))
-               (cleanup-block resume-block #+(or)(if (debug-on info)
-                                                     (generate-cleanup-block function calling-convention resume-block)
-                                                     resume-block))
-               (cleanup-landing-pad nil #+(or)(if (debug-on info)
-                                                  (generate-cleanup-landing-pad
-                                                   function exn.slot ehselector.slot cleanup-block)
-                                                  nil)))
+               (resume-block (generate-resume-block function exn.slot ehselector.slot)))
           (if catches-p
               (generate-catch-landing-pads
-               function cleanup-landing-pad ehselector.slot exn.slot cleanup-block
+               function nil ehselector.slot exn.slot resume-block
                return-value abi (translate-datum (frame-marker info)) tags catches)
-              cleanup-landing-pad))
+              nil))
         nil)))
