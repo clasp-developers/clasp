@@ -583,6 +583,8 @@ have it call the main-function"
 Add the global variable llvm.global_ctors to the Module (linkage appending)
 and initialize it with an array consisting of one function pointer."
   (let ((startup-fn (llvm-sys:get-function module func-name)))
+    (unless startup-fn
+      (error "Could not find ~a in module" func-name))
     #+(or)(unless (eql module (llvm-sys:get-parent func-ptr))
             (error "The parent of the func-ptr ~a (a module) does not match the module ~a" (llvm-sys:get-parent func-ptr) module))
     (let* ((global-ctor (add-global-ctor-function module startup-fn register-library)))
