@@ -500,7 +500,7 @@ eg:  (f closure-ptr nargs a b c d ...)
 (defun add-global-ctor-function (module main-function &optional register-library)
   "Create a function with the name core:+clasp-ctor-function-name+ and
 have it call the main-function"
-  (unless (eql module (llvm-sys:get-parent main-function))
+  #+(or)(unless (eql module (llvm-sys:get-parent main-function))
     (error "The parent of the func-ptr ~a (a module) does not match the module ~a" (llvm-sys:get-parent main-function) module))
   (let* ((*the-module* module)
          (fn (irc-simple-function-create
@@ -516,8 +516,7 @@ have it call the main-function"
       (with-irbuilder (irbuilder-body)
         (when register-library
           (irc-intrinsic "cc_register_library" fn))
-        (let* (
-               (bc-bf (irc-bit-cast main-function %fn-start-up*% "fnptr-pointer"))
+        (let* ((bc-bf (irc-bit-cast main-function %fn-start-up*% "fnptr-pointer"))
                (_     (irc-intrinsic "cc_register_startup_function" bc-bf))
                (_     (irc-ret-void))))
         ;;(llvm-sys:dump fn)
@@ -554,6 +553,11 @@ have it call the main-function"
       (if global
           (llvm-sys:erase-from-parent global))))
 
+  (defun remove-llvm.used-if-exists (module)
+    (let ((global (llvm-sys:get-named-global module "llvm.used")))
+      (if global
+          (llvm-sys:erase-from-parent global))))
+
 (defun add-llvm.global_ctors (module priority global-ctor-function)
   (or global-ctor-function (error "global-ctor-function must not be NIL"))
   (llvm-sys:make-global-variable
@@ -571,18 +575,19 @@ have it call the main-function"
                                     (llvm-sys:constant-pointer-null-get %i8*%)))))
    "llvm.global_ctors"))
 
-(defun make-boot-function-global-variable (module func-ptr &key register-library)
+(defun make-boot-function-global-variable (module func-name &key register-library)
   "* Arguments
 - module :: An llvm module
 - func-ptr :: An llvm function
 * Description
 Add the global variable llvm.global_ctors to the Module (linkage appending)
 and initialize it with an array consisting of one function pointer."
-  (unless (eql module (llvm-sys:get-parent func-ptr))
-    (error "The parent of the func-ptr ~a (a module) does not match the module ~a" (llvm-sys:get-parent func-ptr) module))
-  (let* ((global-ctor (add-global-ctor-function module func-ptr register-library)))
-    (incf *compilation-unit-module-index*)
-    (add-llvm.global_ctors module *compilation-unit-module-index* global-ctor)))
+  (let ((startup-fn (llvm-sys:get-function module func-name)))
+    #+(or)(unless (eql module (llvm-sys:get-parent func-ptr))
+            (error "The parent of the func-ptr ~a (a module) does not match the module ~a" (llvm-sys:get-parent func-ptr) module))
+    (let* ((global-ctor (add-global-ctor-function module startup-fn register-library)))
+      (incf *compilation-unit-module-index*)
+      (add-llvm.global_ctors module *compilation-unit-module-index* global-ctor))))
 
 ;;
 ;; Ensure that the LLVM model of

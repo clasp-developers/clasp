@@ -561,6 +561,7 @@ The passed module is modified as a side-effect."
     (with-track-llvm-time
         (link-builtins-module module)
       (optimize-module-for-compile-file module)
+      #+(or)(remove-llvm.used-if-exists module)
       (llvm-sys:remove-always-inline-functions module))))
 
 
@@ -569,6 +570,7 @@ The passed module is modified as a side-effect."
     (with-track-llvm-time
         (link-fastgf-module module)
       (optimize-module-for-compile-file module)
+      #+(or)(remove-llvm.used-if-exists module)
       (llvm-sys:remove-always-inline-functions module))))
 
 (defun switch-always-inline-to-inline (module)

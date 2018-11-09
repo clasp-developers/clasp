@@ -269,28 +269,29 @@ Compile a lisp source file into an LLVM module."
       (with-compilation-unit ()
         (let* ((*compile-file-pathname* (pathname (merge-pathnames given-input-pathname)))
                (*compile-file-truename* (translate-logical-pathname *compile-file-pathname*))
-               (run-all nil))
+               run-all-name)
           (with-module (:module module
                         :optimize (when optimize #'optimize-module-for-compile-file)
                         :optimize-level optimize-level)
             (with-source-pathnames (:source-pathname *compile-file-truename* ;(namestring source-location)
                                     :source-debug-pathname source-debug-pathname
                                     :source-debug-offset source-debug-offset)
+              ;; (1) Generate the code
               (with-debug-info-generator (:module *the-module*
                                           :pathname *compile-file-truename*)
                 (or *the-module* (error "*the-module* is NIL"))
                 (with-make-new-run-all (run-all-function)
                   (with-literal-table
                       (loop-read-and-compile-file-forms source-sin environment compile-file-hook))
-                  (setf run-all run-all-function)
-                  )))
-            (cmp-log "About to verify the module%N")
-            (cmp-log-dump-module *the-module*)
-            (irc-verify-module-safe *the-module*)
-            (quick-module-dump *the-module* "preoptimize")
-            ;; ALWAYS link the builtins in, inline them and then remove them.
-            (link-inline-remove-builtins *the-module*))
-          (make-boot-function-global-variable module run-all :register-library t)
+                  (setf run-all-name (llvm-sys:get-name run-all-function))))
+              (cmp-log "About to verify the module%N")
+              (cmp-log-dump-module *the-module*)
+              (irc-verify-module-safe *the-module*)
+              (quick-module-dump *the-module* "preoptimize") 
+              ;; (2) Add the CTOR next
+              (make-boot-function-global-variable module run-all-name :register-library t)
+              ;; (3) ALWAYS link the builtins in, inline them and then remove them - then optimize.
+              (link-inline-remove-builtins *the-module*)))
           (quick-module-dump module "postoptimize")
           module)))))
 
