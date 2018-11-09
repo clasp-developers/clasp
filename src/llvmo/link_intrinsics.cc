@@ -1706,22 +1706,4 @@ gctools::return_type cc_dispatch_slot_writer_index_debug(core::T_O* toptimized_s
   core::T_sp result = core::eval::funcall(clos::_sym_dispatch_slot_writer_index_debug,optimized_slot_writer,value,instance,vargs);
   return result.as_return_type();
 }
-
-
-void cc_error_too_few_arguments(size_t nargs, size_t minargs, core::FunctionDescription* functionDescription) {
-  T_sp functionName = llvmo::functionNameOrNilFromFunctionDescription(functionDescription);
-  if (functionName.nilp()) {
-    SIMPLE_ERROR(BF("Not enough arguments when calling an unknown function - you provided %lu and %lu are required") % nargs % minargs );
-  }
-  SIMPLE_ERROR(BF("Not enough arguments when calling %s - you provided %lu and %lu are required") % _rep_(functionName) % nargs % minargs );
-}
-
-void cc_error_too_many_arguments(size_t nargs, size_t maxargs, core::FunctionDescription* functionDescription) {
-  T_sp functionName = llvmo::functionNameOrNilFromFunctionDescription(functionDescription);
-  if (functionName.nilp()) {
-        SIMPLE_ERROR(BF("Too many arguments when calling an unknown function - you provided %lu and %lu are required") % nargs % maxargs );
-  }
-  SIMPLE_ERROR(BF("Too many arguments when calling %s - you provided %lu and %lu are allowed") % _rep_(functionName) % nargs % maxargs );
-}
-
 };

@@ -227,13 +227,6 @@ BUILTIN_ATTRIBUTES core::T_O *cc_readCell(core::T_O *cell)
   return cp->_Car.raw_();
 }
 
-
-BUILTIN_ATTRIBUTES void cc_check_if_wrong_number_of_arguments(size_t nargs, size_t minargs, size_t maxargs, core::FunctionDescription* functionDescription)
-{
-  if (nargs<minargs) cc_error_too_few_arguments(nargs,minargs,functionDescription);
-  if (nargs>maxargs) cc_error_too_many_arguments(nargs,maxargs,functionDescription);
-};
-
 BUILTIN_ATTRIBUTES core::T_O* cc_builtin_nil()
 {
   return _Nil<core::T_O>().raw_();
