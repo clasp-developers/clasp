@@ -25,7 +25,7 @@ THE SOFTWARE.
 */
 /* -^- */
 #define DEBUG_LANDING_PAD 1
-#if defined( __APPLE__ )
+#if defined( _TARGET_OS_DARWIN )
 #include <mach-o/ldsyms.h>
 #include <mach-o/getsect.h>
 #endif
@@ -762,7 +762,7 @@ void invokeTopLevelFunction(core::T_mv *resultP,
 #endif
 
 
-
+#if defined(_TARGET_OS_DARWIN)
 uint8_t * 
 mygetsectiondata(
                  void* vmhp,
@@ -807,6 +807,9 @@ mygetsectiondata(
   }
   return(0);
 }
+#endif
+
+
 
 void cc_register_library(const void* fn) {
 //  printf("%s:%d header -> %p\n", __FILE__, __LINE__, header );
@@ -820,15 +823,19 @@ void cc_register_library(const void* fn) {
 //    printf("%s:%d Found library base %p\n", __FILE__, __LINE__, (void*)dlinfo.dli_fbase);
     unsigned long section_size = 0;
     void* header = (void*)dlinfo.dli_fbase;
+#if defined(_TARGET_OS_DARWIN)
     uint8_t* p_section =  mygetsectiondata( header,
                                             "__LLVM_STACKMAPS",
                                             "__llvm_stackmaps",
                                             &section_size );
+#else 
+    #error "Handle linux and freebsd"
+#endif
     if (p_section!=nullptr) {
-//      printf("%s:%d LLVM_STACKMAPS  p_section@%p section_size=%lu\n", __FILE__, __LINE__, (void*)p_section, section_size );
+      STACKMAP_LOG(("%s:%d LLVM_STACKMAPS  p_section@%p section_size=%lu\n", __FILE__, __LINE__, (void*)p_section, section_size ));
       llvmo::register_llvm_stackmaps(false, (uintptr_t)p_section,(uintptr_t)p_section+section_size);
     } else {
-//      printf("%s:%d     Could not find LLVM_STACKMAPS\n", __FILE__, __LINE__ );
+      STACKMAP_LOG(("%s:%d     Could not find LLVM_STACKMAPS\n", __FILE__, __LINE__ ));
     }
   }
 }
