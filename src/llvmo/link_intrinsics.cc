@@ -25,10 +25,6 @@ THE SOFTWARE.
 */
 /* -^- */
 #define DEBUG_LANDING_PAD 1
-#if defined( _TARGET_OS_DARWIN )
-#include <mach-o/ldsyms.h>
-#include <mach-o/getsect.h>
-#endif
 
 //#define DEBUG_LEVEL_FULL
 #ifdef USE_MPS
@@ -70,6 +66,18 @@ extern "C" {
 #include <clasp/llvmo/intrinsics.h>
 #include <clasp/gctools/gc_interface.fwd.h>
 #include <clasp/core/exceptions.h>
+
+#if defined( _TARGET_OS_DARWIN )
+#include <mach-o/ldsyms.h>
+#include <mach-o/getsect.h>
+#endif
+#if defined(_TARGET_OS_LINUX) || defined(_TARGET_OS_FREEBSD)
+#include <sys/stat.h>
+#include <sys/mman.h>
+#include <elf.h>
+#include <stdio.h>
+#include <fcntl.h>
+#endif
 
 #pragma GCC visibility push(default)
 
@@ -808,7 +816,24 @@ mygetsectiondata(
   return(0);
 }
 #endif
+#if defined(_TARGET_OS_LINUX) || defined(_TARGET_OS_FREEBSD)
 
+int print_shdr( void* p ) {
+
+  Elf32_Ehdr *ehdr = (Elf32_Ehdr*)p;
+  Elf32_Shdr *shdr = (Elf32_Shdr *)(p + ehdr->e_shoff);
+  int shnum = ehdr->e_shnum;
+
+  Elf32_Shdr *sh_strtab = &shdr[ehdr->e_shstrndx];
+  const char *const sh_strtab_p = p + sh_strtab->sh_offset;
+
+  for (int i = 0; i < shnum; ++i) {
+    printf("%2d: %4d '%s'\n", i, shdr[i].sh_name, sh_strtab_p + shdr[i].sh_name);
+  }
+  return 0;
+}
+
+#endif
 
 
 void cc_register_library(const void* fn) {
@@ -828,8 +853,11 @@ void cc_register_library(const void* fn) {
                                             "__LLVM_STACKMAPS",
                                             "__llvm_stackmaps",
                                             &section_size );
-#else 
-    #error "Handle linux and freebsd"
+#else
+    // handle linux and freebsd
+    printf("%s:%d:%s  linux header = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)header);
+    print_shdr((void*)header);
+    uint8_t* p_section = nullptr;
 #endif
     if (p_section!=nullptr) {
       STACKMAP_LOG(("%s:%d LLVM_STACKMAPS  p_section@%p section_size=%lu\n", __FILE__, __LINE__, (void*)p_section, section_size ));

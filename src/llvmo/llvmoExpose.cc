@@ -3554,7 +3554,7 @@ class ClaspSectionMemoryManager : public SectionMemoryManager {
       my_thread->_stackmap = (uintptr_t)ptr;
       my_thread->_stackmap_size = (size_t)Size;
       STACKMAP_LOG(("%s:%d  recorded __llvm_stackmap allocateDataSection Size: %lu  Alignment: %u SectionId: %u SectionName: %s isReadOnly: %d --> allocated at: %p\n",
-                    __FILE__, __LINE__, Size, Alignment, SectionID, SectionName.str() , isReadOnly, (void*)ptr).str().c_str() );
+                    __FILE__, __LINE__, Size, Alignment, SectionID, SectionName.str().c_str() , isReadOnly, (void*)ptr));
     }
     if (llvmo::_sym_STARdebugObjectFilesSTAR->symbolValue().notnilp()) {
       core::write_bf_stream(BF(",s:%d  allocateDataSection Size: %lu  Alignment: %u SectionId: %u SectionName: %s isReadOnly: %d --> allocated at: %p\n") % __FILE__% __LINE__% Size% Alignment% SectionID% SectionName.str() % isReadOnly% (void*)ptr );

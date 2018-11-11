@@ -531,7 +531,7 @@ void debugSuppressMessages(bool s);
 extern bool stackmap_log;
 
 #ifdef DEBUG_STACKMAPS
-#define STACKMAP_LOG(msg) if (core::stackmap_log) printf msg
+#define STACKMAP_LOG(msg) printf msg
 #else
 #define STACKMAP_LOG(msg)
 #endif

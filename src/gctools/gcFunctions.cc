@@ -937,6 +937,13 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #endif
   if (buildReport) ss << (BF("DEBUG_TELEMETRY = %s\n") % (debug_telemetry ? "**DEFINED**" : "undefined") ).str();
 
+  bool debug_stackmaps = false;
+#ifdef DEBUG_STACKMAPS
+  debug_stackmaps = true;
+  debugging = true;
+#endif
+  if (buildReport) ss << (BF("DEBUG_STACKMAPS = %s\n") % (debug_stackmaps ? "**DEFINED**" : "undefined") ).str();
+
   bool debug_stack_telemetry = false;
 #ifdef DEBUG_STACK_TELEMETRY
   debug_stack_telemetry = true;
