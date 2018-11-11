@@ -276,10 +276,7 @@ the value is put into *default-load-time-value-vector* and its index is returned
       (when initialize
         (let* ((fn (compile-form initialize))
                (name (cmp:jit-constant-unique-string-ptr (llvm-sys:get-name fn))))
-          (add-side-effect-call "ltvc_mlf_init_funcall" fn name))))
-    #++(prog1 (add-creator "ltvc_set_mlf_creator_funcall" index (compile-form create))
-         (when initialize
-           (add-side-effect-call "ltvc_mlf_init_funcall" (compile-form initialize))))))
+          (add-side-effect-call "ltvc_mlf_init_funcall" fn name))))))
 
 (defun object-similarity-table-and-creator (object read-only-p)
   (cond
@@ -682,9 +679,10 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
     fn))
 
 (defun compile-form (form)
-  (if core:*use-cleavir-compiler*
-      (funcall (find-symbol "COMPILE-FORM" "CLASP-CLEAVIR") form)
-      (bclasp-compile-form form)))
+    (if core:*use-cleavir-compiler*
+        (progn
+          (funcall (find-symbol "COMPILE-LTV-FORM" "CLASP-CLEAVIR") form))
+        (bclasp-compile-form form)))
 
 
 

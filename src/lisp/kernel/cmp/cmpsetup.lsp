@@ -59,7 +59,6 @@
 (defvar *compiler-suppress-dtors* #+use-refcount nil #-use-refcount t)
 (export '*compiler-suppress-dtors*)
 
-
 ;;
 ;;
 ;; Insert low-level tracing calls within the generated code at specific points
