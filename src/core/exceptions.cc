@@ -59,6 +59,8 @@ THE SOFTWARE.
 
 namespace core {
 
+bool stackmap_log = false;
+
 void assert_failure(const char* file, size_t line, const char* func, const char* msg)
 {
   SIMPLE_ERROR(BF("%s:%d:%s  Assertion failure: %s") % file % line % func % msg);
