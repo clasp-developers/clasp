@@ -316,7 +316,6 @@ Boehm and MPS use a single pointer"
 
 (defstruct (calling-convention-configuration (:type vector))
   use-only-registers
-  invocation-history-frame*
   register-save-area*)
 
 ;; Provide the arguments passed to the function in a convenient manner.
@@ -332,7 +331,6 @@ Boehm and MPS use a single pointer"
   register-args ; The arguments that were passed in registers
   va-list*       ; The address of the va_list on the stack
   register-save-area*
-  invocation-history-frame*
   cleavir-lambda-list ; cleavir-style lambda-list
   rest-alloc ; whether we can dx or ignore a &rest argument
   )
@@ -361,24 +359,8 @@ Boehm and MPS use a single pointer"
                                         :use-only-registers (calling-convention-configuration-use-only-registers setup)
                                         :va-list* (irc-alloca-va_list)
                                         :register-save-area* register-save-area*
-                                        :invocation-history-frame* (calling-convention-configuration-invocation-history-frame* setup)
                                         :cleavir-lambda-list cleavir-lambda-list
                                         :rest-alloc rest-alloc)))))
-
-(defun calling-convention-maybe-push-invocation-history-frame (cc)
-  (when (calling-convention-invocation-history-frame* cc)
-    (irc-intrinsic "cc_push_InvocationHistoryFrame"
-                   (calling-convention-closure cc)
-                   (calling-convention-invocation-history-frame* cc)
-                   (calling-convention-va-list* cc)
-                   (calling-convention-nargs cc))))
-
-(defun calling-convention-maybe-pop-invocation-history-frame (cc)
-  (when (calling-convention-invocation-history-frame* cc)
-    (irc-intrinsic "cc_pop_InvocationHistoryFrame"
-                   (calling-convention-closure cc)
-                   (calling-convention-invocation-history-frame* cc))))
-
 
 (defun calling-convention-args.va-end (cc)
   (when (calling-convention-va-list* cc)
@@ -436,13 +418,13 @@ eg:  (f closure-ptr nargs a b c d ...)
                           (reg-i8*       (irc-bit-cast reg %i8*% "reg-i8*"))
                           (_             (irc-store reg-i8* addr)))
                      addr)))
-          (let* (
-                 (addr-closure  (spill-reg 0 (elt registers 0) "closure0"))
+          (let* ((addr-closure  (spill-reg 0 (elt registers 0) "closure0"))
                  (addr-nargs    (spill-reg 1 (irc-int-to-ptr (elt registers 1) %i8*%) "nargs1"))
                  (addr-farg0    (spill-reg 2 (elt registers 2) "arg0")) ; this is the first fixed arg currently.
                  (addr-farg1    (spill-reg 3 (elt registers 3) "arg1"))
                  (addr-farg2    (spill-reg 4 (elt registers 4) "arg2"))
-                 (addr-farg3    (spill-reg 5 (elt registers 5) "arg3")))))
+                 (addr-farg3    (spill-reg 5 (elt registers 5) "arg3")))
+            (irc-intrinsic "cc_protect_alloca" (irc-bit-cast register-save-area* %i8*%))))
         (unless register-save-area*
           (error "If registers is NIL then register-save-area* also must be NIL"))))
 
@@ -515,36 +497,51 @@ eg:  (f closure-ptr nargs a b c d ...)
                                    "source-file-info-handle"))
 |#
 
-  (defun add-global-ctor-function (module main-function)
-    "Create a function with the name core:+clasp-ctor-function-name+ and
+(defun add-global-ctor-function (module main-function &optional register-library)
+  "Create a function with the name core:+clasp-ctor-function-name+ and
 have it call the main-function"
-    (let* ((*the-module* module)
-           (fn (irc-simple-function-create
-                core::+clasp-ctor-function-name+
-                %fn-ctor%
-                'llvm-sys:internal-linkage
-                *the-module*
-                :argument-names +fn-ctor-argument-names+))
-           #++(with-new-function
-                  (ctor-func func-env result
-                             :function-name core:+clasp-ctor-function-name+
-                             :parent-env nil
-                             :linkage 'llvm-sys:internal-linkage
-                             :function-type %fn-ctor%
-                             :return-void t
-                             :argument-names +fn-ctor-argument-names+ )
-                (let* ((bc-bf (irc-bit-cast main-function %fn-start-up*% "fnptr-pointer")))
-                  (irc-intrinsic "cc_register_startup_function" bc-bf))))
-      (let* ((irbuilder-body (llvm-sys:make-irbuilder *llvm-context*))
-             (*current-function* fn)
-             (entry-bb (irc-basic-block-create "entry" fn)))
-        (irc-set-insert-point-basic-block entry-bb irbuilder-body)
-        (with-irbuilder (irbuilder-body)
-          (let* ((bc-bf (irc-bit-cast main-function %fn-start-up*% "fnptr-pointer"))
-                 (_     (irc-intrinsic "cc_register_startup_function" bc-bf))
-                 (_     (irc-ret-void))))
-          ;;(llvm-sys:dump fn)
-          fn))))
+  #+(or)(unless (eql module (llvm-sys:get-parent main-function))
+    (error "The parent of the func-ptr ~a (a module) does not match the module ~a" (llvm-sys:get-parent main-function) module))
+  (let* ((*the-module* module)
+         (fn (irc-simple-function-create
+              core::+clasp-ctor-function-name+
+              %fn-ctor%
+              'llvm-sys:internal-linkage
+              *the-module*
+              :argument-names +fn-ctor-argument-names+)))
+    (let* ((irbuilder-body (llvm-sys:make-irbuilder *llvm-context*))
+           (*current-function* fn)
+           (entry-bb (irc-basic-block-create "entry" fn)))
+      (irc-set-insert-point-basic-block entry-bb irbuilder-body)
+      (with-irbuilder (irbuilder-body)
+        (when register-library
+          (irc-intrinsic "cc_register_library" fn))
+        (let* ((bc-bf (irc-bit-cast main-function %fn-start-up*% "fnptr-pointer"))
+               (_     (irc-intrinsic "cc_register_startup_function" bc-bf))
+               (_     (irc-ret-void))))
+        ;;(llvm-sys:dump fn)
+        fn))))
+
+(defun add-main-function (module run-all-function)
+  "Create an external function with the name main have it call the run-all-function"
+  (let* ((*the-module* module)
+         (fn (irc-simple-function-create
+              "MAIN"
+              %fn-start-up%
+              'llvm-sys:external-linkage
+              *the-module*
+              :argument-names +fn-start-up-argument-names+)))
+    (let* ((irbuilder-body (llvm-sys:make-irbuilder *llvm-context*))
+           (*current-function* fn)
+           (entry-bb (irc-basic-block-create "entry" fn)))
+      (irc-set-insert-point-basic-block entry-bb irbuilder-body)
+      (with-irbuilder (irbuilder-body)
+        (let* (
+               (bc-bf (irc-bit-cast run-all-function %fn-start-up*% "run-all-pointer"))
+               (_     (irc-intrinsic "cc_invoke_sub_run_all_function" bc-bf))
+               (_     (irc-ret-void))))
+        ;;(llvm-sys:dump fn)
+        fn))))
 
   (defun find-global-ctor-function (module)
     (let ((ctor (llvm-sys:get-function module core:+clasp-ctor-function-name+)))
@@ -553,6 +550,11 @@ have it call the main-function"
 
   (defun remove-llvm.global_ctors-if-exists (module)
     (let ((global (llvm-sys:get-named-global module "llvm.global_ctors")))
+      (if global
+          (llvm-sys:erase-from-parent global))))
+
+  (defun remove-llvm.used-if-exists (module)
+    (let ((global (llvm-sys:get-named-global module "llvm.used")))
       (if global
           (llvm-sys:erase-from-parent global))))
 
@@ -573,16 +575,21 @@ have it call the main-function"
                                     (llvm-sys:constant-pointer-null-get %i8*%)))))
    "llvm.global_ctors"))
 
-(defun make-boot-function-global-variable (module func-ptr)
+(defun make-boot-function-global-variable (module func-name &key register-library)
   "* Arguments
 - module :: An llvm module
 - func-ptr :: An llvm function
 * Description
 Add the global variable llvm.global_ctors to the Module (linkage appending)
 and initialize it with an array consisting of one function pointer."
-  (let* ((global-ctor (add-global-ctor-function module func-ptr)))
-    (incf *compilation-unit-module-index*)
-    (add-llvm.global_ctors module *compilation-unit-module-index* global-ctor)))
+  (let ((startup-fn (llvm-sys:get-function module func-name)))
+    (unless startup-fn
+      (error "Could not find ~a in module" func-name))
+    #+(or)(unless (eql module (llvm-sys:get-parent func-ptr))
+            (error "The parent of the func-ptr ~a (a module) does not match the module ~a" (llvm-sys:get-parent func-ptr) module))
+    (let* ((global-ctor (add-global-ctor-function module startup-fn register-library)))
+      (incf *compilation-unit-module-index*)
+      (add-llvm.global_ctors module *compilation-unit-module-index* global-ctor))))
 
 ;;
 ;; Ensure that the LLVM model of
@@ -635,22 +642,19 @@ and initialize it with an array consisting of one function pointer."
 
 (defun exception-typeid*-from-name (name)
   (let* ((cname (gethash name *exception-types-hash-table*))
-	 (i8* (llvm-sys:get-or-create-external-global *the-module* cname %i8%)))
+	 (i8* (llvm-sys:get-or-create-external-global *the-module* cname %i8% 'llvm-sys:external-linkage)))
     i8*))
-
-
-
 
 (defun assert-result-isa-llvm-value (result)
   (unless (llvm-sys:llvm-value-p result)
       (error "result must be an instance of llvm-sys:Value_O but instead it has the value %s" result)))
 
 
-(defun codegen-startup-shutdown (gcroots-in-module roots-array-or-nil number-of-roots &optional ordered-literals array)
+(defun codegen-startup-shutdown (module &optional gcroots-in-module roots-array-or-nil (number-of-roots 0) ordered-literals array)
   (let ((startup-fn (irc-simple-function-create core:*module-startup-function-name*
                                                 (llvm-sys:function-type-get %void% (list %t*%))
                                                 'llvm-sys::External-linkage
-                                                *the-module*
+                                                module
                                                 :argument-names (list "values" )))
 
         (ordered-raw-literals-list nil))
@@ -671,23 +675,24 @@ and initialize it with an array consisting of one function pointer."
                                   (list (jit-constant-size_t 0)
                                         (jit-constant-size_t 0)))
                          (llvm-sys:constant-pointer-null-get %t**%))))
-          (irc-intrinsic-call "cc_initialize_gcroots_in_module" (list gcroots-in-module start (jit-constant-size_t number-of-roots) values))
+          (if gcroots-in-module
+              (irc-intrinsic-call "cc_initialize_gcroots_in_module" (list gcroots-in-module start (jit-constant-size_t number-of-roots) values)))
           ;; If the constant/literal list is provided - then we may need to generate code for closurettes
           (when ordered-literals
             (setf ordered-raw-literals-list (mapcar (lambda (x)
-                                                     (cond
-                                                       ((literal-node-runtime-p x)
-                                                        (literal-node-runtime-object x))
-                                                       ((literal:literal-node-closure-p x)
-                                                        (literal:generate-run-time-code-for-closurette x irbuilder-alloca array)
-                                                        nil)
-                                                       (t (error "Illegal object ~s in ordered-literals list" x))))
-                                                   ordered-literals)))
+                                                      (cond
+                                                        ((literal-node-runtime-p x)
+                                                         (literal-node-runtime-object x))
+                                                        ((literal:literal-node-closure-p x)
+                                                         (literal:generate-run-time-code-for-closurette x irbuilder-alloca array)
+                                                         nil)
+                                                        (t (error "Illegal object ~s in ordered-literals list" x))))
+                                                    ordered-literals)))
           (irc-ret-void))))
     (let ((shutdown-fn (irc-simple-function-create core:*module-shutdown-function-name*
                                                    (llvm-sys:function-type-get %void% nil)
                                                    'llvm-sys::External-linkage
-                                                   *the-module*
+                                                   module
                                                    :argument-names nil)))
       (let* ((irbuilder-alloca (llvm-sys:make-irbuilder *llvm-context*))
              (irbuilder-body (llvm-sys:make-irbuilder *llvm-context*))
@@ -702,7 +707,8 @@ and initialize it with an array consisting of one function pointer."
         (irc-set-insert-point-basic-block entry-bb irbuilder-alloca)
         (with-irbuilder (irbuilder-alloca)
           (progn
-            (irc-intrinsic-call "cc_shutdown_gcroots_in_module" (list gcroots-in-module))
+            (if gcroots-in-module
+                (irc-intrinsic-call "cc_shutdown_gcroots_in_module" (list gcroots-in-module)))
             (irc-ret-void))))
       (values startup-fn shutdown-fn ordered-raw-literals-list))))
 

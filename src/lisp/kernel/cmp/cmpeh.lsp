@@ -91,10 +91,10 @@ eg: '(block ((exception var) code...))"
 
 
 
-(defmacro with-begin-end-catch ((exn.slot exception-ptr rethrow-bb) &rest body)
+(defmacro with-begin-end-catch ((exn exception-ptr rethrow-bb) &rest body)
   (let ((cont-gs (gensym))
         (exn-gs (gensym)))
-    `(let ((,exn-gs (llvm-sys:create-load-value-twine *irbuilder* ,exn.slot "exn")))
+    `(let ((,exn-gs ,exn))
        (with-landing-pad ,rethrow-bb
          (let ((,exception-ptr (irc-intrinsic "__cxa_begin_catch" ,exn-gs)))
            #+debug-eh(irc-intrinsic "debugPrintI32" (jit-constant-i32 (incf *next-i32*)))
@@ -123,7 +123,7 @@ eg: '(block ((exception var) code...))"
       ((eq (caar clause) 'all-other-exceptions)
        `(progn
 	  (irc-begin-block ,cur-dispatcher-block)
-	  (with-begin-end-catch (,exn.slot dummy-exception ,rethrow-bb)
+	  (with-begin-end-catch ((irc-load ,exn.slot "exn") dummy-exception ,rethrow-bb)
 	    ,@clause-body
 	    ))
        )
@@ -142,7 +142,7 @@ eg: '(block ((exception var) code...))"
 ;;	    (irc-intrinsic "debugPrintI32" ,typeid-gs)
 	    (irc-cond-br ,matches-type-gs ,handler-block-gs ,next-dispatcher-block)
 	    (irc-begin-block ,handler-block-gs)
-	    (with-begin-end-catch (,exn.slot ,clause-exception-name ,rethrow-bb)
+	    (with-begin-end-catch ((irc-load ,exn.slot "exn") ,clause-exception-name ,rethrow-bb)
 	      ,@clause-body)
 	    (irc-branch-if-no-terminator-inst ,successful-catch-block) ;; Why is this commented out?
 	    ))
@@ -190,14 +190,11 @@ eg: '(block ((exception var) code...))"
          (_                     (irc-br previous-exception-handler-cleanup-block)))
     rethrow-cleanup))
 
-(defun generate-ehcleanup-and-resume-code (function exn.slot ehselector.slot &optional cleanup-lambda)
+(defun generate-ehcleanup-and-resume-code (function exn.slot ehselector.slot)
   (let* ((ehbuilder       (llvm-sys:make-irbuilder *llvm-context*))
          (ehcleanup       (irc-basic-block-create "TRY.ehcleanup" function))
          (ehresume        (irc-basic-block-create "TRY.ehresume" function))
          (_               (irc-set-insert-point-basic-block ehcleanup ehbuilder))
-         (_               (and cleanup-lambda
-                               (with-irbuilder (ehbuilder)
-                                 (funcall cleanup-lambda))))
          (_               (llvm-sys:create-br ehbuilder ehresume))
          (_               (irc-set-insert-point-basic-block ehresume ehbuilder))
          (exn7            (llvm-sys:create-load-value-twine ehbuilder exn.slot "exn7"))
@@ -295,9 +292,9 @@ exceptions to higher levels of the code and unwinding the stack.
 	;;	     (cleanup-clause-list (cons cleanup-clause-body (make-list (- (length exception-clauses) 1)))))
 	`(progn
            (irc-branch-to-and-begin-block (irc-basic-block-create "TRY.top"))
-           (let* ((,all-clause-types-gs (if ',my-clause-types
-                                            (append ',my-clause-types *exception-clause-types-to-handle*)
-                                            *exception-clause-types-to-handle*))
+           (let* ((,all-clause-types-gs ,(if my-clause-types
+                                            `(append ',my-clause-types *exception-clause-types-to-handle*)
+                                            '*exception-clause-types-to-handle*))
                   (,previous-exception-clause-types-to-handle-gs *exception-clause-types-to-handle*)
                   (*exception-clause-types-to-handle* ,all-clause-types-gs)
                   (,parent-cleanup-block-gs *exception-handler-cleanup-block*)

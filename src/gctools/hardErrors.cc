@@ -3,35 +3,42 @@
 
 [[noreturn]] void throw_hard_error(const std::string& msg) {
   printf("%s\n", msg.c_str());
-  throw(HardError(msg));
+  abort();
 }
 
 [[noreturn]] void throw_hard_error_implement_me(const char* funcname, const char* filename, size_t lineno ) throw(HardError) {
-  throw_hard_error((BF("Implement me: %s  %s  %u") % funcname % filename % lineno ).str());
+  printf("%s:%d:%s %s %s %lu\n", __FILE__, __LINE__, __FUNCTION__, funcname, filename, lineno);
+  abort();
 }
 
 [[noreturn]] void throw_hard_error_implement_me_message(const char* funcname, const char* filename, size_t lineno, const std::string& msg ) throw(HardError) {
-  throw_hard_error((BF("Implement me: %s  %s  %u - %s") % funcname % filename % lineno % msg ).str());
+  printf("%s:%d:%s %s %s %zu %s\n", __FILE__, __LINE__, __FUNCTION__, funcname, filename, lineno, msg.c_str());
+  abort();
 }
 
 [[noreturn]] void throw_hard_error_failed_assertion(const char* assertion) {
-  throw_hard_error((BF("Failed assertion: %s") % assertion).str());
+  printf("%s:%d:%s %s\n", __FILE__, __LINE__, __FUNCTION__, assertion);
+  abort();
 }
 
 [[noreturn]] void throw_hard_error_not_applicable_method(const char* method) {
-  throw_hard_error((BF("Not applicable method: %s") % method).str());
+  printf("%s:%d:%s %s\n", __FILE__, __LINE__, __FUNCTION__, method);
+  abort();
 }
 
-[[noreturn]] void throw_hard_error_subclass_must_implement(const std::string& className, const std::string& method) {
-  throw_hard_error((BF("Subclass %s must implement method %s") % className % method ).str());
+[[noreturn]] void throw_hard_error_subclass_must_implement(const std::string& className, const std::string& method) { 
+  printf("%s:%d:%s className: %s method: %s\n", __FILE__, __LINE__, __FUNCTION__, className.c_str(), method.c_str());
+  abort();
 }
 
 [[noreturn]] void throw_hard_error_cannot_cast_tagged_pointer(const char* name, size_t kind) {
-  throw_hard_error((BF("Cannot cast tagged_pointer from %s/%zu to some other type (check with debugger)") % name % kind).str());
+  printf("%s:%d:%s name: %s kind: %lu\n", __FILE__, __LINE__, __FUNCTION__, name, kind);
+  abort();
 }
 
 [[noreturn]] void throw_hard_error_cast_failed(const char* type, const char* from) {
-  throw_hard_error((BF("TaggedCast<Type*,From*> failed due to an illegal cast To* = %s  From* = %s") % type % from).str());
+  printf("%s:%d:%s type: %s from: %s\n", __FILE__, __LINE__, __FUNCTION__, type, from);
+  abort();
 };
 
 
@@ -41,7 +48,8 @@
 }
 
 [[noreturn]] void throw_hard_error_size_stack_damaged(size_t totalSize, size_t calcSize) {
-  throw_hard_error((BF("The side-stack is damaged _TotalSize = %u  calcSize = %u") % totalSize % calcSize ).str());
+  printf("%s:%d:%s totalSize: %lu calcSize: %lu\n", __FILE__, __LINE__, __FUNCTION__, totalSize, calcSize );
+  abort();
 }
 
 [[noreturn]] void throw_hard_error_mps_bad_result(int result) {

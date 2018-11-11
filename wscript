@@ -80,9 +80,6 @@ def options(ctx):
 top = '.'
 out = 'build'
 APP_NAME = 'clasp'
-DARWIN_OS = 'darwin'
-LINUX_OS = 'linux'
-FREEBSD_OS = 'freebsd'
 CLANG_VERSION = 6
 
 STAGE_CHARS = [ 'r', 'i', 'a', 'b', 'f', 'c', 'd' ]
@@ -197,6 +194,7 @@ DEBUG_OPTIONS = [
     "DEBUG_DYNAMIC_BINDING_STACK",  # dynamic variable binding debugging
     "DEBUG_VALUES",   # turn on printing (values x y z) values when core:*debug-values* is not nil
     "DEBUG_IHS",
+    "DEBUG_STACKMAPS", # turn on logging for stackmap code
     "DEBUG_TRACK_UNWINDS",  # Count cc_unwind calls and report in TIME
     "DEBUG_NO_UNWIND",   # debug intrinsics that say they don't unwind but actually do
     "DEBUG_STARTUP",
@@ -1025,6 +1023,9 @@ def configure(cfg):
         cfg.env.append_value('LINKFLAGS', ['-lc++'])
         cfg.env.append_value('LINKFLAGS', ['-stdlib=libc++'])
         cfg.env.append_value('INCLUDES', '/usr/local/Cellar/libunwind-headers/35.3/include')  # brew install libunwind-headers
+	# Add macOS SDK paths
+#        cfg.env.append_value('INCLUDES', [ ''.join( [ macosx_sdk_path(cfg), '/usr/include' ] ) ] ) 
+#        cfg.env.append_value('LINKFLAGS', ''.join( [ '-L', macosx_sdk_path(cfg), '/usr/lib' ] ) ) 
     cfg.env.append_value('INCLUDES', [ run_llvm_config(cfg,"--includedir") ])
     cfg.env.append_value('INCLUDES', ['/usr/include'] )
     cfg.define("ENABLE_BACKTRACE_ARGS",1)
@@ -1043,7 +1044,6 @@ def configure(cfg):
         cfg.define("DEBUG_GUARD_VALIDATE",1)
     if (cfg.env.DEBUG_GUARD_EXHAUSTIVE_VALIDATE):
         cfg.define("DEBUG_GUARD_EXHAUSTIVE_VALIDATE",1)
-    cfg.env.USE_HUMAN_READABLE_BITCODE=False
     if (cfg.env.DEBUG_OPTIONS):
         for opt in cfg.env.DEBUG_OPTIONS:
             if (opt in DEBUG_OPTIONS):
@@ -1178,9 +1178,8 @@ def build(bld):
     # not to instantiate tasks into the wrong group.
     bld.add_group('preprocessing')
     bld.add_group('compiling/c++')
-
-    bld.use_human_readable_bitcode = bld.env["USE_HUMAN_READABLE_BITCODE"]
-    log.debug("Using human readable bitcode: %s", bld.use_human_readable_bitcode)
+    bld.use_human_readable_bitcode = "USE_HUMAN_READABLE_BITCODE" in bld.env
+    log.info("Using human readable bitcode: %s", bld.use_human_readable_bitcode)
     bld.clasp_source_files = collect_clasp_c_source_files(bld)
 
     bld.clasp_aclasp = collect_aclasp_lisp_files(wrappers = False)

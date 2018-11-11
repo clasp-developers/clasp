@@ -78,6 +78,7 @@
 (defun alloca-va_list (&optional (label "vaslist"))
   (cmp:irc-alloca-va_list :label label))
 
+#+(or)
 (defun alloca-invocation-history-frame (&optional (label "ihf"))
   (cmp:irc-alloca-invocation-history-frame :label label))
 

@@ -43,5 +43,12 @@ THE SOFTWARE.
 
 namespace core {
 
+string SharpEqualWrapper_O::__repr__() const
+{
+  stringstream ss;
+  ss << "#<SHARP-EQUAL-WRAPPER " << _rep_(this->_Label) << ">";
+  return ss.str();
+}
+
 
 }; // namespace core

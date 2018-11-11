@@ -101,8 +101,6 @@ namespace core {
     int    _isgf;
     bool   _DebugOn;
   public:
-//    static FuncallableInstance_sp createClassUncollectable(gctools::Stamp is,Instance_sp metaClass, size_t number_of_slots, Creator_sp creator);
-    static Instance_sp create(Symbol_sp symbol,Instance_sp metaClass,Creator_sp creator);
   public:
     T_sp GFUN_NAME() const { return this->instanceRef(REF_GFUN_NAME); };
     T_sp GFUN_SPECIALIZERS() const { return this->instanceRef(REF_GFUN_SPECIALIZERS); };

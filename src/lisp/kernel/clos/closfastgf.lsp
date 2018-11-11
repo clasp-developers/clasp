@@ -743,6 +743,9 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
   (if (generic-function-call-history generic-function)
       (let ((call-history (generic-function-call-history generic-function))
             (specializer-profile (generic-function-specializer-profile generic-function)))
+        (gf-log "calculate-fastgf-dispatch-function generic-function: %s (core:function-name generic-function) -> %s%N"
+                generic-function
+                (core:function-name generic-function))
         (cmp:codegen-dispatcher call-history
                                 specializer-profile
                                 generic-function

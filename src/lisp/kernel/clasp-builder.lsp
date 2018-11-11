@@ -156,7 +156,7 @@ Return files."
       (progn
         (cmp:load-bitcode path))
       (if (eq type :fasl)
-          (load path)
+          (load (make-pathname :type "fasl" :defaults path))
           (error "Illegal type ~a for load-kernel-file ~a" type path)))
   path)
 
@@ -188,14 +188,13 @@ Return files."
                    :output-type output-type
                    :print print
                    :verbose verbose
-                   :type :kernel (entry-compile-file-options entry))
+                   :type :kernel
+                   (entry-compile-file-options entry))
             (if reload
-                (let ((reload-file (if (eq output-type :object)
-                                       (make-pathname :type (bitcode-extension) :defaults output-path)
-                                       output-path)))
+                (let ((reload-file (make-pathname :type "fasl" :defaults output-path)))
 		  (unless silent
 		    (bformat t "    Loading newly compiled file: %s%N" reload-file))
-                  (load-kernel-file reload-file output-type))))))
+                  (load-kernel-file reload-file :fasl))))))
     output-path))
 (export 'compile-kernel-file)
 
@@ -243,9 +242,9 @@ Return files."
                                 bc-newer))))))
     (if load-bc
         (progn
-          (bformat t "Loading bitcode file: %s%N" bc-path)
+          (bformat t "Loading fasl bitcode file: %s%N" bc-path)
           (cmp::with-compiler-timer (:message "Loaded bitcode" :verbose t)
-            (cmp:load-bitcode bc-path)))
+            (load-kernel-file bc-path :fasl)))
         (if (probe-file lsp-path)
             (progn
               (if cmp:*implicit-compile-hook*
@@ -338,7 +337,7 @@ Return files."
                     (source-path (build-pathname filename :lisp))
                     (output-path (build-pathname filename output-type)))
                (format t "Loading ~a~%" output-path)
-               (load-kernel-file output-path output-type)))
+               (load-kernel-file output-path :fasl)))
            (reload-some (entries)
              (dolist (entry entries)
                (reload-one entry)))
@@ -642,6 +641,12 @@ Return files."
   (let ((all-output (output-object-pathnames #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/cclasp" :system system)))
     (link-modules output-file all-output)))
 
+(defun move-to-front (files target)
+  "Move the target from inside the files list to the very front"
+  (unless (member target files :test #'equalp) (error "Missing ~a" target))
+  (let ((removed (remove target files :test #'equalp)))
+    (cons target removed)))
+
 (defun compile-cclasp* (output-file system)
   "Compile the cclasp source code."
   (let ((ensure-adjacent (select-source-files #P"src/lisp/kernel/cleavir/inline-prep" #P"src/lisp/kernel/cleavir/auto-compile" :system system)))
@@ -654,6 +659,9 @@ Return files."
     ;; Therefore we can't have the compiler save inline definitions for files earlier than we're able
     ;; to load inline definitions. We wait for the source code to turn it back on.
     (setf core:*defun-inline-hook* nil)
+    ;;; Pull the inline.lisp and fli.lsp files forward because they take the longest to build
+    (setf files (move-to-front files #P"src/lisp/kernel/lsp/fli"))
+    (setf files (move-to-front files #P"src/lisp/kernel/cleavir/inline"))
     (compile-system files :reload nil)
     (let ((all-output (output-object-pathnames #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/cclasp" :system system)))
       (if (out-of-date-target output-file all-output)

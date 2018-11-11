@@ -50,18 +50,21 @@ class SharpEqualWrapper_O : public General_O {
 
  private:
   T_sp   _Value;
+  T_sp   _Label;
  public:
   CL_DEFMETHOD T_sp sharp_equal_wrapper_value() const { return this->_Value; };
   CL_DEFMETHOD T_sp setf_sharp_equal_wrapper_value(T_sp v) { this->_Value = v; return v;};
+  string __repr__() const;
   
- SharpEqualWrapper_O() : _Value(_sym__PLUS_sharp_marker_PLUS_) {};
+  SharpEqualWrapper_O(T_sp label) : _Value(_sym__PLUS_sharp_marker_PLUS_), _Label(label) {};
   virtual ~SharpEqualWrapper_O() {};
 };
 
 
- inline CL_DEFUN SharpEqualWrapper_sp make_sharp_equal_wrapper()
+ inline CL_DEFUN SharpEqualWrapper_sp make_sharp_equal_wrapper(T_sp label)
 {
-  return SharpEqualWrapper_O::create();
+  GC_ALLOCATE_VARIADIC(SharpEqualWrapper_O,sew,label);
+  return sew;
 }
 
 

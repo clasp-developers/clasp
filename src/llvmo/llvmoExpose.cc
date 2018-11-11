@@ -87,6 +87,7 @@ THE SOFTWARE.
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/lispCallingConvention.h>
 #include <clasp/core/package.h>
+#include <clasp/core/debugger.h>
 #include <clasp/core/environment.h>
 #include <clasp/core/hashTableEqual.h>
 #include <clasp/core/pathname.h>
@@ -1008,8 +1009,8 @@ CL_DEFUN Module_sp Module_O::make(llvm::StringRef module_name, LLVMContext_sp co
 
 std::string Module_O::__repr__() const {
   stringstream ss;
-  ss << "#<MODULE ID:";
-  ss << this->_Id << ">";
+  ss << "#<MODULE ";
+  ss << (void*)this->wrappedPtr() << ">";
   return ss.str();
 }
 
@@ -2518,6 +2519,8 @@ CL_DEFUN Function_sp llvm_sys__FunctionCreate(FunctionType_sp tysp, llvm::Global
   return funcsp;
 };
 
+CL_LISPIFY_NAME(getParent);
+CL_EXTERN_DEFMETHOD(Function_O,(llvm::Module *(llvm::Function::*)())&llvm::Function::getParent);
 CL_LISPIFY_NAME("setHasUWTable");
 CL_EXTERN_DEFMETHOD(Function_O,&llvm::Function::setHasUWTable);
 CL_LISPIFY_NAME("setDoesNotThrow");
@@ -2903,22 +2906,7 @@ CL_DEFUN void finalizeEngineAndRegisterWithGcAndRunMainFunctions(ExecutionEngine
     printf("%s:%d Entered %s\n", __FILE__, __LINE__, __FUNCTION__ );
 #endif
     finalizeEngineAndTime(engine);
-#if 1
     engine->runStaticConstructorsDestructors(false);
-#else
-    void (*clasp_ctor)() = reinterpret_cast<void(*)()>(engine->getGlobalValueAddress(CLASP_CTOR_FUNCTION_NAME));
-//  printf("%s:%d clasp_ctor --> %p\n", __FILE__, __LINE__, clasp_ctor );
-    if ( clasp_ctor == NULL ) {
-      SIMPLE_ERROR(BF("Could not get a pointer to %s in finalizeEngineAndRegisterWithGcAndRunMainFunctions") % CLASP_CTOR_FUNCTION_NAME );
-    }
-#ifdef DEBUG_STARTUP
-    printf("%s:%d About to call clasp_ctor\n", __FILE__, __LINE__ );
-#endif
-    (clasp_ctor)();
-#ifdef DEBUG_STARTUP
-    printf("%s:%d Returned from call clasp_ctor\n", __FILE__, __LINE__ );
-#endif
-#endif
     if ( core::startup_functions_are_waiting() ) {
       core::startup_functions_invoke();
     } else {
@@ -3408,13 +3396,13 @@ struct StkMapRecord {
 
 
 template <typename T>
-T read_then_advance(void*& address) {
-  void* original = address;
-  address = (void*)((char*)address+sizeof(T));
+T read_then_advance(uintptr_t& address) {
+  uintptr_t original = address;
+  address = address+sizeof(T);
   return *(T*)original;
 }
 
-void parse_header(void*& address, Header& header, size_t& NumFunctions, size_t& NumConstants, size_t& NumRecords)
+void parse_header(uintptr_t& address, Header& header, size_t& NumFunctions, size_t& NumConstants, size_t& NumRecords)
 {
   header.version = read_then_advance<uint8_t>(address);
   header.reserved0 = read_then_advance<uint8_t>(address);
@@ -3424,17 +3412,17 @@ void parse_header(void*& address, Header& header, size_t& NumFunctions, size_t& 
   NumRecords = read_then_advance<uint32_t>(address);
 }
 
-void parse_function(void*& address, StkSizeRecord& function) {
+void parse_function(uintptr_t& address, StkSizeRecord& function) {
   function.FunctionAddress = read_then_advance<uint64_t>(address);
   function.StackSize = read_then_advance<uint64_t>(address);
   function.RecordCount = read_then_advance<uint64_t>(address);
 }
 
-void parse_constant(void*& address, uint64_t& constant) {
+void parse_constant(uintptr_t& address, uint64_t& constant) {
   constant = read_then_advance<uint64_t>(address);
 }
 
-void parse_record(void*& address, StkMapRecord& record) {
+void parse_record(uintptr_t& address, StkMapRecord& record) {
   record.PatchPointID = read_then_advance<uint64_t>(address);
   record.InstructionOffset = read_then_advance<uint32_t>(address);
   record.Reserved = read_then_advance<uint16_t>(address);
@@ -3450,7 +3438,7 @@ void parse_record(void*& address, StkMapRecord& record) {
   }
   if (((uintptr_t)address)&0x7) read_then_advance<uint32_t>(address);
   if (((uintptr_t)address)&0x7) {
-    printf("%s:%d Address %p is not word aligned - it must be!!!\n", __FILE__, __LINE__, address );
+    printf("%s:%d Address %lX is not word aligned - it must be!!!\n", __FILE__, __LINE__, address );
     abort();
   }
   /*Padding*/ read_then_advance<uint16_t>(address);
@@ -3463,68 +3451,62 @@ void parse_record(void*& address, StkMapRecord& record) {
   }
   if (((uintptr_t)address)&0x7) read_then_advance<uint32_t>(address);
   if (((uintptr_t)address)&0x7) {
-    printf("%s:%d Address %p is not word aligned - it must be!!!\n", __FILE__, __LINE__, address );
+    printf("%s:%d Address %lX is not word aligned - it must be!!!\n", __FILE__, __LINE__, address );
     abort();
   }
 }  
 
-core::T_sp lispify_llvm_stackmap(void* address) {
+
+void register_one_llvm_stackmap(bool jit, uintptr_t& address) {
+  uintptr_t stackMapAddress = address;
   core::Symbol_sp types[5] = {kw::_sym_register, kw::_sym_direct, kw::_sym_indirect, kw::_sym_constant, kw::_sym_constant_index};
   Header header;
   size_t NumFunctions;
   size_t NumConstants;
   size_t NumRecords;
   parse_header(address,header,NumFunctions,NumConstants,NumRecords);
-  ql::list functionList;
+  std::vector<StkSizeRecord> functions;
   for ( size_t index=0; index<NumFunctions; ++index ) {
     StkSizeRecord function;
     parse_function(address,function);
-    core::T_sp o = core::eval::funcall(llvmo::_sym_make_StkSizeRecord,
-                                       core::Pointer_O::create((void*)function.FunctionAddress),
-                                       core::Integer_O::create(function.StackSize),
-                                       core::Integer_O::create(function.RecordCount));
-    functionList << o;
+    functions.push_back(function);
+    // printf("%s:%d:%s register function at 0x%llx\n", __FILE__, __LINE__, __FUNCTION__, function.FunctionAddress);
   }
-  ql::list constantList;
   for ( size_t index=0; index<NumConstants; ++index ) {
     uint64_t constant;
     parse_constant(address,constant);
-    core::T_sp o = core::Integer_O::create(constant);
-    constantList << o;
   }
-  ql::list recordList;
-  for ( size_t index=0; index<NumRecords; ++index ) {
-    StkMapRecord record;
-    parse_record(address,record);
-    ql::list locations;
-    ql::list liveOuts;
-    for ( auto location : record.Locations ) {
-      core::Symbol_sp type = types[location.Type];
-      locations << core::eval::funcall(llvmo::_sym_make_StkMapRecord_Location,
-                                       type,
-                                       core::make_fixnum(location.LocationSize),
-                                       core::make_fixnum(location.DwarfRegNum),
-                                       core::make_fixnum(location.OffsetOrSmallConstant));
+  size_t functionIndex = 0;
+  while (functionIndex < functions.size()) {
+    for ( size_t index=0; index<functions[functionIndex].RecordCount; index++) {
+      StkMapRecord record;
+      parse_record(address,record);
+//      printf("%s:%d:%s function at %llX PatchPointId: %llu\n", __FILE__, __LINE__, __FUNCTION__, functions[functionIndex].FunctionAddress,record.PatchPointID);
+      if (record.PatchPointID == 1234567 ) {
+        core::register_stack_map_entry(jit,
+                                       stackMapAddress,
+                                       functions[functionIndex].FunctionAddress,
+                                       record.Locations[0].OffsetOrSmallConstant,
+                                       functions[functionIndex].StackSize);
+      }
     }
-    for ( auto liveout : record.LiveOuts ) {
-      liveOuts << core::eval::funcall(llvmo::_sym_make_StkMapRecord_LiveOut,
-                                      core::make_fixnum(liveout.DwarfRegNum),
-                                      core::Integer_O::create((uint32_t)liveout.SizeInBytes));
-    }
-    recordList << core::eval::funcall(llvmo::_sym_make_StkMapRecord,
-                                      core::Integer_O::create(record.PatchPointID),
-                                      core::make_fixnum(record.InstructionOffset),
-                                      locations.cons(),
-                                      liveOuts.cons());
+    ++functionIndex;
   }
-  return core::eval::funcall(llvmo::_sym_make_StackMap,
-                             functionList.cons(),
-                             constantList.cons(),
-                             recordList.cons());
 }
+
+
 };
 
 namespace llvmo {
+
+
+void register_llvm_stackmaps(bool jit, uintptr_t startAddress, uintptr_t endAddress) {
+  while (startAddress<endAddress) {
+//    printf("%s:%d:%s startAddress: 0x%lx  endAddress: 0x%lx\n", __FILE__, __LINE__, __FUNCTION__, startAddress, endAddress);
+    stackmap::register_one_llvm_stackmap(jit, startAddress);
+  }
+}
+
 #if 0
 CL_DEFUN core::T_sp llvm_sys__vmmap()
 {
@@ -3551,36 +3533,14 @@ CL_DEFUN llvm_sys__load_object_file(core::Pathname_sp name)
   
 namespace llvmo {
 
-CL_DEFUN core::T_sp llvm_sys__parse_stack_map(core::Pointer_sp address)
-{
-  return stackmap::lispify_llvm_stackmap(address->ptr());
-}
-
 class ClaspSectionMemoryManager : public SectionMemoryManager {
 
-  void 	notifyObjectLoaded (RuntimeDyld &RTDyld, const object::ObjectFile &Obj) {
-    llvm::MemoryBufferRef mem = Obj.getMemoryBufferRef();
-    if (llvmo::_sym_STARdebugObjectFilesSTAR->symbolValue().notnilp()) {
-      core::write_bf_stream( BF("%s:%d notifyObjectLoaded was invoked\n") % __FILE__ % __LINE__ );
-      core::write_bf_stream( BF("%s:%d      --> sizeof(ObjectFile) -> %lu  MemoryBufferRef start: %p   size: %lu\n") % __FILE__ % __LINE__ % sizeof(Obj) % (void*) mem.getBufferStart() % mem.getBufferSize() );
-      void** words = (void**)(&Obj);
-      core::write_bf_stream( BF("%s:%d      --> ObjectFile words:\n") % __FILE__% __LINE__ );
-      core::write_bf_stream( BF("%s:%d            0x00: %18p %18p\n") % __FILE__% __LINE__% words[0]% words[1]);
-      core::write_bf_stream( BF("%s:%d            0x10: %18p %18p\n") % __FILE__% __LINE__% words[2]% words[3]);
-      core::write_bf_stream( BF("%s:%d            0x20: %18p %18p\n") % __FILE__% __LINE__% words[4]% words[5]);
-    }
-    if (llvmo::_sym_STARdumpObjectFilesSTAR->symbolValue().notnilp()) {
-      dumpObjectFile(fileNum++,mem.getBufferStart(),mem.getBufferSize());
-    }
-  }
-  
-
-  uint8_t* allocateCodeSection( uintptr_t Size, unsigned Alignment,
+    uint8_t* allocateCodeSection( uintptr_t Size, unsigned Alignment,
                                 unsigned SectionID,
                                 StringRef SectionName ) {
     uint8_t* ptr = this->SectionMemoryManager::allocateCodeSection(Size,Alignment,SectionID,SectionName);
     if (llvmo::_sym_STARdebugObjectFilesSTAR->symbolValue().notnilp()) {
-      core::write_bf_stream( BF("%s:%d  allocateCodeSection Size: %lu  Alignment: %u SectionId: %u SectionName: %s --> allocated at: %p\n") % __FILE__% __LINE__% Size% Alignment% SectionID% SectionName.str() % (void*)ptr );
+      printf("%s", ( BF("%s:%d  allocateCodeSection Size: %lu  Alignment: %u SectionId: %u SectionName: %s --> allocated at: %p\n") % __FILE__% __LINE__% Size% Alignment% SectionID% SectionName.str() % (void*)ptr ).str().c_str());
     }
     return ptr;
   }
@@ -3590,12 +3550,90 @@ class ClaspSectionMemoryManager : public SectionMemoryManager {
                                 StringRef SectionName,
                                 bool isReadOnly) {
     uint8_t* ptr = this->SectionMemoryManager::allocateDataSection(Size,Alignment,SectionID,SectionName,isReadOnly);
-
+    if (SectionName.str() == "__llvm_stackmaps") {
+      my_thread->_stackmap = (uintptr_t)ptr;
+      my_thread->_stackmap_size = (size_t)Size;
+      STACKMAP_LOG(("%s:%d  recorded __llvm_stackmap allocateDataSection Size: %lu  Alignment: %u SectionId: %u SectionName: %s isReadOnly: %d --> allocated at: %p\n",
+                    __FILE__, __LINE__, Size, Alignment, SectionID, SectionName.str() , isReadOnly, (void*)ptr).str().c_str() );
+    }
     if (llvmo::_sym_STARdebugObjectFilesSTAR->symbolValue().notnilp()) {
-      core::write_bf_stream( BF("%s:%d  allocateDataSection Size: %lu  Alignment: %u SectionId: %u SectionName: %s isReadOnly: %d --> allocated at: %p\n") % __FILE__% __LINE__% Size% Alignment% SectionID% SectionName.str() % isReadOnly% (void*)ptr );
+      core::write_bf_stream(BF(",s:%d  allocateDataSection Size: %lu  Alignment: %u SectionId: %u SectionName: %s isReadOnly: %d --> allocated at: %p\n") % __FILE__% __LINE__% Size% Alignment% SectionID% SectionName.str() % isReadOnly% (void*)ptr );
     }
     return ptr;
   }
+
+  void 	notifyObjectLoaded (RuntimeDyld &RTDyld, const object::ObjectFile &Obj) {
+//    printf("%s:%d:%s entered\n", __FILE__, __LINE__, __FUNCTION__ );
+#if 0
+    uintptr_t stackmap = 0;
+    size_t stackmap_size = 0;
+    for ( auto section : Obj.sections() ) {
+      llvm::StringRef name;
+      section.getName(name);
+//      printf("%s:%d name: %s\n", __FILE__, __LINE__, name.str().c_str());
+      if (name=="__llvm_stackmaps") {
+        auto reloc = section.getRelocatedSection();
+        stackmap = (uintptr_t)reloc->getAddress();
+        stackmap_size = (size_t)reloc->getSize();
+        printf("%s:%d Found stackmap at %p size: %lu\n", __FILE__, __LINE__, (void*) stackmap, stackmap_size);
+      }
+    }
+    unsigned long section_size = 0;
+    void* p_section = NULL;
+#else
+    unsigned long section_size = 0;
+    void* p_section = NULL;
+#if 0
+    if (my_thread->_stackmap>0) {
+      p_section = reinterpret_cast<void*>(my_thread->_stackmap);
+      section_size = my_thread->_stackmap_size;
+      my_thread->_stackmap = 0;
+    }
+#endif
+#endif
+    if (p_section!=nullptr) {
+      printf("%s:%d LLVM_STACKMAPS  p_section@%p section_size=%lu\n", __FILE__, __LINE__, (void*)p_section, section_size );
+      llvmo::register_llvm_stackmaps(true, (uintptr_t)p_section,(uintptr_t)p_section+section_size);
+    } else {
+//      printf("%s:%d     Could not find LLVM_STACKMAPS\n", __FILE__, __LINE__ );
+    }
+    if (llvmo::_sym_STARdebugObjectFilesSTAR->symbolValue().notnilp()) {
+      llvm::MemoryBufferRef mem = Obj.getMemoryBufferRef();
+      core::write_bf_stream( BF("%s:%d notifyObjectLoaded was invoked\n") % __FILE__ % __LINE__ );
+      core::write_bf_stream( BF("%s:%d      --> sizeof(ObjectFile) -> %lu  MemoryBufferRef start: %p   size: %lu\n") % __FILE__ % __LINE__ % sizeof(Obj) % (void*) mem.getBufferStart() % mem.getBufferSize() );
+      void** words = (void**)(&Obj);
+      core::write_bf_stream( BF("%s:%d      --> ObjectFile words:\n") % __FILE__% __LINE__ );
+      core::write_bf_stream( BF("%s:%d            0x00: %18p %18p\n") % __FILE__% __LINE__% words[0]% words[1]);
+      core::write_bf_stream( BF("%s:%d            0x10: %18p %18p\n") % __FILE__% __LINE__% words[2]% words[3]);
+      core::write_bf_stream( BF("%s:%d            0x20: %18p %18p\n") % __FILE__% __LINE__% words[4]% words[5]);
+    }
+    if (llvmo::_sym_STARdumpObjectFilesSTAR->symbolValue().notnilp()) {
+      llvm::MemoryBufferRef mem = Obj.getMemoryBufferRef();
+      dumpObjectFile(fileNum++,mem.getBufferStart(),mem.getBufferSize());
+    }
+  }
+
+  bool finalizeMemory(std::string* ErrMsg = nullptr) {
+    STACKMAP_LOG(("%s:%d:%s entered\n", __FILE__, __LINE__, __FUNCTION__ ));
+    bool result = this->SectionMemoryManager::finalizeMemory(ErrMsg);
+    unsigned long section_size = 0;
+    void* p_section = NULL;
+    if (my_thread->_stackmap>0) {
+      p_section = reinterpret_cast<void*>(my_thread->_stackmap);
+      section_size = my_thread->_stackmap_size;
+      my_thread->_stackmap = 0;
+    }
+    if (p_section!=nullptr) {
+      STACKMAP_LOG(("%s:%d LLVM_STACKMAPS  p_section@%p section_size=%lu\n", __FILE__, __LINE__, (void*)p_section, section_size ));
+      llvmo::register_llvm_stackmaps(true, (uintptr_t)p_section,(uintptr_t)p_section+section_size);
+    } else {
+      printf("%s:%d     Could not find LLVM_STACKMAPS\n", __FILE__, __LINE__ );
+    }
+    return result;
+  }
+
+
+
 
 };
 
@@ -3666,6 +3704,7 @@ void save_symbol_info(const llvm::object::ObjectFile& object_file, const llvm::R
         const llvm::object::SectionRef& section_ref = **expected_section_iterator;
         uint64_t section_address = loaded_object_info.getSectionLoadAddress(section_ref);
         if (((char*)section_address+address) != NULL ) {
+          core::register_jitted_object(name,section_address+address,size);
           core::Cons_sp symbol_info = core::Cons_O::createList(core::make_fixnum((Fixnum)size),core::Pointer_O::create((void*)((char*)section_address+address)));
           register_symbol_with_libunwind(name,section_address+address,size);
           if ((!comp::_sym_jit_register_symbol.unboundp()) && comp::_sym_jit_register_symbol->fboundp()) {
@@ -3732,16 +3771,18 @@ CL_DEFMETHOD ModuleHandle_sp ClaspJIT_O::addModule(Module_sp cM) {
 
     // Add the set to the JIT with the resolver we created above and a newly
     // created SectionMemoryManager.
+#if 1
   Expected<ModuleHandle> expected_ModuleHandle = OptimizeLayer.addModule(std::move(uM), //std::move(Ms),
 //                                                                      make_unique<SectionMemoryManager>(),
                                                                          std::move(Resolver));
-
-//  ObjectFile objectFile = SimpleCompiler(*TM)(optimizeModule(M))
+#else
+  auto objectFile = SimpleCompiler(*TM)(*optimizeModule(std::move(uM)));
     // Here get the start and the size of the objectFile
-    // objectFile->getMemoryBuffer()->getSize()
-    // objectFile->getMemoryBuffer()->getStart()
+  uintptr_t size = objectFile.getBinary()->getMemoryBufferRef().getBufferSize();
+  uintptr_t start = (uintptr_t)objectFile.getBinary()->getMemoryBufferRef().getBufferStart();
+  printf("%s:%d:%s  objectFile @%lX  size %lu\n", __FILE__, __LINE__, __FUNCTION__, start, size);
     // How long will the objectFile->getMemoryBuffer() live?
-    
+#endif
   ModuleHandle_sp mh;
   if (expected_ModuleHandle) {
     mh = ModuleHandle_O::create(*expected_ModuleHandle);
@@ -3939,9 +3980,20 @@ SYMBOL_EXPORT_SC_(CorePkg,repl);
 
 CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, ModuleHandle_sp handle, const string& replName, const string& startupName, const string& shutdownName, core::T_sp initialData) {
   // Stuff to support MCJIT
-  core::Pointer_sp replPtr = jit->findSymbolIn(handle,replName,true);
-  core::Pointer_sp startupPtr = jit->findSymbolIn(handle,startupName,true);
-  core::Pointer_sp shutdownPtr = jit->findSymbolIn(handle,shutdownName,true);
+  core::Pointer_sp replPtr;
+  if (replName!="") {
+    replPtr = jit->findSymbolIn(handle,replName,true);
+  } else {
+    SIMPLE_ERROR(BF("There must be a replName"));
+  }
+  core::Pointer_sp startupPtr;
+  if (startupName!="") {
+    startupPtr = jit->findSymbolIn(handle,startupName,true);
+  }
+  core::Pointer_sp shutdownPtr;
+  if (shutdownName!="") {
+    shutdownPtr = jit->findSymbolIn(handle,shutdownName,true);
+  }
   core::CompiledClosure_fptr_type lisp_funcPtr = (core::CompiledClosure_fptr_type)(gc::As_unsafe<core::Pointer_sp>(replPtr)->ptr());
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid =
     core::ClosureWithSlots_O::make_bclasp_closure( core::_sym_repl,
@@ -3949,8 +4001,10 @@ CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, Mo
                                                     kw::_sym_function,
                                                    _Nil<core::T_O>(),
                                                    _Nil<core::T_O>() );
-  core::module_startup_function_type startup = reinterpret_cast<core::module_startup_function_type>(gc::As_unsafe<core::Pointer_sp>(startupPtr)->ptr());
-  startup(initialData.tagged_());
+  if (startupPtr) {
+    core::module_startup_function_type startup = reinterpret_cast<core::module_startup_function_type>(gc::As_unsafe<core::Pointer_sp>(startupPtr)->ptr());
+    startup(initialData.tagged_());
+  }
   return functoid;
 }
 };

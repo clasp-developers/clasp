@@ -25,6 +25,10 @@ THE SOFTWARE.
 */
 /* -^- */
 #define DEBUG_LANDING_PAD 1
+#if defined( _TARGET_OS_DARWIN )
+#include <mach-o/ldsyms.h>
+#include <mach-o/getsect.h>
+#endif
 
 //#define DEBUG_LEVEL_FULL
 #ifdef USE_MPS
@@ -758,6 +762,84 @@ void invokeTopLevelFunction(core::T_mv *resultP,
 #endif
 
 
+#if defined(_TARGET_OS_DARWIN)
+uint8_t * 
+mygetsectiondata(
+                 void* vmhp,
+                 const char *segname,
+                 const char *sectname,
+                 unsigned long *size)
+{
+  const struct mach_header_64* mhp = (const struct mach_header_64*)vmhp;
+  struct segment_command_64 *sgp;
+  struct section_64 *sp;
+  uint32_t i, j;
+  intptr_t slide;
+    
+  slide = 0;
+  sp = 0;
+  sgp = (struct segment_command_64 *)
+    ((char *)mhp + sizeof(struct mach_header_64));
+  for(i = 0; i < mhp->ncmds; i++){
+    if(sgp->cmd == LC_SEGMENT_64){
+      if(strcmp(sgp->segname, "__TEXT") == 0){
+        slide = (uintptr_t)mhp - sgp->vmaddr;
+      }
+      if(strncmp(sgp->segname, segname, sizeof(sgp->segname)) == 0){
+        sp = (struct section_64 *)((char *)sgp +
+                                   sizeof(struct segment_command_64));
+        for(j = 0; j < sgp->nsects; j++){
+          if(strncmp(sp->sectname, sectname,
+                     sizeof(sp->sectname)) == 0 &&
+             strncmp(sp->segname, segname,
+                     sizeof(sp->segname)) == 0){
+            *size = sp->size;
+//   return (uint8_t*)sp;
+            uint8_t* addr = ((uint8_t *)(sp->addr) + slide);
+            return addr;
+          }
+          sp = (struct section_64 *)((char *)sp +
+                                     sizeof(struct section_64));
+        }
+      }
+    }
+    sgp = (struct segment_command_64 *)((char *)sgp + sgp->cmdsize);
+  }
+  return(0);
+}
+#endif
+
+
+
+void cc_register_library(const void* fn) {
+//  printf("%s:%d header -> %p\n", __FILE__, __LINE__, header );
+  if (fn) {
+    Dl_info dlinfo;
+    int res = dladdr(fn,&dlinfo);
+    if (res<=0) {
+      printf("%s:%d Could not register_library with %p\n", __FILE__, __LINE__, fn);
+      abort();
+    }
+//    printf("%s:%d Found library base %p\n", __FILE__, __LINE__, (void*)dlinfo.dli_fbase);
+    unsigned long section_size = 0;
+    void* header = (void*)dlinfo.dli_fbase;
+#if defined(_TARGET_OS_DARWIN)
+    uint8_t* p_section =  mygetsectiondata( header,
+                                            "__LLVM_STACKMAPS",
+                                            "__llvm_stackmaps",
+                                            &section_size );
+#else 
+    #error "Handle linux and freebsd"
+#endif
+    if (p_section!=nullptr) {
+      STACKMAP_LOG(("%s:%d LLVM_STACKMAPS  p_section@%p section_size=%lu\n", __FILE__, __LINE__, (void*)p_section, section_size ));
+      llvmo::register_llvm_stackmaps(false, (uintptr_t)p_section,(uintptr_t)p_section+section_size);
+    } else {
+      STACKMAP_LOG(("%s:%d     Could not find LLVM_STACKMAPS\n", __FILE__, __LINE__ ));
+    }
+  }
+}
+
 
 /*! Invoke the main functions from the main function array.
 If isNullTerminatedArray is 1 then there is a NULL terminated array of functions to call.
@@ -765,6 +847,13 @@ Otherwise there is just one. */
 void cc_register_startup_function(fnStartUp fptr) {
   register_startup_function(fptr);
 }
+/*! Call this with an alloca pointer to keep the alloca from 
+being optimized away */
+__attribute__((optnone,noinline)) void cc_protect_alloca(char* ptr)
+{
+  (void)ptr;
+}
+
 
 void cc_invoke_sub_run_all_function(fnStartUp fptr) {
   fptr();
@@ -776,58 +865,6 @@ void cc_invoke_startup_functions() {
 
 
 
-};
-
-/*! Look for the keyword in (*frameP) after argIdx.
- */
-extern void throwIfExcessKeywordArguments(char *fnName, core::ActivationFrame_sp *frameP, int argIdx) {
-  ASSERT(frameP != NULL);
-  ASSERT(frameP->objectp());
-  ASSERT(argIdx >= 0);
-  core::ValueFrame_sp vframe = gctools::As_unsafe<core::ValueFrame_sp>(*frameP);
-  if (argIdx >= vframe->length()) return;
-  stringstream ss;
-  for (int i(0); i < (vframe)->length(); ++i) {
-    ss << _rep_(vframe->entry(i)) << " ";
-  }
-  SIMPLE_ERROR(BF("Excess keyword arguments fnName: %s argIdx: %d  args: %s") % fnName % argIdx % ss.str());
-}
-
-extern void throwIfExcessArguments(core::T_sp *frameP, int argIdx) {
-  ASSERT(frameP != NULL);
-  ASSERT(frameP->objectp());
-  ASSERT(argIdx >= 0);
-  core::ValueFrame_sp frame = gc::As_unsafe<core::ValueFrame_sp>((*frameP));
-  if (argIdx < frame->length()) {
-    stringstream serr;
-    for (int i = argIdx; i < frame->length(); i++) {
-      serr << _rep_(frame->entry(i)) << " ";
-    }
-    SIMPLE_ERROR(BF("extraneous arguments: %s") % serr.str());
-  }
-}
-
-inline core::T_sp prependMultipleValues(core::T_mv *multipleValuesP) {
-  core::List_sp result = _Nil<core::T_O>();
-  core::T_mv &mv = (*multipleValuesP);
-  if (mv.number_of_values() > 0) {
-    result = core::Cons_O::create(mv, result);
-    for (int i = 1; i < mv.number_of_values(); i++) {
-      result = core::Cons_O::create(mv.valueGet_(i), result);
-    }
-  }
-  return result;
-}
-
-extern "C" {
-void sp_prependMultipleValues(core::T_sp *resultP, core::T_mv *multipleValuesP) {
-  (*resultP) = prependMultipleValues(multipleValuesP);
-  ASSERTNOTNULL(*resultP);
-}
-void mv_prependMultipleValues(core::T_mv *resultP, core::T_mv *multipleValuesP) {
-  (*resultP) = Values(prependMultipleValues(multipleValuesP));
-  ASSERTNOTNULL(*resultP);
-}
 };
 
 extern "C" {
@@ -1272,14 +1309,6 @@ void ignore_ensureFrameUniqueId() {
   // Do nothing
 }
 
-
-extern size_t matchKeywordOnce(core::T_O *xP, core::T_O *yP, unsigned char *sawKeyAlreadyP)
-{NO_UNWIND_BEGIN();
-  if (xP != yP) return 0;
-  if (*sawKeyAlreadyP) return 2;
-  return 1;
-  NO_UNWIND_END();
-}
 };
 
 // -----------------------------------------------------------

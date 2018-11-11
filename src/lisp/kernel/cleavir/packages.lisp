@@ -88,6 +88,8 @@
    #:array-rank-ast #:array-rank-ast-mdarray
    #:array-dimension-ast #:array-dimension-ast-mdarray #:array-dimension-ast-axis
    #:bind-va-list-ast #:make-bind-va-list-ast #:va-list-ast
+   #:invoke-ast #:multiple-value-invoke-ast #:destinations
+   #:introduce-invoke
    ))
 
 (defpackage #:clasp-cleavir-hir
@@ -137,6 +139,7 @@
    #:make-array-rank-instruction
    #:make-array-dimension-instruction
    #:bind-va-list-instruction #:make-bind-va-list-instruction
+   #:invoke-instruction #:multiple-value-invoke-instruction #:destinations
    ))
 
 (defpackage #:clasp-cleavir-ast-to-hir

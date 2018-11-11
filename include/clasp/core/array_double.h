@@ -64,6 +64,7 @@ namespace core {
     virtual T_sp element_type() const override { return cl::_sym_double_float;};
     virtual T_sp arrayElementType() const override { return cl::_sym_double_float; };
     virtual clasp_elttype elttype() const { return clasp_aet_df; };
+    virtual void __write__(T_sp stream) const;
   public: // Provide the API that I used for NVector_sp
     static SimpleVectorDouble_sp create(size_t sz) {
       return make(sz,0.0,false,0,NULL);

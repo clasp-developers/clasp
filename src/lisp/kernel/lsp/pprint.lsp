@@ -20,6 +20,13 @@
 (defun required-argument ()
   (error "Missing required argument in struct constructor"))
 
+;;; since (ext:check-arguments-type) is a no-op in clasp
+;;; just used to check member types
+(defmacro %verify-type (datum type)
+  (let ((datum-symbol (gensym)))
+    `(let ((,datum-symbol ,datum))
+           (unless (typep ,datum-symbol ,type)
+             (error 'type-error :datum ,datum-symbol :expected-type ,type)))))
 ;;;; Pretty streams
 
 ;;; There are three different units for measuring character positions:
@@ -824,6 +831,8 @@
 
 (defun pprint-logical-block-helper (function object stream prefix
 				    per-line-prefix-p suffix)
+  (check-type prefix string)
+  (check-type suffix string)
   (setf stream (case stream
 		 ((nil) *standard-output*)
 		 ((t) *terminal-io*)
@@ -919,6 +928,7 @@
   (declare (type (member :linear :miser :fill :mandatory) kind)
 	   (type (or stream (member t nil)) stream)
 	   (ext:check-arguments-type))
+  (%verify-type kind '(member :linear :miser :fill :mandatory))
   (let ((stream (case stream
 		  ((t) *terminal-io*)
 		  ((nil) *standard-output*)
@@ -941,6 +951,7 @@
 	   (type real n)
 	   (type (or stream (member t nil)) stream)
 	   (ext:check-arguments-type))
+  (%verify-type relative-to '(member :block :current))
   (let ((stream (case stream
 		  ((t) *terminal-io*)
 		  ((nil) *standard-output*)
@@ -965,6 +976,7 @@
 	   (type unsigned-byte colnum colinc)
 	   (type (or stream (member t nil)) stream)
 	   (ext:check-arguments-type))
+  (%verify-type kind '(member :line :section :line-relative :section-relative))
   (let ((stream (case stream
 		  ((t) *terminal-io*)
 		  ((nil) *standard-output*)

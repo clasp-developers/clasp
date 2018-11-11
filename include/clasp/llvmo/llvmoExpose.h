@@ -4158,6 +4158,8 @@ namespace llvmo {
   Module_sp llvm_sys__parseIRFile(core::T_sp filename, LLVMContext_sp context);
 
 void initialize_llvmo_expose();
+
+void register_llvm_stackmaps(bool jit, uintptr_t startAddress, uintptr_t endAddress);
 }
 
 

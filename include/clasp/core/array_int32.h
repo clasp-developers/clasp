@@ -55,6 +55,7 @@ namespace core {
     virtual T_sp element_type() const override { return ext::_sym_byte32;};
     virtual T_sp arrayElementType() const override { return ext::_sym_byte32; };
     virtual clasp_elttype elttype() const { return clasp_aet_byte32_t; };
+    virtual void __write__(T_sp stream) const;
   };
 };
 
@@ -212,6 +213,7 @@ namespace core {
     virtual T_sp element_type() const override { return ext::_sym_integer32;};
     virtual T_sp arrayElementType() const override { return ext::_sym_integer32; };
     virtual clasp_elttype elttype() const { return clasp_aet_int32_t; };
+    virtual void __write__(T_sp stream) const;
   };
 };
 

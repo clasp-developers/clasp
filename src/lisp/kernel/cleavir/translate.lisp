@@ -102,7 +102,7 @@ when this is t a lot of graphs will be generated.")
                    :readably nil
                    :pretty nil))
 
-;;; KLUDGE: Kept mainly for enter-instruction. Rearrange.
+;;; KLUDGE: Kept mainly for enter-instruction. Rearrange things.
 (defun translate-datum (datum)
   (or (gethash datum *vars*)
       (setf (gethash datum *vars*)
@@ -114,17 +114,31 @@ when this is t a lot of graphs will be generated.")
                (alloca (cc-mir:lexical-location-type datum) 1 (datum-name-as-string datum)))
               (cleavir-ir:lexical-location
                (alloca-t* (datum-name-as-string datum)))
-              (t (error "add support for translate datum: ~a~%" datum))))))
+              (t (error "BUG: add support for translate datum: ~a~%" datum))))))
+
+(defun ssablep (location)
+  (let ((defs (cleavir-ir:defining-instructions location)))
+    (= (length defs) 1)))
 
 (defun in (datum &optional (label ""))
   (etypecase datum
     (cleavir-ir:immediate-input
      (cmp:irc-int-to-ptr (%i64 (cleavir-ir:value datum)) cmp:%t*%))
     (cleavir-ir:lexical-location
-     (%load (translate-datum datum) label))))
+     (let ((existing (gethash datum *vars*)))
+       (if (null existing)
+           (error "BUG: Input ~a not previously defined" datum)
+           (if (ssablep datum)
+               existing
+               (%load existing label)))))))
 
 (defun out (value datum &optional (label ""))
-  (%store value (translate-datum datum) label))
+  (if (ssablep datum)
+      (progn
+        (unless (null (gethash datum *vars*))
+          (error "BUG: SSAable output ~a previously defined" datum))
+        (setf (gethash datum *vars*) value))
+      (%store value (translate-datum datum) label)))
 
 (defun translate-lambda-list-item (item)
   (cond ((symbolp item)
@@ -185,13 +199,6 @@ when this is t a lot of graphs will be generated.")
       (clasp-cleavir-hir:lambda-name instr)
       'TOP-LEVEL))
 
-(defun generate-push-invocation-history-frame (cc)
-  (%intrinsic-call "cc_push_InvocationHistoryFrame"
-                   (list (cmp:calling-convention-closure cc)
-                         (cmp:calling-convention-invocation-history-frame* cc)
-                         (cmp:calling-convention-va-list* cc)
-                         (cmp:calling-convention-nargs cc))))
-
 (defun layout-procedure* (the-function body-irbuilder
                           body-block
                           first-basic-block
@@ -208,11 +215,8 @@ when this is t a lot of graphs will be generated.")
         (cmp:with-irbuilder (body-irbuilder)
           (cmp:with-dbg-lexical-block (*form*)
             (cmp:irc-set-insert-point-basic-block body-block body-irbuilder)
-            (cmp:with-landing-pad
-                (maybe-generate-landing-pad the-function function-info *tags* return-value abi)
+            (with-catch-pad-prep
               (cmp:irc-begin-block body-block)
-              (when (debug-on function-info)
-                (generate-push-invocation-history-frame (calling-convention function-info)))
               (layout-basic-block first-basic-block return-value abi function-info)
               (loop for block in rest-basic-blocks
                     for instruction = (cleavir-basic-blocks:first-instruction block)
@@ -226,8 +230,17 @@ when this is t a lot of graphs will be generated.")
             the-function)))))
 
 ;;; Returns all basic blocks with the given owner.
+;;; They are sorted so that a block never appears before one of its dominators, for SSA reasons.
+;;; (I think both breadth and depth first orderings do this? Here it's depth for simplicity.)
 (defun function-basic-blocks (enter)
-  (remove enter *basic-blocks* :test-not #'eq :key #'cleavir-basic-blocks:owner))
+  (let (ret)
+    (labels ((aux (block)
+               (push block ret)
+               (loop for succ in (cleavir-basic-blocks:successors block)
+                     unless (member succ ret)
+                       do (aux succ))))
+      (aux (find enter *basic-blocks* :key #'cleavir-basic-blocks:first-instruction))
+      (nreverse ret))))
 
 (defun log-layout-procedure (the-function basic-blocks)
   (format *debug-log* "------------ begin layout-procedure ~a~%" (llvm-sys:get-name the-function))
@@ -280,15 +293,14 @@ when this is t a lot of graphs will be generated.")
                                :filepos filepos))
       (t (error "layout-procedure enter is not a known type of enter-instruction - it is a ~a - handle it" enter)))))
 
-(defun layout-procedure (enter lambda-name abi &key (linkage 'llvm-sys:internal-linkage))
+(defun layout-procedure (enter lambda-name abi &key (linkage 'llvm-sys:internal-linkage) ignore-arguments)
   (let* ((function-info (gethash enter *map-enter-to-function-info*))
          ;; Gather the basic blocks of this procedure in basic-blocks
          (basic-blocks (function-basic-blocks enter))
          ;; The basic block control starts in.
-         (first-basic-block (find enter basic-blocks
-                                  :test #'eq :key #'cleavir-basic-blocks:first-instruction))
+         (first-basic-block (first basic-blocks))
          ;; This gathers the rest of the basic blocks
-         (rest-basic-blocks (remove first-basic-block basic-blocks :test #'eq))
+         (rest-basic-blocks (rest basic-blocks))
          (cmp:*current-function-name* (cmp:jit-function-name lambda-name))
          (cmp:*gv-current-function-name*
            (cmp:module-make-global-string cmp:*current-function-name* "fn-name"))
@@ -333,10 +345,11 @@ when this is t a lot of graphs will be generated.")
                      (lambda-list (cleavir-ir:lambda-list enter))
                      (calling-convention (cmp:setup-calling-convention
                                           fn-args
-                                          :debug-on (debug-on function-info)
+                                          :debug-on (and (null ignore-arguments) (debug-on function-info))
                                           :lambda-list (clasp-cleavir-hir::original-lambda-list enter)
                                           :cleavir-lambda-list lambda-list
-                                          :rest-alloc (clasp-cleavir-hir::rest-alloc enter))))
+                                          :rest-alloc (clasp-cleavir-hir::rest-alloc enter)
+                                          :ignore-arguments ignore-arguments)))
                 (setf (calling-convention function-info) calling-convention))))
         (layout-procedure* the-function
                            body-irbuilder
@@ -351,10 +364,10 @@ when this is t a lot of graphs will be generated.")
 ;; multiply accessible in the HIR.
 ;; We assume that the ABI and linkage will not change.
 (defvar *compiled-enters*)
-(defun memoized-layout-procedure (enter lambda-name abi &key (linkage 'llvm-sys:internal-linkage))
+(defun memoized-layout-procedure (enter lambda-name abi &key (linkage 'llvm-sys:internal-linkage) ignore-arguments)
   (or (gethash enter *compiled-enters*)
       (setf (gethash enter *compiled-enters*)
-            (layout-procedure enter lambda-name abi :linkage linkage))))
+            (layout-procedure enter lambda-name abi :linkage linkage :ignore-arguments ignore-arguments))))
 
 (defun log-translate (initial-instruction)
   (let ((mir-pathname (make-pathname :name (format nil "mir~a" (incf *debug-log-index*))
@@ -390,7 +403,8 @@ when this is t a lot of graphs will be generated.")
     uninitialized))
 
 (defun translate (initial-instruction map-enter-to-function-info
-                  &optional (abi *abi-x86-64*) (linkage 'llvm-sys:internal-linkage))
+                  &key (abi *abi-x86-64*) (linkage 'llvm-sys:internal-linkage)
+                    ignore-arguments)
   #+(or)
   (let ((uninitialized (check-for-uninitialized-inputs-dumb initial-instruction)))
     (unless (null uninitialized)
@@ -404,7 +418,7 @@ when this is t a lot of graphs will be generated.")
          (lambda-name (get-or-create-lambda-name initial-instruction)))
     (cc-dbg-when *debug-log* (log-translate initial-instruction))
     (let ((function
-            (memoized-layout-procedure initial-instruction lambda-name abi :linkage linkage)))
+            (memoized-layout-procedure initial-instruction lambda-name abi :linkage linkage :ignore-arguments ignore-arguments)))
       (cmp::cmp-log-compile-file-dump-module cmp:*the-module* "after-translate")
       (setf *ct-translate* (compiler-timer-elapsed))
       (values function lambda-name))))
@@ -515,6 +529,7 @@ Does not hoist."
            (cmp:register-global-function-ref (cleavir-environment:name condition))
            (invoke-restart 'cleavir-generate-ast:consider-global))))
     (let* ((ast (cleavir-generate-ast:generate-ast form env *clasp-system*)))
+      (clasp-cleavir-ast:introduce-invoke ast)
       (when *interactive-debug* (draw-ast ast))
       (cc-dbg-when *debug-log* (log-cst-to-ast ast))
       (setf *ct-generate-ast* (compiler-timer-elapsed))
@@ -552,21 +567,22 @@ Does not hoist."
 
 ;;; Convenience. AST must have been hoisted already.
 (defun translate-ast (ast &key (abi *abi-x86-64*) (linkage 'llvm-sys:internal-linkage)
-                            (env *clasp-env*))
+                            (env *clasp-env*) ignore-arguments)
   (let ((hir (ast->hir ast)))
     (multiple-value-bind (mir function-info-map)
         (hir->mir hir env)
-      (translate mir function-info-map abi linkage))))
+      (translate mir function-info-map :abi abi :linkage linkage :ignore-arguments ignore-arguments))))
 
 #+cst
 (defun translate-cst (cst &key (abi *abi-x86-64*) (linkage 'llvm-sys:internal-linkage)
-                            (env *clasp-env*))
-  (translate-ast (hoist-ast (cst->ast cst env) env) :abi abi :linkage linkage :env env))
+                            (env *clasp-env*) ignore-arguments)
+  (translate-ast (hoist-ast (cst->ast cst env) env) :abi abi :linkage linkage :env env :ignore-arguments ignore-arguments))
 
 #-cst
 (defun translate-form (form &key (abi *abi-x86-64*) (linkage 'llvm-sys:internal-linkage)
-                              (env *clasp-env*))
-  (translate-ast (hoist-ast (generate-ast form env) env) :abi abi :linkage linkage :env env))
+                              (env *clasp-env*) ignore-arguments)
+  (translate-ast (hoist-ast (generate-ast form env) env) :abi abi :linkage linkage :env env
+                 :ignore-arguments ignore-arguments))
 
 (defun translate-lambda-expression-to-llvm-function (lambda-expression)
   "Compile a lambda expression into an llvm-function and return it.
@@ -623,7 +639,7 @@ This works like compile-lambda-function in bclasp."
               (multiple-value-bind (mir function-info-map)
                   (hir->mir hir env)
                 (multiple-value-setq (function lambda-name)
-                  (translate mir function-info-map *abi-x86-64* linkage)))))))
+                  (translate mir function-info-map :abi *abi-x86-64* :linkage linkage)))))))
     (unless function
       (error "There was no function returned by translate-ast"))
     (cmp:cmp-log "fn --> %s%N" fn)
@@ -640,6 +656,13 @@ This works like compile-lambda-function in bclasp."
   (translate-cst (cst:cst-from-expression form) :env env)
   #-cst
   (translate-form form :env env))
+
+(defun compile-ltv-form (form &optional (env *clasp-env*))
+  (setf *ct-start* (compiler-timer-elapsed))
+  #+cst
+  (translate-cst (cst:cst-from-expression form) :env env :ignore-arguments t)
+  #-cst
+  (translate-form form :env env :ignore-arguments t))
 
 #+cst
 (defun cleavir-compile-file-cst (cst &optional (env *clasp-env*))

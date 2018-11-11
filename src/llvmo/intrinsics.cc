@@ -235,17 +235,6 @@ ALWAYS_INLINE gc::return_type cc_call_callback(LCC_ARGS_CC_CALL_ELLIPSIS) {
   return closure(LCC_PASS_ARGS);
 }
 
-size_t cc_matchKeywordOnce(core::T_O *xP, core::T_O *yP, core::T_O *sawKeyAlreadyP)
-{NO_UNWIND_BEGIN();
-  if (xP != yP)
-    return 0;
-  if (!gctools::tagged_nilp(sawKeyAlreadyP))
-    return 2;
-  return 1;
-  NO_UNWIND_END();
-}
-
-
 ALWAYS_INLINE core::T_O *cc_gatherVaRestArguments(va_list vargs, std::size_t nargs, Vaslist untagged_vargs_rest[2])
 {NO_UNWIND_BEGIN();
   va_copy(untagged_vargs_rest[0]._Args,vargs);

@@ -141,7 +141,9 @@
     (primitive-unwinds "functionFrameReference" %t**% (list %t*% %i32%))
     
 ;;;    (primitive-unwinds "invokeTopLevelFunction" %void% (list %tmv*% %fn-prototype*% %i8*% %i32*% %size_t% %size_t% %size_t% %ltv**%))
+    (primitive-unwinds "cc_register_library" %void% (list %fn-start-up*%))
     (primitive-unwinds "cc_register_startup_function" %void% (list %fn-start-up*%))
+    (primitive         "cc_protect_alloca" %void% (list %i8*%))
     (primitive-unwinds "cc_invoke_sub_run_all_function" %void% (list %fn-start-up*%))
     
     (primitive         "cc_trackFirstUnexpectedKeyword" %size_t% (list %size_t% %size_t%))
@@ -219,8 +221,6 @@
     (primitive         "pushDynamicBinding" %void% (list %t*%))
     (primitive         "popDynamicBinding" %void% (list %t*%))
     
-    (primitive         "matchKeywordOnce" %size_t% (list %t*% %t*% %i8*%))
-    
     ;; Primitives for Cleavir code
 
     (primitive         "cc_eql" %i32% (list %t*% %t*%)) ;; eql test
@@ -284,9 +284,6 @@
     (primitive         "cc_setup_vaslist_internal" %t*% (list %vaslist*% %size_t%))
     (primitive         "cc_rewind_va_list" %void% (list %va_list*% %register-save-area*%))
     (primitive         "cc_rewind_vaslist" %t*% (list %vaslist*% %va_list*% %register-save-area*%))
-    (primitive         "cc_push_InvocationHistoryFrame" %void% (list %t*% %InvocationHistoryFrame*% %va_list*% %size_t%))
-    (primitive         "cc_pop_InvocationHistoryFrame" %void% (list %t*% %InvocationHistoryFrame*%))
-    
     (primitive-unwinds "cc_call_multipleValueOneFormCall" %return_type% (list %t*%))
     (primitive-unwinds "cc_call_multipleValueOneFormCallWithRet0" %return_type% (list %t*% %return_type%))
     (primitive-unwinds "cc_call"   %return_type% (list* %t*% %size_t%
@@ -297,7 +294,6 @@
                                                                          (make-list core:+number-of-fixed-arguments+
                                                                                     :initial-element %t*%))
                         :varargs t)
-    (primitive         "cc_matchKeywordOnce" %size_t% (list %t*% %t*% %t*%))
     (primitive-unwinds "cc_oddKeywordException" %void% (list %function-description*%))
     (primitive         "cc_multipleValuesArrayAddress" %t*[0]*% nil)
     (primitive-unwinds "cc_unwind" %void% (list %t*% %size_t%))

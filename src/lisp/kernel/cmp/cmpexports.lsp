@@ -79,7 +79,6 @@
           calling-convention-args.va-arg
           calling-convention-va-list*
           calling-convention-register-save-area*
-          calling-convention-invocation-history-frame*
           calling-convention-nargs
           calling-convention-register-args
           calling-convention-write-registers-to-multiple-values

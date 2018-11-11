@@ -528,6 +528,14 @@ void debugSuppressMessages(bool s);
 
 // char*	internal=BufferPrintf( const char* fmt, ... );
 
+extern bool stackmap_log;
+
+#ifdef DEBUG_STACKMAPS
+#define STACKMAP_LOG(msg) if (core::stackmap_log) printf msg
+#else
+#define STACKMAP_LOG(msg)
+#endif
+
 #ifdef DEBUG_ON
 //#error "TURN OFF DEBUG_ON"
 #define TESTMEMORY()

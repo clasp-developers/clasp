@@ -116,6 +116,7 @@ CL_DEFUN bool llvm_sys__load_bitcode_ll(core::Pathname_sp filename, bool verbose
   core::String_sp namestring = gctools::As<core::String_sp>(tnamestring);
   Module_sp m = llvm_sys__parseIRFile(namestring,gc::As<LLVMContext_sp>(comp::_sym_STARllvm_contextSTAR->symbolValue()));
   EngineBuilder_sp engineBuilder = EngineBuilder_O::make(m);
+  engineBuilder->wrappedPtr()->setUseOrcMCJITReplacement(true);
   TargetOptions_sp targetOptions = TargetOptions_O::make();
   engineBuilder->setTargetOptions(targetOptions);
   ExecutionEngine_sp executionEngine = engineBuilder->createExecutionEngine();
@@ -145,6 +146,7 @@ CL_DEFUN bool llvm_sys__load_bitcode(core::Pathname_sp filename, bool verbose, b
   core::String_sp namestring = gctools::As<core::String_sp>(tnamestring);
   Module_sp m = llvm_sys__parseBitcodeFile(namestring,gc::As<LLVMContext_sp>(comp::_sym_STARllvm_contextSTAR->symbolValue()));
   EngineBuilder_sp engineBuilder = EngineBuilder_O::make(m);
+  engineBuilder->wrappedPtr()->setUseOrcMCJITReplacement(true);
   TargetOptions_sp targetOptions = TargetOptions_O::make();
   engineBuilder->setTargetOptions(targetOptions);
   ExecutionEngine_sp executionEngine = engineBuilder->createExecutionEngine();
@@ -346,7 +348,7 @@ CL_DEFUN void llvm_sys__throwIfMismatchedStructureSizes(core::Fixnum_sp tspSize,
     };
 #endif
 
-CL_DEFUN llvmo::GlobalVariable_sp llvm_sys__getOrCreateExternalGlobal(llvmo::Module_sp module, const string &name, llvmo::Type_sp data_type) {
+CL_DEFUN llvmo::GlobalVariable_sp llvm_sys__getOrCreateExternalGlobal(llvmo::Module_sp module, const string &name, llvmo::Type_sp data_type, llvm::GlobalValue::LinkageTypes linkage) {
   llvm::Module *llvm_module = module->wrappedPtr();
   llvm::Type *llvm_data_type = data_type->wrappedPtr();
   ASSERT(llvm_module != NULL);
@@ -357,7 +359,7 @@ CL_DEFUN llvmo::GlobalVariable_sp llvm_sys__getOrCreateExternalGlobal(llvmo::Mod
     global = new llvm::GlobalVariable(*llvm_module,
                                       llvm_data_type,
                                       true, // isConstant
-                                      llvm::GlobalValue::ExternalLinkage,
+                                      linkage,
                                       0, // Initializer
                                       name);
   }

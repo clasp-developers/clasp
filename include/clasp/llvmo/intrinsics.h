@@ -27,6 +27,7 @@ THE SOFTWARE.
 #ifndef llvmo_intrinsics_H
 #define llvmo_intrinsics_H
 
+
 // If functions are defined with primitive-nounwind that means that they never unwind the stack and they can
 //   be invoked from generated code using 'call'.  If they do unwind the stack, then any function that invokes
 //   them with 'call' will fail to cleanup the stack and that will cause a failure.
@@ -221,4 +222,11 @@ namespace llvmo {
   void initialize_raw_translators( void );
 }
 
+extern "C" {
+uint8_t * 
+mygetsectiondata( void* mhp, //const struct mach_header_64 *mhp,
+                  const char *segname,
+                  const char *sectname,
+                  unsigned long *size);
+};
 #endif
