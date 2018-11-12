@@ -195,7 +195,8 @@ Lisp_O::GCRoots::GCRoots() :
   _Booted(false),
   _KnownSignals(_Unbound<HashTableEq_O>()) {}
 
-Lisp_O::Lisp_O() : _StackWarnSize(gctools::_global_stack_max_size * 0.9), // 6MB default stack size before warnings
+Lisp_O::Lisp_O() : _Started(false),
+                   _StackWarnSize(gctools::_global_stack_max_size * 0.9), // 6MB default stack size before warnings
                    _StackSampleCount(0),
                    _StackSampleSize(0),
                    _StackSampleMax(0),
@@ -681,6 +682,7 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
     this->_PrintSymbolsProperly = true;
   }
   mpip::Mpi_O::initializeGlobals(_lisp);
+  _lisp->_Started = true;
 }
 
 /*! Get a Str8Ns buffer string from the BufferStr8NsPool.*/

@@ -77,17 +77,24 @@ struct StackMap {
 
 
 
-std::map<uintptr_t,StackMap> global_StackMaps;
+std::map<uintptr_t,StackMap>* global_StackMaps = NULL;
 std::vector<JittedObject> global_JittedObjects;
 
+void ensure_global_StackMaps() {
+  if (!global_StackMaps) {
+    global_StackMaps = new std::map<uintptr_t,StackMap>;
+  }
+}
+
 void register_stack_map_entry(bool jit, uintptr_t stackMapAddress, uintptr_t functionPointer, int frameOffset, int frameSize) {
-  if (global_StackMaps.find((uintptr_t)stackMapAddress) == global_StackMaps.end()) {
+  ensure_global_StackMaps();
+  if (global_StackMaps->find((uintptr_t)stackMapAddress) == global_StackMaps->end()) {
     if (jit) {
       STACKMAP_LOG(("%s:%d:%s Adding stackmap entry for %lx offset: %d  size: %d\n", __FILE__, __LINE__, __FUNCTION__, functionPointer, frameOffset, frameSize));
     }
     if (functionPointer!=0) {
       StackMap stackmap(functionPointer,frameOffset,frameSize);
-      global_StackMaps[(uintptr_t)functionPointer] = stackmap;
+      (*global_StackMaps)[(uintptr_t)functionPointer] = stackmap;
     } else {
       printf("%s:%d:%s stackmap %p entry has a function 0x0 offset: %d  size: %d\n", __FILE__, __LINE__, __FUNCTION__, (void*)stackMapAddress, frameOffset, frameSize );
     }
@@ -100,8 +107,9 @@ void register_jitted_object(const std::string& name, uintptr_t address, int size
 }
 
 bool lookup_stack_map_entry(uintptr_t functionPointer, int& frameOffset, int& frameSize) {
-  std::map<uintptr_t,StackMap>::iterator find = global_StackMaps.find((uintptr_t)functionPointer);
-  if (find != global_StackMaps.end()) {
+  ensure_global_StackMaps();
+  std::map<uintptr_t,StackMap>::iterator find = (*global_StackMaps).find((uintptr_t)functionPointer);
+  if (find != (*global_StackMaps).end()) {
     frameOffset = find->second._FrameOffset;
     frameSize = find->second._FrameSize;
     return true;
@@ -111,8 +119,9 @@ bool lookup_stack_map_entry(uintptr_t functionPointer, int& frameOffset, int& fr
 
 bool closest_function(uintptr_t returnAddress, uintptr_t& functionAddress, uintptr_t& instructionOffset, int& frameSize, int& frameOffset) {
   instructionOffset = ~0;
+  ensure_global_StackMaps();
   bool result = false;
-  for ( auto entry : global_StackMaps ) {
+  for ( auto entry : (*global_StackMaps) ) {
     if (entry.second._FunctionPointer<returnAddress) {
       if ((returnAddress-entry.second._FunctionPointer)<instructionOffset) {
         result = true;

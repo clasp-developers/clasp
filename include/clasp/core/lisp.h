@@ -360,7 +360,7 @@ public:
   void archive(ArchiveP node);
 #endif // defined(XML_ARCHIVE)
 public:
-public:
+  bool _Started;
   GCRoots _Roots;
   // Trap INTERN of a specific symbol to help resolve symbol conflicts
   bool _TrapIntern;
