@@ -25,10 +25,6 @@ THE SOFTWARE.
 */
 /* -^- */
 #define DEBUG_LANDING_PAD 1
-#if defined( _TARGET_OS_DARWIN )
-#include <mach-o/ldsyms.h>
-#include <mach-o/getsect.h>
-#endif
 
 //#define DEBUG_LEVEL_FULL
 #ifdef USE_MPS
@@ -70,6 +66,12 @@ extern "C" {
 #include <clasp/llvmo/intrinsics.h>
 #include <clasp/gctools/gc_interface.fwd.h>
 #include <clasp/core/exceptions.h>
+
+#if defined(_TARGET_OS_DARWIN)
+#include <mach-o/ldsyms.h>
+#include <mach-o/getsect.h>
+#endif
+
 
 #pragma GCC visibility push(default)
 
