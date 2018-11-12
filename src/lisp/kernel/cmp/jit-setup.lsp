@@ -135,7 +135,7 @@ Return the module and the global variable that represents the load-time-value-ho
 
 (defvar *run-time-module* nil)
 
-(defvar *the-module* nil "This stores the module into which compile puts its stuff")
+(defvar *the-module*) ; nil "This stores the module into which compile puts its stuff")
 (defvar *the-function-pass-manager* nil "the function-pass-manager applied to runtime functions")
 
 

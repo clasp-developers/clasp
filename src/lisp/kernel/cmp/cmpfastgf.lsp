@@ -894,12 +894,12 @@
   (let ((debug-on (if debug-on-p
                       debug-on
                       (core:get-funcallable-instance-debug-on generic-function)))
-        (*the-module* (create-run-time-module-for-compile)))
+        (module (create-run-time-module-for-compile)))
     #+(or)(unless call-history
             (core:bformat t "codegen-dispatcher %s  optimized-call-history -> %s%N" generic-function-name call-history)
             (core:bformat t "  raw-call-history -> %s%N" raw-call-history)
             (core:bformat t "  specializer-profile -> %s%N" specializer-profile))
-    (with-module (:module *the-module*
+    (with-module (:module module
                   :optimize nil)
       (with-source-pathnames (:source-pathname nil)
         (let* ((*current-function-name* (jit-function-name generic-function-name))
@@ -908,7 +908,7 @@
                (disp-fn (irc-simple-function-create *current-function-name*
                                                     %fn-registers-prototype% #| was %fn-gf% |#
                                                     'llvm-sys::External-linkage
-                                                    *the-module*
+                                                    module
                                                     :argument-names +fn-registers-prototype-argument-names+)))
           ;;(1) Create a function with a regular signature
           ;;(2) Allocate space for a va_list and copy the va_list passed into it.
@@ -922,7 +922,7 @@
                  (*irbuilder-function-body* irbuilder-body)
                  (*current-function* disp-fn)
                  (*gf-data* 
-                   (llvm-sys:make-global-variable *the-module*
+                   (llvm-sys:make-global-variable module
                                                   cmp:%t*[DUMMY]% ; type
                                                   nil ; isConstant
                                                   'llvm-sys:internal-linkage
@@ -930,7 +930,7 @@
                                                   ;; nil ; initializer
                                                   (next-value-table-holder-name "dummy")))
                  (*gcroots-in-module* 
-                   (llvm-sys:make-global-variable *the-module*
+                   (llvm-sys:make-global-variable module
                                                   cmp:%gcroots-in-module% ; type
                                                   nil ; isConstant
                                                   'llvm-sys:internal-linkage
@@ -1009,7 +1009,7 @@
                         (irc-begin-block (argument-holder-continue-after-dispatch arguments)))))
                   (irc-ret (irc-load (argument-holder-return-value arguments))))))
             (let* ((array-type (llvm-sys:array-type-get cmp:%t*% *gf-data-id*))
-                   (correct-size-holder (llvm-sys:make-global-variable *the-module*
+                   (correct-size-holder (llvm-sys:make-global-variable module
                                                                        array-type
                                                                        nil ; isConstant
                                                                        'llvm-sys:internal-linkage
@@ -1017,17 +1017,17 @@
                                                                        (bformat nil "CONSTANTS-%d" (increment-dispatcher-count))))
                    (bitcast-correct-size-holder (irc-bit-cast correct-size-holder %t*[DUMMY]*% "bitcast-table")))
               (multiple-value-bind (startup-fn shutdown-fn)
-                  (codegen-startup-shutdown *the-module* *gcroots-in-module* correct-size-holder *gf-data-id* nil)
+                  (codegen-startup-shutdown module *gcroots-in-module* correct-size-holder *gf-data-id* nil)
                 (llvm-sys:replace-all-uses-with *gf-data* bitcast-correct-size-holder)
                 (llvm-sys:erase-from-parent *gf-data*)
                 #+debug-cmpgf(progn
                                (core:bformat t "Dumping the module from codegen-dispatcher%N")
-                               (llvm-sys:dump-module *the-module*))
+                               (llvm-sys:dump-module module))
                 (let ((sorted-roots (gather-sorted-outcomes *eql-selectors* *outcomes*)))
                   (when output-path
-                    (debug-save-dispatcher *the-module* output-path))
+                    (debug-save-dispatcher module output-path))
                   (jit-add-module-return-dispatch-function
-                   *the-module* disp-fn startup-fn shutdown-fn sorted-roots))))))))))
+                   module disp-fn startup-fn shutdown-fn sorted-roots))))))))))
 
 (defun codegen-dispatcher (raw-call-history specializer-profile generic-function &rest args &key generic-function-name output-path log-gf (debug-on t debug-on-p))
   (let* ((*log-gf* log-gf)

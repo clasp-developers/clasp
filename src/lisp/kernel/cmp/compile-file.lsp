@@ -279,7 +279,7 @@ Compile a lisp source file into an LLVM module."
               ;; (1) Generate the code
               (with-debug-info-generator (:module *the-module*
                                           :pathname *compile-file-truename*)
-                (or *the-module* (error "*the-module* is NIL"))
+                (or module (error "module is NIL"))
                 (with-make-new-run-all (run-all-function)
                   (with-literal-table
                       (loop-read-and-compile-file-forms source-sin environment compile-file-hook))
