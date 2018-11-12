@@ -59,7 +59,7 @@ THE SOFTWARE.
 
 namespace core {
 
-bool stackmap_log = false;
+bool stackmap_log = true;
 
 void assert_failure(const char* file, size_t line, const char* func, const char* msg)
 {

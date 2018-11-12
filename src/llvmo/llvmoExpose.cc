@@ -3554,7 +3554,7 @@ class ClaspSectionMemoryManager : public SectionMemoryManager {
       my_thread->_stackmap = (uintptr_t)ptr;
       my_thread->_stackmap_size = (size_t)Size;
       STACKMAP_LOG(("%s:%d  recorded __llvm_stackmap allocateDataSection Size: %lu  Alignment: %u SectionId: %u SectionName: %s isReadOnly: %d --> allocated at: %p\n",
-                    __FILE__, __LINE__, Size, Alignment, SectionID, SectionName.str() , isReadOnly, (void*)ptr).str().c_str() );
+                    __FILE__, __LINE__, Size, Alignment, SectionID, SectionName.str().c_str() , isReadOnly, (void*)ptr));
     }
     if (llvmo::_sym_STARdebugObjectFilesSTAR->symbolValue().notnilp()) {
       core::write_bf_stream(BF(",s:%d  allocateDataSection Size: %lu  Alignment: %u SectionId: %u SectionName: %s isReadOnly: %d --> allocated at: %p\n") % __FILE__% __LINE__% Size% Alignment% SectionID% SectionName.str() % isReadOnly% (void*)ptr );
@@ -3627,7 +3627,7 @@ class ClaspSectionMemoryManager : public SectionMemoryManager {
       STACKMAP_LOG(("%s:%d LLVM_STACKMAPS  p_section@%p section_size=%lu\n", __FILE__, __LINE__, (void*)p_section, section_size ));
       llvmo::register_llvm_stackmaps(true, (uintptr_t)p_section,(uintptr_t)p_section+section_size);
     } else {
-      printf("%s:%d     Could not find LLVM_STACKMAPS\n", __FILE__, __LINE__ );
+//      printf("%s:%d     Could not find LLVM_STACKMAPS\n", __FILE__, __LINE__ );
     }
     return result;
   }
