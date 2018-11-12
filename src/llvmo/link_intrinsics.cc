@@ -72,11 +72,7 @@ extern "C" {
 #include <mach-o/getsect.h>
 #endif
 #if defined(_TARGET_OS_LINUX) || defined(_TARGET_OS_FREEBSD)
-#include <sys/stat.h>
-#include <sys/mman.h>
-#include <elf.h>
-#include <stdio.h>
-#include <fcntl.h>
+#include <link.h>
 #endif
 
 #pragma GCC visibility push(default)
@@ -818,18 +814,38 @@ mygetsectiondata(
 #endif
 #if defined(_TARGET_OS_LINUX) || defined(_TARGET_OS_FREEBSD)
 
-int print_shdr( void* p ) {
+static int
+callback(struct dl_phdr_info *info, size_t size, void *data)
+{
+  const char *type;
+  int p_type, j;
 
-  Elf32_Ehdr *ehdr = (Elf32_Ehdr*)p;
-  Elf32_Shdr *shdr = (Elf32_Shdr *)(p + ehdr->e_shoff);
-  int shnum = ehdr->e_shnum;
+  printf("Name: \"%s\" (%d segments)\n", info->dlpi_name,
+         info->dlpi_phnum);
 
-  Elf32_Shdr *sh_strtab = &shdr[ehdr->e_shstrndx];
-  const char *const sh_strtab_p = p + sh_strtab->sh_offset;
+  for (j = 0; j < info->dlpi_phnum; j++) {
+    p_type = info->dlpi_phdr[j].p_type;
+    type =  (p_type == PT_LOAD) ? "PT_LOAD" :
+      (p_type == PT_DYNAMIC) ? "PT_DYNAMIC" :
+      (p_type == PT_INTERP) ? "PT_INTERP" :
+      (p_type == PT_NOTE) ? "PT_NOTE" :
+      (p_type == PT_INTERP) ? "PT_INTERP" :
+      (p_type == PT_PHDR) ? "PT_PHDR" :
+      (p_type == PT_TLS) ? "PT_TLS" :
+      (p_type == PT_GNU_EH_FRAME) ? "PT_GNU_EH_FRAME" :
+      (p_type == PT_GNU_STACK) ? "PT_GNU_STACK" :
+      (p_type == PT_GNU_RELRO) ? "PT_GNU_RELRO" : NULL;
 
-  for (int i = 0; i < shnum; ++i) {
-    printf("%2d: %4d '%s'\n", i, shdr[i].sh_name, sh_strtab_p + shdr[i].sh_name);
+    printf("    %2d: [%14p; memsz:%7lx] flags: 0x%x; ", j,
+           (void *) (info->dlpi_addr + info->dlpi_phdr[j].p_vaddr),
+           info->dlpi_phdr[j].p_memsz,
+           info->dlpi_phdr[j].p_flags);
+    if (type != NULL)
+      printf("%s\n", type);
+    else
+      printf("[other (0x%x)]\n", p_type);
   }
+
   return 0;
 }
 
@@ -855,8 +871,8 @@ void cc_register_library(const void* fn) {
                                             &section_size );
 #else
     // handle linux and freebsd
-    printf("%s:%d:%s  linux header = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)header);
-    print_shdr((void*)header);
+    // printf("%s:%d:%s  linux header = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)header);
+    // dl_iterate_phdr(callback,(void*)header);
     uint8_t* p_section = nullptr;
 #endif
     if (p_section!=nullptr) {

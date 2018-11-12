@@ -3627,7 +3627,7 @@ class ClaspSectionMemoryManager : public SectionMemoryManager {
       STACKMAP_LOG(("%s:%d LLVM_STACKMAPS  p_section@%p section_size=%lu\n", __FILE__, __LINE__, (void*)p_section, section_size ));
       llvmo::register_llvm_stackmaps(true, (uintptr_t)p_section,(uintptr_t)p_section+section_size);
     } else {
-      printf("%s:%d     Could not find LLVM_STACKMAPS\n", __FILE__, __LINE__ );
+//      printf("%s:%d     Could not find LLVM_STACKMAPS\n", __FILE__, __LINE__ );
     }
     return result;
   }
