@@ -62,54 +62,250 @@ struct JittedObject {
 };
 
 
-struct StackMap {
+struct FrameMap {
   uintptr_t _FunctionPointer;
   int   _FrameOffset;
   int   _FrameSize;
-  StackMap() {};
-  StackMap(uintptr_t fp, int fo, int fs) : _FunctionPointer(fp), _FrameOffset(fo), _FrameSize(fs) {};
-  StackMap(const StackMap& o) {
+  FrameMap() {};
+  FrameMap(uintptr_t fp, int fo, int fs) : _FunctionPointer(fp), _FrameOffset(fo), _FrameSize(fs) {};
+  FrameMap(const FrameMap& o) {
     this->_FunctionPointer = o._FunctionPointer;
     this->_FrameOffset = o._FrameOffset;
     this->_FrameSize = o._FrameSize;
   }
 };
 
+struct SavedStackMap {
+  bool _Jit;
+  uintptr_t _Address;
+  SavedStackMap(bool j, uintptr_t i) : _Jit(j), _Address(i) {};
+  SavedStackMap() : _Jit(false), _Address(0) {};
+};
 
+struct StackMapInfo {
+  mp::SharedMutex                   _FrameMapsLock;
+  std::map<uintptr_t,FrameMap>      _FrameMaps;
+  mp::SharedMutex                   _StackMapsLock;
+  std::map<uintptr_t,SavedStackMap> _StackMaps;
+  mp::SharedMutex                   _JittedObjectsLock;
+  std::vector<JittedObject>         _JittedObjects;
+  StackMapInfo() : _FrameMapsLock(), _StackMapsLock(), _JittedObjectsLock() {};
+};
 
-std::map<uintptr_t,StackMap>* global_StackMaps = NULL;
-std::vector<JittedObject> global_JittedObjects;
+StackMapInfo* global_StackMapInfo = NULL;
 
-void ensure_global_StackMaps() {
-  if (!global_StackMaps) {
-    global_StackMaps = new std::map<uintptr_t,StackMap>;
+void ensure_global_StackMapInfo() {
+  if (!global_StackMapInfo) {
+    global_StackMapInfo = new StackMapInfo();
   }
 }
 
 void register_stack_map_entry(bool jit, uintptr_t stackMapAddress, uintptr_t functionPointer, int frameOffset, int frameSize) {
-  ensure_global_StackMaps();
-  if (global_StackMaps->find((uintptr_t)stackMapAddress) == global_StackMaps->end()) {
+  ensure_global_StackMapInfo();
+  WITH_READ_WRITE_LOCK(global_StackMapInfo->_FrameMapsLock);
+  if (global_StackMapInfo->_FrameMaps.find((uintptr_t)stackMapAddress) == global_StackMapInfo->_FrameMaps.end()) {
     if (jit) {
       STACKMAP_LOG(("%s:%d:%s Adding stackmap entry for %lx offset: %d  size: %d\n", __FILE__, __LINE__, __FUNCTION__, functionPointer, frameOffset, frameSize));
     }
     if (functionPointer!=0) {
-      StackMap stackmap(functionPointer,frameOffset,frameSize);
-      (*global_StackMaps)[(uintptr_t)functionPointer] = stackmap;
+      FrameMap framemap(functionPointer,frameOffset,frameSize);
+      (global_StackMapInfo->_FrameMaps)[(uintptr_t)functionPointer] = framemap;
     } else {
-      printf("%s:%d:%s stackmap %p entry has a function 0x0 offset: %d  size: %d\n", __FILE__, __LINE__, __FUNCTION__, (void*)stackMapAddress, frameOffset, frameSize );
+      printf("%s:%d:%s framemap %p entry has a function 0x0 offset: %d  size: %d\n", __FILE__, __LINE__, __FUNCTION__, (void*)stackMapAddress, frameOffset, frameSize );
     }
   }
+}
+};
+
+namespace stackmap {
+struct Header {
+  uint8_t  version;
+  uint8_t  reserved0;
+  uint16_t reserved1;
+};
+
+struct StkSizeRecord {
+  uint64_t  FunctionAddress;
+  uint64_t  StackSize;
+  uint64_t  RecordCount;
+};
+
+struct Location{
+  uint8_t  Type;
+  uint8_t   Reserved0;
+  uint16_t  LocationSize;
+  uint16_t  DwarfRegNum;
+  uint16_t  Reserved1;
+  int32_t   OffsetOrSmallConstant;
+};
+
+struct LiveOut {
+  uint16_t DwarfRegNum;
+  uint8_t  Reserved;
+  uint8_t SizeInBytes;
+};
+
+struct StkMapRecord {
+  uint64_t PatchPointID;
+  uint32_t InstructionOffset;
+  uint16_t Reserved;
+  std::vector<Location> Locations;
+  std::vector<LiveOut> LiveOuts;
+};
+
+
+template <typename T>
+T read_then_advance(uintptr_t& address) {
+  uintptr_t original = address;
+  address = address+sizeof(T);
+  return *(T*)original;
+}
+
+void parse_header(uintptr_t& address, Header& header, size_t& NumFunctions, size_t& NumConstants, size_t& NumRecords)
+{
+  header.version = read_then_advance<uint8_t>(address);
+  header.reserved0 = read_then_advance<uint8_t>(address);
+  header.reserved1 = read_then_advance<uint16_t>(address);
+  NumFunctions = read_then_advance<uint32_t>(address);
+  NumConstants = read_then_advance<uint32_t>(address);
+  NumRecords = read_then_advance<uint32_t>(address);
+}
+
+void parse_function(uintptr_t& address, StkSizeRecord& function) {
+  function.FunctionAddress = read_then_advance<uint64_t>(address);
+  function.StackSize = read_then_advance<uint64_t>(address);
+  function.RecordCount = read_then_advance<uint64_t>(address);
+}
+
+void parse_constant(uintptr_t& address, uint64_t& constant) {
+  constant = read_then_advance<uint64_t>(address);
+}
+
+void parse_record(uintptr_t& address, StkMapRecord& record) {
+  record.PatchPointID = read_then_advance<uint64_t>(address);
+  record.InstructionOffset = read_then_advance<uint32_t>(address);
+  record.Reserved = read_then_advance<uint16_t>(address);
+  size_t NumLocations = read_then_advance<uint16_t>(address);
+  record.Locations.resize(NumLocations);
+  for ( size_t index=0; index<NumLocations; ++index ) {
+    record.Locations[index].Type = read_then_advance<uint8_t>(address);
+    record.Locations[index].Reserved0 = read_then_advance<uint8_t>(address);
+    record.Locations[index].LocationSize = read_then_advance<uint16_t>(address);
+    record.Locations[index].DwarfRegNum = read_then_advance<uint16_t>(address);
+    record.Locations[index].Reserved1 = read_then_advance<uint16_t>(address);
+    record.Locations[index].OffsetOrSmallConstant = read_then_advance<int32_t>(address);
+  }
+  if (((uintptr_t)address)&0x7) read_then_advance<uint32_t>(address);
+  if (((uintptr_t)address)&0x7) {
+    printf("%s:%d Address %lX is not word aligned - it must be!!!\n", __FILE__, __LINE__, address );
+    abort();
+  }
+  /*Padding*/ read_then_advance<uint16_t>(address);
+  size_t NumLiveOuts = read_then_advance<uint16_t>(address);
+  record.LiveOuts.resize(NumLiveOuts);
+  for ( size_t index=0; index<NumLiveOuts; ++index ) {
+    record.LiveOuts[index].DwarfRegNum = read_then_advance<uint16_t>(address);
+    record.LiveOuts[index].Reserved = read_then_advance<uint8_t>(address);
+    record.LiveOuts[index].SizeInBytes = read_then_advance<uint8_t>(address);
+  }
+  if (((uintptr_t)address)&0x7) read_then_advance<uint32_t>(address);
+  if (((uintptr_t)address)&0x7) {
+    printf("%s:%d Address %lX is not word aligned - it must be!!!\n", __FILE__, __LINE__, address );
+    abort();
+  }
+}  
+
+
+void walk_one_llvm_stackmap(bool register_, bool jit, uintptr_t& address) {
+  uintptr_t stackMapAddress = address;
+  Header header;
+  size_t NumFunctions;
+  size_t NumConstants;
+  size_t NumRecords;
+  parse_header(address,header,NumFunctions,NumConstants,NumRecords);
+  std::vector<StkSizeRecord> functions;
+  for ( size_t index=0; index<NumFunctions; ++index ) {
+    StkSizeRecord function;
+    parse_function(address,function);
+    functions.push_back(function);
+    // printf("%s:%d:%s register function at 0x%llx\n", __FILE__, __LINE__, __FUNCTION__, function.FunctionAddress);
+  }
+  for ( size_t index=0; index<NumConstants; ++index ) {
+    uint64_t constant;
+    parse_constant(address,constant);
+  }
+  size_t functionIndex = 0;
+  while (functionIndex < functions.size()) {
+    for ( size_t index=0; index<functions[functionIndex].RecordCount; index++) {
+      StkMapRecord record;
+      parse_record(address,record);
+//      printf("%s:%d:%s function at %llX PatchPointId: %llu\n", __FILE__, __LINE__, __FUNCTION__, functions[functionIndex].FunctionAddress,record.PatchPointID);
+      if (register_) {
+        if (record.PatchPointID == 1234567 ) {
+          core::register_stack_map_entry(jit,
+                                         stackMapAddress,
+                                         functions[functionIndex].FunctionAddress,
+                                         record.Locations[0].OffsetOrSmallConstant,
+                                         functions[functionIndex].StackSize);
+        }
+      }
+    }
+    ++functionIndex;
+  }
+}
+
+
+};
+
+;
+
+namespace core {
+
+void register_llvm_stackmaps(bool jit, uintptr_t startAddress, uintptr_t endAddress) {
+  while (startAddress<endAddress) {
+//    printf("%s:%d:%s startAddress: 0x%lx  endAddress: 0x%lx\n", __FILE__, __LINE__, __FUNCTION__, startAddress, endAddress);
+    core::push_one_llvm_stackmap(jit, startAddress);
+  }
+}
+
+
+
+void push_one_llvm_stackmap(bool jit, uintptr_t& address)
+{
+  ensure_global_StackMapInfo();
+  SavedStackMap ss(jit,address);
+  if (global_Started) {
+    WITH_READ_WRITE_LOCK(global_StackMapInfo->_StackMapsLock);
+    global_StackMapInfo->_StackMaps[address] = ss;
+  } else {
+    global_StackMapInfo->_StackMaps[address] = ss;
+  }
+  stackmap::walk_one_llvm_stackmap(false,jit,address);
+}
+
+
+void process_llvm_stackmaps()
+{
+  ensure_global_StackMapInfo();
+  WITH_READ_WRITE_LOCK(global_StackMapInfo->_StackMapsLock);
+  for ( auto entry : global_StackMapInfo->_StackMaps ) {
+    uintptr_t address = entry.second._Address;
+    stackmap::walk_one_llvm_stackmap(true,entry.second._Jit,address);
+  }
+  global_StackMapInfo->_StackMaps.clear();
 }
 
 void register_jitted_object(const std::string& name, uintptr_t address, int size) {
   STACKMAP_LOG(("%s:%d:%s function: %s %lX %d\n", __FILE__, __LINE__, __FUNCTION__, name.c_str(), address, size ));
-  global_JittedObjects.emplace_back(JittedObject(name,address,size));
+  WITH_READ_WRITE_LOCK(global_StackMapInfo->_JittedObjectsLock);
+  global_StackMapInfo->_JittedObjects.emplace_back(JittedObject(name,address,size));
 }
 
 bool lookup_stack_map_entry(uintptr_t functionPointer, int& frameOffset, int& frameSize) {
-  ensure_global_StackMaps();
-  std::map<uintptr_t,StackMap>::iterator find = (*global_StackMaps).find((uintptr_t)functionPointer);
-  if (find != (*global_StackMaps).end()) {
+  ensure_global_StackMapInfo();
+  WITH_READ_LOCK(global_StackMapInfo->_FrameMapsLock);
+  std::map<uintptr_t,FrameMap>::iterator find = (global_StackMapInfo->_FrameMaps).find((uintptr_t)functionPointer);
+  if (find != (global_StackMapInfo->_FrameMaps).end()) {
     frameOffset = find->second._FrameOffset;
     frameSize = find->second._FrameSize;
     return true;
@@ -119,9 +315,10 @@ bool lookup_stack_map_entry(uintptr_t functionPointer, int& frameOffset, int& fr
 
 bool closest_function(uintptr_t returnAddress, uintptr_t& functionAddress, uintptr_t& instructionOffset, int& frameSize, int& frameOffset) {
   instructionOffset = ~0;
-  ensure_global_StackMaps();
+  ensure_global_StackMapInfo();
+  WITH_READ_LOCK(global_StackMapInfo->_FrameMapsLock);
   bool result = false;
-  for ( auto entry : (*global_StackMaps) ) {
+  for ( auto entry : (global_StackMapInfo->_FrameMaps) ) {
     if (entry.second._FunctionPointer<returnAddress) {
       if ((returnAddress-entry.second._FunctionPointer)<instructionOffset) {
         result = true;
@@ -136,7 +333,9 @@ bool closest_function(uintptr_t returnAddress, uintptr_t& functionAddress, uintp
 }
 
 bool function_name(uintptr_t returnAddress, std::string& name, uintptr_t& realFunctionAddress ) {
-  for ( auto entry : global_JittedObjects ) {
+  ensure_global_StackMapInfo();
+  WITH_READ_LOCK(global_StackMapInfo->_JittedObjectsLock);
+  for ( auto entry : global_StackMapInfo->_JittedObjects ) {
     if (entry._ObjectPointer <= returnAddress
         && returnAddress <= (entry._ObjectPointer+entry._Size)) {
       realFunctionAddress = entry._ObjectPointer;
@@ -157,7 +356,14 @@ bool function_name(uintptr_t returnAddress, std::string& name, uintptr_t& realFu
 //  printf("%s:%d:%s found address@%p with dladdr name: %s  realFunctionAddress: %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)returnAddress, name.c_str(), (void*)realFunctionAddress);
   return true;
 }
-  
+
+
+
+
+
+
+
+
   
   
 

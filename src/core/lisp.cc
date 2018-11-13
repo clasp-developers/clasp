@@ -150,6 +150,8 @@ extern "C" void add_history(char *line);
 
 namespace core {
 
+
+bool global_Started = false;
 bool globalTheSystemIsUp = false;
 
 const int Lisp_O::MaxFunctionArguments = 64; //<! See ecl/src/c/main.d:163 ecl_make_cache(64,4096)
@@ -195,8 +197,7 @@ Lisp_O::GCRoots::GCRoots() :
   _Booted(false),
   _KnownSignals(_Unbound<HashTableEq_O>()) {}
 
-Lisp_O::Lisp_O() : _Started(false),
-                   _StackWarnSize(gctools::_global_stack_max_size * 0.9), // 6MB default stack size before warnings
+Lisp_O::Lisp_O() : _StackWarnSize(gctools::_global_stack_max_size * 0.9), // 6MB default stack size before warnings
                    _StackSampleCount(0),
                    _StackSampleSize(0),
                    _StackSampleMax(0),
@@ -682,7 +683,8 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
     this->_PrintSymbolsProperly = true;
   }
   mpip::Mpi_O::initializeGlobals(_lisp);
-  _lisp->_Started = true;
+  global_Started = true;
+  process_llvm_stackmaps();
 }
 
 /*! Get a Str8Ns buffer string from the BufferStr8NsPool.*/

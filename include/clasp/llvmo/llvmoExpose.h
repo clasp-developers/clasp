@@ -4159,7 +4159,6 @@ namespace llvmo {
 
 void initialize_llvmo_expose();
 
-void register_llvm_stackmaps(bool jit, uintptr_t startAddress, uintptr_t endAddress);
 }
 
 

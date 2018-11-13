@@ -56,6 +56,7 @@ extern "C" {
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/stacks.h>
 #include <clasp/core/compiler.h>
+#include <clasp/core/debugger.h>
 #include <clasp/core/random.h>
 #include <clasp/core/primitives.h>
 #include <clasp/core/posixTime.h>
@@ -877,7 +878,7 @@ void cc_register_library(const void* fn) {
 #endif
     if (p_section!=nullptr) {
       STACKMAP_LOG(("%s:%d LLVM_STACKMAPS  p_section@%p section_size=%lu\n", __FILE__, __LINE__, (void*)p_section, section_size ));
-      llvmo::register_llvm_stackmaps(false, (uintptr_t)p_section,(uintptr_t)p_section+section_size);
+      core::register_llvm_stackmaps(false, (uintptr_t)p_section,(uintptr_t)p_section+section_size);
     } else {
       STACKMAP_LOG(("%s:%d     Could not find LLVM_STACKMAPS\n", __FILE__, __LINE__ ));
     }

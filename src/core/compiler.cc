@@ -452,6 +452,7 @@ LOAD:
   }
   T_mv result;
   cc_invoke_startup_functions();
+  process_llvm_stackmaps();
   return (Values(Pointer_O::create(handle), _Nil<T_O>()));
 };
 

@@ -3358,154 +3358,9 @@ SYMBOL_EXPORT_SC_(KeywordPkg,constant);
 SYMBOL_EXPORT_SC_(KeywordPkg,constant_index);
 
 
-namespace stackmap {
-struct Header {
-  uint8_t  version;
-  uint8_t  reserved0;
-  uint16_t reserved1;
-};
-
-struct StkSizeRecord {
-  uint64_t  FunctionAddress;
-  uint64_t  StackSize;
-  uint64_t  RecordCount;
-};
-
-struct Location{
-  uint8_t  Type;
-  uint8_t   Reserved0;
-  uint16_t  LocationSize;
-  uint16_t  DwarfRegNum;
-  uint16_t  Reserved1;
-  int32_t   OffsetOrSmallConstant;
-};
-
-    struct LiveOut {
-      uint16_t DwarfRegNum;
-      uint8_t  Reserved;
-      uint8_t SizeInBytes;
-    };
-
-struct StkMapRecord {
-  uint64_t PatchPointID;
-  uint32_t InstructionOffset;
-  uint16_t Reserved;
-  std::vector<Location> Locations;
-  std::vector<LiveOut> LiveOuts;
-};
-
-
-template <typename T>
-T read_then_advance(uintptr_t& address) {
-  uintptr_t original = address;
-  address = address+sizeof(T);
-  return *(T*)original;
-}
-
-void parse_header(uintptr_t& address, Header& header, size_t& NumFunctions, size_t& NumConstants, size_t& NumRecords)
-{
-  header.version = read_then_advance<uint8_t>(address);
-  header.reserved0 = read_then_advance<uint8_t>(address);
-  header.reserved1 = read_then_advance<uint16_t>(address);
-  NumFunctions = read_then_advance<uint32_t>(address);
-  NumConstants = read_then_advance<uint32_t>(address);
-  NumRecords = read_then_advance<uint32_t>(address);
-}
-
-void parse_function(uintptr_t& address, StkSizeRecord& function) {
-  function.FunctionAddress = read_then_advance<uint64_t>(address);
-  function.StackSize = read_then_advance<uint64_t>(address);
-  function.RecordCount = read_then_advance<uint64_t>(address);
-}
-
-void parse_constant(uintptr_t& address, uint64_t& constant) {
-  constant = read_then_advance<uint64_t>(address);
-}
-
-void parse_record(uintptr_t& address, StkMapRecord& record) {
-  record.PatchPointID = read_then_advance<uint64_t>(address);
-  record.InstructionOffset = read_then_advance<uint32_t>(address);
-  record.Reserved = read_then_advance<uint16_t>(address);
-  size_t NumLocations = read_then_advance<uint16_t>(address);
-  record.Locations.resize(NumLocations);
-  for ( size_t index=0; index<NumLocations; ++index ) {
-    record.Locations[index].Type = read_then_advance<uint8_t>(address);
-    record.Locations[index].Reserved0 = read_then_advance<uint8_t>(address);
-    record.Locations[index].LocationSize = read_then_advance<uint16_t>(address);
-    record.Locations[index].DwarfRegNum = read_then_advance<uint16_t>(address);
-    record.Locations[index].Reserved1 = read_then_advance<uint16_t>(address);
-    record.Locations[index].OffsetOrSmallConstant = read_then_advance<int32_t>(address);
-  }
-  if (((uintptr_t)address)&0x7) read_then_advance<uint32_t>(address);
-  if (((uintptr_t)address)&0x7) {
-    printf("%s:%d Address %lX is not word aligned - it must be!!!\n", __FILE__, __LINE__, address );
-    abort();
-  }
-  /*Padding*/ read_then_advance<uint16_t>(address);
-  size_t NumLiveOuts = read_then_advance<uint16_t>(address);
-  record.LiveOuts.resize(NumLiveOuts);
-  for ( size_t index=0; index<NumLiveOuts; ++index ) {
-    record.LiveOuts[index].DwarfRegNum = read_then_advance<uint16_t>(address);
-    record.LiveOuts[index].Reserved = read_then_advance<uint8_t>(address);
-    record.LiveOuts[index].SizeInBytes = read_then_advance<uint8_t>(address);
-  }
-  if (((uintptr_t)address)&0x7) read_then_advance<uint32_t>(address);
-  if (((uintptr_t)address)&0x7) {
-    printf("%s:%d Address %lX is not word aligned - it must be!!!\n", __FILE__, __LINE__, address );
-    abort();
-  }
-}  
-
-
-void register_one_llvm_stackmap(bool jit, uintptr_t& address) {
-  uintptr_t stackMapAddress = address;
-  core::Symbol_sp types[5] = {kw::_sym_register, kw::_sym_direct, kw::_sym_indirect, kw::_sym_constant, kw::_sym_constant_index};
-  Header header;
-  size_t NumFunctions;
-  size_t NumConstants;
-  size_t NumRecords;
-  parse_header(address,header,NumFunctions,NumConstants,NumRecords);
-  std::vector<StkSizeRecord> functions;
-  for ( size_t index=0; index<NumFunctions; ++index ) {
-    StkSizeRecord function;
-    parse_function(address,function);
-    functions.push_back(function);
-    // printf("%s:%d:%s register function at 0x%llx\n", __FILE__, __LINE__, __FUNCTION__, function.FunctionAddress);
-  }
-  for ( size_t index=0; index<NumConstants; ++index ) {
-    uint64_t constant;
-    parse_constant(address,constant);
-  }
-  size_t functionIndex = 0;
-  while (functionIndex < functions.size()) {
-    for ( size_t index=0; index<functions[functionIndex].RecordCount; index++) {
-      StkMapRecord record;
-      parse_record(address,record);
-//      printf("%s:%d:%s function at %llX PatchPointId: %llu\n", __FILE__, __LINE__, __FUNCTION__, functions[functionIndex].FunctionAddress,record.PatchPointID);
-      if (record.PatchPointID == 1234567 ) {
-        core::register_stack_map_entry(jit,
-                                       stackMapAddress,
-                                       functions[functionIndex].FunctionAddress,
-                                       record.Locations[0].OffsetOrSmallConstant,
-                                       functions[functionIndex].StackSize);
-      }
-    }
-    ++functionIndex;
-  }
-}
-
-
-};
 
 namespace llvmo {
 
-
-void register_llvm_stackmaps(bool jit, uintptr_t startAddress, uintptr_t endAddress) {
-  while (startAddress<endAddress) {
-//    printf("%s:%d:%s startAddress: 0x%lx  endAddress: 0x%lx\n", __FILE__, __LINE__, __FUNCTION__, startAddress, endAddress);
-    stackmap::register_one_llvm_stackmap(jit, startAddress);
-  }
-}
 
 #if 0
 CL_DEFUN core::T_sp llvm_sys__vmmap()
@@ -3593,7 +3448,7 @@ class ClaspSectionMemoryManager : public SectionMemoryManager {
 #endif
     if (p_section!=nullptr) {
       printf("%s:%d LLVM_STACKMAPS  p_section@%p section_size=%lu\n", __FILE__, __LINE__, (void*)p_section, section_size );
-      llvmo::register_llvm_stackmaps(true, (uintptr_t)p_section,(uintptr_t)p_section+section_size);
+      core::register_llvm_stackmaps(true, (uintptr_t)p_section,(uintptr_t)p_section+section_size);
     } else {
 //      printf("%s:%d     Could not find LLVM_STACKMAPS\n", __FILE__, __LINE__ );
     }
@@ -3625,7 +3480,8 @@ class ClaspSectionMemoryManager : public SectionMemoryManager {
     }
     if (p_section!=nullptr) {
       STACKMAP_LOG(("%s:%d LLVM_STACKMAPS  p_section@%p section_size=%lu\n", __FILE__, __LINE__, (void*)p_section, section_size ));
-      llvmo::register_llvm_stackmaps(true, (uintptr_t)p_section,(uintptr_t)p_section+section_size);
+      core::register_llvm_stackmaps(true, (uintptr_t)p_section,(uintptr_t)p_section+section_size);
+      core::process_llvm_stackmaps();
     } else {
 //      printf("%s:%d     Could not find LLVM_STACKMAPS\n", __FILE__, __LINE__ );
     }

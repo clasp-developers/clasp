@@ -360,7 +360,6 @@ public:
   void archive(ArchiveP node);
 #endif // defined(XML_ARCHIVE)
 public:
-  bool _Started;
   GCRoots _Roots;
   // Trap INTERN of a specific symbol to help resolve symbol conflicts
   bool _TrapIntern;
@@ -1046,6 +1045,7 @@ namespace core {
 #else
 #define MONITOR(x)
 #endif
+extern bool global_Started;
 };
 
 
