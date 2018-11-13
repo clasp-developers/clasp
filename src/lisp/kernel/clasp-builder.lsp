@@ -641,11 +641,12 @@ Return files."
   (let ((all-output (output-object-pathnames #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/cclasp" :system system)))
     (link-modules output-file all-output)))
 
-(defun move-to-front (files target)
+(defun maybe-move-to-front (files target)
   "Move the target from inside the files list to the very front"
-  (unless (member target files :test #'equalp) (error "Missing ~a" target))
-  (let ((removed (remove target files :test #'equalp)))
-    (cons target removed)))
+  (if (member target files :test #'equalp)
+      (let ((removed (remove target files :test #'equalp)))
+        (cons target removed))
+      files))
 
 (defun compile-cclasp* (output-file system)
   "Compile the cclasp source code."
@@ -660,8 +661,8 @@ Return files."
     ;; to load inline definitions. We wait for the source code to turn it back on.
     (setf core:*defun-inline-hook* nil)
     ;;; Pull the inline.lisp and fli.lsp files forward because they take the longest to build
-    (setf files (move-to-front files #P"src/lisp/kernel/lsp/fli"))
-    (setf files (move-to-front files #P"src/lisp/kernel/cleavir/inline"))
+    (setf files (maybe-move-to-front files #P"src/lisp/kernel/lsp/fli"))
+    (setf files (maybe-move-to-front files #P"src/lisp/kernel/cleavir/inline"))
     (compile-system files :reload nil)
     (let ((all-output (output-object-pathnames #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/cclasp" :system system)))
       (if (out-of-date-target output-file all-output)
