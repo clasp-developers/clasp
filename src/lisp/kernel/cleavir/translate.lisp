@@ -102,19 +102,16 @@ when this is t a lot of graphs will be generated.")
                    :readably nil
                    :pretty nil))
 
-;;; KLUDGE: Kept mainly for enter-instruction. Rearrange things.
-(defun translate-datum (datum)
+(defun make-datum-alloca (datum)
+  (etypecase datum
+    (cc-mir:typed-lexical-location
+     (alloca (cc-mir:lexical-location-type datum) 1 (datum-name-as-string datum)))
+    (cleavir-ir:lexical-location
+     (alloca-t* (datum-name-as-string datum)))))
+
+(defun datum-alloca (datum)
   (or (gethash datum *vars*)
-      (setf (gethash datum *vars*)
-            (typecase datum
-              (cleavir-ir:values-location) ; do nothing - we don't actually use them
-              ;; note - NOT used for precalc-value-instruction, which works magically.
-              (cleavir-ir:immediate-input (%i64 (cleavir-ir:value datum)))
-              (cc-mir:typed-lexical-location
-               (alloca (cc-mir:lexical-location-type datum) 1 (datum-name-as-string datum)))
-              (cleavir-ir:lexical-location
-               (alloca-t* (datum-name-as-string datum)))
-              (t (error "BUG: add support for translate datum: ~a~%" datum))))))
+      (setf (gethash datum *vars*) (make-datum-alloca datum))))
 
 (defun ssablep (location)
   (let ((defs (cleavir-ir:defining-instructions location)))
@@ -138,25 +135,7 @@ when this is t a lot of graphs will be generated.")
         (unless (null (gethash datum *vars*))
           (error "BUG: SSAable output ~a previously defined" datum))
         (setf (gethash datum *vars*) value))
-      (%store value (translate-datum datum) label)))
-
-(defun translate-lambda-list-item (item)
-  (cond ((symbolp item)
-	 item)
-	((consp item)
-	 (ecase (length item)
-	   (2 (list (translate-datum (first item))
-		    nil
-		    (translate-datum (second item))))
-	   (3 (list (list (first item)
-			  (translate-datum (second item)))
-		    nil
-		    (translate-datum (third item))))))
-	(t
-	 (translate-datum item))))
-
-(defun translate-lambda-list (lambda-list)
-  (mapcar #'translate-lambda-list-item lambda-list))
+      (%store value (datum-alloca datum) label)))
 
 (defun layout-basic-block (basic-block return-value abi current-function-info)
   (with-accessors ((first cleavir-basic-blocks:first-instruction)
