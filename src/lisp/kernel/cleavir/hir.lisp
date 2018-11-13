@@ -326,7 +326,8 @@
 	  (princ original-object s)))))
 
 (defmethod cleavir-ir:clone-initargs append ((instruction precalc-value-instruction))
-  (list :original-object (precalc-value-instruction-original-object instruction)))
+  (list :original-object (precalc-value-instruction-original-object instruction)
+        :index (precalc-value-instruction-index instruction)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
 ;;;
