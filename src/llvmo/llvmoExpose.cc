@@ -3498,28 +3498,18 @@ class ClaspSectionMemoryManager : public SectionMemoryManager {
 
 ClaspJIT_O::ClaspJIT_O() : TM(EngineBuilder().selectTarget()),
                            DL(TM->createDataLayout()),
-//                           NotifyObjectLoaded(*this),
-                           ObjectLayer([]() { return std::make_shared<ClaspSectionMemoryManager>(); }
-/* The following doesn't work in llvm5.0 because of a bug in the definition of NotifyLoadedFtor
-https://groups.google.com/forum/#!topic/llvm-dev/m3JjMNswgcU
-*/
-//#ifdef LLVM5_ORC_NOTIFIER_PATCH
-,
+                           ObjectLayer([]() { return std::make_shared<ClaspSectionMemoryManager>(); },
                                        [this](llvm::orc::RTDyldObjectLinkingLayer::ObjHandleT H,
                                               const RTDyldObjectLinkingLayerBase::ObjectPtr& Obj,
                                               const RuntimeDyld::LoadedObjectInfo &Info) {
                                          this->GDBEventListener->NotifyObjectEmitted(*(Obj->getBinary()), Info);
                                          save_symbol_info(*(Obj->getBinary()), Info);
-                                       }
-//#endif
-)
-                         ,
+                                       }),
                            CompileLayer(ObjectLayer, SimpleCompiler(*TM)),
                            OptimizeLayer(CompileLayer,
                                          [this](std::shared_ptr<Module> M) {
                                            return optimizeModule(std::move(M));
-                                         }
-                                         ),
+                                         }),
                            GDBEventListener(JITEventListener::createGDBRegistrationListener()),
                            ModuleHandles(_Nil<core::T_O>())
 {
