@@ -384,6 +384,10 @@
           do (format stream "  ~a -> ~a [color = pink, style = dashed];~%"
                      me id)))
 
+;;; This will probably break if the CATCH is copied too.
+(defmethod cleavir-ir:clone-initargs append ((instr invoke-instruction))
+  (list :destinations (destinations instr)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Instruction MULTIPLE-VALUE-INVOKE-INSTRUCTION.
@@ -392,6 +396,9 @@
   ((%destinations :accessor destinations :initarg :destinations)))
 
 (defmethod cleavir-ir-graphviz:label ((instruction multiple-value-invoke-instruction)) "mv-invoke")
+
+(defmethod cleavir-ir:clone-initargs append ((instr multiple-value-invoke-instruction))
+  (list :destinations (destinations instr)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
