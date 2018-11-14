@@ -488,6 +488,7 @@ COMPILE-FILE will use the default *clasp-env*."
            (cmp:register-global-function-ref (cleavir-environment:name condition))
            (invoke-restart 'cleavir-cst-to-ast:consider-global))))
     (let* ((ast (cleavir-cst-to-ast:cst-to-ast cst env *clasp-system*)))
+      (clasp-cleavir-ast:introduce-invoke ast)
       (when *interactive-debug* (draw-ast ast))
       (cc-dbg-when *debug-log* (log-cst-to-ast ast))
       (setf *ct-generate-ast* (compiler-timer-elapsed))
