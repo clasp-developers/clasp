@@ -94,7 +94,7 @@ Return T if disassembly was achieved - otherwise NIL"
                              (values desig name)))
         ((and (consp desig) (eq (car desig) 'lambda))
          (let* ((*save-module-for-disassemble* t)
-                (cmp:*saved-module-from-clasp-jit* :no-module))
+                (cmp:*saved-module-from-clasp-jit* nil))
            (compile nil desig)
            (let ((module cmp:*saved-module-from-clasp-jit*))
              (if module
