@@ -3473,15 +3473,13 @@ class ClaspSectionMemoryManager : public SectionMemoryManager {
     bool result = this->SectionMemoryManager::finalizeMemory(ErrMsg);
     unsigned long section_size = 0;
     void* p_section = NULL;
-    if (my_thread->_stackmap>0) {
+    if (my_thread->_stackmap>0 && my_thread->_stackmap_size!=0) {
       p_section = reinterpret_cast<void*>(my_thread->_stackmap);
       section_size = my_thread->_stackmap_size;
-      my_thread->_stackmap = 0;
-    }
-    if (p_section!=nullptr) {
       STACKMAP_LOG(("%s:%d LLVM_STACKMAPS  p_section@%p section_size=%lu\n", __FILE__, __LINE__, (void*)p_section, section_size ));
       core::register_llvm_stackmaps(true, (uintptr_t)p_section,(uintptr_t)p_section+section_size);
       core::process_llvm_stackmaps();
+      my_thread->_stackmap = 0;
     } else {
 //      printf("%s:%d     Could not find LLVM_STACKMAPS\n", __FILE__, __LINE__ );
     }

@@ -204,6 +204,8 @@ namespace core {
 
 
 ThreadLocalState::ThreadLocalState() :
+  _stackmap(0),
+  _stackmap_size(0),
 _PendingInterrupts(_Nil<core::T_O>())
 #ifdef DEBUG_RECURSIVE_ALLOCATIONS
   , _RecursiveAllocationCounter(0)
