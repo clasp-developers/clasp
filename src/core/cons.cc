@@ -174,10 +174,16 @@ Cons_sp Cons_O::createList(T_sp o1, T_sp o2, T_sp o3, T_sp o4, T_sp o5, T_sp o6)
 }
 
 Cons_sp Cons_O::createList(T_sp o1, T_sp o2, T_sp o3, T_sp o4, T_sp o5, T_sp o6, T_sp o7) {
-  return ((Cons_O::create(o1, Cons_O::createList(o2, o3, o4, o5, o6, o7))));
+  return Cons_O::create(o1, Cons_O::createList(o2, o3, o4, o5, o6, o7));
 }
 Cons_sp Cons_O::createList(T_sp o1, T_sp o2, T_sp o3, T_sp o4, T_sp o5, T_sp o6, T_sp o7, T_sp o8) {
-  return ((Cons_O::create(o1, Cons_O::createList(o2, o3, o4, o5, o6, o7, o8))));
+  return Cons_O::create(o1, Cons_O::createList(o2, o3, o4, o5, o6, o7, o8));
+}
+Cons_sp Cons_O::createList(T_sp o1, T_sp o2, T_sp o3, T_sp o4, T_sp o5, T_sp o6, T_sp o7, T_sp o8, T_sp o9) {
+  return Cons_O::create(o1, Cons_O::createList(o2, o3, o4, o5, o6, o7, o8, o9));
+}
+Cons_sp Cons_O::createList(T_sp o1, T_sp o2, T_sp o3, T_sp o4, T_sp o5, T_sp o6, T_sp o7, T_sp o8, T_sp o9, T_sp o10) {
+  return Cons_O::create(o1, Cons_O::createList(o2, o3, o4, o5, o6, o7, o8, o9, o10));
 }
 
 /*! Copied from ecl append_into

@@ -205,7 +205,7 @@ struct ThreadInfo {
   MultipleValues multipleValues;
 };
 #endif
-
+ 
 class Lisp_O {
   friend T_mv core__source_file_info(T_sp sourceFile, String_sp truename, size_t offset, bool useLineno);
   friend gctools::Layout_code* gctools::get_stamp_layout_codes();
@@ -365,7 +365,6 @@ public:
   bool _TrapIntern;
   std::string _TrapInternPackage;
   std::string _TrapInternName;
-  map<string, void *> _OpenDynamicLibraryHandles;
   uint _StackWarnSize;
   uint _StackSampleCount;
   uint _StackSampleSize;
@@ -437,12 +436,6 @@ public:
   // ------------------------------------------------------------
 public:
 //  InvocationHistoryStack &invocationHistoryStack();
-
-public:
-  map<string, void *> &openDynamicLibraryHandles() { return this->_OpenDynamicLibraryHandles; };
-
-public:
-//THREAD_CHANGE  StringOutputStream_sp &bformatStringOutputStream() { return this->_Roots._BformatStringOutputStream; };
 
 public:
   /*! Signal a problem if the stack gets too full*/

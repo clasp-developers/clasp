@@ -874,11 +874,18 @@ void cc_register_library(const void* fn) {
     // handle linux and freebsd
     // printf("%s:%d:%s  linux header = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)header);
     // dl_iterate_phdr(callback,(void*)header);
+    std::string filename(dlinfo.dli_fname);
+    uintptr_t start, size;
     uint8_t* p_section = nullptr;
+    if (elf_find_stackmaps(filename,start,size)) {
+      p_section = (uint8_t*)(start+(uintptr_t)dlinfo.dli_fbase);
+      section_size = size;
+      printf("%s:%d:%s library stackmaps info at %p size: %lu\n", __FILE__, __LINE__, __FUNCTION__, (void*)p_section, size );
+    }
 #endif
     if (p_section!=nullptr) {
       STACKMAP_LOG(("%s:%d LLVM_STACKMAPS  p_section@%p section_size=%lu\n", __FILE__, __LINE__, (void*)p_section, section_size ));
-      core::register_llvm_stackmaps(false, (uintptr_t)p_section,(uintptr_t)p_section+section_size);
+      core::register_llvm_stackmaps((uintptr_t)p_section,(uintptr_t)p_section+section_size);
     } else {
       STACKMAP_LOG(("%s:%d     Could not find LLVM_STACKMAPS\n", __FILE__, __LINE__ ));
     }

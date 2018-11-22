@@ -1604,7 +1604,7 @@ CL_DEFUN void core__debug_invocation_history_frame(size_t v) {
 }
 
 
-core::T_sp capture_arguments(uintptr_t functionAddress, uintptr_t basePointer, int frameOffset)
+core::T_mv capture_arguments(uintptr_t functionAddress, uintptr_t basePointer, int frameOffset)
 {
   size_t argregs = (LCC_ABI_ARGS_IN_REGISTERS-2);
   T_O** register_save_area = (T_O**)(basePointer+frameOffset);
@@ -1619,6 +1619,7 @@ core::T_sp capture_arguments(uintptr_t functionAddress, uintptr_t basePointer, i
   if (nargs>argregs) {
     mem_nargs = nargs-argregs;
   }
+  T_sp closure((gctools::Tagged)register_save_area[0]);
   if (nargs>0) {
     SimpleVector_sp args = SimpleVector_O::make(nargs);
     int iarg = 0;
@@ -1634,9 +1635,9 @@ core::T_sp capture_arguments(uintptr_t functionAddress, uintptr_t basePointer, i
 //    printf("%s:%d:%s  stack argument %lu -> %s\n", __FILE__, __LINE__, __FUNCTION__, i+argregs, _rep_(tobj).c_str());
       (*args)[iarg++] = tobj;
     }
-    return args;
+    return Values(args,closure);
   }
-  return _Nil<T_O>();
+  return Values(_Nil<T_O>(),_Nil<T_O>());
 }
 
 };

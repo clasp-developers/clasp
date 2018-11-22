@@ -871,6 +871,7 @@ def configure(cfg):
     cfg.check_cxx(lib='z', cflags='-Wall', uselib_store='Z')
     if (cfg.env['DEST_OS'] == LINUX_OS ):
         cfg.check_cxx(lib='dl', cflags='-Wall', uselib_store='DL')
+        cfg.check_cxx(lib='elf', cflags='-Wall', uselib_store='ELF')
     cfg.check_cxx(lib='ncurses', cflags='-Wall', uselib_store='NCURSES')
 #    cfg.check_cxx(stlib='lldb', cflags='-Wall', uselib_store='LLDB')
     cfg.check_cxx(lib='m', cflags='-Wall', uselib_store='M')
@@ -1083,6 +1084,7 @@ def configure(cfg):
             cfg.env.append_value('LIB', cfg.env.LIB_FFI)
     if (cfg.env['DEST_OS'] == LINUX_OS ):
         cfg.env.append_value('LIB', cfg.env.LIB_DL)
+        cfg.env.append_value('LIB', cfg.env.LIB_ELF)
         cfg.env.append_value('LIB', cfg.env.LIB_GCC_S)
         cfg.env.append_value('LIB', cfg.env.LIB_UNWIND_X86_64)
         cfg.env.append_value('LIB', cfg.env.LIB_UNWIND)

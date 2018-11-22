@@ -684,7 +684,7 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
   }
   mpip::Mpi_O::initializeGlobals(_lisp);
   global_Started = true;
-  process_llvm_stackmaps();
+//  process_llvm_stackmaps();
 }
 
 /*! Get a Str8Ns buffer string from the BufferStr8NsPool.*/
@@ -2201,15 +2201,6 @@ CL_DEFUN void core__invoke_internal_debugger_from_gdb() {
   eval::funcall(_sym_invokeInternalDebugger);
   SIMPLE_ERROR(BF("This should never happen"));
 };
-
-CL_DEFUN List_sp core__dynamic_library_handles() {
-  ql::list result;
-  for ( auto entry : _lisp->_OpenDynamicLibraryHandles ) {
-    result << Cons_O::create(SimpleBaseString_O::make(entry.first),
-                             Pointer_O::create(entry.second));
-  }
-  return result.cons();
-}
 
 
 CL_LAMBDA(datum &rest arguments);

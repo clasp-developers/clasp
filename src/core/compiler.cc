@@ -431,12 +431,7 @@ LOAD:
 
   int mode = RTLD_NOW | RTLD_GLOBAL; // | RTLD_FIRST;
   // Check if we already have this dynamic library loaded
-  map<string, void *>::iterator handleIt = _lisp->openDynamicLibraryHandles().find(name);
-  if (handleIt != _lisp->openDynamicLibraryHandles().end()) {
-    dlclose(handleIt->second);
-    //	    printf("%s:%d Closing the existing dynamic library %s\n", __FILE__, __LINE__, name.c_str());
-    _lisp->openDynamicLibraryHandles().erase(handleIt);
-  }
+  bool handleIt = if_dynamic_library_loaded_remove(name);
   //	printf("%s:%d Loading dynamic library: %s\n", __FILE__, __LINE__, name.c_str());
   void *handle = dlopen(name.c_str(), mode);
   if (handle == NULL) {
@@ -444,7 +439,7 @@ LOAD:
     SIMPLE_ERROR(BF("Error in dlopen: %s") % error);
     //    return (Values(_Nil<T_O>(), SimpleBaseString_O::make(error)));
   }
-  _lisp->openDynamicLibraryHandles()[name] = handle;
+  add_dynamic_library_handle(name,handle,"_init");
   if (startup_functions_are_waiting()) {
     startup_functions_invoke();
   } else {
@@ -452,7 +447,7 @@ LOAD:
   }
   T_mv result;
   cc_invoke_startup_functions();
-  process_llvm_stackmaps();
+//  process_llvm_stackmaps();
   return (Values(Pointer_O::create(handle), _Nil<T_O>()));
 };
 

@@ -102,9 +102,32 @@ void register_jitted_object(const std::string& name, uintptr_t address, int size
 
 void push_one_llvm_stackmap(bool jit, uintptr_t& startAddress );
 
-void process_llvm_stackmaps();
+void register_llvm_stackmaps(uintptr_t startAddress, uintptr_t endAddress);
 
-void register_llvm_stackmaps(bool jit, uintptr_t startAddress, uintptr_t endAddress);
+ bool elf_find_stackmaps(const std::string& filename,uintptr_t& addr, uintptr_t& size);
+
+ bool if_dynamic_library_loaded_remove(const std::string& libraryName);
+
+ void add_dynamic_library_handle(const std::string& libraryName, void* handle, const std::string& guaranteedSymbol );
+
+
+
+ typedef enum {undefined,symbolicated,lispFrame,cFrame} BacktraceFrameEnum ;
+struct BacktraceEntry {
+  BacktraceEntry() : _Stage(undefined) {};
+  BacktraceFrameEnum   _Stage;
+  uintptr_t            _ReturnAddress;
+  uintptr_t            _FunctionStart;
+  size_t               _FunctionSize;
+  uintptr_t            _BasePointer;
+  int                  _InstructionOffset;
+  int                  _FrameSize;
+  int                  _FrameOffset;
+  FunctionDescription* _FunctionDescription;
+  std::string          _SymbolName;
+  T_sp                 _Closure;
+  T_sp                 _Arguments;
+};
 
 };
 #endif

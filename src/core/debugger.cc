@@ -40,7 +40,7 @@ THE SOFTWARE.
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/sourceFileInfo.h>
 #include <clasp/core/evaluator.h>
-#include <clasp/core/environment.h>
+#include <clasp/core/pathname.h>
 #include <clasp/core/debugger.h>
 #include <clasp/core/hashTableEqual.h>
 #include <clasp/core/primitives.h>
@@ -50,8 +50,29 @@ THE SOFTWARE.
 #include <clasp/core/lispStream.h>
 #include <clasp/llvmo/llvmoExpose.h>
 #include <clasp/core/wrappers.h>
+#ifdef _TARGET_OS_DARWIN
+#import <mach-o/dyld.h>
+#endif
+#ifdef _TARGET_OS_LINUX
+#include <err.h>
+#include <fcntl.h>
+#include <gelf.h>
+#include <stdio.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <dlfcn.h>
+//#include <bsd/vis.h>
+#endif
 
 namespace core {
+//////////////////////////////////////////////////////////////////////
+//
+// Define backtrace
+//
+
+
+
 
 struct JittedObject {
   std::string _Name;
@@ -75,49 +96,92 @@ struct FrameMap {
   }
 };
 
-struct SavedStackMap {
-  bool _Jit;
-  uintptr_t _Address;
-  SavedStackMap(bool j, uintptr_t i) : _Jit(j), _Address(i) {};
-  SavedStackMap() : _Jit(false), _Address(0) {};
+
+struct OpenDynamicLibraryInfo {
+  std::string    _Filename;
+  void*          _Handle;
+  uintptr_t      _TextStart;
+  OpenDynamicLibraryInfo(const std::string& f, void* h, uintptr_t s) : _Filename(f), _Handle(h), _TextStart(s) {};
+  OpenDynamicLibraryInfo() {};
 };
 
-struct StackMapInfo {
-  mp::SharedMutex                   _FrameMapsLock;
-  std::map<uintptr_t,FrameMap>      _FrameMaps;
+struct StackMapRange {
+  uintptr_t _Start;
+  uintptr_t _End;
+  StackMapRange(uintptr_t s, uintptr_t e) : _Start(s), _End(e) {};
+  StackMapRange() : _Start(0), _End(0) {};
+};
+
+struct DebugInfo {
+#ifdef CLASP_THREADS
+  mutable mp::SharedMutex _OpenDynamicLibraryMutex;
+#endif
+  map<std::string, OpenDynamicLibraryInfo> _OpenDynamicLibraryHandles;
   mp::SharedMutex                   _StackMapsLock;
-  std::map<uintptr_t,SavedStackMap> _StackMaps;
+  std::map<uintptr_t,StackMapRange> _StackMaps;
   mp::SharedMutex                   _JittedObjectsLock;
   std::vector<JittedObject>         _JittedObjects;
-  StackMapInfo() : _FrameMapsLock(), _StackMapsLock(), _JittedObjectsLock() {};
+  DebugInfo() {};
 };
 
-StackMapInfo* global_StackMapInfo = NULL;
+DebugInfo* global_DebugInfo = NULL;
 
-void ensure_global_StackMapInfo() {
-  if (!global_StackMapInfo) {
-    global_StackMapInfo = new StackMapInfo();
+DebugInfo& debugInfo() {
+  if (!global_DebugInfo) {
+    global_DebugInfo = new DebugInfo();
   }
+  return *global_DebugInfo;
 }
 
-void register_stack_map_entry(bool jit, uintptr_t stackMapAddress, uintptr_t functionPointer, int frameOffset, int frameSize) {
-  ensure_global_StackMapInfo();
-  WITH_READ_WRITE_LOCK(global_StackMapInfo->_FrameMapsLock);
-  if (global_StackMapInfo->_FrameMaps.find((uintptr_t)stackMapAddress) == global_StackMapInfo->_FrameMaps.end()) {
-    if (jit) {
-      STACKMAP_LOG(("%s:%d:%s Adding stackmap entry for %lx offset: %d  size: %d\n", __FILE__, __LINE__, __FUNCTION__, functionPointer, frameOffset, frameSize));
-    }
-    if (functionPointer!=0) {
-      FrameMap framemap(functionPointer,frameOffset,frameSize);
-      (global_StackMapInfo->_FrameMaps)[(uintptr_t)functionPointer] = framemap;
-    } else {
-      printf("%s:%d:%s framemap %p entry has a function 0x0 offset: %d  size: %d\n", __FILE__, __LINE__, __FUNCTION__, (void*)stackMapAddress, frameOffset, frameSize );
-    }
+void add_dynamic_library_handle(const std::string& libraryName, void* handle, const std::string& oneSymbol) {
+  printf("%s:%d:%s Starting\n", __FILE__, __LINE__, __FUNCTION__ );
+#ifdef CLASP_THREADS
+  WITH_READ_WRITE_LOCK(debugInfo()._OpenDynamicLibraryMutex);
+#endif
+  dlerror();
+  void* oneAddr = dlsym(handle,oneSymbol.c_str());
+  void* dle = dlerror();
+  if (dle) {
+    SIMPLE_ERROR(BF("In library %s could not find symbol %s - it was guaranteed to be there - error %s") % libraryName % oneSymbol % (char*)dle );
   }
+  Dl_info dinfo;
+  int ret = dladdr(oneAddr,&dinfo);
+  if (ret==0) {
+    SIMPLE_ERROR(BF("In library %s could not dladdr address %p for symbol %s") % libraryName % (void*)oneAddr % oneSymbol );
+  }
+  std::string libname(dinfo.dli_fname);
+  OpenDynamicLibraryInfo info(libname,handle,(uintptr_t)dinfo.dli_fbase);
+  debugInfo()._OpenDynamicLibraryHandles[libname] = info;
 }
-};
 
-namespace stackmap {
+bool if_dynamic_library_loaded_remove(const std::string& libraryName) {
+#ifdef CLASP_THREADS
+  WITH_READ_WRITE_LOCK(debugInfo()._OpenDynamicLibraryMutex);
+#endif
+  map<string,OpenDynamicLibraryInfo>::iterator fi = debugInfo()._OpenDynamicLibraryHandles.find(libraryName);
+  bool exists = (fi!=debugInfo()._OpenDynamicLibraryHandles.end());
+  if (exists) {
+    printf("%s:%d:%s What about the stackmaps for this library - you need to remove them as well - I should probably NOT store stackmaps for libraries - but fetch them every time we need a backtrace!\n", __FILE__, __LINE__, __FUNCTION__);
+    dlclose(fi->second._Handle);
+    debugInfo()._OpenDynamicLibraryHandles.erase(libraryName);
+  }
+  return exists;
+}
+
+CL_DEFUN List_sp core__dynamic_library_handles() {
+#ifdef CLASP_THREADS
+  WITH_READ_LOCK(debugInfo()._OpenDynamicLibraryMutex);
+#endif
+  ql::list result;
+  for ( auto entry : debugInfo()._OpenDynamicLibraryHandles ) {
+    result << Cons_O::createList(SimpleBaseString_O::make(entry.second._Filename),
+                                 Pointer_O::create(entry.second._Handle),
+                                 Pointer_O::create((void*)entry.second._TextStart));;
+  }
+  return result.cons();
+}
+
+
 struct Header {
   uint8_t  version;
   uint8_t  reserved0;
@@ -181,19 +245,27 @@ void parse_constant(uintptr_t& address, uint64_t& constant) {
   constant = read_then_advance<uint64_t>(address);
 }
 
-void parse_record(uintptr_t& address, StkMapRecord& record) {
-  record.PatchPointID = read_then_advance<uint64_t>(address);
-  record.InstructionOffset = read_then_advance<uint32_t>(address);
-  record.Reserved = read_then_advance<uint16_t>(address);
+void parse_record(gc::Vec0<BacktraceEntry>& backtrace, uintptr_t& address, const StkSizeRecord& function, StkMapRecord& record) {
+  uint64_t patchPointID = read_then_advance<uint64_t>(address);
+  uint32_t instructionOffset = read_then_advance<uint32_t>(address);
+  /* record.Reserved = */ read_then_advance<uint16_t>(address);
   size_t NumLocations = read_then_advance<uint16_t>(address);
-  record.Locations.resize(NumLocations);
   for ( size_t index=0; index<NumLocations; ++index ) {
-    record.Locations[index].Type = read_then_advance<uint8_t>(address);
-    record.Locations[index].Reserved0 = read_then_advance<uint8_t>(address);
-    record.Locations[index].LocationSize = read_then_advance<uint16_t>(address);
-    record.Locations[index].DwarfRegNum = read_then_advance<uint16_t>(address);
-    record.Locations[index].Reserved1 = read_then_advance<uint16_t>(address);
-    record.Locations[index].OffsetOrSmallConstant = read_then_advance<int32_t>(address);
+    /* record.Locations[index].Type = */ read_then_advance<uint8_t>(address);
+    /* record.Locations[index].Reserved0 = */ read_then_advance<uint8_t>(address);
+    /* record.Locations[index].LocationSize = */ read_then_advance<uint16_t>(address);
+    /* record.Locations[index].DwarfRegNum = */ read_then_advance<uint16_t>(address);
+    /* record.Locations[index].Reserved1 = */ read_then_advance<uint16_t>(address);
+    int32_t offsetOrSmallConstant = read_then_advance<int32_t>(address);
+    if (patchPointID == 1234567 ) {
+      for (size_t j=0; j<backtrace.size(); ++j ) {
+        if (function.FunctionAddress == backtrace[j]._FunctionStart) {
+          backtrace[j]._FrameSize = function.StackSize;
+          backtrace[j]._FrameOffset = offsetOrSmallConstant;
+          break;
+        }
+      }
+    }
   }
   if (((uintptr_t)address)&0x7) read_then_advance<uint32_t>(address);
   if (((uintptr_t)address)&0x7) {
@@ -202,11 +274,10 @@ void parse_record(uintptr_t& address, StkMapRecord& record) {
   }
   /*Padding*/ read_then_advance<uint16_t>(address);
   size_t NumLiveOuts = read_then_advance<uint16_t>(address);
-  record.LiveOuts.resize(NumLiveOuts);
   for ( size_t index=0; index<NumLiveOuts; ++index ) {
-    record.LiveOuts[index].DwarfRegNum = read_then_advance<uint16_t>(address);
-    record.LiveOuts[index].Reserved = read_then_advance<uint8_t>(address);
-    record.LiveOuts[index].SizeInBytes = read_then_advance<uint8_t>(address);
+    /* record.LiveOuts[index].DwarfRegNum = */ read_then_advance<uint16_t>(address);
+    /* record.LiveOuts[index].Reserved = */ read_then_advance<uint8_t>(address);
+    /* record.LiveOuts[index].SizeInBytes = */ read_then_advance<uint8_t>(address);
   }
   if (((uintptr_t)address)&0x7) read_then_advance<uint32_t>(address);
   if (((uintptr_t)address)&0x7) {
@@ -216,18 +287,17 @@ void parse_record(uintptr_t& address, StkMapRecord& record) {
 }  
 
 
-void walk_one_llvm_stackmap(bool register_, bool jit, uintptr_t& address) {
+void walk_one_llvm_stackmap(gc::Vec0<BacktraceEntry>&backtrace, uintptr_t& address) {
   uintptr_t stackMapAddress = address;
   Header header;
   size_t NumFunctions;
   size_t NumConstants;
   size_t NumRecords;
   parse_header(address,header,NumFunctions,NumConstants,NumRecords);
-  std::vector<StkSizeRecord> functions;
+  uintptr_t functionAddress = address;
   for ( size_t index=0; index<NumFunctions; ++index ) {
     StkSizeRecord function;
-    parse_function(address,function);
-    functions.push_back(function);
+    parse_function(address,function); // dummy - used to skip functions
     // printf("%s:%d:%s register function at 0x%llx\n", __FILE__, __LINE__, __FUNCTION__, function.FunctionAddress);
   }
   for ( size_t index=0; index<NumConstants; ++index ) {
@@ -235,41 +305,29 @@ void walk_one_llvm_stackmap(bool register_, bool jit, uintptr_t& address) {
     parse_constant(address,constant);
   }
   size_t functionIndex = 0;
-  while (functionIndex < functions.size()) {
-    for ( size_t index=0; index<functions[functionIndex].RecordCount; index++) {
+  for ( size_t functionIndex = 0; functionIndex < NumFunctions; ++functionIndex ) {
+    StkSizeRecord function;
+    parse_function(functionAddress,function);
+    for ( size_t index=0; index<function.RecordCount; index++) {
       StkMapRecord record;
-      parse_record(address,record);
-//      printf("%s:%d:%s function at %llX PatchPointId: %llu\n", __FILE__, __LINE__, __FUNCTION__, functions[functionIndex].FunctionAddress,record.PatchPointID);
-      if (register_) {
-        if (record.PatchPointID == 1234567 ) {
-          core::register_stack_map_entry(jit,
-                                         stackMapAddress,
-                                         functions[functionIndex].FunctionAddress,
-                                         record.Locations[0].OffsetOrSmallConstant,
-                                         functions[functionIndex].StackSize);
-        }
-      }
+      parse_record(backtrace,address,function,record);
     }
     ++functionIndex;
   }
 }
 
 
-};
-
-;
-
-namespace core {
-
-void register_llvm_stackmaps(bool jit, uintptr_t startAddress, uintptr_t endAddress) {
-  while (startAddress<endAddress) {
-//    printf("%s:%d:%s startAddress: 0x%lx  endAddress: 0x%lx\n", __FILE__, __LINE__, __FUNCTION__, startAddress, endAddress);
-    core::push_one_llvm_stackmap(jit, startAddress);
-  }
+void register_llvm_stackmaps(uintptr_t startAddress, uintptr_t endAddress) {
+  printf("%s:%d:%s startAddress: 0x%lx  endAddress: 0x%lx\n", __FILE__, __LINE__, __FUNCTION__, startAddress, endAddress);
+  WITH_READ_WRITE_LOCK(debugInfo()._StackMapsLock);
+  StackMapRange range(startAddress,endAddress);
+  debugInfo()._StackMaps[startAddress] = range;
 }
 
 
 
+
+#if 0
 void push_one_llvm_stackmap(bool jit, uintptr_t& address)
 {
   ensure_global_StackMapInfo();
@@ -280,27 +338,50 @@ void push_one_llvm_stackmap(bool jit, uintptr_t& address)
   } else {
     global_StackMapInfo->_StackMaps[address] = ss;
   }
-  stackmap::walk_one_llvm_stackmap(false,jit,address);
+  walk_one_llvm_stackmap(false,jit,address);
 }
+#endif
 
-
-void process_llvm_stackmaps()
+void search_stackmaps(gc::Vec0<BacktraceEntry>& backtrace)
 {
-  ensure_global_StackMapInfo();
-  WITH_READ_WRITE_LOCK(global_StackMapInfo->_StackMapsLock);
-  for ( auto entry : global_StackMapInfo->_StackMaps ) {
-    uintptr_t address = entry.second._Address;
-    stackmap::walk_one_llvm_stackmap(true,entry.second._Jit,address);
+  printf("%s:%d:%s Starting\n", __FILE__, __LINE__, __FUNCTION__ );
+  WITH_READ_LOCK(debugInfo()._StackMapsLock);
+  DebugInfo& di = debugInfo();
+  for ( auto entry : di._StackMaps ) {
+    uintptr_t address = entry.second._Start;
+    while (address<entry.second._End) {
+      walk_one_llvm_stackmap(backtrace,address);
+    }
   }
-  global_StackMapInfo->_StackMaps.clear();
 }
-
 void register_jitted_object(const std::string& name, uintptr_t address, int size) {
+  printf("%s:%d:%s Starting\n", __FILE__, __LINE__, __FUNCTION__ );
   STACKMAP_LOG(("%s:%d:%s function: %s %lX %d\n", __FILE__, __LINE__, __FUNCTION__, name.c_str(), address, size ));
-  WITH_READ_WRITE_LOCK(global_StackMapInfo->_JittedObjectsLock);
-  global_StackMapInfo->_JittedObjects.emplace_back(JittedObject(name,address,size));
+  WITH_READ_WRITE_LOCK(debugInfo()._JittedObjectsLock);
+  debugInfo()._JittedObjects.emplace_back(JittedObject(name,address,size));
 }
 
+void search_jitted_objects(gc::Vec0<BacktraceEntry>& backtrace)
+{
+  printf("%s:%d:%s Starting\n", __FILE__, __LINE__, __FUNCTION__ );
+  WITH_READ_LOCK(debugInfo()._JittedObjectsLock);
+  for ( auto entry : debugInfo()._JittedObjects ) {
+    for (size_t j=0; j<backtrace.size(); ++j ) {
+      if (backtrace[j]._Stage != symbolicated) {
+        if (entry._ObjectPointer<=backtrace[j]._ReturnAddress && backtrace[j]._ReturnAddress<(entry._ObjectPointer+entry._Size)) {
+          backtrace[j]._Stage = symbolicated;
+          backtrace[j]._FunctionStart = entry._ObjectPointer;
+          backtrace[j]._FunctionSize = entry._Size;
+          backtrace[j]._SymbolName = entry._Name;
+          break;
+        }
+      }
+    }
+  }
+}
+
+
+#if 0
 bool lookup_stack_map_entry(uintptr_t functionPointer, int& frameOffset, int& frameSize) {
   ensure_global_StackMapInfo();
   WITH_READ_LOCK(global_StackMapInfo->_FrameMapsLock);
@@ -312,7 +393,10 @@ bool lookup_stack_map_entry(uintptr_t functionPointer, int& frameOffset, int& fr
   }
   return false;
 }
+#endif
+ 
 
+#if 0
 bool closest_function(uintptr_t returnAddress, uintptr_t& functionAddress, uintptr_t& instructionOffset, int& frameSize, int& frameOffset) {
   instructionOffset = ~0;
   ensure_global_StackMapInfo();
@@ -340,7 +424,7 @@ bool function_name(uintptr_t returnAddress, std::string& name, uintptr_t& realFu
         && returnAddress <= (entry._ObjectPointer+entry._Size)) {
       realFunctionAddress = entry._ObjectPointer;
       name = entry._Name;
-//      printf("%s:%d:%s found address@%p in JittedObjects name: %s  realFunctionAddress: %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)returnAddress, name.c_str(), (void*)realFunctionAddress);
+      printf("%s:%d:%s found address@%p in JittedObjects name: %s  realFunctionAddress: %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)returnAddress, name.c_str(), (void*)realFunctionAddress);
       return true;
     }
   }
@@ -351,13 +435,224 @@ bool function_name(uintptr_t returnAddress, std::string& name, uintptr_t& realFu
            __FILE__, __LINE__, __FUNCTION__, (void*)returnAddress, dlerror());
     abort();
   }
+  if (dlinfo.dli_sname==0) {
+    stringstream ss;
+    ss << "dladdr-failed-for-return-address(" << (void*)returnAddress << ")";
+    name = ss.str();
+    return true;
+  }
   name = dlinfo.dli_sname;
   realFunctionAddress = (uintptr_t)dlinfo.dli_saddr;
-//  printf("%s:%d:%s found address@%p with dladdr name: %s  realFunctionAddress: %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)returnAddress, name.c_str(), (void*)realFunctionAddress);
+  printf("%s:%d:%s found address@%p with dladdr name: %s  realFunctionAddress: %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)returnAddress, name.c_str(), (void*)realFunctionAddress);
   return true;
 }
+#endif
 
 
+
+
+
+
+#ifdef _TARGET_OS_LINUX
+
+
+std::atomic<bool> global_elf_initialized;
+void ensure_libelf_initialized() {
+  if (!global_elf_initialized) {
+    if (elf_version(EV_CURRENT) == EV_NONE) SIMPLE_ERROR(BF("ELF library initializtion failed %s") % elf_errmsg(-1));
+    global_elf_initialized = true;
+  }
+}
+
+void search_symbol_table(gc::Vec0<BacktraceEntry>&backtrace, const std::string& filename, uintptr_t start)
+{
+  printf("%s:%d:%s Starting\n", __FILE__, __LINE__, __FUNCTION__ );
+  Elf         *elf;
+  Elf_Scn     *scn = NULL;
+  GElf_Shdr   shdr;
+  Elf_Data    *data;
+  int         fd, ii, count;
+  ensure_libelf_initialized();
+  elf_version(EV_CURRENT);
+  fd = open(filename.c_str(), O_RDONLY);
+  elf = elf_begin(fd, ELF_C_READ, NULL);
+  while ((scn = elf_nextscn(elf, scn)) != NULL) {
+    gelf_getshdr(scn, &shdr);
+    if (shdr.sh_type == SHT_SYMTAB) {
+                  /* found a symbol table, go print it. */
+      break;
+    }
+  }
+  data = elf_getdata(scn, NULL);
+  count = shdr.sh_size / shdr.sh_entsize;
+
+      /* Search the symbol names */
+  for (ii = 0; ii < count; ++ii) {
+    GElf_Sym sym;
+    gelf_getsym(data, ii, &sym);
+    if (ELF64_ST_TYPE(sym.st_info) == STT_FUNC) {
+      for ( size_t j=0; j<backtrace.size(); ++j ) {
+        if (backtrace[j]._Stage==undefined) {
+          if ((uintptr_t)sym.st_value<backtrace[j]._ReturnAddress && backtrace[j]._ReturnAddress<((uintptr_t)sym.st_value+sym.st_size)) {
+            backtrace[j]._Stage = symbolicated;
+            backtrace[j]._FunctionStart = (uintptr_t)sym.st_value;
+            backtrace[j]._FunctionSize = (uintptr_t)sym.st_size;
+            backtrace[j]._SymbolName = elf_strptr(elf,shdr.sh_link , (size_t)sym.st_name);
+            break;
+          }
+        }
+      }
+    }
+  }
+  elf_end(elf);
+  close(fd);
+}
+  
+bool elf_find_stackmaps(const std::string& filename, uintptr_t& addr, uintptr_t& size) {
+  printf("%s:%d:%s Starting\n", __FILE__, __LINE__, __FUNCTION__ );
+  int fd ;
+  Elf * e ;
+  const char * name , *p;
+  char* pc [4* sizeof(char)];
+  Elf_Scn * scn ;
+  Elf_Data * data ;
+  GElf_Shdr shdr ;
+  size_t n , shstrndx , sz ;
+  ensure_libelf_initialized();
+//  printf("%s:%d:%s trying to open %s\n", __FILE__, __LINE__, __FUNCTION__, filename.c_str());
+  fd = open(filename.c_str(), O_RDONLY, 0);
+  if (fd < 0) SIMPLE_ERROR(BF("Could not open %s") % filename);
+  if ((e = elf_begin(fd,ELF_C_READ,NULL)) == NULL) {
+    SIMPLE_ERROR(BF("elf_begin failed: %s.") % elf_errmsg(-1));
+  }
+  if ( elf_kind ( e ) != ELF_K_ELF )
+    SIMPLE_ERROR(BF("%s is not an ELF object.") % filename);
+  if ( elf_getshdrstrndx (e, & shstrndx ) != 0)
+    SIMPLE_ERROR(BF("elf_getshdrstrndx () failed : %s.") % elf_errmsg ( -1));
+  scn = NULL ; 
+  while (( scn = elf_nextscn (e, scn )) != NULL ) { 
+    if ( gelf_getshdr ( scn, & shdr ) != & shdr )
+      SIMPLE_ERROR(BF("getshdr() failed : %s.") % elf_errmsg ( -1));
+    if (( name = elf_strptr (e, shstrndx, shdr.sh_name )) == NULL ) 
+      SIMPLE_ERROR(BF("elf_strptr() failed : %s.") % elf_errmsg ( -1));
+    if (strncmp(name,".llvm_stackmaps",strlen(".llvm_stackmaps"))==0) {
+      addr = shdr.sh_addr;
+      size = shdr.sh_size;
+//      ( void ) printf ( "Section %-4.4jd %s address: %lu offset: %lu  size: %lu\n", ( uintmax_t )
+//                        elf_ndxscn ( scn ), name, shdr.sh_addr, shdr.sh_offset, shdr.sh_size );
+      return true;
+    }
+  }
+  ( void ) elf_end( e );
+  ( void ) close( fd );
+  return false;
+}
+
+#if 0
+CL_DEFUN T_mv core__elf_symbols(T_sp tfilename)
+{
+  ensure_libelf_initialized();
+  String_sp filename = gc::As<String_sp>(cl__namestring(tfilename));
+  elf_symbol_table(filename->get_std_string());
+  return Values(_Nil<T_O>(),_Nil<T_O>());
+}
+#endif
+
+CL_DEFUN T_sp core__elf_kind(T_sp tfilename)
+{
+  ensure_libelf_initialized();
+  String_sp filename = gc::As<String_sp>(cl__namestring(tfilename));
+  int fd;
+  Elf *e;
+  const char *k;
+  Elf_Kind ek;
+  fd = open(filename->get_std_string().c_str(), O_RDONLY, 0);
+  if (fd < 0) SIMPLE_ERROR(BF("Could not open %s") % _rep_(tfilename));
+  if ((e = elf_begin(fd,ELF_C_READ,NULL)) == NULL) {
+    SIMPLE_ERROR(BF("elf_begin failed"));
+  }
+  ek = elf_kind(e);
+  switch ( ek ) {
+  case ELF_K_AR :
+      k = " ar (1) archive " ;
+      break ;
+  case ELF_K_ELF :
+      k = " elf object " ;
+      break ;
+  case ELF_K_NONE :
+      k = " data " ;
+      break ;
+  default :
+      k = " unrecognized " ;
+  }
+  return SimpleBaseString_O::make(k);
+}
+
+CL_DEFUN T_mv core__elf_find_stackmaps(T_sp tfilename)
+{
+  ensure_libelf_initialized();
+  String_sp filename = gc::As<String_sp>(cl__namestring(tfilename));
+  uintptr_t addr, size;
+  if (elf_find_stackmaps(filename->get_std_string(),addr,size)) {
+    return Values(core::Integer_O::create(addr), core::Integer_O::create(size));
+  }
+  return Values(_Nil<T_O>(),_Nil<T_O>());
+}
+
+CL_DEFUN T_sp core__scan_elf(T_sp tfilename)
+{
+  ensure_libelf_initialized();
+  int fd ;
+  Elf * e ;
+  const char * name , *p;
+  char* pc [4* sizeof(char)];
+  Elf_Scn * scn ;
+  Elf_Data * data ;
+  GElf_Shdr shdr ;
+  size_t n , shstrndx , sz ;
+  String_sp filename = gc::As<String_sp>(cl__namestring(tfilename));
+  fd = open(filename->get_std_string().c_str(), O_RDONLY, 0);
+  if (fd < 0) SIMPLE_ERROR(BF("Could not open %s") % _rep_(tfilename));
+  if ((e = elf_begin(fd,ELF_C_READ,NULL)) == NULL) {
+    SIMPLE_ERROR(BF("elf_begin failed"));
+  }
+  if ( elf_kind ( e ) != ELF_K_ELF )
+    SIMPLE_ERROR(BF("%s is not an ELF object.") % _rep_(tfilename));
+  if ( elf_getshdrstrndx (e, & shstrndx ) != 0)
+    SIMPLE_ERROR(BF("elf_getshdrstrndx () failed : %s.") % elf_errmsg ( -1));
+  scn = NULL ; 
+  while (( scn = elf_nextscn (e, scn )) != NULL ) { 
+    if ( gelf_getshdr ( scn, & shdr ) != & shdr )
+      SIMPLE_ERROR(BF("getshdr() failed : %s.") % elf_errmsg ( -1));
+    if (( name = elf_strptr (e, shstrndx, shdr.sh_name )) == NULL ) 
+      SIMPLE_ERROR(BF("elf_strptr() failed : %s.") % elf_errmsg ( -1));
+    ( void ) printf ( "Section %-4.4jd %s address: %lu offset: %lu  size: %lu\n", ( uintmax_t )
+                      elf_ndxscn ( scn ), name, shdr.sh_addr, shdr.sh_offset, shdr.sh_size );
+  }
+  if (( scn = elf_getscn (e, shstrndx )) == NULL ) 
+    SIMPLE_ERROR(BF("getscn() failed : %s." ) % elf_errmsg ( -1));
+  if ( gelf_getshdr ( scn, & shdr ) != & shdr )
+    SIMPLE_ERROR(BF(" getshdr( shstrndx ) failed : %s.")% elf_errmsg ( -1));
+  ( void ) printf ( ".shstrab : size =%jd\n", ( uintmax_t )
+                    shdr.sh_size );
+  data = NULL ; n = 0;
+  while ( n < shdr.sh_size &&
+          ( data = elf_getdata ( scn, data )) != NULL ) { 
+    p = ( char *) data->d_buf ;
+    while ( p < ( char *) data->d_buf + data-> d_size ) {
+//      if ( vis( pc, *p, VIS_WHITE, 0)) printf( "%s", pc );
+      printf("%c", *p);
+      n ++; p ++;
+      ( void ) putchar(( n % 16) ? ' ' : '\n' );
+    }
+  }
+  ( void ) putchar( '\n' );
+  ( void ) elf_end( e );
+  ( void ) close( fd );
+  return _Nil<T_O>();
+}
+
+#endif
 
 
 
@@ -464,8 +759,8 @@ T_sp LispDebugger::invoke() {
       break;
     }
     case 'l':
-      dbg_hook("invoked from debugger");
-      break;
+        dbg_hook("invoked from debugger");
+        break;
     case 'g': {
       int is;
       for (is = 1; is < line.size(); is++) {
@@ -489,13 +784,13 @@ T_sp LispDebugger::invoke() {
       break;
     }
     case 'p':
-      af_gotoIhsPrev();
-      this->printExpression();
-      break;
+        af_gotoIhsPrev();
+        this->printExpression();
+        break;
     case 'n':
-      af_gotoIhsNext();
-      this->printExpression();
-      break;
+        af_gotoIhsNext();
+        this->printExpression();
+        break;
     case 'D': {
       T_sp func = core__ihs_fun(core__ihs_current_frame());
       write_bf_stream(BF("Current function: %s\n") % _rep_(func));
@@ -740,16 +1035,21 @@ CL_DEFUN void core__low_level_backtrace_with_args() {
 }
 
 
-int safe_backtrace(void**& return_buffer)
+void safe_backtrace(gc::Vec0<BacktraceEntry>& backtrace_)
 {
 #define START_BACKTRACE_SIZE 512
+  void** return_buffer;
   size_t num = START_BACKTRACE_SIZE;
   for ( int i=0; i<100; ++i ) {
     void** buffer = (void**)malloc(sizeof(void*)*num);
     size_t returned = backtrace(buffer,num);
     if (returned < num) {
-      return_buffer = buffer;
-      return returned;
+      backtrace_.resize(returned);
+      for ( size_t i=0; i<returned; ++i ) {
+        backtrace_[i]._ReturnAddress = (uintptr_t)buffer[i];
+      }
+      free(buffer);
+      return;
     }
     free(buffer);
     num = num*2;
@@ -809,68 +1109,66 @@ CL_DEFUN T_sp core__libunwind_backtrace_as_list() {
   return _Nil<T_O>();
 }
 
+SYMBOL_EXPORT_SC_(CorePkg,make_backtrace_frame);
+SYMBOL_EXPORT_SC_(KeywordPkg,function_name);
+SYMBOL_EXPORT_SC_(KeywordPkg,arguments);
+SYMBOL_EXPORT_SC_(KeywordPkg,closure);
+
 CL_LAMBDA(&optional (depth 0));
 CL_DECLARE();
 CL_DOCSTRING("backtrace");
 CL_DEFUN T_sp core__clib_backtrace_as_list() {
+  Vector_sp result = core__make_vector(_lisp->_true(),16,true,core::make_fixnum(0));
   char *funcname = (char *)malloc(1024);
   size_t funcnamesize = 1024;
-  void** buffer = NULL;
   uintptr_t stackTop = (uintptr_t)my_thread_low_level->_StackTop;
-  int nptrs = safe_backtrace(buffer);
-  char **strings = backtrace_symbols(buffer, nptrs);
-  if (strings == NULL) {
-    if (buffer) free(buffer);
-    return _Nil<T_O>();
-  } else {
-    nptrs -= 2; // drop the last two framesx
-    ql::list result;
-    void* bp = __builtin_frame_address(0);
-    for (int i = 0; i < nptrs; ++i) {
-      std::string str(strings[i]);
-      SimpleBaseString_sp sstr = SimpleBaseString_O::make(str);
-//      printf("%s:%d:%s --- %s\n", __FILE__, __LINE__, __FUNCTION__, str.c_str());
-      Pointer_sp ptr = Pointer_O::create(buffer[i]);
-      uintptr_t functionAddress;
-      uintptr_t instructionOffset;
-      int frameSize;
-      int frameOffset;
-      bool stackmap_found = closest_function((uintptr_t)buffer[i],functionAddress,instructionOffset,frameSize,frameOffset);
-      std::string closest_name = "";
-      T_sp args = _Nil<T_O>();
-      uintptr_t realFunctionAddress = 0;
-      function_name((uintptr_t)buffer[i],closest_name,realFunctionAddress);
-//      printf("%s:%d:%s  closest_name = %s bp=%lX %d instructionOffset: %lu\n", __FILE__, __LINE__, __FUNCTION__, closest_name.c_str(), (uintptr_t)bp, frameOffset, instructionOffset);
-      if (stackmap_found && (functionAddress == realFunctionAddress)) {
-        args = capture_arguments(realFunctionAddress,(uintptr_t)bp,frameOffset);
-      }
-      //printf("func: %s  bp = %p\n", str.c_str(), bp);
-      T_sp frame;
-      if (bp) {
-        frame = Pointer_O::create(bp);
-        bp = *(void**)bp;
-        // Once we hit what we consider the top (bottom) stack pointer stop looking
-        // by setting bp to NULL
-        if ((uintptr_t)bp>stackTop) bp = NULL;
-      } else {
-        frame = _Nil<T_O>();
-      }
-      T_sp tname = _Nil<T_O>();
-      if (closest_name != "") {
-        tname = core::SimpleBaseString_O::make(closest_name);
-      }
-      result << Cons_O::createList(ptr,sstr,frame,
-                                   tname,
-                                   core::make_fixnum(instructionOffset),
-                                   core::make_fixnum(frameSize),
-                                   core::make_fixnum(frameOffset),
-                                   args);
+  gc::Vec0<BacktraceEntry> backtrace;
+  safe_backtrace(backtrace);
+  size_t nptrs = backtrace.size()-2;
+  nptrs -= 2; // drop the last two frames
+  // Fill in the base pointers
+  void* bp = __builtin_frame_address(0);
+  for (size_t i = 0; i < nptrs; ++i) {
+    if (bp) {
+      backtrace[i]._BasePointer = (uintptr_t)bp;
+      bp = *(void**)bp;
     }
-    if (buffer) free(buffer);
-    if (strings) free(strings);
-    return result.cons();
   }
-};
+  List_sp libraryInfo = core__dynamic_library_handles();
+  for ( auto cur : libraryInfo ) {
+    String_sp filename = gc::As<String_sp>(oCar(cur));
+    Pointer_sp handle = gc::As<Pointer_sp>(oCadr(cur));
+    Pointer_sp textStart = gc::As<Pointer_sp>(oCaddr(cur));
+    search_symbol_table(backtrace,filename->get_std_string(),(uintptr_t)textStart->ptr());
+  }
+  search_jitted_objects(backtrace);
+  search_stackmaps(backtrace);
+  // Now get the arguments
+  for ( size_t index=0; index<backtrace.size(); ++index) {
+    if (backtrace[index]._Stage == lispFrame) {
+      T_mv arg_mv = capture_arguments(backtrace[index]._FunctionStart,backtrace[index]._BasePointer,backtrace[index]._FrameOffset );
+      backtrace[index]._Arguments = arg_mv;
+      backtrace[index]._Closure = arg_mv.second();
+    } else {
+      backtrace[index]._Arguments = _Nil<T_O>();
+      backtrace[index]._Closure = _Nil<T_O>();
+    }
+  }
+  // fill in the interpreted frames here
+
+  // Copy the frames into a vector
+  for ( size_t i=0; i<backtrace.size(); ++i ) {
+    if (backtrace[i]._Stage == lispFrame) {
+      T_sp entry = eval::funcall(_sym_make_backtrace_frame,
+                                 kw::_sym_function_name, SimpleBaseString_O::make(backtrace[i]._SymbolName),
+                                 kw::_sym_arguments, backtrace[i]._Arguments,
+                                 kw::_sym_closure, backtrace[i]._Closure);
+      result->vectorPushExtend(entry);
+    }
+  }
+  return result;
+}
+
 
 CL_LAMBDA(&optional (depth 0));
 CL_DECLARE();
