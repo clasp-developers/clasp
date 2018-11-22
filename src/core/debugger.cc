@@ -1160,9 +1160,10 @@ CL_DEFUN T_sp core__clib_backtrace_as_list() {
   for ( size_t i=0; i<backtrace.size(); ++i ) {
     if (backtrace[i]._Stage == lispFrame) {
       T_sp entry = eval::funcall(_sym_make_backtrace_frame,
-                                 kw::_sym_function_name, SimpleBaseString_O::make(backtrace[i]._SymbolName),
-                                 kw::_sym_arguments, backtrace[i]._Arguments,
-                                 kw::_sym_closure, backtrace[i]._Closure);
+                                 INTERN_(kw,return_address),Pointer_O::create(backtrace[i]._ReturnAddress),
+                                 INTERN_(kw,function_name), SimpleBaseString_O::make(backtrace[i]._SymbolName),
+                                 INTERN_(kw,arguments),backtrace[i]._Arguments,
+                                 INTERN_(kw,closure),backtrace[i]._Closure));
       result->vectorPushExtend(entry);
     }
   }

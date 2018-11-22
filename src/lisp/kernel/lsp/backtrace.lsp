@@ -20,6 +20,7 @@
   base-pointer
   next-base-pointer
   arguments
+  closure
   shadow-frame)
 
 
