@@ -104,8 +104,6 @@ void push_one_llvm_stackmap(bool jit, uintptr_t& startAddress );
 
 void register_llvm_stackmaps(uintptr_t startAddress, uintptr_t endAddress);
 
- bool elf_find_stackmaps(const std::string& filename,uintptr_t& addr, uintptr_t& size);
-
  bool if_dynamic_library_loaded_remove(const std::string& libraryName);
 
  void add_dynamic_library_handle(const std::string& libraryName, void* handle, const std::string& guaranteedSymbol );
@@ -114,7 +112,7 @@ void register_llvm_stackmaps(uintptr_t startAddress, uintptr_t endAddress);
 
  typedef enum {undefined,symbolicated,lispFrame,cFrame} BacktraceFrameEnum ;
 struct BacktraceEntry {
-  BacktraceEntry() : _Stage(undefined) {};
+BacktraceEntry() : _Stage(undefined),_ReturnAddress(0),_FunctionStart(0),_FunctionSize(0),_BasePointer(0),_InstructionOffset(0),_FrameSize(0),_FrameOffset(0),_Closure(_Nil<T_O>()), _Arguments(_Nil<T_O>()),_FunctionDescription(0) {};
   BacktraceFrameEnum   _Stage;
   uintptr_t            _ReturnAddress;
   uintptr_t            _FunctionStart;
@@ -123,10 +121,10 @@ struct BacktraceEntry {
   int                  _InstructionOffset;
   int                  _FrameSize;
   int                  _FrameOffset;
-  FunctionDescription* _FunctionDescription;
   std::string          _SymbolName;
   T_sp                 _Closure;
   T_sp                 _Arguments;
+  uintptr_t            _FunctionDescription;
 };
 
 };

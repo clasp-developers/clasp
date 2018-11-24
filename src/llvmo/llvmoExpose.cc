@@ -3400,12 +3400,20 @@ class ClaspSectionMemoryManager : public SectionMemoryManager {
     return ptr;
   }
 
+#ifdef _TARGET_OS_DARWIN    
+  #define STACKMAPS_NAME "__llvm_stackmaps"
+#elif defined(_TARGET_OS_LINUX)
+  #define STACKMAPS_NAME ".llvm_stackmaps"
+#else
+  #error "What is the name of stackmaps section on this OS??? __llvm_stackmaps or .llvm_stackmaps"
+#endif
   uint8_t* allocateDataSection( uintptr_t Size, unsigned Alignment,
                                 unsigned SectionID,
                                 StringRef SectionName,
                                 bool isReadOnly) {
     uint8_t* ptr = this->SectionMemoryManager::allocateDataSection(Size,Alignment,SectionID,SectionName,isReadOnly);
-    if (SectionName.str() == "__llvm_stackmaps") {
+//    printf("%s:%d:%s Allocating section: %s\n", __FILE__, __LINE__, __FUNCTION__, SectionName.str().c_str());
+    if (SectionName.str() == STACKMAPS_NAME) {
       my_thread->_stackmap = (uintptr_t)ptr;
       my_thread->_stackmap_size = (size_t)Size;
       STACKMAP_LOG(("%s:%d  recorded __llvm_stackmap allocateDataSection Size: %lu  Alignment: %u SectionId: %u SectionName: %s isReadOnly: %d --> allocated at: %p\n",
@@ -3448,7 +3456,7 @@ class ClaspSectionMemoryManager : public SectionMemoryManager {
 #endif
     if (p_section!=nullptr) {
       printf("%s:%d LLVM_STACKMAPS  p_section@%p section_size=%lu\n", __FILE__, __LINE__, (void*)p_section, section_size );
-      core::register_llvm_stackmaps((uintptr_t)p_section,(uintptr_t)p_section+section_size);
+//      core::register_llvm_stackmaps((uintptr_t)p_section,(uintptr_t)p_section+section_size);
     } else {
 //      printf("%s:%d     Could not find LLVM_STACKMAPS\n", __FILE__, __LINE__ );
     }

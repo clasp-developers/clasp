@@ -165,10 +165,14 @@ Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
     if (!gotQuicklispPath) {
       std::string opt_clasp_quicklisp_string = "/opt/clasp/lib/quicklisp/";
       bf::path opt_clasp_quicklisp_path = bf::path(opt_clasp_quicklisp_string);
-      if (bf::exists(opt_clasp_quicklisp_path)) {
-        this->_Directories->_QuicklispDir = opt_clasp_quicklisp_path;
-      } else {
+      try {
+        if (bf::exists(opt_clasp_quicklisp_path)) {
+          this->_Directories->_QuicklispDir = opt_clasp_quicklisp_path;
+        } else {
         // there is no quicklisp directory
+        }
+      } catch (...) {
+        // do nothing on error
       }
     }
   }

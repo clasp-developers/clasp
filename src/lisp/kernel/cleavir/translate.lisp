@@ -530,7 +530,7 @@ Does not hoist."
   ;; Note: We should not have an env parameter. It is only required due to
   ;; how types work at the moment, and will be eliminated as soon as practical.
   (let ((system *clasp-system*))
-    (cleavir-ir-graphviz:draw-flowchart hir "/tmp/hir.dot")
+    ;;(cleavir-ir-graphviz:draw-flowchart hir "/tmp/hir.dot")
     (my-hir-transformations hir system env)
     (quick-draw-hir hir "hir-pre-mir")
     (let ((function-info-map (make-function-info-map hir)))

@@ -174,7 +174,7 @@ inline LCC_RETURN funcall(T_sp fn, ARG0 arg0, ARG1 arg1, ARG2 arg2) {
   inline LCC_RETURN funcall(T_sp fn, ARG0 arg0, ARG1 arg1, ARG2 arg2, ARG3 arg3, ARGS &&... args) {
   /* If the following assertion fails then the funcall functions in this header
      need to be made consistent with lispCallingConvention.h */
-  ASSERT(3 == LCC_ARGS_IN_REGISTERS);
+  ASSERT(4 == LCC_ARGS_IN_REGISTERS);
   Function_sp func = interpreter_lookup_function_or_error(fn, _Nil<T_O>());
   ASSERT(gc::IsA<Function_sp>(func));
   size_t vnargs = sizeof...(ARGS);

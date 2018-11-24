@@ -767,93 +767,9 @@ void invokeTopLevelFunction(core::T_mv *resultP,
 #endif
 
 
-#if defined(_TARGET_OS_DARWIN)
-uint8_t * 
-mygetsectiondata(
-                 void* vmhp,
-                 const char *segname,
-                 const char *sectname,
-                 unsigned long *size)
-{
-  const struct mach_header_64* mhp = (const struct mach_header_64*)vmhp;
-  struct segment_command_64 *sgp;
-  struct section_64 *sp;
-  uint32_t i, j;
-  intptr_t slide;
-    
-  slide = 0;
-  sp = 0;
-  sgp = (struct segment_command_64 *)
-    ((char *)mhp + sizeof(struct mach_header_64));
-  for(i = 0; i < mhp->ncmds; i++){
-    if(sgp->cmd == LC_SEGMENT_64){
-      if(strcmp(sgp->segname, "__TEXT") == 0){
-        slide = (uintptr_t)mhp - sgp->vmaddr;
-      }
-      if(strncmp(sgp->segname, segname, sizeof(sgp->segname)) == 0){
-        sp = (struct section_64 *)((char *)sgp +
-                                   sizeof(struct segment_command_64));
-        for(j = 0; j < sgp->nsects; j++){
-          if(strncmp(sp->sectname, sectname,
-                     sizeof(sp->sectname)) == 0 &&
-             strncmp(sp->segname, segname,
-                     sizeof(sp->segname)) == 0){
-            *size = sp->size;
-//   return (uint8_t*)sp;
-            uint8_t* addr = ((uint8_t *)(sp->addr) + slide);
-            return addr;
-          }
-          sp = (struct section_64 *)((char *)sp +
-                                     sizeof(struct section_64));
-        }
-      }
-    }
-    sgp = (struct segment_command_64 *)((char *)sgp + sgp->cmdsize);
-  }
-  return(0);
-}
-#endif
-#if defined(_TARGET_OS_LINUX) || defined(_TARGET_OS_FREEBSD)
-
-static int
-callback(struct dl_phdr_info *info, size_t size, void *data)
-{
-  const char *type;
-  int p_type, j;
-
-  printf("Name: \"%s\" (%d segments)\n", info->dlpi_name,
-         info->dlpi_phnum);
-
-  for (j = 0; j < info->dlpi_phnum; j++) {
-    p_type = info->dlpi_phdr[j].p_type;
-    type =  (p_type == PT_LOAD) ? "PT_LOAD" :
-      (p_type == PT_DYNAMIC) ? "PT_DYNAMIC" :
-      (p_type == PT_INTERP) ? "PT_INTERP" :
-      (p_type == PT_NOTE) ? "PT_NOTE" :
-      (p_type == PT_INTERP) ? "PT_INTERP" :
-      (p_type == PT_PHDR) ? "PT_PHDR" :
-      (p_type == PT_TLS) ? "PT_TLS" :
-      (p_type == PT_GNU_EH_FRAME) ? "PT_GNU_EH_FRAME" :
-      (p_type == PT_GNU_STACK) ? "PT_GNU_STACK" :
-      (p_type == PT_GNU_RELRO) ? "PT_GNU_RELRO" : NULL;
-
-    printf("    %2d: [%14p; memsz:%7lx] flags: 0x%x; ", j,
-           (void *) (info->dlpi_addr + info->dlpi_phdr[j].p_vaddr),
-           info->dlpi_phdr[j].p_memsz,
-           info->dlpi_phdr[j].p_flags);
-    if (type != NULL)
-      printf("%s\n", type);
-    else
-      printf("[other (0x%x)]\n", p_type);
-  }
-
-  return 0;
-}
-
-#endif
-
 
 void cc_register_library(const void* fn) {
+#if 0
 //  printf("%s:%d header -> %p\n", __FILE__, __LINE__, header );
   if (fn) {
     Dl_info dlinfo;
@@ -870,18 +786,10 @@ void cc_register_library(const void* fn) {
                                             "__LLVM_STACKMAPS",
                                             "__llvm_stackmaps",
                                             &section_size );
+    printf("%s:%d:%s Eliminate work to initialize stackmaps on darwin\n", __FILE__, __LINE__, __FUNCTION__);
 #else
-    // handle linux and freebsd
-    // printf("%s:%d:%s  linux header = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)header);
-    // dl_iterate_phdr(callback,(void*)header);
-    std::string filename(dlinfo.dli_fname);
-    uintptr_t start, size;
-    uint8_t* p_section = nullptr;
-    if (elf_find_stackmaps(filename,start,size)) {
-      p_section = (uint8_t*)(start+(uintptr_t)dlinfo.dli_fbase);
-      section_size = size;
-      printf("%s:%d:%s library stackmaps info at %p size: %lu\n", __FILE__, __LINE__, __FUNCTION__, (void*)p_section, size );
-    }
+    uint8_t* p_section = NULL;
+    printf("%s:%d:%s Nothing is done to initialize stackmaps on linux\n", __FILE__, __LINE__, __FUNCTION__);
 #endif
     if (p_section!=nullptr) {
       STACKMAP_LOG(("%s:%d LLVM_STACKMAPS  p_section@%p section_size=%lu\n", __FILE__, __LINE__, (void*)p_section, section_size ));
@@ -890,6 +798,7 @@ void cc_register_library(const void* fn) {
       STACKMAP_LOG(("%s:%d     Could not find LLVM_STACKMAPS\n", __FILE__, __LINE__ ));
     }
   }
+#endif
 }
 
 

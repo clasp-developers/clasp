@@ -1000,10 +1000,11 @@ def configure(cfg):
             cfg.env.append_value('LINKFLAGS', '-fuse-ld=lld-%d.0' % CLANG_VERSION)
             log.info("Using the lld linker")
         else:
+#            cfg.env.append_value('LINKFLAGS', '-fuse-ld=lld-%d.0' % CLANG_VERSION)
             cfg.env.append_value('LINKFLAGS', '-fuse-ld=gold')
             log.info("Using the gold linker")
-        cfg.env.append_value('LINKFLAGS', ['-stdlib=libstdc++'])
-        cfg.env.append_value('LINKFLAGS', ['-lstdc++'])
+        cfg.env.append_value('LINKFLAGS', ['-stdlib=libstdc++']) # libstdc++/GCC libc++/clang
+        cfg.env.append_value('LINKFLAGS', ['-lstdc++']) # -lstdc++/GCC -lc++/clang
         cfg.env.append_value('LINKFLAGS', '-pthread')
     elif (cfg.env['DEST_OS'] == FREEBSD_OS ):
         #--lto-O0 is not effective for avoiding linker hangs
