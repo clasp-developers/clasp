@@ -439,7 +439,7 @@ LOAD:
     SIMPLE_ERROR(BF("Error in dlopen: %s") % error);
     //    return (Values(_Nil<T_O>(), SimpleBaseString_O::make(error)));
   }
-  add_dynamic_library_handle(name,handle,"_init");
+//  add_dynamic_library_handle(name,handle,"_init");
   if (startup_functions_are_waiting()) {
     startup_functions_invoke();
   } else {

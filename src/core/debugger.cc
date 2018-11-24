@@ -26,7 +26,7 @@ THE SOFTWARE.
 /* -^- */
 #define DEBUG_LEVEL_FULL
 
-#if 0
+#if 1
 #define BT_LOG(msg) {char buf[1024]; sprintf msg; LOG(BF("%s") % buf);}
 #else
 #define BT_LOG(msg)
@@ -58,6 +58,7 @@ THE SOFTWARE.
 #include <clasp/core/wrappers.h>
 #ifdef _TARGET_OS_DARWIN
 #import <mach-o/dyld.h>
+#import <mach-o/nlist.h>
 #endif
 #ifdef _TARGET_OS_LINUX
 #include <err.h>
@@ -254,19 +255,21 @@ struct ScanInfo {
     return *(T*)original;
   }
 
-  void parse_header(uintptr_t& address, Header& header, size_t& NumFunctions, size_t& NumConstants, size_t& NumRecords)
+// Return true if the header was read
+bool parse_header(uintptr_t& address, uintptr_t end, Header& header, size_t& NumFunctions, size_t& NumConstants, size_t& NumRecords)
   {
     uintptr_t headerAddress = address;
     header.version = read_then_advance<uint8_t>(address);
     header.reserved0 = read_then_advance<uint8_t>(address);
     header.reserved1 = read_then_advance<uint16_t>(address);
-    if (header.version!=3 || header.reserved0 !=0 || header.reserved1 !=0) {
-      printf("%s:%d:%s stackmap header @%p is out of alignment\n", __FILE__, __LINE__, __FUNCTION__, (void*)headerAddress );
-      abort();
-    }
+    if (address>=end) return false;
     NumFunctions = read_then_advance<uint32_t>(address);
+    if (address>=end) return false;
     NumConstants = read_then_advance<uint32_t>(address);
+    if (address>=end) return false;
     NumRecords = read_then_advance<uint32_t>(address);
+    if (address>=end) return false;
+    return true;
   }
 
   void parse_function(uintptr_t& address, StkSizeRecord& function) {
@@ -316,7 +319,11 @@ struct ScanInfo {
         }
       }
     }
-    if (((uintptr_t)address)&0x7) read_then_advance<uint32_t>(address);
+    BT_LOG((buf,"Done with records at %p\n", (void*)address));
+    if (((uintptr_t)address)&0x7) {
+      read_then_advance<uint32_t>(address);
+      BT_LOG((buf,"advanced to alignment %p\n", (void*)address));
+    }
     if (((uintptr_t)address)&0x7) {
       printf("%s:%d Address %lX is not word aligned - it must be!!!\n", __FILE__, __LINE__, address );
       abort();
@@ -328,7 +335,10 @@ struct ScanInfo {
       /* record.LiveOuts[index].Reserved = */ read_then_advance<uint8_t>(address);
       /* record.LiveOuts[index].SizeInBytes = */ read_then_advance<uint8_t>(address);
     }
-    if (((uintptr_t)address)&0x7) read_then_advance<uint32_t>(address);
+    if (((uintptr_t)address)&0x7) {
+      read_then_advance<uint32_t>(address);
+      BT_LOG((buf,"advanced to alignment %p\n", (void*)address));
+    }
     if (((uintptr_t)address)&0x7) {
       printf("%s:%d Address %lX is not word aligned - it must be!!!\n", __FILE__, __LINE__, address );
       abort();
@@ -336,37 +346,43 @@ struct ScanInfo {
   }  
 
 
-  void walk_one_llvm_stackmap(gc::Vec0<BacktraceEntry>&backtrace, uintptr_t& address) {
-    uintptr_t stackMapAddress = address;
-    Header header;
-    size_t NumFunctions;
-    size_t NumConstants;
-    size_t NumRecords;
-    parse_header(address,header,NumFunctions,NumConstants,NumRecords);
-    uintptr_t functionAddress = address;
-    BT_LOG((buf,"PASS1 Parse function block first pass %p\n", (void*)functionAddress ));
-  
-    for ( size_t index=0; index<NumFunctions; ++index ) {
-      StkSizeRecord function;
-      parse_function(address,function); // dummy - used to skip functions
-      BT_LOG((buf,"PASS1 Found function #%lu at %p\n", index, (void*)function.FunctionAddress));
-    }
-    for ( size_t index=0; index<NumConstants; ++index ) {
-      uint64_t constant;
-      parse_constant(address,constant);
-    }
-    size_t functionIndex = 0;
-    BT_LOG((buf,"Parse record block %p\n", (void*)address ));
-    for ( size_t functionIndex = 0; functionIndex < NumFunctions; ++functionIndex ) {
-      StkSizeRecord function;
-      parse_function(functionAddress,function);
-      BT_LOG((buf,"PASS2 Examining function #%lu at %p - %lu records\n", functionIndex, (void*)function.FunctionAddress, function.RecordCount));
-      for ( size_t index=0; index<function.RecordCount; index++) {
-        StkMapRecord record;
-        parse_record(backtrace,address,functionIndex,function,record);
-      }
+bool walk_one_llvm_stackmap(gc::Vec0<BacktraceEntry>&backtrace, uintptr_t& address, uintptr_t end) {
+  uintptr_t stackMapAddress = address;
+  Header header;
+  size_t NumFunctions;
+  size_t NumConstants;
+  size_t NumRecords;
+  bool read = parse_header(address,end,header,NumFunctions,NumConstants,NumRecords);
+  if (!read) return false; // There was no proper header - return
+  if (header.version!=3 || header.reserved0 !=0 || header.reserved1 !=0) {
+    printf("%s:%d:%s stackmap header @%p is out of alignment\n", __FILE__, __LINE__, __FUNCTION__, (void*)stackMapAddress );
+    abort();
+  }
+  uintptr_t functionAddress = address;
+  BT_LOG((buf,"PASS1 Parse function block first pass %p\n", (void*)functionAddress ));
+  for ( size_t index=0; index<NumFunctions; ++index ) {
+    StkSizeRecord function;
+    parse_function(address,function); // dummy - used to skip functions
+    BT_LOG((buf,"PASS1 Found function #%lu at %p\n", index, (void*)function.FunctionAddress));
+  }
+  for ( size_t index=0; index<NumConstants; ++index ) {
+    uint64_t constant;
+    parse_constant(address,constant);
+  }
+  size_t functionIndex = 0;
+  BT_LOG((buf,"Parse record block %p\n", (void*)address ));
+  for ( size_t functionIndex = 0; functionIndex < NumFunctions; ++functionIndex ) {
+    StkSizeRecord function;
+    parse_function(functionAddress,function);
+    BT_LOG((buf,"PASS2 Examining function #%lu at %p - %llu records\n", functionIndex, (void*)function.FunctionAddress, function.RecordCount));
+    for ( size_t index=0; index<function.RecordCount; index++) {
+      StkMapRecord record;
+      parse_record(backtrace,address,functionIndex,function,record);
     }
   }
+  return true;
+}
+
 
 
   void register_llvm_stackmaps(uintptr_t startAddress, uintptr_t endAddress) {
@@ -377,23 +393,6 @@ struct ScanInfo {
   }
 
 
-
-
-#if 0
-  void push_one_llvm_stackmap(bool jit, uintptr_t& address)
-  {
-    ensure_global_StackMapInfo();
-    SavedStackMap ss(jit,address);
-    if (global_Started) {
-      WITH_READ_WRITE_LOCK(global_StackMapInfo->_StackMapsLock);
-      global_StackMapInfo->_StackMaps[address] = ss;
-    } else {
-      global_StackMapInfo->_StackMaps[address] = ss;
-    }
-    walk_one_llvm_stackmap(false,jit,address);
-  }
-#endif
-
   void search_jitted_stackmaps(gc::Vec0<BacktraceEntry>& backtrace)
   {
     BT_LOG((buf,"Starting search_jitted_stackmaps\n" ));
@@ -402,9 +401,11 @@ struct ScanInfo {
     DebugInfo& di = debugInfo();
     for ( auto entry : di._StackMaps ) {
       uintptr_t address = entry.second._Start;
+      printf("%s:%d:%s  address: %p entry.second %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)address, (void*)entry.second._End);
       while (address<entry.second._End) {
-        BT_LOG((buf," Stackmap start at %p\n", (void*)address));
-        walk_one_llvm_stackmap(backtrace,address);
+        BT_LOG((buf," Stackmap start at %p up to %p\n", (void*)address, (void*)entry.second._End));
+        bool read = walk_one_llvm_stackmap(backtrace,address,entry.second._End);
+        if (!read) return;
         ++num;
       }
     }
@@ -522,44 +523,107 @@ void search_jitted_objects(gc::Vec0<BacktraceEntry>& backtrace, bool searchFunct
 
 #if defined(_TARGET_OS_DARWIN)
 
-#define SEGNAME "__LLVM_STACKMAPS"
-#define SECTNAME "__llvm_stackmaps"
-void search_library( gc::Vec0<BacktraceEntry>& backtrace, const struct mach_header_64* mhp )
+//                          123456789.123456
+#define STACKMAPS_SEGNAME  "__LLVM_STACKMAPS"
+#define STACKMAPS_SECTNAME "__llvm_stackmaps"
+#define LINKEDIT_SEGNAME   "__LINKEDIT"
+
+void search_library_macho_64( gc::Vec0<BacktraceEntry>& backtrace, const struct mach_header_64* mhp )
 {
+  bool foundStackmaps = false;
+  uintptr_t stackmapStart;
+  size_t stackmapSize;
   struct segment_command_64 *sgp;
   struct section_64 *sp;
   uint32_t i, j;
   intptr_t slide;
-    
   slide = 0;
   sp = 0;
   sgp = (struct segment_command_64 *) ((char *)mhp + sizeof(struct mach_header_64));
   for(i = 0; i < mhp->ncmds; i++){
+//    printf("%s:%d:%s  %d/%d segment name: %s\n", __FILE__, __LINE__, __FUNCTION__, i, mhp->ncmds, sgp->segname);
     if(sgp->cmd == LC_SEGMENT_64){
-      if(strcmp(sgp->segname, "__TEXT") == 0){
-        slide = (uintptr_t)mhp - sgp->vmaddr;
-      }
-      if(strncmp(sgp->segname, segname, sizeof(sgp->segname)) == 0){
-        sp = (struct section_64 *)((char *)sgp +
-                                   sizeof(struct segment_command_64));
+      if(strcmp(sgp->segname, "__TEXT") == 0) slide = (uintptr_t)mhp - sgp->vmaddr;
+      if(strncmp(sgp->segname, STACKMAPS_SEGNAME, sizeof(sgp->segname)) == 0){
+        sp = (struct section_64 *)((char *)sgp + sizeof(struct segment_command_64));
+//        printf("%s:%d:%s  found stackmaps nsects %d\n", __FILE__, __LINE__, __FUNCTION__, sgp->nsects);
         for(j = 0; j < sgp->nsects; j++){
-          if(strncmp(sp->sectname, sectname,
+          if(strncmp(sp->sectname, STACKMAPS_SECTNAME,
                      sizeof(sp->sectname)) == 0 &&
-             strncmp(sp->segname, segname,
+             strncmp(sp->segname, STACKMAPS_SEGNAME,
                      sizeof(sp->segname)) == 0){
-            *size = sp->size;
+//            printf("%s:%d:%s  found section |%s| |%s|\n", __FILE__, __LINE__, __FUNCTION__, sp->sectname, sp->segname);
+            stackmapSize = sp->size;
 //   return (uint8_t*)sp;
-            uint8_t* addr = ((uint8_t *)(sp->addr) + slide);
-            return addr;
+            uintptr_t address = ((uintptr_t)(sp->addr) + slide);
+            uintptr_t end = address+stackmapSize;
+            foundStackmaps = true;
+            size_t num=0;
+            while (address<end) {
+              BT_LOG((buf," Stackmap start at %p up to %p\n", (void*)address, (void*)end));
+              bool read = walk_one_llvm_stackmap(backtrace,address,end);
+              ++num;
+            }
           }
           sp = (struct section_64 *)((char *)sp +
                                      sizeof(struct section_64));
         }
       }
+    } else if (sgp->cmd == LC_SYMTAB) {
+      uintptr_t u = (uintptr_t)mhp;
+      const struct symtab_command* st = (const struct symtab_command*)sgp;
+      printf("%s:%d:%s  found LC_SYMTAB symoff %p  nsyms %u  stroff %p strsize %u\n", __FILE__, __LINE__, __FUNCTION__,
+             (void*)(u+st->symoff),
+             st->nsyms,
+             (void*)(u+st->stroff),
+             st->strsize);
+      const struct nlist_64* nl = (const struct nlist_64*)(u+st->symoff);
+      for (size_t symi=0; symi<st->nsyms; symi++ ) {
+        const char* symname;
+        printf("      n_strx=%u  u = %p address = %p\n", (uint32_t)nl->n_un.n_strx, (void*)u, (void*)(nl->n_value));
+        if (nl->n_un.n_strx==0) {
+          symname = "";
+        } else if (nl->n_un.n_strx<0 ||
+                   (uint32_t)nl->n_un.n_strx > st->strsize) {
+          symname = "BAD-SYMBOL";
+        } else {
+          symname = (const char*)(nl->n_un.n_strx+u+st->stroff);
+        }
+        printf("        symname = %s\n", symname);
+        nl = nl + sizeof(const struct nlist_64);
+      }
     }
     sgp = (struct segment_command_64 *)((char *)sgp + sgp->cmdsize);
   }
-  return(0);
+}
+
+
+void search_mach( gc::Vec0<BacktraceEntry>& backtrace, const struct mach_header* mhp )
+{
+  bool foundStackmaps = false;
+  uintptr_t stackmapStart;
+  size_t stackmapSize;
+  struct segment_command_64 *sgp;
+  struct section_64 *sp;
+  uint32_t i, j;
+  intptr_t slide;
+  slide = 0;
+  sp = 0;
+  // Check the header - 32bit or 64bit
+  uint32_t magic = mhp->magic;
+  int is_magic_64 = (magic==MH_MAGIC_64 || magic==MH_CIGAM_64);
+  int swap_bytes = (magic==MH_CIGAM || magic == MH_CIGAM_64);
+  if (swap_bytes) {
+    printf("%s:%d:%s when reading a macho file swap_byte is true\n", __FILE__, __LINE__, __FUNCTION__);
+    abort();
+  }
+  if (is_magic_64) {
+    search_library_macho_64(backtrace,(const struct mach_header_64*)mhp);
+  } else {
+    printf("%s:%d:%s Handle 32bit libraries\n", __FILE__, __LINE__, __FUNCTION__ );
+    abort();
+    //search_library_macho_32(backtrace,mhp);
+  }
 }
 #endif
 
@@ -679,7 +743,7 @@ void scan_elf_library_for_symbols_then_stackmaps(gc::Vec0<BacktraceEntry>&backtr
 	//                        elf_ndxscn ( scn ), name, shdr.sh_addr, shdr.sh_offset, shdr.sh_size );
       while (addr<stackmap_end) {
         BT_LOG((buf," Stackmap start at %p\n", (void*)addr));
-        walk_one_llvm_stackmap(backtrace,addr);
+        bool read =walk_one_llvm_stackmap(backtrace,addr,stackmap_end);
       }
     }
   }
@@ -1261,11 +1325,25 @@ void fill_in_interpreted_frames(gc::Vec0<BacktraceEntry>& backtrace) {
     dl_iterate_phdr(elf_loaded_object_callback,&scan);
 #endif
 #ifdef _TARGET_OS_DARWIN
+    Dl_info dlinfo;
+    for ( size_t idx = 1; idx<backtrace.size(); ++idx) {
+      int ret = dladdr((void*)backtrace[idx]._ReturnAddress,&dlinfo);
+      if (ret==0) {
+        printf( "%s:%d:%s  Could not call dladdr for backtrace #%lu address %p", __FILE__, __LINE__, __FUNCTION__, idx, (void*)backtrace[idx]._ReturnAddress);
+      }
+      backtrace[idx]._SymbolName = dlinfo.dli_sname;
+      if (backtrace[idx]._SymbolName.find("^^")!=string::npos) {
+        backtrace[idx]._Stage = lispFrame;
+      }
+      backtrace[idx]._FunctionStart = (uintptr_t)dlinfo.dli_saddr;
+    }
     printf("Add support to walk symbol tables and stackmaps for DARWIN\n");
     uint32_t num_loaded = _dyld_image_count();
     for ( size_t idx = 0; idx<num_loaded; ++idx ) {
-      const struct mach_header* = _dyld_get_image_header(idx);
-      
+      const char* filename = _dyld_get_image_name(idx);
+      printf("%s:%d:%s Searching DARWIN filename: %s\n", __FILE__, __LINE__, __FUNCTION__, filename);
+      const struct mach_header* header = _dyld_get_image_header(idx);
+      search_mach(backtrace,header);
     }
 #endif
     // Now search the jitted objects
