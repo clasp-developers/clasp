@@ -112,11 +112,11 @@ void register_llvm_stackmaps(uintptr_t startAddress, uintptr_t endAddress);
 
  typedef enum {undefined,symbolicated,lispFrame,cFrame} BacktraceFrameEnum ;
 struct BacktraceEntry {
-BacktraceEntry() : _Stage(undefined),_ReturnAddress(0),_FunctionStart(0),_FunctionSize(0),_BasePointer(0),_InstructionOffset(0),_FrameSize(0),_FrameOffset(0),_Closure(_Nil<T_O>()), _Arguments(_Nil<T_O>()),_FunctionDescription(0) {};
+BacktraceEntry() : _Stage(undefined),_ReturnAddress(0),_FunctionStart(0),_FunctionEnd(~0),_BasePointer(0),_InstructionOffset(0),_FrameSize(0),_FrameOffset(0),_Closure(_Nil<T_O>()), _Arguments(_Nil<T_O>()),_FunctionDescription(0) {};
   BacktraceFrameEnum   _Stage;
   uintptr_t            _ReturnAddress;
   uintptr_t            _FunctionStart;
-  size_t               _FunctionSize;
+  uintptr_t            _FunctionEnd;
   uintptr_t            _BasePointer;
   int                  _InstructionOffset;
   int                  _FrameSize;

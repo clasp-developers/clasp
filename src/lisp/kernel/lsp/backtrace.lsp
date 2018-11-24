@@ -18,7 +18,7 @@
   frame-size
   frame-offset
   function-start-address
-  function-length-bytes
+  function-end-address
   base-pointer
   next-base-pointer
   arguments

@@ -59,6 +59,11 @@ THE SOFTWARE.
 #ifdef _TARGET_OS_DARWIN
 #import <mach-o/dyld.h>
 #import <mach-o/nlist.h>
+#include <sys/mman.h>
+#include <sys/types.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/stat.h>
 #endif
 #ifdef _TARGET_OS_LINUX
 #include <err.h>
@@ -98,7 +103,7 @@ struct ScanInfo {
     if (frame->_Stage!=undefined) {
       ss << frame->_SymbolName << " ";
       ss << "@" << (void*)frame->_FunctionStart << " ";
-      ss << "end: " << (void*)(frame->_FunctionStart+frame->_FunctionSize);
+      ss << "end: " << (void*)(frame->_FunctionEnd);
     }
 	return ss.str();
   }
@@ -401,7 +406,7 @@ bool walk_one_llvm_stackmap(gc::Vec0<BacktraceEntry>&backtrace, uintptr_t& addre
     DebugInfo& di = debugInfo();
     for ( auto entry : di._StackMaps ) {
       uintptr_t address = entry.second._Start;
-      printf("%s:%d:%s  address: %p entry.second %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)address, (void*)entry.second._End);
+//      printf("%s:%d:%s  address: %p entry.second %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)address, (void*)entry.second._End);
       while (address<entry.second._End) {
         BT_LOG((buf," Stackmap start at %p up to %p\n", (void*)address, (void*)entry.second._End));
         bool read = walk_one_llvm_stackmap(backtrace,address,entry.second._End);
@@ -432,7 +437,7 @@ void search_jitted_objects(gc::Vec0<BacktraceEntry>& backtrace, bool searchFunct
           if (entry._ObjectPointer<=backtrace[j]._ReturnAddress && backtrace[j]._ReturnAddress<(entry._ObjectPointer+entry._Size)) {
             backtrace[j]._Stage = lispFrame;
             backtrace[j]._FunctionStart = entry._ObjectPointer;
-            backtrace[j]._FunctionSize = entry._Size;
+            backtrace[j]._FunctionEnd = entry._ObjectPointer+entry._Size;
             backtrace[j]._SymbolName = entry._Name;
             BT_LOG((buf,"MATCHED!!!\n"));
             break;
@@ -528,7 +533,7 @@ void search_jitted_objects(gc::Vec0<BacktraceEntry>& backtrace, bool searchFunct
 #define STACKMAPS_SECTNAME "__llvm_stackmaps"
 #define LINKEDIT_SEGNAME   "__LINKEDIT"
 
-void search_library_macho_64( gc::Vec0<BacktraceEntry>& backtrace, const struct mach_header_64* mhp )
+__attribute__((optnone)) void search_library_macho_64( gc::Vec0<BacktraceEntry>& backtrace, const struct mach_header_64* loaded_mhp, const struct mach_header_64* file_mhp  )
 {
   bool foundStackmaps = false;
   uintptr_t stackmapStart;
@@ -539,11 +544,11 @@ void search_library_macho_64( gc::Vec0<BacktraceEntry>& backtrace, const struct 
   intptr_t slide;
   slide = 0;
   sp = 0;
-  sgp = (struct segment_command_64 *) ((char *)mhp + sizeof(struct mach_header_64));
-  for(i = 0; i < mhp->ncmds; i++){
+  sgp = (struct segment_command_64 *) ((char *)file_mhp + sizeof(struct mach_header_64));
+  for(i = 0; i < file_mhp->ncmds; i++){
 //    printf("%s:%d:%s  %d/%d segment name: %s\n", __FILE__, __LINE__, __FUNCTION__, i, mhp->ncmds, sgp->segname);
     if(sgp->cmd == LC_SEGMENT_64){
-      if(strcmp(sgp->segname, "__TEXT") == 0) slide = (uintptr_t)mhp - sgp->vmaddr;
+      if(strcmp(sgp->segname, "__TEXT") == 0) slide = (uintptr_t)file_mhp - sgp->vmaddr;
       if(strncmp(sgp->segname, STACKMAPS_SEGNAME, sizeof(sgp->segname)) == 0){
         sp = (struct section_64 *)((char *)sgp + sizeof(struct segment_command_64));
 //        printf("%s:%d:%s  found stackmaps nsects %d\n", __FILE__, __LINE__, __FUNCTION__, sgp->nsects);
@@ -555,8 +560,9 @@ void search_library_macho_64( gc::Vec0<BacktraceEntry>& backtrace, const struct 
 //            printf("%s:%d:%s  found section |%s| |%s|\n", __FILE__, __LINE__, __FUNCTION__, sp->sectname, sp->segname);
             stackmapSize = sp->size;
 //   return (uint8_t*)sp;
-            uintptr_t address = ((uintptr_t)(sp->addr) + slide);
+            uintptr_t address = ((uintptr_t)(sp->addr) + slide)+(uintptr_t)loaded_mhp;
             uintptr_t end = address+stackmapSize;
+            printf("%s:%d:%s Stackmap start at %p up to %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)address, (void*)end);
             foundStackmaps = true;
             size_t num=0;
             while (address<end) {
@@ -570,14 +576,17 @@ void search_library_macho_64( gc::Vec0<BacktraceEntry>& backtrace, const struct 
         }
       }
     } else if (sgp->cmd == LC_SYMTAB) {
-      uintptr_t u = (uintptr_t)mhp;
+      uintptr_t u = (uintptr_t)loaded_mhp;
       const struct symtab_command* st = (const struct symtab_command*)sgp;
       printf("%s:%d:%s  found LC_SYMTAB symoff %p  nsyms %u  stroff %p strsize %u\n", __FILE__, __LINE__, __FUNCTION__,
              (void*)(u+st->symoff),
              st->nsyms,
              (void*)(u+st->stroff),
              st->strsize);
-      const struct nlist_64* nl = (const struct nlist_64*)(u+st->symoff);
+      const struct nlist_64* symabs = (const struct nlist_64*)(u+st->symoff);
+      const char* strabs = (const char*)(u+st->stroff);
+      printf("   loaded_mhp -> %p   symabs -> %p  strabs -> %p\n", (void*)u, symabs, strabs );
+#if 0      
       for (size_t symi=0; symi<st->nsyms; symi++ ) {
         const char* symname;
         printf("      n_strx=%u  u = %p address = %p\n", (uint32_t)nl->n_un.n_strx, (void*)u, (void*)(nl->n_value));
@@ -592,13 +601,14 @@ void search_library_macho_64( gc::Vec0<BacktraceEntry>& backtrace, const struct 
         printf("        symname = %s\n", symname);
         nl = nl + sizeof(const struct nlist_64);
       }
+#endif
     }
     sgp = (struct segment_command_64 *)((char *)sgp + sgp->cmdsize);
   }
 }
 
 
-void search_mach( gc::Vec0<BacktraceEntry>& backtrace, const struct mach_header* mhp )
+void search_mach( gc::Vec0<BacktraceEntry>& backtrace, const struct mach_header* loaded_mhp, const struct mach_header* file_mhp )
 {
   bool foundStackmaps = false;
   uintptr_t stackmapStart;
@@ -609,8 +619,13 @@ void search_mach( gc::Vec0<BacktraceEntry>& backtrace, const struct mach_header*
   intptr_t slide;
   slide = 0;
   sp = 0;
+  printf("%s:%d:%s  loaded_mhp -> %p  file_mhp -> %p\n", __FILE__, __LINE__, __FUNCTION__, loaded_mhp, file_mhp );
   // Check the header - 32bit or 64bit
-  uint32_t magic = mhp->magic;
+  uint32_t magic = file_mhp->magic;
+  if (magic != MH_MAGIC_64) {
+    printf("%s:%d:%s Ignore magic %x for now\n", __FILE__, __LINE__, __FUNCTION__, magic );
+    return;
+  }
   int is_magic_64 = (magic==MH_MAGIC_64 || magic==MH_CIGAM_64);
   int swap_bytes = (magic==MH_CIGAM || magic == MH_CIGAM_64);
   if (swap_bytes) {
@@ -618,13 +633,227 @@ void search_mach( gc::Vec0<BacktraceEntry>& backtrace, const struct mach_header*
     abort();
   }
   if (is_magic_64) {
-    search_library_macho_64(backtrace,(const struct mach_header_64*)mhp);
+    search_library_macho_64(backtrace,(const struct mach_header_64*)loaded_mhp, (const struct mach_header_64*)file_mhp);
   } else {
     printf("%s:%d:%s Handle 32bit libraries\n", __FILE__, __LINE__, __FUNCTION__ );
     abort();
     //search_library_macho_32(backtrace,mhp);
   }
 }
+
+
+std::string& ltrim(std::string& str, const std::string& chars = "\t\n\v\f\r ")
+{
+    str.erase(0, str.find_first_not_of(chars));
+    return str;
+}
+ 
+std::string& rtrim(std::string& str, const std::string& chars = "\t\n\v\f\r ")
+{
+    str.erase(str.find_last_not_of(chars) + 1);
+    return str;
+}
+ 
+std::string& trim(std::string& str, const std::string& chars = "\t\n\v\f\r ")
+{
+    return ltrim(rtrim(str, chars), chars);
+}
+
+struct NmSymbol {
+  uintptr_t _Address;
+  char _Type;
+  std::string _Name;
+  NmSymbol(uintptr_t address, char type, const std::string& name) : _Address(address), _Type(type), _Name(name) {};
+};
+
+std::vector<NmSymbol> load_symbol_table(const char* filename, uintptr_t header) {
+  std::vector<NmSymbol> symbol_table;
+  stringstream nm_cmd;
+  nm_cmd << "/usr/bin/nm -numeric-sort -defined-only " << filename;
+  FILE* fnm = popen( nm_cmd.str().c_str(), "r");
+  if (fnm==NULL) {
+    printf("%s:%d:%s  Could not popen %s\n", __FILE__, __LINE__, __FUNCTION__, nm_cmd.str().c_str());
+    return symbol_table;
+  }
+#define BUFLEN 2048
+  {
+    char buf[BUFLEN+1];
+    void* address;
+    char type[BUFLEN+1];
+    char name[BUFLEN+1];
+    while (!feof(fnm)) {
+      fgets(buf,BUFLEN,fnm);
+      sscanf(buf,"%p %s %s", &address, type, name);
+      uintptr_t real_address = (uintptr_t)address + (uintptr_t)header;
+      std::string sname(name);
+      symbol_table.push_back(NmSymbol(real_address,type[0],sname));
+    }
+    symbol_table.push_back(NmSymbol(~0,'d',"TERMINAL_SYMBOL")); // one symbol to end them all
+    pclose(fnm);
+  }
+  return symbol_table;
+}
+
+bool binary_search(uintptr_t address, const std::vector<NmSymbol>& symbol_table, size_t& index )
+{
+  size_t l = 0;
+  size_t r = symbol_table.size()-1;
+  if (address<symbol_table[0]._Address || address >= symbol_table[symbol_table.size()-1]._Address) return false;
+  while (true) {
+    if (l>=r) {
+      index = l-1;
+      return true;
+    }
+    size_t m = (l+r)/2;
+    if (symbol_table[m]._Address<=address) {
+      l = m+1;
+    } else if (symbol_table[m]._Address>address) {
+      r = m;
+    } else {
+      index = l;
+      return true;
+    }
+  }
+}
+
+void search_with_otool_and_nm(gc::Vec0<BacktraceEntry>& backtrace, const char* filename, const struct mach_header* header)
+{
+#define BUFLEN 2048
+  std::vector<NmSymbol> symbol_table = load_symbol_table(filename,(uintptr_t)header);
+  if (symbol_table.size()>0) {
+    for ( size_t j=0; j<backtrace.size(); ++j ) {
+      size_t index;
+      bool found = binary_search(backtrace[j]._ReturnAddress,symbol_table,index);
+      if (found && (symbol_table[index]._Type == 't' || symbol_table[index]._Type == 'T')) {
+        backtrace[j]._Stage = symbolicated;
+        backtrace[j]._FunctionStart = symbol_table[index]._Address;
+        backtrace[j]._FunctionEnd = symbol_table[index+1]._Address;
+        backtrace[j]._SymbolName = symbol_table[index]._Name;
+      }
+    }
+  // Look for FunctionDescriptions
+    for (auto entry : symbol_table ) {
+      if (entry._Type == 'd' || entry._Type=='D') {
+        if (entry._Name.size()>5 && entry._Name.substr(entry._Name.size()-5,entry._Name.size()) == "^DESC") {
+          std::string function_part = entry._Name.substr(0,entry._Name.size()-5);
+          for ( size_t j=0; j<backtrace.size(); ++j ) {
+            if (backtrace[j]._SymbolName == function_part) {
+              backtrace[j]._FunctionDescription = entry._Address;
+            }
+          }
+        }
+      }
+    }
+  }
+  {
+  // Now use otool to get the stackmaps
+    stringstream otool_cmd;
+    otool_cmd << "/usr/bin/otool -l " << filename;
+    FILE* fotool = popen( otool_cmd.str().c_str(), "r");
+    if (fotool==NULL) {
+      printf("%s:%d:%s  Could not popen %s\n", __FILE__, __LINE__, __FUNCTION__, otool_cmd.str().c_str());
+      return;
+    }
+    void* address;
+    void* size;
+    char buf[BUFLEN+1];
+    char key[BUFLEN+1];
+    char arg[BUFLEN+1];
+    bool found_stackmaps = false;
+    while (!feof(fotool)) {
+      fgets(buf,BUFLEN,fotool);
+      std::string sectionbuf(buf);
+      if (trim(sectionbuf) == "Section") {
+        fgets(buf,BUFLEN,fotool);
+        std::string sectnamebuf(buf);
+        if (trim(sectnamebuf) == "sectname __llvm_stackmaps") {
+          fgets(buf,BUFLEN,fotool);
+          std::string segnamebuf(buf);
+          if (trim(segnamebuf) == "segname __LLVM_STACKMAPS") {
+            fgets(buf,BUFLEN,fotool);
+            sscanf(buf,"%s %p",key,&address);
+            if (strcmp(key,"addr")!=0) {
+              printf("%s:%d:%s  Could not read __LLVM_STACKMAPS properly for command: %s line: %s\n", __FILE__, __LINE__, __FUNCTION__, otool_cmd.str().c_str(), buf);
+              pclose(fotool);
+              return;
+            }
+            fgets(buf,BUFLEN,fotool);
+            sscanf(buf,"%s %p",key,&size);
+            if (strcmp(key,"size")!=0) {
+              printf("%s:%d:%s  Could not read __LLVM_STACKMAPS size properly for command: %s line: %s\n", __FILE__, __LINE__, __FUNCTION__, otool_cmd.str().c_str(), buf);
+              pclose(fotool);
+              return;
+            }
+            found_stackmaps = true;
+          }
+        }
+      }
+    }
+    pclose(fotool);
+    if (found_stackmaps) {
+      uintptr_t stackmap_address = (uintptr_t)address+(uintptr_t)header;
+      uintptr_t stackmaps_end = stackmap_address+(uintptr_t)size;
+//            printf("%s:%d:%s  Read __LLVM_STACKMAPS info address: %p end: %p\n", __FILE__, __LINE__, __FUNCTION__, stackmap_address, stackmaps_end);
+      while (stackmap_address<stackmaps_end) {
+        BT_LOG((buf," Stackmap start at %p\n", (void*)stackmap_address));
+        bool read =walk_one_llvm_stackmap(backtrace,stackmap_address,stackmaps_end);
+        if (!read) goto DONE;
+      }
+    }
+  DONE:
+    (void)0;
+  }
+}
+
+struct SafeMMap {
+  const char* _Filename;
+  int _FileDescriptor;
+  void*  _Address;
+  size_t _FileSize;
+  
+  SafeMMap(const char* filename, int fd, size_t size) : _Filename(filename), _FileDescriptor(fd), _FileSize(size) {
+    this->_Address = mmap(NULL,size,PROT_READ, MAP_PRIVATE, fd, 0);
+    if (this->_Address==0) {
+      close(this->_FileDescriptor);
+      SIMPLE_ERROR(BF("Could not mmap %s") % filename);
+    }
+  };
+  ~SafeMMap() {
+    int ret = munmap(this->_Address,this->_FileSize);
+    if (ret!=0) {
+      printf("%s:%d:%s Could not munmap file %s\n", __FILE__, __LINE__, __FUNCTION__, this->_Filename);
+    }
+    close(this->_FileDescriptor);
+  };
+};
+
+void walk_loaded_objects(gc::Vec0<BacktraceEntry>& backtrace) {
+  #include <sys/stat.h>
+//    printf("Add support to walk symbol tables and stackmaps for DARWIN\n");
+    uint32_t num_loaded = _dyld_image_count();
+    for ( size_t idx = 0; idx<num_loaded; ++idx ) {
+      const char* filename = _dyld_get_image_name(idx);
+      const struct mach_header* loaded_header = _dyld_get_image_header(idx);
+#if 1
+      // Use otool and nm
+      search_with_otool_and_nm(backtrace,filename,loaded_header);
+#else      
+      uint32_t magic = loaded_header->magic;
+      printf("%s:%d:%s Searching DARWIN filename: %s magic: %x\n", __FILE__, __LINE__, __FUNCTION__, filename, magic);
+      int fd;
+      if ((fd = open(filename,O_RDONLY,0)) ==-1) {
+        SIMPLE_ERROR(BF("Could not open %s") % filename);
+      }
+      struct stat buf;
+      int res = fstat(fd,&buf);
+      SafeMMap file_header_mmap(filename,fd,buf.st_size);
+      const struct mach_header* file_header = (const struct mach_header*)file_header_mmap._Address;
+      printf("%s:%d:%s  library: %s loaded_mhp -> %p  file_mhp -> %p\n", __FILE__, __LINE__, __FUNCTION__, filename, loaded_header, file_header );
+      search_mach(backtrace,loaded_header,file_header);
+#endif
+    }
+}
+
 #endif
 
 
@@ -683,7 +912,7 @@ void scan_elf_library_for_symbols_then_stackmaps(gc::Vec0<BacktraceEntry>&backtr
               if (symbol_start<=backtrace[j]._ReturnAddress && backtrace[j]._ReturnAddress<symbol_end) {
                 backtrace[j]._Stage = symbolicated;
                 backtrace[j]._FunctionStart = symbol_start;
-                backtrace[j]._FunctionSize = (uintptr_t)sym.st_size;
+                backtrace[j]._FunctionEnd = symbol_start+(uintptr_t)sym.st_size;
                 backtrace[j]._SymbolName = elf_strptr(elf,shdr.sh_link , (size_t)sym.st_name);
                 BT_LOG((buf,"Identified symbol name %s for frame %lu\n", backtrace[j]._SymbolName.c_str(), j));
                 break;
@@ -1325,26 +1554,8 @@ void fill_in_interpreted_frames(gc::Vec0<BacktraceEntry>& backtrace) {
     dl_iterate_phdr(elf_loaded_object_callback,&scan);
 #endif
 #ifdef _TARGET_OS_DARWIN
-    Dl_info dlinfo;
-    for ( size_t idx = 1; idx<backtrace.size(); ++idx) {
-      int ret = dladdr((void*)backtrace[idx]._ReturnAddress,&dlinfo);
-      if (ret==0) {
-        printf( "%s:%d:%s  Could not call dladdr for backtrace #%lu address %p", __FILE__, __LINE__, __FUNCTION__, idx, (void*)backtrace[idx]._ReturnAddress);
-      }
-      backtrace[idx]._SymbolName = dlinfo.dli_sname;
-      if (backtrace[idx]._SymbolName.find("^^")!=string::npos) {
-        backtrace[idx]._Stage = lispFrame;
-      }
-      backtrace[idx]._FunctionStart = (uintptr_t)dlinfo.dli_saddr;
-    }
-    printf("Add support to walk symbol tables and stackmaps for DARWIN\n");
-    uint32_t num_loaded = _dyld_image_count();
-    for ( size_t idx = 0; idx<num_loaded; ++idx ) {
-      const char* filename = _dyld_get_image_name(idx);
-      printf("%s:%d:%s Searching DARWIN filename: %s\n", __FILE__, __LINE__, __FUNCTION__, filename);
-      const struct mach_header* header = _dyld_get_image_header(idx);
-      search_mach(backtrace,header);
-    }
+//    printf("walk symbol tables and stackmaps for DARWIN\n");
+    walk_loaded_objects(backtrace);
 #endif
     // Now search the jitted objects
     search_jitted_objects(backtrace,false);
@@ -1354,7 +1565,7 @@ void fill_in_interpreted_frames(gc::Vec0<BacktraceEntry>& backtrace) {
     // Now get the arguments
     BT_LOG((buf,"Getting arguments\n"));
     for ( size_t index=1; index<backtrace.size(); ++index) {
-      if (backtrace[index]._Stage == lispFrame) {
+      if (backtrace[index]._Stage == lispFrame && backtrace[index]._FrameSize!=0) {
         T_mv arg_mv = capture_arguments(backtrace[index]._FunctionStart,backtrace[index]._BasePointer,backtrace[index]._FrameOffset );
         BT_LOG((buf,"found arguments for frame %lu\n", index ));
         backtrace[index]._Arguments = arg_mv;
@@ -1388,7 +1599,7 @@ void fill_in_interpreted_frames(gc::Vec0<BacktraceEntry>& backtrace) {
                                 INTERN_(kw,frame_offset),core::make_fixnum(backtrace[i]._FrameOffset),
                                 INTERN_(kw,frame_size),core::make_fixnum(backtrace[i]._FrameSize),
                                 INTERN_(kw,function_start_address),Pointer_O::create((void*)backtrace[i]._FunctionStart),
-                                INTERN_(kw,function_length_bytes),core::make_fixnum(backtrace[i]._FunctionSize),
+                                INTERN_(kw,function_end_address),Pointer_O::create((void*)backtrace[i]._FunctionEnd),
                                 INTERN_(kw,function_description),funcDesc);
         } else {
           entry = eval::funcall(_sym_make_backtrace_frame,
