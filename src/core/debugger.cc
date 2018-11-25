@@ -733,11 +733,13 @@ void search_with_otool_and_nm(gc::Vec0<BacktraceEntry>& backtrace, const char* f
     }
   // Look for FunctionDescriptions
     for (auto entry : symbol_table ) {
-      if (entry._Type == 'd' || entry._Type=='D') {
+      if (entry._Type == 'd' || entry._Type=='D' || entry._Type=='s' || entry._Type=='S') {
         if (entry._Name.size()>5 && entry._Name.substr(entry._Name.size()-5,entry._Name.size()) == "^DESC") {
           std::string function_part = entry._Name.substr(0,entry._Name.size()-5);
+//          printf("%s:%d:%s Found a possible FunctionDescription %s \n", __FILE__, __LINE__, __FUNCTION__, entry._Name.c_str());
           for ( size_t j=0; j<backtrace.size(); ++j ) {
             if (backtrace[j]._SymbolName == function_part) {
+//              printf("%s:%d:%s Matched to backtrace frame %lu FunctionName %s \n", __FILE__, __LINE__, __FUNCTION__, j, backtrace[j]._SymbolName.c_str());
               backtrace[j]._FunctionDescription = entry._Address;
             }
           }
