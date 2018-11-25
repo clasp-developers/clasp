@@ -26,7 +26,7 @@ THE SOFTWARE.
 /* -^- */
 #define DEBUG_LEVEL_FULL
 
-#if 1
+#if 0
 #define BT_LOG(msg) {char buf[1024]; sprintf msg; LOG(BF("%s") % buf);}
 #else
 #define BT_LOG(msg)
