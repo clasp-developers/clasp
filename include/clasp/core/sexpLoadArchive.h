@@ -24,6 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
+#if 0
 #ifndef SEXP_LOAD_ARCHIVE_H //[
 #define SEXP_LOAD_ARCHIVE_H
 
@@ -46,5 +47,5 @@ public:
 };
 
 }; // namespace core
-
+#endif
 #endif //]
