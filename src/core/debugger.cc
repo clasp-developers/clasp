@@ -303,7 +303,7 @@ void parse_record(gc::Vec0<BacktraceEntry>& backtrace, uintptr_t& address, size_
         if (backtrace[j]._Stage == symbolicated || backtrace[j]._Stage == lispFrame) {
           BT_LOG((buf,"comparing function#%lu @%p to %s\n", functionIndex, (void*)function.FunctionAddress, backtrace_frame(j,&backtrace[j]).c_str() ));
           if (function.FunctionAddress == backtrace[j]._FunctionStart) {
-            backtrace[j]._Stage = lispFrame;
+            backtrace[j]._Stage = lispFrame;  // anything with a stackmap is a lisp frame
             backtrace[j]._FrameSize = function.StackSize;
             backtrace[j]._FrameOffset = offsetOrSmallConstant;
             BT_LOG((buf,"Identified lispFrame frameOffset = %d\n", offsetOrSmallConstant));
@@ -429,7 +429,7 @@ void search_jitted_objects(gc::Vec0<BacktraceEntry>& backtrace, bool searchFunct
       BT_LOG((buf, "Comparing to backtrace frame %lu  return address %p %s\n", j, (void*)backtrace[j]._ReturnAddress, backtrace_frame(j,&backtrace[j]).c_str()));
       if (!searchFunctionDescriptions && backtrace[j]._Stage != symbolicated) {
         if (entry._ObjectPointer<=backtrace[j]._ReturnAddress && backtrace[j]._ReturnAddress<(entry._ObjectPointer+entry._Size)) {
-          backtrace[j]._Stage = lispFrame;
+          backtrace[j]._Stage = lispFrame; // jitted functions are lisp functions
           backtrace[j]._FunctionStart = entry._ObjectPointer;
           backtrace[j]._FunctionEnd = entry._ObjectPointer+entry._Size;
           backtrace[j]._SymbolName = entry._Name;
@@ -442,6 +442,7 @@ void search_jitted_objects(gc::Vec0<BacktraceEntry>& backtrace, bool searchFunct
         ss << backtrace[j]._SymbolName;
         ss << "^DESC";
         if (ss.str() == entry._Name) {
+          backtrace[j]._Stage = lispFrame; // Anything with a FunctionDescription is a lispFrame
           backtrace[j]._FunctionDescription = entry._ObjectPointer;
           BT_LOG((buf,"MATCHED!!!\n"));
           break;
@@ -763,10 +764,11 @@ void search_with_otool_and_nm(gc::Vec0<BacktraceEntry>& backtrace, const char* f
       if (entry._Type == 'd' || entry._Type=='D' || entry._Type=='s' || entry._Type=='S') {
         if (entry._Name.size()>5 && entry._Name.substr(entry._Name.size()-5,entry._Name.size()) == "^DESC") {
           std::string function_part = entry._Name.substr(0,entry._Name.size()-5);
-//          printf("%s:%d:%s Found a possible FunctionDescription %s \n", __FILE__, __LINE__, __FUNCTION__, entry._Name.c_str());
+          printf("%s:%d:%s Found a possible FunctionDescription %s \n", __FILE__, __LINE__, __FUNCTION__, entry._Name.c_str());
           for ( size_t j=0; j<backtrace.size(); ++j ) {
             if (backtrace[j]._SymbolName == function_part) {
-//              printf("%s:%d:%s Matched to backtrace frame %lu FunctionName %s \n", __FILE__, __LINE__, __FUNCTION__, j, backtrace[j]._SymbolName.c_str());
+              printf("%s:%d:%s Matched to backtrace frame %lu FunctionName %s \n", __FILE__, __LINE__, __FUNCTION__, j, backtrace[j]._SymbolName.c_str());
+              backtrace[j]._Stage = lispFrame; // anything with a FunctionDescription is a lisp frame
               backtrace[j]._FunctionDescription = entry._Address;
             }
           }
@@ -973,6 +975,7 @@ void scan_elf_library_for_symbols_then_stackmaps(gc::Vec0<BacktraceEntry>&backtr
                  << "^DESC";
               if (ss.str() == symname) {
                 uintptr_t symbol_start = (uintptr_t)sym.st_value+start;
+                backtrace[j]._Stage = lispFrame; // anything with a FunctionDescription is a LispFrame
                 backtrace[j]._FunctionDescription = symbol_start;
               }
             }
@@ -1491,7 +1494,7 @@ void fill_in_interpreted_frames(gc::Vec0<BacktraceEntry>& backtrace) {
       uintptr_t bpNext = backtrace[idx]._BasePointer;
 //      printf("%s:%d:%s frame: %lu %s  bp: %p bpNext: %p reg: %p\n", __FILE__, __LINE__, __FUNCTION__, idx, backtrace[idx]._SymbolName.c_str(), (void*)bp, (void*)bpNext, (void*)reg);
       if (bp<=reg && reg <bpNext) {
-        backtrace[idx]._Stage = lispFrame;
+        backtrace[idx]._Stage = lispFrame; // Interpreted frames are lisp frames
         backtrace[idx]._SymbolName = gc::As<Symbol_sp>(gc::As<Closure_sp>(frame->function())->functionName())->formattedName(true);
         backtrace[idx]._Arguments = frame->arguments();
         //printf("%s:%d:%s %s %s  MATCH!!!!\n", __FILE__, __LINE__, __FUNCTION__, backtrace[idx]._SymbolName.c_str(), _rep_(backtrace[idx]._Arguments).c_str());
