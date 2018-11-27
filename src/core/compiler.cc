@@ -106,6 +106,70 @@ claspFunction lookup_internal_functions(uintptr_t handle, const char* name) {
   
 };
 
+
+
+namespace core {
+
+#define INITIALIZER_CAPACITY_INIT 128
+#define INITIALIZER_CAPACITY_MULTIPLIER 2
+size_t global_initializer_capacity = 0;
+size_t global_initializer_count = 0;
+InitializerFunction* global_initializer_functions = NULL;
+
+void register_initializer_function(InitializerFunction fptr)
+{
+//  printf("%s:%d In register_initializer_function --> %p\n", __FILE__, __LINE__, fptr);
+  if ( global_initializer_functions == NULL ) {
+    global_initializer_capacity = INITIALIZER_CAPACITY_INIT;
+    global_initializer_count = 0;
+    global_initializer_functions = (InitializerFunction*)malloc(global_initializer_capacity*sizeof(InitializerFunction));
+  } else {
+    if ( global_initializer_count == global_initializer_capacity ) {
+      global_initializer_capacity = global_initializer_capacity*INITIALIZER_CAPACITY_MULTIPLIER;
+      global_initializer_functions = (InitializerFunction*)realloc(global_initializer_functions,global_initializer_capacity*sizeof(InitializerFunction));
+    }
+  }
+  global_initializer_functions[global_initializer_count] = fptr;
+  global_initializer_count++;
+};
+
+/*! Return the number of initializer_functions that are waiting to be run*/
+size_t initializer_functions_are_waiting()
+{
+//  printf("%s:%d initializer_functions_are_waiting returning %" PRu "\n", __FILE__, __LINE__, global_initializer_count );
+  return global_initializer_count;
+};
+
+/*! Invoke the initializer functions and clear the array of initializer functions */
+void initializer_functions_invoke()
+{
+  if (global_initializer_count>0) {
+#if 0
+    printf("%s:%d In initializer_functions_invoke - there are %" PRu " initializer functions\n", __FILE__, __LINE__, global_initializer_count );
+    for ( size_t i = 0; i<global_initializer_count; ++i ) {
+      InitializerFunction fn = global_initializer_functions[i];
+      printf("%s:%d     Initializer fn[%" PRu "]@%p\n", __FILE__, __LINE__, i, fn );
+    }
+    printf("%s:%d Starting to call the initializer functions\n", __FILE__, __LINE__ );
+#endif
+    for ( size_t i = 0; i<global_initializer_count; ++i ) {
+      InitializerFunction fn = global_initializer_functions[i];
+//      printf("%s:%d     About to invoke fn@%p\n", __FILE__, __LINE__, fn );
+      (fn)();
+    }
+    global_initializer_count = 0;
+    global_initializer_capacity = 0;
+    free(global_initializer_functions);
+    global_initializer_functions = NULL;
+//    printf("%s:%d Done with startup_functions_invoke()\n", __FILE__, __LINE__ );
+  }
+}
+
+};
+
+
+
+
 namespace core {
 
 #define STARTUP_FUNCTION_CAPACITY_INIT 128

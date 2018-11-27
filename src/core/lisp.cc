@@ -2464,11 +2464,10 @@ void Lisp_O::dump_backtrace(int numcol) {
 
 int Lisp_O::run() {
   int exit_code = 0;
-#if 0
   if ( initializer_functions_are_waiting() ) {
     initializer_functions_invoke();
   }
-#endif
+
 #ifndef SCRAPING
 #define ALL_INITIALIZERS_CALLS
 #include INITIALIZERS_INC_H
