@@ -238,7 +238,6 @@ void ThreadLocalState::initialize_thread(mp::Process_sp process, bool initialize
 //  printf("%s:%d Initialize all ThreadLocalState things this->%p\n",__FILE__, __LINE__, (void*)this);
   this->_Bindings.reserve(1024);
   this->_Process = process;
-  printf("%s:%d:%s initializing my_thread this@%p ltvc_read_GCRoots NULL\n", __FILE__, __LINE__, __FUNCTION__, (void*)this);
   process->_ThreadInfo = this;
   this->_BFormatStringOutputStream = gc::As<StringOutputStream_sp>(clasp_make_string_output_stream());
   this->_WriteToStringOutputStream = gc::As<StringOutputStream_sp>(clasp_make_string_output_stream());
