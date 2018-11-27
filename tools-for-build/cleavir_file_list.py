@@ -317,6 +317,7 @@ cleavir_file_list = [
     "src/lisp/kernel/cleavir/gml-drawing",
     "src/lisp/kernel/cleavir/landing-pad",
     "src/lisp/kernel/cleavir/closure-optimize",
+    "src/lisp/kernel/cleavir/satiation",
     "src/lisp/kernel/cleavir/translate",
     "src/lisp/kernel/cleavir/translate-instruction",
     "src/lisp/kernel/cleavir/inline-prep",
