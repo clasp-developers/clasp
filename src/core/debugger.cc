@@ -88,6 +88,12 @@ namespace core {
 // Define backtrace
 //
 
+// ------------------------------------------------------------------
+//
+// Write messages to cl:*debug-io*
+//
+#define WRITE_DEBUG_IO(fmt) core::write_bf_stream(fmt, cl::_sym_STARdebug_ioSTAR->symbolValue());
+
 typedef void(*scan_callback)(gc::Vec0<BacktraceEntry>&backtrace, const std::string& filename, uintptr_t start);
 
 
@@ -278,7 +284,7 @@ void parse_constant(uintptr_t& address, uint64_t& constant) {
   constant = read_then_advance<uint64_t>(address);
 }
 
-void parse_record(gc::Vec0<BacktraceEntry>& backtrace, uintptr_t& address, size_t functionIndex, const StkSizeRecord& function, StkMapRecord& record) {
+void parse_record(gc::Vec0<BacktraceEntry>& backtrace, uintptr_t& address, size_t functionIndex, const StkSizeRecord& function, StkMapRecord& record, bool library) {
   uintptr_t recordAddress = address;
   BT_LOG((buf,"Parse record at %p\n", (void*)address));
   uint64_t patchPointID = read_then_advance<uint64_t>(address);
@@ -297,18 +303,22 @@ void parse_record(gc::Vec0<BacktraceEntry>& backtrace, uintptr_t& address, size_
       abort();
     }
     int32_t offsetOrSmallConstant = read_then_advance<int32_t>(address);
+    if (backtrace.size() == 0 ) {
+      if (library) {
+        WRITE_DEBUG_IO(BF("Stackmap-library function %p stack-size %lu patchPointId %u offset %d\n") % (void*)function.FunctionAddress % function.StackSize % patchPointID % offsetOrSmallConstant );
+      } else {
+        WRITE_DEBUG_IO(BF("Stackmap-jit function %p stack-size %lu patchPointId %u offset %d\n") % (void*)function.FunctionAddress % function.StackSize % patchPointID % offsetOrSmallConstant );
+      }
+    }
     if (patchPointID == 1234567 ) {
       BT_LOG((buf,"patchPointID matched at %p\n", (void*)recordAddress));
       for (size_t j=0; j<backtrace.size(); ++j ) {
-        if (backtrace[j]._Stage == symbolicated || backtrace[j]._Stage == lispFrame) {
-          BT_LOG((buf,"comparing function#%lu @%p to %s\n", functionIndex, (void*)function.FunctionAddress, backtrace_frame(j,&backtrace[j]).c_str() ));
-          if (function.FunctionAddress == backtrace[j]._FunctionStart) {
-            backtrace[j]._Stage = lispFrame;  // anything with a stackmap is a lisp frame
-            backtrace[j]._FrameSize = function.StackSize;
-            backtrace[j]._FrameOffset = offsetOrSmallConstant;
-            BT_LOG((buf,"Identified lispFrame frameOffset = %d\n", offsetOrSmallConstant));
-            break;
-          }
+        BT_LOG((buf,"comparing function#%lu @%p to %s\n", functionIndex, (void*)function.FunctionAddress, backtrace_frame(j,&backtrace[j]).c_str() ));
+        if (function.FunctionAddress == backtrace[j]._FunctionStart) {
+          backtrace[j]._Stage = lispFrame;  // anything with a stackmap is a lisp frame
+          backtrace[j]._FrameSize = function.StackSize;
+          backtrace[j]._FrameOffset = offsetOrSmallConstant;
+          BT_LOG((buf,"Identified lispFrame frameOffset = %d\n", offsetOrSmallConstant));
         }
       }
     }
@@ -340,7 +350,7 @@ void parse_record(gc::Vec0<BacktraceEntry>& backtrace, uintptr_t& address, size_
 }  
 
 
-void walk_one_llvm_stackmap(gc::Vec0<BacktraceEntry>&backtrace, uintptr_t& address, uintptr_t end) {
+void walk_one_llvm_stackmap(gc::Vec0<BacktraceEntry>&backtrace, uintptr_t& address, uintptr_t end, bool library) {
   uintptr_t stackMapAddress = address;
   Header header;
   size_t NumFunctions;
@@ -375,7 +385,7 @@ void walk_one_llvm_stackmap(gc::Vec0<BacktraceEntry>&backtrace, uintptr_t& addre
     BT_LOG((buf,"PASS2 Examining function #%lu at %p - %llu records\n", functionIndex, (void*)function.FunctionAddress, function.RecordCount));
     for ( size_t index=0; index<function.RecordCount; index++) {
       StkMapRecord record;
-      parse_record(backtrace,address,functionIndex,function,record);
+      parse_record(backtrace,address,functionIndex,function,record,library);
     }
   }
 }
@@ -404,7 +414,7 @@ void search_jitted_stackmaps(gc::Vec0<BacktraceEntry>& backtrace)
     uintptr_t address = entry.second._StartAddress;
     BT_LOG((buf," Stackmap start at %p up to %p\n", (void*)address, (void*)entry.second._EndAddress));
     for ( size_t num = 0; num<entry.second._Number; ++num ) {
-      walk_one_llvm_stackmap(backtrace,address,entry.second._EndAddress);
+      walk_one_llvm_stackmap(backtrace,address,entry.second._EndAddress,false);
       if (address>=entry.second._EndAddress) break;
     }
   }
@@ -425,6 +435,9 @@ void search_jitted_objects(gc::Vec0<BacktraceEntry>& backtrace, bool searchFunct
   WITH_READ_LOCK(debugInfo()._JittedObjectsLock);
   for ( auto entry : debugInfo()._JittedObjects ) {
     BT_LOG((buf,"Looking at jitted object name: %s @%p size: %d\n", entry._Name.c_str(), (void*)entry._ObjectPointer, entry._Size));
+    if (backtrace.size()==0 && !searchFunctionDescriptions) {
+      WRITE_DEBUG_IO(BF("Jitted-object object-start %p object-end %p name %s\n") % (void*)entry._ObjectPointer % (void*)(entry._ObjectPointer+entry._Size) % entry._Name);
+    }
     for (size_t j=0; j<backtrace.size(); ++j ) {
       BT_LOG((buf, "Comparing to backtrace frame %lu  return address %p %s\n", j, (void*)backtrace[j]._ReturnAddress, backtrace_frame(j,&backtrace[j]).c_str()));
       if (!searchFunctionDescriptions && backtrace[j]._Stage != symbolicated) {
@@ -527,7 +540,7 @@ bool function_name(uintptr_t returnAddress, std::string& name, uintptr_t& realFu
 #define STACKMAPS_SEGNAME  "__LLVM_STACKMAPS"
 #define STACKMAPS_SECTNAME "__llvm_stackmaps"
 #define LINKEDIT_SEGNAME   "__LINKEDIT"
-
+#if 0 // keep this for the future if we read the library ourselves
 __attribute__((optnone)) void search_library_macho_64( gc::Vec0<BacktraceEntry>& backtrace, const struct mach_header_64* loaded_mhp, const struct mach_header_64* file_mhp  )
 {
   bool foundStackmaps = false;
@@ -600,6 +613,7 @@ __attribute__((optnone)) void search_library_macho_64( gc::Vec0<BacktraceEntry>&
 }
 
 
+
 void search_mach( gc::Vec0<BacktraceEntry>& backtrace, const struct mach_header* loaded_mhp, const struct mach_header* file_mhp )
 {
   bool foundStackmaps = false;
@@ -632,7 +646,7 @@ void search_mach( gc::Vec0<BacktraceEntry>& backtrace, const struct mach_header*
     //search_library_macho_32(backtrace,mhp);
   }
 }
-
+#endif
 
 std::string& ltrim(std::string& str, const std::string& chars = "\t\n\v\f\r ")
 {
@@ -748,28 +762,34 @@ void search_with_otool_and_nm(gc::Vec0<BacktraceEntry>& backtrace, const char* f
 {
 #define BUFLEN 2048
   std::vector<NmSymbol> symbol_table = load_symbol_table(filename,(uintptr_t)header);
-  if (symbol_table.size()>0) {
-    for ( size_t j=0; j<backtrace.size(); ++j ) {
-      size_t index;
-      bool found = binary_search(backtrace[j]._ReturnAddress,symbol_table,index);
-      if (found && (symbol_table[index]._Type == 't' || symbol_table[index]._Type == 'T')) {
-        backtrace[j]._Stage = symbolicated;
-        backtrace[j]._FunctionStart = symbol_table[index]._Address;
-        backtrace[j]._FunctionEnd = symbol_table[index+1]._Address;
-        backtrace[j]._SymbolName = symbol_table[index]._Name;
-      }
-    }
-  // Look for FunctionDescriptions
+  if (backtrace.size() == 0) {
     for (auto entry : symbol_table ) {
-      if (entry._Type == 'd' || entry._Type=='D' || entry._Type=='s' || entry._Type=='S') {
-        if (entry._Name.size()>5 && entry._Name.substr(entry._Name.size()-5,entry._Name.size()) == "^DESC") {
-          std::string function_part = entry._Name.substr(0,entry._Name.size()-5);
-          printf("%s:%d:%s Found a possible FunctionDescription %s \n", __FILE__, __LINE__, __FUNCTION__, entry._Name.c_str());
-          for ( size_t j=0; j<backtrace.size(); ++j ) {
-            if (backtrace[j]._SymbolName == function_part) {
-              printf("%s:%d:%s Matched to backtrace frame %lu FunctionName %s \n", __FILE__, __LINE__, __FUNCTION__, j, backtrace[j]._SymbolName.c_str());
-              backtrace[j]._Stage = lispFrame; // anything with a FunctionDescription is a lisp frame
-              backtrace[j]._FunctionDescription = entry._Address;
+      WRITE_DEBUG_IO(BF("Symbol start %p type %c name %s\n") % (void*)entry._Address % entry._Type % entry._Name);
+    }
+  } else {
+    if (symbol_table.size()>0) {
+      for ( size_t j=0; j<backtrace.size(); ++j ) {
+        size_t index;
+        bool found = binary_search(backtrace[j]._ReturnAddress,symbol_table,index);
+        if (found && (symbol_table[index]._Type == 't' || symbol_table[index]._Type == 'T')) {
+          backtrace[j]._Stage = symbolicated;
+          backtrace[j]._FunctionStart = symbol_table[index]._Address;
+          backtrace[j]._FunctionEnd = symbol_table[index+1]._Address;
+          backtrace[j]._SymbolName = symbol_table[index]._Name;
+        }
+      }
+  // Look for FunctionDescriptions
+      for (auto entry : symbol_table ) {
+        if (entry._Type == 'd' || entry._Type=='D' || entry._Type=='s' || entry._Type=='S') {
+          if (entry._Name.size()>5 && entry._Name.substr(entry._Name.size()-5,entry._Name.size()) == "^DESC") {
+            std::string function_part = entry._Name.substr(0,entry._Name.size()-5);
+//          printf("%s:%d:%s Found a possible FunctionDescription %s \n", __FILE__, __LINE__, __FUNCTION__, entry._Name.c_str());
+            for ( size_t j=0; j<backtrace.size(); ++j ) {
+              if (backtrace[j]._SymbolName == function_part) {
+//              printf("%s:%d:%s Matched to backtrace frame %lu FunctionName %s \n", __FILE__, __LINE__, __FUNCTION__, j, backtrace[j]._SymbolName.c_str());
+                backtrace[j]._Stage = lispFrame; // anything with a FunctionDescription is a lisp frame
+                backtrace[j]._FunctionDescription = entry._Address;
+              }
             }
           }
         }
@@ -827,7 +847,10 @@ void search_with_otool_and_nm(gc::Vec0<BacktraceEntry>& backtrace, const char* f
 //            printf("%s:%d:%s  Read __LLVM_STACKMAPS info address: %p end: %p\n", __FILE__, __LINE__, __FUNCTION__, stackmap_address, stackmaps_end);
       while (stackmap_address<stackmaps_end) {
         BT_LOG((buf," Stackmap start at %p\n", (void*)stackmap_address));
-        walk_one_llvm_stackmap(backtrace,stackmap_address,stackmaps_end);
+        if (backtrace.size()==0) {
+          WRITE_DEBUG_IO(BF("Walking stackmap at %p\n") % (void*)stackmap_address);
+        }
+        walk_one_llvm_stackmap(backtrace,stackmap_address,stackmaps_end,true);
       }
     }
   }
@@ -864,6 +887,9 @@ void walk_loaded_objects(gc::Vec0<BacktraceEntry>& backtrace) {
     const struct mach_header* loaded_header = _dyld_get_image_header(idx);
 #if 1
       // Use otool and nm
+    if (backtrace.size()==0) {
+      WRITE_DEBUG_IO(BF("Library %s\n") % filename );
+    }
     search_with_otool_and_nm(backtrace,filename,loaded_header);
 #else      
     uint32_t magic = loaded_header->magic;
@@ -905,6 +931,7 @@ void scan_elf_library_for_symbols_then_stackmaps(gc::Vec0<BacktraceEntry>&backtr
   GElf_Shdr   shdr;
   Elf_Data    *data;
   int         fd, ii, count;
+  WRITE_DEBUG_IO(BF("Library %s\n") % filename );
   ensure_libelf_initialized();
   elf_version(EV_CURRENT);
   fd = open(filename.c_str(), O_RDONLY);
@@ -930,13 +957,16 @@ void scan_elf_library_for_symbols_then_stackmaps(gc::Vec0<BacktraceEntry>&backtr
       for (ii = 0; ii < count; ++ii) {
         GElf_Sym sym;
         gelf_getsym(data, ii, &sym);
+        uintptr_t symbol_start = (uintptr_t)sym.st_value+start;
+        uintptr_t symbol_end = symbol_start+sym.st_size;
+        if (backtrace.size()==0) {
+          WRITE_DEBUG_IO(BF("Symbol start %p end %p name %s\n") % (void*)symbol_start % (void*)symbol_end % elf_strptr(elf,shdr.sh_link , (size_t)sym.st_name));
+        }
         BT_LOG((buf,"Looking at symbol %s type: %d\n", elf_strptr(elf,shdr.sh_link , (size_t)sym.st_name), ELF64_ST_TYPE(sym.st_info)));
         if (ELF64_ST_TYPE(sym.st_info) == STT_FUNC) {
           BT_LOG((buf,"It's a function symbol\n" ));
           for ( size_t j=0; j<backtrace.size(); ++j ) {
             if (backtrace[j]._Stage==undefined) {
-              uintptr_t symbol_start = (uintptr_t)sym.st_value+start;
-              uintptr_t symbol_end = symbol_start+sym.st_size;
               if (symbol_start<=backtrace[j]._ReturnAddress && backtrace[j]._ReturnAddress<symbol_end) {
                 backtrace[j]._Stage = symbolicated;
                 backtrace[j]._FunctionStart = symbol_start;
@@ -1001,7 +1031,7 @@ void scan_elf_library_for_symbols_then_stackmaps(gc::Vec0<BacktraceEntry>&backtr
 	//                        elf_ndxscn ( scn ), name, shdr.sh_addr, shdr.sh_offset, shdr.sh_size );
       while (addr<stackmap_end) {
         BT_LOG((buf," Stackmap start at %p\n", (void*)addr));
-        walk_one_llvm_stackmap(backtrace,addr,stackmap_end);
+        walk_one_llvm_stackmap(backtrace,addr,stackmap_end,true);
       }
     }
   }
@@ -1504,6 +1534,27 @@ void fill_in_interpreted_frames(gc::Vec0<BacktraceEntry>& backtrace) {
   }
 }
 
+
+
+
+void fill_backtrace_or_dump_info(gc::Vec0<BacktraceEntry>& backtrace) {
+#ifdef _TARGET_OS_LINUX
+  ScanInfo scan;
+  scan._Backtrace = &backtrace;
+    // Search the symbol tables and stackmaps
+  dl_iterate_phdr(elf_loaded_object_callback,&scan);
+#endif
+#ifdef _TARGET_OS_DARWIN
+//    printf("walk symbol tables and stackmaps for DARWIN\n");
+  walk_loaded_objects(backtrace);
+#endif
+    // Now search the jitted objects
+  search_jitted_objects(backtrace,false);
+  search_jitted_objects(backtrace,true); // Search them twice to find all FunctionDescription objects
+  search_jitted_stackmaps(backtrace);
+}
+
+
 SYMBOL_EXPORT_SC_(CorePkg,make_backtrace_frame);
 SYMBOL_EXPORT_SC_(KeywordPkg,function_name);
 SYMBOL_EXPORT_SC_(KeywordPkg,arguments);
@@ -1533,20 +1584,13 @@ CL_DEFUN T_sp core__clib_backtrace_as_list() {
   }
 
   BT_LOG((buf,"About to walk library info\n" ));
-#ifdef _TARGET_OS_LINUX
-  ScanInfo scan;
-  scan._Backtrace = &backtrace;
-    // Search the symbol tables and stackmaps
-  dl_iterate_phdr(elf_loaded_object_callback,&scan);
-#endif
-#ifdef _TARGET_OS_DARWIN
-//    printf("walk symbol tables and stackmaps for DARWIN\n");
-  walk_loaded_objects(backtrace);
-#endif
-    // Now search the jitted objects
-  search_jitted_objects(backtrace,false);
-  search_jitted_objects(backtrace,true); // Search them twice to find all FunctionDescription objects
-  search_jitted_stackmaps(backtrace);
+
+
+  //
+  // Walk libraries and jitted objects to fill backtrace.
+  //
+  fill_backtrace_or_dump_info(backtrace);
+
     
     // Now get the arguments
   BT_LOG((buf,"Getting arguments\n"));
@@ -1660,6 +1704,12 @@ CL_DEFUN void core__frame_pointers() {
   if (fp != NULL)
     printf("Frame pointer --> %p\n", fp);
 };
+
+
+CL_DEFUN void core__dump_symbol_and_stackmap_info() {
+  gc::Vec0<BacktraceEntry> emptyBacktrace;
+  fill_backtrace_or_dump_info(emptyBacktrace);
+}
 };
 
 namespace core {
