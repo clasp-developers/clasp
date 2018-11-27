@@ -46,9 +46,6 @@ class SpecialForm_O : public Function_O {
 
 public: // virtual functions inherited from Object
   void initialize();
-#if defined(XML_ARCHIVE)
-  void archiveBase(ArchiveP node);
-#endif // defined(XML_ARCHIVE)
 //	string	__repr__() const;
 
 GCPRIVATE: // instance variables

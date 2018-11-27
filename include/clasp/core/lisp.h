@@ -356,9 +356,6 @@ public:
 
 public:
   void initialize();
-#if defined(XML_ARCHIVE)
-  void archive(ArchiveP node);
-#endif // defined(XML_ARCHIVE)
 public:
   GCRoots _Roots;
   // Trap INTERN of a specific symbol to help resolve symbol conflicts

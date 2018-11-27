@@ -45,9 +45,6 @@ public:
   void initialize();
 
 public:
-#if defined(XML_ARCHIVE)
-  void archive(ArchiveP node);
-#endif // defined(XML_ARCHIVE)
 private:
   vector<int> _Ints;
 

@@ -45,9 +45,6 @@ class Path_O : public General_O {
   LISP_CLASS(core, CorePkg, Path_O, "path",General_O);
 
 public:
-#if defined(XML_ARCHIVE)
-  void archiveBase(ArchiveP node);
-#endif // defined(XML_ARCHIVE)
   void initialize();
 
 private:
