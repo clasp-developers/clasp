@@ -1255,41 +1255,6 @@ CL_DEFUN T_sp core__mkstemp(String_sp thetemplate) {
   //  cl_index l;
   int fd;
   ASSERT(cl__stringp(thetemplate));
-#if defined(CLASP_MS_WINDOWS_HOST)
-  T_sp phys, dir, file;
-  char strTempDir[MAX_PATH];
-  char strTempFileName[MAX_PATH];
-  char *s;
-  int ok;
-  phys = cl__translate_logical_pathname(1, thetemplate);
-  dir = cl__make_pathname(8,
-                         kw::_sym_type, _Nil<T_O>(),
-                         kw::_sym_name, _Nil<T_O>(),
-                         kw::_sym_version, _Nil<T_O>(),
-                         kw::_sym_defaults, phys);
-  if (dir.nilp()) SIMPLE_ERROR(BF("In %s about invoke core__coerce_to_filename(NIL)") % __FUNCTION__);
-  dir = core__coerce_to_filename(dir);
-  file = cl_file_namestring(phys);
-
-  l = dir->base_string.fillp;
-  memcpy(strTempDir, dir->c_str(), l);
-  strTempDir[l] = 0;
-  for (s = strTempDir; *s; s++)
-    if (*s == '/')
-      *s = '\\';
-
-  clasp_disable_interrupts();
-  ok = GetTempFileName(strTempDir, (char *)file->c_str(), 0,
-                       strTempFileName);
-  clasp_enable_interrupts();
-  if (!ok) {
-    output = _Nil<T_O>();
-  } else {
-    l = strlen(strTempFileName);
-    output = ecl_alloc_simple_base_string(l);
-    memcpy(output->c_str(), strTempFileName, l);
-  }
-#else
   if (thetemplate.nilp()) SIMPLE_ERROR(BF("In %s the template is NIL") % __FUNCTION__);
   thetemplate = core__coerce_to_filename(thetemplate);
   stringstream outss;
@@ -1299,17 +1264,8 @@ CL_DEFUN T_sp core__mkstemp(String_sp thetemplate) {
   std::vector<char> dst_path(outname.begin(), outname.end());
   dst_path.push_back('\0');
   clasp_disable_interrupts();
-#ifdef HAVE_MKSTEMP
   fd = mkstemp(&dst_path[0]);
   outname.assign(dst_path.begin(), dst_path.end() - 1);
-#else
-  if (mktemp(&dst_path[0])) {
-    outname.assign(dst_path.begin(), dst_path.end() - 1);
-    fd = open(outname.c_str(), O_CREAT | O_TRUNC, 0666);
-  } else {
-    fd = -1;
-  }
-#endif
   clasp_enable_interrupts();
   T_sp output;
   if (fd < 0) {
@@ -1318,7 +1274,33 @@ CL_DEFUN T_sp core__mkstemp(String_sp thetemplate) {
     close(fd);
     output = cl__truename(SimpleBaseString_O::make(outname));
   }
-#endif
+  return output;
+}
+
+ CL_LAMBDA(template);
+CL_DECLARE();
+CL_DOCSTRING("mkdtemp");
+CL_DEFUN T_sp core__mkdtemp(String_sp thetemplate) {
+  //  cl_index l;
+  ASSERT(cl__stringp(thetemplate));
+  if (thetemplate.nilp()) SIMPLE_ERROR(BF("In %s the template is NIL") % __FUNCTION__);
+  thetemplate = core__coerce_to_filename(thetemplate);
+  stringstream outss;
+  outss << thetemplate->get();
+  outss << "XXXXXX";
+  string outname = outss.str();
+  std::vector<char> dst_path(outname.begin(), outname.end());
+  dst_path.push_back('\0');
+  clasp_disable_interrupts();
+  const char* dirname = mkdtemp(&dst_path[0]);
+  if (dirname==NULL) {
+    SIMPLE_ERROR(BF("There was an error in mkdtemp - errno %d") % errno);
+  }
+  outname.assign(dst_path.begin(), dst_path.end() - 1);
+  clasp_enable_interrupts();
+  T_sp output;
+  outname = outname + "/";
+  output = cl__truename(SimpleBaseString_O::make(outname));
   return output;
 }
 

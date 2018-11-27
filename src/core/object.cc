@@ -456,7 +456,9 @@ void General_O::describe(T_sp stream) {
 
 void General_O::__write__(T_sp strm) const {
   if (clasp_print_readably() && this->fieldsp()) {
-    if (cl::_sym_printObject->fboundp()) {
+    if (_sym_STARliteral_print_objectSTAR->symbolValue().notnilp()) {
+      eval::funcall(_sym_STARliteral_print_objectSTAR->symbolValue(),this->asSmartPtr(),strm);
+    } else if (cl::_sym_printObject->fboundp()) {
       core::eval::funcall(cl::_sym_printObject,this->asSmartPtr(),strm);
     } else {
       core__print_cxx_object(this->asSmartPtr(), strm);

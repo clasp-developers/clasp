@@ -256,6 +256,29 @@ For C/C++ frames - return (list 'c-function name)."
 (defun backtrace-with-arguments ()
   (backtrace-as-list))
 
+(defun gather-frames (frames start-trigger &key verbose)
+  (let ((state (if start-trigger
+                   :skip-first-frames
+                   :gather)) ; If the start-trigger is NIL start gathering right away
+        new-state result)
+    (dolist (frame frames)
+      (let ((func-name (backtrace-frame-function-name frame)))
+        ;; State machine
+        (setq new-state (cond
+                          ((and (eq state :skip-first-frames)
+                                (funcall start-trigger frame))
+                           :gather)
+                          (t state)))
+        (when verbose
+          (bformat t "-----state -> %s   new-state -> %s%N" state new-state)
+          (bformat t "     frame: %s%N" frame))
+        (setq state new-state)
+        (when (and (eq (backtrace-frame-type frame) :lisp)
+                   (eq state :gather))
+          (when verbose (bformat t "     PUSHED!%N"))
+          (push frame result))))
+    (reverse result)))
+
 ;;; Extract just the Common Lisp backtrace frames
 ;;; starting from a frame that satisfies gather-start-trigger
 (defun common-lisp-backtrace-frames (&key verbose (focus t)
@@ -267,35 +290,10 @@ recording backtrace frames for Common Lisp.   Looking for the 'UNIVERSAL-ERROR-H
 is one way to eliminate frames that aren't interesting to the user.
 Set gather-all-frames to T and you can gather C++ and Common Lisp frames"
   (let ((frames (backtrace-with-arguments)))
-    (flet ((gather-frames (start-trigger)
-                          (let (result
-                                (state (if start-trigger
-                                           :skip-first-frames
-                                         :gather)) ; If the start-trigger is NIL start gathering right away
-                                new-state)
-                            (dolist (frame frames)
-                              (let ((func-name (backtrace-frame-function-name frame)))
-                                ;; State machine
-                                (setq new-state (cond
-                                                 ((and (eq state :skip-first-frames)
-                                                       (funcall start-trigger frame))
-                                                  :gather)
-                                                 (t state)))
-                                (when verbose
-                                  (bformat t "-----state -> %s   new-state -> %s%N" state new-state)
-                                  (bformat t "     frame: %s%N" frame))
-                                (setq state new-state)
-                                (when (and (eq state :gather) (or gather-all-frames (eq (backtrace-frame-type frame) :lisp)))
-                                  (when verbose (bformat t "     PUSHED!%N"))
-                                  (push frame result))))
-                            (if result
-                                (nreverse result)
-                              frames))))
-      (let ((frames (gather-frames gather-start-trigger)))
-        (if frames
-            frames
-            (gather-frames nil))        ; fallback and gather all
-        ))))
+    (cond
+      ((gather-frames frames gather-start-trigger :verbose verbose)) ; Start gathering on a specific frame
+      ((gather-frames frames (lambda (frame) (eq :lisp (backtrace-frame-type frame))) :verbose verbose)) ; return all :LISP frames
+      (t frames)))) ; return ALL frames
 
 ;;; A quick and dirty way to work with btcl frames
 (defvar *current-btcl-frames* nil)

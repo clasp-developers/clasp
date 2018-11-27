@@ -88,5 +88,4 @@ void CxxClass_O::describe(T_sp stream) {
 
 
 
-
 };

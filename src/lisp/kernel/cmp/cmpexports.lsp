@@ -9,11 +9,14 @@
           write-bitcode
           load-bitcode
           *irbuilder*
+          *compile-file-unique-symbol-prefix*
           %ltv*%
           irc-function-create
           irc-bclasp-function-create
           irc-cclasp-function-create
           %fn-prototype%
+          +fn-prototype-argument-names+
+          %fn-prototype*%
           *cleavir-compile-file-hook*
           *cleavir-compile-hook*
           *compile-print*
@@ -49,8 +52,6 @@
           +general-tag+
           %i1%
           %exception-struct%
-          %fn-prototype%
-          +fn-prototype-argument-names+
           %i32%
           %i64%
           %i8*%
@@ -273,8 +274,6 @@
           with-top-level-form
           with-literal-table
           evaluate-function-into-load-time-value
-          generate-run-time-code-for-closurette
-          )
-        )
+          generate-run-time-code-for-closurette))
 
 (use-package :literal :cmp)

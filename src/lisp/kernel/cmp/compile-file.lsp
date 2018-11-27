@@ -318,6 +318,9 @@ Compile a lisp source file into an LLVM module."
                        (output-type :fasl)
                        ;; type can be either :kernel or :user
                        (type :user)
+                       ;; A unique prefix for symbols of compile-file'd files that
+                       ;; will be linked together
+                       (unique-symbol-prefix "")
                        ;; ignored by bclasp
                        ;; but passed to hook functions
                        environment
@@ -330,7 +333,8 @@ Compile a lisp source file into an LLVM module."
     (let* ((*compile-print* print)
            (*compile-verbose* verbose)
            (output-path (compile-file-pathname input-file :output-file output-file :output-type output-type ))
-           (*compile-file-output-pathname* output-path))
+           (*compile-file-output-pathname* output-path)
+           (*compile-file-unique-symbol-prefix* unique-symbol-prefix))
       (with-compiler-timer (:message "Compile-file" :report-link-time t :verbose verbose)
         (let ((module (compile-file-to-module input-file
                                               :type type

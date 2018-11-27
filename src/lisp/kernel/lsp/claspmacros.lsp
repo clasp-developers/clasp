@@ -96,18 +96,6 @@
 
 (export 'do-not-funcall-special-operator)
 
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; Reader macro for builtin objects
-;;
-(defun read-cxx-object (stream char n)
-  (declare (ignore char))
-  (let ((description (read stream t nil t)))
-    (apply #'core:load-cxx-object (car description) (cdr description))))
-
-(set-dispatch-macro-character #\# #\I #'read-cxx-object)
-
 (defmacro with-print-readably (&rest body)
   `(with-standard-io-syntax
      (let ((*print-circle* t))

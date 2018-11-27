@@ -28,7 +28,7 @@ struct gctools::GCInfo<core::Record_O> {
 namespace core {
 SMART(Record);
 class Record_O : public General_O {
-  LISP_ABSTRACT_CLASS(core, CorePkg, Record_O, "Record",General_O);
+  LISP_CLASS(core, CorePkg, Record_O, "Record",General_O);
 public:
   typedef enum { initializing,
                  loading,
@@ -573,6 +573,13 @@ public:
       break;
     }
   }
+
+  // The Common Lisp exposed method
+  T_sp field_read(Symbol_sp name);
+  void field_write(Symbol_sp name, T_sp object);
+  T_sp field_patch(Symbol_sp name, T_sp object);
+
+  Symbol_sp record_stage() const;
 };
 };
 #endif

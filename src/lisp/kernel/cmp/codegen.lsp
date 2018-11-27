@@ -358,6 +358,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
                                               result
                                               :function-name name
                                               :parent-env env
+                                              :linkage 'llvm-sys:external-linkage
                                               :function-form form
                                               :function-info (make-function-info
                                                               :function-name name

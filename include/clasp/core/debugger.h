@@ -102,11 +102,11 @@ void register_jitted_object(const std::string& name, uintptr_t address, int size
 
 void push_one_llvm_stackmap(bool jit, uintptr_t& startAddress );
 
-void register_llvm_stackmaps(uintptr_t startAddress, uintptr_t endAddress);
+void register_llvm_stackmaps(uintptr_t startAddress, uintptr_t endAddress, size_t numberStackmaps);
 
  bool if_dynamic_library_loaded_remove(const std::string& libraryName);
 
- void add_dynamic_library_handle(const std::string& libraryName, void* handle, const std::string& guaranteedSymbol );
+void add_dynamic_library_handle(const std::string& libraryName, void* handle);
 
 
 
@@ -126,6 +126,12 @@ BacktraceEntry() : _Stage(undefined),_ReturnAddress(0),_FunctionStart(0),_Functi
   T_sp                 _Arguments;
   uintptr_t            _FunctionDescription;
 };
+
+};
+
+extern "C" {
+void dbg_safe_print(uintptr_t raw);
+void dbg_safe_println(uintptr_t raw);
 
 };
 #endif

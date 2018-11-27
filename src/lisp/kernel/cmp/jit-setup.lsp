@@ -237,7 +237,7 @@ No DIBuilder is defined for the default module")
     (llvm-sys:create-const-gep2-64 *irbuilder* str-gv 0 0 "str")))
 
 
-(defun module-make-global-string (str &optional (label "global-str"))
+(defun module-make-global-string (str &optional (label ""))
   "A function for creating unique strings within the module - return an LLVM pointer to the string"
   (or *the-module* (error "module-make-global-string-ptr *the-module* is NIL"))
   (let* ((unique-string-global-variable
@@ -341,9 +341,10 @@ No DIBuilder is defined for the default module")
       (let ((lineno (core:source-pos-info-lineno *current-source-pos-info*)))
         (cond
           (*compile-file-pathname*
-           (core:bformat nil "%s.%s^%d^TOP-COMPILE-FILE"
+           (core:bformat nil "%s.%s-%s^%d^TOP-COMPILE-FILE"
                          (pathname-name *compile-file-pathname*)
                          (pathname-type *compile-file-pathname*)
+                         *compile-file-unique-symbol-prefix*
                          lineno))
           ;; Is this even possible?
           (*load-pathname*
@@ -355,7 +356,7 @@ No DIBuilder is defined for the default module")
            (core:bformat nil "UNKNOWN^%d^TOP-UNKNOWN" lineno))))
       "UNKNOWN??LINE^TOP-UNKNOWN"))
 
-(defun jit-function-name (lname)
+(defun jit-function-name (lname &key (compile-file-unique-symbol-prefix *compile-file-unique-symbol-prefix*))
   "Depending on the type of LNAME an actual LLVM name is generated"
   ;;  (break "Check backtrace")
   (cond

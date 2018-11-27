@@ -42,6 +42,7 @@ extern "C" {
 #include <clasp/core/character.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/array.h>
+#include <clasp/core/hashTableEq.h>
 #include <clasp/core/lispList.h>
 #include <clasp/core/bformat.h>
 #include <clasp/core/instance.h>
@@ -347,6 +348,10 @@ LtvcReturn ltvc_make_base_string(gctools::GCRootsInModule* holder, size_t index,
   LTVCRETURN holder->set(index,v.tagged_());
   NO_UNWIND_END();
 }
+};
+
+extern "C" {
+
 
 LtvcReturn ltvc_make_pathname(gctools::GCRootsInModule* holder, size_t index, gctools::Tagged host_t,
                                    gctools::Tagged device_t,
@@ -484,42 +489,9 @@ LtvcReturn ltvc_set_ltv_funcall_cleavir(gctools::GCRootsInModule* holder, size_t
   LTVCRETURN holder->set(index,val.tagged_());
 }
 
-struct MaybeDebugStartup {
-  PosixTime_sp start;
-  fnLispCallingConvention fptr;
-  size_t start_dispatcher_count;
-  MaybeDebugStartup(fnLispCallingConvention fp) : fptr(fp) {
-    if (core::_sym_STARdebugStartupSTAR->symbolValue().notnilp()) {
-      this->start = PosixTime_O::createNow();
-      if (comp::_sym_dispatcher_count->fboundp()) {
-        core::T_sp nu = core::eval::funcall(comp::_sym_dispatcher_count);
-        this->start_dispatcher_count = nu.unsafe_fixnum();
-      } else {
-        this->start_dispatcher_count = 0;
-      }
-    }
-  };
-
-  ~MaybeDebugStartup() {
-    if (core::_sym_STARdebugStartupSTAR->symbolValue().notnilp()) {
-      PosixTime_sp end = PosixTime_O::createNow();
-      PosixTimeDuration_sp diff = end->sub(this->start);
-      Dl_info di;
-      dladdr((void*)fptr,&di);
-      mpz_class ms = diff->totalMilliseconds();
-      size_t end_dispatcher_count = 0;
-      if (comp::_sym_dispatcher_count->fboundp()) {
-        core::T_sp nu = core::eval::funcall(comp::_sym_dispatcher_count);
-        end_dispatcher_count = nu.unsafe_fixnum();
-      }
-      size_t dispatcher_delta = end_dispatcher_count - this->start_dispatcher_count;
-      printf("%s ms %zu gfds : %s\n", _rep_(Integer_O::create(ms)).c_str(), dispatcher_delta, di.dli_sname);
-    }
-  }
-};
 
 LtvcReturn ltvc_toplevel_funcall(fnLispCallingConvention fptr, const char* name) {
-#ifdef DEBUG_SLOW
+#if 0 // def DEBUG_SLOW
   MaybeDebugStartup startup(fptr);
 #endif
   core::T_O *lcc_arglist = _Nil<core::T_O>().raw_();
@@ -765,41 +737,6 @@ void invokeTopLevelFunction(core::T_mv *resultP,
   ASSERTNOTNULL(*resultP);
 };
 #endif
-
-
-
-void cc_register_library(const void* fn) {
-#if 0
-//  printf("%s:%d header -> %p\n", __FILE__, __LINE__, header );
-  if (fn) {
-    Dl_info dlinfo;
-    int res = dladdr(fn,&dlinfo);
-    if (res<=0) {
-      printf("%s:%d Could not register_library with %p\n", __FILE__, __LINE__, fn);
-      abort();
-    }
-//    printf("%s:%d Found library base %p\n", __FILE__, __LINE__, (void*)dlinfo.dli_fbase);
-    unsigned long section_size = 0;
-    void* header = (void*)dlinfo.dli_fbase;
-#if defined(_TARGET_OS_DARWIN)
-    uint8_t* p_section =  mygetsectiondata( header,
-                                            "__LLVM_STACKMAPS",
-                                            "__llvm_stackmaps",
-                                            &section_size );
-    printf("%s:%d:%s Eliminate work to initialize stackmaps on darwin\n", __FILE__, __LINE__, __FUNCTION__);
-#else
-    uint8_t* p_section = NULL;
-    printf("%s:%d:%s Nothing is done to initialize stackmaps on linux\n", __FILE__, __LINE__, __FUNCTION__);
-#endif
-    if (p_section!=nullptr) {
-      STACKMAP_LOG(("%s:%d LLVM_STACKMAPS  p_section@%p section_size=%lu\n", __FILE__, __LINE__, (void*)p_section, section_size ));
-      core::register_llvm_stackmaps((uintptr_t)p_section,(uintptr_t)p_section+section_size);
-    } else {
-      STACKMAP_LOG(("%s:%d     Could not find LLVM_STACKMAPS\n", __FILE__, __LINE__ ));
-    }
-  }
-#endif
-}
 
 
 /*! Invoke the main functions from the main function array.

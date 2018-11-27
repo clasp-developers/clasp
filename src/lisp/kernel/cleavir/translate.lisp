@@ -546,22 +546,18 @@ Does not hoist."
       (values hir function-info-map))))
 
 ;;; Convenience. AST must have been hoisted already.
-(defun translate-ast (ast &key (abi *abi-x86-64*) (linkage 'llvm-sys:internal-linkage)
+(defun translate-hoisted-ast (ast &key (abi *abi-x86-64*) (linkage 'llvm-sys:internal-linkage)
                             (env *clasp-env*) ignore-arguments)
   (let ((hir (ast->hir ast)))
     (multiple-value-bind (mir function-info-map)
         (hir->mir hir env)
       (translate mir function-info-map :abi abi :linkage linkage :ignore-arguments ignore-arguments))))
 
-#+cst
-(defun translate-cst (cst &key (abi *abi-x86-64*) (linkage 'llvm-sys:internal-linkage)
-                            (env *clasp-env*) ignore-arguments)
-  (translate-ast (hoist-ast (cst->ast cst env) env) :abi abi :linkage linkage :env env :ignore-arguments ignore-arguments))
 
-#-cst
-(defun translate-form (form &key (abi *abi-x86-64*) (linkage 'llvm-sys:internal-linkage)
-                              (env *clasp-env*) ignore-arguments)
-  (translate-ast (hoist-ast (generate-ast form env) env) :abi abi :linkage linkage :env env
+(defun translate-ast (ast &key (abi *abi-x86-64*) (linkage 'llvm-sys:internal-linkage)
+                            (env *clasp-env*) ignore-arguments)
+  (translate-hoisted-ast (hoist-ast ast env)
+                 :abi abi :linkage linkage :env env
                  :ignore-arguments ignore-arguments))
 
 (defun translate-lambda-expression-to-llvm-function (lambda-expression)
@@ -633,30 +629,41 @@ This works like compile-lambda-function in bclasp."
 (defun compile-form (form &optional (env *clasp-env*))
   (setf *ct-start* (compiler-timer-elapsed))
   #+cst
-  (translate-cst (cst:cst-from-expression form) :env env)
+  (let* ((cst (cst:cst-from-expression form))
+         (ast (cst->ast cst env)))
+    (translate-ast ast :env env))
   #-cst
-  (translate-form form :env env))
+  (let ((ast (generate-ast form env)))
+    (translate-ast ast :env env)))
+
 
 (defun compile-ltv-form (form &optional (env *clasp-env*))
   (setf *ct-start* (compiler-timer-elapsed))
   #+cst
-  (translate-cst (cst:cst-from-expression form) :env env :ignore-arguments t)
+  (let* ((cst (cst:cst-from-expression form))
+         (ast (cst->ast cst env)))
+    (translate-ast ast :env env :ignore-arguments t :linkage 'llvm-sys:external-linkage))
   #-cst
-  (translate-form form :env env :ignore-arguments t))
+  (let ((ast (generate-ast form env)))
+    (translate-ast ast :env env :ignore-arguments t :linkage 'llvm-sys:external-linkage)))
 
 #+cst
 (defun cleavir-compile-file-cst (cst &optional (env *clasp-env*))
   (literal:with-top-level-form
       (if cmp::*debug-compile-file*
-          (compiler-time (translate-cst cst :env env))
-          (translate-cst cst :env env))))
+          (compiler-time (let (ast (cst->ast cst env))
+                           (translate-ast ast :env env :linkage 'llvm-sys:external-linkage)))
+          (let (ast (cst->ast cst env))
+            (translate-ast ast :env env :linkage 'llvm-sys:external-linkage)))))
 
 #-cst
 (defun cleavir-compile-file-form (form &optional (env *clasp-env*))
   (literal:with-top-level-form
-    (if cmp:*debug-compile-file*
-        (compiler-time (translate-form form :env env))
-        (translate-form form :env env))))
+      (if cmp:*debug-compile-file*
+          (compiler-time (let ((ast (generate-ast form env)))
+                           (translate-ast ast :env env 'llvm-sys:external-linkage)))
+          (let ((ast (generate-ast form env)))
+            (translate-ast ast :env env :linkage 'llvm-sys:external-linkage)))))
 
 (defvar *cst-client* (make-instance 'eclector.concrete-syntax-tree:cst-client))
 

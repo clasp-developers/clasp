@@ -322,6 +322,14 @@ void SourcePosInfo_O::fields(Record_sp node)
 }
 
 string SourcePosInfo_O::__repr__() const {
+  if (cl::_sym_STARprint_readablySTAR->symbolValue().notnilp()) {
+    stringstream ss;
+    T_mv source_file_info = core__source_file_info(core::make_fixnum(this->_FileId));
+    String_sp namestring = gc::As<String_sp>(cl__namestring(gc::As<SourceFileInfo_sp>(source_file_info)->pathname()));
+    ss << "#.(CORE:MAKE-SOURCE-POS-INFO \"" << namestring->get_std_string() << "\"";
+    ss << " " << this->_Filepos << " " << this->_Lineno << " " << this->_Column << ")";
+    return ss.str();
+  }
   stringstream ss;
   ss << "#<" << this->_instanceClass()->_classNameAsString();
   ss << " :fileId " << this->_FileId;

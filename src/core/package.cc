@@ -433,6 +433,11 @@ CL_DEFMETHOD T_mv Package_O::hashTables() const {
 
 string Package_O::__repr__() const {
   WITH_PACKAGE_READ_LOCK(this);
+  if (cl::_sym_STARprint_readablySTAR->symbolValue().notnilp()) {
+    stringstream ss;
+    ss << "#.(CL:FIND-PACKAGE \"" << this->_Name->get_std_string() << "\")";
+    return ss.str();
+  }
   stringstream ss;
   ss << "#<PACKAGE " << this->_Name->get_std_string() << ">";
   return ss.str();

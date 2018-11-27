@@ -26,7 +26,9 @@ THE SOFTWARE.
 /* -^- */
 #define DEBUG_LEVEL_FULL
 
+
 #if 0
+// If you turn this on it takes a LOT of stack memory!!! and it runs even if DEBUG_SOURCE IS ON!!!!
 #define BT_LOG(msg) {char buf[1024]; sprintf msg; LOG(BF("%s") % buf);}
 #else
 #define BT_LOG(msg)
@@ -96,269 +98,260 @@ struct ScanInfo {
   ScanInfo() : _Index(0) {};
 };
 
-  std::string backtrace_frame(size_t index, BacktraceEntry* frame)
-  {
-    stringstream ss;
-    ss << "Frame#" << index << " ";
-    if (frame->_Stage!=undefined) {
-      ss << frame->_SymbolName << " ";
-      ss << "@" << (void*)frame->_FunctionStart << " ";
-      ss << "end: " << (void*)(frame->_FunctionEnd);
-    }
-	return ss.str();
+std::string backtrace_frame(size_t index, BacktraceEntry* frame)
+{
+  stringstream ss;
+  ss << "Frame#" << index << " ";
+  if (frame->_Stage!=undefined) {
+    ss << frame->_SymbolName << " ";
+    ss << "@" << (void*)frame->_FunctionStart << " ";
+    ss << "end: " << (void*)(frame->_FunctionEnd);
   }
+  return ss.str();
+}
 
-    struct JittedObject {
-      std::string _Name;
-      uintptr_t _ObjectPointer;
-      int       _Size;
-      JittedObject() {};
-      JittedObject(const std::string& name, uintptr_t fp, int fs) : _Name(name), _ObjectPointer(fp), _Size(fs) {};
-    };
-
-
-  struct FrameMap {
-    uintptr_t _FunctionPointer;
-    int   _FrameOffset;
-    int   _FrameSize;
-    FrameMap() {};
-    FrameMap(uintptr_t fp, int fo, int fs) : _FunctionPointer(fp), _FrameOffset(fo), _FrameSize(fs) {};
-    FrameMap(const FrameMap& o) {
-      this->_FunctionPointer = o._FunctionPointer;
-      this->_FrameOffset = o._FrameOffset;
-      this->_FrameSize = o._FrameSize;
-    }
-  };
+struct JittedObject {
+  std::string _Name;
+  uintptr_t _ObjectPointer;
+  int       _Size;
+  JittedObject() {};
+  JittedObject(const std::string& name, uintptr_t fp, int fs) : _Name(name), _ObjectPointer(fp), _Size(fs) {};
+};
 
 
-  struct OpenDynamicLibraryInfo {
-    std::string    _Filename;
-    void*          _Handle;
-    uintptr_t      _TextStart;
-    OpenDynamicLibraryInfo(const std::string& f, void* h, uintptr_t s) : _Filename(f), _Handle(h), _TextStart(s) {};
-    OpenDynamicLibraryInfo() {};
-  };
+struct FrameMap {
+  uintptr_t _FunctionPointer;
+  int   _FrameOffset;
+  int   _FrameSize;
+  FrameMap() {};
+  FrameMap(uintptr_t fp, int fo, int fs) : _FunctionPointer(fp), _FrameOffset(fo), _FrameSize(fs) {};
+  FrameMap(const FrameMap& o) {
+    this->_FunctionPointer = o._FunctionPointer;
+    this->_FrameOffset = o._FrameOffset;
+    this->_FrameSize = o._FrameSize;
+  }
+};
 
-  struct StackMapRange {
-    uintptr_t _Start;
-    uintptr_t _End;
-    StackMapRange(uintptr_t s, uintptr_t e) : _Start(s), _End(e) {};
-    StackMapRange() : _Start(0), _End(0) {};
-  };
 
-  struct DebugInfo {
+struct OpenDynamicLibraryInfo {
+  std::string    _Filename;
+  void*          _Handle;
+  OpenDynamicLibraryInfo(const std::string& f, void* h) : _Filename(f), _Handle(h) {};
+  OpenDynamicLibraryInfo() {};
+};
+
+struct StackMapRange {
+  uintptr_t _StartAddress;
+  uintptr_t _EndAddress;
+  size_t _Number;
+  StackMapRange(uintptr_t s, uintptr_t e, size_t number) : _StartAddress(s), _EndAddress(e), _Number(number) {};
+  StackMapRange() : _StartAddress(0), _EndAddress(0), _Number(0) {};
+};
+
+struct DebugInfo {
 #ifdef CLASP_THREADS
-    mutable mp::SharedMutex _OpenDynamicLibraryMutex;
+  mutable mp::SharedMutex _OpenDynamicLibraryMutex;
 #endif
-    map<std::string, OpenDynamicLibraryInfo> _OpenDynamicLibraryHandles;
-    mp::SharedMutex                   _StackMapsLock;
-    std::map<uintptr_t,StackMapRange> _StackMaps;
-    mp::SharedMutex                   _JittedObjectsLock;
-    std::vector<JittedObject>         _JittedObjects;
-    DebugInfo() {};
-  };
+  map<std::string, OpenDynamicLibraryInfo> _OpenDynamicLibraryHandles;
+  mp::SharedMutex                   _StackMapsLock;
+  std::map<uintptr_t,StackMapRange> _StackMaps;
+  mp::SharedMutex                   _JittedObjectsLock;
+  std::vector<JittedObject>         _JittedObjects;
+  DebugInfo() {};
+};
 
-  DebugInfo* global_DebugInfo = NULL;
+DebugInfo* global_DebugInfo = NULL;
 
-  DebugInfo& debugInfo() {
-    if (!global_DebugInfo) {
-      global_DebugInfo = new DebugInfo();
-    }
-    return *global_DebugInfo;
+DebugInfo& debugInfo() {
+  if (!global_DebugInfo) {
+    global_DebugInfo = new DebugInfo();
   }
+  return *global_DebugInfo;
+}
 
-  void add_dynamic_library_handle(const std::string& libraryName, void* handle, const std::string& oneSymbol) {
-    BT_LOG((buf,"Starting\n" ));
+void add_dynamic_library_handle(const std::string& libraryName, void* handle) {
+  BT_LOG((buf,"Starting\n" ));
 #ifdef CLASP_THREADS
-    WITH_READ_WRITE_LOCK(debugInfo()._OpenDynamicLibraryMutex);
+  WITH_READ_WRITE_LOCK(debugInfo()._OpenDynamicLibraryMutex);
 #endif
-    dlerror();
-    void* oneAddr = dlsym(handle,oneSymbol.c_str());
-    void* dle = dlerror();
-    if (dle) {
-      SIMPLE_ERROR(BF("In library %s could not find symbol %s - it was guaranteed to be there - error %s") % libraryName % oneSymbol % (char*)dle );
-    }
-    Dl_info dinfo;
-    int ret = dladdr(oneAddr,&dinfo);
-    if (ret==0) {
-      SIMPLE_ERROR(BF("In library %s could not dladdr address %p for symbol %s") % libraryName % (void*)oneAddr % oneSymbol );
-    }
-    std::string libname(dinfo.dli_fname);
-    OpenDynamicLibraryInfo info(libname,handle,(uintptr_t)dinfo.dli_fbase);
-    debugInfo()._OpenDynamicLibraryHandles[libname] = info;
-  }
+  OpenDynamicLibraryInfo info(libraryName,handle);
+  debugInfo()._OpenDynamicLibraryHandles[libraryName] = info;
+}
 
-  bool if_dynamic_library_loaded_remove(const std::string& libraryName) {
+bool if_dynamic_library_loaded_remove(const std::string& libraryName) {
 #ifdef CLASP_THREADS
-    WITH_READ_WRITE_LOCK(debugInfo()._OpenDynamicLibraryMutex);
+  WITH_READ_WRITE_LOCK(debugInfo()._OpenDynamicLibraryMutex);
 #endif
-    map<string,OpenDynamicLibraryInfo>::iterator fi = debugInfo()._OpenDynamicLibraryHandles.find(libraryName);
-    bool exists = (fi!=debugInfo()._OpenDynamicLibraryHandles.end());
-    if (exists) {
-      BT_LOG((buf,"What about the stackmaps for this library - you need to remove them as well - I should probably NOT store stackmaps for libraries - but fetch them every time we need a backtrace!\n"));
-      dlclose(fi->second._Handle);
-      debugInfo()._OpenDynamicLibraryHandles.erase(libraryName);
-    }
-    return exists;
+  map<string,OpenDynamicLibraryInfo>::iterator fi = debugInfo()._OpenDynamicLibraryHandles.find(libraryName);
+  bool exists = (fi!=debugInfo()._OpenDynamicLibraryHandles.end());
+  if (exists) {
+    BT_LOG((buf,"What about the stackmaps for this library - you need to remove them as well - I should probably NOT store stackmaps for libraries - but fetch them every time we need a backtrace!\n"));
+    dlclose(fi->second._Handle);
+    debugInfo()._OpenDynamicLibraryHandles.erase(libraryName);
   }
+  return exists;
+}
 
 
-  CL_DEFUN List_sp core__dynamic_library_handles() {
+CL_DEFUN List_sp core__dynamic_library_handles() {
 #ifdef CLASP_THREADS
-    WITH_READ_LOCK(debugInfo()._OpenDynamicLibraryMutex);
+  WITH_READ_LOCK(debugInfo()._OpenDynamicLibraryMutex);
 #endif
-    ql::list result;
-    for ( auto entry : debugInfo()._OpenDynamicLibraryHandles ) {
-      result << Cons_O::createList(SimpleBaseString_O::make(entry.second._Filename),
-                                   Pointer_O::create(entry.second._Handle),
-                                   Pointer_O::create((void*)entry.second._TextStart));;
-    }
-    return result.cons();
+  ql::list result;
+  for ( auto entry : debugInfo()._OpenDynamicLibraryHandles ) {
+    result << Cons_O::createList(SimpleBaseString_O::make(entry.second._Filename),
+                                 Pointer_O::create(entry.second._Handle) );;
   }
+  return result.cons();
+}
 
 
-  struct Header {
-    uint8_t  version;
-    uint8_t  reserved0;
-    uint16_t reserved1;
-  };
+struct Header {
+  uint8_t  version;
+  uint8_t  reserved0;
+  uint16_t reserved1;
+};
 
-  struct StkSizeRecord {
-    uint64_t  FunctionAddress;
-    uint64_t  StackSize;
-    uint64_t  RecordCount;
-  };
+struct StkSizeRecord {
+  uint64_t  FunctionAddress;
+  uint64_t  StackSize;
+  uint64_t  RecordCount;
+};
 
-  struct Location{
-    uint8_t  Type;
-    uint8_t   Reserved0;
-    uint16_t  LocationSize;
-    uint16_t  DwarfRegNum;
-    uint16_t  Reserved1;
-    int32_t   OffsetOrSmallConstant;
-  };
+struct Location{
+  uint8_t  Type;
+  uint8_t   Reserved0;
+  uint16_t  LocationSize;
+  uint16_t  DwarfRegNum;
+  uint16_t  Reserved1;
+  int32_t   OffsetOrSmallConstant;
+};
 
-  struct LiveOut {
-    uint16_t DwarfRegNum;
-    uint8_t  Reserved;
-    uint8_t SizeInBytes;
-  };
+struct LiveOut {
+  uint16_t DwarfRegNum;
+  uint8_t  Reserved;
+  uint8_t SizeInBytes;
+};
 
-  struct StkMapRecord {
-    uint64_t PatchPointID;
-    uint32_t InstructionOffset;
-    uint16_t Reserved;
-    std::vector<Location> Locations;
-    std::vector<LiveOut> LiveOuts;
-  };
+struct StkMapRecord {
+  uint64_t PatchPointID;
+  uint32_t InstructionOffset;
+  uint16_t Reserved;
+  std::vector<Location> Locations;
+  std::vector<LiveOut> LiveOuts;
+};
 
 
-  template <typename T>
-  T read_then_advance(uintptr_t& address) {
-    uintptr_t original = address;
-    address = address+sizeof(T);
-    return *(T*)original;
-  }
+template <typename T>
+T read_then_advance(uintptr_t& address) {
+  uintptr_t original = address;
+  address = address+sizeof(T);
+  return *(T*)original;
+}
 
 // Return true if the header was read
 bool parse_header(uintptr_t& address, uintptr_t end, Header& header, size_t& NumFunctions, size_t& NumConstants, size_t& NumRecords)
-  {
-    uintptr_t headerAddress = address;
-    header.version = read_then_advance<uint8_t>(address);
-    header.reserved0 = read_then_advance<uint8_t>(address);
-    header.reserved1 = read_then_advance<uint16_t>(address);
-    if (address>=end) return false;
-    NumFunctions = read_then_advance<uint32_t>(address);
-    if (address>=end) return false;
-    NumConstants = read_then_advance<uint32_t>(address);
-    if (address>=end) return false;
-    NumRecords = read_then_advance<uint32_t>(address);
-    if (address>=end) return false;
-    return true;
-  }
+{
+  uintptr_t headerAddress = address;
+  header.version = read_then_advance<uint8_t>(address);
+  header.reserved0 = read_then_advance<uint8_t>(address);
+  header.reserved1 = read_then_advance<uint16_t>(address);
+  if (address>=end) return false;
+  NumFunctions = read_then_advance<uint32_t>(address);
+  if (address>=end) return false;
+  NumConstants = read_then_advance<uint32_t>(address);
+  if (address>=end) return false;
+  NumRecords = read_then_advance<uint32_t>(address);
+  if (address>=end) return false;
+  return true;
+}
 
-  void parse_function(uintptr_t& address, StkSizeRecord& function) {
-    uintptr_t functionAddress = address;
-    function.FunctionAddress = read_then_advance<uint64_t>(address);
-    function.StackSize = read_then_advance<uint64_t>(address);
-    function.RecordCount = read_then_advance<uint64_t>(address);
-    BT_LOG((buf,"Looking at function record %p function.FunctionAddress = %p\n", (void*)functionAddress, (void*)function.FunctionAddress));
-  }
+void parse_function(uintptr_t& address, StkSizeRecord& function) {
+  uintptr_t functionAddress = address;
+  function.FunctionAddress = read_then_advance<uint64_t>(address);
+  function.StackSize = read_then_advance<uint64_t>(address);
+  function.RecordCount = read_then_advance<uint64_t>(address);
+  BT_LOG((buf,"Looking at function record %p function.FunctionAddress = %p\n", (void*)functionAddress, (void*)function.FunctionAddress));
+}
 
-  void parse_constant(uintptr_t& address, uint64_t& constant) {
-    constant = read_then_advance<uint64_t>(address);
-  }
+void parse_constant(uintptr_t& address, uint64_t& constant) {
+  constant = read_then_advance<uint64_t>(address);
+}
 
-  void parse_record(gc::Vec0<BacktraceEntry>& backtrace, uintptr_t& address, size_t functionIndex, const StkSizeRecord& function, StkMapRecord& record) {
+void parse_record(gc::Vec0<BacktraceEntry>& backtrace, uintptr_t& address, size_t functionIndex, const StkSizeRecord& function, StkMapRecord& record) {
+  uintptr_t recordAddress = address;
+  BT_LOG((buf,"Parse record at %p\n", (void*)address));
+  uint64_t patchPointID = read_then_advance<uint64_t>(address);
+  uint32_t instructionOffset = read_then_advance<uint32_t>(address);
+  /* record.Reserved = */ read_then_advance<uint16_t>(address);
+  size_t NumLocations = read_then_advance<uint16_t>(address);
+  for ( size_t index=0; index<NumLocations; ++index ) {
     uintptr_t recordAddress = address;
-    BT_LOG((buf,"Parse record at %p\n", (void*)address));
-    uint64_t patchPointID = read_then_advance<uint64_t>(address);
-    uint32_t instructionOffset = read_then_advance<uint32_t>(address);
-    /* record.Reserved = */ read_then_advance<uint16_t>(address);
-    size_t NumLocations = read_then_advance<uint16_t>(address);
-    for ( size_t index=0; index<NumLocations; ++index ) {
-      uintptr_t recordAddress = address;
-      /* record.Locations[index].Type = */ read_then_advance<uint8_t>(address);
-      uint8_t reserved0 = read_then_advance<uint8_t>(address);
-      /* record.Locations[index].LocationSize = */ read_then_advance<uint16_t>(address);
-      /* record.Locations[index].DwarfRegNum = */ read_then_advance<uint16_t>(address);
-      uint16_t reserved1 = read_then_advance<uint16_t>(address);
-      if (reserved0 !=0 || reserved1 !=0) {
-        printf("%s:%d:%s stackmap record @%p is out of alignment\n", __FILE__, __LINE__, __FUNCTION__, (void*)recordAddress );
-        abort();
-      }
-      int32_t offsetOrSmallConstant = read_then_advance<int32_t>(address);
-      if (patchPointID == 1234567 ) {
-        BT_LOG((buf,"patchPointID matched at %p\n", (void*)recordAddress));
-        for (size_t j=0; j<backtrace.size(); ++j ) {
-	  if (backtrace[j]._Stage == symbolicated || backtrace[j]._Stage == lispFrame) {
-	    BT_LOG((buf,"comparing function#%lu @%p to %s\n", functionIndex, (void*)function.FunctionAddress, backtrace_frame(j,&backtrace[j]).c_str() ));
-	    if (function.FunctionAddress == backtrace[j]._FunctionStart) {
-	      backtrace[j]._Stage = lispFrame;
-	      backtrace[j]._FrameSize = function.StackSize;
-	      backtrace[j]._FrameOffset = offsetOrSmallConstant;
-	      BT_LOG((buf,"Identified lispFrame frameOffset = %d\n", offsetOrSmallConstant));
-	      break;
-	    }
-	  }
+    /* record.Locations[index].Type = */ read_then_advance<uint8_t>(address);
+    uint8_t reserved0 = read_then_advance<uint8_t>(address);
+    /* record.Locations[index].LocationSize = */ read_then_advance<uint16_t>(address);
+    /* record.Locations[index].DwarfRegNum = */ read_then_advance<uint16_t>(address);
+    uint16_t reserved1 = read_then_advance<uint16_t>(address);
+    if (reserved0 !=0 || reserved1 !=0) {
+      printf("%s:%d:%s stackmap record @%p is out of alignment\n", __FILE__, __LINE__, __FUNCTION__, (void*)recordAddress );
+      abort();
+    }
+    int32_t offsetOrSmallConstant = read_then_advance<int32_t>(address);
+    if (patchPointID == 1234567 ) {
+      BT_LOG((buf,"patchPointID matched at %p\n", (void*)recordAddress));
+      for (size_t j=0; j<backtrace.size(); ++j ) {
+        if (backtrace[j]._Stage == symbolicated || backtrace[j]._Stage == lispFrame) {
+          BT_LOG((buf,"comparing function#%lu @%p to %s\n", functionIndex, (void*)function.FunctionAddress, backtrace_frame(j,&backtrace[j]).c_str() ));
+          if (function.FunctionAddress == backtrace[j]._FunctionStart) {
+            backtrace[j]._Stage = lispFrame;
+            backtrace[j]._FrameSize = function.StackSize;
+            backtrace[j]._FrameOffset = offsetOrSmallConstant;
+            BT_LOG((buf,"Identified lispFrame frameOffset = %d\n", offsetOrSmallConstant));
+            break;
+          }
         }
       }
     }
-    BT_LOG((buf,"Done with records at %p\n", (void*)address));
-    if (((uintptr_t)address)&0x7) {
-      read_then_advance<uint32_t>(address);
-      BT_LOG((buf,"advanced to alignment %p\n", (void*)address));
-    }
-    if (((uintptr_t)address)&0x7) {
-      printf("%s:%d Address %lX is not word aligned - it must be!!!\n", __FILE__, __LINE__, address );
-      abort();
-    }
-    /*Padding*/ read_then_advance<uint16_t>(address);
-    size_t NumLiveOuts = read_then_advance<uint16_t>(address);
-    for ( size_t index=0; index<NumLiveOuts; ++index ) {
-      /* record.LiveOuts[index].DwarfRegNum = */ read_then_advance<uint16_t>(address);
-      /* record.LiveOuts[index].Reserved = */ read_then_advance<uint8_t>(address);
-      /* record.LiveOuts[index].SizeInBytes = */ read_then_advance<uint8_t>(address);
-    }
-    if (((uintptr_t)address)&0x7) {
-      read_then_advance<uint32_t>(address);
-      BT_LOG((buf,"advanced to alignment %p\n", (void*)address));
-    }
-    if (((uintptr_t)address)&0x7) {
-      printf("%s:%d Address %lX is not word aligned - it must be!!!\n", __FILE__, __LINE__, address );
-      abort();
-    }
-  }  
+  }
+  BT_LOG((buf,"Done with records at %p\n", (void*)address));
+  if (((uintptr_t)address)&0x7) {
+    read_then_advance<uint32_t>(address);
+    BT_LOG((buf,"advanced to alignment %p\n", (void*)address));
+  }
+  if (((uintptr_t)address)&0x7) {
+    printf("%s:%d Address %lX is not word aligned - it must be!!!\n", __FILE__, __LINE__, address );
+    abort();
+  }
+  /*Padding*/ read_then_advance<uint16_t>(address);
+  size_t NumLiveOuts = read_then_advance<uint16_t>(address);
+  for ( size_t index=0; index<NumLiveOuts; ++index ) {
+    /* record.LiveOuts[index].DwarfRegNum = */ read_then_advance<uint16_t>(address);
+    /* record.LiveOuts[index].Reserved = */ read_then_advance<uint8_t>(address);
+    /* record.LiveOuts[index].SizeInBytes = */ read_then_advance<uint8_t>(address);
+  }
+  if (((uintptr_t)address)&0x7) {
+    read_then_advance<uint32_t>(address);
+    BT_LOG((buf,"advanced to alignment %p\n", (void*)address));
+  }
+  if (((uintptr_t)address)&0x7) {
+    printf("%s:%d Address %lX is not word aligned - it must be!!!\n", __FILE__, __LINE__, address );
+    abort();
+  }
+}  
 
 
-bool walk_one_llvm_stackmap(gc::Vec0<BacktraceEntry>&backtrace, uintptr_t& address, uintptr_t end) {
+void walk_one_llvm_stackmap(gc::Vec0<BacktraceEntry>&backtrace, uintptr_t& address, uintptr_t end) {
   uintptr_t stackMapAddress = address;
   Header header;
   size_t NumFunctions;
   size_t NumConstants;
   size_t NumRecords;
   bool read = parse_header(address,end,header,NumFunctions,NumConstants,NumRecords);
-  if (!read) return false; // There was no proper header - return
+  if (!read) {
+    printf("%s:%d:%s Walked past the end of stackmaps!!!! address = %p end = %p\n",
+           __FILE__, __LINE__, __FUNCTION__, (void*)address, (void*)end);
+    abort();
+  }
   if (header.version!=3 || header.reserved0 !=0 || header.reserved1 !=0) {
     printf("%s:%d:%s stackmap header @%p is out of alignment\n", __FILE__, __LINE__, __FUNCTION__, (void*)stackMapAddress );
     abort();
@@ -385,143 +378,144 @@ bool walk_one_llvm_stackmap(gc::Vec0<BacktraceEntry>&backtrace, uintptr_t& addre
       parse_record(backtrace,address,functionIndex,function,record);
     }
   }
-  return true;
 }
 
 
 
-  void register_llvm_stackmaps(uintptr_t startAddress, uintptr_t endAddress) {
-    BT_LOG((buf,"register_llvm_stackmaps  startAddress: %p  endAddress: %p\n", (void*)startAddress, (void*)endAddress));
-    WITH_READ_WRITE_LOCK(debugInfo()._StackMapsLock);
-    StackMapRange range(startAddress,endAddress);
-    debugInfo()._StackMaps[startAddress] = range;
-  }
+/*! Register contiguous range of stackmaps.
+There may be 0, 1 or any number of adjacent stackmaps.  
+Pass (size_t)~0 if you don't know how many and want to rely on the memory range.
+Stop parsing them when read numStackmaps or if curAddress >= endAddress */
+void register_llvm_stackmaps(uintptr_t startAddress, uintptr_t endAddress, size_t numStackmaps ) {
+  BT_LOG((buf,"register_llvm_stackmaps  startAddress: %p  endAddress: %p\n", (void*)startAddress, (void*)endAddress));
+  WITH_READ_WRITE_LOCK(debugInfo()._StackMapsLock);
+  StackMapRange range(startAddress,endAddress,numStackmaps);
+  debugInfo()._StackMaps[startAddress] = range;
+}
 
 
-  void search_jitted_stackmaps(gc::Vec0<BacktraceEntry>& backtrace)
-  {
-    BT_LOG((buf,"Starting search_jitted_stackmaps\n" ));
-    size_t num = 0;
-    WITH_READ_LOCK(debugInfo()._StackMapsLock);
-    DebugInfo& di = debugInfo();
-    for ( auto entry : di._StackMaps ) {
-      uintptr_t address = entry.second._Start;
-//      printf("%s:%d:%s  address: %p entry.second %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)address, (void*)entry.second._End);
-      while (address<entry.second._End) {
-        BT_LOG((buf," Stackmap start at %p up to %p\n", (void*)address, (void*)entry.second._End));
-        bool read = walk_one_llvm_stackmap(backtrace,address,entry.second._End);
-        if (!read) return;
-        ++num;
-      }
+void search_jitted_stackmaps(gc::Vec0<BacktraceEntry>& backtrace)
+{
+  BT_LOG((buf,"Starting search_jitted_stackmaps\n" ));
+  size_t num = 0;
+  WITH_READ_LOCK(debugInfo()._StackMapsLock);
+  DebugInfo& di = debugInfo();
+  for ( auto entry : di._StackMaps ) {
+    uintptr_t address = entry.second._StartAddress;
+    BT_LOG((buf," Stackmap start at %p up to %p\n", (void*)address, (void*)entry.second._EndAddress));
+    for ( size_t num = 0; num<entry.second._Number; ++num ) {
+      walk_one_llvm_stackmap(backtrace,address,entry.second._EndAddress);
+      if (address>=entry.second._EndAddress) break;
     }
-    BT_LOG((buf,"Finished search_jitted_stackmaps searched %lu\n", num));
   }
+  BT_LOG((buf,"Finished search_jitted_stackmaps searched %lu\n", num));
+}
 
 
-  void register_jitted_object(const std::string& name, uintptr_t address, int size) {
-    BT_LOG((buf,"Starting\n" ));
-    STACKMAP_LOG(("%s:%d:%s function: %s %lX %d\n", __FILE__, __LINE__, __FUNCTION__, name.c_str(), address, size ));
-    WITH_READ_WRITE_LOCK(debugInfo()._JittedObjectsLock);
-    debugInfo()._JittedObjects.emplace_back(JittedObject(name,address,size));
-  }
+void register_jitted_object(const std::string& name, uintptr_t address, int size) {
+  BT_LOG((buf,"Starting\n" ));
+  LOG(BF("STACKMAP_LOG  %s name: %s %p %d\n") % __FUNCTION__ % name % (void*)address % size );
+  WITH_READ_WRITE_LOCK(debugInfo()._JittedObjectsLock);
+  debugInfo()._JittedObjects.emplace_back(JittedObject(name,address,size));
+}
 
 void search_jitted_objects(gc::Vec0<BacktraceEntry>& backtrace, bool searchFunctionDescriptions)
-  {
-    BT_LOG((buf,"Starting search_jitted_objects\n" ));
-    WITH_READ_LOCK(debugInfo()._JittedObjectsLock);
-    for ( auto entry : debugInfo()._JittedObjects ) {
-      BT_LOG((buf,"Looking at jitted object name: %s @%p size: %d\n", entry._Name.c_str(), (void*)entry._ObjectPointer, entry._Size));
-      for (size_t j=0; j<backtrace.size(); ++j ) {
-        BT_LOG((buf, "Comparing to backtrace frame %lu  return address %p %s\n", j, (void*)backtrace[j]._ReturnAddress, backtrace_frame(j,&backtrace[j]).c_str()));
-        if (!searchFunctionDescriptions && backtrace[j]._Stage != symbolicated) {
-          if (entry._ObjectPointer<=backtrace[j]._ReturnAddress && backtrace[j]._ReturnAddress<(entry._ObjectPointer+entry._Size)) {
-            backtrace[j]._Stage = lispFrame;
-            backtrace[j]._FunctionStart = entry._ObjectPointer;
-            backtrace[j]._FunctionEnd = entry._ObjectPointer+entry._Size;
-            backtrace[j]._SymbolName = entry._Name;
-            BT_LOG((buf,"MATCHED!!!\n"));
-            break;
-          }
+{
+  BT_LOG((buf,"Starting search_jitted_objects\n" ));
+  WITH_READ_LOCK(debugInfo()._JittedObjectsLock);
+  for ( auto entry : debugInfo()._JittedObjects ) {
+    BT_LOG((buf,"Looking at jitted object name: %s @%p size: %d\n", entry._Name.c_str(), (void*)entry._ObjectPointer, entry._Size));
+    for (size_t j=0; j<backtrace.size(); ++j ) {
+      BT_LOG((buf, "Comparing to backtrace frame %lu  return address %p %s\n", j, (void*)backtrace[j]._ReturnAddress, backtrace_frame(j,&backtrace[j]).c_str()));
+      if (!searchFunctionDescriptions && backtrace[j]._Stage != symbolicated) {
+        if (entry._ObjectPointer<=backtrace[j]._ReturnAddress && backtrace[j]._ReturnAddress<(entry._ObjectPointer+entry._Size)) {
+          backtrace[j]._Stage = lispFrame;
+          backtrace[j]._FunctionStart = entry._ObjectPointer;
+          backtrace[j]._FunctionEnd = entry._ObjectPointer+entry._Size;
+          backtrace[j]._SymbolName = entry._Name;
+          BT_LOG((buf,"MATCHED!!!\n"));
+          break;
         }
-        if (searchFunctionDescriptions && entry._Size == sizeof(FunctionDescription) && backtrace[j]._Stage == lispFrame) {
-          stringstream ss;
-          ss << backtrace[j]._SymbolName;
-          ss << "^DESC";
-          if (ss.str() == entry._Name) {
-            backtrace[j]._FunctionDescription = entry._ObjectPointer;
-            BT_LOG((buf,"MATCHED!!!\n"));
-            break;
-          }
+      }
+      if (searchFunctionDescriptions && entry._Size == sizeof(FunctionDescription) && backtrace[j]._Stage == lispFrame) {
+        stringstream ss;
+        ss << backtrace[j]._SymbolName;
+        ss << "^DESC";
+        if (ss.str() == entry._Name) {
+          backtrace[j]._FunctionDescription = entry._ObjectPointer;
+          BT_LOG((buf,"MATCHED!!!\n"));
+          break;
         }
       }
     }
   }
+}
 
 #if 0
-  bool lookup_stack_map_entry(uintptr_t functionPointer, int& frameOffset, int& frameSize) {
-    ensure_global_StackMapInfo();
-    WITH_READ_LOCK(global_StackMapInfo->_FrameMapsLock);
-    std::map<uintptr_t,FrameMap>::iterator find = (global_StackMapInfo->_FrameMaps).find((uintptr_t)functionPointer);
-    if (find != (global_StackMapInfo->_FrameMaps).end()) {
-      frameOffset = find->second._FrameOffset;
-      frameSize = find->second._FrameSize;
-      return true;
-    }
-    return false;
+bool lookup_stack_map_entry(uintptr_t functionPointer, int& frameOffset, int& frameSize) {
+  ensure_global_StackMapInfo();
+  WITH_READ_LOCK(global_StackMapInfo->_FrameMapsLock);
+  std::map<uintptr_t,FrameMap>::iterator find = (global_StackMapInfo->_FrameMaps).find((uintptr_t)functionPointer);
+  if (find != (global_StackMapInfo->_FrameMaps).end()) {
+    frameOffset = find->second._FrameOffset;
+    frameSize = find->second._FrameSize;
+    return true;
   }
+  return false;
+}
 #endif
  
 
 #if 0
-  bool closest_function(uintptr_t returnAddress, uintptr_t& functionAddress, uintptr_t& instructionOffset, int& frameSize, int& frameOffset) {
-    instructionOffset = ~0;
-    ensure_global_StackMapInfo();
-    WITH_READ_LOCK(global_StackMapInfo->_FrameMapsLock);
-    bool result = false;
-    for ( auto entry : (global_StackMapInfo->_FrameMaps) ) {
-      if (entry.second._FunctionPointer<returnAddress) {
-        if ((returnAddress-entry.second._FunctionPointer)<instructionOffset) {
-          result = true;
-          instructionOffset = returnAddress-entry.second._FunctionPointer;
-          functionAddress = entry.second._FunctionPointer;
-          frameSize = entry.second._FrameSize;
-          frameOffset = entry.second._FrameOffset;
-        }
+bool closest_function(uintptr_t returnAddress, uintptr_t& functionAddress, uintptr_t& instructionOffset, int& frameSize, int& frameOffset) {
+  instructionOffset = ~0;
+  ensure_global_StackMapInfo();
+  WITH_READ_LOCK(global_StackMapInfo->_FrameMapsLock);
+  bool result = false;
+  for ( auto entry : (global_StackMapInfo->_FrameMaps) ) {
+    if (entry.second._FunctionPointer<returnAddress) {
+      if ((returnAddress-entry.second._FunctionPointer)<instructionOffset) {
+        result = true;
+        instructionOffset = returnAddress-entry.second._FunctionPointer;
+        functionAddress = entry.second._FunctionPointer;
+        frameSize = entry.second._FrameSize;
+        frameOffset = entry.second._FrameOffset;
       }
     }
-    return result;
   }
+  return result;
+}
 
-  bool function_name(uintptr_t returnAddress, std::string& name, uintptr_t& realFunctionAddress ) {
-    ensure_global_StackMapInfo();
-    WITH_READ_LOCK(global_StackMapInfo->_JittedObjectsLock);
-    for ( auto entry : global_StackMapInfo->_JittedObjects ) {
-      if (entry._ObjectPointer <= returnAddress
-          && returnAddress <= (entry._ObjectPointer+entry._Size)) {
-        realFunctionAddress = entry._ObjectPointer;
-        name = entry._Name;
-        BT_LOG((buf,"found address@%p in JittedObjects name: %s  realFunctionAddress: %p\n", (void*)returnAddress, name.c_str(), (void*)realFunctionAddress));
-        return true;
-      }
-    }
-    Dl_info dlinfo;
-    int res = dladdr((void*)returnAddress,&dlinfo);
-    if (res<=0) {
-      printf("%s:%d:%s dladdr failed on returnAddress: %p - %s\n",
-             __FILE__, __LINE__, __FUNCTION__, (void*)returnAddress, dlerror());
-      abort();
-    }
-    if (dlinfo.dli_sname==0) {
-      stringstream ss;
-      ss << "dladdr-failed-for-return-address(" << (void*)returnAddress << ")";
-      name = ss.str();
+bool function_name(uintptr_t returnAddress, std::string& name, uintptr_t& realFunctionAddress ) {
+  ensure_global_StackMapInfo();
+  WITH_READ_LOCK(global_StackMapInfo->_JittedObjectsLock);
+  for ( auto entry : global_StackMapInfo->_JittedObjects ) {
+    if (entry._ObjectPointer <= returnAddress
+        && returnAddress <= (entry._ObjectPointer+entry._Size)) {
+      realFunctionAddress = entry._ObjectPointer;
+      name = entry._Name;
+      BT_LOG((buf,"found address@%p in JittedObjects name: %s  realFunctionAddress: %p\n", (void*)returnAddress, name.c_str(), (void*)realFunctionAddress));
       return true;
     }
-    name = dlinfo.dli_sname;
-    realFunctionAddress = (uintptr_t)dlinfo.dli_saddr;
-    printf("%s:%d:%s found address@%p with dladdr name: %s  realFunctionAddress: %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)returnAddress, name.c_str(), (void*)realFunctionAddress);
+  }
+  Dl_info dlinfo;
+  int res = dladdr((void*)returnAddress,&dlinfo);
+  if (res<=0) {
+    printf("%s:%d:%s dladdr failed on returnAddress: %p - %s\n",
+           __FILE__, __LINE__, __FUNCTION__, (void*)returnAddress, dlerror());
+    abort();
+  }
+  if (dlinfo.dli_sname==0) {
+    stringstream ss;
+    ss << "dladdr-failed-for-return-address(" << (void*)returnAddress << ")";
+    name = ss.str();
     return true;
   }
+  name = dlinfo.dli_sname;
+  realFunctionAddress = (uintptr_t)dlinfo.dli_saddr;
+  printf("%s:%d:%s found address@%p with dladdr name: %s  realFunctionAddress: %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)returnAddress, name.c_str(), (void*)realFunctionAddress);
+  return true;
+}
 #endif
 
 
@@ -564,11 +558,8 @@ __attribute__((optnone)) void search_library_macho_64( gc::Vec0<BacktraceEntry>&
             uintptr_t end = address+stackmapSize;
             printf("%s:%d:%s Stackmap start at %p up to %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)address, (void*)end);
             foundStackmaps = true;
-            size_t num=0;
             while (address<end) {
-              BT_LOG((buf," Stackmap start at %p up to %p\n", (void*)address, (void*)end));
-              bool read = walk_one_llvm_stackmap(backtrace,address,end);
-              ++num;
+              walk_one_llvm_stackmap(backtrace,address,end);
             }
           }
           sp = (struct section_64 *)((char *)sp +
@@ -644,19 +635,19 @@ void search_mach( gc::Vec0<BacktraceEntry>& backtrace, const struct mach_header*
 
 std::string& ltrim(std::string& str, const std::string& chars = "\t\n\v\f\r ")
 {
-    str.erase(0, str.find_first_not_of(chars));
-    return str;
+  str.erase(0, str.find_first_not_of(chars));
+  return str;
 }
  
 std::string& rtrim(std::string& str, const std::string& chars = "\t\n\v\f\r ")
 {
-    str.erase(str.find_last_not_of(chars) + 1);
-    return str;
+  str.erase(str.find_last_not_of(chars) + 1);
+  return str;
 }
  
 std::string& trim(std::string& str, const std::string& chars = "\t\n\v\f\r ")
 {
-    return ltrim(rtrim(str, chars), chars);
+  return ltrim(rtrim(str, chars), chars);
 }
 
 struct NmSymbol {
@@ -678,15 +669,51 @@ std::vector<NmSymbol> load_symbol_table(const char* filename, uintptr_t header) 
 #define BUFLEN 2048
   {
     char buf[BUFLEN+1];
-    void* address;
     char type[BUFLEN+1];
     char name[BUFLEN+1];
     while (!feof(fnm)) {
       fgets(buf,BUFLEN,fnm);
-      sscanf(buf,"%p %s %s", &address, type, name);
+      const char* cur = buf;
+//      printf("%s:%d:%s Read line: %s\n", __FILE__, __LINE__, __FUNCTION__, cur);
+      // Read the address
+      uintptr_t address = 0;
+      uintptr_t digit;
+      // Read the hex address
+      while (*cur != ' ') {
+        char c = *cur;
+        if (c>='A'&&c<='Z') {
+          digit = c-'A'+10;
+        } else if (c>='0'&&c<='9') {
+          digit = c-'0';
+        } else if (c>='a'&&c<='z') {
+          digit = c-'a'+10;
+        } else {
+          printf("%s:%d:%s Hit non-hex digit %c in line: %s\n", __FILE__,__LINE__,__FUNCTION__,c,buf);
+          digit = 0;
+        }
+        address = address*16+digit;
+//        printf("cur: %p c: %c digit: %lu   address: %p\n", cur, c, digit, (void*)address);
+        ++cur;
+      }
+      // skip spaces
+      while (*cur==' ') ++cur;
+      // Read the type
+      char type = *cur;
+      cur++;
+      // skip spaces
+      while (*cur==' ') ++cur;
+      // Read the name
+      size_t nameidx = 0;
+      while (*cur!='\0'&&*cur>' ') {
+        name[nameidx] = *cur;
+        ++cur;
+        ++nameidx;
+      }
+      name[nameidx] = '\0';
       uintptr_t real_address = (uintptr_t)address + (uintptr_t)header;
       std::string sname(name);
-      symbol_table.push_back(NmSymbol(real_address,type[0],sname));
+//      printf("         address: %p  type: %c   name: %s\n", (void*)address, type, name);
+      symbol_table.push_back(NmSymbol(real_address,type,sname));
     }
     symbol_table.push_back(NmSymbol(~0,'d',"TERMINAL_SYMBOL")); // one symbol to end them all
     pclose(fnm);
@@ -798,12 +825,9 @@ void search_with_otool_and_nm(gc::Vec0<BacktraceEntry>& backtrace, const char* f
 //            printf("%s:%d:%s  Read __LLVM_STACKMAPS info address: %p end: %p\n", __FILE__, __LINE__, __FUNCTION__, stackmap_address, stackmaps_end);
       while (stackmap_address<stackmaps_end) {
         BT_LOG((buf," Stackmap start at %p\n", (void*)stackmap_address));
-        bool read =walk_one_llvm_stackmap(backtrace,stackmap_address,stackmaps_end);
-        if (!read) goto DONE;
+        walk_one_llvm_stackmap(backtrace,stackmap_address,stackmaps_end);
       }
     }
-  DONE:
-    (void)0;
   }
 }
 
@@ -830,30 +854,30 @@ struct SafeMMap {
 };
 
 void walk_loaded_objects(gc::Vec0<BacktraceEntry>& backtrace) {
-  #include <sys/stat.h>
+#include <sys/stat.h>
 //    printf("Add support to walk symbol tables and stackmaps for DARWIN\n");
-    uint32_t num_loaded = _dyld_image_count();
-    for ( size_t idx = 0; idx<num_loaded; ++idx ) {
-      const char* filename = _dyld_get_image_name(idx);
-      const struct mach_header* loaded_header = _dyld_get_image_header(idx);
+  uint32_t num_loaded = _dyld_image_count();
+  for ( size_t idx = 0; idx<num_loaded; ++idx ) {
+    const char* filename = _dyld_get_image_name(idx);
+    const struct mach_header* loaded_header = _dyld_get_image_header(idx);
 #if 1
       // Use otool and nm
-      search_with_otool_and_nm(backtrace,filename,loaded_header);
+    search_with_otool_and_nm(backtrace,filename,loaded_header);
 #else      
-      uint32_t magic = loaded_header->magic;
-      printf("%s:%d:%s Searching DARWIN filename: %s magic: %x\n", __FILE__, __LINE__, __FUNCTION__, filename, magic);
-      int fd;
-      if ((fd = open(filename,O_RDONLY,0)) ==-1) {
-        SIMPLE_ERROR(BF("Could not open %s") % filename);
-      }
-      struct stat buf;
-      int res = fstat(fd,&buf);
-      SafeMMap file_header_mmap(filename,fd,buf.st_size);
-      const struct mach_header* file_header = (const struct mach_header*)file_header_mmap._Address;
-      printf("%s:%d:%s  library: %s loaded_mhp -> %p  file_mhp -> %p\n", __FILE__, __LINE__, __FUNCTION__, filename, loaded_header, file_header );
-      search_mach(backtrace,loaded_header,file_header);
-#endif
+    uint32_t magic = loaded_header->magic;
+    printf("%s:%d:%s Searching DARWIN filename: %s magic: %x\n", __FILE__, __LINE__, __FUNCTION__, filename, magic);
+    int fd;
+    if ((fd = open(filename,O_RDONLY,0)) ==-1) {
+      SIMPLE_ERROR(BF("Could not open %s") % filename);
     }
+    struct stat buf;
+    int res = fstat(fd,&buf);
+    SafeMMap file_header_mmap(filename,fd,buf.st_size);
+    const struct mach_header* file_header = (const struct mach_header*)file_header_mmap._Address;
+    printf("%s:%d:%s  library: %s loaded_mhp -> %p  file_mhp -> %p\n", __FILE__, __LINE__, __FUNCTION__, filename, loaded_header, file_header );
+    search_mach(backtrace,loaded_header,file_header);
+#endif
+  }
 }
 
 #endif
@@ -864,13 +888,13 @@ void walk_loaded_objects(gc::Vec0<BacktraceEntry>& backtrace) {
 #ifdef _TARGET_OS_LINUX
 
 
-  std::atomic<bool> global_elf_initialized;
-  void ensure_libelf_initialized() {
-    if (!global_elf_initialized) {
-      if (elf_version(EV_CURRENT) == EV_NONE) SIMPLE_ERROR(BF("ELF library initializtion failed %s") % elf_errmsg(-1));
-      global_elf_initialized = true;
-    }
+std::atomic<bool> global_elf_initialized;
+void ensure_libelf_initialized() {
+  if (!global_elf_initialized) {
+    if (elf_version(EV_CURRENT) == EV_NONE) SIMPLE_ERROR(BF("ELF library initializtion failed %s") % elf_errmsg(-1));
+    global_elf_initialized = true;
   }
+}
 
 void scan_elf_library_for_symbols_then_stackmaps(gc::Vec0<BacktraceEntry>&backtrace, const std::string& filename, uintptr_t start)
 {
@@ -974,7 +998,7 @@ void scan_elf_library_for_symbols_then_stackmaps(gc::Vec0<BacktraceEntry>&backtr
 	//                        elf_ndxscn ( scn ), name, shdr.sh_addr, shdr.sh_offset, shdr.sh_size );
       while (addr<stackmap_end) {
         BT_LOG((buf," Stackmap start at %p\n", (void*)addr));
-        bool read =walk_one_llvm_stackmap(backtrace,addr,stackmap_end);
+        walk_one_llvm_stackmap(backtrace,addr,stackmap_end);
       }
     }
   }
@@ -983,49 +1007,6 @@ void scan_elf_library_for_symbols_then_stackmaps(gc::Vec0<BacktraceEntry>&backtr
 }
 
   
-#if 0
-void elf_scan_stackmaps(gctools::Vec0<BacktraceEntry>& backtrace, const std::string& filename, uintptr_t start) {
-  BT_LOG((buf,"Starting\n" ));
-  int fd ;
-  Elf * e ;
-  const char * name , *p;
-  char* pc [4* sizeof(char)];
-  Elf_Scn * scn ;
-  Elf_Data * data ;
-  GElf_Shdr shdr ;
-  size_t n , shstrndx , sz ;
-  ensure_libelf_initialized();
-  BT_LOG((buf,"trying to open %s\n", filename.c_str()));
-  fd = open(filename.c_str(), O_RDONLY, 0);
-  if (fd < 0) SIMPLE_ERROR(BF("Could not open %s") % filename);
-  if ((e = elf_begin(fd,ELF_C_READ,NULL)) == NULL) {
-    SIMPLE_ERROR(BF("elf_begin failed: %s.") % elf_errmsg(-1));
-  }
-  if ( elf_kind ( e ) != ELF_K_ELF )
-    SIMPLE_ERROR(BF("%s is not an ELF object.") % filename);
-  if ( elf_getshdrstrndx (e, & shstrndx ) != 0)
-    SIMPLE_ERROR(BF("elf_getshdrstrndx () failed : %s.") % elf_errmsg ( -1));
-  scn = NULL ; 
-  while (( scn = elf_nextscn (e, scn )) != NULL ) { 
-    if ( gelf_getshdr ( scn, & shdr ) != & shdr )
-      SIMPLE_ERROR(BF("getshdr() failed : %s.") % elf_errmsg ( -1));
-    if (( name = elf_strptr (e, shstrndx, shdr.sh_name )) == NULL ) 
-      SIMPLE_ERROR(BF("elf_strptr() failed : %s.") % elf_errmsg ( -1));
-    if (strncmp(name,".llvm_stackmaps",strlen(".llvm_stackmaps"))==0) {
-      uintptr_t addr = shdr.sh_addr;
-      uintptr_t stackmap_end = addr + shdr.sh_size;
-	//      ( void ) printf ( "Section %-4.4jd %s address: %lu offset: %lu  size: %lu\n", ( uintmax_t )
-	//                        elf_ndxscn ( scn ), name, shdr.sh_addr, shdr.sh_offset, shdr.sh_size );
-      while (addr<stackmap_end) {
-        BT_LOG((buf," Stackmap start at %p\n", (void*)address));
-        walk_one_llvm_stackmap(backtrace,addr);
-      }
-    }
-  }
-  (void) elf_end( e );
-  (void) close( fd );
-}
-#endif
 extern "C" char* __progname_full; // The name of the executable?
 
 int elf_loaded_object_callback(struct dl_phdr_info *info, size_t size, void* data)
@@ -1047,457 +1028,457 @@ int elf_loaded_object_callback(struct dl_phdr_info *info, size_t size, void* dat
 
 #endif
 
-  void start_debugger() {
-    LispDebugger dbg(_Nil<T_O>());
-    dbg.invoke();
-  }
+void start_debugger() {
+  LispDebugger dbg(_Nil<T_O>());
+  dbg.invoke();
+}
 
-  LispDebugger::LispDebugger(T_sp condition) : _CanContinue(false), _Condition(condition) {
-    _lisp->incrementDebuggerLevel();
-    af_gotoIhsTop();
-  }
+LispDebugger::LispDebugger(T_sp condition) : _CanContinue(false), _Condition(condition) {
+  _lisp->incrementDebuggerLevel();
+  af_gotoIhsTop();
+}
 
-  LispDebugger::LispDebugger() : _CanContinue(true) {
-    this->_Condition = _Nil<T_O>();
-    _lisp->incrementDebuggerLevel();
-    af_gotoIhsTop();
-  }
+LispDebugger::LispDebugger() : _CanContinue(true) {
+  this->_Condition = _Nil<T_O>();
+  _lisp->incrementDebuggerLevel();
+  af_gotoIhsTop();
+}
 
-  void LispDebugger::printExpression() {
-    int index = core__ihs_current_frame();
-    InvocationHistoryFrameIterator_sp frame = this->currentFrame();
-    if (frame->isValid()) {
-      stringstream ss;
-      ss << frame->frame()->asString(index);
-      write_bf_stream(BF("%s\n") % ss.str());
-    } else {
-      write_bf_stream(BF("No frame.\n"));
+void LispDebugger::printExpression() {
+  int index = core__ihs_current_frame();
+  InvocationHistoryFrameIterator_sp frame = this->currentFrame();
+  if (frame->isValid()) {
+    stringstream ss;
+    ss << frame->frame()->asString(index);
+    write_bf_stream(BF("%s\n") % ss.str());
+  } else {
+    write_bf_stream(BF("No frame.\n"));
+  }
+}
+
+InvocationHistoryFrameIterator_sp LispDebugger::currentFrame() const {
+  int index = core__ihs_current_frame();
+  InvocationHistoryFrameIterator_sp frame = core__get_invocation_history_frame(index);
+  return frame;
+}
+
+size_t global_low_level_debugger_depth = 0;
+
+T_sp LispDebugger::invoke() {
+  if ( cl::_sym_STARfeaturesSTAR
+       && cl::_sym_STARfeaturesSTAR->symbolValue()
+       && cl::_sym_STARfeaturesSTAR->symbolValue().consp()
+       && !gctools::As<Cons_sp>(cl::_sym_STARfeaturesSTAR->symbolValue())->memberEq(kw::_sym_interactive)) {
+    printf("This is not an interactive session and the low-level debugger was entered - aborting\n");
+    abort();
+  }
+  ++global_low_level_debugger_depth;
+  if ( global_low_level_debugger_depth > 10 ) {
+    printf("This is not an interactive session and the low-level debugger was entered too many times - exiting\n");
+    exit(1);
+  }
+  //	DebuggerIHF debuggerStack(my_thread->invocationHistoryStack(),_Nil<ActivationFrame_O>());
+  if (this->_Condition.notnilp()) {
+    write_bf_stream(BF("Debugger entered with condition: %s") % _rep_(this->_Condition));
+  }
+  this->printExpression();
+  write_bf_stream(BF("The following restarts are available:\n"));
+  write_bf_stream(BF("ABORT      a    Abort to REPL\n"));
+  while (1) {
+    string line;
+    stringstream sprompt;
+    sprompt << "Frame-" << this->currentFrame()->index() << "-";
+    sprompt << "Dbg";
+    if (core__ihs_env(core__ihs_current_frame()).notnilp()) {
+      sprompt << "(+ENV)";
     }
-  }
-
-  InvocationHistoryFrameIterator_sp LispDebugger::currentFrame() const {
-    int index = core__ihs_current_frame();
-    InvocationHistoryFrameIterator_sp frame = core__get_invocation_history_frame(index);
-    return frame;
-  }
-
-  size_t global_low_level_debugger_depth = 0;
-
-  T_sp LispDebugger::invoke() {
-    if ( cl::_sym_STARfeaturesSTAR
-         && cl::_sym_STARfeaturesSTAR->symbolValue()
-         && cl::_sym_STARfeaturesSTAR->symbolValue().consp()
-         && !gctools::As<Cons_sp>(cl::_sym_STARfeaturesSTAR->symbolValue())->memberEq(kw::_sym_interactive)) {
-      printf("This is not an interactive session and the low-level debugger was entered - aborting\n");
-      abort();
+    sprompt << "[" << _lisp->debuggerLevel() << "]>";
+    bool end_of_transmission(false);
+    line = myReadLine(sprompt.str(), end_of_transmission);
+    if (end_of_transmission) {
+      printf("%s:%d Exiting debugger\n", __FILE__, __LINE__ );
+      throw core::ExitProgramException(0);
     }
-    ++global_low_level_debugger_depth;
-    if ( global_low_level_debugger_depth > 10 ) {
-      printf("This is not an interactive session and the low-level debugger was entered too many times - exiting\n");
-      exit(1);
+    char cmd;
+    if (line[0] == ':') {
+      cmd = line[1];
+    } else
+      cmd = 'e';
+    
+    switch (cmd) {
+    case '?':
+    case 'h': {
+      write_bf_stream(BF(":?      - help"));
+      write_bf_stream(BF(":h      - help"));
+      write_bf_stream(BF("sexp - evaluate sexp"));
+      write_bf_stream(BF(":c sexp - continue - return values of evaluating sexp"));
+      write_bf_stream(BF(":v      - list local environment"));
+      write_bf_stream(BF(":x      - print current expression"));
+      write_bf_stream(BF(":e      - evaluate an expression with interpreter"));
+      write_bf_stream(BF(":b      - print backtrace"));
+      write_bf_stream(BF(":p      - goto previous frame"));
+      write_bf_stream(BF(":n      - goto next frame"));
+      write_bf_stream(BF(":D      - dissasemble current function"));
+      write_bf_stream(BF(":a      - abort and return to top repl"));
+      write_bf_stream(BF(":l      - invoke debugger by calling core::dbg_hook (set break point in gdb"));
+      write_bf_stream(BF(":g ##   - jump to frame ##"));
+      break;
     }
-    //	DebuggerIHF debuggerStack(my_thread->invocationHistoryStack(),_Nil<ActivationFrame_O>());
-    if (this->_Condition.notnilp()) {
-      write_bf_stream(BF("Debugger entered with condition: %s") % _rep_(this->_Condition));
-    }
-    this->printExpression();
-    write_bf_stream(BF("The following restarts are available:"));
-    write_bf_stream(BF("ABORT      a    Abort to REPL"));
-    while (1) {
-      string line;
-      stringstream sprompt;
-      sprompt << "Frame-" << this->currentFrame()->index() << "-";
-      sprompt << "Dbg";
-      if (core__ihs_env(core__ihs_current_frame()).notnilp()) {
-        sprompt << "(+ENV)";
-      }
-      sprompt << "[" << _lisp->debuggerLevel() << "]>";
-      bool end_of_transmission(false);
-      line = myReadLine(sprompt.str(), end_of_transmission);
-      if (end_of_transmission) {
-        printf("%s:%d Exiting debugger\n", __FILE__, __LINE__ );
-        throw core::ExitProgramException(0);
-      }
-      char cmd;
-      if (line[0] == ':') {
-        cmd = line[1];
-      } else
-        cmd = 'e';
-
-      switch (cmd) {
-      case '?':
-      case 'h': {
-        write_bf_stream(BF(":?      - help"));
-        write_bf_stream(BF(":h      - help"));
-        write_bf_stream(BF("sexp - evaluate sexp"));
-        write_bf_stream(BF(":c sexp - continue - return values of evaluating sexp"));
-        write_bf_stream(BF(":v      - list local environment"));
-        write_bf_stream(BF(":x      - print current expression"));
-        write_bf_stream(BF(":e      - evaluate an expression with interpreter"));
-        write_bf_stream(BF(":b      - print backtrace"));
-        write_bf_stream(BF(":p      - goto previous frame"));
-        write_bf_stream(BF(":n      - goto next frame"));
-        write_bf_stream(BF(":D      - dissasemble current function"));
-        write_bf_stream(BF(":a      - abort and return to top repl"));
-        write_bf_stream(BF(":l      - invoke debugger by calling core::dbg_hook (set break point in gdb"));
-        write_bf_stream(BF(":g ##   - jump to frame ##"));
-        break;
-      }
-      case 'l':
+    case 'l':
 	dbg_hook("invoked from debugger");
 	break;
-      case 'g': {
-        int is;
-        for (is = 1; is < line.size(); is++) {
-          if (line[is] >= '0' && line[is] <= '9')
-            break;
-        }
-        if (is < line.size()) {
-          string sexp = line.substr(is, 99999);
-          int frameIdx = atoi(sexp.c_str());
-          if (frameIdx < 0)
-            frameIdx = 0;
-          if (frameIdx > core__ihs_top()) {
-            frameIdx = core__ihs_top();
-          }
-          write_bf_stream(BF("Switching to frame: %d") % frameIdx);
-          core__set_ihs_current_frame(frameIdx);
-          this->printExpression();
-        } else {
-          write_bf_stream(BF("You must provide a frame number\n"));
-        }
-        break;
+    case 'g': {
+      int is;
+      for (is = 1; is < line.size(); is++) {
+        if (line[is] >= '0' && line[is] <= '9')
+          break;
       }
-      case 'p':
+      if (is < line.size()) {
+        string sexp = line.substr(is, 99999);
+        int frameIdx = atoi(sexp.c_str());
+        if (frameIdx < 0)
+          frameIdx = 0;
+        if (frameIdx > core__ihs_top()) {
+          frameIdx = core__ihs_top();
+        }
+        write_bf_stream(BF("Switching to frame: %d") % frameIdx);
+        core__set_ihs_current_frame(frameIdx);
+        this->printExpression();
+      } else {
+        write_bf_stream(BF("You must provide a frame number\n"));
+      }
+      break;
+    }
+    case 'p':
 	af_gotoIhsPrev();
 	this->printExpression();
 	break;
-      case 'n':
+    case 'n':
 	af_gotoIhsNext();
 	this->printExpression();
 	break;
-      case 'D': {
-        T_sp func = core__ihs_fun(core__ihs_current_frame());
-        write_bf_stream(BF("Current function: %s\n") % _rep_(func));
-        eval::funcall(cl::_sym_disassemble, func);
-        break;
+    case 'D': {
+      T_sp func = core__ihs_fun(core__ihs_current_frame());
+      write_bf_stream(BF("Current function: %s\n") % _rep_(func));
+      eval::funcall(cl::_sym_disassemble, func);
+      break;
+    }
+    case 'b': {
+      core__ihs_backtrace(_lisp->_true(), _Nil<T_O>());
+      break;
+    }
+    case 'x': {
+      this->printExpression();
+      break;
+    }
+    case 'v': {
+      this->printExpression();
+      T_sp env = core__ihs_env(core__ihs_current_frame());
+      write_bf_stream(BF("activationFrame->%p    .nilp()->%d  .nilp()->%d") % env.raw_() % env.nilp() % env.nilp());
+      if (env.notnilp()) {
+        write_bf_stream(BF("%s") % gc::As<Environment_sp>(env)->environmentStackAsString());
+      } else {
+        write_bf_stream(BF("-- Only global environment available --"));
       }
-      case 'b': {
-        core__ihs_backtrace(_lisp->_true(), _Nil<T_O>());
-        break;
-      }
-      case 'x': {
-        this->printExpression();
-        break;
-      }
-      case 'v': {
-        this->printExpression();
-        T_sp env = core__ihs_env(core__ihs_current_frame());
-        write_bf_stream(BF("activationFrame->%p    .nilp()->%d  .nilp()->%d") % env.raw_() % env.nilp() % env.nilp());
-        if (env.notnilp()) {
-          write_bf_stream(BF("%s") % gc::As<Environment_sp>(env)->environmentStackAsString());
-        } else {
-          write_bf_stream(BF("-- Only global environment available --"));
+      break;
+    }
+    case 'a': {
+      throw(DebuggerSaysAbortToRepl());
+    }
+    case 'c': {
+      if (this->_CanContinue) {
+        if (line.size() < 3) {
+          return _Nil<T_O>();
         }
-        break;
-      }
-      case 'a': {
-        throw(DebuggerSaysAbortToRepl());
-      }
-      case 'c': {
-        if (this->_CanContinue) {
-          if (line.size() < 3) {
-            return _Nil<T_O>();
-          }
-          string sexp = line.substr(3, 99999);
-          T_mv result;
-          T_sp env = core__ihs_env(core__ihs_current_frame());
-          result = _lisp->readEvalPrintString(sexp, env, true);
-          if (!result) {
-            result = Values(_Nil<T_O>());
-          }
-          write_bf_stream(BF("Continuing with result: %s") % _rep_(result));
-          return result;
+        string sexp = line.substr(3, 99999);
+        T_mv result;
+        T_sp env = core__ihs_env(core__ihs_current_frame());
+        result = _lisp->readEvalPrintString(sexp, env, true);
+        if (!result) {
+          result = Values(_Nil<T_O>());
+        }
+        write_bf_stream(BF("Continuing with result: %s") % _rep_(result));
+        return result;
 	  //		    throw(DebuggerSaysContinue(result));
-        }
-        write_bf_stream(BF("You cannot resume after condition thrown"));
-        break;
-      };
-      case 'e': {
-        string sexp = line.substr(0, 99999);
-        T_sp env = core__ihs_env(core__ihs_current_frame());
-        try {
-          _lisp->readEvalPrintString(sexp, env, true);
-        } catch (DebuggerSaysAbortToRepl &err) {
-	  // nothing
-        }
-        break;
       }
-      case 'i': {
-        string sexp = line.substr(2, 99999);
+      write_bf_stream(BF("You cannot resume after condition thrown"));
+      break;
+    };
+    case 'e': {
+      string sexp = line.substr(0, 99999);
+      T_sp env = core__ihs_env(core__ihs_current_frame());
+      try {
+        _lisp->readEvalPrintString(sexp, env, true);
+      } catch (DebuggerSaysAbortToRepl &err) {
+	  // nothing
+      }
+      break;
+    }
+    case 'i': {
+      string sexp = line.substr(2, 99999);
 	//		ControlSingleStep singleStep(false);
-        T_sp env = core__ihs_env(core__ihs_current_frame());
+      T_sp env = core__ihs_env(core__ihs_current_frame());
 	//		DebuggerIHF dbgFrame(my_thread->invocationHistoryStack(),Environment_O::clasp_getActivationFrame(env));
-        try {
-          DynamicScopeManager scope(comp::_sym_STARimplicit_compile_hookSTAR, comp::_sym_implicit_compile_hook_default->symbolFunction());
-          _lisp->readEvalPrintString(sexp, env, true);
-        } catch (DebuggerSaysAbortToRepl &err) {
+      try {
+        DynamicScopeManager scope(comp::_sym_STARimplicit_compile_hookSTAR, comp::_sym_implicit_compile_hook_default->symbolFunction());
+        _lisp->readEvalPrintString(sexp, env, true);
+      } catch (DebuggerSaysAbortToRepl &err) {
 	  // nothing
-        }
-        break;
       }
-      default: {
-        write_bf_stream(BF("Unknown command[%c] - try '?'") % cmd);
-      }
-      }
+      break;
+    }
+    default: {
+      write_bf_stream(BF("Unknown command[%c] - try '?'") % cmd);
+    }
     }
   }
+}
 
 #if 0
-  CL_DEFUN void core__test_backtrace() {
-    InvocationHistoryFrame *top = my_thread->_InvocationHistoryStack;
-    if (top == NULL) {
-      printf("Empty InvocationHistoryStack\n");
-      return;
-    }
-    int index = 0;
-    for (InvocationHistoryFrame *cur = top; cur != NULL; cur = cur->_Previous) {
-      T_sp frame = cur->valist_sp();
-      printf("Frame[%d] = %p\n", index, frame.raw_());
-      ++index;
-    }
-    printf("----Done\n");
+CL_DEFUN void core__test_backtrace() {
+  InvocationHistoryFrame *top = my_thread->_InvocationHistoryStack;
+  if (top == NULL) {
+    printf("Empty InvocationHistoryStack\n");
+    return;
   }
+  int index = 0;
+  for (InvocationHistoryFrame *cur = top; cur != NULL; cur = cur->_Previous) {
+    T_sp frame = cur->valist_sp();
+    printf("Frame[%d] = %p\n", index, frame.raw_());
+    ++index;
+  }
+  printf("----Done\n");
+}
 #endif
 
-  SYMBOL_EXPORT_SC_(CorePkg,make_shadow_backtrace_frame);
+SYMBOL_EXPORT_SC_(CorePkg,make_shadow_backtrace_frame);
 
-  CL_DEFUN List_sp core__shadow_backtrace_as_list() {
-    const InvocationHistoryFrame *top = my_thread->_InvocationHistoryStackTop;
-    if (top == NULL) {
-      return _Nil<T_O>();
-    }
-    ql::list result;
-    int index = 0;
-    for (const InvocationHistoryFrame *cur = top; cur != NULL; cur = cur->_Previous) {
-      if (cur->_Previous) {
-        T_sp frame = eval::funcall(_sym_make_shadow_backtrace_frame,
-                                   INTERN_(kw,index), make_fixnum(index),
-                                   INTERN_(kw,frame_address), Pointer_O::create((void*)cur),
-                                   INTERN_(kw,function_name), gc::As<Closure_sp>(cur->function())->functionName(),
-                                   INTERN_(kw,function), cur->function(),
-                                   INTERN_(kw,arguments), cur->arguments(),
-                                   INTERN_(kw,environment), cur->function());
-        result << frame;
-        ++index;
-      }
-    }
-    return result.cons();
-  }
-
-
-  bool search_for_matching_close_bracket(const std::string& sin, size_t& pos, stringstream& sacc) {
-    for ( size_t i=pos; i<sin.size(); ++i ) {
-      if (sin[i] == '>') {
-        pos = i+1;
-        return true;
-      }
-      if (sin[i] == '<') {
-        pos = i;
-        return search_for_matching_close_bracket(sin,pos,sacc);
-      }
-      sacc << sin[i];
-    }
-    return false;
-  }
-
-
-  std::string global_smart_ptr_head = "gctools::smart_ptr<";
-
-  bool mangle_next_smartPtr(const std::string& str, size_t& pos, stringstream& sout) {
-    size_t smartPtrStart = str.find(global_smart_ptr_head,pos);
-    if (smartPtrStart != std::string::npos ) {
-      sout << str.substr(pos,smartPtrStart-pos);
-      size_t bracketStart = smartPtrStart+global_smart_ptr_head.size(); // length of "gctools::smartPtr<"
-      stringstream sinner;
-      search_for_matching_close_bracket(str,bracketStart,sinner);
-      std::string innerType = sinner.str();
-      if (innerType.size() > 2) {
-        if (innerType.substr(innerType.size()-2,2) == "_O") {
-          sout << innerType.substr(0,innerType.size()-2);
-          sout << "_sp";
-        } else if (innerType.substr(innerType.size()-2,2) == "_V") {
-          sout << innerType.substr(0,innerType.size()-2);
-          sout << "_sp";
-        } else {
-          sout << innerType << "_sp";
-        }
-      } else {
-        sout << innerType;
-      }
-      pos = bracketStart;
-      return true;
-    }
-    sout << str.substr(pos,str.size()-pos);
-    return false;
-  }
-
-
-  CL_DEFUN SimpleBaseString_sp core__ever_so_slightly_mangle_cxx_names(const std::string& raw_name)
-  {
-    stringstream sout;
-    size_t pos = 0;
-    while (mangle_next_smartPtr(raw_name,pos,sout));
-    return SimpleBaseString_O::make(sout.str());
-  }
-  
-  
-
-  void low_level_backtrace(bool with_args) {
-    const InvocationHistoryFrame *top = my_thread->_InvocationHistoryStackTop;
-    if (top == NULL) {
-      printf("Empty InvocationHistoryStack\n");
-      return;
-    }
-    int index = 0;
-    for (const InvocationHistoryFrame *cur = top; cur != NULL; cur = cur->_Previous) {
-      string name = "-no-name-";
-      T_sp tclosure = cur->function();
-      if (!tclosure) {
-        name = "-NO-CLOSURE-";
-      } else if (tclosure.generalp()){
-        General_sp closure = gc::As_unsafe<General_sp>(tclosure);
-        if (closure.nilp()) {
-          name = "NIL";
-        } else if (gc::IsA<Function_sp>(closure)) {
-          Function_sp func = gc::As_unsafe<Function_sp>(closure);
-          if (func->functionName().notnilp()) {
-            try {
-              name = _rep_(func->functionName());
-            } catch (...) {
-              name = "-BAD-NAME-";
-            }
-          }
-          /*Nilable?*/ T_sp sfi = core__source_file_info(func->sourcePathname());
-          string sourceName = "cannot-determine";
-          if (sfi.notnilp()) {
-            sourceName = gc::As<SourceFileInfo_sp>(sfi)->fileName();
-          }
-          printf("#%4d frame@%p closure@%p %s/%3d\n    %40s ", index, cur, closure.raw_(), sourceName.c_str(), func->lineNumber(), name.c_str() );
-          if (with_args) {
-            SimpleVector_sp args = cur->arguments();
-            for ( size_t i(0), iEnd(args->length()); i<iEnd; ++i ) { printf( " %s@%p", _rep_((*args)[i]).c_str(), (*args)[i].raw_()); }
-          }
-          printf("\n");
-          goto SKIP_PRINT;
-        } else {
-          name = _rep_(closure);
-        }
-      } else {
-        name = "-BAD-CLOSURE-";
-      }
-      printf("_Index: %4d  Frame@%p(previous=%p)  closure@%p  closure->name[%40s]\n",
-             index, cur, cur->_Previous, tclosure.raw_(), name.c_str() );
-    SKIP_PRINT:
-      ++index;
-    }
-    printf("----Done\n");
-  }
-
-  CL_LAMBDA(&optional with_args);
-  CL_DECLARE();
-  CL_DOCSTRING("lowLevelBacktrace");
-  CL_DEFUN void core__low_level_backtrace() {
-    low_level_backtrace(false);
-  }
-
-
-  CL_LAMBDA();
-  CL_DECLARE();
-  CL_DOCSTRING("lowLevelBacktrace");
-  CL_DEFUN void core__low_level_backtrace_with_args() {
-    low_level_backtrace(true);
-  }
-
-
-  void safe_backtrace(gc::Vec0<BacktraceEntry>& backtrace_)
-  {
-#define START_BACKTRACE_SIZE 512
-    void** return_buffer;
-    size_t num = START_BACKTRACE_SIZE;
-    for ( int i=0; i<100; ++i ) {
-      void** buffer = (void**)malloc(sizeof(void*)*num);
-      size_t returned = backtrace(buffer,num);
-      if (returned < num) {
-        backtrace_.resize(returned);
-        for ( size_t i=0; i<returned; ++i ) {
-          backtrace_[i]._ReturnAddress = (uintptr_t)buffer[i];
-        }
-        free(buffer);
-        char **strings = backtrace_symbols(buffer, returned);
-        for ( size_t i=0; i<returned; ++i ) {
-          backtrace_[i]._SymbolName = strings[i];
-        }
-        free(strings);
-        return;
-      }
-      free(buffer);
-      num = num*2;
-    }
-    printf("%s:%d Couldn't get backtrace\n", __FILE__, __LINE__ );
-    abort();
-  }
-
-
-  CL_DEFUN T_sp core__maybe_demangle(core::String_sp s)
-  {
-    char *funcname = (char *)malloc(1024);
-    size_t funcnamesize = 1024;
-    std::string fnName = s->get_std_string();
-    int status;
-    char *ret = abi::__cxa_demangle(fnName.c_str(), funcname, &funcnamesize, &status);
-    if (status == 0) {
-      std::string demangled(funcname);
-      free(ret);
-      return core__ever_so_slightly_mangle_cxx_names(demangled);
-    } else {
-      if (funcname) free(funcname);
-      return _Nil<T_O>();
-    }
-  }
-
-  CL_DEFUN T_sp core__libunwind_backtrace_as_list() {
-#ifdef USE_LIBUNWIND
-    unw_context_t context;
-    unw_getcontext(&context);
-    unw_cursor_t cursor;
-    unw_init_local(&cursor,&context);
-    char buffer[1024];
-    unw_word_t offset;
-    int step;
-    do {
-      int res = unw_get_proc_name(&cursor,buffer,1024,&offset);
-      if ( res < 0 ) {
-        printf("%s:%d unw_get_proc_name returned error %d\n", __FILE__, __LINE__, res);
-      } else {
-        printf("%s:%d  %s\n", __FILE__, __LINE__, buffer );
-      }
-      unw_proc_info_t proc_info;
-      int pi_res = unw_get_proc_info(&cursor,&proc_info);
-      if (pi_res<0) {
-        printf("%s:%d unw_get_proc_info returned error %d\n", __FILE__, __LINE__, pi_res);
-      } else {
-        printf("          start: %p   end: %p\n", (void*)proc_info.start_ip, (void*)proc_info.end_ip);
-      }
-      step = unw_step(&cursor);
-      if ( step < 0 ) {
-        printf("%s:%d unw_step returned error %d\n", __FILE__, __LINE__, step);
-      }
-    } while (step>0);
-    printf("%s:%d  End of backtrace\n", __FILE__, __LINE__);
-#endif
+CL_DEFUN List_sp core__shadow_backtrace_as_list() {
+  const InvocationHistoryFrame *top = my_thread->_InvocationHistoryStackTop;
+  if (top == NULL) {
     return _Nil<T_O>();
   }
+  ql::list result;
+  int index = 0;
+  for (const InvocationHistoryFrame *cur = top; cur != NULL; cur = cur->_Previous) {
+    if (cur->_Previous) {
+      T_sp frame = eval::funcall(_sym_make_shadow_backtrace_frame,
+                                 INTERN_(kw,index), make_fixnum(index),
+                                 INTERN_(kw,frame_address), Pointer_O::create((void*)cur),
+                                 INTERN_(kw,function_name), gc::As<Closure_sp>(cur->function())->functionName(),
+                                 INTERN_(kw,function), cur->function(),
+                                 INTERN_(kw,arguments), cur->arguments(),
+                                 INTERN_(kw,environment), cur->function());
+      result << frame;
+      ++index;
+    }
+  }
+  return result.cons();
+}
+
+
+bool search_for_matching_close_bracket(const std::string& sin, size_t& pos, stringstream& sacc) {
+  for ( size_t i=pos; i<sin.size(); ++i ) {
+    if (sin[i] == '>') {
+      pos = i+1;
+      return true;
+    }
+    if (sin[i] == '<') {
+      pos = i;
+      return search_for_matching_close_bracket(sin,pos,sacc);
+    }
+    sacc << sin[i];
+  }
+  return false;
+}
+
+
+std::string global_smart_ptr_head = "gctools::smart_ptr<";
+
+bool mangle_next_smartPtr(const std::string& str, size_t& pos, stringstream& sout) {
+  size_t smartPtrStart = str.find(global_smart_ptr_head,pos);
+  if (smartPtrStart != std::string::npos ) {
+    sout << str.substr(pos,smartPtrStart-pos);
+    size_t bracketStart = smartPtrStart+global_smart_ptr_head.size(); // length of "gctools::smartPtr<"
+    stringstream sinner;
+    search_for_matching_close_bracket(str,bracketStart,sinner);
+    std::string innerType = sinner.str();
+    if (innerType.size() > 2) {
+      if (innerType.substr(innerType.size()-2,2) == "_O") {
+        sout << innerType.substr(0,innerType.size()-2);
+        sout << "_sp";
+      } else if (innerType.substr(innerType.size()-2,2) == "_V") {
+        sout << innerType.substr(0,innerType.size()-2);
+        sout << "_sp";
+      } else {
+        sout << innerType << "_sp";
+      }
+    } else {
+      sout << innerType;
+    }
+    pos = bracketStart;
+    return true;
+  }
+  sout << str.substr(pos,str.size()-pos);
+  return false;
+}
+
+
+CL_DEFUN SimpleBaseString_sp core__ever_so_slightly_mangle_cxx_names(const std::string& raw_name)
+{
+  stringstream sout;
+  size_t pos = 0;
+  while (mangle_next_smartPtr(raw_name,pos,sout));
+  return SimpleBaseString_O::make(sout.str());
+}
+  
+  
+
+void low_level_backtrace(bool with_args) {
+  const InvocationHistoryFrame *top = my_thread->_InvocationHistoryStackTop;
+  if (top == NULL) {
+    printf("Empty InvocationHistoryStack\n");
+    return;
+  }
+  int index = 0;
+  for (const InvocationHistoryFrame *cur = top; cur != NULL; cur = cur->_Previous) {
+    string name = "-no-name-";
+    T_sp tclosure = cur->function();
+    if (!tclosure) {
+      name = "-NO-CLOSURE-";
+    } else if (tclosure.generalp()){
+      General_sp closure = gc::As_unsafe<General_sp>(tclosure);
+      if (closure.nilp()) {
+        name = "NIL";
+      } else if (gc::IsA<Function_sp>(closure)) {
+        Function_sp func = gc::As_unsafe<Function_sp>(closure);
+        if (func->functionName().notnilp()) {
+          try {
+            name = _rep_(func->functionName());
+          } catch (...) {
+            name = "-BAD-NAME-";
+          }
+        }
+        /*Nilable?*/ T_sp sfi = core__source_file_info(func->sourcePathname());
+        string sourceName = "cannot-determine";
+        if (sfi.notnilp()) {
+          sourceName = gc::As<SourceFileInfo_sp>(sfi)->fileName();
+        }
+        printf("#%4d frame@%p closure@%p %s/%3d\n    %40s ", index, cur, closure.raw_(), sourceName.c_str(), func->lineNumber(), name.c_str() );
+        if (with_args) {
+          SimpleVector_sp args = cur->arguments();
+          for ( size_t i(0), iEnd(args->length()); i<iEnd; ++i ) { printf( " %s@%p", _rep_((*args)[i]).c_str(), (*args)[i].raw_()); }
+        }
+        printf("\n");
+        goto SKIP_PRINT;
+      } else {
+        name = _rep_(closure);
+      }
+    } else {
+      name = "-BAD-CLOSURE-";
+    }
+    printf("_Index: %4d  Frame@%p(previous=%p)  closure@%p  closure->name[%40s]\n",
+           index, cur, cur->_Previous, tclosure.raw_(), name.c_str() );
+  SKIP_PRINT:
+    ++index;
+  }
+  printf("----Done\n");
+}
+
+CL_LAMBDA(&optional with_args);
+CL_DECLARE();
+CL_DOCSTRING("lowLevelBacktrace");
+CL_DEFUN void core__low_level_backtrace() {
+  low_level_backtrace(false);
+}
+
+
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("lowLevelBacktrace");
+CL_DEFUN void core__low_level_backtrace_with_args() {
+  low_level_backtrace(true);
+}
+
+
+void safe_backtrace(gc::Vec0<BacktraceEntry>& backtrace_)
+{
+#define START_BACKTRACE_SIZE 512
+  void** return_buffer;
+  size_t num = START_BACKTRACE_SIZE;
+  for ( int i=0; i<100; ++i ) {
+    void** buffer = (void**)malloc(sizeof(void*)*num);
+    size_t returned = backtrace(buffer,num);
+    if (returned < num) {
+      backtrace_.resize(returned);
+      for ( size_t i=0; i<returned; ++i ) {
+        backtrace_[i]._ReturnAddress = (uintptr_t)buffer[i];
+      }
+      free(buffer);
+      char **strings = backtrace_symbols(buffer, returned);
+      for ( size_t i=0; i<returned; ++i ) {
+        backtrace_[i]._SymbolName = strings[i];
+      }
+      free(strings);
+      return;
+    }
+    free(buffer);
+    num = num*2;
+  }
+  printf("%s:%d Couldn't get backtrace\n", __FILE__, __LINE__ );
+  abort();
+}
+
+
+CL_DEFUN T_sp core__maybe_demangle(core::String_sp s)
+{
+  char *funcname = (char *)malloc(1024);
+  size_t funcnamesize = 1024;
+  std::string fnName = s->get_std_string();
+  int status;
+  char *ret = abi::__cxa_demangle(fnName.c_str(), funcname, &funcnamesize, &status);
+  if (status == 0) {
+    std::string demangled(funcname);
+    free(ret);
+    return core__ever_so_slightly_mangle_cxx_names(demangled);
+  } else {
+    if (funcname) free(funcname);
+    return _Nil<T_O>();
+  }
+}
+
+CL_DEFUN T_sp core__libunwind_backtrace_as_list() {
+#ifdef USE_LIBUNWIND
+  unw_context_t context;
+  unw_getcontext(&context);
+  unw_cursor_t cursor;
+  unw_init_local(&cursor,&context);
+  char buffer[1024];
+  unw_word_t offset;
+  int step;
+  do {
+    int res = unw_get_proc_name(&cursor,buffer,1024,&offset);
+    if ( res < 0 ) {
+      printf("%s:%d unw_get_proc_name returned error %d\n", __FILE__, __LINE__, res);
+    } else {
+      printf("%s:%d  %s\n", __FILE__, __LINE__, buffer );
+    }
+    unw_proc_info_t proc_info;
+    int pi_res = unw_get_proc_info(&cursor,&proc_info);
+    if (pi_res<0) {
+      printf("%s:%d unw_get_proc_info returned error %d\n", __FILE__, __LINE__, pi_res);
+    } else {
+      printf("          start: %p   end: %p\n", (void*)proc_info.start_ip, (void*)proc_info.end_ip);
+    }
+    step = unw_step(&cursor);
+    if ( step < 0 ) {
+      printf("%s:%d unw_step returned error %d\n", __FILE__, __LINE__, step);
+    }
+  } while (step>0);
+  printf("%s:%d  End of backtrace\n", __FILE__, __LINE__);
+#endif
+  return _Nil<T_O>();
+}
 
 
 void fill_in_interpreted_frames(gc::Vec0<BacktraceEntry>& backtrace) {
@@ -1520,162 +1501,162 @@ void fill_in_interpreted_frames(gc::Vec0<BacktraceEntry>& backtrace) {
   }
 }
 
-  SYMBOL_EXPORT_SC_(CorePkg,make_backtrace_frame);
-  SYMBOL_EXPORT_SC_(KeywordPkg,function_name);
-  SYMBOL_EXPORT_SC_(KeywordPkg,arguments);
-  SYMBOL_EXPORT_SC_(KeywordPkg,closure);
+SYMBOL_EXPORT_SC_(CorePkg,make_backtrace_frame);
+SYMBOL_EXPORT_SC_(KeywordPkg,function_name);
+SYMBOL_EXPORT_SC_(KeywordPkg,arguments);
+SYMBOL_EXPORT_SC_(KeywordPkg,closure);
 
-  CL_LAMBDA(&optional (depth 0));
-  CL_DECLARE();
-  CL_DOCSTRING("backtrace");
-  CL_DEFUN T_sp core__clib_backtrace_as_list() {
-    ql::list result;
-    char *funcname = (char *)malloc(1024);
-    size_t funcnamesize = 1024;
-    uintptr_t stackTop = (uintptr_t)my_thread_low_level->_StackTop;
-    gc::Vec0<BacktraceEntry> backtrace;
-    BT_LOG((buf,"About to safe_backtrace\n" ));
-    safe_backtrace(backtrace);
-    size_t nptrs = backtrace.size()-2;
-    nptrs -= 2; // drop the last two frames
+CL_LAMBDA(&optional (depth 0));
+CL_DECLARE();
+CL_DOCSTRING("backtrace");
+CL_DEFUN T_sp core__clib_backtrace_as_list() {
+  ql::list result;
+  char *funcname = (char *)malloc(1024);
+  size_t funcnamesize = 1024;
+  uintptr_t stackTop = (uintptr_t)my_thread_low_level->_StackTop;
+  gc::Vec0<BacktraceEntry> backtrace;
+  BT_LOG((buf,"About to safe_backtrace\n" ));
+  safe_backtrace(backtrace);
+  size_t nptrs = backtrace.size()-2;
+  nptrs -= 2; // drop the last two frames
     // Fill in the base pointers
-    BT_LOG((buf,"About to get bp's\n" ));
-    void* bp = __builtin_frame_address(0);
-    for (size_t i = 1; i < nptrs; ++i) {
-      if (bp) {
-        backtrace[i]._BasePointer = (uintptr_t)bp;
-        bp = *(void**)bp;
-      }
+  BT_LOG((buf,"About to get bp's\n" ));
+  void* bp = __builtin_frame_address(0);
+  for (size_t i = 1; i < nptrs; ++i) {
+    if (bp) {
+      backtrace[i]._BasePointer = (uintptr_t)bp;
+      bp = *(void**)bp;
     }
+  }
 
-    BT_LOG((buf,"About to walk library info\n" ));
+  BT_LOG((buf,"About to walk library info\n" ));
 #ifdef _TARGET_OS_LINUX
-    ScanInfo scan;
-    scan._Backtrace = &backtrace;
+  ScanInfo scan;
+  scan._Backtrace = &backtrace;
     // Search the symbol tables and stackmaps
-    dl_iterate_phdr(elf_loaded_object_callback,&scan);
+  dl_iterate_phdr(elf_loaded_object_callback,&scan);
 #endif
 #ifdef _TARGET_OS_DARWIN
 //    printf("walk symbol tables and stackmaps for DARWIN\n");
-    walk_loaded_objects(backtrace);
+  walk_loaded_objects(backtrace);
 #endif
     // Now search the jitted objects
-    search_jitted_objects(backtrace,false);
-    search_jitted_objects(backtrace,true); // Search them twice to find all FunctionDescription objects
-    search_jitted_stackmaps(backtrace);
+  search_jitted_objects(backtrace,false);
+  search_jitted_objects(backtrace,true); // Search them twice to find all FunctionDescription objects
+  search_jitted_stackmaps(backtrace);
     
     // Now get the arguments
-    BT_LOG((buf,"Getting arguments\n"));
-    for ( size_t index=1; index<backtrace.size(); ++index) {
-      if (backtrace[index]._Stage == lispFrame && backtrace[index]._FrameSize!=0) {
-        T_mv arg_mv = capture_arguments(backtrace[index]._FunctionStart,backtrace[index]._BasePointer,backtrace[index]._FrameOffset );
-        BT_LOG((buf,"found arguments for frame %lu\n", index ));
-        backtrace[index]._Arguments = arg_mv;
-        backtrace[index]._Closure = arg_mv.second();
-      } else {
-        backtrace[index]._Arguments = _Nil<T_O>();
-        backtrace[index]._Closure = _Nil<T_O>();
-      }
+  BT_LOG((buf,"Getting arguments\n"));
+  for ( size_t index=1; index<backtrace.size(); ++index) {
+    if (backtrace[index]._Stage == lispFrame && backtrace[index]._FrameSize!=0) {
+      T_mv arg_mv = capture_arguments(backtrace[index]._FunctionStart,backtrace[index]._BasePointer,backtrace[index]._FrameOffset );
+      BT_LOG((buf,"found arguments for frame %lu\n", index ));
+      backtrace[index]._Arguments = arg_mv;
+      backtrace[index]._Closure = arg_mv.second();
+    } else {
+      backtrace[index]._Arguments = _Nil<T_O>();
+      backtrace[index]._Closure = _Nil<T_O>();
     }
-    // fill in the interpreted frames here
-    BT_LOG((buf,"fill in interpreted frames here\n"));;
-    fill_in_interpreted_frames(backtrace);
-
-    BT_LOG((buf," building backtrace as list\n" ));
-    // Copy the frames into a vector
-    for ( size_t i=1; i<backtrace.size(); ++i ) {
-      T_sp entry;
-      if (_sym_make_backtrace_frame->fboundp()) {
-        if (backtrace[i]._Stage == lispFrame) {
-          T_sp funcDesc = _Nil<T_O>();
-          if (backtrace[i]._FunctionDescription!=0) {
-            funcDesc = Pointer_O::create((void*)backtrace[i]._FunctionDescription);
-          }
-          entry = eval::funcall(_sym_make_backtrace_frame,
-                                INTERN_(kw,type),INTERN_(kw,lisp),
-                                INTERN_(kw,return_address),Pointer_O::create((void*)backtrace[i]._ReturnAddress),
-                                INTERN_(kw,raw_name), SimpleBaseString_O::make(backtrace[i]._SymbolName),
-                                INTERN_(kw,arguments),backtrace[i]._Arguments,
-                                INTERN_(kw,closure),backtrace[i]._Closure,
-                                INTERN_(kw,base_pointer),Pointer_O::create((void*)backtrace[i]._BasePointer),
-                                INTERN_(kw,frame_offset),core::make_fixnum(backtrace[i]._FrameOffset),
-                                INTERN_(kw,frame_size),core::make_fixnum(backtrace[i]._FrameSize),
-                                INTERN_(kw,function_start_address),Pointer_O::create((void*)backtrace[i]._FunctionStart),
-                                INTERN_(kw,function_end_address),Pointer_O::create((void*)backtrace[i]._FunctionEnd),
-                                INTERN_(kw,function_description),funcDesc);
-        } else {
-          entry = eval::funcall(_sym_make_backtrace_frame,
-                                INTERN_(kw,type),INTERN_(kw,c_PLUS__PLUS_),
-                                INTERN_(kw,raw_name),SimpleBaseString_O::make(backtrace[i]._SymbolName));
-        }
-      } else {
-        entry = Cons_O::createList(SimpleBaseString_O::make(backtrace[i]._SymbolName),
-                                   backtrace[i]._Arguments,
-                                   backtrace[i]._Closure);
-      }
-      result << entry;
-    }
-    return result.cons();
   }
+    // fill in the interpreted frames here
+  BT_LOG((buf,"fill in interpreted frames here\n"));;
+  fill_in_interpreted_frames(backtrace);
+
+  BT_LOG((buf," building backtrace as list\n" ));
+    // Copy the frames into a vector
+  for ( size_t i=1; i<backtrace.size(); ++i ) {
+    T_sp entry;
+    if (_sym_make_backtrace_frame->fboundp()) {
+      if (backtrace[i]._Stage == lispFrame) {
+        T_sp funcDesc = _Nil<T_O>();
+        if (backtrace[i]._FunctionDescription!=0) {
+          funcDesc = Pointer_O::create((void*)backtrace[i]._FunctionDescription);
+        }
+        entry = eval::funcall(_sym_make_backtrace_frame,
+                              INTERN_(kw,type),INTERN_(kw,lisp),
+                              INTERN_(kw,return_address),Pointer_O::create((void*)backtrace[i]._ReturnAddress),
+                              INTERN_(kw,raw_name), SimpleBaseString_O::make(backtrace[i]._SymbolName),
+                              INTERN_(kw,arguments),backtrace[i]._Arguments,
+                              INTERN_(kw,closure),backtrace[i]._Closure,
+                              INTERN_(kw,base_pointer),Pointer_O::create((void*)backtrace[i]._BasePointer),
+                              INTERN_(kw,frame_offset),core::make_fixnum(backtrace[i]._FrameOffset),
+                              INTERN_(kw,frame_size),core::make_fixnum(backtrace[i]._FrameSize),
+                              INTERN_(kw,function_start_address),Pointer_O::create((void*)backtrace[i]._FunctionStart),
+                              INTERN_(kw,function_end_address),Pointer_O::create((void*)backtrace[i]._FunctionEnd),
+                              INTERN_(kw,function_description),funcDesc);
+      } else {
+        entry = eval::funcall(_sym_make_backtrace_frame,
+                              INTERN_(kw,type),INTERN_(kw,c_PLUS__PLUS_),
+                              INTERN_(kw,raw_name),SimpleBaseString_O::make(backtrace[i]._SymbolName));
+      }
+    } else {
+      entry = Cons_O::createList(SimpleBaseString_O::make(backtrace[i]._SymbolName),
+                                 backtrace[i]._Arguments,
+                                 backtrace[i]._Closure);
+    }
+    result << entry;
+  }
+  return result.cons();
+}
 
 
-  CL_LAMBDA(&optional (depth 0));
-  CL_DECLARE();
-  CL_DOCSTRING("backtrace");
-  CL_DEFUN void core__clib_backtrace(int depth) {
+CL_LAMBDA(&optional (depth 0));
+CL_DECLARE();
+CL_DOCSTRING("backtrace");
+CL_DEFUN void core__clib_backtrace(int depth) {
     // Play with Unix backtrace(3)
 #define BACKTRACE_SIZE 1024
-    printf("Entered core__clib_backtrace - symbol: %s\n", _rep_(INTERN_(core, theClibBacktraceFunctionSymbol)).c_str());
-    void *buffer[BACKTRACE_SIZE];
-    char *funcname = (char *)malloc(1024);
-    size_t funcnamesize = 1024;
-    int nptrs;
-    nptrs = backtrace(buffer, BACKTRACE_SIZE);
-    char **strings = backtrace_symbols(buffer, nptrs);
-    if (strings == NULL) {
-      printf("No backtrace available\n");
-      return;
-    } else {
-      for (int i = 0; i < nptrs; ++i) {
-        if (depth && i >= depth)
+  printf("Entered core__clib_backtrace - symbol: %s\n", _rep_(INTERN_(core, theClibBacktraceFunctionSymbol)).c_str());
+  void *buffer[BACKTRACE_SIZE];
+  char *funcname = (char *)malloc(1024);
+  size_t funcnamesize = 1024;
+  int nptrs;
+  nptrs = backtrace(buffer, BACKTRACE_SIZE);
+  char **strings = backtrace_symbols(buffer, nptrs);
+  if (strings == NULL) {
+    printf("No backtrace available\n");
+    return;
+  } else {
+    for (int i = 0; i < nptrs; ++i) {
+      if (depth && i >= depth)
+        break;
+      std::string front = std::string(strings[i], 57);
+      char *fnName = &strings[i][59];
+      char *fnCur = fnName;
+      int len = 0;
+      for (; *fnCur; ++fnCur) {
+        if (*fnCur == ' ')
           break;
-        std::string front = std::string(strings[i], 57);
-        char *fnName = &strings[i][59];
-        char *fnCur = fnName;
-        int len = 0;
-        for (; *fnCur; ++fnCur) {
-          if (*fnCur == ' ')
-            break;
-          ++len;
-        }
-        int status;
-        fnName[len] = '\0';
-        char *rest = &fnName[len + 1];
-        char *ret = abi::__cxa_demangle(fnName, funcname, &funcnamesize, &status);
-        if (status == 0) {
-          funcname = ret; // use possibly realloc()-ed string
-          printf("  %s %s %s\n", front.c_str(), funcname, rest);
-        } else {
+        ++len;
+      }
+      int status;
+      fnName[len] = '\0';
+      char *rest = &fnName[len + 1];
+      char *ret = abi::__cxa_demangle(fnName, funcname, &funcnamesize, &status);
+      if (status == 0) {
+        funcname = ret; // use possibly realloc()-ed string
+        printf("  %s %s %s\n", front.c_str(), funcname, rest);
+      } else {
 	  // demangling failed. Output function name as a C function with
 	  // no arguments.
-          printf("  %s\n", strings[i]);
-        }
+        printf("  %s\n", strings[i]);
       }
     }
-    if (strings)
-      free(strings);
-    if (funcname)
-      free(funcname);
-  };
+  }
+  if (strings)
+    free(strings);
+  if (funcname)
+    free(funcname);
+};
 
-  CL_LAMBDA();
-  CL_DECLARE();
-  CL_DOCSTRING("framePointers");
-  CL_DEFUN void core__frame_pointers() {
-    void *fp = __builtin_frame_address(0); // Constant integer only
-    if (fp != NULL)
-      printf("Frame pointer --> %p\n", fp);
-  };
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("framePointers");
+CL_DEFUN void core__frame_pointers() {
+  void *fp = __builtin_frame_address(0); // Constant integer only
+  if (fp != NULL)
+    printf("Frame pointer --> %p\n", fp);
+};
 };
 
 namespace core {
@@ -1763,19 +1744,19 @@ CL_DEFUN void core__lowLevelDescribe(T_sp obj) {
 
 void dbg_VaList_sp_describe(T_sp obj) {
     // Convert the T_sp object into a VaList_sp object
-    VaList_sp vl = VaList_sp((gc::Tagged)obj.raw_());
-    printf("Original va_list at: %p\n", &((Vaslist *)gc::untag_vaslist(reinterpret_cast<Vaslist *>(obj.raw_())))->_Args);
+  VaList_sp vl = VaList_sp((gc::Tagged)obj.raw_());
+  printf("Original va_list at: %p\n", &((Vaslist *)gc::untag_vaslist(reinterpret_cast<Vaslist *>(obj.raw_())))->_Args);
     // Create a copy of the Vaslist with a va_copy of the va_list
-    Vaslist vlcopy_s(*vl);
-    VaList_sp vlcopy(&vlcopy_s);
-    printf("Calling dump_Vaslist_ptr\n");
-    bool atHead = dump_Vaslist_ptr(&vlcopy_s);
-    if (atHead) {
-      for (size_t i(0), iEnd(vlcopy->remaining_nargs()); i < iEnd; ++i) {
-        T_sp v = vlcopy->next_arg();
-        printf("entry@%p %3zu --> %s\n", v.raw_(), i, _rep_(v).c_str());
-      }
+  Vaslist vlcopy_s(*vl);
+  VaList_sp vlcopy(&vlcopy_s);
+  printf("Calling dump_Vaslist_ptr\n");
+  bool atHead = dump_Vaslist_ptr(&vlcopy_s);
+  if (atHead) {
+    for (size_t i(0), iEnd(vlcopy->remaining_nargs()); i < iEnd; ++i) {
+      T_sp v = vlcopy->next_arg();
+      printf("entry@%p %3zu --> %s\n", v.raw_(), i, _rep_(v).c_str());
     }
+  }
 }
 
 void dbg_lowLevelDescribe(T_sp obj) {
@@ -1888,15 +1869,19 @@ void dbg_printTPtr(uintptr_clasp_t raw, bool print_pretty) {
   clasp_force_output(sout);
 }
 
-void dbg_safe_print(uintptr_clasp_t raw) {
+
+}
+
+extern "C" {
+void dbg_safe_print(uintptr_t raw) {
   core::T_sp obj((gc::Tagged)raw);
   if (gc::IsA<core::Symbol_sp>(obj)) {
-    Symbol_sp sym = gc::As_unsafe<Symbol_sp>(obj);
+    core::Symbol_sp sym = gc::As_unsafe<core::Symbol_sp>(obj);
     printf(" %s", sym->formattedName(true).c_str());
   } else if (obj.consp()) {
     printf(" (");
     while (obj.consp()) {
-      dbg_safe_print((uintptr_clasp_t)CONS_CAR(obj).raw_());
+      dbg_safe_print((uintptr_t)CONS_CAR(obj).raw_());
       obj = CONS_CDR(obj);
     }
     if (obj.notnilp()) {
@@ -1915,29 +1900,19 @@ void dbg_safe_print(uintptr_clasp_t raw) {
   } else if (obj.single_floatp()) {
     printf(" %f", obj.unsafe_single_float());
   } else if (obj.generalp()) {
-    General_sp gen = gc::As_unsafe<General_sp>(obj);
+    core::General_sp gen = gc::As_unsafe<core::General_sp>(obj);
     printf(" #<%s @%p>", gen->className().c_str(), gen.raw_());
   } else {
     printf(" #<RAW@%p\n", (void*)obj.raw_());
   }
 }
 
-void dbg_safe_println(uintptr_clasp_t raw) {
+void dbg_safe_println(uintptr_t raw) {
   dbg_safe_print(raw);
   printf("\n");
 }
 
-
-#if 0
-/*! Sets the flag that controlC has been pressed so that when
-      the process continues it will drop into the debugging repl */
-void dbg_controlC() {
-  SET_SIGNAL(SIGINT);
-  printf("%s:%d   Simulating SIGINT (Control-C) signal - debugging REPL will start up when you continue\n", __FILE__, __LINE__);
-}
-#endif
 };
-
 
 
 extern "C" {

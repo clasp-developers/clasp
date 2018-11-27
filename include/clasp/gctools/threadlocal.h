@@ -22,6 +22,7 @@ namespace core {
     MultipleValues _MultipleValues;
     BignumExportBuffer _AsInt64Buffer;
     BignumExportBuffer _AsUint64Buffer;
+    unsigned int read_recursion_depth;
     const InvocationHistoryFrame* _InvocationHistoryStackTop;
     gctools::GCRootsInModule*  _GCRoots;
     void* _sigaltstack_buffer;

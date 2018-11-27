@@ -67,8 +67,8 @@ SRC_CORE_FILES = \
         'write_ugly',
         'wrappedPointer',
         'serialize',
-        'sexpLoadArchive',
-        'sexpSaveArchive',
+#        'sexpLoadArchive',
+#        'sexpSaveArchive',
         'readtable',
         'float_to_digits',
         'pathname',
@@ -200,8 +200,8 @@ def collect_clasp_c_source_files(bld):
 
 def collect_aclasp_lisp_files(wrappers = True):
     result = [
-        "src/lisp/kernel/tag/start",
-        "src/lisp/kernel/lsp/prologue"]
+        "src/lisp/kernel/tag/start" ]
+    result = result + ["src/lisp/kernel/lsp/prologue"]
     # Don't use wrappers for now - the direct CALL to THROW-FUNCTION needs to use INVOKE and the landing-pad
     # otherwise the exception handling will break because cleanup forms in the wrapper won't be evaluated
     # This is a problem if cc_push_InvocationHistoryFrame/cc_pull_InvocationHistoryFrame are used
@@ -214,19 +214,23 @@ def collect_aclasp_lisp_files(wrappers = True):
         "src/lisp/kernel/tag/min-start",
         "src/lisp/kernel/init",
         "src/lisp/kernel/tag/after-init",
-        "src/lisp/kernel/cmp/runtime-info",
+        "src/lisp/kernel/cmp/runtime-info" ]
+    result = result + ["src/lisp/kernel/lsp/sharpmacros" ]
+    result = result + [
         "src/lisp/kernel/cmp/jit-setup",
         "src/lisp/kernel/clsymbols",
         "src/lisp/kernel/lsp/packages",
         "src/lisp/kernel/lsp/foundation",
         "src/lisp/kernel/lsp/export",
         "src/lisp/kernel/lsp/defmacro",
-        "src/lisp/kernel/lsp/helpfile",
+        "src/lisp/kernel/lsp/helpfile"]
+    result = result + [
         "src/lisp/kernel/lsp/evalmacros",
         "src/lisp/kernel/lsp/claspmacros",
         "src/lisp/kernel/lsp/source-transformations",
         "src/lisp/kernel/lsp/arraylib",
-        "src/lisp/kernel/lsp/setf",
+        "src/lisp/kernel/lsp/setf"]
+    result = result + [
         "src/lisp/kernel/lsp/listlib",
         "src/lisp/kernel/lsp/mislib",
         "src/lisp/kernel/lsp/defstruct",
@@ -237,7 +241,7 @@ def collect_aclasp_lisp_files(wrappers = True):
         "src/lisp/kernel/lsp/seqmacros",
         "src/lisp/kernel/lsp/seqlib",
         "src/lisp/kernel/lsp/iolib",
-        "src/lisp/kernel/lsp/sharpmacros",
+#        "src/lisp/kernel/lsp/sharpmacros",
         "src/lisp/kernel/lsp/backtrace",
         "src/lisp/kernel/lsp/trace",
         "src/lisp/kernel/cmp/cmpexports",

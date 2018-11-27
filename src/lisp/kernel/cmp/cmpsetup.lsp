@@ -32,8 +32,6 @@
 
 (defvar *code-walking* nil)
 
-
-
 ;;; Turn these on to verify llvm modules and functions
 (defvar *verify-llvm-modules* nil)
 (defvar *verify-llvm-functions* nil)
