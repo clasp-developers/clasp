@@ -357,14 +357,14 @@ CL_DEFUN T_mv cl__apply( T_sp head, VaList_sp args ) {
         GET_AND_ADVANCE_VASLIST(a2,lastArgs);
         return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,NULL);
       }
-      case 4: { // lenRest>=4
+      case 4: { // lenRest===4
         GET_AND_ADVANCE_VASLIST(a0,lastArgs);
         GET_AND_ADVANCE_VASLIST(a1,lastArgs);
         GET_AND_ADVANCE_VASLIST(a2,lastArgs);
         GET_AND_ADVANCE_VASLIST(a3,lastArgs);
         return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,a3);
       }
-      default: { // lenRest>=4
+      default: { // lenRest>4
         GET_AND_ADVANCE_VASLIST(a0,lastArgs);
         GET_AND_ADVANCE_VASLIST(a1,lastArgs);
         GET_AND_ADVANCE_VASLIST(a2,lastArgs);
@@ -390,13 +390,13 @@ CL_DEFUN T_mv cl__apply( T_sp head, VaList_sp args ) {
         GET_AND_ADVANCE_VASLIST(a2,lastArgs);
         return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,NULL);
       }
-      case 3: { // lenRest>=3
+      case 3: { // lenRest==3
         GET_AND_ADVANCE_VASLIST(a1,lastArgs);
         GET_AND_ADVANCE_VASLIST(a2,lastArgs);
         GET_AND_ADVANCE_VASLIST(a3,lastArgs);
         return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,a3);
       }
-      default: { // lenRest>=3
+      default: { // lenRest>3
         GET_AND_ADVANCE_VASLIST(a1,lastArgs);
         GET_AND_ADVANCE_VASLIST(a2,lastArgs);
         GET_AND_ADVANCE_VASLIST(a3,lastArgs);
@@ -420,12 +420,12 @@ CL_DEFUN T_mv cl__apply( T_sp head, VaList_sp args ) {
         GET_AND_ADVANCE_VASLIST(a2,lastArgs);
         return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,NULL);
       }
-      case 2: { // lenRest>=3
+      case 2: { // lenRest==2
         GET_AND_ADVANCE_VASLIST(a2,lastArgs);
         GET_AND_ADVANCE_VASLIST(a3,lastArgs);
         return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,a3);
       }
-      default: { // lenRest>=3
+      default: { // lenRest>2
         GET_AND_ADVANCE_VASLIST(a2,lastArgs);
         GET_AND_ADVANCE_VASLIST(a3,lastArgs);
     //printf("variadic[0] @%p\n", &variadic[0]);
@@ -445,11 +445,11 @@ CL_DEFUN T_mv cl__apply( T_sp head, VaList_sp args ) {
       case 0: {
         return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,NULL);
       }
-      case 1: { // lenRest>=3
+      case 1: { // lenRest==1
         GET_AND_ADVANCE_VASLIST(a3,lastArgs);
         return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,a3);
       }
-      default: { // lenRest>=3
+      default: { // lenRest>1
         GET_AND_ADVANCE_VASLIST(a3,lastArgs);
     //printf("variadic[0] @%p\n", &variadic[0]);
         ALLOCA_variadic();
@@ -520,7 +520,7 @@ CL_DEFUN T_mv cl__apply( T_sp head, VaList_sp args ) {
         GET_AND_ADVANCE_LIST(a2,lastArgs);
         return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,NULL);
       }
-      case 4: { // lenRest=4
+      case 4: { // lenRest==4
         GET_AND_ADVANCE_LIST(a0,lastArgs);
         GET_AND_ADVANCE_LIST(a1,lastArgs);
         GET_AND_ADVANCE_LIST(a2,lastArgs);
@@ -556,7 +556,7 @@ CL_DEFUN T_mv cl__apply( T_sp head, VaList_sp args ) {
         GET_AND_ADVANCE_LIST(a2,lastArgs);
         return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,NULL);
       }
-      case 3: { // lenRest=3
+      case 3: { // lenRest==3
         GET_AND_ADVANCE_LIST(a1,lastArgs);
         GET_AND_ADVANCE_LIST(a2,lastArgs);
         GET_AND_ADVANCE_LIST(a3,lastArgs);
@@ -586,12 +586,12 @@ CL_DEFUN T_mv cl__apply( T_sp head, VaList_sp args ) {
         GET_AND_ADVANCE_LIST(a2,lastArgs);
         return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,NULL);
       }
-      case 2: { // lenRest>=2
+      case 2: { // lenRest==2
         GET_AND_ADVANCE_LIST(a2,lastArgs);
         GET_AND_ADVANCE_LIST(a3,lastArgs);
         return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,a3);
       }
-      default: { // lenRest>=2
+      default: { // lenRest>2
         GET_AND_ADVANCE_LIST(a2,lastArgs);
         GET_AND_ADVANCE_LIST(a3,lastArgs);
     //printf("variadic[0] @%p\n", &variadic[0]);
@@ -611,11 +611,11 @@ CL_DEFUN T_mv cl__apply( T_sp head, VaList_sp args ) {
       case 0: {
         return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,NULL);
       }
-      case 1: { // lenRest>=1
+      case 1: { // lenRest==1
         GET_AND_ADVANCE_LIST(a3,lastArgs);
         return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,a3);
       }
-      default: { // lenRest>=1
+      default: { // lenRest>1
         GET_AND_ADVANCE_LIST(a3,lastArgs);
     //printf("variadic[0] @%p\n", &variadic[0]);
         ALLOCA_variadic();
@@ -626,7 +626,7 @@ CL_DEFUN T_mv cl__apply( T_sp head, VaList_sp args ) {
       }
       }
     }
-    case 4: { // lenFirst >= 4
+    case 4: { // lenFirst == 4
       GET_AND_ADVANCE_VASLIST(a0,args);
       GET_AND_ADVANCE_VASLIST(a1,args);
       GET_AND_ADVANCE_VASLIST(a2,args);
@@ -637,7 +637,7 @@ CL_DEFUN T_mv cl__apply( T_sp head, VaList_sp args ) {
       }
       return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,a3);
     }
-    default: { // lenFirst >= 4
+    default: { // lenFirst > 4
       GET_AND_ADVANCE_VASLIST(a0,args);
       GET_AND_ADVANCE_VASLIST(a1,args);
       GET_AND_ADVANCE_VASLIST(a2,args);
