@@ -67,6 +67,21 @@
     (for-entries cleavir-env:declarations)
     (for-entries cleavir-env:compile-time)))
 
+;;; cleavir-ast
+(eval-when (:load-toplevel)
+  (macrolet ((satiate-for-all (name)
+               `(clos:satiate #',name ,@(loop for class
+                                                in (rest (clos:subclasses* (find-class 'cleavir-ast:ast)))
+                                              collect `'(,class)))))
+    (satiate-for-all cleavir-ast:origin)
+    (satiate-for-all cleavir-ast:policy))
+  (macrolet ((satiate-children ()
+               `(clos:satiate #'cleavir-ast:children
+                              ,@(loop for method in (clos:generic-function-methods #'cleavir-ast:children)
+                                      when (null (method-qualifiers method))
+                                        collect `'(,(first (clos:method-specializers method)))))))
+    (satiate-children)))
+
 ;;; cleavir-generate-ast
 #-cst
 (eval-when (:load-toplevel)
@@ -102,7 +117,6 @@
     (satiate-check)))
 
 ;;; cleavir-ast-to-hir
-#+(or)
 (eval-when (:load-toplevel)
   (macrolet ((satiate-compile-ast ()
                (let* ((methods (clos:generic-function-methods #'cleavir-ast-to-hir:compile-ast))
