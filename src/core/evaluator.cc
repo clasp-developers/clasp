@@ -87,11 +87,110 @@ CL_DEFUN T_mv core__compile_form_and_eval_with_env(T_sp form, T_sp env, T_sp ste
   return result;
 };
 
+
+extern "C" void cc_protect_alloca(char* ptr);
+
+/*! An implementation of APPLY that uses the undefined behavior of variadic arrays
+    to pass a variable number of arguments to the another function */
+CL_DEFUN T_mv core__apply0_list( Function_sp func, List_sp args) {
+  size_t len = 0;
+  List_sp cur = args;
+  T_sp lastArg = _Nil<T_O>();
+  while ( cur.consp() ) {
+    len++;
+    lastArg = CONS_CAR(cur);
+    cur = CONS_CDR(cur);
+  }
+  if (cur.notnilp()) {
+    TYPE_ERROR_PROPER_LIST(args);
+  }
+  switch (len) {
+  case 0: {
+    return (*func).entry.load()(func.raw_(),0,LCC_UNUSED,LCC_UNUSED,LCC_UNUSED,LCC_UNUSED);
+  }
+  case 1: {
+    T_O* a0 = CONS_CAR(args).raw_();
+    return (*func).entry.load()(func.raw_(),1,a0,NULL,NULL,NULL);
+  }
+  case 2: {
+    T_O* a0 = CONS_CAR(args).raw_();
+    Cons_sp c1 = gc::As_unsafe<Cons_sp>(CONS_CDR(args));
+    T_O* a1 = CONS_CAR(c1).raw_();
+    return (*func).entry.load()(func.raw_(),2,a0,a1,NULL,NULL);
+  }
+  case 3: {
+    T_O* a0 = CONS_CAR(args).raw_();
+    Cons_sp c1 = gc::As_unsafe<Cons_sp>(CONS_CDR(args));
+    T_O* a1 = CONS_CAR(c1).raw_();
+    Cons_sp c2 = gc::As_unsafe<Cons_sp>(CONS_CDR(c1));
+    T_O* a2 = CONS_CAR(c2).raw_();
+    return (*func).entry.load()(func.raw_(),3,a0,a1,a2,NULL);
+  }
+  default: {
+    T_O* a0 = CONS_CAR(args).raw_();
+    Cons_sp c1 = gc::As_unsafe<Cons_sp>(CONS_CDR(args));
+    T_O* a1 = CONS_CAR(c1).raw_();
+    Cons_sp c2 = gc::As_unsafe<Cons_sp>(CONS_CDR(c1));
+    T_O* a2 = CONS_CAR(c2).raw_();
+    Cons_sp c3 = gc::As_unsafe<Cons_sp>(CONS_CDR(c2));
+    T_O* a3 = CONS_CAR(c3).raw_();
+    Cons_sp ccur = gc::As_unsafe<Cons_sp>(CONS_CDR(c3));
+    T_O* variadic[len-4];
+    cc_protect_alloca((char*)&variadic[0]);
+    //printf("variadic[0] @%p\n", &variadic[0]);
+    for ( size_t idx = 0; idx<(len-4); ++idx ) {
+      variadic[idx] = CONS_CAR(ccur).raw_();
+      ccur = gc::As_unsafe<Cons_sp>(CONS_CDR(ccur));
+    }
+    cc_protect_alloca((char*)&variadic[0]);
+    return (*func).entry.load()(func.raw_(),len,a0,a1,a2,a3);
+  }
+  }
+}
+
+
+CL_DEFUN T_mv core__apply0_vaslist( Function_sp func, VaList_sp vargs) {
+  size_t len = vargs->remaining_nargs();
+  switch (len) {
+  case 0: {
+    return (*func).entry.load()(func.raw_(),0,LCC_UNUSED,LCC_UNUSED,LCC_UNUSED,LCC_UNUSED);
+  }
+  case 1: {
+    T_O* a0 = vargs->next_arg_raw();
+    return (*func).entry.load()(func.raw_(),1,a0,NULL,NULL,NULL);
+  }
+  case 2: {
+    T_O* a0 = vargs->next_arg_raw();
+    T_O* a1 = vargs->next_arg_raw();
+    return (*func).entry.load()(func.raw_(),2,a0,a1,NULL,NULL);
+  }
+  case 3: {
+    T_O* a0 = vargs->next_arg_raw();
+    T_O* a1 = vargs->next_arg_raw();
+    T_O* a2 = vargs->next_arg_raw();
+    return (*func).entry.load()(func.raw_(),3,a0,a1,a2,NULL);
+  }
+  default: {
+    T_O* a0 = vargs->next_arg_raw();
+    T_O* a1 = vargs->next_arg_raw();
+    T_O* a2 = vargs->next_arg_raw();
+    T_O* a3 = vargs->next_arg_raw();
+    T_O* variadic[len-4];
+    //printf("variadic[0] @%p\n", &variadic[0]);
+    for ( size_t idx = 0; idx<(len-4); ++idx ) {
+      variadic[idx] = vargs->next_arg_raw();
+    }
+    cc_protect_alloca((char*)&variadic[0]);
+    return (*func).entry.load()(func.raw_(),len,a0,a1,a2,a3);
+  }
+  }
+}
+
+    
 CL_LAMBDA(head core:&va-rest args);
 CL_DECLARE();
 CL_DOCSTRING("apply");
-DONT_OPTIMIZE_WHEN_DEBUG_RELEASE
-CL_DEFUN T_mv cl__apply( T_sp head, VaList_sp args )
+CL_DEFUN T_mv core__apply_old( T_sp head, VaList_sp args )
 {
   Function_sp func         = coerce::functionDesignator( head );
   int         lenArgs      = 0;
@@ -187,6 +286,374 @@ CL_DEFUN T_mv cl__apply( T_sp head, VaList_sp args )
           return funcall_consume_valist_<core::Function_O>( func.tagged_(), valist );
         }
 
+  T_sp lastArg( (gc::Tagged) lastArgRaw );
+  eval::errorApplyLastArgumentNotList( lastArg );
+  UNREACHABLE();
+}
+
+
+
+
+
+/*! The following APPLY function works by exploiting variadic arrays in C++.
+Variadic arrays are allocated at the bottom of the stack frame (that grows down from high memory).
+Since there is only one allocated in this frame they are at the bottom of the stack frame.
+If you call a function from this function, the return address gets pushed on the stack and the
+T_O* variadic array will appear like a vector of arguments passed on the stack!
+Say you use (apply <func> a0 a1 list-of-5-arguments-a2-a7)
+On x86-64 six (6) arguments are passed in the registers (di, si, dx, cx, r8, r9) respectively.
+The closure object is passed in (di) and the total number of arguments is passed in (si)
+Just before the function is called, the stack will look like...
+a7 <- variadic[3]          sp+5w
+a6 <- variadic[2]          sp+4w
+a5 <- variadic[1]          sp+3w
+a4 <- variadic[0]          sp+2w
+<return-address-to-apply>  sp+1word
+<-sp (stack-pointer)   <<<Arguments a0 a1 a2 a3 will be in registers
+*/
+
+CL_LAMBDA(head core:&va-rest args);
+CL_DECLARE();
+CL_DOCSTRING("apply");
+CL_DEFUN T_mv cl__apply( T_sp head, VaList_sp args ) {
+#define ALLOCA_variadic() T_O* variadic[nargs-REG_ARGS]; cc_protect_alloca((char*)&variadic[0]);
+#define GET_AND_ADVANCE_LIST(x_,cur_) {x_ = CONS_CAR(cur_).raw_(); cur_ = CONS_CDR(gc::As_unsafe<Cons_sp>(cur_)); }
+#define GET_AND_ADVANCE_VASLIST(x_,cur_) {x_ = cur_->next_arg_raw(); };
+#define REG_ARGS 4  // 4 common lisp arguments in regsters
+  T_O* a0;
+  T_O* a1;
+  T_O* a2;
+  T_O* a3;     // Register arguments
+  Function_sp func         = coerce::functionDesignator( head );
+  int         lenArgs      = 0;
+  if ( args->total_nargs() == 0 ) eval::errorApplyZeroArguments();
+  lenArgs = args->remaining_nargs();
+  T_O* lastArgRaw = args->relative_indexed_arg( lenArgs - 1 );
+  if ( gctools::tagged_vaslistp( lastArgRaw )) {
+    VaList_sp valast( (gc::Tagged) lastArgRaw );
+    Vaslist valist_scopy( *valast );
+    VaList_sp lastArgs( &valist_scopy );
+    int lenFirst = args->remaining_nargs() - 1;
+    int lenRest = lastArgs->remaining_nargs();
+    int nargs = lenFirst + lenRest;
+    switch (lenFirst) {
+    case 0: {
+      switch (lenRest) {
+      case 0: {
+        return (*func).entry.load()(func.raw_(),0,NULL,NULL,NULL,NULL);
+      }
+      case 1: {
+        GET_AND_ADVANCE_VASLIST(a0,lastArgs);
+        return (*func).entry.load()(func.raw_(),nargs,a0,NULL,NULL,NULL);
+      }
+      case 2: {
+        GET_AND_ADVANCE_VASLIST(a0,lastArgs);
+        GET_AND_ADVANCE_VASLIST(a1,lastArgs);
+        return (*func).entry.load()(func.raw_(),nargs,a0,a1,NULL,NULL);
+      }
+      case 3: {
+        GET_AND_ADVANCE_VASLIST(a0,lastArgs);
+        GET_AND_ADVANCE_VASLIST(a1,lastArgs);
+        GET_AND_ADVANCE_VASLIST(a2,lastArgs);
+        return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,NULL);
+      }
+      case 4: { // lenRest>=4
+        GET_AND_ADVANCE_VASLIST(a0,lastArgs);
+        GET_AND_ADVANCE_VASLIST(a1,lastArgs);
+        GET_AND_ADVANCE_VASLIST(a2,lastArgs);
+        GET_AND_ADVANCE_VASLIST(a3,lastArgs);
+        return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,a3);
+      }
+      default: { // lenRest>=4
+        GET_AND_ADVANCE_VASLIST(a0,lastArgs);
+        GET_AND_ADVANCE_VASLIST(a1,lastArgs);
+        GET_AND_ADVANCE_VASLIST(a2,lastArgs);
+        GET_AND_ADVANCE_VASLIST(a3,lastArgs);
+        ALLOCA_variadic();
+        for ( size_t idx = 0; idx<(nargs-REG_ARGS); ++idx ) GET_AND_ADVANCE_VASLIST(variadic[idx],lastArgs);
+        return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,a3);
+      }
+      }
+    }
+    case 1: {// lenFirst == 1
+      GET_AND_ADVANCE_VASLIST(a0,args);
+      switch (lenRest) {
+      case 0: {
+        return (*func).entry.load()(func.raw_(),nargs,a0,NULL,NULL,NULL);
+      }
+      case 1: {
+        GET_AND_ADVANCE_VASLIST(a1,lastArgs);
+        return (*func).entry.load()(func.raw_(),nargs,a0,a1,NULL,NULL);
+      }
+      case 2: {
+        GET_AND_ADVANCE_VASLIST(a1,lastArgs);
+        GET_AND_ADVANCE_VASLIST(a2,lastArgs);
+        return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,NULL);
+      }
+      case 3: { // lenRest>=3
+        GET_AND_ADVANCE_VASLIST(a1,lastArgs);
+        GET_AND_ADVANCE_VASLIST(a2,lastArgs);
+        GET_AND_ADVANCE_VASLIST(a3,lastArgs);
+        return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,a3);
+      }
+      default: { // lenRest>=3
+        GET_AND_ADVANCE_VASLIST(a1,lastArgs);
+        GET_AND_ADVANCE_VASLIST(a2,lastArgs);
+        GET_AND_ADVANCE_VASLIST(a3,lastArgs);
+    //printf("variadic[0] @%p\n", &variadic[0]);
+        ALLOCA_variadic();
+        for ( size_t idx = 0; idx<(nargs-REG_ARGS); ++idx ) {
+          GET_AND_ADVANCE_VASLIST(variadic[idx],lastArgs);
+        }
+        return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,a3);
+      }
+      }
+    }
+    case 2: {// lenFirst == 2
+      GET_AND_ADVANCE_VASLIST(a0,args);
+      GET_AND_ADVANCE_VASLIST(a1,args);
+      switch (lenRest) {
+      case 0: {
+        return (*func).entry.load()(func.raw_(),nargs,a0,a1,NULL,NULL);
+      }
+      case 1: {
+        GET_AND_ADVANCE_VASLIST(a2,lastArgs);
+        return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,NULL);
+      }
+      case 2: { // lenRest>=3
+        GET_AND_ADVANCE_VASLIST(a2,lastArgs);
+        GET_AND_ADVANCE_VASLIST(a3,lastArgs);
+        return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,a3);
+      }
+      default: { // lenRest>=3
+        GET_AND_ADVANCE_VASLIST(a2,lastArgs);
+        GET_AND_ADVANCE_VASLIST(a3,lastArgs);
+    //printf("variadic[0] @%p\n", &variadic[0]);
+        ALLOCA_variadic();
+        for ( size_t idx = 0; idx<(nargs-REG_ARGS); ++idx ) {
+          GET_AND_ADVANCE_VASLIST(variadic[idx],lastArgs);
+        }
+        return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,a3);
+      }
+      }
+    }
+    case 3: {// lenFirst == 3
+      GET_AND_ADVANCE_VASLIST(a0,args);
+      GET_AND_ADVANCE_VASLIST(a1,args);
+      GET_AND_ADVANCE_VASLIST(a2,args);
+      switch (lenRest) {
+      case 0: {
+        return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,NULL);
+      }
+      case 1: { // lenRest>=3
+        GET_AND_ADVANCE_VASLIST(a3,lastArgs);
+        return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,a3);
+      }
+      default: { // lenRest>=3
+        GET_AND_ADVANCE_VASLIST(a3,lastArgs);
+    //printf("variadic[0] @%p\n", &variadic[0]);
+        ALLOCA_variadic();
+        for ( size_t idx = 0; idx<(nargs-REG_ARGS); ++idx ) {
+          GET_AND_ADVANCE_VASLIST(variadic[idx],lastArgs);
+        }
+        return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,a3);
+      }
+      }
+    }
+    case 4: { // lenFirst == 4
+      GET_AND_ADVANCE_VASLIST(a0,args);
+      GET_AND_ADVANCE_VASLIST(a1,args);
+      GET_AND_ADVANCE_VASLIST(a2,args);
+      GET_AND_ADVANCE_VASLIST(a3,args);
+      ALLOCA_variadic();
+      for ( size_t idxRest = (lenFirst-REG_ARGS); idxRest < (nargs-REG_ARGS); idxRest++ ) {
+        GET_AND_ADVANCE_VASLIST(variadic[idxRest],lastArgs);
+      }
+      return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,a3);
+    }
+    default: { // lenFirst > 4
+      GET_AND_ADVANCE_VASLIST(a0,args);
+      GET_AND_ADVANCE_VASLIST(a1,args);
+      GET_AND_ADVANCE_VASLIST(a2,args);
+      GET_AND_ADVANCE_VASLIST(a3,args);
+    //printf("variadic[0] @%p\n", &variadic[0]);
+      ALLOCA_variadic();
+      for ( size_t idx = 0; idx<(lenFirst-REG_ARGS); ++idx ) {
+        GET_AND_ADVANCE_VASLIST(variadic[idx],args);
+      }
+      for ( size_t idxRest = (lenFirst-REG_ARGS); idxRest < (nargs-REG_ARGS); idxRest++ ) {
+        GET_AND_ADVANCE_VASLIST(variadic[idxRest],lastArgs);
+      }
+      return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,a3);
+    }
+    }
+  } else if ( gctools::tagged_consp( lastArgRaw ) || gctools::tagged_nilp(lastArgRaw)) {
+    // Last arg is a regular list
+    int lenFirst = args->remaining_nargs() - 1;
+    int lenRest = 0;
+    List_sp cur((gc::Tagged)lastArgRaw);
+    while ( cur.consp() ) {
+      lenRest++;
+      cur = CONS_CDR(cur);
+    }
+    if (cur.notnilp()) TYPE_ERROR_PROPER_LIST(args);
+    int nargs = lenFirst + lenRest;
+    T_sp lastArgs((gc::Tagged)lastArgRaw);
+    switch (lenFirst) {
+    case 0: { // lenFirst == 0
+      switch (lenRest) {
+      case 0: {
+        return (*func).entry.load()(func.raw_(),0,NULL,NULL,NULL,NULL);
+      }
+      case 1: {
+        GET_AND_ADVANCE_LIST(a0,lastArgs);
+        return (*func).entry.load()(func.raw_(),nargs,a0,NULL,NULL,NULL);
+      }
+      case 2: {
+        GET_AND_ADVANCE_LIST(a0,lastArgs);
+        GET_AND_ADVANCE_LIST(a1,lastArgs);
+        return (*func).entry.load()(func.raw_(),nargs,a0,a1,NULL,NULL);
+      }
+      case 3: {
+        GET_AND_ADVANCE_LIST(a0,lastArgs);
+        GET_AND_ADVANCE_LIST(a1,lastArgs);
+        GET_AND_ADVANCE_LIST(a2,lastArgs);
+        return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,NULL);
+      }
+      case 4: { // lenRest=4
+        GET_AND_ADVANCE_LIST(a0,lastArgs);
+        GET_AND_ADVANCE_LIST(a1,lastArgs);
+        GET_AND_ADVANCE_LIST(a2,lastArgs);
+        GET_AND_ADVANCE_LIST(a3,lastArgs);
+        return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,a3);
+      }
+      default: { // lenRest>4
+        GET_AND_ADVANCE_LIST(a0,lastArgs);
+        GET_AND_ADVANCE_LIST(a1,lastArgs);
+        GET_AND_ADVANCE_LIST(a2,lastArgs);
+        GET_AND_ADVANCE_LIST(a3,lastArgs);
+    //printf("variadic[0] @%p\n", &variadic[0]);
+        ALLOCA_variadic();
+        for ( size_t idx = 0; idx<(nargs-REG_ARGS); ++idx ) {
+          GET_AND_ADVANCE_LIST(variadic[idx],lastArgs);
+        }
+        return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,a3);
+      }
+      }
+    }
+    case 1: {// lenFirst == 1
+      GET_AND_ADVANCE_VASLIST(a0,args);
+      switch (lenRest) {
+      case 0: {
+        return (*func).entry.load()(func.raw_(),nargs,a0,NULL,NULL,NULL);
+      }
+      case 1: {
+        GET_AND_ADVANCE_LIST(a1,lastArgs);
+        return (*func).entry.load()(func.raw_(),nargs,a0,a1,NULL,NULL);
+      }
+      case 2: {
+        GET_AND_ADVANCE_LIST(a1,lastArgs);
+        GET_AND_ADVANCE_LIST(a2,lastArgs);
+        return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,NULL);
+      }
+      case 3: { // lenRest=3
+        GET_AND_ADVANCE_LIST(a1,lastArgs);
+        GET_AND_ADVANCE_LIST(a2,lastArgs);
+        GET_AND_ADVANCE_LIST(a3,lastArgs);
+        return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,a3);
+      }
+      default: { // lenRest>3
+        GET_AND_ADVANCE_LIST(a1,lastArgs);
+        GET_AND_ADVANCE_LIST(a2,lastArgs);
+        GET_AND_ADVANCE_LIST(a3,lastArgs);
+    //printf("variadic[0] @%p\n", &variadic[0]);
+        ALLOCA_variadic();
+        for ( size_t idx = 0; idx<(nargs-REG_ARGS); ++idx ) {
+          GET_AND_ADVANCE_LIST(variadic[idx],lastArgs);
+        }
+        return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,a3);
+      }
+      }
+    }
+    case 2: { // lenFirst == 2
+      GET_AND_ADVANCE_VASLIST(a0,args);
+      GET_AND_ADVANCE_VASLIST(a1,args);
+      switch (lenRest) {
+      case 0: {
+        return (*func).entry.load()(func.raw_(),nargs,a0,a1,NULL,NULL);
+      }
+      case 1: {
+        GET_AND_ADVANCE_LIST(a2,lastArgs);
+        return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,NULL);
+      }
+      case 2: { // lenRest>=2
+        GET_AND_ADVANCE_LIST(a2,lastArgs);
+        GET_AND_ADVANCE_LIST(a3,lastArgs);
+        return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,a3);
+      }
+      default: { // lenRest>=2
+        GET_AND_ADVANCE_LIST(a2,lastArgs);
+        GET_AND_ADVANCE_LIST(a3,lastArgs);
+    //printf("variadic[0] @%p\n", &variadic[0]);
+        ALLOCA_variadic();
+        for ( size_t idx = 0; idx<(nargs-REG_ARGS); ++idx ) {
+          GET_AND_ADVANCE_LIST(variadic[idx],lastArgs);
+        }
+        return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,a3);
+      }
+      }
+    }
+    case 3: { // lenFirst == 3
+      GET_AND_ADVANCE_VASLIST(a0,args);
+      GET_AND_ADVANCE_VASLIST(a1,args);
+      GET_AND_ADVANCE_VASLIST(a2,args);
+      switch (lenRest) {
+      case 0: {
+        return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,NULL);
+      }
+      case 1: { // lenRest>=1
+        GET_AND_ADVANCE_LIST(a3,lastArgs);
+        return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,a3);
+      }
+      default: { // lenRest>=1
+        GET_AND_ADVANCE_LIST(a3,lastArgs);
+    //printf("variadic[0] @%p\n", &variadic[0]);
+        ALLOCA_variadic();
+        for ( size_t idx = 0; idx<(nargs-REG_ARGS); ++idx ) {
+          GET_AND_ADVANCE_LIST(variadic[idx],lastArgs);
+        }
+        return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,a3);
+      }
+      }
+    }
+    case 4: { // lenFirst >= 4
+      GET_AND_ADVANCE_VASLIST(a0,args);
+      GET_AND_ADVANCE_VASLIST(a1,args);
+      GET_AND_ADVANCE_VASLIST(a2,args);
+      GET_AND_ADVANCE_VASLIST(a3,args);
+      ALLOCA_variadic();
+      for ( size_t idxRest = 0; idxRest < (nargs-REG_ARGS); idxRest++ ) {
+        GET_AND_ADVANCE_LIST(variadic[idxRest],lastArgs);
+      }
+      return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,a3);
+    }
+    default: { // lenFirst >= 4
+      GET_AND_ADVANCE_VASLIST(a0,args);
+      GET_AND_ADVANCE_VASLIST(a1,args);
+      GET_AND_ADVANCE_VASLIST(a2,args);
+      GET_AND_ADVANCE_VASLIST(a3,args);
+    //printf("variadic[0] @%p\n", &variadic[0]);
+      ALLOCA_variadic();
+      for ( size_t idx = 0; idx<(lenFirst-REG_ARGS); ++idx ) {
+        GET_AND_ADVANCE_VASLIST(variadic[idx],args);
+      }
+      for ( size_t idxRest = (lenFirst-REG_ARGS); idxRest < (nargs-REG_ARGS); idxRest++ ) {
+        GET_AND_ADVANCE_LIST(variadic[idxRest],lastArgs);
+      }
+      return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,a3);
+    }
+    }
+  }
   T_sp lastArg( (gc::Tagged) lastArgRaw );
   eval::errorApplyLastArgumentNotList( lastArg );
   UNREACHABLE();
