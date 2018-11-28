@@ -8,7 +8,7 @@
 Clasp is a new [Common Lisp](https://common-lisp.net/) implementation that seamlessly interoperates with C++ libraries and programs using [LLVM](http://llvm.org/) for compilation to native code. This allows Clasp to take advantage of a vast array of preexisting libraries and programs, such as out of the scientific computing ecosystem. Embedding them in a Common Lisp environment allows you to make use of rapid prototyping, incremental development, and other capabilities that make it a powerful language.
 
 ## Latest Release
-The upcoming release is [Clasp 0.5](https://github.com/clasp-developers/clasp/releases/tag/0.5.0). [Changes](https://github.com/clasp-developers/clasp/milestone/3)
+The upcoming release is [Clasp 0.9](https://github.com/clasp-developers/clasp/releases/tag/0.9.0). [Changes](https://github.com/clasp-developers/clasp/milestone/3)
 
 See the [RELEASE-NOTES](RELEASE-NOTES)
 
