@@ -100,3 +100,49 @@
                                 ,@(loop for sp in special-operators
                                         collect `'(,sp cons))))))
     (satiate-check)))
+
+;;; cleavir-ast-to-hir
+#+(or)
+(eval-when (:load-toplevel)
+  (macrolet ((satiate-compile-ast ()
+               (let* ((methods (clos:generic-function-methods #'cleavir-ast-to-hir:compile-ast))
+                      (tail
+                        (loop for method in methods
+                              when (null (method-qualifiers method)) ; primary on ly
+                                collect `'(,(first (clos:method-specializers method))
+                                           cleavir-ast-to-hir:context))))
+                 `(clos:satiate #'cleavir-ast-to-hir:compile-ast ,@tail))))
+    (satiate-compile-ast)))
+
+;;; cleavir-ir
+(eval-when (:load-toplevel)
+  (macrolet ((satiate-readers ()
+               (let* ((instructions (rest (clos:subclasses* (find-class 'cleavir-ir:instruction))))
+                      (tail (loop for i in instructions collect `'(,i))))
+                 `(progn
+                    (clos:satiate #'cleavir-ir:origin ,@tail)
+                    (clos:satiate #'cleavir-ir:predecessors ,@tail)
+                    (clos:satiate #'cleavir-ir:successors ,@tail)
+                    (clos:satiate #'cleavir-ir:inputs ,@tail)
+                    (clos:satiate #'cleavir-ir:outputs ,@tail)
+                    (clos:satiate #'cleavir-ir:policy ,@tail))))
+             (satiate-writers ()
+               (let* ((instructions (rest (clos:subclasses* (find-class 'cleavir-ir:instruction))))
+                      (tail (loop for i in instructions
+                                  collect `'(cons ,i)
+                                  collect `'(null ,i))))
+                 `(progn
+                    (clos:satiate #'(setf cleavir-ir:predecessors) ,@tail)
+                    (clos:satiate #'(setf cleavir-ir:successors) ,@tail)
+                    (clos:satiate #'(setf cleavir-ir:inputs) ,@tail)
+                    (clos:satiate #'(setf cleavir-ir:outputs) ,@tail))))
+             (satiate-subst ()
+               (let* ((instructions (rest (clos:subclasses* (find-class 'cleavir-ir:instruction))))
+                      (tail (loop for i in instructions
+                                  collect `'(cleavir-ir:lexical-location cleavir-ir:lexical-location ,i))))
+                 `(progn
+                    (clos:satiate #'cleavir-ir:substitute-input ,@tail)
+                    (clos:satiate #'cleavir-ir:substitute-output ,@tail)))))
+    (satiate-readers)
+    (satiate-writers)
+    (satiate-subst)))
