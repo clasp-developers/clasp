@@ -360,6 +360,7 @@ CL_DEFMETHOD void TargetMachine_O::addPassesToEmitFileAndRunPassManager(PassMana
 // This was depreciated in llvm3.7
   CL_LISPIFY_NAME(createDataLayout);
   CL_EXTERN_DEFMETHOD(TargetMachine_O, &llvm::TargetMachine::createDataLayout);
+  CL_EXTERN_DEFMETHOD(TargetMachine_O, &llvm::TargetMachine::setFastISel);
   CL_LISPIFY_NAME(getSubtargetImpl);
   CL_EXTERN_DEFMETHOD(TargetMachine_O, (const llvm::TargetSubtargetInfo *(llvm::TargetMachine::*)() const) & llvm::TargetMachine::getSubtargetImpl);
   CL_LISPIFY_NAME(addPassesToEmitFileAndRunPassManager);
@@ -3646,6 +3647,10 @@ CL_DEFMETHOD ModuleHandle_sp ClaspJIT_O::addModule(Module_sp cM) {
   }
   this->ModuleHandles = core::Cons_O::create(mh,this->ModuleHandles);
   return mh;
+}
+
+CL_DEFMETHOD TargetMachine& ClaspJIT_O::getTargetMachine() {
+  return *this->TM;
 }
 
 CL_LISPIFY_NAME("CLASP-JIT-FIND-SYMBOL");

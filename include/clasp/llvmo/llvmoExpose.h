@@ -749,6 +749,15 @@ namespace translate {
   };
 };
 
+namespace translate {
+  template <>
+    struct to_object<llvm::TargetMachine&> {
+    static core::T_sp convert(llvm::TargetMachine& obj) {
+      return ((core::RP_Create_wrapped<llvmo::TargetMachine_O, llvm::TargetMachine *>(&obj)));
+    }
+  };
+};
+
 extern llvm::Value* llvm_cast_error_ptr;
 template <typename T, typename U>
   T* llvm_cast(U* p) {
@@ -4203,7 +4212,7 @@ namespace llvmo {
 
     ClaspJIT_O();
 
-    TargetMachine &getTargetMachine() { return *TM; }
+    TargetMachine& getTargetMachine();
 
     ModuleHandle_sp addModule(Module_sp M);
     core::Pointer_sp findSymbol(const std::string& Name);
