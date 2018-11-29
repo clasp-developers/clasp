@@ -532,7 +532,7 @@ have it call the main-function"
          (fn (irc-simple-function-create
               "MAIN"
               %fn-start-up%
-              'llvm-sys:external-linkage
+              cmp:*default-linkage*
               *the-module*
               :argument-names +fn-start-up-argument-names+)))
     (let* ((irbuilder-body (llvm-sys:make-irbuilder *llvm-context*))

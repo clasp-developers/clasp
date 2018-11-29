@@ -3842,17 +3842,17 @@ CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, Mo
   // Stuff to support MCJIT
   core::Pointer_sp replPtr;
   if (replName!="") {
-    replPtr = jit->findSymbolIn(handle,replName,true);
+    replPtr = jit->findSymbolIn(handle,replName,false);
   } else {
     SIMPLE_ERROR(BF("There must be a replName"));
   }
   core::Pointer_sp startupPtr;
   if (startupName!="") {
-    startupPtr = jit->findSymbolIn(handle,startupName,true);
+    startupPtr = jit->findSymbolIn(handle,startupName,false);
   }
   core::Pointer_sp shutdownPtr;
   if (shutdownName!="") {
-    shutdownPtr = jit->findSymbolIn(handle,shutdownName,true);
+    shutdownPtr = jit->findSymbolIn(handle,shutdownName,false);
   }
   core::CompiledClosure_fptr_type lisp_funcPtr = (core::CompiledClosure_fptr_type)(gc::As_unsafe<core::Pointer_sp>(replPtr)->ptr());
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid =

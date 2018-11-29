@@ -642,28 +642,28 @@ This works like compile-lambda-function in bclasp."
   #+cst
   (let* ((cst (cst:cst-from-expression form))
          (ast (cst->ast cst env)))
-    (translate-ast ast :env env :ignore-arguments t :linkage 'llvm-sys:external-linkage))
+    (translate-ast ast :env env :ignore-arguments t :linkage cmp:*default-linkage*))
   #-cst
   (let ((ast (generate-ast form env)))
-    (translate-ast ast :env env :ignore-arguments t :linkage 'llvm-sys:external-linkage)))
+    (translate-ast ast :env env :ignore-arguments t :linkage cmp:*default-linkage*)))
 
 #+cst
 (defun cleavir-compile-file-cst (cst &optional (env *clasp-env*))
   (literal:with-top-level-form
       (if cmp::*debug-compile-file*
           (compiler-time (let (ast (cst->ast cst env))
-                           (translate-ast ast :env env :linkage 'llvm-sys:external-linkage)))
+                           (translate-ast ast :env env :linkage cmp:*default-linkage*)))
           (let (ast (cst->ast cst env))
-            (translate-ast ast :env env :linkage 'llvm-sys:external-linkage)))))
+            (translate-ast ast :env env :linkage cmp:*default-linkage*)))))
 
 #-cst
 (defun cleavir-compile-file-form (form &optional (env *clasp-env*))
   (literal:with-top-level-form
       (if cmp:*debug-compile-file*
           (compiler-time (let ((ast (generate-ast form env)))
-                           (translate-ast ast :env env 'llvm-sys:external-linkage)))
+                           (translate-ast ast :env env cmp:*default-linkage*)))
           (let ((ast (generate-ast form env)))
-            (translate-ast ast :env env :linkage 'llvm-sys:external-linkage)))))
+            (translate-ast ast :env env :linkage cmp:*default-linkage*)))))
 
 (defvar *cst-client* (make-instance 'eclector.concrete-syntax-tree:cst-client))
 
@@ -707,8 +707,8 @@ This works like compile-lambda-function in bclasp."
         (core:*use-cleavir-compiler* t))
     (if cmp::*debug-compile-file*
         (compiler-time
-         (cmp:compile-in-env name form env #'cclasp-compile* 'llvm-sys:external-linkage))
-        (cmp:compile-in-env name form env #'cclasp-compile* 'llvm-sys:external-linkage))))
+         (cmp:compile-in-env name form env #'cclasp-compile* cmp:*default-linkage*))
+        (cmp:compile-in-env name form env #'cclasp-compile* cmp:*default-linkage*))))
         
 (defun cleavir-compile (name form &key (debug *debug-cleavir*))
   (let ((cmp:*compile-debug-dump-module* debug)
