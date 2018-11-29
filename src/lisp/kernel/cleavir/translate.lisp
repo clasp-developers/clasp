@@ -535,7 +535,7 @@ Does not hoist."
     (quick-draw-hir hir "hir-pre-mir")
     (let ((function-info-map (make-function-info-map hir)))
       (lower-catches function-info-map)
-      (cleavir-hir-to-mir:hir-to-mir hir system env nil)
+      (cleavir-hir-to-mir:hir-to-mir hir system nil nil)
       #+stealth-gids(cc-mir:assign-mir-instruction-datum-ids hir)
       (quick-draw-hir hir "mir")
       (when *interactive-debug*
