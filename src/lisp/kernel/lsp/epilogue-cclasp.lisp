@@ -9,5 +9,7 @@
             (core:process-command-line-load-eval-sequence)
             (if (core:is-interactive-lisp)
                 (core:top-level)
-                (format t "In non-interactive mode - control fell through to epilogue-cclasp.lisp~%"))))
+                (progn
+                  (format t "In non-interactive mode - control fell through to epilogue-cclasp.lisp~%")
+                  (core:exit 3)))))
 
