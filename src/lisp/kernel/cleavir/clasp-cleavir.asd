@@ -45,6 +45,7 @@
                (:file "landing-pad")
                ;;		 (:file "arguments")
                (:file "closure-optimize")
+               (:file "satiation")
                (:file "translate")
                (:file "translate-instruction")
                (:file "inline-prep")
