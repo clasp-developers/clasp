@@ -171,6 +171,15 @@
     (satiate-writers)
     (satiate-subst)))
 
+;;; cleavir-hir-to-mir
+(eval-when (:load-toplevel)
+  (macrolet ((satiate-specialize ()
+               (let ((classes (rest (clos:subclasses* (find-class 'cleavir-ir:instruction)))))
+                 `(clos:satiate #'cleavir-hir-to-mir:specialize
+                                ,@(loop for c in classes
+                                        collect `'(,c clasp-cleavir::clasp-64bit null null))))))
+    (satiate-specialize)))
+
 ;;; clasp-cleavir
 (eval-when (:load-toplevel)
   (macrolet ((satiate-simple ()
