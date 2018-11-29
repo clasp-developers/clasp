@@ -66,6 +66,23 @@ functionality but before any Common Lisp startup functions are invoked. */
 
 };
 
+
+namespace core {
+FORWARD(PosixTime);
+struct MaybeDebugStartup {
+  PosixTime_sp start;
+  std::string  name;
+  claspFunction fptr;
+  size_t start_dispatcher_count;
+  MaybeDebugStartup(claspFunction fp, const char* n = NULL);
+  ~MaybeDebugStartup();
+};
+
+
+};
+
+
+
 typedef void*(*fnStartUp)();
 
 namespace core {

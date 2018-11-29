@@ -56,6 +56,7 @@ THE SOFTWARE.
 #include <clasp/core/debugger.h>
 #include <clasp/core/pathname.h>
 #include <clasp/core/pointer.h>
+#include <clasp/core/posixTime.h>
 #include <clasp/core/unixfsys.h>
 #include <clasp/core/hashTableEqual.h>
 #include <clasp/core/environment.h>
@@ -70,6 +71,48 @@ THE SOFTWARE.
 
 
 namespace core {
+
+
+MaybeDebugStartup::MaybeDebugStartup(claspFunction fp, const char* n) : fptr(fp) {
+  if (n) this->name = n;
+  if (core::_sym_STARdebugStartupSTAR->symbolValue().notnilp()) {
+    this->start = PosixTime_O::createNow();
+    if (comp::_sym_dispatcher_count->fboundp()) {
+      core::T_sp nu = core::eval::funcall(comp::_sym_dispatcher_count);
+      this->start_dispatcher_count = nu.unsafe_fixnum();
+    } else {
+      this->start_dispatcher_count = 0;
+    }
+  }
+};
+
+MaybeDebugStartup::~MaybeDebugStartup() {
+  if (core::_sym_STARdebugStartupSTAR->symbolValue().notnilp()) {
+    PosixTime_sp end = PosixTime_O::createNow();
+    PosixTimeDuration_sp diff = end->sub(this->start);
+    mpz_class ms = diff->totalMicroseconds();
+    size_t end_dispatcher_count = 0;
+    if (comp::_sym_dispatcher_count->fboundp()) {
+      core::T_sp nu = core::eval::funcall(comp::_sym_dispatcher_count);
+      end_dispatcher_count = nu.unsafe_fixnum();
+    }
+    size_t dispatcher_delta = end_dispatcher_count - this->start_dispatcher_count;
+    std::string name_ = this->name;
+    if (name_!="") {
+      Dl_info di;
+      dladdr((void*)fptr,&di);
+      name_ = di.dli_sname;
+      if (name_ == "") {
+        stringstream ss;
+        ss << (void*)this->fptr;
+        name_ = ss.str();
+      }
+    }
+    printf("%s us %zu gfds : %s\n", _rep_(Integer_O::create(ms)).c_str(), dispatcher_delta, name_.c_str());
+  }
+}
+
+
 #ifdef CLASP_THREADS
 mp::SharedMutex global_internal_functions_mutex;
 #endif
@@ -990,39 +1033,6 @@ CL_DEFUN T_mv core__progv_function(List_sp symbols, List_sp values, Function_sp 
    return gc::As<HashTableEqual_sp>(_sym_STARfunctions_to_notinlineSTAR->symbolValue())->gethash(name);
  }
 
-struct MaybeDebugStartup {
-  PosixTime_sp start;
-  claspFunction fptr;
-  size_t start_dispatcher_count;
-  MaybeDebugStartup(claspFunction fp) : fptr(fp) {
-    if (core::_sym_STARdebugStartupSTAR->symbolValue().notnilp()) {
-      this->start = PosixTime_O::createNow();
-      if (comp::_sym_dispatcher_count->fboundp()) {
-        core::T_sp nu = core::eval::funcall(comp::_sym_dispatcher_count);
-        this->start_dispatcher_count = nu.unsafe_fixnum();
-      } else {
-        this->start_dispatcher_count = 0;
-      }
-    }
-  };
-
-  ~MaybeDebugStartup() {
-    if (core::_sym_STARdebugStartupSTAR->symbolValue().notnilp()) {
-      PosixTime_sp end = PosixTime_O::createNow();
-      PosixTimeDuration_sp diff = end->sub(this->start);
-      Dl_info di;
-      dladdr((void*)fptr,&di);
-      mpz_class ms = diff->totalMilliseconds();
-      size_t end_dispatcher_count = 0;
-      if (comp::_sym_dispatcher_count->fboundp()) {
-        core::T_sp nu = core::eval::funcall(comp::_sym_dispatcher_count);
-        end_dispatcher_count = nu.unsafe_fixnum();
-      }
-      size_t dispatcher_delta = end_dispatcher_count - this->start_dispatcher_count;
-      printf("%s ms %zu gfds : %s\n", _rep_(Integer_O::create(ms)).c_str(), dispatcher_delta, di.dli_sname);
-    }
-  }
-};
 
 
 CL_DEFUN T_sp core__run_function( T_sp object ) {

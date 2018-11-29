@@ -490,9 +490,10 @@ LtvcReturn ltvc_set_ltv_funcall_cleavir(gctools::GCRootsInModule* holder, size_t
 }
 
 
+
 LtvcReturn ltvc_toplevel_funcall(fnLispCallingConvention fptr, const char* name) {
-#if 0 // def DEBUG_SLOW
-  MaybeDebugStartup startup(fptr);
+#ifdef DEBUG_SLOW
+  MaybeDebugStartup startup(fptr,name);
 #endif
   core::T_O *lcc_arglist = _Nil<core::T_O>().raw_();
   Symbol_sp sname = Symbol_O::create_from_string(std::string(name));
