@@ -170,3 +170,49 @@
     (satiate-readers)
     (satiate-writers)
     (satiate-subst)))
+
+;;; clasp-cleavir
+(eval-when (:load-toplevel)
+  (macrolet ((satiate-simple ()
+               (let* ((methods (clos:generic-function-methods
+                                #'clasp-cleavir::translate-simple-instruction))
+                      ;; note: includes INSTRUCTION, but i think that's harmless
+                      (classes (loop for method in methods
+                                     when (null (method-qualifiers method))
+                                       collect (first (clos:method-specializers method)))))
+                 `(clos:satiate
+                   #'clasp-cleavir::translate-simple-instruction
+                   ,@(loop for c in classes
+                           collect `'(,c llvm-sys:alloca-inst
+                                      clasp-cleavir::abi-x86-64 clasp-cleavir::function-info)))))
+             (satiate-branch (&rest groups)
+               ;; We use a fixed list so we can treat the third argument specially.
+               ;; It's the list of successors, and whether it's a cons or null depends
+               ;; on the instruction class.
+               `(clos:satiate #'clasp-cleavir::translate-branch-instruction
+                              ,@(loop for (instruction list) in groups
+                                      collect `'(,instruction llvm-sys:alloca-inst ,list
+                                                 clasp-cleavir::abi-x86-64
+                                                 clasp-cleavir::function-info)))))
+    (satiate-simple)
+    (satiate-branch
+     (cleavir-ir:eq-instruction cons)
+     (cleavir-ir:consp-instruction cons)
+     (cleavir-ir:fixnump-instruction cons)
+     (cc-mir:characterp-instruction cons)
+     (cc-mir:single-float-p-instruction cons)
+     (cc-mir:headerq-instruction cons)
+     (cleavir-ir:unwind-instruction null)
+     (cc-mir:assign-catch-instruction cons)
+     (cleavir-ir:return-instruction null)
+     (cleavir-ir:funcall-no-return-instruction null)
+     (cleavir-ir:unreachable-instruction null)
+     (clasp-cleavir-hir:throw-instruction null)
+     (cleavir-ir:fixnum-add-instruction cons)
+     (cleavir-ir:fixnum-sub-instruction cons)
+     (cleavir-ir:fixnum-less-instruction cons)
+     (cleavir-ir:fixnum-not-greater-instruction cons)
+     (cleavir-ir:fixnum-equal-instruction cons)
+     (cleavir-ir:float-less-instruction cons)
+     (cleavir-ir:float-not-greater-instruction cons)
+     (cleavir-ir:float-equal-instruction cons))))
