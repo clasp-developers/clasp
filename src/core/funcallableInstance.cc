@@ -298,6 +298,14 @@ T_sp FuncallableInstance_O::GFUN_SPECIALIZER_PROFILE_compare_exchange(T_sp expec
   return exchanged ? new_value : expected;
 }
 
+CL_DEFUN void clos__generic_function_increment_compilations(FuncallableInstance_sp gf) {
+  gf->increment_compilations();
+}
+
+CL_DEFUN size_t clos__generic_function_compilations(FuncallableInstance_sp gf) {
+  return gf->compilations();
+}
+
 CL_DEFUN T_sp clos__generic_function_specializer_profile(FuncallableInstance_sp gf) {
   return gf->GFUN_SPECIALIZER_PROFILE();
 }

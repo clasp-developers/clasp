@@ -1032,6 +1032,7 @@
 (defun codegen-dispatcher (raw-call-history specializer-profile generic-function &rest args &key generic-function-name output-path log-gf (debug-on t debug-on-p))
   (let* ((*log-gf* log-gf)
          (dtree (calculate-dtree raw-call-history specializer-profile)))
+    (clos:generic-function-increment-compilations generic-function)
     (apply 'codegen-dispatcher-from-dtree generic-function dtree args)))
 
 (export '(make-dtree
