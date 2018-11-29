@@ -82,6 +82,16 @@
                                         collect `'(,(first (clos:method-specializers method)))))))
     (satiate-children)))
 
+;;; cleavir-io
+(eval-when (:load-toplevel)
+  (macrolet ((satiate-save-info ()
+               `(clos:satiate #'cleavir-io:save-info
+                              ,@(loop for method
+                                        in (clos:generic-function-methods #'cleavir-io:save-info)
+                                      when (equal (method-qualifiers method) '(append))
+                                        collect `'(,(first (clos:method-specializers method)))))))
+    (satiate-save-info)))
+
 ;;; cleavir-generate-ast
 #-cst
 (eval-when (:load-toplevel)
