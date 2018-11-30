@@ -75,12 +75,19 @@
                                               collect `'(,class)))))
     (satiate-for-all cleavir-ast:origin)
     (satiate-for-all cleavir-ast:policy))
-  (macrolet ((satiate-children ()
-               `(clos:satiate #'cleavir-ast:children
-                              ,@(loop for method in (clos:generic-function-methods #'cleavir-ast:children)
+  (macrolet ((satiate-reader (name)
+               `(clos:satiate #',name
+                              ,@(loop for method in (clos:generic-function-methods (fdefinition name))
                                       when (null (method-qualifiers method))
                                         collect `'(,(first (clos:method-specializers method)))))))
-    (satiate-children)))
+    (satiate-reader cleavir-ast:children)
+    (satiate-reader cleavir-ast:arg1-ast)
+    (satiate-reader cleavir-ast:arg2-ast)
+    (satiate-reader cleavir-ast:body-ast)
+    (satiate-reader cleavir-ast:name)
+    (satiate-reader cleavir-ast:form-ast)
+    (satiate-reader cleavir-ast:form-asts)
+    (satiate-reader cleavir-ast:cons-ast)))
 
 ;;; cleavir-io
 (eval-when (:load-toplevel)
