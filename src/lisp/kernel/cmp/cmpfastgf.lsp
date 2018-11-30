@@ -289,6 +289,107 @@
 ;;; Generate Common Lisp code for a fastgf dispatcher given a
 ;;;   DTREE internal representation
 
+(defun generate-node-or-outcome (arguments cur-arg node-or-outcome)
+  (if (outcome-p node-or-outcome)
+      (generate-outcome arguments node-or-outcome)
+      (generate-node arguments cur-arg node-or-outcome)))
+
+;;; outcomes
+
+(defun generate-outcome (arguments outcome)
+  (let ((outcome (outcome-outcome outcome)))
+    (cond ((optimized-slot-reader-p outcome)
+           (generate-slot-reader arguments outcome))
+          ((optimized-slot-writer-p outcome)
+           (generate-slot-writer arguments outcome))
+          ((fast-method-call-p outcome)
+           (generate-fast-method-call arguments outcome))
+          ((effective-method-outcome-p outcome)
+           (generate-effective-method-call arguments (effective-method-outcome-function outcome)))
+          ((functionp outcome)
+           (generate-effective-method-call arguments outcome))
+          (t (error "BUG: Bad thing to be an outcome: ~a" outcome)))))
+
+(defun generate-slot-reader (arguments outcome)
+  (let ((location (optimized-slot-reader-index outcome))
+        (slot-name (optimized-slot-reader-slot-name outcome)))
+    ;; not sure about class slots
+    `(let* ((instance (first ,arguments))
+            (value (standard-instance-access instance ',location)))
+       (if (eq value (core:unbound))
+           (slot-unbound (class-of instance) instance ',slot-name)
+           value))))
+
+(defun generate-slot-writer (arguments outcome)
+  (let ((location (optimized-slot-writer-index outcome)))
+    `(let ((value (first ,arguments))
+           (instance (second ,arguments)))
+       (setf (standard-instance-access instance ',location) value))))
+
+(defun generate-fast-method-call (arguments outcome)
+  (let ((fmf (fast-method-call-function outcome)))
+    `(apply ,fmf ,arguments)))
+
+(defun generate-effective-method-call (arguments outcome)
+  (let ((emf outcome))
+    `(funcall ,emf ,arguments nil)))
+
+;;; discrimination
+
+(defun generate-node (arguments cur-arg node)
+  (let ((cur-arg (1+ cur-arg)))
+    (if (skip-node-p node)
+        (generate-skip-node arguments cur-arg node)
+        `(case (nth ,cur-arg ,arguments)
+           ,@(generate-eql-specializers arguments cur-arg node)
+           (otherwise
+            ,(generate-class-specializers arguments cur-arg node))))))
+
+(defun generate-skip-node (arguments cur-arg node)
+  (let ((skip-node (first (node-class-specializers node))))
+    (generate-node-or-outcome arguments cur-arg (skip-outcome skip-node))))
+
+(defun generate-eql-specializers (arguments cur-arg node)
+  ;; could also loop
+  (let ((result nil))
+    (maphash (lambda (spec outcome)
+               (push (generate-eql-specializer arguments cur-arg spec outcome) result))
+             (node-eql-specializers node))
+    result))
+
+(defun generate-eql-specializer (arguments cur-arg spec outcome)
+  `((,spec) ,(generate-node-or-outcome arguments cur-arg outcome)))
+
+(defun generate-class-specializers (arguments cur-arg node)
+  (let ((stamp-var (gensym "STAMP")))
+    `(let ((,stamp-var ,(generate-arg-stamp arguments cur-arg)))
+       ,(generate-class-binary-search arguments cur-arg (node-class-specializers node) stamp-var))))
+
+(defun generate-arg-stamp (arguments cur-arg)
+  `(stamp (nth ,cur-arg ,arguments)))
+
+(defun generate-class-binary-search (arguments cur-arg matches stamp-var)
+  (cond
+    ((null matches)
+     `(go dispatch-miss))
+    ((= (length matches) 1)
+     (let ((match (first matches)))
+       (if (single-p match)
+           `(if (= ,stamp-var ,(range-first-stamp match))
+                ,(generate-node-or-outcome arguments cur-arg (range-outcome match))
+                (go dispatch-miss))
+           `(if (<= ,(range-first-stamp match) ,stamp-var ,(range-last-stamp match))
+                ,(generate-node-or-outcome arguments cur-arg (match-outcome match))
+                (go dispatch-miss)))))
+    (t
+     (let* ((len-div-2 (floor (length matches) 2))
+            (left-matches (subseq matches 0 len-div-2))
+            (right-matches (subseq matches len-div-2))
+            (right-head (first right-matches))
+            (right-stamp (range-first-stamp right-head)))
+       `(if (< ,stamp-var ,right-stamp)
+            ,(generate-class-binary-search arguments cur-arg left-matches stamp-var)
+            ,(generate-class-binary-search arguments cur-arg right-matches stamp-var))))))
 
 (defun compile-remaining-eql-tests (eql-tests arg args orig-args)
   (if (null eql-tests)
@@ -537,7 +638,7 @@
       ;; FIXME   The argument-holder-gf-args is a vaslist!!!! not a va_list - they are just coincident!!!
       (irc-intrinsic-call-or-invoke "cc_vaslist_end" (list vaslist)))))
 
-(defun codegen-slot-reader (arguments cur-arg outcome)
+(defun codegen-slot-reader (arguments outcome)
   (cf-log "entered codegen-slot-reader%N")
 ;;; If the (cdr outcome) is a fixnum then we can generate code to read the slot
 ;;;    directly and remhash the outcome from the *outcomes* hash table.
@@ -565,7 +666,7 @@
         (irc-store retval (argument-holder-return-value arguments))
         (irc-br (argument-holder-continue-after-dispatch arguments))))))
 
-(defun codegen-slot-writer (arguments cur-arg outcome)
+(defun codegen-slot-writer (arguments outcome)
   (cf-log "codegen-slot-writer%N")
 ;;; If the (optimized-slot-writer-data outcome) is a fixnum then we can generate code to read the slot
 ;;;    directly and remhash the outcome from the *outcomes* hash table.
@@ -595,7 +696,7 @@
         (irc-store retval (argument-holder-return-value arguments))
         (irc-br (argument-holder-continue-after-dispatch arguments))))))
 
-(defun codegen-fast-method-call (arguments cur-arg outcome)
+(defun codegen-fast-method-call (arguments outcome)
   (cf-log "codegen-fast-method-call%N")
   (let* ((fmf (fast-method-call-function outcome))
          (gf-data-id (register-runtime-data fmf *outcomes*))
@@ -619,7 +720,7 @@
       (irc-store-result (argument-holder-return-value arguments) result-in-registers)
       (irc-br (argument-holder-continue-after-dispatch arguments)))))
 
-(defun codegen-effective-method-call (arguments cur-arg outcome)
+(defun codegen-effective-method-call (arguments outcome)
   (cf-log "codegen-effective-method-call %s%N" outcome)
   (let ((gf-data-id (register-runtime-data outcome *outcomes*))
 	(effective-method-block (irc-basic-block-create "effective-method")))
@@ -642,7 +743,7 @@
                          (irc-intrinsic "cc_fastgf_nil")))
       (irc-br (argument-holder-continue-after-dispatch arguments)))))
 
-(defun codegen-outcome (arguments cur-arg node)
+(defun codegen-outcome (arguments node)
   (cf-log "codegen-outcome%N")
   ;; The effective method will be found in a slot in the modules *gf-data* array
   ;;    the slot index will be in gf-data-id
@@ -651,16 +752,16 @@
             (core:bformat *log-gf* "About to codegen-outcome -> %s%N" outcome))
     (cond
       ((optimized-slot-reader-p outcome)
-       (codegen-slot-reader arguments cur-arg outcome))
+       (codegen-slot-reader arguments outcome))
       ((optimized-slot-writer-p outcome)
-       (codegen-slot-writer arguments cur-arg outcome))
+       (codegen-slot-writer arguments outcome))
       ((fast-method-call-p outcome)
-       (codegen-fast-method-call arguments cur-arg outcome))
+       (codegen-fast-method-call arguments outcome))
       ((effective-method-outcome-p outcome)
-       (codegen-effective-method-call arguments cur-arg (effective-method-outcome-function outcome)))
+       (codegen-effective-method-call arguments (effective-method-outcome-function outcome)))
       ((functionp outcome) ; method-function and no-required-method. maybe change to be cleaner?
-       (codegen-effective-method-call arguments cur-arg outcome))
-      (t (error "BUG: Bad thing to be an outcome: ~a~s" outcome)))))
+       (codegen-effective-method-call arguments outcome))
+      (t (error "BUG: Bad thing to be an outcome: ~a" outcome)))))
 
 (defun codegen-class-binary-search (arguments cur-arg matches stamp-var)
   (cf-log "codegen-class-binary-search%N")
@@ -738,7 +839,7 @@
 (defun codegen-node-or-outcome (arguments cur-arg node-or-outcome)
   (cf-log "entered codegen-node-or-outcome%N")
   (if (outcome-p node-or-outcome)
-      (codegen-outcome arguments cur-arg node-or-outcome)
+      (codegen-outcome arguments node-or-outcome)
       (codegen-node arguments cur-arg node-or-outcome)))
 
 ;;; --------------------------------------------------
