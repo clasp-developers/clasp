@@ -10,11 +10,11 @@
 (eval-when (:load-toplevel)
   (macrolet ((frob ()
                `(clos:satiate-initialization
-                 ;; AST initialization - speeds up loading inline.lisp.
-                 ,@(clos:subclasses* (find-class 'cleavir-ast:ast))
-                 ;; the remainder only speeds up the first compile
-                 ,@(clos:subclasses* (find-class 'cleavir-ir:instruction))
-                 ,@(clos:subclasses* (find-class 'cleavir-env::entry))
+                 ,@(rest (clos:subclasses* (find-class 'cleavir-ast:ast)))
+                 ,@(rest (clos:subclasses* (find-class 'cleavir-ir:instruction)))
+                 ,@(rest (clos:subclasses* (find-class 'cleavir-ir:datum)))
+                 ,@(rest (clos:subclasses* (find-class 'cleavir-env::entry)))
+                 'cleavir-ast-to-hir:context
                  'cleavir-env:lexical-variable-info
                  'cleavir-env:special-variable-info
                  'cleavir-env:constant-variable-info
