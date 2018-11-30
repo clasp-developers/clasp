@@ -180,7 +180,6 @@ core::T_O* to_object_pointer( void * x );
 // END OF T R A N S L A T O R S
 // ----------------------------------------------------------------------------
 
-gctools::return_type cc_dispatch_effective_method(core::T_O* teffective_method, core::T_O* tgf, core::T_O* tgf_args_valist_s);
 };
 
 extern "C" {
