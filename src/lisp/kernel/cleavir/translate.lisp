@@ -707,8 +707,8 @@ This works like compile-lambda-function in bclasp."
         (core:*use-cleavir-compiler* t))
     (if cmp::*debug-compile-file*
         (compiler-time
-         (cmp:compile-in-env name form env #'cclasp-compile* cmp:*default-linkage*))
-        (cmp:compile-in-env name form env #'cclasp-compile* cmp:*default-linkage*))))
+         (cmp:compile-in-env name form env #'cclasp-compile* cmp:*default-compile-linkage*))
+        (cmp:compile-in-env name form env #'cclasp-compile* cmp:*default-compile-linkage*))))
         
 (defun cleavir-compile (name form &key (debug *debug-cleavir*))
   (let ((cmp:*compile-debug-dump-module* debug)

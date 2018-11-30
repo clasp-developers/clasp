@@ -5,6 +5,7 @@
           *compile-file-debug-dump-module*  ;; Dump intermediate modules
           *compile-debug-dump-module*  ;; Dump intermediate modules
           *default-linkage*
+          *default-compile-linkage*
           quick-module-dump
           quick-message-dump
           write-bitcode

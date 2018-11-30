@@ -649,9 +649,13 @@ The passed module is modified as a side-effect."
     (let ((module original-module))
       ;; (irc-verify-module-safe module)
       (let ((jit-engine (jit-engine))
-            (repl-name (if main-fn (llvm-sys:get-name main-fn) ""))
-            (startup-name (if startup-fn (llvm-sys:get-name startup-fn) ""))
-            (shutdown-name (if shutdown-fn (llvm-sys:get-name shutdown-fn) "")))
+            (repl-name (if main-fn (llvm-sys:get-name main-fn) nil))
+            (startup-name (if startup-fn (llvm-sys:get-name startup-fn) nil))
+            (shutdown-name (if shutdown-fn (llvm-sys:get-name shutdown-fn) nil)))
+        (when (or (null repl-name) (string= repl-name ""))
+          (error "Could not obtain the name of the repl function ~s - got ~s" main-fn repl-name))
+        (when (or (null startup-name) (string= startup-name ""))
+          (error "Could not obtain the name of the startup function ~s - got ~s" startup-fn startup-name))
         (with-track-llvm-time
             (unwind-protect
                  (progn
