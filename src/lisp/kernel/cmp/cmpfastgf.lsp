@@ -289,12 +289,52 @@
 ;;; Generate Common Lisp code for a fastgf dispatcher given a
 ;;;   DTREE internal representation
 
-(defun generate-node-or-outcome (arguments cur-arg node-or-outcome)
+(defvar *generate-outcomes*) ; alist (outcome . tag)
+
+;;; main entry point
+(defun generate-dispatcher-from-dtree (generic-function-name dtree)
+  (let ((dispatch-args (gensym "DISPATCH-ARGUMENTS"))
+        ;;(backup-args (gensym "ARGUMENTS"))
+        (block-name (core:function-block-name generic-function-name))
+        (*generate-outcomes* nil))
+    `(lambda (core:&va-rest ,dispatch-args)
+       (block ,block-name
+         (tagbody
+            ,(generate-node-or-outcome dispatch-args (dtree-root dtree))
+            ;; note: we need generate-node-or-outcome to run to fill *generate-outcomes*.
+            ,@(generate-tagged-outcomes *generate-outcomes* block-name dispatch-args #+(or)backup-args)
+          dispatch-miss
+            (core:vaslist-rewind ,dispatch-args)
+            (return-from ,block-name
+              (clos::dispatch-miss (fdefinition ',generic-function-name) ,dispatch-args #+(or),backup-args)))))))
+
+(defun generate-node-or-outcome (arguments node-or-outcome)
   (if (outcome-p node-or-outcome)
-      (generate-outcome arguments node-or-outcome)
-      (generate-node arguments cur-arg node-or-outcome)))
+      (generate-go-outcome node-or-outcome)
+      (generate-node arguments node-or-outcome)))
 
 ;;; outcomes
+;;; we cache them to avoid generating calls/whatever more than once
+;;; they're generated after all the discrimination code is.
+
+(defun generate-go-outcome (outcome)
+  (let ((existing (assoc outcome *generate-outcomes* :test #'outcome=)))
+    (if (null existing)
+        ;; no match: put it on there
+        (let ((tag (gensym "OUTCOME")))
+          (push (cons outcome tag) *generate-outcomes*)
+          `(go ,tag))
+        ;; match: goto existing tag
+        `(go ,(cdr existing)))))
+
+(defun generate-tagged-outcomes (list block-name arguments)
+  (mapcan (lambda (pair)
+            (let ((outcome (car pair)) (tag (cdr pair)))
+              (list tag
+                    `(core:vaslist-rewind ,arguments)
+                    `(return-from ,block-name
+                       ,(generate-outcome arguments outcome)))))
+          list))
 
 (defun generate-outcome (arguments outcome)
   (let ((outcome (outcome-outcome outcome)))
@@ -313,8 +353,8 @@
 (defun generate-slot-reader (arguments outcome)
   (let ((location (optimized-slot-reader-index outcome))
         (slot-name (optimized-slot-reader-slot-name outcome)))
-    ;; not sure about class slots
-    `(let* ((instance (first ,arguments))
+    ;; FIXME: for class slots, have to ltv to get the right cons cell
+    `(let* ((instance (core:vaslist-pop ,arguments))
             (value (standard-instance-access instance ',location)))
        (if (eq value (core:unbound))
            (slot-unbound (class-of instance) instance ',slot-name)
@@ -322,8 +362,8 @@
 
 (defun generate-slot-writer (arguments outcome)
   (let ((location (optimized-slot-writer-index outcome)))
-    `(let ((value (first ,arguments))
-           (instance (second ,arguments)))
+    `(let ((value (core:vaslist-pop ,arguments))
+           (instance (core:vaslist-pop ,arguments)))
        (setf (standard-instance-access instance ',location) value))))
 
 (defun generate-fast-method-call (arguments outcome)
@@ -336,39 +376,49 @@
 
 ;;; discrimination
 
-(defun generate-node (arguments cur-arg node)
-  (let ((cur-arg (1+ cur-arg)))
-    (if (skip-node-p node)
-        (generate-skip-node arguments cur-arg node)
-        `(case (nth ,cur-arg ,arguments)
-           ,@(generate-eql-specializers arguments cur-arg node)
-           (otherwise
-            ,(generate-class-specializers arguments cur-arg node))))))
+(defun generate-node (arguments node)
+  (let ((arg (gensym "ARG")))
+    `(let ((,arg (core:vaslist-pop ,arguments)))
+       (declare (ignorable ,arg)) ; for skip
+       ,(cond ((skip-node-p node)
+               (generate-skip-node arguments node))
+              ;; We avoid the eql CASE when possible. This isn't really necessary,
+              ;; but let's try to avoid pressuring the optimizer when it's easy.
+              ((has-eql-specializers-p node)
+               `(case ,arg
+                  ,@(generate-eql-specializers arguments arg node)
+                  (otherwise
+                   ,(generate-class-specializers arguments arg node))))
+              (t (generate-class-specializers arguments arg node))))))
 
-(defun generate-skip-node (arguments cur-arg node)
+(defun generate-skip-node (arguments node)
   (let ((skip-node (first (node-class-specializers node))))
-    (generate-node-or-outcome arguments cur-arg (skip-outcome skip-node))))
+    (generate-node-or-outcome arguments (skip-outcome skip-node))))
 
-(defun generate-eql-specializers (arguments cur-arg node)
+(defun has-eql-specializers-p (node)
+  (not (zerop (hash-table-count (node-eql-specializers node)))))
+
+(defun generate-eql-specializers (arguments arg node)
+  (declare (ignore arg)) ; just for parity with generate-class-specializers
   ;; could also loop
   (let ((result nil))
     (maphash (lambda (spec outcome)
-               (push (generate-eql-specializer arguments cur-arg spec outcome) result))
+               (push (generate-eql-specializer arguments spec outcome) result))
              (node-eql-specializers node))
     result))
 
-(defun generate-eql-specializer (arguments cur-arg spec outcome)
-  `((,spec) ,(generate-node-or-outcome arguments cur-arg outcome)))
+(defun generate-eql-specializer (arguments spec outcome)
+  `((,spec) ,(generate-node-or-outcome arguments outcome)))
 
-(defun generate-class-specializers (arguments cur-arg node)
+(defun generate-class-specializers (arguments arg node)
   (let ((stamp-var (gensym "STAMP")))
-    `(let ((,stamp-var ,(generate-arg-stamp arguments cur-arg)))
-       ,(generate-class-binary-search arguments cur-arg (node-class-specializers node) stamp-var))))
+    `(let ((,stamp-var ,(generate-read-stamp arg)))
+       ,(generate-class-binary-search arguments (node-class-specializers node) stamp-var))))
 
-(defun generate-arg-stamp (arguments cur-arg)
-  `(stamp (nth ,cur-arg ,arguments)))
+(defun generate-read-stamp (arg)
+  `(core:instance-stamp ,arg))
 
-(defun generate-class-binary-search (arguments cur-arg matches stamp-var)
+(defun generate-class-binary-search (arguments matches stamp-var)
   (cond
     ((null matches)
      `(go dispatch-miss))
@@ -376,10 +426,10 @@
      (let ((match (first matches)))
        (if (single-p match)
            `(if (= ,stamp-var ,(range-first-stamp match))
-                ,(generate-node-or-outcome arguments cur-arg (range-outcome match))
+                ,(generate-node-or-outcome arguments (range-outcome match))
                 (go dispatch-miss))
            `(if (<= ,(range-first-stamp match) ,stamp-var ,(range-last-stamp match))
-                ,(generate-node-or-outcome arguments cur-arg (match-outcome match))
+                ,(generate-node-or-outcome arguments (match-outcome match))
                 (go dispatch-miss)))))
     (t
      (let* ((len-div-2 (floor (length matches) 2))
@@ -388,79 +438,9 @@
             (right-head (first right-matches))
             (right-stamp (range-first-stamp right-head)))
        `(if (< ,stamp-var ,right-stamp)
-            ,(generate-class-binary-search arguments cur-arg left-matches stamp-var)
-            ,(generate-class-binary-search arguments cur-arg right-matches stamp-var))))))
+            ,(generate-class-binary-search arguments left-matches stamp-var)
+            ,(generate-class-binary-search arguments right-matches stamp-var))))))
 
-(defun compile-remaining-eql-tests (eql-tests arg args orig-args)
-  (if (null eql-tests)
-      nil
-      (let ((eql-test (car eql-tests))
-	    (eql-rest (cdr eql-tests)))
-	`(if (eql ,arg ',(car eql-test))
-	     ,(compile-node-or-outcome (second eql-test) args orig-args)
-	     ,(if eql-rest
-		  (compile-remaining-eql-tests eql-rest arg args orig-args))))))
-
-(defun compile-eql-specializers (node arg args orig-args)
-  (let ((eql-tests (let (values)
-		     (maphash (lambda (key value)
-				(push (list key value) values))
-			      (node-eql-specializers node))
-		     values)))
-    (let ((result (compile-remaining-eql-tests eql-tests arg args orig-args)))
-      (if result
-	  (list result)
-	  nil))))
-
-
-(defun compile-class-binary-search (matches stamp-var args orig-args)
-  (cond
-    ((null matches)
-     `(no-applicable-method orig-args))
-    ((= (length matches) 1)
-     (let ((match (car matches)))
-       (if (single-p match)
-	   `(if (= ,stamp-var ,(range-first-stamp match))
-		,(compile-node-or-outcome (match-outcome match) args orig-args)
-		(go miss))
-	   `(if (and (>= ,stamp-var ,(range-first-stamp match)) (<= ,stamp-var ,(range-last-stamp match)))
-		,(compile-node-or-outcome (match-outcome match) args orig-args)
-		(go miss)))))
-    (t
-     (let* ((len-div-2 (floor (length matches) 2))
-	    (left-matches (subseq matches 0 len-div-2))
-	    (right-matches (subseq matches len-div-2))
-	    (right-head (car right-matches))
-	    (right-stamp (range-first-stamp right-head)))
-       `(if (< ,stamp-var ,right-stamp)
-	    ,(compile-class-binary-search left-matches stamp-var args orig-args)
-	    ,(compile-class-binary-search right-matches stamp-var args orig-args))))))
-
-(defun compile-class-specializers (node arg args orig-args)
-  (let ((stamp-var (gensym "STAMP")))
-    `(let ((,stamp-var (core:class-stamp-for-instances (class-of ,arg))))
-       ,(compile-class-binary-search (node-class-specializers node) stamp-var args orig-args))))
-
-(defvar *map-tag-outcomes* (make-hash-table))
-
-(defun gather-outcomes (outcome)
-  (let ((tag (intern (core:bformat nil "T%s" (hash-table-count *map-tag-outcomes*)))))
-    (setf (gethash tag *map-tag-outcomes*) outcome)
-    tag))
-
-(defun compile-outcome (node args orig-args)
-  `(go ,(gather-outcomes (outcome-outcome node))))
-
-(defun compile-node (node args orig-args)
-  (let ((arg (gensym "ARG")))
-    `(let ((,arg (core:vaslist-pop ,args))) ;; was (va-arg ,args)
-       ,@(compile-eql-specializers node arg args orig-args)
-       ,(compile-class-specializers node arg args orig-args))))
-
-(defun compile-node-or-outcome (node-or-outcome args orig-args)
-  (if (outcome-p node-or-outcome)
-      (compile-outcome node-or-outcome args orig-args)
-      (compile-node node-or-outcome args orig-args)))
 
 (defun compiled-dtree-form (dtree)
   (let ((vargs (gensym "VARGS"))
