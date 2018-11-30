@@ -536,6 +536,51 @@ bool function_name(uintptr_t returnAddress, std::string& name, uintptr_t& realFu
 
 #if defined(_TARGET_OS_DARWIN)
 
+
+uint8_t * 
+mygetsectiondata(
+                 void* vmhp,
+                 const char *segname,
+                 const char *sectname,
+                 unsigned long *size)
+{
+  const struct mach_header_64* mhp = (const struct mach_header_64*)vmhp;
+  struct segment_command_64 *sgp;
+  struct section_64 *sp;
+  uint32_t i, j;
+  intptr_t slide;
+    
+  slide = 0;
+  sp = 0;
+  sgp = (struct segment_command_64 *)
+    ((char *)mhp + sizeof(struct mach_header_64));
+  for(i = 0; i < mhp->ncmds; i++){
+    if(sgp->cmd == LC_SEGMENT_64){
+      if(strcmp(sgp->segname, "__TEXT") == 0){
+        slide = (uintptr_t)mhp - sgp->vmaddr;
+      }
+      if(strncmp(sgp->segname, segname, sizeof(sgp->segname)) == 0){
+        sp = (struct section_64 *)((char *)sgp +
+                                   sizeof(struct segment_command_64));
+        for(j = 0; j < sgp->nsects; j++){
+          if(strncmp(sp->sectname, sectname,
+                     sizeof(sp->sectname)) == 0 &&
+             strncmp(sp->segname, segname,
+                     sizeof(sp->segname)) == 0){
+            *size = sp->size;
+//   return (uint8_t*)sp;
+            uint8_t* addr = ((uint8_t *)(sp->addr) + slide);
+            return addr;
+          }
+          sp = (struct section_64 *)((char *)sp +
+                                     sizeof(struct section_64));
+        }
+      }
+    }
+    sgp = (struct segment_command_64 *)((char *)sgp + sgp->cmdsize);
+  }
+  return(0);
+}
 //                          123456789.123456
 #define STACKMAPS_SEGNAME  "__LLVM_STACKMAPS"
 #define STACKMAPS_SECTNAME "__llvm_stackmaps"
@@ -796,6 +841,23 @@ void search_with_otool_and_nm(gc::Vec0<BacktraceEntry>& backtrace, const char* f
       }
     }
   }
+#if 1
+  // Use mygetsectiondata to walk the library because stackmaps are mmap'd
+  // in places that I am not able to calculate using otool
+  unsigned long section_size;
+  uint8_t* p_section =  mygetsectiondata( (void*)header,
+                                          "__LLVM_STACKMAPS",
+                                          "__llvm_stackmaps",
+                                          &section_size );
+  if (p_section!=NULL ) {
+    uintptr_t address = (uintptr_t)p_section;
+    uintptr_t endAddress = address+section_size;
+    while (address<endAddress) {
+      walk_one_llvm_stackmap(backtrace,address,endAddress,true);
+    }
+  }
+  
+#else
   {
   // Now use otool to get the stackmaps
     stringstream otool_cmd;
@@ -854,6 +916,7 @@ void search_with_otool_and_nm(gc::Vec0<BacktraceEntry>& backtrace, const char* f
       }
     }
   }
+#endif
 }
 
 struct SafeMMap {
