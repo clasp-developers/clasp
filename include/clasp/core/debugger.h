@@ -132,6 +132,6 @@ BacktraceEntry() : _Stage(undefined),_ReturnAddress(0),_FunctionStart(0),_Functi
 extern "C" {
 void dbg_safe_print(uintptr_t raw);
 void dbg_safe_println(uintptr_t raw);
-
+void dbg_safe_backtrace();
 };
 #endif

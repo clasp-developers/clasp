@@ -1628,7 +1628,7 @@ CL_DEFUN void core__exit(int exitValue) {
   gctools::global_debuggerOnSIGABRT = false;
   if (exitValue != 0) {
     if ( core::_sym_STARexit_backtraceSTAR->symbolValue().notnilp() ) {
-      core::core__clib_backtrace(999999);
+      dbg_safe_backtrace();
     }
   }
   throw(ExitProgramException(exitValue));

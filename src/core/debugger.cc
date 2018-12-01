@@ -1623,15 +1623,11 @@ SYMBOL_EXPORT_SC_(KeywordPkg,function_name);
 SYMBOL_EXPORT_SC_(KeywordPkg,arguments);
 SYMBOL_EXPORT_SC_(KeywordPkg,closure);
 
-CL_LAMBDA(&optional (depth 0));
-CL_DECLARE();
-CL_DOCSTRING("backtrace");
-CL_DEFUN T_sp core__clib_backtrace_as_list() {
-  ql::list result;
+
+void fill_backtrace(gc::Vec0<BacktraceEntry>& backtrace) {
   char *funcname = (char *)malloc(1024);
   size_t funcnamesize = 1024;
   uintptr_t stackTop = (uintptr_t)my_thread_low_level->_StackTop;
-  gc::Vec0<BacktraceEntry> backtrace;
   BT_LOG((buf,"About to safe_backtrace\n" ));
   safe_backtrace(backtrace);
   size_t nptrs = backtrace.size()-2;
@@ -1645,16 +1641,11 @@ CL_DEFUN T_sp core__clib_backtrace_as_list() {
       bp = *(void**)bp;
     }
   }
-
   BT_LOG((buf,"About to walk library info\n" ));
-
-
   //
   // Walk libraries and jitted objects to fill backtrace.
   //
   fill_backtrace_or_dump_info(backtrace);
-
-    
     // Now get the arguments
   BT_LOG((buf,"Getting arguments\n"));
   for ( size_t index=1; index<backtrace.size(); ++index) {
@@ -1671,9 +1662,19 @@ CL_DEFUN T_sp core__clib_backtrace_as_list() {
     // fill in the interpreted frames here
   BT_LOG((buf,"fill in interpreted frames here\n"));;
   fill_in_interpreted_frames(backtrace);
+};
 
+
+
+CL_LAMBDA(&optional (depth 0));
+CL_DECLARE();
+CL_DOCSTRING("backtrace");
+CL_DEFUN T_sp core__clib_backtrace_as_list() {
+  gc::Vec0<BacktraceEntry> backtrace;
+  fill_backtrace(backtrace);
   BT_LOG((buf," building backtrace as list\n" ));
     // Move the frames into Common Lisp
+  ql::list result;
   for ( size_t i=1; i<backtrace.size(); ++i ) {
     T_sp entry;
     Symbol_sp stype;
@@ -1709,6 +1710,7 @@ CL_DEFUN T_sp core__clib_backtrace_as_list() {
 }
 
 
+#if 0
 CL_LAMBDA(&optional (depth 0));
 CL_DECLARE();
 CL_DOCSTRING("backtrace");
@@ -1757,6 +1759,8 @@ CL_DEFUN void core__clib_backtrace(int depth) {
   if (funcname)
     free(funcname);
 };
+
+#endif
 
 CL_LAMBDA();
 CL_DECLARE();
@@ -1988,45 +1992,74 @@ void dbg_printTPtr(uintptr_clasp_t raw, bool print_pretty) {
 }
 
 extern "C" {
-void dbg_safe_print(uintptr_t raw) {
+
+/*! Generate text representation of a objects without using the lisp printer!
+This code MUST be bulletproof!  It must work under the most memory corrupted conditions */
+std::string dbg_safe_repr(uintptr_t raw) {
+  stringstream ss;
   core::T_sp obj((gc::Tagged)raw);
   if (gc::IsA<core::Symbol_sp>(obj)) {
     core::Symbol_sp sym = gc::As_unsafe<core::Symbol_sp>(obj);
-    printf(" %s", sym->formattedName(true).c_str());
+    ss << sym->formattedName(true);
   } else if (obj.consp()) {
-    printf(" (");
+    ss << "(";
     while (obj.consp()) {
-      dbg_safe_print((uintptr_t)CONS_CAR(obj).raw_());
+      ss << dbg_safe_repr((uintptr_t)CONS_CAR(obj).raw_()) << " ";
       obj = CONS_CDR(obj);
     }
     if (obj.notnilp()) {
-      printf(" . ");
-      dbg_safe_print(obj);
+      ss << ". ";
+      ss << dbg_safe_repr(obj);
     }
-    printf(" )");
+    ss << ")";
   } else if (obj.fixnump()) {
-    printf(" %" PFixnum, obj.unsafe_fixnum());
+    ss << (gc::Fixnum)obj.unsafe_fixnum();
   } else if (obj.nilp()) {
-    printf(" NIL");
+    ss << "NIL";
   } else if (obj.unboundp()) {
-    printf(" #:UNBOUND");
+    ss << "#:UNBOUND";
   } else if (obj.characterp()) {
-    printf(" #\\%c[%d]", obj.unsafe_character(), obj.unsafe_character());
+    ss << "#\\" << (char)obj.unsafe_character() << "[" << (int)obj.unsafe_character() << "]";
   } else if (obj.single_floatp()) {
-    printf(" %f", obj.unsafe_single_float());
+    ss << (float)obj.unsafe_single_float();
+  } else if (gc::IsA<core::SimpleBaseString_sp>(obj)) {
+    core::SimpleBaseString_sp sobj = gc::As_unsafe<core::SimpleBaseString_sp>(obj);
+    ss << sobj->get_std_string();
   } else if (obj.generalp()) {
     core::General_sp gen = gc::As_unsafe<core::General_sp>(obj);
-    printf(" #<%s @%p>", gen->className().c_str(), gen.raw_());
+    ss << "#<" << gen->className() << " " << (void*)gen.raw_() << ">";
   } else {
-    printf(" #<RAW@%p\n", (void*)obj.raw_());
+    ss << " #<RAW@" << (void*)obj.raw_() << ">";
   }
+  return ss.str();
+}
+
+void dbg_safe_print(uintptr_t raw) {
+  printf(" %s", dbg_safe_repr(raw).c_str());
 }
 
 void dbg_safe_println(uintptr_t raw) {
-  dbg_safe_print(raw);
-  printf("\n");
+  printf(" %s\n", dbg_safe_repr(raw).c_str());
 }
 
+void dbg_safe_backtrace() {
+  gc::Vec0<core::BacktraceEntry> backtrace;
+  stringstream ss;
+  core::fill_backtrace(backtrace);
+  for ( size_t idx=0; idx<backtrace.size(); ++idx ) {
+    ss << idx << " (" << backtrace[idx]._SymbolName << " ";
+    if (gc::IsA<core::SimpleVector_sp>(backtrace[idx]._Arguments)) {
+      core::SimpleVector_sp args = gc::As_unsafe<core::SimpleVector_sp>(backtrace[idx]._Arguments);
+      for ( size_t aidx=0; aidx<args->length(); ++aidx) {
+        ss << dbg_safe_repr((uintptr_t)(*args)[aidx].raw_()) << " ";
+      }
+    } else {
+      ss << "ARGS: " << dbg_safe_repr(backtrace[idx]._Arguments);
+    }
+    ss << ")";
+    printf("%s\n", ss.str().c_str());
+  }
+}
 };
 
 
