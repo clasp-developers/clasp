@@ -440,17 +440,17 @@ void search_jitted_objects(gc::Vec0<BacktraceEntry>& backtrace, bool searchFunct
     }
     for (size_t j=0; j<backtrace.size(); ++j ) {
       BT_LOG((buf, "Comparing to backtrace frame %lu  return address %p %s\n", j, (void*)backtrace[j]._ReturnAddress, backtrace_frame(j,&backtrace[j]).c_str()));
-      if (!searchFunctionDescriptions && backtrace[j]._Stage != symbolicated) {
+      if (!searchFunctionDescriptions) { // searching for functions
         if (entry._ObjectPointer<=backtrace[j]._ReturnAddress && backtrace[j]._ReturnAddress<(entry._ObjectPointer+entry._Size)) {
           backtrace[j]._Stage = lispFrame; // jitted functions are lisp functions
           backtrace[j]._FunctionStart = entry._ObjectPointer;
           backtrace[j]._FunctionEnd = entry._ObjectPointer+entry._Size;
           backtrace[j]._SymbolName = entry._Name;
           BT_LOG((buf,"MATCHED!!!\n"));
-          break;
+//          break;
         }
       }
-      if (searchFunctionDescriptions && entry._Size == sizeof(FunctionDescription) && backtrace[j]._Stage == lispFrame) {
+      if (searchFunctionDescriptions) { // searching for function descriptions
         stringstream ss;
         ss << backtrace[j]._SymbolName;
         ss << "^DESC";
@@ -458,7 +458,7 @@ void search_jitted_objects(gc::Vec0<BacktraceEntry>& backtrace, bool searchFunct
           backtrace[j]._Stage = lispFrame; // Anything with a FunctionDescription is a lispFrame
           backtrace[j]._FunctionDescription = entry._ObjectPointer;
           BT_LOG((buf,"MATCHED!!!\n"));
-          break;
+//          break;
         }
       }
     }
@@ -1036,7 +1036,7 @@ void scan_elf_library_for_symbols_then_stackmaps(gc::Vec0<BacktraceEntry>&backtr
                 backtrace[j]._FunctionEnd = symbol_start+(uintptr_t)sym.st_size;
                 backtrace[j]._SymbolName = elf_strptr(elf,shdr.sh_link , (size_t)sym.st_name);
                 BT_LOG((buf,"Identified symbol name %s for frame %lu\n", backtrace[j]._SymbolName.c_str(), j));
-                break;
+//                break;
               }
             }
           }
@@ -1673,36 +1673,35 @@ CL_DEFUN T_sp core__clib_backtrace_as_list() {
   fill_in_interpreted_frames(backtrace);
 
   BT_LOG((buf," building backtrace as list\n" ));
-    // Copy the frames into a vector
+    // Move the frames into Common Lisp
   for ( size_t i=1; i<backtrace.size(); ++i ) {
     T_sp entry;
-    if (_sym_make_backtrace_frame->fboundp()) {
-      if (backtrace[i]._Stage == lispFrame) {
-        T_sp funcDesc = _Nil<T_O>();
-        if (backtrace[i]._FunctionDescription!=0) {
-          funcDesc = Pointer_O::create((void*)backtrace[i]._FunctionDescription);
-        }
-        entry = eval::funcall(_sym_make_backtrace_frame,
-                              INTERN_(kw,type),INTERN_(kw,lisp),
-                              INTERN_(kw,return_address),Pointer_O::create((void*)backtrace[i]._ReturnAddress),
-                              INTERN_(kw,raw_name), SimpleBaseString_O::make(backtrace[i]._SymbolName),
-                              INTERN_(kw,arguments),backtrace[i]._Arguments,
-                              INTERN_(kw,closure),backtrace[i]._Closure,
-                              INTERN_(kw,base_pointer),Pointer_O::create((void*)backtrace[i]._BasePointer),
-                              INTERN_(kw,frame_offset),core::make_fixnum(backtrace[i]._FrameOffset),
-                              INTERN_(kw,frame_size),core::make_fixnum(backtrace[i]._FrameSize),
-                              INTERN_(kw,function_start_address),Pointer_O::create((void*)backtrace[i]._FunctionStart),
-                              INTERN_(kw,function_end_address),Pointer_O::create((void*)backtrace[i]._FunctionEnd),
-                              INTERN_(kw,function_description),funcDesc);
-      } else {
-        entry = eval::funcall(_sym_make_backtrace_frame,
-                              INTERN_(kw,type),INTERN_(kw,c_PLUS__PLUS_),
-                              INTERN_(kw,raw_name),SimpleBaseString_O::make(backtrace[i]._SymbolName));
-      }
+    Symbol_sp stype;
+    if (backtrace[i]._Stage == lispFrame) {
+      stype = INTERN_(kw,lisp);
     } else {
-      entry = Cons_O::createList(SimpleBaseString_O::make(backtrace[i]._SymbolName),
-                                 backtrace[i]._Arguments,
-                                 backtrace[i]._Closure);
+      stype = INTERN_(kw,c_PLUS__PLUS_);
+    }
+    T_sp funcDesc = _Nil<T_O>();
+    if (backtrace[i]._FunctionDescription!=0) {
+      funcDesc = Pointer_O::create((void*)backtrace[i]._FunctionDescription);
+    }
+    ql::list args;
+    args << INTERN_(kw,type) << stype
+         << INTERN_(kw,return_address) << Pointer_O::create((void*)backtrace[i]._ReturnAddress)
+         << INTERN_(kw,raw_name) <<  SimpleBaseString_O::make(backtrace[i]._SymbolName)
+         << INTERN_(kw,arguments) << backtrace[i]._Arguments
+         << INTERN_(kw,closure) << backtrace[i]._Closure
+         << INTERN_(kw,base_pointer) << Pointer_O::create((void*)backtrace[i]._BasePointer)
+         << INTERN_(kw,frame_offset) << core::make_fixnum(backtrace[i]._FrameOffset)
+         << INTERN_(kw,frame_size) << core::make_fixnum(backtrace[i]._FrameSize)
+         << INTERN_(kw,function_start_address) << Pointer_O::create((void*)backtrace[i]._FunctionStart)
+         << INTERN_(kw,function_end_address) << Pointer_O::create((void*)backtrace[i]._FunctionEnd)
+         << INTERN_(kw,function_description) << funcDesc;
+    if (_sym_make_backtrace_frame->fboundp()) {
+      entry = core__apply0(_sym_make_backtrace_frame->symbolFunction(),args.cons());
+    } else {
+      entry = core::Cons_O::create(_sym_make_backtrace_frame,args.cons());
     }
     result << entry;
   }

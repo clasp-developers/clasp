@@ -1620,24 +1620,21 @@ core::T_mv capture_arguments(uintptr_t functionAddress, uintptr_t basePointer, i
     mem_nargs = nargs-argregs;
   }
   T_sp closure((gctools::Tagged)register_save_area[0]);
-  if (nargs>0) {
-    SimpleVector_sp args = SimpleVector_O::make(nargs);
-    int iarg = 0;
-    for ( size_t i=0; i<reg_nargs; ++i ) {
-      T_sp tobj((gctools::Tagged)register_save_area[2+i]);
+  SimpleVector_sp args = SimpleVector_O::make(nargs);
+  int iarg = 0;
+  for ( size_t i=0; i<reg_nargs; ++i ) {
+    T_sp tobj((gctools::Tagged)register_save_area[2+i]);
 //    printf("%s:%d:%s  register argument %lu -> %p\n", __FILE__, __LINE__, __FUNCTION__, i, tobj.raw_());
 //    printf("%s:%d:%s  register argument %lu -> %s\n", __FILE__, __LINE__, __FUNCTION__, i, _rep_(tobj).c_str());
-      (*args)[iarg++] = tobj;
-    }
-    for ( size_t i=0; i<mem_nargs; ++i ) {
-      T_sp tobj((gctools::Tagged)((T_O**)basePointer)[2+i]);
+    (*args)[iarg++] = tobj;
+  }
+  for ( size_t i=0; i<mem_nargs; ++i ) {
+    T_sp tobj((gctools::Tagged)((T_O**)basePointer)[2+i]);
 //    printf("%s:%d:%s  stack argument %lu -> %p\n", __FILE__, __LINE__, __FUNCTION__, i+argregs, tobj.raw_());
 //    printf("%s:%d:%s  stack argument %lu -> %s\n", __FILE__, __LINE__, __FUNCTION__, i+argregs, _rep_(tobj).c_str());
-      (*args)[iarg++] = tobj;
-    }
-    return Values(args,closure);
+    (*args)[iarg++] = tobj;
   }
-  return Values(_Nil<T_O>(),_Nil<T_O>());
+  return Values(args,closure);
 }
 
 };

@@ -20,7 +20,6 @@
   function-start-address
   function-end-address
   base-pointer
-  next-base-pointer
   arguments
   closure
   function-description
