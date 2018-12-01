@@ -352,19 +352,49 @@
 
 (defun generate-slot-reader (arguments outcome)
   (let ((location (optimized-slot-reader-index outcome))
-        (slot-name (optimized-slot-reader-slot-name outcome)))
-    ;; FIXME: for class slots, have to ltv to get the right cons cell
-    `(let* ((instance (core:vaslist-pop ,arguments))
-            (value (standard-instance-access instance ',location)))
-       (if (eq value (core:unbound))
-           (slot-unbound (class-of instance) instance ',slot-name)
-           value))))
+        (slot-name (optimized-slot-reader-slot-name outcome))
+        (class (optimized-slot-reader-class outcome)))
+    (cond ((fixnump location)
+           ;; instance location- easy
+           `(let* ((instance (core:vaslist-pop ,arguments))
+                   (value (core:instance-ref instance ',location)))
+              (if (eq value (core:unbound))
+                  (slot-unbound ,class instance ',slot-name)
+                  value)))
+          ((consp location)
+           ;; class location. we need to find the new cell at load time.
+           `(let* ((location
+                     (load-time-value
+                      (clos:slot-definition-location
+                       (or (find ',slot-name (clos:class-slots ,class))
+                           (error "Probably a BUG: slot ~a in ~a stopped existing between compile and load"
+                                  ',slot-name ,class)))))
+                   (value (car location)))
+              (if (eq value (core:unbound))
+                  (slot-unbound ,class (core:vaslist-pop ,arguments) ',slot-name)
+                  value)))
+          (t (error "BUG: Slot location ~a is not a fixnum or cons" location)))))
 
 (defun generate-slot-writer (arguments outcome)
   (let ((location (optimized-slot-writer-index outcome)))
-    `(let ((value (core:vaslist-pop ,arguments))
-           (instance (core:vaslist-pop ,arguments)))
-       (setf (standard-instance-access instance ',location) value))))
+    (cond ((fixnump location)
+           `(let ((value (core:vaslist-pop ,arguments))
+                  (instance (core:vaslist-pop ,arguments)))
+              (si:instance-set instance ,location value)))
+          ((consp location)
+           ;; class location- annoying
+           (let ((slot-name (optimized-slot-reader-slot-name outcome))
+                 (class (optimized-slot-reader-class outcome)))
+             `(let ((value (core:vaslist-pop ,arguments))
+                    (location
+                      (load-time-value
+                       (clos:slot-definition-location
+                        (or (find ',slot-name (clos:class-slots ,class))
+                            (error "Probably a BUG: slot ~a in ~a stopped existing between compile and load"
+                                   ',slot-name ,class))))))
+                (rplaca location value)
+                value)))
+          (t (error "BUG: Slot location ~a is not a fixnum or cons" location)))))
 
 (defun generate-fast-method-call (arguments outcome)
   (let ((fmf (fast-method-call-function outcome)))
