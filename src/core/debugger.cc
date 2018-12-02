@@ -2044,6 +2044,7 @@ void dbg_safe_println(uintptr_t raw) {
 
 void dbg_safe_backtrace() {
   gc::Vec0<core::BacktraceEntry> backtrace;
+  printf("Safe-backtrace\n");
   stringstream ss;
   core::fill_backtrace(backtrace);
   for ( size_t idx=0; idx<backtrace.size(); ++idx ) {
