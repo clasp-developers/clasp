@@ -26,6 +26,8 @@ THE SOFTWARE.
 */
 /* -^- */
 
+#include <clasp/core/foundation.h>
+#include <clasp/core/evaluator.h> // for funcall
 #include <clasp/core/core.h>
 #include <clasp/core/object.h>
 #include <clasp/core/array.h>
@@ -103,6 +105,17 @@ BUILTIN_ATTRIBUTES int64_t cc_read_stamp(void* tagged_pointer)
 };
 
 extern "C" {
+
+BUILTIN_ATTRIBUTES gctools::return_type cc_dispatch_miss(core::T_O* tgf, core::T_O* tgf_vaslist)
+{
+  core::FuncallableInstance_sp gf((gctools::Tagged)tgf);
+  core::VaList_sp gf_vaslist((gctools::Tagged)tgf_vaslist);
+  core::T_mv result = core::eval::funcall(clos::_sym_dispatch_miss,gf,gf_vaslist);
+#ifdef DEBUG_GFDISPATCH
+  printf("%s:%d  Returning from cc_dispatch_miss\n", __FILE__, __LINE__ );
+#endif
+  return result.as_return_type();
+}
 
 BUILTIN_ATTRIBUTES core::T_O* cc_dispatch_slot_reader_index(size_t index, core::T_O* tinstance) {
   core::Instance_sp instance((gctools::Tagged)tinstance);
