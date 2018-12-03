@@ -650,6 +650,8 @@
 
 (defun codegen-slot-reader (arguments outcome)
   (cf-log "entered codegen-slot-reader%N")
+  (cf-log "arguments %s%N" arguments)
+  (cf-log "outcome %s%N" outcome)
 ;;; If the (cdr outcome) is a fixnum then we can generate code to read the slot
 ;;;    directly and remhash the outcome from the *outcomes* hash table.
 ;;; otherwise create an entry for the outcome and call the slot reader.

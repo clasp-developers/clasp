@@ -78,16 +78,6 @@ BUILTIN_ATTRIBUTES int64_t cc_read_stamp(void* tagged_pointer)
 };
 
 extern "C" {
-BUILTIN_ATTRIBUTES gctools::return_type cc_dispatch_miss(core::T_O* tgf, core::T_O* tgf_vaslist)
-{
-  core::FuncallableInstance_sp gf((gctools::Tagged)tgf);
-  core::VaList_sp gf_vaslist((gctools::Tagged)tgf_vaslist);
-  core::T_mv result = core::eval::funcall(clos::_sym_dispatch_miss,gf,gf_vaslist);
-#ifdef DEBUG_GFDISPATCH
-  printf("%s:%d  Returning from cc_dispatch_miss\n", __FILE__, __LINE__ );
-#endif
-  return result.as_return_type();
-}
 
 BUILTIN_ATTRIBUTES core::T_O* cc_dispatch_slot_reader_index(size_t index, core::T_O* tinstance) {
   core::Instance_sp instance((gctools::Tagged)tinstance);
@@ -149,60 +139,5 @@ BUILTIN_ATTRIBUTES core::T_O* cc_rewind_vaslist(core::Vaslist* vaslist, va_list 
   return gctools::tag_vaslist<core::T_O*>(vaslist);
 }
 
-BUILTIN_ATTRIBUTES void cc_dispatch_debug(int msg_id, uintptr_clasp_t val)
-{
-  // The msg_id switch values correspond to values passed from cmpgf.lsp
-  //   The values mean:
-  //         0 - print the argument as an integer step index
-  //         1 - Print the value as a integer
-  //         2 - print the value as a tag
-  //         3 - print the value as a tagged pointer to a Vaslist object
-  //         4 - print the value as a pointer
-  //         5 - print the contents of the va_list pointed to by the value
-  //         6 - print the value as a stamp
-  //         7 - print the value as a pointer to a dispatch function
-  switch (msg_id) {
-  case 0:
-      core::write_bf_stream(BF("Step %d\n") % val);
-//      printf("%s:%d    cc_dispatch_debug step %d\n", __FILE__, __LINE__, val );
-      break;
-  case 1:
-      core::write_bf_stream(BF("Arg val[%d]") % val);
-//      printf("%s:%d    cc_dispatch_debug arg val[%d]\n", __FILE__, __LINE__, val );
-      break;
-  case 2:
-      core::write_bf_stream(BF(" tag = %d\n") % val); 
-//      printf("%s:%d    cc_dispatch_debug tag [%d]\n", __FILE__, __LINE__, val );
-     break;
-  case 3: {
-    core::VaList_sp vls((gc::Tagged)val);
-//    printf("%s:%d    vaList_sp.raw_() = %p\n", __FILE__, __LINE__, vls.raw_());
-    core::write_bf_stream(BF("Arg VaList_sp.raw_() = %p list -> %s\n") % (void*)vls.raw_() % _rep_(vls) );
-    dump_Vaslist_ptr(&*vls);
-    break;
-  }
-  case 4: {
-//      printf("%s:%d     ptr: %p\n", __FILE__, __LINE__, (void*)val);
-      core::write_bf_stream(BF("Ptr: %p\n") % (void*)val );
-  }
-      break;
-  case 5: {
-//      printf("%s:%d     ptr: %p\n", __FILE__, __LINE__, (void*)val);
-      core::write_bf_stream(BF("va_list: %p\n") % (void*)val );
-      void* dump_va_list_voidSTAR = (void*)&core::dump_va_list;
-      typedef void (*fptr)(uintptr_t);
-      fptr my_fptr = reinterpret_cast<fptr>(dump_va_list_voidSTAR);
-      my_fptr(val);
-      break;
-  }
-  case 6:
-      core::write_bf_stream(BF("Argument stamp: %lu\n") % val);
-      break;
-  case 7:
-      core::write_bf_stream(BF("Dispatch to: %p\n") % val);
-      break;
-  }
-  fflush(stdout);
-}
 
 };
