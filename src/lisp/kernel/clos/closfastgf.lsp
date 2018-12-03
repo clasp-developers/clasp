@@ -707,33 +707,34 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
 (defun update-specializer-profile (generic-function specializers)
   (if (vectorp (generic-function-specializer-profile generic-function))
       (loop for vec = (generic-function-specializer-profile generic-function)
-         for new-vec = (let ((new-vec (copy-seq vec)))
-                         (loop for i from 0
-                            for spec in specializers
-                            for specialized = (not (eq spec clos:+the-t-class+))
-                            when specialized
-                            do (setf (elt new-vec i) t))
-                         new-vec)
-         for exchanged = (generic-function-specializer-profile-compare-exchange generic-function vec new-vec)
-         until (eq exchanged new-vec))
+            for new-vec = (let ((new-vec (copy-seq vec)))
+                            (loop for i from 0
+                                  for spec in specializers
+                                  for specialized = (not (eq spec clos:+the-t-class+))
+                                  when specialized
+                                    do (setf (elt new-vec i) t))
+                            new-vec)
+            for exchanged = (generic-function-specializer-profile-compare-exchange generic-function vec new-vec)
+            until (eq exchanged new-vec))
       (warn "update-specializer-profile - Generic function ~a does not have a specializer-profile defined at this point" generic-function)))
 
-
 (defun compute-and-set-specializer-profile (generic-function)
-  ;; The generic-function MUST have a specializer-profile defined already
-  ;;   - it must be a simple-vector with size number-of-requred-arguments
-  ;;     Each element is T if the corresponding argument is specialized on
-  ;;        and NIL if it is not (all specializers are T).
+  ;; The profile is a simple vector with as many elements as the gf has
+  ;; required arguments. Each element is true iff the corresponding
+  ;; argument is specialized on (i.e., not T).
   (gf-log "compute-and-set-specializer-profile%N")
+  ;; If the specializer profile doesn't yet exist, initialize it with a default
+  ;; (all NILs)
   (unless (vectorp (generic-function-specializer-profile generic-function))
     (gf-log "compute-and-set-specializer-profile2%N")
-    (initialize-generic-function-specializer-profile generic-function :errorp t))
+    (initialize-generic-function-specializer-profile generic-function))
   (gf-log "compute-and-set-specializer-profile1%N")
+  ;; Now do the actual computation.
   (let ((vec (make-array (length (generic-function-specializer-profile generic-function))
                          :initial-element nil))
         (methods (clos:generic-function-methods generic-function)))
     (gf-log "compute-and-set-specializer-profile1.5%N")
-    (initialize-generic-function-specializer-profile generic-function :initial-vec vec)
+    (force-generic-function-specializer-profile generic-function vec)
     (when methods
       (loop for method in methods
          for specializers = (method-specializers method)
