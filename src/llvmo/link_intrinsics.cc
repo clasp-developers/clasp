@@ -1,5 +1,6 @@
 /*
-    File: intrinsics.cc
+    File: link_intrinsics.cc
+    Small functions used by the runtime that should NOT be inlined.
 */
 
 /*
@@ -1488,6 +1489,9 @@ gctools::return_type cc_dispatch_slot_writer_index_debug(core::T_O* toptimized_s
 
 
 extern "C" {
+
+// The following are here instead of fastgf.cc because they are apparently
+// too big to be inlined.
 
 gctools::return_type cc_dispatch_miss(core::T_O* tgf, core::T_O* tgf_vaslist)
 {

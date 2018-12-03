@@ -1,5 +1,7 @@
 /*
     File: intrinsics.cc
+    Small functions used by the runtime that may be inlined at the
+    compiler's discretion.
 */
 
 /*
