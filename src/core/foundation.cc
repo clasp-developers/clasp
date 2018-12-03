@@ -1603,40 +1603,6 @@ CL_DEFUN void core__debug_invocation_history_frame(size_t v) {
   }
 }
 
-
-core::T_mv capture_arguments(uintptr_t functionAddress, uintptr_t basePointer, int frameOffset)
-{
-  size_t argregs = (LCC_ABI_ARGS_IN_REGISTERS-2);
-  T_O** register_save_area = (T_O**)(basePointer+frameOffset);
-//  printf("%s:%d:%s basePointer@%p frameOffset %d reg_save_area %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)basePointer, frameOffset, register_save_area);
-  size_t nargs = (uintptr_t)register_save_area[1];
-  if (nargs>256) {
-    printf("%s:%d:%s There are too many arguments %lu for function at %p in frame at %p offset: %d\n", __FILE__, __LINE__, __FUNCTION__, nargs, (void*)functionAddress, (void*)basePointer, frameOffset);
-    return _Nil<T_O>();
-  }
-  size_t reg_nargs = MIN(argregs,nargs);
-  size_t mem_nargs = 0;
-  if (nargs>argregs) {
-    mem_nargs = nargs-argregs;
-  }
-  T_sp closure((gctools::Tagged)register_save_area[0]);
-  SimpleVector_sp args = SimpleVector_O::make(nargs);
-  int iarg = 0;
-  for ( size_t i=0; i<reg_nargs; ++i ) {
-    T_sp tobj((gctools::Tagged)register_save_area[2+i]);
-//    printf("%s:%d:%s  register argument %lu -> %p\n", __FILE__, __LINE__, __FUNCTION__, i, tobj.raw_());
-//    printf("%s:%d:%s  register argument %lu -> %s\n", __FILE__, __LINE__, __FUNCTION__, i, _rep_(tobj).c_str());
-    (*args)[iarg++] = tobj;
-  }
-  for ( size_t i=0; i<mem_nargs; ++i ) {
-    T_sp tobj((gctools::Tagged)((T_O**)basePointer)[2+i]);
-//    printf("%s:%d:%s  stack argument %lu -> %p\n", __FILE__, __LINE__, __FUNCTION__, i+argregs, tobj.raw_());
-//    printf("%s:%d:%s  stack argument %lu -> %s\n", __FILE__, __LINE__, __FUNCTION__, i+argregs, _rep_(tobj).c_str());
-    (*args)[iarg++] = tobj;
-  }
-  return Values(args,closure);
-}
-
 };
 
 

@@ -94,12 +94,12 @@ namespace core {
 //
 #define WRITE_DEBUG_IO(fmt) core::write_bf_stream(fmt, cl::_sym_STARdebug_ioSTAR->symbolValue());
 
-typedef void(*scan_callback)(gc::Vec0<BacktraceEntry>&backtrace, const std::string& filename, uintptr_t start);
+typedef void(*scan_callback)(std::vector<BacktraceEntry>&backtrace, const std::string& filename, uintptr_t start);
 
 
 struct ScanInfo {
   size_t  _Index;
-  gc::Vec0<BacktraceEntry>* _Backtrace;
+  std::vector<BacktraceEntry>* _Backtrace;
   scan_callback _Callback;
   ScanInfo() : _Index(0) {};
 };
@@ -284,7 +284,7 @@ void parse_constant(uintptr_t& address, uint64_t& constant) {
   constant = read_then_advance<uint64_t>(address);
 }
 
-void parse_record(gc::Vec0<BacktraceEntry>& backtrace, uintptr_t& address, size_t functionIndex, const StkSizeRecord& function, StkMapRecord& record, bool library) {
+void parse_record(std::vector<BacktraceEntry>& backtrace, uintptr_t& address, size_t functionIndex, const StkSizeRecord& function, StkMapRecord& record, bool library) {
   uintptr_t recordAddress = address;
   BT_LOG((buf,"Parse record at %p\n", (void*)address));
   uint64_t patchPointID = read_then_advance<uint64_t>(address);
@@ -350,7 +350,7 @@ void parse_record(gc::Vec0<BacktraceEntry>& backtrace, uintptr_t& address, size_
 }  
 
 
-void walk_one_llvm_stackmap(gc::Vec0<BacktraceEntry>&backtrace, uintptr_t& address, uintptr_t end, bool library) {
+void walk_one_llvm_stackmap(std::vector<BacktraceEntry>&backtrace, uintptr_t& address, uintptr_t end, bool library) {
   uintptr_t stackMapAddress = address;
   Header header;
   size_t NumFunctions;
@@ -404,7 +404,7 @@ void register_llvm_stackmaps(uintptr_t startAddress, uintptr_t endAddress, size_
 }
 
 
-void search_jitted_stackmaps(gc::Vec0<BacktraceEntry>& backtrace)
+void search_jitted_stackmaps(std::vector<BacktraceEntry>& backtrace)
 {
   BT_LOG((buf,"Starting search_jitted_stackmaps\n" ));
   size_t num = 0;
@@ -429,7 +429,7 @@ void register_jitted_object(const std::string& name, uintptr_t address, int size
   debugInfo()._JittedObjects.emplace_back(JittedObject(name,address,size));
 }
 
-void search_jitted_objects(gc::Vec0<BacktraceEntry>& backtrace, bool searchFunctionDescriptions)
+void search_jitted_objects(std::vector<BacktraceEntry>& backtrace, bool searchFunctionDescriptions)
 {
   BT_LOG((buf,"Starting search_jitted_objects\n" ));
   WITH_READ_LOCK(debugInfo()._JittedObjectsLock);
@@ -586,7 +586,7 @@ mygetsectiondata(
 #define STACKMAPS_SECTNAME "__llvm_stackmaps"
 #define LINKEDIT_SEGNAME   "__LINKEDIT"
 #if 0 // keep this for the future if we read the library ourselves
-__attribute__((optnone)) void search_library_macho_64( gc::Vec0<BacktraceEntry>& backtrace, const struct mach_header_64* loaded_mhp, const struct mach_header_64* file_mhp  )
+__attribute__((optnone)) void search_library_macho_64( std::vector<BacktraceEntry>& backtrace, const struct mach_header_64* loaded_mhp, const struct mach_header_64* file_mhp  )
 {
   bool foundStackmaps = false;
   uintptr_t stackmapStart;
@@ -659,7 +659,7 @@ __attribute__((optnone)) void search_library_macho_64( gc::Vec0<BacktraceEntry>&
 
 
 
-void search_mach( gc::Vec0<BacktraceEntry>& backtrace, const struct mach_header* loaded_mhp, const struct mach_header* file_mhp )
+void search_mach( std::vector<BacktraceEntry>& backtrace, const struct mach_header* loaded_mhp, const struct mach_header* file_mhp )
 {
   bool foundStackmaps = false;
   uintptr_t stackmapStart;
@@ -803,7 +803,7 @@ bool binary_search(uintptr_t address, const std::vector<NmSymbol>& symbol_table,
   }
 }
 
-void search_with_otool_and_nm(gc::Vec0<BacktraceEntry>& backtrace, const char* filename, const struct mach_header* header)
+void search_with_otool_and_nm(std::vector<BacktraceEntry>& backtrace, const char* filename, const struct mach_header* header)
 {
 #define BUFLEN 2048
   std::vector<NmSymbol> symbol_table = load_symbol_table(filename,(uintptr_t)header);
@@ -941,7 +941,7 @@ struct SafeMMap {
   };
 };
 
-void walk_loaded_objects(gc::Vec0<BacktraceEntry>& backtrace) {
+void walk_loaded_objects(std::vector<BacktraceEntry>& backtrace) {
 #include <sys/stat.h>
 //    printf("Add support to walk symbol tables and stackmaps for DARWIN\n");
   uint32_t num_loaded = _dyld_image_count();
@@ -987,7 +987,7 @@ void ensure_libelf_initialized() {
   }
 }
 
-void scan_elf_library_for_symbols_then_stackmaps(gc::Vec0<BacktraceEntry>&backtrace, const std::string& filename, uintptr_t start)
+void scan_elf_library_for_symbols_then_stackmaps(std::vector<BacktraceEntry>&backtrace, const std::string& filename, uintptr_t start)
 {
   BT_LOG((buf,"Searching symbol table %s memory-start %p\n", filename.c_str(), (void*)start ));
   Elf         *elf;
@@ -1497,24 +1497,26 @@ CL_DEFUN void core__low_level_backtrace_with_args() {
 }
 
 
-void safe_backtrace(gc::Vec0<BacktraceEntry>& backtrace_)
+void safe_backtrace(std::vector<BacktraceEntry>& backtrace_)
 {
 #define START_BACKTRACE_SIZE 512
   void** return_buffer;
   size_t num = START_BACKTRACE_SIZE;
-  for ( int i=0; i<100; ++i ) {
+  for ( int try_=0; try_<100; ++try_ ) {
+    // printf("%s:%s:%d malloc to %lu\n", __FILE__, __FUNCTION__, __LINE__, num);
     void** buffer = (void**)malloc(sizeof(void*)*num);
     size_t returned = backtrace(buffer,num);
     if (returned < num) {
+      // printf("%s:%s:%d Resizing backtrace to %lu\n", __FILE__, __FUNCTION__, __LINE__, returned);
       backtrace_.resize(returned);
-      for ( size_t i=0; i<returned; ++i ) {
-        backtrace_[i]._ReturnAddress = (uintptr_t)buffer[i];
+      // printf("%s:%s:%d Filling backtrace to %lu\n", __FILE__, __FUNCTION__, __LINE__, returned);
+      char **strings = backtrace_symbols(buffer, returned);
+      for ( size_t j=0; j<returned; ++j ) {
+        // printf("%s:%s:%d Filling backtrace at %lu\n", __FILE__, __FUNCTION__, __LINE__, j);
+        backtrace_[j]._ReturnAddress = (uintptr_t)buffer[j];
+        backtrace_[j]._SymbolName = strings[j];
       }
       free(buffer);
-      char **strings = backtrace_symbols(buffer, returned);
-      for ( size_t i=0; i<returned; ++i ) {
-        backtrace_[i]._SymbolName = strings[i];
-      }
       free(strings);
       return;
     }
@@ -1577,7 +1579,7 @@ CL_DEFUN T_sp core__libunwind_backtrace_as_list() {
 }
 
 
-void fill_in_interpreted_frames(gc::Vec0<BacktraceEntry>& backtrace) {
+void fill_in_interpreted_frames(std::vector<BacktraceEntry>& backtrace) {
   const InvocationHistoryFrame* frame = my_thread->_InvocationHistoryStackTop;
   while (frame) {
     uintptr_t reg = (uintptr_t)frame->register_save_area();
@@ -1600,7 +1602,7 @@ void fill_in_interpreted_frames(gc::Vec0<BacktraceEntry>& backtrace) {
 
 
 
-void fill_backtrace_or_dump_info(gc::Vec0<BacktraceEntry>& backtrace) {
+void fill_backtrace_or_dump_info(std::vector<BacktraceEntry>& backtrace) {
 #ifdef _TARGET_OS_LINUX
   ScanInfo scan;
   scan._Backtrace = &backtrace;
@@ -1608,12 +1610,15 @@ void fill_backtrace_or_dump_info(gc::Vec0<BacktraceEntry>& backtrace) {
   dl_iterate_phdr(elf_loaded_object_callback,&scan);
 #endif
 #ifdef _TARGET_OS_DARWIN
-//    printf("walk symbol tables and stackmaps for DARWIN\n");
+//  printf("walk symbol tables and stackmaps for DARWIN\n");
   walk_loaded_objects(backtrace);
 #endif
     // Now search the jitted objects
+//  printf("%s:%d:%s search_jitted_objects false\n", __FILE__, __LINE__, __FUNCTION__);
   search_jitted_objects(backtrace,false);
+//  printf("%s:%d:%s search_jitted_objects true\n", __FILE__, __LINE__, __FUNCTION__);
   search_jitted_objects(backtrace,true); // Search them twice to find all FunctionDescription objects
+//  printf("%s:%d:%s search_jitted_stackmaps\n", __FILE__, __LINE__, __FUNCTION__);
   search_jitted_stackmaps(backtrace);
 }
 
@@ -1624,16 +1629,60 @@ SYMBOL_EXPORT_SC_(KeywordPkg,arguments);
 SYMBOL_EXPORT_SC_(KeywordPkg,closure);
 
 
-void fill_backtrace(gc::Vec0<BacktraceEntry>& backtrace) {
+/*! Get the raw argument from the stack, 
+argIndex==0 is closure
+argIndex==1 is the number of arguments
+argIndex==2... are the passed arguments
+*/
+
+uintptr_t get_raw_argument_from_stack(uintptr_t functionAddress, uintptr_t basePointer, int frameOffset, size_t argIndex)
+{
+  // printf("%s:%s:%d start basePointer: %lu frameOffset: %d\n", __FILE__, __FUNCTION__, __LINE__, basePointer, frameOffset );
+  T_O** register_save_area = (T_O**)(basePointer+frameOffset);
+//  printf("%s:%d:%s basePointer@%p frameOffset %d reg_save_area %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)basePointer, frameOffset, register_save_area);
+  // printf("%s:%s:%d get nargs basePointer: %lu frameOffset: %d\n", __FILE__, __FUNCTION__, __LINE__, basePointer, frameOffset );
+  size_t nargs = (uintptr_t)register_save_area[1];
+  // printf("%s:%s:%d nargs: %lu\n", __FILE__, __FUNCTION__, __LINE__, nargs );
+  if (nargs>256) {
+    printf("%s:%d:%s There are too many arguments %lu for function at %p in frame at %p offset: %d\n", __FILE__, __LINE__, __FUNCTION__, nargs, (void*)functionAddress, (void*)basePointer, frameOffset);
+    return 0;
+  }
+  // printf("%s:%s:%d argIndex: %lu\n", __FILE__, __FUNCTION__, __LINE__, argIndex );
+  if (argIndex < (LCC_ARGS_IN_REGISTERS+2)) {
+    // printf("%s:%s:%d register_save_area: %lu\n", __FILE__, __FUNCTION__, __LINE__, argIndex );
+    return (uintptr_t)register_save_area[argIndex];
+  } else {
+    // printf("%s:%s:%d register_save_area: %lu\n", __FILE__, __FUNCTION__, __LINE__, argIndex );
+    return (uintptr_t)((T_O**)basePointer)[2+argIndex-(LCC_ARGS_IN_REGISTERS+2)];
+  }
+}
+
+
+core::T_mv capture_arguments(uintptr_t functionAddress, uintptr_t basePointer, int frameOffset)
+{
+  T_sp closure((gctools::Tagged)get_raw_argument_from_stack(functionAddress,basePointer,frameOffset,0));
+  size_t nargs = core::get_raw_argument_from_stack(functionAddress,basePointer,frameOffset,1);
+  SimpleVector_sp args = SimpleVector_O::make(nargs);
+  for ( size_t i=0; i<nargs; ++i ) {
+    T_sp tobj((gctools::Tagged)get_raw_argument_from_stack(functionAddress,basePointer,frameOffset,2+i));
+    (*args)[i] = tobj;
+  }
+  return Values(args,closure);
+}
+
+
+void fill_backtrace(std::vector<BacktraceEntry>& backtrace,bool captureArguments) {
   char *funcname = (char *)malloc(1024);
   size_t funcnamesize = 1024;
   uintptr_t stackTop = (uintptr_t)my_thread_low_level->_StackTop;
   BT_LOG((buf,"About to safe_backtrace\n" ));
+  //printf("%s:%s:%d\n", __FILE__, __FUNCTION__, __LINE__);
   safe_backtrace(backtrace);
   size_t nptrs = backtrace.size()-2;
   nptrs -= 2; // drop the last two frames
     // Fill in the base pointers
   BT_LOG((buf,"About to get bp's\n" ));
+  //printf("%s:%s:%d\n", __FILE__, __FUNCTION__, __LINE__);
   void* bp = __builtin_frame_address(0);
   for (size_t i = 1; i < nptrs; ++i) {
     if (bp) {
@@ -1645,11 +1694,14 @@ void fill_backtrace(gc::Vec0<BacktraceEntry>& backtrace) {
   //
   // Walk libraries and jitted objects to fill backtrace.
   //
+  // printf("%s:%s:%d\n", __FILE__, __FUNCTION__, __LINE__);
   fill_backtrace_or_dump_info(backtrace);
     // Now get the arguments
   BT_LOG((buf,"Getting arguments\n"));
+  // printf("%s:%s:%d\n", __FILE__, __FUNCTION__, __LINE__);
   for ( size_t index=1; index<backtrace.size(); ++index) {
-    if (backtrace[index]._Stage == lispFrame && backtrace[index]._FrameSize!=0) {
+    // printf("%s:%s:%d filling arguments %lu\n", __FILE__, __FUNCTION__, __LINE__, index);
+    if (captureArguments && backtrace[index]._Stage == lispFrame && backtrace[index]._FrameSize!=0) {
       T_mv arg_mv = capture_arguments(backtrace[index]._FunctionStart,backtrace[index]._BasePointer,backtrace[index]._FrameOffset );
       BT_LOG((buf,"found arguments for frame %lu\n", index ));
       backtrace[index]._Arguments = arg_mv;
@@ -1659,9 +1711,10 @@ void fill_backtrace(gc::Vec0<BacktraceEntry>& backtrace) {
       backtrace[index]._Closure = _Nil<T_O>();
     }
   }
+  printf("%s:%s:%d\n", __FILE__, __FUNCTION__, __LINE__);
     // fill in the interpreted frames here
   BT_LOG((buf,"fill in interpreted frames here\n"));;
-  fill_in_interpreted_frames(backtrace);
+  if (!captureArguments) fill_in_interpreted_frames(backtrace);
 };
 
 
@@ -1670,8 +1723,9 @@ CL_LAMBDA(&optional (depth 0));
 CL_DECLARE();
 CL_DOCSTRING("backtrace");
 CL_DEFUN T_sp core__clib_backtrace_as_list() {
-  gc::Vec0<BacktraceEntry> backtrace;
-  fill_backtrace(backtrace);
+  gc::SafeGCPark park;
+  std::vector<BacktraceEntry> backtrace;
+  fill_backtrace(backtrace,true);
   BT_LOG((buf," building backtrace as list\n" ));
     // Move the frames into Common Lisp
   ql::list result;
@@ -1773,8 +1827,10 @@ CL_DEFUN void core__frame_pointers() {
 
 
 CL_DEFUN void core__dump_symbol_and_stackmap_info() {
-  gc::Vec0<BacktraceEntry> emptyBacktrace;
+  gc::SafeGCPark park;
+  std::vector<BacktraceEntry> emptyBacktrace;
   fill_backtrace_or_dump_info(emptyBacktrace);
+  gc_release();
 }
 };
 
@@ -1998,9 +2054,24 @@ This code MUST be bulletproof!  It must work under the most memory corrupted con
 __attribute__((optnone)) std::string dbg_safe_repr(uintptr_t raw) {
   stringstream ss;
   core::T_sp obj((gc::Tagged)raw);
-  if (gc::IsA<core::Symbol_sp>(obj)) {
-    core::Symbol_sp sym = gc::As_unsafe<core::Symbol_sp>(obj);
-    ss << sym->formattedName(true);
+  if (gc::tagged_generalp((gc::Tagged)raw) ||gc::tagged_consp((gc::Tagged)raw)) {
+    // protect us from bad pointers
+    if ( raw < 0x1000) {
+      ss << "BAD-TAGGED-POINTER(" << (void*)raw << ")";
+      return ss.str();
+    }
+  }
+  if (obj.generalp() ) {
+    if (gc::IsA<core::Symbol_sp>(obj)) {
+      core::Symbol_sp sym = gc::As_unsafe<core::Symbol_sp>(obj);
+      ss << sym->formattedName(true);
+    } else if (gc::IsA<core::SimpleBaseString_sp>(obj)) {
+      core::SimpleBaseString_sp sobj = gc::As_unsafe<core::SimpleBaseString_sp>(obj);
+      ss << "\"" << sobj->get_std_string() << "\"";
+    } else {
+      core::General_sp gen = gc::As_unsafe<core::General_sp>(obj);
+      ss << "#<" << gen->className() << " " << (void*)gen.raw_() << ">";
+    }
   } else if (obj.consp()) {
     ss << "(";
     while (obj.consp()) {
@@ -2022,12 +2093,6 @@ __attribute__((optnone)) std::string dbg_safe_repr(uintptr_t raw) {
     ss << "#\\" << (char)obj.unsafe_character() << "[" << (int)obj.unsafe_character() << "]";
   } else if (obj.single_floatp()) {
     ss << (float)obj.unsafe_single_float();
-  } else if (gc::IsA<core::SimpleBaseString_sp>(obj)) {
-    core::SimpleBaseString_sp sobj = gc::As_unsafe<core::SimpleBaseString_sp>(obj);
-    ss << "\"" << sobj->get_std_string() << "\"";
-  } else if (obj.generalp()) {
-    core::General_sp gen = gc::As_unsafe<core::General_sp>(obj);
-    ss << "#<" << gen->className() << " " << (void*)gen.raw_() << ">";
   } else {
     ss << " #<RAW@" << (void*)obj.raw_() << ">";
   }
@@ -2045,37 +2110,59 @@ void dbg_safe_println(uintptr_t raw) {
   printf(" %s\n", dbg_safe_repr(raw).c_str());
 }
 
-void dbg_print_frame(const gc::Vec0<core::BacktraceEntry>& backtrace, size_t idx)
+void dbg_print_frame(const std::vector<core::BacktraceEntry>& backtrace, size_t idx, bool printArgs)
 {
   stringstream ss;
-  ss << idx << " (" << backtrace[idx]._SymbolName << " ";
-  if (gc::IsA<core::SimpleVector_sp>(backtrace[idx]._Arguments)) {
-    core::SimpleVector_sp args = gc::As_unsafe<core::SimpleVector_sp>(backtrace[idx]._Arguments);
-    for ( size_t aidx=0; aidx<args->length(); ++aidx) {
-      ss << dbg_safe_repr((uintptr_t)(*args)[aidx].raw_()) << " ";
+  printf("%lu: ", idx);
+  fflush(stdout);
+  printf("(%s ", backtrace[idx]._SymbolName.c_str());
+  fflush(stdout);
+  if (printArgs&&backtrace[idx]._BasePointer!=0&&backtrace[idx]._FrameOffset!=0) {
+    // printf("%s:%s:%d Printing \n", __FILE__, __FUNCTION__, __LINE__);
+    core::T_sp closure((gctools::Tagged)core::get_raw_argument_from_stack(backtrace[idx]._FunctionStart,backtrace[idx]._BasePointer,backtrace[idx]._FrameOffset,0));
+    // printf("%s:%s:%d Printing \n", __FILE__, __FUNCTION__, __LINE__);
+    size_t nargs = core::get_raw_argument_from_stack(backtrace[idx]._FunctionStart,backtrace[idx]._BasePointer,backtrace[idx]._FrameOffset,1);
+    // printf("%s:%s:%d Printing\n", __FILE__, __FUNCTION__, __LINE__);
+    for ( size_t i=0; i<nargs; ++i ) {
+      // printf("%s:%s:%d Printing arg %lu of %lu\n", __FILE__, __FUNCTION__, __LINE__, i, nargs);
+      uintptr_t raw_arg = core::get_raw_argument_from_stack(backtrace[idx]._FunctionStart,backtrace[idx]._BasePointer,backtrace[idx]._FrameOffset,2+i);
+      printf("%s ", dbg_safe_repr(raw_arg).c_str());
     }
   } else {
-    ss << "ARGS: " << (void*)backtrace[idx]._Arguments.raw_();
+    printf("ARGS-NOT-SHOWN");
   }
-  ss << ")";
-  printf("%s\n", ss.str().c_str());
+  // printf("%s:%s:%d Printing\n", __FILE__, __FUNCTION__, __LINE__);
+  printf(")\n");
 }
 
 void dbg_safe_backtrace() {
-  gc::Vec0<core::BacktraceEntry> backtrace;
+  gc::SafeGCPark park;
+  std::vector<core::BacktraceEntry> backtrace;
   printf("Safe-backtrace\n");
-  core::fill_backtrace(backtrace);
+  core::fill_backtrace(backtrace,false);
+  printf("Got backtrace frames - dumping\n");
   for ( size_t idx=0; idx<backtrace.size()-2; ++idx ) {
-    dbg_print_frame(backtrace,idx);
+    if (backtrace[idx]._BasePointer) dbg_print_frame(backtrace,idx,true);
+  }
+}
+void dbg_safe_backtrace_no_args() {
+  gc::SafeGCPark park;
+  std::vector<core::BacktraceEntry> backtrace;
+  printf("Safe-backtrace\n");
+  core::fill_backtrace(backtrace,false);
+  printf("Got backtrace frames - dumping\n");
+  for ( size_t idx=0; idx<backtrace.size()-2; ++idx ) {
+    dbg_print_frame(backtrace,idx,false);
   }
 }
 void dbg_safe_lisp_backtrace() {
-  gc::Vec0<core::BacktraceEntry> backtrace;
+  gc::SafeGCPark park;
+  std::vector<core::BacktraceEntry> backtrace;
   printf("Safe-backtrace\n");
-  core::fill_backtrace(backtrace);
+  core::fill_backtrace(backtrace,false);
   for ( size_t idx=0; idx<backtrace.size()-2; ++idx ) {
     if (backtrace[idx]._Stage == core::lispFrame) {
-      dbg_print_frame(backtrace,idx);
+      dbg_print_frame(backtrace,idx,true);
     }
   }
 }

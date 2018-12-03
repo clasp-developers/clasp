@@ -1134,6 +1134,14 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
 
 extern "C" {
 
+void mps_park() {
+  mps_arena_park(global_arena);
+};
+
+void mps_release() {
+  mps_arena_release(global_arena);
+}
+
 void check_all_clients() {
   mps_arena_park(global_arena);
   // Add code to walk the pool and check everything

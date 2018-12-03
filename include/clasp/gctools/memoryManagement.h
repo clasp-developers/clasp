@@ -823,6 +823,13 @@ namespace gctools {
   }
 };
 
+
+extern "C" {
+// Invoke mps_park/mps_release or boehm_park/boehm_release
+void gc_park();
+void gc_release();
+};
+
 #ifdef DEBUG_ENSURE_VALID_OBJECT
 #define ENSURE_VALID_OBJECT(x) (gctools::ensure_valid_object(x))
 #define EVO(x) (gctools::ensure_valid_object(x))
@@ -830,5 +837,16 @@ namespace gctools {
 #define ENSURE_VALID_OBJECT(x) x
 #define EVO(x)
 #endif
+
+namespace gctools {
+struct SafeGCPark {
+  SafeGCPark() {
+    gc_park();
+  };
+  ~SafeGCPark() {
+    gc_release();
+  }
+};
+};
 
 //#endif // _clasp_memoryManagement_H

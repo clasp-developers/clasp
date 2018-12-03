@@ -94,6 +94,10 @@ extern MpsMetrics globalMpsMetrics;
 
 extern "C" {
 
+// park and release the GC
+void mps_park();
+void mps_release();
+
 void my_mps_finalize(void* client);
 
 /*! Implemented in gc_interace.cc */
