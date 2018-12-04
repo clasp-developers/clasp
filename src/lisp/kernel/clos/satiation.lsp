@@ -348,6 +348,14 @@
               (symbol (find-class sname))))
           list-of-specializer-names))
 
+(defun method-specializers-form (specializers)
+  `(list ,@(loop for s in specializers
+                 collect (etypecase s
+                           (eql-specializer
+                            `(intern-eql-specializer
+                             ',(eql-specializer-object s)))
+                           (class s)))))
+
 (defmacro satiated-call-history (generic-function-name &rest lists-of-specializer-names)
   (let (method-binds method-function-binds method-function-outcome-binds emfo-binds fmf-binds)
     ;;; Confusing and complicated macros.
@@ -368,13 +376,8 @@
                           ;; FIXME: We use DEFINITION instead of #' because we have local macros
                           ;; for method-qualifiers etc., which are also satiated (and need to refer to)
                           `(find-method (fdefinition ',generic-function-name)
-                                       ',(method-qualifiers ,method)
-                                       (list ,@(loop for s in (method-specializers ,method)
-                                                     collect (etypecase s
-                                                               (eql-specializer
-                                                                `(intern-eql-specializer
-                                                                  ',(eql-specializer-object s)))
-                                                               (class s)))))
+                                        ',(method-qualifiers ,method)
+                                        ,(method-specializers-form (method-specializers ,method)))
                           "METHOD"))
                (ensure-method-function (method)
                  `(ensure ,method method-function-binds
@@ -453,7 +456,7 @@
                                         (ensure-emfo am em)))))))
         `(let (,@(mapcar #'rest method-binds))
            (let (,@(mapcar #'rest method-function-binds))
-             (macrolet ((call-method (method &optional nexts &environment env)
+             (macrolet ((call-method (method &optional nexts)
                           (if (consp method)
                               (second method) ; (make-method form)
                               (let ((mfs '(,@(loop for (method name) in method-function-binds
@@ -678,3 +681,131 @@
           standard-direct-slot-definition standard-effective-slot-definition
           eql-specializer method-combination funcallable-standard-class))
        (%satiate make-instances-obsolete (standard-class) (funcallable-standard-class) (structure-class)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; DISCRIMINATING FUNCTIONS IN COMPILE-FILE
+;;;
+
+(defun wrap-call-method (effective-method method-function-map)
+  `(macrolet ((call-method (method &optional nexts)
+                (if (consp method)
+                    (second method) ; (make-method form)
+                    (let ((mfs ',method-function-map))
+                      (flet ((mf (method)
+                               (or (cdr (assoc method mfs))
+                                   (error "BUG: Horrible things are occurring."))))
+                        `(funcall ,(mf method) .method-args.
+                                  (list
+                                   ,@(loop for next in nexts
+                                           collect (if (consp next) ; make-method
+                                                       `(lambda (.method-args. .next-methods.)
+                                                          (declare (ignore .next-methods.))
+                                                          ,(second next))
+                                                       (mf next))))))))))
+     ,effective-method))
+
+(defun compile-time-call-history (generic-function &rest lists-of-specializer-names)
+  (loop with mc = (generic-function-method-combination generic-function)
+        with fmf-binds = nil
+        with mf-binds = nil
+        with mfo-binds = nil
+        with emf-binds = nil
+        for list-of-specializer-names in lists-of-specializer-names
+        for list-of-specializers
+          = (coerce-to-list-of-specializers list-of-specializer-names)
+        for am = (compute-applicable-methods-using-specializers
+                  generic-function list-of-specializers)
+        for em = (compute-effective-method generic-function mc am)
+        for method = (and (consp em) (eq (first em) 'call-method) (second em))
+        for leafp = (when method (leaf-method-p method))
+        ;; this is just whether there is a fast method function, not the function
+        ;; itself, which is not required. Indicated with this booleanization.
+        for fmf = (when leafp
+                    (if (fast-method-function method) t nil))
+        for readerp = (when method (eq (class-of method) (find-class 'standard-reader-method)))
+        for writerp = (when method (eq (class-of method) (find-class 'standard-writer-method)))
+        for accessor-class = (cond ((not method) nil)
+                                   (readerp (first list-of-specializers))
+                                   (writerp (second list-of-specializers))
+                                   (t nil))
+        for slotd = (when accessor-class
+                      (effective-slotd-from-accessor-method method accessor-class))
+        for standard-slotd-p = (when slotd
+                                 (eq (class-of slotd)
+                                     (find-class 'standard-effective-slot-definition)))
+        do (when (null am)
+             (error "No applicable methods for SATIATE of ~a with ~a"
+                    generic-function list-of-specializer-names))
+        do (when (and (consp em) (eq (first em) 'no-required-method))
+             (error "No required methods for SATIATE of ~a with ~a"))
+        collect (cons (coerce list-of-specializers 'vector)
+                      (cond
+                        (standard-slotd-p
+                         (cond (readerp (cmp::make-optimized-slot-reader
+                                         :index (slot-definition-location slotd)
+                                         :slot-name (slot-definition-name slotd)
+                                         :method method
+                                         :class accessor-class))
+                               (writerp (cmp::make-optimized-slot-writer
+                                         :index (slot-definition-location slotd)
+                                         :slot-name (slot-definition-name slotd)
+                                         :method method
+                                         :class accessor-class))
+                               (t (error "BUG: Unreachable weirdness in SATIATE for ~a, ~a"
+                                         generic-function list-of-specializer-names))))
+                        (fmf (or (cdr (assoc method fmf-binds))
+                                 (let* ((sym (gensym "FAST-METHOD-FUNCTION"))
+                                        (outcome (cmp::make-fast-method-call :function sym)))
+                                   (push (cons method outcome) fmf-binds)
+                                   outcome)))
+                        (leafp (or (cdr (assoc method mfo-binds))
+                                   (let* ((mf (or (cdr (assoc method mf-binds))
+                                                  (let ((sym (gensym "METHOD-FUNCTION")))
+                                                    (push (cons method sym) mf-binds)
+                                                    sym)))
+                                          (outcome (cmp::make-function-outcome :function mf)))
+                                     (push (cons method outcome) mfo-binds)
+                                     outcome)))
+                        (t (or (cdr (assoc am emf-binds :test #'equal))
+                               (let* ((sym (gensym "EFFECTIVE-METHOD-FUNCTION"))
+                                      (local-mf
+                                        (loop for m in am
+                                              collect (cons m
+                                                            (or (cdr (assoc m mf-binds))
+                                                                (let ((sym (gensym "METHOD-FUNCTION")))
+                                                                  (push (cons m sym) mf-binds)
+                                                                  sym)))))
+                                      (outcome (cmp::make-effective-method-outcome
+                                                :applicable-methods am
+                                                :function (wrap-call-method em local-mf))))
+                                 (push (cons am outcome) emf-binds)
+                                 outcome)))))
+          into entries
+        finally (return (values entries
+                                (loop for (key . val) in fmf-binds
+                                      collect (cons key (cmp::fast-method-call-function val)))
+                                mf-binds))))
+
+(defun find-method-form (method)
+  `(find-method (fdefinition ',(generic-function-name (method-generic-function method)))
+                ',(method-qualifiers method)
+                ,(method-specializers-form (method-specializers method))))
+
+(defun compile-time-bindings-junk (fmf-binds mf-binds)
+  (append (loop for (method . name) in fmf-binds
+                collect (list name
+                              `(load-time-value
+                                (fast-method-function ,(find-method-form method)))))
+          (loop for (method . name) in mf-binds
+                collect (list name
+                              `(load-time-value
+                                (method-function ,(find-method-form method)))))))
+
+(defun compile-time-discriminator (generic-function &rest lists-of-specializer-names)
+  (multiple-value-bind (call-history fmf-binds mf-binds)
+      (apply #'compile-time-call-history generic-function lists-of-specializer-names)
+    (cmp::generate-dispatcher-from-dtree
+     (generic-function-name generic-function)
+     (cmp::calculate-dtree call-history (generic-function-specializer-profile generic-function))
+     :extra-bindings (compile-time-bindings-junk fmf-binds mf-binds))))

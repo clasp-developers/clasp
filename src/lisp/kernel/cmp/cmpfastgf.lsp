@@ -294,21 +294,22 @@
 (defvar *generate-outcomes*) ; alist (outcome . tag)
 
 ;;; main entry point
-(defun generate-dispatcher-from-dtree (generic-function-name dtree)
+(defun generate-dispatcher-from-dtree (generic-function-name dtree &key extra-bindings)
   (let ((dispatch-args (gensym "DISPATCH-ARGUMENTS"))
         ;;(backup-args (gensym "ARGUMENTS"))
         (block-name (core:function-block-name generic-function-name))
         (*generate-outcomes* nil))
     `(lambda (core:&va-rest ,dispatch-args)
-       (block ,block-name
-         (tagbody
-            ,(generate-node-or-outcome dispatch-args (dtree-root dtree))
-            ;; note: we need generate-node-or-outcome to run to fill *generate-outcomes*.
-            ,@(generate-tagged-outcomes *generate-outcomes* block-name dispatch-args #+(or)backup-args)
-          dispatch-miss
-            (core:vaslist-rewind ,dispatch-args)
-            (return-from ,block-name
-              (clos::dispatch-miss (fdefinition ',generic-function-name) ,dispatch-args #+(or),backup-args)))))))
+       (let (,@extra-bindings)
+         (block ,block-name
+           (tagbody
+              ,(generate-node-or-outcome dispatch-args (dtree-root dtree))
+              ;; note: we need generate-node-or-outcome to run to fill *generate-outcomes*.
+              ,@(generate-tagged-outcomes *generate-outcomes* block-name dispatch-args #+(or)backup-args)
+            dispatch-miss
+              (core:vaslist-rewind ,dispatch-args)
+              (return-from ,block-name
+                (clos::dispatch-miss (fdefinition ',generic-function-name) ,dispatch-args #+(or),backup-args))))))))
 
 (defun generate-node-or-outcome (arguments node-or-outcome)
   (if (outcome-p node-or-outcome)
@@ -403,8 +404,14 @@
     `(apply ,fmf ,arguments)))
 
 (defun generate-effective-method-call (arguments outcome)
-  (let ((emf outcome))
-    `(funcall ,emf ,arguments nil)))
+  (if (consp outcome)
+      ;; if the outcome is a cons, we magically assume it's a form to include entirely.
+      ;; This happens from the COMPILE-TIME-DISCRIMINATOR machinery in clos/satiation.lsp.
+      ;; FIXME: probably clean up. 
+      `(let ((clos::.method-args. ,arguments))
+         ,outcome)
+      (let ((emf outcome))
+        `(funcall ,emf ,arguments nil))))
 
 ;;; discrimination
 
