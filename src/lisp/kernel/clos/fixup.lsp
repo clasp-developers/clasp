@@ -70,7 +70,9 @@
                                        'fast-method-function (if fmfp function nil)))))))
     ;; Put in a call history to speed things up a little.
     (loop ;; either a fast method function, or just the method function.
-          with outcome = (if fmfp (cmp::make-fast-method-call :function function) mf)
+          with outcome = (if fmfp
+                             (cmp::make-fast-method-call :function function)
+                             (cmp::make-function-outcome :function mf))
           for specializers in satiation-specializers
           collect (cons (map 'vector #'find-class specializers) outcome)
             into new-call-history

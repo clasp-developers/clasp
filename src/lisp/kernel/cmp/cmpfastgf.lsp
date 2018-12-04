@@ -94,6 +94,8 @@
 (defstruct (optimized-slot-reader (:type vector) :named) index #| << must be here |# effective-method-function slot-name method class)
 (defstruct (optimized-slot-writer (:type vector) :named) index #| << must be here |# effective-method-function slot-name method class)
 (defstruct (fast-method-call (:type vector) :named) function)
+;; a thing that will be called like an effective method function, but isn't cached or anything.
+(defstruct (function-outcome (:type vector) :named) function)
 ;; applicable-methods slot is for clos; see closfastgf.lsp's find-existing-emf
 (defstruct (effective-method-outcome (:type vector) :named) applicable-methods function)
 (defstruct (klass (:type vector) :named) stamp name)
@@ -346,8 +348,8 @@
            (generate-fast-method-call arguments outcome))
           ((effective-method-outcome-p outcome)
            (generate-effective-method-call arguments (effective-method-outcome-function outcome)))
-          ((functionp outcome)
-           (generate-effective-method-call arguments outcome))
+          ((function-outcome-p outcome)
+           (generate-effective-method-call arguments (function-outcome-function outcome)))
           (t (error "BUG: Bad thing to be an outcome: ~a" outcome)))))
 
 (defun generate-slot-reader (arguments outcome)
@@ -771,8 +773,8 @@
        (codegen-fast-method-call arguments outcome))
       ((effective-method-outcome-p outcome)
        (codegen-effective-method-call arguments (effective-method-outcome-function outcome)))
-      ((functionp outcome) ; method-function and no-required-method. maybe change to be cleaner?
-       (codegen-effective-method-call arguments outcome))
+      ((function-outcome-p outcome) ; method-function and no-required-method. maybe change to be cleaner?
+       (codegen-effective-method-call arguments (function-outcome-function outcome)))
       (t (error "BUG: Bad thing to be an outcome: ~a" outcome)))))
 
 (defun codegen-class-binary-search (arguments cur-arg matches stamp-var)
@@ -913,7 +915,8 @@
   ;; type-error: datum NIL, expected type LLVM-SYS:VALUE
   ;; in code generation - because the vaslist holder will be nil instead of an llvm value.
   (mapc (lambda (entry)
-          (when (or (effective-method-outcome-p (cdr entry)) (functionp (cdr entry)))
+          (when (or (effective-method-outcome-p (cdr entry))
+                    (function-outcome-p (cdr entry)))
             (return-from call-history-needs-vaslist-p t)))
         call-history)
   nil)
@@ -1144,11 +1147,20 @@
                    :output-path output-path
                    ))))))))))
 
-(defun codegen-dispatcher (raw-call-history specializer-profile generic-function &rest args &key generic-function-name output-path log-gf (debug-on t debug-on-p))
+(defun codegen-dispatcher (raw-call-history specializer-profile generic-function
+                           &rest args &key generic-function-name output-path log-gf)
   (let* ((*log-gf* log-gf)
          (dtree (calculate-dtree raw-call-history specializer-profile)))
     (clos:generic-function-increment-compilations generic-function)
     (apply 'codegen-dispatcher-from-dtree generic-function dtree args)))
+
+#+(or)
+(defun codegen-dispatcher (raw-call-history specializer-profile generic-function
+                           &rest args &key generic-function-name output-path log-gf)
+  (let* ((*log-gf* log-gf)
+         (dtree (calculate-dtree raw-call-history specializer-profile)))
+    (clos:generic-function-increment-compilations generic-function)
+    (bclasp-compile nil (generate-dispatcher-from-dtree generic-function-name dtree))))
 
 (export '(make-dtree
 	  dtree-add-call-history

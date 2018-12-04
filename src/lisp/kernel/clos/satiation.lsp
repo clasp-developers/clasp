@@ -333,8 +333,23 @@
                  ,@(mapcar (lambda (form) (ext:constant-form-value form env)) lists))
       form))
 
+;; Given a list of specializer names or specializers, returns a list of specializers.
+(defun coerce-to-list-of-specializers (list-of-specializer-names)
+  (mapcar (lambda (sname)
+            (etypecase sname
+              (class sname)
+              (eql-specializer
+               (list (eql-specializer-object sname)))
+              ;; (eql 'something)
+              ((cons (eql eql)
+                     (cons t null))
+               ;; The fake EQL specializers used by c-a-m-u-s
+               (list (second sname)))
+              (symbol (find-class sname))))
+          list-of-specializer-names))
+
 (defmacro satiated-call-history (generic-function-name &rest lists-of-specializer-names)
-  (let (method-binds method-function-binds emfo-binds fmf-binds)
+  (let (method-binds method-function-binds method-function-outcome-binds emfo-binds fmf-binds)
     ;;; Confusing and complicated macros.
     ;;; Here's what they do: (ensure-method variable) expands into something that checks method-binds
     ;;; for the value of variable. If it's there, that's returned. If not, a new gensym is made and put
@@ -365,6 +380,10 @@
                  `(ensure ,method method-function-binds
                           `(method-function ,(ensure-method ,method))
                           "METHOD-FUNCTION"))
+               (ensure-method-function-outcome (method)
+                 `(ensure ,method method-function-outcome-binds
+                          `(cmp::make-function-outcome :function ,(ensure-method-function ,method))
+                          "METHOD-FUNCTION-OUTCOME"))
                (ensure-emfo (method-list effective-method)
                  `(ensure ,method-list emfo-binds
                           `(cmp::make-effective-method-outcome
@@ -383,18 +402,8 @@
              (mc (generic-function-method-combination generic-function))
              (entries
                (loop for list-of-specializer-names in lists-of-specializer-names
-                     for list-of-specializers = (mapcar (lambda (sname)
-                                                          (etypecase sname
-                                                            (class sname)
-                                                            (eql-specializer
-                                                             (list (eql-specializer-object sname)))
-                                                            ;; (eql 'something)
-                                                            ((cons (eql eql)
-                                                                   (cons t null))
-                                                             ;; The fake EQL specializers used by c-a-m-u-s
-                                                             (list (second sname)))
-                                                            (symbol (find-class sname))))
-                                                        list-of-specializer-names)
+                     for list-of-specializers
+                       = (coerce-to-list-of-specializers list-of-specializer-names)
                      for am = (compute-applicable-methods-using-specializers
                                generic-function list-of-specializers)
                      for em = (compute-effective-method generic-function mc am)
@@ -418,7 +427,7 @@
                           (error "No applicable methods for SATIATE of ~a with ~a"
                                  generic-function list-of-specializer-names))
                      do (when (and (consp em) (eq (first em) 'no-required-method))
-                          (error "No requried methods for SATIATE of ~a with ~a"
+                          (error "No required methods for SATIATE of ~a with ~a"
                                  generic-function list-of-specializer-names))
                      collect `(cons ,(coerce list-of-specializers 'vector)
                                     ,(cond
@@ -433,10 +442,10 @@
                                                          :slot-name ',(slot-definition-name slotd)
                                                          :method ,(ensure-method method)
                                                          :class ,accessor-class))
-                                              (t (error "Unreachable weirdness in SATIATE for ~a, ~a"
+                                              (t (error "BUG: Unreachable weirdness in SATIATE for ~a, ~a"
                                                         generic-function list-of-specializer-names))))
                                        (fmf (ensure-fmf method))
-                                       (leafp (ensure-method-function method))
+                                       (leafp (ensure-method-function-outcome method))
                                        (t
                                         ;; Force method functions, so that call-method can use them.
                                         (loop for method in am do (ensure-method-function method))
@@ -444,25 +453,26 @@
                                         (ensure-emfo am em)))))))
         `(let (,@(mapcar #'rest method-binds))
            (let (,@(mapcar #'rest method-function-binds))
-             (let (,@(mapcar #'rest fmf-binds))
-               (macrolet ((call-method (method &optional nexts &environment env)
-                            (if (consp method)
-                                (second method) ; (make-method form)
-                                (let ((mfs '(,@(loop for (method name) in method-function-binds
-                                                     collect (cons method name)))))
-                                  (flet ((ensure-mf (method)
-                                           (or (cdr (assoc method mfs))
-                                           (error "Horrible things are occurring."))))
-                                    `(funcall ,(ensure-mf method) .method-args.
-                                              (list
-                                               ,@(loop for next in nexts
-                                                       collect (if (consp next)
-                                                                   `(lambda (.method-args. .next-methods.)
-                                                                      (declare (ignore .next-methods.))
-                                                                      ,(second next))
-                                                                   (ensure-mf next))))))))))
-                 (let (,@(mapcar #'rest emfo-binds))
-                   (list ,@entries))))))))))
+             (macrolet ((call-method (method &optional nexts &environment env)
+                          (if (consp method)
+                              (second method) ; (make-method form)
+                              (let ((mfs '(,@(loop for (method name) in method-function-binds
+                                                   collect (cons method name)))))
+                                (flet ((ensure-mf (method)
+                                         (or (cdr (assoc method mfs))
+                                             (error "BUG: Horrible things are occurring."))))
+                                  `(funcall ,(ensure-mf method) .method-args.
+                                            (list
+                                             ,@(loop for next in nexts
+                                                     collect (if (consp next)
+                                                                 `(lambda (.method-args. .next-methods.)
+                                                                    (declare (ignore .next-methods.))
+                                                                    ,(second next))
+                                                                 (ensure-mf next))))))))))
+               (let (,@(mapcar #'rest fmf-binds))
+                 (let (,@(mapcar #'rest method-function-outcome-binds))
+                   (let (,@(mapcar #'rest emfo-binds))
+                     (list ,@entries)))))))))))
 
 ;;; Macro version of SATIATE, that the exported function sometimes expands into.
 (defmacro %satiate (generic-function-name &rest lists-of-specializer-names)

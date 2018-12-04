@@ -379,13 +379,14 @@
                          (cmp::make-fast-method-call :function fmf))
                         (leafp
                          (gf-log "Using method %s function as emf%N" method)
-                         (method-function method))
+                         (cmp::make-function-outcome :function (method-function method)))
                         (nrm-group-name ; missing a required (probably primary) method.
                          ;; FIXME: this is kind of ugly, to say the least. inlining would be nice.
-                         ;; This function will be treated as an emf by cmpfastgf, and called as such.
-                         (lambda (vaslist-args ignore)
-                           (declare (ignore ignore))
-                           (apply #'no-required-method generic-function nrm-group-name vaslist-args)))
+                         (cmp::make-function-outcome
+                          :function
+                          (lambda (vaslist-args ignore)
+                            (declare (ignore ignore))
+                            (apply #'no-required-method generic-function nrm-group-name vaslist-args))))
                         ((setf existing-emf (find-existing-emf (generic-function-call-history generic-function)
                                                                methods))
                          (gf-log "Using existing effective method function%N")
@@ -576,8 +577,8 @@ FIXME!!!! This code will have problems with multithreading if a generic function
     ;; for now, at least. Obviously they don't actually need the next-methods.
     ((cmp::effective-method-outcome-p outcome)
      (funcall (cmp::effective-method-outcome-function outcome) vaslist-arguments nil))
-    ((functionp outcome)
-     (funcall outcome vaslist-arguments nil))
+    ((cmp::function-outcome-p outcome)
+     (funcall (cmp::function-outcome-function outcome) vaslist-arguments nil))
     (t (error "BUG: Bad thing to be an outcome: ~a" outcome))))
 
 #+debug-fastgf
