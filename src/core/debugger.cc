@@ -718,9 +718,14 @@ struct NmSymbol {
 };
 
 std::vector<NmSymbol> load_symbol_table(const char* filename, uintptr_t header) {
+  int baddigit = 0;
   std::vector<NmSymbol> symbol_table;
+  struct stat bug;
+  if (stat(filename,&buf)!=0) {
+    return symbol_table;
+  }
   stringstream nm_cmd;
-  nm_cmd << "/usr/bin/nm -numeric-sort -defined-only " << filename;
+  nm_cmd << "/usr/bin/nm -numeric-sort -defined-only \"" << filename << "\"";
   FILE* fnm = popen( nm_cmd.str().c_str(), "r");
   if (fnm==NULL) {
     printf("%s:%d:%s  Could not popen %s\n", __FILE__, __LINE__, __FUNCTION__, nm_cmd.str().c_str());
@@ -748,7 +753,11 @@ std::vector<NmSymbol> load_symbol_table(const char* filename, uintptr_t header) 
         } else if (c>='a'&&c<='z') {
           digit = c-'a'+10;
         } else {
-          printf("%s:%d:%s Hit non-hex digit %c in line: %s\n", __FILE__,__LINE__,__FUNCTION__,c,buf);
+          if (baddigit<20) {
+            printf("%s:%d:%s In file: %s\n", __FILE__, __LINE__, __FUNCTION__, filename);
+            printf("%s:%d:%s Hit non-hex digit %c in line: %s\n", __FILE__,__LINE__,__FUNCTION__,c,buf);
+            baddigit++;
+          }
           digit = 0;
         }
         address = address*16+digit;
