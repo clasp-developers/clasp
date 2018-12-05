@@ -720,7 +720,7 @@ struct NmSymbol {
 std::vector<NmSymbol> load_symbol_table(const char* filename, uintptr_t header) {
   int baddigit = 0;
   std::vector<NmSymbol> symbol_table;
-  struct stat bug;
+  struct stat buf;
   if (stat(filename,&buf)!=0) {
     return symbol_table;
   }
