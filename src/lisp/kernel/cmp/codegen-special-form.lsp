@@ -406,8 +406,8 @@ env is the parent environment of the (result-af) value frame"
        (codegen n1 n1form env)
        (codegen n2 n2form env)
        ;; FIXME: vary the type by abi
-       (let* ((n1x (irc-ptr-to-int n1 %i64%))
-              (n2x (irc-ptr-to-int n2 %i64%))
+       (let* ((n1x (irc-ptr-to-int (irc-load n1) %i64%))
+              (n2x (irc-ptr-to-int (irc-load n2) %i64%))
               (test (,operator n1x n2x "fixnum-cmp")))
          (irc-cond-br test thenb elseb)))))
 
