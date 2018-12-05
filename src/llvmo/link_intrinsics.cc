@@ -1493,6 +1493,17 @@ extern "C" {
 // The following are here instead of fastgf.cc because they are apparently
 // too big to be inlined.
 
+gctools::return_type cc_dispatch_miss(core::T_O* tgf, core::T_O* tgf_vaslist)
+{
+  core::FuncallableInstance_sp gf((gctools::Tagged)tgf);
+  core::VaList_sp gf_vaslist((gctools::Tagged)tgf_vaslist);
+  core::T_mv result = core::eval::funcall(clos::_sym_dispatch_miss,gf,gf_vaslist);
+#ifdef DEBUG_GFDISPATCH
+  printf("%s:%d  Returning from cc_dispatch_miss\n", __FILE__, __LINE__ );
+#endif
+  return result.as_return_type();
+}
+
 void cc_dispatch_debug(int msg_id, uintptr_clasp_t val)
 {
   // The msg_id switch values correspond to values passed from cmpgf.lsp
