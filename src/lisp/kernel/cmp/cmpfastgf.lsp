@@ -464,11 +464,18 @@
     ((= (length matches) 1)
      (let ((match (first matches)))
        (if (single-p match)
-           `(if (= ,stamp-var ,(range-first-stamp match))
+           `(if (cleavir-primop:fixnum-equal ; =
+                 ,stamp-var ,(range-first-stamp match))
                 ,(generate-node-or-outcome arguments (range-outcome match))
                 (go dispatch-miss))
-           `(if (<= ,(range-first-stamp match) ,stamp-var ,(range-last-stamp match))
-                ,(generate-node-or-outcome arguments (match-outcome match))
+           ;; note: the primop needs to be the literal IF condition,
+           ;; so the obvious AND isn't quite going to work.
+           `(if (cleavir-primop:fixnum-not-greater ; <=
+                 ,(range-first-stamp match) ,stamp-var)
+                (if (cleavir-primop:fixnum-not-greater ; <=
+                     ,stamp-var ,(range-last-stamp match))
+                    ,(generate-node-or-outcome arguments (match-outcome match))
+                    (go dispatch-miss))
                 (go dispatch-miss)))))
     (t
      (let* ((len-div-2 (floor (length matches) 2))
@@ -476,7 +483,8 @@
             (right-matches (subseq matches len-div-2))
             (right-head (first right-matches))
             (right-stamp (range-first-stamp right-head)))
-       `(if (< ,stamp-var ,right-stamp)
+       `(if (cleavir-primop:fixnum-less ; <
+             ,stamp-var ,right-stamp)
             ,(generate-class-binary-search arguments left-matches stamp-var)
             ,(generate-class-binary-search arguments right-matches stamp-var))))))
 
