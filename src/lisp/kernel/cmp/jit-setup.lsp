@@ -637,7 +637,7 @@ The passed module is modified as a side-effect."
 (progn
   (export '(jit-add-module-return-function jit-add-module-return-dispatch-function jit-remove-module))
   (defparameter *jit-lock* (mp:make-lock :name 'jit-lock :recursive t))
-  (defun jit-add-module-return-function (original-module main-fn startup-fn shutdown-fn literals-list &optional dispatcher )
+  (defun jit-add-module-return-function (original-module main-fn startup-fn shutdown-fn literals-list &key dispatcher output-path )
     ;; Link the builtins into the module and optimize them
     (if (null dispatcher)
         (progn
@@ -645,7 +645,13 @@ The passed module is modified as a side-effect."
           (link-inline-remove-builtins original-module)
           (quick-module-dump original-module "module-before-optimize"))
         (progn
-          (link-inline-remove-fastgf original-module)))
+          (link-inline-remove-fastgf original-module)
+          ;; If there is an output-path - then for debugging - save this final, inlined module before it's passed to llvm
+          (when output-path
+            (let* ((filename (pathname-name output-path))
+                   (filename-inlined (concatenate 'string filename "-inlined"))
+                   (output-path-inlined (make-pathname :name filename-inlined :defaults output-path)))
+              (cmp::debug-save-dispatcher original-module output-path-inlined)))))
     (let ((module original-module))
       ;; (irc-verify-module-safe module)
       (let ((jit-engine (jit-engine))
@@ -664,8 +670,9 @@ The passed module is modified as a side-effect."
                      (llvm-sys:jit-finalize-repl-function jit-engine handle repl-name startup-name shutdown-name literals-list)))
               (mp:unlock *jit-lock*))))))
 
-  (defun jit-add-module-return-dispatch-function (original-module dispatch-fn startup-fn shutdown-fn literals-list)
-    (jit-add-module-return-function original-module dispatch-fn startup-fn shutdown-fn literals-list :dispatch))
+  (defun jit-add-module-return-dispatch-function (original-module dispatch-fn startup-fn shutdown-fn literals-list &key output-path)
+    (jit-add-module-return-function original-module dispatch-fn startup-fn shutdown-fn literals-list :dispatcher :dispatch
+                                    :output-path output-path))
      
   (defun jit-remove-module (handle)
     (llvm-sys:clasp-jit-remove-module (jit-engine) handle))

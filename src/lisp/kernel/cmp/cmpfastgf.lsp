@@ -1140,7 +1140,9 @@
                   (when output-path
                     (debug-save-dispatcher module output-path))
                   (jit-add-module-return-dispatch-function
-                   module disp-fn startup-fn shutdown-fn sorted-roots))))))))))
+                   module disp-fn startup-fn shutdown-fn sorted-roots
+                   :output-path output-path
+                   ))))))))))
 
 (defun codegen-dispatcher (raw-call-history specializer-profile generic-function &rest args &key generic-function-name output-path log-gf (debug-on t debug-on-p))
   (let* ((*log-gf* log-gf)

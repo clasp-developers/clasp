@@ -1492,7 +1492,11 @@ extern "C" {
 
 // The following are here instead of fastgf.cc because they are apparently
 // too big to be inlined.
+#if 1
 
+// set to zero and enable this function in fastgf.cc to reproduce a problem
+// where clasp locks up when trying to compile the first discriminating function
+// The problem crops up when cc_dispatch_miss is inlined
 gctools::return_type cc_dispatch_miss(core::T_O* tgf, core::T_O* tgf_vaslist)
 {
   core::FuncallableInstance_sp gf((gctools::Tagged)tgf);
@@ -1503,6 +1507,7 @@ gctools::return_type cc_dispatch_miss(core::T_O* tgf, core::T_O* tgf_vaslist)
 #endif
   return result.as_return_type();
 }
+#endif
 
 void cc_dispatch_debug(int msg_id, uintptr_clasp_t val)
 {
