@@ -10,6 +10,20 @@
 (eval-when (:load-toplevel)
   (macrolet ((frob ()
                `(clos:satiate-initialization
+                 ;; KLUDGE: We incorporate all the classes satiated in clos/satiation.lsp
+                 ;; here so that the discriminating function still includes them etc.
+                 'standard-generic-function
+                 'standard-method
+                 'standard-class
+                 'structure-class
+                 'clos:standard-reader-method
+                 'clos:standard-writer-method
+                 'clos:standard-direct-slot-definition
+                 'clos:standard-effective-slot-definition
+                 'clos:eql-specializer
+                 'clos:method-combination
+                 'clos:funcallable-standard-class
+                 ;; OK on to the real shit.
                  ,@(rest (clos:subclasses* (find-class 'cleavir-ast:ast)))
                  ,@(rest (clos:subclasses* (find-class 'cleavir-ir:instruction)))
                  ,@(rest (clos:subclasses* (find-class 'cleavir-ir:datum)))
@@ -65,7 +79,23 @@
                                         (clos:subclasses* (find-class 'cleavir-env::entry))))))
     (for-entries cleavir-env:global-environment)
     (for-entries cleavir-env:declarations)
-    (for-entries cleavir-env:compile-time)))
+    (for-entries cleavir-env:compile-time)
+    (for-entries cleavir-env:optimize-qualities)))
+
+;;; cleavir-compilation-policy
+(eval-when (:load-toplevel)
+  (clos:satiate #'cleavir-compilation-policy:compute-policy
+                '(cons clasp-global-environment))
+  (clos:satiate #'cleavir-compilation-policy:policy-qualities
+                '(clasp-global-environment))
+  (clos:satiate #'cleavir-compilation-policy:normalize-optimize
+                '(cons clasp-global-environment))
+  (clos:satiate #'cleavir-compilation-policy:compute-policy-quality
+                '((eql cleavir-kildall-type-inference:insert-type-checks) cons clasp-global-environment)
+                '((eql cleavir-escape:trust-dynamic-extent) cons clasp-global-environment)
+                '((eql maintain-shadow-stack) cons clasp-global-environment)
+                '((eql do-type-inference) cons clasp-global-environment)
+                '((eql do-dx-analysis) cons clasp-global-environment)))
 
 ;;; cleavir-ast
 (eval-when (:load-toplevel)
