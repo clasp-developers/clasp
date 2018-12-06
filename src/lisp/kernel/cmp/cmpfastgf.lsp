@@ -1174,6 +1174,7 @@
                            &rest args &key generic-function-name output-path log-gf)
   (let* ((*log-gf* log-gf)
          (dtree (calculate-dtree raw-call-history specializer-profile)))
+    (increment-dispatcher-count)
     (clos:generic-function-increment-compilations generic-function)
     (bclasp-compile nil (generate-dispatcher-from-dtree generic-function-name dtree))))
 
