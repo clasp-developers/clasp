@@ -182,10 +182,10 @@ when this is t a lot of graphs will be generated.")
     (safety 1)))
 
 (eval-when (:compile-toplevel)
-  (format t "abut to compute-policy~%"))
+  (format t "about to compute-policy~%"))
 
 (defvar *global-policy*
-  (cleavir-policy:compute-policy *global-optimize* *clasp-env*))
+  '#.(cleavir-policy:compute-policy *global-optimize* *clasp-env*))
 
 (defmethod cleavir-env:optimize-info ((environment clasp-global-environment))
   ;; The default values are all 3.
