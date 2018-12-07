@@ -773,10 +773,10 @@ void ensure_libelf_initialized() {
   }
 }
 
-SymbolTable load_symbol_table(const std::string& filename, uintptr_t start)
+SymbolTable load_symbol_table(const char* filename, uintptr_t start)
 {
   SymbolTable symbol_table;
-  BT_LOG((buf,"Searching symbol table %s memory-start %p\n", filename.c_str(), (void*)start ));
+  BT_LOG((buf,"Searching symbol table %s memory-start %p\n", filename, (void*)start ));
   Elf         *elf;
   GElf_Shdr   shdr;
   Elf_Data    *data;
@@ -784,9 +784,9 @@ SymbolTable load_symbol_table(const std::string& filename, uintptr_t start)
   WRITE_DEBUG_IO(BF("Library %s\n") % filename );
   ensure_libelf_initialized();
   elf_version(EV_CURRENT);
-  fd = open(filename.c_str(), O_RDONLY);
+  fd = open(filename, O_RDONLY);
   if (fd < 0) {
-    BT_LOG((buf,"Could not open %s", filename.c_str()));
+    BT_LOG((buf,"Could not open %s", filename));
     return symbol_table;
   }
   if ((elf = elf_begin(fd, ELF_C_READ, NULL)) == NULL) {
