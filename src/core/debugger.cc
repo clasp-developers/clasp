@@ -317,8 +317,21 @@ void add_dynamic_library_handle(const std::string& libraryName, void* handle) {
 #endif
 #ifdef _TARGET_OS_LINUX
   void* lorigin;
-  int res = dlinfo(handle,RTLD_DI_ORIGIN,lorigin);
-  library_origin = (uintptr_t)lorigin;
+  Dl_info data;
+  dlerror();
+  void* addr = dlsym(handle,"_init");
+  const char* error = dlerror();
+  if (error) {
+    printf("%s:%d:%s Could not find _init symbol dlerror = %s\n", __FILE__, __LINE__, __FUNCTION__, error);
+    abort();
+  }
+  int ret = dladdr(addr,&data);
+  if (ret==0) {
+    printf("%s:%d:%s Could not use dladdr to get start of library %s dlerror = %s\n", __FILE__, __LINE__, __FUNCTION__, libraryName.c_str(), error);
+    abort();
+  }
+  library_origin = (uintptr_t)data.dli_fbase;
+  printf("%s:%d:%s data.dli_fbase = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)data.dli_fbase);
   size_t section_size;
   SymbolTable symbol_table = load_symbol_table(libraryName.c_str(),library_origin);
 #endif
