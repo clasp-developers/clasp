@@ -212,12 +212,20 @@
   (update-dependents gfun initargs))
 
 (defmethod reinitialize-instance :after ((gfun standard-generic-function) &rest initargs)
-  (declare (ignore initargs))
-  ;; erase any call history and invalidate
-  (loop for call-history = (generic-function-call-history gfun)
-        for exchange = (generic-function-call-history-compare-exchange gfun call-history nil)
-        until (null exchange))
-  (invalidate-discriminating-function gfun))
+  ;; Check if the redefinition is trivial.
+  ;; I am not sure of the fine details here. What happens if you reinitialize-instance
+  ;; and change the method-combination, but not the methods to have compatible qualifiers,
+  ;; for example? So what I'm going with is a somewhat magical minimum:
+  ;; ENSURE-GENERIC-FUNCTION-USING-CLASS below calls with :name and whatever args it was
+  ;; passed, and DEFMETHOD will pass with no extra args.
+  ;; By incorporating this case, we avoid erasing the entire call history after any defmethod.
+  ;; Note that ADD-METHOD is smart and does modify the call history to include the new method,
+  ;; So things will remain consistent.
+  (unless (and (= (length initargs) 2)
+               (eq (first initargs) :name))
+    ;; OK, something complicated. Erase.
+    (erase-generic-function-call-history gfun)
+    (invalidate-discriminating-function gfun)))
 
 (defun associate-methods-to-gfun (name &rest methods)
   (let ((gfun (fdefinition name)))
