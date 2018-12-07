@@ -27,7 +27,7 @@ THE SOFTWARE.
 #define DEBUG_LEVEL_FULL
 
 
-#if 1
+#if 0
 // If you turn this on it takes a LOT of stack memory!!! and it runs even if DEBUG_SOURCE IS ON!!!!
 #define BT_LOG(msg) {char buf[1024]; sprintf msg; LOG(BF("%s") % buf);}
 #else
@@ -525,7 +525,7 @@ void walk_one_llvm_stackmap(std::vector<BacktraceEntry>&backtrace, uintptr_t& ad
   for ( size_t functionIndex = 0; functionIndex < NumFunctions; ++functionIndex ) {
     StkSizeRecord function;
     parse_function(functionAddress,function);
-    BT_LOG((buf,"PASS2 Examining function #%lu at %p - %llu records\n", functionIndex, (void*)function.FunctionAddress, function.RecordCount));
+    BT_LOG((buf,"PASS2 Examining function #%lu at %p - %"PRu" records\n", functionIndex, (void*)function.FunctionAddress, function.RecordCount));
     for ( size_t index=0; index<function.RecordCount; index++) {
       StkMapRecord record;
       parse_record(backtrace,address,functionIndex,function,record,library);
@@ -811,14 +811,11 @@ SymbolTable load_symbol_table(const std::string& filename, uintptr_t start)
         uintptr_t symbol_end = symbol_start+sym.st_size;
         char type = '?';
         if (ELF64_ST_TYPE(sym.st_info) == STT_FUNC) {
-          if (ELF64_ST_BIND(sym.st_info) == STT_GLOBAL) type = 'T';
+          if (ELF64_ST_BIND(sym.st_info) == STB_GLOBAL) type = 'T';
           else type = 't';
         } else if (ELF64_ST_TYPE(sym.st_info) == STT_OBJECT) {
-          if (ELF64_ST_BIND(sym.st_info) == STT_GLOBAL) type = 'D';
+          if (ELF64_ST_BIND(sym.st_info) == STB_GLOBAL) type = 'D';
           else type = 'd';
-        }
-        if (backtrace.size()==0) {
-          WRITE_DEBUG_IO(BF("Symbol start %p end %p name %s type %c\n") % (void*)symbol_start % (void*)symbol_end % elf_strptr(elf,shdr.sh_link , (size_t)sym.st_name, type));
         }
         BT_LOG((buf,"Looking at symbol %s type: %d\n", elf_strptr(elf,shdr.sh_link , (size_t)sym.st_name), ELF64_ST_TYPE(sym.st_info)));
         std::string sname(elf_strptr(elf,shdr.sh_link , (size_t)sym.st_name));
@@ -887,13 +884,15 @@ void search_symbol_table(std::vector<BacktraceEntry>& backtrace, const char* fil
   std::string fname(filename);
   map<std::string,OpenDynamicLibraryInfo>::iterator it = debugInfo()._OpenDynamicLibraryHandles.find(fname);
   if (it == debugInfo()._OpenDynamicLibraryHandles.end()) {
-    printf("%s:%d:%s Could not find handle for library %s\n", __FILE__, __LINE__, __FUNCTION__, fname.c_str());
+//    printf("%s:%d:%s Could not find handle for library %s\n", __FILE__, __LINE__, __FUNCTION__, fname.c_str());
   } else {
     SymbolTable& symbol_table = it->second._SymbolTable;
     symbol_table_size += sizeof(SymbolEntry)*symbol_table._Symbols.size()+symbol_table._Capacity;
-    WRITE_DEBUG_IO(BF("Library symbol_table _SymbolNames %p _End %u  _Capacity %u  _StackmapStart %p    _StackmapEnd %p\n")
-                   % (void*)symbol_table._SymbolNames % symbol_table._End % symbol_table._Capacity
-                   % (void*)symbol_table._StackmapStart % (void*)symbol_table._StackmapEnd );
+    if (backtrace.size()==0) {
+      WRITE_DEBUG_IO(BF("Library symbol_table _SymbolNames %p _End %u  _Capacity %u  _StackmapStart %p    _StackmapEnd %p\n")
+                     % (void*)symbol_table._SymbolNames % symbol_table._End % symbol_table._Capacity
+                     % (void*)symbol_table._StackmapStart % (void*)symbol_table._StackmapEnd );
+    }
     if (backtrace.size() == 0) {
       for (auto entry : symbol_table ) {
         WRITE_DEBUG_IO(BF("Symbol start %p type %c name %s\n") % (void*)entry._Address % entry._Type % entry.symbol(symbol_table._SymbolNames));
@@ -1530,7 +1529,7 @@ void fill_backtrace(std::vector<BacktraceEntry>& backtrace,bool captureArguments
       backtrace[index]._Closure = _Nil<T_O>();
     }
   }
-  printf("%s:%s:%d\n", __FILE__, __FUNCTION__, __LINE__);
+//  printf("%s:%s:%d\n", __FILE__, __FUNCTION__, __LINE__);
     // fill in the interpreted frames here
   BT_LOG((buf,"fill in interpreted frames here\n"));;
   if (!captureArguments) fill_in_interpreted_frames(backtrace);
