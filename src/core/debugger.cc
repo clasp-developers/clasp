@@ -525,7 +525,7 @@ void walk_one_llvm_stackmap(std::vector<BacktraceEntry>&backtrace, uintptr_t& ad
   for ( size_t functionIndex = 0; functionIndex < NumFunctions; ++functionIndex ) {
     StkSizeRecord function;
     parse_function(functionAddress,function);
-    BT_LOG((buf,"PASS2 Examining function #%lu at %p - %"PRu" records\n", functionIndex, (void*)function.FunctionAddress, function.RecordCount));
+    BT_LOG((buf,"PASS2 Examining function #%lu at %p - %" PRu " records\n", functionIndex, (void*)function.FunctionAddress, function.RecordCount));
     for ( size_t index=0; index<function.RecordCount; index++) {
       StkMapRecord record;
       parse_record(backtrace,address,functionIndex,function,record,library);
@@ -850,7 +850,7 @@ extern "C" char* __progname_full; // The name of the executable?
 int elf_loaded_object_callback(struct dl_phdr_info *info, size_t size, void* data)
 {
   ScanInfo* scan_callback_info = (ScanInfo*)data;
-  const char *type;
+  const char *type;s
   int p_type, j;
   std::string libname;
   if (scan_callback_info->_Index==0 && strlen(info->dlpi_name) == 0 ) {
