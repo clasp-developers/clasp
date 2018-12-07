@@ -842,6 +842,7 @@ SymbolTable load_symbol_table(const std::string& filename, uintptr_t start)
   }
   elf_end(elf);
   close(fd);
+  return symbol_table;
 }
 
   
@@ -850,7 +851,7 @@ extern "C" char* __progname_full; // The name of the executable?
 int elf_loaded_object_callback(struct dl_phdr_info *info, size_t size, void* data)
 {
   ScanInfo* scan_callback_info = (ScanInfo*)data;
-  const char *type;s
+  const char *type;
   int p_type, j;
   std::string libname;
   if (scan_callback_info->_Index==0 && strlen(info->dlpi_name) == 0 ) {
