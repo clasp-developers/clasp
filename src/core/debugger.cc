@@ -866,7 +866,7 @@ int elf_loaded_object_callback(struct dl_phdr_info *info, size_t size, void* dat
 }
 
 
-void walk_loaded_objects(std::vector<BacktraceEntry>& backtrace, size_t& symbol_table_memory) {
+void walk_loaded_objects(std::vector<BacktraceEntry>& backtrace, size_t& symbol_table_memory)
 {
   ScanInfo scan;
   scan._Backtrace = &backtrace;
