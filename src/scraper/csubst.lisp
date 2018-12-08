@@ -69,7 +69,7 @@
     ((string= return-type "void")
      #l
      $namespace ::$function-name($(format nil "~{a~a._v~^,~}" arg-indexes));
-     return Values(_Nil<core::T_O>());
+     return Values0<core::T_O>();
      l#)
     ((search "_mv" return-type) ;(or (string= return-type "T_mv") (string= return-type "core::T_mv"))
      #l

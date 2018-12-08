@@ -186,11 +186,13 @@ printer and we should rather use MAKE-LOAD-FORM."
 (defmethod print-object ((obj structure-object) stream)
   (let* ((class (si:instance-class obj))
 	 (slotds (class-slots class)))
-    (when (and slotds
-               ;; *p-readably* effectively disables *p-level*
-	       (not *print-readably*)
-	       *print-level*
-	       (zerop *print-level*))
+    (when (and ;; to fix ansi-tests PRINT-LEVEL.8 & PRINT-LEVEL.9
+           ;; printing a struct w/o slots
+           ;; don't test for slotds
+           ;; *p-readably* effectively disables *p-level*
+           (not *print-readably*)
+           *print-level*
+           (zerop *print-level*))
       (write-string "#" stream)
       (return-from print-object obj))
     (write-string "#S(" stream)
@@ -211,7 +213,10 @@ printer and we should rather use MAKE-LOAD-FORM."
                         (load-time-value (find-package "KEYWORD")))))
         (prin1 kw stream))
       (write-string " " stream)
-      (prin1 sv stream))
+      (if *print-level*
+          (let ((*print-level* (1- *print-level*)))
+            (prin1 sv stream))
+          (prin1 sv stream)))
     (write-string ")" stream)
     obj))
 
@@ -228,21 +233,21 @@ printer and we should rather use MAKE-LOAD-FORM."
   (when (and *print-readably* (null *read-eval*))
     (error 'print-not-readable :object x))
   (let* ((negative-infinities '((single-float .
-                                 "#.ext::single-float-negative-infinity")
+                                 "#.ext:single-float-negative-infinity")
                                 (double-float .
-                                 "#.ext::double-float-negative-infinity")
+                                 "#.ext:double-float-negative-infinity")
                                 (long-float .
-                                 "#.ext::long-float-negative-infinity")
+                                 "#.ext:long-float-negative-infinity")
                                 (short-float .
-                                 "#.ext::short-float-negative-infinity")))
+                                 "#.ext:short-float-negative-infinity")))
          (positive-infinities '((single-float .
-                                 "#.ext::single-float-positive-infinity")
+                                 "#.ext:single-float-positive-infinity")
                                 (double-float .
-                                 "#.ext::double-float-positive-infinity")
+                                 "#.ext:double-float-positive-infinity")
                                 (long-float .
-                                 "#.ext::long-float-positive-infinity")
+                                 "#.ext:long-float-positive-infinity")
                                 (short-float .
-                                 "#.ext::short-float-positive-infinity")))
+                                 "#.ext:short-float-positive-infinity")))
          (record (assoc (type-of x)
                         (if (plusp x) positive-infinities negative-infinities))))
     (unless record
@@ -298,3 +303,12 @@ printer and we should rather use MAKE-LOAD-FORM."
   obj)
 
 ;;; ----------------------------------------------------------------------
+;;; Clasp specific methods
+
+(defmethod cl:print-object ((object core:general) stream)
+  (if (and *print-readably* (core:fieldsp object))
+      (progn
+        (write-string "#i" stream)
+        (write (cons (class-name (class-of object)) (core:encode object)) :stream stream))
+      (call-next-method)))
+                          

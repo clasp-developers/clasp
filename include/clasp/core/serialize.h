@@ -311,7 +311,6 @@ public: // bidirectional
   void attributePOD(Symbol_sp name, Symbol_sp nodeName, SimpleClass &plainObject) {
     _G();
     if (this->loading()) {
-      _BLOCK_TRACE("Loading");
       SNode_sp plainNode = this->getAttributeSNode(name, _Unbound<SNode_O>());
       if (plainNode.unboundp()) {
         SIMPLE_ERROR_SPRINTF("Could not find node %s",  _rep_(name).c_str());
@@ -321,7 +320,6 @@ public: // bidirectional
       }
       plainObject.archive(plainNode);
     } else {
-      _BLOCK_TRACE("Saving");
       SNode_sp plainNode = createBranchSNode(nodeName);
       this->addAttributeSNode(name, plainNode);
       plainObject.archive(plainNode);
@@ -341,14 +339,12 @@ public: // bidirectional
   void attributePODIfDefined(Symbol_sp name, Symbol_sp nodeName, bool &defined, SimpleClass &plainObject) {
     _G();
     if (this->loading()) {
-      _BLOCK_TRACE("Loading");
       SNode_sp plainNode = this->getAttributeSNode(name, _Unbound<SNode_O>());
       if (!plainNode.unboundp()) {
         plainObject.archive(plainNode);
         defined = true;
       }
     } else {
-      _BLOCK_TRACE("Saving");
       if (defined) {
         SNode_sp plainNode = createBranchSNode(nodeName);
         this->addAttributeSNode(name, plainNode);
@@ -405,14 +401,12 @@ public: // bidirectional
 #endif
     ArchiveP listNode;
     if (this->saving()) {
-      _BLOCK_TRACE("Saving");
       typename map<string, pType>::iterator oi;
       for (oi = v.begin(); oi != v.end(); oi++) {
         List_sp pair = Cons_O::create(str_create(oi->first), clasp_make_integer(oi->second));
         this->pushVector(pair);
       }
     } else {
-      _BLOCK_TRACE("Loading");
       v.clear();
       this->mapVector([&v](T_sp pair) {
 			string key = string_get_std_string(oCar(pair));

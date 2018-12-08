@@ -4,63 +4,18 @@
   (format t "About to compile-file ir.lsp~%"))
 
 (in-package :clasp-cleavir)
-
-(defgeneric literal-label (literal))
-
-(defclass literal ()
-  ((%value :initarg :value :reader literal-value)))
-
-(defclass immediate-literal (literal)
-  ((%tagged-value :initarg :tagged-value :reader immediate-literal-tagged-value)))
-
-(defmethod literal-label ((literal immediate-literal))
-  (format nil "~a" (immediate-literal-tagged-value literal)))
-
-(defmethod make-load-form ((thing clasp-cleavir::immediate-literal) &optional environment)
-  (make-load-form-saving-slots thing :environment environment))
-  
-(defmethod print-object ((object immediate-literal) stream)
-  (print-unreadable-object (object stream :type t :identity t)
-    (format stream ":value ~s" (literal-value object))))
-
-(defclass arrayed-literal (literal)
-  ((%index :initarg :index :reader arrayed-literal-index)
-   (%literal-name :initarg :literal-name :reader arrayed-literal-literal-name)))
-
-(defmethod literal-label ((literal arrayed-literal))
-  (if (arrayed-literal-literal-name literal)
-      (format nil "~a/~a" (arrayed-literal-index literal) (arrayed-literal-literal-name literal))
-      (format nil "~a" (arrayed-literal-index literal))))
-
-(defmethod print-object ((object arrayed-literal) stream)
-  (print-unreadable-object (object stream :type t :identity t)
-    (format stream ":value ~s :index ~s :literal-name ~s" (literal-value object)
-            (arrayed-literal-index object)
-            (arrayed-literal-literal-name object))))
-
-
-(defun %literal-index (value &optional read-only-p)
-  (let ((*debug-cleavir* *debug-cleavir-literals*))
-    (multiple-value-bind (data in-array literal-name)
-        (literal:reference-literal value read-only-p)
-      (if in-array
-          (make-instance 'arrayed-literal :value value :index data :literal-name literal-name)
-          (make-instance 'immediate-literal :value value :tagged-value data)))))
-
   
 (defun %literal-ref (value &optional read-only-p)
-  (let ((literal (%literal-index value read-only-p)))
-    (if (typep literal 'arrayed-literal)
-        (let* ((index (arrayed-literal-index literal))
-               (literal-label (if (arrayed-literal-literal-name literal)
-                                  (bformat nil "values-table[%d]/%s" index (arrayed-literal-literal-name literal))
-                                  (bformat nil "values-table[%d]" index)))
-               (gep (llvm-sys:create-const-gep2-64 cmp:*irbuilder*
-                                                   (cmp:ltv-global)
-                                                   0 index
-                                                   literal-label)))
-          gep)
-        (error "%literal-ref of immediate value ~s is illegal" value))))
+  (multiple-value-bind (index in-array)
+      (literal:reference-literal value read-only-p)
+    (unless in-array
+      (error "%literal-ref of immediate value ~s is illegal" value))
+    (let* ((literal-label (bformat nil "values-table[%d]" index))
+           (gep (llvm-sys:create-const-gep2-64 cmp:*irbuilder*
+                                               (cmp:ltv-global)
+                                               0 index
+                                               literal-label)))
+      gep)))
 
 (defun %literal-value (value &optional (label "literal"))
   (cmp:irc-load (%literal-ref value)))
@@ -123,6 +78,7 @@
 (defun alloca-va_list (&optional (label "vaslist"))
   (cmp:irc-alloca-va_list :label label))
 
+#+(or)
 (defun alloca-invocation-history-frame (&optional (label "ihf"))
   (cmp:irc-alloca-invocation-history-frame :label label))
 
@@ -394,15 +350,14 @@ And convert everything to JIT constants."
 ;;; Arguments are passed in registers and in the multiple-value-array
 ;;;
 
-(defun closure-call-or-invoke (closure return-value arg-allocas abi &key (label ""))
-  (let* ((entry-point (cmp::irc-calculate-entry (%load closure))) ;; intrinsic-name "cc_call")
-         (arguments (mapcar (lambda (x) (%load x)) arg-allocas))
+(defun closure-call-or-invoke (closure return-value arguments abi &key (label ""))
+  (let* ((entry-point (cmp::irc-calculate-entry closure)) ;; intrinsic-name "cc_call")
          (real-args (if (< (length arguments) core:+number-of-fixed-arguments+)
                         (append arguments (make-list (- core:+number-of-fixed-arguments+ (length arguments)) :initial-element (cmp:null-t-ptr)))
                         arguments)))
     (with-return-values (return-vals return-value abi)
       (let ((args (list*
-                   (cmp:irc-load closure)
+                   closure
                    ;;                   (cmp:null-t-ptr)
                    (%size_t (length arguments))
                    real-args)))
@@ -413,10 +368,9 @@ And convert everything to JIT constants."
           (%store result-in-registers return-value))))))
 
 
-(defun unsafe-multiple-value-foreign-call (intrinsic-name return-value arg-allocas abi &key (label ""))
+(defun unsafe-multiple-value-foreign-call (intrinsic-name return-value args abi &key (label ""))
   (with-return-values (return-vals return-value abi)
-    (let* ((args (mapcar (lambda (x) (%load x)) arg-allocas))
-           (func (or (llvm-sys:get-function cmp:*the-module* intrinsic-name)
+    (let* ((func (or (llvm-sys:get-function cmp:*the-module* intrinsic-name)
                      (let ((arg-types (make-list (length args) :initial-element cmp:%t*%))
                            (varargs nil))
                        (cmp:irc-function-create
@@ -430,11 +384,12 @@ And convert everything to JIT constants."
                 (cmp::irc-create-call func args))))
       (%store result-in-registers return-value))))
 
-(defun unsafe-foreign-call (call-or-invoke foreign-types foreign-name output arg-allocas abi &key (label ""))
+(defun unsafe-foreign-call (call-or-invoke foreign-types foreign-name args abi &key (label ""))
   ;; Write excess arguments into the multiple-value array
   (let* ((arguments (mapcar (lambda (type arg)
-                              (%intrinsic-invoke-if-landing-pad-or-call (clasp-ffi::from-translator-name type) (list (%load arg))))
-                            (second foreign-types) arg-allocas))
+                              (%intrinsic-invoke-if-landing-pad-or-call
+                               (clasp-ffi::from-translator-name type) (list arg)))
+                            (second foreign-types) args))
          (func (or (llvm-sys:get-function cmp:*the-module* foreign-name)
                    (cmp:irc-function-create
                     (cmp:function-type-create-on-the-fly foreign-types)
@@ -445,15 +400,16 @@ And convert everything to JIT constants."
     (if (eq :void (first foreign-types))
         (progn
           (cmp::irc-call-or-invoke func arguments)
-          (%store (%intrinsic-invoke-if-landing-pad-or-call (clasp-ffi::to-translator-name (first foreign-types)) nil) output))
+          (%intrinsic-invoke-if-landing-pad-or-call (clasp-ffi::to-translator-name (first foreign-types)) nil))
         (let ((foreign-result (cmp::irc-call-or-invoke func arguments)))
-          (%store (%intrinsic-invoke-if-landing-pad-or-call (clasp-ffi::to-translator-name (first foreign-types)) (list foreign-result)) output)))))
+          (%intrinsic-invoke-if-landing-pad-or-call (clasp-ffi::to-translator-name (first foreign-types)) (list foreign-result))))))
 
-(defun unsafe-foreign-call-pointer (call-or-invoke foreign-types pointer output arg-allocas abi &key (label ""))
+(defun unsafe-foreign-call-pointer (call-or-invoke foreign-types pointer args abi &key (label ""))
   ;; Write excess arguments into the multiple-value array
   (let* ((arguments (mapcar (lambda (type arg)
-                              (%intrinsic-invoke-if-landing-pad-or-call (clasp-ffi::from-translator-name type) (list (%load arg))))
-                            (second foreign-types) arg-allocas))
+                              (%intrinsic-invoke-if-landing-pad-or-call
+                               (clasp-ffi::from-translator-name type) (list arg)))
+                            (second foreign-types) args))
          (function-type (cmp:function-type-create-on-the-fly foreign-types))
          (function-pointer-type (llvm-sys:type-get-pointer-to function-type))
          (pointer-t* pointer)
@@ -462,6 +418,6 @@ And convert everything to JIT constants."
     (if (eq :void (first foreign-types))
         (progn
           (cmp::irc-call-or-invoke function-pointer arguments)
-          (%store (%intrinsic-invoke-if-landing-pad-or-call (clasp-ffi::to-translator-name (first foreign-types)) nil) output))
+          (%intrinsic-invoke-if-landing-pad-or-call (clasp-ffi::to-translator-name (first foreign-types)) nil))
         (let ((result-in-t* (cmp::irc-call-or-invoke function-pointer arguments)))
-          (%store (%intrinsic-invoke-if-landing-pad-or-call (clasp-ffi::to-translator-name (first foreign-types)) (list result-in-t*)) output)))))
+          (%intrinsic-invoke-if-landing-pad-or-call (clasp-ffi::to-translator-name (first foreign-types)) (list result-in-t*))))))

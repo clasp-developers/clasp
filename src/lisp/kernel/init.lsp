@@ -67,6 +67,8 @@
 ;; Setup a few things for the CMP package
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (core::select-package :cmp))
+(sys:*make-special '*dbg-generate-dwarf*)
+(setq *dbg-generate-dwarf* (null (member :disable-dbg-generate-dwarf *features*)))
 (export '(llvm-link link-bitcode-modules link-object-files))
 ;;; Turn on aclasp/bclasp activation-frame optimization
 (sys:*make-special '*activation-frame-optimize*)
@@ -128,7 +130,18 @@
           all-encodings
           load-encoding
           make-encoding
-          assume-right-type))
+          assume-right-type
+          short-float-positive-infinity
+          short-float-negative-infinity
+          single-float-positive-infinity
+          single-float-negative-infinity
+          double-float-positive-infinity
+          double-float-negative-infinity
+          long-float-positive-infinity
+          long-float-negative-infinity
+          assert-error
+          float-nan-p
+          float-infinity-p))
 (core:*make-special '*module-provider-functions*)
 (core:*make-special '*source-location*)
 (setq *source-location* nil)
@@ -471,10 +484,10 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 (defun build-configuration ()
   (let ((gc (cond
               ((member :use-mps *features*) "mps")
-              ((member :use-boehmdc *features*) "boehmdc")
               ((member :use-boehm *features*) "boehm")
-              (t (error "Unknown clasp configuration")))))
-    (bformat nil "%s-%s" (lisp-implementation-type) gc)))
+              (t (error "Unknown clasp configuration"))))
+        (mpi (if (member :use-mpi *features*) "-mpi" "")))
+    (bformat nil "%s-%s%s" (lisp-implementation-type) gc mpi)))
 
 (defun ensure-relative-pathname (input)
   "If the input pathname is absolute then search for src, or generated and return

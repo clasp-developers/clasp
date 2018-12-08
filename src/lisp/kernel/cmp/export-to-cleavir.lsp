@@ -50,7 +50,7 @@
           cmp-log-dump-function
           codegen-literal
           reference-literal
-          codegen-rtv
+          codegen-rtv-cclasp
           compile-error-if-not-enough-arguments
           compile-in-env
           compile-lambda-function
@@ -76,6 +76,7 @@
           irc-create-invoke-default-unwind
           irc-create-landing-pad
           irc-exception-typeid*
+          irc-extract-value
           irc-generate-terminate-code
           irc-size_t-*current-source-pos-info*-filepos
           irc-size_t-*current-source-pos-info*-column
@@ -123,7 +124,6 @@
           irc-alloca-vaslist
           irc-alloca-va_list
           irc-alloca-register-save-area
-          irc-alloca-invocation-history-frame
           irc-alloca-size_t
           compile-reference-to-literal
           ltv-global

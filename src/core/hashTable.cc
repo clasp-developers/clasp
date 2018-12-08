@@ -142,7 +142,7 @@ CL_DEFUN T_sp cl__make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_si
   int isize = clasp_to_int(size);
   double rehash_threshold = clasp_to_double(orehash_threshold);
   HashTable_sp table = _Nil<HashTable_O>();
-  //	BFORMAT_T(BF("%s:%d - make_hash_table - fix me so that I grow by powers of 2\n") % __FILE__ % __LINE__ );
+  //	write_bf_stream(BF("%s:%d - make_hash_table - fix me so that I grow by powers of 2\n") % __FILE__ % __LINE__ );
   if (test == cl::_sym_eq || test == cl::_sym_eq->symbolFunction()) {
     table = HashTableEq_O::create(isize, rehash_size, rehash_threshold);
   } else if (test == cl::_sym_eql || test == cl::_sym_eql->symbolFunction()) {
@@ -177,7 +177,7 @@ HashTable_sp HashTable_O::create(T_sp test) {
   Fixnum_sp size = make_fixnum(16);
   DoubleFloat_sp rehashSize = DoubleFloat_O::create(2.0);
   DoubleFloat_sp rehashThreshold = DoubleFloat_O::create(0.9);
-  HashTable_sp ht = cl__make_hash_table(test, size, rehashSize, rehashThreshold);
+  HashTable_sp ht = gc::As_unsafe<HashTable_sp>(cl__make_hash_table(test, size, rehashSize, rehashThreshold));
   return ht;
 }
 
@@ -502,8 +502,15 @@ uint HashTable_O::resizeEmptyTable_no_lock(size_t sz) {
   return sz;
 }
 
-CL_LISPIFY_NAME("hash-table-count");
-CL_DEFMETHOD uint HashTable_O::hashTableCount() const {
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("hash-table-count");
+CL_DEFUN uint cl__hash_table_count(HashTable_sp ht) {
+  HT_READ_LOCK(&*ht);
+  return ht->_HashTableCount;
+}
+
+uint HashTable_O::hashTableCount() const {
   HT_READ_LOCK(this);
   return this->_HashTableCount;
 }
@@ -517,10 +524,12 @@ uint HashTable_O::calculateHashTableCount() const {
   return cnt;
 }
 
-CL_LISPIFY_NAME("hash-table-size");
-CL_DEFMETHOD uint HashTable_O::hashTableSize() const {
-  HT_READ_LOCK(this);
-  return cl__length(ENSURE_VALID_OBJECT(this->_HashTable));
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("hash-table-size");
+CL_DEFUN uint cl__hash_table_size(HashTable_sp ht) {
+  HT_READ_LOCK(&*ht);
+  return cl__length(ENSURE_VALID_OBJECT(ht->_HashTable));
 }
 
 bool HashTable_O::keyTest(T_sp entryKey, T_sp searchKey) const {
@@ -879,16 +888,27 @@ List_sp HashTable_O::tableRef_no_lock(T_sp key) {
     return ss.str();
   }
 
-CL_LISPIFY_NAME("hash-table-rehash-size");
-CL_DEFMETHOD   Number_sp HashTable_O::hashTableRehashSize() const {
-  HT_READ_LOCK(this);
-  return this->_RehashSize;
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("hash-table-rehash-size");
+CL_DEFUN Number_sp cl__hash_table_rehash_size(HashTable_sp ht) {
+  HT_READ_LOCK(&*ht);
+  return ht->_RehashSize;
 };
 
-CL_LISPIFY_NAME("hash-table-rehash-threshold");
-CL_DEFMETHOD   double HashTable_O::hashTableRehashThreshold() const {
-  HT_READ_LOCK(this);
-  return this->_RehashThreshold;
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("hash-table-rehash-threshold");
+CL_DEFUN double cl__hash_table_rehash_threshold(HashTable_sp ht) {
+  HT_READ_LOCK(&*ht);
+  return ht->_RehashThreshold;
+};
+
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("hash-table-test");
+CL_DEFUN T_sp cl__hash_table_test(HashTable_sp ht) {
+  return ht->hashTableTest();
 };
 
 

@@ -15,26 +15,16 @@
   raw-name
   function-name
   print-name
+  frame-size
+  frame-offset
   function-start-address
-  function-length-bytes
+  function-end-address
   base-pointer
   next-base-pointer
   arguments
-  shadow-frame)
-
-
-;;; Common Lisp functions maintain a shadow stack of arguments
-;;; including closure arguments.  When generating a backtrace
-;;; shadow-backtrace-frame is used to represent each shadow stack frame
-(defstruct (shadow-backtrace-frame (:type vector) :named)
-  index
-  frame-address
-  function-name
-  function
-  arguments
-  environment)
-
-(defstruct (shadow-frame (:type vector) :named) frame-address function-name arguments)
+  closure
+  function-description
+)
 
 
 (defun dump-jit-symbol-info ()
@@ -66,7 +56,8 @@ For C/C++ frames - return (list 'c-function name)."
     ((stringp name) (list :c-function name))
     (t (error "Illegal name for function ~a" name))))
 
-(defun parse-frame (return-address backtrace-name base-pointer next-base-pointer verbose maybe-shadow-frame)
+#+(or)
+(defun parse-frame (return-address backtrace-name base-pointer next-base-pointer verbose common-lisp-name maybe-arguments)
   ;; Get the name
   (let (pos)
     (if verbose (bformat *debug-io* "backtrace-name: %s%N" backtrace-name))
@@ -85,82 +76,49 @@ For C/C++ frames - return (list 'c-function name)."
                              :shadow-frame maybe-shadow-frame
                              :base-pointer base-pointer
                              :next-base-pointer next-base-pointer))
-     ((eq backtrace-name :unknown-lisp-function)
-      (make-backtrace-frame :type :lisp
-                            :return-address return-address
-                            :raw-name :unknown-lisp-function
-                            :function-name :unknown-lisp-function
-                            :print-name :unknown-lisp-function
-                            :base-pointer base-pointer
-                            :next-base-pointer next-base-pointer))
-     ;; If the backtrace-name starts with 0x then it is a return address for a JITted function
-     ;; lookup the JITted function and create a backtrace frame for it.
-     ((string= (subseq backtrace-name 0 (min 2 (length backtrace-name))) "0x")
-      (let* ((symbol-info (llvm-sys:lookup-jit-symbol-info return-address))
-;;;              (_ (core:bformat t "symbol-info address: %s -> %s%N" return-address symbol-info))
-             (jit-name (first symbol-info))
-             (function-bytes (second symbol-info))
-             (function-start-address (third symbol-info)))
-        ;; strip leading #\_
-        (if (and jit-name (search "^^" jit-name))
-            (let* ((name-with-parts #+target-os-linux jit-name
-                                    ;; fixme cracauer.  Find out what FreeBSD actually needs here
-                                    #+target-os-freebsd jit-name
-                                    #+target-os-darwin (subseq jit-name 1 (length jit-name)))
-                   (parts (cmp:unescape-and-split-jit-name name-with-parts))
-                   (symbol-name (first parts))
-                   (package-name (second parts))
-                   (name (intern symbol-name (or package-name :keyword))))
-              (if verbose (bformat *debug-io* "-->JITted CL frame%N"))
-              (make-backtrace-frame :type :lisp
-                                    :return-address return-address
-                                    :raw-name jit-name
-                                    :function-name (ensure-function-name name)
-                                    :print-name (cmp:print-name-from-unescaped-split-name jit-name parts name)
-                                    :function-start-address function-start-address
-                                    :function-length-bytes function-bytes
-                                    :base-pointer base-pointer
-                                    :next-base-pointer next-base-pointer))
-          (progn
-            (if verbose (bformat *debug-io* "-->JITted unknown frame%N"))
-            (make-backtrace-frame :type :unknown
-                                  :return-address return-address
-                                  :function-name (ensure-function-name jit-name)
-                                  :print-name (or jit-name (core:bformat nil "%s" return-address))
-                                  :raw-name backtrace-name
-                                  :base-pointer base-pointer
-                                  :next-base-pointer next-base-pointer)))))
-     ;; For some reason only darwin backtrace_symbols gives us Common Lisp function names
-     #+(or target-os-darwin target-os-freebsd)
-     ((setq pos (search "^^" backtrace-name :from-end t))
-      (if verbose (bformat *debug-io* "-->CL frame%N"))
-      (let* ((parts (cmp:unescape-and-split-jit-name (subseq backtrace-name 0 pos)))
-             (symbol-name (first parts))
-             (package-name (second parts))
-             (name (intern symbol-name (or package-name :keyword))))
-        (make-backtrace-frame :type :lisp
-                              :return-address return-address
-                              :raw-name backtrace-name
-                              :print-name (cmp:print-name-from-unescaped-split-name backtrace-name parts name)
-                              :function-name (ensure-function-name name)
-                              :base-pointer base-pointer
-                              :next-base-pointer next-base-pointer)))
-     ;; It's a C++ function with a mangled name
-     (t (let* ((first-space (position-if (lambda (c) (char= c #\space)) backtrace-name))
-               (just-name (if first-space
-                              (subseq backtrace-name 0 first-space)
-                            backtrace-name))
-               (unmangled (core::maybe-demangle just-name)))
-          (if verbose (bformat *debug-io* "-->C++ frame%N"))
-          (make-backtrace-frame :type :c
-                                :return-address return-address
-                                :raw-name backtrace-name
-                                :print-name (or unmangled just-name)
-                                :function-name (if unmangled
-                                                   (ensure-function-name unmangled)
-                                                   (ensure-function-name just-name))
-                                :base-pointer base-pointer
-                                :next-base-pointer next-base-pointer))))))
+      ((and common-lisp-name (search "^^" common-lisp-name))
+       (let* ((name-with-parts #+target-os-linux common-lisp-name
+                               ;; fixme cracauer.  Find out what FreeBSD actually needs here
+                               #+target-os-freebsd common-lisp-name
+                               #+target-os-darwin (if (char= (char common-lisp-name 0) #\_)
+                                                      (subseq common-lisp-name 1 (length common-lisp-name)) ; strip preceeding "_"
+                                                      common-lisp-name))
+              (parts (cmp:unescape-and-split-jit-name name-with-parts))
+              (symbol-name (first parts))
+              (package-name (second parts))
+              (maybe-fn-or-specializers (third parts))
+              (maybe-method (fourth parts))
+              (name (intern symbol-name (or package-name :keyword)))
+              (print-name (cond
+                            ((string= maybe-method "METHOD")
+                             (format nil "(METHOD ~a ~a)" name maybe-fn-or-specializers))
+                            (t name))))
+         (make-backtrace-frame :type :lisp
+                               :return-address return-address
+                               :function-name name
+                               :print-name print-name
+                               :raw-name common-lisp-name
+                               :arguments maybe-arguments
+                               :base-pointer base-pointer
+                               :next-base-pointer next-base-pointer)))
+      ;; If the backtrace-name starts with 0x then it is a return address for a JITted function
+      ;; lookup the JITted function and create a backtrace frame for it.
+      ;; It's a C++ function with a mangled name
+      (t (let* ((first-space (position-if (lambda (c) (char= c #\space)) backtrace-name))
+                (just-name (if first-space
+                               (subseq backtrace-name 0 first-space)
+                               backtrace-name))
+                (unmangled (core::maybe-demangle just-name)))
+           (if verbose (bformat *debug-io* "-->C++ frame%N"))
+           (make-backtrace-frame :type :c
+                                 :return-address return-address
+                                 :raw-name backtrace-name
+                                 :print-name (or unmangled just-name)
+                                 :function-name (if unmangled
+                                                    (ensure-function-name unmangled)
+                                                    (ensure-function-name just-name))
+                                 :base-pointer base-pointer
+                                 :next-base-pointer next-base-pointer))))))
 
 ;;; Search for a backtrace frame that matches the shadow stack frame.
 ;;; The shadow stack frames are stored in the threads stack - so the
@@ -267,32 +225,36 @@ For C/C++ frames - return (list 'c-function name)."
 
 ;;; Return the backtrace as a list of backtrace-frame
 (defun backtrace-as-list (&optional verbose)
-  (let ((clib-backtrace (core:clib-backtrace-as-list))
-        (shadow-backtrace (core:shadow-backtrace-as-list))
-        result
-        prev-base-pointer)
-    (do* ((cur clib-backtrace (cdr cur))
-          (clib-frame (car cur) (car cur))
-          (next-clib-frame (cadr cur) (cadr cur)))
-         ((null next-clib-frame) nil)
-      (let ((base-pointer (third clib-frame)))
-        (when prev-base-pointer 
-          (let* ((address (first clib-frame))
-                 (line (second clib-frame))
-                 (name (extract-backtrace-frame-name line))
-                 (maybe-shadow-frame (search-for-matching-shadow-frame prev-base-pointer base-pointer shadow-backtrace))
-                 (entry (parse-frame address name prev-base-pointer base-pointer verbose maybe-shadow-frame)))
-            (push entry result)))
-        (setf prev-base-pointer base-pointer)))
-    (nreverse result)))
+  (let ((clib-backtrace (core:clib-backtrace-as-list)))
+    (dolist (frame clib-backtrace)
+      (let ((common-lisp-name (backtrace-frame-raw-name frame)))
+        (if (and common-lisp-name (search "^^" common-lisp-name))
+            (let* ((name-with-parts #+target-os-linux common-lisp-name
+                                    ;; fixme cracauer.  Find out what FreeBSD actually needs here
+                                    #+target-os-freebsd common-lisp-name
+                                    #+target-os-darwin (if (char= (char common-lisp-name 0) #\_)
+                                                           (subseq common-lisp-name 1 (length common-lisp-name)) ; strip preceeding "_"
+                                                         common-lisp-name))
+                   (parts (cmp:unescape-and-split-jit-name name-with-parts))
+                   (symbol-name (first parts))
+                   (package-name (second parts))
+                   (maybe-fn-or-specializers (third parts))
+                   (maybe-method (fourth parts))
+                   (name (intern symbol-name (or package-name :keyword)))
+                   (print-name (cond
+                                ((string= maybe-method "METHOD")
+                                 (format nil "(METHOD ~a ~a)" name maybe-fn-or-specializers))
+                                (t name))))
+              (setf (backtrace-frame-function-name frame) name
+                    (backtrace-frame-print-name frame) print-name))
+          (setf (backtrace-frame-function-name frame) common-lisp-name
+                (backtrace-frame-print-name frame) common-lisp-name))))
+    clib-backtrace))
+
 
 ;;; Get the backtrace and the shadow-backtrace and merge them
 (defun backtrace-with-arguments ()
-  (backtrace-as-list)
-  #+(or)(let ((ordered (backtrace-as-list))
-        (shadow-backtrace (core:shadow-backtrace-as-list)))
-    (attach-shadow-backtrace ordered shadow-backtrace)))
-
+  (backtrace-as-list))
 
 ;;; Extract just the Common Lisp backtrace frames
 ;;; starting from a frame that satisfies gather-start-trigger
@@ -306,26 +268,29 @@ is one way to eliminate frames that aren't interesting to the user.
 Set gather-all-frames to T and you can gather C++ and Common Lisp frames"
   (let ((frames (backtrace-with-arguments)))
     (flet ((gather-frames (start-trigger)
-             (let (result
-                   (state (if gather-start-trigger :skip-first-frames :gather))
-                   new-state)
-               (dolist (frame frames)
-                 (let ((func-name (backtrace-frame-function-name frame)))
-                   ;; State machine
-                   (setq new-state (cond
-                                     ((and (eq state :skip-first-frames)
-                                           start-trigger
-                                           (funcall start-trigger frame))
-                                      :gather)
-                                     (t state)))
-                   (when verbose
-                     (bformat t "-----state -> %s   new-state -> %s%N" state new-state)
-                     (bformat t "     frame: %s%N" frame))
-                   (setq state new-state)
-                   (when (and (eq state :gather) (or gather-all-frames (eq (backtrace-frame-type frame) :lisp)))
-                     (when verbose (bformat t "     PUSHED!%N"))
-                     (push frame result))))
-               (nreverse result))))
+                          (let (result
+                                (state (if start-trigger
+                                           :skip-first-frames
+                                         :gather)) ; If the start-trigger is NIL start gathering right away
+                                new-state)
+                            (dolist (frame frames)
+                              (let ((func-name (backtrace-frame-function-name frame)))
+                                ;; State machine
+                                (setq new-state (cond
+                                                 ((and (eq state :skip-first-frames)
+                                                       (funcall start-trigger frame))
+                                                  :gather)
+                                                 (t state)))
+                                (when verbose
+                                  (bformat t "-----state -> %s   new-state -> %s%N" state new-state)
+                                  (bformat t "     frame: %s%N" frame))
+                                (setq state new-state)
+                                (when (and (eq state :gather) (or gather-all-frames (eq (backtrace-frame-type frame) :lisp)))
+                                  (when verbose (bformat t "     PUSHED!%N"))
+                                  (push frame result))))
+                            (if result
+                                (nreverse result)
+                              frames))))
       (let ((frames (gather-frames gather-start-trigger)))
         (if frames
             frames
@@ -378,7 +343,7 @@ Set gather-all-frames to T and you can gather C++ and Common Lisp frames"
         (if arguments
             (progn
               (prin1 (prog1 index (incf index)) stream)
-              (princ ": (" stream)
+              (write-string ": (" stream)
               (princ name stream)
               (if (> (length arguments) 0)
                   (progn
@@ -390,7 +355,7 @@ Set gather-all-frames to T and you can gather C++ and Common Lisp frames"
               (princ ")" stream))
           (progn
             (prin1 (prog1 index (incf index)) stream)
-            (princ #\space stream)
+            (write-string ": " stream)
             (princ name stream)))
         (terpri stream)))))
 
@@ -418,3 +383,12 @@ Set gather-all-frames to T and you can gather C++ and Common Lisp frames"
 
 (export '(btcl bt btargs common-lisp-backtrace-frames
           backtrace-frame-function-name backtrace-frame-arguments))
+
+(defmacro with-dtrace-trigger (&body body)
+  `(unwind-protect
+        (progn
+          (core:trigger-dtrace-start
+           (lambda ()
+             ,@body)))
+     (core:trigger-dtrace-stop)))
+

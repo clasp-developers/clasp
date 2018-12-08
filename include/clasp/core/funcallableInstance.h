@@ -101,8 +101,6 @@ namespace core {
     int    _isgf;
     bool   _DebugOn;
   public:
-//    static FuncallableInstance_sp createClassUncollectable(gctools::Stamp is,Instance_sp metaClass, size_t number_of_slots, Creator_sp creator);
-    static Instance_sp create(Symbol_sp symbol,Instance_sp metaClass,Creator_sp creator);
   public:
     T_sp GFUN_NAME() const { return this->instanceRef(REF_GFUN_NAME); };
     T_sp GFUN_SPECIALIZERS() const { return this->instanceRef(REF_GFUN_SPECIALIZERS); };
@@ -151,7 +149,7 @@ namespace core {
     virtual size_t filePos() const { return 0; }
     virtual int lineNumber() const { return 0; }
     virtual int column() const { return 0; };
-    virtual LambdaListHandler_sp lambdaListHandler() const { HARD_IMPLEMENT_ME(); };
+    virtual T_sp lambdaListHandler() const { HARD_IMPLEMENT_ME(); };
   public: // The hard-coded indexes above are defined below to be used by Class
     void initializeSlots(gctools::Stamp is, size_t numberOfSlots);
     void initializeClassSlots(Creator_sp creator, gctools::Stamp class_stamp);

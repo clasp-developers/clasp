@@ -46,6 +46,7 @@ THE SOFTWARE.
 #include <clasp/gctools/gc_interface.h>
 #include <clasp/gctools/source_info.h>
 #include <clasp/gctools/gcFunctions.h>
+#include <clasp/mpip/claspMpi.h>
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/allClSymbols.h>
@@ -149,6 +150,10 @@ extern "C" void add_history(char *line);
 
 namespace core {
 
+
+bool global_Started = false;
+bool globalTheSystemIsUp = false;
+
 const int Lisp_O::MaxFunctionArguments = 64; //<! See ecl/src/c/main.d:163 ecl_make_cache(64,4096)
 const int Lisp_O::SingleDispatchMethodCacheSize = 1024 * 32;
 
@@ -183,6 +188,9 @@ Lisp_O::GCRoots::GCRoots() :
   _ActiveThreads(_Nil<T_O>()),
   _DefaultSpecialBindings(_Nil<T_O>()),
 #endif
+  _MpiEnabled(false),
+  _MpiRank(0),
+  _MpiSize(1),
   _SpecialForms(_Unbound<HashTableEq_O>()),
   _NullStream(_Nil<T_O>()),
   _ThePathnameTranslations(_Nil<T_O>()),
@@ -198,9 +206,6 @@ Lisp_O::Lisp_O() : _StackWarnSize(gctools::_global_stack_max_size * 0.9), // 6MB
                    _Bundle(NULL),
                    _DebugStream(NULL),
                    _SingleStepLevel(UndefinedUnsignedInt),
-                   _MpiEnabled(false),
-                   _MpiRank(0),
-                   _MpiSize(1),
                    _Interactive(true),
                    _BootClassTableIsValid(true),
                    _PathMax(CLASP_MAXPATHLEN) {
@@ -437,9 +442,9 @@ void monitor_message(const std::string& msg)
 }
 #endif
 void Lisp_O::setupMpi(bool mpiEnabled, int mpiRank, int mpiSize) {
-  this->_MpiEnabled = mpiEnabled;
-  this->_MpiRank = mpiRank;
-  this->_MpiSize = mpiSize;
+  this->_Roots._MpiEnabled = mpiEnabled;
+  this->_Roots._MpiRank = mpiRank;
+  this->_Roots._MpiSize = mpiSize;
 }
 
 #ifdef USE_REFCOUNT
@@ -657,7 +662,7 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
     
     Real_sp bits = gc::As<Real_sp>(clasp_make_fixnum(gc::fixnum_bits));
     Real_sp two = gc::As<Real_sp>(clasp_make_fixnum(2));
-    this->_Roots._IntegerOverflowAdjust = cl__expt(two, bits); // clasp_make_fixnum(2),clasp_make_fixnum(gc::fixnum_bits));
+    this->_Roots._IntegerOverflowAdjust = gc::As<Integer_sp>(cl__expt(two, bits)); // clasp_make_fixnum(2),clasp_make_fixnum(gc::fixnum_bits));
     core::getcwd(true);                                        // set *default-pathname-defaults*
   };
   //
@@ -677,6 +682,9 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
     _BLOCK_TRACE("Start printing symbols properly");
     this->_PrintSymbolsProperly = true;
   }
+  mpip::Mpi_O::initializeGlobals(_lisp);
+  global_Started = true;
+//  process_llvm_stackmaps();
 }
 
 /*! Get a Str8Ns buffer string from the BufferStr8NsPool.*/
@@ -791,7 +799,7 @@ void Lisp_O::remove_process(mp::Process_sp process) {
     dbg_lowLevelDescribe(this->_Roots._ActiveThreads);
 #endif
     while ((*cur).consp()) {
-      mp::Process_sp p = oCar(*cur);
+      mp::Process_sp p = gc::As<mp::Process_sp>(oCar(*cur));
 #ifdef DEBUG_ADD_PROCESS
       printf("        cur->%p   comparing to process: %s @%p\n", (void*)cur, _rep_(p).c_str(), (void*)p.raw_());
 #endif
@@ -905,7 +913,7 @@ Symbol_sp Lisp_O::defineSpecialOperator(const string &packageName, const string 
   string formName = lispify_symbol_name(rawFormName);
   Symbol_sp sym = _lisp->internWithPackageName(packageName, formName);
   sym->exportYourself();
-  sym->setf_symbolFunction(_lisp->_true());
+//  sym->setf_symbolFunction(_lisp->_true());
   SpecialForm_sp special = SpecialForm_O::create(sym, cb);
   if (this->_Roots._SpecialForms.unboundp()) {
     this->_Roots._SpecialForms = HashTableEq_O::create_default();
@@ -1057,7 +1065,7 @@ void Lisp_O::finishPackageSetup(const string &pkgname, list<string> const &nickn
   {
     ql::list sn;
     for ( auto name : usePackages ) {
-      Package_sp other = _lisp->findPackage(name,true);
+      Package_sp other = gc::As<Package_sp>(_lisp->findPackage(name,true));
       pkg->usePackage(other);
     }
   }
@@ -1138,6 +1146,13 @@ Package_sp Lisp_O::makePackage(const string &name, list<string> const &nicknames
 }
 
 T_sp Lisp_O::findPackage_no_lock(const string &name, bool errorp) const {
+  // Check local nicknames first.
+  // FIXME: This conses!
+  if (globalTheSystemIsUp) {
+    T_sp local = this->getCurrentPackage()->findPackageByLocalNickname(SimpleBaseString_O::make(name));
+    if (local.notnilp()) return local;
+  }
+  
   //        printf("%s:%d Lisp_O::findPackage name: %s\n", __FILE__, __LINE__, name.c_str());
   map<string, int>::const_iterator fi = this->_Roots._PackageNameIndexMap.find(name);
   if (fi == this->_Roots._PackageNameIndexMap.end()) {
@@ -1329,12 +1344,11 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], const CommandLine
 #else // _RELEASE_BUILD
   features = Cons_O::create(_lisp->internKeyword("RELEASE-BUILD"), features);
 #endif
-#ifdef USE_BOEHM
-#ifdef USE_CXX_DYNAMIC_CAST
-  features = Cons_O::create(_lisp->internKeyword("USE-BOEHMDC"), features);
-#else
-  features = Cons_O::create(_lisp->internKeyword("USE-BOEHM"), features);
+#ifdef USE_MPI
+  features = Cons_O::create(_lisp->internKeyword("USE-MPI"), features);
 #endif
+#ifdef USE_BOEHM
+  features = Cons_O::create(_lisp->internKeyword("USE-BOEHM"), features);
 #endif
 #ifdef USE_MPS
   // Informs CL that MPS is being used
@@ -1427,7 +1441,7 @@ T_mv Lisp_O::readEvalPrint(T_sp stream, T_sp environ, bool printResults, bool pr
             SIMPLE_ERROR(BF("*read-suppress* is true but the following expression was read: %s") % _rep_(expression));
           }
         }
-        BFORMAT_T(BF(";;--read-%s-------------\n#|\n%s\n----------|#\n") % suppress.c_str() % _rep_(expression));
+        write_bf_stream(BF(";;--read-%s-------------\n#|\n%s\n----------|#\n") % suppress.c_str() % _rep_(expression));
       }
       _BLOCK_TRACEF(BF("---REPL read[%s]") % expression->__repr__());
       if (cl__keywordp(expression)) {
@@ -1472,7 +1486,7 @@ T_mv Lisp_O::readEvalPrint(T_sp stream, T_sp environ, bool printResults, bool pr
 
 T_mv Lisp_O::readEvalPrintString(const string &code, T_sp environ, bool printResults) {
   _OF();
-  StringInputStream_sp sin = StringInputStream_O::make(code);
+  StringInputStream_sp sin = gc::As_unsafe<StringInputStream_sp>(StringInputStream_O::make(code));
   T_mv result = this->readEvalPrint(sin, environ, printResults, false);
   cl__close(sin);
   return result;
@@ -1746,7 +1760,7 @@ CL_DEFUN T_sp cl__find_class(Symbol_sp symbol, bool errorp, T_sp env) {
   }
   if (!foundp) {
     if (errorp) {
-      SIMPLE_ERROR(BF("Could not find class %s") % _rep_(symbol));
+      ERROR(ext::_sym_undefinedClass, Cons_O::createList(kw::_sym_name, symbol));
     }
     return _Nil<T_O>();
   }
@@ -2055,7 +2069,7 @@ CL_DEFUN T_sp cl__sort(List_sp sequence, T_sp predicate, T_sp key) {
     return _Nil<T_O>();
   fillVec0FromCons(sorted, sequence);
   LOG(BF("Sort function: %s") % _rep_(sortProc));
-  OrderBySortFunction orderer(sortProc,key);
+  OrderBySortFunction orderer(sortProc,gc::As<Function_sp>(key));
 //  sort::quickSort(sorted.begin(), sorted.end(), orderer);
   sort::quickSortVec0(sorted,0,sorted.size(),orderer);
   List_sp result = asCons(sorted);
@@ -2136,7 +2150,12 @@ CL_DECLARE();
 CL_DOCSTRING("See CLHS: intern");
 CL_DEFUN T_mv cl__intern(String_sp symbol_name, T_sp package_desig) {
   Package_sp package = coerce::packageDesignator(package_desig);
-  return (package->intern(symbol_name));
+  if (gc::IsA<StrNs_sp>(symbol_name)) {
+    return package->intern(gc::As_unsafe<StrNs_sp>(symbol_name)->asMinimalSimpleString());
+  } else if (gc::IsA<SimpleString_sp>(symbol_name)) {
+    return package->intern(gc::As_unsafe<SimpleString_sp>(symbol_name));
+  }
+  TYPE_ERROR(symbol_name,cl::_sym_string);
 }
 
 CL_LAMBDA(continue-string datum initializers);
@@ -2168,7 +2187,7 @@ CL_DOCSTRING("invokeInternalDebugger");
     LispDebugger debugger;
     debugger.invoke();
   } else {
-    BFORMAT_T(BF("%s:%d core__invoke_internal_debugger --> %s") % __FILE__ % __LINE__ % _rep_(condition).c_str());
+    write_bf_stream(BF("%s:%d core__invoke_internal_debugger --> %s") % __FILE__ % __LINE__ % _rep_(condition).c_str());
     LispDebugger debugger(condition);
     debugger.invoke();
   }
@@ -2182,6 +2201,7 @@ CL_DEFUN void core__invoke_internal_debugger_from_gdb() {
   eval::funcall(_sym_invokeInternalDebugger);
   SIMPLE_ERROR(BF("This should never happen"));
 };
+
 
 CL_LAMBDA(datum &rest arguments);
 CL_DECLARE((optimize (debug 3)));
@@ -2272,7 +2292,7 @@ void Lisp_O::switchToClassNameHashTable() {
 }
 
 CL_LAMBDA(gf-symbol &optional errorp);
-CL_DOCSTRING("Lookup a single dispatch generic function. If errorp is truen and the generic function isn't found throw an exception");
+CL_DOCSTRING("Lookup a single dispatch generic function. If errorp is true and the generic function isn't found throw an exception - otherwise return _Unbound<SingleDispatchGenericFunctionClosure_O>()");
 CL_LISPIFY_NAME(find_single_dispatch_generic_function);
 CL_DEFUN SingleDispatchGenericFunctionClosure_sp Lisp_O::find_single_dispatch_generic_function(T_sp gfName, bool errorp) {
   WITH_READ_LOCK(_lisp->_Roots._SingleDispatchGenericFunctionHashTableEqualMutex);
@@ -2281,7 +2301,7 @@ CL_DEFUN SingleDispatchGenericFunctionClosure_sp Lisp_O::find_single_dispatch_ge
     if (errorp) {
       SIMPLE_ERROR(BF("No single-dispatch-generic-function named %s") % _rep_(gfName));
     }
-    return _Nil<T_O>();
+    return _Unbound<SingleDispatchGenericFunctionClosure_O>();
   }
   return gc::As<SingleDispatchGenericFunctionClosure_sp>(tfn);
 }
@@ -2438,7 +2458,7 @@ void Lisp_O::dump_apropos(const char *part) const {
 void Lisp_O::dump_backtrace(int numcol) {
   _OF();
   string bt = backtrace_as_string();
-  BFORMAT_T(BF("%s") % bt);
+  write_bf_stream(BF("%s") % bt);
 }
 
 
@@ -2475,7 +2495,9 @@ int Lisp_O::run() {
       getchar();
     }
   }
-  Package_sp cluser = _lisp->findPackage("COMMON-LISP-USER");
+  // The system is fully up now
+  globalTheSystemIsUp = true;
+  Package_sp cluser = gc::As<Package_sp>(_lisp->findPackage("COMMON-LISP-USER"));
   cl::_sym_STARpackageSTAR->defparameter(cluser);
   try {
     if (!this->_IgnoreInitImage) {

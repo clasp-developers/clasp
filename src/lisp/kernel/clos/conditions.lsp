@@ -152,8 +152,9 @@
 	     (when test
 	       (setq keywords (list :TEST-FUNCTION `#',test)))				    
 	     (when interactive
-	       (setq keywords (list :INTERACTIVE-FUNCTION
-				    `#',interactive)))
+	       (setq keywords (list* :INTERACTIVE-FUNCTION
+                                     `#',interactive
+                                     keywords)))
 	     (when report
 	       (setq keywords (list* :REPORT-FUNCTION
 				     (if (stringp report)
@@ -575,8 +576,8 @@ returns with NIL."
    (type :initarg :type :initform nil :reader ext:stack-overflow-type))
   (:REPORT
    (lambda (condition stream)
-     (let* ((type (ext::stack-overflow-type condition))
-	    (size (ext::stack-overflow-size condition)))
+     (let* ((type (ext:stack-overflow-type condition))
+	    (size (ext:stack-overflow-size condition)))
        (if size
 	   (format stream "~A overflow at size ~D. Stack can probably be resized."
 		   type size)
@@ -700,6 +701,12 @@ memory limits before executing the program again."))
   (:REPORT (lambda (condition stream)
 	     (format stream "The function ~S is undefined."
 		     (cell-error-name condition)))))
+
+(define-condition ext:undefined-class (cell-error)
+  ()
+  (:report (lambda (condition stream)
+             (format stream "Could not find the class ~s."
+                     (cell-error-name condition)))))
 
 (define-condition arithmetic-error (error)
   ((operation :INITARG :OPERATION :READER arithmetic-error-operation)
@@ -847,9 +854,6 @@ memory limits before executing the program again."))
 
 (defvar *assert-failure-test-form* nil)
 
-(eval-when (:load-toplevel :compile-toplevel :execute)
-  (export 'ext::assert-error (find-package :ext)))
-
 (define-condition ext:assert-error (simple-error) ())
 
 (defun assert-failure (test-form &optional place-names values
@@ -883,6 +887,7 @@ memory limits before executing the program again."))
         (core:btcl)
         (core:exit))))
 
+;;; This is a redefinition, clobbering core__universal_error_handler in lisp.cc.
 (defun sys::universal-error-handler (continue-string datum args)
   "Args: (error-name continuable-p function-name
        continue-format-string error-format-string

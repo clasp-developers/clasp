@@ -75,7 +75,7 @@
        (format *debug-io* "~d: ~S~&" idx spec)))
 
 ;;; %LISP-TYPE->TYPE-SPEC
-(defgeneric %lisp-type->lisp-name (lisp-type-kw))
+(defgeneric %lisp-type->type-spec (lisp-type-kw))
 
 (defmacro generate-type-spec-accessor-functions ()
   `(progn
@@ -124,7 +124,7 @@
 (defmethod %foreign-type-alignment (lisp-type-kw)
   (error "Unknown FLI lisp type ~S - cannot determine foreign alignment." lisp-type-kw))
 
-;;; === T R A N S L A T O R    S U P O R T ===
+;;; === T R A N S L A T O R    S U P P O R T ===
 
 (defgeneric %lisp-type->llvm-type-symbol-fn (lisp-type-kw))
 
@@ -260,6 +260,18 @@
   (declare (ignore ptr offset value))
   (error "Unknown lisp type ~S for %mem-set." type))
 
+;;; === S A T I A T I O N ===
+(defmacro generate-satiation ()
+  (let ((to-satiate
+          (loop for spec across *foreign-type-spec-table*
+                when spec
+                  collect `'((eql ,(%lisp-symbol spec))))))
+    `(eval-when (:load-toplevel) ; don't need to do it while loading as source
+       (clos:satiate #'%lisp-type->type-spec ,@to-satiate)
+       (clos:satiate #'%foreign-type-size ,@to-satiate)
+       (clos:satiate #'%foreign-type-alignment ,@to-satiate)
+       (clos:satiate #'%lisp-type->llvm-type-symbol-fn ,@to-satiate))))
+
 ;;; === F O R E I G N   F U N C T I O N  C A L L I N G ===
 
 ;;; This code has been invented on-the-fly by drmeister on 2016-10-13 ...
@@ -367,12 +379,13 @@
 ;;; F L I   I N I T I A L I Z A T I O N
 
 (generate-type-spec-accessor-functions)
-(init-translators)
 (generate-llvm-type-symbol-fn-accessor-functions)
 (generate-mem-ref-accessor-functions)
 (generate-mem-set-accessor-functions)
 (generate-foreign-type-size-functions)
 (generate-foreign-type-alignment-functions)
+(generate-satiation)
+(init-translators)
 
 ;;;----------------------------------------------------------------------------
 ;;;----------------------------------------------------------------------------

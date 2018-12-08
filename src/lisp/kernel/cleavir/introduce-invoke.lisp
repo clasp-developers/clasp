@@ -4,18 +4,14 @@
   ((%enter-instruction :initarg :enter-instruction :accessor enter-instruction)
    ;; a list of CATCH-INSTRUCTIONs, i.e. nonlocal entrances, in the function.
    (%catches :initform nil :accessor catches)
-   ;; The lexical location that stores the frame marker.
-   (%frame-marker :accessor frame-marker)
+   ;; The LLVM Value for the frame marker.
+   (%frame-value :accessor frame-value)
    ;; Whether the function has high enough optimize debug to save arguments.
    (%debug-on :initform nil :accessor debug-on)
    ;; Used in several places, unfortunately miscellaneously.
    (%calling-convention :accessor calling-convention)
    ;; Used for source tracking.
    (%metadata :accessor metadata)))
-
-;;; Abstraction for elsewhere
-(defun catches-p (function-info)
-  (not (null (catches function-info))))
 
 (defun make-catch-map (initial-instruction)
   (let ((result (make-hash-table :test #'eq)))
@@ -57,8 +53,7 @@
          enter)
         (loop for catchn from 0 for catch in catches
               do (change-class catch 'cc-mir:assign-catch-instruction
-                               :inputs (list frame) :go-index catchn))
-        (setf (frame-marker info) frame)))))
+                               :inputs (list frame) :go-index catchn))))))
 
 (defun lower-catches (function-info-map)
   (maphash #'lower-enter-catches function-info-map))

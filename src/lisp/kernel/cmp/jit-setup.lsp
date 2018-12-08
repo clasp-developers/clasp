@@ -74,20 +74,22 @@
         (unwind-protect
              (llvm-sys:dump-module module fout)
           (close fout)))
-      (llvm-sys:write-bitcode-to-file module output-path)))
+      (llvm-sys:write-bitcode-to-file module (namestring output-path))))
 
 (defun load-bitcode (filename)
   (if *use-human-readable-bitcode*
       (let* ((input-name (make-pathname :type "ll" :defaults (pathname filename))))
         (llvm-sys:load-bitcode-ll input-name))
-      (llvm-sys:load-bitcode filename)))
+      (let ((input-name (make-pathname :type "bc" :defaults (pathname filename))))
+        (llvm-sys:load-bitcode input-name))))
 
 (defun parse-bitcode (filename context)
   ;; Load a module from a bitcode or .ll file
   (if *use-human-readable-bitcode*
       (let ((input-name (make-pathname :type "ll" :defaults (pathname filename))))
         (llvm-sys:parse-irfile input-name context))
-      (llvm-sys:parse-bitcode-file filename context)))
+      (let ((input-name (make-pathname :type "bc" :defaults (pathname filename))))
+        (llvm-sys:parse-bitcode-file input-name context))))
 
 (export '(write-bitcode load-bitcode parse-bitcode))
 
@@ -133,7 +135,7 @@ Return the module and the global variable that represents the load-time-value-ho
 
 (defvar *run-time-module* nil)
 
-(defvar *the-module* nil "This stores the module into which compile puts its stuff")
+(defvar *the-module*) ; nil "This stores the module into which compile puts its stuff")
 (defvar *the-function-pass-manager* nil "the function-pass-manager applied to runtime functions")
 
 
@@ -559,6 +561,7 @@ The passed module is modified as a side-effect."
     (with-track-llvm-time
         (link-builtins-module module)
       (optimize-module-for-compile-file module)
+      #+(or)(remove-llvm.used-if-exists module)
       (llvm-sys:remove-always-inline-functions module))))
 
 
@@ -567,6 +570,7 @@ The passed module is modified as a side-effect."
     (with-track-llvm-time
         (link-fastgf-module module)
       (optimize-module-for-compile-file module)
+      #+(or)(remove-llvm.used-if-exists module)
       (llvm-sys:remove-always-inline-functions module))))
 
 (defun switch-always-inline-to-inline (module)
@@ -644,9 +648,9 @@ The passed module is modified as a side-effect."
     (let ((module original-module))
       ;; (irc-verify-module-safe module)
       (let ((jit-engine (jit-engine))
-            (repl-name (llvm-sys:get-name main-fn))
-            (startup-name (llvm-sys:get-name startup-fn))
-            (shutdown-name (llvm-sys:get-name shutdown-fn)))
+            (repl-name (if main-fn (llvm-sys:get-name main-fn) ""))
+            (startup-name (if startup-fn (llvm-sys:get-name startup-fn) ""))
+            (shutdown-name (if shutdown-fn (llvm-sys:get-name shutdown-fn) "")))
         (with-track-llvm-time
             (unwind-protect
                  (progn
@@ -659,5 +663,16 @@ The passed module is modified as a side-effect."
     (jit-add-module-return-function original-module dispatch-fn startup-fn shutdown-fn literals-list :dispatch))
      
   (defun jit-remove-module (handle)
-    (llvm-sys:clasp-jit-remove-module (jit-engine) handle)))
+    (llvm-sys:clasp-jit-remove-module (jit-engine) handle))
+  (defun jit-kernel-module (original-module)
+    (let* ((module (llvm-sys:clone-module original-module))
+           (all-functions (llvm-sys:module-get-function-list module))
+           run-all-function)
+      (dolist (f all-functions)
+        (if (string= (llvm-sys:get-name f) "RUN-ALL")
+            (setf run-all-function f)))
+      (let ((main-fn (add-main-function module run-all-function)))
+        (let ((run (jit-add-module-return-function module main-fn nil nil nil)))
+          (funcall run)
+          )))))
 

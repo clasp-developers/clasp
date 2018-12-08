@@ -1,5 +1,6 @@
 (in-package :cmp)
 (export '(
+          with-interpreter
           *debug-link-options* ;; A list of strings to inject into link commands
           *compile-file-debug-dump-module*  ;; Dump intermediate modules
           *compile-debug-dump-module*  ;; Dump intermediate modules
@@ -78,7 +79,6 @@
           calling-convention-args.va-arg
           calling-convention-va-list*
           calling-convention-register-save-area*
-          calling-convention-invocation-history-frame*
           calling-convention-nargs
           calling-convention-register-args
           calling-convention-write-registers-to-multiple-values
@@ -114,6 +114,7 @@
           safe-system
           jit-constant-uintptr_t
           irc-int-to-ptr
+          irc-ptr-to-int
           irc-verify-module-safe
           irc-verify-function
           *suppress-llvm-output*
@@ -164,6 +165,7 @@
           jit-constant-i8
           jit-constant-i32
           jit-constant-i64
+          *default-function-attributes*
           ensure-jit-constant-i64
           jit-constant-size_t
           jit-constant-unique-string-ptr
@@ -179,6 +181,7 @@
           walk-form-for-source-info
           with-begin-end-catch
           preserve-exception-info
+          *dbg-generate-dwarf*
           with-new-function
           with-dbg-function
           with-dbg-lexical-block
@@ -253,7 +256,8 @@
           number-of-entries
           reference-literal
           load-time-reference-literal
-          codegen-rtv
+          codegen-rtv-bclasp
+          codegen-rtv-cclasp
           codegen-literal
           codegen-quote
           compile-reference-to-literal

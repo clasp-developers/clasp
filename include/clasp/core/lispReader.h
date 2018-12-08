@@ -42,9 +42,9 @@ extern T_sp read_lisp_object(T_sp, bool eofErrorP, T_sp eofValue, bool recursive
 
  Character_sp lexeme_character(T_sp lexeme);
  List_sp collect_lexemes(/*Character_sp*/ T_sp tc, T_sp sin);
- void make_str_preserve_case(StrWNs_sp sout, List_sp cur_char);
- void make_str_upcase(StrWNs_sp sout, List_sp cur_char);
- void make_str(StrWNs_sp sout, List_sp cur_char);
+ void make_str_preserve_case(StrNs_sp sout, List_sp cur_char);
+ void make_str_upcase(StrNs_sp sout, List_sp cur_char);
+ void make_str(StrNs_sp sout, List_sp cur_char);
  
  
 extern void exposeCore_lisp_reader();

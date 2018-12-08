@@ -60,18 +60,18 @@ Integer_sp clasp_integer_divide(Integer_sp x, Integer_sp y) {
     if (ty == number_Fixnum) {
       if (y.unsafe_fixnum() == 0)
         ERROR_DIVISION_BY_ZERO(x, y);
-      return (clasp_make_fixnum(clasp_fixnum(x) / clasp_fixnum(y)));
+      return (clasp_make_fixnum(x.unsafe_fixnum() / y.unsafe_fixnum()));
     } else if (ty == number_Bignum) {
-      return _clasp_fix_divided_by_big(clasp_fixnum(x), gc::As<Bignum_sp>(y)->get());
+      return _clasp_fix_divided_by_big(x.unsafe_fixnum(), gc::As_unsafe<Bignum_sp>(y)->get());
     } else {
       ERROR_WRONG_TYPE_NTH_ARG(core::_sym_integer_divide, 2, y, cl::_sym_Integer_O);
     }
   }
   if (tx == number_Bignum) {
     if (ty == number_Bignum) {
-      return _clasp_big_divided_by_big(gc::As<Bignum_sp>(x)->get(), gc::As<Bignum_sp>(y)->get());
+      return _clasp_big_divided_by_big(gc::As_unsafe<Bignum_sp>(x)->get(), gc::As_unsafe<Bignum_sp>(y)->get());
     } else if (ty == number_Fixnum) {
-      return _clasp_big_divided_by_fix(gc::As<Bignum_sp>(x)->get(), clasp_fixnum(y));
+      return _clasp_big_divided_by_fix(gc::As_unsafe<Bignum_sp>(x)->get(), y.unsafe_fixnum());
     } else {
       QERROR_WRONG_TYPE_NTH_ARG(2, y, cl::_sym_Integer_O);
     }
@@ -102,7 +102,7 @@ CL_DEFUN Integer_sp cl__gcd(List_sp nums) {
 gc::Fixnum gcd(gc::Fixnum a, gc::Fixnum b)
 {
     if (a == 0)
-      return (abs(b));
+      return (std::abs(b));
     return gcd(b % a, a);
 }
 
@@ -111,7 +111,7 @@ Integer_sp clasp_gcd(Integer_sp x, Integer_sp y, int yidx) {
   case number_Fixnum: {
     if (clasp_t_of(y) == number_Fixnum)
       return clasp_make_fixnum(gcd(x.unsafe_fixnum(), y.unsafe_fixnum()));
-    Bignum_sp big(Bignum_O::create(clasp_fixnum(x)));
+    Bignum_sp big(Bignum_O::create(x.unsafe_fixnum()));
     x = big;
   }
   case number_Bignum:
@@ -121,7 +121,7 @@ Integer_sp clasp_gcd(Integer_sp x, Integer_sp y, int yidx) {
   }
   switch (clasp_t_of(y)) {
   case number_Fixnum: {
-    Bignum_sp big(Bignum_O::create(clasp_fixnum(y)));
+    Bignum_sp big(Bignum_O::create(y.unsafe_fixnum()));
     y = big;
   }
   case number_Bignum:
@@ -129,7 +129,7 @@ Integer_sp clasp_gcd(Integer_sp x, Integer_sp y, int yidx) {
   default:
     QERROR_WRONG_TYPE_NTH_ARG(1 + yidx, y, cl::_sym_Integer_O);
   }
-  Bignum_sp temp = _clasp_big_gcd(gc::As<Bignum_sp>(x), gc::As<Bignum_sp>(y));
+  Bignum_sp temp = gc::As<Bignum_sp>(_clasp_big_gcd(gc::As<Bignum_sp>(x), gc::As<Bignum_sp>(y)));
   if (temp->fits_sint_p())
     return clasp_make_fixnum(temp->as_int());
   else return temp;                                 

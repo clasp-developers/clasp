@@ -221,7 +221,7 @@ clasp-cleavir::*saved-compile-file-info*
             until (eq cst :eof)
             collect cst))))
 
-(trace eclector.concrete-syntax-tree:source-position)
+(trace eclector.parse-result:source-position)
 (trace eclector.reader:source-position)
 (trace cleavir-cst-to-ast:convert-code)
 (trace cleavir-cst-to-ast:convert)

@@ -198,6 +198,38 @@ void startup_functions_invoke()
 }
 
 
+}
+
+extern "C" {
+
+NOINLINE void start_dtrace() {
+  printf("%s:%d start_dtrace\n", __FILE__, __LINE__ );
+  // Do nothing
+};
+
+NOINLINE void stop_dtrace() {
+  printf("%s:%d stop_dtrace\n", __FILE__, __LINE__ );
+  // do nothing
+}
+}
+
+namespace core {
+
+NOINLINE CL_DEFUN T_mv core__trigger_dtrace_start(T_sp closure)
+{
+  start_dtrace();
+  return eval::funcall(closure);
+}
+
+
+NOINLINE CL_DEFUN T_sp core__trigger_dtrace_stop()
+{
+  stop_dtrace();
+  return _Nil<T_O>();
+}
+
+  
+
 
 CL_DEFUN void core__startup_functions_invoke()
 {
@@ -267,6 +299,9 @@ CL_DEFUN Fixnum_sp core__test_tagged_cast(Fixnum_sp pow2) __attribute__((optnone
   for (i = 0; i < times; ++i) {
     f(env);
     Environment_sp e = env.asOrNull<Environment_O>();
+    if (!e) {
+      SIMPLE_ERROR(BF("e is NULL!"));
+    }
     v += f(e);
   }
   return Integer_O::create(v);
@@ -383,7 +418,7 @@ CL_DEFUN T_mv core__load_binary(T_sp pathDesig, T_sp verbose, T_sp print, T_sp e
     goto LOAD;
   SIMPLE_ERROR(BF("Could not find bundle %s") % _rep_(pathDesig));
 LOAD:
-  String_sp nameStr = cl__namestring(cl__probe_file(path));
+  String_sp nameStr = gc::As<String_sp>(cl__namestring(cl__probe_file(path)));
   string name = nameStr->get();
 
   /* Look up the initialization function. */
@@ -396,12 +431,7 @@ LOAD:
 
   int mode = RTLD_NOW | RTLD_GLOBAL; // | RTLD_FIRST;
   // Check if we already have this dynamic library loaded
-  map<string, void *>::iterator handleIt = _lisp->openDynamicLibraryHandles().find(name);
-  if (handleIt != _lisp->openDynamicLibraryHandles().end()) {
-    dlclose(handleIt->second);
-    //	    printf("%s:%d Closing the existing dynamic library %s\n", __FILE__, __LINE__, name.c_str());
-    _lisp->openDynamicLibraryHandles().erase(handleIt);
-  }
+  bool handleIt = if_dynamic_library_loaded_remove(name);
   //	printf("%s:%d Loading dynamic library: %s\n", __FILE__, __LINE__, name.c_str());
   void *handle = dlopen(name.c_str(), mode);
   if (handle == NULL) {
@@ -409,7 +439,7 @@ LOAD:
     SIMPLE_ERROR(BF("Error in dlopen: %s") % error);
     //    return (Values(_Nil<T_O>(), SimpleBaseString_O::make(error)));
   }
-  _lisp->openDynamicLibraryHandles()[name] = handle;
+//  add_dynamic_library_handle(name,handle,"_init");
   if (startup_functions_are_waiting()) {
     startup_functions_invoke();
   } else {
@@ -417,6 +447,7 @@ LOAD:
   }
   T_mv result;
   cc_invoke_startup_functions();
+//  process_llvm_stackmaps();
   return (Values(Pointer_O::create(handle), _Nil<T_O>()));
 };
 
@@ -601,8 +632,8 @@ CL_DEFUN void core__call_dl_main_function(Pointer_sp addr) {
 }
 
 CL_DOCSTRING("(call dladdr with the address and return nil if not found or the contents of the Dl_info structure as multiple values)");
-CL_DEFUN T_mv core__dladdr(Integer_sp addr) {
-  uint64_t val = clasp_to_uint64(addr);
+CL_DEFUN T_mv core__dladdr(Pointer_sp addr) {
+  uint64_t val = (uint64_t)addr->ptr();
   void *ptr = (void *)val;
   Dl_info info;
   int ret = dladdr(ptr, &info);
@@ -783,16 +814,13 @@ CL_DECLARE();
 CL_DOCSTRING("multipleValueFuncall");
 CL_DEFUN T_mv core__multiple_value_funcall(T_sp funcDesignator, List_sp functions) {
   Function_sp fmv = coerce::functionDesignator(funcDesignator);
-  Closure_sp func = fmv.asOrNull<Closure_O>();
-  ASSERT(func);
-  MAKE_STACK_FRAME(frame, func.raw_(), MultipleValues::MultipleValuesLimit);
+  MAKE_STACK_FRAME(frame, fmv.raw_(), MultipleValues::MultipleValuesLimit);
   size_t numArgs = 0;
   size_t idx = 0;
   MultipleValues& mv = lisp_multipleValues();
   for (auto cur : functions) {
-    Function_sp func = gc::As<Function_sp>(oCar(cur));
-    T_mv result = (func->entry.load())(LCC_PASS_ARGS0_ELLIPSIS(func.raw_()));
-//    T_mv result = eval::funcall(func);
+    Function_sp tfunc = gc::As<Function_sp>(oCar(cur));
+    T_mv result = (tfunc->entry.load())(LCC_PASS_ARGS0_ELLIPSIS(tfunc.raw_()));
     ASSERT(idx < MultipleValues::MultipleValuesLimit);
     if (result.number_of_values() > 0  ) {
         (*frame)[idx] = result.raw_();
@@ -807,7 +835,7 @@ CL_DEFUN T_mv core__multiple_value_funcall(T_sp funcDesignator, List_sp function
   frame->set_number_of_arguments(idx);
   Vaslist valist_s(frame);
   VaList_sp args(&valist_s);
-  return funcall_consume_valist_<Closure_O>(func.tagged_(),args);
+  return funcall_consume_valist_<Function_O>(fmv.tagged_(),args);
 }
 
 CL_LAMBDA(func1 func2);
@@ -831,9 +859,7 @@ CL_DEFUN T_mv core__catch_function(T_sp tag, Function_sp thunk) {
   T_mv result;
   int frame = my_thread->exceptionStack().push(CatchFrame, tag);
   try {
-    core::Closure_sp closure = thunk.asOrNull<Closure_O>();
-    ASSERT(closure);
-    result = closure->entry.load()(LCC_PASS_ARGS0_ELLIPSIS(closure.raw_()));
+    result = thunk->entry.load()(LCC_PASS_ARGS0_ELLIPSIS(thunk.raw_()));
   } catch (CatchThrow &catchThrow) {
     if (catchThrow.getFrame() != frame) {
       throw catchThrow;

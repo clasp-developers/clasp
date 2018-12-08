@@ -76,3 +76,29 @@
     static const char* /*std::string*/ CurrentPkg = z;     \
   }
 #endif
+
+// Define a translator for the enum
+#define CL_ENUM_TRANSLATOR(_sym_,_type_) \
+namespace translate { \
+template <> struct to_object<_type_> \
+{								 \
+  typedef	_type_	GivenType;	 \
+  static core::T_sp convert(const GivenType& val) \
+  {_G(); \
+    core::SymbolToEnumConverter_sp converter = _sym_->symbolValue().as<core::SymbolToEnumConverter_O>(); \
+    return (converter->symbolForEnum(val)); \
+  } \
+}; \
+template <> \
+struct from_object<_type_> \
+{								 \
+  typedef	_type_ 	ExpectedType; \
+  typedef	ExpectedType 	DeclareType; \
+  DeclareType _v; \
+  from_object(gctools::smart_ptr<core::T_O> o) { \
+    core::SymbolToEnumConverter_sp converter = _sym_->symbolValue().as<core::SymbolToEnumConverter_O>(); \
+    _v = converter->enumForSymbol<_type_>(o.as<core::Symbol_O>()); \
+  } \
+}; \
+};
+

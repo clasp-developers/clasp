@@ -204,6 +204,8 @@ namespace core {
 
 
 ThreadLocalState::ThreadLocalState() :
+  _stackmap(0),
+  _stackmap_size(0),
 _PendingInterrupts(_Nil<core::T_O>())
 #ifdef DEBUG_RECURSIVE_ALLOCATIONS
   , _RecursiveAllocationCounter(0)
@@ -237,8 +239,8 @@ void ThreadLocalState::initialize_thread(mp::Process_sp process, bool initialize
   this->_Bindings.reserve(1024);
   this->_Process = process;
   process->_ThreadInfo = this;
-  this->_BFormatStringOutputStream = clasp_make_string_output_stream();
-  this->_WriteToStringOutputStream = clasp_make_string_output_stream();
+  this->_BFormatStringOutputStream = gc::As<StringOutputStream_sp>(clasp_make_string_output_stream());
+  this->_WriteToStringOutputStream = gc::As<StringOutputStream_sp>(clasp_make_string_output_stream());
   this->_BignumRegister0 = Bignum_O::create( (gc::Fixnum) 0);
   this->_BignumRegister1 = Bignum_O::create( (gc::Fixnum) 0);
   this->_BignumRegister2 = Bignum_O::create( (gc::Fixnum) 0);

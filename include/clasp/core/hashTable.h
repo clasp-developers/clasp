@@ -109,18 +109,11 @@ namespace core {
     virtual bool equalp(T_sp other) const;
 
   /*! See CLHS */
-    CL_LISPIFY_NAME("hash-table-test");
-    CL_DEFMETHOD   virtual T_sp hashTableTest() const { SUBIMP(); };
+    virtual T_sp hashTableTest() const { SUBIMP(); };
 
   /*! Return a count of the number of keys */
     uint hashTableCount() const;
     size_t size() { return this->hashTableCount(); };
-
-    virtual Number_sp hashTableRehashSize() const;
-
-    double hashTableRehashThreshold() const;
-
-    uint hashTableSize() const;
 
     virtual gc::Fixnum sxhashKey(T_sp key, gc::Fixnum bound, bool willAddKey) const;
     gc::Fixnum safe_sxhashKey(T_sp key, gc::Fixnum bound, bool willAddKey ) const {

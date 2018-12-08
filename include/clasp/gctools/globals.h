@@ -29,16 +29,18 @@ THE SOFTWARE.
 #define gctools_globals_H
 
 namespace gctools {
+#define NUMBER_OF_CORE_SYMBOLS 5
+extern core::Symbol_O* global_core_symbols[];
 /*! Tagged pointer to the global nil */
-extern core::Symbol_O *global_tagged_Symbol_OP_nil;
-/*! Tagged pointer to the global UNBOUND */
-extern core::Symbol_O *global_tagged_Symbol_OP_unbound;
+extern core::Symbol_O*& global_tagged_Symbol_OP_nil;
+/*! Tagged pointer tothe global UNBOUND */
+extern core::Symbol_O*& global_tagged_Symbol_OP_unbound;
  /*! No thread local binding */
-extern core::Symbol_O *global_tagged_Symbol_OP_no_thread_local_binding;
+extern core::Symbol_O*& global_tagged_Symbol_OP_no_thread_local_binding;
 /*! Tagged pointer to the global DELETED - used in weak hash tables */
-extern core::Symbol_O *global_tagged_Symbol_OP_deleted;
+extern core::Symbol_O*& global_tagged_Symbol_OP_deleted;
 /*! Tagged pointer to the global SAME-AS-KEY - used in weak hash tables */
-extern core::Symbol_O *global_tagged_Symbol_OP_sameAsKey;
+extern core::Symbol_O*& global_tagged_Symbol_OP_sameAsKey;
 };
 
 #endif

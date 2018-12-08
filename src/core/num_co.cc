@@ -185,14 +185,14 @@ Real_mv clasp_floor1(Real_sp x) {
     break;
   }
   case number_SingleFloat: {
-    float d = clasp_single_float(x);
+    float d = x.unsafe_single_float();
     float y = floorf(d);
     v0 = _clasp_float_to_integer(y);
     v1 = clasp_make_single_float(d - y);
     break;
   }
   case number_DoubleFloat: {
-    double d = clasp_double_float(x);
+    double d = gc::As<DoubleFloat_sp>(x)->get();
     double y = floor(d);
     v0 = _clasp_double_to_integer(y);
     v1 = clasp_make_double_float(d - y);
@@ -215,7 +215,8 @@ Real_mv clasp_floor1(Real_sp x) {
 
 Real_mv clasp_floor2(Real_sp x, Real_sp y) {
   //	const cl_env_ptr the_env = clasp_process_env();
-  Real_sp v0, v1;
+  Real_sp v0;
+  Number_sp v1;
   NumberType ty;
   ty = clasp_t_of(y);
   if (UNLIKELY(!CLASP_REAL_TYPE_P(y))) {
@@ -225,7 +226,8 @@ Real_mv clasp_floor2(Real_sp x, Real_sp y) {
   case number_Fixnum:
     switch (ty) {
     case number_Fixnum: { /* FIX / FIX */
-      Fixnum a = clasp_fixnum(x), b = clasp_fixnum(y);
+      Fixnum a = x.unsafe_fixnum();
+      Fixnum b = y.unsafe_fixnum();
       Fixnum q = a / b, r = a % b;
       if ((r ^ b) < 0 && r) { /* opposite sign and some remainder*/
         v0 = clasp_make_fixnum(q - 1);
@@ -243,35 +245,37 @@ Real_mv clasp_floor2(Real_sp x, Real_sp y) {
  *	x = MOST_NEGATIVE_FIXNUM
  *    y = - MOST_NEGATIVE_FIXNUM
  */
-      Bignum_sp bx(Bignum_O::create(clasp_fixnum(x)));
+      Bignum_sp bx(Bignum_O::create(x.unsafe_fixnum()));
       //		CLASP_WITH_TEMP_BIGNUM(bx,4);
-      //		_clasp_big_set_fixnum(bx, clasp_fixnum(x));
-      Bignum_sp by = gc::As<Bignum_sp>(y);
-      v0 = _clasp_big_floor(bx, by, &v1);
+      //		_clasp_big_set_fixnum(bx, x.unsafe_fixnum());
+      Bignum_sp by = gc::As_unsafe<Bignum_sp>(y);
+      Real_sp rv1;
+      v0 = _clasp_big_floor(bx, by, &rv1);
+      v1 = rv1;
       break;
     }
     case number_Ratio: /* FIX / RAT */
     {
-      Ratio_sp ry = gc::As<Ratio_sp>(y);
+      Ratio_sp ry = gc::As_unsafe<Ratio_sp>(y);
       Real_mv mv_v0 = clasp_floor2(gc::As<Real_sp>(clasp_times(x, ry->den())), ry->num());
       v0 = mv_v0;
       Integer_sp t1 = gc::As<Integer_sp>(mv_v0.valueGet_(1));
       //		v1 = clasp_make_ratio(clasp_nth_value(the_env, 1), y->den());
-      v1 = clasp_make_ratio(t1, ry->den());
+      v1 = clasp_divide(t1, ry->den());
       break;
     }
     case number_SingleFloat: /* FIX / SF */
     {
-      float n = clasp_single_float(y);
-      float p = clasp_fixnum(x) / n;
+      float n = y.unsafe_single_float();
+      float p = x.unsafe_fixnum() / n;
       float q = floorf(p);
       v0 = _clasp_float_to_integer(q);
       v1 = clasp_make_single_float((p - q) * n);
       break;
     }
     case number_DoubleFloat: { /* FIX / DF */
-      double n = clasp_double_float(y);
-      double p = clasp_fixnum(x) / n;
+      double n = gc::As_unsafe<DoubleFloat_sp>(y)->get();
+      double p = x.unsafe_fixnum() / n;
       double q = floor(p);
       v0 = _clasp_double_to_integer(q);
       v1 = clasp_make_double_float((p - q) * n);
@@ -280,7 +284,7 @@ Real_mv clasp_floor2(Real_sp x, Real_sp y) {
 #ifdef CLASP_LONG_FLOAT
     case number_LongFloat: { /* FIX / LF */
       LongFloat n = clasp_long_float(y);
-      LongFloat p = clasp_fixnum(x) / n;
+      LongFloat p = x.unsafe_fixnum() / n;
       LongFloat q = floorl(p);
       v0 = _clasp_long_double_to_integer(q);
       v1 = clasp_make_long_float((p - q) * n);
@@ -295,17 +299,21 @@ Real_mv clasp_floor2(Real_sp x, Real_sp y) {
     switch (ty) {
     case number_Fixnum: { /* BIG / FIX */
                           // INCOMPLETE(BF("Ensure that this produces the intended result"));
-      Bignum_sp bx(gc::As<Bignum_sp>(x));
-      Bignum_sp by(Bignum_O::create(clasp_fixnum(y)));
+      Bignum_sp bx(gc::As_unsafe<Bignum_sp>(x));
+      Bignum_sp by(Bignum_O::create(y.unsafe_fixnum()));
       //printf("%s:%d x = %s\n", __FILE__, __LINE__, _rep_(x).c_str());
       //printf("%s:%d by = %s\n", __FILE__, __LINE__, _rep_(by).c_str());
       //		CLASP_WITH_TEMP_BIGNUM(by,4);
-      //		_clasp_big_set_fixnum(by, clasp_fixnum(y));
-      v0 = _clasp_big_floor(bx, by, &v1);
+      //		_clasp_big_set_fixnum(by, y.unsafe_fixnum());
+      Real_sp rv1;
+      v0 = _clasp_big_floor(bx, by, &rv1);
+      v1 = rv1;
       break;
     }
     case number_Bignum: { /* BIG / BIG */
-      v0 = _clasp_big_floor(gc::As<Bignum_sp>(x), gc::As<Bignum_sp>(y), &v1);
+      Real_sp rv1;
+      v0 = _clasp_big_floor(gc::As<Bignum_sp>(x), gc::As<Bignum_sp>(y), &rv1);
+      v1 = rv1;
       break;
     }
     case number_Ratio: /* BIG / RAT */
@@ -314,11 +322,11 @@ Real_mv clasp_floor2(Real_sp x, Real_sp y) {
       Real_mv mv_v0 = clasp_floor2(gc::As<Real_sp>(clasp_times(x, ry->den())), ry->num());
       v0 = mv_v0;
       Integer_sp tv1 = gc::As<Integer_sp>(mv_v0.valueGet_(1));
-      v1 = clasp_make_ratio(tv1, ry->den());
+      v1 = clasp_divide(tv1, ry->den());
       break;
     }
     case number_SingleFloat: { /* BIG / SF */
-      float n = clasp_single_float(y);
+      float n = y.unsafe_single_float();
       float p = _clasp_big_to_double(gc::As<Bignum_sp>(x)) / n;
       float q = floorf(p);
       v0 = _clasp_float_to_integer(q);
@@ -326,8 +334,8 @@ Real_mv clasp_floor2(Real_sp x, Real_sp y) {
       break;
     }
     case number_DoubleFloat: { /* BIG / DF */
-      double n = clasp_double_float(y);
-      double p = _clasp_big_to_double(gc::As<Bignum_sp>(x)) / n;
+      double n = gc::As_unsafe<DoubleFloat_sp>(y)->get();
+      double p = _clasp_big_to_double(gc::As_unsafe<Bignum_sp>(x)) / n;
       double q = floor(p);
       v0 = _clasp_double_to_integer(q);
       v1 = clasp_make_double_float((p - q) * n);
@@ -353,26 +361,31 @@ Real_mv clasp_floor2(Real_sp x, Real_sp y) {
     {
       Ratio_sp rx = gc::As<Ratio_sp>(x);
       Ratio_sp ry = gc::As<Ratio_sp>(y);
-      Real_mv mv_v0 = clasp_floor2(gc::As<Real_sp>(clasp_times(rx->num(), ry->den())),
+      // rx-num/rx-den / ry-num/ry-den = rx-num* ry-den / rx-den*ry-num
+      Real_mv temp = clasp_floor2(gc::As<Real_sp>(clasp_times(rx->num(), ry->den())),
                                    gc::As<Real_sp>(clasp_times(rx->den(), ry->num())));
-      v0 = mv_v0;
-      Integer_sp tv1 = gc::As<Integer_sp>(mv_v0.valueGet_(1));
-      v1 = clasp_make_ratio(tv1, gc::As<Integer_sp>(clasp_times(rx->den(), ry->den())));
+      // do I need here to access the first value?
+      // where on earth is Real_mv defined
+      Integer_sp secondValue = gc::As<Integer_sp>(temp.valueGet_(1));
+      v0 = temp;
+      v1 = Rational_O::create(secondValue, gc::As<Integer_sp>(clasp_times(rx->den(), ry->den())));
       break;
     }
     default: /* RAT / ANY */
     {
       Ratio_sp rx = gc::As<Ratio_sp>(x);
-      Real_mv mv_v0 = clasp_floor2(rx->num(), gc::As<Real_sp>(clasp_times(rx->den(), y)));
-      v0 = mv_v0;
-      Number_sp tv1 = gc::As<Number_sp>(mv_v0.valueGet_(1));
-      v1 = gc::As<Real_sp>(clasp_divide(tv1, rx->den()));
+      // rx-num/rx-den / y == (floor rx-num (* rx-den y)
+      Real_mv temp = clasp_floor2(rx->num(), gc::As<Real_sp>(clasp_times(rx->den(), y)));
+      Real_sp secondValue = gc::As<Real_sp>(temp.valueGet_(1));
+      v0 = temp;
+      v1 = clasp_divide(secondValue, rx->den());
       break;
     }
     }
+    break;
   case number_SingleFloat: { /* SF / ANY */
     float n = clasp_to_double(y);
-    float p = clasp_single_float(x) / n;
+    float p = x.unsafe_single_float() / n;
     float q = floorf(p);
     v0 = _clasp_float_to_integer(q);
     /* We cannot factor these two multiplications because
@@ -383,7 +396,7 @@ Real_mv clasp_floor2(Real_sp x, Real_sp y) {
   }
   case number_DoubleFloat: { /* DF / ANY */
     double n = clasp_to_double(y);
-    double p = clasp_double_float(x) / n;
+    double p = gc::As_unsafe<DoubleFloat_sp>(x)->get() / n;
     double q = floor(p);
     v0 = _clasp_double_to_integer(q);
     v1 = clasp_make_double_float(p * n - q * n);
@@ -433,14 +446,14 @@ Real_mv clasp_ceiling1(Real_sp x) {
     break;
   }
   case number_SingleFloat: {
-    float d = clasp_single_float(x);
+    float d = x.unsafe_single_float();
     float y = ceilf(d);
     v0 = _clasp_float_to_integer(y);
     v1 = clasp_make_single_float(d - y);
     break;
   }
   case number_DoubleFloat: {
-    double d = clasp_double_float(x);
+    double d = gc::As_unsafe<DoubleFloat_sp>(x)->get();
     double y = ceil(d);
     v0 = _clasp_double_to_integer(y);
     v1 = clasp_make_double_float(d - y);
@@ -472,8 +485,8 @@ Real_mv clasp_ceiling2(Real_sp x, Real_sp y) {
   case number_Fixnum: {
     switch (ty) {
     case number_Fixnum: { /* FIX / FIX */
-      Fixnum a = clasp_fixnum(x);
-      Fixnum b = clasp_fixnum(y);
+      Fixnum a = x.unsafe_fixnum();
+      Fixnum b = y.unsafe_fixnum();
       Fixnum q = a / b;
       Fixnum r = a % b;
       if ((r ^ b) > 0 && r) { /* same signs and some remainder */
@@ -492,8 +505,8 @@ Real_mv clasp_ceiling2(Real_sp x, Real_sp y) {
 		 *    y = - MOST_NEGATIVE_FIXNUM
 		 */
       //		CLASP_WITH_TEMP_BIGNUM(bx,4);
-      Bignum_sp bx(Bignum_O::create(clasp_fixnum(x)));
-      //		_clasp_big_set_fixnum(bx, clasp_fixnum(x));
+      Bignum_sp bx(Bignum_O::create(x.unsafe_fixnum()));
+      //		_clasp_big_set_fixnum(bx, x.unsafe_fixnum());
       v0 = _clasp_big_ceiling(bx, gc::As<Bignum_sp>(y), &v1);
       break;
     }
@@ -503,20 +516,20 @@ Real_mv clasp_ceiling2(Real_sp x, Real_sp y) {
       Real_mv mv_v = clasp_ceiling2(gc::As<Real_sp>(clasp_times(x, ry->den())), ry->num());
       v0 = mv_v;
       Integer_sp tv1 = gc::As<Integer_sp>(mv_v.valueGet_(1));
-      v1 = clasp_make_ratio(tv1, ry->den());
+      v1 = Rational_O::create(tv1, ry->den());
       break;
     }
     case number_SingleFloat: { /* FIX / SF */
-      float n = clasp_single_float(y);
-      float p = clasp_fixnum(x) / n;
+      float n = y.unsafe_single_float();
+      float p = x.unsafe_fixnum() / n;
       float q = ceilf(p);
       v0 = _clasp_float_to_integer(q);
       v1 = clasp_make_single_float(p * n - q * n);
       break;
     }
     case number_DoubleFloat: { /* FIX / DF */
-      double n = clasp_double_float(y);
-      double p = clasp_fixnum(x) / n;
+      double n = gc::As_unsafe<DoubleFloat_sp>(y)->get();
+      double p = x.unsafe_fixnum() / n;
       double q = ceil(p);
       v0 = _clasp_double_to_integer(q);
       v1 = clasp_make_double_float(p * n - q * n);
@@ -525,7 +538,7 @@ Real_mv clasp_ceiling2(Real_sp x, Real_sp y) {
 #ifdef CLASP_LONG_FLOAT
     case number_LongFloat: { /* FIX / LF */
       LongFloat n = clasp_long_float(y);
-      LongFloat p = clasp_fixnum(x) / n;
+      LongFloat p = x.unsafe_fixnum() / n;
       LongFloat q = ceill(p);
       v0 = _clasp_long_double_to_integer(q);
       v1 = clasp_make_long_float(p * n - q * n);
@@ -541,8 +554,8 @@ Real_mv clasp_ceiling2(Real_sp x, Real_sp y) {
     switch (clasp_t_of(y)) {
     case number_Fixnum: { /* BIG / FIX */
                           //		CLASP_WITH_TEMP_BIGNUM(by,4);
-      Bignum_sp by(Bignum_O::create(clasp_fixnum(y)));
-      //		_clasp_big_set_fixnum(by, clasp_fixnum(y));
+      Bignum_sp by(Bignum_O::create(y.unsafe_fixnum()));
+      //		_clasp_big_set_fixnum(by, y.unsafe_fixnum());
       v0 = _clasp_big_ceiling(gc::As<Bignum_sp>(x), by, &v1);
       break;
     }
@@ -556,11 +569,11 @@ Real_mv clasp_ceiling2(Real_sp x, Real_sp y) {
       Real_mv mv_v = clasp_ceiling2(gc::As<Real_sp>(clasp_times(x, ry->den())), ry->num());
       v0 = mv_v;
       Integer_sp tv1 = gc::As<Integer_sp>(mv_v.valueGet_(1));
-      v1 = clasp_make_ratio(tv1, ry->den());
+      v1 = Rational_O::create(tv1, ry->den());
       break;
     }
     case number_SingleFloat: { /* BIG / SF */
-      float n = clasp_single_float(y);
+      float n = y.unsafe_single_float();
       float p = _clasp_big_to_double(gc::As<Bignum_sp>(x)) / n;
       float q = ceilf(p);
       v0 = _clasp_float_to_integer(q);
@@ -568,7 +581,7 @@ Real_mv clasp_ceiling2(Real_sp x, Real_sp y) {
       break;
     }
     case number_DoubleFloat: { /* BIG / DF */
-      double n = clasp_double_float(y);
+      double n = gc::As_unsafe<DoubleFloat_sp>(y)->get();
       double p = _clasp_big_to_double(gc::As<Bignum_sp>(x)) / n;
       double q = ceil(p);
       v0 = _clasp_double_to_integer(q);
@@ -600,7 +613,7 @@ Real_mv clasp_ceiling2(Real_sp x, Real_sp y) {
                                     gc::As<Real_sp>(clasp_times(rx->den(), ry->num())));
       v0 = mv_v;
       Integer_sp tv1 = gc::As<Integer_sp>(mv_v.valueGet_(1));
-      v1 = clasp_make_ratio(tv1, gc::As<Integer_sp>(clasp_times(rx->den(), ry->den())));
+      v1 = Rational_O::create(tv1, gc::As<Integer_sp>(clasp_times(rx->den(), ry->den())));
       break;
     }
     default: /* RAT / ANY */
@@ -616,7 +629,7 @@ Real_mv clasp_ceiling2(Real_sp x, Real_sp y) {
   }
   case number_SingleFloat: { /* SF / ANY */
     float n = clasp_to_double(y);
-    float p = clasp_single_float(x) / n;
+    float p = x.unsafe_single_float() / n;
     float q = ceilf(p);
     v0 = _clasp_float_to_integer(q);
     v1 = clasp_make_single_float(p * n - q * n);
@@ -624,7 +637,7 @@ Real_mv clasp_ceiling2(Real_sp x, Real_sp y) {
   }
   case number_DoubleFloat: { /* DF / ANY */
     double n = clasp_to_double(y);
-    double p = clasp_double_float(x) / n;
+    double p = gc::As_unsafe<DoubleFloat_sp>(x)->get() / n;
     double q = ceil(p);
     v0 = _clasp_double_to_integer(q);
     v1 = clasp_make_double_float(p * n - q * n);
@@ -673,14 +686,14 @@ Real_mv clasp_truncate1(Real_sp x) {
     break;
   }
   case number_SingleFloat: {
-    float d = clasp_single_float(x);
+    float d = x.unsafe_single_float();
     float y = d > 0 ? floorf(d) : ceilf(d);
     v0 = _clasp_float_to_integer(y);
     v1 = clasp_make_single_float(d - y);
     break;
   }
   case number_DoubleFloat: {
-    double d = clasp_double_float(x);
+    double d = gc::As_unsafe<DoubleFloat_sp>(x)->get();
     double y = d > 0 ? floor(d) : ceil(d);
     v0 = _clasp_double_to_integer(y);
     v1 = clasp_make_double_float(d - y);
@@ -767,14 +780,14 @@ Real_mv clasp_round1(Real_sp x) {
     break;
   }
   case number_SingleFloat: {
-    float d = clasp_single_float(x);
+    float d = x.unsafe_single_float();
     float q = round_double(d);
     v0 = _clasp_float_to_integer(q);
     v1 = clasp_make_single_float(d - q);
     break;
   }
   case number_DoubleFloat: {
-    double d = clasp_double_float(x);
+    double d = gc::As_unsafe<DoubleFloat_sp>(x)->get();
     double q = round_double(d);
     v0 = _clasp_double_to_integer(q);
     v1 = clasp_make_double_float(d - q);
@@ -868,7 +881,7 @@ CL_DEFUN Number_mv cl__decode_float(Float_sp x) {
   float f;
   switch (tx) {
   case number_SingleFloat: {
-    f = clasp_single_float(x);
+    f = x.unsafe_single_float();
     if (f >= 0.0) {
       s = 1;
     } else {
@@ -880,7 +893,7 @@ CL_DEFUN Number_mv cl__decode_float(Float_sp x) {
     break;
   }
   case number_DoubleFloat: {
-    double d = clasp_double_float(x);
+    double d = gc::As_unsafe<DoubleFloat_sp>(x)->get();
     if (d >= 0.0) {
       s = 1;
     } else {
@@ -917,16 +930,16 @@ CL_DOCSTRING("scaleFloat");
 CL_DEFUN Number_sp cl__scale_float(Number_sp x, Number_sp y) {
   Fixnum k;
   if (CLASP_FIXNUMP(y)) {
-    k = clasp_fixnum(y);
+    k = y.unsafe_fixnum();
   } else {
     QERROR_WRONG_TYPE_NTH_ARG(2, y, cl::_sym_fixnum);
   }
   switch (clasp_t_of(x)) {
   case number_SingleFloat:
-    x = clasp_make_single_float(ldexpf(clasp_single_float(x), k));
+    x = clasp_make_single_float(ldexpf(x.unsafe_single_float(), k));
     break;
   case number_DoubleFloat:
-    x = clasp_make_double_float(ldexp(clasp_double_float(x), k));
+      x = clasp_make_double_float(ldexp(gc::As_unsafe<DoubleFloat_sp>(x)->get(), k));
     break;
 #ifdef CLASP_LONG_FLOAT
   case number_LongFloat:
@@ -946,9 +959,9 @@ Integer_sp cl__float_radix(Float_sp x) {
 int clasp_signbit(Number_sp x) {
   switch (clasp_t_of(x)) {
   case number_SingleFloat:
-    return std::signbit(clasp_single_float(x));
+    return std::signbit(x.unsafe_single_float());
   case number_DoubleFloat:
-    return std::signbit(clasp_double_float(x));
+      return std::signbit(gc::As_unsafe<DoubleFloat_sp>(x)->get());
 #ifdef CLASP_LONG_FLOAT
   case number_LongFloat:
     return signbit(clasp_long_float(x));
@@ -970,13 +983,13 @@ CL_DEFUN Float_sp cl__float_sign(Float_sp x, Float_sp y, T_sp yp) {
   negativep = clasp_signbit(x);
   switch (clasp_t_of(y)) {
   case number_SingleFloat: {
-    float f = clasp_single_float(y);
+    float f = y.unsafe_single_float();
     if (std::signbit(f) != negativep)
       y = clasp_make_single_float(-f);
     break;
   }
   case number_DoubleFloat: {
-    double f = clasp_double_float(y);
+    double f = gc::As_unsafe<DoubleFloat_sp>(y)->get();
     if (std::signbit(f) != negativep)
       y = clasp_make_double_float(-f);
     break;
@@ -1018,14 +1031,14 @@ CL_DEFUN Integer_sp cl__float_digits(Float_sp x) {
   return ix;
 }
 
-CL_LAMBDA(Float-sp x);
+CL_LAMBDA(value);
 CL_DECLARE();
 CL_DOCSTRING("floatPrecision");
 CL_DEFUN Integer_sp cl__float_precision(Float_sp x) {
   int precision = 0;
   switch (clasp_t_of(x)) {
   case number_SingleFloat: {
-    float f = clasp_single_float(x);
+    float f = x.unsafe_single_float();
     if (f == 0.0) {
       precision = 0;
     } else {
@@ -1040,7 +1053,7 @@ CL_DEFUN Integer_sp cl__float_precision(Float_sp x) {
     break;
   }
   case number_DoubleFloat: {
-    double f = clasp_double_float(x);
+    double f = gc::As_unsafe<DoubleFloat_sp>(x)->get();
     if (f == 0.0) {
       precision = 0;
     } else {
@@ -1103,7 +1116,7 @@ CL_DEFUN Real_mv cl__integer_decode_float(Float_sp x) {
   }
 #endif
   case number_DoubleFloat: {
-    double d = clasp_double_float(x);
+    double d = gc::As_unsafe<DoubleFloat_sp>(x)->get();
     if (std::signbit(d)) {
       s = -1;
       d = -d;
@@ -1119,7 +1132,7 @@ CL_DEFUN Real_mv cl__integer_decode_float(Float_sp x) {
     break;
   }
   case number_SingleFloat: {
-    float d = clasp_single_float(x);
+    float d = x.unsafe_single_float();
     if (std::signbit(d)) {
       s = -1;
       d = -d;
@@ -1145,7 +1158,7 @@ CL_LAMBDA(r &optional (i 0));
 CL_DECLARE();
 CL_DOCSTRING("complex");
 CL_DEFUN Complex_sp cl__complex(Real_sp r, Real_sp i) {
-  return Complex_O::create(r, i);
+  return gc::As_unsafe<Complex_sp>(clasp_make_complex(r, i));
 }
 
 CL_LAMBDA(x);
@@ -1183,13 +1196,13 @@ CL_DEFUN Real_sp cl__imagpart(Number_sp x) {
     x = clasp_make_fixnum(0);
     break;
   case number_SingleFloat:
-    if (std::signbit(clasp_single_float(x)))
+    if (std::signbit(x.unsafe_single_float()))
       x = _lisp->singleFloatMinusZero();
     else
       x = _lisp->singleFloatPlusZero();
     break;
   case number_DoubleFloat:
-    if (std::signbit(clasp_double_float(x)))
+      if (std::signbit(gc::As_unsafe<DoubleFloat_sp>(x)->get()))
       x = _lisp->doubleFloatMinusZero();
     else
       x = _lisp->doubleFloatPlusZero();

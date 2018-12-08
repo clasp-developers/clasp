@@ -117,9 +117,13 @@
 		   (ELT (list 1 2 3) -1)
 		   :type type-error)
 
-;;; Fails
+;;; 
 (test-expect-error elt-5a 
 		   (ELT (list 1 2 3) 4)
+		   :type type-error)
+
+(test-expect-error elt-5b 
+		   (ELT (cons 1 2) 1)
 		   :type type-error)
 
 (test-expect-error elt-6 
@@ -136,6 +140,25 @@
 		   (elt (make-array 10 :initial-contents '(0 1 2 3 4 5 6 7 8 9) :fill-pointer 3) 5)
 		   :type type-error)
 
+(test-expect-error elt-9 
+		   (setf (ELT (list 1 2 3) -1) 23)
+		   :type type-error)
+
+(test-expect-error elt-10 
+		   (setf (ELT (list 1 2 3) 4) 23)
+		   :type type-error)
+
+(test-expect-error elt-11 
+		   (setf (ELT nil 2) 23)
+		   :type type-error)
+
+(test-expect-error elt-12 
+		   (setf (ELT (make-array 0) 0) 23)
+		   :type type-error)
+
+(test-expect-error elt-13 
+		   (setf (elt (make-array 10 :initial-contents '(0 1 2 3 4 5 6 7 8 9) :fill-pointer 3) 5) 23)
+		   :type type-error)
 ;;;
 (test-expect-error fill-1 
                    (FILL (make-array 6 :initial-element 3) -5 :start -1)
@@ -305,3 +328,34 @@
                (make-array 3 :displaced-to
                            (make-array 5 :initial-contents (list 0 1 2 3 4))
                            :displaced-index-offset 1))))
+
+(test assoc-1
+      ;;; avoid the compiler-macro
+      (eval '(equal (cons nil 'e)(ASSOC NIL '((A . B) NIL (C . D) (NIL . E) (NIL . F) NIL (G . H))))))
+
+(test assoc-compiler-macro
+      (equal (cons nil 'e) (Let () (ASSOC NIL '((A . B) NIL (C . D) (NIL . E) (NIL . F) NIL (G . H))))))
+
+(test-expect-error assoc-2-error
+                   (assoc 3 (list (list 1 3) 2))
+                   :type type-error)
+
+(test-expect-error assoc-2-error-no-compiler-macro
+                   (eval '(assoc 3 (list (list 1 3) 2)))
+                   :type type-error)
+
+;;; That used to crash clasp, test with care
+;;; Use eval to avoid the compiler-macro
+(test-expect-error make-list-1 (MAKE-LIST -1) :type type-error)
+(test-expect-error make-sequence-1 (eval '(MAKE-sequence 'list -1)) :type type-error)
+(test-expect-error make-sequence-1a (let ()(MAKE-sequence 'list -1)) :type type-error)
+(test-expect-error make-sequence-2 (eval '(MAKE-sequence 'vector -1)) :type type-error)
+(test-expect-error make-sequence-2a (let () (MAKE-sequence 'vector -1)) :type type-error)
+;;; fixed in the function and  in the compiler-macro
+(test-expect-error make-sequence-3 (eval '(MAKE-sequence 'cons 0)) :type type-error)
+(test-expect-error make-sequence-3a (let ()(MAKE-sequence 'cons 0)) :type type-error)
+;;; find
+(test-expect-error find-1 (find 5 '(1 2 3 . 4)) :type type-error)
+(test-expect-error find-1a (eval '(find 5 '(1 2 3 . 4))) :type type-error)
+(test-expect-error find-2 (find 5 '(1 2 3 . 4)) :type type-error)
+(test-expect-error find-2a (eval '(find 5 '(1 2 3 . 4))) :type type-error)

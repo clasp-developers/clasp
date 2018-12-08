@@ -918,6 +918,8 @@ But no irbuilders or basic-blocks. Return the fn."
                        *source-debug-pathname* lineno column
                        (+ filepos *source-debug-offset*)))
 
+(defconstant +maxi32+ 4294967295)
+
 (defun irc-create-function-description (llvm-function-name fn module function-info)
   "If **generate-code** then create a function-description block from function info.
     Otherwise we are code-walking - and do something else that is appropriate."
@@ -939,7 +941,7 @@ But no irbuilders or basic-blocks. Return the fn."
         (when l (setf lineno l))
         (when c (setf column c))
         (when f (setf filepos f)))
- #+(or)
+      #+(or)
       (progn
         (core:bformat t "--------------------------%N")
         (core:bformat t "found-source-info: %s%N" found-source-info)
@@ -977,19 +979,30 @@ But no irbuilders or basic-blocks. Return the fn."
          t
          'llvm-sys:internal-linkage
          (llvm-sys:constant-struct-get %function-description%
-                                       (list
-                                        fn
-                                        literal::*gcroots-in-module*
-                                        (jit-constant-i32 source-pathname-index)
-                                        (jit-constant-i32 function-name-index)
-                                        (jit-constant-i32 lambda-list-index)
-                                        (jit-constant-i32 docstring-index)
-                                        (jit-constant-i32 declare-index)
-                                        (jit-constant-i32 lineno)
-                                        (jit-constant-i32 column)
-                                        (jit-constant-i32 filepos)
-                                        )
-                                       )
+                                       (progn
+                                         (progn
+                                           (when (> source-pathname-index +maxi32+) (error "source-pathname-index ~a out-of-bounds for i32" source-pathname-index))
+                                           (when (> source-pathname-index +maxi32+) (error "source-pathname-index ~a out of bounds for i32" source-pathname-index))
+                                           (when (> function-name-index +maxi32+) (error "function-name-index ~a out of bounds for i32" function-name-index))
+                                           (when (> lambda-list-index +maxi32+) (error "lambda-list-index ~a out of bounds for i32" lambda-list-index))
+                                           (when (> docstring-index +maxi32+) (error "docstring-index ~a out of bounds for i32" docstring-index))
+                                           (when (> declare-index +maxi32+) (error "declare-index ~a out of bounds for i32" declare-index))
+                                           (when (> lineno +maxi32+) (error "lineno ~a out of bounds for i32" lineno))
+                                           (when (> column +maxi32+) (error "column ~a out of bounds for i32" column))
+                                           (when (> filepos +maxi32+) (error "filepos ~a out of bounds for i32" filepos)))
+                                         (list
+                                          fn
+                                          literal::*gcroots-in-module*
+                                          (jit-constant-i32 source-pathname-index)
+                                          (jit-constant-i32 function-name-index)
+                                          (jit-constant-i32 lambda-list-index)
+                                          (jit-constant-i32 docstring-index)
+                                          (jit-constant-i32 declare-index)
+                                          (jit-constant-i32 lineno)
+                                          (jit-constant-i32 column)
+                                          (jit-constant-i32 filepos)
+                                          )
+                                         ))
          (function-description-name fn))))))
 
 
@@ -1053,15 +1066,14 @@ and then the irbuilder-alloca, irbuilder-body."
     (cmp-log "About to irc-br return-block%N")
     (irc-br return-block)
     (irc-begin-block return-block)
-    (irc-cleanup-function-environment env #| invocation-history-frame |# ) ;; Why the hell was this commented out?
-    #|	  (irc-cleanup-function-environment env invocation-history-frame )  |#
+    (irc-cleanup-function-environment env )
     (if return-void
         (llvm-sys:create-ret-void *irbuilder*)
         (llvm-sys:create-ret *irbuilder* (irc-load result))))
   (irc-verify-function *current-function*))
   
 
-(defun irc-cleanup-function-environment (env #||invocation-history-frame||#)
+(defun irc-cleanup-function-environment (env)
   "Generate the code to cleanup the environment"
   (if env
       (progn
@@ -1121,7 +1133,8 @@ Within the _irbuilder_ dynamic environment...
 	 (when ,init (funcall ,init ,alloca-sym))
 	 ,alloca-sym))))
 
-(defmacro with-alloca-insert-point (env irbuilder
+#+(or)
+(defmacro with-allocak-insert-point (env irbuilder
 				    &key alloca init cleanup)
   "Switch to the alloca-insert-point and generate code to alloca a local variable.
 Within the _irbuilder_ dynamic environment...
@@ -1146,9 +1159,9 @@ Within the _irbuilder_ dynamic environment...
 (defmacro with-irbuilder ((irbuilder) &rest code)
   "Set *irbuilder* to the given IRBuilder"
   `(let ((*irbuilder* ,irbuilder))
-     (cmp-log "Switching to irbuilder --> %s%N" (bformat nil "%s" ,irbuilder))
+     (cmp-log "Switching to irbuilder --> %s%N" (bformat nil "%s" *irbuilder*))
      (multiple-value-prog1 (progn ,@code)
-       (cmp-log "Leaving irbuilder --> %s%N" (bformat nil "%s" ,irbuilder)))))
+       (cmp-log "Leaving irbuilder --> %s%N" (bformat nil "%s" *irbuilder*)))))
 
 
 (defun irc-alloca-tmv (env &key (irbuilder *irbuilder-function-alloca*) (label ""))
@@ -1163,23 +1176,19 @@ Within the _irbuilder_ dynamic environment...
 
 (defun irc-alloca-t* (&key (irbuilder *irbuilder-function-alloca*) (label ""))
   "Allocate a T_O* on the stack"
-  (with-alloca-insert-point-no-cleanup
+  (with-alloca-insert-point-no-cleanup 
     irbuilder
     :alloca (llvm-sys:create-alloca *irbuilder* %t*% (jit-constant-i32 1) label)))
 
 (defun irc-alloca-af* (env &key (irbuilder *irbuilder-function-alloca*) (label ""))
   (cmp-log "irc-alloca-af* label: %s for %s%N" label irbuilder)
-  (with-alloca-insert-point env irbuilder
-    :alloca (llvm-sys::create-alloca *irbuilder* %af*% (jit-constant-i32 1) label)
-    :init (lambda (a) );;(irc-intrinsic "newAFsp" a))
-    :cleanup (lambda (a)))); (irc-dtor "destructAFsp" a))))
+  (with-alloca-insert-point-no-cleanup irbuilder
+    :alloca (llvm-sys::create-alloca *irbuilder* %af*% (jit-constant-i32 1) label)))
 
 (defun irc-alloca-af*-value-frame-of-size (env size &key (irbuilder *irbuilder-function-alloca*) (label ""))
   (cmp-log "irc-alloca-af*-value-frame-of-size label: %s for %s%N" label irbuilder)
-  (with-alloca-insert-point env irbuilder
-    :alloca (llvm-sys::create-alloca *irbuilder* %af*% (jit-constant-i32 1) label)
-    :init (lambda (a) ); (irc-intrinsic "newAFsp" a))
-    :cleanup (lambda (a)))); (irc-dtor "destructAFsp" a))))
+  (with-alloca-insert-point-no-cleanup irbuilder
+    :alloca (llvm-sys::create-alloca *irbuilder* %af*% (jit-constant-i32 1) label)))
 
 (defun irc-alloca-i32-no-init (&key (irbuilder *irbuilder-function-alloca*) (label "i32-"))
   "Allocate space for an i32"
@@ -1187,14 +1196,14 @@ Within the _irbuilder_ dynamic environment...
 
 (defun irc-alloca-i8 (env init-val &key (irbuilder *irbuilder-function-alloca*) (label "i8-"))
   "Allocate space for an i8"
-  (with-alloca-insert-point env irbuilder
+  (with-alloca-insert-point-no-cleanup irbuilder
     :alloca (llvm-sys::create-alloca *irbuilder* %i8% (jit-constant-i32 1) label)
     :init (lambda (a) (irc-store (jit-constant-i8 init-val) a))))
 
 
 (defun irc-alloca-i32 (env init-val &key (irbuilder *irbuilder-function-alloca*) (label "i32-"))
   "Allocate space for an i32"
-  (with-alloca-insert-point env irbuilder
+  (with-alloca-insert-point-no-cleanup irbuilder
     :alloca (llvm-sys::create-alloca *irbuilder* %i32% (jit-constant-i32 1) label)
     :init (lambda (a) (irc-store (jit-constant-i32 init-val) a))))
 
@@ -1202,12 +1211,6 @@ Within the _irbuilder_ dynamic environment...
   "Alloca space for an va_list"
   (with-alloca-insert-point-no-cleanup irbuilder
     :alloca (llvm-sys::create-alloca *irbuilder* %va_list% (jit-constant-size_t 1) label)
-    :init nil))
-
-(defun irc-alloca-invocation-history-frame (&key (irbuilder *irbuilder-function-alloca*) (label "va_list"))
-  "Alloca space for an va_list"
-  (with-alloca-insert-point-no-cleanup irbuilder
-    :alloca (llvm-sys::create-alloca *irbuilder* %InvocationHistoryFrame% (jit-constant-size_t 1) label)
     :init nil))
 
 (defun irc-alloca-size_t (&key (irbuilder *irbuilder-function-alloca*) (label "va_list"))
@@ -1220,7 +1223,8 @@ Within the _irbuilder_ dynamic environment...
   "Alloca space for an va_list"
   (with-alloca-insert-point-no-cleanup irbuilder
     :alloca (llvm-sys::create-alloca *irbuilder* %register-save-area% (jit-constant-size_t 1) label)
-    :init nil))
+    :init (lambda (alloca)
+            (irc-intrinsic "llvm.experimental.stackmap" (jit-constant-i64 1234567) (jit-constant-i32 0) alloca))))
 
 (defun irc-alloca-vaslist (&key (irbuilder *irbuilder-function-alloca*) (label "va_list"))
   "Alloca space for an vaslist and a backup so that it can be rewound"

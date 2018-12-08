@@ -15,6 +15,7 @@ namespace core {
     
     uint64_t   _BytesAllocated;
     mp::Process_sp _Process;
+    ObjectFile_sp  _ObjectFile; // Capture jitted object-file's with this
     uint64_t  _Tid;
     DynamicBindingStack _Bindings;
     ExceptionStack _ExceptionStack;
@@ -25,6 +26,8 @@ namespace core {
     gctools::GCRootsInModule*  _GCRoots;
     void* _sigaltstack_buffer;
     stack_t _original_stack;
+    uintptr_t         _stackmap;
+    size_t            _stackmap_size;
 #ifdef DEBUG_IHS
     // Save the last return address before IHS screws up
     void*                    _IHSBacktrace[IHS_BACKTRACE_SIZE];

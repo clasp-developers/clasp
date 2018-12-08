@@ -58,7 +58,7 @@ string myReadLine(const string &prompt, bool &end_of_transmission) {
   }
 #else
   if (prompt != "") {
-    BFORMAT_T(BF("%s ") % prompt);
+    write_bf_stream(BF("%s ") % prompt);
   }
   ws(std::cin);
   getline(std::cin, res);

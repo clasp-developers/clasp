@@ -47,6 +47,21 @@
 #include <clasp/core/bignum.fwd.h>
 #include <clasp/core/numbers.fwd.h>
 
+//Class Hierarchy
+//Number_0
+//  Real_O
+//    Rational_O
+//      Integer_O
+//        Fixnum_dummy_O (immediate)
+//        Bignum_O
+//      Ratio_O
+//    Float_O
+//      ShortFloat_O
+//      SingleFloat_dummy_O (immediate)
+//      DoubleFloat_O
+//      LongFloat_O
+//  Complex_O
+
 #define CLASP_PI_D 3.14159265358979323846264338327950288
 #define CLASP_PI_L 3.14159265358979323846264338327950288l
 #define CLASP_PI2_D 1.57079632679489661923132169163975144
@@ -141,6 +156,7 @@ namespace core
   SingleFloat_sp clasp_make_single_float(float d);
   DoubleFloat_sp clasp_make_double_float(double d);
   Number_sp clasp_log1_complex_inner(Number_sp r, Number_sp i);
+  void clasp_report_divide_by_zero(Number_sp x);
 };
 
 namespace core {
@@ -616,9 +632,8 @@ namespace core {
 
     // math routines shared by all numbers
     bool zerop_() const { return (clasp_zerop(this->_real) && clasp_zerop(this->_imaginary)); };
-
     virtual Number_sp negate_() const { return Complex_O::create(gc::As<Real_sp>(clasp_negate(this->_real)),
-								 gc::As<Real_sp>(clasp_negate(this->_imaginary))); };
+								 gc::As<Real_sp>(clasp_negate(this->_imaginary))); };    
 
     virtual Number_sp log1_() const;
     virtual Number_sp log1p_() const;
@@ -678,7 +693,7 @@ namespace core {
   public:
     NumberType number_type_() const { return number_Ratio; };
     virtual bool zerop_() const { return clasp_zerop(this->_numerator); };
-    virtual Number_sp negate_() const { return Ratio_O::create(clasp_negate(this->_numerator), this->_denominator); };
+    virtual Number_sp negate_() const { return Ratio_O::create(gc::As<Integer_sp>(clasp_negate(this->_numerator)), gc::As<Integer_sp>(this->_denominator)); };
     Integer_sp numerator() const { return this->_numerator; };
     Integer_sp denominator() const { return this->_denominator; };
     Integer_sp num() const { return this->_numerator; };
@@ -778,17 +793,25 @@ namespace core {
 
   Integer_sp clasp_ash(Integer_sp x, int bits);
 
+  inline gctools::Fixnum clasp_safe_fixnum(Number_sp x) {
+    return gc::As<Fixnum_sp>(x).unsafe_fixnum();
+  }
+
+#if 0
   inline gctools::Fixnum clasp_fixnum(Number_sp x) {
     return unbox_fixnum(Fixnum_sp(x));
   }
 
   inline float clasp_single_float(Number_sp x) {
-    return unbox_single_float(x);
+    if (x.single_floatp()) {
+      return unbox_single_float(x);
+    }
   }
 
   inline double clasp_double_float(Number_sp x) {
     return gc::As<DoubleFloat_sp>(x)->get();
   }
+#endif
 
 #ifdef CLASP_LONG_FLOAT
   inline LongFloat clasp_long_float(Number_sp x) {
@@ -799,6 +822,13 @@ namespace core {
   inline Ratio_sp clasp_make_ratio(Integer_sp num, Integer_sp denom) {
     return Ratio_O::create(num, denom);
   }
+
+  inline Rational_sp clasp_make_rational(Integer_sp num, Integer_sp denom) {
+    // will check whether denom = 1
+    return Rational_O::create(num, denom);
+  }
+
+  Number_sp clasp_make_complex (Real_sp r, Real_sp i);
 
   inline Fixnum_sp clasp_make_fixnum(gc::Fixnum i) {
     return make_fixnum(i);
@@ -977,7 +1007,14 @@ namespace core {
   CL_LISPIFY_NAME(negate);
   CL_DEFUN inline Number_sp clasp_negate(Number_sp num) {
     if (num.fixnump()) {
-      return immediate_fixnum<Number_O>(-num.unsafe_fixnum());
+      gc::Fixnum fixnum = num.unsafe_fixnum();
+      if (fixnum == MOST_NEGATIVE_FIXNUM) {
+          // will overflow to a bignum when negated
+        fixnum = (MOST_POSITIVE_FIXNUM + 1);
+        return Integer_O::create(fixnum);
+      }
+      else
+        return immediate_fixnum<Number_O>(-num.unsafe_fixnum());
     } else if (num.single_floatp()) {
       float fl = num.unsafe_single_float();
       fl = -fl;
@@ -1005,7 +1042,7 @@ namespace core {
         } else {
           y >>= bits;
         }
-        return immediate_fixnum<Number_O>(y);
+        return immediate_fixnum<Integer_O>(y);
       } else {
         Bignum val(static_cast<signed long>(n.unsafe_fixnum()));
         Bignum res;
@@ -1079,8 +1116,10 @@ namespace core {
 
   inline Number_sp clasp_reciprocal(Number_sp x) {
     if (x.fixnump() ) {
-      if ( x.unsafe_fixnum() == 1 ) return x;
-      return Ratio_O::create(clasp_make_fixnum((Fixnum)1),x);
+      if (x.unsafe_fixnum() == 1) return x;
+      if (x.unsafe_fixnum() == 0) clasp_report_divide_by_zero(x);
+      return Rational_O::create(gc::As_unsafe<Integer_sp>(clasp_make_fixnum((Fixnum)1)),
+                                gc::As_unsafe<Integer_sp>(x));
     } else if (x.single_floatp()) {
       float f = x.unsafe_single_float();
       return clasp_make_single_float(1.0 / f);
@@ -1170,7 +1209,8 @@ namespace core {
       float f = num.unsafe_single_float();
       return std::isinf(f);
     }
-    return num->isnan_();
+    // test for isinf not for isnan, good old friend copy paste
+    return num->isinf_();
   }
 
 #if 0

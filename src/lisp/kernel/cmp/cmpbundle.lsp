@@ -258,7 +258,7 @@ The **library-file** is the name of the output library with the appropriate exte
                      :optimize nil)
         (with-source-pathnames (:source-pathname (pathname output-pathname))
           (with-debug-info-generator (:module module :pathname output-pathname)
-            (let* ((linker (llvm-sys:make-linker *the-module*))
+            (let* ((linker (llvm-sys:make-linker module))
                    (part-index 1))
               ;; Don't enforce .bc extension for additional-bitcode-pathnames
               ;; This is where I used to link the additional-bitcode-pathnames
@@ -286,10 +286,10 @@ The **library-file** is the name of the output library with the appropriate exte
                       (when failure
                         (error "While linking additional module: ~a  encountered error: ~a" bc-file error-msg))
                       ))))
-              (write-bitcode *the-module* (core:coerce-to-filename (pathname (if output-pathname
-                                                                                 output-pathname
-                                                                                 (error "The output pathname is NIL")))))
-              *the-module*)))))))
+              (write-bitcode module (core:coerce-to-filename (pathname (if output-pathname
+                                                                           output-pathname
+                                                                           (error "The output pathname is NIL")))))))))
+      module)))
 (export 'link-bitcode-modules)
 
 
@@ -320,7 +320,9 @@ The type of file generated is specified by **link-type** (:fasl|:executable).
 The type of the files to be linked is defined with **input-type** (:bitcode|:object).
 The **target-backend** indicates if we are linking for aclasp, bclasp or cclasp.
 Return the **output-pathname**."
+  (format t "output-pathname -> ~s  input-files -> ~s~%" output-pathname input-files)
   (let* ((*target-backend* target-backend)
+         (start-time (get-internal-real-time))
          (intrinsics-bitcode-path (core:build-inline-bitcode-pathname link-type :intrinsics))
          (builtins-bitcode-path (core:build-inline-bitcode-pathname link-type :builtins))
          (all-input-files (list* intrinsics-bitcode-path input-files))
@@ -340,6 +342,9 @@ Return the **output-pathname**."
          (bformat t "In llvm-link -> link-type :fasl all-input-files -> %s%N" all-input-files))
        (execute-link-fasl output-pathname all-input-files :input-type input-type))
       (t (error "Cannot link format ~a" link-type)))
+    (let ((link-time (/ (- (get-internal-real-time) start-time) (float internal-time-units-per-second))))
+      (format t "llvm-link link-time -> ~a~%" link-time)
+      (incf llvm-sys:*accumulated-clang-link-time* link-time))
     output-pathname))
 
 (export '(llvm-link))

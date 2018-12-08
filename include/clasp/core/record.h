@@ -6,6 +6,7 @@
 
 namespace core {
 #if 0
+#define DEBUG_RECORD 1
 #define RECORD_LOG(abf) printf("%s:%d %s\n", __FILE__, __LINE__, (abf).str().c_str());
 #else
 #define RECORD_LOG(abf)
@@ -118,7 +119,7 @@ public:
       RECORD_LOG(BF("init/load find apair %s\n") % _rep_(apair));
       // Set the value and ignore its type!!!!!! This is to allow placeholders
       T_sp v = CONS_CDR(apair);
-      RECORD_LOG(BF("init/load v: %s\n") % _rep_(v));
+      RECORD_LOG(BF("init/load v: %s v.raw_=%p\n") % _rep_(v) % (void*)v.raw_());
       value.setRaw_(reinterpret_cast<gc::Tagged>(v.raw_()));
       if (this->stage() == initializing)
         this->flagSeen(apair);
@@ -127,7 +128,7 @@ public:
       gc::smart_ptr<T_O> orig((gc::Tagged)value.raw_());
       T_sp patch = record_circle_subst(this->_replacement_table, orig);
       if (patch != orig) {
-        RECORD_LOG(BF("Patching orig@%p: %s --> new@%p: %s\n") % _rep_(orig) % (void *)(orig.raw_()) % _rep_(patch) % (void *)(patch.raw_()));
+        RECORD_LOG(BF("Patching orig@%p: %s --> new@%p: %s\n") % (void *)(orig.raw_()) % _rep_(orig) % (void *)(patch.raw_()) % _rep_(patch) );
         value.setRaw_(reinterpret_cast<gc::Tagged>(patch.raw_()));
       }
       break;
@@ -162,7 +163,7 @@ public:
       for (size_t i(0), iEnd(cl__length(vec_value)); i < iEnd; ++i) {
         T_sp val = vec_value->rowMajorAref(i);
         RECORD_LOG(BF("Loading vec0[%d] new@%p: %s\n") % i % (void *)(val.raw_()) % _rep_(val));
-        value[i] = val;
+        value[i].rawRef_() = reinterpret_cast<OT *>(val.raw_());
       }
       if (this->stage() == initializing)
         this->flagSeen(apair);
@@ -230,7 +231,7 @@ public:
 
   template <typename K, typename SV>
     void field(Symbol_sp name, gctools::SmallMap<K,gctools::smart_ptr<SV>>& value ) {
-    RECORD_LOG(BF("field(Symbol_sp name, gctools::Vec0<SC& value ) name: %s") % _rep_(name));
+    RECORD_LOG(BF("field(Symbol_sp name, gctools::SmallMap<K,gctools::smart_ptr<SV>>& value ) name: %s") % _rep_(name));
     switch (this->stage()) {
     case saving: {
       Vector_sp vec_value = core__make_vector(cl::_sym_T_O, value.size());
@@ -263,13 +264,15 @@ public:
     } break;
     case patching: {
       RECORD_LOG(BF("Patching"));
+      size_t i = 0;
       for ( auto pairi : value ) {
         gc::smart_ptr<T_O> orig = pairi.second;
         T_sp patch = record_circle_subst(this->_replacement_table, orig);
         if (patch != orig) {
-          RECORD_LOG(BF("Patching vec0[%d] orig@%p: %s --> new@%p: %s\n") % i % _rep_(orig) % (void *)(orig.raw_()) % _rep_(patch) % (void *)(patch.raw_()));
+          RECORD_LOG(BF("Patching vec0[%d] orig@%p: %s --> new@%p: %s\n") % i % (void *)(orig.raw_()) % _rep_(orig) % (void *)(patch.raw_()) % _rep_(patch) );
           pairi.second = patch;
         }
+        ++i;
       }
     } break;
     }
@@ -277,7 +280,7 @@ public:
 
   template <typename SK, typename SV>
     void field(Symbol_sp name, gctools::SmallMap<gctools::smart_ptr<SK>,gctools::smart_ptr<SV>>& value ) {
-    RECORD_LOG(BF("field(Symbol_sp name, gctools::Vec0<SC& value ) name: %s") % _rep_(name));
+    RECORD_LOG(BF("field(Symbol_sp name, gctools::SmallMap<gctools::smart_ptr<SK>,gctools::smart_ptr<SV>> ) name: %s") % _rep_(name));
     switch (this->stage()) {
     case saving: {
       Vector_sp vec_value = core__make_vector(cl::_sym_T_O, value.size());
@@ -315,10 +318,8 @@ public:
         gc::smart_ptr<T_O> orig_value = pairi.second;
         T_sp patch_key = record_circle_subst(this->_replacement_table, orig_key);
         T_sp patch_value = record_circle_subst(this->_replacement_table, orig_value);
-        if (patch_value != orig_value) {
-          pairi.first = patch_key;
-          pairi.second = patch_value;
-        }
+        if (patch_key != orig_key) pairi.first = patch_key;
+        if (patch_value != orig_value) pairi.second = patch_value;
       }
     } break;
     }
@@ -495,7 +496,7 @@ public:
         if (CONS_CDR(apair).nilp()) {
           value = _Nil<T_O>();
         } else {
-          value = gc::As<gc::smart_ptr<OT>>(CONS_CDR(apair));
+          value = gc::As_unsafe<gc::smart_ptr<OT>>(CONS_CDR(apair));
         }
         if (this->stage() == initializing)
           this->flagSeen(apair);

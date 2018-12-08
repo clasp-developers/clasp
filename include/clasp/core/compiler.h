@@ -69,7 +69,8 @@ functionality but before any Common Lisp startup functions are invoked. */
 typedef void*(*fnStartUp)();
 
 namespace core {
-void register_startup_function(fnStartUp fptr);
+  void core__throw_function(T_sp tag, T_sp result_form);
+  void register_startup_function(fnStartUp fptr);
 }
 
 #endif /* _compiler_H_ */

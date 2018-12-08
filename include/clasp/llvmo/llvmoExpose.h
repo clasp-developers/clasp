@@ -4158,6 +4158,7 @@ namespace llvmo {
   Module_sp llvm_sys__parseIRFile(core::T_sp filename, LLVMContext_sp context);
 
 void initialize_llvmo_expose();
+
 }
 
 

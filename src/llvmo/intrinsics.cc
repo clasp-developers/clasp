@@ -235,17 +235,6 @@ ALWAYS_INLINE gc::return_type cc_call_callback(LCC_ARGS_CC_CALL_ELLIPSIS) {
   return closure(LCC_PASS_ARGS);
 }
 
-size_t cc_matchKeywordOnce(core::T_O *xP, core::T_O *yP, core::T_O *sawKeyAlreadyP)
-{NO_UNWIND_BEGIN();
-  if (xP != yP)
-    return 0;
-  if (!gctools::tagged_nilp(sawKeyAlreadyP))
-    return 2;
-  return 1;
-  NO_UNWIND_END();
-}
-
-
 ALWAYS_INLINE core::T_O *cc_gatherVaRestArguments(va_list vargs, std::size_t nargs, Vaslist untagged_vargs_rest[2])
 {NO_UNWIND_BEGIN();
   va_copy(untagged_vargs_rest[0]._Args,vargs);
@@ -268,13 +257,12 @@ ALWAYS_INLINE core::T_O *cc_gatherVaRestArguments(va_list vargs, std::size_t nar
 }
 
 ALWAYS_INLINE core::T_O *cc_makeCell()
-{NO_UNWIND_BEGIN();
+{
   core::Cons_sp res = core::Cons_O::create(_Nil<core::T_O>(),_Nil<core::T_O>());
 #ifdef DEBUG_CC
   printf("%s:%d makeCell res.px[%p]\n", __FILE__, __LINE__, res.px);
 #endif
   return res.raw_();
-  NO_UNWIND_END();
 }
 
 ALWAYS_INLINE void cc_writeCell(core::T_O *cell, core::T_O* val)

@@ -276,10 +276,7 @@ the value is put into *default-load-time-value-vector* and its index is returned
       (when initialize
         (let* ((fn (compile-form initialize))
                (name (cmp:jit-constant-unique-string-ptr (llvm-sys:get-name fn))))
-          (add-side-effect-call "ltvc_mlf_init_funcall" fn name))))
-    #++(prog1 (add-creator "ltvc_set_mlf_creator_funcall" index (compile-form create))
-         (when initialize
-           (add-side-effect-call "ltvc_mlf_init_funcall" (compile-form initialize))))))
+          (add-side-effect-call "ltvc_mlf_init_funcall" fn name))))))
 
 (defun object-similarity-table-and-creator (object read-only-p)
   (cond
@@ -591,7 +588,7 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
              (llvm-sys:replace-all-uses-with cmp:*load-time-value-holder-global-var* bitcast-constant-table)
              (llvm-sys:erase-from-parent cmp:*load-time-value-holder-global-var*)
              (multiple-value-bind (startup-fn shutdown-fn ordered-raw-constant-list)
-                 (cmp:codegen-startup-shutdown *gcroots-in-module* constant-table num-elements ordered-literals-list bitcast-constant-table)
+                 (cmp:codegen-startup-shutdown cmp:*the-module* *gcroots-in-module* constant-table num-elements ordered-literals-list bitcast-constant-table)
                (values ordered-raw-constant-list constant-table startup-fn shutdown-fn))))))))
 
 (defun load-time-reference-literal (object read-only-p)
@@ -682,9 +679,10 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
     fn))
 
 (defun compile-form (form)
-  (if core:*use-cleavir-compiler*
-      (funcall (find-symbol "COMPILE-FORM" "CLASP-CLEAVIR") form)
-      (bclasp-compile-form form)))
+    (if core:*use-cleavir-compiler*
+        (progn
+          (funcall (find-symbol "COMPILE-LTV-FORM" "CLASP-CLEAVIR") form))
+        (bclasp-compile-form form)))
 
 
 
@@ -773,20 +771,33 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
         (values (constants-table-reference data-or-index (pretty-load-time-name literal data-or-index)) literal-name)
         data-or-index)))
 
-(defun codegen-rtv (result obj)
-  "bclasp calls this to get copy the run-time-value for obj into result"
+(defun codegen-rtv-bclasp (result obj)
+  "bclasp calls this to get copy the run-time-value for obj into result.
+Returns (value index t) if the value was put in the literal vector or it
+returns (value immediate nil) if the value is an immediate value."
   (multiple-value-bind (immediate?literal-node-runtime in-array)
       (run-time-reference-literal obj t)
     (if in-array
         (let* ((literal-node-runtime immediate?literal-node-runtime)
                (index (literal-node-runtime-index literal-node-runtime)))
-          (when result
-            (cmp:irc-store (constants-table-value index) result))
+          (cmp:irc-store (constants-table-value index) result)
           index)
         (let ((immediate immediate?literal-node-runtime))
-          (when result
-            (cmp:irc-store immediate result))
-          :poison-value-from-codegen-rtv))))
+          (cmp:irc-store immediate result)
+          :poison-value-from-codegen-rtv-bclasp))))
+
+(defun codegen-rtv-cclasp (obj)
+  "bclasp calls this to get copy the run-time-value for obj into result.
+Returns (value index t) if the value was put in the literal vector or it
+returns (value immediate nil) if the value is an immediate value."
+  (multiple-value-bind (immediate?literal-node-runtime in-array)
+      (run-time-reference-literal obj t)
+    (if in-array
+        (let* ((literal-node-runtime immediate?literal-node-runtime)
+               (index (literal-node-runtime-index literal-node-runtime)))
+          (values index t))
+        (let ((immediate immediate?literal-node-runtime))
+          (values immediate nil)))))
 
 (defun codegen-literal (result object env)
   "This is called by bclasp.  If result is nil then just return the ltv index.

@@ -184,6 +184,9 @@ def collect_clasp_c_source_files(bld):
                  'llvmoExpose',
                  'llvmoPackage',
                  'clbindLlvmExpose']) + \
+             collect_c_source_files(bld, 'src/mpip/', [
+                 'claspMpi'
+             ]) + \
              collect_c_source_files(bld, 'src/asttooling/', [
                  'astVisitor',
                  'astExpose',
@@ -318,6 +321,7 @@ def collect_bclasp_lisp_files(**kwargs):
         "src/lisp/kernel/clos/print",
         "src/lisp/kernel/clos/streams",
         "src/lisp/kernel/lsp/pprint",
+        "src/lisp/kernel/lsp/packlib2",
         "src/lisp/kernel/clos/inspect",
         "src/lisp/kernel/lsp/fli",
         "src/lisp/modules/sockets/sockets",

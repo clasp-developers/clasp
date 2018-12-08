@@ -54,6 +54,15 @@ namespace cl {
 extern core::Symbol_sp& _sym_eq;
 };
 
+namespace mpip {
+class Mpi_O;
+typedef gc::smart_ptr<Mpi_O> Mpi_sp;
+};
+
+namespace clbind {
+class ClassRep_O;
+typedef gc::smart_ptr<ClassRep_O> ClassRep_sp;
+};
 namespace core {
 
 class Bundle;
@@ -196,7 +205,7 @@ struct ThreadInfo {
   MultipleValues multipleValues;
 };
 #endif
-
+ 
 class Lisp_O {
   friend T_mv core__source_file_info(T_sp sourceFile, String_sp truename, size_t offset, bool useLineno);
   friend gctools::Layout_code* gctools::get_stamp_layout_codes();
@@ -226,6 +235,9 @@ class Lisp_O {
     Integer_sp _IntegerOverflowAdjust;
     CharacterInfo charInfo;
     gctools::Vec0<core::Symbol_sp> _ClassSymbolsHolder;
+    gctools::Vec0<Instance_sp> staticClasses;
+    gctools::Vec0<Symbol_sp> staticClassSymbols;
+    gctools::Vec0<Creator_sp> staticInstanceCreators;
 //    DynamicBindingStack _Bindings;
     gctools::Vec0<SourceFileInfo_sp> _SourceFiles;
     map<string, int> _SourceFileIndices; // map<string,SourceFileInfo_sp> 	_SourceFiles;
@@ -256,6 +268,12 @@ class Lisp_O {
     mutable mp::SharedMutex _SetfDefinitionsMutex;
 #endif
 #endif
+    bool _MpiEnabled;
+    int _MpiRank;
+    int _MpiSize;
+    mpip::Mpi_sp  _MpiWorld;
+    //! Class_map
+    gctools::Vec0<clbind::ClassRep_sp> _ClassMap;
     //! Any class defined here needs to be added to predicates.cc::clos__classp
     Instance_sp   _TheClass;
     Instance_sp   _TheBuiltInClass;
@@ -342,13 +360,11 @@ public:
   void archive(ArchiveP node);
 #endif // defined(XML_ARCHIVE)
 public:
-public:
   GCRoots _Roots;
   // Trap INTERN of a specific symbol to help resolve symbol conflicts
   bool _TrapIntern;
   std::string _TrapInternPackage;
   std::string _TrapInternName;
-  map<string, void *> _OpenDynamicLibraryHandles;
   uint _StackWarnSize;
   uint _StackSampleCount;
   uint _StackSampleSize;
@@ -389,9 +405,6 @@ public:
 	*/
   bool _LockGlobalInitialization;
   vector<InitializationCallback> _GlobalInitializationCallbacks;
-  bool _MpiEnabled;
-  int _MpiRank;
-  int _MpiSize;
   bool _Interactive;
   string _FunctionName;
   /*! Define the name of a source file that is evaluated
@@ -425,12 +438,6 @@ public:
 //  InvocationHistoryStack &invocationHistoryStack();
 
 public:
-  map<string, void *> &openDynamicLibraryHandles() { return this->_OpenDynamicLibraryHandles; };
-
-public:
-//THREAD_CHANGE  StringOutputStream_sp &bformatStringOutputStream() { return this->_Roots._BformatStringOutputStream; };
-
-public:
   /*! Signal a problem if the stack gets too full*/
   inline void stack_monitor() {
     int x;
@@ -454,9 +461,9 @@ public:
 
 public:
   void setupMpi(bool mpiEnabled, int mpiRank, int mpiSize);
-  bool mpiEnabled() { return this->_MpiEnabled; }
-  int mpiRank() { return this->_MpiRank; }
-  int mpiSize() { return this->_MpiSize; }
+  bool mpiEnabled() { return this->_Roots._MpiEnabled; }
+  int mpiRank() { return this->_Roots._MpiRank; }
+  int mpiSize() { return this->_Roots._MpiSize; }
 
 public:
   Str8Ns_sp get_Str8Ns_buffer_string();
@@ -942,12 +949,12 @@ public:
 
  /*! Use RAII to safely allocate a buffer */
  
-struct SafeBuffer {
+struct SafeBufferStr8Ns {
   Str8Ns_sp _Buffer;
-  SafeBuffer() {
+  SafeBufferStr8Ns() {
     this->_Buffer = _lisp->get_Str8Ns_buffer_string();
   };
-  ~SafeBuffer() {
+  ~SafeBufferStr8Ns() {
     _lisp->put_Str8Ns_buffer_string(this->_Buffer);
   };
   Str8Ns_sp string() const {return this->_Buffer;};
@@ -1031,6 +1038,7 @@ namespace core {
 #else
 #define MONITOR(x)
 #endif
+extern bool global_Started;
 };
 
 

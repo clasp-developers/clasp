@@ -43,7 +43,14 @@ namespace core {
 
 
 T_sp record_circle_subst(T_sp replacement_table, T_sp tree) {
-  return eval::funcall(_sym_circle_subst, replacement_table, tree);
+  RECORD_LOG(BF("Checking record_circle_subst orig@%p: %s\n") % (void *)(tree.raw_()) %  _rep_(tree) );
+  T_sp result = eval::funcall(_sym_circle_subst, replacement_table, tree);
+#ifdef DEBUG_RECORD
+  if (result.raw_() != tree.raw_()) {
+    RECORD_LOG(BF("  YES!!! record_circle_subst tree@%p subst@%p: %s\n") % (void*)(tree.raw_()) % (void *)(result.raw_()) %  _rep_(result) );
+  }
+#endif
+  return result;
 }
 
 Record_O::Record_O(RecordStage stage, bool dummy, List_sp data) : _stage(stage), _alist(data), _Seen(_Nil<T_O>()) {}
@@ -82,5 +89,15 @@ void Record_O::errorIfInvalidArguments() {
   }
 }
 
+CL_DEFUN Record_sp core__make_record_patcher(HashTable_sp circle_table)
+{
+  return Record_O::create_patcher(circle_table);
+}
+
+CL_DEFUN void core__patch_object(General_sp tree, Record_sp record) {
+  if (tree->fieldsp()) {
+    tree->fields(record);
+  }
+}
 
 };

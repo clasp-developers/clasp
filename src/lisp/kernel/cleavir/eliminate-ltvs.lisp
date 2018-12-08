@@ -1,84 +1,47 @@
 (cl:in-package #:clasp-cleavir)
 ;;;; This code was copied from cleavir's  eliminate-load-time-value-inputs.lisp
 ;;;;  I'm modifying it to work with Clasp's way of dealing with load-time-values
-;;;;
-;;;; If the LOAD-TIME-VALUE-INPUT to be replaced has a form of type
-;;;; (QUOTE constant), then CONVERT-CONSTANT-TO-IMMEDIATE is called,
-;;;; passing the constant and the SYSTEM as arguments.  If that call
-;;;; returns an integer, then instead of adding a form to the initial
-;;;; instruction, this transformation replaces the input by an
-;;;; immediate input instead.  If that call returns NIL, the normal
-;;;; transformation is performed.
-;;;;
-;;;; Client code can add a method on CONVERT-CONSTANT-TO-IMMEDIATE
-;;;; that should then specialize on the second parameter, i.e. the
-;;;; SYSTEM.
 
-(defgeneric convert-constant-to-immediate (constant system))
-
-(defmethod convert-constant-to-immediate (constant system)
-  (cleavir-generate-ast:convert-constant-to-immediate constant *clasp-env* system))
-
-
-(defun replace-constant-with-lexical (initial-instruction input env)
+(defun replace-constant-with-precalc (value index input)
+  (change-class input 'cleavir-ir:lexical-location :name (gensym "CV"))
   (loop for instr in (cleavir-ir:using-instructions input)
-        do (let ((index (clasp-cleavir-ast::generate-new-precalculated-value-index
-                         env
-                         `',(cleavir-ir:value input)
-                         t #|constant-value are read-only-p|#)))
-             (check-type index clasp-cleavir:arrayed-literal)
-             (let* ((index-input (cleavir-ir:make-immediate-input
-                                  index))
-                    (cleavir-ir:*policy* (cleavir-ir:policy instr)) 
-                    (pvi (clasp-cleavir-hir:make-precalc-value-instruction
-                          index-input
-                          input
-;;;                       :successor instr
-                          :original-object `',(cleavir-ir:value input))))
-               (cleavir-ir:insert-instruction-before pvi instr))))
-  (let ((new-sym (gensym "CV")))
-    (change-class input 'cleavir-ir:lexical-location
-                  :name new-sym)))
+        do (let* ((cleavir-ir:*policy* (cleavir-ir:policy instr))
+                  (pvi (clasp-cleavir-hir:make-precalc-value-instruction
+                        index input :original-object value)))
+             (cleavir-ir:insert-instruction-before pvi instr))))
 
 (defun replace-constant-with-immediate (value input)
   (change-class input 'cleavir-ir:immediate-input :value value))
 
-(defun eliminate-constant-input (initial-instruction input system env)
-  (let ((immediate (convert-constant-to-immediate (cleavir-ir:value input) system)))
-    (if (null immediate)
-        (replace-constant-with-lexical initial-instruction input env)
-        (replace-constant-with-immediate immediate input))))
+(defun eliminate-constant-input (input env)
+  (multiple-value-bind (index-or-immediate immediatep)
+      ;; kind of dumb hack to throw it a constant.
+      (clasp-cleavir-ast::process-ltv
+       env (list 'quote (cleavir-ir:value input)) t)
+    (if immediatep
+        (replace-constant-with-immediate index-or-immediate input)
+        (replace-constant-with-precalc (cleavir-ir:value input) index-or-immediate input))))
 
-(defun replace-load-time-value-with-lexical (initial-instruction input env)
+(defun replace-load-time-value-with-precalc (form index input)
+  (change-class input 'cleavir-ir:lexical-location :name (gensym "LTV"))
   (loop for instr in (cleavir-ir:using-instructions input)
-     do (let ((index (clasp-cleavir-ast::generate-new-precalculated-value-index
-                              env
-                              (cleavir-ir:form input)
-                              (cleavir-ir:read-only-p input))))
-          (let* ((index-input (cleavir-ir:make-immediate-input
-                               index))
-                 (cleavir-ir:*policy* (cleavir-ir:policy instr)) 
-                 (pvi (clasp-cleavir-hir:make-precalc-value-instruction
-                       index-input
-                       input
-                       :successor instr
-                       :original-object (cleavir-ir:form input))))
-            (cleavir-ir:insert-instruction-before pvi instr))))
-  (change-class input 'cleavir-ir:lexical-location
-                :name (gensym)))
+        do (let* ((cleavir-ir:*policy* (cleavir-ir:policy instr))
+                  (pvi (clasp-cleavir-hir:make-precalc-value-instruction
+                        index input :original-object form)))
+             (cleavir-ir:insert-instruction-before pvi instr))))
 
 (defun replace-load-time-value-with-immediate (value input)
   (check-type value integer)
   (change-class input 'cleavir-ir:immediate-input :value value))
 
-(defun eliminate-load-time-value-input (initial-instruction input system env)
-  (if (cleavir-hir-transformations:load-time-value-is-constant-p input)
-      (let* ((constant (cleavir-hir-transformations:load-time-value-constant input))
-	     (immediate (convert-constant-to-immediate constant system)))
-	(if (null immediate)
-	    (replace-load-time-value-with-lexical initial-instruction input env)
-	    (replace-load-time-value-with-immediate immediate input)))
-      (replace-load-time-value-with-lexical initial-instruction input)))
+(defun eliminate-load-time-value-input (input env)
+  (multiple-value-bind (index-or-immediate immediatep)
+      (clasp-cleavir-ast::process-ltv
+       env (cleavir-ir:form input) (cleavir-ir:read-only-p input))
+    (if immediatep
+        (replace-load-time-value-with-immediate index-or-immediate input)
+        (replace-load-time-value-with-precalc
+         (cleavir-ir:form input) index-or-immediate input))))
 
 ;;; Main entry point.
 (defun eliminate-load-time-value-inputs (initial-instruction system env)
@@ -88,10 +51,8 @@
    (lambda (instruction)
      (loop for input in (cleavir-ir:inputs instruction)
         when (typep input 'cleavir-ir:constant-input)
-        do (eliminate-constant-input
-            initial-instruction input system env)
+        do (eliminate-constant-input input env)
         when (typep input 'cleavir-ir:load-time-value-input)
-        do (eliminate-load-time-value-input
-            initial-instruction input system env)))
+        do (eliminate-load-time-value-input input env)))
    initial-instruction)
   (cleavir-ir:reinitialize-data initial-instruction))

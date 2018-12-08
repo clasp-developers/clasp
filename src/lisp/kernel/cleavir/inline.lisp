@@ -12,6 +12,9 @@
            #:inlined-two-arg->=
            ))
 
+(eval-when (:compile-toplevel :execute :load-toplevel)
+  (setq core:*defun-inline-hook* 'defun-inline-hook))
+
 (progn
   #+(or)
   (eval-when (:execute)
@@ -538,6 +541,20 @@
             (ext:byte16 nil) (ext:byte8 nil)
             (bit t))))
 
+;;; If the array has a fill-pointer, this might be wrong, at least when called from elt
+;;; (elt (make-array 10 :initial-contents '(0 1 2 3 4 5 6 7 8 9) :fill-pointer 3) 5)
+;;; sbcl -> The index 5 is too large, but no error in clasp
+;;; aref allows access further than the fill pointer
+(declaim (inline vector-in-bounds-p))
+(defun vector-in-bounds-p (vector index)
+  (etypecase vector
+    ((simple-vector *)
+     (and (<= 0 index) (< index (core::vector-length vector))))
+    (array
+     (and (<= 0 index) (< index (if (array-has-fill-pointer-p vector)
+                                    (min (core::%array-total-size vector) (fill-pointer vector))
+                                    (core::%array-total-size vector)))))))
+
 (declaim (inline row-major-array-in-bounds-p))
 (defun row-major-array-in-bounds-p (array index)
   (etypecase array
@@ -562,6 +579,45 @@
           (when (typep ,arrayname '(simple-array * (*))) (return)))))
      ,@body))
 
+
+#|
+(defun %non-empty-array-p (array)
+  (> (array-total-size array) 0))
+
+(deftype non-empty-array ()
+  `(and array (satisfies %non-empty-array-p)))
+
+(typep (make-array 0) 'NON-EMPTY-ARRAY)
+(typep (make-array 1) 'NON-EMPTY-ARRAY)
+|#
+
+(declaim (inline vector-read))
+(defun vector-read (vector index)
+  ;; first bounds check. Use the original arguments.
+  ;; second, undisplace. This can be done independently
+  ;; of the index, meaning it could potentially be
+  ;; moved out of loops, though that can invite inconsistency
+  ;; in a multithreaded environment.
+    (unless (vector-in-bounds-p vector index)
+      ;; From elt: Should signal an error of type type-error if index is not a valid sequence index for sequence.
+      (etypecase vector
+        ((simple-vector *)
+         (let ((max (core::vector-length vector)))
+           (if (zerop max)
+             (error 'simple-type-error :FORMAT-CONTROL "Array ~a not valid for index ~a~%" :format-arguments (list vector index) :datum index :expected-type '(integer 0 (0)))
+               (error 'type-error :datum index :expected-type `(integer 0 ,(1- max))))))
+        (array
+         (let ((max (core::%array-total-size vector)))
+           (when (array-has-fill-pointer-p vector)
+               (setq max (min max (fill-pointer vector))))
+           (if (zerop max)
+             (error 'simple-type-error :FORMAT-CONTROL "Array ~a not valid for index ~a~%" :format-arguments (list vector index) :datum index :expected-type '(integer 0 (0)))
+               (error 'type-error :datum index :expected-type `(integer 0 ,(1- max))))))))
+  (with-array-data (underlying-array offset vector)
+    ;; Okay, now array is a vector/simple, and index is valid.
+    ;; This function takes care of element type discrimination.
+    (%unsafe-vector-ref underlying-array (+ index offset))))
+
 (declaim (inline cl:row-major-aref))
 (defun cl:row-major-aref (array index)
   ;; First, undisplace. This can be done independently
@@ -571,16 +627,47 @@
   (with-array-data (underlying-array offset array)
     ;; Now bounds check. Use the original arguments.
     (unless (row-major-array-in-bounds-p array index)
-      (error "~d is not a valid row-major index for ~a" index array))
+      (etypecase array
+        ((simple-array * (*))
+         (let ((max (core::vector-length array)))
+           (if (zerop max)
+               (error 'simple-type-error :FORMAT-CONTROL "Array not valid ~a for index ~a ~%" :format-arguments (list array index) :datum index :expected-type '(integer 0 (0)))
+               (error 'type-error :datum index :expected-type `(integer 0 ,(1- max))))))
+        (array
+         (let ((max (core::%array-total-size array)))
+           (if (zerop max)
+               (error 'simple-type-error :FORMAT-CONTROL "Array not valid ~a for index ~a ~%" :format-arguments (list array index) :datum index :expected-type '(integer 0 (0)))
+               (error 'type-error :datum index :expected-type `(integer 0 ,(1- max))))))))
     ;; Okay, now array is a vector/simple, and index is valid.
     ;; This function takes care of element type discrimination.
     (%unsafe-vector-ref underlying-array (+ index offset))))
+
+(declaim (inline vector-set))
+(defun vector-set (vector index value)
+  (unless (vector-in-bounds-p vector index)
+    (let ((max (core::vector-length vector)))
+      (if (zerop max)
+          (error 'simple-type-error :FORMAT-CONTROL "Array ~a not valid for index ~a~%" :format-arguments (list vector index) :datum index :expected-type '(integer 0 (0)))
+          (error 'type-error :datum index :expected-type `(integer 0 ,max)))))
+  (with-array-data (underlying-array offset vector)
+    (%unsafe-vector-set underlying-array (+ index offset) value))
+  )
 
 (declaim (inline core:row-major-aset))
 (defun core:row-major-aset (array index value)
   (with-array-data (underlying-array offset array)
     (unless (row-major-array-in-bounds-p array index)
-      (error "~d is not a valid row-major index for ~a" index array))
+      (etypecase array
+        ((simple-array * (*))
+         (let ((max (core::vector-length array)))
+           (if (zerop max)
+               (error 'simple-type-error :FORMAT-CONTROL "Array ~a not valid for index~a~%" :format-arguments (list array index) :datum index :expected-type '(integer 0 (0)))
+               (error 'type-error :datum index :expected-type `(integer 0 ,max)))))
+        (array
+         (let ((max (core::%array-total-size array)))
+           (if (zerop max)
+               (error 'simple-type-error :FORMAT-CONTROL "Array ~a not valid for index ~a~%" :format-arguments (list array index) :datum index :expected-type '(integer 0 (0)))
+               (error 'type-error :datum index :expected-type `(integer 0 ,max)))))))
     (%unsafe-vector-set underlying-array (+ index offset) value)))
 
 
@@ -696,18 +783,36 @@
   (debug-inline "elt")
   (declaim (inline elt))
   (defun elt (sequence index)
-    (etypecase sequence
-      (list (nth index sequence))
-      (vector (row-major-aref sequence index))
-      (t (error 'type-error :datum sequence :expected-type 'sequence))))
-
+  (etypecase sequence
+    (list (if (null sequence)
+              (error 'type-error :datum sequence :expected-type 'cons)
+              (let ((cell (nthcdr index sequence)))
+                (if (consp cell)
+                    (car (the cons cell))
+                    (if cell
+                        ;;; we expect a proper list
+                        (error 'type-error :datum cell :expected-type 'list)
+                        ;;; index must be wrong
+                        (error 'type-error :datum index :expected-type (list 'integer 0 (1- (length sequence)))))))))
+    (vector (vector-read sequence index))
+    (t (error 'type-error :datum sequence :expected-type 'sequence))))
 
   (debug-inline "core:setf-elt")
   (declaim (inline core:setf-elt))
   (defun core:setf-elt (sequence index new-value)
     (etypecase sequence
-      (list (setf (nth index sequence) new-value))
-      (vector (setf (row-major-aref sequence index) new-value))
+      (list (if (null sequence)
+                (error 'type-error :datum sequence :expected-type 'cons)
+                (let ((cell (nthcdr index sequence)))
+                  (if (consp cell)
+                      (setf (car cell) new-value)
+                      (if cell
+                        ;;; we expect a proper list
+                          (error 'type-error :datum sequence :expected-type 'list)
+                        ;;; index must be wrong
+                          (error 'type-error :datum index :expected-type (list 'integer 0 (1- (length sequence)))))))))
+      ;;; Need to test if index fits respecting the fill-pointer
+      (vector (vector-set sequence index new-value))
       (t (error 'type-error :datum sequence :expected-type 'sequence)))))
 
 ;;; ------------------------------------------------------------

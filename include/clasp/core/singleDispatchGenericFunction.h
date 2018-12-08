@@ -100,7 +100,7 @@ public:
 	  unless it's locked. Whenever a method is defined the method combination table
 	  is wiped out */
     void addMethod(SingleDispatchMethod_sp method);
-    LambdaListHandler_sp lambdaListHandler() const { return this->_lambdaListHandler; };
+    T_sp lambdaListHandler() const { return this->_lambdaListHandler; };
     CL_LISPIFY_NAME("SingleDispatchGenericFunction-methods");
     CL_DEFMETHOD   List_sp methods() const {
       return this->_Methods;

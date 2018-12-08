@@ -6,8 +6,8 @@
 ;;; if nil == bclasp. Code for the bclasp compiler is in codegen-toplevel.lsp;
 ;;; look for t1expr.
 
-(defvar *compile-verbose* nil)
-(defvar *compile-print* nil)
+(defvar *compile-verbose* t)
+(defvar *compile-print* t)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -55,9 +55,9 @@
                        (total-llvm-time (+ llvm-finalization-time (if report-link-time
                                                                       link-time
                                                                       0.0)))
-                       (percent-llvm-time (* 100.0 (/ total-llvm-time compiler-real-time)))
+                       (percent-llvm-time (* 100.0 (/ total-llvm-time (+ compiler-real-time (if report-link-time link-time 0.0)))))
                        (percent-time-string (if report-link-time
-                                                (core:bformat nil "(llvm+link)/real(%1.f%%)" percent-llvm-time)
+                                                (core:bformat nil "(llvm+link)/(real+link)(%1.f%%)" percent-llvm-time)
                                                 (core:bformat nil "llvm/real(%1.f%%)" percent-llvm-time))))
                    (core:bformat t "   %s seconds real(%.1f) run(%.1f) llvm(%.1f)%s %s%N"
                                  message
@@ -65,7 +65,8 @@
                                  compiler-run-time
                                  llvm-finalization-time
                                  link-string
-                                 percent-time-string)))))))
+                                 percent-time-string)
+                   (finish-output)))))))
         (t (funcall closure))))
 
 (defmacro with-compiler-timer ((&key message report-link-time verbose override) &rest body)
@@ -229,8 +230,7 @@ and the pathname of the source file - this will also be used as the module initi
                                  (source-debug-offset 0)
                                  environment
                                  (optimize t)
-                                 (optimize-level *optimization-level*)
-                                 dry-run)
+                                 (optimize-level *optimization-level*))
   "* Arguments
 - given-input-pathname :: A pathname.
 - output-path :: A pathname.
@@ -268,26 +268,34 @@ Compile a lisp source file into an LLVM module."
       (cmp-log "About to start with-compilation-unit%N")
       (with-compilation-unit ()
         (let* ((*compile-file-pathname* (pathname (merge-pathnames given-input-pathname)))
-               (*compile-file-truename* (translate-logical-pathname *compile-file-pathname*)))
+               (*compile-file-truename* (translate-logical-pathname *compile-file-pathname*))
+               run-all-name)
           (with-module (:module module
                         :optimize (when optimize #'optimize-module-for-compile-file)
                         :optimize-level optimize-level)
             (with-source-pathnames (:source-pathname *compile-file-truename* ;(namestring source-location)
                                     :source-debug-pathname source-debug-pathname
                                     :source-debug-offset source-debug-offset)
+              ;; (1) Generate the code
               (with-debug-info-generator (:module *the-module*
                                           :pathname *compile-file-truename*)
-                (or *the-module* (error "*the-module* is NIL"))
+                (or module (error "module is NIL"))
                 (with-make-new-run-all (run-all-function)
                   (with-literal-table
                       (loop-read-and-compile-file-forms source-sin environment compile-file-hook))
-                  (make-boot-function-global-variable *the-module* run-all-function))))
-            (cmp-log "About to verify the module%N")
-            (cmp-log-dump-module *the-module*)
-            (irc-verify-module-safe *the-module*)
-            (quick-module-dump *the-module* "preoptimize")
-            ;; ALWAYS link the builtins in, inline them and then remove them.
-            (link-inline-remove-builtins *the-module*))
+                  (setf run-all-name (llvm-sys:get-name run-all-function))))
+              (cmp-log "About to verify the module%N")
+              (cmp-log-dump-module *the-module*)
+              (irc-verify-module-safe *the-module*)
+              (quick-module-dump *the-module* "preoptimize") 
+              ;; (2) Add the CTOR next
+              (make-boot-function-global-variable module run-all-name :register-library t)
+              ;; (3) ALWAYS link the builtins in, inline them and then remove them - then optimize.
+              (link-inline-remove-builtins *the-module*))
+            ;; Now at the end of with-module another round of optimization is done
+            ;; but the RUN-ALL is now referenced by the CTOR and so it won't be optimized away
+            ;; ---- MOVE OPTIMIZATION in with-module to HERE ----
+            )
           (quick-module-dump module "postoptimize")
           module)))))
 
@@ -313,8 +321,6 @@ Compile a lisp source file into an LLVM module."
                        ;; ignored by bclasp
                        ;; but passed to hook functions
                        environment
-                       ;; Use as little llvm as possible for timing
-                       dry-run
                      &aux conditions)
   "See CLHS compile-file."
   (if system-p-p (error "I don't support system-p keyword argument - use output-type"))
@@ -334,45 +340,57 @@ Compile a lisp source file into an LLVM module."
                                               :compile-file-hook *cleavir-compile-file-hook*
                                               :environment environment
                                               :optimize optimize
-                                              :optimize-level optimize-level
-                                              :dry-run dry-run)))
+                                              :optimize-level optimize-level)))
           (cond
             ((null output-path)
              (error "The output-path is nil for input filename ~a~%" input-file))
             ((eq output-type :object)
              (when verbose (bformat t "Writing object to %s%N" (core:coerce-to-filename output-path)))
              (ensure-directories-exist output-path)
-             ;; Save the bitcode so we can take a look at it
-             (with-track-llvm-time
-                 (write-bitcode module (core:coerce-to-filename (cfp-output-file-default output-path :bitcode))))
-             (with-open-file (fout output-path :direction :output)
-               (let ((reloc-model (cond
-                                   ((or (member :target-os-linux *features*) (member :target-os-freebsd *features*))
-                                    'llvm-sys:reloc-model-pic-)
-                                   (t 'llvm-sys:reloc-model-undefined))))
-                 (unless dry-run (generate-obj-asm module fout :file-type 'llvm-sys:code-gen-file-type-object-file :reloc-model reloc-model)))))
+             (let ((temp-bitcode-file (compile-file-pathname input-file :output-file output-file :output-type :bitcode)))
+               (ensure-directories-exist temp-bitcode-file)             ;; Save the bitcode so we can take a look at it
+               (with-track-llvm-time
+                   (write-bitcode module temp-bitcode-file))
+               (prog1
+                   (with-open-file (fout output-path :direction :output)
+                     (let ((reloc-model (cond
+                                          ((or (member :target-os-linux *features*) (member :target-os-freebsd *features*))
+                                           'llvm-sys:reloc-model-pic-)
+                                          (t 'llvm-sys:reloc-model-undefined))))
+                       (generate-obj-asm module fout :file-type 'llvm-sys:code-gen-file-type-object-file :reloc-model reloc-model)))
+                 (when (eq type :kernel)
+                   (when verbose
+                     (bformat t "Writing kernel fasl file to: %s%N" output-file)
+                     (finish-output))
+                   (llvm-link (make-pathname :type "fasl" :defaults output-file) :input-files (list temp-bitcode-file) :input-type :bitcode)))))
             ((eq output-type :bitcode)
              (when verbose (bformat t "Writing bitcode to %s%N" (core:coerce-to-filename output-path)))
              (ensure-directories-exist output-path)
-             (unless dry-run
-               (with-track-llvm-time
-                   (write-bitcode module (core:coerce-to-filename output-path)))))
+             (prog1
+                 (with-track-llvm-time
+                     (write-bitcode module (core:coerce-to-filename output-path)))
+               (when (eq type :kernel)
+                 (when verbose
+                   (bformat t "Writing kernel fasl file to: %s%N" output-file)
+                   (finish-output))
+                 (llvm-link (make-pathname :type "fasl" :defaults output-file) :input-files (list output-path) :input-type :bitcode))))
             ((eq output-type :fasl)
              (ensure-directories-exist output-path)
              (let ((temp-bitcode-file (compile-file-pathname input-file :output-file output-file :output-type :bitcode)))
                (ensure-directories-exist temp-bitcode-file)
                (when verbose
-		 (bformat t "Writing temporary bitcode file to: %s%N" temp-bitcode-file))
+                 (bformat t "Writing temporary bitcode file to: %s%N" temp-bitcode-file))
                (with-track-llvm-time
                    (write-bitcode module (core:coerce-to-filename temp-bitcode-file)))
                (when verbose
-		 (bformat t "Writing fasl file to: %s%N" output-file))
-               (unless dry-run (llvm-link output-file :input-files (list temp-bitcode-file) :input-type :bitcode))))
+                 (bformat t "Writing fasl file to: %s%N" output-file)
+                 (finish-output))
+               (llvm-link output-file :input-files (list temp-bitcode-file) :input-type :bitcode)))
             (t ;; fasl
              (error "Add support to file of type: ~a" output-type)))
           (dolist (c conditions)
             (when verbose
-	      (bformat t "conditions: %s%N" c)))
+              (bformat t "conditions: %s%N" c)))
           (with-track-llvm-time
               (llvm-sys:module-delete module))
           (compile-file-results output-path conditions))))))
@@ -386,6 +404,6 @@ Compile a lisp source file into an LLVM module."
     (let ((cmp:*cleavir-compile-hook* nil)
           (cmp:*cleavir-compile-file-hook* nil)
           (core:*use-cleavir-compiler* nil)
-          (core:*eval-with-env-hook* #'core:eval-with-env-default))
+          (core:*eval-with-env-hook* #'core:interpret-eval-with-env))
       (apply 'compile-file input-file args)))
   (export 'bclasp-compile-file))
