@@ -154,13 +154,14 @@ The **library-file** is the name of the output library with the appropriate exte
 
 (defun execute-link-fasl (in-bundle-file in-all-names &key input-type)
   ;; options are a list of strings like (list "-v")
-  (let ((options *link-options*)
-        (all-object-files (mapcar (lambda (n)
-                                    (ensure-string n))
-                                  (if (listp in-all-names)
-                                      in-all-names
-                                      (list in-all-names))))
-        (bundle-file (ensure-string in-bundle-file)))
+  (let* ((options *link-options*)
+         (all-object-files (mapcar (lambda (n)
+                                     (ensure-string n))
+                                   (if (listp in-all-names)
+                                       in-all-names
+                                       (list in-all-names))))
+         (bundle-file (ensure-string in-bundle-file))
+         (temp-bundle-file (ensure-string (core:mkstemp bundle-file))))
     (let ((clang-args (cond
                         ((member :target-os-darwin *features*)
                          (let ((clang-args `( "-flto"
@@ -177,36 +178,37 @@ The **library-file** is the name of the output library with the appropriate exte
 ;;;                        ,@link-flags
 ;;;                        ,(bformat nil "-Wl,-object_path_lto,%s.lto.o" exec-file)
                                               "-o"
-                                              ,bundle-file)))
+                                              ,temp-bundle-file)))
                            clang-args))
                         ((or (member :target-os-linux *features*)
                              (member :target-os-freebsd *features*))
                          ;; Linux needs to use clang to link
                          ;; FreeBSD might
                          (let ((clang-args `(#+(or)"-v"
-                                                    ,@options
-                                                    ,(core:bformat nil "-O%d" *optimization-level*) 
-                                                   ,@all-object-files
-                                                    "-flto"
-                                                    "-fuse-ld=gold"
-                                                    ,@*debug-link-options*
-                                                    #+(or)"-fvisibility=default"
-                                                    "-shared"
-                                                    "-o"
-                                                    ,bundle-file)))
+                                               ,@options
+                                               ,(core:bformat nil "-O%d" *optimization-level*) 
+                                               ,@all-object-files
+                                               "-flto"
+                                               "-fuse-ld=gold"
+                                               ,@*debug-link-options*
+                                               #+(or)"-fvisibility=default"
+                                               "-shared"
+                                               "-o"
+                                               ,temp-bundle-file)))
                            clang-args))
                         (t (error "Add support for this operating system to cmp:generate-link-command")))))
-      (ext:run-clang clang-args :output-file-name bundle-file)
-      (unless (probe-file bundle-file)
+      (ext:run-clang clang-args :output-file-name temp-bundle-file)
+      (unless (probe-file temp-bundle-file)
         ;; I hate what I'm about to do - but on macOS -flto=thin can sometimes crash the linker
         ;; so get rid of that option (IT MUST BE THE FIRST ONE!!!!) and try again
         (when (member :target-os-darwin *features*)
-          (warn "There was a HUGE problem in execute-link-fasl to generate ~a~% with the arguments: /path-to-clang ~a~%  I'm going to try removing the -flto=thin argument and try linking again~%" bundle-file clang-args)
-          (ext:run-clang (cdr clang-args) :output-file-name bundle-file)
-          (when (probe-file bundle-file)
+          (warn "There was a HUGE problem in execute-link-fasl to generate ~a~% with the arguments: /path-to-clang ~a~%  I'm going to try removing the -flto=thin argument and try linking again~%" temp-bundle-file clang-args)
+          (ext:run-clang (cdr clang-args) :output-file-name temp-bundle-file)
+          (when (probe-file temp-bundle-file)
             (warn "execute-link-fasl worked after removing ~a from the argument list --- FIGURE OUT WHAT IS GOING WRONG WITH THAT ARGUMENT!!!" (car clang-args))))
-        (unless (probe-file bundle-file)
-          (error "~%!~%!~%! There is a HUGE problem - an execute-link-fasl command with the arguments:   /path-to-clang ~a~%~%!        failed to generate the output file ~a~%" clang-args bundle-file)))
+        (unless (probe-file temp-bundle-file)
+          (error "~%!~%!~%! There is a HUGE problem - an execute-link-fasl command with the arguments:   /path-to-clang ~a~%~%!        failed to generate the output file ~a~%" clang-args temp-bundle-file)))
+      (rename-file temp-bundle-file bundle-file :if-exists :supersede)
       (truename bundle-file))))
 
 (defun execute-link-executable (output-file-name in-bitcode-names)
