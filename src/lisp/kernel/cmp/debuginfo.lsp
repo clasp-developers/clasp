@@ -241,6 +241,8 @@
        (if (and *dbg-generate-dwarf* *the-module-dibuilder*)
            (multiple-value-bind (,source-dir ,source-name ,filepos ,lineno ,column)
                (walk-form-for-source-info ,block-form)
+             (unless *dbg-current-scope*
+               (error "The *dbg-current-scope* is nil - it cannot be when create-lexical-block is called"))
              (let* ((*dbg-current-scope*
                       (llvm-sys:create-lexical-block *the-module-dibuilder*
                                                      *dbg-current-scope*
@@ -258,10 +260,14 @@
     (setq *dbg-set-current-source-pos* t)
     (when *current-source-pos-info*
     (cmp-log "dbg-set-current-source-pos on form: %s%N" form)
+    (unless *dbg-current-scope*
+      (error "*dbg-current-scope* must not be NIL"))
     (llvm-sys:set-current-debug-location-to-line-column-scope
      *irbuilder* (core:source-pos-info-lineno *current-source-pos-info*) 0 *dbg-current-scope*))))
 
 (defun dbg-set-current-source-pos-for-irbuilder (irbuilder lineno)
+  (unless *dbg-current-scope*
+    (error "*dbg-current-scope* must not be NIL"))
   (when *dbg-generate-dwarf*
     (llvm-sys:set-current-debug-location-to-line-column-scope irbuilder lineno 0 *dbg-current-scope*)))
 
