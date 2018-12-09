@@ -246,7 +246,7 @@
 (test-expect-error reciprocal-0-1  (/ 1 0) :type DIVISION-BY-ZERO)
 (test-expect-error reciprocal-2 (/ 17 10 0 11) :type DIVISION-BY-ZERO)
 
-(test-expect-error abs-1 (plusp (ABS -2305843009213693952)))
+(test abs-1 (plusp (ABS -2305843009213693952)))
 
 (test complex-1 (equal (complex 0 2) (1- (complex 1 2))))
 
@@ -273,10 +273,36 @@
 (test complex-float-6 (eql (complex 3.0 4.0)(complex 3.0 4)))
 (test complex-float-7 (eql (complex 3.0d0 4.0d0)(complex 3 4.0d0)))
 (test complex-float-8 (eql (complex 3.0d0 4.0d0)(complex 3.0d0 4)))
+;;; real and imagpart must be of the same float type, if both are floats
+(test complex-float-9
+      (let ((c (complex 3.0 3.0d0)))
+        (eql (type-of (imagpart c)) (type-of (realpart c)))))
+(test complex-float-10
+      (let ((c (complex 3.0 3.0l0)))
+        (eql (type-of (imagpart c)) (type-of (realpart c)))))
+(test complex-float-11
+      (let ((c (complex 3.0 3.0)))
+        (eql (type-of (imagpart c)) (type-of (realpart c)))))
+(test complex-float-12
+      (let ((c (complex 3.0d0  3.0 )))
+        (eql (type-of (imagpart c)) (type-of (realpart c)))))
+(test complex-float-13
+      (let ((c (complex 3.0l0 3.0 )))
+        (eql (type-of (imagpart c)) (type-of (realpart c)))))
 
 (test ash-1 (= -1 (ash -4294967296 -4294967296)))
 
 (test logbitp-1 (LOGBITP MOST-POSITIVE-FIXNUM -1))
+(test logbitp-2 (null (LOGBITP (1+ MOST-POSITIVE-FIXNUM) 0)))
+(test-expect-error logbitp-3
+ (LOGBITP -1 0)
+ :type type-error)
+(test-expect-error logbitp-4
+ (LOGBITP (1- most-negative-fixnum) 0)
+ :type type-error)
+(test logbitp-5 (null (LOGBITP 37 0)))
+(test logbitp-6 (null (LOGBITP 37 (1+ MOST-POSITIVE-FIXNUM))))
+
 
 ;;GCD
 (test gcd-1 (typep (gcd 0 1) 'fixnum))
@@ -343,6 +369,12 @@
 (test nan-1 (ext:float-nan-p (/ 0.0 0.0)))
 (test nan-3 (ext:float-nan-p (/ 0d0 0d0)))
 (test nan-4 (ext:float-nan-p (/ 0l0 0l0)))
+
+
+(test signum-1 (= -1 (signum most-negative-fixnum)))
+(test signum-1a (= -1 (signum (1- most-negative-fixnum))))
+(test signum-2 (= 1 (signum most-positive-fixnum)))
+(test signum-2a (= 1 (signum (1+ most-positive-fixnum))))
 
 
 

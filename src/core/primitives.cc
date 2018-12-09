@@ -723,8 +723,36 @@ CL_DEFUN T_mv cl__special_operator_p(T_sp sym) {
 CL_DECLARE();
 CL_DOCSTRING("CLHS: ash");
 CL_DEFUN Integer_sp cl__ash(Integer_sp integer, Integer_sp count) {
-  int cnt = clasp_to_int(count);
-  return clasp_shift(integer, cnt);
+  // clasp_to_int silently returns 0 for arguments being fixnums bigger than int
+  // gctools::Fixnum would be a better type
+  // see ecl cl_ash
+  if (count.fixnump())
+    return clasp_shift(integer, count.unsafe_fixnum());
+    else {
+      // count is bignum
+      if (clasp_plusp(count))
+        if (clasp_zerop (integer))
+          return integer;
+        // result will not fit in memory, giveup
+        else SIMPLE_ERROR(BF("ash for bignum count not implemented"));
+      else if (clasp_minusp (count)) {
+        if (integer.fixnump()) {
+          if (clasp_plusp (integer))
+              return clasp_make_fixnum (1);
+          else if (clasp_minusp (integer))
+              return clasp_make_fixnum (-1);
+            else return clasp_make_fixnum (0);
+          }
+        else {
+          //integer is a bignum
+          if (clasp_minusp (integer))
+            return clasp_make_fixnum (-1);
+          else
+            return clasp_make_fixnum (0);
+        }
+      }
+      else return integer;
+    }
 }
 
 CL_LAMBDA(&optional fmt-control &rest args);

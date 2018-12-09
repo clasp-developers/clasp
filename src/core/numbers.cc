@@ -120,39 +120,64 @@ Number_sp clasp_make_complex (Real_sp r, Real_sp i) {
     // need to check whether i is 0
     // A bignum better not be 0
     // if realpart is a rational and imagpart is the rational number zero, the result of complex is realpart, a rational. 
-    if (i.fixnump() && cl__rationalp(r)) {
-      Fixnum fn = i.unsafe_fixnum();
-      if (fn == 0)
-        return r;
-      else return Complex_O::create(r, i);
-    }
+  if (i.fixnump() && cl__rationalp(r)) {
+    Fixnum fn = i.unsafe_fixnum();
+    if (fn == 0)
+      return r;
+    else return Complex_O::create(r, i);
+  }
     // If imagpart is not supplied, the imaginary part is a zero of the same type as realpart;
     // perhaps need to distinguish better whether i is supplied or not
-    if (cl__floatp(r) && i.fixnump() && clasp_zerop(i)) {
-      if (r.single_floatp())
-        i = clasp_make_single_float(0.0);
-      else if (core__double_float_p (r))
-        i = DoubleFloat_O::create(0.0);
-      else if (core__long_float_p(r))
-        i = LongFloat_O::create(0.0l);
+  if (cl__floatp(r) && i.fixnump() && clasp_zerop(i)) {
+    if (r.single_floatp())
+      i = clasp_make_single_float(0.0);
+    else if (core__double_float_p (r))
+      i = DoubleFloat_O::create(0.0);
+    else if (core__long_float_p(r))
+      i = LongFloat_O::create(0.0l);
       // short floats are not really implemented
-    }
+  }
     // If either realpart or imagpart is a float, the non-float is converted to a float before the complex is created. 
     // does that mean, I need to distinguish single and double-float? PDietz seem to assume so
-    else if (cl__floatp(r) && !cl__floatp(i)) {
-      if (r.single_floatp())
-        i = cl__float(i, clasp_make_single_float(1.0));
-      else
-        i = cl__float(i, DoubleFloat_O::create(1.0));
-    }
-    else if (cl__floatp(i) && !cl__floatp(r)){
-      if (i.single_floatp())
-        r = cl__float(r, clasp_make_single_float(1.0));
-      else
-        r = cl__float(r, DoubleFloat_O::create(1.0));
-    }
-    return Complex_O::create(r, i);
+  else if (cl__floatp(r) && !cl__floatp(i)) {
+    if (r.single_floatp())
+      i = cl__float(i, clasp_make_single_float(1.0));
+    else
+      i = cl__float(i, DoubleFloat_O::create(1.0));
   }
+  else if (cl__floatp(i) && !cl__floatp(r)) {
+    if (i.single_floatp())
+      r = cl__float(r, clasp_make_single_float(1.0));
+    else
+      r = cl__float(r, DoubleFloat_O::create(1.0));
+  }
+  else if (cl__floatp(i) && cl__floatp(r)) {
+      // the highest type of both wins single -> double -> long
+    if (r.single_floatp()) {
+      if (!(i.single_floatp())) {
+        // r should be of type of i
+        if (core__double_float_p (i))
+          r =  DoubleFloat_O::create((double) r.unsafe_single_float());
+        else r = LongFloat_O::create((long) r.unsafe_single_float());
+      }
+    }
+    else if (core__double_float_p (r)) {
+      if (!(core__double_float_p (i))) {
+        if (core__long_float_p (i))
+          r = LongFloat_O::create(clasp_to_long_float(r));
+        else i =  DoubleFloat_O::create((double) i.unsafe_single_float());
+      }
+    }
+    else if (core__long_float_p (r))
+      if (!(core__long_float_p (i))) {
+        if  (i.single_floatp())
+          i = DoubleFloat_O::create((double) i.unsafe_single_float());
+        else
+          i = LongFloat_O::create(clasp_to_long_float(i));
+      }
+  }
+  return Complex_O::create(r, i);
+}
 
 CL_LAMBDA(num);
 CL_DECLARE();
