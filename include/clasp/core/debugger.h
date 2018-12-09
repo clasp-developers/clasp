@@ -106,8 +106,10 @@ void register_llvm_stackmaps(uintptr_t startAddress, uintptr_t endAddress, size_
 
  bool if_dynamic_library_loaded_remove(const std::string& libraryName);
 
-void add_dynamic_library_handle(const std::string& libraryName, void* handle);
-
+ void add_dynamic_library_using_handle(const std::string& libraryName, void* handle);
+ void add_dynamic_library_using_origin(bool is_executable, const std::string& libraryName, uintptr_t origin);
+ 
+ void startup_register_loaded_objects();
 
 
  typedef enum {undefined,symbolicated,lispFrame,cFrame} BacktraceFrameEnum ;

@@ -120,7 +120,7 @@ struct SymbolTable {
   uintptr_t _StackmapStart;
   uintptr_t _StackmapEnd;
   std::vector<SymbolEntry> _Symbols;
-  SymbolTable() : _End(0), _Capacity(1024) {
+  SymbolTable() : _End(0), _Capacity(1024), _StackmapStart(0), _StackmapEnd(0) {
     this->_SymbolNames = (char*)malloc(this->_Capacity);
  }
   ~SymbolTable() {
@@ -144,9 +144,15 @@ struct SymbolTable {
   }
   // Shrink the symbol table to the minimimum size
   void optimize() {
-    size_t newCapacity = this->_End+16&(~0x7);
-    this->_SymbolNames = (char*)realloc(this->_SymbolNames,newCapacity);
-    this->_Capacity = newCapacity;
+    if (this->_End>0) {
+      size_t newCapacity = this->_End+16&(~0x7);
+      this->_SymbolNames = (char*)realloc(this->_SymbolNames,newCapacity);
+      this->_Capacity = newCapacity;
+    } else {
+      if (this->_SymbolNames) free(this->_SymbolNames);
+      this->_SymbolNames = 0;
+      this->_Capacity = 0;
+    }
   }
   // Return true if a symbol is found that matches the address
   bool findSymbolForAddress(uintptr_t address,const char*& symbol, uintptr_t& startAddress, uintptr_t& endAddress, char& type, size_t& index) {
@@ -205,7 +211,8 @@ struct ScanInfo {
   size_t  _Index;
   std::vector<BacktraceEntry>* _Backtrace;
   scan_callback _Callback;
-  ScanInfo() : _Index(0) {};
+  size_t _symbol_table_memory;
+  ScanInfo() : _Index(0), _symbol_table_memory(0) {};
 };
 
 std::string backtrace_frame(size_t index, BacktraceEntry* frame)
@@ -281,109 +288,9 @@ DebugInfo& debugInfo() {
 }
 
 
-SymbolTable load_symbol_table(const char* filename, uintptr_t header);
 uintptr_t load_stackmap_info(const char* filename, uintptr_t header, size_t& section_size);
 void search_symbol_table(std::vector<BacktraceEntry>& backtrace, const char* filename, size_t& symbol_table_size);
 void walk_loaded_objects(std::vector<BacktraceEntry>& backtrace, size_t& symbol_table_memory);
-
-void add_dynamic_library_handle(const std::string& libraryName, void* handle) {
-  BT_LOG((buf,"Starting to load library: %s\n", libraryName.c_str() ));
-#ifdef CLASP_THREADS
-  WITH_READ_WRITE_LOCK(debugInfo()._OpenDynamicLibraryMutex);
-#endif
-// Get the start of the library and the symbol_table
-  uintptr_t library_origin = 0;
-#ifdef _TARGET_OS_DARWIN
-  printf("%s:%d:%s Looking for library %s with handle %p\n", __FILE__, __LINE__, __FUNCTION__, libraryName.c_str(), handle);
-  uint32_t num_loaded = _dyld_image_count();
-  for ( size_t idx = 0; idx<num_loaded; ++idx ) {
-    const char* filename = _dyld_get_image_name(idx);
-//    printf("%s:%d:%s Comparing to library: %s\n", __FILE__, __LINE__, __FUNCTION__, filename);
-    if (strcmp(filename,libraryName.c_str())==0) {
-      printf("%s:%d:%s Found library: %s\n", __FILE__, __LINE__, __FUNCTION__, filename);
-      library_origin = (uintptr_t)_dyld_get_image_header(idx);
-    }
-  }
-  SymbolTable symbol_table;
-  if (library_origin!=0) {
-    symbol_table = load_symbol_table(libraryName.c_str(),library_origin);
-    symbol_table.optimize();
-  } else {
-    printf("%s:%d:%s Could not find start of library %s\n", __FILE__, __LINE__, __FUNCTION__, libraryName.c_str());
-  }
-  size_t section_size;
-  uintptr_t p_section = load_stackmap_info(libraryName.c_str(),library_origin,section_size);
-  symbol_table._StackmapStart = p_section;
-  symbol_table._StackmapEnd = p_section+section_size;
-#endif
-#ifdef _TARGET_OS_LINUX
-  void* lorigin;
-  Dl_info data;
-  dlerror();
-  void* addr = dlsym(handle,"_init");
-  const char* error = dlerror();
-  if (error) {
-    printf("%s:%d:%s Could not find _init symbol dlerror = %s\n", __FILE__, __LINE__, __FUNCTION__, error);
-    abort();
-  }
-  int ret = dladdr(addr,&data);
-  if (ret==0) {
-    printf("%s:%d:%s Could not use dladdr to get start of library %s dlerror = %s\n", __FILE__, __LINE__, __FUNCTION__, libraryName.c_str(), error);
-    abort();
-  }
-  library_origin = (uintptr_t)data.dli_fbase;
-//  printf("%s:%d:%s data.dli_fbase = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)data.dli_fbase);
-  size_t section_size;
-  SymbolTable symbol_table = load_symbol_table(libraryName.c_str(),library_origin);
-  symbol_table.optimize();
-  symbol_table.sort();
-#endif
-  OpenDynamicLibraryInfo odli(libraryName,handle,symbol_table);
-  debugInfo()._OpenDynamicLibraryHandles[libraryName] = odli;
-}
-
-bool if_dynamic_library_loaded_remove(const std::string& libraryName) {
-#ifdef CLASP_THREADS
-  WITH_READ_WRITE_LOCK(debugInfo()._OpenDynamicLibraryMutex);
-#endif
-  map<string,OpenDynamicLibraryInfo>::iterator fi = debugInfo()._OpenDynamicLibraryHandles.find(libraryName);
-  bool exists = (fi!=debugInfo()._OpenDynamicLibraryHandles.end());
-  if (exists) {
-    free((void*)(fi->second._SymbolTable._SymbolNames));
-    BT_LOG((buf,"What about the stackmaps for this library - you need to remove them as well - I should probably NOT store stackmaps for libraries - but fetch them every time we need a backtrace!\n"));
-    dlclose(fi->second._Handle);
-    debugInfo()._OpenDynamicLibraryHandles.erase(libraryName);
-  }
-  return exists;
-}
-
-
-CL_DEFUN List_sp core__dynamic_library_handles() {
-#ifdef CLASP_THREADS
-  WITH_READ_LOCK(debugInfo()._OpenDynamicLibraryMutex);
-#endif
-  ql::list result;
-  for ( auto entry : debugInfo()._OpenDynamicLibraryHandles ) {
-    result << Cons_O::createList(SimpleBaseString_O::make(entry.second._Filename),
-                                 Pointer_O::create(entry.second._Handle) );;
-  }
-  return result.cons();
-}
-
-bool lookup_symbol(uintptr_t address, const char*& symbol, uintptr_t& start, uintptr_t& end, char& type)
-{
-#ifdef CLASP_THREADS
-  WITH_READ_LOCK(debugInfo()._OpenDynamicLibraryMutex);
-#endif
-  size_t index;
-  for ( auto entry : debugInfo()._OpenDynamicLibraryHandles ) {
-    SymbolTable symtab = entry.second._SymbolTable;
-    if (symtab.findSymbolForAddress(address,symbol,start,end,type,index)) {
-      return true;
-    }
-  }
-  return false;
-}
 
 
 struct Header {
@@ -639,7 +546,13 @@ void search_jitted_objects(std::vector<BacktraceEntry>& backtrace, bool searchFu
   }
 }
 
-
+//////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
 #if defined(_TARGET_OS_DARWIN)
 
 uint8_t * 
@@ -687,7 +600,7 @@ mygetsectiondata(
   return(0);
 }
 
-SymbolTable load_symbol_table(const char* filename, uintptr_t header) {
+SymbolTable load_macho_symbol_table(const char* filename, uintptr_t header) {
   int baddigit = 0;
   SymbolTable symbol_table;
   struct stat buf;
@@ -786,7 +699,18 @@ void walk_loaded_objects(std::vector<BacktraceEntry>& backtrace, size_t& symbol_
 }
 
 
-
+void startup_register_loaded_objects() {
+  printf("%s:%d:%s handle macos\n", __FILE__, __LINE__, __FUNCTION__);
+//    printf("Add support to walk symbol tables and stackmaps for DARWIN\n");
+  uint32_t num_loaded = _dyld_image_count();
+  for ( size_t idx = 0; idx<num_loaded; ++idx ) {
+    const char* filename = _dyld_get_image_name(idx);
+    std::string libname(filename);
+    uintptr_t library_origin = (uintptr_t)_dyld_get_image_header(idx);
+    bool is_executable = (idx==0);
+    add_dynamic_library_using_origin(is_executable,libname,library_origin);
+  }
+}
 
 #endif ////////////////////////////////////////////////// _TARGET_OS_DARWIN
 
@@ -804,15 +728,15 @@ void ensure_libelf_initialized() {
   }
 }
 
-SymbolTable load_symbol_table(const char* filename, uintptr_t start)
+SymbolTable load_linux_symbol_table(const char* filename, uintptr_t start, uintptr_t& stackmap_start, size_t& stackmap_size)
 {
+  stackmap_start = 0;
   SymbolTable symbol_table;
   BT_LOG((buf,"Searching symbol table %s memory-start %p\n", filename, (void*)start ));
   Elf         *elf;
   GElf_Shdr   shdr;
   Elf_Data    *data;
   int         fd, ii, count;
-  WRITE_DEBUG_IO(BF("Library %s\n") % filename );
   ensure_libelf_initialized();
   elf_version(EV_CURRENT);
   fd = open(filename, O_RDONLY);
@@ -854,6 +778,7 @@ SymbolTable load_symbol_table(const char* filename, uintptr_t start)
       }
     }
   }
+//  printf("%s:%d:%s Looking at library: %s\n", __FILE__, __LINE__, __FUNCTION__, filename);
   scn = NULL ;
   const char * name , *p;
   size_t n , shstrndx , sz ;
@@ -862,13 +787,13 @@ SymbolTable load_symbol_table(const char* filename, uintptr_t start)
   while (( scn = elf_nextscn (elf, scn )) != NULL ) { 
     if ( gelf_getshdr ( scn, &shdr ) != & shdr )
       SIMPLE_ERROR(BF("getshdr() failed : %s.") % elf_errmsg ( -1));
-    if (( name = elf_strptr (elf, shstrndx, shdr.sh_name )) == NULL ) 
-      SIMPLE_ERROR(BF("stackmaps elf_strptr() failed : %s.") % elf_errmsg ( -1));
+    name = elf_strptr (elf, shstrndx, shdr.sh_name );
+    if ( name == NULL ) SIMPLE_ERROR(BF("stackmaps elf_strptr() failed : %s.") % elf_errmsg ( -1));
+//    printf("%s:%d:%s Looking at section: %s\n", __FILE__, __LINE__, __FUNCTION__, name);
     if (strncmp(name,".llvm_stackmaps",strlen(".llvm_stackmaps"))==0) {
-      uintptr_t addr = shdr.sh_addr+start;
-      uintptr_t stackmap_end = addr + shdr.sh_size;
-      symbol_table._StackmapStart = addr;
-      symbol_table._StackmapEnd = stackmap_end;
+      stackmap_start = shdr.sh_addr;
+      stackmap_size = shdr.sh_size;
+//      printf("%s:%d:%s Found a stackmap! shdr.sh_addr = %p shdr.sh_size=%lu\n", __FILE__, __LINE__, __FUNCTION__, (void*)shdr.sh_addr, (size_t)shdr.sh_size);
     }
   }
   elf_end(elf);
@@ -891,7 +816,25 @@ int elf_loaded_object_callback(struct dl_phdr_info *info, size_t size, void* dat
     libname = info->dlpi_name;
   }
   BT_LOG((buf,"Name: \"%s\" address: %p (%d segments)\n", libname.c_str(), (void*)info->dlpi_addr, info->dlpi_phnum));
-  search_symbol_table(*(scan_callback_info->_Backtrace),libname.c_str(),info->dlpi_addr);
+  search_symbol_table(*(scan_callback_info->_Backtrace),libname.c_str(),scan_callback_info->_symbol_table_memory);
+  scan_callback_info->_Index++;
+  return 0;
+}
+
+int elf_startup_loaded_object_callback(struct dl_phdr_info *info, size_t size, void* data)
+{
+//  printf("%s:%d:%s Startup registering loaded object %s\n", __FILE__, __LINE__, __FUNCTION__, info->dlpi_name);
+  ScanInfo* scan_callback_info = (ScanInfo*)data;
+  bool is_executable;
+  std::string libname;
+  if (scan_callback_info->_Index==0 && strlen(info->dlpi_name) == 0 ) {
+    libname = __progname_full;
+    is_executable = true;
+  } else {
+    libname = info->dlpi_name;
+    is_executable = false;
+  }
+  add_dynamic_library_using_origin(is_executable,libname.c_str(),(uintptr_t)info->dlpi_addr);
   scan_callback_info->_Index++;
   return 0;
 }
@@ -903,8 +846,165 @@ void walk_loaded_objects(std::vector<BacktraceEntry>& backtrace, size_t& symbol_
   scan._Backtrace = &backtrace;
     // Search the symbol tables and stackmaps
   dl_iterate_phdr(elf_loaded_object_callback,&scan);
+  symbol_table_memory += scan._symbol_table_memory;
 }
+
+void startup_register_loaded_objects()
+{
+  ScanInfo scan;
+  dl_iterate_phdr(elf_startup_loaded_object_callback,&scan);
+}
+
 #endif ////////////////////////////////////////////////// _TARGET_OS_LINUX
+
+/*! Add a dynamic library.
+    If library_origin points to the start of the library then that address is used,
+    otherwise it uses handle to look up the start of the library. */
+void add_dynamic_library_impl(bool is_executable, const std::string& libraryName, bool use_origin, uintptr_t library_origin, void* handle) {
+//  printf("%s:%d:%s Looking for executable?(%d) library |%s|\n", __FILE__, __LINE__, __FUNCTION__, is_executable, libraryName.c_str());
+  BT_LOG((buf,"Starting to load library: %s\n", libraryName.c_str() ));
+#ifdef CLASP_THREADS
+  WITH_READ_WRITE_LOCK(debugInfo()._OpenDynamicLibraryMutex);
+#endif
+// Get the start of the library and the symbol_table
+#ifdef _TARGET_OS_DARWIN
+  if (!use_origin) {
+    printf("%s:%d:%s Looking for library %s with handle %p\n", __FILE__, __LINE__, __FUNCTION__, libraryName.c_str(), handle);
+    uint32_t num_loaded = _dyld_image_count();
+    for ( size_t idx = 0; idx<num_loaded; ++idx ) {
+      const char* filename = _dyld_get_image_name(idx);
+//    printf("%s:%d:%s Comparing to library: %s\n", __FILE__, __LINE__, __FUNCTION__, filename);
+      if (strcmp(filename,libraryName.c_str())==0) {
+        printf("%s:%d:%s Found library: %s\n", __FILE__, __LINE__, __FUNCTION__, filename);
+        library_origin = (uintptr_t)_dyld_get_image_header(idx);
+      }
+    }
+  }
+  SymbolTable symbol_table;
+  if (library_origin!=0) {
+    symbol_table = load_macho_symbol_table(libraryName.c_str(),library_origin);
+    symbol_table.optimize();
+  } else {
+    printf("%s:%d:%s Could not find start of library %s\n", __FILE__, __LINE__, __FUNCTION__, libraryName.c_str());
+  }
+  size_t section_size;
+  uintptr_t p_section = load_stackmap_info(libraryName.c_str(),library_origin,section_size);
+  if (p_section) {
+    symbol_table._StackmapStart = p_section;
+    symbol_table._StackmapEnd = p_section+section_size;
+  }    
+#endif
+#ifdef _TARGET_OS_LINUX
+  if (!use_origin) {
+    void* lorigin;
+    Dl_info data;
+    dlerror();
+    void* addr = dlsym(handle,"_init");
+    const char* error = dlerror();
+    if (error) {
+      printf("%s:%d:%s Could not find _init symbol dlerror = %s\n", __FILE__, __LINE__, __FUNCTION__, error);
+      abort();
+    }
+    int ret = dladdr(addr,&data);
+    if (ret==0) {
+      printf("%s:%d:%s Could not use dladdr to get start of library %s dlerror = %s\n", __FILE__, __LINE__, __FUNCTION__, libraryName.c_str(), error);
+      abort();
+    }
+    library_origin = (uintptr_t)data.dli_fbase;
+  }
+//  printf("%s:%d:%s data.dli_fbase = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)data.dli_fbase);
+  uintptr_t stackmap_start;
+  size_t section_size;
+  SymbolTable symbol_table = load_linux_symbol_table(libraryName.c_str(),library_origin,stackmap_start,section_size);
+  if (is_executable) {
+    symbol_table._StackmapStart = stackmap_start;
+    symbol_table._StackmapEnd = stackmap_start+section_size;
+  } else {
+    if (stackmap_start) {
+      symbol_table._StackmapStart = stackmap_start+library_origin;
+      symbol_table._StackmapEnd = stackmap_start+section_size+library_origin;
+    }
+  }
+#if 0
+  printf("%s:%d:%s symbol_table._StackmapStart = %p  symbol_table._StackmapEnd = %p\n",
+         __FILE__, __LINE__, __FUNCTION__, (void*)symbol_table._StackmapStart, (void*)symbol_table._StackmapEnd);
+#endif    
+  symbol_table.optimize();
+  symbol_table.sort();
+#endif
+  OpenDynamicLibraryInfo odli(libraryName,handle,symbol_table);
+  debugInfo()._OpenDynamicLibraryHandles[libraryName] = odli;
+}
+
+void add_dynamic_library_using_handle(const std::string& libraryName, void* handle) {
+  add_dynamic_library_impl(false,libraryName, false, 0, handle);
+}
+
+void add_dynamic_library_using_origin(bool is_executable,const std::string& libraryName, uintptr_t origin) {
+  add_dynamic_library_impl(is_executable,libraryName, true, origin, NULL);
+}
+
+bool if_dynamic_library_loaded_remove(const std::string& libraryName) {
+#ifdef CLASP_THREADS
+  WITH_READ_WRITE_LOCK(debugInfo()._OpenDynamicLibraryMutex);
+#endif
+  map<string,OpenDynamicLibraryInfo>::iterator fi = debugInfo()._OpenDynamicLibraryHandles.find(libraryName);
+  bool exists = (fi!=debugInfo()._OpenDynamicLibraryHandles.end());
+  if (exists) {
+    if (fi->second._SymbolTable._SymbolNames) free((void*)(fi->second._SymbolTable._SymbolNames));
+    BT_LOG((buf,"What about the stackmaps for this library - you need to remove them as well - I should probably NOT store stackmaps for libraries - but fetch them every time we need a backtrace!\n"));
+    if (fi->second._Handle==0) {
+      printf("%s:%d:%s You cannot remove the library %s\n", __FILE__, __LINE__, __FUNCTION__, libraryName.c_str());
+    } else {
+      dlclose(fi->second._Handle);
+      debugInfo()._OpenDynamicLibraryHandles.erase(libraryName);
+    }
+  }
+  return exists;
+}
+
+
+CL_DEFUN List_sp core__dynamic_library_handles() {
+#ifdef CLASP_THREADS
+  WITH_READ_LOCK(debugInfo()._OpenDynamicLibraryMutex);
+#endif
+  ql::list result;
+  for ( auto entry : debugInfo()._OpenDynamicLibraryHandles ) {
+    result << Cons_O::createList(SimpleBaseString_O::make(entry.second._Filename),
+                                 Pointer_O::create(entry.second._Handle) );;
+  }
+  return result.cons();
+}
+
+bool lookup_address(uintptr_t address, const char*& symbol, uintptr_t& start, uintptr_t& end, char& type)
+{
+#ifdef CLASP_THREADS
+  WITH_READ_LOCK(debugInfo()._OpenDynamicLibraryMutex);
+#endif
+  size_t index;
+  for ( auto entry : debugInfo()._OpenDynamicLibraryHandles ) {
+    SymbolTable symtab = entry.second._SymbolTable;
+    if (symtab.findSymbolForAddress(address,symbol,start,end,type,index)) {
+      return true;
+    }
+  }
+  {
+#ifdef CLASP_THREADS
+    WITH_READ_LOCK(debugInfo()._JittedObjectsLock);
+#endif
+    for ( auto entry : debugInfo()._JittedObjects ) {
+      BT_LOG((buf,"Looking at jitted object name: %s @%p size: %d\n", entry._Name.c_str(), (void*)entry._ObjectPointer, entry._Size));
+      if (entry._ObjectPointer<=address && address<(entry._ObjectPointer+entry._Size)) {
+        symbol = entry._Name.c_str();
+        start = entry._ObjectPointer;
+        end = entry._ObjectPointer+entry._Size;
+        type = '?';
+        return true;
+      }
+    }
+  }
+  return false;
+}
 
 
 void search_symbol_table(std::vector<BacktraceEntry>& backtrace, const char* filename, size_t& symbol_table_size)
@@ -921,6 +1021,7 @@ void search_symbol_table(std::vector<BacktraceEntry>& backtrace, const char* fil
     SymbolTable& symbol_table = it->second._SymbolTable;
     symbol_table_size += sizeof(SymbolEntry)*symbol_table._Symbols.size()+symbol_table._Capacity;
     if (backtrace.size()==0) {
+      WRITE_DEBUG_IO(BF("Library filename: %s\n") % filename);
       WRITE_DEBUG_IO(BF("Library symbol_table _SymbolNames %p _End %u  _Capacity %u  _StackmapStart %p    _StackmapEnd %p\n")
                      % (void*)symbol_table._SymbolNames % symbol_table._End % symbol_table._Capacity
                      % (void*)symbol_table._StackmapStart % (void*)symbol_table._StackmapEnd );
@@ -971,8 +1072,10 @@ void search_symbol_table(std::vector<BacktraceEntry>& backtrace, const char* fil
     }
     uintptr_t address = symbol_table._StackmapStart;
     uintptr_t endAddress = symbol_table._StackmapEnd;
-    while (address<endAddress) {
-      walk_one_llvm_stackmap(backtrace,address,endAddress,true);
+    if (address) {
+      while (address<endAddress) {
+        walk_one_llvm_stackmap(backtrace,address,endAddress,true);
+      }
     }
   }
 }
@@ -1680,7 +1783,6 @@ CL_DEFUN void core__dump_symbol_and_stackmap_info() {
   gc::SafeGCPark park;
   std::vector<BacktraceEntry> emptyBacktrace;
   fill_backtrace_or_dump_info(emptyBacktrace);
-  gc_release();
 }
 };
 
@@ -1765,6 +1867,20 @@ void af_evalPrint(const string &expr) {
 
 CL_DEFUN void core__lowLevelDescribe(T_sp obj) {
   dbg_lowLevelDescribe(obj);
+}
+
+CL_DEFUN core::T_mv core__lookup_address(core::Pointer_sp address) {
+  const char* symbol;
+  uintptr_t start, end;
+  char type;
+  bool foundSymbol = lookup_address((uintptr_t)address->ptr(),symbol,start,end,type);
+  if (foundSymbol) {
+    return Values(core::SimpleBaseString_O::make(symbol),
+                  core::Pointer_O::create((void*)start),
+                  core::Pointer_O::create((void*)end),
+                  core::clasp_make_character(type));
+  }
+  return Values(_Nil<core::T_O>());
 }
 
 void dbg_VaList_sp_describe(T_sp obj) {

@@ -684,6 +684,7 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
   }
   mpip::Mpi_O::initializeGlobals(_lisp);
   global_Started = true;
+  startup_register_loaded_objects();
 //  process_llvm_stackmaps();
 }
 
