@@ -73,13 +73,6 @@ private:
   LISP_CLASS(core, ClPkg, Symbol_O, "Symbol",General_O);
 
 public:
-#if defined(XML_ARCHIVE)
-  void archiveBase(ArchiveP node);
-#endif // defined(XML_ARCHIVE)
-#if defined(OLD_SERIALIZE)
-  void serialize(serialize::SNode node);
-#endif
-public:
   /*! Create a Symbol that doesn't have a package or Metaclass defined */
   //	static Symbol_sp create_classless_packageless(string const& name);
 

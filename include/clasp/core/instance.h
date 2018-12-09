@@ -69,7 +69,10 @@ namespace core {
         REF_CLASS_STAMP_FOR_INSTANCES_ = (16+CLASS_SLOT_OFFSET),
         REF_CLASS_CREATOR = (17+CLASS_SLOT_OFFSET)
     } Slots;
-    
+
+  public:
+    bool fieldsp() const;
+    void fields(Record_sp node);
   public: // ctor/dtor for classes with shared virtual base
   Instance_O() : _Sig(_Unbound<T_O>()), _Class(_Nil<Instance_O>()), _Rack(_Unbound<SimpleVector_O>()) {};
     explicit Instance_O(Instance_sp metaClass) :

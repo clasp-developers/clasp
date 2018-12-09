@@ -54,11 +54,6 @@ THE SOFTWARE.
 
 namespace core {
 
-class Archive_O;
-typedef gctools::smart_ptr<Archive_O> Archive_sp;
-class SNode_O;
-typedef gctools::smart_ptr<SNode_O> SNode_sp;
-typedef gctools::smart_ptr<SNode_O> ArchiveP;
 class Function_O;
 typedef gctools::smart_ptr<Function_O> Function_sp;
 

@@ -50,6 +50,24 @@ THE SOFTWARE.
 #endif
 
 extern "C" {
+void gc_park() {
+#ifdef USE_BOEHM
+  boehm_park();
+#endif
+#ifdef USE_MPS
+  mps_park();
+#endif
+};
+
+void gc_release() {
+#ifdef USE_BOEHM
+  boehm_release();
+#endif
+#ifdef USE_MPS
+  mps_release();
+#endif
+};
+
 __attribute__((noinline)) void HitAllocationSizeThreshold() {
   my_thread_low_level->_Allocations._HitAllocationSizeCounter++;
 }

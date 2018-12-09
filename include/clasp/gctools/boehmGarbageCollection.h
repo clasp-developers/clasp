@@ -66,4 +66,10 @@ namespace gctools {
   int initializeBoehm(MainFunctionType startupFn, int argc, char *argv[], bool mpiEnabled, int mpiRank, int mpiSize);
 
 };
+
+extern "C" {
+// Do the same thing that mps_park and mps_release do
+void boehm_park();
+void boehm_release();
+};
 #endif // _clasp_boehmGarbageCollection_H

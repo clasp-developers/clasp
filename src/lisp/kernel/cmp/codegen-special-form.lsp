@@ -176,7 +176,7 @@
 ;; MULTIPLE-VALUE-CALL
 
 (defun codegen-multiple-value-call (result rest env)
-  (with-dbg-lexical-block (rest)
+  (with-dbg-lexical-block ()
     (let* ((function-form (car rest))
            (forms (cdr rest)))
       (if (= (length forms) 1)
@@ -328,7 +328,7 @@ env is the parent environment of the (result-af) value frame"
 	    (codegen target-ref exp evaluate-env)))))))
 
 (defun codegen-let/let* (operator-symbol result parts env)
-  (with-dbg-lexical-block (parts)
+  (with-dbg-lexical-block ()
     (let ((assignments (car parts))
 	  (body (cdr parts)))
       (multiple-value-bind (variables expressions)
@@ -538,7 +538,7 @@ jump to blocks within this tagbody."
   (let* ((block-symbol (car rest))
          (body (cdr rest)))
     (or (symbolp block-symbol) (error "The block name ~a is not a symbol" block-symbol))
-    (with-dbg-lexical-block (body)
+    (with-dbg-lexical-block ()
       (multiple-value-bind (block-env make-block-frame-instruction make-block-frame-instruction-arguments)
           (irc-make-block-environment-set-parent block-symbol env)
 	(let ((block-start (irc-basic-block-create
@@ -656,7 +656,7 @@ jump to blocks within this tagbody."
 	(codegen-closure target fn-lambda closure-env)))))
 
 (defun codegen-flet/labels (operator-symbol result rest env)
-  (with-dbg-lexical-block (rest)
+  (with-dbg-lexical-block ()
     (let* ((functions (car rest))
 	   (body (cdr rest))
 	   (function-env (irc-new-function-value-environment env :functions functions)))
@@ -744,7 +744,7 @@ jump to blocks within this tagbody."
 ;;; LOCALLY
 
 (defun codegen-locally (result rest env)
-  (with-dbg-lexical-block (rest)
+  (with-dbg-lexical-block ()
     (multiple-value-bind (declarations code doc-string specials)
 	(process-declarations rest nil)
       (let ((new-env (irc-new-unbound-value-environment-of-size

@@ -260,5 +260,6 @@ typedef int  claspCharacter;
 
 // On linux and OS X we have mkstemp so use it
 #define HAVE_MKSTEMP
+#define HAVE_MKDTEMP
 
 #endif // __CORE_CONFIG_H__

@@ -94,6 +94,7 @@ namespace core {
     SimpleVector_sp _Rack;
     T_sp   _Sig;
     FunctionDescription* _FunctionDescription;
+    std::atomic<size_t>         _Compilations;
     gc::atomic_wrapper<T_sp>   _CallHistory;
     gc::atomic_wrapper<T_sp>   _SpecializerProfile;
 //    T_sp   _Lock;
@@ -184,6 +185,9 @@ namespace core {
 
     T_sp setFuncallableInstanceFunction(T_sp functionOrT);
 
+    void increment_compilations() { this->_Compilations++; };
+    size_t compilations() const { return this->_Compilations.load(); };
+    
     void describe(T_sp stream);
 
     void __write__(T_sp sout) const; // Look in write_ugly.cc

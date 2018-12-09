@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-//#define DEBUG_LEVEL_FULL
+#define DEBUG_LEVEL_FULL
 
 //#include <llvm/Support/system_error.h>
 #include <clasp/core/foundation.h>
@@ -360,10 +360,12 @@ CL_DEFMETHOD void TargetMachine_O::addPassesToEmitFileAndRunPassManager(PassMana
 // This was depreciated in llvm3.7
   CL_LISPIFY_NAME(createDataLayout);
   CL_EXTERN_DEFMETHOD(TargetMachine_O, &llvm::TargetMachine::createDataLayout);
+  CL_EXTERN_DEFMETHOD(TargetMachine_O, &llvm::TargetMachine::setFastISel);
   CL_LISPIFY_NAME(getSubtargetImpl);
   CL_EXTERN_DEFMETHOD(TargetMachine_O, (const llvm::TargetSubtargetInfo *(llvm::TargetMachine::*)() const) & llvm::TargetMachine::getSubtargetImpl);
   CL_LISPIFY_NAME(addPassesToEmitFileAndRunPassManager);
   CL_EXTERN_DEFMETHOD(TargetMachine_O, &TargetMachine_O::addPassesToEmitFileAndRunPassManager);
+CL_EXTERN_DEFMETHOD(TargetMachine_O, &llvm::TargetMachine::setFastISel);
 
   SYMBOL_EXPORT_SC_(LlvmoPkg, CodeGenFileType);
   SYMBOL_EXPORT_SC_(LlvmoPkg, CodeGenFileType_Null);
@@ -1474,7 +1476,7 @@ CL_DEFUN Constant_sp ConstantArray_O::get(ArrayType_sp type, core::List_sp value
   Constant_sp ca = ConstantArray_O::create();
   vector<llvm::Constant *> vector_IdxList;
   for (auto cur : values) {
-    vector_IdxList.push_back(gc::As<Constant_sp>(oCar(cur))->wrappedPtr());
+    vector_IdxList.push_back(llvm::cast<llvm::Constant>(gc::As<Value_sp>(oCar(cur))->wrappedPtr()));
   }
   llvm::ArrayRef<llvm::Constant *> array_ref_vector_IdxList(vector_IdxList);
   llvm::Constant *llvm_ca = llvm::ConstantArray::get(type->wrapped(), array_ref_vector_IdxList);
@@ -2003,6 +2005,8 @@ string APInt_O::__repr__() const {
 namespace llvmo {
 
 
+CL_LISPIFY_NAME(CreateGlobalString);
+CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateGlobalString);
 CL_PKG_NAME(LlvmoPkg,"SetInsertPointBasicBlock");
 CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(void (llvm::IRBuilderBase::*)(llvm::BasicBlock *))&llvm::IRBuilderBase::SetInsertPoint);
 CL_PKG_NAME(LlvmoPkg,"SetInsertPointInstruction");
@@ -3416,8 +3420,8 @@ class ClaspSectionMemoryManager : public SectionMemoryManager {
     if (SectionName.str() == STACKMAPS_NAME) {
       my_thread->_stackmap = (uintptr_t)ptr;
       my_thread->_stackmap_size = (size_t)Size;
-      STACKMAP_LOG(("%s:%d  recorded __llvm_stackmap allocateDataSection Size: %lu  Alignment: %u SectionId: %u SectionName: %s isReadOnly: %d --> allocated at: %p\n",
-                    __FILE__, __LINE__, Size, Alignment, SectionID, SectionName.str().c_str() , isReadOnly, (void*)ptr));
+      LOG(BF("STACKMAP_LOG  recorded __llvm_stackmap allocateDataSection Size: %lu  Alignment: %u SectionId: %u SectionName: %s isReadOnly: %d --> allocated at: %p\n") %
+           Size% Alignment% SectionID% SectionName.str().c_str() % isReadOnly% (void*)ptr);
     }
     if (llvmo::_sym_STARdebugObjectFilesSTAR->symbolValue().notnilp()) {
       core::write_bf_stream(BF(",s:%d  allocateDataSection Size: %lu  Alignment: %u SectionId: %u SectionName: %s isReadOnly: %d --> allocated at: %p\n") % __FILE__% __LINE__% Size% Alignment% SectionID% SectionName.str() % isReadOnly% (void*)ptr );
@@ -3477,15 +3481,15 @@ class ClaspSectionMemoryManager : public SectionMemoryManager {
   }
 
   bool finalizeMemory(std::string* ErrMsg = nullptr) {
-    STACKMAP_LOG(("%s:%d:%s entered\n", __FILE__, __LINE__, __FUNCTION__ ));
+    LOG(BF("STACKMAP_LOG %s entered\n") % __FUNCTION__ );
     bool result = this->SectionMemoryManager::finalizeMemory(ErrMsg);
     unsigned long section_size = 0;
     void* p_section = NULL;
     if (my_thread->_stackmap>0 && my_thread->_stackmap_size!=0) {
       p_section = reinterpret_cast<void*>(my_thread->_stackmap);
       section_size = my_thread->_stackmap_size;
-      STACKMAP_LOG(("%s:%d LLVM_STACKMAPS  p_section@%p section_size=%lu\n", __FILE__, __LINE__, (void*)p_section, section_size ));
-      core::register_llvm_stackmaps((uintptr_t)p_section,(uintptr_t)p_section+section_size);
+      LOG(BF("STACKMAP_LOG   p_section@%p section_size=%lu\n") % (void*)p_section % section_size );
+      core::register_llvm_stackmaps((uintptr_t)p_section,(uintptr_t)p_section+section_size,1);
 //      core::process_llvm_stackmaps();
       my_thread->_stackmap = 0;
     } else {
@@ -3508,7 +3512,14 @@ ClaspJIT_O::ClaspJIT_O() : TM(EngineBuilder().selectTarget()),
                                        [this](llvm::orc::RTDyldObjectLinkingLayer::ObjHandleT H,
                                               const RTDyldObjectLinkingLayerBase::ObjectPtr& Obj,
                                               const RuntimeDyld::LoadedObjectInfo &Info) {
+#if 0
+                                         // I get an assertion failure
+                                         // at /Development/externals-clasp/llvm60/lib/ExecutionEngine/GDBRegistrationListener.cpp:166
+                                         // 166	  assert(ObjectBufferMap.find(Key) == ObjectBufferMap.end() &&
+                                         //              "Second attempt to perform debug registration.");
+
                                          this->GDBEventListener->NotifyObjectEmitted(*(Obj->getBinary()), Info);
+#endif
                                          save_symbol_info(*(Obj->getBinary()), Info);
                                        }),
                            CompileLayer(ObjectLayer, SimpleCompiler(*TM)),
@@ -3643,6 +3654,10 @@ CL_DEFMETHOD ModuleHandle_sp ClaspJIT_O::addModule(Module_sp cM) {
   }
   this->ModuleHandles = core::Cons_O::create(mh,this->ModuleHandles);
   return mh;
+}
+
+CL_DEFMETHOD TargetMachine& ClaspJIT_O::getTargetMachine() {
+  return *this->TM;
 }
 
 CL_LISPIFY_NAME("CLASP-JIT-FIND-SYMBOL");
@@ -3834,17 +3849,17 @@ CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, Mo
   // Stuff to support MCJIT
   core::Pointer_sp replPtr;
   if (replName!="") {
-    replPtr = jit->findSymbolIn(handle,replName,true);
+    replPtr = jit->findSymbolIn(handle,replName,false);
   } else {
     SIMPLE_ERROR(BF("There must be a replName"));
   }
   core::Pointer_sp startupPtr;
   if (startupName!="") {
-    startupPtr = jit->findSymbolIn(handle,startupName,true);
+    startupPtr = jit->findSymbolIn(handle,startupName,false);
   }
   core::Pointer_sp shutdownPtr;
   if (shutdownName!="") {
-    shutdownPtr = jit->findSymbolIn(handle,shutdownName,true);
+    shutdownPtr = jit->findSymbolIn(handle,shutdownName,false);
   }
   core::CompiledClosure_fptr_type lisp_funcPtr = (core::CompiledClosure_fptr_type)(gc::As_unsafe<core::Pointer_sp>(replPtr)->ptr());
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid =

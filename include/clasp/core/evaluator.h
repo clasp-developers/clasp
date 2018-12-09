@@ -41,7 +41,7 @@ extern core::Symbol_sp& _sym_name;
 
 namespace core {
 T_mv cl__apply(T_sp head, VaList_sp args);
-
+T_mv core__apply0( Function_sp func, T_sp args);
 
 T_sp af_interpreter_lookup_variable(Symbol_sp sym, T_sp env);
 T_sp af_interpreter_lookup_function(Symbol_sp sym, T_sp env);

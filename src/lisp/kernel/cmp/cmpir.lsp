@@ -829,12 +829,12 @@
          (with-irbuilder (*irbuilder-function-body*)
            (with-new-function-prepare-for-try (,fn *irbuilder-function-alloca*)
              (with-try
-                 (with-dbg-function (,function-name
-                                     :linkage-name *current-function-name*
-                                     :function ,fn
-                                     :function-type ,function-type
-                                     :form ,function-form )
-                   (with-dbg-lexical-block (,function-form)
+              (with-dbg-function (,function-name
+                                  :lineno (core:source-pos-info-lineno core:*current-source-pos-info*)
+                                  :linkage-name *current-function-name*
+                                  :function ,fn
+                                  :function-type ,function-type)
+                   (with-dbg-lexical-block (:lineno (core:source-pos-info-lineno core:*current-source-pos-info*))
                      (when core:*current-source-pos-info*
                        (let ((lineno (core:source-pos-info-lineno core:*current-source-pos-info*)))
                          (dbg-set-current-source-pos-for-irbuilder ,irbuilder-alloca lineno)
@@ -842,10 +842,6 @@
                      (with-irbuilder (*irbuilder-function-body*)
                        (or *the-module* (error "with-new-function *the-module* is NIL"))
                        (cmp-log "with-landing-pad around body%N")
-                       ;; I don't think the with-landing-pad is necessary because with-try provides it
-                       #+(or)
-                       (with-landing-pad (irc-get-cleanup-landing-pad-block ,fn-env)
-                         ,@body)
                        (progn ,@body))))
                ((cleanup)
                 (irc-cleanup-function-environment ,fn-env)

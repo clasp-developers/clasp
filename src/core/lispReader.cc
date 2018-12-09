@@ -1002,19 +1002,18 @@ List_sp read_list(T_sp sin, claspCharacter end_char, bool allow_consing_dot) {
 
 SYMBOL_SC_(CorePkg, STARsharp_equal_final_tableSTAR);
 
-__thread unsigned int read_lisp_object_recursion_depth = 0;
 struct increment_read_lisp_object_recursion_depth {
   increment_read_lisp_object_recursion_depth() {
-    ++read_lisp_object_recursion_depth;
+    ++my_thread->read_recursion_depth;
   }
   ~increment_read_lisp_object_recursion_depth() {
-    --read_lisp_object_recursion_depth;
+    --my_thread->read_recursion_depth;
   }
   static void reset() {
-    read_lisp_object_recursion_depth = 0;
+    my_thread->read_recursion_depth = 0;
   }
   int value() const {
-    return read_lisp_object_recursion_depth;
+    return my_thread->read_recursion_depth;
   }
   int max() const {
     return 256;
@@ -1056,22 +1055,9 @@ T_sp read_lisp_object(T_sp sin, bool eofErrorP, T_sp eofValue, bool recursiveP) 
     LOG_READ(BF("About to call read_lisp_object"));
     result = read_lisp_object(sin, eofErrorP, eofValue, true);
     LOG_READ(BF("Came out of read_lisp_object with: |%s|") % _rep_(result).c_str());
-#if 0
-    ReadTable_sp readtable = gc::As<ReadTable_sp>(cl::_sym_STARreadtableSTAR->symbolValue());
-    LOG_READ(BF("About to cl__peek_char"));
-    T_sp tcharc = cl__peek_char(_Nil<T_O>(),sin,_Nil<T_O>(),_Nil<T_O>(),_Nil<T_O>());
-    if (tcharc.notnilp() && readtable->syntax_type(gc::As_unsafe<Character_sp>(tcharc)) == kw::_sym_whitespace) {
-      LOG_READ(BF("cl__peek_char returned |%s|") % _rep_(tcharc));
-      cl__read_char(sin,_lisp->_boolean(eofErrorP),eofValue,_lisp->_true());
-      LOG_READ(BF("Returned from cl__read_char"));
-    } else {
-      LOG_READ(BF("cl__peek_char returned non-nil, non-whitespace: |%s|") % _rep_(tcharc));
-    }
-#endif
   }
   LOG_READ(BF("Returning from read_lisp_object"));
-  if (result.nilp())
-    return (Values(_Nil<T_O>()));
+  if (result.nilp()) return (Values(_Nil<T_O>()));
   return (result);
 }
 

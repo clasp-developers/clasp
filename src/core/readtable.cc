@@ -405,8 +405,9 @@ CL_DEFUN T_mv core__sharp_dot(T_sp sin, Character_sp ch, T_sp num) {
                    Cons_O::create(object,_Nil<T_O>()),
                    sin);
     }
-    T_mv result = eval::funcall(core::_sym_STAReval_with_env_hookSTAR->symbolValue(), object, _Nil<T_O>());
-    return result;
+//    T_mv result = eval::funcall(core::_sym_STAReval_with_env_hookSTAR->symbolValue(), object, _Nil<T_O>());
+//    return result;
+    return eval::evaluate(object,_Nil<T_O>());
   }
   return _Nil<T_O>();
 }
@@ -451,6 +452,28 @@ CL_DEFUN T_mv core__sharp_left_parenthesis(T_sp sin, Character_sp ch, /*Fixnum_s
     return Values(vec);
   }
   return (Values(_Nil<T_O>()));
+};
+
+
+
+SYMBOL_EXPORT_SC_(CorePkg,STARforeign_data_reader_callbackSTAR);
+
+CL_LAMBDA(stream ch num);
+CL_DECLARE();
+CL_DEFUN T_mv core__sharp_foreign_data_reader(T_sp tsin, Character_sp ch, /*Fixnum_sp*/ T_sp tnum) {
+  // ignore *read-suppress*
+  T_sp loader = gc::As<T_sp>(_sym_STARforeign_data_reader_callbackSTAR->symbolValue());
+  StringInputStream_sp sin = gc::As<StringInputStream_sp>(tsin);
+  if (tnum.notnilp() && tnum.fixnump()) {
+    size_t list_length = tnum.unsafe_fixnum();
+    for ( size_t i=0; i<list_length; ++i ) {
+//      printf("%s:%d reader: |%s|\n", __FILE__, __LINE__, sin->peer(50).c_str());
+      T_sp object = cl__read(sin,_lisp->_true(),_Nil<T_O>(),_lisp->_true());
+      eval::funcall(loader,sin,core::make_fixnum(i),object);
+    }
+    return Values(_Nil<T_O>());
+  }
+  SIMPLE_ERROR(BF("Error in #x{ x is %s") % _rep_(tnum).c_str());
 };
 
 CL_LAMBDA(stream ch num);
@@ -593,8 +616,30 @@ CL_LAMBDA(stream ch num);
 CL_DECLARE();
 CL_DOCSTRING("sharp_a");
 CL_DEFUN T_mv core__sharp_a(T_sp sin, Character_sp ch, T_sp num) {
-  IMPLEMENT_MEF("Implement sharp_a");
-}; // core__sharp_a
+  if (num.nilp()) {
+    T_sp initial_contents = core::eval::funcall(cl::_sym_read,sin,_Nil<T_O>(),_lisp->_true());
+    if (cl::_sym_STARread_suppressSTAR->symbolValue().notnilp()) {
+      return Values(_Nil<T_O>());
+    } else if (num.nilp()) {
+      // readably-pretty-printed array: #A(type dims initial-contents)
+      T_sp elt_type = oCar(initial_contents);
+      List_sp dims = gc::As<List_sp>(oCadr(initial_contents));
+      List_sp linitial_contents = gc::As<List_sp>(oCaddr(initial_contents));
+      if (cl__length(dims)==1) {
+        Vector_sp vec = core__make_vector(elt_type,oCar(dims).unsafe_fixnum(),false,_Nil<T_O>(),_Nil<T_O>(),core::make_fixnum(0),_Nil<T_O>(),true);
+        size_t idx = 0;
+        for ( auto e : linitial_contents ) {
+          T_sp val = CONS_CAR(e);
+          vec->rowMajorAset(idx,val);
+          idx++;
+        }
+        return Values(vec);
+      }
+      SIMPLE_ERROR(BF("Add support for multidimensional #a"));
+    }
+  }
+  SIMPLE_ERROR(BF("Add support for #a with argument"));
+}
 
 CL_LAMBDA(stream ch num);
 CL_DECLARE();
@@ -780,6 +825,7 @@ ReadTable_sp ReadTable_O::create_standard_readtable() {
   dispatchers << clasp_make_standard_character('\\') << _sym_sharp_backslash
               << clasp_make_standard_character('\'') << _sym_sharp_single_quote
               << clasp_make_standard_character('(') << _sym_sharp_left_parenthesis
+              << clasp_make_standard_character('f') << _sym_sharp_foreign_data_reader
               << clasp_make_standard_character('*') << _sym_sharp_asterisk
               << clasp_make_standard_character(':') << _sym_sharp_colon
               << clasp_make_standard_character('.') << _sym_sharp_dot
@@ -991,35 +1037,36 @@ ReadTable_sp ReadTable_O::copyReadTable(gc::Nilable<ReadTable_sp> tdest) {
   return dest;
 }
 
-  SYMBOL_EXPORT_SC_(ClPkg, setMacroCharacter);
-  SYMBOL_SC_(CorePkg, reader_backquoted_expression);
-  SYMBOL_SC_(CorePkg, sharp_backslash);
-  SYMBOL_SC_(CorePkg, sharp_single_quote);
-  SYMBOL_SC_(CorePkg, sharp_left_parenthesis);
-  SYMBOL_SC_(CorePkg, sharp_asterisk);
-  SYMBOL_SC_(CorePkg, sharp_colon);
-  SYMBOL_SC_(CorePkg, sharp_dot);
-  SYMBOL_SC_(CorePkg, sharp_b);
-  SYMBOL_SC_(CorePkg, sharp_o);
-  SYMBOL_SC_(CorePkg, sharp_x);
-  SYMBOL_SC_(CorePkg, sharp_r);
-  SYMBOL_SC_(CorePkg, sharp_c);
-  SYMBOL_SC_(CorePkg, sharp_a);
-  SYMBOL_SC_(CorePkg, sharp_s);
-  SYMBOL_SC_(CorePkg, sharp_p);
-  SYMBOL_SC_(CorePkg, sharp_plus);
-  SYMBOL_SC_(CorePkg, sharp_minus);
-  SYMBOL_SC_(CorePkg, sharp_vertical_bar);
-  SYMBOL_SC_(CorePkg, dispatch_macro_character);
-  SYMBOL_SC_(CorePkg, reader_double_quote_string);
-  SYMBOL_SC_(CorePkg, reader_comma_form);
-  SYMBOL_SC_(CorePkg, reader_list_allow_consing_dot);
-  SYMBOL_SC_(CorePkg, reader_error_unmatched_close_parenthesis);
-  SYMBOL_SC_(CorePkg, reader_quote);
-  SYMBOL_SC_(CorePkg, reader_skip_semicolon_comment);
-  SYMBOL_SC_(CorePkg, reader_feature_p);
-  SYMBOL_EXPORT_SC_(ClPkg, setDispatchMacroCharacter);
-  SYMBOL_EXPORT_SC_(ClPkg, getDispatchMacroCharacter);
+SYMBOL_EXPORT_SC_(ClPkg, setMacroCharacter);
+SYMBOL_EXPORT_SC_(CorePkg, reader_backquoted_expression);
+SYMBOL_EXPORT_SC_(CorePkg, sharp_backslash);
+SYMBOL_EXPORT_SC_(CorePkg, sharp_single_quote);
+SYMBOL_EXPORT_SC_(CorePkg, sharp_left_parenthesis);
+SYMBOL_EXPORT_SC_(CorePkg, sharp_foreign_data_reader);
+SYMBOL_EXPORT_SC_(CorePkg, sharp_asterisk);
+SYMBOL_EXPORT_SC_(CorePkg, sharp_colon);
+SYMBOL_EXPORT_SC_(CorePkg, sharp_dot);
+SYMBOL_EXPORT_SC_(CorePkg, sharp_b);
+SYMBOL_EXPORT_SC_(CorePkg, sharp_o);
+SYMBOL_EXPORT_SC_(CorePkg, sharp_x);
+SYMBOL_EXPORT_SC_(CorePkg, sharp_r);
+SYMBOL_EXPORT_SC_(CorePkg, sharp_c);
+SYMBOL_EXPORT_SC_(CorePkg, sharp_a);
+SYMBOL_EXPORT_SC_(CorePkg, sharp_s);
+SYMBOL_EXPORT_SC_(CorePkg, sharp_p);
+SYMBOL_EXPORT_SC_(CorePkg, sharp_plus);
+SYMBOL_EXPORT_SC_(CorePkg, sharp_minus);
+SYMBOL_EXPORT_SC_(CorePkg, sharp_vertical_bar);
+SYMBOL_EXPORT_SC_(CorePkg, dispatch_macro_character);
+SYMBOL_EXPORT_SC_(CorePkg, reader_double_quote_string);
+SYMBOL_EXPORT_SC_(CorePkg, reader_comma_form);
+SYMBOL_EXPORT_SC_(CorePkg, reader_list_allow_consing_dot);
+SYMBOL_EXPORT_SC_(CorePkg, reader_error_unmatched_close_parenthesis);
+SYMBOL_EXPORT_SC_(CorePkg, reader_quote);
+SYMBOL_EXPORT_SC_(CorePkg, reader_skip_semicolon_comment);
+SYMBOL_EXPORT_SC_(CorePkg, reader_feature_p);
+SYMBOL_EXPORT_SC_(ClPkg, setDispatchMacroCharacter);
+SYMBOL_EXPORT_SC_(ClPkg, getDispatchMacroCharacter);
 
 
 

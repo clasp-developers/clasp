@@ -311,4 +311,39 @@ printer and we should rather use MAKE-LOAD-FORM."
         (write-string "#i" stream)
         (write (cons (class-name (class-of object)) (core:encode object)) :stream stream))
       (call-next-method)))
-                          
+
+(in-package :core)
+ 
+(defmacro field (node name slot-access)
+  (let ((valgs (gensym)))
+  `(case (core:record-stage ,node)
+     ((:initializing :saving)
+      (core:field-write ,node ,name ,slot-access))
+     (:reading
+      (let ((,valgs (core:field-read ,node ,name )))
+        (setf ,slot-access ,valgs)))
+     (:patching
+      (let ((,valgs (core:field-patch ,node ,name ,slot-access)))
+        (setf ,slot-access ,valgs))))))
+
+(defmacro with-record-serialize-slots ((node) &rest name-slot-access-pairs)
+  (let ((valgs (gensym)))
+  `(case (core:record-stage ,node)
+     ((:initializing :saving)
+      ,@(loop for entry in name-slot-access-pairs
+              for name = (car entry)
+              for slot-access = (cadr entry)
+              collect `(core:field-write ,node ,name ,slot-access)))
+     (:reading
+      ,@(loop for entry in name-slot-access-pairs
+              for name = (car entry)
+              for slot-access = (cadr entry)
+              collect `(let ((,valgs (core:field-read ,node ,name )))
+                         (setf ,slot-access ,valgs))))
+     (:patching
+      ,@(loop for entry in name-slot-access-pairs
+              for name = (car entry)
+              for slot-access = (cadr entry)
+              collect `(let ((,valgs (core:field-patch ,node ,name ,slot-access)))
+                         (setf ,slot-access ,valgs)))))))
+(export '(field with-record-serialize-slots))

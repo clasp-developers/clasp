@@ -1628,7 +1628,7 @@ CL_DEFUN void core__exit(int exitValue) {
   gctools::global_debuggerOnSIGABRT = false;
   if (exitValue != 0) {
     if ( core::_sym_STARexit_backtraceSTAR->symbolValue().notnilp() ) {
-      core::core__clib_backtrace(999999);
+      dbg_safe_backtrace();
     }
   }
   throw(ExitProgramException(exitValue));
@@ -2467,6 +2467,7 @@ int Lisp_O::run() {
   if ( initializer_functions_are_waiting() ) {
     initializer_functions_invoke();
   }
+
 #ifndef SCRAPING
 #define ALL_INITIALIZERS_CALLS
 #include INITIALIZERS_INC_H
@@ -2486,6 +2487,9 @@ int Lisp_O::run() {
     if (oCar(cur) == kw::_sym_debugStartup) {
       printf("%s:%d Setting core:*debug-startup* to T\n", __FILE__, __LINE__);
       _sym_STARdebugStartupSTAR->setf_symbolValue(_lisp->_true());
+    } else if (oCar(cur) == kw::_sym_debugStartupVerbose) {
+      printf("%s:%d Setting core:*debug-startup* to :verbose\n", __FILE__, __LINE__);
+      _sym_STARdebugStartupSTAR->setf_symbolValue(kw::_sym_verbose);
     } else if (oCar(cur) == kw::_sym_exit_backtrace) {
       printf("%s:%d Setting core:*exit-backtrace* to T\n", __FILE__, __LINE__);
       _sym_STARexit_backtraceSTAR->setf_symbolValue(_lisp->_true());
