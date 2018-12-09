@@ -149,7 +149,7 @@ namespace core
   bool clasp_float_nan_p(Float_sp num);
   bool clasp_float_infinity_p(Float_sp num);
   NumberType clasp_t_of(Number_sp num);
-  Integer_sp clasp_shift(Integer_sp num, int bits);
+  Integer_sp clasp_shift(Integer_sp num, Fixnum bits);
   gc::Fixnum clasp_integer_length(Integer_sp x);
 
   Fixnum_sp clasp_make_fixnum(gc::Fixnum i);
@@ -943,7 +943,14 @@ namespace core {
   CL_PKG_NAME(ClPkg,abs);
   CL_DEFUN inline Number_sp clasp_abs(Number_sp num) {
     if (num.fixnump()) {
-      return immediate_fixnum<Number_O>(std::abs(num.unsafe_fixnum()));
+      gc::Fixnum fixnum = num.unsafe_fixnum();
+      if (fixnum == MOST_NEGATIVE_FIXNUM) {
+          // will overflow to a bignum
+        fixnum = (MOST_POSITIVE_FIXNUM + 1);
+        return Integer_O::create(fixnum);
+      }
+      else
+        return immediate_fixnum<Number_O>(std::abs(fixnum));
     } else if (num.single_floatp()) {
       return immediate_single_float<Number_O>(std::fabs(num.unsafe_single_float()));
     }
@@ -970,10 +977,16 @@ namespace core {
     return num->signum_();
   }
 
-  CL_LISPIFY_NAME(onePlus);
-  CL_DEFUN inline Number_sp clasp_one_plus(Number_sp num) {
+  inline Number_sp clasp_one_plus(Number_sp num) {
     if (num.fixnump()) {
-      return immediate_fixnum<Number_O>(num.unsafe_fixnum() + 1);
+      gc::Fixnum fixnum = num.unsafe_fixnum();
+      if (fixnum == MOST_POSITIVE_FIXNUM) {
+          // will overflow to a bignum
+        fixnum = (MOST_POSITIVE_FIXNUM + 1);
+        return Integer_O::create(fixnum);
+      }
+      else
+        return immediate_fixnum<Number_O>(fixnum + 1);
     } else if (num.single_floatp()) {
       float fl = num.unsafe_single_float();
       fl += 1.0;
@@ -982,10 +995,16 @@ namespace core {
     return num->onePlus_();
   }
 
-  CL_LISPIFY_NAME(oneMinus);
-  CL_DEFUN inline Number_sp clasp_one_minus(Number_sp num) {
+  inline Number_sp clasp_one_minus(Number_sp num) {
     if (num.fixnump()) {
-      return immediate_fixnum<Number_O>(num.unsafe_fixnum() - 1);
+      gc::Fixnum fixnum = num.unsafe_fixnum();
+      if (fixnum == MOST_NEGATIVE_FIXNUM) {
+          // will overflow to a bignum
+        fixnum = (MOST_NEGATIVE_FIXNUM - 1);
+        return Integer_O::create(fixnum);
+      }
+      else
+        return immediate_fixnum<Number_O>(fixnum - 1);
     } else if (num.single_floatp()) {
       float fl = num.unsafe_single_float();
       fl -= 1.0;
@@ -1014,7 +1033,7 @@ namespace core {
         return Integer_O::create(fixnum);
       }
       else
-        return immediate_fixnum<Number_O>(-num.unsafe_fixnum());
+        return immediate_fixnum<Number_O>(-fixnum);
     } else if (num.single_floatp()) {
       float fl = num.unsafe_single_float();
       fl = -fl;
@@ -1032,7 +1051,7 @@ namespace core {
     return n->number_type_();
   }
 
-  inline Integer_sp clasp_shift(Integer_sp n, int bits) {
+  inline Integer_sp clasp_shift(Integer_sp n, Fixnum bits) {
     if (n.fixnump()) {
       if (bits < 0) {
         Fixnum y = n.unsafe_fixnum();
