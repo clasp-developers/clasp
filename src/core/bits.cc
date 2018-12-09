@@ -782,6 +782,10 @@ CL_DEFUN T_sp core__bit_array_op_b_set_op(T_sp tx, T_sp ty, T_sp tr) { return te
 #endif
 /*! Copied from ECL */
 CL_DEFUN T_sp cl__logbitp(Integer_sp p, Integer_sp x) {
+  // Arguments and Values:p - a non-negative integer,  x - an integer.
+  if (clasp_minusp(p))
+      // Expected type for p is (Integer 0 *) or cl::_sym_UnsignedByte
+    TYPE_ERROR(p, cl::_sym_UnsignedByte);
   bool i;
   if (p.fixnump()) {
     cl_index n = clasp_to_size(p);
@@ -796,14 +800,12 @@ CL_DEFUN T_sp cl__logbitp(Integer_sp p, Integer_sp x) {
       i = mpz_tstbit(gc::As<Bignum_sp>(x)->as_mpz_().get_mpz_t(), n);
     }
   } else {
-    IMPLEMENT_MEF("Convert the code below to something Clasp can use");
-#if 0
-    assert_type_non_negative_integer(p);
-    if (CLASP_FIXNUMP(x))
-      i = x.unsafe_fixnum() < 0);
+    if (x.fixnump())
+      i = (x.unsafe_fixnum() < 0);
     else
-      i = (_clasp_big_sign(x) < 0);
-#endif
+      if (clasp_minusp(x))
+        i = true;
+      else i = false;
   }
   return i ? _lisp->_true() : _Nil<T_O>();
 }
