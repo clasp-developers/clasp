@@ -156,6 +156,8 @@ CL_DEFUN core::T_sp sockets_internal__ll_getHostByName(const string &hostName,  
                                              core::Function_sp setf_host_ent_addresses)    // #5
 {
   struct hostent *hostent = gethostbyname(hostName.c_str());
+  if (!hostent)
+    return _Nil<core::T_O>();
   if (tHostEnt.notnilp()) {
     char **aliases;
     char **addrs;
@@ -253,13 +255,6 @@ CL_DEFUN core::T_mv sockets_internal__ll_socketReceive(int fd,       // #0
   clasp_disable_interrupts();
   len = recvfrom(fd, REINTERPRET_CAST(char *, safe_buffer_pointer(buffer, length)), length, flags, NULL, NULL);
   clasp_enable_interrupts();
-  if (len >= 0) {
-    if (core::StrNs_sp vec = buffer.asOrNull<core::StrNs_O>()) {
-      vec->fillPointerSet(len);
-    } else {
-      SIMPLE_ERROR(BF("Vector must have fill pointer to be socket buffer: %s") % _rep_(vec));
-    }
-  }
   return Values(core::make_fixnum(len),core::make_fixnum(errno));
 }
 
@@ -379,7 +374,7 @@ CL_DEFUN int sockets_internal__ll_socketName(int fd, core::Vector_sp vector) {
   }
 }
 
-CL_LAMBDA(arg);
+CL_LAMBDA(fd vbuffer length secondAddress ip0 ip1 ip2 ip3 oob eor dontroute dontwait nosignal confirm);
 CL_DECLARE();
 CL_DOCSTRING("ll_socketSendAddress");
 CL_DEFUN core::Integer_sp sockets_internal__ll_socketSendAddress(int fd,            //#0
