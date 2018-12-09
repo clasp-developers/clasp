@@ -114,6 +114,14 @@ CL_DEFUN Function_sp cl__symbol_function(Symbol_sp sym) {
   return sym->symbolFunction();
 };
 
+
+CL_LAMBDA(sym);
+CL_DECLARE();
+CL_DOCSTRING("Return true if the symbol is dynamic/special");
+CL_DEFUN bool ext__specialp(Symbol_sp sym) {
+  return sym->specialP();
+}
+
 CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("symbolName");
