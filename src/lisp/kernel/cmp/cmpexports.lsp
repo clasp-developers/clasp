@@ -185,6 +185,8 @@
           with-begin-end-catch
           preserve-exception-info
           *dbg-generate-dwarf*
+          *dbg-current-function*
+          *dbg-current-scope*
           with-new-function
           with-dbg-function
           with-dbg-lexical-block

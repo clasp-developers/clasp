@@ -187,73 +187,47 @@
 (defvar *with-dbg-function* nil)
 ;; Set to NIL in with-dbg-function and T in dbg-set-current-source-pos
 (defvar *dbg-set-current-source-pos* nil)
-(defmacro with-dbg-function ((name &key linkage-name form function function-type) &rest body)
-  (let ((source-dir (gensym))
-        (source-name (gensym))
-        (filepos (gensym))
-        (lineno (gensym))
-        (column (gensym)))
-    `(let ((*with-dbg-function* t)
-           (*dbg-set-current-source-pos* nil))
-       (if (and *dbg-generate-dwarf* *the-module-dibuilder*)
-           (multiple-value-bind (,source-dir ,source-name ,filepos ,lineno ,column)
-               (walk-form-for-source-info ,form)
-             (let* ((*dbg-current-function*
-                      (make-function-metadata :file-metadata *dbg-current-file*
-                                              :linkage-name ,linkage-name
-                                              :function-type ,function-type
-                                              :lineno ,lineno)
-                      #+(or)(llvm-sys:create-function
-                             *the-module-dibuilder* ; 0 DIBuilder
-                             *dbg-current-file*     ; 1 function scope
-                             ,linkage-name          ; 2 function name
-                             ,linkage-name ; 3 mangled function name
-                             *dbg-current-file* ; 4 file where function is defined
-                             ,lineno            ; 5 lineno
-                             (dbg-create-function-type *dbg-current-file* ,function-type) ; 6 function-type
-                             nil ; 7 isLocalToUnit - true if this function is not externally visible
-                             t ; 8 isDefinition - true if this is a function definition
-                             ,lineno ; 9 scopeLine - set to the beginning of the scope this starts
-                             (core:enum-logical-or llvm-sys:diflags-enum '(llvm-sys:diflags-zero)) ; 10 flags
-                             nil ; 11 isOptimized - true if optimization is on
-                             nil ; 12 TParam = nullptr
-                             nil ; 13 Decl = nullptr
-                             nil ; 14 ThrownTypes = nullptr
-                             ))
-                    (*dbg-current-scope* *dbg-current-function*))
-               (llvm-sys:set-subprogram ,function *dbg-current-function*)
-               (cmp-log "with-dbg-function *dbg-compile-unit*: %s%N" *dbg-compile-unit*)
-               (cmp-log "with-dbg-function *dbg-current-function*: %s%N" *dbg-current-function*)
-               (cmp-log "with-dbg-function name: [%s]%N" ,name)
-               (cmp-log "with-dbg-function linkage-name: [%s]%N" ,linkage-name)
-               ,@body))
-           (progn
-             ,@body)))))
+(defun do-dbg-function (closure name lineno linkage-name function-type function)
+  (let ((*with-dbg-function* t)
+        (*dbg-set-current-source-pos* nil))
+    (if (and *dbg-generate-dwarf* *the-module-dibuilder*)
+        (let* ((*dbg-current-function*
+                (make-function-metadata :file-metadata *dbg-current-file*
+                                        :linkage-name linkage-name
+                                        :function-type function-type
+                                        :lineno lineno))
+               (*dbg-current-scope* *dbg-current-function*))
+          (llvm-sys:set-subprogram function *dbg-current-function*)
+          (cmp-log "do-dbg-function *dbg-compile-unit*: %s%N" *dbg-compile-unit*)
+          (cmp-log "do-dbg-function *dbg-current-function*: %s%N" *dbg-current-function*)
+          (cmp-log "do-dbg-function name: [%s]%N" name)
+          (cmp-log "do-dbg-function linkage-name: [%s]%N" linkage-name)
+          (funcall closure))
+      (funcall closure))))
+
+(defmacro with-dbg-function ((name &key lineno linkage-name function-type function) &rest body)
+  `(do-dbg-function (lambda () (progn ,@body)) ,name ,lineno ,linkage-name ,function-type ,function))
 
 (defvar *with-dbg-lexical-block* nil)
-(defmacro with-dbg-lexical-block ((block-form) &body body)
-  (let ((source-dir (gensym))
-        (source-name (gensym))
-        (filepos (gensym))
-        (lineno (gensym))
-        (column (gensym)))
-    `(let ((*with-dbg-lexical-block* t))
-       (if (and *dbg-generate-dwarf* *the-module-dibuilder*)
-           (multiple-value-bind (,source-dir ,source-name ,filepos ,lineno ,column)
-               (walk-form-for-source-info ,block-form)
-             (unless *dbg-current-scope*
-               (error "The *dbg-current-scope* is nil - it cannot be when create-lexical-block is called"))
-             (let* ((*dbg-current-scope*
-                      (llvm-sys:create-lexical-block *the-module-dibuilder*
-                                                     *dbg-current-scope*
-                                                     *dbg-current-file*
-                                                     ,lineno
-                                                     ,column
-                                                     #| 0  -- not used anymore TODO: Dwarf path discriminator   |# )))
-               (cmp-log "with-dbg-lexical-block%N")
-               ,@body))
-           (progn
-             ,@body)))))
+(defun do-dbg-lexical-block (closure lineno)
+  (let ((*with-dbg-lexical-block* t))
+    (if (and *dbg-generate-dwarf* *the-module-dibuilder*)
+        (progn
+          (unless *dbg-current-scope*
+            (error "The *dbg-current-scope* is nil - it cannot be when create-lexical-block is called"))
+          (let* ((*dbg-current-scope*
+                  (llvm-sys:create-lexical-block *the-module-dibuilder*
+                                                 *dbg-current-scope*
+                                                 *dbg-current-file*
+                                                 lineno
+                                                 0 ; column
+                                                 #| 0  -- not used anymore TODO: Dwarf path discriminator   |# )))
+            (cmp-log "with-dbg-lexical-block%N")
+            (funcall closure)))
+      (funcall closure))))
+  
+(defmacro with-dbg-lexical-block ((&key (lineno (core:source-pos-info-lineno core:*current-source-pos-info*))) &body body)
+  `(do-dbg-lexical-block (lambda () ,@body) ,lineno))
 
 (defun dbg-set-current-source-pos (form)
   (when *dbg-generate-dwarf*

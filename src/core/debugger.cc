@@ -190,7 +190,7 @@ struct SymbolTable {
     }
   };
   void sort() {
-    printf("%s:%d:%s Sort the SymbolTable here\n", __FILE__, __LINE__, __FUNCTION__ );
+    // printf("%s:%d:%s Sort the SymbolTable here\n", __FILE__, __LINE__, __FUNCTION__ );
     sort::quickSortMemory<SymbolEntry>(&this->_Symbols[0],0,this->_Symbols.size());
   }
   
@@ -307,6 +307,7 @@ void add_dynamic_library_handle(const std::string& libraryName, void* handle) {
   SymbolTable symbol_table;
   if (library_origin!=0) {
     symbol_table = load_symbol_table(libraryName.c_str(),library_origin);
+    symbol_table.optimize();
   } else {
     printf("%s:%d:%s Could not find start of library %s\n", __FILE__, __LINE__, __FUNCTION__, libraryName.c_str());
   }
@@ -331,9 +332,11 @@ void add_dynamic_library_handle(const std::string& libraryName, void* handle) {
     abort();
   }
   library_origin = (uintptr_t)data.dli_fbase;
-  printf("%s:%d:%s data.dli_fbase = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)data.dli_fbase);
+//  printf("%s:%d:%s data.dli_fbase = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)data.dli_fbase);
   size_t section_size;
   SymbolTable symbol_table = load_symbol_table(libraryName.c_str(),library_origin);
+  symbol_table.optimize();
+  symbol_table.sort();
 #endif
   OpenDynamicLibraryInfo odli(libraryName,handle,symbol_table);
   debugInfo()._OpenDynamicLibraryHandles[libraryName] = odli;
@@ -365,6 +368,21 @@ CL_DEFUN List_sp core__dynamic_library_handles() {
                                  Pointer_O::create(entry.second._Handle) );;
   }
   return result.cons();
+}
+
+bool lookup_symbol(uintptr_t address, const char*& symbol, uintptr_t& start, uintptr_t& end, char& type)
+{
+#ifdef CLASP_THREADS
+  WITH_READ_LOCK(debugInfo()._OpenDynamicLibraryMutex);
+#endif
+  size_t index;
+  for ( auto entry : debugInfo()._OpenDynamicLibraryHandles ) {
+    SymbolTable symtab = entry.second._SymbolTable;
+    if (symtab.findSymbolForAddress(address,symbol,start,end,type,index)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 
@@ -1972,9 +1990,9 @@ void dbg_safe_backtrace() {
   std::vector<core::BacktraceEntry> backtrace;
   printf("Safe-backtrace\n");
   core::fill_backtrace(backtrace,false);
-  printf("Got backtrace frames - dumping\n");
+  printf("Got %lu backtrace frames - dumping\n", backtrace.size());
   for ( size_t idx=0; idx<backtrace.size()-2; ++idx ) {
-    if (backtrace[idx]._BasePointer) dbg_print_frame(backtrace,idx,true);
+    dbg_print_frame(backtrace,idx,true);
   }
 }
 void dbg_safe_backtrace_no_args() {
@@ -1998,6 +2016,10 @@ void dbg_safe_lisp_backtrace() {
     }
   }
 }
+
+void dbg_find_symbol(uintptr_t addr) {
+}
+
 };
 
 

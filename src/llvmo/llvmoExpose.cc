@@ -3512,7 +3512,14 @@ ClaspJIT_O::ClaspJIT_O() : TM(EngineBuilder().selectTarget()),
                                        [this](llvm::orc::RTDyldObjectLinkingLayer::ObjHandleT H,
                                               const RTDyldObjectLinkingLayerBase::ObjectPtr& Obj,
                                               const RuntimeDyld::LoadedObjectInfo &Info) {
+#if 0
+                                         // I get an assertion failure
+                                         // at /Development/externals-clasp/llvm60/lib/ExecutionEngine/GDBRegistrationListener.cpp:166
+                                         // 166	  assert(ObjectBufferMap.find(Key) == ObjectBufferMap.end() &&
+                                         //              "Second attempt to perform debug registration.");
+
                                          this->GDBEventListener->NotifyObjectEmitted(*(Obj->getBinary()), Info);
+#endif
                                          save_symbol_info(*(Obj->getBinary()), Info);
                                        }),
                            CompileLayer(ObjectLayer, SimpleCompiler(*TM)),
