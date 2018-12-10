@@ -186,6 +186,30 @@
 ;;; cleavir-generate-ast
 #-cst
 (eval-when (:load-toplevel)
+  (clos:satiate #'cleavir-generate-ast:convert-global-function
+                '(cleavir-env:global-function-info null clasp-64bit))
+  (clos:satiate #'cleavir-generate-ast:convert-special-variable
+                '(cleavir-env:special-variable-info null clasp-64bit))
+  ;; convert-constant-to-immediate is a bit difficult, since it can be called with any object.
+  (clos:satiate #'cleavir-generate-ast:convert-code
+                ;; the ENV class should be irrelevant due to the specializer profile.
+                '(null cons cleavir-env:special-variable clasp-64bit))
+  (clos:satiate #'cleavir-generate-ast:convert-setq-special-variable
+                ;; the FORM-AST class should be irrelevant due to the specializer profile.
+                ;; (Really, everything is - there's only one, unspecialized, method.)
+                '(cleavir-env:special-variable-info symbol cleavir-ast:call-ast null clasp-64bit))
+  #+(or) ;; FIXME: move the shit in inline-prep out.
+  (clos:satiate #'cleavir-generate-ast:convert
+                ;; first two classes irrelevant again.
+                '(cons cleavir-env:special-variable clasp-64bit))
+  (clos:satiate #'cleavir-generate-ast:convert-special-binding
+                ;; again, specprofile is NIL NIL NIL NIL NIL
+                '(symbol cleavir-ast:lexical-ast cleavir-ast:progn-ast cleavir-env:variable-ignore clasp-64bit))
+  (clos:satiate #'cleavir-generate-ast:convert-function
+                ;; T NIL NIL
+                '(cleavir-env:local-function-info cleavir-env:function clasp-64bit)
+                '(cleavir-env:global-function-info cleavir-env:function clasp-64bit))
+  (clos:satiate #'cleavir-generate-ast:raw '(null) '(symbol) '(cons))
   ;; convert-special is probably the most involved.
   (macrolet ((satiate-special ()
                (let* ((special-operators
@@ -200,7 +224,7 @@
                       (entries (rest (clos:subclasses* (find-class 'cleavir-env::entry))))
                       (lists (loop for sp in special-operators
                                    nconcing (loop for entry in entries
-                                                  collect `'(,sp cons ,entry clasp-cleavir::clasp-64bit)))))
+                                                  collect `'(,sp cons ,entry clasp-64bit)))))
                  `(clos:satiate #'cleavir-generate-ast:convert-special ,@lists))))
     (satiate-special))
   ;; check-special-form-syntax is rather involved as well, though.
