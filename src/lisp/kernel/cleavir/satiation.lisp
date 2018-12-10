@@ -72,15 +72,39 @@
                 '(cleavir-env:variable-ignore)
                 '(cleavir-env:lexical-variable-info)
                 '(cleavir-env:local-function-info) '(cleavir-env:global-function-info))
-  (macrolet ((for-entries (name)
-               `(clos:satiate #',name '(null) '(clasp-cleavir:clasp-global-environment)
-                              ,@(mapcar (lambda (class)
-                                          `'(,class))
-                                        (clos:subclasses* (find-class 'cleavir-env::entry))))))
+  (macrolet ((for-entries (name &rest remaining-args)
+               (let* ((entries (list* 'null 'clasp-global-environment
+                                      (rest (clos:subclasses* (find-class 'cleavir-env::entry)))))
+                      (tail (if remaining-args
+                                (loop for things in remaining-args
+                                      nconcing (mapcar (lambda (entry) `'(,entry ,@things)) entries))
+                                (mapcar (lambda (entry) `'(,entry)) entries))))
+               `(clos:satiate #',name ,@tail))))
+    (for-entries cleavir-env:block-info (symbol))
+    ;; i include conses for (setf x) functions, but the specializer profile makes it irrelevant
+    (for-entries cleavir-env:function-info (symbol) (cons))
+    (for-entries cleavir-env:optimize-info)
+    (for-entries cleavir-env:tag-info (symbol))
+    (for-entries cleavir-env:variable-info (symbol))
     (for-entries cleavir-env:global-environment)
     (for-entries cleavir-env:declarations)
     (for-entries cleavir-env:compile-time)
-    (for-entries cleavir-env:optimize-qualities)))
+    (for-entries cleavir-env:optimize-qualities)
+    (for-entries cleavir-env:add-block (symbol))
+    ;;(for-entries cleavir-env:add-function-dynamic-extent (symbol) (cons))
+    ;;(for-entries cleavir-env:add-function-ignore (symbol symbol) (cons symbol) (symbol null) (cons null))
+    ;;(for-entries cleavir-env:add-function-type (symbol cons) (cons cons) (symbol symbol) (cons symbol))
+    ;;add-inline, add-inline-expansion
+    (for-entries cleavir-env:add-lexical-variable (symbol))
+    (for-entries cleavir-env:add-local-function (symbol))
+    (for-entries cleavir-env:add-local-macro (symbol core:closure-with-slots))
+    (for-entries cleavir-env:add-local-symbol-macro (symbol symbol cons)) ; not sure history is correct
+    ;;add-optimize
+    (for-entries cleavir-env:add-special-variable (symbol))
+    (for-entries cleavir-env:add-tag (symbol))
+    ;;add-variable-dynamic-extent
+    (for-entries cleavir-env:add-variable-ignore (symbol symbol))
+    (for-entries cleavir-env:add-variable-type (symbol symbol) (symbol cons))))
 
 ;;; cleavir-compilation-policy
 (eval-when (:load-toplevel)
@@ -220,14 +244,13 @@
 ;;; clasp-cleavir
 (eval-when (:load-toplevel)
   (macrolet ((satiate-simple ()
-               (let* ((methods (clos:generic-function-methods
-                                #'clasp-cleavir::translate-simple-instruction))
+               (let* ((methods (clos:generic-function-methods #'translate-simple-instruction))
                       ;; note: includes INSTRUCTION, but i think that's harmless
                       (classes (loop for method in methods
                                      when (null (method-qualifiers method))
                                        collect (first (clos:method-specializers method)))))
                  `(clos:satiate
-                   #'clasp-cleavir::translate-simple-instruction
+                   #'translate-simple-instruction
                    ,@(loop for c in classes
                            collect `'(,c llvm-sys:alloca-inst
                                       clasp-cleavir::abi-x86-64 clasp-cleavir::function-info)))))
@@ -262,3 +285,4 @@
      (cleavir-ir:float-less-instruction cons)
      (cleavir-ir:float-not-greater-instruction cons)
      (cleavir-ir:float-equal-instruction cons))))
+;  (clos:satiate #'cclasp-eval-with-env '(cons null)
