@@ -600,7 +600,8 @@ mygetsectiondata(
   return(0);
 }
 
-SymbolTable load_macho_symbol_table(const char* filename, uintptr_t header) {
+SymbolTable load_macho_symbol_table(bool is_executable, const char* filename, uintptr_t header, uintptr_t exec_header) {
+  printf("%s:%d:%s is_executable(%d) header = %p  exec_header = %p\n", __FILE__, __LINE__, __FUNCTION__, is_executable, (void*)header, (void*)exec_header);
   int baddigit = 0;
   SymbolTable symbol_table;
   struct stat buf;
@@ -662,8 +663,20 @@ SymbolTable load_macho_symbol_table(const char* filename, uintptr_t header) {
         ++nameidx;
       }
       name[nameidx] = '\0';
-      uintptr_t real_address = (uintptr_t)address + (uintptr_t)header;
+      uintptr_t real_address;
+      if (is_executable) {
+        // The executable needs to be handled differently than libraries
+        real_address = (uintptr_t)address - header;
+        real_address += exec_header;
+      } else {
+        real_address = (uintptr_t)address + (uintptr_t)header;
+      }
       std::string sname(name);
+#if 0
+      if (is_executable) {
+        printf("%s:%d         address: %p  real_address: %p  type: %c   name: %s\n", __FILE__, __LINE__, (void*)address, (void*)real_address, type, name);
+      }
+#endif
 //      printf("         address: %p  type: %c   name: %s\n", (void*)address, type, name);
       symbol_table.addSymbol(sname,real_address,type);
     }
@@ -861,7 +874,7 @@ void startup_register_loaded_objects()
     If library_origin points to the start of the library then that address is used,
     otherwise it uses handle to look up the start of the library. */
 void add_dynamic_library_impl(bool is_executable, const std::string& libraryName, bool use_origin, uintptr_t library_origin, void* handle) {
-//  printf("%s:%d:%s Looking for executable?(%d) library |%s|\n", __FILE__, __LINE__, __FUNCTION__, is_executable, libraryName.c_str());
+  printf("%s:%d:%s Looking for executable?(%d) library |%s|\n", __FILE__, __LINE__, __FUNCTION__, is_executable, libraryName.c_str());
   BT_LOG((buf,"Starting to load library: %s\n", libraryName.c_str() ));
 #ifdef CLASP_THREADS
   WITH_READ_WRITE_LOCK(debugInfo()._OpenDynamicLibraryMutex);
@@ -873,21 +886,37 @@ void add_dynamic_library_impl(bool is_executable, const std::string& libraryName
     uint32_t num_loaded = _dyld_image_count();
     for ( size_t idx = 0; idx<num_loaded; ++idx ) {
       const char* filename = _dyld_get_image_name(idx);
-//    printf("%s:%d:%s Comparing to library: %s\n", __FILE__, __LINE__, __FUNCTION__, filename);
+//      printf("%s:%d:%s Comparing to library: %s\n", __FILE__, __LINE__, __FUNCTION__, filename);
       if (strcmp(filename,libraryName.c_str())==0) {
         printf("%s:%d:%s Found library: %s\n", __FILE__, __LINE__, __FUNCTION__, filename);
         library_origin = (uintptr_t)_dyld_get_image_header(idx);
+        break;
       }
     }
   }
+  uintptr_t exec_header;
+  printf("%s:%d:%s library_origin %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)library_origin);
+  dlerror();
+  exec_header = (uintptr_t)dlsym(RTLD_DEFAULT,"_mh_execute_header");
+  const char* dle = dlerror();
+  if (dle) {
+    printf("Could not find the symbol _mh_execute_header\n");
+    abort();
+  }
+  printf("%s:%d:%s Executable header _mh_execute_header %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)exec_header);
   SymbolTable symbol_table;
   if (library_origin!=0) {
-    symbol_table = load_macho_symbol_table(libraryName.c_str(),library_origin);
+    if (is_executable) {
+      symbol_table = load_macho_symbol_table(is_executable,libraryName.c_str(),(uintptr_t)0x100000000,exec_header); // hard code origin
+    } else {
+      symbol_table = load_macho_symbol_table(is_executable,libraryName.c_str(),library_origin,exec_header);
+    }
     symbol_table.optimize();
   } else {
     printf("%s:%d:%s Could not find start of library %s\n", __FILE__, __LINE__, __FUNCTION__, libraryName.c_str());
   }
   size_t section_size;
+  printf("%s:%d:%s About to load_stackmap_info library_origin = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)library_origin );
   uintptr_t p_section = load_stackmap_info(libraryName.c_str(),library_origin,section_size);
   if (p_section) {
     symbol_table._StackmapStart = p_section;
@@ -1548,7 +1577,8 @@ void fill_in_interpreted_frames(std::vector<BacktraceEntry>& backtrace) {
       if (bp<=reg && reg <bpNext) {
         backtrace[idx]._Stage = lispFrame; // Interpreted frames are lisp frames
         backtrace[idx]._SymbolName = gc::As<Symbol_sp>(gc::As<Closure_sp>(frame->function())->functionName())->formattedName(true);
-        backtrace[idx]._Arguments = frame->arguments();
+        printf("%s:%d:%s  What do I do with the interpreted arguments?????\n", __FILE__, __LINE__, __FUNCTION__ );
+//        backtrace[idx]._Arguments = frame->arguments();
         //printf("%s:%d:%s %s %s  MATCH!!!!\n", __FILE__, __LINE__, __FUNCTION__, backtrace[idx]._SymbolName.c_str(), _rep_(backtrace[idx]._Arguments).c_str());
       }
     }
@@ -1611,7 +1641,7 @@ uintptr_t get_raw_argument_from_stack(uintptr_t functionAddress, uintptr_t baseP
 }
 
 
-core::T_mv capture_arguments(uintptr_t functionAddress, uintptr_t basePointer, int frameOffset)
+CL_DEFUN core::T_mv capture_arguments(uintptr_t functionAddress, uintptr_t basePointer, int frameOffset)
 {
   T_sp closure((gctools::Tagged)get_raw_argument_from_stack(functionAddress,basePointer,frameOffset,0));
   size_t nargs = core::get_raw_argument_from_stack(functionAddress,basePointer,frameOffset,1);
@@ -1621,6 +1651,13 @@ core::T_mv capture_arguments(uintptr_t functionAddress, uintptr_t basePointer, i
     (*args)[i] = tobj;
   }
   return Values(args,closure);
+}
+
+CL_DEFUN core::T_mv core__capture_arguments(Pointer_sp functionAddressP, Pointer_sp basePointerP, int frameOffset)
+{
+  uintptr_t functionAddress = (uintptr_t)functionAddressP->ptr();
+  uintptr_t basePointer = (uintptr_t)basePointerP->ptr();
+  return capture_arguments(functionAddress,basePointer,frameOffset);
 }
 
 
@@ -1652,22 +1689,9 @@ void fill_backtrace(std::vector<BacktraceEntry>& backtrace,bool captureArguments
     // Now get the arguments
   BT_LOG((buf,"Getting arguments\n"));
   // printf("%s:%s:%d\n", __FILE__, __FUNCTION__, __LINE__);
-  for ( size_t index=1; index<backtrace.size(); ++index) {
-    // printf("%s:%s:%d filling arguments %lu\n", __FILE__, __FUNCTION__, __LINE__, index);
-    if (captureArguments && backtrace[index]._Stage == lispFrame && backtrace[index]._FrameSize!=0) {
-      T_mv arg_mv = capture_arguments(backtrace[index]._FunctionStart,backtrace[index]._BasePointer,backtrace[index]._FrameOffset );
-      BT_LOG((buf,"found arguments for frame %lu\n", index ));
-      backtrace[index]._Arguments = arg_mv;
-      backtrace[index]._Closure = arg_mv.second();
-    } else {
-      backtrace[index]._Arguments = _Nil<T_O>();
-      backtrace[index]._Closure = _Nil<T_O>();
-    }
-  }
-//  printf("%s:%s:%d\n", __FILE__, __FUNCTION__, __LINE__);
     // fill in the interpreted frames here
   BT_LOG((buf,"fill in interpreted frames here\n"));;
-  if (!captureArguments) fill_in_interpreted_frames(backtrace);
+  // if (!captureArguments) fill_in_interpreted_frames(backtrace);
 };
 
 
@@ -1676,42 +1700,52 @@ CL_LAMBDA(&optional (depth 0));
 CL_DECLARE();
 CL_DOCSTRING("backtrace");
 CL_DEFUN T_sp core__clib_backtrace_as_list() {
-  gc::SafeGCPark park;
   std::vector<BacktraceEntry> backtrace;
   fill_backtrace(backtrace,true);
   BT_LOG((buf," building backtrace as list\n" ));
     // Move the frames into Common Lisp
+  uintptr_t bp = (uintptr_t)__builtin_frame_address(0);
   ql::list result;
   for ( size_t i=1; i<backtrace.size(); ++i ) {
-    T_sp entry;
-    Symbol_sp stype;
-    if (backtrace[i]._Stage == lispFrame) {
-      stype = INTERN_(kw,lisp);
-    } else {
-      stype = INTERN_(kw,c_PLUS__PLUS_);
+    // printf("%s:%d Examining bp %p frame %p\n", __FILE__, __LINE__, (void*)bp, (void*)backtrace[i]._BasePointer);
+    if (bp<backtrace[i]._BasePointer && backtrace[i]._BasePointer!=0) {
+      T_sp entry;
+      Symbol_sp stype;
+      if (backtrace[i]._Stage == lispFrame) {
+        stype = INTERN_(kw,lisp);
+      } else {
+        stype = INTERN_(kw,c_PLUS__PLUS_);
+      }
+      T_sp funcDesc = _Nil<T_O>();
+      if (backtrace[i]._FunctionDescription!=0) {
+        funcDesc = Pointer_O::create((void*)backtrace[i]._FunctionDescription);
+      }
+      ql::list args;
+      core::T_sp arguments = _Nil<core::T_O>();
+      core::T_sp closure = _Nil<core::T_O>();
+      if (backtrace[i]._FrameOffset!=0) {
+        core::T_mv args_closure = core::capture_arguments(backtrace[i]._FunctionStart,backtrace[i]._BasePointer,backtrace[i]._FrameOffset);
+        arguments = args_closure;
+        closure = args_closure.second();
+      }
+      args << INTERN_(kw,type) << stype
+           << INTERN_(kw,return_address) << Pointer_O::create((void*)backtrace[i]._ReturnAddress)
+           << INTERN_(kw,raw_name) <<  SimpleBaseString_O::make(backtrace[i]._SymbolName)
+           << INTERN_(kw,base_pointer) << Pointer_O::create((void*)backtrace[i]._BasePointer)
+           << INTERN_(kw,frame_offset) << core::make_fixnum(backtrace[i]._FrameOffset)
+           << INTERN_(kw,frame_size) << core::make_fixnum(backtrace[i]._FrameSize)
+           << INTERN_(kw,function_start_address) << Pointer_O::create((void*)backtrace[i]._FunctionStart)
+           << INTERN_(kw,function_end_address) << Pointer_O::create((void*)backtrace[i]._FunctionEnd)
+           << INTERN_(kw,arguments) << arguments
+           << INTERN_(kw,closure) << closure
+           << INTERN_(kw,function_description) << funcDesc;
+      if (_sym_make_backtrace_frame->fboundp()) {
+        entry = core__apply0(_sym_make_backtrace_frame->symbolFunction(),args.cons());
+      } else {
+        entry = core::Cons_O::create(_sym_make_backtrace_frame,args.cons());
+      }
+      result << entry;
     }
-    T_sp funcDesc = _Nil<T_O>();
-    if (backtrace[i]._FunctionDescription!=0) {
-      funcDesc = Pointer_O::create((void*)backtrace[i]._FunctionDescription);
-    }
-    ql::list args;
-    args << INTERN_(kw,type) << stype
-         << INTERN_(kw,return_address) << Pointer_O::create((void*)backtrace[i]._ReturnAddress)
-         << INTERN_(kw,raw_name) <<  SimpleBaseString_O::make(backtrace[i]._SymbolName)
-         << INTERN_(kw,arguments) << backtrace[i]._Arguments
-         << INTERN_(kw,closure) << backtrace[i]._Closure
-         << INTERN_(kw,base_pointer) << Pointer_O::create((void*)backtrace[i]._BasePointer)
-         << INTERN_(kw,frame_offset) << core::make_fixnum(backtrace[i]._FrameOffset)
-         << INTERN_(kw,frame_size) << core::make_fixnum(backtrace[i]._FrameSize)
-         << INTERN_(kw,function_start_address) << Pointer_O::create((void*)backtrace[i]._FunctionStart)
-         << INTERN_(kw,function_end_address) << Pointer_O::create((void*)backtrace[i]._FunctionEnd)
-         << INTERN_(kw,function_description) << funcDesc;
-    if (_sym_make_backtrace_frame->fboundp()) {
-      entry = core__apply0(_sym_make_backtrace_frame->symbolFunction(),args.cons());
-    } else {
-      entry = core::Cons_O::create(_sym_make_backtrace_frame,args.cons());
-    }
-    result << entry;
   }
   return result.cons();
 }
@@ -1780,7 +1814,6 @@ CL_DEFUN void core__frame_pointers() {
 
 
 CL_DEFUN void core__dump_symbol_and_stackmap_info() {
-  gc::SafeGCPark park;
   std::vector<BacktraceEntry> emptyBacktrace;
   fill_backtrace_or_dump_info(emptyBacktrace);
 }
@@ -2102,7 +2135,7 @@ void dbg_print_frame(const std::vector<core::BacktraceEntry>& backtrace, size_t 
 }
 
 void dbg_safe_backtrace() {
-  gc::SafeGCPark park;
+//  gc::SafeGCPark park;
   std::vector<core::BacktraceEntry> backtrace;
   printf("Safe-backtrace\n");
   core::fill_backtrace(backtrace,false);
@@ -2112,7 +2145,7 @@ void dbg_safe_backtrace() {
   }
 }
 void dbg_safe_backtrace_no_args() {
-  gc::SafeGCPark park;
+//  gc::SafeGCPark park;
   std::vector<core::BacktraceEntry> backtrace;
   printf("Safe-backtrace\n");
   core::fill_backtrace(backtrace,false);
@@ -2122,7 +2155,7 @@ void dbg_safe_backtrace_no_args() {
   }
 }
 void dbg_safe_lisp_backtrace() {
-  gc::SafeGCPark park;
+//  gc::SafeGCPark park;
   std::vector<core::BacktraceEntry> backtrace;
   printf("Safe-backtrace\n");
   core::fill_backtrace(backtrace,false);
