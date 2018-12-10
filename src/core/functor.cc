@@ -279,7 +279,10 @@ CL_DEFUN size_t core__closure_length(Closure_sp tclosure)
   if (closure->closureType == ClosureWithSlots_O::cclaspClosure) {
     return closure->_Slots._Length;
   }
-  return gc::As<ValueFrame_sp>(tclosure->closedEnvironment())->length();
+  if (tclosure->closedEnvironment().notnilp()) {
+    return gc::As<ValueFrame_sp>(tclosure->closedEnvironment())->length();
+  }
+  return 0;
 }
 
 T_sp ClosureWithSlots_O::code() const {
