@@ -111,6 +111,7 @@ void register_llvm_stackmaps(uintptr_t startAddress, uintptr_t endAddress, size_
  
  void startup_register_loaded_objects();
 
+bool lookup_address(uintptr_t address, const char*& symbol, uintptr_t& start, uintptr_t& end, char& type);
 
  typedef enum {undefined,symbolicated,lispFrame,cFrame} BacktraceFrameEnum ;
 struct BacktraceEntry {

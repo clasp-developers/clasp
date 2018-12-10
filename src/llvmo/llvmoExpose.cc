@@ -27,6 +27,7 @@ THE SOFTWARE.
 #define DEBUG_LEVEL_FULL
 
 //#include <llvm/Support/system_error.h>
+#include <dlfcn.h>
 #include <clasp/core/foundation.h>
 #include <llvm/ExecutionEngine/GenericValue.h>
 #include <llvm/ExecutionEngine/SectionMemoryManager.h>
@@ -137,60 +138,68 @@ CL_DEFUN std::string llvm_sys__get_default_target_triple() {
   return llvm::sys::getDefaultTargetTriple();
 }
 
-/*! Disassemble code from the base (address).
-    The stopping criterion is defined by start_byte_offset/end_byte_offset and start_instruction_index/num_instructions.
-    If start_byte_offset is a fixnum then end_byte_offset must also be a fixnum >= start_byte_offset and they
-       are used to determine the start and stopping criterion.
-    Otherwise start printing disassembled instructions from the start_instruction_index up to num_instructions.
+
+int my_LLVMOpInfoCallback(void* DisInfo, uint64_t pc, uint64_t offset, uint64_t size, int tagType, void* TagBuf)
+{
+//  printf("%s:%d:%s pc->%p offset->%llu size->%llu tagType->%d\n",  __FILE__, __LINE__, __FUNCTION__, (void*)pc, offset, size, tagType);
+  return 0;
+}
+
+
+const char* my_LLVMSymbolLookupCallback (void *DisInfo, uint64_t ReferenceValue, uint64_t *ReferenceType, uint64_t ReferencePC, const char **ReferenceName) {
+  const char* symbol;
+  uintptr_t start, end;
+  char type;
+  bool found = core::lookup_address((uintptr_t)ReferenceValue, symbol, start, end, type);
+  // printf("%s:%d:%s ReferenceValue->%p ReferencePC->%p\n", __FILE__, __LINE__, __FUNCTION__, (void*)ReferenceValue, (void*)ReferencePC);
+  if (found && start==ReferenceValue) {
+    *ReferenceName = symbol;
+    *ReferenceType = 0;
+    return symbol;
+  }
+  Dl_info data;
+  int ret = dladdr((void*)ReferenceValue,&data);
+  if (ret!=0 && ReferenceValue == (uintptr_t)data.dli_saddr) {
+    *ReferenceName = data.dli_sname;
+    return *ReferenceName;
+  }
+  *ReferenceName = NULL;
+  return NULL;
+}
+
+
+/*! Disassemble code from the start-address to end-address.
 TODO: See the link below to make the disassbmely more informative by emitting comments, symbols and latency
    http://llvm.org/doxygen/Disassembler_8cpp_source.html#l00248
 */
-CL_LAMBDA(target-triple address &key (start-instruction-index 0) (num-instructions 16) start-byte-offset end-byte-offset);
+CL_LAMBDA(target-triple start-address end-address)
 CL_DEFUN void llvm_sys__disassemble_instructions(const std::string& striple,
-                                                 core::Pointer_sp address,
-                                                 size_t start_instruction_index, size_t num_instructions,
-                                                 core::T_sp start_byte_offset, core::T_sp end_byte_offset)
+                                                 core::Pointer_sp start_address,
+                                                 core::Pointer_sp end_address)
 {
 #define DISASM_NUM_BYTES 32
-#define DISASM_OUT_STRING_SIZE 64
+#define DISASM_OUT_STRING_SIZE 128
   LLVMDisasmContextRef dis = LLVMCreateDisasm(striple.c_str(),
-                                                    NULL,
-                                                    0,
-                                                    NULL,
-                                                    NULL);
+                                              NULL,
+                                              0,
+                                              my_LLVMOpInfoCallback,
+                                              my_LLVMSymbolLookupCallback);
   LLVMSetDisasmOptions(dis,LLVMDisassembler_Option_PrintImmHex|LLVMDisassembler_Option_PrintLatency
                        /*|LLVMDisassembler_Option_UseMarkup*/);
-  uint64_t offset= 0;
-  if (start_byte_offset.fixnump()) {
-    if (!end_byte_offset.fixnump()) {
-      SIMPLE_ERROR(BF("If you provide start-byte-offset - you must provide a fixnum for end-byte-offset"));
-    }
-    if (start_byte_offset.unsafe_fixnum()>=end_byte_offset.unsafe_fixnum()) {
-      SIMPLE_ERROR(BF("start-byte-offset must be < end-byte-offset"));
-    }
-    offset = start_byte_offset.unsafe_fixnum();
-    start_instruction_index = 0;
-    num_instructions = UINT_MAX;
-  }
-  for ( size_t ii = 0,iiEnd(start_instruction_index+num_instructions); ; ++ii ) {
-      // stopping criterion
-    if (end_byte_offset.fixnump()) {
-      if (offset >= end_byte_offset.unsafe_fixnum()) break;
-    } else {
-      if (ii >= iiEnd) break;
-    }
-    uint8_t* uiaddress = (uint8_t*)address->ptr()+offset;
-    ArrayRef<uint8_t> Bytes(uiaddress,DISASM_NUM_BYTES);
+  size_t ii = 0;
+  size_t offset = 0;
+  for ( uint8_t* addr = (uint8_t*)start_address->ptr(); addr<(uint8_t*)end_address->ptr(); ) {
+    ArrayRef<uint8_t> Bytes(addr,DISASM_NUM_BYTES);
     SmallVector<char, DISASM_OUT_STRING_SIZE> InsnStr;
-    size_t sz = LLVMDisasmInstruction(dis,(unsigned char*)&Bytes[0],DISASM_NUM_BYTES,(uint64_t)((uint8_t*)address->ptr()+offset),(char*)InsnStr.data(),DISASM_OUT_STRING_SIZE-1);
-    if (ii >= start_instruction_index) {
-      const char* str = InsnStr.data();
-      stringstream ss;
-      ss << std::hex << (void*)uiaddress << " <#" << std::dec << std::setw(3) << ii << "+" << offset <<  ">";
-      core::clasp_write_string(ss.str());
-      core::writestr_stream(str);
-      core::clasp_terpri();
-    }
+    size_t sz = LLVMDisasmInstruction(dis,(unsigned char*)&Bytes[0],DISASM_NUM_BYTES,(uint64_t)addr,(char*)InsnStr.data(),DISASM_OUT_STRING_SIZE-1);
+    const char* str = InsnStr.data();
+    stringstream ss;
+    ss << std::hex << (void*)addr << " <#" << std::dec << std::setw(3) << ii << "+" << offset <<  ">";
+    core::clasp_write_string(ss.str());
+    core::writestr_stream(str);
+    core::clasp_terpri();
+    addr += sz;
+    ii++;
     offset += sz;
   }
   LLVMDisasmDispose(dis);
