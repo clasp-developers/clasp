@@ -42,8 +42,8 @@
 
 (defun next-value-table-holder-name (&optional suffix)
   (if suffix
-      (bformat nil "%s-CONTAB%d" suffix (incf-value-table-id-value))
-      (bformat nil "CONTAB%d" (incf-value-table-id-value))))
+      (bformat nil "%s-%s%d" suffix core:+contab-name+ (incf-value-table-id-value))
+      (bformat nil "%s%d" core:+contab-name+ (incf-value-table-id-value))))
 
 (defstruct (literal-node-toplevel-funcall (:type vector) :named) arguments)
 (defstruct (literal-node-creator (:type vector) :named) index name literal-name arguments)
@@ -320,8 +320,8 @@ the value is put into *default-load-time-value-vector* and its index is returned
   (ensure-creator-llvm-value creator)
   (let* ((idx (literal-node-creator-index creator))
          (label (if (literal-node-creator-literal-name creator)
-                    (bformat nil "CONTAB[%d]/%s" idx (literal-node-creator-literal-name creator))
-                    (bformat nil "CONTAB[%d]%t*" idx)))
+                    (bformat nil "%s[%d]/%s" core:+contab-name+ idx (literal-node-creator-literal-name creator))
+                    (bformat nil "%s[%d]%t*" core:+contab-name+ idx)))
          (entry (llvm-sys:create-geparray cmp:*irbuilder*
                                           cmp:*load-time-value-holder-global-var*
                                           (list (cmp:jit-constant-i32 0)

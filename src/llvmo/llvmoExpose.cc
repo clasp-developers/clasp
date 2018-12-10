@@ -139,6 +139,13 @@ CL_DEFUN std::string llvm_sys__get_default_target_triple() {
 }
 
 
+#ifdef CLASP_THREADS
+mp::Mutex* global_disassemble_mutex = NULL;
+#endif
+#define CALLBACK_BUFFER_SIZE 1024
+char global_LLVMOpInfoCallbackBuffer[CALLBACK_BUFFER_SIZE];
+char global_LLVMSymbolLookupCallbackBuffer[CALLBACK_BUFFER_SIZE];
+
 int my_LLVMOpInfoCallback(void* DisInfo, uint64_t pc, uint64_t offset, uint64_t size, int tagType, void* TagBuf)
 {
 //  printf("%s:%d:%s pc->%p offset->%llu size->%llu tagType->%d\n",  __FILE__, __LINE__, __FUNCTION__, (void*)pc, offset, size, tagType);
@@ -151,22 +158,41 @@ const char* my_LLVMSymbolLookupCallback (void *DisInfo, uint64_t ReferenceValue,
   uintptr_t start, end;
   char type;
   bool found = core::lookup_address((uintptr_t)ReferenceValue, symbol, start, end, type);
-  // printf("%s:%d:%s ReferenceValue->%p ReferencePC->%p\n", __FILE__, __LINE__, __FUNCTION__, (void*)ReferenceValue, (void*)ReferencePC);
-  if (found && start==ReferenceValue) {
-    *ReferenceName = symbol;
-    *ReferenceType = 0;
-    return symbol;
+//  printf("%s:%d:%s ReferenceValue->%p ReferencePC->%p\n", __FILE__, __LINE__, __FUNCTION__, (void*)ReferenceValue, (void*)ReferencePC);
+  if (found) {
+    stringstream ss;
+    ss << (void*)ReferenceValue << "{";
+    ss << symbol;
+    if (ReferenceValue!=start) {
+      ss << "+" << (ReferenceValue-start);
+    }
+    if (symbol[0]=='_'
+        && strlen(symbol)>strlen(CONTAB_NAME)
+        && strncmp(CONTAB_NAME,symbol+1,strlen(CONTAB_NAME))==0) {
+      ss << "["<< dbg_safe_repr((uintptr_t)*(uintptr_t*)ReferenceValue)<<"]";
+    }
+    ss << "}";
+    strcpy(global_LLVMSymbolLookupCallbackBuffer,ss.str().c_str());
+    *ReferenceName = global_LLVMSymbolLookupCallbackBuffer;
+//    printf("%s:%d:%s Returning symbol-table result |%s|\n", __FILE__, __LINE__, __FUNCTION__, *ReferenceName);
+    return *ReferenceName;
   }
   Dl_info data;
   int ret = dladdr((void*)ReferenceValue,&data);
-  if (ret!=0 && ReferenceValue == (uintptr_t)data.dli_saddr) {
-    *ReferenceName = data.dli_sname;
+  if (ret!=0) {
+    stringstream ss;
+    ss << data.dli_sname;
+    if (ReferenceValue != (uintptr_t)data.dli_saddr) {
+      ss << "+" << (ReferenceValue-(uintptr_t)data.dli_saddr);
+    }
+    strcpy(global_LLVMSymbolLookupCallbackBuffer,ss.str().c_str());
+    *ReferenceName = global_LLVMSymbolLookupCallbackBuffer;
+//    printf("%s:%d:%s Returning dladdr result |%s|\n", __FILE__, __LINE__, __FUNCTION__, *ReferenceName);
     return *ReferenceName;
   }
   *ReferenceName = NULL;
   return NULL;
 }
-
 
 /*! Disassemble code from the start-address to end-address.
 TODO: See the link below to make the disassbmely more informative by emitting comments, symbols and latency
@@ -179,6 +205,10 @@ CL_DEFUN void llvm_sys__disassemble_instructions(const std::string& striple,
 {
 #define DISASM_NUM_BYTES 32
 #define DISASM_OUT_STRING_SIZE 128
+  if (global_disassemble_mutex == NULL) {
+    global_disassemble_mutex = new mp::Mutex();
+  }
+  WITH_READ_WRITE_LOCK(*global_disassemble_mutex);
   LLVMDisasmContextRef dis = LLVMCreateDisasm(striple.c_str(),
                                               NULL,
                                               0,

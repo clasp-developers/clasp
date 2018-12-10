@@ -62,6 +62,7 @@ THE SOFTWARE.
 
 #if defined( _ADDRESS_MODEL_64 )
 
+#define CONTAB_NAME "^CONTAB"
 #define INTPTR_BITS 64
 
 #define BIT_ARRAY_BYTE_SIZE 32
