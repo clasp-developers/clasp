@@ -471,6 +471,10 @@ and cannot be added to ~A." method other-gf gf)))
   (dolist (d (generic-function-dependents c))
     (funcall function d)))
 
+;; FIXME: dependence on core:closure-with-slots is not super
+(%satiate map-dependents (standard-generic-function core:closure-with-slots)
+          (standard-class core:closure-with-slots))
+
 (defgeneric update-dependent (object dependent &rest initargs))
 
 ;; After this, update-dependents will work
