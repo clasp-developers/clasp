@@ -79,7 +79,7 @@
                                 (loop for things in remaining-args
                                       nconcing (mapcar (lambda (entry) `'(,entry ,@things)) entries))
                                 (mapcar (lambda (entry) `'(,entry)) entries))))
-               `(clos:satiate #',name ,@tail))))
+                 `(clos:satiate #',name ,@tail))))
     (for-entries cleavir-env:block-info (symbol))
     ;; i include conses for (setf x) functions, but the specializer profile makes it irrelevant
     (for-entries cleavir-env:function-info (symbol) (cons))
@@ -133,15 +133,45 @@
                `(clos:satiate #',name
                               ,@(loop for method in (clos:generic-function-methods (fdefinition name))
                                       when (null (method-qualifiers method))
-                                        collect `'(,(first (clos:method-specializers method)))))))
-    (satiate-reader cleavir-ast:children)
-    (satiate-reader cleavir-ast:arg1-ast)
-    (satiate-reader cleavir-ast:arg2-ast)
-    (satiate-reader cleavir-ast:body-ast)
-    (satiate-reader cleavir-ast:name)
-    (satiate-reader cleavir-ast:form-ast)
-    (satiate-reader cleavir-ast:form-asts)
-    (satiate-reader cleavir-ast:cons-ast)))
+                                        collect `'(,(first (clos:method-specializers method))))))
+             (satiate-readers (&rest names)
+               `(progn ,@(loop for name in names collect `(satiate-reader ,name)))))
+    (satiate-readers
+     ;; universe
+     cleavir-ast:children ; Note: should probably be in satiate-for-all, but scope-ast needs a method
+     ;; general-purpose-asts
+     cleavir-ast:value
+     cleavir-ast:name
+     cleavir-ast:symbol-ast
+     cleavir-ast:value-ast
+     cleavir-ast:name-ast
+     cleavir-ast:callee-ast cleavir-ast:argument-asts
+     cleavir-ast:lambda-list cleavir-ast:body-ast
+     cleavir-ast:forms
+     cleavir-ast:form-asts
+     cleavir-ast:block-ast cleavir-ast:form-ast
+     cleavir-ast:lhs-ast
+     cleavir-ast:lhs-asts
+     cleavir-ast:tag-ast
+     cleavir-ast:required-types cleavir-ast:optional-types cleavir-ast:rest-type
+     cleavir-ast:type-specifier cleavir-ast:type-specifier-ast
+     cleavir-ast:form cleavir-ast:read-only-p
+     cleavir-ast:test-ast cleavir-ast:then-ast cleavir-ast:else-ast
+     cleavir-ast:function-form-ast
+     cleavir-ast:first-form-ast
+     cleavir-ast:symbol
+     cleavir-ast:arg1-ast cleavir-ast:arg2-ast
+     ;; cons-related-asts
+     cleavir-ast:cons-ast cleavir-ast:object-ast
+     ;; fixnum-related-asts
+     cleavir-ast:variable-ast
+     ;; scope-related-asts (NOTE: should probably delete this file anyway)
+     cleavir-ast:child-ast
+     ;; simple-float-related-asts
+     cleavir-ast:subtype
+     cleavir-ast:from-type cleavir-ast:to-type cleavir-ast:arg-ast
+     ;; standard-object-related-asts (NOTE: as of now, unused in clasp)
+     cleavir-ast:slot-number-ast)))
 
 ;;; cleavir-io
 (eval-when (:load-toplevel)
