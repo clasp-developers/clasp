@@ -870,6 +870,7 @@ CL_DEFUN T_mv core__call_with_variable_bound(Symbol_sp sym, T_sp val, T_sp thunk
   if (gc::IsA<Function_sp>(thunk)) {
     printf("%s:%d:%s  The thunk is NOT a Function object!!!!! thunk.raw_() = %p\n",
            __FILE__, __LINE__, __FUNCTION__, (void*)thunk.raw_());
+    fflush(stdout);
   }
   Function_sp func = gc::As_unsafe<Function_sp>(thunk);
   return (func->entry.load())(LCC_PASS_ARGS0_ELLIPSIS(func.raw_()));
