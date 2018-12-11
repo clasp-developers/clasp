@@ -17,6 +17,7 @@ namespace core {
     mp::Process_sp _Process;
     ObjectFile_sp  _ObjectFile; // Capture jitted object-file's with this
     uint64_t  _Tid;
+    uintptr_t           _BacktraceBasePointer;
     DynamicBindingStack _Bindings;
     ExceptionStack _ExceptionStack;
     MultipleValues _MultipleValues;
