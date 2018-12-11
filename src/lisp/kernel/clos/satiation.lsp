@@ -696,6 +696,8 @@
                                                 (standard-class) (funcallable-standard-class)
                                                 (structure-class) (built-in-class) (core:cxx-class)
                                                 (core:derivable-cxx-class) (core:clbind-cxx-class)))
+       ;; eql-specializer has only the one special slot, so we just do it manually.
+       (%early-satiate eql-specializer-object (eql-specializer))
        ,@(satiate-readers (set-difference +class-slots+ +specializer-slots+)
                           '((standard-class) (funcallable-standard-class)
                             (structure-class) (built-in-class) (core:cxx-class)
