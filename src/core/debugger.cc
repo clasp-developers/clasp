@@ -945,7 +945,10 @@ int elf_startup_loaded_object_callback(struct dl_phdr_info *info, size_t size, v
   bool is_executable;
   std::string libname;
   if (scan_callback_info->_Index==0 && strlen(info->dlpi_name) == 0 ) {
-    libname = __progname_full;
+    if (progname_full == NULL) {
+      progname_full = getprogname();
+    }
+    libname = progname_full;
     is_executable = true;
   } else {
     libname = info->dlpi_name;
