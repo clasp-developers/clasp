@@ -125,7 +125,16 @@
                                       nconcing (mapcar (lambda (entry) `'(,@things ,entry)) entries))
                                 (mapcar (lambda (entry) `'(,entry)) entries))))
                  `(clos:satiate #',name ,@tail))))
-    (for-entries-after cleavir-env:macro-function (symbol))))
+    (for-entries-after cleavir-env:symbol-macro-expansion (symbol))
+    (for-entries-after cleavir-env:macro-function (symbol)))
+  (macrolet ((satiate-eval ()
+               (let ((entries (list* 'null 'clasp-global-environment
+                                     (rest (clos:subclasses* (find-class 'cleavir-env::entry))))))
+                 `(clos:satiate #'cleavir-env:eval
+                                ,@(loop for entry1 in entries
+                                        nconc (loop for entry2 in entries
+                                                    collect `'(cons ,entry1 ,entry2)))))))
+    (satiate-eval)))
 
 ;;; cleavir-compilation-policy
 (eval-when (:load-toplevel)
@@ -318,7 +327,8 @@
     (satiate-with-methods cleavir-ir:subtype)
     (satiate-with-methods cleavir-ir:element-type)
     (satiate-with-methods cleavir-ir:offset)
-    (satiate-with-methods cleavir-ir:value)))
+    (satiate-with-methods cleavir-ir:value)
+    (satiate-with-methods cleavir-ir:value-type)))
 
 ;;; cleavir-hir-to-mir
 (eval-when (:load-toplevel)
