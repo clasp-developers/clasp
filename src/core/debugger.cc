@@ -1719,10 +1719,11 @@ void fill_backtrace(std::vector<BacktraceEntry>& backtrace,bool captureArguments
 
 
 
-CL_LAMBDA(&optional args-as-pointers);
+CL_LAMBDA(printer &optional args-as-pointers);
 CL_DECLARE();
-CL_DOCSTRING("backtrace");
-CL_DEFUN T_sp core__clib_backtrace_as_list(bool args_as_pointers) {
+CL_DOCSTRING(R"doc(Generate a backtrace and pass it to the closure for printing or debugging.
+ If args-as-pointers is T then arguments and the closure are wrapped in Pointer_O objects.)doc");
+CL_DEFUN void core__call_with_backtrace(Function_sp closure, bool args_as_pointers) {
   std::vector<BacktraceEntry> backtrace;
   fill_backtrace(backtrace,true);
   BT_LOG((buf," building backtrace as list\n" ));
@@ -1770,7 +1771,7 @@ CL_DEFUN T_sp core__clib_backtrace_as_list(bool args_as_pointers) {
       result << entry;
     }
   }
-  return result.cons();
+  eval::funcall(closure,result.cons());
 }
 
 
@@ -2163,7 +2164,7 @@ void dbg_safe_backtrace() {
   printf("Safe-backtrace\n");
   core::fill_backtrace(backtrace,false);
   printf("Got %lu backtrace frames - dumping\n", backtrace.size());
-  for ( size_t idx=0; idx<backtrace.size()-2; ++idx ) {
+  for ( size_t idx=2; idx<backtrace.size()-2; ++idx ) {
     dbg_print_frame(backtrace,idx,true);
   }
 }

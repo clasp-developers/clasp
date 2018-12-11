@@ -115,38 +115,32 @@ For C/C++ frames - return (list 'c-function name)."
             (subseq line (1+ square-open) square-close)
           :unknown-lisp-function)))))
 
-
-(defparameter *clib-backtrace-arguments-as-pointers* nil
-  "Set this to T if you want arguments and the closure for each frame to be returned as pointer objects.
-This will protect backtrace printing from problems with frames that have been stomped on.")
-
 ;;; Return the backtrace as a list of backtrace-frame
-(defun backtrace-as-list (&optional verbose)
-  (let ((clib-backtrace (core:clib-backtrace-as-list *clib-backtrace-arguments-as-pointers*)))
-    (dolist (frame clib-backtrace)
-      (let ((common-lisp-name (backtrace-frame-raw-name frame)))
-        (if (and common-lisp-name (search "^^" common-lisp-name))
-            (let* ((name-with-parts #+target-os-linux common-lisp-name
-                                    ;; fixme cracauer.  Find out what FreeBSD actually needs here
-                                    #+target-os-freebsd common-lisp-name
-                                    #+target-os-darwin (if (char= (char common-lisp-name 0) #\_)
-                                                           (subseq common-lisp-name 1 (length common-lisp-name)) ; strip preceeding "_"
+(defun backtrace-as-list (clib-backtrace &optional verbose)
+  (dolist (frame clib-backtrace)
+    (let ((common-lisp-name (backtrace-frame-raw-name frame)))
+      (if (and common-lisp-name (search "^^" common-lisp-name))
+          (let* ((name-with-parts #+target-os-linux common-lisp-name
+                                  ;; fixme cracauer.  Find out what FreeBSD actually needs here
+                                  #+target-os-freebsd common-lisp-name
+                                  #+target-os-darwin (if (char= (char common-lisp-name 0) #\_)
+                                                         (subseq common-lisp-name 1 (length common-lisp-name)) ; strip preceeding "_"
                                                          common-lisp-name))
-                   (parts (cmp:unescape-and-split-jit-name name-with-parts))
-                   (symbol-name (first parts))
-                   (package-name (second parts))
-                   (maybe-fn-or-specializers (third parts))
-                   (maybe-method (fourth parts))
-                   (name (intern symbol-name (or package-name :keyword)))
-                   (print-name (cond
-                                ((string= maybe-method "METHOD")
-                                 (format nil "(METHOD ~a ~a)" name maybe-fn-or-specializers))
-                                (t name))))
-              (setf (backtrace-frame-function-name frame) name
-                    (backtrace-frame-print-name frame) print-name))
+                 (parts (cmp:unescape-and-split-jit-name name-with-parts))
+                 (symbol-name (first parts))
+                 (package-name (second parts))
+                 (maybe-fn-or-specializers (third parts))
+                 (maybe-method (fourth parts))
+                 (name (intern symbol-name (or package-name :keyword)))
+                 (print-name (cond
+                               ((string= maybe-method "METHOD")
+                                (format nil "(METHOD ~a ~a)" name maybe-fn-or-specializers))
+                               (t name))))
+            (setf (backtrace-frame-function-name frame) name
+                  (backtrace-frame-print-name frame) print-name))
           (setf (backtrace-frame-function-name frame) common-lisp-name
                 (backtrace-frame-print-name frame) common-lisp-name))))
-    clib-backtrace))
+  clib-backtrace)
 
 
 (defun gather-frames (frames start-trigger &key verbose)
@@ -174,7 +168,7 @@ This will protect backtrace printing from problems with frames that have been st
 
 ;;; Extract just the Common Lisp backtrace frames
 ;;; starting from a frame that satisfies gather-start-trigger
-(defun common-lisp-backtrace-frames (&key verbose (focus t)
+(defun common-lisp-backtrace-frames (backtrace &key verbose (focus t)
                                        (gather-start-trigger nil)
                                        gather-all-frames)
   "Extract the common lisp backtrace frames.  Provide a gather-start-trigger function
@@ -182,97 +176,42 @@ that takes one argument (the backtrace-frame-function-name) and returns T it sho
 recording backtrace frames for Common Lisp.   Looking for the 'UNIVERSAL-ERROR-HANDLER' string
 is one way to eliminate frames that aren't interesting to the user.
 Set gather-all-frames to T and you can gather C++ and Common Lisp frames"
-  (let ((frames (backtrace-as-list)))
+  (let ((frames (backtrace-as-list backtrace)))
     (cond
       ((gather-frames frames gather-start-trigger :verbose verbose)) ; Start gathering on a specific frame
       ((gather-frames frames (lambda (frame) (eq :lisp (backtrace-frame-type frame))) :verbose verbose)) ; return all :LISP frames
       (t frames)))) ; return ALL frames
 
-;;; A quick and dirty way to work with btcl frames
-(defvar *current-btcl-frames* nil)
-(defvar *current-btcl-index* 0)
-(defun cbtcl-frame (index)
-  (elt *current-btcl-frames* index))
-
-(defun bt-function (index)
-  (backtrace-frame-print-name (cbtcl-frame index)))
-
-(defun bt-arguments (index)
-  (if (and (<= 0 index) (< index (length *current-btcl-frames*)))
-      (let ((arguments (backtrace-frame-arguments (cbtcl-frame index))))
-        arguments)
-      (core:bformat t "%d is not a valid frame index - use 0 to %d%N" index (1- (length *current-btcl-frames*)))))
-
-(defun bt-argument (index &optional (argument-index 0))
-  (check-type argument-index fixnum)
-  (let ((arguments (bt-arguments index)))
-    (if (and (<= 0 argument-index) (< argument-index (length arguments)))
-        (elt arguments argument-index)
-        (core:bformat t "%d is not a valid argument index - use 0 to %d%N" argument-index (1- (length arguments))))))
-(export '(bt-arguments bt-argument))
-
-(defun btcl-frames (&key all)
-  (setq *current-btcl-index* 0)
-  (let ((frames (if all
-                    (common-lisp-backtrace-frames)
-                    (common-lisp-backtrace-frames
-                     :gather-start-trigger
-                     (lambda (x)
-                       (eq 'core:universal-error-handler (backtrace-frame-function-name x)))))))
-    (unless frames
-      (setf frames (common-lisp-backtrace-frames)))
-    (setq *current-btcl-frames* frames)
-    frames))
 
 (defun btcl (&key all (args t) (stream *standard-output*))
   "Print backtrace of just common lisp frames.  Set args to nil if you don't want arguments printed"
-  (let ((l (btcl-frames :all all))
-        (index 0))
-    (dolist (e l)
-      (let ((name (backtrace-frame-print-name e))
-            (arguments (backtrace-frame-arguments e)))
-        (if arguments
-            (progn
-              (prin1 (prog1 index (incf index)) stream)
-              (write-string ": (" stream)
-              (princ name stream)
-              (if (> (length arguments) 0)
-                  (progn
-                    (if args 
-                        (dotimes (i (length arguments))
-                          (princ #\space stream)
-                          (prin1 (aref arguments i) stream))
-                      (prin1 " -args-suppressed-" stream))))
-              (princ ")" stream))
-          (progn
-            (prin1 (prog1 index (incf index)) stream)
-            (write-string ": " stream)
-            (princ name stream)))
-        (terpri stream)))))
+  (core:call-with-backtrace
+   (lambda (raw-backtrace)
+     (let ((frames (common-lisp-backtrace-frames raw-backtrace))
+           (index 0))
+       (dolist (e frames)
+         (let ((name (backtrace-frame-print-name e))
+               (arguments (backtrace-frame-arguments e)))
+           (if arguments
+               (progn
+                 (prin1 (prog1 index (incf index)) stream)
+                 (write-string ": (" stream)
+                 (princ name stream)
+                 (if (> (length arguments) 0)
+                     (progn
+                       (if args 
+                           (dotimes (i (length arguments))
+                             (princ #\space stream)
+                             (prin1 (aref arguments i) stream))
+                           (prin1 " -args-suppressed-" stream))))
+                 (princ ")" stream))
+               (progn
+                 (prin1 (prog1 index (incf index)) stream)
+                 (write-string ": " stream)
+                 (princ name stream)))
+           (terpri stream)))))))
 
-(defun bt ()
-  (let ((l (backtrace-as-list)))
-    (bformat t "There are %s frames%N" (length l))
-    (dolist (e l)
-          (bformat t "%s%N" (backtrace-frame-function-name e)))))
-
-(defun btargs ()
-  (let ((l (backtrace-as-list)))
-    (bformat t "There are %s frames%N" (length l))
-    (dolist (e l)
-      (let ((name (backtrace-frame-print-name e))
-            (arguments (backtrace-frame-arguments e)))
-        (if arguments
-            (progn
-              (princ name)
-              (dotimes (i (length arguments))
-                (princ #\space)
-                (prin1 (aref arguments i))))
-            (progn
-              (princ name)))
-        (terpri)))))
-
-(export '(btcl bt btargs common-lisp-backtrace-frames
+(export '(btcl common-lisp-backtrace-frames
           backtrace-frame-function-name backtrace-frame-arguments))
 
 (defmacro with-dtrace-trigger (&body body)
