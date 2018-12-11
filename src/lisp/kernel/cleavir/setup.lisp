@@ -106,6 +106,17 @@ when this is t a lot of graphs will be generated.")
 (defun (setf inline-ast) (ast name)
   (core:put-sysprop name 'inline-ast ast))
 
+;;; So that we can dump ASTs (for DEFUNs with an inline expansion)
+(defmethod make-load-form ((ast cleavir-ast:ast) &optional environment)
+  (values `(allocate-instance ',(class-of ast))
+          `(initialize-instance
+            ,ast
+            ,@(loop for (keyword reader)
+                    in (cleavir-io:save-info ast)
+                    for value = (funcall reader ast)
+                    collect `(quote ,keyword)
+                    collect `(quote ,value)))))
+
 (defmethod cleavir-env:function-info ((environment clasp-global-environment) function-name)
   (cond
     ((and (symbolp function-name) (treat-as-special-operator-p function-name))
