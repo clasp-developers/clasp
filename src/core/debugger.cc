@@ -1719,7 +1719,7 @@ void fill_backtrace(std::vector<BacktraceEntry>& backtrace,bool captureArguments
 
 
 
-CL_LAMBDA(printer &optional args-as-pointers);
+CL_LAMBDA(closure &optional args-as-pointers);
 CL_DECLARE();
 CL_DOCSTRING(R"doc(Generate a backtrace and pass it to the closure for printing or debugging.
  If args-as-pointers is T then arguments and the closure are wrapped in Pointer_O objects.)doc");
