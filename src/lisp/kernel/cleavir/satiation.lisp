@@ -90,6 +90,18 @@
     (for-entries cleavir-env:declarations)
     (for-entries cleavir-env:compile-time)
     (for-entries cleavir-env:optimize-qualities)
+    (for-entries cleavir-env:function-dynamic-extent
+                 (cleavir-env:global-function-info) (cleavir-env:local-function-info))
+    (for-entries cleavir-env:function-ignore
+                 (cleavir-env:global-function-info) (cleavir-env:local-function-info))
+    (for-entries cleavir-env:function-type
+                 (cleavir-env:global-function-info) (cleavir-env:local-function-info))
+    (for-entries cleavir-env:variable-dynamic-extent
+                 (cleavir-env:lexical-variable-info) (cleavir-env:special-variable-info))
+    (for-entries cleavir-env:variable-ignore
+                 (cleavir-env:lexical-variable-info) (cleavir-env:special-variable-info))
+    (for-entries cleavir-env:variable-type
+                 (cleavir-env:lexical-variable-info) (cleavir-env:special-variable-info))
     (for-entries cleavir-env:add-block (symbol))
     ;;(for-entries cleavir-env:add-function-dynamic-extent (symbol) (cons))
     ;;(for-entries cleavir-env:add-function-ignore (symbol symbol) (cons symbol) (symbol null) (cons null))
@@ -104,7 +116,16 @@
     (for-entries cleavir-env:add-tag (symbol))
     ;;add-variable-dynamic-extent
     (for-entries cleavir-env:add-variable-ignore (symbol symbol))
-    (for-entries cleavir-env:add-variable-type (symbol symbol) (symbol cons))))
+    (for-entries cleavir-env:add-variable-type (symbol symbol) (symbol cons)))
+  (macrolet ((for-entries-after (name &rest preceding-args)
+               (let* ((entries (list* 'null 'clasp-global-environment
+                                      (rest (clos:subclasses* (find-class 'cleavir-env::entry)))))
+                      (tail (if preceding-args
+                                (loop for things in preceding-args
+                                      nconcing (mapcar (lambda (entry) `'(,@things ,entry)) entries))
+                                (mapcar (lambda (entry) `'(,entry)) entries))))
+                 `(clos:satiate #',name ,@tail))))
+    (for-entries-after cleavir-env:macro-function (symbol))))
 
 ;;; cleavir-compilation-policy
 (eval-when (:load-toplevel)
@@ -286,7 +307,18 @@
                     (clos:satiate #'cleavir-ir:substitute-output ,@tail)))))
     (satiate-readers)
     (satiate-writers)
-    (satiate-subst)))
+    (satiate-subst))
+  (macrolet ((satiate-with-methods (name)
+               (let* ((methods (clos:generic-function-methods (fdefinition name)))
+                      (tail
+                        (loop for method in methods
+                              when (null (method-qualifiers method)) ; primary
+                                collect `'(,(first (clos:method-specializers method))))))
+                 `(clos:satiate #',name ,@tail))))
+    (satiate-with-methods cleavir-ir:subtype)
+    (satiate-with-methods cleavir-ir:element-type)
+    (satiate-with-methods cleavir-ir:offset)
+    (satiate-with-methods cleavir-ir:value)))
 
 ;;; cleavir-hir-to-mir
 (eval-when (:load-toplevel)
@@ -340,5 +372,9 @@
      (cleavir-ir:fixnum-equal-instruction cons)
      (cleavir-ir:float-less-instruction cons)
      (cleavir-ir:float-not-greater-instruction cons)
-     (cleavir-ir:float-equal-instruction cons))))
+     (cleavir-ir:float-equal-instruction cons)))
+  (clos:satiate #'%default-int-type '(abi-x86-64))
+  (clos:satiate #'%sadd.with-overflow '(llvm-sys:value llvm-sys:value abi-x86-64))
+  (clos:satiate #'%ssub.with-overflow '(llvm-sys:value llvm-sys:value abi-x86-64))
+  )
 ;  (clos:satiate #'cclasp-eval-with-env '(cons null)
