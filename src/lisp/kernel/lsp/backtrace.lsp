@@ -115,7 +115,10 @@ For C/C++ frames - return (list 'c-function name)."
             (subseq line (1+ square-open) square-close)
           :unknown-lisp-function)))))
 
-(defparameter *clib-backtrace-arguments-as-pointers* nil)
+
+(defparameter *clib-backtrace-arguments-as-pointers* nil
+  "Set this to T if you want arguments and the closure for each frame to be returned as pointer objects.
+This will protect backtrace printing from problems with frames that have been stomped on.")
 
 ;;; Return the backtrace as a list of backtrace-frame
 (defun backtrace-as-list (&optional verbose)
