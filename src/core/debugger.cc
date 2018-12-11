@@ -122,7 +122,7 @@ struct SymbolTable {
   std::vector<SymbolEntry> _Symbols;
   SymbolTable() : _End(0), _Capacity(1024), _StackmapStart(0), _StackmapEnd(0) {
     this->_SymbolNames = (char*)malloc(this->_Capacity);
- }
+  }
   ~SymbolTable() {
   };
   void addSymbol(std::string symbol, uintptr_t start, char type) {
@@ -703,7 +703,7 @@ mygetsectiondata(
 }
 
 SymbolTable load_macho_symbol_table(bool is_executable, const char* filename, uintptr_t header, uintptr_t exec_header) {
-  printf("%s:%d:%s is_executable(%d) header = %p  exec_header = %p\n", __FILE__, __LINE__, __FUNCTION__, is_executable, (void*)header, (void*)exec_header);
+//  printf("%s:%d:%s is_executable(%d) header = %p  exec_header = %p\n", __FILE__, __LINE__, __FUNCTION__, is_executable, (void*)header, (void*)exec_header);
   int baddigit = 0;
   SymbolTable symbol_table;
   struct stat buf;
@@ -795,9 +795,9 @@ uintptr_t load_stackmap_info(const char* filename, uintptr_t header, size_t& sec
   // Use mygetsectiondata to walk the library because stackmaps are mmap'd
   // in places that I am not able to calculate using otool
   uint8_t* p_section =  mygetsectiondata( (void*)header,
-                                            "__LLVM_STACKMAPS",
-                                            "__llvm_stackmaps",
-                                            &section_size );
+                                          "__LLVM_STACKMAPS",
+                                          "__llvm_stackmaps",
+                                          &section_size );
   return (uintptr_t)p_section;
 }
 
@@ -981,7 +981,7 @@ void startup_register_loaded_objects()
     If library_origin points to the start of the library then that address is used,
     otherwise it uses handle to look up the start of the library. */
 void add_dynamic_library_impl(bool is_executable, const std::string& libraryName, bool use_origin, uintptr_t library_origin, void* handle) {
-  printf("%s:%d:%s Looking for executable?(%d) library |%s|\n", __FILE__, __LINE__, __FUNCTION__, is_executable, libraryName.c_str());
+//  printf("%s:%d:%s Looking for executable?(%d) library |%s|\n", __FILE__, __LINE__, __FUNCTION__, is_executable, libraryName.c_str());
   BT_LOG((buf,"Starting to load library: %s\n", libraryName.c_str() ));
 #ifdef CLASP_THREADS
   WITH_READ_WRITE_LOCK(debugInfo()._OpenDynamicLibraryMutex);
@@ -989,20 +989,20 @@ void add_dynamic_library_impl(bool is_executable, const std::string& libraryName
 // Get the start of the library and the symbol_table
 #ifdef _TARGET_OS_DARWIN
   if (!use_origin) {
-    printf("%s:%d:%s Looking for library %s with handle %p\n", __FILE__, __LINE__, __FUNCTION__, libraryName.c_str(), handle);
+//    printf("%s:%d:%s Looking for library %s with handle %p\n", __FILE__, __LINE__, __FUNCTION__, libraryName.c_str(), handle);
     uint32_t num_loaded = _dyld_image_count();
     for ( size_t idx = 0; idx<num_loaded; ++idx ) {
       const char* filename = _dyld_get_image_name(idx);
 //      printf("%s:%d:%s Comparing to library: %s\n", __FILE__, __LINE__, __FUNCTION__, filename);
       if (strcmp(filename,libraryName.c_str())==0) {
-        printf("%s:%d:%s Found library: %s\n", __FILE__, __LINE__, __FUNCTION__, filename);
+//        printf("%s:%d:%s Found library: %s\n", __FILE__, __LINE__, __FUNCTION__, filename);
         library_origin = (uintptr_t)_dyld_get_image_header(idx);
         break;
       }
     }
   }
   uintptr_t exec_header;
-  printf("%s:%d:%s library_origin %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)library_origin);
+//  printf("%s:%d:%s library_origin %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)library_origin);
   dlerror();
   exec_header = (uintptr_t)dlsym(RTLD_DEFAULT,"_mh_execute_header");
   const char* dle = dlerror();
@@ -1010,7 +1010,7 @@ void add_dynamic_library_impl(bool is_executable, const std::string& libraryName
     printf("Could not find the symbol _mh_execute_header\n");
     abort();
   }
-  printf("%s:%d:%s Executable header _mh_execute_header %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)exec_header);
+//  printf("%s:%d:%s Executable header _mh_execute_header %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)exec_header);
   SymbolTable symbol_table;
   if (library_origin!=0) {
     if (is_executable) {
@@ -1023,7 +1023,7 @@ void add_dynamic_library_impl(bool is_executable, const std::string& libraryName
     printf("%s:%d:%s Could not find start of library %s\n", __FILE__, __LINE__, __FUNCTION__, libraryName.c_str());
   }
   size_t section_size;
-  printf("%s:%d:%s About to load_stackmap_info library_origin = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)library_origin );
+//  printf("%s:%d:%s About to load_stackmap_info library_origin = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)library_origin );
   uintptr_t p_section = load_stackmap_info(libraryName.c_str(),library_origin,section_size);
   if (p_section) {
     symbol_table._StackmapStart = p_section;
@@ -1748,25 +1748,48 @@ uintptr_t get_raw_argument_from_stack(uintptr_t functionAddress, uintptr_t baseP
 }
 
 
-CL_DEFUN core::T_mv capture_arguments(uintptr_t functionAddress, uintptr_t basePointer, int frameOffset)
+
+core::T_mv capture_arguments(uintptr_t functionAddress, uintptr_t basePointer, int frameOffset, bool asPointers)
 {
   T_sp closure((gctools::Tagged)get_raw_argument_from_stack(functionAddress,basePointer,frameOffset,0));
   size_t nargs = core::get_raw_argument_from_stack(functionAddress,basePointer,frameOffset,1);
   SimpleVector_sp args = SimpleVector_O::make(nargs);
   for ( size_t i=0; i<nargs; ++i ) {
-    T_sp tobj((gctools::Tagged)get_raw_argument_from_stack(functionAddress,basePointer,frameOffset,2+i));
+    T_sp tobj;
+    if (asPointers) {
+      tobj = Pointer_O::create((void*)get_raw_argument_from_stack(functionAddress,basePointer,frameOffset,2+i));
+    } else {
+      T_sp temp((gctools::Tagged)get_raw_argument_from_stack(functionAddress,basePointer,frameOffset,2+i));
+      tobj = temp;
+    }
     (*args)[i] = tobj;
+  }
+  if (asPointers) {
+    return Values(args,Pointer_O::create((void*)closure.raw_()));
   }
   return Values(args,closure);
 }
 
-CL_DEFUN core::T_mv core__capture_arguments(Pointer_sp functionAddressP, Pointer_sp basePointerP, int frameOffset)
+CL_DOCSTRING("Return the arguments and the closure for the frame at base-pointer/frame-offset. If you pass as-pointers as T then pointers to the objects will be returned.");
+CL_LAMBDA(function-address base-pointer frame-offset &optional as-pointers)
+CL_DEFUN core::T_mv core__capture_arguments(Pointer_sp functionAddressP, Pointer_sp basePointerP, int frameOffset, bool asPointers)
 {
   uintptr_t functionAddress = (uintptr_t)functionAddressP->ptr();
   uintptr_t basePointer = (uintptr_t)basePointerP->ptr();
-  return capture_arguments(functionAddress,basePointer,frameOffset);
+  return capture_arguments(functionAddress,basePointer,frameOffset,asPointers);
 }
 
+CL_DEFUN core::T_mv core__get_raw_arguments_from_stack(Pointer_sp functionAddressP, Pointer_sp basePointerP, int frameOffset) {
+  uintptr_t functionAddress = (uintptr_t)functionAddressP->ptr();
+  uintptr_t basePointer = (uintptr_t)basePointerP->ptr();
+  core::Pointer_sp closure = Pointer_O::create((void*)core::get_raw_argument_from_stack(functionAddress,basePointer,frameOffset,0));
+  size_t nargs = core::get_raw_argument_from_stack(functionAddress,basePointer,frameOffset,1);
+  ql::list rest;
+  for (int i=0; i<nargs; ++i ) {
+    rest << Pointer_O::create((void*)core::get_raw_argument_from_stack(functionAddress,basePointer,frameOffset,2+i));
+  }
+  return Values(closure, core::make_fixnum(nargs), rest.cons());
+}
 
 void fill_backtrace(std::vector<BacktraceEntry>& backtrace,bool captureArguments) {
   char *funcname = (char *)malloc(1024);
@@ -1803,10 +1826,11 @@ void fill_backtrace(std::vector<BacktraceEntry>& backtrace,bool captureArguments
 
 
 
-CL_LAMBDA(&optional (depth 0));
+CL_LAMBDA(printer &optional args-as-pointers);
 CL_DECLARE();
-CL_DOCSTRING("backtrace");
-CL_DEFUN T_sp core__clib_backtrace_as_list() {
+CL_DOCSTRING(R"doc(Generate a backtrace and pass it to the closure for printing or debugging.
+ If args-as-pointers is T then arguments and the closure are wrapped in Pointer_O objects.)doc");
+CL_DEFUN void core__call_with_backtrace(Function_sp closure, bool args_as_pointers) {
   std::vector<BacktraceEntry> backtrace;
   fill_backtrace(backtrace,true);
   BT_LOG((buf," building backtrace as list\n" ));
@@ -1831,7 +1855,7 @@ CL_DEFUN T_sp core__clib_backtrace_as_list() {
       core::T_sp arguments = _Nil<core::T_O>();
       core::T_sp closure = _Nil<core::T_O>();
       if (backtrace[i]._FrameOffset!=0) {
-        core::T_mv args_closure = core::capture_arguments(backtrace[i]._FunctionStart,backtrace[i]._BasePointer,backtrace[i]._FrameOffset);
+        core::T_mv args_closure = core::capture_arguments(backtrace[i]._FunctionStart,backtrace[i]._BasePointer,backtrace[i]._FrameOffset,args_as_pointers);
         arguments = args_closure;
         closure = args_closure.second();
       }
@@ -1843,9 +1867,9 @@ CL_DEFUN T_sp core__clib_backtrace_as_list() {
            << INTERN_(kw,frame_size) << core::make_fixnum(backtrace[i]._FrameSize)
            << INTERN_(kw,function_start_address) << Pointer_O::create((void*)backtrace[i]._FunctionStart)
            << INTERN_(kw,function_end_address) << Pointer_O::create((void*)backtrace[i]._FunctionEnd)
+           << INTERN_(kw,function_description) << funcDesc
            << INTERN_(kw,arguments) << arguments
-           << INTERN_(kw,closure) << closure
-           << INTERN_(kw,function_description) << funcDesc;
+           << INTERN_(kw,closure) << closure;
       if (_sym_make_backtrace_frame->fboundp()) {
         entry = core__apply0(_sym_make_backtrace_frame->symbolFunction(),args.cons());
       } else {
@@ -1854,7 +1878,7 @@ CL_DEFUN T_sp core__clib_backtrace_as_list() {
       result << entry;
     }
   }
-  return result.cons();
+  eval::funcall(closure,result.cons());
 }
 
 
@@ -2247,7 +2271,7 @@ void dbg_safe_backtrace() {
   printf("Safe-backtrace\n");
   core::fill_backtrace(backtrace,false);
   printf("Got %lu backtrace frames - dumping\n", backtrace.size());
-  for ( size_t idx=0; idx<backtrace.size()-2; ++idx ) {
+  for ( size_t idx=2; idx<backtrace.size()-2; ++idx ) {
     dbg_print_frame(backtrace,idx,true);
   }
 }

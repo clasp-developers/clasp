@@ -70,7 +70,9 @@
                                        'fast-method-function (if fmfp function nil)))))))
     ;; Put in a call history to speed things up a little.
     (loop ;; either a fast method function, or just the method function.
-          with outcome = (if fmfp (cmp::make-fast-method-call :function function) mf)
+          with outcome = (if fmfp
+                             (cmp::make-fast-method-call :function function)
+                             (cmp::make-function-outcome :function mf))
           for specializers in satiation-specializers
           collect (cons (map 'vector #'find-class specializers) outcome)
             into new-call-history
@@ -468,6 +470,10 @@ and cannot be added to ~A." method other-gf gf)))
 (defmethod map-dependents ((c standard-generic-function) function)
   (dolist (d (generic-function-dependents c))
     (funcall function d)))
+
+;; FIXME: dependence on core:closure-with-slots is not super
+(%satiate map-dependents (standard-generic-function core:closure-with-slots)
+          (standard-class core:closure-with-slots))
 
 (defgeneric update-dependent (object dependent &rest initargs))
 

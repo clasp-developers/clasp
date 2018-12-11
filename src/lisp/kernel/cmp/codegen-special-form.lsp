@@ -398,6 +398,23 @@ env is the parent environment of the (result-af) value frame"
                (compiler-error type "unknown type for typeq"))
              (compile-header-check header-value-min-max object-raw thenb elseb))))))))
 
+(defmacro define-fixnum-cmp (name operator)
+  `(defun ,name (cond env thenb elseb)
+     (let ((n1form (second cond)) (n2form (third cond))
+           (n1 (irc-alloca-t* :label "fixnum-cmp-1"))
+           (n2 (irc-alloca-t* :label "fixnum-cmp-2")))
+       (codegen n1 n1form env)
+       (codegen n2 n2form env)
+       ;; FIXME: vary the type by abi
+       (let* ((n1x (irc-ptr-to-int (irc-load n1) %i64%))
+              (n2x (irc-ptr-to-int (irc-load n2) %i64%))
+              (test (,operator n1x n2x "fixnum-cmp")))
+         (irc-cond-br test thenb elseb)))))
+
+(define-fixnum-cmp compile-fixnum-less-condition irc-icmp-slt)
+(define-fixnum-cmp compile-fixnum-lte-condition irc-icmp-sle)
+(define-fixnum-cmp compile-fixnum-equal-condition irc-icmp-eq)
+
 (defun compile-general-condition (cond env thenb elseb)
   "Generate code for cond that branches to one of the provided successor blocks"
   (let ((test-temp-store (irc-alloca-t* :label "if-cond-tsp")))
@@ -409,10 +426,18 @@ env is the parent environment of the (result-af) value frame"
       (irc-cond-br test-result thenb elseb))))
 
 (defun compile-if-cond (cond env thenb elseb)
-  (cond ((and (consp cond) (eq (first cond) 'cmp::typeq))
+  (if (consp cond)
+      (case (first cond)
+        ((cmp::typeq)
          (compile-typeq-condition cond env thenb elseb))
-        (t (compile-general-condition cond env thenb elseb))))
-
+        ((cleavir-primop:fixnum-less)
+         (compile-fixnum-less-condition cond env thenb elseb))
+        ((cleavir-primop:fixnum-not-greater)
+         (compile-fixnum-lte-condition cond env thenb elseb))
+        ((cleavir-primop:fixnum-equal)
+         (compile-fixnum-equal-condition cond env thenb elseb))
+        (otherwise (compile-general-condition cond env thenb elseb)))
+      (compile-general-condition cond env thenb elseb)))
 
 ;;; TAGBODY, GO
 

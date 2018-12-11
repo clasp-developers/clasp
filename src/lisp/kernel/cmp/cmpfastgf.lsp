@@ -94,6 +94,8 @@
 (defstruct (optimized-slot-reader (:type vector) :named) index #| << must be here |# effective-method-function slot-name method class)
 (defstruct (optimized-slot-writer (:type vector) :named) index #| << must be here |# effective-method-function slot-name method class)
 (defstruct (fast-method-call (:type vector) :named) function)
+;; a thing that will be called like an effective method function, but isn't cached or anything.
+(defstruct (function-outcome (:type vector) :named) function)
 ;; applicable-methods slot is for clos; see closfastgf.lsp's find-existing-emf
 (defstruct (effective-method-outcome (:type vector) :named) applicable-methods function)
 (defstruct (klass (:type vector) :named) stamp name)
@@ -292,21 +294,22 @@
 (defvar *generate-outcomes*) ; alist (outcome . tag)
 
 ;;; main entry point
-(defun generate-dispatcher-from-dtree (generic-function-name dtree)
+(defun generate-dispatcher-from-dtree (generic-function-name dtree &key extra-bindings)
   (let ((dispatch-args (gensym "DISPATCH-ARGUMENTS"))
         ;;(backup-args (gensym "ARGUMENTS"))
         (block-name (core:function-block-name generic-function-name))
         (*generate-outcomes* nil))
     `(lambda (core:&va-rest ,dispatch-args)
-       (block ,block-name
-         (tagbody
-            ,(generate-node-or-outcome dispatch-args (dtree-root dtree))
-            ;; note: we need generate-node-or-outcome to run to fill *generate-outcomes*.
-            ,@(generate-tagged-outcomes *generate-outcomes* block-name dispatch-args #+(or)backup-args)
-          dispatch-miss
-            (core:vaslist-rewind ,dispatch-args)
-            (return-from ,block-name
-              (clos::dispatch-miss (fdefinition ',generic-function-name) ,dispatch-args #+(or),backup-args)))))))
+       (let (,@extra-bindings)
+         (block ,block-name
+           (tagbody
+              ,(generate-node-or-outcome dispatch-args (dtree-root dtree))
+              ;; note: we need generate-node-or-outcome to run to fill *generate-outcomes*.
+              ,@(generate-tagged-outcomes *generate-outcomes* block-name dispatch-args #+(or)backup-args)
+            dispatch-miss
+              (core:vaslist-rewind ,dispatch-args)
+              (return-from ,block-name
+                (clos::dispatch-miss (fdefinition ',generic-function-name) ,dispatch-args #+(or),backup-args))))))))
 
 (defun generate-node-or-outcome (arguments node-or-outcome)
   (if (outcome-p node-or-outcome)
@@ -346,8 +349,8 @@
            (generate-fast-method-call arguments outcome))
           ((effective-method-outcome-p outcome)
            (generate-effective-method-call arguments (effective-method-outcome-function outcome)))
-          ((functionp outcome)
-           (generate-effective-method-call arguments outcome))
+          ((function-outcome-p outcome)
+           (generate-effective-method-call arguments (function-outcome-function outcome)))
           (t (error "BUG: Bad thing to be an outcome: ~a" outcome)))))
 
 (defun generate-slot-reader (arguments outcome)
@@ -401,8 +404,14 @@
     `(apply ,fmf ,arguments)))
 
 (defun generate-effective-method-call (arguments outcome)
-  (let ((emf outcome))
-    `(funcall ,emf ,arguments nil)))
+  (if (consp outcome)
+      ;; if the outcome is a cons, we magically assume it's a form to include entirely.
+      ;; This happens from the COMPILE-TIME-DISCRIMINATOR machinery in clos/satiation.lsp.
+      ;; FIXME: probably clean up. 
+      `(let ((clos::.method-args. ,arguments))
+         ,outcome)
+      (let ((emf outcome))
+        `(funcall ,emf ,arguments nil))))
 
 ;;; discrimination
 
@@ -455,11 +464,18 @@
     ((= (length matches) 1)
      (let ((match (first matches)))
        (if (single-p match)
-           `(if (= ,stamp-var ,(range-first-stamp match))
+           `(if (cleavir-primop:fixnum-equal ; =
+                 ,stamp-var ,(range-first-stamp match))
                 ,(generate-node-or-outcome arguments (range-outcome match))
                 (go dispatch-miss))
-           `(if (<= ,(range-first-stamp match) ,stamp-var ,(range-last-stamp match))
-                ,(generate-node-or-outcome arguments (match-outcome match))
+           ;; note: the primop needs to be the literal IF condition,
+           ;; so the obvious AND isn't quite going to work.
+           `(if (cleavir-primop:fixnum-not-greater ; <=
+                 ,(range-first-stamp match) ,stamp-var)
+                (if (cleavir-primop:fixnum-not-greater ; <=
+                     ,stamp-var ,(range-last-stamp match))
+                    ,(generate-node-or-outcome arguments (match-outcome match))
+                    (go dispatch-miss))
                 (go dispatch-miss)))))
     (t
      (let* ((len-div-2 (floor (length matches) 2))
@@ -467,7 +483,8 @@
             (right-matches (subseq matches len-div-2))
             (right-head (first right-matches))
             (right-stamp (range-first-stamp right-head)))
-       `(if (< ,stamp-var ,right-stamp)
+       `(if (cleavir-primop:fixnum-less ; <
+             ,stamp-var ,right-stamp)
             ,(generate-class-binary-search arguments left-matches stamp-var)
             ,(generate-class-binary-search arguments right-matches stamp-var))))))
 
@@ -771,8 +788,8 @@
        (codegen-fast-method-call arguments outcome))
       ((effective-method-outcome-p outcome)
        (codegen-effective-method-call arguments (effective-method-outcome-function outcome)))
-      ((functionp outcome) ; method-function and no-required-method. maybe change to be cleaner?
-       (codegen-effective-method-call arguments outcome))
+      ((function-outcome-p outcome) ; method-function and no-required-method. maybe change to be cleaner?
+       (codegen-effective-method-call arguments (function-outcome-function outcome)))
       (t (error "BUG: Bad thing to be an outcome: ~a" outcome)))))
 
 (defun codegen-class-binary-search (arguments cur-arg matches stamp-var)
@@ -913,7 +930,8 @@
   ;; type-error: datum NIL, expected type LLVM-SYS:VALUE
   ;; in code generation - because the vaslist holder will be nil instead of an llvm value.
   (mapc (lambda (entry)
-          (when (or (effective-method-outcome-p (cdr entry)) (functionp (cdr entry)))
+          (when (or (effective-method-outcome-p (cdr entry))
+                    (function-outcome-p (cdr entry)))
             (return-from call-history-needs-vaslist-p t)))
         call-history)
   nil)
@@ -1144,11 +1162,21 @@
                    :output-path output-path
                    ))))))))))
 
-(defun codegen-dispatcher (raw-call-history specializer-profile generic-function &rest args &key generic-function-name output-path log-gf (debug-on t debug-on-p))
+(defun codegen-dispatcher (raw-call-history specializer-profile generic-function
+                           &rest args &key generic-function-name output-path log-gf)
   (let* ((*log-gf* log-gf)
          (dtree (calculate-dtree raw-call-history specializer-profile)))
     (clos:generic-function-increment-compilations generic-function)
     (apply 'codegen-dispatcher-from-dtree generic-function dtree args)))
+
+#+(or)
+(defun codegen-dispatcher (raw-call-history specializer-profile generic-function
+                           &rest args &key generic-function-name output-path log-gf)
+  (let* ((*log-gf* log-gf)
+         (dtree (calculate-dtree raw-call-history specializer-profile)))
+    (increment-dispatcher-count)
+    (clos:generic-function-increment-compilations generic-function)
+    (bclasp-compile nil (generate-dispatcher-from-dtree generic-function-name dtree))))
 
 (export '(make-dtree
 	  dtree-add-call-history
