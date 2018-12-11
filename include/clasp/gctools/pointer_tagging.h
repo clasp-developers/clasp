@@ -199,7 +199,7 @@ point to are only ever on the stack.
 I hack the va_list structure in X86_64 ABI dependent ways and I will abstract all of the
 ABI dependent behavior into a single header file so that it can be implemented for other
 ABI's  */
-  static const uintptr_clasp_t valist_tag = BOOST_BINARY(101); // means a valist
+  static const uintptr_clasp_t valist_tag = VASLIST_TAG; // means a valist
                                                        /*! Immediate value tags */
   static const uintptr_clasp_t immediate_mask   = IMMEDIATE_MASK;
   static const uintptr_clasp_t character_tag    = CHARACTER_TAG;
