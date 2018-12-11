@@ -3408,6 +3408,8 @@ class ClaspSectionMemoryManager : public SectionMemoryManager {
   #define STACKMAPS_NAME "__llvm_stackmaps"
 #elif defined(_TARGET_OS_LINUX)
   #define STACKMAPS_NAME ".llvm_stackmaps"
+#elif defined(_TARGET_OS_FREEBSD)
+  #define STACKMAPS_NAME ".llvm_stackmaps"
 #else
   #error "What is the name of stackmaps section on this OS??? __llvm_stackmaps or .llvm_stackmaps"
 #endif

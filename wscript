@@ -869,7 +869,7 @@ def configure(cfg):
         cfg.check_cxx(lib='gc', cflags='-Wall', uselib_store='BOEHM')
     #libz
     cfg.check_cxx(lib='z', cflags='-Wall', uselib_store='Z')
-    if (cfg.env['DEST_OS'] == LINUX_OS ):
+    if (cfg.env['DEST_OS'] == LINUX_OS or cfg.env['DEST_OS'] == FREEBSD_OS):
         cfg.check_cxx(lib='dl', cflags='-Wall', uselib_store='DL')
         cfg.check_cxx(lib='elf', cflags='-Wall', uselib_store='ELF')
     cfg.check_cxx(lib='ncurses', cflags='-Wall', uselib_store='NCURSES')
@@ -1083,7 +1083,7 @@ def configure(cfg):
         if (cfg.env['REQUIRE_LIBFFI'] == True):
             log.info("Appending LIB_FFI")
             cfg.env.append_value('LIB', cfg.env.LIB_FFI)
-    if (cfg.env['DEST_OS'] == LINUX_OS ):
+    if (cfg.env['DEST_OS'] == LINUX_OS or cfg.env['DEST_OS'] == FREEBSD_OS):
         cfg.env.append_value('LIB', cfg.env.LIB_DL)
         cfg.env.append_value('LIB', cfg.env.LIB_ELF)
         cfg.env.append_value('LIB', cfg.env.LIB_GCC_S)

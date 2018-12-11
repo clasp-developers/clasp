@@ -68,7 +68,7 @@ THE SOFTWARE.
 #include <unistd.h>
 #include <sys/stat.h>
 #endif
-#ifdef _TARGET_OS_LINUX
+#if defined(_TARGET_OS_LINUX) || defined(_TARGET_OS_FREEBSD)
 #include <err.h>
 #include <fcntl.h>
 #include <gelf.h>
@@ -316,7 +316,7 @@ void add_dynamic_library_handle(const std::string& libraryName, void* handle) {
   symbol_table._StackmapStart = p_section;
   symbol_table._StackmapEnd = p_section+section_size;
 #endif
-#ifdef _TARGET_OS_LINUX
+#if defined(_TARGET_OS_LINUX) || defined(_TARGET_OS_FREEBSD)
   void* lorigin;
   Dl_info data;
   dlerror();
@@ -793,7 +793,7 @@ void walk_loaded_objects(std::vector<BacktraceEntry>& backtrace, size_t& symbol_
 
 
 
-#ifdef _TARGET_OS_LINUX
+#if defined(_TARGET_OS_LINUX) || defined(_TARGET_OS_FREEBSD)
 
 
 std::atomic<bool> global_elf_initialized;
@@ -876,8 +876,7 @@ SymbolTable load_symbol_table(const char* filename, uintptr_t start)
   return symbol_table;
 }
 
-  
-extern "C" char* __progname_full; // The name of the executable?
+const char* progname_full = NULL;
 
 int elf_loaded_object_callback(struct dl_phdr_info *info, size_t size, void* data)
 {
@@ -886,7 +885,10 @@ int elf_loaded_object_callback(struct dl_phdr_info *info, size_t size, void* dat
   int p_type, j;
   std::string libname;
   if (scan_callback_info->_Index==0 && strlen(info->dlpi_name) == 0 ) {
-    libname = __progname_full;
+    if (progname_full == NULL) {
+      progname_full = getprogname();
+    }
+    libname = progname_full;
   } else {
     libname = info->dlpi_name;
   }
@@ -904,7 +906,7 @@ void walk_loaded_objects(std::vector<BacktraceEntry>& backtrace, size_t& symbol_
     // Search the symbol tables and stackmaps
   dl_iterate_phdr(elf_loaded_object_callback,&scan);
 }
-#endif ////////////////////////////////////////////////// _TARGET_OS_LINUX
+#endif ////////////////////////////////////////////////// _TARGET_OS_LINUX || FREEBSD
 
 
 void search_symbol_table(std::vector<BacktraceEntry>& backtrace, const char* filename, size_t& symbol_table_size)
