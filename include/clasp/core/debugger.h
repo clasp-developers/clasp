@@ -106,13 +106,16 @@ void register_llvm_stackmaps(uintptr_t startAddress, uintptr_t endAddress, size_
 
  bool if_dynamic_library_loaded_remove(const std::string& libraryName);
 
-void add_dynamic_library_handle(const std::string& libraryName, void* handle);
+ void add_dynamic_library_using_handle(const std::string& libraryName, void* handle);
+ void add_dynamic_library_using_origin(bool is_executable, const std::string& libraryName, uintptr_t origin);
+ 
+ void startup_register_loaded_objects();
 
-
+bool lookup_address(uintptr_t address, const char*& symbol, uintptr_t& start, uintptr_t& end, char& type);
 
  typedef enum {undefined,symbolicated,lispFrame,cFrame} BacktraceFrameEnum ;
 struct BacktraceEntry {
-BacktraceEntry() : _Stage(undefined),_ReturnAddress(0),_FunctionStart(0),_FunctionEnd(~0),_BasePointer(0),_InstructionOffset(0),_FrameSize(0),_FrameOffset(0),_Closure(_Nil<T_O>()), _Arguments(_Nil<T_O>()),_FunctionDescription(0) {};
+BacktraceEntry() : _Stage(undefined),_ReturnAddress(0),_FunctionStart(0),_FunctionEnd(~0),_BasePointer(0),_InstructionOffset(0),_FrameSize(0),_FrameOffset(0), _FunctionDescription(0) {};
   BacktraceFrameEnum   _Stage;
   uintptr_t            _ReturnAddress;
   uintptr_t            _FunctionStart;
@@ -122,14 +125,13 @@ BacktraceEntry() : _Stage(undefined),_ReturnAddress(0),_FunctionStart(0),_Functi
   int                  _FrameSize;
   int                  _FrameOffset;
   std::string          _SymbolName;
-  T_sp                 _Closure;
-  T_sp                 _Arguments;
   uintptr_t            _FunctionDescription;
 };
 
 };
 
 extern "C" {
+std::string dbg_safe_repr(uintptr_t raw);
 void dbg_safe_print(uintptr_t raw);
 void dbg_safe_println(uintptr_t raw);
 void dbg_safe_backtrace();

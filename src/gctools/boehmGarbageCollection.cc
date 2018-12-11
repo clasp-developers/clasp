@@ -40,11 +40,13 @@ THE SOFTWARE.
 
 extern "C" {
 void boehm_park() {
-  printf("%s:%s:%d Do something to turn off the boehm gc\n", __FILE__, __FUNCTION__, __LINE__ );
+//  printf("%s:%s:%d Do something to turn off the boehm gc\n", __FILE__, __FUNCTION__, __LINE__ );
+  GC_disable();
 };
 
 void boehm_release() {
-  printf("%s:%s:%d Do something to turn on the boehm gc\n", __FILE__, __FUNCTION__, __LINE__ );
+//  printf("%s:%s:%d Do something to turn on the boehm gc\n", __FILE__, __FUNCTION__, __LINE__ );
+  GC_enable();
 }
 };
 

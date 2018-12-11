@@ -228,7 +228,7 @@ bool abort_flag( void )
 // - PROGRAM NAME
 void set_program_name( std::string program_name = CLASP_DEFAULT_PROGRAM_NAME )
 {
-  printf("%s:%d:%s program_name = %s\n", __FILE__, __LINE__, __FUNCTION__, program_name.c_str());
+//  printf("%s:%d:%s program_name = %s\n", __FILE__, __LINE__, __FUNCTION__, program_name.c_str());
   g_program_name = program_name;
 #if 0
   std::transform( g_program_name.begin(), g_program_name.end(), g_program_name.begin(),

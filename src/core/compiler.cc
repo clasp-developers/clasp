@@ -555,7 +555,7 @@ LOAD:
     SIMPLE_ERROR(BF("Error in dlopen: %s") % error);
     //    return (Values(_Nil<T_O>(), SimpleBaseString_O::make(error)));
   }
-  add_dynamic_library_handle(name,handle);
+  add_dynamic_library_using_handle(name,handle);
   Pointer_sp handle_ptr = Pointer_O::create(handle);
   scope.pushSpecialVariableAndSet(_sym_STARcurrent_dlopen_handleSTAR, handle_ptr);
   if (startup_functions_are_waiting()) {

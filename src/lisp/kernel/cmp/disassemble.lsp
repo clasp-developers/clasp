@@ -30,6 +30,7 @@
 (defun safe-llvm-get-name (what)
   (llvm-sys:get-name what))
 
+#+(or)
 (defun disassemble-assembly-for-llvm-functions (llvm-function-list)
   "Given a list of llvm::Functions that were JITted - generate disassembly for them.
 Return T if disassembly was achieved - otherwise NIL"
@@ -43,6 +44,7 @@ Return T if disassembly was achieved - otherwise NIL"
             (let ((bytes (first symbol-info))
                   (address (second symbol-info)))
               (llvm-sys:disassemble-instructions (get-builtin-target-triple-and-data-layout)
+                                                 
                                                  address
                                                  :start-byte-offset 09
                                                  :end-byte-offset bytes)
@@ -51,24 +53,10 @@ Return T if disassembly was achieved - otherwise NIL"
               (bformat t "Could not disassemble associated function%N")))))
     success))
 
-(defun disassemble-assembly (module-or-func &optional (start-instruction-index 0) (num-instructions 16))
-  (cond
-    ((typep module-or-func 'llvm-sys:module)
-     (unless (disassemble-assembly-for-llvm-functions (llvm-sys:module-get-function-list module-or-func))
-       (error "Cannot disassemble module ~s" module-or-func)))
-    ((functionp module-or-func)
-     ;;; What is the type for a jitted function? For sure not CORE:CLOSURE-WITH-SLOTS, so test that 
-     (let ((success (unless (or (typep module-or-func 'CORE:CLOSURE-WITH-SLOTS)
-				(typep module-or-func 'STANDARD-GENERIC-FUNCTION))       
-		      (disassemble-assembly-for-llvm-functions (list module-or-func)))))
-       (if success
-           t
-           (progn
-             (llvm-sys:disassemble-instructions (get-builtin-target-triple-and-data-layout)
-                                                (core:function-pointer module-or-func)
-                                                :start-instruction-index start-instruction-index
-                                                :num-instructions num-instructions)))))
-    (t (error "Cannot disassemble ~s" module-or-func))))
+(defun disassemble-assembly (start end)
+  (format t "disassemble-assembly ~s ~s~%" start end)
+  (llvm-sys:disassemble-instructions (get-builtin-target-triple-and-data-layout)
+                                     start end))
 
 (defun disassemble-from-address (address &key (start-instruction-index 0) (num-instructions 16)
                                            start-byte-offset end-byte-offset)
@@ -79,7 +67,7 @@ Return T if disassembly was achieved - otherwise NIL"
                                      :start-byte-offset start-byte-offset
                                      :end-byte-offset end-byte-offset))
 
-(defun disassemble (desig &key ((:start start-instruction-index) 0) ((:num num-instructions) 16) (type :asm))
+(defun disassemble (desig &key (type :asm))
   "If type is :ASM then disassemble to assembly language from the START instruction, disassembling NUM instructions
    if type is :IR then dump the llvm-ir for all of the associated functions and ignore START and NUM"
   (check-type type (member :ir :asm))
@@ -116,8 +104,9 @@ Return T if disassembly was achieved - otherwise NIL"
          (cond
            ((compiled-function-p fn)
             (if (eq type :asm)
-                (progn
-                  (disassemble-assembly fn start-instruction-index num-instructions)
+                (multiple-value-bind (symbol start end type)
+                    (core:lookup-address (core:function-pointer fn))
+                  (disassemble-assembly start end)
                   (bformat t "Done%N"))
                 (error "LLVM-IR is not saved for functions - use :type :asm to disassemble to native code")))
            ((interpreted-function-p fn)
@@ -125,7 +114,7 @@ Return T if disassembly was achieved - otherwise NIL"
 	        (error 'type-error :datum fn :expected-type '(or symbol function (CONS (EQL SETF) (CONS SYMBOL NULL)))))
            ((eq type :asm)
 	        ;;; How is it possible to come to this branch
-            (llvm-sys:disassemble-instructions (get-builtin-target-triple-and-data-layout) (core:function-pointer fn) :start-instruction-index start-instruction-index :num-instructions num-instructions))
+            (llvm-sys:disassemble-instructions (get-builtin-target-triple-and-data-layout) (core:function-pointer fn)))
            (t (error 'type-error :datum fn :expected-type '(or symbol function (CONS (EQL SETF) (CONS SYMBOL NULL))))))))
       (t (error 'type-error :datum func-or-lambda :expected-type '(or symbol function (CONS (EQL SETF) (CONS SYMBOL NULL)))))))
   nil)
