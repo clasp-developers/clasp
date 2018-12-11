@@ -772,15 +772,15 @@
          (satiate-gf-writer generic-function-argument-precedence-order cons)
          (satiate-gf-writer generic-function-methods null cons)
          (satiate-gf-writer generic-function-dependents null cons))
-       #+(or) ; done in function-to-method
+       ;; also done in function-to-method
        (%early-satiate compute-applicable-methods-using-classes
                        (standard-generic-function cons)
                        (standard-generic-function null))
-       #+(or) ; done in function-to-method
+       ;; also done in function-to-method
        (%early-satiate compute-applicable-methods
                        (standard-generic-function cons)
                        (standard-generic-function null))
-       #+(or) ; done in function-to-method
+       ;; also done in function-to-method
        (%early-satiate compute-effective-method
                        (standard-generic-function method-combination cons)
                        (standard-generic-function method-combination null))
