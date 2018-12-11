@@ -396,29 +396,34 @@
                              ',(eql-specializer-object s)))
                            (class s)))))
 
+;; For satiation of CLOS, we need to use early-find-method and so on to prevent failures.
+;; If this is T, we use those. Otherwise we use the standard stuff.
+;; Note that this isn't complete - we also need those macro bindings in fixup.lsp.
+(defvar *early-satiation* nil)
+
 (defun find-method-form (method)
-  `(early-find-method
+  `(,(if *early-satiation* 'early-find-method 'find-method)
     (fdefinition ',(generic-function-name (method-generic-function method)))
     ',(method-qualifiers method)
-    ,(method-specializers-form (method-specializers method)))
-  ;; FIXME: find-method is a generic function, so without early- there are problems at boot.
-  ;; Same for the rest.
-  #+(or)
-  `(find-method (fdefinition ',(generic-function-name (method-generic-function method)))
-                ',(method-qualifiers method)
-                ,(method-specializers-form (method-specializers method))))
+    ,(method-specializers-form (method-specializers method))))
 
 (defun compile-time-bindings-junk (fmf-binds mf-binds)
   (append (loop for (method . name) in fmf-binds
                 collect (list name
-                              `(load-time-value
-                                (with-early-accessors (+standard-method-slots+)
-                                  (fast-method-function ,(find-method-form method))))))
+                              (if *early-satiation*
+                                  `(load-time-value
+                                    (with-early-accessors (+standard-method-slots+)
+                                      (fast-method-function ,(find-method-form method))))
+                                  `(load-time-value
+                                    (fast-method-function ,(find-method-form method))))))
           (loop for (method . name) in mf-binds
                 collect (list name
-                              `(load-time-value
-                                (with-early-accessors (+standard-method-slots+)
-                                  (method-function ,(find-method-form method))))))))
+                              (if *early-satiation*
+                                  `(load-time-value
+                                    (with-early-accessors (+standard-method-slots+)
+                                      (method-function ,(find-method-form method))))
+                                  `(load-time-value
+                                    (method-function ,(find-method-form method))))))))
 
 (defun compile-time-discriminator (generic-function &rest lists-of-specializer-names)
   (multiple-value-bind (call-history fmf-binds mf-binds)
@@ -664,8 +669,17 @@
 ;;;
 ;;; Used in boot
 
+;; Like %satiate, but also binds the thing so we get the non-gf expansions.
+;; (The binding must be at compile time, hence the weirdness here.)
+;; Note that this is finicky: We need the %satiate macroexpander specifically to use the variable.
+;; As of now this works, because the macroexpander calls compile-time-discriminator, which calls
+;; the things that use the variable. But if there was another layer of macrology there'd be a problem.
+(defmacro %early-satiate (generic-function-name &rest lists-of-specializer-names &environment env)
+  (let ((*early-satiation* t))
+    (macroexpand-1 `(%satiate ,generic-function-name ,@lists-of-specializer-names) env)))
+
 (defmacro satiate-clos ()
-  ;;; This is the ahead-of-time satiation. If we get as much as possible we can speed startup a bit.
+  ;; This is the ahead-of-time satiation. If we get as much as possible we can speed startup a bit.
   (labels ((readers-from-slot-description (slot-description)
              (loop for (key arg) on (cdr slot-description) by #'cddr
                    when (eq key :reader)
@@ -676,7 +690,7 @@
              (loop for slotdesc in slot-descriptions
                    for readers = (readers-from-slot-description slotdesc)
                    nconc (loop for reader in readers
-                               collect `(%satiate ,reader ,@specializerses)))))
+                               collect `(%early-satiate ,reader ,@specializerses)))))
     `(progn
        ,@(satiate-readers +specializer-slots+ '((eql-specializer)
                                                 (standard-class) (funcallable-standard-class)
@@ -696,7 +710,7 @@
                           '((standard-generic-function)))
        ;; Writers are done manually since the new-value classes are tricky to sort out
        (macrolet ((satiate-specializer-writer (name &rest types) ; i mean, the types are classes though.
-                    `(%satiate
+                    `(%early-satiate
                       (setf ,name)
                       ,@(loop for class in '(eql-specializer standard-class funcallable-standard-class
                                              structure-class built-in-class core:cxx-class
@@ -706,7 +720,7 @@
          (satiate-specializer-writer specializer-direct-methods null cons)
          (satiate-specializer-writer specializer-direct-generic-functions null cons))
        (macrolet ((satiate-class-writer (name &rest types)
-                    `(%satiate
+                    `(%early-satiate
                       (setf ,name)
                       ,@(loop for class in '(standard-class funcallable-standard-class
                                              structure-class built-in-class core:cxx-class
@@ -726,7 +740,7 @@
          (satiate-class-writer class-valid-initargs null cons)
          (satiate-class-writer creator core:funcallable-instance-creator core:instance-creator))
        (macrolet ((satiate-method-writer (name &rest types)
-                    `(%satiate
+                    `(%early-satiate
                       (setf ,name)
                       ,@(loop for class in '(standard-method
                                              standard-writer-method standard-reader-method)
@@ -736,7 +750,7 @@
          (satiate-method-writer method-keywords null cons) ; note: why is this being called?
          (satiate-method-writer method-allows-other-keys-p null cons))
        (macrolet ((satiate-slotd-writer (name &rest types)
-                    `(%satiate
+                    `(%early-satiate
                       (setf ,name)
                       ,@(loop for class in '(standard-direct-slot-definition
                                              standard-effective-slot-definition)
@@ -751,7 +765,7 @@
          (satiate-slotd-writer slot-definition-writers null cons)
          (satiate-slotd-writer slot-definition-location fixnum cons))
        (macrolet ((satiate-gf-writer (name &rest types)
-                    `(%satiate
+                    `(%early-satiate
                       (setf ,name)
                       ,@(loop for type in types collect `(,type standard-generic-function)))))
          (satiate-gf-writer generic-function-method-combination method-combination)
@@ -759,75 +773,75 @@
          (satiate-gf-writer generic-function-methods null cons)
          (satiate-gf-writer generic-function-dependents null cons))
        #+(or) ; done in function-to-method
-       (%satiate compute-applicable-methods-using-classes
-                 (standard-generic-function cons)
-                 (standard-generic-function null))
+       (%early-satiate compute-applicable-methods-using-classes
+                       (standard-generic-function cons)
+                       (standard-generic-function null))
        #+(or) ; done in function-to-method
-       (%satiate compute-applicable-methods
-                 (standard-generic-function cons)
-                 (standard-generic-function null))
+       (%early-satiate compute-applicable-methods
+                       (standard-generic-function cons)
+                       (standard-generic-function null))
        #+(or) ; done in function-to-method
-       (%satiate compute-effective-method
-                 (standard-generic-function method-combination cons)
-                 (standard-generic-function method-combination null))
-       (%satiate make-instance (symbol) (standard-class) (funcallable-standard-class))
-       (%satiate allocate-instance (standard-class) (funcallable-standard-class) (structure-class))
-       (%satiate add-direct-subclass
-                 (standard-class standard-class) (funcallable-standard-class funcallable-standard-class)
-                 (built-in-class standard-class) ; for gray streams
-                 (structure-class structure-class))
-       (%satiate validate-superclass
-                 (standard-class standard-class) (funcallable-standard-class funcallable-standard-class)
-                 (structure-class structure-class) (standard-class built-in-class))
+       (%early-satiate compute-effective-method
+                       (standard-generic-function method-combination cons)
+                       (standard-generic-function method-combination null))
+       (%early-satiate make-instance (symbol) (standard-class) (funcallable-standard-class))
+       (%early-satiate allocate-instance (standard-class) (funcallable-standard-class) (structure-class))
+       (%early-satiate add-direct-subclass
+                       (standard-class standard-class) (funcallable-standard-class funcallable-standard-class)
+                       (built-in-class standard-class) ; for gray streams
+                       (structure-class structure-class))
+       (%early-satiate validate-superclass
+                       (standard-class standard-class) (funcallable-standard-class funcallable-standard-class)
+                       (structure-class structure-class) (standard-class built-in-class))
        (macrolet ((satiate-classdefs (&rest classes)
                     (let ((tail (mapcar #'list classes)))
-                      `(progn (%satiate finalize-inheritance ,@tail)
-                              (%satiate compute-class-precedence-list ,@tail)
-                              (%satiate compute-slots ,@tail)
-                              (%satiate class-name ,@tail)
-                              (%satiate class-prototype ,@tail)
-                              (%satiate compute-default-initargs ,@tail)
-                              (%satiate direct-slot-definition-class ,@tail)
-                              (%satiate effective-slot-definition-class ,@tail)))))
+                      `(progn (%early-satiate finalize-inheritance ,@tail)
+                              (%early-satiate compute-class-precedence-list ,@tail)
+                              (%early-satiate compute-slots ,@tail)
+                              (%early-satiate class-name ,@tail)
+                              (%early-satiate class-prototype ,@tail)
+                              (%early-satiate compute-default-initargs ,@tail)
+                              (%early-satiate direct-slot-definition-class ,@tail)
+                              (%early-satiate effective-slot-definition-class ,@tail)))))
          (satiate-classdefs standard-class funcallable-standard-class structure-class
                             built-in-class core:derivable-cxx-class core:clbind-cxx-class))
-       (%satiate compute-effective-slot-definition
-                 (standard-class symbol cons) (funcallable-standard-class symbol cons)
-                 (structure-class symbol cons))
-       (%satiate ensure-class-using-class (standard-class symbol) (null symbol))
-       (%satiate function-keywords (standard-method) (standard-reader-method) (standard-writer-method))
-       (%satiate add-direct-method
-                 (structure-class standard-method) (eql-specializer standard-method)
-                 (standard-class standard-method) (funcallable-standard-class standard-method)
-                 (standard-class standard-reader-method) (standard-class standard-writer-method)
-                 (built-in-class standard-method)
-                 (built-in-class standard-writer-method) ; for the new-value argument
-                 (funcallable-standard-class standard-reader-method)
-                 (funcallable-standard-class standard-writer-method))
-       (%satiate remove-direct-method
-                 (structure-class standard-method) (eql-specializer standard-method)
-                 (standard-class standard-method) (funcallable-standard-class standard-method)
-                 (standard-class standard-reader-method) (standard-class standard-writer-method)
-                 (built-in-class standard-method)
-                 (built-in-class standard-writer-method) ; for the new-value argument
-                 (funcallable-standard-class standard-reader-method)
-                 (funcallable-standard-class standard-writer-method))
-       (%satiate ensure-generic-function-using-class
-                 (standard-generic-function symbol) (null symbol))
+       (%early-satiate compute-effective-slot-definition
+                       (standard-class symbol cons) (funcallable-standard-class symbol cons)
+                       (structure-class symbol cons))
+       (%early-satiate ensure-class-using-class (standard-class symbol) (null symbol))
+       (%early-satiate function-keywords (standard-method) (standard-reader-method) (standard-writer-method))
+       (%early-satiate add-direct-method
+                       (structure-class standard-method) (eql-specializer standard-method)
+                       (standard-class standard-method) (funcallable-standard-class standard-method)
+                       (standard-class standard-reader-method) (standard-class standard-writer-method)
+                       (built-in-class standard-method)
+                       (built-in-class standard-writer-method) ; for the new-value argument
+                       (funcallable-standard-class standard-reader-method)
+                       (funcallable-standard-class standard-writer-method))
+       (%early-satiate remove-direct-method
+                       (structure-class standard-method) (eql-specializer standard-method)
+                       (standard-class standard-method) (funcallable-standard-class standard-method)
+                       (standard-class standard-reader-method) (standard-class standard-writer-method)
+                       (built-in-class standard-method)
+                       (built-in-class standard-writer-method) ; for the new-value argument
+                       (funcallable-standard-class standard-reader-method)
+                       (funcallable-standard-class standard-writer-method))
+       (%early-satiate ensure-generic-function-using-class
+                       (standard-generic-function symbol) (null symbol))
        ;; these are obviously not complete, but we can throw em in.
        (macrolet ((partly-satiate-initializations (&rest classes)
                     (let ((tail (mapcar #'list classes)))
                       `(progn
-                         (%satiate initialize-instance ,@tail)
-                         (%satiate shared-initialize
-                                   ,@(loop for class in classes
-                                           collect `(,class symbol)
-                                           collect `(,class cons)
-                                           collect `(,class null)))
-                         (%satiate reinitialize-instance ,@tail)))))
+                         (%early-satiate initialize-instance ,@tail)
+                         (%early-satiate shared-initialize
+                                         ,@(loop for class in classes
+                                                 collect `(,class symbol)
+                                                 collect `(,class cons)
+                                                 collect `(,class null)))
+                         (%early-satiate reinitialize-instance ,@tail)))))
          (partly-satiate-initializations
           standard-generic-function standard-method standard-class structure-class
           standard-reader-method standard-writer-method
           standard-direct-slot-definition standard-effective-slot-definition
           eql-specializer method-combination funcallable-standard-class))
-       (%satiate make-instances-obsolete (standard-class) (funcallable-standard-class) (structure-class)))))
+       (%early-satiate make-instances-obsolete (standard-class) (funcallable-standard-class) (structure-class)))))
