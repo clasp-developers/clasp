@@ -73,7 +73,7 @@ THE SOFTWARE.
 namespace core {
 
 
-MaybeDebugStartup::MaybeDebugStartup(claspFunction fp, const char* n) : fptr(fp) {
+MaybeDebugStartup::MaybeDebugStartup(void* fp, const char* n) : fptr(fp), start_dispatcher_count(0) {
   if (n) this->name = n;
   if (core::_sym_STARdebugStartupSTAR->symbolValue().notnilp()) {
     this->start = PosixTime_O::createNow();
@@ -87,7 +87,8 @@ MaybeDebugStartup::MaybeDebugStartup(claspFunction fp, const char* n) : fptr(fp)
 };
 
 MaybeDebugStartup::~MaybeDebugStartup() {
-  if (core::_sym_STARdebugStartupSTAR->symbolValue().notnilp()) {
+  if (core::_sym_STARdebugStartupSTAR->symbolValue().notnilp()
+      && this->start) {
     PosixTime_sp end = PosixTime_O::createNow();
     PosixTimeDuration_sp diff = end->sub(this->start);
     mpz_class ms = diff->totalMicroseconds();
@@ -98,9 +99,9 @@ MaybeDebugStartup::~MaybeDebugStartup() {
     }
     size_t dispatcher_delta = end_dispatcher_count - this->start_dispatcher_count;
     std::string name_ = this->name;
-    if (name_!="") {
+    if (name_=="") {
       Dl_info di;
-      dladdr((void*)fptr,&di);
+      dladdr((void*)this->fptr,&di);
       name_ = di.dli_sname;
       if (name_ == "") {
         stringstream ss;
@@ -300,6 +301,7 @@ void startup_functions_invoke()
 #endif
     for ( size_t i = 0; i<startup_count; ++i ) {
       fnStartUp fn = startup_functions[i];
+      MaybeDebugStartup startup((void*)fn);
 #ifdef DEBUG_STARTUP
       printf("%s:%d     About to invoke fn@%p\n", __FILE__, __LINE__, fn );
 #endif
@@ -1054,7 +1056,7 @@ CL_DEFUN T_sp core__run_function( T_sp object ) {
   claspFunction func = lookup_internal_functions(handle, name.c_str());
 #endif
 #ifdef DEBUG_SLOW
-  MaybeDebugStartup startup(func);
+  MaybeDebugStartup startup((void*)func);
 #endif
   if( func != nullptr ) {
     LCC_RETURN ret = func(LCC_PASS_ARGS0_VA_LIST(_Nil<T_O>().raw_()));
