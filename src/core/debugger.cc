@@ -1718,18 +1718,18 @@ void fill_backtrace(std::vector<BacktraceEntry>& backtrace,bool captureArguments
 };
 
 CL_DOCSTRING("Call the thunk after setting core:*stack-top-hint* to somewhere in the current stack frame.");
-CL_DEFUN void core__call_with_stack_top_hint(Function_sp thunk)
+CL_DEFUN T_mv core__call_with_stack_top_hint(Function_sp thunk)
 {
   size_t temporary_stack_top;
   DynamicScopeManager scope(_sym_STARstack_top_hintSTAR, Pointer_O::create((void*)&temporary_stack_top));
-  eval::funcall(thunk);
+  return eval::funcall(thunk);
 }
 
 CL_LAMBDA(closure &optional args-as-pointers);
 CL_DECLARE();
 CL_DOCSTRING(R"doc(Generate a backtrace and pass it to the closure for printing or debugging.
  If args-as-pointers is T then arguments and the closure are wrapped in Pointer_O objects.)doc");
-CL_DEFUN void core__call_with_backtrace(Function_sp closure, bool args_as_pointers) {
+CL_DEFUN T_mv core__call_with_backtrace(Function_sp closure, bool args_as_pointers) {
   std::vector<BacktraceEntry> backtrace;
   fill_backtrace(backtrace,true);
   uintptr_t stack_top_hint = ~0;
@@ -1784,7 +1784,7 @@ CL_DEFUN void core__call_with_backtrace(Function_sp closure, bool args_as_pointe
       result << entry;
     }
   }
-  eval::funcall(closure,result.cons());
+  return eval::funcall(closure,result.cons());
 }
 
 
