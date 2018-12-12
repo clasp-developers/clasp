@@ -68,9 +68,8 @@
 ;;; It could be improved to handle them; I just don't think we need to satiate anything
 ;;; that uses qualified methods.
 ;;; Does handle accessor methods so that they're fast, yet.
-;;; FIXME: Duplication of other code, in this case
-;;; compute-effective-method-function-maybe-optimize, sucks.
-(defun early-compute-effective-method-function (methods specializers)
+;;; FIXME: Duplication of other code, in this case compute-outcome, sucks.
+(defun early-compute-outcome (methods specializers)
   (with-early-accessors (+standard-method-slots+
                          +slot-definition-slots+)
     (mapc (lambda (method)
@@ -120,10 +119,8 @@
                   for methods = (std-compute-applicable-methods-using-classes
                                  generic-function specific-specializers)
                   ;; Everything should use standard method combination during satiation.
-                  for effective-method-function = (early-compute-effective-method-function
-                                                   methods
-                                                   specific-specializers)
-                  collect (cons (coerce specific-specializers 'vector) effective-method-function))))
+                  for outcome = (early-compute-outcome methods specific-specializers)
+                  collect (cons (coerce specific-specializers 'vector) outcome))))
       (append-generic-function-call-history generic-function new-entries))))
 
 (defun early-satiate (generic-function &rest lists-of-specializers)
@@ -456,9 +453,8 @@
           for specializers = (mapcar #'coerce-specializer-designator list)
           for applicable-methods
             = (compute-applicable-methods-using-specializers generic-function specializers)
-          for outcome = (compute-effective-method-function-maybe-optimize
-                         generic-function method-combination
-                         applicable-methods specializers)
+          for outcome = (compute-outcome generic-function method-combination
+                                         applicable-methods specializers)
           collect (cons (coerce specializers 'simple-vector) outcome) into history
           finally (append-generic-function-call-history generic-function history))))
 
@@ -554,7 +550,7 @@
                      for am = (compute-applicable-methods-using-specializers
                                generic-function list-of-specializers)
                      for em = (compute-effective-method generic-function mc am)
-                     ;; time to recapitulate compute-effective-method-function-maybe-optimize.
+                     ;; time to recapitulate compute-outcome.
                      for method = (and (consp em) (eq (first em) 'call-method) (second em))
                      for leafp = (when method (leaf-method-p method))
                      for fmf = (when leafp (fast-method-function method))
