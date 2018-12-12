@@ -60,7 +60,7 @@
                   :optimize-level optimize-level)
       (with-debug-info-generator (:module module
                                   :pathname *compile-file-truename*)
-        (with-make-new-run-all (run-all-function)
+        (with-make-new-run-all (run-all-function (core:bformat nil "%s%d" (namestring (ast-job-form-output-path job)) (ast-job-form-index job)))
           (with-literal-table
               (let ((clasp-cleavir::*llvm-metadata* (make-hash-table :test 'eql)))
                 (core:with-memory-ramp (:pattern 'gctools:ramp)
