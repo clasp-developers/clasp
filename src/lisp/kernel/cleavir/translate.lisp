@@ -662,9 +662,9 @@ This works like compile-lambda-function in bclasp."
 (defun cleavir-compile-file-cst (cst &optional (env *clasp-env*))
   (literal:with-top-level-form
       (if cmp::*debug-compile-file*
-          (compiler-time (let (ast (cst->ast cst env))
+          (compiler-time (let ((ast (cst->ast cst env)))
                            (translate-ast ast :env env :linkage cmp:*default-linkage*)))
-          (let (ast (cst->ast cst env))
+          (let ((ast (cst->ast cst env)))
             (translate-ast ast :env env :linkage cmp:*default-linkage*)))))
 
 #-cst
