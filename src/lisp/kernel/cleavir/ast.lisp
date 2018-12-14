@@ -1,6 +1,5 @@
 (in-package :clasp-cleavir-ast)
 
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Class SETF-FDEFINITION-AST.
@@ -294,7 +293,24 @@
   (list (array-dimension-ast-mdarray ast)
         (array-dimension-ast-axis ast)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Class VASLIST-POP-AST
+;;;
+;;; Pops an element off a valist.
+;;; Doesn't necessarily check that there is an element.
 
+(defclass vaslist-pop-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
+  ((%arg-ast :initarg :vaslist :reader cleavir-ast:arg-ast)))
+
+(cleavir-io:define-save-info vaslist-pop-ast
+    (:vaslist cleavir-ast:arg-ast))
+
+(defmethod cleavir-ast-graphviz::label ((ast vaslist-pop-ast))
+  "vaslist-pop")
+
+(defmethod cleavir-ast:children ((ast vaslist-pop-ast))
+  (list (cleavir-ast:arg-ast ast)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

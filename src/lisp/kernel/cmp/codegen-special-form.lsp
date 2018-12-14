@@ -31,6 +31,7 @@
     (core:foreign-call codegen-foreign-call convert-foreign-call)
     (core:foreign-call-pointer codegen-foreign-call-pointer convert-foreign-call-pointer)
     (symbol-macrolet  codegen-symbol-macrolet convert-symbol-macrolet)
+    (core:vaslist-pop codegen-vaslist-pop convert-vaslist-pop)
     (llvm-inline codegen-llvm-inline convert-llvm-inline)
     (:gc-profiling codegen-gc-profiling convert-gc-profiling)
     (core::debug-message codegen-debug-message convert-debug-message)
@@ -803,6 +804,14 @@ jump to blocks within this tagbody."
           (irc-store (literal:constants-table-value index) result))
         (let ((ltv (eval form)))
           (literal:codegen-rtv-bclasp result ltv)))))
+
+;;; CORE:VASLIST-POP
+
+(defun codegen-vaslist-pop (result rest env)
+  (let ((form (car rest))
+        (vaslist (irc-alloca-t* :label "vaslist-pop-vaslist")))
+    (codegen vaslist form env)
+    (irc-store (irc-intrinsic "vaslist_pop" (irc-load vaslist)) result)))
 
 ;;; DBG-i32
 

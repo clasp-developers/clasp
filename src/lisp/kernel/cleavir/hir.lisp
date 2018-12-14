@@ -218,6 +218,22 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; Instruction VASLIST-POP-INSTRUCTION
+;;;
+
+(defclass vaslist-pop-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+  ())
+
+(defmethod cleavir-ir-graphviz:label ((instr vaslist-pop-instruction)) "vaslist-pop")
+
+(defun make-vaslist-pop-instruction (vaslist output &optional (successor nil successorp))
+  (make-instance 'vaslist-pop-instruction
+                 :inputs (list vaslist)
+                 :outputs (list output)
+                 :successors (if successorp (list successor) nil)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; Instruction BIND-VA-LIST-INSTRUCTION
 ;;;
 ;;; Sort of like destructuring-bind, but with a va-list

@@ -422,6 +422,13 @@
          output)))
 
 (defmethod translate-simple-instruction
+    ((instruction clasp-cleavir-hir:vaslist-pop-instruction) return-value abi function-info)
+  (declare (ignore return-value function-info))
+  (let ((input (first (cleavir-ir:inputs instruction)))
+        (output (first (cleavir-ir:outputs instruction))))
+    (out (%intrinsic-call "vaslist_pop" (list (in input))) output)))
+
+(defmethod translate-simple-instruction
     ((instruction cleavir-ir:memref2-instruction) return-value abi function-info)
   (let* ((output (first (cleavir-ir:outputs instruction)))
          (tptr (in (first (cleavir-ir:inputs instruction))))

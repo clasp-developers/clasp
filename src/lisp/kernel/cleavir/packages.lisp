@@ -87,6 +87,7 @@
    #:array-total-size-ast #:array-total-size-ast-mdarray
    #:array-rank-ast #:array-rank-ast-mdarray
    #:array-dimension-ast #:array-dimension-ast-mdarray #:array-dimension-ast-axis
+   #:vaslist-pop-ast
    #:bind-va-list-ast #:make-bind-va-list-ast #:va-list-ast
    #:invoke-ast #:multiple-value-invoke-ast #:destinations
    #:introduce-invoke
@@ -138,6 +139,7 @@
    #:make-array-total-size-instruction
    #:make-array-rank-instruction
    #:make-array-dimension-instruction
+   #:vaslist-pop-instruction #:make-vaslist-pop-instruction
    #:bind-va-list-instruction #:make-bind-va-list-instruction
    #:invoke-instruction #:multiple-value-invoke-instruction #:destinations
    ))

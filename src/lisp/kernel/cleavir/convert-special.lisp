@@ -29,6 +29,41 @@
         (cst:db ,origin ,lambda-list (cst:rest ,form) ,@body)
         ,environment ,system))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Define how to convert a special form that's "functionlike".
+;;; This means it evaluates all its arguments normally, and
+;;; left to right.
+;;; NAME is the operator. AST is the name of the AST class.
+;;; INITARGS is a list of initargs to make-instance that class.
+
+(defmacro define-functionlike-special-form (name ast (&rest initargs))
+  (let ((nargs (length initargs))
+        (syms (loop for i in initargs collect (gensym (symbol-name i)))))
+    `(progn
+       (defmethod cleavir-generate-ast:convert-special
+           ((head (eql ',name)) form env (system clasp-cleavir:clasp))
+         (destructuring-bind (,@syms) (rest form)
+           (make-instance
+            ',ast
+            ,@(loop for i in initargs
+                    for s in syms
+                    collect i
+                    collect `(cleavir-generate-ast:convert ,s env system)))))
+       (defmethod cleavir-cst-to-ast:convert-special
+           ((head (eql ',name)) cst env (system clasp-cleavir:clasp))
+         (cst:db origin (,@syms) (cst:rest cst)
+           (make-instance
+            ',ast
+            ,@(loop for i in initargs
+                    for s in syms
+                    collect i
+                    collect `(cleavir-cst-to-ast:convert ,s env system))
+            :origin origin)))
+       (defmethod cleavir-generate-ast:check-special-form-syntax
+           ((head (eql ',name)) form)
+         (cleavir-code-utilities:check-form-proper-list form)
+         (cleavir-code-utilities:check-argcount form ,nargs ,nargs)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -207,151 +242,28 @@
   (cleavir-code-utilities:check-form-proper-list form)
   (cleavir-code-utilities:check-argcount form 2 nil))
 
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Converting CORE:VECTOR-LENGTH
+;;; Functionlikes
+;;; See their AST classes for more info probably
 ;;;
-;;; Gets the length of a vector like CL:LENGTH.
-;;;
-(defmethod cleavir-generate-ast::convert-special
-    ((symbol (eql 'core::vector-length)) form environment (system clasp-cleavir:clasp))
-  (destructuring-bind (vector) (rest form)
-    (make-instance 'clasp-cleavir-ast::vector-length-ast
-                   :vector (cleavir-generate-ast:convert vector environment system))))
 
-(defmethod cleavir-cst-to-ast::convert-special
-    ((symbol (eql 'core::vector-length)) cst environment (system clasp-cleavir:clasp))
-  (cst:db origin (vector) (cst:rest cst)
-    (make-instance 'clasp-cleavir-ast::vector-length-ast
-                   :vector (cleavir-cst-to-ast:convert vector environment system)
-                   :origin origin)))
-
-(defmethod cleavir-generate-ast:check-special-form-syntax ((head (eql 'core::vector-length)) form)
-  (cleavir-code-utilities:check-form-proper-list form)
-  (cleavir-code-utilities:check-argcount form 1 1))
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Converting CORE::%DISPLACEMENT
-;;;
-;;; Gets the underlying (simple-array * (*)) for
-;;; any MDArray, including SimpleMDArrays.
-;;;
-(defmethod cleavir-generate-ast:convert-special
-    ((symbol (eql 'core::%displacement)) form environment (system clasp-cleavir:clasp))
-  (destructuring-bind (mdarray) (rest form)
-    (make-instance 'clasp-cleavir-ast::displacement-ast
-                   :mdarray (cleavir-generate-ast:convert mdarray environment system))))
-
-(defmethod cleavir-cst-to-ast:convert-special
-    ((symbol (eql 'core::%displacement)) cst environment (system clasp-cleavir:clasp))
-  (cst:db origin (mdarray) (cst:rest cst)
-    (make-instance 'clasp-cleavir-ast::displacement-ast
-                   :mdarray (cleavir-cst-to-ast:convert mdarray environment system)
-                   :origin origin)))
-
-(defmethod cleavir-generate-ast:check-special-form-syntax ((head (eql 'core::%displacement)) form)
-  (cleavir-code-utilities:check-form-proper-list form)
-  (cleavir-code-utilities:check-argcount form 1 1))
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Converting CORE::%DISPLACED-INDEX-OFFSET
-;;;
-;;; Gets the underlying DIO for
-;;; any MDArray, including SimpleMDArrays.
-;;;
-(defmethod cleavir-generate-ast:convert-special
-    ((symbol (eql 'core::%displaced-index-offset)) form environment (system clasp-cleavir:clasp))
-  (destructuring-bind (mdarray) (rest form)
-    (make-instance 'clasp-cleavir-ast::displaced-index-offset-ast
-                   :mdarray (cleavir-generate-ast:convert mdarray environment system))))
-
-
-(defmethod cleavir-cst-to-ast:convert-special
-    ((symbol (eql 'core::%displaced-index-offset)) cst environment (system clasp-cleavir:clasp))
-  (cst:db origin (mdarray) (cst:rest cst)
-    (make-instance 'clasp-cleavir-ast::displaced-index-offset-ast
-                   :mdarray (cleavir-cst-to-ast:convert mdarray environment system)
-                   :origin origin)))
-
-(defmethod cleavir-generate-ast:check-special-form-syntax ((head (eql 'core::%displaced-index-offset)) form)
-  (cleavir-code-utilities:check-form-proper-list form)
-  (cleavir-code-utilities:check-argcount form 1 1))
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Converting CORE::%ARRAY-TOTAL-SIZE
-;;;
-;;; Gets the array total size for
-;;; any MDArray, including SimpleMDArrays.
-;;;
-(defmethod cleavir-generate-ast:convert-special
-    ((symbol (eql 'core::%array-total-size)) form environment (system clasp-cleavir:clasp))
-  (destructuring-bind (mdarray) (rest form)
-    (make-instance 'clasp-cleavir-ast::array-total-size-ast
-                   :mdarray (cleavir-generate-ast:convert mdarray environment system))))
-
-(defmethod cleavir-cst-to-ast:convert-special
-    ((symbol (eql 'core::%array-total-size)) cst environment (system clasp-cleavir:clasp))
-  (cst:db origin (mdarray) (cst:rest cst)
-    (make-instance 'clasp-cleavir-ast::array-total-size-ast
-                   :mdarray (cleavir-cst-to-ast:convert mdarray environment system)
-                   :origin origin)))
-
-(defmethod cleavir-generate-ast:check-special-form-syntax ((head (eql 'core::%array-total-size)) form)
-  (cleavir-code-utilities:check-form-proper-list form)
-  (cleavir-code-utilities:check-argcount form 1 1))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Converting CORE::%ARRAY-RANK
-;;;
-;;; ARRAY-RANK for MDArrays
-(defmethod cleavir-generate-ast:convert-special
-    ((symbol (eql 'core::%array-rank)) form environment (system clasp-cleavir:clasp))
-  (destructuring-bind (mdarray) (rest form)
-    (make-instance 'clasp-cleavir-ast::array-rank-ast
-                   :mdarray (cleavir-generate-ast:convert mdarray environment system))))
-
-(defmethod cleavir-cst-to-ast:convert-special
-    ((symbol (eql 'core::%array-rank)) cst environment (system clasp-cleavir:clasp))
-  (cst:db origin (mdarray) (cst:rest cst)
-    (make-instance 'clasp-cleavir-ast::array-rank-ast
-                   :mdarray (cleavir-cst-to-ast:convert mdarray environment system)
-                   :origin origin)))
-
-(defmethod cleavir-generate-ast:check-special-form-syntax ((head (eql 'core::%array-rank)) form)
-  (cleavir-code-utilities:check-form-proper-list form)
-  (cleavir-code-utilities:check-argcount form 1 1))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Converting CORE::%ARRAY-DIMENSION
-;;;
-;;; ARRAY-DIMENSION for MDArrays
-(defmethod cleavir-generate-ast:convert-special
-    ((symbol (eql 'core::%array-dimension)) form environment (system clasp-cleavir:clasp))
-  (destructuring-bind (mdarray axis) (rest form)
-    (make-instance 'clasp-cleavir-ast::array-dimension-ast
-                   :mdarray (cleavir-generate-ast:convert mdarray environment system)
-                   :axis (cleavir-generate-ast:convert axis environment system))))
-
-(defmethod cleavir-cst-to-ast:convert-special
-    ((symbol (eql 'core::%array-dimension)) cst environment (system clasp-cleavir:clasp))
-  (cst:db origin (mdarray axis) (cst:rest cst)
-    (make-instance 'clasp-cleavir-ast::array-dimension-ast
-                   :mdarray (cleavir-cst-to-ast:convert mdarray environment system)
-                   :axis (cleavir-cst-to-ast:convert axis environment system)
-                   :origin origin)))
-
-(defmethod cleavir-generate-ast:check-special-form-syntax ((head (eql 'core::%array-dimension)) form)
-  (cleavir-code-utilities:check-form-proper-list form)
-  (cleavir-code-utilities:check-argcount form 2 2))
+(define-functionlike-special-form core::vector-length cc-ast:vector-length-ast
+  (:vector))
+(define-functionlike-special-form core::%displacement cc-ast:displacement-ast
+  (:mdarray))
+(define-functionlike-special-form core::%displaced-index-offset
+  cc-ast:displaced-index-offset-ast
+  (:mdarray))
+(define-functionlike-special-form core::%array-total-size
+  cc-ast:array-total-size-ast
+  (:mdarray))
+(define-functionlike-special-form core::%array-rank cc-ast:array-rank-ast
+  (:mdarray))
+(define-functionlike-special-form core::%array-dimension cc-ast:array-dimension-ast
+  (:mdarray :axis))
+(define-functionlike-special-form core:vaslist-pop cc-ast:vaslist-pop-ast
+  (:vaslist))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

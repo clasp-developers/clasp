@@ -84,6 +84,15 @@ BUILTIN_ATTRIBUTES core::T_O* cc_setup_vaslist_internal(core::Vaslist* vaslist, 
   return gctools::tag_vaslist<core::T_O*>(vaslist);
 }
 
+/* Remove one item from the vaslist and return it.
+   Do not call this unless you are sure there are elements to pop without DEBUG_BUILD */
+BUILTIN_ATTRIBUTES core::T_O* vaslist_pop(core::T_O *preVaslist)
+{NO_UNWIND_BEGIN(); // check_remaining_nargs doesn't actually throw.
+  core::VaList_sp vaslist((gctools::Tagged)preVaslist);
+  return vaslist->next_arg_raw();
+  NO_UNWIND_END();
+}
+
 BUILTIN_ATTRIBUTES
 core::T_O *va_symbolFunction(core::T_O *symP) {
   core::Symbol_sp sym((gctools::Tagged)symP);
