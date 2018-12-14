@@ -419,6 +419,7 @@ the constants-table."
       ((eq type :ltv) body-return-fn)
       (t (error "bad ltv type: ~a" type)))))
 
+#+(or)
 (defmacro with-ltv ( &body body)
   `(let ((*with-ltv-depth* (1+ *with-ltv-depth*)))
      (do-ltv :ltv (lambda () ,@body))))
@@ -457,7 +458,7 @@ Return the index of the load-time-value"
                                          'llvm-sys:internal-linkage
                                          (llvm-sys:undef-value-get cmp:%gcroots-in-module%)
                                          ;; nil ; initializer
-                                         "constants-table"))
+                                         (core:bformat nil "constants-table*%d" (core:next-number))))
         (cmp:*load-time-value-holder-global-var*
           (llvm-sys:make-global-variable cmp:*the-module*
                                          cmp:%t*[DUMMY]% ; type
@@ -535,7 +536,7 @@ and  return the sorted values and the constant-table or (values nil nil)."
                                           'llvm-sys:internal-linkage
                                           (llvm-sys:undef-value-get cmp:%gcroots-in-module%)
                                           ;; nil ; initializer
-                                          "constants-table"))
+                                          (core:bformat nil "constants-table*%d" (core:next-number))))
          (*table-index* 0)
          (cmp:*load-time-value-holder-global-var*
            (llvm-sys:make-global-variable cmp:*the-module*

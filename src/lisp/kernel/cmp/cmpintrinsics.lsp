@@ -504,7 +504,7 @@ have it call the main-function"
     (error "The parent of the func-ptr ~a (a module) does not match the module ~a" (llvm-sys:get-parent main-function) module))
   (let* ((*the-module* module)
          (fn (irc-simple-function-create
-              core::+clasp-ctor-function-name+
+              (core:bformat nil "%s_%d" core::+clasp-ctor-function-name+ (core:next-number))
               %fn-ctor%
               'llvm-sys:internal-linkage
               *the-module*

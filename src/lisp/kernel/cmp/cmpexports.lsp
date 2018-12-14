@@ -97,7 +97,6 @@
           irc-create-invoke
           compile-file-to-module
           link-builtins-module
-          link-object-files
           optimize-module-for-compile
           optimize-module-for-compile-file
           codegen
@@ -271,7 +270,6 @@
           new-table-index
           constants-table-reference
           constants-table-value
-          with-ltv
           with-load-time-value
           with-load-time-value-cleavir
           with-rtv

@@ -299,32 +299,32 @@ Compile a lisp source file into an LLVM module."
           (quick-module-dump module "postoptimize")
           module)))))
 
-(defun compile-file (input-file
-                     &key
-                       (output-file nil output-file-p)
-                       (verbose *compile-verbose*)
-                       (print *compile-print*)
-                       (optimize t)
-                       (optimize-level *optimization-level*)
-                       (system-p nil system-p-p)
-                       (external-format :default)
-                       ;; If we are spoofing the source-file system to treat given-input-name
-                       ;; as a part of another file then use source-debug-pathname to provide the
-                       ;; truename of the file we want to mimic
-                       source-debug-pathname
-                       ;; This is the offset we want to spoof
-                       (source-debug-offset 0)
-                       ;; output-type can be (or :fasl :bitcode :object)
-                       (output-type :fasl)
-                       ;; type can be either :kernel or :user
-                       (type :user)
-                       ;; A unique prefix for symbols of compile-file'd files that
-                       ;; will be linked together
-                       (unique-symbol-prefix "")
-                       ;; ignored by bclasp
-                       ;; but passed to hook functions
-                       environment
-                     &aux conditions)
+(defun compile-file-serial (input-file
+                            &key
+                              (output-file nil output-file-p)
+                              (verbose *compile-verbose*)
+                              (print *compile-print*)
+                              (optimize t)
+                              (optimize-level *optimization-level*)
+                              (system-p nil system-p-p)
+                              (external-format :default)
+                              ;; If we are spoofing the source-file system to treat given-input-name
+                              ;; as a part of another file then use source-debug-pathname to provide the
+                              ;; truename of the file we want to mimic
+                              source-debug-pathname
+                              ;; This is the offset we want to spoof
+                              (source-debug-offset 0)
+                              ;; output-type can be (or :fasl :bitcode :object)
+                              (output-type :fasl)
+                              ;; type can be either :kernel or :user
+                              (type :user)
+                              ;; A unique prefix for symbols of compile-file'd files that
+                              ;; will be linked together
+                              (unique-symbol-prefix "")
+                              ;; ignored by bclasp
+                              ;; but passed to hook functions
+                              environment
+                            &aux conditions)
   "See CLHS compile-file."
   (if system-p-p (error "I don't support system-p keyword argument - use output-type"))
   (if (not output-file-p) (setq output-file (cfp-output-file-default input-file output-type)))
@@ -352,7 +352,7 @@ Compile a lisp source file into an LLVM module."
              (when verbose (bformat t "Writing object to %s%N" (core:coerce-to-filename output-path)))
              (ensure-directories-exist output-path)
              (let ((temp-bitcode-file (compile-file-pathname input-file :output-file output-file :output-type :bitcode)))
-               (ensure-directories-exist temp-bitcode-file)             ;; Save the bitcode so we can take a look at it
+               (ensure-directories-exist temp-bitcode-file) ;; Save the bitcode so we can take a look at it
                (with-track-llvm-time
                    (write-bitcode module temp-bitcode-file))
                (prog1
@@ -401,6 +401,8 @@ Compile a lisp source file into an LLVM module."
 
 (export 'compile-file)
 
+(eval-when (:load-toplevel :execute)
+  (setf (fdefinition 'compile-file) #'compile-file-serial))
 
 #+(or bclasp cclasp)
 (progn
