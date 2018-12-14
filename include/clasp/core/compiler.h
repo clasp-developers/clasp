@@ -72,9 +72,9 @@ FORWARD(PosixTime);
 struct MaybeDebugStartup {
   PosixTime_sp start;
   std::string  name;
-  claspFunction fptr;
+  void* fptr;
   size_t start_dispatcher_count;
-  MaybeDebugStartup(claspFunction fp, const char* n = NULL);
+  MaybeDebugStartup(void* fp, const char* n = NULL);
   ~MaybeDebugStartup();
 };
 

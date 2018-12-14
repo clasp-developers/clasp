@@ -126,6 +126,7 @@ const char *CorePkg_nicknames[] = {
     "SYSTEM", "sys", "SYS", "si", "SI", "" /*guard*/
 };
 SYMBOL_EXPORT_SC_(CorePkg, STARuse_cleavir_compilerSTAR);  // nil (clasp) or T (cleavir)
+SYMBOL_EXPORT_SC_(CorePkg, STARstack_top_hintSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_contab_name_PLUS_);
 SYMBOL_EXPORT_SC_(KeywordPkg,object);
 SYMBOL_EXPORT_SC_(KeywordPkg,fasl);
@@ -1034,6 +1035,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   cl::_sym_STARtrace_outputSTAR->defparameter(SynonymStream_O::make(ext::_sym__PLUS_processErrorOutput_PLUS_));
   cl::_sym_STARdebug_ioSTAR->defparameter(TwoWayStream_O::make(stdin_stream, stdout_stream));
   cl::_sym_STARquery_ioSTAR->defparameter(TwoWayStream_O::make(stdin_stream, stdout_stream));
+  core::_sym_STARstack_top_hintSTAR->defparameter(_Nil<T_O>());
   _sym_STARdocumentation_poolSTAR->defparameter(Cons_O::createList(HashTableEql_O::create_default(), SimpleBaseString_O::make("help_file.dat")));
   _sym_STARdocumentation_poolSTAR->exportYourself();
   TwoWayStream_sp terminal = gc::As_unsafe<TwoWayStream_sp>(TwoWayStream_O::make(stdin_stream, stdout_stream));

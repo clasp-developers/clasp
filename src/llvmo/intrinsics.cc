@@ -370,6 +370,7 @@ ALWAYS_INLINE core::T_O *cc_stack_enclose(void* closure_address,
                                           core::FunctionDescription* functionDescription,
                                           std::size_t numCells, ...)
 {NO_UNWIND_BEGIN();
+  ASSERT((closure_address&0x7)==0); //
   gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(closure_address);
   const gctools::Header_s::Value closure_header = gctools::Header_s::Value::make<core::ClosureWithSlots_O>();
   size_t size = gctools::sizeof_container_with_header<core::ClosureWithSlots_O>(numCells);

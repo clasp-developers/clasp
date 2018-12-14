@@ -502,13 +502,14 @@
 If FORMAT-STRING is non-NIL, it is used as the format string to be output to
 *ERROR-OUTPUT* before entering the break loop.  ARGs are arguments to the
 format string."
-  (let ((*debugger-hook* nil)
-        (core:*stack-top-hint* (1- (core:ihs-top))))
-    (with-simple-restart (continue "Return from BREAK.")
-      (maybe-invoke-debugger
-       (make-condition 'SIMPLE-CONDITION
-                       :FORMAT-CONTROL format-control
-                       :FORMAT-ARGUMENTS format-arguments))))
+  (let ((*debugger-hook* nil))
+    (core:call-with-stack-top-hint
+     (lambda ()
+       (with-simple-restart (continue "Return from BREAK.")
+         (maybe-invoke-debugger
+          (make-condition 'SIMPLE-CONDITION
+                          :FORMAT-CONTROL format-control
+                          :FORMAT-ARGUMENTS format-arguments))))))
   nil)
 
 (defun warn (datum &rest arguments)
@@ -875,8 +876,6 @@ memory limits before executing the program again."))
 			for value in values
 			collect (assert-prompt place-name value)))))))
 
-(defvar *stack-top-hint* nil)
-
 ;;; ----------------------------------------------------------------------
 ;;; ECL's interface to the toplevel and debugger
 
@@ -904,8 +903,7 @@ bstrings."
   (declare (inline apply) ;; So as not to get bogus frames in debugger
 	   #-(or ecl-min clasp)
            (c::policy-debug-ihs-frame))
-  (let ((condition (coerce-to-condition datum args 'simple-error 'error))
-        (*stack-top-hint* (1- (ihs-top))))
+  (let ((condition (coerce-to-condition datum args 'simple-error 'error)))
     (cond
       ((eq t continue-string)
        ; from CEerror; mostly allocation errors

@@ -169,7 +169,10 @@ For C/C++ frames - return (list 'c-function name)."
 ;;; Extract just the Common Lisp backtrace frames
 ;;; starting from a frame that satisfies gather-start-trigger
 (defun common-lisp-backtrace-frames (backtrace &key verbose (focus t)
-                                       (gather-start-trigger nil)
+                                                 (gather-start-trigger
+                                                  (lambda (frame)
+                                                    (and (eq :lisp (backtrace-frame-type frame))
+                                                         (eq 'cl:error (backtrace-frame-function-name frame)))))
                                        gather-all-frames)
   "Extract the common lisp backtrace frames.  Provide a gather-start-trigger function
 that takes one argument (the backtrace-frame-function-name) and returns T it should trigger when to start

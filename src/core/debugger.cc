@@ -1824,22 +1824,35 @@ void fill_backtrace(std::vector<BacktraceEntry>& backtrace,bool captureArguments
   // if (!captureArguments) fill_in_interpreted_frames(backtrace);
 };
 
+CL_DOCSTRING("Call the thunk after setting core:*stack-top-hint* to somewhere in the current stack frame.");
+CL_DEFUN T_mv core__call_with_stack_top_hint(Function_sp thunk)
+{
+  size_t temporary_stack_top;
+  DynamicScopeManager scope(_sym_STARstack_top_hintSTAR, Pointer_O::create((void*)&temporary_stack_top));
+  return eval::funcall(thunk);
+}
 
-
-CL_LAMBDA(printer &optional args-as-pointers);
+CL_LAMBDA(closure &optional args-as-pointers);
 CL_DECLARE();
 CL_DOCSTRING(R"doc(Generate a backtrace and pass it to the closure for printing or debugging.
  If args-as-pointers is T then arguments and the closure are wrapped in Pointer_O objects.)doc");
-CL_DEFUN void core__call_with_backtrace(Function_sp closure, bool args_as_pointers) {
+CL_DEFUN T_mv core__call_with_backtrace(Function_sp closure, bool args_as_pointers) {
   std::vector<BacktraceEntry> backtrace;
   fill_backtrace(backtrace,true);
+  uintptr_t stack_top_hint = ~0;
+  if (_sym_STARstack_top_hintSTAR->symbolValue().notnilp()) {
+    if (gc::IsA<Pointer_sp>(_sym_STARstack_top_hintSTAR->symbolValue())) {
+      Pointer_sp stack_top_hint_ptr = gc::As_unsafe<Pointer_sp>(_sym_STARstack_top_hintSTAR->symbolValue());
+      stack_top_hint = (uintptr_t)stack_top_hint_ptr->ptr();
+    }
+  }
   BT_LOG((buf," building backtrace as list\n" ));
     // Move the frames into Common Lisp
   uintptr_t bp = (uintptr_t)__builtin_frame_address(0);
   ql::list result;
   for ( size_t i=1; i<backtrace.size(); ++i ) {
     // printf("%s:%d Examining bp %p frame %p\n", __FILE__, __LINE__, (void*)bp, (void*)backtrace[i]._BasePointer);
-    if (bp<backtrace[i]._BasePointer && backtrace[i]._BasePointer!=0) {
+    if (bp<backtrace[i]._BasePointer && backtrace[i]._BasePointer!=0 && backtrace[i]._BasePointer<stack_top_hint) {
       T_sp entry;
       Symbol_sp stype;
       if (backtrace[i]._Stage == lispFrame) {
@@ -1878,7 +1891,7 @@ CL_DEFUN void core__call_with_backtrace(Function_sp closure, bool args_as_pointe
       result << entry;
     }
   }
-  eval::funcall(closure,result.cons());
+  return eval::funcall(closure,result.cons());
 }
 
 

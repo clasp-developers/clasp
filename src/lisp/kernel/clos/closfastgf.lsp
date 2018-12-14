@@ -328,7 +328,7 @@
                   (equal methods (cmp::effective-method-outcome-applicable-methods outcome)))
           return outcome))
 
-(defun compute-effective-method-function-maybe-optimize
+(defun compute-outcome
     (generic-function method-combination methods actual-specializers &key log actual-arguments)
   ;; Calculate the effective-method-function as well as an optimized one
   ;; so that we can apply the e-m-f to the arguments if we need to debug the optimized version.
@@ -347,10 +347,12 @@
     ;; no-applicable-method is different from the no-required-method we'd get if we went below,
     ;; so we pick that off first.
     ;; Similarly to nrm below, we return a sort of fake emf.
-    (return-from compute-effective-method-function-maybe-optimize
-      (lambda (vaslist-args ignore)
-        (declare (ignore ignore))
-        (apply #'no-applicable-method generic-function vaslist-args))))
+    (return-from compute-outcome
+      (cmp::make-function-outcome
+       :function
+       (lambda (vaslist-args ignore)
+         (declare (ignore ignore))
+         (apply #'no-applicable-method generic-function vaslist-args)))))
   (let* ((em (compute-effective-method generic-function method-combination methods))
          (method (and (consp em)
                       (eq (first em) 'call-method)
@@ -448,12 +450,12 @@
        do (let* ((methods (compute-applicable-methods-using-specializers
                            generic-function
                            specializers))
-                 (effective-method-function (compute-effective-method-function-maybe-optimize
-                                             generic-function
-                                             (generic-function-method-combination generic-function)
-                                             methods
-                                             specializers)))    ;;; I have actual specializers from the call history in specializers
-            (rplacd entry effective-method-function)))
+                 (outcome (compute-outcome
+                           generic-function
+                           (generic-function-method-combination generic-function)
+                           methods
+                           specializers)))    ;;; I have actual specializers from the call history in specializers
+            (rplacd entry outcome)))
     call-history))
 
 (defun update-generic-function-call-history-for-add-method (generic-function method)
@@ -473,15 +475,15 @@ FIXME!!!! This code will have problems with multithreading if a generic function
        do (let* ((methods (compute-applicable-methods-using-specializers
                            generic-function
                            specializers))
-                 (effective-method-function (if methods
-                                                (compute-effective-method-function-maybe-optimize
-                                                 generic-function
-                                                 (generic-function-method-combination generic-function)
-                                                 methods
-                                                 specializers) ;; I have the actual specializers in specializers
-                                                nil)))
-            (when effective-method-function
-              (push (cons (car entry) effective-method-function) new-call-history)))
+                 (outcome (if methods
+                              (compute-outcome
+                               generic-function
+                               (generic-function-method-combination generic-function)
+                               methods
+                               specializers) ;; I have the actual specializers in specializers
+                              nil)))
+            (when outcome
+              (push (cons (car entry) outcome) new-call-history)))
        else
        do (push (cons (car entry) (cdr entry)) new-call-history))
     new-call-history))
@@ -624,7 +626,7 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
       (let* ((method-list (if ok
                               method-list
                               (compute-applicable-methods generic-function arguments)))
-             (outcome (compute-effective-method-function-maybe-optimize
+             (outcome (compute-outcome
                        generic-function
                        (generic-function-method-combination generic-function)
                        method-list
