@@ -178,6 +178,7 @@ VALID_OPTIONS = [
 ]
 
 DEBUG_OPTIONS = [
+    "DEBUG_STACKMAPS", # print messages about stackmap registration
     "DEBUG_ASSERT_TYPE_CAST", # Turn on type checking when passing arguments
     "SOURCE_DEBUG", # Allow LOG messages to print - works with CLASP_DEBUG environment variable
     "DEBUG_JIT_LOG_SYMBOLS", # Generate a log of JITted symbols in /tmp/clasp-symbols-<pid>
@@ -271,7 +272,7 @@ def update_dependencies(cfg):
 #                       "master")
     fetch_git_revision("src/lisp/kernel/contrib/sicl",
                        "https://github.com/Bike/SICL.git",
-                       "9cafd1cd350651c7033aad3117088ae61d2ae118")
+                       "78052fb5f02a3814eb7295f3dcac09f21f98702b")
     fetch_git_revision("src/lisp/kernel/contrib/Concrete-Syntax-Tree",
                        "https://github.com/robert-strandh/Concrete-Syntax-Tree.git",
                        "8d8c5abf8f1690cb2b765241d81c2eb86d60d77e")
@@ -870,6 +871,7 @@ def configure(cfg):
     cfg.check_cxx(lib='z', cflags='-Wall', uselib_store='Z')
     if (cfg.env['DEST_OS'] == LINUX_OS ):
         cfg.check_cxx(lib='dl', cflags='-Wall', uselib_store='DL')
+        cfg.check_cxx(lib='elf', cflags='-Wall', uselib_store='ELF')
     cfg.check_cxx(lib='ncurses', cflags='-Wall', uselib_store='NCURSES')
 #    cfg.check_cxx(stlib='lldb', cflags='-Wall', uselib_store='LLDB')
     cfg.check_cxx(lib='m', cflags='-Wall', uselib_store='M')
@@ -998,10 +1000,11 @@ def configure(cfg):
             cfg.env.append_value('LINKFLAGS', '-fuse-ld=lld-%d.0' % CLANG_VERSION)
             log.info("Using the lld linker")
         else:
+#            cfg.env.append_value('LINKFLAGS', '-fuse-ld=lld-%d.0' % CLANG_VERSION)
             cfg.env.append_value('LINKFLAGS', '-fuse-ld=gold')
             log.info("Using the gold linker")
-        cfg.env.append_value('LINKFLAGS', ['-stdlib=libstdc++'])
-        cfg.env.append_value('LINKFLAGS', ['-lstdc++'])
+        cfg.env.append_value('LINKFLAGS', ['-stdlib=libstdc++']) # libstdc++/GCC libc++/clang
+        cfg.env.append_value('LINKFLAGS', ['-lstdc++']) # -lstdc++/GCC -lc++/clang
         cfg.env.append_value('LINKFLAGS', '-pthread')
     elif (cfg.env['DEST_OS'] == FREEBSD_OS ):
         #--lto-O0 is not effective for avoiding linker hangs
@@ -1082,6 +1085,7 @@ def configure(cfg):
             cfg.env.append_value('LIB', cfg.env.LIB_FFI)
     if (cfg.env['DEST_OS'] == LINUX_OS ):
         cfg.env.append_value('LIB', cfg.env.LIB_DL)
+        cfg.env.append_value('LIB', cfg.env.LIB_ELF)
         cfg.env.append_value('LIB', cfg.env.LIB_GCC_S)
         cfg.env.append_value('LIB', cfg.env.LIB_UNWIND_X86_64)
         cfg.env.append_value('LIB', cfg.env.LIB_UNWIND)

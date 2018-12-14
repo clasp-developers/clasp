@@ -1,5 +1,6 @@
 /*
-    File: intrinsics.cc
+    File: link_intrinsics.cc
+    Small functions used by the runtime that should NOT be inlined.
 */
 
 /*
@@ -25,10 +26,6 @@ THE SOFTWARE.
 */
 /* -^- */
 #define DEBUG_LANDING_PAD 1
-#if defined( _TARGET_OS_DARWIN )
-#include <mach-o/ldsyms.h>
-#include <mach-o/getsect.h>
-#endif
 
 //#define DEBUG_LEVEL_FULL
 #ifdef USE_MPS
@@ -46,6 +43,7 @@ extern "C" {
 #include <clasp/core/character.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/array.h>
+#include <clasp/core/hashTableEq.h>
 #include <clasp/core/lispList.h>
 #include <clasp/core/bformat.h>
 #include <clasp/core/instance.h>
@@ -60,6 +58,7 @@ extern "C" {
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/stacks.h>
 #include <clasp/core/compiler.h>
+#include <clasp/core/debugger.h>
 #include <clasp/core/random.h>
 #include <clasp/core/primitives.h>
 #include <clasp/core/posixTime.h>
@@ -70,6 +69,14 @@ extern "C" {
 #include <clasp/llvmo/intrinsics.h>
 #include <clasp/gctools/gc_interface.fwd.h>
 #include <clasp/core/exceptions.h>
+
+#if defined(_TARGET_OS_DARWIN)
+#include <mach-o/ldsyms.h>
+#include <mach-o/getsect.h>
+#endif
+#if defined(_TARGET_OS_LINUX) || defined(_TARGET_OS_FREEBSD)
+#include <link.h>
+#endif
 
 #pragma GCC visibility push(default)
 
@@ -342,6 +349,10 @@ LtvcReturn ltvc_make_base_string(gctools::GCRootsInModule* holder, size_t index,
   LTVCRETURN holder->set(index,v.tagged_());
   NO_UNWIND_END();
 }
+};
+
+extern "C" {
+
 
 LtvcReturn ltvc_make_pathname(gctools::GCRootsInModule* holder, size_t index, gctools::Tagged host_t,
                                    gctools::Tagged device_t,
@@ -479,43 +490,11 @@ LtvcReturn ltvc_set_ltv_funcall_cleavir(gctools::GCRootsInModule* holder, size_t
   LTVCRETURN holder->set(index,val.tagged_());
 }
 
-struct MaybeDebugStartup {
-  PosixTime_sp start;
-  fnLispCallingConvention fptr;
-  size_t start_dispatcher_count;
-  MaybeDebugStartup(fnLispCallingConvention fp) : fptr(fp) {
-    if (core::_sym_STARdebugStartupSTAR->symbolValue().notnilp()) {
-      this->start = PosixTime_O::createNow();
-      if (comp::_sym_dispatcher_count->fboundp()) {
-        core::T_sp nu = core::eval::funcall(comp::_sym_dispatcher_count);
-        this->start_dispatcher_count = nu.unsafe_fixnum();
-      } else {
-        this->start_dispatcher_count = 0;
-      }
-    }
-  };
 
-  ~MaybeDebugStartup() {
-    if (core::_sym_STARdebugStartupSTAR->symbolValue().notnilp()) {
-      PosixTime_sp end = PosixTime_O::createNow();
-      PosixTimeDuration_sp diff = end->sub(this->start);
-      Dl_info di;
-      dladdr((void*)fptr,&di);
-      mpz_class ms = diff->totalMilliseconds();
-      size_t end_dispatcher_count = 0;
-      if (comp::_sym_dispatcher_count->fboundp()) {
-        core::T_sp nu = core::eval::funcall(comp::_sym_dispatcher_count);
-        end_dispatcher_count = nu.unsafe_fixnum();
-      }
-      size_t dispatcher_delta = end_dispatcher_count - this->start_dispatcher_count;
-      printf("%s ms %zu gfds : %s\n", _rep_(Integer_O::create(ms)).c_str(), dispatcher_delta, di.dli_sname);
-    }
-  }
-};
 
 LtvcReturn ltvc_toplevel_funcall(fnLispCallingConvention fptr, const char* name) {
 #ifdef DEBUG_SLOW
-  MaybeDebugStartup startup(fptr);
+  MaybeDebugStartup startup((void*)fptr,name);
 #endif
   core::T_O *lcc_arglist = _Nil<core::T_O>().raw_();
   Symbol_sp sname = Symbol_O::create_from_string(std::string(name));
@@ -760,85 +739,6 @@ void invokeTopLevelFunction(core::T_mv *resultP,
   ASSERTNOTNULL(*resultP);
 };
 #endif
-
-
-#if defined(_TARGET_OS_DARWIN)
-uint8_t * 
-mygetsectiondata(
-                 void* vmhp,
-                 const char *segname,
-                 const char *sectname,
-                 unsigned long *size)
-{
-  const struct mach_header_64* mhp = (const struct mach_header_64*)vmhp;
-  struct segment_command_64 *sgp;
-  struct section_64 *sp;
-  uint32_t i, j;
-  intptr_t slide;
-    
-  slide = 0;
-  sp = 0;
-  sgp = (struct segment_command_64 *)
-    ((char *)mhp + sizeof(struct mach_header_64));
-  for(i = 0; i < mhp->ncmds; i++){
-    if(sgp->cmd == LC_SEGMENT_64){
-      if(strcmp(sgp->segname, "__TEXT") == 0){
-        slide = (uintptr_t)mhp - sgp->vmaddr;
-      }
-      if(strncmp(sgp->segname, segname, sizeof(sgp->segname)) == 0){
-        sp = (struct section_64 *)((char *)sgp +
-                                   sizeof(struct segment_command_64));
-        for(j = 0; j < sgp->nsects; j++){
-          if(strncmp(sp->sectname, sectname,
-                     sizeof(sp->sectname)) == 0 &&
-             strncmp(sp->segname, segname,
-                     sizeof(sp->segname)) == 0){
-            *size = sp->size;
-//   return (uint8_t*)sp;
-            uint8_t* addr = ((uint8_t *)(sp->addr) + slide);
-            return addr;
-          }
-          sp = (struct section_64 *)((char *)sp +
-                                     sizeof(struct section_64));
-        }
-      }
-    }
-    sgp = (struct segment_command_64 *)((char *)sgp + sgp->cmdsize);
-  }
-  return(0);
-}
-#endif
-
-
-
-void cc_register_library(const void* fn) {
-//  printf("%s:%d header -> %p\n", __FILE__, __LINE__, header );
-  if (fn) {
-    Dl_info dlinfo;
-    int res = dladdr(fn,&dlinfo);
-    if (res<=0) {
-      printf("%s:%d Could not register_library with %p\n", __FILE__, __LINE__, fn);
-      abort();
-    }
-//    printf("%s:%d Found library base %p\n", __FILE__, __LINE__, (void*)dlinfo.dli_fbase);
-    unsigned long section_size = 0;
-    void* header = (void*)dlinfo.dli_fbase;
-#if defined(_TARGET_OS_DARWIN)
-    uint8_t* p_section =  mygetsectiondata( header,
-                                            "__LLVM_STACKMAPS",
-                                            "__llvm_stackmaps",
-                                            &section_size );
-#else 
-    #error "Handle linux and freebsd"
-#endif
-    if (p_section!=nullptr) {
-      STACKMAP_LOG(("%s:%d LLVM_STACKMAPS  p_section@%p section_size=%lu\n", __FILE__, __LINE__, (void*)p_section, section_size ));
-      llvmo::register_llvm_stackmaps(false, (uintptr_t)p_section,(uintptr_t)p_section+section_size);
-    } else {
-      STACKMAP_LOG(("%s:%d     Could not find LLVM_STACKMAPS\n", __FILE__, __LINE__ ));
-    }
-  }
-}
 
 
 /*! Invoke the main functions from the main function array.
@@ -1542,83 +1442,6 @@ T_mv cc_multiple_value_prog1_function(core::T_mv* result, core::T_O* tfunc1, cor
 }
 #endif
 
-
-gctools::return_type cc_dispatch_effective_method(core::T_O* teffective_method, core::T_O* tgf, core::T_O* tgf_args_vaslist) {
-  core::Function_sp effective_method((gctools::Tagged)teffective_method);
-  core::T_sp gf_vaslist((gctools::Tagged)tgf_args_vaslist);
-  return (*effective_method).entry.load()(LCC_PASS_ARGS2_ELLIPSIS(teffective_method,gf_vaslist.raw_(),_Nil<core::T_O>().raw_()));
-}
-
-
-gctools::return_type cc_dispatch_miss(core::T_O* tgf, core::T_O* tgf_vaslist)
-{
-  core::FuncallableInstance_sp gf((gctools::Tagged)tgf);
-  core::VaList_sp gf_vaslist((gctools::Tagged)tgf_vaslist);
-  core::T_mv result = core::eval::funcall(clos::_sym_dispatch_miss,gf,gf_vaslist);
-#ifdef DEBUG_GFDISPATCH
-  printf("%s:%d  Returning from cc_dispatch_miss\n", __FILE__, __LINE__ );
-#endif
-  return result.as_return_type();
-}
-
-
-
-void cc_dispatch_debug(int msg_id, uintptr_clasp_t val)
-{
-  // The msg_id switch values correspond to values passed from cmpgf.lsp
-  //   The values mean:
-  //         0 - print the argument as an integer step index
-  //         1 - Print the value as a integer
-  //         2 - print the value as a tag
-  //         3 - print the value as a tagged pointer to a Vaslist object
-  //         4 - print the value as a pointer
-  //         5 - print the contents of the va_list pointed to by the value
-  //         6 - print the value as a stamp
-  //         7 - print the value as a pointer to a dispatch function
-  switch (msg_id) {
-  case 0:
-      write_bf_stream(BF("Step %d\n") % val);
-//      printf("%s:%d    cc_dispatch_debug step %d\n", __FILE__, __LINE__, val );
-      break;
-  case 1:
-      write_bf_stream(BF("Arg val[%d]") % val);
-//      printf("%s:%d    cc_dispatch_debug arg val[%d]\n", __FILE__, __LINE__, val );
-      break;
-  case 2:
-      write_bf_stream(BF(" tag = %d\n") % val); 
-//      printf("%s:%d    cc_dispatch_debug tag [%d]\n", __FILE__, __LINE__, val );
-     break;
-  case 3: {
-    VaList_sp vls((gc::Tagged)val);
-//    printf("%s:%d    vaList_sp.raw_() = %p\n", __FILE__, __LINE__, vls.raw_());
-    write_bf_stream(BF("Arg VaList_sp.raw_() = %p list -> %s\n") % (void*)vls.raw_() % _rep_(vls) );
-    dump_Vaslist_ptr(&*vls);
-    break;
-  }
-  case 4: {
-//      printf("%s:%d     ptr: %p\n", __FILE__, __LINE__, (void*)val);
-      write_bf_stream(BF("Ptr: %p\n") % (void*)val );
-  }
-      break;
-  case 5: {
-//      printf("%s:%d     ptr: %p\n", __FILE__, __LINE__, (void*)val);
-      write_bf_stream(BF("va_list: %p\n") % (void*)val );
-      void* dump_va_list_voidSTAR = (void*)&dump_va_list;
-      typedef void (*fptr)(uintptr_t);
-      fptr my_fptr = reinterpret_cast<fptr>(dump_va_list_voidSTAR);
-      my_fptr(val);
-      break;
-  }
-  case 6:
-      write_bf_stream(BF("Argument stamp: %lu\n") % val);
-      break;
-  case 7:
-      write_bf_stream(BF("Dispatch to: %p\n") % val);
-      break;
-  }
-  fflush(stdout);
-}
-
 void clasp_terminate()
 {
   printf("Terminating clasp from clasp_terminate\n");
@@ -1662,22 +1485,85 @@ gctools::return_type cc_dispatch_slot_writer_index_debug(core::T_O* toptimized_s
   core::T_sp result = core::eval::funcall(clos::_sym_dispatch_slot_writer_index_debug,optimized_slot_writer,value,instance,vargs);
   return result.as_return_type();
 }
+};
 
 
-void cc_error_too_few_arguments(size_t nargs, size_t minargs, core::FunctionDescription* functionDescription) {
-  T_sp functionName = llvmo::functionNameOrNilFromFunctionDescription(functionDescription);
-  if (functionName.nilp()) {
-    SIMPLE_ERROR(BF("Not enough arguments when calling an unknown function - you provided %lu and %lu are required") % nargs % minargs );
+extern "C" {
+
+// The following are here instead of fastgf.cc because they are apparently
+// too big to be inlined.
+#if 1
+
+// set to zero and enable this function in fastgf.cc to reproduce a problem
+// where clasp locks up when trying to compile the first discriminating function
+// The problem crops up when cc_dispatch_miss is inlined
+gctools::return_type cc_dispatch_miss(core::T_O* tgf, core::T_O* tgf_vaslist)
+{
+  core::FuncallableInstance_sp gf((gctools::Tagged)tgf);
+  core::VaList_sp gf_vaslist((gctools::Tagged)tgf_vaslist);
+  core::T_mv result = core::eval::funcall(clos::_sym_dispatch_miss,gf,gf_vaslist);
+#ifdef DEBUG_GFDISPATCH
+  printf("%s:%d  Returning from cc_dispatch_miss\n", __FILE__, __LINE__ );
+#endif
+  return result.as_return_type();
+}
+#endif
+
+void cc_dispatch_debug(int msg_id, uintptr_clasp_t val)
+{
+  // The msg_id switch values correspond to values passed from cmpgf.lsp
+  //   The values mean:
+  //         0 - print the argument as an integer step index
+  //         1 - Print the value as a integer
+  //         2 - print the value as a tag
+  //         3 - print the value as a tagged pointer to a Vaslist object
+  //         4 - print the value as a pointer
+  //         5 - print the contents of the va_list pointed to by the value
+  //         6 - print the value as a stamp
+  //         7 - print the value as a pointer to a dispatch function
+  switch (msg_id) {
+  case 0:
+      core::write_bf_stream(BF("Step %d\n") % val);
+//      printf("%s:%d    cc_dispatch_debug step %d\n", __FILE__, __LINE__, val );
+      break;
+  case 1:
+      core::write_bf_stream(BF("Arg val[%d]") % val);
+//      printf("%s:%d    cc_dispatch_debug arg val[%d]\n", __FILE__, __LINE__, val );
+      break;
+  case 2:
+      core::write_bf_stream(BF(" tag = %d\n") % val); 
+//      printf("%s:%d    cc_dispatch_debug tag [%d]\n", __FILE__, __LINE__, val );
+     break;
+  case 3: {
+    core::VaList_sp vls((gc::Tagged)val);
+//    printf("%s:%d    vaList_sp.raw_() = %p\n", __FILE__, __LINE__, vls.raw_());
+    core::write_bf_stream(BF("Arg VaList_sp.raw_() = %p list -> %s\n") % (void*)vls.raw_() % _rep_(vls) );
+    dump_Vaslist_ptr(&*vls);
+    break;
   }
-  SIMPLE_ERROR(BF("Not enough arguments when calling %s - you provided %lu and %lu are required") % _rep_(functionName) % nargs % minargs );
+  case 4: {
+//      printf("%s:%d     ptr: %p\n", __FILE__, __LINE__, (void*)val);
+      core::write_bf_stream(BF("Ptr: %p\n") % (void*)val );
+  }
+      break;
+  case 5: {
+//      printf("%s:%d     ptr: %p\n", __FILE__, __LINE__, (void*)val);
+      core::write_bf_stream(BF("va_list: %p\n") % (void*)val );
+      void* dump_va_list_voidSTAR = (void*)&core::dump_va_list;
+      typedef void (*fptr)(uintptr_t);
+      fptr my_fptr = reinterpret_cast<fptr>(dump_va_list_voidSTAR);
+      my_fptr(val);
+      break;
+  }
+  case 6:
+      core::write_bf_stream(BF("Argument stamp: %lu\n") % val);
+      break;
+  case 7:
+      core::write_bf_stream(BF("Dispatch to: %p\n") % val);
+      break;
+  }
+  fflush(stdout);
 }
 
-void cc_error_too_many_arguments(size_t nargs, size_t maxargs, core::FunctionDescription* functionDescription) {
-  T_sp functionName = llvmo::functionNameOrNilFromFunctionDescription(functionDescription);
-  if (functionName.nilp()) {
-        SIMPLE_ERROR(BF("Too many arguments when calling an unknown function - you provided %lu and %lu are required") % nargs % maxargs );
-  }
-  SIMPLE_ERROR(BF("Too many arguments when calling %s - you provided %lu and %lu are allowed") % _rep_(functionName) % nargs % maxargs );
-}
 
 };

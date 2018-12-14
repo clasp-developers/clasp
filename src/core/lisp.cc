@@ -150,6 +150,8 @@ extern "C" void add_history(char *line);
 
 namespace core {
 
+
+bool global_Started = false;
 bool globalTheSystemIsUp = false;
 
 const int Lisp_O::MaxFunctionArguments = 64; //<! See ecl/src/c/main.d:163 ecl_make_cache(64,4096)
@@ -681,6 +683,9 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
     this->_PrintSymbolsProperly = true;
   }
   mpip::Mpi_O::initializeGlobals(_lisp);
+  global_Started = true;
+  startup_register_loaded_objects();
+//  process_llvm_stackmaps();
 }
 
 /*! Get a Str8Ns buffer string from the BufferStr8NsPool.*/
@@ -1624,7 +1629,7 @@ CL_DEFUN void core__exit(int exitValue) {
   gctools::global_debuggerOnSIGABRT = false;
   if (exitValue != 0) {
     if ( core::_sym_STARexit_backtraceSTAR->symbolValue().notnilp() ) {
-      core::core__clib_backtrace(999999);
+      dbg_safe_backtrace();
     }
   }
   throw(ExitProgramException(exitValue));
@@ -2198,15 +2203,6 @@ CL_DEFUN void core__invoke_internal_debugger_from_gdb() {
   SIMPLE_ERROR(BF("This should never happen"));
 };
 
-CL_DEFUN List_sp core__dynamic_library_handles() {
-  ql::list result;
-  for ( auto entry : _lisp->_OpenDynamicLibraryHandles ) {
-    result << Cons_O::create(SimpleBaseString_O::make(entry.first),
-                             Pointer_O::create(entry.second));
-  }
-  return result.cons();
-}
-
 
 CL_LAMBDA(datum &rest arguments);
 CL_DECLARE((optimize (debug 3)));
@@ -2472,6 +2468,7 @@ int Lisp_O::run() {
   if ( initializer_functions_are_waiting() ) {
     initializer_functions_invoke();
   }
+
 #ifndef SCRAPING
 #define ALL_INITIALIZERS_CALLS
 #include INITIALIZERS_INC_H
@@ -2491,6 +2488,9 @@ int Lisp_O::run() {
     if (oCar(cur) == kw::_sym_debugStartup) {
       printf("%s:%d Setting core:*debug-startup* to T\n", __FILE__, __LINE__);
       _sym_STARdebugStartupSTAR->setf_symbolValue(_lisp->_true());
+    } else if (oCar(cur) == kw::_sym_debugStartupVerbose) {
+      printf("%s:%d Setting core:*debug-startup* to :verbose\n", __FILE__, __LINE__);
+      _sym_STARdebugStartupSTAR->setf_symbolValue(kw::_sym_verbose);
     } else if (oCar(cur) == kw::_sym_exit_backtrace) {
       printf("%s:%d Setting core:*exit-backtrace* to T\n", __FILE__, __LINE__);
       _sym_STARexit_backtraceSTAR->setf_symbolValue(_lisp->_true());

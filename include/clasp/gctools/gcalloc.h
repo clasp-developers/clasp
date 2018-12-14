@@ -1197,7 +1197,9 @@ public:
   static gctools::tagged_pointer<value_type> allocate(const contained_type &val) {
     size_t size = sizeof(VT);
 #ifdef USE_BOEHM
+#ifdef DEBUG_GCWEAK
     printf("%s:%d Allocating WeakPointer with GC_MALLOC_ATOMIC\n", __FILE__, __LINE__);
+#endif
     value_pointer myAddress = (value_pointer)GC_MALLOC_ATOMIC(size);
     my_thread_low_level->_Allocations.registerAllocation(STAMP_null,size);
     if (!myAddress)

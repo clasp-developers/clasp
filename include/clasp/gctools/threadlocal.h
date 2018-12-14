@@ -17,11 +17,13 @@ namespace core {
     mp::Process_sp _Process;
     ObjectFile_sp  _ObjectFile; // Capture jitted object-file's with this
     uint64_t  _Tid;
+    uintptr_t           _BacktraceBasePointer;
     DynamicBindingStack _Bindings;
     ExceptionStack _ExceptionStack;
     MultipleValues _MultipleValues;
     BignumExportBuffer _AsInt64Buffer;
     BignumExportBuffer _AsUint64Buffer;
+    unsigned int read_recursion_depth;
     const InvocationHistoryFrame* _InvocationHistoryStackTop;
     gctools::GCRootsInModule*  _GCRoots;
     void* _sigaltstack_buffer;

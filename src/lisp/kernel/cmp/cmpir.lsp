@@ -829,12 +829,12 @@
          (with-irbuilder (*irbuilder-function-body*)
            (with-new-function-prepare-for-try (,fn *irbuilder-function-alloca*)
              (with-try
-                 (with-dbg-function (,function-name
-                                     :linkage-name *current-function-name*
-                                     :function ,fn
-                                     :function-type ,function-type
-                                     :form ,function-form )
-                   (with-dbg-lexical-block (,function-form)
+              (with-dbg-function (,function-name
+                                  :lineno (core:source-pos-info-lineno core:*current-source-pos-info*)
+                                  :linkage-name *current-function-name*
+                                  :function ,fn
+                                  :function-type ,function-type)
+                   (with-dbg-lexical-block (:lineno (core:source-pos-info-lineno core:*current-source-pos-info*))
                      (when core:*current-source-pos-info*
                        (let ((lineno (core:source-pos-info-lineno core:*current-source-pos-info*)))
                          (dbg-set-current-source-pos-for-irbuilder ,irbuilder-alloca lineno)
@@ -842,10 +842,6 @@
                      (with-irbuilder (*irbuilder-function-body*)
                        (or *the-module* (error "with-new-function *the-module* is NIL"))
                        (cmp-log "with-landing-pad around body%N")
-                       ;; I don't think the with-landing-pad is necessary because with-try provides it
-                       #+(or)
-                       (with-landing-pad (irc-get-cleanup-landing-pad-block ,fn-env)
-                         ,@body)
                        (progn ,@body))))
                ((cleanup)
                 (irc-cleanup-function-environment ,fn-env)
@@ -1121,7 +1117,7 @@ and then the irbuilder-alloca, irbuilder-body."
   "Push code that should be executed when this environment is left"
   (push-metadata env :unwind unwind-code))
 
-(defmacro with-alloca-insert-point-no-cleanup (irbuilder &key alloca init)
+(defmacro with-alloca-insert-point (irbuilder &key alloca (align 8) init)
   "Switch to the alloca-insert-point and generate code to alloca a local variable.
 Within the _irbuilder_ dynamic environment...
 - insert the given alloca instruction using the provided irbuilder 
@@ -1130,31 +1126,9 @@ Within the _irbuilder_ dynamic environment...
 	(found-gs (gensym)))
     `(with-irbuilder (,irbuilder)
        (let ((,alloca-sym ,alloca))
+         (llvm-sys:set-alignment ,alloca-sym ,align) ; force 8-byte alignment
 	 (when ,init (funcall ,init ,alloca-sym))
 	 ,alloca-sym))))
-
-#+(or)
-(defmacro with-allocak-insert-point (env irbuilder
-				    &key alloca init cleanup)
-  "Switch to the alloca-insert-point and generate code to alloca a local variable.
-Within the _irbuilder_ dynamic environment...
-- insert the given alloca instruction using the provided irbuilder 
-- insert the initialization code right after the alloca
-- setup the :cleanup code for this alloca
-- finally restore the insert-point to the end of the basic block that we entered this macro with."
-  (let ((alloca-sym (gensym))
-	(cleanup-gs (gensym))
-	(found-gs (gensym))
-	(metadata-env-gs (gensym)))
-    `(with-irbuilder (,irbuilder)
-       (let ((,alloca-sym ,alloca))
-	 (when ,init (funcall ,init ,alloca-sym))
-	 (when ,cleanup
-	   (multiple-value-bind (,cleanup-gs ,found-gs ,metadata-env-gs) (lookup-metadata env :cleanup)
-	     (push-metadata ,metadata-env-gs :cleanup (list ,cleanup ,alloca-sym))))
-	 ,alloca-sym))
-    ))
-
 
 (defmacro with-irbuilder ((irbuilder) &rest code)
   "Set *irbuilder* to the given IRBuilder"
@@ -1165,29 +1139,29 @@ Within the _irbuilder_ dynamic environment...
 
 
 (defun irc-alloca-tmv (env &key (irbuilder *irbuilder-function-alloca*) (label ""))
-  (with-alloca-insert-point-no-cleanup irbuilder
+  (with-alloca-insert-point irbuilder
     :alloca (llvm-sys::create-alloca *irbuilder* %tmv% (jit-constant-i32 1) label)
     :init (lambda (a) (irc-intrinsic "newTmv" a))))
 
 (defun irc-alloca-return-type (&key (irbuilder *irbuilder-function-alloca*) (label ""))
-  (with-alloca-insert-point-no-cleanup
+  (with-alloca-insert-point
     irbuilder
     :alloca (llvm-sys:create-alloca irbuilder %return_type% (jit-constant-i32 1) label)))
 
 (defun irc-alloca-t* (&key (irbuilder *irbuilder-function-alloca*) (label ""))
   "Allocate a T_O* on the stack"
-  (with-alloca-insert-point-no-cleanup 
+  (with-alloca-insert-point 
     irbuilder
     :alloca (llvm-sys:create-alloca *irbuilder* %t*% (jit-constant-i32 1) label)))
 
 (defun irc-alloca-af* (env &key (irbuilder *irbuilder-function-alloca*) (label ""))
   (cmp-log "irc-alloca-af* label: %s for %s%N" label irbuilder)
-  (with-alloca-insert-point-no-cleanup irbuilder
+  (with-alloca-insert-point irbuilder
     :alloca (llvm-sys::create-alloca *irbuilder* %af*% (jit-constant-i32 1) label)))
 
 (defun irc-alloca-af*-value-frame-of-size (env size &key (irbuilder *irbuilder-function-alloca*) (label ""))
   (cmp-log "irc-alloca-af*-value-frame-of-size label: %s for %s%N" label irbuilder)
-  (with-alloca-insert-point-no-cleanup irbuilder
+  (with-alloca-insert-point irbuilder
     :alloca (llvm-sys::create-alloca *irbuilder* %af*% (jit-constant-i32 1) label)))
 
 (defun irc-alloca-i32-no-init (&key (irbuilder *irbuilder-function-alloca*) (label "i32-"))
@@ -1196,39 +1170,40 @@ Within the _irbuilder_ dynamic environment...
 
 (defun irc-alloca-i8 (env init-val &key (irbuilder *irbuilder-function-alloca*) (label "i8-"))
   "Allocate space for an i8"
-  (with-alloca-insert-point-no-cleanup irbuilder
+  (with-alloca-insert-point irbuilder
     :alloca (llvm-sys::create-alloca *irbuilder* %i8% (jit-constant-i32 1) label)
     :init (lambda (a) (irc-store (jit-constant-i8 init-val) a))))
 
 
 (defun irc-alloca-i32 (env init-val &key (irbuilder *irbuilder-function-alloca*) (label "i32-"))
   "Allocate space for an i32"
-  (with-alloca-insert-point-no-cleanup irbuilder
+  (with-alloca-insert-point irbuilder
     :alloca (llvm-sys::create-alloca *irbuilder* %i32% (jit-constant-i32 1) label)
+    :align 0 ; default
     :init (lambda (a) (irc-store (jit-constant-i32 init-val) a))))
 
 (defun irc-alloca-va_list (&key (irbuilder *irbuilder-function-alloca*) (label "va_list"))
   "Alloca space for an va_list"
-  (with-alloca-insert-point-no-cleanup irbuilder
+  (with-alloca-insert-point irbuilder
     :alloca (llvm-sys::create-alloca *irbuilder* %va_list% (jit-constant-size_t 1) label)
     :init nil))
 
 (defun irc-alloca-size_t (&key (irbuilder *irbuilder-function-alloca*) (label "va_list"))
   "Alloca space for an va_list"
-  (with-alloca-insert-point-no-cleanup irbuilder
+  (with-alloca-insert-point irbuilder
     :alloca (llvm-sys::create-alloca *irbuilder* %size_t% (jit-constant-size_t 1) label)
     :init nil))
 
 (defun irc-alloca-register-save-area (&key (irbuilder *irbuilder-function-alloca*) (label "va_list"))
   "Alloca space for an va_list"
-  (with-alloca-insert-point-no-cleanup irbuilder
+  (with-alloca-insert-point irbuilder
     :alloca (llvm-sys::create-alloca *irbuilder* %register-save-area% (jit-constant-size_t 1) label)
     :init (lambda (alloca)
             (irc-intrinsic "llvm.experimental.stackmap" (jit-constant-i64 1234567) (jit-constant-i32 0) alloca))))
 
 (defun irc-alloca-vaslist (&key (irbuilder *irbuilder-function-alloca*) (label "va_list"))
   "Alloca space for an vaslist and a backup so that it can be rewound"
-  (with-alloca-insert-point-no-cleanup irbuilder
+  (with-alloca-insert-point irbuilder
     :alloca (llvm-sys::create-alloca *irbuilder* %vaslist% (jit-constant-size_t 2) label)
     :init nil))
 

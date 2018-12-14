@@ -514,8 +514,12 @@ have it call the main-function"
            (entry-bb (irc-basic-block-create "entry" fn)))
       (irc-set-insert-point-basic-block entry-bb irbuilder-body)
       (with-irbuilder (irbuilder-body)
-        (when register-library
-          (irc-intrinsic "cc_register_library" fn))
+        #+(or)(let* ((internal-functions-names-global (llvm-sys:get-named-global cmp:*the-module* *internal-functions-names-global-name*))
+              (internal-functions-global (llvm-sys:get-named-global cmp:*the-module* *internal-functions-global-name*))
+              (internal-functions-length-global (llvm-sys:get-named-global cmp:*the-module* *internal-functions-length-global-name*))
+              (internal-functions-names-global-bf (irc-bit-cast internal-functions-names-global %i8*% "internal-functions-names-ptr"))
+              (internal-functions-global-bf (irc-bit-cast internal-functions-global %i8*% "internal-functions-ptr")))
+          (irc-intrinsic "cc_register_library" fn internal-functions-names-global-bf internal-functions-global-bf internal-functions-length-global))
         (let* ((bc-bf (irc-bit-cast main-function %fn-start-up*% "fnptr-pointer"))
                (_     (irc-intrinsic "cc_register_startup_function" bc-bf))
                (_     (irc-ret-void))))
@@ -528,7 +532,7 @@ have it call the main-function"
          (fn (irc-simple-function-create
               "MAIN"
               %fn-start-up%
-              'llvm-sys:external-linkage
+              cmp:*default-linkage*
               *the-module*
               :argument-names +fn-start-up-argument-names+)))
     (let* ((irbuilder-body (llvm-sys:make-irbuilder *llvm-context*))
@@ -575,16 +579,21 @@ have it call the main-function"
                                     (llvm-sys:constant-pointer-null-get %i8*%)))))
    "llvm.global_ctors"))
 
-(defun make-boot-function-global-variable (module func-name &key register-library)
+(defun make-boot-function-global-variable (module func-designator &key register-library)
   "* Arguments
 - module :: An llvm module
 - func-ptr :: An llvm function
 * Description
 Add the global variable llvm.global_ctors to the Module (linkage appending)
 and initialize it with an array consisting of one function pointer."
-  (let ((startup-fn (llvm-sys:get-function module func-name)))
+  (let ((startup-fn (cond
+                      ((stringp func-designator)
+                        (llvm-sys:get-function module func-designator))
+                      ((typep func-designator 'llvm-sys:function)
+                       func-designator)
+                      (t (error "~a must be a function name or llvm-sys:function" func-designator)))))
     (unless startup-fn
-      (error "Could not find ~a in module" func-name))
+      (error "Could not find ~a in module" func-designator))
     #+(or)(unless (eql module (llvm-sys:get-parent func-ptr))
             (error "The parent of the func-ptr ~a (a module) does not match the module ~a" (llvm-sys:get-parent func-ptr) module))
     (let* ((global-ctor (add-global-ctor-function module startup-fn register-library)))
@@ -729,6 +738,7 @@ and initialize it with an array consisting of one function pointer."
 
 (defvar *compile-file-pathname* nil "Store the pathname of the currently compiled file")
 (defvar *compile-file-truename* nil "Store the truename of the currently compiled file")
+(defvar *compile-file-unique-symbol-prefix* "" "Store a unique prefix for symbols that are external-linkage")
 (defvar *compile-file-source-file-info* nil "Store the SourceFileInfo object for the compile-file target")
 
 (defvar *source-debug-pathname*)

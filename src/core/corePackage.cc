@@ -110,8 +110,6 @@ THE SOFTWARE.
 #include <clasp/core/null.h>
 #include <clasp/core/singleDispatchGenericFunction.h>
 #include <clasp/core/specialForm.h>
-#include <clasp/core/sexpLoadArchive.h>
-#include <clasp/core/sexpSaveArchive.h>
 #include <clasp/core/metaClass.h>
 #include <clasp/core/bignum.h>
 #include <clasp/clbind/class_rep.h>
@@ -128,7 +126,8 @@ const char *CorePkg_nicknames[] = {
     "SYSTEM", "sys", "SYS", "si", "SI", "" /*guard*/
 };
 SYMBOL_EXPORT_SC_(CorePkg, STARuse_cleavir_compilerSTAR);  // nil (clasp) or T (cleavir)
-
+SYMBOL_EXPORT_SC_(CorePkg, STARstack_top_hintSTAR);
+SYMBOL_EXPORT_SC_(CorePkg, _PLUS_contab_name_PLUS_);
 SYMBOL_EXPORT_SC_(KeywordPkg,object);
 SYMBOL_EXPORT_SC_(KeywordPkg,fasl);
 SYMBOL_EXPORT_SC_(KeywordPkg,bitcode);
@@ -137,6 +136,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg, verbose);
 SYMBOL_EXPORT_SC_(KeywordPkg, pause_pid);
 SYMBOL_EXPORT_SC_(KeywordPkg, exit_backtrace);
 SYMBOL_EXPORT_SC_(CorePkg, bclasp_compiler_macro);
+SYMBOL_EXPORT_SC_(CorePkg, STARcurrent_dlopen_handleSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARuseParallelBuildSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARreader_generate_cstSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARreader_cst_resultSTAR);
@@ -314,6 +314,7 @@ SYMBOL_EXPORT_SC_(CorePkg, sicl_syntax_type);
 SYMBOL_EXPORT_SC_(KeywordPkg, create);
 SYMBOL_EXPORT_SC_(KeywordPkg, append);
 SYMBOL_EXPORT_SC_(KeywordPkg, debugStartup);
+SYMBOL_EXPORT_SC_(KeywordPkg, debugStartupVerbose);
 SYMBOL_EXPORT_SC_(KeywordPkg, cclasp);
 SYMBOL_EXPORT_SC_(KeywordPkg, bclasp);
 SYMBOL_EXPORT_SC_(KeywordPkg, load);
@@ -569,6 +570,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg, typeError);
 SYMBOL_EXPORT_SC_(KeywordPkg, datum);
 SYMBOL_EXPORT_SC_(KeywordPkg, expectedType);
 SYMBOL_EXPORT_SC_(ClPkg, typeError);
+SYMBOL_EXPORT_SC_(CorePkg, STARliteral_print_objectSTAR);
 SYMBOL_EXPORT_SC_(ClPkg, printObject);
 SYMBOL_EXPORT_SC_(ClPkg, makeCondition);
 SYMBOL_EXPORT_SC_(ClPkg, controlError);
@@ -1033,6 +1035,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   cl::_sym_STARtrace_outputSTAR->defparameter(SynonymStream_O::make(ext::_sym__PLUS_processErrorOutput_PLUS_));
   cl::_sym_STARdebug_ioSTAR->defparameter(TwoWayStream_O::make(stdin_stream, stdout_stream));
   cl::_sym_STARquery_ioSTAR->defparameter(TwoWayStream_O::make(stdin_stream, stdout_stream));
+  core::_sym_STARstack_top_hintSTAR->defparameter(_Nil<T_O>());
   _sym_STARdocumentation_poolSTAR->defparameter(Cons_O::createList(HashTableEql_O::create_default(), SimpleBaseString_O::make("help_file.dat")));
   _sym_STARdocumentation_poolSTAR->exportYourself();
   TwoWayStream_sp terminal = gc::As_unsafe<TwoWayStream_sp>(TwoWayStream_O::make(stdin_stream, stdout_stream));
@@ -1095,6 +1098,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARdebugLoadTimeValuesSTAR->defparameter(_Nil<T_O>());
   _sym_STARdebugEvalSTAR->defparameter(_Nil<T_O>());
   _sym_STARdebugStartupSTAR->defparameter(_Nil<T_O>());
+  _sym_STARliteral_print_objectSTAR->defparameter(_Nil<T_O>());
   _sym_STARdebugInterpretedFunctionsSTAR->defparameter(_Nil<T_O>());
   _sym_STARuseInterpreterForEvalSTAR->defparameter(_Nil<T_O>()); // _lisp->_true());
   _sym_STARcxxDocumentationSTAR->defparameter(_Nil<T_O>());
@@ -1147,6 +1151,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   ext::_sym_STARinspectorHookSTAR->defparameter(_Nil<T_O>());
   ext::_sym_STARclasp_clang_pathSTAR->defparameter(SimpleBaseString_O::make(CLASP_CLANG_PATH));
   _sym_STARloadSearchListSTAR->defparameter(_Nil<T_O>());
+  _sym_STARcurrent_dlopen_handleSTAR->defparameter(_Nil<T_O>());
   _sym_STARdebugInterpretedClosureSTAR->defparameter(_Nil<T_O>());
   _sym_STARdebugFlowControlSTAR->defparameter(_Nil<T_O>());
   _sym_STARbacktraceFrameSelectorHookSTAR->defparameter(_Nil<T_O>());
@@ -1172,10 +1177,12 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARallow_with_interruptsSTAR->defparameter(_lisp->_true());
   _sym_STARexit_backtraceSTAR->defparameter(_Nil<core::T_O>());
   clos::_sym__PLUS_the_standard_class_PLUS_->defparameter(_lisp->_Roots._TheStandardClass);
+  core::_sym__PLUS_contab_name_PLUS_->defparameter(SimpleBaseString_O::make(CONTAB_NAME));
   _sym_STARdebug_threadsSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARdebug_fastgfSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARdebug_dispatchSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARdebug_valuesSTAR->defparameter(_Nil<core::T_O>());
+  _sym_STARforeign_data_reader_callbackSTAR->defparameter(_Nil<core::T_O>());
   int optimization_level = 3;
   const char* optLevel = getenv("CLASP_OPTIMIZATION_LEVEL");
   if (optLevel) {

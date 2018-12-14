@@ -154,7 +154,7 @@ Finally, just bare functions can be outcomes. Used in a few situations. First fo
 
 Currently all functions, as well as effective method outcomes, go through basically the same codegen path, so they have the same protocol- they take two arguments, first a vaslist of the gf arguments, then the next-methods. The next-methods are always NIL. FIXME.
 
-Outcomes are computed by compute-effective-method-function-maybe-optimize.
+Outcomes are computed by compute-outcome.
 
 Modification
 ============

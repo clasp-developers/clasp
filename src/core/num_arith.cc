@@ -102,7 +102,7 @@ CL_DEFUN Integer_sp cl__gcd(List_sp nums) {
 gc::Fixnum gcd(gc::Fixnum a, gc::Fixnum b)
 {
     if (a == 0)
-      return (abs(b));
+      return (std::abs(b));
     return gcd(b % a, a);
 }
 

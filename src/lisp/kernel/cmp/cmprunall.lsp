@@ -38,11 +38,11 @@ load-time-value manager (true - in COMPILE-FILE) or not (false - in COMPILE)."
 (defvar *run-all-result*)
 
 
-(defmacro with-make-new-run-all ((run-all-fn) &body body)
+(defmacro with-make-new-run-all ((run-all-fn &optional (name-suffix "")) &body body)
   "Set up a run-all function in the current module, return the run-all-fn"
   (let ((irbuilder-alloca (gensym "ltv-irbuilder-alloca"))
 	(irbuilder-body (gensym "ltv-irbuilder-body")))
-    `(let ((,run-all-fn (irc-simple-function-create core:+run-all-function-name+
+    `(let ((,run-all-fn (irc-simple-function-create (core:bformat nil "%s%s" core:+run-all-function-name+ ,name-suffix)
                                                     %fn-start-up%
                                                     'llvm-sys:internal-linkage
                                                     *the-module*
@@ -57,10 +57,10 @@ load-time-value manager (true - in COMPILE-FILE) or not (false - in COMPILE)."
               (*current-function* ,run-all-fn)
               (*run-all-objects* nil))
          (cmp:with-dbg-function ("runAll-dummy-name"
+                                 :lineno 0
                                  :linkage-name (llvm-sys:get-name ,run-all-fn)
                                  :function ,run-all-fn
-                                 :function-type cmp:%fn-prototype%
-                                 :form nil) ;; No form for run-all
+                                 :function-type cmp:%fn-prototype%)
            ;; Set up dummy debug info for these irbuilders
            (let ((entry-bb (irc-basic-block-create "entry" ,run-all-fn)))
              (irc-set-insert-point-basic-block entry-bb ,irbuilder-alloca))

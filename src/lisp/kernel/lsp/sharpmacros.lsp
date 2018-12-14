@@ -1,6 +1,7 @@
 ;;;; reading circular data: the #= and ## readmacros
 
-(in-package :core)
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (core:select-package :core))
 
 (defun %reader-error (stream msg &rest arguments)
   (apply #'simple-reader-error stream msg arguments))
@@ -22,7 +23,7 @@
                   (unless (eq d (cdr tree))
                     (rplacd tree d))))
                ((arrayp tree)
-                (do ((i 0 (1+ i)))
+                (do ((i 0 (+ i 1)))
                     ((>= i (array-total-size tree)))
                   (let* ((old (row-major-aref tree i))
                          (new (circle-subst circle-table old)))
@@ -49,7 +50,7 @@
                   (dolist (pair to-add)
                     (setf (gethash (car pair) tree) (cdr pair)))))
                ;; Do something for builtin objects
-               ((typep tree 'cxx-object)
+               ((core:cxx-object-p tree)
                 #+(or)(error "Handle cxx-object in circle-subst tree: ~s" tree)
                 (let ((record (make-record-patcher circle-table)))
                   (patch-object tree record)))
@@ -118,8 +119,18 @@
           (t
            (core:sharp-equal-wrapper-value entry)))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Reader macro for builtin objects
+;;
+(defun read-cxx-object (stream char n)
+  (declare (ignore char))
+  (let ((description (read stream t nil t)))
+    (apply #'core:load-cxx-object (car description) (cdr description))))
+
 (defun sharpmacros-enhance ()
   (set-dispatch-macro-character #\# #\= #'sharp-equal)
-  (set-dispatch-macro-character #\# #\# #'sharp-sharp))
+  (set-dispatch-macro-character #\# #\# #'sharp-sharp)
+  (set-dispatch-macro-character #\# #\I #'read-cxx-object))
 
 (sharpmacros-enhance)

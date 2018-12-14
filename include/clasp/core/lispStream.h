@@ -471,13 +471,14 @@ public: // Simple default ctor/dtor
 public:    // ctor/dtor for classes with shared virtual base
            //    explicit StringStream_O(core::Instance_sp const& mc) : T_O(mc),AnsiStream(mc) {};
            //    virtual ~StringStream_O() {};
-private: // instance variables here
+public: // instance variables here
   String_sp _Contents;
   gctools::Fixnum _InputPosition;
   gctools::Fixnum _InputLimit;
 
 public: // Functions here
   static T_sp make(const string &str);
+  string peer(size_t len);
 }; // StringStream class
 };
 

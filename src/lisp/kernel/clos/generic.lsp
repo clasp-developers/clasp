@@ -180,25 +180,27 @@
   (set-funcallable-instance-function gfun (compute-discriminating-function gfun))
   gfun)
 
-;;; FIXME: break up the two ways of using this function.
-(defun initialize-generic-function-specializer-profile (gfun &key initial-vec errorp)
-  (loop for profile = (generic-function-specializer-profile gfun)
-     for new-profile = (or initial-vec
-                           (if (slot-boundp gfun 'lambda-list)
-                               (let ((lambda-list (generic-function-lambda-list gfun)))
-                                 (make-array (length (lambda-list-required-arguments lambda-list))
-                                             :initial-element nil))
-                               (if errorp
-                                   (error "The specializer-profile could not be initialized - lambda list of ~a was unbound" gfun)
-                                   nil)))
-     for exchange = (generic-function-specializer-profile-compare-exchange gfun profile new-profile)
-     until (eq exchange new-profile)))
+(defun force-generic-function-specializer-profile (gfun vec)
+  (loop for existing = (generic-function-specializer-profile gfun)
+        for exchange = (generic-function-specializer-profile-compare-exchange gfun existing vec)
+        until (eq exchange vec)))
+
+(defun initialize-generic-function-specializer-profile (gfun &key (errorp t))
+  (cond ((slot-boundp gfun 'lambda-list)
+         (let ((lambda-list (generic-function-lambda-list gfun)))
+           (force-generic-function-specializer-profile
+            gfun
+            (make-array (length (lambda-list-required-arguments lambda-list))
+                        :initial-element nil))))
+        (errorp
+         (error "The specializer profile could not be initialized - lambda list of ~a was unbound"
+                gfun))))
   
 (defmethod shared-initialize :after ((gfun generic-function) slot-names &rest initargs)
   "In Clasp we need to initialize the specializer-profile with an 
    array of (length (lambda-list-required-arguments lambda-list)) full of nil."
   (unless (generic-function-specializer-profile gfun)
-    (initialize-generic-function-specializer-profile gfun))
+    (initialize-generic-function-specializer-profile gfun :errorp nil))
   gfun)
 
 (defmethod shared-initialize :after ((gfun standard-generic-function) slot-names
@@ -210,12 +212,20 @@
   (update-dependents gfun initargs))
 
 (defmethod reinitialize-instance :after ((gfun standard-generic-function) &rest initargs)
-  (declare (ignore initargs))
-  ;; erase any call history and invalidate
-  (loop for call-history = (generic-function-call-history gfun)
-        for exchange = (generic-function-call-history-compare-exchange gfun call-history nil)
-        until (null exchange))
-  (invalidate-discriminating-function gfun))
+  ;; Check if the redefinition is trivial.
+  ;; I am not sure of the fine details here. What happens if you reinitialize-instance
+  ;; and change the method-combination, but not the methods to have compatible qualifiers,
+  ;; for example? So what I'm going with is a somewhat magical minimum:
+  ;; ENSURE-GENERIC-FUNCTION-USING-CLASS below calls with :name and whatever args it was
+  ;; passed, and DEFMETHOD will pass with no extra args.
+  ;; By incorporating this case, we avoid erasing the entire call history after any defmethod.
+  ;; Note that ADD-METHOD is smart and does modify the call history to include the new method,
+  ;; So things will remain consistent.
+  (unless (and (= (length initargs) 2)
+               (eq (first initargs) :name))
+    ;; OK, something complicated. Erase.
+    (erase-generic-function-call-history gfun)
+    (invalidate-discriminating-function gfun)))
 
 (defun associate-methods-to-gfun (name &rest methods)
   (let ((gfun (fdefinition name)))

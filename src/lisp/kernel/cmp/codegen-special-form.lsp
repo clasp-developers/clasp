@@ -176,7 +176,7 @@
 ;; MULTIPLE-VALUE-CALL
 
 (defun codegen-multiple-value-call (result rest env)
-  (with-dbg-lexical-block (rest)
+  (with-dbg-lexical-block ()
     (let* ((function-form (car rest))
            (forms (cdr rest)))
       (if (= (length forms) 1)
@@ -328,7 +328,7 @@ env is the parent environment of the (result-af) value frame"
 	    (codegen target-ref exp evaluate-env)))))))
 
 (defun codegen-let/let* (operator-symbol result parts env)
-  (with-dbg-lexical-block (parts)
+  (with-dbg-lexical-block ()
     (let ((assignments (car parts))
 	  (body (cdr parts)))
       (multiple-value-bind (variables expressions)
@@ -398,6 +398,23 @@ env is the parent environment of the (result-af) value frame"
                (compiler-error type "unknown type for typeq"))
              (compile-header-check header-value-min-max object-raw thenb elseb))))))))
 
+(defmacro define-fixnum-cmp (name operator)
+  `(defun ,name (cond env thenb elseb)
+     (let ((n1form (second cond)) (n2form (third cond))
+           (n1 (irc-alloca-t* :label "fixnum-cmp-1"))
+           (n2 (irc-alloca-t* :label "fixnum-cmp-2")))
+       (codegen n1 n1form env)
+       (codegen n2 n2form env)
+       ;; FIXME: vary the type by abi
+       (let* ((n1x (irc-ptr-to-int (irc-load n1) %i64%))
+              (n2x (irc-ptr-to-int (irc-load n2) %i64%))
+              (test (,operator n1x n2x "fixnum-cmp")))
+         (irc-cond-br test thenb elseb)))))
+
+(define-fixnum-cmp compile-fixnum-less-condition irc-icmp-slt)
+(define-fixnum-cmp compile-fixnum-lte-condition irc-icmp-sle)
+(define-fixnum-cmp compile-fixnum-equal-condition irc-icmp-eq)
+
 (defun compile-general-condition (cond env thenb elseb)
   "Generate code for cond that branches to one of the provided successor blocks"
   (let ((test-temp-store (irc-alloca-t* :label "if-cond-tsp")))
@@ -409,10 +426,18 @@ env is the parent environment of the (result-af) value frame"
       (irc-cond-br test-result thenb elseb))))
 
 (defun compile-if-cond (cond env thenb elseb)
-  (cond ((and (consp cond) (eq (first cond) 'cmp::typeq))
+  (if (consp cond)
+      (case (first cond)
+        ((cmp::typeq)
          (compile-typeq-condition cond env thenb elseb))
-        (t (compile-general-condition cond env thenb elseb))))
-
+        ((cleavir-primop:fixnum-less)
+         (compile-fixnum-less-condition cond env thenb elseb))
+        ((cleavir-primop:fixnum-not-greater)
+         (compile-fixnum-lte-condition cond env thenb elseb))
+        ((cleavir-primop:fixnum-equal)
+         (compile-fixnum-equal-condition cond env thenb elseb))
+        (otherwise (compile-general-condition cond env thenb elseb)))
+      (compile-general-condition cond env thenb elseb)))
 
 ;;; TAGBODY, GO
 
@@ -538,7 +563,7 @@ jump to blocks within this tagbody."
   (let* ((block-symbol (car rest))
          (body (cdr rest)))
     (or (symbolp block-symbol) (error "The block name ~a is not a symbol" block-symbol))
-    (with-dbg-lexical-block (body)
+    (with-dbg-lexical-block ()
       (multiple-value-bind (block-env make-block-frame-instruction make-block-frame-instruction-arguments)
           (irc-make-block-environment-set-parent block-symbol env)
 	(let ((block-start (irc-basic-block-create
@@ -656,7 +681,7 @@ jump to blocks within this tagbody."
 	(codegen-closure target fn-lambda closure-env)))))
 
 (defun codegen-flet/labels (operator-symbol result rest env)
-  (with-dbg-lexical-block (rest)
+  (with-dbg-lexical-block ()
     (let* ((functions (car rest))
 	   (body (cdr rest))
 	   (function-env (irc-new-function-value-environment env :functions functions)))
@@ -744,7 +769,7 @@ jump to blocks within this tagbody."
 ;;; LOCALLY
 
 (defun codegen-locally (result rest env)
-  (with-dbg-lexical-block (rest)
+  (with-dbg-lexical-block ()
     (multiple-value-bind (declarations code doc-string specials)
 	(process-declarations rest nil)
       (let ((new-env (irc-new-unbound-value-environment-of-size

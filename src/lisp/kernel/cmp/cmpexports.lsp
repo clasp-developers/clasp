@@ -4,16 +4,21 @@
           *debug-link-options* ;; A list of strings to inject into link commands
           *compile-file-debug-dump-module*  ;; Dump intermediate modules
           *compile-debug-dump-module*  ;; Dump intermediate modules
+          *default-linkage*
+          *default-compile-linkage*
           quick-module-dump
           quick-message-dump
           write-bitcode
           load-bitcode
           *irbuilder*
+          *compile-file-unique-symbol-prefix*
           %ltv*%
           irc-function-create
           irc-bclasp-function-create
           irc-cclasp-function-create
           %fn-prototype%
+          +fn-prototype-argument-names+
+          %fn-prototype*%
           *cleavir-compile-file-hook*
           *cleavir-compile-hook*
           *compile-print*
@@ -49,8 +54,6 @@
           +general-tag+
           %i1%
           %exception-struct%
-          %fn-prototype%
-          +fn-prototype-argument-names+
           %i32%
           %i64%
           %i8*%
@@ -182,6 +185,8 @@
           with-begin-end-catch
           preserve-exception-info
           *dbg-generate-dwarf*
+          *dbg-current-function*
+          *dbg-current-scope*
           with-new-function
           with-dbg-function
           with-dbg-lexical-block
@@ -273,8 +278,6 @@
           with-top-level-form
           with-literal-table
           evaluate-function-into-load-time-value
-          generate-run-time-code-for-closurette
-          )
-        )
+          generate-run-time-code-for-closurette))
 
 (use-package :literal :cmp)

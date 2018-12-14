@@ -229,11 +229,28 @@
    (%rest-alloc :initarg :rest-alloc :reader rest-alloc)))
 
 (defmethod cleavir-ir-graphviz:label ((instr bind-va-list-instruction))
-  )
+  (format nil "bind-va-list ~a"
+          (mapcar #'cleavir-ir-graphviz::format-item (cleavir-ir:lambda-list instr))))
 
 (defmethod cleavir-ir:clone-initargs append ((instruction bind-va-list-instruction))
   (list :lambda-list (cleavir-ir:lambda-list instruction)
         :rest-alloc (rest-alloc instruction)))
+
+;;; Following two copied from enter-instruction. i mean most of this is.
+;;; Maintain consistency of lambda list with outputs.
+(defmethod cleavir-ir:substitute-output :after (new old (instruction bind-va-list-instruction))
+  (setf (cleavir-ir:lambda-list instruction)
+        (subst new old (cleavir-ir:lambda-list instruction) :test #'eq)))
+
+(defmethod (setf cleavir-ir:outputs) :before (new-outputs (instruction bind-va-list-instruction))
+  (let ((old-lambda-outputs (rest (cleavir-ir:outputs instruction)))
+        (new-lambda-outputs (rest new-outputs)))
+    ;; FIXME: Not sure what to do if the new and old outputs are different lengths.
+    ;; For now we're silent.
+    (setf (cleavir-ir:lambda-list instruction)
+          (sublis (mapcar #'cons old-lambda-outputs new-lambda-outputs)
+                  (cleavir-ir:lambda-list instruction)
+                  :test #'eq))))
 
 (defun make-bind-va-list-instruction (lambda-list va-list rest-alloc &optional (successor nil successor-p))
   (make-instance 'bind-va-list-instruction
@@ -326,7 +343,8 @@
 	  (princ original-object s)))))
 
 (defmethod cleavir-ir:clone-initargs append ((instruction precalc-value-instruction))
-  (list :original-object (precalc-value-instruction-original-object instruction)))
+  (list :original-object (precalc-value-instruction-original-object instruction)
+        :index (precalc-value-instruction-index instruction)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
 ;;;
@@ -383,6 +401,10 @@
           do (format stream "  ~a -> ~a [color = pink, style = dashed];~%"
                      me id)))
 
+;;; This will probably break if the CATCH is copied too.
+(defmethod cleavir-ir:clone-initargs append ((instr invoke-instruction))
+  (list :destinations (destinations instr)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Instruction MULTIPLE-VALUE-INVOKE-INSTRUCTION.
@@ -391,6 +413,9 @@
   ((%destinations :accessor destinations :initarg :destinations)))
 
 (defmethod cleavir-ir-graphviz:label ((instruction multiple-value-invoke-instruction)) "mv-invoke")
+
+(defmethod cleavir-ir:clone-initargs append ((instr multiple-value-invoke-instruction))
+  (list :destinations (destinations instr)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -428,5 +453,3 @@
 (defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction setf-fdefinition-instruction)) nil)
 
 (defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction throw-instruction)) nil)
-
-

@@ -86,8 +86,8 @@ THE SOFTWARE.
 // GLOBAL VARS
 // ---------------------------------------------------------------------------
 
-static const std::string CLASP_DEFAULT_PROGRAM_NAME( "clasp");
-static const std::string CLASP_DEFAULT_EXE_NAME( CLASP_DEFAULT_PROGRAM_NAME );
+#define CLASP_DEFAULT_PROGRAM_NAME "clasp"
+#define CLASP_DEFAULT_EXE_NAME CLASP_DEFAULT_PROGRAM_NAME
 
 static std::string g_exe_name;      // filename of the executable
 static std::string g_program_name;  // logical / settable program name
@@ -228,6 +228,7 @@ bool abort_flag( void )
 // - PROGRAM NAME
 void set_program_name( std::string program_name = CLASP_DEFAULT_PROGRAM_NAME )
 {
+//  printf("%s:%d:%s program_name = %s\n", __FILE__, __LINE__, __FUNCTION__, program_name.c_str());
   g_program_name = program_name;
 #if 0
   std::transform( g_program_name.begin(), g_program_name.end(), g_program_name.begin(),
@@ -325,7 +326,8 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
   serveEvent::ServeEventExposer_O ServeEventPkg(_lisp);
   asttooling::AsttoolingExposer_O AsttoolingPkg(_lisp);
 
-  lispHolder.startup(argc, argv, program_name().c_str() ); // was "CANDO_APP"
+  std::string progname = program_name();
+  lispHolder.startup(argc, argv, progname.c_str()); // was "CANDO_APP"
 
   _lisp->installPackage(&GcToolsPkg);
   _lisp->installPackage(&ClbindPkg);

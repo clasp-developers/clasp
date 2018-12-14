@@ -70,7 +70,9 @@
   (%literal-value nil))
 
 (defun alloca (type size &optional (label ""))
-  (llvm-sys:create-alloca cmp:*irbuilder-function-alloca* type (%i32 size) label))
+  (let ((alloca (llvm-sys:create-alloca cmp:*irbuilder-function-alloca* type (%i32 size) label)))
+    (llvm-sys:set-alignment alloca 8)   ; use 8-byte alignment
+    alloca))
 
 (defun alloca-vaslist (&optional (label "vaslist"))
   (cmp:irc-alloca-vaslist :label label))
@@ -104,16 +106,12 @@
 (defun alloca-t* (&optional (label "var"))
   (let ((instr (alloca cmp:%t*% 1 label)))
     #+(or)(cc-dbg-when *debug-log*
-		       (format *debug-log* "          alloca-t*   cmp:*irbuilder-function-alloca* = ~a~%" cmp:*irbuilder-function-alloca*)
-		       (format *debug-log* "          Wrote ALLOCA ~a into function ~a~%" instr (llvm-sys:get-name (instruction-llvm-function instr))))
+                       (format *debug-log* "          alloca-t*   cmp:*irbuilder-function-alloca* = ~a~%" cmp:*irbuilder-function-alloca*)
+                       (format *debug-log* "          Wrote ALLOCA ~a into function ~a~%" instr (llvm-sys:get-name (instruction-llvm-function instr))))
     instr))
 
 (defun alloca-mv-struct (&optional (label "V"))
   (cmp:irc-alloca-mv-struct :label label))
-#||
-  (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
-    (llvm-sys:create-alloca cmp:*irbuilder* cmp:%mv-struct% (%i32 1) label)))
-||#
 
 (defun %load-or-null (obj)
   (if obj

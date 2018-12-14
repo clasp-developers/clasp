@@ -52,8 +52,11 @@ THE SOFTWARE.
 #include <clasp/core/functor.h>
 #include <clasp/core/compiler.h>
 #include <clasp/core/sequence.h>
+#include <clasp/core/posixTime.h>
 #include <clasp/core/debugger.h>
 #include <clasp/core/pathname.h>
+#include <clasp/core/pointer.h>
+#include <clasp/core/posixTime.h>
 #include <clasp/core/unixfsys.h>
 #include <clasp/core/hashTableEqual.h>
 #include <clasp/core/environment.h>
@@ -65,6 +68,88 @@ THE SOFTWARE.
 #include <clasp/core/environment.h>
 #include <clasp/llvmo/intrinsics.h>
 #include <clasp/core/wrappers.h>
+
+
+namespace core {
+
+
+MaybeDebugStartup::MaybeDebugStartup(void* fp, const char* n) : fptr(fp), start_dispatcher_count(0) {
+  if (n) this->name = n;
+  if (core::_sym_STARdebugStartupSTAR->symbolValue().notnilp()) {
+    this->start = PosixTime_O::createNow();
+    if (comp::_sym_dispatcher_count->fboundp()) {
+      core::T_sp nu = core::eval::funcall(comp::_sym_dispatcher_count);
+      this->start_dispatcher_count = nu.unsafe_fixnum();
+    } else {
+      this->start_dispatcher_count = 0;
+    }
+  }
+};
+
+MaybeDebugStartup::~MaybeDebugStartup() {
+  if (core::_sym_STARdebugStartupSTAR->symbolValue().notnilp()
+      && this->start) {
+    PosixTime_sp end = PosixTime_O::createNow();
+    PosixTimeDuration_sp diff = end->sub(this->start);
+    mpz_class ms = diff->totalMicroseconds();
+    size_t end_dispatcher_count = 0;
+    if (comp::_sym_dispatcher_count->fboundp()) {
+      core::T_sp nu = core::eval::funcall(comp::_sym_dispatcher_count);
+      end_dispatcher_count = nu.unsafe_fixnum();
+    }
+    size_t dispatcher_delta = end_dispatcher_count - this->start_dispatcher_count;
+    std::string name_ = this->name;
+    if (name_=="") {
+      Dl_info di;
+      dladdr((void*)this->fptr,&di);
+      name_ = di.dli_sname;
+      if (name_ == "") {
+        stringstream ss;
+        ss << (void*)this->fptr;
+        name_ = ss.str();
+      }
+    }
+    printf("%s us %zu gfds : %s\n", _rep_(Integer_O::create(ms)).c_str(), dispatcher_delta, name_.c_str());
+  }
+}
+
+
+#ifdef CLASP_THREADS
+mp::SharedMutex global_internal_functions_mutex;
+#endif
+struct InternalFunctions {
+  const claspFunction* _InternalFunctions;
+  const char** _InternalFunctionNames;
+  size_t       _Length;
+  InternalFunctions(const claspFunction* funcs, const char** names, size_t len) : _InternalFunctions(funcs), _InternalFunctionNames(names), _Length(len) {};
+};
+  std::map<uintptr_t,InternalFunctions> global_internal_functions;
+
+void register_internal_functions(uintptr_t handle, const claspFunction* funcs, const char** names, size_t len) {
+//  printf("%s:%d:%s handle -> %p  funcs -> %p  names -> %p  len: %lu\n", __FILE__, __LINE__, __FUNCTION__, (void*)handle, (void*)funcs, (void*)names, len);
+  WITH_READ_WRITE_LOCK(global_internal_functions_mutex);
+  global_internal_functions.emplace(std::make_pair(handle,InternalFunctions(funcs,names,len)));
+}
+
+
+claspFunction lookup_internal_functions(uintptr_t handle, const char* name) {
+  WITH_READ_LOCK(global_internal_functions_mutex);
+  std::map<uintptr_t,InternalFunctions>::iterator fi = global_internal_functions.find(handle);
+  if (fi == global_internal_functions.end()) {
+    SIMPLE_ERROR(BF("Could not find the library with handle %lu") % handle);
+  }
+  for ( size_t num=0; num< fi->second._Length; ++num ) {
+    const char* lookup_name = fi->second._InternalFunctionNames[num];
+    if (strcmp(lookup_name,name)==0) {
+      return fi->second._InternalFunctions[num];
+    }
+  }
+  SIMPLE_ERROR(BF("Could not find internal function %s") % name);
+};
+
+  
+};
+
 
 
 namespace core {
@@ -127,18 +212,31 @@ void initializer_functions_invoke()
 };
 
 
+
+
 namespace core {
 
 #define STARTUP_FUNCTION_CAPACITY_INIT 128
 #define STARTUP_FUNCTION_CAPACITY_MULTIPLIER 2
 size_t global_startup_capacity = 0;
 size_t global_startup_count = 0;
+#ifdef CLASP_THREADS
+mp::SharedMutex* global_startup_functions_mutex = NULL;
+#endif
 fnStartUp* global_startup_functions = NULL;
 
 void register_startup_function(fnStartUp fptr)
 {
 #ifdef DEBUG_STARTUP
   printf("%s:%d In register_startup_function --> %p\n", __FILE__, __LINE__, fptr);
+#endif
+#ifdef CLASP_THREADS
+  if (global_Started) {
+    if (global_startup_functions_mutex==NULL) {
+      global_startup_functions_mutex = new mp::SharedMutex();
+    }
+    (*global_startup_functions_mutex).lock();
+  }
 #endif
   if ( global_startup_functions == NULL ) {
     global_startup_capacity = STARTUP_FUNCTION_CAPACITY_INIT;
@@ -152,6 +250,11 @@ void register_startup_function(fnStartUp fptr)
   }
   global_startup_functions[global_startup_count] = fptr;
   global_startup_count++;
+#ifdef CLASP_THREADS
+  if (global_Started) {
+    (*global_startup_functions_mutex).unlock();
+  }
+#endif
 };
 
 /*! Return the number of startup_functions that are waiting to be run*/
@@ -160,19 +263,32 @@ size_t startup_functions_are_waiting()
 #ifdef DEBUG_STARTUP
   printf("%s:%d startup_functions_are_waiting returning %" PRu "\n", __FILE__, __LINE__, global_startup_count );
 #endif
+#ifdef CLASP_THREADS
+  if (global_startup_functions_mutex==NULL) {
+    global_startup_functions_mutex = new mp::SharedMutex();
+  }
+  WITH_READ_LOCK((*global_startup_functions_mutex));
+#endif
   return global_startup_count;
 };
 
 /*! Invoke the startup functions and clear the array of startup functions */
 void startup_functions_invoke()
 {
+  size_t startup_count = 0;
+  fnStartUp* startup_functions = NULL;
+  {
+#ifdef CLASP_THREADS
+    WITH_READ_LOCK((*global_startup_functions_mutex));
+#endif
   // Save the current list
-  size_t startup_count = global_startup_count;
-  fnStartUp* startup_functions = global_startup_functions;
+    startup_count = global_startup_count;
+    startup_functions = global_startup_functions;
   // Prepare to accumulate a new list
-  global_startup_count = 0;
-  global_startup_capacity = 0;
-  global_startup_functions = NULL;
+    global_startup_count = 0;
+    global_startup_capacity = 0;
+    global_startup_functions = NULL;
+  }
   // Invoke the current list
   if (startup_count>0) {
 #ifdef DEBUG_STARTUP
@@ -185,6 +301,7 @@ void startup_functions_invoke()
 #endif
     for ( size_t i = 0; i<startup_count; ++i ) {
       fnStartUp fn = startup_functions[i];
+      MaybeDebugStartup startup((void*)fn);
 #ifdef DEBUG_STARTUP
       printf("%s:%d     About to invoke fn@%p\n", __FILE__, __LINE__, fn );
 #endif
@@ -194,6 +311,7 @@ void startup_functions_invoke()
 #ifdef DEBUG_STARTUP
     printf("%s:%d Done with startup_functions_invoke()\n", __FILE__, __LINE__ );
 #endif
+    free(startup_functions);
   }
 }
 
@@ -431,12 +549,7 @@ LOAD:
 
   int mode = RTLD_NOW | RTLD_GLOBAL; // | RTLD_FIRST;
   // Check if we already have this dynamic library loaded
-  map<string, void *>::iterator handleIt = _lisp->openDynamicLibraryHandles().find(name);
-  if (handleIt != _lisp->openDynamicLibraryHandles().end()) {
-    dlclose(handleIt->second);
-    //	    printf("%s:%d Closing the existing dynamic library %s\n", __FILE__, __LINE__, name.c_str());
-    _lisp->openDynamicLibraryHandles().erase(handleIt);
-  }
+  bool handleIt = if_dynamic_library_loaded_remove(name);
   //	printf("%s:%d Loading dynamic library: %s\n", __FILE__, __LINE__, name.c_str());
   void *handle = dlopen(name.c_str(), mode);
   if (handle == NULL) {
@@ -444,14 +557,17 @@ LOAD:
     SIMPLE_ERROR(BF("Error in dlopen: %s") % error);
     //    return (Values(_Nil<T_O>(), SimpleBaseString_O::make(error)));
   }
-  _lisp->openDynamicLibraryHandles()[name] = handle;
+  add_dynamic_library_using_handle(name,handle);
+  Pointer_sp handle_ptr = Pointer_O::create(handle);
+  scope.pushSpecialVariableAndSet(_sym_STARcurrent_dlopen_handleSTAR, handle_ptr);
   if (startup_functions_are_waiting()) {
     startup_functions_invoke();
   } else {
     SIMPLE_ERROR(BF("This is not a proper FASL file - there were no global ctors - there have to be global ctors for load-bundle"));
   }
   T_mv result;
-  cc_invoke_startup_functions();
+//  cc_invoke_startup_functions();
+//  process_llvm_stackmaps();
   return (Values(Pointer_O::create(handle), _Nil<T_O>()));
 };
 
@@ -753,6 +869,11 @@ CL_DECLARE();
 CL_DOCSTRING("callWithVariableBound");
 CL_DEFUN T_mv core__call_with_variable_bound(Symbol_sp sym, T_sp val, T_sp thunk) {
   DynamicScopeManager scope(sym, val);
+  if (!gc::IsA<Function_sp>(thunk)) {
+    printf("%s:%d:%s  The thunk is NOT a Function object!!!!! thunk.raw_() = %p\n",
+           __FILE__, __LINE__, __FUNCTION__, (void*)thunk.raw_());
+    fflush(stdout);
+  }
   Function_sp func = gc::As_unsafe<Function_sp>(thunk);
   return (func->entry.load())(LCC_PASS_ARGS0_ELLIPSIS(func.raw_()));
   // Don't put anything in here - don't mess up the MV return
@@ -918,6 +1039,51 @@ CL_DEFUN T_mv core__progv_function(List_sp symbols, List_sp values, Function_sp 
  {
    return gc::As<HashTableEqual_sp>(_sym_STARfunctions_to_notinlineSTAR->symbolValue())->gethash(name);
  }
+
+
+
+CL_DEFUN T_sp core__run_function( T_sp object ) {
+  std::string name = gc::As<String_sp>(object)->get_std_string();
+  T_sp thandle = _sym_STARcurrent_dlopen_handleSTAR->symbolValue();
+  uintptr_t handle = 0;
+  if (thandle.notnilp() && gc::IsA<Pointer_sp>(thandle)) {
+    handle = (uintptr_t)gc::As_unsafe<Pointer_sp>(thandle)->ptr();
+  }
+#if 1
+  claspFunction func = (claspFunction)dlsym((void*)handle,name.c_str());
+//  printf("%s:%d:%s running function %s  at %p\n", __FILE__, __LINE__, __FUNCTION__, name.c_str(), (void*)func);
+#else
+  claspFunction func = lookup_internal_functions(handle, name.c_str());
+#endif
+#ifdef DEBUG_SLOW
+  MaybeDebugStartup startup((void*)func);
+#endif
+  if( func != nullptr ) {
+    LCC_RETURN ret = func(LCC_PASS_ARGS0_VA_LIST(_Nil<T_O>().raw_()));
+    core::T_sp res((gctools::Tagged)ret.ret0[0]);
+    core::T_sp val = res;
+    return val;
+  }
+  return _Nil<T_O>();
+}
+
+CL_DEFUN T_sp core__run_make_mlf( T_sp object ) {
+  return core__run_function(object);
+}
+
+CL_DEFUN T_sp core__run_init_mlf( T_sp object ) {
+  return core__run_function(object);
+}
+
+CL_DEFUN T_sp core__make_builtin_class( T_sp object ) {
+  printf("%s:%d:%s  with %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(object).c_str());
+  SIMPLE_ERROR(BF("Add support for core__make_builtin_class"));
+}
+
+
+CL_DEFUN T_sp core__handle_creator( T_sp object ) {
+  SIMPLE_ERROR(BF("Handle-creator for %s") % _rep_(object).c_str());
+}
 
  SYMBOL_EXPORT_SC_(CompPkg, STARimplicit_compile_hookSTAR);
  SYMBOL_EXPORT_SC_(CompPkg, implicit_compile_hook_default);

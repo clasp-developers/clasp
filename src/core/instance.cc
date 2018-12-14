@@ -171,6 +171,24 @@ CL_DEFUN Instance_sp core__reallocate_instance(Instance_sp instance, Instance_sp
   return instance;
 }
 
+SYMBOL_EXPORT_SC_(ExtPkg,fieldsp);
+SYMBOL_EXPORT_SC_(ExtPkg,fields);
+
+
+bool Instance_O::fieldsp() const {
+  if (ext::_sym_fieldsp->fboundp()) {
+    T_sp result = eval::funcall(ext::_sym_fieldsp,this->asSmartPtr());
+    return result.notnilp();
+  }
+  return false;
+}
+
+void Instance_O::fields(Record_sp node) {
+  eval::funcall(ext::_sym_fields,this->asSmartPtr(),node);
+}
+
+
+
 size_t Instance_O::rack_stamp_offset() {
   SimpleVector_O dummy_rack(0);
   return (char*)&(dummy_rack.operator[](0))-(char*)&dummy_rack;

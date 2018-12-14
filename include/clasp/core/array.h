@@ -578,7 +578,7 @@ namespace core {
     }
     virtual Array_sp unsafe_setf_subseq(size_t start, size_t end, Array_sp newSubseq) final {
       // TODO: Write specialized versions of this to speed it up
-      BOUNDS_ASSERT(0<=start&&start<end&&end<=this->length());
+      BOUNDS_ASSERT(0<=start&&start<=end&&end<=this->length());
       for ( size_t i(start),ni(0); i<end; ++i,++ni ) {
         (*this)[i] = leaf_type::from_object(newSubseq->rowMajorAref(ni));
       }

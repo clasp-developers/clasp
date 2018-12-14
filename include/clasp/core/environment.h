@@ -425,9 +425,6 @@ class FunctionValueEnvironment_O : public RuntimeVisibleEnvironment_O {
 
 public:
   void initialize();
-#if defined(XML_ARCHIVE)
-  void archiveBase(ArchiveP node);
-#endif // defined(XML_ARCHIVE)
 GCPROTECTED:
   /*! Map function names to Fixnum indices.
 	  A function name is either a symbol or a cons of the form (setf XXXX) */
@@ -491,9 +488,6 @@ public:
 
 public:
   List_sp _CleanupForm;
-#if defined(XML_ARCHIVE)
-  void archiveBase(ArchiveP node);
-#endif // defined(XML_ARCHIVE)
 public:
   static UnwindProtectEnvironment_sp make(List_sp cleanupForm, T_sp parent);
 
@@ -568,9 +562,6 @@ class CatchEnvironment_O : public CompileTimeEnvironment_O {
 
 public:
   void initialize();
-#if defined(XML_ARCHIVE)
-  void archiveBase(ArchiveP node);
-#endif // defined(XML_ARCHIVE)
 public:
   static CatchEnvironment_sp make(T_sp parent);
 

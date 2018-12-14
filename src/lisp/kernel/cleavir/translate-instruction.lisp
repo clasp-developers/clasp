@@ -118,21 +118,25 @@
 (defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir:foreign-call-instruction) return-value (abi abi-x86-64) function-info)
   ;; FIXME:  If this function has cleanup forms then this needs to be an INVOKE
-  (out
-   (clasp-cleavir:unsafe-foreign-call :call (clasp-cleavir-hir:foreign-types instruction)
-                                      (clasp-cleavir-hir:function-name instruction)
-                                      (mapcar #'in (cleavir-ir:inputs instruction)) abi)
-   (first (cleavir-ir:outputs instruction))))
+  (let ((output (first (cleavir-ir:outputs instruction))))
+    (out
+     (clasp-cleavir:unsafe-foreign-call :call (clasp-cleavir-hir:foreign-types instruction)
+                                        (clasp-cleavir-hir:function-name instruction)
+                                        (mapcar #'in (cleavir-ir:inputs instruction)) abi
+                                        :label (datum-name-as-string output))
+     output)))
 
 (defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir:foreign-call-pointer-instruction) return-value (abi abi-x86-64) function-info)
   ;; FIXME:  If this function has cleanup forms then this needs to be an INVOKE
-  (let ((inputs (cleavir-ir:inputs instruction)))
+  (let ((inputs (cleavir-ir:inputs instruction))
+        (output (first (cleavir-ir:outputs instruction))))
     (out
      (clasp-cleavir:unsafe-foreign-call-pointer
       :call (clasp-cleavir-hir:foreign-types instruction) (in (first inputs))
-      (mapcar #'in (rest inputs)) abi)
-     (first (cleavir-ir:outputs instruction)))))
+      (mapcar #'in (rest inputs)) abi
+      :label (datum-name-as-string output))
+     output)))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:funcall-instruction) return-value (abi abi-x86-64) function-info)
@@ -153,14 +157,17 @@
 (defmethod translate-simple-instruction
     ((instruction cc-mir:save-frame-instruction) return-value abi function-info)
   ;; FIXME: rename the intrinsic!!
-  (let ((frame (%intrinsic-call "cc_pushLandingPadFrame" nil)))
+  (let* ((output (first (cleavir-ir:outputs instruction)))
+         (frame (%intrinsic-call "cc_pushLandingPadFrame" nil (datum-name-as-string output))))
     (setf (frame-value function-info) frame)
-    (out frame (first (cleavir-ir:outputs instruction)))))
+    (out frame output)))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:create-cell-instruction) return-value abi function-info)
-  (let ((result (%intrinsic-invoke-if-landing-pad-or-call "cc_makeCell" nil)))
-    (out result (first (cleavir-ir:outputs instruction)))))
+  (let* ((output (first (cleavir-ir:outputs instruction)))
+         (result (%intrinsic-invoke-if-landing-pad-or-call
+                  "cc_makeCell" nil (datum-name-as-string output))))
+    (out result output)))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:write-cell-instruction) return-value abi function-info)
@@ -172,8 +179,10 @@
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:read-cell-instruction) return-value abi function-info)
   (let* ((cell (in (first (cleavir-ir:inputs instruction)) "cell"))
-         (result (%intrinsic-call "cc_readCell" (list cell))))
-    (out result (first (cleavir-ir:outputs instruction)))))
+         (output (first (cleavir-ir:outputs instruction)))
+         (result (%intrinsic-call
+                  "cc_readCell" (list cell) (datum-name-as-string output))))
+    (out result output)))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:fetch-instruction) return-value abi function-info)
@@ -181,14 +190,16 @@
          (output (first (cleavir-ir:outputs instruction)))
          (env (in (first inputs) "env"))
          (idx (cmp:irc-ptr-to-int (in (second inputs)) cmp:%size_t% "idx")))
-    (out (%intrinsic-call "cc_fetch" (list env idx)) output)))
+    (out (%intrinsic-call "cc_fetch" (list env idx) (datum-name-as-string output)) output)))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:fdefinition-instruction) return-value abi function-info)
   ;; How do we figure out if we should use safe or unsafe version
   (let* ((cell (in (first (cleavir-ir:inputs instruction)) "func-name"))
-         (result (%intrinsic-invoke-if-landing-pad-or-call "cc_fdefinition" (list cell))))
-      (out result (first (cleavir-ir:outputs instruction)))))
+         (output (first (cleavir-ir:outputs instruction)))
+         (result (%intrinsic-invoke-if-landing-pad-or-call
+                  "cc_fdefinition" (list cell) (datum-name-as-string output))))
+      (out result output)))
 
 (defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir:debug-message-instruction) return-value abi function-info)
@@ -202,14 +213,18 @@
 (defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir:setf-fdefinition-instruction) return-value abi function-info)
   (let* ((cell (in (first (cleavir-ir:inputs instruction)) "setf-func-name"))
-         (result (%intrinsic-invoke-if-landing-pad-or-call "cc_setfdefinition" (list cell))))
-    (out result (first (cleavir-ir:outputs instruction)))))
+         (output (first (cleavir-ir:outputs instruction)))
+         (result (%intrinsic-invoke-if-landing-pad-or-call
+                  "cc_setfdefinition" (list cell) (datum-name-as-string output))))
+    (out result output)))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:symbol-value-instruction) return-value abi function-info)
   (let* ((sym (in (first (cleavir-ir:inputs instruction)) "sym-name"))
-         (result (%intrinsic-invoke-if-landing-pad-or-call "cc_safe_symbol_value" (list sym))))
-      (out result (first (cleavir-ir:outputs instruction)))))
+         (output (first (cleavir-ir:outputs instruction)))
+         (result (%intrinsic-invoke-if-landing-pad-or-call
+                  "cc_safe_symbol_value" (list sym) (datum-name-as-string output))))
+      (out result output)))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:set-symbol-value-instruction) return-value abi function-info)
@@ -280,13 +295,13 @@
     ;; untagged is the actual offset.
     (%gep-variable cast (list (%i32 0) (%i32 1) untagged) "aref")))
 
-(defun translate-bit-aref (array index)
+(defun translate-bit-aref (array index &optional (label ""))
   (let* ((var-offset (%ptrtoint index cmp:%size_t% "variable-offset"))
          (untagged (%lshr var-offset cmp::+fixnum-shift+ :exact t :label "untagged-offset"))
          (bit (%intrinsic-call "cc_simpleBitVectorAref" (list array untagged) "bit-aref"))
          (tagged-bit (%shl bit cmp::+fixnum-shift+ :nuw t :label "tagged-bit")))
     ;; inttoptr intrinsically zexts, according to docs.
-    (%inttoptr tagged-bit cmp:%t*% "bit-aref-result")))
+    (%inttoptr tagged-bit cmp:%t*% label)))
 
 (defun translate-bit-aset (value array index)
   (let* ((var-offset (%ptrtoint index cmp:%size_t% "variable-offset"))
@@ -298,15 +313,18 @@
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:aref-instruction) return-value abi function-info)
-  (let ((et (cleavir-ir:element-type instruction))
-        (inputs (cleavir-ir:inputs instruction)))
+  (let* ((et (cleavir-ir:element-type instruction))
+         (inputs (cleavir-ir:inputs instruction))
+         (output (first (cleavir-ir:outputs instruction)))
+         (label (datum-name-as-string output)))
     (out
      (if (eq et 'bit) ; have to special case due to the layout.
-         (translate-bit-aref (in (first inputs)) (in (second inputs)))
+         (translate-bit-aref (in (first inputs)) (in (second inputs)) label)
          (%load (gen-vector-effective-address (in (first inputs)) (in (second inputs))
                                               (cleavir-ir:element-type instruction)
-                                              (%default-int-type abi))))
-     (first (cleavir-ir:outputs instruction)))))
+                                              (%default-int-type abi))
+                label))
+     output)))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:aset-instruction) return-value abi function-info)
@@ -324,61 +342,72 @@
   (declare (ignore return-value function-info))
   (let* ((tptr (in (first (cleavir-ir:inputs instruction))))
          (ui-offset (%uintptr_t (- cmp::+simple-vector._length-offset+ cmp:+general-tag+)))
-         (ui-tptr (%ptrtoint tptr cmp:%uintptr_t%)))
+         (ui-tptr (%ptrtoint tptr cmp:%uintptr_t%))
+         (output (first (cleavir-ir:outputs instruction)))
+         (label (datum-name-as-string output)))
     (let* ((uiptr (%add ui-tptr ui-offset))
            (ptr (%inttoptr uiptr cmp:%t**%))
            (read-val (%ptrtoint (%load ptr) (%default-int-type abi)))
            ;; now we just make it a fixnum.
            (fixnum (%shl read-val cmp::+fixnum-shift+ :nuw t :label "tag fixnum")))
-      (out (%inttoptr fixnum cmp:%t*%) (first (cleavir-ir:outputs instruction))))))
+      (out (%inttoptr fixnum cmp:%t*% label) output))))
 
 (defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir::displacement-instruction) return-value abi function-info)
   (declare (ignore return-value function-info abi))
-  (out (%intrinsic-call "cc_realArrayDisplacement"
-                        (list (in (first (cleavir-ir:inputs instruction)))))
-       (first (cleavir-ir:outputs instruction))))
+  (let ((output (first (cleavir-ir:outputs instruction))))
+    (out (%intrinsic-call "cc_realArrayDisplacement"
+                          (list (in (first (cleavir-ir:inputs instruction))))
+                          (datum-name-as-string output))
+         output)))
 
 (defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir::displaced-index-offset-instruction) return-value abi function-info)
   (declare (ignore return-value function-info abi))
-  (out (%inttoptr
-        (%shl
-         (%intrinsic-call "cc_realArrayDisplacedIndexOffset"
-                          (list (in (first (cleavir-ir:inputs instruction)))))
-         cmp::+fixnum-shift+
-         :label "fixnum" :nuw t)
-        cmp:%t*%)
-       (first (cleavir-ir:outputs instruction))))
+  (let ((output (first (cleavir-ir:outputs instruction))))
+    (out (%inttoptr
+          (%shl
+           (%intrinsic-call "cc_realArrayDisplacedIndexOffset"
+                            (list (in (first (cleavir-ir:inputs instruction)))))
+           cmp::+fixnum-shift+
+           :label "fixnum" :nuw t)
+          cmp:%t*%
+          (datum-name-as-string output))
+         output)))
 
 (defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir::array-total-size-instruction) return-value abi function-info)
   (declare (ignore return-value function-info abi))
-  (out (%inttoptr
-        (%shl
-         (%intrinsic-call "cc_arrayTotalSize"
-                          (list (in (first (cleavir-ir:inputs instruction)))))
-         cmp::+fixnum-shift+
-         :label "fixnum" :nuw t)
-        cmp:%t*%)
-       (first (cleavir-ir:outputs instruction))))
+  (let ((output (first (cleavir-ir:outputs instruction))))
+    (out (%inttoptr
+          (%shl
+           (%intrinsic-call "cc_arrayTotalSize"
+                            (list (in (first (cleavir-ir:inputs instruction)))))
+           cmp::+fixnum-shift+
+           :label "fixnum" :nuw t)
+          cmp:%t*%
+          (datum-name-as-string output))
+         output)))
 
 (defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir::array-rank-instruction) return-value abi function-info)
   (declare (ignore return-value function-info abi))
-  (out (%inttoptr
-        (%shl
-         (%intrinsic-call "cc_arrayRank"
-                          (list (in (first (cleavir-ir:inputs instruction)))))
-         cmp::+fixnum-shift+
-         :label "fixnum" :nuw t)
-        cmp:%t*%)
-       (first (cleavir-ir:outputs instruction))))
+  (let ((output (first (cleavir-ir:outputs instruction))))
+    (out (%inttoptr
+          (%shl
+           (%intrinsic-call "cc_arrayRank"
+                            (list (in (first (cleavir-ir:inputs instruction)))))
+           cmp::+fixnum-shift+
+           :label "fixnum" :nuw t)
+          cmp:%t*%
+          (datum-name-as-string output))
+         output)))
 
 (defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir::array-dimension-instruction) return-value abi function-info)
   (declare (ignore return-value function-info))
-  (let ((inputs (cleavir-ir:inputs instruction)))
+  (let ((inputs (cleavir-ir:inputs instruction))
+        (output (first (cleavir-ir:outputs instruction))))
     (out (%inttoptr
           (%shl
            (%intrinsic-call "cc_arrayDimension"
@@ -388,17 +417,19 @@
                                          :exact t :label "untagged fixnum")))
            cmp::+fixnum-shift+
            :label "fixnum" :nuw t)
-          cmp:%t*%)
-         (first (cleavir-ir:outputs instruction)))))
+          cmp:%t*%
+          (datum-name-as-string output))
+         output)))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:memref2-instruction) return-value abi function-info)
-  (let* ((tptr (in (first (cleavir-ir:inputs instruction))))
+  (let* ((output (first (cleavir-ir:outputs instruction)))
+         (tptr (in (first (cleavir-ir:inputs instruction))))
          (ui-tptr (%ptrtoint tptr cmp:%uintptr_t%))
          (uiptr (%add ui-tptr (%uintptr_t (cleavir-ir:offset instruction))))
          (ptr (%inttoptr uiptr cmp::%t**%))
-         (read-val (%load ptr)))
-    (out read-val (first (cleavir-ir:outputs instruction)))))
+         (read-val (%load ptr (datum-name-as-string output))))
+    (out read-val output)))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:memset2-instruction) return-value abi function-info)
@@ -427,11 +458,13 @@
             ((ext:byte64) "to_object_uint64")
             ((ext:integer64) "to_object_int64")
             ((single-float) "to_object_float")
-            ((double-float) "to_object_double"))))
+            ((double-float) "to_object_double")))
+        (output (first (cleavir-ir:outputs instruction))))
     (out
      (%intrinsic-invoke-if-landing-pad-or-call
-      intrinsic (list (in (first (cleavir-ir:inputs instruction)))))
-     (first (cleavir-ir:outputs instruction)))))
+      intrinsic (list (in (first (cleavir-ir:inputs instruction))))
+      (datum-name-as-string output))
+     output)))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:unbox-instruction) return-value abi function-info)
@@ -450,11 +483,13 @@
             ((ext:byte64) "from_object_uint64")
             ((ext:integer64) "from_object_int64")
             ((single-float) "from_object_float")
-            ((double-float) "from_object_double"))))
+            ((double-float) "from_object_double")))
+        (output (first (cleavir-ir:outputs instruction))))
     (out
      (%intrinsic-invoke-if-landing-pad-or-call
-      intrinsic (list (in (first (cleavir-ir:inputs instruction)))))
-     (first (cleavir-ir:outputs instruction)))))
+      intrinsic (list (in (first (cleavir-ir:inputs instruction))))
+      (datum-name-as-string output))
+     output)))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:the-instruction) return-value abi function-info)
@@ -481,9 +516,11 @@
   `(defmethod translate-simple-instruction
        ((instruction ,instruction-class-name) return-value abi function-info)
      (declare (ignore return-value abi function-info))
-     (let ((inputs (cleavir-ir:inputs instruction)))
-       (out (,op (in (first inputs)) (in (second inputs)))
-            (first (cleavir-ir:outputs instruction))))))
+     (let ((inputs (cleavir-ir:inputs instruction))
+           (output (first (cleavir-ir:outputs instruction))))
+       (out (,op (in (first inputs)) (in (second inputs))
+                 (datum-name-as-string output))
+            output))))
 
 ;;; As it happens, we do the same IR generation for singles and doubles.
 ;;; This is because the LLVM value descriptors have associated types,
@@ -501,14 +538,15 @@
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:coerce-instruction) return-value abi function-info)
   (declare (ignore return-value abi function-info))
-  (let ((input (in (first (cleavir-ir:inputs instruction))))
-        (output (first (cleavir-ir:outputs instruction))))
+  (let* ((input (in (first (cleavir-ir:inputs instruction))))
+         (output (first (cleavir-ir:outputs instruction)))
+         (label (datum-name-as-string output)))
     (out
      (ecase (cleavir-ir:from-type instruction)
        ((single-float)
         (ecase (cleavir-ir:to-type instruction)
           ((double-float)
-           (%fpext input cmp::%double%)))))
+           (%fpext input cmp::%double% label)))))
      output)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -617,8 +655,9 @@
          (y (%ptrtoint (in (second inputs)) (%default-int-type abi)))
          (result-with-overflow (%sadd.with-overflow x y abi)))
     (let ((val (%extract result-with-overflow 0 "result"))
-          (overflow (%extract result-with-overflow 1 "overflow")))
-      (out (%inttoptr val cmp:%t*%) (first (cleavir-ir:outputs instruction)))
+          (overflow (%extract result-with-overflow 1 "overflow"))
+          (output (first (cleavir-ir:outputs instruction))))
+      (out (%inttoptr val cmp:%t*% (datum-name-as-string output)) output)
       (%cond-br overflow (second successors) (first successors)))))
 
 (defmethod translate-branch-instruction
@@ -628,8 +667,9 @@
          (y (%ptrtoint (in (second inputs)) (%default-int-type abi)))
          (result-with-overflow (%ssub.with-overflow x y abi)))
     (let ((val (%extract result-with-overflow 0 "result"))
-          (overflow (%extract result-with-overflow 1 "overflow")))
-      (out (%inttoptr val cmp:%t*%) (first (cleavir-ir:outputs instruction)))
+          (overflow (%extract result-with-overflow 1 "overflow"))
+          (output (first (cleavir-ir:outputs instruction))))
+      (out (%inttoptr val cmp:%t*% (datum-name-as-string output)) output)
       (%cond-br overflow (second successors) (first successors)))))
 
 (defmethod translate-branch-instruction

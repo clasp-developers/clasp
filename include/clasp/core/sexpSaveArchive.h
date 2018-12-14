@@ -26,6 +26,7 @@ THE SOFTWARE.
 /* -^- */
 #ifndef SEXP_SAVE_ARCHIVE_H //[
 #define SEXP_SAVE_ARCHIVE_H
+#if 0
 
 #include <clasp/core/object.h>
 #include <clasp/core/serialize.h>
@@ -47,5 +48,5 @@ public:
 };
 
 }; // namespace core
-
+#endif
 #endif //]

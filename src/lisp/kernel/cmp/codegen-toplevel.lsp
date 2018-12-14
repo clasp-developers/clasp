@@ -7,11 +7,9 @@
 
 (defun compile-top-level (form env)
   (literal:with-top-level-form
-   (dbg-set-current-source-pos form)
-    (compile-thunk 'repl form env t)
-    ;; After this literals are codegen'd into the RUN-ALL function
-    ;; by with-top-level-form
-    ))
+      (dbg-set-current-source-pos form)
+    (let ((fn (compile-thunk 'repl form env t)))
+      fn)))
 
 (defun t1progn (rest env)
   "All forms in progn at top level are top level forms"

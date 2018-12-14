@@ -141,7 +141,6 @@
     (primitive-unwinds "functionFrameReference" %t**% (list %t*% %i32%))
     
 ;;;    (primitive-unwinds "invokeTopLevelFunction" %void% (list %tmv*% %fn-prototype*% %i8*% %i32*% %size_t% %size_t% %size_t% %ltv**%))
-    (primitive-unwinds "cc_register_library" %void% (list %fn-start-up*%))
     (primitive-unwinds "cc_register_startup_function" %void% (list %fn-start-up*%))
     (primitive         "cc_protect_alloca" %void% (list %i8*%))
     (primitive-unwinds "cc_invoke_sub_run_all_function" %void% (list %fn-start-up*%))
@@ -234,7 +233,6 @@
     (primitive         "cc_dispatch_slot_reader_cons"   %t*% (list %t*%)) ; cons
     (primitive         "cc_dispatch_slot_writer_index"  %t*% (list %t*% %size_t% %t*%)) ; value index instance
     (primitive         "cc_dispatch_slot_writer_cons"   %t*% (list %t*% %t*%)) ; value cons
-    (primitive-unwinds "cc_dispatch_effective_method"   %return_type% (list %t*% %t*% %t*%)) ; effective-method gf gf-args
     (primitive-unwinds "cc_dispatch_debug" %void% (list %i32% %uintptr_t%))
     (primitive-unwinds "cc_bound_or_error" %t*% (list %t*% %t*% %t*%)) ; optimized-data instance value
     (primitive         "cc_vaslist_end" %void% (list %t*%))

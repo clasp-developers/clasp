@@ -110,14 +110,13 @@ typedef bool _Bool;
 #include <clasp/core/hashTableEqual.h>
 #include <clasp/core/hashTableEqualp.h>
 #include <clasp/core/userData.h>
-#include <clasp/core/sexpLoadArchive.h>
-#include <clasp/core/sexpSaveArchive.h>
 #include <clasp/core/loadTimeValues.h>
 #include <clasp/core/specialForm.h>
 #include <clasp/core/instance.h>
 #include <clasp/core/funcallableInstance.h>
 #include <clasp/core/singleDispatchGenericFunction.h>
 #include <clasp/core/arguments.h>
+#include <clasp/core/serialize.h>
 #include <clasp/core/bootStrapCoreSymbolMap.h>
 #include <clasp/core/corePackage.h>
 #include <clasp/core/lambdaListHandler.h>

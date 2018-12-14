@@ -180,15 +180,10 @@ core::T_O* to_object_pointer( void * x );
 // END OF T R A N S L A T O R S
 // ----------------------------------------------------------------------------
 
-gctools::return_type cc_dispatch_effective_method(core::T_O* teffective_method, core::T_O* tgf, core::T_O* tgf_args_valist_s);
 };
 
 extern "C" {
 extern int64_t cc_read_stamp(void* tagged_pointer);
-[[noreturn]] void cc_error_too_few_arguments(size_t nargs, size_t minargs, core::FunctionDescription* functionDescription);
-[[noreturn]] void cc_error_too_many_arguments(size_t nargs, size_t maxargs,  core::FunctionDescription* functionDescription);
-
-
 }
 namespace llvmo {
 

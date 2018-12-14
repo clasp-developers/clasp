@@ -1,5 +1,30 @@
+/*
+    File: builtins.cc
+    Small functions used by the runtime that should always be inlined.
+*/
 
-// Nothing for now
+/*
+Copyright (c) 2014, Christian E. Schafmeister
+
+CLASP is free software; you can redistribute it and/or
+modify it under the terms of the GNU Library General Public
+License as published by the Free Software Foundation; either
+version 2 of the License, or (at your option) any later version.
+
+See directory 'clasp/licenses' for full details.
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+*/
+/* -^- */
 
 #include <clasp/core/core.h>
 #include <clasp/core/object.h>
@@ -226,13 +251,6 @@ BUILTIN_ATTRIBUTES core::T_O *cc_readCell(core::T_O *cell)
   core::Cons_O* cp = reinterpret_cast<core::Cons_O*>(gctools::untag_cons(cell));
   return cp->_Car.raw_();
 }
-
-
-BUILTIN_ATTRIBUTES void cc_check_if_wrong_number_of_arguments(size_t nargs, size_t minargs, size_t maxargs, core::FunctionDescription* functionDescription)
-{
-  if (nargs<minargs) cc_error_too_few_arguments(nargs,minargs,functionDescription);
-  if (nargs>maxargs) cc_error_too_many_arguments(nargs,maxargs,functionDescription);
-};
 
 BUILTIN_ATTRIBUTES core::T_O* cc_builtin_nil()
 {

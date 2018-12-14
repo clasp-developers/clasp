@@ -5568,6 +5568,16 @@ T_sp StringInputStream_O::make(const string &str) {
   return cl__make_string_input_stream(s, make_fixnum(0), _Nil<T_O>());
 }
 
+string StringInputStream_O::peer(size_t len)
+{
+  size_t remaining = this->_InputLimit-this->_InputPosition;
+  len = MIN(len,remaining);
+  stringstream ss;
+  for (size_t i=0; i<len; ++i ) {
+    ss << (char)(this->_Contents->rowMajorAref(this->_InputPosition+i).unsafe_character()&0x7F);
+  }
+  return ss.str();
+}
 
 T_sp IOFileStream_O::make(const string &name, int fd, enum StreamMode smm, T_sp elementType, T_sp externalFormat) {
   String_sp sname = str_create(name);

@@ -106,6 +106,17 @@ when this is t a lot of graphs will be generated.")
 (defun (setf inline-ast) (ast name)
   (core:put-sysprop name 'inline-ast ast))
 
+;;; So that we can dump ASTs (for DEFUNs with an inline expansion)
+(defmethod make-load-form ((ast cleavir-ast:ast) &optional environment)
+  (values `(allocate-instance ',(class-of ast))
+          `(initialize-instance
+            ,ast
+            ,@(loop for (keyword reader)
+                    in (cleavir-io:save-info ast)
+                    for value = (funcall reader ast)
+                    collect `(quote ,keyword)
+                    collect `(quote ,value)))))
+
 (defmethod cleavir-env:function-info ((environment clasp-global-environment) function-name)
   (cond
     ((and (symbolp function-name) (treat-as-special-operator-p function-name))
@@ -182,10 +193,10 @@ when this is t a lot of graphs will be generated.")
     (safety 1)))
 
 (eval-when (:compile-toplevel)
-  (format t "abut to compute-policy~%"))
+  (format t "about to compute-policy~%"))
 
 (defvar *global-policy*
-  (cleavir-policy:compute-policy *global-optimize* *clasp-env*))
+  '#.(cleavir-policy:compute-policy *global-optimize* *clasp-env*))
 
 (defmethod cleavir-env:optimize-info ((environment clasp-global-environment))
   ;; The default values are all 3.
@@ -333,11 +344,11 @@ when this is t a lot of graphs will be generated.")
   "Generate a HIR graph for the form using the cst compiler"
   (let (conditions result)
     (cmp::with-compiler-env (conditions)
-      (let* ((cmp:*the-module* (cmp::create-run-time-module-for-compile)))
+      (let* ((module (cmp::create-run-time-module-for-compile)))
         ;; Link the C++ intrinsics into the module
-        (cmp::with-module (:module cmp:*the-module*
+        (cmp::with-module (:module module
                            :optimize nil)
-          (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname "dummy-file")
+          (cmp:with-debug-info-generator (:module module :pathname "dummy-file")
             (literal:with-rtv
                 (let* ((cleavir-generate-ast:*compiler* 'cl:compile)
                        (cst (cst:cst-from-expression form))
@@ -352,11 +363,11 @@ when this is t a lot of graphs will be generated.")
   "Generate a HIR graph for the form using the ast compiler"
   (let (conditions)
     (cmp::with-compiler-env (conditions)
-      (let* ((cmp:*the-module* (cmp::create-run-time-module-for-compile)))
+      (let* ((module (cmp::create-run-time-module-for-compile)))
         ;; Link the C++ intrinsics into the module
-        (cmp::with-module (:module cmp:*the-module*
+        (cmp::with-module (:module module
                            :optimize nil)
-          (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname "dummy-file")
+          (cmp:with-debug-info-generator (:module module :pathname "dummy-file")
             (literal:with-rtv
                 (let* ((cleavir-generate-ast:*compiler* 'cl:compile)
                        (ast (cleavir-generate-ast:generate-ast form nil clasp-cleavir::*clasp-system*))
