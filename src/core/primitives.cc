@@ -180,6 +180,16 @@ CL_DEFUN T_sp core__interpreter_symbols() {
   return ls;
 }
 
+std::atomic<uint64_t> global_next_number;
+
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("Return the next number.  An internal counter is incremented every time this function is called.");
+CL_DEFUN Integer_sp core__next_number() {
+  uint64_t temp = ++global_next_number;
+  return Integer_O::create((uint64_t)temp);
+};
+
 CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("lispImplementationType");
