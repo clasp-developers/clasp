@@ -1030,7 +1030,7 @@ void add_dynamic_library_impl(bool is_executable, const std::string& libraryName
     symbol_table._StackmapEnd = p_section+section_size;
   }    
 #endif
-#ifdef _TARGET_OS_LINUX
+#if defined(_TARGET_OS_LINUX) || defined(_TARGET_OS_FREEBSD)
   if (!use_origin) {
     void* lorigin;
     Dl_info data;
