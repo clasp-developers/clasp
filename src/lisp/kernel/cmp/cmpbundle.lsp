@@ -115,7 +115,7 @@
                        ((or (member :target-os-linux *features*)
                             (member :target-os-freebsd *features*))
                         (case output-type
-                          (:dynamic "-dynamic")
+                          (:dynamic "-shared")
                           (:static "-static")
                           (otherwise (error "Unknown output-type ~a for linux or freebsd" output-type))))
                        (t (error "Unknown system type")))))
