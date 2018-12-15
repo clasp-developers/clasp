@@ -56,45 +56,47 @@
                                optimize
                                optimize-level
                                intermediate-output-type)
-  (let ((module (cmp::llvm-create-module (namestring (ast-job-form-output-path job)))))
-    (with-module (:module module
-                  :optimize (when optimize #'optimize-module-for-compile-file)
-                  :optimize-level optimize-level)
-      (with-debug-info-generator (:module module
-                                  :pathname *compile-file-truename*)
-        (with-make-new-run-all (run-all-function (namestring (ast-job-form-output-path job)))
-          (with-literal-table
-              (let ((clasp-cleavir::*llvm-metadata* (make-hash-table :test 'eql)))
-                (core:with-memory-ramp (:pattern 'gctools:ramp)
-                  (literal:with-top-level-form
-                      (clasp-cleavir::translate-ast (ast-job-ast job) :env (ast-job-environment job))))))
-          (make-boot-function-global-variable module run-all-function)))
-      (cmp-log "About to verify the module%N")
-      (cmp-log-dump-module module)
-      (irc-verify-module-safe module)
-      (quick-module-dump module (format nil "preoptimize~a" (ast-job-form-index job)))
-      ;; ALWAYS link the builtins in, inline them and then remove them.
-      (link-inline-remove-builtins module))
-    (cond
-      ((eq intermediate-output-type :object)
-       (let ((object-file-path (make-pathname :type "o" :defaults (ast-job-form-output-path job))))
-         (ensure-directories-exist object-file-path)
-         ;; Save the bitcode so we can take a look at it
-         (with-track-llvm-time
-             (let ((bitcode-file (core:coerce-to-filename (cfp-output-file-default object-file-path :bitcode))))
-               (write-bitcode module bitcode-file)))
-         (with-open-file (fout object-file-path :direction :output)
-           (let ((reloc-model (cond
-                                ((or (member :target-os-linux *features*) (member :target-os-freebsd *features*))
-                                 'llvm-sys:reloc-model-pic-)
-                                (t 'llvm-sys:reloc-model-undefined))))
-             (generate-obj-asm module fout :file-type 'llvm-sys:code-gen-file-type-object-file :reloc-model reloc-model)))))
-      ((eq intermediate-output-type :bitcode)
-       (with-track-llvm-time
-           (let ((bitcode-file (core:coerce-to-filename (cfp-output-file-default (ast-job-form-output-path job) :bitcode))))
-             (write-bitcode module bitcode-file))))
-      (t ;; fasl
-       (error "Only options for intermediate-output-type are :object or :bitcode - not ~a" intermediate-output-type)))))
+  (restart-case
+      (let ((module (cmp::llvm-create-module (namestring (ast-job-form-output-path job)))))
+        (with-module (:module module
+                      :optimize (when optimize #'optimize-module-for-compile-file)
+                      :optimize-level optimize-level)
+          (with-debug-info-generator (:module module
+                                      :pathname *compile-file-truename*)
+            (with-make-new-run-all (run-all-function (core:bformat nil "-top-%d" (core:next-number)))
+              (with-literal-table
+                  (let ((clasp-cleavir::*llvm-metadata* (make-hash-table :test 'eql)))
+                    (core:with-memory-ramp (:pattern 'gctools:ramp)
+                      (literal:with-top-level-form
+                            (clasp-cleavir::translate-ast (clasp-cleavir::hoist-ast (ast-job-ast job)) :env (ast-job-environment job))))))
+              (make-boot-function-global-variable module run-all-function :position (ast-job-form-index job))))
+          (cmp-log "About to verify the module%N")
+          (cmp-log-dump-module module)
+          (irc-verify-module-safe module)
+          (quick-module-dump module (format nil "preoptimize~a" (ast-job-form-index job)))
+          ;; ALWAYS link the builtins in, inline them and then remove them.
+          (link-inline-remove-builtins module))
+        (cond
+          ((eq intermediate-output-type :object)
+           (let ((object-file-path (make-pathname :type "o" :defaults (ast-job-form-output-path job))))
+             (ensure-directories-exist object-file-path)
+             ;; Save the bitcode so we can take a look at it
+             (with-track-llvm-time
+                 (let ((bitcode-file (core:coerce-to-filename (cfp-output-file-default object-file-path :bitcode))))
+                   (write-bitcode module bitcode-file)))
+             (with-open-file (fout object-file-path :direction :output)
+               (let ((reloc-model (cond
+                                    ((or (member :target-os-linux *features*) (member :target-os-freebsd *features*))
+                                     'llvm-sys:reloc-model-pic-)
+                                    (t 'llvm-sys:reloc-model-undefined))))
+                 (generate-obj-asm module fout :file-type 'llvm-sys:code-gen-file-type-object-file :reloc-model reloc-model)))))
+          ((eq intermediate-output-type :bitcode)
+           (with-track-llvm-time
+               (let ((bitcode-file (core:coerce-to-filename (cfp-output-file-default (ast-job-form-output-path job) :bitcode))))
+                 (write-bitcode module bitcode-file))))
+          (t ;; fasl
+           (error "Only options for intermediate-output-type are :object or :bitcode - not ~a" intermediate-output-type))))
+    (abort ())))
 
 (defun cclasp-loop2 (input-pathname
                      source-sin
@@ -148,46 +150,40 @@
           (when *compile-print* (cmp::describe-form form))
           (unless ast-only
             (push ast-job ast-jobs)
-            (let ((compile-print *compile-print*)
-                  (compile-verbose *compile-verbose*)
-                  (compile-file-output-pathname *compile-file-output-pathname* )
-                  (package *package*)
-                  (compile-file-pathname *compile-file-pathname*)
-                  (compile-file-truename *compile-file-truename*)
-                  (source-debug-pathname *source-debug-pathname*)
-                  (source-debug-offset *source-debug-offset*)
-                  (current-source-pos-info core:*current-source-pos-info*)
-                  #+cclasp(compiler cleavir-generate-ast:*compiler*)
-                  #+cclasp(use-cleavir-compiler core:*use-cleavir-compiler*))
+            (progn
               (push (mp:process-run-function
                      (core:bformat nil "compile-file-%d" form-index)
                      (lambda ()
-                       (let (
-                             (*compile-print* compile-print)
-                             (*compile-verbose* compile-verbose)
-                             (*compile-file-output-pathname* compile-file-output-pathname )
-                             (*package* package)
-                             (*compile-file-pathname* compile-file-pathname)
-                             (*compile-file-truename* compile-file-truename)
-                             (*source-debug-pathname* source-debug-pathname)
-                             (*source-debug-offset* source-debug-offset)
-                             (core:*current-source-pos-info* current-source-pos-info)
-                             #+cclasp(cleavir-generate-ast:*compiler* compiler)
-                             #+cclasp(core:*use-cleavir-compiler* use-cleavir-compiler))
-                         (compile-from-ast ast-job
-                                           :optimize optimize
-                                           :optimize-level optimize-level
-                                           :intermediate-output-type intermediate-output-type))))
-                    ast-threads)
-              #+(or)
-              (funcall (lambda ()
+                       (progn
                          (compile-from-ast ast-job
                                            :optimize optimize
                                            :optimize-level optimize-level
                                            :intermediate-output-type intermediate-output-type)))
-              ))
+                     `((*compile-print* ',*compile-print*)
+                       (*compile-verbose* ',*compile-verbose*)
+                       (*compile-file-output-pathname* ',*compile-file-output-pathname*)
+                       (*package* ',*package*)
+                       (*compile-file-pathname* ',*compile-file-pathname*)
+                       (*compile-file-truename* ',*compile-file-truename*)
+                       (*source-debug-pathname* ',*source-debug-pathname*)
+                       (*source-debug-offset* ',*source-debug-offset*)
+                       (core:*current-source-pos-info* ',core:*current-source-pos-info*)
+                       (cleavir-generate-ast:*compiler* ',cleavir-generate-ast:*compiler*)
+                       (core:*use-cleavir-compiler* ',core:*use-cleavir-compiler*)
+                       (cmp::*global-function-refs* ',cmp::*global-function-refs*)
+                       ))
+                    ast-threads)
+              (mp:process-join (pop ast-threads)))
+            #+(or)
+            (funcall (lambda ()
+                       (compile-from-ast ast-job
+                                         :optimize optimize
+                                         :optimize-level optimize-level
+                                         :intermediate-output-type intermediate-output-type)))
+            )
           (incf form-index))))
     ;; Now wait for all threads to join
+    #+(or)
     (loop for thread in ast-threads
           do (mp:process-join thread))
     ;; Now return the results
@@ -315,6 +311,7 @@ Compile a lisp source file into an LLVM module."
                                               :ast-only ast-only
                                               :dry-run dry-run)))
           (cf2-log "Came out of compile-file-to-result with result: ~s~%" result)
+          (loop for one in result do (format t "Result: ~s~%" one))
           (cond
             (dry-run
              (format t "Doing nothing further~%"))
