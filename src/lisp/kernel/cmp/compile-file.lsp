@@ -229,6 +229,7 @@ and the pathname of the source file - this will also be used as the module initi
                                  source-debug-pathname
                                  (source-debug-offset 0)
                                  environment
+                                 (image-startup-position 0)
                                  (optimize t)
                                  (optimize-level *optimization-level*))
   "* Arguments
@@ -289,7 +290,9 @@ Compile a lisp source file into an LLVM module."
               (irc-verify-module-safe *the-module*)
               (quick-module-dump *the-module* "preoptimize") 
               ;; (2) Add the CTOR next
-              (make-boot-function-global-variable module run-all-name :register-library t)
+              (make-boot-function-global-variable module run-all-name
+                                                  :position image-startup-position
+                                                  :register-library t)
               ;; (3) ALWAYS link the builtins in, inline them and then remove them - then optimize.
               (link-inline-remove-builtins *the-module*))
             ;; Now at the end of with-module another round of optimization is done
@@ -321,6 +324,8 @@ Compile a lisp source file into an LLVM module."
                               ;; A unique prefix for symbols of compile-file'd files that
                               ;; will be linked together
                               (unique-symbol-prefix "")
+                              ;; Control the order of startup functions
+                              (image-startup-position 0)
                               ;; ignored by bclasp
                               ;; but passed to hook functions
                               environment
@@ -343,6 +348,7 @@ Compile a lisp source file into an LLVM module."
                                               :source-debug-offset source-debug-offset
                                               :compile-file-hook *cleavir-compile-file-hook*
                                               :environment environment
+                                              :image-startup-position image-startup-position
                                               :optimize optimize
                                               :optimize-level optimize-level)))
           (cond

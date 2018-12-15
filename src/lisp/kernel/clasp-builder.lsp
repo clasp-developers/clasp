@@ -160,7 +160,7 @@ Return files."
           (error "Illegal type ~a for load-kernel-file ~a" type path)))
   path)
 
-(defun compile-kernel-file (entry &key (reload nil) load-bitcode (force-recompile nil) (counter 0) total-files (output-type core:*clasp-build-mode*) verbose print silent (file-counter-start 0))
+(defun compile-kernel-file (entry &key (reload nil) load-bitcode (force-recompile nil) (counter 0) total-files (output-type core:*clasp-build-mode*) verbose print silent)
   #+dbg-print(bformat t "DBG-PRINT compile-kernel-file: %s%N" entry)
   ;;  (if *target-backend* nil (error "*target-backend* is undefined"))
   (let* ((filename (entry-filename entry))
@@ -182,13 +182,14 @@ Return files."
                 (bformat t "Compiling %s%N   to %s - will reload: %s%N" source-path output-path reload)))
           (let ((cmp::*module-startup-prefix* "kernel"))
             #+dbg-print(bformat t "DBG-PRINT  source-path = %s%N" source-path)
-            (apply #'compile-file
+            (apply #'cmp::compile-file-serial
                    (probe-file source-path)
                    :output-file output-path
                    :output-type output-type
                    :print print
                    :verbose verbose
-                   :unique-symbol-prefix (format nil "~a~a" (pathname-name source-path) (+ file-counter-start counter))
+                   :unique-symbol-prefix (format nil "~a~a" (pathname-name source-path) counter)
+                   :image-startup-position counter
                    :type :kernel
                    (entry-compile-file-options entry))
             (if reload
@@ -278,26 +279,26 @@ Return files."
        (go top)
      done)))
 
-(defun compile-system-serial (files &key reload (output-type core:*clasp-build-mode*) parallel-jobs batch-min batch-max file-counter-start)
+(defun compile-system-serial (files &key reload (output-type core:*clasp-build-mode*) total-files parallel-jobs batch-min batch-max file-counter-start)
   (declare (ignore parallel-jobs))
   #+dbg-print(bformat t "DBG-PRINT compile-system files: %s%N" files)
   (let* ((cur files)
-           (counter 1)
-           (total (length files)))
+           (counter file-counter-start)
+           (total (or total-files (length files))))
       (tagbody
        top
          (if (endp cur) (go done))
-         (compile-kernel-file (car cur) :reload reload :output-type output-type :counter counter :total-files total :print t :verbose t :file-counter-start file-counter-start)
+         (compile-kernel-file (car cur) :reload reload :output-type output-type :counter counter :total-files total :print t :verbose t)
          (setq cur (cdr cur))
          (setq counter (+ 1 counter))
          (go top)
        done)))
 
 
-(defun compile-system-parallel (files &key reload (output-type core:*clasp-build-mode*) (parallel-jobs *number-of-jobs*) (batch-min 1) (batch-max 1) file-counter-start)
+(defun compile-system-parallel (files &key reload (output-type core:*clasp-build-mode*) total-files (parallel-jobs *number-of-jobs*) (batch-min 1) (batch-max 1) file-counter-start)
   #+dbg-print(bformat t "DBG-PRINT compile-system files: %s\n" files)
-  (let ((total (length files))
-        (counter 1)
+  (let ((total (or total-files (length files)))
+        (counter file-counter-start)
         (job-counter 0)
         (batch-size 0)
         (child-count 0)
@@ -571,15 +572,16 @@ Return files."
         (let* ((*target-backend* target-backend)
                (pre-files (butlast (out-of-date-bitcodes #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/min-start" :system system)))
                (files (out-of-date-bitcodes #P"src/lisp/kernel/tag/min-start" #P"src/lisp/kernel/tag/min-pre-epilogue" :system system))
-               (files-with-epilogue (out-of-date-bitcodes #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/min-end" :system system)))
+               (epilogue-files (out-of-date-bitcodes #P"src/lisp/kernel/tag/min-pre-epilogue" #P"src/lisp/kernel/tag/min-end" :system system)))
           (let ((cmp::*activation-frame-optimize* t)
                 (core:*cache-macroexpand* (make-hash-table :test #'equal)))
-            (compile-system files :reload t :parallel-jobs (min *number-of-jobs* 16) :file-counter-start (+ (- (length system) (length files)) (length pre-files)))
+            (compile-system files :reload t :parallel-jobs (min *number-of-jobs* 16) :total-files (length system) :file-counter-start (length pre-files))
             ;;  Just compile the following files and don't reload, they are needed to link
-            (compile-system pre-files :reload nil :file-counter-start 0)
-            (if files-with-epilogue (compile-system (output-object-pathnames #P"src/lisp/kernel/tag/min-pre-epilogue" #P"src/lisp/kernel/tag/min-end" :system system)
-                                                    :reload nil
-                                                    :file-counter-start (- (length system) 2))))
+            (compile-system pre-files :reload nil :file-counter-start 0 :total-files (length system))
+            (if epilogue-files (compile-system epilogue-files
+                                               :reload nil
+                                               :total-files (length system)
+                                               :file-counter-start (- (length system) 2))))
           (let ((all-output (output-object-pathnames #P"src/lisp/kernel/tag/min-start" #P"src/lisp/kernel/tag/min-end" :system system)))
             (if (out-of-date-target output-file all-output)
                 (link-modules output-file all-output)))))))
@@ -664,9 +666,9 @@ Return files."
     ;; to load inline definitions. We wait for the source code to turn it back on.
     (setf core:*defun-inline-hook* nil)
     ;;; Pull the inline.lisp and fli.lsp files forward because they take the longest to build
-    (setf files (maybe-move-to-front files #P"src/lisp/kernel/lsp/fli"))
-    (setf files (maybe-move-to-front files #P"src/lisp/kernel/cleavir/inline"))
-    (compile-system files :reload nil :file-counter-start (- (length system) (length files)))
+    ;;(setf files (maybe-move-to-front files #P"src/lisp/kernel/lsp/fli"))
+    ;;(setf files (maybe-move-to-front files #P"src/lisp/kernel/cleavir/inline"))
+    (compile-system files :reload nil :file-counter-start (- (length system) (length files)) :total-files (length system))
     (let ((all-output (output-object-pathnames #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/cclasp" :system system)))
       (if (out-of-date-target output-file all-output)
           (link-modules output-file all-output)))))
