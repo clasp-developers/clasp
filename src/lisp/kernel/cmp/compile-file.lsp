@@ -89,7 +89,8 @@
                 (*compilation-unit-module-index* 0)
                 (*compilation-messages* nil)
                 (*global-function-defs* (make-hash-table))
-                (*global-function-refs* (make-hash-table :test #'equal)))
+                (*global-function-refs* (make-hash-table :test #'equal
+                                                         :thread-safe t)))
            (multiple-value-prog1
                (unwind-protect
                     (do-compilation-unit closure) ; --> result*
