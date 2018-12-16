@@ -201,9 +201,9 @@ CL_DEFUN void gctools__change_sigchld_sigport_handlers()
   printf("%s:%d old signal handler for SIGCHLD = %p   SIG_DFL = %p\n", __FILE__, __LINE__, old, SIG_DFL);
 }
 
-CL_DEFUN core::T_sp gctools__known_signals()
+CL_DEFUN core::T_sp gctools__unix_signal_handlers()
 {
-  return _lisp->_Roots._KnownSignals;
+  return _lisp->_Roots._UnixSignalHandlers;
 }
 
 CL_DEFUN void gctools__deallocate_unmanaged_instance(core::T_sp obj) {
