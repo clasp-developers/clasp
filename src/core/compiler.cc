@@ -499,12 +499,12 @@ CL_DEFUN T_mv core__mangle_name(Symbol_sp sym, bool is_function) {
   return Values(_Nil<T_O>(), SimpleBaseString_O::make("Provide-func-name"), make_fixnum(0), make_fixnum(CALL_ARGUMENTS_LIMIT));
 }
 
-CL_LAMBDA();
+CL_LAMBDA("&optional (stage #\\c)");
 CL_DECLARE();
 CL_DOCSTRING("startupImagePathname - returns a pathname based on *features* :CLASP-MIN, :USE-MPS, :BCLASP");
-CL_DEFUN T_sp core__startup_image_pathname() {
+CL_DEFUN T_sp core__startup_image_pathname(char stage) {
   stringstream ss;
-  ss << "app-fasl:cclasp-" << VARIANT_NAME << "-image";
+  ss << "app-fasl:" << stage << "clasp-" << VARIANT_NAME << "-image";
   T_sp mode = core::_sym_STARclasp_build_modeSTAR->symbolValue();
   if (mode == kw::_sym_object) {
     ss << ".fasl";

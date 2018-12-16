@@ -38,6 +38,7 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
       _DontLoadInitLsp(false),
       _DisableMpi(false),
       _HasImageFile(false),
+      _Stage('c'),
       _ImageFile(""),
       _GotRandomNumberSeed(false),
       _RandomNumberSeed(0),
@@ -63,6 +64,7 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
       printf("clasp options\n"
              "-I/--ignore-image    - Don't load the boot image/start with init.lsp\n"
              "-i/--image file      - Use the file as the boot image\n"
+             "-t/--stage (a|b|c)   - Start the specified stage of clasp 'c' is default\n"
              "-N/--non-interactive - Suppress all repls\n"
              "-m/--disable-mpi     - Don't use mpi even if built with mpi\n"
              "-v/--version         - Print version\n"
@@ -138,6 +140,10 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
       ASSERTF(iarg < (endArg + 1), BF("Missing argument for --image,-i"));
       this->_HasImageFile = true;
       this->_ImageFile = argv[iarg + 1];
+      iarg++;
+    } else if (arg == "-t" || arg == "--stage") {
+      ASSERTF(iarg < (endArg + 1), BF("Missing argument for --stage,-t"));
+      this->_Stage = argv[iarg + 1][0];
       iarg++;
     } else if (arg == "-e" || arg == "--eval") {
       ASSERTF(iarg < (endArg + 1), BF("Missing argument for --eval,-e"));

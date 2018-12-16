@@ -195,7 +195,7 @@ Lisp_O::GCRoots::GCRoots() :
   _NullStream(_Nil<T_O>()),
   _ThePathnameTranslations(_Nil<T_O>()),
   _Booted(false),
-  _KnownSignals(_Unbound<HashTableEq_O>()) {}
+  _UnixSignalHandlers(_Nil<T_O>()) {};
 
 Lisp_O::Lisp_O() : _StackWarnSize(gctools::_global_stack_max_size * 0.9), // 6MB default stack size before warnings
                    _StackSampleCount(0),
@@ -1416,7 +1416,7 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], const CommandLine
     SYMBOL_EXPORT_SC_(CorePkg, STARcommandLineImageSTAR);
     _sym_STARcommandLineImageSTAR->defparameter(cl__pathname(SimpleBaseString_O::make(options._ImageFile)));
   } else {
-    _sym_STARcommandLineImageSTAR->defparameter(core__startup_image_pathname());
+    _sym_STARcommandLineImageSTAR->defparameter(core__startup_image_pathname(options._Stage));
   }
   LOG(BF("lisp->_ScriptInFile(%d)  lisp->_FileNameOrCode(%s)") % this->_ScriptInFile % this->_FileNameOrCode);
 }
@@ -2624,7 +2624,7 @@ void LispHolder::startup(int argc, char *argv[], const string &appPathEnvironmen
   this->_Lisp->startupLispEnvironment(bundle);
   mp::_sym_STARcurrent_processSTAR->defparameter(my_thread->_Process);
   this->_Lisp->add_process(my_thread->_Process);
-  gctools::initialize_signal_constants();
+  gctools::initialize_unix_signal_handlers();
   _lisp->_Roots._Booted = true;
   _lisp->parseCommandLineArguments(argc, argv, options);
 }
