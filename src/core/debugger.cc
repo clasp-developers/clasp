@@ -815,7 +815,29 @@ SymbolTable load_linux_symbol_table(const char* filename, uintptr_t start, uintp
 }
 
   
-extern "C" char* __progname_full; // The name of the executable?
+extern "C" const char* __progname_full; // The name of the executable?
+
+struct SearchInfo {
+  const char* _Name;
+  void* _Address;
+  SearchInfo(const char* name) : _Name(name), _Address(NULL) {};
+};
+
+int elf_search_loaded_object_callback(struct dl_phdr_info *info, size_t size, void* data)
+{
+  SearchInfo* search_callback_info = (SearchInfo*)data;
+  const char* libname;
+  if (scan_callback_info->_Index==0 && strlen(info->dlpi_name) == 0 ) {
+    libname = __progname_full;
+  } else {
+    libname = info->dlpi_name;
+  }
+  BT_LOG((buf,"Name: \"%s\" address: %p (%d segments)\n", libname.c_str(), (void*)info->dlpi_addr, info->dlpi_phnum));
+  if (strcmp(libname,search_callback_info._Name)==0) {
+    search_callback_info._Address = (void*)info->dlpi_addr;
+  }
+  return 0;
+}
 
 int elf_loaded_object_callback(struct dl_phdr_info *info, size_t size, void* data)
 {
@@ -860,6 +882,13 @@ void walk_loaded_objects(std::vector<BacktraceEntry>& backtrace, size_t& symbol_
     // Search the symbol tables and stackmaps
   dl_iterate_phdr(elf_loaded_object_callback,&scan);
   symbol_table_memory += scan._symbol_table_memory;
+}
+
+void* find_base_of_loaded_object(const char* name)
+{
+  SearchInfo search(name);
+  dl_iterate_phdr(elf_search_loaded_object,&search);
+  return search._Address;
 }
 
 void startup_register_loaded_objects()
@@ -925,21 +954,26 @@ void add_dynamic_library_impl(bool is_executable, const std::string& libraryName
 #endif
 #ifdef _TARGET_OS_LINUX
   if (!use_origin) {
-    void* lorigin;
-    Dl_info data;
-    dlerror();
-    void* addr = dlsym(handle,"_init");
-    const char* error = dlerror();
-    if (error) {
-      printf("%s:%d:%s Could not find _init symbol dlerror = %s\n", __FILE__, __LINE__, __FUNCTION__, error);
-      abort();
+    // Walk all objects looking for the one we just loaded
+    library_origin = (uintptr_t)find_base_of_loaded_object(libraryName.c_str());
+    if (library_origin==0) {
+      // Try looking for _init symbol
+      void* lorigin;
+      Dl_info data;
+      dlerror();
+      void* addr = dlsym(handle,"_init");
+      const char* error = dlerror();
+      if (error) {
+        printf("%s:%d:%s Could not find library by walking objects or by searching for external symbol '_init' - library %s dlerror = %s\n", __FILE__, __LINE__, __FUNCTION__, error, libraryName.c_str());
+        abort();
+      }
+      int ret = dladdr(addr,&data);
+      if (ret==0) {
+        printf("%s:%d:%s Could not use dladdr to get start of library %s dlerror = %s\n", __FILE__, __LINE__, __FUNCTION__, libraryName.c_str(), error);
+        abort();
+      }
+      library_origin = (uintptr_t)data.dli_fbase;
     }
-    int ret = dladdr(addr,&data);
-    if (ret==0) {
-      printf("%s:%d:%s Could not use dladdr to get start of library %s dlerror = %s\n", __FILE__, __LINE__, __FUNCTION__, libraryName.c_str(), error);
-      abort();
-    }
-    library_origin = (uintptr_t)data.dli_fbase;
   }
 //  printf("%s:%d:%s data.dli_fbase = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)data.dli_fbase);
   uintptr_t stackmap_start;
