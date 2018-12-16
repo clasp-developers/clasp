@@ -834,10 +834,10 @@ int elf_search_loaded_object_callback(struct dl_phdr_info *info, size_t size, vo
     libname = info->dlpi_name;
   }
   BT_LOG((buf,"Name: \"%s\" address: %p (%d segments)\n", libname.c_str(), (void*)info->dlpi_addr, info->dlpi_phnum));
-  if (strcmp(libname,search_callback_info._Name)==0) {
-    search_callback_info._Address = (void*)info->dlpi_addr;
+  if (strcmp(libname,search_callback_info->_Name)==0) {
+    search_callback_info->_Address = (void*)info->dlpi_addr;
   }
-  search_callback_info._Index++;
+  search_callback_info->_Index++;
   return 0;
 }
 
