@@ -820,14 +820,15 @@ extern "C" const char* __progname_full; // The name of the executable?
 struct SearchInfo {
   const char* _Name;
   void* _Address;
-  SearchInfo(const char* name) : _Name(name), _Address(NULL) {};
+  size_t _Index;
+  SearchInfo(const char* name) : _Name(name), _Address(NULL), _Index(0) {};
 };
 
 int elf_search_loaded_object_callback(struct dl_phdr_info *info, size_t size, void* data)
 {
   SearchInfo* search_callback_info = (SearchInfo*)data;
   const char* libname;
-  if (scan_callback_info->_Index==0 && strlen(info->dlpi_name) == 0 ) {
+  if (search_callback_info->_Index==0 && strlen(info->dlpi_name) == 0 ) {
     libname = __progname_full;
   } else {
     libname = info->dlpi_name;
@@ -836,6 +837,7 @@ int elf_search_loaded_object_callback(struct dl_phdr_info *info, size_t size, vo
   if (strcmp(libname,search_callback_info._Name)==0) {
     search_callback_info._Address = (void*)info->dlpi_addr;
   }
+  search_callback_info._Index++;
   return 0;
 }
 
