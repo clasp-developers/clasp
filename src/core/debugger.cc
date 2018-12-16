@@ -889,7 +889,7 @@ void walk_loaded_objects(std::vector<BacktraceEntry>& backtrace, size_t& symbol_
 void* find_base_of_loaded_object(const char* name)
 {
   SearchInfo search(name);
-  dl_iterate_phdr(elf_search_loaded_object,&search);
+  dl_iterate_phdr(elf_search_loaded_object_callback,&search);
   return search._Address;
 }
 
