@@ -329,6 +329,7 @@ Compile a lisp source file into an LLVM module."
                                            'llvm-sys:reloc-model-pic-)
                                           (t 'llvm-sys:reloc-model-undefined))))
                        (unless dry-run (generate-obj-asm module fout :file-type 'llvm-sys:code-gen-file-type-object-file :reloc-model reloc-model)))))
+            #+(or)
             ((eq output-type :bitcode)
              (cf2-log "output-type :bitcode  result -> ~s~%" result)
              (link-modules output-path result))
