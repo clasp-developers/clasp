@@ -297,30 +297,43 @@
 (defun generate-dispatcher-from-dtree (generic-function dtree
                                        &key extra-bindings generic-function-name
                                          (generic-function-form generic-function))
-  ;; GENERIC-FUNCTION-FORM is used when we want to feed this form to COMPILE-FILE,
-  ;; in which case it can't have literal generic functions in it.
-  ;; If we're doing this at runtime, though, we should put the actual GF in, so that
-  ;; things don't break if we have an anonymous GF or suchlike.
-  (let ((dispatch-args (gensym "DISPATCH-ARGUMENTS"))
-        (block-name (if generic-function-name
-                        (core:function-block-name generic-function-name)
-                        (gensym "DISCRIMINATION-BLOCK")))
-        (gfsym (gensym "GENERIC-FUNCTION"))
-        (*generate-outcomes* nil))
-    `(lambda (core:&va-rest ,dispatch-args)
-       (let (,@extra-bindings
-             ;; Bound because at some point in the unknown future we may actually support
-             ;; the :generic-function option to define-method-combination.
-             (,gfsym ,generic-function-form))
-         (block ,block-name
-           (tagbody
-              ,(generate-node-or-outcome dispatch-args (dtree-root dtree))
-              ;; note: we need generate-node-or-outcome to run to fill *generate-outcomes*.
-              ,@(generate-tagged-outcomes *generate-outcomes* block-name dispatch-args)
-            dispatch-miss
-              (core:vaslist-rewind ,dispatch-args)
-              (return-from ,block-name
-                (clos::dispatch-miss ,gfsym ,dispatch-args))))))))
+  (multiple-value-bind (min max)
+      (clos:generic-function-min-max-args generic-function)
+    ;; We need MIN to know how many arguments to grab.
+    ;; MAX we should use for argument count checking. FIXME.
+    (declare (ignore max))
+    ;; GENERIC-FUNCTION-FORM is used when we want to feed this form to COMPILE-FILE,
+    ;; in which case it can't have literal generic functions in it.
+    ;; If we're doing this at runtime, though, we should put the actual GF in, so that
+    ;; things don't break if we have an anonymous GF or suchlike.
+    (let ((args (gensym "DISPATCH-ARGUMENTS"))
+          (block-name (if generic-function-name
+                          (core:function-block-name generic-function-name)
+                          (gensym "DISCRIMINATION-BLOCK")))
+          (gfsym (gensym "GENERIC-FUNCTION"))
+          ;; list of gensyms, one for each required argument.
+          (required-args (let ((res nil))
+                           (dotimes (i min res)
+                             (push (gensym "DISPATCH-ARG") res))))
+          (*generate-outcomes* nil))
+      `(lambda (core:&va-rest ,args)
+         (let (,@extra-bindings
+               ;; Bound because at some point in the unknown future we may actually support
+               ;; the :generic-function option to define-method-combination.
+               (,gfsym ,generic-function-form)
+               ,@(mapcar (lambda (req)
+                           `(,req (core:vaslist-pop ,args)))
+                         required-args))
+           (declare (ignorable ,@required-args))
+           (block ,block-name
+             (tagbody
+                ,(generate-node-or-outcome required-args (dtree-root dtree))
+                ;; note: we need generate-node-or-outcome to run to fill *generate-outcomes*.
+                ,@(generate-tagged-outcomes *generate-outcomes* block-name args required-args)
+              dispatch-miss
+                (core:vaslist-rewind ,args)
+                (return-from ,block-name
+                  (clos::dispatch-miss ,gfsym ,args)))))))))
 
 (defun generate-node-or-outcome (arguments node-or-outcome)
   (if (outcome-p node-or-outcome)
@@ -341,23 +354,22 @@
         ;; match: goto existing tag
         `(go ,(cdr existing)))))
 
-(defun generate-tagged-outcomes (list block-name arguments)
+(defun generate-tagged-outcomes (list block-name arguments required-arguments)
   (mapcan (lambda (pair)
             (let ((outcome (car pair)) (tag (cdr pair)))
               (list tag
-                    `(core:vaslist-rewind ,arguments)
                     `(return-from ,block-name
-                       ,(generate-outcome arguments outcome)))))
+                       ,(generate-outcome arguments required-arguments outcome)))))
           list))
 
-(defun generate-outcome (arguments outcome)
+(defun generate-outcome (arguments reqargs outcome)
   (let ((outcome (outcome-outcome outcome)))
     (cond ((optimized-slot-reader-p outcome)
-           (generate-slot-reader arguments outcome))
+           (generate-slot-reader reqargs outcome))
           ((optimized-slot-writer-p outcome)
-           (generate-slot-writer arguments outcome))
+           (generate-slot-writer reqargs outcome))
           ((fast-method-call-p outcome)
-           (generate-fast-method-call arguments outcome))
+           (generate-fast-method-call reqargs outcome))
           ((effective-method-outcome-p outcome)
            (generate-effective-method-call arguments (effective-method-outcome-function outcome)))
           ((function-outcome-p outcome)
@@ -370,7 +382,7 @@
         (class (optimized-slot-reader-class outcome)))
     (cond ((fixnump location)
            ;; instance location- easy
-           `(let* ((instance (core:vaslist-pop ,arguments))
+           `(let* ((instance ,(first arguments))
                    (value (core:instance-ref instance ',location)))
               (if (eq value (core:unbound))
                   (slot-unbound ,class instance ',slot-name)
@@ -385,21 +397,22 @@
                                   ',slot-name ,class)))))
                    (value (car location)))
               (if (eq value (core:unbound))
-                  (slot-unbound ,class (core:vaslist-pop ,arguments) ',slot-name)
+                  (slot-unbound ,class ,(first arguments) ',slot-name)
                   value)))
           (t (error "BUG: Slot location ~a is not a fixnum or cons" location)))))
 
 (defun generate-slot-writer (arguments outcome)
   (let ((location (optimized-slot-writer-index outcome)))
     (cond ((fixnump location)
-           `(let ((value (core:vaslist-pop ,arguments))
-                  (instance (core:vaslist-pop ,arguments)))
+           `(let ((value ,(first arguments))
+                  (instance ,(second arguments)))
               (si:instance-set instance ,location value)))
           ((consp location)
            ;; class location- annoying
+           ;; Note we don't actually need the instance.
            (let ((slot-name (optimized-slot-reader-slot-name outcome))
                  (class (optimized-slot-reader-class outcome)))
-             `(let ((value (core:vaslist-pop ,arguments))
+             `(let ((value ,(first arguments))
                     (location
                       (load-time-value
                        (clos:slot-definition-location
@@ -412,34 +425,36 @@
 
 (defun generate-fast-method-call (arguments outcome)
   (let ((fmf (fast-method-call-function outcome)))
-    `(apply ,fmf ,arguments)))
+    `(funcall ,fmf ,@arguments)))
 
 (defun generate-effective-method-call (arguments outcome)
   (if (consp outcome)
       ;; if the outcome is a cons, we magically assume it's a form to include entirely.
       ;; This happens from the COMPILE-TIME-DISCRIMINATOR machinery in clos/satiation.lsp.
       ;; FIXME: probably clean up. 
-      `(let ((clos::.method-args. ,arguments))
-         ,outcome)
+      `(progn
+         (core:vaslist-rewind ,arguments)
+         (let ((clos::.method-args. ,arguments))
+           ,outcome))
       (let ((emf outcome))
-        `(funcall ,emf ,arguments nil))))
+        `(progn
+           (core:vaslist-rewind ,arguments)
+           (funcall ,emf ,arguments nil)))))
 
 ;;; discrimination
 
 (defun generate-node (arguments node)
-  (let ((arg (gensym "ARG")))
-    `(let ((,arg (core:vaslist-pop ,arguments)))
-       (declare (ignorable ,arg)) ; for skip
-       ,(cond ((skip-node-p node)
-               (generate-skip-node arguments node))
-              ;; We avoid the eql CASE when possible. This isn't really necessary,
-              ;; but let's try to avoid pressuring the optimizer when it's easy.
-              ((has-eql-specializers-p node)
-               `(case ,arg
-                  ,@(generate-eql-specializers arguments arg node)
-                  (otherwise
-                   ,(generate-class-specializers arguments arg node))))
-              (t (generate-class-specializers arguments arg node))))))
+  (let ((arg (pop arguments)))
+    (cond ((skip-node-p node)
+           (generate-skip-node arguments node))
+          ;; We avoid the eql CASE when possible. This isn't really necessary,
+          ;; but let's try to avoid pressuring the optimizer when it's easy.
+          ((has-eql-specializers-p node)
+           `(case ,arg
+              ,@(generate-eql-specializers arguments arg node)
+              (otherwise
+               ,(generate-class-specializers arguments arg node))))
+          (t (generate-class-specializers arguments arg node)))))
 
 (defun generate-skip-node (arguments node)
   (let ((skip-node (first (node-class-specializers node))))
