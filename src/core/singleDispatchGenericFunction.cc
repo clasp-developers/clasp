@@ -263,18 +263,12 @@ Function_sp SingleDispatchGenericFunctionClosure_O::slowMethodLookup(Instance_sp
     }
   }
   if (UNLIKELY(applicableMethods.size() == 0)) {
-    printf("%s:%d   slowMethodLookup for %s\n", __FILE__, __LINE__, _rep_(this->functionName()).c_str());
-    printf("%s:%d    mc-> %s\n", __FILE__, __LINE__, mc->_classNameAsString().c_str());
     for (auto cur : this->_Methods) {
       SingleDispatchMethod_sp sdm = gc::As<SingleDispatchMethod_sp>(oCar(cur));
       Instance_sp ac = sdm->receiver_class();
-      printf("%s:%d   ac->className -> %s\n", __FILE__, __LINE__, _rep_(ac->_className()).c_str());
-      printf("%s:%d   mc->isSubClassOf(ac) -> %d\n", __FILE__, __LINE__, mc->isSubClassOf(ac));
-      printf("%s:%d    class-precedence-list of ac -> %s\n", __FILE__, __LINE__, _rep_(ac->_className()).c_str() );
       List_sp cpl = ac->instanceRef(Instance_O::REF_CLASS_CLASS_PRECEDENCE_LIST);
       for (auto xxx : cpl ) {
         Instance_sp sc = gc::As<Instance_sp>(CONS_CAR(xxx));
-        printf("%s:%d    :   %s matches mc -> %d\n", __FILE__, __LINE__, _rep_(sc->_className()).c_str(), (mc==sc));
       }
     }
     SIMPLE_ERROR(BF("There are no applicable methods of %s for receiver class %s") % _rep_(this->functionName()) % mc->instanceClassName() );
