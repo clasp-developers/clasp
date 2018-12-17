@@ -695,9 +695,10 @@ This interprets the tags and generates objects that are used to generate code."
                           :test #'string=
                           :key #'function-name% )))))
         (error (e)
-          (error "While parsing tag from ~a:~d - ~a"
+          (error "While parsing tag from ~a:~d~%ERROR ~a~%TAG: ~s~%"
                  (tags:file% tag)
                  (tags:line% tag)
-                 e))))
+                 e
+                 tag))))
     (calculate-class-stamps-and-flags classes gc-managed-types)
     (values (order-packages-by-use packages-to-create) functions symbols classes gc-managed-types enums pregcstartups initializers)))
