@@ -222,8 +222,26 @@
           (setf (gethash eql-value eql-ht) outcome)))))
 
 (defun outcome= (outcome1 outcome2)
-  ;; FIXME: Put some thought into this.
-  (equalp outcome1 outcome2))
+  (or (eq outcome1 outcome2) ; covers effective-method-outcome due to closfastgf caching
+      (cond ((optimized-slot-reader-p outcome1)
+             (and (optimized-slot-reader-p outcome2)
+                  ;; could also do class slot locations somehow,
+                  ;; but it doesn't seem like a big priority.
+                  (fixnump (optimized-slot-reader-index outcome1))
+                  (fixnump (optimized-slot-reader-index outcome2))
+                  (= (optimized-slot-reader-index outcome1)
+                     (optimized-slot-reader-index outcome2))))
+            ((optimized-slot-writer-p outcome1)
+             (and (optimized-slot-writer-p outcome2)
+                  (fixnump (optimized-slot-writer-index outcome1))
+                  (fixnump (optimized-slot-writer-index outcome2))
+                  (= (optimized-slot-writer-index outcome1)
+                     (optimized-slot-writer-index outcome2))))
+            ((fast-method-call-p outcome1)
+             (and (fast-method-call-p outcome2)
+                  (eq (fast-method-call-function outcome1)
+                      (fast-method-call-function outcome2))))
+            (t nil))))
 
 (defun verify-node-class-specializers-sorted-p (specializers)
   (let ((working (first specializers)))
@@ -345,14 +363,16 @@
 ;;; they're generated after all the discrimination code is.
 
 (defun generate-go-outcome (outcome)
-  (let ((existing (assoc outcome *generate-outcomes* :test #'outcome=)))
-    (if (null existing)
-        ;; no match: put it on there
-        (let ((tag (gensym "OUTCOME")))
-          (push (cons outcome tag) *generate-outcomes*)
-          `(go ,tag))
-        ;; match: goto existing tag
-        `(go ,(cdr existing)))))
+  ;; FIXME: outcome-outcome is stupid, just use inheritance.
+  (let ((outcome (outcome-outcome outcome)))
+    (let ((existing (assoc outcome *generate-outcomes* :test #'outcome=)))
+      (if (null existing)
+          ;; no match: put it on there
+          (let ((tag (gensym "OUTCOME")))
+            (push (cons outcome tag) *generate-outcomes*)
+            `(go ,tag))
+          ;; match: goto existing tag
+          `(go ,(cdr existing))))))
 
 (defun generate-tagged-outcomes (list block-name arguments required-arguments)
   (mapcan (lambda (pair)
@@ -363,18 +383,17 @@
           list))
 
 (defun generate-outcome (arguments reqargs outcome)
-  (let ((outcome (outcome-outcome outcome)))
-    (cond ((optimized-slot-reader-p outcome)
-           (generate-slot-reader reqargs outcome))
-          ((optimized-slot-writer-p outcome)
-           (generate-slot-writer reqargs outcome))
-          ((fast-method-call-p outcome)
-           (generate-fast-method-call reqargs outcome))
-          ((effective-method-outcome-p outcome)
-           (generate-effective-method-call arguments (effective-method-outcome-function outcome)))
-          ((function-outcome-p outcome)
-           (generate-effective-method-call arguments (function-outcome-function outcome)))
-          (t (error "BUG: Bad thing to be an outcome: ~a" outcome)))))
+  (cond ((optimized-slot-reader-p outcome)
+         (generate-slot-reader reqargs outcome))
+        ((optimized-slot-writer-p outcome)
+         (generate-slot-writer reqargs outcome))
+        ((fast-method-call-p outcome)
+         (generate-fast-method-call reqargs outcome))
+        ((effective-method-outcome-p outcome)
+         (generate-effective-method-call arguments (effective-method-outcome-function outcome)))
+        ((function-outcome-p outcome)
+         (generate-effective-method-call arguments (function-outcome-function outcome)))
+        (t (error "BUG: Bad thing to be an outcome: ~a" outcome))))
 
 (defun generate-slot-reader (arguments outcome)
   (let ((location (optimized-slot-reader-index outcome))
