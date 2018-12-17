@@ -676,10 +676,12 @@ This works like compile-lambda-function in bclasp."
           (let ((ast (generate-ast form env)))
             (translate-ast ast :env env :linkage cmp:*default-linkage*)))))
 
-(defvar *cst-client* (make-instance 'eclector.concrete-syntax-tree:cst-client))
+(defclass clasp-cst-client (eclector.concrete-syntax-tree:cst-client) ())
+
+(defvar *cst-client* (make-instance 'clasp-cst-client))
 
 (defmethod eclector.parse-result:source-position
-    ((client eclector.concrete-syntax-tree:cst-client) stream)
+    ((client clasp-cst-client) stream)
   (core:input-stream-source-pos-info stream))
 
 (defun cclasp-loop-read-and-compile-file-forms (source-sin environment)
