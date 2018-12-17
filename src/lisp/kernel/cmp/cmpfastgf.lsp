@@ -294,12 +294,24 @@
 (defvar *generate-outcomes*) ; alist (outcome . tag)
 
 ;;; main entry point
-(defun generate-dispatcher-from-dtree (generic-function-name dtree &key extra-bindings)
+(defun generate-dispatcher-from-dtree (generic-function dtree
+                                       &key extra-bindings generic-function-name
+                                         (generic-function-form generic-function))
+  ;; GENERIC-FUNCTION-FORM is used when we want to feed this form to COMPILE-FILE,
+  ;; in which case it can't have literal generic functions in it.
+  ;; If we're doing this at runtime, though, we should put the actual GF in, so that
+  ;; things don't break if we have an anonymous GF or suchlike.
   (let ((dispatch-args (gensym "DISPATCH-ARGUMENTS"))
-        (block-name (core:function-block-name generic-function-name))
+        (block-name (if generic-function-name
+                        (core:function-block-name generic-function-name)
+                        (gensym "DISCRIMINATION-BLOCK")))
+        (gfsym (gensym "GENERIC-FUNCTION"))
         (*generate-outcomes* nil))
     `(lambda (core:&va-rest ,dispatch-args)
-       (let (,@extra-bindings)
+       (let (,@extra-bindings
+             ;; Bound because at some point in the unknown future we may actually support
+             ;; the :generic-function option to define-method-combination.
+             (,gfsym ,generic-function-form))
          (block ,block-name
            (tagbody
               ,(generate-node-or-outcome dispatch-args (dtree-root dtree))
@@ -308,7 +320,7 @@
             dispatch-miss
               (core:vaslist-rewind ,dispatch-args)
               (return-from ,block-name
-                (clos::dispatch-miss (fdefinition ',generic-function-name) ,dispatch-args))))))))
+                (clos::dispatch-miss ,gfsym ,dispatch-args))))))))
 
 (defun generate-node-or-outcome (arguments node-or-outcome)
   (if (outcome-p node-or-outcome)
@@ -1160,7 +1172,9 @@
          (dtree (calculate-dtree raw-call-history specializer-profile)))
     (increment-dispatcher-count)
     (clos:generic-function-increment-compilations generic-function)
-    (bclasp-compile nil (generate-dispatcher-from-dtree generic-function-name dtree))))
+    (bclasp-compile nil (generate-dispatcher-from-dtree
+                         generic-function dtree
+                         :generic-function-name generic-function-name))))
 
 (export '(make-dtree
 	  dtree-add-call-history

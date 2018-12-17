@@ -425,10 +425,13 @@
 (defun compile-time-discriminator (generic-function &rest lists-of-specializer-names)
   (multiple-value-bind (call-history fmf-binds mf-binds)
       (apply #'compile-time-call-history generic-function lists-of-specializer-names)
-    (cmp::generate-dispatcher-from-dtree
-     (generic-function-name generic-function)
-     (cmp::calculate-dtree call-history (generic-function-specializer-profile generic-function))
-     :extra-bindings (compile-time-bindings-junk fmf-binds mf-binds))))
+    (let ((name (generic-function-name generic-function)))
+      (cmp::generate-dispatcher-from-dtree
+       generic-function
+       (cmp::calculate-dtree call-history (generic-function-specializer-profile generic-function))
+       :extra-bindings (compile-time-bindings-junk fmf-binds mf-binds)
+       :generic-function-name name
+       :generic-function-form `(load-time-value (fdefinition ',name) t)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
