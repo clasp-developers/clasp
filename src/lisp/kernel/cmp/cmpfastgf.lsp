@@ -296,7 +296,6 @@
 ;;; main entry point
 (defun generate-dispatcher-from-dtree (generic-function-name dtree &key extra-bindings)
   (let ((dispatch-args (gensym "DISPATCH-ARGUMENTS"))
-        ;;(backup-args (gensym "ARGUMENTS"))
         (block-name (core:function-block-name generic-function-name))
         (*generate-outcomes* nil))
     `(lambda (core:&va-rest ,dispatch-args)
@@ -305,11 +304,11 @@
            (tagbody
               ,(generate-node-or-outcome dispatch-args (dtree-root dtree))
               ;; note: we need generate-node-or-outcome to run to fill *generate-outcomes*.
-              ,@(generate-tagged-outcomes *generate-outcomes* block-name dispatch-args #+(or)backup-args)
+              ,@(generate-tagged-outcomes *generate-outcomes* block-name dispatch-args)
             dispatch-miss
               (core:vaslist-rewind ,dispatch-args)
               (return-from ,block-name
-                (clos::dispatch-miss (fdefinition ',generic-function-name) ,dispatch-args #+(or),backup-args))))))))
+                (clos::dispatch-miss (fdefinition ',generic-function-name) ,dispatch-args))))))))
 
 (defun generate-node-or-outcome (arguments node-or-outcome)
   (if (outcome-p node-or-outcome)
@@ -488,22 +487,7 @@
             ,(generate-class-binary-search arguments left-matches stamp-var)
             ,(generate-class-binary-search arguments right-matches stamp-var))))))
 
-
-(defun compiled-dtree-form (dtree)
-  (let ((vargs (gensym "VARGS"))
-	(orig-vargs (gensym "ORIG-VARGS"))
-	(*map-tag-outcomes* (make-hash-table)))
-    `(lambda (,orig-vargs &aux (,vargs (copy-vargs ,orig-vargs)))
-       (tagbody
-	  ,(compile-node-or-outcome (dtree-root dtree) vargs `(copy-vargs ,vargs))
-	  ,@(let (result)
-                 (maphash (lambda (key value)
-                            (push value result)
-                            (push key result))
-                          *map-tag-outcomes*)
-                 result)
-	miss
-	  (no-applicable-method ,vargs)))))
+;;; draw a picture for debugging
 
 (defun draw-node (fout node)
   (cond
@@ -1020,7 +1004,7 @@
          (dtree-add-call-history dt (list (cons #() (cdr (car raw-call-history))))))
         (t (error "codegen-dispatcher was called with an empty call-history - no dispatcher can be generated")))
       dt)))
-    
+
 (defun codegen-dispatcher-from-dtree (generic-function dtree &key (generic-function-name "discriminator") output-path log-gf (debug-on t debug-on-p))
   (let ((debug-on (if debug-on-p
                       debug-on
