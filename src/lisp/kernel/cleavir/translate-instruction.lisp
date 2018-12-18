@@ -689,25 +689,19 @@
 (defmethod translate-branch-instruction
     ((instruction cleavir-ir:fixnum-less-instruction) return-value successors abi function-info)
   (let* ((inputs (cleavir-ir:inputs instruction))
-         (x (%ptrtoint (in (first inputs)) (%default-int-type abi)))
-         (y (%ptrtoint (in (second inputs)) (%default-int-type abi)))
-         (cmp-lt (%icmp-slt x y)))
+         (cmp-lt (%icmp-slt (in (first inputs)) (in (second inputs)))))
       (%cond-br cmp-lt (first successors) (second successors))))
 
 (defmethod translate-branch-instruction
     ((instruction cleavir-ir:fixnum-not-greater-instruction) return-value successors abi function-info)
   (let* ((inputs (cleavir-ir:inputs instruction))
-         (x (%ptrtoint (in (first inputs)) (%default-int-type abi)))
-         (y (%ptrtoint (in (second inputs)) (%default-int-type abi)))
-         (cmp-lt (%icmp-sle x y)))
+         (cmp-lt (%icmp-sle (in (first inputs)) (in (second inputs)))))
       (%cond-br cmp-lt (first successors) (second successors))))
 
 (defmethod translate-branch-instruction
     ((instruction cleavir-ir:fixnum-equal-instruction) return-value successors abi function-info)
   (let* ((inputs (cleavir-ir:inputs instruction))
-         (x (%ptrtoint (in (first inputs)) (%default-int-type abi)))
-         (y (%ptrtoint (in (second inputs)) (%default-int-type abi)))
-         (cmp-lt (%icmp-eq x y)))
+         (cmp-lt (%icmp-eq (in (first inputs)) (in (second inputs)))))
       (%cond-br cmp-lt (first successors) (second successors))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
