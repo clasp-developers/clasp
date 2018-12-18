@@ -2194,7 +2194,6 @@ void dbg_print_frame(const std::vector<core::BacktraceEntry>& backtrace, size_t 
     core::T_sp closure((gctools::Tagged)core::get_raw_argument_from_stack(backtrace[idx]._FunctionStart,backtrace[idx]._BasePointer,backtrace[idx]._FrameOffset,0));
     // printf("%s:%s:%d Printing \n", __FILE__, __FUNCTION__, __LINE__);
     size_t nargs = core::get_raw_argument_from_stack(backtrace[idx]._FunctionStart,backtrace[idx]._BasePointer,backtrace[idx]._FrameOffset,1);
-    // printf("%s:%s:%d Printing\n", __FILE__, __FUNCTION__, __LINE__);
     for ( size_t i=0; i<nargs; ++i ) {
       // printf("%s:%s:%d Printing arg %lu of %lu\n", __FILE__, __FUNCTION__, __LINE__, i, nargs);
       uintptr_t raw_arg = core::get_raw_argument_from_stack(backtrace[idx]._FunctionStart,backtrace[idx]._BasePointer,backtrace[idx]._FrameOffset,2+i);
