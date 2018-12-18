@@ -325,7 +325,7 @@ Return the **output-pathname**."
        (link-bitcode-modules output-pathname input-files))
       (t (error "Cannot link format ~a" link-type)))
     (let ((link-time (/ (- (get-internal-real-time) start-time) (float internal-time-units-per-second))))
-      (format t "llvm-link link-time -> ~a~%" link-time)
+;;;      (format t "llvm-link link-time -> ~a~%" link-time)
       (incf llvm-sys:*accumulated-clang-link-time* link-time))
     output-pathname))
 
