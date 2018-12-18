@@ -567,9 +567,10 @@ Does not hoist."
 
 (defun translate-ast (ast &key (abi *abi-x86-64*) (linkage 'llvm-sys:internal-linkage)
                             (env *clasp-env*) ignore-arguments)
-  (translate-hoisted-ast (hoist-ast ast env)
-                 :abi abi :linkage linkage :env env
-                 :ignore-arguments ignore-arguments))
+  (let ((hoisted-ast (hoist-ast ast env)))
+    (translate-hoisted-ast hoisted-ast
+                           :abi abi :linkage linkage :env env
+                           :ignore-arguments ignore-arguments)))
 
 (defun translate-lambda-expression-to-llvm-function (lambda-expression)
   "Compile a lambda expression into an llvm-function and return it.

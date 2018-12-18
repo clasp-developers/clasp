@@ -68,7 +68,8 @@
                   (let ((clasp-cleavir::*llvm-metadata* (make-hash-table :test 'eql)))
                     (core:with-memory-ramp (:pattern 'gctools:ramp)
                       (literal:with-top-level-form
-                            (clasp-cleavir::translate-ast (clasp-cleavir::hoist-ast (ast-job-ast job)) :env (ast-job-environment job))))))
+                          (let ((hoisted-ast (clasp-cleavir::hoist-ast (ast-job-ast job))))
+                            (clasp-cleavir::translate-hoisted-ast hoisted-ast :env (ast-job-environment job)))))))
               (make-boot-function-global-variable module run-all-function :position (ast-job-form-index job))))
           (cmp-log "About to verify the module%N")
           (cmp-log-dump-module module)
