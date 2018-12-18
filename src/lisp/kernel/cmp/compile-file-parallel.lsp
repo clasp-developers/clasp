@@ -311,7 +311,7 @@ Compile a lisp source file into an LLVM module."
                                               :ast-only ast-only
                                               :dry-run dry-run)))
           (cf2-log "Came out of compile-file-to-result with result: ~s~%" result)
-          (loop for one in result do (format t "Result: ~s~%" one))
+;;;          (loop for one in result do (format t "Result: ~s~%" one))
           (cond
             (dry-run
              (format t "Doing nothing further~%"))
