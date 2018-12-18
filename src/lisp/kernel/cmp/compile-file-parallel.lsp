@@ -151,7 +151,6 @@
           (when *compile-print* (cmp::describe-form form))
           (unless ast-only
             (push ast-job ast-jobs)
-            #+(or)
             (progn
               (push (mp:process-run-function
                      (core:bformat nil "compile-file-%d" form-index)
@@ -175,15 +174,15 @@
                        (cmp::*global-function-refs* . ',cmp::*global-function-refs*)
                        ))
                     ast-threads)
-              (mp:process-join (pop ast-threads)))
-;;;            #+(or)
+              #+(or)(mp:process-join (pop ast-threads)))
+            #+(or)
             (compile-from-ast ast-job
                               :optimize optimize
                               :optimize-level optimize-level
                               :intermediate-output-type intermediate-output-type))
           (incf form-index))))
     ;; Now wait for all threads to join
-    #+(or)
+;;;    #+(or)
     (loop for thread in ast-threads
           do (mp:process-join thread))
     ;; Now return the results
