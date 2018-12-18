@@ -280,7 +280,7 @@
 
     (primitive         "cc_setup_vaslist" %t*% (list %vaslist*% %va_list*% %size_t%))
     (primitive         "cc_setup_vaslist_internal" %t*% (list %vaslist*% %size_t%))
-    (primitive         "vaslist_pop" %t*% (list %t*%))
+    (primitive         "cx_vaslist_pop" %t*% (list %t*%))
     (primitive         "cc_rewind_va_list" %void% (list %va_list*% %register-save-area*%))
     (primitive         "cc_rewind_vaslist" %t*% (list %vaslist*% %va_list*% %register-save-area*%))
     (primitive-unwinds "cc_call_multipleValueOneFormCall" %return_type% (list %t*%))
@@ -422,6 +422,7 @@
     (primitive-unwinds "to_object_void" %t*% (list))
     ;; === END OF TRANSLATORS ===
     (primitive         "cc_read_stamp" %i64% (list %i8*%))
+    (primitive         "cx_read_stamp" %t*% (list %t*%))
     *primitives*
   ))
 

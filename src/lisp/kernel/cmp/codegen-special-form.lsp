@@ -32,6 +32,7 @@
     (core:foreign-call-pointer codegen-foreign-call-pointer convert-foreign-call-pointer)
     (symbol-macrolet  codegen-symbol-macrolet convert-symbol-macrolet)
     (core:vaslist-pop codegen-vaslist-pop convert-vaslist-pop)
+    (core:instance-stamp codegen-instance-stamp convert-instance-stamp)
     (llvm-inline codegen-llvm-inline convert-llvm-inline)
     (:gc-profiling codegen-gc-profiling convert-gc-profiling)
     (core::debug-message codegen-debug-message convert-debug-message)
@@ -811,7 +812,15 @@ jump to blocks within this tagbody."
   (let ((form (car rest))
         (vaslist (irc-alloca-t* :label "vaslist-pop-vaslist")))
     (codegen vaslist form env)
-    (irc-store (irc-intrinsic "vaslist_pop" (irc-load vaslist)) result)))
+    (irc-store (irc-intrinsic "cx_vaslist_pop" (irc-load vaslist)) result)))
+
+;;; CORE:INSTANCE-STAMP
+
+(defun codegen-instance-stamp (result rest env)
+  (let ((form (car rest))
+        (object (irc-alloca-t* :label "instance-stamp-instance")))
+    (codegen object form env)
+    (irc-store (irc-intrinsic "cx_read_stamp" (irc-load object)) result)))
 
 ;;; DBG-i32
 
