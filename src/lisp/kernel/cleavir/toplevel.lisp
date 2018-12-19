@@ -31,6 +31,8 @@
 (defun run-thunk (thunk)
   (funcall thunk))
 
+(defvar *dump-eval-compile* nil)
+
 (defmethod cclasp-eval-with-env (form env)
 ;;  (format t "cclasp-eval eval: ~a~%" form)
   (flet ((eval-progn (body &optional (penv env))
@@ -40,9 +42,16 @@
               else
               return (cclasp-eval form penv)))
          (eval-compile (form)
-           (let ((thunk (cclasp-compile-in-env nil
-                                           ;; PROGN is needed to avoid processing DECLARE as a declaration
-                                               `(lambda () (progn ,form)) env)))
+           (when *dump-eval-compile*
+             (let ((*print-pretty* nil))
+             (format *debug-io* "toplevel form to cmpl: ~s~%" form)))
+           (let* ((start-time (get-universal-time))
+                  (thunk (cclasp-compile-in-env nil
+                                                ;; PROGN is needed to avoid processing DECLARE as a declaration
+                                                `(lambda () (progn ,form)) env))
+                  (end-time (get-universal-time)))
+             (when *dump-eval-compile*
+               (format *debug-io* "toplevel time: ~7,3f us~%" (* (/ (float (- end-time start-time)) internal-time-units-per-second) 1000000.0)))
              (run-thunk thunk))))
     (let ((form (macroexpand form env)))
       (typecase form
@@ -75,6 +84,17 @@
                                                  then
                                                  else)
                                              env)))
+                    (setq
+                     (when(oddp (length body))
+                       (error "Expected an even number of arguments for setq"))
+                     (loop for cur = body then (cddr cur)
+                           for symbol = (car cur)
+                           for expression = (cadr cur)
+                           while cur
+                           if (ext:specialp symbol)
+                             do (set symbol (cclasp-eval-with-env expression env))
+                           else
+                             do (eval-compile `(setq ,symbol ,expression))))
                     (progn
                       (eval-progn body))
                     (eval-when
