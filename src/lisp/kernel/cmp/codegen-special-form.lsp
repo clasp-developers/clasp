@@ -32,6 +32,7 @@
     (core:foreign-call-pointer codegen-foreign-call-pointer convert-foreign-call-pointer)
     (symbol-macrolet  codegen-symbol-macrolet convert-symbol-macrolet)
     (core:vaslist-pop codegen-vaslist-pop convert-vaslist-pop)
+    (core:instance-stamp codegen-instance-stamp convert-instance-stamp)
     (llvm-inline codegen-llvm-inline convert-llvm-inline)
     (:gc-profiling codegen-gc-profiling convert-gc-profiling)
     (core::debug-message codegen-debug-message convert-debug-message)
@@ -406,15 +407,25 @@ env is the parent environment of the (result-af) value frame"
            (n2 (irc-alloca-t* :label "fixnum-cmp-2")))
        (codegen n1 n1form env)
        (codegen n2 n2form env)
-       ;; FIXME: vary the type by abi
-       (let* ((n1x (irc-ptr-to-int (irc-load n1) %i64%))
-              (n2x (irc-ptr-to-int (irc-load n2) %i64%))
-              (test (,operator n1x n2x "fixnum-cmp")))
-         (irc-cond-br test thenb elseb)))))
+       (irc-cond-br
+        (,operator (irc-load n1) (irc-load n2) "fixnum-cmp")
+        thenb elseb))))
 
 (define-fixnum-cmp compile-fixnum-less-condition irc-icmp-slt)
 (define-fixnum-cmp compile-fixnum-lte-condition irc-icmp-sle)
 (define-fixnum-cmp compile-fixnum-equal-condition irc-icmp-eq)
+
+;;; this is exactly the same as fixnum-equal, but has different implications,
+;;; so it's separate.
+(defun compile-eq-condition (cond env thenb elseb)
+  (let ((n1form (second cond)) (n2form (third cond))
+        (n1 (irc-alloca-t* :label "eq-1"))
+        (n2 (irc-alloca-t* :label "eq-2")))
+    (codegen n1 n1form env)
+    (codegen n2 n2form env)
+    (irc-cond-br
+     (irc-icmp-eq (irc-load n1) (irc-load n2) "eq")
+     thenb elseb)))
 
 (defun compile-general-condition (cond env thenb elseb)
   "Generate code for cond that branches to one of the provided successor blocks"
@@ -437,6 +448,8 @@ env is the parent environment of the (result-af) value frame"
          (compile-fixnum-lte-condition cond env thenb elseb))
         ((cleavir-primop:fixnum-equal)
          (compile-fixnum-equal-condition cond env thenb elseb))
+        ((cleavir-primop:eq)
+         (compile-eq-condition cond env thenb elseb))
         (otherwise (compile-general-condition cond env thenb elseb)))
       (compile-general-condition cond env thenb elseb)))
 
@@ -811,7 +824,15 @@ jump to blocks within this tagbody."
   (let ((form (car rest))
         (vaslist (irc-alloca-t* :label "vaslist-pop-vaslist")))
     (codegen vaslist form env)
-    (irc-store (irc-intrinsic "vaslist_pop" (irc-load vaslist)) result)))
+    (irc-store (irc-intrinsic "cx_vaslist_pop" (irc-load vaslist)) result)))
+
+;;; CORE:INSTANCE-STAMP
+
+(defun codegen-instance-stamp (result rest env)
+  (let ((form (car rest))
+        (object (irc-alloca-t* :label "instance-stamp-instance")))
+    (codegen object form env)
+    (irc-store (irc-intrinsic "cx_read_stamp" (irc-load object)) result)))
 
 ;;; DBG-i32
 

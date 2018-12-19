@@ -315,43 +315,57 @@
 (defun generate-dispatcher-from-dtree (generic-function dtree
                                        &key extra-bindings generic-function-name
                                          (generic-function-form generic-function))
-  (multiple-value-bind (min max)
-      (clos:generic-function-min-max-args generic-function)
-    ;; We need MIN to know how many arguments to grab.
-    ;; MAX we should use for argument count checking. FIXME.
-    (declare (ignore max))
-    ;; GENERIC-FUNCTION-FORM is used when we want to feed this form to COMPILE-FILE,
-    ;; in which case it can't have literal generic functions in it.
-    ;; If we're doing this at runtime, though, we should put the actual GF in, so that
-    ;; things don't break if we have an anonymous GF or suchlike.
-    (let ((args (gensym "DISPATCH-ARGUMENTS"))
-          (block-name (if generic-function-name
-                          (core:function-block-name generic-function-name)
-                          (gensym "DISCRIMINATION-BLOCK")))
-          (gfsym (gensym "GENERIC-FUNCTION"))
-          ;; list of gensyms, one for each required argument.
-          (required-args (let ((res nil))
-                           (dotimes (i min res)
-                             (push (gensym "DISPATCH-ARG") res))))
-          (*generate-outcomes* nil))
-      `(lambda (core:&va-rest ,args)
-         (let (,@extra-bindings
-               ;; Bound because at some point in the unknown future we may actually support
-               ;; the :generic-function option to define-method-combination.
-               (,gfsym ,generic-function-form)
-               ,@(mapcar (lambda (req)
-                           `(,req (core:vaslist-pop ,args)))
-                         required-args))
-           (declare (ignorable ,@required-args))
-           (block ,block-name
-             (tagbody
-                ,(generate-node-or-outcome required-args (dtree-root dtree))
-                ;; note: we need generate-node-or-outcome to run to fill *generate-outcomes*.
-                ,@(generate-tagged-outcomes *generate-outcomes* block-name args required-args)
-              dispatch-miss
-                (core:vaslist-rewind ,args)
-                (return-from ,block-name
-                  (clos::dispatch-miss ,gfsym ,args)))))))))
+  ;; GENERIC-FUNCTION-FORM is used when we want to feed this form to COMPILE-FILE,
+  ;; in which case it can't have literal generic functions in it.
+  ;; If we're doing this at runtime, though, we should put the actual GF in, so that
+  ;; things don't break if we have an anonymous GF or suchlike.
+  ;; EXTRA-BINDINGS is also used in the compile-file case, and gets methods and stuff
+  ;; with load-time-value.
+  (let* (;; We need to know the number of arguments to dispatch on, and to have
+         ;; to the discriminating function if we can manage that.
+         ;; FIXME: This will work, due to how the s-profile is initialized,
+         ;; but it's weird and indirect.
+         (nreq (length (clos:generic-function-specializer-profile generic-function)))
+         ;; and we need this to see if we can manage that
+         (need-vaslist-p (call-history-needs-vaslist-p
+                          (clos:generic-function-call-history generic-function)))
+         (vaslist-args (if need-vaslist-p
+                           (gensym "DISPATCH-VA-ARGS")
+                           '(error "BUG: Discriminator tried to use vaslist")))
+         (block-name (if generic-function-name
+                         (core:function-block-name generic-function-name)
+                         (gensym "DISCRIMINATION-BLOCK")))
+         (gfsym (gensym "GENERIC-FUNCTION"))
+         ;; List of gensyms, one for each required argument
+         (required-args (let ((res nil))
+                          (dotimes (i nreq res)
+                            (push (gensym "DISPATCH-ARG") res))))
+         (*generate-outcomes* nil))
+    `(lambda ,(if need-vaslist-p
+                  `(core:&va-rest ,vaslist-args)
+                  required-args)
+       (let (,@extra-bindings
+             ;; Bound because at some point in the unknown future we may actually support
+             ;; the :generic-function option to define-method-combination.
+             (,gfsym ,generic-function-form)
+             ,@(if need-vaslist-p
+                   (mapcar (lambda (req)
+                             `(,req (core:vaslist-pop ,vaslist-args)))
+                           required-args)
+                   nil))
+         (declare (ignorable ,@required-args))
+         (block ,block-name
+           (tagbody
+              ,(generate-node-or-outcome required-args (dtree-root dtree))
+              ;; note: we need generate-node-or-outcome to run to fill *generate-outcomes*.
+              ,@(generate-tagged-outcomes *generate-outcomes* block-name vaslist-args required-args)
+            dispatch-miss
+              ,@(if need-vaslist-p
+                    `((core:vaslist-rewind ,vaslist-args)
+                      (return-from ,block-name
+                        (clos::dispatch-miss ,gfsym ,vaslist-args)))
+                    `((return-from ,block-name
+                        (clos::dispatch-miss-with-args ,gfsym ,@required-args))))))))))
 
 (defun generate-node-or-outcome (arguments node-or-outcome)
   (if (outcome-p node-or-outcome)
@@ -374,15 +388,15 @@
           ;; match: goto existing tag
           `(go ,(cdr existing))))))
 
-(defun generate-tagged-outcomes (list block-name arguments required-arguments)
+(defun generate-tagged-outcomes (list block-name vaslist-arguments required-arguments)
   (mapcan (lambda (pair)
             (let ((outcome (car pair)) (tag (cdr pair)))
               (list tag
                     `(return-from ,block-name
-                       ,(generate-outcome arguments required-arguments outcome)))))
+                       ,(generate-outcome vaslist-arguments required-arguments outcome)))))
           list))
 
-(defun generate-outcome (arguments reqargs outcome)
+(defun generate-outcome (vaslist-arguments reqargs outcome)
   (cond ((optimized-slot-reader-p outcome)
          (generate-slot-reader reqargs outcome))
         ((optimized-slot-writer-p outcome)
@@ -390,9 +404,9 @@
         ((fast-method-call-p outcome)
          (generate-fast-method-call reqargs outcome))
         ((effective-method-outcome-p outcome)
-         (generate-effective-method-call arguments (effective-method-outcome-function outcome)))
+         (generate-effective-method-call vaslist-arguments (effective-method-outcome-function outcome)))
         ((function-outcome-p outcome)
-         (generate-effective-method-call arguments (function-outcome-function outcome)))
+         (generate-effective-method-call vaslist-arguments (function-outcome-function outcome)))
         (t (error "BUG: Bad thing to be an outcome: ~a" outcome))))
 
 (defun generate-slot-reader (arguments outcome)
@@ -403,7 +417,7 @@
            ;; instance location- easy
            `(let* ((instance ,(first arguments))
                    (value (core:instance-ref instance ',location)))
-              (if (eq value (core:unbound))
+              (if (cleavir-primop:eq value (load-time-value (core:unbound) t))
                   (slot-unbound ,class instance ',slot-name)
                   value)))
           ((consp location)

@@ -704,6 +704,11 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
                  (do-dispatch-miss generic-function valist-args arguments)))))
     (decf-debug-fastgf-indent)))
 
+;; (apply #'dispatch-miss-with-args gf vaslist) = (dispatch-miss gf vaslist)
+;; TODO: Make APPLY good enough that we can lose one.
+(defun dispatch-miss-with-args (generic-function core:&va-rest valist-args)
+  (dispatch-miss generic-function valist-args))
+
 ;;; change-class requires removing call-history entries involving the class
 ;;; and invalidating the generic functions
 
