@@ -35,8 +35,7 @@ core::T_sp safe_signal_name(int sig) {
   if (_lisp->_Roots._Booted) {
     core::T_sp cur = core__alist_assoc_eql(_lisp->_Roots._UnixSignalHandlers,key);
     if (cur.notnilp()) {
-      core::List_sp value = oCar(cur);
-      return oCadr(value); // return the signal name
+      return oCadr(cur); // return the signal name
     }
   }
   return key;
@@ -46,16 +45,19 @@ core::T_sp safe_signal_name(int sig) {
 core::T_sp safe_signal_handler(int sig) {
   WITH_READ_LOCK(_lisp->_Roots._UnixSignalHandlersMutex);
   core::T_sp key = core::clasp_make_fixnum(sig);
-  if (_lisp->_Roots._Booted) {
+  if (_lisp->_Roots._Booted) { 
     core::T_sp cur = core__alist_assoc_eql(_lisp->_Roots._UnixSignalHandlers,key);
     if (cur.notnilp()) {
-      core::List_sp value = oCar(cur);
-      return oCaddr(value); // return the signal name
+      return oCaddr(cur); // return the signal handler
     }
   }
   return key;
 }
 
+
+core::T_mv gctools__signal_info(int sig) {
+  return Values(safe_signal_name(sig),safe_signal_handler(sig));
+}
 
 static bool do_interrupt_thread(mp::Process_sp process)
 {
@@ -156,8 +158,13 @@ inline bool interrupts_disabled_by_lisp() {
 void handle_signal_now( core::T_sp signal_code, core::T_sp process ) {
   if ( signal_code.fixnump() ) {
     printf("%s:%d Received a unix signal with code: %lu\n", __FILE__, __LINE__, (size_t)signal_code.unsafe_fixnum());
-    core::cl__cerror(ext::_sym_ignore_signal->symbolValue(),ext::_sym_unix_signal_received,
-                     core::Cons_O::createList(kw::_sym_code, signal_code));
+    core::Symbol_sp handler = gc::As<core::Symbol_sp>(safe_signal_handler(signal_code.unsafe_fixnum()));
+    if ((gc::IsA<core::Function_sp>(handler->symbolValue()) || gc::IsA<core::Symbol_sp>(handler->symbolValue()))) {
+      core::eval::funcall(handler->symbolValue());
+    } else {
+      core::cl__cerror(ext::_sym_ignore_signal->symbolValue(),ext::_sym_unix_signal_received,
+                       core::Cons_O::createList(kw::_sym_code, signal_code, kw::_sym_handler, handler));
+    }
   } else if (gc::IsA<core::Symbol_sp>(signal_code)) {
     if (core::cl__find_class(signal_code,false,_Nil<core::T_O>()).notnilp()) {
       core::cl__cerror(ext::_sym_ignore_signal->symbolValue(),signal_code,_Nil<core::T_O>());
@@ -398,6 +405,12 @@ void initialize_signals(int clasp_signal) {
   }
   new_action.sa_handler = handle_signals;
   sigemptyset (&new_action.sa_mask);
+  new_action.sa_flags = SA_RESTART;
+  if (sigaction (SIGINFO, &new_action, NULL) != 0) {
+    printf("failed to register SIGINFO signal-handler with kernel error: %s\n", strerror(errno));
+  }
+  new_action.sa_handler = handle_signals;
+  sigemptyset (&new_action.sa_mask);
   new_action.sa_flags = SA_RESTART | SA_ONSTACK;
   if (sigaction (SIGABRT, &new_action, NULL) != 0) {
     printf("failed to register SIGABRT signal-handler with kernel error: %s\n", strerror(errno));
@@ -527,13 +540,18 @@ void initialize_unix_signal_handlers() {
         ADD_SIGNAL( SIGWINCH, "SIGWINCH", _Nil<core::T_O>());
 #endif
 #ifdef SIGINFO
-        ADD_SIGNAL( SIGINFO, "SIGINFO", _Nil<core::T_O>());
+        ADD_SIGNAL( SIGINFO, "SIGINFO", core::_sym_STARinformation_callbackSTAR);
 #endif
 #ifdef SIGUSR1
         ADD_SIGNAL( SIGUSR1, "SIGUSR1", _Nil<core::T_O>());
 #endif
 #ifdef SIGUSR2
+#ifdef _TARGET_OS_DARWIN
         ADD_SIGNAL( SIGUSR2, "SIGUSR2", _Nil<core::T_O>());
+#endif
+#ifdef _TARGET_OS_LINUX
+        ADD_SIGNAL( SIGUSR2, "SIGUSR2", core::_sym_STARinformation_callbackSTAR);
+#endif
 #endif
 #ifdef SIGTHR
         ADD_SIGNAL( SIGTHR, "SIGTHR", _Nil<core::T_O>());

@@ -193,6 +193,8 @@ SYMBOL_EXPORT_SC_(ExtPkg,ignore_signal);
 SYMBOL_EXPORT_SC_(ExtPkg,unix_signal_received);
 SYMBOL_EXPORT_SC_(KeywordPkg,process);
 SYMBOL_EXPORT_SC_(KeywordPkg,code);
+SYMBOL_EXPORT_SC_(KeywordPkg,handler);
+SYMBOL_EXPORT_SC_(CorePkg,STARinformation_callbackSTAR);
 
 
 SYMBOL_EXPORT_SC_(CorePkg, STARmpi_rankSTAR);
@@ -1183,6 +1185,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARdebug_dispatchSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARdebug_valuesSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARforeign_data_reader_callbackSTAR->defparameter(_Nil<core::T_O>());
+  _sym_STARinformation_callbackSTAR->defparameter(_Nil<core::T_O>());
   int optimization_level = 3;
   const char* optLevel = getenv("CLASP_OPTIMIZATION_LEVEL");
   if (optLevel) {
