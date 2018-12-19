@@ -458,15 +458,18 @@ eg:  (f closure-ptr nargs a b c d ...)
 (define-symbol-macro %fn-prototype*[2]% (llvm-sys:array-type-get %fn-prototype*% 2))
 
 
+;;; ------------------------------------------------------------
+;;;
+;;; This must match FunctionDescription in functor.h
+;;;
+;;; source-info/function-name are stored in a CONS cell CAR/CDR
+;;; lambda-list/docstring are stored in a CONS cell CAR/CDR
 (define-symbol-macro %function-description%
     (llvm-sys:struct-type-get *llvm-context*
                               (list %fn-prototype*%
                                     %gcroots-in-module*%
-                                    %i32% ; source info index
-                                    %i32% ; function name literal index
-                                    %i32% ; lambda-list literal index
-                                    %i32% ; docstring literal index
-                                    %i32% ; declare index
+                                    %i32% ; source-info.function-name index
+                                    %i32% ; lambda-list./docstring literal index
                                     %i32% ; lineno
                                     %i32% ; column
                                     %i32% ; filepos

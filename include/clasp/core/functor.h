@@ -56,7 +56,7 @@ namespace core {
 Each thread maintains a current GCRootsInModule structure that stores roots
 used by the FunctionDescription objects.  Every time a Function_O object is created
 a FunctionDescription is allocated using 'new' and if the GCRootsInModule can still fit
-all of the slots (six currently) indicated by the fields that end in 'Index' then that
+all of the slots (two currently) indicated by the fields that end in 'Index' then that
 GCRootsInModule* is written into the FunctionDescription and the indices into the
 GCRootsInModule are written into the FunctionDescription.  Then the function description
 objects that need to be managed by the GC are written into the GCRootsInModule object.
@@ -70,20 +70,17 @@ fields at the same offset as Instance_O.
   struct FunctionDescription {
 // There are six slots below that end with Index
     // They need space opened up in the GCRoots vector
-    static const size_t Roots = 6;
+    static const size_t Roots = 2;
     void* functionPrototype;
     gctools::GCRootsInModule* gcrootsInModule;
-    int sourcePathnameIndex;
-    int functionNameIndex;
-    int lambdaListIndex;
-    int docstringIndex;
-    int declareIndex;
+    int sourcePathname_functionName_Index;
+    int lambdaList_docstring_Index;
     int lineno;
     int column;
     int filepos;
   };
 
-  FunctionDescription* makeFunctionDescription(T_sp functionName, T_sp lambda_list=_Unbound<T_O>(), T_sp docstring=_Unbound<T_O>(), T_sp sourcePathname=_Unbound<T_O>(), int lineno=-1, int column=-1, int filePos=-1, T_sp declares = _Nil<core::T_O>());
+  FunctionDescription* makeFunctionDescription(T_sp functionName, T_sp lambda_list=_Unbound<T_O>(), T_sp docstring=_Unbound<T_O>(), T_sp sourcePathname=_Unbound<T_O>(), int lineno=-1, int column=-1, int filePos=-1);
 
   void validateFunctionDescription(const char* filename, size_t lineno, Function_sp function);
 
@@ -120,38 +117,38 @@ public:
     // Rewrite the function-description pointer - used in direct-calls.lsp
     
     virtual void set_fdesc(FunctionDescription* address) = 0;
-    
+
+#if 0
     T_sp fdescInfo(int index) const {
-      T_sp result((gctools::Tagged)this->fdesc()->gcrootsInModule->get(this->fdesc()->functionNameIndex));
+      T_sp result((gctools::Tagged)this->fdesc()->gcrootsInModule->get(this->fdesc()->sourcePosition_functionName_Index));
       return result;
     }
+#endif
     CL_LISPIFY_NAME("core:functionName");
     CL_DEFMETHOD virtual T_sp functionName() const {
-      return this->fdescInfo(this->fdesc()->functionNameIndex);
+      Cons_sp cell((gctools::Tagged)this->fdesc()->gcrootsInModule->get(this->fdesc()->sourcePathname_functionName_Index));
+      return CONS_CDR(cell);
     }
     T_sp docstring() const {
-      T_sp result((gctools::Tagged)this->fdesc()->gcrootsInModule->get(this->fdesc()->docstringIndex));
-      return result;
-    }
-    T_sp declares() const {
-      T_sp result((gctools::Tagged)this->fdesc()->gcrootsInModule->get(this->fdesc()->declareIndex));
-      return result;
+      Cons_sp cell((gctools::Tagged)this->fdesc()->gcrootsInModule->get(this->fdesc()->lambdaList_docstring_Index));
+      return CONS_CDR(cell);
     }
     CL_DEFMETHOD void setf_lambdaList(T_sp lambda_list) {
-      this->fdesc()->gcrootsInModule->set(this->fdesc()->lambdaListIndex,lambda_list.tagged_());
+      Cons_sp cell((gctools::Tagged)this->fdesc()->gcrootsInModule->get(this->fdesc()->lambdaList_docstring_Index));
+      cell->rplaca(lambda_list);
     }
     CL_DEFMETHOD T_sp sourcePathname() const {
-      T_sp result((gctools::Tagged)this->fdesc()->gcrootsInModule->get(this->fdesc()->sourcePathnameIndex));
+      Cons_sp cell((gctools::Tagged)this->fdesc()->gcrootsInModule->get(this->fdesc()->sourcePathname_functionName_Index));
+      T_sp result = CONS_CAR(cell);
       return result;
     }
     void setf_sourcePathname(T_sp sourceFileName) const {
-      this->fdesc()->gcrootsInModule->set(this->fdesc()->sourcePathnameIndex,sourceFileName.tagged_());
+      Cons_sp cell((gctools::Tagged)this->fdesc()->gcrootsInModule->get(this->fdesc()->sourcePathname_functionName_Index));
+      cell->rplaca(sourceFileName);
     }
     void setf_docstring(T_sp x) const {
-      this->fdesc()->gcrootsInModule->set(this->fdesc()->docstringIndex,x.tagged_());
-    }
-    void setf_declares(T_sp x) const {
-      this->fdesc()->gcrootsInModule->set(this->fdesc()->declareIndex,x.tagged_());
+      Cons_sp cell((gctools::Tagged)this->fdesc()->gcrootsInModule->get(this->fdesc()->lambdaList_docstring_Index));
+      cell->rplacd(x);
     }
     size_t filePos() const {
       return this->fdesc()->filepos;
@@ -183,7 +180,6 @@ public:
     virtual bool interpretedP() const { return false; };
     virtual bool builtinP() const { return false; };
     virtual T_sp sourcePosInfo() const { return _Nil<T_O>(); };
-    CL_DEFMETHOD List_sp function_declares() const { return this->declares(); };
     CL_DEFMETHOD T_sp functionLambdaListHandler() const {
       return this->lambdaListHandler();
     }
@@ -192,8 +188,8 @@ public:
     virtual T_mv functionSourcePos() const;
     virtual T_sp lambdaListHandler() const {SUBIMP();};
     virtual T_sp lambdaList() const {
-      T_sp result((gctools::Tagged)this->fdesc()->gcrootsInModule->get(this->fdesc()->lambdaListIndex));
-      return result;
+      Cons_sp cell((gctools::Tagged)this->fdesc()->gcrootsInModule->get(this->fdesc()->lambdaList_docstring_Index));
+      return CONS_CAR(cell);
     }
     virtual string __repr__() const;
     virtual ~Function_O() {};

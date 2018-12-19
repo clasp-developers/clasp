@@ -88,8 +88,8 @@ core::T_sp functionNameOrNilFromFunctionDescription(core::FunctionDescription* f
   if (functionDescription==NULL) {
     return _Nil<core::T_O>();
   }
-  core::T_sp functionName((gctools::Tagged)functionDescription->gcrootsInModule->get(functionDescription->functionNameIndex));
-  return functionName;
+  core::Cons_sp sourcePosition_functionName((gctools::Tagged)functionDescription->gcrootsInModule->get(functionDescription->sourcePathname_functionName_Index));
+  return CONS_CDR(sourcePosition_functionName);
 }
   
 

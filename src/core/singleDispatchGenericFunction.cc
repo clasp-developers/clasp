@@ -295,7 +295,6 @@ Function_sp SingleDispatchGenericFunctionClosure_O::computeEffectiveMethodFuncti
       FunctionDescription* fdesc = makeFunctionDescription(this->functionName());
       Function_sp emf = gctools::GC<SingleDispatchCxxEffectiveMethodFunction_O>::allocate(fdesc,cmf);
       emf->setf_lambdaList(this->lambdaList());
-      emf->setf_declares(this->declares());
       emf->setf_docstring(this->docstring());
       emf->setf_sourcePathname(this->sourcePathname());
       validateFunctionDescription(__FILE__,__LINE__,emf);
@@ -310,7 +309,6 @@ Function_sp SingleDispatchGenericFunctionClosure_O::computeEffectiveMethodFuncti
   FunctionDescription* fdesc = makeFunctionDescription(this->functionName());
   Function_sp emf = gctools::GC<SingleDispatchEffectiveMethodFunction_O>::allocate(fdesc,befores,primaries,afters);
   emf->setf_lambdaList(this->lambdaList());
-  emf->setf_declares(this->declares());
   emf->setf_docstring(this->docstring());
   emf->setf_sourcePathname(this->sourcePathname());
   validateFunctionDescription(__FILE__,__LINE__,emf);

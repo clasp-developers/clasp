@@ -958,7 +958,6 @@ void lisp_defineSingleDispatchMethod(T_sp name,
   method_body->setf_sourcePathname(_Nil<T_O>());
   method_body->setf_lambdaList(llhandler->lambdaList());
   method_body->setf_docstring(docStr);
-  method_body->setf_declares(ldeclares);
   ASSERT(llhandler || llhandler.notnilp());
 #ifdef DEBUG_PROGRESS
   printf("%s:%d lisp_defineSingleDispatchMethod sym: %s\n", __FILE__, __LINE__, _rep_(sym).c_str());
@@ -1017,7 +1016,6 @@ void lisp_defun(Symbol_sp sym,
   T_sp tdocstring = _Nil<T_O>();
   if (docstring!="") tdocstring = core::SimpleBaseString_O::make(docstring);
   fc->setf_lambdaList(llh->lambdaList());
-  fc->setf_declares(ldeclares);
   fc->setf_docstring(tdocstring);
   core::ext__annotate(sym,cl::_sym_documentation,cl::_sym_function, tdocstring);
   core::ext__annotate(func,cl::_sym_documentation,cl::_sym_function, tdocstring);
@@ -1049,7 +1047,6 @@ void lisp_defun_setf(Symbol_sp sym,
   if (docstring!="") tdocstring = core::SimpleBaseString_O::make(docstring);
   fc->setf_sourcePathname(_Nil<T_O>());
   fc->setf_lambdaList(llh->lambdaList());
-  fc->setf_declares(ldeclares);
   fc->setf_docstring(tdocstring);
   Function_sp func = fc;
   sym->setSetfFdefinition(func);
@@ -1073,7 +1070,6 @@ void lisp_defmacro(Symbol_sp sym,
   sym->setf_macroP(true);
   f->setf_sourcePathname(_Nil<T_O>());
   f->setf_lambdaList(llh->lambdaList());
-  f->setf_declares(ldeclares);
   T_sp tdocstring = _Nil<T_O>();
   if (docstring!="") tdocstring = core::SimpleBaseString_O::make(docstring);
   f->setf_docstring(tdocstring);
