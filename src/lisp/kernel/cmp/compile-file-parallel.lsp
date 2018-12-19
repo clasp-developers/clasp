@@ -130,19 +130,19 @@
              #+cst
              (form (cst:raw cst))
              #+cst
-             (at-eof (eq cst eof-value))
+             (_ (when (eq cst eof-value) (return nil)))
              #+cst
              (ast (if cmp::*debug-compile-file*
-                      (clasp-cleavir::compiler-time (clasp-cleavir::cst->ast cst))))
+                      (clasp-cleavir::compiler-time (clasp-cleavir::cst->ast cst))
+                      (clasp-cleavir::cst->ast cst)))
              #-cst
              (form (read source-sin nil eof-value))
              #-cst
-             (at-eof (eq form eof-value))             
+             (_ (when (eq form eof-value) (return nil)))
              #-cst
              (ast (if cmp::*debug-compile-file*
                       (clasp-cleavir::compiler-time (clasp-cleavir::generate-ast form))
                       (clasp-cleavir::generate-ast form))))
-        (when at-eof (return nil))
         (push form-output-path result)
         (let ((ast-job (make-ast-job :ast ast
                                      :environment environment
