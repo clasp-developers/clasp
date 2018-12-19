@@ -407,15 +407,25 @@ env is the parent environment of the (result-af) value frame"
            (n2 (irc-alloca-t* :label "fixnum-cmp-2")))
        (codegen n1 n1form env)
        (codegen n2 n2form env)
-       ;; FIXME: vary the type by abi
-       (let* ((n1x (irc-load n1))
-              (n2x (irc-load n2))
-              (test (,operator n1x n2x "fixnum-cmp")))
-         (irc-cond-br test thenb elseb)))))
+       (irc-cond-br
+        (,operator (irc-load n1) (irc-load n2) "fixnum-cmp")
+        thenb elseb))))
 
 (define-fixnum-cmp compile-fixnum-less-condition irc-icmp-slt)
 (define-fixnum-cmp compile-fixnum-lte-condition irc-icmp-sle)
 (define-fixnum-cmp compile-fixnum-equal-condition irc-icmp-eq)
+
+;;; this is exactly the same as fixnum-equal, but has different implications,
+;;; so it's separate.
+(defun compile-eq-condition (cond env thenb elseb)
+  (let ((n1form (second cond)) (n2form (third cond))
+        (n1 (irc-alloca-t* :label "eq-1"))
+        (n2 (irc-alloca-t* :label "eq-2")))
+    (codegen n1 n1form env)
+    (codegen n2 n2form env)
+    (irc-cond-br
+     (irc-icmp-eq (irc-load n1) (irc-load n2) "eq")
+     thenb elseb)))
 
 (defun compile-general-condition (cond env thenb elseb)
   "Generate code for cond that branches to one of the provided successor blocks"
@@ -438,6 +448,8 @@ env is the parent environment of the (result-af) value frame"
          (compile-fixnum-lte-condition cond env thenb elseb))
         ((cleavir-primop:fixnum-equal)
          (compile-fixnum-equal-condition cond env thenb elseb))
+        ((cleavir-primop:eq)
+         (compile-eq-condition cond env thenb elseb))
         (otherwise (compile-general-condition cond env thenb elseb)))
       (compile-general-condition cond env thenb elseb)))
 

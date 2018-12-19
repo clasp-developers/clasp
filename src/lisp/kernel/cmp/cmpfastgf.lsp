@@ -417,7 +417,7 @@
            ;; instance location- easy
            `(let* ((instance ,(first arguments))
                    (value (core:instance-ref instance ',location)))
-              (if (eq value (load-time-value (core:unbound) t))
+              (if (cleavir-primop:eq value (load-time-value (core:unbound) t))
                   (slot-unbound ,class instance ',slot-name)
                   value)))
           ((consp location)
