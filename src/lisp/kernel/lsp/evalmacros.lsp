@@ -24,11 +24,8 @@ last FORM.  If not, simply returns NIL."
 
 (defmacro defmacro (name lambda-list &body body &environment env)
   `(eval-when (:compile-toplevel :load-toplevel :execute)
-     (let ((fn #',(ext:parse-macro name lambda-list body env)))
-       (funcall #'(setf macro-function) fn ',name)
-       (setf-lambda-list fn ',lambda-list)
-       ,@(expand-set-documentation name 'function (find-documentation body))
-       ',name)))
+     (funcall #'(setf macro-function) #',(ext:parse-macro name lambda-list body env) ',name)
+     ',name))
 
 (defmacro destructuring-bind (vl list &body body)
   (multiple-value-bind (decls body)
@@ -100,7 +97,12 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
 
 (export '(defconstant-equal))
 
-(defmacro defun (&whole whole name vl &body body &environment env)
+
+;;;; ----------------------------------------------------------------
+;;;;
+;;;; Replace defun with the following version
+;;;;
+#+(or)(defmacro defun (&whole whole name vl &body body &environment env)
   ;; Documentation in help.lsp
   (multiple-value-bind (decls body doc-string) 
       (process-declarations body t)
@@ -126,6 +128,28 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
            ,@(and *defun-inline-hook*
                   (list (funcall *defun-inline-hook* name global-function env)))
            ',name)))))
+
+(defmacro defun (name lambda-list &body body &environment env)
+   ;; Documentation in help.lsp
+   (multiple-value-bind (decls body doc-string) 
+       (process-declarations body t)
+     (let* ((fn (gensym))
+            (doclist (when doc-string (list doc-string)))
+            (global-function
+              `#'(lambda ,lambda-list
+                   (declare (core:lambda-name ,name) ,@decls) 
+                   ,@doclist
+                   (block ,(si::function-block-name name) ,@body))))
+       `(progn
+          (eval-when (:compile-toplevel)
+            ;; this function won't be ready for a while, but it's okay as there's no
+            ;; compiler to run :compile-toplevel forms anyway.
+            (cmp::register-global-function-def 'defun ',name))
+          (funcall #'(setf fdefinition) ,global-function ',name)
+          ,@(and *defun-inline-hook*
+                 (list (funcall *defun-inline-hook* name global-function env)))
+          ',name))))
+
 
 ;;;
 ;;; This is a no-op unless the compiler is installed
