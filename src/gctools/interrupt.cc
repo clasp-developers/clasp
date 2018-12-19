@@ -403,12 +403,14 @@ void initialize_signals(int clasp_signal) {
   if (sigaction (SIGINT, &new_action, NULL) != 0) {
     printf("failed to register SIGINT signal-handler with kernel error: %s\n", strerror(errno));
   }
+#ifdef SIGINFO
   new_action.sa_handler = handle_signals;
   sigemptyset (&new_action.sa_mask);
   new_action.sa_flags = SA_RESTART;
   if (sigaction (SIGINFO, &new_action, NULL) != 0) {
     printf("failed to register SIGINFO signal-handler with kernel error: %s\n", strerror(errno));
   }
+#endif
   new_action.sa_handler = handle_signals;
   sigemptyset (&new_action.sa_mask);
   new_action.sa_flags = SA_RESTART | SA_ONSTACK;
