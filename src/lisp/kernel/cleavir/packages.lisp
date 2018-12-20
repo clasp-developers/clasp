@@ -67,6 +67,7 @@
    #:argument-asts
    #:function-name
    #:foreign-types
+   #:defcallback-ast #:defcallback-args
    #:make-throw-ast
    #:cleanup-ast
    #:make-setf-fdefinition-ast
@@ -143,6 +144,7 @@
    #:vaslist-pop-instruction #:make-vaslist-pop-instruction
    #:instance-stamp-instruction #:make-instance-stamp-instruction
    #:bind-va-list-instruction #:make-bind-va-list-instruction
+   #:defcallback-instruction #:defcallback-args
    #:invoke-instruction #:multiple-value-invoke-instruction #:destinations
    ))
 

@@ -815,6 +815,8 @@ SYMBOL_EXPORT_SC_(ClPkg, structure_object);
 SYMBOL_EXPORT_SC_(ClPkg, standard_object);
 SYMBOL_EXPORT_SC_(ClPkg, copy_structure);
 
+SYMBOL_EXPORT_SC_(CorePkg, defcallback);
+
 void testConses() {
   printf("%s:%d Testing Conses and iterators\n", __FILE__, __LINE__);
   List_sp cur = _Nil<T_O>();

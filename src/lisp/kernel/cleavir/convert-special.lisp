@@ -216,7 +216,6 @@
   (cleavir-code-utilities:check-form-proper-list form)
   (cleavir-code-utilities:check-argcount form 2 nil))
 
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Converting CORE:foreign-call-pointer
@@ -241,6 +240,65 @@
 (defmethod cleavir-generate-ast::check-special-form-syntax ((head (eql 'core:foreign-call-pointer)) form)
   (cleavir-code-utilities:check-form-proper-list form)
   (cleavir-code-utilities:check-argcount form 2 nil))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Converting CORE:DEFCALLBACK
+;;;
+(defmethod cleavir-generate-ast:convert-special
+    ((symbol (eql 'core:defcallback)) form env (system clasp-cleavir:clasp))
+  (let* ((args (butlast (rest form)))
+         (lambda (first (last form)))
+         (params (second lambda)))
+    (make-instance 'cc-ast:defcallback-ast
+                   :args (append (butlast (rest form)) (list params))
+                   ;; The lambda is not a closure.
+                   ;; In fact, we kind of give it its own compile process.
+                   :callee (clasp-cleavir-ast:hoist-load-time-value
+                            (cleavir-generate-ast:generate-ast
+                             `#',lambda nil system)
+                            nil))))
+
+(defmethod cleavir-cst-to-ast:convert-special
+    ((symbol (eql 'core:defcallback)) form env (system clasp-cleavir:clasp))
+  (cst:db origin (name convention rtype rtrans atypes atrans lexpr)
+      (cst:rest form)
+    (let* ((params (second (cst:raw lexpr)))
+           (args (list (cst:raw name) (cst:raw convention)
+                       (cst:raw rtype) (cst:raw rtrans)
+                       (cst:raw atypes) (cst:raw atrans)
+                       params)))
+      (make-instance 'cc-ast:defcallback-ast
+                     :args args
+                     ;; Relies on lambda macroexpansion - no big
+                     ;; see comment in c-g-a method above
+                     :callee (clasp-cleavir-ast:hoist-load-time-value
+                              (cleavir-cst-to-ast:cst-to-ast
+                               lexpr nil system)
+                              nil)))))
+
+(defmethod cleavir-generate-ast:check-special-form-syntax ((head (eql 'core:defcallback)) form)
+  (cleavir-code-utilities:check-form-proper-list form)
+  (cleavir-code-utilities:check-argcount form 7 7)
+  (destructuring-bind (name convention return-type return-translator
+                       argument-types argument-translators
+                       lambda-expression)
+      (rest form)
+    (assert (stringp name))
+    (assert (keywordp convention))
+    (assert (typep return-type 'llvm-sys:type))
+    (assert (stringp return-translator))
+    (assert (and (core:proper-list-p argument-types)
+                 (every (lambda (ty) (typep ty 'llvm-sys:type)) argument-types)))
+    (assert (and (core:proper-list-p argument-translators)
+                 (every #'stringp argument-translators)))
+    (assert (and (core:proper-list-p lambda-expression)
+                 (>= (length lambda-expression) 2)
+                 (eq (car lambda-expression) 'lambda)
+                 (core:proper-list-p (second lambda-expression))))
+    (assert (= (length argument-types)
+               (length argument-translators)
+               (length (second lambda-expression))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

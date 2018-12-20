@@ -182,6 +182,21 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; Class DEFCALLBACK-AST
+;;;
+;;; This AST is used to represent a callback definition.
+
+(defclass defcallback-ast (cleavir-ast:ast cleavir-ast:no-value-ast-mixin)
+  (;; None of these are evaluated and there's a ton of them
+   ;; so why bother splitting them up
+   (%args :initarg :args :reader defcallback-args)
+   (%callee :initarg :callee :reader cleavir-ast:callee-ast)))
+
+(defmethod cleavir-ast:children ((ast defcallback-ast))
+  (list (cleavir-ast:callee-ast ast)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; Class VECTOR-LENGTH-AST
 ;;;
 ;;; Represents an operation to get the length of a vector.

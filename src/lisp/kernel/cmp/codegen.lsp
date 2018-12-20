@@ -316,6 +316,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
     ((eq sym 'core:bind-va-list) t)         ;; bind-va-list
     ((eq sym 'core:vaslist-pop) t)
     ((eq sym 'core:instance-stamp) t)
+    ((eq sym 'core:defcallback) t)
     (t (special-operator-p sym))))
 
 (export 'treat-as-special-operator-p)

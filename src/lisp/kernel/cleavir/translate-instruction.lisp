@@ -139,6 +139,24 @@
      output)))
 
 (defmethod translate-simple-instruction
+    ((instruction clasp-cleavir-hir:defcallback-instruction) return-value (abi abi-x86-64) function-info)
+  (let* ((args (clasp-cleavir-hir:defcallback-args instruction))
+         (code (cleavir-ir:code instruction))
+         (lambda-name (get-or-create-lambda-name code))
+         ;; OK, weird thing: We start a compile more from the top rather than using
+         ;; MEMOIZED-LAYOUT-PROCEDURE, because the function is in kind of its own
+         ;; universe. And more practically, cleavir doesn't know how to walk it,
+         ;; so it doesn't get blocks computed etc.
+         (llvm-function (multiple-value-bind (mir function-info-map)
+                            (hir->mir code)
+                          (translate mir function-info-map))))
+    (format t "args: ~a~%" args)
+    (cmp::gen-defcallback
+     (first args) (second args) (third args) (fourth args)
+     (fifth args) (sixth args) (seventh args)
+     llvm-function)))
+
+(defmethod translate-simple-instruction
     ((instruction cleavir-ir:funcall-instruction) return-value (abi abi-x86-64) function-info)
   (let ((inputs (cleavir-ir:inputs instruction)))
     (closure-call-or-invoke (in (first inputs)) return-value (mapcar #'in (rest inputs)) abi)))

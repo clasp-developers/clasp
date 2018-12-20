@@ -391,100 +391,28 @@
 ;;;----------------------------------------------------------------------------
 ;;; C A L L B A C K  S U P P O R T
 
-;;; Agsin, drmeister did most of the work. This was adapted to run in the
-;;; CLASP-FFI package.
+;;; See cmp/codegen-special-form.lsp for the meat.
 
 (defun mangled-callback-name (name)
   (format nil "clasp_ffi_cb_~a" name))
 
 (defun %expand-callback-definition (name-and-options return-type-kw argument-symbols argument-type-kws body)
-  "Expand a callback into the current cmp::*the-module*"
   (multiple-value-bind (function-name convention)
       (if (consp name-and-options)
-          (destructuring-bind (name &key convention)
-              name-and-options
+          (destructuring-bind (name &key convention) name-and-options
             (values name convention))
           (values name-and-options :cdecl))
-    ;; Convert type keywords into llvm types ie: :int -> %i32%
-    (let* ((body-form `(lambda ,argument-symbols ,@body))
-           (argument-names (mapcar (lambda (s)
-                                     (string s))
-                                   argument-symbols))
-           (mangled-function-name (mangled-callback-name function-name))
-           (return-type (safe-translator-type return-type-kw ))
-           (argument-types (mapcar (lambda (type-kw)
-                                     (safe-translator-type type-kw))
-                                   argument-type-kws))
-           ;; Get the type of the function
-           (function-type (llvm-sys:function-type-get return-type argument-types))
-           ;; Create a new llvm function in the current llvm Module cmp:*the-module*
-           (new-func (llvm-sys:function-create function-type
-                                               'llvm-sys:external-linkage
-                                               mangled-function-name
-                                               cmp::*the-module*))
-           (cmp::*current-function* new-func)
-           (cmp::*current-function-name* mangled-function-name)
-           ;; Create an IRBuilder - a helper for adding instructions to func
-           (irbuilder-cur (llvm-sys:make-irbuilder cmp::*llvm-context*)))
-      ;;(format t "Created function ~a in ~a~%" (llvm-sys:get-name new-func) cmp:*the-module*)
-      ;; Create the entry basic block in the current function
-      (let ((bb (cmp::irc-basic-block-create "entry" cmp::*current-function*)))
-        (cmp::irc-set-insert-point-basic-block bb irbuilder-cur)
-        ;; Start generating instructions
-        (cmp::with-irbuilder (irbuilder-cur)
-          ;; (1) Call the translators for every argument returning a value in a llvm register
-          ;;       Get the c-args from the function argument list
-          (let* ((c-args (mapcar #'(lambda (arg argname)
-                                     (llvm-sys:set-name arg argname)
-                                     arg)
-                                 (llvm-sys:get-argument-list new-func) argument-names))
-                 ;; Call a translator for each c-arg and accumulate a list of cl-args in registers
-                 (cl-args (mapcar (lambda (c-arg arg-type-kw arg-name)
-                                    (let* ((to-object-name (to-translator-name arg-type-kw))
-                                           (trans-arg-name (format nil "translated-~a" arg-name))
-                                           ;; Create the function declaration on the fly
-                                           (to-object-func (cmp::get-or-declare-function-or-error cmp::*the-module* to-object-name)))
-                                      (cmp::irc-call-or-invoke
-                                       to-object-func
-                                       (list c-arg)
-                                       cmp::*current-unwind-landing-pad-dest*
-                                       trans-arg-name)))
-                                  c-args argument-type-kws argument-names)))
-            ;; (2) Call the closure with the arguments in registers
-            (let* ((real-args (if (< (length cl-args) core:+number-of-fixed-arguments+)
-                                  (append cl-args (make-list (- core:+number-of-fixed-arguments+ (length cl-args)) :initial-element (cmp::null-t-ptr)))
-                                  cl-args))
-                   (function-object (if core:*use-cleavir-compiler*
-                                        (let* ((name (load-time-value (string :translate-lambda-expression-to-llvm-function)))
-                                               (compile-form (find-symbol name :clasp-cleavir)))
-                                          (unless compile-form
-                                            (error "Could not file function ~a in :clasp-cleavir" name))
-                                          (funcall compile-form body-form))
-                                        (cmp:compile-lambda-function body-form)))
-                   (invoke-fn (cmp::get-or-declare-function-or-error cmp::*the-module* "cc_call_callback"))
-                   (fptr (cmp:irc-bit-cast function-object cmp:%t*% "fptr-t*"))
-                   (cl-result (cmp::irc-call-or-invoke
-                               invoke-fn
-                               (list* fptr #| (cmp::null-t-ptr) not used in new call-conv |#
-                                      (cmp:jit-constant-size_t (length cl-args)) real-args)
-                               cmp::*current-unwind-landing-pad-dest*
-                               "cl-result")))
-              ;; (3) Call the translator for the return value
-              (if (eq return-type-kw :void)
-                  ;; Return with void
-                  (llvm-sys:create-ret-void cmp::*irbuilder*)
-                  ;; Return the result
-                  (let* ((from-object-name (from-translator-name return-type-kw))
-                         (from-object-func (cmp::get-or-declare-function-or-error cmp::*the-module* from-object-name))
-                         (c-result (cmp::irc-call-or-invoke 
-                                    from-object-func
-                                    (list (llvm-sys:create-extract-value cmp::*irbuilder* cl-result (list 0) "val0"))
-                                    cmp::*current-unwind-landing-pad-dest*
-                                    "cl-result")))
-                    (llvm-sys:create-ret cmp::*irbuilder* c-result))))))))
-    `',function-name))
+    (let ((return-type (safe-translator-type return-type-kw))
+          (return-translator (from-translator-name return-type-kw))
+          (argument-types (mapcar #'safe-translator-type argument-type-kws))
+          (argument-translators (mapcar #'to-translator-name argument-type-kws)))
+      `(progn
+         (core:defcallback ,(mangled-callback-name function-name) ,convention
+             ,return-type ,return-translator ,argument-types ,argument-translators
+           (lambda (,@argument-symbols) (declare (core:lambda-name ,function-name)) ,@body))
+         ',function-name))))
 
-(defmacro %defcallback (name-and-options return-type-kw argument-symbols argument-type-kws &rest body)
+(defmacro %defcallback (name-and-options return-type-kw argument-symbols argument-type-kws &body body)
   (%expand-callback-definition name-and-options return-type-kw argument-symbols argument-type-kws body))
 
 (defmacro %callback (sym)

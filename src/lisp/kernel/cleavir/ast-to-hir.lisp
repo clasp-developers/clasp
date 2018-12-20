@@ -111,6 +111,13 @@
 	  (error "foreign-call-pointer-AST appears in a Boolean context.")))
        (cleavir-ast-to-hir::invocation context)))))
 
+(defmethod cleavir-ast-to-hir:compile-ast ((ast cc-ast:defcallback-ast) context)
+  ;; still giving it its own compile
+  (let ((fn (cleavir-ast-to-hir:compile-toplevel (cleavir-ast:callee-ast ast))))
+    (make-instance 'clasp-cleavir-hir:defcallback-instruction
+       :args (cc-ast:defcallback-args ast)
+       :code fn
+       :successors (cleavir-ast-to-hir::successors context))))
 
 (defmethod cleavir-ast-to-hir:compile-ast ((ast cc-ast:vector-length-ast) context)
   (cleavir-ast-to-hir::assert-context ast context 1 1)
