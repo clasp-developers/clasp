@@ -126,18 +126,35 @@
     (when (or (eq restart name) (eq (restart-name restart) name))
       (return-from find-restart restart))))
 
-(defun find-restart-never-fail (restart &optional condition)
-  (or (find-restart restart condition)
-      (signal-simple-error 'simple-control-error nil
-	     "Restart ~S is not active."
-	     (list restart))))
+;;; We don't just call FIND-RESTART because it has slightly
+;;; different behavior when called with a restart argument.
+;;; FIND-RESTART given a restart only returns it if that restart
+;;; is active _relative to the given condition_. That means you
+;;; can pass it a restart and get NIL back (resulting in an
+;;; error here).
+;;; For restart designators like invoke-restart takes, however,
+;;; a restart just designates itself.
+;;; This comes up with e.g. (invoke-restart (find-restart x c) ...)
+;;; If x is only active relative to C, and invoke-restart used
+;;; FIND-RESTART, it would come up empty since x is not active
+;;; relative to no-condition.
+;;; Strictly speaking we could still test whether the restart is
+;;; active, but I don't think this is required, and it seems
+;;; rare enough that I don't mind not checking.
+(defun coerce-restart-designator (designator &optional condition)
+  (if (restart-p designator)
+      designator
+      (or (find-restart designator condition)
+          (signal-simple-error 'simple-control-error nil
+                               "Restart ~S is not active."
+                               (list designator)))))
 
 (defun invoke-restart (restart &rest values)
-  (let ((real-restart (find-restart-never-fail restart)))
+  (let ((real-restart (coerce-restart-designator restart)))
     (apply (restart-function real-restart) values)))
 
 (defun invoke-restart-interactively (restart)
-  (let ((real-restart (find-restart-never-fail restart)))
+  (let ((real-restart (coerce-restart-designator restart)))
     (apply (restart-function real-restart)
 	   (let ((interactive-function
 		   (restart-interactive-function real-restart)))
@@ -529,12 +546,8 @@ returns with NIL."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; ALL CONDITIONS
 ;;;
-;;; Instead of compiling each condition definition, we store them in a
-;;; list and evaluate them at run time. Besides, there are multiple
-;;; SIMPLE-* conditions which inherit from SIMPLE-ERROR and which are
-;;; only created when the error is signaled.
+;;; ALL CONDITIONS
 ;;;
 
 (define-condition warning () ())
@@ -817,7 +830,7 @@ memory limits before executing the program again."))
      (error (condition) (values nil condition))))
 
 (defun abort (&optional c)
-  (invoke-restart (find-restart-never-fail 'ABORT c))
+  (invoke-restart (coerce-restart-designator 'ABORT c))
   (error 'ABORT-FAILURE))
 
 (defun continue (&optional c)
@@ -825,7 +838,7 @@ memory limits before executing the program again."))
     (and restart (invoke-restart restart))))
 
 (defun muffle-warning (&optional c)
-  (invoke-restart (find-restart-never-fail 'MUFFLE-WARNING c)))
+  (invoke-restart (coerce-restart-designator 'MUFFLE-WARNING c)))
 
 (defun store-value (value &optional c)
   (let ((restart (find-restart 'STORE-VALUE c)))
