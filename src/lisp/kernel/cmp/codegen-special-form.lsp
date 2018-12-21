@@ -1071,7 +1071,7 @@ jump to blocks within this tagbody."
                              (list* fptr (irc-size_t (length cl-args)) real-args)
                              "cl-result")))
             ;; Now call the translator for the return value if applicable.
-            (if (eq return-type %void%)
+            (if (string= return-translator-name "from_object_void")  ; (eq return-type %void%) doesn't seem to work - and it's sketchy because it's a symbol macro
                 ;; nope
                 (irc-ret-void)
                 ;; yep
