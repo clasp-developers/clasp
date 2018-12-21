@@ -1025,69 +1025,70 @@ jump to blocks within this tagbody."
                         return-type return-translator-name
                         argument-types argument-translator-names
                         parameters lisp-function-llvm-value)
-  (declare (ignore convention)) ; FIXME
+  (declare (ignore convention))         ; FIXME
   ;; parameters should be a list of symbols, i.e. lambda list with only required.
   (unless (= (length argument-types) (length parameters) (length argument-translator-names))
     (error "BUG: Callback function parameters and types have a length mismatch"))
-  (let* ((c-argument-names (mapcar #'string parameters))
-         (c-function-type (llvm-sys:function-type-get return-type argument-types))
-         (new-func (llvm-sys:function-create c-function-type
-                                             'llvm-sys:external-linkage
-                                             c-name
-                                             *the-module*))
-         (*current-function* new-func)
-         (*current-function-name* c-name))
-    (with-irbuilder ((llvm-sys:make-irbuilder *llvm-context*))
-      (let ((bb (irc-basic-block-create "entry" new-func)))
-        (irc-set-insert-point-basic-block bb)
-        (let* ((c-args (mapcar (lambda (arg argname)
-                                 (llvm-sys:set-name arg argname)
-                                 arg)
-                               (llvm-sys:get-argument-list new-func)
-                               c-argument-names))
-               ;; Generate code to translate the arguments.
-               (cl-args (mapcar (lambda (c-arg c-arg-name translator)
-                                  (irc-intrinsic-call-or-invoke
-                                   translator
-                                   (list c-arg)
-                                   (format nil "translated-~a" c-arg-name)))
-                                c-args c-argument-names argument-translator-names))
-               ;; Generate the things we pass to the Lisp function.
-               (real-args (if (< (length cl-args) core:+number-of-fixed-arguments+)
-                              (append cl-args (make-list (- core:+number-of-fixed-arguments+ (length cl-args))
-                                                         :initial-element (null-t-ptr)))
-                              cl-args))
-               ;; FIXME: So I think this cast is basically bullshit.
-               ;; lisp-function-llvm-value is a value representing a function (pointer?),
-               ;; not a closure. There is no actual closure even allocated!
-               ;; cc_call_callback also casts this argument to a function pointer.
-               ;; So this is pretty messed up. FIXME FIXME
-               (fptr (irc-bit-cast lisp-function-llvm-value %t*% "fptr-t*"))
-               ;; Generate the code to actually call the lisp function,
-               ;; bullshit cast in mind.
-               (cl-result (irc-intrinsic-call-or-invoke
-                           "cc_call_callback"
-                           (list* fptr (irc-size_t (length cl-args)) real-args)
-                           "cl-result")))
-          ;; Now call the translator for the return value if applicable.
-          (if (eq return-type %void%)
-              ;; nope
-              (irc-ret-void)
-              ;; yep
-              (let ((c-result (irc-intrinsic-call-or-invoke
-                               return-translator-name
-                               ;; get the 0th value.
-                               (list (irc-extract-value cl-result (list 0) "primary"))
-                               "c-result")))
-                (irc-ret c-result))))))))
+  (with-landing-pad nil
+    (let* ((c-argument-names (mapcar #'string parameters))
+           (c-function-type (llvm-sys:function-type-get return-type argument-types))
+           (new-func (llvm-sys:function-create c-function-type
+                                               'llvm-sys:external-linkage
+                                               c-name
+                                               *the-module*))
+           (*current-function* new-func)
+           (*current-function-name* c-name))
+      (with-irbuilder ((llvm-sys:make-irbuilder *llvm-context*))
+        (let ((bb (irc-basic-block-create "entry" new-func)))
+          (irc-set-insert-point-basic-block bb)
+          (let* ((c-args (mapcar (lambda (arg argname)
+                                   (llvm-sys:set-name arg argname)
+                                   arg)
+                                 (llvm-sys:get-argument-list new-func)
+                                 c-argument-names))
+                 ;; Generate code to translate the arguments.
+                 (cl-args (mapcar (lambda (c-arg c-arg-name translator)
+                                    (irc-intrinsic-call-or-invoke
+                                     translator
+                                     (list c-arg)
+                                     (format nil "translated-~a" c-arg-name)))
+                                  c-args c-argument-names argument-translator-names))
+                 ;; Generate the things we pass to the Lisp function.
+                 (real-args (if (< (length cl-args) core:+number-of-fixed-arguments+)
+                                (append cl-args (make-list (- core:+number-of-fixed-arguments+ (length cl-args))
+                                                           :initial-element (null-t-ptr)))
+                                cl-args))
+                 ;; FIXME: So I think this cast is basically bullshit.
+                 ;; lisp-function-llvm-value is a value representing a function (pointer?),
+                 ;; not a closure. There is no actual closure even allocated!
+                 ;; cc_call_callback also casts this argument to a function pointer.
+                 ;; So this is pretty messed up. FIXME FIXME
+                 (fptr (irc-bit-cast lisp-function-llvm-value %t*% "fptr-t*"))
+                 ;; Generate the code to actually call the lisp function,
+                 ;; bullshit cast in mind.
+                 (cl-result (irc-intrinsic-call-or-invoke
+                             "cc_call_callback"
+                             (list* fptr (irc-size_t (length cl-args)) real-args)
+                             "cl-result")))
+            ;; Now call the translator for the return value if applicable.
+            (if (eq return-type %void%)
+                ;; nope
+                (irc-ret-void)
+                ;; yep
+                (let ((c-result (irc-intrinsic-call-or-invoke
+                                 return-translator-name
+                                 ;; get the 0th value.
+                                 (list (irc-extract-value cl-result (list 0) "primary"))
+                                 "c-result")))
+                  (irc-ret c-result)))))))))
 
 (defun codegen-defcallback (result form env)
-  (declare (ignore result)) ; no return value
+  (declare (ignore result))             ; no return value
   (destructuring-bind (c-name convention
                        return-type return-translator-name
                        argument-types argument-translator-names
                        lambda-expr)
-      (rest form)
+      form
     (let ((parameters (second lambda-expr)))
       (gen-defcallback c-name convention
                        return-type return-translator-name
