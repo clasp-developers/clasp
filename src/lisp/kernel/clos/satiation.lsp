@@ -626,13 +626,14 @@
      (append-generic-function-call-history
       gf
       (satiated-call-history ,generic-function-name ,@lists-of-specializer-names))
-     #+(or)
+;;;     #+(or)
      (set-funcallable-instance-function
       gf
       ,(apply #'compile-time-discriminator
               (fdefinition generic-function-name)
               lists-of-specializer-names))
      ;; put in the actual discriminator
+     #+(or)
      (force-dispatcher gf)))
 
 ;;; Exported auxiliary version for the common case of wanting to skip recompilations
