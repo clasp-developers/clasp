@@ -33,7 +33,7 @@
           (parse-integer " +123 ")
         (and (= val 123) (= pos 6))))
 
-(test parse-integer3
+(test parse-integer3a
       (multiple-value-bind (val pos)
           (parse-integer " -123 ")
         (and (= val -123) (= pos 6))))

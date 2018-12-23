@@ -1,3 +1,4 @@
+(in-package #:clasp-tests)
 
 (test array-dimension0 (= (array-dimension (make-array '(3 4) :element-type t) 0) 3))
 ;;(test (subtypep (class-of "abc") 'string))
@@ -25,3 +26,7 @@
 
 (test make-array-5 (let ((please-inline (MAKE-ARRAY '(2 3) :INITIAL-ELEMENT #\a :ELEMENT-TYPE 'base-char)))
                      (char= #\a (aref please-inline 0 0))))
+
+(test-expect-error make-array-6
+                   (make-array 5 :element-type (array-element-type "") :displaced-index-offset 2 :displaced-to "")
+                   :type simple-error)

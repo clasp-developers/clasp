@@ -68,6 +68,19 @@
                (with-output-to-string (blah)
                  (gray:stream-write-sequence blah "1223"))))
 
+(test-expect-error write-sequence-3
+                   (WRITE-SEQUENCE "ABCDEFGH" *STANDARD-OUTPUT* :END -1)
+                    :type type-error)
+
+(test-expect-error write-sequence-4
+                   (WRITE-SEQUENCE "ABCDEFGH" *STANDARD-OUTPUT* :END 1 :start 2)
+                   :type type-error)
+
+(test write-sequence-5
+      (string= ""
+               (with-output-to-string (*STANDARD-OUTPUT*)
+                 (WRITE-SEQUENCE "ABCDEFGH" *STANDARD-OUTPUT* :END 1 :start 1))))
+
 (test read-sequence-1
       (string= "12        "
 	       (let ((seq (make-string 10 :initial-element #\space)))
@@ -81,6 +94,16 @@
 		 (with-input-from-string (blah "127182187261762")
 		   (gray:stream-read-sequence blah seq))
 		 seq)))
+
+(test-expect-error read-sequence-3
+                   (let ((seq (make-string 10 :initial-element #\space)))
+                     (with-input-from-string (blah "127182187261762")
+                       (read-sequence seq blah :end -1))))
+
+(test-expect-error read-sequence-4
+                   (let ((seq (make-string 10 :initial-element #\space)))
+                     (with-input-from-string (blah "127182187261762")
+                       (read-sequence seq blah :start 3 :end 2))))
 (test nsubst-1
       (equalp '(1 1 3 (1 1 3 (1 1 3)))
 	      (nsubst 1 2 '(1 2 3(1 2 3(1 2 3))))))
@@ -136,6 +159,7 @@
 
 ;;; fails, should report an error, since 5 is after the fill-pointer
 ;;; for aref should not fail, since elt is convert to aref, we have a deviation
+;;; fixed now
 (test-expect-error elt-8 
 		   (elt (make-array 10 :initial-contents '(0 1 2 3 4 5 6 7 8 9) :fill-pointer 3) 5)
 		   :type type-error)
@@ -330,32 +354,48 @@
                            :displaced-index-offset 1))))
 
 (test assoc-1
-      ;;; avoid the compiler-macro
-      (eval '(equal (cons nil 'e)(ASSOC NIL '((A . B) NIL (C . D) (NIL . E) (NIL . F) NIL (G . H))))))
+      (locally (declare (notinline assoc))
+        (equal (cons nil 'e)
+               (ASSOC NIL '((A . B) NIL (C . D) (NIL . E) (NIL . F) NIL (G . H))))))
 
 (test assoc-compiler-macro
-      (equal (cons nil 'e) (Let () (ASSOC NIL '((A . B) NIL (C . D) (NIL . E) (NIL . F) NIL (G . H))))))
+      (equal (cons nil 'e)
+             (Let () (ASSOC NIL '((A . B) NIL (C . D) (NIL . E) (NIL . F) NIL (G . H))))))
 
 (test-expect-error assoc-2-error
                    (assoc 3 (list (list 1 3) 2))
                    :type type-error)
 
 (test-expect-error assoc-2-error-no-compiler-macro
-                   (eval '(assoc 3 (list (list 1 3) 2)))
-                   :type type-error)
+                    (locally (declare (notinline assoc))
+                      (assoc 3 (list (list 1 3) 2)))
+                      :type type-error)
 
 ;;; That used to crash clasp, test with care
-;;; Use eval to avoid the compiler-macro
+;;; Use (declare (notinline ..)) to prevent use of the compiler-macro
 (test-expect-error make-list-1 (MAKE-LIST -1) :type type-error)
-(test-expect-error make-sequence-1 (eval '(MAKE-sequence 'list -1)) :type type-error)
-(test-expect-error make-sequence-1a (let ()(MAKE-sequence 'list -1)) :type type-error)
-(test-expect-error make-sequence-2 (eval '(MAKE-sequence 'vector -1)) :type type-error)
+(test-expect-error make-sequence-1
+                   (locally (declare (notinline make-sequence))
+                     (make-sequence 'list -1)) :type type-error)
+(test-expect-error make-sequence-1a
+                   (let ()
+                     (MAKE-sequence 'list -1)) :type type-error)
+(test-expect-error make-sequence-2
+                   (locally (declare (notinline make-sequence))
+                     (MAKE-sequence 'vector -1)) :type type-error)
 (test-expect-error make-sequence-2a (let () (MAKE-sequence 'vector -1)) :type type-error)
 ;;; fixed in the function and  in the compiler-macro
-(test-expect-error make-sequence-3 (eval '(MAKE-sequence 'cons 0)) :type type-error)
-(test-expect-error make-sequence-3a (let ()(MAKE-sequence 'cons 0)) :type type-error)
+(test-expect-error make-sequence-3
+                   (locally (declare (notinline make-sequence))
+                     (MAKE-sequence 'cons 0) :type type-error))
+(test-expect-error make-sequence-3a (let ()
+                                      (MAKE-sequence 'cons 0)) :type type-error)
 ;;; find
 (test-expect-error find-1 (find 5 '(1 2 3 . 4)) :type type-error)
-(test-expect-error find-1a (eval '(find 5 '(1 2 3 . 4))) :type type-error)
+(test-expect-error find-1a
+                   (locally (declare (notinline find))
+                     (find 5 '(1 2 3 . 4))) :type type-error)
 (test-expect-error find-2 (find 5 '(1 2 3 . 4)) :type type-error)
-(test-expect-error find-2a (eval '(find 5 '(1 2 3 . 4))) :type type-error)
+(test-expect-error find-2a
+                   (locally (declare (notinline find))
+                     (find 5 '(1 2 3 . 4))) :type type-error)
