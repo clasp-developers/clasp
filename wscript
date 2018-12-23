@@ -1696,7 +1696,8 @@ class compile_module(clasp_task):
         cmd = self.clasp_command_line(executable,
                                       image = image_file,
                                       features = ['ignore-extensions'],
-                                      forms = ['(compile-file #P"%s" :output-file #P"%s" :output-type :fasl)' % (source_file, fasl_file),
+                                      forms = ['(setf cmp::*compile-file-parallel* t)',
+                                               '(compile-file #P"%s" :output-file #P"%s" :output-type :fasl)' % (source_file, fasl_file),
                                                '(core:quit)'])
         return self.exec_command(cmd)
 

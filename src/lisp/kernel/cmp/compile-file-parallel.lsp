@@ -40,7 +40,6 @@
                 (let* ((bc-file part-pn))
 ;;;                (bformat t "Linking %s%N" bc-file)
                   (let* ((part-module (llvm-sys:parse-bitcode-file (namestring (truename bc-file)) *llvm-context*)))
-                    ;;                  (remove-main-function-if-exists part-module) ;; Remove the ClaspMain FN if it exists
                     (multiple-value-bind (failure error-msg)
                         (llvm-sys:link-in-module linker part-module)
                       (when failure
@@ -362,3 +361,29 @@ Compile a lisp source file into an LLVM module."
             (when verbose
               (bformat t "conditions: %s%N" c)))
           (compile-file-results output-path conditions))))))
+
+
+(defun contains-defcallback-p (path)
+  (let ((data (with-open-file (stream path)
+                (let ((data (make-string (file-length stream))))
+                  (read-sequence data stream)
+                  data))))
+    (search "defcallback" data :test #'string-equal)))
+
+
+(defvar *compile-file-parallel* nil)
+(defun cl:compile-file (input-file &rest args)
+  "Ok, this is a horrible hack - if the file DOESN'T contain defcallback then compile-file-parallel it"
+  (if *compile-file-parallel*
+      (if (null (contains-defcallback-p input-file))
+          (apply #'compile-file-parallel input-file args)
+          (progn
+            (format t "!~%!~%!~% Falling back to compile-file-serial for ~s because it contains DEFCALLBACK~%!~%~~%"
+                    input-file)
+            (apply #'compile-file-serial input-file args)))
+      (apply #'compile-file-serial input-file args)))
+                              
+
+(eval-when (:load-toplevel)
+  ;; Turn on *compile-file-parallel* at load-time
+  (setf *compile-file-parallel* t))

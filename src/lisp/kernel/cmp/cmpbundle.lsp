@@ -49,7 +49,6 @@
 ;; The wait time will be doubled at each retry!
 
 (defun safe-system (cmd-list &key output-file-name)
-
   (if *safe-system-echo*
       (bformat t "safe-system: %s%N" cmd-list))
 
@@ -77,6 +76,7 @@
 
 ;;; This function will compile a bitcode file in PART-BITCODE-PATHNAME with clang and put the output in the
 ;;; same directory as PART-BITCODE-PATHNAME
+#+(or)
 (defun generate-object-file (part-bitcode-pathname &key test)
   (let ((output-pathname (compile-file-pathname part-bitcode-pathname :output-type :object))
         (reloc-model (cond
@@ -183,7 +183,7 @@
   (execute-link-library in-bundle-file in-all-names :input-type input-type :output-type :static))
 
 (defun execute-link-object (output-filename in-all-names &key input-type)
-  (cmp::safe-system (list* "ld" "-r"
+  (safe-system (list* "ld" "-r"
                            "-o" (namestring output-filename)
                            (mapcar (lambda (f) (namestring (make-pathname :type "o" :defaults f)))
                                    in-all-names))))
@@ -261,7 +261,6 @@
                 (let* ((bc-file part-pn))
 ;;;                (bformat t "Linking %s%N" bc-file)
                   (let* ((part-module (llvm-sys:parse-bitcode-file (namestring (truename bc-file)) *llvm-context*)))
-                    (remove-main-function-if-exists part-module) ;; Remove the ClaspMain FN if it exists
                     (multiple-value-bind (failure error-msg)
                         (llvm-sys:link-in-module linker part-module)
                       (when failure
@@ -334,8 +333,7 @@ Return the **output-pathname**."
 
 (defun builder (kind destination &rest keywords)
   (declare (optimize (debug 3)))
-  (with-compiler-timer (:message "builder" :report-link-time t)
-    (apply 'build-fasl destination keywords)))
+  (apply 'build-fasl destination keywords))
 
 (export '(builder))
 
@@ -349,10 +347,11 @@ This is to ensure that the RUN-ALL functions are evaluated in the correct order.
   ;; fixme cracauer - figure out what FreeBSD needs here
   (declare (ignore init-name))
   ;;  (bformat t "cmpbundle.lsp:build-fasl  building fasl for %s from files: %s%N" out-file lisp-files)
-  (let ((bitcode-files (mapcar (lambda (p) (make-pathname :type (core:bitcode-extension) :defaults p))
-                               lisp-files))
-        (temp-bitcode-file (make-pathname :type (core:bitcode-extension) :defaults out-file)))
-    (link-bitcode-modules temp-bitcode-file bitcode-files)
-    (execute-link-fasl out-file (list temp-bitcode-file))))
+  (with-compiler-timer (:message "build-fasl" :report-link-time t :verbose t)
+    (let ((bitcode-files (mapcar (lambda (p) (make-pathname :type (core:bitcode-extension) :defaults p))
+                                 lisp-files))
+          (temp-bitcode-file (make-pathname :type (core:bitcode-extension) :defaults out-file)))
+      (link-bitcode-modules temp-bitcode-file bitcode-files)
+      (execute-link-fasl out-file (list temp-bitcode-file)))))
 
 (export 'build-fasl)
