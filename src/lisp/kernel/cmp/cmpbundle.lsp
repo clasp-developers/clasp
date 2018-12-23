@@ -334,7 +334,8 @@ Return the **output-pathname**."
 
 (defun builder (kind destination &rest keywords)
   (declare (optimize (debug 3)))
-  (apply 'build-fasl destination keywords))
+  (with-compiler-timer (:message "builder" :report-link-time t)
+    (apply 'build-fasl destination keywords)))
 
 (export '(builder))
 

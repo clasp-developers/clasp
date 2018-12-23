@@ -637,7 +637,7 @@ Return files."
           (progn
             (load-system (select-source-files #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/pre-epilogue-bclasp" :system system))
             (let ((files (out-of-date-bitcodes #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/bclasp" :system system)))
-              (compile-system files :file-order file-order)
+              (compile-system files :file-order file-order :total-files (length system))
               (let ((all-output (output-object-pathnames #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/bclasp" :system system)))
                 (if (out-of-date-target output-file all-output)
                     (link-modules output-file all-output)))))))))
