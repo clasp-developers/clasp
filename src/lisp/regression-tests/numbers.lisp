@@ -227,7 +227,7 @@
           (truncate 2305843009213693952 -2305843009213693952)
         (and (zerop rem)(= div -1))))
 
-(test floor-truncate-1
+(test floor-truncate-2
       (multiple-value-bind
             (div rem)
           (round 2305843009213693952 -2305843009213693952)
@@ -366,7 +366,7 @@
 
 ;;; nan
 (test nan-1 (ext:float-nan-p (/ 0s0 0s0)))
-(test nan-1 (ext:float-nan-p (/ 0.0 0.0)))
+(test nan-2 (ext:float-nan-p (/ 0.0 0.0)))
 (test nan-3 (ext:float-nan-p (/ 0d0 0d0)))
 (test nan-4 (ext:float-nan-p (/ 0l0 0l0)))
 
