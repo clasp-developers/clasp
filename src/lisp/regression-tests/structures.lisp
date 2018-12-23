@@ -32,10 +32,6 @@
 ;; Following the pattern of above
 (setf (find-class 'otto) nil)
 
-#|
-Bug 475
-Unfortunately this fails without the fix for defstruct, perhaps because of the eval-whens
-
 (test structure-keyword-name-normal
       (let ((instance nil))
         (defstruct :otto1 a b c)
@@ -72,4 +68,3 @@ Unfortunately this fails without the fix for defstruct, perhaps because of the e
 
 (setf (find-class 'otto3) nil)
 
-|#

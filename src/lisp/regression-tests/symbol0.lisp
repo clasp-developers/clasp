@@ -17,4 +17,9 @@
                 'CHARACTER
                 :FILL-POINTER
                 4))
-   (ERROR (E) E))))
+    (ERROR (E) E))))
+
+(test-expect-error makunbound-1
+                   (let ((foo 23))
+                     (makunbound 23))
+                   :type type-error)

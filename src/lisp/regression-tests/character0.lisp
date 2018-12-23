@@ -22,7 +22,7 @@
              (name-char 
               (char-name (code-char 13)))))
 
-(test TEST-CHAR-12
+(test TEST-CHAR-12a
       (char= #\U80
              (name-char 
               (char-name (code-char 128)))))
