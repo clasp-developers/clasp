@@ -5586,11 +5586,15 @@ T_sp IOFileStream_O::make(const string &name, int fd, enum StreamMode smm, T_sp 
   return stream;
 }
 
-CL_LAMBDA(&optional strm (eof-error-p t) eof-value);
+CL_LAMBDA(strm &optional (eof-error-p t) eof-value);
 CL_DECLARE();
 CL_DOCSTRING("readByte");
 CL_DEFUN T_sp cl__read_byte(T_sp strm, T_sp eof_error_p, T_sp eof_value) {
-  strm = coerce::inputStreamDesignator(strm);
+  // Should signal an error of type type-error if stream is not a stream.
+  // Should signal an error of type error if stream is not a binary input stream.
+  if (strm.nilp())
+    TYPE_ERROR(strm, cl::_sym_Stream_O);
+  // strm ust be a stream, not a stream designator
   T_sp c = clasp_read_byte(strm);
   if (c.nilp()) {
     LOG(BF("Hit eof"));
@@ -5749,27 +5753,45 @@ CL_DEFUN T_mv cl__read_line(T_sp sin, T_sp eof_error_p, T_sp eof_value, T_sp rec
     }
   }
   //    bool recursiveP = translate::from_object<bool>::convert(env->lookup(_sym_recursive_p));
-  Str8Ns_sp sbuf = Str8Ns_O::createBufferString();
+  bool small = true;
+  Str8Ns_sp sbuf_small = Str8Ns_O::createBufferString();
+  StrWNs_sp sbuf_wide;
   while (1) {
     T_sp tch = cl__read_char(sin, _Nil<T_O>(), _Nil<T_O>(), recursive_p);
     if (tch.nilp()) {
       if (eofErrorP) {
-        // If something has been read in this line, no error and it must be returned 
-        if (sbuf->length()>0) {
-            return Values(sbuf, _lisp->_true());
-          }
-        else ERROR_END_OF_FILE(sin);;
-      } else {
-        if (sbuf->length()>0) {
-          return Values(sbuf, _Nil<T_O>());
+        // If something has been read in this line, no error and it must be returned
+        if (small) {
+          if (sbuf_small->length()>0)
+            return Values(sbuf_small, _lisp->_true());
+          else ERROR_END_OF_FILE(sin);
         }
-        return Values(eof_value, _lisp->_true());
+        else {
+          if (sbuf_wide->length()>0)
+            return Values(sbuf_wide, _lisp->_true());
+          else ERROR_END_OF_FILE(sin);
+        }
+      } else {
+        // tch == nil but no eof
+        if (small) {
+          if (sbuf_small->length()>0)
+            return Values(sbuf_small, _Nil<T_O>());
+          else return Values(eof_value, _lisp->_true());
+        }
+        else {
+          if (sbuf_wide->length()>0)
+            return Values(sbuf_wide, _Nil<T_O>());
+          else return Values(eof_value, _lisp->_true());
+        }
       }
     } else {
       claspCharacter cc = (gc::As<Character_sp>(tch)).unsafe_character();
-      if (!clasp_base_char_p(cc)) {
-        SIMPLE_ERROR(BF("Clasp currently can't handle anything but base-char in input streams"));
-      }
+      if (small && (!clasp_base_char_p(cc))) {
+        // first wide char read
+        small = false;
+        sbuf_wide = StrWNs_O::createBufferString();
+        sbuf_wide->unsafe_setf_subseq(0,sbuf_small->length(),sbuf_small->asSmartPtr());
+       }
       if (cc == '\n') {
         break;
       } else if (cc == '\r') {
@@ -5778,11 +5800,15 @@ CL_DEFUN T_mv cl__read_line(T_sp sin, T_sp eof_error_p, T_sp eof_value, T_sp rec
         }
         break;
       }
-      sbuf->vectorPushExtend_claspChar(cc);
+      if (small)
+        sbuf_small->vectorPushExtend_claspChar(cc);
+      else sbuf_wide->vectorPushExtend_claspCharacter(cc);
     }
   }
   LOG(BF("Read line result -->[%s]") % sbuf.str());
-  return Values(sbuf, _Nil<T_O>());
+   if (small)
+     return Values(sbuf_small, _Nil<T_O>());
+   else return Values(sbuf_wide, _Nil<T_O>());
 }
 
 void clasp_terpri(T_sp s) {
@@ -5886,8 +5912,7 @@ CL_DOCSTRING("writeByte");
 CL_DEFUN Integer_sp cl__write_byte(Integer_sp byte, T_sp stream) {
   if (stream.nilp())
     TYPE_ERROR(stream, cl::_sym_Stream_O);
-  // not sure whether this is correct, clhs in 21.2 says stream---a binary output stream.
-  stream = coerce::outputStreamDesignator(stream);
+  // clhs in 21.2 says stream---a binary output stream, not mentioning a stream designator
   clasp_write_byte(byte, stream);
   return (byte);
 };
