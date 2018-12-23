@@ -180,23 +180,18 @@ namespace core {
   public:
     virtual NumberType number_type_() const { SUBIMP(); };
     virtual Number_sp signum_() const {
-      _OF();
       SUBCLASS_MUST_IMPLEMENT();
     };
     virtual Number_sp reciprocal_() const {
-      _OF();
       SUBCLASS_MUST_IMPLEMENT();
     };
     virtual Number_sp abs_() const {
-      _OF();
       SUBCLASS_MUST_IMPLEMENT();
     };
     virtual T_sp floor(Number_sp divisor) const {
-      _OF();
       SUBCLASS_MUST_IMPLEMENT();
     };
     virtual T_sp ffloor(Number_sp divisor) const {
-      _OF();
       SUBCLASS_MUST_IMPLEMENT();
     };
     virtual bool equal(T_sp obj) const;
@@ -505,7 +500,6 @@ namespace core {
     double _Value;
   public:
     static DoubleFloat_sp create(double nm) {
-      _G();
       GC_ALLOCATE(DoubleFloat_O, v);
       v->set(nm);
       return v;
