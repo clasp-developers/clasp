@@ -93,11 +93,18 @@ BUILTIN_ATTRIBUTES core::T_O* cx_vaslist_pop(core::T_O *preVaslist)
   return vaslist->next_arg_raw();
   NO_UNWIND_END();
 }
+};
 
+
+#include <clasp/llvmo/read-stamp.cc>
+
+extern "C" {
 // mostly duplicates fastgf.cc, ew.
 // Idea here is we're moving away from even having fastgf.cc.
 BUILTIN_ATTRIBUTES core::T_O* cx_read_stamp(core::T_O* obj)
 {
+  return llvmo::template_read_stamp<core::T_O>(obj);
+#if 0
   uintptr_t tag = reinterpret_cast<uintptr_t>(obj)&gctools::tag_mask;
   int64_t stamp;
   switch (tag) {
@@ -136,6 +143,7 @@ BUILTIN_ATTRIBUTES core::T_O* cx_read_stamp(core::T_O* obj)
       return core::make_fixnum(gctools::STAMP_SINGLE_FLOAT).raw_();
   }
   return core::make_fixnum(123456).raw_();
+#endif
 }
 
 

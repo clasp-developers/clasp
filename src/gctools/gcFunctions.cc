@@ -116,8 +116,23 @@ void flow_tracker_close() {
 };
 
 
+namespace gctools {
+std::atomic<double>   global_DiscriminatingFunctionCompilationSeconds = ATOMIC_VAR_INIT(0.0);
+
+CL_DEFUN void gctools__accumulate_discriminating_function_compilation_seconds(double seconds) {
+  global_DiscriminatingFunctionCompilationSeconds =
+      global_DiscriminatingFunctionCompilationSeconds + seconds;
+}
+
+CL_DEFUN double gctools__discriminating_function_compilation_seconds() {
+  return global_DiscriminatingFunctionCompilationSeconds;
+}
+
+};
+
 
 namespace gctools {
+
 
 size_t global_next_unused_kind = STAMP_max+1;
 

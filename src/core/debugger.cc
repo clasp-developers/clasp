@@ -2140,6 +2140,13 @@ __attribute__((optnone)) std::string dbg_safe_repr(uintptr_t raw) {
     } else if (gc::IsA<core::SimpleBaseString_sp>(obj)) {
       core::SimpleBaseString_sp sobj = gc::As_unsafe<core::SimpleBaseString_sp>(obj);
       ss << "\"" << sobj->get_std_string() << "\"";
+    } else if (gc::IsA<core::SimpleVector_sp>(obj)) {
+      core::SimpleVector_sp svobj = gc::As_unsafe<core::SimpleVector_sp>(obj);
+      ss << "#(";
+      for ( size_t i=0, iEnd(svobj->length()); i<iEnd; ++i ) {
+        ss << dbg_safe_repr((*svobj)[i]) << " ";
+      }
+      ss << ")";
     } else {
       core::General_sp gen = gc::As_unsafe<core::General_sp>(obj);
       ss << "#<" << gen->className() << " " << (void*)gen.raw_() << ">";
@@ -2159,6 +2166,8 @@ __attribute__((optnone)) std::string dbg_safe_repr(uintptr_t raw) {
     ss << (gc::Fixnum)obj.unsafe_fixnum();
   } else if (obj.nilp()) {
     ss << "NIL";
+  } else if (obj.valistp()) {
+    ss << "#<VASLIST " << (void*)obj.raw_() << ">";
   } else if (obj.unboundp()) {
     ss << "#:UNBOUND";
   } else if (obj.characterp()) {

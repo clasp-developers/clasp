@@ -601,6 +601,10 @@ string lispify_symbol_name(const string &s) {
       stream_pass1 << "+";
       continue;
     }
+    if (lispify_match(cur, "_DOT_")) {
+      stream_pass1 << ".";
+      continue;
+    }
     if (lispify_match(cur, "_EQ_")) {
       stream_pass1 << "=";
       continue;

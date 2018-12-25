@@ -228,4 +228,77 @@ namespace gctools {
 };
 
 
+template <>
+struct gctools::GCInfo<core::DtreeInterpreter_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = false;
+  static GCInfo_policy constexpr Policy = normal;
+};
+
+namespace core {
+
+FORWARD(DtreeInterpreter);
+  class DtreeInterpreter_O : public Closure_O {
+    LISP_CLASS(core, CorePkg, DtreeInterpreter_O, "DtreeInterpreter",Closure_O);
+  public:
+    typedef enum { REF_TYPE = 0 } NamedStructSlots;
+    typedef enum { REF_DTREE_TYPE = 0,
+                   REF_DTREE_NODE = 1,
+                   REF_DTREE_END = 2 } DtreeSlots;
+    typedef enum { REF_NODE_TYPE = 0,
+                   REF_NODE_EQL_SPECIALIZERS = 1,
+                   REF_NODE_CLASS_SPECIALIZERS = 2,
+                   REF_NODE_INTERPRETER = 3,
+                   REF_NODE_END = 4} NodeSlots;
+    typedef enum { REF_RANGE_TYPE = 0,
+                   REF_RANGE_OUTCOME = 1,
+                   REF_RANGE_FIRST_STAMP = 2,
+                   REF_RANGE_LAST_STAMP = 3,
+                   REF_RANGE_REVERSED_CLASSES = 4,
+                   REF_RANGE_END = 5} RangeSlots;
+    typedef enum { REF_SKIP_TYPE = 0,
+                   REF_SKIP_OUTCOME = 1,
+                   REF_SKIP_END = 2 } SkipSlots;
+    typedef enum { REF_OUTCOME_TYPE = 0,
+                   REF_OUTCOME_SUBTYPE = 1 } OutcomeSlots;
+    typedef enum { REF_OPTIMIZED_SLOT_READER_TYPE = 0,
+                   REF_OPTIMIZED_SLOT_READER_SUBTYPE = 1,
+                   REF_OPTIMIZED_SLOT_READER_INDEX = 2,
+                   REF_OPTIMIZED_SLOT_READER_EFM = 3,
+                   REF_OPTIMIZED_SLOT_READER_SLOT_NAME = 4,
+                   REF_OPTIMIZED_SLOT_READER_METHOD = 5,
+                   REF_OPTIMIZED_SLOT_READER_CLASS = 6,
+                   REF_OPTIMIZED_SLOT_READER_END = 7 } OptimizedSlotReaderSlots;
+    typedef enum { REF_OPTIMIZED_SLOT_WRITER_TYPE = 0,
+                   REF_OPTIMIZED_SLOT_WRITER_SUBTYPE = 1,
+                   REF_OPTIMIZED_SLOT_WRITER_INDEX = 2,
+                   REF_OPTIMIZED_SLOT_WRITER_EFM = 3,
+                   REF_OPTIMIZED_SLOT_WRITER_SLOT_NAME = 4,
+                   REF_OPTIMIZED_SLOT_WRITER_METHOD = 5,
+                   REF_OPTIMIZED_SLOT_WRITER_CLASS = 6,
+                   REF_OPTIMIZED_SLOT_WRITER_END = 7 } OptimizedSlotWriterSlots;
+    typedef enum { REF_FAST_METHOD_CALL_TYPE = 0,
+                   REF_FAST_METHOD_CALL_SUBTYPE = 1,
+                   REF_FAST_METHOD_CALL_FUNCTION = 2,
+                   REF_FAST_METHOD_CALL_END = 3 } FastMethodCallSlots;
+    typedef enum { REF_FUNCTION_OUTCOME_TYPE = 0,
+                   REF_FUNCTION_OUTCOME_SUBTYPE = 1,
+                   REF_FUNCTION_OUTCOME_FUNCTION = 2,
+                   REF_FUNCTION_OUTCOME_END = 3 } FunctionOutcome;
+    typedef enum { REF_EFFECTIVE_METHOD_OUTCOME_TYPE = 0,
+                   REF_EFFECTIVE_METHOD_OUTCOME_SUBTYPE = 1,
+                   REF_EFFECTIVE_METHOD_OUTCOME_APPLICABLE_METHODS = 2,
+                   REF_EFFECTIVE_METHOD_OUTCOME_FUNCTION = 3,
+                   REF_EFFECTIVE_METHOD_OUTCOME_END = 4 } EffectiveMethodOutcome;
+  public:
+    core::T_sp      _Dtree;
+  public:
+    static DtreeInterpreter_sp make_dtree_interpreter(T_sp dtree);
+  public:
+    static LCC_RETURN LISP_CALLING_CONVENTION();
+    DtreeInterpreter_O(FunctionDescription* fdesc, T_sp dtree) : Closure_O(entry_point,fdesc), _Dtree(dtree) {};
+  };
+
+};
+
 #endif /* _core_instance_H_ */
