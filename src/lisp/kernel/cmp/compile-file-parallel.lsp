@@ -385,5 +385,5 @@ Compile a lisp source file into an LLVM module."
                               
 
 (eval-when (:load-toplevel)
-  ;; Turn on *compile-file-parallel* at load-time
-  (setf *compile-file-parallel* t))
+  ;; Turn off *compile-file-parallel* at load-time for now until defcallback compiles properly
+  (setf *compile-file-parallel* nil))
