@@ -2216,12 +2216,12 @@ CL_DEFUN void cl__error(T_sp datum, List_sp initializers) {
     // It's only here to identify errors that would cause infinite looping
     // as we get error handling and conditions working properly
     printf("%s:%d -- *nested-error-depth* --> %d  datum: %s\n", __FILE__, __LINE__, nestedErrorDepth, _rep_(datum).c_str());
-    asm("int $03");
     if (initializers.notnilp()) {
       printf("               initializers: %s\n", _rep_(initializers).c_str());
     }
     printf("Dumping backtrace\n");
-    core__low_level_backtrace();
+    dbg_safe_backtrace();
+    asm("int $03");
   }
   ++nestedErrorDepth;
   DynamicScopeManager scope(_sym_STARnestedErrorDepthSTAR, make_fixnum(nestedErrorDepth));
