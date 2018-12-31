@@ -55,6 +55,11 @@
 (test-expect-error random-5a (random -1.23s0) :type type-error)
 (test-expect-error random-6a (random -1.23f0) :type type-error)
 
+(test-expect-error random-7 (random 0) :type type-error)
+(test-expect-error random-7a (random 0.0s0) :type type-error)
+(test-expect-error random-7b (random 0.0d0) :type type-error)
+(test-expect-error random-7c (random 0.0f0) :type type-error)
+
 ;;; http://www.lispworks.com/documentation/HyperSpec/Body/f_eq_sle.htm
 ;;; (= 3 3) is true.              (/= 3 3) is false.             
 ;;; (= 3 5) is false.             (/= 3 5) is true.              
@@ -375,6 +380,28 @@
 (test signum-1a (= -1 (signum (1- most-negative-fixnum))))
 (test signum-2 (= 1 (signum most-positive-fixnum)))
 (test signum-2a (= 1 (signum (1+ most-positive-fixnum))))
+
+(test sqrt-big-ratio-1 
+      (let ((result 
+             (SQRT 28022395738783732117648967388274923619871355234097921/122167958641777737216225939000892255646232346624)))
+        (and (typep result 'float)(not (ext:float-nan-p result)))))
+
+(test sqrt-bignum-should-fit-in-double-1
+      (let ((result 
+             (sqrt 28022395738783732117648967388274923619871355234097921)))
+        (and (typep result 'float)(not (ext:float-nan-p result))(not (ext:float-infinity-p result)))))
+
+(test sqrt-bignum-should-fit-in-double-2
+      (let ((result 
+             (sqrt 2802239573878373211764896738827492361987135523409792123423423468273647283642783467283643456837465347653487563847658346587346523847687324678236487234687234627834687234678236478237687623423426862843627834623846782346234239479283472934798237498273423467823642342342837468723467283462348762378462342347862344998)))
+        (and (typep result 'float)(not (ext:float-nan-p result))(not (ext:float-infinity-p result)))))
+
+(test sqrt-bignum-should-fit-in-double-overflow
+      (let ((result 
+             (sqrt 280223957387837321176489673882749236198713552340979212342342346827364728364278346728364345683746534765348756384765834658734652384768732467823648723468723462783468723467823647823768762342342686284362783462384678234623423947928347293479823749827342346782364234234283746872346728346234876237846234234786234499889)))
+        (and (typep result 'float)(not (ext:float-nan-p result))(ext:float-infinity-p result))))
+
+
 
 
 
