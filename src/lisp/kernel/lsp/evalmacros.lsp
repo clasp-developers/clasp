@@ -103,38 +103,6 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
 
 (export '(defconstant-equal))
 
-
-;;;; ----------------------------------------------------------------
-;;;;
-;;;; Replace defun with the following version
-;;;;
-#+(or)(defmacro defun (&whole whole name vl &body body &environment env)
-  ;; Documentation in help.lsp
-  (multiple-value-bind (decls body doc-string) 
-      (process-declarations body t)
-    (let* ((fn (gensym))
-           (doclist (when doc-string (list doc-string)))
-           (global-function
-             `#'(lambda ,vl 
-                  (declare (core:lambda-name ,name) ,@decls) 
-                  ,@doclist
-                  (block ,(si::function-block-name name) ,@body))))
-      ;;(bformat t "macro expansion of defun current-source-location -> %s%N" current-source-location)
-      ;;(bformat t "DEFUN global-function --> %s%N" global-function )
-      `(progn
-         (eval-when (:compile-toplevel)
-           ;; this function won't be ready for a while, but it's okay as there's no
-           ;; compiler to run :compile-toplevel forms anyway.
-           (cmp::register-global-function-def 'defun ',name))
-         (let ((,fn ,global-function))
-           (funcall #'(setf fdefinition) ,fn ',name)
-           (setf-lambda-list ,fn ',vl)
-           ,@(si::expand-set-documentation name 'function doc-string)
-           ;; This can't be at toplevel.
-           ,@(and *defun-inline-hook*
-                  (list (funcall *defun-inline-hook* name global-function env)))
-           ',name)))))
-
 (defmacro defun (name lambda-list &body body &environment env)
    ;; Documentation in help.lsp
    (multiple-value-bind (decls body doc-string) 
