@@ -406,10 +406,16 @@
           (return-translator (from-translator-name return-type-kw))
           (argument-types (mapcar #'safe-translator-type argument-type-kws))
           (argument-translators (mapcar #'to-translator-name argument-type-kws)))
-      `(progn
+      `(let ((cell (load-time-value (cons nil nil)))
+             (callback-function (lambda (,@argument-symbols)
+                                  (declare (core:lambda-name ,(make-symbol function-name)))
+                                  ,@body)))
+         ;; KLUDGE: In order to keep the lambda from being GCd, it's stuffed into this LTV cell.
+         ;; LTVs are never collected.
+         (setf (car cell) callback-function)
          (core:defcallback ,(mangled-callback-name function-name) ,convention
-             ,return-type ,return-translator ,argument-types ,argument-translators
-           (lambda (,@argument-symbols) (declare (core:lambda-name ,function-name)) ,@body))
+           ,return-type ,return-translator ,argument-types ,argument-translators
+           ,argument-symbols callback-function)
          ',function-name))))
 
 (defmacro %defcallback (name-and-options return-type-kw argument-symbols argument-type-kws &body body)

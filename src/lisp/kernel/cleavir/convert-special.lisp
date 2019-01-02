@@ -248,41 +248,29 @@
 (defmethod cleavir-generate-ast:convert-special
     ((symbol (eql 'core:defcallback)) form env (system clasp-cleavir:clasp))
   (let* ((args (butlast (rest form)))
-         (lambda (first (last form)))
-         (params (second lambda)))
+         (lisp-callback (first (last form))))
     (make-instance 'cc-ast:defcallback-ast
-                   :args (append (butlast (rest form)) (list params))
-                   ;; The lambda is not a closure.
-                   ;; In fact, we kind of give it its own compile process.
-                   :callee (clasp-cleavir-ast:hoist-load-time-value
-                            (cleavir-generate-ast:generate-ast
-                             `#',lambda nil system)
-                            nil))))
+                   :args args
+                   :callee (cleavir-generate-ast:convert lisp-callback env system))))
 
 (defmethod cleavir-cst-to-ast:convert-special
     ((symbol (eql 'core:defcallback)) form env (system clasp-cleavir:clasp))
-  (cst:db origin (name convention rtype rtrans atypes atrans lexpr)
+  (cst:db origin (name convention rtype rtrans atypes atrans params lisp-callback)
       (cst:rest form)
-    (let* ((params (second (cst:raw lexpr)))
-           (args (list (cst:raw name) (cst:raw convention)
-                       (cst:raw rtype) (cst:raw rtrans)
-                       (cst:raw atypes) (cst:raw atrans)
-                       params)))
+    (let ((args (list (cst:raw name) (cst:raw convention)
+                      (cst:raw rtype) (cst:raw rtrans)
+                      (cst:raw atypes) (cst:raw atrans)
+                      (cst:raw params))))
       (make-instance 'cc-ast:defcallback-ast
                      :args args
-                     ;; Relies on lambda macroexpansion - no big
-                     ;; see comment in c-g-a method above
-                     :callee (clasp-cleavir-ast:hoist-load-time-value
-                              (cleavir-cst-to-ast:cst-to-ast
-                               lexpr nil system)
-                              nil)))))
+                     :callee (cleavir-cst-to-ast:cst-to-ast lisp-callback env system)))))
 
 (defmethod cleavir-generate-ast:check-special-form-syntax ((head (eql 'core:defcallback)) form)
   (cleavir-code-utilities:check-form-proper-list form)
-  (cleavir-code-utilities:check-argcount form 7 7)
+  (cleavir-code-utilities:check-argcount form 8 8)
   (destructuring-bind (name convention return-type return-translator
                        argument-types argument-translators
-                       lambda-expression)
+                       params function)
       (rest form)
     (assert (stringp name))
     (assert (keywordp convention))
@@ -292,13 +280,16 @@
                  (every (lambda (ty) (typep ty 'llvm-sys:type)) argument-types)))
     (assert (and (core:proper-list-p argument-translators)
                  (every #'stringp argument-translators)))
+    (assert (and (core:proper-list-p params)
+                 (every #'symbolp params)))
+    #+(or)
     (assert (and (core:proper-list-p lambda-expression)
                  (>= (length lambda-expression) 2)
                  (eq (car lambda-expression) 'lambda)
                  (core:proper-list-p (second lambda-expression))))
     (assert (= (length argument-types)
                (length argument-translators)
-               (length (second lambda-expression))))))
+               (length params)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

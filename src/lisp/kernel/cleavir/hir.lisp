@@ -111,12 +111,10 @@
 ;;;
 ;;; Instruction DEFCALLBACK-INSTRUCTION
 ;;;
-;;; believe in the in the in the in the in the in
 
 (defclass defcallback-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin
                                    cleavir-ir:side-effect-mixin)
-  ((%args :initarg :args :reader defcallback-args)
-   (%code :initarg :code :reader cleavir-ir:code)))
+  ((%args :initarg :args :reader defcallback-args)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

@@ -218,6 +218,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
        (error "Handle lambda applications"))
       (t (compiler-error form "Illegal head for form %s" head)))))
 
+;;; Codegen a (funcall ...) form.
 (defun codegen-funcall (result form env)
   (let ((closure-arg (second form))
         (call-args (cddr form)))
