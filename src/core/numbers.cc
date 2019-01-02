@@ -1494,8 +1494,6 @@ Rational_sp Rational_O::create(Integer_sp num, Integer_sp denom) {
   return Rational_O::create(clasp_to_mpz(num), clasp_to_mpz(denom));
 }
 
-CL_LAMBDA();
-CL_DECLARE();
 CL_DOCSTRING("Return a number that is NAN");
 CL_DEFUN DoubleFloat_sp core__nan() {
   DoubleFloat_sp rnan = DoubleFloat_O::create(NAN);
