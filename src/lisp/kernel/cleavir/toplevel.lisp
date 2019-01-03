@@ -85,16 +85,19 @@
                                                  else)
                                              env)))
                     (setq
-                     (when(oddp (length body))
+                     (when (oddp (length body))
                        (error "Expected an even number of arguments for setq"))
-                     (loop for cur = body then (cddr cur)
+                     (loop with result = nil
+                           for cur = body then (cddr cur)
                            for symbol = (car cur)
                            for expression = (cadr cur)
                            while cur
                            if (ext:specialp symbol)
-                             do (set symbol (cclasp-eval-with-env expression env))
+                             do (setf result (cclasp-eval-with-env expression env)
+                                      (symbol-value symbol) result)
                            else
-                             do (eval-compile `(setq ,symbol ,expression))))
+                             do (setf result (eval-compile `(setq ,symbol ,expression)))
+                           finally (return result)))
                     (progn
                       (eval-progn body))
                     (eval-when
