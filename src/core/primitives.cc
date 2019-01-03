@@ -2076,30 +2076,11 @@ CL_DEFUN T_mv ext__function_lambda_list(T_sp obj) {
     }
     Function_sp fn = sym->symbolFunction();
     return Values(ext__function_lambda_list(fn),_lisp->_true());
-  } else if (gc::IsA<FuncallableInstance_sp>(obj)) {
-    FuncallableInstance_sp iobj = gc::As_unsafe<FuncallableInstance_sp>(obj);
-    if (iobj->isgf()) {
-      return Values(core__get_sysprop(iobj, _sym_generic_function_lambda_lists),_lisp->_true());
-    }
-    return Values(_Nil<T_O>(),_Nil<T_O>());
   } else if (Function_sp func = obj.asOrNull<Function_O>()) {
     return Values(func->lambdaList(), _lisp->_true());
   }
   return Values(_Nil<T_O>(),_Nil<T_O>());
 }
-
-CL_LAMBDA(function lambda_list);
-CL_DECLARE();
-CL_DOCSTRING("Set the lambda-list that function-lambda-list would return for the generic function");
-CL_DEFUN void core__function_lambda_list_set(T_sp obj, T_sp lambda_list) {
-  if (gc::IsA<FuncallableInstance_sp>(obj)) {
-    FuncallableInstance_sp iobj = gc::As_unsafe<FuncallableInstance_sp>(obj);
-    if (iobj->isgf()) {
-      core__put_sysprop(iobj, _sym_generic_function_lambda_lists, lambda_list);
-    }
-  }
-}
-
 
 CL_LAMBDA(function);
 CL_DECLARE();
