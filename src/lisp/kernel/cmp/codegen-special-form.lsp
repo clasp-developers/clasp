@@ -1020,19 +1020,15 @@ jump to blocks within this tagbody."
 (defun gen-defcallback (c-name convention
                         return-type return-translator-name
                         argument-types argument-translator-names
-                        parameters closure-value)
+                        parameters place-holder closure-value)
   (declare (ignore convention))         ; FIXME
   ;; parameters should be a list of symbols, i.e. lambda list with only required.
   (unless (= (length argument-types) (length parameters) (length argument-translator-names))
     (error "BUG: Callback function parameters and types have a length mismatch"))
   ;;; Generate a variable and put the closure in it.
-  (let* ((closure-var-name (core:bformat nil "%s_closure_var" c-name))
-         (closure-var (llvm-sys:make-global-variable
-                       *the-module* %t*% nil 'llvm-sys:internal-linkage
-                       (llvm-sys:undef-value-get %t*%)
-                       closure-var-name)))
-    ;; dumb note to self: closure-var is a T**- llvm treats variables as memory locations.
-    (irc-store closure-value closure-var closure-var-name)
+  (let* ((closure-literal-slot-index (literal:lookup-literal-index place-holder))
+         (closure-var-name (core:bformat nil "%s_closure_var" c-name)))
+    (irc-store closure-value (literal:constants-table-reference closure-literal-slot-index) closure-var-name)
     ;; Now generate the C function.
     ;; We don't actually "do" anything with it- just leave it there to be linked/used like a C function.
     (with-landing-pad nil ; Since we're in a new function (which should never be an unwind dest)
@@ -1060,7 +1056,7 @@ jump to blocks within this tagbody."
                                        (format nil "translated-~a" c-arg-name)))
                                     c-args c-argument-names argument-translator-names))
                    ;; Generate code to get the closure from the global variable from earlier.
-                   (closure-to-call (irc-load closure-var closure-var-name))
+                   (closure-to-call (irc-load (literal:constants-table-reference closure-literal-slot-index) closure-var-name))
                    ;; Generate the code to actually call the lisp function.
                    ;; results-in-registers keeps things in the basic tmv format, because
                    ;; here we don't need the store/load values dance.
@@ -1083,11 +1079,11 @@ jump to blocks within this tagbody."
   (destructuring-bind (c-name convention
                        return-type return-translator-name
                        argument-types argument-translator-names
-                       parameters function)
+                       parameters place-holder function)
       form
     (let ((closure-temp (irc-alloca-t*)))
       (codegen closure-temp function env)
       (gen-defcallback c-name convention
                        return-type return-translator-name
                        argument-types argument-translator-names
-                       parameters (irc-load closure-temp)))))
+                       parameters place-holder (irc-load closure-temp)))))

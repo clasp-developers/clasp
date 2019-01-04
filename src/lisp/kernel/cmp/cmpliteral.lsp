@@ -46,7 +46,7 @@
       (bformat nil "%s%d" core:+contab-name+ (incf-value-table-id-value))))
 
 (defstruct (literal-node-toplevel-funcall (:type vector) :named) arguments)
-(defstruct (literal-node-creator (:type vector) :named) index name literal-name arguments)
+(defstruct (literal-node-creator (:type vector) :named) index name literal-name object arguments)
 (defstruct (literal-node-call (:type vector) :named) function source-pos-info holder)
 (defstruct (literal-node-side-effect (:type vector) :named) name arguments)
 (defstruct (literal-node-runtime (:type vector) :named) index object)
@@ -117,16 +117,26 @@
 the value is put into *default-load-time-value-vector* and its index is returned"
   (prog1 *table-index* (incf *table-index*)))
 
-(defun add-named-creator (name index literal-name &rest args)
+(defun lookup-literal-index (object)
+  "Given a literal object that has already been added to the literal table and will be recreated at load-time,
+return the index in the literal table for that object.  This is used in special cases like defcallback to
+rewrite the slot in the literal table to store a closure."
+  (maphash (lambda (index literal)
+             (when (eq (literal-node-creator-object literal) object)
+               (return-from lookup-literal-index index)))
+           *constant-index-to-literal-node-creator*)
+  (error "Could not find literal ~s" object))
+
+(defun add-named-creator (name index literal-name object &rest args)
   "Call the named function after converting fixnum args to llvm constants"
-  (let ((creator (make-literal-node-creator :index index :name name :literal-name literal-name :arguments args)))
+  (let ((creator (make-literal-node-creator :index index :name name :literal-name literal-name :object object :arguments args)))
     (setf (gethash index *constant-index-to-literal-node-creator*) creator)
     (run-all-add-node creator)
     creator))
 
-(defun add-creator (name index &rest args)
+(defun add-creator (name index object &rest args)
   "Call the named function after converting fixnum args to llvm constants"
-  (apply 'add-named-creator name index nil args))
+  (apply 'add-named-creator name index nil object args))
 
 (defun add-side-effect-call (name &rest args)
   "Call the named function after converting fixnum args to llvm constants"
@@ -135,13 +145,13 @@ the value is put into *default-load-time-value-vector* and its index is returned
     rase))
 
 (defun ltv/nil (object index read-only-p &key recursive-p)
-  (add-named-creator "ltvc_make_nil" index "NIL"))
+  (add-named-creator "ltvc_make_nil" index "NIL" object))
 
 (defun ltv/t (object index read-only-p &key recursive-p)
-  (add-named-creator "ltvc_make_t" index "T"))
+  (add-named-creator "ltvc_make_t" index "T" object))
 
 (defun ltv/ratio (ratio index read-only-p &key recursive-p)
-  (add-creator "ltvc_make_ratio" index
+  (add-creator "ltvc_make_ratio" index ratio
                (load-time-reference-literal (numerator ratio) read-only-p :recursive-p t)
                (load-time-reference-literal (denominator ratio) read-only-p :recursive-p t)))
 
@@ -153,29 +163,29 @@ the value is put into *default-load-time-value-vector* and its index is returned
   (let ((isproper (core:proper-list-p cons)))
     (cond
       ((and isproper (<= (length cons) +list-max+))
-       (apply 'add-creator "ltvc_make_list" index
+       (apply 'add-creator "ltvc_make_list" index cons
               (length cons) (mapcar (lambda (x)
                                       (load-time-reference-literal x read-only-p :recursive-p t :recursive-p t))
                                     cons)))
       ((null isproper)
-       (add-creator "ltvc_make_cons" index
+       (add-creator "ltvc_make_cons" index cons
                     (load-time-reference-literal (car cons) read-only-p :recursive-p t)
                     (load-time-reference-literal (cdr cons) read-only-p :recursive-p t)))
       ;; Too long list
       (t (let* ((pos +list-max+)
                 (front (subseq cons 0 pos))
                 (back (nthcdr pos cons)))
-           (add-creator "ltvc_nconc" index
+           (add-creator "ltvc_nconc" index cons
                         (load-time-reference-literal front read-only-p :recursive-p t)
                         (load-time-reference-literal back read-only-p :recursive-p t)))))))
 
 (defun ltv/complex (complex index read-only-p &key recursive-p)
-  (add-creator "ltvc_make_complex" index
+  (add-creator "ltvc_make_complex" index complex
                (load-time-reference-literal (realpart complex) read-only-p :recursive-p t)
                (load-time-reference-literal (imagpart complex) read-only-p :recursive-p t)))
 
 (defun ltv/array (array index read-only-p &key recursive-p)
-  (let ((val (add-creator "ltvc_make_array" index
+  (let ((val (add-creator "ltvc_make_array" index array
                           (load-time-reference-literal (array-element-type array) read-only-p :recursive-p t)
                           (load-time-reference-literal (array-dimensions array) read-only-p :recursive-p t))))
     (let* ((total-size (if (array-has-fill-pointer-p array)
@@ -187,7 +197,7 @@ the value is put into *default-load-time-value-vector* and its index is returned
     val))
 
 (defun ltv/hash-table (hash-table index read-only-p &key recursive-p)
-  (let ((ht (add-creator "ltvc_make_hash_table" index
+  (let ((ht (add-creator "ltvc_make_hash_table" index hash-table
                          (load-time-reference-literal (hash-table-test hash-table) read-only-p :recursive-p t))))
     (maphash (lambda (key val)
                (add-side-effect-call "ltvc_setf_gethash" ht
@@ -197,38 +207,38 @@ the value is put into *default-load-time-value-vector* and its index is returned
     ht))
 
 (defun ltv/fixnum (fixnum index read-only-p &key recursive-p)
-  (add-creator "ltvc_make_fixnum" index fixnum))
+  (add-creator "ltvc_make_fixnum" index fixnum fixnum))
 
 (defun ltv/bignum (bignum index read-only-p &key recursive-p)
   (let ((bn-str (format nil "~a" bignum)))
-    (add-creator "ltvc_make_bignum" index (load-time-reference-literal bn-str read-only-p :recursive-p t))))
+    (add-creator "ltvc_make_bignum" index bignum (load-time-reference-literal bn-str read-only-p :recursive-p t))))
 
 (defun ltv/bitvector (bitvector index read-only-p &key recursive-p)
   (let ((sout (make-string-output-stream :element-type 'base-char)))
     (write bitvector :stream sout)
     (let ((bv-str (get-output-stream-string sout)))
-      (add-creator "ltvc_make_bitvector" index (load-time-reference-literal bv-str read-only-p :recursive-p t)))))
+      (add-creator "ltvc_make_bitvector" index bitvector (load-time-reference-literal bv-str read-only-p :recursive-p t)))))
 
 (defun ltv/random-state (random-state index read-only-p &key recursive-p)
   (let ((rs-str (format nil "~a" (core:random-state-get random-state))))
-    (add-creator "ltvc_make_random_state" index (load-time-reference-literal rs-str read-only-p :recursive-p t))))
+    (add-creator "ltvc_make_random_state" index random-state (load-time-reference-literal rs-str read-only-p :recursive-p t))))
 
 (defun ltv/symbol (symbol index read-only-p &key recursive-p)
   (let ((pkg (symbol-package symbol))
         (sym-str (symbol-name symbol)))
-    (add-named-creator "ltvc_make_symbol" index sym-str
+    (add-named-creator "ltvc_make_symbol" index sym-str symbol
                        (load-time-reference-literal sym-str read-only-p :recursive-p t)
                        (load-time-reference-literal pkg read-only-p :recursive-p t))))
 
 (defun ltv/character (char index read-only-p &key recursive-p)
-  (add-creator "ltvc_make_character" index
+  (add-creator "ltvc_make_character" index char
                (cmp:jit-constant-i64 (char-code char))))
 
 (defun ltv/base-string (str index read-only-p &key recursive-p)
-  (add-creator "ltvc_make_base_string" index str))
+  (add-creator "ltvc_make_base_string" index str str))
 
 (defun ltv/pathname (pathname index read-only-p &key recursive-p)
-  (add-creator "ltvc_make_pathname" index
+  (add-creator "ltvc_make_pathname" index pathname
                (load-time-reference-literal (pathname-host pathname) read-only-p :recursive-p t)
                (load-time-reference-literal (pathname-device pathname) read-only-p :recursive-p t)
                (load-time-reference-literal (pathname-directory pathname) read-only-p :recursive-p t)
@@ -237,22 +247,22 @@ the value is put into *default-load-time-value-vector* and its index is returned
                (load-time-reference-literal (pathname-version pathname) read-only-p :recursive-p t)))
 
 (defun ltv/package (package index read-only-p &key recursive-p)
-  (add-creator "ltvc_make_package" index
+  (add-creator "ltvc_make_package" index package
                (load-time-reference-literal (package-name package) read-only-p :recursive-p t)))
 
 (defun ltv/built-in-class (class index read-only-p &key recursive-p)
-  (add-creator "ltvc_make_built_in_class" index
+  (add-creator "ltvc_make_built_in_class" index class
                (load-time-reference-literal (class-name class) read-only-p :recursive-p t)))
 
 (defun ltv/single-float (single index read-only-p &key recursive-p)
   (let* ((constant (llvm-sys:make-apfloat-float single))
          (constant-ap-arg (llvm-sys:constant-fp-get cmp:*llvm-context* constant)))
-    (add-creator "ltvc_make_float" index constant-ap-arg)))
+    (add-creator "ltvc_make_float" index single constant-ap-arg)))
 
 (defun ltv/double-float (double index read-only-p &key recursive-p)
   (let* ((constant (llvm-sys:make-apfloat-double double))
          (constant-ap-arg (llvm-sys:constant-fp-get cmp:*llvm-context* constant)))
-    (add-creator "ltvc_make_double" index constant-ap-arg)))
+    (add-creator "ltvc_make_double" index double constant-ap-arg)))
 
 (defun ltv/mlf (object index read-only-p &key recursive-p)
   (multiple-value-bind (create initialize)
@@ -260,7 +270,7 @@ the value is put into *default-load-time-value-vector* and its index is returned
     (prog1
         (let* ((fn (compile-form create))
                (name (cmp:jit-constant-unique-string-ptr (llvm-sys:get-name fn))))
-          (add-creator "ltvc_set_mlf_creator_funcall" index fn name))
+          (add-creator "ltvc_set_mlf_creator_funcall" index object fn name))
       (when initialize
         (let* ((fn (compile-form initialize))
                (name (cmp:jit-constant-unique-string-ptr (llvm-sys:get-name fn))))
@@ -432,7 +442,7 @@ Return the index of the load-time-value"
     `(let* ((*with-ltv-depth* (1+ *with-ltv-depth*))
             (,index (new-table-index))
             (,ltv-func (do-ltv :ltv (lambda () ,@body))))
-       (add-creator "ltvc_set_ltv_funcall" ,index ,ltv-func (cmp:jit-constant-unique-string-ptr (llvm-sys:get-name ,ltv-func)))
+       (add-creator "ltvc_set_ltv_funcall" ,index nil ,ltv-func (cmp:jit-constant-unique-string-ptr (llvm-sys:get-name ,ltv-func)))
        ,index)))
 
 (defmacro with-load-time-value-cleavir (&body body)
@@ -443,7 +453,7 @@ Return the index of the load-time-value"
     `(let* ((*with-ltv-depth* (1+ *with-ltv-depth*))
             (,index (new-table-index))
             (,ltv-func (do-ltv :ltv (lambda () ,@body))))
-       (add-creator "ltvc_set_ltv_funcall_cleavir" ,index ,ltv-func (cmp:jit-constant-unique-string-ptr (llvm-sys:get-name ,ltv-func)))
+       (add-creator "ltvc_set_ltv_funcall_cleavir" ,index nil ,ltv-func (cmp:jit-constant-unique-string-ptr (llvm-sys:get-name ,ltv-func)))
        ,index)))
 
 (defmacro with-top-level-form ( &body body)
@@ -586,7 +596,7 @@ and  return the sorted values and the constant-table or (values nil nil)."
                   (values (funcall creator object index read-only-p :recursive-p t) t))))))))
 
 (defun evaluate-function-into-load-time-value (index fn)
-  (add-creator "ltvc_set_ltv_funcall" index fn (cmp:jit-constant-unique-string-ptr (llvm-sys:get-name fn)))
+  (add-creator "ltvc_set_ltv_funcall" index nil fn (cmp:jit-constant-unique-string-ptr (llvm-sys:get-name fn)))
   index)
 
 (defun pretty-load-time-name (object ltv-idx)

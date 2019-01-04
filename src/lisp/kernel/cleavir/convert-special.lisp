@@ -255,27 +255,28 @@
 
 (defmethod cleavir-cst-to-ast:convert-special
     ((symbol (eql 'core:defcallback)) form env (system clasp-cleavir:clasp))
-  (cst:db origin (name convention rtype rtrans atypes atrans params lisp-callback)
+  (cst:db origin (name convention rtype rtrans atypes atrans params placeholder lisp-callback)
       (cst:rest form)
     (let ((args (list (cst:raw name) (cst:raw convention)
                       (cst:raw rtype) (cst:raw rtrans)
                       (cst:raw atypes) (cst:raw atrans)
-                      (cst:raw params))))
+                      (cst:raw params) (cst:raw placeholder))))
       (make-instance 'cc-ast:defcallback-ast
                      :args args
                      :callee (cleavir-cst-to-ast:cst-to-ast lisp-callback env system)))))
 
 (defmethod cleavir-generate-ast:check-special-form-syntax ((head (eql 'core:defcallback)) form)
   (cleavir-code-utilities:check-form-proper-list form)
-  (cleavir-code-utilities:check-argcount form 8 8)
+  (cleavir-code-utilities:check-argcount form 8 9)
   (destructuring-bind (name convention return-type return-translator
                        argument-types argument-translators
-                       params function)
+                       params placeholder function)
       (rest form)
     (assert (stringp name))
     (assert (keywordp convention))
     (assert (typep return-type 'llvm-sys:type))
     (assert (stringp return-translator))
+    (assert (symbolp placeholder))
     (assert (and (core:proper-list-p argument-types)
                  (every (lambda (ty) (typep ty 'llvm-sys:type)) argument-types)))
     (assert (and (core:proper-list-p argument-translators)

@@ -258,6 +258,7 @@
           literal-node-call-source-pos-info
           literal-node-call-holder
           number-of-entries
+          lookup-literal-index
           reference-literal
           load-time-reference-literal
           codegen-rtv-bclasp

@@ -144,7 +144,7 @@
          (closure (in (first (cleavir-ir:inputs instruction)))))
     (cmp::gen-defcallback
      (first args) (second args) (third args) (fourth args)
-     (fifth args) (sixth args) (seventh args)
+     (fifth args) (sixth args) (seventh args) (eighth args)
      closure)))
 
 (defmethod translate-simple-instruction
