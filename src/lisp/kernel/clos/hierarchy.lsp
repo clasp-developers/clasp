@@ -107,15 +107,14 @@
 
 (eval-when (:compile-toplevel :execute  #+clasp :load-toplevel)
   (defparameter +structure-class-slots+
-    (append +class-slots+ ; NOTE: Probably don't need several, e.g. default initargs stuff.
+    ;; Note that we don't need some of the class-slots, e.g. initargs, so we could
+    ;; hypothetically reorganize things.
+    ;; We also don't really need any of these slots, but it might be good to have
+    ;; some mkind of structure to descriptions of structures later.
+    (append +class-slots+
 	    '((slot-descriptions)
 	      (initial-offset)
-	      (defstruct-form)
-	      (constructors)
-	      (documentation)
-	      (copier)
-	      (predicate)
-	      (print-function)))))
+	      (constructors)))))
 
 ;;; ----------------------------------------------------------------------
 ;;; STANDARD-GENERIC-FUNCTION

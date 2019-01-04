@@ -1015,83 +1015,79 @@ jump to blocks within this tagbody."
 ;;; shared with cleavir.
 ;;; What we're doing here is defining a C function
 ;;; that calls the translators on its arguments, passes those translated arguments
-;;; to a Lisp function, then translates the primary return value of that function
+;;; to a Lisp closure, then translates the primary return value of that function
 ;;; back to C and returns it (or if the C function is return type void, doesn't).
-;;; This is highly unusual mainly in that we take a lambda expression and compile
-;;; it, but instead of making an actual closure, we just have the C function call
-;;; the compiled code directly.
-;;; (That's not the only way it's unusual though.)
 (defun gen-defcallback (c-name convention
                         return-type return-translator-name
                         argument-types argument-translator-names
-                        parameters lisp-function-llvm-value)
+                        parameters closure-value)
   (declare (ignore convention))         ; FIXME
   ;; parameters should be a list of symbols, i.e. lambda list with only required.
   (unless (= (length argument-types) (length parameters) (length argument-translator-names))
     (error "BUG: Callback function parameters and types have a length mismatch"))
-  (with-landing-pad nil
-    (let* ((c-argument-names (mapcar #'string parameters))
-           (c-function-type (llvm-sys:function-type-get return-type argument-types))
-           (new-func (llvm-sys:function-create c-function-type
-                                               'llvm-sys:external-linkage
-                                               c-name
-                                               *the-module*))
-           (*current-function* new-func)
-           (*current-function-name* c-name))
-      (with-irbuilder ((llvm-sys:make-irbuilder *llvm-context*))
-        (let ((bb (irc-basic-block-create "entry" new-func)))
-          (irc-set-insert-point-basic-block bb)
-          (let* ((c-args (mapcar (lambda (arg argname)
-                                   (llvm-sys:set-name arg argname)
-                                   arg)
-                                 (llvm-sys:get-argument-list new-func)
-                                 c-argument-names))
-                 ;; Generate code to translate the arguments.
-                 (cl-args (mapcar (lambda (c-arg c-arg-name translator)
-                                    (irc-intrinsic-call-or-invoke
-                                     translator
-                                     (list c-arg)
-                                     (format nil "translated-~a" c-arg-name)))
-                                  c-args c-argument-names argument-translator-names))
-                 ;; Generate the things we pass to the Lisp function.
-                 (real-args (if (< (length cl-args) core:+number-of-fixed-arguments+)
-                                (append cl-args (make-list (- core:+number-of-fixed-arguments+ (length cl-args))
-                                                           :initial-element (null-t-ptr)))
-                                cl-args))
-                 ;; FIXME: So I think this cast is basically bullshit.
-                 ;; lisp-function-llvm-value is a value representing a function (pointer?),
-                 ;; not a closure. There is no actual closure even allocated!
-                 ;; cc_call_callback also casts this argument to a function pointer.
-                 ;; So this is pretty messed up. FIXME FIXME
-                 (fptr (irc-bit-cast lisp-function-llvm-value %t*% "fptr-t*"))
-                 ;; Generate the code to actually call the lisp function,
-                 ;; bullshit cast in mind.
-                 (cl-result (irc-intrinsic-call-or-invoke
-                             "cc_call_callback"
-                             (list* fptr (irc-size_t (length cl-args)) real-args)
-                             "cl-result")))
-            ;; Now call the translator for the return value if applicable.
-            (if (string= return-translator-name "from_object_void")  ; (eq return-type %void%) doesn't seem to work - and it's sketchy because it's a symbol macro
-                ;; nope
-                (irc-ret-void)
-                ;; yep
-                (let ((c-result (irc-intrinsic-call-or-invoke
-                                 return-translator-name
-                                 ;; get the 0th value.
-                                 (list (irc-extract-value cl-result (list 0) "primary"))
-                                 "c-result")))
-                  (irc-ret c-result)))))))))
+  ;;; Generate a variable and put the closure in it.
+  (let* ((closure-var-name (core:bformat nil "%s_closure_var" c-name))
+         (closure-var (llvm-sys:make-global-variable
+                       *the-module* %t*% nil 'llvm-sys:internal-linkage
+                       (llvm-sys:undef-value-get %t*%)
+                       closure-var-name)))
+    ;; dumb note to self: closure-var is a T**- llvm treats variables as memory locations.
+    (irc-store closure-value closure-var closure-var-name)
+    ;; Now generate the C function.
+    ;; We don't actually "do" anything with it- just leave it there to be linked/used like a C function.
+    (with-landing-pad nil ; Since we're in a new function (which should never be an unwind dest)
+      (let* ((c-argument-names (mapcar #'string parameters))
+             (c-function-type (llvm-sys:function-type-get return-type argument-types))
+             (new-func (llvm-sys:function-create c-function-type
+                                                 'llvm-sys:external-linkage
+                                                 c-name
+                                                 *the-module*))
+             (*current-function* new-func)
+             (*current-function-name* c-name))
+        (with-irbuilder ((llvm-sys:make-irbuilder *llvm-context*))
+          (let ((bb (irc-basic-block-create "entry" new-func)))
+            (irc-set-insert-point-basic-block bb)
+            (let* ((c-args (mapcar (lambda (arg argname)
+                                     (llvm-sys:set-name arg argname)
+                                     arg)
+                                   (llvm-sys:get-argument-list new-func)
+                                   c-argument-names))
+                   ;; Generate code to translate the arguments.
+                   (cl-args (mapcar (lambda (c-arg c-arg-name translator)
+                                      (irc-intrinsic-call
+                                       translator
+                                       (list c-arg)
+                                       (format nil "translated-~a" c-arg-name)))
+                                    c-args c-argument-names argument-translator-names))
+                   ;; Generate code to get the closure from the global variable from earlier.
+                   (closure-to-call (irc-load closure-var closure-var-name))
+                   ;; Generate the code to actually call the lisp function.
+                   ;; results-in-registers keeps things in the basic tmv format, because
+                   ;; here we don't need the store/load values dance.
+                   ;; (The C function only gets/needs/wants the primary value.)
+                   (cl-result (irc-funcall-results-in-registers
+                               closure-to-call cl-args (core:bformat nil "%s_closure" c-name))))
+              ;; Now generate a call the translator for the return value if applicable, then return.
+              ;; NOTE: (eq return-type %void%) doesn't seem to work - and it's sketchy because it's a symbol macro
+              (if (string= return-translator-name "from_object_void")
+                  (irc-ret-void)
+                  (let ((c-result (irc-intrinsic-call
+                                   return-translator-name
+                                   ;; get the 0th value.
+                                   (list (irc-extract-value cl-result (list 0) "primary"))
+                                   "c-result")))
+                    (irc-ret c-result))))))))))
 
 (defun codegen-defcallback (result form env)
   (declare (ignore result))             ; no return value
   (destructuring-bind (c-name convention
                        return-type return-translator-name
                        argument-types argument-translator-names
-                       lambda-expr)
+                       parameters function)
       form
-    (let ((parameters (second lambda-expr)))
+    (let ((closure-temp (irc-alloca-t*)))
+      (codegen closure-temp function env)
       (gen-defcallback c-name convention
                        return-type return-translator-name
                        argument-types argument-translator-names
-                       parameters
-                       (cmp:compile-lambda-function lambda-expr)))))
+                       parameters (irc-load closure-temp)))))

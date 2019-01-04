@@ -24,7 +24,13 @@ last FORM.  If not, simply returns NIL."
 
 (defmacro defmacro (name lambda-list &body body &environment env)
   `(eval-when (:compile-toplevel :load-toplevel :execute)
-     (funcall #'(setf macro-function) #',(ext:parse-macro name lambda-list body env) ',name)
+     ;; TODO: Move this LET into a function- %DEFMACRO or sth.
+     ;; Then the compiler won't have to compile an extra let at compile-time.
+     ;; I'm only not doing this now because there are, as usual,
+     ;; issues with bootstrapping (%DEFMACRO must be defined very early).
+     (let ((macro-function #',(ext:parse-macro name lambda-list body env)))
+       (funcall #'(setf macro-function) macro-function ',name)
+       (setf-lambda-list macro-function ',lambda-list))
      ',name))
 
 (defmacro destructuring-bind (vl list &body body)
@@ -96,38 +102,6 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
   `(defconstant-eqx ,var ,form equal ,doc-string))
 
 (export '(defconstant-equal))
-
-
-;;;; ----------------------------------------------------------------
-;;;;
-;;;; Replace defun with the following version
-;;;;
-#+(or)(defmacro defun (&whole whole name vl &body body &environment env)
-  ;; Documentation in help.lsp
-  (multiple-value-bind (decls body doc-string) 
-      (process-declarations body t)
-    (let* ((fn (gensym))
-           (doclist (when doc-string (list doc-string)))
-           (global-function
-             `#'(lambda ,vl 
-                  (declare (core:lambda-name ,name) ,@decls) 
-                  ,@doclist
-                  (block ,(si::function-block-name name) ,@body))))
-      ;;(bformat t "macro expansion of defun current-source-location -> %s%N" current-source-location)
-      ;;(bformat t "DEFUN global-function --> %s%N" global-function )
-      `(progn
-         (eval-when (:compile-toplevel)
-           ;; this function won't be ready for a while, but it's okay as there's no
-           ;; compiler to run :compile-toplevel forms anyway.
-           (cmp::register-global-function-def 'defun ',name))
-         (let ((,fn ,global-function))
-           (funcall #'(setf fdefinition) ,fn ',name)
-           (setf-lambda-list ,fn ',vl)
-           ,@(si::expand-set-documentation name 'function doc-string)
-           ;; This can't be at toplevel.
-           ,@(and *defun-inline-hook*
-                  (list (funcall *defun-inline-hook* name global-function env)))
-           ',name)))))
 
 (defmacro defun (name lambda-list &body body &environment env)
    ;; Documentation in help.lsp

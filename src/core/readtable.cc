@@ -803,15 +803,12 @@ ReadTable_sp ReadTable_O::create_standard_readtable() {
   rt->set_macro_character(clasp_make_standard_character('('),
                           _sym_reader_list_allow_consing_dot,
                           _Nil<T_O>());
-  SYMBOL_SC_(CorePkg, reader_error_unmatched_close_parenthesis);
   rt->set_macro_character(clasp_make_standard_character(')'),
                           _sym_reader_error_unmatched_close_parenthesis,
                           _Nil<T_O>());
-  SYMBOL_SC_(CorePkg, reader_quote);
   rt->set_macro_character(clasp_make_standard_character('\''),
                           _sym_reader_quote,
                           _Nil<T_O>());
-  SYMBOL_SC_(CorePkg, reader_skip_semicolon_comment);
   rt->set_macro_character(clasp_make_standard_character(';'),
                           _sym_reader_skip_semicolon_comment,
                           _Nil<T_O>());

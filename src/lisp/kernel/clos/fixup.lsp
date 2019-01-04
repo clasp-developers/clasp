@@ -79,7 +79,7 @@
           finally (append-generic-function-call-history f new-call-history))
     ;; Finish setup
     (mlog "function-to-method: installed method%N")
-    (core:function-lambda-list-set f lambda-list) ; hook up the introspection
+    (setf-lambda-list f lambda-list) ; hook up the introspection
     (setf (fdefinition name) f
           (generic-function-name f) name)
     (when (boundp '*early-methods*)

@@ -229,7 +229,7 @@ Compile a lisp source file into an LLVM module."
       (when source-debug-pathname
         (core:source-file-info (namestring given-input-pathname) source-debug-pathname source-debug-offset nil))
       (when *compile-verbose*
-        (bformat t "; Compiling file: %s%N" (namestring given-input-pathname)))
+        (bformat t "; Compiling file parallel: %s%N" (namestring given-input-pathname)))
       (cmp-log "About to start with-compilation-unit%N")
       (with-compilation-unit ()
         (let* ((*compile-file-pathname* (pathname (merge-pathnames given-input-pathname)))
@@ -293,7 +293,7 @@ Compile a lisp source file into an LLVM module."
            (output-path (compile-file-pathname input-file :output-file output-file :output-type output-type ))
            (working-dir (core:mkdtemp (namestring output-path)))
            (*compile-file-output-pathname* output-path))
-      (with-compiler-timer (:message "Compile-file" :report-link-time t :verbose verbose)
+      (with-compiler-timer (:message "Compile-file-parallel" :report-link-time t :verbose verbose)
         (let ((result (compile-file-to-result input-pathname
                                               :type type
                                               :output-type output-type
@@ -385,5 +385,5 @@ Compile a lisp source file into an LLVM module."
                               
 
 (eval-when (:load-toplevel)
-  ;; Turn on *compile-file-parallel* at load-time
-  (setf *compile-file-parallel* t))
+  ;; Turn off *compile-file-parallel* at load-time for now until defcallback compiles properly
+  (setf *compile-file-parallel* nil))
