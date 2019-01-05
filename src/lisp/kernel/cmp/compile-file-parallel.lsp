@@ -372,6 +372,7 @@ Compile a lisp source file into an LLVM module."
 
 
 (defvar *compile-file-parallel* nil)
+#+(or)
 (defun cl:compile-file (input-file &rest args)
   "Ok, this is a horrible hack - if the file DOESN'T contain defcallback then compile-file-parallel it"
   (if *compile-file-parallel*
@@ -383,7 +384,10 @@ Compile a lisp source file into an LLVM module."
             (apply #'compile-file-serial input-file args)))
       (apply #'compile-file-serial input-file args)))
                               
+(defun cl:compile-file (input-file &rest args)
+  (if *compile-file-parallel*
+      (apply #'compile-file-parallel input-file args)
+      (apply #'compile-file-serial input-file args)))
 
 (eval-when (:load-toplevel)
-  ;; Turn off *compile-file-parallel* at load-time for now until defcallback compiles properly
-  (setf *compile-file-parallel* nil))
+  (setf *compile-file-parallel* t))
