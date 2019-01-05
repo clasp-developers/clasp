@@ -409,7 +409,9 @@
           (place-holder (gensym)))
       `(let ((cell ',place-holder)
              (callback-function (lambda (,@argument-symbols)
-                                  (declare (core:lambda-name ,(make-symbol function-name)))
+                                  (declare (core:lambda-name ,(if (stringp function-name)
+                                                                  (make-symbol function-name)
+                                                                  function-name)))
                                   ,@body)))
          ;; KLUDGE: In order to keep the lambda from being GCd, it's stuffed into this LTV cell.
          ;; LTVs are never collected.
