@@ -247,9 +247,7 @@ T_sp inputStreamDesignator(T_sp obj) {
   } else if (cl__streamp(obj)) {
     return obj;
   }
-  // kpoeck
-  // SIMPLE_ERROR(BF("Cannot convert object[%s] into a Stream") % _rep_(obj));
-  TYPE_ERROR(obj, cl::_sym_streamError);
+  TYPE_ERROR(obj, cl::_sym_Stream_O);
 }
 
 T_sp outputStreamDesignator(T_sp obj) {
@@ -260,9 +258,7 @@ T_sp outputStreamDesignator(T_sp obj) {
   } else if (cl__streamp(obj)) {
     return obj;
   }
-  // kpoeck
-  // SIMPLE_ERROR(BF("Cannot convert object[%s] into a Stream") % _rep_(obj));
-  TYPE_ERROR(obj, cl::_sym_streamError);
+  TYPE_ERROR(obj, cl::_sym_Stream_O);
 }
 
 

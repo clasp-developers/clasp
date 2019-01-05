@@ -67,6 +67,7 @@
    #:argument-asts
    #:function-name
    #:foreign-types
+   #:defcallback-ast #:defcallback-args
    #:make-throw-ast
    #:cleanup-ast
    #:make-setf-fdefinition-ast
@@ -87,6 +88,8 @@
    #:array-total-size-ast #:array-total-size-ast-mdarray
    #:array-rank-ast #:array-rank-ast-mdarray
    #:array-dimension-ast #:array-dimension-ast-mdarray #:array-dimension-ast-axis
+   #:vaslist-pop-ast
+   #:instance-stamp-ast
    #:bind-va-list-ast #:make-bind-va-list-ast #:va-list-ast
    #:invoke-ast #:multiple-value-invoke-ast #:destinations
    #:introduce-invoke
@@ -138,7 +141,10 @@
    #:make-array-total-size-instruction
    #:make-array-rank-instruction
    #:make-array-dimension-instruction
+   #:vaslist-pop-instruction #:make-vaslist-pop-instruction
+   #:instance-stamp-instruction #:make-instance-stamp-instruction
    #:bind-va-list-instruction #:make-bind-va-list-instruction
+   #:defcallback-instruction #:defcallback-args
    #:invoke-instruction #:multiple-value-invoke-instruction #:destinations
    ))
 

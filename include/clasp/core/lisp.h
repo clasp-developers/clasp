@@ -324,7 +324,8 @@ class Lisp_O {
     LongFloat_sp _LongFloatOne;
 #endif // ifdef CLASP_LONG_FLOAT
     bool _Booted;
-    HashTableEq_sp _KnownSignals;
+    mutable mp::SharedMutex _UnixSignalHandlersMutex;
+    List_sp _UnixSignalHandlers;
     GCRoots();
   };
 

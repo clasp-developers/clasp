@@ -111,6 +111,17 @@
 	  (error "foreign-call-pointer-AST appears in a Boolean context.")))
        (cleavir-ast-to-hir::invocation context)))))
 
+(defmethod cleavir-ast-to-hir:compile-ast ((ast cc-ast:defcallback-ast) context)
+  (let ((closure-temp (cleavir-ir:new-temporary)))
+    (cleavir-ast-to-hir:compile-ast
+     (cleavir-ast:callee-ast ast)
+     (cleavir-ast-to-hir:context
+      (list closure-temp)
+      (list (make-instance 'clasp-cleavir-hir:defcallback-instruction
+              :args (cc-ast:defcallback-args ast)
+              :inputs (list closure-temp)
+              :successors (cleavir-ast-to-hir::successors context)))
+      (cleavir-ast-to-hir:invocation context)))))
 
 (defmethod cleavir-ast-to-hir:compile-ast ((ast cc-ast:vector-length-ast) context)
   (cleavir-ast-to-hir::assert-context ast context 1 1)
@@ -196,6 +207,30 @@
               (cleavir-ast-to-hir::invocation context))))
       (cleavir-ast-to-hir::invocation context)))))
 
+
+(defmethod cleavir-ast-to-hir:compile-ast ((ast cc-ast:vaslist-pop-ast) context)
+  (cleavir-ast-to-hir::assert-context ast context 1 1)
+  (let ((temp (cleavir-ir:new-temporary)))
+    (cleavir-ast-to-hir:compile-ast
+     (cleavir-ast:arg-ast ast)
+     (cleavir-ast-to-hir::context
+      (list temp)
+      (list (clasp-cleavir-hir:make-vaslist-pop-instruction
+             temp (first (cleavir-ast-to-hir::results context))
+             (first (cleavir-ast-to-hir::successors context))))
+      (cleavir-ast-to-hir::invocation context)))))
+
+(defmethod cleavir-ast-to-hir:compile-ast ((ast cc-ast:instance-stamp-ast) context)
+  (cleavir-ast-to-hir::assert-context ast context 1 1)
+  (let ((temp (cleavir-ir:new-temporary)))
+    (cleavir-ast-to-hir:compile-ast
+     (cleavir-ast:arg-ast ast)
+     (cleavir-ast-to-hir::context
+      (list temp)
+      (list (clasp-cleavir-hir:make-instance-stamp-instruction
+             temp (first (cleavir-ast-to-hir::results context))
+             (first (cleavir-ast-to-hir::successors context))))
+      (cleavir-ast-to-hir::invocation context)))))
 
 (defmethod cleavir-ast-to-hir:compile-ast ((ast cc-ast:bind-va-list-ast) context)
   (let ((temp (cleavir-ir:new-temporary)))

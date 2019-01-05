@@ -339,6 +339,7 @@ def collect_bclasp_lisp_files(**kwargs):
 
 def collect_cclasp_lisp_files(**kwargs):
     return collect_bclasp_lisp_files(**kwargs) + cleavir_file_list + [
+        "src/lisp/kernel/cmp/compile-file-parallel",
         "src/lisp/kernel/tag/pre-epilogue-cclasp",
         "src/lisp/kernel/lsp/epilogue-cclasp",
         "src/lisp/kernel/tag/cclasp" ]

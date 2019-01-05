@@ -94,7 +94,6 @@
 				       reader
 				       options)))
 	      (safe-add-method fname method)
-              (maybe-augment-generic-function-lambda-list fname '(object))
 	      ;; This is redundant, but we need it at boot time because
 	      ;; the early MAKE-METHOD does not use the options field.
 	      (unless *clos-booted*
@@ -105,7 +104,6 @@
 				       writer
 				       options)))
 	      (safe-add-method fname method)
-              (maybe-augment-generic-function-lambda-list fname '(value object))
 	      ;; This is redundant, but we need it at boot time because
 	      ;; the early MAKE-METHOD does not use the options field.
 	      (unless *clos-booted*

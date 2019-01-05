@@ -1688,7 +1688,9 @@ bool clasp_wild_string_p(T_sp item) {
     size_t i, l = cl__length(item);
     for (i = 0; i < l; i++) {
       claspChar c = cl__char(gc::As<String_sp>(item), i).unsafe_character();
-      if (c == '\\' || c == '*' || c == '?')
+      if (c == '\\')
+        i++;
+      else if ( c == '*' || c == '?')
         return 1;
     }
   }

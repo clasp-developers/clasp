@@ -158,10 +158,8 @@
 	   :format-arguments (list gfun-name method-class)
 	   :datum method-class
 	   :expected-type 'method))
-  ;;
   ;; When supplying a new lambda-list, ensure that it is compatible with
   ;; the old list of methods.
-  ;;
   (when (and l-l-p (slot-boundp gfun 'methods))
     (unless (every #'(lambda (x)
                        (declare (core:lambda-name shared-initialize.lambda))
@@ -169,14 +167,21 @@
 		 (mapcar #'method-lambda-list (generic-function-methods gfun)))
       (simple-program-error "Cannot replace the lambda list of ~A with ~A because it is incongruent with some of the methods"
 			    gfun lambda-list)))
-  (call-next-method)
+  (call-next-method) ; now that we have completed the assertions.
+  ;; Coerce a method combination if required.
   (let ((combination (generic-function-method-combination gfun)))
     (unless (typep combination 'method-combination)
       (setf (generic-function-method-combination gfun)
 	    (find-method-combination gfun (first combination) (rest combination)))))
+  ;; If we have a new lambda list but no argument precedence, default the latter.
   (when (and l-l-p (not a-o-p))
     (setf (generic-function-argument-precedence-order gfun)
 	  (lambda-list-required-arguments lambda-list)))
+  ;; If we have a new lambda list and no display-lambda-list set up already, do that.
+  ;; (If we already have a display ll, we probably don't need to alter it?)
+  (when (and l-l-p (eq (ext:function-lambda-list gfun) (core:unbound)))
+    (setf-lambda-list gfun lambda-list))
+  ;; And finally, set up the actual function.
   (set-funcallable-instance-function gfun (compute-discriminating-function gfun))
   gfun)
 

@@ -41,6 +41,7 @@ THE SOFTWARE.
 #include <clasp/core/cxxObject.h>
 #include <clasp/core/record.h>
 #include <clasp/core/lisp.h>
+#include <clasp/core/sort.h>
 #include <clasp/core/environment.h>
 #include <clasp/core/fileSystem.h>
 #include <clasp/core/lightProfiler.h>
@@ -223,9 +224,19 @@ size_t global_startup_count = 0;
 #ifdef CLASP_THREADS
 mp::SharedMutex* global_startup_functions_mutex = NULL;
 #endif
-fnStartUp* global_startup_functions = NULL;
+struct Startup {
+  int _Position;
+  fnStartUp _Function;
+  Startup() {};
+  Startup(int p, fnStartUp f) : _Position(p), _Function(f) {};
+  bool operator<(const Startup& other) {
+    return this->_Position < other._Position;
+  }
+};
 
-void register_startup_function(fnStartUp fptr)
+Startup* global_startup_functions = NULL;
+
+void register_startup_function(int position, fnStartUp fptr)
 {
 #ifdef DEBUG_STARTUP
   printf("%s:%d In register_startup_function --> %p\n", __FILE__, __LINE__, fptr);
@@ -241,14 +252,15 @@ void register_startup_function(fnStartUp fptr)
   if ( global_startup_functions == NULL ) {
     global_startup_capacity = STARTUP_FUNCTION_CAPACITY_INIT;
     global_startup_count = 0;
-    global_startup_functions = (fnStartUp*)malloc(global_startup_capacity*sizeof(fnStartUp));
+    global_startup_functions = (Startup*)malloc(global_startup_capacity*sizeof(Startup));
   } else {
     if ( global_startup_count == global_startup_capacity ) {
       global_startup_capacity = global_startup_capacity*STARTUP_FUNCTION_CAPACITY_MULTIPLIER;
-      global_startup_functions = (fnStartUp*)realloc(global_startup_functions,global_startup_capacity*sizeof(fnStartUp));
+      global_startup_functions = (Startup*)realloc(global_startup_functions,global_startup_capacity*sizeof(Startup));
     }
   }
-  global_startup_functions[global_startup_count] = fptr;
+  Startup startup(position,fptr);
+  global_startup_functions[global_startup_count] = startup;
   global_startup_count++;
 #ifdef CLASP_THREADS
   if (global_Started) {
@@ -276,7 +288,7 @@ size_t startup_functions_are_waiting()
 void startup_functions_invoke()
 {
   size_t startup_count = 0;
-  fnStartUp* startup_functions = NULL;
+  Startup* startup_functions = NULL;
   {
 #ifdef CLASP_THREADS
     WITH_READ_LOCK((*global_startup_functions_mutex));
@@ -291,6 +303,7 @@ void startup_functions_invoke()
   }
   // Invoke the current list
   if (startup_count>0) {
+    sort::quickSortMemory(startup_functions,0,startup_count);
 #ifdef DEBUG_STARTUP
     printf("%s:%d In startup_functions_invoke - there are %" PRu " startup functions\n", __FILE__, __LINE__, startup_count );
     for ( size_t i = 0; i<startup_count; ++i ) {
@@ -300,13 +313,13 @@ void startup_functions_invoke()
     printf("%s:%d Starting to call the startup functions\n", __FILE__, __LINE__ );
 #endif
     for ( size_t i = 0; i<startup_count; ++i ) {
-      fnStartUp fn = startup_functions[i];
-      MaybeDebugStartup startup((void*)fn);
+      Startup& startup = startup_functions[i];
+      MaybeDebugStartup maybe_debug_startup((void*)startup._Function);
 #ifdef DEBUG_STARTUP
       printf("%s:%d     About to invoke fn@%p\n", __FILE__, __LINE__, fn );
 #endif
 //      T_mv result = (fn)(LCC_PASS_MAIN());
-      (fn)(); // invoke the startup function
+      (startup._Function)(); // invoke the startup function
     }
 #ifdef DEBUG_STARTUP
     printf("%s:%d Done with startup_functions_invoke()\n", __FILE__, __LINE__ );
@@ -486,12 +499,12 @@ CL_DEFUN T_mv core__mangle_name(Symbol_sp sym, bool is_function) {
   return Values(_Nil<T_O>(), SimpleBaseString_O::make("Provide-func-name"), make_fixnum(0), make_fixnum(CALL_ARGUMENTS_LIMIT));
 }
 
-CL_LAMBDA();
+CL_LAMBDA("&optional (stage #\\c)");
 CL_DECLARE();
 CL_DOCSTRING("startupImagePathname - returns a pathname based on *features* :CLASP-MIN, :USE-MPS, :BCLASP");
-CL_DEFUN T_sp core__startup_image_pathname() {
+CL_DEFUN T_sp core__startup_image_pathname(char stage) {
   stringstream ss;
-  ss << "app-fasl:cclasp-" << VARIANT_NAME << "-image";
+  ss << "app-fasl:" << stage << "clasp-" << VARIANT_NAME << "-image";
   T_sp mode = core::_sym_STARclasp_build_modeSTAR->symbolValue();
   if (mode == kw::_sym_object) {
     ss << ".fasl";

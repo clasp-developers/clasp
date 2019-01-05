@@ -180,6 +180,16 @@ CL_DEFUN T_sp core__interpreter_symbols() {
   return ls;
 }
 
+std::atomic<uint64_t> global_next_number;
+
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("Return the next number.  An internal counter is incremented every time this function is called.");
+CL_DEFUN Integer_sp core__next_number() {
+  uint64_t temp = ++global_next_number;
+  return Integer_O::create((uint64_t)temp);
+};
+
 CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("lispImplementationType");
@@ -713,8 +723,36 @@ CL_DEFUN T_mv cl__special_operator_p(T_sp sym) {
 CL_DECLARE();
 CL_DOCSTRING("CLHS: ash");
 CL_DEFUN Integer_sp cl__ash(Integer_sp integer, Integer_sp count) {
-  int cnt = clasp_to_int(count);
-  return clasp_shift(integer, cnt);
+  // clasp_to_int silently returns 0 for arguments being fixnums bigger than int
+  // gctools::Fixnum would be a better type
+  // see ecl cl_ash
+  if (count.fixnump())
+    return clasp_shift(integer, count.unsafe_fixnum());
+    else {
+      // count is bignum
+      if (clasp_plusp(count))
+        if (clasp_zerop (integer))
+          return integer;
+        // result will not fit in memory, giveup
+        else SIMPLE_ERROR(BF("ash for bignum count not implemented"));
+      else if (clasp_minusp (count)) {
+        if (integer.fixnump()) {
+          if (clasp_plusp (integer))
+              return clasp_make_fixnum (1);
+          else if (clasp_minusp (integer))
+              return clasp_make_fixnum (-1);
+            else return clasp_make_fixnum (0);
+          }
+        else {
+          //integer is a bignum
+          if (clasp_minusp (integer))
+            return clasp_make_fixnum (-1);
+          else
+            return clasp_make_fixnum (0);
+        }
+      }
+      else return integer;
+    }
 }
 
 CL_LAMBDA(&optional fmt-control &rest args);
@@ -2038,30 +2076,11 @@ CL_DEFUN T_mv ext__function_lambda_list(T_sp obj) {
     }
     Function_sp fn = sym->symbolFunction();
     return Values(ext__function_lambda_list(fn),_lisp->_true());
-  } else if (gc::IsA<FuncallableInstance_sp>(obj)) {
-    FuncallableInstance_sp iobj = gc::As_unsafe<FuncallableInstance_sp>(obj);
-    if (iobj->isgf()) {
-      return Values(core__get_sysprop(iobj, _sym_generic_function_lambda_lists),_lisp->_true());
-    }
-    return Values(_Nil<T_O>(),_Nil<T_O>());
   } else if (Function_sp func = obj.asOrNull<Function_O>()) {
     return Values(func->lambdaList(), _lisp->_true());
   }
   return Values(_Nil<T_O>(),_Nil<T_O>());
 }
-
-CL_LAMBDA(function lambda_list);
-CL_DECLARE();
-CL_DOCSTRING("Set the lambda-list that function-lambda-list would return for the generic function");
-CL_DEFUN void core__function_lambda_list_set(T_sp obj, T_sp lambda_list) {
-  if (gc::IsA<FuncallableInstance_sp>(obj)) {
-    FuncallableInstance_sp iobj = gc::As_unsafe<FuncallableInstance_sp>(obj);
-    if (iobj->isgf()) {
-      core__put_sysprop(iobj, _sym_generic_function_lambda_lists, lambda_list);
-    }
-  }
-}
-
 
 CL_LAMBDA(function);
 CL_DECLARE();

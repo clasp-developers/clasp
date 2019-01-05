@@ -1,6 +1,5 @@
 (in-package :clasp-cleavir-ast)
 
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Class SETF-FDEFINITION-AST.
@@ -183,6 +182,21 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; Class DEFCALLBACK-AST
+;;;
+;;; This AST is used to represent a callback definition.
+
+(defclass defcallback-ast (cleavir-ast:ast cleavir-ast:no-value-ast-mixin)
+  (;; None of these are evaluated and there's a ton of them
+   ;; so why bother splitting them up
+   (%args :initarg :args :reader defcallback-args)
+   (%callee :initarg :callee :reader cleavir-ast:callee-ast)))
+
+(defmethod cleavir-ast:children ((ast defcallback-ast))
+  (list (cleavir-ast:callee-ast ast)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; Class VECTOR-LENGTH-AST
 ;;;
 ;;; Represents an operation to get the length of a vector.
@@ -294,7 +308,42 @@
   (list (array-dimension-ast-mdarray ast)
         (array-dimension-ast-axis ast)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Class VASLIST-POP-AST
+;;;
+;;; Pops an element off a valist.
+;;; Doesn't necessarily check that there is an element.
 
+(defclass vaslist-pop-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
+  ((%arg-ast :initarg :vaslist :reader cleavir-ast:arg-ast)))
+
+(cleavir-io:define-save-info vaslist-pop-ast
+    (:vaslist cleavir-ast:arg-ast))
+
+(defmethod cleavir-ast-graphviz::label ((ast vaslist-pop-ast))
+  "vaslist-pop")
+
+(defmethod cleavir-ast:children ((ast vaslist-pop-ast))
+  (list (cleavir-ast:arg-ast ast)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Class INSTANCE-STAMP-AST
+;;;
+;;; Get the stamp of an object.
+
+(defclass instance-stamp-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
+  ((%arg-ast :initarg :arg :reader cleavir-ast:arg-ast)))
+
+(cleavir-io:define-save-info instance-stamp-ast
+    (:arg cleavir-ast:arg-ast))
+
+(defmethod cleavir-ast-graphviz::label ((ast instance-stamp-ast))
+  "instance-stamp")
+
+(defmethod cleavir-ast:children ((ast instance-stamp-ast))
+  (list (cleavir-ast:arg-ast ast)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

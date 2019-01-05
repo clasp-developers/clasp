@@ -14,7 +14,7 @@
              (wrap-loop-as-in-ansi-tests
               (LOOP FOR I FROM 1 TO 4 SUM (COMPLEX I (1+ I)) OF-TYPE COMPLEX))))
 
-;;; seems to be macroexpanded wrong (x is declared float), errors in ansi-test- but not here, strange
+;;; is macroexpanded wrong (x is declared float), errors only with (optimize (safety 3))
 (test loop-float-1
       (wrap-loop-as-in-ansi-tests
        (LOOP FOR X FROM 1 to 4.0 COLLECT X)))
@@ -23,7 +23,6 @@
       (wrap-loop-as-in-ansi-tests
        (LOOP FOR X FROM 1 BELOW 5.01 COLLECT X)))
 
-;;; (DECLARE (TYPE (INTEGER 1 5) X))
 ;;; works, but perhaps x is temporarily 6
 (test loop-fixnum-1
       (equalp '(1 2 3 4 5)
@@ -40,7 +39,7 @@
       (= 0 (LOOP FOR X FROM 10 DOWNTO 0 DO (PROGN) FINALLY (RETURN X))))
 
 (test loop-finally-4
-      (= 0 (LOOP FOR X FROM 10 ABOVE 0 DO (PROGN) FINALLY (RETURN X))))
+      (= 1 (LOOP FOR X FROM 10 ABOVE 0 DO (PROGN) FINALLY (RETURN X))))
 
 (test loop-collect-1
       (equalp

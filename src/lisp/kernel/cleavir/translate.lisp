@@ -567,9 +567,10 @@ Does not hoist."
 
 (defun translate-ast (ast &key (abi *abi-x86-64*) (linkage 'llvm-sys:internal-linkage)
                             (env *clasp-env*) ignore-arguments)
-  (translate-hoisted-ast (hoist-ast ast env)
-                 :abi abi :linkage linkage :env env
-                 :ignore-arguments ignore-arguments))
+  (let ((hoisted-ast (hoist-ast ast env)))
+    (translate-hoisted-ast hoisted-ast
+                           :abi abi :linkage linkage :env env
+                           :ignore-arguments ignore-arguments)))
 
 (defun translate-lambda-expression-to-llvm-function (lambda-expression)
   "Compile a lambda expression into an llvm-function and return it.
@@ -662,9 +663,9 @@ This works like compile-lambda-function in bclasp."
 (defun cleavir-compile-file-cst (cst &optional (env *clasp-env*))
   (literal:with-top-level-form
       (if cmp::*debug-compile-file*
-          (compiler-time (let (ast (cst->ast cst env))
+          (compiler-time (let ((ast (cst->ast cst env)))
                            (translate-ast ast :env env :linkage cmp:*default-linkage*)))
-          (let (ast (cst->ast cst env))
+          (let ((ast (cst->ast cst env)))
             (translate-ast ast :env env :linkage cmp:*default-linkage*)))))
 
 #-cst
@@ -676,10 +677,12 @@ This works like compile-lambda-function in bclasp."
           (let ((ast (generate-ast form env)))
             (translate-ast ast :env env :linkage cmp:*default-linkage*)))))
 
-(defvar *cst-client* (make-instance 'eclector.concrete-syntax-tree:cst-client))
+(defclass clasp-cst-client (eclector.concrete-syntax-tree:cst-client) ())
+
+(defvar *cst-client* (make-instance 'clasp-cst-client))
 
 (defmethod eclector.parse-result:source-position
-    ((client eclector.concrete-syntax-tree:cst-client) stream)
+    ((client clasp-cst-client) stream)
   (core:input-stream-source-pos-info stream))
 
 (defun cclasp-loop-read-and-compile-file-forms (source-sin environment)

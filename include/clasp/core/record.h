@@ -257,7 +257,8 @@ public:
       for (size_t i(0), iEnd(cl__length(vec_value)); i < iEnd; ++i) {
         T_sp val = vec_value->rowMajorAref(i);
         RECORD_LOG(BF("Loading vec0[%d] new@%p: %s\n") % i % (void *)(val.raw_()) % _rep_(val));
-        value.push_back(std::make_pair<K,gctools::smart_ptr<SV>>(translate::from_object<K>(oCar(val))._v, oCdr(val)));
+        value.push_back(std::make_pair<K,gctools::smart_ptr<SV>>(translate::from_object<K>(oCar(val))._v,
+                                                                 gc::As_unsafe<gctools::smart_ptr<SV>>(oCdr(val))));
       }
       if (this->stage() == initializing)
         this->flagSeen(apair);
@@ -270,7 +271,7 @@ public:
         T_sp patch = record_circle_subst(this->_replacement_table, orig);
         if (patch != orig) {
           RECORD_LOG(BF("Patching vec0[%d] orig@%p: %s --> new@%p: %s\n") % i % (void *)(orig.raw_()) % _rep_(orig) % (void *)(patch.raw_()) % _rep_(patch) );
-          pairi.second = patch;
+          pairi.second = gc::As_unsafe<gctools::smart_ptr<SV>>(patch);
         }
         ++i;
       }
@@ -306,7 +307,9 @@ public:
       for (size_t i(0), iEnd(cl__length(vec_value)); i < iEnd; ++i) {
         T_sp val = vec_value->rowMajorAref(i);
         RECORD_LOG(BF("Loading vec0[%d] new@%p: %s\n") % i % (void *)(val.raw_()) % _rep_(val));
-        value.push_back(std::make_pair<gctools::smart_ptr<SK>,gctools::smart_ptr<SV>>(oCar(val), oCdr(val)));
+        value.push_back(std::make_pair<gctools::smart_ptr<SK>,
+                        gctools::smart_ptr<SV>>(gc::As_unsafe<gctools::smart_ptr<SK>>(oCar(val)),
+                                                gc::As_unsafe<gctools::smart_ptr<SV>>(oCdr(val))));
       }
       if (this->stage() == initializing)
         this->flagSeen(apair);
@@ -318,8 +321,8 @@ public:
         gc::smart_ptr<T_O> orig_value = pairi.second;
         T_sp patch_key = record_circle_subst(this->_replacement_table, orig_key);
         T_sp patch_value = record_circle_subst(this->_replacement_table, orig_value);
-        if (patch_key != orig_key) pairi.first = patch_key;
-        if (patch_value != orig_value) pairi.second = patch_value;
+        if (patch_key != orig_key) pairi.first = gc::As_unsafe<gctools::smart_ptr<SK>>(patch_key);
+        if (patch_value != orig_value) pairi.second = gc::As_unsafe<gctools::smart_ptr<SV>>(patch_value);
       }
     } break;
     }

@@ -195,7 +195,7 @@ Lisp_O::GCRoots::GCRoots() :
   _NullStream(_Nil<T_O>()),
   _ThePathnameTranslations(_Nil<T_O>()),
   _Booted(false),
-  _KnownSignals(_Unbound<HashTableEq_O>()) {}
+  _UnixSignalHandlers(_Nil<T_O>()) {};
 
 Lisp_O::Lisp_O() : _StackWarnSize(gctools::_global_stack_max_size * 0.9), // 6MB default stack size before warnings
                    _StackSampleCount(0),
@@ -1416,7 +1416,7 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], const CommandLine
     SYMBOL_EXPORT_SC_(CorePkg, STARcommandLineImageSTAR);
     _sym_STARcommandLineImageSTAR->defparameter(cl__pathname(SimpleBaseString_O::make(options._ImageFile)));
   } else {
-    _sym_STARcommandLineImageSTAR->defparameter(core__startup_image_pathname());
+    _sym_STARcommandLineImageSTAR->defparameter(core__startup_image_pathname(options._Stage));
   }
   LOG(BF("lisp->_ScriptInFile(%d)  lisp->_FileNameOrCode(%s)") % this->_ScriptInFile % this->_FileNameOrCode);
 }
@@ -2216,12 +2216,12 @@ CL_DEFUN void cl__error(T_sp datum, List_sp initializers) {
     // It's only here to identify errors that would cause infinite looping
     // as we get error handling and conditions working properly
     printf("%s:%d -- *nested-error-depth* --> %d  datum: %s\n", __FILE__, __LINE__, nestedErrorDepth, _rep_(datum).c_str());
-    asm("int $03");
     if (initializers.notnilp()) {
       printf("               initializers: %s\n", _rep_(initializers).c_str());
     }
     printf("Dumping backtrace\n");
-    core__low_level_backtrace();
+    dbg_safe_backtrace();
+    asm("int $03");
   }
   ++nestedErrorDepth;
   DynamicScopeManager scope(_sym_STARnestedErrorDepthSTAR, make_fixnum(nestedErrorDepth));
@@ -2624,7 +2624,7 @@ void LispHolder::startup(int argc, char *argv[], const string &appPathEnvironmen
   this->_Lisp->startupLispEnvironment(bundle);
   mp::_sym_STARcurrent_processSTAR->defparameter(my_thread->_Process);
   this->_Lisp->add_process(my_thread->_Process);
-  gctools::initialize_signal_constants();
+  gctools::initialize_unix_signal_handlers();
   _lisp->_Roots._Booted = true;
   _lisp->parseCommandLineArguments(argc, argv, options);
 }

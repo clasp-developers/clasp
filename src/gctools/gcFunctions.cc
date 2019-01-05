@@ -116,8 +116,23 @@ void flow_tracker_close() {
 };
 
 
+namespace gctools {
+std::atomic<double>   global_DiscriminatingFunctionCompilationSeconds = ATOMIC_VAR_INIT(0.0);
+
+CL_DEFUN void gctools__accumulate_discriminating_function_compilation_seconds(double seconds) {
+  global_DiscriminatingFunctionCompilationSeconds =
+      global_DiscriminatingFunctionCompilationSeconds + seconds;
+}
+
+CL_DEFUN double gctools__discriminating_function_compilation_seconds() {
+  return global_DiscriminatingFunctionCompilationSeconds;
+}
+
+};
+
 
 namespace gctools {
+
 
 size_t global_next_unused_kind = STAMP_max+1;
 
@@ -201,9 +216,9 @@ CL_DEFUN void gctools__change_sigchld_sigport_handlers()
   printf("%s:%d old signal handler for SIGCHLD = %p   SIG_DFL = %p\n", __FILE__, __LINE__, old, SIG_DFL);
 }
 
-CL_DEFUN core::T_sp gctools__known_signals()
+CL_DEFUN core::T_sp gctools__unix_signal_handlers()
 {
-  return _lisp->_Roots._KnownSignals;
+  return _lisp->_Roots._UnixSignalHandlers;
 }
 
 CL_DEFUN void gctools__deallocate_unmanaged_instance(core::T_sp obj) {

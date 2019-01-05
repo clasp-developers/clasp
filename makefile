@@ -124,3 +124,12 @@ cando-deploy:
 	aws s3 cp s3://clasp-cando/docker-cando/cando-build.tgz cando-build.tgz
 	aws s3 cp s3://clasp-cando/demos/demos.tar demos.tar
 	docker-compose build cando-deploy
+
+update-quicklisp:
+	(cd ~/quicklisp/local-projects/cl-jupyter; git pull origin master)
+	(cd ~/quicklisp/local-projects/cl-ipykernel; git pull origin master)
+	(cd ~/quicklisp/local-projects/cl-ipywidgets; git pull origin master)
+	(cd ~/quicklisp/local-projects/cl-nglview; git pull origin master)
+	(cd ~/quicklisp/local-projects/cl-bqplot; git pull origin master)
+	(cd ~/quicklisp/local-projects/trivial-backtrace; git pull origin master)
+

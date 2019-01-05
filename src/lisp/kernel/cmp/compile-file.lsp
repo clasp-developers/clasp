@@ -55,9 +55,9 @@
                        (total-llvm-time (+ llvm-finalization-time (if report-link-time
                                                                       link-time
                                                                       0.0)))
-                       (percent-llvm-time (* 100.0 (/ total-llvm-time (+ compiler-real-time (if report-link-time link-time 0.0)))))
+                       (percent-llvm-time (* 100.0 (/ total-llvm-time compiler-real-time )))
                        (percent-time-string (if report-link-time
-                                                (core:bformat nil "(llvm+link)/(real+link)(%1.f%%)" percent-llvm-time)
+                                                (core:bformat nil "(llvm+link)/real(%1.f%%)" percent-llvm-time)
                                                 (core:bformat nil "llvm/real(%1.f%%)" percent-llvm-time))))
                    (core:bformat t "   %s seconds real(%.1f) run(%.1f) llvm(%.1f)%s %s%N"
                                  message
@@ -89,7 +89,8 @@
                 (*compilation-unit-module-index* 0)
                 (*compilation-messages* nil)
                 (*global-function-defs* (make-hash-table))
-                (*global-function-refs* (make-hash-table :test #'equal)))
+                (*global-function-refs* (make-hash-table :test #'equal
+                                                         :thread-safe t)))
            (multiple-value-prog1
                (unwind-protect
                     (do-compilation-unit closure) ; --> result*
@@ -229,6 +230,7 @@ and the pathname of the source file - this will also be used as the module initi
                                  source-debug-pathname
                                  (source-debug-offset 0)
                                  environment
+                                 (image-startup-position 0)
                                  (optimize t)
                                  (optimize-level *optimization-level*))
   "* Arguments
@@ -289,7 +291,9 @@ Compile a lisp source file into an LLVM module."
               (irc-verify-module-safe *the-module*)
               (quick-module-dump *the-module* "preoptimize") 
               ;; (2) Add the CTOR next
-              (make-boot-function-global-variable module run-all-name :register-library t)
+              (make-boot-function-global-variable module run-all-name
+                                                  :position image-startup-position
+                                                  :register-library t)
               ;; (3) ALWAYS link the builtins in, inline them and then remove them - then optimize.
               (link-inline-remove-builtins *the-module*))
             ;; Now at the end of with-module another round of optimization is done
@@ -299,32 +303,34 @@ Compile a lisp source file into an LLVM module."
           (quick-module-dump module "postoptimize")
           module)))))
 
-(defun compile-file (input-file
-                     &key
-                       (output-file nil output-file-p)
-                       (verbose *compile-verbose*)
-                       (print *compile-print*)
-                       (optimize t)
-                       (optimize-level *optimization-level*)
-                       (system-p nil system-p-p)
-                       (external-format :default)
-                       ;; If we are spoofing the source-file system to treat given-input-name
-                       ;; as a part of another file then use source-debug-pathname to provide the
-                       ;; truename of the file we want to mimic
-                       source-debug-pathname
-                       ;; This is the offset we want to spoof
-                       (source-debug-offset 0)
-                       ;; output-type can be (or :fasl :bitcode :object)
-                       (output-type :fasl)
-                       ;; type can be either :kernel or :user
-                       (type :user)
-                       ;; A unique prefix for symbols of compile-file'd files that
-                       ;; will be linked together
-                       (unique-symbol-prefix "")
-                       ;; ignored by bclasp
-                       ;; but passed to hook functions
-                       environment
-                     &aux conditions)
+(defun compile-file-serial (input-file
+                            &key
+                              (output-file nil output-file-p)
+                              (verbose *compile-verbose*)
+                              (print *compile-print*)
+                              (optimize t)
+                              (optimize-level *optimization-level*)
+                              (system-p nil system-p-p)
+                              (external-format :default)
+                              ;; If we are spoofing the source-file system to treat given-input-name
+                              ;; as a part of another file then use source-debug-pathname to provide the
+                              ;; truename of the file we want to mimic
+                              source-debug-pathname
+                              ;; This is the offset we want to spoof
+                              (source-debug-offset 0)
+                              ;; output-type can be (or :fasl :bitcode :object)
+                              (output-type :fasl)
+                              ;; type can be either :kernel or :user
+                              (type :user)
+                              ;; A unique prefix for symbols of compile-file'd files that
+                              ;; will be linked together
+                              (unique-symbol-prefix "")
+                              ;; Control the order of startup functions
+                              (image-startup-position 0)
+                              ;; ignored by bclasp
+                              ;; but passed to hook functions
+                              environment
+                            &aux conditions)
   "See CLHS compile-file."
   (if system-p-p (error "I don't support system-p keyword argument - use output-type"))
   (if (not output-file-p) (setq output-file (cfp-output-file-default input-file output-type)))
@@ -343,6 +349,7 @@ Compile a lisp source file into an LLVM module."
                                               :source-debug-offset source-debug-offset
                                               :compile-file-hook *cleavir-compile-file-hook*
                                               :environment environment
+                                              :image-startup-position image-startup-position
                                               :optimize optimize
                                               :optimize-level optimize-level)))
           (cond
@@ -352,7 +359,7 @@ Compile a lisp source file into an LLVM module."
              (when verbose (bformat t "Writing object to %s%N" (core:coerce-to-filename output-path)))
              (ensure-directories-exist output-path)
              (let ((temp-bitcode-file (compile-file-pathname input-file :output-file output-file :output-type :bitcode)))
-               (ensure-directories-exist temp-bitcode-file)             ;; Save the bitcode so we can take a look at it
+               (ensure-directories-exist temp-bitcode-file) ;; Save the bitcode so we can take a look at it
                (with-track-llvm-time
                    (write-bitcode module temp-bitcode-file))
                (prog1
@@ -401,6 +408,8 @@ Compile a lisp source file into an LLVM module."
 
 (export 'compile-file)
 
+(eval-when (:load-toplevel :execute)
+  (setf (fdefinition 'compile-file) #'compile-file-serial))
 
 #+(or bclasp cclasp)
 (progn

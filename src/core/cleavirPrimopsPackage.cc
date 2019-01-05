@@ -36,6 +36,7 @@ THE SOFTWARE.
 namespace cleavirPrimops {
 
 SYMBOL_EXPORT_SC_(CleavirPrimopsPkg, callWithVariableBound);
+SYMBOL_EXPORT_SC_(CleavirPrimopsPkg, eq);
 SYMBOL_EXPORT_SC_(CleavirPrimopsPkg, fixnumLess);
 SYMBOL_EXPORT_SC_(CleavirPrimopsPkg, fixnumNotGreater);
 SYMBOL_EXPORT_SC_(CleavirPrimopsPkg, fixnumEqual);

@@ -721,7 +721,24 @@ CL_DEFUN List_sp core__alist_assoc_eq(List_sp alist, T_sp key) {
   }
   return _Nil<T_O>();
 }
-  SYMBOL_EXPORT_SC_(ClPkg, make_list);
+
+CL_DEFUN List_sp core__alist_assoc_eql(List_sp alist, T_sp key) {
+  if (alist.consp()) {
+    for ( auto cur : alist ) {
+      T_sp pair = CONS_CAR(cur);
+      if (pair.consp()) {
+        if (cl__eql(CONS_CAR(pair),key)) return pair;
+      } else {
+        not_alist_error(alist);
+      }
+    }
+  }
+  return _Nil<T_O>();
+}
+
+
+
+SYMBOL_EXPORT_SC_(ClPkg, make_list);
   SYMBOL_EXPORT_SC_(ClPkg, cons);
   SYMBOL_EXPORT_SC_(ClPkg, getf);
   SYMBOL_EXPORT_SC_(CorePkg, rem_f);
