@@ -48,6 +48,10 @@
                      (read-byte strm))
                    :type type-error)
 
+;;; used to error with A string of dots was encountered by the reader.
+(test error-mcclim-1
+      (list :\.))
+
 
   
 
