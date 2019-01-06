@@ -48,6 +48,9 @@ THE SOFTWARE.
 #include <clasp/core/designators.h>
 #include <clasp/core/weakHashTable.h>
 #include <clasp/core/wrappers.h>
+#ifdef CLASP_THREADS
+#include <pthread.h>
+#endif
 namespace core {
 
 
@@ -747,8 +750,19 @@ List_sp HashTable_O::tableRef_no_read_lock(T_sp key, bool under_write_lock) {
   }
 
   List_sp HashTable_O::rehash_upgrade_write_lock(bool expandTable, T_sp findKey) {
-    HT_UPGRADE_WRITE_LOCK(this);
-    return this->rehash_no_lock(expandTable,findKey);
+    if (this->_Mutex) {
+    tryAgain:
+      if (this->_Mutex->write_try_lock(true /*upgrade*/)) {
+        List_sp result = this->rehash_no_lock(expandTable,findKey);
+        // Releasing the read lock will be done by the caller using RAII
+        this->_Mutex->write_unlock( false /*releaseReadLock*/);
+        return result;
+      }
+      pthread_yield_np();
+      goto tryAgain;
+    } else {
+      return this->rehash_no_lock(expandTable,findKey);
+    }
   }
 
   string HashTable_O::__repr__() const {

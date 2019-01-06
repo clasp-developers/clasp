@@ -192,6 +192,7 @@ namespace mp {
 
   inline void muSleep(uint usec) { core::clasp_musleep(usec/1000000.0,false); };
 
+/* I derived this code from https://oroboro.com/upgradable-read-write-locks/ */
   class UpgradableSharedMutex {
   public:
   UpgradableSharedMutex( uint maxReaders = 64 ) : 
@@ -216,15 +217,15 @@ namespace mp {
       mReadMutex.unlock(); 
     };
  
-    void writeLock(bool upgrade = false) {
-      mWriteMutex.lock(); 
-      waitReaders( upgrade ? 1 : 0 );
-    }
     bool writeTryLock(bool upgrade = false) {
-      if ( !mWriteMutex.lock())
+      if ( !mWriteMutex.lock(false))
         return false;
       waitReaders( upgrade ? 1 : 0 );
       return true;
+    }
+    void writeLock(bool upgrade = false) {
+      mWriteMutex.lock(); 
+      waitReaders( upgrade ? 1 : 0 );
     }
     void writeUnlock(bool releaseReadLock = false) {
       mReadMutex.lock();
