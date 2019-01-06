@@ -23,7 +23,3 @@
                    (let ((foo 23))
                      (makunbound 23))
                    :type type-error)
-
-(test-expect-error gentemp-1
-                   (gentemp nil)
-                   :type type-error)
