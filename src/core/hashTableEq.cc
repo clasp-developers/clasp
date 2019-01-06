@@ -78,22 +78,26 @@ HashTableEq_sp HashTableEq_O::createFromPList(List_sp plist, Symbol_sp nilTermin
   return ht;
 }
 
-List_sp HashTableEq_O::tableRef_no_lock(T_sp key) {
+List_sp HashTableEq_O::tableRef_no_read_lock(T_sp key, bool under_write_lock) {
     ASSERT(gc::IsA<Array_sp>(this->_HashTable));
     cl_index length = ENSURE_VALID_OBJECT(this->_HashTable)->length();
-    cl_index index = this->safe_sxhashKey(key, length, false);
+    cl_index index = this->sxhashKey(key, length, false /*will-add-key*/);
     List_sp pair = _Nil<T_O>();
     for (auto cur : gc::As_unsafe<List_sp>((*ENSURE_VALID_OBJECT(this->_HashTable))[index])) {
       pair = CONS_CAR(cur);
       ASSERT(pair.consp());
-      if (CONS_CAR(pair) == key) return pair;
+      if (CONS_CAR(pair) == key) return pair; // hardwire keyTest optimization
     }
 #if defined(USE_MPS)
   // Location dependency test if key is stale
     if (key.objectp()) {
       void *blockAddr = &(*key);
       if (mps_ld_isstale(const_cast<mps_ld_t>(&(this->_LocationDependency)), global_arena, blockAddr)) {
-        return this->rehash_no_lock(false, key);
+        if (under_write_lock) {
+          return this->rehash_no_lock(false /*expandTable*/, key);
+        } else {
+          return this->rehash_upgrade_write_lock(false /*expandTable*/, key);
+        }
       }
     }
 #endif
