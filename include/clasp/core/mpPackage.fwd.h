@@ -216,7 +216,11 @@ namespace mp {
       mReaders--; 
       mReadMutex.unlock(); 
     };
- 
+
+    /* Pass true for upgrade if you want to upgrade a read lock to a write lock.
+      Be careful though!!!! If two threads try to upgrade at the same time 
+      there will be a deadlock unless they do it in a loop using withTryLock(true).
+      See the hashTable.cc rehash_upgrade_write_lock for an example. */
     bool writeTryLock(bool upgrade = false) {
       if ( !mWriteMutex.lock(false))
         return false;
@@ -227,6 +231,8 @@ namespace mp {
       mWriteMutex.lock(); 
       waitReaders( upgrade ? 1 : 0 );
     }
+    /*! Pass true releaseReadLock if when you release the write lock it also
+       releases the read lock */
     void writeUnlock(bool releaseReadLock = false) {
       mReadMutex.lock();
       if ( releaseReadLock ) {
