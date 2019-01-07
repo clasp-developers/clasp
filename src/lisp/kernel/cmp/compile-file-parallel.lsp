@@ -114,7 +114,6 @@
         (form-index 0)
         (eof-value (gensym))
         #+cclasp(eclector.reader:*client* clasp-cleavir::*cst-client*)
-        #+cclasp(read-function 'eclector.concrete-syntax-tree:cst-read)
         ast-jobs ast-threads)
     (loop
       ;; Required to update the source pos info. FIXME!?
@@ -127,9 +126,9 @@
              #+cst
              (cst (eclector.concrete-syntax-tree:cst-read source-sin nil eof-value))
              #+cst
-             (form (cst:raw cst))
-             #+cst
              (_ (when (eq cst eof-value) (return nil)))
+             #+cst
+             (form (cst:raw cst))
              #+cst
              (ast (if cmp::*debug-compile-file*
                       (clasp-cleavir::compiler-time (clasp-cleavir::cst->ast cst))
