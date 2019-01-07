@@ -758,7 +758,11 @@ List_sp HashTable_O::tableRef_no_read_lock(T_sp key, bool under_write_lock) {
         this->_Mutex->write_unlock( false /*releaseReadLock*/);
         return result;
       }
+#ifdef _TARGET_OS_DARWIN
       pthread_yield_np();
+#else
+      pthread_yield();
+#endif
       goto tryAgain;
     } else {
       return this->rehash_no_lock(expandTable,findKey);
