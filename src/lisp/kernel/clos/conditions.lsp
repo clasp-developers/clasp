@@ -611,7 +611,10 @@ memory limits before executing the program again."))
   ((code :type fixnum
          :initform 0
          :initarg :code
-         :accessor ext:unix-signal-received-code))
+         :accessor ext:unix-signal-received-code)
+   (handler :initarg :handler
+            :initform nil
+            :accessor unix-signal-received-handler))
   (:report (lambda (condition stream)
              (format stream "Serious signal ~D caught."
                      (ext:unix-signal-received-code condition)))))
