@@ -1417,38 +1417,48 @@ CL_DEFUN T_mv core__sequence_start_end(T_sp sequence, Fixnum_sp start, T_sp end)
 };
 
 
-CL_LAMBDA(&optional x);
+CL_LAMBDA(&optional (x "G"));
 CL_DECLARE();
 CL_DOCSTRING("See CLHS gensym");
 CL_DEFUN Symbol_sp cl__gensym(T_sp x) {
-  //CHECKME
+  // Should signal an error of type type-error if x is not a string or a non-negative integer.
+  if (x.nilp())
+    TYPE_ERROR(x,Cons_O::createList(cl::_sym_or,cl::_sym_string,cl::_sym_UnsignedByte));
   if (cl__stringp(x)) {
     String_sp sx = gc::As_unsafe<String_sp>(x);
     StrNs_sp ss = gc::As_unsafe<StrNs_sp>(core__make_vector(sx->arrayElementType(),16,true,clasp_make_fixnum(0)));
     StringPushString(ss,sx);
     core__integer_to_string(ss,gc::As<Integer_sp>(cl::_sym_STARgensym_counterSTAR->symbolValue()),clasp_make_fixnum(10));
-    ASSERT(cl::_sym_STARgensym_counterSTAR->symbolValue().fixnump());
-    Fixnum counter = cl::_sym_STARgensym_counterSTAR->symbolValue().unsafe_fixnum();
-    cl::_sym_STARgensym_counterSTAR->setf_symbolValue(make_fixnum(counter + 1));
+    // If and only if no explicit suffix is supplied, *gensym-counter* is incremented after it is used.
+    Integer_sp counter = cl::_sym_STARgensym_counterSTAR->symbolValue();
+    if (clasp_minusp(counter))
+      TYPE_ERROR(counter,cl::_sym_UnsignedByte);
+    if (counter.fixnump()) {
+      Fixnum gensymCounter = counter.unsafe_fixnum() +1;
+      if (gensymCounter == (MOST_POSITIVE_FIXNUM + 1)) {
+        Integer_sp gensymCounterBignum = Integer_O::create(gensymCounter);
+        cl::_sym_STARgensym_counterSTAR->setf_symbolValue(gensymCounterBignum);
+      } else cl::_sym_STARgensym_counterSTAR->setf_symbolValue(make_fixnum(gensymCounter));
+    } else {
+      // counter must be a bignum, positive
+      // still need to increase the bignum by 1
+      counter = clasp_one_plus(counter);
+      cl::_sym_STARgensym_counterSTAR->setf_symbolValue(counter);
+    }
     Symbol_sp sym = Symbol_O::create(ss->asMinimalSimpleString());
     sym->setPackage(_Nil<T_O>());
     return sym;
   }
-  SafeBufferStr8Ns ss;
-  Fixnum counter;
-  ss.string()->vectorPushExtend_claspChar('G');
-  if (x.fixnump()||gc::IsA<Integer_sp>(x)) {
+  if ((x.fixnump() || gc::IsA<Integer_sp>(x)) && (!(clasp_minusp(x)))) {
+    SafeBufferStr8Ns ss;
+    ss.string()->vectorPushExtend_claspChar('G');
     core__integer_to_string(ss.string(),gc::As_unsafe<Integer_sp>(x),clasp_make_fixnum(10));
-  } else if (x.nilp()) {
-    counter = unbox_fixnum(gc::As<Fixnum_sp>(cl::_sym_STARgensym_counterSTAR->symbolValue()));
-    core__integer_to_string(ss.string(),gc::As<Integer_sp>(cl::_sym_STARgensym_counterSTAR->symbolValue()),clasp_make_fixnum(10));
-    cl::_sym_STARgensym_counterSTAR->setf_symbolValue(make_fixnum(counter + 1));
+    Symbol_sp sym = Symbol_O::create(ss.string()->asMinimalSimpleString());
+    sym->setPackage(_Nil<T_O>());
+    return sym;
   } else {
-    TYPE_ERROR(x,Cons_O::createList(cl::_sym_or,cl::_sym_string,cl::_sym_Null_O,cl::_sym_Integer_O));
+    TYPE_ERROR(x,Cons_O::createList(cl::_sym_or,cl::_sym_string,cl::_sym_UnsignedByte));
   }
-  Symbol_sp sym = Symbol_O::create(ss.string()->asMinimalSimpleString());
-  sym->setPackage(_Nil<T_O>());
-  return sym;
 }
 
 CL_LAMBDA(x);
