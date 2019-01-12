@@ -1018,7 +1018,10 @@ CL_DEFUN T_mv cl__fmakunbound(T_sp functionName) {
     sym->fmakunbound();
     return (Values(sym));
   }
-  TYPE_ERROR(functionName,cl::_sym_function);
+  TYPE_ERROR(functionName, // type of function names
+             Cons_O::createList(cl::_sym_or, cl::_sym_symbol,
+                                Cons_O::createList(cl::_sym_cons,
+                                                   Cons_O::createList(cl::_sym_eql, cl::_sym_setf))));
 }
 
 CL_LAMBDA(char &optional input-stream-designator recursive-p);
