@@ -313,7 +313,10 @@ FORM returns no value, NIL."
        (sym (gensym))
        (forms nil)
        (n 0 (the fixnum (1+ n))))
-      ((endp vl) `(LET ((,sym (MULTIPLE-VALUE-LIST ,form))) ,@forms))
+      ((endp vl) (if (null forms)
+                     `(values ,form)
+                    `(LET ((,sym (MULTIPLE-VALUE-LIST ,form)))
+                       (prog1 ,@(reverse forms)))))
     (declare (fixnum n))
     (push `(SETQ ,(car vl) (NTH ,n ,sym)) forms)))
 
