@@ -660,7 +660,8 @@ CL_DEFUN_SETF T_sp setf_macro_function(Function_sp function, Symbol_sp symbol, T
 CL_LAMBDA(symbol);
 CL_DECLARE();
 CL_DOCSTRING("See CLHS: special-operator-p");
-CL_DEFUN T_mv cl__special_operator_p(T_sp sym) {
+CL_DEFUN T_mv cl__special_operator_p(Symbol_sp sym) {
+  // should signal type-error if its argument is not a symbol.
   SYMBOL_EXPORT_SC_(ClPkg, let);
   SYMBOL_EXPORT_SC_(ClPkg, letSTAR);
   SYMBOL_EXPORT_SC_(ClPkg, return_from);
@@ -713,10 +714,7 @@ CL_DEFUN T_mv cl__special_operator_p(T_sp sym) {
   // special-operator-p returns a generalized boolean
   // so it's ok to return a special form symbol if
   // sym is a special form
-  if ( Symbol_sp ssym = sym.asOrNull<Symbol_O>() ) {
-    return _lisp->specialFormOrNil(ssym);
-  }
-  return _Nil<T_O>();
+  return _lisp->specialFormOrNil(sym);
 };
 
 
