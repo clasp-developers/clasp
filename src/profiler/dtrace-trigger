@@ -9,6 +9,7 @@ then
 fi
 echo PID = $PID   PPIDO = $PPIDO
 FRAMES=${3:-4000}
+sudo rm -f /tmp/out-$PID*
 sudo ./trigger.d -x ustackframes=${FRAMES} -p $PID -o /tmp/out-$PID.raw.stacks
 sudo chown $USER /tmp/out-$PID.raw.stacks
 ./symbolicate.lisp -i /tmp/out-$PID.raw.stacks -o /tmp/out-$PID.sym.stacks -s /tmp/clasp-symbols-$PPIDO
