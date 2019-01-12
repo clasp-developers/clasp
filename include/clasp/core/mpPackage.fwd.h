@@ -104,11 +104,23 @@ namespace mp {
     ~GlobalRecursiveMutex() {};
   };
 
-  struct Mutex;
-  void debug_mutex_lock(Mutex* m);
-  void debug_mutex_unlock(Mutex* m);
+extern "C" void mutex_lock_enter();
+extern "C" void mutex_lock_return();
 
-    struct Mutex {
+struct DtraceLockProbe {
+  DtraceLockProbe() {
+    mutex_lock_enter();
+  };
+  ~DtraceLockProbe() {
+    mutex_lock_return();
+  }
+};
+
+struct Mutex;
+void debug_mutex_lock(Mutex* m);
+void debug_mutex_unlock(Mutex* m);
+
+struct Mutex {
       pthread_mutex_t _Mutex;
       gctools::Fixnum _Counter;
       bool _Recursive;
@@ -134,6 +146,9 @@ namespace mp {
         debug_mutex_lock(this);
 #endif
         if (waitp) {
+#ifdef DEBUG_DTRACE_LOCK_PROBE
+          DtraceLockProbe _guard;
+#endif
           bool result = (pthread_mutex_lock(&this->_Mutex)==0);
           ++this->_Counter;
           return result;
@@ -192,6 +207,7 @@ namespace mp {
 
   inline void muSleep(uint usec) { core::clasp_musleep(usec/1000000.0,false); };
 
+/* I derived this code from https://oroboro.com/upgradable-read-write-locks/ */
   class UpgradableSharedMutex {
   public:
   UpgradableSharedMutex( uint maxReaders = 64 ) : 
@@ -215,17 +231,23 @@ namespace mp {
       mReaders--; 
       mReadMutex.unlock(); 
     };
- 
-    void writeLock(bool upgrade = false) {
-      mWriteMutex.lock(); 
-      waitReaders( upgrade ? 1 : 0 );
-    }
+
+    /* Pass true for upgrade if you want to upgrade a read lock to a write lock.
+      Be careful though!!!! If two threads try to upgrade at the same time 
+      there will be a deadlock unless they do it in a loop using withTryLock(true).
+      See the hashTable.cc rehash_upgrade_write_lock for an example. */
     bool writeTryLock(bool upgrade = false) {
-      if ( !mWriteMutex.lock())
+      if ( !mWriteMutex.lock(false))
         return false;
       waitReaders( upgrade ? 1 : 0 );
       return true;
     }
+    void writeLock(bool upgrade = false) {
+      mWriteMutex.lock(); 
+      waitReaders( upgrade ? 1 : 0 );
+    }
+    /*! Pass true releaseReadLock if when you release the write lock it also
+       releases the read lock */
     void writeUnlock(bool releaseReadLock = false) {
       mReadMutex.lock();
       if ( releaseReadLock ) {

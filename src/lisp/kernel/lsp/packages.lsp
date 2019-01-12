@@ -85,6 +85,7 @@
             illegal-instruction
             unix-signal-received
             unix-signal-received-code
+            unix-signal-received-handler
             interactive-interrupt
             hash-table-content
             hash-table-fill

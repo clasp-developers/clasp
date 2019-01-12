@@ -3506,7 +3506,7 @@ double clasp_to_double( core::T_sp x )
   } else if (gc::IsA<Number_sp>(x)) {
     return gc::As_unsafe<Number_sp>(x)->as_double_();
   }
-  TYPE_ERROR(x,Cons_O::createList(cl::_sym_Number_O));
+  TYPE_ERROR(x,cl::_sym_Number_O);
 }
 
 double clasp_to_double( core::Real_sp x )
@@ -3528,7 +3528,7 @@ double clasp_to_double( core::General_sp x )
   if (gc::IsA<Number_sp>(x)) {
     return gc::As_unsafe<Number_sp>(x)->as_double_();
   }
-  TYPE_ERROR(x,Cons_O::createList(cl::_sym_Number_O));
+  TYPE_ERROR(x,cl::_sym_Number_O);
 };
 
 

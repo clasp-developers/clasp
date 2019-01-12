@@ -264,13 +264,29 @@ rewrite the slot in the literal table to store a closure."
          (constant-ap-arg (llvm-sys:constant-fp-get cmp:*llvm-context* constant)))
     (add-creator "ltvc_make_double" index double constant-ap-arg)))
 
+;;; Should match the return value of make-load-form-saving-slots (in clos/print.lsp)
+(defun allocate-instance-form-p (form)
+  (and (consp form)
+       (eq (car form) 'allocate-instance)
+       (consp (cdr form))
+       ;; Slightly goofy way of saying "is constant" without
+       ;; bothering about an environment.
+       ;; As of now, m-l-f-s-s involves a literal class.
+       (not (symbolp (cadr form)))
+       (not (consp (cadr form)))
+       (null (cddr form))))
+
 (defun ltv/mlf (object index read-only-p &key recursive-p)
   (multiple-value-bind (create initialize)
       (make-load-form object)
     (prog1
-        (let* ((fn (compile-form create))
-               (name (cmp:jit-constant-unique-string-ptr (llvm-sys:get-name fn))))
-          (add-creator "ltvc_set_mlf_creator_funcall" index object fn name))
+        (cond
+          ((allocate-instance-form-p create)
+           (add-creator "ltvc_allocate_instance" index object
+                        (load-time-reference-literal (second create) t :recursive-p t)))
+          (t (let* ((fn (compile-form create))
+                    (name (cmp:jit-constant-unique-string-ptr (llvm-sys:get-name fn))))
+               (add-creator "ltvc_set_mlf_creator_funcall" index object fn name))))
       (when initialize
         (let* ((fn (compile-form initialize))
                (name (cmp:jit-constant-unique-string-ptr (llvm-sys:get-name fn))))

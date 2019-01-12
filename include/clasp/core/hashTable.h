@@ -99,7 +99,7 @@ namespace core {
   public:
   /*! If findKey is defined then search it as you rehash and return resulting keyValuePair CONS */
     List_sp rehash_no_lock(bool expandTable, T_sp findKey);
-    List_sp rehash(bool expandTable, T_sp findKey);
+    List_sp rehash_upgrade_write_lock(bool expandTable, T_sp findKey);
     CL_LISPIFY_NAME("hash-table-buckets");
     CL_DEFMETHOD VectorObjects_sp hash_table_buckets() const { return this->_HashTable; };
     CL_LISPIFY_NAME("hash-table-shared-mutex");
@@ -116,15 +116,12 @@ namespace core {
     size_t size() { return this->hashTableCount(); };
 
     virtual gc::Fixnum sxhashKey(T_sp key, gc::Fixnum bound, bool willAddKey) const;
-    gc::Fixnum safe_sxhashKey(T_sp key, gc::Fixnum bound, bool willAddKey ) const {
-      return this->sxhashKey(key,bound,willAddKey);
-    }
     virtual bool keyTest(T_sp entryKey, T_sp searchKey) const;
 
   /*! I'm not sure I need this and tableRef */
     List_sp bucketsFind_no_lock(T_sp key) const;
   /*! I'm not sure I need this and bucketsFind */
-    virtual List_sp tableRef_no_lock(T_sp key);
+    virtual List_sp tableRef_no_read_lock(T_sp key,bool under_write_lock);
     List_sp findAssoc_no_lock(gc::Fixnum index, T_sp searchKey) const;
 
   /*! Return true if the key is within the hash table */
