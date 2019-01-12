@@ -1539,9 +1539,12 @@ T_sp type_of(T_sp x) {
   } else if (x.valistp() ) {
     return core::_sym_valist;
   } else if (x.characterp()) {
-    if (cl__standard_char_p(gc::As<Character_sp>(x)))
+    Character_sp character = gc::As<Character_sp>(x);
+    if (cl__standard_char_p(character))
       return cl::_sym_standard_char;
-    return cl::_sym_character;
+    else if (clasp_base_char_p(character))
+      return cl::_sym_base_char;
+    else return cl::_sym_character;
   } else if (Integer_sp ix = x.asOrNull<Integer_O>()) {
     ql::list res;
     res << cl::_sym_integer << ix << ix;
