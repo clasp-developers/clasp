@@ -446,6 +446,12 @@ LtvcReturn ltvc_enclose(gctools::GCRootsInModule* holder, size_t index, gctools:
   NO_UNWIND_END();
 }
 
+LtvcReturn ltvc_allocate_instance(gctools::GCRootsInModule* holder, size_t index, gctools::Tagged klass) {
+  core::T_sp myklass = gctools::smart_ptr<core::T_O>(klass);
+  core::T_sp object = core::eval::funcall(cl::_sym_allocate_instance, myklass);
+  LTVCRETURN holder->set(index, object.tagged_());
+}
+
 LtvcReturn ltvc_set_mlf_creator_funcall(gctools::GCRootsInModule* holder, size_t index, fnLispCallingConvention fptr, const char* name) {
   core::T_O *lcc_arglist = _Nil<core::T_O>().raw_();
   Symbol_sp sname = Symbol_O::create_from_string(std::string(name));

@@ -62,3 +62,7 @@
                      *gensym-counter*))
       
 
+(test-expect-error gentemp-1
+                   (gentemp nil)
+                   :type type-error)
+

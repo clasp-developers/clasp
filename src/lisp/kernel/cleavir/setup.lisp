@@ -108,7 +108,7 @@ when this is t a lot of graphs will be generated.")
 
 ;;; So that we can dump ASTs (for DEFUNs with an inline expansion)
 (defmethod make-load-form ((ast cleavir-ast:ast) &optional environment)
-  (values `(allocate-instance ',(class-of ast))
+  (values `(allocate-instance ,(class-of ast))
           `(initialize-instance
             ,ast
             ,@(loop for (keyword reader)

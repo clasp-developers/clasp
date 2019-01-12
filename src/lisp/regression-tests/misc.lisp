@@ -168,4 +168,11 @@
 
 (test cl-symbols-1 (not (fboundp 'cl:reader-error)))
 
+(test-expect-error
+ special-operator-p-1
+ (special-operator-p 23)
+ :type type-error)
+
+(test-expect-error special-operator-p-2 (funcall 'go 23) :type undefined-function)
+
                  

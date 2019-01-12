@@ -178,6 +178,7 @@ VALID_OPTIONS = [
 ]
 
 DEBUG_OPTIONS = [
+    "DEBUG_DTRACE_LOCK_PROBE", # Add a Dtrace probe for mutex lock acquisition
     "DEBUG_STACKMAPS", # print messages about stackmap registration
     "DEBUG_ASSERT_TYPE_CAST", # Turn on type checking when passing arguments
     "SOURCE_DEBUG", # Allow LOG messages to print - works with CLASP_DEBUG environment variable

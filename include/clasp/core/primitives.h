@@ -266,7 +266,7 @@ void core__gdb(T_sp msg);
   T_sp core__get_global_inline_status(core::T_sp name, core::T_sp env);
   void core__setf_global_inline_statis(core::T_sp name, bool status, core::T_sp env);
   T_sp cl__fdefinition(T_sp functionName);
-  T_mv cl__special_operator_p(T_sp sym);
+  T_mv cl__special_operator_p(Symbol_sp sym);
   T_sp cl__sleep(T_sp oseconds);
   List_sp core__list_from_va_list(VaList_sp valist);
 
