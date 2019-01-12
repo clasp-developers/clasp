@@ -104,11 +104,23 @@ namespace mp {
     ~GlobalRecursiveMutex() {};
   };
 
-  struct Mutex;
-  void debug_mutex_lock(Mutex* m);
-  void debug_mutex_unlock(Mutex* m);
+extern "C" void mutex_lock_enter();
+extern "C" void mutex_lock_return();
 
-    struct Mutex {
+struct DtraceLockProbe {
+  DtraceLockProbe() {
+    mutex_lock_enter();
+  };
+  ~DtraceLockProbe() {
+    mutex_lock_return();
+  }
+};
+
+struct Mutex;
+void debug_mutex_lock(Mutex* m);
+void debug_mutex_unlock(Mutex* m);
+
+struct Mutex {
       pthread_mutex_t _Mutex;
       gctools::Fixnum _Counter;
       bool _Recursive;
@@ -134,6 +146,9 @@ namespace mp {
         debug_mutex_lock(this);
 #endif
         if (waitp) {
+#ifdef DEBUG_DTRACE_LOCK_PROBE
+          DtraceLockProbe _guard;
+#endif
           bool result = (pthread_mutex_lock(&this->_Mutex)==0);
           ++this->_Counter;
           return result;

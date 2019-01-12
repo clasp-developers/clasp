@@ -33,6 +33,7 @@
 (load-if-compiled-correctly "sys:regression-tests;printer01.lisp")
 (load-if-compiled-correctly "sys:regression-tests;streams01.lisp")
 (load-if-compiled-correctly "sys:regression-tests;types01.lisp")
+(load-if-compiled-correctly "sys:regression-tests;control01.lisp")
 (load-if-compiled-correctly "sys:regression-tests;loop.lisp")
 
 (progn

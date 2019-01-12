@@ -43,6 +43,16 @@ THE SOFTWARE.
 #include <clasp/core/evaluator.h>
 
 
+extern "C" {
+__attribute__((optnone)) void mutex_lock_enter() {
+  (void)0;
+};
+__attribute__((optnone)) void mutex_lock_return() {
+  (void)0;
+};
+
+};
+
 namespace mp {
 
 #ifdef DEBUG_THREADS

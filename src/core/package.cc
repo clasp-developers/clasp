@@ -310,21 +310,21 @@ CL_DEFUN T_mv cl__shadowing_import(T_sp symbol_names_desig, T_sp package_desig) 
 }
 
 std::atomic<uintptr_clasp_t> static_gentemp_counter;
-CL_LAMBDA(&optional prefix (package *package*));
+CL_LAMBDA(&optional (prefix "T") (package *package*));
 CL_DECLARE();
 CL_DOCSTRING("See CLHS gentemp");
 CL_DEFUN T_mv cl__gentemp(T_sp prefix, T_sp package_designator) {
   Package_sp pkg = coerce::packageDesignator(package_designator);
   StrNs_sp ss;
   if (prefix.nilp()) {
-    SimpleBaseString_sp sbs = SimpleBaseString_O::make("T        ");
-    ss = Str8Ns_O::make(sbs->length(),'\0',true,clasp_make_fixnum(1),sbs,false,clasp_make_fixnum(0));
+    // Should signal an error of type type-error if prefix is not a string.
+    TYPE_ERROR(prefix,cl::_sym_string);
   } else if (cl__stringp(prefix)) {
     String_sp sprefix = gc::As_unsafe<String_sp>(prefix);
     ss = gc::As_unsafe<StrNs_sp>(core__make_vector(sprefix->arrayElementType(),sprefix->length()+8,true,clasp_make_fixnum(sprefix->length())));
     ss->unsafe_setf_subseq(0,sprefix->length(),sprefix);
   } else {
-    TYPE_ERROR(prefix,Cons_O::createList(cl::_sym_or,cl::_sym_string,cl::_sym_Null_O));
+    TYPE_ERROR(prefix,cl::_sym_string);
   }
   T_sp retval;
   size_t fillPointer = ss->fillPointer();
