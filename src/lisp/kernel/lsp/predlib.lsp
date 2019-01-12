@@ -1089,11 +1089,16 @@ if not possible."
       (PACKAGE)
       (COMPILED-FUNCTION)
       (FUNCTION (OR COMPILED-FUNCTION GENERIC-FUNCTION))
+      ;;; backported from ecl
+      (FIXNUM (INTEGER #.most-negative-fixnum #.most-positive-fixnum))
+      (BIGNUM (OR (INTEGER * (#.most-negative-fixnum)) (INTEGER (#.most-positive-fixnum) *)))
       
       (INTEGER (INTEGER * *))
+      ;;; the type need to exist, even if short-float is equal to single-float
+      (SHORT-FLOAT (SHORT-FLOAT * *))
       (SINGLE-FLOAT (SINGLE-FLOAT * *))
       (DOUBLE-FLOAT (DOUBLE-FLOAT * *))
-      #+long-float
+      ;;; the type need to exist, even if long-float is equal to double-float
       (LONG-FLOAT (LONG-FLOAT * *))
       (RATIO (RATIO * *))
       
@@ -1190,11 +1195,12 @@ if not possible."
       (SYNONYM-STREAM)
       (TWO-WAY-STREAM)
       (EXT:SEQUENCE-STREAM)
+      ;;; backported from ecl
       (EXT:ANSI-STREAM (OR BROADCAST-STREAM CONCATENATED-STREAM ECHO-STREAM
                         FILE-STREAM STRING-STREAM SYNONYM-STREAM TWO-WAY-STREAM
-                        EXT:SEQUENCE-STREAM
-                        #+clos-streams GRAY:FUNDAMENTAL-STREAM))
-      (STREAM EXT:ANSI-STREAM)
+                        EXT:SEQUENCE-STREAM))
+      #+clos-streams (GRAY:FUNDAMENTAL-STREAM)
+      (STREAM (OR EXT:ANSI-STREAM #+clos-streams GRAY:FUNDAMENTAL-STREAM))
 
       (READTABLE)
       #+threads (MP::PROCESS)

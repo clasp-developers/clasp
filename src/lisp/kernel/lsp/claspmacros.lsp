@@ -92,7 +92,7 @@
                 (let ((so so))
                   (lambda (&rest args)
                     (declare (ignore args))
-                    (error 'do-not-funcall-special-operator :operator so))))))
+                    (error 'do-not-funcall-special-operator :operator so :name so))))))
 
 (export 'do-not-funcall-special-operator)
 

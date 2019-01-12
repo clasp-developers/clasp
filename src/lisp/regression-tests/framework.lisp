@@ -88,7 +88,8 @@
   (handler-case
       (multiple-value-bind
             (fasl warnings-p failure-p)
-          (compile-file file)
+          (let ((cmp::*compile-file-parallel* nil))
+            (compile-file file))
         (declare (ignore warnings-p failure-p))
         (when fasl
           (load fasl)))
