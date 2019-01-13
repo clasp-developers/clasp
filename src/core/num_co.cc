@@ -186,24 +186,39 @@ Real_mv clasp_floor1(Real_sp x) {
   }
   case number_SingleFloat: {
     float d = x.unsafe_single_float();
-    float y = floorf(d);
-    v0 = _clasp_float_to_integer(y);
-    v1 = clasp_make_single_float(d - y);
+    if (std::isnan(d)) {
+      v0 = x;
+      v1 = clasp_make_fixnum(0);
+    } else {
+      float y = floorf(d);
+      v0 = _clasp_float_to_integer(y);
+      v1 = clasp_make_single_float(d - y);
+    }
     break;
   }
   case number_DoubleFloat: {
     double d = gc::As<DoubleFloat_sp>(x)->get();
-    double y = floor(d);
-    v0 = _clasp_double_to_integer(y);
-    v1 = clasp_make_double_float(d - y);
+    if (std::isnan(d)) {
+      v0 = x;
+      v1 = clasp_make_fixnum(0);
+    } else {
+      double y = floor(d);
+      v0 = _clasp_double_to_integer(y);
+      v1 = clasp_make_double_float(d - y);
+    }
     break;
   }
 #ifdef CLASP_LONG_FLOAT
   case number_LongFloat: {
     LongFloat d = clasp_long_float(x);
+    if (std::isnan(d)) {
+      v0 = x;
+      v1 = clasp_make_fixnum(0);
+    } else {
     LongFloat y = floorl(d);
     v0 = _clasp_long_double_to_integer(y);
     v1 = clasp_make_long_float(d - y);
+    }
     break;
   }
 #endif

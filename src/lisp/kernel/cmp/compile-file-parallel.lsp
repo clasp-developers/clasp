@@ -49,13 +49,13 @@
                                                                                  (error "The output pathname is NIL")))))
               *the-module*)))))))
 
-(defstruct (ast-job (:type vector) :named) ast environment form-output-path form-index)
+(defstruct (ast-job (:type vector) :named) ast environment form-output-path form-index error)
 
 (defun compile-from-ast (job &key
                                optimize
                                optimize-level
                                intermediate-output-type)
-  (restart-case
+  (handler-case
       (let ((module (cmp::llvm-create-module (namestring (ast-job-form-output-path job)))))
         (with-module (:module module
                       :optimize (when optimize #'optimize-module-for-compile-file)
@@ -96,7 +96,7 @@
                  (write-bitcode module bitcode-file))))
           (t ;; fasl
            (error "Only options for intermediate-output-type are :object or :bitcode - not ~a" intermediate-output-type))))
-    (abort ())))
+    (error (e) (setf (ast-job-error job) e))))
 
 (defun cclasp-loop2 (input-pathname
                      source-sin
@@ -114,7 +114,6 @@
         (form-index 0)
         (eof-value (gensym))
         #+cclasp(eclector.reader:*client* clasp-cleavir::*cst-client*)
-        #+cclasp(read-function 'eclector.concrete-syntax-tree:cst-read)
         ast-jobs ast-threads)
     (loop
       ;; Required to update the source pos info. FIXME!?
@@ -127,9 +126,9 @@
              #+cst
              (cst (eclector.concrete-syntax-tree:cst-read source-sin nil eof-value))
              #+cst
-             (form (cst:raw cst))
-             #+cst
              (_ (when (eq cst eof-value) (return nil)))
+             #+cst
+             (form (cst:raw cst))
              #+cst
              (ast (if cmp::*debug-compile-file*
                       (clasp-cleavir::compiler-time (clasp-cleavir::cst->ast cst))
@@ -183,7 +182,10 @@
     ;; Now wait for all threads to join
 ;;;    #+(or)
     (loop for thread in ast-threads
-          do (mp:process-join thread))
+       do (mp:process-join thread))
+    (dolist (job ast-jobs)
+      (when (ast-job-error job)
+        (error "Compile-error ~a ~%" (ast-job-error job))))
     ;; Now return the results
     (values (nreverse result))))
 

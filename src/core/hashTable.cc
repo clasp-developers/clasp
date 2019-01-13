@@ -48,6 +48,9 @@ THE SOFTWARE.
 #include <clasp/core/designators.h>
 #include <clasp/core/weakHashTable.h>
 #include <clasp/core/wrappers.h>
+#ifdef CLASP_THREADS
+#include <pthread.h>
+#endif
 namespace core {
 
 
@@ -68,9 +71,9 @@ namespace core {
   };
   struct HashTableWriteLock {
     const HashTable_O* _hashTable;
-  HashTableWriteLock(const HashTable_O* ht) : _hashTable(ht) {
+    HashTableWriteLock(const HashTable_O* ht,bool upgrade = false) : _hashTable(ht) {
     if (this->_hashTable->_Mutex) {
-      this->_hashTable->_Mutex->write_lock(false);
+      this->_hashTable->_Mutex->write_lock(upgrade);
     }
   }
     ~HashTableWriteLock() {
@@ -84,6 +87,7 @@ namespace core {
 #ifdef CLASP_THREADS
 #define HT_READ_LOCK(me) HashTableReadLock _zzz(me)
 #define HT_WRITE_LOCK(me) HashTableWriteLock _zzz(me)
+#define HT_UPGRADE_WRITE_LOCK(me) HashTableWriteLock _zzz(me,true)
 #else
 #define HT_READ_LOCK(me) 
 #define HT_WRITE_LOCK(me) 
@@ -563,10 +567,10 @@ CL_DEFUN T_mv core__gethash3(T_sp key, T_sp hashTable, T_sp default_value) {
   return ht->gethash(key, default_value);
 };
 
-List_sp HashTable_O::tableRef_no_lock(T_sp key) {
+List_sp HashTable_O::tableRef_no_read_lock(T_sp key, bool under_write_lock) {
     ASSERT(gc::IsA<Array_sp>(this->_HashTable));
     cl_index length = ENSURE_VALID_OBJECT(this->_HashTable)->length();
-    cl_index index = this->safe_sxhashKey(key, length, false);
+    cl_index index = this->sxhashKey(key, length, false /*will-add-key*/);
     List_sp pair = _Nil<T_O>();
     for (auto cur : gc::As_unsafe<List_sp>((*ENSURE_VALID_OBJECT(this->_HashTable))[index])) {
       pair = CONS_CAR(cur);
@@ -578,7 +582,11 @@ List_sp HashTable_O::tableRef_no_lock(T_sp key) {
     if (key.objectp()) {
       void *blockAddr = &(*key);
       if (mps_ld_isstale(const_cast<mps_ld_t>(&(this->_LocationDependency)), global_arena, blockAddr)) {
-        return this->rehash_no_lock(false, key);
+        if (under_write_lock) {
+          return this->rehash_no_lock(false /*expandTable*/, key);
+        } else {
+          return this->rehash_upgrade_write_lock(false /*expandTable*/, key);
+        }
       }
     }
 #endif
@@ -589,13 +597,14 @@ List_sp HashTable_O::tableRef_no_lock(T_sp key) {
   CL_DECLARE();
   CL_DOCSTRING("hashTableForceRehash");
   CL_DEFUN void core__hash_table_force_rehash(HashTable_sp ht) {
-    ht->rehash(false, _Unbound<T_O>());
+    HT_WRITE_LOCK(&*ht);
+    ht->rehash_no_lock(false, _Unbound<T_O>());
   }
 
   T_mv HashTable_O::gethash(T_sp key, T_sp default_value) {
     LOG(BF("gethash looking for key[%s]") % _rep_(key));
     HT_READ_LOCK(this);
-    List_sp keyValuePair = this->tableRef_no_lock(key);
+    List_sp keyValuePair = this->tableRef_no_read_lock(key, false /*under_write_lock*/);
     LOG(BF("Found keyValueCons")); // % keyValueCons->__repr__() ); INFINITE-LOOP
     if (keyValuePair.consp()) {
       T_sp value = CONS_CDR(keyValuePair);
@@ -611,13 +620,13 @@ List_sp HashTable_O::tableRef_no_lock(T_sp key) {
 
   CL_LISPIFY_NAME("core:hashIndex");
   CL_DEFMETHOD gc::Fixnum HashTable_O::hashIndex(T_sp key) const {
-    gc::Fixnum idx = this->safe_sxhashKey(key, ENSURE_VALID_OBJECT(this->_HashTable)->length(), false);
+    gc::Fixnum idx = this->sxhashKey(key, ENSURE_VALID_OBJECT(this->_HashTable)->length(), false /*will-add-key*/);
     return idx;
   }
 
   List_sp HashTable_O::find(T_sp key) {
     HT_READ_LOCK(this);
-    List_sp keyValue = this->tableRef_no_lock(key);
+    List_sp keyValue = this->tableRef_no_read_lock(key, false /*under_write_lock*/);
     if (!keyValue.consp()) return keyValue;
     if (CONS_CDR(keyValue).unboundp()) return _Nil<T_O>();
     return keyValue;
@@ -631,7 +640,7 @@ List_sp HashTable_O::tableRef_no_lock(T_sp key) {
 
   bool HashTable_O::remhash(T_sp key) {
     HT_WRITE_LOCK(this);
-    List_sp keyValuePair = this->tableRef_no_lock(key);
+    List_sp keyValuePair = this->tableRef_no_read_lock( key, true /*under_write_lock*/ );
     if (keyValuePair.consp() && !CONS_CDR(keyValuePair).unboundp()) {
       CONS_CDR(keyValuePair) = _Unbound<T_O>();
       this->_HashTableCount--;
@@ -644,10 +653,10 @@ List_sp HashTable_O::tableRef_no_lock(T_sp key) {
   CL_DEFMETHOD T_sp HashTable_O::hash_table_setf_gethash(T_sp key, T_sp value) {
     LOG(BF("About to hash_table_setf_gethash for %s@%p -> %s@%p\n") % _rep_(key) % (void*)&(*key) % _rep_(value) % (void*)&(*value));
     HT_WRITE_LOCK(this);
-    List_sp keyValuePair = this->tableRef_no_lock(key);
+    List_sp keyValuePair = this->tableRef_no_read_lock( key, true /*under_write_lock*/);
     {
       if (keyValuePair.nilp()) {
-        gc::Fixnum index = this->safe_sxhashKey(key, cl__length(ENSURE_VALID_OBJECT(this->_HashTable)), true /*Will add key*/);
+        gc::Fixnum index = this->sxhashKey(key, cl__length(ENSURE_VALID_OBJECT(this->_HashTable)), true /*will-add-key*/);
         Cons_sp newKeyValue = Cons_O::create(key, value);
     //            printf("%s:%d  Inserted newKeyValue@%p\n", __FILE__, __LINE__, newKeyValue.raw_());
         Cons_sp newEntry = Cons_O::create(newKeyValue, ENSURE_VALID_OBJECT(this->_HashTable)->operator[](index));
@@ -712,7 +721,7 @@ List_sp HashTable_O::tableRef_no_lock(T_sp key) {
               foundKeyValuePair = pair;
             }
           }
-          gc::Fixnum index = this->safe_sxhashKey(key, newSize, true /* Will add key */);
+          gc::Fixnum index = this->sxhashKey(key, newSize, true /* Will add key */);
           LOG(BF("Re-indexing key[%s] to index[%d]") % _rep_(key) % index);
           Cons_sp newCur = Cons_O::create(pair, ENSURE_VALID_OBJECT(this->_HashTable)->operator[](index));
           ENSURE_VALID_OBJECT(this->_HashTable)->operator[](index) = newCur;
@@ -740,8 +749,24 @@ List_sp HashTable_O::tableRef_no_lock(T_sp key) {
     return foundKeyValuePair;
   }
 
-  List_sp HashTable_O::rehash(bool expandTable, T_sp findKey) {
-    return this->rehash_no_lock(expandTable,findKey);
+  List_sp HashTable_O::rehash_upgrade_write_lock(bool expandTable, T_sp findKey) {
+    if (this->_Mutex) {
+    tryAgain:
+      if (this->_Mutex->write_try_lock(true /*upgrade*/)) {
+        List_sp result = this->rehash_no_lock(expandTable,findKey);
+        // Releasing the read lock will be done by the caller using RAII
+        this->_Mutex->write_unlock( false /*releaseReadLock*/);
+        return result;
+      }
+#ifdef _TARGET_OS_DARWIN
+      pthread_yield_np();
+#else
+      pthread_yield();
+#endif
+      goto tryAgain;
+    } else {
+      return this->rehash_no_lock(expandTable,findKey);
+    }
   }
 
   string HashTable_O::__repr__() const {

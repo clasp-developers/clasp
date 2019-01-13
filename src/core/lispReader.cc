@@ -787,7 +787,8 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, Token &token, bool only_dot
       return _Nil<T_O>();
     // interpret good keywords
     LOG_READ(BF("Token[%s] interpreted as keyword") % name_marker);
-    SimpleString_sp keyword_name = symbolTokenStr(sin,token, name_marker - token.data(),token.size(),only_dots_ok);
+    // :\. is a valid keyword symbol, so allow only dots here
+    SimpleString_sp keyword_name = symbolTokenStr(sin,token, name_marker - token.data(),token.size(),true);
     return _lisp->keywordPackage()->intern(keyword_name);
   } break;
   case tsymk:{

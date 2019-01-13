@@ -1056,8 +1056,6 @@ typedef void (*PrintvFlushCallback)();
 
 const char *trimSourceFilePathName(const char *fullPathName);
 
-#define IN_PLUG_PREFIX '-'
-#define OUT_PLUG_PREFIX '+'
 };
 
 namespace llvm_interface {

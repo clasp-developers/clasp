@@ -159,8 +159,8 @@ void handle_signal_now( core::T_sp signal_code, core::T_sp process ) {
   if ( signal_code.fixnump() ) {
     printf("%s:%d Received a unix signal with code: %lu\n", __FILE__, __LINE__, (size_t)signal_code.unsafe_fixnum());
     core::Symbol_sp handler = gc::As<core::Symbol_sp>(safe_signal_handler(signal_code.unsafe_fixnum()));
-    if ((gc::IsA<core::Function_sp>(handler->symbolValue()) || gc::IsA<core::Symbol_sp>(handler->symbolValue()))) {
-      core::eval::funcall(handler->symbolValue());
+    if (handler->fboundp()) {
+      core::eval::funcall(handler->symbolFunction());
     } else {
       core::cl__cerror(ext::_sym_ignore_signal->symbolValue(),ext::_sym_unix_signal_received,
                        core::Cons_O::createList(kw::_sym_code, signal_code, kw::_sym_handler, handler));

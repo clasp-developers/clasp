@@ -611,7 +611,10 @@ memory limits before executing the program again."))
   ((code :type fixnum
          :initform 0
          :initarg :code
-         :accessor ext:unix-signal-received-code))
+         :accessor ext:unix-signal-received-code)
+   (handler :initarg :handler
+            :initform nil
+            :accessor unix-signal-received-handler))
   (:report (lambda (condition stream)
              (format stream "Serious signal ~D caught."
                      (ext:unix-signal-received-code condition)))))
@@ -736,7 +739,9 @@ memory limits before executing the program again."))
 
 (define-condition floating-point-invalid-operation (arithmetic-error) ())
 
-#+clasp (define-condition core:do-not-funcall-special-operator (error)
+;;;An error of type undefined-function should be signaled if function is a symbol that does not have
+;;;a global definition as a function or that has a global definition as a macro or a special operator.
+#+clasp (define-condition core:do-not-funcall-special-operator (undefined-function)
           ((operator :initarg :operator :reader operator))
           (:report (lambda (condition stream)
                      (format stream "You should never funcall special operator: ~s"

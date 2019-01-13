@@ -1060,6 +1060,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_cArgumentsLimit->defconstant(make_fixnum(Lisp_O::MaxFunctionArguments));
   _sym_STARdebugMacroexpandSTAR->defparameter(_Nil<T_O>());
   _lisp->_Roots._ClassTable = HashTable_O::create(cl::_sym_eq);
+  _lisp->_Roots._ClassTable->set_thread_safe(true);
   _sym_STARcodeWalkerSTAR->defparameter(_Nil<T_O>());
   _sym_STARsharpEqContextSTAR->defparameter(_Nil<T_O>());
   cl::_sym_STARreadDefaultFloatFormatSTAR->defparameter(cl::_sym_single_float);
