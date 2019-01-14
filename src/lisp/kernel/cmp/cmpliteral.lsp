@@ -288,7 +288,6 @@ rewrite the slot in the literal table to store a closure."
                         (load-time-reference-literal
                          (ext:constant-form-value (second create)) t :recursive-p t)))
           ;; Form like the primary m-l-f method on CLASS returns.
-          #+(or)
           ((find-class-form-p create)
            (add-creator "ltvc_find_class" index object
                         (load-time-reference-literal

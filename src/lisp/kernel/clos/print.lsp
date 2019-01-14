@@ -21,6 +21,8 @@
 ;;;
 
 (defun make-load-form-saving-slots (object &key slot-names environment)
+  ;; The ALLOCATE-INSTANCE form here is treated magically by the file
+  ;; compiler; see cmp/cmpliteral.lsp ALLOCATE-INSTANCE-FORM-P
   (declare (ignore environment))
   (do* ((class (class-of object))
 	(initialization (list 'progn))
@@ -116,6 +118,8 @@ printer and we should rather use MAKE-LOAD-FORM."
 	 (type-of object)))
 
 (defmethod make-load-form ((class class) &optional environment)
+  ;; The find-class form here is treated magically by the file compiler-
+  ;; see cmp/cmpliteral.lsp FIND-CLASS-FORM-P
   (declare (ignore environment))
   (let ((name (class-name class)))
     (if (and name (eq (find-class name) class))
