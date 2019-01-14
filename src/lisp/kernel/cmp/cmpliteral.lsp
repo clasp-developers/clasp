@@ -104,7 +104,6 @@
 (defvar *string-coalesce*)
 (defvar *pathname-coalesce*)
 (defvar *package-coalesce*)
-(defvar *built-in-class-coalesce*)
 (defvar *double-float-coalesce*)
 (defvar *identity-coalesce*)
 (defvar *constant-index-to-literal-node-creator*)
@@ -250,10 +249,6 @@ rewrite the slot in the literal table to store a closure."
   (add-creator "ltvc_make_package" index package
                (load-time-reference-literal (package-name package) read-only-p :recursive-p t)))
 
-(defun ltv/built-in-class (class index read-only-p &key recursive-p)
-  (add-creator "ltvc_make_built_in_class" index class
-               (load-time-reference-literal (class-name class) read-only-p :recursive-p t)))
-
 (defun ltv/single-float (single index read-only-p &key recursive-p)
   (let* ((constant (llvm-sys:make-apfloat-float single))
          (constant-ap-arg (llvm-sys:constant-fp-get cmp:*llvm-context* constant)))
@@ -269,21 +264,36 @@ rewrite the slot in the literal table to store a closure."
   (and (consp form)
        (eq (car form) 'allocate-instance)
        (consp (cdr form))
-       ;; Slightly goofy way of saying "is constant" without
-       ;; bothering about an environment.
-       ;; As of now, m-l-f-s-s involves a literal class.
-       (not (symbolp (cadr form)))
-       (not (consp (cadr form)))
+       (constantp (cadr form))
+       (null (cddr form))))
+
+;;; Should match the return value of the primary m-l-f method on CLASS
+;;; (in clos/print.lsp)
+(defun find-class-form-p (form)
+  (and (consp form)
+       (eq (car form) 'find-class)
+       (consp (cdr form))
+       (constantp (cadr form))
        (null (cddr form))))
 
 (defun ltv/mlf (object index read-only-p &key recursive-p)
   (multiple-value-bind (create initialize)
       (make-load-form object)
     (prog1
+        ;; The compiler is slow, so we try to avoid it for a few common cases.
         (cond
+          ;; Form like the one make-load-form-saving-slots returns.
           ((allocate-instance-form-p create)
            (add-creator "ltvc_allocate_instance" index object
-                        (load-time-reference-literal (second create) t :recursive-p t)))
+                        (load-time-reference-literal
+                         (ext:constant-form-value (second create)) t :recursive-p t)))
+          ;; Form like the primary m-l-f method on CLASS returns.
+          #+(or)
+          ((find-class-form-p create)
+           (add-creator "ltvc_find_class" index object
+                        (load-time-reference-literal
+                         (ext:constant-form-value (second create)) t :recursive-p t)))
+          ;; General case
           (t (let* ((fn (compile-form create))
                     (name (cmp:jit-constant-unique-string-ptr (llvm-sys:get-name fn))))
                (add-creator "ltvc_set_mlf_creator_funcall" index object fn name))))
@@ -312,7 +322,6 @@ rewrite the slot in the literal table to store a closure."
     ((packagep object) (values *package-coalesce* #'ltv/package))
     ((complexp object) (values *complex-coalesce* #'ltv/complex))
     ((random-state-p object) (values *identity-coalesce* #'ltv/random-state))
-    ((core:built-in-class-p object) (values *built-in-class-coalesce* #'ltv/built-in-class))
     (t (values *identity-coalesce* #'ltv/mlf))))
 
 (defun make-similarity-table (test)
@@ -506,7 +515,6 @@ Return the index of the load-time-value"
         (*string-coalesce* (make-similarity-table #'equal))
         (*pathname-coalesce* (make-similarity-table #'equal))
         (*package-coalesce* (make-similarity-table #'eq))
-        (*built-in-class-coalesce* (make-similarity-table #'eq))
         (*double-float-coalesce* (make-similarity-table #'eql))
         (*constant-index-to-literal-node-creator* (make-hash-table :test #'eql))
         (*table-index* 0)
@@ -888,7 +896,6 @@ If it isn't NIL then copy the literal from its index in the LTV into result."
       (primitive         "ltvc_make_pathname" %ltvc-return% (list %gcroots-in-module*% %size_t% %t*% %t*% %t*% %t*% %t*% %t*%))
       (primitive         "ltvc_make_package" %ltvc-return% (list %gcroots-in-module*% %size_t% %t*%))
       (primitive         "ltvc_make_random_state" %ltvc-return% (list %gcroots-in-module*% %size_t% %t*%))
-      (primitive         "ltvc_make_built_in_class" %ltvc-return% (list %gcroots-in-module*% %size_t% %t*%))
       (primitive         "ltvc_make_float" %ltvc-return% (list %gcroots-in-module*% %size_t% %float%))
       (primitive         "ltvc_make_double" %ltvc-return% (list %gcroots-in-module*% %size_t% %double%))
       (primitive         "ltvc_lookup_value" %t*% (list %gcroots-in-module*% %size_t%))
