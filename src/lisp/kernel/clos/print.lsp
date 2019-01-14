@@ -32,11 +32,10 @@
       (when (or (and (null slot-names)
 		     (eq (slot-definition-allocation slot) :instance))
 		(member slot-name slot-names))
-	(push (if (slot-boundp object slot-name)
-		  `(setf (slot-value ,object ',slot-name)
-			 ',(slot-value object slot-name))
-		  `(slot-makunbound ,object ',slot-name))
-	      initialization)))))
+        (when (slot-boundp object slot-name)
+          (push `(setf (slot-value ,object ',slot-name)
+                       ',(slot-value object slot-name))
+                initialization))))))
 
 (defun need-to-make-load-form-p (object env)
   "Return T if the object cannot be externalized using the lisp
