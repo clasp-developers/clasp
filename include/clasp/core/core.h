@@ -849,6 +849,7 @@ namespace core {
   Symbol_sp lisp_upcase_intern_export(string const &name, string const &packageName);
   void* lisp_to_void_ptr(T_sp o);
   T_sp lisp_from_void_ptr(void* p);
+uint64_t lisp_nameword(T_sp name);
  
   List_sp lisp_copy_default_special_bindings();
 /*! Write characters to the stream */

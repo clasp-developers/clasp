@@ -44,10 +44,10 @@ THE SOFTWARE.
 
 
 extern "C" {
-__attribute__((optnone)) void mutex_lock_enter() {
+__attribute__((optnone)) void mutex_lock_enter(char* nameword) {
   (void)0;
 };
-__attribute__((optnone)) void mutex_lock_return() {
+__attribute__((optnone)) void mutex_lock_return(char* nameword) {
   (void)0;
 };
 
@@ -93,7 +93,7 @@ namespace mp {
 
 #ifdef CLASP_THREADS
 std::atomic<size_t> global_LastBindingIndex = ATOMIC_VAR_INIT(0);
-GlobalMutex global_BindingIndexPoolMutex(false);
+Mutex global_BindingIndexPoolMutex(BINDINDX_NAMEWORD,false);
 std::vector<size_t> global_BindingIndexPool;
 #endif
 
@@ -266,6 +266,11 @@ CL_DEFUN void mp__shared_unlock(SharedMutex_sp m) {
 }
 
 
+void SharedMutex_O::setLockNames(core::SimpleBaseString_sp readLockName, core::SimpleBaseString_sp writeLockName)
+{
+  this->_SharedMutex.mReadMutex._NameWord = lisp_nameword(readLockName);
+  this->_SharedMutex.mWriteMutex._NameWord = lisp_nameword(writeLockName);
+}
 
 
 string SharedMutex_O::__repr__() const {

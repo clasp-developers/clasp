@@ -92,7 +92,9 @@ CL_DEFUN void core__specializer_call_history_generic_functions_push_new(T_sp tcl
 
 void Instance_O::CLASS_call_history_generic_functions_push_new(T_sp generic_function) {
   if (this->instanceRef(REF_SPECIALIZER_MUTEX).unboundp()) {
-    this->instanceSet(REF_SPECIALIZER_MUTEX,mp::SharedMutex_O::make_shared_mutex(_Nil<T_O>()));
+    SimpleBaseString_sp sbsr = SimpleBaseString_O::make("CALHISR");
+    SimpleBaseString_sp sbsw = SimpleBaseString_O::make("CALHISW");
+    this->instanceSet(REF_SPECIALIZER_MUTEX,mp::SharedMutex_O::make_shared_mutex(sbsr,sbsw));
   }
   ClassWriteLock(gc::As<mp::SharedMutex_sp>(this->instanceRef(REF_SPECIALIZER_MUTEX)));
   List_sp gflist = gc::As<List_sp>(this->instanceRef(REF_SPECIALIZER_CALL_HISTORY_GENERIC_FUNCTIONS));

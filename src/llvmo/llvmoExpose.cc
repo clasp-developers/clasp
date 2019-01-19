@@ -206,7 +206,7 @@ CL_DEFUN void llvm_sys__disassemble_instructions(const std::string& striple,
 #define DISASM_NUM_BYTES 32
 #define DISASM_OUT_STRING_SIZE 128
   if (global_disassemble_mutex == NULL) {
-    global_disassemble_mutex = new mp::Mutex();
+    global_disassemble_mutex = new mp::Mutex(DISSASSM_NAMEWORD);
   }
   WITH_READ_WRITE_LOCK(*global_disassemble_mutex);
   LLVMDisasmContextRef dis = LLVMCreateDisasm(striple.c_str(),

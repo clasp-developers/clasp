@@ -121,16 +121,19 @@ struct HashTableLocker {
 // ----------------------------------------------------------------------
 //
 
+#if 0
 void HashTable_O::set_thread_safe(bool thread_safe)
 {
 #ifdef CLASP_THREADS
   if (thread_safe) {
-    this->_Mutex = mp::SharedMutex_O::make_shared_mutex(_Nil<T_O>());
+    SimpleBaseString_sp sbs = SimpleBaseString_O::make("HASHTABL");
+    this->_Mutex = mp::SharedMutex_O::make_shared_mutex(sbs);
   } else {
     this->_Mutex.reset_();
   }
 #endif
 }
+#endif
 
 CL_LAMBDA(&key (test (function eql)) (size 64) (rehash-size 2.0) (rehash-threshold 1.0) weakness debug thread-safe);
 CL_DECLARE();
@@ -160,7 +163,9 @@ CL_DEFUN T_sp cl__make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_si
   }
 #ifdef CLASP_THREADS
   if (thread_safe.notnilp()) {
-    table->_Mutex = mp::SharedMutex_O::make_shared_mutex(_Nil<T_O>());
+    SimpleBaseString_sp sbsread = SimpleBaseString_O::make("USRHSHR");
+    SimpleBaseString_sp sbswrite = SimpleBaseString_O::make("USRHSHW");
+    table->_Mutex = mp::SharedMutex_O::make_shared_mutex(sbsread,sbswrite);
   }
 #endif
   return table;
@@ -182,6 +187,15 @@ HashTable_sp HashTable_O::create(T_sp test) {
   DoubleFloat_sp rehashSize = DoubleFloat_O::create(2.0);
   DoubleFloat_sp rehashThreshold = DoubleFloat_O::create(0.9);
   HashTable_sp ht = gc::As_unsafe<HashTable_sp>(cl__make_hash_table(test, size, rehashSize, rehashThreshold));
+  return ht;
+}
+
+HashTable_sp HashTable_O::create_thread_safe(T_sp test, SimpleBaseString_sp readLockName, SimpleBaseString_sp writeLockName) {
+  Fixnum_sp size = make_fixnum(16);
+  DoubleFloat_sp rehashSize = DoubleFloat_O::create(2.0);
+  DoubleFloat_sp rehashThreshold = DoubleFloat_O::create(0.9);
+  HashTable_sp ht = gc::As_unsafe<HashTable_sp>(cl__make_hash_table(test, size, rehashSize, rehashThreshold));
+  ht->_Mutex = mp::SharedMutex_O::make_shared_mutex(readLockName,writeLockName);
   return ht;
 }
 

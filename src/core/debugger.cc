@@ -275,7 +275,10 @@ struct DebugInfo {
   std::map<uintptr_t,StackMapRange> _StackMaps;
   mp::SharedMutex                   _JittedObjectsLock;
   std::vector<JittedObject>         _JittedObjects;
-  DebugInfo() {};
+  DebugInfo() : _OpenDynamicLibraryMutex(OPENDYLB_NAMEWORD),
+                _StackMapsLock(STCKMAPS_NAMEWORD),
+                _JittedObjectsLock(JITDOBJS_NAMEWORD)
+  {};
 };
 
 DebugInfo* global_DebugInfo = NULL;

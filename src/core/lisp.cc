@@ -186,7 +186,18 @@ public:
 Lisp_O::GCRoots::GCRoots() :
 #ifdef CLASP_THREADS
   _ActiveThreads(_Nil<T_O>()),
+  _ActiveThreadsMutex(ACTVTHRD_NAMEWORD),
   _DefaultSpecialBindings(_Nil<T_O>()),
+  _DefaultSpecialBindingsMutex(SPCLBIND_NAMEWORD),
+  _SyspropMutex(SYSPROC__NAMEWORD),
+  _SourceFilesMutex(SRCFILES_NAMEWORD),
+  _PackagesMutex(PKGSMUTX_NAMEWORD),
+  _SingleDispatchGenericFunctionHashTableEqualMutex(SINGDISP_NAMEWORD),
+#ifdef DEBUG_MONITOR
+  _LogMutex(LOGMUTEX_NAMEWORD),
+#endif
+  _ThePathnameTranslationsMutex(PNTRANSL_NAMEWORD),
+  _UnixSignalHandlersMutex(UNIXSIGN_NAMEWORD),
 #endif
   _MpiEnabled(false),
   _MpiRank(0),
@@ -1728,7 +1739,6 @@ CL_DEFUN T_mv core__getline(String_sp prompt) {
 
 CL_DOCSTRING("lookup-class-with-stamp");
 CL_DEFUN T_sp core__lookup_class_with_stamp(Fixnum stamp) {
-  WITH_READ_LOCK(_lisp->_Roots._ClassTableMutex);
   HashTable_sp classNames = _lisp->_Roots._ClassTable;
   T_sp foundClass = _Nil<T_O>();
   classNames->maphash([stamp,&foundClass] (T_sp key, T_sp tclass_) {
@@ -1753,7 +1763,6 @@ CL_DEFUN T_sp cl__find_class(Symbol_sp symbol, bool errorp, T_sp env) {
   bool foundp;
   T_sp cla;
   {
-    WITH_READ_LOCK(_lisp->_Roots._ClassTableMutex);
     HashTable_sp classNames = _lisp->_Roots._ClassTable;
     T_mv mc = classNames->gethash(symbol, _Nil<T_O>());
     cla = mc;
@@ -1782,7 +1791,6 @@ CL_DEFUN T_sp core__setf_find_class(T_sp newValue, Symbol_sp name) {
     return Values(_lisp->boot_setf_findClass(name, gc::As<Instance_sp>(newValue)));
   }
   {
-    WITH_READ_WRITE_LOCK(_lisp->_Roots._ClassTableMutex);
     HashTable_sp ht = _lisp->_Roots._ClassTable;
     T_sp oldClass = ht->gethash(name,ht);
     if (newValue.nilp()) {
@@ -2283,7 +2291,6 @@ Instance_sp Lisp_O::boot_findClass(Symbol_sp className, bool errorp) const {
   CLOS starts up because that is where ECL expects to find them. */
 void Lisp_O::switchToClassNameHashTable() {
   ASSERTF(this->_BootClassTableIsValid, BF("switchToClassNameHashTable should only be called once after boot"));
-  WITH_READ_WRITE_LOCK(this->_Roots._ClassTableMutex);
   HashTable_sp ht = _lisp->_Roots._ClassTable;
   for (auto it = this->_Roots.bootClassTable.begin(); it != this->_Roots.bootClassTable.end(); ++it) {
     ht->hash_table_setf_gethash(it->symbol, it->theClass);
@@ -2585,7 +2592,6 @@ void Lisp_O::mapClassNamesAndClasses(KeyValueMapper *mapper) {
   if (this->_BootClassTableIsValid) {
     SIMPLE_ERROR(BF("What do I do here?"));
   } else {
-    WITH_READ_WRITE_LOCK(_lisp->_Roots._ClassTableMutex);
     HashTable_sp ht = _lisp->_Roots._ClassTable;
     ht->lowLevelMapHash(mapper);
   }

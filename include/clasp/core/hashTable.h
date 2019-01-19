@@ -82,6 +82,7 @@ namespace core {
 #endif
   public:
     static HashTable_sp create(T_sp test); // set everything up with defaults
+    static HashTable_sp create_thread_safe(T_sp test, SimpleBaseString_sp readLockName, SimpleBaseString_sp writeLockName); // set everything up with defaults
 
   public:
     static void sxhash_eq(Hash1Generator &running_hash, T_sp obj, LocationDependencyPtrT);
@@ -104,7 +105,7 @@ namespace core {
     CL_DEFMETHOD VectorObjects_sp hash_table_buckets() const { return this->_HashTable; };
     CL_LISPIFY_NAME("hash-table-shared-mutex");
     CL_DEFMETHOD T_sp hash_table_shared_mutex() const { if (this->_Mutex) return this->_Mutex; else return _Nil<T_O>(); };
-    void set_thread_safe(bool thread_safe);
+//    void set_thread_safe(bool thread_safe);
   public: // Functions here
     virtual bool equalp(T_sp other) const;
 

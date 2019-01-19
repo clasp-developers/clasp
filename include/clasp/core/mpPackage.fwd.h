@@ -68,51 +68,18 @@ namespace mp {
       _SpinLock.unlock();
     }
   };
-      
-  struct GlobalMutex {
-    pthread_mutex_t _Mutex;
-    bool _Recursive;
+    
 
-
-    GlobalMutex(bool recursive) : _Recursive(recursive) {
-      pthread_mutexattr_t Attr;
-      pthread_mutexattr_init(&Attr);
-      if (recursive) {
-        pthread_mutexattr_settype(&Attr, PTHREAD_MUTEX_RECURSIVE);
-      }
-      pthread_mutex_init(&this->_Mutex, &Attr);
-    };
-    bool lock(bool waitp=true) {
-//      printf("%s:%d  locking mutex %p\n", __FILE__, __LINE__, &this->_Mutex); fflush(stdout);
-       if (waitp) return pthread_mutex_lock(&this->_Mutex)==0;
-       return pthread_mutex_trylock(&this->_Mutex)==0;
-    }
-    void unlock() {
-//      printf("%s:%d  unlocking mutex %p\n", __FILE__, __LINE__, &this->_Mutex); fflush(stdout);
-      pthread_mutex_unlock(&this->_Mutex);
-    };
-    bool recursive_lock_p() {
-      return this->_Recursive;
-    }
-    ~GlobalMutex() {
-    };
-  };
-
-  struct GlobalRecursiveMutex : public GlobalMutex {
-    pthread_mutex_t _Mutex;
-  GlobalRecursiveMutex() : GlobalMutex(true) {};
-    ~GlobalRecursiveMutex() {};
-  };
-
-extern "C" void mutex_lock_enter();
-extern "C" void mutex_lock_return();
+extern "C" void mutex_lock_enter(char* nameword);
+extern "C" void mutex_lock_return(char* nameword);
 
 struct DtraceLockProbe {
-  DtraceLockProbe() {
-    mutex_lock_enter();
+  char* _NameWord;
+  DtraceLockProbe(char* nw) : _NameWord(nw) {
+    mutex_lock_enter(nw);
   };
   ~DtraceLockProbe() {
-    mutex_lock_return();
+    mutex_lock_return(this->_NameWord);
   }
 };
 
@@ -120,61 +87,86 @@ struct Mutex;
 void debug_mutex_lock(Mutex* m);
 void debug_mutex_unlock(Mutex* m);
 
+#define PACKAGE__NAMEWORD 0x004547414b434150
+#define INTRFUNC_NAMEWORD 0x004e554652544e49
+#define STRTFUNC_NAMEWORD 0x004e554654525453
+#define BINDINDX_NAMEWORD 0x00444e49444e4942
+#define ACTVTHRD_NAMEWORD 0x0052485456544341
+#define SPCLBIND_NAMEWORD 0x004e49424c435053
+#define SYSPROC__NAMEWORD 0x00434f5250535953
+#define CLASSTBL_NAMEWORD 0x0042545353414c43
+#define SRCFILES_NAMEWORD 0x00454c4946435253
+#define PKGSMUTX_NAMEWORD 0x0054554d53474b50
+#define SETFDEFS_NAMEWORD 0x0046454446544553
+#define SINGDISP_NAMEWORD 0x00534944474e4953
+#define LOGMUTEX_NAMEWORD 0x004554554d474f4c
+#define PNTRANSL_NAMEWORD 0x00534e4152544e50
+#define UNIXSIGN_NAMEWORD 0x0047495358494e55
+#define DEBGINFO_NAMEWORD 0x00464e4947424544
+#define OPENDYLB_NAMEWORD 0x004c59444e45504f
+#define STCKMAPS_NAMEWORD 0x0050414d4b435453
+#define JITDOBJS_NAMEWORD 0x004a424f4454494a
+#define EXITBARR_NAMEWORD 0x0052414254495845
+#define DISSASSM_NAMEWORD 0x0053534153534944
+
 struct Mutex {
-      pthread_mutex_t _Mutex;
-      gctools::Fixnum _Counter;
-      bool _Recursive;
-    Mutex() : _Counter(0), _Recursive(false) {
-      pthread_mutex_init(&this->_Mutex,NULL);
-    }
-    Mutex(bool recursive) : _Counter(0), _Recursive(recursive) {
+  uint64_t _NameWord;
+  pthread_mutex_t _Mutex;
+  gctools::Fixnum _Counter;
+  bool _Recursive;
+#if 0
+  Mutex() : _Counter(0), _Recursive(false) {
+    pthread_mutex_init(&this->_Mutex,NULL);
+  }
+#endif
+  Mutex(uint64_t nameword, bool recursive=false) : _NameWord(nameword), _Counter(0), _Recursive(recursive) {
     
-      if (!recursive) {
+    if (!recursive) {
 //      printf("%s:%d Creating Mutex@%p\n", __FILE__, __LINE__, (void*)&this->_Mutex);
-        pthread_mutex_init(&this->_Mutex,NULL);
-      } else {
-        pthread_mutexattr_t Attr;
-        pthread_mutexattr_init(&Attr);
-        pthread_mutexattr_settype(&Attr, PTHREAD_MUTEX_RECURSIVE);
-        pthread_mutex_init(&this->_Mutex, &Attr);
-        pthread_mutexattr_destroy(&Attr);
-      }
-    };
-      bool lock(bool waitp=true) {
+      pthread_mutex_init(&this->_Mutex,NULL);
+    } else {
+      pthread_mutexattr_t Attr;
+      pthread_mutexattr_init(&Attr);
+      pthread_mutexattr_settype(&Attr, PTHREAD_MUTEX_RECURSIVE);
+      pthread_mutex_init(&this->_Mutex, &Attr);
+      pthread_mutexattr_destroy(&Attr);
+    }
+  };
+  bool lock(bool waitp=true) {
 //      printf("%s:%d locking Mutex@%p\n", __FILE__, __LINE__, (void*)&this->_Mutex); fflush(stdout);
 #ifdef DEBUG_THREADS
-        debug_mutex_lock(this);
+    debug_mutex_lock(this);
 #endif
-        if (waitp) {
+    if (waitp) {
 #ifdef DEBUG_DTRACE_LOCK_PROBE
-          DtraceLockProbe _guard;
+      DtraceLockProbe _guard((char*)&this->_NameWord);
 #endif
-          bool result = (pthread_mutex_lock(&this->_Mutex)==0);
-          ++this->_Counter;
-          return result;
-        }
-        return pthread_mutex_trylock(&this->_Mutex)==0;
-      };
-      void unlock() {
+      bool result = (pthread_mutex_lock(&this->_Mutex)==0);
+      ++this->_Counter;
+      return result;
+    }
+    return pthread_mutex_trylock(&this->_Mutex)==0;
+  };
+  void unlock() {
 //      printf("%s:%d unlocking Mutex@%p\n", __FILE__, __LINE__, (void*)&this->_Mutex); fflush(stdout);
 #ifdef DEBUG_THREADS
-        debug_mutex_unlock(this);
+    debug_mutex_unlock(this);
 #endif
-        --this->_Counter;
-        pthread_mutex_unlock(&this->_Mutex);
-      };
-      size_t counter() const {
-        return this->_Counter;
-      }
-      ~Mutex() {
-        pthread_mutex_destroy(&this->_Mutex);
-      };
-    };
+    --this->_Counter;
+    pthread_mutex_unlock(&this->_Mutex);
+  };
+  size_t counter() const {
+    return this->_Counter;
+  }
+  ~Mutex() {
+    pthread_mutex_destroy(&this->_Mutex);
+  };
+};
 
   
 
   struct RecursiveMutex : public Mutex {
-  RecursiveMutex() : Mutex(true) {};
+    RecursiveMutex(uint64_t nameword) : Mutex(nameword,true) {};
   };
 
   
@@ -182,12 +174,12 @@ struct Mutex {
     mp::Mutex _r;
     mp::Mutex _g;
     size_t _b;
-  SharedMutex() : _r(false), _g(false), _b(0) {};
+    SharedMutex(uint64_t nameword) : _r(nameword,false), _g(nameword,false), _b(0) {};
     // shared access
     void shared_lock() {
       this->_r.lock(true);
       ++this->_b;
-      if (this->_b==1) this->_g.lock(true);
+      if (this->_b==256) this->_g.lock(true);
       this->_r.unlock();
     }
     void shared_unlock() {
@@ -210,8 +202,16 @@ struct Mutex {
 /* I derived this code from https://oroboro.com/upgradable-read-write-locks/ */
   class UpgradableSharedMutex {
   public:
-  UpgradableSharedMutex( uint maxReaders = 64 ) : 
-    mReadsBlocked( false ), mMaxReaders( maxReaders ), mReaders( 0 ) {}
+    Mutex mReadMutex;
+    Mutex mWriteMutex;
+    bool    mReadsBlocked;
+    uint     mMaxReaders;
+    uint     mReaders;
+  public:
+    UpgradableSharedMutex(uint64_t nameword, uint maxReaders = 64, uint64_t writenameword=0 ) :
+      mReadMutex(nameword),
+      mWriteMutex(writenameword ? writenameword : nameword),
+      mReadsBlocked( false ), mMaxReaders( maxReaders ), mReaders( 0 ) {};
     void readLock() {
       while ( 1 ) {
         mReadMutex.lock();
@@ -278,11 +278,6 @@ struct Mutex {
       }
       assert( mReaders == numReaders );
     }
-    bool    mReadsBlocked;
-    uint     mMaxReaders;
-    uint     mReaders;
-    Mutex mReadMutex;
-    Mutex mWriteMutex;
   };
 
 

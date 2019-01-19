@@ -228,10 +228,6 @@ class Lisp_O {
     // ---------
     //! Associate class names with classes
     HashTable_sp _ClassTable;
-#ifdef CLASP_THREADS
-    //! Protect _ClassTable
-    mutable mp::SharedMutex _ClassTableMutex;
-#endif
     Integer_sp _IntegerOverflowAdjust;
     CharacterInfo charInfo;
     gctools::Vec0<core::Symbol_sp> _ClassSymbolsHolder;
