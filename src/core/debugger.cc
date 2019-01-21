@@ -2186,6 +2186,10 @@ __attribute__((optnone)) std::string dbg_safe_repr(uintptr_t raw) {
   return ss.str();
 }
 
+string _safe_rep_(core::T_sp obj) {
+  return dbg_safe_repr((uintptr_t)obj.raw_());
+}
+
 void dbg_safe_print(uintptr_t raw) {
   printf(" %s", dbg_safe_repr(raw).c_str());
 }
