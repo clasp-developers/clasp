@@ -180,6 +180,8 @@
            (ref-env (lexical-variable-reference-ref-env var))
            (register-key (binding-key ref-env index symbol))
            (register (gethash register-key variable-map)))
+      (when (symbolp register)
+        (error "Expected an llvm::Value but got ~s variable-map -> ~d register-key ~s" register variable-map register-key))
       (when (not (closure-cell-p register))
         (convert-to-register-access register var)))))
 
