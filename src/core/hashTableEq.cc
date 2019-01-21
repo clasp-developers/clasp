@@ -79,31 +79,34 @@ HashTableEq_sp HashTableEq_O::createFromPList(List_sp plist, Symbol_sp nilTermin
 }
 
 List_sp HashTableEq_O::tableRef_no_read_lock(T_sp key, bool under_write_lock) {
-    ASSERT(gc::IsA<Array_sp>(this->_HashTable));
-    cl_index length = ENSURE_VALID_OBJECT(this->_HashTable)->length();
-    cl_index index = this->sxhashKey(key, length, false /*will-add-key*/);
-    List_sp pair = _Nil<T_O>();
-    for (auto cur : gc::As_unsafe<List_sp>((*ENSURE_VALID_OBJECT(this->_HashTable))[index])) {
-      pair = CONS_CAR(cur);
-      ASSERT(pair.consp());
-      if (CONS_CAR(pair) == key) return pair; // hardwire keyTest optimization
-    }
+  cl_index length = this->_Table.size();
+  cl_index index = this->sxhashKey(key, length, false /*will-add-key*/);
+  for (size_t cur = index, curEnd(this->_Table.size()); cur<curEnd; ++cur ) {
+    Cons_O& entry = this->_Table[cur];
+    if (entry._Car == key) return gc::smart_ptr<Cons_O>((Cons_O*)&entry);
+    if (entry._Car.unboundp()) goto NOT_FOUND;
+  }
+  for (size_t cur = 0, curEnd(index); cur<curEnd; ++cur ) {
+    Cons_O& entry = this->_Table[cur];
+    if (entry._Car == key) return gc::smart_ptr<Cons_O>((Cons_O*)&entry);
+    if (entry._Car.unboundp()) goto NOT_FOUND;
+  }
+ NOT_FOUND:
 #if defined(USE_MPS)
   // Location dependency test if key is stale
-    if (key.objectp()) {
-      void *blockAddr = &(*key);
-      if (mps_ld_isstale(const_cast<mps_ld_t>(&(this->_LocationDependency)), global_arena, blockAddr)) {
-        if (under_write_lock) {
-          return this->rehash_no_lock(false /*expandTable*/, key);
-        } else {
-          return this->rehash_upgrade_write_lock(false /*expandTable*/, key);
-        }
+  if (key.objectp()) {
+    void *blockAddr = &(*key);
+    if (mps_ld_isstale(const_cast<mps_ld_t>(&(this->_LocationDependency)), global_arena, blockAddr)) {
+      if (under_write_lock) {
+        return this->rehash_no_lock(false /*expandTable*/, key);
+      } else {
+        return this->rehash_upgrade_write_lock(false /*expandTable*/, key);
       }
     }
-#endif
-    return _Nil<T_O>();
   }
-
+#endif
+  return _Nil<T_O>();
+}
 
 bool HashTableEq_O::keyTest(T_sp entryKey, T_sp searchKey) const {
   return cl__eq(entryKey, searchKey);

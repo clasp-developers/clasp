@@ -102,6 +102,7 @@ GC_MANAGED_TYPE(gctools::GCArray_moveable<unsigned int>);
 GC_MANAGED_TYPE(gctools::GCArray_moveable<unsigned long>);
 GC_MANAGED_TYPE(gctools::GCArray_moveable<unsigned short>);
 GC_MANAGED_TYPE(gctools::GCBitUnitArray_moveable<1,unsigned int,int>);
+GC_MANAGED_TYPE(gctools::GCVector_moveable<core::Cons_O>);
 GC_MANAGED_TYPE(gctools::GCVector_moveable<core::AuxArgument>);
 GC_MANAGED_TYPE(gctools::GCVector_moveable<core::CacheRecord>);
 GC_MANAGED_TYPE(gctools::GCVector_moveable<core::DynamicBinding>);
