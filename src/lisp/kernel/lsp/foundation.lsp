@@ -244,40 +244,34 @@ the corresponding VAR.  Returns NIL."
 
 (defun hash-table-iterator (hash-table)
   (let ((number-of-buckets (hash-table-number-of-hashes hash-table))
-        (buckets (core:hash-table-buckets hash-table))
-        (hash 0)
-        cur-alist)
+        (hash 0))
     (labels ((advance-hash-table-iterator ()
                (declare (core:lambda-name advance-hash-table-iterator))
+               #+(or)(core:bformat t "Starting with hash -> %d%N" hash)
                (tagbody
                 top
-                  (if cur-alist
-                      (progn
-                        (setq cur-alist (cdr cur-alist))
-                        (if cur-alist
-                            (progn
-                              (when (core:hash-table-entry-deleted-p (car cur-alist))
-                                (go top)))
-                            (progn
-                              (setq hash (1+ hash))
-                              (go top))))
-                      (if (< hash number-of-buckets)
-                          (progn
-                            (setq cur-alist (elt buckets hash))
-                            (if cur-alist
-                                (progn
-                                  (when (core:hash-table-entry-deleted-p (car cur-alist))
-                                    (go top)))
-                                (progn
-                                  (setq hash (1+ hash))
-                                  (go top)))))))))
+                  (let ((entry (core:hash-table-bucket hash-table hash)))
+                    #+(or)(core:bformat t "  entry -> %s%N" entry)
+                    (if (and (null entry) (< hash number-of-buckets))
+                        (progn
+                          #+(or)(core:bformat t "Empty - incrementing hash%N")
+                          (incf hash)
+                          (if (< hash number-of-buckets)
+                              (go top))
+                          #+(or)(core:bformat t "a-h-t-i returning NIL%N")
+                          (return-from advance-hash-table-iterator nil))
+                        (progn
+                          #+(or)(core:bformat t "expr was nil entry -> %s%N" entry)
+                          (incf hash)
+                          (return-from advance-hash-table-iterator entry)))))))
       (function (lambda ()
         (if (>= hash number-of-buckets)
             nil
-            (progn
-              (advance-hash-table-iterator)
-              (when (< hash number-of-buckets)
-                (values t (caar cur-alist) (cdar cur-alist))))))))))
+            (let ((entry (advance-hash-table-iterator)))
+              #+(or)(core:bformat t " returned entry -> %s%N" entry)
+              (if entry
+                  (values t (car entry) (cdr entry))
+                  nil))))))))
 
 ;   "Substitute data of ALIST for subtrees matching keys of ALIST."
 (defun sublis (alist tree &key key (test #'eql) test-not)
