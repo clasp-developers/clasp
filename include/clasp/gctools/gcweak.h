@@ -283,7 +283,7 @@ typedef gctools::smart_ptr<core::T_O> BucketValueType;
 typedef gctools::Buckets<BucketValueType, BucketValueType, gctools::WeakLinks> WeakBucketsObjectType;
 typedef gctools::Buckets<BucketValueType, BucketValueType, gctools::StrongLinks> StrongBucketsObjectType;
 
-class WeakHashTable {
+class WeakKeyHashTable {
   friend class core::WeakKeyHashTable_O;
 
 public:
@@ -292,14 +292,14 @@ public:
   typedef StrongBucketsObjectType ValueBucketsType;
 
 public:
-  typedef WeakHashTable MyType;
+  typedef WeakKeyHashTable MyType;
 
 public:
   typedef gctools::GCBucketAllocator<KeyBucketsType> KeyBucketsAllocatorType;
   typedef gctools::GCBucketAllocator<ValueBucketsType> ValueBucketsAllocatorType;
 
 public:
-  int _Length;
+  size_t _Length;
   gctools::tagged_pointer<KeyBucketsType> _Keys;     // hash buckets for keys
   gctools::tagged_pointer<ValueBucketsType> _Values; // hash buckets for values
 #ifdef USE_MPS
@@ -309,7 +309,7 @@ public:
 #endif
 
 public:
- WeakHashTable(size_t length) : _Length(length) {};
+ WeakKeyHashTable(size_t length) : _Length(length) {};
   void initialize();
 public:
   static uint sxhashKey(const value_type &key
@@ -323,7 +323,7 @@ public:
 	  Return 1 if the element is found or an unbound or deleted entry is found.
 	  Return the entry index in (b)
 	*/
-  static int find(gctools::tagged_pointer<KeyBucketsType> keys, const value_type &key
+  static size_t find(gctools::tagged_pointer<KeyBucketsType> keys, const value_type &key
 #ifdef USE_MPS
                   ,
                   mps_ld_s *ldP
@@ -381,6 +381,117 @@ public:
 
   int rehash_not_safe(size_t newLength, const value_type &key, size_t &key_bucket);
   int rehash(size_t newLength, const value_type &key, size_t &key_bucket);
+  int trySet(core::T_sp tkey, core::T_sp value);
+
+  string dump(const string &prefix);
+
+  core::T_mv gethash(core::T_sp tkey, core::T_sp defaultValue);
+  void set(core::T_sp key, core::T_sp value);
+  void maphash(std::function<void(core::T_sp, core::T_sp)> const &fn);
+  void remhash(core::T_sp tkey);
+  void clrhash();
+};
+
+
+class StrongKeyHashTable {
+  friend class core::StrongKeyHashTable_O;
+
+public:
+  typedef BucketValueType value_type;
+  typedef StrongBucketsObjectType KeyBucketsType;
+  typedef StrongBucketsObjectType ValueBucketsType;
+
+public:
+  typedef StrongKeyHashTable MyType;
+
+public:
+  typedef gctools::GCBucketAllocator<KeyBucketsType> KeyBucketsAllocatorType;
+  typedef gctools::GCBucketAllocator<ValueBucketsType> ValueBucketsAllocatorType;
+
+public:
+  size_t    _Rehashes;
+  size_t    _Length;
+  gctools::tagged_pointer<KeyBucketsType> _Keys;     // hash buckets for keys
+  gctools::tagged_pointer<ValueBucketsType> _Values; // hash buckets for values
+#ifdef USE_MPS
+  mps_ld_s _LocationDependency;
+#else
+  BogusBoehmLocationDependencyTracker _LocationDependency; // Need to have a field here
+#endif
+
+public:
+  StrongKeyHashTable(size_t length) : _Rehashes(0), _Length(length) {};
+  void initialize();
+public:
+  static uint sxhashKey(const value_type &key
+#ifdef USE_MPS
+                        ,
+                        mps_ld_s *locationDependencyP
+#endif
+                        );
+
+  /*! Return 0 if there is no more room in the sequence of entries for the key
+	  Return 1 if the element is found or an unbound or deleted entry is found.
+	  Return the entry index in (b)
+	*/
+  static size_t find(gctools::tagged_pointer<KeyBucketsType> keys, const value_type &key
+#ifdef USE_MPS
+                  ,
+                  mps_ld_s *ldP
+#endif
+                  ,
+                  size_t &b
+#ifdef DEBUG_FIND
+                  ,
+                  bool debugFind = false, stringstream *reportP = NULL
+#endif
+                  );
+
+public:
+  size_t length() const {
+    if (!this->_Keys) {
+      throw_hard_error("Keys should never be null");
+    }
+    return this->_Keys->length();
+  }
+
+  void swap(MyType &other) {
+    gctools::tagged_pointer<KeyBucketsType> tempKeys = this->_Keys;
+    gctools::tagged_pointer<ValueBucketsType> tempValues = this->_Values;
+    this->_Keys = other._Keys;
+    this->_Values = other._Values;
+    other._Keys = tempKeys;
+    other._Values = tempValues;
+  }
+
+  bool fullp_not_safe() const {
+    bool fp;
+    fp = (*this->_Keys).used() >= (*this->_Keys).length()/2;
+    return fp;
+  }
+
+  bool fullp() const {
+    bool fp;
+    safeRun<void()>([&fp, this]() -> void {
+                    fp = (*this->_Keys).used() >= (*this->_Keys).length()/2;
+    });
+    return fp;
+  }
+
+  size_t tableSize() const {
+    size_t result;
+    safeRun<void()>([&result, this]() -> void {
+                    size_t used, deleted;
+                    used = this->_Keys->used();
+                    deleted = this->_Keys->deleted();
+                    GCTOOLS_ASSERT(used >= deleted);
+                    result = used - deleted;
+    });
+    return result;
+  }
+
+  size_t rehash_not_safe(size_t newLength, const value_type &key, size_t &key_bucket);
+  size_t rehash(size_t newLength, const value_type &key, size_t &key_bucket);
   int trySet(core::T_sp tkey, core::T_sp value);
 
   string dump(const string &prefix);
