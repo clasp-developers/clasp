@@ -31,7 +31,7 @@ THE SOFTWARE.
 // this is not set
 #define USE_STATIC_CAST_FOR_ENVIRONMENT 1
 
-//#define DEBUG_LEVEL_FULL
+#define DEBUG_LEVEL_FULL
 
 #include <string.h>
 
@@ -364,11 +364,11 @@ CL_DEFMETHOD T_mv Environment_O::localMetadata(Symbol_sp key) const {
 
 string Environment_O::__repr__() const {
   stringstream ss;
-  ss << "#<" << lisp_classNameAsString(cl__class_of(this->asSmartPtr())) ;
-#if 1
+  ss << "#<(" << lisp_classNameAsString(cl__class_of(this->asSmartPtr())) << "@" << ((void*)this->asSmartPtr().raw_()) ;
+#if 0
   int tab = gc::As<Fixnum_sp>(_sym_STARenvironmentPrintingTabSTAR->symbolValue()).unsafe_fixnum();
   {
-    ss << (BF("------------ %20s -----") % this->_instanceClass()->_classNameAsString() ).str() << std::endl;
+    ss << "-----------" << std::endl;
     tab += gc::As<Fixnum_sp>(_sym_STARenvironmentPrintingTabIncrementSTAR->symbolValue()).unsafe_fixnum();
     Fixnum_sp fntab = make_fixnum(tab);
     DynamicScopeManager scope(_sym_STARenvironmentPrintingTabSTAR,fntab);
@@ -378,7 +378,7 @@ string Environment_O::__repr__() const {
       ss << string(tab,' ') << " :parent ";
       ss << _rep_(this->getParentEnvironment());
     }
-    ss << string(tab,' ') << " ]" << std::endl;
+    ss << string(tab,' ') << " )" << std::endl;
   }
 #endif
   ss << ">";
@@ -950,7 +950,7 @@ bool ValueEnvironment_O::_findValue(T_sp sym, int &depth, int &index, bool& cros
       }
       valueKind = lexicalValue;
       env = this->asSmartPtr();
-      LOG(BF(" Found binding %s") % fi->second);
+      LOG(BF(" Found binding %s") % _rep_(entry));
       ValueFrame_sp vframe = this->_ActivationFrame;
       value = vframe->entry(index);
       return true;
@@ -1018,6 +1018,7 @@ CL_DEFUN ValueEnvironment_sp ValueEnvironment_O::createForNumberOfEntries(int nu
 
 CL_LISPIFY_NAME(makeValueEnvironmentForLocallySpecialEntries);
 CL_DEFUN ValueEnvironment_sp ValueEnvironment_O::createForLocallySpecialEntries(List_sp specials, T_sp parent) {
+  LOG(BF("specials -> %s parent -> %s\n") % _rep_(specials) % _rep_(parent));
   ValueEnvironment_sp env(ValueEnvironment_O::create());
   env->setupParent(parent);
   env->_Invisible = true; // What do we do with the activation frame?
@@ -1660,7 +1661,7 @@ bool MacroletEnvironment_O::_findMacro(Symbol_sp sym, int &depth, int &index, Fu
   if (fi.nilp()) {
     return this->Base::_findMacro(sym, depth, index, value);
   }
-  LOG(BF(" Found binding %s") % fi->second);
+  LOG(BF(" Found binding %s") % _rep_(fi));
   value = gc::As<Function_sp>(oCdr(fi));
   return true;
 }
@@ -1684,7 +1685,7 @@ bool SymbolMacroletEnvironment_O::_findSymbolMacro(Symbol_sp sym, int &depth, in
   if (fi.nilp()) {
     return this->Base::_findSymbolMacro(sym, depth, index, shadowed, value);
   }
-  LOG(BF(" Found binding %s") % fi->second);
+  LOG(BF(" Found binding %s") % _rep_(fi));
   value = gc::As<Function_sp>(oCdr(fi));
   shadowed = false;
   return true;
