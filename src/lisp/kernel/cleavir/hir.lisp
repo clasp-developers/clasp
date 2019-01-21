@@ -369,6 +369,9 @@
     :index index
     :original-object original-object))
 
+(defgeneric precalc-value-instruction-p (instruction)
+  (:method ((instruction t)) nil)
+  (:method ((instruction precalc-value-instruction)) t))
 
 (defun escaped-string (str)
   (with-output-to-string (s) (loop for c across str do (when (member c '(#\\ #\")) (princ #\\ s)) (princ c s))))
