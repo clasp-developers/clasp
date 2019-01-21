@@ -519,34 +519,36 @@ precalculated-vector and returns the index."
 (defclass multiple-value-invoke-ast (cleavir-ast:multiple-value-call-ast)
   ((%destinations :accessor destinations :initarg :destinations)))
 
-(defvar *invocation-context*)
+;;; Let's get rid of *invocation-context* and pass it as an argument
+;;;(defvar *invocation-context*)
 
 (defun introduce-invoke (ast)
   (let ((visitedp (make-hash-table :test #'eq)))
-    (labels ((introduce-invoke-aux (ast)
+    (labels ((introduce-invoke-aux (ast invocation-context)
                (unless (gethash ast visitedp)
                  (setf (gethash ast visitedp) t)
-                 (let ((new-context *invocation-context*))
+                 (let ((new-context invocation-context))
                    (typecase ast
                      (cleavir-ast:block-ast (push ast new-context))
                      (cleavir-ast:tagbody-ast
                       (loop for item in (cleavir-ast:item-asts ast)
-                            when (typep item 'cleavir-ast:tag-ast)
+                            when (cleavir-ast:tag-ast-p item)
                               do (push item new-context)))
                      (cleavir-ast:function-ast
                       ;; Another level down, so reset.
                       (setf new-context nil))
                      (cleavir-ast:call-ast ; Mark, if it could unwind here.
-                      (unless (null *invocation-context*)
+                      (unless (null invocation-context)
                         (change-class ast 'clasp-cleavir-ast:invoke-ast
-                                      :destinations *invocation-context*)))
+                                      :destinations invocation-context)))
                      (cleavir-ast:multiple-value-call-ast
-                      (unless (null *invocation-context*)
+                      (unless (null invocation-context)
                         (change-class ast 'clasp-cleavir-ast:multiple-value-invoke-ast
-                                      :destinations *invocation-context*))))
+                                      :destinations invocation-context))))
                    ;; Recur.
-                   (let ((*invocation-context* new-context))
-                     (mapc #'introduce-invoke-aux (cleavir-ast:children ast)))))
+                   (let ((invocation-context new-context))
+                     (mapc (lambda (child-ast) (introduce-invoke-aux child-ast invocation-context))
+                           (cleavir-ast:children ast)))))
                (values)))
-      (let ((*invocation-context* nil))
-        (introduce-invoke-aux ast)))))
+      (let ((invocation-context nil))
+        (introduce-invoke-aux ast invocation-context)))))
