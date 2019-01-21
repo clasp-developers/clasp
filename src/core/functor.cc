@@ -185,6 +185,17 @@ ClosureWithSlots_sp ClosureWithSlots_O::make_cclasp_closure(T_sp name, claspFunc
   return closure;
 }
 
+T_sp ClosureWithSlots_O::interpretedSourceCode() {
+  if (this->closureType==interpretedClosure) {
+    return (*this)[INTERPRETED_CLOSURE_FORM_SLOT];
+  };
+  SIMPLE_ERROR(BF("Source code is only available for interpreted functions"));
+}
+
+CL_DEFUN T_mv core__interpreted_closure_form(ClosureWithSlots_sp func) {
+  return Values(func->interpretedSourceCode(),func->closedEnvironment());
+}
+
 CL_DEFUN Integer_sp core__interpreted_closure_calls() {
   return Integer_O::create((Fixnum)global_interpreted_closure_calls);
 }
@@ -352,10 +363,12 @@ CL_DEFUN void core__closure_slots_dump(Closure_sp closure) {
   for ( int i=0; i<nslots; ++i ) {
     printf("    Slot[%d] --> %s\n", i, _rep_(core__closure_ref(closure,i)).c_str());
   }
-  SourcePosInfo_sp spi = gc::As<SourcePosInfo_sp>(closure->sourcePosInfo());
-  T_mv tsfi = core__source_file_info(spi);
-  if ( SourceFileInfo_sp sfi = tsfi.asOrNull<SourceFileInfo_O>() ) {
-    printf("Closure source: %s:%d\n", sfi->namestring().c_str(), spi->lineno() );
+  if (!closure->interpretedP()) {
+    SourcePosInfo_sp spi = gc::As<SourcePosInfo_sp>(closure->sourcePosInfo());
+    T_mv tsfi = core__source_file_info(spi);
+    if ( SourceFileInfo_sp sfi = tsfi.asOrNull<SourceFileInfo_O>() ) {
+      printf("Closure source: %s:%d\n", sfi->namestring().c_str(), spi->lineno() );
+    }
   }
 }
 

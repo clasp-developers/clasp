@@ -311,6 +311,7 @@ namespace core {
           return _Nil<T_O>();
       };
     }
+    T_sp interpretedSourceCode();
     CL_DEFMETHOD T_sp closedEnvironment() const {
       ASSERT(this->closureType!=cclaspClosure); // Never call on a cclaspClosure
       return (*this)[ENVIRONMENT_SLOT];
