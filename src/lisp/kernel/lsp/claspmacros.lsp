@@ -155,6 +155,14 @@
       (core:str-w-ns (intrinsic-call "StrWNs_get" str idx)))))
 
 
+(defmacro with-metrics-message ((message) &body body)
+  `(unwind-protect
+        (progn
+          (core:monitor-write (core:bformat nil "{{{ %s%N" ,message))
+          ,@body)
+     (core:monitor-write (core:bformat nil "}}} ;;; %s%N" ,message))))
+
+(export 'with-metrics-message)
 
 #|
 (core:bclasp-define-compiler-macro new-apply (function-desig &rest args)
