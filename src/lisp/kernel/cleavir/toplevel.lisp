@@ -45,14 +45,16 @@
            (when *dump-eval-compile*
              (let ((*print-pretty* nil))
              (format *debug-io* "toplevel form to cmpl: ~s~%" form)))
-           (let* ((start-time (get-universal-time))
-                  (thunk (cclasp-compile-in-env nil
-                                                ;; PROGN is needed to avoid processing DECLARE as a declaration
-                                                `(lambda () (progn ,form)) env))
-                  (end-time (get-universal-time)))
-             (when *dump-eval-compile*
-               (format *debug-io* "toplevel time: ~7,3f us~%" (* (/ (float (- end-time start-time)) internal-time-units-per-second) 1000000.0)))
-             (run-thunk thunk))))
+           (if nil  #+(or)(or (null env) (eq env clasp-cleavir::*clasp-env*))
+               (core:interpret form nil)
+               (let* ((start-time (get-universal-time))
+                      (thunk (cclasp-compile-in-env nil
+                                                    ;; PROGN is needed to avoid processing DECLARE as a declaration
+                                                    `(lambda () (progn ,form)) env))
+                      (end-time (get-universal-time)))
+                 (when *dump-eval-compile*
+                   (format *debug-io* "toplevel time: ~7,3f us~%" (* (/ (float (- end-time start-time)) internal-time-units-per-second) 1000000.0)))
+                 (run-thunk thunk)))))
     (let ((form (macroexpand form env)))
       (typecase form
         (symbol (symbol-value form))
