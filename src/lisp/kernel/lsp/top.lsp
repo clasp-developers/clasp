@@ -38,7 +38,7 @@
 (defparameter *tpl-continuable* t)
 (defparameter *tpl-prompt-hook* nil)
 (defparameter *eof* (cons nil nil))
-
+(defvar *backtrace*)
 (defparameter *last-error* nil)
 
 (defparameter *break-message* nil)
@@ -975,7 +975,7 @@ Use special code 0 to cancel this operation.")
   (core:btcl))
 
 (defun tpl-backtrace (&optional n)
-  (clasp-backtrace n)
+  (core:dump-backtrace *backtrace*)
   (values))
 
 #+(or)
@@ -1289,8 +1289,8 @@ package."
       ;; As of ECL 9.4.1 making a normal function return from the debugger
       ;; seems to be a very bad idea! Basically, it dumps core...
       (ignore-errors
-        (when (listen *debug-io*)
-          (clear-input *debug-io*)))
+       (when (listen *debug-io*)
+         (clear-input *debug-io*)))
       ;; Like in SBCL, the error message is output through *error-output*
       ;; The rest of the interaction is performed through *debug-io*
       (ignore-errors (finish-output))
@@ -1298,19 +1298,22 @@ package."
       ;; caused by writing to the `*error-output*', what leads to
       ;; infinite recursion!
       (ignore-errors
-        (fresh-line *error-output*)
-        (terpri *error-output*)
-        (princ *break-message* *error-output*))
+       (fresh-line *error-output*)
+       (terpri *error-output*)
+       (princ *break-message* *error-output*))
       (loop
-	 ;; Here we show a list of restarts and invoke the toplevel with
-	 ;; an extended set of commands which includes invoking the associated
-	 ;; restarts.
-	 (let* ((restart-commands (compute-restart-commands condition :display t))
-		(debug-commands
+	;; Here we show a list of restarts and invoke the toplevel with
+	;; an extended set of commands which includes invoking the associated
+	;; restarts.
+	(let* ((restart-commands (compute-restart-commands condition :display t))
+	       (debug-commands
 		 ;;(adjoin restart-commands (adjoin break-commands *tpl-commands*))
 		 (update-debug-commands restart-commands)
-		  ))
-	   (tpl :commands debug-commands))))))
+		 ))
+          (core:call-with-backtrace
+           (lambda (backtrace)
+             (let ((*backtrace* backtrace))
+	       (tpl :commands debug-commands)))))))))
 
 (defun invoke-debugger (condition)
   ;; call *INVOKE-DEBUGGER-HOOK* first, so that *DEBUGGER-HOOK* is not
