@@ -311,8 +311,8 @@ BUILTIN_ATTRIBUTES core::T_O *cc_fetch(core::T_O *tagged_closure, std::size_t id
 
 BUILTIN_ATTRIBUTES core::T_O *cc_readCell(core::T_O *cell)
 {
-  core::Cons_O* cp = reinterpret_cast<core::Cons_O*>(gctools::untag_cons(cell));
-  return cp->_Car.raw_();
+  core::Cons_sp cp((gctools::Tagged)cell);
+  return CONS_CAR(cp).raw_();
 }
 
 BUILTIN_ATTRIBUTES core::T_O* cc_builtin_nil()

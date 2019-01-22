@@ -683,8 +683,9 @@ bool HashTable_O::contains(T_sp key) {
 bool HashTable_O::remhash(T_sp key) {
   HT_WRITE_LOCK(this);
   List_sp keyValuePair = this->tableRef_no_read_lock( key, true /*under_write_lock*/ );
-  if (keyValuePair.notnilp()) {
-    CONS_CAR(keyValuePair) = _Deleted<T_O>();
+  if (keyValuePair.consp()) {
+    Cons_sp pair = gc::As_unsafe<Cons_sp>(keyValuePair);
+    pair->rplaca(_Deleted<T_O>());
     this->_HashTableCount--;
     VERIFY_HASH_TABLE_COUNT(this);
     return true;
@@ -697,8 +698,9 @@ T_sp HashTable_O::setf_gethash_no_write_lock(T_sp key, T_sp value)
 {
   List_sp keyValuePair = this->tableRef_no_read_lock( key, true /*under_write_lock*/);
   if (keyValuePair.consp()) {
+    Cons_sp pair = gc::As_unsafe<Cons_sp>(keyValuePair);
     // rewrite value
-    CONS_CDR(keyValuePair) = value;
+    pair->rplacd(value);
     VERIFY_HASH_TABLE_COUNT(this);
     return value;
   }
