@@ -549,7 +549,7 @@ bool Instance_O::isSubClassOf(Instance_sp ancestor) const {
 void Instance_O::addInstanceBaseClassDoNotCalculateClassPrecedenceList(Symbol_sp className) {
   Instance_sp cl;
   if (!(cl::_sym_findClass) || !cl::_sym_findClass->fboundp()) {
-    cl = cl__find_class(className);
+    cl = gc::As<Instance_sp>(cl__find_class(className));
   } else {
     cl = gc::As<Instance_sp>(eval::funcall(cl::_sym_findClass, className, _lisp->_true()));
   }

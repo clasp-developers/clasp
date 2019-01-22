@@ -1784,7 +1784,7 @@ CL_DOCSTRING("find-class");
 CL_DEFUN T_sp cl__find_class(Symbol_sp symbol, bool errorp, T_sp env) {
   ASSERTF(env.nilp(), BF("Handle non nil environment"));
 //  ClassReadLock _guard(_lisp->_Roots._ClassTableMutex);
-  T_sp cell = ext__find_class_holder(symbol,errorp,env);
+  T_sp cell = core__find_class_holder(symbol,errorp,env);
   if (cell.notnilp()) {
     ClassHolder_sp ch = gc::As_unsafe<ClassHolder_sp>(cell);
     if (ch->class_unboundp()) {
@@ -1821,13 +1821,13 @@ CL_DEFUN T_sp core__setf_find_class(T_sp newValue, Symbol_sp name) {
       return _Nil<T_O>();
     }
       // Replace the class in the CAR of the cell
-    cell->class_set(newValue);
+    cell->class_set(gc::As_unsafe<Instance_sp>(newValue));
     return newValue;
   }
     // tcell is NIL
   if (newValue.notnilp()) {
       // newValue is not NIL
-    ClassHolder_sp cell = ClassHolder_O::create(newValue);
+    ClassHolder_sp cell = ClassHolder_O::create(gc::As_unsafe<Instance_sp>(newValue));
     ht->hash_table_setf_gethash(name, cell);
   }
   return newValue;
