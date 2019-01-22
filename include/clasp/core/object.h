@@ -610,6 +610,27 @@ namespace core {
 };
 
 
+namespace core {
+SMART(AtomicT_Holder);
+class AtomicT_Holder_O : public core::General_O {
+  LISP_CLASS(core, CorePkg, AtomicT_Holder_O, "AtomicT_Holder",core::General_O);
+public:
+  static AtomicT_Holder_sp create(T_sp cl) {
+    GC_ALLOCATE_VARIADIC(AtomicT_Holder_O,ch,cl);
+    return ch;
+  }
+  std::atomic<T_sp> _Object;
+public:
+  bool object_unboundp() const;
+  T_sp object_get() const;
+  void object_set(T_sp cl);
+  void object_makunbound();
+  
+  explicit AtomicT_Holder_O(T_sp c) : _Object(c) {};
+};
+};
+
+
 #include <clasp/core/glue.h>
 
 
