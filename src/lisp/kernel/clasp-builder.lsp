@@ -202,9 +202,10 @@ Return files."
                    :print print
                    :verbose verbose
                    :unique-symbol-prefix (format nil "~a~a" (pathname-name source-path) position)
-                   :image-startup-position position
                    :type :kernel
-                   (entry-compile-file-options entry))
+                   (if position
+                       (list* :image-startup-position position (entry-compile-file-options entry))
+                       (entry-compile-file-options entry)))
             (if reload
                 (let ((reload-file (make-pathname :type "fasl" :defaults output-path)))
 		  (unless silent
