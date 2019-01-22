@@ -116,16 +116,18 @@ when this is t a lot of graphs will be generated.")
     (= (length defs) 1)))
 
 (defun in (datum &optional (label ""))
-  (etypecase datum
-    (cleavir-ir:immediate-input
+  (cond
+    ((cleavir-ir:immediate-input-p datum)
      (cmp:irc-int-to-ptr (%i64 (cleavir-ir:value datum)) cmp:%t*%))
-    (cleavir-ir:lexical-location
+    ((cleavir-ir:lexical-location-p datum)
      (let ((existing (gethash datum *vars*)))
        (if (null existing)
            (error "BUG: Input ~a not previously defined" datum)
            (if (ssablep datum)
                existing
-               (%load existing label)))))))
+               (%load existing label)))))
+    (t (error "datum ~s must be an immediate-input or lexical-location"
+              datum))))
 
 (defun out (value datum &optional (label ""))
   (if (ssablep datum)

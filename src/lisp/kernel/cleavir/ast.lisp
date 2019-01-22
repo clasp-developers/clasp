@@ -528,20 +528,20 @@ precalculated-vector and returns the index."
                (unless (gethash ast visitedp)
                  (setf (gethash ast visitedp) t)
                  (let ((new-context invocation-context))
-                   (typecase ast
-                     (cleavir-ast:block-ast (push ast new-context))
-                     (cleavir-ast:tagbody-ast
+                   (cond
+                     ((cleavir-ast:block-ast-p ast) (push ast new-context))
+                     ((cleavir-ast:tagbody-ast-p ast)
                       (loop for item in (cleavir-ast:item-asts ast)
                             when (cleavir-ast:tag-ast-p item)
                               do (push item new-context)))
-                     (cleavir-ast:function-ast
+                     ((cleavir-ast:function-ast-p ast)
                       ;; Another level down, so reset.
                       (setf new-context nil))
-                     (cleavir-ast:call-ast ; Mark, if it could unwind here.
+                     ((cleavir-ast:call-ast-p ast) ; Mark, if it could unwind here.
                       (unless (null invocation-context)
                         (change-class ast 'clasp-cleavir-ast:invoke-ast
                                       :destinations invocation-context)))
-                     (cleavir-ast:multiple-value-call-ast
+                     ((cleavir-ast:multiple-value-call-ast-p ast)
                       (unless (null invocation-context)
                         (change-class ast 'clasp-cleavir-ast:multiple-value-invoke-ast
                                       :destinations invocation-context))))
