@@ -962,7 +962,7 @@ CL_DEFUN Pathname_sp core__safe_default_pathname_defaults_host_only(void) {
   return res;
 }
 
-static int global_pathname_recursion_guard = 0;
+static std::atomic<size_t> global_pathname_recursion_guard;
 struct PathnameRecursionGuard {
   PathnameRecursionGuard() {
     ++global_pathname_recursion_guard;
