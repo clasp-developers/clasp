@@ -190,6 +190,7 @@ Lisp_O::GCRoots::GCRoots() :
   _DefaultSpecialBindings(_Nil<T_O>()),
   _DefaultSpecialBindingsMutex(SPCLBIND_NAMEWORD),
   _SyspropMutex(SYSPROC__NAMEWORD),
+  _ClassTableMutex(CLASSTBL_NAMEWORD),
   _SourceFilesMutex(SRCFILES_NAMEWORD),
   _PackagesMutex(PKGSMUTX_NAMEWORD),
   _SingleDispatchGenericFunctionHashTableEqualMutex(SINGDISP_NAMEWORD),
@@ -1752,20 +1753,20 @@ CL_DEFUN T_sp core__lookup_class_with_stamp(Fixnum stamp) {
 
 CL_LAMBDA(symbol &optional (errorp t) env);
 CL_DECLARE();
-CL_DOCSTRING("find-class");
-CL_DEFUN T_sp cl__find_class(Symbol_sp symbol, bool errorp, T_sp env) {
+CL_DOCSTRING("Return the class holder that contains the class.");
+CL_DEFUN T_sp ext__find_class_holder(Symbol_sp symbol, bool errorp, T_sp env) {
   ASSERTF(env.nilp(), BF("Handle non nil environment"));
   // Should only be single threaded here
   if (_lisp->bootClassTableIsValid()) {
-    return Values(_lisp->boot_findClass(symbol, errorp));
+    return _lisp->boot_findClassHolder(symbol, errorp);
   }
   // Use the same global variable that ECL uses
   bool foundp;
-  T_sp cla;
+  T_sp cell;
   {
     HashTable_sp classNames = _lisp->_Roots._ClassTable;
     T_mv mc = classNames->gethash(symbol, _Nil<T_O>());
-    cla = mc;
+    cell = mc;
     foundp = mc.valueGet_(1).notnilp();
   }
   if (!foundp) {
@@ -1774,7 +1775,27 @@ CL_DEFUN T_sp cl__find_class(Symbol_sp symbol, bool errorp, T_sp env) {
     }
     return _Nil<T_O>();
   }
-  return cla;
+  return cell;
+}
+
+CL_LAMBDA(symbol &optional (errorp t) env);
+CL_DECLARE();
+CL_DOCSTRING("find-class");
+CL_DEFUN T_sp cl__find_class(Symbol_sp symbol, bool errorp, T_sp env) {
+  ASSERTF(env.nilp(), BF("Handle non nil environment"));
+//  ClassReadLock _guard(_lisp->_Roots._ClassTableMutex);
+  T_sp cell = ext__find_class_holder(symbol,errorp,env);
+  if (cell.notnilp()) {
+    ClassHolder_sp ch = gc::As_unsafe<ClassHolder_sp>(cell);
+    if (ch->class_unboundp()) {
+      if (errorp) {
+        ERROR(ext::_sym_undefinedClass, Cons_O::createList(kw::_sym_name, symbol));
+      }
+      return _Nil<T_O>();
+    }
+    return ch->class_get();
+  }
+  return cell;
 }
 
 CL_LAMBDA(new-value name);
@@ -1788,29 +1809,39 @@ CL_DEFUN T_sp core__setf_find_class(T_sp newValue, Symbol_sp name) {
     if (newValue.nilp()) {
       printf("%s:%d Trying to (setf-find-class nil %s) when bootClassTableIsValid (while boostrapping)\n", __FILE__, __LINE__, _rep_(name).c_str());
     }
-    return Values(_lisp->boot_setf_findClass(name, gc::As<Instance_sp>(newValue)));
+    return _lisp->boot_setf_findClass(name, gc::As<Instance_sp>(newValue));
   }
-  {
-    HashTable_sp ht = _lisp->_Roots._ClassTable;
-    T_sp oldClass = ht->gethash(name,ht);
+//  ClassWriteLock _guard(_lisp->_Roots._ClassTableMutex);
+  HashTable_sp ht = _lisp->_Roots._ClassTable;
+  T_sp tcell = ht->gethash(name,_Nil<T_O>());
+  if (tcell.notnilp()) {
+    ClassHolder_sp cell = gc::As_unsafe<ClassHolder_sp>(tcell);
     if (newValue.nilp()) {
-      if (oldClass.notnilp()) ht->remhash(name);
-    } else {
-      ht->hash_table_setf_gethash(name, newValue);
+      cell->class_mkunbound();
+      return _Nil<T_O>();
     }
+      // Replace the class in the CAR of the cell
+    cell->class_set(newValue);
     return newValue;
   }
+    // tcell is NIL
+  if (newValue.notnilp()) {
+      // newValue is not NIL
+    ClassHolder_sp cell = ClassHolder_O::create(newValue);
+    ht->hash_table_setf_gethash(name, cell);
+  }
+  return newValue;
 };
 
 CL_LAMBDA(partialPath);
 CL_DECLARE();
 CL_DOCSTRING("findFileInLispPath");
-CL_DEFUN T_mv core__find_file_in_lisp_path(String_sp partialPath) {
+CL_DEFUN T_sp core__find_file_in_lisp_path(String_sp partialPath) {
   ASSERT(cl__stringp(partialPath));
   LOG(BF("PartialPath=[%s]") % partialPath->get());
   Path_sp fullPath = _lisp->translateLogicalPathnameUsingPaths(partialPath);
   LOG(BF("fullPath is %s") % fullPath->asString());
-  return (Values(fullPath));
+  return fullPath;
 }
 
 CL_LAMBDA(name-desig);
@@ -2266,23 +2297,23 @@ Instance_sp Lisp_O::boot_setf_findClass(Symbol_sp className, Instance_sp mc) {
 //    printf("%s:%d    boot_setf_findClass for %s\n", __FILE__, __LINE__, _rep_(className).c_str());
   for (auto it = this->_Roots.bootClassTable.begin(); it != this->_Roots.bootClassTable.end(); ++it) {
     if (it->symbol == className) {
-      it->theClass = mc;
+      it->theClassHolder->class_set(mc);
       return mc;
     }
   }
-  SymbolClassPair sc(className, mc);
+  SymbolClassHolderPair sc(className, ClassHolder_O::create(mc));
   this->_Roots.bootClassTable.push_back(sc);
   return mc;
 }
 
-Instance_sp Lisp_O::boot_findClass(Symbol_sp className, bool errorp) const {
+T_sp Lisp_O::boot_findClassHolder(Symbol_sp className, bool errorp) const {
   ASSERTF(this->_BootClassTableIsValid,
           BF("Never use Lisp_O::findClass after boot - use cl::_sym_findClass"));
   for (auto it = this->_Roots.bootClassTable.begin(); it != this->_Roots.bootClassTable.end(); ++it) {
     if (it->symbol == className)
-      return it->theClass;
+      return it->theClassHolder;
   }
-  return _Nil<Instance_O>();
+  return _Nil<T_O>();
 }
 
 /*! After the core classes are defined and we have hash-tables, move all class definitions
@@ -2293,7 +2324,7 @@ void Lisp_O::switchToClassNameHashTable() {
   ASSERTF(this->_BootClassTableIsValid, BF("switchToClassNameHashTable should only be called once after boot"));
   HashTable_sp ht = _lisp->_Roots._ClassTable;
   for (auto it = this->_Roots.bootClassTable.begin(); it != this->_Roots.bootClassTable.end(); ++it) {
-    ht->hash_table_setf_gethash(it->symbol, it->theClass);
+    ht->hash_table_setf_gethash(it->symbol, it->theClassHolder);
   }
   this->_Roots.bootClassTable.clear();
   this->_BootClassTableIsValid = false;

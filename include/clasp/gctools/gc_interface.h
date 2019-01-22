@@ -58,7 +58,7 @@ namespace clbind {
 namespace core {
   class KeywordArgument;
   class RequiredArgument;
-  class SymbolClassPair;
+  class SymbolClassHolderPair;
   class SymbolStorage;
   class TranslationFunctor_O;
   class DynamicBinding;

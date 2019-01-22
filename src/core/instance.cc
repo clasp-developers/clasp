@@ -549,7 +549,7 @@ bool Instance_O::isSubClassOf(Instance_sp ancestor) const {
 void Instance_O::addInstanceBaseClassDoNotCalculateClassPrecedenceList(Symbol_sp className) {
   Instance_sp cl;
   if (!(cl::_sym_findClass) || !cl::_sym_findClass->fboundp()) {
-    cl = _lisp->boot_findClass(className,true);
+    cl = cl__find_class(className);
   } else {
     cl = gc::As<Instance_sp>(eval::funcall(cl::_sym_findClass, className, _lisp->_true()));
   }
@@ -695,6 +695,19 @@ ClassWriteLock::~ClassWriteLock() {
   this->_Lock->write_unlock();
 }
 
+
+CL_DEFMETHOD Instance_sp ClassHolder_O::class_get() const { return this->_Class.load(); };
+CL_DEFMETHOD void ClassHolder_O::class_set(Instance_sp cl) { this->_Class.store(cl); };
+void ClassHolder_O::class_mkunbound() { this->_Class.store(_Unbound<Instance_O>()); };
+bool ClassHolder_O::class_unboundp() const { return this->_Class.load().unboundp();};
+
+CL_DEFUN Instance_sp ext__class_get(ClassHolder_sp holder) {
+  return holder->class_get();
+}
+
+CL_DEFUN bool ext__class_unboundp(ClassHolder_sp holder) {
+  return holder->class_unboundp();
+}
 
 
 
