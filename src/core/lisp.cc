@@ -1754,7 +1754,7 @@ CL_DEFUN T_sp core__lookup_class_with_stamp(Fixnum stamp) {
 CL_LAMBDA(symbol &optional (errorp t) env);
 CL_DECLARE();
 CL_DOCSTRING("Return the class holder that contains the class.");
-CL_DEFUN T_sp ext__find_class_holder(Symbol_sp symbol, bool errorp, T_sp env) {
+CL_DEFUN T_sp core__find_class_holder(Symbol_sp symbol, bool errorp, T_sp env) {
   ASSERTF(env.nilp(), BF("Handle non nil environment"));
   // Should only be single threaded here
   if (_lisp->bootClassTableIsValid()) {
