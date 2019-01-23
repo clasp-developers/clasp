@@ -399,17 +399,11 @@ LtvcReturn ltvc_make_random_state(gctools::GCRootsInModule* holder, size_t index
 }
 
 
-LtvcReturn ltvc_make_built_in_class(gctools::GCRootsInModule* holder, size_t index, gctools::Tagged class_name_t )
-{NO_UNWIND_BEGIN();
+LtvcReturn ltvc_find_class(gctools::GCRootsInModule* holder, size_t index, gctools::Tagged class_name_t )
+{
   core::Symbol_sp class_name(class_name_t);
   core::T_sp cl = core::cl__find_class(class_name, true, _Nil<core::T_O>());
-  if ( cl.nilp() ) {
-    SIMPLE_ERROR(BF("Could not find class %s") % class_name );
-  } else {
-    core::T_sp val = cl;
-    LTVCRETURN holder->set(index,val.tagged_());
-  }
-  NO_UNWIND_END();
+  LTVCRETURN holder->set(index,cl.tagged_());
 }
 
 

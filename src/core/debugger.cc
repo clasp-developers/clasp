@@ -275,7 +275,10 @@ struct DebugInfo {
   std::map<uintptr_t,StackMapRange> _StackMaps;
   mp::SharedMutex                   _JittedObjectsLock;
   std::vector<JittedObject>         _JittedObjects;
-  DebugInfo() {};
+  DebugInfo() : _OpenDynamicLibraryMutex(OPENDYLB_NAMEWORD),
+                _StackMapsLock(STCKMAPS_NAMEWORD),
+                _JittedObjectsLock(JITDOBJS_NAMEWORD)
+  {};
 };
 
 DebugInfo* global_DebugInfo = NULL;
@@ -2181,6 +2184,10 @@ __attribute__((optnone)) std::string dbg_safe_repr(uintptr_t raw) {
     return ss.str().substr(0,512);
   }
   return ss.str();
+}
+
+string _safe_rep_(core::T_sp obj) {
+  return dbg_safe_repr((uintptr_t)obj.raw_());
 }
 
 void dbg_safe_print(uintptr_t raw) {

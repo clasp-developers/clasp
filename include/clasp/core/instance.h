@@ -265,4 +265,26 @@ namespace core {
 
 };
 
+
+
+
+namespace core {
+SMART(ClassHolder);
+class ClassHolder_O : public core::General_O {
+  LISP_CLASS(core, CorePkg, ClassHolder_O, "ClassHolder",core::General_O);
+public:
+  static ClassHolder_sp create(Instance_sp cl) {
+    GC_ALLOCATE_VARIADIC(ClassHolder_O,ch,cl);
+    return ch;
+  }
+  std::atomic<Instance_sp> _Class;
+public:
+  bool class_unboundp() const;
+  Instance_sp class_get() const;
+  void class_set(Instance_sp cl);
+  void class_mkunbound();
+  explicit ClassHolder_O(Instance_sp c) : _Class(c) {};
+};
+};
+
 #endif /* _core_instance_H_ */

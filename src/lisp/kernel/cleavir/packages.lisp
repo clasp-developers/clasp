@@ -123,7 +123,7 @@
    #:make-setf-fdefinition-instruction
    #:make-throw-instruction
    #:lambda-name
-   #:precalc-value-instruction
+   #:precalc-value-instruction #:precalc-value-instruction-p
    #:debug-message
    #:debug-break
    #:setf-fdefinition-instruction

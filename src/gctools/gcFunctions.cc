@@ -902,6 +902,7 @@ CL_DEFUN void gctools__debug_allocations(core::T_sp debugOn) {
 };
 
 bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& ss) {
+  bool metrics_file = false;
   core::List_sp features = cl::_sym_STARfeaturesSTAR->symbolValue();
   bool debugging = false;
   bool use_boehm_memory_marker = false;
@@ -1097,6 +1098,9 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
  
  bool debug_rehash_count = false;
 #ifdef DEBUG_REHASH_COUNT
+ #ifndef DEBUG_MONITOR
+   #error "DEBUG_MONITOR must also be enabled if DEBUG_REHASH_COUNT is turned on"
+ #endif
   debug_rehash_count = true;
   debugging = true;
   if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-REHASH_COUNT"),features);
@@ -1283,7 +1287,7 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   // The cl:*features* environment variable is set below - so all changes to (features) must be above
   //
   if (setFeatures) cl::_sym_STARfeaturesSTAR->setf_symbolValue(features);
-  
+
   // ---- return with the debugging flag
   return debugging;
 }

@@ -1512,6 +1512,7 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
    Pass XXXX as the sym to this function."
   (irc-load (literal:compile-reference-to-literal sym)))
 
+#+(or)
 (defun irc-symbol-value-ref (env sym)
   "Return a reference to the symbol-value"
   (irc-intrinsic "symbolValueReference" (irc-global-symbol sym env)))

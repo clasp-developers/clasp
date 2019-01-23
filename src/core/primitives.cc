@@ -124,6 +124,11 @@ CL_DEFUN T_sp cl__sleep(Real_sp oseconds) {
 }
 
 
+CL_DEFUN void core__monitor_write(T_sp message)
+{
+  MONITOR(BF("%s") % _rep_(message));
+}
+
 CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("A list of all symbols defined in C++");
@@ -1429,7 +1434,7 @@ CL_DEFUN Symbol_sp cl__gensym(T_sp x) {
     StringPushString(ss,sx);
     core__integer_to_string(ss,gc::As<Integer_sp>(cl::_sym_STARgensym_counterSTAR->symbolValue()),clasp_make_fixnum(10));
     // If and only if no explicit suffix is supplied, *gensym-counter* is incremented after it is used.
-    Integer_sp counter = cl::_sym_STARgensym_counterSTAR->symbolValue();
+    Integer_sp counter = gc::As<Integer_sp>(cl::_sym_STARgensym_counterSTAR->symbolValue());
     if (clasp_minusp(counter))
       TYPE_ERROR(counter,cl::_sym_UnsignedByte);
     if (counter.fixnump()) {
@@ -1441,14 +1446,14 @@ CL_DEFUN Symbol_sp cl__gensym(T_sp x) {
     } else {
       // counter must be a bignum, positive
       // still need to increase the bignum by 1
-      counter = clasp_one_plus(counter);
+      counter = gc::As_unsafe<Integer_sp>(clasp_one_plus(counter));
       cl::_sym_STARgensym_counterSTAR->setf_symbolValue(counter);
     }
     Symbol_sp sym = Symbol_O::create(ss->asMinimalSimpleString());
     sym->setPackage(_Nil<T_O>());
     return sym;
   }
-  if ((x.fixnump() || gc::IsA<Integer_sp>(x)) && (!(clasp_minusp(x)))) {
+  if ((x.fixnump() || gc::IsA<Integer_sp>(x)) && (!(clasp_minusp(gc::As_unsafe<Integer_sp>(x))))) {
     SafeBufferStr8Ns ss;
     ss.string()->vectorPushExtend_claspChar('G');
     core__integer_to_string(ss.string(),gc::As_unsafe<Integer_sp>(x),clasp_make_fixnum(10));

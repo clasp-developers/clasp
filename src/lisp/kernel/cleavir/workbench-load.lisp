@@ -38,5 +38,4 @@
 ;;; Start cleavir
 (start-cleavir)
 
-(in-package :literal)
-
+(clasp-cleavir:cleavir-compile-file "sys:kernel;lsp;foundation.lsp")

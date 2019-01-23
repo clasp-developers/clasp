@@ -142,6 +142,42 @@ core::Symbol_sp lisp_classSymbolFromClassId(class_id cid) {
 
 namespace core {
 
+union NW {
+  uint64_t  word;
+  char name[8];
+};
+
+uint64_t lisp_nameword(core::T_sp name)
+{
+  NW nw;
+  if (gc::IsA<String_sp>(name)) {
+    String_sp sname = gc::As_unsafe<String_sp>(name);
+    size_t i = 0;
+    size_t iEnd(std::min((size_t)sname->length(),(size_t)8));
+    for ( ; i<iEnd; ++i ) {
+      nw.name[i] = sname->rowMajorAref(i).unsafe_character();
+    }
+    for ( size_t is = i; is<7; ++is ) nw.name[is] = ' ';
+    nw.name[7] = '\0';
+    return nw.word;
+  } else if (gc::IsA<Symbol_sp>(name)) {
+    if (name.nilp()) {
+      SIMPLE_ERROR(BF("The name must not be NIL"));
+    }
+    String_sp sname = gc::As_unsafe<Symbol_sp>(name)->symbolName();
+    size_t i = 0;
+    size_t iEnd(std::min((size_t)sname->length(),(size_t)8));
+    for ( ; i<iEnd; ++i ) {
+      nw.name[i] = sname->rowMajorAref(i).unsafe_character();
+    }
+    for ( size_t is = i; is<7; ++is ) nw.name[is] = ' ';
+    nw.name[7] = '\0';
+    return nw.word;
+  }
+  SIMPLE_ERROR(BF("The name must be a string or a symbol"));
+}
+    
+
 Instance_sp lisp_built_in_class() {
   return _lisp->_Roots._TheBuiltInClass;
 //  return cl__find_class(clbind::_sym_built_in_class,false,_Nil<T_O>());

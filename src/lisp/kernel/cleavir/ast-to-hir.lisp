@@ -35,7 +35,7 @@
        temps
        (ecase (length successors)
 	 (1
-	  (if (typep results 'cleavir-ir:values-location)
+	  (if (cleavir-ir:values-location-p results)
                 (make-instance 'clasp-cleavir-hir:multiple-value-foreign-call-instruction
                                :function-name (clasp-cleavir-ast:function-name ast)
                                :inputs temps
@@ -65,7 +65,7 @@
        temps
        (ecase (length successors)
 	 (1
-	  (if (typep (car results) 'cleavir-ir:lexical-location)
+	  (if (cleavir-ir:lexical-location-p (car results))
               (make-instance 'clasp-cleavir-hir:foreign-call-instruction
                              :function-name (clasp-cleavir-ast:function-name ast)
                              :foreign-types (clasp-cleavir-ast:foreign-types ast)
@@ -95,7 +95,7 @@
        temps
        (ecase (length successors)
 	 (1
-	  (if (typep (car results) 'cleavir-ir:lexical-location)
+	  (if (cleavir-ir:lexical-location-p (car results))
               (make-instance 'clasp-cleavir-hir:foreign-call-pointer-instruction
                              :foreign-types (clasp-cleavir-ast:foreign-types ast)
                              :inputs temps
@@ -329,7 +329,7 @@
       (cleavir-ast-to-hir:compile-arguments
        all-args
        temps
-       (if (typep results 'cleavir-ir:values-location)
+       (if (cleavir-ir:values-location-p results)
 	   (make-instance 'clasp-cleavir-hir:invoke-instruction
 	     :inputs temps
 	     :outputs (list results)
@@ -363,7 +363,7 @@
           (destinations (compile-destinations
                          (clasp-cleavir-ast:destinations ast))))
       (let ((successor
-	      (if (typep results 'cleavir-ir:values-location)
+	      (if (cleavir-ir:values-location-p results)
 		  (make-instance 'clasp-cleavir-hir:multiple-value-invoke-instruction
 		    :inputs (cons function-temp form-temps)
 		    :outputs (list results)

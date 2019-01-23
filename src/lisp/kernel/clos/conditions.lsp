@@ -783,8 +783,8 @@ memory limits before executing the program again."))
 (define-condition print-not-readable (error)
   ((object :INITARG :OBJECT :READER print-not-readable-object))
   (:REPORT (lambda (condition stream)
-	     (format stream "Cannot print object ~A readably."
-		     (print-not-readable-object condition)))))
+	     (format stream "Cannot print object ~A of class ~A readably."
+		     (print-not-readable-object condition) (class-name (class-of (print-not-readable-object condition)))))))
 
 (define-condition parse-error (error) ())
 

@@ -623,4 +623,35 @@ CL_DEFUN bool cl__equalp(T_sp x, T_sp y) {
   };
 
 
+bool AtomicT_Holder_O::object_unboundp() const {
+  return this->_Object.load().unboundp();
+}
+
+T_sp AtomicT_Holder_O::object_get() const {
+  return this->_Object.load();
+}
+
+void AtomicT_Holder_O::object_set(T_sp o) {
+  this->_Object.store(o);
+}
+
+void AtomicT_Holder_O::object_makunbound() {
+  this->_Object.store(_Unbound<T_O>());
+}
+
+CL_DEFUN bool ext__object_unboundp(AtomicT_Holder_sp ah) {
+  return ah->object_unboundp();
+}
+
+CL_DEFUN T_sp ext__object_get(AtomicT_Holder_sp ah) {
+  return ah->object_get();
+}
+CL_DEFUN void ext__object_set(AtomicT_Holder_sp ah, T_sp value) {
+  ah->object_set(value);
+}
+CL_DEFUN void ext__object_makunbound(AtomicT_Holder_sp ah) {
+  return ah->object_makunbound();
+}
+
+
 };

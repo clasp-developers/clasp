@@ -116,7 +116,7 @@ MaybeDebugStartup::~MaybeDebugStartup() {
 
 
 #ifdef CLASP_THREADS
-mp::SharedMutex global_internal_functions_mutex;
+mp::SharedMutex global_internal_functions_mutex(INTRFUNC_NAMEWORD);
 #endif
 struct InternalFunctions {
   const claspFunction* _InternalFunctions;
@@ -244,7 +244,7 @@ void register_startup_function(int position, fnStartUp fptr)
 #ifdef CLASP_THREADS
   if (global_Started) {
     if (global_startup_functions_mutex==NULL) {
-      global_startup_functions_mutex = new mp::SharedMutex();
+      global_startup_functions_mutex = new mp::SharedMutex(STRTFUNC_NAMEWORD);
     }
     (*global_startup_functions_mutex).lock();
   }
@@ -277,7 +277,7 @@ size_t startup_functions_are_waiting()
 #endif
 #ifdef CLASP_THREADS
   if (global_startup_functions_mutex==NULL) {
-    global_startup_functions_mutex = new mp::SharedMutex();
+    global_startup_functions_mutex = new mp::SharedMutex(STRTFUNC_NAMEWORD);
   }
   WITH_READ_LOCK((*global_startup_functions_mutex));
 #endif

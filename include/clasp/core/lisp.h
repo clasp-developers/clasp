@@ -85,11 +85,11 @@ void af_stackSizeWarning(size_t size);
 List_sp cl__member(T_sp item, T_sp list, T_sp key = _Nil<T_O>(), T_sp test = cl::_sym_eq, T_sp test_not = _Nil<T_O>());
 [[noreturn]]void core__invoke_internal_debugger(T_sp condition);
 
-class SymbolClassPair {
+class SymbolClassHolderPair {
 public:
-  SymbolClassPair(Symbol_sp s, Instance_sp c) : symbol(s), theClass(c){};
+  SymbolClassHolderPair(Symbol_sp s, ClassHolder_sp c) : symbol(s), theClassHolder(c){};
   Symbol_sp symbol;
-  Instance_sp theClass;
+  ClassHolder_sp theClassHolder;
 };
 
 /*! A structure that stores the integer byte/word ordering information for this processor.
@@ -227,11 +227,11 @@ class Lisp_O {
     HashTable_sp _Sysprop;
     // ---------
     //! Associate class names with classes
-    HashTable_sp _ClassTable;
 #ifdef CLASP_THREADS
     //! Protect _ClassTable
     mutable mp::SharedMutex _ClassTableMutex;
 #endif
+    HashTable_sp _ClassTable;
     Integer_sp _IntegerOverflowAdjust;
     CharacterInfo charInfo;
     gctools::Vec0<core::Symbol_sp> _ClassSymbolsHolder;
@@ -249,7 +249,7 @@ class Lisp_O {
     /*! Store CATCH info */
 // THREAD_CHANGE    List_sp _CatchInfo;
     /* The global class table that maps class symbols to classes */
-    gctools::Vec0<SymbolClassPair> bootClassTable;
+    gctools::Vec0<SymbolClassHolderPair> bootClassTable;
     //	    SymbolDict<Instance_O>		_BootClassTable;
     /*! When compiled files are loaded, they need to create
 	      LOAD-TIME-VALUEs and QUOTEd objects using C++ calls at runtime.
@@ -746,7 +746,7 @@ public:
   /*! Lookup a class in the _ClassTable by name
 	 If errorp == true then throw an exception if the class is not
 	found otherwise return nil */
-  Instance_sp boot_findClass(Symbol_sp className, bool errorp = true) const;
+  T_sp boot_findClassHolder(Symbol_sp className, bool errorp = true) const;
   /*! associate a class in the _ClassTable by name */
   Instance_sp boot_setf_findClass(Symbol_sp className, Instance_sp mc);
 
