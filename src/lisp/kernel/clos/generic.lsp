@@ -291,6 +291,37 @@
 
 ;;; Miscellany
 
+;;; Returns as process-lambda-list, but with keys etc from the methods added to the gf's.
+;;; Basically returns the valid lambda list as in CLHS 7.6.5.
+(defun generic-function-augmented-lambda-list (gf applicable-methods)
+  (multiple-value-bind (req opt restvar keyflag keysl aokp) ; aux, varest irrelevant
+      (core:process-lambda-list (generic-function-lambda-list gf) 'function)
+    ;; get a list of keywords accepted by the gf.
+    (let ((known-keys (loop for (key) on (cdr keysl) by #'cddddr
+                            collecting key)))
+      (loop for method in applicable-methods
+            do (multiple-value-bind (mreq mopt mrestvar mkeyflag mkeysl maokp)
+                   (core:process-lambda-list (method-lambda-list method) 'function)
+                 (declare (ignore mreq mopt mrestvar))
+                 ;; If any method wants keywords the arguments have to match that.
+                 ;; E.g. for when the gf has only &rest but a method has &key.
+                 (unless keyflag (when mkeyflag (setf keyflag t)))
+                 ;; If any method has &allow-other-keys, so does the effective method.
+                 (unless aokp (when maokp (setf aokp t)))
+                 ;; The acceptable keywords are the union of the gf's with the methods'.
+                 ;; The variables, default values, and -p variables are irrelevant in
+                 ;; this function.
+                 ;; We collect the keywords even if aokp is true because we might also
+                 ;; want to use this lambda list for a display to the programmer.
+                 (loop for (key var default -p) on (cdr mkeysl) by #'cddddr
+                       unless (member key known-keys)
+                         ;; new keys - throw em in front
+                         do (setf (cdr keysl) (list* key var default -p (cdr keysl))
+                                  (car keysl) (1+ (car keysl))
+                                  ;; also update the known-keys for later methods.
+                                  known-keys (list* key known-keys))))))
+    (values req opt restvar keyflag keysl aokp nil nil)))
+
 ;;; Kind of badly placed, but- returns minimum and maximum number of args allowed as values.
 ;;; max is NIL if infinite. Used by fastgf.
 (defun generic-function-min-max-args (gf)
