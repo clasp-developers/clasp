@@ -46,12 +46,25 @@
       (bformat nil "%s%d" core:+contab-name+ (incf-value-table-id-value))))
 
 (defstruct (literal-node-toplevel-funcall (:type vector) :named) arguments)
-(defstruct (literal-node-creator (:type vector) :named) index name literal-name object arguments)
 (defstruct (literal-node-call (:type vector) :named) function source-pos-info holder)
 (defstruct (literal-node-side-effect (:type vector) :named) name arguments)
-(defstruct (literal-node-runtime (:type vector) :named) index object)
-(defstruct (literal-node-closure (:type vector) :named)
-   index lambda-name-index function source-info-handle filepos lineno column)
+(defstruct (literal-dnode (:type vector) :named) datum)
+(defstruct (literal-node-creator (:type vector) (:include literal-dnode) :named)
+  name literal-name object arguments)
+(defstruct (literal-node-runtime (:type vector) (:include literal-dnode) :named) object)
+(defstruct (literal-node-closure (:type vector) (:include literal-dnode) :named)
+  lambda-name-index function source-info-handle filepos lineno column)
+
+(defstruct (indexed-datum (:type vector) :named) index)
+(defstruct (transient-datum (:type vector) :named) id)
+
+(defun literal-node-index (node)
+  (if (literal-dnode-p node)
+      (let ((datum (literal-dnode-datum node)))
+        (cond
+          ((indexed-datum-p datum) (indexed-datum-index datum))
+          (t (error "Only indexed-datums can provide an index - you passed ~s" datum))))
+      (error "The node must be a literal-dnode - you passed ~s" node)))
 
 ;;; +max-run-all-size+ must be larger than +list-max+ so that
 ;;;   even a full list will fit into one run-all
@@ -72,7 +85,7 @@
     (dolist (node nodes)
       #+(or)(bformat t "generate-run-all-code  generating node: %s%N" node)
       (when (literal-node-creator-p node)
-        (setf highest-index (max highest-index (literal-node-creator-index node)))))
+        (setf highest-index (max highest-index (literal-node-index node)))))
     (1+ highest-index)))
 
 ;;; ------------------------------------------------------------
@@ -119,6 +132,12 @@ the value is put into *default-load-time-value-vector* and its index is returned
   (prog1 *table-index*
     (incf *table-index*)))
 
+(defun new-datum (toplevelp)
+  (if toplevelp
+      (make-indexed-datum :index (new-table-index))
+      (make-indexed-datum :index (new-table-index)) ;(make-transient-datum :id (gensym "TRANSIENT"))))
+      ))
+
 (defun lookup-literal-index (object)
   "Given a literal object that has already been added to the literal table and will be recreated at load-time,
 return the index in the literal table for that object.  This is used in special cases like defcallback to
@@ -131,7 +150,7 @@ rewrite the slot in the literal table to store a closure."
 
 (defun add-named-creator (name index literal-name object &rest args)
   "Call the named function after converting fixnum args to llvm constants"
-  (let ((creator (make-literal-node-creator :index index :name name :literal-name literal-name :object object :arguments args)))
+  (let ((creator (make-literal-node-creator :datum index :name name :literal-name literal-name :object object :arguments args)))
     (setf (gethash index *constant-index-to-literal-node-creator*) creator)
     (run-all-add-node creator)
     creator))
@@ -351,11 +370,11 @@ rewrite the slot in the literal table to store a closure."
             (cmp:irc-intrinsic-call (literal-node-creator-name obj)
                                     (list*
                                      *gcroots-in-module*
-                                     (cmp:jit-constant-size_t (literal-node-creator-index obj))
+                                     (cmp:jit-constant-size_t (literal-node-index obj))
                                      (fix-args (literal-node-creator-arguments obj)))))))
 (defun lookup-arg (creator)
   (ensure-creator-llvm-value creator)
-  (let* ((idx (literal-node-creator-index creator))
+  (let* ((idx (literal-node-index creator))
          (label (if (literal-node-creator-literal-name creator)
                     (bformat nil "%s[%d]/%s" core:+contab-name+ idx (literal-node-creator-literal-name creator))
                     (bformat nil "%s[%d]%t*" core:+contab-name+ idx)))
@@ -412,7 +431,7 @@ rewrite the slot in the literal table to store a closure."
                                                              (fix-arg (literal-node-closure-lambda-name-index node))))))
               (cmp:irc-intrinsic-call "ltvc_enclose"
                                       (list *gcroots-in-module*
-                                            (cmp:jit-constant-size_t (literal-node-closure-index node))
+                                            (cmp:jit-constant-size_t (literal-node-index node))
                                             lambda-name
                                             (literal-node-closure-function node)
                                             (literal-node-closure-source-info-handle node)
@@ -430,7 +449,7 @@ rewrite the slot in the literal table to store a closure."
                                                    (fix-arg (literal-node-closure-lambda-name-index node))))))
     (cmp:irc-intrinsic-call "ltvc_enclose"
                             (list *gcroots-in-module*
-                                  (cmp:jit-constant-size_t (literal-node-closure-index node))
+                                  (cmp:jit-constant-size_t (literal-node-index node))
                                   lambda-name
                                   (literal-node-closure-function node)
                                   (literal-node-closure-source-info-handle node)
@@ -465,23 +484,23 @@ the constants-table."
   "Evaluate the body and then arrange to evaluate the generated function into a load-time-value.
 Return the index of the load-time-value"
   (let ((ltv-func (gensym))
-        (index (gensym)))
+        (datum (gensym)))
     `(let* ((*with-ltv-depth* (1+ *with-ltv-depth*))
-            (,index (new-table-index))
+            (,datum (new-datum t))
             (,ltv-func (do-ltv :ltv (lambda () ,@body))))
-       (add-creator "ltvc_set_ltv_funcall" ,index nil ,ltv-func (cmp:jit-constant-unique-string-ptr (llvm-sys:get-name ,ltv-func)))
-       ,index)))
+       (add-creator "ltvc_set_ltv_funcall" ,datum nil ,ltv-func (cmp:jit-constant-unique-string-ptr (llvm-sys:get-name ,ltv-func)))
+       (indexed-datum-index ,datum))))
 
 (defmacro with-load-time-value-cleavir (&body body)
   "Evaluate the body and then arrange to evaluate the generated function into a load-time-value.
 Return the index of the load-time-value"
   (let ((ltv-func (gensym))
-        (index (gensym)))
+        (datum (gensym)))
     `(let* ((*with-ltv-depth* (1+ *with-ltv-depth*))
-            (,index (new-table-index))
+            (,datum (new-datum t))
             (,ltv-func (do-ltv :ltv (lambda () ,@body))))
-       (add-creator "ltvc_set_ltv_funcall_cleavir" ,index nil ,ltv-func (cmp:jit-constant-unique-string-ptr (llvm-sys:get-name ,ltv-func)))
-       ,index)))
+       (add-creator "ltvc_set_ltv_funcall_cleavir" ,datum nil ,ltv-func (cmp:jit-constant-unique-string-ptr (llvm-sys:get-name ,ltv-func)))
+       (indexed-datum-index ,datum))))
 
 (defmacro with-top-level-form ( &body body)
   `(let ((*with-ltv-depth* (1+ *with-ltv-depth*)))
@@ -590,7 +609,7 @@ and  return the sorted values and the constant-table or (values nil nil)."
        ;; Put the constants in order they will appear in the table.
        ;; Return the orderered-raw-constants-list and the constants-table GlobalVariable
        (when (> num-elements 0)
-         (let* ((ordered-literals-list (sort run-time-values #'< :key #'literal-node-runtime-index))
+         (let* ((ordered-literals-list (sort run-time-values #'< :key #'literal-node-index))
                 (array-type (llvm-sys:array-type-get cmp:%t*% (length ordered-literals-list))))
            (setf constant-table (llvm-sys:make-global-variable cmp:*the-module*
                                                                array-type
@@ -616,10 +635,10 @@ and  return the sorted values and the constant-table or (values nil nil)."
           (let ((existing (if similarity (find-similar object similarity) nil)))
             (if existing
                 (values (gethash existing *constant-index-to-literal-node-creator*) t)
-                (let ((index (new-table-index)))
-                  (when similarity (add-similar object index similarity))
-                  (setf (gethash index *constant-index-to-literal-node-creator*) creator)
-                  (values (funcall creator object index read-only-p :toplevelp nil) t))))))))
+                (let ((datum (new-datum toplevelp)))
+                  (when similarity (add-similar object datum similarity))
+                  (setf (gethash datum *constant-index-to-literal-node-creator*) creator)
+                  (values (funcall creator object datum read-only-p :toplevelp nil) t))))))))
 
 (defun evaluate-function-into-load-time-value (index fn)
   (add-creator "ltvc_set_ltv_funcall" index nil fn (cmp:jit-constant-unique-string-ptr (llvm-sys:get-name fn)))
@@ -650,8 +669,8 @@ and  return the sorted values and the constant-table or (values nil nil)."
                (existing (find-similar object similarity)))
           (if existing
               (values existing T)
-              (values (let* ((index (new-table-index))
-                             (new-obj (make-literal-node-runtime :index index :object object)))
+              (values (let* ((datum (new-datum t))
+                             (new-obj (make-literal-node-runtime :datum datum :object object)))
                         (add-similar object new-obj similarity)
                         (run-all-add-node new-obj)
                         new-obj)
@@ -713,14 +732,14 @@ and  return the sorted values and the constant-table or (values nil nil)."
         (multiple-value-bind (data in-array)
             (load-time-reference-literal object read-only-p)
           (if in-array
-              (let ((index (literal-node-creator-index data)))
+              (let ((index (literal-node-index data)))
                 (values index T (literal-node-creator-literal-name data)))
               (values data nil)))
         (multiple-value-bind (immediate?literal-node-runtime in-array)
             (run-time-reference-literal object read-only-p)
           (if in-array
               (let* ((literal-node-runtime immediate?literal-node-runtime)
-                     (index (literal-node-runtime-index literal-node-runtime)))
+                     (index (literal-node-index literal-node-runtime)))
                 (values index T))
               (let ((immediate immediate?literal-node-runtime))
                 (values immediate nil)))))))
@@ -741,11 +760,11 @@ and  return the sorted values and the constant-table or (values nil nil)."
           (load-time-reference-literal lambda-name t)
         (unless in-array
           (error "BUG: Immediate lambda-name ~a- What?" lambda-name))
-        (let* ((index (new-table-index))
+        (let* ((datum (new-datum t))
                (creator (make-literal-node-closure
                          ;; lambda-name will never be immediate. (Should we check?)
-                         :lambda-name-index (literal-node-creator-index lambda-name-node)
-                         :index index :function enclosed-function
+                         :lambda-name-index (literal-node-index lambda-name-node)
+                         :datum datum :function enclosed-function
                          :source-info-handle source-info-handle
                          :filepos filepos :lineno lineno :column column)))
           (run-all-add-node creator)
@@ -754,11 +773,11 @@ and  return the sorted values and the constant-table or (values nil nil)."
           (run-time-reference-literal lambda-name t)
         (unless in-array
           (error "BUG: Immediate lambda-name ~a- What?" lambda-name))
-        (let* ((index (new-table-index))
+        (let* ((datum (new-datum t))
                (creator (make-literal-node-closure
                          ;; lambda-name will never be immediate. (Should we check?)
-                         :lambda-name-index (literal-node-runtime-index lambda-name-node)
-                         :index index :function enclosed-function
+                         :lambda-name-index (literal-node-index lambda-name-node)
+                         :datum datum :function enclosed-function
                          :source-info-handle source-info-handle
                          :filepos filepos :lineno lineno :column column)))
           (run-all-add-node creator)
@@ -785,7 +804,7 @@ returns (value immediate nil) if the value is an immediate value."
       (run-time-reference-literal obj t)
     (if in-array
         (let* ((literal-node-runtime immediate?literal-node-runtime)
-               (index (literal-node-runtime-index literal-node-runtime)))
+               (index (literal-node-index literal-node-runtime)))
           (cmp:irc-store (constants-table-value index) result)
           index)
         (let ((immediate immediate?literal-node-runtime))
@@ -800,7 +819,7 @@ returns (value immediate nil) if the value is an immediate value."
       (run-time-reference-literal obj t)
     (if in-array
         (let* ((literal-node-runtime immediate?literal-node-runtime)
-               (index (literal-node-runtime-index literal-node-runtime)))
+               (index (literal-node-index literal-node-runtime)))
           (values index t))
         (let ((immediate immediate?literal-node-runtime))
           (values immediate nil)))))
