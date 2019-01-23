@@ -249,7 +249,7 @@
                               for specs = (clos:method-specializers method)
                               for espec = (first specs)
                               when (typep espec 'clos:eql-specializer)
-                                collect espec))
+                                collect `(eql ,(clos:eql-specializer-object espec))))
                       ;; ENTRY itself is abstract, so we can exclude it (with REST)
                       (entries (rest (clos:subclasses* (find-class 'cleavir-env::entry))))
                       (lists (loop for sp in special-operators
@@ -265,7 +265,7 @@
                              for specs = (clos:method-specializers method)
                              for espec = (first specs)
                              when (typep espec 'clos:eql-specializer)
-                               collect espec)))
+                               collect `(eql ,(clos:eql-specializer-object espec)))))
                  `(clos:satiate #'cleavir-generate-ast:check-special-form-syntax
                                 ,@(loop for sp in special-operators
                                         collect `'(,sp cons))))))
