@@ -253,9 +253,9 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Class DISPLACED-INDEX-OFFSET-AST
+;;; Class ARRAY-TOTAL-SIZE-AST
 ;;;
-;;; Gets the actual underlying DIO of any mdarray.
+;;; Gets the total size of any mdarray.
 
 (defclass array-total-size-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
   ((%mdarray :initarg :mdarray :accessor array-total-size-ast-mdarray)))
@@ -372,6 +372,11 @@
                  :lambda-list nil
                  :precalc-asts precalc-asts
                  :forms forms
+                 ;; this should be unused - but this is ugly- FIXME
+                 :dynamic-environment-out (cleavir-ast:make-lexical-ast
+                                           (make-symbol "PRECALC-UNUSED")
+                                           :policy policy
+                                           :origin origin)
                  :policy policy
                  :origin origin))
 
