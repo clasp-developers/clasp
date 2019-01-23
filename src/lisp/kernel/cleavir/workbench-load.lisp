@@ -1,8 +1,8 @@
 ;;; Set up everything to start cleavir
 
 ;;; Do you want CST?
-#+(or)(progn
-        (push :cst *features*))
+#+(or)
+(pushnew :cst *features*)
 
 
 (progn
@@ -23,7 +23,8 @@
 
   (defun start-cleavir ()
     (let ((system (cleavir-system)))
-      (core::load-system system)))
+      (core::load-system system)
+      (format t "Cleavir is go~%")))
 
   (defun load-cleavir-no-inline ()
     (let ((system (cleavir-system)))
@@ -37,6 +38,3 @@
 
 ;;; Start cleavir
 (start-cleavir)
-
-(in-package :literal)
-
