@@ -267,7 +267,7 @@
 
 (defmethod cleavir-generate-ast:check-special-form-syntax ((head (eql 'core:defcallback)) form)
   (cleavir-code-utilities:check-form-proper-list form)
-  (cleavir-code-utilities:check-argcount form 8 9)
+  (cleavir-code-utilities:check-argcount form 9 9)
   (destructuring-bind (name convention return-type return-translator
                        argument-types argument-translators
                        params placeholder function)
