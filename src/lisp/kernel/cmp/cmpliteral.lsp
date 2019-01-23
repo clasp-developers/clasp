@@ -119,7 +119,7 @@
 (defvar *package-coalesce*)
 (defvar *double-float-coalesce*)
 (defvar *identity-coalesce*)
-(defvar *constant-index-to-literal-node-creator*)
+(defvar *constant-datum-to-literal-node-creator*)
 (defvar *llvm-values*)
 
 (defvar *with-ltv-depth* 0)
@@ -142,16 +142,16 @@ the value is put into *default-load-time-value-vector* and its index is returned
   "Given a literal object that has already been added to the literal table and will be recreated at load-time,
 return the index in the literal table for that object.  This is used in special cases like defcallback to
 rewrite the slot in the literal table to store a closure."
-  (maphash (lambda (index literal)
+  (maphash (lambda (datum literal)
              (when (eq (literal-node-creator-object literal) object)
-               (return-from lookup-literal-index index)))
-           *constant-index-to-literal-node-creator*)
+               (return-from lookup-literal-index (indexed-datum-index datum))))
+           *constant-datum-to-literal-node-creator*)
   (error "Could not find literal ~s" object))
 
 (defun add-named-creator (name index literal-name object &rest args)
   "Call the named function after converting fixnum args to llvm constants"
   (let ((creator (make-literal-node-creator :datum index :name name :literal-name literal-name :object object :arguments args)))
-    (setf (gethash index *constant-index-to-literal-node-creator*) creator)
+    (setf (gethash index *constant-datum-to-literal-node-creator*) creator)
     (run-all-add-node creator)
     creator))
 
@@ -537,7 +537,7 @@ Return the index of the load-time-value"
         (*pathname-coalesce* (make-similarity-table #'equal))
         (*package-coalesce* (make-similarity-table #'eq))
         (*double-float-coalesce* (make-similarity-table #'eql))
-        (*constant-index-to-literal-node-creator* (make-hash-table :test #'eql))
+        (*constant-datum-to-literal-node-creator* (make-hash-table :test #'eql))
         (*table-index* 0)
         (real-name (next-value-table-holder-name))
         (*run-all-objects* nil))
@@ -634,10 +634,10 @@ and  return the sorted values and the constant-table or (values nil nil)."
             (object-similarity-table-and-creator object read-only-p)
           (let ((existing (if similarity (find-similar object similarity) nil)))
             (if existing
-                (values (gethash existing *constant-index-to-literal-node-creator*) t)
+                (values (gethash existing *constant-datum-to-literal-node-creator*) t)
                 (let ((datum (new-datum toplevelp)))
                   (when similarity (add-similar object datum similarity))
-                  (setf (gethash datum *constant-index-to-literal-node-creator*) creator)
+                  (setf (gethash datum *constant-datum-to-literal-node-creator*) creator)
                   (values (funcall creator object datum read-only-p :toplevelp nil) t))))))))
 
 (defun evaluate-function-into-load-time-value (index fn)
