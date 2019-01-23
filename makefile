@@ -19,7 +19,7 @@ clean:
 	./waf distclean
 
 pull-sicl-master:
-	(cd src/lisp/kernel/contrib/sicl; git pull origin master)
+	(cd src/lisp/kernel/contrib/sicl && git pull origin master)
 	$(MAKE) setup-cleavir
 
 dump-local-config:
