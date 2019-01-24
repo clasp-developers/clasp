@@ -45,7 +45,8 @@
     (cleavir-ir:make-fdefinition-instruction
      (cleavir-ir:make-constant-input fname) fdef
      (cleavir-ir:make-funcall-instruction
-      (list* fdef args)
+      ;; See HUGE HACK WARNING FIXME in setup.lisp.
+      (list* fdef (clasp-cleavir::make-faux-dynenv-location) args)
       (list vals)
       (cleavir-ir:make-multiple-to-fixed-instruction
        vals
@@ -59,7 +60,8 @@
     (cleavir-ir:make-fdefinition-instruction
      (cleavir-ir:make-constant-input fname) fdef
      (cleavir-ir:make-funcall-instruction
-      (list* fdef args)
+      ;; See HUGE HACK WARNING FIXME in setup.lisp.
+      (list* fdef (clasp-cleavir::make-faux-dynenv-location) args)
       (list vals)
       (cleavir-ir:make-multiple-to-fixed-instruction
        vals
@@ -472,20 +474,20 @@
   (mapc (lambda (ll) (convert-to-tll ll type)) list))
 
 (defmethod cleavir-hir-to-mir:specialize ((instruction cleavir-ir:box-instruction)
-                                  (impl clasp-cleavir:clasp) proc os)
+                                          (impl clasp-cleavir:clasp) proc os)
   (convert-tll-list (cleavir-ir:inputs instruction)
                     (cmp::element-type->llvm-type (cleavir-ir:element-type instruction)))
   instruction)
 
 (defmethod cleavir-hir-to-mir:specialize ((instruction cleavir-ir:unbox-instruction)
-                                  (impl clasp-cleavir:clasp) proc os)
+                                          (impl clasp-cleavir:clasp) proc os)
   (convert-tll-list (cleavir-ir:outputs instruction)
                     (cmp::element-type->llvm-type (cleavir-ir:element-type instruction)))
   instruction)
 
 (defmacro define-float-specializer (instruction-class-name)
   `(defmethod cleavir-hir-to-mir:specialize ((instruction ,instruction-class-name)
-                                     (impl clasp-cleavir:clasp) proc os)
+                                             (impl clasp-cleavir:clasp) proc os)
      (declare (ignore proc os))
      ;; Could probably work out the llvm types ahead of time, but this shouldn't be a big deal.
      (convert-tll-list (cleavir-ir:inputs instruction)

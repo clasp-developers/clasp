@@ -459,3 +459,18 @@ when this is t a lot of graphs will be generated.")
 #++
 (defmacro cleavir-primop:call-with-variable-bound (symbol value thunk)
   `(clasp-cleavir-hir:multiple-value-foreign-call-instruction "call_with_variable_bound" ,symbol ,value ,thunk))
+
+;;; HUGE HACK WARNING FIXME
+;;; Okay, so: With the new dynamic environment machinery, every funcall instruction needs to
+;;; refer to a dynamic-environment variable. But we make funcalls ourselves in hir-to-mir,
+;;; for typep, and there's no easy way to get at those variables. So this faux lexical location
+;;; class exists to say it's in the "global" dynamic environment.
+;;; This is very bad because (a) wow fuck, and (b) if unwind-protect is factored in we could
+;;; hit Problems for typep on satisfies or something.
+;;; The real solution is to change how typeq works to not take arbitrary types, but I'm not
+;;; going to do that right now.
+
+(defclass faux-dynenv-location (cleavir-ir:lexical-location) ())
+
+(defun make-faux-dynenv-location ()
+  (make-instance 'faux-dynenv-location :name 'faux-dynenv-location))
