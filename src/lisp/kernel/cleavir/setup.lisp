@@ -184,13 +184,14 @@ when this is t a lot of graphs will be generated.")
   '(;; behavior as in convert-form.lisp
     core:lambda-name))
 
-(defvar *global-optimize*
-  ;; initial value, changed by de/proclaim
-  '((compilation-speed 1)
-    (debug 1)
-    (space 1)
-    (speed 1)
-    (safety 1)))
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defvar *global-optimize*
+    ;; initial value, changed by de/proclaim
+    '((compilation-speed 1)
+      (debug 1)
+      (space 1)
+      (speed 1)
+      (safety 1))))
 
 (eval-when (:compile-toplevel)
   (format t "about to compute-policy~%"))
