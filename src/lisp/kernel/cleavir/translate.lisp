@@ -506,7 +506,7 @@ COMPILE-FILE will use the default *clasp-env*."
       ast)))
 
 #-cst
-(defun generate-ast (form &optional (env *clasp-env*))
+(defun generate-ast (form dynenv &optional (env *clasp-env*))
   "Compile a form into an AST and return it.
 Does not hoist."
   (handler-bind
@@ -519,15 +519,15 @@ Does not hoist."
            #+verbose-compiler(warn "Condition: ~a" condition)
            (cmp:register-global-function-ref (cleavir-environment:name condition))
            (invoke-restart 'cleavir-generate-ast:consider-global))))
-    (let* ((ast (cleavir-generate-ast:generate-ast form env *clasp-system*)))
+    (let* ((ast (cleavir-generate-ast:generate-ast form env *clasp-system* dynenv)))
       (when *interactive-debug* (draw-ast ast))
       (cc-dbg-when *debug-log* (log-cst-to-ast ast))
       (setf *ct-generate-ast* (compiler-timer-elapsed))
       ast)))
 
-(defun hoist-ast (ast &optional (env *clasp-env*))
+(defun hoist-ast (ast dynenv &optional (env *clasp-env*))
   (prog1
-      (clasp-cleavir-ast:hoist-load-time-value ast env)
+      (clasp-cleavir-ast:hoist-load-time-value ast dynenv env)
     (setf *ct-hoist-ast* (compiler-timer-elapsed))))
 
 (defun ast->hir (ast)
@@ -567,9 +567,9 @@ and go-indices as third."
                  :abi abi :linkage linkage :ignore-arguments ignore-arguments))))
 
 
-(defun translate-ast (ast &key (abi *abi-x86-64*) (linkage 'llvm-sys:internal-linkage)
-                            (env *clasp-env*) ignore-arguments)
-  (let ((hoisted-ast (hoist-ast ast env)))
+(defun translate-ast (ast dynenv &key (abi *abi-x86-64*) (linkage 'llvm-sys:internal-linkage)
+                                   (env *clasp-env*) ignore-arguments)
+  (let ((hoisted-ast (hoist-ast ast dynenv env)))
     (translate-hoisted-ast hoisted-ast
                            :abi abi :linkage linkage :env env
                            :ignore-arguments ignore-arguments)))
@@ -577,13 +577,15 @@ and go-indices as third."
 (defun translate-lambda-expression-to-llvm-function (lambda-expression)
   "Compile a lambda expression into an llvm-function and return it.
 This works like compile-lambda-function in bclasp."
-  (let* (#+cst
+  (let* ((dynenv (cleavir-ast:make-lexical-ast 'loader-dynamic-environment
+                                               :policy *global-policy*))
+         #+cst
          (cst (cst:cst-from-expression lambda-expression))
          #+cst
          (ast (cst->ast cst))
          #-cst
-         (ast (generate-ast lambda-expression))
-         (hir (ast->hir (hoist-ast ast))))
+         (ast (generate-ast lambda-expression dynenv))
+         (hir (ast->hir (hoist-ast ast dynenv))))
     (multiple-value-bind (mir function-info-map go-indices)
         (hir->mir hir)
       (let ((function-enter-instruction
@@ -613,18 +615,21 @@ This works like compile-lambda-function in bclasp."
   (setf *ct-start* (compiler-timer-elapsed))
   (let* ((cleavir-generate-ast:*compiler* 'cl:compile)
          (*llvm-metadata* (make-hash-table :test 'eql))
+         (dynenv (cleavir-ast:make-lexical-ast
+                  'loader-dynamic-environment
+                  :policy (cleavir-env:environment-policy env)))
          #+cst
          (cst (cst:cst-from-expression form))
          #+cst
          (ast (cst->ast cst env))
          #-cst
-         (ast (generate-ast form env))
+         (ast (generate-ast form dynenv env))
          function lambda-name
          ordered-raw-constants-list constants-table startup-fn shutdown-fn)
     (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
       (multiple-value-setq (ordered-raw-constants-list constants-table startup-fn shutdown-fn)
         (literal:with-rtv
-            (let* ((ast (hoist-ast ast env))
+            (let* ((ast (hoist-ast ast dynenv env))
                    (hir (ast->hir ast)))
               (multiple-value-bind (mir function-info-map go-indices)
                   (hir->mir hir env)
@@ -648,19 +653,11 @@ This works like compile-lambda-function in bclasp."
          (ast (cst->ast cst env)))
     (translate-ast ast :env env))
   #-cst
-  (let ((ast (generate-ast form env)))
-    (translate-ast ast :env env)))
-
-
-(defun compile-ltv-form (form &optional (env *clasp-env*))
-  (setf *ct-start* (compiler-timer-elapsed))
-  #+cst
-  (let* ((cst (cst:cst-from-expression form))
-         (ast (cst->ast cst env)))
-    (translate-ast ast :env env :ignore-arguments t :linkage cmp:*default-linkage*))
-  #-cst
-  (let ((ast (generate-ast form env)))
-    (translate-ast ast :env env :ignore-arguments t :linkage cmp:*default-linkage*)))
+  (let* ((dynenv (cleavir-ast:make-lexical-ast
+                  'loader-dynamic-environment
+                  :policy (cleavir-env:environment-policy env)))
+         (ast (generate-ast form env)))
+    (translate-ast ast dynenv :env env)))
 
 #+cst
 (defun cleavir-compile-file-cst (cst &optional (env *clasp-env*))
@@ -674,11 +671,14 @@ This works like compile-lambda-function in bclasp."
 #-cst
 (defun cleavir-compile-file-form (form &optional (env *clasp-env*))
   (literal:with-top-level-form
-      (if cmp:*debug-compile-file*
-          (compiler-time (let ((ast (generate-ast form env)))
-                           (translate-ast ast :env env cmp:*default-linkage*)))
-          (let ((ast (generate-ast form env)))
-            (translate-ast ast :env env :linkage cmp:*default-linkage*)))))
+      (let ((dynenv (cleavir-ast:make-lexical-ast
+                     'loader-dynamic-environment
+                     :policy (cleavir-env:environment-policy env))))
+        (if cmp:*debug-compile-file*
+            (compiler-time (let ((ast (generate-ast form dynenv env)))
+                             (translate-ast ast dynenv :env env cmp:*default-linkage*)))
+            (let ((ast (generate-ast form dynenv env)))
+              (translate-ast ast dynenv :env env :linkage cmp:*default-linkage*))))))
 
 (defclass clasp-cst-client (eclector.concrete-syntax-tree:cst-client) ())
 

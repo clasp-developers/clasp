@@ -366,17 +366,13 @@
 (defclass precalc-vector-function-ast (cleavir-ast:top-level-function-ast)
   ((%precalc-asts :initarg :precalc-asts :reader precalc-asts)))
 
-(defun make-precalc-vector-function-ast (body-ast precalc-asts forms policy &key origin)
+(defun make-precalc-vector-function-ast (body-ast precalc-asts forms dynenv policy &key origin)
   (make-instance 'precalc-vector-function-ast
                  :body-ast body-ast
                  :lambda-list nil
                  :precalc-asts precalc-asts
                  :forms forms
-                 ;; this should be unused - but this is ugly- FIXME
-                 :dynamic-environment-out (cleavir-ast:make-lexical-ast
-                                           (make-symbol "PRECALC-UNUSED")
-                                           :policy policy
-                                           :origin origin)
+                 :dynamic-environment-out dynenv
                  :policy policy
                  :origin origin))
 
@@ -492,7 +488,7 @@ precalculated-vector and returns the index."
            (cmp:codegen-rtv-cclasp value)
          (values index-or-immediate (not index-p)))))))
 
-(defun hoist-load-time-value (ast env)
+(defun hoist-load-time-value (ast dynenv env)
   (let ((ltvs nil)
         (forms nil))
     (cleavir-ast:map-ast-depth-first-preorder
@@ -512,4 +508,4 @@ precalculated-vector and returns the index."
                             :original-object form)))
         (push form forms)))
     (clasp-cleavir-ast:make-precalc-vector-function-ast
-     ast ltvs forms (cleavir-ast:policy ast) :origin (cleavir-ast:origin ast))))
+     ast ltvs forms dynenv (cleavir-ast:policy ast) :origin (cleavir-ast:origin ast))))
