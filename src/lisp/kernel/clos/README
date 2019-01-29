@@ -1,6 +1,6 @@
 Like most CLOS implementations, Clasp's goes through some weirdness to have things work correctly with the MOP. These conceptual notes are intended to aid reading of the code, because comments can't do it all.
 
-Of course, internals notes tend to not be updated, so it's possible the information here isn't accurate. It ought to be as of October 2017 (git commit hash e9cc6ab4d9a502c9b48e5819f77cebd88a713804). Hopefully you're reading a file under version control, in which case you could try looking at the history of this directory to see if there have been any major changes since now.
+Of course, internals notes tend to not be updated, so it's possible the information here isn't accurate. It ought to be as of December 2018 (git commit hash ). Hopefully you're reading a file under version control, in which case you could try looking at the history of this directory to see if there have been any major changes since now.
 
 Booting
 =======
@@ -8,7 +8,7 @@ Booting
 Classes and instances
 ---------------------
 
-Defined in the conventional way, basically a pointer to the class, and a "rack", the vector of slots. Plus some other crap. Defined in core/instance.h.
+Defined in the conventional way, basically a pointer to the class, and a "rack", the vector of slots. Plus some other crap. Defined in core/instance.h. (FYI the rack is a separate vector rather than a stretchy part of the instance so that change-class can swap it out.)
 
 After package.lsp, hierarchy.lsp is loaded. It defines variables containing specifications for the slot definitions of important standard classes. For example,
 
@@ -47,7 +47,7 @@ Instances and classes are all defined relatively straightforwardly. This is not 
 
 The generic dispatch uses the currently new technique we have optimistically called "fastgf". Fastgf has its own section below. The algorithm is more fully described in Strandh, R. (2014). Fast generic dispatch for Common Lisp. Proceedings of ILC 2014 on 8th International Lisp Conference - ILC 14. doi:10.1145/2635648.2635654
 
-To set the system up, everything is dfined with normal functions which we then convert into etc.
+To set the system up, everything is defined with normal functions which we then convert into generics/methods/etc.
 
 kernel.lsp defines a few important functions, some of which are used indefinitely, and some of which are redefined later.
 
@@ -56,7 +56,7 @@ kernel.lsp defines a few important functions, some of which are used indefinitel
  * (SETF GENERIC-FUNCTION-NAME) checks *clos-booted*, calls reinitialize-instance if it's so, or else (setf slot-value).
  * The final standard method of COMPUTE-APPLICABLE-METHODS is defined here as a non-generic function.
  * The function that will be used as the primary method of COMPUTE-APPLICABLE-METHODS-USING-CLASSES is defined here, but not bound as the function.
- * A non-generic PRINT-OBJECT that simply uses print-unreadable-object is defined.
+ * A non-generic PRINT-OBJECT that simply uses print-unreadable-object is defined. This will be upgraded to a method later. It's defined earlier so that if you're unlucky enough to hit a problem during boot, instances can be printed.
 
 method.lsp defines the final definition of DEFMETHOD. It also defines the final standard method of MAKE-METHOD-LAMBDA as a function, and defines early, non-generic versions of GENERIC-FUNCTION-METHOD-CLASS and ADD-METHOD. An early version of the internal function MAKE-METHOD (no relation to the local macro - it makes a method, like make-instance) is defined here. FIND-METHOD's final standard method is here defined as a function.
 
@@ -86,13 +86,15 @@ Then a few things are redefined, most notably ADD-METHOD and REMOVE-METHOD, whic
 
 At the end of this file, CLOS is "set up" in that you should be able to manipulate generic functions with impunity. However some things like detailed PRINT-OBJECT are later.
 
+Also note that "satiation" is done differently in the build from the final image. fixup.lsp is first loaded, which results in the process described above to get CLOS working. Then fixup.lsp is compiled. In this case the call histories and hopefully soon the discriminating functions are dumped into the fasl as described in "satiation" below, which means they don't have to be compiled (as much) as the system starts, which really helps startup time.
+
 Operation
 =========
 
 Dispatch/fastgf
 ---------------
 
-The code for fastgf is mainly in clos/closfastgf.lsp and cmp/cmpfastgf.lsp. The latter is separate and uses bclasp for bootstrap reasons (that is, because cleavir itself uses CLOS).
+The code for fastgf is mainly in clos/closfastgf.lsp and cmp/cmpfastgf.lsp. The latter is separate and uses bclasp for bootstrap reasons- since cleavir itself uses CLOS, recompiling a generic function in cleavir with cleavir would have unfortunate results.
 
 Basic dispatch technique is as follows. The discriminating function has a slow path and a fast path. We start with the fast path. The fast path is a discrimination tree, or "dtree". Each required argument position goes through a binary search based on its class stamp (a natural number each class has). Each leaf of the tree is an "outcome", which is an effective method function or something fancier that does the same thing (see below). If the search fails at any time, it goes to the slow path.
 
@@ -100,28 +102,28 @@ For example, if we have (defmethod foo ((x integer) y) outcome0), the stamp of F
 
 (slow-path)
 
-(let ((xs (instance-class-stamp x)))
+(let ((xs (core:instance-stamp x)))
   (if (= xs 7)
       outcome0
       (slow-path)))
 
-(let ((xs (instance-class-stamp x)))
+(let ((xs (core:instance-stamp x)))
   (if (= xs 8)
       outcome0
       (slow-path)))
 
-(let ((xs (instance-class-stamp x)))
+(let ((xs (core:instance-stamp x)))
   (if (>= xs 7)
       (if (<= xs 8)
           outcome0
           (slow-path))
       (slow-path)))
 
-instance-class-stamp and slow-path are not real functions, those are just for illustration. Anyway, the point is it works based on the actual class of the instance, that is the class that the instance is a direct instance of.
+slow-path is an abbreviation for illustration - the real function is DISPATCH-MISS. Anyway, the point is it works based on the actual class of the instance, that is the class that the instance is a direct instance of.
 
 For a new generic function, the "fast path" is always the first one, i.e. immediately goes to the slow path. The slow path does roughly what MOP suggests, that is, first it calls compute-applicable-methods-using-classes, and if that returns a second value of NIL it calls compute-applicable-methods. Then it uses the applicable methods to compute an effective method, and calls that.
 
-If c-a-m-u-c returns a second value of T, the call is additionally "memoized". The list of classes of the required arguments is stored, along with the effective method, in the generic function's "call history". The discriminating function of the generic function is set to be invalidated-dispatch-function, which is just one particular function.
+If c-a-m-u-c returns a second value of T, the call is additionally "memoized". The list of classes of the required arguments is stored, along with the "outcome" (see below), in the generic function's "call history". The discriminating function of the generic function is set to be invalidated-dispatch-function, which is just one particular function.
 
 When c-a-m-u-c returns a second value of NIL, meaning for standard dispatch that there is a relevant eql-specialize method, the call can still be memoized in certain circumstances. First, the generic function must be a direct instance of standard-generic-function; this ensures that there are no custom methods on c-a-m-u-c, c-a-m, or anything. Second, any arguments in an eql-specialized position must match an eql specializer. To understand what this means and why this restriction is in place, consider (defmethod foo ((x symbol))) (defmethod foo ((x (eql 'x)))). If foo is called with, say, 'y, the argument does not match an eql specializer. If the call was memoized, it would be on the symbol class. Then, if foo was called later with 'x, the fast path would take it to the symbol outcome inappropriately. So instead, we only memoize the latter call (which is probably more common anyway) and leave the slow path for the former.
 
@@ -140,21 +142,53 @@ Miscellany note: no-applicable-method is not memoized, because it's easy to pick
 Outcomes
 --------
 
-Most outcomes are structure instances. Several types exist.
+In CLOS, the behavior of a generic function with whatever particular arguments is an "effective method". The effective method is, as described by CLOS, computed by the COMPUTE-EFFECTIVE-METHOD function. For optimization purposes, we deal with effective methods through special structure instances called "outcomes". Several types exist, corresponding to common effective methods.
 
-Slot readers and writers are represented by cmp::optimized-slot-{reader,writer}. The object contains the slot location along with some other things for debugging. Will be compiled into an inlined call to cc_dispatch_slot_something depending on whether it's a reader or writer and whether the location is an integer or a cons (i.e., :instance versus :class allocation), which will basically be a memory read/write, and for read a boundedness check. This occurs only for instances of direct instances of standard-class and when some other similar conditions are met, so that we are sure there are no methods on setf/slot-value-using-class. Note that we have to use the direct classes of arguments for this, not just the classes the accessor methods are specialized on, because slot locations can change with ineritance.
+Those common effective methods are as follows:
+ * accessors (readers and writers)
+ * "leaf" methods (methods that do not refer to their next-methods, as by call-next-method or next-method-p)
+ * no-required-method or no-applicable-methods (pseudo)
 
-Fast method functions are represented by cmp::fast-method-call. They result in a function call where the function is a "fast method function". Methods have fast method functions when all their parameters are required, they take few enough to fit in registers (kind of ugly, yes), and they are "leaf methods", meaning they don't use call-next-method or next-method-p in any way. It's basically the function that a method would be if it didn't need to do method things; e.g. (defmethod foo (bar) bar) would have an FMF of (lambda (bar) bar).
+To do any optimization we essentially need the effective method form to consist of (call-method #<some-method> ...). This some-method is referred to as "the method" below.
 
-Effective method outcomes are represented by cmp::effective-method-outcome. The object contains an effective method function and a list of applicable methods. Generates a call to the effective method function. This is the most general outcome. The applicable-methods slot is just a list of methods that resulted in that effective method function. It is not used for code generation; rather, within the "slow path", it is used as a memoization key so that multiple call history entries with morally the same outcome can use the actual same outcome, which can collapse the dispatch tree a bit (though I don't think we do this yet) and avoid recompilation.
+Effective methods consisting of a call to a standard slot reader or writer method are represented by cmp::optimized-slot-{reader,writer} instances. The outcome object contains the slot location along with some other things for debugging. It will be compiled into an inline instance reference, probably an inlined call to cc_dispatch_slot_something depending on whether it's a reader or writer and whether the location is an integer or a cons (i.e., :instance versus :class allocation). For the reader there is additionally a boundedness check. "standard slot reader or writer" means that there is no possibility of a slot-value-using-class or (setf slot-value-using-class) method imposing other behavior. Note that we have to use the direct classes of arguments for all of this, not just the classes the accessor methods are specialized on, because slot locations can change with ineritance.
 
-Note that this caching relies on the assumpion that COMPUTE-EFFECTIVE-METHOD is basically well behaved, in that if called with EQUAL method lists (and no redefinitions of the gf, etc. inbetween) it will return morally identical results. Note when I say "morally", it's because an effective method is a behavior, and the intuitive equivalence relation of behaviors is uncomputable. So if a programmer defines a COMPUTE-EFFECTIVE-METHOD method that use randomness or depend on the time of day or whatnot, fastgf won't pick it up. Given how often COMPUTE-EFFECTIVE-METHOD is specialized at all, let alone in such a pathological way, I think this is a reasonable condition to impose. If we had a manual we should document it, though (FIXME).
+"Leaf" methods are recognized by the standard method on MAKE-METHOD-LAMBDA. The body is analyzed for use of call-next-method and next-method-p, and if they're not present the method is a leaf. If the method called in an effective method is a leaf, the method-function is just called as an effective method. The actual outcome structure is cmp::function-outcome.
 
-Finally, just bare functions can be outcomes. Used in a few situations. First for leaf methods that don't have fast method functions. Then for two error conditions, no-applicable-method and no-required-method (a distinct condition- means like missing a primary method even if you have a :before method). These two latter are pretty sham functions that just APPLY something else.
+If a leaf method has all required arguments, and few enough that they can fit in registers (I'm working on abating this condition), the standard MAKE-METHOD-LAMBDA will additionally attach a "fast method function" to the method object. This is basically the method as a simple function, e.g. for (defmethod foo ((x integer)) (1+ x)) the fast method function is just (lambda (x) (1+ x)). This has the advantage of being called with just arguments, rather than a list of arguments and list of next-methods like a usual method-function. This is through the cmp::fast-method-call outcome.
+
+If there are no applicable methods, the outcome is not memoized (because it's probably just clutter). It is still computed, and consists of a cmp::function-outcome that just calls NO-APPLICABLE-METHOD as per the standard.
+
+If there is a lack of required methods - i.e. the method combination has some required method group, like PRIMARY in the standard combination, and it is found that no applicable methods are in this group - the outcome is memoized, just for lack of effort. It consists of a cmp::function-outcome that calls NO-REQUIRED-METHOD.
+
+The general case of an effective method that doesn't fit any of the above is represented by an cmp::effective-method-outcome. The object contains an effective method function and a list of applicable methods. The applicable methods slot is used so that if two call history entries have the same applicable methods, they can use the same effective method outcome, thus saving a bit of time and space. This can also make the dispatch tree more compact - if stamps 347-350 result in the same outcome, we can just test (<= 347 stamp 350) instead of doing four (= ...) tests.
+
+Note that this caching relies on the assumpion that COMPUTE-EFFECTIVE-METHOD is basically well behaved, in that if called with EQUAL method lists (and no redefinitions of the gf, etc. inbetween) it will return morally identical results. Note when I say "morally", it's because an effective method is a behavior, and the intuitive equivalence relation of behaviors is uncomputable. So if a programmer defines a COMPUTE-EFFECTIVE-METHOD method that use randomness or depend on the time of day or whatnot, fastgf won't pick it up. Given how often COMPUTE-EFFECTIVE-METHOD is specialized at all, let alone in such a pathological way, I think this is a reasonable condition to impose. We should document this better, though (FIXME).
 
 Currently all functions, as well as effective method outcomes, go through basically the same codegen path, so they have the same protocol- they take two arguments, first a vaslist of the gf arguments, then the next-methods. The next-methods are always NIL. FIXME.
 
 Outcomes are computed by compute-outcome.
+
+If all the outcomes in a call-history are NOT effective-method- or function- outcomes, the discriminating function doesn't need to produce a list of the arguments. This helps efficiency.
+
+Satiation Interface
+-------------------
+
+The major downside of fastgf is that compiling the discriminating functions takes time, and this can occur at time, leading to inconsistencies in timing and stuff. And since for various reasons Clasp has an especially slow compiler, we really feel this pain. The way we soothe this is "satiation" - installing call histories into generic functions without actually compiling them. We also use satiation to boot up the system as described above, but we can use it for optimization too. (All the code is in satiation.lsp.)
+
+As an example of the importance of this satiation, consider INITIALIZE-INSTANCE. Say it starts out with an empty call history. Then it's called to initialize something - a cleavir-ast:progn-ast object, say. This results in a dispatch miss followed by a discriminating function compilation. If it's then called with a cleavir-ast:car-ast object, there's another dispatch-miss and another compilation. Etc. etc., so every AST class results in another compile essentially the first time you try to use Cleavir. This causes a noticeable time lag, and the worse part is it's basically because fastgf is overeager - if it accumulated a call history of a few dozen classes, it could just compile once and be done.
+
+Instead we start it out with a fake call history so that once it's compiled once, we're golden.
+
+The interface to this is the CLOS:SATIATE function. The interface is described on the wiki but also here:
+
+You call (CLOS:SATIATE generic-function ...lists of specializer designators...). A "specializer designator" is either a specializer, a symbol (the name of a class), or a list (eql <object>) representing an eql specializer for that (unevaluated) object. This adds to any existing call history by adding entries for the given specializer lists.
+
+For the initialize-instance example, we would just do (clos:satiate #'initialize-instance '(cleavir-ast:progn-ast) '(cleavir-ast:car-ast) ...) and presto. (Obviously you only need specializers for the required parameters.)
+
+As a bonus, if you have a literal (CLOS:SATIATE ...) form, a compiler macro will try to compute the call history at compile time, provided the generic function and all appropriate methods exist.
+
+As a further extension that I'm still working on, the source of the discriminating function will appear in the compiler macroexpansion of CLOS:SATIATE, so that it isn't computed at load time at all. This requires coordination between the compiler and loader, because the stamp numbers have to appear literally in the code, meaning they have to be the same at compile-time and load-time. This may not be practical for non-internal code.
 
 Modification
 ============
@@ -174,4 +208,4 @@ It should basically work. There are a few conformance issues though, especially 
 
  * As mentioned, we let illegal modifications to standard functionality go through with nary a peep.
  * Method functions take a va-list rather than a list. Custom methods could run into problems there.
- * Infinitely many optimizations, including caching at make-instance call sites ("ctors"), which i have also implemented before being stymied by the build system, and "fast" methods that skip the complexities of the general protocol which guess.
+ * Infinitely many optimizations, including caching at make-instance call sites ("ctors"), which i have also implemented before being stymied by the build system.

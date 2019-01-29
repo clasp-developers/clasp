@@ -43,18 +43,16 @@
       (slot-value generic-function 'method-class)
       (find-class 'standard-method)))
 
-(defun maybe-augment-generic-function-lambda-list (name method-lambda-list)
+(defun maybe-augment-generic-function-lambda-list (gf method-lambda-list)
   "Add any &key parameters from method-lambda-list that are missing
 in the generic function lambda-list to the generic function lambda-list"
-  (when method-lambda-list
-    (let* ((gf (fdefinition name))
-           (gf-lambda-list-all (ext:function-lambda-list gf))
-           (has-aok (member '&allow-other-keys gf-lambda-list-all))
-           (gf-lambda-list (if has-aok
-                               (butlast gf-lambda-list-all 1)
-                               gf-lambda-list-all)))
-      (if (null gf-lambda-list)
-          (core:function-lambda-list-set gf method-lambda-list)
+  (let ((gf-lambda-list-all (ext:function-lambda-list gf)))
+    (if (eq gf-lambda-list-all (core:unbound)) ; uninitialized
+        (setf-lambda-list gf method-lambda-list)
+        (let* ((has-aok (member '&allow-other-keys gf-lambda-list-all))
+               (gf-lambda-list (if has-aok
+                                   (butlast gf-lambda-list-all 1)
+                                   gf-lambda-list-all)))
           (flet ((match-key (entry)
                    (cond
                      ((symbolp entry)
@@ -74,7 +72,7 @@ in the generic function lambda-list to the generic function lambda-list"
                   (when append-keys
                     (let ((new-ll (append gf-lambda-list append-keys
                                           (if has-aok (list '&allow-other-keys) nil))))
-                      (core:function-lambda-list-set gf new-ll)))))))))))
+                      (setf-lambda-list gf new-ll)))))))))))
 
 (defun prototypes-for-make-method-lambda (name)
   (if (not *clos-booted*)
@@ -108,19 +106,17 @@ in the generic function lambda-list to the generic function lambda-list"
             `(progn
                (eval-when (:compile-toplevel)
                  (cmp:register-global-function-def 'defmethod ',name))
-               (prog1
-                   (install-method ',name ',qualifiers
-                                   ,(specializers-expression specializers)
-                                   ',lambda-list
-                                   ,fn-form
-                                   ;; Note that we do not quote the options returned by make-method-lambda.
-                                   ;; This is essentially to make the fast method function easier.
-                                   ;; MOP is in my view ambiguous about whether they're supposed to be quoted.
-                                   ;; There's an example that sort of implies they are, but the extra
-                                   ;; flexibility is pretty convenient, and matches that the primary value is
-                                   ;; of course evaluated.
-                                   ,@options)
-                 (maybe-augment-generic-function-lambda-list ',name ',lambda-list)))))))))
+               (install-method ',name ',qualifiers
+                               ,(specializers-expression specializers)
+                               ',lambda-list
+                               ,fn-form
+                               ;; Note that we do not quote the options returned by make-method-lambda.
+                               ;; This is essentially to make the fast method function easier.
+                               ;; MOP is in my view ambiguous about whether they're supposed to be quoted.
+                               ;; There's an example that sort of implies they are, but the extra
+                               ;; flexibility is pretty convenient, and matches that the primary value is
+                               ;; of course evaluated.
+                               ,@options))))))))
 
 (defun specializers-expression (specializers)
   `(list ,@(loop for spec in specializers
@@ -378,6 +374,7 @@ have disappeared."
 	(setf (generic-function-lambda-list gf) (method-lambda-list method))
 	(setf (generic-function-argument-precedence-order gf)
 	      (rest (si::process-lambda-list (method-lambda-list method) t))))
+      (maybe-augment-generic-function-lambda-list gf (method-lambda-list method))
       (compute-g-f-spec-list gf)
       (invalidate-discriminating-function gf)
       method)))

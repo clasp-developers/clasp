@@ -46,6 +46,8 @@ SYMBOL_EXPORT_SC_(ClPkg, remove);
 SYMBOL_EXPORT_SC_(ClPkg, pprint_dispatch);
 SYMBOL_EXPORT_SC_(ClPkg, fileStream);
 
+SYMBOL_EXPORT_SC_(ClPkg, allocate_instance);
+
 
 #define ClPkg_SYMBOLS
 

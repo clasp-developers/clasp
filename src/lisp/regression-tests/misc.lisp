@@ -123,15 +123,6 @@
                  (load load-stream :verbose t :print t)))))
         (not (= 0 (length result-string)))))
 
-(test load-stream.3c
-      (let ((result-string
-             (with-output-to-string
-                 (*standard-output*)
-               (with-input-from-string
-                   (load-stream "(defun foo())")
-                 (load load-stream :verbose t :print t)))))
-        (not (= 0 (length result-string)))))
-
 (test-expect-error
  compile-1
  (compile-file "sys:regression-tests;I-do-not-exist.lisp")
@@ -147,10 +138,10 @@
                (with-output-to-string (*standard-output*)
                  (compile-file "sys:regression-tests;test-compile-file.lisp" :verbose t :print nil)))))
 
-(test compile-4
+(test compile-4a
       (not (string= ""
                (with-output-to-string (*standard-output*)
-                 (compile-file "sys:regression-tests;test-compile-file.lisp" :print t :verbose nil)))))
+                 (compile-file "sys:regression-tests;test-compile-file.lisp" :verbose nil :print t)))))
 
 (test compile-5
       (not (string= ""
@@ -176,5 +167,12 @@
  :type PROGRAM-ERROR)
 
 (test cl-symbols-1 (not (fboundp 'cl:reader-error)))
+
+(test-expect-error
+ special-operator-p-1
+ (special-operator-p 23)
+ :type type-error)
+
+(test-expect-error special-operator-p-2 (funcall 'go 23) :type undefined-function)
 
                  

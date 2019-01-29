@@ -193,6 +193,8 @@ SYMBOL_EXPORT_SC_(ExtPkg,ignore_signal);
 SYMBOL_EXPORT_SC_(ExtPkg,unix_signal_received);
 SYMBOL_EXPORT_SC_(KeywordPkg,process);
 SYMBOL_EXPORT_SC_(KeywordPkg,code);
+SYMBOL_EXPORT_SC_(KeywordPkg,handler);
+SYMBOL_EXPORT_SC_(CorePkg,STARinformation_callbackSTAR);
 
 
 SYMBOL_EXPORT_SC_(CorePkg, STARmpi_rankSTAR);
@@ -294,8 +296,6 @@ SYMBOL_EXPORT_SC_(CorePkg, lambdaName);
 SYMBOL_EXPORT_SC_(CorePkg, dump_module);
 SYMBOL_EXPORT_SC_(CorePkg, STARfunctions_to_inlineSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARfunctions_to_notinlineSTAR);
-SYMBOL_EXPORT_SC_(CorePkg, optimized_slot_reader);
-SYMBOL_EXPORT_SC_(CorePkg, optimized_slot_writer);
 SYMBOL_SC_(CorePkg, printf);
 
 //SYMBOL_EXPORT_SC_(CorePkg, asin);
@@ -813,6 +813,8 @@ SYMBOL_EXPORT_SC_(ClPkg, structure_object);
 SYMBOL_EXPORT_SC_(ClPkg, standard_object);
 SYMBOL_EXPORT_SC_(ClPkg, copy_structure);
 
+SYMBOL_EXPORT_SC_(CorePkg, defcallback);
+
 void testConses() {
   printf("%s:%d Testing Conses and iterators\n", __FILE__, __LINE__);
   List_sp cur = _Nil<T_O>();
@@ -1057,7 +1059,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   SYMBOL_SC_(CorePkg, cArgumentsLimit);
   _sym_cArgumentsLimit->defconstant(make_fixnum(Lisp_O::MaxFunctionArguments));
   _sym_STARdebugMacroexpandSTAR->defparameter(_Nil<T_O>());
-  _lisp->_Roots._ClassTable = HashTable_O::create(cl::_sym_eq);
+  _lisp->_Roots._ClassTable = HashTable_O::create_thread_safe(cl::_sym_eq,SimpleBaseString_O::make("CLTBLRD"),SimpleBaseString_O::make("CLTBLWR"));
   _sym_STARcodeWalkerSTAR->defparameter(_Nil<T_O>());
   _sym_STARsharpEqContextSTAR->defparameter(_Nil<T_O>());
   cl::_sym_STARreadDefaultFloatFormatSTAR->defparameter(cl::_sym_single_float);
@@ -1119,7 +1121,9 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   HashTableEqual_sp jit_save = HashTableEqual_O::create_default();
 #ifdef CLASP_THREADS
   // When threading - make *jit-saved-symbol-info* a thread safe hash table
-  jit_save->_Mutex = mp::SharedMutex_O::make_shared_mutex(_Nil<T_O>());
+  SimpleBaseString_sp sbsr = SimpleBaseString_O::make("JITSAVR");
+  SimpleBaseString_sp sbsw = SimpleBaseString_O::make("JITSAVW");
+  jit_save->_Mutex = mp::SharedMutex_O::make_shared_mutex(sbsr,sbsw);
 #endif
   comp::_sym_STARjit_saved_symbol_infoSTAR->defparameter(jit_save);
   //
@@ -1158,10 +1162,9 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARfunctions_to_inlineSTAR->defparameter(HashTableEqual_O::create_default());
   _sym_STARfunctions_to_notinlineSTAR->defparameter(HashTableEqual_O::create_default());
   _sym_STARextension_startup_loadsSTAR->defparameter(_Nil<T_O>());
-  _lisp->_Roots._Sysprop = HashTableEql_O::create_default();
-#ifdef CLASP_THREADS
-  _lisp->_Roots._Sysprop->set_thread_safe(true);
-#endif
+  SimpleBaseString_sp sbsr1 = SimpleBaseString_O::make("SYSPMNR");
+  SimpleBaseString_sp sbsw1 = SimpleBaseString_O::make("SYSPMNW");
+  _lisp->_Roots._Sysprop = gc::As<HashTableEql_sp>(HashTable_O::create_thread_safe(cl::_sym_eql,sbsr1,sbsw1));
   _sym_STARdebug_accessorsSTAR->defparameter(_Nil<T_O>());
   _sym_STARmodule_startup_function_nameSTAR->defparameter(SimpleBaseString_O::make(std::string(MODULE_STARTUP_FUNCTION_NAME)));
   _sym_STARmodule_shutdown_function_nameSTAR->defparameter(SimpleBaseString_O::make(std::string(MODULE_SHUTDOWN_FUNCTION_NAME)));
@@ -1183,6 +1186,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARdebug_dispatchSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARdebug_valuesSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARforeign_data_reader_callbackSTAR->defparameter(_Nil<core::T_O>());
+  _sym_STARinformation_callbackSTAR->defparameter(_Nil<core::T_O>());
   int optimization_level = 3;
   const char* optLevel = getenv("CLASP_OPTIMIZATION_LEVEL");
   if (optLevel) {

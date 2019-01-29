@@ -2536,13 +2536,6 @@ T_mv evaluate(T_sp exp, T_sp environment) {
   if (_evaluateVerbosity > 0) {
     printf("core::eval::evaluate depth[%5d] -> %s\n", _evaluateDepth, _rep_(exp).c_str());
   }
-  if (exp.nilp()) {
-    //		LOG(BF("Expression is nil - returning nil"));
-    if (_evaluateVerbosity > 0) {
-      printf("core::eval::evaluate depth[%5d] return <- %s\n", _evaluateDepth, _rep_(exp).c_str());
-    }
-    return Values(exp);
-  }
   if (!exp.consp()) {
     return evaluate_atom(exp, environment);
   }

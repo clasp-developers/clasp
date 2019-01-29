@@ -108,7 +108,7 @@ when this is t a lot of graphs will be generated.")
 
 ;;; So that we can dump ASTs (for DEFUNs with an inline expansion)
 (defmethod make-load-form ((ast cleavir-ast:ast) &optional environment)
-  (values `(allocate-instance ',(class-of ast))
+  (values `(allocate-instance ,(class-of ast))
           `(initialize-instance
             ,ast
             ,@(loop for (keyword reader)
@@ -184,13 +184,14 @@ when this is t a lot of graphs will be generated.")
   '(;; behavior as in convert-form.lisp
     core:lambda-name))
 
-(defvar *global-optimize*
-  ;; initial value, changed by de/proclaim
-  '((compilation-speed 1)
-    (debug 1)
-    (space 1)
-    (speed 1)
-    (safety 1)))
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defvar *global-optimize*
+    ;; initial value, changed by de/proclaim
+    '((compilation-speed 1)
+      (debug 1)
+      (space 1)
+      (speed 1)
+      (safety 1))))
 
 (eval-when (:compile-toplevel)
   (format t "about to compute-policy~%"))
@@ -376,28 +377,30 @@ when this is t a lot of graphs will be generated.")
                   (clasp-cleavir::draw-hir hir "/tmp/foo.dot")
                   hir))))))))
 
+(defun draw-ast (&optional (ast *ast*) filename)
+  (unless filename (setf filename (pathname (core:mkstemp "/tmp/ast"))))
+  (let* ((filename (merge-pathnames filename))
+         (dot-pathname (make-pathname :type "dot" :defaults (pathname filename)))
+	 (pdf-pathname (make-pathname :type "pdf" :defaults dot-pathname)))
+    (with-open-file (stream filename :direction :output)
+      (cleavir-ast-graphviz:draw-ast ast dot-pathname))
+    (ext:system (format nil "dot -Tpdf -o~a ~a" (namestring pdf-pathname) (namestring dot-pathname)))))
+
 (defun draw-hir (&optional (hir *hir*) filename)
   (unless filename (setf filename (pathname (core:mkstemp "/tmp/hir"))))
-  (with-open-file (stream filename :direction :output)
-    (cleavir-ir-graphviz:draw-flowchart hir stream))
-  (let* ((pdf-pn (make-pathname :type "pdf" :defaults filename)))
-    (ext:system (format nil "dot -Tpdf -o~a ~a" (namestring pdf-pn) (namestring filename)))
-    (ext:system (format nil "open -n ~a" (namestring pdf-pn)))))
+  (let* ((filename (merge-pathnames filename))
+         (dot-pathname (make-pathname :type "dot" :defaults (pathname filename)))
+	 (pdf-pathname (make-pathname :type "pdf" :defaults dot-pathname)))
+    (with-open-file (stream dot-pathname :direction :output)
+      (cleavir-ir-graphviz:draw-flowchart hir stream))
+    (ext:system (format nil "dot -Tpdf -o~a ~a" (namestring pdf-pathname) (namestring filename)))
+    (ext:system (format nil "open -n ~a" (namestring pdf-pathname)))))
 
 (defun draw-mir (&optional (mir *mir*) (filename "/tmp/mir.dot"))
   (with-open-file (stream filename :direction :output)
     (cleavir-ir-graphviz:draw-flowchart mir stream))
   (ext:system (format nil "dot -Teps -o/tmp/mir.eps ~a" filename))
   (ext:system "open -n /tmp/mir.eps"))
-
-(defun draw-ast (&optional (ast *ast*) filename)
-  (unless filename (setf filename (pathname (core:mkstemp "/tmp/ast"))))
-  (let* ((dot-pathname (pathname filename))
-	 (pdf-pathname (make-pathname :type "pdf" :defaults dot-pathname)))
-    (with-open-file (stream filename :direction :output)
-      (cleavir-ast-graphviz:draw-ast ast filename))
-    (ext:system (format nil "dot -Tpdf -o~a ~a" (namestring pdf-pathname) (namestring dot-pathname)))
-    (ext:system (format nil "open -n ~a" (namestring pdf-pathname)))))
 
 (defvar *hir-single-step* nil)
 (defun hir-single-step (&optional (on t))

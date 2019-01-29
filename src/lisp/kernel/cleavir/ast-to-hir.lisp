@@ -35,7 +35,7 @@
        temps
        (ecase (length successors)
 	 (1
-	  (if (typep results 'cleavir-ir:values-location)
+	  (if (cleavir-ir:values-location-p results)
                 (make-instance 'clasp-cleavir-hir:multiple-value-foreign-call-instruction
                                :function-name (clasp-cleavir-ast:function-name ast)
                                :inputs temps
@@ -65,7 +65,7 @@
        temps
        (ecase (length successors)
 	 (1
-	  (if (typep (car results) 'cleavir-ir:lexical-location)
+	  (if (cleavir-ir:lexical-location-p (car results))
               (make-instance 'clasp-cleavir-hir:foreign-call-instruction
                              :function-name (clasp-cleavir-ast:function-name ast)
                              :foreign-types (clasp-cleavir-ast:foreign-types ast)
@@ -95,7 +95,7 @@
        temps
        (ecase (length successors)
 	 (1
-	  (if (typep (car results) 'cleavir-ir:lexical-location)
+	  (if (cleavir-ir:lexical-location-p (car results))
               (make-instance 'clasp-cleavir-hir:foreign-call-pointer-instruction
                              :foreign-types (clasp-cleavir-ast:foreign-types ast)
                              :inputs temps
@@ -111,6 +111,17 @@
 	  (error "foreign-call-pointer-AST appears in a Boolean context.")))
        (cleavir-ast-to-hir::invocation context)))))
 
+(defmethod cleavir-ast-to-hir:compile-ast ((ast cc-ast:defcallback-ast) context)
+  (let ((closure-temp (cleavir-ir:new-temporary)))
+    (cleavir-ast-to-hir:compile-ast
+     (cleavir-ast:callee-ast ast)
+     (cleavir-ast-to-hir:context
+      (list closure-temp)
+      (list (make-instance 'clasp-cleavir-hir:defcallback-instruction
+              :args (cc-ast:defcallback-args ast)
+              :inputs (list closure-temp)
+              :successors (cleavir-ast-to-hir::successors context)))
+      (cleavir-ast-to-hir:invocation context)))))
 
 (defmethod cleavir-ast-to-hir:compile-ast ((ast cc-ast:vector-length-ast) context)
   (cleavir-ast-to-hir::assert-context ast context 1 1)
@@ -196,6 +207,30 @@
               (cleavir-ast-to-hir::invocation context))))
       (cleavir-ast-to-hir::invocation context)))))
 
+
+(defmethod cleavir-ast-to-hir:compile-ast ((ast cc-ast:vaslist-pop-ast) context)
+  (cleavir-ast-to-hir::assert-context ast context 1 1)
+  (let ((temp (cleavir-ir:new-temporary)))
+    (cleavir-ast-to-hir:compile-ast
+     (cleavir-ast:arg-ast ast)
+     (cleavir-ast-to-hir::context
+      (list temp)
+      (list (clasp-cleavir-hir:make-vaslist-pop-instruction
+             temp (first (cleavir-ast-to-hir::results context))
+             (first (cleavir-ast-to-hir::successors context))))
+      (cleavir-ast-to-hir::invocation context)))))
+
+(defmethod cleavir-ast-to-hir:compile-ast ((ast cc-ast:instance-stamp-ast) context)
+  (cleavir-ast-to-hir::assert-context ast context 1 1)
+  (let ((temp (cleavir-ir:new-temporary)))
+    (cleavir-ast-to-hir:compile-ast
+     (cleavir-ast:arg-ast ast)
+     (cleavir-ast-to-hir::context
+      (list temp)
+      (list (clasp-cleavir-hir:make-instance-stamp-instruction
+             temp (first (cleavir-ast-to-hir::results context))
+             (first (cleavir-ast-to-hir::successors context))))
+      (cleavir-ast-to-hir::invocation context)))))
 
 (defmethod cleavir-ast-to-hir:compile-ast ((ast cc-ast:bind-va-list-ast) context)
   (let ((temp (cleavir-ir:new-temporary)))
@@ -294,7 +329,7 @@
       (cleavir-ast-to-hir:compile-arguments
        all-args
        temps
-       (if (typep results 'cleavir-ir:values-location)
+       (if (cleavir-ir:values-location-p results)
 	   (make-instance 'clasp-cleavir-hir:invoke-instruction
 	     :inputs temps
 	     :outputs (list results)
@@ -328,7 +363,7 @@
           (destinations (compile-destinations
                          (clasp-cleavir-ast:destinations ast))))
       (let ((successor
-	      (if (typep results 'cleavir-ir:values-location)
+	      (if (cleavir-ir:values-location-p results)
 		  (make-instance 'clasp-cleavir-hir:multiple-value-invoke-instruction
 		    :inputs (cons function-temp form-temps)
 		    :outputs (list results)

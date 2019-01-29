@@ -69,7 +69,7 @@
   (core::select-package :cmp))
 (sys:*make-special '*dbg-generate-dwarf*)
 (setq *dbg-generate-dwarf* (null (member :disable-dbg-generate-dwarf *features*)))
-(export '(llvm-link link-bitcode-modules link-object-files))
+(export '(llvm-link link-bitcode-modules))
 ;;; Turn on aclasp/bclasp activation-frame optimization
 (sys:*make-special '*activation-frame-optimize*)
 (setq *activation-frame-optimize* t)

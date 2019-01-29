@@ -142,6 +142,42 @@ core::Symbol_sp lisp_classSymbolFromClassId(class_id cid) {
 
 namespace core {
 
+union NW {
+  uint64_t  word;
+  char name[8];
+};
+
+uint64_t lisp_nameword(core::T_sp name)
+{
+  NW nw;
+  if (gc::IsA<String_sp>(name)) {
+    String_sp sname = gc::As_unsafe<String_sp>(name);
+    size_t i = 0;
+    size_t iEnd(std::min((size_t)sname->length(),(size_t)8));
+    for ( ; i<iEnd; ++i ) {
+      nw.name[i] = sname->rowMajorAref(i).unsafe_character();
+    }
+    for ( size_t is = i; is<7; ++is ) nw.name[is] = ' ';
+    nw.name[7] = '\0';
+    return nw.word;
+  } else if (gc::IsA<Symbol_sp>(name)) {
+    if (name.nilp()) {
+      SIMPLE_ERROR(BF("The name must not be NIL"));
+    }
+    String_sp sname = gc::As_unsafe<Symbol_sp>(name)->symbolName();
+    size_t i = 0;
+    size_t iEnd(std::min((size_t)sname->length(),(size_t)8));
+    for ( ; i<iEnd; ++i ) {
+      nw.name[i] = sname->rowMajorAref(i).unsafe_character();
+    }
+    for ( size_t is = i; is<7; ++is ) nw.name[is] = ' ';
+    nw.name[7] = '\0';
+    return nw.word;
+  }
+  SIMPLE_ERROR(BF("The name must be a string or a symbol"));
+}
+    
+
 Instance_sp lisp_built_in_class() {
   return _lisp->_Roots._TheBuiltInClass;
 //  return cl__find_class(clbind::_sym_built_in_class,false,_Nil<T_O>());
@@ -601,6 +637,10 @@ string lispify_symbol_name(const string &s) {
       stream_pass1 << "+";
       continue;
     }
+    if (lispify_match(cur, "_DOT_")) {
+      stream_pass1 << ".";
+      continue;
+    }
     if (lispify_match(cur, "_EQ_")) {
       stream_pass1 << "=";
       continue;
@@ -958,7 +998,6 @@ void lisp_defineSingleDispatchMethod(T_sp name,
   method_body->setf_sourcePathname(_Nil<T_O>());
   method_body->setf_lambdaList(llhandler->lambdaList());
   method_body->setf_docstring(docStr);
-  method_body->setf_declares(ldeclares);
   ASSERT(llhandler || llhandler.notnilp());
 #ifdef DEBUG_PROGRESS
   printf("%s:%d lisp_defineSingleDispatchMethod sym: %s\n", __FILE__, __LINE__, _rep_(sym).c_str());
@@ -1017,7 +1056,6 @@ void lisp_defun(Symbol_sp sym,
   T_sp tdocstring = _Nil<T_O>();
   if (docstring!="") tdocstring = core::SimpleBaseString_O::make(docstring);
   fc->setf_lambdaList(llh->lambdaList());
-  fc->setf_declares(ldeclares);
   fc->setf_docstring(tdocstring);
   core::ext__annotate(sym,cl::_sym_documentation,cl::_sym_function, tdocstring);
   core::ext__annotate(func,cl::_sym_documentation,cl::_sym_function, tdocstring);
@@ -1049,7 +1087,6 @@ void lisp_defun_setf(Symbol_sp sym,
   if (docstring!="") tdocstring = core::SimpleBaseString_O::make(docstring);
   fc->setf_sourcePathname(_Nil<T_O>());
   fc->setf_lambdaList(llh->lambdaList());
-  fc->setf_declares(ldeclares);
   fc->setf_docstring(tdocstring);
   Function_sp func = fc;
   sym->setSetfFdefinition(func);
@@ -1073,7 +1110,6 @@ void lisp_defmacro(Symbol_sp sym,
   sym->setf_macroP(true);
   f->setf_sourcePathname(_Nil<T_O>());
   f->setf_lambdaList(llh->lambdaList());
-  f->setf_declares(ldeclares);
   T_sp tdocstring = _Nil<T_O>();
   if (docstring!="") tdocstring = core::SimpleBaseString_O::make(docstring);
   f->setf_docstring(tdocstring);

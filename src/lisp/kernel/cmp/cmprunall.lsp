@@ -38,7 +38,7 @@ load-time-value manager (true - in COMPILE-FILE) or not (false - in COMPILE)."
 (defvar *run-all-result*)
 
 
-(defmacro with-make-new-run-all ((run-all-fn &optional (name-suffix "")) &body body)
+(defmacro with-make-new-run-all ((run-all-fn &optional (name-suffix '(core:bformat nil "*%d" (core:next-number)))) &body body)
   "Set up a run-all function in the current module, return the run-all-fn"
   (let ((irbuilder-alloca (gensym "ltv-irbuilder-alloca"))
 	(irbuilder-body (gensym "ltv-irbuilder-body")))

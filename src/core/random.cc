@@ -52,11 +52,12 @@ CL_DEFUN RandomState_sp RandomState_O::make(T_sp state) {
                                        Cons_O::createList(cl::_sym_eql, cl::_sym_T_O)));
 }
 
-// sbcl says this type is needed for random (or (integer 1) (float (0)))
-#define TYPE_ERROR_cl_random(_datum_)                                                                             \
+// sbcl says this type is needed for random  (OR (SINGLE-FLOAT (0.0)) (DOUBLE-FLOAT (0.0d0)) (INTEGER 1))
+// better use just float instead of using all subtypes
+#define TYPE_ERROR_cl_random(_datum_)                                                                              \
   TYPE_ERROR(_datum_, Cons_O::createList(cl::_sym_or,                                                              \
                                          Cons_O::createList(cl::_sym_Integer_O, make_fixnum(1)),                   \
-                                         Cons_O::createList(cl::_sym_float, Cons_O::createList(make_fixnum(1)))))
+                                         Cons_O::createList(cl::_sym_float, Cons_O::createList(clasp_make_single_float(0.0)))))
 
 CL_LAMBDA(olimit &optional (random-state cl:*random-state*));
 CL_DECLARE();

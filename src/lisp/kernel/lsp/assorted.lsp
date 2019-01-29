@@ -225,5 +225,8 @@
     (loop for i from 0 below (integer-length integer)
           count (= counting (ldb (byte 1 i) integer)))))
 
+#|
+This is already correctly defined in c++, this version errors
 (defun logbitp (index integer)
   (ldb-test (byte 1 index) integer))
+|#

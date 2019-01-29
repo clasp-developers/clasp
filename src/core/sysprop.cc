@@ -51,10 +51,7 @@ CL_DEFUN T_sp core__put_sysprop(T_sp key, T_sp area, T_sp value) {
   if (foundHashTable) {
     retval = gc::As<HashTableEql_sp>(area_hash_table)->hash_table_setf_gethash(key, value);
   } else {
-    HashTableEql_sp new_hash_table = HashTableEql_O::create_default();
-#ifdef CLASP_THREADS
-    new_hash_table->set_thread_safe(true);
-#endif
+    HashTableEql_sp new_hash_table = gc::As<HashTableEql_sp>(HashTable_O::create_thread_safe(cl::_sym_eql,SimpleBaseString_O::make("SYSPRRD"),SimpleBaseString_O::make("SYSPRWR")));
     new_hash_table->hash_table_setf_gethash(key, value);
     retval = gc::As<HashTableEql_sp>(sysprops)->hash_table_setf_gethash(area, new_hash_table);
   }

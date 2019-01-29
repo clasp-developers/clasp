@@ -58,70 +58,68 @@
 ;;; is used internally by ECL during bootstrap. Unlike WITH-SLOTS,
 ;;; the macros directly access the slots by index.
 ;;;
-(eval-when (:compile-toplevel :execute #+clasp-boot :load-toplevel)
-  (defmacro with-early-accessors ((&rest slot-definitions) &rest body)
-    `(macrolet
-	 ,(loop for slots in slot-definitions
-	     nconc (loop for (name . slotd) in (if (symbolp slots)
-						   (symbol-value slots)
-						   slots)
-		      for index from 0
-		      for accessor = (or (getf slotd :accessor) (getf slotd :reader))
-		      when accessor
-		      collect `(,accessor (object) `(si::instance-ref ,object ,,index))))
-       ,@body)))
+(defmacro with-early-accessors ((&rest slot-definitions) &rest body)
+  `(macrolet
+       ,(loop for slots in slot-definitions
+              nconc (loop for (name . slotd) in (if (symbolp slots)
+                                                    (symbol-value slots)
+                                                    slots)
+                          for index from 0
+                          for accessor = (or (getf slotd :accessor) (getf slotd :reader))
+                          when accessor
+                            collect `(,accessor (object) `(si::instance-ref ,object ,,index))))
+     ,@body))
 
 ;;;
 ;;; The following macro are also used at bootstrap for instantiating
 ;;; a class based only on the s-form description.
 ;;;
-(eval-when (:compile-toplevel :execute #+clasp-boot :load-toplevel)
-  (defmacro with-early-make-instance (slots (object class &rest key-value-pairs)
-				      &rest body)
-    (when (symbolp slots)
-      (setf slots (symbol-value slots)))
-    `(let* ((%class ,class)
-	    (,object (core:allocate-new-instance %class ,(length slots))))
-       (declare (type standard-object ,object))
-       ,@(flet ((initializerp (name list)
-		  (not (eq (getf list name 'wrong) 'wrong))))
-	       (loop for (name . slotd) in slots
-		  for initarg = (getf slotd :initarg)
-		  for initform = (getf slotd :initform (si::unbound))
-		  for initvalue = (getf key-value-pairs initarg)
-		  for index from 0
-		  do (cond ((and initarg (initializerp initarg key-value-pairs))
-			    (setf initform (getf key-value-pairs initarg)))
-			   ((initializerp name key-value-pairs)
-			    (setf initform (getf key-value-pairs name))))
-		  when (si:sl-boundp initform)
-		  collect `(si::instance-set ,object ,index ,initform)))
-       (with-early-accessors (,slots)
-	 ,@body)))
-  
-  (defmacro with-early-make-funcallable-instance (slots (object class &rest key-value-pairs)
-                                                  &rest body)
-    (when (symbolp slots)
-      (setf slots (symbol-value slots)))
-    `(let* ((%class ,class)
-            ;; Identical to above macro except here. (FIXME: rewrite more nicely.)
-	    (,object (core:allocate-new-funcallable-instance %class ,(length slots))))
-       (declare (type standard-object ,object))
-       ,@(flet ((initializerp (name list)
-		  (not (eq (getf list name 'wrong) 'wrong))))
-	       (loop for (name . slotd) in slots
-		  for initarg = (getf slotd :initarg)
-		  for initform = (getf slotd :initform (si::unbound))
-		  for initvalue = (getf key-value-pairs initarg)
-		  for index from 0
-		  do (cond ((and initarg (initializerp initarg key-value-pairs))
-			    (setf initform (getf key-value-pairs initarg)))
-			   ((initializerp name key-value-pairs)
-			    (setf initform (getf key-value-pairs name))))
-		  when (si:sl-boundp initform)
-		  collect `(si::instance-set ,object ,index ,initform)))
-       (with-early-accessors (,slots)
-	 ,@body))))
+(defmacro with-early-make-instance (slots (object class &rest key-value-pairs)
+                                    &rest body)
+  (when (symbolp slots)
+    (setf slots (symbol-value slots)))
+  `(let* ((%class ,class)
+          (,object (core:allocate-new-instance %class ,(length slots))))
+     (declare (type standard-object ,object))
+     ,@(flet ((initializerp (name list)
+                (not (eq (getf list name 'wrong) 'wrong))))
+         (loop for (name . slotd) in slots
+               for initarg = (getf slotd :initarg)
+               for initform = (getf slotd :initform (si::unbound))
+               for initvalue = (getf key-value-pairs initarg)
+               for index from 0
+               do (cond ((and initarg (initializerp initarg key-value-pairs))
+                         (setf initform (getf key-value-pairs initarg)))
+                        ((initializerp name key-value-pairs)
+                         (setf initform (getf key-value-pairs name))))
+               when (si:sl-boundp initform)
+                 collect `(si::instance-set ,object ,index ,initform)))
+     (with-early-accessors (,slots)
+       ,@body)))
+
+(defmacro with-early-make-funcallable-instance (slots (object class &rest key-value-pairs)
+                                                &rest body)
+  (when (symbolp slots)
+    (setf slots (symbol-value slots)))
+  `(let* ((%class ,class)
+          ;; Identical to above macro except here. (FIXME: rewrite more nicely.)
+          (,object (core:allocate-new-funcallable-instance %class ,(length slots))))
+     (declare (type standard-object ,object))
+     ,@(flet ((initializerp (name list)
+                (not (eq (getf list name 'wrong) 'wrong))))
+         (loop for (name . slotd) in slots
+               for initarg = (getf slotd :initarg)
+               for initform = (getf slotd :initform (si::unbound))
+               for initvalue = (getf key-value-pairs initarg)
+               for index from 0
+               do (cond ((and initarg (initializerp initarg key-value-pairs))
+                         (setf initform (getf key-value-pairs initarg)))
+                        ((initializerp name key-value-pairs)
+                         (setf initform (getf key-value-pairs name))))
+               when (si:sl-boundp initform)
+                 collect `(si::instance-set ,object ,index ,initform)))
+     (with-early-accessors (,slots)
+       ,@body)))
 
 ;;;
 ;;; ECL classes store slots in a hash table for faster access. The

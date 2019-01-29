@@ -952,20 +952,13 @@ But no irbuilders or basic-blocks. Return the fn."
         (core:bformat t "lineno: %s%N" lineno)
         (core:bformat t "column: %s%N" column)
         (core:bformat t "filepos: %s%N" filepos))
-      (let ((source-pathname-index (literal:reference-literal source-pathname))
-            (function-name-index (literal:reference-literal function-name t))
-            (lambda-list-index (literal:reference-literal lambda-list t))
-            (docstring-index (literal:reference-literal docstring t))
-            (declare-index (literal:reference-literal declares t)))
+      (let* ((source-pathname.function-name-index (literal:reference-literal (cons source-pathname function-name)))
+             (lambda-list.docstring-index (literal:reference-literal (cons lambda-list docstring))))
         #+(or)
         (progn
-          (core:bformat t "source-pathname-index: %s%N" source-pathname-index)
-          (core:bformat t "function-name-index: %s%N" function-name-index)
-          (core:bformat t "lambda-list-index: %s%N" lambda-list-index)
-          (core:bformat t "docstring-index: %s%N" docstring-index)
-          (core:bformat t "declare-index: %s%N" declare-index))
-        (unless lambda-list-index (error "There is no lambda-list-index"))
-        (unless docstring-index (error "There is no docstring-index"))
+          (core:bformat t "source-pathname.function-name-index: %s%N" source-pathname.function-name-index)
+          (core:bformat t "lambda-list.docstring-index: %s%N" lambda-list.docstring-index))
+        (unless lambda-list.docstring-index (error "There is no lambda-list.docstring-index"))
         (unless lineno (error "There is no lineno"))
         (unless column (error "There is no column"))
         (unless filepos (error "There is no filepos"))
@@ -977,23 +970,16 @@ But no irbuilders or basic-blocks. Return the fn."
          (llvm-sys:constant-struct-get %function-description%
                                        (progn
                                          (progn
-                                           (when (> source-pathname-index +maxi32+) (error "source-pathname-index ~a out-of-bounds for i32" source-pathname-index))
-                                           (when (> source-pathname-index +maxi32+) (error "source-pathname-index ~a out of bounds for i32" source-pathname-index))
-                                           (when (> function-name-index +maxi32+) (error "function-name-index ~a out of bounds for i32" function-name-index))
-                                           (when (> lambda-list-index +maxi32+) (error "lambda-list-index ~a out of bounds for i32" lambda-list-index))
-                                           (when (> docstring-index +maxi32+) (error "docstring-index ~a out of bounds for i32" docstring-index))
-                                           (when (> declare-index +maxi32+) (error "declare-index ~a out of bounds for i32" declare-index))
+                                           (when (> source-pathname.function-name-index +maxi32+) (error "source-pathname.function-name-index ~a out-of-bounds for i32" source-pathname.function-name-index))
+                                           (when (> lambda-list.docstring-index +maxi32+) (error "lambda-list.docstring-index ~a out of bounds for i32" lambda-list.docstring-index))
                                            (when (> lineno +maxi32+) (error "lineno ~a out of bounds for i32" lineno))
                                            (when (> column +maxi32+) (error "column ~a out of bounds for i32" column))
                                            (when (> filepos +maxi32+) (error "filepos ~a out of bounds for i32" filepos)))
                                          (list
                                           fn
                                           literal::*gcroots-in-module*
-                                          (jit-constant-i32 source-pathname-index)
-                                          (jit-constant-i32 function-name-index)
-                                          (jit-constant-i32 lambda-list-index)
-                                          (jit-constant-i32 docstring-index)
-                                          (jit-constant-i32 declare-index)
+                                          (jit-constant-i32 source-pathname.function-name-index)
+                                          (jit-constant-i32 lambda-list.docstring-index)
                                           (jit-constant-i32 lineno)
                                           (jit-constant-i32 column)
                                           (jit-constant-i32 filepos)
@@ -1526,6 +1512,7 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
    Pass XXXX as the sym to this function."
   (irc-load (literal:compile-reference-to-literal sym)))
 
+#+(or)
 (defun irc-symbol-value-ref (env sym)
   "Return a reference to the symbol-value"
   (irc-intrinsic "symbolValueReference" (irc-global-symbol sym env)))

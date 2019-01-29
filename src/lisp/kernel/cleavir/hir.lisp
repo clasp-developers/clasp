@@ -107,6 +107,14 @@
                  :outputs outputs
                  :successors (if successor-p (list successor) '())))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Instruction DEFCALLBACK-INSTRUCTION
+;;;
+
+(defclass defcallback-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin
+                                   cleavir-ir:side-effect-mixin)
+  ((%args :initarg :args :reader defcallback-args)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -215,6 +223,38 @@
                  :inputs (list mdarray axis)
                  :outputs (list output)
                  :successors (if successor-p (list successor) nil)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Instruction VASLIST-POP-INSTRUCTION
+;;;
+
+(defclass vaslist-pop-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+  ())
+
+(defmethod cleavir-ir-graphviz:label ((instr vaslist-pop-instruction)) "vaslist-pop")
+
+(defun make-vaslist-pop-instruction (vaslist output &optional (successor nil successorp))
+  (make-instance 'vaslist-pop-instruction
+                 :inputs (list vaslist)
+                 :outputs (list output)
+                 :successors (if successorp (list successor) nil)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Instruction INSTANCE-STAMP-INSTRUCTION
+;;;
+
+(defclass instance-stamp-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+  ())
+
+(defmethod cleavir-ir-graphviz:label ((instr instance-stamp-instruction)) "instance-stamp")
+
+(defun make-instance-stamp-instruction (arg output &optional (successor nil successorp))
+  (make-instance 'instance-stamp-instruction
+                 :inputs (list arg)
+                 :outputs (list output)
+                 :successors (if successorp (list successor) nil)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -329,6 +369,9 @@
     :index index
     :original-object original-object))
 
+(defgeneric precalc-value-instruction-p (instruction)
+  (:method ((instruction t)) nil)
+  (:method ((instruction precalc-value-instruction)) t))
 
 (defun escaped-string (str)
   (with-output-to-string (s) (loop for c across str do (when (member c '(#\\ #\")) (princ #\\ s)) (princ c s))))

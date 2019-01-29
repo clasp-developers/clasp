@@ -1,7 +1,7 @@
 (in-package #:clasp-tests)
 
 (setq *expected-failures*
-      '(ANSI-PUSHNEW.14 ;;; this is debatable, will ask jackdaniel to verify, I consider this undefined behaviour
+      '(ANSI-PUSHNEW.14A 
         EQUALP-2
         ;;; EQUALP-CLHS-2
         EQUALP-3 EQUALP-4
@@ -15,15 +15,17 @@
         ;;; BROADCAST-STREAM
         NEQ-1 NEQ-4 NEQ-5 NEQ-6
         ;;; NEQ-8 EQ-7
-        NEGATE-MOST-NEGATIVE-FIXNUM-1
-        ABS-1
-        ASH-1
-        LOGBITP-1
-        CL-SYMBOLS-1
-        ;;; loop
+        ;;; NEGATE-MOST-NEGATIVE-FIXNUM-1
+        ;;; ABS-1
+        ;;; ASH-1
+        ;;; LOGBITP-1
+        ;;; CL-SYMBOLS-1
+        ;;; loop this are all fixed using sicl loop
         LOOP-COMPLEX-1 LOOP-FLOAT-1 LOOP-FLOAT-2 LOOP-FIXNUM-1
-        LOOP-FINALLY-1 LOOP-FINALLY-2 LOOP-FINALLY-3
+        LOOP-FINALLY-1 LOOP-FINALLY-2 LOOP-FINALLY-3 LOOP-FINALLY-4
         LOOP-COLLECT-1 LOOP-COLLECT-2 LOOP-COLLECT-3
         LOOP-COLLECT-4 LOOP-COLLECT-5 LOOP-COLLECT-6
+        ;;; print-5 
+        PRINT-READ-1
         )
       )

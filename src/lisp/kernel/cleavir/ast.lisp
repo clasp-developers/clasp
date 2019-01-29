@@ -1,6 +1,5 @@
 (in-package :clasp-cleavir-ast)
 
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Class SETF-FDEFINITION-AST.
@@ -183,6 +182,21 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; Class DEFCALLBACK-AST
+;;;
+;;; This AST is used to represent a callback definition.
+
+(defclass defcallback-ast (cleavir-ast:ast cleavir-ast:no-value-ast-mixin)
+  (;; None of these are evaluated and there's a ton of them
+   ;; so why bother splitting them up
+   (%args :initarg :args :reader defcallback-args)
+   (%callee :initarg :callee :reader cleavir-ast:callee-ast)))
+
+(defmethod cleavir-ast:children ((ast defcallback-ast))
+  (list (cleavir-ast:callee-ast ast)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; Class VECTOR-LENGTH-AST
 ;;;
 ;;; Represents an operation to get the length of a vector.
@@ -294,7 +308,42 @@
   (list (array-dimension-ast-mdarray ast)
         (array-dimension-ast-axis ast)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Class VASLIST-POP-AST
+;;;
+;;; Pops an element off a valist.
+;;; Doesn't necessarily check that there is an element.
 
+(defclass vaslist-pop-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
+  ((%arg-ast :initarg :vaslist :reader cleavir-ast:arg-ast)))
+
+(cleavir-io:define-save-info vaslist-pop-ast
+    (:vaslist cleavir-ast:arg-ast))
+
+(defmethod cleavir-ast-graphviz::label ((ast vaslist-pop-ast))
+  "vaslist-pop")
+
+(defmethod cleavir-ast:children ((ast vaslist-pop-ast))
+  (list (cleavir-ast:arg-ast ast)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Class INSTANCE-STAMP-AST
+;;;
+;;; Get the stamp of an object.
+
+(defclass instance-stamp-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
+  ((%arg-ast :initarg :arg :reader cleavir-ast:arg-ast)))
+
+(cleavir-io:define-save-info instance-stamp-ast
+    (:arg cleavir-ast:arg-ast))
+
+(defmethod cleavir-ast-graphviz::label ((ast instance-stamp-ast))
+  "instance-stamp")
+
+(defmethod cleavir-ast:children ((ast instance-stamp-ast))
+  (list (cleavir-ast:arg-ast ast)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -470,34 +519,36 @@ precalculated-vector and returns the index."
 (defclass multiple-value-invoke-ast (cleavir-ast:multiple-value-call-ast)
   ((%destinations :accessor destinations :initarg :destinations)))
 
-(defvar *invocation-context*)
+;;; Let's get rid of *invocation-context* and pass it as an argument
+;;;(defvar *invocation-context*)
 
 (defun introduce-invoke (ast)
   (let ((visitedp (make-hash-table :test #'eq)))
-    (labels ((introduce-invoke-aux (ast)
+    (labels ((introduce-invoke-aux (ast invocation-context)
                (unless (gethash ast visitedp)
                  (setf (gethash ast visitedp) t)
-                 (let ((new-context *invocation-context*))
-                   (typecase ast
-                     (cleavir-ast:block-ast (push ast new-context))
-                     (cleavir-ast:tagbody-ast
+                 (let ((new-context invocation-context))
+                   (cond
+                     ((cleavir-ast:block-ast-p ast) (push ast new-context))
+                     ((cleavir-ast:tagbody-ast-p ast)
                       (loop for item in (cleavir-ast:item-asts ast)
-                            when (typep item 'cleavir-ast:tag-ast)
+                            when (cleavir-ast:tag-ast-p item)
                               do (push item new-context)))
-                     (cleavir-ast:function-ast
+                     ((cleavir-ast:function-ast-p ast)
                       ;; Another level down, so reset.
                       (setf new-context nil))
-                     (cleavir-ast:call-ast ; Mark, if it could unwind here.
-                      (unless (null *invocation-context*)
+                     ((cleavir-ast:call-ast-p ast) ; Mark, if it could unwind here.
+                      (unless (null invocation-context)
                         (change-class ast 'clasp-cleavir-ast:invoke-ast
-                                      :destinations *invocation-context*)))
-                     (cleavir-ast:multiple-value-call-ast
-                      (unless (null *invocation-context*)
+                                      :destinations invocation-context)))
+                     ((cleavir-ast:multiple-value-call-ast-p ast)
+                      (unless (null invocation-context)
                         (change-class ast 'clasp-cleavir-ast:multiple-value-invoke-ast
-                                      :destinations *invocation-context*))))
+                                      :destinations invocation-context))))
                    ;; Recur.
-                   (let ((*invocation-context* new-context))
-                     (mapc #'introduce-invoke-aux (cleavir-ast:children ast)))))
+                   (let ((invocation-context new-context))
+                     (mapc (lambda (child-ast) (introduce-invoke-aux child-ast invocation-context))
+                           (cleavir-ast:children ast)))))
                (values)))
-      (let ((*invocation-context* nil))
-        (introduce-invoke-aux ast)))))
+      (let ((invocation-context nil))
+        (introduce-invoke-aux ast invocation-context)))))

@@ -245,9 +245,10 @@ DebugStream::DebugStream(int rank) : DebugLogAsXml(false) {
   //    this->_InvocationHistoryStack.setTraceFileLine("--Debugging off--",0);
   //    this->_DebugPrefix = "--Debugging off--";
   this->_DebugFileNames.clear();
-  boost::format fileName("_candoDebug%05d.log");
-  fileName % this->DebugLogProcessRank;
-  this->_LogFileName = fileName.str();
+  stringstream ss;
+  pid_t pid = getpid();
+  ss << "/tmp/_claspDebug_" << pid << ".log";
+  this->_LogFileName = ss.str();
   char *cstr = getenv("CLASP_DEBUG");
   if (cstr != NULL) {
     printf("=== Initializing source code debug/log system\n");

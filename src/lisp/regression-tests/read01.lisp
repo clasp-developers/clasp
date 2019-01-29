@@ -33,6 +33,25 @@
 (test-expect-error read-6 (READ-FROM-STRING ",") :type reader-error)
 (test-expect-error read-7 (READ-FROM-STRING "#)" NIL NIL) :type reader-error)
 
+(test read-8
+      (let ((wide-string (make-string 4 :initial-element (code-char 256))))
+        (string= wide-string
+                 (with-input-from-string (stream wide-string)
+                   (read-line stream)))))
+
+(test-expect-error read-9 (read-byte) :type PROGRAM-ERROR)
+(test-expect-error read-10 (read-byte nil) :type type-error)
+(test-expect-error read-11 (read-byte t) :type type-error)
+(test-expect-error read-12 (read-byte 23) :type type-error)
+(test-expect-error read-13
+                   (with-input-from-string (strm "wq12351523765127635765232")
+                     (read-byte strm))
+                   :type type-error)
+
+;;; used to error with A string of dots was encountered by the reader.
+(test error-mcclim-1
+      (list :\.))
+
 
   
 

@@ -146,7 +146,7 @@ BUILTIN_ATTRIBUTES core::T_O* cc_dispatch_slot_writer_cons(core::T_O* tvalue, co
   core::SimpleVector_sp optinfo((gctools::Tagged)toptinfo);
   core::Cons_sp cons = gc::As_unsafe<core::Cons_sp>((*optinfo)[OPTIMIZED_SLOT_INDEX_INDEX]);
   core::T_sp value((gctools::Tagged)tvalue);
-  CONS_CAR(cons) = value;
+  cons->rplaca(value);
   return value.raw_();
 }
 

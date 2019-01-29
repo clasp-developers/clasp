@@ -120,39 +120,64 @@ Number_sp clasp_make_complex (Real_sp r, Real_sp i) {
     // need to check whether i is 0
     // A bignum better not be 0
     // if realpart is a rational and imagpart is the rational number zero, the result of complex is realpart, a rational. 
-    if (i.fixnump() && cl__rationalp(r)) {
-      Fixnum fn = i.unsafe_fixnum();
-      if (fn == 0)
-        return r;
-      else return Complex_O::create(r, i);
-    }
+  if (i.fixnump() && cl__rationalp(r)) {
+    Fixnum fn = i.unsafe_fixnum();
+    if (fn == 0)
+      return r;
+    else return Complex_O::create(r, i);
+  }
     // If imagpart is not supplied, the imaginary part is a zero of the same type as realpart;
     // perhaps need to distinguish better whether i is supplied or not
-    if (cl__floatp(r) && i.fixnump() && clasp_zerop(i)) {
-      if (r.single_floatp())
-        i = clasp_make_single_float(0.0);
-      else if (core__double_float_p (r))
-        i = DoubleFloat_O::create(0.0);
-      else if (core__long_float_p(r))
-        i = LongFloat_O::create(0.0l);
+  if (cl__floatp(r) && i.fixnump() && clasp_zerop(i)) {
+    if (r.single_floatp())
+      i = clasp_make_single_float(0.0);
+    else if (core__double_float_p (r))
+      i = DoubleFloat_O::create(0.0);
+    else if (core__long_float_p(r))
+      i = LongFloat_O::create(0.0l);
       // short floats are not really implemented
-    }
+  }
     // If either realpart or imagpart is a float, the non-float is converted to a float before the complex is created. 
     // does that mean, I need to distinguish single and double-float? PDietz seem to assume so
-    else if (cl__floatp(r) && !cl__floatp(i)) {
-      if (r.single_floatp())
-        i = cl__float(i, clasp_make_single_float(1.0));
-      else
-        i = cl__float(i, DoubleFloat_O::create(1.0));
-    }
-    else if (cl__floatp(i) && !cl__floatp(r)){
-      if (i.single_floatp())
-        r = cl__float(r, clasp_make_single_float(1.0));
-      else
-        r = cl__float(r, DoubleFloat_O::create(1.0));
-    }
-    return Complex_O::create(r, i);
+  else if (cl__floatp(r) && !cl__floatp(i)) {
+    if (r.single_floatp())
+      i = cl__float(i, clasp_make_single_float(1.0));
+    else
+      i = cl__float(i, DoubleFloat_O::create(1.0));
   }
+  else if (cl__floatp(i) && !cl__floatp(r)) {
+    if (i.single_floatp())
+      r = cl__float(r, clasp_make_single_float(1.0));
+    else
+      r = cl__float(r, DoubleFloat_O::create(1.0));
+  }
+  else if (cl__floatp(i) && cl__floatp(r)) {
+      // the highest type of both wins single -> double -> long
+    if (r.single_floatp()) {
+      if (!(i.single_floatp())) {
+        // r should be of type of i
+        if (core__double_float_p (i))
+          r =  DoubleFloat_O::create((double) r.unsafe_single_float());
+        else r = LongFloat_O::create((long) r.unsafe_single_float());
+      }
+    }
+    else if (core__double_float_p (r)) {
+      if (!(core__double_float_p (i))) {
+        if (core__long_float_p (i))
+          r = LongFloat_O::create(clasp_to_long_float(r));
+        else i =  DoubleFloat_O::create((double) i.unsafe_single_float());
+      }
+    }
+    else if (core__long_float_p (r))
+      if (!(core__long_float_p (i))) {
+        if  (i.single_floatp())
+          i = DoubleFloat_O::create((double) i.unsafe_single_float());
+        else
+          i = LongFloat_O::create(clasp_to_long_float(i));
+      }
+  }
+  return Complex_O::create(r, i);
+}
 
 CL_LAMBDA(num);
 CL_DECLARE();
@@ -1469,12 +1494,10 @@ Rational_sp Rational_O::create(Integer_sp num, Integer_sp denom) {
   return Rational_O::create(clasp_to_mpz(num), clasp_to_mpz(denom));
 }
 
-CL_LAMBDA(num);
-CL_DECLARE();
 CL_DOCSTRING("Return a number that is NAN");
-CL_DEFUN DoubleFloat_mv core__nan() {
+CL_DEFUN DoubleFloat_sp core__nan() {
   DoubleFloat_sp rnan = DoubleFloat_O::create(NAN);
-  return (Values(rnan));
+  return (rnan);
 }
 
 // --------------------------------------------------------------------------------
@@ -1911,8 +1934,7 @@ Number_sp Ratio_O::signum_() const {
 }
 
 Number_sp Ratio_O::sqrt_() const {
-  // (sqrt (/ x y)) = (/ (sqrt x) (sqrt y))
-  return clasp_divide(clasp_sqrt(this->_numerator), clasp_sqrt(this->_denominator));
+  return float_sqrt(this->as_float_());
 }
 
 Number_sp Ratio_O::reciprocal_() const {
@@ -2049,11 +2071,20 @@ Number_sp Complex_O::sqrt_() const {
 
 Number_sp Bignum_O::sqrt_() const {
   // Could move the <0 logic out to another function, to share
+  // Might try to convert to a double-float, if this does not fit into a single-float
   float z = this->as_float_();
-  if (z < 0)
-    return clasp_make_complex(clasp_make_single_float(0.0), clasp_make_single_float(sqrt(-z)));
-  else
-    return clasp_make_single_float(sqrt(z));
+  if (std::isinf (z)) {
+    double z1 = this->as_double_();
+    if (z1 < 0)
+      return clasp_make_complex(clasp_make_double_float(0.0), clasp_make_double_float(sqrt(-z)));
+    else
+      return clasp_make_double_float(sqrt(z1));
+  } else {
+    if (z < 0)
+      return clasp_make_complex(clasp_make_single_float(0.0), clasp_make_single_float(sqrt(-z)));
+    else
+      return clasp_make_single_float(sqrt(z));
+  }
 }
 
 Number_sp Bignum_O::reciprocal_() const {
@@ -3475,7 +3506,7 @@ double clasp_to_double( core::T_sp x )
   } else if (gc::IsA<Number_sp>(x)) {
     return gc::As_unsafe<Number_sp>(x)->as_double_();
   }
-  TYPE_ERROR(x,Cons_O::createList(cl::_sym_Number_O));
+  TYPE_ERROR(x,cl::_sym_Number_O);
 }
 
 double clasp_to_double( core::Real_sp x )
@@ -3497,7 +3528,7 @@ double clasp_to_double( core::General_sp x )
   if (gc::IsA<Number_sp>(x)) {
     return gc::As_unsafe<Number_sp>(x)->as_double_();
   }
-  TYPE_ERROR(x,Cons_O::createList(cl::_sym_Number_O));
+  TYPE_ERROR(x,cl::_sym_Number_O);
 };
 
 

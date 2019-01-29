@@ -214,7 +214,8 @@ class Package_O : public General_O {
  public:
   // Not default constructable
  Package_O() : _Nicknames(_Nil<T_O>()), _LocalNicknames(_Nil<T_O>()),
-    _Documentation(_Nil<T_O>()), _ActsLikeKeywordPackage(false){};
+                                   _Documentation(_Nil<T_O>()), _Lock(PACKAGE__NAMEWORD), _ActsLikeKeywordPackage(false)
+  {};
   virtual ~Package_O(){};
 };
 

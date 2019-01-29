@@ -23,6 +23,10 @@
           SOCKET-FAMILY SOCKET-PROTOCOL SOCKET-TYPE
           SOCKET-ERROR NAME-SERVICE-ERROR NON-BLOCKING-MODE
           HOST-ENT-NAME HOST-ENT-ALIASES HOST-ENT-ADDRESS-TYPE
+          ;;; these should be exported by define-name-service-condition
+          NETDB-SUCCESS-ERROR NETDB-INTERNAL-ERROR
+          HOST-NOT-FOUND-ERROR TRY-AGAIN-ERROR NO-RECOVERY-ERROR
+          ;;; but aren't
           HOST-ENT-ADDRESSES HOST-ENT HOST-ENT-ADDRESS SOCKET-SEND))
 
 
@@ -206,7 +210,7 @@ list of an ip address and a port). If no socket address is provided, send(2)
 will be called instead. Returns the number of octets written."))
 
 
-(defgeneric socket-close (socket)
+(defgeneric socket-close (socket &key abort)
   (:documentation "Close SOCKET.  May throw any kind of error that write(2) would have
 thrown.  If SOCKET-MAKE-STREAM has been called, calls CLOSE on that
 stream instead"))
@@ -235,7 +239,7 @@ SB-SYS:MAKE-FD-STREAM."))
 (defmethod socket-close-low-level ((socket socket))
   (ff-close (socket-file-descriptor socket)))
 
-(defmethod socket-close ((socket socket))
+(defmethod socket-close ((socket socket)  &key abort)
   ;; the close(2) manual page has all kinds of warning about not
   ;; checking the return value of close, on the grounds that an
   ;; earlier write(2) might have returned successfully w/o actually
@@ -254,11 +258,11 @@ SB-SYS:MAKE-FD-STREAM."))
       (cond ((slot-boundp socket 'stream)
              (let ((stream (slot-value socket 'stream)))
                #+threads
-               (close (two-way-stream-input-stream stream))
+               (close (two-way-stream-input-stream stream) :abort abort)
                #+threads
-               (close (two-way-stream-output-stream stream))
+               (close (two-way-stream-output-stream stream) :abort abort)
                #-threads
-               (close stream)) ;; closes fd indirectly
+               (close stream :abort abort)) ;; closes fd indirectly
              (slot-makunbound socket 'stream))
             ((= (socket-close-low-level socket) -1)
              (socket-error "close")))
@@ -268,21 +272,30 @@ SB-SYS:MAKE-FD-STREAM."))
 ;; FIXME: How bad is manipulating fillp directly?
 (defmethod socket-receive ((socket socket) buffer length
                            &key oob peek waitall element-type)
-  (unless (or buffer length) (error "You have to supply either buffer or length!"))
-  (let ((buffer (or buffer (make-array length :element-type element-type :fill-pointer 0)))
-        (length (or length (length buffer)))
-        (fd (socket-file-descriptor socket)))
-
-    (multiple-value-bind (len-recv errno)
-        (ll-socket-receive fd buffer length oob peek waitall)
-      (cond ((and (= len-recv -1)
-                  (member errno (list +eagain+ +eintr+)))
-             nil)
-            ((= len-recv -1)
-             (socket-error "receive"))
-            (t 
-             (values buffer len-recv))))))
-
+  (unless (or buffer length)
+    (error "You have to supply either buffer or length!"))
+  (let ((need-to-copy nil)
+        (local-buffer nil))
+    (cond ((null buffer)(setq local-buffer (make-string length :initial-element #\Space :element-type 'base-char)))
+          ((stringp buffer)(setq local-buffer buffer))
+          (t (setq local-buffer (make-string (or length (length buffer)) :initial-element #\Space :element-type 'base-char)
+                   need-to-copy t)))
+      ;;; and it better be a string of 8-bit chars
+    (let ((length (or length (length local-buffer)))
+          (fd (socket-file-descriptor socket)))
+      (multiple-value-bind (len-recv errno)
+          (ll-socket-receive fd local-buffer length oob peek waitall)
+        (cond ((and (= len-recv -1)
+                    (member errno (list +eagain+ +eintr+)))
+               nil)
+              ((= len-recv -1)
+               (socket-error "receive"))
+              (t
+               (cond (need-to-copy
+                      (dotimes (x len-recv)
+                        (setf (aref buffer x) (char-code (aref local-buffer x))))
+                      (values buffer len-recv))
+                     (t (values local-buffer len-recv)))))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -372,14 +385,19 @@ Examples:
 
 
 (defmethod socket-send ((socket socket) buffer length
-                           &key address external-format oob eor dontroute dontwait nosignal confirm more)
+                        &key address external-format oob eor dontroute dontwait nosignal confirm more)
   (declare (ignore external-format more))
-  (assert (or (stringp buffer)
-                (typep buffer 'vector)))
+  (assert (or (stringp buffer) (typep buffer 'vector)))
   (let (;eh, here goes string->octet convertion... 
         ;When will ecl support Unicode?
         (length (or length (length buffer)))
         (fd (socket-file-descriptor socket)))
+    (unless (stringp buffer)
+      ;;; and it better be a string of 8-bit chars
+      (let ((new-buffer (make-string length :initial-element #\Space :element-type 'base-char)))
+        (dotimes (x length)
+          (setf (aref new-buffer x)(code-char (aref buffer x))))
+        (setq buffer new-buffer)))
     (let ((len-sent
            (if address
                (progn

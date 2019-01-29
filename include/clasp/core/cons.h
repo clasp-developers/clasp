@@ -502,6 +502,7 @@ void fillVec0FromCons(gctools::Vec0<T> &vec, List_sp list) {
 namespace core {
 /*! Lookup the key and return the Cons containing the key/val pair - or return NIL if not found */
 List_sp core__alist_assoc_eq(List_sp alist, T_sp key);
+List_sp core__alist_assoc_eql(List_sp alist, T_sp key);
  
 };
 

@@ -116,8 +116,23 @@ void flow_tracker_close() {
 };
 
 
+namespace gctools {
+std::atomic<double>   global_DiscriminatingFunctionCompilationSeconds = ATOMIC_VAR_INIT(0.0);
+
+CL_DEFUN void gctools__accumulate_discriminating_function_compilation_seconds(double seconds) {
+  global_DiscriminatingFunctionCompilationSeconds =
+      global_DiscriminatingFunctionCompilationSeconds + seconds;
+}
+
+CL_DEFUN double gctools__discriminating_function_compilation_seconds() {
+  return global_DiscriminatingFunctionCompilationSeconds;
+}
+
+};
+
 
 namespace gctools {
+
 
 size_t global_next_unused_kind = STAMP_max+1;
 
@@ -201,9 +216,9 @@ CL_DEFUN void gctools__change_sigchld_sigport_handlers()
   printf("%s:%d old signal handler for SIGCHLD = %p   SIG_DFL = %p\n", __FILE__, __LINE__, old, SIG_DFL);
 }
 
-CL_DEFUN core::T_sp gctools__known_signals()
+CL_DEFUN core::T_sp gctools__unix_signal_handlers()
 {
-  return _lisp->_Roots._KnownSignals;
+  return _lisp->_Roots._UnixSignalHandlers;
 }
 
 CL_DEFUN void gctools__deallocate_unmanaged_instance(core::T_sp obj) {
@@ -887,6 +902,7 @@ CL_DEFUN void gctools__debug_allocations(core::T_sp debugOn) {
 };
 
 bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& ss) {
+  bool metrics_file = false;
   core::List_sp features = cl::_sym_STARfeaturesSTAR->symbolValue();
   bool debugging = false;
   bool use_boehm_memory_marker = false;
@@ -1082,6 +1098,9 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
  
  bool debug_rehash_count = false;
 #ifdef DEBUG_REHASH_COUNT
+ #ifndef DEBUG_MONITOR
+   #error "DEBUG_MONITOR must also be enabled if DEBUG_REHASH_COUNT is turned on"
+ #endif
   debug_rehash_count = true;
   debugging = true;
   if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-REHASH_COUNT"),features);
@@ -1220,6 +1239,14 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #endif
   if (buildReport) ss << (BF("DEBUG_DONT_OPTIMIZE_BCLASP = %s\n") % (debug_dont_optimize_bclasp ? "**DEFINED**" : "undefined") ).str();
 
+  bool debug_dtrace_lock_probe = false;
+#ifdef DEBUG_DTRACE_LOCK_PROBE
+  debug_dtrace_lock_probe = true;
+  debugging = true;
+  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-DTRACE-LOCK-PROBE"),features);
+#endif
+  if (buildReport) ss << (BF("DEBUG_DTRACE_LOCK_PROBE = %s\n") % (debug_dtrace_lock_probe ? "**DEFINED**" : "undefined") ).str();
+
   bool disable_type_inference = false;
 #ifdef DISABLE_TYPE_INFERENCE
   disable_type_inference = true;
@@ -1260,7 +1287,7 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   // The cl:*features* environment variable is set below - so all changes to (features) must be above
   //
   if (setFeatures) cl::_sym_STARfeaturesSTAR->setf_symbolValue(features);
-  
+
   // ---- return with the debugging flag
   return debugging;
 }

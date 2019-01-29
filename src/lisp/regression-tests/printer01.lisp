@@ -134,23 +134,42 @@
               (MAKE-ARRAY 2
                           :INITIAL-CONTENTS '(0.0d0 1.0d0)
                           :ELEMENT-TYPE 'double-float)
-        ;;; SimpleCharacterString_O or SimpleBaseString_O
+        ;;; SimpleBaseString_O
               (MAKE-ARRAY 2
                           :INITIAL-CONTENTS (list (code-char 65) (code-char 66))
                           :ELEMENT-TYPE 'base-char)
-        ;;; Str8Ns_O or StrWNs_O
+        ;;; Str8Ns_O
+              (MAKE-ARRAY 2
+                          :INITIAL-CONTENTS (list (code-char 65) (code-char 66))
+                          :adjustable t
+                          :ELEMENT-TYPE 'base-char)
+        ;;;  SimpleCharacterString_O
               (MAKE-ARRAY 2
                           :INITIAL-CONTENTS
                           (list (code-char 256) (code-char 256))
-                          :ELEMENT-TYPE
-                          'character
-                          ))))
+                          :ELEMENT-TYPE 'character)
+        ;;;  StrWNs_O
+              (MAKE-ARRAY 2
+                          :INITIAL-CONTENTS
+                          (list (code-char 256) (code-char 256))
+                          :adjustable t
+                          :ELEMENT-TYPE 'character)
+              )))
         (dolist (array arrays t)
           (print (write-to-string array :READABLY nil :ARRAY nil :PRETTY NIL))
           (print (write-to-string array :READABLY nil :ARRAY t :PRETTY NIL))
           #+(or)(print (write-to-string array :READABLY t :ARRAY nil :PRETTY NIL))
           (print (write-to-string array :READABLY t :ARRAY t :PRETTY NIL))
           (format t "~%"))))
+
+
+(test-expect-error print-6 (write-byte) :type program-error)
+(test-expect-error print-7 (write-byte 233 nil) :type type-error)
+(test-expect-error print-8 (write-byte 233 t) :type type-error)
+(test-expect-error print-9 (write-byte 233 23) :type type-error)
+(test-expect-error print-10
+                   (with-output-to-string (*standard-output*)
+                     (write-byte 23 *standard-output*)) :type type-error)
 
 
 

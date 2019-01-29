@@ -79,7 +79,7 @@
           finally (append-generic-function-call-history f new-call-history))
     ;; Finish setup
     (mlog "function-to-method: installed method%N")
-    (core:function-lambda-list-set f lambda-list) ; hook up the introspection
+    (setf-lambda-list f lambda-list) ; hook up the introspection
     (setf (fdefinition name) f
           (generic-function-name f) name)
     (when (boundp '*early-methods*)
@@ -279,7 +279,9 @@ and cannot be added to ~A." method other-gf gf)))
 	(let ((old-lambda-list (generic-function-lambda-list gf)))
 	  (unless (congruent-lambda-p old-lambda-list new-lambda-list)
 	    (error "Cannot add the method ~A to the generic function ~A because their lambda lists ~A and ~A are not congruent."
-		   method gf new-lambda-list old-lambda-list)))
+		   method gf new-lambda-list old-lambda-list))
+          ;; Add any keywords from the method to the gf display lambda list.
+          (maybe-augment-generic-function-lambda-list gf new-lambda-list))
 	(reinitialize-instance gf :lambda-list new-lambda-list)))
   ;;
   ;; 3) Finally, it is inserted in the list of methods, and the method is

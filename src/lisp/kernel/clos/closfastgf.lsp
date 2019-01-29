@@ -697,12 +697,19 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
            (if invalid-instance
                (apply generic-function valist-args)
                (progn
-                 (gf-log "----{---- A dispatch-miss occurred -> %s  %N" (clos::generic-function-name generic-function))
-                 (dolist (arg (core:list-from-va-list valist-args))
-                   (gf-log "%s[%s/%d] " arg (class-of arg) (core:instance-stamp arg)))
-                 (gf-log-noindent "%N")
+                 #+debug-fastgf
+                 (progn
+                   (gf-log "----{---- A dispatch-miss occurred -> %s  %N" (clos::generic-function-name generic-function))
+                   (dolist (arg (core:list-from-va-list valist-args))
+                     (gf-log "%s[%s/%d] " arg (class-of arg) (core:instance-stamp arg)))
+                   (gf-log-noindent "%N"))
                  (do-dispatch-miss generic-function valist-args arguments)))))
     (decf-debug-fastgf-indent)))
+
+;; (apply #'dispatch-miss-with-args gf vaslist) = (dispatch-miss gf vaslist)
+;; TODO: Make APPLY good enough that we can lose one.
+(defun dispatch-miss-with-args (generic-function core:&va-rest valist-args)
+  (dispatch-miss generic-function valist-args))
 
 ;;; change-class requires removing call-history entries involving the class
 ;;; and invalidating the generic functions

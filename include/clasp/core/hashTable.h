@@ -34,8 +34,11 @@ THE SOFTWARE.
 #include <clasp/core/corePackage.fwd.h>
 
 namespace core {
-  T_sp cl__make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_size, Real_sp orehash_threshold, Symbol_sp weakness = _Nil<T_O>(), T_sp debug = _Nil<T_O>(), T_sp thread_safe = _Nil<T_O>());
+double maybeFixRehashThreshold(double rt);
 
+T_sp cl__make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_size, Real_sp orehash_threshold, Symbol_sp weakness = _Nil<T_O>(), T_sp debug = _Nil<T_O>(), T_sp thread_safe = _Nil<T_O>());
+
+size_t next_hash_table_id();
 
 
   FORWARD(HashTable);
@@ -51,9 +54,11 @@ namespace core {
     friend T_mv cl__maphash(T_sp function_desig, T_sp hash_table);
   HashTable_O() :
 #ifdef DEBUG_REHASH_COUNT
+    _HashTableId(next_hash_table_id()),
     _RehashCount(0),
+    _InitialSize(0),
 #endif
-      _RehashSize(_Nil<Number_O>()), _RehashThreshold(1.2), _HashTable(_Nil<VectorObjects_O>()), _HashTableCount(0)
+    _RehashSize(_Nil<Number_O>()), _RehashThreshold(maybeFixRehashThreshold(0.7)),/* _HashTable(_Nil<VectorObjects_O>()),*/ _HashTableCount(0)
     {};
     virtual ~HashTable_O(){};
   //	DEFAULT_CTOR_DTOR(HashTable_O);
@@ -66,12 +71,15 @@ namespace core {
 
   public: // instance variables here
 #ifdef DEBUG_REHASH_COUNT
+    size_t    _HashTableId;
     size_t    _RehashCount;
+    size_t    _InitialSize;
 #endif
     Number_sp _RehashSize;
     double _RehashThreshold;
-    VectorObjects_sp _HashTable;
-    uint _HashTableCount;
+//    VectorObjects_sp _HashTable;
+    gctools::Vec0<Cons_O> _Table;
+    size_t _HashTableCount;
 #ifdef CLASP_THREADS
     mutable mp::SharedMutex_sp _Mutex;
 #endif
@@ -82,6 +90,7 @@ namespace core {
 #endif
   public:
     static HashTable_sp create(T_sp test); // set everything up with defaults
+    static HashTable_sp create_thread_safe(T_sp test, SimpleBaseString_sp readLockName, SimpleBaseString_sp writeLockName); // set everything up with defaults
 
   public:
     static void sxhash_eq(Hash1Generator &running_hash, T_sp obj, LocationDependencyPtrT);
@@ -97,14 +106,15 @@ namespace core {
     uint calculateHashTableCount() const;
 
   public:
+    List_sp hash_table_bucket(size_t index);
   /*! If findKey is defined then search it as you rehash and return resulting keyValuePair CONS */
     List_sp rehash_no_lock(bool expandTable, T_sp findKey);
-    List_sp rehash(bool expandTable, T_sp findKey);
+    List_sp rehash_upgrade_write_lock(bool expandTable, T_sp findKey);
     CL_LISPIFY_NAME("hash-table-buckets");
-    CL_DEFMETHOD VectorObjects_sp hash_table_buckets() const { return this->_HashTable; };
+//    CL_DEFMETHOD VectorObjects_sp hash_table_buckets() const { return this->_HashTable; };
     CL_LISPIFY_NAME("hash-table-shared-mutex");
     CL_DEFMETHOD T_sp hash_table_shared_mutex() const { if (this->_Mutex) return this->_Mutex; else return _Nil<T_O>(); };
-    void set_thread_safe(bool thread_safe);
+//    void set_thread_safe(bool thread_safe);
   public: // Functions here
     virtual bool equalp(T_sp other) const;
 
@@ -116,16 +126,13 @@ namespace core {
     size_t size() { return this->hashTableCount(); };
 
     virtual gc::Fixnum sxhashKey(T_sp key, gc::Fixnum bound, bool willAddKey) const;
-    gc::Fixnum safe_sxhashKey(T_sp key, gc::Fixnum bound, bool willAddKey ) const {
-      return this->sxhashKey(key,bound,willAddKey);
-    }
     virtual bool keyTest(T_sp entryKey, T_sp searchKey) const;
 
   /*! I'm not sure I need this and tableRef */
     List_sp bucketsFind_no_lock(T_sp key) const;
   /*! I'm not sure I need this and bucketsFind */
-    virtual List_sp tableRef_no_lock(T_sp key);
-    List_sp findAssoc_no_lock(gc::Fixnum index, T_sp searchKey) const;
+    virtual List_sp tableRef_no_read_lock(T_sp key,bool under_write_lock);
+//    List_sp findAssoc_no_lock(gc::Fixnum index, T_sp searchKey) const;
 
   /*! Return true if the key is within the hash table */
     bool contains(T_sp key);
@@ -137,6 +144,7 @@ namespace core {
     gc::Fixnum hashIndex(T_sp key) const;
 
     T_sp hash_table_setf_gethash(T_sp key, T_sp value);
+    T_sp setf_gethash_no_write_lock(T_sp key, T_sp value);
     void setf_gethash(T_sp key, T_sp val) { this->hash_table_setf_gethash(key, val); };
 
     void clrhash();
@@ -158,7 +166,7 @@ namespace core {
   /*! Return the number of entries in the HashTable Vector0 */
     int hashTableNumberOfHashes() const;
   /*! Return the start of the alist in the HashTable Vector0 at hash value */
-    List_sp hashTableAlistAtHash(int hash) const;
+//    List_sp hashTableAlistAtHash(int hash) const;
 
     string keysAsString();
 

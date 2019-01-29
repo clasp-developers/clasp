@@ -24,8 +24,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef _core_WeakHashTable_H
-#define _core_WeakHashTable_H
+#ifndef _core_WeakKeyHashTable_H
+#define _core_WeakKeyHashTable_H
 
 #include <clasp/core/object.h>
 #include <clasp/gctools/gcweak.h>
@@ -37,52 +37,36 @@ namespace cl {
   extern core::Symbol_sp& _sym_eq;
 };
 
-namespace core {
 
-FORWARD(WeakHashTable);
-class WeakHashTable_O : public General_O {
-  LISP_CLASS(core, CorePkg, WeakHashTable_O, "WeakHashTable",General_O);
-#if defined(XML_ARCHIVE)
-  DECLARE_ARCHIVE();
-#endif // defined(XML_ARCHIVE)
-  DEFAULT_CTOR_DTOR(WeakHashTable_O);
-
-private: // instance variables here
-public:  // Functions here
-};
-
-}; /* core */
 template <>
-struct gctools::GCInfo<core::WeakHashTable_O> {
-  static bool constexpr NeedsInitialization = false;
+struct gctools::GCInfo<core::WeakKeyHashTable_O> {
+  static bool constexpr NeedsInitialization = true;
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
 };
 
-
 namespace core {
-
 FORWARD(WeakKeyHashTable);
-class WeakKeyHashTable_O : public WeakHashTable_O {
-  LISP_CLASS(core, CorePkg, WeakKeyHashTable_O, "WeakKeyHashTable",WeakHashTable_O);
+class WeakKeyHashTable_O : public General_O {
+  LISP_CLASS(core, CorePkg, WeakKeyHashTable_O, "WeakKeyHashTable",General_O);
 #if defined(XML_ARCHIVE)
   DECLARE_ARCHIVE();
 #endif  // defined(XML_ARCHIVE)
 public: // instance variables here
 #if 1
-  typedef typename gctools::WeakHashTable::value_type value_type;
-  typedef typename gctools::WeakHashTable::KeyBucketsType KeyBucketsType;
-  typedef typename gctools::WeakHashTable::ValueBucketsType ValueBucketsType;
-  typedef typename gctools::WeakHashTable::KeyBucketsAllocatorType KeyBucketsAllocatorType;
-  typedef typename gctools::WeakHashTable::ValueBucketsAllocatorType ValueBucketsAllocatorType;
-  typedef gctools::WeakHashTable HashTableType;
+  typedef typename gctools::WeakKeyHashTable::value_type value_type;
+  typedef typename gctools::WeakKeyHashTable::KeyBucketsType KeyBucketsType;
+  typedef typename gctools::WeakKeyHashTable::ValueBucketsType ValueBucketsType;
+  typedef typename gctools::WeakKeyHashTable::KeyBucketsAllocatorType KeyBucketsAllocatorType;
+  typedef typename gctools::WeakKeyHashTable::ValueBucketsAllocatorType ValueBucketsAllocatorType;
+  typedef gctools::WeakKeyHashTable HashTableType;
 #else
   typedef gctools::tagged_backcastable_base_ptr<T_O> value_type;
   typedef gctools::Buckets<value_type, value_type, gctools::WeakLinks> KeyBucketsType;
   typedef gctools::Buckets<value_type, value_type, gctools::StrongLinks> ValueBucketsType;
   typedef gctools::GCBucketAllocator<KeyBucketsType> KeyBucketsAllocatorType;
   typedef gctools::GCBucketAllocator<ValueBucketsType> ValueBucketsAllocatorType;
-  typedef gctools::WeakHashTable<KeyBucketsType, ValueBucketsType> HashTableType;
+  typedef gctools::WeakKeyHashTable<KeyBucketsType, ValueBucketsType> HashTableType;
 #endif
   HashTableType _HashTable;
 
@@ -109,18 +93,67 @@ public:
   T_mv gethash(T_sp key, T_sp defaultValue = _Nil<T_O>());
   void remhash(T_sp key);
   void clrhash();
+  string __repr__() const;
 };
 }; /* core */
+
+
+
+
 template <>
-struct gctools::GCInfo<core::WeakKeyHashTable_O> {
+struct gctools::GCInfo<core::StrongKeyHashTable_O> {
   static bool constexpr NeedsInitialization = true;
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
 };
 
+namespace core {
+FORWARD(StrongKeyHashTable);
+class StrongKeyHashTable_O : public General_O {
+  LISP_CLASS(core, CorePkg, StrongKeyHashTable_O, "StrongKeyHashTable",General_O);
+public: // instance variables here
+  typedef typename gctools::StrongKeyHashTable::value_type value_type;
+  typedef typename gctools::StrongKeyHashTable::KeyBucketsType KeyBucketsType;
+  typedef typename gctools::StrongKeyHashTable::ValueBucketsType ValueBucketsType;
+  typedef typename gctools::StrongKeyHashTable::KeyBucketsAllocatorType KeyBucketsAllocatorType;
+  typedef typename gctools::StrongKeyHashTable::ValueBucketsAllocatorType ValueBucketsAllocatorType;
+  typedef gctools::StrongKeyHashTable HashTableType;
+  HashTableType _HashTable;
+  size_t _Rehashes;
+public:
+  StrongKeyHashTable_O(size_t sz) : _HashTable(sz), _Rehashes(0) {};
+  StrongKeyHashTable_O() : _HashTable(16), _Rehashes(0) {};
+  void initialize(); 
+public:
+  virtual int tableSize() const;
+  cl_index size() const { return this->tableSize(); };
+
+  void setf_gethash(T_sp key, T_sp value);
+
+  bool fullp();
+
+  void describe(T_sp stream);
+  virtual T_sp hashTableTest() const { return cl::_sym_eq; };
+  bool keyTest(T_sp entryKey, T_sp searchKey) const;
+
+  gc::Fixnum sxhashKey(T_sp key, gc::Fixnum bound, bool willAddKey) const;
+
+  void maphash(std::function<void(T_sp, T_sp)> const &fn);
+
+  T_mv gethash(T_sp key, T_sp defaultValue = _Nil<T_O>());
+  void remhash(T_sp key);
+  void clrhash();
+  string __repr__() const;
+};
+}; /* core */
+
+
 
 namespace core {
 WeakKeyHashTable_sp core__make_weak_key_hash_table(Fixnum_sp size);
+StrongKeyHashTable_sp core__make_strong_key_hash_table(Fixnum_sp size);
 };
 
-#endif /* _core_WeakHashTable_H */
+
+
+#endif /* _core_WeakKeyHashTable_H */

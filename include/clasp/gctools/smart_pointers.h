@@ -1698,4 +1698,9 @@ namespace gctools {
     };
   
 };
+
+namespace core {
+typedef gctools::atomic_wrapper<T_sp> T_asp;
+};
+
 #endif

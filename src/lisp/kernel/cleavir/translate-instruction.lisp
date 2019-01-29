@@ -139,6 +139,15 @@
      output)))
 
 (defmethod translate-simple-instruction
+    ((instruction clasp-cleavir-hir:defcallback-instruction) return-value (abi abi-x86-64) function-info)
+  (let* ((args (clasp-cleavir-hir:defcallback-args instruction))
+         (closure (in (first (cleavir-ir:inputs instruction)))))
+    (cmp::gen-defcallback
+     (first args) (second args) (third args) (fourth args)
+     (fifth args) (sixth args) (seventh args) (eighth args)
+     closure)))
+
+(defmethod translate-simple-instruction
     ((instruction cleavir-ir:funcall-instruction) return-value (abi abi-x86-64) function-info)
   (let ((inputs (cleavir-ir:inputs instruction)))
     (closure-call-or-invoke (in (first inputs)) return-value (mapcar #'in (rest inputs)) abi)))
@@ -422,6 +431,20 @@
          output)))
 
 (defmethod translate-simple-instruction
+    ((instruction clasp-cleavir-hir:vaslist-pop-instruction) return-value abi function-info)
+  (declare (ignore return-value function-info))
+  (let ((input (first (cleavir-ir:inputs instruction)))
+        (output (first (cleavir-ir:outputs instruction))))
+    (out (%intrinsic-call "cx_vaslist_pop" (list (in input))) output)))
+
+(defmethod translate-simple-instruction
+    ((instruction clasp-cleavir-hir:instance-stamp-instruction) return-value abi function-info)
+  (declare (ignore return-value function-info))
+  (let ((input (first (cleavir-ir:inputs instruction)))
+        (output (first (cleavir-ir:outputs instruction))))
+    (out (%intrinsic-call "cx_read_stamp" (list (in input))) output)))
+
+(defmethod translate-simple-instruction
     ((instruction cleavir-ir:memref2-instruction) return-value abi function-info)
   (let* ((output (first (cleavir-ir:outputs instruction)))
          (tptr (in (first (cleavir-ir:inputs instruction))))
@@ -675,25 +698,19 @@
 (defmethod translate-branch-instruction
     ((instruction cleavir-ir:fixnum-less-instruction) return-value successors abi function-info)
   (let* ((inputs (cleavir-ir:inputs instruction))
-         (x (%ptrtoint (in (first inputs)) (%default-int-type abi)))
-         (y (%ptrtoint (in (second inputs)) (%default-int-type abi)))
-         (cmp-lt (%icmp-slt x y)))
+         (cmp-lt (%icmp-slt (in (first inputs)) (in (second inputs)))))
       (%cond-br cmp-lt (first successors) (second successors))))
 
 (defmethod translate-branch-instruction
     ((instruction cleavir-ir:fixnum-not-greater-instruction) return-value successors abi function-info)
   (let* ((inputs (cleavir-ir:inputs instruction))
-         (x (%ptrtoint (in (first inputs)) (%default-int-type abi)))
-         (y (%ptrtoint (in (second inputs)) (%default-int-type abi)))
-         (cmp-lt (%icmp-sle x y)))
+         (cmp-lt (%icmp-sle (in (first inputs)) (in (second inputs)))))
       (%cond-br cmp-lt (first successors) (second successors))))
 
 (defmethod translate-branch-instruction
     ((instruction cleavir-ir:fixnum-equal-instruction) return-value successors abi function-info)
   (let* ((inputs (cleavir-ir:inputs instruction))
-         (x (%ptrtoint (in (first inputs)) (%default-int-type abi)))
-         (y (%ptrtoint (in (second inputs)) (%default-int-type abi)))
-         (cmp-lt (%icmp-eq x y)))
+         (cmp-lt (%icmp-eq (in (first inputs)) (in (second inputs)))))
       (%cond-br cmp-lt (first successors) (second successors))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

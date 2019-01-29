@@ -8,20 +8,40 @@
 (defparameter *fails* 0)
 (defparameter *failed-tests* nil)
 (defparameter *expected-failures* nil)
+(defparameter *files-failed-to-compile* nil)
+(defparameter *test-marker-table* (make-hash-table))
 
-(defun reset-clasp-test ()
+(defun reset-clasp-tests ()
   (setq *passes* 0
         *fails* 0
-        *failed-tests* nil))
+        *failed-tests* nil
+        *files-failed-to-compile* nil
+        *test-marker-table* (make-hash-table)
+        *duplicate-tests* nil))
+
+(defun note-test (name)
+  (cond ((gethash name *test-marker-table*)
+         (push name *duplicate-tests*)
+         (warn "~%Duplicate test ~a~%" name))
+        (t (setf (gethash name *test-marker-table*) t)))) 
 
 (defun note-test-finished ()
   (setq *failed-tests* (nreverse *failed-tests*)))
+
+(defun note-compile-error (file&error)
+  (push file&error *files-failed-to-compile*))
   
 (defun show-failed-tests ()
   (cond (*failed-tests*
          (format t "~%Failed tests ~a~%" *failed-tests*)
          (show-unexpected-failures))
-        (t (format t "~%No tests failed~%"))))
+        (t (format t "~%No tests failed~%")))
+  (when *files-failed-to-compile*
+    (dolist (file&error *files-failed-to-compile*)
+      (format t "Compilation error for file ~a with error  ~a~%" (first file&error)(second file&error))))
+  (when *duplicate-tests*
+    (dolist (test *duplicate-tests*)
+      (format t "Duplicate test ~a~%" test))))
 
 (defun show-unexpected-failures ()
   (let ((unexpected-failures nil))
@@ -38,13 +58,15 @@
         (format t "~%unexpected success ~a~%" (nreverse unexpected-successes))))))
 
 (defmacro test (name form &key description )
-  `(if (ignore-errors ,form)
+  `(if (progn
+         (note-test ',name)
+         (ignore-errors ,form))
        (progn
          (format t "Passed ~s~%" ',name)
          (incf *passes*))
        (progn
          (incf *fails*)
-         (pushnew ',name *failed-tests*)
+         (push ',name *failed-tests*)
          (format t "Failed ~s~%" ',name)
          (when ,description (format t "~s~%" ,description)))))
 
@@ -61,3 +83,16 @@
 (defmacro test-expect-error (name form &key (type 'error) description)
   `(test ,name (handler-case (progn ,form nil)
                  (,type (err) t)) :description ,description))
+
+(defun load-if-compiled-correctly (file)
+  (handler-case
+      (multiple-value-bind
+            (fasl warnings-p failure-p)
+          (let ((cmp::*compile-file-parallel* nil))
+            (compile-file file))
+        (declare (ignore warnings-p failure-p))
+        (when fasl
+          (load fasl)))
+    (error (e)
+      (note-compile-error (list file e))
+      (format t "Regression: compile-file of ~a failed with ~a~%" file e))))

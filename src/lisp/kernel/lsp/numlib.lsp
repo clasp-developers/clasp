@@ -105,6 +105,8 @@ Returns zero for non-complex numbers."
     (if (eq x 0) 0.0 (float 0 (realpart x)))
     (atan (imagpart x) (realpart x))))
 
+;;; this is defined in numbers.h
+#+or()  
 (defun signum (x)
   "Args: (number)
 Returns a number that represents the sign of NUMBER.  Returns NUMBER If it is

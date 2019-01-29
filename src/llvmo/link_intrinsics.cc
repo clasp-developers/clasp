@@ -88,8 +88,8 @@ core::T_sp functionNameOrNilFromFunctionDescription(core::FunctionDescription* f
   if (functionDescription==NULL) {
     return _Nil<core::T_O>();
   }
-  core::T_sp functionName((gctools::Tagged)functionDescription->gcrootsInModule->get(functionDescription->functionNameIndex));
-  return functionName;
+  core::Cons_sp sourcePosition_functionName((gctools::Tagged)functionDescription->gcrootsInModule->get(functionDescription->sourcePathname_functionName_Index));
+  return CONS_CDR(sourcePosition_functionName);
 }
   
 
@@ -399,17 +399,11 @@ LtvcReturn ltvc_make_random_state(gctools::GCRootsInModule* holder, size_t index
 }
 
 
-LtvcReturn ltvc_make_built_in_class(gctools::GCRootsInModule* holder, size_t index, gctools::Tagged class_name_t )
-{NO_UNWIND_BEGIN();
+LtvcReturn ltvc_find_class(gctools::GCRootsInModule* holder, size_t index, gctools::Tagged class_name_t )
+{
   core::Symbol_sp class_name(class_name_t);
   core::T_sp cl = core::cl__find_class(class_name, true, _Nil<core::T_O>());
-  if ( cl.nilp() ) {
-    SIMPLE_ERROR(BF("Could not find class %s") % class_name );
-  } else {
-    core::T_sp val = cl;
-    LTVCRETURN holder->set(index,val.tagged_());
-  }
-  NO_UNWIND_END();
+  LTVCRETURN holder->set(index,cl.tagged_());
 }
 
 
@@ -444,6 +438,12 @@ LtvcReturn ltvc_enclose(gctools::GCRootsInModule* holder, size_t index, gctools:
                                                               core::ClosureWithSlots_O::cclaspClosure);
   LTVCRETURN holder->set(index, functoid.tagged_());
   NO_UNWIND_END();
+}
+
+LtvcReturn ltvc_allocate_instance(gctools::GCRootsInModule* holder, size_t index, gctools::Tagged klass) {
+  core::T_sp myklass = gctools::smart_ptr<core::T_O>(klass);
+  core::T_sp object = core::eval::funcall(cl::_sym_allocate_instance, myklass);
+  LTVCRETURN holder->set(index, object.tagged_());
 }
 
 LtvcReturn ltvc_set_mlf_creator_funcall(gctools::GCRootsInModule* holder, size_t index, fnLispCallingConvention fptr, const char* name) {
@@ -744,8 +744,8 @@ void invokeTopLevelFunction(core::T_mv *resultP,
 /*! Invoke the main functions from the main function array.
 If isNullTerminatedArray is 1 then there is a NULL terminated array of functions to call.
 Otherwise there is just one. */
-void cc_register_startup_function(fnStartUp fptr) {
-  register_startup_function(fptr);
+void cc_register_startup_function(int index, fnStartUp fptr) {
+  register_startup_function(index,fptr);
 }
 /*! Call this with an alloca pointer to keep the alloca from 
 being optimized away */

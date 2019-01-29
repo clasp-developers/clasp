@@ -275,7 +275,10 @@ struct DebugInfo {
   std::map<uintptr_t,StackMapRange> _StackMaps;
   mp::SharedMutex                   _JittedObjectsLock;
   std::vector<JittedObject>         _JittedObjects;
-  DebugInfo() {};
+  DebugInfo() : _OpenDynamicLibraryMutex(OPENDYLB_NAMEWORD),
+                _StackMapsLock(STCKMAPS_NAMEWORD),
+                _JittedObjectsLock(JITDOBJS_NAMEWORD)
+  {};
 };
 
 DebugInfo* global_DebugInfo = NULL;
@@ -969,6 +972,13 @@ void walk_loaded_objects(std::vector<BacktraceEntry>& backtrace, size_t& symbol_
   symbol_table_memory += scan._symbol_table_memory;
 }
 
+void* find_base_of_loaded_object(const char* name)
+{
+  SearchInfo search(name);
+  dl_iterate_phdr(elf_search_loaded_object_callback,&search);
+  return search._Address;
+}
+
 void startup_register_loaded_objects()
 {
   ScanInfo scan;
@@ -1032,21 +1042,26 @@ void add_dynamic_library_impl(bool is_executable, const std::string& libraryName
 #endif
 #if defined(_TARGET_OS_LINUX) || defined(_TARGET_OS_FREEBSD)
   if (!use_origin) {
-    void* lorigin;
-    Dl_info data;
-    dlerror();
-    void* addr = dlsym(handle,"_init");
-    const char* error = dlerror();
-    if (error) {
-      printf("%s:%d:%s Could not find _init symbol dlerror = %s\n", __FILE__, __LINE__, __FUNCTION__, error);
-      abort();
+    // Walk all objects looking for the one we just loaded
+    library_origin = (uintptr_t)find_base_of_loaded_object(libraryName.c_str());
+    if (library_origin==0) {
+      // Try looking for _init symbol
+      void* lorigin;
+      Dl_info data;
+      dlerror();
+      void* addr = dlsym(handle,"_init");
+      const char* error = dlerror();
+      if (error) {
+        printf("%s:%d:%s Could not find library by walking objects or by searching for external symbol '_init' - library %s dlerror = %s\n", __FILE__, __LINE__, __FUNCTION__, error, libraryName.c_str());
+        abort();
+      }
+      int ret = dladdr(addr,&data);
+      if (ret==0) {
+        printf("%s:%d:%s Could not use dladdr to get start of library %s dlerror = %s\n", __FILE__, __LINE__, __FUNCTION__, libraryName.c_str(), error);
+        abort();
+      }
+      library_origin = (uintptr_t)data.dli_fbase;
     }
-    int ret = dladdr(addr,&data);
-    if (ret==0) {
-      printf("%s:%d:%s Could not use dladdr to get start of library %s dlerror = %s\n", __FILE__, __LINE__, __FUNCTION__, libraryName.c_str(), error);
-      abort();
-    }
-    library_origin = (uintptr_t)data.dli_fbase;
   }
 //  printf("%s:%d:%s data.dli_fbase = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)data.dli_fbase);
   uintptr_t stackmap_start;
@@ -2211,6 +2226,13 @@ __attribute__((optnone)) std::string dbg_safe_repr(uintptr_t raw) {
     } else if (gc::IsA<core::SimpleBaseString_sp>(obj)) {
       core::SimpleBaseString_sp sobj = gc::As_unsafe<core::SimpleBaseString_sp>(obj);
       ss << "\"" << sobj->get_std_string() << "\"";
+    } else if (gc::IsA<core::SimpleVector_sp>(obj)) {
+      core::SimpleVector_sp svobj = gc::As_unsafe<core::SimpleVector_sp>(obj);
+      ss << "#(";
+      for ( size_t i=0, iEnd(svobj->length()); i<iEnd; ++i ) {
+        ss << dbg_safe_repr((*svobj)[i]) << " ";
+      }
+      ss << ")";
     } else {
       core::General_sp gen = gc::As_unsafe<core::General_sp>(obj);
       ss << "#<" << gen->className() << " " << (void*)gen.raw_() << ">";
@@ -2230,6 +2252,8 @@ __attribute__((optnone)) std::string dbg_safe_repr(uintptr_t raw) {
     ss << (gc::Fixnum)obj.unsafe_fixnum();
   } else if (obj.nilp()) {
     ss << "NIL";
+  } else if (obj.valistp()) {
+    ss << "#<VASLIST " << (void*)obj.raw_() << ">";
   } else if (obj.unboundp()) {
     ss << "#:UNBOUND";
   } else if (obj.characterp()) {
@@ -2243,6 +2267,10 @@ __attribute__((optnone)) std::string dbg_safe_repr(uintptr_t raw) {
     return ss.str().substr(0,512);
   }
   return ss.str();
+}
+
+string _safe_rep_(core::T_sp obj) {
+  return dbg_safe_repr((uintptr_t)obj.raw_());
 }
 
 void dbg_safe_print(uintptr_t raw) {
@@ -2265,7 +2293,6 @@ void dbg_print_frame(const std::vector<core::BacktraceEntry>& backtrace, size_t 
     core::T_sp closure((gctools::Tagged)core::get_raw_argument_from_stack(backtrace[idx]._FunctionStart,backtrace[idx]._BasePointer,backtrace[idx]._FrameOffset,0));
     // printf("%s:%s:%d Printing \n", __FILE__, __FUNCTION__, __LINE__);
     size_t nargs = core::get_raw_argument_from_stack(backtrace[idx]._FunctionStart,backtrace[idx]._BasePointer,backtrace[idx]._FrameOffset,1);
-    // printf("%s:%s:%d Printing\n", __FILE__, __FUNCTION__, __LINE__);
     for ( size_t i=0; i<nargs; ++i ) {
       // printf("%s:%s:%d Printing arg %lu of %lu\n", __FILE__, __FUNCTION__, __LINE__, i, nargs);
       uintptr_t raw_arg = core::get_raw_argument_from_stack(backtrace[idx]._FunctionStart,backtrace[idx]._BasePointer,backtrace[idx]._FrameOffset,2+i);

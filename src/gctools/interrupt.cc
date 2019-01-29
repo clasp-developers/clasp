@@ -30,11 +30,12 @@ static void queue_signal(core::ThreadLocalState* thread, core::T_sp code, bool a
 
 /*! Signal info is in CONS set by ADD_SIGNAL macro at bottom */
 core::T_sp safe_signal_name(int sig) {
+  WITH_READ_LOCK(_lisp->_Roots._UnixSignalHandlersMutex);
   core::T_sp key = core::clasp_make_fixnum(sig);
   if (_lisp->_Roots._Booted) {
-    core::T_sp value = _lisp->_Roots._KnownSignals->gethash(key);
-    if (value.notnilp()) {
-      return oCar(value);
+    core::T_sp cur = core__alist_assoc_eql(_lisp->_Roots._UnixSignalHandlers,key);
+    if (cur.notnilp()) {
+      return oCadr(cur); // return the signal name
     }
   }
   return key;
@@ -42,16 +43,21 @@ core::T_sp safe_signal_name(int sig) {
 
 /*! Signal info is in CONS set by ADD_SIGNAL macro at bottom */
 core::T_sp safe_signal_handler(int sig) {
+  WITH_READ_LOCK(_lisp->_Roots._UnixSignalHandlersMutex);
   core::T_sp key = core::clasp_make_fixnum(sig);
-  if (_lisp->_Roots._Booted) {
-    core::T_sp value = _lisp->_Roots._KnownSignals->gethash(key);
-    if (value.notnilp()) {
-      return oCdr(value);
+  if (_lisp->_Roots._Booted) { 
+    core::T_sp cur = core__alist_assoc_eql(_lisp->_Roots._UnixSignalHandlers,key);
+    if (cur.notnilp()) {
+      return oCaddr(cur); // return the signal handler
     }
   }
   return key;
 }
 
+
+core::T_mv gctools__signal_info(int sig) {
+  return Values(safe_signal_name(sig),safe_signal_handler(sig));
+}
 
 static bool do_interrupt_thread(mp::Process_sp process)
 {
@@ -151,9 +157,14 @@ inline bool interrupts_disabled_by_lisp() {
 
 void handle_signal_now( core::T_sp signal_code, core::T_sp process ) {
   if ( signal_code.fixnump() ) {
-    printf("%s:%d Received a unix signal %s\n", __FILE__, __LINE__, _rep_(safe_signal_name(signal_code.unsafe_fixnum())).c_str());
-    core::cl__cerror(ext::_sym_ignore_signal->symbolValue(),ext::_sym_unix_signal_received,
-                     core::Cons_O::createList(kw::_sym_code, signal_code));
+    printf("%s:%d Received a unix signal with code: %lu\n", __FILE__, __LINE__, (size_t)signal_code.unsafe_fixnum());
+    core::Symbol_sp handler = gc::As<core::Symbol_sp>(safe_signal_handler(signal_code.unsafe_fixnum()));
+    if (handler->fboundp()) {
+      core::eval::funcall(handler->symbolFunction());
+    } else {
+      core::cl__cerror(ext::_sym_ignore_signal->symbolValue(),ext::_sym_unix_signal_received,
+                       core::Cons_O::createList(kw::_sym_code, signal_code, kw::_sym_handler, handler));
+    }
   } else if (gc::IsA<core::Symbol_sp>(signal_code)) {
     if (core::cl__find_class(signal_code,false,_Nil<core::T_O>()).notnilp()) {
       core::cl__cerror(ext::_sym_ignore_signal->symbolValue(),signal_code,_Nil<core::T_O>());
@@ -214,7 +225,9 @@ core::T_sp pop_signal(core::ThreadLocalState* thread) {
 void handle_all_queued_interrupts()
 {
   while (my_thread->_PendingInterrupts.consp()) {
+    printf("%s:%d:%s Handling a signal - there are pending interrupts\n", __FILE__, __LINE__, __FUNCTION__ );
     core::T_sp sig = pop_signal(my_thread);
+    printf("%s:%d:%s Handling a signal: %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(sig).c_str() );
     handle_signal_now(sig, my_thread->_Process);
   }
 }
@@ -390,6 +403,14 @@ void initialize_signals(int clasp_signal) {
   if (sigaction (SIGINT, &new_action, NULL) != 0) {
     printf("failed to register SIGINT signal-handler with kernel error: %s\n", strerror(errno));
   }
+#ifdef SIGINFO
+  new_action.sa_handler = handle_signals;
+  sigemptyset (&new_action.sa_mask);
+  new_action.sa_flags = SA_RESTART;
+  if (sigaction (SIGINFO, &new_action, NULL) != 0) {
+    printf("failed to register SIGINFO signal-handler with kernel error: %s\n", strerror(errno));
+  }
+#endif
   new_action.sa_handler = handle_signals;
   sigemptyset (&new_action.sa_mask);
   new_action.sa_flags = SA_RESTART | SA_ONSTACK;
@@ -421,111 +442,121 @@ void initialize_signals(int clasp_signal) {
   llvm::install_fatal_error_handler(fatal_error_handler, NULL);
 }
 
-
-
-void initialize_signal_constants() {
-  return;
-  _lisp->_Roots._KnownSignals = core::HashTableEq_O::create_default();
-#define ADD_SIGNAL(sig,name,handler) {\
-    core::Symbol_sp sigsym = _lisp->intern(name,CorePkg); \
-    _lisp->_Roots._KnownSignals->hash_table_setf_gethash(core::clasp_make_fixnum(sig),core::Cons_O::create(sigsym,handler));\
+#define ADD_SIGNAL_SYMBOL(sig,sigsym,handler) {\
+    core::List_sp info = core::Cons_O::createList(core::clasp_make_fixnum(sig),sigsym,handler); \
+    _lisp->_Roots._UnixSignalHandlers = core::Cons_O::create(info,_lisp->_Roots._UnixSignalHandlers); \
   }
-                                                       
+#define ADD_SIGNAL(sig,name,handler) {\
+    core::Symbol_sp sigsym = _lisp->intern(name,KeywordPkg); \
+    ADD_SIGNAL_SYMBOL(sig,sigsym,handler); \
+  }
+
+void gctools__push_unix_signal_handler(int signal, core::Symbol_sp name, core::Function_sp handler) {
+  WITH_READ_WRITE_LOCK(_lisp->_Roots._UnixSignalHandlersMutex);
+  ADD_SIGNAL_SYMBOL(signal,name,handler);
+}
+
+void initialize_unix_signal_handlers() {
 #ifdef SIGHUP
-        ADD_SIGNAL( SIGHUP, "+SIGHUP+", _Nil<core::T_O>());
+        ADD_SIGNAL( SIGHUP, "SIGHUP", _Nil<core::T_O>());
 #endif
 #ifdef SIGINT
-        ADD_SIGNAL( SIGINT, "+SIGINT+", core::_sym_terminal_interrupt);
+        ADD_SIGNAL( SIGINT, "SIGINT", core::_sym_terminal_interrupt);
 #endif
 #ifdef SIGQUIT
-        ADD_SIGNAL( SIGQUIT, "+SIGQUIT+", _Nil<core::T_O>());
+        ADD_SIGNAL( SIGQUIT, "SIGQUIT", _Nil<core::T_O>());
 #endif
 #ifdef SIGILL
-        ADD_SIGNAL( SIGILL, "+SIGILL+", ext::_sym_illegal_instruction);
+        ADD_SIGNAL( SIGILL, "SIGILL", ext::_sym_illegal_instruction);
 #endif
 #ifdef SIGTRAP
-        ADD_SIGNAL( SIGTRAP, "+SIGTRAP+", _Nil<core::T_O>());
+        ADD_SIGNAL( SIGTRAP, "SIGTRAP", _Nil<core::T_O>());
 #endif
 #ifdef SIGABRT
-        ADD_SIGNAL( SIGABRT, "+SIGABRT+", _Nil<core::T_O>());
+        ADD_SIGNAL( SIGABRT, "SIGABRT", _Nil<core::T_O>());
 #endif
 #ifdef SIGEMT
-        ADD_SIGNAL( SIGEMT, "+SIGEMT+", _Nil<core::T_O>());
+        ADD_SIGNAL( SIGEMT, "SIGEMT", _Nil<core::T_O>());
 #endif
 #ifdef SIGFPE
-        ADD_SIGNAL( SIGFPE, "+SIGFPE+", _Nil<core::T_O>());
+        ADD_SIGNAL( SIGFPE, "SIGFPE", _Nil<core::T_O>());
 #endif
 #ifdef SIGKILL
-        ADD_SIGNAL( SIGKILL, "+SIGKILL+", _Nil<core::T_O>());
+        ADD_SIGNAL( SIGKILL, "SIGKILL", _Nil<core::T_O>());
 #endif
 #ifdef SIGBUS
-        ADD_SIGNAL( SIGBUS, "+SIGBUS+", ext::_sym_segmentation_violation);
+        ADD_SIGNAL( SIGBUS, "SIGBUS", ext::_sym_segmentation_violation);
 #endif
 #ifdef SIGSEGV
-        ADD_SIGNAL( SIGSEGV, "+SIGSEGV+", ext::_sym_segmentation_violation);
+        ADD_SIGNAL( SIGSEGV, "SIGSEGV", ext::_sym_segmentation_violation);
 #endif
 #ifdef SIGSYS
-        ADD_SIGNAL( SIGSYS, "+SIGSYS+", _Nil<core::T_O>());
+        ADD_SIGNAL( SIGSYS, "SIGSYS", _Nil<core::T_O>());
 #endif
 #ifdef SIGPIPE
-        ADD_SIGNAL( SIGPIPE, "+SIGPIPE+", _Nil<core::T_O>());
+        ADD_SIGNAL( SIGPIPE, "SIGPIPE", _Nil<core::T_O>());
 #endif
 #ifdef SIGALRM
-        ADD_SIGNAL( SIGALRM, "+SIGALRM+", _Nil<core::T_O>());
+        ADD_SIGNAL( SIGALRM, "SIGALRM", _Nil<core::T_O>());
 #endif
 #ifdef SIGTERM
-        ADD_SIGNAL( SIGTERM, "+SIGTERM+", _Nil<core::T_O>());
+        ADD_SIGNAL( SIGTERM, "SIGTERM", _Nil<core::T_O>());
 #endif
 #ifdef SIGURG
-        ADD_SIGNAL( SIGURG, "+SIGURG+", _Nil<core::T_O>());
+        ADD_SIGNAL( SIGURG, "SIGURG", _Nil<core::T_O>());
 #endif
 #ifdef SIGSTOP
-        ADD_SIGNAL( SIGSTOP, "+SIGSTOP+", _Nil<core::T_O>());
+        ADD_SIGNAL( SIGSTOP, "SIGSTOP", _Nil<core::T_O>());
 #endif
 #ifdef SIGTSTP
-        ADD_SIGNAL( SIGTSTP, "+SIGTSTP+", _Nil<core::T_O>());
+        ADD_SIGNAL( SIGTSTP, "SIGTSTP", _Nil<core::T_O>());
 #endif
 #ifdef SIGCONT
-        ADD_SIGNAL( SIGCONT, "+SIGCONT+", _Nil<core::T_O>());
+        ADD_SIGNAL( SIGCONT, "SIGCONT", _Nil<core::T_O>());
 #endif
 #ifdef SIGCHLD
-        ADD_SIGNAL( SIGCHLD, "+SIGCHLD+", core::_sym_wait_for_all_processes);
+        ADD_SIGNAL( SIGCHLD, "SIGCHLD", core::_sym_wait_for_all_processes);
 #endif
 #ifdef SIGTTIN
-        ADD_SIGNAL( SIGTTIN, "+SIGTTIN+", _Nil<core::T_O>());
+        ADD_SIGNAL( SIGTTIN, "SIGTTIN", _Nil<core::T_O>());
 #endif
 #ifdef SIGTTOU
-        ADD_SIGNAL( SIGTTOU, "+SIGTTOU+", _Nil<core::T_O>());
+        ADD_SIGNAL( SIGTTOU, "SIGTTOU", _Nil<core::T_O>());
 #endif
 #ifdef SIGIO
-        ADD_SIGNAL( SIGIO, "+SIGIO+", _Nil<core::T_O>());
+        ADD_SIGNAL( SIGIO, "SIGIO", _Nil<core::T_O>());
 #endif
 #ifdef SIGXCPU
-        ADD_SIGNAL( SIGXCPU, "+SIGXCPU+", _Nil<core::T_O>());
+        ADD_SIGNAL( SIGXCPU, "SIGXCPU", _Nil<core::T_O>());
 #endif
 #ifdef SIGXFSZ
-        ADD_SIGNAL( SIGXFSZ, "+SIGXFSZ+", _Nil<core::T_O>());
+        ADD_SIGNAL( SIGXFSZ, "SIGXFSZ", _Nil<core::T_O>());
 #endif
 #ifdef SIGVTALRM
-        ADD_SIGNAL( SIGVTALRM, "+SIGVTALRM+", _Nil<core::T_O>());
+        ADD_SIGNAL( SIGVTALRM, "SIGVTALRM", _Nil<core::T_O>());
 #endif
 #ifdef SIGPROF
-        ADD_SIGNAL( SIGPROF, "+SIGPROF+", _Nil<core::T_O>());
+        ADD_SIGNAL( SIGPROF, "SIGPROF", _Nil<core::T_O>());
 #endif
 #ifdef SIGWINCH
-        ADD_SIGNAL( SIGWINCH, "+SIGWINCH+", _Nil<core::T_O>());
+        ADD_SIGNAL( SIGWINCH, "SIGWINCH", _Nil<core::T_O>());
 #endif
 #ifdef SIGINFO
-        ADD_SIGNAL( SIGINFO, "+SIGINFO+", _Nil<core::T_O>());
+        ADD_SIGNAL( SIGINFO, "SIGINFO", core::_sym_STARinformation_callbackSTAR);
 #endif
 #ifdef SIGUSR1
-        ADD_SIGNAL( SIGUSR1, "+SIGUSR1+", _Nil<core::T_O>());
+        ADD_SIGNAL( SIGUSR1, "SIGUSR1", _Nil<core::T_O>());
 #endif
 #ifdef SIGUSR2
-        ADD_SIGNAL( SIGUSR2, "+SIGUSR2+", _Nil<core::T_O>());
+#ifdef _TARGET_OS_DARWIN
+        ADD_SIGNAL( SIGUSR2, "SIGUSR2", _Nil<core::T_O>());
+#endif
+#ifdef _TARGET_OS_LINUX
+        ADD_SIGNAL( SIGUSR2, "SIGUSR2", core::_sym_STARinformation_callbackSTAR);
+#endif
 #endif
 #ifdef SIGTHR
-        ADD_SIGNAL( SIGTHR, "+SIGTHR+", _Nil<core::T_O>());
+        ADD_SIGNAL( SIGTHR, "SIGTHR", _Nil<core::T_O>());
 #endif
 };
   

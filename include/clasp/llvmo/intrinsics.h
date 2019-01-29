@@ -224,4 +224,6 @@ mygetsectiondata( void* mhp, //const struct mach_header_64 *mhp,
                   const char *sectname,
                   unsigned long *size);
 };
+
+
 #endif

@@ -962,7 +962,7 @@ CL_DEFUN Pathname_sp core__safe_default_pathname_defaults_host_only(void) {
   return res;
 }
 
-static int global_pathname_recursion_guard = 0;
+static std::atomic<size_t> global_pathname_recursion_guard;
 struct PathnameRecursionGuard {
   PathnameRecursionGuard() {
     ++global_pathname_recursion_guard;
@@ -1688,7 +1688,9 @@ bool clasp_wild_string_p(T_sp item) {
     size_t i, l = cl__length(item);
     for (i = 0; i < l; i++) {
       claspChar c = cl__char(gc::As<String_sp>(item), i).unsafe_character();
-      if (c == '\\' || c == '*' || c == '?')
+      if (c == '\\')
+        i++;
+      else if ( c == '*' || c == '?')
         return 1;
     }
   }

@@ -458,15 +458,18 @@ eg:  (f closure-ptr nargs a b c d ...)
 (define-symbol-macro %fn-prototype*[2]% (llvm-sys:array-type-get %fn-prototype*% 2))
 
 
+;;; ------------------------------------------------------------
+;;;
+;;; This must match FunctionDescription in functor.h
+;;;
+;;; source-info/function-name are stored in a CONS cell CAR/CDR
+;;; lambda-list/docstring are stored in a CONS cell CAR/CDR
 (define-symbol-macro %function-description%
     (llvm-sys:struct-type-get *llvm-context*
                               (list %fn-prototype*%
                                     %gcroots-in-module*%
-                                    %i32% ; source info index
-                                    %i32% ; function name literal index
-                                    %i32% ; lambda-list literal index
-                                    %i32% ; docstring literal index
-                                    %i32% ; declare index
+                                    %i32% ; source-info.function-name index
+                                    %i32% ; lambda-list./docstring literal index
                                     %i32% ; lineno
                                     %i32% ; column
                                     %i32% ; filepos
@@ -497,14 +500,14 @@ eg:  (f closure-ptr nargs a b c d ...)
                                    "source-file-info-handle"))
 |#
 
-(defun add-global-ctor-function (module main-function &optional register-library)
+(defun add-global-ctor-function (module main-function &key position register-library)
   "Create a function with the name core:+clasp-ctor-function-name+ and
 have it call the main-function"
   #+(or)(unless (eql module (llvm-sys:get-parent main-function))
     (error "The parent of the func-ptr ~a (a module) does not match the module ~a" (llvm-sys:get-parent main-function) module))
   (let* ((*the-module* module)
          (fn (irc-simple-function-create
-              core::+clasp-ctor-function-name+
+              (core:bformat nil "%s_%d" core::+clasp-ctor-function-name+ (core:next-number))
               %fn-ctor%
               'llvm-sys:internal-linkage
               *the-module*
@@ -521,7 +524,7 @@ have it call the main-function"
               (internal-functions-global-bf (irc-bit-cast internal-functions-global %i8*% "internal-functions-ptr")))
           (irc-intrinsic "cc_register_library" fn internal-functions-names-global-bf internal-functions-global-bf internal-functions-length-global))
         (let* ((bc-bf (irc-bit-cast main-function %fn-start-up*% "fnptr-pointer"))
-               (_     (irc-intrinsic "cc_register_startup_function" bc-bf))
+               (_     (irc-intrinsic "cc_register_startup_function" (jit-constant-i32 position) bc-bf))
                (_     (irc-ret-void))))
         ;;(llvm-sys:dump fn)
         fn))))
@@ -579,7 +582,7 @@ have it call the main-function"
                                     (llvm-sys:constant-pointer-null-get %i8*%)))))
    "llvm.global_ctors"))
 
-(defun make-boot-function-global-variable (module func-designator &key register-library)
+(defun make-boot-function-global-variable (module func-designator &key position register-library)
   "* Arguments
 - module :: An llvm module
 - func-ptr :: An llvm function
@@ -596,7 +599,9 @@ and initialize it with an array consisting of one function pointer."
       (error "Could not find ~a in module" func-designator))
     #+(or)(unless (eql module (llvm-sys:get-parent func-ptr))
             (error "The parent of the func-ptr ~a (a module) does not match the module ~a" (llvm-sys:get-parent func-ptr) module))
-    (let* ((global-ctor (add-global-ctor-function module startup-fn register-library)))
+    (let* ((global-ctor (add-global-ctor-function module startup-fn
+                                                  :position position
+                                                  :register-library register-library)))
       (incf *compilation-unit-module-index*)
       (add-llvm.global_ctors module *compilation-unit-module-index* global-ctor))))
 
