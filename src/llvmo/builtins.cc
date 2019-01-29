@@ -1,5 +1,30 @@
+/*
+    File: builtins.cc
+    Small functions used by the runtime that should always be inlined.
+*/
 
-// Nothing for now
+/*
+Copyright (c) 2014, Christian E. Schafmeister
+
+CLASP is free software; you can redistribute it and/or
+modify it under the terms of the GNU Library General Public
+License as published by the Free Software Foundation; either
+version 2 of the License, or (at your option) any later version.
+
+See directory 'clasp/licenses' for full details.
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+*/
+/* -^- */
 
 #include <clasp/core/core.h>
 #include <clasp/core/object.h>
@@ -7,6 +32,7 @@
 #include <clasp/core/instance.h>
 #include <clasp/core/wrappedPointer.h>
 #include <clasp/core/funcallableInstance.h>
+#include <clasp/core/derivableCxxObject.h>
 #include <clasp/gctools/gcStack.h>
 #include <clasp/llvmo/intrinsics.h>
 
@@ -31,15 +57,9 @@ BUILTIN_ATTRIBUTES void newTmv(core::T_mv *sharedP)
   new (sharedP) core::T_mv();
 }
 
-BUILTIN_ATTRIBUTES void cc_rewind_va_list(va_list va_args, size_t* nargsP, void** register_save_areaP)
+BUILTIN_ATTRIBUTES void cc_rewind_va_list(va_list va_args, void** register_save_areaP)
 {NO_UNWIND_BEGIN_BUILTINS();
-#if 0
-  if (core::debug_InvocationHistoryFrame==3) {
-    printf("%s:%d cc_rewind_va_list     va_args=%p     nargsP = %p      register_save_areaP = %p\n", __FILE__, __LINE__, va_args, nargsP, register_save_areaP );
-  }
-#endif
   LCC_REWIND_VA_LIST(va_args,register_save_areaP);
-  *nargsP = (uintptr_t)register_save_areaP[1];
   NO_UNWIND_END_BUILTINS();
 }
 
@@ -64,6 +84,68 @@ BUILTIN_ATTRIBUTES core::T_O* cc_setup_vaslist_internal(core::Vaslist* vaslist, 
   vaslist->remaining_nargs() = nargs;
   return gctools::tag_vaslist<core::T_O*>(vaslist);
 }
+
+/* Remove one item from the vaslist and return it.
+   Do not call this unless you are sure there are elements to pop without DEBUG_BUILD */
+BUILTIN_ATTRIBUTES core::T_O* cx_vaslist_pop(core::T_O *preVaslist)
+{NO_UNWIND_BEGIN(); // check_remaining_nargs doesn't actually throw.
+  core::VaList_sp vaslist((gctools::Tagged)preVaslist);
+  return vaslist->next_arg_raw();
+  NO_UNWIND_END();
+}
+};
+
+
+#include <clasp/llvmo/read-stamp.cc>
+
+extern "C" {
+// mostly duplicates fastgf.cc, ew.
+// Idea here is we're moving away from even having fastgf.cc.
+BUILTIN_ATTRIBUTES core::T_O* cx_read_stamp(core::T_O* obj)
+{
+  return llvmo::template_read_stamp<core::T_O>(obj);
+#if 0
+  uintptr_t tag = reinterpret_cast<uintptr_t>(obj)&gctools::tag_mask;
+  int64_t stamp;
+  switch (tag) {
+  case FIXNUM0_TAG:
+      return core::make_fixnum(gctools::STAMP_FIXNUM).raw_();
+  case GENERAL_TAG: {
+  // do more stuff to get the stamp
+    core::General_O* client_ptr = reinterpret_cast<core::General_O*>(gctools::untag_general<core::T_O*>(obj));
+    const gctools::Header_s& header = *reinterpret_cast<const gctools::Header_s *>(ClientPtrToBasePtr(client_ptr));
+    uint64_t stamp = header.stamp();
+    if (stamp == gctools::STAMP_core__Instance_O ||
+        stamp == gctools::STAMP_core__FuncallableInstance_O ||
+        stamp == global_TheClassRep_stamp ) {
+      core::Instance_O* instance_ptr = reinterpret_cast<core::Instance_O*>(client_ptr);
+      core::SimpleVector_O* rack = reinterpret_cast<core::SimpleVector_O*>(gctools::untag_general<core::T_O*>(instance_ptr->_Rack.raw_()));
+      return core::make_fixnum((*rack)[0].unsafe_fixnum()).raw_();
+    } else if ( stamp == gctools::STAMP_core__WrappedPointer_O ) {
+      core::WrappedPointer_O* wrapped_ptr = reinterpret_cast<core::WrappedPointer_O*>(client_ptr);
+      return core::make_fixnum(wrapped_ptr->Stamp_).raw_();
+    } else if ( stamp == gctools::STAMP_core__DerivableCxxObject_O ) {
+      core::DerivableCxxObject_O* derivable_cxx_object_ptr = reinterpret_cast<core::DerivableCxxObject_O*>(client_ptr);
+      return core::make_fixnum(derivable_cxx_object_ptr->get_stamp_()).raw_();
+    } else {
+      return core::make_fixnum(stamp).raw_();
+    }
+  }
+  case CHARACTER_TAG:
+      return core::make_fixnum(gctools::STAMP_CHARACTER).raw_();
+  case CONS_TAG:
+      return core::make_fixnum(gctools::STAMP_CONS).raw_();
+  case FIXNUM1_TAG:
+      return core::make_fixnum(gctools::STAMP_FIXNUM).raw_();
+  case VASLIST_TAG:
+      return core::make_fixnum(gctools::STAMP_VA_LIST_S).raw_();
+  case SINGLE_FLOAT_TAG:
+      return core::make_fixnum(gctools::STAMP_SINGLE_FLOAT).raw_();
+  }
+  return core::make_fixnum(123456).raw_();
+#endif
+}
+
 
 BUILTIN_ATTRIBUTES
 core::T_O *va_symbolFunction(core::T_O *symP) {
@@ -229,16 +311,9 @@ BUILTIN_ATTRIBUTES core::T_O *cc_fetch(core::T_O *tagged_closure, std::size_t id
 
 BUILTIN_ATTRIBUTES core::T_O *cc_readCell(core::T_O *cell)
 {
-  core::Cons_O* cp = reinterpret_cast<core::Cons_O*>(gctools::untag_cons(cell));
-  return cp->_Car.raw_();
+  core::Cons_sp cp((gctools::Tagged)cell);
+  return CONS_CAR(cp).raw_();
 }
-
-
-BUILTIN_ATTRIBUTES void cc_check_if_wrong_number_of_arguments(size_t nargs, size_t minargs, size_t maxargs, core::FunctionDescription* functionDescription)
-{
-  if (nargs<minargs) cc_error_too_few_arguments(nargs,minargs,functionDescription);
-  if (nargs>maxargs) cc_error_too_many_arguments(nargs,maxargs,functionDescription);
-};
 
 BUILTIN_ATTRIBUTES core::T_O* cc_builtin_nil()
 {

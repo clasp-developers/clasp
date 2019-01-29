@@ -112,7 +112,7 @@ namespace gctools {
     this->this_thread->_DisableInterrupts = true;
   }
     ~RAIIDisableInterrupts() {
-      this->this_thread->_DisableInterrupts = true;
+      this->this_thread->_DisableInterrupts = false;
     }
   };
 };

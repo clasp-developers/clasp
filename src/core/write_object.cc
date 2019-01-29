@@ -110,8 +110,19 @@ Fixnum search_print_circle(T_sp x) {
 }
 
 T_sp write_object(T_sp x, T_sp stream) {
-  // First, make sure *print-circle* is ready.
-  // If it is and we need to just print a #n# tag, we can goto OUTPUT.
+  // With *print-pretty*, go immediately to the pretty printer, which does its own *print-circle* etc.
+  if (!cl::_sym_STARprint_prettySTAR.unboundp() && cl::_sym_STARprint_prettySTAR->symbolValueUnsafe().notnilp()) {
+    T_sp objx = x;
+    T_mv mv_f = eval::funcall(cl::_sym_pprint_dispatch, objx);
+    T_sp f0 = mv_f;
+    T_sp f1 = mv_f.valueGet_(1);
+    if (f1.notnilp()) {
+      eval::funcall(f0, stream, objx);
+      return objx;
+    }
+  }
+
+  // Otherwise, check print circle stuff...
   bool circle = clasp_print_circle();
   // We only worry about *print-circle* for objects that aren't numbers, valists, characters,
   // or interned symbols.
@@ -125,10 +136,10 @@ T_sp write_object(T_sp x, T_sp stream) {
     Fixnum code;
     T_sp circle_counter = _sym_STARcircle_counterSTAR->symbolValue();
     if (circle_counter.nilp()) {
-      HashTable_sp hash = cl__make_hash_table(cl::_sym_eq,
-                                             make_fixnum(1024),
-                                             _lisp->rehashSize(),
-                                             _lisp->rehashThreshold());
+      HashTable_sp hash = gc::As_unsafe<HashTable_sp>(cl__make_hash_table(cl::_sym_eq,
+                                                                          make_fixnum(1024),
+                                                                          _lisp->rehashSize(),
+                                                                          _lisp->rehashThreshold()));
       DynamicScopeManager scope;
       scope.pushSpecialVariableAndSet(_sym_STARcircle_counterSTAR, _lisp->_true());
       scope.pushSpecialVariableAndSet(_sym_STARcircle_stackSTAR, hash);
@@ -161,18 +172,7 @@ T_sp write_object(T_sp x, T_sp stream) {
       goto OUTPUT;
     }
   }
-  // Now for the actual printing. If *print-pretty*, and there's a dispatch function, we call that.
-  if (!cl::_sym_STARprint_prettySTAR.unboundp() && cl::_sym_STARprint_prettySTAR->symbolValueUnsafe().notnilp()) {
-    T_sp objx = x;
-    T_mv mv_f = eval::funcall(cl::_sym_pprint_dispatch, objx);
-    T_sp f0 = mv_f;
-    T_sp f1 = mv_f.valueGet_(1);
-    if (f1.notnilp()) {
-      eval::funcall(f0, stream, objx);
-      return objx;
-    }
-  }
-  // Otherwise print_ugly_object can take care of it.
+  // ...and then do the actual printing in write_ugly_object.
   return write_ugly_object(x, stream);
 OUTPUT:
   return x;

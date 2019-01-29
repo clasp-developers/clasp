@@ -26,6 +26,7 @@ THE SOFTWARE.
 /* -^- */
 //#define DEBUG_LEVEL_FULL
 
+#if 0
 #include <clasp/core/foundation.h>
 #include <clasp/core/serialize.h>
 #include <clasp/core/sexpSaveArchive.h>
@@ -118,3 +119,4 @@ CL_DEFMETHOD void SexpSaveArchive_O::sexpSaveArchiveWrite(T_sp streamDesignator)
   this->write(this->_TopNode, sNodeToRef, stream);
 };
 };
+#endif

@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#define DEBUG_LEVEL_FULL
+//#define DEBUG_LEVEL_FULL
 #include <clasp/core/foundation.h>
 #pragma clang diagnostic push
 //#pragma clang diagnostic ignored "-Wunused-local-typedef"
@@ -197,8 +197,8 @@ T_sp read_ch(T_sp sin) {
 }
 
 /*! See SACLA reader.lisp::read-ch-or-die */
-T_sp read_ch_or_die(T_sp sin) {
-  T_sp nc = cl__read_char(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true());
+Character_sp read_ch_or_die(T_sp sin) {
+  Character_sp nc = gc::As_unsafe<Character_sp>(cl__read_char(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true()));
   return nc;
 }
 
@@ -209,7 +209,7 @@ void unread_ch(T_sp sin, Character_sp c) {
 
 /*! See SACLA reader.lisp::collect-escaped-lexemes */
 List_sp collect_escaped_lexemes(Character_sp c, T_sp sin) {
-  ReadTable_sp readTable = _lisp->getCurrentReadTable();
+  ReadTable_sp readTable = gc::As<ReadTable_sp>(_lisp->getCurrentReadTable());
   Symbol_sp syntax_type = readTable->syntax_type(c);
   if (syntax_type == kw::_sym_invalid) {
     SIMPLE_ERROR(BF("invalid-character-error: %s") % _rep_(c));
@@ -229,7 +229,7 @@ List_sp collect_escaped_lexemes(Character_sp c, T_sp sin) {
 List_sp collect_lexemes(/*Character_sp*/ T_sp tc, T_sp sin) {
   if (tc.notnilp()) {
     Character_sp c = gc::As<Character_sp>(tc);
-    ReadTable_sp readTable = _lisp->getCurrentReadTable();
+    ReadTable_sp readTable = gc::As<ReadTable_sp>(_lisp->getCurrentReadTable());
     Symbol_sp syntax_type = readTable->syntax_type(c);
     if (syntax_type == kw::_sym_invalid) {
       SIMPLE_ERROR(BF("invalid-character-error: %s") % _rep_(c));
@@ -302,7 +302,7 @@ Character_sp lexeme_character(T_sp lexeme) {
   SIMPLE_ERROR(BF("Unknown lexeme %s") % _rep_(lexeme));
 }
 
-void make_str_upcase(StrWNs_sp sout, List_sp cur_char) {
+void make_str_upcase(StrNs_sp sout, List_sp cur_char) {
   while (cur_char.notnilp()) {
     T_sp obj = oCar(cur_char);
     if (obj.consp()) {
@@ -318,7 +318,7 @@ void make_str_upcase(StrWNs_sp sout, List_sp cur_char) {
   }
 }
 
-void make_str_downcase(StrWNs_sp sout, List_sp cur_char) {
+void make_str_downcase(StrNs_sp sout, List_sp cur_char) {
   while (cur_char.notnilp()) {
     T_sp obj = oCar(cur_char);
     if (obj.consp()) {
@@ -334,7 +334,7 @@ void make_str_downcase(StrWNs_sp sout, List_sp cur_char) {
   }
 }
 
-void make_str_preserve_case(StrWNs_sp sout, List_sp cur_char) {
+void make_str_preserve_case(StrNs_sp sout, List_sp cur_char) {
   while (cur_char.notnilp()) {
     T_sp obj = oCar(cur_char);
     if (obj.consp()) {
@@ -350,7 +350,7 @@ void make_str_preserve_case(StrWNs_sp sout, List_sp cur_char) {
 
 /*! Works like SACLA readtable::make-str but accumulates the characters
       into a stringstream */
-void make_str(StrWNs_sp sout, List_sp cur_char) {
+void make_str(StrNs_sp sout, List_sp cur_char) {
   ReadTable_sp readtable = gc::As<ReadTable_sp>(cl::_sym_STARreadtableSTAR->symbolValue());
   if (readtable->_Case == kw::_sym_invert) {
     UnEscapedCase strcase = check_case(cur_char,undefined);
@@ -787,7 +787,8 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, Token &token, bool only_dot
       return _Nil<T_O>();
     // interpret good keywords
     LOG_READ(BF("Token[%s] interpreted as keyword") % name_marker);
-    SimpleString_sp keyword_name = symbolTokenStr(sin,token, name_marker - token.data(),token.size(),only_dots_ok);
+    // :\. is a valid keyword symbol, so allow only dots here
+    SimpleString_sp keyword_name = symbolTokenStr(sin,token, name_marker - token.data(),token.size(),true);
     return _lisp->keywordPackage()->intern(keyword_name);
   } break;
   case tsymk:{
@@ -833,12 +834,13 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, Token &token, bool only_dot
     // interpret ratio
     SimpleString_sp sRatioStr = tokenStr(sin,token, start - token.data());
     std::string ratioStr = sRatioStr->get_std_string();
-    if (ratioStr[0] == '+') {
-      Ratio_sp rp = Ratio_O::create(ratioStr.substr(1, ratioStr.size() - 1).c_str());
-      return rp;
-    }
-    Ratio_sp r = Ratio_O::create(ratioStr.c_str());
-    return r;
+    if (ratioStr[0] == '+')
+      ratioStr = ratioStr.substr(1, ratioStr.size() - 1);
+    vector<string> parts = split(ratioStr.c_str(), "/");
+    ASSERT(parts.size() == 2);
+    Integer_sp num = Integer_O::create(parts[0]);
+    Integer_sp denom = Integer_O::create(parts[1]);
+    return Rational_O::create(num, denom);
     break;
   }
   case tfloat0:
@@ -1001,19 +1003,18 @@ List_sp read_list(T_sp sin, claspCharacter end_char, bool allow_consing_dot) {
 
 SYMBOL_SC_(CorePkg, STARsharp_equal_final_tableSTAR);
 
-__thread unsigned int read_lisp_object_recursion_depth = 0;
 struct increment_read_lisp_object_recursion_depth {
   increment_read_lisp_object_recursion_depth() {
-    ++read_lisp_object_recursion_depth;
+    ++my_thread->read_recursion_depth;
   }
   ~increment_read_lisp_object_recursion_depth() {
-    --read_lisp_object_recursion_depth;
+    --my_thread->read_recursion_depth;
   }
   static void reset() {
-    read_lisp_object_recursion_depth = 0;
+    my_thread->read_recursion_depth = 0;
   }
   int value() const {
-    return read_lisp_object_recursion_depth;
+    return my_thread->read_recursion_depth;
   }
   int max() const {
     return 256;
@@ -1055,22 +1056,9 @@ T_sp read_lisp_object(T_sp sin, bool eofErrorP, T_sp eofValue, bool recursiveP) 
     LOG_READ(BF("About to call read_lisp_object"));
     result = read_lisp_object(sin, eofErrorP, eofValue, true);
     LOG_READ(BF("Came out of read_lisp_object with: |%s|") % _rep_(result).c_str());
-#if 0
-    ReadTable_sp readtable = gc::As<ReadTable_sp>(cl::_sym_STARreadtableSTAR->symbolValue());
-    LOG_READ(BF("About to cl__peek_char"));
-    T_sp tcharc = cl__peek_char(_Nil<T_O>(),sin,_Nil<T_O>(),_Nil<T_O>(),_Nil<T_O>());
-    if (tcharc.notnilp() && readtable->syntax_type(gc::As_unsafe<Character_sp>(tcharc)) == kw::_sym_whitespace) {
-      LOG_READ(BF("cl__peek_char returned |%s|") % _rep_(tcharc));
-      cl__read_char(sin,_lisp->_boolean(eofErrorP),eofValue,_lisp->_true());
-      LOG_READ(BF("Returned from cl__read_char"));
-    } else {
-      LOG_READ(BF("cl__peek_char returned non-nil, non-whitespace: |%s|") % _rep_(tcharc));
-    }
-#endif
   }
   LOG_READ(BF("Returning from read_lisp_object"));
-  if (result.nilp())
-    return (Values(_Nil<T_O>()));
+  if (result.nilp()) return (Values(_Nil<T_O>()));
   return (result);
 }
 
@@ -1079,7 +1067,7 @@ T_sp read_lisp_object(T_sp sin, bool eofErrorP, T_sp eofValue, bool recursiveP) 
       Read a character from the stream and based on what it is continue to process the
       stream until a complete symbol/number of macro is processed.
       Return the result in a MultipleValues object - if it is empty then nothing was read */
-T_mv lisp_object_query(T_sp sin, bool eofErrorP, T_sp eofValue, bool recursiveP) {
+__attribute__((optnone)) T_mv lisp_object_query(T_sp sin, bool eofErrorP, T_sp eofValue, bool recursiveP) {
 #if 0
   static int monitorReaderStep = 0;
   if ((monitorReaderStep % 1000) == 0 && cl__member(_sym_monitorReader, _sym_STARdebugMonitorSTAR->symbolValue(), _Nil<T_O>()).notnilp()) {
@@ -1089,7 +1077,7 @@ T_mv lisp_object_query(T_sp sin, bool eofErrorP, T_sp eofValue, bool recursiveP)
 #endif
   bool only_dots_ok = false;
   Token token;
-  ReadTable_sp readTable = _lisp->getCurrentReadTable();
+  ReadTable_sp readTable = gc::As<ReadTable_sp>(_lisp->getCurrentReadTable());
   Character_sp xxx, y, z, X, Y, Z;
 /* See the CLHS 2.2 Reader Algorithm  - continue has the effect of jumping to step 1 */
 step1:
@@ -1182,7 +1170,7 @@ step8:
       LOG_READ(BF("Hit eof"));
       goto step10;
     }
-    Character_sp y(ty);
+    Character_sp y(gc::As_unsafe<Character_sp>(ty));
     LOG_READ(BF("Step8: Read y[%s/%c]") % clasp_as_claspCharacter(y) % (char)clasp_as_claspCharacter(y));
     Symbol_sp y8_syntax_type = readTable->syntax_type(y);
     LOG_READ(BF("y8_syntax_type=%s") % _rep_(y8_syntax_type));

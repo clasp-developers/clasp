@@ -22,7 +22,7 @@
 ;;; Debugging code
 ;;;
 ;;; Add :LOG-CMPGF to log fastgf messages during the slow path.
-;;;    
+;;;
 #+(or)
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (pushnew :debug-fastgf *features*))
@@ -328,7 +328,7 @@
                   (equal methods (cmp::effective-method-outcome-applicable-methods outcome)))
           return outcome))
 
-(defun compute-effective-method-function-maybe-optimize
+(defun compute-outcome
     (generic-function method-combination methods actual-specializers &key log actual-arguments)
   ;; Calculate the effective-method-function as well as an optimized one
   ;; so that we can apply the e-m-f to the arguments if we need to debug the optimized version.
@@ -347,10 +347,12 @@
     ;; no-applicable-method is different from the no-required-method we'd get if we went below,
     ;; so we pick that off first.
     ;; Similarly to nrm below, we return a sort of fake emf.
-    (return-from compute-effective-method-function-maybe-optimize
-      (lambda (vaslist-args ignore)
-        (declare (ignore ignore))
-        (apply #'no-applicable-method generic-function vaslist-args))))
+    (return-from compute-outcome
+      (cmp::make-function-outcome
+       :function
+       (lambda (vaslist-args ignore)
+         (declare (ignore ignore))
+         (apply #'no-applicable-method generic-function vaslist-args)))))
   (let* ((em (compute-effective-method generic-function method-combination methods))
          (method (and (consp em)
                       (eq (first em) 'call-method)
@@ -379,13 +381,14 @@
                          (cmp::make-fast-method-call :function fmf))
                         (leafp
                          (gf-log "Using method %s function as emf%N" method)
-                         (method-function method))
+                         (cmp::make-function-outcome :function (method-function method)))
                         (nrm-group-name ; missing a required (probably primary) method.
                          ;; FIXME: this is kind of ugly, to say the least. inlining would be nice.
-                         ;; This function will be treated as an emf by cmpfastgf, and called as such.
-                         (lambda (vaslist-args ignore)
-                           (declare (ignore ignore))
-                           (apply #'no-required-method generic-function nrm-group-name vaslist-args)))
+                         (cmp::make-function-outcome
+                          :function
+                          (lambda (vaslist-args ignore)
+                            (declare (ignore ignore))
+                            (apply #'no-required-method generic-function nrm-group-name vaslist-args))))
                         ((setf existing-emf (find-existing-emf (generic-function-call-history generic-function)
                                                                methods))
                          (gf-log "Using existing effective method function%N")
@@ -447,12 +450,12 @@
        do (let* ((methods (compute-applicable-methods-using-specializers
                            generic-function
                            specializers))
-                 (effective-method-function (compute-effective-method-function-maybe-optimize
-                                             generic-function
-                                             (generic-function-method-combination generic-function)
-                                             methods
-                                             specializers)))    ;;; I have actual specializers from the call history in specializers
-            (rplacd entry effective-method-function)))
+                 (outcome (compute-outcome
+                           generic-function
+                           (generic-function-method-combination generic-function)
+                           methods
+                           specializers)))    ;;; I have actual specializers from the call history in specializers
+            (rplacd entry outcome)))
     call-history))
 
 (defun update-generic-function-call-history-for-add-method (generic-function method)
@@ -472,15 +475,15 @@ FIXME!!!! This code will have problems with multithreading if a generic function
        do (let* ((methods (compute-applicable-methods-using-specializers
                            generic-function
                            specializers))
-                 (effective-method-function (if methods
-                                                (compute-effective-method-function-maybe-optimize
-                                                 generic-function
-                                                 (generic-function-method-combination generic-function)
-                                                 methods
-                                                 specializers) ;; I have the actual specializers in specializers
-                                                nil)))
-            (when effective-method-function
-              (push (cons (car entry) effective-method-function) new-call-history)))
+                 (outcome (if methods
+                              (compute-outcome
+                               generic-function
+                               (generic-function-method-combination generic-function)
+                               methods
+                               specializers) ;; I have the actual specializers in specializers
+                              nil)))
+            (when outcome
+              (push (cons (car entry) outcome) new-call-history)))
        else
        do (push (cons (car entry) (cdr entry)) new-call-history))
     new-call-history))
@@ -576,8 +579,8 @@ FIXME!!!! This code will have problems with multithreading if a generic function
     ;; for now, at least. Obviously they don't actually need the next-methods.
     ((cmp::effective-method-outcome-p outcome)
      (funcall (cmp::effective-method-outcome-function outcome) vaslist-arguments nil))
-    ((functionp outcome)
-     (funcall outcome vaslist-arguments nil))
+    ((cmp::function-outcome-p outcome)
+     (funcall (cmp::function-outcome-function outcome) vaslist-arguments nil))
     (t (error "BUG: Bad thing to be an outcome: ~a" outcome))))
 
 #+debug-fastgf
@@ -601,6 +604,17 @@ FIXME!!!! This code will have problems with multithreading if a generic function
   "This effectively does what compute-discriminator-function does and maybe memoizes the result 
 and calls the effective-method-function that is calculated.
 It takes the arguments in two forms, as a vaslist and as a list of arguments."
+  (multiple-value-bind (min max) (generic-function-min-max-args generic-function)
+    (cond ((< (length arguments) min)
+           (error 'simple-program-error
+                  :format-control "Not enough arguments when calling ~a - you provided ~d and ~d are required"
+                  :format-arguments (list (generic-function-name generic-function)
+                                          (length arguments) min)))
+          ((and max (> (length arguments) max))
+           (error 'simple-program-error
+                  :format-control "Too many arguments when calling ~a - you provided ~d and ~d are allowed"
+                  :format-arguments (list (generic-function-name generic-function)
+                                          (length arguments) max)))))
   (let ((argument-classes (mapcar #'class-of arguments))
         #+debug-fastgf
         (*dispatch-miss-start-time* (get-internal-real-time)))
@@ -612,7 +626,7 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
       (let* ((method-list (if ok
                               method-list
                               (compute-applicable-methods generic-function arguments)))
-             (outcome (compute-effective-method-function-maybe-optimize
+             (outcome (compute-outcome
                        generic-function
                        (generic-function-method-combination generic-function)
                        method-list
@@ -683,12 +697,19 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
            (if invalid-instance
                (apply generic-function valist-args)
                (progn
-                 (gf-log "----{---- A dispatch-miss occurred -> %s  %N" (clos::generic-function-name generic-function))
-                 (dolist (arg (core:list-from-va-list valist-args))
-                   (gf-log "%s[%s/%d] " arg (class-of arg) (core:instance-stamp arg)))
-                 (gf-log-noindent "%N")
+                 #+debug-fastgf
+                 (progn
+                   (gf-log "----{---- A dispatch-miss occurred -> %s  %N" (clos::generic-function-name generic-function))
+                   (dolist (arg (core:list-from-va-list valist-args))
+                     (gf-log "%s[%s/%d] " arg (class-of arg) (core:instance-stamp arg)))
+                   (gf-log-noindent "%N"))
                  (do-dispatch-miss generic-function valist-args arguments)))))
     (decf-debug-fastgf-indent)))
+
+;; (apply #'dispatch-miss-with-args gf vaslist) = (dispatch-miss gf vaslist)
+;; TODO: Make APPLY good enough that we can lose one.
+(defun dispatch-miss-with-args (generic-function core:&va-rest valist-args)
+  (dispatch-miss generic-function valist-args))
 
 ;;; change-class requires removing call-history entries involving the class
 ;;; and invalidating the generic functions
@@ -696,33 +717,34 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
 (defun update-specializer-profile (generic-function specializers)
   (if (vectorp (generic-function-specializer-profile generic-function))
       (loop for vec = (generic-function-specializer-profile generic-function)
-         for new-vec = (let ((new-vec (copy-seq vec)))
-                         (loop for i from 0
-                            for spec in specializers
-                            for specialized = (not (eq spec clos:+the-t-class+))
-                            when specialized
-                            do (setf (elt new-vec i) t))
-                         new-vec)
-         for exchanged = (generic-function-specializer-profile-compare-exchange generic-function vec new-vec)
-         until (eq exchanged new-vec))
+            for new-vec = (let ((new-vec (copy-seq vec)))
+                            (loop for i from 0
+                                  for spec in specializers
+                                  for specialized = (not (eq spec clos:+the-t-class+))
+                                  when specialized
+                                    do (setf (elt new-vec i) t))
+                            new-vec)
+            for exchanged = (generic-function-specializer-profile-compare-exchange generic-function vec new-vec)
+            until (eq exchanged new-vec))
       (warn "update-specializer-profile - Generic function ~a does not have a specializer-profile defined at this point" generic-function)))
 
-
 (defun compute-and-set-specializer-profile (generic-function)
-  ;; The generic-function MUST have a specializer-profile defined already
-  ;;   - it must be a simple-vector with size number-of-requred-arguments
-  ;;     Each element is T if the corresponding argument is specialized on
-  ;;        and NIL if it is not (all specializers are T).
+  ;; The profile is a simple vector with as many elements as the gf has
+  ;; required arguments. Each element is true iff the corresponding
+  ;; argument is specialized on (i.e., not T).
   (gf-log "compute-and-set-specializer-profile%N")
+  ;; If the specializer profile doesn't yet exist, initialize it with a default
+  ;; (all NILs)
   (unless (vectorp (generic-function-specializer-profile generic-function))
     (gf-log "compute-and-set-specializer-profile2%N")
-    (initialize-generic-function-specializer-profile generic-function :errorp t))
+    (initialize-generic-function-specializer-profile generic-function))
   (gf-log "compute-and-set-specializer-profile1%N")
+  ;; Now do the actual computation.
   (let ((vec (make-array (length (generic-function-specializer-profile generic-function))
                          :initial-element nil))
         (methods (clos:generic-function-methods generic-function)))
     (gf-log "compute-and-set-specializer-profile1.5%N")
-    (initialize-generic-function-specializer-profile generic-function :initial-vec vec)
+    (force-generic-function-specializer-profile generic-function vec)
     (when methods
       (loop for method in methods
          for specializers = (method-specializers method)
@@ -732,6 +754,9 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
   (if (generic-function-call-history generic-function)
       (let ((call-history (generic-function-call-history generic-function))
             (specializer-profile (generic-function-specializer-profile generic-function)))
+        (gf-log "calculate-fastgf-dispatch-function generic-function: %s (core:function-name generic-function) -> %s%N"
+                generic-function
+                (core:function-name generic-function))
         (cmp:codegen-dispatcher call-history
                                 specializer-profile
                                 generic-function
@@ -746,6 +771,21 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
 (defun not-funcallable-dispatch-function (generic-function valist-args)
   (error "The funcallable-instance ~s is not funcallable" generic-function))
 
+(defun force-dispatcher (generic-function)
+  (let (log-output)
+    #+debug-fastgf
+    (progn
+      (if (eq (class-of generic-function) (find-class 'standard-generic-function))
+          (let ((generic-function-name (core:low-level-standard-generic-function-name generic-function)))
+            (setf log-output (log-cmpgf-filename generic-function-name "func" "ll"))
+            (gf-log "Writing dispatcher to %s%N" log-output))
+          (setf log-output (log-cmpgf-filename (generic-function-name generic-function) "func" "ll")))
+      (incf-debug-fastgf-didx))
+    (set-funcallable-instance-function generic-function
+                                       (calculate-fastgf-dispatch-function
+                                        generic-function
+                                        :output-path log-output))))
+
 (defun invalidated-dispatch-function (generic-function valist-args)
   (declare (optimize (debug 3)))
   ;;; If there is a call history then compile a dispatch function
@@ -759,18 +799,8 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
       (gf-log "Entered invalidated-dispatch-function - avoiding generic function calls until return!!!%N"))
   (gf-log "Specializer profile is %s%N" (generic-function-specializer-profile generic-function))
   (if (generic-function-call-history generic-function)
-      (let (log-output)
-        #+debug-fastgf(progn
-                        (if (eq (class-of generic-function) (find-class 'standard-generic-function))
-                            (let ((generic-function-name (core:low-level-standard-generic-function-name generic-function)))
-                              (setf log-output (log-cmpgf-filename generic-function-name "func" "ll"))
-                              (gf-log "Writing dispatcher to %s%N" log-output))
-                            (setf log-output (log-cmpgf-filename (generic-function-name generic-function) "func" "ll")))
-                        (incf-debug-fastgf-didx))
-        (set-funcallable-instance-function generic-function
-                                           (calculate-fastgf-dispatch-function
-                                            generic-function
-                                            :output-path log-output))
+      (progn
+        (force-dispatcher generic-function)
         (apply generic-function valist-args))
       (dispatch-miss generic-function valist-args)))
 

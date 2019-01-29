@@ -52,6 +52,7 @@ is used."
 	   (type (second current))
 	   (iterator (si::hash-table-iterator (third current))))
       (flet ((iterate ()
+               (declare (core:lambda-name packages-iterator-iterate))
 	       (tagbody
 		AGAIN
 		  (multiple-value-bind (found key value)

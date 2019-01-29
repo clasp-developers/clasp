@@ -26,7 +26,9 @@
   (apply #'shared-initialize instance 'T initargs))
 
 (defmethod reinitialize-instance ((instance T ) &rest initargs)
-;;  (print "HUNT entered reinitialize-instance") ;
+  (declare (dynamic-extent initargs))
+  ;; NOTE: This dynamic extent declaration relies on the fact clasp's APPLY does not reuse rest lists.
+  ;; If it did, a method on #'shared-initialize, or whatever, could potentially let the rest list escape.
   (check-initargs (class-of instance) initargs
 		  (valid-keywords-from-methods
                    (compute-applicable-methods
@@ -97,7 +99,7 @@
         when (eq (slot-definition-allocation slotd) :instance)
           sum 1))
 
-(defmethod allocate-instance ((class standard-class) core:&va-rest initargs)
+(defmethod allocate-instance ((class standard-class) &rest initargs)
   (declare (ignore initargs))
   ;; CLHS says allocate-instance finalizes the class first, but we don't.
   ;; Dr. Strandh argues that this is impossible since the initargs should be the
@@ -113,13 +115,13 @@
     (mlog "In allocate-instance  x -> %s\n" x)
     x))
 
-(defmethod allocate-instance ((class derivable-cxx-class) core:&va-rest initargs)
+(defmethod allocate-instance ((class derivable-cxx-class) &rest initargs)
   (declare (ignore initargs))
   ;; derivable cxx objects are Instance_O's, so this is _probably_ okay.
   ;; (And allocate-new-instance uses the creator, so it'll do any C++ junk.)
   (core:allocate-new-instance class (class-size class)))
 
-(defmethod allocate-instance ((class funcallable-standard-class) core:&va-rest initargs)
+(defmethod allocate-instance ((class funcallable-standard-class) &rest initargs)
   (declare (ignore initargs))
   (dbg-standard "About to allocate-new-funcallable-instance class->~a~%" class)
   (let ((x (core:allocate-new-funcallable-instance class (class-size class))))
@@ -128,6 +130,7 @@
     x))
 
 (defmethod make-instance ((class class) &rest initargs)
+  (declare (dynamic-extent initargs)) ; see NOTE in reinitialize-instance/T
   (dbg-standard "standard.lsp:128  make-instance class ->~a~%" class)
   ;; Without finalization we can not find initargs.
   (unless (class-finalized-p class)
@@ -190,7 +193,10 @@
                  (class-direct-superclasses class)))))
 
 (defun finalize-unless-forward (class)
-  (unless (find-if #'has-forward-referenced-parents (class-direct-superclasses class))
+  (unless (or
+           ;; We used to have all forward-referenced classes "finalized", weirdly.
+           (forward-referenced-class-p class)
+           (find-if #'has-forward-referenced-parents (class-direct-superclasses class)))
     (finalize-inheritance class)))
 
 (defmethod make-instances-obsolete ((class class))
@@ -205,6 +211,7 @@
   class)
 
 (defmethod initialize-instance ((class class) &rest initargs &key direct-slots)
+  (declare (dynamic-extent initargs)) ; see NOTE in reinitialize-instance/T
   (dbg-standard "standard.lsp:196  initialize-instance class->~a~%" class)
   ;; convert the slots from lists to direct slots
   (apply #'call-next-method class
@@ -218,6 +225,7 @@
   class)
 
 (defmethod shared-initialize ((class class) slot-names &rest initargs &key direct-superclasses)
+  (declare (dynamic-extent initargs)) ; see NOTE in reinitialize-instance/T
   ;; verify that the inheritance list makes sense
   (dbg-standard "standard.lsp:200 shared-initialize of class-> ~a direct-superclasses-> ~a~%" class direct-superclasses)
   (let* ((class (apply #'call-next-method class slot-names
@@ -262,9 +270,6 @@
     (map-dependents
      object
      #'(lambda (dep) (apply #'update-dependent object dep initargs)))))
-
-(defmethod reinitialize-instance :after ((class class) &rest initargs)
-  (update-dependents class initargs))
 
 (defmethod add-direct-subclass ((parent class) child)
   (pushnew child (class-direct-subclasses parent)))
@@ -311,9 +316,6 @@ argument was supplied for metaclass ~S." (class-of class))))))))
 ;;; ----------------------------------------------------------------------
 ;;; FINALIZATION OF CLASS INHERITANCE
 ;;;
-(defun forward-referenced-class-p (x)
-  (let ((y (find-class 'FORWARD-REFERENCED-CLASS nil)))
-    (and y (si::subclassp (class-of x) y))))
 
 (defmethod finalize-inheritance ((class class))
   ;; FINALIZE-INHERITANCE computes the guts of what defines a class: the
@@ -469,7 +471,7 @@ because it contains a reference to the undefined class~%  ~A"
 ;;; IMPORTANT: The following implementation of ENSURE-CLASS-USING-CLASS is
 ;;; shared by the metaclasses STANDARD-CLASS and STRUCTURE-CLASS.
 ;;;
-(defmethod ensure-class-using-class ((class class) name &rest rest
+(defmethod ensure-class-using-class ((class class) name core:&va-rest rest
 				     &key direct-slots direct-default-initargs)
   (declare (ignore direct-default-initargs direct-slots))
   (clos::gf-log "In ensure-class-using-class (class class) %N")
@@ -618,6 +620,7 @@ because it contains a reference to the undefined class~%  ~A"
 ;;;
 
 (defun valid-keywords-from-methods (&rest method-lists)
+  (declare (dynamic-extent method-lists))
   (loop for methods in method-lists
      when (member t methods :key #'method-keywords)
      return t

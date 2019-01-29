@@ -34,6 +34,7 @@ THE SOFTWARE.
 #include <clasp/core/package.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/fileSystem.h>
+#include <clasp/core/pathname.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/character.h>
 #include <clasp/core/array.h>
@@ -246,9 +247,7 @@ T_sp inputStreamDesignator(T_sp obj) {
   } else if (cl__streamp(obj)) {
     return obj;
   }
-  // kpoeck
-  // SIMPLE_ERROR(BF("Cannot convert object[%s] into a Stream") % _rep_(obj));
-  TYPE_ERROR(obj, cl::_sym_streamError);
+  TYPE_ERROR(obj, cl::_sym_Stream_O);
 }
 
 T_sp outputStreamDesignator(T_sp obj) {
@@ -259,9 +258,7 @@ T_sp outputStreamDesignator(T_sp obj) {
   } else if (cl__streamp(obj)) {
     return obj;
   }
-  // kpoeck
-  // SIMPLE_ERROR(BF("Cannot convert object[%s] into a Stream") % _rep_(obj));
-  TYPE_ERROR(obj, cl::_sym_streamError);
+  TYPE_ERROR(obj, cl::_sym_Stream_O);
 }
 
 

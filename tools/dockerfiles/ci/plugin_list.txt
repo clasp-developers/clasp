@@ -1,7 +1,0 @@
-ansicolor
-git
-git-client
-github
-greenballs
-ssh-agent
-docker-slaves

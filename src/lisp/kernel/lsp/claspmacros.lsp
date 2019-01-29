@@ -87,26 +87,14 @@
 ;;; Set the fdefinition for all special operators to something more reasonable than T
 ;;;
 (dolist (so (core::list-of-all-special-operators))
-  (when (eq (fdefinition so) T)
+  (when (null (fboundp so))
     (core:fset so
                 (let ((so so))
                   (lambda (&rest args)
                     (declare (ignore args))
-                    (error 'do-not-funcall-special-operator :operator so))))))
+                    (error 'do-not-funcall-special-operator :operator so :name so))))))
 
 (export 'do-not-funcall-special-operator)
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; Reader macro for builtin objects
-;;
-(defun read-cxx-object (stream char n)
-  (declare (ignore char))
-  (let ((description (read stream t nil t)))
-    (apply #'core:make-cxx-object (car description) (cdr description))))
-
-(set-dispatch-macro-character #\# #\I #'read-cxx-object)
 
 (defmacro with-print-readably (&rest body)
   `(with-standard-io-syntax
@@ -167,6 +155,14 @@
       (core:str-w-ns (intrinsic-call "StrWNs_get" str idx)))))
 
 
+(defmacro with-metrics-message ((message) &body body)
+  `(unwind-protect
+        (progn
+          (core:monitor-write (core:bformat nil "{{{ %s%N" ,message))
+          ,@body)
+     (core:monitor-write (core:bformat nil "}}} ;;; %s%N" ,message))))
+
+(export 'with-metrics-message)
 
 #|
 (core:bclasp-define-compiler-macro new-apply (function-desig &rest args)

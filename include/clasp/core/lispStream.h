@@ -135,6 +135,7 @@ void clasp_clear_output(T_sp strm);
 void clasp_force_output(T_sp strm);
 
 void clasp_finish_output(T_sp strm);
+void clasp_finish_output_t(); // finish output to *standard-output*
 int clasp_file_column(T_sp strm);
 size_t clasp_input_filePos(T_sp strm);
 int clasp_input_lineno(T_sp strm);
@@ -145,8 +146,8 @@ Pathname_sp clasp_input_pathname(T_sp strm);
 /*! Return the filename of the stream if possible, error if errorp=true and no name can be determined */
 T_sp clasp_filename(T_sp strm, bool errorp = false);
 
- void cl__unread_char(Character_sp ch, T_sp dstrm);
-  T_sp cl__get_output_stream_string(T_sp strm);
+T_sp cl__unread_char(Character_sp ch, T_sp dstrm);
+T_sp cl__get_output_stream_string(T_sp strm);
 
 T_sp clasp_file_length(T_sp strm);
 T_sp clasp_file_position(T_sp strm);
@@ -157,6 +158,9 @@ T_sp clasp_stream_element_type(T_sp strm);
 int clasp_interactive_stream_p(T_sp strm);
 T_sp clasp_off_t_to_integer(clasp_off_t offset);
 clasp_off_t clasp_integer_to_off_t(T_sp i);
+
+T_sp cl__file_length(T_sp stream);
+T_sp cl__file_position(T_sp stream, T_sp position);
 
 T_sp cl__stream_element_type(T_sp strm);
 T_sp cl__stream_external_format(T_sp strm);
@@ -470,13 +474,14 @@ public: // Simple default ctor/dtor
 public:    // ctor/dtor for classes with shared virtual base
            //    explicit StringStream_O(core::Instance_sp const& mc) : T_O(mc),AnsiStream(mc) {};
            //    virtual ~StringStream_O() {};
-private: // instance variables here
+public: // instance variables here
   String_sp _Contents;
   gctools::Fixnum _InputPosition;
   gctools::Fixnum _InputLimit;
 
 public: // Functions here
   static T_sp make(const string &str);
+  string peer(size_t len);
 }; // StringStream class
 };
 
@@ -500,7 +505,7 @@ GCPROTECTED: // instance variables here
 
 public:
   static SynonymStream_sp make(Symbol_sp symbol) {
-    return cl__make_synonym_stream(symbol);
+    return gc::As<SynonymStream_sp>(cl__make_synonym_stream(symbol));
   }
 
 public: // Functions here

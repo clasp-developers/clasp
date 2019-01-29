@@ -36,7 +36,9 @@ namespace core {
 CommandLineOptions::CommandLineOptions(int argc, char *argv[])
     : _DontLoadImage(false),
       _DontLoadInitLsp(false),
+      _DisableMpi(false),
       _HasImageFile(false),
+      _Stage('c'),
       _ImageFile(""),
       _GotRandomNumberSeed(false),
       _RandomNumberSeed(0),
@@ -62,7 +64,9 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
       printf("clasp options\n"
              "-I/--ignore-image    - Don't load the boot image/start with init.lsp\n"
              "-i/--image file      - Use the file as the boot image\n"
+             "-t/--stage (a|b|c)   - Start the specified stage of clasp 'c' is default\n"
              "-N/--non-interactive - Suppress all repls\n"
+             "-m/--disable-mpi     - Don't use mpi even if built with mpi\n"
              "-v/--version         - Print version\n"
              "-R/--resource-dir    - This directory is treated as the executable directory\n"
              "                       and it is used to start the search for resource directories\n"
@@ -77,6 +81,7 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
              "-- {ARGS}*           - Trailing are added to core:*command-line-arguments*\n"
              "*feature* settings\n"
              " debug-startup       - Print a message for every top level form at startup (requires DEBUG_SLOW)\n"
+             " debug-startup-verbose - Print a message for every top level form and literal read at startup (requires DEBUG_SLOW)\n"
              " debug-run-clang     - Print every clang invocation\n"
              " exit-backtrace      - Print a backtrace if a non-zero exit code is used to exit\n"
              " jit-log-symbols     - Generate a log of JITted symbols\n"
@@ -85,7 +90,8 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
              " clasp-builder-repl  - Stop in the clasp builder repl to debug bootstrapping\n"
              " use-human-readable-bitcode - Write .ll files instead of .bc files\n"
              " disable-profiling   - Set cmp::*enable-profiling* to NIL and \n"
-             "                       disable generation of counting-function function attribute\n"
+             " disable-dbg-generate-dwarf   - Set cmp::*dbg-generate-dwarf* to NIL \n"
+             "                       disable generation of DWARF metadata during compilations\n"
              "Environment variables:\n"
              "export CLASP_DEBUG=<file-names-space-or-comma-separated>  Define files that\n"
              "                        generate log info when DEBUG_LEVEL_FULL is set at top of file.\n"
@@ -97,6 +103,7 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
              "export CLASP_DUMP_FUNCTIONS (set to anything)  Dump all function definitions at startup\n"
              "export CLASP_TELEMETRY_MASK=1  #turn on telemetry for (1=gc,2=stack)\n"
              "export CLASP_TELEMETRY_FILE=/tmp/clasp.tel # (file to write telemetry)\n"
+             "export CLASP_QUICKLISP_DIRECTORY=<dir> # (directory that contains quicklisp setup.lisp)\n"
              "export CLASP_FEATURES=clasp-builder-repl  # Set *features* (separate multiple features with spaces)\n"
              "export CLASP_MEMORY_PROFILE <size-threshold> <number-theshold> # This means call \n"
              "                      # HitAllocationSizeThreshold every time 16000000 bytes are allocated\n"
@@ -117,6 +124,8 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
       this->_NoRc = true;
     } else if (arg == "-w" || arg == "--wait") {
       this->_PauseForDebugger = true;
+    } else if (arg == "-m" || arg == "--disable-mpi") {
+      this->_DisableMpi = true;
     } else if (arg == "-n" || arg == "--noinit") {
       this->_DontLoadInitLsp = true;
     } else if (arg == "-v" || arg == "--version") {
@@ -131,6 +140,10 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
       ASSERTF(iarg < (endArg + 1), BF("Missing argument for --image,-i"));
       this->_HasImageFile = true;
       this->_ImageFile = argv[iarg + 1];
+      iarg++;
+    } else if (arg == "-t" || arg == "--stage") {
+      ASSERTF(iarg < (endArg + 1), BF("Missing argument for --stage,-t"));
+      this->_Stage = argv[iarg + 1][0];
       iarg++;
     } else if (arg == "-e" || arg == "--eval") {
       ASSERTF(iarg < (endArg + 1), BF("Missing argument for --eval,-e"));

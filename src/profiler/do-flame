@@ -10,7 +10,7 @@ FRAMES=${4:-1000}
 #else
 #   cp /tmp/out-$1.user_stacks /tmp/out-symbol-$1.user_stacks
 #fi
-./do-dtrace $1
-$FLAME_GRAPH_HOME/stackcollapse.pl /tmp/out-symbol-$1.user_stacks >/tmp/out-symbol-$1.folded
-$FLAME_GRAPH_HOME/flamegraph.pl /tmp/out-symbol-$1.folded >/tmp/out-$1.svg
+./do-dtrace $PID $TIME $RATE $FRAMES
+$FLAME_GRAPH_HOME/stackcollapse.pl /tmp/out-$1.stacks >/tmp/out-$1.folded
+$FLAME_GRAPH_HOME/flamegraph.pl /tmp/out-$1.folded >/tmp/out-$1.svg
 echo /tmp/out-$1.svg

@@ -316,13 +316,11 @@ Boehm and MPS use a single pointer"
 
 (defstruct (calling-convention-configuration (:type vector))
   use-only-registers
-  invocation-history-frame*
-  vaslist*
   register-save-area*)
 
 ;; Provide the arguments passed to the function in a convenient manner.
 ;; Either the register arguments are available in register-args
-;;   or the va-list/remaining-nargs is used to access the arguments
+;;   or the va-list is used to access the arguments
 ;;   one after the other with calling-convention.va-arg
 (defstruct (calling-convention-impl
             (:conc-name "CALLING-CONVENTION-")
@@ -331,85 +329,38 @@ Boehm and MPS use a single pointer"
   nargs
   use-only-registers ; If T then use only the register-args
   register-args ; The arguments that were passed in registers
-  va-list*       ; The address of vaslist.va_list on the stack
-  remaining-nargs* ; The address of vaslist._remaining_nargs on the stack
+  va-list*       ; The address of the va_list on the stack
   register-save-area*
-  invocation-history-frame*
-  lambda-list ; the original lambda-list
-  canonical-declares  ; canonicalized declares
   cleavir-lambda-list ; cleavir-style lambda-list
-  name-map ; lambda-list names mapped to cleavir-names in alist
+  rest-alloc ; whether we can dx or ignore a &rest argument
   )
 
 ;; Parse the function arguments into a calling-convention
 ;;
 ;; What if we don't want/need to spill the registers to the register-save-area?
-(defun initialize-calling-convention (arguments setup &key (rewind t) name-map canonical-declares lambda-list cleavir-lambda-list)
-  (if (null (calling-convention-configuration-vaslist* setup))
-      ;; If there is no vaslist then only register arguments are available
-      ;;    no registers are spilled to the register-save-area and no InvocationHistoryFrame
-      ;;    will be available to initialize
-      (progn
+(defun initialize-calling-convention (arguments setup &key (rewind t) cleavir-lambda-list rest-alloc)
+  (let ((register-save-area* (calling-convention-configuration-register-save-area* setup)))
+    (if (null register-save-area*)
+        ;; If there's no RSA, we determined we only need registers and don't need to dump things.
         (make-calling-convention-impl :closure (first arguments)
                                       :nargs (second arguments)
                                       :use-only-registers t
                                       :register-args (nthcdr 2 arguments)
-                                      :lambda-list lambda-list
-                                      :canonical-declares canonical-declares
                                       :cleavir-lambda-list cleavir-lambda-list
-                                      :name-map name-map))
-      ;; The register arguments need to be spilled to the register-save-area
-      ;;    and the vaslist needs to be initialized.
-      ;;    If a InvocationHistoryFrame is available, then initialize it.
-      (progn
-        (let* ((vaslist                    (calling-convention-configuration-vaslist* setup))
-               #++(_dbg                        (progn
-                                                 (llvm-print "vaslist%N")
-                                                 (irc-intrinsic "debugPointer" (irc-bit-cast vaslist %i8*%))))
-               (register-save-area*         (calling-convention-configuration-register-save-area* setup))
-               #++(_dbg                        (progn
-                                                 (llvm-print "register-save-area%N")
-                                                 (irc-intrinsic "debugPointer" (irc-bit-cast register-save-area* %i8*%))))
-               (vaslist-addr-uint           (irc-ptr-to-int vaslist %uintptr_t% "vaslist-tagged-uint"))
-               (va-list-addr                (irc-add vaslist-addr-uint (jit-constant-uintptr_t +vaslist-valist-offset+) "va-list-addr"))
-               (va-list*                    (irc-int-to-ptr va-list-addr %va_list*% "va-list*"))
-               (remaining-nargs*-uint       (irc-add vaslist-addr-uint (jit-constant-uintptr_t +vaslist-remaining-nargs-offset+) "remaining-nargs*-uint"))
-               (remaining-nargs*            (irc-int-to-ptr remaining-nargs*-uint %size_t*% "remaining-nargs*"))
-               #++(_dbg                        (irc-intrinsic "debugPointer" (irc-bit-cast remaining-nargs* %i8*%)))
-               (_                           (maybe-spill-to-register-save-area arguments register-save-area*))
-               (cc                          (make-calling-convention-impl :closure (first arguments)
-                                                                          :nargs (second arguments) ;; The number of arguments
-                                                                          :register-args (nthcdr 2 arguments)
-                                                                          :use-only-registers (calling-convention-configuration-use-only-registers setup)
-                                                                          :va-list* va-list*
-                                                                          :remaining-nargs* remaining-nargs*
-                                                                          :register-save-area* (calling-convention-configuration-register-save-area* setup)
-                                                                          :invocation-history-frame* (calling-convention-configuration-invocation-history-frame* setup)
-                                                                          :lambda-list lambda-list
-                                                                          :canonical-declares canonical-declares
-                                                                          :cleavir-lambda-list cleavir-lambda-list
-                                                                          :name-map name-map))
-               ;; va-start is done in caller
-               #+(or)(_                           (calling-convention-args.va-start cc))
-               #++(_dbg                        (progn
-                                                 (llvm-print "After calling-convention-args.va-start%N")
-                                                 (irc-intrinsic "debug_va_list" va-list*))))
-          cc))))
-
-(defun calling-convention-maybe-push-invocation-history-frame (cc)
-  (when (calling-convention-invocation-history-frame* cc)
-    (irc-intrinsic "cc_push_InvocationHistoryFrame"
-                   (calling-convention-closure cc)
-                   (calling-convention-invocation-history-frame* cc)
-                   (calling-convention-va-list* cc)
-                   (irc-load (calling-convention-remaining-nargs* cc)))))
-
-(defun calling-convention-maybe-pop-invocation-history-frame (cc)
-  (when (calling-convention-invocation-history-frame* cc)
-    (irc-intrinsic "cc_pop_InvocationHistoryFrame"
-                   (calling-convention-closure cc)
-                   (calling-convention-invocation-history-frame* cc))))
-
+                                      :rest-alloc rest-alloc)
+        ;; The register arguments need to be spilled to the register-save-area
+        ;;    and the va_list needs to be initialized.
+        ;;    If a InvocationHistoryFrame is available, then initialize it.
+        (progn
+          (maybe-spill-to-register-save-area arguments register-save-area*)
+          (make-calling-convention-impl :closure (first arguments)
+                                        :nargs (second arguments) ;; The number of arguments
+                                        :register-args (nthcdr 2 arguments)
+                                        :use-only-registers (calling-convention-configuration-use-only-registers setup)
+                                        :va-list* (irc-alloca-va_list)
+                                        :register-save-area* register-save-area*
+                                        :cleavir-lambda-list cleavir-lambda-list
+                                        :rest-alloc rest-alloc)))))
 
 (defun calling-convention-args.va-end (cc)
   (when (calling-convention-va-list* cc)
@@ -417,24 +368,14 @@ Boehm and MPS use a single pointer"
 
 ;;;
 ;;; Read the next argument from the va_list
-;;; Everytime the arg-idx is incremented, this function must be called.
-(defun calling-convention-args.va-arg (cc &optional target-idx)
-  (let* ((label                 (if (and target-idx core::*enable-print-pretty*)
-                                    (bformat nil "arg-%d" target-idx)
-                                    "rawarg"))
-         (remaining-nargs*-addr (calling-convention-remaining-nargs* cc))
-         (remaining-nargs       (irc-load remaining-nargs*-addr "rem-nargs"))
-         (rem-nargs-1           (irc-sub  remaining-nargs (jit-constant-size_t 1) "rem-nargs-1"))
-         (_                     (irc-store rem-nargs-1 remaining-nargs*-addr))
-         (result                (irc-va_arg (calling-convention-va-list* cc) %t*% )))
-    result))
+(defun calling-convention-args.va-arg (cc)
+  (irc-va_arg (calling-convention-va-list* cc) %t*%))
 
 (defun calling-convention-args.va-start (cc &optional (rewind t))
   "Like va-start - but it rewinds the va-list to start at the third argument. 
 This allows all of the arguments to be accessed with successive calls to calling-convention-args.va-arg.
 eg:  (f closure-ptr nargs a b c d ...)
-                          ^-----  after calling-convention-args.va-start the va-list will point here.
-                                  and remaining-nargs will contain nargs."
+                          ^-----  after calling-convention-args.va-start the va-list will point here."
                                         ; Initialize the va_list - the only valid field will be overflow-area
   (let* ((va-list*                      (calling-convention-va-list* cc)))
     (when va-list*
@@ -469,30 +410,28 @@ eg:  (f closure-ptr nargs a b c d ...)
                                              %i8*%
                                              (/ +register-save-area-size+ +void*-size+)))
   (define-symbol-macro %register-save-area*% (llvm-sys:type-get-pointer-to %register-save-area%))
+  ;; (Maybe) generate code to store registers in memory. Return value unspecified.
   (defun maybe-spill-to-register-save-area (registers register-save-area*)
-    (unless registers
-      (unless register-save-area*
-        (error "If registers is NIL then register-save-area* also must be NIL")))
-    (when registers
-      (labels ((spill-reg (idx reg addr-name)
-                 (let* ((addr          (irc-gep register-save-area* (list (jit-constant-size_t 0) (jit-constant-size_t idx)) addr-name))
-                        (reg-i8*       (irc-bit-cast reg %i8*% "reg-i8*"))
-                        (_             (irc-store reg-i8* addr)))
-                   addr)))
-        (let* (
-               (addr-closure  (spill-reg 0 (elt registers 0) "closure0"))
-               (addr-nargs    (spill-reg 1 (irc-int-to-ptr (elt registers 1) %i8*%) "nargs1"))
-               (addr-farg0    (spill-reg 2 (elt registers 2) "arg0")) ; this is the first fixed arg currently.
-               (addr-farg1    (spill-reg 3 (elt registers 3) "arg1"))
-               (addr-farg2    (spill-reg 4 (elt registers 4) "arg2"))
-               (addr-farg3    (spill-reg 5 (elt registers 5) "arg3")))))))
-
+    (if registers
+        (labels ((spill-reg (idx reg addr-name)
+                   (let* ((addr          (irc-gep register-save-area* (list (jit-constant-size_t 0) (jit-constant-size_t idx)) addr-name))
+                          (reg-i8*       (irc-bit-cast reg %i8*% "reg-i8*"))
+                          (_             (irc-store reg-i8* addr)))
+                     addr)))
+          (let* ((addr-closure  (spill-reg 0 (elt registers 0) "closure0"))
+                 (addr-nargs    (spill-reg 1 (irc-int-to-ptr (elt registers 1) %i8*%) "nargs1"))
+                 (addr-farg0    (spill-reg 2 (elt registers 2) "arg0")) ; this is the first fixed arg currently.
+                 (addr-farg1    (spill-reg 3 (elt registers 3) "arg1"))
+                 (addr-farg2    (spill-reg 4 (elt registers 4) "arg2"))
+                 (addr-farg3    (spill-reg 5 (elt registers 5) "arg3")))
+            (irc-intrinsic "cc_protect_alloca" (irc-bit-cast register-save-area* %i8*%))))
+        (unless register-save-area*
+          (error "If registers is NIL then register-save-area* also must be NIL"))))
 
   (defun calling-convention-rewind-va-list-to-start-on-third-argument (cc)
     (let* ((va-list*                      (calling-convention-va-list* cc))
-           (register-save-area*           (calling-convention-register-save-area* cc))
-           (remaining-nargs*              (calling-convention-remaining-nargs* cc)))
-      (irc-intrinsic "cc_rewind_va_list" va-list* remaining-nargs* register-save-area*)))
+           (register-save-area*           (calling-convention-register-save-area* cc)))
+      (irc-intrinsic "cc_rewind_va_list" va-list* register-save-area*)))
 ;;; end of x86-64 specific stuff
   )
 
@@ -519,15 +458,18 @@ eg:  (f closure-ptr nargs a b c d ...)
 (define-symbol-macro %fn-prototype*[2]% (llvm-sys:array-type-get %fn-prototype*% 2))
 
 
+;;; ------------------------------------------------------------
+;;;
+;;; This must match FunctionDescription in functor.h
+;;;
+;;; source-info/function-name are stored in a CONS cell CAR/CDR
+;;; lambda-list/docstring are stored in a CONS cell CAR/CDR
 (define-symbol-macro %function-description%
     (llvm-sys:struct-type-get *llvm-context*
                               (list %fn-prototype*%
                                     %gcroots-in-module*%
-                                    %i32% ; source info index
-                                    %i32% ; function name literal index
-                                    %i32% ; lambda-list literal index
-                                    %i32% ; docstring literal index
-                                    %i32% ; declare index
+                                    %i32% ; source-info.function-name index
+                                    %i32% ; lambda-list./docstring literal index
                                     %i32% ; lineno
                                     %i32% ; column
                                     %i32% ; filepos
@@ -558,36 +500,55 @@ eg:  (f closure-ptr nargs a b c d ...)
                                    "source-file-info-handle"))
 |#
 
-  (defun add-global-ctor-function (module main-function)
-    "Create a function with the name core:+clasp-ctor-function-name+ and
+(defun add-global-ctor-function (module main-function &key position register-library)
+  "Create a function with the name core:+clasp-ctor-function-name+ and
 have it call the main-function"
-    (let* ((*the-module* module)
-           (fn (irc-simple-function-create
-                core::+clasp-ctor-function-name+
-                %fn-ctor%
-                'llvm-sys:internal-linkage
-                *the-module*
-                :argument-names +fn-ctor-argument-names+))
-           #++(with-new-function
-                  (ctor-func func-env result
-                             :function-name core:+clasp-ctor-function-name+
-                             :parent-env nil
-                             :linkage 'llvm-sys:internal-linkage
-                             :function-type %fn-ctor%
-                             :return-void t
-                             :argument-names +fn-ctor-argument-names+ )
-                (let* ((bc-bf (irc-bit-cast main-function %fn-start-up*% "fnptr-pointer")))
-                  (irc-intrinsic "cc_register_startup_function" bc-bf))))
-      (let* ((irbuilder-body (llvm-sys:make-irbuilder *llvm-context*))
-             (*current-function* fn)
-             (entry-bb (irc-basic-block-create "entry" fn)))
-        (irc-set-insert-point-basic-block entry-bb irbuilder-body)
-        (with-irbuilder (irbuilder-body)
-          (let* ((bc-bf (irc-bit-cast main-function %fn-start-up*% "fnptr-pointer"))
-                 (_     (irc-intrinsic "cc_register_startup_function" bc-bf))
-                 (_     (irc-ret-void))))
-          ;;(llvm-sys:dump fn)
-          fn))))
+  #+(or)(unless (eql module (llvm-sys:get-parent main-function))
+    (error "The parent of the func-ptr ~a (a module) does not match the module ~a" (llvm-sys:get-parent main-function) module))
+  (let* ((*the-module* module)
+         (fn (irc-simple-function-create
+              (core:bformat nil "%s_%d" core::+clasp-ctor-function-name+ (core:next-number))
+              %fn-ctor%
+              'llvm-sys:internal-linkage
+              *the-module*
+              :argument-names +fn-ctor-argument-names+)))
+    (let* ((irbuilder-body (llvm-sys:make-irbuilder *llvm-context*))
+           (*current-function* fn)
+           (entry-bb (irc-basic-block-create "entry" fn)))
+      (irc-set-insert-point-basic-block entry-bb irbuilder-body)
+      (with-irbuilder (irbuilder-body)
+        #+(or)(let* ((internal-functions-names-global (llvm-sys:get-named-global cmp:*the-module* *internal-functions-names-global-name*))
+              (internal-functions-global (llvm-sys:get-named-global cmp:*the-module* *internal-functions-global-name*))
+              (internal-functions-length-global (llvm-sys:get-named-global cmp:*the-module* *internal-functions-length-global-name*))
+              (internal-functions-names-global-bf (irc-bit-cast internal-functions-names-global %i8*% "internal-functions-names-ptr"))
+              (internal-functions-global-bf (irc-bit-cast internal-functions-global %i8*% "internal-functions-ptr")))
+          (irc-intrinsic "cc_register_library" fn internal-functions-names-global-bf internal-functions-global-bf internal-functions-length-global))
+        (let* ((bc-bf (irc-bit-cast main-function %fn-start-up*% "fnptr-pointer"))
+               (_     (irc-intrinsic "cc_register_startup_function" (jit-constant-i32 position) bc-bf))
+               (_     (irc-ret-void))))
+        ;;(llvm-sys:dump fn)
+        fn))))
+
+(defun add-main-function (module run-all-function)
+  "Create an external function with the name main have it call the run-all-function"
+  (let* ((*the-module* module)
+         (fn (irc-simple-function-create
+              "MAIN"
+              %fn-start-up%
+              cmp:*default-linkage*
+              *the-module*
+              :argument-names +fn-start-up-argument-names+)))
+    (let* ((irbuilder-body (llvm-sys:make-irbuilder *llvm-context*))
+           (*current-function* fn)
+           (entry-bb (irc-basic-block-create "entry" fn)))
+      (irc-set-insert-point-basic-block entry-bb irbuilder-body)
+      (with-irbuilder (irbuilder-body)
+        (let* (
+               (bc-bf (irc-bit-cast run-all-function %fn-start-up*% "run-all-pointer"))
+               (_     (irc-intrinsic "cc_invoke_sub_run_all_function" bc-bf))
+               (_     (irc-ret-void))))
+        ;;(llvm-sys:dump fn)
+        fn))))
 
   (defun find-global-ctor-function (module)
     (let ((ctor (llvm-sys:get-function module core:+clasp-ctor-function-name+)))
@@ -596,6 +557,11 @@ have it call the main-function"
 
   (defun remove-llvm.global_ctors-if-exists (module)
     (let ((global (llvm-sys:get-named-global module "llvm.global_ctors")))
+      (if global
+          (llvm-sys:erase-from-parent global))))
+
+  (defun remove-llvm.used-if-exists (module)
+    (let ((global (llvm-sys:get-named-global module "llvm.used")))
       (if global
           (llvm-sys:erase-from-parent global))))
 
@@ -616,16 +582,28 @@ have it call the main-function"
                                     (llvm-sys:constant-pointer-null-get %i8*%)))))
    "llvm.global_ctors"))
 
-(defun make-boot-function-global-variable (module func-ptr)
+(defun make-boot-function-global-variable (module func-designator &key position register-library)
   "* Arguments
 - module :: An llvm module
 - func-ptr :: An llvm function
 * Description
 Add the global variable llvm.global_ctors to the Module (linkage appending)
 and initialize it with an array consisting of one function pointer."
-  (let* ((global-ctor (add-global-ctor-function module func-ptr)))
-    (incf *compilation-unit-module-index*)
-    (add-llvm.global_ctors module *compilation-unit-module-index* global-ctor)))
+  (let ((startup-fn (cond
+                      ((stringp func-designator)
+                        (llvm-sys:get-function module func-designator))
+                      ((typep func-designator 'llvm-sys:function)
+                       func-designator)
+                      (t (error "~a must be a function name or llvm-sys:function" func-designator)))))
+    (unless startup-fn
+      (error "Could not find ~a in module" func-designator))
+    #+(or)(unless (eql module (llvm-sys:get-parent func-ptr))
+            (error "The parent of the func-ptr ~a (a module) does not match the module ~a" (llvm-sys:get-parent func-ptr) module))
+    (let* ((global-ctor (add-global-ctor-function module startup-fn
+                                                  :position position
+                                                  :register-library register-library)))
+      (incf *compilation-unit-module-index*)
+      (add-llvm.global_ctors module *compilation-unit-module-index* global-ctor))))
 
 ;;
 ;; Ensure that the LLVM model of
@@ -678,22 +656,19 @@ and initialize it with an array consisting of one function pointer."
 
 (defun exception-typeid*-from-name (name)
   (let* ((cname (gethash name *exception-types-hash-table*))
-	 (i8* (llvm-sys:get-or-create-external-global *the-module* cname %i8%)))
+	 (i8* (llvm-sys:get-or-create-external-global *the-module* cname %i8% 'llvm-sys:external-linkage)))
     i8*))
-
-
-
 
 (defun assert-result-isa-llvm-value (result)
   (unless (llvm-sys:llvm-value-p result)
       (error "result must be an instance of llvm-sys:Value_O but instead it has the value %s" result)))
 
 
-(defun codegen-startup-shutdown (gcroots-in-module roots-array-or-nil number-of-roots &optional ordered-literals array)
+(defun codegen-startup-shutdown (module &optional gcroots-in-module roots-array-or-nil (number-of-roots 0) ordered-literals array)
   (let ((startup-fn (irc-simple-function-create core:*module-startup-function-name*
                                                 (llvm-sys:function-type-get %void% (list %t*%))
                                                 'llvm-sys::External-linkage
-                                                *the-module*
+                                                module
                                                 :argument-names (list "values" )))
 
         (ordered-raw-literals-list nil))
@@ -714,23 +689,24 @@ and initialize it with an array consisting of one function pointer."
                                   (list (jit-constant-size_t 0)
                                         (jit-constant-size_t 0)))
                          (llvm-sys:constant-pointer-null-get %t**%))))
-          (irc-intrinsic-call "cc_initialize_gcroots_in_module" (list gcroots-in-module start (jit-constant-size_t number-of-roots) values))
+          (if gcroots-in-module
+              (irc-intrinsic-call "cc_initialize_gcroots_in_module" (list gcroots-in-module start (jit-constant-size_t number-of-roots) values)))
           ;; If the constant/literal list is provided - then we may need to generate code for closurettes
           (when ordered-literals
             (setf ordered-raw-literals-list (mapcar (lambda (x)
-                                                     (cond
-                                                       ((literal-node-runtime-p x)
-                                                        (literal-node-runtime-object x))
-                                                       ((literal:literal-node-closure-p x)
-                                                        (literal:generate-run-time-code-for-closurette x irbuilder-alloca array)
-                                                        nil)
-                                                       (t (error "Illegal object ~s in ordered-literals list" x))))
-                                                   ordered-literals)))
+                                                      (cond
+                                                        ((literal-node-runtime-p x)
+                                                         (literal-node-runtime-object x))
+                                                        ((literal:literal-node-closure-p x)
+                                                         (literal:generate-run-time-code-for-closurette x irbuilder-alloca array)
+                                                         nil)
+                                                        (t (error "Illegal object ~s in ordered-literals list" x))))
+                                                    ordered-literals)))
           (irc-ret-void))))
     (let ((shutdown-fn (irc-simple-function-create core:*module-shutdown-function-name*
                                                    (llvm-sys:function-type-get %void% nil)
                                                    'llvm-sys::External-linkage
-                                                   *the-module*
+                                                   module
                                                    :argument-names nil)))
       (let* ((irbuilder-alloca (llvm-sys:make-irbuilder *llvm-context*))
              (irbuilder-body (llvm-sys:make-irbuilder *llvm-context*))
@@ -745,7 +721,8 @@ and initialize it with an array consisting of one function pointer."
         (irc-set-insert-point-basic-block entry-bb irbuilder-alloca)
         (with-irbuilder (irbuilder-alloca)
           (progn
-            (irc-intrinsic-call "cc_shutdown_gcroots_in_module" (list gcroots-in-module))
+            (if gcroots-in-module
+                (irc-intrinsic-call "cc_shutdown_gcroots_in_module" (list gcroots-in-module)))
             (irc-ret-void))))
       (values startup-fn shutdown-fn ordered-raw-literals-list))))
 
@@ -766,6 +743,7 @@ and initialize it with an array consisting of one function pointer."
 
 (defvar *compile-file-pathname* nil "Store the pathname of the currently compiled file")
 (defvar *compile-file-truename* nil "Store the truename of the currently compiled file")
+(defvar *compile-file-unique-symbol-prefix* "" "Store a unique prefix for symbols that are external-linkage")
 (defvar *compile-file-source-file-info* nil "Store the SourceFileInfo object for the compile-file target")
 
 (defvar *source-debug-pathname*)

@@ -36,8 +36,8 @@ namespace core {
 	Fixnum print_level;
 	bool readably = clasp_print_readably();
 	if (vector) {
-	    adims = x->arrayDimensionsAsVector();
-	    n = 1;
+                adims.push_back(x->length());
+                n = 1;
 	} else {
 	    adims = x->arrayDimensionsAsVector();
 	    n = x->rank();
@@ -59,22 +59,24 @@ namespace core {
 	if (print_level == 0)
 	    return;
 	if (readably) {
-	    clasp_write_char('A', stream);
-	    clasp_write_char('(', stream);
-	    write_object(x->element_type(), stream);
-	    clasp_write_char(' ', stream);
-	    if (n > 0) {
-		clasp_write_char('(', stream);
-		for (j = 0; j < n; j++) {
-		    write_object(clasp_make_fixnum(adims[j]), stream);
-		    if (j < n - 1)
-			clasp_write_char(' ', stream);
-		}
-		clasp_write_char(')', stream);
-	    } else {
-		write_object(_Nil<T_O>(), stream);
-	    }
-	    clasp_write_char(' ', stream);
+                {
+                        clasp_write_char('A', stream);
+                        clasp_write_char('(', stream);
+                        write_object(x->element_type(), stream);
+                        clasp_write_char(' ', stream);
+                        if (n > 0) {
+                                clasp_write_char('(', stream);
+                                for (j = 0; j < n; j++) {
+                                        write_object(clasp_make_fixnum(adims[j]), stream);
+                                        if (j < n - 1)
+                                                clasp_write_char(' ', stream);
+                                }
+                                clasp_write_char(')', stream);
+                        } else {
+                                write_object(_Nil<T_O>(), stream);
+                        }
+                        clasp_write_char(' ', stream);
+                }
 	} else if (!vector) {
 	    _clasp_write_fixnum(n, stream);
 	    clasp_write_char('A', stream);
@@ -148,6 +150,7 @@ namespace core {
 	    write_array_inner(0, this->asSmartPtr(), stream);
 	}
     }
+    
     void SimpleVector_O::__write__(T_sp stream) const {
 	if (this->rank() == 0) {
 	    writestr_stream("#0A0", stream);
@@ -186,13 +189,15 @@ namespace core {
 	} else {
 	    cl_index ndx;
 	    writestr_stream("#*", stream);
-	    for (ndx=0; ndx<this->length(); ++ndx)
-		//      if (x->vector.self.bit[(ndx /*+ x->vector.offset*/) / 8] & (0200 >> (ndx /*+ x->vector.offset*/) % 8))
-		if (this->testBit(ndx))
-		    clasp_write_char('1', stream);
-		else
-		    clasp_write_char('0', stream);
-	}
+	    if (clasp_print_array()) {
+	    	for (ndx=0; ndx<this->length(); ++ndx)
+			//      if (x->vector.self.bit[(ndx /*+ x->vector.offset*/) / 8] & (0200 >> (ndx /*+ x->vector.offset*/) % 8))
+			if (this->testBit(ndx))
+		    	clasp_write_char('1', stream);
+			else
+		    	clasp_write_char('0', stream);
+		    	}
+		}	
     }
 
     void BitVector_O::__write__(T_sp stream) const {
@@ -203,35 +208,154 @@ namespace core {
 	} else {
 	    cl_index ndx;
 	    writestr_stream("#*", stream);
-	    for (ndx = 0; ndx < this->length(); ndx++)
-		//      if (x->vector.self.bit[(ndx /*+ x->vector.offset*/) / 8] & (0200 >> (ndx /*+ x->vector.offset*/) % 8))
-		if (this->testBit(ndx))
-		    clasp_write_char('1', stream);
-		else
-		    clasp_write_char('0', stream);
-	}
+	    if  (clasp_print_array()) {
+	    	for (ndx = 0; ndx < this->length(); ndx++)
+			//      if (x->vector.self.bit[(ndx /*+ x->vector.offset*/) / 8] & (0200 >> (ndx /*+ x->vector.offset*/) % 8))
+			if (this->testBit(ndx))
+		    	clasp_write_char('1', stream);
+			else
+		    	clasp_write_char('0', stream);
+		    }
+		}
     }
 
+    static void write_simple_vector_simple (const char *title, Array_sp x, T_sp stream) {
+            writestr_stream(title, stream);
+            SafeBufferStr8Ns buffer;
+            clasp_write_string(" length:",stream);
+            stringstream slen;
+            slen << x->length();
+            clasp_write_characters(slen.str().c_str(),slen.str().size(),stream);
+            if  (clasp_print_array()) {
+                    clasp_write_string(" data: ",stream);
+                    int print_base = clasp_print_base();
+                    for (size_t ndx=0; ndx<x->length(); ++ndx) {
+                            core__integer_to_string(buffer._Buffer, clasp_make_fixnum(x->rowMajorAref(ndx)),
+                                                    make_fixnum(print_base),
+                                                    cl::_sym_STARprint_radixSTAR->symbolValue().isTrue(),
+                                                    true);
+                            cl__write_sequence(buffer._Buffer,stream,make_fixnum(0),_Nil<T_O>());
+                            clasp_write_string(" ",stream);
+                            buffer._Buffer->fillPointerSet(0);
+                    }
+            }
+            clasp_write_string(">",stream);
+    }
+
+    static void write_simple_vector_simple_float (const char *title, Array_sp x, T_sp stream) {
+            writestr_stream(title, stream);
+            clasp_write_string(" length:",stream);
+            stringstream slen;
+            slen << x->length();
+            clasp_write_characters(slen.str().c_str(),slen.str().size(),stream);
+            if (clasp_print_array()) {
+                    clasp_write_string(" data: ",stream);
+                    for (size_t ndx=0; ndx<x->length(); ++ndx) {
+                            write_float(gc::As<Float_sp>(x->rowMajorAref(ndx)), stream);
+                            clasp_write_string(" ",stream);
+                    }
+            }
+            clasp_write_string(">",stream);
+    }
+    
     void SimpleVector_byte8_t_O::__write__(T_sp stream) const {
-        writestr_stream("#<SIMPLE-VECTOR-BYTE8-T ");
-        SafeBuffer buffer;
-        clasp_write_string(" length(",stream);
-        stringstream slen;
-        slen << this->length();
-        clasp_write_characters(slen.str().c_str(),slen.str().size(),stream);
-        clasp_write_string(" data: ",stream);
-        int print_base = clasp_print_base();
-        for (size_t ndx=0; ndx<this->length(); ++ndx) {
-            core__integer_to_string(buffer._Buffer, clasp_make_fixnum((*this)[ndx]),
-                                    make_fixnum(print_base),
-                                    cl::_sym_STARprint_radixSTAR->symbolValue().isTrue(),
-                                    true);
-            cl__write_sequence(buffer._Buffer,stream,make_fixnum(0),_Nil<T_O>());
-            clasp_write_string(" ",stream);
-        }
-        clasp_write_string(">",stream);
+            if (!clasp_print_array() && !clasp_print_readably()) {
+                    const char *title = "#<SIMPLE-VECTOR-BYTE8-T ";
+                    write_simple_vector_simple(title, this->asSmartPtr(), stream);
+            }
+            else
+                    write_array_inner(true, this->asSmartPtr(), stream);
+
     }
 
+    void SimpleVector_byte16_t_O::__write__(T_sp stream) const {
+            if (!clasp_print_array() && !clasp_print_readably()) {
+                    const char *title = "#<SimpleVector_byte16_t_O>";
+                    write_simple_vector_simple(title, this->asSmartPtr(), stream);
+            }
+            else 
+                    write_array_inner(true, this->asSmartPtr(), stream);
+    }
+
+    void SimpleVector_byte32_t_O::__write__(T_sp stream) const {
+            if (!clasp_print_array() && !clasp_print_readably()) {
+                    const char *title = "#<SimpleVector_byte32_t_O>";
+                    write_simple_vector_simple(title, this->asSmartPtr(), stream);
+             }
+            else
+                    write_array_inner(true, this->asSmartPtr(), stream);
+    }
+
+    void SimpleVector_byte64_t_O::__write__(T_sp stream) const {
+            if (!clasp_print_array() && !clasp_print_readably()) {
+                    const char *title = "#<SimpleVector_byte64_t_O>";
+                    write_simple_vector_simple(title, this->asSmartPtr(), stream);
+            }
+            else
+                    write_array_inner(true, this->asSmartPtr(), stream);
+    }
+
+    void   SimpleVector_fixnum_O::__write__(T_sp stream) const {
+            if (!clasp_print_array() && !clasp_print_readably()) {
+                    const char *title = "#<SimpleVector_fixnum_O>";
+                    write_simple_vector_simple(title, this->asSmartPtr(), stream);
+            }
+            else write_array_inner(true, this->asSmartPtr(), stream);
+    }
+
+    void SimpleVector_int8_t_O::__write__(T_sp stream) const {
+            if (!clasp_print_array() && !clasp_print_readably()) {
+                    const char *title = "#<SimpleVector_int8_t_O>";
+                    write_simple_vector_simple(title, this->asSmartPtr(), stream);
+            }
+            else
+                    write_array_inner(true, this->asSmartPtr(), stream);
+    }
+
+    void SimpleVector_int16_t_O::__write__(T_sp stream) const {
+            if (!clasp_print_array() && !clasp_print_readably()) {
+                    const char *title = "#<SimpleVector_int16_t_O>";
+                    write_simple_vector_simple(title, this->asSmartPtr(), stream);
+            }
+            else
+                    write_array_inner(true, this->asSmartPtr(), stream);
+    }
+
+    void SimpleVector_int32_t_O::__write__(T_sp stream) const {
+            if (!clasp_print_array() && !clasp_print_readably()) {
+                    const char *title = "#<SimpleVector_int32_t_O>";
+                    write_simple_vector_simple(title, this->asSmartPtr(), stream);
+            }
+            else
+                    write_array_inner(true, this->asSmartPtr(), stream);
+    }
+
+    void SimpleVector_int64_t_O::__write__(T_sp stream) const {
+            if (!clasp_print_array() && !clasp_print_readably()) {
+                    const char *title ="#<SimpleVector_int64_t_O>";
+                    write_simple_vector_simple(title, this->asSmartPtr(), stream);
+            }
+            else
+                    write_array_inner(true, this->asSmartPtr(), stream);
+    }
+
+    void SimpleVectorFloat_O::__write__(T_sp stream) const {
+            if (!clasp_print_array() && !clasp_print_readably()) {
+                    const char *title ="#<SimpleVectorFloat_O>";
+                    write_simple_vector_simple_float(title, this->asSmartPtr(), stream);
+            }
+            else
+                    write_array_inner(true, this->asSmartPtr(), stream);
+    }
+
+    void SimpleVectorDouble_O::__write__(T_sp stream) const {
+            if (!clasp_print_array() && !clasp_print_readably()) {
+                    const char *title ="#<SimpleVectorDouble_O>";
+                    write_simple_vector_simple_float(title, this->asSmartPtr(), stream);
+             }
+            else 
+                    write_array_inner(true, this->asSmartPtr(), stream);
+    }
     
     void unsafe_write_SimpleBaseString(SimpleBaseString_sp str, size_t start, size_t end, T_sp stream) {
 	cl_index ndx;
@@ -260,7 +384,7 @@ namespace core {
 	} else {
 	    clasp_write_char('"', stream);
 	    for (ndx = start; ndx < end; ndx++) {
-		char c = (*str)[ndx];
+		claspCharacter c = (*str)[ndx];
 		if (c == '"' || c == '\\')
 		    clasp_write_char('\\', stream);
 		clasp_write_char((*str)[ndx],stream);
@@ -268,6 +392,7 @@ namespace core {
 	    clasp_write_char('"', stream);
 	}
     }
+    
     void SimpleBaseString_O::__write__(T_sp stream) const {
 	unsafe_write_SimpleBaseString(this->asSmartPtr(),0,this->length(),stream);
     }
@@ -279,9 +404,11 @@ namespace core {
 	SimpleBaseString_sp sb = gc::As<SimpleBaseString_sp>(str);
 	unsafe_write_SimpleBaseString(sb,start,end,stream);
     }
+    
     void SimpleCharacterString_O::__write__(T_sp stream) const {
 	unsafe_write_SimpleCharacterString(this->asSmartPtr(),0,this->length(),stream);
     }
+    
     void StrWNs_O::__write__(T_sp stream) const {
 	size_t start, end;
 	AbstractSimpleVector_sp str;

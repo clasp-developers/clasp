@@ -1,6 +1,5 @@
 (in-package :clasp-cleavir-ast)
 
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Class SETF-FDEFINITION-AST.
@@ -18,9 +17,6 @@
 (defmethod cleavir-ast:children ((ast setf-fdefinition-ast))
   (list (cleavir-ast:name-ast ast)))
 
-
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Class NAMED-FUNCTION-AST
@@ -32,19 +28,21 @@
   ((%lambda-name :initarg :lambda-name :initform "lambda-ast" :reader lambda-name)
    (%original-lambda-list :initarg :original-lambda-list :initform nil :reader original-lambda-list)
    (%docstring :initarg :docstring :initform nil :reader docstring)
-   (%declares :initarg :declares :initform nil :reader declares)))
+   ;; We can avoid or dx-allocate the &rest list sometimes- controlled here,
+   ;; and set up from declarations in convert-form.lisp.
+   ;; NIL indicates the general case (i.e. full heap allocation).
+   (%rest-alloc :initarg :rest-alloc :initform nil :reader rest-alloc
+                     :type (member nil ignore dynamic-extent))))
 
 (cleavir-io:define-save-info named-function-ast
     (:lambda-name lambda-name)
   (:original-lambda-list original-lambda-list)
   (:docstring docstring)
-  (:declares declares))
+  (:rest-alloc rest-alloc))
 
 (defmethod cleavir-ast-graphviz::label ((ast named-function-ast))
   (with-output-to-string (s)
     (format s "named-function (~a)" (lambda-name ast))))
-
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -69,7 +67,6 @@
 (defmethod cleavir-ast:children ((ast throw-ast))
   (list (tag-ast ast) (result-ast ast)))
 
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Class DEBUG-MESSAGE-AST
@@ -87,7 +84,6 @@
     (format s "debug-message (~a)" (debug-message ast))))
 
 (defmethod cleavir-ast:children ((ast debug-message-ast)) nil)
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -183,6 +179,21 @@
 
 (defmethod cleavir-ast:children ((ast foreign-call-pointer-ast))
   (argument-asts ast))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Class DEFCALLBACK-AST
+;;;
+;;; This AST is used to represent a callback definition.
+
+(defclass defcallback-ast (cleavir-ast:ast cleavir-ast:no-value-ast-mixin)
+  (;; None of these are evaluated and there's a ton of them
+   ;; so why bother splitting them up
+   (%args :initarg :args :reader defcallback-args)
+   (%callee :initarg :callee :reader cleavir-ast:callee-ast)))
+
+(defmethod cleavir-ast:children ((ast defcallback-ast))
+  (list (cleavir-ast:callee-ast ast)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -297,7 +308,42 @@
   (list (array-dimension-ast-mdarray ast)
         (array-dimension-ast-axis ast)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Class VASLIST-POP-AST
+;;;
+;;; Pops an element off a valist.
+;;; Doesn't necessarily check that there is an element.
 
+(defclass vaslist-pop-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
+  ((%arg-ast :initarg :vaslist :reader cleavir-ast:arg-ast)))
+
+(cleavir-io:define-save-info vaslist-pop-ast
+    (:vaslist cleavir-ast:arg-ast))
+
+(defmethod cleavir-ast-graphviz::label ((ast vaslist-pop-ast))
+  "vaslist-pop")
+
+(defmethod cleavir-ast:children ((ast vaslist-pop-ast))
+  (list (cleavir-ast:arg-ast ast)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Class INSTANCE-STAMP-AST
+;;;
+;;; Get the stamp of an object.
+
+(defclass instance-stamp-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
+  ((%arg-ast :initarg :arg :reader cleavir-ast:arg-ast)))
+
+(cleavir-io:define-save-info instance-stamp-ast
+    (:arg cleavir-ast:arg-ast))
+
+(defmethod cleavir-ast-graphviz::label ((ast instance-stamp-ast))
+  "instance-stamp")
+
+(defmethod cleavir-ast:children ((ast instance-stamp-ast))
+  (list (cleavir-ast:arg-ast ast)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -355,6 +401,18 @@
 (defmethod cleavir-ast:children ((ast precalc-value-reference-ast))
   nil)
 
+(defun escaped-string (str)
+  (with-output-to-string (s) (loop for c across str do (when (member c '(#\\ #\")) (princ #\\ s)) (princ c s))))
+
+(defmethod cleavir-ast-graphviz::label ((ast precalc-value-reference-ast))
+  (with-output-to-string (s)
+    (format s "precalc-val-ref ; ")
+    (let ((original-object (escaped-string
+                            (format nil "~s" (precalc-value-reference-ast-original-object ast)))))
+      (if (> (length original-object) 10)
+	  (format s "~a..." (subseq original-object 0 10))
+	  (princ original-object s)))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Class BIND-VA-LIST-AST
@@ -365,17 +423,21 @@
 (defclass bind-va-list-ast (cleavir-ast:ast)
   ((%lambda-list :initarg :lambda-list :reader cleavir-ast:lambda-list)
    (%va-list-ast :initarg :va-list :reader va-list-ast)
-   (%body-ast :initarg :body-ast :reader cleavir-ast:body-ast)))
+   (%body-ast :initarg :body-ast :reader cleavir-ast:body-ast)
+   ;; as for named-function-ast
+   (%rest-alloc :initarg :rest-alloc :reader rest-alloc)))
 
-(defun make-bind-va-list-ast (lambda-list va-list-ast body-ast &key origin (policy cleavir-ast:*policy*))
+(defun make-bind-va-list-ast (lambda-list va-list-ast body-ast rest-alloc
+                              &key origin (policy cleavir-ast:*policy*))
   (make-instance 'bind-va-list-ast
-    :origin origin :policy policy
+    :origin origin :policy policy :rest-alloc rest-alloc
     :va-list va-list-ast :body-ast body-ast :lambda-list lambda-list))
 
 (cleavir-io:define-save-info bind-va-list-ast
     (:lambda-list cleavir-ast:lambda-list)
   (:va-list va-list-ast)
-  (:body-ast cleavir-ast:body-ast))
+  (:body-ast cleavir-ast:body-ast)
+  (:rest-alloc rest-alloc))
 
 (defmethod cleavir-ast:children ((ast bind-va-list-ast))
   (list* (va-list-ast ast)
@@ -388,84 +450,105 @@
                                  (cdr entry)))
                             (t (list entry))))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Load-time-value hoisting, Clasp-style.
 
-(defun escaped-string (str)
-  (with-output-to-string (s) (loop for c across str do (when (member c '(#\\ #\")) (princ #\\ s)) (princ c s))))
-
-(defmethod cleavir-ast-graphviz::label ((ast precalc-value-reference-ast))
-  (with-output-to-string (s)
-    (format s "precalc-val-ref(~a) ; " (clasp-cleavir:literal-label (precalc-value-reference-ast-index ast)))
-    (let ((original-object (escaped-string (format nil "~s" (precalc-value-reference-ast-original-object ast)))))
-      (if (> (length original-object) 10)
-	  (format s "~a..." (subseq original-object 0 10))
-	  (princ original-object s)))))
-
-
-
-
-(defun generate-new-precalculated-value-index (env form read-only-p)
-  "Generates code for the form that places the result into a precalculated-vector and returns the precalculated-vector index.
-If this form has already been precalculated then just return the precalculated-value index"
+(defun process-ltv (env form read-only-p)
+  "If the form is an immediate constant, returns it. If the form has previously been processed here,
+returns the previous results. Otherwise, generates code for the form that places the result into a
+precalculated-vector and returns the index."
   (cond
     ((constantp form env)
-     (clasp-cleavir:%literal-index (ext:constant-form-value form env) read-only-p))
+     (let* ((value (ext:constant-form-value form env))
+            (immediate (core:create-tagged-immediate-value-or-nil value)))
+       (if immediate
+           (values immediate t)
+           (multiple-value-bind (index indexp)
+               (literal:reference-literal value t)
+             ;; FIXME: Might not to reorganize things deeper.
+             (unless indexp
+               (error "BUG: create-tagged-immediate-value-or-nil is inconsistent with literal machinery."))
+             (values index nil)))))
+    ;; Currently read-only-p is ignored from here on.
+    ;; But it might be possible to coalesce EQ forms or something.
+    ;; COMPLE-FILE will generate a function for the form in the Module
+    ;; and arrange for it's evaluation at load time
+    ;; and to make its result available as a value
+    ((eq cleavir-generate-ast:*compiler* 'cl:compile-file)
+     (values (literal:with-load-time-value-cleavir
+                 (clasp-cleavir::compile-form form env))
+             nil))
+    ;; COMPILE on the other hand evaluates the form and puts its
+    ;; value in the run-time environment.
     (t
-     ;; Currently read-only-p is ignored from here on
-     ;; OPTIMIZE - an optimization would be to coalesce
-     ;; the forms and their results
-     (if (eq cleavir-generate-ast:*compiler* 'cl:compile-file)
-         ;; COMPLE-FILE will generate a function for the form in the Module
-         ;; and arrange for it's evaluation at load time
-         ;; and to make its result available as a value
-         (let* ((index (literal:with-load-time-value-cleavir
-                           (clasp-cleavir::compile-form form env)))
-                (result (make-instance 'clasp-cleavir:arrayed-literal :value form :index index)))
-           (check-type result clasp-cleavir:literal)
-           result)
-         ;; COMPILE on the other hand evaluates the form and puts its
-         ;; value in the run-time environment.
-         ;; We use cleavir-env:eval rather than cclasp-eval-with-env so that it works
-         ;; more correctly with alternate global environments.
-         (let* ((value (cleavir-env:eval form env env))
-                (index (cmp:codegen-rtv nil value))
-                (result (make-instance 'clasp-cleavir:arrayed-literal :value form :index index :literal-name "NIL")))
-           (check-type result clasp-cleavir:literal)
-           result)))))
-
-
-(defun find-load-time-value-asts (ast)
-  (let ((table (make-hash-table :test #'eq :rehash-size 4.0 :rehash-threshold 1.0)))
-    (labels ((traverse (ast parent)
-               (declare (core:lambda-name traverse))
-	       (unless (gethash ast table)
-		 (setf (gethash ast table) t)
-		 (if (typep ast 'cleavir-ast:load-time-value-ast)
-		     (list (list ast parent))
-		     (let ((children (cleavir-ast:children ast)))
-		       (reduce #'append
-			       (mapcar (lambda (child)
-                                         (declare (core:lambda-name traverse.lambda))
-                                         (funcall #'traverse child ast))
-                                       children)
-			       :from-end t))))))
-      (traverse ast nil))))
+     (let ((value (cleavir-env:eval form env env)))
+       (multiple-value-bind (index-or-immediate index-p)
+           (cmp:codegen-rtv-cclasp value)
+         (values index-or-immediate (not index-p)))))))
 
 (defun hoist-load-time-value (ast env)
-  (let* ((load-time-value-asts (find-load-time-value-asts ast))
-         (forms (mapcar (lambda (ast-parent)
-                          (cleavir-ast:form (first ast-parent)))
-                        load-time-value-asts)))
-    (loop for (ast parent) in load-time-value-asts
-          for index = (let ((index (generate-new-precalculated-value-index env (cleavir-ast:form ast) (cleavir-ast:read-only-p ast))))
-                        (check-type index clasp-cleavir:literal)
-                        index)
-       do (change-class ast 'precalc-value-reference-ast ; 'cleavir-ast:t-aref-ast
-                        :index index
-                        :original-object (cleavir-ast:form ast)))
+  (let ((ltvs nil)
+        (forms nil))
+    (cleavir-ast:map-ast-depth-first-preorder
+     (lambda (ast)
+       (when (typep ast 'cleavir-ast:load-time-value-ast)
+         (push ast ltvs)))
+     ast)
+    (dolist (ltv ltvs)
+      (let ((form (cleavir-ast:form ltv)))
+        (multiple-value-bind (index-or-immediate immediatep literal-name)
+            (process-ltv env form (cleavir-ast:read-only-p ltv))
+          (if immediatep
+              (change-class ltv 'cleavir-ast:immediate-ast
+                            :value index-or-immediate)
+              (change-class ltv 'precalc-value-reference-ast
+                            :index index-or-immediate
+                            :original-object form)))
+        (push form forms)))
     (clasp-cleavir-ast:make-precalc-vector-function-ast
-     ast (mapcar #'first load-time-value-asts) forms (cleavir-ast:policy ast)
-     :origin (cleavir-ast:origin ast))))
+     ast ltvs forms (cleavir-ast:policy ast) :origin (cleavir-ast:origin ast))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Introducing invocations
 
+(defclass invoke-ast (cleavir-ast:call-ast)
+  ((%destinations :accessor destinations :initarg :destinations)))
 
+(defclass multiple-value-invoke-ast (cleavir-ast:multiple-value-call-ast)
+  ((%destinations :accessor destinations :initarg :destinations)))
 
+;;; Let's get rid of *invocation-context* and pass it as an argument
+;;;(defvar *invocation-context*)
+
+(defun introduce-invoke (ast)
+  (let ((visitedp (make-hash-table :test #'eq)))
+    (labels ((introduce-invoke-aux (ast invocation-context)
+               (unless (gethash ast visitedp)
+                 (setf (gethash ast visitedp) t)
+                 (let ((new-context invocation-context))
+                   (cond
+                     ((cleavir-ast:block-ast-p ast) (push ast new-context))
+                     ((cleavir-ast:tagbody-ast-p ast)
+                      (loop for item in (cleavir-ast:item-asts ast)
+                            when (cleavir-ast:tag-ast-p item)
+                              do (push item new-context)))
+                     ((cleavir-ast:function-ast-p ast)
+                      ;; Another level down, so reset.
+                      (setf new-context nil))
+                     ((cleavir-ast:call-ast-p ast) ; Mark, if it could unwind here.
+                      (unless (null invocation-context)
+                        (change-class ast 'clasp-cleavir-ast:invoke-ast
+                                      :destinations invocation-context)))
+                     ((cleavir-ast:multiple-value-call-ast-p ast)
+                      (unless (null invocation-context)
+                        (change-class ast 'clasp-cleavir-ast:multiple-value-invoke-ast
+                                      :destinations invocation-context))))
+                   ;; Recur.
+                   (let ((invocation-context new-context))
+                     (mapc (lambda (child-ast) (introduce-invoke-aux child-ast invocation-context))
+                           (cleavir-ast:children ast)))))
+               (values)))
+      (let ((invocation-context nil))
+        (introduce-invoke-aux ast invocation-context)))))

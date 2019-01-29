@@ -1,6 +1,7 @@
 ;;;; reading circular data: the #= and ## readmacros
 
-(in-package :core)
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (core:select-package :core))
 
 (defun %reader-error (stream msg &rest arguments)
   (apply #'simple-reader-error stream msg arguments))
@@ -22,48 +23,52 @@
                   (unless (eq d (cdr tree))
                     (rplacd tree d))))
                ((arrayp tree)
-                (do ((i 0 (1+ i)))
+                (do ((i 0 (+ i 1)))
                     ((>= i (array-total-size tree)))
                   (let* ((old (row-major-aref tree i))
                          (new (circle-subst circle-table old)))
                     (unless (eq old new)
-                      (setf (row-major-aref tree i) new))))
-		)
-               #| TODO: MUST PROVIDE FIXUP FOR HASH-TABLES!!!! |#
+                      (setf (row-major-aref tree i) new)))))
                ((hash-table-p tree)
-                (error "Handle hash-tables in circle-subst"))
+                (let ((to-add nil))
+                  (maphash (lambda (key value)
+                             (let ((subst-key (circle-subst circle-table key))
+                                   (subst-value (circle-subst circle-table value)))
+                               (cond ((eq subst-key key)
+                                      ;; easy case - just alter the value.
+                                      (setf (gethash key tree) subst-value))
+                                     (t
+                                      ;; if the key needed substitution, though,
+                                      ;; things are trickier. We can't alter the
+                                      ;; key of a k-v pair in-place, so we have
+                                      ;; to remove the old pair and add a new one.
+                                      ;; And we can't add the new one during maphash.
+                                      (remhash key tree)
+                                      (push (cons subst-key subst-value) to-add)))))
+                           tree)
+                  ;; Add new pairs from the key-subst case.
+                  (dolist (pair to-add)
+                    (setf (gethash (car pair) tree) (cdr pair)))))
                ;; Do something for builtin objects
-               ((typep tree 'cxx-object)
-                (error "Handle cxx-object in circle-subst")
-                #+(or)(let ((record (make-record-patcher circle-table)))
-                        (patch-object tree record)))
-               #+clos ((typep tree 'instance)
-                       (error "Handle instance in circle-subst")
-                       #+(or)(let* ((n-untagged (layout-n-untagged-slots (%instance-layout tree)))
-                                    (n-tagged (- (%instance-length tree) n-untagged)))
-                               ;; N-TAGGED includes the layout as well (at index 0), which ; ;
-                               ;; we don't grovel. ; ;
-                               (do ((i 1 (1+ i)))
-                                   ((= i n-tagged))
-                                 (let* ((old (%instance-ref tree i))
-                                        (new (circle-subst circle-table old)))
-                                   (unless (eq old new)
-                                     (setf (%instance-ref tree i) new))))
-                               (do ((i 0 (1+ i)))
-                                   ((= i n-untagged))
-                                 (let* ((old (%raw-instance-ref/word tree i))
-                                        (new (circle-subst circle-table old)))
-                                   (unless (= old new)
-                                     (setf (%raw-instance-ref/word tree i) new))))))
-               #+(or) ((typep tree 'funcallable-instance)
-                       (error "Handle funcallable-instance in circle-subst")
-                       #+(or)(do ((i 1 (1+ i))
-                                  (end (- (1+ (get-closure-length tree)) %funcallable-instance-info-offset)))
-                                 ((= i end))
-                               (let* ((old (%funcallable-instance-info tree i))
-                                      (new (circle-subst circle-table old)))
-                                 (unless (eq old new)
-                                   (setf (%funcallable-instance-info tree i) new))))))
+               ((core:cxx-object-p tree)
+                #+(or)(error "Handle cxx-object in circle-subst tree: ~s" tree)
+                (let ((record (make-record-patcher circle-table)))
+                  (patch-object tree record)))
+               ;; These next two are #+cclasp since they need the classes to be defined, etc.
+               ;; For structure objects use raw slots.
+               #+cclasp
+               ((typep tree 'structure-object)
+                (dotimes (i (clos::class-size (class-of tree)))
+                  (si:instance-set tree i (circle-subst circle-table (si:instance-ref tree i)))))
+               ;; For general objects go full MOP
+               #+cclasp
+               ((typep tree 'standard-object)
+                (let ((class (class-of tree)))
+                  (dolist (slotd (clos:class-slots class))
+                    (when (clos:slot-boundp-using-class class tree slotd)
+                      (setf (clos:slot-value-using-class class tree slotd)
+                            (circle-subst circle-table
+                                          (clos:slot-value-using-class class tree slotd))))))))
          tree)
         (t tree)))
 
@@ -76,15 +81,21 @@
          (setf *sharp-equal-final-table* (make-hash-table)))
         ((gethash label *sharp-equal-final-table*)
          (simple-reader-error stream "multiply defined label: #~D=" label)))
-  (let ((tag (setf (gethash label *sharp-equal-final-table*)
-                   (core:make-sharp-equal-wrapper)))
+  (let ((tag (progn
+               #+(or)(format t "{{{ Handling sharp-equal label: ~a~%" label)
+               (setf (gethash label *sharp-equal-final-table*)
+                   (core:make-sharp-equal-wrapper label))))
         (obj (read stream t nil t)))
     (when (eq obj tag)
       (simple-reader-error stream
                            "must tag something more than just #~D#"
                            label))
+    #+(or)(format t "{{{ About to circle-subst for sharp-equal label: ~a~%" label)
     (setf (core:sharp-equal-wrapper-value tag) obj)
-    (circle-subst (make-hash-table :test 'eq) obj)))
+    (prog1
+        (circle-subst (make-hash-table :test 'eq) obj)
+      #+(or)(format t "Done circle-subst with sharp-equal label: ~a}}}~%" label)
+      #+(or)(format t "}}}Done handling sharp-equal label: ~a~%" label))))
 
 (defun sharp-sharp (stream ignore label)
   (declare (ignore ignore))
@@ -108,8 +119,18 @@
           (t
            (core:sharp-equal-wrapper-value entry)))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Reader macro for builtin objects
+;;
+(defun read-cxx-object (stream char n)
+  (declare (ignore char))
+  (let ((description (read stream t nil t)))
+    (apply #'core:load-cxx-object (car description) (cdr description))))
+
 (defun sharpmacros-enhance ()
   (set-dispatch-macro-character #\# #\= #'sharp-equal)
-  (set-dispatch-macro-character #\# #\# #'sharp-sharp))
+  (set-dispatch-macro-character #\# #\# #'sharp-sharp)
+  (set-dispatch-macro-character #\# #\I #'read-cxx-object))
 
 (sharpmacros-enhance)

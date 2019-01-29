@@ -74,4 +74,6 @@ DONTQUOTEIT:
 
 SYMBOL_EXPORT_SC_(ExtPkg, maybeQuote);
 
+SYMBOL_EXPORT_SC_(ExtPkg, undefinedClass);
+
 };

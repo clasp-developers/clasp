@@ -41,6 +41,7 @@ THE SOFTWARE.
 #include <clasp/core/cxxObject.h>
 #include <clasp/core/record.h>
 #include <clasp/core/lisp.h>
+#include <clasp/core/sort.h>
 #include <clasp/core/environment.h>
 #include <clasp/core/fileSystem.h>
 #include <clasp/core/lightProfiler.h>
@@ -52,8 +53,11 @@ THE SOFTWARE.
 #include <clasp/core/functor.h>
 #include <clasp/core/compiler.h>
 #include <clasp/core/sequence.h>
+#include <clasp/core/posixTime.h>
 #include <clasp/core/debugger.h>
 #include <clasp/core/pathname.h>
+#include <clasp/core/pointer.h>
+#include <clasp/core/posixTime.h>
 #include <clasp/core/unixfsys.h>
 #include <clasp/core/hashTableEqual.h>
 #include <clasp/core/environment.h>
@@ -65,6 +69,88 @@ THE SOFTWARE.
 #include <clasp/core/environment.h>
 #include <clasp/llvmo/intrinsics.h>
 #include <clasp/core/wrappers.h>
+
+
+namespace core {
+
+
+MaybeDebugStartup::MaybeDebugStartup(void* fp, const char* n) : fptr(fp), start_dispatcher_count(0) {
+  if (n) this->name = n;
+  if (core::_sym_STARdebugStartupSTAR->symbolValue().notnilp()) {
+    this->start = PosixTime_O::createNow();
+    if (comp::_sym_dispatcher_count->fboundp()) {
+      core::T_sp nu = core::eval::funcall(comp::_sym_dispatcher_count);
+      this->start_dispatcher_count = nu.unsafe_fixnum();
+    } else {
+      this->start_dispatcher_count = 0;
+    }
+  }
+};
+
+MaybeDebugStartup::~MaybeDebugStartup() {
+  if (core::_sym_STARdebugStartupSTAR->symbolValue().notnilp()
+      && this->start) {
+    PosixTime_sp end = PosixTime_O::createNow();
+    PosixTimeDuration_sp diff = end->sub(this->start);
+    mpz_class ms = diff->totalMicroseconds();
+    size_t end_dispatcher_count = 0;
+    if (comp::_sym_dispatcher_count->fboundp()) {
+      core::T_sp nu = core::eval::funcall(comp::_sym_dispatcher_count);
+      end_dispatcher_count = nu.unsafe_fixnum();
+    }
+    size_t dispatcher_delta = end_dispatcher_count - this->start_dispatcher_count;
+    std::string name_ = this->name;
+    if (name_=="") {
+      Dl_info di;
+      dladdr((void*)this->fptr,&di);
+      name_ = di.dli_sname;
+      if (name_ == "") {
+        stringstream ss;
+        ss << (void*)this->fptr;
+        name_ = ss.str();
+      }
+    }
+    printf("%s us %zu gfds : %s\n", _rep_(Integer_O::create(ms)).c_str(), dispatcher_delta, name_.c_str());
+  }
+}
+
+
+#ifdef CLASP_THREADS
+mp::SharedMutex global_internal_functions_mutex(INTRFUNC_NAMEWORD);
+#endif
+struct InternalFunctions {
+  const claspFunction* _InternalFunctions;
+  const char** _InternalFunctionNames;
+  size_t       _Length;
+  InternalFunctions(const claspFunction* funcs, const char** names, size_t len) : _InternalFunctions(funcs), _InternalFunctionNames(names), _Length(len) {};
+};
+  std::map<uintptr_t,InternalFunctions> global_internal_functions;
+
+void register_internal_functions(uintptr_t handle, const claspFunction* funcs, const char** names, size_t len) {
+//  printf("%s:%d:%s handle -> %p  funcs -> %p  names -> %p  len: %lu\n", __FILE__, __LINE__, __FUNCTION__, (void*)handle, (void*)funcs, (void*)names, len);
+  WITH_READ_WRITE_LOCK(global_internal_functions_mutex);
+  global_internal_functions.emplace(std::make_pair(handle,InternalFunctions(funcs,names,len)));
+}
+
+
+claspFunction lookup_internal_functions(uintptr_t handle, const char* name) {
+  WITH_READ_LOCK(global_internal_functions_mutex);
+  std::map<uintptr_t,InternalFunctions>::iterator fi = global_internal_functions.find(handle);
+  if (fi == global_internal_functions.end()) {
+    SIMPLE_ERROR(BF("Could not find the library with handle %lu") % handle);
+  }
+  for ( size_t num=0; num< fi->second._Length; ++num ) {
+    const char* lookup_name = fi->second._InternalFunctionNames[num];
+    if (strcmp(lookup_name,name)==0) {
+      return fi->second._InternalFunctions[num];
+    }
+  }
+  SIMPLE_ERROR(BF("Could not find internal function %s") % name);
+};
+
+  
+};
+
 
 
 namespace core {
@@ -127,31 +213,60 @@ void initializer_functions_invoke()
 };
 
 
+
+
 namespace core {
 
 #define STARTUP_FUNCTION_CAPACITY_INIT 128
 #define STARTUP_FUNCTION_CAPACITY_MULTIPLIER 2
 size_t global_startup_capacity = 0;
 size_t global_startup_count = 0;
-fnStartUp* global_startup_functions = NULL;
+#ifdef CLASP_THREADS
+mp::SharedMutex* global_startup_functions_mutex = NULL;
+#endif
+struct Startup {
+  int _Position;
+  fnStartUp _Function;
+  Startup() {};
+  Startup(int p, fnStartUp f) : _Position(p), _Function(f) {};
+  bool operator<(const Startup& other) {
+    return this->_Position < other._Position;
+  }
+};
 
-void register_startup_function(fnStartUp fptr)
+Startup* global_startup_functions = NULL;
+
+void register_startup_function(int position, fnStartUp fptr)
 {
 #ifdef DEBUG_STARTUP
   printf("%s:%d In register_startup_function --> %p\n", __FILE__, __LINE__, fptr);
 #endif
+#ifdef CLASP_THREADS
+  if (global_Started) {
+    if (global_startup_functions_mutex==NULL) {
+      global_startup_functions_mutex = new mp::SharedMutex(STRTFUNC_NAMEWORD);
+    }
+    (*global_startup_functions_mutex).lock();
+  }
+#endif
   if ( global_startup_functions == NULL ) {
     global_startup_capacity = STARTUP_FUNCTION_CAPACITY_INIT;
     global_startup_count = 0;
-    global_startup_functions = (fnStartUp*)malloc(global_startup_capacity*sizeof(fnStartUp));
+    global_startup_functions = (Startup*)malloc(global_startup_capacity*sizeof(Startup));
   } else {
     if ( global_startup_count == global_startup_capacity ) {
       global_startup_capacity = global_startup_capacity*STARTUP_FUNCTION_CAPACITY_MULTIPLIER;
-      global_startup_functions = (fnStartUp*)realloc(global_startup_functions,global_startup_capacity*sizeof(fnStartUp));
+      global_startup_functions = (Startup*)realloc(global_startup_functions,global_startup_capacity*sizeof(Startup));
     }
   }
-  global_startup_functions[global_startup_count] = fptr;
+  Startup startup(position,fptr);
+  global_startup_functions[global_startup_count] = startup;
   global_startup_count++;
+#ifdef CLASP_THREADS
+  if (global_Started) {
+    (*global_startup_functions_mutex).unlock();
+  }
+#endif
 };
 
 /*! Return the number of startup_functions that are waiting to be run*/
@@ -160,21 +275,35 @@ size_t startup_functions_are_waiting()
 #ifdef DEBUG_STARTUP
   printf("%s:%d startup_functions_are_waiting returning %" PRu "\n", __FILE__, __LINE__, global_startup_count );
 #endif
+#ifdef CLASP_THREADS
+  if (global_startup_functions_mutex==NULL) {
+    global_startup_functions_mutex = new mp::SharedMutex(STRTFUNC_NAMEWORD);
+  }
+  WITH_READ_LOCK((*global_startup_functions_mutex));
+#endif
   return global_startup_count;
 };
 
 /*! Invoke the startup functions and clear the array of startup functions */
 void startup_functions_invoke()
 {
+  size_t startup_count = 0;
+  Startup* startup_functions = NULL;
+  {
+#ifdef CLASP_THREADS
+    WITH_READ_LOCK((*global_startup_functions_mutex));
+#endif
   // Save the current list
-  size_t startup_count = global_startup_count;
-  fnStartUp* startup_functions = global_startup_functions;
+    startup_count = global_startup_count;
+    startup_functions = global_startup_functions;
   // Prepare to accumulate a new list
-  global_startup_count = 0;
-  global_startup_capacity = 0;
-  global_startup_functions = NULL;
+    global_startup_count = 0;
+    global_startup_capacity = 0;
+    global_startup_functions = NULL;
+  }
   // Invoke the current list
   if (startup_count>0) {
+    sort::quickSortMemory(startup_functions,0,startup_count);
 #ifdef DEBUG_STARTUP
     printf("%s:%d In startup_functions_invoke - there are %" PRu " startup functions\n", __FILE__, __LINE__, startup_count );
     for ( size_t i = 0; i<startup_count; ++i ) {
@@ -184,19 +313,53 @@ void startup_functions_invoke()
     printf("%s:%d Starting to call the startup functions\n", __FILE__, __LINE__ );
 #endif
     for ( size_t i = 0; i<startup_count; ++i ) {
-      fnStartUp fn = startup_functions[i];
+      Startup& startup = startup_functions[i];
+      MaybeDebugStartup maybe_debug_startup((void*)startup._Function);
 #ifdef DEBUG_STARTUP
       printf("%s:%d     About to invoke fn@%p\n", __FILE__, __LINE__, fn );
 #endif
 //      T_mv result = (fn)(LCC_PASS_MAIN());
-      (fn)(); // invoke the startup function
+      (startup._Function)(); // invoke the startup function
     }
 #ifdef DEBUG_STARTUP
     printf("%s:%d Done with startup_functions_invoke()\n", __FILE__, __LINE__ );
 #endif
+    free(startup_functions);
   }
 }
 
+
+}
+
+extern "C" {
+
+NOINLINE void start_dtrace() {
+  printf("%s:%d start_dtrace\n", __FILE__, __LINE__ );
+  // Do nothing
+};
+
+NOINLINE void stop_dtrace() {
+  printf("%s:%d stop_dtrace\n", __FILE__, __LINE__ );
+  // do nothing
+}
+}
+
+namespace core {
+
+NOINLINE CL_DEFUN T_mv core__trigger_dtrace_start(T_sp closure)
+{
+  start_dtrace();
+  return eval::funcall(closure);
+}
+
+
+NOINLINE CL_DEFUN T_sp core__trigger_dtrace_stop()
+{
+  stop_dtrace();
+  return _Nil<T_O>();
+}
+
+  
 
 
 CL_DEFUN void core__startup_functions_invoke()
@@ -267,6 +430,9 @@ CL_DEFUN Fixnum_sp core__test_tagged_cast(Fixnum_sp pow2) __attribute__((optnone
   for (i = 0; i < times; ++i) {
     f(env);
     Environment_sp e = env.asOrNull<Environment_O>();
+    if (!e) {
+      SIMPLE_ERROR(BF("e is NULL!"));
+    }
     v += f(e);
   }
   return Integer_O::create(v);
@@ -333,12 +499,12 @@ CL_DEFUN T_mv core__mangle_name(Symbol_sp sym, bool is_function) {
   return Values(_Nil<T_O>(), SimpleBaseString_O::make("Provide-func-name"), make_fixnum(0), make_fixnum(CALL_ARGUMENTS_LIMIT));
 }
 
-CL_LAMBDA();
+CL_LAMBDA("&optional (stage #\\c)");
 CL_DECLARE();
 CL_DOCSTRING("startupImagePathname - returns a pathname based on *features* :CLASP-MIN, :USE-MPS, :BCLASP");
-CL_DEFUN T_sp core__startup_image_pathname() {
+CL_DEFUN T_sp core__startup_image_pathname(char stage) {
   stringstream ss;
-  ss << "app-fasl:cclasp-" << VARIANT_NAME << "-image";
+  ss << "app-fasl:" << stage << "clasp-" << VARIANT_NAME << "-image";
   T_sp mode = core::_sym_STARclasp_build_modeSTAR->symbolValue();
   if (mode == kw::_sym_object) {
     ss << ".fasl";
@@ -383,7 +549,7 @@ CL_DEFUN T_mv core__load_binary(T_sp pathDesig, T_sp verbose, T_sp print, T_sp e
     goto LOAD;
   SIMPLE_ERROR(BF("Could not find bundle %s") % _rep_(pathDesig));
 LOAD:
-  String_sp nameStr = cl__namestring(cl__probe_file(path));
+  String_sp nameStr = gc::As<String_sp>(cl__namestring(cl__probe_file(path)));
   string name = nameStr->get();
 
   /* Look up the initialization function. */
@@ -396,12 +562,7 @@ LOAD:
 
   int mode = RTLD_NOW | RTLD_GLOBAL; // | RTLD_FIRST;
   // Check if we already have this dynamic library loaded
-  map<string, void *>::iterator handleIt = _lisp->openDynamicLibraryHandles().find(name);
-  if (handleIt != _lisp->openDynamicLibraryHandles().end()) {
-    dlclose(handleIt->second);
-    //	    printf("%s:%d Closing the existing dynamic library %s\n", __FILE__, __LINE__, name.c_str());
-    _lisp->openDynamicLibraryHandles().erase(handleIt);
-  }
+  bool handleIt = if_dynamic_library_loaded_remove(name);
   //	printf("%s:%d Loading dynamic library: %s\n", __FILE__, __LINE__, name.c_str());
   void *handle = dlopen(name.c_str(), mode);
   if (handle == NULL) {
@@ -409,14 +570,17 @@ LOAD:
     SIMPLE_ERROR(BF("Error in dlopen: %s") % error);
     //    return (Values(_Nil<T_O>(), SimpleBaseString_O::make(error)));
   }
-  _lisp->openDynamicLibraryHandles()[name] = handle;
+  add_dynamic_library_using_handle(name,handle);
+  Pointer_sp handle_ptr = Pointer_O::create(handle);
+  scope.pushSpecialVariableAndSet(_sym_STARcurrent_dlopen_handleSTAR, handle_ptr);
   if (startup_functions_are_waiting()) {
     startup_functions_invoke();
   } else {
     SIMPLE_ERROR(BF("This is not a proper FASL file - there were no global ctors - there have to be global ctors for load-bundle"));
   }
   T_mv result;
-  cc_invoke_startup_functions();
+//  cc_invoke_startup_functions();
+//  process_llvm_stackmaps();
   return (Values(Pointer_O::create(handle), _Nil<T_O>()));
 };
 
@@ -601,8 +765,8 @@ CL_DEFUN void core__call_dl_main_function(Pointer_sp addr) {
 }
 
 CL_DOCSTRING("(call dladdr with the address and return nil if not found or the contents of the Dl_info structure as multiple values)");
-CL_DEFUN T_mv core__dladdr(Integer_sp addr) {
-  uint64_t val = clasp_to_uint64(addr);
+CL_DEFUN T_mv core__dladdr(Pointer_sp addr) {
+  uint64_t val = (uint64_t)addr->ptr();
   void *ptr = (void *)val;
   Dl_info info;
   int ret = dladdr(ptr, &info);
@@ -718,6 +882,11 @@ CL_DECLARE();
 CL_DOCSTRING("callWithVariableBound");
 CL_DEFUN T_mv core__call_with_variable_bound(Symbol_sp sym, T_sp val, T_sp thunk) {
   DynamicScopeManager scope(sym, val);
+  if (!gc::IsA<Function_sp>(thunk)) {
+    printf("%s:%d:%s  The thunk is NOT a Function object!!!!! thunk.raw_() = %p\n",
+           __FILE__, __LINE__, __FUNCTION__, (void*)thunk.raw_());
+    fflush(stdout);
+  }
   Function_sp func = gc::As_unsafe<Function_sp>(thunk);
   return (func->entry.load())(LCC_PASS_ARGS0_ELLIPSIS(func.raw_()));
   // Don't put anything in here - don't mess up the MV return
@@ -783,16 +952,13 @@ CL_DECLARE();
 CL_DOCSTRING("multipleValueFuncall");
 CL_DEFUN T_mv core__multiple_value_funcall(T_sp funcDesignator, List_sp functions) {
   Function_sp fmv = coerce::functionDesignator(funcDesignator);
-  Closure_sp func = fmv.asOrNull<Closure_O>();
-  ASSERT(func);
-  MAKE_STACK_FRAME(frame, func.raw_(), MultipleValues::MultipleValuesLimit);
+  MAKE_STACK_FRAME(frame, fmv.raw_(), MultipleValues::MultipleValuesLimit);
   size_t numArgs = 0;
   size_t idx = 0;
   MultipleValues& mv = lisp_multipleValues();
   for (auto cur : functions) {
-    Function_sp func = gc::As<Function_sp>(oCar(cur));
-    T_mv result = (func->entry.load())(LCC_PASS_ARGS0_ELLIPSIS(func.raw_()));
-//    T_mv result = eval::funcall(func);
+    Function_sp tfunc = gc::As<Function_sp>(oCar(cur));
+    T_mv result = (tfunc->entry.load())(LCC_PASS_ARGS0_ELLIPSIS(tfunc.raw_()));
     ASSERT(idx < MultipleValues::MultipleValuesLimit);
     if (result.number_of_values() > 0  ) {
         (*frame)[idx] = result.raw_();
@@ -807,7 +973,7 @@ CL_DEFUN T_mv core__multiple_value_funcall(T_sp funcDesignator, List_sp function
   frame->set_number_of_arguments(idx);
   Vaslist valist_s(frame);
   VaList_sp args(&valist_s);
-  return funcall_consume_valist_<Closure_O>(func.tagged_(),args);
+  return funcall_consume_valist_<Function_O>(fmv.tagged_(),args);
 }
 
 CL_LAMBDA(func1 func2);
@@ -831,9 +997,7 @@ CL_DEFUN T_mv core__catch_function(T_sp tag, Function_sp thunk) {
   T_mv result;
   int frame = my_thread->exceptionStack().push(CatchFrame, tag);
   try {
-    core::Closure_sp closure = thunk.asOrNull<Closure_O>();
-    ASSERT(closure);
-    result = closure->entry.load()(LCC_PASS_ARGS0_ELLIPSIS(closure.raw_()));
+    result = thunk->entry.load()(LCC_PASS_ARGS0_ELLIPSIS(thunk.raw_()));
   } catch (CatchThrow &catchThrow) {
     if (catchThrow.getFrame() != frame) {
       throw catchThrow;
@@ -888,6 +1052,51 @@ CL_DEFUN T_mv core__progv_function(List_sp symbols, List_sp values, Function_sp 
  {
    return gc::As<HashTableEqual_sp>(_sym_STARfunctions_to_notinlineSTAR->symbolValue())->gethash(name);
  }
+
+
+
+CL_DEFUN T_sp core__run_function( T_sp object ) {
+  std::string name = gc::As<String_sp>(object)->get_std_string();
+  T_sp thandle = _sym_STARcurrent_dlopen_handleSTAR->symbolValue();
+  uintptr_t handle = 0;
+  if (thandle.notnilp() && gc::IsA<Pointer_sp>(thandle)) {
+    handle = (uintptr_t)gc::As_unsafe<Pointer_sp>(thandle)->ptr();
+  }
+#if 1
+  claspFunction func = (claspFunction)dlsym((void*)handle,name.c_str());
+//  printf("%s:%d:%s running function %s  at %p\n", __FILE__, __LINE__, __FUNCTION__, name.c_str(), (void*)func);
+#else
+  claspFunction func = lookup_internal_functions(handle, name.c_str());
+#endif
+#ifdef DEBUG_SLOW
+  MaybeDebugStartup startup((void*)func);
+#endif
+  if( func != nullptr ) {
+    LCC_RETURN ret = func(LCC_PASS_ARGS0_VA_LIST(_Nil<T_O>().raw_()));
+    core::T_sp res((gctools::Tagged)ret.ret0[0]);
+    core::T_sp val = res;
+    return val;
+  }
+  return _Nil<T_O>();
+}
+
+CL_DEFUN T_sp core__run_make_mlf( T_sp object ) {
+  return core__run_function(object);
+}
+
+CL_DEFUN T_sp core__run_init_mlf( T_sp object ) {
+  return core__run_function(object);
+}
+
+CL_DEFUN T_sp core__make_builtin_class( T_sp object ) {
+  printf("%s:%d:%s  with %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(object).c_str());
+  SIMPLE_ERROR(BF("Add support for core__make_builtin_class"));
+}
+
+
+CL_DEFUN T_sp core__handle_creator( T_sp object ) {
+  SIMPLE_ERROR(BF("Handle-creator for %s") % _rep_(object).c_str());
+}
 
  SYMBOL_EXPORT_SC_(CompPkg, STARimplicit_compile_hookSTAR);
  SYMBOL_EXPORT_SC_(CompPkg, implicit_compile_hook_default);

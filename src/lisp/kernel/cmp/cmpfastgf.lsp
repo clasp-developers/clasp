@@ -65,8 +65,8 @@
 
 
 (defmacro cf-log (fmt &body args)
-  nil
-  #+(or)`(core:bformat *debug-io* ,fmt ,@args))
+  #+(or)nil
+  `(core:bformat *log-gf* ,fmt ,@args))
 
 ;;; ------------------------------------------------------------
 ;;;
@@ -91,18 +91,26 @@
   (unless (= +optimized-slot-index-index+ 1)
     (error "The index of the slot index must be 1")))
 ;; the emf slot here is for debugging only - i.e., comparing with the optimized slot value. Usually unused.
-(defstruct (optimized-slot-reader (:type vector) :named) index #| << must be here |# effective-method-function slot-name method class)
-(defstruct (optimized-slot-writer (:type vector) :named) index #| << must be here |# effective-method-function slot-name method class)
-(defstruct (fast-method-call (:type vector) :named) function)
+(defstruct (outcome (:type vector) :named))
+(defstruct (optimized-slot-reader (:type vector) (:include outcome) :named) index #| << must be here |# effective-method-function slot-name method class)
+(defstruct (optimized-slot-writer (:type vector) (:include outcome) :named) index #| << must be here |# effective-method-function slot-name method class)
+(defstruct (fast-method-call (:type vector) (:include outcome) :named) function)
+;; a thing that will be called like an effective method function, but isn't cached or anything.
+(defstruct (function-outcome (:type vector) (:include outcome) :named) function)
 ;; applicable-methods slot is for clos; see closfastgf.lsp's find-existing-emf
-(defstruct (effective-method-outcome (:type vector) :named) applicable-methods function)
+(defstruct (effective-method-outcome (:type vector) (:include outcome) :named) applicable-methods function)
+
 (defstruct (klass (:type vector) :named) stamp name)
-(defstruct (outcome (:type vector) :named) outcome)
 (defstruct (match (:type vector) :named) outcome)
 (defstruct (range (:include match) (:type vector) :named) first-stamp last-stamp reversed-classes)
 (defstruct (skip (:include match) (:type vector) :named))
 (defstruct (node (:type vector) :named) (eql-specializers (make-hash-table :test #'eql) :type hash-table)
-           (class-specializers nil :type list))
+           (class-specializers nil :type list)
+           (interpreter nil :type vector))
+
+(defun ensure-outcome-or-error (obj)
+  (unless (outcome-p obj) (error "~s is not an outcome" obj))
+  obj)
 
 ;; Degenerate range node with only one stamp are useful to create/note.
 (defun make-stamp-matcher (&key stamp class outcome)
@@ -122,29 +130,13 @@
   dispatch-va-list*
   vaslist*
   methods-vaslist-t*
-  invocation-history-frame*
-  cleanup-action
   continue-after-dispatch
   miss-basic-block)
 
 (defun argument-get (arguments index)
   (elt (argument-holder-dispatch-arguments arguments) index))
 
-(defun argument-next (arguments)
-  (if (argument-holder-remaining-register-arguments arguments)
-      (pop (argument-holder-remaining-register-arguments arguments))
-      (irc-va_arg (argument-holder-dispatch-va-list* arguments) %t*%)))
-
 (defstruct (dtree (:type vector) :named) root)
-
-(defstruct (spec-vec-iterator (:type vector))
-  index vector)
-
-(defun spec-vec-iterator-value (spec-vec)
-  (svref (spec-vec-iterator-vector spec-vec) (spec-vec-iterator-index spec-vec)))
-
-(defun spec-vec-iterator-advance (spec-vec)
-  (incf (spec-vec-iterator-index spec-vec)))
 
 (defun dtree-add-call-history (dtree call-history)
   "Add call-history for one generic-function to the dtree"
@@ -157,8 +149,7 @@
             (when (null (dtree-root dtree)) (setf (dtree-root dtree) (make-node)))
             (node-add (dtree-root dtree) (svref signature 0) 1 signature outcome))
           (progn
-            (setf (dtree-root dtree) (make-outcome :outcome outcome))))))
-  (optimize-nodes (dtree-root dtree))
+            (setf (dtree-root dtree) (ensure-outcome-or-error outcome))))))
   dtree)
 
 (defun eql-specializer-p (spec)
@@ -187,7 +178,7 @@
 
 (defun ensure-outcome (argument-index specs goal)
   (if (>= argument-index (length specs))
-      (make-outcome :outcome goal)
+      (ensure-outcome-or-error goal)
       (let ((node (make-node)))
         (node-add node (svref specs argument-index) (1+ argument-index) specs goal)
         node)))
@@ -236,8 +227,26 @@
           (setf (gethash eql-value eql-ht) outcome)))))
 
 (defun outcome= (outcome1 outcome2)
-  ;; FIXME: Put some thought into this.
-  (equalp outcome1 outcome2))
+  (or (eq outcome1 outcome2) ; covers effective-method-outcome due to closfastgf caching
+      (cond ((optimized-slot-reader-p outcome1)
+             (and (optimized-slot-reader-p outcome2)
+                  ;; could also do class slot locations somehow,
+                  ;; but it doesn't seem like a big priority.
+                  (fixnump (optimized-slot-reader-index outcome1))
+                  (fixnump (optimized-slot-reader-index outcome2))
+                  (= (optimized-slot-reader-index outcome1)
+                     (optimized-slot-reader-index outcome2))))
+            ((optimized-slot-writer-p outcome1)
+             (and (optimized-slot-writer-p outcome2)
+                  (fixnump (optimized-slot-writer-index outcome1))
+                  (fixnump (optimized-slot-writer-index outcome2))
+                  (= (optimized-slot-writer-index outcome1)
+                     (optimized-slot-writer-index outcome2))))
+            ((fast-method-call-p outcome1)
+             (and (fast-method-call-p outcome2)
+                  (eq (fast-method-call-function outcome1)
+                      (fast-method-call-function outcome2))))
+            (t nil))))
 
 (defun verify-node-class-specializers-sorted-p (specializers)
   (let ((working (first specializers)))
@@ -248,37 +257,58 @@
           (setf working next)
           (return-from verify-node-class-specializers-sorted-p nil))))
   t)
-      
+
+(defun prepare-node-for-interpreter (node)
+  (let* ((specializers (node-class-specializers node))
+         (layout (make-array (1+ (* 3 (length specializers)))))
+         (first-spec (and specializers (elt specializers 0))))
+    (cond
+      ((null specializers)
+       (setf (elt layout 0) 'cmp:range)) ;; No 
+      ((skip-p first-spec)
+       (setf (elt layout 0) 'cmp:skip)
+       (setf (elt layout 1) (skip-outcome first-spec)))
+      ((range-p first-spec)
+       (setf (elt layout 0) 'cmp:range)
+       (dotimes (i (length specializers))
+         (let ((spec (car specializers))
+               (start (1+ (* i 3))))
+           (setf (elt layout (+ start 0)) (range-outcome spec)
+                 (elt layout (+ start 1)) (range-first-stamp spec)
+                 (elt layout (+ start 2)) (range-last-stamp spec)))
+         (setf specializers (cdr specializers))))
+      (t (error "cannot prepare interpreter for ~s" specializers)))
+    (setf (node-interpreter node) layout)))
+
 ;; Given a node that isn't a skip node (i.e. all "specializers" are ranges),
 ;; modify its specializers so that adjacent ranges are merged together.
 (defun optimize-node-with-class-specializers (node)
-  (when (null (node-class-specializers node))
-    (return-from optimize-node-with-class-specializers))
-  (let* ((class-specializers (node-class-specializers node))
-         ;; FIXME: copy is due to an abundance of paranoia, and may not be necessary.
-         (sorted (sort (copy-list class-specializers) #'< :key #'range-first-stamp))
-         (working (first sorted))
-         merged)
-    ;; Now we proceed through the list trying to merge the first with the rest.
-    ;; Once we find one we can't merge with, throw it on the complete list.
-    (dolist (match (rest sorted))
-      (if (and (= (1+ (range-last-stamp working)) (range-first-stamp match))
-               (outcome= (range-outcome working) (range-outcome match)))
-          ;; ranges touch: merge by increasing working's last stamp.
-          (setf (range-last-stamp working) (range-last-stamp match)
-                ;; note: i think this reversed-classes field is only used for debugging,
-                ;; and perhaps could be removed or simplified.
-                (range-reversed-classes working)
-                (append (range-reversed-classes match) (range-reversed-classes working)))
-          ;; range is distinct: throw working on the pile and continue anew.
-          (setf merged (cons working merged) working match)))
-    (push working merged)
-    (let ((sorted (nreverse merged)))
-      (setf (node-class-specializers node) sorted)
-      #+debug-fastgf(if (verify-node-class-specializers-sorted-p sorted)
-                        t
-                        (error "optimize-node-with-class-specializers has a problem stamps aren't sorted --> ~a" sorted))
-      sorted)))
+  (when (node-class-specializers node)
+    (let* ((class-specializers (node-class-specializers node))
+           ;; FIXME: copy is due to an abundance of paranoia, and may not be necessary.
+           (sorted (sort (copy-list class-specializers) #'< :key #'range-first-stamp))
+           (working (first sorted))
+           merged)
+      ;; Now we proceed through the list trying to merge the first with the rest.
+      ;; Once we find one we can't merge with, throw it on the complete list.
+      (dolist (match (rest sorted))
+        (if (and (= (1+ (range-last-stamp working)) (range-first-stamp match))
+                 (outcome= (range-outcome working) (range-outcome match)))
+            ;; ranges touch: merge by increasing working's last stamp.
+            (setf (range-last-stamp working) (range-last-stamp match)
+                  ;; note: i think this reversed-classes field is only used for debugging,
+                  ;; and perhaps could be removed or simplified.
+                  (range-reversed-classes working)
+                  (append (range-reversed-classes match) (range-reversed-classes working)))
+            ;; range is distinct: throw working on the pile and continue anew.
+            (setf merged (cons working merged) working match)))
+      (push working merged)
+      (let ((sorted (nreverse merged)))
+        (setf (node-class-specializers node) sorted)
+        #+debug-fastgf(if (verify-node-class-specializers-sorted-p sorted)
+                          t
+                          (error "optimize-node-with-class-specializers has a problem stamps aren't sorted --> ~a" sorted))
+        sorted))))
 
 (defun skip-node-p (node)
   (let ((class-specializers (node-class-specializers node)))
@@ -288,15 +318,24 @@
   "Create a list from the argument list and merge matches
    that can be considered adjacent into a range object."
   (if (skip-node-p node)
-      nil ;; There is one class-specializer and it's a skip class-specializer do nothing
-      (optimize-node-with-class-specializers node)))
+      nil                   ; There is one class-specializer and
+                                        ; it's a skip class-specializer do
+                                        ; nothing but prepare for the interpreter.
+      (optimize-node-with-class-specializers node))
+  (prepare-node-for-interpreter node))
 
-(defun optimize-nodes (node-or-outcome)
-  (when (node-p node-or-outcome)
-    (dolist (spec (node-class-specializers node-or-outcome))
-      (let ((child-node-or-outcome (match-outcome spec)))
-	(optimize-nodes child-node-or-outcome)))
-    (optimize-node node-or-outcome)))
+(defun optimize-node-and-children (maybe-node)
+  (when (node-p maybe-node)
+    ;; Loop over eql-specializers
+    (maphash (lambda (specializer maybe-child-node)
+               (optimize-node-and-children maybe-child-node))
+             (node-eql-specializers maybe-node))
+    ;; loop over class-specializers
+    (dolist (spec (node-class-specializers maybe-node))
+      (let ((child-maybe-node (match-outcome spec)))
+	(optimize-node-and-children child-maybe-node)))
+    ;; optimize this node
+    (optimize-node maybe-node)))
 	    
 
 
@@ -305,93 +344,245 @@
 ;;; Generate Common Lisp code for a fastgf dispatcher given a
 ;;;   DTREE internal representation
 
+(defvar *generate-outcomes*) ; alist (outcome . tag)
 
-(defun compile-remaining-eql-tests (eql-tests arg args orig-args)
-  (if (null eql-tests)
-      nil
-      (let ((eql-test (car eql-tests))
-	    (eql-rest (cdr eql-tests)))
-	`(if (eql ,arg ',(car eql-test))
-	     ,(compile-node-or-outcome (second eql-test) args orig-args)
-	     ,(if eql-rest
-		  (compile-remaining-eql-tests eql-rest arg args orig-args))))))
+;;; main entry point
+(defun generate-dispatcher-from-dtree (generic-function dtree
+                                       &key extra-bindings generic-function-name
+                                         (generic-function-form generic-function))
+  ;; GENERIC-FUNCTION-FORM is used when we want to feed this form to COMPILE-FILE,
+  ;; in which case it can't have literal generic functions in it.
+  ;; If we're doing this at runtime, though, we should put the actual GF in, so that
+  ;; things don't break if we have an anonymous GF or suchlike.
+  ;; EXTRA-BINDINGS is also used in the compile-file case, and gets methods and stuff
+  ;; with load-time-value.
+  (let* (;; We need to know the number of arguments to dispatch on, and to have
+         ;; to the discriminating function if we can manage that.
+         ;; FIXME: This will work, due to how the s-profile is initialized,
+         ;; but it's weird and indirect.
+         (nreq (length (clos:generic-function-specializer-profile generic-function)))
+         ;; and we need this to see if we can manage that
+         (need-vaslist-p (call-history-needs-vaslist-p
+                          (clos:generic-function-call-history generic-function)))
+         (vaslist-args (if need-vaslist-p
+                           (gensym "DISPATCH-VA-ARGS")
+                           '(error "BUG: Discriminator tried to use vaslist")))
+         (block-name (if generic-function-name
+                         (core:function-block-name generic-function-name)
+                         (gensym "DISCRIMINATION-BLOCK")))
+         (gfsym (gensym "GENERIC-FUNCTION"))
+         ;; List of gensyms, one for each required argument
+         (required-args (let ((res nil))
+                          (dotimes (i nreq res)
+                            (push (gensym "DISPATCH-ARG") res))))
+         (*generate-outcomes* nil))
+    `(lambda ,(if need-vaslist-p
+                  `(core:&va-rest ,vaslist-args)
+                  required-args)
+       (let (,@extra-bindings
+             ;; Bound because at some point in the unknown future we may actually support
+             ;; the :generic-function option to define-method-combination.
+             (,gfsym ,generic-function-form)
+             ,@(if need-vaslist-p
+                   (mapcar (lambda (req)
+                             `(,req (core:vaslist-pop ,vaslist-args)))
+                           required-args)
+                   nil))
+         (declare (ignorable ,@required-args))
+         (block ,block-name
+           (tagbody
+              ,(generate-node-or-outcome required-args (dtree-root dtree))
+              ;; note: we need generate-node-or-outcome to run to fill *generate-outcomes*.
+              ,@(generate-tagged-outcomes *generate-outcomes* block-name vaslist-args required-args)
+            dispatch-miss
+              ,@(if need-vaslist-p
+                    `((core:vaslist-rewind ,vaslist-args)
+                      (return-from ,block-name
+                        (clos::dispatch-miss ,gfsym ,vaslist-args)))
+                    `((return-from ,block-name
+                        (clos::dispatch-miss-with-args ,gfsym ,@required-args))))))))))
 
-(defun compile-eql-specializers (node arg args orig-args)
-  (let ((eql-tests (let (values)
-		     (maphash (lambda (key value)
-				(push (list key value) values))
-			      (node-eql-specializers node))
-		     values)))
-    (let ((result (compile-remaining-eql-tests eql-tests arg args orig-args)))
-      (if result
-	  (list result)
-	  nil))))
+(defun generate-node-or-outcome (arguments node-or-outcome)
+  (if (outcome-p node-or-outcome)
+      (generate-go-outcome node-or-outcome)
+      (generate-node arguments node-or-outcome)))
+
+;;; outcomes
+;;; we cache them to avoid generating calls/whatever more than once
+;;; they're generated after all the discrimination code is.
+
+(defun generate-go-outcome (outcome)
+  (ensure-outcome-or-error outcome)
+  (let ((existing (assoc outcome *generate-outcomes* :test #'outcome=)))
+    (if (null existing)
+        ;; no match: put it on there
+        (let ((tag (gensym "OUTCOME")))
+          (push (cons outcome tag) *generate-outcomes*)
+          `(go ,tag))
+        ;; match: goto existing tag
+        `(go ,(cdr existing)))))
+
+(defun generate-tagged-outcomes (list block-name vaslist-arguments required-arguments)
+  (mapcan (lambda (pair)
+            (let ((outcome (car pair)) (tag (cdr pair)))
+              (list tag
+                    `(return-from ,block-name
+                       ,(generate-outcome vaslist-arguments required-arguments outcome)))))
+          list))
 
 
-(defun compile-class-binary-search (matches stamp-var args orig-args)
+(defun generate-outcome (vaslist-arguments reqargs outcome)
+  (cond ((optimized-slot-reader-p outcome)
+         (generate-slot-reader reqargs outcome))
+        ((optimized-slot-writer-p outcome)
+         (generate-slot-writer reqargs outcome))
+        ((fast-method-call-p outcome)
+         (generate-fast-method-call reqargs outcome))
+        ((effective-method-outcome-p outcome)
+         (generate-effective-method-call vaslist-arguments (effective-method-outcome-function outcome)))
+        ((function-outcome-p outcome)
+         (generate-effective-method-call vaslist-arguments (function-outcome-function outcome)))
+        (t (error "BUG: Bad thing to be an outcome: ~a" outcome))))
+
+(defun generate-slot-reader (arguments outcome)
+  (let ((location (optimized-slot-reader-index outcome))
+        (slot-name (optimized-slot-reader-slot-name outcome))
+        (class (optimized-slot-reader-class outcome)))
+    (cond ((fixnump location)
+           ;; instance location- easy
+           `(let* ((instance ,(first arguments))
+                   (value (core:instance-ref instance ',location)))
+              (if (cleavir-primop:eq value (load-time-value (core:unbound) t))
+                  (slot-unbound ,class instance ',slot-name)
+                  value)))
+          ((consp location)
+           ;; class location. we need to find the new cell at load time.
+           `(let* ((location
+                     (load-time-value
+                      (clos:slot-definition-location
+                       (or (find ',slot-name (clos:class-slots ,class))
+                           (error "Probably a BUG: slot ~a in ~a stopped existing between compile and load"
+                                  ',slot-name ,class)))))
+                   (value (car location)))
+              (if (eq value (core:unbound))
+                  (slot-unbound ,class ,(first arguments) ',slot-name)
+                  value)))
+          (t (error "BUG: Slot location ~a is not a fixnum or cons" location)))))
+
+(defun generate-slot-writer (arguments outcome)
+  (let ((location (optimized-slot-writer-index outcome)))
+    (cond ((fixnump location)
+           `(let ((value ,(first arguments))
+                  (instance ,(second arguments)))
+              (si:instance-set instance ,location value)))
+          ((consp location)
+           ;; class location- annoying
+           ;; Note we don't actually need the instance.
+           (let ((slot-name (optimized-slot-reader-slot-name outcome))
+                 (class (optimized-slot-reader-class outcome)))
+             `(let ((value ,(first arguments))
+                    (location
+                      (load-time-value
+                       (clos:slot-definition-location
+                        (or (find ',slot-name (clos:class-slots ,class))
+                            (error "Probably a BUG: slot ~a in ~a stopped existing between compile and load"
+                                   ',slot-name ,class))))))
+                (rplaca location value)
+                value)))
+          (t (error "BUG: Slot location ~a is not a fixnum or cons" location)))))
+
+(defun generate-fast-method-call (arguments outcome)
+  (let ((fmf (fast-method-call-function outcome)))
+    `(funcall ,fmf ,@arguments)))
+
+(defun generate-effective-method-call (arguments outcome)
+  (if (consp outcome)
+      ;; if the outcome is a cons, we magically assume it's a form to include entirely.
+      ;; This happens from the COMPILE-TIME-DISCRIMINATOR machinery in clos/satiation.lsp.
+      ;; FIXME: probably clean up. 
+      `(progn
+         (core:vaslist-rewind ,arguments)
+         (let ((clos::.method-args. ,arguments))
+           ,outcome))
+      (let ((emf outcome))
+        `(progn
+           (core:vaslist-rewind ,arguments)
+           (funcall ,emf ,arguments nil)))))
+
+;;; discrimination
+
+(defun generate-node (arguments node)
+  (let ((arg (pop arguments)))
+    (cond ((skip-node-p node)
+           (generate-skip-node arguments node))
+          ;; We avoid the eql CASE when possible. This isn't really necessary,
+          ;; but let's try to avoid pressuring the optimizer when it's easy.
+          ((has-eql-specializers-p node)
+           `(case ,arg
+              ,@(generate-eql-specializers arguments arg node)
+              (otherwise
+               ,(generate-class-specializers arguments arg node))))
+          (t (generate-class-specializers arguments arg node)))))
+
+(defun generate-skip-node (arguments node)
+  (let ((skip-node (first (node-class-specializers node))))
+    (generate-node-or-outcome arguments (skip-outcome skip-node))))
+
+(defun has-eql-specializers-p (node)
+  (not (zerop (hash-table-count (node-eql-specializers node)))))
+
+(defun generate-eql-specializers (arguments arg node)
+  (declare (ignore arg)) ; just for parity with generate-class-specializers
+  ;; could also loop
+  (let ((result nil))
+    (maphash (lambda (spec outcome)
+               (push (generate-eql-specializer arguments spec outcome) result))
+             (node-eql-specializers node))
+    result))
+
+(defun generate-eql-specializer (arguments spec outcome)
+  `((,spec) ,(generate-node-or-outcome arguments outcome)))
+
+(defun generate-class-specializers (arguments arg node)
+  (let ((stamp-var (gensym "STAMP")))
+    `(let ((,stamp-var ,(generate-read-stamp arg)))
+       ,(generate-class-binary-search arguments (node-class-specializers node) stamp-var))))
+
+(defun generate-read-stamp (arg)
+  `(core:instance-stamp ,arg))
+
+(defun generate-class-binary-search (arguments matches stamp-var)
   (cond
     ((null matches)
-     `(no-applicable-method orig-args))
+     `(go dispatch-miss))
     ((= (length matches) 1)
-     (let ((match (car matches)))
+     (let ((match (first matches)))
        (if (single-p match)
-	   `(if (= ,stamp-var ,(range-first-stamp match))
-		,(compile-node-or-outcome (match-outcome match) args orig-args)
-		(go miss))
-	   `(if (and (>= ,stamp-var ,(range-first-stamp match)) (<= ,stamp-var ,(range-last-stamp match)))
-		,(compile-node-or-outcome (match-outcome match) args orig-args)
-		(go miss)))))
+           `(if (cleavir-primop:fixnum-equal ; =
+                 ,stamp-var ,(range-first-stamp match))
+                ,(generate-node-or-outcome arguments (range-outcome match))
+                (go dispatch-miss))
+           ;; note: the primop needs to be the literal IF condition,
+           ;; so the obvious AND isn't quite going to work.
+           `(if (cleavir-primop:fixnum-not-greater ; <=
+                 ,(range-first-stamp match) ,stamp-var)
+                (if (cleavir-primop:fixnum-not-greater ; <=
+                     ,stamp-var ,(range-last-stamp match))
+                    ,(generate-node-or-outcome arguments (match-outcome match))
+                    (go dispatch-miss))
+                (go dispatch-miss)))))
     (t
      (let* ((len-div-2 (floor (length matches) 2))
-	    (left-matches (subseq matches 0 len-div-2))
-	    (right-matches (subseq matches len-div-2))
-	    (right-head (car right-matches))
-	    (right-stamp (range-first-stamp right-head)))
-       `(if (< ,stamp-var ,right-stamp)
-	    ,(compile-class-binary-search left-matches stamp-var args orig-args)
-	    ,(compile-class-binary-search right-matches stamp-var args orig-args))))))
+            (left-matches (subseq matches 0 len-div-2))
+            (right-matches (subseq matches len-div-2))
+            (right-head (first right-matches))
+            (right-stamp (range-first-stamp right-head)))
+       `(if (cleavir-primop:fixnum-less ; <
+             ,stamp-var ,right-stamp)
+            ,(generate-class-binary-search arguments left-matches stamp-var)
+            ,(generate-class-binary-search arguments right-matches stamp-var))))))
 
-(defun compile-class-specializers (node arg args orig-args)
-  (let ((stamp-var (gensym "STAMP")))
-    `(let ((,stamp-var (core:class-stamp-for-instances (class-of ,arg))))
-       ,(compile-class-binary-search (node-class-specializers node) stamp-var args orig-args))))
-
-(defvar *map-tag-outcomes* (make-hash-table))
-
-(defun gather-outcomes (outcome)
-  (let ((tag (intern (core:bformat nil "T%s" (hash-table-count *map-tag-outcomes*)))))
-    (setf (gethash tag *map-tag-outcomes*) outcome)
-    tag))
-
-(defun compile-outcome (node args orig-args)
-  `(go ,(gather-outcomes (outcome-outcome node))))
-
-(defun compile-node (node args orig-args)
-  (let ((arg (gensym "ARG")))
-    `(let ((,arg (core:vaslist-pop ,args))) ;; was (va-arg ,args)
-       ,@(compile-eql-specializers node arg args orig-args)
-       ,(compile-class-specializers node arg args orig-args))))
-
-(defun compile-node-or-outcome (node-or-outcome args orig-args)
-  (if (outcome-p node-or-outcome)
-      (compile-outcome node-or-outcome args orig-args)
-      (compile-node node-or-outcome args orig-args)))
-
-(defun compiled-dtree-form (dtree)
-  (let ((vargs (gensym "VARGS"))
-	(orig-vargs (gensym "ORIG-VARGS"))
-	(*map-tag-outcomes* (make-hash-table)))
-    `(lambda (,orig-vargs &aux (,vargs (copy-vargs ,orig-vargs)))
-       (tagbody
-	  ,(compile-node-or-outcome (dtree-root dtree) vargs `(copy-vargs ,vargs))
-	  ,@(let (result)
-                 (maphash (lambda (key value)
-                            (push value result)
-                            (push key result))
-                          *map-tag-outcomes*)
-                 result)
-	miss
-	  (no-applicable-method ,vargs)))))
+;;; draw a picture for debugging
 
 (defun draw-node (fout node)
   (cond
@@ -403,7 +594,7 @@
      nil)
     ((outcome-p node)
      (let ((nodeid (gensym)))
-       (core:bformat fout "%s [shape=ellipse,label=\"HIT-%s\"];%N" (string nodeid) (core:object-address (outcome-outcome node)))
+       (core:bformat fout "%s [shape=ellipse,label=\"HIT-%s\"];%N" (string nodeid) (core:object-address (ensure-outcome-or-error node)))
        nodeid))
     ((node-p node)
      (let* ((nodeid (gensym))
@@ -553,8 +744,10 @@
       ;; FIXME   The argument-holder-gf-args is a vaslist!!!! not a va_list - they are just coincident!!!
       (irc-intrinsic-call-or-invoke "cc_vaslist_end" (list vaslist)))))
 
-(defun codegen-slot-reader (arguments cur-arg outcome)
+(defun codegen-slot-reader (arguments outcome)
   (cf-log "entered codegen-slot-reader%N")
+  (cf-log "arguments %s%N" arguments)
+  (cf-log "outcome %s%N" outcome)
 ;;; If the (cdr outcome) is a fixnum then we can generate code to read the slot
 ;;;    directly and remhash the outcome from the *outcomes* hash table.
 ;;; otherwise create an entry for the outcome and call the slot reader.
@@ -581,7 +774,7 @@
         (irc-store retval (argument-holder-return-value arguments))
         (irc-br (argument-holder-continue-after-dispatch arguments))))))
 
-(defun codegen-slot-writer (arguments cur-arg outcome)
+(defun codegen-slot-writer (arguments outcome)
   (cf-log "codegen-slot-writer%N")
 ;;; If the (optimized-slot-writer-data outcome) is a fixnum then we can generate code to read the slot
 ;;;    directly and remhash the outcome from the *outcomes* hash table.
@@ -611,7 +804,7 @@
         (irc-store retval (argument-holder-return-value arguments))
         (irc-br (argument-holder-continue-after-dispatch arguments))))))
 
-(defun codegen-fast-method-call (arguments cur-arg outcome)
+(defun codegen-fast-method-call (arguments outcome)
   (cf-log "codegen-fast-method-call%N")
   (let* ((fmf (fast-method-call-function outcome))
          (gf-data-id (register-runtime-data fmf *outcomes*))
@@ -635,7 +828,7 @@
       (irc-store-result (argument-holder-return-value arguments) result-in-registers)
       (irc-br (argument-holder-continue-after-dispatch arguments)))))
 
-(defun codegen-effective-method-call (arguments cur-arg outcome)
+(defun codegen-effective-method-call (arguments outcome)
   (cf-log "codegen-effective-method-call %s%N" outcome)
   (let ((gf-data-id (register-runtime-data outcome *outcomes*))
 	(effective-method-block (irc-basic-block-create "effective-method")))
@@ -658,25 +851,25 @@
                          (irc-intrinsic "cc_fastgf_nil")))
       (irc-br (argument-holder-continue-after-dispatch arguments)))))
 
-(defun codegen-outcome (arguments cur-arg node)
+(defun codegen-outcome (arguments node)
   (cf-log "codegen-outcome%N")
   ;; The effective method will be found in a slot in the modules *gf-data* array
   ;;    the slot index will be in gf-data-id
-  (let ((outcome (outcome-outcome node)))
+  (let ((outcome (ensure-outcome-or-error node)))
     #+(or)(when *log-gf*
             (core:bformat *log-gf* "About to codegen-outcome -> %s%N" outcome))
     (cond
       ((optimized-slot-reader-p outcome)
-       (codegen-slot-reader arguments cur-arg outcome))
+       (codegen-slot-reader arguments outcome))
       ((optimized-slot-writer-p outcome)
-       (codegen-slot-writer arguments cur-arg outcome))
+       (codegen-slot-writer arguments outcome))
       ((fast-method-call-p outcome)
-       (codegen-fast-method-call arguments cur-arg outcome))
+       (codegen-fast-method-call arguments outcome))
       ((effective-method-outcome-p outcome)
-       (codegen-effective-method-call arguments cur-arg (effective-method-outcome-function outcome)))
-      ((functionp outcome) ; method-function and no-required-method. maybe change to be cleaner?
-       (codegen-effective-method-call arguments cur-arg outcome))
-      (t (error "BUG: Bad thing to be an outcome: ~a~s" outcome)))))
+       (codegen-effective-method-call arguments (effective-method-outcome-function outcome)))
+      ((function-outcome-p outcome) ; method-function and no-required-method. maybe change to be cleaner?
+       (codegen-effective-method-call arguments (function-outcome-function outcome)))
+      (t (error "BUG: Bad thing to be an outcome: ~a" outcome)))))
 
 (defun codegen-class-binary-search (arguments cur-arg matches stamp-var)
   (cf-log "codegen-class-binary-search%N")
@@ -754,16 +947,15 @@
 (defun codegen-node-or-outcome (arguments cur-arg node-or-outcome)
   (cf-log "entered codegen-node-or-outcome%N")
   (if (outcome-p node-or-outcome)
-      (codegen-outcome arguments cur-arg node-or-outcome)
+      (codegen-outcome arguments node-or-outcome)
       (codegen-node arguments cur-arg node-or-outcome)))
 
 ;;; --------------------------------------------------
 ;;;
 ;;; Debugging a generic function dispatcher
 ;;;
-(defun debug-save-dispatcher (gf module disp-fn startup-fn shutdown-fn sorted-roots &optional (output-path #P"/tmp/dispatcher.ll"))
+(defun debug-save-dispatcher (module &optional (output-path #P"/tmp/dispatcher.ll"))
   "Save everything about the generic function so that it can be saved to a file and then edited and re-installed"
-  ;;  (cmp::gf-log-sorted-roots sorted-roots)
   (when (wild-pathname-p output-path)
     (setf output-path (pathname (substitute #\_ #\* (namestring output-path)))))
   (let ((fout (open output-path :direction :output)))
@@ -817,7 +1009,8 @@
   ;; type-error: datum NIL, expected type LLVM-SYS:VALUE
   ;; in code generation - because the vaslist holder will be nil instead of an llvm value.
   (mapc (lambda (entry)
-          (when (or (effective-method-outcome-p (cdr entry)) (functionp (cdr entry)))
+          (when (or (effective-method-outcome-p (cdr entry))
+                    (function-outcome-p (cdr entry)))
             (return-from call-history-needs-vaslist-p t)))
         call-history)
   nil)
@@ -839,7 +1032,6 @@
                              debug-on))
            (need-vaslist (or effective-methods-need-full-method-arguments
                              debug-on))
-           (need-debug-frame debug-on)
            (closure (first register-arguments))
            (number-of-arguments-passed (second register-arguments))
            (return-value (irc-alloca-return-type :label "return-value"))
@@ -848,24 +1040,11 @@
                        (when need-va-list
                          (irc-intrinsic-call-or-invoke "llvm.va_start" (list (irc-bit-cast va-list* %i8*% "va-list*-i8*"))))
                        va-list*))
-           (reg-save-area* (irc-alloca-register-save-area :label "reg-save-area*"))
+           (register-save-area* (irc-alloca-register-save-area :label "reg-save-area*"))
            (vaslist* (irc-alloca-vaslist :label "vaslist*"))
            (vaslist-t* (when need-vaslist
-                         (maybe-spill-to-register-save-area register-arguments reg-save-area*)
-                         (irc-intrinsic "cc_rewind_vaslist" vaslist* va-list* reg-save-area*)))
-           (invocation-history-frame* (when need-debug-frame
-                                        (let ((ihs* (irc-alloca-invocation-history-frame :label "ihf")))
-                                          (irc-intrinsic "cc_push_InvocationHistoryFrame"
-                                                         closure
-                                                         ihs*
-                                                         va-list*
-                                                         number-of-arguments-passed)
-                                          ihs*)))
-           (cleanup-action (when need-debug-frame
-                             #'(lambda (arguments)
-                                 (irc-intrinsic "cc_pop_InvocationHistoryFrame"
-                                                (first (argument-holder-register-arguments arguments))
-                                                (argument-holder-invocation-history-frame* arguments))))))
+                         (maybe-spill-to-register-save-area register-arguments register-save-area*)
+                         (irc-intrinsic "cc_rewind_vaslist" vaslist* va-list* register-save-area*))))
       ;; We have va-list* and register-arguments for the arguments
       ;; We also have specializer-profile - now we can gather up the arguments we need to dispatch on.
       (flet ((next-argument (idx dispatch-register-arguments)
@@ -884,13 +1063,11 @@
                                 :continue-after-dispatch continue-after-dispatch
                                 :dispatch-arguments (nreverse dispatch-args)
                                 :register-arguments register-arguments
-                                :register-save-area* reg-save-area*
+                                :register-save-area* register-save-area*
                                 :remaining-register-arguments (cddr register-arguments)
                                 :dispatch-va-list* va-list*
                                 :vaslist* vaslist*
                                 :methods-vaslist-t* vaslist-t*
-                                :cleanup-action cleanup-action
-                                :invocation-history-frame* invocation-history-frame*
                                 :miss-basic-block miss-basic-block))))))
 
 
@@ -921,26 +1098,29 @@
         (raw-call-history
          (dtree-add-call-history dt (list (cons #() (cdr (car raw-call-history))))))
         (t (error "codegen-dispatcher was called with an empty call-history - no dispatcher can be generated")))
+      (optimize-node-and-children (dtree-root dt))
       dt)))
-    
+
 (defun codegen-dispatcher-from-dtree (generic-function dtree &key (generic-function-name "discriminator") output-path log-gf (debug-on t debug-on-p))
   (let ((debug-on (if debug-on-p
                       debug-on
                       (core:get-funcallable-instance-debug-on generic-function)))
-        (*the-module* (create-run-time-module-for-compile)))
+        (module (create-run-time-module-for-compile)))
     #+(or)(unless call-history
             (core:bformat t "codegen-dispatcher %s  optimized-call-history -> %s%N" generic-function-name call-history)
             (core:bformat t "  raw-call-history -> %s%N" raw-call-history)
             (core:bformat t "  specializer-profile -> %s%N" specializer-profile))
-    (with-module (:module *the-module*
+    (with-module (:module module
                   :optimize nil)
       (with-source-pathnames (:source-pathname nil)
-        (let* ((dispatcher-name (jit-function-name generic-function-name))
-               (disp-fn (irc-simple-function-create dispatcher-name
+        (let* ((*current-function-name* (jit-function-name generic-function-name))
+               (*gv-current-function-name* (module-make-global-string *current-function-name* "fn-name"))
+               (_ (cf-log "codegen-dispatcher-from-dtree dispatcher name %s generic function name %s%N" *current-function-name* generic-function-name))
+               (disp-fn (irc-simple-function-create *current-function-name*
                                                     %fn-registers-prototype% #| was %fn-gf% |#
                                                     'llvm-sys::External-linkage
-                                                    *the-module*
-                                                    :argument-names +fn-registers-prototype-argument-names+ #| was %fn-gf-arguments% |# )))
+                                                    module
+                                                    :argument-names +fn-registers-prototype-argument-names+)))
           ;;(1) Create a function with a regular signature
           ;;(2) Allocate space for a va_list and copy the va_list passed into it.
           ;;(3) compile the dispatch function to llvm-ir refering to the eql specializers and stamps and
@@ -953,7 +1133,7 @@
                  (*irbuilder-function-body* irbuilder-body)
                  (*current-function* disp-fn)
                  (*gf-data* 
-                   (llvm-sys:make-global-variable *the-module*
+                   (llvm-sys:make-global-variable module
                                                   cmp:%t*[DUMMY]% ; type
                                                   nil ; isConstant
                                                   'llvm-sys:internal-linkage
@@ -961,7 +1141,7 @@
                                                   ;; nil ; initializer
                                                   (next-value-table-holder-name "dummy")))
                  (*gcroots-in-module* 
-                   (llvm-sys:make-global-variable *the-module*
+                   (llvm-sys:make-global-variable module
                                                   cmp:%gcroots-in-module% ; type
                                                   nil ; isConstant
                                                   'llvm-sys:internal-linkage
@@ -990,6 +1170,10 @@
                 ;;      then we need to allocate a va_list to use when we run out of register arguments.
                 ;; Setup exception handling and cleanup landing pad
                 (let* ((arguments (analyze-generic-function-make-arguments generic-function register-arguments debug-on miss-bb)))
+                  ;; This will ALWAYS spill the arguments.  If we have simple accessors - we don't want to do this.
+                  (maybe-spill-to-register-save-area
+                   (argument-holder-register-arguments arguments)
+                   (argument-holder-register-save-area* arguments))
                   (flet ((codegen-rest-of-dispatcher ()
                            (with-irbuilder (*irbuilder-function-alloca*)
                              (irc-br body-bb))
@@ -1005,9 +1189,9 @@
                                                       (irc-bit-cast
                                                        (argument-holder-dispatch-va-list* arguments)
                                                        %i8*%)))
-                                                    (maybe-spill-to-register-save-area
-                                                     (argument-holder-register-arguments arguments)
-                                                     (argument-holder-register-save-area* arguments))
+                                                    #+(or)(maybe-spill-to-register-save-area
+                                                           (argument-holder-register-arguments arguments)
+                                                           (argument-holder-register-save-area* arguments))
                                                     (prog1
                                                         (irc-intrinsic
                                                          "cc_rewind_vaslist"
@@ -1024,22 +1208,19 @@
                                         (argument-holder-return-value arguments))
                              (argument-holder-return-value arguments))
                            (irc-br (argument-holder-continue-after-dispatch arguments))))
-                    (if (argument-holder-invocation-history-frame* arguments)
-                        (with-new-function-prepare-for-try (disp-fn irbuilder-alloca)
-                          (with-try
-                              (progn
-                                (codegen-node-or-outcome arguments -1 (dtree-root dtree))
-                                (codegen-rest-of-dispatcher)
-                                (irc-begin-block (argument-holder-continue-after-dispatch arguments)))
-                            ((cleanup)
-                             (funcall (argument-holder-cleanup-action arguments) arguments))))
-                        (with-landing-pad nil
-                          (codegen-node-or-outcome arguments -1 (dtree-root dtree))
-                          (codegen-rest-of-dispatcher)
-                          (irc-begin-block (argument-holder-continue-after-dispatch arguments)))))
+                    (multiple-value-bind (min max)
+                        (clos:generic-function-min-max-args generic-function)
+                      (with-landing-pad nil
+                        (unless (zerop min)
+                          (compile-error-if-not-enough-arguments min num-args))
+                        (unless (null max)
+                          (compile-error-if-too-many-arguments max num-args))
+                        (codegen-node-or-outcome arguments -1 (dtree-root dtree))
+                        (codegen-rest-of-dispatcher)
+                        (irc-begin-block (argument-holder-continue-after-dispatch arguments)))))
                   (irc-ret (irc-load (argument-holder-return-value arguments))))))
             (let* ((array-type (llvm-sys:array-type-get cmp:%t*% *gf-data-id*))
-                   (correct-size-holder (llvm-sys:make-global-variable *the-module*
+                   (correct-size-holder (llvm-sys:make-global-variable module
                                                                        array-type
                                                                        nil ; isConstant
                                                                        'llvm-sys:internal-linkage
@@ -1047,30 +1228,46 @@
                                                                        (bformat nil "CONSTANTS-%d" (increment-dispatcher-count))))
                    (bitcast-correct-size-holder (irc-bit-cast correct-size-holder %t*[DUMMY]*% "bitcast-table")))
               (multiple-value-bind (startup-fn shutdown-fn)
-                  (codegen-startup-shutdown *gcroots-in-module* correct-size-holder *gf-data-id* nil)
+                  (codegen-startup-shutdown module *gcroots-in-module* correct-size-holder *gf-data-id* nil)
                 (llvm-sys:replace-all-uses-with *gf-data* bitcast-correct-size-holder)
                 (llvm-sys:erase-from-parent *gf-data*)
                 #+debug-cmpgf(progn
                                (core:bformat t "Dumping the module from codegen-dispatcher%N")
-                               (llvm-sys:dump-module *the-module*))
+                               (llvm-sys:dump-module module))
                 (let ((sorted-roots (gather-sorted-outcomes *eql-selectors* *outcomes*)))
-                  ;; REMOVE THE FOLLOWING IN PRODUCTION CODE
-                  #||                #+debug-cmpgf
-                  (progn
-                  (let ((before-disp-name (llvm-sys:get-name disp-fn)))
-                  (debug-save-dispatcher the-gf *the-module* disp-fn startup-fn shutdown-fn sorted-roots)
-                  (let ((after-disp-name (llvm-sys:get-name disp-fn)))
-                  (format t "Saved dispatcher  before-disp-name -> ~a     after-disp-name -> ~a~%" before-disp-name after-disp-name))))
-                  ||#
                   (when output-path
-                    (debug-save-dispatcher generic-function *the-module* disp-fn startup-fn shutdown-fn sorted-roots output-path))
-                  (let* ((compiled-dispatcher (jit-add-module-return-dispatch-function *the-module* disp-fn startup-fn shutdown-fn sorted-roots)))
-                    compiled-dispatcher))))))))))
+                    (debug-save-dispatcher module output-path))
+                  (jit-add-module-return-dispatch-function
+                   module disp-fn startup-fn shutdown-fn sorted-roots
+                   :output-path output-path
+                   ))))))))))
 
-(defun codegen-dispatcher (raw-call-history specializer-profile generic-function &rest args &key generic-function-name output-path log-gf (debug-on t debug-on-p))
+(defvar *fastgf-use-compiler* nil)
+(defvar *fastgf-timer-start*)
+(defun codegen-dispatcher (raw-call-history specializer-profile generic-function
+                           &rest args &key generic-function-name output-path log-gf)
+  (let* ((*log-gf* log-gf)
+         (*fastgf-timer-start* (get-internal-real-time))
+         (dtree (calculate-dtree raw-call-history specializer-profile)))
+    (unwind-protect
+         (if *fastgf-use-compiler*
+             (apply 'codegen-dispatcher-from-dtree generic-function dtree args)
+             (core:make-dtree-interpreter dtree))
+      (let ((delta-seconds (/ (float (- (get-internal-real-time) *fastgf-timer-start*) 1d0)
+                              internal-time-units-per-second)))
+        (clos:generic-function-increment-compilations generic-function)
+        (gctools:accumulate-discriminating-function-compilation-seconds delta-seconds)))))
+
+#+(or)
+(defun codegen-dispatcher (raw-call-history specializer-profile generic-function
+                           &rest args &key generic-function-name output-path log-gf)
   (let* ((*log-gf* log-gf)
          (dtree (calculate-dtree raw-call-history specializer-profile)))
-    (apply 'codegen-dispatcher-from-dtree generic-function dtree args)))
+    (increment-dispatcher-count)
+    (clos:generic-function-increment-compilations generic-function)
+    (bclasp-compile nil (generate-dispatcher-from-dtree
+                         generic-function dtree
+                         :generic-function-name generic-function-name))))
 
 (export '(make-dtree
 	  dtree-add-call-history

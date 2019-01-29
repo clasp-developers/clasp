@@ -43,18 +43,16 @@
       (slot-value generic-function 'method-class)
       (find-class 'standard-method)))
 
-(defun maybe-augment-generic-function-lambda-list (name method-lambda-list)
+(defun maybe-augment-generic-function-lambda-list (gf method-lambda-list)
   "Add any &key parameters from method-lambda-list that are missing
 in the generic function lambda-list to the generic function lambda-list"
-  (when method-lambda-list
-    (let* ((gf (fdefinition name))
-           (gf-lambda-list-all (core:function-lambda-list gf))
-           (has-aok (member '&allow-other-keys gf-lambda-list-all))
-           (gf-lambda-list (if has-aok
-                               (butlast gf-lambda-list-all 1)
-                               gf-lambda-list-all)))
-      (if (null gf-lambda-list)
-          (core:function-lambda-list-set gf method-lambda-list)
+  (let ((gf-lambda-list-all (ext:function-lambda-list gf)))
+    (if (eq gf-lambda-list-all (core:unbound)) ; uninitialized
+        (setf-lambda-list gf method-lambda-list)
+        (let* ((has-aok (member '&allow-other-keys gf-lambda-list-all))
+               (gf-lambda-list (if has-aok
+                                   (butlast gf-lambda-list-all 1)
+                                   gf-lambda-list-all)))
           (flet ((match-key (entry)
                    (cond
                      ((symbolp entry)
@@ -74,7 +72,7 @@ in the generic function lambda-list to the generic function lambda-list"
                   (when append-keys
                     (let ((new-ll (append gf-lambda-list append-keys
                                           (if has-aok (list '&allow-other-keys) nil))))
-                      (core:function-lambda-list-set gf new-ll)))))))))))
+                      (setf-lambda-list gf new-ll)))))))))))
 
 (defun prototypes-for-make-method-lambda (name)
   (if (not *clos-booted*)
@@ -108,19 +106,17 @@ in the generic function lambda-list to the generic function lambda-list"
             `(progn
                (eval-when (:compile-toplevel)
                  (cmp:register-global-function-def 'defmethod ',name))
-               (prog1
-                   (install-method ',name ',qualifiers
-                                   ,(specializers-expression specializers)
-                                   ',lambda-list
-                                   ,fn-form
-                                   ;; Note that we do not quote the options returned by make-method-lambda.
-                                   ;; This is essentially to make the fast method function easier.
-                                   ;; MOP is in my view ambiguous about whether they're supposed to be quoted.
-                                   ;; There's an example that sort of implies they are, but the extra
-                                   ;; flexibility is pretty convenient, and matches that the primary value is
-                                   ;; of course evaluated.
-                                   ,@options)
-                 (maybe-augment-generic-function-lambda-list ',name ',lambda-list)))))))))
+               (install-method ',name ',qualifiers
+                               ,(specializers-expression specializers)
+                               ',lambda-list
+                               ,fn-form
+                               ;; Note that we do not quote the options returned by make-method-lambda.
+                               ;; This is essentially to make the fast method function easier.
+                               ;; MOP is in my view ambiguous about whether they're supposed to be quoted.
+                               ;; There's an example that sort of implies they are, but the extra
+                               ;; flexibility is pretty convenient, and matches that the primary value is
+                               ;; of course evaluated.
+                               ,@options))))))))
 
 (defun specializers-expression (specializers)
   `(list ,@(loop for spec in specializers
@@ -144,20 +140,6 @@ in the generic function lambda-list to the generic function lambda-list"
 (defun make-raw-lambda (name lambda-list required-parameters specializers body env qualifiers)
   (multiple-value-bind (declarations real-body documentation)
       (sys::find-declarations body)
-    ;; FIXME!! This deactivates the checking of keyword arguments
-    ;; inside methods. The reason is that this checking must be
-    ;; supplemented the knowledge of the keyword arguments of all
-    ;; applicable methods (X3J13 7.6.5). Therefore, we should insert
-    ;; that check, either in the method itself so that it is done
-    ;; incrementally, or in COMPUTE-EFFECTIVE-METHOD.
-    (when (and (member '&key lambda-list)
-               (not (member '&allow-other-keys lambda-list)))
-      (let ((x (position '&aux lambda-list)))
-        (setf lambda-list
-              (append (subseq lambda-list 0 x)
-                      '(&allow-other-keys)
-                      (and x (subseq lambda-list x))
-                      nil))))
     (setf qualifiers (if qualifiers (list qualifiers)))
     (let* ((copied-variables '())
            (class-declarations
@@ -196,6 +178,7 @@ in the generic function lambda-list to the generic function lambda-list"
                  lambda-list))))
 
 (defun make-method-lambda (gf method method-lambda env)
+  (declare (ignore gf method))
   (multiple-value-bind (call-next-method-p next-method-p-p)
       (walk-method-lambda method-lambda env)
     (let ((leaf-method-p (null (or call-next-method-p next-method-p-p))))
@@ -222,6 +205,9 @@ in the generic function lambda-list to the generic function lambda-list"
                             ,@(and next-method-p-p
                                 `((next-method-p ()
                                                  (and .next-methods. t)))))
+                       ;; Per CLHS 7.6.4, methods do not do keyword argument checking- the gf does.
+                       ;; BIND-VA-LIST is therefore set up to pass :safep nil to the argument parser
+                       ;; generator, which essentially implies &allow-other-keys.
                        (core::bind-va-list ,lambda-list .method-args.
                                            (declare ,@declarations)
                                            ,@body)))
@@ -388,10 +374,12 @@ have disappeared."
 	(setf (generic-function-lambda-list gf) (method-lambda-list method))
 	(setf (generic-function-argument-precedence-order gf)
 	      (rest (si::process-lambda-list (method-lambda-list method) t))))
+      (maybe-augment-generic-function-lambda-list gf (method-lambda-list method))
       (compute-g-f-spec-list gf)
       (invalidate-discriminating-function gf)
       method)))
 
+;; Upgraded into method in fixup.
 (defun find-method (gf qualifiers specializers &optional (errorp t))
   (declare (notinline method-qualifiers))
   (flet ((filter-specializer (name)
@@ -443,11 +431,3 @@ have disappeared."
 		       (push `(,(caar scan) (,(cadar scan) ,temp)) res))))
     `(let ((,temp ,instance-form))
        (symbol-macrolet ,accessors ,@body))))
-
-
-;;; Force the compiler into optimizing use of gethash inside methods:
-(setf (symbol-function 'SLOT-INDEX) (symbol-function 'GETHASH))
-
-
-
-

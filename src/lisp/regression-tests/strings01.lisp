@@ -33,7 +33,7 @@
           (parse-integer " +123 ")
         (and (= val 123) (= pos 6))))
 
-(test parse-integer3
+(test parse-integer3a
       (multiple-value-bind (val pos)
           (parse-integer " -123 ")
         (and (= val -123) (= pos 6))))
@@ -46,6 +46,36 @@
 (test parse-integer5 (multiple-value-bind (val pos)
                                       (parse-integer " 123a" :junk-allowed t)
                                     (and (= val 123) (= pos 4))))
+
+(test-expect-error parse-integer6
+      (multiple-value-bind (val pos)
+          (parse-integer "+"))
+      :type parse-error)
+
+(test-expect-error parse-integer7
+      (multiple-value-bind (val pos)
+          (parse-integer "-"))
+      :type parse-error)
+
+(test-expect-error parse-integer8
+      (multiple-value-bind (val pos)
+          (parse-integer ""))
+      :type parse-error)
+
+(test parse-integer9
+      (not
+       (multiple-value-bind (val pos)
+           (parse-integer "+" :junk-allowed t))))
+
+(test parse-integer10
+      (not
+       (multiple-value-bind (val pos)
+           (parse-integer "-" :junk-allowed t))))
+
+(test parse-integer11
+      (not
+       (multiple-value-bind (val pos)
+           (parse-integer "" :junk-allowed t))))
 
 (test type-of-string (subtypep (type-of "abc") '(simple-array base-char (3))))
 

@@ -7,6 +7,10 @@ try:
 except ImportError:
     from io import StringIO
 
+DARWIN_OS = 'darwin'
+LINUX_OS = 'linux'
+FREEBSD_OS = 'freebsd'
+
 #
 # run_program
 #
@@ -59,6 +63,18 @@ def maybe_dump_command(cmd, kind = ''):
         log.pprint('YELLOW', cmdstr)
     else:
         log.debug("command line for %s:\n%s", kind, cmdstr)
+
+#
+# macOS specfic tools
+#
+def macosx_sdk_path(cfg):
+    result = ""
+    if ( cfg.env['DEST_OS'] == DARWIN_OS ):
+        result = run_program('xcrun', '--show-sdk-path')
+        assert len(result) > 0
+        result = result.strip()
+    log.debug("macosx_sdk_path: %s", result)
+    return result
 
 #
 # logging
@@ -138,6 +154,7 @@ class clasp_task(Task.Task):
 
         cmd = [ clasp_exe_path,
                 "--norc",
+                "--disable-mpi",
         ]
 
         if resource_dir:

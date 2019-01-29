@@ -56,6 +56,7 @@ namespace core {
 
 struct BundleDirectories {
   boost_filesystem::path _StartupWorkingDir;
+  boost_filesystem::path _InstallDir;
   boost_filesystem::path _ExecutableDir;
   boost_filesystem::path _ContentsDir;
   boost_filesystem::path _ResourcesDir;
@@ -67,6 +68,7 @@ struct BundleDirectories {
   boost_filesystem::path _DatabasesDir;
   boost_filesystem::path _FaslDir;
   boost_filesystem::path _BitcodeDir;
+  boost_filesystem::path _QuicklispDir;
 };
 
 Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
@@ -139,6 +141,43 @@ Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
     printf("%s:%d   Climb one level up from _ExecutablePath = %s\n", __FILE__, __LINE__, appDir.string().c_str());
   }
 
+  // Setup the quicklisp dir - if none is available then leave _QuicklispDir empty and don't create a hostname
+  const char* quicklisp_env = getenv("CLASP_QUICKLISP_DIRECTORY");
+  if (quicklisp_env) {
+    if (bf::is_directory(bf::path(quicklisp_env))) {
+      this->_Directories->_QuicklispDir = bf::path(quicklisp_env);
+    } else {
+      SIMPLE_ERROR(BF("The contents of CLASP_QUICKLISP_DIRECTORY (%s) is not a directory") % quicklisp_env);
+    }
+  } else {
+    bool gotQuicklispPath = false;
+    const char* home_dir = getenv("HOME");
+    std::stringstream sdir;
+    if (home_dir) {
+      bf::path quicklispPath(home_dir);
+      quicklispPath = quicklispPath / "quicklisp";
+      if (bf::exists(quicklispPath)) {
+        printf("%s:%d  ~/quicklisp/ exists\n", __FILE__, __LINE__);
+        this->_Directories->_QuicklispDir = quicklispPath;
+        gotQuicklispPath = true;
+      }
+    }
+    if (!gotQuicklispPath) {
+      std::string opt_clasp_quicklisp_string = "/opt/clasp/lib/quicklisp/";
+      bf::path opt_clasp_quicklisp_path = bf::path(opt_clasp_quicklisp_string);
+      try {
+        if (bf::exists(opt_clasp_quicklisp_path)) {
+          this->_Directories->_QuicklispDir = opt_clasp_quicklisp_path;
+        } else {
+        // there is no quicklisp directory
+        }
+      } catch (...) {
+        // do nothing on error
+      }
+    }
+  }
+      
+   
   // Check if there is a 'src' directory in _ExecutableDir - if so we are building
   bf::path srcPath = this->_Directories->_ExecutableDir / "src";
   bool foundContents = false;
@@ -146,6 +185,7 @@ Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
     if (verbose) {
       printf("%s:%d   In development environment - found src path = %s\n", __FILE__, __LINE__, srcPath.string().c_str());
     }
+    this->_Directories->_InstallDir = this->_Directories->_ExecutableDir.parent_path();
     this->_Directories->_ContentsDir = this->_Directories->_ExecutableDir.parent_path().parent_path();
     foundContents = true;
   } else {
@@ -156,8 +196,9 @@ Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
     printf("%s:%d Find Contents elsewhere\n", __FILE__, __LINE__ );
 #endif
 //  this->_Directories->_RootDir = appDir;
-    bf::path one_up_contents = this->_Directories->_ExecutableDir.parent_path();
-    one_up_contents = one_up_contents / "lib" / "clasp";
+    bf::path original_one_up_contents = this->_Directories->_ExecutableDir.parent_path();
+    this->_Directories->_InstallDir = original_one_up_contents;
+    bf::path one_up_contents = original_one_up_contents / "lib" / "clasp";
     if (bf::exists(one_up_contents)) {
       this->_Directories->_ContentsDir = one_up_contents;
       if (verbose) {
@@ -171,9 +212,11 @@ Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
       char *homedir = getenv("CLASP_HOME");
       if (homedir) {
         if (verbose) printf("%s:%d  Using the CLASP_HOME directory %s\n", __FILE__, __LINE__, homedir);
-        this->_Directories->_ContentsDir = bf::path(homedir) / "lib" / "clasp";
+        this->_Directories->_InstallDir = bf::path(homedir);
+        this->_Directories->_ContentsDir = this->_Directories->_InstallDir / "lib" / "clasp";
         foundContents = true;
       } else {
+        this->_Directories->_InstallDir = bf::path(std::string(PREFIX));
         std::string install_path = std::string(PREFIX)+"/lib/clasp";
         bf::path test_path(install_path);
         if (bf::exists(test_path)) {
@@ -219,6 +262,9 @@ Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
   #endif
 #else
 #error "There must be a target - only boehm and mps are supported"
+#endif
+#ifdef USE_MPI
+    target = target + "_mpi";
 #endif
   this->_Directories->_LibDir = this->_Directories->_ContentsDir / "build" / target / "fasl";
   if (verbose) {
@@ -326,6 +372,7 @@ boost_filesystem::path Bundle::findAppDir( const string &argv0, const string &cw
 
 string Bundle::describe() {
   stringstream ss;
+  ss << "InstallDir:      " << this->_Directories->_InstallDir.string() << std::endl;
   ss << "ExecutableDir:   " << this->_Directories->_ExecutableDir.string() << std::endl;
   ss << "Lib dir:         " << this->_Directories->_LibDir.string() << std::endl;
   ss << "Contents dir:    " << this->_Directories->_ContentsDir.string() << std::endl;
@@ -337,6 +384,7 @@ string Bundle::describe() {
   ss << "Fasl dir:        " << this->_Directories->_FaslDir.string() << std::endl;
   ss << "Bitcode dir:     " << this->_Directories->_BitcodeDir.string() << std::endl;
   ss << "Databases dir:   " << this->_Directories->_DatabasesDir.string() << std::endl;
+  ss << "Quicklisp dir:   " << this->_Directories->_QuicklispDir.string() << std::endl;
   return ss.str();
 }
 
@@ -417,7 +465,13 @@ void Bundle::setup_pathname_translations()
                                       );
   core__pathname_translations(SimpleBaseString_O::make("tmp"), _lisp->_true(), ptsTmp);
 
-            // setup the APP-EXECUTABLE logical-pathname-translations
+  // Setup hostname pathname translations
+  {
+    Cons_sp appc =
+      Cons_O::createList(Cons_O::createList(SimpleBaseString_O::make("install:**;*.*"),
+                                            generate_pathname(this->_Directories->_InstallDir)));
+    core__pathname_translations(SimpleBaseString_O::make("install"), _lisp->_true(), appc);
+  }
   {
     Cons_sp appc =
       Cons_O::createList(Cons_O::createList(SimpleBaseString_O::make("app-executable:**;*.*"),
@@ -452,6 +506,12 @@ void Bundle::setup_pathname_translations()
       Cons_O::createList(Cons_O::createList(SimpleBaseString_O::make("app-resources:**;*.*"),
                                             generate_pathname(this->_Directories->_ResourcesDir)));
     core__pathname_translations(SimpleBaseString_O::make("app-resources"), _lisp->_true(), appc);
+  }
+  if ( !this->_Directories->_QuicklispDir.empty() ) {
+    Cons_sp appc =
+      Cons_O::createList(Cons_O::createList(SimpleBaseString_O::make("quicklisp:**;*.*"),
+                                            generate_pathname(this->_Directories->_QuicklispDir)));
+    core__pathname_translations(SimpleBaseString_O::make("quicklisp"), _lisp->_true(), appc);
   }
 }
 

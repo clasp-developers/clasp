@@ -145,5 +145,16 @@ namespace core {
 };
 
 
+struct SafeExceptionStackPush {
+  core::ExceptionStack* _stack;
+  int _frame;
+  SafeExceptionStackPush(core::ExceptionStack* s, core::FrameKind k, core::T_sp key) {
+    this->_stack = s;
+    this->_frame = s->push(k,key);
+  }
+  ~SafeExceptionStackPush() {
+    this->_stack->unwind(this->_frame);
+  };
+};
 
 #endif

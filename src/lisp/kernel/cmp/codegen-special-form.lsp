@@ -31,10 +31,13 @@
     (core:foreign-call codegen-foreign-call convert-foreign-call)
     (core:foreign-call-pointer codegen-foreign-call-pointer convert-foreign-call-pointer)
     (symbol-macrolet  codegen-symbol-macrolet convert-symbol-macrolet)
+    (core:vaslist-pop codegen-vaslist-pop convert-vaslist-pop)
+    (core:instance-stamp codegen-instance-stamp convert-instance-stamp)
     (llvm-inline codegen-llvm-inline convert-llvm-inline)
     (:gc-profiling codegen-gc-profiling convert-gc-profiling)
     (core::debug-message codegen-debug-message convert-debug-message)
     (core::debug-break codegen-debug-break convert-debug-break)
+    (core:defcallback codegen-defcallback convert-defcallback)
     ))
 
 (defun make-dispatch-table (alist)
@@ -176,7 +179,7 @@
 ;; MULTIPLE-VALUE-CALL
 
 (defun codegen-multiple-value-call (result rest env)
-  (with-dbg-lexical-block (rest)
+  (with-dbg-lexical-block ()
     (let* ((function-form (car rest))
            (forms (cdr rest)))
       (if (= (length forms) 1)
@@ -328,7 +331,7 @@ env is the parent environment of the (result-af) value frame"
 	    (codegen target-ref exp evaluate-env)))))))
 
 (defun codegen-let/let* (operator-symbol result parts env)
-  (with-dbg-lexical-block (parts)
+  (with-dbg-lexical-block ()
     (let ((assignments (car parts))
 	  (body (cdr parts)))
       (multiple-value-bind (variables expressions)
@@ -398,6 +401,33 @@ env is the parent environment of the (result-af) value frame"
                (compiler-error type "unknown type for typeq"))
              (compile-header-check header-value-min-max object-raw thenb elseb))))))))
 
+(defmacro define-fixnum-cmp (name operator)
+  `(defun ,name (cond env thenb elseb)
+     (let ((n1form (second cond)) (n2form (third cond))
+           (n1 (irc-alloca-t* :label "fixnum-cmp-1"))
+           (n2 (irc-alloca-t* :label "fixnum-cmp-2")))
+       (codegen n1 n1form env)
+       (codegen n2 n2form env)
+       (irc-cond-br
+        (,operator (irc-load n1) (irc-load n2) "fixnum-cmp")
+        thenb elseb))))
+
+(define-fixnum-cmp compile-fixnum-less-condition irc-icmp-slt)
+(define-fixnum-cmp compile-fixnum-lte-condition irc-icmp-sle)
+(define-fixnum-cmp compile-fixnum-equal-condition irc-icmp-eq)
+
+;;; this is exactly the same as fixnum-equal, but has different implications,
+;;; so it's separate.
+(defun compile-eq-condition (cond env thenb elseb)
+  (let ((n1form (second cond)) (n2form (third cond))
+        (n1 (irc-alloca-t* :label "eq-1"))
+        (n2 (irc-alloca-t* :label "eq-2")))
+    (codegen n1 n1form env)
+    (codegen n2 n2form env)
+    (irc-cond-br
+     (irc-icmp-eq (irc-load n1) (irc-load n2) "eq")
+     thenb elseb)))
+
 (defun compile-general-condition (cond env thenb elseb)
   "Generate code for cond that branches to one of the provided successor blocks"
   (let ((test-temp-store (irc-alloca-t* :label "if-cond-tsp")))
@@ -409,10 +439,20 @@ env is the parent environment of the (result-af) value frame"
       (irc-cond-br test-result thenb elseb))))
 
 (defun compile-if-cond (cond env thenb elseb)
-  (cond ((and (consp cond) (eq (first cond) 'cmp::typeq))
+  (if (consp cond)
+      (case (first cond)
+        ((cmp::typeq)
          (compile-typeq-condition cond env thenb elseb))
-        (t (compile-general-condition cond env thenb elseb))))
-
+        ((cleavir-primop:fixnum-less)
+         (compile-fixnum-less-condition cond env thenb elseb))
+        ((cleavir-primop:fixnum-not-greater)
+         (compile-fixnum-lte-condition cond env thenb elseb))
+        ((cleavir-primop:fixnum-equal)
+         (compile-fixnum-equal-condition cond env thenb elseb))
+        ((cleavir-primop:eq)
+         (compile-eq-condition cond env thenb elseb))
+        (otherwise (compile-general-condition cond env thenb elseb)))
+      (compile-general-condition cond env thenb elseb)))
 
 ;;; TAGBODY, GO
 
@@ -538,7 +578,7 @@ jump to blocks within this tagbody."
   (let* ((block-symbol (car rest))
          (body (cdr rest)))
     (or (symbolp block-symbol) (error "The block name ~a is not a symbol" block-symbol))
-    (with-dbg-lexical-block (body)
+    (with-dbg-lexical-block ()
       (multiple-value-bind (block-env make-block-frame-instruction make-block-frame-instruction-arguments)
           (irc-make-block-environment-set-parent block-symbol env)
 	(let ((block-start (irc-basic-block-create
@@ -656,7 +696,7 @@ jump to blocks within this tagbody."
 	(codegen-closure target fn-lambda closure-env)))))
 
 (defun codegen-flet/labels (operator-symbol result rest env)
-  (with-dbg-lexical-block (rest)
+  (with-dbg-lexical-block ()
     (let* ((functions (car rest))
 	   (body (cdr rest))
 	   (function-env (irc-new-function-value-environment env :functions functions)))
@@ -744,7 +784,7 @@ jump to blocks within this tagbody."
 ;;; LOCALLY
 
 (defun codegen-locally (result rest env)
-  (with-dbg-lexical-block (rest)
+  (with-dbg-lexical-block ()
     (multiple-value-bind (declarations code doc-string specials)
 	(process-declarations rest nil)
       (let ((new-env (irc-new-unbound-value-environment-of-size
@@ -777,7 +817,23 @@ jump to blocks within this tagbody."
         (let ((index (literal:with-load-time-value (literal:compile-load-time-value-thunk form))))
           (irc-store (literal:constants-table-value index) result))
         (let ((ltv (eval form)))
-          (codegen-rtv result ltv)))))
+          (literal:codegen-rtv-bclasp result ltv)))))
+
+;;; CORE:VASLIST-POP
+
+(defun codegen-vaslist-pop (result rest env)
+  (let ((form (car rest))
+        (vaslist (irc-alloca-t* :label "vaslist-pop-vaslist")))
+    (codegen vaslist form env)
+    (irc-store (irc-intrinsic "cx_vaslist_pop" (irc-load vaslist)) result)))
+
+;;; CORE:INSTANCE-STAMP
+
+(defun codegen-instance-stamp (result rest env)
+  (let ((form (car rest))
+        (object (irc-alloca-t* :label "instance-stamp-instance")))
+    (codegen object form env)
+    (irc-store (irc-intrinsic "cx_read_stamp" (irc-load object)) result)))
 
 ;;; DBG-i32
 
@@ -822,7 +878,7 @@ jump to blocks within this tagbody."
     (multiple-value-bind (declares code docstring specials)
         (process-declarations body t)
       (let ((canonical-declares (core:canonicalize-declarations declares)))
-        (multiple-value-bind (cleavir-lambda-list new-body name-map)
+        (multiple-value-bind (cleavir-lambda-list new-body rest-alloc)
             (transform-lambda-parts lambda-list canonical-declares code)
           (blog "got cleavir-lambda-list -> %s%N" cleavir-lambda-list)
           (let ((debug-on nil)
@@ -831,27 +887,17 @@ jump to blocks within this tagbody."
             (let* ((lvaslist (irc-load eval-vaslist "lvaslist"))
                    (src-remaining-nargs* (irc-intrinsic "cc_vaslist_remaining_nargs_address" lvaslist))
                    (src-va_list* (irc-intrinsic "cc_vaslist_va_list_address" lvaslist "vaslist_address"))
-                   (local-remaining-nargs* (irc-alloca-size_t :label "local-remaining-nargs"))
                    (local-va_list* (irc-alloca-va_list :label "local-va_list"))
-                   (_             (irc-store (irc-load src-remaining-nargs*) local-remaining-nargs*))
                    (_             (irc-intrinsic-call "llvm.va_copy" (list (irc-pointer-cast local-va_list* %i8*%)
                                                                            (irc-pointer-cast src-va_list* %i8*%))))
                    (callconv (make-calling-convention-impl :nargs (irc-load src-remaining-nargs*)
                                                            :va-list* local-va_list*
-                                                           :remaining-nargs* local-remaining-nargs*
-                                                           :lambda-list lambda-list
-                                                           :canonical-declares canonical-declares
-                                                           :cleavir-lambda-list cleavir-lambda-list
-                                                           :name-map name-map)))
-              (let ((new-env (bclasp-compile-lambda-list-code evaluate-env callconv)))
+                                                           :rest-alloc rest-alloc
+                                                           :cleavir-lambda-list cleavir-lambda-list)))
+              ;; See comment in cleavir bind-va-list w/r/t safep.
+              (let ((new-env (bclasp-compile-lambda-list-code evaluate-env callconv :safep nil)))
                 (irc-intrinsic-call "llvm.va_end" (list (irc-pointer-cast local-va_list* %i8*%)))
-                (codegen-let/let* (car new-body) result (cdr new-body) new-env)
-                #+(or)(cmp:with-try
-                          (codegen-let/let* 'let* result (cdr new-body) new-env)
-                        ((cleanup)
-                         (calling-convention-maybe-pop-invocation-history-frame callconv)
-                         (irc-unwind-environment new-env)))))))))))
-
+                (codegen-let/let* (car new-body) result (cdr new-body) new-env)))))))))
 
 ;;; MULTIPLE-VALUE-FOREIGN-CALL
 
@@ -963,3 +1009,81 @@ jump to blocks within this tagbody."
                   (irc-intrinsic-call (clasp-ffi::to-translator-name (first foreign-types)) (list foreign-result)))))
         (irc-store-result-t* result result-in-t*)))
     (irc-low-level-trace :flow)))
+
+;;; DEFCALLBACK
+
+;;; shared with cleavir.
+;;; What we're doing here is defining a C function
+;;; that calls the translators on its arguments, passes those translated arguments
+;;; to a Lisp closure, then translates the primary return value of that function
+;;; back to C and returns it (or if the C function is return type void, doesn't).
+(defun gen-defcallback (c-name convention
+                        return-type return-translator-name
+                        argument-types argument-translator-names
+                        parameters place-holder closure-value)
+  (declare (ignore convention))         ; FIXME
+  ;; parameters should be a list of symbols, i.e. lambda list with only required.
+  (unless (= (length argument-types) (length parameters) (length argument-translator-names))
+    (error "BUG: Callback function parameters and types have a length mismatch"))
+  ;;; Generate a variable and put the closure in it.
+  (let* ((closure-literal-slot-index (literal:lookup-literal-index place-holder))
+         (closure-var-name (core:bformat nil "%s_closure_var" c-name)))
+    (irc-store closure-value (literal:constants-table-reference closure-literal-slot-index) closure-var-name)
+    ;; Now generate the C function.
+    ;; We don't actually "do" anything with it- just leave it there to be linked/used like a C function.
+    (with-landing-pad nil ; Since we're in a new function (which should never be an unwind dest)
+      (let* ((c-argument-names (mapcar #'string parameters))
+             (c-function-type (llvm-sys:function-type-get return-type argument-types))
+             (new-func (llvm-sys:function-create c-function-type
+                                                 'llvm-sys:external-linkage
+                                                 c-name
+                                                 *the-module*))
+             (*current-function* new-func)
+             (*current-function-name* c-name))
+        (with-irbuilder ((llvm-sys:make-irbuilder *llvm-context*))
+          (let ((bb (irc-basic-block-create "entry" new-func)))
+            (irc-set-insert-point-basic-block bb)
+            (let* ((c-args (mapcar (lambda (arg argname)
+                                     (llvm-sys:set-name arg argname)
+                                     arg)
+                                   (llvm-sys:get-argument-list new-func)
+                                   c-argument-names))
+                   ;; Generate code to translate the arguments.
+                   (cl-args (mapcar (lambda (c-arg c-arg-name translator)
+                                      (irc-intrinsic-call
+                                       translator
+                                       (list c-arg)
+                                       (format nil "translated-~a" c-arg-name)))
+                                    c-args c-argument-names argument-translator-names))
+                   ;; Generate code to get the closure from the global variable from earlier.
+                   (closure-to-call (irc-load (literal:constants-table-reference closure-literal-slot-index) closure-var-name))
+                   ;; Generate the code to actually call the lisp function.
+                   ;; results-in-registers keeps things in the basic tmv format, because
+                   ;; here we don't need the store/load values dance.
+                   ;; (The C function only gets/needs/wants the primary value.)
+                   (cl-result (irc-funcall-results-in-registers
+                               closure-to-call cl-args (core:bformat nil "%s_closure" c-name))))
+              ;; Now generate a call the translator for the return value if applicable, then return.
+              ;; NOTE: (eq return-type %void%) doesn't seem to work - and it's sketchy because it's a symbol macro
+              (if (string= return-translator-name "from_object_void")
+                  (irc-ret-void)
+                  (let ((c-result (irc-intrinsic-call
+                                   return-translator-name
+                                   ;; get the 0th value.
+                                   (list (irc-extract-value cl-result (list 0) "primary"))
+                                   "c-result")))
+                    (irc-ret c-result))))))))))
+
+(defun codegen-defcallback (result form env)
+  (declare (ignore result))             ; no return value
+  (destructuring-bind (c-name convention
+                       return-type return-translator-name
+                       argument-types argument-translator-names
+                       parameters place-holder function)
+      form
+    (let ((closure-temp (irc-alloca-t*)))
+      (codegen closure-temp function env)
+      (gen-defcallback c-name convention
+                       return-type return-translator-name
+                       argument-types argument-translator-names
+                       parameters place-holder (irc-load closure-temp)))))

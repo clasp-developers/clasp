@@ -43,7 +43,14 @@ namespace core {
 
 
 T_sp record_circle_subst(T_sp replacement_table, T_sp tree) {
-  return eval::funcall(_sym_circle_subst, replacement_table, tree);
+  RECORD_LOG(BF("Checking record_circle_subst orig@%p: %s\n") % (void *)(tree.raw_()) %  _rep_(tree) );
+  T_sp result = eval::funcall(_sym_circle_subst, replacement_table, tree);
+#ifdef DEBUG_RECORD
+  if (result.raw_() != tree.raw_()) {
+    RECORD_LOG(BF("  YES!!! record_circle_subst tree@%p subst@%p: %s\n") % (void*)(tree.raw_()) % (void *)(result.raw_()) %  _rep_(result) );
+  }
+#endif
+  return result;
 }
 
 Record_O::Record_O(RecordStage stage, bool dummy, List_sp data) : _stage(stage), _alist(data), _Seen(_Nil<T_O>()) {}
@@ -82,5 +89,59 @@ void Record_O::errorIfInvalidArguments() {
   }
 }
 
+CL_DEFUN Record_sp core__make_record_patcher(HashTable_sp circle_table)
+{
+  return Record_O::create_patcher(circle_table);
+}
+
+CL_DEFUN void core__patch_object(General_sp tree, Record_sp record) {
+  if (tree->fieldsp()) {
+    tree->fields(record);
+  }
+}
+
+CL_DEFMETHOD T_sp Record_O::field_read(Symbol_sp name) {
+  if (this->_stage==loading) {
+    T_sp result;
+    this->field(name,result);
+    return result;
+  }
+  SIMPLE_ERROR(BF("field-read called on a record that is not loading"));
+}
+
+CL_DEFMETHOD void Record_O::field_write(Symbol_sp name, T_sp object) {
+  if (this->_stage==saving || this->_stage==initializing) {
+    this->field(name,object);
+    return;
+  }
+  SIMPLE_ERROR(BF("field-write called on a record that is not saving or initializing"));
+}
+
+CL_DEFMETHOD T_sp Record_O::field_patch(Symbol_sp name, T_sp object) {
+  if (this->_stage==patching) {
+    this->field(name,object);
+    return object;
+  }
+  SIMPLE_ERROR(BF("field-patch called on a record that is not patching"));
+}
+
+SYMBOL_EXPORT_SC_(KeywordPkg,initializing);
+SYMBOL_EXPORT_SC_(KeywordPkg,saving);
+SYMBOL_EXPORT_SC_(KeywordPkg,loading);
+SYMBOL_EXPORT_SC_(KeywordPkg,patching);
+CL_DEFMETHOD Symbol_sp Record_O::record_stage() const {
+  switch (this->_stage) {
+  case initializing:
+      return kw::_sym_initializing;
+  case loading:
+      return kw::_sym_loading;
+  case saving:
+      return kw::_sym_saving;
+  case patching:
+      return kw::_sym_patching;
+  default:
+      SIMPLE_ERROR(BF("Illegal stage"));
+  }
+}
 
 };

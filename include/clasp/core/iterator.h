@@ -40,9 +40,6 @@ class Iterator_O : public General_O {
   LISP_CLASS(core, CorePkg, Iterator_O, "Iterator",General_O);
 
 public:
-#if defined(XML_ARCHIVE)
-  void archive(ArchiveP node);
-#endif // defined(XML_ARCHIVE)
   void initialize();
 
 private:

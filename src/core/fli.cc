@@ -4,7 +4,7 @@
 
 /*
 Copyright (c) 2016, Christian E. Schafmeister
-Copyright (c) 2016 and beyond, Frank Gönninger
+Copyright (c) 2016,2018, Frank Gönninger
 
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
@@ -79,6 +79,11 @@ THE SOFTWARE.
 
 #include <dlfcn.h>
 #include <arpa/inet.h> // for htonl
+
+#if defined( __APPLE__ )
+#include <mach-o/ldsyms.h>
+#include <mach-o/getsect.h>
+#endif
 
 // ---------------------------------------------------------------------------
 //   DEBUG SETTINGS
@@ -288,11 +293,11 @@ void register_foreign_type_spec( core::VectorObjects_sp sp_tst,
                                core::make_fixnum(size),
                                core::make_fixnum(alignment),
                                core::Str_O::create( cxx_name ),
-                               _Nil<core::T_O>(),
+                               _Nil<core::Function_O>(),
                                core::Str_O::create( to_object_fn_name ),
                                core::Str_O::create( from_object_fn_name ),
-                               _Nil<core::T_O>(),
-                               _Nil<core::T_O>() );
+                               _Nil<clasp_ffi::ForeignData_O>(),
+                               _Nil<clasp_ffi::ForeignData_O>() );
 
   sp_tst->rowMajorAset( n_index, sp_fts->asSmartPtr() );
 
@@ -416,9 +421,9 @@ inline string ForeignData_O::__repr__() const
      << " :size " << this->m_size
      << " :ownership-flags " << this->m_ownership_flags
      << " :data-ptr "
-     << (BF("%p") % this->m_raw_data)
+     << (BF("%p") % (void*)this->m_raw_data)
      << " :orig-ptr "
-     << (BF("%p") % this->m_orig_data_ptr)
+     << (BF("%p") % (void*)this->m_orig_data_ptr)
      << ">";
 
   return ss.str();
@@ -572,10 +577,11 @@ ForeignData_sp ForeignData_O::create( cl_intptr_t address )
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-ForeignData_sp ForeignData_O::create( void * p_address )
+ForeignData_sp ForeignData_O::create( void * p_address, size_t size )
 {
   GC_ALLOCATE(ForeignData_O, self);
   self->m_raw_data = p_address;
+  self->m_size = size;
   self->set_kind( kw::_sym_clasp_foreign_data_kind_pointer );
   return self;
 }
@@ -617,7 +623,6 @@ core::Pointer_sp PERCENTcore_pointer_from_foreign_data( ForeignData_sp fd_ptr )
 core::T_sp PERCENTforeign_data_pointerp( core::T_sp obj )
 {
   ForeignData_sp sp_foreign_data = obj.asOrNull<ForeignData_O>();
-
   if( sp_foreign_data )
   {
     if( sp_foreign_data.nilp() )
@@ -645,7 +650,6 @@ core::T_sp PERCENTpointerp( core::T_sp obj )
 core::T_sp PERCENTnull_pointer_p( core::T_sp obj )
 {
   ForeignData_sp sp_foreign_data = obj.asOrNull<ForeignData_O>();
-
   if( sp_foreign_data )
   {
     if( sp_foreign_data->null_pointer_p() )
@@ -681,14 +685,14 @@ int64_t foreign_type_size( core::Symbol_sp atype )
 {
   int64_t result = -1;
 
-  core::VectorObjects_sp sp_tst = _sym_STARforeign_type_spec_tableSTAR->symbolValue();
+  core::VectorObjects_sp sp_tst = gc::As<core::VectorObjects_sp>(_sym_STARforeign_type_spec_tableSTAR->symbolValue());
   auto iterator = sp_tst->begin();
   auto it_end = sp_tst->end();
 
   for ( ; iterator != it_end; iterator++ )
   {
     ForeignTypeSpec_sp sp_fts = iterator->asOrNull< ForeignTypeSpec_O >();
-    if ( sp_fts.notnilp() )
+    if ( sp_fts )
     {
       if ( sp_fts->PERCENTlisp_symbol()->eql_( atype ) )
       {
@@ -845,7 +849,7 @@ ForeignTypeSpec_sp ForeignTypeSpec_O::create( core::Symbol_sp    lisp_symbol,
                        from_object_fn_name,
                        to_object_fn_ptr,
                        from_object_fn_ptr);
-#if 0  
+#if 0
   self->m_lisp_symbol           = lisp_symbol;
   self->m_lisp_name             = lisp_name;
   self->m_size                  = size;
@@ -892,7 +896,6 @@ core::Integer_sp PERCENToffset_address_as_integer( core::T_sp address_or_foreign
   if( address_or_foreign_data_ptr.nilp() )
   {
     SIMPLE_ERROR(BF("Invalid parameter type for address!"));
-    return _Nil<core::T_O>();
   }
 
   // If offset is not NIL then get v
@@ -914,14 +917,10 @@ core::Integer_sp PERCENToffset_address_as_integer( core::T_sp address_or_foreign
   }
   else
   {
-    ForeignData_sp sp_fd = _Nil<core::T_O>();
-
-    sp_fd = address_or_foreign_data_ptr.asOrNull<ForeignData_O>();
-    if( sp_fd.notnilp() && PERCENTpointerp( address_or_foreign_data_ptr ) )
+    ForeignData_sp sp_fd = address_or_foreign_data_ptr.asOrNull<ForeignData_O>();
+    if( sp_fd && PERCENTpointerp( address_or_foreign_data_ptr ) )
     {
-      core::Integer_sp sp_address = _Nil<core::T_O>();
-
-      sp_address = sp_fd->PERCENTforeign_data_address();
+      core::Integer_sp sp_address = sp_fd->PERCENTforeign_data_address();
       if( sp_address.fixnump() )
       {
         n_address = unbox_fixnum( sp_address );
@@ -934,7 +933,6 @@ core::Integer_sp PERCENToffset_address_as_integer( core::T_sp address_or_foreign
     else
     {
       SIMPLE_ERROR(BF("Invalid parameter type for address!"));
-      return _Nil<core::T_O>();
     }
   }
 
@@ -1387,6 +1385,51 @@ core::T_sp PERCENTmem_set_unsigned_char( core::Integer_sp address, core::T_sp va
   tmp = mem_set< uint8_t >( core::clasp_to_cl_intptr_t( address ), v._v );
   DEBUG_PRINT(BF("%s (%s:%d) | v = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % v._v );
   return mk_fixnum_uint8( tmp );
+}
+
+const struct section_64 *get_section_data( const char* segment_name,
+                                           const char* section_name )
+{
+  const struct section_64 * p_section = (struct section_64 *) NULL;
+  
+#if defined( __APPLE__ )
+  unsigned long section_size = 0;
+  p_section = (struct section_64 *) getsectiondata( &_mh_execute_header,
+                                                    segment_name,
+                                                    section_name,
+                                                    &section_size );
+#endif
+
+  return p_section;
+}
+
+core::T_mv PERCENTget_section_data( core::String_sp sp_segment_name,
+                                    core::String_sp sp_section_name )
+{
+#if defined( __APPLE__ )
+
+  const struct section_64 * p_section     = (struct section_64 *) NULL;
+  unsigned long             section_size  = 0;
+
+  p_section = get_section_data(sp_segment_name->get_std_string().c_str(),
+                               sp_section_name->get_std_string().c_str());
+  if( p_section != nullptr )
+  {
+    unsigned long long section_start_address = p_section->addr;
+    ForeignData_sp fd = ForeignData_O::create((void*)section_start_address,section_size);
+    return Values( fd, core::lisp_true() );
+  }
+  else
+  {
+    return Values( _Nil<core::T_O>(), _lisp->_true());
+  }
+
+#else
+
+  return Values( _Nil<core::T_O>(), _Nil<core::T_O>() );
+
+#endif
+
 }
 
 }; // namespace clasp_ffi

@@ -1,4 +1,14 @@
-#! /usr/bin/env sbcl --noinform --dynamic-space-size 4096
+#!/bin/sh
+#--eval '(set-dispatch-macro-character #\# #\! (lambda (s c n)(declare (ignore c n)) (read-line s) (values)))' \
+#|
+SCRIPT_DIR="$(dirname "$0")"
+exec sbcl --dynamic-space-size 4096 --noinform --disable-ldb --lose-on-corruption --disable-debugger \
+--no-sysinit --no-userinit --noprint \
+--eval '(set-dispatch-macro-character #\# #\! (lambda (s c n)(declare (ignore c n)) (read-line s) (values)))' \
+--eval "(defvar *script-args* '( $# \"$0\" \"$1\" \"$2\" \"$3\" \"$4\" \"$5\" \"$6\" \"$7\" \"$8\" \"$9\" ))" \
+--eval "(require :asdf)" \
+--load "$0"
+|#
 
 (defstruct symbol-entry
   start end symbol)
@@ -119,15 +129,19 @@ Read the contents of the filename into memory and return a buffer-stream on it."
     (format *debug-io* "Read file~%")
     (symbolicate-buffer (buffer buffer) output symbol-table)))
 
-(let ((output-stream *standard-output*)
+(let* ((output-stream *standard-output*)
       (input-stream *standard-input*)
-      (symbol-table nil))
-  (declare (optimize (debug 3)))
-  (loop for cur = (cddr sb-ext:*posix-argv*) then (cddr cur)
+      (symbol-table nil)
+      (nargs (car *script-args*))
+      (args (subseq (cddr *script-args*) 0 nargs)))
+  (declare (optimize (debug 3)) (ignore nargs))
+  (format t "nargs: ~a args: ~s~%" nargs args)
+  (loop for cur = args then (cddr cur)
         for option = (first cur)
         for value = (second cur)
         while cur
         do (progn
+             (format t "Handling argument ~a ~s~%" option value)
              (cond
                ((string= option "-o")
                 (setf output-stream (open value :direction :output :if-exists :supersede)))
@@ -135,6 +149,7 @@ Read the contents of the filename into memory and return a buffer-stream on it."
                 (setf input-stream (open value :direction :input :external-format '(:utf-8 :replacement #\?))))
                ((string= option "-s")
                 (setf symbol-table (load-symbol-table value)))
+               ((zerop (length option)))
                (t (error "Unknown option ~a - only -o {output} -i {input} -s {symbol-table} are allowed" option)))))
   (or symbol-table (error "The symbol-table must be provided using -s"))
   (format *debug-io* "Starting symbolicate~%")

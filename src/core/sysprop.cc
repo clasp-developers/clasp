@@ -42,7 +42,7 @@ CL_DOCSTRING("put_sysprop - returns value");
 CL_DEFUN T_sp core__put_sysprop(T_sp key, T_sp area, T_sp value) {
   ASSERT(_lisp->_Roots._Sysprop.notnilp());
 //  WITH_READ_WRITE_LOCK(_lisp->_Roots._SyspropMutex);
-  HashTableEql_sp sysprops = _lisp->_Roots._Sysprop;
+  HashTableEql_sp sysprops = gc::As_unsafe<HashTableEql_sp>(_lisp->_Roots._Sysprop);
   bool foundHashTable = false;
   T_mv values = sysprops->gethash(area);
   T_sp area_hash_table = values;
@@ -51,10 +51,7 @@ CL_DEFUN T_sp core__put_sysprop(T_sp key, T_sp area, T_sp value) {
   if (foundHashTable) {
     retval = gc::As<HashTableEql_sp>(area_hash_table)->hash_table_setf_gethash(key, value);
   } else {
-    HashTableEql_sp new_hash_table = HashTableEql_O::create_default();
-#ifdef CLASP_THREADS
-    new_hash_table->set_thread_safe(true);
-#endif
+    HashTableEql_sp new_hash_table = gc::As<HashTableEql_sp>(HashTable_O::create_thread_safe(cl::_sym_eql,SimpleBaseString_O::make("SYSPRRD"),SimpleBaseString_O::make("SYSPRWR")));
     new_hash_table->hash_table_setf_gethash(key, value);
     retval = gc::As<HashTableEql_sp>(sysprops)->hash_table_setf_gethash(area, new_hash_table);
   }
@@ -67,7 +64,7 @@ CL_DOCSTRING("get_sysprop - returns (values val foundp)");
 CL_DEFUN T_mv core__get_sysprop(T_sp key, T_sp area) {
   ASSERT(_lisp->_Roots._Sysprop.notnilp());
 //  WITH_READ_LOCK(_lisp->_Roots._SyspropMutex);
-  HashTableEql_sp sysprops = _lisp->_Roots._Sysprop;
+  HashTableEql_sp sysprops = gc::As_unsafe<HashTableEql_sp>(_lisp->_Roots._Sysprop);
   if (sysprops.notnilp()) {
     T_mv values = sysprops->gethash(area, _Nil<T_O>());
     T_sp hashTable = values;
@@ -85,7 +82,7 @@ CL_DOCSTRING("rem_sysprop");
 CL_DEFUN T_sp core__rem_sysprop(T_sp key, T_sp area) {
   ASSERT(_lisp->_Roots._Sysprop.notnilp());
 //  WITH_READ_WRITE_LOCK(_lisp->_Roots._SyspropMutex);
-  HashTableEql_sp sysprops = _lisp->_Roots._Sysprop;
+  HashTableEql_sp sysprops = gc::As_unsafe<HashTableEql_sp>(_lisp->_Roots._Sysprop);
   T_mv mv_values = sysprops->gethash(area, _Nil<T_O>());
   HashTableEql_sp hashTable = gc::As<HashTableEql_sp>(mv_values);
   bool foundHashTable = gc::As<T_sp>(mv_values.valueGet_(1)).isTrue();

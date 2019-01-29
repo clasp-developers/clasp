@@ -1049,6 +1049,8 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
 
   int exit_code = 0;
 
+//#define USE_main_thread_roots_scan
+#ifdef USE_main_thread_roots_scan
   mps_root_t global_scan_root;
   res = mps_root_create(&global_scan_root,
                         global_arena,
@@ -1059,7 +1061,11 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
                         0);
   if (res != MPS_RES_OK)
     GC_RESULT_ERROR(res, "Could not create scan root");
-
+#else
+  mps_register_roots((void*)&_lisp,1);
+  mps_register_roots((void*)&global_core_symbols[0],NUMBER_OF_CORE_SYMBOLS);
+  mps_register_roots((void*)&global_symbols[0],global_symbol_count);
+#endif  
 //  mps_register_root(reinterpret_cast<gctools::Tagged*>(&globalTaggedRunTimeValues));
 #ifdef RUNNING_GC_BUILDER
   printf("%s:%d mps-prep version of clasp started up\n", __FILE__, __LINE__);
@@ -1102,7 +1108,9 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
 #if 0
   threadLocalStack()->deallocateStack();
 #endif
+#ifdef USE_main_thread_roots_scan
   mps_root_destroy(global_scan_root);
+#endif
   mps_root_destroy(global_stack_root);
   mps_thread_dereg(global_thread);
   destroy_custom_allocation_point_info();
@@ -1125,6 +1133,14 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
 
 
 extern "C" {
+
+void mps_park() {
+  mps_arena_park(global_arena);
+};
+
+void mps_release() {
+  mps_arena_release(global_arena);
+}
 
 void check_all_clients() {
   mps_arena_park(global_arena);

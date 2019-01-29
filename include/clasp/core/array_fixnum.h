@@ -56,6 +56,7 @@ namespace core {
     virtual T_sp element_type() const override { return cl::_sym_fixnum;};
     virtual T_sp arrayElementType() const override { return cl::_sym_fixnum; };
     virtual clasp_elttype elttype() const { return clasp_aet_fix; };
+    virtual void __write__(T_sp stream) const;
   };
 };
 

@@ -40,61 +40,100 @@ namespace core {
   the single step state to what it was.
 */
 
-  void core__low_level_backtrace();
-  void core__clib_backtrace(int depth = 999999999);
+void core__low_level_backtrace();
+void core__clib_backtrace(int depth = 999999999);
 
-  FORWARD(InvocationHistoryFrameIterator);
+FORWARD(InvocationHistoryFrameIterator);
 
-  class LispDebugger {
-  private:
-    bool _CanContinue;
-    T_sp _Condition;
+class LispDebugger {
+private:
+  bool _CanContinue;
+  T_sp _Condition;
 
-  public:
+public:
   /* Immediatly returns if we are not single stepping or if the step stack level
 	   is less than the current stack level.
 	   Otherwise print the next instruction to be evaluated and wait for
 	   the user to indicate what they want to do. */
-    static void step();
+  static void step();
 
-  public:
+public:
   /*! Print the current expression */
-    void printExpression();
+  void printExpression();
 
   /*! Invoke the debugger,
 	  If the user is allowed to resume and opts to resume then return the resume object 
 	*/
-    T_sp invoke();
+  T_sp invoke();
 
-    InvocationHistoryFrameIterator_sp currentFrame() const;
+  InvocationHistoryFrameIterator_sp currentFrame() const;
 
-    LispDebugger(T_sp condition);
-    LispDebugger();
+  LispDebugger(T_sp condition);
+  LispDebugger();
 
-    virtual ~LispDebugger() {
-      _G();
-      _lisp->decrementDebuggerLevel();
-    };
+  virtual ~LispDebugger() {
+    _G();
+    _lisp->decrementDebuggerLevel();
   };
+};
 
-  void af_backtrace();
+void af_backtrace();
 
 
-  void dbg_lowLevelDescribe(T_sp obj);
-  void dbg_describe_tagged_T_Optr(T_O *p);
+void dbg_lowLevelDescribe(T_sp obj);
+void dbg_describe_tagged_T_Optr(T_O *p);
 
-  extern "C" {
-  void af_gotoIhsTop();
-  void af_gotoIhsNext();
-  void af_gotoIhsPrev();
-  void af_printCurrentIhsFrame();
-  void af_evalPrint(const string &expr);
+extern "C" {
+void af_gotoIhsTop();
+void af_gotoIhsNext();
+void af_gotoIhsPrev();
+void af_printCurrentIhsFrame();
+void af_evalPrint(const string &expr);
 
 // Generate a backtrace with JIT symbols resolved 
-  void c_bt();
-  void c_btcl();
-  };
+void c_bt();
+void c_btcl();
+};
 
-  int safe_backtrace(void**& return_buffer);
+int safe_backtrace(void**& return_buffer);
+
+bool lookup_stack_map_entry(uintptr_t functionPointer, int& frameOffset, int& frameSize);
+void register_jitted_object(const std::string& name, uintptr_t address, int size);
+
+void push_one_llvm_stackmap(bool jit, uintptr_t& startAddress );
+
+void register_llvm_stackmaps(uintptr_t startAddress, uintptr_t endAddress, size_t numberStackmaps);
+
+ bool if_dynamic_library_loaded_remove(const std::string& libraryName);
+
+ void add_dynamic_library_using_handle(const std::string& libraryName, void* handle);
+ void add_dynamic_library_using_origin(bool is_executable, const std::string& libraryName, uintptr_t origin);
+ 
+ void startup_register_loaded_objects();
+
+bool lookup_address(uintptr_t address, const char*& symbol, uintptr_t& start, uintptr_t& end, char& type);
+
+ typedef enum {undefined,symbolicated,lispFrame,cFrame} BacktraceFrameEnum ;
+struct BacktraceEntry {
+BacktraceEntry() : _Stage(undefined),_ReturnAddress(0),_FunctionStart(0),_FunctionEnd(~0),_BasePointer(0),_InstructionOffset(0),_FrameSize(0),_FrameOffset(0), _FunctionDescription(0) {};
+  BacktraceFrameEnum   _Stage;
+  uintptr_t            _ReturnAddress;
+  uintptr_t            _FunctionStart;
+  uintptr_t            _FunctionEnd;
+  uintptr_t            _BasePointer;
+  int                  _InstructionOffset;
+  int                  _FrameSize;
+  int                  _FrameOffset;
+  std::string          _SymbolName;
+  uintptr_t            _FunctionDescription;
+};
+
+};
+
+extern "C" {
+std::string dbg_safe_repr(uintptr_t raw);
+void dbg_safe_print(uintptr_t raw);
+void dbg_safe_println(uintptr_t raw);
+void dbg_safe_backtrace();
 };
 #endif

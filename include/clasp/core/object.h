@@ -54,11 +54,6 @@ THE SOFTWARE.
 
 namespace core {
 
-class Archive_O;
-typedef gctools::smart_ptr<Archive_O> Archive_sp;
-class SNode_O;
-typedef gctools::smart_ptr<SNode_O> SNode_sp;
-typedef gctools::smart_ptr<SNode_O> ArchiveP;
 class Function_O;
 typedef gctools::smart_ptr<Function_O> Function_sp;
 
@@ -83,6 +78,7 @@ namespace core {
   FORWARD(Symbol);
   FORWARD(Cons);
   FORWARD(General);
+
 };
 
 //----------------------------------------------------------------------
@@ -264,6 +260,17 @@ class Hash1Generator {
   };
 };
 
+
+namespace core {
+Instance_sp lisp_getStaticClass(gctools::Header_s::Value);
+void lisp_setStaticClass(gctools::Header_s::Value value, Instance_sp class_);
+Symbol_sp lisp_getStaticClassSymbol(gctools::Header_s::Value value);
+void lisp_setStaticClassSymbol(gctools::Header_s::Value value, Symbol_sp class_);
+Creator_sp lisp_getStaticInstanceCreator(gctools::Header_s::Value value);
+void lisp_setStaticInstanceCreator(gctools::Header_s::Value value, Creator_sp creator);
+};
+
+
 #define COMMON_CLASS_PARTS(oNamespace, oPackage, oClass, oclassName) \
   FRIEND_GC_SCANNER(oNamespace::oClass);                                \
  public:                                                                \
@@ -279,24 +286,27 @@ class Hash1Generator {
   { return this->const_sharedThis<oClass>(); };                         \
   gctools::smart_ptr<oClass> asSmartPtr()                               \
   { return this->sharedThis<oClass>(); };                               \
+  static core::Creator_sp staticCreator()                               \
+    { return core::lisp_getStaticInstanceCreator(oClass::static_HeaderValue);} \
+  static void setStaticClass(core::Instance_sp ci)                         \
+  { return core::lisp_setStaticClass(oClass::static_HeaderValue,ci);} \
+  static core::Instance_sp staticClass()                                  \
+    { return core::lisp_getStaticClass(oClass::static_HeaderValue);} \
  public:                                                                \
   typedef oClass my_type;                                               \
   typedef gctools::smart_ptr<oClass> smart_ptr_type;                 \
  public:                                                                \
-  static core::Symbol_sp static_class_symbol;                           \
-  static core::Instance_sp static_class;                                   \
-  static gctools::smart_ptr<core::Creator_O> static_creator;            \
   static gctools::Header_s::Value static_HeaderValue;                   \
  public:                                                                \
-  static void set_static_class_symbol(core::Symbol_sp i)                \
-  { oClass::static_class_symbol = i; };                                 \
-  static void set_static_creator(gctools::smart_ptr<core::Creator_O> al) \
-  { oClass::static_creator = al; };                                     \
+ static void set_static_class_symbol(core::Symbol_sp symbol)                \
+ { core::lisp_setStaticClassSymbol(oClass::static_HeaderValue,symbol); }; \
+ static void set_static_creator(gctools::smart_ptr<core::Creator_O> al) \
+ { core::lisp_setStaticInstanceCreator(oClass::static_HeaderValue,al); }; \
   static string static_packageName() { return oPackage; };              \
   static string static_className()                                      \
   { return core::lispify_symbol_name(oclassName); };                    \
   static core::Symbol_sp static_classSymbol()                           \
-  { return oClass::static_class_symbol; };                              \
+  { return core::lisp_getStaticClassSymbol(oClass::static_HeaderValue);};     \
   static string Package() { return oClass::static_packageName(); };     \
   static string Pkg() { return Package(); };                            \
   static void register_class_with_redeye() {                            \
@@ -318,8 +328,8 @@ class Hash1Generator {
   static gctools::smart_ptr<aClass> create() {                          \
       return gctools::GC<aClass>::allocate_with_default_constructor();  \
     };                                                                  \
-  virtual core::Instance_sp __class() const {                     \
-    return aClass::static_class;                                        \
+  virtual core::Instance_sp __class() const {                           \
+    return core::lisp_getStaticClass(aClass::static_HeaderValue);       \
   }                                                                     \
   /* end LISP_CLASS */
     
@@ -461,7 +471,7 @@ namespace core {
 namespace core {
   template <class oclass>
     inline T_sp new_LispObject() {
-    T_sp obj = oclass::static_creator->creator_allocate();
+    T_sp obj = oclass::staticCreator()->creator_allocate();
   //	GC_ALLOCATE(oclass,obj );
     return obj;
   };
@@ -597,6 +607,27 @@ namespace core {
   bool cl__equalp(T_sp x, T_sp y);
 
   List_sp encode(T_sp);
+};
+
+
+namespace core {
+SMART(AtomicT_Holder);
+class AtomicT_Holder_O : public core::General_O {
+  LISP_CLASS(core, CorePkg, AtomicT_Holder_O, "AtomicT_Holder",core::General_O);
+public:
+  static AtomicT_Holder_sp create(T_sp cl) {
+    GC_ALLOCATE_VARIADIC(AtomicT_Holder_O,ch,cl);
+    return ch;
+  }
+  std::atomic<T_sp> _Object;
+public:
+  bool object_unboundp() const;
+  T_sp object_get() const;
+  void object_set(T_sp cl);
+  void object_makunbound();
+  
+  explicit AtomicT_Holder_O(T_sp c) : _Object(c) {};
+};
 };
 
 

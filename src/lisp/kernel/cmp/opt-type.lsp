@@ -1,47 +1,51 @@
 (in-package #:core)
 
 (core:bclasp-define-compiler-macro typep (&whole whole object type &optional environment
-                                     &environment macro-env)
+                                                 &environment macro-env)
   (unless (constantp type macro-env)
     (return-from typep whole))
   (let ((type (ext:constant-form-value type macro-env)))
     (cond (environment whole)
-          ((eq type t)
-           `(progn
-              ,object
-              t))
-          ((null type)
-           `(progn
-              ,object
-              nil))
-          ((eq type 'sequence)
-           `(let ((object ,object))
-              (or (listp object) (vectorp object))))
-          ((eq type 'simple-base-string)
-           `(let ((object ,object))
-              (and (base-string-p object)
-                   (simple-string-p object))))
-          ((and (symbolp type)
-                (let ((predicate (simple-type-predicate type)))
-                  (and predicate `(,predicate ,object)))))
-          ((and (proper-list-p type)
-                (eq (car type) 'member))
-           `(let ((object ,object))
-              (or ,@(mapcar
-                     (lambda (x)
-                       `(eq object ',x))
-                     (cdr type)))))
-          ((and (consp type)
-                (eq (car type) 'eql)
-                (cdr type)
-                (not (cddr type)))
-           `(eql ,object ',(cadr type)))
-          ((and (symbolp type)
-                (find-class type nil))
-           ;; Finding a class at compile time and not load time is disallowed by semantic constraints
-           `(subclassp (class-of ,object) (find-class ',type)))
-          (t
-           whole))))
+          ((symbolp type)
+           (case type
+             ((t) `(progn ,object t))
+             ((nil) `(progn ,object nil))
+             ((sequence) `(let ((object ,object)) (or (listp object) (vectorp object))))
+             ((simple-base-string) `(let ((object ,object))
+                                      (and (base-string-p object) (simple-string-p object))))
+             (otherwise
+              (cond ((let ((predicate (simple-type-predicate type)))
+                       (and predicate `(,predicate ,object))))
+                    ((find-class type nil environment)
+                     ;; By semantic constraints, classes that are defined at compile time
+                     ;; must still be defined at load time, and have the same superclasses
+                     ;; and metaclass. This would let us just serialize and check the CPL,
+                     ;; but to be a little flexible we only assume that it will still be a
+                     ;; class (i.e. so users can do technically-illegal redefinitions easier).
+                     `(subclassp (class-of ,object) (find-class ',type)))
+                    (t whole)))))
+          ((proper-list-p type)
+           (case (car type)
+             ((member)
+              `(let ((object ,object))
+                 (or ,@(mapcar
+                        (lambda (x)
+                          `(eql object ',x))
+                        (cdr type)))))
+             ((eql)
+              `(eql ,object ',(second type)))
+             ((and or)
+              `(let ((object ,object))
+                 (,(car type) ,@(mapcar
+                                 (lambda (type)
+                                   `(typep object ',type))
+                                 (cdr type)))))
+             ((not)
+              `(not (typep ,object ',(second type))))
+             ((satisfies)
+              `(if (funcall (fdefinition ',(second type)) ,object) t nil))
+             (t whole)))
+          (t whole))))
 
 ;;; FIXME: This should not exist. Instead, coerce should be inlined, and
 ;;; the compiler should eliminate tests where both arguments are constant.

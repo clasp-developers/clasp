@@ -50,6 +50,24 @@ THE SOFTWARE.
 #endif
 
 extern "C" {
+void gc_park() {
+#ifdef USE_BOEHM
+  boehm_park();
+#endif
+#ifdef USE_MPS
+  mps_park();
+#endif
+};
+
+void gc_release() {
+#ifdef USE_BOEHM
+  boehm_release();
+#endif
+#ifdef USE_MPS
+  mps_release();
+#endif
+};
+
 __attribute__((noinline)) void HitAllocationSizeThreshold() {
   my_thread_low_level->_Allocations._HitAllocationSizeCounter++;
 }
@@ -72,7 +90,6 @@ __attribute__((noinline)) void HitAllocationNumberThreshold() {
 // Objects that are managed by the GC and need a stamp
 //   but are not directly accessible to Common Lisp
 GC_MANAGED_TYPE(core::Lisp_O);
-GC_MANAGED_TYPE(clbind::detail::class_map);
 GC_MANAGED_TYPE(gctools::GCArray_moveable<double>);
 GC_MANAGED_TYPE(gctools::GCArray_moveable<float>);
 GC_MANAGED_TYPE(gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>);
@@ -85,6 +102,7 @@ GC_MANAGED_TYPE(gctools::GCArray_moveable<unsigned int>);
 GC_MANAGED_TYPE(gctools::GCArray_moveable<unsigned long>);
 GC_MANAGED_TYPE(gctools::GCArray_moveable<unsigned short>);
 GC_MANAGED_TYPE(gctools::GCBitUnitArray_moveable<1,unsigned int,int>);
+GC_MANAGED_TYPE(gctools::GCVector_moveable<core::Cons_O>);
 GC_MANAGED_TYPE(gctools::GCVector_moveable<core::AuxArgument>);
 GC_MANAGED_TYPE(gctools::GCVector_moveable<core::CacheRecord>);
 GC_MANAGED_TYPE(gctools::GCVector_moveable<core::DynamicBinding>);
@@ -92,13 +110,16 @@ GC_MANAGED_TYPE(gctools::GCVector_moveable<core::ExceptionEntry>);
 GC_MANAGED_TYPE(gctools::GCVector_moveable<core::KeywordArgument>);
 GC_MANAGED_TYPE(gctools::GCVector_moveable<core::OptionalArgument>);
 GC_MANAGED_TYPE(gctools::GCVector_moveable<core::RequiredArgument>);
-GC_MANAGED_TYPE(gctools::GCVector_moveable<core::SymbolClassPair>);
+GC_MANAGED_TYPE(gctools::GCVector_moveable<core::SymbolClassHolderPair>);
 GC_MANAGED_TYPE(gctools::GCVector_moveable<core::SymbolStorage>);
+GC_MANAGED_TYPE(gctools::GCVector_moveable<core::BacktraceEntry>);
 GC_MANAGED_TYPE(gctools::GCVector_moveable<core::T_O *>);
 GC_MANAGED_TYPE(gctools::GCVector_moveable<double>);
 GC_MANAGED_TYPE(gctools::GCVector_moveable<float>);
 GC_MANAGED_TYPE(gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>);
 GC_MANAGED_TYPE(gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>);
+GC_MANAGED_TYPE(gctools::GCVector_moveable<gctools::smart_ptr<core::Instance_O>>);
+GC_MANAGED_TYPE(gctools::GCVector_moveable<gctools::smart_ptr<core::Creator_O>>);
 GC_MANAGED_TYPE(gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>>);
 GC_MANAGED_TYPE(gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>);
 GC_MANAGED_TYPE(gctools::GCVector_moveable<gctools::smart_ptr<core::SequenceStepper_O>>);
@@ -476,7 +497,7 @@ void initialize_gcroots_in_module(GCRootsInModule* roots, core::T_O** root_addre
     for ( auto c : args ) {
       core::T_sp arg = oCar(c);
       roots->set(i,arg.tagged_());
-    //if (debug) BFORMAT_T(BF("Filling roots table[%d]@%p -> %p\n") % i % ct.address(i) % (void*)arg.tagged_());
+    //if (debug) write_bf_stream(BF("Filling roots table[%d]@%p -> %p\n") % i % ct.address(i) % (void*)arg.tagged_());
       ++i;
     }
   }

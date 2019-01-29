@@ -1,5 +1,7 @@
 /*
     File: intrinsics.cc
+    Small functions used by the runtime that may be inlined at the
+    compiler's discretion.
 */
 
 /*
@@ -235,27 +237,7 @@ ALWAYS_INLINE gc::return_type cc_call_callback(LCC_ARGS_CC_CALL_ELLIPSIS) {
   return closure(LCC_PASS_ARGS);
 }
 
-
-ALWAYS_INLINE size_t cc_allowOtherKeywords(size_t saw_aok, core::T_O *kw_arg)
-{NO_UNWIND_BEGIN();
-  if (saw_aok) return saw_aok;
-  bool aokTrue = !(gctools::tagged_nilp(kw_arg));
-  return aokTrue ? 2 : 1;
-  NO_UNWIND_END();
-}
-
-size_t cc_matchKeywordOnce(core::T_O *xP, core::T_O *yP, core::T_O *sawKeyAlreadyP)
-{NO_UNWIND_BEGIN();
-  if (xP != yP)
-    return 0;
-  if (!gctools::tagged_nilp(sawKeyAlreadyP))
-    return 2;
-  return 1;
-  NO_UNWIND_END();
-}
-
-
-ALWAYS_INLINE core::T_O *cc_gatherVaRestArguments(va_list vargs, std::size_t* nargs, Vaslist untagged_vargs_rest[2])
+ALWAYS_INLINE core::T_O *cc_gatherVaRestArguments(va_list vargs, std::size_t nargs, Vaslist untagged_vargs_rest[2])
 {NO_UNWIND_BEGIN();
   va_copy(untagged_vargs_rest[0]._Args,vargs);
   va_copy(untagged_vargs_rest[1]._Args,vargs);
@@ -263,27 +245,26 @@ ALWAYS_INLINE core::T_O *cc_gatherVaRestArguments(va_list vargs, std::size_t* na
   // Validate the arguments in the va_list
   va_list validate_vargs;
   va_copy(validate_vargs,vargs);
-  for ( size_t i(0),iEnd(*nargs); i<iEnd; ++i ) {
+  for ( size_t i(0); i<nargs; ++i ) {
     core::T_O* tobj = va_arg(validate_vargs,core::T_O*);
     ENSURE_VALID_OBJECT(tobj);
   }
   va_end(validate_vargs);
 #endif
-  untagged_vargs_rest[0]._remaining_nargs = *nargs;
-  untagged_vargs_rest[1]._remaining_nargs = *nargs;
+  untagged_vargs_rest[0]._remaining_nargs = nargs;
+  untagged_vargs_rest[1]._remaining_nargs = nargs;
   T_O* result = untagged_vargs_rest->asTaggedPtr();
   return result;
   NO_UNWIND_END();
 }
 
 ALWAYS_INLINE core::T_O *cc_makeCell()
-{NO_UNWIND_BEGIN();
+{
   core::Cons_sp res = core::Cons_O::create(_Nil<core::T_O>(),_Nil<core::T_O>());
 #ifdef DEBUG_CC
   printf("%s:%d makeCell res.px[%p]\n", __FILE__, __LINE__, res.px);
 #endif
   return res.raw_();
-  NO_UNWIND_END();
 }
 
 ALWAYS_INLINE void cc_writeCell(core::T_O *cell, core::T_O* val)
@@ -309,31 +290,6 @@ ALWAYS_INLINE void cc_push_InvocationHistoryFrame(core::T_O* tagged_closure, Inv
   core::core__stack_monitor(_Nil<core::T_O>());
   new (frame) InvocationHistoryFrame(va_args, nargs);
   core::push_InvocationHistoryStack(frame);
-#if 0
-  if (core::debug_InvocationHistoryFrame) {
-    Closure_sp closure((gc::Tagged)tagged_closure);
-    if ( strcmp(_rep_(frame->function()->name()).c_str(),debug_InvocationHistoryFrame_name)==0) {
-      printf("%s:%d !!!!!!!!!!!!!!!!!!!!!!   Saw %s\n", __FILE__, __LINE__, debug_InvocationHistoryFrame_name);
-      core::debug_InvocationHistoryFrame = 2;
-    }
-    if (core::debug_InvocationHistoryFrame >= 2) {
-//      printf("%s:%d  --------   Entering closure %s\n", __FILE__, __LINE__, _rep_(closure).c_str());
-//      printf("%s:%d:%s  push    frame @%p   stack @%p\n", __FILE__, __LINE__, __FUNCTION__, frame, my_thread->_InvocationHistoryStack );
-      if (_rep_(frame->function()->name()) == std::string("THROW-FUNCTION")) {
-        core::debug_InvocationHistoryFrame = 3;
-      }
-      if (core::debug_InvocationHistoryFrame == 3) {
-        printf("%s:%d:%s  push    frame @%p     stack @%p\n", __FILE__, __LINE__, __FUNCTION__, frame, my_thread->_InvocationHistoryStack );
-        printf("%s:%d:%s          name: %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(frame->function()->name()).c_str());
-      }
-//      printf("          %s\n", frame->asString(0).c_str());
-    }
-  }
-  if (frame==NULL || nargsP==NULL) {
-    printf("%s:%d   Bad call to cc_push_InvocationHistoryFrame\n", __FILE__, __LINE__);
-    abort();
-  }
-#endif
   NO_UNWIND_END();
 }
 
@@ -414,6 +370,7 @@ ALWAYS_INLINE core::T_O *cc_stack_enclose(void* closure_address,
                                           core::FunctionDescription* functionDescription,
                                           std::size_t numCells, ...)
 {NO_UNWIND_BEGIN();
+  ASSERT(((uintptr_t)(closure_address)&0x7)==0); //
   gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(closure_address);
   const gctools::Header_s::Value closure_header = gctools::Header_s::Value::make<core::ClosureWithSlots_O>();
   size_t size = gctools::sizeof_container_with_header<core::ClosureWithSlots_O>(numCells);

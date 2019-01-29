@@ -6,7 +6,7 @@
 DOXYFILE_ENCODING      = UTF-8
 PROJECT_NAME           = brcl
 PROJECT_NUMBER         = 
-OUTPUT_DIRECTORY       = $(BRCL_HOME)/build/
+OUTPUT_DIRECTORY       = ../build/
 CREATE_SUBDIRS         = YES
 OUTPUT_LANGUAGE        = English
 BRIEF_MEMBER_DESC      = YES
@@ -74,7 +74,6 @@ GENERATE_DEPRECATEDLIST= YES
 ENABLED_SECTIONS       = 
 MAX_INITIALIZER_LINES  = 30
 SHOW_USED_FILES        = YES
-SHOW_DIRECTORIES       = YES
 FILE_VERSION_FILTER    = 
 #---------------------------------------------------------------------------
 # configuration options related to warning and progress messages
@@ -89,10 +88,18 @@ WARN_LOGFILE           =
 #---------------------------------------------------------------------------
 # configuration options related to the input files
 #---------------------------------------------------------------------------
-INPUT         = $(BRCL_HOME)/src/core \
-	      $(BRCL_HOME)/src/cffi \
-	      $(BRCL_HOME)/src/llvmo \
-	      $(BRCL_HOME)/src/brcl
+INPUT         = \
+	      ../src/asttooling \
+              ../src/clbind \
+              ../src/core \
+              ../src/gctools \
+              ../src/llvmo \
+              ../src/main \
+              ../src/mpip \
+              ../src/mps \
+              ../src/serveEvent \
+              ../src/sockets 
+              
 INPUT_ENCODING         = UTF-8
 FILE_PATTERNS          = *.c \
                          *.cc \
@@ -131,7 +138,7 @@ EXAMPLE_PATTERNS       = *
 EXAMPLE_RECURSIVE      = NO
 IMAGE_PATH             = 
 INPUT_FILTER           = 
-FILTER_PATTERNS        = *.yy=$(BRCL_HOME)/docs/bisonDocs *.h=$(BRCL_HOME)/docs/filterSrc
+FILTER_PATTERNS        = *.yy=../docs/bisonDocs *.h=../docs/filterSrc
 FILTER_SOURCE_FILES    = YES
 #---------------------------------------------------------------------------
 # configuration options related to source browsing
@@ -159,7 +166,6 @@ HTML_FILE_EXTENSION    = .html
 HTML_HEADER            = 
 HTML_FOOTER            = 
 HTML_STYLESHEET        = 
-HTML_ALIGN_MEMBERS     = YES
 GENERATE_HTMLHELP      = NO
 GENERATE_DOCSET        = NO
 DOCSET_FEEDNAME        = "Doxygen generated docs"
@@ -210,8 +216,6 @@ MAN_LINKS              = NO
 #---------------------------------------------------------------------------
 GENERATE_XML           = NO
 XML_OUTPUT             = xml
-XML_SCHEMA             = 
-XML_DTD                = 
 XML_PROGRAMLISTING     = YES
 #---------------------------------------------------------------------------
 # configuration options for the AutoGen Definitions output
@@ -231,7 +235,7 @@ ENABLE_PREPROCESSING   = NO
 MACRO_EXPANSION        = NO
 EXPAND_ONLY_PREDEF     = NO
 SEARCH_INCLUDES        = YES
-INCLUDE_PATH           = $(BRCL_HOME)/src/
+INCLUDE_PATH           = ../include/
 INCLUDE_FILE_PATTERNS  = 
 PREDEFINED             = 
 EXPAND_AS_DEFINED      = 

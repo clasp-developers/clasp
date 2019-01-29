@@ -24,11 +24,14 @@ last FORM.  If not, simply returns NIL."
 
 (defmacro defmacro (name lambda-list &body body &environment env)
   `(eval-when (:compile-toplevel :load-toplevel :execute)
-     (let ((fn #',(ext:parse-macro name lambda-list body env)))
-       (funcall #'(setf macro-function) fn ',name)
-       (setf-lambda-list fn ',lambda-list)
-       ,@(expand-set-documentation name 'function (find-documentation body))
-       ',name)))
+     ;; TODO: Move this LET into a function- %DEFMACRO or sth.
+     ;; Then the compiler won't have to compile an extra let at compile-time.
+     ;; I'm only not doing this now because there are, as usual,
+     ;; issues with bootstrapping (%DEFMACRO must be defined very early).
+     (let ((macro-function #',(ext:parse-macro name lambda-list body env)))
+       (funcall #'(setf macro-function) macro-function ',name)
+       (setf-lambda-list macro-function ',lambda-list))
+     ',name))
 
 (defmacro destructuring-bind (vl list &body body)
   (multiple-value-bind (decls body)
@@ -80,7 +83,7 @@ existing value."
                   (unless (,test ,value (symbol-value ',var))
                     ;; This will just trigger the error in SET.
                     (set ',var ,value)))
-                 ((core:specialp ',var)
+                 ((ext:specialp ',var)
                   (error "Cannot redefine special variable ~a as constant" ',var))
                  (t (set ',var ,value)
                     (funcall #'(setf core:symbol-constantp) t ',var)))))
@@ -100,32 +103,27 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
 
 (export '(defconstant-equal))
 
-(defmacro defun (&whole whole name vl &body body &environment env)
-  ;; Documentation in help.lsp
-  (multiple-value-bind (decls body doc-string) 
-      (process-declarations body t)
-    (let* ((fn (gensym))
-           (doclist (when doc-string (list doc-string)))
-           (global-function
-             `#'(lambda ,vl 
-                  (declare (core:lambda-name ,name) ,@decls) 
-                  ,@doclist
-                  (block ,(si::function-block-name name) ,@body))))
-      ;;(bformat t "macro expansion of defun current-source-location -> %s%N" current-source-location)
-      ;;(bformat t "DEFUN global-function --> %s%N" global-function )
-      `(progn
-         (eval-when (:compile-toplevel)
-           ;; this function won't be ready for a while, but it's okay as there's no
-           ;; compiler to run :compile-toplevel forms anyway.
-           (cmp::register-global-function-def 'defun ',name))
-         (let ((,fn ,global-function))
-           (funcall #'(setf fdefinition) ,fn ',name)
-           (setf-lambda-list ,fn ',vl)
-           ,@(si::expand-set-documentation name 'function doc-string)
-           ;; This can't be at toplevel.
-           ,@(and *defun-inline-hook*
-                  (list (funcall *defun-inline-hook* name global-function env)))
-           ',name)))))
+(defmacro defun (name lambda-list &body body &environment env)
+   ;; Documentation in help.lsp
+   (multiple-value-bind (decls body doc-string) 
+       (process-declarations body t)
+     (let* ((fn (gensym))
+            (doclist (when doc-string (list doc-string)))
+            (global-function
+              `#'(lambda ,lambda-list
+                   (declare (core:lambda-name ,name) ,@decls) 
+                   ,@doclist
+                   (block ,(si::function-block-name name) ,@body))))
+       `(progn
+          (eval-when (:compile-toplevel)
+            ;; this function won't be ready for a while, but it's okay as there's no
+            ;; compiler to run :compile-toplevel forms anyway.
+            (cmp::register-global-function-def 'defun ',name))
+          (funcall #'(setf fdefinition) ,global-function ',name)
+          ,@(and *defun-inline-hook*
+                 (list (funcall *defun-inline-hook* name global-function env)))
+          ',name))))
+
 
 ;;;
 ;;; This is a no-op unless the compiler is installed
@@ -133,17 +131,12 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
 (defmacro bclasp-define-compiler-macro (&whole whole name vl &rest body &environment env)
   ;; CLHS doesn't actually say d-c-m has compile time effects, but it's nice to match defmacro
   `(eval-when (:compile-toplevel :load-toplevel :execute)
-     (core:setf-bclasp-compiler-macro-function
-      ',name
-      (function ,(ext:parse-compiler-macro name vl body env)))
+     (funcall #'(setf core:bclasp-compiler-macro-function)
+              (function ,(ext:parse-compiler-macro name vl body env))
+              ',name)
      ',name))
 
-(defun bclasp-compiler-macro-function (name &optional env)
-  ;;  (declare (ignorable env))
-  (core:get-bclasp-compiler-macro-function name env))
-;;  (values (get-sysprop name 'sys::compiler-macro)))
-
-(export '(bclasp-define-compiler-macro bclasp-compiler-macro-function))
+(export '(bclasp-define-compiler-macro))
 
 (defun bclasp-compiler-macroexpand-1 (form &optional env)
   (if (atom form)
@@ -320,7 +313,10 @@ FORM returns no value, NIL."
        (sym (gensym))
        (forms nil)
        (n 0 (the fixnum (1+ n))))
-      ((endp vl) `(LET ((,sym (MULTIPLE-VALUE-LIST ,form))) ,@forms))
+      ((endp vl) (if (null forms)
+                     `(values ,form)
+                    `(LET ((,sym (MULTIPLE-VALUE-LIST ,form)))
+                       (prog1 ,@(reverse forms)))))
     (declare (fixnum n))
     (push `(SETQ ,(car vl) (NTH ,n ,sym)) forms)))
 
@@ -337,7 +333,11 @@ values of the last FORM.  If no FORM is given, returns NIL."
       ;; Who would write m-v-b with one variable, you ask? Computers! (Mostly SETF.)
       ;; Note that in cclasp, a compiler macro (in inline.lsp) takes over from this macro.
       `(let ((,(first vars) ,form)) ,@body)
-      `(multiple-value-call #'(lambda (&optional ,@(mapcar #'list vars) &rest ,(gensym)) ,@body) ,form)))
+      (let ((restvar (gensym)))
+        `(multiple-value-call #'(lambda (&optional ,@(mapcar #'list vars) &rest ,restvar)
+                                  (declare (ignore ,restvar))
+                                  ,@body)
+           ,form))))
 
 (defun while-until (test body jmp-op)
   (let ((label (gensym))
@@ -394,8 +394,8 @@ values of the last FORM.  If no FORM is given, returns NIL."
      (si::select-package ,(string name))
      *package*))
 
-(defun (setf symbol-macro) (expansion name)
-  (put-sysprop name 'core:symbol-macro
+(defun (setf ext:symbol-macro) (expansion name)
+  (put-sysprop name 'ext:symbol-macro
                (lambda (form env)
                  (declare (ignore form env))
                  expansion)))
@@ -404,12 +404,12 @@ values of the last FORM.  If no FORM is given, returns NIL."
   (cond ((not (symbolp symbol))
 	 (error "DEFINE-SYMBOL-MACRO: ~A is not a symbol"
 		symbol))
-	((specialp symbol)
+	((ext:specialp symbol)
 	 (error "DEFINE-SYMBOL-MACRO: cannot redefine a special variable, ~A"
 		symbol))
 	(t
 	 `(eval-when (:compile-toplevel :load-toplevel :execute)
-            (funcall #'(setf symbol-macro) ',expansion ',symbol)
+            (funcall #'(setf ext:symbol-macro) ',expansion ',symbol)
 	   ',symbol))))
 
 (defmacro nth-value (n expr)

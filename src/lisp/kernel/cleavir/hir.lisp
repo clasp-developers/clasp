@@ -107,6 +107,14 @@
                  :outputs outputs
                  :successors (if successor-p (list successor) '())))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Instruction DEFCALLBACK-INSTRUCTION
+;;;
+
+(defclass defcallback-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin
+                                   cleavir-ir:side-effect-mixin)
+  ((%args :initarg :args :reader defcallback-args)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -218,6 +226,38 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; Instruction VASLIST-POP-INSTRUCTION
+;;;
+
+(defclass vaslist-pop-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+  ())
+
+(defmethod cleavir-ir-graphviz:label ((instr vaslist-pop-instruction)) "vaslist-pop")
+
+(defun make-vaslist-pop-instruction (vaslist output &optional (successor nil successorp))
+  (make-instance 'vaslist-pop-instruction
+                 :inputs (list vaslist)
+                 :outputs (list output)
+                 :successors (if successorp (list successor) nil)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Instruction INSTANCE-STAMP-INSTRUCTION
+;;;
+
+(defclass instance-stamp-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+  ())
+
+(defmethod cleavir-ir-graphviz:label ((instr instance-stamp-instruction)) "instance-stamp")
+
+(defun make-instance-stamp-instruction (arg output &optional (successor nil successorp))
+  (make-instance 'instance-stamp-instruction
+                 :inputs (list arg)
+                 :outputs (list output)
+                 :successors (if successorp (list successor) nil)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; Instruction BIND-VA-LIST-INSTRUCTION
 ;;;
 ;;; Sort of like destructuring-bind, but with a va-list
@@ -225,17 +265,37 @@
 ;;; and only allowing ordinary lambda lists.
 
 (defclass bind-va-list-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
-  ((%lambda-list :initarg :lambda-list :accessor cleavir-ir:lambda-list)))
+  ((%lambda-list :initarg :lambda-list :accessor cleavir-ir:lambda-list)
+   (%rest-alloc :initarg :rest-alloc :reader rest-alloc)))
 
 (defmethod cleavir-ir-graphviz:label ((instr bind-va-list-instruction))
-  )
+  (format nil "bind-va-list ~a"
+          (mapcar #'cleavir-ir-graphviz::format-item (cleavir-ir:lambda-list instr))))
 
 (defmethod cleavir-ir:clone-initargs append ((instruction bind-va-list-instruction))
-  (list :lambda-list (cleavir-ir:lambda-list instruction)))
+  (list :lambda-list (cleavir-ir:lambda-list instruction)
+        :rest-alloc (rest-alloc instruction)))
 
-(defun make-bind-va-list-instruction (lambda-list va-list &optional (successor nil successor-p))
+;;; Following two copied from enter-instruction. i mean most of this is.
+;;; Maintain consistency of lambda list with outputs.
+(defmethod cleavir-ir:substitute-output :after (new old (instruction bind-va-list-instruction))
+  (setf (cleavir-ir:lambda-list instruction)
+        (subst new old (cleavir-ir:lambda-list instruction) :test #'eq)))
+
+(defmethod (setf cleavir-ir:outputs) :before (new-outputs (instruction bind-va-list-instruction))
+  (let ((old-lambda-outputs (rest (cleavir-ir:outputs instruction)))
+        (new-lambda-outputs (rest new-outputs)))
+    ;; FIXME: Not sure what to do if the new and old outputs are different lengths.
+    ;; For now we're silent.
+    (setf (cleavir-ir:lambda-list instruction)
+          (sublis (mapcar #'cons old-lambda-outputs new-lambda-outputs)
+                  (cleavir-ir:lambda-list instruction)
+                  :test #'eq))))
+
+(defun make-bind-va-list-instruction (lambda-list va-list rest-alloc &optional (successor nil successor-p))
   (make-instance 'bind-va-list-instruction
                  :lambda-list lambda-list
+                 :rest-alloc rest-alloc
                  :inputs (list va-list)
                  ;; copied from cleavir-ir:make-enter-instruction
                  :outputs (loop for item in lambda-list
@@ -257,19 +317,20 @@
 
 (defclass named-enter-instruction (cleavir-ir:enter-instruction)
   ((%lambda-name :initarg :lambda-name :initform "lambda" :accessor lambda-name)
-   (%declares :initarg :declares :initform nil :accessor declares)
    (%original-lambda-list :initarg :original-lambda-list :initform nil :reader original-lambda-list)
-   (%docstring :initarg :docstring :initform nil :reader docstring)))
+   (%docstring :initarg :docstring :initform nil :reader docstring)
+   (%rest-alloc :initarg :rest-alloc :initform nil :reader rest-alloc
+                :type (member nil ignore dynamic-extent))))
 
 (defun make-named-enter-instruction
-    (lambda-list lambda-name &key (successor nil successor-p) origin original-lambda-list docstring declares)
+    (lambda-list lambda-name &key (successor nil successor-p) origin original-lambda-list docstring rest-alloc)
   (let ((oe (if successor-p
 		(cleavir-ir:make-enter-instruction lambda-list :successor successor :origin origin)
 		(cleavir-ir:make-enter-instruction lambda-list :origin origin))))
     (change-class oe 'named-enter-instruction :lambda-name lambda-name
                                               :original-lambda-list original-lambda-list
                                               :docstring docstring
-                                              :declares declares)))
+                                              :rest-alloc rest-alloc)))
 
 (defmethod cleavir-ir-graphviz:label ((instr named-enter-instruction))
   (with-output-to-string (s)
@@ -279,14 +340,12 @@
   (list :lambda-name (lambda-name instruction)
         :original-lambda-list (original-lambda-list instruction)
         :docstring (docstring instruction)
-        :declares (declares instruction)))
+        :rest-alloc (rest-alloc instruction)))
 
 (defmethod original-lambda-list ((self cleavir-ir:top-level-enter-instruction))
-  "Provide a method for top-level-enter-instruction"
   nil)
 
-(defmethod declares ((self cleavir-ir:top-level-enter-instruction))
-  "Provide a method for top-level-enter-instruction - they never have declares"
+(defmethod rest-alloc ((self cleavir-ir:top-level-enter-instruction))
   nil)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -298,25 +357,21 @@
 ;;; Represented as a vector containing an entry for each
 ;;; precalculated value.  
 ;;;
-;;; This instruction takes two inputs.  The first input is a simple vector
-;;; that holds the precalculated values.  The second
-;;; input is an immediate input containing a non-negative integer and
-;;; which serves as an index into the vector.  This
-;;; instruction has a single output, which is a dynamic lexical
-;;; location.
 
 (defclass precalc-value-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
-  ((%original-object :initarg :original-object :accessor precalc-value-instruction-original-object)))
+  ((%index :initarg :index :accessor precalc-value-instruction-index)
+   (%original-object :initarg :original-object :accessor precalc-value-instruction-original-object)))
 
-(defun make-precalc-value-instruction
-    (index-input output &key successor vector original-object)
-  (assert (typep (cleavir-ir:value index-input) 'clasp-cleavir::literal))
+(defun make-precalc-value-instruction (index output &key successor original-object)
   (make-instance 'precalc-value-instruction
-    :inputs (list index-input)
     :outputs (list output)
     :successors (if (null successor) nil (list successor))
+    :index index
     :original-object original-object))
 
+(defgeneric precalc-value-instruction-p (instruction)
+  (:method ((instruction t)) nil)
+  (:method ((instruction precalc-value-instruction)) t))
 
 (defun escaped-string (str)
   (with-output-to-string (s) (loop for c across str do (when (member c '(#\\ #\")) (princ #\\ s)) (princ c s))))
@@ -331,7 +386,8 @@
 	  (princ original-object s)))))
 
 (defmethod cleavir-ir:clone-initargs append ((instruction precalc-value-instruction))
-  (list :original-object (precalc-value-instruction-original-object instruction)))
+  (list :original-object (precalc-value-instruction-original-object instruction)
+        :index (precalc-value-instruction-index instruction)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
 ;;;
@@ -371,6 +427,38 @@
 
 (defmethod cleavir-ir-graphviz:label ((instruction setf-fdefinition-instruction)) "setf-fdefinition")
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Instruction INVOKE-INSTRUCTION.
+
+(defclass invoke-instruction (cleavir-ir:funcall-instruction)
+  ((%destinations :accessor destinations :initarg :destinations)))
+
+(defmethod cleavir-ir-graphviz:label ((instruction invoke-instruction)) "invoke")
+
+(defmethod cleavir-ir-graphviz:draw-instruction :after ((instruction invoke-instruction) stream)
+  (loop with me = (cleavir-ir-graphviz::instruction-id instruction)
+        for dest in (clasp-cleavir-hir:destinations instruction)
+        for id = (cleavir-ir-graphviz::instruction-id dest)
+        when id
+          do (format stream "  ~a -> ~a [color = pink, style = dashed];~%"
+                     me id)))
+
+;;; This will probably break if the CATCH is copied too.
+(defmethod cleavir-ir:clone-initargs append ((instr invoke-instruction))
+  (list :destinations (destinations instr)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Instruction MULTIPLE-VALUE-INVOKE-INSTRUCTION.
+
+(defclass multiple-value-invoke-instruction (cleavir-ir:multiple-value-call-instruction)
+  ((%destinations :accessor destinations :initarg :destinations)))
+
+(defmethod cleavir-ir-graphviz:label ((instruction multiple-value-invoke-instruction)) "mv-invoke")
+
+(defmethod cleavir-ir:clone-initargs append ((instr multiple-value-invoke-instruction))
+  (list :destinations (destinations instr)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -408,5 +496,3 @@
 (defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction setf-fdefinition-instruction)) nil)
 
 (defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction throw-instruction)) nil)
-
-

@@ -179,6 +179,10 @@ CL_DEFUN bool cl__random_state_p(T_sp obj) {
   return gc::IsA<RandomState_sp>(obj);
 };
 
+CL_DEFUN bool core__source_pos_info_p(T_sp obj) {
+  return gc::IsA<SourcePosInfo_sp>(obj);
+};
+
 CL_DEFUN bool cl__rationalp(T_sp obj) {
   return obj.fixnump()||gc::IsA<Rational_sp>(obj);
 };
@@ -368,4 +372,13 @@ CL_DEFUN bool local_function_form_p(core::T_sp form)
            core::oCar(gc::As<core::Cons_sp>(form)) == cl::_sym_labels ));
 }
 
+
+};
+
+namespace core {
+
+CL_DEFUN bool core__cxxObjectP(T_sp obj)
+{
+  return gc::IsA<CxxObject_sp>(obj);
+}
 };

@@ -159,8 +159,8 @@ extern core::Symbol_sp& _sym_name;
 #define ERROR_END_OF_FILE(st) ERROR(cl::_sym_endOfFile, core::lisp_createList(kw::_sym_stream, st))
 #define CLOSED_STREAM_ERROR(st) ERROR(core::_sym_closedStream, core::lisp_createList(kw::_sym_stream, st))
 
-#define READER_ERROR(_fmt_, _fmtArgs_, _stream_) cl__reader_error(__FILE__, __LINE__, _fmt_, _fmtArgs_, _stream_)
-#define PARSE_ERROR(_fmt_, _fmtArgs_) cl__reader_error(__FILE__, __LINE__, _fmt_, _fmtArgs_, _Nil<Stream_O>())
+#define READER_ERROR(_fmt_, _fmtArgs_, _stream_) core__reader_error_internal(__FILE__, __LINE__, _fmt_, _fmtArgs_, _stream_)
+#define PARSE_ERROR(_fmt_, _fmtArgs_) core__reader_error_internal(__FILE__, __LINE__, _fmt_, _fmtArgs_, _Nil<Stream_O>())
 
 #define PRINT_NOT_READABLE_ERROR(obj) ERROR(cl::_sym_printNotReadable, core::lisp_createList(kw::_sym_object, obj));
 #define CELL_ERROR(name) ERROR(cl::_sym_cellError, core::lisp_createList(kw::_sym_name, name))
@@ -396,12 +396,12 @@ FORWARD(Cons);
 #define HARD_ASSERT(t)                                                                   \
   if (!(t)) {                                                                            \
     core::errorFormatted("HARD_ASSERT failed");                                          \
-    throw(HardError(__FILE__, __FUNCTION__, __LINE__, "Assertion " #t " failed")); \
+    abort(); \
   };
 #define HARD_ASSERTF(t, fmt) \
   if (!(t)) { \
     core::errorFormatted(fmt); \
-    throw(core::HardError(__FILE__, __FUNCTION__, __LINE__, BF("Assertion %s failed: %s") % #t % (fmt).str())); \
+    abort(); \
   };
 #else
 #define HARD_ASSERT(t) \
@@ -527,6 +527,14 @@ void debugSuppressMessages(bool s);
 // void	debug=Printf( const char* fmt, ... );
 
 // char*	internal=BufferPrintf( const char* fmt, ... );
+
+extern bool stackmap_log;
+
+#ifdef DEBUG_STACKMAPS
+#define STACKMAP_LOG(msg) printf msg
+#else
+#define STACKMAP_LOG(msg)
+#endif
 
 #ifdef DEBUG_ON
 //#error "TURN OFF DEBUG_ON"
@@ -666,10 +674,26 @@ extern string _stackTraceAsString();
 #define LOG_CXX_FUNCTION_INVOCATION() core::CxxFunctionInvocationLogger __cxxFunctionInvocationLogger(__FILE__, __FUNCTION__, __LINE__);
 
 #ifdef CALLSTACK_ON //[
-#define _G()
+#define LOG_CXX_FUNCTION_INVOCATION() core::CxxFunctionInvocationLogger __cxxFunctionInvocationLogger(__FILE__, __FUNCTION__, __LINE__);
+
+struct _StackTrace {
+  const char* _Filename;
+  _StackTrace(const char* filename, const char* kind, size_t line, size_t col, const boost::format& fmt) :_Filename(filename) {
+    if (core::lisp_debugIsOn(filename)) { 
+      lisp_debugLog()->beginNode(DEBUG_CPP_BLOCK,filename,kind,line,col,fmt.str());
+    } 
+  }
+  ~_StackTrace() {
+    if (core::lisp_debugIsOn(this->_Filename)) {
+      lisp_debugLog()->endNode(DEBUG_CPP_BLOCK);
+    } 
+  }
+};
+
+#define _G()                     \
+  LOG_CXX_FUNCTION_INVOCATION(); 
 #define _OF() _G();
-#define _lisp_BLOCK_TRACEF(__f) \
-  {} // core::_StackTrace _B_stackTrace(__FILE__,"LexicalScope",__LINE__,0,DEBUG_CPP_BLOCK,__f)
+#define _lisp_BLOCK_TRACEF(__f) core::_StackTrace _B_stackTrace(__FILE__,"LexicalScope",__LINE__,0,__f)
 #define _lisp_BLOCK_TRACE(__s) _lisp_BLOCK_TRACEF(BF("%s") % (__s))
 #define _BLOCK_TRACEF(f) _lisp_BLOCK_TRACEF(f)
 #define _BLOCK_TRACE(s) _lisp_BLOCK_TRACEF(BF("%s") % (s))
@@ -714,7 +738,7 @@ void af_wrongTypeOnlyArg(const string &sourceFile, int lineno, Symbol_sp functio
 
 void core__wrong_index(const string &sourceFile, int lineno, Symbol_sp function, T_sp array, int which, T_sp index, int noninc_index);
 
- void cl__reader_error(const string &sourceFile, uint lineno,
+void core__reader_error_internal(const string &sourceFile, uint lineno,
                     String_sp fmt, List_sp fmtargs, T_sp stream = _Nil<T_O>());
 
 void assert_type_integer(T_sp p, int idx);

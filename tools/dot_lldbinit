@@ -16,6 +16,8 @@ command regex set-args 's/(.+)/settings set target.run-args %1/'
 #
 command regex lpr 's/(.+)/expr tprint((void*)%1.theObject)/'
 command regex lpraw 's/(.+)/expr tprint((void*)%1)/'
+command regex slpr 's/(.+)/expr dbg_safe_println((uintptr_t)%1.theObject)/'
+command regex slpraw 's/(.+)/expr dbg_safe_println((uintptr_t)%1)/'
 command regex lphead 's/(.+)/expr core::dbg_describe_tagged_T_Optr_header((core::T_O*)%1)/'
 command regex lmv 's/(.+)/expr core::dbg_mv_lowLevelDescribe(%1)/'
 

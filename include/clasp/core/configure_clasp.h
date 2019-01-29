@@ -62,6 +62,7 @@ THE SOFTWARE.
 
 #if defined( _ADDRESS_MODEL_64 )
 
+#define CONTAB_NAME "^CONTAB"
 #define INTPTR_BITS 64
 
 #define BIT_ARRAY_BYTE_SIZE 32
@@ -260,5 +261,6 @@ typedef int  claspCharacter;
 
 // On linux and OS X we have mkstemp so use it
 #define HAVE_MKSTEMP
+#define HAVE_MKDTEMP
 
 #endif // __CORE_CONFIG_H__

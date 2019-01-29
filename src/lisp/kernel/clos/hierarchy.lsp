@@ -46,9 +46,14 @@
 
 (eval-when (:compile-toplevel :execute #+clasp :load-toplevel)
   (defparameter +eql-specializer-slots+
+    ;; We don't splice in +specializer-slots+ because we need the :initform t for flag.
+    ;; Nonetheless, these slots should match those of specializer, plus the slot for the object.
     '((flag :initform t :accessor eql-specializer-flag)
       (direct-methods :initform nil :accessor specializer-direct-methods)
       (direct-generic-functions :initform nil :accessor specializer-direct-generic-functions)
+      (call-history-generic-functions :initform nil :accessor specializer-call-history-generic-functions)
+      (specializer-mutex :initform (mp:make-shared-mutex 'call-history-generic-functions-mutex)
+                         :accessor specializer-mutex)
       (object :initarg :object :accessor eql-specializer-object))))
 
 ;;; ----------------------------------------------------------------------
@@ -77,7 +82,7 @@
       (direct-default-initargs :initarg :direct-default-initargs
 			       :initform nil :accessor class-direct-default-initargs)
       (default-initargs :accessor class-default-initargs)
-      (finalized :initform nil :accessor class-finalized-p)
+      (finalized :initform nil :accessor class-finalized-p) ; FIXME: is the writer supposed to be exported?
       (docstring :initarg :documentation :initform nil)
       (size :accessor class-size)
       (prototype)
@@ -102,15 +107,14 @@
 
 (eval-when (:compile-toplevel :execute  #+clasp :load-toplevel)
   (defparameter +structure-class-slots+
+    ;; Note that we don't need some of the class-slots, e.g. initargs, so we could
+    ;; hypothetically reorganize things.
+    ;; We also don't really need any of these slots, but it might be good to have
+    ;; some mkind of structure to descriptions of structures later.
     (append +class-slots+
 	    '((slot-descriptions)
 	      (initial-offset)
-	      (defstruct-form)
-	      (constructors)
-	      (documentation)
-	      (copier)
-	      (predicate)
-	      (print-function)))))
+	      (constructors)))))
 
 ;;; ----------------------------------------------------------------------
 ;;; STANDARD-GENERIC-FUNCTION
@@ -121,7 +125,7 @@
     '((name :initarg :name :initform nil
        :reader generic-function-name)
       (spec-list :initform nil :accessor generic-function-spec-list)
-      (method-combination 
+      (method-combination
        :initarg :method-combination :initform (find-method-combination (class-prototype (find-class 'standard-generic-function)) 'standard nil)
        :accessor generic-function-method-combination)
       (lambda-list :initarg :lambda-list
@@ -354,13 +358,14 @@
          :direct-slots #3=#.+slot-definition-slots+)
         (standard-effective-slot-definition
          :direct-slots #3#)
-        (t
-         :index 0)
+        (t)
         (class :direct-slots #.+class-slots+)
         (standard-object
          :direct-superclasses (t))
-        (core:cxx-object
+        (core:general
          :direct-superclasses (t))
+        (core:cxx-object
+         :direct-superclasses (core:general))
         (metaobject
          :direct-superclasses (standard-object))
         (slot-definition
@@ -418,8 +423,7 @@
         ,@(loop for (name . rest) in +builtin-classes-list+
              for index from 1
              collect (list name :metaclass 'built-in-class
-                           :index index
-                           :direct-superclasses (or rest '(t))))
+                           :direct-superclasses (or rest '(core:general))))
         (funcallable-standard-object
          :direct-superclasses (standard-object function))
         (generic-function
@@ -457,7 +461,7 @@
          :direct-slots #.+standard-class-slots+)
         (derivable-cxx-object
          :metaclass core:derivable-cxx-class
-         :direct-superclasses (standard-object #+(or)t))
+         :direct-superclasses (standard-object))
         ))))
 
 (eval-when (:compile-toplevel :execute)

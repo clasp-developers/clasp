@@ -71,10 +71,10 @@ string string_get_std_string(T_sp str);
 string string_get_std_string(String_sp str);
 
 /*! Create a SimpleBaseString_O object */
-T_sp str_create(const string &val);
+SimpleBaseString_sp str_create(const string &val);
 
 /*! Create a SimpleBaseString_O object from a const char* */
-T_sp str_create(const char *val);
+SimpleBaseString_sp str_create(const char *val);
 
 }; /* core */
 

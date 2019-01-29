@@ -5,13 +5,11 @@
 ;;; t1expr is called by compile-file. Eventually this file will call
 ;;; compile-thunk (in codegen.lsp) to do the actual compiling.
 
-(defun compile-top-level (form)
+(defun compile-top-level (form env)
   (literal:with-top-level-form
-   (dbg-set-current-source-pos form)
-    (compile-thunk 'repl form nil t)
-    ;; After this literals are codegen'd into the RUN-ALL function
-    ;; by with-top-level-form
-    ))
+      (dbg-set-current-source-pos form)
+    (let ((fn (compile-thunk 'repl form env t)))
+      fn)))
 
 (defun t1progn (rest env)
   "All forms in progn at top level are top level forms"
@@ -105,8 +103,9 @@
                        (progn
                          (t1expr expansion env)
                          t)))))
-           ((macro-function head env)
+           ((and (symbolp head) ; it's unlikely, but we could have a constant toplevel form.
+                 (macro-function head env))
             (let ((expanded (macroexpand form env)))
               (t1expr expanded env)))
-           (t (compile-top-level form))))
+           (t (compile-top-level form env))))
     (pop core:*top-level-form-stack*)))

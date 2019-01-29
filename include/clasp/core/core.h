@@ -589,6 +589,8 @@ namespace dummy_namespace {
 namespace core {
 class Instance_O;
 typedef gc::smart_ptr<Instance_O> Instance_sp;
+class Creator_O;
+typedef gc::smart_ptr<Creator_O> Creator_sp;
 class FuncallableInstance_O;
 typedef gc::smart_ptr<FuncallableInstance_O> FuncallableInstance_sp;
 
@@ -831,6 +833,7 @@ namespace core {
 //  Lisp class access functions for when we only have a forward
 //  definition for the Lisp_O class and for any other object
 //
+extern "C" string _safe_rep_(core::T_sp obj);
   string _rep_(T_sp obj);
 /*! Convert underscores to "-" and "STAR" to "*" and "AMP" to "&"
       to convert a C++ name to a lisp symbol */
@@ -847,6 +850,7 @@ namespace core {
   Symbol_sp lisp_upcase_intern_export(string const &name, string const &packageName);
   void* lisp_to_void_ptr(T_sp o);
   T_sp lisp_from_void_ptr(void* p);
+uint64_t lisp_nameword(T_sp name);
  
   List_sp lisp_copy_default_special_bindings();
 /*! Write characters to the stream */
@@ -1054,8 +1058,6 @@ typedef void (*PrintvFlushCallback)();
 
 const char *trimSourceFilePathName(const char *fullPathName);
 
-#define IN_PLUG_PREFIX '-'
-#define OUT_PLUG_PREFIX '+'
 };
 
 namespace llvm_interface {

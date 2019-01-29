@@ -1,0 +1,8 @@
+{
+    "argv": [
+	"/opt/clasp/bin/fork-client",
+        "{connection_file}"
+    ],
+    "display_name": "fork-cando",
+    "language": "lisp"
+}

@@ -24,9 +24,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-//#define DEBUG_LEVEL_FULL
+#define DEBUG_LEVEL_FULL
 
 //#include <llvm/Support/system_error.h>
+#include <dlfcn.h>
 #include <clasp/core/foundation.h>
 #include <llvm/ExecutionEngine/GenericValue.h>
 #include <llvm/ExecutionEngine/SectionMemoryManager.h>
@@ -87,6 +88,7 @@ THE SOFTWARE.
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/lispCallingConvention.h>
 #include <clasp/core/package.h>
+#include <clasp/core/debugger.h>
 #include <clasp/core/environment.h>
 #include <clasp/core/hashTableEqual.h>
 #include <clasp/core/pathname.h>
@@ -122,7 +124,6 @@ llvm::Value* llvm_cast_error_ptr;
 
 namespace llvmo {
 
-
 CL_DEFUN bool llvm_sys__llvm_value_p(core::T_sp o) {
   if (o.nilp())
     return false;
@@ -137,60 +138,102 @@ CL_DEFUN std::string llvm_sys__get_default_target_triple() {
   return llvm::sys::getDefaultTargetTriple();
 }
 
-/*! Disassemble code from the base (address).
-    The stopping criterion is defined by start_byte_offset/end_byte_offset and start_instruction_index/num_instructions.
-    If start_byte_offset is a fixnum then end_byte_offset must also be a fixnum >= start_byte_offset and they
-       are used to determine the start and stopping criterion.
-    Otherwise start printing disassembled instructions from the start_instruction_index up to num_instructions.
+
+#ifdef CLASP_THREADS
+mp::Mutex* global_disassemble_mutex = NULL;
+#endif
+#define CALLBACK_BUFFER_SIZE 1024
+char global_LLVMOpInfoCallbackBuffer[CALLBACK_BUFFER_SIZE];
+char global_LLVMSymbolLookupCallbackBuffer[CALLBACK_BUFFER_SIZE];
+
+int my_LLVMOpInfoCallback(void* DisInfo, uint64_t pc, uint64_t offset, uint64_t size, int tagType, void* TagBuf)
+{
+//  printf("%s:%d:%s pc->%p offset->%llu size->%llu tagType->%d\n",  __FILE__, __LINE__, __FUNCTION__, (void*)pc, offset, size, tagType);
+  return 0;
+}
+
+
+const char* my_LLVMSymbolLookupCallback (void *DisInfo, uint64_t ReferenceValue, uint64_t *ReferenceType, uint64_t ReferencePC, const char **ReferenceName) {
+  const char* symbol;
+  uintptr_t start, end;
+  char type;
+  bool found = core::lookup_address((uintptr_t)ReferenceValue, symbol, start, end, type);
+//  printf("%s:%d:%s ReferenceValue->%p ReferencePC->%p\n", __FILE__, __LINE__, __FUNCTION__, (void*)ReferenceValue, (void*)ReferencePC);
+  if (found) {
+    stringstream ss;
+    ss << (void*)ReferenceValue << "{";
+    ss << symbol;
+    if (ReferenceValue!=start) {
+      ss << "+" << (ReferenceValue-start);
+    }
+    if (symbol[0]=='_'
+        && strlen(symbol)>strlen(CONTAB_NAME)
+        && strncmp(CONTAB_NAME,symbol+1,strlen(CONTAB_NAME))==0) {
+      ss << "["<< dbg_safe_repr((uintptr_t)*(uintptr_t*)ReferenceValue)<<"]";
+    }
+    ss << "}";
+    strcpy(global_LLVMSymbolLookupCallbackBuffer,ss.str().c_str());
+    *ReferenceName = global_LLVMSymbolLookupCallbackBuffer;
+//    printf("%s:%d:%s Returning symbol-table result |%s|\n", __FILE__, __LINE__, __FUNCTION__, *ReferenceName);
+    return *ReferenceName;
+  }
+  Dl_info data;
+  int ret = dladdr((void*)ReferenceValue,&data);
+  if (ret!=0) {
+    stringstream ss;
+    ss << data.dli_sname;
+    if (ReferenceValue != (uintptr_t)data.dli_saddr) {
+      ss << "+" << (ReferenceValue-(uintptr_t)data.dli_saddr);
+    }
+    strcpy(global_LLVMSymbolLookupCallbackBuffer,ss.str().c_str());
+    *ReferenceName = global_LLVMSymbolLookupCallbackBuffer;
+//    printf("%s:%d:%s Returning dladdr result |%s|\n", __FILE__, __LINE__, __FUNCTION__, *ReferenceName);
+    return *ReferenceName;
+  }
+  *ReferenceName = NULL;
+  return NULL;
+}
+
+/*! Disassemble code from the start-address to end-address.
 TODO: See the link below to make the disassbmely more informative by emitting comments, symbols and latency
    http://llvm.org/doxygen/Disassembler_8cpp_source.html#l00248
 */
-CL_LAMBDA(target-triple address &key (start-instruction-index 0) (num-instructions 16) start-byte-offset end-byte-offset);
+CL_LAMBDA(target-triple start-address end-address)
 CL_DEFUN void llvm_sys__disassemble_instructions(const std::string& striple,
-                                                 core::Pointer_sp address,
-                                                 size_t start_instruction_index, size_t num_instructions,
-                                                 core::T_sp start_byte_offset, core::T_sp end_byte_offset)
+                                                 core::Pointer_sp start_address,
+                                                 core::Pointer_sp end_address)
 {
 #define DISASM_NUM_BYTES 32
-#define DISASM_OUT_STRING_SIZE 64
+#define DISASM_OUT_STRING_SIZE 128
+  if (global_disassemble_mutex == NULL) {
+    global_disassemble_mutex = new mp::Mutex(DISSASSM_NAMEWORD);
+  }
+  WITH_READ_WRITE_LOCK(*global_disassemble_mutex);
   LLVMDisasmContextRef dis = LLVMCreateDisasm(striple.c_str(),
-                                                    NULL,
-                                                    0,
-                                                    NULL,
-                                                    NULL);
+                                              NULL,
+                                              0,
+                                              my_LLVMOpInfoCallback,
+                                              my_LLVMSymbolLookupCallback);
   LLVMSetDisasmOptions(dis,LLVMDisassembler_Option_PrintImmHex|LLVMDisassembler_Option_PrintLatency
                        /*|LLVMDisassembler_Option_UseMarkup*/);
-  uint64_t offset= 0;
-  if (start_byte_offset.fixnump()) {
-    if (!end_byte_offset.fixnump()) {
-      SIMPLE_ERROR(BF("If you provide start-byte-offset - you must provide a fixnum for end-byte-offset"));
-    }
-    if (start_byte_offset.unsafe_fixnum()>=end_byte_offset.unsafe_fixnum()) {
-      SIMPLE_ERROR(BF("start-byte-offset must be < end-byte-offset"));
-    }
-    offset = start_byte_offset.unsafe_fixnum();
-    start_instruction_index = 0;
-    num_instructions = UINT_MAX;
-  }
-  for ( size_t ii = 0,iiEnd(start_instruction_index+num_instructions); ; ++ii ) {
-      // stopping criterion
-    if (end_byte_offset.fixnump()) {
-      if (offset >= end_byte_offset.unsafe_fixnum()) break;
-    } else {
-      if (ii >= iiEnd) break;
-    }
-    uint8_t* uiaddress = (uint8_t*)address->ptr()+offset;
-    ArrayRef<uint8_t> Bytes(uiaddress,DISASM_NUM_BYTES);
+  size_t ii = 0;
+  size_t offset = 0;
+  for ( uint8_t* addr = (uint8_t*)start_address->ptr(); addr<(uint8_t*)end_address->ptr(); ) {
+    ArrayRef<uint8_t> Bytes(addr,DISASM_NUM_BYTES);
     SmallVector<char, DISASM_OUT_STRING_SIZE> InsnStr;
-    size_t sz = LLVMDisasmInstruction(dis,(unsigned char*)&Bytes[0],DISASM_NUM_BYTES,(uint64_t)((uint8_t*)address->ptr()+offset),(char*)InsnStr.data(),DISASM_OUT_STRING_SIZE-1);
-    if (ii >= start_instruction_index) {
-      const char* str = InsnStr.data();
-      stringstream ss;
-      ss << std::hex << (void*)uiaddress << " <#" << std::dec << std::setw(3) << ii << "+" << offset <<  ">";
-      core::clasp_write_string(ss.str());
-      core::writestr_stream(str);
-      core::clasp_terpri();
+    size_t sz = LLVMDisasmInstruction(dis,(unsigned char*)&Bytes[0],DISASM_NUM_BYTES,(uint64_t)addr,(char*)InsnStr.data(),DISASM_OUT_STRING_SIZE-1);
+    const char* str = InsnStr.data();
+    stringstream ss;
+    ss << std::hex << (void*)addr << " <#" << std::dec << std::setw(3) << ii << "+" << offset <<  ">";
+    core::clasp_write_string(ss.str());
+    core::writestr_stream(str);
+    core::clasp_terpri();
+    if (sz==0) {
+      ss << "STOPPING BECAUSE PREVIOUS INSTRUCTION HAS ZERO LENGTH!!!!! ";
+      break;
     }
+    addr += sz;
+    ii++;
     offset += sz;
   }
   LLVMDisasmDispose(dis);
@@ -360,10 +403,12 @@ CL_DEFMETHOD void TargetMachine_O::addPassesToEmitFileAndRunPassManager(PassMana
 // This was depreciated in llvm3.7
   CL_LISPIFY_NAME(createDataLayout);
   CL_EXTERN_DEFMETHOD(TargetMachine_O, &llvm::TargetMachine::createDataLayout);
+  CL_EXTERN_DEFMETHOD(TargetMachine_O, &llvm::TargetMachine::setFastISel);
   CL_LISPIFY_NAME(getSubtargetImpl);
   CL_EXTERN_DEFMETHOD(TargetMachine_O, (const llvm::TargetSubtargetInfo *(llvm::TargetMachine::*)() const) & llvm::TargetMachine::getSubtargetImpl);
   CL_LISPIFY_NAME(addPassesToEmitFileAndRunPassManager);
   CL_EXTERN_DEFMETHOD(TargetMachine_O, &TargetMachine_O::addPassesToEmitFileAndRunPassManager);
+CL_EXTERN_DEFMETHOD(TargetMachine_O, &llvm::TargetMachine::setFastISel);
 
   SYMBOL_EXPORT_SC_(LlvmoPkg, CodeGenFileType);
   SYMBOL_EXPORT_SC_(LlvmoPkg, CodeGenFileType_Null);
@@ -791,7 +836,7 @@ CL_DEFUN void llvm_sys__writeBitcodeToFile(Module_sp module, core::String_sp pat
 
 CL_DEFUN Module_sp llvm_sys__parseIRFile(core::T_sp tfilename, LLVMContext_sp context) {
   if (tfilename.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
-  core::String_sp spathname = core::cl__namestring(core::cl__pathname(tfilename));
+  core::String_sp spathname = gc::As<core::String_sp>(core::cl__namestring(core::cl__pathname(tfilename)));
   llvm::ErrorOr<std::unique_ptr<llvm::MemoryBuffer>> eo_membuf = llvm::MemoryBuffer::getFile(spathname->get_std_string());
   if (std::error_code ec = eo_membuf.getError()) {
     SIMPLE_ERROR(BF("Could not read the file %s - error: %s") % spathname->get_std_string() % ec.message());
@@ -811,7 +856,7 @@ CL_DEFUN Module_sp llvm_sys__parseIRFile(core::T_sp tfilename, LLVMContext_sp co
 CL_LAMBDA("filename &optional (context cmp:*llvm-context*)");
 CL_DEFUN Module_sp llvm_sys__parseBitcodeFile(core::T_sp tfilename, LLVMContext_sp context) {
   if (tfilename.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
-  core::String_sp spathname = core::cl__namestring(core::cl__pathname(tfilename));
+  core::String_sp spathname = gc::As<core::String_sp>(core::cl__namestring(core::cl__pathname(tfilename)));
   llvm::ErrorOr<std::unique_ptr<llvm::MemoryBuffer>> eo_membuf = llvm::MemoryBuffer::getFile(spathname->get_std_string());
   if (std::error_code ec = eo_membuf.getError()) {
     SIMPLE_ERROR(BF("Could not load bitcode for file %s - error: %s") % spathname->get_std_string() % ec.message());
@@ -1009,8 +1054,8 @@ CL_DEFUN Module_sp Module_O::make(llvm::StringRef module_name, LLVMContext_sp co
 
 std::string Module_O::__repr__() const {
   stringstream ss;
-  ss << "#<MODULE ID:";
-  ss << this->_Id << ">";
+  ss << "#<MODULE ";
+  ss << (void*)this->wrappedPtr() << ">";
   return ss.str();
 }
 
@@ -1244,7 +1289,7 @@ CL_DEFMETHOD bool ExecutionEngine_O::removeModule(Module_sp module) {
 
 CL_LISPIFY_NAME("find_function_named");
 CL_DEFMETHOD Function_sp ExecutionEngine_O::find_function_named(core::String_sp name) {
-  return translate::to_object<llvm::Function *>::convert(this->wrappedPtr()->FindFunctionNamed(name->get().c_str()));
+  return gc::As<Function_sp>(translate::to_object<llvm::Function *>::convert(this->wrappedPtr()->FindFunctionNamed(name->get().c_str())));
 }
 
 CL_LISPIFY_NAME(clearAllGlobalMappings);
@@ -1474,7 +1519,7 @@ CL_DEFUN Constant_sp ConstantArray_O::get(ArrayType_sp type, core::List_sp value
   Constant_sp ca = ConstantArray_O::create();
   vector<llvm::Constant *> vector_IdxList;
   for (auto cur : values) {
-    vector_IdxList.push_back(gc::As<Constant_sp>(oCar(cur))->wrappedPtr());
+    vector_IdxList.push_back(llvm::cast<llvm::Constant>(gc::As<Value_sp>(oCar(cur))->wrappedPtr()));
   }
   llvm::ArrayRef<llvm::Constant *> array_ref_vector_IdxList(vector_IdxList);
   llvm::Constant *llvm_ca = llvm::ConstantArray::get(type->wrapped(), array_ref_vector_IdxList);
@@ -1793,6 +1838,13 @@ ConstantInt_sp ConstantInt_O::create(llvm::ConstantInt *ptr) {
   CL_LISPIFY_NAME(constant-int-get);
   CL_EXTERN_DEFUN((llvm::ConstantInt *(*)(llvm::LLVMContext &, const llvm::APInt &)) &llvm::ConstantInt::get);
 
+CL_LISPIFY_NAME(get-true);
+CL_EXTERN_DEFUN((llvm::ConstantInt *(*)(llvm::LLVMContext &)) &llvm::ConstantInt::getTrue);
+
+CL_LISPIFY_NAME(get-false);
+CL_EXTERN_DEFUN((llvm::ConstantInt *(*)(llvm::LLVMContext &)) &llvm::ConstantInt::getFalse);
+
+
 ;
 
 
@@ -1996,6 +2048,8 @@ string APInt_O::__repr__() const {
 namespace llvmo {
 
 
+CL_LISPIFY_NAME(CreateGlobalString);
+CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateGlobalString);
 CL_PKG_NAME(LlvmoPkg,"SetInsertPointBasicBlock");
 CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(void (llvm::IRBuilderBase::*)(llvm::BasicBlock *))&llvm::IRBuilderBase::SetInsertPoint);
 CL_PKG_NAME(LlvmoPkg,"SetInsertPointInstruction");
@@ -2512,6 +2566,8 @@ CL_DEFUN Function_sp llvm_sys__FunctionCreate(FunctionType_sp tysp, llvm::Global
   return funcsp;
 };
 
+CL_LISPIFY_NAME(getParent);
+CL_EXTERN_DEFMETHOD(Function_O,(llvm::Module *(llvm::Function::*)())&llvm::Function::getParent);
 CL_LISPIFY_NAME("setHasUWTable");
 CL_EXTERN_DEFMETHOD(Function_O,&llvm::Function::setHasUWTable);
 CL_LISPIFY_NAME("setDoesNotThrow");
@@ -2566,7 +2622,7 @@ CL_DEFMETHOD void Function_O::appendBasicBlock(BasicBlock_sp basicBlock) {
 
 CL_LISPIFY_NAME("getEntryBlock");
 CL_DEFMETHOD BasicBlock_sp Function_O::getEntryBlock() const {
-  return translate::to_object<llvm::BasicBlock*>::convert(&this->wrappedPtr()->getEntryBlock());
+  return gc::As<BasicBlock_sp>(translate::to_object<llvm::BasicBlock*>::convert(&this->wrappedPtr()->getEntryBlock()));
 }
 
 CL_LISPIFY_NAME("basic-blocks");
@@ -2674,7 +2730,7 @@ CL_LISPIFY_NAME(get_contained_type);
 CL_EXTERN_DEFMETHOD(Type_O,&llvm::Type::getContainedType);
 
 CL_DEFMETHOD LLVMContext_sp Type_O::getContext() const {
-  return translate::to_object<llvm::LLVMContext&>::convert(this->wrappedPtr()->getContext());
+  return gc::As<LLVMContext_sp>(translate::to_object<llvm::LLVMContext&>::convert(this->wrappedPtr()->getContext()));
 }
 
 bool Type_O::equal(core::T_sp obj) const {
@@ -2897,22 +2953,7 @@ CL_DEFUN void finalizeEngineAndRegisterWithGcAndRunMainFunctions(ExecutionEngine
     printf("%s:%d Entered %s\n", __FILE__, __LINE__, __FUNCTION__ );
 #endif
     finalizeEngineAndTime(engine);
-#if 1
     engine->runStaticConstructorsDestructors(false);
-#else
-    void (*clasp_ctor)() = reinterpret_cast<void(*)()>(engine->getGlobalValueAddress(CLASP_CTOR_FUNCTION_NAME));
-//  printf("%s:%d clasp_ctor --> %p\n", __FILE__, __LINE__, clasp_ctor );
-    if ( clasp_ctor == NULL ) {
-      SIMPLE_ERROR(BF("Could not get a pointer to %s in finalizeEngineAndRegisterWithGcAndRunMainFunctions") % CLASP_CTOR_FUNCTION_NAME );
-    }
-#ifdef DEBUG_STARTUP
-    printf("%s:%d About to call clasp_ctor\n", __FILE__, __LINE__ );
-#endif
-    (clasp_ctor)();
-#ifdef DEBUG_STARTUP
-    printf("%s:%d Returned from call clasp_ctor\n", __FILE__, __LINE__ );
-#endif
-#endif
     if ( core::startup_functions_are_waiting() ) {
       core::startup_functions_invoke();
     } else {
@@ -3295,30 +3336,242 @@ namespace llvmo {
 using namespace llvm;
 using namespace llvm::orc;
 
+//#define MONITOR_JIT_MEMORY_MANAGER 1    // monitor SectionMemoryManager
+//#define DUMP_OBJECT_FILES 1
+
+std::atomic<size_t> fileNum;
+void dumpObjectFile(size_t num, const char* start, size_t size) {
+  std::stringstream filename;
+  filename << "object-file-" << num << ".o";
+  std::ofstream fout;
+  fout.open(filename.str(), std::ios::out | std::ios::binary );
+  fout.write(start,size);
+  fout.close();
+}
+
+
+////////////////////////////////////////////////////////////
+//
+// Register Jitted object files with gdb
+//
+// Using interface described here:
+//     https://sourceware.org/gdb/current/onlinedocs/gdb/JIT-Interface.html#JIT-Interface
+
+typedef enum
+{
+  JIT_NOACTION = 0,
+  JIT_REGISTER_FN,
+  JIT_UNREGISTER_FN
+} jit_actions_t;
+
+struct jit_code_entry
+{
+  struct jit_code_entry *next_entry;
+  struct jit_code_entry *prev_entry;
+  const char *symfile_addr;
+  uint64_t symfile_size;
+};
+
+struct jit_descriptor
+{
+  uint32_t version;
+  /* This type should be jit_actions_t, but we use uint32_t
+     to be explicit about the bitwidth.  */
+  uint32_t action_flag;
+  struct jit_code_entry *relevant_entry;
+  struct jit_code_entry *first_entry;
+};
+
+/* GDB puts a breakpoint in this function.  */
+void __attribute__((noinline)) __jit_debug_register_code () { }
+
+/* Make sure to specify the version statically, because the
+   debugger may check the version before we can set it.  */
+struct jit_descriptor __jit_debug_descriptor = { 1, 0, 0, 0 };
+
+
+
+};
+
+SYMBOL_EXPORT_SC_(LlvmoPkg,make_StkSizeRecord);
+SYMBOL_EXPORT_SC_(LlvmoPkg,make_StkMapRecord_Location);
+SYMBOL_EXPORT_SC_(LlvmoPkg,make_StkMapRecord_LiveOut);
+SYMBOL_EXPORT_SC_(LlvmoPkg,make_StkMapRecord);
+SYMBOL_EXPORT_SC_(LlvmoPkg,make_StackMap);
+SYMBOL_EXPORT_SC_(KeywordPkg,register);
+SYMBOL_EXPORT_SC_(KeywordPkg,direct);
+SYMBOL_EXPORT_SC_(KeywordPkg,indirect);
+SYMBOL_EXPORT_SC_(KeywordPkg,constant);
+SYMBOL_EXPORT_SC_(KeywordPkg,constant_index);
+
+
+
+namespace llvmo {
+
+
+#if 0
+CL_DEFUN core::T_sp llvm_sys__vmmap()
+{
+  auto task = task_for_pid();
+  return _Nil<core::T_O>();x
+}
+#endif
+
+
+SYMBOL_EXPORT_SC_(LlvmoPkg,library);
+#if 0
+CL_DEFUN llvm_sys__load_object_file(core::Pathname_sp name)
+{
+  core::T_sp filename = cl__namestring(name);
+  if (core::cl__stringp(filename)) {
+    core::String_sp str = gc::As_unsafe<core::String_sp>(filename);
+    int fd = open(str->get(),O_RDONLY);
+    if (fd<0) SIMPLE_ERROR(BF("Could not read file %s") % str->get());
+    GC_ALLOCATE(fli::ForeignData_O,data);
+    data.allocate(llvmo::_sym_library,data = 
+
+#endif
+};
+  
+namespace llvmo {
+
+class ClaspSectionMemoryManager : public SectionMemoryManager {
+
+    uint8_t* allocateCodeSection( uintptr_t Size, unsigned Alignment,
+                                unsigned SectionID,
+                                StringRef SectionName ) {
+    uint8_t* ptr = this->SectionMemoryManager::allocateCodeSection(Size,Alignment,SectionID,SectionName);
+    if (llvmo::_sym_STARdebugObjectFilesSTAR->symbolValue().notnilp()) {
+      printf("%s", ( BF("%s:%d  allocateCodeSection Size: %lu  Alignment: %u SectionId: %u SectionName: %s --> allocated at: %p\n") % __FILE__% __LINE__% Size% Alignment% SectionID% SectionName.str() % (void*)ptr ).str().c_str());
+    }
+    return ptr;
+  }
+
+#ifdef _TARGET_OS_DARWIN    
+  #define STACKMAPS_NAME "__llvm_stackmaps"
+#elif defined(_TARGET_OS_LINUX)
+  #define STACKMAPS_NAME ".llvm_stackmaps"
+#elif defined(_TARGET_OS_FREEBSD)
+  #define STACKMAPS_NAME ".llvm_stackmaps"
+#else
+  #error "What is the name of stackmaps section on this OS??? __llvm_stackmaps or .llvm_stackmaps"
+#endif
+  uint8_t* allocateDataSection( uintptr_t Size, unsigned Alignment,
+                                unsigned SectionID,
+                                StringRef SectionName,
+                                bool isReadOnly) {
+    uint8_t* ptr = this->SectionMemoryManager::allocateDataSection(Size,Alignment,SectionID,SectionName,isReadOnly);
+//    printf("%s:%d:%s Allocating section: %s\n", __FILE__, __LINE__, __FUNCTION__, SectionName.str().c_str());
+    if (SectionName.str() == STACKMAPS_NAME) {
+      my_thread->_stackmap = (uintptr_t)ptr;
+      my_thread->_stackmap_size = (size_t)Size;
+      LOG(BF("STACKMAP_LOG  recorded __llvm_stackmap allocateDataSection Size: %lu  Alignment: %u SectionId: %u SectionName: %s isReadOnly: %d --> allocated at: %p\n") %
+           Size% Alignment% SectionID% SectionName.str().c_str() % isReadOnly% (void*)ptr);
+    }
+    if (llvmo::_sym_STARdebugObjectFilesSTAR->symbolValue().notnilp()) {
+      core::write_bf_stream(BF(",s:%d  allocateDataSection Size: %lu  Alignment: %u SectionId: %u SectionName: %s isReadOnly: %d --> allocated at: %p\n") % __FILE__% __LINE__% Size% Alignment% SectionID% SectionName.str() % isReadOnly% (void*)ptr );
+    }
+    return ptr;
+  }
+
+  void 	notifyObjectLoaded (RuntimeDyld &RTDyld, const object::ObjectFile &Obj) {
+//    printf("%s:%d:%s entered\n", __FILE__, __LINE__, __FUNCTION__ );
+#if 0
+    uintptr_t stackmap = 0;
+    size_t stackmap_size = 0;
+    for ( auto section : Obj.sections() ) {
+      llvm::StringRef name;
+      section.getName(name);
+//      printf("%s:%d name: %s\n", __FILE__, __LINE__, name.str().c_str());
+      if (name=="__llvm_stackmaps") {
+        auto reloc = section.getRelocatedSection();
+        stackmap = (uintptr_t)reloc->getAddress();
+        stackmap_size = (size_t)reloc->getSize();
+        printf("%s:%d Found stackmap at %p size: %lu\n", __FILE__, __LINE__, (void*) stackmap, stackmap_size);
+      }
+    }
+    unsigned long section_size = 0;
+    void* p_section = NULL;
+#else
+    unsigned long section_size = 0;
+    void* p_section = NULL;
+#if 0
+    if (my_thread->_stackmap>0) {
+      p_section = reinterpret_cast<void*>(my_thread->_stackmap);
+      section_size = my_thread->_stackmap_size;
+      my_thread->_stackmap = 0;
+    }
+#endif
+#endif
+    if (p_section!=nullptr) {
+      printf("%s:%d LLVM_STACKMAPS  p_section@%p section_size=%lu\n", __FILE__, __LINE__, (void*)p_section, section_size );
+//      core::register_llvm_stackmaps((uintptr_t)p_section,(uintptr_t)p_section+section_size);
+    } else {
+//      printf("%s:%d     Could not find LLVM_STACKMAPS\n", __FILE__, __LINE__ );
+    }
+    if (llvmo::_sym_STARdebugObjectFilesSTAR->symbolValue().notnilp()) {
+      llvm::MemoryBufferRef mem = Obj.getMemoryBufferRef();
+      core::write_bf_stream( BF("%s:%d notifyObjectLoaded was invoked\n") % __FILE__ % __LINE__ );
+      core::write_bf_stream( BF("%s:%d      --> sizeof(ObjectFile) -> %lu  MemoryBufferRef start: %p   size: %lu\n") % __FILE__ % __LINE__ % sizeof(Obj) % (void*) mem.getBufferStart() % mem.getBufferSize() );
+      void** words = (void**)(&Obj);
+      core::write_bf_stream( BF("%s:%d      --> ObjectFile words:\n") % __FILE__% __LINE__ );
+      core::write_bf_stream( BF("%s:%d            0x00: %18p %18p\n") % __FILE__% __LINE__% words[0]% words[1]);
+      core::write_bf_stream( BF("%s:%d            0x10: %18p %18p\n") % __FILE__% __LINE__% words[2]% words[3]);
+      core::write_bf_stream( BF("%s:%d            0x20: %18p %18p\n") % __FILE__% __LINE__% words[4]% words[5]);
+    }
+    if (llvmo::_sym_STARdumpObjectFilesSTAR->symbolValue().notnilp()) {
+      llvm::MemoryBufferRef mem = Obj.getMemoryBufferRef();
+      dumpObjectFile(fileNum++,mem.getBufferStart(),mem.getBufferSize());
+    }
+  }
+
+  bool finalizeMemory(std::string* ErrMsg = nullptr) {
+    LOG(BF("STACKMAP_LOG %s entered\n") % __FUNCTION__ );
+    bool result = this->SectionMemoryManager::finalizeMemory(ErrMsg);
+    unsigned long section_size = 0;
+    void* p_section = NULL;
+    if (my_thread->_stackmap>0 && my_thread->_stackmap_size!=0) {
+      p_section = reinterpret_cast<void*>(my_thread->_stackmap);
+      section_size = my_thread->_stackmap_size;
+      LOG(BF("STACKMAP_LOG   p_section@%p section_size=%lu\n") % (void*)p_section % section_size );
+      core::register_llvm_stackmaps((uintptr_t)p_section,(uintptr_t)p_section+section_size,1);
+//      core::process_llvm_stackmaps();
+      my_thread->_stackmap = 0;
+    } else {
+//      printf("%s:%d     Could not find LLVM_STACKMAPS\n", __FILE__, __LINE__ );
+    }
+    return result;
+  }
+
+
+
+
+};
+
+
+
+
 ClaspJIT_O::ClaspJIT_O() : TM(EngineBuilder().selectTarget()),
                            DL(TM->createDataLayout()),
-//                           NotifyObjectLoaded(*this),
-                           ObjectLayer([]() { return std::make_shared<SectionMemoryManager>(); }
-/* The following doesn't work in llvm5.0 because of a bug in the definition of NotifyLoadedFtor
-https://groups.google.com/forum/#!topic/llvm-dev/m3JjMNswgcU
-*/
-//#ifdef LLVM5_ORC_NOTIFIER_PATCH
-,
+                           ObjectLayer([]() { return std::make_shared<ClaspSectionMemoryManager>(); },
                                        [this](llvm::orc::RTDyldObjectLinkingLayer::ObjHandleT H,
                                               const RTDyldObjectLinkingLayerBase::ObjectPtr& Obj,
                                               const RuntimeDyld::LoadedObjectInfo &Info) {
+#if 0
+                                         // I get an assertion failure
+                                         // at /Development/externals-clasp/llvm60/lib/ExecutionEngine/GDBRegistrationListener.cpp:166
+                                         // 166	  assert(ObjectBufferMap.find(Key) == ObjectBufferMap.end() &&
+                                         //              "Second attempt to perform debug registration.");
+
                                          this->GDBEventListener->NotifyObjectEmitted(*(Obj->getBinary()), Info);
+#endif
                                          save_symbol_info(*(Obj->getBinary()), Info);
-                                       }
-//#endif
-)
-                         ,
+                                       }),
                            CompileLayer(ObjectLayer, SimpleCompiler(*TM)),
                            OptimizeLayer(CompileLayer,
                                          [this](std::shared_ptr<Module> M) {
                                            return optimizeModule(std::move(M));
-                                         }
-                                         ),
+                                         }),
                            GDBEventListener(JITEventListener::createGDBRegistrationListener()),
                            ModuleHandles(_Nil<core::T_O>())
 {
@@ -3359,6 +3612,7 @@ void save_symbol_info(const llvm::object::ObjectFile& object_file, const llvm::R
         const llvm::object::SectionRef& section_ref = **expected_section_iterator;
         uint64_t section_address = loaded_object_info.getSectionLoadAddress(section_ref);
         if (((char*)section_address+address) != NULL ) {
+          core::register_jitted_object(name,section_address+address,size);
           core::Cons_sp symbol_info = core::Cons_O::createList(core::make_fixnum((Fixnum)size),core::Pointer_O::create((void*)((char*)section_address+address)));
           register_symbol_with_libunwind(name,section_address+address,size);
           if ((!comp::_sym_jit_register_symbol.unboundp()) && comp::_sym_jit_register_symbol->fboundp()) {
@@ -3425,9 +3679,18 @@ CL_DEFMETHOD ModuleHandle_sp ClaspJIT_O::addModule(Module_sp cM) {
 
     // Add the set to the JIT with the resolver we created above and a newly
     // created SectionMemoryManager.
+#if 1
   Expected<ModuleHandle> expected_ModuleHandle = OptimizeLayer.addModule(std::move(uM), //std::move(Ms),
 //                                                                      make_unique<SectionMemoryManager>(),
                                                                          std::move(Resolver));
+#else
+  auto objectFile = SimpleCompiler(*TM)(*optimizeModule(std::move(uM)));
+    // Here get the start and the size of the objectFile
+  uintptr_t size = objectFile.getBinary()->getMemoryBufferRef().getBufferSize();
+  uintptr_t start = (uintptr_t)objectFile.getBinary()->getMemoryBufferRef().getBufferStart();
+  printf("%s:%d:%s  objectFile @%lX  size %lu\n", __FILE__, __LINE__, __FUNCTION__, start, size);
+    // How long will the objectFile->getMemoryBuffer() live?
+#endif
   ModuleHandle_sp mh;
   if (expected_ModuleHandle) {
     mh = ModuleHandle_O::create(*expected_ModuleHandle);
@@ -3436,6 +3699,10 @@ CL_DEFMETHOD ModuleHandle_sp ClaspJIT_O::addModule(Module_sp cM) {
   }
   this->ModuleHandles = core::Cons_O::create(mh,this->ModuleHandles);
   return mh;
+}
+
+CL_DEFMETHOD TargetMachine& ClaspJIT_O::getTargetMachine() {
+  return *this->TM;
 }
 
 CL_LISPIFY_NAME("CLASP-JIT-FIND-SYMBOL");
@@ -3625,9 +3892,20 @@ SYMBOL_EXPORT_SC_(CorePkg,repl);
 
 CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, ModuleHandle_sp handle, const string& replName, const string& startupName, const string& shutdownName, core::T_sp initialData) {
   // Stuff to support MCJIT
-  core::Pointer_sp replPtr = jit->findSymbolIn(handle,replName,true);
-  core::Pointer_sp startupPtr = jit->findSymbolIn(handle,startupName,true);
-  core::Pointer_sp shutdownPtr = jit->findSymbolIn(handle,shutdownName,true);
+  core::Pointer_sp replPtr;
+  if (replName!="") {
+    replPtr = jit->findSymbolIn(handle,replName,false);
+  } else {
+    SIMPLE_ERROR(BF("There must be a replName"));
+  }
+  core::Pointer_sp startupPtr;
+  if (startupName!="") {
+    startupPtr = jit->findSymbolIn(handle,startupName,false);
+  }
+  core::Pointer_sp shutdownPtr;
+  if (shutdownName!="") {
+    shutdownPtr = jit->findSymbolIn(handle,shutdownName,false);
+  }
   core::CompiledClosure_fptr_type lisp_funcPtr = (core::CompiledClosure_fptr_type)(gc::As_unsafe<core::Pointer_sp>(replPtr)->ptr());
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid =
     core::ClosureWithSlots_O::make_bclasp_closure( core::_sym_repl,
@@ -3635,8 +3913,10 @@ CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, Mo
                                                     kw::_sym_function,
                                                    _Nil<core::T_O>(),
                                                    _Nil<core::T_O>() );
-  core::module_startup_function_type startup = reinterpret_cast<core::module_startup_function_type>(gc::As_unsafe<core::Pointer_sp>(startupPtr)->ptr());
-  startup(initialData.tagged_());
+  if (startupPtr) {
+    core::module_startup_function_type startup = reinterpret_cast<core::module_startup_function_type>(gc::As_unsafe<core::Pointer_sp>(startupPtr)->ptr());
+    startup(initialData.tagged_());
+  }
   return functoid;
 }
 };

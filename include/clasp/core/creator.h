@@ -47,7 +47,7 @@ namespace core {
     T_sp closedEnvironment() const { return _Nil<T_O>(); };
     int sourceFileInfoHandle() const { return 0; };
     bool macroP() const { return false; };
-    LambdaListHandler_sp lambdaListHandler() const { return _Nil<LambdaListHandler_O>(); };
+    T_sp lambdaListHandler() const { return _Nil<T_O>(); };
     T_sp lambda_list() const { return _Nil<T_O>(); };
     T_sp setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column ) {return _Nil<T_O>();};
     virtual int duplicationLevel() const { return 0; };

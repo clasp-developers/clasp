@@ -52,6 +52,7 @@ cl_index clasp_print_base(void) {
   return base;
 }
 
+// see comment for clasp_print_length
 cl_index clasp_print_level(void) {
   T_sp object = cl::_sym_STARprint_levelSTAR->symbolValue();
   gctools::Fixnum level;
@@ -63,8 +64,8 @@ cl_index clasp_print_level(void) {
     ERROR:
       cl::_sym_STARprint_levelSTAR->setf_symbolValue(_Nil<T_O>());
       SIMPLE_ERROR(BF("The value of *PRINT-LEVEL*\n %s\n"
-                      "is not of the expected type (or NULL (INTEGER 0 *))") %
-                   _rep_(object));
+                      "is not of the expected type (or NULL (INTEGER 0 %s))")
+                   % _rep_(object) % MOST_POSITIVE_FIXNUM);
     }
   } else if (core__bignump(object)) {
     goto ERROR;
@@ -74,6 +75,9 @@ cl_index clasp_print_level(void) {
   return level;
 }
 
+// Not correct wrt ansi, theoretically could be a bignum
+// is only used twice, perhpas we could also allow a bignum
+// The practical use of a bignum *print_length* remains to be seen
 cl_index clasp_print_length(void) {
   T_sp object = cl::_sym_STARprint_lengthSTAR->symbolValue();
   gctools::Fixnum length;
@@ -85,8 +89,8 @@ cl_index clasp_print_length(void) {
     ERROR:
       cl::_sym_STARprint_lengthSTAR->setf_symbolValue(_Nil<T_O>());
       SIMPLE_ERROR(BF("The value of *PRINT-LENGTH*\n %s\n"
-                      "is not of the expected type (or NULL (INTEGER 0 *))") %
-                   _rep_(object));
+                      "is not of the expected type (or NULL (INTEGER 0 %s))")
+                   % _rep_(object) % MOST_POSITIVE_FIXNUM);
     }
   } else if (core__bignump(object)) {
     goto ERROR;
@@ -166,7 +170,7 @@ CL_DEFUN T_sp cl__write(T_sp x, T_sp strm, T_sp array, T_sp base,
 CL_LAMBDA(o stream type id function);
 CL_DECLARE();
 CL_DOCSTRING("print-unreadable-object-function: What CL:PRINT-UNREADABLE-OBJECT expands into.");
-CL_DEFUN void core__print_unreadable_object_function(T_sp object, T_sp output_stream_desig, T_sp type, T_sp id, T_sp function) {
+CL_DEFUN T_sp core__print_unreadable_object_function(T_sp object, T_sp output_stream_desig, T_sp type, T_sp id, T_sp function) {
   if (clasp_print_readably()) {
     PRINT_NOT_READABLE_ERROR(object);
   } else if (object.unboundp()) {
@@ -196,6 +200,7 @@ CL_DEFUN void core__print_unreadable_object_function(T_sp object, T_sp output_st
     stail << ">";
     clasp_write_string(stail.str(), ostream);
   }
+  return _Nil<T_O>();
 };
 
 CL_LAMBDA(obj &optional stream);

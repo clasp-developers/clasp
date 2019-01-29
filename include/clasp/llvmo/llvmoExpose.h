@@ -86,8 +86,8 @@ THE SOFTWARE.
 
 
 namespace llvmo {
-  FORWARD(CallInst);
-  FORWARD(InvokeInst);
+FORWARD(CallInst);
+FORWARD(InvokeInst);
 FORWARD(LLVMContext);
 class LLVMContext_O : public core::ExternalObject_O {
   LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::LLVMContext, LLVMContext_O, "llvm-context", core::ExternalObject_O);
@@ -239,7 +239,6 @@ namespace translate {
 template <>
 struct to_object<llvm::Pass *> {
   static core::T_sp convert(llvm::Pass *ptr) {
-    _G();
     return ((core::RP_Create_wrapped<llvmo::Pass_O, llvm::Pass *>(ptr)));
   }
 };
@@ -275,7 +274,6 @@ struct from_object<llvm::AttributeSet> {
 template <>
 struct to_object<llvm::AttributeSet> {
   static core::T_sp convert(llvm::AttributeSet val) {
-    _G();
     GC_ALLOCATE_VARIADIC(llvmo::AttributeSet_O, obj, val);
     return obj;
   };
@@ -365,7 +363,6 @@ namespace translate {
 template <>
 struct to_object<llvm::Triple *> {
   static core::T_sp convert(llvm::Triple *ptr) {
-    _G();
     return ((core::RP_Create_wrapped<llvmo::Triple_O, llvm::Triple *>(ptr)));
   }
 };
@@ -442,7 +439,6 @@ namespace translate {
 template <>
 struct to_object<llvm::TargetOptions *> {
   static core::T_sp convert(llvm::TargetOptions *ptr) {
-    _G();
     return ((core::RP_Create_wrapped<llvmo::TargetOptions_O, llvm::TargetOptions *>(ptr)));
   }
 };
@@ -496,7 +492,6 @@ namespace translate {
 template <>
 struct to_object<llvm::Target *, translate::dont_adopt_pointer> {
   static core::T_sp convert(llvm::Target *ptr) {
-    _G();
     return ((core::RP_Create_wrapped<llvmo::Target_O, llvm::Target *>(ptr)));
   }
 };
@@ -504,7 +499,6 @@ struct to_object<llvm::Target *, translate::dont_adopt_pointer> {
 template <>
 struct to_object<const llvm::Target *> {
   static core::T_sp convert(const llvm::Target *ptr) {
-    _G();
     return ((core::RP_Create_wrapped<llvmo::Target_O, llvm::Target *>(const_cast<llvm::Target *>(ptr))));
   }
 };
@@ -558,7 +552,6 @@ namespace translate {
 template <>
 struct to_object<llvm::MCSubtargetInfo *, translate::dont_adopt_pointer> {
   static core::T_sp convert(llvm::MCSubtargetInfo *ptr) {
-    _G();
     return ((core::RP_Create_wrapped<llvmo::MCSubtargetInfo_O, llvm::MCSubtargetInfo *>(ptr)));
   }
 };
@@ -566,7 +559,6 @@ struct to_object<llvm::MCSubtargetInfo *, translate::dont_adopt_pointer> {
 template <>
 struct to_object<const llvm::MCSubtargetInfo *> {
   static core::T_sp convert(const llvm::MCSubtargetInfo *ptr) {
-    _G();
     return ((core::RP_Create_wrapped<llvmo::MCSubtargetInfo_O, llvm::MCSubtargetInfo *>(const_cast<llvm::MCSubtargetInfo *>(ptr))));
   }
 };
@@ -603,7 +595,6 @@ struct from_object<llvm::TargetSubtargetInfo *, std::true_type> {
 template <>
 struct to_object<const llvm::TargetSubtargetInfo *> {
   static core::T_sp convert(const llvm::TargetSubtargetInfo *ptr) {
-    _G();
     return ((core::RP_Create_wrapped<llvmo::TargetSubtargetInfo_O, llvm::TargetSubtargetInfo *>(const_cast<llvm::TargetSubtargetInfo *>(ptr))));
   }
 };
@@ -743,8 +734,16 @@ namespace translate {
   template <>
     struct to_object<llvm::TargetMachine *> {
     static core::T_sp convert(llvm::TargetMachine *ptr) {
-      _G();
       return ((core::RP_Create_wrapped<llvmo::TargetMachine_O, llvm::TargetMachine *>(ptr)));
+    }
+  };
+};
+
+namespace translate {
+  template <>
+    struct to_object<llvm::TargetMachine&> {
+    static core::T_sp convert(llvm::TargetMachine& obj) {
+      return ((core::RP_Create_wrapped<llvmo::TargetMachine_O, llvm::TargetMachine *>(&obj)));
     }
   };
 };
@@ -801,7 +800,6 @@ namespace translate {
 template <>
 struct to_object<llvm::LLVMTargetMachine *> {
   static core::T_sp convert(llvm::LLVMTargetMachine *ptr) {
-    _G();
     return ((core::RP_Create_wrapped<llvmo::LLVMTargetMachine_O, llvm::LLVMTargetMachine *>(ptr)));
   }
 };
@@ -843,7 +841,6 @@ namespace translate {
 template <>
 struct to_object<llvm::FunctionPass *> {
   static core::T_sp convert(llvm::FunctionPass *ptr) {
-    _G();
     return ((core::RP_Create_wrapped<llvmo::FunctionPass_O, llvm::FunctionPass *>(ptr)));
   }
 };
@@ -884,7 +881,6 @@ namespace translate {
 template <>
 struct to_object<llvm::ModulePass *> {
   static core::T_sp convert(llvm::ModulePass *ptr) {
-    _G();
     return ((core::RP_Create_wrapped<llvmo::ModulePass_O, llvm::ModulePass *>(ptr)));
   }
 };
@@ -927,7 +923,6 @@ namespace translate {
 template <>
 struct to_object<llvm::ImmutablePass *> {
   static core::T_sp convert(llvm::ImmutablePass *ptr) {
-    _G();
     return ((core::RP_Create_wrapped<llvmo::ImmutablePass_O, llvm::ImmutablePass *>(ptr)));
   }
 };
@@ -991,7 +986,6 @@ namespace translate {
 template <>
   struct to_object<llvm::legacy::PassManagerBase *> {
   static core::T_sp convert(llvm::legacy::PassManagerBase *ptr) {
-    _G();
     return ((core::RP_Create_wrapped<llvmo::PassManagerBase_O, llvm::legacy::PassManagerBase *>(ptr)));
   }
 };
@@ -1077,7 +1071,6 @@ namespace translate {
 template <>
 struct to_object<llvm::Value *> {
   static core::T_sp convert(llvm::Value *ptr) {
-    _G();
     return ((llvmo::Value_O::create(ptr)));
   }
 };
@@ -1161,7 +1154,6 @@ namespace translate {
 template <>
 struct to_object<llvm::Metadata *> {
   static core::T_sp convert(llvm::Metadata *ptr) {
-    _G();
     return ((llvmo::Metadata_O::create(ptr)));
   }
 };
@@ -1217,7 +1209,6 @@ struct from_object<llvm::Attribute::AttrKind, std::true_type> {
   typedef llvm::Attribute::AttrKind DeclareType;
   DeclareType _v;
   from_object(core::T_sp object) {
-    _G();
     if (core::Symbol_sp sym = object.asOrNull<core::Symbol_O>()) {
       core::SymbolToEnumConverter_sp converter = gc::As<core::SymbolToEnumConverter_sp>(llvmo::_sym_AttributeEnum->symbolValue());
       this->_v = converter->enumForSymbol<llvm::Attribute::AttrKind>(sym);
@@ -1241,7 +1232,6 @@ namespace translate {
 template <>
 struct to_object<llvm::Attribute> {
   static core::T_sp convert(llvm::Attribute attr) {
-    _G();
     GC_ALLOCATE(llvmo::Attribute_O, oattr);
     oattr->setAttribute(attr);
     return ((oattr));
@@ -1339,7 +1329,6 @@ namespace translate {
 template <>
 struct to_object<llvm::Constant *> {
   static core::T_sp convert(llvm::Constant *ptr) {
-    _G();
     return ((core::RP_Create_wrapped<llvmo::Constant_O, llvm::Constant *>(ptr)));
   };
 };
@@ -1560,7 +1549,6 @@ namespace translate {
 template <>
 struct to_object<llvm::GlobalVariable *> {
   static core::T_sp convert(llvm::GlobalVariable *ptr) {
-    _G();
     if (ptr)
       return ((core::RP_Create_wrapped<llvmo::GlobalVariable_O, llvm::GlobalVariable *>(ptr)));
     return _Nil<core::T_O>();
@@ -1721,7 +1709,6 @@ namespace translate {
 template <>
 struct to_object<llvm::Module *> {
   static core::T_sp convert(llvm::Module *ptr) {
-    _G();
     return ((core::RP_Create_wrapped<llvmo::Module_O, llvm::Module *>(ptr)));
   }
 };
@@ -1745,7 +1732,6 @@ namespace translate {
 template <>
 struct to_object<llvm::ExecutionEngine *> {
   static core::T_sp convert(llvm::ExecutionEngine *ptr) {
-    _G();
     return ((core::RP_Create_wrapped<llvmo::ExecutionEngine_O, llvm::ExecutionEngine *>(ptr)));
   }
 };
@@ -1795,14 +1781,12 @@ struct from_object<llvm::TargetLibraryInfoWrapperPass const &, std::true_type> {
 template <>
 struct to_object<llvm::TargetLibraryInfoWrapperPass *> {
   static core::T_sp convert(llvm::TargetLibraryInfoWrapperPass *ptr) {
-    _G();
     return ((core::RP_Create_wrapped<llvmo::TargetLibraryInfoWrapperPass_O, llvm::TargetLibraryInfoWrapperPass *>(ptr)));
   }
 };
 template <>
 struct to_object<const llvm::TargetLibraryInfoWrapperPass *> {
   static core::T_sp convert(const llvm::TargetLibraryInfoWrapperPass *ptr) {
-    _G();
     return ((core::RP_Create_wrapped<llvmo::TargetLibraryInfoWrapperPass_O, llvm::TargetLibraryInfoWrapperPass *>(const_cast<llvm::TargetLibraryInfoWrapperPass *>(ptr))));
   }
 };
@@ -1904,7 +1888,6 @@ namespace translate {
 template <>
   struct to_object<llvm::legacy::PassManager *> {
   static core::T_sp convert(llvm::legacy::PassManager *ptr) {
-    _G();
     return ((core::RP_Create_wrapped<llvmo::PassManager_O, llvm::legacy::PassManager *>(ptr)));
   }
 };
@@ -1971,7 +1954,6 @@ struct from_object<llvm::EngineBuilder *, std::true_type> {
   typedef llvm::EngineBuilder *DeclareType;
   DeclareType _v;
   from_object(T_P object) {
-    _G();
     this->_v = (gc::As<llvmo::EngineBuilder_sp>(object)->wrappedPtr());
   };
 };
@@ -2037,7 +2019,6 @@ template <>
   typedef llvm::PassManagerBuilder *DeclareType;
   DeclareType _v;
   from_object(T_P object) {
-    _G();
     this->_v = (gc::As<llvmo::PassManagerBuilder_sp>(object)->wrappedPtr());
   };
 };
@@ -2182,7 +2163,6 @@ namespace translate {
 template <>
 struct to_object<llvm::IRBuilderBase *> {
   static core::T_sp convert(llvm::IRBuilderBase *ptr) {
-    _G();
     return ((llvmo::IRBuilderBase_O::create(ptr)));
   }
 };
@@ -2315,7 +2295,6 @@ namespace translate {
 template <>
 struct to_object<llvm::StoreInst *> {
   static core::T_sp convert(llvm::StoreInst *ptr) {
-    _G();
     return ((core::RP_Create_wrapped<llvmo::StoreInst_O, llvm::StoreInst *>(ptr)));
   }
 };
@@ -2357,7 +2336,6 @@ namespace translate {
 template <>
 struct to_object<llvm::FenceInst *> {
   static core::T_sp convert(llvm::FenceInst *ptr) {
-    _G();
     return ((core::RP_Create_wrapped<llvmo::FenceInst_O, llvm::FenceInst *>(ptr)));
   }
 };
@@ -2399,7 +2377,6 @@ namespace translate {
 template <>
 struct to_object<llvm::AtomicCmpXchgInst *> {
   static core::T_sp convert(llvm::AtomicCmpXchgInst *ptr) {
-    _G();
     return ((core::RP_Create_wrapped<llvmo::AtomicCmpXchgInst_O, llvm::AtomicCmpXchgInst *>(ptr)));
   }
 };
@@ -2441,7 +2418,6 @@ namespace translate {
 template <>
 struct to_object<llvm::AtomicRMWInst *> {
   static core::T_sp convert(llvm::AtomicRMWInst *ptr) {
-    _G();
     return ((core::RP_Create_wrapped<llvmo::AtomicRMWInst_O, llvm::AtomicRMWInst *>(ptr)));
   }
 };
@@ -2483,7 +2459,6 @@ namespace translate {
 template <>
 struct to_object<llvm::PHINode *> {
   static core::T_sp convert(llvm::PHINode *ptr) {
-    _G();
     return ((core::RP_Create_wrapped<llvmo::PHINode_O, llvm::PHINode *>(ptr)));
   }
 };
@@ -2529,7 +2504,6 @@ namespace translate {
 template <>
 struct to_object<llvm::CallInst *> {
   static core::T_sp convert(llvm::CallInst *ptr) {
-    _G();
     return ((core::RP_Create_wrapped<llvmo::CallInst_O, llvm::CallInst *>(ptr)));
   }
 };
@@ -2571,7 +2545,6 @@ namespace translate {
 template <>
 struct to_object<llvm::LandingPadInst *> {
   static core::T_sp convert(llvm::LandingPadInst *ptr) {
-    _G();
     return ((core::RP_Create_wrapped<llvmo::LandingPadInst_O, llvm::LandingPadInst *>(ptr)));
   }
 };
@@ -2633,7 +2606,6 @@ namespace translate {
 template <>
 struct to_object<llvm::AllocaInst *> {
   static core::T_sp convert(llvm::AllocaInst *ptr) {
-    _G();
     return ((core::RP_Create_wrapped<llvmo::AllocaInst_O, llvm::AllocaInst *>(ptr)));
   }
 };
@@ -2675,7 +2647,6 @@ namespace translate {
 template <>
 struct to_object<llvm::VAArgInst *> {
   static core::T_sp convert(llvm::VAArgInst *ptr) {
-    _G();
     return ((core::RP_Create_wrapped<llvmo::VAArgInst_O, llvm::VAArgInst *>(ptr)));
   }
 };
@@ -2717,7 +2688,6 @@ namespace translate {
 template <>
 struct to_object<llvm::LoadInst *> {
   static core::T_sp convert(llvm::LoadInst *ptr) {
-    _G();
     return ((core::RP_Create_wrapped<llvmo::LoadInst_O, llvm::LoadInst *>(ptr)));
   }
 };
@@ -2780,7 +2750,6 @@ namespace translate {
 template <>
 struct to_object<llvm::BranchInst *> {
   static core::T_sp convert(llvm::BranchInst *ptr) {
-    _G();
     return ((core::RP_Create_wrapped<llvmo::BranchInst_O, llvm::BranchInst *>(ptr)));
   }
 };
@@ -2824,7 +2793,6 @@ namespace translate {
 template <>
 struct to_object<llvm::SwitchInst *> {
   static core::T_sp convert(llvm::SwitchInst *ptr) {
-    _G();
     return ((core::RP_Create_wrapped<llvmo::SwitchInst_O, llvm::SwitchInst *>(ptr)));
   }
 };
@@ -2866,7 +2834,6 @@ namespace translate {
 template <>
 struct to_object<llvm::IndirectBrInst *> {
   static core::T_sp convert(llvm::IndirectBrInst *ptr) {
-    _G();
     return ((core::RP_Create_wrapped<llvmo::IndirectBrInst_O, llvm::IndirectBrInst *>(ptr)));
   }
 };
@@ -2912,7 +2879,6 @@ namespace translate {
 template <>
 struct to_object<llvm::InvokeInst *> {
   static core::T_sp convert(llvm::InvokeInst *ptr) {
-    _G();
     return ((core::RP_Create_wrapped<llvmo::InvokeInst_O, llvm::InvokeInst *>(ptr)));
   }
 };
@@ -2954,7 +2920,6 @@ namespace translate {
 template <>
 struct to_object<llvm::ResumeInst *> {
   static core::T_sp convert(llvm::ResumeInst *ptr) {
-    _G();
     return ((core::RP_Create_wrapped<llvmo::ResumeInst_O, llvm::ResumeInst *>(ptr)));
   }
 };
@@ -2996,7 +2961,6 @@ namespace translate {
 template <>
 struct to_object<llvm::UnreachableInst *> {
   static core::T_sp convert(llvm::UnreachableInst *ptr) {
-    _G();
     return ((core::RP_Create_wrapped<llvmo::UnreachableInst_O, llvm::UnreachableInst *>(ptr)));
   }
 };
@@ -3038,7 +3002,6 @@ namespace translate {
 template <>
 struct to_object<llvm::ReturnInst *> {
   static core::T_sp convert(llvm::ReturnInst *ptr) {
-    _G();
     return ((core::RP_Create_wrapped<llvmo::ReturnInst_O, llvm::ReturnInst *>(ptr)));
   }
 };
@@ -3076,7 +3039,6 @@ namespace translate {
 template <>
 struct to_object<llvm::ConstantFP *> {
   static core::T_sp convert(llvm::ConstantFP *ptr) {
-    _G();
     return ((llvmo::ConstantFP_O::create(ptr)));
   }
 };
@@ -3113,7 +3075,6 @@ namespace translate {
 template <>
 struct to_object<llvm::ConstantInt *> {
   static core::T_sp convert(llvm::ConstantInt *ptr) {
-    _G();
     return ((llvmo::ConstantInt_O::create(ptr)));
   }
 };
@@ -3149,7 +3110,6 @@ namespace translate {
 template <>
 struct to_object<llvm::ConstantStruct *> {
   static core::T_sp convert(llvm::ConstantStruct *ptr) {
-    _G();
     return ((llvmo::ConstantStruct_O::create(ptr)));
   }
 };
@@ -3187,7 +3147,6 @@ namespace translate {
 template <>
 struct to_object<llvm::UndefValue *> {
   static core::T_sp convert(llvm::UndefValue *ptr) {
-    _G();
     return ((llvmo::UndefValue_O::create(ptr)));
   }
 };
@@ -3224,7 +3183,6 @@ namespace translate {
 template <>
 struct to_object<llvm::ConstantPointerNull *> {
   static core::T_sp convert(llvm::ConstantPointerNull *ptr) {
-    _G();
     return ((llvmo::ConstantPointerNull_O::create(ptr)));
   }
 };
@@ -3277,7 +3235,6 @@ namespace translate {
 template <>
 struct to_object<llvm::MDNode *> {
   static llvmo::MDNode_mv convert(llvm::MDNode *ptr) {
-    _G();
     return (Values(core::RP_Create_wrapped<llvmo::MDNode_O, llvm::MDNode *>(ptr)));
   }
 };
@@ -3324,7 +3281,6 @@ namespace translate {
 template <>
 struct to_object<llvm::MDString *> {
   static core::T_sp convert(llvm::MDString *ptr) {
-    _G();
     return ((core::RP_Create_wrapped<llvmo::MDString_O, llvm::MDString *>(ptr)));
   }
 };
@@ -3371,7 +3327,6 @@ namespace translate {
 template <>
 struct to_object<llvm::ValueAsMetadata *> {
   static core::T_sp convert(llvm::ValueAsMetadata *ptr) {
-    _G();
     return ((core::RP_Create_wrapped<llvmo::ValueAsMetadata_O, llvm::ValueAsMetadata *>(ptr)));
   }
 };
@@ -3425,7 +3380,6 @@ namespace translate {
 template <>
 struct to_object<llvm::NamedMDNode *> {
   static llvmo::NamedMDNode_mv convert(llvm::NamedMDNode *ptr) {
-    _G();
     return (Values(core::RP_Create_wrapped<llvmo::NamedMDNode_O, llvm::NamedMDNode *>(ptr)));
   }
 };
@@ -3442,14 +3396,6 @@ class Function_O : public GlobalValue_O {
 GCPRIVATE:
   core::LoadTimeValues_sp _RunTimeValues;
 
-public:
-#if 0
-  /*! If a Function is compiled with COMPILE then quoted values and literals need to be stored
-	  somewhere.  We store them in a LoadTimeValue array and associate it with the Function
-	  so that if the Function is destructed then the LoadTimeValues get destructed as well */
-  void setLiterals(core::LoadTimeValues_sp ltv);
-  core::LoadTimeValues_sp literals() const;
-#endif
 public:
   PointerToExternalType wrappedPtr() { return static_cast<PointerToExternalType>(this->_ptr); };
   PointerToExternalType wrappedPtr() const { return static_cast<PointerToExternalType>(this->_ptr); };
@@ -3477,7 +3423,6 @@ namespace translate {
 template <>
 struct to_object<llvm::Function *> {
   static core::T_sp convert(llvm::Function *ptr) {
-    _G();
     if (ptr == NULL)
       return ((_Nil<core::T_O>()));
     return ((core::RP_Create_wrapped<llvmo::Function_O, llvm::Function *>(ptr)));
@@ -3487,7 +3432,6 @@ struct to_object<llvm::Function *> {
 template <>
 struct to_object<const llvm::Function &> {
   static core::T_sp convert(const llvm::Function &val) {
-    _G();
     return ((core::RP_Create_wrapped<llvmo::Function_O, llvm::Function *>(const_cast<llvm::Function *>(&val))));
   };
 };
@@ -3549,7 +3493,6 @@ namespace translate {
 template <>
 struct to_object<llvm::BasicBlock *> {
   static core::T_sp convert(llvm::BasicBlock *ptr) {
-    _G();
     if (ptr != NULL) {
       return ((core::RP_Create_wrapped<llvmo::BasicBlock_O, llvm::BasicBlock *>(ptr)));
     }
@@ -3594,14 +3537,12 @@ namespace translate {
 template <>
 struct to_object<llvm::Argument *> {
   static core::T_sp convert(llvm::Argument *ptr) {
-    _G();
     return ((core::RP_Create_wrapped<llvmo::Argument_O, llvm::Argument *>(ptr)));
   };
 };
 template <>
 struct to_object<llvm::Argument> {
   static core::T_sp convert(llvm::Argument &arg) {
-    _G();
     return ((core::RP_Create_wrapped<llvmo::Argument_O, llvm::Argument *>(&arg)));
   };
 };
@@ -3658,7 +3599,6 @@ struct from_object<llvm::Type *, std::true_type> {
   typedef llvm::Type *DeclareType;
   DeclareType _v;
   from_object(T_P object) {
-    _G();
     if ( object.nilp() ) {
       this->_v = NULL;
       return;
@@ -3671,7 +3611,6 @@ struct from_object<llvm::Type *, std::true_type> {
 template <>
 struct to_object<llvm::Type *> {
   static core::T_sp convert(llvm::Type *ptr) {
-    _G();
     return ((core::RP_Create_wrapped<llvmo::Type_O, llvm::Type *>(ptr)));
   };
 };
@@ -3705,7 +3644,6 @@ namespace translate {
 template <>
 struct to_object<llvm::FunctionType *> {
   static core::T_sp convert(llvm::FunctionType *ptr) {
-    _G();
     return ((core::RP_Create_wrapped<llvmo::FunctionType_O, llvm::FunctionType *>(ptr)));
   };
 };
@@ -3748,7 +3686,6 @@ namespace translate {
 template <>
 struct to_object<llvm::IntegerType *> {
   static core::T_sp convert(llvm::IntegerType *ptr) {
-    _G();
     return ((core::RP_Create_wrapped<llvmo::IntegerType_O, llvm::IntegerType *>(ptr)));
   };
 };
@@ -3839,7 +3776,6 @@ namespace translate {
 template <>
 struct to_object<llvm::StructType *> {
   static llvmo::StructType_mv convert(llvm::StructType *ptr) {
-    _G();
     return (Values(core::RP_Create_wrapped<llvmo::StructType_O, llvm::StructType *>(ptr)));
   };
 };
@@ -3882,7 +3818,6 @@ namespace translate {
 template <>
 struct to_object<llvm::SequentialType *> {
   static core::T_sp convert(llvm::SequentialType *ptr) {
-    _G();
     return ((core::RP_Create_wrapped<llvmo::SequentialType_O, llvm::SequentialType *>(ptr)));
   };
 };
@@ -3928,7 +3863,6 @@ namespace translate {
 template <>
 struct to_object<llvm::PointerType *> {
   static llvmo::PointerType_mv convert(llvm::PointerType *ptr) {
-    _G();
     return (Values(core::RP_Create_wrapped<llvmo::PointerType_O, llvm::PointerType *>(ptr)));
   };
 };
@@ -3971,7 +3905,6 @@ namespace translate {
 template <>
 struct to_object<llvm::ArrayType *> {
   static core::T_sp convert(llvm::ArrayType *ptr) {
-    _G();
     return ((core::RP_Create_wrapped<llvmo::ArrayType_O, llvm::ArrayType *>(ptr)));
   };
 };
@@ -4014,7 +3947,6 @@ namespace translate {
 template <>
 struct to_object<llvm::VectorType *> {
   static core::T_sp convert(llvm::VectorType *ptr) {
-    _G();
     return ((core::RP_Create_wrapped<llvmo::VectorType_O, llvm::VectorType *>(ptr)));
   };
 };
@@ -4046,7 +3978,6 @@ struct from_object<llvm::GlobalValue::LinkageTypes, std::true_type> {
   typedef llvm::GlobalValue::LinkageTypes DeclareType;
   DeclareType _v;
   from_object(T_P object) {
-    _G();
     if (core::Symbol_sp sym = object.asOrNull<core::Symbol_O>()) {
       core::SymbolToEnumConverter_sp converter = gc::As<core::SymbolToEnumConverter_sp>(llvmo::_sym_STARglobal_value_linkage_typesSTAR->symbolValue());
       this->_v = converter->enumForSymbol<llvm::GlobalValue::LinkageTypes>(sym);
@@ -4061,7 +3992,6 @@ struct from_object<llvm::GlobalValue::ThreadLocalMode, std::true_type> {
   typedef llvm::GlobalValue::ThreadLocalMode DeclareType;
   DeclareType _v;
   from_object(T_P object) {
-    _G();
     if (object.notnilp()) {
       if (core::Symbol_sp sym = object.asOrNull<core::Symbol_O>()) {
         core::SymbolToEnumConverter_sp converter = gc::As<core::SymbolToEnumConverter_sp>(llvmo::_sym_STARglobal_ThreadLocalModesSTAR->symbolValue());
@@ -4078,7 +4008,6 @@ struct from_object<llvm::AtomicOrdering, std::true_type> {
   typedef llvm::AtomicOrdering DeclareType;
   DeclareType _v;
   from_object(core::T_sp object) {
-    _G();
     if (object.notnilp()) {
       if (core::Symbol_sp sym = object.asOrNull<core::Symbol_O>()) {
         core::SymbolToEnumConverter_sp converter = gc::As<core::SymbolToEnumConverter_sp>(llvmo::_sym_STARatomic_orderingSTAR->symbolValue());
@@ -4095,7 +4024,6 @@ struct from_object<llvm::AtomicRMWInst::BinOp, std::true_type> {
   typedef llvm::AtomicRMWInst::BinOp DeclareType;
   DeclareType _v;
   from_object(T_P object) {
-    _G();
     if (core::Symbol_sp sym = object.asOrNull<core::Symbol_O>()) {
       core::SymbolToEnumConverter_sp converter = gc::As<core::SymbolToEnumConverter_sp>(llvmo::_sym_STARAtomicRMWInstBinOpSTAR->symbolValue());
       this->_v = converter->enumForSymbol<llvm::AtomicRMWInst::BinOp>(sym);
@@ -4110,7 +4038,6 @@ struct from_object<llvm::Instruction::CastOps, std::true_type> {
   typedef llvm::Instruction::CastOps DeclareType;
   DeclareType _v;
   from_object(T_P object) {
-    _G();
     if (core::Symbol_sp sym = object.asOrNull<core::Symbol_O>()) {
       core::SymbolToEnumConverter_sp converter = gc::As<core::SymbolToEnumConverter_sp>(llvmo::_sym_STARInstructionCastOpsSTAR->symbolValue());
       this->_v = converter->enumForSymbol<llvm::Instruction::CastOps>(sym);
@@ -4125,7 +4052,6 @@ struct from_object<llvm::Instruction::BinaryOps, std::true_type> {
   typedef llvm::Instruction::BinaryOps DeclareType;
   DeclareType _v;
   from_object(T_P object) {
-    _G();
     if (core::Symbol_sp sym = object.asOrNull<core::Symbol_O>()) {
       core::SymbolToEnumConverter_sp converter = gc::As<core::SymbolToEnumConverter_sp>(llvmo::_sym_STARBinaryOpsSTAR->symbolValue());
       this->_v = converter->enumForSymbol<llvm::Instruction::BinaryOps>(sym);
@@ -4140,7 +4066,6 @@ struct from_object<llvm::CmpInst::Predicate, std::true_type> {
   typedef llvm::CmpInst::Predicate DeclareType;
   DeclareType _v;
   from_object(T_P object) {
-    _G();
     if (core::Symbol_sp sym = object.asOrNull<core::Symbol_O>()) {
       core::SymbolToEnumConverter_sp converter = gc::As<core::SymbolToEnumConverter_sp>(llvmo::_sym_STARCmpInstPredicateSTAR->symbolValue());
       this->_v = converter->enumForSymbol<llvm::CmpInst::Predicate>(sym);
@@ -4158,6 +4083,7 @@ namespace llvmo {
   Module_sp llvm_sys__parseIRFile(core::T_sp filename, LLVMContext_sp context);
 
 void initialize_llvmo_expose();
+
 }
 
 
@@ -4202,7 +4128,7 @@ namespace llvmo {
 
     ClaspJIT_O();
 
-    TargetMachine &getTargetMachine() { return *TM; }
+    TargetMachine& getTargetMachine();
 
     ModuleHandle_sp addModule(Module_sp M);
     core::Pointer_sp findSymbol(const std::string& Name);

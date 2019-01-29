@@ -27,6 +27,7 @@ THE SOFTWARE.
 #ifndef llvmo_intrinsics_H
 #define llvmo_intrinsics_H
 
+
 // If functions are defined with primitive-nounwind that means that they never unwind the stack and they can
 //   be invoked from generated code using 'call'.  If they do unwind the stack, then any function that invokes
 //   them with 'call' will fail to cleanup the stack and that will cause a failure.
@@ -179,15 +180,10 @@ core::T_O* to_object_pointer( void * x );
 // END OF T R A N S L A T O R S
 // ----------------------------------------------------------------------------
 
-gctools::return_type cc_dispatch_effective_method(core::T_O* teffective_method, core::T_O* tgf, core::T_O* tgf_args_valist_s);
 };
 
 extern "C" {
 extern int64_t cc_read_stamp(void* tagged_pointer);
-[[noreturn]] void cc_error_too_few_arguments(size_t nargs, size_t minargs, core::FunctionDescription* functionDescription);
-[[noreturn]] void cc_error_too_many_arguments(size_t nargs, size_t maxargs,  core::FunctionDescription* functionDescription);
-
-
 }
 namespace llvmo {
 
@@ -220,5 +216,14 @@ namespace llvmo {
   [[noreturn]] void not_function_designator_error(core::T_sp datum);
   void initialize_raw_translators( void );
 }
+
+extern "C" {
+uint8_t * 
+mygetsectiondata( void* mhp, //const struct mach_header_64 *mhp,
+                  const char *segname,
+                  const char *sectname,
+                  unsigned long *size);
+};
+
 
 #endif

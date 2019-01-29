@@ -518,14 +518,14 @@ CL_DEFUN size_t core__arrayFlags(Array_sp a)
 CL_DEFUN void core__mdarray_dump(Array_sp a)
 {
   MDArray_sp mda = gc::As<MDArray_sp>(a);
-  BFORMAT_T(BF("MDArray address = %p\n") % (void*)&*mda);
-  BFORMAT_T(BF("MDArray _ArrayTotalSize = %d\n") % mda->_ArrayTotalSize);
-  BFORMAT_T(BF("MDArray _Data = %p\n") % (void*)&*(mda->_Data));
-  BFORMAT_T(BF("MDArray _DisplacedIndexOffset = %d\n") % mda->_DisplacedIndexOffset);
-  BFORMAT_T(BF("MDArray _Flags = %d\n") % mda->_Flags._Flags);
-  BFORMAT_T(BF("MDArray _Dimensions._Length = %d\n") % mda->_Dimensions._Length);
+  write_bf_stream(BF("MDArray address = %p\n") % (void*)&*mda);
+  write_bf_stream(BF("MDArray _ArrayTotalSize = %d\n") % mda->_ArrayTotalSize);
+  write_bf_stream(BF("MDArray _Data = %p\n") % (void*)&*(mda->_Data));
+  write_bf_stream(BF("MDArray _DisplacedIndexOffset = %d\n") % mda->_DisplacedIndexOffset);
+  write_bf_stream(BF("MDArray _Flags = %d\n") % mda->_Flags._Flags);
+  write_bf_stream(BF("MDArray _Dimensions._Length = %d\n") % mda->_Dimensions._Length);
   for ( size_t i(0); i<mda->_Dimensions._Length; ++i ) {
-    BFORMAT_T(BF("MDArray _Dimensions[%d = %d\n") % i % mda->_Dimensions[i]);
+    write_bf_stream(BF("MDArray _Dimensions[%d = %d\n") % i % mda->_Dimensions[i]);
   }
 }
 
@@ -798,7 +798,7 @@ CL_DECLARE();
 CL_DOCSTRING("string_upcase");
 CL_DEFUN SimpleString_sp cl__string_upcase(T_sp arg) {
   String_sp str = coerce::stringDesignator(arg);
-  SimpleString_sp result = core__make_vector(str->arrayElementType(),str->length(),false);
+  SimpleString_sp result = gc::As_unsafe<SimpleString_sp>(core__make_vector(str->arrayElementType(),str->length(),false));
   for ( size_t i(0), iEnd(str->length()); i<iEnd; ++i ) {
     T_sp cc = str->rowMajorAref(i);
     claspCharacter c = cc.unsafe_character();
@@ -815,7 +815,7 @@ CL_DECLARE();
 CL_DOCSTRING("string_downcase");
 CL_DEFUN SimpleString_sp cl__string_downcase(T_sp arg) {
   String_sp str = coerce::stringDesignator(arg);
-  SimpleString_sp result = core__make_vector(str->arrayElementType(),str->length(),false);
+  SimpleString_sp result = gc::As_unsafe<SimpleString_sp>(core__make_vector(str->arrayElementType(),str->length(),false));
   for ( size_t i(0), iEnd(str->length()); i<iEnd; ++i ) {
     claspCharacter c = str->rowMajorAref(i).unsafe_character();
     claspCharacter u = claspCharacter_downcase(c);
@@ -1069,9 +1069,7 @@ T_sp template_string_LE_(const T1& string1, const T2& string2, size_t start1, si
     ++cp2;
   }
  END_STRING1:
-  if (num2 == 0)
     goto RETURN_TRUE;
-  goto RETURN_FALSE;
  END_STRING2:
  RETURN_FALSE:
   return _Nil<T_O>();
@@ -1188,8 +1186,8 @@ T_sp template_string_lessp(const T1& string1, const T2& string2, size_t start1, 
       goto END_STRING1;
     if (num2 == 0)
       goto END_STRING2;
-    char ucp1 = toupper(static_cast<claspCharacter>(*cp1));
-    char ucp2 = toupper(static_cast<claspCharacter>(*cp2));
+    claspCharacter ucp1 = toupper(static_cast<claspCharacter>(*cp1));
+    claspCharacter ucp2 = toupper(static_cast<claspCharacter>(*cp2));
     if (ucp1 != ucp2) {
       if (ucp1 < ucp2)
         goto RETURN_TRUE;
@@ -1222,8 +1220,8 @@ T_sp template_string_greaterp(const T1& string1, const T2& string2, size_t start
       goto END_STRING1;
     if (num2 == 0)
       goto END_STRING2;
-    char ucp1 = toupper(static_cast<claspCharacter>(*cp1));
-    char ucp2 = toupper(static_cast<claspCharacter>(*cp2));
+    claspCharacter ucp1 = toupper(static_cast<claspCharacter>(*cp1));
+    claspCharacter ucp2 = toupper(static_cast<claspCharacter>(*cp2));
     if ((ucp1 != ucp2)) {
       if (ucp1 > ucp2)
         goto RETURN_TRUE;
@@ -1256,8 +1254,8 @@ T_sp template_string_not_greaterp(const T1& string1, const T2& string2, size_t s
       goto END_STRING1;
     if (num2 == 0)
       goto END_STRING2;
-    char ucp1 = toupper(static_cast<claspCharacter>(*cp1));
-    char ucp2 = toupper(static_cast<claspCharacter>(*cp2));
+    claspCharacter ucp1 = toupper(static_cast<claspCharacter>(*cp1));
+    claspCharacter ucp2 = toupper(static_cast<claspCharacter>(*cp2));
     if ((ucp1 != ucp2)) {
       if (ucp1 < ucp2)
         goto RETURN_TRUE;
@@ -1269,9 +1267,7 @@ T_sp template_string_not_greaterp(const T1& string1, const T2& string2, size_t s
     ++cp2;
   }
  END_STRING1:
-  if (num2 == 0)
     goto RETURN_TRUE;
-  goto RETURN_FALSE;
  END_STRING2:
  RETURN_FALSE:
   return _Nil<T_O>();
@@ -1294,8 +1290,8 @@ T_sp template_string_not_lessp(const T1& string1, const T2& string2, size_t star
       goto END_STRING1;
     if (num2 == 0)
       goto END_STRING2;
-    char ucp1 = toupper(static_cast<claspCharacter>(*cp1));
-    char ucp2 = toupper(static_cast<claspCharacter>(*cp2));
+    claspCharacter ucp1 = toupper(static_cast<claspCharacter>(*cp1));
+    claspCharacter ucp2 = toupper(static_cast<claspCharacter>(*cp2));
     if ((ucp1 != ucp2)) {
       if (ucp1 > ucp2)
         goto RETURN_TRUE;
@@ -1623,6 +1619,13 @@ CL_DEFUN T_sp cl__make_string(Fixnum_sp size, T_sp initial_element, T_sp element
   if (!initial_element.characterp()) {
     TYPE_ERROR(initial_element,cl::_sym_character);
   }
+  if (!size.fixnump()) {
+    TYPE_ERROR(size,cl::_sym_fixnum);
+  }
+  Fixnum sz = size.unsafe_fixnum();
+  if (sz < 0 ) {
+    SIMPLE_ERROR(BF("Size must be >= 0"));
+  }
   claspCharacter initial_element_cc = initial_element.unsafe_character();
   if ( element_type == cl::_sym_base_char ) {
     if (!clasp_base_char_p(initial_element_cc)) {
@@ -1729,7 +1732,7 @@ cl_index fsmInteger(mpz_class &result, cl_index &numDigits, bool &sawJunk, Strin
   numDigits = 0;
   cl_index cur = istart;
   while (1) {
-    claspCharacter c = clasp_as_claspCharacter(str->rowMajorAref(cur));
+    claspCharacter c = clasp_as_claspCharacter(gc::As_unsafe<Character_sp>(str->rowMajorAref(cur)));
     LOG(BF("fsmInteger str[%d] -> c = [%d/%c]") % cur  % c % c );
     switch (state) {
       LOG(BF("  top state = %d") % state);
@@ -1836,7 +1839,12 @@ CL_DEFUN T_mv cl__parse_integer(String_sp str, Fixnum start, T_sp end, uint radi
       LOG(BF("Returning parse-integer with result = %s  cur = %d") % _rep_(iresult) % cur );
       return (Values(iresult, make_fixnum(cur)));
     } else {
-      return (Values(_Nil<T_O>(), make_fixnum(cur)));
+      //If junk-allowed is false, an error of type parse-error is signaled if substring does not consist entirely of the representation
+      // of a signed integer, possibly surrounded on either side by whitespace[1] characters.
+      // The first value returned is either the integer that was parsed, or else nil if no syntactically correct integer was seen but junk-allowed was true.
+      if (junkAllowed.notnilp())
+        return (Values(_Nil<T_O>(), make_fixnum(cur)));
+      else PARSE_ERROR(SimpleBaseString_O::make("Could not parse integer from ~S"), Cons_O::create(str,_Nil<T_O>()));
     }
   }
   PARSE_ERROR(SimpleBaseString_O::make("Could not parse integer from ~S"), Cons_O::create(str,_Nil<T_O>()));
@@ -2020,6 +2028,7 @@ SimpleBitVector_sp SimpleBitVector_copy(SimpleBitVector_sp orig_sbv)
 }
 
 Array_sp SimpleBitVector_O::unsafe_subseq(size_t start, size_t end) const {
+  BOUNDS_ASSERT(0<=start&&start<end&&end<=this->length());
   SimpleBitVector_sp sbv = SimpleBitVector_O::make(end-start);
   for (size_t i(0),iEnd(end-start);i<iEnd;++i) {
     sbv->setBit(i,this->testBit(start+i));
@@ -2028,6 +2037,7 @@ Array_sp SimpleBitVector_O::unsafe_subseq(size_t start, size_t end) const {
 }
 
 Array_sp SimpleBitVector_O::unsafe_setf_subseq(size_t start, size_t end, Array_sp other) {
+  BOUNDS_ASSERT(0<=start&&start<end&&end<=this->length());
   if (SimpleBitVector_sp sbv = other.asOrNull<SimpleBitVector_O>()) {
       // TODO: Write specialized versions of this to speed it up
     for ( size_t i(start),ni(0); i<end; ++i,++ni ) {
@@ -2070,7 +2080,7 @@ void SimpleBitVector_O::unsafe_fillArrayWithElt(T_sp initialElement, size_t star
 void SimpleBitVector_O::unsafe_fillArrayWithElt(T_sp initialElement, size_t start, size_t end) {
   if (CLASP_FIXNUMP (initialElement))
   {
-    Fixnum zero_or_one = clasp_fixnum(gc::As<core::Fixnum_sp>(initialElement));
+    Fixnum zero_or_one = gc::As<core::Fixnum_sp>(initialElement).unsafe_fixnum();
     if ((zero_or_one == 0) || (zero_or_one == 1)) {
       for (size_t i(start),iEnd(end); i<iEnd; ++i) {
         this->setBit(i, zero_or_one);
@@ -2511,8 +2521,8 @@ string string_get_std_string(T_sp str) {
   };
   return gc::As<String_sp>(str)->get_std_string();
 };
-T_sp str_create(const string &str) { return SimpleBaseString_O::make(str); };
-T_sp str_create(const char *str) { return SimpleBaseString_O::make(std::string(str)); };
+SimpleBaseString_sp str_create(const string &str) { return SimpleBaseString_O::make(str); };
+SimpleBaseString_sp str_create(const char *str) { return SimpleBaseString_O::make(std::string(str)); };
 
 
 };
@@ -2986,7 +2996,7 @@ bool template_fits_in_base_string(const T1& sub, size_t start, size_t end)
   return true;
 }
 
-bool core__fits_in_base_string(T_sp tstr) {
+CL_DEFUN bool core__fits_in_base_string(T_sp tstr) {
   String_sp str = gc::As<String_sp>(tstr);
   TEMPLATE_SINGLE_STRING_DISPATCHER(str,template_fits_in_base_string,0,str->length());
 }
@@ -3024,7 +3034,7 @@ CL_DEFUN Array_sp core__coerce_to_byte8_vector(T_sp object)
 }
 
 // Create a base-char simple vector from any array
-CL_DEFUN Array_sp core__coerce_memory_to_foreign_data(Array_sp source)
+CL_DEFUN clasp_ffi::ForeignData_sp core__coerce_memory_to_foreign_data(Array_sp source)
 {
   T_sp element_type = source->element_type();
   if (element_type == cl::_sym_single_float) {

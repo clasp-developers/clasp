@@ -12,9 +12,6 @@
   (:export
    #:*use-cst*
    #:literal
-   #:literal-label
-   #:immediate-literal
-   #:arrayed-literal
    #:%literal-index
    #:*clasp-ordinary-lambda-list-grammar*
    #:*use-type-inference*
@@ -61,7 +58,7 @@
    #:named-function-ast
    #:original-lambda-list
    #:docstring
-   #:declares
+   #:rest-alloc
    #:debug-message-ast
    #:debug-break-ast
    #:multiple-value-foreign-call-ast
@@ -70,6 +67,7 @@
    #:argument-asts
    #:function-name
    #:foreign-types
+   #:defcallback-ast #:defcallback-args
    #:make-throw-ast
    #:cleanup-ast
    #:make-setf-fdefinition-ast
@@ -90,7 +88,11 @@
    #:array-total-size-ast #:array-total-size-ast-mdarray
    #:array-rank-ast #:array-rank-ast-mdarray
    #:array-dimension-ast #:array-dimension-ast-mdarray #:array-dimension-ast-axis
+   #:vaslist-pop-ast
+   #:instance-stamp-ast
    #:bind-va-list-ast #:make-bind-va-list-ast #:va-list-ast
+   #:invoke-ast #:multiple-value-invoke-ast #:destinations
+   #:introduce-invoke
    ))
 
 (defpackage #:clasp-cleavir-hir
@@ -104,7 +106,7 @@
    #:lambda-list
    #:original-lambda-list
    #:docstring
-   #:declares
+   #:rest-alloc
    #:make-named-enter-instruction
    #:debug-message-instruction
    #:debug-break-instruction
@@ -121,11 +123,12 @@
    #:make-setf-fdefinition-instruction
    #:make-throw-instruction
    #:lambda-name
-   #:precalc-value-instruction
+   #:precalc-value-instruction #:precalc-value-instruction-p
    #:debug-message
    #:debug-break
    #:setf-fdefinition-instruction
    #:throw-instruction
+   #:precalc-value-instruction-index
    #:precalc-value-instruction-original-object
    #:instruction-id
    #:push-special-binding-instruction
@@ -138,7 +141,11 @@
    #:make-array-total-size-instruction
    #:make-array-rank-instruction
    #:make-array-dimension-instruction
+   #:vaslist-pop-instruction #:make-vaslist-pop-instruction
+   #:instance-stamp-instruction #:make-instance-stamp-instruction
    #:bind-va-list-instruction #:make-bind-va-list-instruction
+   #:defcallback-instruction #:defcallback-args
+   #:invoke-instruction #:multiple-value-invoke-instruction #:destinations
    ))
 
 (defpackage #:clasp-cleavir-ast-to-hir

@@ -67,19 +67,6 @@
 
 (export 'code-walk-using-cleavir)
 
-
-(defmethod make-load-form ((ast cleavir-ast:ast) &optional environment)
-  (values `(allocate-instance ',(class-of ast))
-          `(initialize-instance
-            ,ast
-            ,@(loop for (keyword reader)
-                    in (cleavir-io:save-info ast)
-                    for value = (funcall reader ast)
-                    collect `(quote ,keyword)
-                    collect `(quote ,value)))))
-
-;; Store
-
 ;; Generate an AST and save it for inlining if the
 ;; function is proclaimed as inline
 (defun defun-inline-hook (name function-form env)
@@ -128,5 +115,4 @@
 (export '(*simple-environment* *code-walker*))
 
 (eval-when (:compile-toplevel :execute :load-toplevel)
-  (setq core:*defun-inline-hook* 'defun-inline-hook)
   (setq core:*proclaim-hook* 'proclaim-hook))

@@ -71,7 +71,12 @@ bool HashTableEqualp_O::keyTest(T_sp entryKey, T_sp searchKey) const {
 
 gc::Fixnum HashTableEqualp_O::sxhashKey(T_sp obj, gc::Fixnum bound, bool willAddKey) const {
   HashGenerator hg;
+  // To be symmetric with other hash-table test types optionally pass this->_LocationDependency
+#ifdef USE_MPS
+  HashTable_O::sxhash_equalp(hg, obj, willAddKey ? const_cast<mps_ld_t>(&(this->_LocationDependency)) : NULL);
+#else
   HashTable_O::sxhash_equalp(hg, obj, NULL);
+#endif
   return hg.hash(bound);
 }
 

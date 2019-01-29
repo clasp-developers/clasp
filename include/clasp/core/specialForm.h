@@ -46,9 +46,6 @@ class SpecialForm_O : public Function_O {
 
 public: // virtual functions inherited from Object
   void initialize();
-#if defined(XML_ARCHIVE)
-  void archiveBase(ArchiveP node);
-#endif // defined(XML_ARCHIVE)
 //	string	__repr__() const;
 
 GCPRIVATE: // instance variables
@@ -62,7 +59,7 @@ public: // initialize
   virtual FunctionDescription* fdesc() const { return this->_FunctionDescription; };
   virtual void set_fdesc(FunctionDescription* address) { this->_FunctionDescription = address; };
 
-  LambdaListHandler_sp lambdaListHandler() const { SIMPLE_ERROR_SPRINTF("special-form does not implement lambdaListHandler");} ;
+  T_sp lambdaListHandler() const { SIMPLE_ERROR_SPRINTF("special-form does not implement lambdaListHandler");} ;
   string __repr__() const;
   T_mv evaluate(List_sp args, T_sp environment);
   SpecialForm_O(const SpecialForm_O &ss); //!< Copy constructor

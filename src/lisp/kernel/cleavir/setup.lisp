@@ -29,48 +29,30 @@ when this is t a lot of graphs will be generated.")
 
 (defmethod cleavir-generate-ast:convert-constant-to-immediate ((n integer) environment (system clasp))
   ;; convert fixnum into immediate but bignums return nil
-  (let ((result (core:create-tagged-immediate-value-or-nil n)))
-    (if result
-        (make-instance 'immediate-literal :value n :tagged-value result)
-        nil)))
+ (core:create-tagged-immediate-value-or-nil n))
 
 (defmethod cleavir-generate-ast:convert-constant-to-immediate ((n character) environment (system clasp))
   ;; convert character to an immediate
-  (let ((result (core:create-tagged-immediate-value-or-nil n)))
-    (if result
-        (make-instance 'immediate-literal :value n :tagged-value result)
-        nil)))
+  (core:create-tagged-immediate-value-or-nil n))
 
 (defmethod cleavir-generate-ast:convert-constant-to-immediate ((n float) environment (system clasp))
   ;; single-float's can be converted to immediates, anything else will return nil
-  (let ((result (core:create-tagged-immediate-value-or-nil n)))
-    (if result
-        (make-instance 'immediate-literal :value n :tagged-value result)
-        nil)))
+  (core:create-tagged-immediate-value-or-nil n))
 
 ;;; ------------------------------------------------------------
 ;;;
 ;;; cst-to-ast methods for convert-constant-to-immediate
 (defmethod cleavir-cst-to-ast:convert-constant-to-immediate ((n integer) environment (system clasp))
   ;; convert fixnum into immediate but bignums return nil
-  (let ((result (core:create-tagged-immediate-value-or-nil n)))
-    (if result
-        (make-instance 'immediate-literal :value n :tagged-value result)
-        nil)))
+  (core:create-tagged-immediate-value-or-nil n))
 
 (defmethod cleavir-cst-to-ast:convert-constant-to-immediate ((n character) environment (system clasp))
   ;; convert character to an immediate
-  (let ((result (core:create-tagged-immediate-value-or-nil n)))
-    (if result
-        (make-instance 'immediate-literal :value n :tagged-value result)
-        nil)))
+  (core:create-tagged-immediate-value-or-nil n))
 
 (defmethod cleavir-cst-to-ast:convert-constant-to-immediate ((n float) environment (system clasp))
   ;; single-float's can be converted to immediates, anything else will return nil
-  (let ((result (core:create-tagged-immediate-value-or-nil n)))
-    (if result
-        (make-instance 'immediate-literal :value n :tagged-value result)
-        nil)))
+  (core:create-tagged-immediate-value-or-nil n))
 
 (defmethod cleavir-env:variable-info ((environment clasp-global-environment) symbol)
   (core:stack-monitor)
@@ -85,12 +67,12 @@ when this is t a lot of graphs will be generated.")
         (;; Use Clasp's core:specialp test to determine if it is special.
          ;; Note that in Clasp constants are also special (FIXME?) so we
          ;; have to do this test after checking for constantness.
-         (core:specialp symbol)
+         (ext:specialp symbol)
 	 (make-instance 'cleavir-env:special-variable-info
             :name symbol
             :global-p t))
 	(;; Maybe it's a symbol macro.
-	 (core:symbol-macro symbol)
+	 (ext:symbol-macro symbol)
 	 (make-instance 'cleavir-env:symbol-macro-info
 	   :name symbol
 	   :expansion (macroexpand-1 symbol)))
@@ -123,6 +105,17 @@ when this is t a lot of graphs will be generated.")
   (core:get-sysprop name 'inline-ast))
 (defun (setf inline-ast) (ast name)
   (core:put-sysprop name 'inline-ast ast))
+
+;;; So that we can dump ASTs (for DEFUNs with an inline expansion)
+(defmethod make-load-form ((ast cleavir-ast:ast) &optional environment)
+  (values `(allocate-instance ,(class-of ast))
+          `(initialize-instance
+            ,ast
+            ,@(loop for (keyword reader)
+                    in (cleavir-io:save-info ast)
+                    for value = (funcall reader ast)
+                    collect `(quote ,keyword)
+                    collect `(quote ,value)))))
 
 (defmethod cleavir-env:function-info ((environment clasp-global-environment) function-name)
   (cond
@@ -191,19 +184,20 @@ when this is t a lot of graphs will be generated.")
   '(;; behavior as in convert-form.lisp
     core:lambda-name))
 
-(defvar *global-optimize*
-  ;; initial value, changed by de/proclaim
-  '((compilation-speed 1)
-    (debug 1)
-    (space 1)
-    (speed 1)
-    (safety 1)))
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defvar *global-optimize*
+    ;; initial value, changed by de/proclaim
+    '((compilation-speed 1)
+      (debug 1)
+      (space 1)
+      (speed 1)
+      (safety 1))))
 
 (eval-when (:compile-toplevel)
-  (format t "abut to compute-policy~%"))
+  (format t "about to compute-policy~%"))
 
 (defvar *global-policy*
-  (cleavir-policy:compute-policy *global-optimize* *clasp-env*))
+  '#.(cleavir-policy:compute-policy *global-optimize* *clasp-env*))
 
 (defmethod cleavir-env:optimize-info ((environment clasp-global-environment))
   ;; The default values are all 3.
@@ -249,7 +243,7 @@ when this is t a lot of graphs will be generated.")
       (class (return-from type-expand-1 (values type-specifier nil)))
       (symbol (setf head type-specifier tail nil))
       (cons (setf head (first type-specifier) tail (rest type-specifier))))
-    (let ((def (core::type-expander head)))
+    (let ((def (ext:type-expander head)))
       (if def
           (values (apply def tail) t)
           (values type-specifier nil)))))
@@ -346,29 +340,67 @@ when this is t a lot of graphs will be generated.")
       (with-open-file (stream pn :direction :output)
         (cleavir-ir-graphviz:draw-flowchart hir stream))
       pn)))
-    
+
+(defun draw-form-cst-hir (form)
+  "Generate a HIR graph for the form using the cst compiler"
+  (let (conditions result)
+    (cmp::with-compiler-env (conditions)
+      (let* ((module (cmp::create-run-time-module-for-compile)))
+        ;; Link the C++ intrinsics into the module
+        (cmp::with-module (:module module
+                           :optimize nil)
+          (cmp:with-debug-info-generator (:module module :pathname "dummy-file")
+            (literal:with-rtv
+                (let* ((cleavir-generate-ast:*compiler* 'cl:compile)
+                       (cst (cst:cst-from-expression form))
+                       (ast (cleavir-cst-to-ast:cst-to-ast cst nil clasp-cleavir::*clasp-system*))
+                       (hoisted-ast (clasp-cleavir::hoist-ast ast))
+                       (hir (clasp-cleavir::ast->hir hoisted-ast)))
+                  (setq result hir)
+                  (clasp-cleavir::draw-hir hir "/tmp/foo.dot")))))))
+    result))
+
+(defun draw-form-ast-hir (form)
+  "Generate a HIR graph for the form using the ast compiler"
+  (let (conditions)
+    (cmp::with-compiler-env (conditions)
+      (let* ((module (cmp::create-run-time-module-for-compile)))
+        ;; Link the C++ intrinsics into the module
+        (cmp::with-module (:module module
+                           :optimize nil)
+          (cmp:with-debug-info-generator (:module module :pathname "dummy-file")
+            (literal:with-rtv
+                (let* ((cleavir-generate-ast:*compiler* 'cl:compile)
+                       (ast (cleavir-generate-ast:generate-ast form nil clasp-cleavir::*clasp-system*))
+                       (hoisted-ast (clasp-cleavir::hoist-ast ast))
+                       (hir (clasp-cleavir::ast->hir hoisted-ast)))
+                  (clasp-cleavir::draw-hir hir "/tmp/foo.dot")
+                  hir))))))))
+
+(defun draw-ast (&optional (ast *ast*) filename)
+  (unless filename (setf filename (pathname (core:mkstemp "/tmp/ast"))))
+  (let* ((filename (merge-pathnames filename))
+         (dot-pathname (make-pathname :type "dot" :defaults (pathname filename)))
+	 (pdf-pathname (make-pathname :type "pdf" :defaults dot-pathname)))
+    (with-open-file (stream filename :direction :output)
+      (cleavir-ast-graphviz:draw-ast ast dot-pathname))
+    (ext:system (format nil "dot -Tpdf -o~a ~a" (namestring pdf-pathname) (namestring dot-pathname)))))
+
 (defun draw-hir (&optional (hir *hir*) filename)
   (unless filename (setf filename (pathname (core:mkstemp "/tmp/hir"))))
-  (with-open-file (stream filename :direction :output)
-    (cleavir-ir-graphviz:draw-flowchart hir stream))
-  (let* ((png-pn (make-pathname :type "png" :defaults filename)))
-    (ext:system (format nil "dot -Tpng -o~a ~a" (namestring png-pn) (namestring filename)))
-    (ext:system (format nil "open -n ~a" (namestring png-pn)))))
+  (let* ((filename (merge-pathnames filename))
+         (dot-pathname (make-pathname :type "dot" :defaults (pathname filename)))
+	 (pdf-pathname (make-pathname :type "pdf" :defaults dot-pathname)))
+    (with-open-file (stream dot-pathname :direction :output)
+      (cleavir-ir-graphviz:draw-flowchart hir stream))
+    (ext:system (format nil "dot -Tpdf -o~a ~a" (namestring pdf-pathname) (namestring filename)))
+    (ext:system (format nil "open -n ~a" (namestring pdf-pathname)))))
 
 (defun draw-mir (&optional (mir *mir*) (filename "/tmp/mir.dot"))
   (with-open-file (stream filename :direction :output)
     (cleavir-ir-graphviz:draw-flowchart mir stream))
   (ext:system (format nil "dot -Teps -o/tmp/mir.eps ~a" filename))
   (ext:system "open -n /tmp/mir.eps"))
-
-(defun draw-ast (&optional (ast *ast*) filename)
-  (unless filename (setf filename (pathname (core:mkstemp "/tmp/ast"))))
-  (let* ((dot-pathname (pathname filename))
-	 (png-pathname (make-pathname :type "png" :defaults dot-pathname)))
-    (with-open-file (stream filename :direction :output)
-      (cleavir-ast-graphviz:draw-ast ast filename))
-    (ext:system (format nil "dot -Tpng -o~a ~a" (namestring png-pathname) (namestring dot-pathname)))
-    (ext:system (format nil "open -n ~a" (namestring png-pathname)))))
 
 (defvar *hir-single-step* nil)
 (defun hir-single-step (&optional (on t))

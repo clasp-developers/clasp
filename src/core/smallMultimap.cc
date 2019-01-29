@@ -54,7 +54,7 @@ CL_DEFUN SmallMultimap_sp core__make_small_multimap() {
 CL_LISPIFY_NAME("small_multimap_describe");
 CL_DEFMETHOD void SmallMultimap_O::describe() {
   for (auto it = this->map.begin(); it != this->map.end(); ++it) {
-    BFORMAT_T(BF("%s:%d  key: %s   value: %s\n") % __FILE__ % __LINE__ % _rep_(it->first) % _rep_(it->second));
+    write_bf_stream(BF("%s:%d  key: %s   value: %s\n") % __FILE__ % __LINE__ % _rep_(it->first) % _rep_(it->second));
   }
 }
 
@@ -62,7 +62,7 @@ CL_LISPIFY_NAME("small_multimap_describe_range");
 CL_DEFMETHOD void SmallMultimap_O::describeRange(T_sp key) {
   pair<map_type::iterator, map_type::iterator> range = this->map.equal_range(key);
   for (auto it = range.first; it != range.second; ++it) {
-    BFORMAT_T(BF("%s:%d  key: %s   value: %s\n") % __FILE__ % __LINE__ % _rep_(it->first) % _rep_(it->second));
+    write_bf_stream(BF("%s:%d  key: %s   value: %s\n") % __FILE__ % __LINE__ % _rep_(it->first) % _rep_(it->second));
   }
 }
 

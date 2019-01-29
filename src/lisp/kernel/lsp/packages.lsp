@@ -32,6 +32,7 @@
             expand-compare
             expand-uncompare
             with-memory-ramp
+            with-dtrace-trigger
             ))
 
   (export '( ;;;;MISSING SYMBOLS!!!!!
@@ -84,6 +85,7 @@
             illegal-instruction
             unix-signal-received
             unix-signal-received-code
+            unix-signal-received-handler
             interactive-interrupt
             hash-table-content
             hash-table-fill
@@ -98,6 +100,11 @@
             system
             float-nan-string
             float-infinity-string
+            package-local-nicknames
+            add-package-local-nickname
+            remove-package-local-nickname
+            package-locally-nicknamed-by-list
+            keep-old change-nick ; restarts for add-package-local-nicknames
             )))
 
 

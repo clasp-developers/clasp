@@ -1,6 +1,33 @@
+/*
+    File: fastgf.cc
+    Small functions used by the fastgf runtime that should always be inlined.
+*/
 
-// Nothing for now
+/*
+Copyright (c) 2017, Christian E. Schafmeister
 
+CLASP is free software; you can redistribute it and/or
+modify it under the terms of the GNU Library General Public
+License as published by the Free Software Foundation; either
+version 2 of the License, or (at your option) any later version.
+
+See directory 'clasp/licenses' for full details.
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+*/
+/* -^- */
+
+#include <clasp/core/foundation.h>
+#include <clasp/core/evaluator.h> // for funcall
 #include <clasp/core/core.h>
 #include <clasp/core/object.h>
 #include <clasp/core/array.h>
@@ -78,6 +105,24 @@ BUILTIN_ATTRIBUTES int64_t cc_read_stamp(void* tagged_pointer)
 };
 
 extern "C" {
+
+
+#if 0
+BUILTIN_ATTRIBUTES gctools::return_type cc_dispatch_miss(core::T_O* tgf, core::T_O* tgf_vaslist)
+{
+  core::FuncallableInstance_sp gf((gctools::Tagged)tgf);
+  core::VaList_sp gf_vaslist((gctools::Tagged)tgf_vaslist);
+  core::T_mv result = core::eval::funcall(clos::_sym_dispatch_miss,gf,gf_vaslist);
+#ifdef DEBUG_GFDISPATCH
+  printf("%s:%d  Returning from cc_dispatch_miss\n", __FILE__, __LINE__ );
+#endif
+  return result.as_return_type();
+}
+#endif
+};
+
+extern "C" {
+
 BUILTIN_ATTRIBUTES core::T_O* cc_dispatch_slot_reader_index(size_t index, core::T_O* tinstance) {
   core::Instance_sp instance((gctools::Tagged)tinstance);
   core::T_sp value = low_level_instanceRef(instance->_Rack,index);
@@ -101,7 +146,7 @@ BUILTIN_ATTRIBUTES core::T_O* cc_dispatch_slot_writer_cons(core::T_O* tvalue, co
   core::SimpleVector_sp optinfo((gctools::Tagged)toptinfo);
   core::Cons_sp cons = gc::As_unsafe<core::Cons_sp>((*optinfo)[OPTIMIZED_SLOT_INDEX_INDEX]);
   core::T_sp value((gctools::Tagged)tvalue);
-  CONS_CAR(cons) = value;
+  cons->rplaca(value);
   return value.raw_();
 }
 
@@ -132,26 +177,11 @@ BUILTIN_ATTRIBUTES core::T_O* cc_fastgf_nil() {
 
 BUILTIN_ATTRIBUTES core::T_O* cc_rewind_vaslist(core::Vaslist* vaslist, va_list va_args, void** register_save_areaP)
 {
-#if 0
-  if (core::debug_InvocationHistoryFrame==3) {
-    printf("%s:%d cc_rewind_va_list     va_args=%p     nargsP = %p      register_save_areaP = %p\n", __FILE__, __LINE__, va_args, nargsP, register_save_areaP );
-  }
-#endif
   va_copy(vaslist->_Args,va_args);
   LCC_REWIND_VA_LIST(vaslist->_Args,register_save_areaP);
   vaslist->remaining_nargs() = (uintptr_t)register_save_areaP[1];
   return gctools::tag_vaslist<core::T_O*>(vaslist);
 }
-
-
-
-
-
-
-
-
-
-
 
 
 };

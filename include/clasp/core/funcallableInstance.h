@@ -94,6 +94,7 @@ namespace core {
     SimpleVector_sp _Rack;
     T_sp   _Sig;
     FunctionDescription* _FunctionDescription;
+    std::atomic<size_t>         _Compilations;
     gc::atomic_wrapper<T_sp>   _CallHistory;
     gc::atomic_wrapper<T_sp>   _SpecializerProfile;
 //    T_sp   _Lock;
@@ -101,8 +102,6 @@ namespace core {
     int    _isgf;
     bool   _DebugOn;
   public:
-//    static FuncallableInstance_sp createClassUncollectable(gctools::Stamp is,Instance_sp metaClass, size_t number_of_slots, Creator_sp creator);
-    static Instance_sp create(Symbol_sp symbol,Instance_sp metaClass,Creator_sp creator);
   public:
     T_sp GFUN_NAME() const { return this->instanceRef(REF_GFUN_NAME); };
     T_sp GFUN_SPECIALIZERS() const { return this->instanceRef(REF_GFUN_SPECIALIZERS); };
@@ -151,7 +150,7 @@ namespace core {
     virtual size_t filePos() const { return 0; }
     virtual int lineNumber() const { return 0; }
     virtual int column() const { return 0; };
-    virtual LambdaListHandler_sp lambdaListHandler() const { HARD_IMPLEMENT_ME(); };
+    virtual T_sp lambdaListHandler() const { HARD_IMPLEMENT_ME(); };
   public: // The hard-coded indexes above are defined below to be used by Class
     void initializeSlots(gctools::Stamp is, size_t numberOfSlots);
     void initializeClassSlots(Creator_sp creator, gctools::Stamp class_stamp);
@@ -186,6 +185,9 @@ namespace core {
 
     T_sp setFuncallableInstanceFunction(T_sp functionOrT);
 
+    void increment_compilations() { this->_Compilations++; };
+    size_t compilations() const { return this->_Compilations.load(); };
+    
     void describe(T_sp stream);
 
     void __write__(T_sp sout) const; // Look in write_ugly.cc
@@ -225,5 +227,78 @@ namespace gctools {
   };
 };
 
+
+template <>
+struct gctools::GCInfo<core::DtreeInterpreter_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = false;
+  static GCInfo_policy constexpr Policy = normal;
+};
+
+namespace core {
+
+FORWARD(DtreeInterpreter);
+  class DtreeInterpreter_O : public Closure_O {
+    LISP_CLASS(core, CorePkg, DtreeInterpreter_O, "DtreeInterpreter",Closure_O);
+  public:
+    typedef enum { REF_TYPE = 0 } NamedStructSlots;
+    typedef enum { REF_DTREE_TYPE = 0,
+                   REF_DTREE_NODE = 1,
+                   REF_DTREE_END = 2 } DtreeSlots;
+    typedef enum { REF_NODE_TYPE = 0,
+                   REF_NODE_EQL_SPECIALIZERS = 1,
+                   REF_NODE_CLASS_SPECIALIZERS = 2,
+                   REF_NODE_INTERPRETER = 3,
+                   REF_NODE_END = 4} NodeSlots;
+    typedef enum { REF_RANGE_TYPE = 0,
+                   REF_RANGE_OUTCOME = 1,
+                   REF_RANGE_FIRST_STAMP = 2,
+                   REF_RANGE_LAST_STAMP = 3,
+                   REF_RANGE_REVERSED_CLASSES = 4,
+                   REF_RANGE_END = 5} RangeSlots;
+    typedef enum { REF_SKIP_TYPE = 0,
+                   REF_SKIP_OUTCOME = 1,
+                   REF_SKIP_END = 2 } SkipSlots;
+    typedef enum { REF_OUTCOME_TYPE = 0,
+                   REF_OUTCOME_SUBTYPE = 1 } OutcomeSlots;
+    typedef enum { REF_OPTIMIZED_SLOT_READER_TYPE = 0,
+                   REF_OPTIMIZED_SLOT_READER_SUBTYPE = 1,
+                   REF_OPTIMIZED_SLOT_READER_INDEX = 2,
+                   REF_OPTIMIZED_SLOT_READER_EFM = 3,
+                   REF_OPTIMIZED_SLOT_READER_SLOT_NAME = 4,
+                   REF_OPTIMIZED_SLOT_READER_METHOD = 5,
+                   REF_OPTIMIZED_SLOT_READER_CLASS = 6,
+                   REF_OPTIMIZED_SLOT_READER_END = 7 } OptimizedSlotReaderSlots;
+    typedef enum { REF_OPTIMIZED_SLOT_WRITER_TYPE = 0,
+                   REF_OPTIMIZED_SLOT_WRITER_SUBTYPE = 1,
+                   REF_OPTIMIZED_SLOT_WRITER_INDEX = 2,
+                   REF_OPTIMIZED_SLOT_WRITER_EFM = 3,
+                   REF_OPTIMIZED_SLOT_WRITER_SLOT_NAME = 4,
+                   REF_OPTIMIZED_SLOT_WRITER_METHOD = 5,
+                   REF_OPTIMIZED_SLOT_WRITER_CLASS = 6,
+                   REF_OPTIMIZED_SLOT_WRITER_END = 7 } OptimizedSlotWriterSlots;
+    typedef enum { REF_FAST_METHOD_CALL_TYPE = 0,
+                   REF_FAST_METHOD_CALL_SUBTYPE = 1,
+                   REF_FAST_METHOD_CALL_FUNCTION = 2,
+                   REF_FAST_METHOD_CALL_END = 3 } FastMethodCallSlots;
+    typedef enum { REF_FUNCTION_OUTCOME_TYPE = 0,
+                   REF_FUNCTION_OUTCOME_SUBTYPE = 1,
+                   REF_FUNCTION_OUTCOME_FUNCTION = 2,
+                   REF_FUNCTION_OUTCOME_END = 3 } FunctionOutcome;
+    typedef enum { REF_EFFECTIVE_METHOD_OUTCOME_TYPE = 0,
+                   REF_EFFECTIVE_METHOD_OUTCOME_SUBTYPE = 1,
+                   REF_EFFECTIVE_METHOD_OUTCOME_APPLICABLE_METHODS = 2,
+                   REF_EFFECTIVE_METHOD_OUTCOME_FUNCTION = 3,
+                   REF_EFFECTIVE_METHOD_OUTCOME_END = 4 } EffectiveMethodOutcome;
+  public:
+    core::T_sp      _Dtree;
+  public:
+    static DtreeInterpreter_sp make_dtree_interpreter(T_sp dtree);
+  public:
+    static LCC_RETURN LISP_CALLING_CONVENTION();
+    DtreeInterpreter_O(FunctionDescription* fdesc, T_sp dtree) : Closure_O(entry_point,fdesc), _Dtree(dtree) {};
+  };
+
+};
 
 #endif /* _core_instance_H_ */

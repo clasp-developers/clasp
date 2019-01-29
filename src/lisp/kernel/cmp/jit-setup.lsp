@@ -74,20 +74,22 @@
         (unwind-protect
              (llvm-sys:dump-module module fout)
           (close fout)))
-      (llvm-sys:write-bitcode-to-file module output-path)))
+      (llvm-sys:write-bitcode-to-file module (namestring output-path))))
 
 (defun load-bitcode (filename)
   (if *use-human-readable-bitcode*
       (let* ((input-name (make-pathname :type "ll" :defaults (pathname filename))))
         (llvm-sys:load-bitcode-ll input-name))
-      (llvm-sys:load-bitcode filename)))
+      (let ((input-name (make-pathname :type "bc" :defaults (pathname filename))))
+        (llvm-sys:load-bitcode input-name))))
 
 (defun parse-bitcode (filename context)
   ;; Load a module from a bitcode or .ll file
   (if *use-human-readable-bitcode*
       (let ((input-name (make-pathname :type "ll" :defaults (pathname filename))))
         (llvm-sys:parse-irfile input-name context))
-      (llvm-sys:parse-bitcode-file filename context)))
+      (let ((input-name (make-pathname :type "bc" :defaults (pathname filename))))
+        (llvm-sys:parse-bitcode-file input-name context))))
 
 (export '(write-bitcode load-bitcode parse-bitcode))
 
@@ -133,7 +135,7 @@ Return the module and the global variable that represents the load-time-value-ho
 
 (defvar *run-time-module* nil)
 
-(defvar *the-module* nil "This stores the module into which compile puts its stuff")
+(defvar *the-module*) ; nil "This stores the module into which compile puts its stuff")
 (defvar *the-function-pass-manager* nil "the function-pass-manager applied to runtime functions")
 
 
@@ -144,6 +146,11 @@ No DIBuilder is defined for the default module")
 (defun jit-constant-pointer-null-get (type)
   (llvm-sys:constant-pointer-null-get type))
 
+(defun jit-constant-true ()
+  (llvm-sys:get-true *llvm-context*))
+
+(defun jit-constant-false ()
+  (llvm-sys:get-false *llvm-context*))
 
 (defun jit-constant-i1 (val)
   "Create an i1 constant in the current context"
@@ -230,7 +237,7 @@ No DIBuilder is defined for the default module")
     (llvm-sys:create-const-gep2-64 *irbuilder* str-gv 0 0 "str")))
 
 
-(defun module-make-global-string (str &optional (label "global-str"))
+(defun module-make-global-string (str &optional (label ""))
   "A function for creating unique strings within the module - return an LLVM pointer to the string"
   (or *the-module* (error "module-make-global-string-ptr *the-module* is NIL"))
   (let* ((unique-string-global-variable
@@ -334,9 +341,10 @@ No DIBuilder is defined for the default module")
       (let ((lineno (core:source-pos-info-lineno *current-source-pos-info*)))
         (cond
           (*compile-file-pathname*
-           (core:bformat nil "%s.%s^%d^TOP-COMPILE-FILE"
+           (core:bformat nil "%s.%s-%s^%d^TOP-COMPILE-FILE"
                          (pathname-name *compile-file-pathname*)
                          (pathname-type *compile-file-pathname*)
+                         *compile-file-unique-symbol-prefix*
                          lineno))
           ;; Is this even possible?
           (*load-pathname*
@@ -348,7 +356,7 @@ No DIBuilder is defined for the default module")
            (core:bformat nil "UNKNOWN^%d^TOP-UNKNOWN" lineno))))
       "UNKNOWN??LINE^TOP-UNKNOWN"))
 
-(defun jit-function-name (lname)
+(defun jit-function-name (lname &key (compile-file-unique-symbol-prefix *compile-file-unique-symbol-prefix*))
   "Depending on the type of LNAME an actual LLVM name is generated"
   ;;  (break "Check backtrace")
   (cond
@@ -554,6 +562,7 @@ The passed module is modified as a side-effect."
     (with-track-llvm-time
         (link-builtins-module module)
       (optimize-module-for-compile-file module)
+      #+(or)(remove-llvm.used-if-exists module)
       (llvm-sys:remove-always-inline-functions module))))
 
 
@@ -562,6 +571,7 @@ The passed module is modified as a side-effect."
     (with-track-llvm-time
         (link-fastgf-module module)
       (optimize-module-for-compile-file module)
+      #+(or)(remove-llvm.used-if-exists module)
       (llvm-sys:remove-always-inline-functions module))))
 
 (defun switch-always-inline-to-inline (module)
@@ -627,7 +637,7 @@ The passed module is modified as a side-effect."
 (progn
   (export '(jit-add-module-return-function jit-add-module-return-dispatch-function jit-remove-module))
   (defparameter *jit-lock* (mp:make-lock :name 'jit-lock :recursive t))
-  (defun jit-add-module-return-function (original-module main-fn startup-fn shutdown-fn literals-list &optional dispatcher )
+  (defun jit-add-module-return-function (original-module main-fn startup-fn shutdown-fn literals-list &key dispatcher output-path )
     ;; Link the builtins into the module and optimize them
     (if (null dispatcher)
         (progn
@@ -635,13 +645,23 @@ The passed module is modified as a side-effect."
           (link-inline-remove-builtins original-module)
           (quick-module-dump original-module "module-before-optimize"))
         (progn
-          (link-inline-remove-fastgf original-module)))
+          (link-inline-remove-fastgf original-module)
+          ;; If there is an output-path - then for debugging - save this final, inlined module before it's passed to llvm
+          (when output-path
+            (let* ((filename (pathname-name output-path))
+                   (filename-inlined (concatenate 'string filename "-inlined"))
+                   (output-path-inlined (make-pathname :name filename-inlined :defaults output-path)))
+              (cmp::debug-save-dispatcher original-module output-path-inlined)))))
     (let ((module original-module))
       ;; (irc-verify-module-safe module)
       (let ((jit-engine (jit-engine))
-            (repl-name (llvm-sys:get-name main-fn))
-            (startup-name (llvm-sys:get-name startup-fn))
-            (shutdown-name (llvm-sys:get-name shutdown-fn)))
+            (repl-name (if main-fn (llvm-sys:get-name main-fn) nil))
+            (startup-name (if startup-fn (llvm-sys:get-name startup-fn) nil))
+            (shutdown-name (if shutdown-fn (llvm-sys:get-name shutdown-fn) nil)))
+        (when (or (null repl-name) (string= repl-name ""))
+          (error "Could not obtain the name of the repl function ~s - got ~s" main-fn repl-name))
+        (when (or (null startup-name) (string= startup-name ""))
+          (error "Could not obtain the name of the startup function ~s - got ~s" startup-fn startup-name))
         (with-track-llvm-time
             (unwind-protect
                  (progn
@@ -650,9 +670,21 @@ The passed module is modified as a side-effect."
                      (llvm-sys:jit-finalize-repl-function jit-engine handle repl-name startup-name shutdown-name literals-list)))
               (mp:unlock *jit-lock*))))))
 
-  (defun jit-add-module-return-dispatch-function (original-module dispatch-fn startup-fn shutdown-fn literals-list)
-    (jit-add-module-return-function original-module dispatch-fn startup-fn shutdown-fn literals-list :dispatch))
+  (defun jit-add-module-return-dispatch-function (original-module dispatch-fn startup-fn shutdown-fn literals-list &key output-path)
+    (jit-add-module-return-function original-module dispatch-fn startup-fn shutdown-fn literals-list :dispatcher :dispatch
+                                    :output-path output-path))
      
   (defun jit-remove-module (handle)
-    (llvm-sys:clasp-jit-remove-module (jit-engine) handle)))
+    (llvm-sys:clasp-jit-remove-module (jit-engine) handle))
+  (defun jit-kernel-module (original-module)
+    (let* ((module (llvm-sys:clone-module original-module))
+           (all-functions (llvm-sys:module-get-function-list module))
+           run-all-function)
+      (dolist (f all-functions)
+        (if (string= (llvm-sys:get-name f) "RUN-ALL")
+            (setf run-all-function f)))
+      (let ((main-fn (add-main-function module run-all-function)))
+        (let ((run (jit-add-module-return-function module main-fn nil nil nil)))
+          (funcall run)
+          )))))
 

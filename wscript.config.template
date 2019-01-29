@@ -6,7 +6,7 @@
 ### recognised by the build system.
 
 # Define where the llvm/clang is that will be used for building clasp.
-LLVM_CONFIG_BINARY = '/path/to/llvm-config-4.0'
+# LLVM_CONFIG_BINARY = '/path/to/llvm-config-4.0'
 
 # To link to the debug versions of the LLVM libraries, set a path here to the llvm-config binary of the LLVM debug build
 # LLVM_CONFIG_BINARY_FOR_LIBS = "/full/path/externals-clasp/build/debug/bin/llvm-config"
@@ -18,15 +18,15 @@ LLVM_CONFIG_BINARY = '/path/to/llvm-config-4.0'
 #  This option requires a special build of the Boehm garbage collector
 #  built with the option --enable-handle-fork
 #
-USE_PARALLEL_BUILD = False
+USE_PARALLEL_BUILD = True
 
 # Use lld linker
 #  The llvm linker is supposed to be faster than ld
 #  Currently this option only works on linux
-USE_LLD = False
+USE_LLD = True
 
 # Where to install clasp. Defaults to '/usr/local/'.
-#PREFIX = '/usr/local/'
+PREFIX = '/opt/clasp/'
 
 # SBCL is used at build time. Defaults to 'sbcl'.
 #SBCL                = '/path/sbcl/run-sbcl.sh'
@@ -60,6 +60,6 @@ USE_LLD = False
 DEBUG_OPTIONS = [ "DEBUG_RELEASE",
                   "DEBUG_BCLASP_LISP",
                   "DEBUG_CCLASP_LISP",
-                  "DEBUG_COMPILER",
+#                  "DEBUG_COMPILER",
                   "DEBUG_SLOW"
                   ]

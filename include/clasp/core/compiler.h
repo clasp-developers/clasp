@@ -33,7 +33,7 @@ namespace core {
 
 T_sp varArgsList(int numArgs, ...);
 
-T_sp core__startup_image_pathname();
+T_sp core__startup_image_pathname(char stage);
 T_mv core__load_bundle(T_sp pathDesig, T_sp verbose = _Nil<T_O>(), T_sp print = _Nil<T_O>(), T_sp external_format = kw::_sym_default);
 
 T_mv compiler__implicit_compile_hook_default(T_sp form, T_sp env);
@@ -66,10 +66,29 @@ functionality but before any Common Lisp startup functions are invoked. */
 
 };
 
+
+namespace core {
+FORWARD(PosixTime);
+struct MaybeDebugStartup {
+  PosixTime_sp start;
+  std::string  name;
+  void* fptr;
+  size_t start_dispatcher_count;
+  MaybeDebugStartup(void* fp, const char* n = NULL);
+  ~MaybeDebugStartup();
+};
+
+
+};
+
+
+
 typedef void*(*fnStartUp)();
 
 namespace core {
-void register_startup_function(fnStartUp fptr);
+  void core__throw_function(T_sp tag, T_sp result_form);
+void register_startup_function(int position, fnStartUp fptr);
+void register_internal_functions(uintptr_t handle, const claspFunction* funcs, const char** names, size_t len);
 }
 
 #endif /* _compiler_H_ */

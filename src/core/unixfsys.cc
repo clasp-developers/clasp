@@ -109,7 +109,6 @@ typedef int mode_t;
 #endif
 
 
-
 SYMBOL_EXPORT_SC_(KeywordPkg, absolute);
 SYMBOL_EXPORT_SC_(KeywordPkg, default);
 SYMBOL_EXPORT_SC_(KeywordPkg, defaults);
@@ -131,7 +130,6 @@ SYMBOL_EXPORT_SC_(KeywordPkg, version);
 SYMBOL_EXPORT_SC_(KeywordPkg, wild);
 
 
-
 #if defined( _TARGET_OS_DARWIN ) || defined( _TARGET_OS_FREEBSD )
 #define sigthreadmask(HOW,NEW,OLD) sigprocmask((HOW),(NEW),(OLD))
 #endif
@@ -139,7 +137,6 @@ SYMBOL_EXPORT_SC_(KeywordPkg, wild);
 #if defined( _TARGET_OS_LINUX )
 #define sigthreadmask(HOW,NEW,OLD) sigprocmask((HOW),(NEW),(OLD))
 #endif
-
 
 namespace core {
 
@@ -390,7 +387,7 @@ CL_DEFUN T_sp ext__chdir(T_sp dir, T_sp change_default_pathname_defaults) {
     String_sp sdir = gc::As_unsafe<String_sp>(tdir);
     Integer_sp result = Integer_O::create((gc::Fixnum)safe_chdir(sdir->get_std_string().c_str(), _Nil<T_O>()));
     if (change_default_pathname_defaults.notnilp()) {
-      BFORMAT_T(BF("Changing *default-pathname-defaults* because change-default-pathname-defaults -> %s\n") % _rep_(change_default_pathname_defaults));
+      write_bf_stream(BF("Changing *default-pathname-defaults* because change-default-pathname-defaults -> %s\n") % _rep_(change_default_pathname_defaults));
       core::getcwd(true); // get the current working directory and change *default-pathname-defaults* to it
     }
     return result;
@@ -430,8 +427,7 @@ ecl_cstring_to_pathname(char *s)
 }
 #endif
 
-
-};
+}; // namespace core
 
 namespace ext {
 /*
@@ -440,16 +436,44 @@ namespace ext {
  */
 
 CL_DOCSTRING("Return the unix current working directory");
-CL_DEFUN core::String_sp ext__getcwd() {
+CL_DEFUN core::Str8Ns_sp ext__getcwd() {
   // TESTME :   Test this function with the new code
   const char *ok = ::getcwd(NULL,0);
+  
+  // Take into account what the shell, if any, might think about
+  // the current working directory.  This is important in symlinked
+  // trees.  However, we need to make sure that the information is
+  // not outdated.
+  const char *spwd = getenv("PWD");
+  if (spwd) {
+    if (::chdir(spwd) != -1) {
+      // We make sure $PWD is not outdated by chdir'ing into it,
+      // which resolves all symlinks, and make sure that the
+      // directory ends up being the same as getcwd
+      //
+      // Performance optimization: we want to avoid this system
+      // call on repeated calls to this function in the future.
+      // However, I don't want to make it a non-const function
+      // at this time.
+      const char *nowpwd = ::getcwd(NULL,0);
+      if (strcmp(ok, nowpwd) == 0) {
+        // OK, we should use the shell's/user's idea of "cd"
+        ::free((void*)ok);
+        ok = strdup(spwd);
+      }
+    }
+  } else {
+    // was found to be invalid, save us re-testing on next call
+    unsetenv("PWD");
+  }
+
   size_t cwdsize = strlen(ok);
   // Pad with 4 characters for / and terminator \0
   core::Str8Ns_sp output = core::Str8Ns_O::make(cwdsize+2,'\0',true,core::clasp_make_fixnum(0));
   StringPushStringCharStar(output, ok);
   ::free((void*)ok);
 #if defined(_TARGET_OS_DARWIN) || defined(_TARGET_OS_LINUX) || defined(_TARGET_OS_FREEBSD)
-  // Add a terminal '/' if there is none
+  // Add a terminal '/' if there is none.
   if ((*output)[output->fillPointer() - 1] != DIR_SEPARATOR_CHAR) {
     output->vectorPushExtend(core::clasp_make_character(DIR_SEPARATOR_CHAR));
   }
@@ -461,7 +485,7 @@ CL_DEFUN core::String_sp ext__getcwd() {
 #endif
   return output;
 }
-};
+}; // namespace ext
 
 namespace core {
 /*
@@ -609,8 +633,8 @@ enter_directory(Pathname_sp base_dir, T_sp subdir, bool ignore_if_failure) {
                                              kw::_sym_directory, ldir,
                                              kw::_sym_defaults, base_dir));
   if (output.nilp()) SIMPLE_ERROR(BF("%s is about to pass NIL to clasp_namestring") % __FUNCTION__);
-  aux = clasp_namestring(output, CLASP_NAMESTRING_FORCE_BASE_STRING);
-  aux = aux->subseq(0, clasp_make_fixnum(aux->length() - 1));
+  aux = gc::As<String_sp>(clasp_namestring(output, CLASP_NAMESTRING_FORCE_BASE_STRING));
+  aux = gc::As<String_sp>(aux->subseq(0, clasp_make_fixnum(aux->length() - 1)));
   //    aux->_contents()[aux->base_string.fillp-1] = 0;
   kind = file_kind((const char *)aux->rowMajorAddressOfElement_(0), false);
   if (kind.nilp()) {
@@ -651,7 +675,7 @@ enter_directory(Pathname_sp base_dir, T_sp subdir, bool ignore_if_failure) {
 
 static Pathname_sp
 make_absolute_pathname(T_sp orig_pathname) {
-  Pathname_sp base_dir = getcwd(false);
+  Pathname_sp base_dir = core::getcwd(false); // FIXME
   if (orig_pathname.nilp()) {
     SIMPLE_ERROR(BF("In make_absolute_pathname NIL is about to be passed to core__coerce_to_file_pathname"));
   }
@@ -710,7 +734,7 @@ file_truename(T_sp pathname, T_sp filename, int flags) {
       return Values(pathname, kind);
     /* The link might be a relative pathname. In that case we have
 	 * to merge with the original pathname */
-    filename = core__readlink(filename);
+    filename = core__readlink(gc::As<String_sp>(filename));
     Pathname_sp pn = gc::As<Pathname_sp>(pathname);
     pathname = Pathname_O::makePathname(pn->_Host,
                                         pn->_Device,
@@ -732,7 +756,7 @@ file_truename(T_sp pathname, T_sp filename, int flags) {
     if (gc::As<Pathname_sp>(pathname)->_Name.notnilp() ||
         gc::As<Pathname_sp>(pathname)->_Type.notnilp()) {
       String_sp spathname = gc::As<String_sp>(filename);
-      SafeBuffer buffer;
+      SafeBufferStr8Ns buffer;
       StringPushString(buffer.string(),spathname);
       buffer.string()->vectorPushExtend(clasp_make_character(DIR_SEPARATOR_CHAR));
       pathname = cl__truename(buffer.string());
@@ -1089,7 +1113,7 @@ Pathname_sp clasp_homedir_pathname(T_sp tuser) {
   i = namestring->length();
   if (!IS_DIR_SEPARATOR(namestring->get_std_string().c_str()[i - 1]))
     namestring = SimpleBaseString_O::make(namestring->get() + DIR_SEPARATOR);
-  return cl__parse_namestring(namestring);
+  return gc::As<Pathname_sp>(cl__parse_namestring(namestring));
 }
 
 CL_LAMBDA(&optional host);
@@ -1231,41 +1255,6 @@ CL_DEFUN T_sp core__mkstemp(String_sp thetemplate) {
   //  cl_index l;
   int fd;
   ASSERT(cl__stringp(thetemplate));
-#if defined(CLASP_MS_WINDOWS_HOST)
-  T_sp phys, dir, file;
-  char strTempDir[MAX_PATH];
-  char strTempFileName[MAX_PATH];
-  char *s;
-  int ok;
-  phys = cl__translate_logical_pathname(1, thetemplate);
-  dir = cl__make_pathname(8,
-                         kw::_sym_type, _Nil<T_O>(),
-                         kw::_sym_name, _Nil<T_O>(),
-                         kw::_sym_version, _Nil<T_O>(),
-                         kw::_sym_defaults, phys);
-  if (dir.nilp()) SIMPLE_ERROR(BF("In %s about invoke core__coerce_to_filename(NIL)") % __FUNCTION__);
-  dir = core__coerce_to_filename(dir);
-  file = cl_file_namestring(phys);
-
-  l = dir->base_string.fillp;
-  memcpy(strTempDir, dir->c_str(), l);
-  strTempDir[l] = 0;
-  for (s = strTempDir; *s; s++)
-    if (*s == '/')
-      *s = '\\';
-
-  clasp_disable_interrupts();
-  ok = GetTempFileName(strTempDir, (char *)file->c_str(), 0,
-                       strTempFileName);
-  clasp_enable_interrupts();
-  if (!ok) {
-    output = _Nil<T_O>();
-  } else {
-    l = strlen(strTempFileName);
-    output = ecl_alloc_simple_base_string(l);
-    memcpy(output->c_str(), strTempFileName, l);
-  }
-#else
   if (thetemplate.nilp()) SIMPLE_ERROR(BF("In %s the template is NIL") % __FUNCTION__);
   thetemplate = core__coerce_to_filename(thetemplate);
   stringstream outss;
@@ -1275,17 +1264,8 @@ CL_DEFUN T_sp core__mkstemp(String_sp thetemplate) {
   std::vector<char> dst_path(outname.begin(), outname.end());
   dst_path.push_back('\0');
   clasp_disable_interrupts();
-#ifdef HAVE_MKSTEMP
   fd = mkstemp(&dst_path[0]);
   outname.assign(dst_path.begin(), dst_path.end() - 1);
-#else
-  if (mktemp(&dst_path[0])) {
-    outname.assign(dst_path.begin(), dst_path.end() - 1);
-    fd = open(outname.c_str(), O_CREAT | O_TRUNC, 0666);
-  } else {
-    fd = -1;
-  }
-#endif
   clasp_enable_interrupts();
   T_sp output;
   if (fd < 0) {
@@ -1294,7 +1274,33 @@ CL_DEFUN T_sp core__mkstemp(String_sp thetemplate) {
     close(fd);
     output = cl__truename(SimpleBaseString_O::make(outname));
   }
-#endif
+  return output;
+}
+
+ CL_LAMBDA(template);
+CL_DECLARE();
+CL_DOCSTRING("mkdtemp");
+CL_DEFUN T_sp core__mkdtemp(String_sp thetemplate) {
+  //  cl_index l;
+  ASSERT(cl__stringp(thetemplate));
+  if (thetemplate.nilp()) SIMPLE_ERROR(BF("In %s the template is NIL") % __FUNCTION__);
+  thetemplate = core__coerce_to_filename(thetemplate);
+  stringstream outss;
+  outss << thetemplate->get();
+  outss << "XXXXXX";
+  string outname = outss.str();
+  std::vector<char> dst_path(outname.begin(), outname.end());
+  dst_path.push_back('\0');
+  clasp_disable_interrupts();
+  const char* dirname = mkdtemp(&dst_path[0]);
+  if (dirname==NULL) {
+    SIMPLE_ERROR(BF("There was an error in mkdtemp - errno %d") % errno);
+  }
+  outname.assign(dst_path.begin(), dst_path.end() - 1);
+  clasp_enable_interrupts();
+  T_sp output;
+  outname = outname + "/";
+  output = cl__truename(SimpleBaseString_O::make(outname));
   return output;
 }
 
@@ -1626,7 +1632,7 @@ AGAIN:
          * 2.2) If CAR(DIRECTORY) is :ABSOLUTE, :RELATIVE or :UP we update
          * the directory to reflect the root, the current or the parent one.
          */
-    base_dir = enter_directory(base_dir, item, 1);
+    base_dir = enter_directory(gc::As<Pathname_sp>(base_dir), item, 1);
     /*
          * If enter_directory() fails, we simply ignore this path. This is
          * what other implementations do and is consistent with the behavior
@@ -1649,7 +1655,7 @@ CL_DEFUN T_sp cl__directory(T_sp mask, T_sp resolveSymlinks) {
   if (mask.nilp()) SIMPLE_ERROR(BF("In cl__directory NIL is about to be passed to core__coerce_to_file_pathname"));
   mask = core__coerce_to_file_pathname(mask);
   mask = make_absolute_pathname(mask); // in this file
-  base_dir = make_base_pathname(mask);
+  base_dir = make_base_pathname(gc::As<Pathname_sp>(mask));
   output = dir_recursive(base_dir, cl__pathname_directory(mask), mask,
                          resolveSymlinks.nilp() ? 0 : FOLLOW_SYMLINKS);
   return output;
@@ -1712,7 +1718,7 @@ CL_DEFUN T_sp core__mkdir(T_sp directory, T_sp mode) {
       if (IS_DIR_SEPARATOR(c))
         last--;
     }
-    filename = filename->subseq(0, make_fixnum(last));
+    filename = gc::As_unsafe<String_sp>(filename->subseq(0, make_fixnum(last)));
   }
 //    clasp_disable_interrupts();
 #if defined(CLASP_MS_WINDOWS_HOST)
@@ -2015,14 +2021,11 @@ CL_DEFUN T_sp ext__getenv(String_sp arg) {
   return SimpleBaseString_O::make(sres);
 };
 
-
-
-   SYMBOL_EXPORT_SC_(CorePkg, currentDir);
-  SYMBOL_EXPORT_SC_(CorePkg, file_kind);
-  SYMBOL_EXPORT_SC_(ClPkg, truename);
-  SYMBOL_EXPORT_SC_(ClPkg, probe_file);
-  SYMBOL_EXPORT_SC_(ClPkg, deleteFile);
-  SYMBOL_EXPORT_SC_(ClPkg, file_write_date);
-  SYMBOL_EXPORT_SC_(ClPkg, userHomedirPathname);
-
-};
+SYMBOL_EXPORT_SC_(CorePkg, currentDir);
+SYMBOL_EXPORT_SC_(CorePkg, file_kind);
+SYMBOL_EXPORT_SC_(ClPkg, truename);
+SYMBOL_EXPORT_SC_(ClPkg, probe_file);
+SYMBOL_EXPORT_SC_(ClPkg, deleteFile);
+SYMBOL_EXPORT_SC_(ClPkg, file_write_date);
+SYMBOL_EXPORT_SC_(ClPkg, userHomedirPathname);
+}; // namespace core

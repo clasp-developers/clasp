@@ -69,7 +69,7 @@ CL_DOCSTRING("copy-instance returns a shallow copy of the instance");
 CL_DEFUN T_sp core__copy_instance(T_sp obj) {
   if (gc::IsA<Instance_sp>(obj)) {
     Instance_sp iobj = gc::As_unsafe<Instance_sp>(obj);
-    Instance_sp cp = iobj->copyInstance();
+    Instance_sp cp = gc::As_unsafe<Instance_sp>(iobj->copyInstance());
     return cp;
   }
   SIMPLE_ERROR(BF("copy-instance doesn't support copying %s") % _rep_(obj));
@@ -92,7 +92,9 @@ CL_DEFUN void core__specializer_call_history_generic_functions_push_new(T_sp tcl
 
 void Instance_O::CLASS_call_history_generic_functions_push_new(T_sp generic_function) {
   if (this->instanceRef(REF_SPECIALIZER_MUTEX).unboundp()) {
-    this->instanceSet(REF_SPECIALIZER_MUTEX,mp::SharedMutex_O::make_shared_mutex(_Nil<T_O>()));
+    SimpleBaseString_sp sbsr = SimpleBaseString_O::make("CALHISR");
+    SimpleBaseString_sp sbsw = SimpleBaseString_O::make("CALHISW");
+    this->instanceSet(REF_SPECIALIZER_MUTEX,mp::SharedMutex_O::make_shared_mutex(sbsr,sbsw));
   }
   ClassWriteLock(gc::As<mp::SharedMutex_sp>(this->instanceRef(REF_SPECIALIZER_MUTEX)));
   List_sp gflist = gc::As<List_sp>(this->instanceRef(REF_SPECIALIZER_CALL_HISTORY_GENERIC_FUNCTIONS));
@@ -148,7 +150,7 @@ CL_DEFUN T_sp core__allocate_new_instance(Instance_sp cl, size_t slot_count) {
   // cl is known to be a standard-class.
   ASSERT(cl->CLASS_has_creator());
   Creator_sp creator = gctools::As<Creator_sp>(cl->CLASS_get_creator());
-  Instance_sp obj = creator->creator_allocate();
+  Instance_sp obj = gc::As_unsafe<Instance_sp>(creator->creator_allocate());
   obj->_Class = cl;
   /* Unlike other slots, the stamp must be initialized in the allocator,
    * as it's required for dispatch. */
@@ -170,6 +172,24 @@ CL_DEFUN Instance_sp core__reallocate_instance(Instance_sp instance, Instance_sp
   instance->_Sig = new_class->slots();
   return instance;
 }
+
+SYMBOL_EXPORT_SC_(ExtPkg,fieldsp);
+SYMBOL_EXPORT_SC_(ExtPkg,fields);
+
+
+bool Instance_O::fieldsp() const {
+  if (ext::_sym_fieldsp->fboundp()) {
+    T_sp result = eval::funcall(ext::_sym_fieldsp,this->asSmartPtr());
+    return result.notnilp();
+  }
+  return false;
+}
+
+void Instance_O::fields(Record_sp node) {
+  eval::funcall(ext::_sym_fields,this->asSmartPtr(),node);
+}
+
+
 
 size_t Instance_O::rack_stamp_offset() {
   SimpleVector_O dummy_rack(0);
@@ -299,7 +319,7 @@ string Instance_O::__repr__() const {
 
 T_sp Instance_O::copyInstance() const {
   Instance_sp cl = this->_Class;
-  Instance_sp copy = cl->CLASS_get_creator()->creator_allocate();
+  Instance_sp copy = gc::As_unsafe<Instance_sp>(cl->CLASS_get_creator()->creator_allocate());
   copy->_Class = cl;
   copy->_Rack = this->_Rack;
   copy->_Sig = this->_Sig;
@@ -529,7 +549,7 @@ bool Instance_O::isSubClassOf(Instance_sp ancestor) const {
 void Instance_O::addInstanceBaseClassDoNotCalculateClassPrecedenceList(Symbol_sp className) {
   Instance_sp cl;
   if (!(cl::_sym_findClass) || !cl::_sym_findClass->fboundp()) {
-    cl = _lisp->boot_findClass(className,true);
+    cl = gc::As<Instance_sp>(cl__find_class(className));
   } else {
     cl = gc::As<Instance_sp>(eval::funcall(cl::_sym_findClass, className, _lisp->_true()));
   }
@@ -675,6 +695,19 @@ ClassWriteLock::~ClassWriteLock() {
   this->_Lock->write_unlock();
 }
 
+
+CL_DEFMETHOD Instance_sp ClassHolder_O::class_get() const { return this->_Class.load(); };
+CL_DEFMETHOD void ClassHolder_O::class_set(Instance_sp cl) { this->_Class.store(cl); };
+void ClassHolder_O::class_mkunbound() { this->_Class.store(_Unbound<Instance_O>()); };
+bool ClassHolder_O::class_unboundp() const { return this->_Class.load().unboundp();};
+
+CL_DEFUN Instance_sp ext__class_get(ClassHolder_sp holder) {
+  return holder->class_get();
+}
+
+CL_DEFUN bool ext__class_unboundp(ClassHolder_sp holder) {
+  return holder->class_unboundp();
+}
 
 
 

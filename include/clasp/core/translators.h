@@ -221,7 +221,7 @@ template <>
     typedef float DeclareType;
 
     DeclareType _v;
-  from_object( core::T_sp o ) : _v( core::clasp_to_float( o ) ) {};
+    from_object( core::T_sp o ) : _v( core::clasp_to_float( gc::As<core::Number_sp>(o) ) ) {};
   };
 
   template <>
@@ -230,7 +230,7 @@ template <>
     typedef double DeclareType;
 
     DeclareType _v;
-  from_object( core::T_sp o ) : _v( core::clasp_to_double( o ) ) {};
+    from_object( core::T_sp o ) : _v( core::clasp_to_double( gc::As<core::Number_sp>(o) ) ) {};
   };
 
   template <>
@@ -239,7 +239,7 @@ template <>
     typedef long double DeclareType;
 
     DeclareType _v;
-  from_object( core::T_sp o ) : _v( core::clasp_to_long_double( o ) ) {};
+    from_object( core::T_sp o ) : _v( core::clasp_to_long_double( gc::As<core::Number_sp>(o) ) ) {};
   };
 
   template <>

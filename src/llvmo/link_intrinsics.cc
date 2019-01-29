@@ -1,5 +1,6 @@
 /*
-    File: intrinsics.cc
+    File: link_intrinsics.cc
+    Small functions used by the runtime that should NOT be inlined.
 */
 
 /*
@@ -42,6 +43,7 @@ extern "C" {
 #include <clasp/core/character.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/array.h>
+#include <clasp/core/hashTableEq.h>
 #include <clasp/core/lispList.h>
 #include <clasp/core/bformat.h>
 #include <clasp/core/instance.h>
@@ -56,6 +58,7 @@ extern "C" {
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/stacks.h>
 #include <clasp/core/compiler.h>
+#include <clasp/core/debugger.h>
 #include <clasp/core/random.h>
 #include <clasp/core/primitives.h>
 #include <clasp/core/posixTime.h>
@@ -67,6 +70,14 @@ extern "C" {
 #include <clasp/gctools/gc_interface.fwd.h>
 #include <clasp/core/exceptions.h>
 
+#if defined(_TARGET_OS_DARWIN)
+#include <mach-o/ldsyms.h>
+#include <mach-o/getsect.h>
+#endif
+#if defined(_TARGET_OS_LINUX) || defined(_TARGET_OS_FREEBSD)
+#include <link.h>
+#endif
+
 #pragma GCC visibility push(default)
 
 using namespace core;
@@ -77,8 +88,8 @@ core::T_sp functionNameOrNilFromFunctionDescription(core::FunctionDescription* f
   if (functionDescription==NULL) {
     return _Nil<core::T_O>();
   }
-  core::T_sp functionName((gctools::Tagged)functionDescription->gcrootsInModule->get(functionDescription->functionNameIndex));
-  return functionName;
+  core::Cons_sp sourcePosition_functionName((gctools::Tagged)functionDescription->gcrootsInModule->get(functionDescription->sourcePathname_functionName_Index));
+  return CONS_CDR(sourcePosition_functionName);
 }
   
 
@@ -160,7 +171,8 @@ void ltvc_assign_source_file_info_handle(const char *moduleName, const char *sou
   //	printf("%s:%d assignSourceFileInfoHandle %s\n", __FILE__, __LINE__, moduleName );
   core::SimpleBaseString_sp mname = core::SimpleBaseString_O::make(moduleName);
   core::SimpleBaseString_sp struename = core::SimpleBaseString_O::make(sourceDebugPathname);
-  SourceFileInfo_mv sfi_mv = core::core__source_file_info(mname, struename, sourceDebugOffset, useLineno ? true : false);
+  T_mv sfi_mv = core::core__source_file_info(mname, struename, sourceDebugOffset, useLineno ? true : false);
+  SourceFileInfo_sp sfi = gc::As<SourceFileInfo_sp>(sfi_mv);
   int sfindex = unbox_fixnum(gc::As<core::Fixnum_sp>(sfi_mv.valueGet_(1)));
   *sourceFileInfoHandleP = sfindex;
   NO_UNWIND_END();
@@ -190,16 +202,19 @@ LtvcReturn ltvc_make_t(gctools::GCRootsInModule* holder, size_t index)
 
 LtvcReturn ltvc_make_ratio(gctools::GCRootsInModule* holder, size_t index, gctools::Tagged num, gctools::Tagged denom )
 {NO_UNWIND_BEGIN();
-  core::T_sp val = core::Ratio_O::create(core::T_sp(num),core::T_sp(denom));
+  Integer_sp inum((gc::Tagged)num);
+  Integer_sp idenom((gc::Tagged)denom);
+  core::T_sp val = core::Ratio_O::create(inum,idenom);
   LTVCRETURN holder->set(index,val.tagged_());
   NO_UNWIND_END();
 }
 
 LtvcReturn ltvc_make_complex(gctools::GCRootsInModule* holder, size_t index, gctools::Tagged real, gctools::Tagged imag)
 {NO_UNWIND_BEGIN();
-  core::Number_sp nreal((gctools::Tagged)real);
-  core::Number_sp nimag((gctools::Tagged)imag);
-  core::T_sp val = core::Complex_O::create(clasp_to_double(nreal),clasp_to_double(nimag));
+  core::Real_sp nreal((gctools::Tagged)real);
+  core::Real_sp nimag((gctools::Tagged)imag);
+  // Do not convert nreal and nimag to double, can be all types of Real_sp
+  core::T_sp val = core::Complex_O::create(nreal,nimag);
   LTVCRETURN holder->set(index,val.tagged_());
   NO_UNWIND_END();
 }
@@ -334,6 +349,10 @@ LtvcReturn ltvc_make_base_string(gctools::GCRootsInModule* holder, size_t index,
   LTVCRETURN holder->set(index,v.tagged_());
   NO_UNWIND_END();
 }
+};
+
+extern "C" {
+
 
 LtvcReturn ltvc_make_pathname(gctools::GCRootsInModule* holder, size_t index, gctools::Tagged host_t,
                                    gctools::Tagged device_t,
@@ -380,17 +399,11 @@ LtvcReturn ltvc_make_random_state(gctools::GCRootsInModule* holder, size_t index
 }
 
 
-LtvcReturn ltvc_make_built_in_class(gctools::GCRootsInModule* holder, size_t index, gctools::Tagged class_name_t )
-{NO_UNWIND_BEGIN();
+LtvcReturn ltvc_find_class(gctools::GCRootsInModule* holder, size_t index, gctools::Tagged class_name_t )
+{
   core::Symbol_sp class_name(class_name_t);
   core::T_sp cl = core::cl__find_class(class_name, true, _Nil<core::T_O>());
-  if ( cl.nilp() ) {
-    SIMPLE_ERROR(BF("Could not find class %s") % class_name );
-  } else {
-    core::T_sp val = cl;
-    LTVCRETURN holder->set(index,val.tagged_());
-  }
-  NO_UNWIND_END();
+  LTVCRETURN holder->set(index,cl.tagged_());
 }
 
 
@@ -425,6 +438,12 @@ LtvcReturn ltvc_enclose(gctools::GCRootsInModule* holder, size_t index, gctools:
                                                               core::ClosureWithSlots_O::cclaspClosure);
   LTVCRETURN holder->set(index, functoid.tagged_());
   NO_UNWIND_END();
+}
+
+LtvcReturn ltvc_allocate_instance(gctools::GCRootsInModule* holder, size_t index, gctools::Tagged klass) {
+  core::T_sp myklass = gctools::smart_ptr<core::T_O>(klass);
+  core::T_sp object = core::eval::funcall(cl::_sym_allocate_instance, myklass);
+  LTVCRETURN holder->set(index, object.tagged_());
 }
 
 LtvcReturn ltvc_set_mlf_creator_funcall(gctools::GCRootsInModule* holder, size_t index, fnLispCallingConvention fptr, const char* name) {
@@ -471,43 +490,11 @@ LtvcReturn ltvc_set_ltv_funcall_cleavir(gctools::GCRootsInModule* holder, size_t
   LTVCRETURN holder->set(index,val.tagged_());
 }
 
-struct MaybeDebugStartup {
-  PosixTime_sp start;
-  fnLispCallingConvention fptr;
-  size_t start_dispatcher_count;
-  MaybeDebugStartup(fnLispCallingConvention fp) : fptr(fp) {
-    if (core::_sym_STARdebugStartupSTAR->symbolValue().notnilp()) {
-      this->start = PosixTime_O::createNow();
-      if (comp::_sym_dispatcher_count->fboundp()) {
-        core::T_sp nu = core::eval::funcall(comp::_sym_dispatcher_count);
-        this->start_dispatcher_count = nu.unsafe_fixnum();
-      } else {
-        this->start_dispatcher_count = 0;
-      }
-    }
-  };
 
-  ~MaybeDebugStartup() {
-    if (core::_sym_STARdebugStartupSTAR->symbolValue().notnilp()) {
-      PosixTime_sp end = PosixTime_O::createNow();
-      PosixTimeDuration_sp diff = end->sub(this->start);
-      Dl_info di;
-      dladdr((void*)fptr,&di);
-      mpz_class ms = diff->totalMilliseconds();
-      size_t end_dispatcher_count = 0;
-      if (comp::_sym_dispatcher_count->fboundp()) {
-        core::T_sp nu = core::eval::funcall(comp::_sym_dispatcher_count);
-        end_dispatcher_count = nu.unsafe_fixnum();
-      }
-      size_t dispatcher_delta = end_dispatcher_count - this->start_dispatcher_count;
-      printf("%s ms %zu gfds : %s\n", _rep_(Integer_O::create(ms)).c_str(), dispatcher_delta, di.dli_sname);
-    }
-  }
-};
 
 LtvcReturn ltvc_toplevel_funcall(fnLispCallingConvention fptr, const char* name) {
 #ifdef DEBUG_SLOW
-  MaybeDebugStartup startup(fptr);
+  MaybeDebugStartup startup((void*)fptr,name);
 #endif
   core::T_O *lcc_arglist = _Nil<core::T_O>().raw_();
   Symbol_sp sname = Symbol_O::create_from_string(std::string(name));
@@ -611,32 +598,36 @@ NOINLINE extern void va_ifExcessKeywordArgumentsException(char *fnName, std::siz
 ALWAYS_INLINE T_O *va_lexicalFunction(size_t depth, size_t index, core::T_O* evaluateFrameP)
 {NO_UNWIND_BEGIN();
   core::ActivationFrame_sp af((gctools::Tagged)evaluateFrameP);
-  core::Function_sp func = core::function_frame_lookup(af, depth, index);
+  core::Function_sp func = gc::As_unsafe<core::Function_sp>(core::function_frame_lookup(af, depth, index));
   return func.raw_();
   NO_UNWIND_END();
 }
 
-
-__attribute__((visibility("default"))) core::T_O *cc_gatherRestArguments(va_list vargs, std::size_t* remainingP)
+/* Conses up a &rest argument from the passed valist.
+ * Used in cmp/arguments.lsp for the general case of functions with a &rest in their lambda list. */
+__attribute__((visibility("default"))) core::T_O *cc_gatherRestArguments(va_list vargs, std::size_t nargs)
 {NO_UNWIND_BEGIN();
   va_list rargs;
-  va_copy(rargs, vargs);
+  va_copy(rargs, vargs); // the original valist is needed for &key processing elsewhere.
   core::List_sp result = _Nil<core::T_O>();
   core::Cons_sp *cur = reinterpret_cast<Cons_sp *>(&result);
-  size_t nargs = *remainingP;
   for (int i = 0; i<nargs; ++i ) {
     core::T_O* tagged_obj = ENSURE_VALID_OBJECT(va_arg(rargs,core::T_O*));
     *cur = core::Cons_O::create(gc::smart_ptr<core::T_O>((gc::Tagged)tagged_obj), _Nil<core::T_O>());
     cur = reinterpret_cast<Cons_sp *>(&(*cur)->_Cdr);
   }
+  va_end(rargs);
   return result.raw_();
   NO_UNWIND_END();
 }
 
-__attribute__((visibility("default"))) core::T_O *cc_gatherDynamicExtentRestArguments(va_list rargs, std::size_t* remainingP, core::Cons_O* cur)
+/* Like cc_gatherRestArguments, but uses a vector of conses provided by the caller-
+ * intended to be stack space, for &rest parameters declared dynamic-extent. */
+__attribute__((visibility("default"))) core::T_O *cc_gatherDynamicExtentRestArguments(va_list vargs, std::size_t nargs, core::Cons_O* cur)
 {NO_UNWIND_BEGIN();
+  va_list rargs;
+  va_copy(rargs, vargs);
   core::List_sp result = Cons_sp((gctools::Tagged)gctools::tag_cons((core::Cons_O*)cur));
-  size_t nargs = *remainingP;
   if (nargs) {
     for (int i = 0; i<nargs-1; ++i ) {
       core::T_O* tagged_obj = ENSURE_VALID_OBJECT(va_arg(rargs,core::T_O*));
@@ -663,12 +654,11 @@ void badKeywordArgumentError(core::T_sp keyword, core::FunctionDescription* func
   SIMPLE_ERROR(BF("When calling %s the bad keyword argument %s was passed") % _rep_(functionName) % _rep_(keyword) );
 }
 
-void cc_ifBadKeywordArgumentException(size_t allowOtherKeys, std::size_t badKwIdx, core::T_O *kw, core::FunctionDescription* functionDescription)
-{
-  if (allowOtherKeys == 2) return;
-  if (badKwIdx != 65536) badKeywordArgumentError(core::T_sp((gc::Tagged)kw),functionDescription);
+void cc_ifBadKeywordArgumentException(core::T_O *allowOtherKeys, core::T_O *kw,
+                                      core::FunctionDescription* functionDescription) {
+  if (gctools::tagged_nilp(allowOtherKeys))
+    badKeywordArgumentError(core::T_sp((gc::Tagged)kw), functionDescription);
 }
-
 
 extern void mv_copyTmv(core::T_mv *destP, core::T_mv *sourceP)
 {NO_UNWIND_BEGIN();
@@ -751,13 +741,19 @@ void invokeTopLevelFunction(core::T_mv *resultP,
 #endif
 
 
-
 /*! Invoke the main functions from the main function array.
 If isNullTerminatedArray is 1 then there is a NULL terminated array of functions to call.
 Otherwise there is just one. */
-void cc_register_startup_function(fnStartUp fptr) {
-  register_startup_function(fptr);
+void cc_register_startup_function(int index, fnStartUp fptr) {
+  register_startup_function(index,fptr);
 }
+/*! Call this with an alloca pointer to keep the alloca from 
+being optimized away */
+__attribute__((optnone,noinline)) void cc_protect_alloca(char* ptr)
+{
+  (void)ptr;
+}
+
 
 void cc_invoke_sub_run_all_function(fnStartUp fptr) {
   fptr();
@@ -769,58 +765,6 @@ void cc_invoke_startup_functions() {
 
 
 
-};
-
-/*! Look for the keyword in (*frameP) after argIdx.
- */
-extern void throwIfExcessKeywordArguments(char *fnName, core::ActivationFrame_sp *frameP, int argIdx) {
-  ASSERT(frameP != NULL);
-  ASSERT(frameP->objectp());
-  ASSERT(argIdx >= 0);
-  core::ValueFrame_sp vframe = gctools::As_unsafe<core::ValueFrame_sp>(*frameP);
-  if (argIdx >= vframe->length()) return;
-  stringstream ss;
-  for (int i(0); i < (vframe)->length(); ++i) {
-    ss << _rep_(vframe->entry(i)) << " ";
-  }
-  SIMPLE_ERROR(BF("Excess keyword arguments fnName: %s argIdx: %d  args: %s") % fnName % argIdx % ss.str());
-}
-
-extern void throwIfExcessArguments(core::T_sp *frameP, int argIdx) {
-  ASSERT(frameP != NULL);
-  ASSERT(frameP->objectp());
-  ASSERT(argIdx >= 0);
-  core::ValueFrame_sp frame = gc::As_unsafe<core::ValueFrame_sp>((*frameP));
-  if (argIdx < frame->length()) {
-    stringstream serr;
-    for (int i = argIdx; i < frame->length(); i++) {
-      serr << _rep_(frame->entry(i)) << " ";
-    }
-    SIMPLE_ERROR(BF("extraneous arguments: %s") % serr.str());
-  }
-}
-
-inline core::T_sp prependMultipleValues(core::T_mv *multipleValuesP) {
-  core::List_sp result = _Nil<core::T_O>();
-  core::T_mv &mv = (*multipleValuesP);
-  if (mv.number_of_values() > 0) {
-    result = core::Cons_O::create(mv, result);
-    for (int i = 1; i < mv.number_of_values(); i++) {
-      result = core::Cons_O::create(mv.valueGet_(i), result);
-    }
-  }
-  return result;
-}
-
-extern "C" {
-void sp_prependMultipleValues(core::T_sp *resultP, core::T_mv *multipleValuesP) {
-  (*resultP) = prependMultipleValues(multipleValuesP);
-  ASSERTNOTNULL(*resultP);
-}
-void mv_prependMultipleValues(core::T_mv *resultP, core::T_mv *multipleValuesP) {
-  (*resultP) = Values(prependMultipleValues(multipleValuesP));
-  ASSERTNOTNULL(*resultP);
-}
 };
 
 extern "C" {
@@ -1099,7 +1043,7 @@ void throwDynamicGo(size_t depth, size_t index, core::T_O *afP) {
   global_DynamicGo_count++;
 #endif
   T_sp af((gctools::Tagged)afP);
-  ValueFrame_sp tagbody = core::tagbody_frame_lookup(af,depth,index);
+  ValueFrame_sp tagbody = gc::As<ValueFrame_sp>(core::tagbody_frame_lookup(gc::As_unsafe<ValueFrame_sp>(af),depth,index));
   T_O* handle = tagbody->operator[](0).raw_();
   core::DynamicGo dgo(handle, index);
 #if defined(DEBUG_FLOW_TRACKER)
@@ -1124,7 +1068,7 @@ void debugSourceFileInfoHandle(int *sourceFileInfoHandleP)
 {NO_UNWIND_BEGIN();
   int sfindex = *sourceFileInfoHandleP;
   core::Fixnum_sp fn = core::make_fixnum(sfindex);
-  SourceFileInfo_sp sfi = core::core__source_file_info(fn);
+  SourceFileInfo_sp sfi = gc::As<SourceFileInfo_sp>(core::core__source_file_info(fn));
   printf("%s:%d debugSourceFileInfoHandle[%d] --> %s\n", __FILE__, __LINE__, sfindex, _rep_(sfi).c_str());
   NO_UNWIND_END();
 }
@@ -1265,14 +1209,6 @@ void ignore_ensureFrameUniqueId() {
   // Do nothing
 }
 
-
-extern size_t matchKeywordOnce(core::T_O *xP, core::T_O *yP, unsigned char *sawKeyAlreadyP)
-{NO_UNWIND_BEGIN();
-  if (xP != yP) return 0;
-  if (*sawKeyAlreadyP) return 2;
-  return 1;
-  NO_UNWIND_END();
-}
 };
 
 // -----------------------------------------------------------
@@ -1393,16 +1329,12 @@ void cc_loadThreadLocalMultipleValues(core::T_mv *result, core::MultipleValues *
   NO_UNWIND_END();
 }
 
-
-void cc_ifNotKeywordException(core::T_O *obj, size_t argIdx, va_list valist, core::FunctionDescription* functionDescription) {
-  T_sp vobj((gc::Tagged)obj);
-  if (!cl__symbolp(vobj)) {
-    T_sp functionName = llvmo::functionNameOrNilFromFunctionDescription(functionDescription);
-    if (functionName.nilp()) {
-      SIMPLE_ERROR(BF("Expected keyword argument at argument %d got %s") % argIdx % _rep_(gctools::smart_ptr<core::T_O>((gc::Tagged)obj)));
-    }
-    SIMPLE_ERROR(BF("In call to %s expected keyword argument at argument %d got %s") % _rep_(functionName) % argIdx % _rep_(gctools::smart_ptr<core::T_O>((gc::Tagged)obj)));
-  }
+void cc_oddKeywordException(core::FunctionDescription* functionDescription) {
+  T_sp functionName = llvmo::functionNameOrNilFromFunctionDescription(functionDescription);
+  if (functionName.nilp())
+    SIMPLE_ERROR(BF("Odd number of keyword arguments"));
+  else
+    SIMPLE_ERROR(BF("In call to %s got odd number of keyword arguments") % _rep_(functionName));
 }
 
 T_O **cc_multipleValuesArrayAddress()
@@ -1461,6 +1393,7 @@ T_mv cc_multiple_value_funcall(core::T_mv* result, T_O* funcDesignator, std::siz
   va_start(argp,numFuns);
   for (; numFuns; --numFuns) {
     core::T_O* tfunc = va_arg(argp,core::T_O*);
+#error "Check the return value of tfunc.asOrNull"
     core::Function_sp func = tfunc.asOrNull<core::Function_O>();
     ASSERT(func);
     auto closure = func->closure;
@@ -1476,6 +1409,7 @@ T_mv cc_multiple_value_funcall(core::T_mv* result, T_O* funcDesignator, std::siz
   va_end(argp);
   ASSERT(idx < MultipleValues::MultipleValuesLimit);
   mvAccumulate._Size = idx;
+#error "Check the return value of tfunc.asOrNull"
   core::Function_sp func = funcDesignator.asOrNull<core::Function_O>();
   ASSERT(func);
   auto closure = gc::untag_general<core::Function_O *>(func)->closure.as<core::Closure>();
@@ -1489,6 +1423,7 @@ T_mv cc_multiple_value_funcall(core::T_mv* result, T_O* funcDesignator, std::siz
 
 T_mv cc_multiple_value_prog1_function(core::T_mv* result, core::T_O* tfunc1, core::T_O* tfunc2) {
   MultipleValues mvFunc1;
+#error "Check the return value of tfunc.asOrNull"
   core::Function_sp func1 = tfunc1.asOrNull<core::Function_O>();
   ASSERT(func1);
   core::Closure_sp closure1 = func1->closure;
@@ -1498,6 +1433,7 @@ T_mv cc_multiple_value_prog1_function(core::T_mv* result, core::T_O* tfunc1, cor
   MultipleValues &mvThreadLocal = lisp_multipleValues();
   for (size_t i(1), iEnd(mvFunc1._Size); i < iEnd; ++i) mvFunc1[i] = mvThreadLocal[i];
   T_mv resultTemp;
+#error "Check the return value of tfunc.asOrNull"
   core::Function_sp func2 = tfunc2.asOrNull<core::Function_O>();
   ASSERT(func2);
   core::Closure_sp closure2 = func2->closure;
@@ -1505,83 +1441,6 @@ T_mv cc_multiple_value_prog1_function(core::T_mv* result, core::T_O* tfunc1, cor
   for (size_t i(1), iEnd(mvFunc1._Size); i < iEnd; ++i) mvThreadLocal[i] = mvFunc1[i];
 }
 #endif
-
-
-gctools::return_type cc_dispatch_effective_method(core::T_O* teffective_method, core::T_O* tgf, core::T_O* tgf_args_vaslist) {
-  core::Function_sp effective_method((gctools::Tagged)teffective_method);
-  core::T_sp gf_vaslist((gctools::Tagged)tgf_args_vaslist);
-  return (*effective_method).entry.load()(LCC_PASS_ARGS2_ELLIPSIS(teffective_method,gf_vaslist.raw_(),_Nil<core::T_O>().raw_()));
-}
-
-
-gctools::return_type cc_dispatch_miss(core::T_O* tgf, core::T_O* tgf_vaslist)
-{
-  core::FuncallableInstance_sp gf((gctools::Tagged)tgf);
-  core::VaList_sp gf_vaslist((gctools::Tagged)tgf_vaslist);
-  core::T_mv result = core::eval::funcall(clos::_sym_dispatch_miss,gf,gf_vaslist);
-#ifdef DEBUG_GFDISPATCH
-  printf("%s:%d  Returning from cc_dispatch_miss\n", __FILE__, __LINE__ );
-#endif
-  return result.as_return_type();
-}
-
-
-
-void cc_dispatch_debug(int msg_id, uintptr_clasp_t val)
-{
-  // The msg_id switch values correspond to values passed from cmpgf.lsp
-  //   The values mean:
-  //         0 - print the argument as an integer step index
-  //         1 - Print the value as a integer
-  //         2 - print the value as a tag
-  //         3 - print the value as a tagged pointer to a Vaslist object
-  //         4 - print the value as a pointer
-  //         5 - print the contents of the va_list pointed to by the value
-  //         6 - print the value as a stamp
-  //         7 - print the value as a pointer to a dispatch function
-  switch (msg_id) {
-  case 0:
-      BFORMAT_T(BF("Step %d\n") % val);
-//      printf("%s:%d    cc_dispatch_debug step %d\n", __FILE__, __LINE__, val );
-      break;
-  case 1:
-      BFORMAT_T(BF("Arg val[%d]") % val);
-//      printf("%s:%d    cc_dispatch_debug arg val[%d]\n", __FILE__, __LINE__, val );
-      break;
-  case 2:
-      BFORMAT_T(BF(" tag = %d\n") % val); 
-//      printf("%s:%d    cc_dispatch_debug tag [%d]\n", __FILE__, __LINE__, val );
-     break;
-  case 3: {
-    VaList_sp vls((gc::Tagged)val);
-//    printf("%s:%d    vaList_sp.raw_() = %p\n", __FILE__, __LINE__, vls.raw_());
-    BFORMAT_T(BF("Arg VaList_sp.raw_() = %p list -> %s\n") % (void*)vls.raw_() % _rep_(vls) );
-    dump_Vaslist_ptr(&*vls);
-    break;
-  }
-  case 4: {
-//      printf("%s:%d     ptr: %p\n", __FILE__, __LINE__, (void*)val);
-      BFORMAT_T(BF("Ptr: %p\n") % (void*)val );
-  }
-      break;
-  case 5: {
-//      printf("%s:%d     ptr: %p\n", __FILE__, __LINE__, (void*)val);
-      BFORMAT_T(BF("va_list: %p\n") % (void*)val );
-      void* dump_va_list_voidSTAR = (void*)&dump_va_list;
-      typedef void (*fptr)(uintptr_t);
-      fptr my_fptr = reinterpret_cast<fptr>(dump_va_list_voidSTAR);
-      my_fptr(val);
-      break;
-  }
-  case 6:
-      BFORMAT_T(BF("Argument stamp: %lu\n") % val);
-      break;
-  case 7:
-      BFORMAT_T(BF("Dispatch to: %p\n") % val);
-      break;
-  }
-  fflush(stdout);
-}
 
 void clasp_terminate()
 {
@@ -1626,22 +1485,85 @@ gctools::return_type cc_dispatch_slot_writer_index_debug(core::T_O* toptimized_s
   core::T_sp result = core::eval::funcall(clos::_sym_dispatch_slot_writer_index_debug,optimized_slot_writer,value,instance,vargs);
   return result.as_return_type();
 }
+};
 
 
-void cc_error_too_few_arguments(size_t nargs, size_t minargs, core::FunctionDescription* functionDescription) {
-  T_sp functionName = llvmo::functionNameOrNilFromFunctionDescription(functionDescription);
-  if (functionName.nilp()) {
-    SIMPLE_ERROR(BF("Not enough arguments when calling an unknown function - you provided %lu and %lu are required") % nargs % minargs );
+extern "C" {
+
+// The following are here instead of fastgf.cc because they are apparently
+// too big to be inlined.
+#if 1
+
+// set to zero and enable this function in fastgf.cc to reproduce a problem
+// where clasp locks up when trying to compile the first discriminating function
+// The problem crops up when cc_dispatch_miss is inlined
+gctools::return_type cc_dispatch_miss(core::T_O* tgf, core::T_O* tgf_vaslist)
+{
+  core::FuncallableInstance_sp gf((gctools::Tagged)tgf);
+  core::VaList_sp gf_vaslist((gctools::Tagged)tgf_vaslist);
+  core::T_mv result = core::eval::funcall(clos::_sym_dispatch_miss,gf,gf_vaslist);
+#ifdef DEBUG_GFDISPATCH
+  printf("%s:%d  Returning from cc_dispatch_miss\n", __FILE__, __LINE__ );
+#endif
+  return result.as_return_type();
+}
+#endif
+
+void cc_dispatch_debug(int msg_id, uintptr_clasp_t val)
+{
+  // The msg_id switch values correspond to values passed from cmpgf.lsp
+  //   The values mean:
+  //         0 - print the argument as an integer step index
+  //         1 - Print the value as a integer
+  //         2 - print the value as a tag
+  //         3 - print the value as a tagged pointer to a Vaslist object
+  //         4 - print the value as a pointer
+  //         5 - print the contents of the va_list pointed to by the value
+  //         6 - print the value as a stamp
+  //         7 - print the value as a pointer to a dispatch function
+  switch (msg_id) {
+  case 0:
+      core::write_bf_stream(BF("Step %d\n") % val);
+//      printf("%s:%d    cc_dispatch_debug step %d\n", __FILE__, __LINE__, val );
+      break;
+  case 1:
+      core::write_bf_stream(BF("Arg val[%d]") % val);
+//      printf("%s:%d    cc_dispatch_debug arg val[%d]\n", __FILE__, __LINE__, val );
+      break;
+  case 2:
+      core::write_bf_stream(BF(" tag = %d\n") % val); 
+//      printf("%s:%d    cc_dispatch_debug tag [%d]\n", __FILE__, __LINE__, val );
+     break;
+  case 3: {
+    core::VaList_sp vls((gc::Tagged)val);
+//    printf("%s:%d    vaList_sp.raw_() = %p\n", __FILE__, __LINE__, vls.raw_());
+    core::write_bf_stream(BF("Arg VaList_sp.raw_() = %p list -> %s\n") % (void*)vls.raw_() % _rep_(vls) );
+    dump_Vaslist_ptr(&*vls);
+    break;
   }
-  SIMPLE_ERROR(BF("Not enough arguments when calling %s - you provided %lu and %lu are required") % _rep_(functionName) % nargs % minargs );
+  case 4: {
+//      printf("%s:%d     ptr: %p\n", __FILE__, __LINE__, (void*)val);
+      core::write_bf_stream(BF("Ptr: %p\n") % (void*)val );
+  }
+      break;
+  case 5: {
+//      printf("%s:%d     ptr: %p\n", __FILE__, __LINE__, (void*)val);
+      core::write_bf_stream(BF("va_list: %p\n") % (void*)val );
+      void* dump_va_list_voidSTAR = (void*)&core::dump_va_list;
+      typedef void (*fptr)(uintptr_t);
+      fptr my_fptr = reinterpret_cast<fptr>(dump_va_list_voidSTAR);
+      my_fptr(val);
+      break;
+  }
+  case 6:
+      core::write_bf_stream(BF("Argument stamp: %lu\n") % val);
+      break;
+  case 7:
+      core::write_bf_stream(BF("Dispatch to: %p\n") % val);
+      break;
+  }
+  fflush(stdout);
 }
 
-void cc_error_too_many_arguments(size_t nargs, size_t maxargs, core::FunctionDescription* functionDescription) {
-  T_sp functionName = llvmo::functionNameOrNilFromFunctionDescription(functionDescription);
-  if (functionName.nilp()) {
-        SIMPLE_ERROR(BF("Too many arguments when calling an unknown function - you provided %lu and %lu are required") % nargs % maxargs );
-  }
-  SIMPLE_ERROR(BF("Too many arguments when calling %s - you provided %lu and %lu are allowed") % _rep_(functionName) % nargs % maxargs );
-}
 
 };

@@ -63,12 +63,12 @@ RUN /bin/bash -c "source activate lab"
 RUN conda install ipywidgets -c conda-forge -y
 RUN pip install nglview==1.1.2
 RUN nglview enable # might need this to enable nglview-js-widgets extension for notebook
-RUN conda install jupyterlab -y -c conda-forge
+RUN conda install jupyterlab=0.32 -y -c conda-forge
 RUN pip install bqplot
 RUN jupyter-labextension install @jupyter-widgets/jupyterlab-manager nglview-js-widgets@1.1.2 bqplot
 #RUN jupyter-labextension install nglview-js-widgets@1.1.2
 
-ADD cando-build.tgz /home/app/clasp
+ADD build/cando-build.tgz /home/app/clasp
 ADD tools/dockerfiles/jupyter/kernels /home/app/.local/share/jupyter/kernels
 ADD tools/dockerfiles/jupyter/jupyter_notebook_config.py /home/app/.jupyter/jupyter_notebook_config.py
 # RUN chown -R app:app /home/app/.jupyter /home/app/.local
@@ -103,7 +103,7 @@ RUN clasp -l "/home/app/quicklisp/setup.lisp" \
            -e "(swank-loader:init :delete nil :reload nil :load-contribs nil)"\
            -e "(core:quit)"
 
-ADD --chown=app:app ambertools18-docker.tar.gz /home/app
+ADD --chown=app:app build/ambertools18-docker.tar.gz /home/app
 ENV AMBERHOME=/home/app/amber18/
 
 RUN cp /home/app/clasp/lib/clasp/extensions/cando/src/data/force-field/ATOMTYPE_SYBYL.DEF /home/app/clasp/lib/clasp/extensions/cando/src/data/force-field/atomtype_sybyl.def

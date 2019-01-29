@@ -354,15 +354,20 @@ q (or Q):             quits the inspection.~%~
     (case doc-type
       (type
        (let ((c (find-class object nil)))
-	 (if c
-	     (documentation c t)
-	     (si::get-documentation object doc-type))))
+         (if c
+             (documentation c t)
+             (si::get-documentation object doc-type))))
       (function
-       (or (si::get-documentation object doc-type)
-	   (and (fboundp object)
-		(documentation (or (macro-function object)
-				   (fdefinition object))
-			       doc-type))))
+       (if (fboundp object)
+           (documentation (or (macro-function object)
+                              (fdefinition object))
+                          doc-type)
+           nil))
+      (compiler-macro
+       (if (compiler-macro-function object)
+           (documentation (compiler-macro-function object)
+                          doc-type)
+           nil))
       (otherwise
        (si::get-documentation object doc-type)))))
 
@@ -371,18 +376,23 @@ q (or Q):             quits the inspection.~%~
     (case doc-type
       (type
        (let ((c (find-class object nil)))
-	 (if c
-	     (progn
-	       (si::set-documentation object 'type nil)
-	       (si::set-documentation object 'structure nil)
-	       (setf (documentation c t) new-value))
-	     (si::set-documentation object doc-type new-value))))
+         (if c
+             (progn
+               (si::set-documentation object 'type nil)
+               (si::set-documentation object 'structure nil)
+               (setf (documentation c t) new-value))
+             (si::set-documentation object doc-type new-value))))
       (function
-       (if (fboundp object)
-	   (let ((c (or (macro-function object) (fdefinition object))))
-	     (si::set-documentation c 'function nil)
-	     (setf (documentation c 'function) new-value))
-	   (si::set-documentation object doc-type new-value)))
+       (when (fboundp object)
+         (setf (documentation (or (macro-function object)
+                                  (fdefinition object))
+                              doc-type)
+               new-value)))
+      (compiler-macro
+       (when (compiler-macro-function object)
+         (setf (documentation (compiler-macro-function object)
+                              doc-type)
+               new-value)))
       (otherwise
        (si::set-documentation object doc-type new-value))))
   new-value)
@@ -412,12 +422,21 @@ q (or Q):             quits the inspection.~%~
     (setf (documentation (class-name object) 'structure) new-value)))
 
 (defmethod documentation ((object list) doc-type)
-  (when (member doc-type '(function compiler-macro))
-    (si::get-documentation object doc-type)))
+  (cond ((and (eq doc-type 'function)
+              (fboundp object))
+         (documentation (fdefinition object) doc-type))
+        ((and (eq doc-type 'compiler-macro)
+              (compiler-macro-function object))
+         (documentation (compiler-macro-function object) doc-type))))
 
 (defmethod (setf documentation) (new-value (object list) doc-type)
-  (when (member doc-type '(function compiler-macro))
-    (si::set-documentation object doc-type new-value)))
+  (cond ((and (eq doc-type 'function)
+              (fboundp object))
+         (setf (documentation (fdefinition object) doc-type) new-value))
+        ((and (eq doc-type 'compiler-macro)
+              (compiler-macro-function object))
+         (setf (documentation (compiler-macro-function object) doc-type)
+               new-value))))
 
 (defmethod documentation ((object standard-generic-function) doc-type)
   (when (member doc-type '(t function))
@@ -437,11 +456,11 @@ q (or Q):             quits the inspection.~%~
 
 (defmethod documentation ((object function) doc-type)
   (when (member doc-type '(t function))
-    (si::get-documentation object doc-type)))
+    (core:function-docstring object)))
 
 (defmethod (setf documentation) (new-value (object function) doc-type)
   (when (member doc-type '(t function))
-    (si::set-documentation object doc-type new-value)))
+    (setf (core:function-docstring object) new-value)))
 
 (defmethod documentation ((object slot-definition) doc-type)
   (when (member doc-type '(t function))

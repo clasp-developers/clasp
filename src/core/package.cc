@@ -43,6 +43,7 @@ THE SOFTWARE.
 #include <clasp/core/bignum.h>
 #include <clasp/core/array.h>
 #include <clasp/core/multipleValues.h>
+#include <clasp/core/evaluator.h> // for eval::funcall
 
 // last include is wrappers.h
 #include <clasp/core/wrappers.h>
@@ -83,6 +84,38 @@ CL_DEFUN T_sp cl__package_nicknames(T_sp pkg) {
   Package_sp package = coerce::packageDesignator(pkg);
   return package->getNicknames();
 };
+
+CL_LAMBDA(pkg);
+CL_DECLARE();
+CL_DOCSTRING("Grab the (local-nickname . package) alist without locking. No coercion.");
+CL_DEFUN T_sp core__package_local_nicknames_internal(Package_sp package) {
+  return package->getLocalNicknames();
+}
+
+CL_LISPIFY_NAME("core:package-local-nicknames-internal");
+CL_LAMBDA(nicks pkg);
+CL_DECLARE();
+CL_DOCSTRING("Set the local nicknames of PKG to be NICKS. Internal, unlocked, no coercion. Be careful.");
+CL_DEFUN_SETF void set_package_local_nicknames_internal(T_sp nicks, Package_sp package) {
+  package->setLocalNicknames(nicks);
+}
+
+// FIXME: Maybe we can just grab the lock in CL?
+CL_LAMBDA(pkg thunk);
+CL_DECLARE();
+CL_DOCSTRING("Call THUNK while holding the read lock for PKG, and return the result.");
+CL_DEFUN T_sp core__call_with_package_read_lock(Package_sp pkg, Function_sp thunk) {
+  WITH_PACKAGE_READ_LOCK(pkg);
+  return eval::funcall(thunk);
+}
+
+CL_LAMBDA(pkg thunk);
+CL_DECLARE();
+CL_DOCSTRING("Call THUNK while holding the read-write lock for PKG, and return the result.");
+CL_DEFUN T_sp core__call_with_package_read_write_lock(Package_sp pkg, Function_sp thunk) {
+  WITH_PACKAGE_READ_WRITE_LOCK(pkg);
+  return eval::funcall(thunk);
+}
 
 CL_LAMBDA(symbol &optional (package *package*));
 CL_DECLARE();
@@ -276,32 +309,41 @@ CL_DEFUN T_mv cl__shadowing_import(T_sp symbol_names_desig, T_sp package_desig) 
   return Values(_lisp->_true());
 }
 
-static uintptr_clasp_t static_gentemp_counter = 1;
-CL_LAMBDA(&optional prefix (package *package*));
+std::atomic<uintptr_clasp_t> static_gentemp_counter;
+CL_LAMBDA(&optional (prefix "T") (package *package*));
 CL_DECLARE();
 CL_DOCSTRING("See CLHS gentemp");
 CL_DEFUN T_mv cl__gentemp(T_sp prefix, T_sp package_designator) {
   Package_sp pkg = coerce::packageDesignator(package_designator);
   StrNs_sp ss;
   if (prefix.nilp()) {
-    SimpleBaseString_sp sbs = SimpleBaseString_O::make("T        ");
-    ss = Str8Ns_O::make(sbs->length(),'\0',true,clasp_make_fixnum(1),sbs,false,clasp_make_fixnum(0));
+    // Should signal an error of type type-error if prefix is not a string.
+    TYPE_ERROR(prefix,cl::_sym_string);
   } else if (cl__stringp(prefix)) {
     String_sp sprefix = gc::As_unsafe<String_sp>(prefix);
-    ss = gc::As_unsafe<StrNs_sp>(core__make_vector(sprefix->arrayElementType(),32,true,clasp_make_fixnum(sprefix->length())));
+    ss = gc::As_unsafe<StrNs_sp>(core__make_vector(sprefix->arrayElementType(),sprefix->length()+8,true,clasp_make_fixnum(sprefix->length())));
     ss->unsafe_setf_subseq(0,sprefix->length(),sprefix);
   } else {
-    TYPE_ERROR(prefix,Cons_O::createList(cl::_sym_or,cl::_sym_string,cl::_sym_Null_O));
+    TYPE_ERROR(prefix,cl::_sym_string);
   }
   T_sp retval;
-  core__integer_to_string(ss,Integer_O::create(static_gentemp_counter),clasp_make_fixnum(10),false,false);
-  ++static_gentemp_counter;
-  T_mv mv = pkg->findSymbol(ss);
-  if (mv.valueGet_(1).nilp()) {
-    retval = pkg->intern(ss);
-    return retval;
+  size_t fillPointer = ss->fillPointer();
+#define GENTEMP_TRIES 1000000
+  size_t tries = GENTEMP_TRIES;
+  while (1) {
+    ++static_gentemp_counter;
+    core__integer_to_string(ss,Integer_O::create(static_gentemp_counter),clasp_make_fixnum(10),false,false);
+    T_mv mv = pkg->findSymbol(ss);
+    if (mv.valueGet_(1).nilp()) {
+      retval = pkg->intern(ss->asMinimalSimpleString());
+      return retval;
+    }
+    ss->fillPointerSet(fillPointer);
+    --tries;
+    if (tries==0) {
+      SIMPLE_ERROR(BF("gentemp tried %d times to generate a unique symbol and then gave up") % GENTEMP_TRIES);
+    }
   }
-  SIMPLE_ERROR(BF("Could not find unique gentemp"));
 };
 
 CL_LAMBDA(package-designator);
@@ -391,8 +433,13 @@ CL_DEFMETHOD T_mv Package_O::hashTables() const {
 
 string Package_O::__repr__() const {
   WITH_PACKAGE_READ_LOCK(this);
+  if (cl::_sym_STARprint_readablySTAR->symbolValue().notnilp()) {
+    stringstream ss;
+    ss << "#.(CL:FIND-PACKAGE \"" << this->_Name->get_std_string() << "\")";
+    return ss.str();
+  }
   stringstream ss;
-  ss << "#<" << this->_Name->get_std_string() << ">";
+  ss << "#<PACKAGE " << this->_Name->get_std_string() << ">";
   return ss.str();
 }
 
@@ -518,6 +565,20 @@ bool Package_O::usingPackageP_no_lock(Package_sp usePackage) const {
 bool Package_O::usingPackageP(Package_sp usePackage) const {
   WITH_PACKAGE_READ_LOCK(this);
   return this->usingPackageP_no_lock(usePackage);
+}
+
+// Find a package by local nickname, or return NIL.
+T_sp Package_O::findPackageByLocalNickname(String_sp name) {
+  WITH_PACKAGE_READ_LOCK(this);
+  List_sp nicks = this->getLocalNicknames();
+  // This is used by findPackage, which happens pretty early,
+  // so we use underlying stuff instead of cl:assoc.
+  if (nicks.notnilp()) {
+    T_sp pair = nicks.asCons()->assoc(name, _Nil<T_O>(), cl::_sym_string_EQ_, _Nil<T_O>());
+    if (pair.nilp())
+      return pair; // no result
+    else return oCdr(pair);
+  } else return nicks;
 }
 
   //

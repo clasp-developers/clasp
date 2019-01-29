@@ -33,6 +33,7 @@ THE SOFTWARE.
 #include <unistd.h>
 #include <pthread.h> // TODO: PORTING - frgo, 2017-08-04
 #include <signal.h>  // TODO: PORTING - frgo, 2017-08-04
+#include <sys/utsname.h> 
 #include <clasp/external/PicoSHA2/picosha2.h>
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
@@ -86,7 +87,7 @@ THE SOFTWARE.
 
 namespace core {
 
-void clasp_musleep(double dsec, bool alertable) {
+int clasp_musleep(double dsec, bool alertable) {
   double seconds = floor(dsec);
   double frac_seconds = dsec - seconds;
   double nanoseconds = (frac_seconds * 1000000000.0);
@@ -105,23 +106,28 @@ void clasp_musleep(double dsec, bool alertable) {
       printf("%s:%d nanosleep returned code = %d  errno = %d\n", __FILE__, __LINE__, code, errno);
     }
   }
+  return code;
 }
 
 CL_LAMBDA(seconds);
 CL_DECLARE();
 CL_DOCSTRING("sleep");
-CL_DEFUN void cl__sleep(T_sp oseconds) {
+CL_DEFUN T_sp cl__sleep(Real_sp oseconds) {
+  // seconds - a non-negative real.
   SYMBOL_EXPORT_SC_(ClPkg, sleep);
-  if (oseconds.nilp()) {
-    ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_sleep, oseconds, cl::_sym_Number_O);
-  }
   double dsec = clasp_to_double(oseconds);
   if (dsec < 0.0) {
-    SIMPLE_ERROR(BF("You cannot sleep for < 0 seconds"));
+    TYPE_ERROR(oseconds,Cons_O::createList(cl::_sym_float,clasp_make_single_float(0.0)));
   }
-  clasp_musleep(dsec,false);
+  int retval = clasp_musleep(dsec,false);
+  return _Nil<T_O>();
 }
 
+
+CL_DEFUN void core__monitor_write(T_sp message)
+{
+  MONITOR(BF("%s") % _rep_(message));
+}
 
 CL_LAMBDA();
 CL_DECLARE();
@@ -176,6 +182,16 @@ CL_DEFUN T_sp core__interpreter_symbols() {
 #endif // #ifndef SCRAPING
   return ls;
 }
+
+std::atomic<uint64_t> global_next_number;
+
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("Return the next number.  An internal counter is incremented every time this function is called.");
+CL_DEFUN Integer_sp core__next_number() {
+  uint64_t temp = ++global_next_number;
+  return Integer_O::create((uint64_t)temp);
+};
 
 CL_LAMBDA();
 CL_DECLARE();
@@ -235,7 +251,11 @@ CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("softwareType");
 CL_DEFUN T_sp cl__software_type() {
-  return _Nil<T_O>();
+  struct utsname aux;
+  if (uname(&aux) < 0)
+    return _Nil<T_O>();
+  else
+    return SimpleBaseString_O::make(aux.sysname);
 };
 
 CL_LAMBDA();
@@ -250,21 +270,33 @@ CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("machineType");
 CL_DEFUN T_sp cl__machine_type() {
-  return _Nil<T_O>();
+  struct utsname aux;
+  if (uname(&aux) < 0)
+    return _Nil<T_O>();
+  else
+    return SimpleBaseString_O::make(aux.machine);
 };
 
 CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("machineVersion");
 CL_DEFUN T_sp cl__machine_version() {
-  return _Nil<T_O>();
+  struct utsname aux;
+  if (uname(&aux) < 0)
+    return _Nil<T_O>();
+  else
+    return SimpleBaseString_O::make(aux.version);
 };
 
 CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("machineInstance");
 CL_DEFUN T_sp cl__machine_instance() {
-  return _Nil<T_O>();
+  struct utsname aux;
+   if (uname(&aux) < 0)
+     return _Nil<T_O>();
+   else
+     return SimpleBaseString_O::make(aux.nodename);
 };
 
 CL_LAMBDA();
@@ -456,17 +488,6 @@ CL_DEFUN T_mv cl__values(VaList_sp vargs) {
   return mv;
 }
 
-
-CL_LAMBDA(&rest args);
-CL_DECLARE();
-CL_DOCSTRING("values");
-CL_DEFUN T_mv core__values_testing(List_sp args) {
-  // returns multiple values
-  T_mv result = ValuesFromCons(args);
-  printf("%s:%d core__values_testing: %s\n", __FILE__, __LINE__, _rep_(args).c_str());
-  return result;
-}
-
 CL_LAMBDA(list);
 CL_DECLARE();
 CL_DOCSTRING("values_list");
@@ -507,16 +528,6 @@ CL_DEFUN T_mv core__valid_function_name_p(T_sp arg) {
   return (Values(_lisp->_true()));
 };
 
-CL_LAMBDA();
-CL_DECLARE();
-CL_DOCSTRING("testMemoryError");
-CL_DEFUN void core__test_memory_error() {
-  int *h = (int *)malloc(sizeof(int));
-  *h = 1;
-  free(h);
-  *h = 2;
-};
-
 CL_LAMBDA(listOfPairs);
 CL_DECLARE();
 CL_DOCSTRING("Split a list of pairs into a pair of lists returned as MultipleValues. The first list is each first element and the second list is each second element or nil if there was no second element");
@@ -546,16 +557,19 @@ CL_DEFUN T_mv core__separate_pair_list(List_sp listOfPairs) {
 }
 
 // ignore env
+CL_LISPIFY_NAME("core:bclasp-compiler-macro-function");
 CL_LAMBDA(name &optional env);
-CL_DEFUN T_mv core__get_bclasp_compiler_macro_function(core::T_sp name, core::T_sp env)
+CL_DEFUN T_mv core___bclasp_compiler_macro_function(core::T_sp name, core::T_sp env)
 {
   return core__get_sysprop(name,core::_sym_bclasp_compiler_macro);
 }
 
-CL_LAMBDA(name function &optional env);
-CL_DEFUN void core__setf_bclasp_compiler_macro_function(core::T_sp name, core::T_sp function, core::T_sp env)
+CL_LISPIFY_NAME("CORE:bclasp-compiler-macro-function");
+CL_LAMBDA(function name &optional env);
+CL_DEFUN_SETF T_sp core__setf_bclasp_compiler_macro_function(core::T_sp function, core::T_sp name, core::T_sp env)
 {
   core__put_sysprop(name,core::_sym_bclasp_compiler_macro,function);
+  return function;
 }
 
 // ignore env
@@ -649,7 +663,8 @@ CL_DEFUN_SETF T_sp setf_macro_function(Function_sp function, Symbol_sp symbol, T
 CL_LAMBDA(symbol);
 CL_DECLARE();
 CL_DOCSTRING("See CLHS: special-operator-p");
-CL_DEFUN T_mv cl__special_operator_p(T_sp sym) {
+CL_DEFUN T_mv cl__special_operator_p(Symbol_sp sym) {
+  // should signal type-error if its argument is not a symbol.
   SYMBOL_EXPORT_SC_(ClPkg, let);
   SYMBOL_EXPORT_SC_(ClPkg, letSTAR);
   SYMBOL_EXPORT_SC_(ClPkg, return_from);
@@ -702,24 +717,49 @@ CL_DEFUN T_mv cl__special_operator_p(T_sp sym) {
   // special-operator-p returns a generalized boolean
   // so it's ok to return a special form symbol if
   // sym is a special form
-  if ( Symbol_sp ssym = sym.asOrNull<Symbol_O>() ) {
-    return _lisp->specialFormOrNil(ssym);
-  }
-  return _Nil<T_O>();
+  return _lisp->specialFormOrNil(sym);
 };
 
 
 CL_DECLARE();
 CL_DOCSTRING("CLHS: ash");
 CL_DEFUN Integer_sp cl__ash(Integer_sp integer, Integer_sp count) {
-  int cnt = clasp_to_int(count);
-  return clasp_shift(integer, cnt);
+  // clasp_to_int silently returns 0 for arguments being fixnums bigger than int
+  // gctools::Fixnum would be a better type
+  // see ecl cl_ash
+  if (count.fixnump())
+    return clasp_shift(integer, count.unsafe_fixnum());
+    else {
+      // count is bignum
+      if (clasp_plusp(count))
+        if (clasp_zerop (integer))
+          return integer;
+        // result will not fit in memory, giveup
+        else SIMPLE_ERROR(BF("ash for bignum count not implemented"));
+      else if (clasp_minusp (count)) {
+        if (integer.fixnump()) {
+          if (clasp_plusp (integer))
+              return clasp_make_fixnum (1);
+          else if (clasp_minusp (integer))
+              return clasp_make_fixnum (-1);
+            else return clasp_make_fixnum (0);
+          }
+        else {
+          //integer is a bignum
+          if (clasp_minusp (integer))
+            return clasp_make_fixnum (-1);
+          else
+            return clasp_make_fixnum (0);
+        }
+      }
+      else return integer;
+    }
 }
 
 CL_LAMBDA(&optional fmt-control &rest args);
 CL_DECLARE();
 CL_DOCSTRING("Built in implementation of break - that calls the internal debugger - replace this with a CL implemented version");
-CL_DEFUN void core__break(T_sp fmt, List_sp args) {
+CL_DEFUN void core__break_low_level(T_sp fmt, List_sp args) {
   int frame = core__ihs_top();
   T_sp tframe = clasp_make_fixnum(frame);
   DynamicScopeManager scope(_sym_STARstack_top_hintSTAR,tframe);
@@ -767,7 +807,7 @@ CL_DEFUN void core__gdb_inspect(String_sp msg, T_sp o) {
   core__invoke_internal_debugger(_Nil<core::T_O>());
 };
 
-CL_LISPIFY_NAME("CORE:specialp");
+CL_LISPIFY_NAME("EXT:specialp");
 CL_LAMBDA(specialp symbol);
 CL_DECLARE();
 CL_DOCSTRING("Set whether SYMBOL is globally known to be special. Use cautiously.");
@@ -894,7 +934,10 @@ CL_DEFUN T_sp cl__fdefinition(T_sp functionName) {
       ERROR_UNDEFINED_FUNCTION(functionName);
     return sym->symbolFunction();
   }
-  TYPE_ERROR(functionName,cl::_sym_function);
+  TYPE_ERROR(functionName, // type of function names
+             Cons_O::createList(cl::_sym_or, cl::_sym_symbol,
+                                Cons_O::createList(cl::_sym_cons,
+                                                   Cons_O::createList(cl::_sym_eql, cl::_sym_setf))));
 }
 
 CL_LISPIFY_NAME("cl:fdefinition")
@@ -976,7 +1019,10 @@ CL_DEFUN T_mv cl__fmakunbound(T_sp functionName) {
     sym->fmakunbound();
     return (Values(sym));
   }
-  TYPE_ERROR(functionName,cl::_sym_function);
+  TYPE_ERROR(functionName, // type of function names
+             Cons_O::createList(cl::_sym_or, cl::_sym_symbol,
+                                Cons_O::createList(cl::_sym_cons,
+                                                   Cons_O::createList(cl::_sym_eql, cl::_sym_setf))));
 }
 
 CL_LAMBDA(char &optional input-stream-designator recursive-p);
@@ -1320,7 +1366,6 @@ CL_DEFUN T_mv cl__mapcan(T_sp op, List_sp lists) {
   them together into one list and then points the cdr of the last element of this new list
   to c.
 */
-#if 1
 CL_LAMBDA(core:&va-rest lists);
 CL_DECLARE();
 CL_DOCSTRING("append as in clhs");
@@ -1347,35 +1392,6 @@ CL_DEFUN T_sp cl__append(VaList_sp args) {
   T_sp res = list.cons();
   return res;
 }
-#endif
-
-#if 0
-CL_LAMBDA(&rest lists);
-CL_DECLARE();
-CL_DOCSTRING("append as in clhs");
-CL_DEFUN T_sp cl__append(List_sp lists) {
-  ql::list list;
-  LOG(BF("Carrying out append with arguments: %s") % _rep_(lists));
-  auto it = lists.begin();
-  auto end = lists.end();
-  T_sp curit = *it;
-  while (it != end) {
-    curit = *it;
-    it++;
-    if (it == end)
-      break;
-    for (auto inner : (List_sp)oCar(curit)) {
-      list << oCar(inner);
-    }
-  }
-  /* Now append the last argument by setting the new lists last element cdr
-       to the last argument of append */
-  T_sp last = oCar(curit);
-  list.dot(last);
-  T_sp res = list.cons();
-  return res;
-}
-#endif
 
 CL_LAMBDA(sequence start end);
 CL_DECLARE();
@@ -1405,38 +1421,48 @@ CL_DEFUN T_mv core__sequence_start_end(T_sp sequence, Fixnum_sp start, T_sp end)
 };
 
 
-CL_LAMBDA(&optional x);
+CL_LAMBDA(&optional (x "G"));
 CL_DECLARE();
 CL_DOCSTRING("See CLHS gensym");
 CL_DEFUN Symbol_sp cl__gensym(T_sp x) {
-  //CHECKME
+  // Should signal an error of type type-error if x is not a string or a non-negative integer.
+  if (x.nilp())
+    TYPE_ERROR(x,Cons_O::createList(cl::_sym_or,cl::_sym_string,cl::_sym_UnsignedByte));
   if (cl__stringp(x)) {
     String_sp sx = gc::As_unsafe<String_sp>(x);
     StrNs_sp ss = gc::As_unsafe<StrNs_sp>(core__make_vector(sx->arrayElementType(),16,true,clasp_make_fixnum(0)));
     StringPushString(ss,sx);
     core__integer_to_string(ss,gc::As<Integer_sp>(cl::_sym_STARgensym_counterSTAR->symbolValue()),clasp_make_fixnum(10));
-    ASSERT(cl::_sym_STARgensym_counterSTAR->symbolValue().fixnump());
-    Fixnum counter = cl::_sym_STARgensym_counterSTAR->symbolValue().unsafe_fixnum();
-    cl::_sym_STARgensym_counterSTAR->setf_symbolValue(make_fixnum(counter + 1));
+    // If and only if no explicit suffix is supplied, *gensym-counter* is incremented after it is used.
+    Integer_sp counter = gc::As<Integer_sp>(cl::_sym_STARgensym_counterSTAR->symbolValue());
+    if (clasp_minusp(counter))
+      TYPE_ERROR(counter,cl::_sym_UnsignedByte);
+    if (counter.fixnump()) {
+      Fixnum gensymCounter = counter.unsafe_fixnum() +1;
+      if (gensymCounter == (MOST_POSITIVE_FIXNUM + 1)) {
+        Integer_sp gensymCounterBignum = Integer_O::create(gensymCounter);
+        cl::_sym_STARgensym_counterSTAR->setf_symbolValue(gensymCounterBignum);
+      } else cl::_sym_STARgensym_counterSTAR->setf_symbolValue(make_fixnum(gensymCounter));
+    } else {
+      // counter must be a bignum, positive
+      // still need to increase the bignum by 1
+      counter = gc::As_unsafe<Integer_sp>(clasp_one_plus(counter));
+      cl::_sym_STARgensym_counterSTAR->setf_symbolValue(counter);
+    }
     Symbol_sp sym = Symbol_O::create(ss->asMinimalSimpleString());
     sym->setPackage(_Nil<T_O>());
     return sym;
   }
-  SafeBuffer ss;
-  Fixnum counter;
-  ss.string()->vectorPushExtend_claspChar('G');
-  if (x.fixnump()||gc::IsA<Integer_sp>(x)) {
-    core__integer_to_string(ss.string(),x,clasp_make_fixnum(10));
-  } else if (x.nilp()) {
-    counter = unbox_fixnum(gc::As<Fixnum_sp>(cl::_sym_STARgensym_counterSTAR->symbolValue()));
-    core__integer_to_string(ss.string(),gc::As<Integer_sp>(cl::_sym_STARgensym_counterSTAR->symbolValue()),clasp_make_fixnum(10));
-    cl::_sym_STARgensym_counterSTAR->setf_symbolValue(make_fixnum(counter + 1));
+  if ((x.fixnump() || gc::IsA<Integer_sp>(x)) && (!(clasp_minusp(gc::As_unsafe<Integer_sp>(x))))) {
+    SafeBufferStr8Ns ss;
+    ss.string()->vectorPushExtend_claspChar('G');
+    core__integer_to_string(ss.string(),gc::As_unsafe<Integer_sp>(x),clasp_make_fixnum(10));
+    Symbol_sp sym = Symbol_O::create(ss.string()->asMinimalSimpleString());
+    sym->setPackage(_Nil<T_O>());
+    return sym;
   } else {
-    TYPE_ERROR(x,Cons_O::createList(cl::_sym_or,cl::_sym_string,cl::_sym_Null_O,cl::_sym_Integer_O));
+    TYPE_ERROR(x,Cons_O::createList(cl::_sym_or,cl::_sym_string,cl::_sym_UnsignedByte));
   }
-  Symbol_sp sym = Symbol_O::create(ss.string()->asMinimalSimpleString());
-  sym->setPackage(_Nil<T_O>());
-  return sym;
 }
 
 CL_LAMBDA(x);
@@ -1527,9 +1553,12 @@ T_sp type_of(T_sp x) {
   } else if (x.valistp() ) {
     return core::_sym_valist;
   } else if (x.characterp()) {
-    if (cl__standard_char_p(gc::As<Character_sp>(x)))
+    Character_sp character = gc::As_unsafe<Character_sp>(x);
+    if (cl__standard_char_p(character))
       return cl::_sym_standard_char;
-    return cl::_sym_character;
+    else if (clasp_base_char_p(character))
+      return cl::_sym_base_char;
+    else return cl::_sym_character;
   } else if (Integer_sp ix = x.asOrNull<Integer_O>()) {
     ql::list res;
     res << cl::_sym_integer << ix << ix;
@@ -1591,12 +1620,13 @@ CL_DEFUN T_sp cl__type_of(T_sp x) {
 CL_LAMBDA(obj);
 CL_DECLARE();
 CL_DOCSTRING("sxhash");
-CL_DEFUN Integer_sp cl__sxhash(T_sp obj) {
+CL_DEFUN Fixnum_sp cl__sxhash(T_sp obj) {
   if (obj.nilp())
     return make_fixnum(1);
   HashGenerator hg;
   clasp_sxhash(obj, hg);
-  return Integer_O::create(hg.hash());
+  gc::Fixnum hash = MOST_POSITIVE_FIXNUM&hg.hash();
+  return clasp_make_fixnum(hash);
 }
 
 // --------------------------------------------------
@@ -1670,7 +1700,7 @@ CL_DEFMETHOD T_sp InvocationHistoryFrameIterator_O::functionName() {
     return _Nil<T_O>();
   }
   if (this->_Frame->_Previous) {
-    Function_sp closure = this->_Frame->function();
+    Function_sp closure = gc::As_unsafe<Function_sp>(this->_Frame->function());
     if (!closure) {
       SIMPLE_ERROR(BF("Could not access closure of InvocationHistoryFrame"));
     }
@@ -2051,11 +2081,11 @@ namespace core {
 
 SYMBOL_EXPORT_SC_(CorePkg,generic_function_lambda_lists);
 
-
+CL_LISPIFY_NAME("ext:function-lambda-list");
 CL_LAMBDA(function);
 CL_DECLARE();
 CL_DOCSTRING("Return the lambda-list of a function");
-CL_DEFUN T_mv core__function_lambda_list(T_sp obj) {
+CL_DEFUN T_mv ext__function_lambda_list(T_sp obj) {
   if (obj.nilp()) {
     return Values(_Nil<T_O>(),_Nil<T_O>());
   } else if (Symbol_sp sym = obj.asOrNull<Symbol_O>()) {
@@ -2063,31 +2093,12 @@ CL_DEFUN T_mv core__function_lambda_list(T_sp obj) {
       return Values(_Nil<T_O>(),_Nil<T_O>());
     }
     Function_sp fn = sym->symbolFunction();
-    return Values(core__function_lambda_list(fn),_lisp->_true());
-  } else if (gc::IsA<FuncallableInstance_sp>(obj)) {
-    FuncallableInstance_sp iobj = gc::As_unsafe<FuncallableInstance_sp>(obj);
-    if (iobj->isgf()) {
-      return Values(core__get_sysprop(iobj, _sym_generic_function_lambda_lists),_lisp->_true());
-    }
-    return Values(_Nil<T_O>(),_Nil<T_O>());
+    return Values(ext__function_lambda_list(fn),_lisp->_true());
   } else if (Function_sp func = obj.asOrNull<Function_O>()) {
     return Values(func->lambdaList(), _lisp->_true());
   }
   return Values(_Nil<T_O>(),_Nil<T_O>());
 }
-
-CL_LAMBDA(function lambda_list);
-CL_DECLARE();
-CL_DOCSTRING("Set the lambda-list that function-lambda-list would return for the generic function");
-CL_DEFUN void core__function_lambda_list_set(T_sp obj, T_sp lambda_list) {
-  if (gc::IsA<FuncallableInstance_sp>(obj)) {
-    FuncallableInstance_sp iobj = gc::As_unsafe<FuncallableInstance_sp>(obj);
-    if (iobj->isgf()) {
-      core__put_sysprop(iobj, _sym_generic_function_lambda_lists, lambda_list);
-    }
-  }
-}
-
 
 CL_LAMBDA(function);
 CL_DECLARE();
@@ -2216,6 +2227,53 @@ CL_DEFUN T_sp core__digest_sha256(List_sp data)
   }
   std::string result = digest.getHash();
   return SimpleBaseString_O::make(result);
+}
+
+CL_DEFUN SimpleVector_byte8_t_sp core__base_string_to_octets(T_sp tarray)
+{
+  if (!core__base_string_p(tarray)) {
+    TYPE_ERROR(tarray,cl::_sym_base_string);
+  }
+  if (gc::IsA<SimpleBaseString_sp>(tarray)) {
+    SimpleBaseString_sp sarray = gc::As_unsafe<SimpleBaseString_sp>(tarray);
+    SimpleVector_byte8_t_sp result = SimpleVector_byte8_t_O::make(sarray->length(),0,false,sarray->length(),&(*sarray)[0]);
+    return result;
+  } else if (gc::IsA<Str8Ns_sp>(tarray)) {
+    Str8Ns_sp sarray = gc::As_unsafe<Str8Ns_sp>(tarray);
+    AbstractSimpleVector_sp basesv;
+    size_t start, end;
+    sarray->asAbstractSimpleVectorRange(basesv,start,end);
+    SimpleBaseString_sp sbs = gc::As_unsafe<SimpleBaseString_sp>(basesv);
+    SimpleVector_byte8_t_sp result = SimpleVector_byte8_t_O::make((end-start),0,false,(end-start),&(*sbs)[start]);
+    return result;
+  }
+  SIMPLE_ERROR(BF("Don't get here"));
+}
+
+CL_DEFUN SimpleVector_byte8_t_sp core__character_string_that_fits_in_base_string_to_octets(T_sp tarray)
+{
+  if (gc::IsA<SimpleCharacterString_sp>(tarray)) {
+    SimpleCharacterString_sp sarray = gc::As_unsafe<SimpleCharacterString_sp>(tarray);
+    SimpleVector_byte8_t_sp result = SimpleVector_byte8_t_O::make(sarray->length(),0,false);
+    for ( int i=0; i<sarray->length(); ++i ) {
+      int c = (*sarray)[i];
+      (*result)[i] = c;
+    }
+    return result;
+  } else if (gc::IsA<StrWNs_sp>(tarray)) {
+    StrWNs_sp sarray = gc::As_unsafe<StrWNs_sp>(tarray);
+    AbstractSimpleVector_sp basesv;
+    size_t start, end;
+    sarray->asAbstractSimpleVectorRange(basesv,start,end);
+    SimpleCharacterString_sp sbs = gc::As_unsafe<SimpleCharacterString_sp>(basesv);
+    SimpleVector_byte8_t_sp result = SimpleVector_byte8_t_O::make((end-start),0,false);
+    for ( int i=0; i<sarray->length(); ++i ) {
+      int c = (*sarray)[i];
+      (*result)[i] = c;
+    }
+    return result;
+  }
+  SIMPLE_ERROR(BF("Handle Don't get here"));
 }
 };
 

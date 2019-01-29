@@ -83,7 +83,7 @@ public:
   static const uintptr_clasp_t tagged_NULL = BOOST_BINARY(000000) | special_tag;    // Should I have this????
   static const uintptr_clasp_t tagged_unbound = BOOST_BINARY(000100) | special_tag; // 0x05
   static const uintptr_clasp_t tagged_nil = BOOST_BINARY(001000) | special_tag;     // 0x09
-  static const uintptr_clasp_t tagged_deleted = BOOST_BINARY(001100) | special_tag; // 0x0D - used by WeakHashTable
+  static const uintptr_clasp_t tagged_deleted = BOOST_BINARY(001100) | special_tag; // 0x0D - used by WeakKeyHashTable
   static const uintptr_clasp_t tagged_sameAsKey = BOOST_BINARY(010000) | special_tag;
   static const uintptr_clasp_t tagged_character = BOOST_BINARY(010100) | special_tag;
   static const uintptr_clasp_t character_shift = 8;

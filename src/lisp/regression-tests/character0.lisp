@@ -22,7 +22,7 @@
              (name-char 
               (char-name (code-char 13)))))
 
-(test TEST-CHAR-12
+(test TEST-CHAR-12a
       (char= #\U80
              (name-char 
               (char-name (code-char 128)))))
@@ -103,3 +103,6 @@
            (unless (name-char name)
              (push name result)))
          result)))
+
+(test test-char-17 (char/= #\a #\b #\c #\d))
+(test test-char-18 (let ()(char/= #\a #\b #\c #\d)))

@@ -48,6 +48,7 @@ THE SOFTWARE.
 #include <clasp/core/array.h>
 #include <clasp/core/hashTable.h>
 #include <clasp/core/wrappers.h>
+#include <clasp/core/unixfsys.h>
 #include <string>
 
 namespace bf = boost_filesystem;
@@ -100,7 +101,7 @@ CL_DEFUN T_mv cl__ensure_directories_exist(T_sp pathspec) {
   if (cl__stringp(pathspec)) {
     path_to_create = Path_O::create(gc::As_unsafe<String_sp>(pathspec)->get_std_string());
   } else if ( Pathname_sp pn = pathspec.asOrNull<Pathname_O>() ) {
-    String_sp spn = cl__namestring(pn);
+    String_sp spn = gc::As<String_sp>(cl__namestring(pn));
     path_to_create = Path_O::create(spn->get());
   } else {
     TYPE_ERROR(pathspec, core::Cons_O::createList(cl::_sym_or,cl::_sym_string,cl::_sym_pathname));
@@ -556,12 +557,15 @@ CL_DEFMETHOD bool FileStatus_O::isOther() {
 }
 
 Pathname_sp getcwd(bool change_d_p_d) {
-  boost::filesystem::path cwd = boost::filesystem::current_path();
-  SimpleBaseString_sp namestring = SimpleBaseString_O::make(cwd.string());
+  Str8Ns_sp namestring = ext::ext__getcwd();
   size_t i = namestring->length();
-  if (!IS_DIR_SEPARATOR(clasp_as_claspCharacter(namestring->rowMajorAref(i - 1))))
-    namestring = SimpleBaseString_O::make(namestring->get() + DIR_SEPARATOR);
-  Pathname_sp pathname = cl__parse_namestring(namestring);
+  // This commented out code adds a directory delimiter if none is there yet.
+  // Not currently required because ext::ext__getcwd already does it.
+  // However, ext::ext__getcwd() shouldn't, so leave this here to re-activate
+  // on cleanup.
+  //if (!IS_DIR_SEPARATOR(clasp_as_claspCharacter(namestring->rowMajorAref(i - 1))))
+  //  namestring = SimpleBaseString_O::make(namestring->get() + DIR_SEPARATOR);
+  Pathname_sp pathname = gc::As<Pathname_sp>(cl__parse_namestring(namestring));
   if (change_d_p_d && pathname.notnilp()) {
     cl::_sym_STARdefaultPathnameDefaultsSTAR->setf_symbolValue(pathname);
   }
@@ -612,6 +616,6 @@ Pathname_sp homedirPathname(T_sp tuser) {
   i = namestring->length();
   if (!IS_DIR_SEPARATOR(namestring->rowMajorAref(i - 1).unsafe_character()))
     namestring = SimpleBaseString_O::make(namestring->get() + DIR_SEPARATOR);
-  return cl__parse_namestring(namestring);
+  return gc::As<Pathname_sp>(cl__parse_namestring(namestring));
 }
 };

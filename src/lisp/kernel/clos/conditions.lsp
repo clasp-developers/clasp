@@ -126,18 +126,35 @@
     (when (or (eq restart name) (eq (restart-name restart) name))
       (return-from find-restart restart))))
 
-(defun find-restart-never-fail (restart &optional condition)
-  (or (find-restart restart condition)
-      (signal-simple-error 'simple-control-error nil
-	     "Restart ~S is not active."
-	     (list restart))))
+;;; We don't just call FIND-RESTART because it has slightly
+;;; different behavior when called with a restart argument.
+;;; FIND-RESTART given a restart only returns it if that restart
+;;; is active _relative to the given condition_. That means you
+;;; can pass it a restart and get NIL back (resulting in an
+;;; error here).
+;;; For restart designators like invoke-restart takes, however,
+;;; a restart just designates itself.
+;;; This comes up with e.g. (invoke-restart (find-restart x c) ...)
+;;; If x is only active relative to C, and invoke-restart used
+;;; FIND-RESTART, it would come up empty since x is not active
+;;; relative to no-condition.
+;;; Strictly speaking we could still test whether the restart is
+;;; active, but I don't think this is required, and it seems
+;;; rare enough that I don't mind not checking.
+(defun coerce-restart-designator (designator &optional condition)
+  (if (restart-p designator)
+      designator
+      (or (find-restart designator condition)
+          (signal-simple-error 'simple-control-error nil
+                               "Restart ~S is not active."
+                               (list designator)))))
 
 (defun invoke-restart (restart &rest values)
-  (let ((real-restart (find-restart-never-fail restart)))
+  (let ((real-restart (coerce-restart-designator restart)))
     (apply (restart-function real-restart) values)))
 
 (defun invoke-restart-interactively (restart)
-  (let ((real-restart (find-restart-never-fail restart)))
+  (let ((real-restart (coerce-restart-designator restart)))
     (apply (restart-function real-restart)
 	   (let ((interactive-function
 		   (restart-interactive-function real-restart)))
@@ -152,8 +169,9 @@
 	     (when test
 	       (setq keywords (list :TEST-FUNCTION `#',test)))				    
 	     (when interactive
-	       (setq keywords (list :INTERACTIVE-FUNCTION
-				    `#',interactive)))
+	       (setq keywords (list* :INTERACTIVE-FUNCTION
+                                     `#',interactive
+                                     keywords)))
 	     (when report
 	       (setq keywords (list* :REPORT-FUNCTION
 				     (if (stringp report)
@@ -501,13 +519,14 @@
 If FORMAT-STRING is non-NIL, it is used as the format string to be output to
 *ERROR-OUTPUT* before entering the break loop.  ARGs are arguments to the
 format string."
-  (let ((*debugger-hook* nil)
-        (core:*stack-top-hint* (1- (core:ihs-top))))
-    (with-simple-restart (continue "Return from BREAK.")
-      (maybe-invoke-debugger
-       (make-condition 'SIMPLE-CONDITION
-                       :FORMAT-CONTROL format-control
-                       :FORMAT-ARGUMENTS format-arguments))))
+  (let ((*debugger-hook* nil))
+    (core:call-with-stack-top-hint
+     (lambda ()
+       (with-simple-restart (continue "Return from BREAK.")
+         (maybe-invoke-debugger
+          (make-condition 'SIMPLE-CONDITION
+                          :FORMAT-CONTROL format-control
+                          :FORMAT-ARGUMENTS format-arguments))))))
   nil)
 
 (defun warn (datum &rest arguments)
@@ -527,12 +546,8 @@ returns with NIL."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; ALL CONDITIONS
 ;;;
-;;; Instead of compiling each condition definition, we store them in a
-;;; list and evaluate them at run time. Besides, there are multiple
-;;; SIMPLE-* conditions which inherit from SIMPLE-ERROR and which are
-;;; only created when the error is signaled.
+;;; ALL CONDITIONS
 ;;;
 
 (define-condition warning () ())
@@ -575,8 +590,8 @@ returns with NIL."
    (type :initarg :type :initform nil :reader ext:stack-overflow-type))
   (:REPORT
    (lambda (condition stream)
-     (let* ((type (ext::stack-overflow-type condition))
-	    (size (ext::stack-overflow-size condition)))
+     (let* ((type (ext:stack-overflow-type condition))
+	    (size (ext:stack-overflow-size condition)))
        (if size
 	   (format stream "~A overflow at size ~D. Stack can probably be resized."
 		   type size)
@@ -596,7 +611,10 @@ memory limits before executing the program again."))
   ((code :type fixnum
          :initform 0
          :initarg :code
-         :accessor ext:unix-signal-received-code))
+         :accessor ext:unix-signal-received-code)
+   (handler :initarg :handler
+            :initform nil
+            :accessor unix-signal-received-handler))
   (:report (lambda (condition stream)
              (format stream "Serious signal ~D caught."
                      (ext:unix-signal-received-code condition)))))
@@ -701,6 +719,12 @@ memory limits before executing the program again."))
 	     (format stream "The function ~S is undefined."
 		     (cell-error-name condition)))))
 
+(define-condition ext:undefined-class (cell-error)
+  ()
+  (:report (lambda (condition stream)
+             (format stream "Could not find the class ~s."
+                     (cell-error-name condition)))))
+
 (define-condition arithmetic-error (error)
   ((operation :INITARG :OPERATION :READER arithmetic-error-operation)
    (operands :INITARG :OPERANDS :INITFORM '() :READER arithmetic-error-operands)))
@@ -715,7 +739,9 @@ memory limits before executing the program again."))
 
 (define-condition floating-point-invalid-operation (arithmetic-error) ())
 
-#+clasp (define-condition core:do-not-funcall-special-operator (error)
+;;;An error of type undefined-function should be signaled if function is a symbol that does not have
+;;;a global definition as a function or that has a global definition as a macro or a special operator.
+#+clasp (define-condition core:do-not-funcall-special-operator (undefined-function)
           ((operator :initarg :operator :reader operator))
           (:report (lambda (condition stream)
                      (format stream "You should never funcall special operator: ~s"
@@ -757,8 +783,8 @@ memory limits before executing the program again."))
 (define-condition print-not-readable (error)
   ((object :INITARG :OBJECT :READER print-not-readable-object))
   (:REPORT (lambda (condition stream)
-	     (format stream "Cannot print object ~A readably."
-		     (print-not-readable-object condition)))))
+	     (format stream "Cannot print object ~A of class ~A readably."
+		     (print-not-readable-object condition) (class-name (class-of (print-not-readable-object condition)))))))
 
 (define-condition parse-error (error) ())
 
@@ -809,7 +835,7 @@ memory limits before executing the program again."))
      (error (condition) (values nil condition))))
 
 (defun abort (&optional c)
-  (invoke-restart (find-restart-never-fail 'ABORT c))
+  (invoke-restart (coerce-restart-designator 'ABORT c))
   (error 'ABORT-FAILURE))
 
 (defun continue (&optional c)
@@ -817,7 +843,7 @@ memory limits before executing the program again."))
     (and restart (invoke-restart restart))))
 
 (defun muffle-warning (&optional c)
-  (invoke-restart (find-restart-never-fail 'MUFFLE-WARNING c)))
+  (invoke-restart (coerce-restart-designator 'MUFFLE-WARNING c)))
 
 (defun store-value (value &optional c)
   (let ((restart (find-restart 'STORE-VALUE c)))
@@ -847,9 +873,6 @@ memory limits before executing the program again."))
 
 (defvar *assert-failure-test-form* nil)
 
-(eval-when (:load-toplevel :compile-toplevel :execute)
-  (export 'ext::assert-error (find-package :ext)))
-
 (define-condition ext:assert-error (simple-error) ())
 
 (defun assert-failure (test-form &optional place-names values
@@ -871,8 +894,6 @@ memory limits before executing the program again."))
 			for value in values
 			collect (assert-prompt place-name value)))))))
 
-(defvar *stack-top-hint* nil)
-
 ;;; ----------------------------------------------------------------------
 ;;; ECL's interface to the toplevel and debugger
 
@@ -883,6 +904,7 @@ memory limits before executing the program again."))
         (core:btcl)
         (core:exit))))
 
+;;; This is a redefinition, clobbering core__universal_error_handler in lisp.cc.
 (defun sys::universal-error-handler (continue-string datum args)
   "Args: (error-name continuable-p function-name
        continue-format-string error-format-string
@@ -899,8 +921,7 @@ bstrings."
   (declare (inline apply) ;; So as not to get bogus frames in debugger
 	   #-(or ecl-min clasp)
            (c::policy-debug-ihs-frame))
-  (let ((condition (coerce-to-condition datum args 'simple-error 'error))
-        (*stack-top-hint* (1- (ihs-top))))
+  (let ((condition (coerce-to-condition datum args 'simple-error 'error)))
     (cond
       ((eq t continue-string)
        ; from CEerror; mostly allocation errors

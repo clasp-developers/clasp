@@ -213,6 +213,7 @@ namespace core {
     virtual T_sp element_type() const override { return ext::_sym_integer8;};
     virtual T_sp arrayElementType() const override { return ext::_sym_integer8; };
     virtual clasp_elttype elttype() const { return clasp_aet_int8_t; };
+    virtual void __write__(T_sp stream) const;
   };
 };
 

@@ -158,10 +158,8 @@
 	   :format-arguments (list gfun-name method-class)
 	   :datum method-class
 	   :expected-type 'method))
-  ;;
   ;; When supplying a new lambda-list, ensure that it is compatible with
   ;; the old list of methods.
-  ;;
   (when (and l-l-p (slot-boundp gfun 'methods))
     (unless (every #'(lambda (x)
                        (declare (core:lambda-name shared-initialize.lambda))
@@ -169,38 +167,46 @@
 		 (mapcar #'method-lambda-list (generic-function-methods gfun)))
       (simple-program-error "Cannot replace the lambda list of ~A with ~A because it is incongruent with some of the methods"
 			    gfun lambda-list)))
-  (call-next-method)
+  (call-next-method) ; now that we have completed the assertions.
+  ;; Coerce a method combination if required.
   (let ((combination (generic-function-method-combination gfun)))
     (unless (typep combination 'method-combination)
       (setf (generic-function-method-combination gfun)
 	    (find-method-combination gfun (first combination) (rest combination)))))
+  ;; If we have a new lambda list but no argument precedence, default the latter.
   (when (and l-l-p (not a-o-p))
     (setf (generic-function-argument-precedence-order gfun)
 	  (lambda-list-required-arguments lambda-list)))
+  ;; If we have a new lambda list and no display-lambda-list set up already, do that.
+  ;; (If we already have a display ll, we probably don't need to alter it?)
+  (when (and l-l-p (eq (ext:function-lambda-list gfun) (core:unbound)))
+    (setf-lambda-list gfun lambda-list))
+  ;; And finally, set up the actual function.
   (set-funcallable-instance-function gfun (compute-discriminating-function gfun))
   gfun)
 
-;;; FIXME: break up the two ways of using this function.
-(defun initialize-generic-function-specializer-profile (gfun &key initial-vec errorp)
-  (loop for profile = (generic-function-specializer-profile gfun)
-     for new-profile = (or initial-vec
-                           (if (slot-boundp gfun 'lambda-list)
-                               (let ((lambda-list (generic-function-lambda-list gfun)))
-                                 (make-array (length (lambda-list-required-arguments lambda-list))
-                                             :initial-element nil))
-                               (if errorp
-                                   (error "The specializer-profile could not be initialized - lambda list of ~a was unbound" gfun)
-                                   nil)))
-     for exchange = (generic-function-specializer-profile-compare-exchange gfun profile new-profile)
-     until (eq exchange new-profile)))
+(defun force-generic-function-specializer-profile (gfun vec)
+  (loop for existing = (generic-function-specializer-profile gfun)
+        for exchange = (generic-function-specializer-profile-compare-exchange gfun existing vec)
+        until (eq exchange vec)))
+
+(defun initialize-generic-function-specializer-profile (gfun &key (errorp t))
+  (cond ((slot-boundp gfun 'lambda-list)
+         (let ((lambda-list (generic-function-lambda-list gfun)))
+           (force-generic-function-specializer-profile
+            gfun
+            (make-array (length (lambda-list-required-arguments lambda-list))
+                        :initial-element nil))))
+        (errorp
+         (error "The specializer profile could not be initialized - lambda list of ~a was unbound"
+                gfun))))
   
 (defmethod shared-initialize :after ((gfun generic-function) slot-names &rest initargs)
   "In Clasp we need to initialize the specializer-profile with an 
    array of (length (lambda-list-required-arguments lambda-list)) full of nil."
   (unless (generic-function-specializer-profile gfun)
-    (initialize-generic-function-specializer-profile gfun))
+    (initialize-generic-function-specializer-profile gfun :errorp nil))
   gfun)
-
 
 (defmethod shared-initialize :after ((gfun standard-generic-function) slot-names
                                      &rest initargs)
@@ -209,6 +215,22 @@
   (when (generic-function-methods gfun)
     (compute-g-f-spec-list gfun))
   (update-dependents gfun initargs))
+
+(defmethod reinitialize-instance :after ((gfun standard-generic-function) &rest initargs)
+  ;; Check if the redefinition is trivial.
+  ;; I am not sure of the fine details here. What happens if you reinitialize-instance
+  ;; and change the method-combination, but not the methods to have compatible qualifiers,
+  ;; for example? So what I'm going with is a somewhat magical minimum:
+  ;; ENSURE-GENERIC-FUNCTION-USING-CLASS below calls with :name and whatever args it was
+  ;; passed, and DEFMETHOD will pass with no extra args.
+  ;; By incorporating this case, we avoid erasing the entire call history after any defmethod.
+  ;; Note that ADD-METHOD is smart and does modify the call history to include the new method,
+  ;; So things will remain consistent.
+  (unless (and (= (length initargs) 2)
+               (eq (first initargs) :name))
+    ;; OK, something complicated. Erase.
+    (erase-generic-function-call-history gfun)
+    (invalidate-discriminating-function gfun)))
 
 (defun associate-methods-to-gfun (name &rest methods)
   (let ((gfun (fdefinition name)))
@@ -266,3 +288,46 @@
   (when (and method-class-p (symbolp generic-function-class))
     (setf args (list* :method-class (find-class method-class) args)))
   (apply #'make-instance generic-function-class :name name args))
+
+;;; Miscellany
+
+;;; Returns as process-lambda-list, but with keys etc from the methods added to the gf's.
+;;; Basically returns the valid lambda list as in CLHS 7.6.5.
+(defun generic-function-augmented-lambda-list (gf applicable-methods)
+  (multiple-value-bind (req opt restvar keyflag keysl aokp) ; aux, varest irrelevant
+      (core:process-lambda-list (generic-function-lambda-list gf) 'function)
+    ;; get a list of keywords accepted by the gf.
+    (let ((known-keys (loop for (key) on (cdr keysl) by #'cddddr
+                            collecting key)))
+      (loop for method in applicable-methods
+            do (multiple-value-bind (mreq mopt mrestvar mkeyflag mkeysl maokp)
+                   (core:process-lambda-list (method-lambda-list method) 'function)
+                 (declare (ignore mreq mopt mrestvar))
+                 ;; If any method wants keywords the arguments have to match that.
+                 ;; E.g. for when the gf has only &rest but a method has &key.
+                 (unless keyflag (when mkeyflag (setf keyflag t)))
+                 ;; If any method has &allow-other-keys, so does the effective method.
+                 (unless aokp (when maokp (setf aokp t)))
+                 ;; The acceptable keywords are the union of the gf's with the methods'.
+                 ;; The variables, default values, and -p variables are irrelevant in
+                 ;; this function.
+                 ;; We collect the keywords even if aokp is true because we might also
+                 ;; want to use this lambda list for a display to the programmer.
+                 (loop for (key var default -p) on (cdr mkeysl) by #'cddddr
+                       unless (member key known-keys)
+                         ;; new keys - throw em in front
+                         do (setf (cdr keysl) (list* key var default -p (cdr keysl))
+                                  (car keysl) (1+ (car keysl))
+                                  ;; also update the known-keys for later methods.
+                                  known-keys (list* key known-keys))))))
+    (values req opt restvar keyflag keysl aokp nil nil)))
+
+;;; Kind of badly placed, but- returns minimum and maximum number of args allowed as values.
+;;; max is NIL if infinite. Used by fastgf.
+(defun generic-function-min-max-args (gf)
+  ;; since we call this from fastgf, it can't use generic functions (like g-f-l-l)
+  ;; but FIXME: this may be a problem if g-f-l-l being generic is relevant, e.g. for a user subclass.
+  (with-early-accessors (+standard-generic-function-slots+)
+    (multiple-value-bind (req opt restvar keyflag) ; rest are irrelevant
+        (core:process-lambda-list (generic-function-lambda-list gf) 'function)
+      (values (car req) (if (or restvar keyflag) nil (+ (car req) (car opt)))))))

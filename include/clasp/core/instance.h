@@ -69,13 +69,16 @@ namespace core {
         REF_CLASS_STAMP_FOR_INSTANCES_ = (16+CLASS_SLOT_OFFSET),
         REF_CLASS_CREATOR = (17+CLASS_SLOT_OFFSET)
     } Slots;
-    
+
+  public:
+    bool fieldsp() const;
+    void fields(Record_sp node);
   public: // ctor/dtor for classes with shared virtual base
-  Instance_O() : _Sig(_Unbound<T_O>()), _Class(_Nil<Instance_O>()), _Rack(_Nil<T_O>()) {};
+  Instance_O() : _Sig(_Unbound<T_O>()), _Class(_Nil<Instance_O>()), _Rack(_Unbound<SimpleVector_O>()) {};
     explicit Instance_O(Instance_sp metaClass) :
       _Sig(_Unbound<T_O>())
       ,_Class(metaClass)
-        ,_Rack(_Nil<T_O>())
+        ,_Rack(_Unbound<SimpleVector_O>())
       
 //    ,_NumberOfSlots(slots)
     {};
@@ -260,6 +263,28 @@ namespace core {
     ~ClassWriteLock();
   };
 
+};
+
+
+
+
+namespace core {
+SMART(ClassHolder);
+class ClassHolder_O : public core::General_O {
+  LISP_CLASS(core, CorePkg, ClassHolder_O, "ClassHolder",core::General_O);
+public:
+  static ClassHolder_sp create(Instance_sp cl) {
+    GC_ALLOCATE_VARIADIC(ClassHolder_O,ch,cl);
+    return ch;
+  }
+  std::atomic<Instance_sp> _Class;
+public:
+  bool class_unboundp() const;
+  Instance_sp class_get() const;
+  void class_set(Instance_sp cl);
+  void class_mkunbound();
+  explicit ClassHolder_O(Instance_sp c) : _Class(c) {};
+};
 };
 
 #endif /* _core_instance_H_ */

@@ -187,7 +187,7 @@
 	 (*package* *package*))
      (with-compilation-unit ()
        (unwind-protect (progn ,@body)
-         (setq conditions *compilation-messages*)))))
+         (setq ,conditions *compilation-messages*)))))
 
 
 (defstruct (global-function-def (:type vector) :named)
@@ -248,7 +248,7 @@
         ;; We treat constants pretty much identically to specials in bclasp.
         ;; It's not the best way to compile constants.
         (setq info (cons 'ext:special-var var))
-        (unless (or (core:specialp var) (core:symbol-constantp var))
+        (unless (or (ext:specialp var) (core:symbol-constantp var))
           (when (not *code-walking*)
             (compiler-warning-undefined-global-variable var))))
       info)))

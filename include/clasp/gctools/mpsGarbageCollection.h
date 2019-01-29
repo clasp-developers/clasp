@@ -94,6 +94,10 @@ extern MpsMetrics globalMpsMetrics;
 
 extern "C" {
 
+// park and release the GC
+void mps_park();
+void mps_release();
+
 void my_mps_finalize(void* client);
 
 /*! Implemented in gc_interace.cc */
@@ -173,6 +177,7 @@ class smart_ptr;
 // Notes: tagged_objectp cuts out nonpointers (e.g. immediate fixnums)
 // The macro assumes that the mps_ss_t is called "ss".
 // MPS_FIX2 alters the pointer if the object has moved, so it must be retagged and propagated.
+// MPS docs say to return ASAP if RES is not MPS_RES_OK.
 #define PTRFIX(_ptr_)\
   {\
     gctools::Tagged *taggedP = _ptr_;\

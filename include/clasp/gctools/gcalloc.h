@@ -654,9 +654,8 @@ namespace gctools {
 
   template <class OT>
     struct GCObjectDefaultConstructorAllocator<OT,false> {
-    static smart_ptr<OT> allocate(const Header_s::Value& kind) {
+    [[noreturn]] static smart_ptr<OT> allocate(const Header_s::Value& kind) {
       lisp_errorCannotAllocateInstanceWithMissingDefaultConstructor(OT::static_classSymbol());
-      return _Nil<core::T_O>(); // it should never get here but shut up the compiler about return values
     }
   };
 };
@@ -1198,7 +1197,9 @@ public:
   static gctools::tagged_pointer<value_type> allocate(const contained_type &val) {
     size_t size = sizeof(VT);
 #ifdef USE_BOEHM
+#ifdef DEBUG_GCWEAK
     printf("%s:%d Allocating WeakPointer with GC_MALLOC_ATOMIC\n", __FILE__, __LINE__);
+#endif
     value_pointer myAddress = (value_pointer)GC_MALLOC_ATOMIC(size);
     my_thread_low_level->_Allocations.registerAllocation(STAMP_null,size);
     if (!myAddress)

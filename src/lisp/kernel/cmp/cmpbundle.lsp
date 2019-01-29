@@ -49,7 +49,6 @@
 ;; The wait time will be doubled at each retry!
 
 (defun safe-system (cmd-list &key output-file-name)
-
   (if *safe-system-echo*
       (bformat t "safe-system: %s%N" cmd-list))
 
@@ -77,6 +76,7 @@
 
 ;;; This function will compile a bitcode file in PART-BITCODE-PATHNAME with clang and put the output in the
 ;;; same directory as PART-BITCODE-PATHNAME
+#+(or)
 (defun generate-object-file (part-bitcode-pathname &key test)
   (let ((output-pathname (compile-file-pathname part-bitcode-pathname :output-type :object))
         (reloc-model (cond
@@ -104,111 +104,90 @@
 
 (defparameter *link-options* nil)
 
-(defun link-object-files (library-file in-all-names)
-  "Link object files together to create a .dylib (macOS) or .so (linux/freebsd) library.
-The **library-file** is the name of the output library with the appropriate extension.
-**in-all-names** are the object files."
+(defun execute-link-library (in-bundle-file in-all-names &key input-type (output-type :dynamic))
   ;; options are a list of strings like (list "-v")
-  (let ((options *link-options*)
-        (all-object-files (mapcar (lambda (n)
-                                    (ensure-string n))
-                                  (if (listp in-all-names)
-                                      in-all-names
-                                      (list in-all-names))))
-        (library-file (ensure-string library-file)))
-    (let ((clang-args (cond
-                        ((member :target-os-darwin *features*)
-                         (let ((clang-args `( ,@options
-                                              ,(core:bformat nil "-O%d" *optimization-level*)
-                                              ,@all-object-files
+  (let ((output-flag (cond
+                       ((member :target-os-darwin *features*)
+                        (case output-type
+                          (:dynamic "-bundle")
+                          (:static "-static")
+                          (otherwise (error "Unknown output-type ~a for darwin" output-type))))
+                       ((or (member :target-os-linux *features*)
+                            (member :target-os-freebsd *features*))
+                        (case output-type
+                          (:dynamic "-shared")
+                          (:static "-static")
+                          (otherwise (error "Unknown output-type ~a for linux or freebsd" output-type))))
+                       (t (error "Unknown system type")))))
+    (let* ((options *link-options*)
+           (all-object-files (mapcar (lambda (n)
+                                       (ensure-string n))
+                                     (if (listp in-all-names)
+                                         in-all-names
+                                         (list in-all-names))))
+           (bundle-file (ensure-string in-bundle-file))
+           (temp-bundle-file (ensure-string (core:mkstemp bundle-file))))
+      (let ((clang-args (cond
+                          ((member :target-os-darwin *features*)
+                           (let ((clang-args `( "-flto"
+                                                ,@options
+                                                ,(core:bformat nil "-O%d" *optimization-level*)
+                                                ,@all-object-files
 ;;;                                 "-macosx_version_min" "10.10"
-                                              "-flat_namespace"
-                                              #+(or)"-fvisibility=default"
-                                              "-undefined" "suppress"
-                                              ,@*debug-link-options*
+                                                "-flat_namespace"
+                                                #+(or)"-fvisibility=default"
+                                                "-undefined" "suppress"
+                                                ,@*debug-link-options*
+                                                #+(or)"-Wl,-save-temps"
+                                                ,output-flag
 ;;;                        ,@link-flags
 ;;;                        ,(bformat nil "-Wl,-object_path_lto,%s.lto.o" exec-file)
-                                              "-shared"
-                                              "-o"
-                                              ,library-file)))
-                           clang-args))
-                        ((or (member :target-os-linux *features*)
-                             (member :target-os-freebsd *features*))
-                         ;; Linux needs to use clang to link
-                         ;; FreeBSD might
-                         (let ((clang-args `(#+(or)"-v"
-                                                    ,@options
-                                                    ,(core:bformat nil "-O%d" *optimization-level*)
-                                                    ,@all-object-files
-                                                    ,@*debug-link-options*
-                                                    #+(or)"-fvisibility=default"
-                                                    "-shared"
-                                                    "-o"
-                                                    ,library-file)))
-                           clang-args))
-                        (t (error "Add support for this operating system to cmp:generate-link-command")))))
-      (ext:run-clang clang-args :output-file-name library-file)
-      (unless (probe-file library-file)
-        (error "~%!~%!~%! There is a HUGE problem - an execute-link-dylib-so command with the arguments:   /path-to-clang ~a~%~%!        failed to generate the output file ~a~%" clang-args library-file)))
-    (truename library-file)))
+                                                "-o"
+                                                ,temp-bundle-file)))
+                             clang-args))
+                          ((or (member :target-os-linux *features*)
+                               (member :target-os-freebsd *features*))
+                           ;; Linux needs to use clang to link
+                           ;; FreeBSD might
+                           (let ((clang-args `(#+(or)"-v"
+                                                 ,@options
+                                                 ,(core:bformat nil "-O%d" *optimization-level*) 
+                                                 ,@all-object-files
+                                                 "-flto"
+                                                 "-fuse-ld=gold"
+                                                 ,@*debug-link-options*
+                                                 #+(or)"-fvisibility=default"
+                                                 ,output-flag
+                                                 "-o"
+                                                 ,temp-bundle-file)))
+                             clang-args))
+                          (t (error "Add support for this operating system to cmp:generate-link-command")))))
+        (ext:run-clang clang-args :output-file-name temp-bundle-file)
+        (unless (probe-file temp-bundle-file)
+          ;; I hate what I'm about to do - but on macOS -flto=thin can sometimes crash the linker
+          ;; so get rid of that option (IT MUST BE THE FIRST ONE!!!!) and try again
+          (when (member :target-os-darwin *features*)
+            (warn "There was a HUGE problem in execute-link-fasl to generate ~a~% with the arguments: /path-to-clang ~a~%  I'm going to try removing the -flto=thin argument and try linking again~%" temp-bundle-file clang-args)
+            (ext:run-clang (cdr clang-args) :output-file-name temp-bundle-file)
+            (when (probe-file temp-bundle-file)
+              (warn "execute-link-fasl worked after removing ~a from the argument list --- FIGURE OUT WHAT IS GOING WRONG WITH THAT ARGUMENT!!!" (car clang-args))))
+          (unless (probe-file temp-bundle-file)
+            (error "~%!~%!~%! There is a HUGE problem - an execute-link-fasl command with the arguments:   /path-to-clang ~a~%~%!        failed to generate the output file ~a~%" clang-args temp-bundle-file)))
+        (rename-file temp-bundle-file bundle-file :if-exists :supersede)
+        (truename bundle-file)))))
 
 (defun execute-link-fasl (in-bundle-file in-all-names &key input-type)
-  ;; options are a list of strings like (list "-v")
-  (let ((options *link-options*)
-        (all-object-files (mapcar (lambda (n)
-                                    (ensure-string n))
-                                  (if (listp in-all-names)
-                                      in-all-names
-                                      (list in-all-names))))
-        (bundle-file (ensure-string in-bundle-file)))
-    (let ((clang-args (cond
-                        ((member :target-os-darwin *features*)
-                         (let ((clang-args `( "-flto"
-                                              ,@options
-                                              ,(core:bformat nil "-O%d" *optimization-level*)
-                                              ,@all-object-files
-;;;                                 "-macosx_version_min" "10.10"
-                                              "-flat_namespace"
-                                              #+(or)"-fvisibility=default"
-                                              "-undefined" "suppress"
-                                              ,@*debug-link-options*
-                                              #+(or)"-Wl,-save-temps"
-                                              "-bundle"
-;;;                        ,@link-flags
-;;;                        ,(bformat nil "-Wl,-object_path_lto,%s.lto.o" exec-file)
-                                              "-o"
-                                              ,bundle-file)))
-                           clang-args))
-                        ((or (member :target-os-linux *features*)
-                             (member :target-os-freebsd *features*))
-                         ;; Linux needs to use clang to link
-                         ;; FreeBSD might
-                         (let ((clang-args `(#+(or)"-v"
-                                                    ,@options
-                                                    ,(core:bformat nil "-O%d" *optimization-level*) 
-                                                   ,@all-object-files
-                                                    "-flto"
-                                                    "-fuse-ld=gold"
-                                                    ,@*debug-link-options*
-                                                    #+(or)"-fvisibility=default"
-                                                    "-shared"
-                                                    "-o"
-                                                    ,bundle-file)))
-                           clang-args))
-                        (t (error "Add support for this operating system to cmp:generate-link-command")))))
-      (ext:run-clang clang-args :output-file-name bundle-file)
-      (unless (probe-file bundle-file)
-        ;; I hate what I'm about to do - but on macOS -flto=thin can sometimes crash the linker
-        ;; so get rid of that option (IT MUST BE THE FIRST ONE!!!!) and try again
-        (when (member :target-os-darwin *features*)
-          (warn "There was a HUGE problem in execute-link-fasl to generate ~a~% with the arguments: /path-to-clang ~a~%  I'm going to try removing the -flto=thin argument and try linking again~%" bundle-file clang-args)
-          (ext:run-clang (cdr clang-args) :output-file-name bundle-file)
-          (when (probe-file bundle-file)
-            (warn "execute-link-fasl worked after removing ~a from the argument list --- FIGURE OUT WHAT IS GOING WRONG WITH THAT ARGUMENT!!!" (car clang-args))))
-        (unless (probe-file bundle-file)
-          (error "~%!~%!~%! There is a HUGE problem - an execute-link-fasl command with the arguments:   /path-to-clang ~a~%~%!        failed to generate the output file ~a~%" clang-args bundle-file)))
-      (truename bundle-file))))
+  (execute-link-library in-bundle-file in-all-names :input-type input-type :output-type :dynamic))
 
+(defun execute-link-static (in-bundle-file in-all-names &key input-type)
+  (execute-link-library in-bundle-file in-all-names :input-type input-type :output-type :static))
+
+(defun execute-link-object (output-filename in-all-names &key input-type)
+  (safe-system (list* "ld" "-r"
+                           "-o" (namestring output-filename)
+                           (mapcar (lambda (f) (namestring (make-pathname :type "o" :defaults f)))
+                                   in-all-names))))
+                            
 (defun execute-link-executable (output-file-name in-bitcode-names)
   ;; options are a list of strings like (list "-v")
   (let ((options nil)
@@ -258,7 +237,7 @@ The **library-file** is the name of the output library with the appropriate exte
                      :optimize nil)
         (with-source-pathnames (:source-pathname (pathname output-pathname))
           (with-debug-info-generator (:module module :pathname output-pathname)
-            (let* ((linker (llvm-sys:make-linker *the-module*))
+            (let* ((linker (llvm-sys:make-linker module))
                    (part-index 1))
               ;; Don't enforce .bc extension for additional-bitcode-pathnames
               ;; This is where I used to link the additional-bitcode-pathnames
@@ -268,11 +247,13 @@ The **library-file** is the name of the output library with the appropriate exte
                   (let* ((part-module (parse-bitcode (namestring (truename bc-file)) *llvm-context*)))
                     (incf part-index)
                     (multiple-value-bind (failure error-msg)
-                        (let ((global-ctor (find-global-ctor-function part-module))
-                              (priority part-index))
-                          (remove-llvm.global_ctors-if-exists part-module)
-                          (add-llvm.global_ctors part-module priority global-ctor)
-                          (llvm-sys:link-in-module linker part-module))
+                        (llvm-sys:link-in-module linker part-module)
+                      #+(or)
+                      (let ((global-ctor (find-global-ctor-function part-module))
+                            (priority part-index))
+                        (remove-llvm.global_ctors-if-exists part-module)
+                        (add-llvm.global_ctors part-module priority global-ctor)
+                        (llvm-sys:link-in-module linker part-module))
                       (when failure
                         (error "While linking part module: ~a  encountered error: ~a" part-pn error-msg))))))
               ;; The following links in additional-bitcode-pathnames
@@ -280,16 +261,15 @@ The **library-file** is the name of the output library with the appropriate exte
                 (let* ((bc-file part-pn))
 ;;;                (bformat t "Linking %s%N" bc-file)
                   (let* ((part-module (llvm-sys:parse-bitcode-file (namestring (truename bc-file)) *llvm-context*)))
-                    (remove-main-function-if-exists part-module) ;; Remove the ClaspMain FN if it exists
                     (multiple-value-bind (failure error-msg)
                         (llvm-sys:link-in-module linker part-module)
                       (when failure
                         (error "While linking additional module: ~a  encountered error: ~a" bc-file error-msg))
                       ))))
-              (write-bitcode *the-module* (core:coerce-to-filename (pathname (if output-pathname
-                                                                                 output-pathname
-                                                                                 (error "The output pathname is NIL")))))
-              *the-module*)))))))
+              (write-bitcode module (core:coerce-to-filename (pathname (if output-pathname
+                                                                           output-pathname
+                                                                           (error "The output pathname is NIL")))))))))
+      module)))
 (export 'link-bitcode-modules)
 
 
@@ -321,31 +301,38 @@ The type of the files to be linked is defined with **input-type** (:bitcode|:obj
 The **target-backend** indicates if we are linking for aclasp, bclasp or cclasp.
 Return the **output-pathname**."
   (let* ((*target-backend* target-backend)
-         (intrinsics-bitcode-path (core:build-inline-bitcode-pathname link-type :intrinsics))
-         (builtins-bitcode-path (core:build-inline-bitcode-pathname link-type :builtins))
-         (all-input-files (list* intrinsics-bitcode-path input-files))
+         (start-time (get-internal-real-time))
          (output-pathname (pathname output-pathname)))
     (cond
-      ((eq input-type :object)
-       ;; don't link builtins - object files already have them linked in by compile-file
-       )
-      ((eq input-type :bitcode)
-       (setf all-input-files (append (list builtins-bitcode-path) all-input-files)))
-      (t (error "Add support for llvm-link input-type ~a" input-type)))
-    (cond
       ((eq link-type :executable)
-       (execute-link-executable output-pathname all-input-files :input-type input-type))
+       (push (core:build-inline-bitcode-pathname link-type :intrinsics) input-files)
+       (when (eq input-type :bitcode)
+         (push (core:build-inline-bitcode-pathname link-type :builtins) input-files))
+       (execute-link-executable output-pathname input-files :input-type input-type))
       ((eq link-type :fasl)
+       (push (core:build-inline-bitcode-pathname link-type :intrinsics) input-files)
+       (when (eq input-type :bitcode)
+         (push (core:build-inline-bitcode-pathname link-type :builtins) input-files))
        (when (member :debug-run-clang *features*)
-         (bformat t "In llvm-link -> link-type :fasl all-input-files -> %s%N" all-input-files))
-       (execute-link-fasl output-pathname all-input-files :input-type input-type))
+         (bformat t "In llvm-link -> link-type :fasl input-files -> %s%N" input-files))
+       (execute-link-fasl output-pathname input-files :input-type input-type))
+      ((eq link-type :object)
+       (when (member :debug-run-clang *features*)
+         (bformat t "In llvm-link -> link-type :object input-files -> %s%N" input-files))
+       (execute-link-object output-pathname input-files :input-type input-type))
+      ((eq link-type :bitcode)
+       (link-bitcode-modules output-pathname input-files))
       (t (error "Cannot link format ~a" link-type)))
+    (let ((link-time (/ (- (get-internal-real-time) start-time) (float internal-time-units-per-second))))
+;;;      (format t "llvm-link link-time -> ~a~%" link-time)
+      (incf llvm-sys:*accumulated-clang-link-time* link-time))
     output-pathname))
 
 (export '(llvm-link))
 
 
 (defun builder (kind destination &rest keywords)
+  "This is used by ASDF to build fasl files."
   (declare (optimize (debug 3)))
   (apply 'build-fasl destination keywords))
 
@@ -361,10 +348,11 @@ This is to ensure that the RUN-ALL functions are evaluated in the correct order.
   ;; fixme cracauer - figure out what FreeBSD needs here
   (declare (ignore init-name))
   ;;  (bformat t "cmpbundle.lsp:build-fasl  building fasl for %s from files: %s%N" out-file lisp-files)
-  (let ((bitcode-files (mapcar (lambda (p) (make-pathname :type (core:bitcode-extension) :defaults p))
-                               lisp-files))
-        (temp-bitcode-file (make-pathname :type (core:bitcode-extension) :defaults out-file)))
-    (link-bitcode-modules temp-bitcode-file bitcode-files)
-      (execute-link-fasl out-file (list temp-bitcode-file))))
+  (with-compiler-timer (:message "build-fasl" :report-link-time t :verbose t)
+    (let ((bitcode-files (mapcar (lambda (p) (make-pathname :type (core:bitcode-extension) :defaults p))
+                                 lisp-files))
+          (temp-bitcode-file (make-pathname :type (core:bitcode-extension) :defaults out-file)))
+      (link-bitcode-modules temp-bitcode-file bitcode-files)
+      (execute-link-fasl out-file (list temp-bitcode-file)))))
 
 (export 'build-fasl)

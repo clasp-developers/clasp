@@ -43,7 +43,7 @@ namespace mp {
   
 #ifdef CLASP_THREADS
   /*! Keep track of binding indices for symbols */
-  extern GlobalMutex global_BindingIndexPoolMutex;
+  extern Mutex global_BindingIndexPoolMutex;
   extern std::vector<size_t> global_BindingIndexPool;
   extern std::atomic<size_t> global_LastBindingIndex;
 #endif
@@ -132,7 +132,7 @@ namespace mp {
     mps_root_t root;
 #endif
   public:
-  Process_O(core::T_sp name, core::T_sp function, core::List_sp arguments, core::List_sp initialSpecialBindings=_Nil<core::T_O>(), size_t stack_size=8*1024*1024) : _Name(name), _Function(function), _Arguments(arguments), _InitialSpecialBindings(initialSpecialBindings), _ThreadInfo(NULL), _ReturnValuesList(_Nil<core::T_O>()), _StackSize(stack_size), _Phase(Booting) {
+    Process_O(core::T_sp name, core::T_sp function, core::List_sp arguments, core::List_sp initialSpecialBindings=_Nil<core::T_O>(), size_t stack_size=8*1024*1024) : _Name(name), _Function(function), _Arguments(arguments), _InitialSpecialBindings(initialSpecialBindings), _ThreadInfo(NULL), _ReturnValuesList(_Nil<core::T_O>()), _StackSize(stack_size), _Phase(Booting), _ExitBarrier(EXITBARR_NAMEWORD) {
       if (!function) {
         printf("%s:%d Trying to create a process and the function is NULL\n", __FILE__, __LINE__ );
       }
@@ -183,7 +183,7 @@ namespace mp {
     core::T_sp  _Name;
     core::T_sp  _Owner;
     Mutex _Mutex;
-  Mutex_O(core::T_sp name, bool recursive) : _Name(name), _Owner(_Nil<T_O>()), _Mutex(recursive) {};
+    Mutex_O(core::T_sp name, bool recursive) : _Name(name), _Owner(_Nil<T_O>()), _Mutex(lisp_nameword(name),recursive) {};
     CL_DEFMETHOD bool lock(bool waitp) {
       bool locked = this->_Mutex.lock(waitp);
       if (locked) this->_Owner = my_thread->_Process;
@@ -220,15 +220,15 @@ namespace mp {
   public:
     CL_LISPIFY_NAME("make-shared-mutex");
     CL_LAMBDA(&optional name)
-      CL_DEF_CLASS_METHOD static SharedMutex_sp make_shared_mutex(core::T_sp name) {
-      GC_ALLOCATE_VARIADIC(SharedMutex_O,l,name);
+    CL_DEF_CLASS_METHOD static SharedMutex_sp make_shared_mutex(core::T_sp readName,core::T_sp writeLockName) {
+      GC_ALLOCATE_VARIADIC(SharedMutex_O,l,readName,writeLockName);
       return l;
     };
   public:
     core::T_sp  _Name;
     core::T_sp  _Owner;
     UpgradableSharedMutex _SharedMutex;
-  SharedMutex_O(core::T_sp name) : _Name(name), _Owner(_Nil<T_O>()) {};
+    SharedMutex_O(core::T_sp readName, core::T_sp writeName=_Nil<core::T_O>()) : _Name(readName), _Owner(_Nil<T_O>()),_SharedMutex(lisp_nameword(readName), 256, writeName.nilp() ? lisp_nameword(readName) : lisp_nameword(writeName)) {};
     void write_lock(bool upgrade=false) {
       this->_SharedMutex.writeLock(upgrade);
     };
@@ -251,6 +251,7 @@ void write_unlock(bool release_read_lock=false) {
  void shared_unlock() {
       this->_SharedMutex.readUnlock();
     };
+    void setLockNames(core::SimpleBaseString_sp readLockName, core::SimpleBaseString_sp writeLockName);
     string __repr__() const;
   };
 };
@@ -307,7 +308,7 @@ namespace mp {
     void signal() { this->_ConditionVariable.signal();};
     void broadcast() { this->_ConditionVariable.broadcast();};
   };
-
+  core::T_sp mp__interrupt_process(Process_sp process, core::T_sp func);
 };
 
 #endif

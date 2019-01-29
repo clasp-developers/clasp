@@ -107,9 +107,6 @@ class LambdaListHandler_O : public General_O {
 
 public: // virtual functions inherited from Object
   void initialize();
-#if defined(XML_ARCHIVE)
-//	void	archiveBase(ArchiveP node);
-#endif       // defined(XML_ARCHIVE)
              //	string	__repr__() const;
 GCPROTECTED: // instance variables
   /*! If _CreatesBindings is true then no bindings will be set by this

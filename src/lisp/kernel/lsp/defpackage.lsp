@@ -50,12 +50,11 @@
 
    Each standard OPTION is a list of keyword (the name of the option)
    and associated arguments.  No part of a DEFPACKAGE form is evaluated.
-   Except for the :SIZE and :DOCUMENTATION options, more than one option 
+   Except for the :DOCUMENTATION option, more than one option 
    of the same kind may occur within the same DEFPACKAGE form.
 
   Valid Options:
 	(:documentation		string)
-	(:size			integer)
 	(:nicknames		{package-name}*)
 	(:shadow		{symbol-name}*)
 	(:shadowing-import-from	package-name {symbol-name}*)
@@ -64,20 +63,28 @@
 	(:intern		{symbol-name}*)
 	(:export		{symbol-name}*)
 	(:export-from		{package-name}*)
+        (:local-nicknames       (nickname package-name)*)
 
-  [Note: :EXPORT-FROM is an extension to DEFPACKAGE.
-	 If a symbol is interned in the package being created and
-	 if a symbol with the same print name appears as an external
-	 symbol of one of the packages in the :EXPORT-FROM option,
-	 then the symbol is exported from the package being created.
+  :EXPORT-FROM is an extension to DEFPACKAGE.
+  If a symbol is interned in the package being created and
+  if a symbol with the same print name appears as an external
+  symbol of one of the packages in the :EXPORT-FROM option,
+  then the symbol is exported from the package being created.
 
-	 :SIZE is used only in Genera and Allegro.]"
+  :LOCAL-NICKNAMES is an extension to DEFPACKAGE.
+  The created package will have NICKNAME (a string designator)
+  as a local nickname for PACKAGE-NAME (a package designator).
+  Whenever *PACKAGE* is the new package, NICKNAME will be understood
+  by FIND-PACKAGE and all implicit uses thereof to refer to the
+  package named by PACKAGE-NAME.
+  See also EXT:PACKAGE-LOCAL-NICKNAMES, EXT:ADD-PACKAGE-LOCAL-NICKNAME,
+  EXT:REMOVE-PACKAGE-LOCAL-NICKNAME, EXT:PACKAGE-LOCALLY-NICKNAMED-BY-LIST."
 
   (dolist (option options)
     (unless (member (first option)
 		    '(:DOCUMENTATION :SIZE :NICKNAMES :SHADOW
 		      :SHADOWING-IMPORT-FROM :USE :IMPORT-FROM :INTERN :EXPORT
-		      :EXPORT-FROM) :test #'eq)
+		      :EXPORT-FROM :LOCAL-NICKNAMES) :test #'eq)
       (cerror "Proceed, ignoring this option."
 	      "~s is not a valid DEFPACKAGE option." option)))
   (labels ((to-string (x) (if (numberp x) x (string x)))
@@ -96,14 +103,13 @@
 	     output)
 	   (option-values (option options &aux output)
 	     (dolist (o options)
-	       (let* ((o-option (first o))
-		      (o-symbols (mapcar #'to-string (cdr o))))
+	       (let ((o-option (first o)))
 		 (when (string= o-option option)
-		   (setq output (union o-symbols output :test #'equal)))))
+		   (setq output (union (mapcar #'to-string (cdr o)) output :test #'equal)))))
 	     output))
-    (dolist (option '(:SIZE :DOCUMENTATION))
+    (dolist (option '(:DOCUMENTATION)) ; could add more later.
       (when (<= 2 (count option options ':key #'car))
-	(si::simple-program-error "DEFPACKAGE option ~s specified more than once."
+	(simple-program-error "DEFPACKAGE option ~s specified more than once."
 				  option)))
     (setq name (string name))
     (let* ((nicknames (option-values ':nicknames options))
@@ -115,12 +121,16 @@
 	    (option-values-list ':shadowing-import-from options))
 	   (imported-from-symbol-names-list
 	    (option-values-list ':import-from options))
-	   (exported-from-package-names (option-values ':export-from options)))
+	   (exported-from-package-names (option-values ':export-from options))
+           (local-nicknames-list
+             (loop for option in options
+                   when (eq (car option) :local-nicknames)
+                     append (cdr option))))
       (dolist (duplicate (find-duplicates shadowed-symbol-names
 					  interned-symbol-names
 					  (loop for list in shadowing-imported-from-symbol-names-list append (rest list))
 					  (loop for list in imported-from-symbol-names-list append (rest list))))
-	(si::simple-program-error
+	(simple-program-error
 	 "The symbol ~s cannot coexist in these lists:~{ ~s~}"
 	 (first duplicate)
 	 (loop for num in (rest duplicate)
@@ -131,7 +141,7 @@
 			 (4 ':IMPORT-FROM)))))
       (dolist (duplicate (find-duplicates exported-symbol-names
 					  interned-symbol-names))
-	(si::simple-program-error
+	(simple-program-error
 	 "The symbol ~s cannot coexist in these lists:~{ ~s~}"
 	 (first duplicate)
 	 (loop for num in (rest duplicate) collect
@@ -139,7 +149,7 @@
 		 (1 ':EXPORT)
 		 (2 ':INTERN)))))
       `(eval-when (eval compile load)
-        (si::dodefpackage
+        (dodefpackage
 	,name
 	',nicknames
 	,(car documentation)
@@ -149,19 +159,21 @@
 	',exported-symbol-names
 	',shadowing-imported-from-symbol-names-list
 	',imported-from-symbol-names-list
-	',exported-from-package-names)))))
+	',exported-from-package-names
+        ',local-nicknames-list)))))
 
 
 (defun dodefpackage (name
-		    nicknames
-		    documentation
-		    use
-		    shadowed-symbol-names
-		    interned-symbol-names
-		    exported-symbol-names
-		    shadowing-imported-from-symbol-names-list
-		    imported-from-symbol-names-list
-		    exported-from-package-names)
+                     nicknames
+                     documentation
+                     use
+                     shadowed-symbol-names
+                     interned-symbol-names
+                     exported-symbol-names
+                     shadowing-imported-from-symbol-names-list
+                     imported-from-symbol-names-list
+                     exported-from-package-names
+                     local-nicknames-list)
   (if (find-package name)
       (progn ; (rename-package name name)
         (when nicknames
@@ -179,7 +191,7 @@
           (signal-simple-error 'simple-package-error "Create the package"
                                "The name ~s does not designate any package"
                                (list (first item))
-                               :package (find-package name)))
+                               :package *package*))
 	(dolist (name (rest item))
 	  (shadowing-import (find-or-make-symbol name package)))))
     (use-package use)
@@ -195,7 +207,14 @@
       (do-external-symbols (symbol (find-package package))
 	(when (nth 1 (multiple-value-list
 		      (find-symbol (string symbol))))
-	  (export (list (intern (string symbol))))))))
+	  (export (list (intern (string symbol)))))))
+    (dolist (spec local-nicknames-list)
+      (unless (and (consp spec) (consp (cdr spec)) (null (cddr spec)))
+        (simple-program-error
+         "~a is not a valid ~a specification"
+         spec :local-nicknames))
+      (destructuring-bind (nickname actual) spec
+        (ext:add-package-local-nickname nickname actual))))
   (find-package name))
 
 (defun find-or-make-symbol (name package)

@@ -207,38 +207,44 @@ public:
   }
 };
 };
+
+
+
+
 namespace gctools {
 template <class T>
-class smart_ptr /*: public tagged_ptr<T>*/ {
+class base_ptr /*: public tagged_ptr<T>*/ {
  public:
   typedef T Type;
   Type *theObject;
 
  public:
   //Default constructor, set theObject to NULL
-  inline smart_ptr() noexcept : theObject(NULL){};
+  inline base_ptr() noexcept : theObject(NULL){};
   /*! Create a smart pointer from an existing tagged pointer */
-  explicit inline smart_ptr(Tagged ptr) : theObject(reinterpret_cast<Type *>(ptr)){};
-  explicit inline smart_ptr(Type *ptr) : theObject(ptr ? tag_general<Type *>(ptr) : NULL) {
+  explicit inline base_ptr(Tagged ptr) : theObject(reinterpret_cast<Type *>(ptr)){};
+  explicit inline base_ptr(Type *ptr) : theObject(ptr ? tag_general<Type *>(ptr) : NULL) {
     GCTOOLS_ASSERT((reinterpret_cast<uintptr_clasp_t>(ptr) & tag_mask) == 0);
   };
-  inline smart_ptr(const return_type &rt) : theObject((Type *)rt.ret0[0]){};
-#ifdef SMART_PTR_COPY_CTOR
-  inline smart_ptr(const smart_ptr<Type> &obj) : theObject(obj.theObject){};
+  inline base_ptr(const return_type &rt) : theObject((Type *)rt.ret0[0]){};
+#ifdef BASE_PTR_COPY_CTOR
+  inline base_ptr(const base_ptr<Type> &obj) : theObject(obj.theObject){};
 #endif
 
 #ifndef DEBUG_ASSERT_TYPE_CAST
   template <class From>
-    inline smart_ptr(smart_ptr<From> const &rhs) : theObject(reinterpret_cast<Type*>(rhs.theObject)) {};
+    inline base_ptr(base_ptr<From> const &rhs) : theObject(reinterpret_cast<Type*>(rhs.theObject)) {};
 #else
+  #if 1
   template <class From>
-    inline smart_ptr(smart_ptr<From> const &rhs) {
+    inline base_ptr(base_ptr<From> const &rhs) {
     if (TaggedCast<Type *, From *>::isA(rhs.theObject)) {
       this->theObject = reinterpret_cast<Type*>(rhs.raw_());//TaggedCast<Type *, From *>::castOrNULL(rhs.theObject); //reinterpret_cast<From*>(rhs.raw_()));
       return;
     }
     core::lisp_errorCast<Type, From>(rhs.theObject);
   }
+  #endif
 #endif
 
   uintptr_clasp_t tag() const { return reinterpret_cast<uintptr_clasp_t>(this->theObject) & tag_mask; };
@@ -249,7 +255,7 @@ class smart_ptr /*: public tagged_ptr<T>*/ {
 
   void reset_() { this->theObject = NULL; };
 
-  inline void swap(smart_ptr<Type> &other) {
+  inline void swap(base_ptr<Type> &other) {
     Type *temp;
     temp = this->theObject;
     this->theObject = other.theObject;
@@ -257,29 +263,29 @@ class smart_ptr /*: public tagged_ptr<T>*/ {
   };
   
   template <class o_class>
-    inline smart_ptr<o_class> asOrNull() {
+    inline base_ptr<o_class> asOrNull() {
     o_class *cast = TaggedCast<o_class *, Type *>::castOrNULL(this->theObject);
-    smart_ptr<o_class> ret((Tagged)cast);
+    base_ptr<o_class> ret((Tagged)cast);
     return ret;
   }
 
   template <class o_class>
-    inline smart_ptr<o_class> asOrNull() const {
+    inline base_ptr<o_class> asOrNull() const {
     o_class *cast = TaggedCast<o_class *, Type *>::castOrNULL(this->theObject);
-    smart_ptr<o_class> ret((Tagged)cast);
+    base_ptr<o_class> ret((Tagged)cast);
     return ret;
   }
 
   template <class o_class>
-    inline smart_ptr<o_class> as() {
-    smart_ptr<o_class> ret = this->asOrNull<o_class>();
+    inline base_ptr<o_class> as() {
+    base_ptr<o_class> ret = this->asOrNull<o_class>();
     if (ret) return ret;
     core::lisp_errorCast<o_class, Type>(this->theObject);
   }
 
   template <class o_class>
-    inline smart_ptr<o_class> as() const {
-    smart_ptr<o_class> ret = this->asOrNull<o_class>();
+    inline base_ptr<o_class> as() const {
+    base_ptr<o_class> ret = this->asOrNull<o_class>();
     if (ret) return ret;
     core::lisp_errorCast<o_class, Type>(this->theObject);
   }
@@ -295,10 +301,10 @@ class smart_ptr /*: public tagged_ptr<T>*/ {
   }
 
   /*! Return the offset in bytes between this.px and this - you need to modify the base
-	  class of smart_ptr to make px protected */
+	  class of base_ptr to make px protected */
   //	int offset_of_px_from_this() const { return ((char*)(&this->px)) - ((char*)(this));}
   /*! Return the size in bytes of px - you need to modify the base class
-	  of smart_ptr to make px protected */
+	  of base_ptr to make px protected */
   //	int size_of_px() const { return sizeof(this->px); };
 
   int number_of_values() const { return this->theObject == NULL ? 0 : 1; };
@@ -370,7 +376,7 @@ class smart_ptr /*: public tagged_ptr<T>*/ {
     return untag_fixnum<Type *>(this->theObject);
   };
 
-  /*! Return the raw smart_ptr value interpreted as a T_O* */
+  /*! Return the raw base_ptr value interpreted as a T_O* */
   inline core::T_O *raw_() const { return reinterpret_cast<core::T_O *>(this->theObject); }
   inline gctools::Tagged tagged_() const { return reinterpret_cast<gctools::Tagged>(this->theObject); }
 
@@ -396,15 +402,90 @@ class smart_ptr /*: public tagged_ptr<T>*/ {
   }
 
   template <class U>
-    inline bool operator==(smart_ptr<U> const other) const {
+    inline bool operator==(base_ptr<U> const other) const {
       return reinterpret_cast<uintptr_clasp_t>(this->theObject) == reinterpret_cast<uintptr_clasp_t>(other.theObject);
   }
 
   template <class U>
-    inline bool operator!=(smart_ptr<U> const other) const {
+    inline bool operator!=(base_ptr<U> const other) const {
     return reinterpret_cast<uintptr_clasp_t>(this->theObject) != reinterpret_cast<uintptr_clasp_t>(other.theObject);
   }
  };
+};
+
+
+#ifndef SCRAPING
+#ifdef USE_MPS
+#undef USE_MPS // temporary!!!!!
+#define DECLARE_FORWARDS
+#include INIT_CLASSES_INC_H
+#undef DECLARE_FORWARDS
+#define USE_MPS
+#endif
+#ifdef USE_BOEHM
+#define DECLARE_FORWARDS
+#include INIT_CLASSES_INC_H
+#undef DECLARE_FORWARDS
+#endif
+#endif
+
+namespace gctools {
+
+#if defined(DEBUG_ASSERT_TYPE_CAST) && !defined(SCRAPING)
+template <typename T1, typename T2>
+struct Inherits : std::false_type {};
+#define DECLARE_INHERITANCE
+#include INIT_CLASSES_INC_H
+#undef DECLARE_INHERITANCE
+/// Add special Inheritance info here
+ template <> struct Inherits<core::Number_O,::core::SingleFloat_I> : public std::true_type  {};
+ template <> struct Inherits<core::Real_O,::core::SingleFloat_I> : public std::true_type  {};
+ template <> struct Inherits<core::Float_O,::core::SingleFloat_I> : public std::true_type  {};
+ template <> struct Inherits<core::Number_O,::core::Fixnum_I> : public std::true_type  {};
+ template <> struct Inherits<core::Real_O,::core::Fixnum_I> : public std::true_type  {};
+ template <> struct Inherits<core::Rational_O,::core::Fixnum_I> : public std::true_type  {};
+ template <> struct Inherits<core::Integer_O,::core::Fixnum_I> : public std::true_type  {};
+
+/// Stop special Inheritance
+#else
+template <typename T1, typename T2>
+struct Inherits : std::true_type {};
+#endif
+
+template <typename T1, typename T2>
+void TestInheritance() {
+  static_assert(Inherits<T1,T2>::value,"T1 does not inherit from T2");
+};
+};
+
+namespace gctools {
+template <typename Type>
+class smart_ptr : public base_ptr<Type> {
+public:
+  //Default constructor, set theObject to NULL
+  inline smart_ptr() noexcept : base_ptr<Type>((Type*)NULL) {};
+  /*! Create a smart pointer from an existing tagged pointer */
+  explicit inline smart_ptr(Tagged ptr) : base_ptr<Type>(ptr) {};
+  explicit inline smart_ptr(Type *ptr) : base_ptr<Type>(ptr) {};
+  inline smart_ptr(const return_type &rt) : base_ptr<Type>(rt) {};
+  inline smart_ptr(base_ptr<Type> orig) : base_ptr<Type>((Tagged)orig.raw_()) {};
+
+#ifndef DEBUG_ASSERT_TYPE_CAST
+  template <class From>
+  inline smart_ptr(smart_ptr<From> const &rhs) : base_ptr<Type>((Tagged)rhs.raw_()) {};
+#else
+#if 1
+  template <class From>
+  inline smart_ptr(smart_ptr<From> const &rhs) : base_ptr<Type>((Tagged)rhs.raw_())
+  {
+    TestInheritance<Type,From>();
+  };
+#endif
+#endif
+
+  
+};
+
 };
 
 namespace gctools {
@@ -529,7 +610,7 @@ public:
     smart_ptr<o_class> ret = this->asOrNull<o_class>();
     if (ret)
       return ret;
-    core::lisp_errorCast<o_class, Type>(this->theObject);
+    ::core::lisp_errorCast<o_class, Type>(this->theObject);
   }
 
   template <class o_class>
@@ -693,14 +774,10 @@ typedef gctools::smart_ptr<Character_I> Character_sp;
 
 namespace gctools {
 template <>
-class smart_ptr<core::Symbol_O> /*: public tagged_ptr<Type>*/ {
-public:
-  typedef core::Symbol_O Type;
-  Type *theObject;
-
+class smart_ptr<core::Symbol_O> : public base_ptr<core::Symbol_O> { 
 public:
   //Default constructor, set theObject to NULL
-  smart_ptr() noexcept : theObject(NULL){};
+  smart_ptr() noexcept : base_ptr<core::Symbol_O>((core::Symbol_O*)NULL){};
   //    	explicit smart_ptr(uintptr_clasp_t p) : theObject(p) {}; // TODO: this converts ints to smart_ptr's - its dangerous
   //! Construct a FRAME object - I need to get rid of these
   //smart_ptr( core::T_O** p ) : theObject(tag_vaslist(p)) { /*printf("%s:%d Creating Frame \n", __FILE__, __LINE__ );*/ };
@@ -708,13 +785,9 @@ public:
   // explicit smart_ptr( void* objP) : theObject(reinterpret_cast<Type*>(objP)) {};
 
   /*! Create a smart pointer from an existing tagged pointer */
-  explicit inline smart_ptr(Tagged ptr) : theObject(reinterpret_cast<Type *>(ptr)) {
-    GCTOOLS_ASSERT(!ptr || (reinterpret_cast<uintptr_clasp_t>(ptr) & tag_mask) != 0);
-  };
-
-  explicit inline smart_ptr(Type *ptr) : theObject(ptr ? tag_general<Type *>(ptr) : NULL) {
-    GCTOOLS_ASSERT((reinterpret_cast<uintptr_clasp_t>(ptr) & tag_mask) == 0);
-  };
+  explicit inline smart_ptr(Tagged ptr) : base_ptr((Tagged)ptr) {};
+  explicit inline smart_ptr(Type *ptr) : base_ptr((Type*)ptr) {};
+  inline smart_ptr(base_ptr<core::Symbol_O> orig) : base_ptr<core::Symbol_O>((Tagged)orig.raw_()) {};
 
 #ifdef SMART_PTR_COPY_CTOR
   inline smart_ptr(const smart_ptr<Type> &obj) : theObject(obj.theObject){};
@@ -1219,6 +1292,8 @@ inline bool operator==(const core::List_sp::fast_iterator &a, const core::List_s
 inline bool operator!=(const core::List_sp::fast_iterator &a, const core::List_sp::fast_iterator &b) { return a->consp(); }
 };
 
+
+ 
 template <class T>
 gctools::smart_ptr<T> _Nil() {
   gctools::smart_ptr<T> x((gctools::Tagged)gctools::tag_nil<T *>());
@@ -1623,4 +1698,9 @@ namespace gctools {
     };
   
 };
+
+namespace core {
+typedef gctools::atomic_wrapper<T_sp> T_asp;
+};
+
 #endif

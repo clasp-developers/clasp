@@ -34,7 +34,7 @@ lambda-list, environment.
 All code generation comes through here.   Return (llvm:function lambda-name)
 Could return more functions that provide lambda-list for swank for example"
   (setq *lambda-args-num* (1+ *lambda-args-num*))
-  (multiple-value-bind (cleavir-lambda-list new-body name-map)
+  (multiple-value-bind (cleavir-lambda-list new-body rest-alloc)
       (transform-lambda-parts lambda-list original-declares code)
     (let ((declares (core:canonicalize-declarations original-declares)))
       (cmp-log "generate-llvm-function-from-code%N")
@@ -65,12 +65,10 @@ Could return more functions that provide lambda-list for swank for example"
                    #+(or)(irc-intrinsic-call "debugInspectT_sp" (list (literal:compile-reference-to-literal :This-is-a-test)))
                    (let* ((arguments      (llvm-sys:get-argument-list fn))
                           (callconv       (setup-calling-convention arguments
-                                                                    :lambda-list lambda-list
                                                                     :debug-on core::*debug-bclasp*
-                                                                    :canonical-declares declares
+                                                                    :lambda-list lambda-list
                                                                     :cleavir-lambda-list cleavir-lambda-list
-                                                                    :name-map name-map)))
-                     (calling-convention-maybe-push-invocation-history-frame callconv)
+                                                                    :rest-alloc rest-alloc)))
                      (let ((new-env (bclasp-compile-lambda-list-code fn-env callconv)))
                        (cmp-log "Created new register environment -> %s%N" new-env)
                        (with-try
@@ -79,8 +77,6 @@ Could return more functions that provide lambda-list for swank for example"
                                  (codegen-block result (list* block-name (list new-body)) new-env)
                                  (codegen-progn result (list new-body) new-env)))
                          ((cleanup)
-                          (cmp-log "About to calling-convention-maybe-pop-invocation-history-frame%N")
-                          (calling-convention-maybe-pop-invocation-history-frame callconv)
                           (irc-unwind-environment new-env))))))))
         (cmp-log "About to dump the function constructed by generate-llvm-function-from-code%N")
         (cmp-log-dump-function fn)
@@ -119,27 +115,27 @@ Return the same things that generate-llvm-function-from-code returns"
   "Extract everything necessary to compile an interpreted function and
 then compile it and return (values compiled-llvm-function lambda-name)"
   (let ((lambda-list (core:lambda-list-handler-lambda-list (function-lambda-list-handler fn)))
-	(declares (function-declares fn))
+	#+(or)(declares (function-declares fn))
 	(docstring (function-docstring fn))
 	(code (function-source-code fn))
 	(env (closed-environment fn)))
-    (generate-llvm-function-from-code nil lambda-list declares docstring code env :linkage 'llvm-sys:external-linkage)))
+    (generate-llvm-function-from-code nil lambda-list #|declares|# nil docstring code env :linkage 'llvm-sys:external-linkage)))
 
 (defun generate-lambda-expression-from-interpreted-function (fn)
   (let* ((lambda-list-handler (function-lambda-list-handler fn))
 	 (lambda-list (core:lambda-list-handler-lambda-list lambda-list-handler))
-	 (declares (function-declares fn))
+	 #+(or)(declares (function-declares fn))
 	 (docstring (docstring fn))
 	 (code (code fn))
 	 (env (closed-environment fn)))
     (when docstring (setq docstring (list docstring)))
     #+(or)(progn
 	    (bformat t "lambda-list = %s%N" lambda-list)
-	    (bformat t "declares    = %s%N" declares)
+	    #+(or)(bformat t "declares    = %s%N" declares)
 	    (bformat t "docstring   = %s%N" docstring)
 	    (bformat t "code        = %s%N" code)
 	    (bformat t "env         = %s%N" env))
-    (values `(lambda ,lambda-list ,@docstring (declare ,@declares) ,@code) env)))
+    (values `(lambda ,lambda-list ,@docstring #| (declare ,@declares)|# ,@code) env)))
 
 (defun function-name-from-lambda (name)
     (cond
@@ -222,6 +218,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
        (error "Handle lambda applications"))
       (t (compiler-error form "Illegal head for form %s" head)))))
 
+;;; Codegen a (funcall ...) form.
 (defun codegen-funcall (result form env)
   (let ((closure-arg (second form))
         (call-args (cddr form)))
@@ -306,19 +303,26 @@ then compile it and return (values compiled-llvm-function lambda-name)"
 ;;; Return true if the symbol should be treated as a special operator
 ;;; Special operators that are handled as macros are exempt
 (defun treat-as-special-operator-p (sym)
-  (cond
-    ((eq sym 'cl:unwind-protect) nil)     ;; handled with macro
-    ((eq sym 'cl:multiple-value-prog1) nil)     ;; handled with macro
-    ((eq sym 'cl:catch) nil)              ;; handled with macro
-    ((eq sym 'cl:throw) nil)              ;; handled with macro
-    ((eq sym 'cl:progv) nil)              ;; handled with macro
-    ((eq sym 'core:debug-message) t)      ;; special operator
-    ((eq sym 'core:debug-break) t)      ;; special operator
-    ((eq sym 'core:multiple-value-foreign-call) t) ;; Call intrinsic functions
-    ((eq sym 'core:foreign-call-pointer) t) ;; Call function pointers
-    ((eq sym 'core:foreign-call) t)         ;; Call foreign function
-    ((eq sym 'core:bind-va-list) t)         ;; bind-va-list
-    (t (special-operator-p sym))))
+  (and (symbolp sym)
+       ;;; perhaps the test (symbolp sym) should be done in the callers
+       ;;; done here, since special-operator-p should type-error on a non-symbol
+       ;;; and bclasp is calling treat-as-special-operator-p on forms too
+       (cond
+         ((eq sym 'cl:unwind-protect) nil)     ;; handled with macro
+         ((eq sym 'cl:multiple-value-prog1) nil)     ;; handled with macro
+         ((eq sym 'cl:catch) nil)              ;; handled with macro
+         ((eq sym 'cl:throw) nil)              ;; handled with macro
+         ((eq sym 'cl:progv) nil)              ;; handled with macro
+         ((eq sym 'core:debug-message) t)      ;; special operator
+         ((eq sym 'core:debug-break) t)      ;; special operator
+         ((eq sym 'core:multiple-value-foreign-call) t) ;; Call intrinsic functions
+         ((eq sym 'core:foreign-call-pointer) t) ;; Call function pointers
+         ((eq sym 'core:foreign-call) t)         ;; Call foreign function
+         ((eq sym 'core:bind-va-list) t)         ;; bind-va-list
+         ((eq sym 'core:vaslist-pop) t)
+         ((eq sym 'core:instance-stamp) t)
+         ((eq sym 'core:defcallback) t)
+         (t (special-operator-p sym)))))
 
 (export 'treat-as-special-operator-p)
 
@@ -362,6 +366,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
                                               result
                                               :function-name name
                                               :parent-env env
+                                              :linkage cmp:*default-linkage*
                                               :function-form form
                                               :function-info (make-function-info
                                                               :function-name name

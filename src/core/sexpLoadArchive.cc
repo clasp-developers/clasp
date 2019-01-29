@@ -26,6 +26,9 @@ THE SOFTWARE.
 /* -^- */
 //#define DEBUG_LEVEL_FULL
 
+#if 0
+
+
 #include <clasp/core/foundation.h>
 #include <clasp/core/serialize.h>
 #include <clasp/core/sexpLoadArchive.h>
@@ -128,3 +131,4 @@ CL_DEFMETHOD void SexpLoadArchive_O::parseFromStream(T_sp streamDesignator) {
   this->parseFromObject(obj);
 };
 };
+#endif

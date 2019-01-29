@@ -116,8 +116,23 @@ void flow_tracker_close() {
 };
 
 
+namespace gctools {
+std::atomic<double>   global_DiscriminatingFunctionCompilationSeconds = ATOMIC_VAR_INIT(0.0);
+
+CL_DEFUN void gctools__accumulate_discriminating_function_compilation_seconds(double seconds) {
+  global_DiscriminatingFunctionCompilationSeconds =
+      global_DiscriminatingFunctionCompilationSeconds + seconds;
+}
+
+CL_DEFUN double gctools__discriminating_function_compilation_seconds() {
+  return global_DiscriminatingFunctionCompilationSeconds;
+}
+
+};
+
 
 namespace gctools {
+
 
 size_t global_next_unused_kind = STAMP_max+1;
 
@@ -193,6 +208,18 @@ CL_DEFUN size_t gctools__catch_throw_counter() {
   return global_CatchThrow_count;
 }
 #endif
+
+CL_DEFUN void gctools__change_sigchld_sigport_handlers()
+{
+  void* old = (void*)signal(SIGCHLD, SIG_DFL);
+  signal(SIGPIPE, SIG_DFL);
+  printf("%s:%d old signal handler for SIGCHLD = %p   SIG_DFL = %p\n", __FILE__, __LINE__, old, SIG_DFL);
+}
+
+CL_DEFUN core::T_sp gctools__unix_signal_handlers()
+{
+  return _lisp->_Roots._UnixSignalHandlers;
+}
 
 CL_DEFUN void gctools__deallocate_unmanaged_instance(core::T_sp obj) {
   obj_deallocate_unmanaged_instance(obj);
@@ -330,9 +357,12 @@ struct ReachableClass {
     } else {
       className << "??CONS??";
     }
-    BFORMAT_T(BF("%s: total_size: %10d count: %8d avg.sz: %8d kind: %s/%d\n")
-              % shortName % this->totalSize % this->instances % (this->totalSize / this->instances) % className.str().c_str() % k);
-    return this->totalSize;
+      clasp_write_string((BF("%s: total_size: %10d count: %8d avg.sz: %8d kind: %s/%d\n")
+                          % shortName % this->totalSize % this->instances
+                          % (this->totalSize / this->instances) % className.str().c_str() % k).str()
+                         ,cl::_sym_STARstandard_outputSTAR->symbolValue());
+      core::clasp_finish_output_t();
+      return this->totalSize;
   }
 };
 
@@ -397,8 +427,11 @@ struct ReachableMPSObject {
   size_t largest = 0;
   size_t print(const std::string &shortName,const vector<std::string> stampNames) {
     if (this->instances > 0) {
-      printf("%s: totalMemory: %10lu count: %8lu largest: %8lu avg.sz: %8lu %s/%lu\n", shortName.c_str(),
-             this->totalMemory, this->instances, this->largest, this->totalMemory / this->instances, stampNames[this->stamp].c_str(), this->stamp);
+      clasp_write_string((BF("%s: total_size: %10d count: %8d avg.sz: %8d kind: %s/%d\n")
+                          % shortName % this->totalMemory % this->instances % (this->totalMemory/this->instances)
+                          % stampNames[this->stamp] % this->stamp).str(),
+                         cl::_sym_STARstandard_outputSTAR->symbolValue());
+      core::clasp_finish_output_t();
     }
     return this->totalMemory;
   }
@@ -813,7 +846,7 @@ CL_DEFUN core::T_sp gctools__stack_depth() {
 CL_DEFUN void gctools__garbage_collect() {
 #ifdef USE_BOEHM
   GC_gcollect();
-//  BFORMAT_T(BF("GC_invoke_finalizers\n"));
+//  write_bf_stream(BF("GC_invoke_finalizers\n"));
   GC_invoke_finalizers();
 #endif
 //        printf("%s:%d Starting garbage collection of arena\n", __FILE__, __LINE__ );
@@ -846,7 +879,7 @@ CL_DEFUN void gctools__cleanup(bool verbose) {
   size_t finalizations;
   size_t messages = processMpsMessages(finalizations);
   if (verbose) {
-    BFORMAT_T(BF("Processed %d finalization messages and %d total messages\n") % messages % finalizations );
+    core::write_bf_stream(BF("Processed %d finalization messages and %d total messages\n") % messages % finalizations );
   }
 #endif
 }
@@ -869,6 +902,7 @@ CL_DEFUN void gctools__debug_allocations(core::T_sp debugOn) {
 };
 
 bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& ss) {
+  bool metrics_file = false;
   core::List_sp features = cl::_sym_STARfeaturesSTAR->symbolValue();
   bool debugging = false;
   bool use_boehm_memory_marker = false;
@@ -918,6 +952,13 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   debugging = true;
 #endif
   if (buildReport) ss << (BF("DEBUG_TELEMETRY = %s\n") % (debug_telemetry ? "**DEFINED**" : "undefined") ).str();
+
+  bool debug_stackmaps = false;
+#ifdef DEBUG_STACKMAPS
+  debug_stackmaps = true;
+  debugging = true;
+#endif
+  if (buildReport) ss << (BF("DEBUG_STACKMAPS = %s\n") % (debug_stackmaps ? "**DEFINED**" : "undefined") ).str();
 
   bool debug_stack_telemetry = false;
 #ifdef DEBUG_STACK_TELEMETRY
@@ -1057,12 +1098,25 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
  
  bool debug_rehash_count = false;
 #ifdef DEBUG_REHASH_COUNT
+ #ifndef DEBUG_MONITOR
+   #error "DEBUG_MONITOR must also be enabled if DEBUG_REHASH_COUNT is turned on"
+ #endif
   debug_rehash_count = true;
   debugging = true;
   if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-REHASH_COUNT"),features);
 #endif
   if (buildReport) ss << (BF("DEBUG_REHASH_COUNT = %s\n") % (debug_rehash_count ? "**DEFINED**" : "undefined") ).str();
-  
+
+    
+  bool debug_jit_log_symbols = false;
+#ifdef DEBUG_JIT_LOG_SYMBOLS
+  printf("%s:%d  Setting JIT-LOG-SYMBOLS *feature*\n", __FILE__, __LINE__ );
+  debug_jit_log_symbols = true;
+  debugging = true;
+  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("JIT-LOG-SYMBOLS"),features);
+#endif
+  if (buildReport) ss << (BF("DEBUG_JIT_LOG_SYMBOLS = %s\n") % (debug_jit_log_symbols ? "**DEFINED**" : "undefined") ).str();
+
   bool debug_monitor = false;
 #ifdef DEBUG_MONITOR
   debug_monitor = true;
@@ -1153,6 +1207,22 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #endif
   if (buildReport) ss << (BF("DEBUG_COMPILER = %s\n") % (debug_compiler ? "**DEFINED**" : "undefined") ).str();
 
+  bool debug_assert_type_cast = false;
+#ifdef DEBUG_ASSERT_TYPE_CAST
+  debug_assert_type_cast = true;
+  debugging = true;
+  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-ASSERT-TYPE-CAST"),features);
+#endif
+  if (buildReport) ss << (BF("DEBUG_ASSERT_TYPE_CAST = %s\n") % (debug_assert_type_cast ? "**DEFINED**" : "undefined") ).str();
+
+  bool debug_llvm_optimization_level_0 = false;
+#ifdef DEBUG_LLVM_OPTIMIZATION_LEVEL_0
+  debug_llvm_optimization_level_0 = true;
+  debugging = true;
+  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-LLVM-OPTIMIZATION-LEVEL-0"),features);
+#endif
+  if (buildReport) ss << (BF("DEBUG_LLVM_OPTIMIZATION_LEVEL_0 = %s\n") % (debug_llvm_optimization_level_0 ? "**DEFINED**" : "undefined") ).str();
+
   bool debug_count_allocations = false;
 #ifdef DEBUG_COUNT_ALLOCATIONS
   debug_count_allocations = true;
@@ -1168,6 +1238,14 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-DONT-OPTIMIZE-BCLASP"),features);
 #endif
   if (buildReport) ss << (BF("DEBUG_DONT_OPTIMIZE_BCLASP = %s\n") % (debug_dont_optimize_bclasp ? "**DEFINED**" : "undefined") ).str();
+
+  bool debug_dtrace_lock_probe = false;
+#ifdef DEBUG_DTRACE_LOCK_PROBE
+  debug_dtrace_lock_probe = true;
+  debugging = true;
+  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-DTRACE-LOCK-PROBE"),features);
+#endif
+  if (buildReport) ss << (BF("DEBUG_DTRACE_LOCK_PROBE = %s\n") % (debug_dtrace_lock_probe ? "**DEFINED**" : "undefined") ).str();
 
   bool disable_type_inference = false;
 #ifdef DISABLE_TYPE_INFERENCE
@@ -1209,7 +1287,7 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   // The cl:*features* environment variable is set below - so all changes to (features) must be above
   //
   if (setFeatures) cl::_sym_STARfeaturesSTAR->setf_symbolValue(features);
-  
+
   // ---- return with the debugging flag
   return debugging;
 }

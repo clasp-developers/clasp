@@ -2,7 +2,13 @@
 ;;; Any symbols we want to export from EXT must be done in init.lsp
 ;;;
 
+(in-package :core)
+;;; Temporary alias for SLIME compatibility- remove as soon as possible
+(setf (fdefinition 'function-lambda-list) #'ext:function-lambda-list)
+(export 'function-lambda-list)
+
 (in-package :ext)
+
 (defun compiled-function-name (x)
   (core:function-name x))
 
@@ -111,7 +117,7 @@ Return the source-location for the name/kind pair"
            (when cmf
              (source-location cmf t)))))
       (:setf-expander
-       (let ((expander (core::setf-expander name)))
+       (let ((expander (ext:setf-expander name)))
          (when expander
            (source-location expander t))))
       (:method-combination
@@ -121,7 +127,7 @@ Return the source-location for the name/kind pair"
            (source-location method-combination-compiler t))))
       (:type
        ;; We use the source location of the expander function.
-       (let ((expander (core::type-expander name)))
+       (let ((expander (ext:type-expander name)))
          (when expander
            (source-location expander t)))))))
 
