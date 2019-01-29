@@ -376,7 +376,6 @@
     (declare (ignore op origin))
     (let* ((parsed-lambda-list
              (cleavir-code-utilities:parse-ordinary-lambda-list lambda-list))
-           (required (cleavir-code-utilities:required parsed-lambda-list))
            (semi-rest (cleavir-code-utilities:rest-body parsed-lambda-list))
            (rest (if (eq semi-rest :none) nil semi-rest)))
       (multiple-value-bind (declarations documentation forms)
@@ -392,13 +391,10 @@
                (cleavir-generate-ast::itemize-lambda-list parsed-lambda-list)
                canonicalized-dspecs)
             (multiple-value-bind (ast lexical-lambda-list)
-                (cleavir-generate-ast::process-required
-                 required
-                 parsed-lambda-list
-                 idspecs
+                (cleavir-generate-ast::process-lambda-list
+                 parsed-lambda-list idspecs
                  (cleavir-generate-ast::make-body rdspecs forms nil nil)
-                 environment
-                 system)
+                 environment system)
               (cc-ast:make-bind-va-list-ast
                 lexical-lambda-list
                 (cleavir-generate-ast::convert va-list-form environment system)
