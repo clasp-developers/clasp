@@ -51,7 +51,7 @@ HashTableEqual_sp HashTableEqual_O::create(uint sz, Number_sp rehashSize, double
 SYMBOL_EXPORT_SC_(ClPkg, equal);
 HashTableEqual_sp HashTableEqual_O::create_default() {
   DoubleFloat_sp rhs = DoubleFloat_O::create(2.0);
-  HashTableEqual_sp ht = HashTableEqual_O::create(16, rhs, 1.0);
+  HashTableEqual_sp ht = HashTableEqual_O::create(16, rhs, DEFAULT_REHASH_THRESHOLD);
   return ht;
 }
 

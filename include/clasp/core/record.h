@@ -266,7 +266,7 @@ public:
     case patching: {
       RECORD_LOG(BF("Patching"));
       size_t i = 0;
-      for ( auto pairi : value ) {
+      for ( auto&& pairi : value ) {
         gc::smart_ptr<T_O> orig = pairi.second;
         T_sp patch = record_circle_subst(this->_replacement_table, orig);
         if (patch != orig) {
@@ -316,7 +316,7 @@ public:
     } break;
     case patching: {
       RECORD_LOG(BF("Patching"));
-      for ( auto pairi : value ) {
+      for ( auto&& pairi : value ) {
         gc::smart_ptr<T_O> orig_key = pairi.first;
         gc::smart_ptr<T_O> orig_value = pairi.second;
         T_sp patch_key = record_circle_subst(this->_replacement_table, orig_key);

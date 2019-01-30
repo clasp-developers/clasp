@@ -53,7 +53,7 @@ HashTableEql_sp HashTableEql_O::create(uint sz, Number_sp rehashSize, double reh
 SYMBOL_EXPORT_SC_(ClPkg, eql);
 HashTableEql_sp HashTableEql_O::create_default() {
   DoubleFloat_sp rhs = DoubleFloat_O::create(2.0);
-  HashTableEql_sp ht = HashTableEql_O::create(16, rhs, 1.0);
+  HashTableEql_sp ht = HashTableEql_O::create(16, rhs, DEFAULT_REHASH_THRESHOLD);
   return ht;
 }
 

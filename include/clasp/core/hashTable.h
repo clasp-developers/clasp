@@ -35,6 +35,7 @@ THE SOFTWARE.
 
 namespace core {
 double maybeFixRehashThreshold(double rt);
+#define DEFAULT_REHASH_THRESHOLD 0.7
 
 T_sp cl__make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_size, Real_sp orehash_threshold, Symbol_sp weakness = _Nil<T_O>(), T_sp debug = _Nil<T_O>(), T_sp thread_safe = _Nil<T_O>());
 
