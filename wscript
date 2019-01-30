@@ -881,7 +881,7 @@ def configure(cfg):
     if (cfg.env['DEST_OS'] == DARWIN_OS and cfg.env['REQUIRE_LIBFFI'] == True):
         cfg.check_cxx(lib='ffi', cflags='-Wall', uselib_store="FFI")
     elif (cfg.env['DEST_OS'] == LINUX_OS ):
-        pass
+        cfg.check_cxx(lib='bsd', cflags='-Wall', uselib_store='BSD')
 #        cfg.check_cxx(lib='gcc_s', cflags='-Wall', uselib_store="GCC_S")
 #        cfg.check_cxx(lib='unwind-x86_64', cflags='-Wall', uselib_store='UNWIND_X86_64')
 #        cfg.check_cxx(lib='unwind', cflags='-Wall', uselib_store='UNWIND')
@@ -1006,7 +1006,6 @@ def configure(cfg):
             log.info("Using the gold linker")
         cfg.env.append_value('LINKFLAGS', ['-stdlib=libstdc++']) # libstdc++/GCC libc++/clang
         cfg.env.append_value('LINKFLAGS', ['-lstdc++']) # -lstdc++/GCC -lc++/clang
-        cfg.env.append_value('LINKFLAGS', ['-lbsd'])
         cfg.env.append_value('LINKFLAGS', '-pthread')
     elif (cfg.env['DEST_OS'] == FREEBSD_OS ):
         #--lto-O0 is not effective for avoiding linker hangs
@@ -1092,6 +1091,8 @@ def configure(cfg):
         cfg.env.append_value('LIB', cfg.env.LIB_UNWIND_X86_64)
         cfg.env.append_value('LIB', cfg.env.LIB_UNWIND)
         cfg.env.append_value('LIB', cfg.env.LIB_LZMA)
+    if (cfg.env['DEST_OS'] == LINUX_OS):
+        cfg.env.append_value('LIB', cfg.env.LIB_BSD)
     cfg.env.append_value('LIB', cfg.env.LIB_CLANG)
     cfg.env.append_value('LIB', cfg.env.LIB_LLVM)
     cfg.env.append_value('LIB', cfg.env.LIB_NCURSES)
