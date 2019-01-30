@@ -342,10 +342,10 @@
         :docstring (docstring instruction)
         :rest-alloc (rest-alloc instruction)))
 
-(defmethod original-lambda-list ((self cleavir-ir:top-level-enter-instruction))
-  nil)
-
-(defmethod rest-alloc ((self cleavir-ir:top-level-enter-instruction))
+;;; We need this one for when an enter-instruction makes it to translate.
+;;; This will happen if generate-ast or cst-to-ast make a function-ast without
+;;; going through convert-code.
+(defmethod rest-alloc ((self cleavir-ir:enter-instruction))
   nil)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
