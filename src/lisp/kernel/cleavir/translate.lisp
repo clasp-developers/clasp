@@ -333,13 +333,13 @@ when this is t a lot of graphs will be generated.")
         (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
                             (let* ((fn-args (llvm-sys:get-argument-list cmp:*current-function*))
                                    (lambda-list (cleavir-ir:lambda-list enter))
-                                   (calling-convention (cmp:setup-calling-convention
-                                                        fn-args
-                                                        :debug-on (and (null ignore-arguments) (debug-on function-info))
-                                                        :lambda-list (clasp-cleavir-hir::original-lambda-list enter)
-                                                        :cleavir-lambda-list lambda-list
-                                                        :rest-alloc (clasp-cleavir-hir::rest-alloc enter)
-                                                        :ignore-arguments ignore-arguments)))
+                                   (calling-convention
+                                     (cmp:setup-calling-convention
+                                      fn-args
+                                      :debug-on (and (null ignore-arguments) (debug-on function-info))
+                                      :cleavir-lambda-list lambda-list
+                                      :rest-alloc (clasp-cleavir-hir:rest-alloc enter)
+                                      :ignore-arguments ignore-arguments)))
                               (setf (calling-convention function-info) calling-convention))))
        (layout-procedure* the-function
                           body-irbuilder
@@ -656,7 +656,7 @@ This works like compile-lambda-function in bclasp."
   (let* ((dynenv (cleavir-ast:make-lexical-ast
                   'loader-dynamic-environment
                   :policy (cleavir-env:environment-policy env)))
-         (ast (generate-ast form env)))
+         (ast (generate-ast form dynenv env)))
     (translate-ast ast dynenv :env env)))
 
 #+cst
