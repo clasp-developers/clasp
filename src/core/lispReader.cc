@@ -1017,7 +1017,7 @@ struct increment_read_lisp_object_recursion_depth {
     return my_thread->read_recursion_depth;
   }
   int max() const {
-    return 256;
+    return 1024;
   }
 };
 
@@ -1028,10 +1028,12 @@ T_sp read_lisp_object(T_sp sin, bool eofErrorP, T_sp eofValue, bool recursiveP) 
   T_sp result = _Nil<T_O>();
   if (recursiveP) {
     increment_read_lisp_object_recursion_depth recurse;
+#if 0
     if (recurse.value() > recurse.max()) {
       printf("%s:%d read_lisp_object_recursion_depth %d has exceeded max (%d) - there is a problem reading line %d",
              __FILE__, __LINE__, recurse.value(), recurse.max(), clasp_input_lineno(sin));
     }
+#endif
     while (1) {
       LOG_READ(BF("At top of while loop"));
       T_mv mv = lisp_object_query(sin, eofErrorP, eofValue, recursiveP);

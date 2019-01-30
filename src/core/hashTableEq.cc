@@ -49,7 +49,7 @@ HashTableEq_sp HashTableEq_O::create(uint sz, Number_sp rehashSize, double rehas
 
 HashTableEq_sp HashTableEq_O::create_default() {
   DoubleFloat_sp rhs = DoubleFloat_O::create(2.0);
-  return HashTableEq_O::create(8, rhs, 1.0);
+  return HashTableEq_O::create(8, rhs, DEFAULT_REHASH_THRESHOLD);
 }
 
 HashTableEq_sp HashTableEq_O::createFromPList(List_sp plist, Symbol_sp nilTerminatedValidKeywords[]) {
