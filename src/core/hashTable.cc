@@ -70,6 +70,7 @@ void verifyHashTableCount(HashTable_O* ht)
   }
   if (cnt!=ht->_HashTableCount) {
     printf("%s:%d There is a mismatch in _HashTableCount %lu vs calcd %lu\n", __FILE__, __LINE__, ht->_HashTableCount, cnt);
+    printf("  dump: %s\n", ht->hash_table_dump(0,_Nil<core::T_O>()).c_str());
     abort();
   }
 }
@@ -214,7 +215,7 @@ CL_DEFUN Symbol_sp core__hash_table_weakness(T_sp ht) {
 HashTable_sp HashTable_O::create(T_sp test) {
   Fixnum_sp size = make_fixnum(16);
   DoubleFloat_sp rehashSize = DoubleFloat_O::create(2.0);
-  DoubleFloat_sp rehashThreshold = DoubleFloat_O::create(0.9);
+  DoubleFloat_sp rehashThreshold = DoubleFloat_O::create(DEFAULT_REHASH_THRESHOLD);
   HashTable_sp ht = gc::As_unsafe<HashTable_sp>(cl__make_hash_table(test, size, rehashSize, rehashThreshold));
   return ht;
 }
@@ -222,7 +223,7 @@ HashTable_sp HashTable_O::create(T_sp test) {
 HashTable_sp HashTable_O::create_thread_safe(T_sp test, SimpleBaseString_sp readLockName, SimpleBaseString_sp writeLockName) {
   Fixnum_sp size = make_fixnum(16);
   DoubleFloat_sp rehashSize = DoubleFloat_O::create(2.0);
-  DoubleFloat_sp rehashThreshold = DoubleFloat_O::create(0.9);
+  DoubleFloat_sp rehashThreshold = DoubleFloat_O::create(DEFAULT_REHASH_THRESHOLD);
   HashTable_sp ht = gc::As_unsafe<HashTable_sp>(cl__make_hash_table(test, size, rehashSize, rehashThreshold));
   ht->_Mutex = mp::SharedMutex_O::make_shared_mutex(readLockName,writeLockName);
   return ht;
@@ -313,12 +314,16 @@ CL_DEFUN bool cl__remhash(T_sp key, HashTable_sp ht) {
 
 void HashTable_O::clrhash() {
   ASSERT(!clasp_zerop(this->_RehashSize));
-  this->setup(4, this->_RehashSize, this->_RehashThreshold);
+  this->_HashTableCount = 0;
+  T_sp unbound = _Unbound<T_O>();
+  this->_Table.resize(0,Cons_O(unbound,unbound));
+  this->setup(16, this->_RehashSize, this->_RehashThreshold);
+  VERIFY_HASH_TABLE_COUNT(this);
 }
 
 double maybeFixRehashThreshold(double rt)
 {
-  if (rt < 0.0 || rt > 0.8) return 0.8;
+  if (rt < 0.0 || rt > DEFAULT_REHASH_THRESHOLD) return DEFAULT_REHASH_THRESHOLD;
   return rt;
 }
 void HashTable_O::setup(uint sz, Number_sp rehashSize, double rehashThreshold) {
@@ -506,7 +511,7 @@ List_sp HashTable_O::keysAsCons() {
 }
 
 void HashTable_O::fields(Record_sp node) {
-  
+  VERIFY_HASH_TABLE_COUNT(this);
   // this->Base::fields(node);
   node->field(INTERN_(core, rehash_size), this->_RehashSize);
   node->/*pod_*/ field(INTERN_(core, rehash_threshold), this->_RehashThreshold);
@@ -535,6 +540,7 @@ void HashTable_O::fields(Record_sp node) {
     IMPLEMENT_MEF("Add support to patch hash tables");
   } break;
   }
+  VERIFY_HASH_TABLE_COUNT(this);
 }
 
 uint HashTable_O::resizeEmptyTable_no_lock(size_t sz) {
@@ -603,6 +609,7 @@ CL_DEFUN T_mv core__gethash3(T_sp key, T_sp hashTable, T_sp default_value) {
 List_sp HashTable_O::tableRef_no_read_lock(T_sp key, bool under_write_lock) {
   cl_index length = this->_Table.size();
   cl_index index = this->sxhashKey(key, length, false /*will-add-key*/);
+  VERIFY_HASH_TABLE_COUNT(this);
   for (size_t cur = index, curEnd(this->_Table.size()); cur<curEnd; ++cur ) {
     Cons_O& entry = this->_Table[cur];
     if (entry._Car.unboundp()) goto NOT_FOUND;
@@ -631,6 +638,7 @@ List_sp HashTable_O::tableRef_no_read_lock(T_sp key, bool under_write_lock) {
     }
   }
 #endif
+  VERIFY_HASH_TABLE_COUNT(this);
   return _Nil<T_O>();
 }
 
@@ -697,6 +705,7 @@ bool HashTable_O::remhash(T_sp key) {
 T_sp HashTable_O::setf_gethash_no_write_lock(T_sp key, T_sp value)
 {
   List_sp keyValuePair = this->tableRef_no_read_lock( key, true /*under_write_lock*/);
+  VERIFY_HASH_TABLE_COUNT(this);
   if (keyValuePair.consp()) {
     Cons_sp pair = gc::As_unsafe<Cons_sp>(keyValuePair);
     // rewrite value
@@ -716,7 +725,9 @@ T_sp HashTable_O::setf_gethash_no_write_lock(T_sp key, T_sp value)
     if (entryP->_Car.unboundp()||entryP->_Car.deletedp()) goto ADD_KEY_VALUE;
   }
   // There is no room!!!!!
-  SIMPLE_WARN(BF("There is absolutely no room in the hash-table - increasing size"));
+  printf("%s:%d There is absolutely no room in the hash-table _RehashThreshold = %lf - _HashTableCount -> %lu size -> %lu increasing size\n", __FILE__, __LINE__, this->_RehashThreshold, this->_HashTableCount, this->_Table.size());
+  verifyHashTableCount(this);
+  printf("%s:%d ---- done verify\n", __FILE__, __LINE__ );
   this->rehash_no_lock(true, _Unbound<T_O>());
   VERIFY_HASH_TABLE_COUNT(this);
   return this->setf_gethash_no_write_lock(key,value);
@@ -728,8 +739,8 @@ T_sp HashTable_O::setf_gethash_no_write_lock(T_sp key, T_sp value)
   if (this->_HashTableCount > this->_RehashThreshold * this->_Table.size()) {
     LOG(BF("Expanding hash table"));
     this->rehash_no_lock(true, _Unbound<T_O>());
+    VERIFY_HASH_TABLE_COUNT(this);
   }
-  VERIFY_HASH_TABLE_COUNT(this);
   return value;
 }
 
@@ -948,14 +959,6 @@ CL_DEFMETHOD string HashTable_O::hash_table_dump(Fixnum start, T_sp end) const {
     return this->_Table.size();
   }
 
-#if 0
-  CL_LISPIFY_NAME("core:hashTableAlistAtHash");
-  CL_DEFMETHOD List_sp HashTable_O::hashTableAlistAtHash(int hash) const {
-    HT_READ_LOCK(this);
-    ASSERTF(hash >= 0 && hash < this->_Table.size(), BF("Illegal hash value[%d] must between [0,%d)") % hash % this->_Table.size());
-    return this->_Table[hash];
-  }
-#endif
   string HashTable_O::keysAsString() {
     stringstream ss;
     this->mapHash([&ss, this](T_sp key, T_sp val) {
