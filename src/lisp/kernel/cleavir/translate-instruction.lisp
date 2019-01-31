@@ -158,7 +158,6 @@
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:funcall-instruction) return-value (abi abi-x86-64) function-info)
-  (declare (ignore function-info))
   (translate-funcall instruction return-value abi function-info))
 
 (defmethod translate-simple-instruction
@@ -659,7 +658,7 @@
 (defmethod translate-branch-instruction
     ((instruction cleavir-ir:funcall-no-return-instruction)
      return-value successors (abi abi-x86-64) function-info)
-  (declare (ignore successors function-info))
+  (declare (ignore successors))
   (translate-funcall instruction return-value abi function-info)
   (cmp:irc-unreachable))
 
