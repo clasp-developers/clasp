@@ -157,29 +157,30 @@ and the pathname of the source file - this will also be used as the module initi
 ;;; Compile-file proper
 
 (defun generate-obj-asm (module output-stream &key file-type (reloc-model 'llvm-sys:reloc-model-undefined))
-  (let* ((triple-string (llvm-sys:get-target-triple module))
-	 (normalized-triple-string (llvm-sys:triple-normalize triple-string))
-	 (triple (llvm-sys:make-triple normalized-triple-string))
-	 (target-options (llvm-sys:make-target-options)))
-    (multiple-value-bind (target msg)
-	(llvm-sys:target-registry-lookup-target "" triple)
-      (unless target (error msg))
-      (let* ((target-machine (llvm-sys:create-target-machine target
-							     (llvm-sys:get-triple triple)
-							     ""
-							     ""
-							     target-options
-							     reloc-model
-							     *default-code-model*
-							     'llvm-sys:code-gen-opt-default
-                                                             NIL ; JIT?
-                                                             ))
-	     (pm (llvm-sys:make-pass-manager))
-	     (tli (llvm-sys:make-target-library-info-wrapper-pass triple #||LLVM3.7||#))
-	     (data-layout (llvm-sys:create-data-layout target-machine)))
-	(llvm-sys:set-data-layout module data-layout)
-	(llvm-sys:pass-manager-add pm tli)
-	(llvm-sys:add-passes-to-emit-file-and-run-pass-manager target-machine pm output-stream file-type module)))))
+  (with-track-llvm-time
+      (let* ((triple-string (llvm-sys:get-target-triple module))
+             (normalized-triple-string (llvm-sys:triple-normalize triple-string))
+             (triple (llvm-sys:make-triple normalized-triple-string))
+             (target-options (llvm-sys:make-target-options)))
+        (multiple-value-bind (target msg)
+            (llvm-sys:target-registry-lookup-target "" triple)
+          (unless target (error msg))
+          (let* ((target-machine (llvm-sys:create-target-machine target
+                                                                 (llvm-sys:get-triple triple)
+                                                                 ""
+                                                                 ""
+                                                                 target-options
+                                                                 reloc-model
+                                                                 *default-code-model*
+                                                                 'llvm-sys:code-gen-opt-default
+                                                                 NIL ; JIT?
+                                                                 ))
+                 (pm (llvm-sys:make-pass-manager))
+                 (tli (llvm-sys:make-target-library-info-wrapper-pass triple #||LLVM3.7||#))
+                 (data-layout (llvm-sys:create-data-layout target-machine)))
+            (llvm-sys:set-data-layout module data-layout)
+            (llvm-sys:pass-manager-add pm tli)
+            (llvm-sys:add-passes-to-emit-file-and-run-pass-manager target-machine pm output-stream file-type module))))))
 
 (defun compile-file-results (output-file conditions)
   (let (warnings-p failures-p)
@@ -250,7 +251,10 @@ Compile a lisp source file into an LLVM module."
                (enough-namestring given-input-pathname clasp-source-root)
                given-input-pathname))
          (input-pathname (or (probe-file given-input-pathname)
-                             (error "compile-file-to-module could not find the file ~a to open it" given-input-pathname)))
+			     (error 'core:simple-file-error
+				    :pathname given-input-pathname
+				    :format-control "compile-file-to-module could not find the file ~s to open it"
+				    :format-arguments (list given-input-pathname))))
          (source-sin (open input-pathname :direction :input))
          (module (llvm-create-module (namestring input-pathname)))
 	 (module-name (cf-module-name type given-input-pathname))
@@ -354,19 +358,33 @@ Compile a lisp source file into an LLVM module."
             ((eq output-type :object)
              (when verbose (bformat t "Writing object to %s%N" (core:coerce-to-filename output-path)))
              (ensure-directories-exist output-path)
-             ;; Save the bitcode so we can take a look at it
-             (write-bitcode module (core:coerce-to-filename (cfp-output-file-default output-path :bitcode)))
-             (with-open-file (fout output-path :direction :output)
-               (let ((reloc-model (cond
-                                    ((or (member :target-os-linux *features*)
-                                         (member :target-os-freebsd *features*))
-                                     'llvm-sys:reloc-model-pic-)
-                                    (t 'llvm-sys:reloc-model-undefined))))
-                 (unless dry-run (generate-obj-asm module fout :file-type 'llvm-sys:code-gen-file-type-object-file :reloc-model reloc-model)))))
+             (let ((temp-bitcode-file (compile-file-pathname input-file :output-file output-file :output-type :bitcode)))
+               (ensure-directories-exist temp-bitcode-file) ;; Save the bitcode so we can take a look at it
+               (with-track-llvm-time
+                   (write-bitcode module temp-bitcode-file))
+               (prog1
+                   (with-open-file (fout output-path :direction :output)
+                     (let ((reloc-model (cond
+                                          ((or (member :target-os-linux *features*) (member :target-os-freebsd *features*))
+                                           'llvm-sys:reloc-model-pic-)
+                                          (t 'llvm-sys:reloc-model-undefined))))
+                       (generate-obj-asm module fout :file-type 'llvm-sys:code-gen-file-type-object-file :reloc-model reloc-model)))
+                 (when (eq type :kernel)
+                   (when verbose
+                     (bformat t "Writing kernel fasl file to: %s%N" output-file)
+                     (finish-output))
+                   (llvm-link (make-pathname :type "fasl" :defaults output-file) :input-files (list temp-bitcode-file) :input-type :bitcode)))))
             ((eq output-type :bitcode)
              (when verbose (bformat t "Writing bitcode to %s%N" (core:coerce-to-filename output-path)))
              (ensure-directories-exist output-path)
-             (unless dry-run (write-bitcode module (core:coerce-to-filename output-path))))
+             (prog1
+                 (with-track-llvm-time
+                     (write-bitcode module (core:coerce-to-filename output-path)))
+               (when (eq type :kernel)
+                 (when verbose
+                   (bformat t "Writing kernel fasl file to: %s%N" output-file)
+                   (finish-output))
+                 (llvm-link (make-pathname :type "fasl" :defaults output-file) :input-files (list output-path) :input-type :bitcode))))
             ((eq output-type :fasl)
              (ensure-directories-exist output-path)
              (let ((temp-bitcode-file (compile-file-pathname input-file :output-file output-file :output-type :bitcode)))
