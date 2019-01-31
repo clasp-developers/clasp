@@ -482,6 +482,12 @@ when this is t a lot of graphs will be generated.")
 
 (defvar *interactive-debug* nil)
 
+;;; needed to coordinate dynamic environments between asts and hoisting.
+(defun make-dynenv (&optional (env *clasp-env*))
+  (cleavir-ast:make-lexical-ast
+   'loader-dynamic-environment
+   :policy (cleavir-env:environment-policy env)))
+
 #+cst
 (defun cst->ast (cst &optional (env *clasp-env*))
   "Compile a cst into an AST and return it.
@@ -577,8 +583,7 @@ and go-indices as third."
 (defun translate-lambda-expression-to-llvm-function (lambda-expression)
   "Compile a lambda expression into an llvm-function and return it.
 This works like compile-lambda-function in bclasp."
-  (let* ((dynenv (cleavir-ast:make-lexical-ast 'loader-dynamic-environment
-                                               :policy *global-policy*))
+  (let* ((dynenv (make-dynenv))
          #+cst
          (cst (cst:cst-from-expression lambda-expression))
          #+cst
@@ -615,9 +620,7 @@ This works like compile-lambda-function in bclasp."
   (setf *ct-start* (compiler-timer-elapsed))
   (let* ((cleavir-generate-ast:*compiler* 'cl:compile)
          (*llvm-metadata* (make-hash-table :test 'eql))
-         (dynenv (cleavir-ast:make-lexical-ast
-                  'loader-dynamic-environment
-                  :policy (cleavir-env:environment-policy env)))
+         (dynenv (make-dynenv env))
          #+cst
          (cst (cst:cst-from-expression form))
          #+cst
@@ -653,9 +656,7 @@ This works like compile-lambda-function in bclasp."
          (ast (cst->ast cst env)))
     (translate-ast ast :env env))
   #-cst
-  (let* ((dynenv (cleavir-ast:make-lexical-ast
-                  'loader-dynamic-environment
-                  :policy (cleavir-env:environment-policy env)))
+  (let* ((dynenv (make-dynenv env))
          (ast (generate-ast form dynenv env)))
     (translate-ast ast dynenv :env env)))
 
@@ -671,9 +672,7 @@ This works like compile-lambda-function in bclasp."
 #-cst
 (defun cleavir-compile-file-form (form &optional (env *clasp-env*))
   (literal:with-top-level-form
-      (let ((dynenv (cleavir-ast:make-lexical-ast
-                     'loader-dynamic-environment
-                     :policy (cleavir-env:environment-policy env))))
+      (let ((dynenv (make-dynenv env)))
         (if cmp:*debug-compile-file*
             (compiler-time (let ((ast (generate-ast form dynenv env)))
                              (translate-ast ast dynenv :env env cmp:*default-linkage*)))
