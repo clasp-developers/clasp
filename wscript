@@ -870,7 +870,7 @@ def configure(cfg):
         cfg.check_cxx(lib='gc', cflags='-Wall', uselib_store='BOEHM')
     #libz
     cfg.check_cxx(lib='z', cflags='-Wall', uselib_store='Z')
-    if (cfg.env['DEST_OS'] == LINUX_OS ):
+    if (cfg.env['DEST_OS'] == LINUX_OS or cfg.env['DEST_OS'] == FREEBSD_OS):
         cfg.check_cxx(lib='dl', cflags='-Wall', uselib_store='DL')
         cfg.check_cxx(lib='elf', cflags='-Wall', uselib_store='ELF')
     cfg.check_cxx(lib='ncurses', cflags='-Wall', uselib_store='NCURSES')
@@ -881,7 +881,7 @@ def configure(cfg):
     if (cfg.env['DEST_OS'] == DARWIN_OS and cfg.env['REQUIRE_LIBFFI'] == True):
         cfg.check_cxx(lib='ffi', cflags='-Wall', uselib_store="FFI")
     elif (cfg.env['DEST_OS'] == LINUX_OS ):
-        pass
+        cfg.check_cxx(lib='bsd', cflags='-Wall', uselib_store='BSD')
 #        cfg.check_cxx(lib='gcc_s', cflags='-Wall', uselib_store="GCC_S")
 #        cfg.check_cxx(lib='unwind-x86_64', cflags='-Wall', uselib_store='UNWIND_X86_64')
 #        cfg.check_cxx(lib='unwind', cflags='-Wall', uselib_store='UNWIND')
@@ -1084,13 +1084,15 @@ def configure(cfg):
         if (cfg.env['REQUIRE_LIBFFI'] == True):
             log.info("Appending LIB_FFI")
             cfg.env.append_value('LIB', cfg.env.LIB_FFI)
-    if (cfg.env['DEST_OS'] == LINUX_OS ):
+    if (cfg.env['DEST_OS'] == LINUX_OS or cfg.env['DEST_OS'] == FREEBSD_OS):
         cfg.env.append_value('LIB', cfg.env.LIB_DL)
         cfg.env.append_value('LIB', cfg.env.LIB_ELF)
         cfg.env.append_value('LIB', cfg.env.LIB_GCC_S)
         cfg.env.append_value('LIB', cfg.env.LIB_UNWIND_X86_64)
         cfg.env.append_value('LIB', cfg.env.LIB_UNWIND)
         cfg.env.append_value('LIB', cfg.env.LIB_LZMA)
+    if (cfg.env['DEST_OS'] == LINUX_OS):
+        cfg.env.append_value('LIB', cfg.env.LIB_BSD)
     cfg.env.append_value('LIB', cfg.env.LIB_CLANG)
     cfg.env.append_value('LIB', cfg.env.LIB_LLVM)
     cfg.env.append_value('LIB', cfg.env.LIB_NCURSES)

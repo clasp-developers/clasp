@@ -69,6 +69,9 @@ THE SOFTWARE.
 #include <sys/stat.h>
 #endif
 #ifdef _TARGET_OS_LINUX
+#include <bsd/bsd.h>
+#endif
+#if defined(_TARGET_OS_LINUX) || defined(_TARGET_OS_FREEBSD)
 #include <err.h>
 #include <fcntl.h>
 #include <gelf.h>
@@ -294,7 +297,6 @@ DebugInfo& debugInfo() {
 uintptr_t load_stackmap_info(const char* filename, uintptr_t header, size_t& section_size);
 void search_symbol_table(std::vector<BacktraceEntry>& backtrace, const char* filename, size_t& symbol_table_size);
 void walk_loaded_objects(std::vector<BacktraceEntry>& backtrace, size_t& symbol_table_memory);
-
 
 struct Header {
   uint8_t  version;
@@ -733,7 +735,7 @@ void startup_register_loaded_objects() {
 
 
 
-#ifdef _TARGET_OS_LINUX
+#if defined(_TARGET_OS_LINUX) || defined(_TARGET_OS_FREEBSD)
 
 
 std::atomic<bool> global_elf_initialized;
@@ -817,8 +819,7 @@ SymbolTable load_linux_symbol_table(const char* filename, uintptr_t start, uintp
   return symbol_table;
 }
 
-  
-extern "C" const char* __progname_full; // The name of the executable?
+const char* progname_full = NULL;
 
 struct SearchInfo {
   const char* _Name;
@@ -832,7 +833,10 @@ int elf_search_loaded_object_callback(struct dl_phdr_info *info, size_t size, vo
   SearchInfo* search_callback_info = (SearchInfo*)data;
   const char* libname;
   if (search_callback_info->_Index==0 && strlen(info->dlpi_name) == 0 ) {
-    libname = __progname_full;
+    if (progname_full == NULL) {
+      progname_full = getprogname();
+    }
+    libname = progname_full;
   } else {
     libname = info->dlpi_name;
   }
@@ -851,7 +855,10 @@ int elf_loaded_object_callback(struct dl_phdr_info *info, size_t size, void* dat
   int p_type, j;
   std::string libname;
   if (scan_callback_info->_Index==0 && strlen(info->dlpi_name) == 0 ) {
-    libname = __progname_full;
+    if (progname_full == NULL) {
+      progname_full = getprogname();
+    }
+    libname = progname_full;
   } else {
     libname = info->dlpi_name;
   }
@@ -868,7 +875,10 @@ int elf_startup_loaded_object_callback(struct dl_phdr_info *info, size_t size, v
   bool is_executable;
   std::string libname;
   if (scan_callback_info->_Index==0 && strlen(info->dlpi_name) == 0 ) {
-    libname = __progname_full;
+    if (progname_full == NULL) {
+      progname_full = getprogname();
+    }
+    libname = progname_full;
     is_executable = true;
   } else {
     libname = info->dlpi_name;
@@ -902,7 +912,7 @@ void startup_register_loaded_objects()
   dl_iterate_phdr(elf_startup_loaded_object_callback,&scan);
 }
 
-#endif ////////////////////////////////////////////////// _TARGET_OS_LINUX
+#endif ////////////////////////////////////////////////// _TARGET_OS_LINUX || FREEBSD
 
 /*! Add a dynamic library.
     If library_origin points to the start of the library then that address is used,
@@ -957,7 +967,7 @@ void add_dynamic_library_impl(bool is_executable, const std::string& libraryName
     symbol_table._StackmapEnd = p_section+section_size;
   }    
 #endif
-#ifdef _TARGET_OS_LINUX
+#if defined(_TARGET_OS_LINUX) || defined(_TARGET_OS_FREEBSD)
   if (!use_origin) {
     // Walk all objects looking for the one we just loaded
     library_origin = (uintptr_t)find_base_of_loaded_object(libraryName.c_str());
