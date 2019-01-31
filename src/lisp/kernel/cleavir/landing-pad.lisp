@@ -63,6 +63,8 @@
                        (assert (not (null tag-block)))
                        (llvm-sys:add-case sw (%size_t jump-id) tag-block)))
             (cmp:irc-begin-block default-block)
+            ;; NOTE: This error should probably not bother reporting the switch value, which is
+            ;; internal. If this is actually hit it's a code generation bug - a lack of coordination.
             (%intrinsic-invoke-if-landing-pad-or-call "throwIllegalSwitchValue"
                                                       (list go-index (%size_t (length destinations)))
                                                       ""

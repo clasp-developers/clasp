@@ -176,6 +176,7 @@
    #:make-headerq-instruction
    #:save-frame-instruction
    #:make-save-frame-instruction
+   #:numbered-wind-to-instruction #:go-index
    #:enter-instruction
    #:typed-lexical-location #:lexical-location-type
    #:closure-pointer-dynamic-lexical-location
