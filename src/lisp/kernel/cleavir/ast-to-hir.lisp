@@ -351,7 +351,7 @@
 ;;;
 ;;; Duplicates Cleavir's method on m-v-call-ast. KLUDGE: figure out how to mod Cleavir.
 
-(defmethod compile-ast ((ast cleavir-ast:multiple-value-call-ast) context)
+(defmethod cleavir-ast-to-hir:compile-ast ((ast cc-ast:multiple-value-invoke-ast) context)
   (with-accessors ((results cleavir-ast-to-hir::results)
 		   (successors cleavir-ast-to-hir::successors)
 		   (invocation cleavir-ast-to-hir::invocation))
