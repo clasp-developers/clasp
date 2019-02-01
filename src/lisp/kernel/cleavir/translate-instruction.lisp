@@ -164,10 +164,6 @@
     ((instruction cleavir-ir:nop-instruction) return-value abi function-info)
   (declare (ignore return-value inputs outputs abi function-info)))
 
-(defmethod translate-simple-instruction
-    ((instruction cleavir-ir:wind-to-instruction) return-value abi function-info)
-  (declare (ignore return-value inputs outputs abi function-info)))
-
 ;;; Again note that the frame-value is in the function-info rather than an actual location.
 (defmethod translate-simple-instruction
     ((instruction cc-mir:save-frame-instruction) return-value abi function-info)
