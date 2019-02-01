@@ -75,15 +75,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; NUMBERED-WIND-TO-INSTRUCTION
-;;;
-;;; WIND-TO, but with a fixnum identifier used by the unwinder.
-
-(defclass numbered-wind-to-instruction (cleavir-ir:wind-to-instruction)
-  ((%go-index :initarg :go-index :accessor go-index)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
 ;;; Assign a unique integer index to every instruction
 ;;; using the stealth mixin - see system.lisp
 ;;;

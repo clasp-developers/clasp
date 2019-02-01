@@ -392,7 +392,7 @@ when this is t a lot of graphs will be generated.")
      initial-instruction)
     uninitialized))
 
-(defun translate (initial-instruction map-enter-to-function-info
+(defun translate (initial-instruction map-enter-to-function-info go-indices
                   &key (abi *abi-x86-64*) (linkage 'llvm-sys:internal-linkage)
                     ignore-arguments)
   #+(or)
@@ -403,6 +403,7 @@ when this is t a lot of graphs will be generated.")
          (*tags* (make-hash-table :test #'eq))
          (*vars* (make-hash-table :test #'eq))
          (*compiled-enters* (make-hash-table :test #'eq))
+         (*instruction-go-indices* go-indices)
          (*map-enter-to-function-info* map-enter-to-function-info)
          ;; FIXME: Probably don't return this as a value - it's a property of the ENTER.
          (lambda-name (get-or-create-lambda-name initial-instruction)))
@@ -541,14 +542,16 @@ Does not hoist."
     (setf *ct-generate-hir* (compiler-timer-elapsed))))
 
 (defun hir->mir (hir &optional (env *clasp-env*))
-  "Perform HIR transformations, then compile down to MIR. Returns function-info-map as second value."
+  "Perform HIR transformations, then compile down to MIR. Returns function-info-map as second value,
+and go-indices as third."
   ;; Note: We should not have an env parameter. It is only required due to
   ;; how types work at the moment, and will be eliminated as soon as practical.
   (let ((system *clasp-system*))
     ;;(cleavir-ir-graphviz:draw-flowchart hir "/tmp/hir.dot")
     (my-hir-transformations hir system env)
     (quick-draw-hir hir "hir-pre-mir")
-    (let ((function-info-map (make-function-info-map hir)))
+    (let ((function-info-map (make-function-info-map hir))
+          (*instruction-go-indices* (make-go-indices)))
       (lower-catches function-info-map)
       (cleavir-hir-to-mir:hir-to-mir hir system nil nil)
       #+stealth-gids(cc-mir:assign-mir-instruction-datum-ids hir)
@@ -558,15 +561,15 @@ Does not hoist."
         (format t "Press enter to continue: ")
         (finish-output)
         (read-line))
-      (values hir function-info-map))))
+      (values hir function-info-map *instruction-go-indices*))))
 
 ;;; Convenience. AST must have been hoisted already.
 (defun translate-hoisted-ast (ast &key (abi *abi-x86-64*) (linkage 'llvm-sys:internal-linkage)
                             (env *clasp-env*) ignore-arguments)
   (let ((hir (ast->hir ast)))
-    (multiple-value-bind (mir function-info-map)
+    (multiple-value-bind (mir function-info-map go-indices)
         (hir->mir hir env)
-      (translate mir function-info-map
+      (translate mir function-info-map go-indices
                  :abi abi :linkage linkage :ignore-arguments ignore-arguments))))
 
 
@@ -588,7 +591,7 @@ This works like compile-lambda-function in bclasp."
          #-cst
          (ast (generate-ast lambda-expression dynenv))
          (hir (ast->hir (hoist-ast ast dynenv))))
-    (multiple-value-bind (mir function-info-map)
+    (multiple-value-bind (mir function-info-map go-indices)
         (hir->mir hir)
       (let ((function-enter-instruction
               (block first-function
@@ -600,7 +603,7 @@ This works like compile-lambda-function in bclasp."
         (unless function-enter-instruction
           (error "Could not find enter-instruction for enclosed function in ~a"
                  lambda-expression))
-        (translate function-enter-instruction function-info-map)))))
+        (translate function-enter-instruction function-info-map go-indices)))))
 
 (defparameter *debug-final-gml* nil)
 (defparameter *debug-final-next-id* 0)
@@ -631,10 +634,10 @@ This works like compile-lambda-function in bclasp."
         (literal:with-rtv
             (let* ((ast (hoist-ast ast dynenv env))
                    (hir (ast->hir ast)))
-              (multiple-value-bind (mir function-info-map)
+              (multiple-value-bind (mir function-info-map go-indices)
                   (hir->mir hir env)
                 (multiple-value-setq (function lambda-name)
-                  (translate mir function-info-map
+                  (translate mir function-info-map go-indices
                              :abi *abi-x86-64* :linkage linkage)))))))
     (unless function
       (error "There was no function returned by translate-ast"))
