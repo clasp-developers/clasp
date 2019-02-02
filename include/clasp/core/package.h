@@ -68,6 +68,7 @@ class Package_O : public General_O {
 #endif
   bool systemLockedP = false;
   bool userLockedP = false;
+  bool zombieP = false;
  public: // Creation class functions
   static Package_sp create(const string &p);
 
@@ -209,6 +210,14 @@ class Package_O : public General_O {
 
   bool getUserLockedP () {
     return this->userLockedP;
+  }
+
+   void setZombieP (bool value) {
+    this->zombieP = value;
+  }
+
+  bool getZombieP () {
+    return this->zombieP;
   }
 
  public:
