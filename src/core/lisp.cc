@@ -1194,6 +1194,7 @@ void Lisp_O::remove_package(const string& name ) {
     PACKAGE_ERROR(SimpleBaseString_O::make(name));
   }
   this->_Roots._PackageNameIndexMap.erase(name);
+  this->_Roots._Packages[fi->second]->setZombieP(true);
 }
 
 bool Lisp_O::recognizesPackage(const string &packageName) const {
@@ -1204,7 +1205,14 @@ bool Lisp_O::recognizesPackage(const string &packageName) const {
 
 List_sp Lisp_O::allPackagesAsCons() const {
   WITH_READ_LOCK(this->_Roots._PackagesMutex);
-  return asCons(this->_Roots._Packages);
+  gctools::Vec0<Package_sp> TempPackages;
+  for (int packageIndex = 0; packageIndex < this->_Roots._Packages.size(); ++packageIndex) {
+    // As a workaround, don't list previously deleted packages
+    if (!this->_Roots._Packages[packageIndex]->getZombieP()) {
+        TempPackages.push_back(this->_Roots._Packages[packageIndex]);
+      }
+  }
+  return asCons(TempPackages);
 }
 
 void Lisp_O::inPackage(const string &p) {
