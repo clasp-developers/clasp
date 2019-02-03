@@ -312,6 +312,7 @@ CL_DEFUN bool cl__char_equal(List_sp args) {
 #define PAGE_CHAR 12
 #define RETURN_CHAR 13
 #define ESCAPE_CHAR 27
+#define RUBOUT_CHAR 127
 
 Character_sp clasp_character_create_from_name(string const &name) {
   Character_sp ch;
@@ -326,6 +327,8 @@ Character_sp clasp_character_create_from_name(string const &name) {
     ch = clasp_make_standard_character(PAGE_CHAR);
   else if ((ssup == "RETURN") || (ssup == "Return"))
     ch = clasp_make_standard_character(RETURN_CHAR);
+  else if ((ssup == "DEL") || (ssup == "Del" ))
+    ch = clasp_make_standard_character(RUBOUT_CHAR);
   else if ((ssup == "ESCAPE") || (ssup == "Escape"))
     ch = clasp_make_standard_character(ESCAPE_CHAR);
   else if ((ssup == "SPACE") || (ssup == "Space"))
@@ -402,8 +405,9 @@ void CharacterInfo::initialize() {
   }
   // we later compare with Uppercase
   gNamesToCharacterIndex["NULL"] = 0;
-  gNamesToCharacterIndex["LINEFEED"] = 10;
-  gNamesToCharacterIndex["ESCAPE"] = 27;
+  gNamesToCharacterIndex["LINEFEED"] = LINE_FEED_CHAR;
+  gNamesToCharacterIndex["ESCAPE"] = ESCAPE_CHAR;
+  gNamesToCharacterIndex["DEL"] = RUBOUT_CHAR;
 }
 
 CL_LAMBDA(ch);
