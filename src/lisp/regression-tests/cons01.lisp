@@ -85,5 +85,11 @@
               Z))
          (list a b c d e f))))
 
+(test-expect-error map-1 (MAPCON #'APPEND) :type program-error)
+(test-expect-error map-2 (MAPLIST #'APPEND) :type program-error)
+(test-expect-error map-3 (MAPL #'APPEND) :type program-error)
+(test-expect-error map-4 (MAPCAN #'APPEND) :type program-error)
+(test-expect-error map-5 (MAPCAR #'APPEND) :type program-error)
+(test-expect-error map-6 (MAPC #'APPEND) :type program-error)
 
 
