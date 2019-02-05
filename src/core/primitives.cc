@@ -1242,7 +1242,7 @@ CL_DEFUN T_sp cl__mapcar(T_sp func_desig, List_sp lists) {
     }
     return result.cons();
   }
-  return _Nil<T_O>();
+  SIMPLE_PROGRAM_ERROR("Mapcar second argument can't be empty", lists);
 }
 
 /*
@@ -1253,6 +1253,7 @@ CL_LAMBDA(op &rest lists);
 CL_DECLARE();
 CL_DOCSTRING("See CLHS mapc");
 CL_DEFUN T_sp cl__mapc(T_sp func_desig, List_sp lists) {
+  // mapc function &rest lists+    list-1
   Function_sp func = coerce::functionDesignator(func_desig);
   if (lists.consp()) {
     List_sp result = CONS_CAR(lists);
@@ -1276,7 +1277,7 @@ CL_DEFUN T_sp cl__mapc(T_sp func_desig, List_sp lists) {
     }
     return result;
   }
-  return _Nil<T_O>();
+  SIMPLE_PROGRAM_ERROR("Mapc second argument can't be empty", lists);
 }
 
 CL_LAMBDA(func-desig &rest lists);
@@ -1306,7 +1307,7 @@ CL_DEFUN T_sp cl__maplist(T_sp func_desig, List_sp lists) {
     }
     return result.cons();
   }
-  return _Nil<T_O>();
+  SIMPLE_PROGRAM_ERROR("Maplist second argument can't be empty", lists);
 }
 
 CL_LAMBDA(op &rest lists);
@@ -1336,7 +1337,7 @@ CL_DEFUN T_sp cl__mapl(T_sp func_desig, List_sp lists) {
     }
     return result;
   }
-  return _Nil<T_O>();
+  SIMPLE_PROGRAM_ERROR("Mapl second argument can't be empty", lists);
 }
 
 CL_LAMBDA(op &rest lists);
