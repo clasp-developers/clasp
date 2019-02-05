@@ -378,15 +378,18 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 (defun proclaim (decl)
   "Args: (decl-spec)
 Gives a global declaration.  See DECLARE for possible DECL-SPECs."
+  ;;decl must be a proper list
+  (unless (core:proper-list-p decl)
+    (error "decl must be a proper list: ~a" decl)) 
   (cond
     ((eq (car decl) 'SPECIAL)
      (mapc #'sys::*make-special (cdr decl)))
     ((eq (car decl) 'cl:inline)
-     (let ((name (cadr decl)))
+     (dolist (name (cdr decl))
        (core:hash-table-setf-gethash *functions-to-inline* name t)
        (remhash name *functions-to-notinline*)))
     ((eq (car decl) 'cl:notinline)
-     (let ((name (cadr decl)))
+     (dolist (name (cdr decl))
        (core:hash-table-setf-gethash *functions-to-notinline* name t)
        (remhash name *functions-to-inline*)))
     (*proclaim-hook*
