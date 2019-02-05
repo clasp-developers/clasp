@@ -623,7 +623,9 @@
     ;; Save whatever is in return-vals in the multiple-value array
     (%intrinsic-call "cc_saveMultipleValue0" (list return-value))
     (let ((static-index
-            (instruction-go-index (cleavir-ir:destination instruction))))
+            (instruction-go-index
+             (nth (cleavir-ir:unwind-index instruction)
+                  (cleavir-ir:successors (cleavir-ir:destination instruction))))))
       (%intrinsic-call "cc_unwind" (list (in (first (cleavir-ir:inputs instruction)))
                                          (%size_t static-index))))
     (cmp:irc-unreachable)))
