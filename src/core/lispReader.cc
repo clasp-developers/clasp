@@ -657,6 +657,7 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, Token &token, bool only_dot
       ELSE(tsymz);
     case tintp:
       TEST(TRAIT_MATCH_ANY(*cur, TRAIT_DIGIT), tfloat0);
+      EXPTEST(*cur, tsymx); // Handle things like 1.e-3 as floats
       ELSE(tsymz);
     case tfloat0:
       TEST(TRAIT_MATCH_ANY(*cur, TRAIT_DIGIT), tfloat0);
