@@ -59,6 +59,14 @@
                  (sw (cmp:irc-switch go-index default-block (length destinations))))
             (loop for dest in destinations
                   for jump-id = (instruction-go-index dest)
+                  #| Assertion
+                  ;; For making sure no instructions are multiply present.
+                  ;; (If they are, you get a switch with duplicate entries,
+                  ;;  which kills the LLVM.)
+                  do (when (member jump-id used-ids)
+                       (error "Duplicated ID!"))
+                  collect jump-id into used-ids
+                  |#
                   do (let ((tag-block (gethash dest tags)))
                        (assert (not (null tag-block)))
                        (llvm-sys:add-case sw (%size_t jump-id) tag-block)))
@@ -130,8 +138,11 @@
         (cleavir-ir:assignment-instruction
          (dynenv-destinations (first (cleavir-ir:inputs definer))))
         (cleavir-ir:catch-instruction
-         (append (rest (cleavir-ir:successors definer)) ; the new destinations
-                 (dynenv-destinations (first (cleavir-ir:inputs definer)))))
+         ;; append the new destinations to the parent destinations.
+         (remove-duplicates
+          (append (rest (cleavir-ir:successors definer))
+                  (dynenv-destinations (first (cleavir-ir:inputs definer))))
+          :test #'eq))
         ;; for an enter, there's obviously nowhere to go.
         (cleavir-ir:enter-instruction nil)))))
 
