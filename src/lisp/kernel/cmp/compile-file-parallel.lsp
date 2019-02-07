@@ -137,8 +137,8 @@
              (form (cst:raw cst))
              #+cst
              (ast (if cmp::*debug-compile-file*
-                      (clasp-cleavir::compiler-time (clasp-cleavir::cst->ast cst))
-                      (clasp-cleavir::cst->ast cst)))
+                      (clasp-cleavir::compiler-time (clasp-cleavir::cst->ast cst dynenv))
+                      (clasp-cleavir::cst->ast cst dynenv)))
              #-cst
              (form (read source-sin nil eof-value))
              #-cst

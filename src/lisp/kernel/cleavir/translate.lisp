@@ -421,9 +421,9 @@ when this is t a lot of graphs will be generated.")
   ;; or an object needing a make-load-form.
   ;; That shouldn't actually happen, but it's a little ambiguous in Cleavir right now.
   (quick-draw-hir init-instr "hir-before-transformations")
-  #+cst
+  #+(or)
   (cleavir-partial-inlining:do-inlining init-instr)
-  #+cst
+  #+(or)
   (quick-draw-hir init-instr "hir-after-inlining")
   ;; required by most of the below
   (cleavir-hir-transformations:process-captured-variables init-instr)
@@ -490,7 +490,7 @@ when this is t a lot of graphs will be generated.")
    :policy (cleavir-env:environment-policy env)))
 
 #+cst
-(defun cst->ast (cst &optional (env *clasp-env*))
+(defun cst->ast (cst dynenv &optional (env *clasp-env*))
   "Compile a cst into an AST and return it.
 Does not hoist.
 COMPILE might call this with an environment in ENV.
@@ -506,7 +506,7 @@ COMPILE-FILE will use the default *clasp-env*."
            #+verbose-compiler(warn "Condition: ~a" condition)
            (cmp:register-global-function-ref (cleavir-environment:name condition))
            (invoke-restart 'cleavir-cst-to-ast:consider-global))))
-    (let* ((ast (cleavir-cst-to-ast:cst-to-ast cst env *clasp-system*)))
+    (let* ((ast (cleavir-cst-to-ast:cst-to-ast cst env *clasp-system* dynenv)))
       (when *interactive-debug* (draw-ast ast))
       (cc-dbg-when *debug-log* (log-cst-to-ast ast))
       (setf *ct-generate-ast* (compiler-timer-elapsed))
@@ -588,7 +588,7 @@ This works like compile-lambda-function in bclasp."
          #+cst
          (cst (cst:cst-from-expression lambda-expression))
          #+cst
-         (ast (cst->ast cst))
+         (ast (cst->ast cst dynenv))
          #-cst
          (ast (generate-ast lambda-expression dynenv))
          (hir (ast->hir (hoist-ast ast dynenv))))
@@ -625,7 +625,7 @@ This works like compile-lambda-function in bclasp."
          #+cst
          (cst (cst:cst-from-expression form))
          #+cst
-         (ast (cst->ast cst env))
+         (ast (cst->ast cst dynenv env))
          #-cst
          (ast (generate-ast form dynenv env))
          function lambda-name
@@ -653,9 +653,10 @@ This works like compile-lambda-function in bclasp."
 (defun compile-form (form &optional (env *clasp-env*))
   (setf *ct-start* (compiler-timer-elapsed))
   #+cst
-  (let* ((cst (cst:cst-from-expression form))
-         (ast (cst->ast cst env)))
-    (translate-ast ast :env env))
+  (let* ((dynenv (make-dynenv env))
+         (cst (cst:cst-from-expression form))
+         (ast (cst->ast cst dynenv env)))
+    (translate-ast ast dynenv :env env))
   #-cst
   (let* ((dynenv (make-dynenv env))
          (ast (generate-ast form dynenv env)))
@@ -664,11 +665,12 @@ This works like compile-lambda-function in bclasp."
 #+cst
 (defun cleavir-compile-file-cst (cst &optional (env *clasp-env*))
   (literal:with-top-level-form
-      (if cmp::*debug-compile-file*
-          (compiler-time (let ((ast (cst->ast cst env)))
-                           (translate-ast ast :env env :linkage cmp:*default-linkage*)))
-          (let ((ast (cst->ast cst env)))
-            (translate-ast ast :env env :linkage cmp:*default-linkage*)))))
+      (let ((dynenv (make-dynenv env)))
+        (if cmp::*debug-compile-file*
+            (compiler-time (let ((ast (cst->ast cst dynenv env)))
+                             (translate-ast ast dynenv :env env :linkage cmp:*default-linkage*)))
+            (let ((ast (cst->ast cst dynenv env)))
+              (translate-ast ast dynenv :env env :linkage cmp:*default-linkage*))))))
 
 #-cst
 (defun cleavir-compile-file-form (form &optional (env *clasp-env*))

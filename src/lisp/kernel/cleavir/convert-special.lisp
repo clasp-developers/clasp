@@ -389,40 +389,42 @@
 (defmethod cleavir-cst-to-ast:convert-special
     ((symbol (eql 'core::bind-va-list)) cst environment (system clasp-cleavir:clasp))
   (cst:db origin (op lambda-list-cst va-list-cst . body-cst) cst
-          (declare (ignore op origin))
-          (let* ((parsed-lambda-list
-                   (cst:parse-ordinary-lambda-list system lambda-list-cst :error-p nil)))
-            (when (null parsed-lambda-list)
-              (error 'cleavir-cst-to-ast::malformed-lambda-list
-                     :expr (cst:raw lambda-list-cst)
-                     :origin (cst:source lambda-list-cst)))
-            (multiple-value-bind (declaration-csts documentation forms-cst)
-                (cst:separate-function-body body-cst)
-              (declare (ignore documentation))
-              (let* ((declaration-specifiers
-                       (loop for declaration-cst in declaration-csts
-                             append (cdr (cst:listify declaration-cst))))
-                     (canonicalized-dspecs
-                       (cst:canonicalize-declaration-specifiers
-                        system
-                        declaration-specifiers)))
-                (multiple-value-bind (idspecs rdspecs)
-                    (cleavir-cst-to-ast::itemize-declaration-specifiers-by-parameter-group
-                     (cleavir-cst-to-ast::itemize-lambda-list parsed-lambda-list)
-                     canonicalized-dspecs)
-                  (multiple-value-bind (ast lexical-lambda-list)
-                      (cleavir-cst-to-ast::process-parameter-groups
-                       (cst:children parsed-lambda-list)
-                       idspecs
-                       (cleavir-cst-to-ast::make-body rdspecs (cst:listify forms-cst) nil)
-                       environment
-                       system)
-                    (cc-ast:make-bind-va-list-ast
-                     lexical-lambda-list
-                     (cleavir-cst-to-ast::convert va-list-cst environment system)
-                     ast
-                     nil ; FIXME: handle rest-alloc (parse &rest from lambda list)
-                     :origin origin))))))))
+    (declare (ignore op origin))
+    (let* ((parsed-lambda-list
+             (cst:parse-ordinary-lambda-list system lambda-list-cst :error-p nil)))
+      (when (null parsed-lambda-list)
+        (error 'cleavir-cst-to-ast::malformed-lambda-list
+               :expr (cst:raw lambda-list-cst)
+               :origin (cst:source lambda-list-cst)))
+      (multiple-value-bind (declaration-csts documentation forms-cst)
+          (cst:separate-function-body body-cst)
+        (declare (ignore documentation))
+        (let* ((declaration-specifiers
+                 (loop for declaration-cst in declaration-csts
+                       append (cdr (cst:listify declaration-cst))))
+               (canonicalized-dspecs
+                 (cst:canonicalize-declaration-specifiers
+                  system
+                  declaration-specifiers)))
+          (multiple-value-bind (idspecs rdspecs)
+              (cleavir-cst-to-ast::itemize-declaration-specifiers-by-parameter-group
+               (cleavir-cst-to-ast::itemize-lambda-list parsed-lambda-list)
+               canonicalized-dspecs)
+            (multiple-value-bind (lexical-lambda-list entries)
+                (cleavir-cst-to-ast::lambda-list-from-parameter-groups
+                 (cst:children parsed-lambda-list))
+              (let ((ast (cleavir-cst-to-ast::process-parameter-groups
+                          (cst:children parsed-lambda-list)
+                          idspecs
+                          entries
+                          (cleavir-cst-to-ast::make-body rdspecs (cst:listify forms-cst) nil)
+                          environment system)))
+                (cc-ast:make-bind-va-list-ast
+                 lexical-lambda-list
+                 (cleavir-cst-to-ast::convert va-list-cst environment system)
+                 ast
+                 nil ; FIXME: handle rest-alloc (parse &rest from lambda list)
+                 :origin origin)))))))))
 
 (defmethod cleavir-generate-ast:check-special-form-syntax
     ((head (eql 'core::bind-va-list)) form)
