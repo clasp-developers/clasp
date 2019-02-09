@@ -2152,14 +2152,22 @@ void SimpleBitVector_getOnIndices(SimpleBitVector_sp x, vector<size_t> &res) {
 }
 
 size_t SimpleBitVector_lowestIndex(SimpleBitVector_sp x) {
-  size_t i;
-  for (i = 0; i < x->length(); i++) {
-    if (x->testBit(i)) {
-      return i;
+  size_t word_length = x->length()/SimpleBitVector_O::BitWidth;
+  size_t ib = 0;
+  size_t iw = 0;
+  while (iw<word_length && x->_Data[iw]==0) {
+    ++iw;
+    ib = ib + SimpleBitVector_O::BitWidth;
+  }
+  for ( ; ib < x->length(); ib++) {
+    if (x->testBit(ib)) {
+      return ib;
     }
   }
-  return i;
+  return ib;
 }
+
+
 bool SimpleBitVector_isZero(SimpleBitVector_sp x) {
   size_t i;
   for (i = 0; i < x->length(); i++) {
