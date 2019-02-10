@@ -402,7 +402,7 @@ Return files."
                  (error "wait returned ~d  status ~d~%" wpid status)))
            (when entries
              (multiple-value-bind (maybe-error pid-or-error result-stream)
-                 (core:fork t)
+                 (if core:*use-build-fork-redirect* (core:fork t)(core:fork))
                (if maybe-error
                    (error "Could not fork when trying to build ~a" entries)
                    (let ((pid pid-or-error))

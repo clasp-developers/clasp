@@ -138,6 +138,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg, pause_pid);
 SYMBOL_EXPORT_SC_(KeywordPkg, exit_backtrace);
 SYMBOL_EXPORT_SC_(CorePkg, STARcurrent_dlopen_handleSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARuseParallelBuildSTAR);
+SYMBOL_EXPORT_SC_(CorePkg, STARuseBuildForkRedirectSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARreader_generate_cstSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARreader_cst_resultSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, arguments );
@@ -1118,6 +1119,11 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARuseParallelBuildSTAR->defparameter(_lisp->_true());
 #else
   _sym_STARuseParallelBuildSTAR->defparameter(_Nil<T_O>());
+#endif
+#ifdef USE_BUILD_FORK_REDIRECT_OUTPUT
+  _sym_STARuseBuildForkRedirectSTAR->defparameter(_lisp->_true());
+#else
+  _sym_STARuseBuildForkRedirectSTAR->defparameter(_Nil<T_O>());
 #endif
   _sym__PLUS_numberOfFixedArguments_PLUS_->defconstant(make_fixnum(LCC_ARGS_IN_REGISTERS));
   cl::_sym_STARrandom_stateSTAR->defparameter(RandomState_O::create());
