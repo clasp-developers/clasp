@@ -301,7 +301,7 @@ namespace core {
     };
   /*! Return the last cons (not the last element) of list.
 	  If we are nil then return nil */
-    List_sp last(cl_index idx = 1) const;
+    T_sp last(cl_index idx = 1) const;
 
   /*! Like Common Lisp copy-list */
     List_sp copyList() const;
