@@ -144,6 +144,8 @@ VALID_OPTIONS = [
     # Build clasp in parallel
     # default = True
     "USE_PARALLEL_BUILD",
+    # build with fork redirecting output: default = True
+    "USE_BUILD_FORK_REDIRECT_OUTPUT",
     # Use lld only on Linux when CLASP_BUILD_MODE is "bitcode" - it's faster than ld
     # default = True
     "USE_LLD",
@@ -826,6 +828,11 @@ def configure(cfg):
     else:
         cfg.env.USE_PARALLEL_BUILD = True
         cfg.define("USE_PARALLEL_BUILD",1)
+    if (cfg.env.USE_BUILD_FORK_REDIRECT_OUTPUT == False):
+        pass
+    else:
+        cfg.env.USE_BUILD_FORK_REDIRECT_OUTPUT = True
+        cfg.define("USE_BUILD_FORK_REDIRECT_OUTPUT",1)
     cfg.env["LLVM_BIN_DIR"] = run_llvm_config(cfg, "--bindir")
     cfg.env["LLVM_AR_BINARY"] = "%s/llvm-ar" % cfg.env.LLVM_BIN_DIR
 #    cfg.env["LLVM_AR_BINARY"] = cfg.find_program("llvm-ar", var = "LLVM_AR")[0]
