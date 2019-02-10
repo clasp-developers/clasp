@@ -85,5 +85,11 @@
               Z))
          (list a b c d e f))))
 
+(test ldiff-1 (equalp '(A B C D E . F) (LDIFF ( COPY-TREE '(A B C D E . F)) 'A)))
+(test-expect-error ldiff.error.1 (let ((x 10))(ldiff x 'a)) :type type-error)
+(test-expect-error ldiff.error.2 (let ((x 'a))(ldiff x 'a)) :type type-error)
+(test-expect-error ldiff.error.3 (let ((x (make-array '(10) :initial-element 'a)))(ldiff x 'a)) :type type-error)
+(test-expect-error ldiff.error.4 (let ((x 1.23 ))(ldiff x 'a)) :type type-error)
+(test-expect-error ldiff.error.5 (let ((x #\w))(ldiff x 'a)) :type type-error)
 
 

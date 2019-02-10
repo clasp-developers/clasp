@@ -182,6 +182,7 @@ the corresponding VAR.  Returns NIL."
 ;;
 ;;   "Return a copy of LIST before the part which is the same as OBJECT."
 ;;
+#+(or)
 (defun ldiff (list object)
   (unless (eql list object)
     (do* ((result (list (car list)))
@@ -191,6 +192,21 @@ the corresponding VAR.  Returns NIL."
       (if (eql list object)
           (return result)
         (setq splice (cdr (rplacd splice (list (car list)))))))))
+
+;;; from 14.2.30 ldiff, tailp, added type-check
+(defun ldiff (list object)
+  (unless (listp list)
+    (error 'simple-type-error
+           :format-control "Not a proper list or a dotted list.; ~s."
+           :format-arguments (list list)
+           :datum list
+           :expected-type 'list))
+  (do ((list list (cdr list))
+       (r '() (cons (car list) r)))
+      ((atom list)
+       (if (eql list object) (nreverse r) (nreconc r list)))
+    (when (eql object list)
+      (return (nreverse r)))))
 ;; stuff
 
 
