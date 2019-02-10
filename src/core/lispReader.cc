@@ -1055,9 +1055,32 @@ T_sp read_lisp_object(T_sp sin, bool eofErrorP, T_sp eofValue, bool recursiveP) 
     }
   } else {
     increment_read_lisp_object_recursion_depth::reset();
-    DynamicScopeManager scope(_sym_STARsharp_equal_final_tableSTAR, _Nil<T_O>());
-    LOG_READ(BF("About to call read_lisp_object"));
-    result = read_lisp_object(sin, eofErrorP, eofValue, true);
+     {
+       increment_read_lisp_object_recursion_depth recurse;
+       if (recurse.value() > recurse.max()) {
+         printf("%s:%d read_lisp_object_recursion_depth %d has exceeded max (%d) - there is a problem reading line %d",
+                __FILE__, __LINE__, recurse.value(), recurse.max(), clasp_input_lineno(sin));
+       }
+      DynamicScopeManager scope(_sym_STARsharp_equal_final_tableSTAR, _Nil<T_O>());
+      while (1) {
+        LOG_READ(BF("At top of while loop"));
+        T_mv mv = lisp_object_query(sin, eofErrorP, eofValue, recursiveP);
+        int ivalues = mv.number_of_values();
+        if (ivalues > 0) {
+          result = mv;
+          if (result==_sym_dot) {
+            READER_ERROR(SimpleBaseString_O::make("An illegal dot was encountered by the reader."),
+                         _Nil<T_O>(), sin);
+          }
+          if (cl::_sym_STARread_suppressSTAR->symbolValue().isTrue()) {
+            LOG_READ(BF("read_suppress == true"));
+            result = _Nil<T_O>();
+            break;
+          }
+          break;
+        }
+      }
+    }
     LOG_READ(BF("Came out of read_lisp_object with: |%s|") % _rep_(result).c_str());
   }
   LOG_READ(BF("Returning from read_lisp_object"));
@@ -1089,7 +1112,7 @@ step1:
   T_sp tx = cl__read_char(sin, _Nil<T_O>(), _Nil<T_O>(), _lisp->_true());
   if (tx.nilp()) {
     if (eofErrorP)
-      STREAM_ERROR(sin);
+      ERROR_END_OF_FILE(sin);
     return Values(eofValue);
   }
   xxx = gc::As<Character_sp>(tx);
@@ -1204,14 +1227,10 @@ step8:
     }
     if (y8_syntax_type == kw::_sym_whitespace) {
       LOG_READ(BF("y is whitespace"));
-#if 0
-      if (_sym_STARpreserve_whitespace_pSTAR->symbolValue().isTrue()) { // Can this be recursiveP?
+      if (_sym_STARpreserve_whitespace_pSTAR->symbolValue().isTrue() && !recursiveP) {
         LOG_READ(BF("unreading y[%s]") % clasp_as_claspCharacter(y));
         clasp_unread_char(clasp_as_claspCharacter(y), sin);
       }
-#else
-      clasp_unread_char(clasp_as_claspCharacter(y), sin);
-#endif
       goto step10;
     }
   }

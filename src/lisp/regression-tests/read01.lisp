@@ -52,7 +52,52 @@
 (test error-mcclim-1
       (list :\.))
 
+(test-expect-error read-14
+                   (WITH-INPUT-FROM-STRING (S "") (READ S))
+                   :type END-OF-FILE)
 
+(test read-from-string-1a
+      (multiple-value-bind
+            (object position)
+          (let ((*read-default-float-format* 'single-float))
+            (read-from-string "123.1212 (1 2 3)" nil :end :preserve-whitespace nil))
+        (and (= object 123.1212)
+             ;;; position, is the index of the first character in the bounded string that was not read
+             ;;; in this case why 9 and not 8
+             (= position 9))))
+
+(test read-from-string-1b
+      (multiple-value-bind
+            (object position)
+          (let ((*read-default-float-format* 'single-float))
+            (read-from-string "123.1212 (1 2 3)" nil :end :preserve-whitespace t))
+        (and (= object 123.1212)
+             ;;; position, is the index of the first character in the bounded string that was not read
+             ;;; in this case why 9 and not 8
+             (= position 8))))
+
+(test read-from-string-1c
+      (multiple-value-bind
+            (object position)
+          (let ((*read-default-float-format* 'single-float))
+            (read-from-string " 1 3 5" t nil :start 2 :preserve-whitespace nil))
+        (and (= object 3)
+             ;;; position, is the index of the first character in the bounded string that was not read
+             ;;; in this case why 9 and not 8
+             (= position 5))))
+
+(test read-from-string-1d
+      (multiple-value-bind
+            (object position)
+          (let ((*read-default-float-format* 'single-float))
+            (read-from-string " 1 3 5" t nil :start 2 :preserve-whitespace t))
+        (and (= object 3)
+             ;;; position, is the index of the first character in the bounded string that was not read
+             ;;; in this case why 9 and not 8
+             (= position 4))))
+
+(test issue-678
+      (floatp (first (list 1.e-7))))
   
 
 
