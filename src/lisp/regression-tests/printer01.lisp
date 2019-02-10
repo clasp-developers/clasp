@@ -171,8 +171,18 @@
                    (with-output-to-string (*standard-output*)
                      (write-byte 23 *standard-output*)) :type type-error)
 
+(test print-11
+      (string= "#0A23"
+               (with-standard-io-syntax
+                 (LET ((A (MAKE-ARRAY NIL :INITIAL-ELEMENT 23)))
+                   (WRITE-TO-STRING A :READABLY NIL :ARRAY T :pretty nil)))))
 
-
-  
+(test print-12
+      (let ((result
+             (with-standard-io-syntax
+               (LET ((A (MAKE-ARRAY NIL :INITIAL-ELEMENT 23)))
+                 (WRITE-TO-STRING A :READABLY NIL :ARRAY nil :pretty nil)))))
+        (and (zerop (search "#<" result))
+             (search ">" result))))
 
 
