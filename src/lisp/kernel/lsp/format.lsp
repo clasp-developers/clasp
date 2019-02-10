@@ -1344,7 +1344,7 @@
                (t
                 (when w (dotimes (i spaceleft) (write-char pad stream)))
                 (if (or (minusp number)
-                        #+ieee-floating-point
+                        #+(or clasp ieee-floating-point)
                         (and (zerop number)
                              (minusp (atan number -1))))
                     (write-char #\- stream)
