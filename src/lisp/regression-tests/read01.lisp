@@ -46,12 +46,43 @@
 (test-expect-error read-13
                    (with-input-from-string (strm "wq12351523765127635765232")
                      (read-byte strm))
-                   :type type-error)
+                   :type error)
 
 ;;; used to error with A string of dots was encountered by the reader.
 (test error-mcclim-1
       (list :\.))
 
+(test READ-BYTE.ERROR.3.simplyfied
+      (PROGN
+        (LET ((S (OPEN "foo.txt" :DIRECTION :OUTPUT :IF-EXISTS :SUPERSEDE)))
+          (CLOSE S))
+        (handler-case (LET ((S (OPEN "foo.txt" :DIRECTION :INPUT)))
+                        (UNWIND-PROTECT (READ-BYTE S) (CLOSE S)))
+          (end-of-file (e) nil)
+          (error (e) t))))
+
+(test READ-BYTE.ERROR.4.simplyfied
+      (stringp
+       (write-to-string
+        (LET ((S (OPEN "foo.txt" :DIRECTION :OUTPUT :IF-EXISTS :SUPERSEDE)))
+          (CLOSE S)
+          s))))
+
+(test FILE-LENGTH.3.simplyfied
+      (= 17 (first  
+             (let* ((i 9)
+                    (etype  `(unsigned-byte ,i))
+                    (e  (max 0 (- (ash 1 i) 5)))
+                    (os (open "tmp.dat" :direction :output
+                              :if-exists :supersede
+                              :element-type etype)))
+               (loop repeat 17 do (write-byte e os))
+               (close os)
+               (let ((is (open "tmp.dat" :direction :input
+                               :element-type etype)))
+                 (prog1
+                     (list (file-length is) (stream-element-type is) e etype)
+                   (close is)))))))
 
   
 
