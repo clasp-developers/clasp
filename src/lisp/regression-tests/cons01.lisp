@@ -84,6 +84,9 @@
               Y
               Z))
          (list a b c d e f))))
+         
+(test-expect-error GET-PROPERTIES.ERROR.5 (GET-PROPERTIES '(A 1 B 2 C 3 . D) '(X Y)) :type type-error)
+
 
 
 
