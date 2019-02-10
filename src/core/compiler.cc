@@ -1032,11 +1032,16 @@ CL_DECLARE();
 CL_DOCSTRING("progvFunction");
 CL_DEFUN T_mv core__progv_function(List_sp symbols, List_sp values, Function_sp func) {
   DynamicScopeManager manager;
+  int lengthValues = cl__length(values);
+  int index = 0;
   for (auto curSym : symbols) {
+    if (index < lengthValues) {
     Symbol_sp symbol = gc::As<Symbol_sp>(oCar(curSym));
     T_sp value = oCar(values);
     manager.pushSpecialVariableAndSet(symbol, value);
     values = oCdr(values);
+    }
+    index++;
   }
   T_mv result = (func->entry.load())(LCC_PASS_ARGS0_ELLIPSIS(func.raw_()));
   // T_mv result = eval::funcall(func);
