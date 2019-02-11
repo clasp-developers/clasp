@@ -366,7 +366,8 @@
 (defclass precalc-vector-function-ast (cleavir-ast:top-level-function-ast)
   ((%precalc-asts :initarg :precalc-asts :reader precalc-asts)))
 
-(defun make-precalc-vector-function-ast (body-ast precalc-asts forms dynenv policy &key origin)
+(defun make-precalc-vector-function-ast (body-ast precalc-asts forms dynenv policy
+                                         &key origin)
   (make-instance 'precalc-vector-function-ast
                  :body-ast body-ast
                  :lambda-list nil
@@ -507,5 +508,7 @@ precalculated-vector and returns the index."
                             :index index-or-immediate
                             :original-object form)))
         (push form forms)))
-    (clasp-cleavir-ast:make-precalc-vector-function-ast
-     ast ltvs forms dynenv (cleavir-ast:policy ast) :origin (cleavir-ast:origin ast))))
+    (let ((cleavir-ast:*dynamic-environment* dynenv))
+      (clasp-cleavir-ast:make-precalc-vector-function-ast
+       ast ltvs forms dynenv (cleavir-ast:policy ast)
+       :origin (cleavir-ast:origin ast)))))

@@ -45,8 +45,7 @@
     (cleavir-ir:make-fdefinition-instruction
      (cleavir-ir:make-constant-input fname) fdef
      (cleavir-ir:make-funcall-instruction
-      ;; See HUGE HACK WARNING FIXME in setup.lisp.
-      (list* fdef (clasp-cleavir::make-faux-dynenv-location) args)
+      (list* fdef args)
       (list vals)
       (cleavir-ir:make-multiple-to-fixed-instruction
        vals
@@ -60,8 +59,7 @@
     (cleavir-ir:make-fdefinition-instruction
      (cleavir-ir:make-constant-input fname) fdef
      (cleavir-ir:make-funcall-instruction
-      ;; See HUGE HACK WARNING FIXME in setup.lisp.
-      (list* fdef (clasp-cleavir::make-faux-dynenv-location) args)
+      (list* fdef args)
       (list vals)
       (cleavir-ir:make-multiple-to-fixed-instruction
        vals
@@ -442,7 +440,9 @@
         (pro (first (cleavir-ir:successors typeq-instruction)))
         (con (second (cleavir-ir:successors typeq-instruction)))
         (preds (cleavir-ir:predecessors typeq-instruction))
-        (cleavir-ir:*policy* (cleavir-ir:policy typeq-instruction)))
+        (cleavir-ir:*policy* (cleavir-ir:policy typeq-instruction))
+        (cleavir-ir:*dynamic-environment*
+          (cleavir-ir:dynamic-environment typeq-instruction)))
     (let ((new (gen-type-check object type pro con)))
       (dolist (pred preds)
         (setf (cleavir-ir:successors pred)

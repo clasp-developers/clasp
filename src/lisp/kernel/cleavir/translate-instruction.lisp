@@ -9,7 +9,7 @@
     ((instr cleavir-ir:enter-instruction) return-value (abi abi-x86-64) function-info)
   (let* ((lambda-list (cleavir-ir:lambda-list instr))
          (closed-env-dest (cleavir-ir:static-environment instr))
-         (dynenv (cleavir-ir:dynamic-environment instr))
+         (dynenv (cleavir-ir:dynamic-environment-output instr))
          (calling-convention (calling-convention function-info)))
     (out (cmp:calling-convention-closure calling-convention) closed-env-dest)
     ;; see comment in catch-instruction
@@ -151,8 +151,8 @@
 (defun translate-funcall (instruction return-value abi function-info)
   (let* ((inputs (cleavir-ir:inputs instruction))
          (function (first inputs))
-         (dynamic-environment (second inputs))
-         (arguments (cddr inputs)))
+         (dynamic-environment (cleavir-ir:dynamic-environment instruction))
+         (arguments (cdr inputs)))
     (cmp:with-landing-pad (landing-pad dynamic-environment return-value abi *tags* function-info)
       (closure-call-or-invoke (in function) return-value (mapcar #'in arguments) abi))))
 
@@ -276,7 +276,7 @@
     ((instruction cleavir-ir:multiple-value-call-instruction) return-value abi function-info)
   (with-return-values (return-vals return-value abi)
     ;; second input is the dynamic-environment argument.
-    (cmp:with-landing-pad (landing-pad (second (cleavir-ir:inputs instruction))
+    (cmp:with-landing-pad (landing-pad (cleavir-ir:dynamic-environment instruction)
                                        return-value abi *tags* function-info)
       (let ((call-result (%intrinsic-invoke-if-landing-pad-or-call
                           "cc_call_multipleValueOneFormCallWithRet0" 
@@ -642,7 +642,7 @@
   ;; in some implementations. Not in Clasp- we just use the location to find the chain of
   ;; catch-instructions. But the location still exists.
   ;; So we fill it with an undef in enter, and then pass it along here. LLVM will remove it.
-  (out (first (cleavir-ir:inputs instruction))
+  (out (cleavir-ir:dynamic-environment instruction)
        (second (cleavir-ir:outputs instruction))
        "sham-dynamic-environment")
   ;; unconditionally go to first successor

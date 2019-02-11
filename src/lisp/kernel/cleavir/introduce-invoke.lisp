@@ -51,7 +51,9 @@
     (unless (null catches)
       ;; Insert the same-frame.
       (cleavir-ir:insert-instruction-after
-       (let ((cleavir-ir:*policy* (cleavir-ir:policy enter)))
+       (let ((cleavir-ir:*policy* (cleavir-ir:policy enter))
+             (cleavir-ir:*dynamic-environment*
+               (cleavir-ir:dynamic-environment enter)))
          (cc-mir:make-save-frame-instruction))
        enter)
       ;; Assign a go-index to every instruction that's an abnormal successor to a catch.

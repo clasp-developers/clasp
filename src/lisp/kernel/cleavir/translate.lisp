@@ -485,7 +485,7 @@ when this is t a lot of graphs will be generated.")
 
 ;;; needed to coordinate dynamic environments between asts and hoisting.
 (defun make-dynenv (&optional (env *clasp-env*))
-  (cleavir-ast:make-lexical-ast
+  (cleavir-ast:make-dynamic-environment-ast
    'loader-dynamic-environment
    :policy (cleavir-env:environment-policy env)))
 

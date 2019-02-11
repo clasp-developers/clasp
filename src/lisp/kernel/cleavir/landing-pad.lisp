@@ -126,9 +126,6 @@
          return-value abi tags destinations frame function-info))))
 
 (defun compute-dynenv-destinations (location)
-  ;; See "HUGE HACK WARNING FIXME" in setup.lisp.
-  (when (typep location 'faux-dynenv-location)
-    (return-from compute-dynenv-destinations nil))
   (let ((definers (cleavir-ir:defining-instructions location)))
     (unless (= (length definers) 1)
       (error "BUG: Dynamic-environment ~a def-use chain is messed up"
@@ -141,7 +138,7 @@
          ;; append the new destinations to the parent destinations.
          (remove-duplicates
           (append (rest (cleavir-ir:successors definer))
-                  (dynenv-destinations (first (cleavir-ir:inputs definer))))
+                  (dynenv-destinations (cleavir-ir:dynamic-environment definer)))
           :test #'eq))
         ;; for an enter, there's obviously nowhere to go.
         (cleavir-ir:enter-instruction nil)))))
