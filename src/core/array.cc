@@ -2141,16 +2141,6 @@ void SimpleBitVector_inPlaceXor(SimpleBitVector_sp x, SimpleBitVector_sp y) {
   }
 }
 
-void SimpleBitVector_getOnIndices(SimpleBitVector_sp x, vector<size_t> &res) {
-  size_t i;
-  res.clear();
-  for (i = 0; i != x->length(); i++) {
-    if (x->testBit(i)) {
-      res.push_back(i);
-    }
-  }
-}
-
 size_t SimpleBitVector_lowestIndex(SimpleBitVector_sp x) {
   size_t word_length = x->length()/SimpleBitVector_O::BitWidth;
   size_t ib = 0;
@@ -2167,13 +2157,19 @@ size_t SimpleBitVector_lowestIndex(SimpleBitVector_sp x) {
   return ib;
 }
 
+void SimpleBitVector_getOnIndices(SimpleBitVector_sp x, vector<size_t> &res) {
+  size_t i;
+  res.clear();
+  i = SimpleBitVector_lowestIndex(x);
+  for (; i != x->length(); i++) {
+    if (x->testBit(i)) {
+      res.push_back(i);
+    }
+  }
+}
 
 bool SimpleBitVector_isZero(SimpleBitVector_sp x) {
-  size_t i;
-  for (i = 0; i < x->length(); i++) {
-    if (x->testBit(i)) return false;
-  }
-  return true;
+  return (SimpleBitVector_lowestIndex(x) == x->length());
 }
 // ------------------------------------------------------------
 //
