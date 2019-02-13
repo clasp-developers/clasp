@@ -119,7 +119,8 @@
     (let* ((slotd (parse-slot (first scan)))
 	   (name (getf (cdr slotd) :name)))
       (dolist (other-slotd collect)
-	(when (eq name (getf (cdr other-slotd) :name))
+        ;;; name might be (quote <name>) so test with eq or eql does not work 
+	(when (equal name (getf (cdr other-slotd) :name))
 	  (si::simple-program-error
 	   "A definition for the slot ~S appeared twice in a DEFCLASS form"
 	   name)))
