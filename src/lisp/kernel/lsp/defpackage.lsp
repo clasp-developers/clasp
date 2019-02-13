@@ -62,8 +62,9 @@
 	(:import-from		package-name {symbol-name}*)
 	(:intern		{symbol-name}*)
 	(:export		{symbol-name}*)
-	(:export-from		{package-name}*)
-        (:local-nicknames       (nickname package-name)*)
+    	(:size                  integer)
+    	(:export-from		{package-name}*)
+    	(:local-nicknames       (nickname package-name)*)
 
   :EXPORT-FROM is an extension to DEFPACKAGE.
   If a symbol is interned in the package being created and
@@ -107,7 +108,9 @@
 		 (when (string= o-option option)
 		   (setq output (union (mapcar #'to-string (cdr o)) output :test #'equal)))))
 	     output))
-    (dolist (option '(:DOCUMENTATION)) ; could add more later.
+    ;;; clhs 11.2.19 defpackage
+    ;;; An error of type program-error should be signaled if :size or :documentation appears more than once.
+    (dolist (option '(:DOCUMENTATION :SIZE)) ; could add more later.
       (when (<= 2 (count option options ':key #'car))
 	(simple-program-error "DEFPACKAGE option ~s specified more than once."
 				  option)))
