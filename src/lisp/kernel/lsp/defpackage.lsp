@@ -62,9 +62,9 @@
 	(:import-from		package-name {symbol-name}*)
 	(:intern		{symbol-name}*)
 	(:export		{symbol-name}*)
-    (:size                  integer)
-    (:export-from		{package-name}*)
-    (:local-nicknames       (nickname package-name)*)
+    	(:size                  integer)
+    	(:export-from		{package-name}*)
+    	(:local-nicknames       (nickname package-name)*)
 
   :EXPORT-FROM is an extension to DEFPACKAGE.
   If a symbol is interned in the package being created and
