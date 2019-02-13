@@ -354,11 +354,12 @@ CL_DEFUN T_sp cl__listSTAR(VaList_sp vargs) {
 // But there are not bignum length list (there is not enough memory)
 // so for a Fixnum we do the real test
 // and for a Bignum we test if it is positive and than return the list
+// last does not necessarily return a list, see (last '(a . b) 0) -> B
 
 CL_LAMBDA(list &optional (on 1));
 CL_DECLARE();
 CL_DOCSTRING("last - see CLHS");
-CL_DEFUN List_sp cl__last(List_sp list, Integer_sp in) {
+CL_DEFUN T_sp cl__last(List_sp list, Integer_sp in) {
   if (list.nilp())
     return list;
   //drmeister says we should test the common case fixnum first

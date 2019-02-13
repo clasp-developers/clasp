@@ -1671,7 +1671,7 @@ CL_DEFUN void core__quit(int exitValue) {
 CL_LAMBDA(key datum alist);
 CL_DECLARE();
 CL_DOCSTRING("acons");
-CL_DEFUN List_sp cl__acons(T_sp key, T_sp val, List_sp alist) {
+CL_DEFUN List_sp cl__acons(T_sp key, T_sp val, T_sp alist) {
   Cons_sp acons = Cons_O::create(key, val);
   return Cons_O::create(acons, alist);
 }

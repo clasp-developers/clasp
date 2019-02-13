@@ -582,7 +582,7 @@ T_sp Cons_O::onthcdr(cl_index idx) const {
 /*! This algorithm works by first stepping through (n) CONS elements with (r)
 and then stepping to the end with (l) and (r).  Once (r) hits the end
 (l) will point to the (n)th from the end CONS cell */
-List_sp Cons_O::last(cl_index n) const {
+T_sp Cons_O::last(cl_index n) const {
   ASSERT(n >= 0);
   List_sp l = this->asSmartPtr();
   T_sp r = l;
