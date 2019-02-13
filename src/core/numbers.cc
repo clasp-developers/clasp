@@ -1246,28 +1246,28 @@ CL_DEFUN bool two_arg__GE_(Number_sp x, Number_sp y) {
 CL_LAMBDA(&rest args);
 CL_DEFUN T_sp cl___LT_(List_sp args) {
   if (args.nilp())
-      PROGRAM_ERROR();
+      SIMPLE_PROGRAM_ERROR("< needs at least 1 argument",_Nil<T_O>());
   return numbers_monotonic(-1, 1, args);
 };
 
 CL_LAMBDA(&rest args);
 CL_DEFUN T_mv cl___GT_(List_sp args) {
   if (args.nilp())
-      PROGRAM_ERROR();
+      SIMPLE_PROGRAM_ERROR("> needs at least 1 argument",_Nil<T_O>());
   return (Values(numbers_monotonic(1, 1, args)));
 };
 
 CL_LAMBDA(&rest args);
 CL_DEFUN T_mv cl___LE_(List_sp args) {
   if (args.nilp())
-      PROGRAM_ERROR();
+      SIMPLE_PROGRAM_ERROR("<= needs at least 1 argument",_Nil<T_O>());
   return (Values(numbers_monotonic(-1, 0, args)));
 };
 
 CL_LAMBDA(&rest args);
 CL_DEFUN T_mv cl___GE_(List_sp args) {
   if (args.nilp())
-      PROGRAM_ERROR();
+      SIMPLE_PROGRAM_ERROR(">= needs at least 1 argument",_Nil<T_O>());
   return (Values(numbers_monotonic(1, 0, args)));
 };
 
@@ -1411,7 +1411,8 @@ CL_DECLARE();
 CL_DOCSTRING("NE");
 CL_DEFUN T_sp cl___NE_(VaList_sp args) {
   if (args->remaining_nargs() == 1) return _lisp->_true();
-  if (args->remaining_nargs()==0) return _lisp->_true();
+  if (args->remaining_nargs() == 0)
+    SIMPLE_PROGRAM_ERROR("/= needs at least 1 argument",_Nil<T_O>());
   if (args->remaining_nargs() == 2) {
     Number_sp a = gc::As<Number_sp>(args->next_arg());
     Number_sp b = gc::As<Number_sp>(args->next_arg());
@@ -1435,7 +1436,7 @@ CL_DECLARE();
 CL_DOCSTRING("_EQ_");
 CL_DEFUN T_sp cl___EQ_(List_sp args) {
   if (args.nilp())
-    return (_lisp->_true());
+    SIMPLE_PROGRAM_ERROR("= needs at least 1 argument",_Nil<T_O>());
   Number_sp a = gc::As<Number_sp>(oCar(args));
   Number_sp b;
   for (auto cur : (List_sp)oCdr(args)) {
