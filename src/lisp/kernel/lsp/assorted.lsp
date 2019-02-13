@@ -107,16 +107,22 @@
 (declaim (ftype (function (list list) (values t t list)) get-properties))
 (defun get-properties (place indicator-list)
   "Return the first key/value pair in PLACE where the key is eq to something in INDICATOR-LIST, as well as the plist tail at that point."
-  (loop for plist on place by #'cddr
-     when (atom (cdr plist))
-     do (error 'simple-type-error
-	       :format-control "Malformed property list; ~s."
-	       :format-arguments (list place)
-	       :datum (cdr plist)
-	       :expected-type 'cons)
-     when (member (car plist) indicator-list :test #'eq)
-     return (values (first plist) (second plist) plist)
-     finally (return (values nil nil nil))))
+  (if (CORE:PROPER-LIST-P place)
+      (loop for plist on place by #'cddr
+         when (atom (cdr plist))
+         do (error 'simple-type-error
+                   :format-control "Malformed property list; ~s."
+                   :format-arguments (list place)
+                   :datum (cdr plist)
+                   :expected-type 'cons)
+         when (member (car plist) indicator-list :test #'eq)
+         return (values (first plist) (second plist) plist)
+         finally (return (values nil nil nil)))
+      (error 'simple-type-error
+                   :format-control "Malformed place; ~s."
+                   :format-arguments (list place)
+                   :datum place
+                   :expected-type '(and list (satisfies CORE:PROPER-LIST-P)))))
 
 ;; nobody uses these but this is conforming
 (declaim (ftype (function () null) short-site-name long-site-name))
