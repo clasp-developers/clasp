@@ -72,7 +72,7 @@ def macosx_sdk_path(cfg):
     if ( cfg.env['DEST_OS'] == DARWIN_OS ):
         result = run_program('xcrun', '--show-sdk-path')
         assert len(result) > 0
-	result = result.strip()
+        result = result.strip()
     log.debug("macosx_sdk_path: %s", result)
     return result
 
