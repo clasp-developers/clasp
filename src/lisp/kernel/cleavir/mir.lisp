@@ -23,7 +23,7 @@
 ;;; Generates code for characterp
 ;;;
 
-(defclass characterp-instruction (cleavir-ir:instruction cleavir-ir:two-successors-mixin) ())
+(defclass characterp-instruction (cleavir-ir:instruction cleavir-ir:multiple-successors-mixin) ())
 
 (defun make-characterp-instruction (input successors)
   (make-instance 'characterp-instruction
@@ -37,7 +37,7 @@
 ;;; Generates code for single-float-p
 ;;;
 
-(defclass single-float-p-instruction (cleavir-ir:instruction cleavir-ir:two-successors-mixin) ())
+(defclass single-float-p-instruction (cleavir-ir:instruction cleavir-ir:multiple-successors-mixin) ())
 
 (defun make-single-float-p-instruction (input successors)
   (make-instance 'single-float-p-instruction
@@ -51,7 +51,7 @@
 ;;; Branch based on the type header of an object.
 ;;;
 
-(defclass headerq-instruction (cleavir-ir:instruction cleavir-ir:two-successors-mixin)
+(defclass headerq-instruction (cleavir-ir:instruction cleavir-ir:multiple-successors-mixin)
   ((%header-value-min-max :initarg :hvmm :accessor header-value-min-max)))
 
 (defun make-headerq-instruction (header-value-min-max input successors)
