@@ -144,7 +144,7 @@ namespace core {
     void MDArray_O::__write__(T_sp stream) const {
             if (this->rank() == 0) {
                     if (!clasp_print_array() && !clasp_print_readably()) {
-                            writestr_stream("#<MDArray_O ", stream);
+                            writestr_stream("#<ARRAY ", stream);
                             clasp_write_addr(this->asSmartPtr(), stream);
                             clasp_write_char('>', stream);
                     } else {
@@ -161,7 +161,7 @@ namespace core {
     void SimpleVector_O::__write__(T_sp stream) const {
             if (this->rank() == 0) {
                     if (!clasp_print_array() && !clasp_print_readably()) {
-                            writestr_stream("#<SimpleVector_O ", stream);
+                            writestr_stream("#<SIMPLE-VECTOR ", stream);
                             clasp_write_addr(this->asSmartPtr(), stream);
                             clasp_write_char('>', stream);
                     } else {
