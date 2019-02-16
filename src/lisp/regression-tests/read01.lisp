@@ -52,6 +52,59 @@
 (test error-mcclim-1
       (list :\.))
 
+(test issue-382-a
+      (arrayp (let ((*readtable* (copy-readtable nil)))
+                (read-from-string "#a(T 1 (2))"))))
+
+(test issue-382-b
+      (arrayp (let ((*readtable* (copy-readtable nil)))
+                (read-from-string "#a(T (1) (2))"))))
+
+(test issue-382-c
+      (arrayp (let ((*readtable* (copy-readtable nil)))
+                (read-from-string "#a(T (2 2) ((1 2)(3 4)))"))))
+
+(test issue-382-d
+      (arrayp (let ((*readtable* (copy-readtable nil)))
+                (read-from-string "#2A((0 1 5) (foo 2 (hot dog)))"))))
+
+(defstruct %foo% %bar%)
+
+(test sharp-s-new-readtable
+      (let ((*readtable* (copy-readtable nil)))
+        (%foo%-p (read-from-string "#S(%FOO% :%BAR% 1)"))))
+
+(test 'SET-SYNTAX-FROM-CHAR-TRAIT-X-1a
+      (let ((result
+             (let ((chars (list #\Backspace #\Tab  #\Newline #\Linefeed #\Page #\Return #\Space #\Rubout)))
+               ;;; 2.1.4 Character Syntax Types
+               ;;; Backspace and Rubout are constituent but invalid
+               (mapcar #'(lambda(c)
+                           (WITH-STANDARD-IO-SYNTAX
+                             (LET ((*READTABLE* (COPY-READTABLE NIL)))
+                                (handler-case 
+                                   (READ-FROM-STRING
+                                    (CONCATENATE 'STRING (STRING C) "Z"))
+                                 (reader-error (e) e)))))
+                       chars))))
+        (and (typep (first result) 'reader-error)
+             (typep (eighth result) 'reader-error))))
+
+(test SET-SYNTAX-FROM-CHAR-TRAIT-X-1b
+      (let ((result
+             (let ((chars (list #\Backspace #\Tab  #\Newline #\Linefeed #\Page #\Return #\Space #\Rubout)))
+               (mapcar #'(lambda(c)
+                           (WITH-STANDARD-IO-SYNTAX
+                             (LET ((*READTABLE* (COPY-READTABLE NIL)))
+                               (SET-SYNTAX-FROM-CHAR C #\X)
+                               ;;; see 2.1.4.2 Constituent Traits
+                               ;;; all these chars should fail
+                               (handler-case 
+                                   (READ-FROM-STRING
+                                    (CONCATENATE 'STRING (STRING C) "Z"))
+                                 (reader-error (e) e)))))
+                       chars))))
+        (every #'(lambda(a)(typep a 'reader-error)) result)))
 
   
 
