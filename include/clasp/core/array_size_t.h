@@ -44,8 +44,9 @@ namespace core {
                                       value_type initialElement=value_type(),
                                       bool initialElementSupplied=false,
                                       size_t initialContentsSize=0,
-                                      const value_type* initialContents=NULL) {
-      auto bs = gctools::GC<SimpleVector_size_t_O>::allocate_container(length,initialElement,initialElementSupplied,initialContentsSize,initialContents);
+                                       const value_type* initialContents=NULL,
+                                       bool static_vector_p = false) {
+      auto bs = gctools::GC<SimpleVector_size_t_O>::allocate_container(static_vector_p,length,initialElement,initialElementSupplied,initialContentsSize,initialContents);
       return bs;
     }
   public:
@@ -82,7 +83,7 @@ namespace core {
       LIKELY_if (dataOrDisplacedTo.nilp()) {
         dataOrDisplacedTo = simple_type::make(dimension,initialElement,true);
       }
-      MDArray_size_t_sp array = gctools::GC<MDArray_size_t_O>::allocate_container(1,dimension,fillPointer,gc::As_unsafe<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
+      MDArray_size_t_sp array = gctools::GC<MDArray_size_t_O>::allocate_container(false,1,dimension,fillPointer,gc::As_unsafe<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
       return array;
     }
     static MDArray_size_t_sp make_vector(size_t dimension) {
@@ -101,7 +102,7 @@ namespace core {
       LIKELY_if (dataOrDisplacedTo.nilp()) {
         dataOrDisplacedTo = simple_type::make(arrayTotalSize,initialElement,true);
       }
-      MDArray_size_t_sp array = gctools::GC<MDArray_size_t_O>::allocate_container(rank,dim_desig,gc::As<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
+      MDArray_size_t_sp array = gctools::GC<MDArray_size_t_O>::allocate_container(false,rank,dim_desig,gc::As<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
       return array;
     }
   public:
@@ -126,7 +127,7 @@ namespace core {
       LIKELY_if (data.nilp()) {
         data = SimpleVector_size_t_O::make(dimension,initialElement,true);
       }
-      SimpleMDArray_size_t_sp array = gctools::GC<SimpleMDArray_size_t_O>::allocate_container(1,dimension,gc::As_unsafe<Array_sp>(data));
+      SimpleMDArray_size_t_sp array = gctools::GC<SimpleMDArray_size_t_O>::allocate_container(false,1,dimension,gc::As_unsafe<Array_sp>(data));
       return array;
     }
     static SimpleMDArray_size_t_sp make(size_t dimension, simple_element_type initialElement) {
@@ -143,7 +144,7 @@ namespace core {
       LIKELY_if (data.nilp()) {
         data = SimpleVector_size_t_O::make(arrayTotalSize,initialElement,true);
       }
-      SimpleMDArray_size_t_sp array = gctools::GC<SimpleMDArray_size_t_O>::allocate_container(rank,dim_desig,gc::As<Array_sp>(data));
+      SimpleMDArray_size_t_sp array = gctools::GC<SimpleMDArray_size_t_O>::allocate_container(false,rank,dim_desig,gc::As<Array_sp>(data));
       return array;
     }
   };

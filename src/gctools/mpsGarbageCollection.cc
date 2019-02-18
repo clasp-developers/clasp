@@ -233,9 +233,9 @@ void bad_cons_mps_reserve_error()
   abort();
 }
 
-void bad_general_mps_reserve_error(const char* ap_name)
+void bad_general_mps_reserve_error(mps_ap_t* allocation_point_p)
 {
-  printf("%s:%d Bad general_mps_allocation for %s\n", __FILE__, __LINE__, ap_name);
+  printf("%s:%d Bad general_mps_allocation for mps_ap_t -> %p\n", __FILE__, __LINE__, allocation_point_p);
   abort();
 }
 

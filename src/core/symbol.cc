@@ -170,7 +170,7 @@ ClosureWithSlots_sp make_unbound_symbol_function(Symbol_sp name)
     global_unboundSymbolFunctionFunctionDescription = makeFunctionDescription(name,_Nil<T_O>());
   }
   ClosureWithSlots_sp closure = 
-    gctools::GC<core::ClosureWithSlots_O>::allocate_container(1,
+    gctools::GC<core::ClosureWithSlots_O>::allocate_container(false,1,
                                                               unboundFunctionEntryPoint,
                                                               global_unboundSymbolFunctionFunctionDescription,
                                                               ClosureWithSlots_O::cclaspClosure);
@@ -186,7 +186,7 @@ ClosureWithSlots_sp make_unbound_setf_symbol_function(Symbol_sp name)
     global_unboundSetfSymbolFunctionFunctionDescription = makeFunctionDescription(sname,_Nil<T_O>());
   }
   ClosureWithSlots_sp closure = 
-    gctools::GC<core::ClosureWithSlots_O>::allocate_container(1,
+    gctools::GC<core::ClosureWithSlots_O>::allocate_container(false, 1,
                                                               unboundSetfFunctionEntryPoint,
                                                               global_unboundSetfSymbolFunctionFunctionDescription,
                                                               ClosureWithSlots_O::cclaspClosure);

@@ -432,7 +432,7 @@ LtvcReturn ltvc_enclose(gctools::GCRootsInModule* holder, size_t index, gctools:
 {NO_UNWIND_BEGIN();
   core::T_sp tlambdaName = gctools::smart_ptr<core::T_O>((gc::Tagged)lambdaName);
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid =
-    gctools::GC<core::ClosureWithSlots_O>::allocate_container(0,
+    gctools::GC<core::ClosureWithSlots_O>::allocate_container(false,0,
                                                               llvm_func,
                                                               (core::FunctionDescription*)functionDescription,
                                                               core::ClosureWithSlots_O::cclaspClosure);
@@ -689,7 +689,7 @@ DONT_OPTIMIZE_WHEN_DEBUG_RELEASE core::T_O* makeCompiledFunction(fnLispCallingCo
   // TODO: If a pointer to an integer was passed here we could write the sourceName SourceFileInfo_sp index into it for source line debugging
   core::T_sp frame((gctools::Tagged)frameP);
   core::ClosureWithSlots_sp toplevel_closure =
-    gctools::GC<core::ClosureWithSlots_O>::allocate_container(BCLASP_CLOSURE_SLOTS,
+    gctools::GC<core::ClosureWithSlots_O>::allocate_container(false, BCLASP_CLOSURE_SLOTS,
                                                               funcPtr,
                                                               (core::FunctionDescription*)functionDescription,
                                                               core::ClosureWithSlots_O::bclaspClosure);
@@ -1245,7 +1245,7 @@ core::T_O *cc_enclose(fnLispCallingConvention llvm_func,
                       std::size_t numCells, ...)
 {
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid =
-    gctools::GC<core::ClosureWithSlots_O>::allocate_container( numCells
+    gctools::GC<core::ClosureWithSlots_O>::allocate_container( false, numCells
                                                               , llvm_func
                                                                , (core::FunctionDescription*)functionDescription,
                                                                core::ClosureWithSlots_O::cclaspClosure);

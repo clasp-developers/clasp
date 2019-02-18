@@ -77,4 +77,16 @@ CL_DEFUN bool core__pointer_in_pointer_range(Pointer_sp test, Pointer_sp low, T_
   }
   SIMPLE_ERROR(BF("Illegal range for pointer comparison %s - %s") % _rep_(low) % _rep_(high_or_size));
 }
+
+CL_DEFUN void core__fill_foreign_memory(Pointer_sp ptr, size_t length, size_t value)
+{
+  memset(ptr->ptr(), value&0xFF,length);
+}
+
+CL_DEFUN void core__replace_foreign_memory(Pointer_sp dest, Pointer_sp src, size_t length)
+{
+  memcpy(dest->ptr(),src->ptr(),length);
+}
+
+
 };

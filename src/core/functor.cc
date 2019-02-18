@@ -141,7 +141,8 @@ ClosureWithSlots_sp ClosureWithSlots_O::make_interpreted_closure(T_sp name, T_sp
   SourceFileInfo_sp sfi = gc::As<SourceFileInfo_sp>(core__source_file_info(core::make_fixnum(sourceFileInfoHandle)));
   FunctionDescription* interpretedFunctionDescription = makeFunctionDescription(name,lambda_list,docstring,sfi,lineno,column,filePos);
   ClosureWithSlots_sp closure =
-    gctools::GC<core::ClosureWithSlots_O>::allocate_container(INTERPRETED_CLOSURE_SLOTS,
+    gctools::GC<core::ClosureWithSlots_O>::allocate_container(false,
+                                                              INTERPRETED_CLOSURE_SLOTS,
                                                               &interpretedClosureEntryPoint,
                                                               interpretedFunctionDescription,
                                                               ClosureWithSlots_O::interpretedClosure);
@@ -160,7 +161,8 @@ ClosureWithSlots_sp ClosureWithSlots_O::make_interpreted_closure(T_sp name, T_sp
 ClosureWithSlots_sp ClosureWithSlots_O::make_bclasp_closure(T_sp name, claspFunction ptr, T_sp type, T_sp lambda_list, T_sp environment) {
   core::FunctionDescription* fdesc = makeFunctionDescription(name,lambda_list);
   ClosureWithSlots_sp closure = 
-    gctools::GC<core::ClosureWithSlots_O>::allocate_container(BCLASP_CLOSURE_SLOTS,
+    gctools::GC<core::ClosureWithSlots_O>::allocate_container(false,
+                                                              BCLASP_CLOSURE_SLOTS,
                                                               ptr,
                                                               (core::FunctionDescription*)fdesc,
                                                               ClosureWithSlots_O::bclaspClosure);
@@ -175,7 +177,8 @@ ClosureWithSlots_sp ClosureWithSlots_O::make_bclasp_closure(T_sp name, claspFunc
 ClosureWithSlots_sp ClosureWithSlots_O::make_cclasp_closure(T_sp name, claspFunction ptr, T_sp type, T_sp lambda_list, SOURCE_INFO) {
   core::FunctionDescription* fdesc = makeFunctionDescription(name,lambda_list);
   ClosureWithSlots_sp closure = 
-    gctools::GC<core::ClosureWithSlots_O>::allocate_container(0,
+    gctools::GC<core::ClosureWithSlots_O>::allocate_container(false,
+                                                              0,
                                                               ptr,
                                                               (core::FunctionDescription*)fdesc,
                                                               ClosureWithSlots_O::cclaspClosure);
