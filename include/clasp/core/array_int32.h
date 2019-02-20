@@ -80,7 +80,7 @@ namespace core {
       LIKELY_if (dataOrDisplacedTo.nilp()) {
         dataOrDisplacedTo = simple_type::make(dimension,initialElement,true);
       }
-      return gctools::GC<my_type>::allocate_container(1,dimension,fillPointer,gc::As_unsafe<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
+      return gctools::GC<my_type>::allocate_container(false,1,dimension,fillPointer,gc::As_unsafe<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
     }
     static smart_ptr_type make_vector(size_t dimension) {
       return make_vector(dimension,0,_Nil<T_O>(),_Nil<T_O>(),false,clasp_make_fixnum(0));
