@@ -56,8 +56,11 @@ namespace gctools {
 
 
 void clasp_warn_proc(char *msg, GC_word arg) {
+#if 0
+  // This warning is annoying and comes up a lot but doesn't cause problems except for when building ironclad
   printf("%s:%d clasp trapped Boehm-gc warning...\n", __FILE__, __LINE__);
   printf(msg, arg);
+#endif
 }
 
 
