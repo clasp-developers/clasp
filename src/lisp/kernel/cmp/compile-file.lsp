@@ -230,7 +230,7 @@ and the pathname of the source file - this will also be used as the module initi
                                  source-debug-pathname
                                  (source-debug-offset 0)
                                  environment
-                                 (image-startup-position 0)
+                                 image-startup-position
                                  (optimize t)
                                  (optimize-level *optimization-level*))
   "* Arguments
@@ -326,7 +326,7 @@ Compile a lisp source file into an LLVM module."
                               ;; will be linked together
                               (unique-symbol-prefix "")
                               ;; Control the order of startup functions
-                              (image-startup-position 0)
+                              (image-startup-position (core:next-startup-position))
                               ;; ignored by bclasp
                               ;; but passed to hook functions
                               environment

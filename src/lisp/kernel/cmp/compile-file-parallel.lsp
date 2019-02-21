@@ -111,7 +111,7 @@
                        ast-only
                        verbose)
   (let (result
-        (form-index 0)
+        (form-index (core:next-startup-position))
         (eof-value (gensym))
         #+cclasp(eclector.reader:*client* clasp-cleavir::*cst-client*)
         ast-jobs ast-threads)
@@ -178,7 +178,7 @@
                               :optimize optimize
                               :optimize-level optimize-level
                               :intermediate-output-type intermediate-output-type))
-          (incf form-index))))
+          (setf form-index (core:next-startup-position)))))
     ;; Now wait for all threads to join
 ;;;    #+(or)
     (loop for thread in ast-threads

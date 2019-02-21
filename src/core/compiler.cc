@@ -225,10 +225,10 @@ size_t global_startup_count = 0;
 mp::SharedMutex* global_startup_functions_mutex = NULL;
 #endif
 struct Startup {
-  int _Position;
+  size_t _Position;
   fnStartUp _Function;
   Startup() {};
-  Startup(int p, fnStartUp f) : _Position(p), _Function(f) {};
+  Startup(size_t p, fnStartUp f) : _Position(p), _Function(f) {};
   bool operator<(const Startup& other) {
     return this->_Position < other._Position;
   }
@@ -236,7 +236,13 @@ struct Startup {
 
 Startup* global_startup_functions = NULL;
 
-void register_startup_function(int position, fnStartUp fptr)
+std::atomic<size_t> global_next_startup_position;
+
+CL_DEFUN size_t core__next_startup_position() {
+  return global_next_startup_position++;
+}
+
+void register_startup_function(size_t position, fnStartUp fptr)
 {
 #ifdef DEBUG_STARTUP
   printf("%s:%d In register_startup_function --> %p\n", __FILE__, __LINE__, fptr);
@@ -305,15 +311,20 @@ void startup_functions_invoke()
   if (startup_count>0) {
     sort::quickSortMemory(startup_functions,0,startup_count);
 #ifdef DEBUG_STARTUP
-    printf("%s:%d In startup_functions_invoke - there are %" PRu " startup functions\n", __FILE__, __LINE__, startup_count );
+    printf("%s:%d In startup_functions_invoke - there are %" PRsize_t " startup functions\n", __FILE__, __LINE__, startup_count );
     for ( size_t i = 0; i<startup_count; ++i ) {
-      fnStartUp fn = startup_functions[i];
-      printf("%s:%d     Startup fn[%" PRu "]@%p\n", __FILE__, __LINE__, i, fn );
+      Startup& startup = startup_functions[i];
+      printf("%s:%d     Startup fn[%" PRsize_t "] -> %p\n", __FILE__, __LINE__, startup._Position, startup._Function );
     }
     printf("%s:%d Starting to call the startup functions\n", __FILE__, __LINE__ );
 #endif
+    Startup previous(~0,NULL);
     for ( size_t i = 0; i<startup_count; ++i ) {
       Startup& startup = startup_functions[i];
+      if (startup._Position == previous._Position) {
+        printf("%s:%d At startup there were two adjacent startup functions with the same position value %lu - this could mean a startup order catastrophe\n", __FILE__, __LINE__, startup._Position);
+      }
+      previous = startup;
       MaybeDebugStartup maybe_debug_startup((void*)startup._Function);
 #ifdef DEBUG_STARTUP
       printf("%s:%d     About to invoke fn@%p\n", __FILE__, __LINE__, fn );

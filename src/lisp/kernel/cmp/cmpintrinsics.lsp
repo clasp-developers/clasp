@@ -524,7 +524,7 @@ have it call the main-function"
               (internal-functions-global-bf (irc-bit-cast internal-functions-global %i8*% "internal-functions-ptr")))
           (irc-intrinsic "cc_register_library" fn internal-functions-names-global-bf internal-functions-global-bf internal-functions-length-global))
         (let* ((bc-bf (irc-bit-cast main-function %fn-start-up*% "fnptr-pointer"))
-               (_     (irc-intrinsic "cc_register_startup_function" (jit-constant-i32 position) bc-bf))
+               (_     (irc-intrinsic "cc_register_startup_function" (jit-constant-size_t position) bc-bf))
                (_     (irc-ret-void))))
         ;;(llvm-sys:dump fn)
         fn))))

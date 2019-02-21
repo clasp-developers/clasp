@@ -87,7 +87,7 @@ typedef void*(*fnStartUp)();
 
 namespace core {
   void core__throw_function(T_sp tag, T_sp result_form);
-void register_startup_function(int position, fnStartUp fptr);
+void register_startup_function(size_t position, fnStartUp fptr);
 void register_internal_functions(uintptr_t handle, const claspFunction* funcs, const char** names, size_t len);
 }
 
