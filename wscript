@@ -223,8 +223,8 @@ DEBUG_OPTIONS = [
     "DEBUG_RECURSIVE_ALLOCATIONS",
     "DEBUG_LLVM_OPTIMIZATION_LEVEL_0",
     "DEBUG_SLOW",    # Code runs slower due to checks - undefine to remove checks
-    "USE_HUMAN_READABLE_BITCODE"
-    "CONFIG_VAR_COOL", # mps setting
+    "USE_HUMAN_READABLE_BITCODE",
+    "CONFIG_VAR_COOL" # mps setting
 ]
 
 def build_extension(bld):
