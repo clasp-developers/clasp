@@ -726,6 +726,9 @@ namespace core {
     bool minusp_() const {
       return clasp_minusp(this->_numerator);
     }
+
+    virtual void __write__(T_sp strm) const;
+    
     Ratio_O() : _numerator(clasp_make_fixnum(0)), _denominator(clasp_make_fixnum(1)) {};
     virtual ~Ratio_O() {};
   };

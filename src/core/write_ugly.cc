@@ -145,6 +145,12 @@ void Integer_O::__write__(T_sp stream) const {
   cl__write_sequence(buffer._Buffer, stream, make_fixnum(0), _Nil<T_O>());
 }
 
+void Ratio_O::__write__(T_sp stream) const {
+  write_ugly_object(this->num(), stream);
+  clasp_write_char('/', stream);
+  write_ugly_object(this->den(), stream);
+}
+
 void Complex_O::__write__(T_sp stream) const {
   clasp_write_string("#C(", stream);
   write_ugly_object(this->_real, stream);
