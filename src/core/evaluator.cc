@@ -1862,13 +1862,10 @@ T_mv sp_letSTAR(List_sp args, T_sp parentEnvironment) {
 
 T_mv sp_if(List_sp args, T_sp environment) {
   ASSERT(environment.generalp());
-  T_sp res;
-  {
-    res = eval::evaluate(oCar(args), environment);
-  }
   if (oCdddr(args).notnilp()) {
     SIMPLE_ERROR(BF("Illegal if has too many expressions: %s") % _rep_(args));
   }
+  T_sp res = eval::evaluate(oCar(args), environment);
   if (res.isTrue()) {
     return eval::evaluate(oCadr(args), environment);
   } else {
@@ -1876,7 +1873,7 @@ T_mv sp_if(List_sp args, T_sp environment) {
       return eval::evaluate(oCaddr(args), environment);
     }
   }
-  return (Values(_Nil<T_O>()));
+  return Values(_Nil<T_O>());
 }
 
 T_mv sp_cond(List_sp args, T_sp environment) {
