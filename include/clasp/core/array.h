@@ -955,8 +955,8 @@ namespace core {
   public:
     // The types that define what this class does
     typedef MyParentType Base;
-    typedef MyArrayType /*eg: VectorTNs_O*/ my_array_type;
-    typedef MySimpleArrayType /*eg: VectorTNs_O*/ my_simple_array_type;
+    typedef MyArrayType /*eg: ComplexVector_T_O*/ my_array_type;
+    typedef MySimpleArrayType /*eg: ComplexVector_T_O*/ my_simple_array_type;
     typedef MySimpleType /*eg: SimpleVector_O*/ simple_type;
     typedef typename simple_type::simple_element_type /*eg: T_sp*/ simple_element_type;
     typedef gctools::smart_ptr<my_array_type> my_smart_ptr_type;
@@ -1060,7 +1060,7 @@ namespace core {
   public:
     // The types that define what this class does
     typedef MyParentType Base;
-    typedef MyArrayType /*eg: VectorTNs_O*/ my_array_type;
+    typedef MyArrayType /*eg: ComplexVector_T_O*/ my_array_type;
     typedef MySimpleType /*eg: SimpleVector_O*/ simple_type;
     typedef typename simple_type::simple_element_type /*eg: T_sp*/ simple_element_type;
     typedef gctools::smart_ptr<my_array_type> my_smart_ptr_type;
@@ -1171,7 +1171,7 @@ namespace core {
   public:
     // The types that define what this class does
     typedef MyParentType Base;
-    typedef MyArrayType /*eg: VectorTNs_O*/ my_array_type;
+    typedef MyArrayType /*eg: ComplexVector_T_O*/ my_array_type;
     typedef MySimpleType /*eg: SimpleVector_O*/ simple_type;
     typedef typename simple_type::simple_element_type /*eg: T_sp*/ simple_element_type;
     typedef gctools::smart_ptr<my_array_type> my_smart_ptr_type;
@@ -1566,6 +1566,57 @@ namespace core {
   public:
 //    virtual bool equalp(T_sp o) const final;
   };
+};
+
+namespace core
+{
+FORWARD(ComplexVector_T);
+class ComplexVector_T_O : public template_Array< ComplexVector_T_O, ComplexVector_T_O, SimpleVector_O, MDArray_O >
+{
+  LISP_CLASS(core, CorePkg, ComplexVector_T_O, "ComplexVector_T",MDArray_O);
+  virtual ~ComplexVector_T_O() {};
+
+public:
+
+  typedef template_Array< ComplexVector_T_O, ComplexVector_T_O, SimpleVector_O, MDArray_O> TemplatedBase;
+  typedef typename TemplatedBase::simple_element_type simple_element_type;
+  typedef typename TemplatedBase::simple_type simple_type;
+
+public: // make vector
+
+  ComplexVector_T_O( size_t dummy_rank_1,
+                     size_t dimension,
+                     T_sp fillPointer,
+                     Array_sp data,
+                     bool displacedToP,
+                     Fixnum_sp displacedIndexOffset) : TemplatedBase( Rank1(), dimension, fillPointer, data,displacedToP, displacedIndexOffset ) {};
+
+  static ComplexVector_T_sp make( size_t dimension,
+                                  T_sp initialElement /* =_Nil<T_O>() */,
+                                  T_sp fillPointer /* =_Nil<T_O>() */,
+                                  T_sp dataOrDisplacedTo /* =_Nil<T_O>() */,
+                                  bool displacedToP /* = false */,
+                                  Fixnum_sp displacedIndexOffset /* = clasp_make_fixnum(0) */ )
+  {
+    LIKELY_if ( dataOrDisplacedTo.nilp() )
+    {
+      dataOrDisplacedTo = SimpleVector_O::make(dimension,initialElement,true);
+    }
+    ComplexVector_T_sp array = gctools::GC<ComplexVector_T_O>::allocate_container(false,1,dimension,fillPointer,gc::As_unsafe<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
+    return array;
+  }
+  static ComplexVector_T_sp make(size_t dimension, T_sp initialElement) {
+    return make(dimension,initialElement,_Nil<T_O>(),_Nil<T_O>(),false,clasp_make_fixnum(0));
+  }
+  static ComplexVector_T_sp make(size_t dimension, T_sp initialElement, T_sp fillPointer ) {
+    return make(dimension,initialElement,fillPointer,_Nil<T_O>(),false,clasp_make_fixnum(0));
+  }
+
+public: // specific to ComplexVector_T_O
+  static ComplexVector_T_sp create(const gctools::Vec0<T_sp> &objs);
+public:
+//    virtual bool equalp(T_sp o) const final;
+};
 };
 
 

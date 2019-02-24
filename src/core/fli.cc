@@ -131,7 +131,7 @@ THE SOFTWARE.
 // ---------------------------------------------------------------------------
 
 // This is a hell of a "macro" ... Here are the descriptions of the params:
-// TST           => core::VectorObjects_sp - SmartPtr to a symbol holding the
+// TST           => core::ComplexVector_T_sp - SmartPtr to a symbol holding the
 //                                           an array of ForeignTypeSpec_sp
 // IDX           => int                    - Numeric index number as an index
 //                                           into the TST array
@@ -176,7 +176,7 @@ const std::string FROM_OBJECT_FN_NAME_PREFIX( "from_object_" );
 
 void setup_endianess_info( void );
 void register_foreign_types( void );
-void register_foreign_type_spec( core::VectorObjects_sp sp_tst,
+void register_foreign_type_spec( core::ComplexVector_T_sp sp_tst,
                                  uint32_t n_index,
                                  const core::Symbol_sp lisp_symbol,
                                  const std::string &lisp_name,
@@ -199,7 +199,7 @@ size_t get_fn_address( std::function< T( U... ) > f )
 template <typename T>
 struct register_foreign_type
 {
-  static void doit( core::VectorObjects_sp sp_tst,
+  static void doit( core::ComplexVector_T_sp sp_tst,
                     uint32_t n_index,
                     core::Symbol_sp lisp_symbol,
                     const std::string &cxx_name )
@@ -254,7 +254,7 @@ inline void setup_endianess_info( void )
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-void register_foreign_type_spec( core::VectorObjects_sp sp_tst,
+void register_foreign_type_spec( core::ComplexVector_T_sp sp_tst,
                                  uint32_t n_index,
                                  const core::Symbol_sp lisp_symbol,
                                  const std::string& lisp_name,
@@ -318,8 +318,8 @@ inline void register_foreign_types( void )
 
   // STEP 1 : REGISTER FOREIGN TYPES
 
-  core::VectorObjects_sp sp_tst =
-    core::VectorObjects_O::make( 64, _Nil<core::T_O>() );
+  core::ComplexVector_T_sp sp_tst =
+    core::ComplexVector_T_O::make( 64, _Nil<core::T_O>() );
 
   //  - 1.1 : CREATE FOREIGN TYPE SPECS
 
@@ -685,7 +685,7 @@ int64_t foreign_type_size( core::Symbol_sp atype )
 {
   int64_t result = -1;
 
-  core::VectorObjects_sp sp_tst = gc::As<core::VectorObjects_sp>(_sym_STARforeign_type_spec_tableSTAR->symbolValue());
+  core::ComplexVector_T_sp sp_tst = gc::As<core::ComplexVector_T_sp>(_sym_STARforeign_type_spec_tableSTAR->symbolValue());
   auto iterator = sp_tst->begin();
   auto it_end = sp_tst->end();
 

@@ -392,7 +392,7 @@ void run_quick_tests() {
   printf("%s:%d   gc::IsA<SimpleBaseString_sp>(sbcsTest) -> %d\n", __FILE__, __LINE__, gc::IsA<SimpleBaseString_sp>(sbcsTest) );
   MATCH_PAIR_notnilp(cl__string_EQ_,sbcsTest,sbcs2Test);
   MATCH_PAIRS_notnilp(cl__string_EQ_,sbcsTest,scsTest,s8Test,swTest);
-  VectorTNs_sp vec9 = VectorTNs_O::make(5,_Nil<T_O>(),clasp_make_fixnum(0));
+  ComplexVector_T_sp vec9 = ComplexVector_T_O::make(5,_Nil<T_O>(),clasp_make_fixnum(0));
   for (size_t i=0; i<256; ++i) {
     printf("%s:%d    Building string of %lu size\n", __FILE__, __LINE__, i);
     Str8Ns_sp s9 = Str8Ns_O::make(i,'A',true,_Nil<T_O>());
@@ -401,7 +401,7 @@ void run_quick_tests() {
     printf("%s:%d     done vectorPushExtend final length=%lu total size=%lu\n", __FILE__, __LINE__, vec9->length(),vec9->arrayTotalSize());
   }
   printf("%s:%d    vec9->length() = %lu\n", __FILE__, __LINE__, vec9->length());
-  VectorTNs_sp vec = VectorTNs_O::make(5,_Nil<T_O>());
+  ComplexVector_T_sp vec = ComplexVector_T_O::make(5,_Nil<T_O>());
   printf("%s:%d  vec@%p   length = %lu\n", __FILE__, __LINE__, (void*)&*vec, vec->length());
   printf("%s:%d  vec@%p   vec->_Data = %p\n", __FILE__, __LINE__, (void*)&*vec, (void*)&*(vec->_Data));
   printf("%s:%d  vec@%p   vec.data() = %p\n", __FILE__, __LINE__, (void*)&*vec, (void*)&*(vec->data()));
@@ -1291,7 +1291,7 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], const CommandLine
   for (int j(endArg + 1); j < argc; ++j) {
     vargs.push_back(SimpleBaseString_O::make(argv[j]));
   }
-  VectorObjects_sp args = VectorObjects_O::create(vargs);
+  ComplexVector_T_sp args = ComplexVector_T_O::create(vargs);
   LOG(BF(" Command line arguments are being set in Lisp to: %s") % _rep_(args));
   SYMBOL_EXPORT_SC_(CorePkg, STARcommandLineArgumentsSTAR);
   _sym_STARcommandLineArgumentsSTAR->defparameter(args);

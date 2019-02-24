@@ -1116,7 +1116,7 @@ extern core::T_O* saveValues(core::T_mv *mvP)
   NO_UNWIND_END();
 }
 
-/*! Copy the current MultipleValues in _lisp->values() into a VectorObjects */
+/*! Copy the current MultipleValues in _lisp->values() into a ComplexVector_T */
 extern void loadValues(core::T_mv *resultP, core::T_O* simpleVectorP)
 {NO_UNWIND_BEGIN();
   ASSERT(resultP != NULL);

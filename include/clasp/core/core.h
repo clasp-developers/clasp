@@ -998,7 +998,7 @@ uint64_t lisp_nameword(T_sp name);
   Symbol_sp lisp_internKeyword(const string &name);
   Symbol_sp lisp_intern(const string &name);
   Symbol_sp lisp_intern(const string &symbolName, const string &packageName);
-  T_sp lisp_VectorObjectsFromMultipleValues(T_mv values);
+  T_sp lisp_ComplexVector_TFromMultipleValues(T_mv values);
   string symbol_fullName(Symbol_sp s);
   void lisp_logException(const char *file, const char *fn, int line, const char *structure, T_sp condition);
 //    bool lisp_isGlobalInitializationAllowed(Lisp_sp lisp);

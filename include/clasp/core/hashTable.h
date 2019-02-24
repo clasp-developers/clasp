@@ -59,7 +59,7 @@ size_t next_hash_table_id();
     _RehashCount(0),
     _InitialSize(0),
 #endif
-    _RehashSize(_Nil<Number_O>()), _RehashThreshold(maybeFixRehashThreshold(0.7)),/* _HashTable(_Nil<VectorObjects_O>()),*/ _HashTableCount(0)
+    _RehashSize(_Nil<Number_O>()), _RehashThreshold(maybeFixRehashThreshold(0.7)),/* _HashTable(_Nil<ComplexVector_T_O>()),*/ _HashTableCount(0)
     {};
     virtual ~HashTable_O(){};
   //	DEFAULT_CTOR_DTOR(HashTable_O);
@@ -78,7 +78,7 @@ size_t next_hash_table_id();
 #endif
     Number_sp _RehashSize;
     double _RehashThreshold;
-//    VectorObjects_sp _HashTable;
+//    ComplexVector_T_sp _HashTable;
     gctools::Vec0<Cons_O> _Table;
     size_t _HashTableCount;
 #ifdef CLASP_THREADS
@@ -112,7 +112,7 @@ size_t next_hash_table_id();
     List_sp rehash_no_lock(bool expandTable, T_sp findKey);
     List_sp rehash_upgrade_write_lock(bool expandTable, T_sp findKey);
     CL_LISPIFY_NAME("hash-table-buckets");
-//    CL_DEFMETHOD VectorObjects_sp hash_table_buckets() const { return this->_HashTable; };
+//    CL_DEFMETHOD ComplexVector_T_sp hash_table_buckets() const { return this->_HashTable; };
     CL_LISPIFY_NAME("hash-table-shared-mutex");
     CL_DEFMETHOD T_sp hash_table_shared_mutex() const { if (this->_Mutex) return this->_Mutex; else return _Nil<T_O>(); };
 //    void set_thread_safe(bool thread_safe);

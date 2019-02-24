@@ -403,7 +403,7 @@ void Instance_O::CLASS_set_creator(Creator_sp cb) {
   this->instanceSet(REF_CLASS_CREATOR,cb);
 }
 
-void Instance_O::accumulateSuperClasses(HashTableEq_sp supers, VectorObjects_sp arrayedSupers, Instance_sp mc) {
+void Instance_O::accumulateSuperClasses(HashTableEq_sp supers, ComplexVector_T_sp arrayedSupers, Instance_sp mc) {
   if (IS_SYMBOL_UNDEFINED(mc->_className()))
     return;
   //	printf("%s:%d accumulateSuperClasses of: %s\n", __FILE__, __LINE__, _rep_(mc->className()).c_str() );
@@ -425,7 +425,7 @@ void Instance_O::accumulateSuperClasses(HashTableEq_sp supers, VectorObjects_sp 
 void Instance_O::lowLevel_calculateClassPrecedenceList() {
   using namespace boost;
   HashTableEq_sp supers = HashTableEq_O::create_default();
-  VectorObjects_sp arrayedSupers(VectorObjects_O::make(16, _Nil<T_O>(), clasp_make_fixnum(0)));
+  ComplexVector_T_sp arrayedSupers(ComplexVector_T_O::make(16, _Nil<T_O>(), clasp_make_fixnum(0)));
   this->accumulateSuperClasses(supers, arrayedSupers, this->sharedThis<Instance_O>());
   vector<list<int>> graph(cl__length(arrayedSupers));
 

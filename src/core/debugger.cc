@@ -1957,7 +1957,7 @@ CL_DOCSTRING("printCurrentIhsFrameEnvironment");
 CL_DEFUN void core__print_current_ihs_frame_environment() {
   T_sp args = core__ihs_arguments(core__ihs_current_frame());
   if (args.notnilp()) {
-    VectorObjects_sp vargs = gc::As<VectorObjects_sp>(args);
+    ComplexVector_T_sp vargs = gc::As<ComplexVector_T_sp>(args);
     for (int i = 0; i < cl__length(vargs); ++i) {
       write_bf_stream(BF("arg%s --> %s") % i % _rep_(vargs->rowMajorAref(i)));
     }

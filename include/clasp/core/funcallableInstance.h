@@ -126,7 +126,7 @@ namespace core {
     void GFUN_DISPATCHER_set(T_sp val) { this->_CompiledDispatchFunction.store(val); };
   public:
 
-    void accumulateSuperClasses(HashTableEq_sp supers, VectorObjects_sp arrayedSupers, Instance_sp mc);
+    void accumulateSuperClasses(HashTableEq_sp supers, ComplexVector_T_sp arrayedSupers, Instance_sp mc);
     void lowLevel_calculateClassPrecedenceList();
 
 //    virtual bool isSubClassOf(Instance_sp mc) const;

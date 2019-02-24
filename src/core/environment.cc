@@ -102,7 +102,7 @@ CL_DEFUN T_sp core__environment_debug_values(T_sp frame) {
     return _Nil<T_O>();
   else if (ValueFrame_sp vf = frame.asOrNull<ValueFrame_O>()) {
     int iEnd = vf->length();
-    VectorObjects_sp vo = VectorObjects_O::make(iEnd,_Nil<T_O>());
+    ComplexVector_T_sp vo = ComplexVector_T_O::make(iEnd,_Nil<T_O>());
     for (int i(0); i < iEnd; ++i) {
       T_sp val = (*vf)[i];
       if (val.unboundp()) {

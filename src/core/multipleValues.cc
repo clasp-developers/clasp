@@ -75,7 +75,7 @@ size_t multipleValuesLength(SimpleVector_sp values) {
   return (values->operator[](MultipleValues::MultipleValuesLimit)).unsafe_fixnum();
 }
 
-T_mv multipleValuesLoadFromVector(VectorObjects_sp load) {
+T_mv multipleValuesLoadFromVector(ComplexVector_T_sp load) {
   DEPRECATED();
   if (cl__length(load) > 0) {
     T_mv mvn(load->operator[](0), cl__length(load));

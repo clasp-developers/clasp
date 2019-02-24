@@ -353,7 +353,7 @@ CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("allRegisteredClassNames");
 CL_DEFUN Vector_sp core__all_registered_class_names() {
-  VectorObjects_sp vo = VectorObjects_O::make( _lisp->classSymbolsHolder().size(), _Nil<T_O>());
+  ComplexVector_T_sp vo = ComplexVector_T_O::make( _lisp->classSymbolsHolder().size(), _Nil<T_O>());
   for (int i(0), iEnd(_lisp->classSymbolsHolder().size()); i < iEnd; ++i) {
     vo->rowMajorAset(i, _lisp->classSymbolsHolder()[i]);
   }
