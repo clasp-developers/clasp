@@ -144,11 +144,11 @@ namespace core {
 };
 
 namespace core {
-  class ComplexVector_byte16_t_O : public template_Array<ComplexVector_byte16_t_O,ComplexVector_byte16_t_O,SimpleVector_byte16_t_O,MDArray_O> {
-    LISP_CLASS(core, CorePkg, ComplexVector_byte16_t_O, "ComplexVector_byte16_t",MDArray_O);
+  class ComplexVector_byte16_t_O : public template_Array<ComplexVector_byte16_t_O,ComplexVector_byte16_t_O,SimpleVector_byte16_t_O,ComplexVector_O> {
+    LISP_CLASS(core, CorePkg, ComplexVector_byte16_t_O, "ComplexVector_byte16_t",ComplexVector_O);
     virtual ~ComplexVector_byte16_t_O() {};
   public:
-    typedef template_Array<ComplexVector_byte16_t_O,ComplexVector_byte16_t_O,SimpleVector_byte16_t_O,MDArray_O> TemplatedBase;
+    typedef template_Array<ComplexVector_byte16_t_O,ComplexVector_byte16_t_O,SimpleVector_byte16_t_O,ComplexVector_O> TemplatedBase;
     typedef typename TemplatedBase::simple_element_type simple_element_type;
     typedef typename TemplatedBase::simple_type simple_type;
   public: // make vector
@@ -335,11 +335,11 @@ namespace core {
 
 
 namespace core {
-  class ComplexVector_int16_t_O : public template_Array<ComplexVector_int16_t_O,ComplexVector_int16_t_O,SimpleVector_int16_t_O,MDArray_O> {
-    LISP_CLASS(core, CorePkg, ComplexVector_int16_t_O, "ComplexVector_int16_t",MDArray_O);
+  class ComplexVector_int16_t_O : public template_Array<ComplexVector_int16_t_O,ComplexVector_int16_t_O,SimpleVector_int16_t_O,ComplexVector_O> {
+    LISP_CLASS(core, CorePkg, ComplexVector_int16_t_O, "ComplexVector_int16_t",ComplexVector_O);
     virtual ~ComplexVector_int16_t_O() {};
   public:
-    typedef template_Array<ComplexVector_int16_t_O,ComplexVector_int16_t_O,SimpleVector_int16_t_O,MDArray_O> TemplatedBase;
+    typedef template_Array<ComplexVector_int16_t_O,ComplexVector_int16_t_O,SimpleVector_int16_t_O,ComplexVector_O> TemplatedBase;
     typedef typename TemplatedBase::simple_element_type simple_element_type;
     typedef typename TemplatedBase::simple_type simple_type;
   public: // make vector

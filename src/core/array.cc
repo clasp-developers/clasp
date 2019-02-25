@@ -330,6 +330,7 @@ CL_DEFUN size_t cl__arrayDimension(Array_sp array, size_t idx)
 //
 //
 
+// One dimension constructor
 MDArray_O::MDArray_O(Rank1 dummy,
                      size_t dimension,
                      T_sp fillPointer,
@@ -349,6 +350,8 @@ MDArray_O::MDArray_O(Rank1 dummy,
     this->_FillPointerOrLengthOrDummy = arrayTotalSize;
   }
 }
+
+
 
 // Multi-dimensional constructor
 MDArray_O::MDArray_O(size_t rank,
@@ -472,6 +475,9 @@ Fixnum_sp MDArray_O::vectorPushExtend(T_sp newElement, size_t extension) {
   return make_fixnum(idx);
 }
 
+// ------------------------------------------------------------
+//
+// ComplexVector
 
 
 

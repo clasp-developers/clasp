@@ -142,11 +142,11 @@ namespace core {
 };
 
 namespace core {
-  class ComplexVector_size_t_O : public template_Array<ComplexVector_size_t_O,ComplexVector_size_t_O,SimpleVector_size_t_O,MDArray_O> {
-    LISP_CLASS(core, CorePkg, ComplexVector_size_t_O, "ComplexVector_size_t",MDArray_O);
+  class ComplexVector_size_t_O : public template_Array<ComplexVector_size_t_O,ComplexVector_size_t_O,SimpleVector_size_t_O,ComplexVector_O> {
+    LISP_CLASS(core, CorePkg, ComplexVector_size_t_O, "ComplexVector_size_t",ComplexVector_O);
     virtual ~ComplexVector_size_t_O() {};
   public:
-    typedef template_Array<ComplexVector_size_t_O,ComplexVector_size_t_O,SimpleVector_size_t_O,MDArray_O> TemplatedBase;
+    typedef template_Array<ComplexVector_size_t_O,ComplexVector_size_t_O,SimpleVector_size_t_O,ComplexVector_O> TemplatedBase;
     typedef typename TemplatedBase::simple_element_type simple_element_type;
     typedef typename TemplatedBase::simple_type simple_type;
   public: // make vector

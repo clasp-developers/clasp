@@ -356,7 +356,6 @@ namespace core {
 
 }; /* core */
 
-
 namespace core {
   struct Rank1 {};
   class MDArray_O : public Array_O {
@@ -385,13 +384,13 @@ namespace core {
     size_t      _DisplacedIndexOffset;
     Flags _Flags;
     vector_type _Dimensions;
-    // One dimension vector
+    // One dimension
     MDArray_O(Rank1 dummy_rank,
-              size_t dimension,
-              T_sp fillPointer,
-              Array_sp data,
-              bool displacedToP,
-              Fixnum_sp displacedIndexOffset);
+                  size_t dimension,
+                  T_sp fillPointer,
+                  Array_sp data,
+                  bool displacedToP,
+                  Fixnum_sp displacedIndexOffset);
     // multiple dimensions
     MDArray_O(size_t rank,
               List_sp dimensions,
@@ -459,6 +458,19 @@ namespace core {
     virtual Array_sp unsafe_subseq(size_t start, size_t end) const override;
     virtual Array_sp unsafe_setf_subseq(size_t start, size_t end, Array_sp newSubseq) override;
   };
+};
+
+namespace core {
+class ComplexVector_O : public MDArray_O {
+    LISP_CLASS(core, CorePkg, ComplexVector_O, "ComplexVector",MDArray_O);
+    // One dimension vector
+  ComplexVector_O(Rank1 dummy,
+                  size_t dimension,
+                  T_sp fillPointer,
+                  Array_sp data,
+                  bool displacedToP,
+                  Fixnum_sp displacedIndexOffset) : MDArray_O(Rank1(),dimension,fillPointer,data,displacedToP,displacedIndexOffset) {};
+};
 };
 
 
@@ -1571,14 +1583,14 @@ namespace core {
 namespace core
 {
 FORWARD(ComplexVector_T);
-class ComplexVector_T_O : public template_Array< ComplexVector_T_O, ComplexVector_T_O, SimpleVector_O, MDArray_O >
+class ComplexVector_T_O : public template_Array< ComplexVector_T_O, ComplexVector_T_O, SimpleVector_O, ComplexVector_O >
 {
-  LISP_CLASS(core, CorePkg, ComplexVector_T_O, "ComplexVector_T",MDArray_O);
+  LISP_CLASS(core, CorePkg, ComplexVector_T_O, "ComplexVector_T",ComplexVector_O);
   virtual ~ComplexVector_T_O() {};
 
 public:
 
-  typedef template_Array< ComplexVector_T_O, ComplexVector_T_O, SimpleVector_O, MDArray_O> TemplatedBase;
+  typedef template_Array< ComplexVector_T_O, ComplexVector_T_O, SimpleVector_O, ComplexVector_O> TemplatedBase;
   typedef typename TemplatedBase::simple_element_type simple_element_type;
   typedef typename TemplatedBase::simple_type simple_type;
 
