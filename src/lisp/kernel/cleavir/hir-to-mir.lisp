@@ -153,18 +153,16 @@
                'core:abstract-simple-vector
                (simple-vector-type element-type)))
          (complex-vector-type
-           (case element-type
-             ((base-char) 'core:str8ns)
-             ((character) 'core:str-wns)
-             ((bit) 'core:bit-vector-ns)
-             (t nil)))
+           (if (eq element-type '*)
+               'core:complex-vector
+               (complex-vector-type element-type)))
          (simple-mdarray-type
            (if (eq element-type '*)
                'core:simple-mdarray
                (simple-mdarray-type element-type)))
          (mdarray-type
            (if (eq element-type '*)
-               'core:mdarray
+               'core:mdarray ; FIXME: could be non-simple-mdarray specifically & save redundancy a lil
                (complex-mdarray-type element-type))))
     (let ((pro (if (or (eq dimensions '*) (null dimensions))
                    pro
@@ -189,35 +187,26 @@
                      con))))
             (t
              (cond ((eql rank 1)
+                    ;; check for vector types only
+                    ;; (and so we don't need a rank check)
                     (maybe-gen-primitive-type-check
                      object simple-vector-type pro
-                     (if complex-vector-type ; probably next most likely.
-                         (maybe-gen-primitive-type-check
-                          object complex-vector-type pro
-                          ;; rank is one, so it can't be a simple mdarray.
-                          (maybe-gen-primitive-type-check
-                           object mdarray-type
-                           (gen-rank-check object rank pro con)
-                           con))
-                         ;; no complex vector type, so just mdarray
-                         (maybe-gen-primitive-type-check
-                          object mdarray-type
-                          (gen-rank-check object rank pro con) con))))
+                     (maybe-gen-primitive-type-check
+                      object complex-vector-type pro con)))
                    ((eq rank '*)
-                    ;; just the above without the rank check, and plus simple mdarray.
+                    ;; check for both vector and mdarray types
+                    ;; (and no rank check because it wasn't specified)
                     (maybe-gen-primitive-type-check
                      object simple-vector-type pro
-                     (let ((mdarray-check
-                             (maybe-gen-primitive-type-check
-                              object simple-mdarray-type pro
-                              (maybe-gen-primitive-type-check
-                               object mdarray-type pro con))))
-                       (if complex-vector-type
-                           (maybe-gen-primitive-type-check
-                            object complex-vector-type
-                            pro mdarray-check)
-                           mdarray-check))))
-                   (t ;; checking for some multidimensional type
+                     (maybe-gen-primitive-type-check
+                      object complex-vector-type pro
+                      (maybe-gen-primitive-type-check
+                       object simple-mdarray-type pro
+                       (maybe-gen-primitive-type-check
+                        object mdarray-type pro con)))))
+                   (t
+                    ;; check for mdarray types only,
+                    ;; and check the rank.
                     (maybe-gen-primitive-type-check
                      object simple-mdarray-type pro
                      (maybe-gen-primitive-type-check
@@ -304,6 +293,29 @@
     (if pair
         (cdr pair)
         (error "BUG: Unknown UAET ~a in simple-vector-type" uaet))))
+
+(defparameter +complex-vector-type-map+
+  '((bit . core:bit-vector-ns)
+    (fixnum . core:complex-vector-fixnum)
+    (ext:byte8 . core:complex-vector-byte8-t)
+    (ext:byte16 . core:complex-vector-byte16-t)
+    (ext:byte32 . core:complex-vector-byte32-t)
+    (ext:byte64 . core:complex-vector-byte64-t)
+    (ext:integer8 . core:complex-vector-int8-t)
+    (ext:integer16 . core:complex-vector-int16-t)
+    (ext:integer32 . core:complex-vector-int32-t)
+    (ext:integer64 . core:complex-vector-int64-t)
+    (single-float . core:complex-vector-float)
+    (double-float . core:complex-vector-double)
+    (base-char . core:str8ns)
+    (character . core:str-wns)
+    (t . core:complex-vector-t)))
+
+(defun complex-vector-type (uaet)
+  (let ((pair (assoc uaet +complex-vector-type-map+)))
+    (if pair
+        (cdr pair)
+        (error "BUF: Unknown UAET in complex-vector-type" uaet))))
 
 #-use-boehmdc
 (defparameter +simple-mdarray-type-map+
