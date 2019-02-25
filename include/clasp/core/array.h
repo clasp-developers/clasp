@@ -1234,8 +1234,8 @@ public:
 
 
 namespace core {
-  class StrNs_O : public MDArray_O {
-    LISP_CLASS(core, CorePkg, StrNs_O, "StrNs",MDArray_O);
+  class StrNs_O : public ComplexVector_O {
+    LISP_CLASS(core, CorePkg, StrNs_O, "StrNs",ComplexVector_O);
     virtual ~StrNs_O() {};
   public:
   StrNs_O(Rank1 dummy,
@@ -1245,12 +1245,14 @@ namespace core {
           bool displacedToP,
           Fixnum_sp displacedIndexOffset)
     : Base(dummy,dimension,fillPointer,data,displacedToP,displacedIndexOffset) {};
+#if 0
   StrNs_O(size_t rank,
           List_sp dimensions,
           Array_sp data,
           bool displacedToP,
           Fixnum_sp displacedIndexOffset)
     : Base(rank,dimensions,data,displacedToP,displacedIndexOffset) {};
+#endif
   public:
     virtual void sxhash_(HashGenerator& hg) const final {
       AbstractSimpleVector_sp svec;
@@ -1394,8 +1396,8 @@ namespace core {
 
 namespace core {
   // I can't use the template_Array here because of bitwise access
-  class BitVectorNs_O : public MDArray_O {
-    LISP_CLASS(core, CorePkg, BitVectorNs_O, "BitVectorNs",MDArray_O);
+  class BitVectorNs_O : public ComplexVector_O {
+    LISP_CLASS(core, CorePkg, BitVectorNs_O, "BitVectorNs",ComplexVector_O);
     virtual ~BitVectorNs_O() {};
   public:
     typedef SimpleBitVector_O simple_type;
