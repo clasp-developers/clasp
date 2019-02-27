@@ -639,18 +639,41 @@ void AtomicT_Holder_O::object_makunbound() {
   this->_Object.store(_Unbound<T_O>());
 }
 
-CL_DEFUN bool ext__object_unboundp(AtomicT_Holder_sp ah) {
+CL_DEFUN bool ext__atomic_unboundp(AtomicT_Holder_sp ah) {
   return ah->object_unboundp();
 }
 
-CL_DEFUN T_sp ext__object_get(AtomicT_Holder_sp ah) {
+CL_DEFUN T_sp ext__atomic_get(AtomicT_Holder_sp ah) {
   return ah->object_get();
 }
-CL_DEFUN void ext__object_set(AtomicT_Holder_sp ah, T_sp value) {
+CL_DEFUN void ext__atomic_set(AtomicT_Holder_sp ah, T_sp value) {
   ah->object_set(value);
 }
-CL_DEFUN void ext__object_makunbound(AtomicT_Holder_sp ah) {
+CL_DEFUN void ext__atomic_makunbound(AtomicT_Holder_sp ah) {
   return ah->object_makunbound();
+}
+
+CL_DEFUN bool ext__atomic_compare_and_swap_weak(AtomicT_Holder_sp object,
+                                         T_sp expected,
+                                         T_sp desired )
+{
+  bool result = object->_Object.compare_exchange_weak(expected,desired);
+  return result;
+}
+
+CL_DEFUN bool ext__atomic_compare_and_swap_strong(AtomicT_Holder_sp object,
+                                           T_sp expected,
+                                           T_sp desired )
+{
+  bool result = object->_Object.compare_exchange_strong(expected,desired);
+  return result;
+}
+
+  
+
+CL_DEFUN AtomicT_Holder_sp ext__make_atomic(T_sp value)
+{
+  return AtomicT_Holder_O::create(value);
 }
 
 
