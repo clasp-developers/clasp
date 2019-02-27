@@ -7,56 +7,31 @@
 (defmacro cf2-log (fmt &rest args)
   nil)
 
-#+(or)
-(defun link-modules-parallel (output-pathname modules
-                     &key additional-bitcode-pathnames
-                     &aux conditions)
-  "Link a bunch of modules together, return the linked module"
-  (with-compiler-env (conditions)
-    (let* ((module (llvm-create-module (pathname-name output-pathname)))
-           (*compile-file-pathname* (pathname (merge-pathnames output-pathname)))
-           (*compile-file-truename* (translate-logical-pathname *compile-file-pathname*))
-           (bcnum 0))
-      (with-module ( :module module
-                     :optimize nil)
-        (with-source-pathnames (:source-pathname (pathname output-pathname))
-          (with-debug-info-generator (:module module :pathname output-pathname)
-            (let* ((linker (llvm-sys:make-linker *the-module*))
-                   (part-index 1))
-              ;; Don't enforce .bc extension for additional-bitcode-pathnames
-              ;; This is where I used to link the additional-bitcode-pathnames
-              (dolist (part-module modules)
-                (incf part-index)
-                (multiple-value-bind (failure error-msg)
-                    (let ((global-ctor (find-global-ctor-function part-module))
-                          (priority part-index))
-                      (remove-llvm.global_ctors-if-exists part-module)
-                      (add-llvm.global_ctors part-module priority global-ctor)
-                      (llvm-sys:link-in-module linker part-module))
-                  (when failure
-                    (error "While linking part module ~a" part-module error-msg))))
-              ;; The following links in additional-bitcode-pathnames
-              (dolist (part-pn additional-bitcode-pathnames)
-                (let* ((bc-file part-pn))
-;;;                (bformat t "Linking %s%N" bc-file)
-                  (let* ((part-module (llvm-sys:parse-bitcode-file (namestring (truename bc-file)) *llvm-context*)))
-                    (multiple-value-bind (failure error-msg)
-                        (llvm-sys:link-in-module linker part-module)
-                      (when failure
-                        (error "While linking additional module: ~a  encountered error: ~a" bc-file error-msg))))))
-              (write-bitcode *the-module* (core:coerce-to-filename (pathname (if output-pathname
-                                                                                 output-pathname
-                                                                                 (error "The output pathname is NIL")))))
-              *the-module*)))))))
+(defparameter *compile-file-thread-semaphore* (ext:make-atomic 20))
 
-(defstruct (ast-job (:type vector) :named) ast environment form-output-path form-index error)
+
+(defun semaphore-decf (sem)
+  (loop until (let* ((orig (ext:atomic-get sem))
+                     (dec (1- orig)))
+                (when (>= dec 0)
+                  (ext:atomic-compare-and-swap-weak sem orig dec)))))
+
+
+(defun semaphore-incf (sem)
+  (loop until (let* ((orig (ext:atomic-get sem))
+                     (inc (1+ orig)))
+                (ext:atomic-compare-and-swap-weak sem orig inc))))
+
+
+(defstruct (ast-job (:type vector) :named) ast environment form-output-path form-index error current-source-pos-info)
 
 (defun compile-from-ast (job &key
                                optimize
                                optimize-level
                                intermediate-output-type)
   (handler-case
-      (let ((module (cmp::llvm-create-module (namestring (ast-job-form-output-path job)))))
+      (let ((module (cmp::llvm-create-module (namestring (ast-job-form-output-path job))))
+            (core:*current-source-pos-info* (ast-job-current-source-pos-info job)))
         (with-module (:module module
                       :optimize (when optimize #'optimize-module-for-compile-file)
                       :optimize-level optimize-level)
@@ -98,6 +73,15 @@
            (error "Only options for intermediate-output-type are :object or :bitcode - not ~a" intermediate-output-type))))
     (error (e) (setf (ast-job-error job) e))))
 
+(defun wait-for-ast-job (queue &key optimize optimize-level intermediate-output-type)
+  (loop for ast-job = (core:dequeue queue)
+        until (eq ast-job :quit)
+        do (compile-from-ast ast-job
+                             :optimize optimize
+                             :optimize-level optimize-level
+                             :intermediate-output-type intermediate-output-type)))
+
+
 (defun cclasp-loop2 (input-pathname
                      source-sin
                      environment
@@ -113,76 +97,83 @@
   (let (result
         (form-index (core:next-startup-position))
         (eof-value (gensym))
+        #+cclasp(cleavir-generate-ast:*compiler* 'cl:compile-file)
+        #+cclasp(core:*use-cleavir-compiler* t)
         #+cclasp(eclector.reader:*client* clasp-cleavir::*cst-client*)
-        ast-jobs ast-threads)
-    (loop
-      ;; Required to update the source pos info. FIXME!?
-      (peek-char t source-sin nil)
-      ;; FIXME: if :environment is provided we should probably use a different read somehow
-      (let* ((core:*current-source-pos-info* (core:input-stream-source-pos-info source-sin))
-             (form-output-path (make-pathname :name (format nil "~a_~d" (pathname-name output-path) form-index ) :defaults working-dir))
-             #+cclasp(cleavir-generate-ast:*compiler* 'cl:compile-file)
-             #+cclasp(core:*use-cleavir-compiler* t)
-             #+cst
-             (cst (eclector.concrete-syntax-tree:cst-read source-sin nil eof-value))
-             #+cst
-             (_ (when (eq cst eof-value) (return nil)))
-             #+cst
-             (form (cst:raw cst))
-             #+cst
-             (ast (if cmp::*debug-compile-file*
-                      (clasp-cleavir::compiler-time (clasp-cleavir::cst->ast cst))
-                      (clasp-cleavir::cst->ast cst)))
-             #-cst
-             (form (read source-sin nil eof-value))
-             #-cst
-             (_ (when (eq form eof-value) (return nil)))
-             #-cst
-             (ast (if cmp::*debug-compile-file*
-                      (clasp-cleavir::compiler-time (clasp-cleavir::generate-ast form))
-                      (clasp-cleavir::generate-ast form))))
-        (push form-output-path result)
-        (let ((ast-job (make-ast-job :ast ast
-                                     :environment environment
-                                     :form-output-path form-output-path
-                                     :form-index form-index)))
-          (when *compile-print* (cmp::describe-form form))
-          (unless ast-only
-            (push ast-job ast-jobs)
-            (progn
-              (push (mp:process-run-function
-                     (core:bformat nil "compile-file-%d" form-index)
-                     (lambda ()
-                       (progn
-                         (compile-from-ast ast-job
-                                           :optimize optimize
-                                           :optimize-level optimize-level
-                                           :intermediate-output-type intermediate-output-type)))
-                     `((*compile-print* . ',*compile-print*)
-                       (*compile-verbose* . ',*compile-verbose*)
-                       (*compile-file-output-pathname* . ',*compile-file-output-pathname*)
-                       (*package* . ',*package*)
-                       (*compile-file-pathname* . ',*compile-file-pathname*)
-                       (*compile-file-truename* . ',*compile-file-truename*)
-                       (*source-debug-pathname* . ',*source-debug-pathname*)
-                       (*source-debug-offset* . ',*source-debug-offset*)
-                       (core:*current-source-pos-info* . ',core:*current-source-pos-info*)
-                       (cleavir-generate-ast:*compiler* . ',cleavir-generate-ast:*compiler*)
-                       (core:*use-cleavir-compiler* . ',core:*use-cleavir-compiler*)
-                       (cmp::*global-function-refs* . ',cmp::*global-function-refs*)
-                       ))
-                    ast-threads)
-              #+(or)(mp:process-join (pop ast-threads)))
-            #+(or)
-            (compile-from-ast ast-job
-                              :optimize optimize
-                              :optimize-level optimize-level
-                              :intermediate-output-type intermediate-output-type))
-          (setf form-index (core:next-startup-position)))))
-    ;; Now wait for all threads to join
-;;;    #+(or)
-    (loop for thread in ast-threads
-       do (mp:process-join thread))
+        ast-jobs)
+    (format t "Starting the pool of threads~%")
+    (finish-output)
+    (let* ((number-of-threads (core:num-logical-processors))
+           (ast-queue (core:make-queue 'compile-file-parallel))
+           ;; Setup a pool of threads
+           (ast-threads
+             (loop for thread-num below number-of-threads
+                   collect
+                   (mp:process-run-function
+                    (format nil "compile-file-parallel-~a" thread-num)
+                    (lambda ()
+                      (wait-for-ast-job ast-queue :optimize optimize
+                                                  :optimize-level optimize-level
+                                                  :intermediate-output-type intermediate-output-type))
+                    `((*compile-print* . ',*compile-print*)
+                      (*compile-verbose* . ',*compile-verbose*)
+                      (*compile-file-output-pathname* . ',*compile-file-output-pathname*)
+                      (*package* . ',*package*)
+                      (*compile-file-pathname* . ',*compile-file-pathname*)
+                      (*compile-file-truename* . ',*compile-file-truename*)
+                      (*source-debug-pathname* . ',*source-debug-pathname*)
+                      (*source-debug-offset* . ',*source-debug-offset*)
+                      #+cclasp(cleavir-generate-ast:*compiler* . ',cleavir-generate-ast:*compiler*)
+                      #+cclasp(core:*use-cleavir-compiler* . ',core:*use-cleavir-compiler*)
+                      (cmp::*global-function-refs* . ',cmp::*global-function-refs*))))))
+      (unwind-protect
+           (loop
+             ;; Required to update the source pos info. FIXME!?
+             (peek-char t source-sin nil)
+             ;; FIXME: if :environment is provided we should probably use a different read somehow
+             (let* ((current-source-pos-info (core:input-stream-source-pos-info source-sin))
+                    (form-output-path (make-pathname :name (format nil "~a_~d" (pathname-name output-path) form-index ) :defaults working-dir))
+                    #+cst
+                    (cst (eclector.concrete-syntax-tree:cst-read source-sin nil eof-value))
+                    #+cst
+                    (_ (when (eq cst eof-value) (return nil)))
+                    #+cst
+                    (form (cst:raw cst))
+                    #+cst
+                    (ast (if cmp::*debug-compile-file*
+                             (clasp-cleavir::compiler-time (clasp-cleavir::cst->ast cst))
+                             (clasp-cleavir::cst->ast cst)))
+                    #-cst
+                    (form (read source-sin nil eof-value))
+                    #-cst
+                    (_ (when (eq form eof-value) (return nil)))
+                    #-cst
+                    (ast (if cmp::*debug-compile-file*
+                             (clasp-cleavir::compiler-time (clasp-cleavir::generate-ast form))
+                             (clasp-cleavir::generate-ast form))))
+               (push form-output-path result)
+               (let ((ast-job (make-ast-job :ast ast
+                                            :environment environment
+                                            :current-source-pos-info current-source-pos-info
+                                            :form-output-path form-output-path
+                                            :form-index form-index)))
+                 (when *compile-print* (cmp::describe-form form))
+                 (unless ast-only
+                   (push ast-job ast-jobs)
+                   (core:enqueue ast-queue ast-job))
+                 #+(or)
+                 (compile-from-ast ast-job
+                                   :optimize optimize
+                                   :optimize-level optimize-level
+                                   :intermediate-output-type intermediate-output-type))
+               (setf form-index (core:next-startup-position)))))
+      (progn
+        ;; Now send :quit messages to all threads
+        (loop for thread in ast-threads
+              do (core:enqueue ast-queue :quit))
+        ;; Now wait for all threads to join
+        (loop for thread in ast-threads
+              do (mp:process-join thread))))
     (dolist (job ast-jobs)
       (when (ast-job-error job)
         (error "Compile-error ~a ~%" (ast-job-error job))))
