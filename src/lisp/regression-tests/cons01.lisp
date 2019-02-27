@@ -87,6 +87,12 @@
          
 (test-expect-error GET-PROPERTIES.ERROR.5 (GET-PROPERTIES '(A 1 B 2 C 3 . D) '(X Y)) :type type-error)
 
+(test-expect-error map-1 (MAPCON #'APPEND) :type program-error)
+(test-expect-error map-2 (MAPLIST #'APPEND) :type program-error)
+(test-expect-error map-3 (MAPL #'APPEND) :type program-error)
+(test-expect-error map-4 (MAPCAN #'APPEND) :type program-error)
+(test-expect-error map-5 (MAPCAR #'APPEND) :type program-error)
+(test-expect-error map-6 (MAPC #'APPEND) :type program-error)
 
 (test last.8 (eq 'b (last '(a . b) 0)))
 ;;; 14.2.29 last
