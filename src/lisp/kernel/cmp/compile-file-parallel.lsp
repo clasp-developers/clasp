@@ -7,21 +7,18 @@
 (defmacro cf2-log (fmt &rest args)
   nil)
 
-(defparameter *compile-file-thread-semaphore* (ext:make-atomic 20))
-
-
-(defun semaphore-decf (sem)
-  (loop until (let* ((orig (ext:atomic-get sem))
-                     (dec (1- orig)))
-                (when (>= dec 0)
-                  (ext:atomic-compare-and-swap-weak sem orig dec)))))
-
-
-(defun semaphore-incf (sem)
-  (loop until (let* ((orig (ext:atomic-get sem))
-                     (inc (1+ orig)))
-                (ext:atomic-compare-and-swap-weak sem orig inc))))
-
+#+(or)
+(progn
+  (defparameter *cfp-message-mutex* (mp:make-lock :name "message-mutex"))
+  (defmacro cfp-log (fmt &rest args)
+    `(unwind-protect
+          (progn
+            (mp:get-lock *cfp-message-mutex*)
+            (format *debug-io* ,fmt ,@args))
+       (mp:giveup-lock *cfp-message-mutex*))))
+;;;#+(or)
+(defmacro cfp-log (fmt &rest args)
+  nil)
 
 (defstruct (ast-job (:type vector) :named) ast environment form-output-path form-index error current-source-pos-info)
 
@@ -74,12 +71,19 @@
     (error (e) (setf (ast-job-error job) e))))
 
 (defun wait-for-ast-job (queue &key optimize optimize-level intermediate-output-type)
-  (loop for ast-job = (core:dequeue queue)
-        until (eq ast-job :quit)
-        do (compile-from-ast ast-job
-                             :optimize optimize
-                             :optimize-level optimize-level
-                             :intermediate-output-type intermediate-output-type)))
+  (unwind-protect
+       (loop for ast-job = (core:dequeue queue :timeout 1.0 :timeout-val nil)
+             until (eq ast-job :quit)
+             do (if ast-job
+                    (progn
+                      (cfp-log "Thread ~a compiling form~%" (mp:process-name mp:*current-process*))
+                      (compile-from-ast ast-job
+                                        :optimize optimize
+                                        :optimize-level optimize-level
+                                        :intermediate-output-type intermediate-output-type)
+                      (cfp-log "Thread ~a done with form~%" (mp:process-name mp:*current-process*)))
+                    (cfp-log "Thread ~a timed out during dequeue - trying again~%" (mp:process-name mp:*current-process*))))
+    (cfp-log "Leaving thread ~a~%" (mp:process-name mp:*current-process*))))
 
 
 (defun cclasp-loop2 (input-pathname
@@ -101,7 +105,7 @@
         #+cclasp(core:*use-cleavir-compiler* t)
         #+cclasp(eclector.reader:*client* clasp-cleavir::*cst-client*)
         ast-jobs)
-    (format t "Starting the pool of threads~%")
+    (cfp-log "Starting the pool of threads~%")
     (finish-output)
     (let* ((number-of-threads (core:num-logical-processors))
            (ast-queue (core:make-queue 'compile-file-parallel))
@@ -170,10 +174,13 @@
       (progn
         ;; Now send :quit messages to all threads
         (loop for thread in ast-threads
-              do (core:enqueue ast-queue :quit))
+              do (cfp-log "Sending two :quit (why not?) for thread ~a~%" (mp:process-name thread))
+              do (core:enqueue ast-queue :quit)
+                 (core:enqueue ast-queue :quit))
         ;; Now wait for all threads to join
         (loop for thread in ast-threads
-              do (mp:process-join thread))))
+              do (mp:process-join thread)
+                 (cfp-log "Process-join of thread ~a~%" (mp:process-name thread)))))
     (dolist (job ast-jobs)
       (when (ast-job-error job)
         (error "Compile-error ~a ~%" (ast-job-error job))))

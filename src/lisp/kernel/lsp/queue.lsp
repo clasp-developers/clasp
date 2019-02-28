@@ -77,9 +77,7 @@ RETURN:     The NOT-EMPTY condition variable of the QUEUE.
 
 (defun enqueue (queue message)
   "
-DO:         Atomically enqueues the MESSAGE in the QUEUE.  If the
-            queue was empty, then a condition-notify is sent on the
-            queue not-empty condition.
+DO:         Atomically enqueues the MESSAGE in the QUEUE.  
 
 RETURN:     MESSAGE
 "
@@ -87,9 +85,8 @@ RETURN:     MESSAGE
     (if (queue-tail queue)
         (setf (cdr (queue-tail queue)) (list message)
               (queue-tail queue) (cdr (queue-tail queue)))
-        (progn
-          (setf (queue-head queue) (setf (queue-tail queue) (list message)))
-          (mp:condition-variable-signal (queue-not-empty queue)))))
+        (setf (queue-head queue) (setf (queue-tail queue) (list message))))
+    (mp:condition-variable-signal (queue-not-empty queue)))
   message)
 
 (defun dequeue (queue &key (timeout nil timeoutp) (timeout-val nil timeout-val-p))
