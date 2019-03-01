@@ -47,8 +47,8 @@ struct gctools::GCInfo<core::WeakKeyHashTable_O> {
 
 namespace core {
 FORWARD(WeakKeyHashTable);
-class WeakKeyHashTable_O : public General_O {
-  LISP_CLASS(core, CorePkg, WeakKeyHashTable_O, "WeakKeyHashTable",General_O);
+class WeakKeyHashTable_O : public HashTableBase_O {
+  LISP_CLASS(core, CorePkg, WeakKeyHashTable_O, "WeakKeyHashTable",HashTableBase_O);
 #if defined(XML_ARCHIVE)
   DECLARE_ARCHIVE();
 #endif  // defined(XML_ARCHIVE)
@@ -109,8 +109,8 @@ struct gctools::GCInfo<core::StrongKeyHashTable_O> {
 
 namespace core {
 FORWARD(StrongKeyHashTable);
-class StrongKeyHashTable_O : public General_O {
-  LISP_CLASS(core, CorePkg, StrongKeyHashTable_O, "StrongKeyHashTable",General_O);
+class StrongKeyHashTable_O : public HashTableBase_O {
+  LISP_CLASS(core, CorePkg, StrongKeyHashTable_O, "StrongKeyHashTable",HashTableBase_O);
 public: // instance variables here
   typedef typename gctools::StrongKeyHashTable::value_type value_type;
   typedef typename gctools::StrongKeyHashTable::KeyBucketsType KeyBucketsType;

@@ -41,14 +41,22 @@ T_sp cl__make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_size, Real_
 
 size_t next_hash_table_id();
 
+  FORWARD(HashTableBase);
+  class HashTableBase_O : public General_O {
+    struct metadata_bootstrap_class {};
+    LISP_CLASS(core, ClPkg, HashTableBase_O, "HashTableBase",core::General_O);
+  public:
+    virtual T_sp hash_table_setf_gethash(T_sp key, T_sp value) = 0;
+  };
+
 
   FORWARD(HashTable);
-  class HashTable_O : public General_O {
+  class HashTable_O : public HashTableBase_O {
     struct metadata_bootstrap_class {};
     friend T_sp cl__make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_size, Real_sp orehash_threshold, Symbol_sp weakness, T_sp debug, T_sp thread_safe);
     friend class HashTableReadLock;
     friend class HashTableWriteLock;
-    LISP_CLASS(core, ClPkg, HashTable_O, "HashTable",core::General_O);
+    LISP_CLASS(core, ClPkg, HashTable_O, "HashTable",HashTableBase_O);
     bool fieldsp() const { return true; };
     void fields(Record_sp node);
 
