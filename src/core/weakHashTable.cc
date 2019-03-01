@@ -97,8 +97,9 @@ T_mv WeakKeyHashTable_O::gethash(T_sp key, T_sp defaultValue) {
   return this->_HashTable.gethash(key, defaultValue);
 }
 
-void WeakKeyHashTable_O::setf_gethash(T_sp key, T_sp value) {
+T_sp WeakKeyHashTable_O::hash_table_setf_gethash(T_sp key, T_sp value) {
   this->_HashTable.set(key, value);
+  return value;
 }
 void WeakKeyHashTable_O::maphash(std::function<void(T_sp, T_sp)> const &fn) {
   this->_HashTable.maphash(fn);
@@ -138,7 +139,7 @@ CL_LAMBDA(ht key value);
 CL_DECLARE();
 CL_DOCSTRING("weakSetfGethash");
 CL_DEFUN void core__weak_setf_gethash(T_sp key, WeakKeyHashTable_sp ht, T_sp val) {
-  ht->setf_gethash(key, val);
+  ht->hash_table_setf_gethash(key, val);
 };
 
 CL_LAMBDA(ht key);
@@ -251,8 +252,9 @@ T_mv StrongKeyHashTable_O::gethash(T_sp key, T_sp defaultValue) {
   return this->_HashTable.gethash(key, defaultValue);
 }
 
-void StrongKeyHashTable_O::setf_gethash(T_sp key, T_sp value) {
+T_sp StrongKeyHashTable_O::hash_table_setf_gethash(T_sp key, T_sp value) {
   this->_HashTable.set(key, value);
+  return value;
 }
 void StrongKeyHashTable_O::maphash(std::function<void(T_sp, T_sp)> const &fn) {
   this->_HashTable.maphash(fn);
@@ -293,7 +295,7 @@ CL_LAMBDA(hashtable key value);
 CL_DECLARE();
 CL_DOCSTRING("strongSetfGethash");
 CL_DEFUN void core__strong_setf_gethash(StrongKeyHashTable_sp ht, T_sp key, T_sp val) {
-  ht->setf_gethash(key, val);
+  ht->hash_table_setf_gethash(key, val);
 };
 
 CL_LAMBDA(ht key);

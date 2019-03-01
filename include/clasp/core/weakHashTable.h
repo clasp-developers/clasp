@@ -29,7 +29,6 @@ THE SOFTWARE.
 
 #include <clasp/core/object.h>
 #include <clasp/gctools/gcweak.h>
-//#include <clasp/core/hashTable.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/corePackage.fwd.h>
 
@@ -78,7 +77,7 @@ public:
   virtual int tableSize() const;
   cl_index size() const { return this->tableSize(); };
 
-  void setf_gethash(T_sp key, T_sp value);
+  T_sp hash_table_setf_gethash(T_sp key, T_sp value);
 
   bool fullp();
 
@@ -128,7 +127,7 @@ public:
   virtual int tableSize() const;
   cl_index size() const { return this->tableSize(); };
 
-  void setf_gethash(T_sp key, T_sp value);
+  T_sp hash_table_setf_gethash(T_sp key, T_sp value);
 
   bool fullp();
 

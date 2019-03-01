@@ -478,6 +478,17 @@ namespace core {
 };
 
 
+namespace core {
+  FORWARD(HashTableBase);
+  class HashTableBase_O : public General_O {
+    struct metadata_bootstrap_class {};
+    LISP_CLASS(core, ClPkg, HashTableBase_O, "HashTableBase",core::General_O);
+  public:
+    virtual T_sp hash_table_setf_gethash(T_sp key, T_sp value) = 0;
+  };
+
+};
+
 
 namespace core {
 
