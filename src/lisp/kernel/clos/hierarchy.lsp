@@ -248,7 +248,7 @@
 	    (function)
 	    (pathname)
 	      (logical-pathname pathname)
-            #+or() (hash-table)  ;;No longer inherits from (core:general) 
+            ;;; (hash-table)  ;;No longer inherits from (core:general) 
 	    (random-state)
 	    (readtable)
             (si::code-block)
