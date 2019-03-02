@@ -229,6 +229,20 @@ HashTable_sp HashTable_O::create_thread_safe(T_sp test, SimpleBaseString_sp read
   return ht;
 }
 
+T_mv HashTable_O::maphash(T_sp function_desig) {
+    //        printf("%s:%d starting maphash on hash-table@%p\n", __FILE__, __LINE__, hash_table.raw_());
+  Function_sp func = coerce::functionDesignator(function_desig);
+  HT_READ_LOCK(this);
+  for (size_t it = 0, itEnd = this->_Table.size(); it < itEnd; ++it) {
+    Cons_O& entry = this->_Table[it];
+    if (!entry._Car.unboundp()&&!entry._Car.deletedp()) {
+      eval::funcall(func,entry._Car,entry._Cdr);
+    }
+  }
+  //        printf("%s:%d finished maphash on hash-table@%p\n", __FILE__, __LINE__, hash_table.raw_());
+  return (Values(_Nil<T_O>()));
+}
+
 CL_LAMBDA(function-desig hash-table);
 CL_DECLARE();
 CL_DOCSTRING("see CLHS");
@@ -239,14 +253,7 @@ CL_DEFUN T_mv cl__maphash(T_sp function_desig, T_sp thash_table) {
     SIMPLE_ERROR(BF("maphash called with nil hash-table"));
   }
   HashTable_sp hash_table = gc::As<HashTable_sp>(thash_table);
-  HT_READ_LOCK(&*hash_table);
-  for (size_t it = 0, itEnd = hash_table->_Table.size(); it < itEnd; ++it) {
-    Cons_O& entry = hash_table->_Table[it];
-    if (!entry._Car.unboundp()&&!entry._Car.deletedp()) {
-      eval::funcall(func,entry._Car,entry._Cdr);
-    }
-  }
-  //        printf("%s:%d finished maphash on hash-table@%p\n", __FILE__, __LINE__, hash_table.raw_());
+  hash_table->maphash(function_desig);
   return (Values(_Nil<T_O>()));
 }
 
@@ -312,13 +319,14 @@ CL_DEFUN bool cl__remhash(T_sp key, HashTable_sp ht) {
   return ht->remhash(key);
 };
 
-void HashTable_O::clrhash() {
+T_sp HashTable_O::clrhash() {
   ASSERT(!clasp_zerop(this->_RehashSize));
   this->_HashTableCount = 0;
   T_sp unbound = _Unbound<T_O>();
   this->_Table.resize(0,Cons_O(unbound,unbound));
   this->setup(16, this->_RehashSize, this->_RehashThreshold);
   VERIFY_HASH_TABLE_COUNT(this);
+  return this->asSmartPtr();
 }
 
 double maybeFixRehashThreshold(double rt)
@@ -559,10 +567,10 @@ CL_DECLARE();
 CL_DOCSTRING("hash-table-count");
 CL_DEFUN uint cl__hash_table_count(HashTable_sp ht) {
   HT_READ_LOCK(&*ht);
-  return ht->_HashTableCount;
+  return ht->hashTableCount();
 }
 
-uint HashTable_O::hashTableCount() const {
+size_t HashTable_O::hashTableCount() const {
   HT_READ_LOCK(this);
   return this->_HashTableCount;
 }
@@ -967,27 +975,42 @@ CL_DEFMETHOD string HashTable_O::hash_table_dump(Fixnum start, T_sp end) const {
     return ss.str();
   }
 
+Number_sp HashTable_O::rehash_size()
+{
+  return this->_RehashSize;
+}
+
+double HashTable_O::rehash_threshold() {
+  return this->_RehashThreshold;
+}
+
+T_sp HashTable_O::hash_table_test() {
+  return this->hashTableTest();
+}
+
 CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("hash-table-rehash-size");
 CL_DEFUN Number_sp cl__hash_table_rehash_size(HashTable_sp ht) {
   HT_READ_LOCK(&*ht);
-  return ht->_RehashSize;
+  return ht->rehash_size();
 };
+
+
 
 CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("hash-table-rehash-threshold");
 CL_DEFUN double cl__hash_table_rehash_threshold(HashTable_sp ht) {
   HT_READ_LOCK(&*ht);
-  return ht->_RehashThreshold;
+  return ht->rehash_threshold();
 };
 
 CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("hash-table-test");
 CL_DEFUN T_sp cl__hash_table_test(HashTable_sp ht) {
-  return ht->hashTableTest();
+  return ht->hash_table_test();
 };
 
 

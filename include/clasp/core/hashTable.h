@@ -30,6 +30,7 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <clasp/core/record.h>
 #include <clasp/core/array.h>
+#include <clasp/core/hashTableBase.h>
 #include <clasp/core/mpPackage.fwd.h>
 #include <clasp/core/corePackage.fwd.h>
 
@@ -62,7 +63,9 @@ namespace core{
     _RehashCount(0),
     _InitialSize(0),
 #endif
-    _RehashSize(_Nil<Number_O>()), _RehashThreshold(maybeFixRehashThreshold(0.7)),/* _HashTable(_Nil<ComplexVector_T_O>()),*/ _HashTableCount(0)
+    _RehashSize(_Nil<Number_O>()),
+    _RehashThreshold(maybeFixRehashThreshold(0.7)),
+    _HashTableCount(0)
     {};
     virtual ~HashTable_O(){};
   //	DEFAULT_CTOR_DTOR(HashTable_O);
@@ -72,7 +75,6 @@ namespace core{
     friend class HashTableEqualp_O;
     friend T_mv cl__maphash(T_sp function_desig, HashTable_sp hash_table);
     friend T_sp cl__clrhash(HashTable_sp hash_table);
-
   public: // instance variables here
 #ifdef DEBUG_REHASH_COUNT
     size_t    _HashTableId;
@@ -126,7 +128,7 @@ namespace core{
     virtual T_sp hashTableTest() const { SUBIMP(); };
 
   /*! Return a count of the number of keys */
-    uint hashTableCount() const;
+    size_t hashTableCount() const;
     size_t size() { return this->hashTableCount(); };
 
     virtual gc::Fixnum sxhashKey(T_sp key, gc::Fixnum bound, bool willAddKey) const;
@@ -151,7 +153,11 @@ namespace core{
     T_sp setf_gethash_no_write_lock(T_sp key, T_sp value);
     void setf_gethash(T_sp key, T_sp val) { this->hash_table_setf_gethash(key, val); };
 
-    void clrhash();
+    Number_sp rehash_size();
+    double rehash_threshold();
+    T_sp hash_table_test();
+    
+    T_sp clrhash();
 
     bool remhash(T_sp key);
 
@@ -160,6 +166,8 @@ namespace core{
     string hash_table_dump(Fixnum start, T_sp end) const;
 
     void lowLevelMapHash(KeyValueMapper *mapper) const;
+
+    T_mv maphash(T_sp fn); 
 
     void mapHash(std::function<void(T_sp, T_sp)> const &fn);
     void maphash(std::function<void(T_sp, T_sp)> const &fn) { this->mapHash(fn); };

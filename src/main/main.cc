@@ -71,6 +71,7 @@ THE SOFTWARE.
 #include <clasp/core/instance.h>
 #include <clasp/llvmo/llvmoPackage.h>
 #include <clasp/core/debugger.h>
+#include <clasp/core/hashTableEqual.h>
 #include <clasp/gctools/gctoolsPackage.h>
 #include <clasp/clbind/clbindPackage.h>
 #include <clasp/sockets/socketsPackage.h>
@@ -378,6 +379,16 @@ void* to_fixnum(int8_t v) {
 
 int main( int argc, char *argv[] )
 {
+
+#if 0
+  core::HashTableEqual_O foo;
+  printf("%s:%d std::is_default_constructible<core::General_O>()::value -> %d\n", __FILE__, __LINE__, std::is_default_constructible<core::General_O>::value);
+  printf("%s:%d std::is_default_constructible<core::HashTableBase_O>()::value -> %d\n", __FILE__, __LINE__, std::is_default_constructible<core::HashTableBase_O>::value);
+  printf("%s:%d std::is_default_constructible<core::HashTable_O>()::value -> %d\n", __FILE__, __LINE__, std::is_default_constructible<core::HashTable_O>::value);
+  printf("%s:%d std::is_default_constructible<core::HashTableEqual_O>()::value -> %d\n", __FILE__, __LINE__, std::is_default_constructible<core::HashTableEqual_O>::value);
+  printf("%s:%d std::is_default_constructible<core::Array_O>()::value -> %d\n", __FILE__, __LINE__, std::is_default_constructible<core::Array_O>::value);
+  printf("%s:%d std::is_default_constructible<core::SimpleVector_O>()::value -> %d\n", __FILE__, __LINE__, std::is_default_constructible<core::SimpleVector_O>::value);
+#endif
   // Do not touch debug log until after MPI init
 
   bool mpiEnabled = false;
