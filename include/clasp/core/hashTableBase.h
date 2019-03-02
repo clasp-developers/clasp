@@ -33,7 +33,7 @@ namespace core {
   FORWARD(HashTableBase);
   class HashTableBase_O : public General_O {
     struct metadata_bootstrap_class {};
-    LISP_CLASS(core, ClPkg, HashTableBase_O, "HashTableBase",core::General_O);
+    LISP_CLASS(core, CorePkg, HashTableBase_O, "HashTableBase",core::General_O);
   HashTableBase_O() {};
   public:
     virtual T_sp hash_table_setf_gethash(T_sp key, T_sp value) = 0;
@@ -44,7 +44,8 @@ namespace core {
     virtual T_sp hash_table_test() = 0;
     virtual T_mv maphash(T_sp function_desig) = 0;
     virtual T_sp clrhash() = 0;
-    virtual size_t hashTableCount() const = 0 ;
+    virtual size_t hashTableCount() const = 0;
+    virtual size_t hashTableSize() const = 0;
   };
 
 };

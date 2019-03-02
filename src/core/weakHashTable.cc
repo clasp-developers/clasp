@@ -113,10 +113,6 @@ T_mv WeakKeyHashTable_O::gethash(T_sp key, T_sp defaultValue) {
   return this->_HashTable.gethash(key, defaultValue);
 }
 
-T_sp WeakKeyHashTable_O::hash_table_setf_gethash(T_sp key, T_sp value) {
-  this->_HashTable.set(key, value);
-  return value;
-}
 void WeakKeyHashTable_O::maphashLowLevel(std::function<void(T_sp, T_sp)> const &fn) {
   this->_HashTable.maphash(fn);
 }
@@ -156,6 +152,12 @@ CL_DOCSTRING("weakGethash");
 CL_DEFUN T_mv core__weak_gethash(T_sp tkey, WeakKeyHashTable_sp ht, T_sp defaultValue) {
   return ht->gethash(tkey, defaultValue);
 };
+
+CL_LISPIFY_NAME("core:hashTableSetfGethash");
+CL_DEFMETHOD T_sp WeakKeyHashTable_O::hash_table_setf_gethash(T_sp key, T_sp value) {
+  this->_HashTable.set(key, value);
+  return value;
+}
 
 CL_LAMBDA(ht key value);
 CL_DECLARE();
