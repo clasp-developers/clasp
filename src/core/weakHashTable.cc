@@ -117,9 +117,8 @@ void WeakKeyHashTable_O::maphashLowLevel(std::function<void(T_sp, T_sp)> const &
   this->_HashTable.maphash(fn);
 }
 
-T_mv WeakKeyHashTable_O::maphash(T_sp func) {
+void WeakKeyHashTable_O::maphash(T_sp func) {
   this->_HashTable.maphashFn(func);
-  return Values(_Nil<T_O>());
 }
 
 bool WeakKeyHashTable_O::remhash(T_sp tkey) {

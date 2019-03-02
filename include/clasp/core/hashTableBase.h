@@ -42,7 +42,7 @@ namespace core {
     virtual Number_sp rehash_size() = 0;
     virtual double rehash_threshold() = 0;
     virtual T_sp hash_table_test() = 0;
-    virtual T_mv maphash(T_sp function_desig) = 0;
+    virtual void maphash(T_sp function_desig) = 0;
     virtual T_sp clrhash() = 0;
     virtual size_t hashTableCount() const = 0;
     virtual size_t hashTableSize() const = 0;
