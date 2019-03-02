@@ -77,6 +77,7 @@ public:
 public:
   size_t hashTableCount() const { return this->_HashTable.tableSize();};
   cl_index size() const { return this->hashTableCount(); };
+  size_t hashTableSize() const { return this->_HashTable.length();};
 
   T_sp hash_table_setf_gethash(T_sp key, T_sp value);
 

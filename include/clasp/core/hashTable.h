@@ -129,6 +129,7 @@ namespace core{
 
   /*! Return a count of the number of keys */
     size_t hashTableCount() const;
+    size_t hashTableSize() const;
     size_t size() { return this->hashTableCount(); };
 
     virtual gc::Fixnum sxhashKey(T_sp key, gc::Fixnum bound, bool willAddKey) const;
