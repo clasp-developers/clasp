@@ -56,7 +56,7 @@ namespace core{
     bool fieldsp() const { return true; };
     void fields(Record_sp node);
 
-    friend T_mv cl__maphash(T_sp function_desig, T_sp hash_table);
+    friend T_sp cl__maphash(T_sp function_desig, T_sp hash_table);
   HashTable_O() :
 #ifdef DEBUG_REHASH_COUNT
     _HashTableId(next_hash_table_id()),
@@ -73,7 +73,7 @@ namespace core{
     friend class HashTableEql_O;
     friend class HashTableEqual_O;
     friend class HashTableEqualp_O;
-    friend T_mv cl__maphash(T_sp function_desig, HashTable_sp hash_table);
+    friend T_sp cl__maphash(T_sp function_desig, HashTable_sp hash_table);
     friend T_sp cl__clrhash(HashTable_sp hash_table);
   public: // instance variables here
 #ifdef DEBUG_REHASH_COUNT
@@ -168,7 +168,7 @@ namespace core{
 
     void lowLevelMapHash(KeyValueMapper *mapper) const;
 
-    T_mv maphash(T_sp fn); 
+    void maphash(T_sp fn); 
 
     void mapHash(std::function<void(T_sp, T_sp)> const &fn);
     void maphash(std::function<void(T_sp, T_sp)> const &fn) { this->mapHash(fn); };

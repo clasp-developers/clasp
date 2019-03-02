@@ -229,7 +229,7 @@ HashTable_sp HashTable_O::create_thread_safe(T_sp test, SimpleBaseString_sp read
   return ht;
 }
 
-T_mv HashTable_O::maphash(T_sp function_desig) {
+void HashTable_O::maphash(T_sp function_desig) {
     //        printf("%s:%d starting maphash on hash-table@%p\n", __FILE__, __LINE__, hash_table.raw_());
   Function_sp func = coerce::functionDesignator(function_desig);
   HT_READ_LOCK(this);
@@ -240,13 +240,12 @@ T_mv HashTable_O::maphash(T_sp function_desig) {
     }
   }
   //        printf("%s:%d finished maphash on hash-table@%p\n", __FILE__, __LINE__, hash_table.raw_());
-  return (Values(_Nil<T_O>()));
 }
 
 CL_LAMBDA(function-desig hash-table);
 CL_DECLARE();
 CL_DOCSTRING("see CLHS");
-CL_DEFUN T_mv cl__maphash(T_sp function_desig, HashTableBase_sp hash_table) {
+CL_DEFUN T_sp cl__maphash(T_sp function_desig, HashTableBase_sp hash_table) {
   //        printf("%s:%d starting maphash on hash-table@%p\n", __FILE__, __LINE__, hash_table.raw_());
   Function_sp func = coerce::functionDesignator(function_desig);
   if (hash_table.nilp()) {

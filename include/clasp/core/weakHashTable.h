@@ -90,7 +90,7 @@ public:
   gc::Fixnum sxhashKey(T_sp key, gc::Fixnum bound, bool willAddKey) const;
 
   void maphashLowLevel(std::function<void(T_sp, T_sp)> const &fn);
-  T_mv maphash(T_sp functionDesig); 
+  void maphash(T_sp functionDesig); 
 
   T_mv gethash(T_sp key, T_sp defaultValue = _Nil<T_O>());
   bool remhash(T_sp key);
