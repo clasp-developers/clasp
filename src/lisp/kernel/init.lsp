@@ -433,7 +433,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
            (build-linkflags (split-at-white-space *build-linkflags*))
            (link-flags (append ldflags #+(or)(list clasp-lib-dir) build-linkflags libdir-flag libs build-stlib build-lib)))
       (close stream)
-      (if (or (member :use-boehm *features*) (member :use-boehmdc *features*))
+      (if (member :use-boehm *features*)
           (setq link-flags (cons "-lgc" link-flags)))
       (let ((library-extension (if (member :target-os-darwin *features*)
                                    "dylib"

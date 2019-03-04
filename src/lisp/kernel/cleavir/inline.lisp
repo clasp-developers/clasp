@@ -171,14 +171,12 @@
            t nil)
       whole))
 
-#-use-boehmdc
 (progn
   (debug-inline "consp")
   (declaim (inline cl:consp))
   (defun cl:consp (x)
     (if (cleavir-primop:typeq x cons) t nil)))
 
-#-use-boehmdc
 (progn
   (debug-inline "null")
   (declaim (inline cl:null))
@@ -195,7 +193,6 @@
           ((null list) t)
           (t (error 'type-error :datum list :expected-type 'list)))))
 
-#-use-boehmdc
 (progn
   (debug-inline "fixnump")
   (declaim (inline core:fixnump))
@@ -214,7 +211,6 @@
   (defun core:single-float-p (x)
     (if (cleavir-primop:typeq x cl:single-float) t nil)))
 
-#-use-boehmdc
 (progn
   (debug-inline "car")
   (declaim (inline cl:car))
@@ -225,7 +221,6 @@
             nil
             (error 'type-error :datum x :expected-type 'list)))))
 
-#-use-boehmdc
 (progn
   (debug-inline "cdr")
   (declaim (inline cl:cdr))
@@ -290,7 +285,6 @@
 
 (debug-inline "rplaca")
 
-#-use-boehmdc
 (progn
   (declaim (inline cl:rplaca))
   (defun cl:rplaca (p v)
@@ -300,7 +294,6 @@
           p)
         (error 'type-error :datum p :expected-type 'cons))))
 
-#-use-boehmdc
 (progn
   (declaim (inline cl:rplacd))
   (defun cl:rplacd (p v)
@@ -313,7 +306,6 @@
 
 (debug-inline "primop")
 
-#-use-boehmdc
 (progn
   (defmacro define-with-contagion (inlined-name comparison (x y) fixnum single-float double-float generic)
     (declare (ignore comparison)) ; this will be used to control fp behavior, see CLHS 12.1.4.1
@@ -391,7 +383,6 @@
   (defcomparison primop:inlined-two-arg->=
     cleavir-primop:fixnum-not-less    cleavir-primop:float-not-less    core:two-arg->=))
 
-#-use-boehmdc
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (define-cleavir-compiler-macro + (&whole form &rest numbers)
     (core:expand-associative '+ 'primop:inlined-two-arg-+ numbers 0))
