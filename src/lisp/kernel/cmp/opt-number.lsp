@@ -1,5 +1,7 @@
 (in-package #:cmp)
 
+;;; arithmetic
+
 (define-compiler-macro min (&whole form &rest args)
   (if (null args) ; invalid
       form
@@ -57,3 +59,45 @@
 
 (define-compiler-macro 1- (x)
   `(core:two-arg-- ,x 1))
+
+;;; byte operations: look for calls like (foo ... (byte ...) ...)
+
+(in-package #:core)
+
+(defun parse-bytespec (bytespec)
+  (when (and (consp bytespec)
+             (eql (car bytespec) 'byte)
+             (consp (cdr bytespec))
+             (consp (cddr bytespec))
+             (null (cdddr bytespec)))
+    (values (cadr bytespec) (caddr bytespec))))
+
+(define-compiler-macro ldb (&whole whole bytespec integer)
+  (multiple-value-bind (size position) (parse-bytespec bytespec)
+    (if size
+        `(%ldb ,size ,position ,integer)
+        whole)))
+
+(define-compiler-macro ldb-test (&whole whole bytespec integer)
+  (multiple-value-bind (size position) (parse-bytespec bytespec)
+    (if size
+        `(%ldb-test ,size ,position ,integer)
+        whole)))
+
+(define-compiler-macro mask-field (&whole whole bytespec integer)
+  (multiple-value-bind (size position) (parse-bytespec bytespec)
+    (if size
+        `(%mask-field ,size ,position ,integer)
+        whole)))
+
+(define-compiler-macro dpb (&whole whole newbyte bytespec integer)
+  (multiple-value-bind (size position) (parse-bytespec bytespec)
+    (if size
+        `(%dpb ,newbyte ,size ,position ,integer)
+        whole)))
+
+(define-compiler-macro deposit-field (&whole whole newbyte bytespec integer)
+  (multiple-value-bind (size position) (parse-bytespec bytespec)
+    (if size
+        `(%deposit-field ,newbyte ,size ,position ,integer)
+        whole)))

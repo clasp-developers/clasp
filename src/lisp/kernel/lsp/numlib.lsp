@@ -275,20 +275,6 @@ Extracts a byte from INTEGER at the specified byte position, right-justifies
 the byte, and returns the result as an integer."
   (%ldb (byte-size bytespec) (byte-position bytespec) integer))
 
-(defun parse-bytespec (bytespec)
-  (when (and (consp bytespec)
-             (eql (car bytespec) 'byte)
-             (consp (cdr bytespec))
-             (consp (cddr bytespec))
-             (null (cdddr bytespec)))
-    (values (cadr bytespec) (caddr bytespec))))
-
-(define-compiler-macro ldb (&whole whole bytespec integer)
-  (multiple-value-bind (size position) (parse-bytespec bytespec)
-    (if size
-        `(%ldb ,size ,position ,integer)
-        whole)))
-
 (declaim (inline %ldb-test))
 (defun %ldb-test (size position integer)
   (not (zerop (%mask-field size position integer))))
@@ -297,12 +283,6 @@ the byte, and returns the result as an integer."
   "Args: (bytespec integer)
 Returns T if at least one bit of the specified byte is 1; NIL otherwise."
   (%ldb-test (byte-size bytespec) (byte-position bytespec) integer))
-
-(define-compiler-macro ldb-test (&whole whole bytespec integer)
-  (multiple-value-bind (size position) (parse-bytespec bytespec)
-    (if size
-        `(%ldb-test ,size ,position ,integer)
-        whole)))
 
 (declaim (inline %mask-field))
 (defun %mask-field (size position integer)
@@ -314,12 +294,6 @@ Returns T if at least one bit of the specified byte is 1; NIL otherwise."
   "Args: (bytespec integer)
 Extracts the specified byte from INTEGER and returns the result as an integer."
   (%mask-field (byte-size bytespec) (byte-position bytespec) integer))
-
-(define-compiler-macro mask-field (&whole whole bytespec integer)
-  (multiple-value-bind (size position) (parse-bytespec bytespec)
-    (if size
-        `(%mask-field ,size ,position ,integer)
-        whole)))
 
 (declaim (inline %dpb))
 (defun %dpb (newbyte size position integer)
@@ -333,12 +307,6 @@ Replaces the specified byte of INTEGER with NEWBYTE (an integer) and returns
 the result."
   (%dpb newbyte (byte-size bytespec) (byte-position bytespec) integer))
 
-(define-compiler-macro dpb (&whole whole newbyte bytespec integer)
-  (multiple-value-bind (size position) (parse-bytespec bytespec)
-    (if size
-        `(%dpb ,newbyte ,size ,position ,integer)
-        whole)))
-
 (declaim (inline %deposit-field))
 (defun %deposit-field (newbyte size position integer)
   (let ((mask (ash (lognot (ash -1 size)) position)))
@@ -350,9 +318,3 @@ the result."
 Returns an integer represented by the bit sequence obtained by replacing the
 specified bits of INTEGER2 with the specified bits of INTEGER1."
   (%deposit-field newbyte (byte-size bytespec) (byte-position bytespec) integer))
-
-(define-compiler-macro deposit-field (&whole whole newbyte bytespec integer)
-  (multiple-value-bind (size position) (parse-bytespec bytespec)
-    (if size
-        `(%deposit-field ,newbyte ,size ,position ,integer)
-        whole)))
