@@ -35,6 +35,7 @@ THE SOFTWARE.
 #include <clasp/core/functor.h>
 #include <clasp/core/numbers.h>
 #include <clasp/core/lispList.h>
+#include <clasp/core/instance.h>
 #include <clasp/core/package.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/wrappers.h>
@@ -197,20 +198,19 @@ ClosureWithSlots_sp make_unbound_setf_symbol_function(Symbol_sp name)
 
 /*! Construct a symbol that is incomplete, it has no Class or Package */
 Symbol_O::Symbol_O(bool dummy) : _HomePackage(_Nil<T_O>()),
+#ifdef SYMBOL_CLASS
+                                 _Class(_Nil<T_O>()),
+#endif
                                  _GlobalValue(_Unbound<T_O>()),
                                  _Function(_Unbound<Function_O>()),
                                  _SetfFunction(_Unbound<Function_O>()),
                                  _Binding(NO_THREAD_LOCAL_BINDINGS),
-                                 _IsSpecial(false),
-                                 _IsConstant(false),
-                                 _IsMacro(false),
+                                 _Flags(0),
                                  _PropertyList(_Nil<List_V>()) {};
 
 Symbol_O::Symbol_O() : Base(),
                        _Binding(NO_THREAD_LOCAL_BINDINGS),
-                       _IsSpecial(false),
-                       _IsConstant(false),
-                       _IsMacro(false),
+                       _Flags(0),
                        _PropertyList(_Nil<List_V>()) {};
 
 
@@ -302,7 +302,7 @@ void Symbol_O::setf_plist(List_sp plist) {
 }
 
 void Symbol_O::sxhash_(HashGenerator &hg) const {
-  if (hg.isFilling()) this->_HomePackage.unsafe_general()->sxhash_(hg);
+  if (hg.isFilling()) this->_HomePackage.load().unsafe_general()->sxhash_(hg);
   if (hg.isFilling()) this->_Name->sxhash_(hg);
 }
 
@@ -320,7 +320,7 @@ CL_DEFMETHOD Symbol_sp Symbol_O::copy_symbol(T_sp copy_properties) const {
   if (copy_properties.isTrue()) {
     if (this->boundP())
       new_symbol->_GlobalValue = this->symbolValue();
-    new_symbol->_IsConstant = this->_IsConstant;
+    new_symbol->setReadOnly(this->getReadOnly());
     new_symbol->_PropertyList = cl__copy_list(this->_PropertyList);
     if (this->fboundp()) new_symbol->_Function = this->_Function;
     else new_symbol->fmakunbound();
@@ -333,7 +333,7 @@ CL_DEFMETHOD Symbol_sp Symbol_O::copy_symbol(T_sp copy_properties) const {
 
 bool Symbol_O::isKeywordSymbol() {
   if (this->homePackage().nilp()) return false;
-  Package_sp pkg = gc::As<Package_sp>(this->_HomePackage); //
+  Package_sp pkg = gc::As<Package_sp>(this->_HomePackage.load()); //
   return pkg->isKeywordPackage();
 };
 
@@ -361,8 +361,8 @@ void Symbol_O::archiveBase(ArchiveP node) {
 
 CL_LISPIFY_NAME("core:asKeywordSymbol");
 CL_DEFMETHOD Symbol_sp Symbol_O::asKeywordSymbol() {
-  if (this->_HomePackage.notnilp()) {
-    Package_sp pkg = gc::As<Package_sp>(this->_HomePackage);
+  if (this->_HomePackage.load().notnilp()) {
+    Package_sp pkg = gc::As<Package_sp>(this->_HomePackage.load());
     if (pkg->isKeywordPackage())
       return this->asSmartPtr();
   }
@@ -370,16 +370,47 @@ CL_DEFMETHOD Symbol_sp Symbol_O::asKeywordSymbol() {
   return kwSymbol;
 };
 
+#ifdef SYMBOL_CLASS
+T_sp Symbol_O::find_class() {
+  T_sp tholder = this->_Class.load();
+  if (tholder.nilp()) return tholder;
+  if (gc::As_unsafe<ClassHolder_sp>(tholder)->class_unboundp()) {
+    return _Unbound<T_O>();
+  }
+  return gc::As_unsafe<ClassHolder_sp>(tholder)->class_();
+}
+
+void Symbol_O::setf_find_class(T_sp class_) {
+  T_sp tholder = this->_Class.load();
+  if (tholder.nilp()) {
+    tholder = ClassHolder_O::create(class_);
+  }
+  if (class_.notnilp()) {
+    gc::As_unsafe<ClassHolder_sp>(tholder)->class_set(class_);
+  } else {
+    gc::As_unsafe<ClassHolder_sp>(tholder)->class_mkunbound();
+  }
+}
+
+ClassHolder_sp Symbol_O::find_class_holder() {
+  T_sp tholder = this->_Class.load();
+  if (tholder.nilp()) {
+    ClassHolder_sp holder = ClassHolder_O::create();
+    this->_Class.set(holder);
+  }
+  return gc::As_unsafe<ClassHolder_sp>(tholder);
+}
+#endif
 
 CL_LISPIFY_NAME("core:STARmakeSpecial");
 CL_DEFMETHOD void Symbol_O::makeSpecial() {
-  this->_IsSpecial = true;
+  this->setf_specialP(true);
 }
 
 T_sp Symbol_O::defconstant(T_sp val) {
   _OF();
   T_sp result = this->setf_symbolValue(val);
-  this->_IsSpecial = true;
+  this->setf_specialP(true);
   this->setReadOnly(true);
   return result;
 }
@@ -387,7 +418,7 @@ T_sp Symbol_O::defconstant(T_sp val) {
 T_sp Symbol_O::defparameter(T_sp val) {
   _OF();
   T_sp result = this->setf_symbolValue(val);
-  this->_IsSpecial = true;
+  this->setf_specialP(true);
   return result;
 }
 
@@ -402,7 +433,7 @@ string Symbol_O::symbolNameAsString() const {
 
 string Symbol_O::formattedName(bool prefixAlways) const { //no guard
   stringstream ss;
-  if (this->_HomePackage.nilp()) {
+  if (this->_HomePackage.load().nilp()) {
     ss << "#:";
     ss << this->_Name->get();
   } else {
@@ -450,7 +481,7 @@ bool Symbol_O::isExported() {
 Symbol_sp Symbol_O::exportYourself(bool doit) {
   if (doit) {
     if (!this->isExported()) {
-      if (this->_HomePackage.nilp())
+      if (this->_HomePackage.load().nilp())
         SIMPLE_ERROR(BF("Cannot export - no package"));
       Package_sp pkg = gc::As<Package_sp>(this->getPackage());
       if (!pkg->isKeywordPackage()) {
@@ -478,8 +509,9 @@ CL_DEFMETHOD string Symbol_O::fullName() const {
 }
 
 T_sp Symbol_O::getPackage() const {
-  if (!this->_HomePackage) return _Nil<T_O>();
-  return this->_HomePackage;
+  T_sp pkg = this->_HomePackage.load();
+  if (!pkg) return _Nil<T_O>();
+  return pkg;
 }
 
 void Symbol_O::setPackage(T_sp p) {
@@ -503,7 +535,7 @@ void Symbol_O::dump() {
   ss << "Symbol @" << (void *)this << " --->" << std::endl;
   {
     ss << "Name: " << this->_Name->get() << std::endl;
-    if (!this->_HomePackage) {
+    if (!this->_HomePackage.load()) {
       ss << "Package: UNDEFINED" << std::endl;
     } else {
       ss << "Package: ";
@@ -524,8 +556,8 @@ void Symbol_O::dump() {
     } else {
       ss << "Function: UNBOUND" << std::endl;
     }
-    ss << "IsSpecial: " << this->_IsSpecial << std::endl;
-    ss << "IsConstant: " << this->_IsConstant << std::endl;
+    ss << "IsSpecial: " << this->specialP() << std::endl;
+    ss << "IsConstant: " << this->getReadOnly() << std::endl;
     ss << "PropertyList: ";
     if (this->_PropertyList) {
       ss << _rep_(this->_PropertyList) << std::endl;

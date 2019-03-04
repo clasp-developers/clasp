@@ -41,10 +41,15 @@ THE SOFTWARE.
 
 #define KW(s) (_lisp->internKeyword(s))
 
+#define IS_SPECIAL  0x01
+#define IS_CONSTANT 0x02
+#define IS_MACRO    0x04
+
 namespace core {
 #define NO_THREAD_LOCAL_BINDINGS std::numeric_limits<size_t>::max()
 SMART(Package);
 SMART(NamedFunction);
+FORWARD(ClassHolder);
 
 FORWARD(Symbol);
 class Symbol_O : public General_O {
@@ -53,17 +58,15 @@ class Symbol_O : public General_O {
 
 public:
   SimpleString_sp _Name;
-#ifdef CLASP_THREADS
-  mp::SpinLock      _HomePackage_spinlock;
+  std::atomic<T_sp> _HomePackage; // NIL or Package
+#ifdef SYMBOL_CLASS
+  std::atomic<T_sp> _Class; // NIL or an Instance_sp/class
 #endif
-  T_sp _HomePackage; // NIL or Package
   T_sp _GlobalValue;
   Function_sp _Function;
   Function_sp _SetfFunction;
   mutable size_t _Binding;
-  bool _IsSpecial;
-  bool _IsConstant;
-  bool _IsMacro;
+  size_t _Flags;
   List_sp _PropertyList;
 
 private:
@@ -100,8 +103,12 @@ public:
   bool isKeywordSymbol();
   Symbol_sp asKeywordSymbol();
 
-  bool macroP() const { return this->_IsMacro;};
-  void setf_macroP(bool m) { this->_IsMacro = m; };
+  bool macroP() const { return !!(this->_Flags&IS_MACRO);};
+  void setf_macroP(bool m) {
+    if (m) this->_Flags = this->_Flags|IS_MACRO;
+    else this->_Flags = this->_Flags&(~IS_MACRO);
+  }
+  
   
   /*! Return a pointer to the value cell */
   inline T_sp *valueReference(T_sp* globalValuePtr) {
@@ -122,16 +129,26 @@ public:
 
   void setf_name(SimpleString_sp nm) { this->_Name = nm; };
 
+#ifdef SYMBOL_CLASS
+  void setf_find_class(T_sp class_);
+  T_sp find_class();
+  ClassHolder_sp find_class_holder();
+#endif
   List_sp plist() const { return this->_PropertyList; };
   void setf_plist(List_sp plist);
-
-  void setReadOnly(bool b) { this->_IsConstant = b; };
-  bool getReadOnly() const { return this->_IsConstant; };
+  
+  bool getReadOnly() const { return !!(this->_Flags&IS_CONSTANT);};
+  void setReadOnly(bool m) {
+    if (m) this->_Flags = this->_Flags|IS_CONSTANT;
+    else this->_Flags = this->_Flags&(~IS_CONSTANT);
+  }
 
   /*! Return true if the symbol is dynamic/special */
-  bool specialP() const { return this->_IsSpecial; };
-
-  void setf_specialP(bool specialp) { this->_IsSpecial = specialp; };
+  bool specialP() const { return !!(this->_Flags&IS_SPECIAL);};
+  void setf_specialP(bool m) {
+    if (m) this->_Flags = this->_Flags|IS_SPECIAL;
+    else this->_Flags = this->_Flags&(~IS_SPECIAL);
+  }
 
   Symbol_sp copy_symbol(T_sp copy_properties) const;
   bool isExported();

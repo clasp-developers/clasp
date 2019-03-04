@@ -1751,31 +1751,32 @@ CL_DEFUN T_sp core__lookup_class_with_stamp(Fixnum stamp) {
   return foundClass;
 }
 
-CL_LAMBDA(symbol &optional (errorp t) env);
+CL_LAMBDA(symbol &optional env);
 CL_DECLARE();
 CL_DOCSTRING("Return the class holder that contains the class.");
-CL_DEFUN T_sp core__find_class_holder(Symbol_sp symbol, bool errorp, T_sp env) {
+CL_DEFUN T_sp core__find_class_holder(Symbol_sp symbol, T_sp env) {
+#ifdef SYMBOL_CLASS
+  return symbol->find_class_holder();
+#else
   ASSERTF(env.nilp(), BF("Handle non nil environment"));
   // Should only be single threaded here
   if (_lisp->bootClassTableIsValid()) {
-    return _lisp->boot_findClassHolder(symbol, errorp);
+    return _lisp->boot_findClassHolder(symbol,false);
   }
   // Use the same global variable that ECL uses
   bool foundp;
-  T_sp cell;
-  {
-    HashTable_sp classNames = _lisp->_Roots._ClassTable;
-    T_mv mc = classNames->gethash(symbol, _Nil<T_O>());
-    cell = mc;
-    foundp = mc.valueGet_(1).notnilp();
-  }
+  ClassHolder_sp cell;
+  HashTable_sp classNames = _lisp->_Roots._ClassTable;
+  T_mv mc = classNames->gethash(symbol, _Nil<T_O>());
+  foundp = mc.valueGet_(1).notnilp();
   if (!foundp) {
-    if (errorp) {
-      ERROR(ext::_sym_undefinedClass, Cons_O::createList(kw::_sym_name, symbol));
-    }
-    return _Nil<T_O>();
+    cell = ClassHolder_O::create(_Unbound<ClassHolder_O>());
+    classNames->setf_gethash(symbol,cell);
+  } else {
+    cell = gc::As_unsafe<ClassHolder_sp>(mc);
   }
   return cell;
+#endif
 }
 
 CL_LAMBDA(symbol &optional (errorp t) env);
@@ -1784,24 +1785,24 @@ CL_DOCSTRING("find-class");
 CL_DEFUN T_sp cl__find_class(Symbol_sp symbol, bool errorp, T_sp env) {
   ASSERTF(env.nilp(), BF("Handle non nil environment"));
 //  ClassReadLock _guard(_lisp->_Roots._ClassTableMutex);
-  T_sp cell = core__find_class_holder(symbol,errorp,env);
-  if (cell.notnilp()) {
-    ClassHolder_sp ch = gc::As_unsafe<ClassHolder_sp>(cell);
-    if (ch->class_unboundp()) {
-      if (errorp) {
-        ERROR(ext::_sym_undefinedClass, Cons_O::createList(kw::_sym_name, symbol));
-      }
-      return _Nil<T_O>();
+  ClassHolder_sp cell = core__find_class_holder(symbol,env);
+  if (cell->class_unboundp()) {
+    if (errorp) {
+      ERROR(ext::_sym_undefinedClass, Cons_O::createList(kw::_sym_name, symbol));
     }
-    return ch->class_get();
+    return _Nil<T_O>();
   }
-  return cell;
+  return cell->class_get();
 }
 
 CL_LAMBDA(new-value name);
 CL_DECLARE();
 CL_DOCSTRING("setf_find_class, set value to NIL to remove the class name ");
 CL_DEFUN T_sp core__setf_find_class(T_sp newValue, Symbol_sp name) {
+#ifdef SYMBOL_CLASS
+  name->setf_find_class(newValue);
+  return newValue;
+#else
   if (!newValue.nilp() && !clos__classp(newValue)) {
     SIMPLE_ERROR(BF("Classes in cando have to be subclasses of Class or NIL unlike ECL which uses Instances to represent classes - while trying to (setf find-class) of %s you gave: %s") % _rep_(name) % _rep_(newValue));
   }
@@ -1831,6 +1832,7 @@ CL_DEFUN T_sp core__setf_find_class(T_sp newValue, Symbol_sp name) {
     ht->hash_table_setf_gethash(name, cell);
   }
   return newValue;
+#endif
 };
 
 CL_LAMBDA(partialPath);
