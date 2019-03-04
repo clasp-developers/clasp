@@ -1,30 +1,35 @@
 (in-package #:cmp)
 
-(core:bclasp-define-compiler-macro
- find-class (&whole form class &optional (errorp t) env)
- (format *debug-io* "In find-class with class ~a errorp ~a~%" class errorp)
- (let ((class-holder-gs (gensym)))
-   (if (and (constantp class env) (constantp errorp env))
-       (let ((class (ext:constant-form-value class env)))
-         (if (eq (ext:constant-form-value errorp) nil)
-             (progn
-               (format *debug-io* "Case 1 - in find-class with class ~a errorp ~a~%" class errorp)
-               `(let ((,class-holder-gs (load-time-value (core:find-class-holder ',class))))
-                  (format t "In find-class for ~a~%" ',class)
-                  (if (ext:class-unboundp ,class-holder-gs)
-                      nil
-                      (ext:class-get ,class-holder-gs))))
-             (progn
-               (format *debug-io* "Case 2 - in find-class with class ~a errorp ~a~%" class errorp)
-               `(let ((,class-holder-gs (load-time-value (core:find-class-holder ',class))))
-                (format t "In find-class for ~a~%" ',class)
-                (if (ext:class-unboundp ,class-holder-gs)
-                    (error 'ext:undefined-class :name ',class)
-                    (ext:class-get ,class-holder-gs))))))
-       (progn
-         (format *debug-io* "Fallback - in find-class with class ~a errorp ~a~%" class errorp)
-         form))))
+;;; Optimize FIND-CLASS with constant symbol argument.
+;;; Every symbol used as a class-name gets a CLASS-HOLDER, which is basically
+;;; just a cell. This class-holder can be looked up at load time.
 
+(core:bclasp-define-compiler-macro find-class
+    (&whole form classf &optional (errorpf 't) env &environment cenv)
+  (if (and (constantp classf env) (null env))
+    (let ((class (ext:constant-form-value classf cenv))
+          (class-holder-gs (gensym "CLASS-HOLDER")))
+      (if (symbolp class)
+          ;; Okay, we can actually optimize.
+          `(let ((,class-holder-gs (load-time-value (core:find-class-holder ',class))))
+             (if (ext:class-unboundp ,class-holder-gs)
+                 ;; Check what we do with an error condition
+                 ,(if (constantp errorpf env)
+                      (if (ext:constant-form-value errorpf cenv)
+                          ;; errorp is constant true: signal an error.
+                          `(error 'ext:undefined-class :name ',class)
+                          ;; errorp is constant false: return NIL.
+                          'nil)
+                      ;; errorp is variable: check at runtime.
+                      `(if ,errorpf
+                           (error 'ext:undefined-class :name ',class)
+                           nil))
+                 ;; Class is bound, return it.
+                 (ext:class-get ,class-holder-gs)))
+          ;; Class is constant but not a symbol - type error. just let the call do it.
+          form))
+    ;; Class is not constant or we're in some weird environment - punt
+    form))
 
 ;;; generic functions are usually hard to work with at compile time,
 ;;; but we can at least take care of the simple method on SYMBOL,
