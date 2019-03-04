@@ -229,10 +229,6 @@
           generate-load-time-values
           ))
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (if (find-package "LITERAL")
-      nil
-      (make-package "LITERAL" :use (list :CL :CORE))))
 
 (in-package :literal)
 

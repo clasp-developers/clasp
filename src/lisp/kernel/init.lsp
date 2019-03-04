@@ -96,9 +96,15 @@
     nil
     (make-package "C" :use '(:cl :core)))
 
-(if (find-package "CLASP-CLEAVIR")
-    nil
-    (make-package "CLASP-CLEAVIR" :use '(:CL)))
+(eval-when (:execute :compile-toplevel :load-toplevel)
+  (if (find-package "LITERAL")
+      nil
+      (make-package "LITERAL" :use '(:cl :core))))
+
+(eval-when (:execute :compile-toplevel :load-toplevel)
+  (if (find-package "CLASP-CLEAVIR")
+      nil
+      (make-package "CLASP-CLEAVIR" :use '(:CL))))
 
 ;;; Setup a few things for the EXT package
 ;;; EXT exports
