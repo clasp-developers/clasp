@@ -58,6 +58,11 @@
 
 (defmethod interpret-ast ((ast cleavir-ast:immediate-ast) env)
   (declare (ignore env))
+  (let* ((val (cleavir-ast:value ast))
+         (_ (or val (error "AST immediate from ~a is not possible" val)))
+         (imm (core:value-from-tagged-immediate val)))
+    (or imm (error "AST immediate ~a produced nil" val)))        
+  #+(or)
   (error "AST produced for interpretation cannot include immediates: ~a" ast))
 
 (defmethod interpret-ast ((ast cleavir-ast:constant-ast) env)
@@ -145,10 +150,13 @@
           (interpret-ast body env))))))
 
 (defmethod interpret-ast ((ast cleavir-ast:progn-ast) env)
-  (loop with result = nil
-        for form-ast in (cleavir-ast:form-asts ast)
-        do (setf result (interpret-ast form-ast env))
-        finally (return result)))
+  (let ((form-asts (cleavir-ast:form-asts ast)))
+    (if (null form-asts)
+        nil
+        (loop for (form-ast . rest) on form-asts
+              when (null rest)
+                return (interpret-ast form-ast env)
+              else do (interpret-ast form-ast env)))))
 
 (defmethod interpret-ast ((ast cleavir-ast:block-ast) env)
   ;; We need to disambiguate things if the block is entered
@@ -403,31 +411,6 @@
 ;;;
 ;;; CLASP-SPECIFIC MODS
 
-;;; Just avoid immediates.
-
-(defclass clasp-interpreter-system (clasp-cleavir:clasp) ())
-
-(defvar *system* (make-instance 'clasp-interpreter-system))
-
-;;; FIXME: maybe the methods should have a different precedence order
-;;; but, immediatization should be moved out of ast anyway, so fuck all of this
-
-(defmethod cleavir-generate-ast:convert-constant-to-immediate
-    ((constant integer) env (system clasp-interpreter-system))
-  nil)
-
-(defmethod cleavir-generate-ast:convert-constant-to-immediate
-    ((constant character) env (system clasp-interpreter-system))
-  nil)
-
-(defmethod cleavir-generate-ast:convert-constant-to-immediate
-    ((constant float) env (system clasp-interpreter-system))
-  nil)
-
-(defmethod cleavir-cst-to-ast:convert-constant-to-immediate
-    (constant env (system clasp-interpreter-system))
-  nil)
-
 ;;; Provide convenience function.
 
 (in-package #:clasp-cleavir)
@@ -436,7 +419,7 @@
   (interpret-ast:interpret
    #-cst
    (cleavir-generate-ast:generate-ast
-    form env interpret-ast:*system*)
+    form env clasp-cleavir::*clasp-system*)
    #+cst
    (cleavir-cst-to-ast:cst-to-ast
     (cst:cst-from-expression form)

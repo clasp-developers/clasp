@@ -247,6 +247,17 @@ CL_DEFUN T_sp core__create_tagged_immediate_value_or_nil(T_sp object) {
   return _Nil<T_O>();
 };
 
+CL_LAMBDA(obj);
+CL_DECLARE();
+CL_DOCSTRING("Convert a fixnum value that represents an immediate back into an immediate value either a fixnum, character or single float into an tagged version and return as an integer (either Fixnum or Bignum) or return NIL");
+CL_DEFUN T_sp core__value_from_tagged_immediate(T_sp object) {
+  if (object.fixnump()) {
+    T_sp value((gctools::Tagged)object.unsafe_fixnum());
+    return value;
+  }
+  TYPE_ERROR(object,cl::_sym_fixnum);
+}
+
 CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("softwareType");
