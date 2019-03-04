@@ -124,44 +124,6 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
                  (list (funcall *defun-inline-hook* name global-function env)))
           ',name))))
 
-
-;;;
-;;; This is a no-op unless the compiler is installed
-;;;
-(defmacro bclasp-define-compiler-macro (&whole whole name vl &rest body &environment env)
-  ;; CLHS doesn't actually say d-c-m has compile time effects, but it's nice to match defmacro
-  `(eval-when (:compile-toplevel :load-toplevel :execute)
-     (funcall #'(setf core:bclasp-compiler-macro-function)
-              (function ,(ext:parse-compiler-macro name vl body env))
-              ',name)
-     ',name))
-
-(export '(bclasp-define-compiler-macro))
-
-(defun bclasp-compiler-macroexpand-1 (form &optional env)
-  (if (atom form)
-      form
-      (or
-       (and (eq (car form) 'cl:funcall)
-            (listp (cadr form))
-            (eq (car (cadr form)) 'cl:function)
-            (let ((expander (core:bclasp-compiler-macro-function (cadr (cadr form)) env)))
-              (if expander
-                  (funcall *macroexpand-hook* expander (cons (cadr (cadr form)) (cddr form)) env)
-                  form)))
-       (let ((expander (core:bclasp-compiler-macro-function (car form) env)))
-         (if expander
-             (funcall *macroexpand-hook* expander form env)
-             form)))))
-
-(defun bclasp-compiler-macroexpand (form &optional env)
-  (let ((expansion (bclasp-compiler-macroexpand-1 form env)))
-    (if (eq expansion form)
-        (return-from bclasp-compiler-macroexpand form)
-        (bclasp-compiler-macroexpand expansion env))))
-
-(export '(bclasp-compiler-macroexpand-1 bclasp-compiler-macroexpand))
-
 (defmacro define-compiler-macro (&whole whole name vl &rest body &environment env)
   ;; CLHS doesn't actually say d-c-m has compile time effects, but it's nice to match defmacro
   `(eval-when (:compile-toplevel :load-toplevel :execute)

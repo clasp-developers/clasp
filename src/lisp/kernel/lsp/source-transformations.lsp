@@ -79,7 +79,7 @@
           (otherwise form))
         form))
 
-  (core:bclasp-define-compiler-macro aref (&whole whole array &rest indeces)
+  (define-compiler-macro aref (&whole whole array &rest indeces)
     (if (= (length indeces) 1)
         `(row-major-aref ,array ,(car indeces))
         whole))

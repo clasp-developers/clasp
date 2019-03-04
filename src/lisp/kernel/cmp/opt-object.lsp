@@ -5,32 +5,29 @@
 ;;; just a cell. This class-holder can be looked up at load time, so all that's
 ;;; done at runtime is a boundedness check and a read from a known location.
 
-(core:bclasp-define-compiler-macro find-class
+(define-compiler-macro find-class
     (&whole form classf &optional (errorpf 't) env &environment cenv)
   (if (and (constantp classf env) (null env))
-    (let ((class (ext:constant-form-value classf cenv))
-          (class-holder-gs (gensym "CLASS-HOLDER")))
-      (if (symbolp class)
-          ;; Okay, we can actually optimize.
-          `(let ((,class-holder-gs (load-time-value (core:find-class-holder ',class))))
-             (if (ext:class-unboundp ,class-holder-gs)
-                 ;; Check what we do with an error condition
-                 ,(if (constantp errorpf env)
-                      (if (ext:constant-form-value errorpf cenv)
-                          ;; errorp is constant true: signal an error.
-                          `(error 'ext:undefined-class :name ',class)
-                          ;; errorp is constant false: return NIL.
-                          'nil)
-                      ;; errorp is variable: check at runtime.
-                      `(if ,errorpf
-                           (error 'ext:undefined-class :name ',class)
-                           nil))
-                 ;; Class is bound, return it.
-                 (ext:class-get ,class-holder-gs)))
-          ;; Class is constant but not a symbol - type error. just let the call do it.
-          form))
-    ;; Class is not constant or we're in some weird environment - punt
-    form))
+      (let ((class (ext:constant-form-value classf cenv))
+            (class-holder-gs (gensym "CLASS-HOLDER"))
+            (errorp-gs (gensym "ERRORP")))
+        (if (symbolp class)
+            ;; Okay, we can actually optimize.
+            `(let ((,class-holder-gs (load-time-value (core:find-class-holder ',class)))
+                   ;; note we have to evaluate errorpf if it was provided,
+                   ;; in case of side effects. If we were smarter about
+                   ;; other environments, we'd have to eval env too.
+                   (,errorp-gs ,errorpf))
+               (if (ext:class-unboundp ,class-holder-gs)
+                   (if ,errorp-gs
+                       (error 'ext:undefined-class :name ',class)
+                       nil)
+                   ;; Class is bound, return it.
+                   (ext:class-get ,class-holder-gs)))
+            ;; Class is constant but not a symbol - type error. just let the call do it.
+            form))
+      ;; Class is not constant or we're in some weird environment - punt
+      form))
 
 ;;; generic functions are usually hard to work with at compile time,
 ;;; but we can at least take care of the simple methods on SYMBOL,
@@ -39,7 +36,7 @@
 ;;; These macros allow the above FIND-CLASS optimization to be used, avoiding a runtime lookup.
 ;;; They're ordered from most to least important.
 
-(core:bclasp-define-compiler-macro make-instance (&whole form class &rest initargs &environment env)
+(define-compiler-macro make-instance (&whole form class &rest initargs &environment env)
   (if (constantp class env)
     (let ((class (ext:constant-form-value class env)))
       (if (symbolp class)
@@ -47,7 +44,7 @@
           form))
     form))
 
-(core:bclasp-define-compiler-macro change-class
+(define-compiler-macro change-class
     (&whole form instance classf &rest initargs &environment env)
   (if (constantp classf env)
       (let ((class (ext:constant-form-value classf env)))
@@ -56,7 +53,7 @@
             form))
       form))
 
-(core:bclasp-define-compiler-macro make-instances-obsolete (&whole form classf &environment env)
+(define-compiler-macro make-instances-obsolete (&whole form classf &environment env)
   (if (constantp classf env)
       (let ((class (ext:constant-form-value classf env)))
         (if (symbolp class)

@@ -16,7 +16,7 @@
 (in-package "COMPILER")
 
 #+(or)
-(core:bclasp-define-compiler-macro si::make-seq-iterator (seq &optional (start 0))
+(define-compiler-macro si::make-seq-iterator (seq &optional (start 0))
   (with-clean-symbols (%seq %start)
     `(let ((%seq (optional-type-check ,seq sequence))
            (%start ,start))
@@ -28,7 +28,7 @@
               nil)))))
 
 #+(or)
-(core:bclasp-define-compiler-macro si::seq-iterator-ref (seq iterator)
+(define-compiler-macro si::seq-iterator-ref (seq iterator)
   (with-clean-symbols (%seq %iterator)
     `(let* ((%seq ,seq)
             (%iterator ,iterator))
@@ -40,7 +40,7 @@
            (cons-car (checked-value cons %iterator))))))
 
 #+(or)
-(core:bclasp-define-compiler-macro si::seq-iterator-next (seq iterator)
+(define-compiler-macro si::seq-iterator-next (seq iterator)
   (with-clean-symbols (%seq %iterator)
     `(let* ((%seq ,seq)
             (%iterator ,iterator))
@@ -111,7 +111,7 @@
 ;;; FIND
 ;;;
 
-(core:bclasp-define-compiler-macro find (&whole whole value sequence &rest sequence-args &environment env)
+(define-compiler-macro find (&whole whole value sequence &rest sequence-args &environment env)
   (multiple-value-bind (key-function test-function init
                         key-flag test-flag test start end)
       (two-arg-test-parse-args 'find sequence-args :environment env)
@@ -129,7 +129,7 @@
 ;;; MAKE-SEQUENCE
 ;;;
 
-(core:bclasp-define-compiler-macro make-sequence
+(define-compiler-macro make-sequence
     (&whole form type size &key (initial-element nil iesp) &environment env)
   (unless (constantp type env)
     (return-from make-sequence form))
@@ -169,7 +169,7 @@
 ;;; MAP
 ;;;
 
-(core:bclasp-define-compiler-macro si::map-for-effect
+(define-compiler-macro si::map-for-effect
     (function sequence &rest more-sequences)
   (let* ((fun (gensym "FUNCTION")))
     `(let ((,fun (si::coerce-fdesignator ,function)))
@@ -177,7 +177,7 @@
          (call ,fun))
        nil)))
 
-(core:bclasp-define-compiler-macro map
+(define-compiler-macro map
     (&whole form result-type function sequence &rest more-sequences &environment env)
   (if (constantp result-type env)
       (let ((result-type (ext:constant-form-value result-type env))) ; constant-form-value
@@ -231,7 +231,7 @@
          (incf ,output-index))
        (setf (fill-pointer ,output) ,output-index))))
 
-(core:bclasp-define-compiler-macro map-into (result function &rest sequences)
+(define-compiler-macro map-into (result function &rest sequences)
   ;; handle multiple evaluation up here
   (let ((output (gensym "OUTPUT"))
         (fun (gensym "FUNCTION"))
@@ -259,14 +259,14 @@
                   (,whenless it (return-from ,b ,found))))
               ,unfound)))))
   (macrolet ((def (name whenless found unfound)
-               `(core:bclasp-define-compiler-macro ,name (predicate sequence &rest more-sequences)
+               `(define-compiler-macro ,name (predicate sequence &rest more-sequences)
                   (body predicate (cons sequence more-sequences) ',whenless ',found ',unfound))))
     (def some when it nil)
     (def every unless nil t)
     (def notany when nil t)
     (def notevery unless t nil)))
 
-(core:bclasp-define-compiler-macro si::every* (predicate &rest sequences)
+(define-compiler-macro si::every* (predicate &rest sequences)
   (let ((seqs (gensym-list sequences "SEQUENCE")))
     `(and (= ,@(mapcar (lambda (s) `(length ,s)) seqs))
           (every ,predicate ,@seqs))))

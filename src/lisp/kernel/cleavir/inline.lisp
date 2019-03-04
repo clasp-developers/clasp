@@ -30,6 +30,18 @@
   (defmacro debug-inline (msg &rest msg-args)
     nil))
 
+;;; This defines compiler macros that only come into effect when using cclasp.
+;;; This is useful when their expansions involve cleavir-only special operators.
+;;; Syntax is the same as define-compiler-macro, except that the lambda-list
+;;; MUST start with (&whole something ...) for things to work.
+;;; This macro is a little janky in that it doesn't work with declarations.
+(defmacro define-cleavir-compiler-macro (name lambda-list &body body)
+  `(define-compiler-macro ,name (,@lambda-list)
+     ;; I just picked this since it's the first variable in auto-compile.lisp.
+     (unless (eq cmp:*cleavir-compile-hook* 'cclasp-compile*)
+       (return-from ,name ,(second lambda-list)))
+     ,@body))
+
 (progn
   (debug-inline "eq")
   (declaim (inline cl:eq))
@@ -152,10 +164,7 @@
     complexp complex
     rationalp rational))
 
-;;; On BOEHMDC, we don't have primitive type information, so typeq
-;;; just defers to typep anyway.
-#-use-boehmdc
-(define-compiler-macro typep
+(define-cleavir-compiler-macro typep
     (&whole whole object type &optional env &environment macro-env)
   (if (and (null env) (constantp type macro-env))
       `(if (cleavir-primop:typeq ,object ,(ext:constant-form-value type macro-env))
@@ -384,37 +393,37 @@
 
 #-use-boehmdc
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (define-compiler-macro + (&rest numbers)
+  (define-cleavir-compiler-macro + (&whole form &rest numbers)
     (core:expand-associative '+ 'primop:inlined-two-arg-+ numbers 0))
-  (define-compiler-macro - (minuend &rest subtrahends)
+  (define-cleavir-compiler-macro - (&whole form minuend &rest subtrahends)
     (if (core:proper-list-p subtrahends)
         (if subtrahends
             `(primop:inlined-two-arg-- ,minuend ,(core:expand-associative '+ 'primop:inlined-two-arg-+ subtrahends 0))
             `(core:negate ,minuend))
         (error "The - operator can not be part of a form that is a dotted list.")))
-  (define-compiler-macro * (&rest numbers)
+  (define-cleavir-compiler-macro * (&whole form &rest numbers)
     (core:expand-associative '* 'primop:inlined-two-arg-* numbers 1))
-  (define-compiler-macro / (dividend &rest divisors)
+  (define-cleavir-compiler-macro / (&whole form dividend &rest divisors)
     (if (core:proper-list-p divisors)
         (if divisors
             `(primop:inlined-two-arg-/ ,dividend (* ,@divisors))
             `(primop:inlined-two-arg-/ 1 ,dividend))
         (error "The / operator can not be part of a form that is a dotted list.")))
-  (define-compiler-macro < (&whole form &rest numbers)
+  (define-cleavir-compiler-macro < (&whole form &rest numbers)
     (core:expand-compare form 'primop:inlined-two-arg-< numbers))
-  (define-compiler-macro <= (&whole form &rest numbers)
+  (define-cleavir-compiler-macro <= (&whole form &rest numbers)
     (core:expand-compare form 'primop:inlined-two-arg-<= numbers))
-  (define-compiler-macro = (&whole form &rest numbers)
+  (define-cleavir-compiler-macro = (&whole form &rest numbers)
     (core:expand-compare form 'primop:inlined-two-arg-= numbers))
-  (define-compiler-macro /= (&whole form &rest numbers)
+  (define-cleavir-compiler-macro /= (&whole form &rest numbers)
     (core:expand-uncompare form 'primop:inlined-two-arg-= numbers))
-  (define-compiler-macro > (&whole form &rest numbers)
+  (define-cleavir-compiler-macro > (&whole form &rest numbers)
     (core:expand-compare form 'primop:inlined-two-arg-> numbers))
-  (define-compiler-macro >= (&whole form &rest numbers)
+  (define-cleavir-compiler-macro >= (&whole form &rest numbers)
     (core:expand-compare form 'primop:inlined-two-arg->= numbers))
-  (define-compiler-macro 1+ (x)
+  (define-cleavir-compiler-macro 1+ (&whole form x)
     `(primop:inlined-two-arg-+ ,x 1))
-  (define-compiler-macro 1- (x)
+  (define-cleavir-compiler-macro 1- (&whole form x)
     `(primop:inlined-two-arg-- ,x 1)))
 
 (progn
@@ -706,8 +715,7 @@
                           for subsym in (reverse subsyms)
                           collect `(* ,sub ,subsym)))))))))
 
-#-use-boehmdc
-(define-compiler-macro array-row-major-index (&whole form array &rest subscripts)
+(define-cleavir-compiler-macro array-row-major-index (&whole form array &rest subscripts)
   ;; FIXME: Cleavir arithmetic is not yet clever enough for this to be fast in the
   ;; >1dimensional case. We need wrapped fixnum multiplication and addition, basically,
   ;; where overflow jumps to an error.
@@ -743,8 +751,7 @@
              ;; Now we know we're good, do the actual computation
              ,(row-major-index-computer sarray dimsyms ssubscripts))))))
 
-#-use-boehmdc
-(define-compiler-macro aref (&whole form array &rest subscripts)
+(define-cleavir-compiler-macro aref (&whole form array &rest subscripts)
   ;; FIXME: See tragic comment above in array-row-major-index.
   (if (> (length subscripts) 1)
       form
@@ -834,20 +841,20 @@
 ;;;  Copied from clasp/src/lisp/kernel/lsp/pprint.lsp
 ;;;    and put here so that the inline definition is available
 ;;;
-                 (in-package "SI")
+(in-package "SI")
 
-                 (declaim (inline index-posn posn-index posn-column))
-                 (defun index-posn (index stream)
-                   (declare (type index index) (type pretty-stream stream))
-                   (+ index (pretty-stream-buffer-offset stream)))
-                 (defun posn-index (posn stream)
-                   (declare (type posn posn) (type pretty-stream stream))
-                   (- posn (pretty-stream-buffer-offset stream)))
-                 (defun posn-column (posn stream)
-                   (declare (type posn posn) (type pretty-stream stream))
-                   (index-column (posn-index posn stream) stream))
+(declaim (inline index-posn posn-index posn-column))
+(defun index-posn (index stream)
+  (declare (type index index) (type pretty-stream stream))
+  (+ index (pretty-stream-buffer-offset stream)))
+(defun posn-index (posn stream)
+  (declare (type posn posn) (type pretty-stream stream))
+  (- posn (pretty-stream-buffer-offset stream)))
+(defun posn-column (posn stream)
+  (declare (type posn posn) (type pretty-stream stream))
+  (index-column (posn-index posn stream) stream))
 
-
+(in-package #:clasp-cleavir)
 ;;; --------------------------------------------------
 ;;;
 ;;; Provided by bike  May 21, 2017
@@ -886,8 +893,8 @@
     (mapfoo-macro 'on 'nconc function (cons list more-lists)))
   )
 
-#-use-boehmdc
-(define-compiler-macro funcall (&whole form function &rest arguments &environment env)
+(define-cleavir-compiler-macro funcall
+    (&whole form function &rest arguments &environment env)
   ;; If we have (funcall #'foo ...), we might be able to apply the FOO compiler macro.
   (when (and (consp function) (eq (first function) 'function)
              (consp (cdr function)) (null (cddr function)))
@@ -908,13 +915,11 @@
           (t (error 'type-error :datum ,fsym :expected-type '(or symbol function))))
         ,@arguments))))
 
-;;; FIXME:  This relies on ir.lisp: return-value-elt to work properly and it
-;;;         isn't completely implemented - it needs a GEP instruction.
-(define-compiler-macro values (&rest values)
+(define-cleavir-compiler-macro values (&whole form &rest values)
   `(cleavir-primop:values ,@values))
 
 ;;; Written as a compiler macro to avoid confusing bclasp.
-(define-compiler-macro multiple-value-bind (vars form &body body)
+(define-cleavir-compiler-macro multiple-value-bind (&whole form vars form &body body)
   (let ((syms (loop for var in vars collecting (gensym (symbol-name var)))))
     `(cleavir-primop:let-uninitialized (,@syms)
        (cleavir-primop:multiple-value-setq (,@syms) ,form)

@@ -1,7 +1,7 @@
 (in-package #:core)
 
-(core:bclasp-define-compiler-macro typep (&whole whole object type &optional environment
-                                                 &environment macro-env)
+(define-compiler-macro typep (&whole whole object type &optional environment
+                                     &environment macro-env)
   (unless (constantp type macro-env)
     (return-from typep whole))
   (let ((type (ext:constant-form-value type macro-env)))
@@ -53,7 +53,7 @@
 ;;; which is a little weird as its behavior does change. Just, per
 ;;; the compiletime/runtime restrictions, any type defined at compile time
 ;;; has to be the same at runtime.
-(core:bclasp-define-compiler-macro coerce (&whole form object type &environment env)
+(define-compiler-macro coerce (&whole form object type &environment env)
   (if (constantp type env)
       (let ((type (ext:constant-form-value type env))
             (obj (gensym "OBJECT")))

@@ -26,12 +26,12 @@
     ;; size_t?
     (t (values nil nil))))
 
-(core:bclasp-define-compiler-macro make-array (&whole form dimensions
-                                                      &key (element-type t)
-                                                      (adjustable nil ap) (fill-pointer nil fp)
-                                                      (initial-element nil iesp) (initial-contents nil icsp)
-                                                      (displaced-to nil dp) (displaced-index-offset 0 diop)
-                                                      &environment env)
+(define-compiler-macro make-array (&whole form dimensions
+                                          &key (element-type t)
+                                          (adjustable nil ap) (fill-pointer nil fp)
+                                          (initial-element nil iesp) (initial-contents nil icsp)
+                                          (displaced-to nil dp) (displaced-index-offset 0 diop)
+                                          &environment env)
   (if (constantp element-type env)
       (multiple-value-bind (make-sv make-smdarray)
           (uaet-info (upgraded-array-element-type (ext:constant-form-value element-type env) env))

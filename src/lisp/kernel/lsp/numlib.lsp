@@ -283,7 +283,7 @@ the byte, and returns the result as an integer."
              (null (cdddr bytespec)))
     (values (cadr bytespec) (caddr bytespec))))
 
-(core:bclasp-define-compiler-macro ldb (&whole whole bytespec integer)
+(define-compiler-macro ldb (&whole whole bytespec integer)
   (multiple-value-bind (size position) (parse-bytespec bytespec)
     (if size
         `(%ldb ,size ,position ,integer)
@@ -298,7 +298,7 @@ the byte, and returns the result as an integer."
 Returns T if at least one bit of the specified byte is 1; NIL otherwise."
   (%ldb-test (byte-size bytespec) (byte-position bytespec) integer))
 
-(core:bclasp-define-compiler-macro ldb-test (&whole whole bytespec integer)
+(define-compiler-macro ldb-test (&whole whole bytespec integer)
   (multiple-value-bind (size position) (parse-bytespec bytespec)
     (if size
         `(%ldb-test ,size ,position ,integer)
@@ -315,7 +315,7 @@ Returns T if at least one bit of the specified byte is 1; NIL otherwise."
 Extracts the specified byte from INTEGER and returns the result as an integer."
   (%mask-field (byte-size bytespec) (byte-position bytespec) integer))
 
-(core:bclasp-define-compiler-macro mask-field (&whole whole bytespec integer)
+(define-compiler-macro mask-field (&whole whole bytespec integer)
   (multiple-value-bind (size position) (parse-bytespec bytespec)
     (if size
         `(%mask-field ,size ,position ,integer)
@@ -333,7 +333,7 @@ Replaces the specified byte of INTEGER with NEWBYTE (an integer) and returns
 the result."
   (%dpb newbyte (byte-size bytespec) (byte-position bytespec) integer))
 
-(core:bclasp-define-compiler-macro dpb (&whole whole newbyte bytespec integer)
+(define-compiler-macro dpb (&whole whole newbyte bytespec integer)
   (multiple-value-bind (size position) (parse-bytespec bytespec)
     (if size
         `(%dpb ,newbyte ,size ,position ,integer)
@@ -351,7 +351,7 @@ Returns an integer represented by the bit sequence obtained by replacing the
 specified bits of INTEGER2 with the specified bits of INTEGER1."
   (%deposit-field newbyte (byte-size bytespec) (byte-position bytespec) integer))
 
-(core:bclasp-define-compiler-macro deposit-field (&whole whole newbyte bytespec integer)
+(define-compiler-macro deposit-field (&whole whole newbyte bytespec integer)
   (multiple-value-bind (size position) (parse-bytespec bytespec)
     (if size
         `(%deposit-field ,newbyte ,size ,position ,integer)
