@@ -368,7 +368,7 @@
 
 ;;; Unimplemented:
 ;;; debug-message, debug-break, m-v-foreign-call, foreign-call, foreign-call-pointer, defcallback,
-;;; precalc-whatever, bind-va-list
+;;; precalc-whatever, bind-va-listr
 
 (defmethod interpret-ast ((ast cc-ast:setf-fdefinition-ast) env)
   (fdefinition `(setf ,(interpret-ast (cleavir-ast:name-ast ast) env))))
@@ -406,6 +406,42 @@
 
 (defmethod interpret-ast ((ast cc-ast:instance-stamp-ast) env)
   (core:instance-stamp (interpret-ast (cleavir-ast:arg-ast ast) env)))
+
+(defmethod interpret-ast ((ast cc-ast:bind-va-list-ast) env)
+  (let ((lambda-list (cleavir-ast:lambda-list ast))
+        (va-list-ast (cc-ast:va-list-ast ast))
+        (body-ast (cleavir-ast:body-ast ast)))
+    (multiple-value-bind (required optional rest keyp key aok-p)
+        (parse-lambda-list lambda-list)
+      (let ((vaslist (interpret-ast va-list-ast env)))
+        ;; mostly copied from enclose, above
+        (loop for r in required
+              if (zerop (core:vaslist-length vaslist))
+                do (error "Not enough arguments") ; FIXME: message
+              else do (setf (variable r env) (core:vaslist-pop vaslist)))
+        (loop for (ovar o-p) in optional
+              if (zerop (core:vaslist-length vaslist))
+                do (setf (variable o-p env) nil)
+              else do (setf (variable ovar env) (core:vaslist-pop vaslist)
+                            (variable o-p env) t))
+        (when rest
+          (setf (variable rest env) (core:vaslist-as-list vaslist)))
+        (when keyp
+          (unless (evenp (core:vaslist-length vaslist))
+            (error "Odd number of keyword arguments")))
+        (when (and (not rest) (not keyp)
+                   (not (zerop (core:vaslist-length vaslist))))
+          (error "Too many arguments"))
+        (loop with arguments = (core:vaslist-as-list vaslist)
+              with indicator = (list nil)
+              for (k var var-p) in key
+              for value = (getf arguments k indicator)
+              if (eq value indicator) ; not present
+                do (setf (variable var-p env) nil)
+              else do (setf (variable var env) value
+                            (variable var-p env) t))
+        ;; variables bound, now just interpret
+        (interpret-ast body-ast env)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
