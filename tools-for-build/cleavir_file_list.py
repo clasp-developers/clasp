@@ -308,6 +308,7 @@ cleavir_file_list = [
     "src/lisp/kernel/cleavir/eliminate-ltvs",
     "src/lisp/kernel/cleavir/hir",
     "src/lisp/kernel/cleavir/introduce-invoke",
+    "src/lisp/kernel/cleavir/ast-interpreter",
     "src/lisp/kernel/cleavir/toplevel",
     "src/lisp/kernel/cleavir/setup",
     "src/lisp/kernel/cleavir/ast-to-hir",

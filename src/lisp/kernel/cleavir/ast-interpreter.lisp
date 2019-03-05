@@ -4,6 +4,11 @@
   ;; FIXME: lose this asap
   (:export #:*system*))
 
+;;;; NOTE: Some methods in this file must be compiled with cleavir,
+;;;; as they use cleavir special operators - metacircularity, eh?
+;;;; These are surrounded with (eval-when (:load-toplevel) ...) to
+;;;; prevent bclasp from loading them.
+
 (in-package #:interpret-ast)
 
 ;;; environment definition
@@ -121,7 +126,6 @@
     (multiple-value-bind (required optional rest keyp key aok-p)
         (parse-lambda-list ll)
       (lambda (&rest arguments)
-        (core:stack-monitor)
         (let ((env (augment-environment env)))
           (loop for r in required
                 if (null arguments)
@@ -199,7 +203,7 @@
     ;; Go
     (loop for to-interpret = items
             then (catch catch-tag
-                   ;; if we hit a GO to here, it'll return and the
+                   ;; if we hit a GO to here, it'll throw and the
                    ;; (cdr to-interpret) will be unused.
                    (interpret-ast (car to-interpret) env)
                    (cdr to-interpret))
@@ -282,6 +286,7 @@
 
 ;;; fixnum-related-asts.lisp
 
+(eval-when (:load-toplevel)
 (defmethod interpret-boolean-ast ((ast cleavir-ast:fixnum-add-ast) env)
   ;; Doing this without metacicularity is just annoying.
   (cleavir-primop:let-uninitialized (z)
@@ -302,6 +307,7 @@
              z)
             t nil)
       (setf (variable (cleavir-ast:variable-ast ast) env) z))))
+) ; eval-when
 
 (defmacro define-fixnum-comparison-interpreter (name op)
   `(defmethod interpret-boolean-ast ((ast ,name) env)
@@ -350,6 +356,7 @@
           (cleavir-ast:to-type ast)))
 
 ;;; standard-object-related-asts.lisp
+;;; clasp only, replace clos: with your mop package 
 
 (defmethod interpret-ast ((ast cleavir-ast:slot-read-ast) env)
   (clos:standard-instance-access
@@ -377,6 +384,7 @@
   (throw (interpret-ast (cc-ast:tag-ast ast) env)
     (interpret-ast (cc-ast:result-ast ast) env)))
 
+(eval-when (:load-toplevel)
 (defmethod interpret-ast ((ast cc-ast:vector-length-ast) env)
   (core::vector-length (interpret-ast (cc-ast:vl-ast-vector ast) env)))
 
@@ -400,6 +408,7 @@
   (core::%array-dimension
    (interpret-ast (cc-ast:array-dimension-ast-mdarray ast) env)
    (interpret-ast (cc-ast:array-dimension-ast-axis ast) env)))
+) ; eval-when
 
 (defmethod interpret-ast ((ast cc-ast:vaslist-pop-ast) env)
   (core:vaslist-pop (interpret-ast (cleavir-ast:arg-ast ast) env)))
@@ -455,8 +464,8 @@
   (interpret-ast:interpret
    #-cst
    (cleavir-generate-ast:generate-ast
-    form env clasp-cleavir::*clasp-system*)
+    form env clasp-cleavir:*clasp-system*)
    #+cst
    (cleavir-cst-to-ast:cst-to-ast
     (cst:cst-from-expression form)
-    env interpret-ast:*system*)))
+    env clasp-cleavir:*clasp-system*)))
