@@ -119,37 +119,44 @@
                     (push item key)))))
     (values (nreverse required) (nreverse optional) rest keyp (nreverse key) aok-p)))
 
+;;; given a list of arguments, an env, and the shredded viscera of a lambda list,
+;;; fill the env with the appropriate bindings.
+(defun bind-list (arguments env required optional rest keyp key aok-p)
+  (loop for r in required
+        if (null arguments)
+          do (error "Not enough arguments") ; FIXME: message
+        else do (setf (variable r env) (pop arguments)))
+  (loop for (ovar o-p) in optional
+        if (null arguments)
+          do (setf (variable o-p env) nil)
+        else do (setf (variable ovar env) (pop arguments)
+                      (variable o-p env) t))
+  (when rest
+    (setf (variable rest env) arguments))
+  (when keyp
+    (unless (evenp (length arguments))
+      (error "Odd number of keyword arguments")))
+  (when (and (not rest) (not keyp) (not (null arguments)))
+    (error "Too many arguments"))
+  (loop with indicator = (list nil) ; arbitrary unique thing
+        for (k var var-p) in key
+        for value = (getf arguments k indicator)
+        if (eq value indicator) ; not present
+          do (setf (variable var-p env) nil)
+        else do (setf (variable var env) value
+                      (variable var-p env) t))
+  ;; TODO: aokp check blabla
+  (values))
+
 (defmethod interpret-ast ((ast cleavir-ast:function-ast) env)
   (let ((body (cleavir-ast:body-ast ast))
-        (ll (cleavir-ast:lambda-list ast))
-        (indicator (gensym)))
+        (ll (cleavir-ast:lambda-list ast)))
     (multiple-value-bind (required optional rest keyp key aok-p)
         (parse-lambda-list ll)
       (lambda (&rest arguments)
+        (declare (core:lambda-name ast-interpreted-closure))
         (let ((env (augment-environment env)))
-          (loop for r in required
-                if (null arguments)
-                  do (error "Not enough arguments") ; FIXME: message
-                else do (setf (variable r env) (pop arguments)))
-          (loop for (ovar o-p) in optional
-                if (null arguments)
-                  do (setf (variable o-p env) nil)
-                else do (setf (variable ovar env) (pop arguments)
-                              (variable o-p env) t))
-          (when rest
-            (setf (variable rest env) arguments))
-          (when keyp
-            (unless (evenp (length arguments))
-              (error "Odd number of keyword arguments")))
-          (when (and (not rest) (not keyp) (not (null arguments)))
-            (error "Too many arguments"))
-          (loop for (k var var-p) in key
-                for value = (getf arguments k indicator)
-                if (eq value indicator) ; not present
-                  do (setf (variable var-p env) nil)
-                else do (setf (variable var env) value
-                              (variable var-p env) t))
-          ;; TODO: aokp check blabla
+          (bind-list arguments env required optional rest keyp key aok-p)
           ;; ok body now
           (interpret-ast body env))))))
 
@@ -375,7 +382,7 @@
 
 ;;; Unimplemented:
 ;;; debug-message, debug-break, m-v-foreign-call, foreign-call, foreign-call-pointer, defcallback,
-;;; precalc-whatever, bind-va-listr
+;;; precalc-whatever
 
 (defmethod interpret-ast ((ast cc-ast:setf-fdefinition-ast) env)
   (fdefinition `(setf ,(interpret-ast (cleavir-ast:name-ast ast) env))))
@@ -422,34 +429,11 @@
         (body-ast (cleavir-ast:body-ast ast)))
     (multiple-value-bind (required optional rest keyp key aok-p)
         (parse-lambda-list lambda-list)
-      (let ((vaslist (interpret-ast va-list-ast env)))
-        ;; mostly copied from enclose, above
-        (loop for r in required
-              if (zerop (core:vaslist-length vaslist))
-                do (error "Not enough arguments") ; FIXME: message
-              else do (setf (variable r env) (core:vaslist-pop vaslist)))
-        (loop for (ovar o-p) in optional
-              if (zerop (core:vaslist-length vaslist))
-                do (setf (variable o-p env) nil)
-              else do (setf (variable ovar env) (core:vaslist-pop vaslist)
-                            (variable o-p env) t))
-        (when rest
-          (setf (variable rest env) (core:vaslist-as-list vaslist)))
-        (when keyp
-          (unless (evenp (core:vaslist-length vaslist))
-            (error "Odd number of keyword arguments")))
-        (when (and (not rest) (not keyp)
-                   (not (zerop (core:vaslist-length vaslist))))
-          (error "Too many arguments"))
-        (loop with arguments = (core:vaslist-as-list vaslist)
-              with indicator = (list nil)
-              for (k var var-p) in key
-              for value = (getf arguments k indicator)
-              if (eq value indicator) ; not present
-                do (setf (variable var-p env) nil)
-              else do (setf (variable var env) value
-                            (variable var-p env) t))
-        ;; variables bound, now just interpret
+      (let* ((vaslist (interpret-ast va-list-ast env))
+             ;; NOTE: bind-va-list semantics include NOT destroying the
+             ;; provided vaslist. vaslist-as-list avoids destruction.
+             (arguments (core:vaslist-as-list vaslist)))
+        (bind-list arguments env required optional rest keyp key aok-p)
         (interpret-ast body-ast env)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
