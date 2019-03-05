@@ -390,4 +390,5 @@ Compile a lisp source file into an LLVM module."
       (apply #'compile-file-serial input-file args)))
 
 (eval-when (:load-toplevel)
-  (setf *compile-file-parallel* t))
+  (setf *compile-file-parallel* t)
+  (setf clasp-cleavir::*use-ast-interpreter* t))
