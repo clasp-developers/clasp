@@ -77,7 +77,7 @@
              (simple-program-error "Wrong number of keyword arguments for SHARED-INITIALIZE, ~A"
                                    (progn
                                      (core:vaslist-rewind initargs)
-                                     (core:vaslist-as-list initargs))))
+                                     (core:list-from-va-list initargs))))
            (unless (symbolp initarg)
              (simple-program-error "Not a valid initarg: ~A" initarg))
            (setf val #+(or)(pop l) (core:vaslist-pop largs))

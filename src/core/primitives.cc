@@ -2043,11 +2043,6 @@ CL_DEFUN List_sp core__list_from_va_list(VaList_sp vorig)
   return result;
 }
 
-CL_DEFUN List_sp core__vaslist_as_list(VaList_sp vorig)
-{
-  return core__list_from_va_list(vorig);
-}
-
 CL_LAMBDA(&optional (out t) msg);
 CL_DECLARE();
 CL_DOCSTRING("ihsBacktrace");

@@ -431,8 +431,8 @@
         (parse-lambda-list lambda-list)
       (let* ((vaslist (interpret-ast va-list-ast env))
              ;; NOTE: bind-va-list semantics include NOT destroying the
-             ;; provided vaslist. vaslist-as-list avoids destruction.
-             (arguments (core:vaslist-as-list vaslist)))
+             ;; provided vaslist. list-from-va-list avoids destruction.
+             (arguments (core:list-from-va-list vaslist)))
         (bind-list arguments env required optional rest keyp key aok-p)
         (interpret-ast body-ast env)))))
 
