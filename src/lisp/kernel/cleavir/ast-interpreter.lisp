@@ -455,10 +455,11 @@
 
 (defun ast-interpret-form (form env)
   (interpret-ast:interpret
-   #-cst
-   (cleavir-generate-ast:generate-ast
-    form env clasp-cleavir:*clasp-system*)
-   #+cst
-   (cleavir-cst-to-ast:cst-to-ast
-    (cst:cst-from-expression form)
-    env clasp-cleavir:*clasp-system*)))
+   (let ((cleavir-generate-ast:*compiler* 'cl:eval))
+     #-cst
+     (cleavir-generate-ast:generate-ast
+      form env clasp-cleavir:*clasp-system*)
+     #+cst
+     (cleavir-cst-to-ast:cst-to-ast
+      (cst:cst-from-expression form)
+      env clasp-cleavir:*clasp-system*))))
