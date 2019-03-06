@@ -391,4 +391,4 @@ Compile a lisp source file into an LLVM module."
 
 (eval-when (:load-toplevel)
   (setf *compile-file-parallel* t)
-  (setf clasp-cleavir::*use-ast-interpreter* nil))
+  (setf clasp-cleavir::*use-ast-interpreter* t))
