@@ -2676,7 +2676,7 @@ DEFMAKESIMPLEMDARRAY(byte64, SimpleMDArray_byte64_t_O, SimpleMDArray_byte64_t_sp
 DEFMAKESIMPLEMDARRAY(fixnum, SimpleMDArray_fixnum_O, SimpleMDArray_fixnum_sp, SimpleVector_fixnum_O);
 DEFMAKESIMPLEMDARRAY(size_t, SimpleMDArray_size_t_O, SimpleMDArray_size_t_sp, SimpleVector_size_t_O);
 
-CL_LAMBDA(element_type dimension &optional adjustable fill_pointer displaced_to (displaced_index_offset 0) initial_element initial_element_supplied_p static_vector_p);
+CL_LAMBDA(element_type dimension &optional adjustable fill_pointer displaced_to (displaced_index_offset 0) initial_element initial_element_supplied_p);
 CL_DECLARE();
 CL_DOCSTRING("Makes a vector based on the arguments. See si_make_vector in ecl>>array.d");
 CL_DEFUN Vector_sp core__make_vector(T_sp element_type,
@@ -3082,8 +3082,8 @@ template <typename T1>
 bool template_fits_in_base_string(const T1& sub, size_t start, size_t end)
 {
   // The std::search convention is reversed -->  std::search(outer,sub,...)
-  const typename T1::simple_element_type* s_cps = &sub[start];
-  const typename T1::simple_element_type* s_cpe = &sub[end];
+  const typename T1::simple_element_type* s_cps = (typename T1::simple_element_type*)sub.rowMajorAddressOfElement_(start); // &sub[start];
+  const typename T1::simple_element_type* s_cpe = (typename T1::simple_element_type*)sub.rowMajorAddressOfElement_(end); // &sub[end];
   for ( ; s_cps != s_cpe; ++s_cps ) {
     if ( !clasp_base_char_p(*s_cps) ) {
       return false;
