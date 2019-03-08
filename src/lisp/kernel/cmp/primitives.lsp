@@ -106,7 +106,9 @@
     (primitive-unwinds "ltvc_set_ltv_funcall" %ltvc-return% (list %gcroots-in-module*% %size_t% %fn-prototype*% %i8*%))
     (primitive-unwinds "ltvc_set_ltv_funcall_cleavir" %ltvc-return% (list %gcroots-in-module*% %size_t% %fn-prototype*% %i8*%))
     (primitive-unwinds "ltvc_toplevel_funcall" %ltvc-return% (list %fn-prototype*% %i8*%))
-  
+
+    (primitive         "cc_lookup_transient" %t*% (list %gcroots-in-module*% %size_t%))
+
     (primitive         "newTmv" %void% (list %tmv*%))
     (primitive         "isTrue" %i32% (list %t*%))
     (primitive         "isBound" %i32% (list %t*%))
@@ -170,7 +172,7 @@
     (primitive-unwinds "va_tooManyArgumentsException" %void% (list %i8*% %size_t% %size_t%))
     (primitive-unwinds "va_notEnoughArgumentsException" %void% (list %i8*% %size_t% %size_t%))
     (primitive-unwinds "va_ifExcessKeywordArgumentsException" %void% (list %i8*% %size_t% %va_list*% %size_t%))
-    (primitive-unwinds "va_symbolFunction" %t*% (list %t*%))
+    (primitive-unwinds "cc_symbol_function" %t*% (list %t*%))
     (primitive         "va_lexicalFunction" %t*% (list %size_t% %size_t% %t*%))
     
     (primitive         "cc_gatherRestArguments" %t*% (list %va_list*% %size_t%))
@@ -261,7 +263,7 @@
     (primitive         "cc_arrayDimension" %size_t% (list %t*% %size_t%))
     (primitive         "cc_simpleBitVectorAref" %uint% (list %t*% %size_t%))
     (primitive         "cc_simpleBitVectorAset" %void% (list %t*% %size_t% %uint%))
-    (primitive         "cc_initialize_gcroots_in_module" %void% (list %gcroots-in-module*% %t**% %size_t% %t*%))
+    (primitive         "cc_initialize_gcroots_in_module" %void% (list %gcroots-in-module*% %t**% %size_t% %t*% %i8**% %size_t%))
     (primitive         "cc_shutdown_gcroots_in_module" %void% (list %gcroots-in-module*% ))
 
     (primitive-unwinds "cc_enclose" %t*% (list %fn-prototype*%

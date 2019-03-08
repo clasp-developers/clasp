@@ -193,7 +193,7 @@ void Instance_O::fields(Record_sp node) {
 
 size_t Instance_O::rack_stamp_offset() {
   SimpleVector_O dummy_rack(0);
-  return (char*)&(dummy_rack.operator[](0))-(char*)&dummy_rack;
+  return (char*)(dummy_rack.rowMajorAddressOfElement_(0))-(char*)&dummy_rack;
 }
 
 Fixnum Instance_O::stamp() const {

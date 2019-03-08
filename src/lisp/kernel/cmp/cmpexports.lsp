@@ -124,6 +124,8 @@
           with-track-llvm-time
           irc-add
           irc-alloca-tmv
+          irc-alloca-i8*
+          irc-alloca-i8**
           irc-alloca-mv-struct
           irc-add-clause
           irc-basic-block-create

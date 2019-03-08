@@ -970,16 +970,14 @@ But no irbuilders or basic-blocks. Return the fn."
          (llvm-sys:constant-struct-get %function-description%
                                        (progn
                                          (progn
-                                           (when (> source-pathname.function-name-index +maxi32+) (error "source-pathname.function-name-index ~a out-of-bounds for i32" source-pathname.function-name-index))
-                                           (when (> lambda-list.docstring-index +maxi32+) (error "lambda-list.docstring-index ~a out of bounds for i32" lambda-list.docstring-index))
                                            (when (> lineno +maxi32+) (error "lineno ~a out of bounds for i32" lineno))
                                            (when (> column +maxi32+) (error "column ~a out of bounds for i32" column))
                                            (when (> filepos +maxi32+) (error "filepos ~a out of bounds for i32" filepos)))
                                          (list
                                           fn
                                           literal::*gcroots-in-module*
-                                          (jit-constant-i32 source-pathname.function-name-index)
-                                          (jit-constant-i32 lambda-list.docstring-index)
+                                          (jit-constant-size_t source-pathname.function-name-index)
+                                          (jit-constant-size_t lambda-list.docstring-index)
                                           (jit-constant-i32 lineno)
                                           (jit-constant-i32 column)
                                           (jit-constant-i32 filepos)
@@ -1201,6 +1199,10 @@ Within the _irbuilder_ dynamic environment...
 (defun irc-alloca-i8* (&key (irbuilder *irbuilder-function-alloca*) (label "i8*-"))
   "Allocate space for an i8*"
   (llvm-sys::create-alloca irbuilder %i8*% (jit-constant-i32 1) label))
+
+(defun irc-alloca-i8** (&key (irbuilder *irbuilder-function-alloca*) (label "i8**-"))
+  "Allocate space for an i8**"
+  (llvm-sys::create-alloca irbuilder %i8**% (jit-constant-i32 1) label))
 
 (defun irc-alloca-mv-struct (&key (irbuilder *irbuilder-function-alloca*) (label "V"))
   (llvm-sys:create-alloca irbuilder %mv-struct% (jit-constant-i32 1) label))

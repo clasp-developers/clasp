@@ -102,12 +102,12 @@ extern "C" void dumpFunctionDescription(void* vfdesc)
 {
   core::FunctionDescription* fdesc = (core::FunctionDescription*)vfdesc;
   printf("FunctionDescription @%p\n", fdesc);
-  core::Cons_sp sourcePathname_functionName((gctools::Tagged)fdesc->gcrootsInModule->get(fdesc->sourcePathname_functionName_Index));
-  core::Cons_sp lambdaList_docstring((gctools::Tagged)fdesc->gcrootsInModule->get(fdesc->lambdaList_docstring_Index));
-  printf("sourcePathname CAR[%d] = %s\n", fdesc->sourcePathname_functionName_Index, _rep_(CONS_CAR(sourcePathname_functionName)).c_str());
-  printf("functionName CDR[%d] = %s\n", fdesc->sourcePathname_functionName_Index, _rep_(CONS_CDR(sourcePathname_functionName)).c_str());
-  printf("lambdaList CAR[%d] = %s\n", fdesc->lambdaList_docstring_Index, _rep_(CONS_CAR(lambdaList_docstring)).c_str());
-  printf("docstring CDR[%d] = %s\n", fdesc->lambdaList_docstring_Index, _rep_(CONS_CDR(lambdaList_docstring)).c_str());
+  core::Cons_sp sourcePathname_functionName((gctools::Tagged)fdesc->gcrootsInModule->getTaggedIndex(fdesc->sourcePathname_functionName_Index));
+  core::Cons_sp lambdaList_docstring((gctools::Tagged)fdesc->gcrootsInModule->getTaggedIndex(fdesc->lambdaList_docstring_Index));
+  printf("sourcePathname CAR[%lu] = %s\n", fdesc->sourcePathname_functionName_Index, _rep_(CONS_CAR(sourcePathname_functionName)).c_str());
+  printf("functionName CDR[%lu] = %s\n", fdesc->sourcePathname_functionName_Index, _rep_(CONS_CDR(sourcePathname_functionName)).c_str());
+  printf("lambdaList CAR[%lu] = %s\n", fdesc->lambdaList_docstring_Index, _rep_(CONS_CAR(lambdaList_docstring)).c_str());
+  printf("docstring CDR[%lu] = %s\n", fdesc->lambdaList_docstring_Index, _rep_(CONS_CDR(lambdaList_docstring)).c_str());
   printf("lineno = %d\n", fdesc->lineno);
   printf("column = %d\n", fdesc->column);
   printf("filepos = %d\n", fdesc->filepos);

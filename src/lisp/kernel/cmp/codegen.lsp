@@ -185,7 +185,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
 	(if (eq (car classified) 'core::global-function)
             (multiple-value-bind (sym-arg label)
                 (irc-global-symbol fn-designator evaluate-env)
-              (values (irc-intrinsic-call-or-invoke "va_symbolFunction" (list sym-arg) label) label))
+              (values (irc-intrinsic-call-or-invoke "cc_symbol_function" (list sym-arg) label) label))
             (values (irc-lexical-function-lookup classified evaluate-env) "lexical-func")))
       (if (eq (car fn-designator) 'cl:lambda)
 	  (error "Handle lambda expressions at head of form")

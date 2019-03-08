@@ -207,7 +207,15 @@ Boehm and MPS use a single pointer"
 (define-symbol-macro %cons% (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields %t*% %t*%) nil))
 
 ;; This structure must match the gctools::GCRootsInModule structure
-(define-symbol-macro %gcroots-in-module% (llvm-sys:struct-type-get *llvm-context* (list %i8*% %i8*% %size_t% %size_t%) nil))
+(define-symbol-macro %gcroots-in-module% (llvm-sys:struct-type-get
+                                          *llvm-context*
+                                          (list
+                                           %size_t% ; _index_offset
+                                           %i8*% ; _boehm_shadow_memory
+                                           %i8*% ; _module_memory
+                                           %size_t% ; _num_entries
+                                           %size_t% ; _capacity
+                                           ) nil))
 (define-symbol-macro %gcroots-in-module*% (llvm-sys:type-get-pointer-to %gcroots-in-module%))
 
 ;; The definition of %tmv% doesn't quite match T_mv because T_mv inherits from T_sp
@@ -468,8 +476,8 @@ eg:  (f closure-ptr nargs a b c d ...)
     (llvm-sys:struct-type-get *llvm-context*
                               (list %fn-prototype*%
                                     %gcroots-in-module*%
-                                    %i32% ; source-info.function-name index
-                                    %i32% ; lambda-list./docstring literal index
+                                    %size_t% ; source-info.function-name index
+                                    %size_t% ; lambda-list./docstring literal index
                                     %i32% ; lineno
                                     %i32% ; column
                                     %i32% ; filepos
@@ -689,8 +697,13 @@ and initialize it with an array consisting of one function pointer."
                                   (list (jit-constant-size_t 0)
                                         (jit-constant-size_t 0)))
                          (llvm-sys:constant-pointer-null-get %t**%))))
-          (if gcroots-in-module
-              (irc-intrinsic-call "cc_initialize_gcroots_in_module" (list gcroots-in-module start (jit-constant-size_t number-of-roots) values)))
+          (when gcroots-in-module
+            (irc-intrinsic-call "cc_initialize_gcroots_in_module" (list gcroots-in-module
+                                                                        start
+                                                                        (jit-constant-size_t number-of-roots)
+                                                                        values
+                                                                        (llvm-sys:constant-pointer-null-get %i8**%)
+                                                                        (jit-constant-size_t 0))))
           ;; If the constant/literal list is provided - then we may need to generate code for closurettes
           (when ordered-literals
             (setf ordered-raw-literals-list (mapcar (lambda (x)

@@ -58,16 +58,16 @@ class Symbol_O : public General_O {
 
 public:
   SimpleString_sp _Name;
-  std::atomic<T_sp> _HomePackage; // NIL or Package
-#ifdef SYMBOL_CLASS
-  std::atomic<T_sp> _Class; // NIL or an Instance_sp/class
-#endif
   T_sp _GlobalValue;
   Function_sp _Function;
   Function_sp _SetfFunction;
   mutable size_t _Binding;
   size_t _Flags;
   List_sp _PropertyList;
+  std::atomic<T_sp> _HomePackage; // NIL or Package
+#ifdef SYMBOL_CLASS
+  std::atomic<T_sp> _Class; // NIL or an Instance_sp/class
+#endif
 
 private:
   friend class Instance_O;

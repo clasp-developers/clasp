@@ -148,7 +148,7 @@ BUILTIN_ATTRIBUTES core::T_O* cx_read_stamp(core::T_O* obj)
 
 
 BUILTIN_ATTRIBUTES
-core::T_O *va_symbolFunction(core::T_O *symP) {
+core::T_O *cc_symbol_function(core::T_O *symP) {
   core::Symbol_sp sym((gctools::Tagged)symP);
   core::Function_sp func((gc::Tagged)(sym)->_Function.theObject);
   return func.raw_();

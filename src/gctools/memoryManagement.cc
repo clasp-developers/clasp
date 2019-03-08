@@ -49,6 +49,12 @@ THE SOFTWARE.
 #undef ALL_PREGCSTARTUPS_EXTERN
 #endif
 
+#if 0
+#define GCROOT_LOG(x) if (_sym_STARdebug_gcrootsSTAR&&_sym_STARdebug_gcrootsSTAR.boundp()&&_sym_STARdebug_gcrootsSTAR->symbolValue()&&_sym_STARdebug_gcrootsSTAR->symbolValue().notnilp()) { printf x;}
+#else
+#define GCROOT_LOG(x)
+#endif
+
 extern "C" {
 void gc_park() {
 #ifdef USE_BOEHM
@@ -436,19 +442,19 @@ int handleFatalCondition() {
     _lisp->print(BF("At %s:%d - HardError caught: %s") % __FILE__ % __LINE__ % ee.message());
   }
 #if 0
-        catch ( ... )
-        {
-            _lisp->print(BF("Unknown exception in main - everything should be caught lower down %s:%d") % __FILE__ % __LINE__);
-        }
+  catch ( ... )
+  {
+    _lisp->print(BF("Unknown exception in main - everything should be caught lower down %s:%d") % __FILE__ % __LINE__);
+  }
 #endif
   return exitCode;
 }
 
 stamp_t next_header_kind()
 {
-    stamp_t next = global_next_header_stamp;
-    ++global_next_header_stamp;
-    return next;
+  stamp_t next = global_next_header_stamp;
+  ++global_next_header_stamp;
+  return next;
 }
 
 core::Fixnum ensure_fixnum(stamp_t val)
@@ -463,18 +469,60 @@ CL_LAMBDA();
 CL_DOCSTRING(R"doc(Return the next available header KIND value and increment the global variable global_next_header_stamp)doc");
 CL_DEFUN core::Fixnum gctools__next_header_kind()
 {
-    stamp_t next = global_next_header_stamp;
-    ++global_next_header_stamp;
-    return ensure_fixnum(next);
+  stamp_t next = global_next_header_stamp;
+  ++global_next_header_stamp;
+  return ensure_fixnum(next);
 }
 
 std::atomic<uint64_t> global_TotalRootTableSize;
 std::atomic<uint64_t> global_NumberOfRootTables;
 
 
+SYMBOL_EXPORT_SC_(GcToolsPkg,STARdebug_gcrootsSTAR);
+
+void GCRootsInModule::setup_transients(core::SimpleVector_O** transient_alloca, size_t transient_entries) {
+  if (transient_entries>0) {
+    core::SimpleVector_sp sv = core::SimpleVector_O::make(transient_entries);
+    GCROOT_LOG(("%s:%d  Setup simple vector@%p\n", __FILE__, __LINE__, (void*)sv.tagged_()));
+    *transient_alloca = &(*sv);
+  } else {
+    this->_TransientAlloca = nullptr;
+  }
+}
+
+GCRootsInModule::GCRootsInModule(void* shadow_mem, void* module_mem, size_t num_entries, core::SimpleVector_O** transient_alloca, size_t transient_entries) {
+  this->_num_entries = num_entries;
+  this->_capacity = num_entries;
+  this->_boehm_shadow_memory = shadow_mem;
+  this->_module_memory = module_mem;
+  this->setup_transients(transient_alloca, transient_entries);
+}
+
+GCRootsInModule::GCRootsInModule(size_t capacity) {
+  this->_num_entries = 0;
+  this->_capacity = capacity;
+#ifdef USE_BOEHM
+  core::T_O** shadow_mem = reinterpret_cast<core::T_O**>(boehm_create_shadow_table(this->_capacity));
+  core::T_O** module_mem = shadow_mem;
+#endif
+#ifdef USE_MPS
+  core::T_O** shadow_mem = reinterpret_cast<core::T_O**>(NULL);
+  core::T_O** module_mem = reinterpret_cast<core::T_O**>(malloc(sizeof(core::T_O*)*this->_capacity));
+#endif
+  this->_boehm_shadow_memory = shadow_mem;
+  this->_module_memory = module_mem;
+  memset(module_mem, 0, sizeof(core::T_O*)*this->_capacity);
+#ifdef USE_MPS
+  // MPS registers the roots with the GC and doesn't need a shadow table
+  mps_register_roots(reinterpret_cast<void*>(module_mem),capacity);
+#endif
+  this->setup_transients(NULL,0);
+}
+
+
 /*! initial_data is a gctools::Tagged pointer to a List of tagged pointers.
 */
-void initialize_gcroots_in_module(GCRootsInModule* roots, core::T_O** root_address, size_t num_roots, gctools::Tagged initial_data) {
+void initialize_gcroots_in_module(GCRootsInModule* roots, core::T_O** root_address, size_t num_roots, gctools::Tagged initial_data, core::SimpleVector_O** transientAlloca, size_t transient_entries) {
   global_TotalRootTableSize += num_roots;
   global_NumberOfRootTables++;
   core::T_O** shadow_mem = NULL;
@@ -490,13 +538,13 @@ void initialize_gcroots_in_module(GCRootsInModule* roots, core::T_O** root_addre
   // FIXME: The GCRootsInModule is on the stack - once it's gone we loose the ability
   //        to keep track of the constants and in the future when we start GCing code
   //        we need to keep track of the constants.
-  new (roots) GCRootsInModule(reinterpret_cast<void*>(shadow_mem),reinterpret_cast<void*>(module_mem),num_roots);
+  new (roots) GCRootsInModule(reinterpret_cast<void*>(shadow_mem),reinterpret_cast<void*>(module_mem),num_roots,transientAlloca,transient_entries);
   size_t i = 0;
   if (initial_data != 0 ) {
     core::List_sp args((gctools::Tagged)initial_data);
     for ( auto c : args ) {
       core::T_sp arg = oCar(c);
-      roots->set(i,arg.tagged_());
+      roots->setLiteral(i,arg.tagged_());
     //if (debug) write_bf_stream(BF("Filling roots table[%d]@%p -> %p\n") % i % ct.address(i) % (void*)arg.tagged_());
       ++i;
     }
@@ -508,7 +556,7 @@ void initialize_gcroots_in_module(GCRootsInModule* roots, core::T_O** root_addre
 }
 
 core::T_O* read_gcroots_in_module(GCRootsInModule* roots, size_t index) {
-  return (core::T_O*)(roots->get(index));
+  return (core::T_O*)(roots->getLiteral(index));
 }
 
 void shutdown_gcroots_in_module(GCRootsInModule* roots) {
@@ -537,11 +585,11 @@ CL_DEFUN void gctools__register_roots(core::T_sp taddress, core::List_sp args) {
 //  printf("%s:%d:%s address=%p nargs=%" PRu "\n", __FILE__, __LINE__, __FUNCTION__, (void*)address, nargs);
 //  printf("%s:%d:%s constants-table contents: vvvvv\n", __FILE__, __LINE__, __FUNCTION__ );
   // Create a ConstantsTable structure to write the constants with
-  GCRootsInModule ct(reinterpret_cast<void*>(shadow_mem),reinterpret_cast<void*>(module_mem),nargs);
+  GCRootsInModule ct(reinterpret_cast<void*>(shadow_mem),reinterpret_cast<void*>(module_mem),nargs,NULL,0);
   size_t i = 0;
   for ( auto c : args ) {
     core::T_sp arg = oCar(c);
-    ct.set(i,arg.tagged_());
+    ct.setLiteral(i,arg.tagged_());
     ++i;
   }
 #ifdef USE_MPS
@@ -590,26 +638,141 @@ int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char 
   return exitCode;
 }
 
-Tagged GCRootsInModule::set(size_t index, Tagged val) {
+Tagged GCRootsInModule::setLiteral(size_t raw_index, Tagged val) {
+  BOUNDS_ASSERT(raw_index<this->_capacity);
+  BOUNDS_ASSERT(raw_index<this->_num_entries);
 #ifdef USE_BOEHM
   // shadow_memory is only used by Boehm
   if (this->_boehm_shadow_memory != this->_module_memory) {
-    reinterpret_cast<core::T_O**>(this->_boehm_shadow_memory)[index] = reinterpret_cast<core::T_O*>(val);
+    reinterpret_cast<core::T_O**>(this->_boehm_shadow_memory)[raw_index] = reinterpret_cast<core::T_O*>(val);
   }
 #endif
-  reinterpret_cast<core::T_O**>(this->_module_memory)[index] = reinterpret_cast<core::T_O*>(val);
+  reinterpret_cast<core::T_O**>(this->_module_memory)[raw_index] = reinterpret_cast<core::T_O*>(val);
   return val;
 }
+Tagged GCRootsInModule::getLiteral(size_t raw_index) {
+  BOUNDS_ASSERT(raw_index<this->_capacity);
+  BOUNDS_ASSERT(raw_index<this->_num_entries);
+  return reinterpret_cast<Tagged>(reinterpret_cast<core::T_O**>(this->_module_memory)[raw_index]);
+}
+
 
 size_t GCRootsInModule::push_back( Tagged val) {
   size_t index = this->_num_entries;
   this->_num_entries++;
-  this->set(index,val);
-  return index;
+  this->setLiteral(index,val);
+  size_t tindex = index|LITERAL_TAG;
+  return tindex;
 }
 
-Tagged GCRootsInModule::get(size_t index) {
-  return reinterpret_cast<Tagged>(reinterpret_cast<core::T_O**>(this->_module_memory)[index]);
+Tagged GCRootsInModule::setTransient(size_t index, Tagged val) {
+  core::SimpleVector_O* transients = *this->_TransientAlloca;
+  if (transients) {
+    BOUNDS_ASSERT(index<transients->length());
+    core::T_sp tval((gctools::Tagged)val);
+    if (transients) {
+      GCROOT_LOG(("%s:%d:%s GCRootsInModule@%p[%lu] - writing %p of transient vector %p length: %lu\n", __FILE__, __LINE__, __FUNCTION__, (void*)this, index, (void*)tval.tagged_(), (void*)transients.tagged_(), transients->length()));
+      GCROOT_LOG(("     value -> %s\n",  _rep_(tval).c_str()));
+    } else {
+      GCROOT_LOG(("%s:%d:%s GCRootsInModule@%p - writing %p to transient@%lu of transient vector %p BUT ITS NOT THERE!!!\n", __FILE__, __LINE__, __FUNCTION__, (void*)this, (void*)tval.tagged_(), index, (void*)transients.tagged_() ));
+    }
+    (*transients)[index] = tval;
+    return val;
+  }
+  printf("%s:%d There is no transients vector\n", __FILE__, __LINE__);
+  abort();
 }
+
+Tagged GCRootsInModule::getTransient(size_t index) {
+  core::SimpleVector_O* transients = *this->_TransientAlloca;
+  if (transients) {
+    BOUNDS_ASSERT(index<transients->length());
+    core::T_sp tval = (*transients)[index];
+    if (transients) {
+      GCROOT_LOG(("%s:%d:%s GCRootsInModule@%p[%lu] - read %p of transient vector %p length: %lu value-> %s\n", __FILE__, __LINE__, __FUNCTION__, (void*)this, index, (void*)tval.tagged_(), (void*)transients.tagged_(), transients->length(), _rep_(tval).c_str()));
+    } else {
+      GCROOT_LOG(("%s:%d:%s GCRootsInModule@%p - writing %p to transient@%lu of transient vector %p BUT ITS NOT THERE!!!\n", __FILE__, __LINE__, __FUNCTION__, (void*)this, (void*)tval.tagged_(), index, (void*)transients.tagged_() ));
+    }
+    return tval.tagged_();
+  }
+  printf("%s:%d There is no transients vector\n", __FILE__, __LINE__);
+  abort();
+}
+
+
+SYMBOL_EXPORT_SC_(KeywordPkg,literal);
+SYMBOL_EXPORT_SC_(KeywordPkg,transient);
+CL_DEFUN core::T_sp gctools__tag_literal_index(core::Fixnum_sp index, core::Symbol_sp kind)
+{
+  Fixnum tag;
+  if (kind==kw::_sym_literal) {
+    tag = LITERAL_TAG;
+  } else if (kind==kw::_sym_transient) {
+    tag = TRANSIENT_TAG;
+  } else {
+    SIMPLE_ERROR(BF("Illegal kind %s for value %s") % _rep_(kind) % _rep_(index));
+  }
+  return core::make_fixnum(index.unsafe_fixnum()|tag);
+}
+
+void untag_literal_index(size_t findex, size_t& index, size_t& tag)
+{
+  index = (findex&(~MASK_TAG));
+  tag = (findex&MASK_TAG);
+}
+
+CL_DEFUN core::T_mv gctools__untag_literal_index(core::Fixnum_sp index)
+{
+  size_t utindex, tag;
+  untag_literal_index(index.unsafe_fixnum(),utindex,tag);
+  core::Symbol_sp tag_kind;
+  if (tag==LITERAL_TAG) {
+    tag_kind = kw::_sym_literal;
+  } else if (tag==TRANSIENT_TAG) {
+    tag_kind = kw::_sym_transient;
+  } else {
+    SIMPLE_ERROR(BF("Illegal kind %s for value %s") % _rep_(tag_kind) % _rep_(index));
+  }
+  return Values(core::make_fixnum(utindex),tag_kind);
+}
+
+
+
+Tagged GCRootsInModule::setTaggedIndex(size_t raw_index, Tagged val) {
+  size_t index;
+  size_t tag;
+  untag_literal_index(raw_index,index,tag);
+  GCROOT_LOG(("%s:%d:%s GCRootsInModule@%p[%lu] raw_index %lu/0x%lx tag 0x%lx\n", __FILE__, __LINE__, __FUNCTION__, (void*)this, index, raw_index, raw_index, tag ));
+  switch (tag) {
+  case LITERAL_TAG: {
+    return setLiteral(index,val);
+  }
+  case TRANSIENT_TAG: {
+    return setTransient(index,val);
+  };
+  };
+  printf("%s:%d Illegal index %lu/0x%lx tag 0x%lx\n", __FILE__, __LINE__, index, index, tag);
+  abort();
+}
+
+Tagged GCRootsInModule::getTaggedIndex(size_t raw_index) {
+  size_t index;
+  size_t tag;
+  untag_literal_index(raw_index,index,tag);
+  GCROOT_LOG(("%s:%d:%s GCRootsInModule@%p[%lu] raw_index %lu/0x%lx tag 0x%lx\n", __FILE__, __LINE__, __FUNCTION__, (void*)this, index, raw_index, raw_index, tag ));
+  switch (tag) {
+  case LITERAL_TAG: {
+    return getLiteral(index);
+  }
+  case TRANSIENT_TAG: {
+    return getTransient(index);
+  };
+  };
+  printf("%s:%d Illegal index %lu/0x%lx tag 0x%lx\n", __FILE__, __LINE__, index, index, tag);
+  abort();
+}
+
+    
+
 
 };

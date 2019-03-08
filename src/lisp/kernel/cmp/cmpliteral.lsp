@@ -491,6 +491,7 @@ Return the index of the load-time-value"
        (add-creator "ltvc_set_ltv_funcall" ,datum nil ,ltv-func (cmp:jit-constant-unique-string-ptr (llvm-sys:get-name ,ltv-func)))
        (indexed-datum-index ,datum))))
 
+(defparameter *transient-entries* 0)
 (defmacro with-load-time-value-cleavir (&body body)
   "Evaluate the body and then arrange to evaluate the generated function into a load-time-value.
 Return the index of the load-time-value"
@@ -547,7 +548,8 @@ Return the index of the load-time-value"
         (let* ((ordered-run-all-nodes (nreverse *run-all-objects*))
                (sub-run-all (generate-run-all-from-literal-nodes ordered-run-all-nodes)))
           (cmp:irc-intrinsic-call "cc_invoke_sub_run_all_function" (list sub-run-all))))
-    (let* ((table-entries *table-index*))
+    (let* ((table-entries *table-index*)
+           (transient-entries *transient-entries*))
       (when (> table-entries 0)
         ;; We have a new table, replace the old one and generate code to register the new one
         ;; and gc roots tabl
@@ -564,11 +566,14 @@ Return the index of the load-time-value"
                                                            (cmp:jit-constant-size_t 0)) "table")))
           (llvm-sys:replace-all-uses-with cmp:*load-time-value-holder-global-var* bitcast-correct-size-holder)
           (cmp:with-run-all-entry-codegen
-              (cmp:irc-intrinsic-call "cc_initialize_gcroots_in_module"
-                                      (list *gcroots-in-module*
-                                            (cmp:irc-pointer-cast correct-size-holder cmp:%t**% "")
-                                            (cmp:jit-constant-size_t table-entries)
-                                            (cmp:irc-int-to-ptr (cmp:jit-constant-uintptr_t 0) cmp:%t*%))))
+              (let ((transient-vector (cmp:irc-alloca-i8* :label "transients")))
+                (cmp:irc-intrinsic-call "cc_initialize_gcroots_in_module"
+                                        (list *gcroots-in-module*
+                                              (cmp:irc-pointer-cast correct-size-holder cmp:%t**% "")
+                                              (cmp:jit-constant-size_t table-entries)
+                                              (cmp:irc-int-to-ptr (cmp:jit-constant-uintptr_t 0) cmp:%t*%)
+                                              transient-vector
+                                              (cmp:jit-constant-size_t transient-entries)))))
           ;; Erase the dummy holder
           (llvm-sys:erase-from-parent cmp:*load-time-value-holder-global-var*))))))
 
