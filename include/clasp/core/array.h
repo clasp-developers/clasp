@@ -557,14 +557,14 @@ namespace core {
     static void never_invoke_allocator() {gctools::GCAbstractAllocator<template_SimpleVector>::never_invoke_allocator();};
   public:
     // NULL terminated strings use this - so the ASSERT needs to accept it
-    value_type& operator[](size_t index) { BOUNDS_ASSERT(index<=this->length());return this->_Data[index];};
-    const value_type& operator[](size_t index) const { BOUNDS_ASSERT(index<=this->length());return this->_Data[index];};
+    value_type& operator[](size_t index) { BOUNDS_ASSERT(index<this->length());return this->_Data[index];};
+    const value_type& operator[](size_t index) const { BOUNDS_ASSERT(index<this->length());return this->_Data[index];};
     iterator begin() { return &this->_Data[0];};
     iterator end() { return &this->_Data[this->_Data._Length]; }
     const_iterator begin() const { return &this->_Data[0];};
     const_iterator end() const { return &this->_Data[this->_Data._Length]; }
     virtual size_t elementSizeInBytes() const override {return sizeof(value_type); };
-    virtual void* rowMajorAddressOfElement_(size_t i) const override {return (void*)&(*this)[i];};
+    virtual void* rowMajorAddressOfElement_(size_t i) const override {return (void*)&(this->_Data[i]);};
     void asAbstractSimpleVectorRange(AbstractSimpleVector_sp& sv, size_t& start, size_t& end) const override {
       sv = this->asSmartPtr();
       start = 0;
@@ -585,12 +585,12 @@ namespace core {
     CL_METHOD_OVERLOAD virtual void rowMajorAset(size_t idx, T_sp value) final {(*this)[idx] = leaf_type::from_object(value);}
     CL_METHOD_OVERLOAD virtual T_sp rowMajorAref(size_t idx) const final {return leaf_type::to_object((*this)[idx]);}
     virtual Array_sp unsafe_subseq(size_t start, size_t end) const final {
-      BOUNDS_ASSERT(0<=start&&start<end&&end<=this->length());
+      BOUNDS_ASSERT(start<=end&&end<=this->length());
       return leaf_type::make(end-start,value_type(),true,end-start,&(*this)[start]);
     }
     virtual Array_sp unsafe_setf_subseq(size_t start, size_t end, Array_sp newSubseq) final {
       // TODO: Write specialized versions of this to speed it up
-      BOUNDS_ASSERT(0<=start&&start<=end&&end<=this->length());
+      BOUNDS_ASSERT(start<=end&&end<=this->length());
       for ( size_t i(start),ni(0); i<end; ++i,++ni ) {
         (*this)[i] = leaf_type::from_object(newSubseq->rowMajorAref(ni));
       }
