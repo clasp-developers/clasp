@@ -294,9 +294,10 @@ Compile a lisp source file into an LLVM module."
               (make-boot-function-global-variable module run-all-name
                                                   :position image-startup-position
                                                   :register-library t)
-              ;; (3) ALWAYS link the builtins in, inline them and then remove them - then optimize.
-              (link-inline-remove-builtins *the-module*))
-            ;; Now at the end of with-module another round of optimization is done
+              ;; (3) If optimize ALWAYS link the builtins in, inline them and then remove them - then optimize.
+              (if (> optimize-level 0)
+                  (link-inline-remove-builtins *the-module*)))
+              ;; Now at the end of with-module another round of optimization is done
             ;; but the RUN-ALL is now referenced by the CTOR and so it won't be optimized away
             ;; ---- MOVE OPTIMIZATION in with-module to HERE ----
             )

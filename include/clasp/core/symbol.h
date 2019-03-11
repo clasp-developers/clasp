@@ -58,14 +58,15 @@ class Symbol_O : public General_O {
 
 public:
   SimpleString_sp _Name;
+  size_t _Flags;
+  std::atomic<T_sp> _HomePackage; // NIL or Package
   T_sp _GlobalValue;
   Function_sp _Function;
   Function_sp _SetfFunction;
   mutable size_t _Binding;
-  size_t _Flags;
   List_sp _PropertyList;
-  std::atomic<T_sp> _HomePackage; // NIL or Package
 #ifdef SYMBOL_CLASS
+  #error "Don't define SYMBOL_CLASS"
   std::atomic<T_sp> _Class; // NIL or an Instance_sp/class
 #endif
 

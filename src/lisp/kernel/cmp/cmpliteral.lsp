@@ -55,16 +55,50 @@
 (defstruct (literal-node-closure (:type vector) (:include literal-dnode) :named)
   lambda-name-index function source-info-handle filepos lineno column)
 
-(defstruct (indexed-datum (:type vector) :named) index)
-(defstruct (transient-datum (:type vector) :named) id)
+(defstruct (datum (:type vector) :named) kind index)
+
+(defun literal-datum-p (datum)
+  (eq (datum-kind datum) :literal))
+
+(defun transient-datum-p (datum)
+  (eq (datum-kind datum) :transient))
+
+(defun make-literal-datum (&key index)
+  (make-datum :kind :literal :index index))
+
+(defun make-transient-datum ()
+  (make-datum :kind :transient :index nil))
+
+(defun upgrade-transient-datum-to-literal (datum)
+  (unless (transient-datum-p datum)
+    (error "The datum ~s must be a transient" datum))
+  (setf (datum-kind datum) :literal)
+  (setf (datum-index datum) (new-table-index)))
+  
+(defun literal-datum-index (datum)
+  (unless (literal-datum-p datum)
+    (error "The datum ~s must be a literal" datum))
+  (datum-index datum))
+
+
+(defun datum-tag (datum)
+  (cond
+    ((literal-datum-p datum) 0)
+    ((transient-datum-p datum) 1)
+    (t (error "No tag for datum ~a" datum))))
+
+(defun datum-index-tag-kind (datum &key allow-transients)
+  (let ((index (datum-index datum))
+        (tag (datum-tag datum))
+        (kind (datum-kind datum)))
+    (values index tag kind)))
+
 
 (defun literal-node-index (node)
-  (if (literal-dnode-p node)
-      (let ((datum (literal-dnode-datum node)))
-        (cond
-          ((indexed-datum-p datum) (indexed-datum-index datum))
-          (t (error "Only indexed-datums can provide an index - you passed ~s" datum))))
-      (error "The node must be a literal-dnode - you passed ~s" node)))
+  (let ((datum (literal-dnode-datum node)))
+    (unless (literal-datum-p datum)
+      (error "The node ~a has a non-literal datum ~a" node datum))
+    (datum-index datum)))
 
 ;;; +max-run-all-size+ must be larger than +list-max+ so that
 ;;;   even a full list will fit into one run-all
@@ -85,7 +119,10 @@
     (dolist (node nodes)
       #+(or)(bformat t "generate-run-all-code  generating node: %s%N" node)
       (when (literal-node-creator-p node)
-        (setf highest-index (max highest-index (literal-node-index node)))))
+        (let* ((datum (literal-dnode-datum node))
+               (raw-index (datum-index datum)))
+          (when (literal-datum-p datum)
+            (setf highest-index (max highest-index raw-index))))))
     (1+ highest-index)))
 
 ;;; ------------------------------------------------------------
@@ -102,6 +139,8 @@
         nil)))
 
 (defvar *table-index*)
+(defvar *function-vector*)
+
 
 ;;; ------------------------------------------------------------
 ;;;
@@ -132,11 +171,26 @@ the value is put into *default-load-time-value-vector* and its index is returned
   (prog1 *table-index*
     (incf *table-index*)))
 
+(defun finalize-transient-datum-indices (objects)
+  "Give each datum a unique index"
+  (let ((ht (make-hash-table))
+        (index 0))
+    (dolist (obj objects)
+      (when (literal-dnode-p obj)
+        (let ((datum (literal-dnode-datum obj)))
+          (when (transient-datum-p datum)
+            (unless (gethash datum ht)
+              (setf (gethash datum ht) index)
+              (setf (datum-index datum) index)
+;;;              (format t "obj -> ~s~%" obj)
+              (incf index))))))
+    index))
+
 (defun new-datum (toplevelp)
   (if toplevelp
-      (make-indexed-datum :index (new-table-index))
-      (make-indexed-datum :index (new-table-index)) ;(make-transient-datum :id (gensym "TRANSIENT"))))
-      ))
+      (make-literal-datum :index (new-table-index))
+      #+(or)(make-literal-datum :index (new-table-index))
+      (make-transient-datum)))
 
 (defun lookup-literal-index (object)
   "Given a literal object that has already been added to the literal table and will be recreated at load-time,
@@ -144,7 +198,9 @@ return the index in the literal table for that object.  This is used in special 
 rewrite the slot in the literal table to store a closure."
   (maphash (lambda (datum literal)
              (when (eq (literal-node-creator-object literal) object)
-               (return-from lookup-literal-index (indexed-datum-index datum))))
+               (unless (literal-datum-p datum)
+                 (error "lookup-literal-index must passed an literal-datum - instead it got ~a" datum))
+               (return-from lookup-literal-index (literal-datum-index datum))))
            *constant-datum-to-literal-node-creator*)
   (error "Could not find literal ~s" object))
 
@@ -164,6 +220,12 @@ rewrite the slot in the literal table to store a closure."
   (let ((rase (make-literal-node-side-effect :name name :arguments args)))
     (run-all-add-node rase)
     rase))
+
+(defun register-function (llvm-func)
+  "Add a function to the *function-vector* and return its index"
+  (let ((function-index (length *function-vector*)))
+    (vector-push-extend llvm-func *function-vector*)
+    function-index))
 
 (defun ltv/nil (object index read-only-p &key (toplevelp t))
   (add-named-creator "ltvc_make_nil" index "NIL" object))
@@ -348,11 +410,11 @@ rewrite the slot in the literal table to store a closure."
 (defun make-similarity-table (test)
   (make-hash-table :test test))
 
-(defun find-similar (object table)
+(defun find-similar (object kind table)
   (gethash object table))
 
-(defun add-similar (object index table)
-  (setf (gethash object table) index))
+(defun add-similar (object datum kind table)
+  (setf (gethash object table) datum))
 
 (defun estimate-run-all-size (nodes)
   (let ((estimate 0))
@@ -365,26 +427,45 @@ rewrite the slot in the literal table to store a closure."
 
 (defun ensure-creator-llvm-value (obj)
   "Lookup or create the llvm::Value for obj"
-  (or (gethash obj *llvm-values*)
-      (setf (gethash obj *llvm-values*)
-            (cmp:irc-intrinsic-call (literal-node-creator-name obj)
-                                    (list*
-                                     *gcroots-in-module*
-                                     (cmp:jit-constant-size_t (literal-node-index obj))
-                                     (fix-args (literal-node-creator-arguments obj)))))))
+  (let ((llvm-value (gethash obj *llvm-values*)))
+    (if llvm-value
+        llvm-value
+        (let* ((datum (literal-dnode-datum obj))
+               (index (datum-index datum))
+               (tag (datum-tag datum)))
+          (setf (gethash obj *llvm-values*)
+                (cmp:irc-intrinsic-call (literal-node-creator-name obj)
+                                        (list*
+                                         *gcroots-in-module*
+                                         (cmp:jit-constant-i8 tag)
+                                         (cmp:jit-constant-size_t index)
+                                         (fix-args (literal-node-creator-arguments obj)))))))))
 (defun lookup-arg (creator)
-  (ensure-creator-llvm-value creator)
-  (let* ((idx (literal-node-index creator))
-         (label (if (literal-node-creator-literal-name creator)
-                    (bformat nil "%s[%d]/%s" core:+contab-name+ idx (literal-node-creator-literal-name creator))
-                    (bformat nil "%s[%d]%t*" core:+contab-name+ idx)))
-         (entry (llvm-sys:create-geparray cmp:*irbuilder*
-                                          cmp:*load-time-value-holder-global-var*
-                                          (list (cmp:jit-constant-i32 0)
-                                                (cmp:jit-constant-i32 idx))
-                                          label))
-         (arg (cmp:irc-load entry label)))
-    arg))
+  (labels ((object-label (creator idx)
+             (if (literal-node-creator-literal-name creator)
+                 (bformat nil "%s[%d]/%s" core:+contab-name+ idx (literal-node-creator-literal-name creator))
+                 (bformat nil "%s[%d]%t*" core:+contab-name+ idx))))
+    (ensure-creator-llvm-value creator)
+    (let ((datum (literal-dnode-datum creator)))
+      (multiple-value-bind (index tag kind)
+          (datum-index-tag-kind datum)
+        (cond
+          ((eq kind :literal)
+           (let* ((label (object-label creator index))
+                  (entry (llvm-sys:create-geparray cmp:*irbuilder*
+                                                   cmp:*load-time-value-holder-global-var*
+                                                   (list (cmp:jit-constant-i32 0)
+                                                         (cmp:jit-constant-i32 index))
+                                                   label))
+                  (arg (cmp:irc-load entry label)))
+             arg))
+          ((eq kind :transient)
+           (let* ((label (object-label creator index))
+                  (arg (cmp:irc-intrinsic-call "cc_lookup_transient" (list *gcroots-in-module*
+                                                                           (cmp:jit-constant-i8 tag)
+                                                                           (cmp:jit-constant-size_t index)) label)))
+             arg))
+          (t (error "Illegal creator for lookup-arg ~a" creator)))))))
 
 (defun fix-arg (arg)
   (cond
@@ -426,7 +507,7 @@ rewrite the slot in the literal table to store a closure."
            ((literal-node-toplevel-funcall-p node)
             (cmp:irc-intrinsic-call "ltvc_toplevel_funcall" (literal-node-toplevel-funcall-arguments node)))
            ((literal-node-closure-p node)
-            (let ((lambda-name (cmp:irc-intrinsic-call "ltvc_lookup_value"
+            (let ((lambda-name (cmp:irc-intrinsic-call "ltvc_lookup_literal"
                                                        (list *gcroots-in-module*
                                                              (fix-arg (literal-node-closure-lambda-name-index node))))))
               (cmp:irc-intrinsic-call "ltvc_enclose"
@@ -444,7 +525,7 @@ rewrite the slot in the literal table to store a closure."
 (defun generate-run-time-code-for-closurette (node irbuilder-alloca array)
   ;; Generate calls to ltvc_enclose for closurettes that are created at JIT startup time
   (declare (ignore array))
-  (let ((lambda-name (cmp:irc-intrinsic-call "ltvc_lookup_value"
+  (let ((lambda-name (cmp:irc-intrinsic-call "ltvc_lookup_literal"
                                              (list *gcroots-in-module*
                                                    (fix-arg (literal-node-closure-lambda-name-index node))))))
     (cmp:irc-intrinsic-call "ltvc_enclose"
@@ -489,7 +570,7 @@ Return the index of the load-time-value"
             (,datum (new-datum t))
             (,ltv-func (do-ltv :ltv (lambda () ,@body))))
        (add-creator "ltvc_set_ltv_funcall" ,datum nil ,ltv-func (cmp:jit-constant-unique-string-ptr (llvm-sys:get-name ,ltv-func)))
-       (indexed-datum-index ,datum))))
+       (literal-datum-index ,datum))))
 
 (defparameter *transient-entries* 0)
 (defmacro with-load-time-value-cleavir (&body body)
@@ -501,7 +582,7 @@ Return the index of the load-time-value"
             (,datum (new-datum t))
             (,ltv-func (do-ltv :ltv (lambda () ,@body))))
        (add-creator "ltvc_set_ltv_funcall_cleavir" ,datum nil ,ltv-func (cmp:jit-constant-unique-string-ptr (llvm-sys:get-name ,ltv-func)))
-       (indexed-datum-index ,datum))))
+       (literal-datum-index ,datum))))
 
 (defmacro with-top-level-form ( &body body)
   `(let ((*with-ltv-depth* (1+ *with-ltv-depth*)))
@@ -519,14 +600,14 @@ Return the index of the load-time-value"
         (cmp:*load-time-value-holder-global-var*
           (llvm-sys:make-global-variable cmp:*the-module*
                                          cmp:%t*[DUMMY]% ; type
-                                         nil              ; isConstant
+                                         nil             ; isConstant
                                          'llvm-sys:internal-linkage
                                          (llvm-sys:undef-value-get cmp:%t*[DUMMY]%)
                                          ;; nil ; initializer
                                          (next-value-table-holder-name "dummy")))
         (*llvm-values* (make-hash-table))
         (cmp:*generate-compile-file-load-time-values* t)
-        (*identity-coalesce* (make-hash-table :test #'eq))
+        (*identity-coalesce* (make-similarity-table #'eq))
         (*ratio-coalesce* (make-similarity-table #'eql))
 ;;;        (*cons-coalesce* (make-similarity-table #'eq))
         (*complex-coalesce* (make-similarity-table #'eql))
@@ -540,42 +621,45 @@ Return the index of the load-time-value"
         (*double-float-coalesce* (make-similarity-table #'eql))
         (*constant-datum-to-literal-node-creator* (make-hash-table :test #'eql))
         (*table-index* 0)
+        (*function-vector* (make-array 16 :fill-pointer 0 :adjustable t))
         (real-name (next-value-table-holder-name))
         (*run-all-objects* nil))
     (funcall body-fn)
     ;; Generate the run-all function here
-    (cmp:with-run-all-body-codegen
-        (let* ((ordered-run-all-nodes (nreverse *run-all-objects*))
-               (sub-run-all (generate-run-all-from-literal-nodes ordered-run-all-nodes)))
-          (cmp:irc-intrinsic-call "cc_invoke_sub_run_all_function" (list sub-run-all))))
-    (let* ((table-entries *table-index*)
-           (transient-entries *transient-entries*))
-      (when (> table-entries 0)
-        ;; We have a new table, replace the old one and generate code to register the new one
-        ;; and gc roots tabl
-        (let* ((array-type (llvm-sys:array-type-get cmp:%t*% table-entries))
-               (correct-size-holder (llvm-sys:make-global-variable cmp:*the-module*
-                                                                   array-type
-                                                                   nil ; isConstant
-                                                                   'llvm-sys:internal-linkage
-                                                                   (llvm-sys:undef-value-get array-type)
-                                                                   real-name))
-               (bitcast-correct-size-holder (cmp:irc-bit-cast correct-size-holder cmp:%t*[DUMMY]*% "bitcast-table"))
-               (holder-ptr (llvm-sys:create-geparray cmp:*irbuilder* correct-size-holder
-                                                     (list (cmp:jit-constant-size_t 0)
-                                                           (cmp:jit-constant-size_t 0)) "table")))
-          (llvm-sys:replace-all-uses-with cmp:*load-time-value-holder-global-var* bitcast-correct-size-holder)
-          (cmp:with-run-all-entry-codegen
-              (let ((transient-vector (cmp:irc-alloca-i8* :label "transients")))
-                (cmp:irc-intrinsic-call "cc_initialize_gcroots_in_module"
-                                        (list *gcroots-in-module*
-                                              (cmp:irc-pointer-cast correct-size-holder cmp:%t**% "")
-                                              (cmp:jit-constant-size_t table-entries)
-                                              (cmp:irc-int-to-ptr (cmp:jit-constant-uintptr_t 0) cmp:%t*%)
-                                              transient-vector
-                                              (cmp:jit-constant-size_t transient-entries)))))
-          ;; Erase the dummy holder
-          (llvm-sys:erase-from-parent cmp:*load-time-value-holder-global-var*))))))
+    (let ((transient-entries (finalize-transient-datum-indices *run-all-objects*)))
+      (cmp:with-run-all-body-codegen
+          (let* ((ordered-run-all-nodes (nreverse *run-all-objects*))
+                 (sub-run-all (generate-run-all-from-literal-nodes ordered-run-all-nodes)))
+            (cmp:irc-intrinsic-call "cc_invoke_sub_run_all_function" (list sub-run-all))
+            (cmp:irc-intrinsic-call "cc_finish_gcroots_in_module" (list *gcroots-in-module*))))
+      (let ((literal-entries *table-index*))
+        #+(or)(format t "transient-entries -> ~a   literal-entries -> ~a~%" transient-entries literal-entries)
+        (when (> literal-entries 0)
+          ;; We have a new table, replace the old one and generate code to register the new one
+          ;; and gc roots tabl
+          (let* ((array-type (llvm-sys:array-type-get cmp:%t*% literal-entries))
+                 (correct-size-holder (llvm-sys:make-global-variable cmp:*the-module*
+                                                                     array-type
+                                                                     nil ; isConstant
+                                                                     'llvm-sys:internal-linkage
+                                                                     (llvm-sys:undef-value-get array-type)
+                                                                     real-name))
+                 (bitcast-correct-size-holder (cmp:irc-bit-cast correct-size-holder cmp:%t*[DUMMY]*% "bitcast-table"))
+                 (holder-ptr (llvm-sys:create-geparray cmp:*irbuilder* correct-size-holder
+                                                       (list (cmp:jit-constant-size_t 0)
+                                                             (cmp:jit-constant-size_t 0)) "table")))
+            (llvm-sys:replace-all-uses-with cmp:*load-time-value-holder-global-var* bitcast-correct-size-holder)
+            (cmp:with-run-all-entry-codegen
+                (let ((transient-vector (cmp:irc-alloca-i8* :label "transients")))
+                  (cmp:irc-intrinsic-call "cc_initialize_gcroots_in_module"
+                                          (list *gcroots-in-module*
+                                                (cmp:irc-pointer-cast correct-size-holder cmp:%t**% "")
+                                                (cmp:jit-constant-size_t literal-entries)
+                                                (cmp:irc-int-to-ptr (cmp:jit-constant-uintptr_t 0) cmp:%t*%)
+                                                transient-vector
+                                                (cmp:jit-constant-size_t transient-entries)))))
+            ;; Erase the dummy holder
+            (llvm-sys:erase-from-parent cmp:*load-time-value-holder-global-var*)))))))
 
 (defmacro with-literal-table (&body body)
   `(do-literal-table (lambda () ,@body)))
@@ -605,7 +689,7 @@ and  return the sorted values and the constant-table or (values nil nil)."
                                           'llvm-sys:internal-linkage
                                           nil
                                           (next-value-table-holder-name)))
-         (*run-time-coalesce* (make-hash-table :test #'eq))
+         (*run-time-coalesce* (make-similarity-table #'eq))
          (*run-all-objects* nil))
      (progn ,@body)
      (let* ((run-time-values *run-all-objects*)
@@ -632,18 +716,26 @@ and  return the sorted values and the constant-table or (values nil nil)."
 (defun load-time-reference-literal (object read-only-p &key (toplevelp t))
   "If the object is an immediate object return (values immediate nil).
    Otherwise return (values creator T)."
-  (let ((immediate (immediate-object-or-nil object)))
+  (let ((immediate (immediate-object-or-nil object))
+        (desired-kind (if toplevelp :literal :transient)))
     (if immediate
         (values (cmp:irc-maybe-cast-integer-to-t* immediate) nil)
         (multiple-value-bind (similarity creator)
             (object-similarity-table-and-creator object read-only-p)
-          (let ((existing (if similarity (find-similar object similarity) nil)))
-            (if existing
-                (values (gethash existing *constant-datum-to-literal-node-creator*) t)
-                (let ((datum (new-datum toplevelp)))
-                  (when similarity (add-similar object datum similarity))
-                  (setf (gethash datum *constant-datum-to-literal-node-creator*) creator)
-                  (values (funcall creator object datum read-only-p :toplevelp nil) t))))))))
+          (let ((existing (if similarity (find-similar object desired-kind similarity) nil)))
+;;;            (format t "Looking for ~s object ~s   existing --> ~s~%" desired-kind object existing)
+            (cond
+              (existing
+               (when (and (eq desired-kind :literal) (eq :transient (datum-kind existing)))
+;;;                 (format t "    upgrading ~s~%" existing)
+                 (upgrade-transient-datum-to-literal existing)
+                 #+(or)(format t "    after upgrade: ~s~%" existing))
+               (values (gethash existing *constant-datum-to-literal-node-creator*) t))
+              ;; Otherwise create a new datum at the current level of transientness
+              (t (let ((datum (new-datum toplevelp)))
+                   (when similarity (add-similar object datum desired-kind similarity))
+                   (setf (gethash datum *constant-datum-to-literal-node-creator*) creator)
+                   (values (funcall creator object datum read-only-p :toplevelp toplevelp) t)))))))))
 
 (defun evaluate-function-into-load-time-value (index fn)
   (add-creator "ltvc_set_ltv_funcall" index nil fn (cmp:jit-constant-unique-string-ptr (llvm-sys:get-name fn)))
@@ -671,12 +763,12 @@ and  return the sorted values and the constant-table or (values nil nil)."
     (if immediate
         (values immediate NIL)
         (let* ((similarity *run-time-coalesce*)
-               (existing (find-similar object similarity)))
+               (existing (find-similar object :literal similarity)))
           (if existing
               (values existing T)
               (values (let* ((datum (new-datum t))
                              (new-obj (make-literal-node-runtime :datum datum :object object)))
-                        (add-similar object new-obj similarity)
+                        (add-similar object new-obj :literal similarity)
                         (run-all-add-node new-obj)
                         new-obj)
                       T))))))
@@ -737,8 +829,10 @@ and  return the sorted values and the constant-table or (values nil nil)."
         (multiple-value-bind (data in-array)
             (load-time-reference-literal object read-only-p)
           (if in-array
-              (let ((index (literal-node-index data)))
-                (values index T (literal-node-creator-literal-name data)))
+              (progn
+;;                (format t "reference-literal data -> ~s~%" data)
+                (let ((index (literal-node-index data)))
+                  (values index T (literal-node-creator-literal-name data))))
               (values data nil)))
         (multiple-value-bind (immediate?literal-node-runtime in-array)
             (run-time-reference-literal object read-only-p)
@@ -758,6 +852,7 @@ and  return the sorted values and the constant-table or (values nil nil)."
 ;;; We could also add the capability to dump actual closures, though
 ;;;  I'm not sure why we'd want to do so.
 
+#+(or)
 (defun reference-closure (lambda-name enclosed-function source-info-handle
                           filepos lineno column)
   (if (cmp:generate-load-time-values)
@@ -924,7 +1019,7 @@ If it isn't NIL then copy the literal from its index in the LTV into result."
       (primitive         "ltvc_make_random_state" %ltvc-return% (list %gcroots-in-module*% %size_t% %t*%))
       (primitive         "ltvc_make_float" %ltvc-return% (list %gcroots-in-module*% %size_t% %float%))
       (primitive         "ltvc_make_double" %ltvc-return% (list %gcroots-in-module*% %size_t% %double%))
-      (primitive         "ltvc_lookup_value" %t*% (list %gcroots-in-module*% %size_t%))
+      (primitive         "ltvc_lookup_literal" %t*% (list %gcroots-in-module*% %size_t%))
       (primitive         "ltvc_enclose" %ltvc-return% (list %gcroots-in-module*%
                                                        %size_t%
                                                        %t*%

@@ -714,7 +714,9 @@ and initialize it with an array consisting of one function pointer."
                                                          (literal:generate-run-time-code-for-closurette x irbuilder-alloca array)
                                                          nil)
                                                         (t (error "Illegal object ~s in ordered-literals list" x))))
-                                                    ordered-literals)))
+                                                    ordered-literals))) 
+          (when gcroots-in-module
+            (irc-intrinsic-call "cc_finish_gcroots_in_module" (list gcroots-in-module)))
           (irc-ret-void))))
     (let ((shutdown-fn (irc-simple-function-create core:*module-shutdown-function-name*
                                                    (llvm-sys:function-type-get %void% nil)
@@ -735,7 +737,7 @@ and initialize it with an array consisting of one function pointer."
         (with-irbuilder (irbuilder-alloca)
           (progn
             (if gcroots-in-module
-                (irc-intrinsic-call "cc_shutdown_gcroots_in_module" (list gcroots-in-module)))
+                (irc-intrinsic-call "cc_remove_gcroots_in_module" (list gcroots-in-module)))
             (irc-ret-void))))
       (values startup-fn shutdown-fn ordered-raw-literals-list))))
 

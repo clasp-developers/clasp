@@ -739,9 +739,8 @@ void header_describe(gctools::Header_s* headerP);
 
 
 namespace gctools {
-#define MASK_TAG      (((size_t)0xFF)<<50)
-#define LITERAL_TAG   (((size_t)0x00)<<50)
-#define TRANSIENT_TAG (((size_t)0x01)<<50)
+#define LITERAL_TAG_CHAR 0
+#define TRANSIENT_TAG_CHAR 1
 
 void untag_literal_index(size_t findex, size_t& index, size_t& tag);
 };
@@ -778,8 +777,8 @@ namespace gctools {
     Tagged getLiteral(size_t index);
     Tagged setTransient(size_t index, Tagged val);
     Tagged getTransient(size_t index);
-    Tagged setTaggedIndex(size_t index, Tagged val);
-    Tagged getTaggedIndex(size_t index);
+    Tagged setTaggedIndex(char tag, size_t index, Tagged val);
+    Tagged getTaggedIndex(char tag, size_t index);
     void* address(size_t index) {
       return reinterpret_cast<void*>(&reinterpret_cast<core::T_sp*>(this->_module_memory)[index+1]);
     }

@@ -102,8 +102,8 @@ extern "C" void dumpFunctionDescription(void* vfdesc)
 {
   core::FunctionDescription* fdesc = (core::FunctionDescription*)vfdesc;
   printf("FunctionDescription @%p\n", fdesc);
-  core::Cons_sp sourcePathname_functionName((gctools::Tagged)fdesc->gcrootsInModule->getTaggedIndex(fdesc->sourcePathname_functionName_Index));
-  core::Cons_sp lambdaList_docstring((gctools::Tagged)fdesc->gcrootsInModule->getTaggedIndex(fdesc->lambdaList_docstring_Index));
+  core::Cons_sp sourcePathname_functionName((gctools::Tagged)fdesc->gcrootsInModule->getTaggedIndex(LITERAL_TAG_CHAR,fdesc->sourcePathname_functionName_Index));
+  core::Cons_sp lambdaList_docstring((gctools::Tagged)fdesc->gcrootsInModule->getTaggedIndex(LITERAL_TAG_CHAR,fdesc->lambdaList_docstring_Index));
   printf("sourcePathname CAR[%lu] = %s\n", fdesc->sourcePathname_functionName_Index, _rep_(CONS_CAR(sourcePathname_functionName)).c_str());
   printf("functionName CDR[%lu] = %s\n", fdesc->sourcePathname_functionName_Index, _rep_(CONS_CDR(sourcePathname_functionName)).c_str());
   printf("lambdaList CAR[%lu] = %s\n", fdesc->lambdaList_docstring_Index, _rep_(CONS_CAR(lambdaList_docstring)).c_str());
@@ -384,6 +384,7 @@ __attribute__((optnone)) LCC_RETURN unboundFunctionEntryPoint(LCC_ARGS_FUNCALL_E
 LCC_RETURN unboundSetfFunctionEntryPoint(LCC_ARGS_FUNCALL_ELLIPSIS) {
   ClosureWithSlots_O* closure = gctools::untag_general<ClosureWithSlots_O*>((ClosureWithSlots_O*)lcc_closure);
   Symbol_sp symbol = gc::As<Symbol_sp>((*closure)[0]);
+  printf("%s:%d:%s closure@%p function@%p  symbol@%p\n", __FILE__, __LINE__, __FUNCTION__, (void*)closure, (void*)unboundSetfFunctionEntryPoint, (void*)symbol.raw_());
   List_sp name = Cons_O::createList(cl::_sym_setf,symbol);
   ERROR_UNDEFINED_FUNCTION(name);
 }
