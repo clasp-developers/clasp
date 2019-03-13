@@ -1775,7 +1775,7 @@ CL_DEFUN T_sp core__find_class_holder(Symbol_sp symbol, T_sp env) {
   T_mv mc = classNames->gethash(symbol, _Nil<T_O>());
   foundp = mc.valueGet_(1).notnilp();
   if (!foundp) {
-    cell = ClassHolder_O::create(_Unbound<ClassHolder_O>());
+    cell = ClassHolder_O::create(_Unbound<Instance_O>());
     classNames->setf_gethash(symbol,cell);
   } else {
     cell = gc::As_unsafe<ClassHolder_sp>(mc);
@@ -1790,7 +1790,7 @@ CL_DOCSTRING("find-class");
 CL_DEFUN T_sp cl__find_class(Symbol_sp symbol, bool errorp, T_sp env) {
   ASSERTF(env.nilp(), BF("Handle non nil environment"));
 //  ClassReadLock _guard(_lisp->_Roots._ClassTableMutex);
-  ClassHolder_sp cell = core__find_class_holder(symbol,env);
+  ClassHolder_sp cell = gc::As<ClassHolder_sp>(core__find_class_holder(symbol,env));
   if (cell->class_unboundp()) {
     if (errorp) {
       ERROR(ext::_sym_undefinedClass, Cons_O::createList(kw::_sym_name, symbol));
