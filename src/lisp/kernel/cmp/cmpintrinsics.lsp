@@ -709,8 +709,8 @@ and initialize it with an array consisting of one function pointer."
                                                                         (llvm-sys:constant-pointer-null-get %i8**%) ; transient_alloca
                                                                         (jit-constant-size_t 0) ; transient_entries
                                                                         (jit-constant-size_t 0) ; function_pointer_count
-                                                                        (llvm-sys:constant-pointer-null-get %fn-prototype*%) ; fptrs
-                                                                        (llvm-sys:constant-pointer-null-get %fn-prototype*%) ; fdescs
+                                                                        (irc-bit-cast (llvm-sys:constant-pointer-null-get %fn-prototype*%) %i8**%) ; fptrs
+                                                                        (irc-bit-cast (llvm-sys:constant-pointer-null-get %function-description*%) %i8**%) ; fdescs
                                                                         )))
           ;; If the constant/literal list is provided - then we may need to generate code for closurettes
           (when ordered-literals
