@@ -257,7 +257,16 @@
          (primitive         "cc_arrayDimension" %size_t% (list %t*% %size_t%))
          (primitive         "cc_simpleBitVectorAref" %uint% (list %t*% %size_t%))
          (primitive         "cc_simpleBitVectorAset" %void% (list %t*% %size_t% %uint%))
-         (primitive         "cc_initialize_gcroots_in_module" %void% (list %gcroots-in-module*% %t**% %size_t% %t*% %i8**% %size_t% %size_t% %i8**% %i8**%)) 
+         (primitive         "cc_initialize_gcroots_in_module" %void% (list %gcroots-in-module*% ; holder
+                                                                      %t**% ; root_address
+                                                                      %size_t% ; num_roots
+                                                                      %t*% ; initial_data
+                                                                      %i8**% ; transient_alloca
+                                                                      %size_t% ; transient_entries
+                                                                      %size_t% ; function_pointer_count
+                                                                      %i8**% ; fptrs
+                                                                      %i8**% ; fdescs
+                                                                      )) 
          (primitive         "cc_finish_gcroots_in_module" %void% (list %gcroots-in-module*%))
          (primitive         "cc_remove_gcroots_in_module" %void% (list %gcroots-in-module*% ))
          (primitive-unwinds "cc_invoke_sub_run_all_function" %void% (list %fn-start-up*%))

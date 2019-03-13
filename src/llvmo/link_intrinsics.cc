@@ -154,7 +154,15 @@ core::T_sp intrinsic_slot_unbound(core::T_sp slot_info, core::T_sp instance ) {
 
 extern "C" {
 
-void cc_initialize_gcroots_in_module(gctools::GCRootsInModule* holder, core::T_O** root_address, size_t num_roots, gctools::Tagged initial_data, SimpleVector_O** transientAlloca, size_t transient_entries, size_t function_pointer_count, fnLispCallingConvention* fptrs, void** fdescs )
+void cc_initialize_gcroots_in_module(gctools::GCRootsInModule* holder,
+                                     core::T_O** root_address,
+                                     size_t num_roots,
+                                     gctools::Tagged initial_data,
+                                     SimpleVector_O** transientAlloca,
+                                     size_t transient_entries,
+                                     size_t function_pointer_count,
+                                     fnLispCallingConvention* fptrs,
+                                     void** fdescs )
 {NO_UNWIND_BEGIN();
   initialize_gcroots_in_module(holder,root_address,num_roots,initial_data,transientAlloca,transient_entries, function_pointer_count, (void**)fptrs, fdescs );
   NO_UNWIND_END();

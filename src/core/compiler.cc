@@ -1405,7 +1405,17 @@ void ltvc_make_list_varargs( gctools::GCRootsInModule* roots, char tag, size_t i
 
 void byte_code_interpreter(gctools::GCRootsInModule* roots, T_sp fin, bool log)
 {
-  size_t byte_index = 0;
+  volatile uint32_t i=0x01234567;
+    // return 0 for big endian, 1 for little endian.
+  if ((*((uint8_t*)(&i))) == 0x67) {
+    // Little endian - the code is set up for this
+  } else {
+    printf("%s:%d This is a big-endian architecture and the byte-code interpreter is set up for little-endian - fix this before proceeding\n", __FILE__, __LINE__ );
+    abort();
+  }
+    
+
+    size_t byte_index = 0;
   while(1) {
     if (log) printf("%s:%d ------- top of byte-code interpreter\n", __FILE__, __LINE__ );
     char c = ltvc_read_char(fin,log,byte_index);

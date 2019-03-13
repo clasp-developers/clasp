@@ -702,14 +702,16 @@ and initialize it with an array consisting of one function pointer."
                                         (jit-constant-size_t 0)))
                          (llvm-sys:constant-pointer-null-get %t**%))))
           (when gcroots-in-module
-            (irc-intrinsic-call "cc_initialize_gcroots_in_module" (list gcroots-in-module
-                                                                        start
-                                                                        (jit-constant-size_t number-of-roots)
-                                                                        values
-                                                                        (llvm-sys:constant-pointer-null-get %i8**%)
-                                                                        (jit-constant-size_t 0)
-                                                                        (jit-constant-size_t 0)
-                                                                        (llvm-sys:constant-pointer-null-get %fn-prototype*%))))
+            (irc-intrinsic-call "cc_initialize_gcroots_in_module" (list gcroots-in-module ; holder
+                                                                        start ; root_address
+                                                                        (jit-constant-size_t number-of-roots) ; num_roots
+                                                                        values ; initial_data
+                                                                        (llvm-sys:constant-pointer-null-get %i8**%) ; transient_alloca
+                                                                        (jit-constant-size_t 0) ; transient_entries
+                                                                        (jit-constant-size_t 0) ; function_pointer_count
+                                                                        (llvm-sys:constant-pointer-null-get %fn-prototype*%) ; fptrs
+                                                                        (llvm-sys:constant-pointer-null-get %fn-prototype*%) ; fdescs
+                                                                        )))
           ;; If the constant/literal list is provided - then we may need to generate code for closurettes
           (when ordered-literals
             (setf ordered-raw-literals-list (mapcar (lambda (x)
