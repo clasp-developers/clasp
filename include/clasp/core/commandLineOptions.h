@@ -29,6 +29,8 @@ THE SOFTWARE.
 
 namespace core {
 
+extern bool global_debug_byte_code;
+
 typedef enum { cloLoad,
                cloEval } LoadEvalEnum;
 

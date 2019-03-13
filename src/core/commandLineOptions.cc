@@ -33,6 +33,8 @@ THE SOFTWARE.
 
 namespace core {
 
+bool global_debug_byte_code = false;
+
 CommandLineOptions::CommandLineOptions(int argc, char *argv[])
     : _DontLoadImage(false),
       _DontLoadInitLsp(false),
@@ -99,6 +101,7 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
              "export CLASP_OPTIMIZATION_LEVEL=0|1|2|3 Set the llvm optimization level for compiled code\n"
              "export CLASP_TRAP_INTERN=PKG:SYMBOL Trap the intern of the symbol\n"
              "export CLASP_VERBOSE_BUNDLE_SETUP   Dump info during bundle setup\n"
+             "export CLASP_DEBUG_BYTE_CODE   Dump info during startup for every byte-code\n"
              "export CLASP_PAUSE_STARTUP (set to anything)  Pause right at startup\n"
              "export CLASP_DUMP_FUNCTIONS (set to anything)  Dump all function definitions at startup\n"
              "export CLASP_TELEMETRY_MASK=1  #turn on telemetry for (1=gc,2=stack)\n"

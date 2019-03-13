@@ -87,6 +87,7 @@ Set this to other IRBuilders to make code go where you want")
 
 (define-symbol-macro %void% (llvm-sys:type-get-void-ty *llvm-context*))
 (define-symbol-macro %void*% (llvm-sys:type-get-pointer-to %void%))
+(define-symbol-macro %void**% (llvm-sys:type-get-pointer-to %void*%))
 
 (define-symbol-macro %vtable*% %i8*%)
 
@@ -215,6 +216,9 @@ Boehm and MPS use a single pointer"
                                            %i8*% ; _module_memory
                                            %size_t% ; _num_entries
                                            %size_t% ; _capacity
+                                           %i8**% ; function pointers
+                                           %i8**% ; function descriptions
+                                           %size_t% ; number of functions
                                            ) nil))
 (define-symbol-macro %gcroots-in-module*% (llvm-sys:type-get-pointer-to %gcroots-in-module%))
 
@@ -703,7 +707,9 @@ and initialize it with an array consisting of one function pointer."
                                                                         (jit-constant-size_t number-of-roots)
                                                                         values
                                                                         (llvm-sys:constant-pointer-null-get %i8**%)
-                                                                        (jit-constant-size_t 0))))
+                                                                        (jit-constant-size_t 0)
+                                                                        (jit-constant-size_t 0)
+                                                                        (llvm-sys:constant-pointer-null-get %fn-prototype*%))))
           ;; If the constant/literal list is provided - then we may need to generate code for closurettes
           (when ordered-literals
             (setf ordered-raw-literals-list (mapcar (lambda (x)

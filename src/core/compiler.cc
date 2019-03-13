@@ -41,6 +41,7 @@ THE SOFTWARE.
 #include <clasp/core/cxxObject.h>
 #include <clasp/core/record.h>
 #include <clasp/core/lisp.h>
+#include <clasp/core/lispStream.h>
 #include <clasp/core/sort.h>
 #include <clasp/core/environment.h>
 #include <clasp/core/fileSystem.h>
@@ -1122,8 +1123,307 @@ CL_DEFUN T_sp core__handle_creator( T_sp object ) {
  SYMBOL_SC_(CorePkg, dladdr);
  SYMBOL_EXPORT_SC_(CorePkg, callWithVariableBound);
 
+template <typename T> char document() {return '\0'; };
+template <> char document<char>() { return 'c'; };
+template <> char document<size_t>() { return 's'; };
+template <> char document<char*>() { return 'S'; };
+template <> char document<T_O*>() { return 'O'; };
+template <> char document<float>() { return 'f'; };
+template <> char document<double>() { return 'd'; };
+template <> char document<fnLispCallingConvention>() { return 'f'; };
 
-                             
+char ll_read_char(T_sp stream, bool log, size_t& index)
+{
+  while (1) {
+    char c = clasp_read_char(stream);
+    if (c == '!') {
+      std::string msg;
+      char d;
+      do {
+        d = clasp_read_char(stream);
+        if (d != '!') {
+          msg += d;
+        }
+        index++;
+      } while(d!='!');
+      if (log) printf("%s:%d byte-code message: %s\n", __FILE__, __LINE__, msg.c_str());
+    } else return c;
+  }
+}
+
+#if 1
+#define SELF_DOCUMENT(ty,stream,index) { char _xx = document<ty>(); clasp_write_char(_xx,stream); ++index; }
+#define SELF_CHECK(ty,stream,index) { char _xx = document<ty>(); claspCharacter _cc = ll_read_char(stream,log,index); ++index; if (_xx!=_cc) SIMPLE_ERROR(BF("Mismatch of ltvc read types read '%c' expected '%c'") % _cc % _xx );}
+#else
+#define SELF_DOCUMENT(ty,stream,index) {}
+#define SELF_CHECK(ty,stream,index) {}
+#endif
+
+
+CL_DEFUN size_t core__ltvc_write_char(T_sp object, T_sp stream, size_t index)
+{
+  SELF_DOCUMENT(char,stream,index);
+  if (object.fixnump()) {
+    clasp_write_char(object.unsafe_fixnum()&0xff,stream);
+    ++index;
+  } else if (object.characterp()) {
+    clasp_write_char(object.unsafe_character(),stream);
+    ++index;
+  } else {
+    SIMPLE_ERROR(BF("Expected fixnum or character - got %s") % _rep_(object));
+  }
+  return index;
+}
+
+
+    
+    
+
+char ltvc_read_char(T_sp stream, bool log, size_t& index)
+{
+  SELF_CHECK(char,stream,index);
+  char c = clasp_read_char(stream);
+  ++index;
+  if (log) printf("%s:%d:%s -> '%c'/%d\n", __FILE__, __LINE__, __FUNCTION__, c, c);
+  return c;
+}
+
+void compact_write_size_t(size_t data, T_sp stream, size_t& index) {
+  int64_t nb = 0;
+  for (nb=sizeof(data)-1; nb>=0; nb-- ) {
+    if (((char*)&data)[nb] != '\0') break;
+  }
+  nb += 1;
+  clasp_write_char('0'+nb,stream);
+  clasp_write_characters((char*)&data,nb,stream);
+  index += nb+1;
+}
+
+size_t compact_read_size_t(T_sp stream, size_t& index) {
+  size_t data = 0;
+  int64_t nb = clasp_read_char(stream)-'0';
+  if (nb<0 ||nb>8) {
+    printf("%s:%d Illegal size_t size %lld\n", __FILE__, __LINE__, nb);
+    abort();
+  }
+  for (size_t ii=0; ii<nb; ++ii ) {
+    ((char*)&data)[ii] = clasp_read_char(stream);
+  }
+  index += nb+1;
+  return data;
+}
+
+
+  
+CL_DEFUN size_t core__ltvc_write_size_t(T_sp object, T_sp stream, size_t index)
+{
+  SELF_DOCUMENT(size_t,stream,index);
+  if (object.fixnump()) {
+    size_t data = object.unsafe_fixnum();
+    compact_write_size_t(data,stream,index);
+  } else if (gc::IsA<Bignum_sp>(object)) {
+    size_t data = gc::As_unsafe<Bignum_sp>(object)->as_size_t();
+    compact_write_size_t(data,stream,index);
+  } else {
+    SIMPLE_ERROR(BF("Expected integer got %s") % _rep_(object));
+  }
+  return index;
+}
+
+size_t ltvc_read_size_t(T_sp stream, bool log, size_t& index)
+{
+  SELF_CHECK(size_t,stream,index);
+  size_t data = compact_read_size_t(stream,index);
+  if (log) printf("%s:%d:%s -> %lu\n", __FILE__, __LINE__, __FUNCTION__, data);
+  return data;
+}
+
+CL_DEFUN size_t core__ltvc_write_string(T_sp object, T_sp stream, size_t index)
+{
+  SELF_DOCUMENT(char*,stream,index);
+  std::string str = gc::As<String_sp>(object)->get_std_string();
+  index = core__ltvc_write_size_t(make_fixnum(str.size()),stream,index);
+  clasp_write_characters((char*)str.c_str(),str.size(),stream);
+  index += str.size();
+  return index;
+}
+
+std::string ltvc_read_string(T_sp stream, bool log, size_t& index)
+{
+  SELF_CHECK(char*,stream,index);
+  size_t len = ltvc_read_size_t(stream,log,index);
+  std::string str(len,' ');
+  for (size_t i=0; i<len; ++i ) {
+    str[i] = clasp_read_char(stream);
+  }
+  index += len;
+  if (log) printf("%s:%d:%s -> \"%s\"\n", __FILE__, __LINE__, __FUNCTION__, str.c_str());
+  return str;
+}
+
+CL_DEFUN size_t core__ltvc_write_float(T_sp object, T_sp stream, size_t index)
+{
+  SELF_DOCUMENT(float,stream,index);
+  if (object.single_floatp()) {
+    float data = object.unsafe_single_float();
+    clasp_write_characters((char*)&data,sizeof(data),stream);
+    index += sizeof(data);
+  } else {
+    SIMPLE_ERROR(BF("Expected single-float got %s") % _rep_(object));
+  }
+  return index;
+}
+
+float ltvc_read_float(T_sp stream, bool log, size_t& index)
+{
+  SELF_CHECK(float,stream,index);
+  float data;
+  for (size_t i=0; i<sizeof(data); ++i ) {
+    ((char*)&data)[i] = clasp_read_char(stream);
+  }
+  index += sizeof(data);
+  if (log) printf("%s:%d:%s -> '%f'\n", __FILE__, __LINE__, __FUNCTION__, data );
+  return data;
+}
+
+CL_DEFUN size_t core__ltvc_write_double(T_sp object, T_sp stream, size_t index)
+{
+  SELF_DOCUMENT(double,stream,index);
+  double data = gc::As<DoubleFloat_sp>(object)->get();
+  clasp_write_characters((char*)&data,sizeof(data),stream);
+  index += sizeof(data);
+  return index;
+}
+
+double ltvc_read_double(T_sp stream, bool log, size_t& index)
+{
+  SELF_CHECK(double,stream,index);
+  double data;
+  for (size_t i=0; i<sizeof(data); ++i ) {
+    ((char*)&data)[i] = clasp_read_char(stream);
+  }
+  index += sizeof(data);
+  if (log) printf("%s:%d:%s -> '%lf'\n", __FILE__, __LINE__, __FUNCTION__, data );
+  return data;
+}
+
+CL_DOCSTRING("tag is (0|1|2) where 0==literal, 1==transient, 2==immediate");
+CL_DEFUN size_t core__ltvc_write_object(T_sp ttag, T_sp index_or_immediate, T_sp stream, size_t index)
+{
+  SELF_DOCUMENT(T_O*,stream,index);
+  if (ttag.characterp() && (ttag.unsafe_character()=='l'||ttag.unsafe_character()=='t'||ttag.unsafe_character()=='i')) {
+    char tag = ttag.unsafe_character();
+    clasp_write_char(tag,stream);
+    index += 1;
+    uintptr_t data;
+    if (ttag.unsafe_character()=='l'||ttag.unsafe_character()=='t') {
+      data = index_or_immediate.unsafe_fixnum();
+    } else {
+      if (index_or_immediate.fixnump()) {
+        data = index_or_immediate.unsafe_fixnum();
+      } else {
+        data = gc::As<Bignum_sp>(index_or_immediate)->as_size_t();
+      }
+    }
+    compact_write_size_t(data,stream,index);
+    return index;
+  }
+  SIMPLE_ERROR(BF("tag must be 0, 1 or 2 - you passed %s") % _rep_(ttag));
+}
+
+T_O* ltvc_read_object(gctools::GCRootsInModule* roots, T_sp stream, bool log, size_t& index)
+{
+  SELF_CHECK(T_O*,stream,index);
+  char tag = clasp_read_char(stream);
+  char ttag;
+  if (tag=='l') ttag = 0; // literal
+  else if (tag=='t') ttag = 1; // transient
+  else if (tag=='i') ttag = 2; // immediate
+  else {
+    printf("%s:%d The object tag must be 'l', 't' or 'i'\n", __FILE__, __LINE__ );
+    abort();
+  }
+  ++index;
+  if (log) printf("%s:%d:%s    tag = %c\n", __FILE__, __LINE__, __FUNCTION__, tag);
+  size_t data;
+  data = compact_read_size_t(stream,index);
+  if (log) printf("%s:%d:%s    index = %lu\n", __FILE__, __LINE__, __FUNCTION__, data);
+  switch (tag) {
+  case 'l': {
+    gctools::Tagged val = roots->getLiteral(data);
+    if (log) {
+      T_sp o((gctools::Tagged)val);
+      printf("%s:%d:%s literal -> %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(o).c_str());
+    }
+    return (T_O*)val;
+  }
+      break;
+  case 't': {
+    gctools::Tagged val = roots->getTransient(data);
+    if (log) {
+      T_sp o((gctools::Tagged)val);
+      printf("%s:%d:%s transient -> %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(o).c_str());
+    }
+    return (T_O*)val;
+  }
+      break;
+  case 'i': {
+    gctools::Tagged val = (gctools::Tagged)data;
+    if (log) {
+      T_sp o((gctools::Tagged)val);
+      printf("%s:%d:%s immediate -> %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(o).c_str());
+    }
+    return (T_O*)val;
+  }
+  default: {
+    SIMPLE_ERROR(BF("Could not read an object for using tag %d data %p") % tag % data );
+  };
+  };
+}
+
+Cons_O* ltvc_read_list(gctools::GCRootsInModule* roots, size_t num, T_sp stream, bool log, size_t& index) {
+  ql::list result;
+  for ( size_t ii =0; ii<num; ++ii ) {
+    T_sp obj((gctools::Tagged)ltvc_read_object(roots,stream,log,index));
+    result << obj;
+  }
+  if (log) {
+    printf("%s:%d:%s list -> %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(result.cons()).c_str());
+  }
+  return (Cons_O*)result.cons().tagged_();
+}
+
+void ltvc_make_list_varargs( gctools::GCRootsInModule* roots, char tag, size_t index, size_t len, Cons_O* list)
+{
+  Cons_sp ll((gctools::Tagged)list);
+  roots->setTaggedIndex(tag,index,ll.tagged_());
+}
+
+#define DEFINE_PARSERS
+#include "byte-code-interpreter.cc"
+#undef DEFINE_PARSERS
+
+void byte_code_interpreter(gctools::GCRootsInModule* roots, T_sp fin, bool log)
+{
+  size_t byte_index = 0;
+  while(1) {
+    if (log) printf("%s:%d ------- top of byte-code interpreter\n", __FILE__, __LINE__ );
+    char c = ltvc_read_char(fin,log,byte_index);
+    switch (c) {
+    case 0: goto DONE;
+#define DEFINE_SWITCH
+#include "byte-code-interpreter.cc"
+#undef DEFINE_SWITCH
+    default: {
+      printf("%s:%d illegal byte-code %d\n", __FILE__, __LINE__, c);
+      abort();
+    }
+    }
+  }
+ DONE:
+  return;
+}
+
 void initialize_compiler_primitives(Lisp_sp lisp) {
 
   // Initialize raw object translators needed for Foreign Language Interface support 

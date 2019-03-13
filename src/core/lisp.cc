@@ -495,6 +495,11 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
       fflush(stdout);
       getchar();
   }
+  char* debug_byte_code = getenv("CLASP_DEBUG_BYTE_CODE");
+  if (debug_byte_code) {
+    printf("%s:%d Turning on *debug-byte-code*\n", __FILE__, __LINE__);
+    global_debug_byte_code = true;
+  }
 
   my_thread->create_sigaltstack();
   my_thread->_GCRoots = new gctools::GCRootsInModule();
