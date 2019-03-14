@@ -1,6 +1,7 @@
 (defpackage #:interpret-ast
   (:use #:cl)
   (:export #:interpret)
+  (:shadow #:variable)
   ;; FIXME: lose this asap
   (:export #:*system*))
 
