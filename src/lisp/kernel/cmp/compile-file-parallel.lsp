@@ -164,7 +164,7 @@
                  (when *compile-print* (cmp::describe-form form))
                  (unless ast-only
                    (push ast-job ast-jobs)
-                   (core:enqueue ast-queue ast-job))
+                   (core:atomic-enqueue ast-queue ast-job))
                  #+(or)
                  (compile-from-ast ast-job
                                    :optimize optimize
@@ -175,8 +175,8 @@
         ;; Now send :quit messages to all threads
         (loop for thread in ast-threads
               do (cfp-log "Sending two :quit (why not?) for thread ~a~%" (mp:process-name thread))
-              do (core:enqueue ast-queue :quit)
-                 (core:enqueue ast-queue :quit))
+              do (core:atomic-enqueue ast-queue :quit)
+                 (core:atomic-enqueue ast-queue :quit))
         ;; Now wait for all threads to join
         (loop for thread in ast-threads
               do (mp:process-join thread)
