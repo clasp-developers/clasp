@@ -40,7 +40,7 @@
   (setf *readtable* (copy-readtable nil)))
 
 (in-package :core)
-(export '(make-queue queue-p enqueue dequeue dequeue-timed queue-count queue-emptyp))
+(export '(make-queue queue-p atomic-enqueue dequeue dequeue-timed queue-count queue-emptyp))
 
 (defstruct (queue
             (:constructor make-queue
@@ -75,7 +75,7 @@ RETURN:     The lock of the QUEUE.
 RETURN:     The NOT-EMPTY condition variable of the QUEUE.
 "))
 
-(defun enqueue (queue message)
+(defun atomic-enqueue (queue message)
   "
 DO:         Atomically enqueues the MESSAGE in the QUEUE.  
 
