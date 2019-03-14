@@ -49,14 +49,14 @@
 
 ;;; Main entry point.
 (defun eliminate-load-time-value-inputs (initial-instruction system env)
-  (assert (cleavir-ir:top-level-enter-instruction-p initial-instruction))
+  (assert (typep initial-instruction 'cleavir-ir:top-level-enter-instruction))
   (cleavir-ir:reinitialize-data initial-instruction)
   (cleavir-ir:map-instructions-arbitrary-order
    (lambda (instruction)
      (loop for input in (cleavir-ir:inputs instruction)
-           when (cleavir-ir:constant-input-p input)
+           when (typep input 'cleavir-ir:constant-input)
              do (eliminate-constant-input input env)
-           when (cleavir-ir:load-time-value-input-p input)
+           when (typep input 'cleavir-ir:load-time-value-input)
              do (eliminate-load-time-value-input input env)))
    initial-instruction)
   (cleavir-ir:reinitialize-data initial-instruction))

@@ -117,9 +117,9 @@ when this is t a lot of graphs will be generated.")
 
 (defun in (datum &optional (label ""))
   (cond
-    ((cleavir-ir:immediate-input-p datum)
+    ((typep datum 'cleavir-ir:immediate-input)
      (cmp:irc-int-to-ptr (%i64 (cleavir-ir:value datum)) cmp:%t*%))
-    ((cleavir-ir:lexical-location-p datum)
+    ((typep datum 'cleavir-ir:lexical-location)
      (let ((existing (gethash datum *vars*)))
        (if (null existing)
            (error "BUG: Input ~a not previously defined" datum)

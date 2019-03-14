@@ -445,7 +445,7 @@
 (defun reduce-typeqs (initial-instruction)
   (cleavir-ir:map-instructions-arbitrary-order
    (lambda (i)
-     (when (cleavir-ir:typeq-instruction-p i)
+     (when (typep i 'cleavir-ir:typeq-instruction)
        (replace-typeq i)))
    initial-instruction)
   (cleavir-ir:set-predecessors initial-instruction))
