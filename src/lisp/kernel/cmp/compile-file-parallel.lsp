@@ -105,9 +105,9 @@
   (let (result
         (form-index (core:next-startup-position))
         (eof-value (gensym))
-        #+cclasp(cleavir-generate-ast:*compiler* 'cl:compile-file)
-        #+cclasp(core:*use-cleavir-compiler* t)
-        #+cclasp(eclector.reader:*client* clasp-cleavir::*cst-client*)
+        (cleavir-generate-ast:*compiler* 'cl:compile-file)
+        (core:*use-cleavir-compiler* t)
+        (eclector.reader:*client* clasp-cleavir::*cst-client*)
         ast-jobs)
     (cfp-log "Starting the pool of threads~%")
     (finish-output)
@@ -131,8 +131,8 @@
                       (*compile-file-truename* . ',*compile-file-truename*)
                       (*source-debug-pathname* . ',*source-debug-pathname*)
                       (*source-debug-offset* . ',*source-debug-offset*)
-                      #+cclasp(cleavir-generate-ast:*compiler* . ',cleavir-generate-ast:*compiler*)
-                      #+cclasp(core:*use-cleavir-compiler* . ',core:*use-cleavir-compiler*)
+                      (cleavir-generate-ast:*compiler* . ',cleavir-generate-ast:*compiler*)
+                      (core:*use-cleavir-compiler* . ',core:*use-cleavir-compiler*)
                       (cmp::*global-function-refs* . ',cmp::*global-function-refs*))))))
       (unwind-protect
            (loop
@@ -163,6 +163,7 @@
                (push form-output-path result)
                (let ((ast-job (make-ast-job :ast ast
                                             :environment environment
+                                            :dynenv dynenv
                                             :current-source-pos-info current-source-pos-info
                                             :form-output-path form-output-path
                                             :form-index form-index)))
@@ -396,4 +397,4 @@ Compile a lisp source file into an LLVM module."
 
 (eval-when (:load-toplevel)
   (setf *compile-file-parallel* t)
-  (setf clasp-cleavir::*use-ast-interpreter* t))
+  (setf clasp-cleavir::*use-ast-interpreter* nil))
