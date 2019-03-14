@@ -13,14 +13,6 @@
    ;; Used for source tracking.
    (%metadata :accessor metadata)))
 
-(defun make-catch-map (initial-instruction)
-  (let ((result (make-hash-table :test #'eq)))
-    (cleavir-ir:map-instructions-with-owner
-     (lambda (instruction owner)
-       (when (typep instruction 'cleavir-ir:catch-instruction)
-         (push instruction (gethash owner result)))))
-    result))
-
 (defun make-function-info-map (initial-instruction)
   (let ((result (make-hash-table :test #'eq)))
     ;; Do the basic construction: collect catches.
@@ -40,20 +32,38 @@
      initial-instruction)
     result))
 
-;;; This reduces HIR catches to MIR catches.
-;;; This means it converts catches to mere assignments as described above,
-;;; and inserts one instruction right after the ENTER to make the actual continuation.
+;; HT from instructions to their go-indices, for unwinding
+(defvar *instruction-go-indices*)
+
+(defun make-go-indices () (make-hash-table :test #'eq))
+
+(defun instruction-go-index (instruction)
+  (or (gethash instruction *instruction-go-indices*) ; bound by translate
+      (error "BUG: Instruction not a valid unwind target: ~a" instruction)))
+
+(defun (setf instruction-go-index) (index instruction)
+  (setf (gethash instruction *instruction-go-indices*) index))
+
+;;; This inserts save-frame instructions when necessary, and assigns unwind targets IDs.
 (defun lower-enter-catches (enter info)
   (let ((catches (catches info)))
+    ;; If there are no catches, we don't need a save-frame or the rest.
     (unless (null catches)
-      (let ((frame (cleavir-ir:new-temporary "FRAME")))
-        (cleavir-ir:insert-instruction-after
-         (let ((cleavir-ir:*policy* (cleavir-ir:policy enter)))
-           (cc-mir:make-save-frame-instruction frame))
-         enter)
-        (loop for catchn from 0 for catch in catches
-              do (change-class catch 'cc-mir:assign-catch-instruction
-                               :inputs (list frame) :go-index catchn))))))
+      ;; Insert the same-frame.
+      (cleavir-ir:insert-instruction-after
+       (let ((cleavir-ir:*policy* (cleavir-ir:policy enter))
+             (cleavir-ir:*dynamic-environment*
+               (cleavir-ir:dynamic-environment enter)))
+         (cc-mir:make-save-frame-instruction))
+       enter)
+      ;; Assign a go-index to every instruction that's an abnormal successor to a catch.
+      ;; FIXME: maybe check for pathological case of overflowing i?
+      (loop with i = 0
+            for catch in catches
+            for abnormal = (rest (cleavir-ir:successors catch))
+            do (loop for succ in abnormal
+                     do (setf (instruction-go-index succ) i)
+                        (incf i))))))
 
 (defun lower-catches (function-info-map)
   (maphash #'lower-enter-catches function-info-map))

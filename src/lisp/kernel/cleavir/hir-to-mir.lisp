@@ -434,7 +434,9 @@
         (pro (first (cleavir-ir:successors typeq-instruction)))
         (con (second (cleavir-ir:successors typeq-instruction)))
         (preds (cleavir-ir:predecessors typeq-instruction))
-        (cleavir-ir:*policy* (cleavir-ir:policy typeq-instruction)))
+        (cleavir-ir:*policy* (cleavir-ir:policy typeq-instruction))
+        (cleavir-ir:*dynamic-environment*
+          (cleavir-ir:dynamic-environment typeq-instruction)))
     (let ((new (gen-type-check object type pro con)))
       (dolist (pred preds)
         (setf (cleavir-ir:successors pred)
@@ -466,20 +468,20 @@
   (mapc (lambda (ll) (convert-to-tll ll type)) list))
 
 (defmethod cleavir-hir-to-mir:specialize ((instruction cleavir-ir:box-instruction)
-                                  (impl clasp-cleavir:clasp) proc os)
+                                          (impl clasp-cleavir:clasp) proc os)
   (convert-tll-list (cleavir-ir:inputs instruction)
                     (cmp::element-type->llvm-type (cleavir-ir:element-type instruction)))
   instruction)
 
 (defmethod cleavir-hir-to-mir:specialize ((instruction cleavir-ir:unbox-instruction)
-                                  (impl clasp-cleavir:clasp) proc os)
+                                          (impl clasp-cleavir:clasp) proc os)
   (convert-tll-list (cleavir-ir:outputs instruction)
                     (cmp::element-type->llvm-type (cleavir-ir:element-type instruction)))
   instruction)
 
 (defmacro define-float-specializer (instruction-class-name)
   `(defmethod cleavir-hir-to-mir:specialize ((instruction ,instruction-class-name)
-                                     (impl clasp-cleavir:clasp) proc os)
+                                             (impl clasp-cleavir:clasp) proc os)
      (declare (ignore proc os))
      ;; Could probably work out the llvm types ahead of time, but this shouldn't be a big deal.
      (convert-tll-list (cleavir-ir:inputs instruction)

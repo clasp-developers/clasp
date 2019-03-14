@@ -342,10 +342,10 @@
         :docstring (docstring instruction)
         :rest-alloc (rest-alloc instruction)))
 
-(defmethod original-lambda-list ((self cleavir-ir:top-level-enter-instruction))
-  nil)
-
-(defmethod rest-alloc ((self cleavir-ir:top-level-enter-instruction))
+;;; We need this one for when an enter-instruction makes it to translate.
+;;; This will happen if generate-ast or cst-to-ast make a function-ast without
+;;; going through convert-code.
+(defmethod rest-alloc ((self cleavir-ir:enter-instruction))
   nil)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -426,39 +426,6 @@
 
 
 (defmethod cleavir-ir-graphviz:label ((instruction setf-fdefinition-instruction)) "setf-fdefinition")
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Instruction INVOKE-INSTRUCTION.
-
-(defclass invoke-instruction (cleavir-ir:funcall-instruction)
-  ((%destinations :accessor destinations :initarg :destinations)))
-
-(defmethod cleavir-ir-graphviz:label ((instruction invoke-instruction)) "invoke")
-
-(defmethod cleavir-ir-graphviz:draw-instruction :after ((instruction invoke-instruction) stream)
-  (loop with me = (cleavir-ir-graphviz::instruction-id instruction)
-        for dest in (clasp-cleavir-hir:destinations instruction)
-        for id = (cleavir-ir-graphviz::instruction-id dest)
-        when id
-          do (format stream "  ~a -> ~a [color = pink, style = dashed];~%"
-                     me id)))
-
-;;; This will probably break if the CATCH is copied too.
-(defmethod cleavir-ir:clone-initargs append ((instr invoke-instruction))
-  (list :destinations (destinations instr)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Instruction MULTIPLE-VALUE-INVOKE-INSTRUCTION.
-
-(defclass multiple-value-invoke-instruction (cleavir-ir:multiple-value-call-instruction)
-  ((%destinations :accessor destinations :initarg :destinations)))
-
-(defmethod cleavir-ir-graphviz:label ((instruction multiple-value-invoke-instruction)) "mv-invoke")
-
-(defmethod cleavir-ir:clone-initargs append ((instr multiple-value-invoke-instruction))
-  (list :destinations (destinations instr)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

@@ -6,6 +6,8 @@
   (change-class input 'cleavir-ir:lexical-location :name (gensym "CV"))
   (loop for instr in (cleavir-ir:using-instructions input)
         do (let* ((cleavir-ir:*policy* (cleavir-ir:policy instr))
+                  (cleavir-ir:*dynamic-environment*
+                    (cleavir-ir:dynamic-environment instr))
                   (pvi (clasp-cleavir-hir:make-precalc-value-instruction
                         index input :original-object value)))
              (cleavir-ir:insert-instruction-before pvi instr))))
@@ -26,6 +28,8 @@
   (change-class input 'cleavir-ir:lexical-location :name (gensym "LTV"))
   (loop for instr in (cleavir-ir:using-instructions input)
         do (let* ((cleavir-ir:*policy* (cleavir-ir:policy instr))
+                  (cleavir-ir:*dynamic-environment*
+                    (cleavir-ir:dynamic-environment instr))
                   (pvi (clasp-cleavir-hir:make-precalc-value-instruction
                         index input :original-object form)))
              (cleavir-ir:insert-instruction-before pvi instr))))

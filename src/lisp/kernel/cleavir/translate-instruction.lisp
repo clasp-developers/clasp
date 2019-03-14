@@ -8,13 +8,13 @@
 (defmethod translate-simple-instruction
     ((instr cleavir-ir:enter-instruction) return-value (abi abi-x86-64) function-info)
   (let* ((lambda-list (cleavir-ir:lambda-list instr))
-         (closed-env-dest (first (cleavir-ir:outputs instr)))
+         (closed-env-dest (cleavir-ir:static-environment instr))
+         (dynenv (cleavir-ir:dynamic-environment-output instr))
          (calling-convention (calling-convention function-info)))
     (out (cmp:calling-convention-closure calling-convention) closed-env-dest)
-    ;; We used to change the landing pad here, so that it skipped unwinds
-    ;; (which after all can't possibly be from the lambda list code)
-    ;; But it substantially complicates the code and it's not that important.
-    ;; Better usage of INVOKE might be able to restore the situation.
+    ;; see comment in catch-instruction
+    (out (cmp:irc-undef-value-get cmp:%t*%) dynenv)
+    ;; actual argument parsing
     (cmp:compile-lambda-list-code lambda-list calling-convention
                                   :argument-out #'out)))
 
@@ -147,29 +147,29 @@
      (fifth args) (sixth args) (seventh args) (eighth args)
      closure)))
 
-(defmethod translate-simple-instruction
-    ((instruction cleavir-ir:funcall-instruction) return-value (abi abi-x86-64) function-info)
-  (let ((inputs (cleavir-ir:inputs instruction)))
-    (closure-call-or-invoke (in (first inputs)) return-value (mapcar #'in (rest inputs)) abi)))
+;;; shared with funcall-no-return
+(defun translate-funcall (instruction return-value abi function-info)
+  (let* ((inputs (cleavir-ir:inputs instruction))
+         (function (first inputs))
+         (dynamic-environment (cleavir-ir:dynamic-environment instruction))
+         (arguments (cdr inputs)))
+    (cmp:with-landing-pad (landing-pad dynamic-environment return-value abi *tags* function-info)
+      (closure-call-or-invoke (in function) return-value (mapcar #'in arguments) abi))))
 
 (defmethod translate-simple-instruction
-    ((instruction clasp-cleavir-hir:invoke-instruction) return-value (abi abi-x86-64) function-info)
-  (cmp:with-landing-pad (catch-pad (clasp-cleavir-hir:destinations instruction)
-                                   return-value abi *tags* function-info)
-    ;; funcall-instruction method
-    (call-next-method)))
+    ((instruction cleavir-ir:funcall-instruction) return-value (abi abi-x86-64) function-info)
+  (translate-funcall instruction return-value abi function-info))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:nop-instruction) return-value abi function-info)
   (declare (ignore return-value inputs outputs abi function-info)))
 
+;;; Again note that the frame-value is in the function-info rather than an actual location.
 (defmethod translate-simple-instruction
     ((instruction cc-mir:save-frame-instruction) return-value abi function-info)
   ;; FIXME: rename the intrinsic!!
-  (let* ((output (first (cleavir-ir:outputs instruction)))
-         (frame (%intrinsic-call "cc_pushLandingPadFrame" nil (datum-name-as-string output))))
-    (setf (frame-value function-info) frame)
-    (out frame output)))
+  (setf (frame-value function-info)
+        (%intrinsic-call "cc_pushLandingPadFrame" nil "FRAME")))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:create-cell-instruction) return-value abi function-info)
@@ -275,24 +275,18 @@
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:multiple-value-call-instruction) return-value abi function-info)
   (with-return-values (return-vals return-value abi)
- ;   (%intrinsic-call "cc_saveMultipleValue0" (list return-value)) ;; (sret-arg return-vals))
-    ;; NOTE: (NOT A FIXME)  This instruction is explicitly for calls.
-    (let ((call-result (%intrinsic-invoke-if-landing-pad-or-call
-                        "cc_call_multipleValueOneFormCallWithRet0" 
-                        (list (in (first (cleavir-ir:inputs instruction))) (%load return-value)))))
-      (%store call-result return-value)
-      (cc-dbg-when *debug-log*
-                   (format *debug-log* "    translate-simple-instruction multiple-value-call-instruction: ~a~%" 
-                           (cc-mir:describe-mir instruction))
-                   (format *debug-log* "     instruction --> ~a~%" call-result)))))
-
-(defmethod translate-simple-instruction
-    ((instruction clasp-cleavir-hir:multiple-value-invoke-instruction)
-     return-value (abi abi-x86-64) function-info)
-  (cmp:with-landing-pad (catch-pad (clasp-cleavir-hir:destinations instruction)
-                                   return-value abi *tags* function-info)
-    ;; funcall-instruction method
-    (call-next-method)))
+    ;; second input is the dynamic-environment argument.
+    (cmp:with-landing-pad (landing-pad (cleavir-ir:dynamic-environment instruction)
+                                       return-value abi *tags* function-info)
+      (let ((call-result (%intrinsic-invoke-if-landing-pad-or-call
+                          "cc_call_multipleValueOneFormCallWithRet0" 
+                          (list (in (first (cleavir-ir:inputs instruction))) (%load return-value)))))
+        (%store call-result return-value)
+        (cc-dbg-when *debug-log*
+                     (format *debug-log*
+                             "    translate-simple-instruction multiple-value-call-instruction: ~a~%" 
+                             (cc-mir:describe-mir instruction))
+                     (format *debug-log* "     instruction --> ~a~%" call-result))))))
 
 (defun gen-vector-effective-address (array index element-type fixnum-type)
   (let* ((type (llvm-sys:type-get-pointer-to (cmp::simple-vector-llvm-type element-type)))
@@ -623,22 +617,35 @@
 
 (defmethod translate-branch-instruction
     ((instruction cleavir-ir:unwind-instruction) return-value successors abi function-info)
-  (declare (ignore successors))
+  (declare (ignore successors function-info))
+  ;; we don't use the second input to the unwind - the dynenv - at the moment.
   (with-return-values (return-values return-value abi)
     ;; Save whatever is in return-vals in the multiple-value array
     (%intrinsic-call "cc_saveMultipleValue0" (list return-value))
-    (let ((static-index (cc-mir:go-index (cleavir-ir:destination instruction))))
+    (let ((static-index
+            (instruction-go-index
+             (nth (cleavir-ir:unwind-index instruction)
+                  (cleavir-ir:successors (cleavir-ir:destination instruction))))))
       (%intrinsic-call "cc_unwind" (list (in (first (cleavir-ir:inputs instruction)))
                                          (%size_t static-index))))
     (cmp:irc-unreachable)))
 
-;;; This is not a real branch: it only has two successors for convenience elsewhere.
-;;; See comment in mir.lisp.
-;;; The second branch's code will be reachable from the function's landing pad.
+;;; This is not a real branch: The real successors are only for convenience elsewhere
+;;; (HIR analysis, basically.)
+;;; Also, the frame marker is unique to the frame, not to the catch, so we get it from
+;;; the function-info.
 (defmethod translate-branch-instruction
-    ((instruction cc-mir:assign-catch-instruction) return-value successors abi function-info)
-  (out (in (first (cleavir-ir:inputs instruction)))
+    ((instruction cleavir-ir:catch-instruction) return-value successors abi function-info)
+  (out (frame-value function-info)
        (first (cleavir-ir:outputs instruction)) "frame-marker")
+  ;; So, Cleavir treats the dynamic-environment as an actual runtime thing, as it would be
+  ;; in some implementations. Not in Clasp- we just use the location to find the chain of
+  ;; catch-instructions. But the location still exists.
+  ;; So we fill it with an undef in enter, and then pass it along here. LLVM will remove it.
+  (out (cleavir-ir:dynamic-environment instruction)
+       (second (cleavir-ir:outputs instruction))
+       "sham-dynamic-environment")
+  ;; unconditionally go to first successor
   (cmp:irc-br (first successors)))
 
 (defmethod translate-branch-instruction
@@ -650,8 +657,7 @@
     ((instruction cleavir-ir:funcall-no-return-instruction)
      return-value successors (abi abi-x86-64) function-info)
   (declare (ignore successors))
-  (let ((inputs (cleavir-ir:inputs instruction)))
-    (closure-call-or-invoke (in (first inputs)) return-value (mapcar #'in (rest inputs)) abi))
+  (translate-funcall instruction return-value abi function-info)
   (cmp:irc-unreachable))
 
 (defmethod translate-branch-instruction
