@@ -667,7 +667,7 @@ core::T_sp PERCENTnull_pointer_p( core::T_sp obj )
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-ForeignData_sp ForeignData_O::PERCENTinc_pointer( core::Integer_sp offset )
+ForeignData_sp ForeignData_O::PERCENTinc_pointer_in_place( core::Integer_sp offset )
 {
   cl_intptr_t new_address = 0;
   cl_intptr_t raw_data_address = reinterpret_cast<cl_intptr_t>( this->raw_data() );
@@ -677,6 +677,18 @@ ForeignData_sp ForeignData_O::PERCENTinc_pointer( core::Integer_sp offset )
   this->m_raw_data  = reinterpret_cast<void *>( new_address );
 
   return this->asSmartPtr();
+}
+
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+ForeignData_sp ForeignData_O::PERCENTinc_pointer( core::Integer_sp offset )
+{
+  cl_intptr_t new_address = 0;
+  cl_intptr_t raw_data_address = reinterpret_cast<cl_intptr_t>( this->raw_data() );
+  cl_intptr_t offset_ = core::clasp_to_cl_intptr_t( offset );
+
+  new_address = raw_data_address + offset_;
+  return (make_pointer( reinterpret_cast<void *>( new_address ) ))->asSmartPtr();
 }
 
 // ---------------------------------------------------------------------------
@@ -1391,7 +1403,7 @@ const struct section_64 *get_section_data( const char* segment_name,
                                            const char* section_name )
 {
   const struct section_64 * p_section = (struct section_64 *) NULL;
-  
+
 #if defined( __APPLE__ )
   unsigned long section_size = 0;
   p_section = (struct section_64 *) getsectiondata( &_mh_execute_header,
