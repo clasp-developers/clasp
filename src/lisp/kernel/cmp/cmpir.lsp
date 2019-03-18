@@ -980,9 +980,7 @@ But no irbuilders or basic-blocks. Return the fn."
                                           (jit-constant-size_t lambda-list.docstring-index)
                                           (jit-constant-i32 lineno)
                                           (jit-constant-i32 column)
-                                          (jit-constant-i32 filepos)
-                                          )
-                                         ))
+                                          (jit-constant-i32 filepos))))
          (function-description-name fn))))))
 
 

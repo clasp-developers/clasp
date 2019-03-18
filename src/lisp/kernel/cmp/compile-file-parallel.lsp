@@ -140,6 +140,7 @@
              (peek-char t source-sin nil)
              ;; FIXME: if :environment is provided we should probably use a different read somehow
              (let* ((current-source-pos-info (core:input-stream-source-pos-info source-sin))
+                    (core:*current-source-pos-info* current-source-pos-info)
                     (form-output-path (make-pathname :name (format nil "~a_~d" (pathname-name output-path) form-index ) :defaults working-dir))
                     (dynenv (clasp-cleavir::make-dynenv environment))
                     #+cst
