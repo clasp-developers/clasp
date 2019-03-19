@@ -718,7 +718,7 @@ void walk_loaded_objects(std::vector<BacktraceEntry>& backtrace, size_t& symbol_
 
 
 void startup_register_loaded_objects() {
-  printf("%s:%d:%s handle macos\n", __FILE__, __LINE__, __FUNCTION__);
+// printf("%s:%d:%s handle macos\n", __FILE__, __LINE__, __FUNCTION__);
 //    printf("Add support to walk symbol tables and stackmaps for DARWIN\n");
   uint32_t num_loaded = _dyld_image_count();
   for ( size_t idx = 0; idx<num_loaded; ++idx ) {

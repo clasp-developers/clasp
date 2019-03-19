@@ -161,7 +161,7 @@ Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
       bf::path quicklispPath(home_dir);
       quicklispPath = quicklispPath / "quicklisp";
       if (bf::exists(quicklispPath)) {
-        printf("%s:%d  ~/quicklisp/ exists\n", __FILE__, __LINE__);
+        // printf("%s:%d  ~/quicklisp/ exists\n", __FILE__, __LINE__);
         this->_Directories->_QuicklispDir = quicklispPath;
         gotQuicklispPath = true;
       }
