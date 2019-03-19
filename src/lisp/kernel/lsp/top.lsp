@@ -393,7 +393,7 @@
 
 (defparameter *lisp-initialized* nil)
 
-(defun top-level (&optional (process-command-line nil))
+(defun top-level (&optional (process-command-line nil) (set-package nil))
   "Args: ()
 ECL specific.
 The top-level loop of ECL. It is called by default when ECL is invoked."
@@ -401,7 +401,8 @@ The top-level loop of ECL. It is called by default when ECL is invoked."
     (let* ((*debugger-hook* nil)
 	   + ++ +++ - * ** *** / // ///)
 
-      (in-package "CL-USER")
+      (when set-package
+        (in-package "CL-USER"))
 
       (unless (or *lisp-initialized* (null process-command-line))
         (process-command-args)

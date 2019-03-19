@@ -8,7 +8,7 @@
           (let ((core:*use-interpreter-for-eval* nil))
             (core:process-command-line-load-eval-sequence)
             (if (core:is-interactive-lisp)
-                (core:top-level)
+                (core:top-level nil nil)
                 (progn
                   (format t "In non-interactive mode - control fell through to epilogue-cclasp.lisp~%")
                   (core:exit 3)))))
