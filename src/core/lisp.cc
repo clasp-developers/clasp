@@ -150,6 +150,7 @@ extern "C" void add_history(char *line);
 
 namespace core {
 
+CommandLineOptions *global_options;
 
 bool global_Started = false;
 bool globalTheSystemIsUp = false;
@@ -2513,13 +2514,14 @@ int Lisp_O::run() {
   if ( initializer_functions_are_waiting() ) {
     initializer_functions_invoke();
   }
-
+#if 0
 #ifndef SCRAPING
 #define ALL_INITIALIZERS_CALLS
 #include INITIALIZERS_INC_H
 #undef ALL_INITIALIZERS_CALLS
 #endif
-
+#endif
+  
 #ifdef DEBUG_PROGRESS
   printf("%s:%d run\n", __FILE__, __LINE__ );
 #endif
@@ -2663,14 +2665,23 @@ void LispHolder::startup(int argc, char *argv[], const string &appPathEnvironmen
   for (int i = 0; i < argc; ++i) {
     this->_Lisp->_Argv.push_back(string(argv[i]));
   }
-  CommandLineOptions options(argc, argv);
-  Bundle *bundle = new Bundle(argv0,options._ResourceDir);
+  // Create the one global CommandLineOptions object and do some minimal argument processing
+  global_options = new CommandLineOptions(argc, argv);
+  // Call the initializers here so that they can edit the global_options structure
+  Bundle *bundle = new Bundle(argv0,global_options->_ResourceDir);
   this->_Lisp->startupLispEnvironment(bundle);
   mp::_sym_STARcurrent_processSTAR->defparameter(my_thread->_Process);
   this->_Lisp->add_process(my_thread->_Process);
   gctools::initialize_unix_signal_handlers();
   _lisp->_Roots._Booted = true;
-  _lisp->parseCommandLineArguments(argc, argv, options);
+#ifndef SCRAPING
+#define ALL_INITIALIZERS_CALLS
+#include INITIALIZERS_INC_H
+#undef ALL_INITIALIZERS_CALLS
+#endif
+  // The initializers may have changed the function that processes global_options
+  (global_options->_ProcessArguments)(global_options);
+  _lisp->parseCommandLineArguments(argc, argv, *global_options);
 }
 
 LispHolder::~LispHolder() {
