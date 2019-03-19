@@ -83,7 +83,7 @@ p  (core:pathname-translations "cclasp-boehm" '(("**;*.*" #P"SYS:build;system;cc
                                           (if (member :clos *features*) nil (setq *features* (cons :clos *features*)))
                                           (if (member :cclasp *features*) nil (setq *features* (cons :cclasp *features*)))
                                           (if (core:is-interactive-lisp)
-                                              (core:bformat t "Starting %s cclasp %s ... loading image... it takes a few seconds%N"
+                                              (core:bformat t "Starting %s cclasp %s ... loading image...%N"
                                                             (if (member :use-mps *features*) "MPS" "Boehm" ) (software-version))))
                          :epilogue-form '(progn
                                           (cl:in-package :cl-user)

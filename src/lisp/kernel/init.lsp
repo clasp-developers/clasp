@@ -661,7 +661,7 @@ the stage, the +application-name+ and the +bitcode-name+"
   `(progn
      ,@(mapcar #'(lambda (f) `(push ,f *features*)) features)
      (if (core:is-interactive-lisp)
-         (bformat t "Starting %s ... loading image... it takes a few seconds%N" (lisp-implementation-version)))))
+         (bformat t "Starting %s ... loading image...%N" (lisp-implementation-version)))))
 
 (export '*extension-startup-loads*) ;; ADDED: frgo, 2016-08-10
 (defvar *extension-startup-loads* nil)
