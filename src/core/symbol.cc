@@ -204,12 +204,12 @@ Symbol_O::Symbol_O(bool dummy) : _HomePackage(_Nil<T_O>()),
                                  _GlobalValue(_Unbound<T_O>()),
                                  _Function(_Unbound<Function_O>()),
                                  _SetfFunction(_Unbound<Function_O>()),
-                                 _Binding(NO_THREAD_LOCAL_BINDINGS),
+                                 _BindingIdx(NO_THREAD_LOCAL_BINDINGS),
                                  _Flags(0),
                                  _PropertyList(_Nil<List_V>()) {};
 
 Symbol_O::Symbol_O() : Base(),
-                       _Binding(NO_THREAD_LOCAL_BINDINGS),
+                       _BindingIdx(NO_THREAD_LOCAL_BINDINGS),
                        _Flags(0),
                        _PropertyList(_Nil<List_V>()) {};
 

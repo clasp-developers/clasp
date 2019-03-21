@@ -63,7 +63,7 @@ public:
   T_sp _GlobalValue;
   Function_sp _Function;
   Function_sp _SetfFunction;
-  mutable size_t _Binding;
+  mutable std::atomic<size_t> _BindingIdx;
   List_sp _PropertyList;
 #ifdef SYMBOL_CLASS
   #error "Don't define SYMBOL_CLASS"
@@ -271,8 +271,8 @@ public:
   explicit Symbol_O();
   virtual ~Symbol_O(){
 #ifdef CLASP_THREAD
-    if (this->_Binding != NO_THREAD_LOCAL_BINDINGS) {
-      my_thread->_Bindings.release_binding_index(this->_Binding);
+    if (this->_BindingIdx.load() != NO_THREAD_LOCAL_BINDINGS) {
+      my_thread->_Bindings.release_binding_index(this->_BindingIdx.load());
     }
 #endif
   };
