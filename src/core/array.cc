@@ -2622,8 +2622,8 @@ CL_DEFUN SimpleVector_sp core__make_simple_vector_t(size_t dimension,
   CL_DECLARE();\
   CL_DOCSTRING("Make a (simple-vector " #TYPE ")");\
   CL_DEFUN SMART core__make_simple_vector_##TYPE(size_t dimension, T_sp initialElement, bool initialElementSuppliedP) {\
-  OBJECT::value_type init = OBJECT::initial_element_from_object(initialElement, initialElementSuppliedP);\
-  return OBJECT::make(dimension, init, initialElementSuppliedP);\
+    OBJECT::value_type init = OBJECT::initial_element_from_object(initialElement, initialElementSuppliedP);\
+    return OBJECT::make(dimension, init, initialElementSuppliedP);\
   }
 
 DEFMAKESIMPLEVECTOR(bit, SimpleBitVector_O, SimpleBitVector_sp);
@@ -2656,8 +2656,8 @@ CL_DEFUN SimpleMDArrayT_sp core__make_simple_mdarray_t(List_sp dimensions,
   CL_DECLARE();\
   CL_DOCSTRING("Make a (simple-array " #TYPE ") that is not a vector");\
   CL_DEFUN SMART core__make_simple_mdarray_##TYPE(List_sp dimensions, T_sp initialElement, bool initialElementSuppliedP) {\
-  SIMPLE::value_type init = SIMPLE::initial_element_from_object(initialElement, initialElementSuppliedP);\
-  return OBJECT::make_multi_dimensional(dimensions, init, _Nil<T_O>());\
+    SIMPLE::value_type init = SIMPLE::initial_element_from_object(initialElement, initialElementSuppliedP);\
+    return OBJECT::make_multi_dimensional(dimensions, init, _Nil<T_O>());\
   }
 
 DEFMAKESIMPLEMDARRAY(bit, SimpleMDArrayBit_O, SimpleMDArrayBit_sp, SimpleBitVector_O);
@@ -3156,5 +3156,39 @@ CL_DEFUN Pointer_sp core__static_vector_pointer(Array_sp source, size_t offset )
 {
   return Pointer_O::create((char*)source->rowMajorAddressOfElement_(0)+offset);
 }
-                           
+
+CL_DOCSTRING("Return the simple-vector that stores the data for this array - this is like sbcl sb-ext:array-storage-vector");
+CL_DEFUN Array_sp ext__array_storage_vector(Array_sp source )
+{
+  if (source->displacedToP()) {
+    SIMPLE_ERROR(BF("array-storage-vector cannot be used with displaced arrays"));
+  }
+  AbstractSimpleVector_sp bsv;
+  size_t ostart, oend;
+  ASSERT(ostart==0);
+  source->asAbstractSimpleVectorRange(bsv,ostart,oend);
+  return bsv;
+}
+
+CL_DOCSTRING("Return a pointer to the data in the array source");
+CL_DEFUN Pointer_sp ext__array_pointer(Array_sp source )
+{
+  return Pointer_O::create(source->rowMajorAddressOfElement_(0));
+}
+
+CL_DOCSTRING("Pin the objects in the list in memory and then call the thunk");
+CL_DEFUN T_mv ext__pinned_objects_funcall(List_sp objects, T_sp thunk)
+{
+  size_t num = cl__length(objects);
+  T_O* pointerArray[num];
+  size_t idx = 0;
+  for ( auto cur : objects ) {
+    T_sp obj = CONS_CAR(cur);
+    pointerArray[idx] = obj.raw_();
+    idx++;
+  }
+  return eval::funcall(thunk);
+}
+  
+  
 }; /* core */
