@@ -47,6 +47,7 @@ search for the string 'src', or 'generated' and return the rest of the list that
      top
        (if (>= index (length system)) (go done))
        (core:hash-table-setf-gethash file-order (elt system index) index)
+       (format t "Assigned build order ~a to ~s~%" index (elt system index))
        (setq index (+ index 1))
        (go top)
      done

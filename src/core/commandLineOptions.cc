@@ -41,10 +41,11 @@ void process_clasp_arguments(CommandLineOptions* options)
 {
   int endArg = options->_RawArguments.size();
   for (int i = 0; i < options->_RawArguments.size(); ++i) {
-    if (strcmp(options->_RawArguments[i].c_str(), "--") == 0) {
+    if (options->_RawArguments[i] == "--") {
       endArg = i;
     }
   }
+  options->_EndArg = endArg;
   options->_ExecutableName = options->_RawArguments[0];
   // The most basic processing of the arguments
   int iarg = 1;
