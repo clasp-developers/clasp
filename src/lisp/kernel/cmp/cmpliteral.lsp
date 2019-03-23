@@ -937,7 +937,7 @@ and  return the sorted values and the constant-table or (values nil nil)."
 (defun compile-form (form)
   (if core:*use-cleavir-compiler*
       (progn
-        (funcall (find-symbol "COMPILE-FORM" "CLASP-CLEAVIR") form))
+        (funcall (find-symbol "COMPILE-LTV-FORM" "CLASP-CLEAVIR") form))
       (bclasp-compile-form form)))
 
 ;;; ------------------------------------------------------------

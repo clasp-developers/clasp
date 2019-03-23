@@ -27,10 +27,7 @@
     (cond
       (presentp value)
       ((null (cdr env))
-       ;; could be a block or summat.
-       (if (typep var 'cleavir-ast:lexical-ast)
-           (error "BUG: Unbound ~a (named ~a)" var (cleavir-ast:name var))
-           (error "BUG: Unbound ~a" var)))
+       (error "BUG: Unbound ~a" var))
       (t (variable var (cdr env))))))
 
 (defun variable-frame (var env)
@@ -46,10 +43,8 @@
 
 ;; interface
 
-(defun interpret (ast &optional dynenv)
+(defun interpret (ast)
   (let ((env (empty-environment)))
-    (when dynenv
-      (setf (variable dynenv env) '#:loader-dynamic-environment))
     (interpret-ast ast env)))
 
 ;;; meat
@@ -163,7 +158,6 @@
 
 (defmethod interpret-ast ((ast cleavir-ast:function-ast) env)
   (let ((body (cleavir-ast:body-ast ast))
-        (dynenv (cleavir-ast:dynamic-environment-out-ast ast))
         (ll (cleavir-ast:lambda-list ast)))
     (multiple-value-bind (required optional rest va-rest-p keyp key aok-p)
         (parse-lambda-list ll)
@@ -172,9 +166,6 @@
         (let ((env (augment-environment env)))
           (bind-list arguments env
                      required optional rest va-rest-p keyp key aok-p)
-          ;; The dynamic environment isn't actually used, but there
-          ;; will be problems if it's simply left unbound.
-          (setf (variable dynenv env) '#:dynamic-environment-argument)
           ;; ok body now
           (interpret-ast body env))))))
 
@@ -188,9 +179,6 @@
               else do (interpret-ast form-ast env)))))
 
 (defmethod interpret-ast ((ast cleavir-ast:block-ast) env)
-  ;; Bind dynamic environment although it's unused.
-  (setf (variable (cleavir-ast:dynamic-environment-out-ast ast) env)
-        '#:block-dynamic-environment)
   ;; We need to disambiguate things if the block is entered
   ;; more than once. Storing things in the environment
   ;; lets it work with closures.
@@ -219,9 +207,6 @@
   (declare (ignore env)))
 
 (defmethod interpret-ast ((ast cleavir-ast:tagbody-ast) env)
-  ;; Bind dynamic environment although it's unused.
-  (setf (variable (cleavir-ast:dynamic-environment-out-ast ast) env)
-        '#:tagbody-dynamic-environment)
   ;; We loop through the item-asts interpreting them.
   ;; If we hit a GO, the GO throws a new list of ASTs to interpret, set up
   ;; beforehand. We catch that and set it as the new to-interpret list.
@@ -470,14 +455,12 @@
 (in-package #:clasp-cleavir)
 
 (defun ast-interpret-form (form env)
-  (let ((dynenv (clasp-cleavir::make-dynenv env)))
-    (interpret-ast:interpret
-     (let ((cleavir-generate-ast:*compiler* 'cl:eval))
-       #-cst
-       (cleavir-generate-ast:generate-ast
-        form env clasp-cleavir:*clasp-system* dynenv)
-       #+cst
-       (cleavir-cst-to-ast:cst-to-ast
-        (cst:cst-from-expression form)
-        env clasp-cleavir:*clasp-system* dynenv))
-     dynenv)))
+  (interpret-ast:interpret
+   (let ((cleavir-generate-ast:*compiler* 'cl:eval))
+     #-cst
+     (cleavir-generate-ast:generate-ast
+      form env clasp-cleavir:*clasp-system*)
+     #+cst
+     (cleavir-cst-to-ast:cst-to-ast
+      (cst:cst-from-expression form)
+      env clasp-cleavir:*clasp-system*))))

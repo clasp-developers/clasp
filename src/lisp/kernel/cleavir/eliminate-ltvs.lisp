@@ -6,8 +6,6 @@
   (change-class input 'cleavir-ir:lexical-location :name (gensym "CV"))
   (loop for instr in (cleavir-ir:using-instructions input)
         do (let* ((cleavir-ir:*policy* (cleavir-ir:policy instr))
-                  (cleavir-ir:*dynamic-environment*
-                    (cleavir-ir:dynamic-environment instr))
                   (pvi (clasp-cleavir-hir:make-precalc-value-instruction
                         index input :original-object value)))
              (cleavir-ir:insert-instruction-before pvi instr))))
@@ -28,8 +26,6 @@
   (change-class input 'cleavir-ir:lexical-location :name (gensym "LTV"))
   (loop for instr in (cleavir-ir:using-instructions input)
         do (let* ((cleavir-ir:*policy* (cleavir-ir:policy instr))
-                  (cleavir-ir:*dynamic-environment*
-                    (cleavir-ir:dynamic-environment instr))
                   (pvi (clasp-cleavir-hir:make-precalc-value-instruction
                         index input :original-object form)))
              (cleavir-ir:insert-instruction-before pvi instr))))
@@ -49,14 +45,14 @@
 
 ;;; Main entry point.
 (defun eliminate-load-time-value-inputs (initial-instruction system env)
-  (assert (typep initial-instruction 'cleavir-ir:top-level-enter-instruction))
+  (assert (cleavir-ir:top-level-enter-instruction-p initial-instruction))
   (cleavir-ir:reinitialize-data initial-instruction)
   (cleavir-ir:map-instructions-arbitrary-order
    (lambda (instruction)
      (loop for input in (cleavir-ir:inputs instruction)
-           when (typep input 'cleavir-ir:constant-input)
+           when (cleavir-ir:constant-input-p input)
              do (eliminate-constant-input input env)
-           when (typep input 'cleavir-ir:load-time-value-input)
+           when (cleavir-ir:load-time-value-input-p input)
              do (eliminate-load-time-value-input input env)))
    initial-instruction)
   (cleavir-ir:reinitialize-data initial-instruction))

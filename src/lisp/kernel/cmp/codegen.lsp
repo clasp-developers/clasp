@@ -64,11 +64,11 @@ Could return more functions that provide lambda-list for swank for example"
                    ;; load time values table
                    #+(or)(irc-intrinsic-call "debugInspectT_sp" (list (literal:compile-reference-to-literal :This-is-a-test)))
                    (let* ((arguments      (llvm-sys:get-argument-list fn))
-                          (callconv       (setup-calling-convention
-                                           arguments
-                                           :debug-on core::*debug-bclasp*
-                                           :cleavir-lambda-list cleavir-lambda-list
-                                           :rest-alloc rest-alloc)))
+                          (callconv       (setup-calling-convention arguments
+                                                                    :debug-on core::*debug-bclasp*
+                                                                    :lambda-list lambda-list
+                                                                    :cleavir-lambda-list cleavir-lambda-list
+                                                                    :rest-alloc rest-alloc)))
                      (let ((new-env (bclasp-compile-lambda-list-code fn-env callconv)))
                        (cmp-log "Created new register environment -> %s%N" new-env)
                        (with-try

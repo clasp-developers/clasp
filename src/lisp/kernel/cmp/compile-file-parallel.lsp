@@ -20,9 +20,7 @@
 (defmacro cfp-log (fmt &rest args)
   nil)
 
-(defstruct (ast-job (:type vector) :named)
-  ast environment dynenv form-output-path
-  form-index error current-source-pos-info)
+(defstruct (ast-job (:type vector) :named) ast environment form-output-path form-index error current-source-pos-info)
 
 (defun compile-from-ast (job &key
                                optimize
@@ -41,9 +39,7 @@
                   (let ((clasp-cleavir::*llvm-metadata* (make-hash-table :test 'eql)))
                     (core:with-memory-ramp (:pattern 'gctools:ramp)
                       (literal:with-top-level-form
-                          (let ((hoisted-ast (clasp-cleavir::hoist-ast
-                                              (ast-job-ast job)
-                                              (ast-job-dynenv job))))
+                          (let ((hoisted-ast (clasp-cleavir::hoist-ast (ast-job-ast job))))
                             (clasp-cleavir::translate-hoisted-ast hoisted-ast :env (ast-job-environment job)))))))
               (make-boot-function-global-variable module run-all-function :position (ast-job-form-index job))))
           (cmp-log "About to verify the module%N")
@@ -105,9 +101,9 @@
   (let (result
         (form-index (core:next-startup-position))
         (eof-value (gensym))
-        (cleavir-generate-ast:*compiler* 'cl:compile-file)
-        (core:*use-cleavir-compiler* t)
-        (eclector.reader:*client* clasp-cleavir::*cst-client*)
+        #+cclasp(cleavir-generate-ast:*compiler* 'cl:compile-file)
+        #+cclasp(core:*use-cleavir-compiler* t)
+        #+cclasp(eclector.reader:*client* clasp-cleavir::*cst-client*)
         ast-jobs)
     (cfp-log "Starting the pool of threads~%")
     (finish-output)
@@ -131,8 +127,8 @@
                       (*compile-file-truename* . ',*compile-file-truename*)
                       (*source-debug-pathname* . ',*source-debug-pathname*)
                       (*source-debug-offset* . ',*source-debug-offset*)
-                      (cleavir-generate-ast:*compiler* . ',cleavir-generate-ast:*compiler*)
-                      (core:*use-cleavir-compiler* . ',core:*use-cleavir-compiler*)
+                      #+cclasp(cleavir-generate-ast:*compiler* . ',cleavir-generate-ast:*compiler*)
+                      #+cclasp(core:*use-cleavir-compiler* . ',core:*use-cleavir-compiler*)
                       (cmp::*global-function-refs* . ',cmp::*global-function-refs*))))))
       (unwind-protect
            (loop
@@ -142,7 +138,6 @@
              (let* ((current-source-pos-info (core:input-stream-source-pos-info source-sin))
                     (core:*current-source-pos-info* current-source-pos-info)
                     (form-output-path (make-pathname :name (format nil "~a_~d" (pathname-name output-path) form-index ) :defaults working-dir))
-                    (dynenv (clasp-cleavir::make-dynenv environment))
                     #+cst
                     (cst (eclector.concrete-syntax-tree:cst-read source-sin nil eof-value))
                     #+cst
@@ -151,20 +146,19 @@
                     (form (cst:raw cst))
                     #+cst
                     (ast (if cmp::*debug-compile-file*
-                             (clasp-cleavir::compiler-time (clasp-cleavir::cst->ast cst dynenv))
-                             (clasp-cleavir::cst->ast cst dynenv)))
+                             (clasp-cleavir::compiler-time (clasp-cleavir::cst->ast cst))
+                             (clasp-cleavir::cst->ast cst)))
                     #-cst
                     (form (read source-sin nil eof-value))
                     #-cst
                     (_ (when (eq form eof-value) (return nil)))
                     #-cst
                     (ast (if cmp::*debug-compile-file*
-                             (clasp-cleavir::compiler-time (clasp-cleavir::generate-ast form dynenv))
-                             (clasp-cleavir::generate-ast form dynenv))))
+                             (clasp-cleavir::compiler-time (clasp-cleavir::generate-ast form))
+                             (clasp-cleavir::generate-ast form))))
                (push form-output-path result)
                (let ((ast-job (make-ast-job :ast ast
                                             :environment environment
-                                            :dynenv dynenv
                                             :current-source-pos-info current-source-pos-info
                                             :form-output-path form-output-path
                                             :form-index form-index)))

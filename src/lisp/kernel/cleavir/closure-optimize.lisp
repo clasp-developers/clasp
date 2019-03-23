@@ -33,7 +33,7 @@ PROGN."
   (when-let* ((definers (cleavir-ir:defining-instructions input))
               (only-one-definer (= (length definers) 1))
               (definer (first definers))
-              (is-enclose (typep definer 'cleavir-ir:enclose-instruction)))
+              (is-enclose (cleavir-ir:enclose-instruction-p definer)))
     (setf (cleavir-ir:dynamic-extent-p definer) t)))
 
 ;;; This function finds calls to certain functions that we generate for special operators,
@@ -46,12 +46,12 @@ PROGN."
 (defun optimize-stack-enclose (top-instruction)
   (cleavir-ir:map-instructions-arbitrary-order
    (lambda (i)
-     (when-let* ((is-funcall (typep i 'cleavir-ir:funcall-instruction))
+     (when-let* ((is-funcall (cleavir-ir:funcall-instruction-p i))
                  (input1 (first (cleavir-ir:inputs i)))
                  (fdefs (cleavir-ir:defining-instructions input1))
                  (only-one-fdef (= (length fdefs) 1))
                  (fdef (first fdefs))
-                 (is-fdef (typep fdef 'cleavir-ir:fdefinition-instruction))
+                 (is-fdef (cleavir-ir:fdefinition-instruction-p fdef))
                  (fdef-input (first (cleavir-ir:inputs fdef)))
                  (fdef-input-definers (cleavir-ir:defining-instructions fdef-input))
                  (only-one-fdef-input-definer (= (length fdef-input-definers) 1))
