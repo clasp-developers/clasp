@@ -345,7 +345,7 @@ CL_DEFUN core::T_sp mp__make_lock(core::T_sp name, bool recursive) {
 }
   
 CL_DEFUN core::T_sp mp__process_active_p(Process_sp p) {
-  return p->_Phase ? _lisp->_true() : _Nil<core::T_O>();
+  return (p->_Phase == Active) ? _lisp->_true() : _Nil<core::T_O>();
 }
 
 SYMBOL_EXPORT_SC_(MpPkg,suspend_loop);
