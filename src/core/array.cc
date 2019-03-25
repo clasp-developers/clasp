@@ -1989,7 +1989,7 @@ bool SimpleCharacterString_O::equal(T_sp other) const {
 bool SimpleCharacterString_O::equalp(T_sp other) const {
   if (&*other==this) return true;
   if (!other.generalp()) return false;
-  if (!cl__stringp(other)) {
+  if (cl__stringp(other)) {
     String_sp sother = gc::As_unsafe<String_sp>(other);
     TEMPLATE_HALF_STRING_DISPATCHER(this,sother,template_string_equalp_bool,0,this->length(),0,sother->length());
   } else {
