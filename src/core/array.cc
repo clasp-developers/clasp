@@ -3149,7 +3149,7 @@ CL_DEFUN clasp_ffi::ForeignData_sp core__coerce_memory_to_foreign_data(Array_sp 
 
 CL_DEFUN Pointer_sp core__static_vector_address(Array_sp source)
 {
-  return Pointer_O::create(source->rowMajorAddressOfElement_(0));
+  return Pointer_O::create(&*source);
 };
 
 CL_DEFUN Pointer_sp core__static_vector_pointer(Array_sp source, size_t offset )
