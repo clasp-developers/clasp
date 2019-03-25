@@ -186,6 +186,9 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
     if (arg == "--resource-dir") {
       this->_ResourceDir = this->_RawArguments[iarg+1];
       iarg++;
+    } else if (arg == "--verbose") {
+      this->_SilentStartup = false;
+      iarg++;
     }
     iarg++;
   }
