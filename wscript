@@ -59,6 +59,7 @@ os.environ['LC_ALL'] = os.environ['LANG'] = "C"
 
 # This function enables extra command line options for ./waf --help
 def options(ctx):
+    ctx.recurse('extensions')
     ctx.load('compiler_cxx')
     ctx.load('compiler_c')
     ctx.add_option('-d', '--debug', default = False, action = 'store_true', dest = 'DEBUG_WHILE_BUILDING',
@@ -73,6 +74,8 @@ def options(ctx):
                    help = 'Build OpenMPI version of iclasp and cclasp')
     ctx.add_option('--mpi-path', action = 'store', dest = 'mpi_path',
                    help = 'Build OpenMPI version of iclasp and cclasp, provide the path to mpicc and mpic++')
+    ctx.add_option('--enable-mpi', action = 'store_true', dest = 'enable_mpi',
+                   help = 'Build OpenMPI version of iclasp and cclasp')
 
 #
 # Global variables for the build
