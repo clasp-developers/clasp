@@ -18,6 +18,11 @@ configure:
 clean:
 	./waf distclean
 
+clean-modules:
+	find src/lisp/modules/ . -name '*.bc' -exec rm {} \;
+	find src/lisp/modules/ . -name '*.fasl' -exec rm {} \;
+	find src/lisp/modules/ . -name '*.o' -exec rm {} \;
+
 pull-sicl-master:
 	(cd src/lisp/kernel/contrib/sicl && git pull origin master)
 	$(MAKE) setup-cleavir
