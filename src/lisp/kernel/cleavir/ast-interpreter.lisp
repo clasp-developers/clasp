@@ -305,24 +305,31 @@
 (eval-when (:load-toplevel)
 (defmethod interpret-boolean-ast ((ast cleavir-ast:fixnum-add-ast) env)
   ;; Doing this without metacicularity is just annoying.
-  (cleavir-primop:let-uninitialized (z)
-    (prog1
-        (if (cleavir-primop:fixnum-add
-             (interpret-ast (cleavir-ast:arg1-ast ast) env)
-             (interpret-ast (cleavir-ast:arg2-ast ast) env)
-             z)
-            t nil)
-      (setf (variable (cleavir-ast:variable-ast ast) env) z))))
+  ;; Doing it WITH metacircularity turns out to be annoying too, because
+  ;; the output of a fixnum-add can't be closed over, but it will be
+  ;; in the CST build if you use the more obvious PROG1 (= LET) code here.
+  ;; (Can't be closed over because cell conversion can't handle an outputting
+  ;;  instruction with more than one successor - could change that too.)
+  ;; FIXME: We should probably just entirely disable inlining in this
+  ;; interpreter. More trouble than it's worth, which is probably little.
+  (cleavir-primop:let-uninitialized (z w)
+    (prog1 (if (cleavir-primop:fixnum-add
+                (interpret-ast (cleavir-ast:arg1-ast ast) env)
+                (interpret-ast (cleavir-ast:arg2-ast ast) env)
+                z)
+               (progn (setq w z) t)
+               (progn (setq w z) nil))
+      (setf (variable (cleavir-ast:variable-ast ast) env) w))))
 
 (defmethod interpret-boolean-ast ((ast cleavir-ast:fixnum-sub-ast) env)
-  (cleavir-primop:let-uninitialized (z)
-    (prog1
-        (if (cleavir-primop:fixnum-sub
-             (interpret-ast (cleavir-ast:arg1-ast ast) env)
-             (interpret-ast (cleavir-ast:arg2-ast ast) env)
-             z)
-            t nil)
-      (setf (variable (cleavir-ast:variable-ast ast) env) z))))
+  (cleavir-primop:let-uninitialized (z w)
+    (prog1 (if (cleavir-primop:fixnum-sub
+                (interpret-ast (cleavir-ast:arg1-ast ast) env)
+                (interpret-ast (cleavir-ast:arg2-ast ast) env)
+                z)
+               (progn (setq w z) t)
+               (progn (setq w z) nil))
+      (setf (variable (cleavir-ast:variable-ast ast) env) w))))
 ) ; eval-when
 
 (defmacro define-fixnum-comparison-interpreter (name op)
@@ -432,6 +439,7 @@
 (defmethod interpret-ast ((ast cc-ast:instance-stamp-ast) env)
   (core:instance-stamp (interpret-ast (cleavir-ast:arg-ast ast) env)))
 
+#-cst ; bind-va-list doesn't inline right - FIXME
 (defmethod interpret-ast ((ast cc-ast:bind-va-list-ast) env)
   (let ((lambda-list (cleavir-ast:lambda-list ast))
         (va-list-ast (cc-ast:va-list-ast ast))
