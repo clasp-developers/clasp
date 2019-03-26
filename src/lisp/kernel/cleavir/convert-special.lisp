@@ -18,15 +18,16 @@
         (destructuring-bind ,lambda-list (rest ,form) ,@body)
         ,environment ,system))))
 
-(defmacro def-cst-macro (name lambda-list origin &body body)
+(defmacro def-cst-macro (name lambda-list &body body)
   (let ((head (gensym "HEAD"))
-        (form (gensym "FORM"))
+        (cst (gensym "CST"))
         (environment (gensym "ENVIRONMENT"))
         (system (gensym "SYSTEM")))
     `(defmethod cleavir-cst-to-ast:convert-special
-         ((,head (eql ',name)) ,form ,environment (,system clasp-cleavir:clasp))
+         ((,head (eql ',name)) ,cst ,environment (,system clasp-cleavir:clasp))
        (cleavir-cst-to-ast:convert
-        (cst:db ,origin ,lambda-list (cst:rest ,form) ,@body)
+        (destructuring-bind ,lambda-list (cst:raw (cst:rest ,cst))
+          (cst:reconstruct (progn ,@body) ,cst ,system))
         ,environment ,system))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -84,35 +85,12 @@
         (core::coerce-fdesignator ,function-form)
         ,@(mapcar (lambda (x) `#'(lambda () (progn ,x))) forms))))
 
-(defun cst-length (csts)
-  (loop for remaining = csts then (cst:rest csts)
-        until (cst:null remaining)
-        count 1))
-
-(defmethod cleavir-cst-to-ast:convert-special ((head (eql 'multiple-value-call)) cst env (system clasp-cleavir:clasp))
-  (cleavir-cst-to-ast:convert
-   (destructuring-bind (function-form &rest forms)
-       (cst:raw (cst:rest cst))
-     (cst:reconstruct
-      (if (eql (length forms) 1)
-          `(cleavir-primop:multiple-value-call (core::coerce-fdesignator ,function-form) ,@forms)
-          `(core:multiple-value-funcall
-            (core::coerce-fdesignator ,function-form)
-            ,@(mapcar (lambda (x) `#'(lambda () (progn ,x))) forms)))
-      cst
-      system))
-   env system))
-
-
-#+(or)(def-cst-macro multiple-value-call (function-form . csts) origin
-  (if (eql (cst-length csts) 1)
-      (my-cstify origin `(cleavir-primop:multiple-value-call (core::coerce-fdesignator ,function-form) ,@csts))
-      (my-cstify origin `(core:multiple-value-funcall
-                          (core::coerce-fdesignator ,function-form)
-                          ,@(loop for remaining = csts then (cst:rest csts)
-                                  for x = (cst:first remaining)
-                                  collect `#'(lambda () (progn ,x)))))))
-
+(def-cst-macro multiple-value-call (function-form &rest forms)
+  (if (eql (length forms) 1)
+      `(cleavir-primop:multiple-value-call (core::coerce-fdesignator ,function-form) ,@forms)
+      `(core:multiple-value-funcall
+        (core::coerce-fdesignator ,function-form)
+        ,@(mapcar (lambda (x) `#'(lambda () (progn ,x))) forms))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
