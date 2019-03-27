@@ -43,8 +43,11 @@
 
 ;; interface
 
-(defun interpret (ast)
+(defun interpret (ast dynenv)
   (let ((env (empty-environment)))
+    ;; the dynamic environment is unused, but must be bound (e.g. for assignments)
+    (setf (variable dynenv env) nil)
+    ;; Do actual work
     (interpret-ast ast env)))
 
 ;;; meat
@@ -158,12 +161,14 @@
 
 (defmethod interpret-ast ((ast cleavir-ast:function-ast) env)
   (let ((body (cleavir-ast:body-ast ast))
+        (dynenv-out (cleavir-ast:dynamic-environment-out-ast ast))
         (ll (cleavir-ast:lambda-list ast)))
     (multiple-value-bind (required optional rest va-rest-p keyp key aok-p)
         (parse-lambda-list ll)
       (lambda (core:&va-rest arguments)
         (declare (core:lambda-name ast-interpreted-closure))
         (let ((env (augment-environment env)))
+          (setf (variable dynenv-out env) nil)
           (bind-list arguments env
                      required optional rest va-rest-p keyp key aok-p)
           ;; ok body now
@@ -182,6 +187,7 @@
   ;; We need to disambiguate things if the block is entered
   ;; more than once. Storing things in the environment
   ;; lets it work with closures.
+  (setf (variable (cleavir-ast:dynamic-environment-out-ast ast) env) nil)
   (let ((catch-tag (gensym)))
     (setf (variable ast env) catch-tag)
     (catch catch-tag
@@ -207,6 +213,7 @@
   (declare (ignore env)))
 
 (defmethod interpret-ast ((ast cleavir-ast:tagbody-ast) env)
+  (setf (variable (cleavir-ast:dynamic-environment-out-ast ast) env) nil)
   ;; We loop through the item-asts interpreting them.
   ;; If we hit a GO, the GO throws a new list of ASTs to interpret, set up
   ;; beforehand. We catch that and set it as the new to-interpret list.
@@ -463,12 +470,14 @@
 (in-package #:clasp-cleavir)
 
 (defun ast-interpret-form (form env)
-  (interpret-ast:interpret
-   (let ((cleavir-generate-ast:*compiler* 'cl:eval))
-     #-cst
-     (cleavir-generate-ast:generate-ast
-      form env clasp-cleavir:*clasp-system*)
-     #+cst
-     (cleavir-cst-to-ast:cst-to-ast
-      (cst:cst-from-expression form)
-      env clasp-cleavir:*clasp-system*))))
+  (let ((dynenv (make-dynenv env)))
+    (interpret-ast:interpret
+     (let ((cleavir-generate-ast:*compiler* 'cl:eval))
+       #-cst
+       (cleavir-generate-ast:generate-ast
+        form env clasp-cleavir:*clasp-system* dynenv)
+       #+cst
+       (cleavir-cst-to-ast:cst-to-ast
+        (cst:cst-from-expression form)
+        env clasp-cleavir:*clasp-system* dynenv))
+     dynenv)))
