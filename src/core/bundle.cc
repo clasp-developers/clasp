@@ -71,6 +71,15 @@ struct BundleDirectories {
   boost_filesystem::path _QuicklispDir;
 };
 
+
+bool safe_is_directory(const bf::path& path) {
+  try {
+    return bf::is_directory(path);
+  } catch (...) {
+    SIMPLE_ERROR(BF("The bf::is_directory(%s) call threw a C++ exception") % path.str().c_str() );
+  }
+}
+
 Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
 //  printf("%s:%d ---------- Initializing Bundle\n", __FILE__, __LINE__);
   this->_Initialized = false;
@@ -259,7 +268,7 @@ Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
   const char* quicklisp_env = getenv("CLASP_QUICKLISP_DIRECTORY");
   if (quicklisp_env) {
     try {
-      if (bf::is_directory(bf::path(quicklisp_env))) {
+      if (safe_is_directory(bf::path(quicklisp_env))) {
         this->_Directories->_QuicklispDir = bf::path(quicklisp_env);
       } else {
         SIMPLE_ERROR(BF("The contents of CLASP_QUICKLISP_DIRECTORY (%s) is not a directory") % quicklisp_env);
@@ -271,7 +280,7 @@ Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
     bool gotQuicklispPath = false;
     // Try "sys:modules;quicklisp;"
     bf::path modules_quicklisp = this->_Directories->_LispSourceDir / "modules" / "quicklisp";
-    if (bf::is_directory(modules_quicklisp)) {
+    if (safe_is_directory(modules_quicklisp)) {
       if (!getenv("ASDF_OUTPUT_TRANSLATIONS")) {
         if (!global_options->_SilentStartup) {
           printf("%s:%d Found %s so setting ASDF_OUTPUT_TRANSLATIONS to /:\n", __FILE__, __LINE__, modules_quicklisp.string().c_str() );

@@ -538,17 +538,30 @@ CL_DEFMETHOD bool FileStatus_O::exists() {
 CL_LISPIFY_NAME("isRegularFile");
 CL_DEFMETHOD bool FileStatus_O::isRegularFile() {
   _OF();
-  return boost_filesystem::is_regular_file(this->_FileStatus);
+  try {
+    return boost_filesystem::is_regular_file(this->_FileStatus);
+  } catch (...) {
+    SIMPLE_ERROR(BF("In %s boost_filesystem on file %s signaled a c++ exception") % __FUNCTION__ % this->_FileStatus.string().c_str());
+  }
 }
+
 CL_LISPIFY_NAME("isDirectory");
 CL_DEFMETHOD bool FileStatus_O::isDirectory() {
   _OF();
-  return boost_filesystem::is_directory(this->_FileStatus);
+  try {
+    return boost_filesystem::is_directory(this->_FileStatus);
+  } catch (...) {
+    SIMPLE_ERROR(BF("In %s boost_filesystem on file %s signaled a c++ exception") % __FUNCTION__ % this->_FileStatus.string().c_str());
+  }
 }
 CL_LISPIFY_NAME("isSymlink");
 CL_DEFMETHOD bool FileStatus_O::isSymlink() {
   _OF();
-  return boost_filesystem::is_symlink(this->_FileStatus);
+  try {
+    return boost_filesystem::is_symlink(this->_FileStatus);
+  } catch (...) {
+    SIMPLE_ERROR(BF("In %s boost_filesystem on file %s signaled a c++ exception") % __FUNCTION__ % this->_FileStatus.string().c_str());
+  }    
 }
 CL_LISPIFY_NAME("isOther");
 CL_DEFMETHOD bool FileStatus_O::isOther() {
