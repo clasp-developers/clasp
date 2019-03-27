@@ -176,6 +176,7 @@
  "src/lisp/kernel/contrib/sicl/Code/Cleavir/CST-to-AST/process-init-parameter"
  "src/lisp/kernel/contrib/sicl/Code/Cleavir/CST-to-AST/itemize-declaration-specifiers"
  "src/lisp/kernel/contrib/sicl/Code/Cleavir/CST-to-AST/itemize-lambda-list"
+ "src/lisp/kernel/contrib/sicl/Code/Cleavir/CST-to-AST/lambda-list-from-parameter-groups"
  "src/lisp/kernel/contrib/sicl/Code/Cleavir/CST-to-AST/convert-setq"
  "src/lisp/kernel/contrib/sicl/Code/Cleavir/CST-to-AST/convert-let-and-letstar"
  "src/lisp/kernel/contrib/sicl/Code/Cleavir/CST-to-AST/convert-code"

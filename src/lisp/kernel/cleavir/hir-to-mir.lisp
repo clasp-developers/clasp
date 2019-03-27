@@ -2,20 +2,20 @@
 
 
 (defmethod cleavir-hir-to-mir:specialize ((instr cleavir-ir:instruction)
-				  (impl clasp-cleavir:clasp) proc os)
+                                          (impl clasp-cleavir:clasp) proc os)
   ;; By default just return the current instruction
   instr)
 
 
 (defmethod cleavir-hir-to-mir:specialize ((instr cleavir-ir:car-instruction)
-                                  (impl clasp-cleavir:clasp) proc os)
+                                          (impl clasp-cleavir:clasp) proc os)
   (change-class instr 'cleavir-ir:memref2-instruction
                 :inputs (list (first (cleavir-ir:inputs instr)))
                 :offset (- cmp:+cons-car-offset+ cmp:+cons-tag+)
                 :outputs (cleavir-ir:outputs instr)))
 
 (defmethod cleavir-hir-to-mir:specialize ((instr cleavir-ir:cdr-instruction)
-                                  (impl clasp-cleavir:clasp) proc os)
+                                          (impl clasp-cleavir:clasp) proc os)
   (change-class instr 'cleavir-ir:memref2-instruction
                 :inputs (list (first (cleavir-ir:inputs instr)))
                 :offset (- cmp:+cons-cdr-offset+ cmp:+cons-tag+)
@@ -23,7 +23,7 @@
 
 
 (defmethod cleavir-hir-to-mir:specialize ((instr cleavir-ir:rplaca-instruction)
-                                  (impl clasp-cleavir:clasp) proc os)
+                                          (impl clasp-cleavir:clasp) proc os)
   (change-class instr 'cleavir-ir:memset2-instruction
                 :inputs (list (first (cleavir-ir:inputs instr))
                               (second (cleavir-ir:inputs instr)))
@@ -31,7 +31,7 @@
                 :outputs nil))
 
 (defmethod cleavir-hir-to-mir:specialize ((instr cleavir-ir:rplacd-instruction)
-                                  (impl clasp-cleavir:clasp) proc os)
+                                          (impl clasp-cleavir:clasp) proc os)
   (change-class instr 'cleavir-ir:memset2-instruction
                 :inputs (list (first (cleavir-ir:inputs instr))
                               (second (cleavir-ir:inputs instr)))
@@ -434,7 +434,9 @@
         (pro (first (cleavir-ir:successors typeq-instruction)))
         (con (second (cleavir-ir:successors typeq-instruction)))
         (preds (cleavir-ir:predecessors typeq-instruction))
-        (cleavir-ir:*policy* (cleavir-ir:policy typeq-instruction)))
+        (cleavir-ir:*policy* (cleavir-ir:policy typeq-instruction))
+        (cleavir-ir:*dynamic-environment*
+          (cleavir-ir:dynamic-environment typeq-instruction)))
     (let ((new (gen-type-check object type pro con)))
       (dolist (pred preds)
         (setf (cleavir-ir:successors pred)
@@ -443,7 +445,7 @@
 (defun reduce-typeqs (initial-instruction)
   (cleavir-ir:map-instructions-arbitrary-order
    (lambda (i)
-     (when (cleavir-ir:typeq-instruction-p i)
+     (when (typep i 'cleavir-ir:typeq-instruction)
        (replace-typeq i)))
    initial-instruction)
   (cleavir-ir:set-predecessors initial-instruction))
