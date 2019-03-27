@@ -76,7 +76,7 @@ bool safe_is_directory(const bf::path& path) {
   try {
     return bf::is_directory(path);
   } catch (...) {
-    SIMPLE_ERROR(BF("The bf::is_directory(%s) call threw a C++ exception") % path.str().c_str() );
+    SIMPLE_ERROR(BF("The bf::is_directory(%s) call threw a C++ exception") % path.string().c_str() );
   }
 }
 
@@ -174,11 +174,13 @@ Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
     this->_Directories->_InstallDir = original_one_up_contents;
     bf::path one_up_contents = original_one_up_contents / "lib" / "clasp";
     if (bf::exists(one_up_contents)) {
-      this->_Directories->_ContentsDir = one_up_contents;
-      if (verbose) {
-        printf("%s:%d   Set _ContentsDir = %s\n", __FILE__, __LINE__, this->_Directories->_ContentsDir.string().c_str());
+      if (safe_is_directory(one_up_contents)) {
+        this->_Directories->_ContentsDir = one_up_contents;
+        if (verbose) {
+          printf("%s:%d   Set _ContentsDir = %s\n", __FILE__, __LINE__, this->_Directories->_ContentsDir.string().c_str());
+        }
+        foundContents = true;
       }
-      foundContents = true;
     } else {
       if (verbose) {
         printf("%s:%d  Could not find the Contents/clasp library directory - searching...\n", __FILE__, __LINE__ );
@@ -267,28 +269,27 @@ Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
   }
   const char* quicklisp_env = getenv("CLASP_QUICKLISP_DIRECTORY");
   if (quicklisp_env) {
-    try {
+    bf::path env_path(quicklisp_env);
+    if (bf::exists(env_path)) {
       if (safe_is_directory(bf::path(quicklisp_env))) {
         this->_Directories->_QuicklispDir = bf::path(quicklisp_env);
-      } else {
-        SIMPLE_ERROR(BF("The contents of CLASP_QUICKLISP_DIRECTORY (%s) is not a directory") % quicklisp_env);
       }
-    } catch (...) {
-      SIMPLE_ERROR(BF("The contents of CLASP_QUICKLISP_DIRECTORY (%s) threw a C++ exception") % quicklisp_env);
     }
   } else {
     bool gotQuicklispPath = false;
     // Try "sys:modules;quicklisp;"
     bf::path modules_quicklisp = this->_Directories->_LispSourceDir / "modules" / "quicklisp";
-    if (safe_is_directory(modules_quicklisp)) {
-      if (!getenv("ASDF_OUTPUT_TRANSLATIONS")) {
-        if (!global_options->_SilentStartup) {
-          printf("%s:%d Found %s so setting ASDF_OUTPUT_TRANSLATIONS to /:\n", __FILE__, __LINE__, modules_quicklisp.string().c_str() );
+    if (bf::exists(modules_quicklisp)) {
+      if (safe_is_directory(modules_quicklisp)) {
+        if (!getenv("ASDF_OUTPUT_TRANSLATIONS")) {
+          if (!global_options->_SilentStartup) {
+            printf("%s:%d Found %s so setting ASDF_OUTPUT_TRANSLATIONS to /:\n", __FILE__, __LINE__, modules_quicklisp.string().c_str() );
+          }
+          setenv("ASDF_OUTPUT_TRANSLATIONS","/:",1);
         }
-        setenv("ASDF_OUTPUT_TRANSLATIONS","/:",1);
+        gotQuicklispPath = true;
+        this->_Directories->_QuicklispDir = modules_quicklisp;
       }
-      gotQuicklispPath = true;
-      this->_Directories->_QuicklispDir = modules_quicklisp;
     }
     if (!gotQuicklispPath) {
     // Try $HOME/quicklisp
@@ -298,23 +299,21 @@ Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
         bf::path quicklispPath(home_dir);
         quicklispPath = quicklispPath / "quicklisp";
         if (bf::exists(quicklispPath)) {
+          if (safe_is_directory(quicklispPath)) {
         // printf("%s:%d  ~/quicklisp/ exists\n", __FILE__, __LINE__);
-          this->_Directories->_QuicklispDir = quicklispPath;
-          gotQuicklispPath = true;
+            this->_Directories->_QuicklispDir = quicklispPath;
+            gotQuicklispPath = true;
+          }
         }
       }
     }
     if (!gotQuicklispPath) {
       std::string opt_clasp_quicklisp_string = "/opt/clasp/lib/quicklisp/";
       bf::path opt_clasp_quicklisp_path = bf::path(opt_clasp_quicklisp_string);
-      try {
-        if (bf::exists(opt_clasp_quicklisp_path)) {
+      if (bf::exists(opt_clasp_quicklisp_path)) {
+        if (safe_is_directory(opt_clasp_quicklisp_path)) {
           this->_Directories->_QuicklispDir = opt_clasp_quicklisp_path;
-        } else {
-        // there is no quicklisp directory
         }
-      } catch (...) {
-        // do nothing on error
       }
     }
   }
