@@ -267,6 +267,10 @@ def add_cando_extension_master(cfg):
                        "https://github.com/drmeister/cando.git",
                        label="master")
 
+def add_cando(cfg):
+    add_cando_extension_master(cfg)
+
+    
 def update_dependencies(cfg):
     # Specifying only label = "some-tag" will check out that tag into a "detached head", but
     # specifying both label = "master" and revision = "some-tag" will stay on master and reset to that revision.
