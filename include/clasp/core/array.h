@@ -1389,6 +1389,7 @@ namespace core {
     bool all_base_char_p() const;
     /*! Return the smallest character simple-string that can hold this */
     SimpleString_sp asMinimalSimpleString() const final;
+    SimpleCharacterString_sp asSimpleString () const;
   };
 };
 

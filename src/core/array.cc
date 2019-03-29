@@ -2334,6 +2334,12 @@ SimpleString_sp StrWNs_O::asMinimalSimpleString() const {
   }
 }
 
+SimpleCharacterString_sp StrWNs_O::asSimpleString() const {
+  SimpleCharacterString_sp strw = SimpleCharacterString_O::make(this->length());
+  strw->unsafe_setf_subseq(0,this->length(),this->asSmartPtr());
+  return strw;
+}
+
 // ------------------------------------------------------------
 //
 // Class BitVectorNs

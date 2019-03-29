@@ -197,7 +197,7 @@ CL_DEFUN T_sp core__reader_double_quote_string(T_sp stream, Character_sp ch) {
     }
     buffer.string()->vectorPushExtend(clasp_make_character(cc));
   }
-  SimpleString_sp result = buffer.string()->asMinimalSimpleString();
+  SimpleCharacterString_sp result = buffer.string()->asSimpleString();
   return result;
 };
 

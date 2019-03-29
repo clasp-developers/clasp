@@ -108,3 +108,10 @@
 ;;; These should not return t, but the first index, where it is different
 (test eql-1 (eql 0 (string/= "a" "b")))
 (test eql-2 (eql 0 (string-not-equal "a" "b")))
+
+(test babel-simple-strings
+      (string-equal
+       (make-array 4 :element-type 'character :initial-contents (list #\? (code-char 256) #\? #\? ))
+       (let ((var (copy-seq "????")))
+         (setf (char var 1) (code-char 256))
+         var)))
