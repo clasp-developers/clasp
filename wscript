@@ -792,8 +792,8 @@ def configure(cfg):
             raise Exception("You do not have the correct version of externals-clasp installed - you need the one with the LLVM_COMMIT=%s" % externals_clasp_llvm_hash)
 
     def load_local_config(cfg):
+        local_environment = {}
         if os.path.isfile("./wscript.config"):
-            local_environment = {}
             log.debug("local_environment = %s", local_environment)
             exec(open("./wscript.config").read(), globals(), local_environment)
             for key in local_environment.keys():
@@ -801,14 +801,13 @@ def configure(cfg):
                     raise Exception("%s is an INVALID wscript.config option - valid options are: %s" % (key, VALID_OPTIONS))
                 else:
                     log.info("wscript.config option %s = %s", key, local_environment[key])
-            cfg.env.update(local_environment)
         else:
             log.warn("There is no 'wscript.config' file - assuming default configuration. See 'wscript.config.template' for further details.")
             if (cfg.env['DEST_OS'] == DARWIN_OS):
                 local_environment.LLVM_CONFIG_BINARY = '/usr/local/Cellar/llvm/6.0.1/bin/llvm-config'
             elif (cfg.env['DEST_OS'] == LINUX_OS):
                 local_environment.LLVM_CONFIG_BINARY = '/usr/bin/llvm-config-6.0'
-            cfg.env.update(local_environment)
+        cfg.env.update(local_environment)
 
     #
     # This is where configure(cfg) starts
