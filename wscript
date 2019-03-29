@@ -84,6 +84,7 @@ top = '.'
 out = 'build'
 APP_NAME = 'clasp'
 CLANG_VERSION = 6
+CLANG_SPECIFIC_VERSION = 6.0.1
 
 STAGE_CHARS = [ 'r', 'i', 'a', 'b', 'f', 'c', 'd' ]
 # Full LTO  -flto
@@ -755,7 +756,9 @@ def configure(cfg):
         llvm_config_binary = cfg.env.LLVM_CONFIG_BINARY
         if (len(llvm_config_binary) == 0):
             if (cfg.env['DEST_OS'] == DARWIN_OS ):
-                llvm_config_binary = '/usr/local/opt/llvm@%s/bin/llvm-config'%CLANG_VERSION
+                llvm_config_binary = '/usr/local/Cellar/llvm/%s/bin/llvm-config'%CLANG_SPECIFIC_VERSION
+            elif (cfg.env['DEST_OS'] == LINUX_OS):
+                local_environment.LLVM_CONFIG_BINARY = '/usr/bin/llvm-config-6.0'
                 log.info("On darwin looking for %s" % llvm_config_binary)
             else:
                 try:
@@ -801,13 +804,7 @@ def configure(cfg):
                     raise Exception("%s is an INVALID wscript.config option - valid options are: %s" % (key, VALID_OPTIONS))
                 else:
                     log.info("wscript.config option %s = %s", key, local_environment[key])
-        else:
-            log.warn("There is no 'wscript.config' file - assuming default configuration. See 'wscript.config.template' for further details.")
-            if (cfg.env['DEST_OS'] == DARWIN_OS):
-                local_environment.LLVM_CONFIG_BINARY = '/usr/local/Cellar/llvm/6.0.1/bin/llvm-config'
-            elif (cfg.env['DEST_OS'] == LINUX_OS):
-                local_environment.LLVM_CONFIG_BINARY = '/usr/bin/llvm-config-6.0'
-        cfg.env.update(local_environment)
+                cfg.env.update(local_environment)
 
     #
     # This is where configure(cfg) starts
