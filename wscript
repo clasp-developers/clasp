@@ -757,8 +757,6 @@ def configure(cfg):
         if (len(llvm_config_binary) == 0):
             if (cfg.env['DEST_OS'] == DARWIN_OS ):
                 llvm_config_binary = '/usr/local/Cellar/llvm/%s/bin/llvm-config'%CLANG_SPECIFIC_VERSION
-            elif (cfg.env['DEST_OS'] == LINUX_OS):
-                local_environment.LLVM_CONFIG_BINARY = '/usr/bin/llvm-config-6.0'
                 log.info("On darwin looking for %s" % llvm_config_binary)
             else:
                 try:
