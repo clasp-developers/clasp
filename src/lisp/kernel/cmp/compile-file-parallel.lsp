@@ -335,13 +335,16 @@ Compile a lisp source file into an LLVM module."
              (cf2-log "output-type :bitcode  result -> ~s~%" result)
              (link-modules output-path result))
             ((eq output-type :fasl)
+             (unless result
+               (when verbose
+                 (warn "Empty result from fasl compilation for  ~s" input-file)))
              (ensure-directories-exist output-path)
              (let ((output-path-1 (make-pathname :type (bitcode-extension) :defaults output-path))
                    (input-files (mapcar (lambda (name)
                                           (make-pathname :type (bitcode-extension) :defaults name))
                                         result)))
                (llvm-link output-path-1 :input-files input-files :link-type :bitcode)
-               ;;; Once linked we can delete the intermediate bitcode files
+             ;;; Once linked we can delete the intermediate bitcode files
                (dolist (file input-files)
                  (delete-file file)))
              (let ((input-files (mapcar (lambda (name)
@@ -350,12 +353,19 @@ Compile a lisp source file into an LLVM module."
                (llvm-link output-path :input-files input-files :input-type :object)
              ;;; Now we can delete the intermediate ".o" files
                (dolist (file input-files)
-                 (delete-file file)))
-             ;;; now delete the directory
-             (let* ((file (first result))
-                    (temp-dir (make-pathname :name nil :type nil :version nil :defaults file)))
-               (core::rmdir temp-dir)))
+                 (cond ((find (pathname-type file) (list "o" "ll" "fasl" "bc") :test #'string-equal)
+                        (delete-file file))
+                       (t (warn "Unknown file type in compile-file-parallel ~s" (pathname-type file)))))
+             ;;; now delete the intermediate directory
+               (when result
+                 ;;; otherwise does not exist
+                 (let* ((file (first result))
+                        (temp-dir (make-pathname :name nil :type nil :version nil :defaults file)))
+                   (core::rmdir temp-dir)))))
             ((eq output-type :object)
+             (unless result
+               (when verbose
+                 (warn "Empty result from fasl compilation for  ~s" input-file)))
              (ensure-directories-exist output-path)
              (let ((output-path-1 (make-pathname :type (bitcode-extension) :defaults output-path))
                    (input-files (mapcar (lambda (name)
@@ -372,18 +382,20 @@ Compile a lisp source file into an LLVM module."
                (llvm-link output-path-1 :input-files input-files :link-type :object)
                 ;;; Now we can delete the intermediate ".o" files
                (dolist (file input-files)
-                 (delete-file file)))
-             ;;; now delete the directory
-             (let* ((file (first result))
-                    (temp-dir (make-pathname :name nil :type nil :version nil :defaults file)))
-               (core::rmdir temp-dir)))
+                 (cond ((find (pathname-type file) (list "o" "ll" "fasl" "bc") :test #'string-equal)
+                        (delete-file file))
+                       (t (warn "Unknown file type in compile-file-parallel ~s" (pathname-type file))))))
+             ;;; now delete the intermediate directory
+             (when result
+               (let* ((file (first result))
+                      (temp-dir (make-pathname :name nil :type nil :version nil :defaults file)))
+                 (core::rmdir temp-dir))))
             (t ;; fasl
              (error "Add support for output-type: ~a" output-type)))          
           (dolist (c conditions)
             (when verbose
               (bformat t "conditions: %s%N" c)))
           (compile-file-results output-path conditions))))))
-
 
 (defun contains-defcallback-p (path)
   (let ((data (with-open-file (stream path)
