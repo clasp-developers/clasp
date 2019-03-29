@@ -804,6 +804,11 @@ def configure(cfg):
             cfg.env.update(local_environment)
         else:
             log.warn("There is no 'wscript.config' file - assuming default configuration. See 'wscript.config.template' for further details.")
+            if (cfg.env['DEST_OS'] == DARWIN_OS):
+                local_environment.LLVM_CONFIG_BINARY = '/usr/local/Cellar/llvm/6.0.1/bin/llvm-config'
+            elif (cfg.env['DEST_OS'] == LINUX_OS):
+                local_environment.LLVM_CONFIG_BINARY = '/usr/bin/llvm-config-6.0'
+            cfg.env.update(local_environment)
 
     #
     # This is where configure(cfg) starts
