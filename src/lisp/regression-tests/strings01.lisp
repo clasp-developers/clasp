@@ -1,3 +1,4 @@
+(in-package #:clasp-tests)
 
 (test read-from-string0 (eq (read-from-string (concatenate 'string "abc" (string #\nul) "AA")) (intern (concatenate 'string "ABC" (string #\nul) "AA"))))
 (test reverse-string (let ((s "abc")) (string= (reverse s) "cba")))
@@ -109,9 +110,19 @@
 (test eql-1 (eql 0 (string/= "a" "b")))
 (test eql-2 (eql 0 (string-not-equal "a" "b")))
 
-(test babel-simple-strings
+;;; 
+;;; The reader reads "????" now as a simpe-string
+;;; But the file-compiler converts its simply into a simple-base-string
+;;; By using ltv/base-string
+(test babel-simple-strings-1
       (string-equal
        (make-array 4 :element-type 'character :initial-contents (list #\? (code-char 256) #\? #\? ))
        (let ((var (copy-seq "????")))
          (setf (char var 1) (code-char 256))
          var)))
+
+;;; What does the file-compiler do with a real unicode
+(test babel-simple-strings-2
+      (equal
+       (type-of "zażółć gęślą jaźń")
+       '(SIMPLE-ARRAY CHARACTER (17))))
