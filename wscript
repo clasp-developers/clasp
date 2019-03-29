@@ -138,6 +138,7 @@ VALID_OPTIONS = [
     # Default on linux = it searches your path
     "LLVM_CONFIG_BINARY",
     # To link to the debug versions of the LLVM libraries, set a path here to the llvm-config binary of the LLVM debug build
+    
     "LLVM_CONFIG_BINARY_FOR_LIBS",
     # point to where you want to install clasp - this has to be defined before ./waf configure
     "PREFIX",
@@ -1033,7 +1034,7 @@ def configure(cfg):
         cfg.env.append_value('LINKFLAGS', ['-lc++'])
         cfg.env.append_value('LINKFLAGS', ['-stdlib=libc++'])
         cfg.env.append_value('INCLUDES', '/usr/local/Cellar/libunwind-headers/35.3/include')  # brew install libunwind-headers
-	# Add macOS SDK paths
+# Add macOS SDK paths
 #        cfg.env.append_value('INCLUDES', [ ''.join( [ macosx_sdk_path(cfg), '/usr/include' ] ) ] ) 
 #        cfg.env.append_value('LINKFLAGS', ''.join( [ '-L', macosx_sdk_path(cfg), '/usr/lib' ] ) ) 
     cfg.env.append_value('INCLUDES', [ run_llvm_config(cfg,"--includedir") ])
