@@ -84,6 +84,7 @@ top = '.'
 out = 'build'
 APP_NAME = 'clasp'
 CLANG_VERSION = 6
+CLANG_SPECIFIC_VERSION = "6.0.1"
 
 STAGE_CHARS = [ 'r', 'i', 'a', 'b', 'f', 'c', 'd' ]
 # Full LTO  -flto
@@ -137,6 +138,7 @@ VALID_OPTIONS = [
     # Default on linux = it searches your path
     "LLVM_CONFIG_BINARY",
     # To link to the debug versions of the LLVM libraries, set a path here to the llvm-config binary of the LLVM debug build
+    
     "LLVM_CONFIG_BINARY_FOR_LIBS",
     # point to where you want to install clasp - this has to be defined before ./waf configure
     "PREFIX",
@@ -267,6 +269,10 @@ def add_cando_extension_master(cfg):
                        "https://github.com/drmeister/cando.git",
                        label="master")
 
+def add_cando(cfg):
+    add_cando_extension_master(cfg)
+
+    
 def update_dependencies(cfg):
     # Specifying only label = "some-tag" will check out that tag into a "detached head", but
     # specifying both label = "master" and revision = "some-tag" will stay on master and reset to that revision.
@@ -751,7 +757,7 @@ def configure(cfg):
         llvm_config_binary = cfg.env.LLVM_CONFIG_BINARY
         if (len(llvm_config_binary) == 0):
             if (cfg.env['DEST_OS'] == DARWIN_OS ):
-                llvm_config_binary = '/usr/local/opt/llvm@%s/bin/llvm-config'%CLANG_VERSION
+                llvm_config_binary = '/usr/local/Cellar/llvm/%s/bin/llvm-config'%CLANG_SPECIFIC_VERSION
                 log.info("On darwin looking for %s" % llvm_config_binary)
             else:
                 try:
@@ -788,8 +794,8 @@ def configure(cfg):
             raise Exception("You do not have the correct version of externals-clasp installed - you need the one with the LLVM_COMMIT=%s" % externals_clasp_llvm_hash)
 
     def load_local_config(cfg):
+        local_environment = {}
         if os.path.isfile("./wscript.config"):
-            local_environment = {}
             log.debug("local_environment = %s", local_environment)
             exec(open("./wscript.config").read(), globals(), local_environment)
             for key in local_environment.keys():
@@ -797,9 +803,7 @@ def configure(cfg):
                     raise Exception("%s is an INVALID wscript.config option - valid options are: %s" % (key, VALID_OPTIONS))
                 else:
                     log.info("wscript.config option %s = %s", key, local_environment[key])
-            cfg.env.update(local_environment)
-        else:
-            log.warn("There is no 'wscript.config' file - assuming default configuration. See 'wscript.config.template' for further details.")
+                cfg.env.update(local_environment)
 
     #
     # This is where configure(cfg) starts
@@ -1030,7 +1034,7 @@ def configure(cfg):
         cfg.env.append_value('LINKFLAGS', ['-lc++'])
         cfg.env.append_value('LINKFLAGS', ['-stdlib=libc++'])
         cfg.env.append_value('INCLUDES', '/usr/local/Cellar/libunwind-headers/35.3/include')  # brew install libunwind-headers
-	# Add macOS SDK paths
+# Add macOS SDK paths
 #        cfg.env.append_value('INCLUDES', [ ''.join( [ macosx_sdk_path(cfg), '/usr/include' ] ) ] ) 
 #        cfg.env.append_value('LINKFLAGS', ''.join( [ '-L', macosx_sdk_path(cfg), '/usr/lib' ] ) ) 
     cfg.env.append_value('INCLUDES', [ run_llvm_config(cfg,"--includedir") ])
