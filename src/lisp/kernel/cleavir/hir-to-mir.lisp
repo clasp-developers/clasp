@@ -143,22 +143,10 @@
 (defun gen-array-type-check (object element-type dimensions simple-only-p pro con)
   (let* ((dimensions (if (integerp dimensions) (make-list dimensions :initial-element '*) dimensions))
          (rank (if (eq dimensions '*) '* (length dimensions)))
-         (simple-vector-type
-           (if (eq element-type '*)
-               'core:abstract-simple-vector
-               (simple-vector-type element-type)))
-         (complex-vector-type
-           (if (eq element-type '*)
-               'core:complex-vector
-               (complex-vector-type element-type)))
-         (simple-mdarray-type
-           (if (eq element-type '*)
-               'core:simple-mdarray
-               (simple-mdarray-type element-type)))
-         (mdarray-type
-           (if (eq element-type '*)
-               'core:mdarray ; FIXME: could be non-simple-mdarray specifically & save redundancy a lil
-               (complex-mdarray-type element-type))))
+         (simple-vector-type (core::simple-vector-type element-type))
+         (complex-vector-type (core::complex-vector-type element-type))
+         (simple-mdarray-type (core::simple-mdarray-type element-type))
+         (mdarray-type (core::complex-mdarray-type element-type)))
     (let ((pro (if (or (eq dimensions '*) (null dimensions))
                    pro
                    (loop for dim in dimensions
@@ -260,99 +248,6 @@
                 (check-type header-info (or integer cons)) ; sanity check
                 (cc-mir:make-headerq-instruction header-info object (list pro con)))
                (t (gen-typep-check object primitive-type pro con)))))))
-
-;;; FIXME: Move these?
-(defparameter +simple-vector-type-map+
-  '((bit . simple-bit-vector)
-    (fixnum . core:simple-vector-fixnum)
-    (ext:byte8 . core:simple-vector-byte8-t)
-    (ext:byte16 . core:simple-vector-byte16-t)
-    (ext:byte32 . core:simple-vector-byte32-t)
-    (ext:byte64 . core:simple-vector-byte64-t)
-    (ext:integer8 . core:simple-vector-int8-t)
-    (ext:integer16 . core:simple-vector-int16-t)
-    (ext:integer32 . core:simple-vector-int32-t)
-    (ext:integer64 . core:simple-vector-int64-t)
-    (single-float . core:simple-vector-float)
-    (double-float . core:simple-vector-double)
-    (base-char . simple-base-string)
-    (character . core:simple-character-string)
-    (t . simple-vector)))
-
-(defun simple-vector-type (uaet)
-  (let ((pair (assoc uaet +simple-vector-type-map+)))
-    (if pair
-        (cdr pair)
-        (error "BUG: Unknown UAET ~a in simple-vector-type" uaet))))
-
-(defparameter +complex-vector-type-map+
-  '((bit . core:bit-vector-ns)
-    (fixnum . core:complex-vector-fixnum)
-    (ext:byte8 . core:complex-vector-byte8-t)
-    (ext:byte16 . core:complex-vector-byte16-t)
-    (ext:byte32 . core:complex-vector-byte32-t)
-    (ext:byte64 . core:complex-vector-byte64-t)
-    (ext:integer8 . core:complex-vector-int8-t)
-    (ext:integer16 . core:complex-vector-int16-t)
-    (ext:integer32 . core:complex-vector-int32-t)
-    (ext:integer64 . core:complex-vector-int64-t)
-    (single-float . core:complex-vector-float)
-    (double-float . core:complex-vector-double)
-    (base-char . core:str8ns)
-    (character . core:str-wns)
-    (t . core:complex-vector-t)))
-
-(defun complex-vector-type (uaet)
-  (let ((pair (assoc uaet +complex-vector-type-map+)))
-    (if pair
-        (cdr pair)
-        (error "BUF: Unknown UAET in complex-vector-type" uaet))))
-
-(defparameter +simple-mdarray-type-map+
-  '((bit . core:simple-mdarray-bit)
-    (fixnum . core:simple-mdarray-fixnum)
-    (ext:byte8 . core:simple-mdarray-byte8-t)
-    (ext:byte16 . core:simple-mdarray-byte16-t)
-    (ext:byte32 . core:simple-mdarray-byte32-t)
-    (ext:byte64 . core:simple-mdarray-byte64-t)
-    (ext:integer8 . core:simple-mdarray-int8-t)
-    (ext:integer16 . core:simple-mdarray-int16-t)
-    (ext:integer32 . core:simple-mdarray-int32-t)
-    (ext:integer64 . core:simple-mdarray-int64-t)
-    (single-float . core:simple-mdarray-float)
-    (double-float . core:simple-mdarray-double)
-    (base-char . core:simple-mdarray-base-char)
-    (character . core:simple-mdarray-character)
-    (t . core:simple-mdarray-t)))
-
-(defun simple-mdarray-type (uaet)
-  (let ((pair (assoc uaet +simple-mdarray-type-map+)))
-    (if pair
-        (cdr pair)
-        (error "BUG: Unknown UAET ~a in simple-mdarray-type" uaet))))
-
-(defparameter +complex-mdarray-type-map+
-  '((bit . core:mdarray-bit)
-    (fixnum . core:mdarray-fixnum)
-    (ext:byte8 . core:mdarray-byte8-t)
-    (ext:byte16 . core:mdarray-byte16-t)
-    (ext:byte32 . core:mdarray-byte32-t)
-    (ext:byte64 . core:mdarray-byte64-t)
-    (ext:integer8 . core:mdarray-int8-t)
-    (ext:integer16 . core:mdarray-int16-t)
-    (ext:integer32 . core:mdarray-int32-t)
-    (ext:integer64 . core:mdarray-int64-t)
-    (single-float . core:mdarray-float)
-    (double-float . core:mdarray-double)
-    (base-char . core:mdarray-base-char)
-    (character . core:mdarray-character)
-    (t . core:mdarray-t)))
-
-(defun complex-mdarray-type (uaet)
-  (let ((pair (assoc uaet +complex-mdarray-type-map+)))
-    (if pair
-        (cdr pair)
-        (error "BUG: Unknown UAET ~a in complex-mdarray-type" uaet))))
 
 (defun gen-type-check (object type pro con)
   (multiple-value-bind (head args) (core::normalize-type type)

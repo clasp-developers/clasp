@@ -1,5 +1,7 @@
 (in-package #:core)
 
+;;;; Optimizations for Chapter 4, Types and Classes
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; TYPEP
@@ -8,6 +10,149 @@
 ;;; TODO: Treat malformed types better:
 ;;; We should DEFINITELY NOT cause compile time errors
 ;;; We COULD signal warnings on types like (standard-char foo)
+
+;;; Array type map.
+;;; The array hierarchy is defined in array.h. Basically here's how it goes:
+;;; Arrays are divided by element type, and then in two other ways:
+;;; Being a vector or not, and being simple or not.
+;;; This means four array classes per element type.
+;;; These tables map element types to those classes.
+(macrolet ((def (name map-name untyped &rest types)
+             `(progn
+                (defparameter ,map-name
+                  ',(loop for element-type in
+                          '(bit fixnum ext:byte8 ext:byte16 ext:byte32 ext:byte64
+                            ext:integer8 ext:integer16 ext:integer32 ext:integer64
+                            single-float double-float base-char character t)
+                          for uaet in types
+                          collect (cons element-type uaet)))
+                (defun ,name (uaet)
+                  (if (eq uaet '*)
+                      ',untyped
+                      (let ((pair (assoc uaet ,map-name)))
+                        (if pair
+                            (cdr pair)
+                            (error "BUT: Unknown UAET ~a in ~a" uaet ',name))))))))
+  (def simple-vector-type +simple-vector-type-map+ core:abstract-simple-vector
+    simple-bit-vector
+    core:simple-vector-fixnum
+    core:simple-vector-byte8-t
+    core:simple-vector-byte16-t
+    core:simple-vector-byte32-t
+    core:simple-vector-byte64-t
+    core:simple-vector-int8-t
+    core:simple-vector-int16-t
+    core:simple-vector-int32-t
+    core:simple-vector-int64-t
+    core:simple-vector-float
+    core:simple-vector-double
+    simple-base-string
+    core:simple-character-string
+    simple-vector)
+  (def complex-vector-type +complex-vector-type-map+ core:complex-vector
+    core:bit-vector-ns
+    core:complex-vector-fixnum
+    core:complex-vector-byte8-t
+    core:complex-vector-byte16-t
+    core:complex-vector-byte32-t
+    core:complex-vector-byte64-t
+    core:complex-vector-int8-t
+    core:complex-vector-int16-t
+    core:complex-vector-int32-t
+    core:complex-vector-int64-t
+    core:complex-vector-float
+    core:complex-vector-double
+    core:str8ns
+    core:str-wns
+    core:complex-vector-t)
+  (def simple-mdarray-type +simple-mdarray-type-map+ core:simple-mdarray
+    core:simple-mdarray-bit
+    core:simple-mdarray-fixnum
+    core:simple-mdarray-byte8-t
+    core:simple-mdarray-byte16-t
+    core:simple-mdarray-byte32-t
+    core:simple-mdarray-byte64-t
+    core:simple-mdarray-int8-t
+    core:simple-mdarray-int16-t
+    core:simple-mdarray-int32-t
+    core:simple-mdarray-int64-t
+    core:simple-mdarray-float
+    core:simple-mdarray-double
+    core:simple-mdarray-base-char
+    core:simple-mdarray-character
+    core:simple-mdarray-t)
+  (def complex-mdarray-type +complex-mdarray-type-map+ core:mdarray
+    core:mdarray-bit
+    core:mdarray-fixnum
+    core:mdarray-byte8-t
+    core:mdarray-byte16-t
+    core:mdarray-byte32-t
+    core:mdarray-byte64-t
+    core:mdarray-int8-t
+    core:mdarray-int16-t
+    core:mdarray-int32-t
+    core:mdarray-int64-t
+    core:mdarray-float
+    core:mdarray-double
+    core:mdarray-base-char
+    core:mdarray-character
+    core:mdarray-t))
+
+(defun array-typep-form (form simplicity dims uaet)
+  (let ((rank (if (eq dims '*) '* (length dims)))
+        (simple-vector-type (simple-vector-type uaet))
+        (complex-vector-type (complex-vector-type uaet))
+        (simple-mdarray-type (simple-mdarray-type uaet))
+        ;; NOTE: At the moment the "complex-mdarray" classes
+        ;; are actually simple+complex, making the below tests
+        ;; a little bit redundant.
+        (mdarray-type (complex-mdarray-type uaet)))
+    (flet ((generate-test (simple complex if-simple if-complex if-no)
+             (ecase simplicity
+               ((simple-array)
+                `(if (cleavir-primop:typeq object ,simple)
+                     ,if-simple ,if-no))
+               ((complex-array)
+                `(if (cleavir-primop:typeq object ,complex)
+                     ,if-complex ,if-no))
+               ((array)
+                `(if (cleavir-primop:typeq object ,simple)
+                     ,if-simple
+                     (if (cleavir-primop:typeq object ,complex)
+                         ,if-complex ,if-no))))))
+      `(let ((object ,form))
+         ,(case rank
+            ((1) ; vector
+             (let ((length (first dims)))
+               (if (eq length '*)
+                   ;; no length check: easy
+                   (generate-test simple-vector-type complex-vector-type
+                                  't 't 'nil)
+                   ;; Now we have to get the length differently based on
+                   ;; the simplicity.
+                   (generate-test simple-vector-type complex-vector-type
+                                  `(eq (core::vector-length object) ',length)
+                                  `(eq (core::%array-dimension object 0) ',length)
+                                  'nil))))
+            ((*) ; anything, and dimensions are unspecified
+             (generate-test simple-vector-type complex-vector-type
+                            't 't
+                            (generate-test simple-mdarray-type
+                                           mdarray-type
+                                           't 't 'nil)))
+            (otherwise ; an mdarray with possibly specified dimensions
+             `(block nil
+                ;; We use a block so the dimensions check code is only
+                ;; generated once.
+                ;; First, if it's not an mdarray, return NIL early.
+                ,(generate-test simple-mdarray-type mdarray-type
+                                nil nil '(return nil))
+                ;; Now, it is an mdarray, so check dimensions.
+                (and
+                 ,@(loop for dim in dims
+                         for i from 0
+                         unless (eq dim '*)
+                           collect `(eq (core::%array-dimension object ',i)))))))))))
 
 (defun cons-typep-form (form cart cdrt)
   `(let ((object ,form))
@@ -18,31 +163,6 @@
           ,@(if (eq cdrt '*)
                 nil
                 `((typep (cdr object) ',cdrt))))))
-
-(defun array-typep-form (form et dims base-predicate env)
-  `(let ((object ,form))
-     (and
-      ;; Basic: Is it an array at all.
-      (,base-predicate object)
-      ;; Does the element type match?
-      ,@(if (eq et '*)
-            nil
-            (let ((uaet (upgraded-array-element-type et env)))
-              ;; I use EQ since UAETs are always symbols at the moment.
-              `((eq ',uaet (array-element-type object)))))
-      ;; Do the dimensions match?
-      ,@(if (eq dims '*)
-            nil
-            (let ((dims (if (integerp dims)
-                            (make-list dims :initial-element '*)
-                            dims)))
-              ;; all numbers involved are fixnums, so EQ is ok.
-              `((eq (array-rank object) ',(length dims))
-                ,@(loop for dim in dims
-                        for i from 0
-                        unless (eq dim '*)
-                          collect `(eq (array-dimension object ',i)
-                                       ',dim))))))))
 
 (defun number-typep-form (form simple-pred low high)
   `(let ((object ,form))
@@ -83,11 +203,15 @@
          (destructuring-bind (&optional (cart '*) (cdrt '*)) args
            (cons-typep-form object cart cdrt)))
         ((simple-array complex-array array)
-         (let ((pred (simple-type-predicate head)))
-           (when (null pred)
-             (error "BUG: Missing simple type predicate for ~a" head))
-           (destructuring-bind (&optional (et '*) (dims '*)) args
-             (array-typep-form object et dims pred macro-env))))
+         (destructuring-bind (&optional (et '*) (dims '*)) args
+           (array-typep-form
+            object head
+            (if (integerp dims)
+                (make-list dims :initial-element '*)
+                dims)
+            (if (eq et '*)
+                et
+                (upgraded-array-element-type et macro-env)))))
         ((sequence)
          `(let ((object ,object)) (or (listp object) (vectorp object))))
         ((standard-char)
