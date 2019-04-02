@@ -86,6 +86,9 @@
   (let ((indices (mapcar (lambda (x) (if (fixnump x) (jit-constant-intptr_t x) x)) indices)))
     (llvm-sys:create-in-bounds-gep *irbuilder* array indices name )))
 
+(defun irc-gep-variable (array indices &optional (label "gep"))
+  (llvm-sys:create-in-bounds-gep *irbuilder* array indices label))
+
 (defun irc-in-bounds-gep-type (type value indices &optional (label "gep"))
   (llvm-sys:create-in-bounds-geptype *irbuilder* type value indices label))
 
@@ -641,6 +644,15 @@
 
 (defun irc-srem (lhs rhs &optional (label ""))
   (llvm-sys:create-srem *irbuilder* lhs rhs label))
+
+(defun irc-shl (value shift &key (label "") nuw nsw)
+  "If shift is an integer, generate shl with a constant uint64.
+Otherwise do a variable shift."
+  (if (integerp shift)
+      (llvm-sys:create-shl-value-uint64
+       cmp:*irbuilder* value shift label nuw nsw)
+      (llvm-sys:create-shl-value-value
+       cmp:*irbuilder* value shift label nuw nsw)))
 
 (defun irc-load (source &optional (label ""))
   (llvm-sys:create-load-value-twine *irbuilder* source label))

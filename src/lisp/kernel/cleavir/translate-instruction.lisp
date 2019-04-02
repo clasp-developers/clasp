@@ -293,9 +293,9 @@
          (var-offset (%ptrtoint index fixnum-type))
          (untagged (%lshr var-offset cmp::+fixnum-shift+ :exact t :label "untagged fixnum")))
     ;; 0 is for LLVM reasons, that pointers are C arrays. or something.
-    ;; 1 gets us to the "data" slot of the struct.
+    ;; For layout of the vector, check simple-vector-llvm-type's definition.
     ;; untagged is the actual offset.
-    (%gep-variable cast (list (%i32 0) (%i32 1) untagged) "aref")))
+    (%gep-variable cast (list (%i32 0) (%i32 cmp::+simple-vector-data-slot+) untagged) "aref")))
 
 (defun translate-bit-aref (array index &optional (label ""))
   (let* ((var-offset (%ptrtoint index cmp:%size_t% "variable-offset"))
@@ -342,17 +342,8 @@
 (defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir::vector-length-instruction) return-value abi function-info)
   (declare (ignore return-value function-info))
-  (let* ((tptr (in (first (cleavir-ir:inputs instruction))))
-         (ui-offset (%uintptr_t (- cmp::+simple-vector._length-offset+ cmp:+general-tag+)))
-         (ui-tptr (%ptrtoint tptr cmp:%uintptr_t%))
-         (output (first (cleavir-ir:outputs instruction)))
-         (label (datum-name-as-string output)))
-    (let* ((uiptr (%add ui-tptr ui-offset))
-           (ptr (%inttoptr uiptr cmp:%t**%))
-           (read-val (%ptrtoint (%load ptr) (%default-int-type abi)))
-           ;; now we just make it a fixnum.
-           (fixnum (%shl read-val cmp::+fixnum-shift+ :nuw t :label "tag fixnum")))
-      (out (%inttoptr fixnum cmp:%t*% label) output))))
+  (out (cmp::gen-vector-length (in (first (cleavir-ir:inputs instruction))))
+       (first (cleavir-ir:outputs instruction))))
 
 (defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir::displacement-instruction) return-value abi function-info)

@@ -31,6 +31,7 @@
     (core:foreign-call codegen-foreign-call convert-foreign-call)
     (core:foreign-call-pointer codegen-foreign-call-pointer convert-foreign-call-pointer)
     (symbol-macrolet  codegen-symbol-macrolet convert-symbol-macrolet)
+    (core::vector-length codegen-vector-length convert-vector-length)
     (core:vaslist-pop codegen-vaslist-pop convert-vaslist-pop)
     (core:instance-stamp codegen-instance-stamp convert-instance-stamp)
     (llvm-inline codegen-llvm-inline convert-llvm-inline)
@@ -818,6 +819,30 @@ jump to blocks within this tagbody."
           (irc-store (literal:constants-table-value index) result))
         (let ((ltv (eval form)))
           (literal:codegen-rtv-bclasp result ltv)))))
+
+;;; CORE::VECTOR-LENGTH
+
+(defun gen-vector-length (vector)
+  (let* (;; Since we're not touching the data, the element type is irrelevant.
+         (type (llvm-sys:type-get-pointer-to (simple-vector-llvm-type 't)))
+         (cast (irc-bit-cast vector type)) ; treat the vector as a vector
+         ;; find the location of the length
+         (length-address
+           (irc-gep-variable cast (list (jit-constant-i32 0)
+                                        (jit-constant-i32 +simple-vector-length-slot+))
+                             "vector-length-address"))
+         (untagged-length (irc-load length-address "vector-length"))
+         ;; fixnumize it
+         (length (irc-shl untagged-length +fixnum-shift+
+                          :nuw t :label "vector-length-tagged")))
+    ;; ...and actually treat the fixnum as a T*
+    (irc-int-to-ptr length %t*% "vector-length-fixnum")))
+
+(defun codegen-vector-length (result rest env)
+  (let ((form (car rest))
+        (vector (irc-alloca-t* :label "vector-alloca")))
+    (codegen vector form env)
+    (irc-store (gen-vector-length (irc-load vector "vector")) result)))
 
 ;;; CORE:VASLIST-POP
 

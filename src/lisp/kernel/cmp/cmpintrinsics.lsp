@@ -291,12 +291,17 @@ Boehm and MPS use a single pointer"
   (llvm-sys:struct-type-get
    *llvm-context*
    (list
-    ;; Spacer to get to the data
-    (llvm-sys:array-type-get %i8% (- +simple-vector._data-offset+ +general-tag+))
+    ;; Spacer to get to the stuff that matters
+    (llvm-sys:array-type-get %i8% (- +simple-vector._length-offset+ +general-tag+))
+    ;; The length, an untagged integer
+    %size_t%
     ;; The data, a flexible member
     (llvm-sys:array-type-get (element-type->llvm-type element-type) 0))
    ;; Not totally sure it should be packed.
    t))
+
+(defvar +simple-vector-length-slot+ 1)
+(defvar +simple-vector-data-slot+ 2)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
