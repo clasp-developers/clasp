@@ -441,7 +441,7 @@ env is the parent environment of the (result-af) value frame"
 (defun compile-if-cond (cond env thenb elseb)
   (if (consp cond)
       (case (first cond)
-        ((cmp::typeq)
+        ((cleavir-primop:typeq)
          (compile-typeq-condition cond env thenb elseb))
         ((cleavir-primop:fixnum-less)
          (compile-fixnum-less-condition cond env thenb elseb))
