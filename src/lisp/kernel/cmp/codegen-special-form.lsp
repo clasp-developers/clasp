@@ -32,6 +32,7 @@
     (core:foreign-call-pointer codegen-foreign-call-pointer convert-foreign-call-pointer)
     (symbol-macrolet  codegen-symbol-macrolet convert-symbol-macrolet)
     (core::vector-length codegen-vector-length convert-vector-length)
+    (core::%array-dimension codegen-%array-dimension convert-%array-dimension)
     (core:vaslist-pop codegen-vaslist-pop convert-vaslist-pop)
     (core:instance-stamp codegen-instance-stamp convert-instance-stamp)
     (llvm-inline codegen-llvm-inline convert-llvm-inline)
@@ -843,6 +844,26 @@ jump to blocks within this tagbody."
         (vector (irc-alloca-t* :label "vector-alloca")))
     (codegen vector form env)
     (irc-store (gen-vector-length (irc-load vector "vector")) result)))
+
+;;; CORE::%ARRAY-DIMENSION
+
+(defun gen-%array-dimension (array axisn)
+  (let* ((untagged-axisn (irc-lshr (irc-ptr-to-int axisn %i64%) +fixnum-shift+
+                                  :exact t :label "untagged-axisn"))
+         (untagged-dim (irc-intrinsic-call "cc_arrayDimension"
+                                           (list array untagged-axisn)))
+         (dim (irc-shl untagged-dim +fixnum-shift+ :nuw t :label "array-dimension")))
+    (irc-int-to-ptr dim %t*%)))
+
+(defun codegen-%array-dimension (result rest env)
+  (let ((array-form (first rest))
+        (array-alloca (irc-alloca-t* :label "array-alloca"))
+        (axis-form (second rest))
+        (axis-alloca (irc-alloca-t* :label "axis-alloca")))
+    (codegen array-alloca array-form env)
+    (codegen axis-alloca axis-form env)
+    (irc-store (gen-%array-dimension (irc-load array-alloca) (irc-load axis-alloca))
+               result)))
 
 ;;; CORE:VASLIST-POP
 

@@ -654,6 +654,15 @@ Otherwise do a variable shift."
       (llvm-sys:create-shl-value-value
        cmp:*irbuilder* value shift label nuw nsw)))
 
+(defun irc-lshr (value shift &key (label "") exact)
+  "If shift is an integer, generate lshr with a constant uint64.
+Otherwise do a variable shift."
+  (if (integerp shift)
+      (llvm-sys:create-lshr-value-uint64
+       cmp:*irbuilder* value shift label exact)
+      (llvm-sys:create-lshr-value-value
+       cmp:*irbuilder* value shift label exact)))
+
 (defun irc-load (source &optional (label ""))
   (llvm-sys:create-load-value-twine *irbuilder* source label))
 

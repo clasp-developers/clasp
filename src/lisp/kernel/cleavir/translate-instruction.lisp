@@ -398,20 +398,10 @@
 
 (defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir::array-dimension-instruction) return-value abi function-info)
-  (declare (ignore return-value function-info))
+  (declare (ignore return-value function-info abi))
   (let ((inputs (cleavir-ir:inputs instruction))
         (output (first (cleavir-ir:outputs instruction))))
-    (out (%inttoptr
-          (%shl
-           (%intrinsic-call "cc_arrayDimension"
-                            (list (in (first inputs))
-                                  (%lshr (%ptrtoint (in (second inputs)) (%default-int-type abi))
-                                         cmp::+fixnum-shift+ 
-                                         :exact t :label "untagged fixnum")))
-           cmp::+fixnum-shift+
-           :label "fixnum" :nuw t)
-          cmp:%t*%
-          (datum-name-as-string output))
+    (out (cmp::gen-%array-dimension (in (first inputs)) (in (second inputs)))
          output)))
 
 (defmethod translate-simple-instruction

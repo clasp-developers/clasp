@@ -320,6 +320,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
          ((eq sym 'core:foreign-call) t)         ;; Call foreign function
          ((eq sym 'core:bind-va-list) t)         ;; bind-va-list
          ((eq sym 'core::vector-length) t)
+         ((eq sym 'core::%array-dimension) t)
          ((eq sym 'core:vaslist-pop) t)
          ((eq sym 'core:instance-stamp) t)
          ((eq sym 'core:defcallback) t)
