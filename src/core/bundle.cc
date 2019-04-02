@@ -129,9 +129,11 @@ Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
     }
 #endif
     string cwd = this->_Directories->_StartupWorkingDir.string();
-    appDir = this->findAppDir(argv0, cwd);
+    appDir = this->findAppDir(argv0, cwd,verbose);
+    if ( verbose ) printf("%s:%d Using this->findAppDir(...) appDir = %s\n", __FILE__, __LINE__, appDir.string().c_str() );
   } else {
     appDir = bf::path(appDirName);
+    if ( verbose ) printf("%s:%d Using appDirName appDir = %s\n", __FILE__, __LINE__, appDir.string().c_str() );
   }
   // First crawl up the directory tree and look for the cando root
   // Climb up one level
@@ -350,7 +352,12 @@ void Bundle::initializeStartupWorkingDirectory(bool verbose) {
 // appVariableName is the name of a variable containing the directory for this app, e.g.
 // MYAPPDIR. This is checked first.
 
-boost_filesystem::path Bundle::findAppDir( const string &argv0, const string &cwd) {
+boost_filesystem::path Bundle::findAppDir( const string &argv0, const string &cwd, bool verbose) {
+  if (verbose) {
+    printf("%s:%d In findAppDir argv0: %s\n", __FILE__, __LINE__, argv0.c_str() );
+    printf("%s:%d In findAppDir cwd: %s\n", __FILE__, __LINE__, cwd.c_str() );
+  }
+
 #if 0 // defined(darwin)
   boost_filesystem::path cwdPath(cwd);
   LOG(BF("Using current working directory: path=%s") % cwdPath.string() );
@@ -358,6 +365,7 @@ boost_filesystem::path Bundle::findAppDir( const string &argv0, const string &cw
 #endif
   boost_filesystem::path argv0Path(argv0);
   if (argv0Path.has_root_path()) {
+    if (verbose) printf("%s:%d has_root_path: %s\n", __FILE__, __LINE__, argv0Path.branch_path().string().c_str() );
     return argv0Path.branch_path();
   } else {
     boost_filesystem::path cwdPath(cwd);
@@ -365,6 +373,7 @@ boost_filesystem::path Bundle::findAppDir( const string &argv0, const string &cw
 
     absPath = cwdPath / argv0Path;
     if (bf::exists(absPath)) {
+      if (verbose) printf("%s:%d absPath.branch_path(): %s\n", __FILE__, __LINE__, absPath.branch_path().string().c_str() );
       return absPath.branch_path();
     }
   }
@@ -392,6 +401,7 @@ boost_filesystem::path Bundle::findAppDir( const string &argv0, const string &cw
     bf::path onePath(*it);
     onePath = onePath / argv0Extension;
     if (bf::exists(onePath)) {
+      if (verbose) printf("%s:%d onePath.branch_path(): %s\n", __FILE__, __LINE__, onePath.branch_path().string().c_str() );
       return onePath.branch_path();
     }
   }
