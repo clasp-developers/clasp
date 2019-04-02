@@ -66,3 +66,6 @@
                    (gentemp nil)
                    :type type-error)
 
+(test build-sbcl-1 (setf (symbol-plist nil)(list 1 2)))
+(test build-sbcl-2 (setf (get nil 1) 2))
+

@@ -61,10 +61,6 @@ CL_LAMBDA(plist sym);
 CL_DECLARE();
 CL_DOCSTRING("Set the symbol plist");
 CL_DEFUN_SETF List_sp core__set_symbol_plist(List_sp plist, Symbol_sp sym) {
-  // FIXME: necessary?
-  if (sym.nilp()) {
-    SIMPLE_ERROR(BF("You cannot set the plist of nil"));
-  }
   sym->setf_plist(plist);
   return plist;
 }
@@ -82,9 +78,6 @@ CL_DECLARE();
 CL_DOCSTRING("Set the value of a plist property");
 CL_DEFUN_SETF T_sp core__putprop(T_sp val, Symbol_sp sym, T_sp indicator, T_sp defval) {
   (void)(defval); // unused
-  if (sym.nilp()) {
-    SIMPLE_ERROR(BF("You cannot set the plist of nil"));
-  };
   sym->_PropertyList = core__put_f(sym->_PropertyList, val, indicator);
   return val;
 }
