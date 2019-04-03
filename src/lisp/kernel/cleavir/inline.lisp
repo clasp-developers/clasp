@@ -190,13 +190,6 @@
       ;; streamp stream ; no good as it's an extensible class... FIXME do it anyway?
       compiled-function-p compiled-function))
 
-(define-cleavir-compiler-macro typep
-    (&whole whole object type &optional env &environment macro-env)
-  (if (and (null env) (constantp type macro-env))
-      `(if (cleavir-primop:typeq ,object ,(ext:constant-form-value type macro-env))
-           t nil)
-      whole))
-
 (progn
   (debug-inline "null")
   (declaim (inline cl:null))
