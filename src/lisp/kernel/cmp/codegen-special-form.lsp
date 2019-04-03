@@ -33,6 +33,8 @@
     (symbol-macrolet  codegen-symbol-macrolet convert-symbol-macrolet)
     (core::vector-length codegen-vector-length convert-vector-length)
     (core::%array-dimension codegen-%array-dimension convert-%array-dimension)
+    (cleavir-primop:car codegen-car convert-car)
+    (cleavir-primop:cdr codegen-cdr convert-cdr)
     (core:vaslist-pop codegen-vaslist-pop convert-vaslist-pop)
     (core:instance-stamp codegen-instance-stamp convert-instance-stamp)
     (llvm-inline codegen-llvm-inline convert-llvm-inline)
@@ -863,6 +865,35 @@ jump to blocks within this tagbody."
     (codegen array-alloca array-form env)
     (codegen axis-alloca axis-form env)
     (irc-store (gen-%array-dimension (irc-load array-alloca) (irc-load axis-alloca))
+               result)))
+
+;;; CLEAVIR-PRIMOP:CAR, CLEAVIR-PRIMOP:CDR
+
+(defun gen-memref-address (tpointer offset)
+  (irc-bit-cast
+   ;; memref/set use byte addressing, so treat these as i8 arrays
+   (irc-gep-variable (irc-bit-cast tpointer %i8*%)
+                     ;; llvm doesn't actually have signed types,
+                     ;; so the u is a misnomer - don't sweat it.
+                     (list (cmp:make-uintptr_t offset)))
+   %t**% "memref-set-addr"))
+
+(defun codegen-car (result rest env)
+  (let ((cons-form (first rest))
+        (cons-alloca (irc-alloca-t* :label "cons")))
+    (codegen cons-alloca cons-form env)
+    (irc-store (irc-load (gen-memref-address
+                          (irc-load cons-alloca)
+                          (- +cons-car-offset+ +cons-tag+)))
+               result)))
+
+(defun codegen-cdr (result rest env)
+  (let ((cons-form (first rest))
+        (cons-alloca (irc-alloca-t* :label "cons")))
+    (codegen cons-alloca cons-form env)
+    (irc-store (irc-load (gen-memref-address
+                          (irc-load cons-alloca)
+                          (- +cons-cdr-offset+ +cons-tag+)))
                result)))
 
 ;;; CORE:VASLIST-POP

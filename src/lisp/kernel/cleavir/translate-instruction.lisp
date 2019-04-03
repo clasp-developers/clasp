@@ -418,21 +418,12 @@
         (output (first (cleavir-ir:outputs instruction))))
     (out (%intrinsic-call "cx_read_stamp" (list (in input))) output)))
 
-(defun gen-memref-address (tpointer offset)
-  (%bit-cast
-   ;; memref/set use byte addressing, so treat these as i8 arrays
-   (%gep-variable (%bit-cast tpointer cmp:%i8*%)
-                  ;; llvm doesn't actually have signed types,
-                  ;; so the u is a misnomer - don't sweat it.
-                  (list (%uintptr_t offset)))
-   cmp:%t**% "memref-set-addr"))
-
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:memref2-instruction) return-value abi function-info)
   (declare (ignore return-value abi function-info))
   (out (%load
-        (gen-memref-address (in (first (cleavir-ir:inputs instruction)))
-                            (cleavir-ir:offset instruction)))
+        (cmp::gen-memref-address (in (first (cleavir-ir:inputs instruction)))
+                                 (cleavir-ir:offset instruction)))
        (first (cleavir-ir:outputs instruction))))
 
 (defmethod translate-simple-instruction
@@ -440,8 +431,8 @@
   (declare (ignore return-value abi function-info))
   (let ((inputs (cleavir-ir:inputs instruction)))
     (%store (in (second inputs) "memset2-val")
-            (gen-memref-address (in (first inputs))
-                                (cleavir-ir:offset instruction)))))
+            (cmp::gen-memref-address (in (first inputs))
+                                     (cleavir-ir:offset instruction)))))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:box-instruction) return-value abi function-info)
