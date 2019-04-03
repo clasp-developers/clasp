@@ -127,8 +127,17 @@
     (the t object)))
 
 ;;; Type predicates.
-#+(or) ; recursion problem: e.g. (streamp x) => (typeq x stream) => (typep x 'stream) => (streamp x)
 (macrolet ((defpred (name type)
+             ;; We have to be careful about recursion - if one of these ended up
+             ;; as a TYPEP call there could be disastrous recursion.
+             ;; Here's a sanity check to make sure the type is something simple
+             ;; enough to be done as a header check.
+             ;; Since some aren't actually THAT simple but still won't be typep
+             ;; it's not actually used, but, you know, it's there.
+             #+(or)
+             (unless (or (member type '(fixnum cons character single-float))
+                         (gethash type core:+type-header-value-map+))
+               (error "BUG: See comment in inline.lisp DEFPRED"))
              `(progn
                 (debug-inline ,(symbol-name name))
                 (declaim (inline ,name))
@@ -138,31 +147,48 @@
              `(progn
                 ,@(loop for (fun name) on rest by #'cddr
                         collect `(defpred ,fun ,name)))))
+  ;; Ideally, we want to cover standard type predicates, plus everything with a
+  ;; core::simple-type-predicate,= as those will show up from TYPEP.
+
+  ;; numbers are a bit weird cos of fixnums, but nonetheless
+  ;; shouldn't revert to typep.
+  ;; string is (or simple-base-string simple-character-string) so should be ok.
+  ;; list is (or cons null) so should be ok.
+  ;; atom is (not cons)
   (defpreds consp cons
-    hash-table-p hash-table
-    simple-string-p simple-string
+    core:fixnump fixnum
+    characterp character
+    core:single-float-p single-float
+
+    arrayp array
     atom atom
-    simple-vector-p simple-vector
+    complexp complex
+    core:double-float-p double-float
+    floatp float
+    functionp function
+    hash-table-p hash-table
     integerp integer
+    listp list
+    ;; null null ; defined with EQ below
     numberp number
     random-state-p random-state
-    compiled-function-p compiled-function
-    standard-char-p standard-char
-    simple-bit-vector-p simple-bit-vector
+    rationalp rational
     realp real
-    stringp string
-    functionp function
-    streamp stream
-    floatp float
-    symbolp symbol
-    pathnamep pathname
-    arrayp array
-    vectorp vector
-    characterp character
     packagep package
-    listp list
-    complexp complex
-    rationalp rational))
+    pathnamep pathname
+    simple-array-p simple-array
+    simple-bit-vector-p simple-bit-vector
+    simple-string-p simple-string
+    simple-vector-p simple-vector
+    stringp string
+    symbolp symbol
+    vectorp vector)
+  ;; standard predicates we can't define like this
+  #+(or)
+  (defpreds
+    ;; standard-char-p standard-char ; not actually a type pred - only accepts chars
+      ;; streamp stream ; no good as it's an extensible class... FIXME do it anyway?
+      compiled-function-p compiled-function))
 
 (define-cleavir-compiler-macro typep
     (&whole whole object type &optional env &environment macro-env)
@@ -170,12 +196,6 @@
       `(if (cleavir-primop:typeq ,object ,(ext:constant-form-value type macro-env))
            t nil)
       whole))
-
-(progn
-  (debug-inline "consp")
-  (declaim (inline cl:consp))
-  (defun cl:consp (x)
-    (if (cleavir-primop:typeq x cons) t nil)))
 
 (progn
   (debug-inline "null")
@@ -192,24 +212,6 @@
     (cond ((cleavir-primop:typeq list cons) nil) ; common case
           ((null list) t)
           (t (error 'type-error :datum list :expected-type 'list)))))
-
-(progn
-  (debug-inline "fixnump")
-  (declaim (inline core:fixnump))
-  (defun core:fixnump (x)
-    (if (cleavir-primop:typeq x cl:fixnum) t nil)))
-
-#+(or)
-(progn
-  (declaim (inline cl:characterp))
-  (defun cl:characterp (x)
-    (if (cleavir-primop:typeq x cl:character) t nil)))
-
-#+(or)
-(progn
-  (declaim (inline core:single-float-p))
-  (defun core:single-float-p (x)
-    (if (cleavir-primop:typeq x cl:single-float) t nil)))
 
 (progn
   (debug-inline "car")
@@ -601,7 +603,7 @@
     (unless (vector-in-bounds-p vector index)
       ;; From elt: Should signal an error of type type-error if index is not a valid sequence index for sequence.
       (etypecase vector
-        ((simple-vector *)
+        ((simple-vector *) ; FIXME: why is this not simple-array * (*)
          (let ((max (core::vector-length vector)))
            (if (zerop max)
              (error 'simple-type-error :FORMAT-CONTROL "Array ~a not valid for index ~a~%" :format-arguments (list vector index) :datum index :expected-type '(integer 0 (0)))
