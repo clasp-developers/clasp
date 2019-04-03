@@ -156,25 +156,70 @@
 
 (defun cons-typep-form (form cart cdrt)
   `(let ((object ,form))
-     (and (consp object)
-          ,@(if (eq cart '*)
-                nil
-                `((typep (car object) ',cart)))
-          ,@(if (eq cdrt '*)
-                nil
-                `((typep (cdr object) ',cdrt))))))
+     (if (cleavir-primop:typeq object cons)
+         (and ,@(if (eq cart '*)
+                    nil
+                    `((typep (cleavir-primop:car object) ',cart)))
+              ,@(if (eq cdrt '*)
+                    nil
+                    `((typep (cleavir-primop:cdr object) ',cdrt))))
+         nil)))
 
-(defun number-typep-form (form simple-pred low high)
+(defun number-typep-form (form head low high)
+  ;; First, we special case FIXNUM and subintervals of fixnum.
+  ;; Since the compiler macro normalizes, a literal 'fixnum type will
+  ;; resolve as an integer interval,
+  ;; but we don't want or need to do the compares.
+  ;; NOTE: Even partially fixnum intervals could be optimized by
+  ;; dividing into fixnum and bignum intervals - probably not
+  ;; a priority though given how big fixnums can be
+  (when (eq head 'integer)
+    ;; We can turn exclusive ranges into inclusive ones.
+    ;; (Even if it turns out to not be a fixnum- as long as it's an integer)
+    (when (consp low) (setf low (1+ (car low))))
+    (when (consp high) (setf high (1- (car high))))
+    ;; OK, now check for fixnumitude.
+    (when (and (not (eq low '*))
+               (>= low most-negative-fixnum)
+               (not (eq high '*))
+               (<= high most-positive-fixnum))
+      ;; It's a fixnum- this type test can therefore be very cheap,
+      ;; doing only a header check and fixnum comparisons.
+      ;; We can skip bounds checks if they happen to equal most-*-fixnum.
+      ;; With that plus the strictness of the primops as conditions, this code
+      ;; is written a little oddly, but generates something pretty obvious.
+      ;; Remember: fixnum-not-greater is <=
+      (let* ((highc (if (= high most-positive-fixnum)
+                        't
+                        `(if (cleavir-primop:fixnum-not-greater object ,high)
+                             t nil)))
+             (lowc (if (= low most-negative-fixnum)
+                       highc
+                       `(if (cleavir-primop:fixnum-not-greater ,low object)
+                            ,highc nil))))
+        (return-from number-typep-form
+          `(let ((object ,form))
+             (if (cleavir-primop:typeq object fixnum)
+                 ,lowc
+                 nil))))))
+  ;; Non-fixnum, the general case.
+  ;; TODO: Speed up float intervals by using primitive arithmetic.
   `(let ((object ,form))
-     (and (,simple-pred object)
-          ;; We ought to make sure that low and high are the right kind of
-          ;; number and stuff like that. Maybe.
-          ,@(cond ((eq low '*) nil)
-                  ((listp low) `((> object ',(car low))))
-                  (t `((>= object ',low))))
-          ,@(cond ((eq high '*) nil)
-                  ((listp high) `((< object ',(car high))))
-                  (t `((<= object ',high)))))))
+     ;; bclasp typeq isn't smart enough to check the fixnum tag for types
+     ;; like REAL, so we do that manually.
+     (if ,(if (member head '(integer rational real))
+              `(if (cleavir-primop:typeq object fixnum)
+                   t
+                   (if (cleavir-primop:typeq object ,head)
+                       t nil))
+              `(cleavir-primop:typeq object ,head))
+         (and ,@(cond ((eq low '*) nil)
+                      ((listp low) `((> object ',(car low))))
+                      (t `((>= object ',low))))
+              ,@(cond ((eq high '*) nil)
+                      ((listp high) `((< object ',(car high))))
+                      (t `((<= object ',high)))))
+         nil)))
 
 (define-compiler-macro typep (&whole whole object type &optional environment
                                      &environment macro-env)
@@ -217,17 +262,30 @@
         ((standard-char)
          `(let ((object ,object))
             (and (characterp object) (standard-char-p object))))
+        ;; NOTE: Probably won't actually occur, due to normalization.
         ((bignum)
          `(let ((object ,object))
             (and (integerp object) (not (fixnump object)))))
         ((#+short-float short-float #+long-float long-float
           single-float double-float
           float integer rational real)
-         (let ((pred (simple-type-predicate head)))
-           (when (null pred)
-             (error "BUG: Missing simple type predicate for ~a" head))
-           (destructuring-bind (&optional (low '*) (high '*)) args
-             (number-typep-form object pred low high))))
+         (destructuring-bind (&optional (low '*) (high '*)) args
+           ;; Check the bounds for correctness.
+           ;; We use primitives for testing with them, so we want
+           ;; to be sure that they're valid.
+           ;; NOTE: We could warn on incorrectness.
+           (unless (or (eq low '*)
+                       ;; recursion should be ok since we check * first.
+                       (typep low head)
+                       (and (consp low) (null (cdr low))
+                            (typep (car low) head)))
+             (return-from typep whole))
+           (unless (or (eq high '*)
+                       (typep high head)
+                       (and (consp high) (null (cdr high))
+                            (typep (car high) head)))
+             (return-from typep whole))
+           (number-typep-form object head low high)))
         ((complex)
          ;; This covers (complex whatever) types in addition to just complex.
          ;; We don't have multiple complex types in the backend,
