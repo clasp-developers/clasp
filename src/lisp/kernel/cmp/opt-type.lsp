@@ -297,6 +297,12 @@
            ;; Is there a simple predicate?
            ((simple-type-predicate type)
             `(,(simple-type-predicate type) ,object))
+           ;; Could be a C++ class kind of thing.
+           ;; NOTE: This is a static header check, so it shouldn't be used
+           ;; for anything that could be subclassed. The most likely candidate
+           ;; for this problem is STREAM, but it's caught by the previous case.
+           ((gethash type core:+type-header-value-map+)
+            `(if (cleavir-primop:typeq ,object ,type) t nil))
            ;; Maybe it's a class name?
            ((and (symbolp type) (find-class type nil macro-env))
             ;; By semantic constraints, classes that are defined at compile time
