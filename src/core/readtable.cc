@@ -850,6 +850,9 @@ ReadTable_sp ReadTable_O::create_standard_readtable() {
     Symbol_sp sym = gc::As<Symbol_sp>(oCadr(cur));
     rt->set_dispatch_macro_character(sharp, ch, sym);
   }
+  //reinstall the things defined in lisp
+  if (core::_sym_sharpmacros_lisp_redefine->fboundp())
+    eval::funcall(core::_sym_sharpmacros_lisp_redefine, rt);
   return rt;
 }
 

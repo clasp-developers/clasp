@@ -106,6 +106,36 @@
                        chars))))
         (every #'(lambda(a)(typep a 'reader-error)) result)))
 
-  
+(test readtable-1
+      (and (get-dispatch-macro-character #\# #\=)
+             (get-dispatch-macro-character #\# #\#)
+             (get-dispatch-macro-character #\# #\I)
+             (get-dispatch-macro-character #\# #\!)
+             (get-dispatch-macro-character #\# #\a)
+             (get-dispatch-macro-character #\# #\A)
+             (get-dispatch-macro-character #\# #\s)
+             (get-dispatch-macro-character #\# #\S)))
+
+(test readtable-2
+      (let ((new (copy-readtable)))
+        (and (get-dispatch-macro-character #\# #\= new)
+             (get-dispatch-macro-character #\# #\# new)
+             (get-dispatch-macro-character #\# #\I new)
+             (get-dispatch-macro-character #\# #\! new)
+             (get-dispatch-macro-character #\# #\a new)
+             (get-dispatch-macro-character #\# #\A new)
+             (get-dispatch-macro-character #\# #\s new)
+             (get-dispatch-macro-character #\# #\S new))))
+
+(test readtable-3
+      (let ((new (copy-readtable nil)))
+        (and (get-dispatch-macro-character #\# #\= new)
+             (get-dispatch-macro-character #\# #\# new)
+             (get-dispatch-macro-character #\# #\I new)
+             (get-dispatch-macro-character #\# #\! new)
+             (get-dispatch-macro-character #\# #\a new)
+             (get-dispatch-macro-character #\# #\A new)
+             (get-dispatch-macro-character #\# #\s new)
+             (get-dispatch-macro-character #\# #\S new))))
 
 

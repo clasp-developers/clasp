@@ -816,6 +816,8 @@ SYMBOL_EXPORT_SC_(ClPkg, copy_structure);
 SYMBOL_EXPORT_SC_(CorePkg, defcallback);
 SYMBOL_EXPORT_SC_(CorePkg, sharp_a_reader);
 SYMBOL_EXPORT_SC_(CorePkg, sharp_s_reader);
+SYMBOL_EXPORT_SC_(CorePkg, sharpmacros_lisp_redefine);
+
 
 void testConses() {
   printf("%s:%d Testing Conses and iterators\n", __FILE__, __LINE__);
