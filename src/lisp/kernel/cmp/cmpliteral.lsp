@@ -483,7 +483,7 @@ rewrite the slot in the literal table to store a closure."
     ((literal-node-creator-p arg) (lookup-arg arg))
     ((single-float-datum-p arg) (llvm-sys:constant-fp-get cmp:*llvm-context* (llvm-sys:make-apfloat-float (single-float-datum-value arg))))
     ((double-float-datum-p arg) (llvm-sys:constant-fp-get cmp:*llvm-context* (llvm-sys:make-apfloat-double (double-float-datum-value arg))))
-    ((immediate-datum-p arg) (cmp:irc-maybe-cast-integer-to-t* (immediate-datum-value immediate)))
+    ((immediate-datum-p arg) (cmp:irc-maybe-cast-integer-to-t* (immediate-datum-value arg)))
     (t arg)))
 
 (defun fix-args (args)

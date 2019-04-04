@@ -698,6 +698,25 @@ Otherwise do a variable shift."
          (irc-extract-value val-tsp (list 0) "t*-part")))
       (t (error "Cannot irc-load-t* from ~s" source)))))
 
+(defun irc-simple-store (val destination &optional (label ""))
+  ;; Mismatch in store type sis a very common bug we hit when rewriting codegen.
+  ;; LLVM doesn't deal with it gracefully except with a debug build, so we just
+  ;; check it ourselves. We also check that types are in the same context-
+  ;; another reasonably common issue.
+  ;; FIXME: Label is unused - llvm store doesn't return a value so it can't have one.
+  ;; Fix code so it doesn't pass a label here, if possible, then remove the parameter.
+  (let ((val-type (llvm-sys:get-type val))
+        (dest-contained-type (llvm-sys:get-contained-type (llvm-sys:get-type destination) 0)))
+    (cond ((equal val-type dest-contained-type)
+           (llvm-sys:create-store *irbuilder* val destination nil))
+          ((equal (llvm-sys:get-context val-type) (llvm-sys:get-context dest-contained-type))
+           (error "BUG: Mismatch in irc-store between val type ~a and destination contained type ~a%N"
+                  val-type dest-contained-type))
+          (t
+           (error "BUG: Mismatch in irc-store involving the val type ~a and destination type ~a -
+the type LLVMContexts don't match - so they were defined in different threads!"
+                  val-type dest-contained-type)))))
+
 ;;; irc-store generates code for the following situations
 ;;;   t* -> tsp
 ;;;   t* -> tmv

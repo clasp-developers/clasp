@@ -135,7 +135,7 @@ when this is t a lot of graphs will be generated.")
         (unless (null (gethash datum *vars*))
           (error "BUG: SSAable output ~a previously defined" datum))
         (setf (gethash datum *vars*) value))
-      (cmp:irc-store value (datum-alloca datum) label)))
+      (cmp:irc-simple-store value (datum-alloca datum) label)))
 
 (defun layout-basic-block (basic-block return-value abi current-function-info)
   (with-accessors ((first cleavir-basic-blocks:first-instruction)
@@ -193,8 +193,7 @@ when this is t a lot of graphs will be generated.")
                                        function-info
                                        initial-instruction abi &key (linkage 'llvm-sys:internal-linkage))
   (with-debug-info-disabled
-   (let ((return-value (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
-                                           (alloca-return_type))))
+   (let ((return-value (alloca-return_type)))
      (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
        ;; in case of a non-local exit, zero out the number of returned values
        (with-return-values (return-values return-value abi)

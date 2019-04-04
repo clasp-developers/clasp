@@ -170,6 +170,7 @@
             irc-ret-void
             irc-ret
             irc-undef-value-get
+            irc-simple-store
             irc-store
             irc-switch
             irc-tag-fixnum

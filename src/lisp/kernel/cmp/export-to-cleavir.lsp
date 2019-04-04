@@ -94,6 +94,7 @@
           irc-phi-add-incoming
           irc-renv
           irc-ret-void
+          irc-simple-store
           irc-store
           irc-switch
           irc-tag-fixnum

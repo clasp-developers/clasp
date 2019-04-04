@@ -236,10 +236,6 @@ And convert everything to JIT constants."
 		 :numvals (llvm-sys:create-in-bounds-gep cmp:*irbuilder* return-sret-arg (list (%i32 0) (%i32 1)) "ret-nvals")
 		 :return-registers (list (llvm-sys:create-in-bounds-gep cmp:*irbuilder* return-sret-arg (list (%i32 0) (%i32 0)) "ret-regs"))))
 
-
-(defun return-values-num (return-vals)
-  (number-of-return-values return-vals))
-
 (defun return-value-elt (return-vals idx)
   (if (< idx +pointers-returned-in-registers+)
       (elt (return-registers return-vals) idx)
@@ -258,39 +254,36 @@ And convert everything to JIT constants."
 ;;; Arguments are passed in registers and in the multiple-value-array
 ;;;
 
-(defun closure-call-or-invoke (closure return-value arguments abi &key (label ""))
+(defun closure-call-or-invoke (closure return-value arguments &key (label ""))
   (let* ((entry-point (cmp::irc-calculate-entry closure)) ;; intrinsic-name "cc_call")
          (real-args (if (< (length arguments) core:+number-of-fixed-arguments+)
                         (append arguments (make-list (- core:+number-of-fixed-arguments+ (length arguments)) :initial-element (cmp:null-t-ptr)))
                         arguments)))
-    (with-return-values (return-vals return-value abi)
-      (let ((args (list*
-                   closure
-                   ;;                   (cmp:null-t-ptr)
-                   (%size_t (length arguments))
-                   real-args)))
-        (let* ((result-in-registers
-                (if cmp::*current-unwind-landing-pad-dest*
-                    (cmp:irc-create-invoke entry-point args cmp::*current-unwind-landing-pad-dest* label)
-                    (cmp:irc-create-call entry-point args label))))
-          (cmp:irc-store result-in-registers return-value))))))
-
+    (let ((args (list*
+                 closure
+                 ;;                   (cmp:null-t-ptr)
+                 (%size_t (length arguments))
+                 real-args)))
+      (let* ((result-in-registers
+               (if cmp::*current-unwind-landing-pad-dest*
+                   (cmp:irc-create-invoke entry-point args cmp::*current-unwind-landing-pad-dest* label)
+                   (cmp:irc-create-call entry-point args label))))
+        (cmp:irc-store result-in-registers return-value)))))
 
 (defun unsafe-multiple-value-foreign-call (intrinsic-name return-value args abi &key (label ""))
-  (with-return-values (return-vals return-value abi)
-    (let* ((func (or (llvm-sys:get-function cmp:*the-module* intrinsic-name)
-                     (let ((arg-types (make-list (length args) :initial-element cmp:%t*%))
-                           (varargs nil))
-                       (cmp:irc-function-create
-                        (llvm-sys:function-type-get cmp:%return_type% arg-types varargs)
-                        'llvm-sys::External-linkage
-                        intrinsic-name
-                        cmp:*the-module*))))
-           (result-in-registers
-            (if cmp::*current-unwind-landing-pad-dest*
-                (cmp::irc-create-invoke func args cmp::*current-unwind-landing-pad-dest*)
-                (cmp::irc-create-call func args))))
-      (cmp:irc-store result-in-registers return-value))))
+  (let* ((func (or (llvm-sys:get-function cmp:*the-module* intrinsic-name)
+                   (let ((arg-types (make-list (length args) :initial-element cmp:%t*%))
+                         (varargs nil))
+                     (cmp:irc-function-create
+                      (llvm-sys:function-type-get cmp:%return_type% arg-types varargs)
+                      'llvm-sys::External-linkage
+                      intrinsic-name
+                      cmp:*the-module*))))
+         (result-in-registers
+           (if cmp::*current-unwind-landing-pad-dest*
+               (cmp::irc-create-invoke func args cmp::*current-unwind-landing-pad-dest*)
+               (cmp::irc-create-call func args))))
+    (cmp:irc-store result-in-registers return-value)))
 
 (defun unsafe-foreign-call (call-or-invoke foreign-types foreign-name args abi &key (label ""))
   ;; Write excess arguments into the multiple-value array

@@ -71,9 +71,9 @@
   (let ((inputs (cleavir-ir:inputs instruction)))
     ;; Write the first return value into the result
     (with-return-values (return-values return-value abi)
-      (cmp:irc-store (%size_t (length inputs)) (number-of-return-values return-values))
+      (cmp:irc-simple-store (%size_t (length inputs)) (number-of-return-values return-values))
       (dotimes (i (length inputs))
-        (cmp:irc-store (in (elt inputs i)) (return-value-elt return-values i))))))
+        (cmp:irc-simple-store (in (elt inputs i)) (return-value-elt return-values i))))))
 
 (defmethod translate-simple-instruction
     ((instr cleavir-ir:multiple-to-fixed-instruction) return-value (abi abi-x86-64) function-info)
@@ -158,7 +158,7 @@
          (dynamic-environment (cleavir-ir:dynamic-environment instruction))
          (arguments (cdr inputs)))
     (cmp:with-landing-pad (landing-pad dynamic-environment return-value abi *tags* function-info)
-      (closure-call-or-invoke (in function) return-value (mapcar #'in arguments) abi))))
+      (closure-call-or-invoke (in function) return-value (mapcar #'in arguments)))))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:funcall-instruction) return-value (abi abi-x86-64) function-info)
@@ -277,20 +277,19 @@
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:multiple-value-call-instruction) return-value abi function-info)
-  (with-return-values (return-vals return-value abi)
-    ;; second input is the dynamic-environment argument.
-    (cmp:with-landing-pad (landing-pad (cleavir-ir:dynamic-environment instruction)
-                                       return-value abi *tags* function-info)
-      (let ((call-result (%intrinsic-invoke-if-landing-pad-or-call
-                          "cc_call_multipleValueOneFormCallWithRet0" 
-                          (list (in (first (cleavir-ir:inputs instruction)))
-                                (cmp:irc-load return-value)))))
-        (cmp:irc-store call-result return-value)
-        (cc-dbg-when *debug-log*
-                     (format *debug-log*
-                             "    translate-simple-instruction multiple-value-call-instruction: ~a~%" 
-                             (cc-mir:describe-mir instruction))
-                     (format *debug-log* "     instruction --> ~a~%" call-result))))))
+  ;; second input is the dynamic-environment argument.
+  (cmp:with-landing-pad (landing-pad (cleavir-ir:dynamic-environment instruction)
+                                     return-value abi *tags* function-info)
+    (let ((call-result (%intrinsic-invoke-if-landing-pad-or-call
+                        "cc_call_multipleValueOneFormCallWithRet0" 
+                        (list (in (first (cleavir-ir:inputs instruction)))
+                              (cmp:irc-load return-value)))))
+      (cmp:irc-store call-result return-value)
+      (cc-dbg-when *debug-log*
+                   (format *debug-log*
+                           "    translate-simple-instruction multiple-value-call-instruction: ~a~%" 
+                           (cc-mir:describe-mir instruction))
+                   (format *debug-log* "     instruction --> ~a~%" call-result)))))
 
 (defun gen-vector-effective-address (array index element-type fixnum-type)
   (let* ((type (llvm-sys:type-get-pointer-to (cmp::simple-vector-llvm-type element-type)))
@@ -333,10 +332,11 @@
         (inputs (cleavir-ir:inputs instruction)))
     (if (eq et 'bit) ; ditto above
         (translate-bit-aset (in (third inputs)) (in (first inputs)) (in (second inputs)))
-        (cmp:irc-store (in (third inputs))
-                       (gen-vector-effective-address (in (first inputs)) (in (second inputs))
-                                                     (cleavir-ir:element-type instruction)
-                                                     (%default-int-type abi))))))
+        (cmp:irc-simple-store
+         (in (third inputs))
+         (gen-vector-effective-address (in (first inputs)) (in (second inputs))
+                                       (cleavir-ir:element-type instruction)
+                                       (%default-int-type abi))))))
 
 (defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir::vector-length-instruction) return-value abi function-info)
@@ -417,9 +417,10 @@
     ((instruction cleavir-ir:memset2-instruction) return-value abi function-info)
   (declare (ignore return-value abi function-info))
   (let ((inputs (cleavir-ir:inputs instruction)))
-    (cmp:irc-store (in (second inputs) "memset2-val")
-                   (cmp::gen-memref-address (in (first inputs))
-                                            (cleavir-ir:offset instruction)))))
+    (cmp:irc-simple-store
+     (in (second inputs) "memset2-val")
+     (cmp::gen-memref-address (in (first inputs))
+                              (cleavir-ir:offset instruction)))))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:box-instruction) return-value abi function-info)
@@ -584,16 +585,15 @@
     ((instruction cleavir-ir:unwind-instruction) return-value successors abi function-info)
   (declare (ignore successors function-info))
   ;; we don't use the second input to the unwind - the dynenv - at the moment.
-  (with-return-values (return-values return-value abi)
-    ;; Save whatever is in return-vals in the multiple-value array
-    (%intrinsic-call "cc_saveMultipleValue0" (list return-value))
-    (let ((static-index
-            (instruction-go-index
-             (nth (cleavir-ir:unwind-index instruction)
-                  (cleavir-ir:successors (cleavir-ir:destination instruction))))))
-      (%intrinsic-call "cc_unwind" (list (in (first (cleavir-ir:inputs instruction)))
-                                         (%size_t static-index))))
-    (cmp:irc-unreachable)))
+  ;; Save whatever is in return-vals in the multiple-value array
+  (%intrinsic-call "cc_saveMultipleValue0" (list return-value))
+  (let ((static-index
+          (instruction-go-index
+           (nth (cleavir-ir:unwind-index instruction)
+                (cleavir-ir:successors (cleavir-ir:destination instruction))))))
+    (%intrinsic-call "cc_unwind" (list (in (first (cleavir-ir:inputs instruction)))
+                                       (%size_t static-index))))
+  (cmp:irc-unreachable))
 
 ;;; This is not a real branch: The real successors are only for convenience elsewhere.
 ;;; (HIR analysis, basically.)
