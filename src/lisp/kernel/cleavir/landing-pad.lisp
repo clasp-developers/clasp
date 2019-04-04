@@ -10,7 +10,7 @@
   ;; We do this weird thing to get the index while still generating the other code around it.
   ;; FIXME: with-begin-end-catch should maybe abstract away so it can return an actual thing.
   (let (go-index)
-    (cmp:with-begin-end-catch ((%load exn.slot "exn") exception-ptr nil)
+    (cmp:with-begin-end-catch ((cmp:irc-load exn.slot "exn") exception-ptr nil)
       ;; Check if frame is correct against tagbody and jump to jumpid
       (cmp:with-landing-pad landing-pad-for-unwind-rethrow
         (setq go-index
@@ -40,8 +40,8 @@
       (let* ((lpad (cmp:irc-create-landing-pad 1 "lp"))
              (exception-structure (cmp:irc-extract-value lpad (list 0) "exception-structure"))
              (exception-selector (cmp:irc-extract-value lpad (list 1) "exception-selector")))
-        (%store exception-structure exn.slot)
-        (%store exception-selector ehselector.slot)
+        (cmp:irc-store exception-structure exn.slot)
+        (cmp:irc-store exception-selector ehselector.slot)
         (cmp:irc-add-clause lpad (cmp:irc-exception-typeid* 'cmp:typeid-core-unwind))
         ;; we have to go to the cleanup later, so we can't ignore any exceptions.
         (when maybe-cleanup-landing-pad (llvm-sys:set-cleanup lpad t))

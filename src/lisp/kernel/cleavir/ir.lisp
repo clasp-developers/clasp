@@ -65,9 +65,6 @@
 (defmethod %default-int-type ((abi abi-x86-64)) cmp:%i64%)
 (defmethod %default-int-type ((abi abi-x86-32)) cmp:%i32%)
 
-(defun %extract (val index &optional (label "extract"))
-  (llvm-sys:create-extract-value cmp:*irbuilder* val (list index) label))
-
 (defun %nil ()
   "A nil in a T*"
   (%literal-value nil))
@@ -116,11 +113,6 @@
 (defun alloca-mv-struct (&optional (label "V"))
   (cmp:irc-alloca-mv-struct :label label))
 
-(defun %load-or-null (obj)
-  (if obj
-      (cmp:irc-load obj)
-      (llvm-sys:constant-pointer-null-get cmp:%t*%)))
-
 
 (defun instruction-llvm-function (instr)
   (llvm-sys:get-parent (llvm-sys:get-parent instr)))
@@ -145,65 +137,6 @@
             (cmp:irc-intrinsic-invoke function-name args maybe-landing-pad label)
             (cmp:irc-intrinsic-call function-name args label)))
 
-(defun %load (place &optional (label ""))
-  (cmp:irc-load place label))
-
-(defun %store (val target &optional label)
-  (let* ((instr (cmp:irc-store val target)))
-    #+debug-compiler
-    (when (typep target 'llvm-sys::instruction)
-      (let ((store-fn (llvm-sys:get-name (instruction-llvm-function instr)))
-            (target-fn (llvm-sys:get-name (instruction-llvm-function target))))
-        (unless (string= store-fn target-fn)
-          (error "Mismatch in store function vs target function - you are attempting to store a value in a target where the store instruction is in a different LLVM function(~a) from the target value(~a)" store-fn target-fn))))
-    instr))
-
-(defun %bit-cast (val type &optional (label ""))
-  (llvm-sys:create-bit-cast cmp:*irbuilder* val type label))
-
-(defun %pointer-cast (from totype &optional (label ""))
-  (cmp:irc-pointer-cast from totype label))
-
-(defun %ptrtoint (val type &optional (label ""))
-  (llvm-sys:create-ptr-to-int cmp:*irbuilder* val type label))
-
-(defun %inttoptr (val type &optional (label ""))
-  (llvm-sys:create-int-to-ptr cmp:*irbuilder* val type label))
-
-(defun %and (x y &optional (label ""))
-  (llvm-sys:create-and-value-value cmp:*irbuilder* x y label))
-(defun %or (x y &optional (label ""))
-  (llvm-sys:create-or-value-value cmp:*irbuilder* x y label))
-
-(defun %add (x y &optional (label ""))
-  (llvm-sys:create-add cmp:*irbuilder* x y label))
-(defun %add-nsw (x y &optional (label ""))
-  (llvm-sys:create-nswadd cmp:*irbuilder* x y label))
-(defun %add-nuw (x y &optional (label ""))
-  (llvm-sys:create-nuwadd cmp:*irbuilder* x y label))
-
-(defun %icmp-eq (x y &optional (label ""))
-  (llvm-sys:create-icmp-eq cmp:*irbuilder* x y label))
-(defun %icmp-ne (x y &optional (label ""))
-  (llvm-sys:create-icmp-ne cmp:*irbuilder* x y label))
-(defun %icmp-slt (x y &optional (label ""))
-  (llvm-sys:create-icmp-slt cmp:*irbuilder* x y label))
-(defun %icmp-sle (x y &optional (label ""))
-  (llvm-sys:create-icmp-sle cmp:*irbuilder* x y label))
-(defun %icmp-sgt (x y &optional (label ""))
-  (llvm-sys:create-icmp-sgt cmp:*irbuilder* x y label))
-(defun %icmp-sge (x y &optional (label ""))
-  (llvm-sys:create-icmp-sge cmp:*irbuilder* x y label))
-
-(defun %cond-br (test true-branch false-branch &key likely-true likely-false)
-  (llvm-sys:create-cond-br cmp:*irbuilder* test true-branch false-branch nil))
-
-(defun %ret (val)
-  (cmp:irc-ret val))
-
-(defun %sub (minuend subtrahend &key (label "") nuw nsw)
-  (llvm-sys:create-sub cmp:*irbuilder* minuend subtrahend label nuw nsw))
-
 (defgeneric %sadd.with-overflow (x y abi))
 (defmethod %sadd.with-overflow (x y (abi abi-x86-64))
   (%intrinsic-call "llvm.sadd.with.overflow.i64" (list x y)))
@@ -215,29 +148,6 @@
   (%intrinsic-call "llvm.ssub.with.overflow.i64" (list x y)))
 (defmethod %ssub.with-overflow (x y (abi abi-x86-32))
   (%intrinsic-call "llvm.ssub.with.overflow.i32" (list x y)))
-
-(defun %shl (value shift &key (label "") nuw nsw)
-  "If shift is an integer, generate shl with a constant uint64.
-Otherwise do a variable shift."
-  (if (integerp shift)
-      (llvm-sys:create-shl-value-uint64
-       cmp:*irbuilder* value shift label nuw nsw)
-      (llvm-sys:create-shl-value-value
-       cmp:*irbuilder* value shift label nuw nsw)))
-
-(defun %lshr (value shift &key (label "") exact)
-  "If shift is an integer, generate lshr with a constant uint64.
-Otherwise do a variable shift."
-  (if (integerp shift)
-      (llvm-sys:create-lshr-value-uint64
-       cmp:*irbuilder* value shift label exact)
-      (llvm-sys:create-lshr-value-value
-       cmp:*irbuilder* value shift label exact)))
-
-(defun %udiv (dividend divisor &key (label "") exact)
-  (llvm-sys:create-udiv cmp:*irbuilder* dividend divisor label exact))
-(defun %urem (dividend divisor &key (label ""))
-  (llvm-sys:create-urem cmp:*irbuilder* dividend divisor label))
 
 (defun %fadd (x y &optional (label "") fast-math-flags)
   (llvm-sys:create-fadd cmp:*irbuilder* x y label fast-math-flags))
@@ -270,9 +180,6 @@ Otherwise do a variable shift."
      ,@body))
 
 
-(defun %gep-variable (object indices &optional (label "gep"))
-  (llvm-sys:create-in-bounds-gep cmp:*irbuilder* object indices label))
-
 (defun %gep (type object indices &optional (label "gep"))
   "Check the type against the object type and if they match return the GEP.
 And convert everything to JIT constants."
@@ -280,7 +187,7 @@ And convert everything to JIT constants."
     (error "%gep expected object of type ~a but got ~a of type ~a"
            type object (llvm-sys:get-type object)))
   (let ((converted-indices (mapcar (lambda (x) (%i32 x)) indices)))
-    (%gep-variable object converted-indices label)))
+    (cmp:irc-gep-variable object converted-indices label)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -366,7 +273,7 @@ And convert everything to JIT constants."
                 (if cmp::*current-unwind-landing-pad-dest*
                     (cmp:irc-create-invoke entry-point args cmp::*current-unwind-landing-pad-dest* label)
                     (cmp:irc-create-call entry-point args label))))
-          (%store result-in-registers return-value))))))
+          (cmp:irc-store result-in-registers return-value))))))
 
 
 (defun unsafe-multiple-value-foreign-call (intrinsic-name return-value args abi &key (label ""))
@@ -383,7 +290,7 @@ And convert everything to JIT constants."
             (if cmp::*current-unwind-landing-pad-dest*
                 (cmp::irc-create-invoke func args cmp::*current-unwind-landing-pad-dest*)
                 (cmp::irc-create-call func args))))
-      (%store result-in-registers return-value))))
+      (cmp:irc-store result-in-registers return-value))))
 
 (defun unsafe-foreign-call (call-or-invoke foreign-types foreign-name args abi &key (label ""))
   ;; Write excess arguments into the multiple-value array
@@ -414,7 +321,10 @@ And convert everything to JIT constants."
          (function-type (cmp:function-type-create-on-the-fly foreign-types))
          (function-pointer-type (llvm-sys:type-get-pointer-to function-type))
          (pointer-t* pointer)
-         (function-pointer (%bit-cast (%intrinsic-call "cc_getPointer" (list pointer-t*)) function-pointer-type "cast-function-pointer")))
+         (function-pointer
+           (cmp:irc-bit-cast
+            (%intrinsic-call "cc_getPointer" (list pointer-t*)) function-pointer-type
+            "cast-function-pointer")))
     ;;; FIXME: Do these calls also need an INVOKE version if landing-pad is set????
     (if (eq :void (first foreign-types))
         (progn

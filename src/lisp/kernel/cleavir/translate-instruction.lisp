@@ -20,17 +20,20 @@
 
 (defmethod translate-simple-instruction
     ((instr clasp-cleavir-hir:bind-va-list-instruction) return-value (abi abi-x86-64) function-info)
-  (let* ((lambda-list                   (cleavir-ir:lambda-list instr))
-         (vaslist                       (first (cleavir-ir:inputs instr)))
-         (vaslist-value                 (in vaslist))
-         (src-remaining-nargs*          (%intrinsic-call "cc_vaslist_remaining_nargs_address" (list vaslist-value)))
-         (src-va_list*                  (%intrinsic-call "cc_vaslist_va_list_address" (list vaslist-value) "vaslist_address"))
-         (local-va_list*                (alloca-va_list "local-va_list"))
-         (_                             (%intrinsic-call "llvm.va_copy" (list (%pointer-cast local-va_list* cmp:%i8*%)
-                                                                              (%pointer-cast src-va_list* cmp:%i8*%))))
-         (callconv                      (cmp:make-calling-convention-impl :nargs (%load src-remaining-nargs*)
-                                                                          :va-list* local-va_list*
-                                                                          :rest-alloc (clasp-cleavir-hir:rest-alloc instr))))
+  (let* ((lambda-list          (cleavir-ir:lambda-list instr))
+         (vaslist              (first (cleavir-ir:inputs instr)))
+         (vaslist-value        (in vaslist))
+         (src-remaining-nargs* (%intrinsic-call "cc_vaslist_remaining_nargs_address" (list vaslist-value)))
+         (src-va_list*         (%intrinsic-call "cc_vaslist_va_list_address" (list vaslist-value)
+                                                "vaslist_address"))
+         (local-va_list*       (alloca-va_list "local-va_list"))
+         (_                    (%intrinsic-call "llvm.va_copy"
+                                                (list (cmp:irc-pointer-cast local-va_list* cmp:%i8*%)
+                                                      (cmp:irc-pointer-cast src-va_list* cmp:%i8*%))))
+         (callconv             (cmp:make-calling-convention-impl
+                                :nargs (cmp:irc-load src-remaining-nargs*)
+                                :va-list* local-va_list*
+                                :rest-alloc (clasp-cleavir-hir:rest-alloc instr))))
     (cmp:compile-lambda-list-code lambda-list callconv
                                   ;; BIND-VA-LIST is used exclusively internally, and furthermore,
                                   ;; in method bodies. In that case the generic function does the
@@ -59,7 +62,8 @@
     ((instruction clasp-cleavir-hir:precalc-value-instruction) return-value abi function-info)
   (let* ((index (clasp-cleavir-hir:precalc-value-instruction-index instruction))
          (label (safe-llvm-name (clasp-cleavir-hir:precalc-value-instruction-original-object instruction)))
-         (value (%load (%gep-variable (cmp:ltv-global) (list (%size_t 0) (%i64 index)) label))))
+         (value (cmp:irc-load
+                 (cmp:irc-gep-variable (cmp:ltv-global) (list (%size_t 0) (%i64 index)) label))))
     (out value (first (cleavir-ir:outputs instruction)))))
 
 (defmethod translate-simple-instruction
@@ -67,9 +71,9 @@
   (let ((inputs (cleavir-ir:inputs instruction)))
     ;; Write the first return value into the result
     (with-return-values (return-values return-value abi)
-      (%store (%size_t (length inputs)) (number-of-return-values return-values))
+      (cmp:irc-store (%size_t (length inputs)) (number-of-return-values return-values))
       (dotimes (i (length inputs))
-        (%store (in (elt inputs i)) (return-value-elt return-values i))))))
+        (cmp:irc-store (in (elt inputs i)) (return-value-elt return-values i))))))
 
 (defmethod translate-simple-instruction
     ((instr cleavir-ir:multiple-to-fixed-instruction) return-value (abi abi-x86-64) function-info)
@@ -84,10 +88,10 @@
            (nouts (length outputs))
            (rets (loop for i below nouts collect (return-value-elt return-vals i)))
            (default (cmp:irc-basic-block-create "mtf-enough"))
-           (switch (cmp:irc-switch (%load (number-of-return-values return-vals)) default nouts))
+           (switch (cmp:irc-switch (cmp:irc-load (number-of-return-values return-vals)) default nouts))
            (final (cmp:irc-basic-block-create "mtf-final"))
            (default-vars (prog2 (cmp:irc-begin-block default)
-                             (mapcar #'%load rets)
+                             (mapcar #'cmp:irc-load rets)
                            (cmp:irc-br final)))
            (blocks-and-vars
              (loop for retn below nouts
@@ -97,7 +101,7 @@
                    collect (cons block
                                  (loop for ret in rets
                                        for i below nouts
-                                       collect (if (< i retn) (%load ret) (%nil))))
+                                       collect (if (< i retn) (cmp:irc-load ret) (%nil))))
                    do (cmp:irc-br final))))
       (cmp:irc-begin-block final)
       (loop for out in outputs
@@ -279,8 +283,9 @@
                                        return-value abi *tags* function-info)
       (let ((call-result (%intrinsic-invoke-if-landing-pad-or-call
                           "cc_call_multipleValueOneFormCallWithRet0" 
-                          (list (in (first (cleavir-ir:inputs instruction))) (%load return-value)))))
-        (%store call-result return-value)
+                          (list (in (first (cleavir-ir:inputs instruction)))
+                                (cmp:irc-load return-value)))))
+        (cmp:irc-store call-result return-value)
         (cc-dbg-when *debug-log*
                      (format *debug-log*
                              "    translate-simple-instruction multiple-value-call-instruction: ~a~%" 
@@ -289,27 +294,21 @@
 
 (defun gen-vector-effective-address (array index element-type fixnum-type)
   (let* ((type (llvm-sys:type-get-pointer-to (cmp::simple-vector-llvm-type element-type)))
-         (cast (%bit-cast array type))
-         (var-offset (%ptrtoint index fixnum-type))
-         (untagged (%lshr var-offset cmp::+fixnum-shift+ :exact t :label "untagged fixnum")))
+         (cast (cmp:irc-bit-cast array type))
+         (untagged (cmp:irc-untag-fixnum index fixnum-type "vector-index")))
     ;; 0 is for LLVM reasons, that pointers are C arrays. or something.
     ;; For layout of the vector, check simple-vector-llvm-type's definition.
     ;; untagged is the actual offset.
-    (%gep-variable cast (list (%i32 0) (%i32 cmp::+simple-vector-data-slot+) untagged) "aref")))
+    (cmp:irc-gep-variable cast (list (%i32 0) (%i32 cmp::+simple-vector-data-slot+) untagged) "aref")))
 
 (defun translate-bit-aref (array index &optional (label ""))
-  (let* ((var-offset (%ptrtoint index cmp:%size_t% "variable-offset"))
-         (untagged (%lshr var-offset cmp::+fixnum-shift+ :exact t :label "untagged-offset"))
-         (bit (%intrinsic-call "cc_simpleBitVectorAref" (list array untagged) "bit-aref"))
-         (tagged-bit (%shl bit cmp::+fixnum-shift+ :nuw t :label "tagged-bit")))
-    ;; inttoptr intrinsically zexts, according to docs.
-    (%inttoptr tagged-bit cmp:%t*% label)))
+  (let* ((untagged (cmp:irc-untag-fixnum index cmp:%size_t%))
+         (bit (%intrinsic-call "cc_simpleBitVectorAref" (list array untagged) "bit-aref")))
+    (cmp:irc-tag-fixnum bit "bit")))
 
 (defun translate-bit-aset (value array index)
-  (let* ((var-offset (%ptrtoint index cmp:%size_t% "variable-offset"))
-         (offset (%lshr var-offset cmp::+fixnum-shift+ :exact t :label "untagged-offset"))
-         (uint-value (%ptrtoint value cmp::%uint%))
-         (untagged-value (%lshr uint-value cmp::+fixnum-shift+ :exact t :label "untagged-value")))
+  (let ((offset (cmp:irc-untag-fixnum index cmp:%size_t% "untagged-offset"))
+        (untagged-value (cmp:irc-untag-fixnum value cmp::%uint% "untagged-value")))
     ;; Note: We cannot label void calls, because then they'll get a variable
     (%intrinsic-call "cc_simpleBitVectorAset" (list array offset untagged-value))))
 
@@ -322,10 +321,10 @@
     (out
      (if (eq et 'bit) ; have to special case due to the layout.
          (translate-bit-aref (in (first inputs)) (in (second inputs)) label)
-         (%load (gen-vector-effective-address (in (first inputs)) (in (second inputs))
-                                              (cleavir-ir:element-type instruction)
-                                              (%default-int-type abi))
-                label))
+         (cmp:irc-load (gen-vector-effective-address (in (first inputs)) (in (second inputs))
+                                                     (cleavir-ir:element-type instruction)
+                                                     (%default-int-type abi))
+                       label))
      output)))
 
 (defmethod translate-simple-instruction
@@ -334,10 +333,10 @@
         (inputs (cleavir-ir:inputs instruction)))
     (if (eq et 'bit) ; ditto above
         (translate-bit-aset (in (third inputs)) (in (first inputs)) (in (second inputs)))
-        (%store (in (third inputs))
-                (gen-vector-effective-address (in (first inputs)) (in (second inputs))
-                                              (cleavir-ir:element-type instruction)
-                                              (%default-int-type abi))))))
+        (cmp:irc-store (in (third inputs))
+                       (gen-vector-effective-address (in (first inputs)) (in (second inputs))
+                                                     (cleavir-ir:element-type instruction)
+                                                     (%default-int-type abi))))))
 
 (defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir::vector-length-instruction) return-value abi function-info)
@@ -358,13 +357,9 @@
     ((instruction clasp-cleavir-hir::displaced-index-offset-instruction) return-value abi function-info)
   (declare (ignore return-value function-info abi))
   (let ((output (first (cleavir-ir:outputs instruction))))
-    (out (%inttoptr
-          (%shl
-           (%intrinsic-call "cc_realArrayDisplacedIndexOffset"
-                            (list (in (first (cleavir-ir:inputs instruction)))))
-           cmp::+fixnum-shift+
-           :label "fixnum" :nuw t)
-          cmp:%t*%
+    (out (cmp:irc-tag-fixnum
+          (%intrinsic-call "cc_realArrayDisplacedIndexOffset"
+                           (list (in (first (cleavir-ir:inputs instruction)))))
           (datum-name-as-string output))
          output)))
 
@@ -372,13 +367,9 @@
     ((instruction clasp-cleavir-hir::array-total-size-instruction) return-value abi function-info)
   (declare (ignore return-value function-info abi))
   (let ((output (first (cleavir-ir:outputs instruction))))
-    (out (%inttoptr
-          (%shl
-           (%intrinsic-call "cc_arrayTotalSize"
-                            (list (in (first (cleavir-ir:inputs instruction)))))
-           cmp::+fixnum-shift+
-           :label "fixnum" :nuw t)
-          cmp:%t*%
+    (out (cmp:irc-tag-fixnum
+          (%intrinsic-call "cc_arrayTotalSize"
+                           (list (in (first (cleavir-ir:inputs instruction)))))
           (datum-name-as-string output))
          output)))
 
@@ -386,13 +377,9 @@
     ((instruction clasp-cleavir-hir::array-rank-instruction) return-value abi function-info)
   (declare (ignore return-value function-info abi))
   (let ((output (first (cleavir-ir:outputs instruction))))
-    (out (%inttoptr
-          (%shl
-           (%intrinsic-call "cc_arrayRank"
-                            (list (in (first (cleavir-ir:inputs instruction)))))
-           cmp::+fixnum-shift+
-           :label "fixnum" :nuw t)
-          cmp:%t*%
+    (out (cmp:irc-tag-fixnum
+          (%intrinsic-call "cc_arrayRank"
+                           (list (in (first (cleavir-ir:inputs instruction)))))
           (datum-name-as-string output))
          output)))
 
@@ -421,7 +408,7 @@
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:memref2-instruction) return-value abi function-info)
   (declare (ignore return-value abi function-info))
-  (out (%load
+  (out (cmp:irc-load
         (cmp::gen-memref-address (in (first (cleavir-ir:inputs instruction)))
                                  (cleavir-ir:offset instruction)))
        (first (cleavir-ir:outputs instruction))))
@@ -430,9 +417,9 @@
     ((instruction cleavir-ir:memset2-instruction) return-value abi function-info)
   (declare (ignore return-value abi function-info))
   (let ((inputs (cleavir-ir:inputs instruction)))
-    (%store (in (second inputs) "memset2-val")
-            (cmp::gen-memref-address (in (first inputs))
-                                     (cleavir-ir:offset instruction)))))
+    (cmp:irc-store (in (second inputs) "memset2-val")
+                   (cmp::gen-memref-address (in (first inputs))
+                                            (cleavir-ir:offset instruction)))))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:box-instruction) return-value abi function-info)
@@ -556,32 +543,34 @@
 (defmethod translate-branch-instruction
     ((instruction cleavir-ir:consp-instruction) return-value successors abi function-info)
   (let* ((x (in (first (cleavir-ir:inputs instruction))))
-         (tag (%and (%ptrtoint x cmp::%i32%) (%i32 cmp:+tag-mask+) "tag-only"))
-         (cmp (%icmp-eq tag (%i32 cmp:+cons-tag+) "consp-test")))
-    (%cond-br cmp (first successors) (second successors) :likely-true t)))
+         (tag (cmp:irc-and (cmp:irc-ptr-to-int x cmp:%i32%) (%i32 cmp:+tag-mask+) "tag-only"))
+         (cmp (cmp:irc-icmp-eq tag (%i32 cmp:+cons-tag+) "consp-test")))
+    (cmp:irc-cond-br cmp (first successors) (second successors))))
 
 (defmethod translate-branch-instruction
     ((instruction cleavir-ir:fixnump-instruction) return-value successors abi function-info)
   (let* ((x (in (first (cleavir-ir:inputs instruction))))
-         (tag (%and (%ptrtoint x cmp::%i32%) (%i32 cmp:+fixnum-mask+) "fixnum-tag-only"))
-         (cmp (%icmp-eq tag (%i32 cmp:+fixnum-tag+) "fixnump-test")))
-    (%cond-br cmp (first successors) (second successors) :likely-true t)))
+         (tag (cmp:irc-and (cmp:irc-ptr-to-int x cmp:%i32%) (%i32 cmp:+fixnum-mask+) "fixnum-tag-only"))
+         (cmp (cmp:irc-icmp-eq tag (%i32 cmp:+fixnum-tag+) "fixnump-test")))
+    (cmp:irc-cond-br cmp (first successors) (second successors))))
 
 (defmethod translate-branch-instruction
     ((instruction cc-mir:characterp-instruction) return-value successors abi function-info)
   (let* ((value     (in (first (cleavir-ir:inputs instruction))))
-         (tag       (%and (%ptrtoint value cmp:%uintptr_t%)
-                          (%uintptr_t cmp:+immediate-mask+) "character-tag-only"))
-         (cmp (%icmp-eq tag (%uintptr_t cmp:+character-tag+))))
-    (%cond-br cmp (first successors) (second successors) :likely-true t)))
+         (tag       (cmp:irc-and (cmp:irc-ptr-to-int value cmp:%uintptr_t%)
+                                 (%uintptr_t cmp:+immediate-mask+)
+                                 "character-tag-test"))
+         (cmp (cmp:irc-icmp-eq tag (%uintptr_t cmp:+character-tag+))))
+    (cmp:irc-cond-br cmp (first successors) (second successors))))
 
 (defmethod translate-branch-instruction
     ((instruction cc-mir:single-float-p-instruction) return-value successors abi function-info)
   (let* ((value     (in (first (cleavir-ir:inputs instruction))))
-         (tag       (%and (%ptrtoint value cmp:%uintptr_t%)
-                    (%uintptr_t cmp:+immediate-mask+) "single-float-tag-only"))
-         (cmp       (%icmp-eq tag (%uintptr_t cmp:+single-float-tag+))))
-    (%cond-br cmp (first successors) (second successors) :likely-true t)))
+         (tag       (cmp:irc-and (cmp:irc-ptr-to-int value cmp:%uintptr_t%)
+                                 (%uintptr_t cmp:+immediate-mask+)
+                                 "single-float-tag-test"))
+         (cmp       (cmp:irc-icmp-eq tag (%uintptr_t cmp:+single-float-tag+))))
+    (cmp:irc-cond-br cmp (first successors) (second successors))))
 
 
 (defmethod translate-branch-instruction
@@ -628,7 +617,7 @@
 (defmethod translate-branch-instruction
     ((instruction cleavir-ir:return-instruction) return-value successors abi function-info)
   (declare (ignore successors))
-  (%ret (%load return-value)))
+  (cmp:irc-ret (cmp:irc-load return-value)))
 
 (defmethod translate-branch-instruction
     ((instruction cleavir-ir:funcall-no-return-instruction)
@@ -657,44 +646,44 @@
 (defmethod translate-branch-instruction
     ((instruction cleavir-ir:fixnum-add-instruction) return-value successors abi function-info)
   (let* ((inputs (cleavir-ir:inputs instruction))
-         (x (%ptrtoint (in (first inputs)) (%default-int-type abi)))
-         (y (%ptrtoint (in (second inputs)) (%default-int-type abi)))
+         (x (cmp:irc-ptr-to-int (in (first inputs)) (%default-int-type abi)))
+         (y (cmp:irc-ptr-to-int (in (second inputs)) (%default-int-type abi)))
          (result-with-overflow (%sadd.with-overflow x y abi)))
-    (let ((val (%extract result-with-overflow 0 "result"))
-          (overflow (%extract result-with-overflow 1 "overflow"))
+    (let ((val (cmp:irc-extract-value result-with-overflow (list 0) "result"))
+          (overflow (cmp:irc-extract-value result-with-overflow (list 1) "overflow"))
           (output (first (cleavir-ir:outputs instruction))))
-      (out (%inttoptr val cmp:%t*% (datum-name-as-string output)) output)
-      (%cond-br overflow (second successors) (first successors)))))
+      (out (cmp:irc-int-to-ptr val cmp:%t*% (datum-name-as-string output)) output)
+      (cmp:irc-cond-br overflow (second successors) (first successors)))))
 
 (defmethod translate-branch-instruction
     ((instruction cleavir-ir:fixnum-sub-instruction) return-value successors abi function-info)
   (let* ((inputs (cleavir-ir:inputs instruction))
-         (x (%ptrtoint (in (first inputs)) (%default-int-type abi)))
-         (y (%ptrtoint (in (second inputs)) (%default-int-type abi)))
+         (x (cmp:irc-ptr-to-int (in (first inputs)) (%default-int-type abi)))
+         (y (cmp:irc-ptr-to-int (in (second inputs)) (%default-int-type abi)))
          (result-with-overflow (%ssub.with-overflow x y abi)))
-    (let ((val (%extract result-with-overflow 0 "result"))
-          (overflow (%extract result-with-overflow 1 "overflow"))
+    (let ((val (cmp:irc-extract-value result-with-overflow (list 0) "result"))
+          (overflow (cmp:irc-extract-value result-with-overflow (list 1) "overflow"))
           (output (first (cleavir-ir:outputs instruction))))
-      (out (%inttoptr val cmp:%t*% (datum-name-as-string output)) output)
-      (%cond-br overflow (second successors) (first successors)))))
+      (out (cmp:irc-int-to-ptr val cmp:%t*% (datum-name-as-string output)) output)
+      (cmp:irc-cond-br overflow (second successors) (first successors)))))
 
 (defmethod translate-branch-instruction
     ((instruction cleavir-ir:fixnum-less-instruction) return-value successors abi function-info)
   (let* ((inputs (cleavir-ir:inputs instruction))
-         (cmp-lt (%icmp-slt (in (first inputs)) (in (second inputs)))))
-      (%cond-br cmp-lt (first successors) (second successors))))
+         (cmp-lt (cmp:irc-icmp-slt (in (first inputs)) (in (second inputs)))))
+      (cmp:irc-cond-br cmp-lt (first successors) (second successors))))
 
 (defmethod translate-branch-instruction
     ((instruction cleavir-ir:fixnum-not-greater-instruction) return-value successors abi function-info)
   (let* ((inputs (cleavir-ir:inputs instruction))
-         (cmp-lt (%icmp-sle (in (first inputs)) (in (second inputs)))))
-      (%cond-br cmp-lt (first successors) (second successors))))
+         (cmp-lt (cmp:irc-icmp-sle (in (first inputs)) (in (second inputs)))))
+      (cmp:irc-cond-br cmp-lt (first successors) (second successors))))
 
 (defmethod translate-branch-instruction
     ((instruction cleavir-ir:fixnum-equal-instruction) return-value successors abi function-info)
   (let* ((inputs (cleavir-ir:inputs instruction))
-         (cmp-lt (%icmp-eq (in (first inputs)) (in (second inputs)))))
-      (%cond-br cmp-lt (first successors) (second successors))))
+         (cmp-lt (cmp:irc-icmp-eq (in (first inputs)) (in (second inputs)))))
+      (cmp:irc-cond-br cmp-lt (first successors) (second successors))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -709,7 +698,7 @@
          (x (in (first inputs)))
          (y (in (second inputs)))
          (cmp (%fcmp-olt x y)))
-    (%cond-br cmp (first successors) (second successors))))
+    (cmp:irc-cond-br cmp (first successors) (second successors))))
 
 (defmethod translate-branch-instruction
     ((instruction cleavir-ir:float-not-greater-instruction) return-value successors abi function-info)
@@ -717,7 +706,7 @@
          (x (in (first inputs)))
          (y (in (second inputs)))
          (cmp (%fcmp-ole x y)))
-    (%cond-br cmp (first successors) (second successors))))
+    (cmp:irc-cond-br cmp (first successors) (second successors))))
 
 (defmethod translate-branch-instruction
     ((instruction cleavir-ir:float-equal-instruction) return-value successors abi function-info)
@@ -725,4 +714,4 @@
          (x (in (first inputs)))
          (y (in (second inputs)))
          (cmp (%fcmp-oeq x y)))
-    (%cond-br cmp (first successors) (second successors))))
+    (cmp:irc-cond-br cmp (first successors) (second successors))))

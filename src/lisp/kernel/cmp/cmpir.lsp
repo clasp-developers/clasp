@@ -595,6 +595,21 @@
 (defun irc-int-to-ptr (val ptr-type &optional (label "inttoptr"))
   (llvm-sys:create-int-to-ptr *irbuilder* val ptr-type label))
 
+(defun irc-untag-fixnum (t* fixnum-type &optional (label "fixnum"))
+  "Given a T* fixnum llvm::Value, returns a Value of the given type
+representing the fixnum with the tag shaved off."
+  (irc-lshr (irc-ptr-to-int t* fixnum-type) +fixnum-shift+
+            :exact t ; fixnum tag is zero.
+            :label label))
+
+(defun irc-tag-fixnum (int &optional (label "fixnum"))
+  "Given an llvm::Value of integer type, returns a T* value
+representing a tagged fixnum."
+  ;; :NUW T tells LLVM the top bits are zero, i.e. no overflow is possible.
+  ;; NOTE: It's okay if the int is short (e.g. a bit) as inttoptr zexts.
+  ;; (If the int is too long, it truncates - don't think we ever do that, though)
+  (irc-int-to-ptr (irc-shl int +fixnum-shift+ :nuw t) %t*% label))
+
 (defun irc-maybe-cast-integer-to-t* (val &optional (label "fixnum-to-t*"))
   "If it's a fixnum then cast it - otherwise just return it - it should already be a t*"
   (if (typep val '(integer #.(- (expt 2 63)) #.(- (expt 2 63) 1)))
@@ -644,6 +659,11 @@
 
 (defun irc-srem (lhs rhs &optional (label ""))
   (llvm-sys:create-srem *irbuilder* lhs rhs label))
+
+(defun irc-udiv (dividend divisor &key (label "") exact)
+  (llvm-sys:create-udiv cmp:*irbuilder* divident divisor label exact))
+(defun irc-urem (dividend divisor &key (label ""))
+  (llvm-sys:create-urem cmp:*irbuilder* dividend divisor label))
 
 (defun irc-shl (value shift &key (label "") nuw nsw)
   "If shift is an integer, generate shl with a constant uint64.
@@ -1097,7 +1117,7 @@ and then the irbuilder-alloca, irbuilder-body."
 (defun irc-pointer-cast (from totype &optional (label ""))
   (llvm-sys:create-pointer-cast *irbuilder* from totype label))
 
-(defun irc-bit-cast (from totype &optional (label "irc-bit-cast"))
+(defun irc-bit-cast (from totype &optional (label "bit-cast"))
   (llvm-sys:create-bit-cast *irbuilder* from totype label))
 
 (defun irc-irbuilder-status (&optional (irbuilder *irbuilder*) (label "current *irbuilder*"))
@@ -1253,7 +1273,7 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
 ;;;    (XXXXXXX)
     (irc-low-level-trace)
     multiple-values-array))
-	
+
 	
 (defun irc-struct-gep (struct idx &optional (label ""))
   (llvm-sys:create-struct-gep *irbuilder* struct idx label ))
@@ -1265,6 +1285,7 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
   (irc-insert-value tsp-val t-ptr-val (list 0)))
 
 (defun irc-extract-value (struct idx-list &optional (label ""))
+  ;; Sanity check - maybe unnecessary?
   (let ((struct-type (llvm-sys:get-type struct)))
     (when (or (equal struct-type %t*%)
               (equal struct-type %t**%))

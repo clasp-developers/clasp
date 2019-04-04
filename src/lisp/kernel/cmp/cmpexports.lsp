@@ -129,11 +129,12 @@
             *optimization-level*
             with-track-llvm-time
             irc-add
+            irc-add-clause
             irc-alloca-tmv
             irc-alloca-i8*
             irc-alloca-i8**
             irc-alloca-mv-struct
-            irc-add-clause
+            irc-and
             irc-basic-block-create
             irc-begin-block
             irc-br
@@ -150,12 +151,14 @@
             irc-exception-typeid*
             irc-generate-terminate-code
             irc-gep
+            irc-gep-variable
             irc-smart-ptr-extract
             irc-set-insert-point-basic-block
             irc-size_t-*current-source-pos-info*-filepos
             irc-size_t-*current-source-pos-info*-column
             irc-size_t-*current-source-pos-info*-lineno
             irc-icmp-eq
+            irc-icmp-sle
             irc-icmp-slt
             irc-intrinsic
             irc-load
@@ -169,8 +172,10 @@
             irc-undef-value-get
             irc-store
             irc-switch
-            irc-unreachable
+            irc-tag-fixnum
             irc-trunc
+            irc-unreachable
+            irc-untag-fixnum
             jit-constant-i1
             jit-constant-i8
             jit-constant-i32

@@ -125,7 +125,7 @@ when this is t a lot of graphs will be generated.")
            (error "BUG: Input ~a not previously defined" datum)
            (if (ssablep datum)
                existing
-               (%load existing label)))))
+               (cmp:irc-load existing label)))))
     (t (error "datum ~s must be an immediate-input or lexical-location"
               datum))))
 
@@ -135,7 +135,7 @@ when this is t a lot of graphs will be generated.")
         (unless (null (gethash datum *vars*))
           (error "BUG: SSAable output ~a previously defined" datum))
         (setf (gethash datum *vars*) value))
-      (%store value (datum-alloca datum) label)))
+      (cmp:irc-store value (datum-alloca datum) label)))
 
 (defun layout-basic-block (basic-block return-value abi current-function-info)
   (with-accessors ((first cleavir-basic-blocks:first-instruction)
@@ -196,9 +196,9 @@ when this is t a lot of graphs will be generated.")
    (let ((return-value (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
                                            (alloca-return_type))))
      (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
-                         ;; in case of a non-local exit, zero out the number of returned values
-                         (with-return-values (return-values return-value abi)
-                                             (%store (%size_t 0) (number-of-return-values return-values))))
+       ;; in case of a non-local exit, zero out the number of returned values
+       (with-return-values (return-values return-value abi)
+         (cmp:irc-store (%size_t 0) (number-of-return-values return-values))))
      (cmp:with-irbuilder
       (body-irbuilder)
       (cmp:with-dbg-lexical-block

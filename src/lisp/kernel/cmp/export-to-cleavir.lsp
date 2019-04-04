@@ -66,6 +66,7 @@
           irc-verify-module-safe
           irc-add
           irc-add-clause
+          irc-and
           irc-basic-block-create
           irc-begin-block
           irc-br
@@ -78,10 +79,12 @@
           irc-exception-typeid*
           irc-extract-value
           irc-generate-terminate-code
+          irc-gep-variable
           irc-size_t-*current-source-pos-info*-filepos
           irc-size_t-*current-source-pos-info*-column
           irc-size_t-*current-source-pos-info*-lineno
           irc-icmp-eq
+          irc-icmp-sle
           irc-icmp-slt
           irc-intrinsic
           irc-load
@@ -93,8 +96,10 @@
           irc-ret-void
           irc-store
           irc-switch
-          irc-unreachable
+          irc-tag-fixnum
           irc-trunc
+          irc-unreachable
+          irc-untag-fixnum
           jit-constant-i1
           jit-constant-i8
           jit-constant-i32
