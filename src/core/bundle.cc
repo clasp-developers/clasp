@@ -287,7 +287,7 @@ Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
           if (!global_options->_SilentStartup) {
             printf("%s:%d Found %s so setting ASDF_OUTPUT_TRANSLATIONS to /:\n", __FILE__, __LINE__, modules_quicklisp.string().c_str() );
           }
-          setenv("ASDF_OUTPUT_TRANSLATIONS","/:",1);
+//          setenv("ASDF_OUTPUT_TRANSLATIONS","/:",1);
         }
         gotQuicklispPath = true;
         this->_Directories->_QuicklispDir = modules_quicklisp;
