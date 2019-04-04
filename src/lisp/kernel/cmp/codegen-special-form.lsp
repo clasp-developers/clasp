@@ -193,7 +193,9 @@
             (codegen funcDesignator function-form env)
             (codegen temp-mv-result form env)
 ;;            (irc-intrinsic "saveToMultipleValue0" temp-mv-result)
-            (let ((register-ret (irc-intrinsic "cc_call_multipleValueOneFormCallWithRet0" (irc-load funcDesignator) (irc-load temp-mv-result) )))
+            (let ((register-ret (irc-intrinsic "cc_call_multipleValueOneFormCallWithRet0"
+                                               (irc-load funcDesignator)
+                                               (irc-load temp-mv-result))))
               (irc-store-result result register-ret)))
           (codegen result `(core:multiple-value-funcall
                             ,function-form
@@ -247,13 +249,14 @@
                              (t (error "Handle codegen-setq with ~s" classified)))
                            ))
 		    (codegen temp-res cur-expr env)
-		    (irc-store temp-res target-ref))) ;;(irc-intrinsic "copyTsp" target-ref temp-res)))
+		    (irc-store (irc-load temp-res) target-ref)))
 		;; symbol was macroexpanded use SETF
 		(progn
-		  (cmp-log "The symbol[%s] was macroexpanded to result[%s] setting with SETF%N" cur-var expanded)
+		  (cmp-log "The symbol[%s] was macroexpanded to result[%s] setting with SETF%N"
+                           cur-var expanded)
 		  (codegen temp-res `(setf ,expanded ,cur-expr) env))))
 	  (unless (cddr cur)
-	    (irc-store temp-res result)))
+	    (irc-store (irc-load temp-res) result)))
 	;; There were no pairs, return nil
 	(codegen-literal result nil env))))
 
@@ -834,12 +837,8 @@ jump to blocks within this tagbody."
            (irc-gep-variable cast (list (jit-constant-i32 0)
                                         (jit-constant-i32 +simple-vector-length-slot+))
                              "vector-length-address"))
-         (untagged-length (irc-load length-address "vector-length"))
-         ;; fixnumize it
-         (length (irc-shl untagged-length +fixnum-shift+
-                          :nuw t :label "vector-length-tagged")))
-    ;; ...and actually treat the fixnum as a T*
-    (irc-int-to-ptr length %t*% "vector-length-fixnum")))
+         (untagged-length (irc-load length-address "vector-length")))
+    (irc-tag-fixnum untagged-length "vector-length")))
 
 (defun codegen-vector-length (result rest env)
   (let ((form (car rest))
@@ -850,12 +849,10 @@ jump to blocks within this tagbody."
 ;;; CORE::%ARRAY-DIMENSION
 
 (defun gen-%array-dimension (array axisn)
-  (let* ((untagged-axisn (irc-lshr (irc-ptr-to-int axisn %i64%) +fixnum-shift+
-                                  :exact t :label "untagged-axisn"))
+  (let* ((untagged-axisn (irc-untag-fixnum axisn %i64% "untagged-axisn"))
          (untagged-dim (irc-intrinsic-call "cc_arrayDimension"
-                                           (list array untagged-axisn)))
-         (dim (irc-shl untagged-dim +fixnum-shift+ :nuw t :label "array-dimension")))
-    (irc-int-to-ptr dim %t*%)))
+                                           (list array untagged-axisn))))
+    (irc-tag-fixnum untagged-dim "array-dimension")))
 
 (defun codegen-%array-dimension (result rest env)
   (let ((array-form (first rest))

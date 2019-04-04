@@ -728,13 +728,6 @@ the type LLVMContexts don't match - so they were defined in different threads!"
     (if (equal val-type dest-contained-type)
         (llvm-sys:create-store *irbuilder* val destination nil)
         (cond
-          ;; Write into %t**%
-          ((and (equal val-type %t**%)
-                (equal dest-contained-type %t*%))
-           (llvm-sys:create-store *irbuilder* (irc-load val) destination nil))
-          ((and (equal val-type %t*%)
-                (equal dest-contained-type %t*%))
-           (llvm-sys:create-store *irbuilder* val destination nil))
           ((and (equal val-type %tsp%)
                 (equal dest-contained-type %t*%))
            (let ((t* (irc-smart-ptr-extract val)))

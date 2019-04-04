@@ -284,7 +284,8 @@
                         "cc_call_multipleValueOneFormCallWithRet0" 
                         (list (in (first (cleavir-ir:inputs instruction)))
                               (cmp:irc-load return-value)))))
-      (cmp:irc-store call-result return-value)
+      ;; call-result is a T_mv, and return-valuea  T_mv*
+      (cmp:irc-simple-store call-result return-value)
       (cc-dbg-when *debug-log*
                    (format *debug-log*
                            "    translate-simple-instruction multiple-value-call-instruction: ~a~%" 
