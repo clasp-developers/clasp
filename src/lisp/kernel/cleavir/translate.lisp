@@ -196,8 +196,8 @@ when this is t a lot of graphs will be generated.")
    (let ((return-value (alloca-return_type)))
      (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
        ;; in case of a non-local exit, zero out the number of returned values
-       (with-return-values (return-values return-value abi)
-         (cmp:irc-store (%size_t 0) (number-of-return-values return-values))))
+       (with-return-values (return-value abi nret ret-regs)
+         (cmp:irc-store (%size_t 0) nret)))
      (cmp:with-irbuilder
       (body-irbuilder)
       (cmp:with-dbg-lexical-block

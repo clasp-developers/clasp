@@ -206,45 +206,34 @@ And convert everything to JIT constants."
 	      (%intrinsic-call "cc_multipleValuesArrayAddress" nil))))
   *function-current-multiple-value-array-address*)
 
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; RETURN-VALUES
-;;;
-;;; Simplifies access to the return values stored
-;;; in registers and in the multiple-value-array
-;;; %numvals - returns a Value that stores the number of return values
-;;; %return-registers - a list of the first (register-return-size) return values
-;;;                     returned in registers (X86 System V ABI says 1pointer + 1integer)
-;;; %multiple-value-array-address - The an llvm::Value address of the multiple-value array
-;;;                                 It is only set if the array is needed.
-;;;
-(defclass return-values ()
-  ((%sret-arg :initarg :sret-arg :accessor sret-arg)
-   (%numvals :initarg :numvals :accessor number-of-return-values)
-   (%return-registers :initarg :return-registers :accessor return-registers)))
-
-
 (defvar +pointers-returned-in-registers+ 1)
-;; Only one pointer and one integer can be returned in registers return value returned in a register
+;; Only one pointer and one integer can be returned in registers (from X86 System V ABI)
+;; so we return one pointer (value) and the number of returned values.
 
-(defgeneric make-return-values (return-sret-arg abi))
+(defgeneric make-return-nret (return-value abi))
 
-(defmethod make-return-values (return-sret-arg (abi abi-x86-64))
-  (make-instance 'return-values
-		 :sret-arg return-sret-arg
-		 :numvals (llvm-sys:create-in-bounds-gep cmp:*irbuilder* return-sret-arg (list (%i32 0) (%i32 1)) "ret-nvals")
-		 :return-registers (list (llvm-sys:create-in-bounds-gep cmp:*irbuilder* return-sret-arg (list (%i32 0) (%i32 0)) "ret-regs"))))
+(defmethod make-return-nret (return-value (abi abi-x86-64))
+  (cmp:irc-gep-variable return-value (list (%i32 0) (%i32 1)) "ret-nvals"))
 
-(defun return-value-elt (return-vals idx)
+(defgeneric make-return-regs (return-value abi))
+
+(defmethod make-return-regs (return-value (abi abi-x86-64))
+  (list ; only one register.
+   (cmp:irc-gep-variable return-value (list (%i32 0) (%i32 0)) "reg-regs")))
+
+(defun return-value-elt (return-regs idx)
   (if (< idx +pointers-returned-in-registers+)
-      (elt (return-registers return-vals) idx)
+      (elt return-regs idx)
       (let ((multiple-value-pointer (multiple-value-array-address)))
         (%gep cmp::%t*[0]*% multiple-value-pointer (list 0 idx)))))
 
-(defmacro with-return-values ((return-vals return-value abi) &body body)
-  `(let* ((,return-vals (make-return-values ,return-value ,abi)))
-     ,@body))
+(defmacro with-return-values ((return-value abi nret ret-regs) &body body)
+  (let ((rvs (gensym "RETURN-VALUE")) (abis (gensym "ABI")))
+    `(let* ((,rvs ,return-value) (,abis ,abi)
+            (,nret (make-return-nret ,rvs ,abis))
+            (,ret-regs (make-return-regs ,rvs ,abis)))
+       (declare (ignorable ,nret ,ret-regs))
+       ,@body)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

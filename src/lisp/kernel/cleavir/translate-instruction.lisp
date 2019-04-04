@@ -70,10 +70,10 @@
     ((instruction cleavir-ir:fixed-to-multiple-instruction) return-value (abi abi-x86-64) function-info)
   (let ((inputs (cleavir-ir:inputs instruction)))
     ;; Write the first return value into the result
-    (with-return-values (return-values return-value abi)
-      (cmp:irc-simple-store (%size_t (length inputs)) (number-of-return-values return-values))
+    (with-return-values (return-value abi nret ret-regs)
+      (cmp:irc-simple-store (%size_t (length inputs)) nret)
       (dotimes (i (length inputs))
-        (cmp:irc-simple-store (in (elt inputs i)) (return-value-elt return-values i))))))
+        (cmp:irc-simple-store (in (elt inputs i)) (return-value-elt ret-regs i))))))
 
 (defmethod translate-simple-instruction
     ((instr cleavir-ir:multiple-to-fixed-instruction) return-value (abi abi-x86-64) function-info)
@@ -83,12 +83,12 @@
   ;; switch number-of-return-values { case 0: go zero; default: go default;}
   ;; zero: out = nil; go final;
   ;; default: out = return-value-0; go final;
-  (with-return-values (return-vals return-value abi)
+  (with-return-values (return-value abi nret return-regs)
     (let* ((outputs (cleavir-ir:outputs instr))
            (nouts (length outputs))
-           (rets (loop for i below nouts collect (return-value-elt return-vals i)))
+           (rets (loop for i below nouts collect (return-value-elt return-regs i)))
            (default (cmp:irc-basic-block-create "mtf-enough"))
-           (switch (cmp:irc-switch (cmp:irc-load (number-of-return-values return-vals)) default nouts))
+           (switch (cmp:irc-switch (cmp:irc-load nret) default nouts))
            (final (cmp:irc-basic-block-create "mtf-final"))
            (default-vars (prog2 (cmp:irc-begin-block default)
                              (mapcar #'cmp:irc-load rets)
