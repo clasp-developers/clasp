@@ -330,7 +330,6 @@ def collect_bclasp_lisp_files(**kwargs):
         "src/lisp/kernel/lsp/fli",
         "src/lisp/modules/sockets/sockets",
         "src/lisp/kernel/lsp/top",
-        "src/lisp/kernel/cmp/export-to-cleavir",
         "src/lisp/kernel/tag/pre-epilogue-bclasp",
         "src/lisp/kernel/lsp/epilogue-bclasp",
         "src/lisp/kernel/tag/bclasp"
