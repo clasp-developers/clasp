@@ -130,10 +130,11 @@
             with-track-llvm-time
             irc-add
             irc-add-clause
-            irc-alloca-tmv
-            irc-alloca-i8*
-            irc-alloca-i8**
-            irc-alloca-mv-struct
+            alloca
+            alloca-i8*
+            alloca-i32
+            alloca-return
+            alloca-va_list
             irc-and
             irc-basic-block-create
             irc-begin-block

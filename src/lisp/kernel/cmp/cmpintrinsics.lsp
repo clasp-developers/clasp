@@ -374,7 +374,7 @@ Boehm and MPS use a single pointer"
                                         :nargs (second arguments) ;; The number of arguments
                                         :register-args (nthcdr 2 arguments)
                                         :use-only-registers (calling-convention-configuration-use-only-registers setup)
-                                        :va-list* (irc-alloca-va_list)
+                                        :va-list* (alloca-va_list)
                                         :register-save-area* register-save-area*
                                         :cleavir-lambda-list cleavir-lambda-list
                                         :rest-alloc rest-alloc)))))

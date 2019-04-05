@@ -26,7 +26,7 @@
          (src-remaining-nargs* (%intrinsic-call "cc_vaslist_remaining_nargs_address" (list vaslist-value)))
          (src-va_list*         (%intrinsic-call "cc_vaslist_va_list_address" (list vaslist-value)
                                                 "vaslist_address"))
-         (local-va_list*       (alloca-va_list "local-va_list"))
+         (local-va_list*       (cmp:alloca-va_list "local-va_list"))
          (_                    (%intrinsic-call "llvm.va_copy"
                                                 (list (cmp:irc-pointer-cast local-va_list* cmp:%i8*%)
                                                       (cmp:irc-pointer-cast src-va_list* cmp:%i8*%))))
@@ -266,7 +266,7 @@
                 ;; Closure is dynamic extent, so we can use stack storage.
                 (%intrinsic-call
                  "cc_stack_enclose"
-                 (list* (alloca-i8 (core:closure-with-slots-size ninputs) "stack-allocated-closure")
+                 (list* (cmp:alloca-i8 (core:closure-with-slots-size ninputs) "stack-allocated-closure")
                         enclose-args)
                  (format nil "closure->~a" lambda-name)))
                (t

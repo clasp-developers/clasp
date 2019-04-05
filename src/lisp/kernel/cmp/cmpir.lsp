@@ -185,7 +185,7 @@
 (defun irc-new-unbound-function-value-environment (old-env &key number-of-functions (label "function-frame"))
   "Create a new function environment and a new runtime environment"
   (let* ((new-env (make-function-value-environment number-of-functions old-env))
-	 (new-renv (irc-alloca-af* new-env :label label)))
+	 (new-renv (alloca-af* :label label)))
     (or new-renv (error "The new-renv is nil - it shouldn't be"))
     (irc-set-renv new-env new-renv)
     new-env))
@@ -203,7 +203,7 @@
 (defun irc-new-unbound-tagbody-environment (old-env &key (label "tagbody-frame"))
   "Create a new tagbody environment and a new runtime environment"
   (let* ((new-env (make-tagbody-environment old-env))
-	 (new-renv (irc-alloca-af* new-env :label label)))
+	 (new-renv (alloca-af* :label label)))
     (or new-renv (error "The new-renv is nil - it shouldn't be"))
     (irc-set-renv new-env new-renv)
     new-env))
@@ -238,7 +238,7 @@
 		    (lambda-list-handler (make-value-environment lambda-list-handler old-env))
 		    (number-of-arguments (make-value-environment-for-number-of-entries number-of-arguments old-env))
 		    (t (error "You must provide either a lambda-list-handler or number-of-arguments"))))
-	 (new-renv (irc-alloca-af* new-env :label label)))
+	 (new-renv (alloca-af* :label label)))
     (or new-renv (error "The new-renv is nil - it shouldn't be"))
     (irc-set-renv new-env new-renv)
     new-env))
@@ -269,7 +269,7 @@
   (or number-of-arguments
       (error "Only pass one of :lambda-list-handler or :number-of-arguments"))
   (let* ((new-env (make-value-environment-for-number-of-entries number-of-arguments old-env))
-	 (new-renv (irc-alloca-af*-value-frame-of-size new-env number-of-arguments :label label)))
+	 (new-renv (alloca-af* :label label)))
     (or new-renv (error "The new-renv is nil - it shouldn't be"))
     (irc-set-renv new-env new-renv)
     new-env))
@@ -290,7 +290,7 @@
 
 (defun irc-make-block-environment-set-parent (name parent-env)
   (let* ((block-env (make-block-environment name parent-env))
-         (new-renv (irc-alloca-af* block-env :label "block-renv"))
+         (new-renv (alloca-af* :label "block-renv"))
          (size (jit-constant-size_t 1))
          (visible-ancestor-environment (current-visible-environment parent-env t))
          (parent-renv-ref (if (core:function-container-environment-p visible-ancestor-environment)
@@ -453,7 +453,7 @@
 
 (defun irc-unwind-unwind-protect-environment (env)
   (let ((unwind-form (unwind-protect-environment-cleanup-form env))
-	(unwind-result (irc-alloca-t*)))
+	(unwind-result (alloca-t*)))
     ;; Generate the unwind-form code in the parent environment of the unwind-protect form
     (codegen unwind-result unwind-form (get-parent-environment env))
     ))
@@ -867,7 +867,7 @@ the type LLVMContexts don't match - so they were defined in different threads!"
               (*irbuilder-function-body* ,irbuilder-body)
               (*gv-current-function-name* (module-make-global-string *current-function-name* "fn-name")))
          (with-irbuilder (*irbuilder-function-body*)
-           (with-new-function-prepare-for-try (,fn *irbuilder-function-alloca*)
+           (with-new-function-prepare-for-try (,fn)
              (with-try
               (with-dbg-function (,function-name
                                   :lineno (core:source-pos-info-lineno core:*current-source-pos-info*)
@@ -1068,7 +1068,7 @@ and then the irbuilder-alloca, irbuilder-body."
 	(irc-set-insert-point-instruction entry-branch irbuilder-alloca)
 	(irc-set-insert-point-basic-block body-bb irbuilder-body)))
     (setf-metadata func-env :cleanup ())
-    (let ((result               (irc-alloca-tmv func-env :irbuilder irbuilder-alloca :label "result")))
+    (let ((result (let ((*irbuilder-function-alloca* irbuilder-alloca)) (alloca-tmv "result"))))
       (values fn func-env cleanup-block irbuilder-alloca irbuilder-body result fn-description))))
 
 
@@ -1139,19 +1139,6 @@ and then the irbuilder-alloca, irbuilder-body."
   "Push code that should be executed when this environment is left"
   (push-metadata env :unwind unwind-code))
 
-(defmacro with-alloca-insert-point (irbuilder &key alloca (align 8) init)
-  "Switch to the alloca-insert-point and generate code to alloca a local variable.
-Within the _irbuilder_ dynamic environment...
-- insert the given alloca instruction using the provided irbuilder 
-- insert the initialization code (if provided) right after the alloca "
-  (let ((alloca-sym (gensym))
-	(found-gs (gensym)))
-    `(with-irbuilder (,irbuilder)
-       (let ((,alloca-sym ,alloca))
-         (llvm-sys:set-alignment ,alloca-sym ,align) ; force 8-byte alignment
-	 (when ,init (funcall ,init ,alloca-sym))
-	 ,alloca-sym))))
-
 (defmacro with-irbuilder ((irbuilder) &rest code)
   "Set *irbuilder* to the given IRBuilder"
   `(let ((*irbuilder* ,irbuilder))
@@ -1159,93 +1146,41 @@ Within the _irbuilder_ dynamic environment...
      (multiple-value-prog1 (progn ,@code)
        (cmp-log "Leaving irbuilder --> %s%N" (bformat nil "%s" *irbuilder*)))))
 
+;;; ALLOCA functions
 
-(defun irc-alloca-tmv (env &key (irbuilder *irbuilder-function-alloca*) (label ""))
-  (with-alloca-insert-point irbuilder
-    :alloca (llvm-sys::create-alloca *irbuilder* %tmv% (jit-constant-i32 1) label)
-    :init (lambda (a) (irc-intrinsic "newTmv" a))))
+(defun alloca (type size &optional (label ""))
+  (let ((alloca
+          (llvm-sys:create-alloca *irbuilder-function-alloca*
+                                  type (jit-constant-i32 size) label)))
+    (llvm-sys:set-alignment alloca 8) ; 8-byte alignment
+    alloca))
 
-(defun irc-alloca-return-type (&key (irbuilder *irbuilder-function-alloca*) (label ""))
-  (with-alloca-insert-point
-    irbuilder
-    :alloca (llvm-sys:create-alloca irbuilder %return_type% (jit-constant-i32 1) label)))
+(defun alloca-return (&optional (label "")) (alloca %return_type% 1 label))
+(defun alloca-t* (&optional (label "")) (alloca %t*% 1 label))
+(defun alloca-tmv (&optional (label "")) (alloca %tmv% 1 label))
+(defun alloca-af* (&key (label "")) (alloca %af*% 1 label))
+(defun alloca-i8 (size &optional (label "var")) (alloca %i8% size label))
+(defun alloca-i8* (&optional (label "i8*-")) (alloca %i8*% 1 label))
+(defun alloca-i32 (&optional (label "i32-")) (alloca %i32% 1 label))
+(defun alloca-va_list (&optional (label "va_list")) (alloca %va_list% 1 label))
+(defun alloca-size_t (&optional (label "var")) (alloca %size_t% 1 label))
+(defun alloca-vaslist (&key (label "va_list")) (alloca %vaslist% 2 label))
 
-(defun irc-alloca-t* (&key (irbuilder *irbuilder-function-alloca*) (label ""))
-  "Allocate a T_O* on the stack"
-  (with-alloca-insert-point 
-    irbuilder
-    :alloca (llvm-sys:create-alloca *irbuilder* %t*% (jit-constant-i32 1) label)))
-
-(defun irc-alloca-af* (env &key (irbuilder *irbuilder-function-alloca*) (label ""))
-  (cmp-log "irc-alloca-af* label: %s for %s%N" label irbuilder)
-  (with-alloca-insert-point irbuilder
-    :alloca (llvm-sys::create-alloca *irbuilder* %af*% (jit-constant-i32 1) label)))
-
-(defun irc-alloca-af*-value-frame-of-size (env size &key (irbuilder *irbuilder-function-alloca*) (label ""))
-  (cmp-log "irc-alloca-af*-value-frame-of-size label: %s for %s%N" label irbuilder)
-  (with-alloca-insert-point irbuilder
-    :alloca (llvm-sys::create-alloca *irbuilder* %af*% (jit-constant-i32 1) label)))
-
-(defun irc-alloca-i32-no-init (&key (irbuilder *irbuilder-function-alloca*) (label "i32-"))
-  "Allocate space for an i32"
-  (llvm-sys::create-alloca irbuilder %i32% (jit-constant-i32 1) label))
-
-(defun irc-alloca-i8 (env init-val &key (irbuilder *irbuilder-function-alloca*) (label "i8-"))
-  "Allocate space for an i8"
-  (with-alloca-insert-point irbuilder
-    :alloca (llvm-sys::create-alloca *irbuilder* %i8% (jit-constant-i32 1) label)
-    :init (lambda (a) (irc-store (jit-constant-i8 init-val) a))))
+(defun alloca-dx-list (&key length (label "dx-list"))
+  ;; Unlike most allocas, we want dx object allocas to be done inline with the code,
+  ;; as the length will have been computed at runtime. Kinda like a C VLA.
+  ;; So we use *irbuilder*, and don't send the length through constantization.
+  (llvm-sys:create-alloca *irbuilder* %cons% length label))
 
 
-(defun irc-alloca-i32 (env init-val &key (irbuilder *irbuilder-function-alloca*) (label "i32-"))
-  "Allocate space for an i32"
-  (with-alloca-insert-point irbuilder
-    :alloca (llvm-sys::create-alloca *irbuilder* %i32% (jit-constant-i32 1) label)
-    :align 0 ; default
-    :init (lambda (a) (irc-store (jit-constant-i32 init-val) a))))
-
-(defun irc-alloca-va_list (&key (irbuilder *irbuilder-function-alloca*) (label "va_list"))
-  "Alloca space for an va_list"
-  (with-alloca-insert-point irbuilder
-    :alloca (llvm-sys::create-alloca *irbuilder* %va_list% (jit-constant-size_t 1) label)
-    :init nil))
-
-(defun irc-alloca-size_t (&key (irbuilder *irbuilder-function-alloca*) (label "va_list"))
-  "Alloca space for an va_list"
-  (with-alloca-insert-point irbuilder
-    :alloca (llvm-sys::create-alloca *irbuilder* %size_t% (jit-constant-size_t 1) label)
-    :init nil))
-
-(defun irc-alloca-register-save-area (&key (irbuilder *irbuilder-function-alloca*) (label "va_list"))
-  "Alloca space for an va_list"
-  (with-alloca-insert-point irbuilder
-    :alloca (llvm-sys::create-alloca *irbuilder* %register-save-area% (jit-constant-size_t 1) label)
-    :init (lambda (alloca)
-            (irc-intrinsic "llvm.experimental.stackmap" (jit-constant-i64 1234567) (jit-constant-i32 0) alloca))))
-
-(defun irc-alloca-vaslist (&key (irbuilder *irbuilder-function-alloca*) (label "va_list"))
-  "Alloca space for an vaslist and a backup so that it can be rewound"
-  (with-alloca-insert-point irbuilder
-    :alloca (llvm-sys::create-alloca *irbuilder* %vaslist% (jit-constant-size_t 2) label)
-    :init nil))
-
-(defun irc-alloca-dynamic-extent-list (&key (irbuilder *irbuilder-function-alloca*)
-                                            length
-                                         (label "dext-list"))
-  (llvm-sys:create-alloca irbuilder %cons% length label))
-
-(defun irc-alloca-i8* (&key (irbuilder *irbuilder-function-alloca*) (label "i8*-"))
-  "Allocate space for an i8*"
-  (llvm-sys::create-alloca irbuilder %i8*% (jit-constant-i32 1) label))
-
-(defun irc-alloca-i8** (&key (irbuilder *irbuilder-function-alloca*) (label "i8**-"))
-  "Allocate space for an i8**"
-  (llvm-sys::create-alloca irbuilder %i8**% (jit-constant-i32 1) label))
-
-(defun irc-alloca-mv-struct (&key (irbuilder *irbuilder-function-alloca*) (label "V"))
-  (llvm-sys:create-alloca irbuilder %mv-struct% (jit-constant-i32 1) label))
-
-
+(defun irc-register-save-area (&key (irbuilder *irbuilder-function-alloca*) (label "va_list"))
+  "Alloca space for a register save area, and keep it in the stack map."
+  (with-irbuilder (irbuilder)
+    (let ((rsa
+            (llvm-sys:create-alloca *irbuilder* %register-save-area% (jit-constant-size_t 1) label)))
+      (irc-intrinsic "llvm.experimental.stackmap" (jit-constant-i64 1234567) (jit-constant-i32 0)
+                     rsa)
+      rsa)))
 
 ; ----------------------------------------------------------------------
 (defun null-tsp ()

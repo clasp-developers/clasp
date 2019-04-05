@@ -200,7 +200,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
       ((and (atom head) (symbolp head))
        (let ((nargs (length (cdr form)))
              args
-             (temp-result (irc-alloca-t*)))
+             (temp-result (alloca-t*)))
          ;; evaluate the arguments into the array
          ;;  used to be done by --->    (codegen-evaluate-arguments (cdr form) evaluate-env)
          (do* ((cur-exp (cdr form) (cdr cur-exp))
@@ -236,8 +236,8 @@ then compile it and return (values compiled-llvm-function lambda-name)"
       (t
        (let ((nargs (length call-args))
              args
-             (temp-closure (irc-alloca-t*))
-             (temp-result (irc-alloca-t*)))
+             (temp-closure (alloca-t*))
+             (temp-result (alloca-t*)))
          ;; evaluate the arguments into the array
          ;;  used to be done by --->    (codegen-evaluate-arguments (cdr form) evaluate-env)
          (do* ((cur-exp call-args (cdr cur-exp))

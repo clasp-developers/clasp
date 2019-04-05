@@ -91,9 +91,9 @@
     ehresume))
 
 (defun alloca-exn.slot ()
-  (alloca-i8* "exn.slot"))
+  (cmp:alloca-i8* "exn.slot"))
 (defun alloca-ehselector.slot ()
-  (alloca-i32 "ehselector.slot"))
+  (cmp:alloca-i32 "ehselector.slot"))
 
 ;;; Note: Previously, we had cleanup blocks in almost every function, which popped a "shadow stack"
 ;;; loaded with arguments for the debugger. Stackmaps mean we no longer have to do that, but similar

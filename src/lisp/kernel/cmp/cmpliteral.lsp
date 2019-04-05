@@ -771,7 +771,7 @@ Return the index of the load-time-value"
                                                                    (llvm-sys:constant-array-get function-descs-type (coerce *function-description-vector* 'list))
                                                                    "function-descs")))
               (cmp:with-run-all-entry-codegen
-                  (let ((transient-vector (cmp:irc-alloca-i8* :label "transients")))
+                  (let ((transient-vector (cmp:alloca-i8* "transients")))
                     (cmp:irc-intrinsic-call "cc_initialize_gcroots_in_module"
                                             (list *gcroots-in-module*
                                                   (cmp:irc-pointer-cast correct-size-holder cmp:%t**% "")

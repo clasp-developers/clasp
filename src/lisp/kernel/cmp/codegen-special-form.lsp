@@ -134,7 +134,7 @@
   (cmp-log "Dumping the module%N")
   (cmp-log-dump-module *the-module*)
   (if forms
-      (let ((temp-val (irc-alloca-t* :label "temp")))
+      (let ((temp-val (alloca-t* "temp")))
         (do* ((cur forms (cdr cur))
               (form (car cur) (car cur)))
              ((endp cur) nil)
@@ -187,8 +187,8 @@
     (let* ((function-form (car rest))
            (forms (cdr rest)))
       (if (= (length forms) 1)
-          (let ((temp-mv-result (irc-alloca-tmv env :label "temp-mv-result"))
-                (funcDesignator (irc-alloca-t* :label "funcDesignator"))
+          (let ((temp-mv-result (alloca-tmv "temp-mv-result"))
+                (funcDesignator (alloca-t* "funcDesignator"))
                 (form (car forms)))
             (codegen funcDesignator function-form env)
             (codegen temp-mv-result form env)
@@ -219,7 +219,7 @@
 
 (defun codegen-setq (result setq-pairs env)
   "Carry out setq for a collection of pairs"
-  (let ((temp-res (irc-alloca-t* :label "tsetq")))
+  (let ((temp-res (alloca-t* "tsetq")))
     (if setq-pairs
 	(do* ((cur setq-pairs (cddr cur))
 	      (cur-var (car cur) (car cur))
@@ -286,8 +286,7 @@ env is the parent environment of the (result-af) value frame"
 	(do* ((cur-req (cdr reqvars) (cdr cur-req))
 	      (cur-exp exps (cdr cur-exp))
 	      (exp (car cur-exp) (car cur-exp))
-	      (temp (irc-alloca-t* :label "let") 
-		    (irc-alloca-t* :label "let")))
+	      (temp (alloca-t* "let") (alloca-t* "let")))
 	     ((endp cur-req) nil)
 	  (vector-push-extend temp temps)
 	  (dbg-set-current-source-pos exp)
@@ -393,7 +392,7 @@ env is the parent environment of the (result-af) value frame"
     (when (cdddr cond)
       (format t "compile-typeq-condition (cdddr cond) = ~a~%" (cdddr cond))
       (compiler-error (cdddr cond) "too many arguments for typeq"))
-    (let ((value (irc-alloca-t* :label "if-typeq-tsp")))
+    (let ((value (alloca-t* "if-typeq-tsp")))
       (codegen value object env)
       (let ((object-raw (irc-load value)))
         (case type
@@ -411,8 +410,8 @@ env is the parent environment of the (result-af) value frame"
 (defmacro define-fixnum-cmp (name operator)
   `(defun ,name (cond env thenb elseb)
      (let ((n1form (second cond)) (n2form (third cond))
-           (n1 (irc-alloca-t* :label "fixnum-cmp-1"))
-           (n2 (irc-alloca-t* :label "fixnum-cmp-2")))
+           (n1 (alloca-t* "fixnum-cmp-1"))
+           (n2 (alloca-t* "fixnum-cmp-2")))
        (codegen n1 n1form env)
        (codegen n2 n2form env)
        (irc-cond-br
@@ -427,8 +426,8 @@ env is the parent environment of the (result-af) value frame"
 ;;; so it's separate.
 (defun compile-eq-condition (cond env thenb elseb)
   (let ((n1form (second cond)) (n2form (third cond))
-        (n1 (irc-alloca-t* :label "eq-1"))
-        (n2 (irc-alloca-t* :label "eq-2")))
+        (n1 (alloca-t* "eq-1"))
+        (n2 (alloca-t* "eq-2")))
     (codegen n1 n1form env)
     (codegen n2 n2form env)
     (irc-cond-br
@@ -437,7 +436,7 @@ env is the parent environment of the (result-af) value frame"
 
 (defun compile-general-condition (cond env thenb elseb)
   "Generate code for cond that branches to one of the provided successor blocks"
-  (let ((test-temp-store (irc-alloca-t* :label "if-cond-tsp")))
+  (let ((test-temp-store (alloca-t* "if-cond-tsp")))
     (codegen test-temp-store cond env)
     (let ((test-result (llvm-sys:create-icmp-eq *irbuilder*
                                                 (irc-intrinsic "isTrue" (irc-load test-temp-store))
@@ -622,7 +621,7 @@ jump to blocks within this tagbody."
             (irc-begin-block after-return-block)))))))
 
 (defun codegen-return-from (result rest env)
-  (let* ((temp-mv-result (irc-alloca-tmv env :label "temp-mv-result"))
+  (let* ((temp-mv-result (alloca-tmv "temp-mv-result"))
 	 (block-symbol (car rest))
 	 (return-form (cadr rest)))
     (multiple-value-bind (recognizes-block-symbol inter-function block-env)
@@ -842,7 +841,7 @@ jump to blocks within this tagbody."
 
 (defun codegen-vector-length (result rest env)
   (let ((form (car rest))
-        (vector (irc-alloca-t* :label "vector-alloca")))
+        (vector (alloca-t* "vector-alloca")))
     (codegen vector form env)
     (irc-store (gen-vector-length (irc-load vector "vector")) result)))
 
@@ -856,9 +855,9 @@ jump to blocks within this tagbody."
 
 (defun codegen-%array-dimension (result rest env)
   (let ((array-form (first rest))
-        (array-alloca (irc-alloca-t* :label "array-alloca"))
+        (array-alloca (alloca-t* "array-alloca"))
         (axis-form (second rest))
-        (axis-alloca (irc-alloca-t* :label "axis-alloca")))
+        (axis-alloca (alloca-t* "axis-alloca")))
     (codegen array-alloca array-form env)
     (codegen axis-alloca axis-form env)
     (irc-store (gen-%array-dimension (irc-load array-alloca) (irc-load axis-alloca))
@@ -877,7 +876,7 @@ jump to blocks within this tagbody."
 
 (defun codegen-car (result rest env)
   (let ((cons-form (first rest))
-        (cons-alloca (irc-alloca-t* :label "cons")))
+        (cons-alloca (alloca-t* "cons")))
     (codegen cons-alloca cons-form env)
     (irc-store (irc-load (gen-memref-address
                           (irc-load cons-alloca)
@@ -886,7 +885,7 @@ jump to blocks within this tagbody."
 
 (defun codegen-cdr (result rest env)
   (let ((cons-form (first rest))
-        (cons-alloca (irc-alloca-t* :label "cons")))
+        (cons-alloca (alloca-t* "cons")))
     (codegen cons-alloca cons-form env)
     (irc-store (irc-load (gen-memref-address
                           (irc-load cons-alloca)
@@ -897,7 +896,7 @@ jump to blocks within this tagbody."
 
 (defun codegen-vaslist-pop (result rest env)
   (let ((form (car rest))
-        (vaslist (irc-alloca-t* :label "vaslist-pop-vaslist")))
+        (vaslist (alloca-t* "vaslist-pop-vaslist")))
     (codegen vaslist form env)
     (irc-store (irc-intrinsic "cx_vaslist_pop" (irc-load vaslist)) result)))
 
@@ -905,7 +904,7 @@ jump to blocks within this tagbody."
 
 (defun codegen-instance-stamp (result rest env)
   (let ((form (car rest))
-        (object (irc-alloca-t* :label "instance-stamp-instance")))
+        (object (alloca-t* "instance-stamp-instance")))
     (codegen object form env)
     (irc-store (irc-intrinsic "cx_read_stamp" (irc-load object)) result)))
 
@@ -956,12 +955,12 @@ jump to blocks within this tagbody."
             (transform-lambda-parts lambda-list canonical-declares code)
           (blog "got cleavir-lambda-list -> %s%N" cleavir-lambda-list)
           (let ((debug-on nil)
-                (eval-vaslist (irc-alloca-t* :label "bind-vaslist")))
+                (eval-vaslist (alloca-t* "bind-vaslist")))
             (codegen eval-vaslist vaslist evaluate-env)
             (let* ((lvaslist (irc-load eval-vaslist "lvaslist"))
                    (src-remaining-nargs* (irc-intrinsic "cc_vaslist_remaining_nargs_address" lvaslist))
                    (src-va_list* (irc-intrinsic "cc_vaslist_va_list_address" lvaslist "vaslist_address"))
-                   (local-va_list* (irc-alloca-va_list :label "local-va_list"))
+                   (local-va_list* (alloca-va_list "local-va_list"))
                    (_             (irc-intrinsic-call "llvm.va_copy" (list (irc-pointer-cast local-va_list* %i8*%)
                                                                            (irc-pointer-cast src-va_list* %i8*%))))
                    (callconv (make-calling-convention-impl :nargs (irc-load src-remaining-nargs*)
@@ -983,7 +982,7 @@ jump to blocks within this tagbody."
   (let* ((intrinsic-name (car form))
          (nargs (length (cdr form)))
          args
-         (temp-result (irc-alloca-t*)))
+         (temp-result (alloca-t*)))
     ;; evaluate the arguments into the array
     ;;  used to be done by --->    (codegen-evaluate-arguments (cdr form) evaluate-env)
     (do* ((cur-exp (cdr form) (cdr cur-exp))
@@ -1038,7 +1037,7 @@ jump to blocks within this tagbody."
          (intrinsic-name (second form))
          (fargs (cddr form))
          (nargs (length fargs))
-         (temp-result (irc-alloca-t*)))
+         (temp-result (alloca-t*)))
     ;; evaluate the arguments into the array
     ;;  used to be done by --->    (codegen-evaluate-arguments (cddr form) evaluate-env)
     (let* ((args (evaluate-foreign-arguments fargs foreign-types temp-result evaluate-env))
@@ -1066,7 +1065,7 @@ jump to blocks within this tagbody."
          (func-pointer (second form))
          (fargs (cddr form))
          (nargs (length fargs))
-         (temp-result (irc-alloca-t*)))
+         (temp-result (alloca-t*)))
     ;; evaluate the arguments into the array
     (let ((args (evaluate-foreign-arguments fargs foreign-types temp-result evaluate-env))
           (function-type (function-type-create-on-the-fly foreign-types)))
@@ -1155,7 +1154,7 @@ jump to blocks within this tagbody."
                        argument-types argument-translator-names
                        parameters place-holder function)
       form
-    (let ((closure-temp (irc-alloca-t*)))
+    (let ((closure-temp (alloca-t*)))
       (codegen closure-temp function env)
       (gen-defcallback c-name convention
                        return-type return-translator-name

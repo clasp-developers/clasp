@@ -103,9 +103,9 @@ when this is t a lot of graphs will be generated.")
 (defun make-datum-alloca (datum)
   (etypecase datum
     (cc-mir:typed-lexical-location
-     (alloca (cc-mir:lexical-location-type datum) 1 (datum-name-as-string datum)))
+     (cmp:alloca (cc-mir:lexical-location-type datum) 1 (datum-name-as-string datum)))
     (cleavir-ir:lexical-location
-     (alloca-t* (datum-name-as-string datum)))))
+     (cmp:alloca-t* (datum-name-as-string datum)))))
 
 (defun datum-alloca (datum)
   (or (gethash datum *vars*)
@@ -193,7 +193,7 @@ when this is t a lot of graphs will be generated.")
                                        function-info
                                        initial-instruction abi &key (linkage 'llvm-sys:internal-linkage))
   (with-debug-info-disabled
-   (let ((return-value (alloca-return_type)))
+   (let ((return-value (cmp:alloca-return "return-value")))
      (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
        ;; in case of a non-local exit, zero out the number of returned values
        (with-return-values (return-value abi nret ret-regs)
@@ -212,7 +212,7 @@ when this is t a lot of graphs will be generated.")
               (layout-basic-block block return-value abi function-info)))
        ;; finish up by jumping from the entry block to the body block
        (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
-                           (cmp:irc-br body-block))
+         (cmp:irc-br body-block))
        (cc-dbg-when *debug-log* (format *debug-log* "----------end layout-procedure ~a~%"
                                         (llvm-sys:get-name the-function)))
        the-function)))))

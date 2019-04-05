@@ -133,16 +133,13 @@ switch (nargs) {
                     (irc-undef-value-get %t*%))
                    ((eq rest-alloc 'dynamic-extent)
                     ;; Do the dynamic extent thing- alloca, then an intrinsic to initialize it.
-                    (let ((rrest
-                            (irc-alloca-dynamic-extent-list :irbuilder *irbuilder*
-                                                            :length nremaining
-                                                            :label "rrest")))
+                    (let ((rrest (alloca-dx-list :length nremaining :label "rrest")))
                       (irc-intrinsic-call "cc_gatherDynamicExtentRestArguments"
                                           (list (cmp:calling-convention-va-list* calling-conv)
                                                 nremaining
                                                 (irc-bit-cast rrest %t**%)))))
                    (varest-p
-                    (let ((temp-valist (irc-alloca-vaslist :label "rest")))
+                    (let ((temp-valist (alloca-vaslist :label "rest")))
                       (irc-intrinsic-call "cc_gatherVaRestArguments" 
                                           (list (cmp:calling-convention-va-list* calling-conv)
                                                 nremaining
@@ -614,7 +611,7 @@ a_p = a_p_temp; a = a_temp;
             :use-only-registers t)
            (make-calling-convention-configuration
             :use-only-registers may-use-only-registers ; if may-use-only-registers then debug-on is T and we could use only registers
-            :register-save-area* (irc-alloca-register-save-area :label "register-save-area"))))))
+            :register-save-area* (irc-register-save-area :label "register-save-area"))))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

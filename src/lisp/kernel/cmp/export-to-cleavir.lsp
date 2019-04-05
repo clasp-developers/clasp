@@ -127,10 +127,11 @@
           with-debug-info-generator
           with-irbuilder
           with-landing-pad
-          irc-alloca-vaslist
-          irc-alloca-va_list
-          irc-alloca-register-save-area
-          irc-alloca-size_t
+          alloca
+          alloca-i8
+          alloca-t*
+          alloca-va_list
+          alloca-return
           compile-reference-to-literal
           ltv-global
           bclasp-compile

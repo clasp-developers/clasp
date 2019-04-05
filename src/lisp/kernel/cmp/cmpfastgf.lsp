@@ -1034,14 +1034,14 @@
                              debug-on))
            (closure (first register-arguments))
            (number-of-arguments-passed (second register-arguments))
-           (return-value (irc-alloca-return-type :label "return-value"))
+           (return-value (alloca-return "return-value"))
            (continue-after-dispatch (irc-basic-block-create "continue-after-dispatch"))
-           (va-list* (let ((va-list* (irc-alloca-va_list :label "dispatch-va_list*")))
+           (va-list* (let ((va-list* (alloca-va_list "dispatch-va_list*")))
                        (when need-va-list
                          (irc-intrinsic-call-or-invoke "llvm.va_start" (list (irc-bit-cast va-list* %i8*% "va-list*-i8*"))))
                        va-list*))
-           (register-save-area* (irc-alloca-register-save-area :label "reg-save-area*"))
-           (vaslist* (irc-alloca-vaslist :label "vaslist*"))
+           (register-save-area* (irc-register-save-area :label "reg-save-area*"))
+           (vaslist* (alloca-vaslist :label "vaslist*"))
            (vaslist-t* (when need-vaslist
                          (maybe-spill-to-register-save-area register-arguments register-save-area*)
                          (irc-intrinsic "cc_rewind_vaslist" vaslist* va-list* register-save-area*))))

@@ -69,50 +69,6 @@
   "A nil in a T*"
   (%literal-value nil))
 
-(defun alloca (type size &optional (label ""))
-  (let ((alloca (llvm-sys:create-alloca cmp:*irbuilder-function-alloca* type (%i32 size) label)))
-    (llvm-sys:set-alignment alloca 8)   ; use 8-byte alignment
-    alloca))
-
-(defun alloca-vaslist (&optional (label "vaslist"))
-  (cmp:irc-alloca-vaslist :label label))
-
-(defun alloca-va_list (&optional (label "vaslist"))
-  (cmp:irc-alloca-va_list :label label))
-
-#+(or)
-(defun alloca-invocation-history-frame (&optional (label "ihf"))
-  (cmp:irc-alloca-invocation-history-frame :label label))
-
-(defun alloca-register-save-area (&optional (label "ihf"))
-  (cmp:irc-alloca-register-save-area :label label))
-
-(defun alloca-size_t (&optional (label "var"))
-  (cmp:irc-alloca-size_t :label label))
-
-(defun alloca-i32 (&optional (label "var"))
-  (alloca cmp:%i32% 1 label))
-
-(defun alloca-i8* (&optional (label "var"))
-  (alloca cmp:%i8*% 1 label))
-
-(defun alloca-i8 (num &optional (label "var"))
-  "Allocate a block of memory in the stack frame"
-  (alloca cmp:%i8% num label))
-
-(defun alloca-return_type (&optional (label "return-value"))
-  (alloca cmp:%return_type% 1 label))
-
-(defun alloca-t* (&optional (label "var"))
-  (let ((instr (alloca cmp:%t*% 1 label)))
-    #+(or)(cc-dbg-when *debug-log*
-                       (format *debug-log* "          alloca-t*   cmp:*irbuilder-function-alloca* = ~a~%" cmp:*irbuilder-function-alloca*)
-                       (format *debug-log* "          Wrote ALLOCA ~a into function ~a~%" instr (llvm-sys:get-name (instruction-llvm-function instr))))
-    instr))
-
-(defun alloca-mv-struct (&optional (label "V"))
-  (cmp:irc-alloca-mv-struct :label label))
-
 
 (defun instruction-llvm-function (instr)
   (llvm-sys:get-parent (llvm-sys:get-parent instr)))
