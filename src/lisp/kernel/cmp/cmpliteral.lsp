@@ -1116,12 +1116,6 @@ If it isn't NIL then copy the literal from its index in the LTV into result."
 (defun constants-table-value (index &optional (label "ltv") (holder cmp:*load-time-value-holder-global-var*))
   (cmp:irc-load (constants-table-reference index label holder)))
 
-(defun copy-constants-table-value (result index
-                                   &optional (holder cmp:*load-time-value-holder-global-var*))
-  (let ((ref (constants-table-reference index "copy-constants-table-value" holder )))
-    (cmp:irc-store (cmp:irc-load ref) result)))
-
-
 
 
 ;;; ------------------------------------------------------------
