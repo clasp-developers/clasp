@@ -737,19 +737,6 @@ the type LLVMContexts don't match - so they were defined in different threads!"
                 (llvm-sys:type-equal dest-contained-type %t*%))
            (let ((ptr (irc-extract-value val (list 0) "t*-part")))
              (llvm-sys:create-store *irbuilder* ptr destination nil)))
-          ;; Write into %tsp*%
-          ((and (llvm-sys:type-equal val-type %t*%)
-                (llvm-sys:type-equal dest-contained-type %tsp%))
-           (let* ((ptr val)
-                  (undef (llvm-sys:undef-value-get %tsp%))
-                  (tsp0 (llvm-sys:create-insert-value *irbuilder* undef ptr '(0) "tsp0")))
-             (llvm-sys:create-store *irbuilder* tsp0 destination nil)))
-          ((and (llvm-sys:type-equal val-type %return_type%)
-                (llvm-sys:type-equal dest-contained-type %tsp%))
-           (let* ((val (irc-intrinsic "valueOrNilIfZero" val))
-                  (undef (llvm-sys:undef-value-get %tsp%))
-                  (tsp0 (llvm-sys:create-insert-value *irbuilder* undef val '(0) "tsp0")))
-             (llvm-sys:create-store *irbuilder* tsp0 destination nil)))
           ;; Write into %tmv*%
           ((and (llvm-sys:type-equal val-type %return_type%)
                 (llvm-sys:type-equal dest-contained-type %tmv%))
@@ -1184,8 +1171,6 @@ and then the irbuilder-alloca, irbuilder-body."
       rsa)))
 
 ; ----------------------------------------------------------------------
-(defun null-tsp ()
-  (llvm-sys:constant-struct-get %tsp% (list (llvm-sys:constant-pointer-null-get %t*%))))
 
 (defun null-t-ptr ()
   (llvm-sys:constant-pointer-null-get %t*%))
@@ -1215,9 +1200,6 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
 
 (defun irc-insert-value (struct val idx-list &optional (label ""))
   (llvm-sys:create-insert-value *irbuilder* struct val idx-list label))
-
-(defun irc-set-smart-ptr (tsp-val t-ptr-val)
-  (irc-insert-value tsp-val t-ptr-val (list 0)))
 
 (defun irc-extract-value (struct idx-list &optional (label ""))
   ;; Sanity check - maybe unnecessary?
