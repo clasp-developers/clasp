@@ -12,7 +12,7 @@
       (error "%literal-ref of immediate value ~s is illegal" value))
     (let* ((literal-label (bformat nil "values-table[%d]" index))
            (gep (llvm-sys:create-const-gep2-64 cmp:*irbuilder*
-                                               (cmp:ltv-global)
+                                               (literal:ltv-global)
                                                0 index
                                                literal-label)))
       gep)))
@@ -32,7 +32,7 @@
   (let* ((index (%closurette-index lambda-name function source-info-handle
                                    filepos lineno column))
          (gep (llvm-sys:create-const-gep2-64 cmp:*irbuilder*
-                                             (cmp:ltv-global)
+                                             (literal:ltv-global)
                                              0 index
                                              (bformat nil "values-table[%d]" index))))
     gep))

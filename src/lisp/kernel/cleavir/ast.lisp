@@ -486,7 +486,7 @@ precalculated-vector and returns the index."
     (t
      (let ((value (cleavir-env:eval form env env)))
        (multiple-value-bind (index-or-immediate index-p)
-           (cmp:codegen-rtv-cclasp value)
+           (literal:codegen-rtv-cclasp value)
          (values index-or-immediate (not index-p)))))))
 
 (defun hoist-load-time-value (ast dynenv env)

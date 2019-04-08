@@ -63,7 +63,7 @@
   (let* ((index (clasp-cleavir-hir:precalc-value-instruction-index instruction))
          (label (safe-llvm-name (clasp-cleavir-hir:precalc-value-instruction-original-object instruction)))
          (value (cmp:irc-load
-                 (cmp:irc-gep-variable (cmp:ltv-global) (list (%size_t 0) (%i64 index)) label))))
+                 (cmp:irc-gep-variable (literal:ltv-global) (list (%size_t 0) (%i64 index)) label))))
     (out value (first (cleavir-ir:outputs instruction)))))
 
 (defmethod translate-simple-instruction

@@ -109,6 +109,8 @@
             compile-error-if-not-enough-arguments
             compile-in-env
             compile-lambda-function
+            compile-lambda-list-code
+            make-calling-convention-impl
             bclasp-compile-form
             compile-form
             compiler-error
@@ -131,6 +133,8 @@
             irc-add
             irc-add-clause
             alloca
+            alloca-t*
+            alloca-i8
             alloca-i8*
             alloca-i32
             alloca-return
@@ -150,6 +154,7 @@
             irc-create-invoke-default-unwind
             irc-create-landing-pad
             irc-exception-typeid*
+            irc-extract-value
             irc-generate-terminate-code
             irc-gep
             irc-gep-variable
@@ -192,6 +197,7 @@
             llvm-link
             link-builtins-module
             load-bitcode
+            setup-calling-convention
             initialize-calling-convention
             treat-as-special-operator-p
             typeid-core-unwind
@@ -234,6 +240,7 @@
             irc-function-cleanup-and-return
             %RUN-AND-LOAD-TIME-VALUE-HOLDER-GLOBAL-VAR-TYPE%
             codegen-startup-shutdown
+            compute-rest-alloc
             )))
 
 ;;; exports for runall
