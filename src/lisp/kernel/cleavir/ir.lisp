@@ -276,7 +276,7 @@ Otherwise do a variable shift."
 (defun %gep (type object indices &optional (label "gep"))
   "Check the type against the object type and if they match return the GEP.
 And convert everything to JIT constants."
-  (unless (equal type (llvm-sys:get-type object))
+  (unless (llvm-sys:type-equal type (llvm-sys:get-type object))
     (error "%gep expected object of type ~a but got ~a of type ~a"
            type object (llvm-sys:get-type object)))
   (let ((converted-indices (mapcar (lambda (x) (%i32 x)) indices)))
