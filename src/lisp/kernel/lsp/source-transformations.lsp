@@ -47,7 +47,7 @@
                ,(simple-compare-args fun arg next)
                nil))))
 
-  (defun expand-compare (form fun args)
+  (defun expand-compare (form fun args &optional (one-arg-result-type 'number))
     (if (proper-list-p args)
         (case (length args)
           ((0)
@@ -55,7 +55,7 @@
            form)
           ((1)
            ;; preserve nontoplevelness and side effects
-           `(progn (the t ,(first args)) t))
+           `(progn (the ,one-arg-result-type ,(first args)) t))
           ((2)
            `(,fun ,@args))
           (otherwise
