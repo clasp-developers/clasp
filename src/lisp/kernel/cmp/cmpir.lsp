@@ -154,7 +154,6 @@
   )
 
 
-
 (defun irc-set-function-for-environment (env fn)
   (setf-metadata env :function fn))
 
@@ -180,8 +179,6 @@
   (lookup-metadata env :cleanup-landing-pad-block))
 
 
-
-
 (defun irc-new-unbound-function-value-environment (old-env &key number-of-functions (label "function-frame"))
   "Create a new function environment and a new runtime environment"
   (let* ((new-env (make-function-value-environment number-of-functions old-env))
@@ -190,15 +187,12 @@
     (irc-set-renv new-env new-renv)
     new-env))
 
-
 (defun irc-new-function-value-environment (old-env &key functions (label "function-frame"))
   "Create a new function environment and a new runtime environment"
   (let ((new-env (irc-new-unbound-function-value-environment old-env :number-of-functions (length functions))))
     (dolist (fn functions)
       (bind-function new-env (car fn) #'(lambda () (print "Dummy func"))))
     new-env))
-
-
 
 (defun irc-new-unbound-tagbody-environment (old-env &key (label "tagbody-frame"))
   "Create a new tagbody environment and a new runtime environment"
@@ -208,26 +202,20 @@
     (irc-set-renv new-env new-renv)
     new-env))
 
-
 (defun irc-new-tagbody-environment (old-env &key (label "function-frame"))
   "Create a new tagbody environment and a new runtime environment"
   (let ((new-env (irc-new-unbound-tagbody-environment old-env )))
     new-env))
-
 
 (defun irc-new-macrolet-environment (old-env)
   "Create a new function environment and a new runtime environment"
   (let* ((new-env (make-macrolet-environment old-env)))
     new-env))
 
-
 (defun irc-new-symbol-macrolet-environment (old-env)
   "Create a new symbol-macrolet environment and a new runtime environment"
   (let* ((new-env (make-symbol-macrolet-environment old-env)))
     new-env))
-
-
-
 
 (defun irc-new-unbound-value-environment (old-env &key lambda-list-handler
 						    number-of-arguments (label "value-frame"))
@@ -242,9 +230,6 @@
     (or new-renv (error "The new-renv is nil - it shouldn't be"))
     (irc-set-renv new-env new-renv)
     new-env))
-
-
-
 
 (defun irc-new-value-environment (old-env
 				  &key lambda-list-handler
@@ -262,8 +247,6 @@
       (funcall fill-runtime-form new-env))
     new-env))
 
-
-
 (defun irc-new-unbound-value-environment-of-size (old-env &key number-of-arguments (label "value-frame"))
   "Create a new environment and a new runtime environment"
   (or number-of-arguments
@@ -273,20 +256,6 @@
     (or new-renv (error "The new-renv is nil - it shouldn't be"))
     (irc-set-renv new-env new-renv)
     new-env))
-
-
-#+(or)
-(defun irc-new-value-environment-of-size (old-env &key number-of-arguments fill-runtime-form (label "env") )
-  "Create a new environment and a new runtime environment"
-  (or fill-runtime-form (error "You must provide a fill-runtime-form - if you want to fill later then use irc-new-unbound-value-environment"))
-  (let ((new-env (irc-new-unbound-value-environment-of-size old-env
-							    :number-of-arguments number-of-arguments
-							    :label label )))
-    (when fill-runtime-form
-      (funcall fill-runtime-form new-env))
-    new-env))
-
-
 
 (defun irc-make-block-environment-set-parent (name parent-env)
   (let* ((block-env (make-block-environment name parent-env))
@@ -299,16 +268,9 @@
                               (irc-renv visible-ancestor-environment)))
          (parent-renv (irc-load parent-renv-ref))
          (instr (irc-intrinsic "makeBlockFrameSetParent" parent-renv)))
-    (irc-store instr new-renv)
+    (irc-simple-store instr new-renv)
     (irc-set-renv block-env new-renv)
     (values block-env instr (list parent-renv))))
-
-#+(or)
-(defun irc-new-block-environment (old-env &key name)
-  (let* ((block-env (make-block-environment name old-env))
-         (block-renv (irc-make-block-frame-set-parent block-env old-env)))
-    (irc-set-renv block-env block-renv)
-    block-env))
 
 (defun irc-new-catch-environment (old-env)
   (make-catch-environment old-env))
@@ -327,10 +289,6 @@
 	(let ((nil-renv (literal:compile-reference-to-literal nil))) ;; (irc-intrinsic "activationFrameNil")))
 	  (cmp-log "Returning nil renv: %s%N" nil-renv)
 	  nil-renv))))
-
-(defun irc-make-value-frame (result-af size)
-  (let ((vf (irc-intrinsic "makeValueFrame" (jit-constant-size_t size))))
-    (irc-store vf result-af)))
 
 (defun irc-make-value-frame-set-parent (new-env fnsize parent-env)
   (let* ((new-renv (irc-renv new-env))
@@ -1169,30 +1127,8 @@ and then the irbuilder-alloca, irbuilder-body."
                      rsa)
       rsa)))
 
-; ----------------------------------------------------------------------
-
 (defun null-t-ptr ()
   (llvm-sys:constant-pointer-null-get %t*%))
-
-;----------------------------------------------------------------------
-
-#+(or)
-(defun irc-store-multiple-values (offset values &optional va-list)
-  "When passing more arguments than can be passed in registers the extra arguments
-are written into the current multiple-valles array offset by the number of arguments
-that are passed in registers.
-Write T_O* pointers into the current multiple-values array starting at the (offset)"
-  (let ((multiple-values-array (irc-intrinsic "getMultipleValues" (jit-constant-i32 offset))))
-    (do* ((idx 0 (1+ idx))
-	  (values values (cdr values))
-	  (value (car values) (car values)))
-	 ((null values) nil)
-      (let ((ptr (llvm-sys:create-geparray *irbuilder* multiple-values-array (list (cmp:jit-constant-i32 0) (cmp:jit-constant-i32 idx) #||(cmp:jit-constant-i32 0)||# ) "idx")))
-	(irc-store value ptr)))
-;;;    (XXXXXXX)
-    (irc-low-level-trace)
-    multiple-values-array))
-
 	
 (defun irc-struct-gep (struct idx &optional (label ""))
   (llvm-sys:create-struct-gep *irbuilder* struct idx label ))
@@ -1214,7 +1150,7 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
     (error "The argument ~s is not a tsp" smart-ptr))
   (irc-extract-value smart-ptr (list 0) label))
 
-
+;;; Store a T* (result-in-registers) in a T_sp* or T_mv*
 (defun irc-store-result-t* (result result-in-registers)
   (let ((ret0 result-in-registers)
         (nret (jit-constant-size_t 1))
@@ -1228,8 +1164,7 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
                (ret-tmv1 (llvm-sys:create-insert-value *irbuilder* ret-tmv0 nret '(1) "nret")))
           (irc-store ret-tmv1 result)))))
 
-;;; Store the result in a +result_type+ value (result-in-registers)
-;;; in a T_mv or T_sp value
+;;; Store a T_mv (result-in-registers) in a T_sp* or T_mv*
 (defun irc-store-result (result result-in-registers)
   (let ((ret0 (irc-extract-value result-in-registers (list 0)))
         (nret (irc-extract-value result-in-registers (list 1)))
@@ -1469,13 +1404,6 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
   "Return an llvm GlobalValue for a function name of the form (setf XXXX).
    Pass XXXX as the sym to this function."
   (irc-load (literal:compile-reference-to-literal sym)))
-
-#+(or)
-(defun irc-symbol-value-ref (env sym)
-  "Return a reference to the symbol-value"
-  (irc-intrinsic "symbolValueReference" (irc-global-symbol sym env)))
-
-
 
 (defun irc-environment-activation-frame (env)
   (if env

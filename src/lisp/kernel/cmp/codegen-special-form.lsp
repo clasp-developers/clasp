@@ -271,7 +271,6 @@ env is the parent environment of the (result-af) value frame"
       (process-lambda-list-handler lambda-list-handler)
     (let ((number-of-lexical-vars (number-of-lexical-variables lambda-list-handler))
 	  (result-af (irc-renv new-env)))
-;      (irc-make-value-frame result-af number-of-lexical-vars)
 ;;      (dbg-set-activation-frame-for-ihs-top (irc-renv new-env))
       (irc-make-value-frame-set-parent new-env number-of-lexical-vars parent-env) ;(irc-intrinsic "setParentOfActivationFrame" result-af (irc-renv parent-env))
       ;; Save all special variables
@@ -315,7 +314,6 @@ env is the parent environment of the (result-af) value frame"
       (process-lambda-list-handler lambda-list-handler)
     (let ((number-of-lexical-vars (number-of-lexical-variables lambda-list-handler))
 	  (result-af (irc-renv new-env)))
-;      (irc-make-value-frame result-af number-of-lexical-vars)
 ;;      (dbg-set-activation-frame-for-ihs-top (irc-renv new-env))
       (irc-make-value-frame-set-parent new-env number-of-lexical-vars parent-env)
       ;; Save all special variables
@@ -799,7 +797,6 @@ jump to blocks within this tagbody."
 		      :label "locally-env")))
 	;; TODO: A runtime environment will be created with space for the specials
 	;; but they aren't used - get rid of them
-;;;	(irc-make-value-frame (irc-renv new-env) 0)
         (irc-make-value-frame-set-parent new-env 0 env) ; (irc-intrinsic "setParentOfActivationFrame" (irc-renv new-env) (irc-renv env))
 	(dolist (sp specials)
 	  (value-environment-define-special-binding new-env sp))
