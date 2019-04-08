@@ -719,52 +719,51 @@ the type LLVMContexts don't match - so they were defined in different threads!"
                   val-type dest-contained-type)))))
 
 ;;; irc-store generates code for the following situations
-;;;   t* -> tsp
-;;;   t* -> tmv
-;;;   tsp -> tsp
-;;;   tsp -> tmv
+;;;   x -> x* for any x
+;;;   T_sp -> T**
+;;;   T_mv -> T**
+;;;   T*   -> T_mv
+;;;   T_sp -> T_mv
 (defun irc-store (val destination &optional (label ""))
   (let ((val-type (llvm-sys:get-type val))
         (dest-contained-type (llvm-sys:get-contained-type (llvm-sys:get-type destination) 0)))
-    (if (llvm-sys:type-equal val-type dest-contained-type)
-        (llvm-sys:create-store *irbuilder* val destination nil)
-        (cond
-          ((and (llvm-sys:type-equal val-type %tsp%)
-                (llvm-sys:type-equal dest-contained-type %t*%))
-           (let ((t* (irc-smart-ptr-extract val)))
-             (llvm-sys:create-store *irbuilder* t* destination nil)))
-          ((and (llvm-sys:type-equal val-type %tmv%)
-                (llvm-sys:type-equal dest-contained-type %t*%))
-           (let ((ptr (irc-extract-value val (list 0) "t*-part")))
-             (llvm-sys:create-store *irbuilder* ptr destination nil)))
-          ;; Write into %tmv*%
-          ((and (llvm-sys:type-equal val-type %return_type%)
-                (llvm-sys:type-equal dest-contained-type %tmv%))
-           (let* ((result-in-registers val)
-                  (ret0 (irc-extract-value result-in-registers (list 0)))
-                  (nret (irc-extract-value result-in-registers (list 1)))
-                  (undef (llvm-sys:undef-value-get %tmv%))
-                  (tmv0 (llvm-sys:create-insert-value *irbuilder* undef ret0 '(0) "tmv0"))
-                  (tmv1 (llvm-sys:create-insert-value *irbuilder* tmv0 nret '(1) "tmv1")))
-             (llvm-sys:create-store *irbuilder* tmv1 destination nil)))
-        
-          ((and (llvm-sys:type-equal val-type %t*%)
-                (llvm-sys:type-equal dest-contained-type %tmv%))
-           (let* ((ptr val)
-                  (undef (llvm-sys:undef-value-get %tmv%))
-                  (tmv0 (llvm-sys:create-insert-value *irbuilder* undef ptr '(0) "tmv0"))
-                  (tmv1 (llvm-sys:create-insert-value *irbuilder* tmv0 (jit-constant-uintptr_t 1) '(1) "tmv1")))
-             (llvm-sys:create-store *irbuilder* tmv1 destination nil)))
-          ((and (llvm-sys:type-equal val-type %tsp%)
-                (llvm-sys:type-equal dest-contained-type %tmv%))
-           (let* ((ptr (irc-extract-value val (list 0) "t*-part"))
-                  (undef (llvm-sys:undef-value-get %tmv%))
-                  (tmv0 (llvm-sys:create-insert-value *irbuilder* undef ptr '(0) "tmv0"))
-                  (tmv1 (llvm-sys:create-insert-value *irbuilder* tmv0 (jit-constant-uintptr_t 1) '(1) "tmv1")))
-             (llvm-sys:create-store *irbuilder* tmv1 destination nil)))
-          (t (if (llvm-sys:llvmcontext-equal (llvm-sys:get-context val-type) (llvm-sys:get-context dest-contained-type))
-                 (error "!!! Mismatch in irc-store between val type ~a and destination contained type ~a%N" val-type dest-contained-type)
-                 (error "!!! Mismatch in irc-store involving the val type ~a and desintation contained type ~a - the type LLVMContexts don't match - so they were defined in different threads!" val-type dest-contained-type)))))))
+    (cond
+      ;; Simple case
+      ((llvm-sys:type-equal val-type dest-contained-type)
+       (llvm-sys:create-store *irbuilder* val destination nil))
+      ;; Write into T**
+      ((and (llvm-sys:type-equal val-type %tsp%)
+            (llvm-sys:type-equal dest-contained-type %t*%))
+       (let ((t* (irc-smart-ptr-extract val)))
+         (llvm-sys:create-store *irbuilder* t* destination nil)))
+      ((and (llvm-sys:type-equal val-type %tmv%)
+            (llvm-sys:type-equal dest-contained-type %t*%))
+       (let ((ptr (irc-extract-value val (list 0) "t*-part")))
+         (llvm-sys:create-store *irbuilder* ptr destination nil)))
+      ;; Write into %tmv*%
+      ((and (llvm-sys:type-equal val-type %t*%)
+            (llvm-sys:type-equal dest-contained-type %tmv%))
+       (let* ((ptr val)
+              (undef (llvm-sys:undef-value-get %tmv%))
+              (one (jit-constant-uintptr_t 1))
+              (tmv0 (llvm-sys:create-insert-value *irbuilder* undef ptr '(0) "tmv0"))
+              (tmv1 (llvm-sys:create-insert-value *irbuilder* tmv0 one '(1) "tmv1")))
+         (llvm-sys:create-store *irbuilder* tmv1 destination nil)))
+      ((and (llvm-sys:type-equal val-type %tsp%)
+            (llvm-sys:type-equal dest-contained-type %tmv%))
+       (let* ((ptr (irc-extract-value val (list 0) "t*-part"))
+              (undef (llvm-sys:undef-value-get %tmv%))
+              (one (jit-constant-uintptr_t 1))
+              (tmv0 (llvm-sys:create-insert-value *irbuilder* undef ptr '(0) "tmv0"))
+              (tmv1 (llvm-sys:create-insert-value *irbuilder* tmv0 one '(1) "tmv1")))
+         (llvm-sys:create-store *irbuilder* tmv1 destination nil)))
+      ;; Error
+      ((llvm-sys:llvmcontext-equal
+        (llvm-sys:get-context val-type) (llvm-sys:get-context dest-contained-type))
+       (error "!!! Mismatch in irc-store between val type ~a and destination contained type ~a%N"
+              val-type dest-contained-type))
+      (t (error "!!! Mismatch in irc-store involving the val type ~a and desintation contained type ~a - the type LLVMContexts don't match - so they were defined in different threads!"
+                val-type dest-contained-type)))))
 
 (defun irc-phi (return-type num-reserved-values &optional (label "phi"))
   (llvm-sys:create-phi *irbuilder* return-type num-reserved-values label))
