@@ -707,9 +707,10 @@ Otherwise do a variable shift."
   ;; Fix code so it doesn't pass a label here, if possible, then remove the parameter.
   (let ((val-type (llvm-sys:get-type val))
         (dest-contained-type (llvm-sys:get-contained-type (llvm-sys:get-type destination) 0)))
-    (cond ((equal val-type dest-contained-type)
+    (cond ((llvm-sys:type-equal val-type dest-contained-type)
            (llvm-sys:create-store *irbuilder* val destination nil))
-          ((equal (llvm-sys:get-context val-type) (llvm-sys:get-context dest-contained-type))
+          ((llvm-sys:llvmcontext-equal
+            (llvm-sys:get-context val-type) (llvm-sys:get-context dest-contained-type))
            (error "BUG: Mismatch in irc-store between val type ~a and destination contained type ~a%N"
                   val-type dest-contained-type))
           (t
