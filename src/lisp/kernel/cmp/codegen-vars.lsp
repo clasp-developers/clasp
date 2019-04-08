@@ -512,7 +512,7 @@
 #+(or)
 (defun codegen-local-lexical-var-reference (index renv)
   "Generate code to reference a lexical variable in the current value frame"
-  (or (equal (llvm-sys:get-type renv) %afsp*%)
+  (or (llvm-sys:type-equal (llvm-sys:get-type renv) %afsp*%)
       (error "renv is not the right type %afsp*%, it is: ~a" (llvm-sys:get-type renv)))
   (let* ((value-frame-tsp           (irc-load renv))
          (tagged-value-frame-ptr    (llvm-sys:create-extract-value *irbuilder* value-frame-tsp (list 0) "tagged-value-frame-ptr"))

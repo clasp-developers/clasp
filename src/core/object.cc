@@ -59,6 +59,15 @@ __END_DOC
 */
 
 
+extern "C" {
+bool low_level_equal(core::T_O* a, core::T_O* b) {
+  core::T_sp ta((gctools::Tagged) a);
+  core::T_sp tb((gctools::Tagged) b);
+  return cl__equal(ta,tb);
+};  
+  
+};
+
 namespace core {
 
 uint __nextGlobalClassSymbol = 1;
