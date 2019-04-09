@@ -98,85 +98,11 @@
 (defun irc-exception-typeid* (name)
   (exception-typeid*-from-name name))
 
-
-#+(or)
-(defmacro with-catch ((exn.slot exception-ptr) &rest body)
-  (let ((exn-gs (gensym)))
-    `(let* ((,exn-gs (llvm-sys:create-load-value-twine *irbuilder* ,exn.slot "exn"))
-	    (,exception-ptr (irc-intrinsic "__cxa_begin_catch" ,exn-gs)))
-       ,@body
-       (irc-intrinsic "__cxa_end_catch"))))
-
-#+(or)
-(defmacro with-catch ((exn.slot exception-ptr) &rest body)
-  (let ((exn-gs (gensym)))
-    `(let ((,exn-gs (llvm-sys:create-load-value-twine *irbuilder* ,exn.slot "exn")))
-       (unwind-protect
-            (let ((,exception-ptr (irc-intrinsic "__cxa_begin_catch" ,exn-gs)))
-              ,@body)
-         (irc-intrinsic "__cxa_end_catch")))))
-
-
-
-#|
-(defun irc-save-exception-info (env lpad)
-  (let ((exception-structure (llvm-sys:create-extract-value *irbuilder* lpad (list 0) "")))
-    (llvm-sys:create-store *irbuilder* exception-structure (irc-function-exn.slot env) nil))
-  (let ((exception-selector (llvm-sys:create-extract-value *irbuilder* lpad (list 1) "")))
-    (llvm-sys:create-store *irbuilder* exception-selector (irc-function-ehselector.slot env) nil)))
-|#
-
-(defparameter *use-unwind-resume* nil)
-
-
-
-
-
-(defun irc-generate-resume-code (exn.slot ehselector.slot env)
-  (let ((exn7 (llvm-sys:create-load-value-twine *irbuilder* exn.slot "exn7")))
-    (if *use-unwind-resume*
-	(progn
-	  (irc-intrinsic "_Unwind_Resume" exn7)
-	  (irc-unreachable))
-	(let ((sel (llvm-sys:create-load-value-twine *irbuilder* ehselector.slot "sel")))
-	  (let* ((undef (llvm-sys:undef-value-get %exception-struct% ))
-		 (lpad.val (llvm-sys:create-insert-value *irbuilder*
-							 undef exn7 '(0) "lpad.val")))
-	    (debug-print-i32 90)
-	    (let ((lpad.val8 (llvm-sys:create-insert-value *irbuilder*
-							   lpad.val sel '(1) "lpad.val8")))
-	      (debug-print-i32 91)
-	      (llvm-sys:create-resume *irbuilder* lpad.val8)))))))
-
-(defun irc-rethrow (env)
-  (irc-intrinsic "__cxa_rethrow")
-;;  (llvm-sys:create-unreachable *irbuilder*)
-  )
-
-
 (defun irc-set-function-for-environment (env fn)
   (setf-metadata env :function fn))
 
 (defun irc-get-function-for-environment (env)
   (lookup-metadata env :function))
-
-(defun irc-setup-cleanup-return-block (env)
-  (let ((bblock (irc-basic-block-create "func-cleanup-return-block")))
-    (setf-metadata env :cleanup-return-block bblock)))
-
-(defun irc-get-cleanup-return-block (env)
-  (or env (error "env must be supplied"))
-  (lookup-metadata env :cleanup-return-block))
-
-
-(defun irc-setup-cleanup-landing-pad-block (env)
-  "Setup a cleanup landing-pad and code to save the exception info for the current function environment"
-  (let ((cleanup-landing-pad-block (irc-basic-block-create "func-cleanup-landing-pad")))
-    (setf-metadata env :cleanup-landing-pad-block cleanup-landing-pad-block)
-    ))
-
-(defun irc-get-cleanup-landing-pad-block (env)
-  (lookup-metadata env :cleanup-landing-pad-block))
 
 
 (defun irc-new-unbound-function-value-environment (old-env &key number-of-functions (label "function-frame"))
@@ -272,13 +198,8 @@
     (irc-set-renv block-env new-renv)
     (values block-env instr (list parent-renv))))
 
-(defun irc-new-catch-environment (old-env)
-  (make-catch-environment old-env))
-
-
 (defun irc-set-renv (env renv)
   (set-runtime-environment env renv))
-
 
 (defun irc-renv (env)
   (let ((renv (runtime-environment (current-visible-environment env))))
@@ -312,7 +233,7 @@
                                             :parent-renv parent-renv
                                             #+debug-lexical-depth :frame-unique-id #+debug-lexical-depth frame-unique-id
                                             #+debug-lexical-depth :set-frame-unique-id #+debug-lexical-depth (list set-frame-unique-id (list (jit-constant-size_t frame-unique-id) instr))))
-    (irc-store instr new-renv)
+    (irc-t*-result instr new-renv)
     instr))
 
 
@@ -368,45 +289,10 @@
   (let ((csp core:*current-source-pos-info*))
     (jit-constant-size_t (core:source-pos-info-column *current-source-pos-info*))))
 
-
-
-
-#++
-(defun irc-generate-terminate-code ()
-      (let* ((landpad (irc-create-landing-pad 1)))
-	(llvm-sys:add-clause landpad (llvm-sys:constant-pointer-null-get %i8*%))
-	(irc-low-level-trace)
-	(irc-intrinsic "clasp_terminate" (irc-constant-string-ptr *gv-source-namestring*)
-		       (irc-size_t-*current-source-pos-info*-lineno) 
-		       (irc-size_t-*current-source-pos-info*-column) 
-		       (irc-constant-string-ptr *gv-current-function-name* ))
-	(irc-unreachable)
-	))
-
-
-(defun irc-generate-unwind-protect-landing-pad-code (env)
-      (let* ((landpad (irc-create-landing-pad 1)))
-	(llvm-sys:add-clause landpad (llvm-sys:constant-pointer-null-get %i8*%))
-	(irc-low-level-trace)
-	))
-
-
-
-
-
 ;; ---------------------------------------------------------------------------------------
 ;;
 ;; Environment unwinding
 ;;
-
-
-
-
-
-
-(defun irc-make-unwind-protect-environment (cleanup-code parent-env)
-  (let ((new-env (make-unwind-protect-environment cleanup-code parent-env)))
-    new-env))
 
 
 (defun irc-unwind-unwind-protect-environment (env)
@@ -415,7 +301,6 @@
     ;; Generate the unwind-form code in the parent environment of the unwind-protect form
     (codegen unwind-result unwind-form (get-parent-environment env))
     ))
-
 
 (defun irc-do-unwind-environment (env)
   (cmp-log "irc-do-unwind-environment for: %s%N" env)
@@ -436,8 +321,6 @@
     (irc-unwind-unwind-protect-environment env))
   (irc-do-unwind-environment env)
   )
-
-
 
 (defun irc-unwind-into-environment (begin-env end-env)
   "Unwind the environments from begin-env to end-env"
@@ -644,18 +527,6 @@ Otherwise do a variable shift."
 (defun irc-load (source &optional (label ""))
   (llvm-sys:create-load-value-twine *irbuilder* source label))
 
-;;; Loads a t* from a t** or a tsp* depending on the type of source
-(defun irc-load-t* (source &optional (label ""))
-  (let ((source-type (llvm-sys:get-type source)))
-    (cond
-      ((llvm-sys:type-equal source-type %t*%) source) ;; pass it through
-      ((llvm-sys:type-equal source-type %t**%)
-       (llvm-sys:create-load-value-twine *irbuilder* source label))
-      ((llvm-sys:type-equal source-type %tsp*%)
-       (let ((val-tsp (llvm-sys:create-load-value-twine *irbuilder* source label)))
-         (irc-extract-value val-tsp (list 0) "t*-part")))
-      (t (error "Cannot irc-load-t* from ~s" source)))))
-
 (defun irc-simple-store (val destination &optional (label ""))
   ;; Mismatch in store type sis a very common bug we hit when rewriting codegen.
   ;; LLVM doesn't deal with it gracefully except with a debug build, so we just
@@ -744,13 +615,6 @@ the type LLVMContexts don't match - so they were defined in different threads!"
 
 (defun irc-va_arg (valist type &optional (name "vaarg"))
   (llvm-sys:create-vaarg *irbuilder* valist type name))
-
-
-
-
-#|(llvm-sys:create-in-bounds-gep *irbuilder* (llvm-sys:get-or-create-uniqued-string-global-variable *the-module* *current-function-name* (bformat nil ":::func-name-%s" *current-function-name*)) (list (jit-constant-i32 0) (jit-constant-i32 0)) "fn-name") 
-|#
-
 
 (defparameter *default-function-attributes* '(llvm-sys:attribute-uwtable
                                               ("no-frame-pointer-elim" "true")
@@ -1023,19 +887,6 @@ and then the irbuilder-alloca, irbuilder-body."
          (fn-description (irc-create-function-description llvm-function-name fn module function-info)))
     (values fn fn-description)))
 
-#+(or)
-(defun irc-function-cleanup-and-return (env result &key return-void)
-  (let ((return-block (irc-basic-block-create "return-block")))
-    (cmp-log "About to irc-br return-block%N")
-    (irc-br return-block)
-    (irc-begin-block return-block)
-    (irc-cleanup-function-environment env )
-    (if return-void
-        (llvm-sys:create-ret-void *irbuilder*)
-        (llvm-sys:create-ret *irbuilder* (irc-load result))))
-  (irc-verify-function *current-function*))
-  
-
 (defun irc-cleanup-function-environment (env)
   "Generate the code to cleanup the environment"
   (if env
@@ -1160,7 +1011,7 @@ and then the irbuilder-alloca, irbuilder-body."
                   (one (jit-constant-size_t 1))
                   (ret-tmv1 (llvm-sys:create-insert-value *irbuilder* ret-tmv0 one '(1) "nret")))
              (irc-simple-store ret-tmv1 result)))
-          (t (error "Unknown return-type in irc-store-t*")))))
+          (t (error "Unknown return-type in irc-t*-result")))))
 
 (defun irc-tmv-result (tmv result)
   (let ((return-type (llvm-sys:get-type result)))
@@ -1169,7 +1020,10 @@ and then the irbuilder-alloca, irbuilder-body."
              (irc-simple-store primary result)))
           ((llvm-sys:type-equal return-type %tmv*%)
            (irc-simple-store tmv result))
-          (t (error "Unknown return-type in irc-store-tmv")))))
+          (t (error "Unknown return-type in irc-tmv-result")))))
+
+(defun irc-tsp-result (tsp result)
+  (irc-t*-result (irc-smart-ptr-extract tsp) result))
 
 (defun irc-calculate-entry (closure &optional (label "entry-point"))
   (let* ((closure-uintptr        (irc-ptr-to-int closure %uintptr_t%))

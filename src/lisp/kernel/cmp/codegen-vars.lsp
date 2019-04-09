@@ -506,7 +506,7 @@
       (codegen-literal result nil env)
       (let* ((global-symbol (irc-global-symbol sym env))
              (val (irc-intrinsic "symbolValueRead" global-symbol)))
-        (irc-store val result))))
+        (irc-t*-result val result))))
 
 
 #+(or)
@@ -623,7 +623,7 @@
   (if (keywordp symbol)
       (progn
         (cmp-log "codegen-symbol-value - %s is a keyword%N" symbol)
-        (irc-store (irc-intrinsic "symbolValueRead" (irc-global-symbol symbol env)) result))
+        (irc-t*-result (irc-intrinsic "symbolValueRead" (irc-global-symbol symbol env)) result))
       (progn
         (cmp-log "About to macroexpand%N")
         (let ((expanded (macroexpand symbol env)))
@@ -634,7 +634,7 @@
               ;; The symbol was a symbol-macro - evaluate it
               (codegen result expanded env)
               )))))
-	
+
 (defun compile-save-if-special (env target &key make-unbound)
   (when (eq (car target) 'ext:special-var)
     (cmp-log "compile-save-if-special - the target: %s is special - so I'm saving it%N" target)

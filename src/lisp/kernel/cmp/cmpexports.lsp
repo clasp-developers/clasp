@@ -232,7 +232,6 @@
             compile-error-if-too-many-arguments
             compile-throw-if-excess-keyword-arguments
             *irbuilder-function-alloca*
-            irc-get-cleanup-landing-pad-block
             irc-constant-string-ptr
             *source-debug-pathname*
             *source-debug-offset*
