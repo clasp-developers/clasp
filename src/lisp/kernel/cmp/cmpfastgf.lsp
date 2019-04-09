@@ -825,7 +825,7 @@
                                  ;; This whole thing could use some major cleanup (FIXME).
                                  (list* fmf (rest (argument-holder-register-arguments arguments)))
                                  *current-unwind-landing-pad-dest* "fast-method-call")))
-      (irc-store-result (argument-holder-return-value arguments) result-in-registers)
+      (irc-tmv-result result-in-registers (argument-holder-return-value arguments))
       (irc-br (argument-holder-continue-after-dispatch arguments)))))
 
 (defun codegen-effective-method-call (arguments outcome)

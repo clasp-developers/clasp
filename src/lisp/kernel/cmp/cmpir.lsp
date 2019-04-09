@@ -1150,33 +1150,26 @@ and then the irbuilder-alloca, irbuilder-body."
     (error "The argument ~s is not a tsp" smart-ptr))
   (irc-extract-value smart-ptr (list 0) label))
 
-;;; Store a T* (result-in-registers) in a T_sp* or T_mv*
-(defun irc-store-result-t* (result result-in-registers)
-  (let ((ret0 result-in-registers)
-        (nret (jit-constant-size_t 1))
-        (return-type (llvm-sys:get-type result)))
-    (if (llvm-sys:type-equal return-type %tsp*%)
-        (let* ((undef (llvm-sys:undef-value-get %tsp%))
-               (ret-tsp (llvm-sys:create-insert-value *irbuilder* undef ret0 '(0) "ret0")))
-          (irc-store ret-tsp result))
-        (let* ((undef (llvm-sys:undef-value-get %tmv%))
-               (ret-tmv0 (llvm-sys:create-insert-value *irbuilder* undef ret0 '(0) "ret0"))
-               (ret-tmv1 (llvm-sys:create-insert-value *irbuilder* ret-tmv0 nret '(1) "nret")))
-          (irc-store ret-tmv1 result)))))
+(defun irc-t*-result (t* result)
+  (let ((return-type (llvm-sys:get-type result)))
+    (cond ((llvm-sys:type-equal return-type %t**%)
+           (irc-simple-store t* result))
+          ((llvm-sys:type-equal return-type %tmv*%)
+           (let* ((undef (llvm-sys:undef-value-get %tmv%))
+                  (ret-tmv0 (llvm-sys:create-insert-value *irbuilder* undef t* '(0) "ret0"))
+                  (one (jit-constant-size_t 1))
+                  (ret-tmv1 (llvm-sys:create-insert-value *irbuilder* ret-tmv0 one '(1) "nret")))
+             (irc-simple-store ret-tmv1 result)))
+          (t (error "Unknown return-type in irc-store-t*")))))
 
-;;; Store a T_mv (result-in-registers) in a T_sp* or T_mv*
-(defun irc-store-result (result result-in-registers)
-  (let ((ret0 (irc-extract-value result-in-registers (list 0)))
-        (nret (irc-extract-value result-in-registers (list 1)))
-        (return-type (llvm-sys:get-type result)))
-    (if (llvm-sys:type-equal return-type %tsp*%)
-        (let* ((undef (llvm-sys:undef-value-get %tsp%))
-               (ret-tsp (llvm-sys:create-insert-value *irbuilder* undef ret0 '(0) "ret0")))
-          (irc-store ret-tsp result))
-        (let* ((undef (llvm-sys:undef-value-get %tmv%))
-               (ret-tmv0 (llvm-sys:create-insert-value *irbuilder* undef ret0 '(0) "ret0"))
-               (ret-tmv1 (llvm-sys:create-insert-value *irbuilder* ret-tmv0 nret '(1) "nret")))
-          (irc-store ret-tmv1 result)))))
+(defun irc-tmv-result (tmv result)
+  (let ((return-type (llvm-sys:get-type result)))
+    (cond ((llvm-sys:type-equal return-type %t**%)
+           (let ((primary (irc-extract-value tmv (list 0))))
+             (irc-simple-store primary result)))
+          ((llvm-sys:type-equal return-type %tmv*%)
+           (irc-simple-store tmv result))
+          (t (error "Unknown return-type in irc-store-tmv")))))
 
 (defun irc-calculate-entry (closure &optional (label "entry-point"))
   (let* ((closure-uintptr        (irc-ptr-to-int closure %uintptr_t%))
@@ -1206,7 +1199,7 @@ and then the irbuilder-alloca, irbuilder-body."
   (unless label
     (setf label "unlabeled-function"))
   (let ((result-in-registers (irc-funcall-results-in-registers closure args label)))
-    (irc-store-result result result-in-registers)))
+    (irc-tmv-result result-in-registers result)))
 
 ;----------------------------------------------------------------------
 
@@ -1337,7 +1330,7 @@ and then the irbuilder-alloca, irbuilder-body."
 (defun irc-verify-function (fn &optional (continue t))
   (when *verify-llvm-functions*
     (cmp-log "At top of irc-verify-function  ---- about to verify-function - if there is a problem it will not return%N")
-    (multiple-value-bind (failed-verify error-msg)
+    (multiple-value-bind (failed-verify xerror-msg)
         (llvm-sys:verify-function fn)
       (if failed-verify
           (progn
