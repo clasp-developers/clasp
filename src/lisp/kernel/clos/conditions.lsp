@@ -523,7 +523,7 @@ format string."
     (core:call-with-stack-top-hint
      (lambda ()
        (with-simple-restart (continue "Return from BREAK.")
-         (maybe-invoke-debugger
+         (invoke-debugger
           (make-condition 'SIMPLE-CONDITION
                           :FORMAT-CONTROL format-control
                           :FORMAT-ARGUMENTS format-arguments))))))
@@ -897,13 +897,6 @@ memory limits before executing the program again."))
 ;;; ----------------------------------------------------------------------
 ;;; ECL's interface to the toplevel and debugger
 
-(defun maybe-invoke-debugger (condition)
-  (if (core:is-interactive-lisp)
-      (invoke-debugger condition)
-      (progn
-        (core:btcl)
-        (core:exit))))
-
 ;;; This is a redefinition, clobbering core__universal_error_handler in lisp.cc.
 (defun sys::universal-error-handler (continue-string datum args)
   "Args: (error-name continuable-p function-name
@@ -927,12 +920,12 @@ bstrings."
        ; from CEerror; mostly allocation errors
        (with-simple-restart (ignore "Ignore the error, and try the operation again")
 	 (signal condition)
-	 (maybe-invoke-debugger condition)))
+	 (invoke-debugger condition)))
       ((stringp continue-string)
        (with-simple-restart
 	 (continue "~A" (format nil "~?" continue-string args))
 	 (signal condition)
-	 (maybe-invoke-debugger condition)))
+	 (invoke-debugger condition)))
       ((and continue-string (symbolp continue-string))
        ; from CEerror
        (with-simple-restart (accept "Accept the error, returning NIL")
@@ -941,13 +934,13 @@ bstrings."
 	     (multiple-value-bind (rv used-restart)
 	       (with-simple-restart (continue "Continue, using ~S" continue-string)
 		 (signal condition)
-		 (maybe-invoke-debugger condition))
+		 (invoke-debugger condition))
 
 	       (if used-restart continue-string rv)))
 	   (if used-restart t rv))))
       (t
        (signal condition)
-       (maybe-invoke-debugger condition)))))
+       (invoke-debugger condition)))))
 
 (defun sys::tpl-continue-command (&rest any)
   (apply #'invoke-restart 'continue any))

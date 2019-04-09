@@ -1348,15 +1348,13 @@ package."
   (format t "~&Received error of type: ~A~%~A~%~
                Debugger disabled - exiting.~%"
           (type-of condition) condition)
-  (format t "~&------- Common Lisp backtrace: ~%")
+  (format t "~&------- Backtrace: ~%")
   (core:btcl)
-  (format t "~&------- C++/CL backtrace: ~%")
-  (core:bt)
   (core:quit 1))
 
 (eval-when (:execute :load-toplevel)
   (when (null (core:is-interactive-lisp))
-    (setq *invoke-debugger-hook* 'debugger-disabled-hook)))
+    (setq ext:*invoke-debugger-hook* 'debugger-disabled-hook)))
 
 (defun safe-eval (form env &optional (err-value nil err-value-p))
   "Args: (FORM ENV &optional ERR-VALUE)
