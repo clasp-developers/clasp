@@ -255,9 +255,7 @@ CL_DEFUN T_sp core__value_from_tagged_immediate(T_sp object) {
     T_sp value((gctools::Tagged)object.unsafe_fixnum());
     return value;
   } if (gc::IsA<Bignum_sp>(object)) {
-    printf("%s:%d bignum -> %s\n", __FILE__, __LINE__, _rep_(object).c_str());
     size_t val = gc::As_unsafe<Bignum_sp>(object)->as_size_t();
-    printf("%s:%d  as size_t -> %lu\n", __FILE__, __LINE__, val);
     T_sp value((gctools::Tagged)val);
     return value;
   }
