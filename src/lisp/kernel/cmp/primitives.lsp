@@ -224,8 +224,8 @@
          (primitive         "cc_fastgf_nil" %t*% nil)
          (primitive-unwinds "cc_dispatch_invalid" %return_type% (list %t*% %t*%)) ;; gf gf-args
          (primitive-unwinds "cc_dispatch_miss" %return_type% (list %t*% %t*%)) ;; gf gf-args
-;;;    (primitive-unwinds "cc_dispatch_slot_reader_index_debug"   %return_type% (list %t*% %size_t% %t*% %t*%)) ; effective-method gf gf-args
-;;;    (primitive-unwinds "cc_dispatch_slot_writer_index_debug"   %return_type% (list %t*% %size_t% %t*% %t*%)) ; effective-method gf gf-args
+;;;    (primitive-unwinds "cc_dispatch_slot_reader_index_debug"   %t*% (list %t*% %size_t% %t*% %t*%)) ; effective-method gf gf-args
+;;;    (primitive-unwinds "cc_dispatch_slot_writer_index_debug"   %t*% (list %t*% %size_t% %t*% %t*%)) ; effective-method gf gf-args
          (primitive         "cc_dispatch_slot_reader_index"  %t*% (list %size_t% %t*%)) ; index instance
          (primitive         "cc_dispatch_slot_reader_cons"   %t*% (list %t*%)) ; cons
          (primitive         "cc_dispatch_slot_writer_index"  %t*% (list %t*% %size_t% %t*%)) ; value index instance

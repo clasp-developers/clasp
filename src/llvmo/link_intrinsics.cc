@@ -1489,18 +1489,19 @@ void initialize_link_intrinsics() {
 
 extern "C" {
 
-gctools::return_type cc_dispatch_slot_reader_index_debug(core::T_O* toptimized_slot_reader, size_t index, core::T_O* tvargs) {
+core::T_O* cc_dispatch_slot_reader_index_debug(core::T_O* toptimized_slot_reader, size_t index, core::T_O* tvargs) {
   core::SimpleVector_sp optimized_slot_reader((gctools::Tagged)toptimized_slot_reader);
   core::VaList_sp vargs((gctools::Tagged)tvargs);
   va_list vat;
   va_copy(vat,vargs->_Args);
   core::Instance_sp instance((gctools::Tagged)va_arg(vat,core::T_O*));
   va_end(vat);
-  core::T_sp result = core::eval::funcall(clos::_sym_dispatch_slot_reader_index_debug,optimized_slot_reader,instance,vargs);
-  return result.as_return_type();
+  core::T_sp result = core::eval::funcall(clos::_sym_dispatch_slot_reader_index_debug,
+                                          optimized_slot_reader,instance,vargs);
+  return reinterpret_cast<T_O*>(result.raw_());
 }
 
-gctools::return_type cc_dispatch_slot_writer_index_debug(core::T_O* toptimized_slot_writer, size_t index, core::T_O* tvargs) {
+core::T_O* cc_dispatch_slot_writer_index_debug(core::T_O* toptimized_slot_writer, size_t index, core::T_O* tvargs) {
   core::SimpleVector_sp optimized_slot_writer((gctools::Tagged)toptimized_slot_writer);
   core::VaList_sp vargs((gctools::Tagged)tvargs);
   va_list vat;
@@ -1508,8 +1509,9 @@ gctools::return_type cc_dispatch_slot_writer_index_debug(core::T_O* toptimized_s
   core::T_sp value((gctools::Tagged)va_arg(vat,core::T_O*));
   core::Instance_sp instance((gctools::Tagged)va_arg(vat,core::T_O*));
   va_end(vat);
-  core::T_sp result = core::eval::funcall(clos::_sym_dispatch_slot_writer_index_debug,optimized_slot_writer,value,instance,vargs);
-  return result.as_return_type();
+  core::T_sp result = core::eval::funcall(clos::_sym_dispatch_slot_writer_index_debug,
+                                          optimized_slot_writer,value,instance,vargs);
+  return reinterpret_cast<T_O*>(result.raw_());
 }
 };
 

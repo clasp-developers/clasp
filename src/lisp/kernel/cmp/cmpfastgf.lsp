@@ -771,7 +771,7 @@
                         (let* ((value (irc-intrinsic-call-or-invoke "cc_dispatch_slot_reader_cons" (list slot-read-info))))
                           (irc-intrinsic-call-or-invoke "cc_bound_or_error" (list slot-read-info (first (argument-holder-dispatch-arguments arguments)) value))))
                        (t (error "Unknown opt-data type ~a" opt-data)))))
-        (irc-store retval (argument-holder-return-value arguments))
+        (irc-t*-result retval (argument-holder-return-value arguments))
         (irc-br (argument-holder-continue-after-dispatch arguments))))))
 
 (defun codegen-slot-writer (arguments outcome)
@@ -801,7 +801,7 @@
                           (irc-intrinsic-call-or-invoke "cc_dispatch_slot_writer_cons" (list (first (argument-holder-dispatch-arguments arguments)) ; falue
                                                                                              slot-write-info))))
                        (t (error "Unknown opt-data ~a" opt-data)))))
-        (irc-store retval (argument-holder-return-value arguments))
+        (irc-t*-result retval (argument-holder-return-value arguments))
         (irc-br (argument-holder-continue-after-dispatch arguments))))))
 
 (defun codegen-fast-method-call (arguments outcome)
