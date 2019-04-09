@@ -182,6 +182,7 @@ public:
 	  gcweak.h>>~WeakPointerManager
 	  gcweak.h>>Mapping(const Type& val)
 	  gcweak.h>>Buckets::set
+          builtins.cc>>lexicalValueReference
 	  intrinsics.cc>>cc_loadTimeValueReference
           record.h>>field specialized on gc::smart_ptr<OT>&
           SMART_PTR_FIX and smart_ptr fixing in general when SMART_PTR_FIX is replaced
