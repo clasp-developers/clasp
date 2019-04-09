@@ -690,5 +690,5 @@ a_p = a_p_temp; a = a_temp;
                               (symbol (car info))
                               (index (cdr info))
                               (ref (codegen-lexical-var-reference symbol 0 index new-env new-env)))
-                         (irc-store value ref))))
+                         (irc-t*-result value ref))))
       new-env)))

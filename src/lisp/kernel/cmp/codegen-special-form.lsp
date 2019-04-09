@@ -817,7 +817,7 @@ jump to blocks within this tagbody."
 ;;; coalescence performed - this could be added as an optimization
     (if *generate-compile-file-load-time-values*
         (let ((index (literal:with-load-time-value (literal:compile-load-time-value-thunk form))))
-          (irc-store (literal:constants-table-value index) result))
+          (irc-t*-result (literal:constants-table-value index) result))
         (let ((ltv (eval form)))
           (literal:codegen-rtv-bclasp result ltv)))))
 
@@ -1050,7 +1050,7 @@ jump to blocks within this tagbody."
                 (irc-intrinsic-call (clasp-ffi::to-translator-name (first foreign-types)) nil) ; returns :void
                 (irc-intrinsic-call (clasp-ffi::to-translator-name (first foreign-types))
                                  (list foreign-result)))))
-      (irc-store result-in-t* result))) ; FIXME: translators return T_sp atm
+      (irc-t*-result result-in-t* result)))
   (irc-low-level-trace :flow))
 
 (defun codegen-foreign-call-pointer (result form evaluate-env)
@@ -1076,7 +1076,7 @@ jump to blocks within this tagbody."
               (if (eq :void (first foreign-types))
                   (irc-intrinsic-call (clasp-ffi::to-translator-name (first foreign-types)) nil) ; returns :void
                   (irc-intrinsic-call (clasp-ffi::to-translator-name (first foreign-types)) (list foreign-result)))))
-        (irc-store result-in-t* result)))
+        (irc-t*-result result-in-t* result)))
     (irc-low-level-trace :flow)))
 
 ;;; DEFCALLBACK

@@ -592,13 +592,13 @@
   "Generate IR for lookup of lexical value in runtime-env using depth and index"
   (let* ((ref (codegen-lexical-var-reference symbol depth index src-env dest-env))
          (val (irc-load ref "lexical-value-load")))
-    (irc-store val result))
+    (irc-t*-result val result))
   result)
 
 (defun codegen-register-var-lookup (result alloca)
   ;; Read from a register
   (let ((val (irc-load alloca)))
-    (irc-store val result)))
+    (irc-t*-result val result)))
 
 (defun codegen-var-lookup (result sym src-env)
   "Return IR code thsym returns the value of a symbol that is either lexical or special"

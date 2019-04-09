@@ -1045,10 +1045,10 @@ returns (value immediate nil) if the value is an immediate value."
     (if in-array
         (let* ((literal-node-runtime immediate?literal-node-runtime)
                (index (literal-node-index literal-node-runtime)))
-          (cmp:irc-store (constants-table-value index) result)
+          (cmp:irc-t*-result (constants-table-value index) result)
           index)
         (let ((immediate immediate?literal-node-runtime))
-          (cmp:irc-store immediate result)
+          (cmp:irc-t*-result immediate result)
           :poison-value-from-codegen-rtv-bclasp))))
 
 (defun codegen-rtv-cclasp (obj)
@@ -1072,11 +1072,11 @@ If it isn't NIL then copy the literal from its index in the LTV into result."
     (if in-array
         (progn
           (when result
-            (cmp:irc-store (constants-table-value data-or-index) result))
+            (cmp:irc-t*-result (constants-table-value data-or-index) result))
           data-or-index)
         (progn
           (when result
-            (cmp:irc-store data-or-index result))
+            (cmp:irc-t*-result data-or-index result))
           :poison-value-from-codegen-literal))))
 
 ;; Should be bclasp-compile-load-time-value-thunk

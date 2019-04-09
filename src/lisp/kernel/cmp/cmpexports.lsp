@@ -178,6 +178,8 @@
             irc-undef-value-get
             irc-simple-store
             irc-store
+            irc-t*-result
+            irc-tmv-result
             irc-switch
             irc-tag-fixnum
             irc-trunc
