@@ -680,8 +680,6 @@ memory limits before executing the program again."))
 
 (define-condition core:simple-stream-error (simple-condition stream-error) ())
 
-;;; #define CLOSED_STREAM_ERROR(st) ERROR(core::_sym_closedStream, core::lisp_createList(kw::_sym_stream, st))
-
 (define-condition core:closed-stream (core:simple-stream-error)
   ())
 

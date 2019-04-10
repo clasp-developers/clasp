@@ -135,7 +135,7 @@ when this is t a lot of graphs will be generated.")
         (unless (null (gethash datum *vars*))
           (error "BUG: SSAable output ~a previously defined" datum))
         (setf (gethash datum *vars*) value))
-      (cmp:irc-simple-store value (datum-alloca datum) label)))
+      (cmp:irc-store value (datum-alloca datum) label)))
 
 (defun layout-basic-block (basic-block return-value abi current-function-info)
   (with-accessors ((first cleavir-basic-blocks:first-instruction)
@@ -197,7 +197,7 @@ when this is t a lot of graphs will be generated.")
      (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
        ;; in case of a non-local exit, zero out the number of returned values
        (with-return-values (return-value abi nret ret-regs)
-         (cmp:irc-simple-store (%size_t 0) nret)))
+         (cmp:irc-store (%size_t 0) nret)))
      (cmp:with-irbuilder
       (body-irbuilder)
       (cmp:with-dbg-lexical-block

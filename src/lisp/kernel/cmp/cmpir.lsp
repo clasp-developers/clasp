@@ -194,7 +194,7 @@
                               (irc-renv visible-ancestor-environment)))
          (parent-renv (irc-load parent-renv-ref))
          (instr (irc-intrinsic "makeBlockFrameSetParent" parent-renv)))
-    (irc-simple-store instr new-renv)
+    (irc-store instr new-renv)
     (irc-set-renv block-env new-renv)
     (values block-env instr (list parent-renv))))
 
@@ -527,7 +527,7 @@ Otherwise do a variable shift."
 (defun irc-load (source &optional (label ""))
   (llvm-sys:create-load-value-twine *irbuilder* source label))
 
-(defun irc-simple-store (val destination &optional (label ""))
+(defun irc-store (val destination &optional (label ""))
   ;; Mismatch in store type sis a very common bug we hit when rewriting codegen.
   ;; LLVM doesn't deal with it gracefully except with a debug build, so we just
   ;; check it ourselves. We also check that types are in the same context-
@@ -546,53 +546,6 @@ Otherwise do a variable shift."
            (error "BUG: Mismatch in irc-store involving the val type ~a and destination type ~a -
 the type LLVMContexts don't match - so they were defined in different threads!"
                   val-type dest-contained-type)))))
-
-;;; irc-store generates code for the following situations
-;;;   x -> x* for any x
-;;;   T_sp -> T**
-;;;   T_mv -> T**
-;;;   T*   -> T_mv
-;;;   T_sp -> T_mv
-(defun irc-store (val destination &optional (label ""))
-  (let ((val-type (llvm-sys:get-type val))
-        (dest-contained-type (llvm-sys:get-contained-type (llvm-sys:get-type destination) 0)))
-    (cond
-      ;; Simple case
-      ((llvm-sys:type-equal val-type dest-contained-type)
-       (llvm-sys:create-store *irbuilder* val destination nil))
-      ;; Write into T**
-      ((and (llvm-sys:type-equal val-type %tsp%)
-            (llvm-sys:type-equal dest-contained-type %t*%))
-       (let ((t* (irc-smart-ptr-extract val)))
-         (llvm-sys:create-store *irbuilder* t* destination nil)))
-      ((and (llvm-sys:type-equal val-type %tmv%)
-            (llvm-sys:type-equal dest-contained-type %t*%))
-       (let ((ptr (irc-extract-value val (list 0) "t*-part")))
-         (llvm-sys:create-store *irbuilder* ptr destination nil)))
-      ;; Write into %tmv*%
-      ((and (llvm-sys:type-equal val-type %t*%)
-            (llvm-sys:type-equal dest-contained-type %tmv%))
-       (let* ((ptr val)
-              (undef (llvm-sys:undef-value-get %tmv%))
-              (one (jit-constant-uintptr_t 1))
-              (tmv0 (llvm-sys:create-insert-value *irbuilder* undef ptr '(0) "tmv0"))
-              (tmv1 (llvm-sys:create-insert-value *irbuilder* tmv0 one '(1) "tmv1")))
-         (llvm-sys:create-store *irbuilder* tmv1 destination nil)))
-      ((and (llvm-sys:type-equal val-type %tsp%)
-            (llvm-sys:type-equal dest-contained-type %tmv%))
-       (let* ((ptr (irc-extract-value val (list 0) "t*-part"))
-              (undef (llvm-sys:undef-value-get %tmv%))
-              (one (jit-constant-uintptr_t 1))
-              (tmv0 (llvm-sys:create-insert-value *irbuilder* undef ptr '(0) "tmv0"))
-              (tmv1 (llvm-sys:create-insert-value *irbuilder* tmv0 one '(1) "tmv1")))
-         (llvm-sys:create-store *irbuilder* tmv1 destination nil)))
-      ;; Error
-      ((llvm-sys:llvmcontext-equal
-        (llvm-sys:get-context val-type) (llvm-sys:get-context dest-contained-type))
-       (error "!!! Mismatch in irc-store between val type ~a and destination contained type ~a%N"
-              val-type dest-contained-type))
-      (t (error "!!! Mismatch in irc-store involving the val type ~a and desintation contained type ~a - the type LLVMContexts don't match - so they were defined in different threads!"
-                val-type dest-contained-type)))))
 
 (defun irc-phi (return-type num-reserved-values &optional (label "phi"))
   (llvm-sys:create-phi *irbuilder* return-type num-reserved-values label))
@@ -1004,22 +957,22 @@ and then the irbuilder-alloca, irbuilder-body."
 (defun irc-t*-result (t* result)
   (let ((return-type (llvm-sys:get-type result)))
     (cond ((llvm-sys:type-equal return-type %t**%)
-           (irc-simple-store t* result))
+           (irc-store t* result))
           ((llvm-sys:type-equal return-type %tmv*%)
            (let* ((undef (llvm-sys:undef-value-get %tmv%))
                   (ret-tmv0 (llvm-sys:create-insert-value *irbuilder* undef t* '(0) "ret0"))
                   (one (jit-constant-size_t 1))
                   (ret-tmv1 (llvm-sys:create-insert-value *irbuilder* ret-tmv0 one '(1) "nret")))
-             (irc-simple-store ret-tmv1 result)))
+             (irc-store ret-tmv1 result)))
           (t (error "Unknown return-type in irc-t*-result")))))
 
 (defun irc-tmv-result (tmv result)
   (let ((return-type (llvm-sys:get-type result)))
     (cond ((llvm-sys:type-equal return-type %t**%)
            (let ((primary (irc-extract-value tmv (list 0))))
-             (irc-simple-store primary result)))
+             (irc-store primary result)))
           ((llvm-sys:type-equal return-type %tmv*%)
-           (irc-simple-store tmv result))
+           (irc-store tmv result))
           (t (error "Unknown return-type in irc-tmv-result")))))
 
 (defun irc-tsp-result (tsp result)

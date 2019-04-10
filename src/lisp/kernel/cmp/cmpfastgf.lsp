@@ -1204,8 +1204,8 @@
                                                         (irc-bit-cast
                                                          (argument-holder-dispatch-va-list* arguments)
                                                          %i8*%))))))))
-                             (irc-simple-store (irc-intrinsic "cc_dispatch_miss" gf vaslist-t*)
-                                               (argument-holder-return-value arguments))
+                             (irc-store (irc-intrinsic "cc_dispatch_miss" gf vaslist-t*)
+                                        (argument-holder-return-value arguments))
                              (argument-holder-return-value arguments))
                            (irc-br (argument-holder-continue-after-dispatch arguments))))
                     (multiple-value-bind (min max)

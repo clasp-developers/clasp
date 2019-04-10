@@ -39,8 +39,8 @@
       (let* ((lpad (cmp:irc-create-landing-pad 1 "lp"))
              (exception-structure (cmp:irc-extract-value lpad (list 0) "exception-structure"))
              (exception-selector (cmp:irc-extract-value lpad (list 1) "exception-selector")))
-        (cmp:irc-simple-store exception-structure exn.slot)
-        (cmp:irc-simple-store exception-selector ehselector.slot)
+        (cmp:irc-store exception-structure exn.slot)
+        (cmp:irc-store exception-selector ehselector.slot)
         (cmp:irc-add-clause lpad (cmp:irc-exception-typeid* 'cmp:typeid-core-unwind))
         ;; we have to go to the cleanup later, so we can't ignore any exceptions.
         (when maybe-cleanup-landing-pad (llvm-sys:set-cleanup lpad t))

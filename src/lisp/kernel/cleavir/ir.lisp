@@ -213,7 +213,7 @@ And convert everything to JIT constants."
                (if cmp::*current-unwind-landing-pad-dest*
                    (cmp:irc-create-invoke entry-point args cmp::*current-unwind-landing-pad-dest* label)
                    (cmp:irc-create-call entry-point args label))))
-        (cmp:irc-simple-store result-in-registers return-value)))))
+        (cmp:irc-store result-in-registers return-value)))))
 
 (defun unsafe-multiple-value-foreign-call (intrinsic-name return-value args abi &key (label ""))
   (let* ((func (or (llvm-sys:get-function cmp:*the-module* intrinsic-name)
@@ -228,7 +228,7 @@ And convert everything to JIT constants."
            (if cmp::*current-unwind-landing-pad-dest*
                (cmp::irc-create-invoke func args cmp::*current-unwind-landing-pad-dest*)
                (cmp::irc-create-call func args))))
-    (cmp:irc-simple-store result-in-registers return-value)))
+    (cmp:irc-store result-in-registers return-value)))
 
 (defun unsafe-foreign-call (call-or-invoke foreign-types foreign-name args abi &key (label ""))
   ;; Write excess arguments into the multiple-value array

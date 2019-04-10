@@ -71,9 +71,9 @@
   (let ((inputs (cleavir-ir:inputs instruction)))
     ;; Write the first return value into the result
     (with-return-values (return-value abi nret ret-regs)
-      (cmp:irc-simple-store (%size_t (length inputs)) nret)
+      (cmp:irc-store (%size_t (length inputs)) nret)
       (dotimes (i (length inputs))
-        (cmp:irc-simple-store (in (elt inputs i)) (return-value-elt ret-regs i))))))
+        (cmp:irc-store (in (elt inputs i)) (return-value-elt ret-regs i))))))
 
 (defmethod translate-simple-instruction
     ((instr cleavir-ir:multiple-to-fixed-instruction) return-value (abi abi-x86-64) function-info)
@@ -285,7 +285,7 @@
                         (list (in (first (cleavir-ir:inputs instruction)))
                               (cmp:irc-load return-value)))))
       ;; call-result is a T_mv, and return-valuea  T_mv*
-      (cmp:irc-simple-store call-result return-value)
+      (cmp:irc-store call-result return-value)
       (cc-dbg-when *debug-log*
                    (format *debug-log*
                            "    translate-simple-instruction multiple-value-call-instruction: ~a~%" 
@@ -333,7 +333,7 @@
         (inputs (cleavir-ir:inputs instruction)))
     (if (eq et 'bit) ; ditto above
         (translate-bit-aset (in (third inputs)) (in (first inputs)) (in (second inputs)))
-        (cmp:irc-simple-store
+        (cmp:irc-store
          (in (third inputs))
          (gen-vector-effective-address (in (first inputs)) (in (second inputs))
                                        (cleavir-ir:element-type instruction)
@@ -418,7 +418,7 @@
     ((instruction cleavir-ir:memset2-instruction) return-value abi function-info)
   (declare (ignore return-value abi function-info))
   (let ((inputs (cleavir-ir:inputs instruction)))
-    (cmp:irc-simple-store
+    (cmp:irc-store
      (in (second inputs) "memset2-val")
      (cmp::gen-memref-address (in (first inputs))
                               (cleavir-ir:offset instruction)))))
