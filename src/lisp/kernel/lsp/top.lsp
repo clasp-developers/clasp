@@ -1345,10 +1345,11 @@ package."
 
 (defun core::debugger-disabled-hook (condition old-hook)
   (declare (ignore old-hook))
-  (format t "~&Received error of type: ~A~%~A~%~
-               Debugger disabled - exiting.~%"
+  (format *error-output*
+          "~&Received error of type: ~A~%~A~%~
+             Debugger disabled - exiting.~%"
           (type-of condition) condition)
-  (format t "~&------- Backtrace: ~%")
+  (format *error-output* "~&------- Backtrace: ~%")
   (core:btcl)
   (core:quit 1))
 
