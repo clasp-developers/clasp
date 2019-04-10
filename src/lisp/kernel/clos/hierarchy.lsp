@@ -25,7 +25,7 @@
 (eval-when (:compile-toplevel :execute :load-toplevel)
   (push :mlog *features*)
   (defmacro mlog (fmt &rest fmtargs)
-    `(core:bformat *debug-io* ,fmt ,@fmtargs)))
+    `(core:bformat *error-output* ,fmt ,@fmtargs)))
 ;;#+(or)
 (defmacro mlog (fmt &rest fmtargs) nil)
 

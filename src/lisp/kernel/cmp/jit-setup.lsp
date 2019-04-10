@@ -502,8 +502,6 @@ The passed module is modified as a side-effect."
 
 
 (defun optimize-module-for-compile (module)
-  #+(or)(bformat *debug-io* "In optimize-module-for-compile%N")
-  #+(or)(llvm-sys:dump-module module)
   module)
 
 #+(or)

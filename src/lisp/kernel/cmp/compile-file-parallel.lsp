@@ -3,7 +3,7 @@
 
 #+(or)
 (defmacro cf2-log (fmt &rest args)
-  `(format *debug-io* ,fmt ,@args))
+  `(format *error-output* ,fmt ,@args))
 (defmacro cf2-log (fmt &rest args)
   nil)
 
@@ -14,7 +14,7 @@
     `(unwind-protect
           (progn
             (mp:get-lock *cfp-message-mutex*)
-            (format *debug-io* ,fmt ,@args))
+            (format *error-output* ,fmt ,@args))
        (mp:giveup-lock *cfp-message-mutex*))))
 ;;;#+(or)
 (defmacro cfp-log (fmt &rest args)

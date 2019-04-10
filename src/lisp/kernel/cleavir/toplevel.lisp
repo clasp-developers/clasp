@@ -42,7 +42,7 @@
          (eval-compile (form)
            (when *dump-eval-compile*
              (let ((*print-pretty* nil))
-               (format *debug-io* "toplevel form to cmpl: ~s~%" form)))
+               (format *error-output* "toplevel form to cmpl: ~s~%" form)))
            (let* ((start-time (get-universal-time))
                   (thunk (cclasp-compile-in-env
                           nil
@@ -50,7 +50,7 @@
                           `(lambda () (progn ,form)) env))
                   (end-time (get-universal-time)))
              (when *dump-eval-compile*
-               (format *debug-io* "toplevel time: ~7,3f us~%"
+               (format *error-output* "toplevel time: ~7,3f us~%"
                        (* (/ (float (- end-time start-time))
                              internal-time-units-per-second)
                           1000000.0)))

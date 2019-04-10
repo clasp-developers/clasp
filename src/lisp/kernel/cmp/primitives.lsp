@@ -424,7 +424,6 @@
 
          ;; POINTER / VOID *
 
-         ;;(format *debug-io* "~%*** +VOID+ = ~S, +VOID*+ = ~S~%" %void% %void*%)
          ;; Note: using %void*% causes an error - so we use %i64*% instead here!
          (primitive-unwinds "from_object_pointer" %i64*% (list %t*%))
          (primitive-unwinds "to_object_pointer" %t*% (list %i64*%))

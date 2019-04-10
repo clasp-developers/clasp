@@ -935,7 +935,7 @@ jump to blocks within this tagbody."
 
 #+(or)
 (defmacro blog (fmt &rest fargs)
-  `(core:bformat *debug-io* ,fmt ,@fargs))
+  `(core:bformat *error-output* ,fmt ,@fargs))
 (defmacro blog (fmt &rest fargs) nil)
 
 ;;; core:bind-va-list

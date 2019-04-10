@@ -40,8 +40,8 @@ Could return more functions that provide lambda-list for swank for example"
       (cmp-log "generate-llvm-function-from-code%N")
       (cmp-log "cleavir-lambda-list -> %s%N" cleavir-lambda-list)
       (cmp-log "new-body -> %s%N" new-body)
-;;;    (bformat *debug-io* "old  -> %s %s %s %s%N" lambda-list-handler declares docstring code)
-;;;    (bformat *debug-io* "new-body -> %s%N" new-body)
+;;;    (bformat *error-output* "old  -> %s %s %s %s%N" lambda-list-handler declares docstring code)
+;;;    (bformat *error-output* "new-body -> %s%N" new-body)
       (let* ((name (core:extract-lambda-name-from-declares declares (or given-name 'cl:lambda)))
              (fn (with-new-function (fn fn-env result
                                         :function-name name

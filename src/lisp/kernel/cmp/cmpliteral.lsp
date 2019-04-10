@@ -30,7 +30,7 @@
 ;;;; * (CALL handle) calls the function denoted by HANDLE (returned from COMPILE-CST-OR-FORM)
 #+(or)
 (defmacro llog (fmt &rest args)
-  `(format *debug-io* ,fmt ,@args))
+  `(format *error-output* ,fmt ,@args))
 (defmacro llog (fmt &rest args) nil)
 
 (defvar *gcroots-in-module*)
