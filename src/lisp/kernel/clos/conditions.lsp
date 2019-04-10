@@ -640,6 +640,18 @@ memory limits before executing the program again."))
 	     (case-failure-name condition)
 	     (case-failure-possibilities condition)))))
 
+(define-condition clos:no-applicable-method-error (error)
+  ((generic-function :initarg :generic-function
+                     :reader no-applicable-method-generic-function)
+   (arguments :initarg :arguments :reader no-applicable-method-arguments))
+  (:report
+   (lambda (condition stream)
+     (format stream "No applicable method for ~A with ~
+                  ~:[no arguments.~;arguments~%~t~:*(~{~S~^ ~})~]"
+             (clos:generic-function-name
+              (no-applicable-method-generic-function condition))
+             (no-applicable-method-arguments condition)))))
+
 (define-condition program-error (error) ())
 
 (define-condition core:simple-program-error (simple-condition program-error) ())
