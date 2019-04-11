@@ -2919,6 +2919,8 @@ io_file_length(T_sp strm) {
   if (StreamByteSize(strm) != 8 && output.notnilp()) {
     cl_index bs = StreamByteSize(strm);
     Real_mv output_mv = clasp_floor2(gc::As_unsafe<Integer_sp>(output), make_fixnum(bs / 8));
+    // and now lets use the calculated value
+    output = output_mv;
     Fixnum_sp fn1 = gc::As<Fixnum_sp>(output_mv.valueGet_(1));
     unlikely_if(unbox_fixnum(fn1) != 0) {
       FEerror("File length is not on byte boundary", 0);
@@ -3551,6 +3553,8 @@ io_stream_length(T_sp strm) {
     //            const cl_env_ptr the_env = clasp_process_env();
     cl_index bs = StreamByteSize(strm);
     T_mv output_mv = clasp_floor2(gc::As_unsafe<Integer_sp>(output), make_fixnum(bs / 8));
+     // and now lets use the calculated value
+    output = output_mv;
     Fixnum_sp ofn1 = gc::As<Fixnum_sp>(output_mv.valueGet_(1));
     Fixnum fn = unbox_fixnum(ofn1);
     unlikely_if(fn != 0) {
@@ -5559,7 +5563,13 @@ namespace core {
 
 string FileStream_O::__repr__() const {
   stringstream ss;
-  ss << "#<" << this->_instanceClass()->_classNameAsString() << " " << _rep_(FileStreamFilename(this->asSmartPtr())) <<  " file-pos " << _rep_(clasp_file_position(this->asSmartPtr())) << ">";
+  ss << "#<" << this->_instanceClass()->_classNameAsString();
+  ss << " " << _rep_(this->filename());
+  if (!this->_Closed) {
+    ss <<  " file-pos ";
+    ss << _rep_(clasp_file_position(this->asSmartPtr()));
+  }
+  ss << ">";
   return ss.str();
 }
 
@@ -5601,7 +5611,10 @@ CL_DEFUN T_sp cl__read_byte(T_sp strm, T_sp eof_error_p, T_sp eof_value) {
   // Should signal an error of type error if stream is not a binary input stream.
   if (strm.nilp())
     TYPE_ERROR(strm, cl::_sym_Stream_O);
-  // strm ust be a stream, not a stream designator
+  // as a side effect verifies that strm is really a stream.
+  T_sp elt_type = clasp_stream_element_type(strm);
+  if (elt_type == cl::_sym_character || elt_type == cl::_sym_base_char)
+    SIMPLE_ERROR_BF("Not a binary stream");
   T_sp c = clasp_read_byte(strm);
   if (c.nilp()) {
     LOG(BF("Hit eof"));
