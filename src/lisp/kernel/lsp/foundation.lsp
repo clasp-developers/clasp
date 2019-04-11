@@ -182,18 +182,8 @@ the corresponding VAR.  Returns NIL."
 ;;
 ;;   "Return a copy of LIST before the part which is the same as OBJECT."
 ;;
-#+(or)
-(defun ldiff (list object)
-  (unless (eql list object)
-    (do* ((result (list (car list)))
-          (splice result)
-          (list (cdr list) (cdr list)))
-        ((atom list) (if (eql list object) (rplacd splice nil)) result)
-      (if (eql list object)
-          (return result)
-        (setq splice (cdr (rplacd splice (list (car list)))))))))
 
-;;; from 14.2.30 ldiff, tailp, added type-check
+;;; Definition from CLHS 14.2.30 (LDIFF, TAILP)
 (defun ldiff (list object)
   (unless (listp list)
     (error 'simple-type-error
@@ -207,9 +197,6 @@ the corresponding VAR.  Returns NIL."
        (if (eql list object) (nreverse r) (nreconc r list)))
     (when (eql object list)
       (return (nreverse r)))))
-;; stuff
-
-
 
 
 ;; in-package macro is re-defined in evalmacros.lsp
