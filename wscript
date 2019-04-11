@@ -59,6 +59,7 @@ os.environ['LC_ALL'] = os.environ['LANG'] = "C"
 
 # This function enables extra command line options for ./waf --help
 def options(ctx):
+    ctx.recurse('extensions')
     ctx.load('compiler_cxx')
     ctx.load('compiler_c')
     ctx.add_option('-d', '--debug', default = False, action = 'store_true', dest = 'DEBUG_WHILE_BUILDING',
@@ -73,6 +74,8 @@ def options(ctx):
                    help = 'Build OpenMPI version of iclasp and cclasp')
     ctx.add_option('--mpi-path', action = 'store', dest = 'mpi_path',
                    help = 'Build OpenMPI version of iclasp and cclasp, provide the path to mpicc and mpic++')
+    ctx.add_option('--enable-mpi', action = 'store_true', dest = 'enable_mpi',
+                   help = 'Build OpenMPI version of iclasp and cclasp')
 
 #
 # Global variables for the build
@@ -81,6 +84,7 @@ top = '.'
 out = 'build'
 APP_NAME = 'clasp'
 CLANG_VERSION = 6
+CLANG_SPECIFIC_VERSION = "6.0.1"
 
 STAGE_CHARS = [ 'r', 'i', 'a', 'b', 'f', 'c', 'd' ]
 # Full LTO  -flto
@@ -134,6 +138,7 @@ VALID_OPTIONS = [
     # Default on linux = it searches your path
     "LLVM_CONFIG_BINARY",
     # To link to the debug versions of the LLVM libraries, set a path here to the llvm-config binary of the LLVM debug build
+    
     "LLVM_CONFIG_BINARY_FOR_LIBS",
     # point to where you want to install clasp - this has to be defined before ./waf configure
     "PREFIX",
@@ -223,8 +228,8 @@ DEBUG_OPTIONS = [
     "DEBUG_RECURSIVE_ALLOCATIONS",
     "DEBUG_LLVM_OPTIMIZATION_LEVEL_0",
     "DEBUG_SLOW",    # Code runs slower due to checks - undefine to remove checks
-    "CONFIG_VAR_COOL", # mps setting
-    "USE_HUMAN_READABLE_BITCODE"
+    "USE_HUMAN_READABLE_BITCODE",
+    "CONFIG_VAR_COOL" # mps setting
 ]
 
 def build_extension(bld):
@@ -264,6 +269,10 @@ def add_cando_extension_master(cfg):
                        "https://github.com/drmeister/cando.git",
                        label="master")
 
+def add_cando(cfg):
+    add_cando_extension_master(cfg)
+
+    
 def update_dependencies(cfg):
     # Specifying only label = "some-tag" will check out that tag into a "detached head", but
     # specifying both label = "master" and revision = "some-tag" will stay on master and reset to that revision.
@@ -273,7 +282,7 @@ def update_dependencies(cfg):
 #                       "master")
     fetch_git_revision("src/lisp/kernel/contrib/sicl",
                        "https://github.com/Bike/SICL.git",
-                       "4aeaa9d4a743e3e03b4585cde79aac99201441bf")
+                       "06f3f4c4b808a76e00b2cf2191cae283a8ce517b")
     fetch_git_revision("src/lisp/kernel/contrib/Concrete-Syntax-Tree",
                        "https://github.com/robert-strandh/Concrete-Syntax-Tree.git",
                        "8d8c5abf8f1690cb2b765241d81c2eb86d60d77e")
@@ -748,7 +757,7 @@ def configure(cfg):
         llvm_config_binary = cfg.env.LLVM_CONFIG_BINARY
         if (len(llvm_config_binary) == 0):
             if (cfg.env['DEST_OS'] == DARWIN_OS ):
-                llvm_config_binary = '/usr/local/opt/llvm@%s/bin/llvm-config'%CLANG_VERSION
+                llvm_config_binary = '/usr/local/Cellar/llvm/%s/bin/llvm-config'%CLANG_SPECIFIC_VERSION
                 log.info("On darwin looking for %s" % llvm_config_binary)
             else:
                 try:
@@ -785,8 +794,8 @@ def configure(cfg):
             raise Exception("You do not have the correct version of externals-clasp installed - you need the one with the LLVM_COMMIT=%s" % externals_clasp_llvm_hash)
 
     def load_local_config(cfg):
+        local_environment = {}
         if os.path.isfile("./wscript.config"):
-            local_environment = {}
             log.debug("local_environment = %s", local_environment)
             exec(open("./wscript.config").read(), globals(), local_environment)
             for key in local_environment.keys():
@@ -794,9 +803,7 @@ def configure(cfg):
                     raise Exception("%s is an INVALID wscript.config option - valid options are: %s" % (key, VALID_OPTIONS))
                 else:
                     log.info("wscript.config option %s = %s", key, local_environment[key])
-            cfg.env.update(local_environment)
-        else:
-            log.warn("There is no 'wscript.config' file - assuming default configuration. See 'wscript.config.template' for further details.")
+                cfg.env.update(local_environment)
 
     #
     # This is where configure(cfg) starts
@@ -1027,7 +1034,7 @@ def configure(cfg):
         cfg.env.append_value('LINKFLAGS', ['-lc++'])
         cfg.env.append_value('LINKFLAGS', ['-stdlib=libc++'])
         cfg.env.append_value('INCLUDES', '/usr/local/Cellar/libunwind-headers/35.3/include')  # brew install libunwind-headers
-	# Add macOS SDK paths
+# Add macOS SDK paths
 #        cfg.env.append_value('INCLUDES', [ ''.join( [ macosx_sdk_path(cfg), '/usr/include' ] ) ] ) 
 #        cfg.env.append_value('LINKFLAGS', ''.join( [ '-L', macosx_sdk_path(cfg), '/usr/lib' ] ) ) 
     cfg.env.append_value('INCLUDES', [ run_llvm_config(cfg,"--includedir") ])
@@ -1699,8 +1706,7 @@ class compile_module(clasp_task):
         cmd = self.clasp_command_line(executable,
                                       image = image_file,
                                       features = ['ignore-extensions'],
-                                      forms = ['(setf cmp::*compile-file-parallel* t)',
-                                               '(compile-file #P"%s" :output-file #P"%s" :output-type :fasl)' % (source_file, fasl_file),
+                                      forms = ['(compile-file #P"%s" :output-file #P"%s" :output-type :fasl)' % (source_file, fasl_file),
                                                '(core:quit)'])
         return self.exec_command(cmd)
 

@@ -509,6 +509,7 @@ public:
   }
 
 public: // Functions here
+  virtual string __repr__() const;
   T_sp filename() const;
 
 }; // SynonymStream class

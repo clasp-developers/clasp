@@ -30,7 +30,7 @@
 #+(or)
 (progn
   (defmacro cv-log (fmt &rest fmt-args)
-    `(core:bformat *debug-io* ,fmt ,@fmt-args))
+    `(core:bformat *error-output* ,fmt ,@fmt-args))
   (defmacro cv-log-do (&rest body)
     `(progn ,@body)))
     
@@ -140,7 +140,8 @@
     ;;    with the value :closure-allocate or :register-allocate
     (cv-log-do
      (maphash (lambda (k v)
-                (bformat *debug-io* "(ENV@%s %s %s) -> %s%N" (core:environment-address (car k)) (second k) (third k) v))
+                (cv-log "(ENV@%s %s %s) -> %s%N"
+                        (core:environment-address (car k)) (second k) (third k) v))
               variable-map))
     (maphash (lambda (register-key option)
                (when (eq option :register-allocate)
@@ -151,7 +152,8 @@
              variable-map)
     (cv-log-do
      (maphash (lambda (k v)
-                (bformat *debug-io* "(ENV@%s %s %s) -> %s%N" (core:environment-address (car k)) (second k) (third k) v))
+                (cv-log "(ENV@%s %s %s) -> %s%N"
+                        (core:environment-address (car k)) (second k) (third k) v))
               variable-map))
     variable-map))
 
@@ -203,7 +205,6 @@
                        (llvm-sys:replace-call the-function
                                               instr                                      
                                               (list (jit-constant-i64 closure-size) parent-renv))))
-                   ;;(bformat *debug-io* "function-name -> %s%N" function-name)
                    (let ((the-function (get-or-declare-function-or-error *the-module* "invisible_makeValueFrameSetParent"))
                          #+debug-lexical-depth(ignore-set-frame-unique-id (get-or-declare-function-or-error *the-module* "ignore_setFrameUniqueId")))
                      (core:set-invisible new-env t)
@@ -234,10 +235,6 @@
                (ensure-frame-unique-id-function (get-or-declare-function-or-error *the-module* "ensureFrameUniqueId")))
           (cv-log "About to replace lexicalValueReference for %s  (old depth/index %d/%d)  (new depth/index %d/%d) to env %s  from env %s !!!!!!%N"
                   symbol depth index new-depth new-index (core:environment-address ref-env) start-env)
-          #+(or)(progn
-                  (bformat *debug-io* "In rewrite-lexical-variable-references-for-new-depth%N")
-                  (bformat *debug-io* "         rewrite instruction before -> %s%N" instr)
-                  (bformat *debug-io* "         arguments -> %s%N" (llvm-sys:call-or-invoke-get-argument-list instr)))
           (let* ((args (llvm-sys:call-or-invoke-get-argument-list instr))
                  (start-renv (car (last args)))
                  (new-instr (llvm-sys:replace-call the-function
@@ -506,13 +503,13 @@
       (codegen-literal result nil env)
       (let* ((global-symbol (irc-global-symbol sym env))
              (val (irc-intrinsic "symbolValueRead" global-symbol)))
-        (irc-store val result))))
+        (irc-t*-result val result))))
 
 
 #+(or)
 (defun codegen-local-lexical-var-reference (index renv)
   "Generate code to reference a lexical variable in the current value frame"
-  (or (equal (llvm-sys:get-type renv) %afsp*%)
+  (or (llvm-sys:type-equal (llvm-sys:get-type renv) %afsp*%)
       (error "renv is not the right type %afsp*%, it is: ~a" (llvm-sys:get-type renv)))
   (let* ((value-frame-tsp           (irc-load renv))
          (tagged-value-frame-ptr    (llvm-sys:create-extract-value *irbuilder* value-frame-tsp (list 0) "tagged-value-frame-ptr"))
@@ -592,13 +589,13 @@
   "Generate IR for lookup of lexical value in runtime-env using depth and index"
   (let* ((ref (codegen-lexical-var-reference symbol depth index src-env dest-env))
          (val (irc-load ref "lexical-value-load")))
-    (irc-store val result))
+    (irc-t*-result val result))
   result)
 
 (defun codegen-register-var-lookup (result alloca)
   ;; Read from a register
   (let ((val (irc-load alloca)))
-    (irc-store val result)))
+    (irc-t*-result val result)))
 
 (defun codegen-var-lookup (result sym src-env)
   "Return IR code thsym returns the value of a symbol that is either lexical or special"
@@ -623,7 +620,7 @@
   (if (keywordp symbol)
       (progn
         (cmp-log "codegen-symbol-value - %s is a keyword%N" symbol)
-        (irc-store (irc-intrinsic "symbolValueRead" (irc-global-symbol symbol env)) result))
+        (irc-t*-result (irc-intrinsic "symbolValueRead" (irc-global-symbol symbol env)) result))
       (progn
         (cmp-log "About to macroexpand%N")
         (let ((expanded (macroexpand symbol env)))
@@ -634,7 +631,7 @@
               ;; The symbol was a symbol-macro - evaluate it
               (codegen result expanded env)
               )))))
-	
+
 (defun compile-save-if-special (env target &key make-unbound)
   (when (eq (car target) 'ext:special-var)
     (cmp-log "compile-save-if-special - the target: %s is special - so I'm saving it%N" target)

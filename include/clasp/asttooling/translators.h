@@ -77,7 +77,7 @@ struct to_object<int &> {
 template <>
 struct to_object<std::vector<std::string>, translate::adopt_pointer> {
   static core::T_sp convert(std::vector<std::string> strings) {
-    core::VectorObjects_sp vo = core::VectorObjects_O::make(strings.size(),_Nil<core::T_O>());
+    core::ComplexVector_T_sp vo = core::ComplexVector_T_O::make(strings.size(),_Nil<core::T_O>());
     int i(0);
     for (auto ai = strings.begin(); ai != strings.end(); ai++) {
       vo->rowMajorAset(i++, core::lisp_createStr(*ai));
@@ -89,7 +89,7 @@ struct to_object<std::vector<std::string>, translate::adopt_pointer> {
 template <>
 struct to_object<std::vector<std::string>, translate::dont_adopt_pointer> {
   static core::T_sp convert(std::vector<std::string> strings) {
-    core::VectorObjects_sp vo = core::VectorObjects_O::make(strings.size(),_Nil<core::T_O>());
+    core::ComplexVector_T_sp vo = core::ComplexVector_T_O::make(strings.size(),_Nil<core::T_O>());
     int i(0);
     for (auto ai = strings.begin(); ai != strings.end(); ai++) {
       vo->rowMajorAset(i++, core::lisp_createStr(*ai));
@@ -143,7 +143,7 @@ template <>
 struct to_object<std::vector<std::unique_ptr<clang::ASTUnit>> &> {
   typedef std::vector<std::unique_ptr<clang::ASTUnit>> GivenType;
   static core::T_sp convert(std::vector<std::unique_ptr<clang::ASTUnit>> &vals) {
-    core::VectorObjects_sp vo = core::VectorObjects_O::make( vals.size(), _Nil<core::T_O>(), core::clasp_make_fixnum(0));
+    core::ComplexVector_T_sp vo = core::ComplexVector_T_O::make( vals.size(), _Nil<core::T_O>(), core::clasp_make_fixnum(0));
     for (int i(0), iEnd(vals.size()); i < iEnd; ++i) {
       vo->vectorPushExtend(clbind::Wrapper<clang::ASTUnit, std::unique_ptr<clang::ASTUnit>>::make_wrapper(std::move(vals[i]), reg::registered_class<clang::ASTUnit>::id));
     }
@@ -155,7 +155,7 @@ template <>
 struct to_object<std::vector<clang::tooling::CompileCommand>> {
   typedef std::vector<clang::tooling::CompileCommand> GivenType;
   static core::T_sp convert(GivenType vals) {
-    core::VectorObjects_sp vo = core::VectorObjects_O::make(vals.size(), _Nil<core::T_O>(), core::clasp_make_fixnum(0));
+    core::ComplexVector_T_sp vo = core::ComplexVector_T_O::make(vals.size(), _Nil<core::T_O>(), core::clasp_make_fixnum(0));
     for (int i(0), iEnd(vals.size()); i < iEnd; ++i) {
       vo->vectorPushExtend(clbind::Wrapper<clang::tooling::CompileCommand, std::unique_ptr<clang::tooling::CompileCommand>>::make_wrapper(vals[i], reg::registered_class<clang::tooling::CompileCommand>::id));
     }

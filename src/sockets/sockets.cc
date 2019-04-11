@@ -72,7 +72,7 @@ safe_buffer_pointer(core::T_sp x, uint size) {
       } else if (core::SimpleBaseString_sp strb = x.asOrNull<core::SimpleBaseString_O>()) {
     ok = (size <= strb->arrayTotalSize());
     address = (void*)&(*strb)[0]; // str->addressOfBuffer();
-  } else if (core::VectorObjects_sp vec = x.asOrNull<core::VectorObjects_O>()) {
+  } else if (core::ComplexVector_T_sp vec = x.asOrNull<core::ComplexVector_T_O>()) {
     int divisor = vec->elementSizeInBytes();
     size = (size + divisor - 1) / divisor;
     ok = (size <= vec->arrayTotalSize());

@@ -354,18 +354,18 @@ namespace core {
                     write_array_inner(true, this->asSmartPtr(), stream);
     }
 
-    void SimpleVectorFloat_O::__write__(T_sp stream) const {
+    void SimpleVector_float_O::__write__(T_sp stream) const {
             if (!clasp_print_array() && !clasp_print_readably()) {
-                    const char *title ="#<SimpleVectorFloat_O>";
+                    const char *title ="#<SimpleVector_float_O>";
                     write_simple_vector_simple_float(title, this->asSmartPtr(), stream);
             }
             else
                     write_array_inner(true, this->asSmartPtr(), stream);
     }
 
-    void SimpleVectorDouble_O::__write__(T_sp stream) const {
+    void SimpleVector_double_O::__write__(T_sp stream) const {
             if (!clasp_print_array() && !clasp_print_readably()) {
-                    const char *title ="#<SimpleVectorDouble_O>";
+                    const char *title ="#<SimpleVector_double_O>";
                     write_simple_vector_simple_float(title, this->asSmartPtr(), stream);
              }
             else 

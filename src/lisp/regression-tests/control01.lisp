@@ -19,4 +19,10 @@
 
 (TEST MULTIPLE-VALUE-SETQ.15 (eq 'a (MULTIPLE-VALUE-SETQ NIL (VALUES 'A 'B))))
 
+(test progv-1
+      (PROGV
+          '(X Y Z W)
+          '(1)
+        (and (BOUNDP 'X) (not (BOUNDP 'Y)) (not (BOUNDP 'Z)) (not (BOUNDP 'W)))))
+
 

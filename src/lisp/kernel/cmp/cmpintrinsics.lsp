@@ -87,6 +87,7 @@ Set this to other IRBuilders to make code go where you want")
 
 (define-symbol-macro %void% (llvm-sys:type-get-void-ty *llvm-context*))
 (define-symbol-macro %void*% (llvm-sys:type-get-pointer-to %void%))
+(define-symbol-macro %void**% (llvm-sys:type-get-pointer-to %void*%))
 
 (define-symbol-macro %vtable*% %i8*%)
 
@@ -207,7 +208,18 @@ Boehm and MPS use a single pointer"
 (define-symbol-macro %cons% (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields %t*% %t*%) nil))
 
 ;; This structure must match the gctools::GCRootsInModule structure
-(define-symbol-macro %gcroots-in-module% (llvm-sys:struct-type-get *llvm-context* (list %i8*% %i8*% %size_t% %size_t%) nil))
+(define-symbol-macro %gcroots-in-module% (llvm-sys:struct-type-get
+                                          *llvm-context*
+                                          (list
+                                           %size_t% ; _index_offset
+                                           %i8*% ; _boehm_shadow_memory
+                                           %i8*% ; _module_memory
+                                           %size_t% ; _num_entries
+                                           %size_t% ; _capacity
+                                           %i8**% ; function pointers
+                                           %i8**% ; function descriptions
+                                           %size_t% ; number of functions
+                                           ) nil))
 (define-symbol-macro %gcroots-in-module*% (llvm-sys:type-get-pointer-to %gcroots-in-module%))
 
 ;; The definition of %tmv% doesn't quite match T_mv because T_mv inherits from T_sp
@@ -279,12 +291,17 @@ Boehm and MPS use a single pointer"
   (llvm-sys:struct-type-get
    *llvm-context*
    (list
-    ;; Spacer to get to the data
-    (llvm-sys:array-type-get %i8% (- +simple-vector._data-offset+ +general-tag+))
+    ;; Spacer to get to the stuff that matters
+    (llvm-sys:array-type-get %i8% (- +simple-vector._length-offset+ +general-tag+))
+    ;; The length, an untagged integer
+    %size_t%
     ;; The data, a flexible member
     (llvm-sys:array-type-get (element-type->llvm-type element-type) 0))
    ;; Not totally sure it should be packed.
    t))
+
+(defvar +simple-vector-length-slot+ 1)
+(defvar +simple-vector-data-slot+ 2)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -357,7 +374,7 @@ Boehm and MPS use a single pointer"
                                         :nargs (second arguments) ;; The number of arguments
                                         :register-args (nthcdr 2 arguments)
                                         :use-only-registers (calling-convention-configuration-use-only-registers setup)
-                                        :va-list* (irc-alloca-va_list)
+                                        :va-list* (alloca-va_list)
                                         :register-save-area* register-save-area*
                                         :cleavir-lambda-list cleavir-lambda-list
                                         :rest-alloc rest-alloc)))))
@@ -468,8 +485,8 @@ eg:  (f closure-ptr nargs a b c d ...)
     (llvm-sys:struct-type-get *llvm-context*
                               (list %fn-prototype*%
                                     %gcroots-in-module*%
-                                    %i32% ; source-info.function-name index
-                                    %i32% ; lambda-list./docstring literal index
+                                    %size_t% ; source-info.function-name index
+                                    %size_t% ; lambda-list./docstring literal index
                                     %i32% ; lineno
                                     %i32% ; column
                                     %i32% ; filepos
@@ -524,7 +541,7 @@ have it call the main-function"
               (internal-functions-global-bf (irc-bit-cast internal-functions-global %i8*% "internal-functions-ptr")))
           (irc-intrinsic "cc_register_library" fn internal-functions-names-global-bf internal-functions-global-bf internal-functions-length-global))
         (let* ((bc-bf (irc-bit-cast main-function %fn-start-up*% "fnptr-pointer"))
-               (_     (irc-intrinsic "cc_register_startup_function" (jit-constant-i32 position) bc-bf))
+               (_     (irc-intrinsic "cc_register_startup_function" (jit-constant-size_t position) bc-bf))
                (_     (irc-ret-void))))
         ;;(llvm-sys:dump fn)
         fn))))
@@ -689,8 +706,17 @@ and initialize it with an array consisting of one function pointer."
                                   (list (jit-constant-size_t 0)
                                         (jit-constant-size_t 0)))
                          (llvm-sys:constant-pointer-null-get %t**%))))
-          (if gcroots-in-module
-              (irc-intrinsic-call "cc_initialize_gcroots_in_module" (list gcroots-in-module start (jit-constant-size_t number-of-roots) values)))
+          (when gcroots-in-module
+            (irc-intrinsic-call "cc_initialize_gcroots_in_module" (list gcroots-in-module ; holder
+                                                                        start ; root_address
+                                                                        (jit-constant-size_t number-of-roots) ; num_roots
+                                                                        values ; initial_data
+                                                                        (llvm-sys:constant-pointer-null-get %i8**%) ; transient_alloca
+                                                                        (jit-constant-size_t 0) ; transient_entries
+                                                                        (jit-constant-size_t 0) ; function_pointer_count
+                                                                        (irc-bit-cast (llvm-sys:constant-pointer-null-get %fn-prototype*%) %i8**%) ; fptrs
+                                                                        (irc-bit-cast (llvm-sys:constant-pointer-null-get %function-description*%) %i8**%) ; fdescs
+                                                                        )))
           ;; If the constant/literal list is provided - then we may need to generate code for closurettes
           (when ordered-literals
             (setf ordered-raw-literals-list (mapcar (lambda (x)
@@ -701,7 +727,9 @@ and initialize it with an array consisting of one function pointer."
                                                          (literal:generate-run-time-code-for-closurette x irbuilder-alloca array)
                                                          nil)
                                                         (t (error "Illegal object ~s in ordered-literals list" x))))
-                                                    ordered-literals)))
+                                                    ordered-literals))) 
+          (when gcroots-in-module
+            (irc-intrinsic-call "cc_finish_gcroots_in_module" (list gcroots-in-module)))
           (irc-ret-void))))
     (let ((shutdown-fn (irc-simple-function-create core:*module-shutdown-function-name*
                                                    (llvm-sys:function-type-get %void% nil)
@@ -722,7 +750,7 @@ and initialize it with an array consisting of one function pointer."
         (with-irbuilder (irbuilder-alloca)
           (progn
             (if gcroots-in-module
-                (irc-intrinsic-call "cc_shutdown_gcroots_in_module" (list gcroots-in-module)))
+                (irc-intrinsic-call "cc_remove_gcroots_in_module" (list gcroots-in-module)))
             (irc-ret-void))))
       (values startup-fn shutdown-fn ordered-raw-literals-list))))
 

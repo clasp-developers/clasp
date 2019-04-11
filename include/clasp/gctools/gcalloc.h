@@ -185,7 +185,7 @@ namespace gctools {
     return tagged_obj;
   };
 
-  extern void bad_general_mps_reserve_error(const char* ap_name);
+extern void bad_general_mps_reserve_error(mps_ap_t* allocation_point);
   
   template <class PTR_TYPE, typename... ARGS>
 #ifdef ALWAYS_INLINE_MPS_ALLOCATIONS
@@ -196,7 +196,6 @@ namespace gctools {
      PTR_TYPE general_mps_allocation(const Header_s::Value& the_header,
                                       size_t size,
                                       mps_ap_t& allocation_point,
-                                      const char* ap_name,
                                       ARGS &&... args) {
     mps_addr_t addr;
     typedef typename PTR_TYPE::Type T;
@@ -213,7 +212,7 @@ namespace gctools {
     { RAII_DISABLE_INTERRUPTS(); 
       do {
         mps_res_t res = mps_reserve(&addr, allocation_point, true_size);
-        if ( res != MPS_RES_OK ) bad_general_mps_reserve_error(ap_name);
+        if ( res != MPS_RES_OK ) bad_general_mps_reserve_error(&ap_name);
         header = reinterpret_cast<HeadT *>(addr);
 #ifdef DEBUG_GUARD
         memset(header,0x00,true_size);
@@ -313,7 +312,6 @@ namespace gctools {
           general_mps_allocation<tagged_pointer<T>>(the_header,
                                                size,
                                                my_thread_allocation_points._non_moving_allocation_point,
-                                               "NON_MOVING_POOL",
                                                std::forward<ARGS>(args)...);
         return tagged_obj;
 #endif
@@ -396,7 +394,7 @@ namespace gctools {
         mps_ap_t obj_ap = my_thread_allocation_points._automatic_mostly_copying_allocation_point;
         globalMpsMetrics.movingAllocations++;
         smart_ptr<OT> sp =
-          general_mps_allocation<smart_ptr<OT>>(the_header,size,obj_ap,"AMC",
+          general_mps_allocation<smart_ptr<OT>>(the_header,size,obj_ap,
                                            std::forward<ARGS>(args)...);
         return sp;
 #endif
@@ -426,7 +424,7 @@ namespace gctools {
       mps_ap_t obj_ap = my_thread_allocation_points._automatic_mostly_copying_zero_rank_allocation_point;
       globalMpsMetrics.movingZeroRankAllocations++;
       smart_pointer_type sp =
-        general_mps_allocation<smart_pointer_type>(the_header,size,obj_ap,"AMCZ",
+        general_mps_allocation<smart_pointer_type>(the_header,size,obj_ap,
                                               std::forward<ARGS>(args)...);
       return sp;
 #endif
@@ -459,7 +457,7 @@ When would I ever want the GC to automatically collect objects but not move them
       mps_ap_t obj_ap = my_thread_allocation_points._non_moving_allocation_point;
       globalMpsMetrics.nonMovingAllocations++;
       smart_pointer_type sp =
-        general_mps_allocation<smart_pointer_type>(the_header,size,obj_ap,"NON_MOVING_POOL",
+        general_mps_allocation<smart_pointer_type>(the_header,size,obj_ap,
                                               std::forward<ARGS>(args)...);
       return sp;
 #endif
@@ -493,7 +491,7 @@ should not be managed by the GC */
       mps_ap_t obj_ap = my_thread_allocation_points._non_moving_allocation_point;
       globalMpsMetrics.nonMovingAllocations++;
       gctools::smart_ptr<OT> sp =
-        general_mps_allocation<gctools::smart_ptr<OT>>(the_header,size,obj_ap,"NON_MOVING_POOL",
+        general_mps_allocation<gctools::smart_ptr<OT>>(the_header,size,obj_ap,
                                                   std::forward<ARGS>(args)...);
       return sp;
 #endif
@@ -614,6 +612,28 @@ namespace gctools {
       return sp;
 #endif
     };
+
+    template <typename... ARGS>
+    static smart_pointer_type static_allocate_kind(const Header_s::Value& the_header, size_t size, ARGS &&... args) {
+#ifdef USE_BOEHM
+      smart_pointer_type sp = GCObjectAppropriatePoolAllocator<OT, unmanaged>::allocate_in_appropriate_pool_kind(the_header,size,std::forward<ARGS>(args)...);
+      GCObjectInitializer<OT, GCInfo<OT>::NeedsInitialization>::initializeIfNeeded(sp);
+      GCObjectFinalizer<OT, GCInfo<OT>::NeedsFinalization>::finalizeIfNeeded(sp);
+      handle_all_queued_interrupts();
+      return sp;
+#endif
+#ifdef USE_MPS
+      smart_pointer_type sp = GCObjectAppropriatePoolAllocator<OT, unmanaged>::allocate_in_appropriate_pool_kind(the_header,size,std::forward<ARGS>(args)...);
+      GCObjectInitializer<OT, GCInfo<OT>::NeedsInitialization>::initializeIfNeeded(sp);
+      GCObjectFinalizer<OT, GCInfo<OT>::NeedsFinalization>::finalizeIfNeeded(sp);
+      handle_all_queued_interrupts();
+      return sp;
+#endif
+    };
+
+
+
+
     static smart_pointer_type register_class_with_redeye() {
       throw_hard_error("Never call this - it's only used to register with the redeye static analyzer");
     }
@@ -714,9 +734,10 @@ namespace gctools {
     // Uses the underlying constructor. Like, GC<SimpleVector_O>::allocate_container(...)
     // ends up passing the ... to the SimpleVector_O constructor.
     template <typename... ARGS>
-      static smart_pointer_type allocate_container( size_t length, /*const typename OT::value_type& initial_element,*/ ARGS &&... args) {
+    static smart_pointer_type allocate_container( bool static_container_p, size_t length, /*const typename OT::value_type& initial_element,*/ ARGS &&... args) {
       size_t capacity = length;
       size_t size = sizeof_container_with_header<OT>(capacity);
+      if (static_container_p) return GCObjectAllocator<OT>::static_allocate_kind(OT::static_HeaderValue,size,length,/*initial_element,*/std::forward<ARGS>(args)...);
       return GCObjectAllocator<OT>::allocate_kind(OT::static_HeaderValue,size,length,/*initial_element,*/std::forward<ARGS>(args)...);
     }
 
@@ -726,7 +747,6 @@ namespace gctools {
       size_t size = sizeof_container_with_header<OT>(capacity);
       return GCObjectAllocator<OT>::allocate_kind(OT::static_HeaderValue,size,length,/*initial_element,*/std::forward<ARGS>(args)...);
     }
-
 
     
     template <typename... ARGS>
@@ -805,7 +825,7 @@ public:
     globalMpsMetrics.movingAllocations++;
     gc::tagged_pointer<container_type> obj =
       general_mps_allocation<gc::tagged_pointer<container_type>>(the_header,
-                                                            size,obj_ap,"containerAMC",
+                                                            size,obj_ap,
                                                             num);
     return obj;
 #endif
@@ -909,8 +929,7 @@ public:
     mps_ap_t obj_ap = my_thread_allocation_points._non_moving_allocation_point;
     globalMpsMetrics.nonMovingAllocations++;
     gctools::tagged_pointer<container_type> obj =
-      general_mps_allocation<gc::tagged_pointer<container_type>>(the_header,size,obj_ap,"container_non_moving_ap",
-                                                            num);
+      general_mps_allocation<gc::tagged_pointer<container_type>>(the_header,size,obj_ap,num);
     return obj;
 #endif
   }

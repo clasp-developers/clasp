@@ -2,20 +2,20 @@
 
 
 (defmethod cleavir-hir-to-mir:specialize ((instr cleavir-ir:instruction)
-				  (impl clasp-cleavir:clasp) proc os)
+                                          (impl clasp-cleavir:clasp) proc os)
   ;; By default just return the current instruction
   instr)
 
 
 (defmethod cleavir-hir-to-mir:specialize ((instr cleavir-ir:car-instruction)
-                                  (impl clasp-cleavir:clasp) proc os)
+                                          (impl clasp-cleavir:clasp) proc os)
   (change-class instr 'cleavir-ir:memref2-instruction
                 :inputs (list (first (cleavir-ir:inputs instr)))
                 :offset (- cmp:+cons-car-offset+ cmp:+cons-tag+)
                 :outputs (cleavir-ir:outputs instr)))
 
 (defmethod cleavir-hir-to-mir:specialize ((instr cleavir-ir:cdr-instruction)
-                                  (impl clasp-cleavir:clasp) proc os)
+                                          (impl clasp-cleavir:clasp) proc os)
   (change-class instr 'cleavir-ir:memref2-instruction
                 :inputs (list (first (cleavir-ir:inputs instr)))
                 :offset (- cmp:+cons-cdr-offset+ cmp:+cons-tag+)
@@ -23,7 +23,7 @@
 
 
 (defmethod cleavir-hir-to-mir:specialize ((instr cleavir-ir:rplaca-instruction)
-                                  (impl clasp-cleavir:clasp) proc os)
+                                          (impl clasp-cleavir:clasp) proc os)
   (change-class instr 'cleavir-ir:memset2-instruction
                 :inputs (list (first (cleavir-ir:inputs instr))
                               (second (cleavir-ir:inputs instr)))
@@ -31,14 +31,13 @@
                 :outputs nil))
 
 (defmethod cleavir-hir-to-mir:specialize ((instr cleavir-ir:rplacd-instruction)
-                                  (impl clasp-cleavir:clasp) proc os)
+                                          (impl clasp-cleavir:clasp) proc os)
   (change-class instr 'cleavir-ir:memset2-instruction
                 :inputs (list (first (cleavir-ir:inputs instr))
                               (second (cleavir-ir:inputs instr)))
                 :offset (- cmp:+cons-cdr-offset+ cmp:+cons-tag+)
                 :outputs nil))
 
-#-use-boehmdc
 (defun gen-sv-call (fname args result succ)
   (let ((fdef (cleavir-ir:new-temporary))
         (vals (cleavir-ir:make-values-location)))
@@ -104,7 +103,6 @@
   (with-constant (ty type)
     (gen-branch-call 'typep (list object ty) pro con)))
 
-#-use-boehmdc
 (defun gen-eql-check (object1 literal pro con)
   (with-constant (object2 literal)
     (if (typep literal '(and number (not fixnum) (not single-float))) ; non-eq-comparable
@@ -113,7 +111,6 @@
          (list object1 object2)
          (list pro con)))))
 
-#-use-boehmdc
 (defun gen-dimension-check (object dim spec pro con)
   (if (eq spec '*)
       pro ; don't need a nop as this will not be returned from gen-array-type-check
@@ -124,7 +121,6 @@
                        arrayd
                        (gen-eql-check arrayd spec pro con))))))
 
-#-use-boehmdc
 (defun gen-rank-check (object rank pro con)
   (let ((arrayr (cleavir-ir:new-temporary)))
     (gen-sv-call 'array-rank
@@ -144,28 +140,13 @@
 ;;; We don't do this for arrays any more though.
 ;;; This should all be source-level but we are unprepared.
 
-#-use-boehmdc
 (defun gen-array-type-check (object element-type dimensions simple-only-p pro con)
   (let* ((dimensions (if (integerp dimensions) (make-list dimensions :initial-element '*) dimensions))
          (rank (if (eq dimensions '*) '* (length dimensions)))
-         (simple-vector-type
-           (if (eq element-type '*)
-               'core:abstract-simple-vector
-               (simple-vector-type element-type)))
-         (complex-vector-type
-           (case element-type
-             ((base-char) 'core:str8ns)
-             ((character) 'core:str-wns)
-             ((bit) 'core:bit-vector-ns)
-             (t nil)))
-         (simple-mdarray-type
-           (if (eq element-type '*)
-               'core:simple-mdarray
-               (simple-mdarray-type element-type)))
-         (mdarray-type
-           (if (eq element-type '*)
-               'core:mdarray
-               (complex-mdarray-type element-type))))
+         (simple-vector-type (core::simple-vector-type element-type))
+         (complex-vector-type (core::complex-vector-type element-type))
+         (simple-mdarray-type (core::simple-mdarray-type element-type))
+         (mdarray-type (core::complex-mdarray-type element-type)))
     (let ((pro (if (or (eq dimensions '*) (null dimensions))
                    pro
                    (loop for dim in dimensions
@@ -189,42 +170,32 @@
                      con))))
             (t
              (cond ((eql rank 1)
+                    ;; check for vector types only
+                    ;; (and so we don't need a rank check)
                     (maybe-gen-primitive-type-check
                      object simple-vector-type pro
-                     (if complex-vector-type ; probably next most likely.
-                         (maybe-gen-primitive-type-check
-                          object complex-vector-type pro
-                          ;; rank is one, so it can't be a simple mdarray.
-                          (maybe-gen-primitive-type-check
-                           object mdarray-type
-                           (gen-rank-check object rank pro con)
-                           con))
-                         ;; no complex vector type, so just mdarray
-                         (maybe-gen-primitive-type-check
-                          object mdarray-type
-                          (gen-rank-check object rank pro con) con))))
+                     (maybe-gen-primitive-type-check
+                      object complex-vector-type pro con)))
                    ((eq rank '*)
-                    ;; just the above without the rank check, and plus simple mdarray.
+                    ;; check for both vector and mdarray types
+                    ;; (and no rank check because it wasn't specified)
                     (maybe-gen-primitive-type-check
                      object simple-vector-type pro
-                     (let ((mdarray-check
-                             (maybe-gen-primitive-type-check
-                              object simple-mdarray-type pro
-                              (maybe-gen-primitive-type-check
-                               object mdarray-type pro con))))
-                       (if complex-vector-type
-                           (maybe-gen-primitive-type-check
-                            object complex-vector-type
-                            pro mdarray-check)
-                           mdarray-check))))
-                   (t ;; checking for some multidimensional type
+                     (maybe-gen-primitive-type-check
+                      object complex-vector-type pro
+                      (maybe-gen-primitive-type-check
+                       object simple-mdarray-type pro
+                       (maybe-gen-primitive-type-check
+                        object mdarray-type pro con)))))
+                   (t
+                    ;; check for mdarray types only,
+                    ;; and check the rank.
                     (maybe-gen-primitive-type-check
                      object simple-mdarray-type pro
                      (maybe-gen-primitive-type-check
                       object mdarray-type
                       (gen-rank-check object rank pro con) con)))))))))
 
-#-use-boehmdc
 (defun gen-interval-type-check (object head low high pro con)
   (let ((prims
           (ecase head
@@ -266,7 +237,6 @@
           do (setf con (maybe-gen-primitive-type-check object prim pro con)))
     con))
 
-#-use-boehmdc
 (defun maybe-gen-primitive-type-check (object primitive-type pro con)
   (case primitive-type
     ((fixnum) (cleavir-ir:make-fixnump-instruction object (list pro con)))
@@ -279,83 +249,6 @@
                 (cc-mir:make-headerq-instruction header-info object (list pro con)))
                (t (gen-typep-check object primitive-type pro con)))))))
 
-;;; FIXME: Move these?
-#-use-boehmdc
-(defparameter +simple-vector-type-map+
-  '((bit . simple-bit-vector)
-    (fixnum . core:simple-vector-fixnum)
-    (ext:byte8 . core:simple-vector-byte8-t)
-    (ext:byte16 . core:simple-vector-byte16-t)
-    (ext:byte32 . core:simple-vector-byte32-t)
-    (ext:byte64 . core:simple-vector-byte64-t)
-    (ext:integer8 . core:simple-vector-int8-t)
-    (ext:integer16 . core:simple-vector-int16-t)
-    (ext:integer32 . core:simple-vector-int32-t)
-    (ext:integer64 . core:simple-vector-int64-t)
-    (single-float . core:simple-vector-float)
-    (double-float . core:simple-vector-double)
-    (base-char . simple-base-string)
-    (character . core:simple-character-string)
-    (t . simple-vector)))
-
-#-use-boehmdc
-(defun simple-vector-type (uaet)
-  (let ((pair (assoc uaet +simple-vector-type-map+)))
-    (if pair
-        (cdr pair)
-        (error "BUG: Unknown UAET ~a in simple-vector-type" uaet))))
-
-#-use-boehmdc
-(defparameter +simple-mdarray-type-map+
-  '((bit . core:simple-mdarray-bit)
-    (fixnum . core:simple-mdarray-fixnum)
-    (ext:byte8 . core:simple-mdarray-byte8-t)
-    (ext:byte16 . core:simple-mdarray-byte16-t)
-    (ext:byte32 . core:simple-mdarray-byte32-t)
-    (ext:byte64 . core:simple-mdarray-byte64-t)
-    (ext:integer8 . core:simple-mdarray-int8-t)
-    (ext:integer16 . core:simple-mdarray-int16-t)
-    (ext:integer32 . core:simple-mdarray-int32-t)
-    (ext:integer64 . core:simple-mdarray-int64-t)
-    (single-float . core:simple-mdarray-float)
-    (double-float . core:simple-mdarray-double)
-    (base-char . core:simple-mdarray-base-char)
-    (character . core:simple-mdarray-character)
-    (t . core:simple-mdarray-t)))
-
-#-use-boehmdc
-(defun simple-mdarray-type (uaet)
-  (let ((pair (assoc uaet +simple-mdarray-type-map+)))
-    (if pair
-        (cdr pair)
-        (error "BUG: Unknown UAET ~a in simple-mdarray-type" uaet))))
-
-#-use-boehmdc
-(defparameter +complex-mdarray-type-map+
-  '((bit . core:mdarray-bit)
-    (fixnum . core:mdarray-fixnum)
-    (ext:byte8 . core:mdarray-byte8-t)
-    (ext:byte16 . core:mdarray-byte16-t)
-    (ext:byte32 . core:mdarray-byte32-t)
-    (ext:byte64 . core:mdarray-byte64-t)
-    (ext:integer8 . core:mdarray-int8-t)
-    (ext:integer16 . core:mdarray-int16-t)
-    (ext:integer32 . core:mdarray-int32-t)
-    (ext:integer64 . core:mdarray-int64-t)
-    (single-float . core:mdarray-float)
-    (double-float . core:mdarray-double)
-    (base-char . core:mdarray-base-char)
-    (character . core:mdarray-character)
-    (t . core:mdarray-t)))
-
-#-use-boehmdc
-(defun complex-mdarray-type (uaet)
-  (let ((pair (assoc uaet +complex-mdarray-type-map+)))
-    (if pair
-        (cdr pair)
-        (error "BUG: Unknown UAET ~a in complex-mdarray-type" uaet))))
-
-#-use-boehmdc
 (defun gen-type-check (object type pro con)
   (multiple-value-bind (head args) (core::normalize-type type)
     (case head
@@ -430,17 +323,15 @@
              (gen-typep-check object type pro con) ; unknown compound type
              (maybe-gen-primitive-type-check object head pro con))))))
 
-#+use-boehmdc
-(defun gen-type-check (object type pro con)
-  (gen-typep-check object type pro con))
-
 (defun replace-typeq (typeq-instruction)
   (let ((object (first (cleavir-ir:inputs typeq-instruction)))
         (type (cleavir-ir:value-type typeq-instruction))
         (pro (first (cleavir-ir:successors typeq-instruction)))
         (con (second (cleavir-ir:successors typeq-instruction)))
         (preds (cleavir-ir:predecessors typeq-instruction))
-        (cleavir-ir:*policy* (cleavir-ir:policy typeq-instruction)))
+        (cleavir-ir:*policy* (cleavir-ir:policy typeq-instruction))
+        (cleavir-ir:*dynamic-environment*
+          (cleavir-ir:dynamic-environment typeq-instruction)))
     (let ((new (gen-type-check object type pro con)))
       (dolist (pred preds)
         (setf (cleavir-ir:successors pred)
@@ -449,7 +340,7 @@
 (defun reduce-typeqs (initial-instruction)
   (cleavir-ir:map-instructions-arbitrary-order
    (lambda (i)
-     (when (cleavir-ir:typeq-instruction-p i)
+     (when (typep i 'cleavir-ir:typeq-instruction)
        (replace-typeq i)))
    initial-instruction)
   (cleavir-ir:set-predecessors initial-instruction))

@@ -57,10 +57,10 @@
 
 
 (defun simple-program-error (e1 &rest args)
-  (eval `(error ,e1 ,@args)))
+  (apply 'error e1 args))
 
 (defun simple-reader-error (stream e1 &rest args)
-  (eval `(error ,e1 ,@args)))
+  (apply 'error e1 args))
 
 
 (fset 'return #'(lambda (whole env)
@@ -182,18 +182,21 @@ the corresponding VAR.  Returns NIL."
 ;;
 ;;   "Return a copy of LIST before the part which is the same as OBJECT."
 ;;
+
+;;; Definition from CLHS 14.2.30 (LDIFF, TAILP)
 (defun ldiff (list object)
-  (unless (eql list object)
-    (do* ((result (list (car list)))
-          (splice result)
-          (list (cdr list) (cdr list)))
-        ((atom list) (if (eql list object) (rplacd splice nil)) result)
-      (if (eql list object)
-          (return result)
-        (setq splice (cdr (rplacd splice (list (car list)))))))))
-;; stuff
-
-
+  (unless (listp list)
+    (error 'simple-type-error
+           :format-control "Not a proper list or a dotted list.; ~s."
+           :format-arguments (list list)
+           :datum list
+           :expected-type 'list))
+  (do ((list list (cdr list))
+       (r '() (cons (car list) r)))
+      ((atom list)
+       (if (eql list object) (nreverse r) (nreconc r list)))
+    (when (eql object list)
+      (return (nreverse r)))))
 
 
 ;; in-package macro is re-defined in evalmacros.lsp

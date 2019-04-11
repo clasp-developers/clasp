@@ -5,7 +5,7 @@ MAKE	?= make
 PREFIX	?= /opt/clasp
 
 all:
-	./waf build_dboehm
+	./waf build_cboehm
 
 cando-jupyter:
 	./waf build_cboehm && ~/Development/cando/build/boehm/iclasp-boehm -l "source-dir:extensions;cando;src;lisp;load-cando-jupyter.lisp" -e "(core:quit)"
@@ -17,6 +17,11 @@ configure:
 
 clean:
 	./waf distclean
+
+clean-modules:
+	find src/lisp/modules/ . -name '*.bc' -exec rm {} \;
+	find src/lisp/modules/ . -name '*.fasl' -exec rm {} \;
+	find src/lisp/modules/ . -name '*.o' -exec rm {} \;
 
 pull-sicl-master:
 	(cd src/lisp/kernel/contrib/sicl && git pull origin master)

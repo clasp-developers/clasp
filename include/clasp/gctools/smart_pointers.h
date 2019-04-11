@@ -182,6 +182,7 @@ public:
 	  gcweak.h>>~WeakPointerManager
 	  gcweak.h>>Mapping(const Type& val)
 	  gcweak.h>>Buckets::set
+          builtins.cc>>lexicalValueReference
 	  intrinsics.cc>>cc_loadTimeValueReference
           record.h>>field specialized on gc::smart_ptr<OT>&
           SMART_PTR_FIX and smart_ptr fixing in general when SMART_PTR_FIX is replaced
@@ -754,6 +755,8 @@ public:
 
 public:
   inline return_type as_return_type() { return return_type(this->theObject,1);};
+  inline bool unboundp() const { return tagged_unboundp(this->theObject); };
+  inline bool boundp() const { return !tagged_unboundp(this->theObject); };
   inline bool nilp() const { return tagged_nilp(this->theObject); }
   inline bool notnilp() const { return (!this->nilp()); };
   inline bool fixnump() const { return tagged_fixnump(this->theObject); };

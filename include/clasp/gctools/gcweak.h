@@ -299,6 +299,8 @@ public:
   typedef gctools::GCBucketAllocator<ValueBucketsType> ValueBucketsAllocatorType;
 
 public:
+  core::Number_sp _RehashSize;
+  double _RehashThreshold;
   size_t _Length;
   gctools::tagged_pointer<KeyBucketsType> _Keys;     // hash buckets for keys
   gctools::tagged_pointer<ValueBucketsType> _Values; // hash buckets for values
@@ -309,7 +311,7 @@ public:
 #endif
 
 public:
- WeakKeyHashTable(size_t length) : _Length(length) {};
+  WeakKeyHashTable(size_t length, core::Number_sp rehashSize, double rehashThreshold) : _Length(length), _RehashSize(rehashSize), _RehashThreshold(rehashThreshold) {};
   void initialize();
 public:
   static uint sxhashKey(const value_type &key
@@ -347,15 +349,21 @@ public:
   void swap(MyType &other) {
     gctools::tagged_pointer<KeyBucketsType> tempKeys = this->_Keys;
     gctools::tagged_pointer<ValueBucketsType> tempValues = this->_Values;
+    core::Number_sp rehashSize = this->_RehashSize;
+    double rehashThreshold = this->_RehashThreshold;
     this->_Keys = other._Keys;
     this->_Values = other._Values;
+    this->_RehashSize = other._RehashSize;
+    this->_RehashThreshold = other._RehashThreshold;
     other._Keys = tempKeys;
     other._Values = tempValues;
+    other._RehashSize = rehashSize;
+    other._RehashThreshold = rehashThreshold;
   }
 
   bool fullp_not_safe() const {
     bool fp;
-    fp = (*this->_Keys).used() >= (*this->_Keys).length()/2;
+    fp = (*this->_Keys).used() >= (this->_RehashThreshold * (*this->_Keys).length());
     return fp;
   }
 
@@ -379,8 +387,8 @@ public:
     return result;
   }
 
-  int rehash_not_safe(size_t newLength, const value_type &key, size_t &key_bucket);
-  int rehash(size_t newLength, const value_type &key, size_t &key_bucket);
+  int rehash_not_safe( const value_type &key, size_t &key_bucket);
+  int rehash(const value_type &key, size_t &key_bucket);
   int trySet(core::T_sp tkey, core::T_sp value);
 
   string dump(const string &prefix);
@@ -388,7 +396,8 @@ public:
   core::T_mv gethash(core::T_sp tkey, core::T_sp defaultValue);
   void set(core::T_sp key, core::T_sp value);
   void maphash(std::function<void(core::T_sp, core::T_sp)> const &fn);
-  void remhash(core::T_sp tkey);
+  void maphashFn(core::T_sp fn);
+  bool remhash(core::T_sp tkey);
   void clrhash();
 };
 
@@ -499,7 +508,8 @@ public:
   core::T_mv gethash(core::T_sp tkey, core::T_sp defaultValue);
   void set(core::T_sp key, core::T_sp value);
   void maphash(std::function<void(core::T_sp, core::T_sp)> const &fn);
-  void remhash(core::T_sp tkey);
+  core::T_mv maphashFn(core::T_sp fn);
+  bool remhash(core::T_sp tkey);
   void clrhash();
 };
 

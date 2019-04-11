@@ -36,6 +36,7 @@ THE SOFTWARE.
 #include <clasp/core/foundation.h>
 #include <clasp/gctools/gcweak.h>
 #include <clasp/core/object.h>
+#include <clasp/core/evaluator.h>
 #ifdef USE_MPS
 #include <clasp/mps/code/mps.h>
 #endif
@@ -142,14 +143,23 @@ size_t WeakKeyHashTable::find(gctools::tagged_pointer<KeyBucketsType> keys, cons
   } while (i != h);
   return result;
 }
-int WeakKeyHashTable::rehash_not_safe(size_t newLength, const value_type &key, size_t &key_bucket) {
+int WeakKeyHashTable::rehash_not_safe(const value_type &key, size_t &key_bucket) {
+  size_t newLength;
+  if (this->_RehashSize.fixnump()) {
+    newLength = this->_Keys->length() + this->_RehashSize.unsafe_fixnum();
+  } else if (gc::IsA<core::Float_sp>(this->_RehashSize)) {
+    double size = core::clasp_to_double(this->_RehashSize);
+    newLength = this->_Keys->length()*size;
+  } else {
+    SIMPLE_ERROR(BF("Illegal rehash size %s") % _rep_(this->_RehashSize));
+  }
   int result;
   GCWEAK_LOG(BF("entered rehash newLength = %d") % newLength );
   size_t i, length;
 		// buckets_t new_keys, new_values;
   result = 0;
   length = this->_Keys->length();
-  MyType newHashTable(newLength);
+  MyType newHashTable(newLength,this->_RehashSize,this->_RehashThreshold);
   newHashTable.initialize();
 		//new_keys = make_buckets(newLength, this->key_ap);
 		//new_values = make_buckets(newLength, this->value_ap);
@@ -197,10 +207,10 @@ int WeakKeyHashTable::rehash_not_safe(size_t newLength, const value_type &key, s
   return result;
 }
 
-int WeakKeyHashTable::rehash(size_t newLength, const value_type &key, size_t &key_bucket) {
+int WeakKeyHashTable::rehash( const value_type &key, size_t &key_bucket) {
   int result;
-  safeRun<void()>([&result, this, newLength, &key, &key_bucket]() -> void {
-      result = this->rehash_not_safe(newLength,key,key_bucket);
+  safeRun<void()>([&result, this, &key, &key_bucket]() -> void {
+      result = this->rehash_not_safe(key,key_bucket);
     });
   return result;
 }
@@ -428,7 +438,7 @@ void WeakKeyHashTable::set(core::T_sp key, core::T_sp value) {
 		    int res;
 		    value_type dummyKey;
 		    size_t dummyPos;
-		    this->rehash( (*this->_Keys).length() * 2, dummyKey, dummyPos );
+		    this->rehash( dummyKey, dummyPos );
 		    res = this->trySet( key, value);
 		    GCTOOLS_ASSERT(res);
 		}
@@ -450,8 +460,24 @@ void WeakKeyHashTable::maphash(std::function<void(core::T_sp, core::T_sp)> const
       });
 }
 
-void WeakKeyHashTable::remhash(core::T_sp tkey) {
-  safeRun<void()>([this, tkey]() -> void {
+void WeakKeyHashTable::maphashFn(core::T_sp fn) {
+  safeRun<void()>(
+      [fn, this]() -> void {
+		size_t length = this->_Keys->length();
+		for (int i = 0; i < length; ++i) {
+		    value_type& old_key = (*this->_Keys)[i];
+		    if (!old_key.unboundp() && !old_key.deletedp()) {
+			core::T_sp tkey(old_key);
+			core::T_sp tval((*this->_Values)[i]);
+                        core::eval::funcall(fn,tkey,tval);
+		    }
+		}
+      });
+}
+
+bool WeakKeyHashTable::remhash(core::T_sp tkey) {
+  bool bresult = false;
+  safeRun<void()>([this, tkey, &bresult]() -> void {
 		size_t b;
 		value_type key(tkey);
 #ifdef USE_MPS
@@ -465,11 +491,15 @@ void WeakKeyHashTable::remhash(core::T_sp tkey) {
 		    (*this->_Keys)[b].deletedp() )
 		    {
 #ifdef USE_MPS
-			if(key.objectp() && !mps_ld_isstale(&this->_LocationDependency, global_arena, key.raw_()))
-			    return;
+                      if(key.objectp() && !mps_ld_isstale(&this->_LocationDependency, global_arena, key.raw_())) {
+                        bresult = false;
+                        return;
+                      }
 #endif
-			if(!this->rehash( (*this->_Keys).length(), key, b))
-			    return;
+                      if(!this->rehash( key, b)) {
+                        bresult = false;
+                        return;
+                      }
 		    }
 		if( !(*this->_Keys)[b].unboundp() &&
 		    !(*this->_Keys)[b].deletedp() )
@@ -478,8 +508,12 @@ void WeakKeyHashTable::remhash(core::T_sp tkey) {
                       this->_Keys->set(b, deleted);
                       (*this->_Keys).setDeleted((*this->_Keys).deleted()+1);
                       (*this->_Values)[b] = value_type(gctools::make_tagged_unbound<core::T_O*>());
+                      bresult = true;
+                      return;
 		    }
+                bresult = false;
   });
+  return bresult;
 }
 
 void WeakKeyHashTable::clrhash() {
@@ -894,7 +928,7 @@ void StrongKeyHashTable::maphash(std::function<void(core::T_sp, core::T_sp)> con
   }
 }
 
-void StrongKeyHashTable::remhash(core::T_sp tkey) {
+bool StrongKeyHashTable::remhash(core::T_sp tkey) {
   size_t b;
   value_type key(tkey);
 #ifdef USE_MPS
@@ -909,10 +943,10 @@ void StrongKeyHashTable::remhash(core::T_sp tkey) {
   {
 #ifdef USE_MPS
     if(key.objectp() && !mps_ld_isstale(&this->_LocationDependency, global_arena, key.raw_()))
-      return;
+      return false;
 #endif
     if(!this->rehash( (*this->_Keys).length(), key, b))
-      return;
+      return false;
   }
   if( !(*this->_Keys)[b].unboundp() &&
       !(*this->_Keys)[b].deletedp() )
@@ -921,7 +955,9 @@ void StrongKeyHashTable::remhash(core::T_sp tkey) {
     this->_Keys->set(b, deleted);
     (*this->_Keys).setDeleted((*this->_Keys).deleted()+1);
     (*this->_Values)[b] = value_type(gctools::make_tagged_unbound<core::T_O*>());
+    return true;
   }
+  return false;
 }
 
 void StrongKeyHashTable::clrhash() {

@@ -185,4 +185,17 @@
         (and (zerop (search "#<" result))
              (search ">" result))))
 
+(test print-13
+      (string= "-0.0"
+               (let ((type 'SINGLE-FLOAT)
+                     (number -0.0))
+                 (LET ((*READ-DEFAULT-FLOAT-FORMAT* TYPE))
+                   (FORMAT NIL "~f" number)))))
+
+(test print-14
+      (string= "-0.0"
+               (let ((type 'SINGLE-FLOAT)
+                     (number -0.0))
+                 (LET ((*READ-DEFAULT-FLOAT-FORMAT* type))
+                   (PRIN1-TO-STRING number)))))
 

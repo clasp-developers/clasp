@@ -84,6 +84,32 @@
               Y
               Z))
          (list a b c d e f))))
+         
+(test-expect-error GET-PROPERTIES.ERROR.5 (GET-PROPERTIES '(A 1 B 2 C 3 . D) '(X Y)) :type type-error)
 
 
+(test ldiff-1 (equalp '(A B C D E . F) (LDIFF ( COPY-TREE '(A B C D E . F)) 'A)))
+(test-expect-error ldiff.error.1 (let ((x 10))(ldiff x 'a)) :type type-error)
+(test-expect-error ldiff.error.2 (let ((x 'a))(ldiff x 'a)) :type type-error)
+(test-expect-error ldiff.error.3 (let ((x (make-array '(10) :initial-element 'a)))(ldiff x 'a)) :type type-error)
+(test-expect-error ldiff.error.4 (let ((x 1.23 ))(ldiff x 'a)) :type type-error)
+(test-expect-error ldiff.error.5 (let ((x #\w))(ldiff x 'a)) :type type-error)
 
+(test-expect-error map-1 (MAPCON #'APPEND) :type program-error)
+(test-expect-error map-2 (MAPLIST #'APPEND) :type program-error)
+(test-expect-error map-3 (MAPL #'APPEND) :type program-error)
+(test-expect-error map-4 (MAPCAN #'APPEND) :type program-error)
+(test-expect-error map-5 (MAPCAR #'APPEND) :type program-error)
+(test-expect-error map-6 (MAPC #'APPEND) :type program-error)
+
+(test last.8 (eq 'b (last '(a . b) 0)))
+;;; 14.2.29 last
+(test last-ansi-1 (equal '(c)  (last '(a b c))))
+(test last-ansi-2 (null (last '(a b c) 0)))
+(test last-ansi-3 (equal '(c) (last '(a b c) 1)))
+(test last-ansi-4 (equal '(b c) (last '(a b c) 2)))
+(test last-ansi-5 (equal '(a b c) (last '(a b c) 3)))
+(test last-ansi-6 (equal '(a b c) (last '(a b c) 4)))
+(test last-ansi-7 (equal (cons 'a 'b) (last '(a . b) 1)))
+(test last-ansi-8 (equal (cons 'a 'b) (last '(a . b) 2)))
+(test ACONS.3 (acons :a :b :c))

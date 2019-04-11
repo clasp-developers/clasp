@@ -96,9 +96,15 @@
     nil
     (make-package "C" :use '(:cl :core)))
 
-(if (find-package "CLASP-CLEAVIR")
-    nil
-    (make-package "CLASP-CLEAVIR" :use '(:CL)))
+(eval-when (:execute :compile-toplevel :load-toplevel)
+  (if (find-package "LITERAL")
+      nil
+      (make-package "LITERAL" :use '(:cl :core))))
+
+(eval-when (:execute :compile-toplevel :load-toplevel)
+  (if (find-package "CLASP-CLEAVIR")
+      nil
+      (make-package "CLASP-CLEAVIR" :use '(:CL))))
 
 ;;; Setup a few things for the EXT package
 ;;; EXT exports
@@ -378,15 +384,18 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 (defun proclaim (decl)
   "Args: (decl-spec)
 Gives a global declaration.  See DECLARE for possible DECL-SPECs."
+  ;;decl must be a proper list
+  (unless (core:proper-list-p decl)
+    (error "decl must be a proper list: ~a" decl)) 
   (cond
     ((eq (car decl) 'SPECIAL)
      (mapc #'sys::*make-special (cdr decl)))
     ((eq (car decl) 'cl:inline)
-     (let ((name (cadr decl)))
+     (dolist (name (cdr decl))
        (core:hash-table-setf-gethash *functions-to-inline* name t)
        (remhash name *functions-to-notinline*)))
     ((eq (car decl) 'cl:notinline)
-     (let ((name (cadr decl)))
+     (dolist (name (cdr decl))
        (core:hash-table-setf-gethash *functions-to-notinline* name t)
        (remhash name *functions-to-inline*)))
     (*proclaim-hook*
@@ -424,7 +433,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
            (build-linkflags (split-at-white-space *build-linkflags*))
            (link-flags (append ldflags #+(or)(list clasp-lib-dir) build-linkflags libdir-flag libs build-stlib build-lib)))
       (close stream)
-      (if (or (member :use-boehm *features*) (member :use-boehmdc *features*))
+      (if (member :use-boehm *features*)
           (setq link-flags (cons "-lgc" link-flags)))
       (let ((library-extension (if (member :target-os-darwin *features*)
                                    "dylib"
@@ -652,7 +661,7 @@ the stage, the +application-name+ and the +bitcode-name+"
   `(progn
      ,@(mapcar #'(lambda (f) `(push ,f *features*)) features)
      (if (core:is-interactive-lisp)
-         (bformat t "Starting %s ... loading image... it takes a few seconds%N" (lisp-implementation-version)))))
+         (bformat t "Starting %s ... loading image...%N" (lisp-implementation-version)))))
 
 (export '*extension-startup-loads*) ;; ADDED: frgo, 2016-08-10
 (defvar *extension-startup-loads* nil)

@@ -65,8 +65,3 @@
 
 (eval-when (:execute :load-toplevel)
   (setq core:*eval-with-env-hook* 'cclasp-eval))
-
-
-
-
-

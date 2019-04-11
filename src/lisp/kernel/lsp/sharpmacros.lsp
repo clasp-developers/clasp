@@ -133,4 +133,15 @@
   (set-dispatch-macro-character #\# #\# #'sharp-sharp)
   (set-dispatch-macro-character #\# #\I #'read-cxx-object))
 
+(defun sharpmacros-lisp-redefine(readtable)
+  (set-dispatch-macro-character #\# #\= #'sharp-equal readtable)
+  (set-dispatch-macro-character #\# #\# #'sharp-sharp readtable)
+  (set-dispatch-macro-character #\# #\I #'read-cxx-object readtable)
+  (set-dispatch-macro-character #\# #\! 'sharp-!-reader readtable)
+  (set-dispatch-macro-character #\# #\a 'sharp-a-reader readtable)
+  (set-dispatch-macro-character #\# #\A 'sharp-a-reader readtable)
+  (set-dispatch-macro-character #\# #\s 'sharp-s-reader readtable)
+  (set-dispatch-macro-character #\# #\S 'sharp-s-reader readtable)
+  (values))      
+        
 (sharpmacros-enhance)
