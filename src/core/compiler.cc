@@ -1203,7 +1203,7 @@ size_t compact_read_size_t(T_sp stream, size_t& index) {
   size_t data = 0;
   int64_t nb = clasp_read_char(stream)-'0';
   if (nb<0 ||nb>8) {
-    printf("%s:%d Illegal size_t size %lld\n", __FILE__, __LINE__, nb);
+    printf("%s:%d Illegal size_t size %lld\n", __FILE__, __LINE__, (long long)nb);
     abort();
   }
   for (size_t ii=0; ii<nb; ++ii ) {
