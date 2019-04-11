@@ -156,5 +156,8 @@
           satiate-initialization
           ))
 
+#+clasp
+(export '(no-applicable-method-error))
+
 (export '*environment-contains-closure-hook*)
 

@@ -1431,30 +1431,16 @@ T_sp interpreter_multipleValueSetq(List_sp args, T_sp environment) {
   List_sp lcur = oCar(args);
   T_sp form = oCadr(args);
   T_mv result = eval::evaluate(form, environment);
-#define USE_SAVE_TO_MULTIPLE_VALUES 1
-#if USE_SAVE_TO_MULTIPLE_VALUES
   MultipleValues values;
   multipleValuesSaveToMultipleValues(result,&values);
-#else
-  SimpleVector_sp values(SimpleVector_O::create_for_multiple_values());
-  multipleValuesSaveToVector(result, values);
-#endif
   Cons_sp skipFirst = Cons_O::create(_Nil<T_O>(), _Nil<T_O>());
   Cons_sp add = skipFirst;
   // Assemble a Cons for sp_setq
-#if USE_SAVE_TO_MULTIPLE_VALUES
   size_t valuesLength = values._Size;
-#else
-  size_t valuesLength = multipleValuesLength(values);
-#endif
   int i = 0;
   for (auto cur : lcur) {
     Symbol_sp symbol = gc::As<Symbol_sp>(oCar(cur));
-#if USE_SAVE_TO_MULTIPLE_VALUES
     T_sp value = i < valuesLength ? T_sp((gctools::Tagged)values[i]) : _Nil<T_O>();
-#else
-    T_sp value = i < valuesLength ? values->operator[](i) : _Nil<T_O>();
-#endif
     Cons_sp one = Cons_O::create(symbol, _Nil<T_O>());
     add->setCdr(one);
     add = one;
@@ -1465,11 +1451,7 @@ T_sp interpreter_multipleValueSetq(List_sp args, T_sp environment) {
     ++i;
   }
   eval::sp_setq(oCdr(skipFirst), environment);
-#if USE_SAVE_TO_MULTIPLE_VALUES
   return T_sp((gctools::Tagged)(values[0]));
-#else
-  return (values->operator[](0));
-#endif
 }
 
 SYMBOL_EXPORT_SC_(ClPkg, prog1);
@@ -1862,13 +1844,10 @@ T_mv sp_letSTAR(List_sp args, T_sp parentEnvironment) {
 
 T_mv sp_if(List_sp args, T_sp environment) {
   ASSERT(environment.generalp());
-  T_sp res;
-  {
-    res = eval::evaluate(oCar(args), environment);
-  }
   if (oCdddr(args).notnilp()) {
     SIMPLE_ERROR(BF("Illegal if has too many expressions: %s") % _rep_(args));
   }
+  T_sp res = eval::evaluate(oCar(args), environment);
   if (res.isTrue()) {
     return eval::evaluate(oCadr(args), environment);
   } else {
@@ -1876,7 +1855,7 @@ T_mv sp_if(List_sp args, T_sp environment) {
       return eval::evaluate(oCaddr(args), environment);
     }
   }
-  return (Values(_Nil<T_O>()));
+  return Values(_Nil<T_O>());
 }
 
 T_mv sp_cond(List_sp args, T_sp environment) {

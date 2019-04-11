@@ -150,6 +150,7 @@ extern "C" void add_history(char *line);
 
 namespace core {
 
+CommandLineOptions *global_options;
 
 bool global_Started = false;
 bool globalTheSystemIsUp = false;
@@ -392,7 +393,7 @@ void run_quick_tests() {
   printf("%s:%d   gc::IsA<SimpleBaseString_sp>(sbcsTest) -> %d\n", __FILE__, __LINE__, gc::IsA<SimpleBaseString_sp>(sbcsTest) );
   MATCH_PAIR_notnilp(cl__string_EQ_,sbcsTest,sbcs2Test);
   MATCH_PAIRS_notnilp(cl__string_EQ_,sbcsTest,scsTest,s8Test,swTest);
-  VectorTNs_sp vec9 = VectorTNs_O::make(5,_Nil<T_O>(),clasp_make_fixnum(0));
+  ComplexVector_T_sp vec9 = ComplexVector_T_O::make(5,_Nil<T_O>(),clasp_make_fixnum(0));
   for (size_t i=0; i<256; ++i) {
     printf("%s:%d    Building string of %lu size\n", __FILE__, __LINE__, i);
     Str8Ns_sp s9 = Str8Ns_O::make(i,'A',true,_Nil<T_O>());
@@ -401,7 +402,7 @@ void run_quick_tests() {
     printf("%s:%d     done vectorPushExtend final length=%lu total size=%lu\n", __FILE__, __LINE__, vec9->length(),vec9->arrayTotalSize());
   }
   printf("%s:%d    vec9->length() = %lu\n", __FILE__, __LINE__, vec9->length());
-  VectorTNs_sp vec = VectorTNs_O::make(5,_Nil<T_O>());
+  ComplexVector_T_sp vec = ComplexVector_T_O::make(5,_Nil<T_O>());
   printf("%s:%d  vec@%p   length = %lu\n", __FILE__, __LINE__, (void*)&*vec, vec->length());
   printf("%s:%d  vec@%p   vec->_Data = %p\n", __FILE__, __LINE__, (void*)&*vec, (void*)&*(vec->_Data));
   printf("%s:%d  vec@%p   vec.data() = %p\n", __FILE__, __LINE__, (void*)&*vec, (void*)&*(vec->data()));
@@ -494,6 +495,11 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
       printf("%s:%d PID = %d  Paused at startup - press enter to continue: \n", __FILE__, __LINE__, getpid() );
       fflush(stdout);
       getchar();
+  }
+  char* debug_byte_code = getenv("CLASP_DEBUG_BYTE_CODE");
+  if (debug_byte_code) {
+    printf("%s:%d Turning on *debug-byte-code*\n", __FILE__, __LINE__);
+    global_debug_byte_code = true;
   }
 
   my_thread->create_sigaltstack();
@@ -1291,7 +1297,7 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], const CommandLine
   for (int j(endArg + 1); j < argc; ++j) {
     vargs.push_back(SimpleBaseString_O::make(argv[j]));
   }
-  VectorObjects_sp args = VectorObjects_O::create(vargs);
+  ComplexVector_T_sp args = ComplexVector_T_O::create(vargs);
   LOG(BF(" Command line arguments are being set in Lisp to: %s") % _rep_(args));
   SYMBOL_EXPORT_SC_(CorePkg, STARcommandLineArgumentsSTAR);
   _sym_STARcommandLineArgumentsSTAR->defparameter(args);
@@ -1671,7 +1677,7 @@ CL_DEFUN void core__quit(int exitValue) {
 CL_LAMBDA(key datum alist);
 CL_DECLARE();
 CL_DOCSTRING("acons");
-CL_DEFUN List_sp cl__acons(T_sp key, T_sp val, List_sp alist) {
+CL_DEFUN List_sp cl__acons(T_sp key, T_sp val, T_sp alist) {
   Cons_sp acons = Cons_O::create(key, val);
   return Cons_O::create(acons, alist);
 }
@@ -1751,31 +1757,32 @@ CL_DEFUN T_sp core__lookup_class_with_stamp(Fixnum stamp) {
   return foundClass;
 }
 
-CL_LAMBDA(symbol &optional (errorp t) env);
+CL_LAMBDA(symbol &optional env);
 CL_DECLARE();
 CL_DOCSTRING("Return the class holder that contains the class.");
-CL_DEFUN T_sp core__find_class_holder(Symbol_sp symbol, bool errorp, T_sp env) {
+CL_DEFUN T_sp core__find_class_holder(Symbol_sp symbol, T_sp env) {
+#ifdef SYMBOL_CLASS
+  return symbol->find_class_holder();
+#else
   ASSERTF(env.nilp(), BF("Handle non nil environment"));
   // Should only be single threaded here
   if (_lisp->bootClassTableIsValid()) {
-    return _lisp->boot_findClassHolder(symbol, errorp);
+    return _lisp->boot_findClassHolder(symbol,false);
   }
   // Use the same global variable that ECL uses
   bool foundp;
-  T_sp cell;
-  {
-    HashTable_sp classNames = _lisp->_Roots._ClassTable;
-    T_mv mc = classNames->gethash(symbol, _Nil<T_O>());
-    cell = mc;
-    foundp = mc.valueGet_(1).notnilp();
-  }
+  ClassHolder_sp cell;
+  HashTable_sp classNames = _lisp->_Roots._ClassTable;
+  T_mv mc = classNames->gethash(symbol, _Nil<T_O>());
+  foundp = mc.valueGet_(1).notnilp();
   if (!foundp) {
-    if (errorp) {
-      ERROR(ext::_sym_undefinedClass, Cons_O::createList(kw::_sym_name, symbol));
-    }
-    return _Nil<T_O>();
+    cell = ClassHolder_O::create(_Unbound<Instance_O>());
+    classNames->setf_gethash(symbol,cell);
+  } else {
+    cell = gc::As_unsafe<ClassHolder_sp>(mc);
   }
   return cell;
+#endif
 }
 
 CL_LAMBDA(symbol &optional (errorp t) env);
@@ -1784,24 +1791,24 @@ CL_DOCSTRING("find-class");
 CL_DEFUN T_sp cl__find_class(Symbol_sp symbol, bool errorp, T_sp env) {
   ASSERTF(env.nilp(), BF("Handle non nil environment"));
 //  ClassReadLock _guard(_lisp->_Roots._ClassTableMutex);
-  T_sp cell = core__find_class_holder(symbol,errorp,env);
-  if (cell.notnilp()) {
-    ClassHolder_sp ch = gc::As_unsafe<ClassHolder_sp>(cell);
-    if (ch->class_unboundp()) {
-      if (errorp) {
-        ERROR(ext::_sym_undefinedClass, Cons_O::createList(kw::_sym_name, symbol));
-      }
-      return _Nil<T_O>();
+  ClassHolder_sp cell = gc::As<ClassHolder_sp>(core__find_class_holder(symbol,env));
+  if (cell->class_unboundp()) {
+    if (errorp) {
+      ERROR(ext::_sym_undefinedClass, Cons_O::createList(kw::_sym_name, symbol));
     }
-    return ch->class_get();
+    return _Nil<T_O>();
   }
-  return cell;
+  return cell->class_get();
 }
 
 CL_LAMBDA(new-value name);
 CL_DECLARE();
 CL_DOCSTRING("setf_find_class, set value to NIL to remove the class name ");
 CL_DEFUN T_sp core__setf_find_class(T_sp newValue, Symbol_sp name) {
+#ifdef SYMBOL_CLASS
+  name->setf_find_class(newValue);
+  return newValue;
+#else
   if (!newValue.nilp() && !clos__classp(newValue)) {
     SIMPLE_ERROR(BF("Classes in cando have to be subclasses of Class or NIL unlike ECL which uses Instances to represent classes - while trying to (setf find-class) of %s you gave: %s") % _rep_(name) % _rep_(newValue));
   }
@@ -1831,6 +1838,7 @@ CL_DEFUN T_sp core__setf_find_class(T_sp newValue, Symbol_sp name) {
     ht->hash_table_setf_gethash(name, cell);
   }
   return newValue;
+#endif
 };
 
 CL_LAMBDA(partialPath);
@@ -2506,13 +2514,14 @@ int Lisp_O::run() {
   if ( initializer_functions_are_waiting() ) {
     initializer_functions_invoke();
   }
-
+#if 0
 #ifndef SCRAPING
 #define ALL_INITIALIZERS_CALLS
 #include INITIALIZERS_INC_H
 #undef ALL_INITIALIZERS_CALLS
 #endif
-
+#endif
+  
 #ifdef DEBUG_PROGRESS
   printf("%s:%d run\n", __FILE__, __LINE__ );
 #endif
@@ -2656,14 +2665,23 @@ void LispHolder::startup(int argc, char *argv[], const string &appPathEnvironmen
   for (int i = 0; i < argc; ++i) {
     this->_Lisp->_Argv.push_back(string(argv[i]));
   }
-  CommandLineOptions options(argc, argv);
-  Bundle *bundle = new Bundle(argv0,options._ResourceDir);
+  // Create the one global CommandLineOptions object and do some minimal argument processing
+  global_options = new CommandLineOptions(argc, argv);
+  // Call the initializers here so that they can edit the global_options structure
+  Bundle *bundle = new Bundle(argv0,global_options->_ResourceDir);
   this->_Lisp->startupLispEnvironment(bundle);
   mp::_sym_STARcurrent_processSTAR->defparameter(my_thread->_Process);
   this->_Lisp->add_process(my_thread->_Process);
   gctools::initialize_unix_signal_handlers();
   _lisp->_Roots._Booted = true;
-  _lisp->parseCommandLineArguments(argc, argv, options);
+#ifndef SCRAPING
+#define ALL_INITIALIZERS_CALLS
+#include INITIALIZERS_INC_H
+#undef ALL_INITIALIZERS_CALLS
+#endif
+  // The initializers may have changed the function that processes global_options
+  (global_options->_ProcessArguments)(global_options);
+  _lisp->parseCommandLineArguments(argc, argv, *global_options);
 }
 
 LispHolder::~LispHolder() {

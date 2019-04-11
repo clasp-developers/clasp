@@ -102,12 +102,12 @@ extern "C" void dumpFunctionDescription(void* vfdesc)
 {
   core::FunctionDescription* fdesc = (core::FunctionDescription*)vfdesc;
   printf("FunctionDescription @%p\n", fdesc);
-  core::Cons_sp sourcePathname_functionName((gctools::Tagged)fdesc->gcrootsInModule->get(fdesc->sourcePathname_functionName_Index));
-  core::Cons_sp lambdaList_docstring((gctools::Tagged)fdesc->gcrootsInModule->get(fdesc->lambdaList_docstring_Index));
-  printf("sourcePathname CAR[%d] = %s\n", fdesc->sourcePathname_functionName_Index, _rep_(CONS_CAR(sourcePathname_functionName)).c_str());
-  printf("functionName CDR[%d] = %s\n", fdesc->sourcePathname_functionName_Index, _rep_(CONS_CDR(sourcePathname_functionName)).c_str());
-  printf("lambdaList CAR[%d] = %s\n", fdesc->lambdaList_docstring_Index, _rep_(CONS_CAR(lambdaList_docstring)).c_str());
-  printf("docstring CDR[%d] = %s\n", fdesc->lambdaList_docstring_Index, _rep_(CONS_CDR(lambdaList_docstring)).c_str());
+  core::Cons_sp sourcePathname_functionName((gctools::Tagged)fdesc->gcrootsInModule->getTaggedIndex(LITERAL_TAG_CHAR,fdesc->sourcePathname_functionName_Index));
+  core::Cons_sp lambdaList_docstring((gctools::Tagged)fdesc->gcrootsInModule->getTaggedIndex(LITERAL_TAG_CHAR,fdesc->lambdaList_docstring_Index));
+  printf("sourcePathname CAR[%lu] = %s\n", fdesc->sourcePathname_functionName_Index, _rep_(CONS_CAR(sourcePathname_functionName)).c_str());
+  printf("functionName CDR[%lu] = %s\n", fdesc->sourcePathname_functionName_Index, _rep_(CONS_CDR(sourcePathname_functionName)).c_str());
+  printf("lambdaList CAR[%lu] = %s\n", fdesc->lambdaList_docstring_Index, _rep_(CONS_CAR(lambdaList_docstring)).c_str());
+  printf("docstring CDR[%lu] = %s\n", fdesc->lambdaList_docstring_Index, _rep_(CONS_CDR(lambdaList_docstring)).c_str());
   printf("lineno = %d\n", fdesc->lineno);
   printf("column = %d\n", fdesc->column);
   printf("filepos = %d\n", fdesc->filepos);
@@ -141,7 +141,8 @@ ClosureWithSlots_sp ClosureWithSlots_O::make_interpreted_closure(T_sp name, T_sp
   SourceFileInfo_sp sfi = gc::As<SourceFileInfo_sp>(core__source_file_info(core::make_fixnum(sourceFileInfoHandle)));
   FunctionDescription* interpretedFunctionDescription = makeFunctionDescription(name,lambda_list,docstring,sfi,lineno,column,filePos);
   ClosureWithSlots_sp closure =
-    gctools::GC<core::ClosureWithSlots_O>::allocate_container(INTERPRETED_CLOSURE_SLOTS,
+    gctools::GC<core::ClosureWithSlots_O>::allocate_container(false,
+                                                              INTERPRETED_CLOSURE_SLOTS,
                                                               &interpretedClosureEntryPoint,
                                                               interpretedFunctionDescription,
                                                               ClosureWithSlots_O::interpretedClosure);
@@ -160,7 +161,8 @@ ClosureWithSlots_sp ClosureWithSlots_O::make_interpreted_closure(T_sp name, T_sp
 ClosureWithSlots_sp ClosureWithSlots_O::make_bclasp_closure(T_sp name, claspFunction ptr, T_sp type, T_sp lambda_list, T_sp environment) {
   core::FunctionDescription* fdesc = makeFunctionDescription(name,lambda_list);
   ClosureWithSlots_sp closure = 
-    gctools::GC<core::ClosureWithSlots_O>::allocate_container(BCLASP_CLOSURE_SLOTS,
+    gctools::GC<core::ClosureWithSlots_O>::allocate_container(false,
+                                                              BCLASP_CLOSURE_SLOTS,
                                                               ptr,
                                                               (core::FunctionDescription*)fdesc,
                                                               ClosureWithSlots_O::bclaspClosure);
@@ -175,7 +177,8 @@ ClosureWithSlots_sp ClosureWithSlots_O::make_bclasp_closure(T_sp name, claspFunc
 ClosureWithSlots_sp ClosureWithSlots_O::make_cclasp_closure(T_sp name, claspFunction ptr, T_sp type, T_sp lambda_list, SOURCE_INFO) {
   core::FunctionDescription* fdesc = makeFunctionDescription(name,lambda_list);
   ClosureWithSlots_sp closure = 
-    gctools::GC<core::ClosureWithSlots_O>::allocate_container(0,
+    gctools::GC<core::ClosureWithSlots_O>::allocate_container(false,
+                                                              0,
                                                               ptr,
                                                               (core::FunctionDescription*)fdesc,
                                                               ClosureWithSlots_O::cclaspClosure);
@@ -381,6 +384,7 @@ __attribute__((optnone)) LCC_RETURN unboundFunctionEntryPoint(LCC_ARGS_FUNCALL_E
 LCC_RETURN unboundSetfFunctionEntryPoint(LCC_ARGS_FUNCALL_ELLIPSIS) {
   ClosureWithSlots_O* closure = gctools::untag_general<ClosureWithSlots_O*>((ClosureWithSlots_O*)lcc_closure);
   Symbol_sp symbol = gc::As<Symbol_sp>((*closure)[0]);
+  printf("%s:%d:%s closure@%p function@%p  symbol@%p\n", __FILE__, __LINE__, __FUNCTION__, (void*)closure, (void*)unboundSetfFunctionEntryPoint, (void*)symbol.raw_());
   List_sp name = Cons_O::createList(cl::_sym_setf,symbol);
   ERROR_UNDEFINED_FUNCTION(name);
 }

@@ -370,7 +370,7 @@
      (cc-mir:single-float-p-instruction cons)
      (cc-mir:headerq-instruction cons)
      (cleavir-ir:unwind-instruction null)
-     (cc-mir:assign-catch-instruction cons)
+     (cleavir-ir:catch-instruction cons)
      (cleavir-ir:return-instruction null)
      (cleavir-ir:funcall-no-return-instruction null)
      (cleavir-ir:unreachable-instruction null)

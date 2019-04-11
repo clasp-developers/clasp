@@ -131,7 +131,7 @@ THE SOFTWARE.
 // ---------------------------------------------------------------------------
 
 // This is a hell of a "macro" ... Here are the descriptions of the params:
-// TST           => core::VectorObjects_sp - SmartPtr to a symbol holding the
+// TST           => core::ComplexVector_T_sp - SmartPtr to a symbol holding the
 //                                           an array of ForeignTypeSpec_sp
 // IDX           => int                    - Numeric index number as an index
 //                                           into the TST array
@@ -176,7 +176,7 @@ const std::string FROM_OBJECT_FN_NAME_PREFIX( "from_object_" );
 
 void setup_endianess_info( void );
 void register_foreign_types( void );
-void register_foreign_type_spec( core::VectorObjects_sp sp_tst,
+void register_foreign_type_spec( core::ComplexVector_T_sp sp_tst,
                                  uint32_t n_index,
                                  const core::Symbol_sp lisp_symbol,
                                  const std::string &lisp_name,
@@ -199,7 +199,7 @@ size_t get_fn_address( std::function< T( U... ) > f )
 template <typename T>
 struct register_foreign_type
 {
-  static void doit( core::VectorObjects_sp sp_tst,
+  static void doit( core::ComplexVector_T_sp sp_tst,
                     uint32_t n_index,
                     core::Symbol_sp lisp_symbol,
                     const std::string &cxx_name )
@@ -254,7 +254,7 @@ inline void setup_endianess_info( void )
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-void register_foreign_type_spec( core::VectorObjects_sp sp_tst,
+void register_foreign_type_spec( core::ComplexVector_T_sp sp_tst,
                                  uint32_t n_index,
                                  const core::Symbol_sp lisp_symbol,
                                  const std::string& lisp_name,
@@ -318,8 +318,8 @@ inline void register_foreign_types( void )
 
   // STEP 1 : REGISTER FOREIGN TYPES
 
-  core::VectorObjects_sp sp_tst =
-    core::VectorObjects_O::make( 64, _Nil<core::T_O>() );
+  core::ComplexVector_T_sp sp_tst =
+    core::ComplexVector_T_O::make( 64, _Nil<core::T_O>() );
 
   //  - 1.1 : CREATE FOREIGN TYPE SPECS
 
@@ -667,7 +667,7 @@ core::T_sp PERCENTnull_pointer_p( core::T_sp obj )
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-ForeignData_sp ForeignData_O::PERCENTinc_pointer( core::Integer_sp offset )
+ForeignData_sp ForeignData_O::PERCENTinc_pointer_in_place( core::Integer_sp offset )
 {
   cl_intptr_t new_address = 0;
   cl_intptr_t raw_data_address = reinterpret_cast<cl_intptr_t>( this->raw_data() );
@@ -681,11 +681,23 @@ ForeignData_sp ForeignData_O::PERCENTinc_pointer( core::Integer_sp offset )
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
+ForeignData_sp ForeignData_O::PERCENTinc_pointer( core::Integer_sp offset )
+{
+  cl_intptr_t new_address = 0;
+  cl_intptr_t raw_data_address = reinterpret_cast<cl_intptr_t>( this->raw_data() );
+  cl_intptr_t offset_ = core::clasp_to_cl_intptr_t( offset );
+
+  new_address = raw_data_address + offset_;
+  return (make_pointer( reinterpret_cast<void *>( new_address ) ))->asSmartPtr();
+}
+
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
 int64_t foreign_type_size( core::Symbol_sp atype )
 {
   int64_t result = -1;
 
-  core::VectorObjects_sp sp_tst = gc::As<core::VectorObjects_sp>(_sym_STARforeign_type_spec_tableSTAR->symbolValue());
+  core::ComplexVector_T_sp sp_tst = gc::As<core::ComplexVector_T_sp>(_sym_STARforeign_type_spec_tableSTAR->symbolValue());
   auto iterator = sp_tst->begin();
   auto it_end = sp_tst->end();
 
@@ -1391,7 +1403,7 @@ const struct section_64 *get_section_data( const char* segment_name,
                                            const char* section_name )
 {
   const struct section_64 * p_section = (struct section_64 *) NULL;
-  
+
 #if defined( __APPLE__ )
   unsigned long section_size = 0;
   p_section = (struct section_64 *) getsectiondata( &_mh_execute_header,

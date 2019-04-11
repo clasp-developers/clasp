@@ -135,7 +135,6 @@ SYMBOL_EXPORT_SC_(KeywordPkg,linkage);
 SYMBOL_EXPORT_SC_(KeywordPkg, verbose);
 SYMBOL_EXPORT_SC_(KeywordPkg, pause_pid);
 SYMBOL_EXPORT_SC_(KeywordPkg, exit_backtrace);
-SYMBOL_EXPORT_SC_(CorePkg, bclasp_compiler_macro);
 SYMBOL_EXPORT_SC_(CorePkg, STARcurrent_dlopen_handleSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARuseParallelBuildSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARreader_generate_cstSTAR);
@@ -168,6 +167,7 @@ SYMBOL_EXPORT_SC_(CorePkg, STARmodule_shutdown_function_nameSTAR);
 SYMBOL_EXPORT_SC_(ExtPkg, STARinvoke_debugger_hookSTAR);
 SYMBOL_EXPORT_SC_(CorePkg,variable_source_location)
 SYMBOL_EXPORT_SC_(CorePkg,class_source_location)
+SYMBOL_EXPORT_SC_(CorePkg,STARdebug_hash_tableSTAR)
 SYMBOL_EXPORT_SC_(CorePkg,bt)
 SYMBOL_EXPORT_SC_(CorePkg,btcl)
 SYMBOL_EXPORT_SC_(CorePkg,STARdebug_fastgfSTAR);
@@ -290,6 +290,7 @@ SYMBOL_EXPORT_SC_(CorePkg, STARllvmVersionSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARdebugInterpretedClosureSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARdebugFlowControlSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARdebugStartupSTAR);
+SYMBOL_EXPORT_SC_(CorePkg, STARdebugByteCodeSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, _BANG_unbound_BANG_);
 SYMBOL_EXPORT_SC_(CorePkg, bitArrayOp);
 SYMBOL_EXPORT_SC_(CorePkg, lambdaName);
@@ -814,6 +815,10 @@ SYMBOL_EXPORT_SC_(ClPkg, standard_object);
 SYMBOL_EXPORT_SC_(ClPkg, copy_structure);
 
 SYMBOL_EXPORT_SC_(CorePkg, defcallback);
+SYMBOL_EXPORT_SC_(CorePkg, sharp_a_reader);
+SYMBOL_EXPORT_SC_(CorePkg, sharp_s_reader);
+SYMBOL_EXPORT_SC_(CorePkg, sharpmacros_lisp_redefine);
+
 
 void testConses() {
   printf("%s:%d Testing Conses and iterators\n", __FILE__, __LINE__);
@@ -1185,8 +1190,10 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARdebug_fastgfSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARdebug_dispatchSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARdebug_valuesSTAR->defparameter(_Nil<core::T_O>());
+  _sym_STARdebug_hash_tableSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARforeign_data_reader_callbackSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARinformation_callbackSTAR->defparameter(_Nil<core::T_O>());
+  gctools::_sym_STARdebug_gcrootsSTAR->defparameter(_Nil<core::T_O>());
   int optimization_level = 3;
   const char* optLevel = getenv("CLASP_OPTIMIZATION_LEVEL");
   if (optLevel) {
@@ -1208,6 +1215,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARreader_generate_cstSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARreader_cst_resultSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARcache_macroexpandSTAR->defparameter(_Nil<core::T_O>());
+  _sym_STARdebugByteCodeSTAR->defparameter(_Nil<core::T_O>());
 #if defined(__x86_64__)
   SYMBOL_EXPORT_SC_(KeywordPkg, address_model_64);
   Symbol_sp address_model = kw::_sym_address_model_64;

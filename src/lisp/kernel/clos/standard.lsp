@@ -77,7 +77,7 @@
              (simple-program-error "Wrong number of keyword arguments for SHARED-INITIALIZE, ~A"
                                    (progn
                                      (core:vaslist-rewind initargs)
-                                     (core:vaslist-as-list initargs))))
+                                     (core:list-from-va-list initargs))))
            (unless (symbolp initarg)
              (simple-program-error "Not a valid initarg: ~A" initarg))
            (setf val #+(or)(pop l) (core:vaslist-pop largs))
@@ -636,11 +636,11 @@ because it contains a reference to the undefined class~%  ~A"
     (do* ((name-loc initargs (cddr name-loc))
 	  (allow-other-keys nil)
 	  (allow-other-keys-found nil)
-	  (unknown-key nil))
+	  (unknown-key-names nil))
 	 ((null name-loc)
-	  (when (and (not allow-other-keys) unknown-key)
-	    (simple-program-error "Unknown initialization option ~S for class ~A"
-				  unknown-key class)))
+	  (when (and (not allow-other-keys) unknown-key-names)
+            (simple-program-error "Unknown initialization options ~S for class ~A."
+                                  (nreverse unknown-key-names) class)))
       (let ((name (first name-loc)))
 	(cond ((null (cdr name-loc))
 	       (simple-program-error "No value supplied for the init-name ~S." name))
@@ -656,7 +656,7 @@ because it contains a reference to the undefined class~%  ~A"
               ((member name cached-keywords))
 	      ((and methods (member name methods :test #'member :key #'method-keywords)))
 	      (t
-	       (setf unknown-key name)))))))
+	       (push name unknown-key-names)))))))
 
 ;;; ----------------------------------------------------------------------
 ;;; Methods

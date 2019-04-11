@@ -111,7 +111,7 @@ public:
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
     this->_ptr = ptr;
   }
-  bool equal(core::T_sp obj) const;
+  bool LLVMContext_equal(core::T_sp obj) const;
   static LLVMContext_sp create_llvm_context();
   ;
   LLVMContext_O() : Base(), _ptr(NULL){};
@@ -3407,7 +3407,7 @@ public:
   Function_O() : Base(){};
   ~Function_O() {}
 
-  bool equal(core::T_sp obj) const;
+  bool Function_equal(core::T_sp obj) const;
 
   void addReturnAttr(typename llvm::Attribute::AttrKind);
   core::List_sp getArgumentList();
@@ -3585,7 +3585,7 @@ public:
 
   PointerType_sp getPointerTo(int addressSpace = 0);
 
-  bool equal(core::T_sp obj) const;
+  bool Type_equal(core::T_sp obj) const;
   LLVMContext_sp getContext() const;
   string __repr__() const;
 

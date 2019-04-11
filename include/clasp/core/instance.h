@@ -132,7 +132,7 @@ namespace core {
     return this->isSubClassOf(lisp_classFromClassSymbol(oclass::static_classSymbol()));
   }
 
-    void accumulateSuperClasses(HashTableEq_sp supers, VectorObjects_sp arrayedSupers, Instance_sp mc);
+    void accumulateSuperClasses(HashTableEq_sp supers, ComplexVector_T_sp arrayedSupers, Instance_sp mc);
     void lowLevel_calculateClassPrecedenceList();
 
     virtual bool isSubClassOf(Instance_sp mc) const;

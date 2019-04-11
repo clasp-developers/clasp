@@ -40,8 +40,8 @@ Could return more functions that provide lambda-list for swank for example"
       (cmp-log "generate-llvm-function-from-code%N")
       (cmp-log "cleavir-lambda-list -> %s%N" cleavir-lambda-list)
       (cmp-log "new-body -> %s%N" new-body)
-;;;    (bformat *debug-io* "old  -> %s %s %s %s%N" lambda-list-handler declares docstring code)
-;;;    (bformat *debug-io* "new-body -> %s%N" new-body)
+;;;    (bformat *error-output* "old  -> %s %s %s %s%N" lambda-list-handler declares docstring code)
+;;;    (bformat *error-output* "new-body -> %s%N" new-body)
       (let* ((name (core:extract-lambda-name-from-declares declares (or given-name 'cl:lambda)))
              (fn (with-new-function (fn fn-env result
                                         :function-name name
@@ -64,11 +64,11 @@ Could return more functions that provide lambda-list for swank for example"
                    ;; load time values table
                    #+(or)(irc-intrinsic-call "debugInspectT_sp" (list (literal:compile-reference-to-literal :This-is-a-test)))
                    (let* ((arguments      (llvm-sys:get-argument-list fn))
-                          (callconv       (setup-calling-convention arguments
-                                                                    :debug-on core::*debug-bclasp*
-                                                                    :lambda-list lambda-list
-                                                                    :cleavir-lambda-list cleavir-lambda-list
-                                                                    :rest-alloc rest-alloc)))
+                          (callconv       (setup-calling-convention
+                                           arguments
+                                           :debug-on core::*debug-bclasp*
+                                           :cleavir-lambda-list cleavir-lambda-list
+                                           :rest-alloc rest-alloc)))
                      (let ((new-env (bclasp-compile-lambda-list-code fn-env callconv)))
                        (cmp-log "Created new register environment -> %s%N" new-env)
                        (with-try
@@ -185,7 +185,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
 	(if (eq (car classified) 'core::global-function)
             (multiple-value-bind (sym-arg label)
                 (irc-global-symbol fn-designator evaluate-env)
-              (values (irc-intrinsic-call-or-invoke "va_symbolFunction" (list sym-arg) label) label))
+              (values (irc-intrinsic-call-or-invoke "cc_symbol_function" (list sym-arg) label) label))
             (values (irc-lexical-function-lookup classified evaluate-env) "lexical-func")))
       (if (eq (car fn-designator) 'cl:lambda)
 	  (error "Handle lambda expressions at head of form")
@@ -200,7 +200,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
       ((and (atom head) (symbolp head))
        (let ((nargs (length (cdr form)))
              args
-             (temp-result (irc-alloca-t*)))
+             (temp-result (alloca-t*)))
          ;; evaluate the arguments into the array
          ;;  used to be done by --->    (codegen-evaluate-arguments (cdr form) evaluate-env)
          (do* ((cur-exp (cdr form) (cdr cur-exp))
@@ -236,8 +236,8 @@ then compile it and return (values compiled-llvm-function lambda-name)"
       (t
        (let ((nargs (length call-args))
              args
-             (temp-closure (irc-alloca-t*))
-             (temp-result (irc-alloca-t*)))
+             (temp-closure (alloca-t*))
+             (temp-result (alloca-t*)))
          ;; evaluate the arguments into the array
          ;;  used to be done by --->    (codegen-evaluate-arguments (cdr form) evaluate-env)
          (do* ((cur-exp call-args (cdr cur-exp))
@@ -261,7 +261,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
               (not (core:lexical-function (car form) env))
               (not (core:lexical-macro-function (car form) env))
               (not (core:declared-global-notinline-p (car form)))
-              (let ((expansion (core:bclasp-compiler-macroexpand form env)))
+              (let ((expansion (core:compiler-macroexpand form env)))
                 (if (eq expansion form)
                     nil
                     (progn
@@ -319,6 +319,10 @@ then compile it and return (values compiled-llvm-function lambda-name)"
          ((eq sym 'core:foreign-call-pointer) t) ;; Call function pointers
          ((eq sym 'core:foreign-call) t)         ;; Call foreign function
          ((eq sym 'core:bind-va-list) t)         ;; bind-va-list
+         ((eq sym 'core::vector-length) t)
+         ((eq sym 'core::%array-dimension) t)
+         ((eq sym 'cleavir-primop:car) t)
+         ((eq sym 'cleavir-primop:cdr) t)
          ((eq sym 'core:vaslist-pop) t)
          ((eq sym 'core:instance-stamp) t)
          ((eq sym 'core:defcallback) t)

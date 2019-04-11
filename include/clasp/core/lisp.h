@@ -65,6 +65,9 @@ typedef gc::smart_ptr<ClassRep_O> ClassRep_sp;
 };
 namespace core {
 
+
+extern CommandLineOptions *global_options;
+
 class Bundle;
 class CallStack;
 SMART(Intrinsic);

@@ -541,6 +541,9 @@ SimpleString_sp symbolTokenStr(T_sp stream, Token &token, size_t start, size_t e
     printf("%s:%d The symbolTokenStr is empty\n", __FILE__, __LINE__ );
   }
   for (size_t i=start,iEnd(end); i<iEnd; ++i) {
+    if (TRAIT_MATCH_ANY(token[i], TRAIT_INVALID))
+         READER_ERROR(SimpleBaseString_O::make("A char with trait invalid was encountered by the reader."),
+                  _Nil<T_O>(), stream);
     claspCharacter c = CHR(token[i]);
     if (c != '.') only_dots = false;
     buffer.string()->vectorPushExtend_claspCharacter(CHR(token[i]));
@@ -1098,7 +1101,8 @@ step1:
   //    step2:
   if (xxx_syntax_type == kw::_sym_invalid) {
     LOG_READ(BF("step2 - invalid-character[%c]") % clasp_as_claspCharacter(xxx));
-    SIMPLE_ERROR(BF("ReaderError_O::create(sin,_lisp)"));
+    READER_ERROR(SimpleBaseString_O::make("A char with syntax type invalid was encountered by the reader."),
+                 _Nil<T_O>(), sin);
   }
   //    step3:
   if (xxx_syntax_type == kw::_sym_whitespace) {

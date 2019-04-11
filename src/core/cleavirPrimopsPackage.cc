@@ -35,11 +35,14 @@ THE SOFTWARE.
 
 namespace cleavirPrimops {
 
+SYMBOL_EXPORT_SC_(CleavirPrimopsPkg, typeq);
 SYMBOL_EXPORT_SC_(CleavirPrimopsPkg, callWithVariableBound);
 SYMBOL_EXPORT_SC_(CleavirPrimopsPkg, eq);
 SYMBOL_EXPORT_SC_(CleavirPrimopsPkg, fixnumLess);
 SYMBOL_EXPORT_SC_(CleavirPrimopsPkg, fixnumNotGreater);
 SYMBOL_EXPORT_SC_(CleavirPrimopsPkg, fixnumEqual);
+SYMBOL_EXPORT_SC_(CleavirPrimopsPkg, car);
+SYMBOL_EXPORT_SC_(CleavirPrimopsPkg, cdr);
 
 void initialize_cleavirPrimopsPackage() {
   list<string> lnicknames;

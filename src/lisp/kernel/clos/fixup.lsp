@@ -358,15 +358,13 @@ and cannot be added to ~A." method other-gf gf)))
 (defgeneric no-applicable-method (gf &rest args)
   (declare (optimize (debug 3))))
 
-;;; FIXME: use actual condition classes
-
 (defmethod no-applicable-method (gf &rest args)
   (declare (optimize (debug 3)))
-  (error "No applicable method for ~S with ~
-          ~:[no arguments~;arguments of types ~:*~{~& ~A~}~]."
-         (generic-function-name gf)
-         (mapcar #'type-of args)))
+  (error 'no-applicable-method-error :generic-function gf :arguments args))
 
+;;; FIXME: use actual condition classes
+
+;;; FIXME: See method.lsp: This is not actually used normally.
 (defmethod no-next-method (gf method &rest args)
   (declare (ignore gf))
   (error "In method ~A~%No next method given arguments ~A" method args))
@@ -374,7 +372,7 @@ and cannot be added to ~A." method other-gf gf)))
 (defun no-required-method (gf group-name &rest args)
   (error "No applicable methods in required group ~a for generic function ~a~@
           Given arguments: ~a"
-         group-name gf args))
+         group-name (generic-function-name gf) args))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

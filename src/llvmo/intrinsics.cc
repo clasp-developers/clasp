@@ -1020,6 +1020,9 @@ ALWAYS_INLINE void * from_object_pointer( core::T_O* obj )
   if (gctools::IsA<clasp_ffi::ForeignData_sp>(tobj)) {
     return gctools::As_unsafe<clasp_ffi::ForeignData_sp>(tobj)->ptr();
   }
+  if (gctools::IsA<core::Pointer_sp>(tobj)) {
+    return gctools::As_unsafe<core::Pointer_sp>(tobj)->ptr();
+  }
   SIMPLE_ERROR(BF("Handle from_object_pointer for value: %s") % _rep_(tobj));
 }
 

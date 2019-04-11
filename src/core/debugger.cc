@@ -718,7 +718,7 @@ void walk_loaded_objects(std::vector<BacktraceEntry>& backtrace, size_t& symbol_
 
 
 void startup_register_loaded_objects() {
-  printf("%s:%d:%s handle macos\n", __FILE__, __LINE__, __FUNCTION__);
+// printf("%s:%d:%s handle macos\n", __FILE__, __LINE__, __FUNCTION__);
 //    printf("Add support to walk symbol tables and stackmaps for DARWIN\n");
   uint32_t num_loaded = _dyld_image_count();
   for ( size_t idx = 0; idx<num_loaded; ++idx ) {
@@ -1957,7 +1957,7 @@ CL_DOCSTRING("printCurrentIhsFrameEnvironment");
 CL_DEFUN void core__print_current_ihs_frame_environment() {
   T_sp args = core__ihs_arguments(core__ihs_current_frame());
   if (args.notnilp()) {
-    VectorObjects_sp vargs = gc::As<VectorObjects_sp>(args);
+    ComplexVector_T_sp vargs = gc::As<ComplexVector_T_sp>(args);
     for (int i = 0; i < cl__length(vargs); ++i) {
       write_bf_stream(BF("arg%s --> %s") % i % _rep_(vargs->rowMajorAref(i)));
     }
@@ -2167,7 +2167,7 @@ __attribute__((optnone)) std::string dbg_safe_repr(uintptr_t raw) {
   } else if (obj.consp()) {
     ss << "(";
     while (obj.consp()) {
-      ss << dbg_safe_repr((uintptr_t)CONS_CAR(obj).raw_()) << " ";
+      ss << dbg_safe_repr((uintptr_t)CONS_CAR(obj).raw_()) << "@" << (void*)CONS_CAR(obj).raw_() << " ";
       obj = CONS_CDR(obj);
     }
     if (obj.notnilp()) {

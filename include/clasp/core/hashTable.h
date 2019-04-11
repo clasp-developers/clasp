@@ -30,6 +30,7 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <clasp/core/record.h>
 #include <clasp/core/array.h>
+#include <clasp/core/hashTableBase.h>
 #include <clasp/core/mpPackage.fwd.h>
 #include <clasp/core/corePackage.fwd.h>
 
@@ -41,25 +42,30 @@ T_sp cl__make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_size, Real_
 
 size_t next_hash_table_id();
 
+};
+
+namespace core{
 
   FORWARD(HashTable);
-  class HashTable_O : public General_O {
+  class HashTable_O : public HashTableBase_O {
     struct metadata_bootstrap_class {};
     friend T_sp cl__make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_size, Real_sp orehash_threshold, Symbol_sp weakness, T_sp debug, T_sp thread_safe);
     friend class HashTableReadLock;
     friend class HashTableWriteLock;
-    LISP_CLASS(core, ClPkg, HashTable_O, "HashTable",core::General_O);
+    LISP_CLASS(core, ClPkg, HashTable_O, "HashTable",HashTableBase_O);
     bool fieldsp() const { return true; };
     void fields(Record_sp node);
 
-    friend T_mv cl__maphash(T_sp function_desig, T_sp hash_table);
+    friend T_sp cl__maphash(T_sp function_desig, T_sp hash_table);
   HashTable_O() :
 #ifdef DEBUG_REHASH_COUNT
     _HashTableId(next_hash_table_id()),
     _RehashCount(0),
     _InitialSize(0),
 #endif
-    _RehashSize(_Nil<Number_O>()), _RehashThreshold(maybeFixRehashThreshold(0.7)),/* _HashTable(_Nil<VectorObjects_O>()),*/ _HashTableCount(0)
+    _RehashSize(_Nil<Number_O>()),
+    _RehashThreshold(maybeFixRehashThreshold(0.7)),
+    _HashTableCount(0)
     {};
     virtual ~HashTable_O(){};
   //	DEFAULT_CTOR_DTOR(HashTable_O);
@@ -67,9 +73,8 @@ size_t next_hash_table_id();
     friend class HashTableEql_O;
     friend class HashTableEqual_O;
     friend class HashTableEqualp_O;
-    friend T_mv cl__maphash(T_sp function_desig, HashTable_sp hash_table);
+    friend T_sp cl__maphash(T_sp function_desig, HashTable_sp hash_table);
     friend T_sp cl__clrhash(HashTable_sp hash_table);
-
   public: // instance variables here
 #ifdef DEBUG_REHASH_COUNT
     size_t    _HashTableId;
@@ -78,7 +83,7 @@ size_t next_hash_table_id();
 #endif
     Number_sp _RehashSize;
     double _RehashThreshold;
-//    VectorObjects_sp _HashTable;
+//    ComplexVector_T_sp _HashTable;
     gctools::Vec0<Cons_O> _Table;
     size_t _HashTableCount;
 #ifdef CLASP_THREADS
@@ -112,7 +117,7 @@ size_t next_hash_table_id();
     List_sp rehash_no_lock(bool expandTable, T_sp findKey);
     List_sp rehash_upgrade_write_lock(bool expandTable, T_sp findKey);
     CL_LISPIFY_NAME("hash-table-buckets");
-//    CL_DEFMETHOD VectorObjects_sp hash_table_buckets() const { return this->_HashTable; };
+//    CL_DEFMETHOD ComplexVector_T_sp hash_table_buckets() const { return this->_HashTable; };
     CL_LISPIFY_NAME("hash-table-shared-mutex");
     CL_DEFMETHOD T_sp hash_table_shared_mutex() const { if (this->_Mutex) return this->_Mutex; else return _Nil<T_O>(); };
 //    void set_thread_safe(bool thread_safe);
@@ -123,7 +128,8 @@ size_t next_hash_table_id();
     virtual T_sp hashTableTest() const { SUBIMP(); };
 
   /*! Return a count of the number of keys */
-    uint hashTableCount() const;
+    size_t hashTableCount() const;
+    size_t hashTableSize() const;
     size_t size() { return this->hashTableCount(); };
 
     virtual gc::Fixnum sxhashKey(T_sp key, gc::Fixnum bound, bool willAddKey) const;
@@ -148,7 +154,11 @@ size_t next_hash_table_id();
     T_sp setf_gethash_no_write_lock(T_sp key, T_sp value);
     void setf_gethash(T_sp key, T_sp val) { this->hash_table_setf_gethash(key, val); };
 
-    void clrhash();
+    Number_sp rehash_size();
+    double rehash_threshold();
+    T_sp hash_table_test();
+    
+    T_sp clrhash();
 
     bool remhash(T_sp key);
 
@@ -157,6 +167,8 @@ size_t next_hash_table_id();
     string hash_table_dump(Fixnum start, T_sp end) const;
 
     void lowLevelMapHash(KeyValueMapper *mapper) const;
+
+    void maphash(T_sp fn); 
 
     void mapHash(std::function<void(T_sp, T_sp)> const &fn);
     void maphash(std::function<void(T_sp, T_sp)> const &fn) { this->mapHash(fn); };

@@ -246,7 +246,8 @@ CL_DEFUN LLVMContext_sp LLVMContext_O::create_llvm_context() {
   context->_ptr = lc;
   return context;
 };
-bool LLVMContext_O::equal(core::T_sp obj) const {
+
+CL_DEFMETHOD bool LLVMContext_O::LLVMContext_equal(core::T_sp obj) const {
   if (LLVMContext_sp t = obj.asOrNull<LLVMContext_O>()) {
     return t->_ptr == this->_ptr;
   }
@@ -2601,7 +2602,7 @@ CL_DEFMETHOD core::List_sp Function_O::getArgumentList() {
   return l.cons();
 }
 
-bool Function_O::equal(core::T_sp obj) const {
+CL_DEFMETHOD bool Function_O::Function_equal(core::T_sp obj) const {
   if (gc::IsA<Function_sp>(obj)) {
     Function_sp other = gc::As_unsafe<Function_sp>(obj);
     return this->_ptr == other->_ptr;
@@ -2733,7 +2734,7 @@ CL_DEFMETHOD LLVMContext_sp Type_O::getContext() const {
   return gc::As<LLVMContext_sp>(translate::to_object<llvm::LLVMContext&>::convert(this->wrappedPtr()->getContext()));
 }
 
-bool Type_O::equal(core::T_sp obj) const {
+CL_DEFMETHOD bool Type_O::Type_equal(core::T_sp obj) const {
   if (Type_sp t = obj.asOrNull<Type_O>()) {
     return t->_ptr == this->_ptr;
   }

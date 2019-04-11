@@ -57,10 +57,10 @@
 
 
 (defun simple-program-error (e1 &rest args)
-  (eval `(error ,e1 ,@args)))
+  (apply 'error e1 args))
 
 (defun simple-reader-error (stream e1 &rest args)
-  (eval `(error ,e1 ,@args)))
+  (apply 'error e1 args))
 
 
 (fset 'return #'(lambda (whole env)

@@ -27,6 +27,9 @@ def configure(cfg):
     cfg.recurse(subdirs_str)
     print("After recurse cfg.extensions_names = %s" % cfg.extensions_names)
 
+def options(bld):
+    bld.recurse(" ".join(subdirectories()))
+
 def build(bld):
     bld.recurse(" ".join(subdirectories()))
 

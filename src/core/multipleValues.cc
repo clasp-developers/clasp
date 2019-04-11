@@ -58,42 +58,6 @@ void dump_values_pos(T_sp v, const char* name, int n)
   }
 }
 
-void multipleValuesSaveToVector(T_mv values, SimpleVector_sp save) {
-  DEPRECATED();
-  core::MultipleValues &mv = core::lisp_multipleValues();
-  save->operator[](MultipleValues::MultipleValuesLimit) = clasp_make_fixnum(values.number_of_values());
-  if (values.number_of_values() > 0) {
-    save->operator[](0) = values;
-  }
-  for (int i(1); i < values.number_of_values(); ++i) {
-    save->operator[](i) = mv.valueGet(i, values.number_of_values());
-  }
-}
-
-size_t multipleValuesLength(SimpleVector_sp values) {
-  DEPRECATED();
-  return (values->operator[](MultipleValues::MultipleValuesLimit)).unsafe_fixnum();
-}
-
-T_mv multipleValuesLoadFromVector(VectorObjects_sp load) {
-  DEPRECATED();
-  if (cl__length(load) > 0) {
-    T_mv mvn(load->operator[](0), cl__length(load));
-    core::MultipleValues &mv = lisp_multipleValues();
-    SUPPRESS_GC();
-    int i(0);
-    int iEnd(cl__length(load));
-    mv.setSize(iEnd);
-    for (; i < iEnd; ++i) {
-      mv.valueSet(i, load->operator[](i));
-    }
-    ENABLE_GC();
-    return mvn;
-  }
-  T_mv mvNil(_Nil<T_O>(), 0);
-  return mvNil;
-}
-
 }; /* core */
 
 core::T_mv ValuesFromCons(core::List_sp vals) {

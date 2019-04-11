@@ -59,7 +59,7 @@
                        (percent-time-string (if report-link-time
                                                 (core:bformat nil "(llvm+link)/real(%1.f%%)" percent-llvm-time)
                                                 (core:bformat nil "llvm/real(%1.f%%)" percent-llvm-time))))
-                   (core:bformat t "   %s seconds real(%.1f) run(%.1f) llvm(%.1f)%s %s%N"
+                   #+(or)(core:bformat t "   %s seconds real(%.1f) run(%.1f) llvm(%.1f)%s %s%N"
                                  message
                                  compiler-real-time
                                  compiler-run-time
@@ -230,7 +230,7 @@ and the pathname of the source file - this will also be used as the module initi
                                  source-debug-pathname
                                  (source-debug-offset 0)
                                  environment
-                                 (image-startup-position 0)
+                                 image-startup-position
                                  (optimize t)
                                  (optimize-level *optimization-level*))
   "* Arguments
@@ -294,9 +294,10 @@ Compile a lisp source file into an LLVM module."
               (make-boot-function-global-variable module run-all-name
                                                   :position image-startup-position
                                                   :register-library t)
-              ;; (3) ALWAYS link the builtins in, inline them and then remove them - then optimize.
-              (link-inline-remove-builtins *the-module*))
-            ;; Now at the end of with-module another round of optimization is done
+              ;; (3) If optimize ALWAYS link the builtins in, inline them and then remove them - then optimize.
+              (if (> optimize-level 0)
+                  (link-inline-remove-builtins *the-module*)))
+              ;; Now at the end of with-module another round of optimization is done
             ;; but the RUN-ALL is now referenced by the CTOR and so it won't be optimized away
             ;; ---- MOVE OPTIMIZATION in with-module to HERE ----
             )
@@ -326,7 +327,7 @@ Compile a lisp source file into an LLVM module."
                               ;; will be linked together
                               (unique-symbol-prefix "")
                               ;; Control the order of startup functions
-                              (image-startup-position 0)
+                              (image-startup-position (core:next-startup-position))
                               ;; ignored by bclasp
                               ;; but passed to hook functions
                               environment

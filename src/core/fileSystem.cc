@@ -538,22 +538,39 @@ CL_DEFMETHOD bool FileStatus_O::exists() {
 CL_LISPIFY_NAME("isRegularFile");
 CL_DEFMETHOD bool FileStatus_O::isRegularFile() {
   _OF();
-  return boost_filesystem::is_regular_file(this->_FileStatus);
+  try {
+    return boost_filesystem::is_regular_file(this->_FileStatus);
+  } catch (...) {
+    SIMPLE_ERROR(BF("In %s boost_filesystem signaled a c++ exception") % __FUNCTION__ );
+  }
 }
+
 CL_LISPIFY_NAME("isDirectory");
 CL_DEFMETHOD bool FileStatus_O::isDirectory() {
   _OF();
-  return boost_filesystem::is_directory(this->_FileStatus);
+  try {
+    return boost_filesystem::is_directory(this->_FileStatus);
+  } catch (...) {
+    SIMPLE_ERROR(BF("In %s boost_filesystem signaled a c++ exception") % __FUNCTION__ );
+  }
 }
 CL_LISPIFY_NAME("isSymlink");
 CL_DEFMETHOD bool FileStatus_O::isSymlink() {
   _OF();
-  return boost_filesystem::is_symlink(this->_FileStatus);
+  try {
+    return boost_filesystem::is_symlink(this->_FileStatus);
+  } catch (...) {
+    SIMPLE_ERROR(BF("In %s boost_filesystem signaled a c++ exception") % __FUNCTION__ );
+  }    
 }
 CL_LISPIFY_NAME("isOther");
 CL_DEFMETHOD bool FileStatus_O::isOther() {
   _OF();
+  try {
   return boost_filesystem::is_other(this->_FileStatus);
+  } catch (...) {
+    SIMPLE_ERROR(BF("In %s boost_filesystem signaled a c++ exception") % __FUNCTION__ );
+  }
 }
 
 Pathname_sp getcwd(bool change_d_p_d) {

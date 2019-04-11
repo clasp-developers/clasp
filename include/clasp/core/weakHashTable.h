@@ -29,8 +29,8 @@ THE SOFTWARE.
 
 #include <clasp/core/object.h>
 #include <clasp/gctools/gcweak.h>
-//#include <clasp/core/hashTable.h>
 #include <clasp/core/symbolTable.h>
+#include <clasp/core/hashTableBase.h>
 #include <clasp/core/corePackage.fwd.h>
 
 namespace cl {
@@ -47,8 +47,8 @@ struct gctools::GCInfo<core::WeakKeyHashTable_O> {
 
 namespace core {
 FORWARD(WeakKeyHashTable);
-class WeakKeyHashTable_O : public General_O {
-  LISP_CLASS(core, CorePkg, WeakKeyHashTable_O, "WeakKeyHashTable",General_O);
+class WeakKeyHashTable_O : public HashTableBase_O {
+  LISP_CLASS(core, CorePkg, WeakKeyHashTable_O, "WeakKeyHashTable",HashTableBase_O);
 #if defined(XML_ARCHIVE)
   DECLARE_ARCHIVE();
 #endif  // defined(XML_ARCHIVE)
@@ -69,16 +69,17 @@ public: // instance variables here
   typedef gctools::WeakKeyHashTable<KeyBucketsType, ValueBucketsType> HashTableType;
 #endif
   HashTableType _HashTable;
-
+  
 public:
- WeakKeyHashTable_O(size_t sz) : _HashTable(sz) {};
- WeakKeyHashTable_O() : _HashTable(16) {};
+  WeakKeyHashTable_O(size_t sz, Number_sp rehashSize, double rehashThreshold ) : _HashTable(sz,rehashSize, rehashThreshold) {};
+  WeakKeyHashTable_O();
   void initialize(); 
 public:
-  virtual int tableSize() const;
-  cl_index size() const { return this->tableSize(); };
+  size_t hashTableCount() const { return this->_HashTable.tableSize();};
+  cl_index size() const { return this->hashTableCount(); };
+  size_t hashTableSize() const { return this->_HashTable.length();};
 
-  void setf_gethash(T_sp key, T_sp value);
+  T_sp hash_table_setf_gethash(T_sp key, T_sp value);
 
   bool fullp();
 
@@ -88,70 +89,27 @@ public:
 
   gc::Fixnum sxhashKey(T_sp key, gc::Fixnum bound, bool willAddKey) const;
 
-  void maphash(std::function<void(T_sp, T_sp)> const &fn);
+  void maphashLowLevel(std::function<void(T_sp, T_sp)> const &fn);
+  void maphash(T_sp functionDesig); 
 
   T_mv gethash(T_sp key, T_sp defaultValue = _Nil<T_O>());
-  void remhash(T_sp key);
-  void clrhash();
+  bool remhash(T_sp key);
+  T_sp clrhash();
+  Number_sp rehash_size();
+  double rehash_threshold();
+  T_sp hash_table_test();
+
   string __repr__() const;
 };
 }; /* core */
 
 
 
-
-template <>
-struct gctools::GCInfo<core::StrongKeyHashTable_O> {
-  static bool constexpr NeedsInitialization = true;
-  static bool constexpr NeedsFinalization = false;
-  static GCInfo_policy constexpr Policy = normal;
-};
-
-namespace core {
-FORWARD(StrongKeyHashTable);
-class StrongKeyHashTable_O : public General_O {
-  LISP_CLASS(core, CorePkg, StrongKeyHashTable_O, "StrongKeyHashTable",General_O);
-public: // instance variables here
-  typedef typename gctools::StrongKeyHashTable::value_type value_type;
-  typedef typename gctools::StrongKeyHashTable::KeyBucketsType KeyBucketsType;
-  typedef typename gctools::StrongKeyHashTable::ValueBucketsType ValueBucketsType;
-  typedef typename gctools::StrongKeyHashTable::KeyBucketsAllocatorType KeyBucketsAllocatorType;
-  typedef typename gctools::StrongKeyHashTable::ValueBucketsAllocatorType ValueBucketsAllocatorType;
-  typedef gctools::StrongKeyHashTable HashTableType;
-  HashTableType _HashTable;
-  size_t _Rehashes;
-public:
-  StrongKeyHashTable_O(size_t sz) : _HashTable(sz), _Rehashes(0) {};
-  StrongKeyHashTable_O() : _HashTable(16), _Rehashes(0) {};
-  void initialize(); 
-public:
-  virtual int tableSize() const;
-  cl_index size() const { return this->tableSize(); };
-
-  void setf_gethash(T_sp key, T_sp value);
-
-  bool fullp();
-
-  void describe(T_sp stream);
-  virtual T_sp hashTableTest() const { return cl::_sym_eq; };
-  bool keyTest(T_sp entryKey, T_sp searchKey) const;
-
-  gc::Fixnum sxhashKey(T_sp key, gc::Fixnum bound, bool willAddKey) const;
-
-  void maphash(std::function<void(T_sp, T_sp)> const &fn);
-
-  T_mv gethash(T_sp key, T_sp defaultValue = _Nil<T_O>());
-  void remhash(T_sp key);
-  void clrhash();
-  string __repr__() const;
-};
-}; /* core */
 
 
 
 namespace core {
 WeakKeyHashTable_sp core__make_weak_key_hash_table(Fixnum_sp size);
-StrongKeyHashTable_sp core__make_strong_key_hash_table(Fixnum_sp size);
 };
 
 
