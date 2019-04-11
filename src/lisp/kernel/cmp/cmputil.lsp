@@ -266,4 +266,4 @@
                           messages :test #'equalp))))
            *global-function-refs*)
   (dolist (m (reverse messages))
-    (print-compiler-message m *debug-io*)))
+    (print-compiler-message m *error-output*)))

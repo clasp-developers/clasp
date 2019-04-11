@@ -165,7 +165,7 @@
 (export 'with-metrics-message)
 
 #|
-(core:bclasp-define-compiler-macro new-apply (function-desig &rest args)
+(define-compiler-macro new-apply (function-desig &rest args)
   (let ((fun (gensym "FUN")))
     (if (> (length args) 8)
         `(let ((,fun ,function-desig))
@@ -188,7 +188,7 @@
             ,@args)))))
 
 
-(core:bclasp-define-compiler-macro apply-general (function-design &rest args)
+(define-compiler-macro apply-general (function-design &rest args)
   `(let ((,fun ,function-desig))
      (core:multiple-value-foreign-call
       "fast_apply_general"

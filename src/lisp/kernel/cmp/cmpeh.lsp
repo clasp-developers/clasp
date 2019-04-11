@@ -226,11 +226,11 @@ eg: '(block ((exception var) code...))"
 ;;; and creates the ehcleanup and ehresume blocks.
 ;;; ehcleanup doesn't do anything but jump to ehresume
 ;;; ehresume evokes the 'resume' instruction
-(defmacro with-new-function-prepare-for-try ((function irbuilder-entry) &body body)
+(defmacro with-new-function-prepare-for-try ((function) &body body)
   `(let* ((*exception-handling-level* 0)
           (*exception-clause-types-to-handle* nil)
-          (*current-function-exn.slot* (irc-alloca-i8* :irbuilder ,irbuilder-entry :label "exn.slot"))
-          (*current-function-ehselector.slot* (irc-alloca-i32-no-init :irbuilder ,irbuilder-entry :label "ehselector.slot"))
+          (*current-function-exn.slot* (alloca-i8* "exn.slot"))
+          (*current-function-ehselector.slot* (alloca-i32 "ehselector.slot"))
           (*exception-handler-cleanup-block* (generate-ehcleanup-and-resume-code ,function *current-function-exn.slot* *current-function-ehselector.slot*))
           (*current-function-terminate-landing-pad* (generate-terminate-code ,function))
           (*current-unwind-landing-pad-dest* *current-function-terminate-landing-pad*))

@@ -324,7 +324,7 @@ NOINLINE void dbg_hook(const char *error) {
 namespace core {
 
 void lisp_vectorPushExtend(T_sp vec, T_sp obj) {
-  VectorObjects_sp vvec = gc::As<VectorObjects_sp>(vec);
+  ComplexVector_T_sp vvec = gc::As<ComplexVector_T_sp>(vec);
   vvec->vectorPushExtend(obj);
 }
 };

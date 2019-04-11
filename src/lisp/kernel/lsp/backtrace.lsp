@@ -186,7 +186,7 @@ Set gather-all-frames to T and you can gather C++ and Common Lisp frames"
       (t frames)))) ; return ALL frames
 
 
-(defun dump-backtrace (raw-backtrace &key (stream *standard-output*) (args t) (all t))
+(defun dump-backtrace (raw-backtrace &key (stream *error-output*) (args t) (all t))
     (let ((frames (common-lisp-backtrace-frames raw-backtrace))
            (index 0))
        (dolist (e frames)
@@ -211,7 +211,7 @@ Set gather-all-frames to T and you can gather C++ and Common Lisp frames"
                  (princ name stream)))
            (terpri stream)))))
 
-(defun btcl (&key all (args t) (stream *standard-output*))
+(defun btcl (&key all (args t) (stream *error-output*))
   "Print backtrace of just common lisp frames.  Set args to nil if you don't want arguments printed"
   (core:call-with-backtrace
    (lambda (raw-backtrace)

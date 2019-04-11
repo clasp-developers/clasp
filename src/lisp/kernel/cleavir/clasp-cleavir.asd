@@ -35,6 +35,7 @@
                (:file "eliminate-ltvs")
                (:file "hir")
                (:file "introduce-invoke")
+               (:file "ast-interpreter")
                (:file "toplevel")
                (:file "setup")
                (:file "ast-to-hir")

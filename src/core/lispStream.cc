@@ -5573,6 +5573,13 @@ string FileStream_O::__repr__() const {
   return ss.str();
 }
 
+string SynonymStream_O::__repr__() const {
+  stringstream ss;
+  ss << "#<" << this->_instanceClass()->_classNameAsString() << " ";
+  ss << _rep_(this->_SynonymSymbol) << ">";
+  return ss.str();
+}
+
 T_sp StringInputStream_O::make(const string &str) {
   String_sp s = str_create(str);
   return cl__make_string_input_stream(s, make_fixnum(0), _Nil<T_O>());

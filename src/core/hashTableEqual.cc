@@ -71,7 +71,6 @@ void HashTableEqual_O::archiveBase(::core::ArchiveP node) {
 #endif // defined(XML_ARCHIVE)
 
 bool HashTableEqual_O::keyTest(T_sp entryKey, T_sp searchKey) const {
-  _OF();
   return cl__equal(entryKey, searchKey);
 }
 

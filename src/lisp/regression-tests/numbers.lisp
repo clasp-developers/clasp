@@ -98,6 +98,26 @@
       (let ()
         (= (complex 1 2)(complex 1 2))))
 
+(test /=.ORDER.3
+      (equal
+       '(t 6 1 2 3 4 5 6)
+       (multiple-value-list
+        (LET ((I 0) U V W X Y Z)
+          (VALUES
+           (/= (PROGN (SETF U (INCF I)) 1)
+               (PROGN (SETF V (INCF I)) 2)
+               (PROGN (SETF W (INCF I)) 3)
+               (PROGN (SETF X (INCF I)) 4)
+               (PROGN (SETF Y (INCF I)) 5)
+               (PROGN (SETF Z (INCF I)) 6))
+           I
+           U
+           V
+           W
+           X
+           Y
+           Z)))))
+
 (test ratios-1 (equal 2 (+ 1/2 1/2 1/2 1/2)))
 
 (test ratios-2 (equalp (LOOP FOR X FROM 0 TO 5 BY 1/2 COLLECT X)
@@ -401,10 +421,11 @@
              (sqrt 280223957387837321176489673882749236198713552340979212342342346827364728364278346728364345683746534765348756384765834658734652384768732467823648723468723462783468723467823647823768762342342686284362783462384678234623423947928347293479823749827342346782364234234283746872346728346234876237846234234786234499889)))
         (and (typep result 'float)(not (ext:float-nan-p result))(ext:float-infinity-p result))))
 
-
-
-
-
-
-
+;;; the following all have &rest numbers+ in the definition, so need at least 1 argument
+(test-expect-error number-compare-1 (=) :type program-error)
+(test-expect-error number-compare-2 (/=) :type program-error)
+(test-expect-error number-compare-3 (<) :type program-error)
+(test-expect-error number-compare-4 (>) :type program-error)
+(test-expect-error number-compare-5 (<=) :type program-error)
+(test-expect-error number-compare-6 (>=) :type program-error)
 

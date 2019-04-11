@@ -23,7 +23,7 @@
 ;;; Generates code for characterp
 ;;;
 
-(defclass characterp-instruction (cleavir-ir:instruction cleavir-ir:two-successors-mixin) ())
+(defclass characterp-instruction (cleavir-ir:instruction cleavir-ir:multiple-successors-mixin) ())
 
 (defun make-characterp-instruction (input successors)
   (make-instance 'characterp-instruction
@@ -37,7 +37,7 @@
 ;;; Generates code for single-float-p
 ;;;
 
-(defclass single-float-p-instruction (cleavir-ir:instruction cleavir-ir:two-successors-mixin) ())
+(defclass single-float-p-instruction (cleavir-ir:instruction cleavir-ir:multiple-successors-mixin) ())
 
 (defun make-single-float-p-instruction (input successors)
   (make-instance 'single-float-p-instruction
@@ -51,7 +51,7 @@
 ;;; Branch based on the type header of an object.
 ;;;
 
-(defclass headerq-instruction (cleavir-ir:instruction cleavir-ir:two-successors-mixin)
+(defclass headerq-instruction (cleavir-ir:instruction cleavir-ir:multiple-successors-mixin)
   ((%header-value-min-max :initarg :hvmm :accessor header-value-min-max)))
 
 (defun make-headerq-instruction (header-value-min-max input successors)
@@ -65,33 +65,13 @@
 ;;; SAVE-FRAME-INSTRUCTION
 ;;;
 ;;; Allocate a marker for the frame so that it can be unwound to.
+;;; The marker is not an actual mir input/output, just in the function-info.
 
 (defclass save-frame-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin) ())
 
-(defun make-save-frame-instruction (output &optional (successor nil successor-p))
+(defun make-save-frame-instruction (&optional (successor nil successor-p))
   (make-instance 'save-frame-instruction
-                 :outputs (list output)
                  :successors (if successor-p (list successor) nil)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; ASSIGN-CATCH-INSTRUCTION
-;;;
-;;; Like a CATCH-INSTRUCTION, but instead of making a continuation
-;;; just returns the one it's input.
-;;; The GO-INDEX is a small integer used to tell apart catches in
-;;; the same function.
-;;;
-;;; FIXME: We don't represent the INVOKE alternates explicitly in the IR graph, instead relying
-;;; on cmp:with-landing-pad (i.e. dynamic variables). This means we can't simply replace the
-;;; CATCH with an assignment, because we need to ensure the abnormal branch is actually translated.
-;;; This in turn means that even if the first successor of an (assign-)catch has only one predecessor,
-;;; it will be the head of a spurious basic block.
-
-(defclass assign-catch-instruction (cleavir-ir:catch-instruction)
-  ((%go-index :initarg :go-index :reader go-index)))
-
-(defmethod cleavir-ir-graphviz:label ((inst assign-catch-instruction)) "acatch")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

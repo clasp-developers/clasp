@@ -66,3 +66,11 @@
   (when (find-package "KARSTEN-NEW")
     (delete-package (find-package "KARSTEN-NEW"))))
 
+(test-expect-error defpackage-1
+                   (eval '(defpackage :test (:size 10)(:size 10)))
+                   :type program-error)
+
+(test-expect-error defpackage-2
+                   (eval '(defpackage :test1 (:documentation "foo")(:documentation "bar")))
+                   :type program-error)
+

@@ -737,7 +737,15 @@ void header_describe(gctools::Header_s* headerP);
 
 //#include <clasp/gctools/containers.h>
 
-  
+
+namespace gctools {
+#define LITERAL_TAG_CHAR 0
+#define TRANSIENT_TAG_CHAR 1
+
+void untag_literal_index(size_t findex, size_t& index, size_t& tag);
+};
+
+
 
 namespace gctools {
 
@@ -749,52 +757,43 @@ namespace gctools {
         I wasn't able to get GC_add_roots to work properly.
         TODO: get GC_add_roots to work
    */
+
+
   struct GCRootsInModule {
+    static int const TransientRawIndex = 0;
     static size_t const DefaultCapacity = 256;
+    // Fields
+    core::SimpleVector_O** _TransientAlloca;
     void* _boehm_shadow_memory;
     void* _module_memory;
     size_t _num_entries;
     size_t _capacity;
-
-    GCRootsInModule(void* shadow_mem, void* module_mem, size_t num_entries) {
-      this->_boehm_shadow_memory = shadow_mem;
-      this->_module_memory = module_mem;
-      this->_num_entries = num_entries;
-      this->_capacity = num_entries;
-    }
-    GCRootsInModule(size_t capacity = DefaultCapacity) {
-#ifdef USE_BOEHM
-      core::T_O** shadow_mem = reinterpret_cast<core::T_O**>(boehm_create_shadow_table(capacity));
-      core::T_O** module_mem = shadow_mem;
-#endif
-#ifdef USE_MPS
-      core::T_O** shadow_mem = reinterpret_cast<core::T_O**>(NULL);
-      core::T_O** module_mem = reinterpret_cast<core::T_O**>(malloc(sizeof(core::T_O*)*capacity));
-#endif
-      this->_boehm_shadow_memory = shadow_mem;
-      this->_module_memory = module_mem;
-      this->_num_entries = 0;
-      this->_capacity = capacity;
-      memset(module_mem, 0, sizeof(core::T_O*)*capacity);
-#ifdef USE_MPS
-  // MPS registers the roots with the GC and doesn't need a shadow table
-      mps_register_roots(reinterpret_cast<void*>(module_mem),capacity);
-#endif
-    }
+    /*fnLispCallingConvention* */ void** _function_pointers;
+    void** _function_descriptions;
+    size_t _function_pointer_count;
+    GCRootsInModule(void* shadow_mem, void* module_mem, size_t num_entries, core::SimpleVector_O** transient_alloca, size_t transient_entries, size_t function_pointer_count, void** fptrs, void** fdescs);
+    GCRootsInModule(size_t capacity = DefaultCapacity);
+    void setup_transients(core::SimpleVector_O** transient_alloca, size_t transient_entries);
+    
     size_t remainingCapacity() { return this->_capacity - this->_num_entries;};
     size_t push_back(Tagged val);
-    Tagged set(size_t index, Tagged val);
-    Tagged get(size_t index);
+    Tagged setLiteral(size_t index, Tagged val);
+    Tagged getLiteral(size_t index);
+    Tagged setTransient(size_t index, Tagged val);
+    Tagged getTransient(size_t index);
+    Tagged setTaggedIndex(char tag, size_t index, Tagged val);
+    Tagged getTaggedIndex(char tag, size_t index);
+    /*fnLispCallingConvention*/ void* lookup_function(size_t index);
+    void* lookup_function_description(size_t index);
     void* address(size_t index) {
-      return reinterpret_cast<void*>(&reinterpret_cast<core::T_sp*>(this->_module_memory)[index]);
+      return reinterpret_cast<void*>(&reinterpret_cast<core::T_sp*>(this->_module_memory)[index+1]);
     }
-
   };
 
   extern std::atomic<uint64_t> global_NumberOfRootTables;
   extern std::atomic<uint64_t> global_TotalRootTableSize;
   
-  void initialize_gcroots_in_module(GCRootsInModule* gcroots_in_module, core::T_O** root_address, size_t num_roots, gctools::Tagged initial_data);
+void initialize_gcroots_in_module(GCRootsInModule* gcroots_in_module, core::T_O** root_address, size_t num_roots, gctools::Tagged initial_data, core::SimpleVector_O** transientAlloca, size_t transient_entries, size_t function_pointer_number, void** fptrs, void** fdescs);
   core::T_O* read_gcroots_in_module(GCRootsInModule* roots, size_t index);
   void shutdown_gcroots_in_module(GCRootsInModule* gcroots_in_module);
 

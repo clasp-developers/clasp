@@ -1392,23 +1392,23 @@ CL_DEFMETHOD List_sp LambdaListHandler_O::namesOfLexicalVariables() const {
 
 void LambdaListHandler_O::calculateNamesOfLexicalVariablesForDebugging() {
   List_sp names = this->namesOfLexicalVariables();
-  this->_LexicalVariableNamesForDebugging = VectorObjects_O::make(cl__length(names),_Nil<T_O>());
-  gc::As<VectorObjects_sp>(this->_LexicalVariableNamesForDebugging)->fillInitialContents(names);
+  this->_LexicalVariableNamesForDebugging = ComplexVector_T_O::make(cl__length(names),_Nil<T_O>());
+  gc::As<ComplexVector_T_sp>(this->_LexicalVariableNamesForDebugging)->fillInitialContents(names);
 }
 
 CL_LISPIFY_NAME("namesOfLexicalVariablesForDebugging");
-CL_DEFMETHOD VectorObjects_sp LambdaListHandler_O::namesOfLexicalVariablesForDebugging() {
+CL_DEFMETHOD ComplexVector_T_sp LambdaListHandler_O::namesOfLexicalVariablesForDebugging() {
   if (this->_LexicalVariableNamesForDebugging.nilp()) {
     this->calculateNamesOfLexicalVariablesForDebugging();
   }
-  return gc::As<VectorObjects_sp>(this->_LexicalVariableNamesForDebugging);
+  return gc::As<ComplexVector_T_sp>(this->_LexicalVariableNamesForDebugging);
 }
 
 // ----------------------------------------------------------------------
 //
 
 
-LambdaListHandler_O::LambdaListHandler_O() : _SpecialSymbolSet(_Nil<T_O>()), _LexicalVariableNamesForDebugging(_Nil<VectorObjects_O>()), _RequiredLexicalArgumentsOnly(false){};
+LambdaListHandler_O::LambdaListHandler_O() : _SpecialSymbolSet(_Nil<T_O>()), _LexicalVariableNamesForDebugging(_Nil<ComplexVector_T_O>()), _RequiredLexicalArgumentsOnly(false){};
 
 
 

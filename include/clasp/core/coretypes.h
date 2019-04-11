@@ -109,8 +109,6 @@ namespace core {
   typedef Array_O Vector_O;
   typedef Array_O String_O;
   typedef MDArray_O StringNs_O;
-  typedef MDArrayT_O VectorObjects_O;
-  typedef MDArrayT_O VectorTNs_O;
   typedef BitVectorNs_O BitVector_O;
   typedef Str8Ns_O Str_O;
   typedef gc::smart_ptr<Array_O> Array_sp;
@@ -128,8 +126,6 @@ namespace core {
   typedef BitVectorNs_sp BitVector_sp;
   typedef Str8Ns_sp Str_sp;
   typedef Array_sp Vector_sp;
-  typedef MDArrayT_sp VectorObjects_sp;
-  typedef MDArrayT_sp VectorTNs_sp;
 };
 
 namespace mp {

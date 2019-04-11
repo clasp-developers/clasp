@@ -71,6 +71,7 @@ THE SOFTWARE.
 #include <clasp/core/instance.h>
 #include <clasp/llvmo/llvmoPackage.h>
 #include <clasp/core/debugger.h>
+#include <clasp/core/hashTableEqual.h>
 #include <clasp/gctools/gctoolsPackage.h>
 #include <clasp/clbind/clbindPackage.h>
 #include <clasp/sockets/socketsPackage.h>
@@ -91,7 +92,6 @@ THE SOFTWARE.
 
 static std::string g_exe_name;      // filename of the executable
 static std::string g_program_name;  // logical / settable program name
-static int         g_exit_code;     // exit code to be return at exit
 
 static bool        g_abort_flag;
 
@@ -198,18 +198,6 @@ static inline void print_stacktrace(FILE *out = stderr, unsigned int max_frames 
 
     free(funcname);
     free(symbollist);
-}
-
-// EXIT CODE HANDLING
-
-void set_exit_code( int exit_code = EXIT_SUCCESS )
-{
-  g_exit_code = exit_code;
-}
-
-int exit_code( void )
-{
-  return g_exit_code;
 }
 
 // ABORT FLAG HANDLING
@@ -355,12 +343,6 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
     // __FILE__, __LINE__, (void*)&typeid(core::ExitProgram) );
     // RUN THIS LISP IMPLEMENTATION
   exit_code = _lisp->run();
-  if ( exit_code != 0 )
-  {
-    fprintf( stderr, "*** ERROR: %s is terminating with exit code %d !\n",
-             program_name().c_str(), exit_code );
-  }
-  set_exit_code( exit_code );
   return exit_code;
 
 } // STARTUP
@@ -378,6 +360,7 @@ void* to_fixnum(int8_t v) {
 
 int main( int argc, char *argv[] )
 {
+
   // Do not touch debug log until after MPI init
 
   bool mpiEnabled = false;
@@ -386,7 +369,6 @@ int main( int argc, char *argv[] )
 
   // DO BASIC EXE SETUP
 
-  set_exit_code(); // Set exit code to default value
   set_abort_flag(); // Set abort flag to default value
   g_prev_terminate_handler = std::set_terminate( [](){ clasp_terminate_handler(); } );
 
@@ -452,28 +434,10 @@ int main( int argc, char *argv[] )
 
   // CALL LISP STARTUP
 
-  int exit_code = 0;
-//  try
+  int exit_code;
   {
     exit_code = gctools::startupGarbageCollectorAndSystem( &startup, argc, argv, rl.rlim_max, mpiEnabled, mpiRank, mpiSize );
-    set_exit_code( exit_code );
   }
-#if 0
-  catch ( ... )
-  {
-    // As we don't know what went wrong we just exit with a generic error code
-    fprintf( stderr, "**** %s (%s:%d): FATAL ERROR - ",
-             exe_name().c_str(), __FILE__, __LINE__ );
-
-    handle_unhandled_exception();
-
-    fprintf( stderr, "**** %s (%s:%d): ABORTING!",
-             exe_name().c_str(), __FILE__, __LINE__ );
-    fflush( stderr );
-
-    set_abort_flag( true );
-  }
-#endif
   
 #ifdef USE_MPI
   if (!options._DisableMpi) {
@@ -481,5 +445,5 @@ int main( int argc, char *argv[] )
   }
 #endif
 
-//  std::terminate(); // This calls the terminate handler and then exits or aborts!
+  return exit_code;
 }

@@ -308,6 +308,7 @@ CL_DEFUN bool cl__char_equal(List_sp args) {
   return true;
 };
 
+#define BELL_CHAR 7
 #define LINE_FEED_CHAR 10
 #define PAGE_CHAR 12
 #define RETURN_CHAR 13
@@ -335,6 +336,8 @@ Character_sp clasp_character_create_from_name(string const &name) {
     ch = clasp_make_standard_character(' ');
   else if ((ssup == "BACKSPACE") || (ssup == "Backspace"))
     ch = clasp_make_standard_character(8);
+  else if ((ssup == "BELL") || (ssup == "Bell"))
+    ch = clasp_make_standard_character(BELL_CHAR);
   else {
     SIMPLE_ERROR(BF("Unknown character name[%s]") % ssup);
   }
@@ -405,6 +408,7 @@ void CharacterInfo::initialize() {
   }
   // we later compare with Uppercase
   gNamesToCharacterIndex["NULL"] = 0;
+  gNamesToCharacterIndex["BELL"] = BELL_CHAR;
   gNamesToCharacterIndex["LINEFEED"] = LINE_FEED_CHAR;
   gNamesToCharacterIndex["ESCAPE"] = ESCAPE_CHAR;
   gNamesToCharacterIndex["DEL"] = RUBOUT_CHAR;

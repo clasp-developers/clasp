@@ -168,7 +168,7 @@ that are susceptible to be changed by PROCLAIM."
 	     (baboon :format-control "Uknown record found in environment~%~S"
                      :format-arguments (list record)))
 	    ;; We have to use EQUAL because the name can be a list (SETF whatever)
-	    ((equal (first record) name)
+	    ((llvm-sys:type-equal (first record) name)
 	     (setf found (first (last record)))
 	     (return))))
     (values found ccb clb unw)))

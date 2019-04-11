@@ -159,6 +159,7 @@ namespace clasp_ffi {
     CL_DEFMETHOD void PERCENTfree_foreign_data();
 
     // POINTER ADDRESS MANIPULATION
+    CL_DEFMETHOD ForeignData_sp PERCENTinc_pointer_in_place(core::Integer_sp offset);
     CL_DEFMETHOD ForeignData_sp PERCENTinc_pointer(core::Integer_sp offset);
 
     // OBJECT PRINTING
