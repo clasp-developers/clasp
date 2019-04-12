@@ -80,27 +80,18 @@
 ;;; I have put things in the wrong place (following the UNWIND-PROTECT)
 ;;; and it introduced subtle bugs that were very difficult to track down.
 (defun do-compilation-unit (closure &key override)
-  (cond (override
-	 (let* ((*active-protection* nil))
-	   (do-compilation-unit closure)))
-	((null *active-protection*)
-	 (let* ((*active-protection* t)
-		(*pending-actions* nil)
-                (*compilation-unit-module-index* 0)
-                (*compilation-messages* nil)
-                (*global-function-defs* (make-hash-table))
-                (*global-function-refs* (make-hash-table :test #'equal
-                                                         :thread-safe t)))
-           (multiple-value-prog1
-               (unwind-protect
-                    (do-compilation-unit closure) ; --> result*
-                 (progn
-                   (dolist (action *pending-actions*)
-                     (funcall action))
-                   (compilation-unit-finished *compilation-messages*))) ; --> result*
-             )))
-	(t
-	 (funcall closure))))
+  (if (or (not *active-protection*) ; we're not in a do-compilation-unit
+          override) ; we are, but we're overriding it
+      (let* ((*active-protection* t)
+             (*compilation-unit-module-index* 0)
+             (*compilation-messages* nil)
+             (*global-function-defs* (make-hash-table :test #'equal))
+             (*global-function-refs* (make-hash-table :test #'equal
+                                                      :thread-safe t)))
+        (unwind-protect
+             (funcall closure) ; --> result*
+          (compilation-unit-finished *compilation-messages*))) ; --> result*
+      (funcall closure)))
 
 (export 'do-compilation-unit)
 
