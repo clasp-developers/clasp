@@ -434,6 +434,11 @@
 (test-expect-error max-2a (max #c(1 2)) :type type-error)
 (test max-3 (max 36 (1+ (integer-length most-positive-fixnum))))
 
+(test-expect-error min-1 (min) :type program-error)
+(test-expect-error min-2 (locally (declare (notinline min))(min #c(1 2))) :type type-error)
+(test-expect-error min-2a (min #c(1 2)) :type type-error)
+(test min-3 (min 36 (1+ (integer-length most-positive-fixnum))))
+
 ;;; <, >, <=, >=: take reals, =, /= numbers
 (test-expect-error number-comparison-real-1 (locally (declare (notinline <)) (< #c(1 2))) :type type-error)
 (test-expect-error number-comparison-real-2 (locally (declare (notinline >))(> #c(1 2))) :type type-error)
