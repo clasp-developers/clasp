@@ -429,3 +429,36 @@
 (test-expect-error number-compare-5 (<=) :type program-error)
 (test-expect-error number-compare-6 (>=) :type program-error)
 
+(test-expect-error max-1 (max) :type program-error)
+(test-expect-error max-2 (locally (declare (notinline max))(max #c(1 2))) :type type-error)
+(test-expect-error max-2a (max #c(1 2)) :type type-error)
+(test max-3 (max 36 (1+ (integer-length most-positive-fixnum))))
+
+;;; <, >, <=, >=: take reals, =, /= numbers
+(test-expect-error number-comparison-real-1 (locally (declare (notinline <)) (< #c(1 2))) :type type-error)
+(test-expect-error number-comparison-real-2 (locally (declare (notinline >))(> #c(1 2))) :type type-error)
+(test-expect-error number-comparison-real-3 (locally (declare (notinline <=))(<= #c(1 2))) :type type-error)
+(test-expect-error number-comparison-real-4 (locally (declare (notinline >=))(>= #c(1 2))) :type type-error)
+(test-expect-error number-comparison-real-7 (locally (declare (notinline =))(= (make-hash-table))) :type type-error)
+(test-expect-error number-comparison-real-8 (locally (declare (notinline /=))(/= (make-hash-table))) :type type-error)
+(test-expect-error number-comparison-real-9 (locally (declare (notinline =))(= "jd")) :type type-error)
+(test-expect-error number-comparison-real-10 (locally (declare (notinline /=))(/= "jd")) :type type-error)
+(test-expect-error number-comparison-number-11 (locally (declare (notinline <))(< "jd")) :type type-error)
+(test-expect-error number-comparison-number-12 (locally (declare (notinline >))(> "jd")) :type type-error)
+(test-expect-error number-comparison-number-13 (locally (declare (notinline <=))(<= "jd")) :type type-error)
+(test-expect-error number-comparison-number-14 (locally (declare (notinline >=))(>= "jd")) :type type-error)
+
+;;; and with compiler macros
+(test-expect-error number-comparison-real-1a (let ()(< #c(1 2))) :type type-error)
+(test-expect-error number-comparison-real-2a (let ()(> #c(1 2))) :type type-error)
+(test-expect-error number-comparison-real-3a (let ()(<= #c(1 2))) :type type-error)
+(test-expect-error number-comparison-real-4a (let ()(>= #c(1 2))) :type type-error)
+(test-expect-error number-comparison-real-7a (let ()(= (make-hash-table))) :type type-error)
+(test-expect-error number-comparison-real-8a (let ()(/= (make-hash-table))) :type type-error)
+(test-expect-error number-comparison-real-9a (let ()(= "jd")) :type type-error)
+(test-expect-error number-comparison-real-10a (let ()(/= "jd")) :type type-error)
+(test-expect-error number-comparison-number-11a (let ()(< "jd")) :type type-error)
+(test-expect-error number-comparison-number-12a (let ()(> "jd")) :type type-error)
+(test-expect-error number-comparison-number-13a (let ()(<= "jd")) :type type-error)
+(test-expect-error number-comparison-number-14a (let ()(>= "jd")) :type type-error)
+
