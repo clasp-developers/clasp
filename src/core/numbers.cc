@@ -1207,13 +1207,14 @@ int basic_compare(Number_sp na, Number_sp nb) {
   MATH_DISPATCH_END();
 }
 
+/// this is used for comparison of reals, not for complex, so use Real_sp
 T_sp numbers_monotonic(int s, int t, List_sp args) {
-  Number_sp c = gc::As<Number_sp>(oCar(args));
-  Number_sp d;
+  Real_sp c = gc::As<Real_sp>(oCar(args));
+  Real_sp d;
   int dir;
   args = oCdr(args);
   while (args.notnilp()) {
-    d = gc::As<Number_sp>(oCar(args));
+    d = gc::As<Real_sp>(oCar(args));
     dir = s * basic_compare(c, d);
     if (dir < t)
       return _lisp->_false();
@@ -1251,24 +1252,24 @@ CL_DEFUN T_sp cl___LT_(List_sp args) {
 };
 
 CL_LAMBDA(&rest args);
-CL_DEFUN T_mv cl___GT_(List_sp args) {
+CL_DEFUN T_sp cl___GT_(List_sp args) {
   if (args.nilp())
       SIMPLE_PROGRAM_ERROR("> needs at least 1 argument",_Nil<T_O>());
-  return (Values(numbers_monotonic(1, 1, args)));
+  return numbers_monotonic(1, 1, args);
 };
 
 CL_LAMBDA(&rest args);
-CL_DEFUN T_mv cl___LE_(List_sp args) {
+CL_DEFUN T_sp cl___LE_(List_sp args) {
   if (args.nilp())
       SIMPLE_PROGRAM_ERROR("<= needs at least 1 argument",_Nil<T_O>());
-  return (Values(numbers_monotonic(-1, 0, args)));
+  return numbers_monotonic(-1, 0, args);
 };
 
 CL_LAMBDA(&rest args);
-CL_DEFUN T_mv cl___GE_(List_sp args) {
+CL_DEFUN T_sp cl___GE_(List_sp args) {
   if (args.nilp())
       SIMPLE_PROGRAM_ERROR(">= needs at least 1 argument",_Nil<T_O>());
-  return (Values(numbers_monotonic(1, 0, args)));
+  return numbers_monotonic(1, 0, args);
 };
 
 /*! Return true if two numbers are equal otherwise false */
@@ -1410,7 +1411,11 @@ CL_LAMBDA(core:&va-rest args);
 CL_DECLARE();
 CL_DOCSTRING("NE");
 CL_DEFUN T_sp cl___NE_(VaList_sp args) {
-  if (args->remaining_nargs() == 1) return _lisp->_true();
+  if (args->remaining_nargs() == 1) {
+    // the first arg needs to be a number
+    Number_sp a = gc::As<Number_sp>(args->next_arg());
+    return _lisp->_true();
+  }
   if (args->remaining_nargs() == 0)
     SIMPLE_PROGRAM_ERROR("/= needs at least 1 argument",_Nil<T_O>());
   if (args->remaining_nargs() == 2) {
