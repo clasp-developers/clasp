@@ -116,7 +116,7 @@ class list {
   }
 
   /*! Return all of the list including the (usually) dummy first element */
-  inline core::T_sp all() const {
+  inline core::T_sp result() const {
     return this->cons();
   }
 
