@@ -2,7 +2,7 @@
 PID=$1
 TIME=${2:-60s}
 RATE=${3:-97}
-FRAMES=${4:-1000}
+FRAMES=${4:-4000}
 ## in case there is no symbols file
 #sudo rm -f /tmp/out-$1.user_stacks && sudo dtrace -p $PID -x ustackframes=${FRAMES} -n  "profile-$RATE /pid == $PID && arg1 / { @[ustack()] = count(); } tick-$TIME { exit(0); }" -o /tmp/out-$1.user_stacks
 #if [ -f /tmp/clasp-symbols-$1 ]; then
