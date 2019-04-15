@@ -868,9 +868,8 @@ List_sp HashTable_O::rehash_upgrade_write_lock(bool expandTable, T_sp findKey) {
     ss << "#<" << this->_instanceClass()->_classNameAsString() << " :HashTableCount " << this->_HashTableCount;
     ss << " :calculated-entries " << this->calculateHashTableCount();
     ss << " :size " << this->_Table.size();
-    ss << " @" << (void *)(this) << "> ";
+    ss << " @" << (void *)(this) << ">";
     return ss.str();
-  //	return this->hash_table_dump();
   }
 
 #define DUMP_LOW_LEVEL 1
