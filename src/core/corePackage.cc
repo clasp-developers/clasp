@@ -157,7 +157,6 @@ SYMBOL_EXPORT_SC_(CorePkg, clbind_cxx_class);
 SYMBOL_EXPORT_SC_(CorePkg, derivable_cxx_class);
 SYMBOL_EXPORT_SC_(CorePkg, derivable_cxx_object);
 SYMBOL_EXPORT_SC_(CorePkg, stack_closure);
-SYMBOL_EXPORT_SC_(CorePkg, STARminimum_number_generic_function_slotsSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, make_source_pos_info);
 SYMBOL_EXPORT_SC_(CorePkg, STARtop_level_form_stackSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARloadHooksSTAR);
@@ -1093,7 +1092,6 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   comp::_sym_STARsave_module_for_disassembleSTAR->defparameter(_Nil<core::T_O>());
   comp::_sym_STARsaved_module_from_clasp_jitSTAR->defparameter(_Nil<core::T_O>());
   comp::_sym_STARdebug_jitSTAR->defparameter(_Nil<core::T_O>());
-  _sym_STARminimum_number_generic_function_slotsSTAR->defparameter(make_fixnum(FuncallableInstance_O::MIN_GFUN_SLOTS));
   _sym_STARallCxxClassesSTAR->defparameter(_Nil<T_O>());
   _sym_STARtopLevelCommandHookSTAR->defparameter(_Nil<T_O>());
   _sym_STARllvmFunctionNameHookSTAR->defparameter(_Nil<T_O>());

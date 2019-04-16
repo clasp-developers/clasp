@@ -34,13 +34,19 @@
 
 (eval-when (:compile-toplevel :execute #+clasp :load-toplevel)
   (defparameter +specializer-slots+
-;;; Any changes involving adding, removing, rearranging slots below need to be reflected in instance.h
+    ;; The number of specializer slots is fixed in instance.h.
+    ;; A change in the number of slots here needs to be reflected there.
+    ;; The slots marked with a :location are also fixed in instance.h.
+    ;; They need to have those locations, even in user subclasses of this class.
+    ;; Also note that boot.lsp ignores these locations for effective slots, just
+    ;; using the position in the list here; so that must match the :location.
     '((flag :initform nil :accessor eql-specializer-flag)
       (direct-methods :initform nil :accessor specializer-direct-methods)
       (direct-generic-functions :initform nil :accessor specializer-direct-generic-functions)
-      (call-history-generic-functions :initform nil :accessor specializer-call-history-generic-functions)
+      (call-history-generic-functions :initform nil :accessor specializer-call-history-generic-functions
+                                      :location 3)
       (specializer-mutex :initform (mp:make-shared-mutex 'call-history-generic-functions-mutex)
-                         :accessor specializer-mutex)
+                         :accessor specializer-mutex :location 4)
       ;;; Any changes to the slots above need to be reflected in instance.h
       )))
 
@@ -51,9 +57,10 @@
     '((flag :initform t :accessor eql-specializer-flag)
       (direct-methods :initform nil :accessor specializer-direct-methods)
       (direct-generic-functions :initform nil :accessor specializer-direct-generic-functions)
-      (call-history-generic-functions :initform nil :accessor specializer-call-history-generic-functions)
+      (call-history-generic-functions :initform nil :accessor specializer-call-history-generic-functions
+                                      :location 3)
       (specializer-mutex :initform (mp:make-shared-mutex 'call-history-generic-functions-mutex)
-                         :accessor specializer-mutex)
+                         :accessor specializer-mutex :location 4)
       (object :initarg :object :accessor eql-specializer-object))))
 
 ;;; ----------------------------------------------------------------------
@@ -70,28 +77,30 @@
 
 (eval-when (:compile-toplevel :execute #+clasp :load-toplevel)
   (defparameter +class-slots+
-;;; Any changes involving adding, removing, rearranging slots below need to be reflected in instance.h
+    ;; Any changes involving adding, removing, rearranging slots below need to be reflected in instance.h.
+    ;; See comment in +specializer-slots+ about locations.
     `(,@+specializer-slots+
-      (name :initarg :name :initform nil :accessor class-id)
+      (name :initarg :name :initform nil :accessor class-id :location 5)
       (direct-superclasses :initarg :direct-superclasses :initform nil
-			   :accessor class-direct-superclasses)
-      (direct-subclasses :initform nil :accessor class-direct-subclasses)
-      (slots :accessor class-slots)
-      (precedence-list :accessor class-precedence-list)
-      (direct-slots :initarg :direct-slots :accessor class-direct-slots)
-      (direct-default-initargs :initarg :direct-default-initargs
+			   :accessor class-direct-superclasses :location 6)
+      (direct-subclasses :initform nil :accessor class-direct-subclasses :location 7)
+      (slots :accessor class-slots :location 8)
+      (precedence-list :accessor class-precedence-list :location 9)
+      (direct-slots :initarg :direct-slots :accessor class-direct-slots :location 10)
+      (direct-default-initargs :initarg :direct-default-initargs :location 11
 			       :initform nil :accessor class-direct-default-initargs)
-      (default-initargs :accessor class-default-initargs)
-      (finalized :initform nil :accessor class-finalized-p) ; FIXME: is the writer supposed to be exported?
-      (docstring :initarg :documentation :initform nil)
+      (default-initargs :accessor class-default-initargs :location 12)
+      ;; FIXME: is the writer supposed to be exported? I don't think so!
+      (finalized :initform nil :accessor class-finalized-p :location 13)
+      (docstring :initarg :documentation :initform nil :location 14)
       (size :accessor class-size)
       (prototype)
-      (dependents :initform nil :accessor class-dependents)
+      (dependents :initform nil :accessor class-dependents :location 17)
       (valid-initargs :accessor class-valid-initargs)
       (slot-table :accessor slot-table)
-      (location-table :initform nil :accessor class-location-table)
-      (stamp-for-instances :accessor stamp-for-instances)
-      (creator :accessor creator)
+      (location-table :initform nil :accessor class-location-table :location 20)
+      (stamp-for-instances :accessor stamp-for-instances :location 21)
+      (creator :accessor creator :location 22)
       (source-position :initform nil :initarg :source-position :accessor class-source-position)
       ;;; Any changes to the slots above need to be reflected in instance.h and metaClass.h
       )))
@@ -110,7 +119,7 @@
     ;; Note that we don't need some of the class-slots, e.g. initargs, so we could
     ;; hypothetically reorganize things.
     ;; We also don't really need any of these slots, but it might be good to have
-    ;; some mkind of structure to descriptions of structures later.
+    ;; some kind of structure to represent descriptions of structures later.
     (append +class-slots+
 	    '((slot-descriptions)
 	      (initial-offset)
@@ -121,16 +130,20 @@
 
 (eval-when (:compile-toplevel :execute  #+clasp :load-toplevel)
   (defparameter +standard-generic-function-slots+
-;;; Any changes involving adding, removing, rearranging slots below need to be reflected in funcallableInstance.h
+    ;; Any changes involving adding, removing, rearranging slots below
+    ;; need to be reflected in funcallableInstance.h. See +specializer-slots+ comment.
     '((name :initarg :name :initform nil
-       :reader generic-function-name)
-      (spec-list :initform nil :accessor generic-function-spec-list)
+            :reader generic-function-name :location 0)
+      (spec-list :initform nil :accessor generic-function-spec-list :location 1)
       (method-combination
-       :initarg :method-combination :initform (find-method-combination (class-prototype (find-class 'standard-generic-function)) 'standard nil)
+       :initarg :method-combination
+       :initform (find-method-combination (class-prototype (find-class 'standard-generic-function))
+                  'standard nil)
        :accessor generic-function-method-combination)
-      (lambda-list :initarg :lambda-list
-       :accessor generic-function-lambda-list)
-;;; Any changes to the slots above need to be reflected in funcallableInstance.h
+      (lambda-list :initarg :lambda-list :location 3
+                   :accessor generic-function-lambda-list)
+      ;; Any changes to the slots above need to be reflected in funcallableInstance.h
+      ;; (except method-combination)
       (argument-precedence-order 
        :initarg :argument-precedence-order
        :initform nil
