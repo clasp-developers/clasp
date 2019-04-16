@@ -152,7 +152,7 @@
                  ,@(loop for dim in dims
                          for i from 0
                          unless (eq dim '*)
-                           collect `(eq (core::%array-dimension object ',i)))))))))))
+                           collect `(eq (core::%array-dimension object ',i) ,dim))))))))))
 
 (defun cons-typep-form (form cart cdrt)
   `(let ((object ,form))
