@@ -649,6 +649,7 @@ namespace core {
     virtual Number_sp tanh_() const;
 
     virtual Number_sp conjugate_() const;
+    virtual Number_sp reciprocal_() const;
 
     virtual void __write__(T_sp strm) const;
 

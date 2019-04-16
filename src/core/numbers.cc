@@ -2023,10 +2023,14 @@ Number_sp Complex_O::abs_() const {
                                clasp_times(this->_imaginary, this->_imaginary)));
 }
 
-
-
-
-
+Number_sp Complex_O::reciprocal_() const {
+  // 1/(a+bi) = (a-bi)/(a^2+b^2) by basic algebra.
+  // alternately we could just clasp_divide. I dunno if reciprocal_ is terribly necessary.
+  Real_sp square_modulus = clasp_plus(clasp_times(this->_real, this->_real),
+                                      clasp_times(this->_imaginary, this->_imaginary));
+  return Complex_O::create(clasp_divide(this->_real, square_modulus),
+                           clasp_divide(clasp_negate(this->_imaginary), square_modulus));
+}
 
 /* ----------------------------------------------------------------------
 
