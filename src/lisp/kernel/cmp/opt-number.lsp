@@ -49,10 +49,10 @@
   (core:expand-compare form 'core:two-arg->= numbers 'real))
 
 (define-compiler-macro = (&whole form &rest numbers)
-  (core:expand-compare form 'core:two-arg-= numbers))
+  (core:expand-compare form 'core:two-arg-= numbers 'number))
 
 (define-compiler-macro /= (&whole form &rest numbers)
-  (core:expand-uncompare form 'core:two-arg-= numbers))
+  (core:expand-uncompare form 'core:two-arg-= numbers 'number))
 
 (define-compiler-macro 1+ (x)
   `(core:two-arg-+ ,x 1))
