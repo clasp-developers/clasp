@@ -239,10 +239,10 @@
 
 (defun congruent-lambda-p (l1 l2)
   (multiple-value-bind (r1 opts1 rest1 key-flag1 keywords1 a-o-k1)
-      (si::process-lambda-list l1 'FUNCTION)
+      (core:process-lambda-list l1 'FUNCTION)
     (declare (ignore a-o-k1))
     (multiple-value-bind (r2 opts2 rest2 key-flag2 keywords2 a-o-k2)
-	(si::process-lambda-list l2 'FUNCTION)
+	(core:process-lambda-list l2 'FUNCTION)
       (and (= (length r2) (length r1))
            (= (length opts1) (length opts2))
            (eq (and (null rest1) (null key-flag1))
@@ -255,6 +255,27 @@
                (null (set-difference (all-keywords keywords1)
                                      (all-keywords keywords2))))
            t))))
+
+;;; auxiliary for add-method
+;;; It takes a DEFMETHOD lambda list and returns a lambda list usable for
+;;; initializing a generic function. The difficulty here is that the CLHS
+;;; page for DEFMETHOD specifies that if a generic function is implicitly
+;;; created, its lambda list lacks any specific keyword parameters.
+;;; So (defmethod foo (... &key a)) (defmethod foo (... &key)) is legal.
+;;; If we were to just use the same method lambda list, this would not be
+;;; true.
+(defun method-lambda-list-for-gf (lambda-list)
+  (multiple-value-bind (req opt rest keyflag keywords aok)
+      (core:process-lambda-list lambda-list 'function)
+    (declare (ignore keywords))
+    `(,@(rest req)
+      ,@(unless (zerop (car opt))
+          (cons '&optional (loop for (o) on (rest opt)
+                                 by #'cdddr
+                                 collect o)))
+      ,@(when rest (list '&rest rest))
+      ,@(when keyflag '(&key))
+      ,@(when aok '(&allow-other-keys)))))
 
 ;;; It's possible we could use DEFMETHOD for these.
 
@@ -282,7 +303,8 @@ and cannot be added to ~A." method other-gf gf)))
 		   method gf new-lambda-list old-lambda-list))
           ;; Add any keywords from the method to the gf display lambda list.
           (maybe-augment-generic-function-lambda-list gf new-lambda-list))
-	(reinitialize-instance gf :lambda-list new-lambda-list)))
+	(reinitialize-instance
+         gf :lambda-list (method-lambda-list-for-gf new-lambda-list))))
   ;;
   ;; 3) Finally, it is inserted in the list of methods, and the method is
   ;;    marked as belonging to a generic function.
