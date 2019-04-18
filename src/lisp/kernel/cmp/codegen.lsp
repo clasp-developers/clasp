@@ -117,7 +117,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
   (let ((lambda-list (core:lambda-list-handler-lambda-list (function-lambda-list-handler fn)))
 	#+(or)(declares (function-declares fn))
 	(docstring (function-docstring fn))
-	(code (function-source-code fn))
+	(code (interpreted-source-code fn))
 	(env (closed-environment fn)))
     (generate-llvm-function-from-code nil lambda-list #|declares|# nil docstring code env :linkage 'llvm-sys:external-linkage)))
 
@@ -125,8 +125,8 @@ then compile it and return (values compiled-llvm-function lambda-name)"
   (let* ((lambda-list-handler (function-lambda-list-handler fn))
 	 (lambda-list (core:lambda-list-handler-lambda-list lambda-list-handler))
 	 #+(or)(declares (function-declares fn))
-	 (docstring (docstring fn))
-	 (code (code fn))
+	 (docstring (function-docstring fn))
+	 (code (interpreted-source-code fn))
 	 (env (closed-environment fn)))
     (when docstring (setq docstring (list docstring)))
     #+(or)(progn
