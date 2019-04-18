@@ -90,24 +90,15 @@ namespace translate {
     typedef char DeclareType;
 
     DeclareType _v;
-  from_object( core::T_sp o ) : _v( o.unsafe_character() ){};
+  from_object( core::T_sp o ) : _v( o.unsafe_fixnum() ){};
   };
-
-  // template <>
-  //   struct from_object< unsigned char, std::true_type >
-  // {
-  //   typedef unsigned char DeclareType;
-
-  //   DeclareType _v;
-  // from_object( core::T_sp o ) : _v( o.unsafe_character() ){};
-  // };
 
   template <>
     struct to_object<char> {
     typedef uint GivenType;
     static core::T_sp convert(GivenType v) {
       _G();
-      return core::clasp_make_character(v);
+      return core::clasp_make_fixnum(v);
     }
   };
 };
