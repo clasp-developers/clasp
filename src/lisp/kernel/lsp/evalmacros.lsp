@@ -289,11 +289,11 @@ Evaluates INIT and binds the N-th VAR to the N-th value of INIT or, if INIT
 returns less than N values, to NIL.  Then evaluates FORMs, and returns all
 values of the last FORM.  If no FORM is given, returns NIL."
   (declare (notinline mapcar))
+  ;; Note that in cclasp, a compiler macro (in inline.lsp) takes over from this macro.
   (if (= (length vars) 1)
       ;; at the moment we don't handle multiple-value-call well, so this is probably
       ;; faster. Might be so in the future too.
       ;; Who would write m-v-b with one variable, you ask? Computers! (Mostly SETF.)
-      ;; Note that in cclasp, a compiler macro (in inline.lsp) takes over from this macro.
       `(let ((,(first vars) ,form)) ,@body)
       (let ((restvar (gensym)))
         `(multiple-value-call #'(lambda (&optional ,@(mapcar #'list vars) &rest ,restvar)
