@@ -243,36 +243,26 @@ LtvcReturn ltvc_make_complex(gctools::GCRootsInModule* holder, char tag, size_t 
 }
 
 
-LtvcReturn ltvc_make_cons(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* car, core::T_O* cdr)
+LtvcReturn ltvc_make_cons(gctools::GCRootsInModule* holder, char tag, size_t index)
 {NO_UNWIND_BEGIN();
-  core::T_sp val = core::Cons_O::create(core::T_sp(car),core::T_sp(cdr));
+  core::T_sp val = core::Cons_O::create(_Nil<core::T_O>(), _Nil<core::T_O>());
   LTVCRETURN holder->setTaggedIndex(tag,index,val.tagged_());
   NO_UNWIND_END();
 }
 
-LtvcReturn ltvc_nconc(gctools::GCRootsInModule* holder, char tag, size_t index,
-                               core::T_O* front, core::T_O* back)
+LtvcReturn ltvc_rplaca(gctools::GCRootsInModule* holder, core::T_O* cons_t, core::T_O* car_t)
 {NO_UNWIND_BEGIN();
-  core::T_sp val = core::clasp_nconc(core::T_sp(front),core::T_sp(back));
-  LTVCRETURN holder->setTaggedIndex(tag,index,val.tagged_());
+  core::T_sp tcons((gctools::Tagged)cons_t);
+  core::Cons_sp cons = gc::As<core::Cons_sp>(tcons);
+  cons->rplaca(core::T_sp(car_t));
   NO_UNWIND_END();
 }
 
-NOINLINE LtvcReturn ltvc_make_list(gctools::GCRootsInModule* holder, char tag, size_t index, size_t num, ... )
+LtvcReturn ltvc_rplacd(gctools::GCRootsInModule* holder, core::T_O* cons_t, core::T_O* cdr_t)
 {NO_UNWIND_BEGIN();
-  core::T_sp first;
-  core::T_sp* cur = &first;
-  va_list va;
-  va_start(va,num);
-  for (; num; --num) {
-    gctools::Tagged p = va_arg(va, gctools::Tagged);
-    Cons_sp one = Cons_O::create(core::T_sp(p),_Nil<core::T_O>());
-    *cur = one;
-    cur = &one->_Cdr;
-  }
-  va_end(va);
-  core::T_sp val = first;
-  LTVCRETURN holder->setTaggedIndex(tag,index,val.tagged_());
+  core::T_sp tcons((gctools::Tagged)cons_t);
+  core::Cons_sp cons = gc::As<core::Cons_sp>(tcons);
+  cons->rplacd(core::T_sp(cdr_t));
   NO_UNWIND_END();
 }
 

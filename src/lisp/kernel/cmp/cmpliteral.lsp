@@ -110,9 +110,6 @@
 ;;; +max-run-all-size+ must be larger than +list-max+ so that
 ;;;   even a full list will fit into one run-all
 (defconstant +max-run-all-size+ (max 200 call-arguments-limit))
-;;; +list-max+ must be smaller than call-arguments-limit so that
-;;;  no ltvc_make_list doesn't blow the call stack
-(defconstant +list-max+ (- call-arguments-limit 8))
 
 (defparameter *run-all-objects* nil)
 
@@ -155,9 +152,9 @@
 ;;;
 
 (defvar *ratio-coalesce*)
-;;;(defvar *cons-coalesce*)
+(defvar *cons-coalesce*)
 (defvar *complex-coalesce*)
-;;;(defvar *array-coalesce*)
+(defvar *array-coalesce*)
 (defvar *hash-table-coalesce*)
 (defvar *bignum-coalesce*)
 (defvar *symbol-coalesce*)
@@ -249,28 +246,12 @@ rewrite the slot in the literal table to store a closure."
                (load-time-reference-literal (denominator ratio) read-only-p :toplevelp nil)))
 
 (defun ltv/cons (cons index read-only-p &key (toplevelp t))
-  #+(or)
-  (add-creator "ltvc_make_cons" index
-               (load-time-reference-literal (car cons) read-only-p)
-               (load-time-reference-literal (cdr cons) read-only-p))
-  (let ((isproper (core:proper-list-p cons)))
-    (cond
-      ((and isproper (<= (length cons) +list-max+))
-       (apply 'add-creator "ltvc_make_list" index cons
-              (length cons) (mapcar (lambda (x)
-                                      (load-time-reference-literal x read-only-p :toplevelp nil :toplevelp nil))
-                                    cons)))
-      ((null isproper)
-       (add-creator "ltvc_make_cons" index cons
-                    (load-time-reference-literal (car cons) read-only-p :toplevelp nil)
-                    (load-time-reference-literal (cdr cons) read-only-p :toplevelp nil)))
-      ;; Too long list
-      (t (let* ((pos +list-max+)
-                (front (subseq cons 0 pos))
-                (back (nthcdr pos cons)))
-           (add-creator "ltvc_nconc" index cons
-                        (load-time-reference-literal front read-only-p :toplevelp nil)
-                        (load-time-reference-literal back read-only-p :toplevelp nil)))))))
+  (let ((val (add-creator "ltvc_make_cons" index cons)))
+    (add-side-effect-call "ltvc_rplaca" val
+                          (load-time-reference-literal (car cons) read-only-p :toplevelp nil))
+    (add-side-effect-call "ltvc_rplacd" val
+                          (load-time-reference-literal (cdr cons) read-only-p :toplevelp nil))
+    val))
 
 (defun ltv/complex (complex index read-only-p &key (toplevelp t))
   (add-creator "ltvc_make_complex" index complex
@@ -397,7 +378,7 @@ rewrite the slot in the literal table to store a closure."
   (cond
     ((null object) (values *identity-coalesce* #'ltv/nil))
     ((eq t object) (values *identity-coalesce* #'ltv/t))
-    ((consp object) (values nil #+(or)*cons-coalesce* #'ltv/cons))
+    ((consp object) (values *cons-coalesce* #'ltv/cons))
     ((fixnump object) (values nil #'ltv/fixnum))
     ((characterp object) (values nil #'ltv/character))
     ((core:single-float-p  object) (values nil #'ltv/single-float))
@@ -406,7 +387,7 @@ rewrite the slot in the literal table to store a closure."
     ((core:ratio-p object) (values *ratio-coalesce* #'ltv/ratio))
     ((bit-vector-p object) (values nil #'ltv/bitvector))
     ((stringp  object) (values (if read-only-p *identity-coalesce* *string-coalesce*) #'ltv/base-string))
-    ((arrayp object) (values nil #+(or)*array-coalesce* #'ltv/array))
+    ((arrayp object) (values *array-coalesce* #'ltv/array))
     ((hash-table-p object) (values *hash-table-coalesce* #'ltv/hash-table))
     ((bignump object) (values *bignum-coalesce* #'ltv/bignum))
     ((pathnamep object) (values *pathname-coalesce* #'ltv/pathname))
@@ -704,9 +685,9 @@ Return the index of the load-time-value"
         (cmp:*generate-compile-file-load-time-values* t)
         (*identity-coalesce* (make-similarity-table #'eq))
         (*ratio-coalesce* (make-similarity-table #'eql))
-;;;        (*cons-coalesce* (make-similarity-table #'eq))
+        (*cons-coalesce* (make-similarity-table #'eq))
         (*complex-coalesce* (make-similarity-table #'eql))
-;;;        (*array-coalesce* (make-similarity-table #'eq))
+        (*array-coalesce* (make-similarity-table #'eq))
         (*hash-table-coalesce* (make-similarity-table #'eq))
         (*bignum-coalesce* (make-similarity-table #'eql))
         (*symbol-coalesce* (make-similarity-table #'eq))
@@ -857,19 +838,19 @@ and  return the sorted values and the constant-table or (values nil nil)."
             (values immediate nil)))
         (multiple-value-bind (similarity creator)
             (object-similarity-table-and-creator object read-only-p)
+          (llog "non-immediate~%")
           (let ((existing (if similarity (find-similar object desired-kind similarity) nil)))
-;;;            (format t "Looking for ~s object ~s   existing --> ~s~%" desired-kind object existing)
+            (llog "Looking for ~s object ~s   existing --> ~s~%" desired-kind object existing)
             (cond
               (existing
                (when (and (eq desired-kind :literal) (eq :transient (datum-kind existing)))
-;;;                 (format t "    upgrading ~s~%" existing)
+                 (llog "    upgrading ~s~%" existing)
                  (upgrade-transient-datum-to-literal existing)
-                 #+(or)(format t "    after upgrade: ~s~%" existing))
+                 (llog "    after upgrade: ~s~%" existing))
                (values (gethash existing *constant-datum-to-literal-node-creator*) t))
               ;; Otherwise create a new datum at the current level of transientness
               (t (let ((datum (new-datum toplevelp)))
                    (when similarity (add-similar object datum desired-kind similarity))
-                   (setf (gethash datum *constant-datum-to-literal-node-creator*) creator)
                    (values (funcall creator object datum read-only-p :toplevelp toplevelp) t)))))))))
 
 (defun pretty-load-time-name (object ltv-idx)

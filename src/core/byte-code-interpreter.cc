@@ -42,25 +42,19 @@ void parse_ltvc_make_cons(gctools::GCRootsInModule* roots, T_sp fin, bool log, s
   if (log) printf("%s:%d:%s parse_ltvc_make_cons\n", __FILE__, __LINE__, __FUNCTION__);
   char tag = ltvc_read_char( fin, log, byte_index );
   size_t index = ltvc_read_size_t( fin, log, byte_index );
-  T_O* arg2 = ltvc_read_object(roots,  fin, log, byte_index );
-  T_O* arg3 = ltvc_read_object(roots,  fin, log, byte_index );
-  ltvc_make_cons( roots, tag, index, arg2, arg3);
+  ltvc_make_cons( roots, tag, index);
 };
-void parse_ltvc_nconc(gctools::GCRootsInModule* roots, T_sp fin, bool log, size_t& byte_index) {
-  if (log) printf("%s:%d:%s parse_ltvc_nconc\n", __FILE__, __LINE__, __FUNCTION__);
-  char tag = ltvc_read_char( fin, log, byte_index );
-  size_t index = ltvc_read_size_t( fin, log, byte_index );
-  T_O* arg2 = ltvc_read_object(roots,  fin, log, byte_index );
-  T_O* arg3 = ltvc_read_object(roots,  fin, log, byte_index );
-  ltvc_nconc( roots, tag, index, arg2, arg3);
+void parse_ltvc_rplaca(gctools::GCRootsInModule* roots, T_sp fin, bool log, size_t& byte_index) {
+  if (log) printf("%s:%d:%s parse_ltvc_rplaca\n", __FILE__, __LINE__, __FUNCTION__);
+  T_O* arg0 = ltvc_read_object(roots,  fin, log, byte_index );
+  T_O* arg1 = ltvc_read_object(roots,  fin, log, byte_index );
+  ltvc_rplaca( roots, arg0, arg1);
 };
-void parse_ltvc_make_list(gctools::GCRootsInModule* roots, T_sp fin, bool log, size_t& byte_index) {
-  if (log) printf("%s:%d:%s parse_ltvc_make_list\n", __FILE__, __LINE__, __FUNCTION__);
-  char tag = ltvc_read_char( fin, log, byte_index );
-  size_t index = ltvc_read_size_t( fin, log, byte_index );
-  size_t arg2 = ltvc_read_size_t( fin, log, byte_index );
-  Cons_O* varargs = ltvc_read_list( roots, arg2, fin, log, byte_index );
-  ltvc_make_list_varargs( roots, tag, index, arg2, varargs);
+void parse_ltvc_rplacd(gctools::GCRootsInModule* roots, T_sp fin, bool log, size_t& byte_index) {
+  if (log) printf("%s:%d:%s parse_ltvc_rplacd\n", __FILE__, __LINE__, __FUNCTION__);
+  T_O* arg0 = ltvc_read_object(roots,  fin, log, byte_index );
+  T_O* arg1 = ltvc_read_object(roots,  fin, log, byte_index );
+  ltvc_rplacd( roots, arg0, arg1);
 };
 void parse_ltvc_make_array(gctools::GCRootsInModule* roots, T_sp fin, bool log, size_t& byte_index) {
   if (log) printf("%s:%d:%s parse_ltvc_make_array\n", __FILE__, __LINE__, __FUNCTION__);
@@ -244,9 +238,9 @@ void parse_ltvc_toplevel_funcall(gctools::GCRootsInModule* roots, T_sp fin, bool
            break;
   case 69: parse_ltvc_make_cons(roots,fin,log,byte_index);
            break;
-  case 70: parse_ltvc_nconc(roots,fin,log,byte_index);
+  case 70: parse_ltvc_rplaca(roots,fin,log,byte_index);
            break;
-  case 71: parse_ltvc_make_list(roots,fin,log,byte_index);
+  case 71: parse_ltvc_rplacd(roots,fin,log,byte_index);
            break;
   case 72: parse_ltvc_make_array(roots,fin,log,byte_index);
            break;
