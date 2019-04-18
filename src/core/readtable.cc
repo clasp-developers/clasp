@@ -405,9 +405,7 @@ CL_DEFUN T_mv core__sharp_dot(T_sp sin, Character_sp ch, T_sp num) {
                    Cons_O::create(object,_Nil<T_O>()),
                    sin);
     }
-//    T_mv result = eval::funcall(core::_sym_STAReval_with_env_hookSTAR->symbolValue(), object, _Nil<T_O>());
-//    return result;
-    return eval::evaluate(object,_Nil<T_O>());
+    return cl__eval(object);
   }
   return _Nil<T_O>();
 }

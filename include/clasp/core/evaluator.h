@@ -40,6 +40,7 @@ extern core::Symbol_sp& _sym_name;
 };
 
 namespace core {
+T_mv cl__eval(T_sp form);
 T_mv cl__apply(T_sp head, VaList_sp args);
 T_mv core__apply0( Function_sp func, T_sp args);
 
