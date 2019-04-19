@@ -655,9 +655,6 @@ Return the index of the load-time-value"
   `(let ((*with-ltv-depth* (1+ *with-ltv-depth*)))
      (do-ltv :toplevel (lambda () ,@body))))
 
-;;; Generate byte-code instead of llvm-ir for startup
-(defvar *generate-byte-code* t)
-
 (defun do-literal-table (body-fn)
   (llog "do-literal-table~%")
   (let ((*gcroots-in-module*
@@ -703,20 +700,17 @@ Return the index of the load-time-value"
     (let ((transient-entries (finalize-transient-datum-indices *run-all-objects*)))
       (cmp:with-run-all-body-codegen
           (let ((ordered-run-all-nodes (nreverse *run-all-objects*)))
-            (if *generate-byte-code*
-                (let* ((byte-code-string (write-literal-nodes-byte-code ordered-run-all-nodes))
-                       (byte-code-length (length byte-code-string))
-                       (byte-code-global (llvm-sys:make-string-global cmp:*the-module* byte-code-string "startup-byte-code")))
-                  (cmp:irc-intrinsic-call "cc_invoke_byte_code_interpreter"
-                                          (list *gcroots-in-module*
-                                                (cmp:irc-bit-cast (cmp:irc-gep byte-code-global (list 0 0)) cmp:%i8*%)
-                                                (cmp:jit-constant-size_t byte-code-length)))
-                  (cmp:irc-intrinsic-call "cc_finish_gcroots_in_module" (list *gcroots-in-module*)))
-                (let ((sub-run-all (generate-run-all-from-literal-nodes ordered-run-all-nodes)))
-                  (cmp:irc-intrinsic-call "cc_invoke_sub_run_all_function" (list sub-run-all))
-                  (cmp:irc-intrinsic-call "cc_finish_gcroots_in_module" (list *gcroots-in-module*))))))
+            (let* ((byte-code-string (write-literal-nodes-byte-code ordered-run-all-nodes))
+                   (byte-code-length (length byte-code-string))
+                   (byte-code-global (llvm-sys:make-string-global cmp:*the-module* byte-code-string
+                                                                  "startup-byte-code")))
+              (cmp:irc-intrinsic-call "cc_invoke_byte_code_interpreter"
+                                      (list *gcroots-in-module*
+                                            (cmp:irc-bit-cast (cmp:irc-gep byte-code-global (list 0 0))
+                                                              cmp:%i8*%)
+                                            (cmp:jit-constant-size_t byte-code-length)))
+              (cmp:irc-intrinsic-call "cc_finish_gcroots_in_module" (list *gcroots-in-module*)))))
       (let ((literal-entries *table-index*))
-        #+(or)(format t "transient-entries -> ~a   literal-entries -> ~a~%" transient-entries literal-entries)
         (when (> literal-entries 0)
           ;; We have a new table, replace the old one and generate code to register the new one
           ;; and gc roots tabl
@@ -727,43 +721,56 @@ Return the index of the load-time-value"
                                                                      'llvm-sys:internal-linkage
                                                                      (llvm-sys:undef-value-get array-type)
                                                                      real-name))
-                 (bitcast-correct-size-holder (cmp:irc-bit-cast correct-size-holder cmp:%t*[DUMMY]*% "bitcast-table"))
+                 (bitcast-correct-size-holder (cmp:irc-bit-cast correct-size-holder cmp:%t*[DUMMY]*%
+                                                                "bitcast-table"))
                  (holder-ptr (llvm-sys:create-geparray cmp:*irbuilder* correct-size-holder
                                                        (list (cmp:jit-constant-size_t 0)
                                                              (cmp:jit-constant-size_t 0)) "table")))
-            (llvm-sys:replace-all-uses-with cmp:*load-time-value-holder-global-var* bitcast-correct-size-holder)
-            (let* ((function-vector-type (llvm-sys:array-type-get cmp:%fn-prototype*% (length *function-vector*)))
-                   (function-vector (llvm-sys:make-global-variable cmp:*the-module*
-                                                                   function-vector-type
-                                                                   nil
-                                                                   'llvm-sys:internal-linkage
-                                                                   (llvm-sys:constant-array-get function-vector-type (coerce *function-vector* 'list))
-                                                                   "function-vector"))
-                   (function-descs-type (llvm-sys:array-type-get cmp:%function-description*% (length *function-description-vector*)))
-                   (function-descs (llvm-sys:make-global-variable cmp:*the-module*
-                                                                  function-descs-type
-                                                                   nil
-                                                                   'llvm-sys:internal-linkage
-                                                                   (llvm-sys:constant-array-get function-descs-type (coerce *function-description-vector* 'list))
-                                                                   "function-descs")))
+            (llvm-sys:replace-all-uses-with cmp:*load-time-value-holder-global-var*
+                                            bitcast-correct-size-holder)
+            (let* ((function-vector-type (llvm-sys:array-type-get cmp:%fn-prototype*%
+                                                                  (length *function-vector*)))
+                   (function-vector (llvm-sys:make-global-variable
+                                     cmp:*the-module*
+                                     function-vector-type
+                                     nil
+                                     'llvm-sys:internal-linkage
+                                     (llvm-sys:constant-array-get function-vector-type
+                                                                  (coerce *function-vector* 'list))
+                                     "function-vector"))
+                   (function-descs-type (llvm-sys:array-type-get
+                                         cmp:%function-description*%
+                                         (length *function-description-vector*)))
+                   (function-descs (llvm-sys:make-global-variable
+                                    cmp:*the-module*
+                                    function-descs-type
+                                    nil
+                                    'llvm-sys:internal-linkage
+                                    (llvm-sys:constant-array-get
+                                     function-descs-type
+                                     (coerce *function-description-vector* 'list))
+                                    "function-descs")))
               (cmp:with-run-all-entry-codegen
                   (let ((transient-vector (cmp:alloca-i8* "transients")))
                     (cmp:irc-intrinsic-call "cc_initialize_gcroots_in_module"
                                             (list *gcroots-in-module*
                                                   (cmp:irc-pointer-cast correct-size-holder cmp:%t**% "")
                                                   (cmp:jit-constant-size_t literal-entries)
-                                                  (cmp:irc-int-to-ptr (cmp:jit-constant-uintptr_t 0) cmp:%t*%)
+                                                  (cmp:irc-int-to-ptr (cmp:jit-constant-uintptr_t 0)
+                                                                      cmp:%t*%)
                                                   transient-vector
                                                   (cmp:jit-constant-size_t transient-entries)
                                                   (cmp:jit-constant-size_t (length *function-vector*))
-                                                  (cmp:irc-bit-cast (cmp:irc-gep function-vector
-                                                                                 (list (cmp:jit-constant-size_t 0)
-                                                                                       (cmp:jit-constant-size_t 0)))
-                                                                    cmp:%i8**% )
-                                                  (cmp:irc-bit-cast (cmp:irc-gep function-vector
-                                                                                 (list (cmp:jit-constant-size_t 0)
-                                                                                       (cmp:jit-constant-size_t 0)))
-                                                                    cmp:%i8**% ))))))
+                                                  (cmp:irc-bit-cast
+                                                   (cmp:irc-gep function-vector
+                                                                (list (cmp:jit-constant-size_t 0)
+                                                                      (cmp:jit-constant-size_t 0)))
+                                                   cmp:%i8**%)
+                                                  (cmp:irc-bit-cast
+                                                   (cmp:irc-gep function-vector
+                                                                (list (cmp:jit-constant-size_t 0)
+                                                                      (cmp:jit-constant-size_t 0)))
+                                                   cmp:%i8**%))))))
             ;; Erase the dummy holder
             (llvm-sys:erase-from-parent cmp:*load-time-value-holder-global-var*)))))))
 

@@ -787,11 +787,6 @@ __attribute__((optnone,noinline)) void cc_protect_alloca(char* ptr)
   (void)ptr;
 }
 
-
-void cc_invoke_sub_run_all_function(fnStartUp fptr) {
-  fptr();
-}
-
 void cc_invoke_startup_functions() {
   startup_functions_invoke();
 };
