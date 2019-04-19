@@ -95,7 +95,6 @@
     (primitive-unwinds "ltvc_set_mlf_creator_funcall" %ltvc-return% (list %gcroots-in-module*% %i8% %size_t% %size_t% #|fn-prototype*%|# %i8*%) :ltvc t)
     (primitive-unwinds "ltvc_mlf_init_funcall" %ltvc-return% (list %gcroots-in-module*% %size_t% #|%fn-prototype*%|# %i8*%) :ltvc t)
     (primitive-unwinds "ltvc_set_ltv_funcall" %ltvc-return% (list %gcroots-in-module*% %i8% %size_t% %size_t% #|%fn-prototype*%|# %i8*%) :ltvc t)
-    (primitive-unwinds "ltvc_set_ltv_funcall_cleavir" %ltvc-return% (list %gcroots-in-module*% %i8% %size_t% %size_t% #|%fn-prototype*%|# %i8*%) :ltvc t)
     (primitive-unwinds "ltvc_toplevel_funcall" %ltvc-return% (list %gcroots-in-module*% %size_t% #|%fn-prototype*%|# %i8*%) :ltvc t)))
 
 (defmacro primitives-in-thread-macro ()

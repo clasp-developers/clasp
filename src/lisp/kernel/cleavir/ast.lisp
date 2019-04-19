@@ -478,7 +478,7 @@ precalculated-vector and returns the index."
     ;; and arrange for it's evaluation at load time
     ;; and to make its result available as a value
     ((eq cleavir-generate-ast:*compiler* 'cl:compile-file)
-     (values (literal:with-load-time-value-cleavir
+     (values (literal:with-load-time-value
                  (clasp-cleavir::compile-form form env))
              nil))
     ;; COMPILE on the other hand evaluates the form and puts its

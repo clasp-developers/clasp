@@ -494,7 +494,7 @@ LtvcReturn ltvc_mlf_init_funcall(gctools::GCRootsInModule* holder, size_t fptr_i
 //  LTVCRETURN reinterpret_cast<gctools::Tagged>(ret.ret0[0]);
 }
 
-// This is exactly like the one above - is it necessary?
+// Similar to the above, but puts value in the table.
 LtvcReturn ltvc_set_ltv_funcall(gctools::GCRootsInModule* holder, char tag, size_t index, size_t fptr_index, const char* name) {\
   fnLispCallingConvention fptr = (fnLispCallingConvention)holder->lookup_function(fptr_index);
   core::T_O *lcc_arglist = _Nil<core::T_O>().raw_();
@@ -505,24 +505,6 @@ LtvcReturn ltvc_set_ltv_funcall(gctools::GCRootsInModule* holder, char tag, size
   core::T_sp val = res;
   LTVCRETURN holder->setTaggedIndex(tag,index,val.tagged_());
 }
-
-LtvcReturn ltvc_set_ltv_funcall_cleavir(gctools::GCRootsInModule* holder, char tag, size_t index, size_t fptr_index , const char* name) {
-  // I created this function just in case cleavir returns a function that when evaluated returns a function that
-  // would return the ltv value - that appears not to be the case.
-  // FIXME: Remove this function and use the ltvc_set_ltv_funcall instead
-  fnLispCallingConvention fptr = (fnLispCallingConvention)holder->lookup_function(fptr_index);
-  core::T_O *lcc_arglist = _Nil<core::T_O>().raw_();
-  Symbol_sp sname = Symbol_O::create_from_string(std::string(name));
-  core::ClosureWithSlots_sp toplevel_closure = core::ClosureWithSlots_O::make_bclasp_closure(sname, fptr, kw::_sym_function, _Nil<core::T_O>(), _Nil<core::T_O>());
-  LCC_RETURN ret = fptr(LCC_PASS_ARGS0_VA_LIST(toplevel_closure.raw_()));
-  core::T_sp tret((gctools::Tagged)ret.ret0);
-//  printf("%s:%d:%s     ret -> %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(tret).c_str());
-  core::T_sp res((gctools::Tagged)ret.ret0[0]);
-  core::T_sp val = res;
-  LTVCRETURN holder->setTaggedIndex(tag,index,val.tagged_());
-}
-
-
 
 LtvcReturn ltvc_toplevel_funcall(gctools::GCRootsInModule* holder, size_t fptr_index, const char* name) {
   fnLispCallingConvention fptr = (fnLispCallingConvention)holder->lookup_function(fptr_index);  

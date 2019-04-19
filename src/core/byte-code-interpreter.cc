@@ -226,14 +226,6 @@ void parse_ltvc_set_ltv_funcall(gctools::GCRootsInModule* roots, T_sp fin, bool 
   string arg3 = ltvc_read_string( fin, log, byte_index );
   ltvc_set_ltv_funcall( roots, tag, index, arg2, arg3.c_str());
 };
-void parse_ltvc_set_ltv_funcall_cleavir(gctools::GCRootsInModule* roots, T_sp fin, bool log, size_t& byte_index) {
-  if (log) printf("%s:%d:%s parse_ltvc_set_ltv_funcall_cleavir\n", __FILE__, __LINE__, __FUNCTION__);
-  char tag = ltvc_read_char( fin, log, byte_index );
-  size_t index = ltvc_read_size_t( fin, log, byte_index );
-  size_t arg2 = ltvc_read_size_t( fin, log, byte_index );
-  string arg3 = ltvc_read_string( fin, log, byte_index );
-  ltvc_set_ltv_funcall_cleavir( roots, tag, index, arg2, arg3.c_str());
-};
 void parse_ltvc_toplevel_funcall(gctools::GCRootsInModule* roots, T_sp fin, bool log, size_t& byte_index) {
   if (log) printf("%s:%d:%s parse_ltvc_toplevel_funcall\n", __FILE__, __LINE__, __FUNCTION__);
   size_t arg0 = ltvc_read_size_t( fin, log, byte_index );
@@ -302,9 +294,7 @@ void parse_ltvc_toplevel_funcall(gctools::GCRootsInModule* roots, T_sp fin, bool
            break;
   case 94: parse_ltvc_set_ltv_funcall(roots,fin,log,byte_index);
            break;
-  case 95: parse_ltvc_set_ltv_funcall_cleavir(roots,fin,log,byte_index);
-           break;
-  case 96: parse_ltvc_toplevel_funcall(roots,fin,log,byte_index);
+  case 95: parse_ltvc_toplevel_funcall(roots,fin,log,byte_index);
            break;
 #endif // DEFINE_SWITCH
 

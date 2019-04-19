@@ -164,8 +164,6 @@
 
 (defvar *with-ltv-depth* 0)
 
-(defstruct (literal-index (:type vector)) toplevelp index)
-
 (defun new-table-index (&optional (toplevelp t))
   "Return the next ltv-index. If this is being invoked from COMPILE then
 the value is put into *default-load-time-value-vector* and its index is returned"
@@ -639,19 +637,7 @@ Return the index of the load-time-value"
        (add-creator "ltvc_set_ltv_funcall" ,datum nil (register-function ,ltv-func) (llvm-sys:get-name ,ltv-func))
        (literal-datum-index ,datum))))
 
-(defparameter *transient-entries* 0)
-(defmacro with-load-time-value-cleavir (&body body)
-  "Evaluate the body and then arrange to evaluate the generated function into a load-time-value.
-Return the index of the load-time-value"
-  (let ((ltv-func (gensym))
-        (datum (gensym)))
-    `(let* ((*with-ltv-depth* (1+ *with-ltv-depth*))
-            (,datum (new-datum t))
-            (,ltv-func (do-ltv :ltv (lambda () ,@body))))
-       (add-creator "ltvc_set_ltv_funcall_cleavir" ,datum nil (register-function ,ltv-func) (llvm-sys:get-name ,ltv-func))
-       (literal-datum-index ,datum))))
-
-(defmacro with-top-level-form ( &body body)
+(defmacro with-top-level-form (&body body)
   `(let ((*with-ltv-depth* (1+ *with-ltv-depth*)))
      (do-ltv :toplevel (lambda () ,@body))))
 
