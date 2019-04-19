@@ -413,8 +413,6 @@
                                                                   (make-symbol function-name)
                                                                   function-name)))
                                   ,@body)))
-         ;; KLUDGE: In order to keep the lambda from being GCd, it's stuffed into this LTV cell.
-         ;; LTVs are never collected.
          (core:defcallback ,(mangled-callback-name function-name) ,convention
            ,return-type ,return-translator ,argument-types ,argument-translators
            ,argument-symbols ,place-holder callback-function)
