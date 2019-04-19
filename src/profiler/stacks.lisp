@@ -1,11 +1,7 @@
-#||
 #!/bin/sh
-#--eval '(set-dispatch-macro-character #\# #\! (lambda (s c n)(declare (ignore c n)) (read-line s) (values)))' \
-||#
-
 #|
 SCRIPT_DIR="$(dirname "$0")"
-exec sbcl --dynamic-space-size 4096 --noinform --disable-ldb --lose-on-corruption --disable-debugger \
+exec sbcl --noinform --disable-ldb --lose-on-corruption --disable-debugger \
 --no-sysinit --no-userinit --noprint \
 --eval '(set-dispatch-macro-character #\# #\! (lambda (s c n)(declare (ignore c n)) (read-line s) (values)))' \
 --eval "(defvar *script-args* '( $# \"$0\" \"$1\" \"$2\" \"$3\" \"$4\" \"$5\" \"$6\" \"$7\" ))" \
@@ -270,7 +266,8 @@ exec sbcl --dynamic-space-size 4096 --noinform --disable-ldb --lose-on-corruptio
     (loop for backtrace in folded
           do (write-folded-backtrace backtrace fout))))
 
-(defun test-collapse (file-in file-out max-frames)
+(defun test-collapse
+ (file-in file-out max-frames)
   (with-open-file (fin file-in :direction :input)
     (with-open-file (fout file-out :direction :output :if-exists :supersede)
       (collapse fin fout max-frames))))
@@ -428,7 +425,6 @@ exec sbcl --dynamic-space-size 4096 --noinform --disable-ldb --lose-on-corruptio
 ;;;  callers -i <in> -o <out> -c <callee-name>
 ;;;      generates a list of callers of callee-name and how often they call
 
-#+(or)
 (progn
   (finish-output *debug-io*)
   (let* ((number-args (first *script-args*))
@@ -440,7 +436,9 @@ exec sbcl --dynamic-space-size 4096 --noinform --disable-ldb --lose-on-corruptio
           for key = (car cur)
           for val = (cadr cur)
           while cur
-          do (setf (gethash key args) val))
+          do (if (char= (char key 0) #\-)
+                 (setf (gethash key args) val)
+                 (error "Expected an option argument starting with '0' - got ~s" key)))
     (format *debug-io* "cmd = ~a~%" cmd)
     (let ((in-stream (let ((in-file (gethash "-i" args)))
                        (if in-file
@@ -474,7 +472,7 @@ exec sbcl --dynamic-space-size 4096 --noinform --disable-ldb --lose-on-corruptio
            (format *debug-io* "Callers of ~a~%" callee-name)
            (callers in-stream out-stream callee-name)))
         ((search "collapse" cmd)
-         (let ((max-frames (gethash "-m" args)))
+         (let ((max-frames (parse-integer (gethash "-m" args))))
            (format *debug-io* "Maximum number of frames: ~s~%" max-frames)
            (collapse in-stream out-stream max-frames)))
         (t (error "Unknown command")))
