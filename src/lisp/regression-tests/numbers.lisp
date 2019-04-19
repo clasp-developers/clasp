@@ -467,3 +467,4 @@
 (test-expect-error number-comparison-number-13a (let ()(<= "jd")) :type type-error)
 (test-expect-error number-comparison-number-14a (let ()(>= "jd")) :type type-error)
 
+(test complex-reciprocal (/ #c(1 1)))
