@@ -107,10 +107,6 @@
       (error "The node ~a has a non-literal datum ~a" node datum))
     (datum-index datum)))
 
-;;; +max-run-all-size+ must be larger than +list-max+ so that
-;;;   even a full list will fit into one run-all
-(defconstant +max-run-all-size+ (max 200 call-arguments-limit))
-
 (defparameter *run-all-objects* nil)
 
 (defun run-all-add-node (node)
@@ -227,6 +223,14 @@ rewrite the slot in the literal table to store a closure."
     (run-all-add-node rase)
     rase))
 
+(defun add-side-effect-call-arglist (name args)
+  ;; identical to above, but without &rest
+  ;; because args could be tens of thousands long and i'm wary of blowing the stack
+  "Call the named function after converting fixnum args to llvm constants"
+  (let ((rase (make-literal-node-side-effect :name name :arguments args)))
+    (run-all-add-node rase)
+    rase))
+
 (defun register-function (llvm-func &optional (func-desc (llvm-sys:constant-pointer-null-get cmp:%function-description*%)))
   "Add a function to the *function-vector* and return its index"
   (let ((function-index (length *function-vector*)))
@@ -246,12 +250,28 @@ rewrite the slot in the literal table to store a closure."
                (load-time-reference-literal (denominator ratio) read-only-p :toplevelp nil)))
 
 (defun ltv/cons (cons index read-only-p &key (toplevelp t))
-  (let ((val (add-creator "ltvc_make_cons" index cons)))
-    (add-side-effect-call "ltvc_rplaca" val
-                          (load-time-reference-literal (car cons) read-only-p :toplevelp nil))
-    (add-side-effect-call "ltvc_rplacd" val
-                          (load-time-reference-literal (cdr cons) read-only-p :toplevelp nil))
-    val))
+  ;; While the general case (make_cons) works for all cases,
+  ;; it is far from the most efficient way to store a list.
+  ;; More importantly, for a long list we will recurse deeply and break the stack.
+  ;; So we have other alternatives for that.
+  (cond
+    ((core:proper-list-p cons)
+     (let* ((len (length cons))
+            (val (add-creator "ltvc_make_list" index cons len)))
+       (add-side-effect-call-arglist
+        "ltvc_fill_list"
+        (list* val len
+               (mapcar (lambda (o)
+                         (load-time-reference-literal o read-only-p :toplevelp nil))
+                       cons)))
+       val))
+    (t
+     (let ((val (add-creator "ltvc_make_cons" index cons)))
+       (add-side-effect-call "ltvc_rplaca" val
+                             (load-time-reference-literal (car cons) read-only-p :toplevelp nil))
+       (add-side-effect-call "ltvc_rplacd" val
+                             (load-time-reference-literal (cdr cons) read-only-p :toplevelp nil))
+       val))))
 
 (defun ltv/complex (complex index read-only-p &key (toplevelp t))
   (add-creator "ltvc_make_complex" index complex
@@ -405,15 +425,6 @@ rewrite the slot in the literal table to store a closure."
 (defun add-similar (object datum kind table)
   (setf (gethash object table) datum))
 
-(defun estimate-run-all-size (nodes)
-  (let ((estimate 0))
-    (dolist (node nodes)
-      (cond ((and (literal-node-creator-p node)
-                  (string= "ltvc_make_list" (literal-node-creator-name node)))
-             (incf estimate (length (literal-node-creator-arguments node))))
-            (t (incf estimate))))
-    estimate))
-
 (defun ensure-creator-llvm-value (obj)
   "Lookup or create the llvm::Value for obj"
   (let ((llvm-value (gethash obj *llvm-values*)))
@@ -472,48 +483,32 @@ rewrite the slot in the literal table to store a closure."
   (mapcar #'fix-arg args))
 
 (defun generate-run-all-from-literal-nodes (nodes)
-  ;; We split up a run-all that would be very big so LLVM doesn't take years to compile.
-  (cond
-    ((> (estimate-run-all-size nodes) +max-run-all-size+)
-     (let* ((half-len (floor (length nodes) 2))
-            (middle-node (nthcdr (1- half-len) nodes))
-            (front nodes)
-            (back (cdr middle-node))
-            (_ (rplacd middle-node nil)) ; break the list in two
-            (front-run-all (generate-run-all-from-literal-nodes front))
-            (back-run-all (generate-run-all-from-literal-nodes back)))
-       (cmp::with-make-new-run-all (sub-run-all)
-         (cmp:irc-intrinsic-call "cc_invoke_sub_run_all_function" (list front-run-all))
-         (cmp:irc-intrinsic-call "cc_invoke_sub_run_all_function" (list back-run-all))
-         sub-run-all)))
-    (t
-     (cmp::with-make-new-run-all (foo)
-       (dolist (node nodes)
-         (cond
-           ((literal-node-creator-p node)
-            (ensure-creator-llvm-value node))
-           ((literal-node-side-effect-p node)
-            (let* ((fn-name (literal-node-side-effect-name node))
-                   (args (literal-node-side-effect-arguments node))
-                   (fix-args (fix-args args)))
-              (cmp:irc-intrinsic-call fn-name (list* *gcroots-in-module* fix-args))))
-           ((literal-node-toplevel-funcall-p node)
-            (cmp:irc-intrinsic-call "ltvc_toplevel_funcall" (fix-args (literal-node-toplevel-funcall-arguments node))))
-           ((literal-node-closure-p node)
-            (let ((lambda-name (cmp:irc-intrinsic-call "ltvc_lookup_literal"
-                                                       (list *gcroots-in-module*
-                                                             (fix-arg (literal-node-closure-lambda-name-index node))))))
-              (cmp:irc-intrinsic-call "ltvc_enclose"
-                                      (list *gcroots-in-module*
-                                            (cmp:jit-constant-size_t (literal-node-index node))
-                                            lambda-name
-                                            (fix-arg (register-function (literal-node-closure-function node)))
-                                            #|(literal-node-closure-source-info-handle node)
-                                            (literal-node-closure-filepos node)
-                                            (literal-node-closure-lineno node)
-                                            (literal-node-closure-column node)|#))))
+  (cmp::with-make-new-run-all (foo)
+    (dolist (node nodes)
+      (cond
+        ((literal-node-creator-p node)
+         (ensure-creator-llvm-value node))
+        ((literal-node-side-effect-p node)
+         (let* ((fn-name (literal-node-side-effect-name node))
+                (args (literal-node-side-effect-arguments node))
+                (fix-args (fix-args args)))
+           (cmp:irc-intrinsic-call fn-name (list* *gcroots-in-module* fix-args))))
+        ((literal-node-toplevel-funcall-p node)
+         (cmp:irc-intrinsic-call "ltvc_toplevel_funcall"
+                                 (fix-args (literal-node-toplevel-funcall-arguments node))))
+        ((literal-node-closure-p node)
+         (let ((lambda-name (cmp:irc-intrinsic-call
+                             "ltvc_lookup_literal"
+                             (list *gcroots-in-module*
+                                   (fix-arg (literal-node-closure-lambda-name-index node))))))
+           (cmp:irc-intrinsic-call "ltvc_enclose"
+                                   (list *gcroots-in-module*
+                                         (cmp:jit-constant-size_t (literal-node-index node))
+                                         lambda-name
+                                         (fix-arg
+                                          (register-function (literal-node-closure-function node)))))))
            (t (error "Unknown run-all node ~a" node))))
-       foo))))
+    foo))
 
 (defun write-argument-byte-code (arg stream byte-index)
   (llog "    write-argument-byte-code arg: ~s byte-index ~d~%" arg byte-index)

@@ -266,6 +266,34 @@ LtvcReturn ltvc_rplacd(gctools::GCRootsInModule* holder, core::T_O* cons_t, core
   NO_UNWIND_END();
 }
 
+LtvcReturn ltvc_make_list(gctools::GCRootsInModule* holder, char tag, size_t index, size_t len)
+{NO_UNWIND_BEGIN();
+  // Makes a list of length LEN where all elements are NIL.
+  // (ltvc_fill_list will be immediately after, so they could be undefined just as well.)
+  core::T_sp first;
+  core::T_sp* cur = &first;
+  for (; len != 0; --len) {
+    Cons_sp one = Cons_O::create(_Nil<core::T_O>(), _Nil<core::T_O>());
+    *cur = one;
+    cur = &one->_Cdr;
+  }
+  LTVCRETURN holder->setTaggedIndex(tag, index, first.tagged_());
+  NO_UNWIND_END();
+}
+
+LtvcReturn ltvc_fill_list(gctools::GCRootsInModule* holder, core::T_O* list, size_t len, ...)
+{NO_UNWIND_BEGIN();
+  core::T_sp cur((gctools::Tagged)list);
+  va_list va;
+  va_start(va, len);
+  for (; len != 0; --len) {
+    core::Cons_sp cons = gc::As<core::Cons_sp>(cur);
+    cons->rplaca(core::T_sp(va_arg(va, T_O*)));
+    cur = cons->_Cdr;
+  }
+  NO_UNWIND_END();
+}
+
 LtvcReturn ltvc_make_array(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* telement_type, core::T_O* tdimensions )
 {NO_UNWIND_BEGIN();
   core::T_sp element_type(telement_type);

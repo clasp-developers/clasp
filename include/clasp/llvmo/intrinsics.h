@@ -59,6 +59,8 @@ LtvcReturn ltvc_make_complex(gctools::GCRootsInModule* holder, char tag, size_t 
 LtvcReturn ltvc_make_cons(gctools::GCRootsInModule* holder, char tag, size_t index);
 LtvcReturn ltvc_rplaca(gctools::GCRootsInModule* holder, core::T_O* cons_t, core::T_O* car_t);
 LtvcReturn ltvc_rplacd(gctools::GCRootsInModule* holder, core::T_O* cons_t, core::T_O* cdr_t);
+LtvcReturn ltvc_make_list(gctools::GCRootsInModule* holder, char tag, size_t index, size_t len);
+LtvcReturn ltvc_fill_list(gctools::GCRootsInModule* holder, core::T_O* list, size_t len, ...);
 LtvcReturn ltvc_make_array(gctools::GCRootsInModule* holder, char tag, size_t index,core::T_O* telement_type,core::T_O* tdimensions );
 LtvcReturn ltvc_make_hash_table(gctools::GCRootsInModule* holder, char tag, size_t index,core::T_O* test_t );
 void ltvc_setf_row_major_aref(gctools::GCRootsInModule* holder, core::T_O* array_t, size_t row_major_index, core::T_O* value_t );

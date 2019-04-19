@@ -72,6 +72,8 @@
     (primitive         "ltvc_make_cons" %ltvc-return% (list %gcroots-in-module*% %i8% %size_t%) :ltvc t)
     (primitive         "ltvc_rplaca" %ltvc-return% (list %gcroots-in-module*% %t*% %t*%) :ltvc t)
     (primitive         "ltvc_rplacd" %ltvc-return% (list %gcroots-in-module*% %t*% %t*%) :ltvc t)
+    (primitive         "ltvc_make_list" %ltvc-return% (list %gcroots-in-module*% %i8% %size_t% %size_t%) :ltvc t)
+    (primitive         "ltvc_fill_list" %ltvc-return% (list %gcroots-in-module*% %t*% %size_t%) :varargs t :ltvc t)
     (primitive         "ltvc_make_array" %ltvc-return% (list %gcroots-in-module*% %i8% %size_t% %t*% %t*%) :ltvc t)
     (primitive         "ltvc_setf_row_major_aref" %ltvc-return% (list %gcroots-in-module*% %t*% %size_t% %t*%) :ltvc t)
     (primitive         "ltvc_make_hash_table" %ltvc-return% (list %gcroots-in-module*% %i8% %size_t% %t*%) :ltvc t)

@@ -1393,10 +1393,19 @@ Cons_O* ltvc_read_list(gctools::GCRootsInModule* roots, size_t num, T_sp stream,
   return (Cons_O*)result.cons().tagged_();
 }
 
-void ltvc_make_list_varargs( gctools::GCRootsInModule* roots, char tag, size_t index, size_t len, Cons_O* list)
+void ltvc_fill_list_varargs(gctools::GCRootsInModule* roots, T_O* list, size_t len, Cons_O* varargs)
 {
-  Cons_sp ll((gctools::Tagged)list);
-  roots->setTaggedIndex(tag,index,ll.tagged_());
+  // Copy the vargs list into the ltv one.
+  // FIXME: This is obviously inefficient.
+  T_sp cur((gctools::Tagged)list);
+  T_sp vargs((gctools::Tagged)varargs);
+  for (; len != 0; --len) {
+    Cons_sp cur_cons = gc::As<Cons_sp>(cur);
+    Cons_sp cur_vargs = gc::As<Cons_sp>(vargs);
+    cur_cons->rplaca(cur_vargs->_Car);
+    cur = cur_cons->_Cdr;
+    vargs = cur_vargs->_Cdr;
+  }
 }
 
 #define DEFINE_PARSERS
