@@ -1101,7 +1101,8 @@
       (optimize-node-and-children (dtree-root dt))
       dt)))
 
-(defun codegen-dispatcher-from-dtree (generic-function dtree &key (generic-function-name "discriminator") output-path log-gf (debug-on t debug-on-p))
+(defun codegen-dispatcher-from-dtree (generic-function dtree &key (generic-function-name "discriminator") output-path log-gf (debug-on t debug-on-p) force-compile)
+  (declare (ignore force-compile))
   (let ((debug-on (if debug-on-p
                       debug-on
                       (core:get-funcallable-instance-debug-on generic-function)))
@@ -1245,12 +1246,12 @@
 (defvar *fastgf-use-compiler* nil)
 (defvar *fastgf-timer-start*)
 (defun codegen-dispatcher (raw-call-history specializer-profile generic-function
-                           &rest args &key generic-function-name output-path log-gf)
+                           &rest args &key generic-function-name output-path log-gf force-compile)
   (let* ((*log-gf* log-gf)
          (*fastgf-timer-start* (get-internal-real-time))
          (dtree (calculate-dtree raw-call-history specializer-profile)))
     (unwind-protect
-         (if *fastgf-use-compiler*
+         (if (or force-compile *fastgf-use-compiler*)
              (apply 'codegen-dispatcher-from-dtree generic-function dtree args)
              (core:make-dtree-interpreter dtree))
       (let ((delta-seconds (/ (float (- (get-internal-real-time) *fastgf-timer-start*) 1d0)

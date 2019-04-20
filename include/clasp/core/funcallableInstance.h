@@ -290,11 +290,13 @@ FORWARD(DtreeInterpreter);
                    REF_EFFECTIVE_METHOD_OUTCOME_END = 4 } EffectiveMethodOutcome;
   public:
     core::T_sp      _Dtree;
+    size_t          _CallCount;
   public:
     static DtreeInterpreter_sp make_dtree_interpreter(T_sp dtree);
   public:
+    CL_DEFMETHOD size_t call_count() const { return this->_CallCount; };
     static LCC_RETURN LISP_CALLING_CONVENTION();
-    DtreeInterpreter_O(FunctionDescription* fdesc, T_sp dtree) : Closure_O(entry_point,fdesc), _Dtree(dtree) {};
+    DtreeInterpreter_O(FunctionDescription* fdesc, T_sp dtree) : Closure_O(entry_point,fdesc), _Dtree(dtree), _CallCount(0) {};
   };
 
 };
