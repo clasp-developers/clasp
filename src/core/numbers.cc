@@ -2048,10 +2048,10 @@ Number_sp Complex_O::abs_() const {
 Number_sp Complex_O::reciprocal_() const {
   // 1/(a+bi) = (a-bi)/(a^2+b^2) by basic algebra.
   // alternately we could just clasp_divide. I dunno if reciprocal_ is terribly necessary.
-  Real_sp square_modulus = gc::As<Real_sp>(clasp_plus(clasp_times(this->_real, this->_real),
-                                                         clasp_times(this->_imaginary, this->_imaginary)));
-  return Complex_O::create(gc::As<Real_sp>(clasp_divide(this->_real, square_modulus)),
-                           gc::As<Real_sp>(clasp_divide(clasp_negate(this->_imaginary), square_modulus)));
+  Real_sp square_modulus = gc::As_unsafe<Real_sp>(clasp_plus(clasp_times(this->_real, this->_real),
+                                                             clasp_times(this->_imaginary, this->_imaginary)));
+  return Complex_O::create(gc::As_unsafe<Real_sp>(clasp_divide(this->_real, square_modulus)),
+                           gc::As_unsafe<Real_sp>(clasp_divide(clasp_negate(this->_imaginary), square_modulus)));
 }
 
 /* ----------------------------------------------------------------------
