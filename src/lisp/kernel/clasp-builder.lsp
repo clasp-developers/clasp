@@ -683,9 +683,11 @@ Return files."
     ;; Therefore we can't have the compiler save inline definitions for files earlier than we're able
     ;; to load inline definitions. We wait for the source code to turn it back on.
     (setf core:*defun-inline-hook* nil)
-    ;;; Pull the inline.lisp and fli.lsp files forward because they take the longest to build
-    (setf files (maybe-move-to-front files #P"src/lisp/kernel/lsp/fli"))
-    (setf files (maybe-move-to-front files #P"src/lisp/kernel/cleavir/inline"))
+    ;; Pull the inline.lisp and fli.lsp files forward because they take the longest to build
+    ;; Only do this if we are doing a parallel build
+    (when (and core:*use-parallel-build* (> *number-of-jobs* 1))
+      (setf files (maybe-move-to-front files #P"src/lisp/kernel/lsp/fli"))
+      (setf files (maybe-move-to-front files #P"src/lisp/kernel/cleavir/inline")))
     (compile-system files :reload nil :file-order file-order :total-files (length system))
     (let ((all-output (output-object-pathnames #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/cclasp" :system system)))
       (if (out-of-date-target output-file all-output)
