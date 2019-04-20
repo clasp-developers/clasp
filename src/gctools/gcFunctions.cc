@@ -1043,6 +1043,14 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #endif
   if (buildReport) ss << (BF("DEBUG_GFDISPATCH = %s\n") % (debug_gfdispatch ? "**DEFINED**" : "undefined") ).str();
 
+  bool debug_cst = false;
+#ifdef CST
+  debug_cst = true;
+  debugging = true;
+  if (setFeatures)  features = core::Cons_O::create(_lisp->internKeyword("CST"),features);
+#endif
+  if (buildReport) ss << (BF("CST = %s\n") % (debug_gfdispatch ? "**DEFINED**" : "undefined") ).str();
+
   bool debug_ihs = false;
 #ifdef DEBUG_IHS
   debug_ihs = true;
