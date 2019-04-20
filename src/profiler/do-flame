@@ -11,6 +11,6 @@ FRAMES=${4:-10000}
 #   cp /tmp/out-$1.user_stacks /tmp/out-symbol-$1.user_stacks
 #fi
 ./do-dtrace $PID $TIME $RATE $FRAMES
-./collapse -i /tmp/out-$1.stacks -o /tmp/out-$1.folded -m 1000
+./collapse -i /tmp/out-$1.stacks -o /tmp/out-$1.folded -m 400
 $FLAME_GRAPH_HOME/flamegraph.pl /tmp/out-$1.folded >/tmp/out-$1.svg
 echo /tmp/out-$1.svg

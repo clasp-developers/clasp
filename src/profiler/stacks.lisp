@@ -1,7 +1,7 @@
 #!/bin/sh
 #|
 SCRIPT_DIR="$(dirname "$0")"
-exec sbcl --noinform --disable-ldb --lose-on-corruption --disable-debugger \
+exec sbcl --noinform --dynamic-space-size 2048 --disable-ldb --lose-on-corruption --disable-debugger \
 --no-sysinit --no-userinit --noprint \
 --eval '(set-dispatch-macro-character #\# #\! (lambda (s c n)(declare (ignore c n)) (read-line s) (values)))' \
 --eval "(defvar *script-args* '( $# \"$0\" \"$1\" \"$2\" \"$3\" \"$4\" \"$5\" \"$6\" \"$7\" ))" \
