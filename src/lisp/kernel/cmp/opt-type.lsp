@@ -207,12 +207,26 @@
   `(let ((object ,form))
      ;; bclasp typeq isn't smart enough to check the fixnum tag for types
      ;; like REAL, so we do that manually.
-     (if ,(if (member head '(integer rational real))
-              `(if (cleavir-primop:typeq object fixnum)
-                   t
-                   (if (cleavir-primop:typeq object ,head)
-                       t nil))
-              `(cleavir-primop:typeq object ,head))
+     (if ,(cond
+            ((eq head 'real)
+             `(if (cleavir-primop:typeq object fixnum)
+                  t
+                  (if (cleavir-primop:typeq object single-float)
+                      t
+                      (if (cleavir-primop:typeq object ,head)
+                          t nil))))
+            ((member head '(integer rational))
+             `(if (cleavir-primop:typeq object fixnum)
+                  t
+                  (if (cleavir-primop:typeq object ,head)
+                      t nil)))
+            ((eq head 'float)
+             `(if (cleavir-primop:typeq object single-float)
+                  t
+                  (if (cleavir-primop:typeq object ,head)
+                      t nil)))
+            (t `(if (cleavir-primop:typeq object ,head)
+                    t nil)))
          (and ,@(cond ((eq low '*) nil)
                       ((listp low) `((> object ',(car low))))
                       (t `((>= object ',low))))
