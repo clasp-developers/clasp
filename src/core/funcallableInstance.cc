@@ -402,7 +402,7 @@ LCC_RETURN DtreeInterpreter_O::LISP_CALLING_CONVENTION() {
 //    printf("%s:%d:%s  About to call compiler\n", __FILE__, __LINE__, __FUNCTION__);
     T_sp compiled_discriminator = eval::funcall(comp::_sym_codegen_dispatcher,call_history,specializer_profile,funcallable_instance->asSmartPtr(),
                                                 kw::_sym_force_compile,_lisp->_true(),
-                                                kw::_sym_generic_function_name, comp::_sym_compiled_discriminator );
+                                                kw::_sym_generic_function_name, fn );
 //    printf("%s:%d:%s  setFuncallableInstanceFunction\n", __FILE__, __LINE__, __FUNCTION__);
     funcallable_instance->setFuncallableInstanceFunction(compiled_discriminator);
     // The next call should use the compiled discriminator
