@@ -124,6 +124,8 @@ public: // Functions here
 
   string __repr__() const;
 
+  Number_sp signum_() const;
+
   /*! Return true if the number fits in a signed int */
   bool fits_sint_p();
 
