@@ -690,6 +690,29 @@ This works like compile-lambda-function in bclasp."
     ((client clasp-cst-client) stream)
   (core:input-stream-source-pos-info stream))
 
+(defparameter *additional-clasp-character-names*
+  (alexandria:alist-hash-table '(("NULL"   . #.(code-char 0))
+                                 ("NUL"    . #.(code-char 0))
+                                 ("BELL"   . #.(code-char 7))
+                                 ("ESCAPE" . #.(code-char 27))
+                                 ("DEL"    . #.(code-char 127))
+                                 ("CR"     . #.(code-char 13)))
+                               :test 'equal))
+
+(defun simple-unicode-name (name)
+  "Allow U00 - U10FFFF"
+  (and (>= (length name) 3)
+       (char= (char name 0) #\U)
+       (let ((number (parse-integer name :start 1 :radix 16 :junk-allowed t)))
+         (and (numberp number)
+              (<= #X00 number #X10FFFF)
+              (code-char number)))))
+
+(defmethod eclector.reader:find-character ((client clasp-cst-client) name)
+  (or (call-next-method)
+      (gethash name *additional-clasp-character-names*)
+      (simple-unicode-name name)))
+
 (defun cclasp-loop-read-and-compile-file-forms (source-sin environment)
   (let ((eof-value (gensym))
         (eclector.reader:*client* *cst-client*)
