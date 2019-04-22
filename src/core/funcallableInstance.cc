@@ -383,7 +383,7 @@ SYMBOL_EXPORT_SC_(CompPkg,compiled_discriminator);
   then on.
 */
 
-#define COMPILE_TRIGGER 1024
+#define COMPILE_TRIGGER 2
 LCC_RETURN DtreeInterpreter_O::LISP_CALLING_CONVENTION() {
   DTLOG(("%s:%d:%s Entered\n", __FILE__, __LINE__, __FUNCTION__));
   SETUP_CLOSURE(FuncallableInstance_O,funcallable_instance);
@@ -394,9 +394,10 @@ LCC_RETURN DtreeInterpreter_O::LISP_CALLING_CONVENTION() {
   DtreeInterpreter_sp interpreter = gc::As_unsafe<DtreeInterpreter_sp>(tinterpreter);
   SimpleVector_sp dtree = gc::As_unsafe<SimpleVector_sp>(interpreter->_Dtree);
   interpreter->_CallCount++;
+#if 0
   if (interpreter->_CallCount==COMPILE_TRIGGER) {
     T_sp fn = funcallable_instance->functionName();
-//    printf("%s:%d:%s  interpreter->_CallCount hit %lu for %s\n", __FILE__, __LINE__, __FUNCTION__, interpreter->_CallCount, _rep_(fn).c_str());
+    printf("%s:%d:%s  interpreter->_CallCount hit %lu for %s\n", __FILE__, __LINE__, __FUNCTION__, interpreter->_CallCount, _rep_(fn).c_str());
     T_sp call_history = funcallable_instance->GFUN_CALL_HISTORY();
     T_sp specializer_profile = funcallable_instance->GFUN_SPECIALIZER_PROFILE();
 //    printf("%s:%d:%s  About to call compiler\n", __FILE__, __LINE__, __FUNCTION__);
@@ -404,11 +405,12 @@ LCC_RETURN DtreeInterpreter_O::LISP_CALLING_CONVENTION() {
                                                 kw::_sym_force_compile,_lisp->_true(),
                                                 kw::_sym_generic_function_name, fn );
 //    printf("%s:%d:%s  setFuncallableInstanceFunction\n", __FILE__, __LINE__, __FUNCTION__);
-    funcallable_instance->setFuncallableInstanceFunction(compiled_discriminator);
+    //funcallable_instance->setFuncallableInstanceFunction(compiled_discriminator);
     // The next call should use the compiled discriminator
     // Can I fall through from here and continue using the interpreter one more time?
 //    printf("%s:%d:%s  falling through to interpreter\n", __FILE__, __LINE__, __FUNCTION__);
   }
+#endif
   // Here is where we can check interpreter->_CallCount and maybe compile the dtree and replace ourselves and jump
   // to the compiled version of the dtree.
   DTLOG(("%s:%d Entered with dtree-interpreter @%p  with node -> %s\n", __FILE__, __LINE__, (void*)interpreter.raw_(), _rep_(interpreter).c_str()))
