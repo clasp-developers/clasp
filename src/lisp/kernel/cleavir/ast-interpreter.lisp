@@ -168,6 +168,20 @@
   (let ((body (cleavir-ast:body-ast ast))
         (dynenv-out (cleavir-ast:dynamic-environment-out-ast ast))
         (ll (cleavir-ast:lambda-list ast)))
+    ;; KLUDGE: If the closure has ASTs we can't interpret, we have
+    ;; to give up now, and there's no way to only compile this
+    ;; possibly-a-closure. We have to check proactively.
+    (cleavir-ast:map-ast-depth-first-preorder
+     (lambda (ast)
+       (when (typep ast '(or #+cst cc-ast:bind-va-list-ast
+                          cc-ast:defcallback-ast
+                          cc-ast:debug-break-ast
+                          cc-ast:debug-message-ast
+                          cc-ast:multiple-value-foreign-call-ast
+                          cc-ast:foreign-call-ast
+                          cc-ast:foreign-call-pointer-ast))
+         (error 'interpret-ast:cannot-interpret :ast ast)))
+     body)
     (multiple-value-bind (required optional rest va-rest-p keyp key aok-p)
         (parse-lambda-list ll)
       (lambda (core:&va-rest arguments)
