@@ -696,17 +696,16 @@ This works like compile-lambda-function in bclasp."
                                  ("BELL"   . #.(code-char 7))
                                  ("ESCAPE" . #.(code-char 27))
                                  ("DEL"    . #.(code-char 127))
-                                 ("CR"     . #.(code-char 13))
-                                 ("RUBOUT" . #.(code-char 127)))
+                                 ("CR"     . #.(code-char 13)))
                                :test 'equal))
 
 (defun simple-unicode-name (name)
   "Allow U00 - U10FFFF"
-  (and (string name)
-       (>= (length name) 3)
-       (or (char= (char name 0) #\U) (char= (char name 0) #\u))
+  (and (>= (length name) 3)
+       (char= (char name 0) #\U)
        (let ((number (parse-integer name :start 1 :radix 16 :junk-allowed t)))
-         (and (<= #X00 number #X10FFFF)
+         (and (numberp number)
+              (<= #X00 number #X10FFFF)
               (code-char number)))))
 
 (defmethod eclector.reader:find-character ((client clasp-cst-client) name)
