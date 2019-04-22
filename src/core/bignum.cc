@@ -340,6 +340,15 @@ string Bignum_O::__repr__() const {
   return ((ss.str()));
 }
 
+Number_sp Bignum_O::signum_() const {
+  if (this->zerop_())
+    return immediate_fixnum<Number_O>(0);
+  else if (this->plusp_())
+    return immediate_fixnum<Number_O>(1);
+  else
+    return immediate_fixnum<Number_O>(-1);
+}
+
 Bignum Bignum_O::get() const {
   return ((this->_value));
 }
