@@ -370,27 +370,7 @@ Compile a lisp source file into an LLVM module."
               (bformat t "conditions: %s%N" c)))
           (compile-file-results output-path conditions))))))
 
-
-(defun contains-defcallback-p (path)
-  (let ((data (with-open-file (stream path)
-                (let ((data (make-string (file-length stream))))
-                  (read-sequence data stream)
-                  data))))
-    (search "defcallback" data :test #'string-equal)))
-
-
 (defvar *compile-file-parallel* nil)
-#+(or)
-(defun cl:compile-file (input-file &rest args)
-  "Ok, this is a horrible hack - if the file DOESN'T contain defcallback then compile-file-parallel it"
-  (if *compile-file-parallel*
-      (if (null (contains-defcallback-p input-file))
-          (apply #'compile-file-parallel input-file args)
-          (progn
-            (format t "!~%!~%!~% Falling back to compile-file-serial for ~s because it contains DEFCALLBACK~%!~%~~%"
-                    input-file)
-            (apply #'compile-file-serial input-file args)))
-      (apply #'compile-file-serial input-file args)))
                               
 (defun cl:compile-file (input-file &rest args)
   (if *compile-file-parallel*
@@ -399,5 +379,4 @@ Compile a lisp source file into an LLVM module."
 
 (eval-when (:load-toplevel)
   (setf *compile-file-parallel* t)
-  #-cst
   (setf clasp-cleavir::*use-ast-interpreter* t))

@@ -311,7 +311,12 @@ when this is t a lot of graphs will be generated.")
   (cond (core:*use-interpreter-for-eval*
          (core:interpret form (cleavir-env->interpreter env)))
         (*use-ast-interpreter*
-         (ast-interpret-form form env))
+         (handler-case
+             (ast-interpret-form form env)
+           (interpret-ast:cannot-interpret (c)
+             (declare (ignore c))
+             ;; If the AST interpreter doesn't work, fall back.
+             (cclasp-eval form env))))
         (t
          (cclasp-eval form env))))
 

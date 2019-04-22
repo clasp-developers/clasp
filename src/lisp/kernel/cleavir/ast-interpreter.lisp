@@ -1,9 +1,8 @@
 (defpackage #:interpret-ast
   (:use #:cl)
   (:export #:interpret)
-  (:shadow #:variable)
-  ;; FIXME: lose this asap
-  (:export #:*system*))
+  (:export #:cannot-interpret #:cannot-interpret-ast)
+  (:shadow #:variable))
 
 ;;;; NOTE: Some methods in this file must be compiled with cleavir,
 ;;;; as they use cleavir special operators - metacircularity, eh?
@@ -50,20 +49,26 @@
     ;; Do actual work
     (interpret-ast ast env)))
 
+(define-condition cannot-interpret (error)
+  ((ast :reader cannot-interpret-ast :initarg :ast))
+  (:report (lambda (condition stream)
+             (format stream "Interpreter not implemented for AST: ~a"
+                     (cannot-interpret-ast condition)))))
+
 ;;; meat
 
 (defgeneric interpret-ast (ast env))
 
 (defmethod interpret-ast (ast env)
   (declare (ignore env))
-  (error "AST interpreter not implemented for ~a" ast))
+  (error 'cannot-interpret :ast ast))
 
 ;;; distinguished only to make sure the input ast is correct
 (defgeneric interpret-boolean (condition env))
 
 (defmethod interpret-boolean (condition env)
   (declare (ignore then else env))
-  (error "AST boolean interpreter not implemented for ~a" condition))
+  (error 'cannot-interpret :ast condition))
 
 (defmethod interpret-ast ((ast cleavir-ast:immediate-ast) env)
   (declare (ignore env))
