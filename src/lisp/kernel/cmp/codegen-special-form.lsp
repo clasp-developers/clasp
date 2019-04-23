@@ -18,6 +18,7 @@
     (tagbody codegen-tagbody convert-tagbody)
     (go codegen-go convert-go)
     (multiple-value-call  codegen-multiple-value-call convert-multiple-value-call)
+    (multiple-value-prog1 codegen-multiple-value-prog1 convert-multiple-value-prog1)
     (flet  codegen-flet convert-flet)
     (labels  codegen-labels convert-labels)
     (eval-when  codegen-eval-when convert-eval-when)
@@ -203,18 +204,32 @@
 
 ;;; MULTIPLE-VALUE-PROG1
 
-(defmacro multiple-value-prog1 (first-form &rest forms)
-  (if (null forms) ; triviality check
-      first-form
-      `(core:multiple-value-prog1-function
-        ;; progn is to make sure code like (multiple-value-prog1 (declare ...)) fails right.
-        (lambda () (progn ,first-form))
-        (lambda () (progn ,@forms)))))
+(defun codegen-multiple-value-prog1 (result rest env)
+  (let ((first-form (first rest))
+        (forms (rest rest)))
+    (if (null forms) ; triviality check
+        (codegen result first-form env)
+        ;; Evaluate the first form into a new tmv,
+        ;; then alloca a vector to store the values in,
+        ;; save the values in,
+        ;; run the rest of the forms,
+        ;; and finally the stored values are the result.
+        (let ((tmvp (alloca-tmv "mvp1-tmv")))
+          (codegen tmvp first-form env)
+          (let* ((tmv (irc-load tmvp))
+                 (primary (irc-extract-value tmv '(0)))
+                 (nvals (irc-extract-value tmv '(1)))
+                 (temp (alloca-temp-values nvals "mvp1-temp")))
+            (irc-intrinsic "cc_save_values" nvals primary temp)
+            ;; we have extracted what we need from the tmv, so just reuse it
+            ;; (and then discard it cruelly)
+            (codegen-progn tmvp forms env)
+            (irc-tmv-result (irc-intrinsic "cc_load_values" nvals temp) result))))))
+
+;;; SETQ
 
 (defun codegen-special-var-reference (var &optional env)
   (irc-intrinsic "symbolValueReference" (irc-global-symbol var env) (bformat nil "<special-var:%s>" (symbol-name var) )))
-
-;;; SETQ
 
 (defun codegen-setq (result setq-pairs env)
   "Carry out setq for a collection of pairs"

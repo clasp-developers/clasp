@@ -190,9 +190,9 @@
          (primitive-unwinds "throwIllegalSwitchValue" %void% (list %size_t% %size_t%) :does-not-return t)
     
          (primitive         "clasp_terminate" %void% nil)
-         (primitive         "__gxx_personality_v0" %i32% nil :varargs t) ;; varargs
+         (primitive         "__gxx_personality_v0" %i32% nil :varargs t)
          (primitive         "__cxa_begin_catch" %i8*% (list %i8*%) )
-         (primitive-unwinds "__cxa_end_catch" %void% nil) ;; This DOES UNWIND!!!!!   use primitive-unwind once you figure out how to make it work
+         (primitive-unwinds "__cxa_end_catch" %void% nil)
          (primitive-unwinds "__cxa_rethrow" %void% nil)
          (primitive         "llvm.eh.typeid.for" %i32% (list %i8*%))
     
@@ -210,8 +210,8 @@
     
          (primitive         "saveToMultipleValue0" %void% (list %tmv*%))
          (primitive         "restoreFromMultipleValue0" %return_type% nil)
-;;;    (primitive         "saveValues" %t*% (list %tmv*%))
-;;;    (primitive         "loadValues" %void% (list %tmv*% %t*%))
+         (primitive         "cc_save_values" %void% (list %size_t% %t*% %t**%))
+         (primitive         "cc_load_values" %return_type% (list %size_t% %t**%))
     
          (primitive         "pushDynamicBinding" %void% (list %t*%))
          (primitive         "popDynamicBinding" %void% (list %t*%))

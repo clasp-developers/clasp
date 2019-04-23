@@ -921,6 +921,9 @@ and then the irbuilder-alloca, irbuilder-body."
   ;; So we use *irbuilder*, and don't send the length through constantization.
   (llvm-sys:create-alloca *irbuilder* %cons% length label))
 
+(defun alloca-temp-values (size &optional (label "temp-values"))
+  ;; Also VLA
+  (llvm-sys:create-alloca *irbuilder* %t*% size label))
 
 (defun irc-register-save-area (&key (irbuilder *irbuilder-function-alloca*) (label "va_list"))
   "Alloca space for a register save area, and keep it in the stack map."

@@ -1111,59 +1111,6 @@ gctools::return_type restoreFromMultipleValue0()
   NO_UNWIND_END();
 }
 
-void mv_restoreFromMultipleValue0(core::T_mv *resultP)
-{NO_UNWIND_BEGIN();
-  resultP->readFromMultipleValue0();
-  NO_UNWIND_END();
-}
-
-#if 0
-/*! Copy the current MultipleValues in _lisp->values() into a SimpleVector */
-extern core::T_O* saveValues(core::T_mv *mvP)
-{NO_UNWIND_BEGIN();
-  ASSERT(mvP != NULL);
-  int numValues = (*mvP).number_of_values();
-  core::SimpleVector_sp vo = core::SimpleVector_O::make(numValues,_Nil<core::T_O>());
-  //	printf("intrinsics.cc saveValues numValues = %d\n", numValues );
-  if (numValues > 0) {
-    vo->rowMajorAset(0, (*mvP));
-  }
-  core::MultipleValues& mv = core::lisp_multipleValues();
-  for (int i(1); i < (*mvP).number_of_values(); ++i) {
-    core::T_sp val((gctools::Tagged)mv._Values[i]);
-    vo->rowMajorAset(i, val );
-  }
-  return vo.raw_();
-  NO_UNWIND_END();
-}
-
-/*! Copy the current MultipleValues in _lisp->values() into a ComplexVector_T */
-extern void loadValues(core::T_mv *resultP, core::T_O* simpleVectorP)
-{NO_UNWIND_BEGIN();
-  ASSERT(resultP != NULL);
-  // I'm not sure the following can ever happen
-  if (!simpleVectorP) {
-    // If there was a non-local exit then *vectorObjectP will be NULL
-    // check for that here and if so set the result to gctools::multiple_values<core::T_O>()
-    (*resultP) = gctools::multiple_values<core::T_O>();
-    return;
-  }
-  SimpleVector_sp vo((gctools::Tagged)simpleVectorP);
-  //	printf("intrinsics.cc loadValues vo->length() = %d\n", vo->length() );
-  if (vo->length() == 0) {
-    (*resultP) = gctools::multiple_values<core::T_O>();
-    return;
-  }
-  (*resultP) = gctools::multiple_values<core::T_O>(vo->rowMajorAref(0), vo->length());
-  core::MultipleValues& mv = core::lisp_multipleValues();
-  for (int i(1); i < vo->length(); ++i) {
-    mv._Values[i] = vo->rowMajorAref(i).raw_();
-  }
-  NO_UNWIND_END();
-}
-#endif
-
-
 size_t cc_trackFirstUnexpectedKeyword(size_t badKwIdx, size_t newBadKwIdx)
 {NO_UNWIND_BEGIN();
   // 65536 is the magic number for badKwIdx has not been assigned yet
@@ -1384,6 +1331,18 @@ void cc_restoreMultipleValue0(core::T_mv *result)
   NO_UNWIND_END();
 }
 
+void cc_save_values(size_t nvals, T_O* primary, T_O** vector)
+{NO_UNWIND_BEGIN();
+  returnTypeSaveToTemp(nvals, primary, vector);
+  NO_UNWIND_END();
+}
+
+gctools::return_type cc_load_values(size_t nvals, T_O** vector)
+{NO_UNWIND_BEGIN();
+  return returnTypeLoadFromTemp(nvals, vector);
+  NO_UNWIND_END();
+}
+
 T_O *cc_pushLandingPadFrame()
 {NO_UNWIND_BEGIN();
 #ifdef DEBUG_FLOW_TRACKER
@@ -1404,64 +1363,6 @@ size_t cc_landingpadUnwindMatchFrameElseRethrow(char *exceptionP, core::T_O *thi
   // throw * unwindP;
   throw;
 }
-
-#if 0 // Bring this back online when we convert to new calling convention
-T_mv cc_multiple_value_funcall(core::T_mv* result, T_O* funcDesignator, std::size_t numFuns, ...) {
-  MultipleValues mvAccumulate;
-  mvAccumulate._Size = 0;
-  size_t idx = 0;
-  va_list argp;
-  va_start(argp,numFuns);
-  for (; numFuns; --numFuns) {
-    core::T_O* tfunc = va_arg(argp,core::T_O*);
-#error "Check the return value of tfunc.asOrNull"
-    core::Function_sp func = tfunc.asOrNull<core::Function_O>();
-    ASSERT(func);
-    auto closure = func->closure;
-    T_mv result;
-    closure->invoke(&result,LCC_PASS_ARGS0());
-    mvAccumulate[idx] = result.raw_();
-    ++idx;
-    for (size_t i = 1, iEnd(result.number_of_values()); i < iEnd; ++i) {
-      mvAccumulate[idx] = result.valueGet(i).raw_();
-      ++idx;
-    }
-  }
-  va_end(argp);
-  ASSERT(idx < MultipleValues::MultipleValuesLimit);
-  mvAccumulate._Size = idx;
-#error "Check the return value of tfunc.asOrNull"
-  core::Function_sp func = funcDesignator.asOrNull<core::Function_O>();
-  ASSERT(func);
-  auto closure = gc::untag_general<core::Function_O *>(func)->closure.as<core::Closure>();
-  core::T_O** a = &mvAccumulate[0];
-  MultipleValues &mvThreadLocal = lisp_multipleValues();
-  for (size_t i = LCC_FIXED_ARGS, iEnd(mvAccumulate._Size); i < iEnd; ++i) {
-    mvThreadLocal[i] = mvAccumulate[i];
-  }
-  closure->invoke(result, mvAccumulate._Size, mvAccumulate[0], mvAccumulate[1], mvAccumulate[2], mvAccumulate[3], mvAccumulate[4]);
-}
-
-T_mv cc_multiple_value_prog1_function(core::T_mv* result, core::T_O* tfunc1, core::T_O* tfunc2) {
-  MultipleValues mvFunc1;
-#error "Check the return value of tfunc.asOrNull"
-  core::Function_sp func1 = tfunc1.asOrNull<core::Function_O>();
-  ASSERT(func1);
-  core::Closure_sp closure1 = func1->closure;
-  closure1->invoke(result,LCC_PASS_ARGS0());
-  mvFunc1._Size = result->number_of_values();
-  mvFunc1[0] = result->raw_();
-  MultipleValues &mvThreadLocal = lisp_multipleValues();
-  for (size_t i(1), iEnd(mvFunc1._Size); i < iEnd; ++i) mvFunc1[i] = mvThreadLocal[i];
-  T_mv resultTemp;
-#error "Check the return value of tfunc.asOrNull"
-  core::Function_sp func2 = tfunc2.asOrNull<core::Function_O>();
-  ASSERT(func2);
-  core::Closure_sp closure2 = func2->closure;
-  closure2->invoke(&resultTemp,LCC_PASS_ARGS0());
-  for (size_t i(1), iEnd(mvFunc1._Size); i < iEnd; ++i) mvThreadLocal[i] = mvFunc1[i];
-}
-#endif
 
 void clasp_terminate()
 {

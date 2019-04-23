@@ -309,7 +309,6 @@ then compile it and return (values compiled-llvm-function lambda-name)"
        ;;; and bclasp is calling treat-as-special-operator-p on forms too
        (cond
          ((eq sym 'cl:unwind-protect) nil)     ;; handled with macro
-         ((eq sym 'cl:multiple-value-prog1) nil)     ;; handled with macro
          ((eq sym 'cl:catch) nil)              ;; handled with macro
          ((eq sym 'cl:throw) nil)              ;; handled with macro
          ((eq sym 'cl:progv) nil)              ;; handled with macro
