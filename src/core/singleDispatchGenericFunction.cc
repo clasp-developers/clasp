@@ -152,14 +152,19 @@ DONT_OPTIMIZE_WHEN_DEBUG_RELEASE LCC_RETURN SingleDispatchEffectiveMethodFunctio
   Vaslist primary_args_s(*lcc_vargs);
   VaList_sp primary_args(&primary_args_s);
   T_mv val0 = (*primary0).entry.load()(LCC_PASS_ARGS_VASLIST(primary0.raw_(),primary_args));
-  multipleValuesSaveToMultipleValues(val0, &save);
+  // Save multiple values
+  size_t nvals = val0.number_of_values();
+  T_O* mv_temp[nvals];
+  returnTypeSaveToTemp(nvals, val0.raw_(), mv_temp);
+  // Run the after methods
   for ( auto cur : closure->_Afters ) {
     Vaslist after_args_s(*lcc_vargs);
     VaList_sp after_args(&after_args_s);
     Function_sp after((gctools::Tagged)oCar(cur).raw_());
     (*after).entry.load()(LCC_PASS_ARGS_VASLIST(after.raw_(),after_args));
   }
-  return multipleValuesLoadFromMultipleValues(&save);
+  // Restore multiple values
+  return returnTypeLoadFromTemp(nvals, mv_temp);
 }
 
 

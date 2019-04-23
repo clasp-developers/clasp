@@ -1431,12 +1431,13 @@ T_sp interpreter_multipleValueSetq(List_sp args, T_sp environment) {
   List_sp lcur = oCar(args);
   T_sp form = oCadr(args);
   T_mv result = eval::evaluate(form, environment);
-  MultipleValues values;
-  multipleValuesSaveToMultipleValues(result,&values);
+  T_O* primary = result.raw_(); // save for return
+  result.saveToMultipleValue0(); // save to iterate over below
+  MultipleValues& values = lisp_multipleValues();
   Cons_sp skipFirst = Cons_O::create(_Nil<T_O>(), _Nil<T_O>());
   Cons_sp add = skipFirst;
   // Assemble a Cons for sp_setq
-  size_t valuesLength = values._Size;
+  size_t valuesLength = values.getSize();
   int i = 0;
   for (auto cur : lcur) {
     Symbol_sp symbol = gc::As<Symbol_sp>(oCar(cur));
@@ -1451,7 +1452,7 @@ T_sp interpreter_multipleValueSetq(List_sp args, T_sp environment) {
     ++i;
   }
   eval::sp_setq(oCdr(skipFirst), environment);
-  return T_sp((gctools::Tagged)(values[0]));
+  return T_sp((gctools::Tagged)primary);
 }
 
 SYMBOL_EXPORT_SC_(ClPkg, prog1);
@@ -1916,27 +1917,32 @@ T_mv sp_returnFrom(List_sp args, T_sp environment) {
 }
 
 T_mv sp_unwindProtect(List_sp args, T_sp environment) {
-  gc::Vec0<core::T_sp> save;
   T_mv result;
   try {
     // Evaluate the protected form
     result = eval::evaluate(oCar(args), environment);
   } catch (...) {
-    T_mv tresult;
-    tresult.readFromMultipleValue0();
-    tresult.saveToVec0(save);
+    // Abnormal exit
+    // Might be a return, so
+    // save the multiple values (from the vector)
+    size_t nvals = lisp_multipleValues().getSize();
+    T_O* mv_temp[nvals];
+    multipleValuesSaveToTemp(mv_temp);
     eval::sp_progn(oCdr(args), environment);
-    tresult.loadFromVec0(save);
-    tresult.saveToMultipleValue0();
+    multipleValuesLoadFromTemp(nvals, mv_temp);
     throw;
   }
+  // Normal exit
+  // Allocate a vector in which to save the return values.
+  // While VLAs aren't in C++, Clang has them.
+  size_t nvals = result.number_of_values();
+  T_O* mv_temp[nvals];
   // Save the return values
-  result.saveToVec0(save);
+  returnTypeSaveToTemp(nvals, result.raw_(), mv_temp);
   // Evaluate the cleanup forms --
   eval::sp_progn(oCdr(args), environment);
-  // Restore the return values
-  result.loadFromVec0(save);
-  return result;
+  // Restore the return values and return
+  return returnTypeLoadFromTemp(nvals, mv_temp);
 }
 
 T_mv sp_catch(List_sp args, T_sp environment) {
@@ -1978,11 +1984,15 @@ T_mv sp_throw(List_sp args, T_sp environment) {
 
 T_mv sp_multipleValueProg1(List_sp args, T_sp environment) {
   ASSERT(environment.generalp());
-  MultipleValues save;
-  T_mv val0 = eval::evaluate(oCar(args), environment);
-  multipleValuesSaveToMultipleValues(val0, &save);
+  T_mv vals0 = eval::evaluate(oCar(args), environment);
+  // Allocate multiple value temporary and save
+  size_t nvals = vals0.number_of_values();
+  T_O* mv_temp[nvals];
+  returnTypeSaveToTemp(nvals, vals0.raw_(), mv_temp);
+  // Evaluate the remaining forms
   eval::evaluateListReturnLast(oCdr(args), environment);
-  return multipleValuesLoadFromMultipleValues(&save);
+  // Restore first form's values
+  return returnTypeLoadFromTemp(nvals, mv_temp);
 }
 
 T_mv sp_multipleValueForeignCall(List_sp args, T_sp env) {

@@ -2048,16 +2048,6 @@ void dbg_lowLevelDescribe(T_sp obj) {
   fflush(stdout);
 }
 
-void dbg_mv_lowLevelDescribe(T_mv mv_obj) {
-  gc::Vec0<core::T_sp> values;
-  mv_obj.saveToVec0(values);
-  for (int i(0), iEnd(values.size()); i < iEnd; ++i) {
-    printf("Multiple value#%d\n", i);
-    dbg_lowLevelDescribe(values[i]);
-  }
-  fflush(stdout);
-}
-
 void dbg_describe_tagged_T_Optr(T_O *p) {
   client_describe(p);
   T_sp obj((gctools::Tagged) reinterpret_cast<T_O *>(p));

@@ -930,33 +930,28 @@ CL_DEFUN T_mv core__funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
   }
   catch (...)
   {
-#if 0
-    void* primary_exception = __cxxabiv1::__cxa_current_primary_exception();
-    printf("%s:%d  primary_exception = %p\n", __FILE__, __LINE__, primary_exception );
-    __cxxabiv1::__cxa_decrement_exception_refcount(primary_exception);
-#endif
-// Save any return value that may be in the multiple value return array
-    gctools::Vec0<T_sp> savemv;
-    T_mv tresult;
-    tresult.readFromMultipleValue0();
-    tresult.saveToVec0(savemv);
+    // Abnormal exit
+    // Save return values, then cleanup, then continue exit
+    size_t nvals = lisp_multipleValues().getSize();
+    T_O* mv_temp[nvals];
+    multipleValuesSaveToTemp(mv_temp);
     {
       Closure_sp closure = gc::As_unsafe<Closure_sp>(cleanup_fn);
-      tresult = closure->entry.load()(LCC_PASS_ARGS0_ELLIPSIS(closure.raw_()));
+      closure->entry.load()(LCC_PASS_ARGS0_ELLIPSIS(closure.raw_()));
     }
-    tresult.loadFromVec0(savemv);
-    tresult.saveToMultipleValue0();
+    multipleValuesLoadFromTemp(nvals, mv_temp);
     throw;  // __cxa_rethrow
   }
-  gctools::Vec0<T_sp> savemv;
-  result.saveToVec0(savemv);
+  // Normal exit
+  // Save return values, cleanup, return
+  size_t nvals = result.number_of_values();
+  T_O* mv_temp[nvals];
+  returnTypeSaveToTemp(nvals, result.raw_(), mv_temp);
   {
-    T_mv tresult;
     Closure_sp closure = gc::As_unsafe<Closure_sp>(cleanup_fn);
-    tresult = closure->entry.load()(LCC_PASS_ARGS0_ELLIPSIS(closure.raw_()));
+    closure->entry.load()(LCC_PASS_ARGS0_ELLIPSIS(closure.raw_()));
   }
-  result.loadFromVec0(savemv);
-  return result;
+  return returnTypeLoadFromTemp(nvals, mv_temp);
 }
 
 CL_LAMBDA(function-designator &rest functions);
@@ -992,14 +987,16 @@ CL_LAMBDA(func1 func2);
 CL_DECLARE();
 CL_DOCSTRING("multipleValueProg1_Function - evaluate func1, save the multiple values and then evaluate func2 and restore the multiple values");
 CL_DEFUN T_mv core__multiple_value_prog1_function(Function_sp first_func, Function_sp second_func) {
-  MultipleValues mvFunc1;
   ASSERT((first_func) && first_func.notnilp());
   T_mv result = (first_func->entry.load())(LCC_PASS_ARGS0_ELLIPSIS(first_func.raw_()));
-  //  T_mv result = eval::funcall(first_func);
-  multipleValuesSaveToMultipleValues(result,&mvFunc1);
+  // Save multiple values
+  size_t nvals = result.number_of_values();
+  T_O* mv_temp[nvals];
+  returnTypeSaveToTemp(nvals, result.raw_(), mv_temp);
+  // Call second function/evaluate rest of forms
   (second_func->entry.load())(LCC_PASS_ARGS0_ELLIPSIS(second_func.raw_()));
-  // eval::funcall(func2);
-  return multipleValuesLoadFromMultipleValues(&mvFunc1);
+  // Restore multiple values
+  return returnTypeLoadFromTemp(nvals, mv_temp);
 }
 
 CL_LAMBDA(tag func);
