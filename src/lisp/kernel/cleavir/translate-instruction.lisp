@@ -113,6 +113,35 @@
                (out phi out)))))
 
 (defmethod translate-simple-instruction
+    ((instr clasp-cleavir-hir:save-values-instruction) return-value abi function-info)
+  (declare (ignore abi function-info))
+  (let* ((outputs (cleavir-ir:outputs instr))
+         (nvals-loc (first outputs))
+         (vals-loc (second outputs))
+         ;; Get the values.
+         (ret (cmp:irc-load return-value))
+         ;; Get the parts we need.
+         (primary (cmp:irc-extract-value ret '(0) "primary"))
+         (nvals (cmp:irc-extract-value ret '(1) "nvals"))
+         ;; Allocate storage. Note this is in-line.
+         (mv-temp (cmp:alloca-temp-values nvals)))
+    ;; Do the actual storing into mv-temp
+    (%intrinsic-call "cc_save_values" (list nvals primary mv-temp))
+    ;; Put the stuff in the outputs
+    (out nvals nvals-loc)
+    (out mv-temp vals-loc)))
+
+(defmethod translate-simple-instruction
+    ((instr clasp-cleavir-hir:load-values-instruction) return-value abi function-info)
+  (declare (ignore abi function-info))
+  (let* ((inputs (cleavir-ir:inputs instr))
+         (nvals-loc (first inputs))
+         (vals-loc (second inputs)))
+    (cmp:irc-store
+     (%intrinsic-call "cc_load_values" (list (in nvals-loc) (in vals-loc)))
+     return-value)))
+
+(defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir:multiple-value-foreign-call-instruction) return-value (abi abi-x86-64) function-info)
   (check-type (clasp-cleavir-hir:function-name instruction) string)
   (clasp-cleavir:unsafe-multiple-value-foreign-call

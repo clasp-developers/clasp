@@ -139,6 +139,7 @@
             alloca-i32
             alloca-return
             alloca-va_list
+            alloca-temp-values
             irc-and
             irc-basic-block-create
             irc-begin-block
