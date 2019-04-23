@@ -52,11 +52,6 @@ THE SOFTWARE.
 
 extern "C" {
 
-BUILTIN_ATTRIBUTES void newTmv(core::T_mv *sharedP)
-{
-  new (sharedP) core::T_mv();
-}
-
 BUILTIN_ATTRIBUTES void cc_rewind_va_list(va_list va_args, void** register_save_areaP)
 {NO_UNWIND_BEGIN_BUILTINS();
   LCC_REWIND_VA_LIST(va_args,register_save_areaP);

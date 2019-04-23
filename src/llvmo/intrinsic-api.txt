@@ -3,7 +3,6 @@ _newTsp
 _copyTsp
 _copyTspTptr
 _compareTspTptr
-_newTmv
 _resetTmv
 _copyTmvOrSlice
 _isNilTsp

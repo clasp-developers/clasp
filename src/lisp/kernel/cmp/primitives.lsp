@@ -104,8 +104,6 @@
      ,@*startup-primitives-as-list*
      ,@'((primitive         "ltvc_lookup_literal" %t*% (list %gcroots-in-module*% %size_t%))
          (primitive         "ltvc_lookup_transient" %t*% (list %gcroots-in-module*% %i8% %size_t%))
-
-         (primitive         "newTmv" %void% (list %tmv*%))
          (primitive         "isTrue" %i32% (list %t*%))
          (primitive         "isBound" %i32% (list %t*%))
          (primitive         "valueOrNilIfZero" %t*% (list %return_type%))
