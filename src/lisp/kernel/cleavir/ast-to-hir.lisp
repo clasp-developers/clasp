@@ -29,33 +29,36 @@
                    (successors cleavir-ast-to-hir::successors)
                    (invocation cleavir-ast-to-hir::invocation))
       context
-    (if (typep results 'cleavir-ir:values-location) ; hard case
-        (let* (;; Values location for the first form. Despite the hoopla, means nothing.
-               (mv (cleavir-ir:make-values-location))
-               ;; These two (lexical!) temporaries store the values.
-               ;; They will be typed in hir-to-mir, and are not used for anything else.
-               (nvals-temp (cleavir-ir:new-temporary))
-               (values-temp (cleavir-ir:new-temporary))
-               ;; Our final instruction - load the temporaries back into the values location.
-               (load (clasp-cleavir-hir:make-load-values-instruction
-                      (list nvals-temp values-temp) results (first successors)))
-               ;; Now we're set up to compile the rest forms.
-               (next (loop with successor = load
-                           for form-ast in (reverse (cleavir-ast:form-asts ast))
-                           do (setf successor
-                                    (cleavir-ast-to-hir:compile-ast
-                                     form-ast (cleavir-ast-to-hir:context
-                                               () (list successor) invocation)))
-                           finally (return successor)))
-               ;; This instruction stores the result(s) of the first form into the temporaries.
-               (store (clasp-cleavir-hir:make-save-values-instruction
-                       mv (list nvals-temp values-temp) next)))
-          ;; Finally, we can compile the first form.
-          (cleavir-ast-to-hir:compile-ast
-           (cleavir-ast:first-form-ast ast)
-           (cleavir-ast-to-hir:context mv (list store) invocation)))
-        ;; results are just lexical locations - no special effort needed
-        (call-next-method))))
+    (cond ((null (cleavir-ast:form-asts ast)) ; trivial case
+           (cleavir-ast-to-hir:compile-ast (cleavir-ast:first-form-ast ast) context))
+          ((typep results 'cleavir-ir:values-location) ; hard case
+           (let* (;; Values location for the first form. Despite the hoopla, means nothing
+                  ;; in the runtime.
+                  (mv (cleavir-ir:make-values-location))
+                  ;; These two (lexical!) temporaries store the values.
+                  ;; They will be typed in hir-to-mir, and are not used for anything else.
+                  (nvals-temp (cleavir-ir:new-temporary))
+                  (values-temp (cleavir-ir:new-temporary))
+                  ;; Our final instruction - load the temporaries back into the values location.
+                  (load (clasp-cleavir-hir:make-load-values-instruction
+                         (list nvals-temp values-temp) results (first successors)))
+                  ;; Now we're set up to compile the rest forms.
+                  (next (loop with successor = load
+                              for form-ast in (reverse (cleavir-ast:form-asts ast))
+                              do (setf successor
+                                       (cleavir-ast-to-hir:compile-ast
+                                        form-ast (cleavir-ast-to-hir:context
+                                                  () (list successor) invocation)))
+                              finally (return successor)))
+                  ;; This instruction stores the result(s) of the first form into the temporaries.
+                  (store (clasp-cleavir-hir:make-save-values-instruction
+                          mv (list nvals-temp values-temp) next)))
+             ;; Finally, we can compile the first form.
+             (cleavir-ast-to-hir:compile-ast
+              (cleavir-ast:first-form-ast ast)
+              (cleavir-ast-to-hir:context mv (list store) invocation))))
+          (t ; simple case - results are just lexical locations - no special effort needed
+           (call-next-method)))))
 
 (defmethod cleavir-ast-to-hir:compile-ast ((ast clasp-cleavir-ast:multiple-value-foreign-call-ast) context)
   (with-accessors ((results cleavir-ast-to-hir::results)
