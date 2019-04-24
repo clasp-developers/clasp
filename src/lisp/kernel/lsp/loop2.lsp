@@ -1870,25 +1870,35 @@ collected result will be returned as the value of the LOOP."
      (when step-hack
        (setq step-hack `(,variable ,(hide-variable-reference indexv-user-specified-p indexv step-hack))))
      (let ((first-test test) (remaining-tests test))
-       (when (and stepby-constantp start-constantp limit-constantp)
+       (when (and stepby-constantp start-constantp)
          ;; We can make the number type more precise when we know the
          ;; start, end and step values.
-         (let ((new-type (typecase (+ start-value stepby limit-value)
+         (let ((new-type (typecase (+ start-value stepby)
                            (integer (if (and (fixnump start-value)
-                                             (fixnump limit-value))
+                                             limit-constantp
+                                             (< limit-value most-positive-fixnum)
+                                             (> limit-value most-negative-fixnum))
                                         'fixnum
-                                        indexv-type))
+                                        'integer))
                            (single-float 'single-float)
                            (double-float 'double-float)
                            (long-float 'long-float)
                            (short-float 'short-float)
                            (t indexv-type))))
+           (unless (subtypep (type-of start-value) new-type)
+             ;; The start type may not be a subtype of the type during
+             ;; iteration. Happens e.g. when stepping a fixnum start
+             ;; value by a float.
+             (setf new-type `(or ,(type-of start-value) ,new-type)))
            (unless (subtypep indexv-type new-type)
              (loop-declare-variable indexv new-type)))
-	 (when (setq first-test (funcall (symbol-function testfn) start-value limit-value))
-	   (setq remaining-tests t)))
+         (when (and limit-constantp
+                    (setq first-test (funcall (symbol-function testfn)
+                                              start-value
+                                              limit-value)))
+           (setq remaining-tests t)))
        `(() (,indexv ,(hide-variable-reference t indexv step)) ,remaining-tests ,step-hack
-	 () () ,first-test ,step-hack))))
+         () () ,first-test ,step-hack))))
 
 
 ;;;; Interfaces to the Master Sequencer

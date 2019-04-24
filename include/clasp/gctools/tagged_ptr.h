@@ -68,25 +68,25 @@ private:
   typedef tagged_ptr this_type;
 
 public:
-  static const uintptr_clasp_t tag_mask = BOOST_BINARY(0011);
-  static const uintptr_clasp_t ptr_tag = BOOST_BINARY(0000);     // xxx00 means ptr
-  static const uintptr_clasp_t special_tag = BOOST_BINARY(0001); // xxx01 means special val
-  static const uintptr_clasp_t frame_tag = BOOST_BINARY(0010);   // xxx10 means a ValueFrame stored entirely on the stack
-  static const uintptr_clasp_t fixnum_tag = BOOST_BINARY(0011);  // xxx11 means fixnum
-  static const uintptr_clasp_t fixnum_shift = 2;
+  static const uintptr_t tag_mask = BOOST_BINARY(0011);
+  static const uintptr_t ptr_tag = BOOST_BINARY(0000);     // xxx00 means ptr
+  static const uintptr_t special_tag = BOOST_BINARY(0001); // xxx01 means special val
+  static const uintptr_t frame_tag = BOOST_BINARY(0010);   // xxx10 means a ValueFrame stored entirely on the stack
+  static const uintptr_t fixnum_tag = BOOST_BINARY(0011);  // xxx11 means fixnum
+  static const uintptr_t fixnum_shift = 2;
 
-  static const uintptr_clasp_t ptr_mask = ~tag_mask;
+  static const uintptr_t ptr_mask = ~tag_mask;
 
 public:
   /*! Special tagged values */
-  static const uintptr_clasp_t _NULL = BOOST_BINARY(000000);
-  static const uintptr_clasp_t tagged_NULL = BOOST_BINARY(000000) | special_tag;    // Should I have this????
-  static const uintptr_clasp_t tagged_unbound = BOOST_BINARY(000100) | special_tag; // 0x05
-  static const uintptr_clasp_t tagged_nil = BOOST_BINARY(001000) | special_tag;     // 0x09
-  static const uintptr_clasp_t tagged_deleted = BOOST_BINARY(001100) | special_tag; // 0x0D - used by WeakKeyHashTable
-  static const uintptr_clasp_t tagged_sameAsKey = BOOST_BINARY(010000) | special_tag;
-  static const uintptr_clasp_t tagged_character = BOOST_BINARY(010100) | special_tag;
-  static const uintptr_clasp_t character_shift = 8;
+  static const uintptr_t _NULL = BOOST_BINARY(000000);
+  static const uintptr_t tagged_NULL = BOOST_BINARY(000000) | special_tag;    // Should I have this????
+  static const uintptr_t tagged_unbound = BOOST_BINARY(000100) | special_tag; // 0x05
+  static const uintptr_t tagged_nil = BOOST_BINARY(001000) | special_tag;     // 0x09
+  static const uintptr_t tagged_deleted = BOOST_BINARY(001100) | special_tag; // 0x0D - used by WeakKeyHashTable
+  static const uintptr_t tagged_sameAsKey = BOOST_BINARY(010000) | special_tag;
+  static const uintptr_t tagged_character = BOOST_BINARY(010100) | special_tag;
+  static const uintptr_t character_shift = 8;
 
 public:
   static T *make_tagged_nil() {
@@ -96,11 +96,11 @@ public:
     return reinterpret_cast<T *>(tagged_unbound);
   }
   static T *make_tagged_frame(core::T_O **p) {
-    return reinterpret_cast<T *>((reinterpret_cast<uintptr_clasp_t>(p) & ptr_mask) | frame_tag);
+    return reinterpret_cast<T *>((reinterpret_cast<uintptr_t>(p) & ptr_mask) | frame_tag);
   }
 
   static T *untagged_frame(T *ptr) {
-    return reinterpret_cast<core::T_O **>(reinterpret_cast<uintptr_clasp_t>(ptr) & ptr_mask);
+    return reinterpret_cast<core::T_O **>(reinterpret_cast<uintptr_t>(ptr) & ptr_mask);
   }
 
   static T *make_tagged_fixnum(int fn) {
@@ -108,12 +108,12 @@ public:
   }
 
   static int untagged_fixnum(T *ptr) {
-    return (int)(reinterpret_cast<uintptr_clasp_t>(ptr) >> fixnum_shift);
+    return (int)(reinterpret_cast<uintptr_t>(ptr) >> fixnum_shift);
   }
 
   static bool tagged_pointerp(T *ptr) {
-    return ((uintptr_clasp_t)(ptr) & tag_mask) == ptr_tag // Is ptr
-           && ((uintptr_clasp_t)(ptr) & ptr_mask);        // Is not NULL
+    return ((uintptr_t)(ptr) & tag_mask) == ptr_tag // Is ptr
+           && ((uintptr_t)(ptr) & ptr_mask);        // Is not NULL
   }
 
   static bool tagged_nilp(T *ptr) {
@@ -132,7 +132,7 @@ public:
   tagged_ptr(const T *p) {
     typedef typename std::remove_const<T>::type *no_const_T_ptr;
     if (p != NULL) {
-      this->px = const_cast<no_const_T_ptr>((T *)(((uintptr_clasp_t)p) + ptr_tag));
+      this->px = const_cast<no_const_T_ptr>((T *)(((uintptr_t)p) + ptr_tag));
     } else {
       this->px = NULL;
     }
@@ -142,7 +142,7 @@ public:
 
   explicit tagged_ptr(int p) : px(reinterpret_cast<T *>((p << fixnum_shift) | fixnum_tag)){};
 
-  explicit tagged_ptr(uintptr_clasp_t p) : px((T *)p) {
+  explicit tagged_ptr(uintptr_t p) : px((T *)p) {
     // ASSERT that the p does not correspond to a pointer
     BOOST_ASSERT((p & tag_mask) != ptr_tag);
   }
@@ -155,7 +155,7 @@ public:
         THROW_HARD_ERROR(BF("DynamicCast<T*,From*> failed due to an illegal cast T* = %s  From* = %s") % typeid(T *).name() % typeid(From *).name());
       }
     } else {
-      uintptr_clasp_t upx = reinterpret_cast<uintptr_clasp_t>(rhs.pxget());
+      uintptr_t upx = reinterpret_cast<uintptr_t>(rhs.pxget());
       px = (T *)upx;
     }
   }
@@ -221,8 +221,8 @@ public:
 
   /*! Return true if px contains a non-NULL pointer */
   bool pointerp() const {
-    return ((uintptr_clasp_t)(this->px) & tag_mask) == ptr_tag // Is ptr
-           && ((uintptr_clasp_t)(this->px) & ptr_mask);        // Is not NULL
+    return ((uintptr_t)(this->px) & tag_mask) == ptr_tag // Is ptr
+           && ((uintptr_t)(this->px) & ptr_mask);        // Is not NULL
   };
 
   bool not_pointerp() const { return !this->pointerp(); };
@@ -230,32 +230,32 @@ public:
   /*! THROW exception if px is not a pointer */
   void assert_pointer() const { BOOST_ASSERT(this->pointerp()); }
 
-  uintptr_clasp_t tag() const { return reinterpret_cast<uintptr_clasp_t>(this->px) & tag_mask; };
+  uintptr_t tag() const { return reinterpret_cast<uintptr_t>(this->px) & tag_mask; };
   bool taggedp() const { return (this->px & tag_mask); };
 
-  bool _NULLp() const { return (uintptr_clasp_t) this->px == tagged_NULL; };
+  bool _NULLp() const { return (uintptr_t) this->px == tagged_NULL; };
 
-  bool deletedp() const { return (uintptr_clasp_t) this->px == tagged_deleted; };
+  bool deletedp() const { return (uintptr_t) this->px == tagged_deleted; };
 
-  bool unboundp() const { return (uintptr_clasp_t) this->px == tagged_unbound; };
+  bool unboundp() const { return (uintptr_t) this->px == tagged_unbound; };
   bool notunboundp() const { return !this->unboundp(); };
 
-  bool sameAsKeyP() const { return (uintptr_clasp_t) this->px == tagged_sameAsKey; };
+  bool sameAsKeyP() const { return (uintptr_t) this->px == tagged_sameAsKey; };
   bool notsameAsKeyP() const { return !this->sameAsKeyP(); };
 
-  bool nilp() const { return (uintptr_clasp_t) this->px == tagged_nil; };
+  bool nilp() const { return (uintptr_t) this->px == tagged_nil; };
 
-  bool framep() const { return ((reinterpret_cast<uintptr_clasp_t>(this->px) & tag_mask) == frame_tag); };
-  core::T_O **frame() const { return reinterpret_cast<core::T_O **>(reinterpret_cast<uintptr_clasp_t>(this->px) & ptr_mask); };
+  bool framep() const { return ((reinterpret_cast<uintptr_t>(this->px) & tag_mask) == frame_tag); };
+  core::T_O **frame() const { return reinterpret_cast<core::T_O **>(reinterpret_cast<uintptr_t>(this->px) & ptr_mask); };
 
-  //        bool characterp() const { return ((reinterpret_cast<uintptr_clasp_t>(this->px)&tag_mask)==character_tag);};
+  //        bool characterp() const { return ((reinterpret_cast<uintptr_t>(this->px)&tag_mask)==character_tag);};
 
-  bool specialp() const { return ((reinterpret_cast<uintptr_clasp_t>(this->px) & tag_mask) == special_tag); }
-  bool fixnump() const { return ((reinterpret_cast<uintptr_clasp_t>(this->px) & tag_mask) == fixnum_tag); };
+  bool specialp() const { return ((reinterpret_cast<uintptr_t>(this->px) & tag_mask) == special_tag); }
+  bool fixnump() const { return ((reinterpret_cast<uintptr_t>(this->px) & tag_mask) == fixnum_tag); };
   // Handle get_fixnum
 
-  inline claspChar character() const { return ((reinterpret_cast<uintptr_clasp_t>(this->px) >> character_shift)); };
-  inline Fixnum fixnum() const { return ((reinterpret_cast<uintptr_clasp_t>(this->px) >> fixnum_shift)); };
+  inline claspChar character() const { return ((reinterpret_cast<uintptr_t>(this->px) >> character_shift)); };
+  inline Fixnum fixnum() const { return ((reinterpret_cast<uintptr_t>(this->px) >> fixnum_shift)); };
 
   T *get() const {
     if (LIKELY(pointerp() || px == 0)) {
@@ -275,7 +275,7 @@ public:
     return *(this->get());
 #else
     //            return *this->px;
-    return *(T *)(((uintptr_clasp_t) this->px) - ptr_tag); //   *((cons *) (((unsigned long long int) ptr) - 3))
+    return *(T *)(((uintptr_t) this->px) - ptr_tag); //   *((cons *) (((unsigned long long int) ptr) - 3))
 #endif
   }
 
@@ -283,17 +283,17 @@ public:
 #ifdef RUN_SAFE
     return this->get();
 #else
-    return (T *)(((uintptr_clasp_t) this->px) - ptr_tag); //   *((cons *) (((unsigned long long int) ptr) - 3))
+    return (T *)(((uintptr_t) this->px) - ptr_tag); //   *((cons *) (((unsigned long long int) ptr) - 3))
 #endif
   }
 
   inline T *pxget() const {
-    return (T *)(((uintptr_clasp_t) this->px) - ptr_tag); //   *((cons *) (((unsigned long long int) ptr) - 3))
+    return (T *)(((uintptr_t) this->px) - ptr_tag); //   *((cons *) (((unsigned long long int) ptr) - 3))
   }
 
   /*! Use pointer rather than pxget */
   inline T *pointer() const {
-    return (T *)(((uintptr_clasp_t) this->px) - ptr_tag); //   *((cons *) (((unsigned long long int) ptr) - 3))
+    return (T *)(((uintptr_t) this->px) - ptr_tag); //   *((cons *) (((unsigned long long int) ptr) - 3))
   }
 
 // implicit conversion to "bool"
@@ -356,10 +356,10 @@ namespace gctools {
       of GC managed object */
 class tagged_base_ptr {
 public:
-  static const uintptr_clasp_t _NULL = tagged_ptr<typename GCHeader<void>::HeaderType>::tagged_NULL;
-  static const uintptr_clasp_t unbound = tagged_ptr<typename GCHeader<void>::HeaderType>::tagged_unbound;
-  static const uintptr_clasp_t deleted = tagged_ptr<typename GCHeader<void>::HeaderType>::tagged_deleted;
-  tagged_base_ptr(uintptr_clasp_t v) : base(v){};
+  static const uintptr_t _NULL = tagged_ptr<typename GCHeader<void>::HeaderType>::tagged_NULL;
+  static const uintptr_t unbound = tagged_ptr<typename GCHeader<void>::HeaderType>::tagged_unbound;
+  static const uintptr_t deleted = tagged_ptr<typename GCHeader<void>::HeaderType>::tagged_deleted;
+  tagged_base_ptr(uintptr_t v) : base(v){};
   tagged_base_ptr() : base(){};
 
   template <class U>
@@ -410,13 +410,13 @@ template <class T>
 class tagged_backcastable_base_ptr : public tagged_base_ptr {
 #if 0
     public:
-        static const uintptr_clasp_t _NULL = tagged_base_ptr::_NULL;
-        static const uintptr_clasp_t unbound = tagged_base_ptr::unbound;
-        static const uintptr_clasp_t deleted = tagged_base_ptr::deleted;
+        static const uintptr_t _NULL = tagged_base_ptr::_NULL;
+        static const uintptr_t unbound = tagged_base_ptr::unbound;
+        static const uintptr_t deleted = tagged_base_ptr::deleted;
 #endif
 public:
   explicit tagged_backcastable_base_ptr() : tagged_base_ptr(), offset(){};
-  explicit tagged_backcastable_base_ptr(uintptr_clasp_t v) : tagged_base_ptr(v), offset(){};
+  explicit tagged_backcastable_base_ptr(uintptr_t v) : tagged_base_ptr(v), offset(){};
   explicit tagged_backcastable_base_ptr(tagged_ptr<T> objPtr) : tagged_base_ptr(objPtr) {
     if (objPtr.pointerp()) {
       const char *base_addr = reinterpret_cast<const char *>(this->base.px_ref());
@@ -435,7 +435,7 @@ public:
       char *obj_addr = base_addr + diff;
       return tagged_ptr<T>(reinterpret_cast<T *>(obj_addr));
     }
-    return tagged_ptr<T>(reinterpret_cast<uintptr_clasp_t>(this->base.px_ref()));
+    return tagged_ptr<T>(reinterpret_cast<uintptr_t>(this->base.px_ref()));
   }
 
 public:

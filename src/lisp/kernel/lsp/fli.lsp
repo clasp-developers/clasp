@@ -72,7 +72,7 @@
      for idx from 0 to (1- (length *foreign-type-spec-table*))
      when spec
      do
-       (format *debug-io* "~d: ~S~&" idx spec)))
+       (format *error-output* "~d: ~S~&" idx spec)))
 
 ;;; %LISP-TYPE->TYPE-SPEC
 (defgeneric %lisp-type->type-spec (lisp-type-kw))
@@ -214,12 +214,12 @@
 (declaim (inline %foreign-alloc))
 (defun %foreign-alloc (size)
   (let ((result (%allocate-foreign-data size)))
-    #+clasp-ffi.debug (format *debug-io* "*** clasp-ffi::%foreign-alloc - size = ~S, allocated ptr = ~S.~%" size result)
+    #+clasp-ffi.debug (format *error-output* "*** clasp-ffi::%foreign-alloc - size = ~S, allocated ptr = ~S.~%" size result)
     result))
 
 (declaim (inline %foreign-free))
 (defun %foreign-free (ptr)
-  #+clasp-ffi.debug (format *debug-io* "*** clasp-ffi::%foreign-free - freeing ~S.~%" ptr)
+  #+clasp-ffi.debug (format *error-output* "*** clasp-ffi::%foreign-free - freeing ~S.~%" ptr)
   (%free-foreign-data ptr)
   nil)
 
@@ -413,8 +413,6 @@
                                                                   (make-symbol function-name)
                                                                   function-name)))
                                   ,@body)))
-         ;; KLUDGE: In order to keep the lambda from being GCd, it's stuffed into this LTV cell.
-         ;; LTVs are never collected.
          (core:defcallback ,(mangled-callback-name function-name) ,convention
            ,return-type ,return-translator ,argument-types ,argument-translators
            ,argument-symbols ,place-holder callback-function)

@@ -141,8 +141,8 @@ class Hash1Generator {
  public:
   gc::Fixnum hash(gc::Fixnum bound = 0) const {
     gc::Fixnum hash = 5381;
-    hash = (gc::Fixnum)hash_word((cl_intptr_t)5381,(cl_intptr_t)this->_Part);
-    if (bound) return ((cl_intptr_t)hash) % bound;
+    hash = (gc::Fixnum)hash_word((uintptr_t)5381,(uintptr_t)this->_Part);
+    if (bound) return ((uintptr_t)hash) % bound;
 #ifdef DEBUG_HASH_GENERATOR
     if (this->_debug) {
       printf("%s:%d  final hash = %lu\n", __FILE__, __LINE__, hash);
@@ -152,13 +152,13 @@ class Hash1Generator {
   }
   gc::Fixnum hashBound(gc::Fixnum bound) const {
     gc::Fixnum hash = 5381;
-    hash = (gc::Fixnum)hash_word((cl_intptr_t)5381,(cl_intptr_t)this->_Part);
+    hash = (gc::Fixnum)hash_word((uintptr_t)5381,(uintptr_t)this->_Part);
 #ifdef DEBUG_HASH_GENERATOR
     if (this->_debug) {
       printf("%s:%d  final hash = %lu\n", __FILE__, __LINE__, hash);
     }
 #endif
-    return ((cl_intptr_t)hash) % bound;
+    return ((uintptr_t)hash) % bound;
   }
   bool addPart(Fixnum part) {
     this->_Part = part;
@@ -229,7 +229,7 @@ class Hash1Generator {
     gc::Fixnum hash(gc::Fixnum bound = 0) const {
       gc::Fixnum hash = 5381;
       for (int i = 0; i < this->_NextPartIndex; i++) {
-        hash = (gc::Fixnum)hash_word((cl_intptr_t)hash, (cl_intptr_t) this->_Parts[i]);
+        hash = (gc::Fixnum)hash_word((uintptr_t)hash, (uintptr_t) this->_Parts[i]);
 #ifdef DEBUG_HASH_GENERATOR
         if (this->_debug) {
           printf("%s:%d  calculated hash = %lu with part[%d] --> %lu\n", __FILE__, __LINE__, hash, i, this->_Parts[i]);
@@ -237,7 +237,7 @@ class Hash1Generator {
 #endif
       }
       if (bound)
-        return ((cl_intptr_t)hash) % bound;
+        return ((uintptr_t)hash) % bound;
 #ifdef DEBUG_HASH_GENERATOR
       if (this->_debug) {
         printf("%s:%d  final hash = %lu\n", __FILE__, __LINE__, hash);
@@ -476,6 +476,7 @@ namespace core {
     return obj;
   };
 };
+
 
 
 

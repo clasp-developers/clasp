@@ -10,8 +10,8 @@
 #include <string>
 namespace telemetry {
 
-typedef uintptr_clasp_t Handle;
-typedef uintptr_clasp_t Word;
+typedef uintptr_t Handle;
+typedef uintptr_t Word;
 constexpr int StringBufferSize = 256;
 constexpr Handle label_undefined = 0; // must be zero
 constexpr Handle label_allocation = 1;
@@ -379,10 +379,10 @@ void initialize_telemetry_functions();
 
 #ifdef DEBUG_TELEMETRY
 #define GC_TELEMETRY0(label) telemetry::global_telemetry_search->write(telemetry::Telemetry::GC_telemetry, label)
-#define GC_TELEMETRY1(label, arg0) telemetry::global_telemetry_search->write(telemetry::Telemetry::GC_telemetry, label, (uintptr_clasp_t)arg0)
-#define GC_TELEMETRY2(label, arg0, arg1) telemetry::global_telemetry_search->write(telemetry::Telemetry::GC_telemetry, label, (uintptr_clasp_t)arg0, (uintptr_clasp_t)arg1)
-#define GC_TELEMETRY3(label, arg0, arg1, arg2) telemetry::global_telemetry_search->write(telemetry::Telemetry::GC_telemetry, label, (uintptr_clasp_t)arg0, (uintptr_clasp_t)arg1, (uintptr_clasp_t)arg2)
-#define GC_TELEMETRY4(label, arg0, arg1, arg2, arg3) telemetry::global_telemetry_search->write(telemetry::Telemetry::GC_telemetry, label, (uintptr_clasp_t)arg0, (uintptr_clasp_t)arg1, (uintptr_clasp_t)arg2, (uintptr_clasp_t)arg3)
+#define GC_TELEMETRY1(label, arg0) telemetry::global_telemetry_search->write(telemetry::Telemetry::GC_telemetry, label, (uintptr_t)arg0)
+#define GC_TELEMETRY2(label, arg0, arg1) telemetry::global_telemetry_search->write(telemetry::Telemetry::GC_telemetry, label, (uintptr_t)arg0, (uintptr_t)arg1)
+#define GC_TELEMETRY3(label, arg0, arg1, arg2) telemetry::global_telemetry_search->write(telemetry::Telemetry::GC_telemetry, label, (uintptr_t)arg0, (uintptr_t)arg1, (uintptr_t)arg2)
+#define GC_TELEMETRY4(label, arg0, arg1, arg2, arg3) telemetry::global_telemetry_search->write(telemetry::Telemetry::GC_telemetry, label, (uintptr_t)arg0, (uintptr_t)arg1, (uintptr_t)arg2, (uintptr_t)arg3)
 #else
 #define GC_TELEMETRY0(label)
 #define GC_TELEMETRY1(label, arg0)
@@ -392,10 +392,10 @@ void initialize_telemetry_functions();
 #endif
 #ifdef DEBUG_STACK_TELEMETRY
 #define STACK_TELEMETRY0(label) telemetry::global_telemetry_search->write(telemetry::Telemetry::STACK_telemetry, label)
-#define STACK_TELEMETRY1(label, arg0) telemetry::global_telemetry_search->write(telemetry::Telemetry::STACK_telemetry, label, (uintptr_clasp_t)arg0)
-#define STACK_TELEMETRY2(label, arg0, arg1) telemetry::global_telemetry_search->write(telemetry::Telemetry::STACK_telemetry, label, (uintptr_clasp_t)arg0, (uintptr_clasp_t)arg1)
-#define STACK_TELEMETRY3(label, arg0, arg1, arg2) telemetry::global_telemetry_search->write(telemetry::Telemetry::STACK_telemetry, label, (uintptr_clasp_t)arg0, (uintptr_clasp_t)arg1, (uintptr_clasp_t)arg2)
-#define STACK_TELEMETRY7(label, a0, a1, a2, a3, a4, a5, a6) telemetry::global_telemetry_search->write(telemetry::Telemetry::STACK_telemetry, label, (uintptr_clasp_t)a0, (uintptr_clasp_t)a1, (uintptr_clasp_t)a2, (uintptr_clasp_t)a3, (uintptr_clasp_t)a4, (uintptr_clasp_t)a5, (uintptr_clasp_t)a6)
+#define STACK_TELEMETRY1(label, arg0) telemetry::global_telemetry_search->write(telemetry::Telemetry::STACK_telemetry, label, (uintptr_t)arg0)
+#define STACK_TELEMETRY2(label, arg0, arg1) telemetry::global_telemetry_search->write(telemetry::Telemetry::STACK_telemetry, label, (uintptr_t)arg0, (uintptr_t)arg1)
+#define STACK_TELEMETRY3(label, arg0, arg1, arg2) telemetry::global_telemetry_search->write(telemetry::Telemetry::STACK_telemetry, label, (uintptr_t)arg0, (uintptr_t)arg1, (uintptr_t)arg2)
+#define STACK_TELEMETRY7(label, a0, a1, a2, a3, a4, a5, a6) telemetry::global_telemetry_search->write(telemetry::Telemetry::STACK_telemetry, label, (uintptr_t)a0, (uintptr_t)a1, (uintptr_t)a2, (uintptr_t)a3, (uintptr_t)a4, (uintptr_t)a5, (uintptr_t)a6)
 #else
 #define STACK_TELEMETRY0(label)
 #define STACK_TELEMETRY1(label, arg0)

@@ -122,8 +122,8 @@ struct GCAllocationPoint;
 namespace gctools {
     /*! This is the type of the tagged kind header that is the first
 word of every object in memory managed by the GC */
-  typedef uintptr_clasp_t stamp_t;
-  typedef uintptr_clasp_t tagged_stamp_t;
+  typedef uintptr_t stamp_t;
+  typedef uintptr_t tagged_stamp_t;
 
 };
 
@@ -206,7 +206,7 @@ namespace gctools {
      See Header_s below for a description of the GC Header tag scheme.
      Stamp needs to fit within a Fixnum.
  */
-  typedef uintptr_clasp_t Stamp;
+  typedef uintptr_t Stamp;
   extern std::atomic<Stamp> global_NextStamp;
 
   template <class T>
@@ -221,16 +221,16 @@ namespace gctools {
 //
 
 /*!
-      A header is 8 bytes long and consists of one uintptr_clasp_t (8 bytes) value.
+      A header is 8 bytes long and consists of one uintptr_t (8 bytes) value.
       The structure of the header is...
 
-      The (header) uintptr_clasp_t is a tagged value where the
+      The (header) uintptr_t is a tagged value where the
       two least significant bits are the tag.
 
                               data       tag
       64 bits total -> |    62 bits | 2 bits |
 
-      The 'tag' - two least-significant bits of the header uintptr_clasp_t value describe
+      The 'tag' - two least-significant bits of the header uintptr_t value describe
       what the rest of the header data means.  This is used for General_O and derived objects.
       #B00 == This is an illegal value for the two lsbs,
               it indictates that this is not a valid header.
@@ -238,7 +238,7 @@ namespace gctools {
               represent a stamp value that indicate 
               whether there is an extended-stamp and where to find the extended-stamp.
       #B10 == This tag indicates that the remaining data bits in the header contains a forwarding
-              pointer.  The uintptr_clasp_t in additional_data[0] contains the length of
+              pointer.  The uintptr_t in additional_data[0] contains the length of
               the block from the client pointer.
       #B11 == This indicates that the header contains a pad; check the
               bit at #B100 to see if the pad is a pad1 (==0) or a pad (==1)
@@ -260,7 +260,7 @@ namespace gctools {
       Each time a standard-class is redefined a new STAMP is generated and that 
       is later written into the Instance_O rack.
 
-      The header ends with a uintptr_clasp_t additional_data[0], an array of uintptr_clasp_t which intrudes
+      The header ends with a uintptr_t additional_data[0], an array of uintptr_t which intrudes
       into the client data and is used when some header tags (fwd, pad) need it.  
       NOTE!!!   Writing anything into header.additional_data[0] wipes out the objects vtable and completely
                 invalidates it - this is only used by the MPS GC when it's ok to invalidate the object.
@@ -716,7 +716,7 @@ int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char 
 
 
 namespace gctools {
-  void rawHeaderDescribe(const uintptr_clasp_t *headerP);
+  void rawHeaderDescribe(const uintptr_t *headerP);
 };
 
 extern "C" {
@@ -737,7 +737,15 @@ void header_describe(gctools::Header_s* headerP);
 
 //#include <clasp/gctools/containers.h>
 
-  
+
+namespace gctools {
+#define LITERAL_TAG_CHAR 0
+#define TRANSIENT_TAG_CHAR 1
+
+void untag_literal_index(size_t findex, size_t& index, size_t& tag);
+};
+
+
 
 namespace gctools {
 
@@ -749,52 +757,43 @@ namespace gctools {
         I wasn't able to get GC_add_roots to work properly.
         TODO: get GC_add_roots to work
    */
+
+
   struct GCRootsInModule {
+    static int const TransientRawIndex = 0;
     static size_t const DefaultCapacity = 256;
+    // Fields
+    core::SimpleVector_O** _TransientAlloca;
     void* _boehm_shadow_memory;
     void* _module_memory;
     size_t _num_entries;
     size_t _capacity;
-
-    GCRootsInModule(void* shadow_mem, void* module_mem, size_t num_entries) {
-      this->_boehm_shadow_memory = shadow_mem;
-      this->_module_memory = module_mem;
-      this->_num_entries = num_entries;
-      this->_capacity = num_entries;
-    }
-    GCRootsInModule(size_t capacity = DefaultCapacity) {
-#ifdef USE_BOEHM
-      core::T_O** shadow_mem = reinterpret_cast<core::T_O**>(boehm_create_shadow_table(capacity));
-      core::T_O** module_mem = shadow_mem;
-#endif
-#ifdef USE_MPS
-      core::T_O** shadow_mem = reinterpret_cast<core::T_O**>(NULL);
-      core::T_O** module_mem = reinterpret_cast<core::T_O**>(malloc(sizeof(core::T_O*)*capacity));
-#endif
-      this->_boehm_shadow_memory = shadow_mem;
-      this->_module_memory = module_mem;
-      this->_num_entries = 0;
-      this->_capacity = capacity;
-      memset(module_mem, 0, sizeof(core::T_O*)*capacity);
-#ifdef USE_MPS
-  // MPS registers the roots with the GC and doesn't need a shadow table
-      mps_register_roots(reinterpret_cast<void*>(module_mem),capacity);
-#endif
-    }
+    /*fnLispCallingConvention* */ void** _function_pointers;
+    void** _function_descriptions;
+    size_t _function_pointer_count;
+    GCRootsInModule(void* shadow_mem, void* module_mem, size_t num_entries, core::SimpleVector_O** transient_alloca, size_t transient_entries, size_t function_pointer_count, void** fptrs, void** fdescs);
+    GCRootsInModule(size_t capacity = DefaultCapacity);
+    void setup_transients(core::SimpleVector_O** transient_alloca, size_t transient_entries);
+    
     size_t remainingCapacity() { return this->_capacity - this->_num_entries;};
     size_t push_back(Tagged val);
-    Tagged set(size_t index, Tagged val);
-    Tagged get(size_t index);
+    Tagged setLiteral(size_t index, Tagged val);
+    Tagged getLiteral(size_t index);
+    Tagged setTransient(size_t index, Tagged val);
+    Tagged getTransient(size_t index);
+    Tagged setTaggedIndex(char tag, size_t index, Tagged val);
+    Tagged getTaggedIndex(char tag, size_t index);
+    /*fnLispCallingConvention*/ void* lookup_function(size_t index);
+    void* lookup_function_description(size_t index);
     void* address(size_t index) {
-      return reinterpret_cast<void*>(&reinterpret_cast<core::T_sp*>(this->_module_memory)[index]);
+      return reinterpret_cast<void*>(&reinterpret_cast<core::T_sp*>(this->_module_memory)[index+1]);
     }
-
   };
 
   extern std::atomic<uint64_t> global_NumberOfRootTables;
   extern std::atomic<uint64_t> global_TotalRootTableSize;
   
-  void initialize_gcroots_in_module(GCRootsInModule* gcroots_in_module, core::T_O** root_address, size_t num_roots, gctools::Tagged initial_data);
+void initialize_gcroots_in_module(GCRootsInModule* gcroots_in_module, core::T_O** root_address, size_t num_roots, gctools::Tagged initial_data, core::SimpleVector_O** transientAlloca, size_t transient_entries, size_t function_pointer_number, void** fptrs, void** fdescs);
   core::T_O* read_gcroots_in_module(GCRootsInModule* roots, size_t index);
   void shutdown_gcroots_in_module(GCRootsInModule* gcroots_in_module);
 

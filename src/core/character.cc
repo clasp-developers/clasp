@@ -31,6 +31,7 @@ THE SOFTWARE.
 #include <boost/algorithm/string.hpp>
 #pragma clang diagnostic pop
 #include <clasp/core/foundation.h>
+#include <clasp/core/primitives.h> // core__list_from_va_list
 #include <clasp/core/common.h>
 #include <clasp/core/array.h>
 #include <clasp/core/symbolTable.h>
@@ -227,22 +228,51 @@ CL_DEFUN T_sp cl__char_not_lessp(List_sp args) {
   return ((monotonic(1, 0, args, false)));
 };
 
-CL_LAMBDA(&rest args);
+CL_LAMBDA(core:&va-rest args);
 CL_DECLARE();
 CL_DOCSTRING("NE_");
-CL_DEFUN T_sp cl__char_NE_(List_sp args) {
-  if (args.nilp())
-      PROGRAM_ERROR();
-  while (args.notnilp()) {
-    claspCharacter a = clasp_as_claspCharacter(gc::As<Character_sp>(oCar(args)));
-    for (List_sp cur = oCdr(args); cur.notnilp(); cur = oCdr(cur)) {
-      claspCharacter b = clasp_as_claspCharacter(gc::As<Character_sp>(oCar(cur)));
-      if (a == b)
-        return ((_Nil<T_O>()));
-    }
-    args = oCdr(args);
+CL_DEFUN T_sp cl__char_NE_(VaList_sp args) {
+  // Just like cl___NE_
+  switch (args->remaining_nargs()) {
+    /* I expect the order of likelihood is 2, 3, 1, >3, 0.
+     * I don't think the compiler takes the order in a switch
+     * very seriously, though, so it's just in order. */
+  case 0:
+      SIMPLE_PROGRAM_ERROR("CHAR/= needs at least 1 argument",_Nil<T_O>());
+  case 1: {
+    // the first arg needs to be a character - check that
+    gc::As<Character_sp>(args->next_arg());
+    return _lisp->_true();
   }
-  return ((_lisp->_true()));
+  case 2: {
+    claspCharacter a = clasp_as_claspCharacter(gc::As<Character_sp>(args->next_arg()));
+    claspCharacter b = clasp_as_claspCharacter(gc::As<Character_sp>(args->next_arg()));
+    if (a == b) return _Nil<T_O>();
+    else return _lisp->_true();
+  }
+  case 3: {
+    claspCharacter a = clasp_as_claspCharacter(gc::As<Character_sp>(args->next_arg()));
+    claspCharacter b = clasp_as_claspCharacter(gc::As<Character_sp>(args->next_arg()));
+    claspCharacter c = clasp_as_claspCharacter(gc::As<Character_sp>(args->next_arg()));
+    if ((a == b) || (a == c) || (b == c)) return _Nil<T_O>();
+    else return _lisp->_true();
+  }
+  default: {
+    /* General case is a nested loop.
+     * We're going to iterate over the arguments several times,
+     * so a valist isn't going to cut it. */
+    List_sp largs = core__list_from_va_list(args);
+    while (largs.notnilp()) {
+      claspCharacter c1 = clasp_as_claspCharacter(gc::As<Character_sp>(oCar(largs)));
+      for (List_sp cur = oCdr(largs); cur.notnilp(); cur = oCdr(cur)) {
+        claspCharacter c2 = clasp_as_claspCharacter(gc::As<Character_sp>(oCar(cur)));
+        if (c1 == c2) return _Nil<T_O>();
+      }
+      largs = oCdr(largs);
+    }
+    return _lisp->_true();
+  }
+  }
 }
 
 CL_LAMBDA(&rest args);
@@ -308,6 +338,7 @@ CL_DEFUN bool cl__char_equal(List_sp args) {
   return true;
 };
 
+#define BELL_CHAR 7
 #define LINE_FEED_CHAR 10
 #define PAGE_CHAR 12
 #define RETURN_CHAR 13
@@ -335,6 +366,8 @@ Character_sp clasp_character_create_from_name(string const &name) {
     ch = clasp_make_standard_character(' ');
   else if ((ssup == "BACKSPACE") || (ssup == "Backspace"))
     ch = clasp_make_standard_character(8);
+  else if ((ssup == "BELL") || (ssup == "Bell"))
+    ch = clasp_make_standard_character(BELL_CHAR);
   else {
     SIMPLE_ERROR(BF("Unknown character name[%s]") % ssup);
   }
@@ -405,6 +438,7 @@ void CharacterInfo::initialize() {
   }
   // we later compare with Uppercase
   gNamesToCharacterIndex["NULL"] = 0;
+  gNamesToCharacterIndex["BELL"] = BELL_CHAR;
   gNamesToCharacterIndex["LINEFEED"] = LINE_FEED_CHAR;
   gNamesToCharacterIndex["ESCAPE"] = ESCAPE_CHAR;
   gNamesToCharacterIndex["DEL"] = RUBOUT_CHAR;

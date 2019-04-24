@@ -49,6 +49,12 @@ THE SOFTWARE.
 #undef ALL_PREGCSTARTUPS_EXTERN
 #endif
 
+#if 0
+#define GCROOT_LOG(x) if (_sym_STARdebug_gcrootsSTAR&&_sym_STARdebug_gcrootsSTAR.boundp()&&_sym_STARdebug_gcrootsSTAR->symbolValue()&&_sym_STARdebug_gcrootsSTAR->symbolValue().notnilp()) { printf x;}
+#else
+#define GCROOT_LOG(x)
+#endif
+
 extern "C" {
 void gc_park() {
 #ifdef USE_BOEHM
@@ -156,7 +162,7 @@ void lisp_decrement_recursive_allocation_counter(core::ThreadLocalState* thread)
 
 namespace gctools {
 #if 0
-AllocationRecord* allocation_backtrace(size_t kind, uintptr_clasp_t stamp, size_t size, AllocationRecord* prev) {
+AllocationRecord* allocation_backtrace(size_t kind, uintptr_t stamp, size_t size, AllocationRecord* prev) {
 // Play with Unix backtrace(3)
 #define BACKTRACE_SIZE 1024
   void *buffer[BACKTRACE_SIZE];
@@ -218,16 +224,16 @@ void clasp_dealloc(char* buffer) {
 
 
 namespace gctools {
-void rawHeaderDescribe(const uintptr_clasp_t *headerP) {
-  uintptr_clasp_t headerTag = (*headerP) & Header_s::tag_mask;
+void rawHeaderDescribe(const uintptr_t *headerP) {
+  uintptr_t headerTag = (*headerP) & Header_s::tag_mask;
   switch (headerTag) {
   case 0:
-      printf("  %p : %" Puintptr_clasp_t "(%p) %" Puintptr_clasp_t "(%p)\n", headerP, *headerP, (void*)*headerP, *(headerP + 1), (void*)*(headerP + 1));
+      printf("  %p : %" PRIuPTR "(%p) %" PRIuPTR "(%p)\n", headerP, *headerP, (void*)*headerP, *(headerP + 1), (void*)*(headerP + 1));
       printf(" Not an object header!\n");
       break;
   case Header_s::stamp_tag: {
-    printf("  %p : %" Puintptr_clasp_t " (%p)\n", headerP, *headerP, (void*)*headerP);
-    printf("  %p : %" Puintptr_clasp_t " (%p)\n", (headerP+1), *(headerP+1), (void*)*(headerP+1));
+    printf("  %p : %" PRIuPTR " (%p)\n", headerP, *headerP, (void*)*headerP);
+    printf("  %p : %" PRIuPTR " (%p)\n", (headerP+1), *(headerP+1), (void*)*(headerP+1));
 #ifdef DEBUG_GUARD
     printf("  %p : %p\n", (headerP+2), (void*)*(headerP+2));
     printf("  %p : %p\n", (headerP+3), (void*)*(headerP+3));
@@ -241,19 +247,19 @@ void rawHeaderDescribe(const uintptr_clasp_t *headerP) {
   } break;
   case Header_s::fwd_tag: {
     Header_s *hdr = (Header_s *)headerP;
-    printf("  0x%p : 0x%" Puintptr_clasp_t " 0x%" Puintptr_clasp_t "\n", headerP, *headerP, *(headerP + 1));
-    printf(" fwd_tag - fwd address: 0x%" Puintptr_clasp_t "\n", (*headerP) & Header_s::fwd_ptr_mask);
-    printf("     fwdSize = %" Puintptr_clasp_t "/0x%" Puintptr_clasp_t "\n", hdr->fwdSize(), hdr->fwdSize());
+    printf("  0x%p : 0x%" PRIuPTR " 0x%" PRIuPTR "\n", headerP, *headerP, *(headerP + 1));
+    printf(" fwd_tag - fwd address: 0x%" PRIuPTR "\n", (*headerP) & Header_s::fwd_ptr_mask);
+    printf("     fwdSize = %" PRIuPTR "/0x%" PRIuPTR "\n", hdr->fwdSize(), hdr->fwdSize());
   } break;
   case Header_s::pad_tag:
-      printf("  0x%p : 0x%" PRu " 0x%" PRu "\n", headerP, *headerP, *(headerP + 1));
+      printf("  0x%p : 0x%" PRIuPTR " 0x%" PRIuPTR "\n", headerP, *headerP, *(headerP + 1));
       if (((*headerP) & Header_s::pad1_tag) == Header_s::pad1_tag) {
         printf("   pad1_tag\n");
-        printf("  0x%p : 0x%" PRu "\n", headerP, *headerP);
+        printf("  0x%p : 0x%" PRIuPTR "\n", headerP, *headerP);
       } else {
         printf("   pad_tag\n");
-        printf("  0x%p : 0x%" PRu "\n", headerP, *headerP);
-        printf("  0x%p : 0x%" PRu "\n", (headerP+1), *(headerP+1));
+        printf("  0x%p : 0x%" PRIuPTR "\n", headerP, *headerP);
+        printf("  0x%p : 0x%" PRIuPTR "\n", (headerP+1), *(headerP+1));
       }
       break;
   }
@@ -273,18 +279,18 @@ void client_describe(void *taggedClient) {
     // Currently this assumes that Conses and General objects share the same header
     // this may not be true in the future
     // conses may be moved into a separate pool and dealt with in a different way
-    const uintptr_clasp_t *headerP;
+    const uintptr_t *headerP;
     if (gctools::tagged_generalp(taggedClient)) {
-      headerP = reinterpret_cast<const uintptr_clasp_t *>(gctools::ClientPtrToBasePtr(gctools::untag_general(taggedClient)));
+      headerP = reinterpret_cast<const uintptr_t *>(gctools::ClientPtrToBasePtr(gctools::untag_general(taggedClient)));
     } else {
-      headerP = reinterpret_cast<const uintptr_clasp_t *>(gctools::ClientPtrToBasePtr(gctools::untag_cons(taggedClient)));
+      headerP = reinterpret_cast<const uintptr_t *>(gctools::ClientPtrToBasePtr(gctools::untag_cons(taggedClient)));
     }
     gctools::rawHeaderDescribe(headerP);
   } else {
     printf("%s:%d Not a tagged pointer - might be immediate value\n", __FILE__, __LINE__);
     printf("    Trying to interpret as client pointer\n");
-    const uintptr_clasp_t* headerP;
-    headerP = reinterpret_cast<const uintptr_clasp_t*>(gctools::ClientPtrToBasePtr(taggedClient));
+    const uintptr_t* headerP;
+    headerP = reinterpret_cast<const uintptr_t*>(gctools::ClientPtrToBasePtr(taggedClient));
     gctools::rawHeaderDescribe(headerP);
   }
 };
@@ -316,7 +322,7 @@ void client_validate_tagged(gctools::Tagged taggedClient) {
 
 
 void header_describe(gctools::Header_s* headerP) {
-  gctools::rawHeaderDescribe((uintptr_clasp_t*)headerP);
+  gctools::rawHeaderDescribe((uintptr_t*)headerP);
 };
 };
 
@@ -377,7 +383,7 @@ namespace gctools {
 std::atomic<Stamp>   global_NextStamp = ATOMIC_VAR_INIT(STAMP_max+1);
 
 void OutOfStamps() {
-    printf("%s:%d Hello future entity!  Congratulations! - you have run clasp long enough to run out of STAMPs - %" PRu " are allowed - change the clasp header layout or add another word for the stamp\n", __FILE__, __LINE__, Header_s::largest_possible_stamp );
+    printf("%s:%d Hello future entity!  Congratulations! - you have run clasp long enough to run out of STAMPs - %" Ptagged_stamp_t " are allowed - change the clasp header layout or add another word for the stamp\n", __FILE__, __LINE__, Header_s::largest_possible_stamp );
     abort();
 }
 
@@ -436,19 +442,19 @@ int handleFatalCondition() {
     _lisp->print(BF("At %s:%d - HardError caught: %s") % __FILE__ % __LINE__ % ee.message());
   }
 #if 0
-        catch ( ... )
-        {
-            _lisp->print(BF("Unknown exception in main - everything should be caught lower down %s:%d") % __FILE__ % __LINE__);
-        }
+  catch ( ... )
+  {
+    _lisp->print(BF("Unknown exception in main - everything should be caught lower down %s:%d") % __FILE__ % __LINE__);
+  }
 #endif
   return exitCode;
 }
 
 stamp_t next_header_kind()
 {
-    stamp_t next = global_next_header_stamp;
-    ++global_next_header_stamp;
-    return next;
+  stamp_t next = global_next_header_stamp;
+  ++global_next_header_stamp;
+  return next;
 }
 
 core::Fixnum ensure_fixnum(stamp_t val)
@@ -463,18 +469,75 @@ CL_LAMBDA();
 CL_DOCSTRING(R"doc(Return the next available header KIND value and increment the global variable global_next_header_stamp)doc");
 CL_DEFUN core::Fixnum gctools__next_header_kind()
 {
-    stamp_t next = global_next_header_stamp;
-    ++global_next_header_stamp;
-    return ensure_fixnum(next);
+  stamp_t next = global_next_header_stamp;
+  ++global_next_header_stamp;
+  return ensure_fixnum(next);
 }
 
 std::atomic<uint64_t> global_TotalRootTableSize;
 std::atomic<uint64_t> global_NumberOfRootTables;
 
 
+SYMBOL_EXPORT_SC_(GcToolsPkg,STARdebug_gcrootsSTAR);
+
+void GCRootsInModule::setup_transients(core::SimpleVector_O** transient_alloca, size_t transient_entries) {
+  if (!transient_alloca && transient_entries!=0) {
+    printf("%s:%d:%s PROBLEM!!! transient_alloca is %p and transient_entries is %lu\n", __FILE__, __LINE__, __FUNCTION__, transient_alloca, transient_entries );
+    abort();
+  }
+  if (transient_alloca&&transient_entries>0) {
+    core::SimpleVector_sp sv = core::SimpleVector_O::make(transient_entries);
+    for (size_t ii = 0; ii<transient_entries; ++ii) {
+      (*sv)[ii] = core::make_fixnum(12345);
+    }
+    GCROOT_LOG(("%s:%d  Setup simple vector@%p\n", __FILE__, __LINE__, (void*)sv.tagged_()));
+    *transient_alloca = &(*sv);
+    this->_TransientAlloca = transient_alloca;
+  } else {
+    this->_TransientAlloca = nullptr;
+  }
+}
+
+GCRootsInModule::GCRootsInModule(void* shadow_mem, void* module_mem, size_t num_entries, core::SimpleVector_O** transient_alloca, size_t transient_entries, size_t function_pointer_count, void** fptrs, void** func_descs) {
+  this->_function_pointer_count = function_pointer_count;
+  this->_function_pointers = fptrs;
+  this->_function_descriptions = func_descs;
+  this->_num_entries = num_entries;
+  this->_capacity = num_entries;
+  this->_boehm_shadow_memory = shadow_mem;
+  this->_module_memory = module_mem;
+  this->setup_transients(transient_alloca, transient_entries);
+}
+
+/*! For the interpreter */
+GCRootsInModule::GCRootsInModule(size_t capacity) {
+  this->_function_pointer_count = 0;
+  this->_function_pointers = NULL;
+  this->_function_descriptions = NULL;
+  this->_num_entries = 0;
+  this->_capacity = capacity;
+#ifdef USE_BOEHM
+  core::T_O** shadow_mem = reinterpret_cast<core::T_O**>(boehm_create_shadow_table(this->_capacity));
+  core::T_O** module_mem = shadow_mem;
+#endif
+#ifdef USE_MPS
+  core::T_O** shadow_mem = reinterpret_cast<core::T_O**>(NULL);
+  core::T_O** module_mem = reinterpret_cast<core::T_O**>(malloc(sizeof(core::T_O*)*this->_capacity));
+#endif
+  this->_boehm_shadow_memory = shadow_mem;
+  this->_module_memory = module_mem;
+  memset(module_mem, 0, sizeof(core::T_O*)*this->_capacity);
+#ifdef USE_MPS
+  // MPS registers the roots with the GC and doesn't need a shadow table
+  mps_register_roots(reinterpret_cast<void*>(module_mem),capacity);
+#endif
+  this->setup_transients(NULL,0); // Does nothing
+}
+
+
 /*! initial_data is a gctools::Tagged pointer to a List of tagged pointers.
 */
-void initialize_gcroots_in_module(GCRootsInModule* roots, core::T_O** root_address, size_t num_roots, gctools::Tagged initial_data) {
+void initialize_gcroots_in_module(GCRootsInModule* roots, core::T_O** root_address, size_t num_roots, gctools::Tagged initial_data, core::SimpleVector_O** transientAlloca, size_t transient_entries, size_t function_pointer_count, void** fptrs, void** fdescs) {
   global_TotalRootTableSize += num_roots;
   global_NumberOfRootTables++;
   core::T_O** shadow_mem = NULL;
@@ -482,7 +545,7 @@ void initialize_gcroots_in_module(GCRootsInModule* roots, core::T_O** root_addre
   shadow_mem = reinterpret_cast<core::T_O**>(boehm_create_shadow_table(num_roots));
 #endif
   // Get the address of the memory space in the llvm::Module
-  uintptr_clasp_t address = reinterpret_cast<uintptr_clasp_t>(root_address);
+  uintptr_t address = reinterpret_cast<uintptr_t>(root_address);
   core::T_O** module_mem = reinterpret_cast<core::T_O**>(address);
 //  printf("%s:%d:%s address=%p nargs=%" PRu "\n", __FILE__, __LINE__, __FUNCTION__, (void*)address, nargs);
 //  printf("%s:%d:%s constants-table contents: vvvvv\n", __FILE__, __LINE__, __FUNCTION__ );
@@ -490,13 +553,17 @@ void initialize_gcroots_in_module(GCRootsInModule* roots, core::T_O** root_addre
   // FIXME: The GCRootsInModule is on the stack - once it's gone we loose the ability
   //        to keep track of the constants and in the future when we start GCing code
   //        we need to keep track of the constants.
-  new (roots) GCRootsInModule(reinterpret_cast<void*>(shadow_mem),reinterpret_cast<void*>(module_mem),num_roots);
+  if (transientAlloca) {
+    // transient_entries = num_roots;
+//    printf("%s:%d:%s transients is %lu and num_roots is %lu\n", __FILE__, __LINE__, __FUNCTION__, transient_entries, num_roots);
+  }
+  new (roots) GCRootsInModule(reinterpret_cast<void*>(shadow_mem),reinterpret_cast<void*>(module_mem),num_roots,transientAlloca, transient_entries, function_pointer_count, (void**)fptrs, fdescs );
   size_t i = 0;
   if (initial_data != 0 ) {
     core::List_sp args((gctools::Tagged)initial_data);
     for ( auto c : args ) {
       core::T_sp arg = oCar(c);
-      roots->set(i,arg.tagged_());
+      roots->setLiteral(i,arg.tagged_());
     //if (debug) write_bf_stream(BF("Filling roots table[%d]@%p -> %p\n") % i % ct.address(i) % (void*)arg.tagged_());
       ++i;
     }
@@ -508,10 +575,11 @@ void initialize_gcroots_in_module(GCRootsInModule* roots, core::T_O** root_addre
 }
 
 core::T_O* read_gcroots_in_module(GCRootsInModule* roots, size_t index) {
-  return (core::T_O*)(roots->get(index));
+  return (core::T_O*)(roots->getLiteral(index));
 }
 
 void shutdown_gcroots_in_module(GCRootsInModule* roots) {
+  roots->_TransientAlloca = NULL;
 #ifdef USE_BOEHM
   GC_FREE(roots->_boehm_shadow_memory);
 #endif
@@ -532,16 +600,16 @@ CL_DEFUN void gctools__register_roots(core::T_sp taddress, core::List_sp args) {
   shadow_mem = reinterpret_cast<core::T_O**>(boehm_create_shadow_table(nargs));
 #endif
   // Get the address of the memory space in the llvm::Module
-  uintptr_clasp_t address = translate::from_object<uintptr_clasp_t>(taddress)._v;
+  uintptr_t address = translate::from_object<uintptr_t>(taddress)._v;
   core::T_O** module_mem = reinterpret_cast<core::T_O**>(address);
 //  printf("%s:%d:%s address=%p nargs=%" PRu "\n", __FILE__, __LINE__, __FUNCTION__, (void*)address, nargs);
 //  printf("%s:%d:%s constants-table contents: vvvvv\n", __FILE__, __LINE__, __FUNCTION__ );
   // Create a ConstantsTable structure to write the constants with
-  GCRootsInModule ct(reinterpret_cast<void*>(shadow_mem),reinterpret_cast<void*>(module_mem),nargs);
+  GCRootsInModule ct(reinterpret_cast<void*>(shadow_mem),reinterpret_cast<void*>(module_mem),nargs,NULL,0,0,NULL,NULL);
   size_t i = 0;
   for ( auto c : args ) {
     core::T_sp arg = oCar(c);
-    ct.set(i,arg.tagged_());
+    ct.setLiteral(i,arg.tagged_());
     ++i;
   }
 #ifdef USE_MPS
@@ -590,26 +658,124 @@ int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char 
   return exitCode;
 }
 
-Tagged GCRootsInModule::set(size_t index, Tagged val) {
+Tagged GCRootsInModule::setLiteral(size_t raw_index, Tagged val) {
+  BOUNDS_ASSERT(raw_index<this->_capacity);
+  BOUNDS_ASSERT(raw_index<this->_num_entries);
 #ifdef USE_BOEHM
   // shadow_memory is only used by Boehm
   if (this->_boehm_shadow_memory != this->_module_memory) {
-    reinterpret_cast<core::T_O**>(this->_boehm_shadow_memory)[index] = reinterpret_cast<core::T_O*>(val);
+    reinterpret_cast<core::T_O**>(this->_boehm_shadow_memory)[raw_index] = reinterpret_cast<core::T_O*>(val);
   }
 #endif
-  reinterpret_cast<core::T_O**>(this->_module_memory)[index] = reinterpret_cast<core::T_O*>(val);
+  reinterpret_cast<core::T_O**>(this->_module_memory)[raw_index] = reinterpret_cast<core::T_O*>(val);
   return val;
 }
+Tagged GCRootsInModule::getLiteral(size_t raw_index) {
+  BOUNDS_ASSERT(raw_index<this->_capacity);
+  BOUNDS_ASSERT(raw_index<this->_num_entries);
+  return reinterpret_cast<Tagged>(reinterpret_cast<core::T_O**>(this->_module_memory)[raw_index]);
+}
+
 
 size_t GCRootsInModule::push_back( Tagged val) {
   size_t index = this->_num_entries;
   this->_num_entries++;
-  this->set(index,val);
+  this->setLiteral(index,val);
   return index;
 }
 
-Tagged GCRootsInModule::get(size_t index) {
-  return reinterpret_cast<Tagged>(reinterpret_cast<core::T_O**>(this->_module_memory)[index]);
+Tagged GCRootsInModule::setTransient(size_t index, Tagged val) {
+  if (this->_TransientAlloca) {
+    core::SimpleVector_O* transients = *this->_TransientAlloca;
+    if (transients) {
+      BOUNDS_ASSERT(index<transients->length());
+      core::T_sp tval((gctools::Tagged)val);
+      if (transients) {
+        GCROOT_LOG(("%s:%d:%s GCRootsInModule@%p[%lu] - writing %p of transient vector %p length: %lu\n", __FILE__, __LINE__, __FUNCTION__, (void*)this, index, (void*)tval.tagged_(), (void*)transients.tagged_(), transients->length()));
+        GCROOT_LOG(("     value -> %s\n",  _rep_(tval).c_str()));
+      } else {
+        GCROOT_LOG(("%s:%d:%s GCRootsInModule@%p - writing %p to transient@%lu of transient vector %p BUT ITS NOT THERE!!!\n", __FILE__, __LINE__, __FUNCTION__, (void*)this, (void*)tval.tagged_(), index, (void*)transients.tagged_() ));
+      }
+      (*transients)[index] = tval;
+      return val;
+    }
+    printf("%s:%d There is no transients vector\n", __FILE__, __LINE__);
+    abort();
+  }
+  printf("%s:%d:%s The _TransientAlloca was NULL but index is %lu\n", __FILE__, __LINE__, __FUNCTION__, index );
+  abort();
 }
+
+Tagged GCRootsInModule::getTransient(size_t index) {
+  if (this->_TransientAlloca) {
+    core::SimpleVector_O* transients = *this->_TransientAlloca;
+    if (transients) {
+      BOUNDS_ASSERT(index<transients->length());
+      core::T_sp tval = (*transients)[index];
+      if (transients) {
+        GCROOT_LOG(("%s:%d:%s GCRootsInModule@%p[%lu] - read %p of transient vector %p length: %lu value-> %s\n", __FILE__, __LINE__, __FUNCTION__, (void*)this, index, (void*)tval.tagged_(), (void*)transients.tagged_(), transients->length(), _rep_(tval).c_str()));
+      } else {
+        GCROOT_LOG(("%s:%d:%s GCRootsInModule@%p - writing %p to transient@%lu of transient vector %p BUT ITS NOT THERE!!!\n", __FILE__, __LINE__, __FUNCTION__, (void*)this, (void*)tval.tagged_(), index, (void*)transients.tagged_() ));
+      }
+      return tval.tagged_();
+    }
+    printf("%s:%d There is no transients vector\n", __FILE__, __LINE__);
+    abort();
+  }
+  printf("%s:%d:%s There _TransientAlloca is NULL index = %lu\n", __FILE__, __LINE__, __FUNCTION__, index );
+  abort();
+}  
+
+
+Tagged GCRootsInModule::setTaggedIndex(char tag, size_t index, Tagged val) {
+  GCROOT_LOG(("%s:%d:%s GCRootsInModule@%p[%lu] tag '%d'\n", __FILE__, __LINE__, __FUNCTION__, (void*)this, index, tag ));
+  switch (tag) {
+  case 'l':
+  case LITERAL_TAG_CHAR: {
+    return setLiteral(index,val);
+  }
+  case 't':
+  case TRANSIENT_TAG_CHAR: {
+    return setTransient(index,val);
+  };
+  };
+  printf("%s:%d Illegal index %lu/0x%lx tag %c\n", __FILE__, __LINE__, index, index, tag);
+  abort();
+}
+
+Tagged GCRootsInModule::getTaggedIndex(char tag, size_t index) {
+  GCROOT_LOG(("%s:%d:%s GCRootsInModule@%p[%lu] tag '%d'\n", __FILE__, __LINE__, __FUNCTION__, (void*)this, index, tag ));
+  switch (tag) {
+  case 'l':
+  case LITERAL_TAG_CHAR: {
+    return getLiteral(index);
+  }
+  case 't':
+  case TRANSIENT_TAG_CHAR: {
+    return getTransient(index);
+  };
+  };
+  printf("%s:%d Illegal index %lu/0x%lx tag %c\n", __FILE__, __LINE__, index, index, tag);
+  abort();
+}
+
+void* GCRootsInModule::lookup_function(size_t index) {
+  if (index<this->_function_pointer_count) {
+    return (void*)this->_function_pointers[index];
+  }
+  printf("%s:%d Illegal function pointer index %lu must be less than %lu\n", __FILE__, __LINE__, index, this->_function_pointer_count);
+  abort();
+}
+
+void* GCRootsInModule::lookup_function_description(size_t index) {
+  if (index<this->_function_pointer_count) {
+    return (void*)this->_function_descriptions[index];
+  }
+  printf("%s:%d Illegal function pointer index %lu must be less than %lu\n", __FILE__, __LINE__, index, this->_function_pointer_count);
+  abort();
+}
+
+    
+
 
 };

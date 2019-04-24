@@ -51,7 +51,7 @@ THE SOFTWARE.
 namespace core {
 
 CL_DEFUN T_sp core__package_lock(T_sp x, T_sp y) {
-  printf("%s:%d  package-lock doesn't do anything currently\n", __FILE__, __LINE__);
+//  printf("%s:%d  package-lock doesn't do anything currently\n", __FILE__, __LINE__);
   return _Nil<T_O>();
 }
 
@@ -309,7 +309,7 @@ CL_DEFUN T_mv cl__shadowing_import(T_sp symbol_names_desig, T_sp package_desig) 
   return Values(_lisp->_true());
 }
 
-std::atomic<uintptr_clasp_t> static_gentemp_counter;
+std::atomic<uint64_t> static_gentemp_counter;
 CL_LAMBDA(&optional (prefix "T") (package *package*));
 CL_DECLARE();
 CL_DOCSTRING("See CLHS gentemp");

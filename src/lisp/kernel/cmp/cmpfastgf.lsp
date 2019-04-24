@@ -771,7 +771,7 @@
                         (let* ((value (irc-intrinsic-call-or-invoke "cc_dispatch_slot_reader_cons" (list slot-read-info))))
                           (irc-intrinsic-call-or-invoke "cc_bound_or_error" (list slot-read-info (first (argument-holder-dispatch-arguments arguments)) value))))
                        (t (error "Unknown opt-data type ~a" opt-data)))))
-        (irc-store retval (argument-holder-return-value arguments))
+        (irc-t*-result retval (argument-holder-return-value arguments))
         (irc-br (argument-holder-continue-after-dispatch arguments))))))
 
 (defun codegen-slot-writer (arguments outcome)
@@ -801,7 +801,7 @@
                           (irc-intrinsic-call-or-invoke "cc_dispatch_slot_writer_cons" (list (first (argument-holder-dispatch-arguments arguments)) ; falue
                                                                                              slot-write-info))))
                        (t (error "Unknown opt-data ~a" opt-data)))))
-        (irc-store retval (argument-holder-return-value arguments))
+        (irc-t*-result retval (argument-holder-return-value arguments))
         (irc-br (argument-holder-continue-after-dispatch arguments))))))
 
 (defun codegen-fast-method-call (arguments outcome)
@@ -825,7 +825,7 @@
                                  ;; This whole thing could use some major cleanup (FIXME).
                                  (list* fmf (rest (argument-holder-register-arguments arguments)))
                                  *current-unwind-landing-pad-dest* "fast-method-call")))
-      (irc-store-result (argument-holder-return-value arguments) result-in-registers)
+      (irc-tmv-result result-in-registers (argument-holder-return-value arguments))
       (irc-br (argument-holder-continue-after-dispatch arguments)))))
 
 (defun codegen-effective-method-call (arguments outcome)
@@ -1034,14 +1034,14 @@
                              debug-on))
            (closure (first register-arguments))
            (number-of-arguments-passed (second register-arguments))
-           (return-value (irc-alloca-return-type :label "return-value"))
+           (return-value (alloca-return "return-value"))
            (continue-after-dispatch (irc-basic-block-create "continue-after-dispatch"))
-           (va-list* (let ((va-list* (irc-alloca-va_list :label "dispatch-va_list*")))
+           (va-list* (let ((va-list* (alloca-va_list "dispatch-va_list*")))
                        (when need-va-list
                          (irc-intrinsic-call-or-invoke "llvm.va_start" (list (irc-bit-cast va-list* %i8*% "va-list*-i8*"))))
                        va-list*))
-           (register-save-area* (irc-alloca-register-save-area :label "reg-save-area*"))
-           (vaslist* (irc-alloca-vaslist :label "vaslist*"))
+           (register-save-area* (irc-register-save-area :label "reg-save-area*"))
+           (vaslist* (alloca-vaslist :label "vaslist*"))
            (vaslist-t* (when need-vaslist
                          (maybe-spill-to-register-save-area register-arguments register-save-area*)
                          (irc-intrinsic "cc_rewind_vaslist" vaslist* va-list* register-save-area*))))
@@ -1101,7 +1101,8 @@
       (optimize-node-and-children (dtree-root dt))
       dt)))
 
-(defun codegen-dispatcher-from-dtree (generic-function dtree &key (generic-function-name "discriminator") output-path log-gf (debug-on t debug-on-p))
+(defun codegen-dispatcher-from-dtree (generic-function dtree &key (generic-function-name "discriminator") output-path log-gf (debug-on t debug-on-p) force-compile)
+  (declare (ignore force-compile))
   (let ((debug-on (if debug-on-p
                       debug-on
                       (core:get-funcallable-instance-debug-on generic-function)))
@@ -1245,12 +1246,12 @@
 (defvar *fastgf-use-compiler* nil)
 (defvar *fastgf-timer-start*)
 (defun codegen-dispatcher (raw-call-history specializer-profile generic-function
-                           &rest args &key generic-function-name output-path log-gf)
+                           &rest args &key generic-function-name output-path log-gf force-compile)
   (let* ((*log-gf* log-gf)
          (*fastgf-timer-start* (get-internal-real-time))
          (dtree (calculate-dtree raw-call-history specializer-profile)))
     (unwind-protect
-         (if *fastgf-use-compiler*
+         (if (or force-compile *fastgf-use-compiler*)
              (apply 'codegen-dispatcher-from-dtree generic-function dtree args)
              (core:make-dtree-interpreter dtree))
       (let ((delta-seconds (/ (float (- (get-internal-real-time) *fastgf-timer-start*) 1d0)

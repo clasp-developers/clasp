@@ -34,6 +34,44 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; Instruction SAVE-VALUES-INSTRUCTION
+;;;
+;;; Allocate storage for the current return values and put em in.
+;;; The values can be restored by LOAD-VALUES-INSTRUCTION.
+;;; Has two outputs, which represent the storage. These outputs are only used
+;;; by LOAD-VALUES-INSTRUCTION, so if we want to change them later that's fine.
+;;; More details in ast-to-hir.lisp for multiple-value-prog1-ast.
+
+(defclass save-values-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+  ())
+
+(defmethod cleavir-ir-graphviz:label ((instr save-values-instruction)) "save-values")
+
+(defun make-save-values-instruction (input outputs &optional (successor nil successor-p))
+  (make-instance 'save-values-instruction
+                 :inputs (list input)
+                 :outputs outputs
+                 :successors (if successor-p (list successor) nil)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Instruction LOAD-VALUES-INSTRUCTION
+;;;
+;;; See save-values.
+
+(defclass load-values-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+  ())
+
+(defmethod cleavir-ir-graphviz:label ((instr load-values-instruction)) "load-values")
+
+(defun make-load-values-instruction (inputs output &optional (successor nil successor-p))
+  (make-instance 'load-values-instruction
+                 :inputs inputs
+                 :outputs (list output)
+                 :successors (if successor-p (list successor) nil)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; Instruction multiple-value-foreign-CALL-INSTRUCTION
 ;;;
 ;;; Calls a foreign function (designated by its name, a string) and receives its result as values.
@@ -345,7 +383,10 @@
 (defmethod original-lambda-list ((self cleavir-ir:top-level-enter-instruction))
   nil)
 
-(defmethod rest-alloc ((self cleavir-ir:top-level-enter-instruction))
+;;; We need this one for when an enter-instruction makes it to translate.
+;;; This will happen if generate-ast or cst-to-ast make a function-ast without
+;;; going through convert-code. Right now that means dynamic bindings.
+(defmethod rest-alloc ((self cleavir-ir:enter-instruction))
   nil)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -369,10 +410,6 @@
     :index index
     :original-object original-object))
 
-(defgeneric precalc-value-instruction-p (instruction)
-  (:method ((instruction t)) nil)
-  (:method ((instruction precalc-value-instruction)) t))
-
 (defun escaped-string (str)
   (with-output-to-string (s) (loop for c across str do (when (member c '(#\\ #\")) (princ #\\ s)) (princ c s))))
 
@@ -388,27 +425,6 @@
 (defmethod cleavir-ir:clone-initargs append ((instruction precalc-value-instruction))
   (list :original-object (precalc-value-instruction-original-object instruction)
         :index (precalc-value-instruction-index instruction)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
-;;;
-;;; Instruction MULTIPLE-VALUE-ONE-FORM-CALL-INSTRUCTION.
-;;;
-;;; The first input of this instruction is an ordinary lexical
-;;; location.  The remaining inputs are of type VALUES-LOCATION, and
-;;; each represents multiple values returned from the evaluation of
-;;; some form.  This instruction has a single output, also of the type
-;;; VALUES-LOCATION.
-
-(defclass multiple-value-one-form-call-instruction (cleavir-ir:multiple-value-call-instruction)
-  ())
-
-(defun make-multiple-value-one-form-call-instruction
-    (inputs output &optional (successor nil successor-p))
-  (make-instance 'multiple-value-one-form-call-instruction
-    :inputs inputs
-    :outputs (list output)
-    :successors (if successor-p (list successor) '())))
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -426,39 +442,6 @@
 
 
 (defmethod cleavir-ir-graphviz:label ((instruction setf-fdefinition-instruction)) "setf-fdefinition")
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Instruction INVOKE-INSTRUCTION.
-
-(defclass invoke-instruction (cleavir-ir:funcall-instruction)
-  ((%destinations :accessor destinations :initarg :destinations)))
-
-(defmethod cleavir-ir-graphviz:label ((instruction invoke-instruction)) "invoke")
-
-(defmethod cleavir-ir-graphviz:draw-instruction :after ((instruction invoke-instruction) stream)
-  (loop with me = (cleavir-ir-graphviz::instruction-id instruction)
-        for dest in (clasp-cleavir-hir:destinations instruction)
-        for id = (cleavir-ir-graphviz::instruction-id dest)
-        when id
-          do (format stream "  ~a -> ~a [color = pink, style = dashed];~%"
-                     me id)))
-
-;;; This will probably break if the CATCH is copied too.
-(defmethod cleavir-ir:clone-initargs append ((instr invoke-instruction))
-  (list :destinations (destinations instr)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Instruction MULTIPLE-VALUE-INVOKE-INSTRUCTION.
-
-(defclass multiple-value-invoke-instruction (cleavir-ir:multiple-value-call-instruction)
-  ((%destinations :accessor destinations :initarg :destinations)))
-
-(defmethod cleavir-ir-graphviz:label ((instruction multiple-value-invoke-instruction)) "mv-invoke")
-
-(defmethod cleavir-ir:clone-initargs append ((instr multiple-value-invoke-instruction))
-  (list :destinations (destinations instr)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -490,8 +473,6 @@
 (defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction debug-break-instruction)) nil)
 
 ;(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction precalc-value-instruction)) t)
-
-(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction multiple-value-one-form-call-instruction)) nil)
 
 (defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction setf-fdefinition-instruction)) nil)
 

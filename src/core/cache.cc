@@ -104,7 +104,7 @@ void Cache_O::empty() {
   }
 }
 
-cl_intptr_t Cache_O::vector_hash_key(gctools::Vec0<T_sp> &keys) {
+uintptr_t Cache_O::vector_hash_key(gctools::Vec0<T_sp> &keys) {
 #if DEBUG_CLOS >= 2
   printf("MLOG vector_hash_key keys->vector.fillp = %d %s:%d\n", keys->fillPointer(), __FILE__, __LINE__);
   if (keys->fillPointer() > 0) {
@@ -114,18 +114,18 @@ cl_intptr_t Cache_O::vector_hash_key(gctools::Vec0<T_sp> &keys) {
   }
 #endif
 
-  cl_intptr_t c, n, a = GOLDEN_RATIO, b = GOLDEN_RATIO;
+  uintptr_t c, n, a = GOLDEN_RATIO, b = GOLDEN_RATIO;
   for (c = 0, n = keys.size(); n >= 3;) {
-    c += (cl_intptr_t)(keys[--n].get());
-    b += (cl_intptr_t)(keys[--n].get());
-    a += (cl_intptr_t)(keys[--n].get());
+    c += (uintptr_t)(keys[--n].get());
+    b += (uintptr_t)(keys[--n].get());
+    a += (uintptr_t)(keys[--n].get());
     hash_mix(a, b, c);
   }
   switch (n) {
   case 2:
-    b += (cl_intptr_t)(keys[--n].get());
+    b += (uintptr_t)(keys[--n].get());
   case 1:
-    a += (cl_intptr_t)(keys[--n].get());
+    a += (uintptr_t)(keys[--n].get());
     c += keys.size();
     hash_mix(a, b, c);
   }
@@ -152,7 +152,7 @@ void Cache_O::search_cache(CacheRecord *&min_e) {
     }
   }
 #endif
-  cl_intptr_t hi = this->vector_hash_key(keys);
+  uintptr_t hi = this->vector_hash_key(keys);
   int total_size = table.size();
   int min_gen, gen;
   //        gctools::StackRootedPointer<CacheRecord> min_e;	//    cl_object *min_e;

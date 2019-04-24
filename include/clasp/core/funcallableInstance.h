@@ -58,9 +58,8 @@ namespace core {
 // These indices MUST match the order and positions of slots in +standard-generic-function-slots+
     typedef enum { REF_GFUN_NAME = 0,
                    REF_GFUN_SPECIALIZERS = 1,  // lock
-                   REF_GFUN_COMB = 2,          
                    REF_GFUN_LAMBDA_LIST = 3,   // lock
-                   MIN_GFUN_SLOTS = 4 } GenericFunctionSlots;
+                 } GenericFunctionSlots;
   public: // ctor/dtor for classes with shared virtual base
     // entry_point is the LISP_CALLING_CONVENTION() macro
   FuncallableInstance_O(FunctionDescription* fdesc) : Base(not_funcallable_entry_point)
@@ -105,7 +104,6 @@ namespace core {
   public:
     T_sp GFUN_NAME() const { return this->instanceRef(REF_GFUN_NAME); };
     T_sp GFUN_SPECIALIZERS() const { return this->instanceRef(REF_GFUN_SPECIALIZERS); };
-    T_sp GFUN_COMB() const { return this->instanceRef(REF_GFUN_COMB); };
     T_sp GFUN_LAMBDA_LIST() const { return this->instanceRef(REF_GFUN_LAMBDA_LIST);};
     void GFUN_LAMBDA_LIST_set(T_sp lambda_list)
     {
@@ -126,7 +124,7 @@ namespace core {
     void GFUN_DISPATCHER_set(T_sp val) { this->_CompiledDispatchFunction.store(val); };
   public:
 
-    void accumulateSuperClasses(HashTableEq_sp supers, VectorObjects_sp arrayedSupers, Instance_sp mc);
+    void accumulateSuperClasses(HashTableEq_sp supers, ComplexVector_T_sp arrayedSupers, Instance_sp mc);
     void lowLevel_calculateClassPrecedenceList();
 
 //    virtual bool isSubClassOf(Instance_sp mc) const;
@@ -292,11 +290,13 @@ FORWARD(DtreeInterpreter);
                    REF_EFFECTIVE_METHOD_OUTCOME_END = 4 } EffectiveMethodOutcome;
   public:
     core::T_sp      _Dtree;
+    size_t          _CallCount;
   public:
     static DtreeInterpreter_sp make_dtree_interpreter(T_sp dtree);
   public:
+    CL_DEFMETHOD size_t call_count() const { return this->_CallCount; };
     static LCC_RETURN LISP_CALLING_CONVENTION();
-    DtreeInterpreter_O(FunctionDescription* fdesc, T_sp dtree) : Closure_O(entry_point,fdesc), _Dtree(dtree) {};
+    DtreeInterpreter_O(FunctionDescription* fdesc, T_sp dtree) : Closure_O(entry_point,fdesc), _Dtree(dtree), _CallCount(0) {};
   };
 
 };

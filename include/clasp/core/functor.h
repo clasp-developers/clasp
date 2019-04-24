@@ -73,8 +73,8 @@ fields at the same offset as Instance_O.
     static const size_t Roots = 2;
     void* functionPrototype;
     gctools::GCRootsInModule* gcrootsInModule;
-    int sourcePathname_functionName_Index;
-    int lambdaList_docstring_Index;
+    size_t sourcePathname_functionName_Index;
+    size_t lambdaList_docstring_Index;
     int lineno;
     int column;
     int filepos;
@@ -120,34 +120,34 @@ public:
 
 #if 0
     T_sp fdescInfo(int index) const {
-      T_sp result((gctools::Tagged)this->fdesc()->gcrootsInModule->get(this->fdesc()->sourcePosition_functionName_Index));
+      T_sp result((gctools::Tagged)this->fdesc()->gcrootsInModule->getTaggedIndex(LITERAL_TAG_CHAR,this->fdesc()->sourcePosition_functionName_Index));
       return result;
     }
 #endif
     CL_LISPIFY_NAME("core:functionName");
     CL_DEFMETHOD virtual T_sp functionName() const {
-      Cons_sp cell((gctools::Tagged)this->fdesc()->gcrootsInModule->get(this->fdesc()->sourcePathname_functionName_Index));
+      Cons_sp cell((gctools::Tagged)this->fdesc()->gcrootsInModule->getTaggedIndex(LITERAL_TAG_CHAR,this->fdesc()->sourcePathname_functionName_Index));
       return CONS_CDR(cell);
     }
     T_sp docstring() const {
-      Cons_sp cell((gctools::Tagged)this->fdesc()->gcrootsInModule->get(this->fdesc()->lambdaList_docstring_Index));
+      Cons_sp cell((gctools::Tagged)this->fdesc()->gcrootsInModule->getTaggedIndex(LITERAL_TAG_CHAR,this->fdesc()->lambdaList_docstring_Index));
       return CONS_CDR(cell);
     }
     CL_DEFMETHOD void setf_lambdaList(T_sp lambda_list) {
-      Cons_sp cell((gctools::Tagged)this->fdesc()->gcrootsInModule->get(this->fdesc()->lambdaList_docstring_Index));
+      Cons_sp cell((gctools::Tagged)this->fdesc()->gcrootsInModule->getTaggedIndex(LITERAL_TAG_CHAR,this->fdesc()->lambdaList_docstring_Index));
       cell->rplaca(lambda_list);
     }
     CL_DEFMETHOD T_sp sourcePathname() const {
-      Cons_sp cell((gctools::Tagged)this->fdesc()->gcrootsInModule->get(this->fdesc()->sourcePathname_functionName_Index));
+      Cons_sp cell((gctools::Tagged)this->fdesc()->gcrootsInModule->getTaggedIndex(LITERAL_TAG_CHAR,this->fdesc()->sourcePathname_functionName_Index));
       T_sp result = CONS_CAR(cell);
       return result;
     }
     void setf_sourcePathname(T_sp sourceFileName) const {
-      Cons_sp cell((gctools::Tagged)this->fdesc()->gcrootsInModule->get(this->fdesc()->sourcePathname_functionName_Index));
+      Cons_sp cell((gctools::Tagged)this->fdesc()->gcrootsInModule->getTaggedIndex(LITERAL_TAG_CHAR,this->fdesc()->sourcePathname_functionName_Index));
       cell->rplaca(sourceFileName);
     }
     void setf_docstring(T_sp x) const {
-      Cons_sp cell((gctools::Tagged)this->fdesc()->gcrootsInModule->get(this->fdesc()->lambdaList_docstring_Index));
+      Cons_sp cell((gctools::Tagged)this->fdesc()->gcrootsInModule->getTaggedIndex(LITERAL_TAG_CHAR,this->fdesc()->lambdaList_docstring_Index));
       cell->rplacd(x);
     }
     size_t filePos() const {
@@ -188,7 +188,7 @@ public:
     virtual T_mv functionSourcePos() const;
     virtual T_sp lambdaListHandler() const {SUBIMP();};
     virtual T_sp lambdaList() const {
-      Cons_sp cell((gctools::Tagged)this->fdesc()->gcrootsInModule->get(this->fdesc()->lambdaList_docstring_Index));
+      Cons_sp cell((gctools::Tagged)this->fdesc()->gcrootsInModule->getTaggedIndex(LITERAL_TAG_CHAR,this->fdesc()->lambdaList_docstring_Index));
       return CONS_CAR(cell);
     }
     virtual string __repr__() const;
@@ -311,7 +311,7 @@ namespace core {
           return _Nil<T_O>();
       };
     }
-    T_sp interpretedSourceCode();
+    CL_DEFMETHOD T_sp interpretedSourceCode();
     CL_DEFMETHOD T_sp closedEnvironment() const {
       ASSERT(this->closureType!=cclaspClosure); // Never call on a cclaspClosure
       return (*this)[ENVIRONMENT_SLOT];

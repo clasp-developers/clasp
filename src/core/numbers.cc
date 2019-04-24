@@ -33,6 +33,7 @@ THE SOFTWARE.
 #include <boost/format.hpp>
 
 #include <clasp/core/foundation.h>
+#include <clasp/core/primitives.h> // core__list_from_va_list
 #include <clasp/core/common.h>
 #include <clasp/core/numbers.h>
 #include <clasp/core/multipleValues.h>
@@ -1207,13 +1208,14 @@ int basic_compare(Number_sp na, Number_sp nb) {
   MATH_DISPATCH_END();
 }
 
+/// this is used for comparison of reals, not for complex, so use Real_sp
 T_sp numbers_monotonic(int s, int t, List_sp args) {
-  Number_sp c = gc::As<Number_sp>(oCar(args));
-  Number_sp d;
+  Real_sp c = gc::As<Real_sp>(oCar(args));
+  Real_sp d;
   int dir;
   args = oCdr(args);
   while (args.notnilp()) {
-    d = gc::As<Number_sp>(oCar(args));
+    d = gc::As<Real_sp>(oCar(args));
     dir = s * basic_compare(c, d);
     if (dir < t)
       return _lisp->_false();
@@ -1246,29 +1248,29 @@ CL_DEFUN bool two_arg__GE_(Number_sp x, Number_sp y) {
 CL_LAMBDA(&rest args);
 CL_DEFUN T_sp cl___LT_(List_sp args) {
   if (args.nilp())
-      PROGRAM_ERROR();
+      SIMPLE_PROGRAM_ERROR("< needs at least 1 argument",_Nil<T_O>());
   return numbers_monotonic(-1, 1, args);
 };
 
 CL_LAMBDA(&rest args);
-CL_DEFUN T_mv cl___GT_(List_sp args) {
+CL_DEFUN T_sp cl___GT_(List_sp args) {
   if (args.nilp())
-      PROGRAM_ERROR();
-  return (Values(numbers_monotonic(1, 1, args)));
+      SIMPLE_PROGRAM_ERROR("> needs at least 1 argument",_Nil<T_O>());
+  return numbers_monotonic(1, 1, args);
 };
 
 CL_LAMBDA(&rest args);
-CL_DEFUN T_mv cl___LE_(List_sp args) {
+CL_DEFUN T_sp cl___LE_(List_sp args) {
   if (args.nilp())
-      PROGRAM_ERROR();
-  return (Values(numbers_monotonic(-1, 0, args)));
+      SIMPLE_PROGRAM_ERROR("<= needs at least 1 argument",_Nil<T_O>());
+  return numbers_monotonic(-1, 0, args);
 };
 
 CL_LAMBDA(&rest args);
-CL_DEFUN T_mv cl___GE_(List_sp args) {
+CL_DEFUN T_sp cl___GE_(List_sp args) {
   if (args.nilp())
-      PROGRAM_ERROR();
-  return (Values(numbers_monotonic(1, 0, args)));
+      SIMPLE_PROGRAM_ERROR(">= needs at least 1 argument",_Nil<T_O>());
+  return numbers_monotonic(1, 0, args);
 };
 
 /*! Return true if two numbers are equal otherwise false */
@@ -1410,15 +1412,26 @@ CL_LAMBDA(core:&va-rest args);
 CL_DECLARE();
 CL_DOCSTRING("NE");
 CL_DEFUN T_sp cl___NE_(VaList_sp args) {
-  if (args->remaining_nargs() == 1) return _lisp->_true();
-  if (args->remaining_nargs()==0) return _lisp->_true();
-  if (args->remaining_nargs() == 2) {
+  /* Unlike variable-argument =, this takes a quadratic number of
+   * comparisons, as every pair must be unequal. */
+  switch (args->remaining_nargs()) {
+    /* I expect the order of likelihood is 2, 3, 1, >3, 0.
+     * I don't think the compiler takes the order in a switch
+     * very seriously, though, so it's just in order. */
+  case 0:
+      SIMPLE_PROGRAM_ERROR("/= needs at least 1 argument",_Nil<T_O>());
+  case 1: {
+    // the first arg needs to be a number - check that
+    gc::As<Number_sp>(args->next_arg());
+    return _lisp->_true();
+  }
+  case 2: {
     Number_sp a = gc::As<Number_sp>(args->next_arg());
     Number_sp b = gc::As<Number_sp>(args->next_arg());
     if (basic_equalp(a, b)) return _Nil<T_O>();
-    return _lisp->_true();
+    else return _lisp->_true();
   }
-  if (args->remaining_nargs() == 3) {
+  case 3: {
     Number_sp a = gc::As<Number_sp>(args->next_arg());
     Number_sp b = gc::As<Number_sp>(args->next_arg());
     Number_sp c = gc::As<Number_sp>(args->next_arg());
@@ -1427,7 +1440,22 @@ CL_DEFUN T_sp cl___NE_(VaList_sp args) {
     if (basic_equalp(b, c)) return _Nil<T_O>();
     return _lisp->_true();
   }
-  SIMPLE_ERROR(BF("Handle /= with more than 3 arguments"));
+  default: {
+    /* General case is a nested loop.
+     * We're going to iterate over the arguments several times,
+     * so a valist isn't going to cut it. */
+    List_sp largs = core__list_from_va_list(args);
+    while (largs.notnilp()) {
+      Number_sp n1 = gc::As<Number_sp>(oCar(largs));
+      for (List_sp cur = oCdr(largs); cur.notnilp(); cur = oCdr(cur)) {
+        Number_sp n2 = gc::As<Number_sp>(oCar(cur));
+        if (basic_equalp(n1, n2)) return _Nil<T_O>();
+      }
+      largs = oCdr(largs);
+    }
+    return _lisp->_true();
+  }
+  }
 }
 
 CL_LAMBDA(&rest args);
@@ -1435,7 +1463,7 @@ CL_DECLARE();
 CL_DOCSTRING("_EQ_");
 CL_DEFUN T_sp cl___EQ_(List_sp args) {
   if (args.nilp())
-    return (_lisp->_true());
+    SIMPLE_PROGRAM_ERROR("= needs at least 1 argument",_Nil<T_O>());
   Number_sp a = gc::As<Number_sp>(oCar(args));
   Number_sp b;
   for (auto cur : (List_sp)oCdr(args)) {
@@ -1594,16 +1622,12 @@ Integer_sp Integer_O::create( unsigned long long v )
 }
 #endif
 
-#if !defined( CLASP_UINTPTR_IS_UINT64 ) && !defined( CLASP_UINTPTR_IS_UINT32 )
-Integer_sp Integer_O::create( uintptr_clasp_t v )
-{
-  if ( v <= gc::most_positive_fixnum )
-  {
+Integer_sp Integer_O::create( uintptr_t v) {
+  if ( v <= gc::most_positive_fixnum ) {
     return clasp_make_fixnum((Fixnum)v);
   }
-  return Bignum_O::create( v );
+  return Bignum_O::create( (uint64_t)v );
 }
-#endif
 
 /* Why >= and <? Because most-negative-fixnum is a negative power of two,
  * exactly representable by a float. most-positive-fixnum is slightly less than
@@ -2017,10 +2041,14 @@ Number_sp Complex_O::abs_() const {
                                clasp_times(this->_imaginary, this->_imaginary)));
 }
 
-
-
-
-
+Number_sp Complex_O::reciprocal_() const {
+  // 1/(a+bi) = (a-bi)/(a^2+b^2) by basic algebra.
+  // alternately we could just clasp_divide. I dunno if reciprocal_ is terribly necessary.
+  Real_sp square_modulus = gc::As_unsafe<Real_sp>(clasp_plus(clasp_times(this->_real, this->_real),
+                                                             clasp_times(this->_imaginary, this->_imaginary)));
+  return Complex_O::create(gc::As_unsafe<Real_sp>(clasp_divide(this->_real, square_modulus)),
+                           gc::As_unsafe<Real_sp>(clasp_divide(clasp_negate(this->_imaginary), square_modulus)));
+}
 
 /* ----------------------------------------------------------------------
 
@@ -3334,19 +3362,19 @@ uint64_t clasp_to_uint64_t( core::T_sp x )
 }
 
 
-  // --- CL_INTPTR_T ---
-cl_intptr_t clasp_to_cl_intptr_t( core::T_sp x )
+  // --- UINTPTR_T ---
+uintptr_t clasp_to_uintptr_t( core::T_sp x )
 {
   if ( x.fixnump() ) {
-    ASSERT(x.unsafe_fixnum() >=gc::most_negative_cl_intptr && x.unsafe_fixnum() < gc::most_positive_cl_intptr);
+    ASSERT(x.unsafe_fixnum() >=gc::most_negative_uintptr && x.unsafe_fixnum() < gc::most_positive_uintptr);
     return x.unsafe_fixnum();
   } else if (gc::IsA<Bignum_sp>(x)) {
     Bignum_sp bx = gc::As_unsafe<Bignum_sp>(x);
-    return bx->as_cl_intptr_t();
+    return bx->as_uintptr_t();
   }
   TYPE_ERROR( x, Cons_O::createList(cl::_sym_Integer_O,
-                                    Integer_O::create(gc::most_negative_cl_intptr),
-                                    Integer_O::create(gc::most_positive_cl_intptr)));
+                                    Integer_O::create(gc::most_negative_uintptr),
+                                    Integer_O::create(gc::most_positive_uintptr)));
 }
 
 
@@ -3421,7 +3449,7 @@ ssize_t clasp_to_ssize_t( core::T_sp x )
 
     if (farg < gc::most_negative_ssize|| farg > gc::most_positive_ssize)
     {
-      SIMPLE_ERROR(BF("Cannot convert cl_intptr_t to char. Value out of range  for ssize_t"));
+      SIMPLE_ERROR(BF("Cannot convert uintptr_t to char. Value out of range  for ssize_t"));
     }
     return (ssize_t) farg;
   }
@@ -3430,7 +3458,7 @@ ssize_t clasp_to_ssize_t( core::T_sp x )
   if( sp_i )
     return sp_i->as_size_t();
   else
-    SIMPLE_ERROR(BF("Cannot convert cl_intptr_t to char."));
+    SIMPLE_ERROR(BF("Cannot convert uintptr_t to char."));
 }
 
 ssize_t clasp_to_ssize( core::T_sp x )

@@ -305,10 +305,20 @@ when this is t a lot of graphs will be generated.")
        result))
     (cleavir-env::entry (cleavir-env->interpreter (cleavir-env::next env)))))
 
+(defvar *use-ast-interpreter* nil)
+
 (defmethod cleavir-environment:eval (form env (dispatch-env clasp-global-environment))
-  (if core:*use-interpreter-for-eval*
-      (core:interpret form (cleavir-env->interpreter env))
-      (cclasp-eval form env)))
+  (cond (core:*use-interpreter-for-eval*
+         (core:interpret form (cleavir-env->interpreter env)))
+        (*use-ast-interpreter*
+         (handler-case
+             (ast-interpret-form form env)
+           (interpret-ast:cannot-interpret (c)
+             (declare (ignore c))
+             ;; If the AST interpreter doesn't work, fall back.
+             (cclasp-eval form env))))
+        (t
+         (cclasp-eval form env))))
 
 (defmethod cleavir-environment:eval (form env (dispatch-env NULL))
   "Evaluate the form in Clasp's top level environment"

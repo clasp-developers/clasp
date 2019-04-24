@@ -47,7 +47,7 @@
                ,(simple-compare-args fun arg next)
                nil))))
 
-  (defun expand-compare (form fun args)
+  (defun expand-compare (form fun args &optional (arg-type 't))
     (if (proper-list-p args)
         (case (length args)
           ((0)
@@ -55,13 +55,15 @@
            form)
           ((1)
            ;; preserve nontoplevelness and side effects
-           `(progn (the t ,(first args)) t))
+           `(progn (the ,arg-type ,(first args)) t))
           ((2)
-           `(,fun ,@args))
+           `(,fun (the ,arg-type ,(first args))
+                  (the ,arg-type ,(second args))))
           (otherwise
            ;; Evaluate arguments only once
            (let ((syms (mapcar (lambda (a) (declare (ignore a)) (gensym)) args)))
              `(let (,@(mapcar #'list syms args))
+                (declare (type ,arg-type ,@syms))
                 ,(simple-compare-args fun (first syms) (rest syms))))))
         ;; bad syntax. warn?
         form))
@@ -69,17 +71,18 @@
   ;; /=, char/=, and so on have to compare every pair.
   ;; In general this results in order n^2 comparisons, requiring a loop etc.
   ;; For now we don't do that, and only inline the 1 and 2 arg cases.
-  (defun expand-uncompare (form fun args)
+  (defun expand-uncompare (form fun args &optional (arg-type 't))
     (if (proper-list-p args)
         (case (length args)
           ((1)
            ;; preserve nontoplevelness and side effects.
-           `(progn (the t ,(first args)) t))
-          ((2) `(not (,fun ,@args)))
+           `(progn (the ,arg-type ,(first args)) t))
+          ((2) `(not (,fun (the ,arg-type ,(first args))
+                           (the ,arg-type ,(second args)))))
           (otherwise form))
         form))
 
-  (core:bclasp-define-compiler-macro aref (&whole whole array &rest indeces)
+  (define-compiler-macro aref (&whole whole array &rest indeces)
     (if (= (length indeces) 1)
         `(row-major-aref ,array ,(car indeces))
         whole))

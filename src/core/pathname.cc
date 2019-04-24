@@ -966,7 +966,7 @@ static std::atomic<size_t> global_pathname_recursion_guard;
 struct PathnameRecursionGuard {
   PathnameRecursionGuard() {
     ++global_pathname_recursion_guard;
-    if ( global_pathname_recursion_guard > 50 ) {
+    if ( global_pathname_recursion_guard > 500 ) {
       printf("%s:%d Hit maximum recursion on pathname - set breakpoint here\n", __FILE__, __LINE__ );
     }
   }

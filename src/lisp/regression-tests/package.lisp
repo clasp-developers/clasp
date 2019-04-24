@@ -66,3 +66,24 @@
   (when (find-package "KARSTEN-NEW")
     (delete-package (find-package "KARSTEN-NEW"))))
 
+(test-expect-error defpackage-1
+                   (eval '(defpackage :test (:size 10)(:size 10)))
+                   :type program-error)
+
+(test-expect-error defpackage-2
+                   (eval '(defpackage :test1 (:documentation "foo")(:documentation "bar")))
+                   :type program-error)
+
+(test issue-699
+      (every #'stringp (package-nicknames (find-package :ast-tooling))))
+
+(test issue-699-generic
+      (every #'(lambda(package)
+                 (cond ((and (every #'stringp (package-nicknames package))
+                             (every #'packagep (package-use-list package))
+                             (every #'packagep (package-used-by-list package))
+                             (stringp (package-name package))))
+                       (t (format t "Error in package-tests for ~s" package)
+                          nil)))
+             (list-all-packages)))
+

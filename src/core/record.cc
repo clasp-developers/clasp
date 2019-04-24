@@ -57,16 +57,16 @@ Record_O::Record_O(RecordStage stage, bool dummy, List_sp data) : _stage(stage),
 
 void Record_O::initialize() {
   if (this->_stage == initializing) {
-    this->_Seen = VectorObjects_O::make(16, _Nil<T_O>(), clasp_make_fixnum(0));
+    this->_Seen = ComplexVector_T_O::make(16, _Nil<T_O>(), clasp_make_fixnum(0));
   }
 }
 void Record_O::flagSeen(Cons_sp pair) {
-  VectorObjects_sp vvec = gc::As<VectorObjects_sp>(this->_Seen);
+  ComplexVector_T_sp vvec = gc::As<ComplexVector_T_sp>(this->_Seen);
   vvec->vectorPushExtend(pair);
 }
 
 void Record_O::errorIfInvalidArguments() {
-  VectorObjects_sp seenvec = gc::As<VectorObjects_sp>(this->_Seen);
+  ComplexVector_T_sp seenvec = gc::As<ComplexVector_T_sp>(this->_Seen);
   //  printf("%s:%d arguments seen: %s\n", __FILE__, __LINE__, _rep_(seenvec).c_str());
   //  printf("       arguments passed: %s\n", _rep_(this->_alist).c_str());
   List_sp badArgs(_Nil<T_O>());

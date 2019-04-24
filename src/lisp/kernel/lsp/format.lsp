@@ -1344,7 +1344,6 @@
                (t
                 (when w (dotimes (i spaceleft) (write-char pad stream)))
                 (if (or (minusp number)
-                        #+ieee-floating-point
                         (and (zerop number)
                              (minusp (atan number -1))))
                     (write-char #\- stream)
@@ -2812,7 +2811,7 @@
               package))))
 
 ;;; Contributed by stassats May 24, 2016
-(core:bclasp-define-compiler-macro format (&whole whole destination control-string &rest args)
+(define-compiler-macro format (&whole whole destination control-string &rest args)
   (if (stringp control-string)
       (let ((fun-sym (gensym "FUN"))
             (out-sym (gensym "OUT"))

@@ -406,9 +406,7 @@ CL_DEFUN T_mv core__sharp_dot(T_sp sin, Character_sp ch, T_sp num) {
                    Cons_O::create(object,_Nil<T_O>()),
                    sin);
     }
-//    T_mv result = eval::funcall(core::_sym_STAReval_with_env_hookSTAR->symbolValue(), object, _Nil<T_O>());
-//    return result;
-    return eval::evaluate(object,_Nil<T_O>());
+    return cl__eval(object);
   }
   return _Nil<T_O>();
 }
@@ -547,7 +545,7 @@ CL_DEFUN T_mv core__sharp_colon(T_sp sin, Character_sp ch, T_sp num) {
 CL_LAMBDA(stream subchar radix);
 CL_DECLARE();
 CL_DOCSTRING("sharp_r");
-CL_DEFUN T_mv core__sharp_r(T_sp sin, Character_sp ch, gc::Nilable<Fixnum_sp> nradix) {
+CL_DEFUN T_mv core__sharp_r(T_sp sin, Character_sp ch, T_sp nradix) {
   if (cl::_sym_STARread_suppressSTAR->symbolValue().isTrue()) {
     T_sp object = cl__read(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true());
     (void)object; // suppress warning
@@ -555,8 +553,7 @@ CL_DEFUN T_mv core__sharp_r(T_sp sin, Character_sp ch, gc::Nilable<Fixnum_sp> nr
   } else if (nradix.nilp()) {
     SIMPLE_ERROR(BF("Radix missing in #R reader macro"));
   } else {
-    T_sp tradix = nradix;
-    Fixnum_sp radix = gc::As<Fixnum_sp>(tradix);
+    Fixnum_sp radix = gc::As<Fixnum_sp>(nradix);
     int iradix = unbox_fixnum(radix);
     if (iradix < 2 || iradix > 36) {
       SIMPLE_ERROR(BF("Illegal radix for #R: %d") % iradix);
@@ -576,14 +573,14 @@ CL_DEFUN T_mv core__sharp_r(T_sp sin, Character_sp ch, gc::Nilable<Fixnum_sp> nr
 CL_LAMBDA(stream ch num);
 CL_DECLARE();
 CL_DOCSTRING("sharp_b");
-CL_DEFUN T_mv core__sharp_b(T_sp sin, Character_sp ch, gc::Nilable<Fixnum_sp> num) {
+CL_DEFUN T_mv core__sharp_b(T_sp sin, Character_sp ch, T_sp num) {
   return core__sharp_r(sin, ch, make_fixnum(2));
 };
 
 CL_LAMBDA(stream ch num);
 CL_DECLARE();
 CL_DOCSTRING("sharp_o");
-CL_DEFUN T_mv core__sharp_o(T_sp sin, Character_sp ch, gc::Nilable<Fixnum_sp> num) {
+CL_DEFUN T_mv core__sharp_o(T_sp sin, Character_sp ch, T_sp num) {
   return core__sharp_r(sin, ch, make_fixnum(8));
 };
 
@@ -617,6 +614,8 @@ CL_LAMBDA(stream ch num);
 CL_DECLARE();
 CL_DOCSTRING("sharp_a");
 CL_DEFUN T_mv core__sharp_a(T_sp sin, Character_sp ch, T_sp num) {
+   if (core::_sym_sharp_a_reader->fboundp())
+     return eval::funcall(core::_sym_sharp_a_reader, sin, ch, num);
   if (num.nilp()) {
     T_sp initial_contents = core::eval::funcall(cl::_sym_read,sin,_Nil<T_O>(),_lisp->_true());
     if (cl::_sym_STARread_suppressSTAR->symbolValue().notnilp()) {
@@ -624,10 +623,13 @@ CL_DEFUN T_mv core__sharp_a(T_sp sin, Character_sp ch, T_sp num) {
     } else if (num.nilp()) {
       // readably-pretty-printed array: #A(type dims initial-contents)
       T_sp elt_type = oCar(initial_contents);
-      List_sp dims = gc::As<List_sp>(oCadr(initial_contents));
+      T_sp dims = gc::As<T_sp>(oCadr(initial_contents));
+      // is either a number or a list of n elements
       List_sp linitial_contents = gc::As<List_sp>(oCaddr(initial_contents));
-      if (cl__length(dims)==1) {
-        Vector_sp vec = core__make_vector(elt_type,oCar(dims).unsafe_fixnum(),false,_Nil<T_O>(),_Nil<T_O>(),core::make_fixnum(0),_Nil<T_O>(),true);
+      if (!dims.consp() || cl__length(dims)==1) {
+        if (dims.consp()) 
+            dims = oCar(dims);
+        Vector_sp vec = core__make_vector(elt_type,dims.unsafe_fixnum(),false,_Nil<T_O>(),_Nil<T_O>(),core::make_fixnum(0),_Nil<T_O>(),true);
         size_t idx = 0;
         for ( auto e : linitial_contents ) {
           T_sp val = CONS_CAR(e);
@@ -646,6 +648,8 @@ CL_LAMBDA(stream ch num);
 CL_DECLARE();
 CL_DOCSTRING("sharp_s");
 CL_DEFUN T_mv core__sharp_s(T_sp sin, Character_sp ch, T_sp num) {
+   if (core::_sym_sharp_s_reader->fboundp())
+     return eval::funcall(core::_sym_sharp_s_reader, sin, ch, num);
   IMPLEMENT_MEF("Implement sharp_s");
 }; // core__sharp_s
 
@@ -845,6 +849,9 @@ ReadTable_sp ReadTable_O::create_standard_readtable() {
     Symbol_sp sym = gc::As<Symbol_sp>(oCadr(cur));
     rt->set_dispatch_macro_character(sharp, ch, sym);
   }
+  //reinstall the things defined in lisp
+  if (core::_sym_sharpmacros_lisp_redefine->fboundp())
+    eval::funcall(core::_sym_sharpmacros_lisp_redefine, rt);
   return rt;
 }
 

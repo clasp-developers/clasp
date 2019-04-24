@@ -247,6 +247,21 @@ CL_DEFUN T_sp core__create_tagged_immediate_value_or_nil(T_sp object) {
   return _Nil<T_O>();
 };
 
+CL_LAMBDA(obj);
+CL_DECLARE();
+CL_DOCSTRING("Convert a fixnum value that represents an immediate back into an immediate value either a fixnum, character or single float into an tagged version and return as an integer (either Fixnum or Bignum) or return NIL");
+CL_DEFUN T_sp core__value_from_tagged_immediate(T_sp object) {
+  if (object.fixnump()) {
+    T_sp value((gctools::Tagged)object.unsafe_fixnum());
+    return value;
+  } if (gc::IsA<Bignum_sp>(object)) {
+    size_t val = gc::As_unsafe<Bignum_sp>(object)->as_size_t();
+    T_sp value((gctools::Tagged)val);
+    return value;
+  }
+  SIMPLE_ERROR(BF("Value must fit in fixnum"));
+}
+
 CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("softwareType");
@@ -353,7 +368,7 @@ CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("allRegisteredClassNames");
 CL_DEFUN Vector_sp core__all_registered_class_names() {
-  VectorObjects_sp vo = VectorObjects_O::make( _lisp->classSymbolsHolder().size(), _Nil<T_O>());
+  ComplexVector_T_sp vo = ComplexVector_T_O::make( _lisp->classSymbolsHolder().size(), _Nil<T_O>());
   for (int i(0), iEnd(_lisp->classSymbolsHolder().size()); i < iEnd; ++i) {
     vo->rowMajorAset(i, _lisp->classSymbolsHolder()[i]);
   }
@@ -557,30 +572,10 @@ CL_DEFUN T_mv core__separate_pair_list(List_sp listOfPairs) {
 }
 
 // ignore env
-CL_LISPIFY_NAME("core:bclasp-compiler-macro-function");
-CL_LAMBDA(name &optional env);
-CL_DEFUN T_mv core___bclasp_compiler_macro_function(core::T_sp name, core::T_sp env)
-{
-  return core__get_sysprop(name,core::_sym_bclasp_compiler_macro);
-}
-
-CL_LISPIFY_NAME("CORE:bclasp-compiler-macro-function");
-CL_LAMBDA(function name &optional env);
-CL_DEFUN_SETF T_sp core__setf_bclasp_compiler_macro_function(core::T_sp function, core::T_sp name, core::T_sp env)
-{
-  core__put_sysprop(name,core::_sym_bclasp_compiler_macro,function);
-  return function;
-}
-
-// ignore env
 CL_LAMBDA(name &optional env);
 CL_DEFUN T_mv cl__compiler_macro_function(core::T_sp name, core::T_sp env)
 {
-  // First try to get it from the cl:compiler-macro system property and failing that
-  // try getting it from the core:bclasp-compiler-macro
-  T_mv result = core__get_sysprop(name,cl::_sym_compiler_macro);
-  if (result.valueGet_(1).notnilp()) return result;
-  return core__get_sysprop(name,core::_sym_bclasp_compiler_macro);
+  return core__get_sysprop(name,cl::_sym_compiler_macro);
 }
 
 CL_LISPIFY_NAME("CL:compiler-macro-function");
@@ -1242,7 +1237,7 @@ CL_DEFUN T_sp cl__mapcar(T_sp func_desig, List_sp lists) {
     }
     return result.cons();
   }
-  return _Nil<T_O>();
+  SIMPLE_PROGRAM_ERROR("Mapcar second argument can't be empty", lists);
 }
 
 /*
@@ -1253,6 +1248,7 @@ CL_LAMBDA(op &rest lists);
 CL_DECLARE();
 CL_DOCSTRING("See CLHS mapc");
 CL_DEFUN T_sp cl__mapc(T_sp func_desig, List_sp lists) {
+  // mapc function &rest lists+    list-1
   Function_sp func = coerce::functionDesignator(func_desig);
   if (lists.consp()) {
     List_sp result = CONS_CAR(lists);
@@ -1276,7 +1272,7 @@ CL_DEFUN T_sp cl__mapc(T_sp func_desig, List_sp lists) {
     }
     return result;
   }
-  return _Nil<T_O>();
+  SIMPLE_PROGRAM_ERROR("Mapc second argument can't be empty", lists);
 }
 
 CL_LAMBDA(func-desig &rest lists);
@@ -1306,7 +1302,7 @@ CL_DEFUN T_sp cl__maplist(T_sp func_desig, List_sp lists) {
     }
     return result.cons();
   }
-  return _Nil<T_O>();
+  SIMPLE_PROGRAM_ERROR("Maplist second argument can't be empty", lists);
 }
 
 CL_LAMBDA(op &rest lists);
@@ -1336,7 +1332,7 @@ CL_DEFUN T_sp cl__mapl(T_sp func_desig, List_sp lists) {
     }
     return result;
   }
-  return _Nil<T_O>();
+  SIMPLE_PROGRAM_ERROR("Mapl second argument can't be empty", lists);
 }
 
 CL_LAMBDA(op &rest lists);
@@ -2049,11 +2045,6 @@ CL_DEFUN List_sp core__list_from_va_list(VaList_sp vorig)
   }
   T_sp result = l.cons();
   return result;
-}
-
-CL_DEFUN List_sp core__vaslist_as_list(VaList_sp vorig)
-{
-  return core__list_from_va_list(vorig);
 }
 
 CL_LAMBDA(&optional (out t) msg);

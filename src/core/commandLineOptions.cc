@@ -33,33 +33,24 @@ THE SOFTWARE.
 
 namespace core {
 
-CommandLineOptions::CommandLineOptions(int argc, char *argv[])
-    : _DontLoadImage(false),
-      _DontLoadInitLsp(false),
-      _DisableMpi(false),
-      _HasImageFile(false),
-      _Stage('c'),
-      _ImageFile(""),
-      _GotRandomNumberSeed(false),
-      _RandomNumberSeed(0),
-      _Interactive(true),
-      _Version(false),
-      _SilentStartup(true),
-      _NoRc(false),
-      _PauseForDebugger(false)
+bool global_debug_byte_code = false;
 
+
+
+void process_clasp_arguments(CommandLineOptions* options)
 {
-  int endArg = argc;
-  for (int i = 0; i < argc; ++i) {
-    if (strcmp(argv[i], "--") == 0) {
+  int endArg = options->_RawArguments.size();
+  for (int i = 0; i < options->_RawArguments.size(); ++i) {
+    if (options->_RawArguments[i] == "--") {
       endArg = i;
     }
   }
-  this->_EndArg = endArg;
-  this->_ExecutableName = argv[0];
+  options->_EndArg = endArg;
+  options->_ExecutableName = options->_RawArguments[0];
+  // The most basic processing of the arguments
   int iarg = 1;
   while (iarg < endArg) {
-    string arg = argv[iarg];
+    string arg = options->_RawArguments[iarg];
     if (arg == "-h" || arg == "--help") {
       printf("clasp options\n"
              "-I/--ignore-image    - Don't load the boot image/start with init.lsp\n"
@@ -68,7 +59,7 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
              "-N/--non-interactive - Suppress all repls\n"
              "-m/--disable-mpi     - Don't use mpi even if built with mpi\n"
              "-v/--version         - Print version\n"
-             "-R/--resource-dir    - This directory is treated as the executable directory\n"
+             "--resource-dir       - Options directory is treated as the executable directory\n"
              "                       and it is used to start the search for resource directories\n"
              "-s/--verbose         - Print more info while booting\n"
              "-f/--feature feature - Add the feature to *features*\n"
@@ -99,13 +90,14 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
              "export CLASP_OPTIMIZATION_LEVEL=0|1|2|3 Set the llvm optimization level for compiled code\n"
              "export CLASP_TRAP_INTERN=PKG:SYMBOL Trap the intern of the symbol\n"
              "export CLASP_VERBOSE_BUNDLE_SETUP   Dump info during bundle setup\n"
+             "export CLASP_DEBUG_BYTE_CODE   Dump info during startup for every byte-code\n"
              "export CLASP_PAUSE_STARTUP (set to anything)  Pause right at startup\n"
              "export CLASP_DUMP_FUNCTIONS (set to anything)  Dump all function definitions at startup\n"
              "export CLASP_TELEMETRY_MASK=1  #turn on telemetry for (1=gc,2=stack)\n"
              "export CLASP_TELEMETRY_FILE=/tmp/clasp.tel # (file to write telemetry)\n"
              "export CLASP_QUICKLISP_DIRECTORY=<dir> # (directory that contains quicklisp setup.lisp)\n"
              "export CLASP_FEATURES=clasp-builder-repl  # Set *features* (separate multiple features with spaces)\n"
-             "export CLASP_MEMORY_PROFILE <size-threshold> <number-theshold> # This means call \n"
+             "export CLASP_MEMORY_PROFILE <size-threshold> <number-theshold> # Options means call \n"
              "                      # HitAllocationSizeThreshold every time 16000000 bytes are allocated\n"
              "                      # and call HitAllocationNumberThreshold every time 1024 allocations take place\n"
              "export CLASP_BACKTRACE_ALLOCATIONS <stamp-val> # generate a backtrace to /tmp/stamp<stamp-val>.backtraces\n"
@@ -114,54 +106,92 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
              "export CLASP_MPS_CONFIG=\"32 32 16 80 32 80 64\" # for lots of GC's\n");
       exit(0);
     } else if (arg == "-I" || arg == "--ignore-image") {
-      this->_DontLoadImage = true;
+      options->_DontLoadImage = true;
     } else if (arg == "-N" || arg == "--non-interactive") {
-      this->_Interactive = false;
+      options->_Interactive = false;
     } else if (arg == "-R" || arg == "--resource-dir") {
-      this->_ResourceDir = argv[iarg+1];
+      options->_ResourceDir = options->_RawArguments[iarg+1];
       iarg++;
     } else if (arg == "-r" || arg == "--norc") {
-      this->_NoRc = true;
+      options->_NoRc = true;
     } else if (arg == "-w" || arg == "--wait") {
-      this->_PauseForDebugger = true;
+      options->_PauseForDebugger = true;
     } else if (arg == "-m" || arg == "--disable-mpi") {
-      this->_DisableMpi = true;
+      options->_DisableMpi = true;
     } else if (arg == "-n" || arg == "--noinit") {
-      this->_DontLoadInitLsp = true;
+      options->_DontLoadInitLsp = true;
     } else if (arg == "-v" || arg == "--version") {
-      this->_Version = true;
+      options->_Version = true;
     } else if (arg == "-s" || arg == "--verbose") {
-      this->_SilentStartup = false;
+      options->_SilentStartup = false;
     } else if (arg == "-f" || arg == "--feature") {
       ASSERTF(iarg < (endArg + 1), BF("Missing argument for --feature,-f"));
-      this->_Features.push_back(argv[iarg + 1]);
+      options->_Features.push_back(options->_RawArguments[iarg + 1]);
       iarg++;
     } else if (arg == "-i" || arg == "--image") {
       ASSERTF(iarg < (endArg + 1), BF("Missing argument for --image,-i"));
-      this->_HasImageFile = true;
-      this->_ImageFile = argv[iarg + 1];
+      options->_HasImageFile = true;
+      options->_ImageFile = options->_RawArguments[iarg + 1];
       iarg++;
     } else if (arg == "-t" || arg == "--stage") {
       ASSERTF(iarg < (endArg + 1), BF("Missing argument for --stage,-t"));
-      this->_Stage = argv[iarg + 1][0];
+      options->_Stage = options->_RawArguments[iarg + 1][0];
       iarg++;
     } else if (arg == "-e" || arg == "--eval") {
       ASSERTF(iarg < (endArg + 1), BF("Missing argument for --eval,-e"));
-      pair<LoadEvalEnum, std::string> eval(std::make_pair(cloEval, argv[iarg + 1]));
-      this->_LoadEvalList.push_back(eval);
+      pair<LoadEvalEnum, std::string> eval(std::make_pair(cloEval, options->_RawArguments[iarg + 1]));
+      options->_LoadEvalList.push_back(eval);
       iarg++;
     } else if (arg == "-l" || arg == "--load") {
       ASSERTF(iarg < (endArg + 1), BF("Missing argument for --load,-l"));
-      pair<LoadEvalEnum, std::string> eval(std::make_pair(cloLoad, argv[iarg + 1]));
-      this->_LoadEvalList.push_back(eval);
+      pair<LoadEvalEnum, std::string> eval(std::make_pair(cloLoad, options->_RawArguments[iarg + 1]));
+      options->_LoadEvalList.push_back(eval);
       iarg++;
     } else if (arg == "-S" || arg == "--seed") {
-      this->_RandomNumberSeed = atoi(argv[iarg + 1]);
+      options->_RandomNumberSeed = atoi(options->_RawArguments[iarg + 1].c_str());
       iarg++;
     } else {
-      this->_Args.push_back(arg);
+      options->_Args.push_back(arg);
     }
     iarg++;
   }
 }
+
+
+CommandLineOptions::CommandLineOptions(int argc, char *argv[])
+  : _ProcessArguments(process_clasp_arguments),
+    _DontLoadImage(false),
+      _DontLoadInitLsp(false),
+      _DisableMpi(false),
+      _HasImageFile(false),
+      _Stage('c'),
+      _ImageFile(""),
+      _GotRandomNumberSeed(false),
+      _RandomNumberSeed(0),
+      _Interactive(true),
+      _Version(false),
+      _SilentStartup(true),
+      _NoRc(false),
+      _PauseForDebugger(false)
+
+{
+  for (int i = 0; i < argc; ++i) {
+    this->_RawArguments.push_back(argv[i]);
+  }
+  this->_ExecutableName = this->_RawArguments[0];
+  // --resource-dir is the one argument we must process now
+  int iarg = 1;
+  while ( iarg<this->_RawArguments.size() && this->_RawArguments[iarg] != "--" ) {
+    std::string arg = this->_RawArguments[iarg];
+    if (arg == "--resource-dir") {
+      this->_ResourceDir = this->_RawArguments[iarg+1];
+      iarg++;
+    } else if (arg == "--verbose") {
+      this->_SilentStartup = false;
+      iarg++;
+    }
+    iarg++;
+  }
+}
+
 };

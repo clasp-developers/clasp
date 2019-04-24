@@ -158,7 +158,7 @@ namespace gctools {
 #define LCC_ABI_ARGS_IN_REGISTERS 6
 
 #define ASSERT_LCC_VA_LIST_AT_START(_valist_s_) \
-  ASSERT((_valist_s_)._Args->gp_offset == sizeof(uintptr_clasp_t) * (LCC_ABI_ARGS_IN_REGISTERS - LCC_ARGS_IN_REGISTERS));
+  ASSERT((_valist_s_)._Args->gp_offset == sizeof(uintptr_t) * (LCC_ABI_ARGS_IN_REGISTERS - LCC_ARGS_IN_REGISTERS));
 
 // Registers are %rdi, %rsi, %rdx, %rcx, %r8, %r9
 #define LCC_CLOSURE_REGISTER 0
@@ -171,7 +171,7 @@ namespace gctools {
 #define LCC_TOTAL_REGISTERS LCC_ABI_ARGS_IN_REGISTERS
 #define LCC_SPILL_NUMBER_ARGUMENTS_TO_VA_LIST(_valist_s_, _num_)                               \
   {                                                                                            \
-    ((uintptr_clasp_t *)(_valist_s_)._Args->reg_save_area)[LCC_NARGS_REGISTER] = (uintptr_clasp_t)(_num_); \
+    ((uintptr_t *)(_valist_s_)._Args->reg_save_area)[LCC_NARGS_REGISTER] = (uintptr_t)(_num_); \
   }
 #define LCC_SPILL_CLOSURE_TO_VA_LIST(_valist_s_,_closure_)    ((core::T_O* *)(_valist_s_)._Args->reg_save_area)[LCC_CLOSURE_REGISTER] = (core::T_O*)_closure_;
 
@@ -203,9 +203,9 @@ namespace gctools {
   ::core::Vaslist lcc_arglist_s(*(core::Vaslist*)gctools::untag_vaslist(lcc_passed_valist));\
   core::VaList_sp lcc_vargs(&lcc_arglist_s); 
 
-#define private_LCC_VA_LIST_TOTAL_NUMBER_OF_ARGUMENTS(_args) (size_t)(((uintptr_clasp_t *)(_args[0].reg_save_area))[LCC_NARGS_REGISTER])
-#define private_LCC_VA_LIST_SET_TOTAL_NUMBER_OF_ARGUMENTS(_args, _n) (((uintptr_clasp_t *)(_args[0].reg_save_area))[LCC_NARGS_REGISTER]) = ((uintptr_clasp_t)_n)
-//#define private_LCC_VA_LIST_DECREMENT_TOTAL_NUMBER_OF_ARGUMENTS(_args) (--((uintptr_clasp_t *)(_args[0].reg_save_area))[LCC_NARGS_REGISTER])
+#define private_LCC_VA_LIST_TOTAL_NUMBER_OF_ARGUMENTS(_args) (size_t)(((uintptr_t *)(_args[0].reg_save_area))[LCC_NARGS_REGISTER])
+#define private_LCC_VA_LIST_SET_TOTAL_NUMBER_OF_ARGUMENTS(_args, _n) (((uintptr_t *)(_args[0].reg_save_area))[LCC_NARGS_REGISTER]) = ((uintptr_t)_n)
+//#define private_LCC_VA_LIST_DECREMENT_TOTAL_NUMBER_OF_ARGUMENTS(_args) (--((uintptr_t *)(_args[0].reg_save_area))[LCC_NARGS_REGISTER])
 
 #define LCC_VA_LIST_CLOSURE(_args) core::Function_sp((gctools::Tagged)((core::T_O **)(*_args)._Args->reg_save_area)[LCC_CLOSURE_REGISTER])
 #define LCC_VA_LIST_REGISTER_SAVE_AREA(_args) (core::T_O **)(((*_args))[0].reg_save_area)

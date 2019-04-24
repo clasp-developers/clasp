@@ -47,6 +47,7 @@ search for the string 'src', or 'generated' and return the rest of the list that
      top
        (if (>= index (length system)) (go done))
        (core:hash-table-setf-gethash file-order (elt system index) index)
+       (format t "Assigned build order ~a to ~s~%" index (elt system index))
        (setq index (+ index 1))
        (go top)
      done
@@ -672,18 +673,21 @@ Return files."
   "Compile the cclasp source code."
   (let ((ensure-adjacent (select-source-files #P"src/lisp/kernel/cleavir/inline-prep" #P"src/lisp/kernel/cleavir/auto-compile" :system system)))
     (or (= (length ensure-adjacent) 2) (error "src/lisp/kernel/inline-prep MUST immediately preceed src/lisp/kernel/auto-compile - currently the order is: ~a" ensure-adjacent)))
-  (let ((files (append (out-of-date-bitcodes #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/cleavir/inline-prep" :system system)
-                       (select-source-files #P"src/lisp/kernel/cleavir/auto-compile"
-                                            #P"src/lisp/kernel/tag/cclasp"
-                                            :system system)))
+  (let ((files #+(or)(append (out-of-date-bitcodes #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/cleavir/inline-prep" :system system)
+                             (select-source-files #P"src/lisp/kernel/cleavir/auto-compile"
+                                                  #P"src/lisp/kernel/tag/cclasp"
+                                                  :system system))
+               (out-of-date-bitcodes #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/cclasp" :system system))
         (file-order (calculate-file-order system)))
     ;; Inline ASTs refer to various classes etc that are not available while earlier files are loaded.
     ;; Therefore we can't have the compiler save inline definitions for files earlier than we're able
     ;; to load inline definitions. We wait for the source code to turn it back on.
     (setf core:*defun-inline-hook* nil)
-    ;;; Pull the inline.lisp and fli.lsp files forward because they take the longest to build
-    (setf files (maybe-move-to-front files #P"src/lisp/kernel/lsp/fli"))
-    (setf files (maybe-move-to-front files #P"src/lisp/kernel/cleavir/inline"))
+    ;; Pull the inline.lisp and fli.lsp files forward because they take the longest to build
+    ;; Only do this if we are doing a parallel build
+    (when (and core:*use-parallel-build* (> *number-of-jobs* 1))
+      (setf files (maybe-move-to-front files #P"src/lisp/kernel/lsp/fli"))
+      (setf files (maybe-move-to-front files #P"src/lisp/kernel/cleavir/inline")))
     (compile-system files :reload nil :file-order file-order :total-files (length system))
     (let ((all-output (output-object-pathnames #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/cclasp" :system system)))
       (if (out-of-date-target output-file all-output)

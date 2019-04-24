@@ -133,16 +133,13 @@ switch (nargs) {
                     (irc-undef-value-get %t*%))
                    ((eq rest-alloc 'dynamic-extent)
                     ;; Do the dynamic extent thing- alloca, then an intrinsic to initialize it.
-                    (let ((rrest
-                            (irc-alloca-dynamic-extent-list :irbuilder *irbuilder*
-                                                            :length nremaining
-                                                            :label "rrest")))
+                    (let ((rrest (alloca-dx-list :length nremaining :label "rrest")))
                       (irc-intrinsic-call "cc_gatherDynamicExtentRestArguments"
                                           (list (cmp:calling-convention-va-list* calling-conv)
                                                 nremaining
                                                 (irc-bit-cast rrest %t**%)))))
                    (varest-p
-                    (let ((temp-valist (irc-alloca-vaslist :label "rest")))
+                    (let ((temp-valist (alloca-vaslist :label "rest")))
                       (irc-intrinsic-call "cc_gatherVaRestArguments" 
                                           (list (cmp:calling-convention-va-list* calling-conv)
                                                 nremaining
@@ -571,14 +568,27 @@ a_p = a_p_temp; a = a_temp;
                                             :argument-out argument-out
                                             :safep safep)))))
 
-(defun maybe-alloc-cc-setup (lambda-list debug-on)
+(defun maybe-alloc-cc-setup (cleavir-lambda-list debug-on)
   "Maybe allocate slots in the stack frame to handle the calls
    depending on what is in the lambda-list (&rest, &key etc) and debug-on.
    Return a calling-convention-configuration object that describes what was allocated.
    See the bclasp version in lambdalistva.lsp."
-  (multiple-value-bind (reqargs optargs rest-var key-flag keyargs allow-other-keys aux varest-p)
-      (core:process-lambda-list lambda-list 'core::function)
-    (declare (ignore aux))
+  ;; Parse a cleavir lambda list a little bit.
+  ;; Form is (req+ [&optional (o -p)+] [&rest r] [&key (:k k -p)+] [&allow-other-keys])
+  (let ((nreq 0) (nopt 0) (req-opt-only t)
+        (state nil))
+    (dolist (item cleavir-lambda-list)
+      (cond ((eq item '&optional)
+             (if (eq state '&optional)
+                 (progn (setf req-opt-only nil) ; dupe &optional; just mark as general
+                        (return))
+                 (setf state '&optional)))
+            ((member item lambda-list-keywords)
+             (setf req-opt-only nil)
+             (return))
+            (t (if (eq state '&optional)
+                   (incf nopt)
+                   (incf nreq)))))
     ;; Currently if nargs <= +args-in-registers+ required arguments and (null debug-on)
     ;;      then can optimize and use the arguments in registers directly
     ;;  If anything else then allocate space to spill the registers
@@ -592,22 +602,16 @@ a_p = a_p_temp; a = a_temp;
     ;; In the future add support for required + optional 
     ;; (x &optional y)
     ;; (x y &optional z) etc
-    (let* ((req-opt-only (and (not rest-var)
-                              (not key-flag)
-                              (eql 0 (car keyargs))
-                              (not allow-other-keys)))
-           (num-req (car reqargs))
-           (num-opt (car optargs))
-           ;; If only required or optional arguments are used
-           ;; and the sum of required and optional arguments is less
-           ;; than the number +args-in-register+ then use only registers.
-           (may-use-only-registers (and req-opt-only (<= (+ num-req num-opt) +args-in-registers+))))
+    (let (;; If only required or optional arguments are used
+          ;; and the sum of required and optional arguments is less
+          ;; than the number +args-in-register+ then use only registers.
+          (may-use-only-registers (and req-opt-only (<= (+ nreq nopt) +args-in-registers+))))
       (if (and may-use-only-registers (null debug-on))
            (make-calling-convention-configuration
             :use-only-registers t)
            (make-calling-convention-configuration
             :use-only-registers may-use-only-registers ; if may-use-only-registers then debug-on is T and we could use only registers
-            :register-save-area* (irc-alloca-register-save-area :label "register-save-area"))))))
+            :register-save-area* (irc-register-save-area :label "register-save-area"))))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -615,9 +619,9 @@ a_p = a_p_temp; a = a_temp;
 ;; Setup the calling convention
 ;;
 (defun setup-calling-convention (arguments
-                                 &key lambda-list debug-on rest-alloc cleavir-lambda-list
+                                 &key debug-on rest-alloc cleavir-lambda-list
                                    ignore-arguments)
-  (let ((setup (maybe-alloc-cc-setup lambda-list debug-on)))
+  (let ((setup (maybe-alloc-cc-setup cleavir-lambda-list debug-on)))
     (let ((cc (initialize-calling-convention arguments
                                              setup
                                              :rewind t
@@ -686,5 +690,5 @@ a_p = a_p_temp; a = a_temp;
                               (symbol (car info))
                               (index (cdr info))
                               (ref (codegen-lexical-var-reference symbol 0 index new-env new-env)))
-                         (irc-store value ref))))
+                         (irc-t*-result value ref))))
       new-env)))

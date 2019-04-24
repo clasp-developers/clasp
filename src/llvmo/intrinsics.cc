@@ -512,7 +512,7 @@ ALWAYS_INLINE core::T_sp mk_integer_long( long v )
 
 ALWAYS_INLINE core::T_sp mk_integer_ulong( unsigned long v )
 {
-  return core::Integer_O::create( static_cast<uintptr_clasp_t>(v) );
+  return core::Integer_O::create( static_cast<Fixnum>(v) );
 }
 
 ALWAYS_INLINE core::T_sp mk_integer_longlong( long long v )
@@ -551,14 +551,14 @@ ALWAYS_INLINE core::T_sp mk_time( time_t v )
 
 ALWAYS_INLINE core::T_sp mk_pointer( void * v )
 {
-  clasp_ffi::ForeignData_sp ptr = clasp_ffi::ForeignData_O::create( reinterpret_cast<cl_intptr_t>( v ) );
+  clasp_ffi::ForeignData_sp ptr = clasp_ffi::ForeignData_O::create( reinterpret_cast<uintptr_t>( v ) );
   ptr->set_kind( kw::_sym_clasp_foreign_data_kind_pointer );
   return ptr;
 }
 
 ALWAYS_INLINE core::T_sp mk_size( size_t v )
 {
-  return core::Integer_O::create( static_cast<uintptr_clasp_t>(v) );
+  return core::Integer_O::create( static_cast<Fixnum>(v) );
 }
 
 ALWAYS_INLINE core::T_sp mk_ssize( ssize_t v )
@@ -1019,6 +1019,9 @@ ALWAYS_INLINE void * from_object_pointer( core::T_O* obj )
   T_sp tobj((gctools::Tagged)obj);
   if (gctools::IsA<clasp_ffi::ForeignData_sp>(tobj)) {
     return gctools::As_unsafe<clasp_ffi::ForeignData_sp>(tobj)->ptr();
+  }
+  if (gctools::IsA<core::Pointer_sp>(tobj)) {
+    return gctools::As_unsafe<core::Pointer_sp>(tobj)->ptr();
   }
   SIMPLE_ERROR(BF("Handle from_object_pointer for value: %s") % _rep_(tobj));
 }

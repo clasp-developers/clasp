@@ -145,6 +145,21 @@ void Integer_O::__write__(T_sp stream) const {
   cl__write_sequence(buffer._Buffer, stream, make_fixnum(0), _Nil<T_O>());
 }
 
+void Ratio_O::__write__(T_sp stream) const {  
+  SafeBufferStr8Ns buffer;
+  int print_base = clasp_print_base();
+  core__integer_to_string(buffer._Buffer, this->num()->const_sharedThis<Integer_O>(),
+                       make_fixnum(print_base),
+                       cl::_sym_STARprint_radixSTAR->symbolValue().isTrue(),
+                       false);
+  buffer._Buffer->vectorPushExtend(clasp_make_character('/'));
+  core__integer_to_string(buffer._Buffer, this->den()->const_sharedThis<Integer_O>(),
+                       make_fixnum(print_base),
+                       false,
+                       false);
+  cl__write_sequence(buffer._Buffer, stream, make_fixnum(0), _Nil<T_O>());
+}
+
 void Complex_O::__write__(T_sp stream) const {
   clasp_write_string("#C(", stream);
   write_ugly_object(this->_real, stream);

@@ -97,7 +97,7 @@
                  (not (core:lexical-function (car form) env))
                  (not (core:lexical-macro-function (car form) env))
                  (not (core:declared-global-notinline-p (car form)))
-                 (let ((expansion (core:bclasp-compiler-macroexpand form env)))
+                 (let ((expansion (core:compiler-macroexpand form env)))
                    (if (eq expansion form)
                        nil
                        (progn

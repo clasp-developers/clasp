@@ -44,15 +44,15 @@ int global_recursive_allocation_counter = 0;
 void GCStack::growStack() {
   size_t oldSize = (this->_StackLimit - this->_StackBottom);
   size_t newSize = oldSize * 2;
-  uintptr_clasp_t *newStack = (uintptr_clasp_t *)GC_MALLOC(newSize);
+  uintptr_t *newStack = (uintptr_t *)GC_MALLOC(newSize);
   memcpy(newStack, this->_StackBottom, oldSize);    // Copy old to new
   memset(newStack + oldSize, 0, newSize - oldSize); // Zero end of new part
   long long int stack_top_offset = (char *)this->_StackCur - (char *)this->_StackBottom;
-  uintptr_clasp_t *oldStack = this->_StackBottom;
+  uintptr_t *oldStack = this->_StackBottom;
   this->_StackBottom = newStack;
-  this->_StackLimit = (uintptr_clasp_t *)((char *)newStack + newSize);
+  this->_StackLimit = (uintptr_t *)((char *)newStack + newSize);
   this->_StackMiddleOffset = (newSize / 2);
-  this->_StackCur = (uintptr_clasp_t *)((char *)newStack + stack_top_offset);
+  this->_StackCur = (uintptr_t *)((char *)newStack + stack_top_offset);
   GCTOOLS_ASSERT(this->_StackBottom <= this->_StackCur && this->_StackCur < this->_StackLimit);
   GC_FREE(oldStack);
 }
@@ -61,14 +61,14 @@ void GCStack::shrinkStack() {
   GCTOOLS_ASSERT((this->_StackCur - this->_StackBottom) < this->_StackMiddleOffset);
   size_t oldSize = (this->_StackLimit - this->_StackBottom);
   size_t newSize = oldSize / 2;
-  uintptr_clasp_t *newStack = (uintptr_clasp_t *)GC_MALLOC(newSize);
+  uintptr_t *newStack = (uintptr_t *)GC_MALLOC(newSize);
   memcpy(newStack, this->_StackBottom, newSize); // Copy old to new
   long long int stack_top_offset = (char *)this->_StackCur - (char *)this->_StackBottom;
-  uintptr_clasp_t *oldStack = this->_StackBottom;
+  uintptr_t *oldStack = this->_StackBottom;
   this->_StackBottom = newStack;
-  this->_StackLimit = (uintptr_clasp_t *)((char *)newStack + newSize);
+  this->_StackLimit = (uintptr_t *)((char *)newStack + newSize);
   this->_StackMiddleOffset = (newSize / 2);
-  this->_StackCur = (uintptr_clasp_t *)((char *)newStack + stack_top_offset);
+  this->_StackCur = (uintptr_t *)((char *)newStack + stack_top_offset);
   GCTOOLS_ASSERT(this->_StackBottom <= this->_StackCur && this->_StackCur < this->_StackLimit);
   GC_FREE(oldStack);
 }
@@ -82,18 +82,18 @@ void *GCStack::pushFrameImpl(size_t frameSize) {
   size_t headerAndFrameSize = FRAME_HEADER_SIZE + frameSize;
 #ifdef USE_BOEHM
 #ifdef BOEHM_ONE_BIG_STACK
-  uintptr_clasp_t *headerAndFrame = (uintptr_clasp_t *)this->_StackCur;
-  uintptr_clasp_t *stackCur = (uintptr_clasp_t *)((char *)this->_StackCur + headerAndFrameSize);
+  uintptr_t *headerAndFrame = (uintptr_t *)this->_StackCur;
+  uintptr_t *stackCur = (uintptr_t *)((char *)this->_StackCur + headerAndFrameSize);
   if (stackCur > this->_StackLimit)
     this->growStack();
-  this->_StackCur = (uintptr_clasp_t *)((char *)this->_StackCur + headerAndFrameSize);
+  this->_StackCur = (uintptr_t *)((char *)this->_StackCur + headerAndFrameSize);
   GCTOOLS_ASSERT(this->_StackBottom <= this->_StackCur && this->_StackCur < this->_StackLimit);
 #else
-  uintptr_clasp_t *headerAndFrame = (uintptr_clasp_t *)GC_MALLOC(headerAndFrameSize);
+  uintptr_t *headerAndFrame = (uintptr_t *)GC_MALLOC(headerAndFrameSize);
 #endif
   FRAME_HEADER_TYPE_FIELD(headerAndFrame) = frame_t;
   FRAME_HEADER_SIZE_FIELD(headerAndFrame) = headerAndFrameSize;
-  void *frameStart = headerAndFrame + 1; // skip uintptr_clasp_t header
+  void *frameStart = headerAndFrame + 1; // skip uintptr_t header
   this->_TotalSize += headerAndFrameSize;
   this->_TotalAllocations += headerAndFrameSize;
   goto DONE;
@@ -110,19 +110,19 @@ void *GCStack::pushFrameImpl(size_t frameSize) {
     THROW_HARD_ERROR(BF("Could not mps_ap_frame_push"));
   }
   mps_addr_t p;
-  uintptr_clasp_t *allocP;
+  uintptr_t *allocP;
   do {
     mps_res_t res = mps_reserve(&p, this->_AllocationPoint, headerAndFrameSize);
     if (res != MPS_RES_OK) {
       THROW_HARD_ERROR(BF("Out of memory in GCStack::allocateFrame"));
     }
-    allocP = reinterpret_cast<uintptr_clasp_t *>(p);
+    allocP = reinterpret_cast<uintptr_t *>(p);
     memset(allocP, 0, headerAndFrameSize);
   } while (!mps_commit(this->_AllocationPoint, p, headerAndFrameSize)); /* see note 2 */
   DEBUG_MPS_UNDERSCANNING_TESTS();
   FRAME_HEADER_TYPE_FIELD(allocP) = frame_t;
   FRAME_HEADER_SIZE_FIELD(allocP) = headerAndFrameSize;
-  void *frameStart = FRAME_START(allocP); // skip uintptr_clasp_t header
+  void *frameStart = FRAME_START(allocP); // skip uintptr_t header
   this->_TotalSize += headerAndFrameSize;
   this->_TotalAllocations += headerAndFrameSize;
   goto DONE;

@@ -420,7 +420,11 @@ No DIBuilder is defined for the default module")
     ((and (consp lname) (eq (car lname) 'method) (consp (second lname)) (eq (car (second lname)) 'setf))
      (let* ((name-list (second lname))
             (setf-name-symbol (second name-list))
-            (pkg-name (string (package-name (symbol-package setf-name-symbol))))
+            (pkg-symbol (symbol-package setf-name-symbol))
+            ;;; e.g. lname = (METHOD (SETF #:G4336) (T CONS))
+            (pkg-name (if pkg-symbol
+                          (string (package-name pkg-symbol))
+                          "UNINTERNED"))
             (specializers (core:bformat nil "%s" (cddr lname))))
        (escape-and-join-jit-name (list (string setf-name-symbol) pkg-name specializers "SETFMETHOD"))))
     ((consp lname)
@@ -498,8 +502,6 @@ The passed module is modified as a side-effect."
 
 
 (defun optimize-module-for-compile (module)
-  #+(or)(bformat *debug-io* "In optimize-module-for-compile%N")
-  #+(or)(llvm-sys:dump-module module)
   module)
 
 #+(or)
@@ -621,7 +623,7 @@ The passed module is modified as a side-effect."
              #+threads(mp:lock *jit-log-lock* t)
              (if (not (boundp '*jit-log-stream*))
                  (let ((filename (core:bformat nil "/tmp/clasp-symbols-%s" (core:getpid))))
-                   (core:bformat *debug-io* "Writing jitted symbols to %s%N" filename)
+                   (core:bformat *error-output* "Writing jitted symbols to %s%N" filename)
                    (setq *jit-log-stream* (open filename :direction :output))))
              (write-string (core:pointer-as-string (cadr symbol-info)) *jit-log-stream*)
              (write-char #\space *jit-log-stream*)

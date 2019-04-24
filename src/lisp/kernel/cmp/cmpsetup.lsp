@@ -116,7 +116,7 @@ Options are :tagbody :go :all :eh-landing-pads
 #+(or)
 (progn
   (eval-when (:compile-toplevel :load-toplevel :execute)
-    (core:bformat *debug-io* "!%N!%N!   WARNING - cmp-log (bclasp compiler debugging) is on - Disable the macros in cmpsetup.lsp\n!\n!\n!\n"))
+    (core:bformat *error-output* "!%N!%N!   WARNING - cmp-log (bclasp compiler debugging) is on - Disable the macros in cmpsetup.lsp\n!\n!\n!\n"))
   (defun is-debug-compiler-on ()
     *debug-compiler*)
   (defmacro debug-print-i32 (num)

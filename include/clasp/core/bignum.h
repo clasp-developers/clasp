@@ -124,6 +124,8 @@ public: // Functions here
 
   string __repr__() const;
 
+  Number_sp signum_() const;
+
   /*! Return true if the number fits in a signed int */
   bool fits_sint_p();
 
@@ -204,7 +206,7 @@ public: // Functions here
   virtual int64_t as_int64_t() const;
   virtual uint64_t as_uint64_t() const;
 
-  virtual cl_intptr_t as_cl_intptr_t() const;
+  virtual uintptr_t as_uintptr_t() const;
   virtual ptrdiff_t as_ptrdiff_t() const;
   virtual size_t as_size_t() const;
   virtual ssize_t as_ssize_t() const;

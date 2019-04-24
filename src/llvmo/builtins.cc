@@ -52,11 +52,6 @@ THE SOFTWARE.
 
 extern "C" {
 
-BUILTIN_ATTRIBUTES void newTmv(core::T_mv *sharedP)
-{
-  new (sharedP) core::T_mv();
-}
-
 BUILTIN_ATTRIBUTES void cc_rewind_va_list(va_list va_args, void** register_save_areaP)
 {NO_UNWIND_BEGIN_BUILTINS();
   LCC_REWIND_VA_LIST(va_args,register_save_areaP);
@@ -148,21 +143,11 @@ BUILTIN_ATTRIBUTES core::T_O* cx_read_stamp(core::T_O* obj)
 
 
 BUILTIN_ATTRIBUTES
-core::T_O *va_symbolFunction(core::T_O *symP) {
+core::T_O *cc_symbol_function(core::T_O *symP) {
   core::Symbol_sp sym((gctools::Tagged)symP);
   core::Function_sp func((gc::Tagged)(sym)->_Function.theObject);
   return func.raw_();
 }
-
-#if 0
-/*! Invoke a symbol function with the given arguments and put the result in (*resultP) */
-BUILTIN_ATTRIBUTES core::T_O* symbolFunctionRead(const core::T_O *tsymP)
-{NO_UNWIND_BEGIN();
-  const core::Symbol_sp sym((gc::Tagged)tsymP);
-  return sym->symbolFunction().raw_();
-  NO_UNWIND_END();
-}
-#endif
 
 /*! Invoke a symbol function with the given arguments and put the result in (*resultP) */
 BUILTIN_ATTRIBUTES core::T_O* setfSymbolFunctionRead(const core::T_O *tsymP)
@@ -173,37 +158,17 @@ BUILTIN_ATTRIBUTES core::T_O* setfSymbolFunctionRead(const core::T_O *tsymP)
   NO_UNWIND_END();
 }
 
-#if 0
-BUILTIN_ATTRIBUTES core::T_sp *symbolValueReference(core::T_sp *symbolP)
-{
-  core::Symbol_sp sym((gctools::Tagged)ENSURE_VALID_OBJECT_BUILTINS(symbolP->raw_()));
-  return sym->valueReference();
-}
-#endif
-
-
-BUILTIN_ATTRIBUTES core::T_sp *lexicalValueReference(size_t depth, size_t index, core::ActivationFrame_O *frameP)
+BUILTIN_ATTRIBUTES core::T_O** lexicalValueReference(size_t depth, size_t index, core::ActivationFrame_O *frameP)
 {
   core::ActivationFrame_sp af((gctools::Tagged)frameP);
-  return const_cast<core::T_sp *>(&core::value_frame_lookup_reference(af, depth, index));
+  core::T_sp& value_ref = core::value_frame_lookup_reference(af, depth, index);
+  return &value_ref.rawRef_();
 }
 
-BUILTIN_ATTRIBUTES core::T_sp *registerReference(core::T_sp* register_)
+BUILTIN_ATTRIBUTES core::T_O** registerReference(core::T_O** register_)
 {
   return register_;
 }
-
-
-#if 0
-BUILTIN_ATTRIBUTES void sp_lexicalValueRead(core::T_sp *resultP, int depth, int index, core::ActivationFrame_sp *renvP)
-{
-  (*resultP) = core::value_frame_lookup_reference(*renvP,depth,index);
-}
-BUILTIN_ATTRIBUTES void mv_lexicalValueRead(core::T_mv *resultP, int depth, int index, core::ActivationFrame_sp *renvP)
-{
-  (*resultP) = core::value_frame_lookup_reference(*renvP,depth,index);
-}
-#endif
 
 // The following two are only valid for non-simple arrays. Be careful!
 BUILTIN_ATTRIBUTES core::T_O* cc_realArrayDisplacement(core::T_O* tarray) {

@@ -110,6 +110,8 @@
    #:make-named-enter-instruction
    #:debug-message-instruction
    #:debug-break-instruction
+   #:save-values-instruction #:make-save-values-instruction
+   #:load-values-instruction #:make-load-values-instruction
    #:multiple-value-foreign-call-instruction
    #:foreign-call-instruction
    #:foreign-call-pointer-instruction
@@ -176,7 +178,6 @@
    #:make-headerq-instruction
    #:save-frame-instruction
    #:make-save-frame-instruction
-   #:assign-catch-instruction #:go-index
    #:enter-instruction
    #:typed-lexical-location #:lexical-location-type
    #:closure-pointer-dynamic-lexical-location

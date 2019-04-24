@@ -87,10 +87,10 @@ SNode_sp parseNode(HashTable_sp objToNode, T_sp obj) {
         result->setCdr(one);
         result = one;
       }
-      VectorObjects_sp vresult(_Nil<VectorObjects_O>());
+      ComplexVector_T_sp vresult(_Nil<ComplexVector_T_O>());
       if (oCddr(consObj).notnilp()) {
         Vector_sp vdata = gc::As<Vector_sp>(oThird(consObj));
-        vresult = VectorObjects_O::make(vdata->length(),_Nil<T_O>());
+        vresult = ComplexVector_T_O::make(vdata->length(),_Nil<T_O>());
         for (int i = 0, iEnd(vdata->length()); i < iEnd; ++i) {
           SNode_sp data = parseNode(objToNode, vdata->rowMajorAref(i));
           vresult->rowMajorAset(i, data);

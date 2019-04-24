@@ -29,16 +29,24 @@ THE SOFTWARE.
 
 namespace core {
 
+class CommandLineOptions;
+
+typedef void (*process_arguments_callback)(CommandLineOptions*);
+
+extern bool global_debug_byte_code;
+
 typedef enum { cloLoad,
                cloEval } LoadEvalEnum;
 
 struct CommandLineOptions {
   CommandLineOptions(int argc, char *argv[]);
+  process_arguments_callback _ProcessArguments;
   int _EndArg;
   std::string _ExecutableName;
   bool _DontLoadImage;
   bool _DontLoadInitLsp;
   bool _DisableMpi {false};
+  std::vector<std::string> _RawArguments;
   std::vector<std::string> _Features;
   std::vector<pair<LoadEvalEnum, std::string>> _LoadEvalList;
   bool _HasImageFile;

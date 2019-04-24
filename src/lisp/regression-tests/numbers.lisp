@@ -98,6 +98,26 @@
       (let ()
         (= (complex 1 2)(complex 1 2))))
 
+(test /=.ORDER.3
+      (equal
+       '(t 6 1 2 3 4 5 6)
+       (multiple-value-list
+        (LET ((I 0) U V W X Y Z)
+          (VALUES
+           (/= (PROGN (SETF U (INCF I)) 1)
+               (PROGN (SETF V (INCF I)) 2)
+               (PROGN (SETF W (INCF I)) 3)
+               (PROGN (SETF X (INCF I)) 4)
+               (PROGN (SETF Y (INCF I)) 5)
+               (PROGN (SETF Z (INCF I)) 6))
+           I
+           U
+           V
+           W
+           X
+           Y
+           Z)))))
+
 (test ratios-1 (equal 2 (+ 1/2 1/2 1/2 1/2)))
 
 (test ratios-2 (equalp (LOOP FOR X FROM 0 TO 5 BY 1/2 COLLECT X)
@@ -401,10 +421,50 @@
              (sqrt 280223957387837321176489673882749236198713552340979212342342346827364728364278346728364345683746534765348756384765834658734652384768732467823648723468723462783468723467823647823768762342342686284362783462384678234623423947928347293479823749827342346782364234234283746872346728346234876237846234234786234499889)))
         (and (typep result 'float)(not (ext:float-nan-p result))(ext:float-infinity-p result))))
 
+;;; the following all have &rest numbers+ in the definition, so need at least 1 argument
+(test-expect-error number-compare-1 (=) :type program-error)
+(test-expect-error number-compare-2 (/=) :type program-error)
+(test-expect-error number-compare-3 (<) :type program-error)
+(test-expect-error number-compare-4 (>) :type program-error)
+(test-expect-error number-compare-5 (<=) :type program-error)
+(test-expect-error number-compare-6 (>=) :type program-error)
 
+(test-expect-error max-1 (max) :type program-error)
+(test-expect-error max-2 (locally (declare (notinline max))(max #c(1 2))) :type type-error)
+(test-expect-error max-2a (max #c(1 2)) :type type-error)
+(test max-3 (max 36 (1+ (integer-length most-positive-fixnum))))
 
+(test-expect-error min-1 (min) :type program-error)
+(test-expect-error min-2 (locally (declare (notinline min))(min #c(1 2))) :type type-error)
+(test-expect-error min-2a (min #c(1 2)) :type type-error)
+(test min-3 (min 36 (1+ (integer-length most-positive-fixnum))))
 
+;;; <, >, <=, >=: take reals, =, /= numbers
+(test-expect-error number-comparison-real-1 (locally (declare (notinline <)) (< #c(1 2))) :type type-error)
+(test-expect-error number-comparison-real-2 (locally (declare (notinline >))(> #c(1 2))) :type type-error)
+(test-expect-error number-comparison-real-3 (locally (declare (notinline <=))(<= #c(1 2))) :type type-error)
+(test-expect-error number-comparison-real-4 (locally (declare (notinline >=))(>= #c(1 2))) :type type-error)
+(test-expect-error number-comparison-real-7 (locally (declare (notinline =))(= (make-hash-table))) :type type-error)
+(test-expect-error number-comparison-real-8 (locally (declare (notinline /=))(/= (make-hash-table))) :type type-error)
+(test-expect-error number-comparison-real-9 (locally (declare (notinline =))(= "jd")) :type type-error)
+(test-expect-error number-comparison-real-10 (locally (declare (notinline /=))(/= "jd")) :type type-error)
+(test-expect-error number-comparison-number-11 (locally (declare (notinline <))(< "jd")) :type type-error)
+(test-expect-error number-comparison-number-12 (locally (declare (notinline >))(> "jd")) :type type-error)
+(test-expect-error number-comparison-number-13 (locally (declare (notinline <=))(<= "jd")) :type type-error)
+(test-expect-error number-comparison-number-14 (locally (declare (notinline >=))(>= "jd")) :type type-error)
 
+;;; and with compiler macros
+(test-expect-error number-comparison-real-1a (let ()(< #c(1 2))) :type type-error)
+(test-expect-error number-comparison-real-2a (let ()(> #c(1 2))) :type type-error)
+(test-expect-error number-comparison-real-3a (let ()(<= #c(1 2))) :type type-error)
+(test-expect-error number-comparison-real-4a (let ()(>= #c(1 2))) :type type-error)
+(test-expect-error number-comparison-real-7a (let ()(= (make-hash-table))) :type type-error)
+(test-expect-error number-comparison-real-8a (let ()(/= (make-hash-table))) :type type-error)
+(test-expect-error number-comparison-real-9a (let ()(= "jd")) :type type-error)
+(test-expect-error number-comparison-real-10a (let ()(/= "jd")) :type type-error)
+(test-expect-error number-comparison-number-11a (let ()(< "jd")) :type type-error)
+(test-expect-error number-comparison-number-12a (let ()(> "jd")) :type type-error)
+(test-expect-error number-comparison-number-13a (let ()(<= "jd")) :type type-error)
+(test-expect-error number-comparison-number-14a (let ()(>= "jd")) :type type-error)
 
-
-
+(test complex-reciprocal (/ #c(1 1)))

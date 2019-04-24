@@ -43,6 +43,7 @@ namespace core {
   FORWARD(StrWNs);
   FORWARD(MDArrayT);
   FORWARD(SimpleMDArrayT);
+FORWARD(ComplexVector_T);
   FORWARD(MDArrayBit);
   FORWARD(SimpleMDArrayBit);
   FORWARD(MDArrayBaseChar);
@@ -50,9 +51,10 @@ namespace core {
   FORWARD(MDArrayCharacter);
   FORWARD(SimpleMDArrayCharacter);
   //
-  FORWARD(SimpleVectorDouble);
-  FORWARD(MDArrayDouble);
-  FORWARD(SimpleMDArrayDouble);
+  FORWARD(SimpleVector_double);
+  FORWARD(MDArray_double);
+  FORWARD(SimpleMDArray_double);
+  FORWARD(ComplexVector_double);
   //
   FORWARD(SimpleVector_size_t);
   FORWARD(MDArray_size_t);

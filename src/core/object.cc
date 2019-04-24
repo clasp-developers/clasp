@@ -59,6 +59,15 @@ __END_DOC
 */
 
 
+extern "C" {
+bool low_level_equal(core::T_O* a, core::T_O* b) {
+  core::T_sp ta((gctools::Tagged) a);
+  core::T_sp tb((gctools::Tagged) b);
+  return cl__equal(ta,tb);
+};  
+  
+};
+
 namespace core {
 
 uint __nextGlobalClassSymbol = 1;
@@ -359,7 +368,7 @@ string General_O::className() const {
 
 void General_O::sxhash_(HashGenerator &hg) const {
   if (hg.isFilling()) {
-    Fixnum res = (Fixnum)((((uintptr_clasp_t)this) >> gctools::tag_shift));
+    Fixnum res = (Fixnum)((((uintptr_t)this) >> gctools::tag_shift));
     hg.addPart(res);
   }
 }
@@ -370,7 +379,7 @@ void General_O::sxhash_equal(HashGenerator &hg,LocationDependencyPtrT ld) const 
 #ifdef USE_MPS
   if (ld) mps_ld_add(ld, global_arena, (mps_addr_t)address );
 #endif
-  hg.addPart((Fixnum)(((uintptr_clasp_t)address)>>gctools::tag_shift));
+  hg.addPart((Fixnum)(((uintptr_t)address)>>gctools::tag_shift));
   return;
 }
 
@@ -639,18 +648,41 @@ void AtomicT_Holder_O::object_makunbound() {
   this->_Object.store(_Unbound<T_O>());
 }
 
-CL_DEFUN bool ext__object_unboundp(AtomicT_Holder_sp ah) {
+CL_DEFUN bool ext__atomic_unboundp(AtomicT_Holder_sp ah) {
   return ah->object_unboundp();
 }
 
-CL_DEFUN T_sp ext__object_get(AtomicT_Holder_sp ah) {
+CL_DEFUN T_sp ext__atomic_get(AtomicT_Holder_sp ah) {
   return ah->object_get();
 }
-CL_DEFUN void ext__object_set(AtomicT_Holder_sp ah, T_sp value) {
+CL_DEFUN void ext__atomic_set(AtomicT_Holder_sp ah, T_sp value) {
   ah->object_set(value);
 }
-CL_DEFUN void ext__object_makunbound(AtomicT_Holder_sp ah) {
+CL_DEFUN void ext__atomic_makunbound(AtomicT_Holder_sp ah) {
   return ah->object_makunbound();
+}
+
+CL_DEFUN bool ext__atomic_compare_and_swap_weak(AtomicT_Holder_sp object,
+                                         T_sp expected,
+                                         T_sp desired )
+{
+  bool result = object->_Object.compare_exchange_weak(expected,desired);
+  return result;
+}
+
+CL_DEFUN bool ext__atomic_compare_and_swap_strong(AtomicT_Holder_sp object,
+                                           T_sp expected,
+                                           T_sp desired )
+{
+  bool result = object->_Object.compare_exchange_strong(expected,desired);
+  return result;
+}
+
+  
+
+CL_DEFUN AtomicT_Holder_sp ext__make_atomic(T_sp value)
+{
+  return AtomicT_Holder_O::create(value);
 }
 
 
