@@ -304,6 +304,7 @@
          ;; This covers (complex whatever) types in addition to just complex.
          ;; We don't have multiple complex types in the backend,
          ;; so we can just do this.
+         ;; See comment in DEFUN TYPEP in lsp/predlib.lsp.
          `(complexp ,object))
         (otherwise
          ;; Last ditch efforts.

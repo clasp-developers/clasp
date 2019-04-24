@@ -480,14 +480,13 @@ Returns T if X belongs to TYPE; NIL otherwise."
     #+long-float
     (LONG-FLOAT
      (and (eq (type-of object) 'LONG-FLOAT) (in-interval-p object i)))
-    (COMPLEX
-     (and (complexp object)
-          (or (null i)
-	      (and (typep (realpart object) (car i))
-		   ;;wfs--should only have to check one.
-		   ;;Illegal to mix real and imaginary types!
-		   (typep (imagpart object) (car i))))
-	   ))
+    ;; OK, important conformance note. CLHS says TYPEP for a complex checks
+    ;; the real and imaginary parts against the complex element type.
+    ;; However, this seems to conflict with the idea of upgraded complex types
+    ;; and the operation of subtypep... so, no.
+    ;; Note that if you decide to change this, you'll need to alter the
+    ;; compiler macro (in cmp/opt-type.lsp) as well.
+    (COMPLEX (complexp object))
     (SEQUENCE (or (listp object) (vectorp object)))
     (CONS (and (consp object)
 	       (or (endp i)
