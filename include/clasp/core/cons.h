@@ -114,43 +114,43 @@ namespace core {
     friend T_sp oCdr(T_sp o);
 #ifdef USE_MPS
   public: // Garbage collector functions
-    uintptr_clasp_t& rawRef(int idx) {return *(uintptr_clasp_t*)((uintptr_clasp_t*)this+idx);};
-    uintptr_clasp_t& rawRef(int idx) const {return *(uintptr_clasp_t*)((uintptr_clasp_t*)this+idx);};
+    uintptr_t& rawRef(int idx) {return *(uintptr_t*)((uintptr_t*)this+idx);};
+    uintptr_t& rawRef(int idx) const {return *(uintptr_t*)((uintptr_t*)this+idx);};
     
     bool hasGcTag() const {
-      return ((((uintptr_clasp_t)(this->rawRef(0))&gctools::tag_mask) == gctools::gc_tag));
+      return ((((uintptr_t)(this->rawRef(0))&gctools::tag_mask) == gctools::gc_tag));
     }
     bool fwdP() const {
-      return ((((uintptr_clasp_t)(this->rawRef(0))&gctools::tag_mask) == gctools::gc_tag)
-              && (((uintptr_clasp_t)(this->rawRef(1))&gctools::tag_mask) == gctools::Header_s::fwd_tag));
+      return ((((uintptr_t)(this->rawRef(0))&gctools::tag_mask) == gctools::gc_tag)
+              && (((uintptr_t)(this->rawRef(1))&gctools::tag_mask) == gctools::Header_s::fwd_tag));
     }
     bool pad1P() const {
-      return ((uintptr_clasp_t)(this->rawRef(0)) == gctools::gc_tag);
+      return ((uintptr_t)(this->rawRef(0)) == gctools::gc_tag);
     }
     bool padP() const {
-      return ((((uintptr_clasp_t)(this->rawRef(0))&gctools::tag_mask) == gctools::gc_tag)
-              && (((uintptr_clasp_t)(this->rawRef(1))&gctools::tag_mask) == gctools::Header_s::pad_tag));
+      return ((((uintptr_t)(this->rawRef(0))&gctools::tag_mask) == gctools::gc_tag)
+              && (((uintptr_t)(this->rawRef(1))&gctools::tag_mask) == gctools::Header_s::pad_tag));
     }
     size_t padSize() const {
-      size_t sz = (size_t)(((uintptr_clasp_t)this->rawRef(1)) >> gctools::tag_shift);
+      size_t sz = (size_t)(((uintptr_t)this->rawRef(1)) >> gctools::tag_shift);
       return sz;
     }
     void setFwdPointer(void* ptr) {
-      this->rawRef(0) = (uintptr_clasp_t)((uintptr_clasp_t)(ptr) | gctools::gc_tag);
-      this->rawRef(1) = (uintptr_clasp_t)(gctools::Header_s::fwd_tag);
+      this->rawRef(0) = (uintptr_t)((uintptr_t)(ptr) | gctools::gc_tag);
+      this->rawRef(1) = (uintptr_t)(gctools::Header_s::fwd_tag);
     }
     void* fwdPointer() {
-      return (void*)((uintptr_clasp_t)(this->rawRef(0)) & gctools::ptr_mask);
+      return (void*)((uintptr_t)(this->rawRef(0)) & gctools::ptr_mask);
     }
     void setPad1()
     {
     // Just a gc_tag means pad1
-      this->rawRef(0) = (uintptr_clasp_t)(gctools::gc_tag | 0);
+      this->rawRef(0) = (uintptr_t)(gctools::gc_tag | 0);
     }
     void setPad(size_t sz)
     {
-      this->rawRef(0) = (uintptr_clasp_t)(gctools::gc_tag | gctools::ptr_mask);
-      this->rawRef(1) = (uintptr_clasp_t)(gctools::Header_s::pad_tag | (sz << gctools::tag_shift));
+      this->rawRef(0) = (uintptr_t)(gctools::gc_tag | gctools::ptr_mask);
+      this->rawRef(1) = (uintptr_t)(gctools::Header_s::pad_tag | (sz << gctools::tag_shift));
     }
 #endif
 

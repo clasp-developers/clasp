@@ -1622,16 +1622,12 @@ Integer_sp Integer_O::create( unsigned long long v )
 }
 #endif
 
-#if !defined( CLASP_UINTPTR_IS_UINT64 ) && !defined( CLASP_UINTPTR_IS_UINT32 )
-Integer_sp Integer_O::create( uintptr_clasp_t v )
-{
-  if ( v <= gc::most_positive_fixnum )
-  {
+Integer_sp Integer_O::create( uintptr_t v) {
+  if ( v <= gc::most_positive_fixnum ) {
     return clasp_make_fixnum((Fixnum)v);
   }
-  return Bignum_O::create( v );
+  return Bignum_O::create( (uint64_t)v );
 }
-#endif
 
 /* Why >= and <? Because most-negative-fixnum is a negative power of two,
  * exactly representable by a float. most-positive-fixnum is slightly less than

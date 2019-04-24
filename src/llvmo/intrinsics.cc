@@ -512,7 +512,7 @@ ALWAYS_INLINE core::T_sp mk_integer_long( long v )
 
 ALWAYS_INLINE core::T_sp mk_integer_ulong( unsigned long v )
 {
-  return core::Integer_O::create( static_cast<uintptr_clasp_t>(v) );
+  return core::Integer_O::create( static_cast<Fixnum>(v) );
 }
 
 ALWAYS_INLINE core::T_sp mk_integer_longlong( long long v )
@@ -558,7 +558,7 @@ ALWAYS_INLINE core::T_sp mk_pointer( void * v )
 
 ALWAYS_INLINE core::T_sp mk_size( size_t v )
 {
-  return core::Integer_O::create( static_cast<uintptr_clasp_t>(v) );
+  return core::Integer_O::create( static_cast<Fixnum>(v) );
 }
 
 ALWAYS_INLINE core::T_sp mk_ssize( ssize_t v )

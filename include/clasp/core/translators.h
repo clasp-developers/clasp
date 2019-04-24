@@ -433,7 +433,7 @@ template <>
     typedef unsigned long DeclareType;
     static core::T_sp convert( DeclareType v )
     {
-      core::Integer_sp oi = core::Integer_O::create( static_cast<uintptr_clasp_t>(v) );
+      core::Integer_sp oi = core::Integer_O::create( static_cast<gctools::Fixnum>(v) );
       return ( oi );
     }
   };

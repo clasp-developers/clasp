@@ -72,7 +72,7 @@ T_sp* DynamicBindingStack::reference_raw_(Symbol_O* var,T_sp* globalValuePtr) {
   if ( var->_BindingIdx.load() == NO_THREAD_LOCAL_BINDINGS ) {
     return globalValuePtr;
   }
-  uintptr_clasp_t index = var->_BindingIdx.load();
+  uintptr_t index = var->_BindingIdx.load();
   // If it has a _Binding value but our table is not big enough, then expand the table.
   unlikely_if (index >= this->_ThreadLocalBindings.size()) {
     this->_ThreadLocalBindings.resize(index+1,_NoThreadLocalBinding<T_O>());
@@ -91,7 +91,7 @@ const T_sp* DynamicBindingStack::reference_raw_(const Symbol_O* var,const T_sp* 
   if ( var->_BindingIdx.load() == NO_THREAD_LOCAL_BINDINGS ) {
     return globalValuePtr;
   }
-  uintptr_clasp_t index = var->_BindingIdx.load();
+  uintptr_t index = var->_BindingIdx.load();
   // If it has a _Binding value but our table is not big enough, then expand the table.
   unlikely_if (index >= this->_ThreadLocalBindings.size()) {
     this->_ThreadLocalBindings.resize(index+1,_NoThreadLocalBinding<T_O>());
@@ -118,7 +118,7 @@ void DynamicBindingStack::push_with_value_coming(Symbol_sp var, T_sp* globalValu
       this->release_binding_index(new_index);
     }
   }
-  uintptr_clasp_t index = var->_BindingIdx.load();
+  uintptr_t index = var->_BindingIdx.load();
   // If it has a _Binding value but our table is not big enough, then expand the table.
   unlikely_if (index >= this->_ThreadLocalBindings.size()) {
     this->_ThreadLocalBindings.resize(index+1,_NoThreadLocalBinding<T_O>());
@@ -149,7 +149,7 @@ void DynamicBindingStack::push_binding(Symbol_sp var, T_sp* globalValuePtr, T_sp
       this->release_binding_index(new_index);
     }
   }
-  uintptr_clasp_t index = var->_BindingIdx.load();
+  uintptr_t index = var->_BindingIdx.load();
   // If it has a _Binding value but our table is not big enough, then expand the table.
   unlikely_if (index >= this->_ThreadLocalBindings.size()) {
     this->_ThreadLocalBindings.resize(index+1,_NoThreadLocalBinding<T_O>());

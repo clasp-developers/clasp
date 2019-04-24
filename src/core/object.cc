@@ -368,7 +368,7 @@ string General_O::className() const {
 
 void General_O::sxhash_(HashGenerator &hg) const {
   if (hg.isFilling()) {
-    Fixnum res = (Fixnum)((((uintptr_clasp_t)this) >> gctools::tag_shift));
+    Fixnum res = (Fixnum)((((uintptr_t)this) >> gctools::tag_shift));
     hg.addPart(res);
   }
 }
@@ -379,7 +379,7 @@ void General_O::sxhash_equal(HashGenerator &hg,LocationDependencyPtrT ld) const 
 #ifdef USE_MPS
   if (ld) mps_ld_add(ld, global_arena, (mps_addr_t)address );
 #endif
-  hg.addPart((Fixnum)(((uintptr_clasp_t)address)>>gctools::tag_shift));
+  hg.addPart((Fixnum)(((uintptr_t)address)>>gctools::tag_shift));
   return;
 }
 

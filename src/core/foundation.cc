@@ -824,7 +824,7 @@ DebugStream *lisp_debugLog() {
   return &(_lisp->debugLog());
 }
 
-uint lisp_hash(uintptr_clasp_t x) {
+uint lisp_hash(uintptr_t x) {
   HashGenerator hg;
   hg.addPart(x);
   return hg.hash();

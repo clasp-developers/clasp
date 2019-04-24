@@ -213,7 +213,7 @@ Layout_code* get_stamp_layout_codes() {
  */
 
 #define BAD_HEADER(msg,hdr) \
-  printf("%s:%d Illegal header@%p in %s  header->header=%" PXuintptr_t "  header->data[0]=%" PXuintptr_t "  header->data[1]=%" PXuintptr_t "\n", __FILE__, __LINE__, &hdr, msg, hdr.header._value, hdr.additional_data[0], hdr.additional_data[1]);
+  printf("%s:%d Illegal header@%p in %s  header->header=%" PRIxPTR "  header->data[0]=%" PRIxPTR "  header->data[1]=%" PRIxPTR "\n", __FILE__, __LINE__, &hdr, msg, hdr.header._value, hdr.additional_data[0], hdr.additional_data[1]);
 
 template <typename RT, typename...ARGS>
 NOINLINE void expose_function(const std::string& pkg_sym,

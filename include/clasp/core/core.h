@@ -132,12 +132,6 @@ typedef std::size_t class_id;
 /*! Configure architecture dependent types */
 #include <clasp/core/configure_clasp.h>
 
-// BASE TYPES CL_POINTER_T AND CL_VALUE_T
-// A 64bit or 32bit value holding representing a Lisp Object - either
-// tagged or untagged.
-//typedef uintptr_clasp_t cl_pointer_t;
-//typedef uintptr_clasp_t cl_value_t;
-
 /*! Use old Conditions system baked into C++
   OLD_CONDITIONS = 1
   otherwise OLD_CONDITIONS = 0
@@ -571,7 +565,7 @@ namespace dummy_namespace {
       rather than in registers. */
   union multiple_value_ptr_union_generates_a_compile_time_error_then_multiple_values_isnt_trivial {
     gctools::multiple_values<core::T_O> _multiple_values;
-    uintptr_clasp_t _uintptr;
+    uintptr_t _uintptr;
   };
 
   /*! If this union generates a compile-time error then smart_ptr isn't
@@ -579,7 +573,7 @@ namespace dummy_namespace {
       rather than in registers. */
   union smart_ptr_union_generates_a_compile_time_error_then_smart_ptr_isnt_trivial {
     gctools::smart_ptr<core::T_O> _smart_ptr;
-    uintptr_clasp_t _uintptr;
+    uintptr_t _uintptr;
   };
 #pragma clang diagnostic pop
 };
@@ -601,7 +595,7 @@ typedef gc::smart_ptr<FuncallableInstance_O> FuncallableInstance_sp;
 
 namespace core {
 core::T_sp lisp_true();
-uint lisp_hash(uintptr_clasp_t v);
+uint lisp_hash(uintptr_t v);
 };
 
 

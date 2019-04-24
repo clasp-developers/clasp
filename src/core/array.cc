@@ -583,13 +583,13 @@ CL_DEFUN T_mv cl__array_displacement(Array_sp array) {
 void core__copy_subarray(Array_sp dest, Fixnum_sp destStart, Array_sp orig, Fixnum_sp origStart, Fixnum_sp len) {
   // TODO: THIS NEEDS TO BE OPTIMIZED FOR DIFFERENT TYPES OF ARRAYS!!!!!!!
   //       Currently this is very inefficient
-  intptr_clasp_t iLen = unbox_fixnum(len);
+  size_t iLen = unbox_fixnum(len);
   if (iLen == 0)
     return;
   ASSERTF(dest->rank() == 1, BF("dest array must be rank 1 - instead it is %d") % dest->rank());
   ASSERTF(orig->rank() == 1, BF("orig array must be rank 1 - instead it is %d") % orig->rank());
-  intptr_clasp_t iDestStart = unbox_fixnum(destStart);
-  intptr_clasp_t iOrigStart = unbox_fixnum(origStart);
+  size_t iDestStart = unbox_fixnum(destStart);
+  size_t iOrigStart = unbox_fixnum(origStart);
   if ((iLen + iDestStart) >= dest->arrayTotalSize()) iLen = dest->arrayTotalSize()-iDestStart;
   if ((iLen + iOrigStart) >= orig->arrayTotalSize()) iLen = orig->arrayTotalSize()-iOrigStart;
   if (iDestStart < iOrigStart) {

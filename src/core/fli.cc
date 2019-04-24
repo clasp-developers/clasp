@@ -494,8 +494,8 @@ core::Integer_sp ForeignData_O::PERCENTownership_flags( void )
 // ---------------------------------------------------------------------------
 core::Integer_sp ForeignData_O::PERCENTforeign_data_address( void )
 {
-  cl_intptr_t result = this->data<cl_intptr_t>();
-  return core::Integer_O::create( result );
+  uintptr_t result = this->data<uintptr_t>();
+  return core::Integer_O::create(result);
 }
 
 // ---------------------------------------------------------------------------
@@ -950,7 +950,7 @@ core::Integer_sp PERCENToffset_address_as_integer( core::T_sp address_or_foreign
 
   n_result = n_address + n_offset;
 
-  return core::Integer_O::create( n_result );
+  return core::Integer_O::create(n_result);
 }
 
 // ---------------------------------------------------------------------------

@@ -625,7 +625,7 @@ CL_DEFUN core::T_mv cl__room(core::T_sp x, core::Fixnum_sp marker, core::T_sp tm
   OutputStream << "-------------------- Reachable ClassKinds -------------------\n"; 
   totalSize += dumpResults("Reachable ClassKinds", "class", static_ReachableClassKinds);
   OutputStream << "Skipping objects with less than 96 total_size\n";
-  OutputStream << "Done walk of memory  " << static_cast<uintptr_clasp_t>(static_ReachableClassKinds->size()) << " ClassKinds\n";
+  OutputStream << "Done walk of memory  " << static_cast<uintptr_t>(static_ReachableClassKinds->size()) << " ClassKinds\n";
 #if USE_CXX_DYNAMIC_CAST
   OutputStream << smsg << " live memory total size = " << std::setw(12) << invalidHeaderTotalSize << '\n';
 #else

@@ -309,7 +309,7 @@ CL_DEFUN T_mv cl__shadowing_import(T_sp symbol_names_desig, T_sp package_desig) 
   return Values(_lisp->_true());
 }
 
-std::atomic<uintptr_clasp_t> static_gentemp_counter;
+std::atomic<uint64_t> static_gentemp_counter;
 CL_LAMBDA(&optional (prefix "T") (package *package*));
 CL_DECLARE();
 CL_DOCSTRING("See CLHS gentemp");

@@ -370,7 +370,7 @@ LtvcReturn ltvc_make_symbol(gctools::GCRootsInModule* holder, char tag, size_t i
   NO_UNWIND_END();
 }
 
-LtvcReturn ltvc_make_character(gctools::GCRootsInModule* holder, char tag, size_t index, uintptr_clasp_t val)
+LtvcReturn ltvc_make_character(gctools::GCRootsInModule* holder, char tag, size_t index, uintptr_t val)
 {NO_UNWIND_BEGIN();
   core::T_sp v = clasp_make_character(val);
   LTVCRETURN holder->setTaggedIndex(tag,index,v.tagged_());
@@ -854,10 +854,10 @@ void debugMessage(const char *msg)
   NO_UNWIND_END();
 }
 
-uintptr_clasp_t debug_match_two_uintptr_t(uintptr_clasp_t x, uintptr_clasp_t y)
+uintptr_t debug_match_two_uintptr_t(uintptr_t x, uintptr_t y)
 {NO_UNWIND_BEGIN();
   if ( x == y ) return x;
-  printf("%s:%d !!!!! in debug_match_two_uintptr_clasp_t the two pointers %p and %p don't match\n", __FILE__, __LINE__, (void*)x, (void*)y);
+  printf("%s:%d !!!!! in debug_match_two_uintptr_t the two pointers %p and %p don't match\n", __FILE__, __LINE__, (void*)x, (void*)y);
   gdb();
   UNREACHABLE();
   NO_UNWIND_END();
@@ -874,9 +874,9 @@ void debug_vaslistPtr(Vaslist *vargs)
   Vaslist *args = reinterpret_cast<Vaslist *>(gc::untag_vaslist((void *)vargs));
   printf("++++++ debug_va_list: reg_save_area @%p \n", args->_Args[0].reg_save_area);
   printf("++++++ debug_va_list: gp_offset %d \n", args->_Args[0].gp_offset);
-  printf("++++++      next reg arg: %p\n", (void *)(((uintptr_clasp_t *)((char *)args->_Args[0].reg_save_area + args->_Args[0].gp_offset))[0]));
+  printf("++++++      next reg arg: %p\n", (void *)(((uintptr_t *)((char *)args->_Args[0].reg_save_area + args->_Args[0].gp_offset))[0]));
   printf("++++++ debug_va_list: overflow_arg_area @%p \n", args->_Args[0].overflow_arg_area);
-  printf("++++++      next overflow arg: %p\n", (void *)(((uintptr_clasp_t *)((char *)args->_Args[0].overflow_arg_area))[0]));
+  printf("++++++      next overflow arg: %p\n", (void *)(((uintptr_t *)((char *)args->_Args[0].overflow_arg_area))[0]));
   NO_UNWIND_END();
 }
 
@@ -886,8 +886,8 @@ void debug_va_list(va_list vargs)
   printf("++++++ debug_va_list:          fp_offset@%p -> %x \n", &vargs[0].fp_offset, vargs[0].fp_offset);
   printf("++++++ debug_va_list: overflow_arg_area @%p -> %p \n", &vargs[0].overflow_arg_area, vargs[0].overflow_arg_area);
   printf("++++++ debug_va_list:     reg_save_area @%p -> %p \n", &vargs[0].reg_save_area, vargs[0].reg_save_area);
-  printf("++++++      next reg arg: %p\n", (void *)(((uintptr_clasp_t *)((char *)vargs[0].reg_save_area + vargs[0].gp_offset))[0]));
-  printf("++++++      next overflow arg: %p\n", (void *)(((uintptr_clasp_t *)((char *)vargs[0].overflow_arg_area))[0]));
+  printf("++++++      next reg arg: %p\n", (void *)(((uintptr_t *)((char *)vargs[0].reg_save_area + vargs[0].gp_offset))[0]));
+  printf("++++++      next overflow arg: %p\n", (void *)(((uintptr_t *)((char *)vargs[0].overflow_arg_area))[0]));
   NO_UNWIND_END();
 }
 
@@ -1433,7 +1433,7 @@ gctools::return_type cc_dispatch_miss(core::T_O* tgf, core::T_O* tgf_vaslist)
 }
 #endif
 
-void cc_dispatch_debug(int msg_id, uintptr_clasp_t val)
+void cc_dispatch_debug(int msg_id, uintptr_t val)
 {
   // The msg_id switch values correspond to values passed from cmpgf.lsp
   //   The values mean:
