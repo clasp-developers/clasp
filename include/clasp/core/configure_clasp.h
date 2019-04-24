@@ -137,7 +137,7 @@ typedef int32_t    Fixnum; // Signed Fixnum immediate value
 #endif
 
 // ----------------------------------------------------------------------------
-//  ADRESS-MDOEL INDEPENDENT CLASP FUNDAMENTAL DEFINITIONS
+//  ADDRESS-MODEL INDEPENDENT CLASP FUNDAMENTAL DEFINITIONS
 // ----------------------------------------------------------------------------
 
 #define GMP_LONG(z)  (static_cast<long>(z))
@@ -194,9 +194,6 @@ typedef int  claspCharacter;
 
 /*! Don't use LongFloat - they are doubles */
 //#define CLASP_LONG_FLOAT 1
-
-// Use an array on the stack to store multiple_values
-#define USE_MULTIPLE_VALUES_ARRAY
 
 #define CLASP_ARRAY_DIMENSION_LIMIT (1024 * 1024)
 #define CLASP_ARRAY_RANK_LIMIT 8
