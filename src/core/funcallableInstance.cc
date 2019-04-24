@@ -208,6 +208,18 @@ LCC_RETURN FuncallableInstance_O::not_funcallable_entry_point(LCC_ARGS_ELLIPSIS)
   return core::eval::funcall(clos::_sym_not_funcallable_dispatch_function, closure->asSmartPtr(), lcc_vargs);
 }
 
+LCC_RETURN FuncallableInstance_O::interpreted_funcallable_entry_point(LCC_ARGS_ELLIPSIS) {
+  SETUP_CLOSURE(FuncallableInstance_O,closure);
+  INCREMENT_FUNCTION_CALL_COUNTER(closure);
+  if (lcc_nargs<=LCC_ARGS_IN_REGISTERS) {
+    return (gc::As_unsafe<Function_sp>(closure->GFUN_DISPATCHER())->entry.load())(closure->GFUN_DISPATCHER().raw_(),lcc_nargs,lcc_fixed_arg0,lcc_fixed_arg1,lcc_fixed_arg2,lcc_fixed_arg3);
+  }
+  INITIALIZE_VA_LIST();
+  // This is where we could decide to compile the dtree and switch the GFUN_DISPATCHER() or not
+//  printf("%s:%d:%s About to call %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(closure->functionName()).c_str());
+  return funcall_consume_valist_<core::Function_O>(closure->GFUN_DISPATCHER().tagged_(),lcc_vargs);
+}
+
 T_sp FuncallableInstance_O::copyInstance() const {
   DEPRECATED();
   Instance_sp cl = this->_Class;
@@ -232,8 +244,8 @@ T_sp FuncallableInstance_O::setFuncallableInstanceFunction(T_sp functionOrT) {
     this->entry.store(this->not_funcallable_entry_point);
   } else if (gc::IsA<Function_sp>(functionOrT)) {
     this->_isgf = CLASP_NORMAL_DISPATCH;
+    this->entry.store(interpreted_funcallable_entry_point);//gc::As_unsafe<Function_sp>(functionOrT)->entry.load());
     this->GFUN_DISPATCHER_set(functionOrT);
-    this->entry.store(gc::As_unsafe<Function_sp>(functionOrT)->entry.load());
   } else {
     TYPE_ERROR(functionOrT, cl::_sym_function);
     //SIMPLE_ERROR(BF("Wrong type argument: %s") % functionOrT->__repr__());
@@ -351,14 +363,14 @@ SYMBOL_EXPORT_SC_(CompPkg,effective_method_outcome);
 namespace core {
 #if 1
 
-CL_DEF_CLASS_METHOD DtreeInterpreter_sp DtreeInterpreter_O::make_dtree_interpreter(T_sp tdtree) {
+CL_DEF_CLASS_METHOD DtreeInterpreter_sp DtreeInterpreter_O::make_dtree_interpreter(T_sp generic_function, T_sp tdtree) {
   FunctionDescription* fdesc = makeFunctionDescription(comp::_sym_node,_Nil<T_O>());
   SimpleVector_sp dtree = gc::As_unsafe<SimpleVector_sp>(tdtree);
   SimpleVector_sp node = gc::As_unsafe<SimpleVector_sp>((*dtree)[REF_DTREE_NODE]);
   if (!gc::IsA<SimpleVector_sp>(node)) {
     printf("%s:%d Trying to create a dtree-interpreter %s with no node\n", __FILE__, __LINE__, _rep_(dtree).c_str());
   }
-  GC_ALLOCATE_VARIADIC(DtreeInterpreter_O,dt,fdesc,dtree);
+  GC_ALLOCATE_VARIADIC(DtreeInterpreter_O,dt,fdesc,generic_function,dtree);
 //  printf("%s:%d Created a dtree-interpreter @%p  dtree -> @%p with node -> %s\n", __FILE__, __LINE__, (void*)dt.raw_(), (void*)dtree.raw_(), _rep_(dtree).c_str());
   return dt;
 }
@@ -386,26 +398,21 @@ SYMBOL_EXPORT_SC_(CompPkg,compiled_discriminator);
 #define COMPILE_TRIGGER 2
 LCC_RETURN DtreeInterpreter_O::LISP_CALLING_CONVENTION() {
   DTLOG(("%s:%d:%s Entered\n", __FILE__, __LINE__, __FUNCTION__));
-  SETUP_CLOSURE(FuncallableInstance_O,funcallable_instance);
-  T_sp tinterpreter = funcallable_instance->GFUN_DISPATCHER();
-  if (!gc::IsA<DtreeInterpreter_sp>(tinterpreter)) {
-    SIMPLE_ERROR(BF("Could not locate the dtree-interpreter"));
-  }
-  DtreeInterpreter_sp interpreter = gc::As_unsafe<DtreeInterpreter_sp>(tinterpreter);
+  SETUP_CLOSURE(DtreeInterpreter_O,interpreter);
+  FuncallableInstance_sp generic_function = gc::As_unsafe<FuncallableInstance_sp>(interpreter->_GenericFunction);
   SimpleVector_sp dtree = gc::As_unsafe<SimpleVector_sp>(interpreter->_Dtree);
-  interpreter->_CallCount++;
 #if 0
   if (interpreter->_CallCount==COMPILE_TRIGGER) {
-    T_sp fn = funcallable_instance->functionName();
+    T_sp fn = generic_function->functionName();
     printf("%s:%d:%s  interpreter->_CallCount hit %lu for %s\n", __FILE__, __LINE__, __FUNCTION__, interpreter->_CallCount, _rep_(fn).c_str());
-    T_sp call_history = funcallable_instance->GFUN_CALL_HISTORY();
-    T_sp specializer_profile = funcallable_instance->GFUN_SPECIALIZER_PROFILE();
+    T_sp call_history = generic_function->GFUN_CALL_HISTORY();
+    T_sp specializer_profile = generic_function->GFUN_SPECIALIZER_PROFILE();
 //    printf("%s:%d:%s  About to call compiler\n", __FILE__, __LINE__, __FUNCTION__);
-    T_sp compiled_discriminator = eval::funcall(comp::_sym_codegen_dispatcher,call_history,specializer_profile,funcallable_instance->asSmartPtr(),
+    T_sp compiled_discriminator = eval::funcall(comp::_sym_codegen_dispatcher,call_history,specializer_profile,generic_function->asSmartPtr(),
                                                 kw::_sym_force_compile,_lisp->_true(),
                                                 kw::_sym_generic_function_name, fn );
 //    printf("%s:%d:%s  setFuncallableInstanceFunction\n", __FILE__, __LINE__, __FUNCTION__);
-    //funcallable_instance->setFuncallableInstanceFunction(compiled_discriminator);
+    //generic_function->setFuncallableInstanceFunction(compiled_discriminator);
     // The next call should use the compiled discriminator
     // Can I fall through from here and continue using the interpreter one more time?
 //    printf("%s:%d:%s  falling through to interpreter\n", __FILE__, __LINE__, __FUNCTION__);
@@ -523,12 +530,11 @@ LCC_RETURN DtreeInterpreter_O::LISP_CALLING_CONVENTION() {
       // Do outcomes.
     }
     DISPATCH_MISS:
-      T_sp tclosure((gctools::Tagged)gctools::tag_general<FuncallableInstance_O*>(funcallable_instance));
       DTLOG(("%s:%d:%s    It's a DISPATCH-MISS!!! Invoking (%s %s %s)\n", __FILE__, __LINE__, __FUNCTION__,
              dbg_safe_repr((uintptr_t)clos::_sym_dispatch_miss.tagged_()).c_str(),
              dbg_safe_repr((uintptr_t)tclosure.raw_()).c_str(),
              dbg_safe_repr((uintptr_t)lcc_vargs.raw_()).c_str()));
-      return core::eval::funcall(clos::_sym_dispatch_miss,tclosure,lcc_vargs);
+      return core::eval::funcall(clos::_sym_dispatch_miss,generic_function,lcc_vargs);
     }
 #endif
 

@@ -62,7 +62,8 @@ namespace core {
                  } GenericFunctionSlots;
   public: // ctor/dtor for classes with shared virtual base
     // entry_point is the LISP_CALLING_CONVENTION() macro
-  FuncallableInstance_O(FunctionDescription* fdesc) : Base(not_funcallable_entry_point)
+  FuncallableInstance_O(FunctionDescription* fdesc) :
+    Base(not_funcallable_entry_point)
       , _isgf(CLASP_NOT_FUNCALLABLE)
       , _DebugOn(false)
       , _Class(_Nil<Instance_O>())
@@ -192,6 +193,8 @@ namespace core {
 
     static LCC_RETURN invalidated_entry_point(LCC_ARGS_ELLIPSIS);
     static LCC_RETURN not_funcallable_entry_point(LCC_ARGS_ELLIPSIS);
+    static LCC_RETURN interpreted_funcallable_entry_point(LCC_ARGS_ELLIPSIS);
+    static LCC_RETURN compiled_funcallable_entry_point(LCC_ARGS_ELLIPSIS);
   }; // FuncallableInstance class
 
 }; // core namespace
@@ -289,14 +292,13 @@ FORWARD(DtreeInterpreter);
                    REF_EFFECTIVE_METHOD_OUTCOME_FUNCTION = 3,
                    REF_EFFECTIVE_METHOD_OUTCOME_END = 4 } EffectiveMethodOutcome;
   public:
+    T_sp            _GenericFunction;
     core::T_sp      _Dtree;
-    size_t          _CallCount;
   public:
-    static DtreeInterpreter_sp make_dtree_interpreter(T_sp dtree);
+    static DtreeInterpreter_sp make_dtree_interpreter(T_sp generic_function, T_sp dtree);
   public:
-    CL_DEFMETHOD size_t call_count() const { return this->_CallCount; };
     static LCC_RETURN LISP_CALLING_CONVENTION();
-    DtreeInterpreter_O(FunctionDescription* fdesc, T_sp dtree) : Closure_O(entry_point,fdesc), _Dtree(dtree), _CallCount(0) {};
+    DtreeInterpreter_O(FunctionDescription* fdesc, T_sp generic_function, T_sp dtree) : Closure_O(entry_point,fdesc), _GenericFunction(generic_function), _Dtree(dtree) {};
   };
 
 };

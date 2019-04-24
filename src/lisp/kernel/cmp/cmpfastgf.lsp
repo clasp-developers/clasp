@@ -1253,7 +1253,7 @@
     (unwind-protect
          (if (or force-compile *fastgf-use-compiler*)
              (apply 'codegen-dispatcher-from-dtree generic-function dtree args)
-             (core:make-dtree-interpreter dtree))
+             (core:make-dtree-interpreter generic-function dtree))
       (let ((delta-seconds (/ (float (- (get-internal-real-time) *fastgf-timer-start*) 1d0)
                               internal-time-units-per-second)))
         (clos:generic-function-increment-compilations generic-function)
