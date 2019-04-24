@@ -52,6 +52,23 @@
 (test error-mcclim-1
       (list :\.))
 
+(test read-15
+      (eq :invert (LET ((RT (COPY-READTABLE)))
+                    (SETF (READTABLE-CASE RT) :INVERT))))
+
+(test-expect-error read-16
+                   (LET ((RT (COPY-READTABLE)))
+                     (SETF (READTABLE-CASE RT) :pepito))
+                   :type type-error)
+
+(test-expect-error read-17-a
+                   (READTABLE-CASE 23)
+                   :type type-error)
+
+(test-expect-error read-17-b
+                   (READTABLE-CASE nil)
+                   :type type-error)
+
 (test READ-BYTE.ERROR.3.simplyfied
       (PROGN
         (LET ((S (OPEN "foo.txt" :DIRECTION :OUTPUT :IF-EXISTS :SUPERSEDE)))
