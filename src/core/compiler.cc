@@ -983,22 +983,6 @@ CL_DEFUN T_mv core__multiple_value_funcall(T_sp funcDesignator, List_sp function
   return funcall_consume_valist_<Function_O>(fmv.tagged_(),args);
 }
 
-CL_LAMBDA(func1 func2);
-CL_DECLARE();
-CL_DOCSTRING("multipleValueProg1_Function - evaluate func1, save the multiple values and then evaluate func2 and restore the multiple values");
-CL_DEFUN T_mv core__multiple_value_prog1_function(Function_sp first_func, Function_sp second_func) {
-  ASSERT((first_func) && first_func.notnilp());
-  T_mv result = (first_func->entry.load())(LCC_PASS_ARGS0_ELLIPSIS(first_func.raw_()));
-  // Save multiple values
-  size_t nvals = result.number_of_values();
-  T_O* mv_temp[nvals];
-  returnTypeSaveToTemp(nvals, result.raw_(), mv_temp);
-  // Call second function/evaluate rest of forms
-  (second_func->entry.load())(LCC_PASS_ARGS0_ELLIPSIS(second_func.raw_()));
-  // Restore multiple values
-  return returnTypeLoadFromTemp(nvals, mv_temp);
-}
-
 CL_LAMBDA(tag func);
 CL_DECLARE();
 CL_DOCSTRING("catchFunction");

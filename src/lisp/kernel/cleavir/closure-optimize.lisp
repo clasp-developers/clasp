@@ -40,9 +40,8 @@ PROGN."
 ;;; and marks their thunk arguments as stack allocatable (dynamic extent).
 ;;; TODO/FIXME: A more principled way to do this, in Cleavir.
 ;;; Current functions: cleavir-primop:call-with-variable-bound,
-;;;                    core:progv-function,
-;;;                    core:catch-function, core:throw-function,
-;;;                    core:funwind-protect, core:multiple-value-prog1-function
+;;;                    core:progv-function, core:funwind-protect
+;;;                    core:catch-function, core:throw-function
 (defun optimize-stack-enclose (top-instruction)
   (cleavir-ir:map-instructions-arbitrary-order
    (lambda (i)
@@ -68,8 +67,7 @@ PROGN."
                   ((core:catch-function
                     core:throw-function)
                    (maybe-mark-enclose (third (cleavir-ir:inputs i))))
-                  ((core:funwind-protect
-                    core:multiple-value-prog1-function)
+                  ((core:funwind-protect)
                    (maybe-mark-enclose (second (cleavir-ir:inputs i)))
                    (maybe-mark-enclose (third (cleavir-ir:inputs i)))))))
    top-instruction))
