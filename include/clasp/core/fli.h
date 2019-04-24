@@ -152,7 +152,7 @@ namespace clasp_ffi {
     CL_DEFMETHOD core::Integer_sp PERCENTforeign_data_address();
 
     // MAKE AND CREATE
-    static ForeignData_sp create(const cl_intptr_t address = 0);
+    static ForeignData_sp create(const uintptr_t address = 0);
     static ForeignData_sp create(void * p_address = nullptr, size_t size = 0);
 
     CL_DEFMETHOD void PERCENTfree_foreign_object();
@@ -225,7 +225,7 @@ namespace clasp_ffi
 {
   // FOREIGN MEMORY DIRECT ACCESS - MEM REF
   template <typename T>
-    T mem_ref(cl_intptr_t address);
+    T mem_ref(uintptr_t address);
 
   // MEM-REF
   CL_DEFUN core::T_sp PERCENTmem_ref_short( core::Integer_sp address );
@@ -308,7 +308,7 @@ namespace clasp_ffi
 
   // FOREIGN MEMORY DIRECT ACCESS - MEM SET
   template <typename T>
-    T mem_set(cl_intptr_t address, T value);
+    T mem_set(uintptr_t address, T value);
 
   // HELPER FUNCTIONS FOR MAKING C++ VALUES FROM CLASP LISP OBJECTS
   ptrdiff_t clasp_to_ptrdiff( core::T_sp sp_lisp_value );
@@ -317,7 +317,7 @@ namespace clasp_ffi
 
   // FOREIGN MEMORY DIRECT ACCESS - MEM SET
   template<typename T>
-    T mem_set( cl_intptr_t address, T value );
+    T mem_set( uintptr_t address, T value );
 
   // MEM-SET
 

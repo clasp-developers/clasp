@@ -115,8 +115,6 @@ typedef int32_t    Fixnum; // Signed Fixnum immediate value
 
 #endif // _ADDRESS_MODEL_64
 
-typedef uintptr_t cl_intptr_t;
-
 // ----------------------------------------------------------------------------
 //  PLATFORM INDEPENDENT CLASP FUNDAMENTAL DEFINITIONS
 // ----------------------------------------------------------------------------

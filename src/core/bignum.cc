@@ -244,16 +244,16 @@ inline uint64_t Bignum_O::as_uint64_t() const {
   return static_cast<uint64_t>( this->as_uint64_() );
 }
 
-// -- CL_INTPTR_T --
+// -- UINTPTR_T --
 
-inline cl_intptr_t Bignum_O::as_cl_intptr_t() const
+inline uintptr_t Bignum_O::as_uintptr_t() const
 {
   if( this->get().get_si() >= 0 )
   {
-    return static_cast<cl_intptr_t>( this->get().get_si() );
+    return static_cast<uintptr_t>( this->get().get_si() );
   }
 
-  SIMPLE_ERROR(BF("Value %llud out of range for type CL_INTPTR_T .") % (unsigned long long) this->get().get_si() );
+  SIMPLE_ERROR(BF("Value %llud out of range for type UINTPTR_T .") % (unsigned long long) this->get().get_si() );
 }
 
 // -- PTRDIFF_T --

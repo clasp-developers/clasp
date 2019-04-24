@@ -77,7 +77,7 @@ public:
   uintptr_t tag() const { return reinterpret_cast<uintptr_t>(this->theObject) & tag_mask; };
 
   /*! Get the pointer typcast to an integer quantity for hashing */
-  cl_intptr_t intptr() const { return ((uintptr_t)(this->theObject)); };
+  uintptr_t intptr() const { return ((uintptr_t)(this->theObject)); };
 
   void reset_() { this->theObject = NULL; };
 
@@ -252,7 +252,7 @@ class base_ptr /*: public tagged_ptr<T>*/ {
 
  public:
   /*! Get the pointer typcast to an integer quantity for hashing */
-  cl_intptr_t intptr() const { return ((uintptr_t)(this->theObject)); };
+  uintptr_t intptr() const { return ((uintptr_t)(this->theObject)); };
 
   void reset_() { this->theObject = NULL; };
 
@@ -671,7 +671,7 @@ public:
   bool _NULLp() const { return this->theObject == NULL; };
 public:
   /*! Get the pointer typcast to an integer quantity for hashing */
-  cl_intptr_t intptr() const { return ((uintptr_t)(this->theObject)); };
+  uintptr_t intptr() const { return ((uintptr_t)(this->theObject)); };
   int number_of_values() const { return this->theObject == NULL ? 0 : 1; };
   bool unboundp() const { return tagged_unboundp(this->theObject); };
   bool boundp() const { return !tagged_unboundp(this->theObject); };
@@ -820,7 +820,7 @@ public:
   // Make a tagged fixnum
 
   /*! Get the pointer typcast to an integer quantity for hashing */
-  cl_intptr_t intptr() const { return ((uintptr_t)(this->theObject)); };
+  uintptr_t intptr() const { return ((uintptr_t)(this->theObject)); };
 
   void reset_() { this->theObject = NULL; };
 

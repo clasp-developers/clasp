@@ -157,9 +157,9 @@ namespace gctools {
   static const ssize_t most_negative_ssize = std::numeric_limits<ssize_t>::min();
   static const ssize_t most_positive_ssize = std::numeric_limits<ssize_t>::max();
 
-  // --- CL_INTPTR_T ---
-  static const cl_intptr_t most_negative_cl_intptr = std::numeric_limits<cl_intptr_t>::min();
-  static const cl_intptr_t most_positive_cl_intptr = std::numeric_limits<cl_intptr_t>::max();
+  // --- UINTPTR_T ---
+  static const uintptr_t most_negative_uintptr = std::numeric_limits<uintptr_t>::min();
+  static const uintptr_t most_positive_uintptr = std::numeric_limits<uintptr_t>::max();
 
   // --- PTRDIFF_T ---
   static const ptrdiff_t most_negative_ptrdiff = std::numeric_limits<ptrdiff_t>::min();

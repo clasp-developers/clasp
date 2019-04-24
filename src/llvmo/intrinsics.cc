@@ -551,7 +551,7 @@ ALWAYS_INLINE core::T_sp mk_time( time_t v )
 
 ALWAYS_INLINE core::T_sp mk_pointer( void * v )
 {
-  clasp_ffi::ForeignData_sp ptr = clasp_ffi::ForeignData_O::create( reinterpret_cast<cl_intptr_t>( v ) );
+  clasp_ffi::ForeignData_sp ptr = clasp_ffi::ForeignData_O::create( reinterpret_cast<uintptr_t>( v ) );
   ptr->set_kind( kw::_sym_clasp_foreign_data_kind_pointer );
   return ptr;
 }

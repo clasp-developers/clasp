@@ -86,7 +86,7 @@ namespace core {
   /*! Like ecl_cache_remove_one */
     void removeOne(T_sp firstKey);
 
-    cl_intptr_t vector_hash_key(gctools::Vec0<T_sp> &keys);
+    uintptr_t vector_hash_key(gctools::Vec0<T_sp> &keys);
 
     gctools::Vec0<T_sp> &keys() { return this->_keys; };
     const gctools::Vec0<T_sp> &keys() const { return this->_keys; };

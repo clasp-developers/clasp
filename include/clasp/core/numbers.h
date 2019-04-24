@@ -377,7 +377,7 @@ namespace core {
     virtual int64_t as_int64_() const { SUBIMP(); };
     virtual uint64_t as_uint64_() const { SUBIMP(); };
 
-    virtual cl_intptr_t as_cl_intptr_t() const { SUBIMP(); };
+    virtual uintptr_t as_uintptr_t() const { SUBIMP(); };
     virtual size_t as_size_t() const { SUBIMP(); };
     virtual ssize_t as_ssize_t() const { SUBIMP(); };
 
@@ -1104,7 +1104,7 @@ namespace core {
   // frgo, 2017-01-21
 
 
-  cl_intptr_t         clasp_to_cl_intptr_t( core::T_sp );
+  uintptr_t         clasp_to_uintptr_t( core::T_sp );
   mpz_class           clasp_to_mpz( core::T_sp );
   cl_index            clasp_to_size( core::T_sp );
 

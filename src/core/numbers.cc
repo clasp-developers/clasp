@@ -3362,19 +3362,19 @@ uint64_t clasp_to_uint64_t( core::T_sp x )
 }
 
 
-  // --- CL_INTPTR_T ---
-cl_intptr_t clasp_to_cl_intptr_t( core::T_sp x )
+  // --- UINTPTR_T ---
+uintptr_t clasp_to_uintptr_t( core::T_sp x )
 {
   if ( x.fixnump() ) {
-    ASSERT(x.unsafe_fixnum() >=gc::most_negative_cl_intptr && x.unsafe_fixnum() < gc::most_positive_cl_intptr);
+    ASSERT(x.unsafe_fixnum() >=gc::most_negative_uintptr && x.unsafe_fixnum() < gc::most_positive_uintptr);
     return x.unsafe_fixnum();
   } else if (gc::IsA<Bignum_sp>(x)) {
     Bignum_sp bx = gc::As_unsafe<Bignum_sp>(x);
-    return bx->as_cl_intptr_t();
+    return bx->as_uintptr_t();
   }
   TYPE_ERROR( x, Cons_O::createList(cl::_sym_Integer_O,
-                                    Integer_O::create(gc::most_negative_cl_intptr),
-                                    Integer_O::create(gc::most_positive_cl_intptr)));
+                                    Integer_O::create(gc::most_negative_uintptr),
+                                    Integer_O::create(gc::most_positive_uintptr)));
 }
 
 
@@ -3449,7 +3449,7 @@ ssize_t clasp_to_ssize_t( core::T_sp x )
 
     if (farg < gc::most_negative_ssize|| farg > gc::most_positive_ssize)
     {
-      SIMPLE_ERROR(BF("Cannot convert cl_intptr_t to char. Value out of range  for ssize_t"));
+      SIMPLE_ERROR(BF("Cannot convert uintptr_t to char. Value out of range  for ssize_t"));
     }
     return (ssize_t) farg;
   }
@@ -3458,7 +3458,7 @@ ssize_t clasp_to_ssize_t( core::T_sp x )
   if( sp_i )
     return sp_i->as_size_t();
   else
-    SIMPLE_ERROR(BF("Cannot convert cl_intptr_t to char."));
+    SIMPLE_ERROR(BF("Cannot convert uintptr_t to char."));
 }
 
 ssize_t clasp_to_ssize( core::T_sp x )
