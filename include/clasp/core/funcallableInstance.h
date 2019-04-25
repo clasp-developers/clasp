@@ -38,7 +38,6 @@ THE SOFTWARE.
 /*! Different values for Instance_O.isgf */
 #define CLASP_NOT_FUNCALLABLE 0
 #define CLASP_NORMAL_DISPATCH 1
-#define CLASP_INVALIDATED_DISPATCH 3
 
 namespace core {
   FORWARD(FuncallableInstance);
@@ -191,7 +190,6 @@ namespace core {
 
     void __write__(T_sp sout) const; // Look in write_ugly.cc
 
-    static LCC_RETURN invalidated_entry_point(LCC_ARGS_ELLIPSIS);
     static LCC_RETURN not_funcallable_entry_point(LCC_ARGS_ELLIPSIS);
     static LCC_RETURN funcallable_entry_point(LCC_ARGS_ELLIPSIS);
   }; // FuncallableInstance class

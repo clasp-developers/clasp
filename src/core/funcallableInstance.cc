@@ -194,13 +194,6 @@ void FuncallableInstance_O::LISP_INVOKE() {
   IMPLEMENT_ME();
 }
 
-LCC_RETURN FuncallableInstance_O::invalidated_entry_point(LCC_ARGS_ELLIPSIS) {
-  SETUP_CLOSURE(FuncallableInstance_O,closure);
-  INCREMENT_FUNCTION_CALL_COUNTER(closure);
-  INITIALIZE_VA_LIST();
-  return core::eval::funcall(clos::_sym_invalidated_dispatch_function, closure->asSmartPtr(), lcc_vargs);
-}
-
 LCC_RETURN FuncallableInstance_O::not_funcallable_entry_point(LCC_ARGS_ELLIPSIS) {
   SETUP_CLOSURE(FuncallableInstance_O,closure);
   INCREMENT_FUNCTION_CALL_COUNTER(closure);
@@ -235,11 +228,7 @@ T_sp FuncallableInstance_O::setFuncallableInstanceFunction(T_sp functionOrT) {
   SYMBOL_EXPORT_SC_(ClPkg, standardGenericFunction);
   SYMBOL_SC_(ClosPkg, standardOptimizedReaderFunction);
   SYMBOL_SC_(ClosPkg, standardOptimizedWriterFunction);
-  if (functionOrT == clos::_sym_invalidated_dispatch_function) {
-    this->_isgf = CLASP_INVALIDATED_DISPATCH;
-    // FIXME Jump straight to the invalidated-dispatch-function
-    this->entry.store(this->invalidated_entry_point);
-  } else if (functionOrT.nilp()) {
+  if (functionOrT.nilp()) {
     this->_isgf = CLASP_NOT_FUNCALLABLE;
     this->entry.store(this->not_funcallable_entry_point);
   } else if (gc::IsA<Function_sp>(functionOrT)) {
@@ -278,8 +267,6 @@ CL_DEFUN T_mv clos__getFuncallableInstanceFunction(T_sp obj) {
     switch (iobj->_isgf) {
     case CLASP_NORMAL_DISPATCH:
         return Values(_lisp->_true(),Pointer_O::create((void*)iobj->entry.load()));
-    case CLASP_INVALIDATED_DISPATCH:
-        return Values(clos::_sym_invalidated_dispatch_function,Pointer_O::create((void*)iobj->entry.load()));
     case CLASP_NOT_FUNCALLABLE:
         return Values(clos::_sym_not_funcallable);
     }

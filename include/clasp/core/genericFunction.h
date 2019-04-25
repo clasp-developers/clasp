@@ -37,9 +37,5 @@ namespace core {
 
   LCC_RETURN generic_function_dispatch(gctools::Tagged tgf, gctools::Tagged tvargs);
 
-  LCC_RETURN invalidated_dispatch(gctools::Tagged tgf, gctools::Tagged tvargs);
-
-  LCC_RETURN user_function_dispatch(gctools::Tagged tgf, gctools::Tagged tvargs);
-
 };
 #endif /* _core_genericFunction_H_ */
