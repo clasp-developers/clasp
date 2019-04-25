@@ -193,8 +193,7 @@ namespace core {
 
     static LCC_RETURN invalidated_entry_point(LCC_ARGS_ELLIPSIS);
     static LCC_RETURN not_funcallable_entry_point(LCC_ARGS_ELLIPSIS);
-    static LCC_RETURN interpreted_funcallable_entry_point(LCC_ARGS_ELLIPSIS);
-    static LCC_RETURN compiled_funcallable_entry_point(LCC_ARGS_ELLIPSIS);
+    static LCC_RETURN funcallable_entry_point(LCC_ARGS_ELLIPSIS);
   }; // FuncallableInstance class
 
 }; // core namespace
@@ -294,11 +293,12 @@ FORWARD(DtreeInterpreter);
   public:
     T_sp            _GenericFunction;
     core::T_sp      _Dtree;
+    size_t          _CallCount;
   public:
     static DtreeInterpreter_sp make_dtree_interpreter(T_sp generic_function, T_sp dtree);
   public:
     static LCC_RETURN LISP_CALLING_CONVENTION();
-    DtreeInterpreter_O(FunctionDescription* fdesc, T_sp generic_function, T_sp dtree) : Closure_O(entry_point,fdesc), _GenericFunction(generic_function), _Dtree(dtree) {};
+    DtreeInterpreter_O(FunctionDescription* fdesc, T_sp generic_function, T_sp dtree) : Closure_O(entry_point,fdesc), _GenericFunction(generic_function), _Dtree(dtree), _CallCount(0) {};
   };
 
 };

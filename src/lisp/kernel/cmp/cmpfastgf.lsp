@@ -1252,7 +1252,12 @@
          (dtree (calculate-dtree raw-call-history specializer-profile)))
     (unwind-protect
          (if (or force-compile *fastgf-use-compiler*)
-             (apply 'codegen-dispatcher-from-dtree generic-function dtree args)
+             (progn
+               (bclasp-compile nil (generate-dispatcher-from-dtree
+                                    generic-function dtree
+                                    :generic-function-name generic-function-name))
+               #+(or)(apply 'codegen-dispatcher-from-dtree generic-function dtree args)
+               )
              (core:make-dtree-interpreter generic-function dtree))
       (let ((delta-seconds (/ (float (- (get-internal-real-time) *fastgf-timer-start*) 1d0)
                               internal-time-units-per-second)))

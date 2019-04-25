@@ -208,7 +208,7 @@ LCC_RETURN FuncallableInstance_O::not_funcallable_entry_point(LCC_ARGS_ELLIPSIS)
   return core::eval::funcall(clos::_sym_not_funcallable_dispatch_function, closure->asSmartPtr(), lcc_vargs);
 }
 
-LCC_RETURN FuncallableInstance_O::interpreted_funcallable_entry_point(LCC_ARGS_ELLIPSIS) {
+LCC_RETURN FuncallableInstance_O::funcallable_entry_point(LCC_ARGS_ELLIPSIS) {
   SETUP_CLOSURE(FuncallableInstance_O,closure);
   INCREMENT_FUNCTION_CALL_COUNTER(closure);
   if (lcc_nargs<=LCC_ARGS_IN_REGISTERS) {
@@ -244,7 +244,7 @@ T_sp FuncallableInstance_O::setFuncallableInstanceFunction(T_sp functionOrT) {
     this->entry.store(this->not_funcallable_entry_point);
   } else if (gc::IsA<Function_sp>(functionOrT)) {
     this->_isgf = CLASP_NORMAL_DISPATCH;
-    this->entry.store(interpreted_funcallable_entry_point);//gc::As_unsafe<Function_sp>(functionOrT)->entry.load());
+    this->entry.store(funcallable_entry_point);//gc::As_unsafe<Function_sp>(functionOrT)->entry.load());
     this->GFUN_DISPATCHER_set(functionOrT);
   } else {
     TYPE_ERROR(functionOrT, cl::_sym_function);
@@ -395,24 +395,25 @@ SYMBOL_EXPORT_SC_(CompPkg,compiled_discriminator);
   then on.
 */
 
-#define COMPILE_TRIGGER 2
+#define COMPILE_TRIGGER 1024
 LCC_RETURN DtreeInterpreter_O::LISP_CALLING_CONVENTION() {
   DTLOG(("%s:%d:%s Entered\n", __FILE__, __LINE__, __FUNCTION__));
   SETUP_CLOSURE(DtreeInterpreter_O,interpreter);
   FuncallableInstance_sp generic_function = gc::As_unsafe<FuncallableInstance_sp>(interpreter->_GenericFunction);
   SimpleVector_sp dtree = gc::As_unsafe<SimpleVector_sp>(interpreter->_Dtree);
-#if 0
+#if 1
+  interpreter->_CallCount++;
   if (interpreter->_CallCount==COMPILE_TRIGGER) {
     T_sp fn = generic_function->functionName();
-    printf("%s:%d:%s  interpreter->_CallCount hit %lu for %s\n", __FILE__, __LINE__, __FUNCTION__, interpreter->_CallCount, _rep_(fn).c_str());
+//    printf("%s:%d:%s  interpreter->_CallCount hit %lu for %s\n", __FILE__, __LINE__, __FUNCTION__, interpreter->_CallCount, _rep_(fn).c_str());
     T_sp call_history = generic_function->GFUN_CALL_HISTORY();
     T_sp specializer_profile = generic_function->GFUN_SPECIALIZER_PROFILE();
 //    printf("%s:%d:%s  About to call compiler\n", __FILE__, __LINE__, __FUNCTION__);
     T_sp compiled_discriminator = eval::funcall(comp::_sym_codegen_dispatcher,call_history,specializer_profile,generic_function->asSmartPtr(),
                                                 kw::_sym_force_compile,_lisp->_true(),
                                                 kw::_sym_generic_function_name, fn );
-//    printf("%s:%d:%s  setFuncallableInstanceFunction\n", __FILE__, __LINE__, __FUNCTION__);
-    //generic_function->setFuncallableInstanceFunction(compiled_discriminator);
+//    printf("%s:%d:%s about to setFuncallableInstanceFunction\n", __FILE__, __LINE__, __FUNCTION__);
+    generic_function->setFuncallableInstanceFunction(compiled_discriminator);
     // The next call should use the compiled discriminator
     // Can I fall through from here and continue using the interpreter one more time?
 //    printf("%s:%d:%s  falling through to interpreter\n", __FILE__, __LINE__, __FUNCTION__);
