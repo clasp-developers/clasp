@@ -154,7 +154,7 @@
 (defvar *hash-table-coalesce*)
 (defvar *bignum-coalesce*)
 (defvar *symbol-coalesce*)
-(defvar *string-coalesce*)
+(defvar *base-string-coalesce*)
 (defvar *pathname-coalesce*)
 (defvar *package-coalesce*)
 (defvar *double-float-coalesce*)
@@ -236,6 +236,12 @@ rewrite the slot in the literal table to store a closure."
     (vector-push-extend func-desc *function-description-vector*)
     (make-function-datum :index function-index)))
 
+;;; Helper function: we write a few things out as base strings.
+;;; FIXME: Use a more efficient representation.
+(defun prin1-to-base-string (object)
+  (with-output-to-string (s nil :element-type 'base-char)
+    (prin1 object s)))
+
 (defun ltv/nil (object index read-only-p &key (toplevelp t))
   (add-named-creator "ltvc_make_nil" index "NIL" object))
 
@@ -302,18 +308,18 @@ rewrite the slot in the literal table to store a closure."
   (add-creator "ltvc_make_fixnum" index fixnum fixnum))
 
 (defun ltv/bignum (bignum index read-only-p &key (toplevelp t))
-  (let ((bn-str (format nil "~a" bignum)))
+  (let ((bn-str (prin1-to-base-string bignum)))
     (add-creator "ltvc_make_bignum" index bignum (load-time-reference-literal bn-str read-only-p :toplevelp nil))))
 
 (defun ltv/bitvector (bitvector index read-only-p &key (toplevelp t))
-  (let ((sout (make-string-output-stream :element-type 'base-char)))
-    (write bitvector :stream sout)
-    (let ((bv-str (get-output-stream-string sout)))
-      (add-creator "ltvc_make_bitvector" index bitvector (load-time-reference-literal bv-str read-only-p :toplevelp nil)))))
+  (let ((bv-str (prin1-to-base-string bitvector)))
+    (add-creator "ltvc_make_bitvector" index bitvector
+                 (load-time-reference-literal bv-str read-only-p :toplevelp nil))))
 
 (defun ltv/random-state (random-state index read-only-p &key (toplevelp t))
-  (let ((rs-str (format nil "~a" (core:random-state-get random-state))))
-    (add-creator "ltvc_make_random_state" index random-state (load-time-reference-literal rs-str read-only-p :toplevelp nil))))
+  (let ((rs-str (core:random-state-get random-state)))
+    (add-creator "ltvc_make_random_state" index random-state
+                 (load-time-reference-literal rs-str read-only-p :toplevelp nil))))
 
 (defun ltv/symbol (symbol index read-only-p &key (toplevelp t))
   (let ((pkg (symbol-package symbol))
@@ -393,6 +399,8 @@ rewrite the slot in the literal table to store a closure."
           (add-side-effect-call "ltvc_mlf_init_funcall" (register-function fn) name))))))
 
 (defun object-similarity-table-and-creator (object read-only-p)
+  ;; Note: If an object has modifiable sub-parts, if we are not read-only-p
+  ;; we must use the *identity-coalesce* or else the user will see spooky action at a distance.
   (cond
     ((null object) (values *identity-coalesce* #'ltv/nil))
     ((eq t object) (values *identity-coalesce* #'ltv/t))
@@ -404,9 +412,12 @@ rewrite the slot in the literal table to store a closure."
     ((double-float-p object) (values *double-float-coalesce* #'ltv/double-float))
     ((core:ratio-p object) (values *ratio-coalesce* #'ltv/ratio))
     ((bit-vector-p object) (values nil #'ltv/bitvector))
-    ((stringp  object) (values (if read-only-p *identity-coalesce* *string-coalesce*) #'ltv/base-string))
-    ((arrayp object) (values *array-coalesce* #'ltv/array))
-    ((hash-table-p object) (values *hash-table-coalesce* #'ltv/hash-table))
+    ((core:base-string-p object)
+     (values (if read-only-p *identity-coalesce* *base-string-coalesce*) #'ltv/base-string))
+    ((arrayp object)
+     (values (if read-only-p *identity-coalesce* *array-coalesce*) #'ltv/array))
+    ((hash-table-p object)
+     (values (if read-only-p *identity-coalesce* *hash-table-coalesce*) #'ltv/hash-table))
     ((bignump object) (values *bignum-coalesce* #'ltv/bignum))
     ((pathnamep object) (values *pathname-coalesce* #'ltv/pathname))
     ((packagep object) (values *package-coalesce* #'ltv/package))
@@ -669,7 +680,7 @@ Return the index of the load-time-value"
         (*hash-table-coalesce* (make-similarity-table #'eq))
         (*bignum-coalesce* (make-similarity-table #'eql))
         (*symbol-coalesce* (make-similarity-table #'eq))
-        (*string-coalesce* (make-similarity-table #'equal))
+        (*base-string-coalesce* (make-similarity-table #'equal))
         (*pathname-coalesce* (make-similarity-table #'equal))
         (*package-coalesce* (make-similarity-table #'eq))
         (*double-float-coalesce* (make-similarity-table #'eql))
