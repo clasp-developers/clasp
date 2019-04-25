@@ -35,10 +35,6 @@ THE SOFTWARE.
 // may need more later
 #include <clasp/gctools/gc_interface.h>
 
-/*! Different values for Instance_O.isgf */
-#define CLASP_NOT_FUNCALLABLE 0
-#define CLASP_NORMAL_DISPATCH 1
-
 namespace core {
   FORWARD(FuncallableInstance);
 };
@@ -62,8 +58,7 @@ namespace core {
   public: // ctor/dtor for classes with shared virtual base
     // entry_point is the LISP_CALLING_CONVENTION() macro
   FuncallableInstance_O(FunctionDescription* fdesc) :
-    Base(not_funcallable_entry_point)
-      , _isgf(CLASP_NOT_FUNCALLABLE)
+    Base(funcallable_entry_point)
       , _DebugOn(false)
       , _Class(_Nil<Instance_O>())
       , _Sig(_Nil<T_O>())
@@ -73,7 +68,7 @@ namespace core {
 //      _Lock(mp::SharedMutex_O::make_shared_mutex(_Nil<T_O>())),
       , _CompiledDispatchFunction(_Nil<T_O>()) {};
     explicit FuncallableInstance_O(FunctionDescription* fdesc,Instance_sp metaClass, size_t slots) :
-    Base(not_funcallable_entry_point),
+    Base(funcallable_entry_point),
       _Class(metaClass)
       ,_DebugOn(false)
       ,_Sig(_Unbound<T_O>())
@@ -98,7 +93,6 @@ namespace core {
     gc::atomic_wrapper<T_sp>   _SpecializerProfile;
 //    T_sp   _Lock;
     gc::atomic_wrapper<T_sp>   _CompiledDispatchFunction;
-    int    _isgf;
     bool   _DebugOn;
   public:
   public:
@@ -135,7 +129,7 @@ namespace core {
     T_sp make_instance();
   public:
   // Add support for Function_O methods
-    T_sp functionName() const { ASSERT(this->isgf()); return this->GFUN_NAME(); };
+    T_sp functionName() const { return this->GFUN_NAME(); };
     virtual T_sp closedEnvironment() const { HARD_IMPLEMENT_ME(); };
     virtual T_sp setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column) { HARD_IMPLEMENT_ME(); };
 //  virtual T_mv functionSourcePos() const { HARD_IMPLEMENT_ME();;
@@ -152,7 +146,7 @@ namespace core {
   public: // The hard-coded indexes above are defined below to be used by Class
     void initializeSlots(gctools::Stamp is, size_t numberOfSlots);
     void initializeClassSlots(Creator_sp creator, gctools::Stamp class_stamp);
-    virtual void setf_lambda_list(List_sp lambda_list) { if (!this->_isgf) {SIMPLE_ERROR_SPRINTF("Cannot set lambda list of non gf function ll->%s", _rep_(lambda_list).c_str());} this->GFUN_LAMBDA_LIST_set(lambda_list); }; //{ this->_lambda_list = lambda_list; };
+    virtual void setf_lambda_list(List_sp lambda_list) { this->GFUN_LAMBDA_LIST_set(lambda_list); };
     virtual T_sp lambda_list() const { return this->GFUN_LAMBDA_LIST(); };
   public:
     static size_t rack_stamp_offset();
@@ -163,8 +157,6 @@ namespace core {
     Fixnum stamp() const;
     void stamp_set(Fixnum s);
     size_t numberOfSlots() const;
-
-    CL_DEFMETHOD int isgf() const { return this->_isgf; };
 
     Instance_sp _instanceClass() const { return this->_Class; };
 
@@ -190,7 +182,6 @@ namespace core {
 
     void __write__(T_sp sout) const; // Look in write_ugly.cc
 
-    static LCC_RETURN not_funcallable_entry_point(LCC_ARGS_ELLIPSIS);
     static LCC_RETURN funcallable_entry_point(LCC_ARGS_ELLIPSIS);
   }; // FuncallableInstance class
 

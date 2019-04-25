@@ -31,11 +31,5 @@ THE SOFTWARE.
 
 namespace core {
 
-// Arguments are passed in the multiple_values structure
-
-  LCC_RETURN not_funcallable_dispatch(gctools::Tagged tgf, gctools::Tagged tvargs);
-
-  LCC_RETURN generic_function_dispatch(gctools::Tagged tgf, gctools::Tagged tvargs);
-
 };
 #endif /* _core_genericFunction_H_ */

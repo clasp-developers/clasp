@@ -766,9 +766,6 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
                                 #+debug-fastgf (debug-fastgf-stream))) ;; the stream better be initialized
       (invalidated-discriminating-function-closure generic-function)))
 
-(defun not-funcallable-dispatch-function (generic-function valist-args)
-  (error "The funcallable-instance ~s is not funcallable" generic-function))
-
 (defun force-dispatcher (generic-function)
   (let (log-output)
     #+debug-fastgf

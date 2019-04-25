@@ -314,7 +314,7 @@ CL_DECLARE();
 CL_DOCSTRING("genericFunctionP");
 CL_DEFUN bool core__generic_function_p(T_sp o) {
   if (gc::IsA<FuncallableInstance_sp>(o)) {
-    return gc::As_unsafe<FuncallableInstance_sp>(o)->isgf();
+    return true;
   }
   return false;
 };

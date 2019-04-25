@@ -45,7 +45,6 @@ SYMBOL_EXPORT_SC_(ClosPkg,slot_value_set);
 SYMBOL_EXPORT_SC_(ClosPkg,update_instance);
 SYMBOL_EXPORT_SC_(ClosPkg,dispatch_miss);
 SYMBOL_EXPORT_SC_(ClosPkg,_PLUS_the_standard_class_PLUS_);
-SYMBOL_EXPORT_SC_(ClosPkg,not_funcallable);
 SYMBOL_EXPORT_SC_(ClosPkg,funcallable_standard_class);
 
 SYMBOL_EXPORT_SC_(ClosPkg, DIRECT_SUPERCLASSES);
@@ -65,8 +64,6 @@ SYMBOL_EXPORT_SC_(ClosPkg, NUMBER_OF_SLOTS_IN_STRUCTURE_CLASS);
 SYMBOL_EXPORT_SC_(ClosPkg, fastgf_slot_unbound);
 SYMBOL_EXPORT_SC_(ClosPkg, dispatch_slot_reader_index_debug);
 SYMBOL_EXPORT_SC_(ClosPkg, dispatch_slot_writer_index_debug);
-
-SYMBOL_EXPORT_SC_(ClosPkg, not_funcallable_dispatch_function);
 
 void initialize_closPackage() {
   list<string> lnicknames;

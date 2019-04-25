@@ -127,6 +127,14 @@
   (let ((x (core:allocate-new-funcallable-instance class (class-size class))))
     (dbg-standard "Done allocate-new-funcallable-instance unbound x ->~a~%" (eq (core:unbound) x))
     (mlog "In allocate-instance  x -> %s\n" x)
+    ;; MOP says if you call a funcallable instance before setting its function,
+    ;; the effects are undefined. (In the entry for set-funcallable-instance-function.)
+    ;; But we can be nice.
+    (set-funcallable-instance-function
+     x (lambda (core:&va-rest args)
+         (declare (core:lambda-name uninitialized-funcallable-instance))
+         (declare (ignore args))
+         (error "The funcallable instance ~a has not been initialized with a function" x)))
     x))
 
 (defmethod make-instance ((class class) &rest initargs)

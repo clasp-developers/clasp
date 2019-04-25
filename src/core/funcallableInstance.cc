@@ -177,9 +177,7 @@ string FuncallableInstance_O::__repr__() const {
   } else {
     ss << "<ADD SUPPORT FOR INSTANCE _CLASS=" << _rep_(this->_Class) << " >";
   }
-  if (this->isgf()) {
-      ss << _rep_(this->GFUN_NAME());
-  }
+  ss << _rep_(this->GFUN_NAME());
   if (this->_Rack)
   {
     ss << " #slots[" << this->numberOfSlots() << "]";
@@ -192,13 +190,6 @@ string FuncallableInstance_O::__repr__() const {
 
 void FuncallableInstance_O::LISP_INVOKE() {
   IMPLEMENT_ME();
-}
-
-LCC_RETURN FuncallableInstance_O::not_funcallable_entry_point(LCC_ARGS_ELLIPSIS) {
-  SETUP_CLOSURE(FuncallableInstance_O,closure);
-  INCREMENT_FUNCTION_CALL_COUNTER(closure);
-  INITIALIZE_VA_LIST();
-  return core::eval::funcall(clos::_sym_not_funcallable_dispatch_function, closure->asSmartPtr(), lcc_vargs);
 }
 
 LCC_RETURN FuncallableInstance_O::funcallable_entry_point(LCC_ARGS_ELLIPSIS) {
@@ -220,7 +211,6 @@ T_sp FuncallableInstance_O::copyInstance() const {
   copy->_Class = cl;
   copy->_Rack = this->_Rack;
   copy->_Sig = this->_Sig;
-  copy->_isgf = this->_isgf;
   return copy;
 }
 
@@ -228,11 +218,7 @@ T_sp FuncallableInstance_O::setFuncallableInstanceFunction(T_sp functionOrT) {
   SYMBOL_EXPORT_SC_(ClPkg, standardGenericFunction);
   SYMBOL_SC_(ClosPkg, standardOptimizedReaderFunction);
   SYMBOL_SC_(ClosPkg, standardOptimizedWriterFunction);
-  if (functionOrT.nilp()) {
-    this->_isgf = CLASP_NOT_FUNCALLABLE;
-    this->entry.store(this->not_funcallable_entry_point);
-  } else if (gc::IsA<Function_sp>(functionOrT)) {
-    this->_isgf = CLASP_NORMAL_DISPATCH;
+  if (gc::IsA<Function_sp>(functionOrT)) {
     this->entry.store(funcallable_entry_point);//gc::As_unsafe<Function_sp>(functionOrT)->entry.load());
     this->GFUN_DISPATCHER_set(functionOrT);
   } else {
@@ -246,7 +232,6 @@ T_sp FuncallableInstance_O::setFuncallableInstanceFunction(T_sp functionOrT) {
 void FuncallableInstance_O::describe(T_sp stream) {
   stringstream ss;
   ss << (BF("FuncallableInstance\n")).str();
-  ss << (BF("isgf %d\n") % this->_isgf).str();
   ss << (BF("_Class: %s\n") % _rep_(this->_Class).c_str()).str();
   for (int i(1); i < this->_Rack->length(); ++i) {
     ss << (BF("_Rack[%d]: %s\n") % i % _rep_((*this->_Rack)[i]).c_str()).str();
@@ -264,15 +249,8 @@ CL_DEFUN bool core__get_funcallable_instance_debug_on(FuncallableInstance_sp ins
 
 CL_DEFUN T_mv clos__getFuncallableInstanceFunction(T_sp obj) {
   if (FuncallableInstance_sp iobj = obj.asOrNull<FuncallableInstance_O>()) {
-    switch (iobj->_isgf) {
-    case CLASP_NORMAL_DISPATCH:
-        return Values(_lisp->_true(),Pointer_O::create((void*)iobj->entry.load()));
-    case CLASP_NOT_FUNCALLABLE:
-        return Values(clos::_sym_not_funcallable);
-    }
-    return Values(clasp_make_fixnum(iobj->_isgf),_Nil<T_O>());
-  }
-  return Values(_Nil<T_O>(),_Nil<T_O>());
+    return Values(_lisp->_true(),Pointer_O::create((void*)iobj->entry.load()));
+  } else return Values(_Nil<T_O>(),_Nil<T_O>());
 };
 
 CL_DEFUN T_sp clos__setFuncallableInstanceFunction(T_sp obj, T_sp func) {
