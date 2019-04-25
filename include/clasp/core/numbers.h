@@ -333,8 +333,9 @@ namespace core {
 #if !defined( CLASP_UNSIGNED_LONG_LONG_IS_UINT64 )
     static Integer_sp create( unsigned long long v );
 #endif
+#if !defined(_TARGET_OS_LINUX)
     static Integer_sp create( uintptr_t v );
-
+#endif
     static Integer_sp create( float f );
     static Integer_sp create( double f );
     static Integer_sp createLongFloat( LongFloat f );

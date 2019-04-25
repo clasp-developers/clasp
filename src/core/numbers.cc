@@ -1592,11 +1592,9 @@ Integer_sp Integer_O::create( int64_t v )
 
 Integer_sp Integer_O::create( uint64_t v )
 {
-  if (v <= gc::most_positive_fixnum)
-  {
+  if (v <= gc::most_positive_fixnum) {
     return Integer_O::create(static_cast<Fixnum>(v));
   }
-
   return Bignum_O::create( v );
 }
 
@@ -1622,13 +1620,14 @@ Integer_sp Integer_O::create( unsigned long long v )
 }
 #endif
 
+#if !defined(_TARGET_OS_LINUX)
 Integer_sp Integer_O::create( uintptr_t v) {
   if ( v <= gc::most_positive_fixnum ) {
     return clasp_make_fixnum((Fixnum)v);
   }
   return Bignum_O::create( (uint64_t)v );
 }
-
+#endif
 /* Why >= and <? Because most-negative-fixnum is a negative power of two,
  * exactly representable by a float. most-positive-fixnum is slightly less than
  * a positive power of two. So (double)mpf is a double that, cast to an integer,
