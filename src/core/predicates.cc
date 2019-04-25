@@ -311,16 +311,6 @@ CL_DEFUN bool cl__compiled_function_p(T_sp o) {
 
 CL_LAMBDA(arg);
 CL_DECLARE();
-CL_DOCSTRING("genericFunctionP");
-CL_DEFUN bool core__generic_function_p(T_sp o) {
-  if (gc::IsA<FuncallableInstance_sp>(o)) {
-    return true;
-  }
-  return false;
-};
-
-CL_LAMBDA(arg);
-CL_DECLARE();
 CL_DOCSTRING("Return true if arg is a proper list");
 CL_DEFUN bool core__proper_list_p(T_sp arg) {
   T_sp fast, slow;
