@@ -326,7 +326,7 @@ namespace core {
     bool interpretedP() const {
       return (this->closureType==interpretedClosure);
     }
-      
+    bool openP();
     inline T_sp &operator[](size_t idx) {
       BOUNDS_ASSERT(idx<this->_Slots._Length);
       return this->_Slots[idx];

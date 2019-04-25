@@ -195,6 +195,17 @@ T_sp ClosureWithSlots_O::interpretedSourceCode() {
   SIMPLE_ERROR(BF("Source code is only available for interpreted functions"));
 }
 
+/* This function is used (currently exclusively) in funcallableInstance.cc.
+ * It returns true if the function doesn't refer to any closure slots,
+ * i.e., if the entry point ignores its first argument. */
+bool ClosureWithSlots_O::openP() {
+  switch (this->closureType) {
+  case bclaspClosure: return this->closedEnvironment().nilp();
+  case cclaspClosure: return (this->_Slots._Length == 0);
+  default: return false;
+  }
+}
+
 CL_DEFUN T_mv core__interpreted_closure_form(ClosureWithSlots_sp func) {
   return Values(func->interpretedSourceCode(),func->closedEnvironment());
 }

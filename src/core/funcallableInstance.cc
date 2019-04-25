@@ -214,16 +214,42 @@ T_sp FuncallableInstance_O::copyInstance() const {
   return copy;
 }
 
-T_sp FuncallableInstance_O::setFuncallableInstanceFunction(T_sp functionOrT) {
+T_sp FuncallableInstance_O::setFuncallableInstanceFunction(T_sp function) {
   SYMBOL_EXPORT_SC_(ClPkg, standardGenericFunction);
-  SYMBOL_SC_(ClosPkg, standardOptimizedReaderFunction);
-  SYMBOL_SC_(ClosPkg, standardOptimizedWriterFunction);
-  if (gc::IsA<Function_sp>(functionOrT)) {
-    this->entry.store(funcallable_entry_point);//gc::As_unsafe<Function_sp>(functionOrT)->entry.load());
-    this->GFUN_DISPATCHER_set(functionOrT);
+  /* We have to be cautious about thread safety here. We don't want to crash
+   * if one thread set-funcallable-instance-function's an instance that another
+   * thread is calling.
+   * As an optimization, if a function isn't a closure, we just use its entry
+   * point directly, to avoid the overhead from funcallable_entry_point.
+   * But in general we have funcallable_entry_point just call the GFUN_DISPATCHER.
+   * Accessing both the entry point and the GFUN_DISPATCHER is atomic.
+   * So here's what we do: first, change the GFUN_DISPATCHER. Then, change the
+   * entry point.
+   * If we had funcallable_entry_point before the set-funcallable-instance,
+   * a call between the two sets will just use the new function.
+   * If we had some other entry point, a call will use that, and it must be
+   * insensitive to the GFUN_DISPATCHER.
+   * So in either case something coherent is called. */
+  /* TODO: We could make this work with any closure, without using locks:
+   * 1) GFUN_DISPATCHER_set. If the entry_point is funcallable_entry_point,
+   *    now we are using the new function. Otherwise this is meaningless.
+   * 2) Set the entry to funcallable_entry_point. Now the instance's closure
+   *    vector is irrelevant and we are using the new function.
+   * 3) Copy the closure vector into the instance. Doesn't need to be atomic.
+   * 4) Set the entry to the closure's entry.
+   * The only reason I'm not doing this now is that funcallable instances
+   * aren't actually closures at the moment. */
+  if (gc::IsA<Function_sp>(function)) {
+    this->GFUN_DISPATCHER_set(function);
+    // If the function has no closure slots, we can use its entry point.
+    if (gc::IsA<ClosureWithSlots_sp>(function)) {
+      ClosureWithSlots_sp closure = gc::As_unsafe<ClosureWithSlots_sp>(function);
+      if (closure->openP())
+        this->entry.store(closure->entry.load());
+      else this->entry.store(funcallable_entry_point);
+    } else this->entry.store(funcallable_entry_point);
   } else {
-    TYPE_ERROR(functionOrT, cl::_sym_function);
-    //SIMPLE_ERROR(BF("Wrong type argument: %s") % functionOrT->__repr__());
+    TYPE_ERROR(function, cl::_sym_function);
   }
 
   return ((this->sharedThis<FuncallableInstance_O>()));
