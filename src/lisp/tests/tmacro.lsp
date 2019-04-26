@@ -1,1 +1,0 @@
-(defmacro foo () `(print "Hello"))
