@@ -224,8 +224,10 @@
 (defmethod interpret-ast ((ast cleavir-ast:multiple-value-setq-ast) env)
   (let ((values (multiple-value-list
                  (interpret-ast (cleavir-ast:form-ast ast) env))))
-    (loop for var in (cleavir-ast:lhs-asts ast)
-          do (setf (variable var env) (pop values)))))
+    (loop with rvalues = values
+          for var in (cleavir-ast:lhs-asts ast)
+          do (setf (variable var env) (pop rvalues)))
+    (values-list values)))
 
 (defmethod interpret-ast ((ast cleavir-ast:tag-ast) env)
   ;; nop
