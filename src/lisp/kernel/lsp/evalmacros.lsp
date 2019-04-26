@@ -124,6 +124,21 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
                  (list (funcall *defun-inline-hook* name global-function env)))
           ',name))))
 
+(defvar *compiler-macros* (make-hash-table :test #'equal))
+
+(defun compiler-macro-function (name &optional environment)
+  (declare (ignore environment))
+  (values (gethash name *compiler-macros*)))
+
+(defun (setf compiler-macro-function) (cmf name &optional environment)
+  (declare (ignore environment))
+  ;; Basically ETYPECASE.
+  (if (functionp cmf)
+      (core:hash-table-setf-gethash *compiler-macros* name cmf)
+      (if (null cmf)
+          (progn (remhash name *compiler-macros*) nil)
+          (error 'type-error :datum cmf :expected-type '(or function null)))))
+
 (defmacro define-compiler-macro (&whole whole name vl &rest body &environment env)
   ;; CLHS doesn't actually say d-c-m has compile time effects, but it's nice to match defmacro
   `(eval-when (:compile-toplevel :load-toplevel :execute)

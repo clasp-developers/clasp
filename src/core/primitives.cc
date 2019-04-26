@@ -573,21 +573,6 @@ CL_DEFUN T_mv core__separate_pair_list(List_sp listOfPairs) {
 
 // ignore env
 CL_LAMBDA(name &optional env);
-CL_DEFUN T_mv cl__compiler_macro_function(core::T_sp name, core::T_sp env)
-{
-  return core__get_sysprop(name,cl::_sym_compiler_macro);
-}
-
-CL_LISPIFY_NAME("CL:compiler-macro-function");
-CL_LAMBDA(function name &optional env);
-CL_DEFUN_SETF T_sp setf_compiler_macro_function(core::T_sp function, core::T_sp name, core::T_sp env)
-{
-  core__put_sysprop(name,cl::_sym_compiler_macro,function);
-  return function;
-}
-
-// ignore env
-CL_LAMBDA(name &optional env);
 CL_DEFUN T_sp core__get_global_inline_status(core::T_sp name, core::T_sp env)
 {
   return core__get_sysprop(name,cl::_sym_inline);
