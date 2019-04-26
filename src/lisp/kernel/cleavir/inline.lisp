@@ -39,7 +39,7 @@
   `(define-compiler-macro ,name (,@lambda-list)
      ;; I just picked this since it's the first variable in auto-compile.lisp.
      (unless (eq cmp:*cleavir-compile-hook* 'cclasp-compile*)
-       (return-from ,name ,(second lambda-list)))
+       (return-from ,(core:function-block-name name) ,(second lambda-list)))
      ,@body))
 
 (progn
@@ -415,14 +415,12 @@
 (progn
   (debug-inline "plusp")
   (declaim (inline plusp))
-  (defun plusp (number)
-    (> number 0)))
+  (defun plusp (number) (> number 0)))
 
 (progn
   (debug-inline "minusp")
   (declaim (inline minusp))
-  (defun minusp (number)
-    (< number 0)))
+  (defun minusp (number) (< number 0)))
 
 ;;; ------------------------------------------------------------
 ;;;
@@ -558,6 +556,13 @@
     (array
      (and (<= 0 index) (< index (core::%array-total-size array))))))
 
+;;; Array indices are all fixnums. If we're sure sizes are valid, we don't want
+;;; to use general arithmetic. We can just use this to do unsafe modular arithmetic.
+;;; (Used in this file only)
+(defmacro add-indices (a b)
+  `(cleavir-primop:let-uninitialized (z)
+     (if (cleavir-primop:fixnum-add ,a ,b z) z z)))
+
 ;; FIXME: This could be a function returning two values. But that's
 ;; quite inefficient at the moment.
 (defmacro with-array-data ((arrayname offsetname array) &body body)
@@ -570,21 +575,10 @@
        (array
         (loop
           (psetf ,arrayname (core::%displacement ,arrayname)
-                 ,offsetname (+ ,offsetname (core::%displaced-index-offset ,arrayname)))
+                 ,offsetname (add-indices ,offsetname
+                                          (core::%displaced-index-offset ,arrayname)))
           (when (typep ,arrayname '(simple-array * (*))) (return)))))
      ,@body))
-
-
-#|
-(defun %non-empty-array-p (array)
-  (> (array-total-size array) 0))
-
-(deftype non-empty-array ()
-  `(and array (satisfies %non-empty-array-p)))
-
-(typep (make-array 0) 'NON-EMPTY-ARRAY)
-(typep (make-array 1) 'NON-EMPTY-ARRAY)
-|#
 
 (declaim (inline vector-read))
 (defun vector-read (vector index)
@@ -611,7 +605,7 @@
   (with-array-data (underlying-array offset vector)
     ;; Okay, now array is a vector/simple, and index is valid.
     ;; This function takes care of element type discrimination.
-    (%unsafe-vector-ref underlying-array (+ index offset))))
+    (%unsafe-vector-ref underlying-array (add-indices index offset))))
 
 (declaim (inline cl:row-major-aref))
 (defun cl:row-major-aref (array index)
@@ -635,7 +629,7 @@
                (error 'type-error :datum index :expected-type `(integer 0 ,(1- max))))))))
     ;; Okay, now array is a vector/simple, and index is valid.
     ;; This function takes care of element type discrimination.
-    (%unsafe-vector-ref underlying-array (+ index offset))))
+    (%unsafe-vector-ref underlying-array (add-indices index offset))))
 
 (declaim (inline vector-set))
 (defun vector-set (vector index value)
@@ -645,8 +639,7 @@
           (error 'simple-type-error :FORMAT-CONTROL "Array ~a not valid for index ~a~%" :format-arguments (list vector index) :datum index :expected-type '(integer 0 (0)))
           (error 'type-error :datum index :expected-type `(integer 0 ,max)))))
   (with-array-data (underlying-array offset vector)
-    (%unsafe-vector-set underlying-array (+ index offset) value))
-  )
+    (%unsafe-vector-set underlying-array (add-indices index offset) value)))
 
 (declaim (inline core:row-major-aset))
 (defun core:row-major-aset (array index value)
@@ -663,7 +656,7 @@
            (if (zerop max)
                (error 'simple-type-error :FORMAT-CONTROL "Array ~a not valid for index ~a~%" :format-arguments (list array index) :datum index :expected-type '(integer 0 (0)))
                (error 'type-error :datum index :expected-type `(integer 0 ,max)))))))
-    (%unsafe-vector-set underlying-array (+ index offset) value)))
+    (%unsafe-vector-set underlying-array (add-indices index offset) value)))
 
 
 (declaim (inline schar (setf schar) char (setf char)))
@@ -748,7 +741,16 @@
         `(let* ((,sarray ,array)
                 (rmi (array-row-major-index ,sarray ,@subscripts)))
            (with-array-data (data offset ,sarray)
-             (%unsafe-vector-ref data (+ offset rmi)))))))
+             (%unsafe-vector-ref data (add-indices offset rmi)))))))
+
+(define-cleavir-compiler-macro (setf aref) (&whole form new array &rest subscripts)
+  (if (> (length subscripts) 1)
+      form
+      (let ((sarray (gensym "ARRAY")))
+        `(let* ((,sarray ,array)
+                (rmi (array-row-major-index ,sarray ,@subscripts)))
+           (with-array-data (data offset ,sarray)
+             (%unsafe-vector-set data (add-indices offset rmi) ,new))))))
 
 ;;; ------------------------------------------------------------
 ;;;
@@ -884,11 +886,15 @@
   ;; If we have (funcall #'foo ...), we might be able to apply the FOO compiler macro.
   (when (and (consp function) (eq (first function) 'function)
              (consp (cdr function)) (null (cddr function)))
-    (let ((cmf (compiler-macro-function (second function) env)))
-      (when cmf
-        (return-from funcall
-          ;; incidentally, this funcall should be okay given that it's compile-time.
-          (funcall cmf form env)))))
+    (let ((name (second function)))
+      (when (core:valid-function-name-p name)
+        (let ((cmf (compiler-macro-function name env))
+              (notinline (eq 'notinline
+                             (cleavir-env:inline
+                              (cleavir-env:function-info env name)))))
+          (when (and cmf (not notinline))
+            (return-from funcall
+              (funcall *macroexpand-hook* cmf form env)))))))
   ;; If not, we can stil eliminate the call to FUNCALL as follows.
   (let ((fsym (gensym "FUNCTION")))
     `(let ((,fsym ,function))
