@@ -622,9 +622,7 @@ CL_DEFUN T_mv core__gethash3(T_sp key, T_sp hashTable, T_sp default_value) {
   return ht->gethash(key, default_value);
 };
 
-List_sp HashTable_O::tableRef_no_read_lock(T_sp key, bool under_write_lock) {
-  cl_index length = this->_Table.size();
-  cl_index index = this->sxhashKey(key, length, false /*will-add-key*/);
+List_sp HashTable_O::tableRef_no_read_lock(T_sp key, bool under_write_lock, cl_index index) {
   DEBUG_HASH_TABLE({core::write_bf_stream(BF("%s:%d index = %ld\n") % __FILE__ % __LINE__ % index );});
   VERIFY_HASH_TABLE_COUNT(this);
   for (size_t cur = index, curEnd(this->_Table.size()); cur<curEnd; ++cur ) {
@@ -681,7 +679,8 @@ T_mv HashTable_O::gethash(T_sp key, T_sp default_value) {
   LOG(BF("gethash looking for key[%s]") % _rep_(key));
   HT_READ_LOCK(this);
   VERIFY_HASH_TABLE_COUNT(this);
-  List_sp keyValuePair = this->tableRef_no_read_lock(key, false /*under_write_lock*/);
+  cl_index index = this->sxhashKey(key, this->_Table.size(), false /*will-add-key*/);
+  List_sp keyValuePair = this->tableRef_no_read_lock(key, false /*under_write_lock*/, index);
   LOG(BF("Found keyValueCons")); // % keyValueCons->__repr__() ); INFINITE-LOOP
   if (keyValuePair.consp()) {
     T_sp value = CONS_CDR(keyValuePair);
@@ -703,7 +702,8 @@ CL_DEFMETHOD gc::Fixnum HashTable_O::hashIndex(T_sp key) const {
 
 List_sp HashTable_O::find(T_sp key) {
   HT_READ_LOCK(this);
-  List_sp keyValue = this->tableRef_no_read_lock(key, false /*under_write_lock*/);
+  cl_index index = this->sxhashKey(key, this->_Table.size(), false /*will-add-key*/);
+  List_sp keyValue = this->tableRef_no_read_lock(key, false /*under_write_lock*/, index);
   if (!keyValue.consp()) return keyValue;
   if (CONS_CDR(keyValue).unboundp()) return _Nil<T_O>();
   return keyValue;
@@ -717,7 +717,8 @@ bool HashTable_O::contains(T_sp key) {
 
 bool HashTable_O::remhash(T_sp key) {
   HT_WRITE_LOCK(this);
-  List_sp keyValuePair = this->tableRef_no_read_lock( key, true /*under_write_lock*/ );
+  cl_index index = this->sxhashKey(key, this->_Table.size(), false /*will-add-key*/);
+  List_sp keyValuePair = this->tableRef_no_read_lock( key, true /*under_write_lock*/, index );
   if (keyValuePair.consp()) {
     Cons_sp pair = gc::As_unsafe<Cons_sp>(keyValuePair);
     pair->rplaca(_Deleted<T_O>());
@@ -731,7 +732,8 @@ bool HashTable_O::remhash(T_sp key) {
 
 T_sp HashTable_O::setf_gethash_no_write_lock(T_sp key, T_sp value)
 {
-  List_sp keyValuePair = this->tableRef_no_read_lock( key, true /*under_write_lock*/);
+  cl_index index = this->sxhashKey(key, this->_Table.size(), false /*will-add-key*/);
+  List_sp keyValuePair = this->tableRef_no_read_lock( key, true /*under_write_lock*/, index);
   VERIFY_HASH_TABLE_COUNT(this);
   if (keyValuePair.consp()) {
     DEBUG_HASH_TABLE({core::write_bf_stream(BF("%s:%d Found key\n") % __FILE__ % __LINE__);});
@@ -742,7 +744,7 @@ T_sp HashTable_O::setf_gethash_no_write_lock(T_sp key, T_sp value)
     return value;
   }
   // not found
-  gc::Fixnum index = this->sxhashKey(key, this->_Table.size(), true /*will-add-key*/);
+  // index = this->sxhashKey(key, this->_Table.size(), true /*will-add-key*/);
   DEBUG_HASH_TABLE({core::write_bf_stream(BF("%s:%d Looking for empty slot index = %ld\n")  % __FILE__ % __LINE__ % index);});
   Cons_O* entryP = nullptr;
   entryP = &this->_Table[index];
@@ -906,6 +908,33 @@ CL_DEFMETHOD List_sp HashTable_O::hash_table_bucket(size_t index)
   return _Nil<T_O>();
 }
 
+
+CL_DEFMETHOD T_sp HashTable_O::hash_table_average_search_length()
+{
+  HT_READ_LOCK(this);
+  gc::Fixnum iend(this->_Table.size());
+  double sum = 0.0;
+  gc::Fixnum count = 0;
+  for (gc::Fixnum it(0), itEnd(iend); it < itEnd; ++it) {
+    const Cons_O& entry = this->_Table[it];
+    if (!(entry._Car.unboundp()||entry._Car.deletedp())) {
+      gc::Fixnum index = this->sxhashKey(entry._Car, this->_Table.size(), false /*will-add-key*/);
+      gc::Fixnum delta;
+      if (index > it) {
+        delta = (it+iend)-index;
+      } else {
+        delta = (it-index);
+      }
+//      printf("%s:%d  index = %lld  it = %lld  delta=%lld\n", __FILE__, __LINE__, index, it, delta );
+      sum = sum + delta;
+      count++;
+    }
+  }
+  if (count>0) {
+    return core::clasp_make_double_float(sum / count);
+  }
+  return _Nil<T_O>();
+}  
 
 CL_LISPIFY_NAME("core:hashTableDump");
 CL_DEFMETHOD string HashTable_O::hash_table_dump(Fixnum start, T_sp end) const {
