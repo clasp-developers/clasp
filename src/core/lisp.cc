@@ -966,15 +966,9 @@ void Lisp_O::installPackage(const Exposer_O *pkg) {
   LOG(BF("Installing package[%s]") % pkg->packageName());
   int firstNewGlobalCallback = this->_GlobalInitializationCallbacks.end() - this->_GlobalInitializationCallbacks.begin();
   ChangePackage change(pkg->package());
-  //    this->inPackage(pkg->packageName());
   {
     _BLOCK_TRACE("Initializing classes");
     pkg->expose(_lisp, Exposer_O::candoClasses);
-  }
-  {
-    _BLOCK_TRACE("Creating nils for built-in classes");
-    LOG(BF("Nils aren't created here anymore - they are created when the class is registered"));
-    //	this->createNils();
   }
   {
     _BLOCK_TRACE("Initializing functions");
