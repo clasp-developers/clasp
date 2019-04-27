@@ -460,7 +460,7 @@
            `(let* ((location
                      (load-time-value
                       (clos:slot-definition-location
-                       (or (find ',slot-name (clos:class-slots ,class))
+                       (or (find ',slot-name (clos:class-slots ,class) :key #'clos:slot-definition-name)
                            (error "Probably a BUG: slot ~a in ~a stopped existing between compile and load"
                                   ',slot-name ,class)))))
                    (value (car location)))
@@ -484,7 +484,7 @@
                     (location
                       (load-time-value
                        (clos:slot-definition-location
-                        (or (find ',slot-name (clos:class-slots ,class))
+                        (or (find ',slot-name (clos:class-slots ,class) :key #'clos:slot-definition-name)
                             (error "Probably a BUG: slot ~a in ~a stopped existing between compile and load"
                                    ',slot-name ,class))))))
                 (rplaca location value)
