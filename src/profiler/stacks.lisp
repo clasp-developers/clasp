@@ -242,7 +242,10 @@ exec sbcl --noinform --dynamic-space-size 2048 --disable-ldb --lose-on-corruptio
   (let ((frames (reverse (dtrace-backtrace-frames backtrace))))
     (format fout "~{~a~^;~} ~d~%"
             (loop for frame in frames
-                  collect (string-trim " " frame))
+             collect (let ((fr (string-trim " " frame)))
+                      (if (> (length fr) 64)
+                          (subseq fr 0 64)
+                          fr)))
             (dtrace-backtrace-count backtrace))))
 
 
