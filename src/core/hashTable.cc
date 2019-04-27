@@ -779,8 +779,7 @@ T_sp HashTable_O::setf_gethash_no_write_lock(T_sp key, T_sp value)
 }
 
 
-CL_LISPIFY_NAME("core:hashTableSetfGethash");
-CL_DEFMETHOD T_sp HashTable_O::hash_table_setf_gethash(T_sp key, T_sp value) {
+T_sp HashTable_O::hash_table_setf_gethash(T_sp key, T_sp value) {
   LOG(BF("About to hash_table_setf_gethash for %s@%p -> %s@%p\n") % _safe_rep_(key) % (void*)key.raw_() % _safe_rep_(value) % (void*)value.raw_());
   HashTableWriteLock _guard(this);
   return this->setf_gethash_no_write_lock(key, value);
@@ -788,9 +787,7 @@ CL_DEFMETHOD T_sp HashTable_O::hash_table_setf_gethash(T_sp key, T_sp value) {
 
 CL_LISPIFY_NAME("core:hash-table-setf-gethash");
 CL_DEFUN T_sp core__hash_table_setf_gethash(HashTable_sp hash_table, T_sp key, T_sp value) {
-  LOG(BF("About to hash_table_setf_gethash for %s@%p -> %s@%p\n") % _safe_rep_(key) % (void*)key.raw_() % _safe_rep_(value) % (void*)value.raw_());
-  HashTableWriteLock _guard(&*hash_table);
-  return hash_table->setf_gethash_no_write_lock(key, value);
+  return hash_table->hash_table_setf_gethash(key,value);
 }
 
 
