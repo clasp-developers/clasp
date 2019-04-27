@@ -29,4 +29,8 @@ THE SOFTWARE.
 
 NAMESPACE_PACKAGE_ASSOCIATION(cleavirEnv, CleavirEnvPkg, "CLEAVIR-ENVIRONMENT")
 
+  
+SYMBOL_EXPORT_SC_(CleavirEnvPkg, macroFunction);
+SYMBOL_EXPORT_SC_(CleavirEnvPkg, symbolMacroExpansion);
+
 #endif

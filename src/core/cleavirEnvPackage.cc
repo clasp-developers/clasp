@@ -29,20 +29,11 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/symbol.h>
-#include <clasp/core/cleavirEnvPackage.h>
+#include <clasp/core/cleavirEnvPackage.fwd.h>
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/package.h>
 
 namespace cleavirEnv {
 
 
-SYMBOL_EXPORT_SC_(CleavirEnvPkg, macroFunction);
-SYMBOL_EXPORT_SC_(CleavirEnvPkg, symbolMacroExpansion);
-
-void initialize_cleavirEnvPackage() {
-  list<string> lnicknames;
-  list<string> luse = {"COMMON-LISP"};
-  _lisp->makePackage(CleavirEnvPkg, lnicknames, luse);
-  // We don't have to create the CLEAVIR-PRIMOPS symbols here - it's done in bootStrapCoreSymbolMap
-}
 };

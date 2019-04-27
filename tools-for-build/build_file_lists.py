@@ -89,7 +89,7 @@ SRC_CORE_FILES = \
         'grayPackage',
         'closPackage',
         'cleavirPrimopsPackage',
-        'cleavirEnvPackage',
+        'cleavirIrPackage',
         'compPackage',
         'bootStrapCoreSymbolMap',
         'cons',
