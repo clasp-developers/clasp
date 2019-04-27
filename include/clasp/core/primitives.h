@@ -268,8 +268,9 @@ void core__gdb(T_sp msg);
   T_sp cl__fdefinition(T_sp functionName);
   T_mv cl__special_operator_p(Symbol_sp sym);
   T_sp cl__sleep(Real_sp oseconds);
-  List_sp core__list_from_va_list(VaList_sp valist);
+List_sp core__list_from_va_list(VaList_sp valist);
 
+T_sp core__next_number();
 };
 
 #endif /* _core_primitives_H */

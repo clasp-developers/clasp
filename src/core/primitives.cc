@@ -183,14 +183,21 @@ CL_DEFUN T_sp core__interpreter_symbols() {
   return ls;
 }
 
-std::atomic<uint64_t> global_next_number;
+std::atomic<int64_t> global_next_number;
 
 CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("Return the next number.  An internal counter is incremented every time this function is called.");
-CL_DEFUN Integer_sp core__next_number() {
-  uint64_t temp = ++global_next_number;
-  return Integer_O::create((uint64_t)temp);
+CL_DEFUN T_sp core__next_number() {
+  int64_t num, next_num;
+  do {
+    num = global_next_number;
+    next_num = num + 1;
+    if ((next_num<<gctools::fixnum_shift)<=0) { // if it wraps it won't fit in a positive fixnum
+      next_num = 1;
+    }
+  } while (!global_next_number.compare_exchange_weak(num,next_num));
+  return core::clasp_make_fixnum(next_num);
 };
 
 CL_LAMBDA();
