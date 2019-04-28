@@ -900,24 +900,26 @@
              (consp (cdr function)) (null (cddr function)))
     (let ((name (second function)))
       (when (core:valid-function-name-p name)
-        (let ((cmf (compiler-macro-function name env))
-              (notinline (eq 'notinline
-                             (cleavir-env:inline
-                              (cleavir-env:function-info env name)))))
-          (when (and cmf (not notinline))
-            (return-from funcall
-              (funcall *macroexpand-hook* cmf form env)))))))
-  ;; If not, we can stil eliminate the call to FUNCALL as follows.
-  (let ((fsym (gensym "FUNCTION")))
-    `(let ((,fsym ,function))
-       (cleavir-primop:funcall
-        (cond
-          ((cleavir-primop:typeq ,fsym function)
-           ,fsym)
-          ((cleavir-primop:typeq ,fsym symbol)
-           (symbol-function ,fsym))
-          (t (error 'type-error :datum ,fsym :expected-type '(or symbol function))))
-        ,@arguments))))
+        (let ((func-info (cleavir-env:function-info env name)))
+          (when func-info
+            (let ((cmf (compiler-macro-function name env)))
+              (when cmf
+                (let ((notinline (eq 'notinline
+                                     (cleavir-env:inline func-info))))
+                  (when (not notinline)
+                    (return-from funcall
+                      (funcall *macroexpand-hook* cmf form env))))))))))
+    ;; If not, we can still eliminate the call to FUNCALL as follows.
+    (let ((fsym (gensym "FUNCTION")))
+      `(let ((,fsym ,function))
+         (cleavir-primop:funcall
+          (cond
+            ((cleavir-primop:typeq ,fsym function)
+             ,fsym)
+            ((cleavir-primop:typeq ,fsym symbol)
+             (symbol-function ,fsym))
+            (t (error 'type-error :datum ,fsym :expected-type '(or symbol function))))
+          ,@arguments)))))
 
 (define-cleavir-compiler-macro values (&whole form &rest values)
   `(cleavir-primop:values ,@values))
