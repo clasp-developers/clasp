@@ -786,7 +786,7 @@ T_sp HashTable_O::hash_table_setf_gethash(T_sp key, T_sp value) {
 }
 
 CL_LISPIFY_NAME("core:hash-table-setf-gethash");
-CL_DEFUN T_sp core__hash_table_setf_gethash(HashTable_sp hash_table, T_sp key, T_sp value) {
+CL_DEFUN T_sp core__hash_table_setf_gethash(HashTableBase_sp hash_table, T_sp key, T_sp value) {
   return hash_table->hash_table_setf_gethash(key,value);
 }
 
