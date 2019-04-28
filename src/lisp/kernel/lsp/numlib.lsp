@@ -106,7 +106,7 @@ Returns zero for non-complex numbers."
     (atan (imagpart x) (realpart x))))
 
 ;;; this is defined in numbers.h
-#+or()  
+#+(or)  
 (defun signum (x)
   "Args: (number)
 Returns a number that represents the sign of NUMBER.  Returns NUMBER If it is

@@ -53,6 +53,10 @@ public:
     return result;
   }
 
+  // Save this T_mv's primary value to the multiple value vector,
+  // probably so we can restore it later.
+  // With our multiple value protocol, the primary value is not
+  // written into the vector by default.
   void saveToMultipleValue0() const {
     core::MultipleValues &mv = core::lisp_multipleValues();
     mv.setSize(0);
@@ -64,60 +68,12 @@ public:
     return return_type(this->raw_(), this->_number_of_values);
   }
 
+  // Read this T_mv from the multiple value vector.
   void readFromMultipleValue0() {
     core::MultipleValues &mv = core::lisp_multipleValues();
     this->setRaw_(reinterpret_cast<gc::Tagged>(mv[0]));
     this->_number_of_values = mv.getSize();
   };
-
-  void saveToVec0(::gctools::Vec0<core::T_sp> &values) {
-#if 0
-    if ( this->_number_of_values < 0 || this->_number_of_values >= CALL_ARGUMENTS_LIMIT ) {
-      printf("%s:%d  Illegal number of return values: %zu\n", __FILE__, __LINE__, this->_number_of_values);
-    }
-#endif
-    values.resize(this->_number_of_values);
-    values[0] = *this;
-    core::MultipleValues &mv = core::lisp_multipleValues();
-    for (int i(1); i < this->_number_of_values; ++i) {
-#ifdef TRAP
-      if ( (((uintptr_clasp_t)mv._Values[i])&gctools::tag_mask) == unused0_tag) {
-        printf("%s:%d Caught bad tagged pointer\n", __FILE__, __LINE__ );
-        abort();
-      }
-#endif
-      core::T_sp val((gctools::Tagged)mv._Values[i]);
-      values[i] = val;
-#ifdef TRAP
-      if ( (((uintptr_clasp_t)values[i].raw_())&gctools::tag_mask) == unused0_tag) {
-        printf("%s:%d Caught bad tagged pointer\n", __FILE__, __LINE__ );
-        abort();
-      }
-#endif
-    }
-  }
-
-  void loadFromVec0(const ::gctools::Vec0<core::T_sp> &values) {
-    core::MultipleValues &mv = core::lisp_multipleValues();
-    for (size_t i(1), iEnd(values.size()); i < iEnd; ++i) {
-#ifdef TRAP
-      if ( (((uintptr_clasp_t)values[i].raw_())&gctools::tag_mask) == unused0_tag) {
-        printf("%s:%d Caught bad tagged pointer\n", __FILE__, __LINE__ );
-        abort();
-      }
-#endif
-      mv._Values[i] = values[i].raw_();
-#ifdef TRAP
-      if ( (((uintptr_clasp_t)mv._Values[i])&gctools::tag_mask) == unused0_tag) {
-        printf("%s:%d Caught bad tagged pointer\n", __FILE__, __LINE__ );
-        abort();
-      }
-#endif
-    }
-    this->_number_of_values = values.size();
-    this->setRaw_(reinterpret_cast<gc::Tagged>(values[0].raw_()));
-    //	    GCTOOLS_ASSERT(this->valid());
-  }
 
   operator bool() const {
     return this->theObject != NULL;
@@ -126,7 +82,7 @@ public:
 #ifdef POLYMORPHIC_SMART_PTR
   virtual
 #endif
-      int
+      size_t
       number_of_values() const {
     return this->_number_of_values;
   };
@@ -168,50 +124,55 @@ public:
 
 namespace core {
  typedef gctools::multiple_values<T_O> T_mv;
- 
- // The SimpleVector needs to be created with SimpleVector_O::create_for_multiple_values
- void multipleValuesSaveToVector(T_mv values, SimpleVector_sp save);
- inline size_t multipleValuesLength(SimpleVector_sp values);
- core::T_mv multipleValuesLoadFromVector(SimpleVector_sp load);
 
- inline void multipleValuesSaveToMultipleValues(T_mv values, MultipleValues* destmv)
- {
-   core::MultipleValues& mv = core::lisp_multipleValues();
-   destmv->_Values[0] = values.raw_();
-   for ( int i(1); i<values.number_of_values(); ++i ) {
-     destmv->_Values[i] = mv._Values[i];
+ /* Save a return_type (in the form of a primary value and number of values)
+  * into an array of T_O*. Values past the first are taken from lisp_multipleValues.
+  * This is intended to be used in a pattern like the following:
+  * { T_mv result = whatever;
+  *   size_t nvals = whatever.number_of_values();
+  *   T_O* mv_temp[nvals];
+  *   returnTypeSaveToTemp(nvals, result.raw_(), mv_temp);
+  *   ... stuff that messes with values ...
+  *   return returnTypeLoadFromTemp(nvals, mv_temp);
+  * }
+  * FIXME: Formalize with a macro or templates or something? */
+ inline void returnTypeSaveToTemp(size_t nvals, T_O* primary, T_O** temp) {
+   if (nvals > 0) { // don't store even the primary unless the space actually exists
+     core::MultipleValues& mv = core::lisp_multipleValues();
+     temp[0] = primary;
+     for (size_t i = 1; i < nvals; ++i) {
+       temp[i] = mv._Values[i];
+     }
    }
-   destmv->_Size = values.number_of_values();;
  }
- inline gctools::return_type multipleValuesLoadFromMultipleValues(MultipleValues* sourcemv)
- {
+ // Build and return a return_type from a temporary vector. See above.
+ inline gctools::return_type returnTypeLoadFromTemp(size_t nvals, T_O** temp) {
    core::MultipleValues& mv = core::lisp_multipleValues();
-   for ( int i(1); i<sourcemv->_Size; ++i ) {
-//     printf("%s:%d    multipleValuesLoadFromMultipleValues[%d] --> %s\n", __FILE__, __LINE__, i, _rep_(val));
-     mv._Values[i] = sourcemv->_Values[i];
+   for (size_t i = 1; i < nvals; ++i) {
+     mv._Values[i] = temp[i];
    }
-//   printf("%s:%d    multipleValuesLoadFromMultipleValues[%d] --> %s\n", __FILE__, __LINE__, i, _rep_(val0));
-   return gctools::return_type(sourcemv->_Values[0],sourcemv->_Size);
+   return gctools::return_type(temp[0], nvals);
  }
- 
+
+ // Similar to returnTypeSaveToTemp, but saves only from lisp_multipleValues.
+ inline void multipleValuesSaveToTemp(T_O** temp) {
+   core::MultipleValues& mv = core::lisp_multipleValues();
+   size_t nvals = mv.getSize();
+   for (size_t i = 0; i < nvals; ++i) {
+     temp[i] = mv._Values[i];
+   }
+ }
+ // Similar to returnTypeLoadFromTemp, but just writes into lisp_multipleValues.
+ inline void multipleValuesLoadFromTemp(size_t nvals, T_O** temp) {
+   core::MultipleValues& mv = core::lisp_multipleValues();
+   mv.setSize(nvals);
+   for (size_t i = 0; i < nvals; ++i) {
+     mv._Values[i] = temp[i];
+   }
+ }
 };
 
 extern core::T_mv ValuesFromCons(core::List_sp vals);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 namespace gctools { 
 

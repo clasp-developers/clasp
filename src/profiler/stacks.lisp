@@ -1,8 +1,7 @@
 #!/bin/sh
-#--eval '(set-dispatch-macro-character #\# #\! (lambda (s c n)(declare (ignore c n)) (read-line s) (values)))' \
 #|
 SCRIPT_DIR="$(dirname "$0")"
-exec sbcl --dynamic-space-size 4096 --noinform --disable-ldb --lose-on-corruption --disable-debugger \
+exec sbcl --noinform --dynamic-space-size 2048 --disable-ldb --lose-on-corruption --disable-debugger \
 --no-sysinit --no-userinit --noprint \
 --eval '(set-dispatch-macro-character #\# #\! (lambda (s c n)(declare (ignore c n)) (read-line s) (values)))' \
 --eval "(defvar *script-args* '( $# \"$0\" \"$1\" \"$2\" \"$3\" \"$4\" \"$5\" \"$6\" \"$7\" ))" \
@@ -55,14 +54,30 @@ exec sbcl --dynamic-space-size 4096 --noinform --disable-ldb --lose-on-corruptio
         (subseq line 0 offset)
         line)))
 
+(defstruct dtrace-backtrace frames count)
+
+(defun backtrace-equal (x y)
+  (equal (dtrace-backtrace-frames x) (dtrace-backtrace-frames y)))
+
+(defun read-dtrace-backtrace-raw (stream &optional eofp eof)
+  (loop named read-lines
+        for line = (let ((ln (read-line stream nil :eof)))
+                     (when (eq ln :eof)
+                       (if eofp
+                           (error "End of file encountered")
+                           (return-from read-lines eof)))
+                     ln)
+        until (= (length line) 0)
+        collect (remove-offset line)))
+
 (defun read-dtrace-backtrace (stream &optional eofp eof)
-  (loop for line = (read-line stream nil :eof)
-     when (eq line :eof)
-     do (if eofp
-            (error "End of file encountered")
-            (return-from read-dtrace-backtrace eof))
-     until (= (length line) 0)
-     collect (remove-offset line)))
+  (let ((raw-backtrace (read-dtrace-backtrace-raw stream eofp eof)))
+    (if (consp raw-backtrace)
+        (let* ((frames (subseq raw-backtrace 0 (1- (length raw-backtrace))))
+               (last-line (car (last raw-backtrace 1)))
+               (count (parse-integer (string-trim " " last-line))))
+          (make-dtrace-backtrace :frames frames :count count))
+        raw-backtrace)))
 
 (defun write-block (stream backtrace)
   (loop for x in backtrace
@@ -81,30 +96,30 @@ exec sbcl --dynamic-space-size 4096 --noinform --disable-ldb --lose-on-corruptio
 
 (defun cleanup-backtrace (backtrace)
   (declare (optimize speed))
-  (list*
-   (cleanup-frame (car backtrace))
-   (loop for line in (cdr backtrace)
-      unless (search "VariadicFunctor" line)
-      unless (search "core__call_with_variable_bound" line)
-      unless (search "core::apply_method" line)
-      unless (search "core::funcall_va_list" line)
-      unless (search "core::funcall_consume_valist" line)
-      unless (search "core::cl__apply" line)
-      unless (search "FuncallableInstance_O::entry_point" line)
-      unless (search "standard_dispatch" line)
-      unless (search "funcall_frame" line)
-      unless (search "cc_call_multipleValueOneFormCall" line)
-      unless (search "core::core__funwind_protect" line)
-      unless (search "core::core__multiple_value_prog1_function" line)
-      unless (search "LAMBDA^^COMMON-LISP_FN" line)
-      unless (search "COMBINE-METHOD-FUNCTIONS3.LAMBDA" line)
-      collect (cleanup-frame line))))
+  (setf (dtrace-backtrace-frames backtrace)
+        (loop for line in (dtrace-backtrace-frames backtrace)
+              unless (search "VariadicFunctor" line)
+                unless (search "core__call_with_variable_bound" line)
+                  unless (search "core::apply_method" line)
+                    unless (search "core::funcall_va_list" line)
+                      unless (search "core::funcall_consume_valist" line)
+                        unless (search "core::cl__apply" line)
+                          unless (search "FuncallableInstance_O::entry_point" line)
+                            unless (search "standard_dispatch" line)
+                              unless (search "funcall_frame" line)
+                                unless (search "cc_call_multipleValueOneFormCall" line)
+                                  unless (search "core::core__funwind_protect" line)
+                                    unless (search "core::core__multiple_value_prog1_function" line)
+                                      unless (search "LAMBDA^^COMMON-LISP_FN" line)
+                                        unless (search "COMBINE-METHOD-FUNCTIONS3.LAMBDA" line)
+                                          collect (cleanup-frame line)))
+  backtrace)
 
 #+(or)(defun cleanup-dtrace-log (fin fout &key (verbose t))
   (let ((count 0))
     (let ((header (read-dtrace-header fin)))
       (write-block fout header)
-      (loop for backtrace = (read-dtrace-backtrace fin nil :eof)
+      (loop for backtrace = (read-dtrace-backtrace-raw fin nil :eof)
             until (eq backtrace :eof)
             for cleaned = (cleanup-backtrace backtrace)
             when (> (length backtrace) 4000)
@@ -135,7 +150,7 @@ exec sbcl --dynamic-space-size 4096 --noinform --disable-ldb --lose-on-corruptio
 (defun trace-tips (fin)
   (let ((header (read-dtrace-header fin)))
     (declare (ignore header))
-      (let ((tips (loop for backtrace = (read-dtrace-backtrace fin nil :eof)
+      (let ((tips (loop for backtrace = (read-dtrace-backtrace-raw fin nil :eof)
                         until (eq backtrace :eof)
                         when (> (length backtrace) 0)
                           collect (pick-tip backtrace))))
@@ -171,7 +186,7 @@ exec sbcl --dynamic-space-size 4096 --noinform --disable-ldb --lose-on-corruptio
   (let ((header (read-dtrace-header fin))
         (num-backtraces 0))
     (declare (ignore header))
-    (let ((calls (loop for backtrace = (read-dtrace-backtrace fin nil :eof)
+    (let ((calls (loop for backtrace = (read-dtrace-backtrace-raw fin nil :eof)
                   for backtrace-times = (if (consp backtrace) (parse-integer (string-trim " " (car (last backtrace)))) nil)
                   do (when (eq backtrace :eof) (loop-finish))
                     when (> (length backtrace) 0)
@@ -209,6 +224,56 @@ exec sbcl --dynamic-space-size 4096 --noinform --disable-ldb --lose-on-corruptio
           (format fout "GC_ related counts: ~a~%" gc-counts)
           (format fout "HashTable_O related counts: ~a~%" hash-table-counts))))))
 
+(defun prune-backtrace-height (backtrace max-frames)
+  (let ((frames (dtrace-backtrace-frames backtrace)))
+    (if (> (length frames) max-frames)
+        (setf (dtrace-backtrace-frames backtrace) (subseq frames (- (length frames) max-frames) nil))))
+  backtrace)
+
+(defun remove-frame-offsets (backtrace)
+  (let* ((frames (dtrace-backtrace-frames backtrace))
+         (removed-offsets (loop for frame in frames
+                                for plus-pos = (position #\+ frame :from-end t)
+                                collect (if plus-pos (subseq frame 0 plus-pos) frame))))
+    (setf (dtrace-backtrace-frames backtrace) removed-offsets))
+  backtrace)
+
+(defun write-folded-backtrace (backtrace fout)
+  (let ((frames (reverse (dtrace-backtrace-frames backtrace))))
+    (format fout "~{~a~^;~} ~d~%"
+            (loop for frame in frames
+             collect (let ((fr (string-trim " " frame)))
+                      (if (> (length fr) 64)
+                          (subseq fr 0 64)
+                          fr)))
+            (dtrace-backtrace-count backtrace))))
+
+
+(defun collapse (fin fout max-frames)
+  (let ((header (read-dtrace-header fin))
+        (folded nil))
+    (declare (ignore header))
+    (loop named read-backtraces
+          for backtrace = (let ((bt (read-dtrace-backtrace fin nil :eof)))
+                            (when (eq bt :eof) (return-from read-backtraces nil))
+                            bt)
+;;          for backtrace = (cleanup-backtrace raw-backtrace)
+          for backtrace-no-offsets = (remove-frame-offsets backtrace)
+          for pruned = (prune-backtrace-height backtrace-no-offsets max-frames)
+          do (if folded
+                 (if (backtrace-equal pruned (first folded))
+                     (incf (dtrace-backtrace-count (first folded)) (dtrace-backtrace-count pruned))
+                     (push pruned folded))
+                 (push pruned folded)))
+    (setf folded (reverse folded))
+    (loop for backtrace in folded
+          do (write-folded-backtrace backtrace fout))))
+
+(defun test-collapse
+ (file-in file-out max-frames)
+  (with-open-file (fin file-in :direction :input)
+    (with-open-file (fout file-out :direction :output :if-exists :supersede)
+      (collapse fin fout max-frames))))
 
 ;;; Prune backtraces down to a specific function in the backtraces.
 ;;; Look down each backtrace from until you find a frame with the function name that contains the focus-name.
@@ -219,7 +284,7 @@ exec sbcl --dynamic-space-size 4096 --noinform --disable-ldb --lose-on-corruptio
   (format *debug-io* "Looking for ~s~%" prune-name)
   (let ((header (read-dtrace-header fin)))
     (write-dtrace-header fout header))
-  (loop for backtrace = (read-dtrace-backtrace fin nil :eof)
+  (loop for backtrace = (read-dtrace-backtrace-raw fin nil :eof)
         until (eq backtrace :eof)
         do (let ((prune-name-index nil))
              (loop for line in (butlast backtrace)
@@ -243,7 +308,7 @@ exec sbcl --dynamic-space-size 4096 --noinform --disable-ldb --lose-on-corruptio
   (let ((header (read-dtrace-header fin))
         (cleavir-p (member "cleavir" options :test 'string=)))
     (write-dtrace-header fout header)
-    (loop for backtrace = (read-dtrace-backtrace fin nil :eof)
+    (loop for backtrace = (read-dtrace-backtrace-raw fin nil :eof)
           until (eq backtrace :eof)
           when backtrace
             do (let ((repeat-line (car (last backtrace)))
@@ -294,7 +359,7 @@ exec sbcl --dynamic-space-size 4096 --noinform --disable-ldb --lose-on-corruptio
     (declare (ignore header))
     (let ((counts (make-hash-table :test #'equal))
           (num-backtraces 0))
-      (loop for backtrace = (read-dtrace-backtrace fin nil :eof)
+      (loop for backtrace = (read-dtrace-backtrace-raw fin nil :eof)
             until (eq backtrace :eof)
             when (> (length backtrace) 0)
               do (incf num-backtraces)
@@ -330,7 +395,7 @@ exec sbcl --dynamic-space-size 4096 --noinform --disable-ldb --lose-on-corruptio
   (read-dtrace-header in-stream)
   (format *debug-io* "In callers~%")
   (let ((callers (make-hash-table :test #'equal)))
-    (loop for backtrace = (read-dtrace-backtrace in-stream nil :eof)
+    (loop for backtrace = (read-dtrace-backtrace-raw in-stream nil :eof)
           until (eq backtrace :eof)
           do (loop for line in backtrace
                    for prev-name = nil then name
@@ -363,55 +428,61 @@ exec sbcl --dynamic-space-size 4096 --noinform --disable-ldb --lose-on-corruptio
 ;;;  callers -i <in> -o <out> -c <callee-name>
 ;;;      generates a list of callers of callee-name and how often they call
 
-
-(finish-output *debug-io*)
-(let* ((number-args (first *script-args*))
-       (cmd (second *script-args*))
-       (argv (subseq (cddr *script-args*) 0 number-args))
-       (args (make-hash-table :test #'equal )))
-  (declare (optimize (debug 3)))
-  (loop for cur = argv then (cddr cur)
-        for key = (car cur)
-        for val = (cadr cur)
-        while cur
-        do (setf (gethash key args) val))
-  (format *debug-io* "cmd = ~a~%" cmd)
-  (let ((in-stream (let ((in-file (gethash "-i" args)))
-                     (if in-file
-                         (open in-file :direction :input :external-format '(:utf-8 :replacement #\?))
-                         *standard-input*)))
-        (out-file (gethash "-o" args))
-        (out-stream (let ((out-file (gethash "-o" args)))
-                      (if out-file
-                          (open out-file :direction :output :if-exists :supersede :external-format '(:utf-8 :replacement #\?))
-                          *standard-output*))))
-    (cond
-      ((search "cleanup-stacks" cmd)
-       (let ((options (parse-cleanup-options (gethash "-O" args nil))))
-         (cleanup-stacks in-stream out-stream options)))
-      ((search "count-tips" cmd)
-       (count-tips in-stream out-stream))
-      ((search "count-calls" cmd)
-       (count-calls in-stream out-stream))
-      ((search "prune-count" cmd)
-       (let ((stop-at (gethash "-s" args nil)))
-         (print-fraction in-stream out-stream :stop-at stop-at)))
-      ((search "prune" cmd)
-       (let ((prune-name (gethash "-s" args)))
-         (unless prune-name
-           (error "You must provide the name (-s name) of a function to prune on"))
-         (prune in-stream out-stream prune-name)))
-      ((search "callers" cmd)
-       (let ((callee-name (gethash "-c" args)))
-         (unless callee-name
-           (error "You must provide the name (-c name) of the callee function"))
-         (format *debug-io* "Callers of ~a~%" callee-name)
-         (callers in-stream out-stream callee-name)))
-      (t (error "Unknown command")))
-    (unless (eq in-stream *standard-input*)
-      (close in-stream))
-    (unless (eq out-stream *standard-output*)
-      (when out-file (format *debug-io* "~a~%" out-file))
-      (close out-stream))))
-
-(sb-ext:exit)
+(progn
+  (finish-output *debug-io*)
+  (let* ((number-args (first *script-args*))
+         (cmd (second *script-args*))
+         (argv (subseq (cddr *script-args*) 0 number-args))
+         (args (make-hash-table :test #'equal )))
+    (declare (optimize (debug 3)))
+    (loop for cur = argv then (cddr cur)
+          for key = (car cur)
+          for val = (cadr cur)
+          while cur
+          do (if (char= (char key 0) #\-)
+                 (setf (gethash key args) val)
+                 (error "Expected an option argument starting with '0' - got ~s" key)))
+    (format *debug-io* "cmd = ~a~%" cmd)
+    (let ((in-stream (let ((in-file (gethash "-i" args)))
+                       (if in-file
+                           (open in-file :direction :input :external-format '(:utf-8 :replacement #\?))
+                           *standard-input*)))
+          (out-file (gethash "-o" args))
+          (out-stream (let ((out-file (gethash "-o" args)))
+                        (if out-file
+                            (open out-file :direction :output :if-exists :supersede :external-format '(:utf-8 :replacement #\?))
+                            *standard-output*))))
+      (cond
+        ((search "cleanup-stacks" cmd)
+         (let ((options (parse-cleanup-options (gethash "-O" args nil))))
+           (cleanup-stacks in-stream out-stream options)))
+        ((search "count-tips" cmd)
+         (count-tips in-stream out-stream))
+        ((search "count-calls" cmd)
+         (count-calls in-stream out-stream))
+        ((search "prune-count" cmd)
+         (let ((stop-at (gethash "-s" args nil)))
+           (print-fraction in-stream out-stream :stop-at stop-at)))
+        ((search "prune" cmd)
+         (let ((prune-name (gethash "-s" args)))
+           (unless prune-name
+             (error "You must provide the name (-s name) of a function to prune on"))
+           (prune in-stream out-stream prune-name)))
+        ((search "callers" cmd)
+         (let ((callee-name (gethash "-c" args)))
+           (unless callee-name
+             (error "You must provide the name (-c name) of the callee function"))
+           (format *debug-io* "Callers of ~a~%" callee-name)
+           (callers in-stream out-stream callee-name)))
+        ((search "collapse" cmd)
+         (let ((max-frames (parse-integer (gethash "-m" args))))
+           (format *debug-io* "Maximum number of frames: ~s~%" max-frames)
+           (collapse in-stream out-stream max-frames)))
+        (t (error "Unknown command")))
+      (unless (eq in-stream *standard-input*)
+        (close in-stream))
+      (unless (eq out-stream *standard-output*)
+        (when out-file (format *debug-io* "~a~%" out-file))
+        (close out-stream))))
+  (sb-ext:exit)
+  )

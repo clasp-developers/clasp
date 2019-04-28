@@ -124,6 +124,21 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
                  (list (funcall *defun-inline-hook* name global-function env)))
           ',name))))
 
+(defvar *compiler-macros* (make-hash-table :test #'equal))
+
+(defun compiler-macro-function (name &optional environment)
+  (declare (ignore environment))
+  (values (gethash name *compiler-macros*)))
+
+(defun (setf compiler-macro-function) (cmf name &optional environment)
+  (declare (ignore environment))
+  ;; Basically ETYPECASE.
+  (if (functionp cmf)
+      (core:hash-table-setf-gethash *compiler-macros* name cmf)
+      (if (null cmf)
+          (progn (remhash name *compiler-macros*) nil)
+          (error 'type-error :datum cmf :expected-type '(or function null)))))
+
 (defmacro define-compiler-macro (&whole whole name vl &rest body &environment env)
   ;; CLHS doesn't actually say d-c-m has compile time effects, but it's nice to match defmacro
   `(eval-when (:compile-toplevel :load-toplevel :execute)
@@ -289,11 +304,11 @@ Evaluates INIT and binds the N-th VAR to the N-th value of INIT or, if INIT
 returns less than N values, to NIL.  Then evaluates FORMs, and returns all
 values of the last FORM.  If no FORM is given, returns NIL."
   (declare (notinline mapcar))
+  ;; Note that in cclasp, a compiler macro (in inline.lsp) takes over from this macro.
   (if (= (length vars) 1)
       ;; at the moment we don't handle multiple-value-call well, so this is probably
       ;; faster. Might be so in the future too.
       ;; Who would write m-v-b with one variable, you ask? Computers! (Mostly SETF.)
-      ;; Note that in cclasp, a compiler macro (in inline.lsp) takes over from this macro.
       `(let ((,(first vars) ,form)) ,@body)
       (let ((restvar (gensym)))
         `(multiple-value-call #'(lambda (&optional ,@(mapcar #'list vars) &rest ,restvar)

@@ -308,7 +308,7 @@ void searchMemoryForAddress(mps_addr_t addr) {
   // Search the stack
   const char* sptr = reinterpret_cast<const char *>(&searcher) + 1;
   for (; sptr < _global_stack_marker; ++sptr) {
-    if (*sptr == reinterpret_cast<uintptr_clasp_t>(addr)) {
+    if (*sptr == reinterpret_cast<uintptr_t>(addr)) {
       searcher.stackMatches.push_back(reinterpret_cast<mps_addr_t>(const_cast<char*>(sptr)));
     }
     ++(searcher.stackAddresses);
@@ -455,19 +455,19 @@ namespace gctools {
 #if 0
 static mps_res_t stack_frame_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit) {
   STACK_TELEMETRY2(telemetry::label_stack_frame_scan_start,
-                   (uintptr_clasp_t)base,
-                   (uintptr_clasp_t)limit);
+                   (uintptr_t)base,
+                   (uintptr_t)limit);
   MPS_SCAN_BEGIN(ss) {
     while (base < limit) {
       mps_addr_t original_base = base;
-      uintptr_clasp_t *headerAndFrame = (uintptr_clasp_t *)base;
+      uintptr_t *headerAndFrame = (uintptr_t *)base;
       GCStack::frameType ftype = (GCStack::frameType)FRAME_HEADER_TYPE_FIELD(headerAndFrame);
       size_t sz = FRAME_HEADER_SIZE_FIELD(headerAndFrame);
       switch (ftype) {
       case GCStack::frame_t: {
-        uintptr_clasp_t *frameStart = FRAME_START(headerAndFrame);
+        uintptr_t *frameStart = FRAME_START(headerAndFrame);
         size_t elements = frameStart[gc::IdxNumElements];
-        uintptr_clasp_t *taggedPtr = &frameStart[gc::IdxValuesArray];
+        uintptr_t *taggedPtr = &frameStart[gc::IdxValuesArray];
         for (size_t i = 0; i < elements; ++i) {
           taggedPtrFix(_ss, _mps_zs, _mps_w, _mps_ufs, _mps_wt, reinterpret_cast<gctools::Tagged *>(taggedPtr));
           ++taggedPtr;
@@ -482,9 +482,9 @@ static mps_res_t stack_frame_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit
           abort();
       }
       STACK_TELEMETRY3(telemetry::label_stack_frame_scan,
-                       (uintptr_clasp_t)original_base,
-                       (uintptr_clasp_t)base,
-                       (uintptr_clasp_t)ftype);
+                       (uintptr_t)original_base,
+                       (uintptr_t)base,
+                       (uintptr_t)ftype);
     }
   }
   MPS_SCAN_END(ss);
@@ -492,7 +492,7 @@ static mps_res_t stack_frame_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit
 };
 
 static mps_addr_t stack_frame_skip(mps_addr_t base) {
-  uintptr_clasp_t *headerAndFrame = (uintptr_clasp_t *)base;
+  uintptr_t *headerAndFrame = (uintptr_t *)base;
   mps_addr_t original_base = base;
   GCStack::frameType ftype = (GCStack::frameType)FRAME_HEADER_TYPE_FIELD(headerAndFrame);
   size_t sz = FRAME_HEADER_SIZE_FIELD(headerAndFrame);
@@ -509,18 +509,18 @@ static mps_addr_t stack_frame_skip(mps_addr_t base) {
       break;
   }
   STACK_TELEMETRY3(telemetry::label_stack_frame_skip,
-                   (uintptr_clasp_t)original_base,
-                   (uintptr_clasp_t)base,
-                   (uintptr_clasp_t)((char *)original_base - (char *)base));
+                   (uintptr_t)original_base,
+                   (uintptr_t)base,
+                   (uintptr_t)((char *)original_base - (char *)base));
   return base;
 }
 
 static void stack_frame_pad(mps_addr_t addr, size_t size) {
   STACK_TELEMETRY2(telemetry::label_stack_frame_pad,
-                   (uintptr_clasp_t)addr,
-                   (uintptr_clasp_t)size);
-  uintptr_clasp_t *obj = reinterpret_cast<uintptr_clasp_t *>(addr);
-  GCTOOLS_ASSERT(size >= STACK_ALIGN_UP(sizeof(uintptr_clasp_t)));
+                   (uintptr_t)addr,
+                   (uintptr_t)size);
+  uintptr_t *obj = reinterpret_cast<uintptr_t *>(addr);
+  GCTOOLS_ASSERT(size >= STACK_ALIGN_UP(sizeof(uintptr_t)));
   FRAME_HEADER_TYPE_FIELD(obj) = (int)GCStack::frameType::pad_t;
   FRAME_HEADER_SIZE_FIELD(obj) = size;
 }

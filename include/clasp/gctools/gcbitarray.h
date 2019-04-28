@@ -29,9 +29,9 @@ THE SOFTWARE.
 
 namespace gctools {
 #if BIT_ARRAY_BYTE_SIZE==8
-  template <int BitUnitBitWidth, class UnsignedWordType=byte8_t /*uintptr_clasp_t*/, class SignedWordType=int8_t/*intptr_t*/>
+  template <int BitUnitBitWidth, class UnsignedWordType=byte8_t /*uintptr_t*/, class SignedWordType=int8_t/*intptr_t*/>
 #elif BIT_ARRAY_BYTE_SIZE==32
-  template <int BitUnitBitWidth, class UnsignedWordType=byte32_t /*uintptr_clasp_t*/, class SignedWordType=int32_t/*intptr_t*/>
+  template <int BitUnitBitWidth, class UnsignedWordType=byte32_t /*uintptr_t*/, class SignedWordType=int32_t/*intptr_t*/>
 #endif
     class GCBitUnitArray_moveable : public GCContainer {
   public:

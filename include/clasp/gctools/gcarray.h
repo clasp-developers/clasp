@@ -195,7 +195,7 @@ void Array0_dump(const Array &v, const char *head = "") {
 }
 
 
- typedef gctools::GCArray<uintptr_clasp_t, gctools::GCContainerAllocator<gctools::GCArray_moveable<uintptr_clasp_t> > > gcbitvector;
+ typedef gctools::GCArray<uintptr_t, gctools::GCContainerAllocator<gctools::GCArray_moveable<uintptr_t> > > gcbitvector;
 
 
 } // namespace gctools

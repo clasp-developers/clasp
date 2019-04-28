@@ -67,9 +67,9 @@ namespace gctools {
 
   struct Layout_code {
     Layout_cmd    cmd;
-    uintptr_clasp_t     data0;
-    uintptr_clasp_t     data1;
-    uintptr_clasp_t     data2;
+    uintptr_t     data0;
+    uintptr_t     data1;
+    uintptr_t     data2;
     const char*   description;
   };
 

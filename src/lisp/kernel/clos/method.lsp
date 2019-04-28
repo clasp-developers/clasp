@@ -209,8 +209,8 @@ in the generic function lambda-list to the generic function lambda-list"
                        ;; BIND-VA-LIST is therefore set up to pass :safep nil to the argument parser
                        ;; generator, which essentially implies &allow-other-keys.
                        (core::bind-va-list ,lambda-list .method-args.
-                                           (declare ,@declarations)
-                                           ,@body)))
+                         (declare ,@declarations)
+                         ,@body)))
                   ;; double quotes as per evaluation, explained above in defmethod.
                   (list ''leaf-method-p `',leaf-method-p
                         ;; FIXME: This is kind of a messy way of arranging things. Both the lambda list check

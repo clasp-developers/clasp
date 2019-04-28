@@ -65,7 +65,7 @@ public:
   explicit inline tagged_ptr(Tagged ptr) : theObject(reinterpret_cast<Type *>(ptr)){};
 
   explicit inline tagged_ptr(Type *ptr) : theObject(ptr ? tag_general<Type *>(ptr) : NULL) {
-    GCTOOLS_ASSERT((reinterpret_cast<uintptr_clasp_t>(ptr) & tag_mask) == 0);
+    GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr) & tag_mask) == 0);
   };
 
   inline tagged_ptr(const tagged_ptr<Type> &obj) : theObject(obj.theObject){};
@@ -74,10 +74,10 @@ public:
   inline tagged_ptr(tagged_ptr<From> const &rhs) : theObject(rhs.raw_()){};
 
 public:
-  uintptr_clasp_t tag() const { return reinterpret_cast<uintptr_clasp_t>(this->theObject) & tag_mask; };
+  uintptr_t tag() const { return reinterpret_cast<uintptr_t>(this->theObject) & tag_mask; };
 
   /*! Get the pointer typcast to an integer quantity for hashing */
-  cl_intptr_t intptr() const { return ((uintptr_clasp_t)(this->theObject)); };
+  uintptr_t intptr() const { return ((uintptr_t)(this->theObject)); };
 
   void reset_() { this->theObject = NULL; };
 
@@ -150,11 +150,11 @@ public:
   bool consp() const { return tagged_consp<Type *>(this->theObject); };
   core::Cons_O *unsafe_cons() const {
     GCTOOLS_ASSERT(this->consp());
-    return reinterpret_cast<core::Cons_O *>(reinterpret_cast<uintptr_clasp_t>(this->theObject) - cons_tag);
+    return reinterpret_cast<core::Cons_O *>(reinterpret_cast<uintptr_t>(this->theObject) - cons_tag);
   };
   core::General_O *unsafe_general() const {
     GCTOOLS_ASSERT(this->generalp());
-    return reinterpret_cast<core::General_O *>(reinterpret_cast<uintptr_clasp_t>(this->theObject) - general_tag);
+    return reinterpret_cast<core::General_O *>(reinterpret_cast<uintptr_t>(this->theObject) - general_tag);
   };
 
   Fixnum asFixnum() const {
@@ -182,6 +182,7 @@ public:
 	  gcweak.h>>~WeakPointerManager
 	  gcweak.h>>Mapping(const Type& val)
 	  gcweak.h>>Buckets::set
+          builtins.cc>>lexicalValueReference
 	  intrinsics.cc>>cc_loadTimeValueReference
           record.h>>field specialized on gc::smart_ptr<OT>&
           SMART_PTR_FIX and smart_ptr fixing in general when SMART_PTR_FIX is replaced
@@ -224,7 +225,7 @@ class base_ptr /*: public tagged_ptr<T>*/ {
   /*! Create a smart pointer from an existing tagged pointer */
   explicit inline base_ptr(Tagged ptr) : theObject(reinterpret_cast<Type *>(ptr)){};
   explicit inline base_ptr(Type *ptr) : theObject(ptr ? tag_general<Type *>(ptr) : NULL) {
-    GCTOOLS_ASSERT((reinterpret_cast<uintptr_clasp_t>(ptr) & tag_mask) == 0);
+    GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr) & tag_mask) == 0);
   };
   inline base_ptr(const return_type &rt) : theObject((Type *)rt.ret0[0]){};
 #ifdef BASE_PTR_COPY_CTOR
@@ -247,11 +248,11 @@ class base_ptr /*: public tagged_ptr<T>*/ {
   #endif
 #endif
 
-  uintptr_clasp_t tag() const { return reinterpret_cast<uintptr_clasp_t>(this->theObject) & tag_mask; };
+  uintptr_t tag() const { return reinterpret_cast<uintptr_t>(this->theObject) & tag_mask; };
 
  public:
   /*! Get the pointer typcast to an integer quantity for hashing */
-  cl_intptr_t intptr() const { return ((uintptr_clasp_t)(this->theObject)); };
+  uintptr_t intptr() const { return ((uintptr_t)(this->theObject)); };
 
   void reset_() { this->theObject = NULL; };
 
@@ -347,7 +348,7 @@ class base_ptr /*: public tagged_ptr<T>*/ {
   bool isTrue() const { return !this->nilp(); };
   core::Cons_O *unsafe_cons() const {
     GCTOOLS_ASSERT(this->consp());
-    return reinterpret_cast<core::Cons_O *>(reinterpret_cast<uintptr_clasp_t>(this->theObject) - cons_tag);
+    return reinterpret_cast<core::Cons_O *>(reinterpret_cast<uintptr_t>(this->theObject) - cons_tag);
   };
 #else
   //bool nilp() const { return tagged_nilp(this->theObject); }
@@ -358,7 +359,7 @@ class base_ptr /*: public tagged_ptr<T>*/ {
   bool generalp() const { return tagged_generalp<Type *>(this->theObject); };
   core::General_O *unsafe_general() const {
     GCTOOLS_ASSERT(this->generalp());
-    return reinterpret_cast<core::General_O *>(reinterpret_cast<uintptr_clasp_t>(this->theObject) - general_tag);
+    return reinterpret_cast<core::General_O *>(reinterpret_cast<uintptr_t>(this->theObject) - general_tag);
   };
   bool consp() const { return tagged_consp<Type *>(this->theObject); };
   bool unboundp() const { return tagged_unboundp(this->theObject); };
@@ -403,12 +404,12 @@ class base_ptr /*: public tagged_ptr<T>*/ {
 
   template <class U>
     inline bool operator==(base_ptr<U> const other) const {
-      return reinterpret_cast<uintptr_clasp_t>(this->theObject) == reinterpret_cast<uintptr_clasp_t>(other.theObject);
+      return reinterpret_cast<uintptr_t>(this->theObject) == reinterpret_cast<uintptr_t>(other.theObject);
   }
 
   template <class U>
     inline bool operator!=(base_ptr<U> const other) const {
-    return reinterpret_cast<uintptr_clasp_t>(this->theObject) != reinterpret_cast<uintptr_clasp_t>(other.theObject);
+    return reinterpret_cast<uintptr_t>(this->theObject) != reinterpret_cast<uintptr_t>(other.theObject);
   }
  };
 };
@@ -670,7 +671,7 @@ public:
   bool _NULLp() const { return this->theObject == NULL; };
 public:
   /*! Get the pointer typcast to an integer quantity for hashing */
-  cl_intptr_t intptr() const { return ((uintptr_clasp_t)(this->theObject)); };
+  uintptr_t intptr() const { return ((uintptr_t)(this->theObject)); };
   int number_of_values() const { return this->theObject == NULL ? 0 : 1; };
   bool unboundp() const { return tagged_unboundp(this->theObject); };
   bool boundp() const { return !tagged_unboundp(this->theObject); };
@@ -703,7 +704,7 @@ public:
   };
   core::General_O *unsafe_general() const {
     GCTOOLS_ASSERT(this->generalp());
-    return reinterpret_cast<core::General_O *>(reinterpret_cast<uintptr_clasp_t>(this->theObject) - general_tag);
+    return reinterpret_cast<core::General_O *>(reinterpret_cast<uintptr_t>(this->theObject) - general_tag);
   };
 
   template <class U>
@@ -780,7 +781,7 @@ class smart_ptr<core::Symbol_O> : public base_ptr<core::Symbol_O> {
 public:
   //Default constructor, set theObject to NULL
   smart_ptr() noexcept : base_ptr<core::Symbol_O>((core::Symbol_O*)NULL){};
-  //    	explicit smart_ptr(uintptr_clasp_t p) : theObject(p) {}; // TODO: this converts ints to smart_ptr's - its dangerous
+  //    	explicit smart_ptr(uintptr_t p) : theObject(p) {}; // TODO: this converts ints to smart_ptr's - its dangerous
   //! Construct a FRAME object - I need to get rid of these
   //smart_ptr( core::T_O** p ) : theObject(tag_vaslist(p)) { /*printf("%s:%d Creating Frame \n", __FILE__, __LINE__ );*/ };
   //smart_ptr( Type* objP) : theObject(tag_object(objP)) {};
@@ -808,7 +809,7 @@ public:
     }
   }
 
-  uintptr_clasp_t tag() const { return reinterpret_cast<uintptr_clasp_t>(this->theObject) & tag_mask; };
+  uintptr_t tag() const { return reinterpret_cast<uintptr_t>(this->theObject) & tag_mask; };
 
 public:
   //----------------------------------------------------------------------
@@ -819,7 +820,7 @@ public:
   // Make a tagged fixnum
 
   /*! Get the pointer typcast to an integer quantity for hashing */
-  cl_intptr_t intptr() const { return ((uintptr_clasp_t)(this->theObject)); };
+  uintptr_t intptr() const { return ((uintptr_t)(this->theObject)); };
 
   void reset_() { this->theObject = NULL; };
 
@@ -897,7 +898,7 @@ public:
   bool consp() const { return tagged_consp<Type *>(this->theObject); };
   core::Cons_O *unsafe_cons() const {
     GCTOOLS_ASSERT(this->consp());
-    return reinterpret_cast<core::Cons_O *>(reinterpret_cast<uintptr_clasp_t>(this->theObject) - cons_tag);
+    return reinterpret_cast<core::Cons_O *>(reinterpret_cast<uintptr_t>(this->theObject) - cons_tag);
   };
 
   Fixnum asFixnum() const {
@@ -969,7 +970,7 @@ public:
   smart_ptr() noexcept : theObject(NULL){};
   // Constructor that takes Cons_O* assumes its untagged
   explicit inline smart_ptr(core::Cons_O *ptr) : theObject(ptr ? tag_cons<core::Cons_O *>(ptr) : NULL) {
-    GCTOOLS_ASSERT((reinterpret_cast<uintptr_clasp_t>(ptr) & tag_mask) == 0);
+    GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr) & tag_mask) == 0);
   };
   /*! Constructor that takes Tagged assumes that the pointer is tagged.
 	  Any ptr passed to this constructor must have the CONS tag.
@@ -1082,11 +1083,11 @@ public:
   // Constructor that takes Cons_O* assumes its untagged
   explicit inline smart_ptr(core::Cons_O *ptr)
       : theObject(tag_cons<Type *>(reinterpret_cast<core::T_O *>(ptr))) {
-    GCTOOLS_ASSERT((reinterpret_cast<uintptr_clasp_t>(ptr) & tag_mask) == 0);
+    GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr) & tag_mask) == 0);
   };
   explicit inline smart_ptr(core::Symbol_O *ptr)
       : theObject(tag_general<Type *>(reinterpret_cast<core::T_O *>(ptr))) {
-    GCTOOLS_ASSERT((reinterpret_cast<uintptr_clasp_t>(ptr) & tag_mask) == 0);
+    GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr) & tag_mask) == 0);
   };
   /*! Constructor that takes Tagged assumes that the pointer is tagged.
 	  Any ptr passed to this constructor must have the CONS tag.
@@ -1106,7 +1107,7 @@ public:
   inline bool consp() const { return tagged_consp(this->theObject); };
   inline core::Cons_O *unsafe_cons() const {
     GCTOOLS_ASSERT(this->consp());
-    return reinterpret_cast<core::Cons_O *>(reinterpret_cast<uintptr_clasp_t>(this->theObject) - cons_tag);
+    return reinterpret_cast<core::Cons_O *>(reinterpret_cast<uintptr_t>(this->theObject) - cons_tag);
   };
   inline bool objectp() const { return this->generalp() || this->consp(); };
   inline return_type as_return_type() { return return_type(this->theObject,1);};

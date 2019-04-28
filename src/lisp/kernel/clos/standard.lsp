@@ -127,6 +127,14 @@
   (let ((x (core:allocate-new-funcallable-instance class (class-size class))))
     (dbg-standard "Done allocate-new-funcallable-instance unbound x ->~a~%" (eq (core:unbound) x))
     (mlog "In allocate-instance  x -> %s\n" x)
+    ;; MOP says if you call a funcallable instance before setting its function,
+    ;; the effects are undefined. (In the entry for set-funcallable-instance-function.)
+    ;; But we can be nice.
+    (set-funcallable-instance-function
+     x (lambda (core:&va-rest args)
+         (declare (core:lambda-name uninitialized-funcallable-instance))
+         (declare (ignore args))
+         (error "The funcallable instance ~a has not been initialized with a function" x)))
     x))
 
 (defmethod make-instance ((class class) &rest initargs)
@@ -518,30 +526,32 @@ because it contains a reference to the undefined class~%  ~A"
 ;;;
 
 (defun class-compute-slots (class slots)
-  ;; This an ECL extension. We are allowed to specify the location of
+  ;; This an Clasp extension. We are allowed to specify the location of
   ;; a direct slot. Consequently we have to first sort the ones which
   ;; have been predefined and then assign locations _after_ the last
   ;; assigned slot. Note the generalized comparison, which pushes all
   ;; slots without a defined location to the end of the list.
+  ;; We also use this internally for some system slots accessed from C++.
+  ;; See :location use in hierarchy.lsp.
+  ;; Originally from ECL.
   (let* ((size (compute-instance-size slots))
 	 (instance-slots (remove :instance slots :key #'slot-definition-allocation
 						 :test-not #'eq))
 	 (numbered-slots (remove-if-not #'safe-slot-definition-location instance-slots))
 	 (other-slots (remove-if #'safe-slot-definition-location instance-slots))
-	 (aux (make-array size :element-type 't :adjustable nil :initial-element nil)))
+	 (aux (make-array size :initial-element nil)))
     (loop for i in numbered-slots
-       do (let ((loc (slot-definition-location i)))
-	    (when (aref aux loc)
-	      (error 'simple-error
-		     :format-control "Slots ~A and ~A are said to have the same location in class ~A."
-		     :format-ars (list (aref aux loc) i class)))
-	    (setf (aref aux loc) i)))
+          do (let ((loc (slot-definition-location i)))
+               (when (aref aux loc)
+                 (error "Slots ~A and ~A are said to have the same location in class ~A."
+                        (aref aux loc) i class))
+               (setf (aref aux loc) i)))
     (loop for i in other-slots
-       with index = 0
-       do (loop while (aref aux index)
-	       do (incf index)
-	       finally (setf (aref aux index) i
-			     (slot-definition-location i) index)))
+          with index = 0
+          do (loop while (aref aux index)
+                   do (incf index)
+                   finally (setf (aref aux index) i
+                                 (slot-definition-location i) index)))
     slots))
 
 (defmethod compute-slots :around ((class class))

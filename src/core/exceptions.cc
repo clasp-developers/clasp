@@ -75,22 +75,6 @@ void LexicalGo::keyFunctionForVtable(){};
 void DynamicGo::keyFunctionForVtable(){};
 void Unwind::keyFunctionForVtable(){};
 
-#if 0
-    GC_RESULT ReturnFrom::onHeapScanGCRoots(GC_SCAN_ARGS_PROTOTYPE)
-#ifdef USE_MPS
-            {
-                MPS_SCAN_BEGIN(GC_SCAN_STATE) {
-                    SMART_PTR_FIX(this->_ReturnedObject);
-                } MPS_SCAN_END(GC_SCAN_STATE);
-                return GC_RES_OK;
-            };
-#else
-            {
-                return GC_RES_OK;
-            };
-#endif
-#endif
-
 TooFewArgumentsError::TooFewArgumentsError(int given, int required) : givenNumberOfArguments(given), requiredNumberOfArguments(required) {
   printf("%s:%d Constructed TooFewArgumentsError given %d required %d\n", __FILE__, __LINE__, given, required);
 };

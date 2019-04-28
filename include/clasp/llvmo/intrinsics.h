@@ -56,9 +56,11 @@ LtvcReturn ltvc_make_nil(gctools::GCRootsInModule* holder, char tag, size_t inde
 LtvcReturn ltvc_make_t(gctools::GCRootsInModule* holder, char tag, size_t index);
 LtvcReturn ltvc_make_ratio(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* num, core::T_O* denom );
 LtvcReturn ltvc_make_complex(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* real, core::T_O* imag);
-LtvcReturn ltvc_make_cons(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* car, core::T_O* cdr);
-LtvcReturn ltvc_nconc(gctools::GCRootsInModule* holder, char tag, size_t index,core::T_O* front, core::T_O* back);
-LtvcReturn ltvc_make_list(gctools::GCRootsInModule* holder, char tag, size_t index, size_t num, ... );
+LtvcReturn ltvc_make_cons(gctools::GCRootsInModule* holder, char tag, size_t index);
+LtvcReturn ltvc_rplaca(gctools::GCRootsInModule* holder, core::T_O* cons_t, core::T_O* car_t);
+LtvcReturn ltvc_rplacd(gctools::GCRootsInModule* holder, core::T_O* cons_t, core::T_O* cdr_t);
+LtvcReturn ltvc_make_list(gctools::GCRootsInModule* holder, char tag, size_t index, size_t len);
+LtvcReturn ltvc_fill_list(gctools::GCRootsInModule* holder, core::T_O* list, size_t len, ...);
 LtvcReturn ltvc_make_array(gctools::GCRootsInModule* holder, char tag, size_t index,core::T_O* telement_type,core::T_O* tdimensions );
 LtvcReturn ltvc_make_hash_table(gctools::GCRootsInModule* holder, char tag, size_t index,core::T_O* test_t );
 void ltvc_setf_row_major_aref(gctools::GCRootsInModule* holder, core::T_O* array_t, size_t row_major_index, core::T_O* value_t );
@@ -67,7 +69,7 @@ LtvcReturn ltvc_make_fixnum(gctools::GCRootsInModule* holder, char tag, size_t i
 LtvcReturn ltvc_make_bignum(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* bignum_string_t);
 LtvcReturn ltvc_make_bitvector(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* bitvector_string_t);
 LtvcReturn ltvc_make_symbol(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* name_t,core::T_O* package_t );
-LtvcReturn ltvc_make_character(gctools::GCRootsInModule* holder, char tag, size_t index, uintptr_clasp_t val);
+LtvcReturn ltvc_make_character(gctools::GCRootsInModule* holder, char tag, size_t index, uintptr_t val);
 LtvcReturn ltvc_make_base_string(gctools::GCRootsInModule* holder, char tag, size_t index, const char* str);
 LtvcReturn ltvc_make_pathname(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* host_t,core::T_O* device_t,core::T_O* directory_t,core::T_O* name_t,core::T_O* type_t,core::T_O* version_t );
 LtvcReturn ltvc_make_package(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* package_name_t );
@@ -80,7 +82,6 @@ LtvcReturn ltvc_allocate_instance(gctools::GCRootsInModule* holder, char tag, si
 LtvcReturn ltvc_set_mlf_creator_funcall(gctools::GCRootsInModule* holder, char tag, size_t index, size_t fptr_index, const char* name) ;
 LtvcReturn ltvc_mlf_init_funcall(gctools::GCRootsInModule* holder, size_t fptr_index, const char* name) ;
 LtvcReturn ltvc_set_ltv_funcall(gctools::GCRootsInModule* holder, char tag, size_t index, size_t fptr_index, const char* name);
-LtvcReturn ltvc_set_ltv_funcall_cleavir(gctools::GCRootsInModule* holder, char tag, size_t index, size_t fptr_index , const char* name) ;
 LtvcReturn ltvc_toplevel_funcall(gctools::GCRootsInModule* holder, size_t fptr_index, const char* name) ;
 
  

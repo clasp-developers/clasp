@@ -177,9 +177,7 @@ string FuncallableInstance_O::__repr__() const {
   } else {
     ss << "<ADD SUPPORT FOR INSTANCE _CLASS=" << _rep_(this->_Class) << " >";
   }
-  if (this->isgf()) {
-      ss << _rep_(this->GFUN_NAME());
-  }
+  ss << _rep_(this->GFUN_NAME());
   if (this->_Rack)
   {
     ss << " #slots[" << this->numberOfSlots() << "]";
@@ -194,18 +192,16 @@ void FuncallableInstance_O::LISP_INVOKE() {
   IMPLEMENT_ME();
 }
 
-LCC_RETURN FuncallableInstance_O::invalidated_entry_point(LCC_ARGS_ELLIPSIS) {
+LCC_RETURN FuncallableInstance_O::funcallable_entry_point(LCC_ARGS_ELLIPSIS) {
   SETUP_CLOSURE(FuncallableInstance_O,closure);
   INCREMENT_FUNCTION_CALL_COUNTER(closure);
+  if (lcc_nargs<=LCC_ARGS_IN_REGISTERS) {
+    return (gc::As_unsafe<Function_sp>(closure->GFUN_DISPATCHER())->entry.load())(closure->GFUN_DISPATCHER().raw_(),lcc_nargs,lcc_fixed_arg0,lcc_fixed_arg1,lcc_fixed_arg2,lcc_fixed_arg3);
+  }
   INITIALIZE_VA_LIST();
-  return core::eval::funcall(clos::_sym_invalidated_dispatch_function, closure->asSmartPtr(), lcc_vargs);
-}
-
-LCC_RETURN FuncallableInstance_O::not_funcallable_entry_point(LCC_ARGS_ELLIPSIS) {
-  SETUP_CLOSURE(FuncallableInstance_O,closure);
-  INCREMENT_FUNCTION_CALL_COUNTER(closure);
-  INITIALIZE_VA_LIST();
-  return core::eval::funcall(clos::_sym_not_funcallable_dispatch_function, closure->asSmartPtr(), lcc_vargs);
+  // This is where we could decide to compile the dtree and switch the GFUN_DISPATCHER() or not
+//  printf("%s:%d:%s About to call %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(closure->functionName()).c_str());
+  return funcall_consume_valist_<core::Function_O>(closure->GFUN_DISPATCHER().tagged_(),lcc_vargs);
 }
 
 T_sp FuncallableInstance_O::copyInstance() const {
@@ -215,28 +211,45 @@ T_sp FuncallableInstance_O::copyInstance() const {
   copy->_Class = cl;
   copy->_Rack = this->_Rack;
   copy->_Sig = this->_Sig;
-  copy->_isgf = this->_isgf;
   return copy;
 }
 
-T_sp FuncallableInstance_O::setFuncallableInstanceFunction(T_sp functionOrT) {
+T_sp FuncallableInstance_O::setFuncallableInstanceFunction(T_sp function) {
   SYMBOL_EXPORT_SC_(ClPkg, standardGenericFunction);
-  SYMBOL_SC_(ClosPkg, standardOptimizedReaderFunction);
-  SYMBOL_SC_(ClosPkg, standardOptimizedWriterFunction);
-  if (functionOrT == clos::_sym_invalidated_dispatch_function) {
-    this->_isgf = CLASP_INVALIDATED_DISPATCH;
-    // FIXME Jump straight to the invalidated-dispatch-function
-    this->entry.store(this->invalidated_entry_point);
-  } else if (functionOrT.nilp()) {
-    this->_isgf = CLASP_NOT_FUNCALLABLE;
-    this->entry.store(this->not_funcallable_entry_point);
-  } else if (gc::IsA<Function_sp>(functionOrT)) {
-    this->_isgf = CLASP_NORMAL_DISPATCH;
-    this->GFUN_DISPATCHER_set(functionOrT);
-    this->entry.store(gc::As_unsafe<Function_sp>(functionOrT)->entry.load());
+  /* We have to be cautious about thread safety here. We don't want to crash
+   * if one thread set-funcallable-instance-function's an instance that another
+   * thread is calling.
+   * As an optimization, if a function isn't a closure, we just use its entry
+   * point directly, to avoid the overhead from funcallable_entry_point.
+   * But in general we have funcallable_entry_point just call the GFUN_DISPATCHER.
+   * Accessing both the entry point and the GFUN_DISPATCHER is atomic.
+   * So here's what we do: first, change the GFUN_DISPATCHER. Then, change the
+   * entry point.
+   * If we had funcallable_entry_point before the set-funcallable-instance,
+   * a call between the two sets will just use the new function.
+   * If we had some other entry point, a call will use that, and it must be
+   * insensitive to the GFUN_DISPATCHER.
+   * So in either case something coherent is called. */
+  /* TODO: We could make this work with any closure, without using locks:
+   * 1) GFUN_DISPATCHER_set. If the entry_point is funcallable_entry_point,
+   *    now we are using the new function. Otherwise this is meaningless.
+   * 2) Set the entry to funcallable_entry_point. Now the instance's closure
+   *    vector is irrelevant and we are using the new function.
+   * 3) Copy the closure vector into the instance. Doesn't need to be atomic.
+   * 4) Set the entry to the closure's entry.
+   * The only reason I'm not doing this now is that funcallable instances
+   * aren't actually closures at the moment. */
+  if (gc::IsA<Function_sp>(function)) {
+    this->GFUN_DISPATCHER_set(function);
+    // If the function has no closure slots, we can use its entry point.
+    if (gc::IsA<ClosureWithSlots_sp>(function)) {
+      ClosureWithSlots_sp closure = gc::As_unsafe<ClosureWithSlots_sp>(function);
+      if (closure->openP())
+        this->entry.store(closure->entry.load());
+      else this->entry.store(funcallable_entry_point);
+    } else this->entry.store(funcallable_entry_point);
   } else {
-    TYPE_ERROR(functionOrT, cl::_sym_function);
-    //SIMPLE_ERROR(BF("Wrong type argument: %s") % functionOrT->__repr__());
+    TYPE_ERROR(function, cl::_sym_function);
   }
 
   return ((this->sharedThis<FuncallableInstance_O>()));
@@ -245,7 +258,6 @@ T_sp FuncallableInstance_O::setFuncallableInstanceFunction(T_sp functionOrT) {
 void FuncallableInstance_O::describe(T_sp stream) {
   stringstream ss;
   ss << (BF("FuncallableInstance\n")).str();
-  ss << (BF("isgf %d\n") % this->_isgf).str();
   ss << (BF("_Class: %s\n") % _rep_(this->_Class).c_str()).str();
   for (int i(1); i < this->_Rack->length(); ++i) {
     ss << (BF("_Rack[%d]: %s\n") % i % _rep_((*this->_Rack)[i]).c_str()).str();
@@ -263,17 +275,8 @@ CL_DEFUN bool core__get_funcallable_instance_debug_on(FuncallableInstance_sp ins
 
 CL_DEFUN T_mv clos__getFuncallableInstanceFunction(T_sp obj) {
   if (FuncallableInstance_sp iobj = obj.asOrNull<FuncallableInstance_O>()) {
-    switch (iobj->_isgf) {
-    case CLASP_NORMAL_DISPATCH:
-        return Values(_lisp->_true(),Pointer_O::create((void*)iobj->entry.load()));
-    case CLASP_INVALIDATED_DISPATCH:
-        return Values(clos::_sym_invalidated_dispatch_function,Pointer_O::create((void*)iobj->entry.load()));
-    case CLASP_NOT_FUNCALLABLE:
-        return Values(clos::_sym_not_funcallable);
-    }
-    return Values(clasp_make_fixnum(iobj->_isgf),_Nil<T_O>());
-  }
-  return Values(_Nil<T_O>(),_Nil<T_O>());
+    return Values(_lisp->_true(),Pointer_O::create((void*)iobj->entry.load()));
+  } else return Values(_Nil<T_O>(),_Nil<T_O>());
 };
 
 CL_DEFUN T_sp clos__setFuncallableInstanceFunction(T_sp obj, T_sp func) {
@@ -351,14 +354,14 @@ SYMBOL_EXPORT_SC_(CompPkg,effective_method_outcome);
 namespace core {
 #if 1
 
-CL_DEF_CLASS_METHOD DtreeInterpreter_sp DtreeInterpreter_O::make_dtree_interpreter(T_sp tdtree) {
+CL_DEF_CLASS_METHOD DtreeInterpreter_sp DtreeInterpreter_O::make_dtree_interpreter(T_sp generic_function, T_sp tdtree) {
   FunctionDescription* fdesc = makeFunctionDescription(comp::_sym_node,_Nil<T_O>());
   SimpleVector_sp dtree = gc::As_unsafe<SimpleVector_sp>(tdtree);
   SimpleVector_sp node = gc::As_unsafe<SimpleVector_sp>((*dtree)[REF_DTREE_NODE]);
   if (!gc::IsA<SimpleVector_sp>(node)) {
     printf("%s:%d Trying to create a dtree-interpreter %s with no node\n", __FILE__, __LINE__, _rep_(dtree).c_str());
   }
-  GC_ALLOCATE_VARIADIC(DtreeInterpreter_O,dt,fdesc,dtree);
+  GC_ALLOCATE_VARIADIC(DtreeInterpreter_O,dt,fdesc,generic_function,dtree);
 //  printf("%s:%d Created a dtree-interpreter @%p  dtree -> @%p with node -> %s\n", __FILE__, __LINE__, (void*)dt.raw_(), (void*)dtree.raw_(), _rep_(dtree).c_str());
   return dt;
 }
@@ -369,14 +372,46 @@ CL_DEF_CLASS_METHOD DtreeInterpreter_sp DtreeInterpreter_O::make_dtree_interpret
 #define DTLOG(x)
 #endif
 
-DONT_OPTIMIZE_WHEN_DEBUG_RELEASE LCC_RETURN DtreeInterpreter_O::LISP_CALLING_CONVENTION() {
+SYMBOL_EXPORT_SC_(CompPkg,codegen_dispatcher);
+SYMBOL_EXPORT_SC_(KeywordPkg,force_compile);
+SYMBOL_EXPORT_SC_(KeywordPkg,generic_function_name);
+SYMBOL_EXPORT_SC_(CompPkg,compiled_discriminator);
+/*!
+* The Closure that is passed to LISP_CALLING_CONVENTION is a FuncallableInstance_O that contains 
+  a DtreeInterpreter_sp.   In the code below the funcallable_instance is the FuncallableInstance_O closure
+  and interpreter is the DtreeInterpreter_O.   The DtreeInterpreter_O keeps track of the number of times that
+  it was called and if it is called too many times we can COMPILE the dtree and replace the funcallable_instance's
+  GFUN_DISPATCHER, and 'entry' pointer with the compiled version.
+  This will cause the interpreter to be collected and the generic function will use the compiled version from
+  then on.
+*/
+
+#define COMPILE_TRIGGER 1024
+LCC_RETURN DtreeInterpreter_O::LISP_CALLING_CONVENTION() {
   DTLOG(("%s:%d:%s Entered\n", __FILE__, __LINE__, __FUNCTION__));
-  SETUP_CLOSURE(FuncallableInstance_O,funcallable_instance);
-  T_sp tinterpreter = funcallable_instance->GFUN_DISPATCHER();
-  if (!gc::IsA<DtreeInterpreter_sp>(tinterpreter)) {
-    SIMPLE_ERROR(BF("Could not locate the dtree-interpreter"));
+  SETUP_CLOSURE(DtreeInterpreter_O,interpreter);
+  FuncallableInstance_sp generic_function = gc::As_unsafe<FuncallableInstance_sp>(interpreter->_GenericFunction);
+  SimpleVector_sp dtree = gc::As_unsafe<SimpleVector_sp>(interpreter->_Dtree);
+#if 1
+  interpreter->_CallCount++;
+  if (interpreter->_CallCount==COMPILE_TRIGGER) {
+    T_sp fn = generic_function->functionName();
+//    printf("%s:%d:%s  interpreter->_CallCount hit %lu for %s\n", __FILE__, __LINE__, __FUNCTION__, interpreter->_CallCount, _rep_(fn).c_str());
+    T_sp call_history = generic_function->GFUN_CALL_HISTORY();
+    T_sp specializer_profile = generic_function->GFUN_SPECIALIZER_PROFILE();
+//    printf("%s:%d:%s  About to call compiler\n", __FILE__, __LINE__, __FUNCTION__);
+    T_sp compiled_discriminator = eval::funcall(comp::_sym_codegen_dispatcher,call_history,specializer_profile,generic_function->asSmartPtr(),
+                                                kw::_sym_force_compile,_lisp->_true(),
+                                                kw::_sym_generic_function_name, fn );
+//    printf("%s:%d:%s about to setFuncallableInstanceFunction\n", __FILE__, __LINE__, __FUNCTION__);
+    generic_function->setFuncallableInstanceFunction(compiled_discriminator);
+    // The next call should use the compiled discriminator
+    // Can I fall through from here and continue using the interpreter one more time?
+//    printf("%s:%d:%s  falling through to interpreter\n", __FILE__, __LINE__, __FUNCTION__);
   }
-  DtreeInterpreter_sp interpreter = gc::As_unsafe<DtreeInterpreter_sp>(tinterpreter);
+#endif
+  // Here is where we can check interpreter->_CallCount and maybe compile the dtree and replace ourselves and jump
+  // to the compiled version of the dtree.
   DTLOG(("%s:%d Entered with dtree-interpreter @%p  with node -> %s\n", __FILE__, __LINE__, (void*)interpreter.raw_(), _rep_(interpreter).c_str()))
   INITIALIZE_VA_LIST(); // lcc_vargs now points to the rewound argument list
   Vaslist dispatch_args_s(*lcc_vargs);
@@ -384,7 +419,6 @@ DONT_OPTIMIZE_WHEN_DEBUG_RELEASE LCC_RETURN DtreeInterpreter_O::LISP_CALLING_CON
   DTLOG(("%s:%d     Arguments: %s\n", __FILE__, __LINE__, dbg_safe_repr((uintptr_t)(lcc_vargs).raw_()).c_str()));
   int nargs = dispatch_args->remaining_nargs();
   ASSERT(gc::IsA<SimpleVector_sp>(interpreter->_Dtree));
-  SimpleVector_sp dtree = gc::As_unsafe<SimpleVector_sp>(interpreter->_Dtree);
   SimpleVector_sp node = gc::As_unsafe<SimpleVector_sp>((*dtree)[REF_DTREE_NODE]);
  TOP:
   DTLOG(("%s:%d:%s node = %s\n", __FILE__, __LINE__, __FUNCTION__, dbg_safe_repr((uintptr_t)(node).raw_()).c_str()));
@@ -488,12 +522,11 @@ DONT_OPTIMIZE_WHEN_DEBUG_RELEASE LCC_RETURN DtreeInterpreter_O::LISP_CALLING_CON
       // Do outcomes.
     }
     DISPATCH_MISS:
-      T_sp tclosure((gctools::Tagged)gctools::tag_general<FuncallableInstance_O*>(funcallable_instance));
       DTLOG(("%s:%d:%s    It's a DISPATCH-MISS!!! Invoking (%s %s %s)\n", __FILE__, __LINE__, __FUNCTION__,
              dbg_safe_repr((uintptr_t)clos::_sym_dispatch_miss.tagged_()).c_str(),
              dbg_safe_repr((uintptr_t)tclosure.raw_()).c_str(),
              dbg_safe_repr((uintptr_t)lcc_vargs.raw_()).c_str()));
-      return core::eval::funcall(clos::_sym_dispatch_miss,tclosure,lcc_vargs);
+      return core::eval::funcall(clos::_sym_dispatch_miss,generic_function,lcc_vargs);
     }
 #endif
 

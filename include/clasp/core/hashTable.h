@@ -83,7 +83,6 @@ namespace core{
 #endif
     Number_sp _RehashSize;
     double _RehashThreshold;
-//    ComplexVector_T_sp _HashTable;
     gctools::Vec0<Cons_O> _Table;
     size_t _HashTableCount;
 #ifdef CLASP_THREADS
@@ -138,8 +137,10 @@ namespace core{
   /*! I'm not sure I need this and tableRef */
     List_sp bucketsFind_no_lock(T_sp key) const;
   /*! I'm not sure I need this and bucketsFind */
-    virtual List_sp tableRef_no_read_lock(T_sp key,bool under_write_lock);
+    virtual List_sp tableRef_no_read_lock(T_sp key,bool under_write_lock, cl_index index);
 //    List_sp findAssoc_no_lock(gc::Fixnum index, T_sp searchKey) const;
+
+    T_sp hash_table_average_search_length();
 
   /*! Return true if the key is within the hash table */
     bool contains(T_sp key);

@@ -41,8 +41,8 @@
   (defvar *dispatch-history-dir*
     (let ((dir (core:bformat nil "/tmp/dispatch-history-%d/" (core:getpid))))
       (ensure-directories-exist dir)
-      (core:bformat *debug-io*  "!!!!  Created gf dispatch monitor directory: %s%N" dir)
-      (core:bformat *debug-io*  "!!!!     Run clasp with --feature fastgf-dump-module to write dispatchers to this directory%N")
+      (core:bformat *error-output* "!!!!  Created gf dispatch monitor directory: %s%N" dir)
+      (core:bformat *error-output* "!!!!     Run clasp with --feature fastgf-dump-module to write dispatchers to this directory%N")
       (dolist (f (directory (core:bformat nil "%s/*.*" dir)))
         (delete-file f))
       dir))
@@ -210,19 +210,19 @@
                  (efm-value (if (si::fixnump efm-index)
                                 (si:instance-ref instance (the fixnum efm-index))
                                 (car (the cons efm-index)))))
-            (format *debug-io* "DATA FOR READER ERROR!!!!!!!!!!!!!!!!!!!!!~%")
-            (format *debug-io* "slot-name -----> ~s~%" slot-name)
-            (format *debug-io* "opt-index -----> ~s~%" opt-index)
-            (format *debug-io* "opt-method ----> ~s~%" opt-method)
-            (format *debug-io* "opt-class -----> ~s~%" opt-class)
-            (format *debug-io* "(core:instance-stamp instance) --------------------------------------------> ~s~%" (core:instance-stamp instance))
-            (format *debug-io* "(core:lookup-class-with-stamp (core:instance-stamp instance)) -------------> ~s~%" (core:lookup-class-with-stamp (core:instance-stamp instance)))
-            (format *debug-io* "(core:class-stamp-for-instances opt-class) --------------------------------> ~s~%" (core:class-stamp-for-instances opt-class))
-            (format *debug-io* "(core:lookup-class-with-stamp (core:class-stamp-for-instances opt-class)) -> ~s~%" (core:lookup-class-with-stamp (core:class-stamp-for-instances opt-class)))
-            (format *debug-io* "efm-class -----> ~s~%" efm-class)
-            (format *debug-io* "efm-index -----> ~s~%" efm-index)
-            (format *debug-io* "efm-value -----> ~s~%" efm-value)
-            (format *debug-io* "(core::object-address instance) -> ~s~%" (core::object-address instance))
+            (format *error-output* "DATA FOR READER ERROR!!!!!!!!!!!!!!!!!!!!!~%")
+            (format *error-output* "slot-name -----> ~s~%" slot-name)
+            (format *error-output* "opt-index -----> ~s~%" opt-index)
+            (format *error-output* "opt-method ----> ~s~%" opt-method)
+            (format *error-output* "opt-class -----> ~s~%" opt-class)
+            (format *error-output* "(core:instance-stamp instance) --------------------------------------------> ~s~%" (core:instance-stamp instance))
+            (format *error-output* "(core:lookup-class-with-stamp (core:instance-stamp instance)) -------------> ~s~%" (core:lookup-class-with-stamp (core:instance-stamp instance)))
+            (format *error-output* "(core:class-stamp-for-instances opt-class) --------------------------------> ~s~%" (core:class-stamp-for-instances opt-class))
+            (format *error-output* "(core:lookup-class-with-stamp (core:class-stamp-for-instances opt-class)) -> ~s~%" (core:lookup-class-with-stamp (core:class-stamp-for-instances opt-class)))
+            (format *error-output* "efm-class -----> ~s~%" efm-class)
+            (format *error-output* "efm-index -----> ~s~%" efm-index)
+            (format *error-output* "efm-value -----> ~s~%" efm-value)
+            (format *error-output* "(core::object-address instance) -> ~s~%" (core::object-address instance))
             (error "The dispatch-slot-reader-index-debug function caught a difference between reading the slot and calling the effective-method-function")))
         efm-result))))
 
@@ -764,12 +764,7 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
                                 :output-path output-path
                                 #+debug-fastgf :log-gf
                                 #+debug-fastgf (debug-fastgf-stream))) ;; the stream better be initialized
-      ;; yes, this means we set a funcallable instance function to a symbol.
-      ;; See comment on invalidate-discriminating-function (in method.lsp)
-      'invalidated-dispatch-function))
-
-(defun not-funcallable-dispatch-function (generic-function valist-args)
-  (error "The funcallable-instance ~s is not funcallable" generic-function))
+      (invalidated-discriminating-function-closure generic-function)))
 
 (defun force-dispatcher (generic-function)
   (let (log-output)

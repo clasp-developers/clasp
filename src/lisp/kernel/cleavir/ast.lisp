@@ -253,9 +253,9 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Class DISPLACED-INDEX-OFFSET-AST
+;;; Class ARRAY-TOTAL-SIZE-AST
 ;;;
-;;; Gets the actual underlying DIO of any mdarray.
+;;; Gets the total size of any mdarray.
 
 (defclass array-total-size-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
   ((%mdarray :initarg :mdarray :accessor array-total-size-ast-mdarray)))
@@ -366,12 +366,14 @@
 (defclass precalc-vector-function-ast (cleavir-ast:top-level-function-ast)
   ((%precalc-asts :initarg :precalc-asts :reader precalc-asts)))
 
-(defun make-precalc-vector-function-ast (body-ast precalc-asts forms policy &key origin)
+(defun make-precalc-vector-function-ast (body-ast precalc-asts forms dynenv policy
+                                         &key origin)
   (make-instance 'precalc-vector-function-ast
                  :body-ast body-ast
                  :lambda-list nil
                  :precalc-asts precalc-asts
                  :forms forms
+                 :dynamic-environment-out dynenv
                  :policy policy
                  :origin origin))
 
@@ -476,7 +478,7 @@ precalculated-vector and returns the index."
     ;; and arrange for it's evaluation at load time
     ;; and to make its result available as a value
     ((eq cleavir-generate-ast:*compiler* 'cl:compile-file)
-     (values (literal:with-load-time-value-cleavir
+     (values (literal:with-load-time-value
                  (clasp-cleavir::compile-form form env))
              nil))
     ;; COMPILE on the other hand evaluates the form and puts its
@@ -484,10 +486,10 @@ precalculated-vector and returns the index."
     (t
      (let ((value (cleavir-env:eval form env env)))
        (multiple-value-bind (index-or-immediate index-p)
-           (cmp:codegen-rtv-cclasp value)
+           (literal:codegen-rtv-cclasp value)
          (values index-or-immediate (not index-p)))))))
 
-(defun hoist-load-time-value (ast env)
+(defun hoist-load-time-value (ast dynenv env)
   (let ((ltvs nil)
         (forms nil))
     (cleavir-ast:map-ast-depth-first-preorder
@@ -506,49 +508,7 @@ precalculated-vector and returns the index."
                             :index index-or-immediate
                             :original-object form)))
         (push form forms)))
-    (clasp-cleavir-ast:make-precalc-vector-function-ast
-     ast ltvs forms (cleavir-ast:policy ast) :origin (cleavir-ast:origin ast))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Introducing invocations
-
-(defclass invoke-ast (cleavir-ast:call-ast)
-  ((%destinations :accessor destinations :initarg :destinations)))
-
-(defclass multiple-value-invoke-ast (cleavir-ast:multiple-value-call-ast)
-  ((%destinations :accessor destinations :initarg :destinations)))
-
-;;; Let's get rid of *invocation-context* and pass it as an argument
-;;;(defvar *invocation-context*)
-
-(defun introduce-invoke (ast)
-  (let ((visitedp (make-hash-table :test #'eq)))
-    (labels ((introduce-invoke-aux (ast invocation-context)
-               (unless (gethash ast visitedp)
-                 (setf (gethash ast visitedp) t)
-                 (let ((new-context invocation-context))
-                   (cond
-                     ((cleavir-ast:block-ast-p ast) (push ast new-context))
-                     ((cleavir-ast:tagbody-ast-p ast)
-                      (loop for item in (cleavir-ast:item-asts ast)
-                            when (cleavir-ast:tag-ast-p item)
-                              do (push item new-context)))
-                     ((cleavir-ast:function-ast-p ast)
-                      ;; Another level down, so reset.
-                      (setf new-context nil))
-                     ((cleavir-ast:call-ast-p ast) ; Mark, if it could unwind here.
-                      (unless (null invocation-context)
-                        (change-class ast 'clasp-cleavir-ast:invoke-ast
-                                      :destinations invocation-context)))
-                     ((cleavir-ast:multiple-value-call-ast-p ast)
-                      (unless (null invocation-context)
-                        (change-class ast 'clasp-cleavir-ast:multiple-value-invoke-ast
-                                      :destinations invocation-context))))
-                   ;; Recur.
-                   (let ((invocation-context new-context))
-                     (mapc (lambda (child-ast) (introduce-invoke-aux child-ast invocation-context))
-                           (cleavir-ast:children ast)))))
-               (values)))
-      (let ((invocation-context nil))
-        (introduce-invoke-aux ast invocation-context)))))
+    (let ((cleavir-ast:*dynamic-environment* dynenv))
+      (clasp-cleavir-ast:make-precalc-vector-function-ast
+       ast ltvs forms dynenv (cleavir-ast:policy ast)
+       :origin (cleavir-ast:origin ast)))))

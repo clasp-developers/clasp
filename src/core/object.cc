@@ -59,6 +59,15 @@ __END_DOC
 */
 
 
+extern "C" {
+bool low_level_equal(core::T_O* a, core::T_O* b) {
+  core::T_sp ta((gctools::Tagged) a);
+  core::T_sp tb((gctools::Tagged) b);
+  return cl__equal(ta,tb);
+};  
+  
+};
+
 namespace core {
 
 uint __nextGlobalClassSymbol = 1;
@@ -359,7 +368,7 @@ string General_O::className() const {
 
 void General_O::sxhash_(HashGenerator &hg) const {
   if (hg.isFilling()) {
-    Fixnum res = (Fixnum)((((uintptr_clasp_t)this) >> gctools::tag_shift));
+    Fixnum res = (Fixnum)((((uintptr_t)this) >> gctools::tag_shift));
     hg.addPart(res);
   }
 }
@@ -370,7 +379,7 @@ void General_O::sxhash_equal(HashGenerator &hg,LocationDependencyPtrT ld) const 
 #ifdef USE_MPS
   if (ld) mps_ld_add(ld, global_arena, (mps_addr_t)address );
 #endif
-  hg.addPart((Fixnum)(((uintptr_clasp_t)address)>>gctools::tag_shift));
+  hg.addPart((Fixnum)(((uintptr_t)address)>>gctools::tag_shift));
   return;
 }
 

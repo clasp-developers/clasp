@@ -243,36 +243,54 @@ LtvcReturn ltvc_make_complex(gctools::GCRootsInModule* holder, char tag, size_t 
 }
 
 
-LtvcReturn ltvc_make_cons(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* car, core::T_O* cdr)
+LtvcReturn ltvc_make_cons(gctools::GCRootsInModule* holder, char tag, size_t index)
 {NO_UNWIND_BEGIN();
-  core::T_sp val = core::Cons_O::create(core::T_sp(car),core::T_sp(cdr));
+  core::T_sp val = core::Cons_O::create(_Nil<core::T_O>(), _Nil<core::T_O>());
   LTVCRETURN holder->setTaggedIndex(tag,index,val.tagged_());
   NO_UNWIND_END();
 }
 
-LtvcReturn ltvc_nconc(gctools::GCRootsInModule* holder, char tag, size_t index,
-                               core::T_O* front, core::T_O* back)
+LtvcReturn ltvc_rplaca(gctools::GCRootsInModule* holder, core::T_O* cons_t, core::T_O* car_t)
 {NO_UNWIND_BEGIN();
-  core::T_sp val = core::clasp_nconc(core::T_sp(front),core::T_sp(back));
-  LTVCRETURN holder->setTaggedIndex(tag,index,val.tagged_());
+  core::T_sp tcons((gctools::Tagged)cons_t);
+  core::Cons_sp cons = gc::As<core::Cons_sp>(tcons);
+  cons->rplaca(core::T_sp(car_t));
   NO_UNWIND_END();
 }
 
-NOINLINE LtvcReturn ltvc_make_list(gctools::GCRootsInModule* holder, char tag, size_t index, size_t num, ... )
+LtvcReturn ltvc_rplacd(gctools::GCRootsInModule* holder, core::T_O* cons_t, core::T_O* cdr_t)
 {NO_UNWIND_BEGIN();
+  core::T_sp tcons((gctools::Tagged)cons_t);
+  core::Cons_sp cons = gc::As<core::Cons_sp>(tcons);
+  cons->rplacd(core::T_sp(cdr_t));
+  NO_UNWIND_END();
+}
+
+LtvcReturn ltvc_make_list(gctools::GCRootsInModule* holder, char tag, size_t index, size_t len)
+{NO_UNWIND_BEGIN();
+  // Makes a list of length LEN where all elements are NIL.
+  // (ltvc_fill_list will be immediately after, so they could be undefined just as well.)
   core::T_sp first;
   core::T_sp* cur = &first;
-  va_list va;
-  va_start(va,num);
-  for (; num; --num) {
-    gctools::Tagged p = va_arg(va, gctools::Tagged);
-    Cons_sp one = Cons_O::create(core::T_sp(p),_Nil<core::T_O>());
+  for (; len != 0; --len) {
+    Cons_sp one = Cons_O::create(_Nil<core::T_O>(), _Nil<core::T_O>());
     *cur = one;
     cur = &one->_Cdr;
   }
-  va_end(va);
-  core::T_sp val = first;
-  LTVCRETURN holder->setTaggedIndex(tag,index,val.tagged_());
+  LTVCRETURN holder->setTaggedIndex(tag, index, first.tagged_());
+  NO_UNWIND_END();
+}
+
+LtvcReturn ltvc_fill_list(gctools::GCRootsInModule* holder, core::T_O* list, size_t len, ...)
+{NO_UNWIND_BEGIN();
+  core::T_sp cur((gctools::Tagged)list);
+  va_list va;
+  va_start(va, len);
+  for (; len != 0; --len) {
+    core::Cons_sp cons = gc::As<core::Cons_sp>(cur);
+    cons->rplaca(core::T_sp(va_arg(va, T_O*)));
+    cur = cons->_Cdr;
+  }
   NO_UNWIND_END();
 }
 
@@ -352,7 +370,7 @@ LtvcReturn ltvc_make_symbol(gctools::GCRootsInModule* holder, char tag, size_t i
   NO_UNWIND_END();
 }
 
-LtvcReturn ltvc_make_character(gctools::GCRootsInModule* holder, char tag, size_t index, uintptr_clasp_t val)
+LtvcReturn ltvc_make_character(gctools::GCRootsInModule* holder, char tag, size_t index, uintptr_t val)
 {NO_UNWIND_BEGIN();
   core::T_sp v = clasp_make_character(val);
   LTVCRETURN holder->setTaggedIndex(tag,index,v.tagged_());
@@ -476,7 +494,7 @@ LtvcReturn ltvc_mlf_init_funcall(gctools::GCRootsInModule* holder, size_t fptr_i
 //  LTVCRETURN reinterpret_cast<gctools::Tagged>(ret.ret0[0]);
 }
 
-// This is exactly like the one above - is it necessary?
+// Similar to the above, but puts value in the table.
 LtvcReturn ltvc_set_ltv_funcall(gctools::GCRootsInModule* holder, char tag, size_t index, size_t fptr_index, const char* name) {\
   fnLispCallingConvention fptr = (fnLispCallingConvention)holder->lookup_function(fptr_index);
   core::T_O *lcc_arglist = _Nil<core::T_O>().raw_();
@@ -487,24 +505,6 @@ LtvcReturn ltvc_set_ltv_funcall(gctools::GCRootsInModule* holder, char tag, size
   core::T_sp val = res;
   LTVCRETURN holder->setTaggedIndex(tag,index,val.tagged_());
 }
-
-LtvcReturn ltvc_set_ltv_funcall_cleavir(gctools::GCRootsInModule* holder, char tag, size_t index, size_t fptr_index , const char* name) {
-  // I created this function just in case cleavir returns a function that when evaluated returns a function that
-  // would return the ltv value - that appears not to be the case.
-  // FIXME: Remove this function and use the ltvc_set_ltv_funcall instead
-  fnLispCallingConvention fptr = (fnLispCallingConvention)holder->lookup_function(fptr_index);
-  core::T_O *lcc_arglist = _Nil<core::T_O>().raw_();
-  Symbol_sp sname = Symbol_O::create_from_string(std::string(name));
-  core::ClosureWithSlots_sp toplevel_closure = core::ClosureWithSlots_O::make_bclasp_closure(sname, fptr, kw::_sym_function, _Nil<core::T_O>(), _Nil<core::T_O>());
-  LCC_RETURN ret = fptr(LCC_PASS_ARGS0_VA_LIST(toplevel_closure.raw_()));
-  core::T_sp tret((gctools::Tagged)ret.ret0);
-//  printf("%s:%d:%s     ret -> %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(tret).c_str());
-  core::T_sp res((gctools::Tagged)ret.ret0[0]);
-  core::T_sp val = res;
-  LTVCRETURN holder->setTaggedIndex(tag,index,val.tagged_());
-}
-
-
 
 LtvcReturn ltvc_toplevel_funcall(gctools::GCRootsInModule* holder, size_t fptr_index, const char* name) {
   fnLispCallingConvention fptr = (fnLispCallingConvention)holder->lookup_function(fptr_index);  
@@ -769,11 +769,6 @@ __attribute__((optnone,noinline)) void cc_protect_alloca(char* ptr)
   (void)ptr;
 }
 
-
-void cc_invoke_sub_run_all_function(fnStartUp fptr) {
-  fptr();
-}
-
 void cc_invoke_startup_functions() {
   startup_functions_invoke();
 };
@@ -826,14 +821,14 @@ void debugInspectT_mv(core::T_mv *objP)
 {NO_UNWIND_BEGIN();
   MultipleValues &mv = lisp_multipleValues();
   size_t size = mv.getSize();
-  printf("debugInspect_return_type T_mv.val0@%p  T_mv.nvals=%d mvarray.size=%zu\n", (*objP).raw_(), (*objP).number_of_values(), size);
+  printf("debugInspect_return_type T_mv.val0@%p  T_mv.nvals=%zu mvarray.size=%zu\n", (*objP).raw_(), (*objP).number_of_values(), size);
   size = std::max(size, (size_t)(*objP).number_of_values());
   for (size_t i(0); i < size; ++i) {
     printf("[%zu]->%p : %s\n", i, mv.valueGet(i, size).raw_(), _rep_(core::T_sp((gc::Tagged)mv.valueGet(i,size).raw_())).c_str());
   }
   printf("\n");
   printf("%s:%d Insert breakpoint here if you want to inspect object\n", __FILE__, __LINE__);
-  printf("debugInspectT_mv@%p  #val=%d\n", (void *)objP, objP->number_of_values());
+  printf("debugInspectT_mv@%p  #val=%zu\n", (void *)objP, objP->number_of_values());
   printf("   debugInspectT_mv  obj= %s\n", _rep_(*objP).c_str());
   printf("%s:%d Insert breakpoint here if you want to inspect object\n", __FILE__, __LINE__);
   NO_UNWIND_END();
@@ -859,10 +854,10 @@ void debugMessage(const char *msg)
   NO_UNWIND_END();
 }
 
-uintptr_clasp_t debug_match_two_uintptr_t(uintptr_clasp_t x, uintptr_clasp_t y)
+uintptr_t debug_match_two_uintptr_t(uintptr_t x, uintptr_t y)
 {NO_UNWIND_BEGIN();
   if ( x == y ) return x;
-  printf("%s:%d !!!!! in debug_match_two_uintptr_clasp_t the two pointers %p and %p don't match\n", __FILE__, __LINE__, (void*)x, (void*)y);
+  printf("%s:%d !!!!! in debug_match_two_uintptr_t the two pointers %p and %p don't match\n", __FILE__, __LINE__, (void*)x, (void*)y);
   gdb();
   UNREACHABLE();
   NO_UNWIND_END();
@@ -879,9 +874,9 @@ void debug_vaslistPtr(Vaslist *vargs)
   Vaslist *args = reinterpret_cast<Vaslist *>(gc::untag_vaslist((void *)vargs));
   printf("++++++ debug_va_list: reg_save_area @%p \n", args->_Args[0].reg_save_area);
   printf("++++++ debug_va_list: gp_offset %d \n", args->_Args[0].gp_offset);
-  printf("++++++      next reg arg: %p\n", (void *)(((uintptr_clasp_t *)((char *)args->_Args[0].reg_save_area + args->_Args[0].gp_offset))[0]));
+  printf("++++++      next reg arg: %p\n", (void *)(((uintptr_t *)((char *)args->_Args[0].reg_save_area + args->_Args[0].gp_offset))[0]));
   printf("++++++ debug_va_list: overflow_arg_area @%p \n", args->_Args[0].overflow_arg_area);
-  printf("++++++      next overflow arg: %p\n", (void *)(((uintptr_clasp_t *)((char *)args->_Args[0].overflow_arg_area))[0]));
+  printf("++++++      next overflow arg: %p\n", (void *)(((uintptr_t *)((char *)args->_Args[0].overflow_arg_area))[0]));
   NO_UNWIND_END();
 }
 
@@ -891,8 +886,8 @@ void debug_va_list(va_list vargs)
   printf("++++++ debug_va_list:          fp_offset@%p -> %x \n", &vargs[0].fp_offset, vargs[0].fp_offset);
   printf("++++++ debug_va_list: overflow_arg_area @%p -> %p \n", &vargs[0].overflow_arg_area, vargs[0].overflow_arg_area);
   printf("++++++ debug_va_list:     reg_save_area @%p -> %p \n", &vargs[0].reg_save_area, vargs[0].reg_save_area);
-  printf("++++++      next reg arg: %p\n", (void *)(((uintptr_clasp_t *)((char *)vargs[0].reg_save_area + vargs[0].gp_offset))[0]));
-  printf("++++++      next overflow arg: %p\n", (void *)(((uintptr_clasp_t *)((char *)vargs[0].overflow_arg_area))[0]));
+  printf("++++++      next reg arg: %p\n", (void *)(((uintptr_t *)((char *)vargs[0].reg_save_area + vargs[0].gp_offset))[0]));
+  printf("++++++      next overflow arg: %p\n", (void *)(((uintptr_t *)((char *)vargs[0].overflow_arg_area))[0]));
   NO_UNWIND_END();
 }
 
@@ -1116,59 +1111,6 @@ gctools::return_type restoreFromMultipleValue0()
   NO_UNWIND_END();
 }
 
-void mv_restoreFromMultipleValue0(core::T_mv *resultP)
-{NO_UNWIND_BEGIN();
-  resultP->readFromMultipleValue0();
-  NO_UNWIND_END();
-}
-
-#if 0
-/*! Copy the current MultipleValues in _lisp->values() into a SimpleVector */
-extern core::T_O* saveValues(core::T_mv *mvP)
-{NO_UNWIND_BEGIN();
-  ASSERT(mvP != NULL);
-  int numValues = (*mvP).number_of_values();
-  core::SimpleVector_sp vo = core::SimpleVector_O::make(numValues,_Nil<core::T_O>());
-  //	printf("intrinsics.cc saveValues numValues = %d\n", numValues );
-  if (numValues > 0) {
-    vo->rowMajorAset(0, (*mvP));
-  }
-  core::MultipleValues& mv = core::lisp_multipleValues();
-  for (int i(1); i < (*mvP).number_of_values(); ++i) {
-    core::T_sp val((gctools::Tagged)mv._Values[i]);
-    vo->rowMajorAset(i, val );
-  }
-  return vo.raw_();
-  NO_UNWIND_END();
-}
-
-/*! Copy the current MultipleValues in _lisp->values() into a ComplexVector_T */
-extern void loadValues(core::T_mv *resultP, core::T_O* simpleVectorP)
-{NO_UNWIND_BEGIN();
-  ASSERT(resultP != NULL);
-  // I'm not sure the following can ever happen
-  if (!simpleVectorP) {
-    // If there was a non-local exit then *vectorObjectP will be NULL
-    // check for that here and if so set the result to gctools::multiple_values<core::T_O>()
-    (*resultP) = gctools::multiple_values<core::T_O>();
-    return;
-  }
-  SimpleVector_sp vo((gctools::Tagged)simpleVectorP);
-  //	printf("intrinsics.cc loadValues vo->length() = %d\n", vo->length() );
-  if (vo->length() == 0) {
-    (*resultP) = gctools::multiple_values<core::T_O>();
-    return;
-  }
-  (*resultP) = gctools::multiple_values<core::T_O>(vo->rowMajorAref(0), vo->length());
-  core::MultipleValues& mv = core::lisp_multipleValues();
-  for (int i(1); i < vo->length(); ++i) {
-    mv._Values[i] = vo->rowMajorAref(i).raw_();
-  }
-  NO_UNWIND_END();
-}
-#endif
-
-
 size_t cc_trackFirstUnexpectedKeyword(size_t badKwIdx, size_t newBadKwIdx)
 {NO_UNWIND_BEGIN();
   // 65536 is the magic number for badKwIdx has not been assigned yet
@@ -1389,6 +1331,18 @@ void cc_restoreMultipleValue0(core::T_mv *result)
   NO_UNWIND_END();
 }
 
+void cc_save_values(size_t nvals, T_O* primary, T_O** vector)
+{NO_UNWIND_BEGIN();
+  returnTypeSaveToTemp(nvals, primary, vector);
+  NO_UNWIND_END();
+}
+
+gctools::return_type cc_load_values(size_t nvals, T_O** vector)
+{NO_UNWIND_BEGIN();
+  return returnTypeLoadFromTemp(nvals, vector);
+  NO_UNWIND_END();
+}
+
 T_O *cc_pushLandingPadFrame()
 {NO_UNWIND_BEGIN();
 #ifdef DEBUG_FLOW_TRACKER
@@ -1409,64 +1363,6 @@ size_t cc_landingpadUnwindMatchFrameElseRethrow(char *exceptionP, core::T_O *thi
   // throw * unwindP;
   throw;
 }
-
-#if 0 // Bring this back online when we convert to new calling convention
-T_mv cc_multiple_value_funcall(core::T_mv* result, T_O* funcDesignator, std::size_t numFuns, ...) {
-  MultipleValues mvAccumulate;
-  mvAccumulate._Size = 0;
-  size_t idx = 0;
-  va_list argp;
-  va_start(argp,numFuns);
-  for (; numFuns; --numFuns) {
-    core::T_O* tfunc = va_arg(argp,core::T_O*);
-#error "Check the return value of tfunc.asOrNull"
-    core::Function_sp func = tfunc.asOrNull<core::Function_O>();
-    ASSERT(func);
-    auto closure = func->closure;
-    T_mv result;
-    closure->invoke(&result,LCC_PASS_ARGS0());
-    mvAccumulate[idx] = result.raw_();
-    ++idx;
-    for (size_t i = 1, iEnd(result.number_of_values()); i < iEnd; ++i) {
-      mvAccumulate[idx] = result.valueGet(i).raw_();
-      ++idx;
-    }
-  }
-  va_end(argp);
-  ASSERT(idx < MultipleValues::MultipleValuesLimit);
-  mvAccumulate._Size = idx;
-#error "Check the return value of tfunc.asOrNull"
-  core::Function_sp func = funcDesignator.asOrNull<core::Function_O>();
-  ASSERT(func);
-  auto closure = gc::untag_general<core::Function_O *>(func)->closure.as<core::Closure>();
-  core::T_O** a = &mvAccumulate[0];
-  MultipleValues &mvThreadLocal = lisp_multipleValues();
-  for (size_t i = LCC_FIXED_ARGS, iEnd(mvAccumulate._Size); i < iEnd; ++i) {
-    mvThreadLocal[i] = mvAccumulate[i];
-  }
-  closure->invoke(result, mvAccumulate._Size, mvAccumulate[0], mvAccumulate[1], mvAccumulate[2], mvAccumulate[3], mvAccumulate[4]);
-}
-
-T_mv cc_multiple_value_prog1_function(core::T_mv* result, core::T_O* tfunc1, core::T_O* tfunc2) {
-  MultipleValues mvFunc1;
-#error "Check the return value of tfunc.asOrNull"
-  core::Function_sp func1 = tfunc1.asOrNull<core::Function_O>();
-  ASSERT(func1);
-  core::Closure_sp closure1 = func1->closure;
-  closure1->invoke(result,LCC_PASS_ARGS0());
-  mvFunc1._Size = result->number_of_values();
-  mvFunc1[0] = result->raw_();
-  MultipleValues &mvThreadLocal = lisp_multipleValues();
-  for (size_t i(1), iEnd(mvFunc1._Size); i < iEnd; ++i) mvFunc1[i] = mvThreadLocal[i];
-  T_mv resultTemp;
-#error "Check the return value of tfunc.asOrNull"
-  core::Function_sp func2 = tfunc2.asOrNull<core::Function_O>();
-  ASSERT(func2);
-  core::Closure_sp closure2 = func2->closure;
-  closure2->invoke(&resultTemp,LCC_PASS_ARGS0());
-  for (size_t i(1), iEnd(mvFunc1._Size); i < iEnd; ++i) mvThreadLocal[i] = mvFunc1[i];
-}
-#endif
 
 void clasp_terminate()
 {
@@ -1489,18 +1385,19 @@ void initialize_link_intrinsics() {
 
 extern "C" {
 
-gctools::return_type cc_dispatch_slot_reader_index_debug(core::T_O* toptimized_slot_reader, size_t index, core::T_O* tvargs) {
+core::T_O* cc_dispatch_slot_reader_index_debug(core::T_O* toptimized_slot_reader, size_t index, core::T_O* tvargs) {
   core::SimpleVector_sp optimized_slot_reader((gctools::Tagged)toptimized_slot_reader);
   core::VaList_sp vargs((gctools::Tagged)tvargs);
   va_list vat;
   va_copy(vat,vargs->_Args);
   core::Instance_sp instance((gctools::Tagged)va_arg(vat,core::T_O*));
   va_end(vat);
-  core::T_sp result = core::eval::funcall(clos::_sym_dispatch_slot_reader_index_debug,optimized_slot_reader,instance,vargs);
-  return result.as_return_type();
+  core::T_sp result = core::eval::funcall(clos::_sym_dispatch_slot_reader_index_debug,
+                                          optimized_slot_reader,instance,vargs);
+  return reinterpret_cast<T_O*>(result.raw_());
 }
 
-gctools::return_type cc_dispatch_slot_writer_index_debug(core::T_O* toptimized_slot_writer, size_t index, core::T_O* tvargs) {
+core::T_O* cc_dispatch_slot_writer_index_debug(core::T_O* toptimized_slot_writer, size_t index, core::T_O* tvargs) {
   core::SimpleVector_sp optimized_slot_writer((gctools::Tagged)toptimized_slot_writer);
   core::VaList_sp vargs((gctools::Tagged)tvargs);
   va_list vat;
@@ -1508,8 +1405,9 @@ gctools::return_type cc_dispatch_slot_writer_index_debug(core::T_O* toptimized_s
   core::T_sp value((gctools::Tagged)va_arg(vat,core::T_O*));
   core::Instance_sp instance((gctools::Tagged)va_arg(vat,core::T_O*));
   va_end(vat);
-  core::T_sp result = core::eval::funcall(clos::_sym_dispatch_slot_writer_index_debug,optimized_slot_writer,value,instance,vargs);
-  return result.as_return_type();
+  core::T_sp result = core::eval::funcall(clos::_sym_dispatch_slot_writer_index_debug,
+                                          optimized_slot_writer,value,instance,vargs);
+  return reinterpret_cast<T_O*>(result.raw_());
 }
 };
 
@@ -1535,7 +1433,7 @@ gctools::return_type cc_dispatch_miss(core::T_O* tgf, core::T_O* tgf_vaslist)
 }
 #endif
 
-void cc_dispatch_debug(int msg_id, uintptr_clasp_t val)
+void cc_dispatch_debug(int msg_id, uintptr_t val)
 {
   // The msg_id switch values correspond to values passed from cmpgf.lsp
   //   The values mean:

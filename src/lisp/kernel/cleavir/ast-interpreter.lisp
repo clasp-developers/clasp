@@ -1,9 +1,8 @@
 (defpackage #:interpret-ast
   (:use #:cl)
   (:export #:interpret)
-  (:shadow #:variable)
-  ;; FIXME: lose this asap
-  (:export #:*system*))
+  (:export #:cannot-interpret #:cannot-interpret-ast)
+  (:shadow #:variable))
 
 ;;;; NOTE: Some methods in this file must be compiled with cleavir,
 ;;;; as they use cleavir special operators - metacircularity, eh?
@@ -43,9 +42,18 @@
 
 ;; interface
 
-(defun interpret (ast)
+(defun interpret (ast dynenv)
   (let ((env (empty-environment)))
+    ;; the dynamic environment is unused, but must be bound (e.g. for assignments)
+    (setf (variable dynenv env) nil)
+    ;; Do actual work
     (interpret-ast ast env)))
+
+(define-condition cannot-interpret (error)
+  ((ast :reader cannot-interpret-ast :initarg :ast))
+  (:report (lambda (condition stream)
+             (format stream "Interpreter not implemented for AST: ~a"
+                     (cannot-interpret-ast condition)))))
 
 ;;; meat
 
@@ -53,14 +61,14 @@
 
 (defmethod interpret-ast (ast env)
   (declare (ignore env))
-  (error "AST interpreter not implemented for ~a" ast))
+  (error 'cannot-interpret :ast ast))
 
 ;;; distinguished only to make sure the input ast is correct
 (defgeneric interpret-boolean (condition env))
 
 (defmethod interpret-boolean (condition env)
   (declare (ignore then else env))
-  (error "AST boolean interpreter not implemented for ~a" condition))
+  (error 'cannot-interpret :ast condition))
 
 (defmethod interpret-ast ((ast cleavir-ast:immediate-ast) env)
   (declare (ignore env))
@@ -158,12 +166,28 @@
 
 (defmethod interpret-ast ((ast cleavir-ast:function-ast) env)
   (let ((body (cleavir-ast:body-ast ast))
+        (dynenv-out (cleavir-ast:dynamic-environment-out-ast ast))
         (ll (cleavir-ast:lambda-list ast)))
+    ;; KLUDGE: If the closure has ASTs we can't interpret, we have
+    ;; to give up now, and there's no way to only compile this
+    ;; possibly-a-closure. We have to check proactively.
+    (cleavir-ast:map-ast-depth-first-preorder
+     (lambda (ast)
+       (when (typep ast '(or #+cst cc-ast:bind-va-list-ast
+                          cc-ast:defcallback-ast
+                          cc-ast:debug-break-ast
+                          cc-ast:debug-message-ast
+                          cc-ast:multiple-value-foreign-call-ast
+                          cc-ast:foreign-call-ast
+                          cc-ast:foreign-call-pointer-ast))
+         (error 'interpret-ast:cannot-interpret :ast ast)))
+     body)
     (multiple-value-bind (required optional rest va-rest-p keyp key aok-p)
         (parse-lambda-list ll)
       (lambda (core:&va-rest arguments)
         (declare (core:lambda-name ast-interpreted-closure))
         (let ((env (augment-environment env)))
+          (setf (variable dynenv-out env) nil)
           (bind-list arguments env
                      required optional rest va-rest-p keyp key aok-p)
           ;; ok body now
@@ -182,6 +206,7 @@
   ;; We need to disambiguate things if the block is entered
   ;; more than once. Storing things in the environment
   ;; lets it work with closures.
+  (setf (variable (cleavir-ast:dynamic-environment-out-ast ast) env) nil)
   (let ((catch-tag (gensym)))
     (setf (variable ast env) catch-tag)
     (catch catch-tag
@@ -199,14 +224,17 @@
 (defmethod interpret-ast ((ast cleavir-ast:multiple-value-setq-ast) env)
   (let ((values (multiple-value-list
                  (interpret-ast (cleavir-ast:form-ast ast) env))))
-    (loop for var in (cleavir-ast:lhs-asts ast)
-          do (setf (variable var env) (pop values)))))
+    (loop with rvalues = values
+          for var in (cleavir-ast:lhs-asts ast)
+          do (setf (variable var env) (pop rvalues)))
+    (values-list values)))
 
 (defmethod interpret-ast ((ast cleavir-ast:tag-ast) env)
   ;; nop
   (declare (ignore env)))
 
 (defmethod interpret-ast ((ast cleavir-ast:tagbody-ast) env)
+  (setf (variable (cleavir-ast:dynamic-environment-out-ast ast) env) nil)
   ;; We loop through the item-asts interpreting them.
   ;; If we hit a GO, the GO throws a new list of ASTs to interpret, set up
   ;; beforehand. We catch that and set it as the new to-interpret list.
@@ -305,24 +333,31 @@
 (eval-when (:load-toplevel)
 (defmethod interpret-boolean-ast ((ast cleavir-ast:fixnum-add-ast) env)
   ;; Doing this without metacicularity is just annoying.
-  (cleavir-primop:let-uninitialized (z)
-    (prog1
-        (if (cleavir-primop:fixnum-add
-             (interpret-ast (cleavir-ast:arg1-ast ast) env)
-             (interpret-ast (cleavir-ast:arg2-ast ast) env)
-             z)
-            t nil)
-      (setf (variable (cleavir-ast:variable-ast ast) env) z))))
+  ;; Doing it WITH metacircularity turns out to be annoying too, because
+  ;; the output of a fixnum-add can't be closed over, but it will be
+  ;; in the CST build if you use the more obvious PROG1 (= LET) code here.
+  ;; (Can't be closed over because cell conversion can't handle an outputting
+  ;;  instruction with more than one successor - could change that too.)
+  ;; FIXME: We should probably just entirely disable inlining in this
+  ;; interpreter. More trouble than it's worth, which is probably little.
+  (cleavir-primop:let-uninitialized (z w)
+    (prog1 (if (cleavir-primop:fixnum-add
+                (interpret-ast (cleavir-ast:arg1-ast ast) env)
+                (interpret-ast (cleavir-ast:arg2-ast ast) env)
+                z)
+               (progn (setq w z) t)
+               (progn (setq w z) nil))
+      (setf (variable (cleavir-ast:variable-ast ast) env) w))))
 
 (defmethod interpret-boolean-ast ((ast cleavir-ast:fixnum-sub-ast) env)
-  (cleavir-primop:let-uninitialized (z)
-    (prog1
-        (if (cleavir-primop:fixnum-sub
-             (interpret-ast (cleavir-ast:arg1-ast ast) env)
-             (interpret-ast (cleavir-ast:arg2-ast ast) env)
-             z)
-            t nil)
-      (setf (variable (cleavir-ast:variable-ast ast) env) z))))
+  (cleavir-primop:let-uninitialized (z w)
+    (prog1 (if (cleavir-primop:fixnum-sub
+                (interpret-ast (cleavir-ast:arg1-ast ast) env)
+                (interpret-ast (cleavir-ast:arg2-ast ast) env)
+                z)
+               (progn (setq w z) t)
+               (progn (setq w z) nil))
+      (setf (variable (cleavir-ast:variable-ast ast) env) w))))
 ) ; eval-when
 
 (defmacro define-fixnum-comparison-interpreter (name op)
@@ -432,6 +467,7 @@
 (defmethod interpret-ast ((ast cc-ast:instance-stamp-ast) env)
   (core:instance-stamp (interpret-ast (cleavir-ast:arg-ast ast) env)))
 
+#-cst ; bind-va-list doesn't inline right - FIXME
 (defmethod interpret-ast ((ast cc-ast:bind-va-list-ast) env)
   (let ((lambda-list (cleavir-ast:lambda-list ast))
         (va-list-ast (cc-ast:va-list-ast ast))
@@ -455,12 +491,14 @@
 (in-package #:clasp-cleavir)
 
 (defun ast-interpret-form (form env)
-  (interpret-ast:interpret
-   (let ((cleavir-generate-ast:*compiler* 'cl:eval))
-     #-cst
-     (cleavir-generate-ast:generate-ast
-      form env clasp-cleavir:*clasp-system*)
-     #+cst
-     (cleavir-cst-to-ast:cst-to-ast
-      (cst:cst-from-expression form)
-      env clasp-cleavir:*clasp-system*))))
+  (let ((dynenv (make-dynenv env)))
+    (interpret-ast:interpret
+     (let ((cleavir-generate-ast:*compiler* 'cl:eval))
+       #-cst
+       (cleavir-generate-ast:generate-ast
+        form env clasp-cleavir:*clasp-system* dynenv)
+       #+cst
+       (cleavir-cst-to-ast:cst-to-ast
+        (cst:cst-from-expression form)
+        env clasp-cleavir:*clasp-system* dynenv))
+     dynenv)))

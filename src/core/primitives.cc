@@ -183,14 +183,21 @@ CL_DEFUN T_sp core__interpreter_symbols() {
   return ls;
 }
 
-std::atomic<uint64_t> global_next_number;
+std::atomic<int64_t> global_next_number;
 
 CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("Return the next number.  An internal counter is incremented every time this function is called.");
-CL_DEFUN Integer_sp core__next_number() {
-  uint64_t temp = ++global_next_number;
-  return Integer_O::create((uint64_t)temp);
+CL_DEFUN T_sp core__next_number() {
+  int64_t num, next_num;
+  do {
+    num = global_next_number;
+    next_num = num + 1;
+    if ((next_num<<gctools::fixnum_shift)<=0) { // if it wraps it won't fit in a positive fixnum
+      next_num = 1;
+    }
+  } while (!global_next_number.compare_exchange_weak(num,next_num));
+  return core::clasp_make_fixnum(next_num);
 };
 
 CL_LAMBDA();
@@ -255,9 +262,7 @@ CL_DEFUN T_sp core__value_from_tagged_immediate(T_sp object) {
     T_sp value((gctools::Tagged)object.unsafe_fixnum());
     return value;
   } if (gc::IsA<Bignum_sp>(object)) {
-    printf("%s:%d bignum -> %s\n", __FILE__, __LINE__, _rep_(object).c_str());
     size_t val = gc::As_unsafe<Bignum_sp>(object)->as_size_t();
-    printf("%s:%d  as size_t -> %lu\n", __FILE__, __LINE__, val);
     T_sp value((gctools::Tagged)val);
     return value;
   }
@@ -571,21 +576,6 @@ CL_DEFUN T_mv core__separate_pair_list(List_sp listOfPairs) {
   }
   T_sp tfirsts = firsts.cons();
   return (Values(tfirsts, seconds.cons()));
-}
-
-// ignore env
-CL_LAMBDA(name &optional env);
-CL_DEFUN T_mv cl__compiler_macro_function(core::T_sp name, core::T_sp env)
-{
-  return core__get_sysprop(name,cl::_sym_compiler_macro);
-}
-
-CL_LISPIFY_NAME("CL:compiler-macro-function");
-CL_LAMBDA(function name &optional env);
-CL_DEFUN_SETF T_sp setf_compiler_macro_function(core::T_sp function, core::T_sp name, core::T_sp env)
-{
-  core__put_sysprop(name,cl::_sym_compiler_macro,function);
-  return function;
 }
 
 // ignore env

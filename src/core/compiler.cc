@@ -930,33 +930,28 @@ CL_DEFUN T_mv core__funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
   }
   catch (...)
   {
-#if 0
-    void* primary_exception = __cxxabiv1::__cxa_current_primary_exception();
-    printf("%s:%d  primary_exception = %p\n", __FILE__, __LINE__, primary_exception );
-    __cxxabiv1::__cxa_decrement_exception_refcount(primary_exception);
-#endif
-// Save any return value that may be in the multiple value return array
-    gctools::Vec0<T_sp> savemv;
-    T_mv tresult;
-    tresult.readFromMultipleValue0();
-    tresult.saveToVec0(savemv);
+    // Abnormal exit
+    // Save return values, then cleanup, then continue exit
+    size_t nvals = lisp_multipleValues().getSize();
+    T_O* mv_temp[nvals];
+    multipleValuesSaveToTemp(mv_temp);
     {
       Closure_sp closure = gc::As_unsafe<Closure_sp>(cleanup_fn);
-      tresult = closure->entry.load()(LCC_PASS_ARGS0_ELLIPSIS(closure.raw_()));
+      closure->entry.load()(LCC_PASS_ARGS0_ELLIPSIS(closure.raw_()));
     }
-    tresult.loadFromVec0(savemv);
-    tresult.saveToMultipleValue0();
+    multipleValuesLoadFromTemp(nvals, mv_temp);
     throw;  // __cxa_rethrow
   }
-  gctools::Vec0<T_sp> savemv;
-  result.saveToVec0(savemv);
+  // Normal exit
+  // Save return values, cleanup, return
+  size_t nvals = result.number_of_values();
+  T_O* mv_temp[nvals];
+  returnTypeSaveToTemp(nvals, result.raw_(), mv_temp);
   {
-    T_mv tresult;
     Closure_sp closure = gc::As_unsafe<Closure_sp>(cleanup_fn);
-    tresult = closure->entry.load()(LCC_PASS_ARGS0_ELLIPSIS(closure.raw_()));
+    closure->entry.load()(LCC_PASS_ARGS0_ELLIPSIS(closure.raw_()));
   }
-  result.loadFromVec0(savemv);
-  return result;
+  return returnTypeLoadFromTemp(nvals, mv_temp);
 }
 
 CL_LAMBDA(function-designator &rest functions);
@@ -986,20 +981,6 @@ CL_DEFUN T_mv core__multiple_value_funcall(T_sp funcDesignator, List_sp function
   Vaslist valist_s(frame);
   VaList_sp args(&valist_s);
   return funcall_consume_valist_<Function_O>(fmv.tagged_(),args);
-}
-
-CL_LAMBDA(func1 func2);
-CL_DECLARE();
-CL_DOCSTRING("multipleValueProg1_Function - evaluate func1, save the multiple values and then evaluate func2 and restore the multiple values");
-CL_DEFUN T_mv core__multiple_value_prog1_function(Function_sp first_func, Function_sp second_func) {
-  MultipleValues mvFunc1;
-  ASSERT((first_func) && first_func.notnilp());
-  T_mv result = (first_func->entry.load())(LCC_PASS_ARGS0_ELLIPSIS(first_func.raw_()));
-  //  T_mv result = eval::funcall(first_func);
-  multipleValuesSaveToMultipleValues(result,&mvFunc1);
-  (second_func->entry.load())(LCC_PASS_ARGS0_ELLIPSIS(second_func.raw_()));
-  // eval::funcall(func2);
-  return multipleValuesLoadFromMultipleValues(&mvFunc1);
 }
 
 CL_LAMBDA(tag func);
@@ -1203,7 +1184,7 @@ size_t compact_read_size_t(T_sp stream, size_t& index) {
   size_t data = 0;
   int64_t nb = clasp_read_char(stream)-'0';
   if (nb<0 ||nb>8) {
-    printf("%s:%d Illegal size_t size %lld\n", __FILE__, __LINE__, nb);
+    printf("%s:%d Illegal size_t size %lld\n", __FILE__, __LINE__, (long long)nb);
     abort();
   }
   for (size_t ii=0; ii<nb; ++ii ) {
@@ -1393,10 +1374,19 @@ Cons_O* ltvc_read_list(gctools::GCRootsInModule* roots, size_t num, T_sp stream,
   return (Cons_O*)result.cons().tagged_();
 }
 
-void ltvc_make_list_varargs( gctools::GCRootsInModule* roots, char tag, size_t index, size_t len, Cons_O* list)
+void ltvc_fill_list_varargs(gctools::GCRootsInModule* roots, T_O* list, size_t len, Cons_O* varargs)
 {
-  Cons_sp ll((gctools::Tagged)list);
-  roots->setTaggedIndex(tag,index,ll.tagged_());
+  // Copy the vargs list into the ltv one.
+  // FIXME: This is obviously inefficient.
+  T_sp cur((gctools::Tagged)list);
+  T_sp vargs((gctools::Tagged)varargs);
+  for (; len != 0; --len) {
+    Cons_sp cur_cons = gc::As<Cons_sp>(cur);
+    Cons_sp cur_vargs = gc::As<Cons_sp>(vargs);
+    cur_cons->rplaca(cur_vargs->_Car);
+    cur = cur_cons->_Cdr;
+    vargs = cur_vargs->_Cdr;
+  }
 }
 
 #define DEFINE_PARSERS

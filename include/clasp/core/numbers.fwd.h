@@ -97,7 +97,7 @@ FORWARD(Bool);
     return clasp_to_uint64_t( x );
   }
 
-  cl_intptr_t         clasp_to_cl_intptr_t( core::T_sp );
+  uintptr_t           clasp_to_uintptr_t( core::T_sp );
   mpz_class           clasp_to_mpz( core::T_sp );
   cl_index            clasp_to_size( core::T_sp );
 

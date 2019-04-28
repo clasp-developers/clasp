@@ -109,6 +109,8 @@
             compile-error-if-not-enough-arguments
             compile-in-env
             compile-lambda-function
+            compile-lambda-list-code
+            make-calling-convention-impl
             bclasp-compile-form
             compile-form
             compiler-error
@@ -129,11 +131,16 @@
             *optimization-level*
             with-track-llvm-time
             irc-add
-            irc-alloca-tmv
-            irc-alloca-i8*
-            irc-alloca-i8**
-            irc-alloca-mv-struct
             irc-add-clause
+            alloca
+            alloca-t*
+            alloca-i8
+            alloca-i8*
+            alloca-i32
+            alloca-return
+            alloca-va_list
+            alloca-temp-values
+            irc-and
             irc-basic-block-create
             irc-begin-block
             irc-br
@@ -148,14 +155,17 @@
             irc-create-invoke-default-unwind
             irc-create-landing-pad
             irc-exception-typeid*
+            irc-extract-value
             irc-generate-terminate-code
             irc-gep
+            irc-gep-variable
             irc-smart-ptr-extract
             irc-set-insert-point-basic-block
             irc-size_t-*current-source-pos-info*-filepos
             irc-size_t-*current-source-pos-info*-column
             irc-size_t-*current-source-pos-info*-lineno
             irc-icmp-eq
+            irc-icmp-sle
             irc-icmp-slt
             irc-intrinsic
             irc-load
@@ -168,9 +178,13 @@
             irc-ret
             irc-undef-value-get
             irc-store
+            irc-t*-result
+            irc-tmv-result
             irc-switch
-            irc-unreachable
+            irc-tag-fixnum
             irc-trunc
+            irc-unreachable
+            irc-untag-fixnum
             jit-constant-i1
             jit-constant-i8
             jit-constant-i32
@@ -185,6 +199,7 @@
             llvm-link
             link-builtins-module
             load-bitcode
+            setup-calling-convention
             initialize-calling-convention
             treat-as-special-operator-p
             typeid-core-unwind
@@ -219,7 +234,6 @@
             compile-error-if-too-many-arguments
             compile-throw-if-excess-keyword-arguments
             *irbuilder-function-alloca*
-            irc-get-cleanup-landing-pad-block
             irc-constant-string-ptr
             *source-debug-pathname*
             *source-debug-offset*
@@ -227,6 +241,7 @@
             irc-function-cleanup-and-return
             %RUN-AND-LOAD-TIME-VALUE-HOLDER-GLOBAL-VAR-TYPE%
             codegen-startup-shutdown
+            compute-rest-alloc
             )))
 
 ;;; exports for runall

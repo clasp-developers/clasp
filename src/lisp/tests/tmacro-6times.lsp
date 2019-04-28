@@ -1,6 +1,0 @@
-(defmacro foo ()
-    (print 'expand)
-    10)
-(eval-when (:compile-toplevel :load-toplevel) ;; :execute)
-  (defun bar ()
-    (foo)))

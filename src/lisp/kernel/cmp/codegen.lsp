@@ -40,8 +40,8 @@ Could return more functions that provide lambda-list for swank for example"
       (cmp-log "generate-llvm-function-from-code%N")
       (cmp-log "cleavir-lambda-list -> %s%N" cleavir-lambda-list)
       (cmp-log "new-body -> %s%N" new-body)
-;;;    (bformat *debug-io* "old  -> %s %s %s %s%N" lambda-list-handler declares docstring code)
-;;;    (bformat *debug-io* "new-body -> %s%N" new-body)
+;;;    (bformat *error-output* "old  -> %s %s %s %s%N" lambda-list-handler declares docstring code)
+;;;    (bformat *error-output* "new-body -> %s%N" new-body)
       (let* ((name (core:extract-lambda-name-from-declares declares (or given-name 'cl:lambda)))
              (fn (with-new-function (fn fn-env result
                                         :function-name name
@@ -64,11 +64,11 @@ Could return more functions that provide lambda-list for swank for example"
                    ;; load time values table
                    #+(or)(irc-intrinsic-call "debugInspectT_sp" (list (literal:compile-reference-to-literal :This-is-a-test)))
                    (let* ((arguments      (llvm-sys:get-argument-list fn))
-                          (callconv       (setup-calling-convention arguments
-                                                                    :debug-on core::*debug-bclasp*
-                                                                    :lambda-list lambda-list
-                                                                    :cleavir-lambda-list cleavir-lambda-list
-                                                                    :rest-alloc rest-alloc)))
+                          (callconv       (setup-calling-convention
+                                           arguments
+                                           :debug-on core::*debug-bclasp*
+                                           :cleavir-lambda-list cleavir-lambda-list
+                                           :rest-alloc rest-alloc)))
                      (let ((new-env (bclasp-compile-lambda-list-code fn-env callconv)))
                        (cmp-log "Created new register environment -> %s%N" new-env)
                        (with-try
@@ -117,7 +117,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
   (let ((lambda-list (core:lambda-list-handler-lambda-list (function-lambda-list-handler fn)))
 	#+(or)(declares (function-declares fn))
 	(docstring (function-docstring fn))
-	(code (function-source-code fn))
+	(code (interpreted-source-code fn))
 	(env (closed-environment fn)))
     (generate-llvm-function-from-code nil lambda-list #|declares|# nil docstring code env :linkage 'llvm-sys:external-linkage)))
 
@@ -125,8 +125,8 @@ then compile it and return (values compiled-llvm-function lambda-name)"
   (let* ((lambda-list-handler (function-lambda-list-handler fn))
 	 (lambda-list (core:lambda-list-handler-lambda-list lambda-list-handler))
 	 #+(or)(declares (function-declares fn))
-	 (docstring (docstring fn))
-	 (code (code fn))
+	 (docstring (function-docstring fn))
+	 (code (interpreted-source-code fn))
 	 (env (closed-environment fn)))
     (when docstring (setq docstring (list docstring)))
     #+(or)(progn
@@ -200,7 +200,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
       ((and (atom head) (symbolp head))
        (let ((nargs (length (cdr form)))
              args
-             (temp-result (irc-alloca-t*)))
+             (temp-result (alloca-t*)))
          ;; evaluate the arguments into the array
          ;;  used to be done by --->    (codegen-evaluate-arguments (cdr form) evaluate-env)
          (do* ((cur-exp (cdr form) (cdr cur-exp))
@@ -236,8 +236,8 @@ then compile it and return (values compiled-llvm-function lambda-name)"
       (t
        (let ((nargs (length call-args))
              args
-             (temp-closure (irc-alloca-t*))
-             (temp-result (irc-alloca-t*)))
+             (temp-closure (alloca-t*))
+             (temp-result (alloca-t*)))
          ;; evaluate the arguments into the array
          ;;  used to be done by --->    (codegen-evaluate-arguments (cdr form) evaluate-env)
          (do* ((cur-exp call-args (cdr cur-exp))
@@ -309,7 +309,6 @@ then compile it and return (values compiled-llvm-function lambda-name)"
        ;;; and bclasp is calling treat-as-special-operator-p on forms too
        (cond
          ((eq sym 'cl:unwind-protect) nil)     ;; handled with macro
-         ((eq sym 'cl:multiple-value-prog1) nil)     ;; handled with macro
          ((eq sym 'cl:catch) nil)              ;; handled with macro
          ((eq sym 'cl:throw) nil)              ;; handled with macro
          ((eq sym 'cl:progv) nil)              ;; handled with macro
@@ -319,6 +318,10 @@ then compile it and return (values compiled-llvm-function lambda-name)"
          ((eq sym 'core:foreign-call-pointer) t) ;; Call function pointers
          ((eq sym 'core:foreign-call) t)         ;; Call foreign function
          ((eq sym 'core:bind-va-list) t)         ;; bind-va-list
+         ((eq sym 'core::vector-length) t)
+         ((eq sym 'core::%array-dimension) t)
+         ((eq sym 'cleavir-primop:car) t)
+         ((eq sym 'cleavir-primop:cdr) t)
          ((eq sym 'core:vaslist-pop) t)
          ((eq sym 'core:instance-stamp) t)
          ((eq sym 'core:defcallback) t)

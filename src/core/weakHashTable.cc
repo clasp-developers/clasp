@@ -152,8 +152,7 @@ CL_DEFUN T_mv core__weak_gethash(T_sp tkey, WeakKeyHashTable_sp ht, T_sp default
   return ht->gethash(tkey, defaultValue);
 };
 
-CL_LISPIFY_NAME("core:hashTableSetfGethash");
-CL_DEFMETHOD T_sp WeakKeyHashTable_O::hash_table_setf_gethash(T_sp key, T_sp value) {
+T_sp WeakKeyHashTable_O::hash_table_setf_gethash(T_sp key, T_sp value) {
   this->_HashTable.set(key, value);
   return value;
 }

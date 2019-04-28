@@ -72,7 +72,7 @@ T_sp* DynamicBindingStack::reference_raw_(Symbol_O* var,T_sp* globalValuePtr) {
   if ( var->_BindingIdx.load() == NO_THREAD_LOCAL_BINDINGS ) {
     return globalValuePtr;
   }
-  uintptr_clasp_t index = var->_BindingIdx.load();
+  uintptr_t index = var->_BindingIdx.load();
   // If it has a _Binding value but our table is not big enough, then expand the table.
   unlikely_if (index >= this->_ThreadLocalBindings.size()) {
     this->_ThreadLocalBindings.resize(index+1,_NoThreadLocalBinding<T_O>());
@@ -91,7 +91,7 @@ const T_sp* DynamicBindingStack::reference_raw_(const Symbol_O* var,const T_sp* 
   if ( var->_BindingIdx.load() == NO_THREAD_LOCAL_BINDINGS ) {
     return globalValuePtr;
   }
-  uintptr_clasp_t index = var->_BindingIdx.load();
+  uintptr_t index = var->_BindingIdx.load();
   // If it has a _Binding value but our table is not big enough, then expand the table.
   unlikely_if (index >= this->_ThreadLocalBindings.size()) {
     this->_ThreadLocalBindings.resize(index+1,_NoThreadLocalBinding<T_O>());
@@ -115,13 +115,10 @@ void DynamicBindingStack::push_with_value_coming(Symbol_sp var, T_sp* globalValu
     // thread got to it before us and we release the index
     size_t new_index = this->new_binding_index();
     if (!var->_BindingIdx.compare_exchange_strong(no_binding,new_index)) {
-      printf("%s:%d !\n!\n!\n!\n!\n! WARN WARN WARN !!!! ANOTHER THREAD SET SYMBOL %s _Binding slot to %lu before we could set ours to %lu!!!!\n! TELL CHRIS ABOUT THIS\n!\n!\n!\n", __FILE__, __LINE__, _rep_(var).c_str(), var->_BindingIdx.load(), new_index);
       this->release_binding_index(new_index);
-    } else {
-//      printf("%s:%d TID=%p Set _Binding for symbols %s to %lu\n", __FILE__, __LINE__, (void*)my_thread->_Tid, _rep_(var).c_str(), new_index);
     }
   }
-  uintptr_clasp_t index = var->_BindingIdx.load();
+  uintptr_t index = var->_BindingIdx.load();
   // If it has a _Binding value but our table is not big enough, then expand the table.
   unlikely_if (index >= this->_ThreadLocalBindings.size()) {
     this->_ThreadLocalBindings.resize(index+1,_NoThreadLocalBinding<T_O>());
@@ -149,13 +146,10 @@ void DynamicBindingStack::push_binding(Symbol_sp var, T_sp* globalValuePtr, T_sp
     // thread got to it before us and we release the index
     size_t new_index = this->new_binding_index();
     if (!var->_BindingIdx.compare_exchange_strong(no_binding,new_index)) {
-      printf("%s:%d !\n!\n!\n!\n!\n! WARN WARN WARN !!!! ANOTHER THREAD SET SYMBOL %s _Binding slot to %lu before we could set ours to %lu!!!!\n! TELL CHRIS ABOUT THIS\n!\n!\n!\n", __FILE__, __LINE__, _rep_(var).c_str(), var->_BindingIdx.load(), new_index);
       this->release_binding_index(new_index);
-    } else {
-//      printf("%s:%d TID=%p Set _Binding for symbols %s to %lu\n", __FILE__, __LINE__, (void*)my_thread->_Tid, _rep_(var).c_str(), new_index);
     }
   }
-  uintptr_clasp_t index = var->_BindingIdx.load();
+  uintptr_t index = var->_BindingIdx.load();
   // If it has a _Binding value but our table is not big enough, then expand the table.
   unlikely_if (index >= this->_ThreadLocalBindings.size()) {
     this->_ThreadLocalBindings.resize(index+1,_NoThreadLocalBinding<T_O>());

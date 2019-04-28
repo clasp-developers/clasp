@@ -625,7 +625,7 @@ CL_DEFUN core::T_mv cl__room(core::T_sp x, core::Fixnum_sp marker, core::T_sp tm
   OutputStream << "-------------------- Reachable ClassKinds -------------------\n"; 
   totalSize += dumpResults("Reachable ClassKinds", "class", static_ReachableClassKinds);
   OutputStream << "Skipping objects with less than 96 total_size\n";
-  OutputStream << "Done walk of memory  " << static_cast<uintptr_clasp_t>(static_ReachableClassKinds->size()) << " ClassKinds\n";
+  OutputStream << "Done walk of memory  " << static_cast<uintptr_t>(static_ReachableClassKinds->size()) << " ClassKinds\n";
 #if USE_CXX_DYNAMIC_CAST
   OutputStream << smsg << " live memory total size = " << std::setw(12) << invalidHeaderTotalSize << '\n';
 #else
@@ -1043,6 +1043,14 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #endif
   if (buildReport) ss << (BF("DEBUG_GFDISPATCH = %s\n") % (debug_gfdispatch ? "**DEFINED**" : "undefined") ).str();
 
+  bool debug_cst = false;
+#ifdef CST
+  debug_cst = true;
+  debugging = true;
+  if (setFeatures)  features = core::Cons_O::create(_lisp->internKeyword("CST"),features);
+#endif
+  if (buildReport) ss << (BF("CST = %s\n") % (debug_gfdispatch ? "**DEFINED**" : "undefined") ).str();
+
   bool debug_ihs = false;
 #ifdef DEBUG_IHS
   debug_ihs = true;
@@ -1110,7 +1118,9 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
     
   bool debug_jit_log_symbols = false;
 #ifdef DEBUG_JIT_LOG_SYMBOLS
-  printf("%s:%d  Setting JIT-LOG-SYMBOLS *feature*\n", __FILE__, __LINE__ );
+  if (!core::global_options->_SilentStartup) {
+    printf("%s:%d  Setting JIT-LOG-SYMBOLS *feature*\n", __FILE__, __LINE__ );
+  }
   debug_jit_log_symbols = true;
   debugging = true;
   if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("JIT-LOG-SYMBOLS"),features);

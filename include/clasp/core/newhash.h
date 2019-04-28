@@ -82,13 +82,13 @@ THE SOFTWARE.
   }
 
 #define extract_word(k)                                                                      \
-  (k[0] + ((cl_intptr_t)k[1] << 8) + ((cl_intptr_t)k[2] << 16) + ((cl_intptr_t)k[3] << 24) + \
-   ((cl_intptr_t)k[4] << 32) + ((cl_intptr_t)k[5] << 40) + ((cl_intptr_t)k[6] << 48) +       \
-   ((cl_intptr_t)k[7] << 52))
+  (k[0] + ((uintptr_t)k[1] << 8) + ((uintptr_t)k[2] << 16) + ((uintptr_t)k[3] << 24) + \
+   ((uintptr_t)k[4] << 32) + ((uintptr_t)k[5] << 40) + ((uintptr_t)k[6] << 48) +       \
+   ((uintptr_t)k[7] << 52))
 
-inline cl_intptr_t
+inline uintptr_t
 hash_string(int initval, const unsigned char *k, int length) {
-  register cl_intptr_t a = GOLDEN_RATIO, b = GOLDEN_RATIO, c = initval;
+  register uintptr_t a = GOLDEN_RATIO, b = GOLDEN_RATIO, c = initval;
   register int len;
   for (len = length; len >= 24; len -= 24) {
     a += extract_word(k);
@@ -105,50 +105,50 @@ hash_string(int initval, const unsigned char *k, int length) {
   switch (len) {
   /* all the case statements fall through */
   case 23:
-    c += ((cl_intptr_t)k[22] << 52);
+    c += ((uintptr_t)k[22] << 52);
   case 22:
-    c += ((cl_intptr_t)k[21] << 48);
+    c += ((uintptr_t)k[21] << 48);
   case 21:
-    c += ((cl_intptr_t)k[20] << 40);
+    c += ((uintptr_t)k[20] << 40);
   case 20:
-    c += ((cl_intptr_t)k[19] << 32);
+    c += ((uintptr_t)k[19] << 32);
   case 19:
-    c += ((cl_intptr_t)k[18] << 24);
+    c += ((uintptr_t)k[18] << 24);
   case 18:
-    c += ((cl_intptr_t)k[17] << 16);
+    c += ((uintptr_t)k[17] << 16);
   case 17:
-    c += ((cl_intptr_t)k[16] << 8);
+    c += ((uintptr_t)k[16] << 8);
   /* the first byte of c is reserved for the length */
   case 16:
-    b += ((cl_intptr_t)k[15] << 52);
+    b += ((uintptr_t)k[15] << 52);
   case 15:
-    b += ((cl_intptr_t)k[14] << 48);
+    b += ((uintptr_t)k[14] << 48);
   case 14:
-    b += ((cl_intptr_t)k[13] << 40);
+    b += ((uintptr_t)k[13] << 40);
   case 13:
-    b += ((cl_intptr_t)k[12] << 32);
+    b += ((uintptr_t)k[12] << 32);
   case 12:
-    b += ((cl_intptr_t)k[11] << 24);
+    b += ((uintptr_t)k[11] << 24);
   case 11:
-    b += ((cl_intptr_t)k[10] << 16);
+    b += ((uintptr_t)k[10] << 16);
   case 10:
-    b += ((cl_intptr_t)k[9] << 8);
+    b += ((uintptr_t)k[9] << 8);
   case 9:
     b += k[8];
   case 8:
-    a += ((cl_intptr_t)k[7] << 52);
+    a += ((uintptr_t)k[7] << 52);
   case 7:
-    a += ((cl_intptr_t)k[6] << 48);
+    a += ((uintptr_t)k[6] << 48);
   case 6:
-    a += ((cl_intptr_t)k[5] << 40);
+    a += ((uintptr_t)k[5] << 40);
   case 5:
-    a += ((cl_intptr_t)k[4] << 32);
+    a += ((uintptr_t)k[4] << 32);
   case 4:
-    a += ((cl_intptr_t)k[3] << 24);
+    a += ((uintptr_t)k[3] << 24);
   case 3:
-    a += ((cl_intptr_t)k[2] << 16);
+    a += ((uintptr_t)k[2] << 16);
   case 2:
-    a += ((cl_intptr_t)k[1] << 8);
+    a += ((uintptr_t)k[1] << 8);
   case 1:
     a += k[0];
     /* case 0: nothing left to add */
@@ -195,11 +195,11 @@ hash_string(int initval, const unsigned char *k, int length) {
     c ^= (b >> 15);  \
   }
 #define extract_word(k) \
-  (k[0] + ((cl_intptr_t)k[1] << 8) + ((cl_intptr_t)k[2] << 16) + ((cl_intptr_t)k[3] << 24))
+  (k[0] + ((uintptr_t)k[1] << 8) + ((uintptr_t)k[2] << 16) + ((uintptr_t)k[3] << 24))
 
-inline cl_intptr_t
+inline uintptr_t
 hash_string(int initval, const unsigned char *k, int length) {
-  register cl_intptr_t a = GOLDEN_RATIO, b = GOLDEN_RATIO, c = initval;
+  register uintptr_t a = GOLDEN_RATIO, b = GOLDEN_RATIO, c = initval;
   register int len;
   for (len = length; len >= 12; len -= 12) {
     a += extract_word(k);
@@ -216,26 +216,26 @@ hash_string(int initval, const unsigned char *k, int length) {
   switch (len) {
   /* all the case statements fall through */
   case 11:
-    c += ((cl_intptr_t)k[10] << 24);
+    c += ((uintptr_t)k[10] << 24);
   case 10:
-    c += ((cl_intptr_t)k[9] << 16);
+    c += ((uintptr_t)k[9] << 16);
   case 9:
-    c += ((cl_intptr_t)k[8] << 8);
+    c += ((uintptr_t)k[8] << 8);
   /* the first byte of c is reserved for the length */
   case 8:
-    b += ((cl_intptr_t)k[7] << 24);
+    b += ((uintptr_t)k[7] << 24);
   case 7:
-    b += ((cl_intptr_t)k[6] << 16);
+    b += ((uintptr_t)k[6] << 16);
   case 6:
-    b += ((cl_intptr_t)k[5] << 8);
+    b += ((uintptr_t)k[5] << 8);
   case 5:
     b += k[4];
   case 4:
-    a += ((cl_intptr_t)k[3] << 24);
+    a += ((uintptr_t)k[3] << 24);
   case 3:
-    a += ((cl_intptr_t)k[2] << 16);
+    a += ((uintptr_t)k[2] << 16);
   case 2:
-    a += ((cl_intptr_t)k[1] << 8);
+    a += ((uintptr_t)k[1] << 8);
   case 1:
     a += k[0];
     /* case 0: nothing left to add */
@@ -246,14 +246,14 @@ hash_string(int initval, const unsigned char *k, int length) {
 }
 #endif
 
-inline cl_intptr_t hash_word(cl_intptr_t c, cl_intptr_t w) {
-  cl_intptr_t a = w + GOLDEN_RATIO, b = GOLDEN_RATIO;
+inline uintptr_t hash_word(uintptr_t c, uintptr_t w) {
+  uintptr_t a = w + GOLDEN_RATIO, b = GOLDEN_RATIO;
   hash_mix(a, b, c);
   return c;
 }
 #if 0
-inline cl_intptr_t hash_base_string(const char *s, int len, cl_intptr_t h) {
-  cl_intptr_t a = GOLDEN_RATIO, b = GOLDEN_RATIO, i;
+inline uintptr_t hash_base_string(const char *s, int len, uintptr_t h) {
+  uintptr_t a = GOLDEN_RATIO, b = GOLDEN_RATIO, i;
   for (i = len; i >= 3; i -= 3) {
     a += *s;
     s++;
@@ -277,8 +277,8 @@ inline cl_intptr_t hash_base_string(const char *s, int len, cl_intptr_t h) {
 }
 
 #ifdef CLASP_UNICODE
-static cl_intptr_t hash_full_string(const claspCharacter *s, int len, int h) {
-  cl_intptr_t a = GOLDEN_RATIO, b = GOLDEN_RATIO, i;
+static uintptr_t hash_full_string(const claspCharacter *s, int len, int h) {
+  uintptr_t a = GOLDEN_RATIO, b = GOLDEN_RATIO, i;
   for (i = len; i >= 3; i -= 3) {
     a += (*s);
     s++;

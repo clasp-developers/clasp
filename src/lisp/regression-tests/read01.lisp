@@ -46,12 +46,60 @@
 (test-expect-error read-13
                    (with-input-from-string (strm "wq12351523765127635765232")
                      (read-byte strm))
-                   :type type-error)
+                   :type error)
 
 ;;; used to error with A string of dots was encountered by the reader.
 (test error-mcclim-1
       (list :\.))
 
+(test read-15
+      (eq :invert (LET ((RT (COPY-READTABLE)))
+                    (SETF (READTABLE-CASE RT) :INVERT))))
+
+(test-expect-error read-16
+                   (LET ((RT (COPY-READTABLE)))
+                     (SETF (READTABLE-CASE RT) :pepito))
+                   :type type-error)
+
+(test-expect-error read-17-a
+                   (READTABLE-CASE 23)
+                   :type type-error)
+
+(test-expect-error read-17-b
+                   (READTABLE-CASE nil)
+                   :type type-error)
+
+(test READ-BYTE.ERROR.3.simplyfied
+      (PROGN
+        (LET ((S (OPEN "foo.txt" :DIRECTION :OUTPUT :IF-EXISTS :SUPERSEDE)))
+          (CLOSE S))
+        (handler-case (LET ((S (OPEN "foo.txt" :DIRECTION :INPUT)))
+                        (UNWIND-PROTECT (READ-BYTE S) (CLOSE S)))
+          (end-of-file (e) nil)
+          (error (e) t))))
+
+(test READ-BYTE.ERROR.4.simplyfied
+      (stringp
+       (write-to-string
+        (LET ((S (OPEN "foo.txt" :DIRECTION :OUTPUT :IF-EXISTS :SUPERSEDE)))
+          (CLOSE S)
+          s))))
+
+(test FILE-LENGTH.3.simplyfied
+      (= 17 (first  
+             (let* ((i 9)
+                    (etype  `(unsigned-byte ,i))
+                    (e  (max 0 (- (ash 1 i) 5)))
+                    (os (open "tmp.dat" :direction :output
+                              :if-exists :supersede
+                              :element-type etype)))
+               (loop repeat 17 do (write-byte e os))
+               (close os)
+               (let ((is (open "tmp.dat" :direction :input
+                               :element-type etype)))
+                 (prog1
+                     (list (file-length is) (stream-element-type is) e etype)
+                   (close is)))))))
 (test issue-382-a
       (arrayp (let ((*readtable* (copy-readtable nil)))
                 (read-from-string "#a(T 1 (2))"))))
@@ -106,6 +154,36 @@
                        chars))))
         (every #'(lambda(a)(typep a 'reader-error)) result)))
 
-  
+(test readtable-1
+      (and (get-dispatch-macro-character #\# #\=)
+             (get-dispatch-macro-character #\# #\#)
+             (get-dispatch-macro-character #\# #\I)
+             (get-dispatch-macro-character #\# #\!)
+             (get-dispatch-macro-character #\# #\a)
+             (get-dispatch-macro-character #\# #\A)
+             (get-dispatch-macro-character #\# #\s)
+             (get-dispatch-macro-character #\# #\S)))
+
+(test readtable-2
+      (let ((new (copy-readtable)))
+        (and (get-dispatch-macro-character #\# #\= new)
+             (get-dispatch-macro-character #\# #\# new)
+             (get-dispatch-macro-character #\# #\I new)
+             (get-dispatch-macro-character #\# #\! new)
+             (get-dispatch-macro-character #\# #\a new)
+             (get-dispatch-macro-character #\# #\A new)
+             (get-dispatch-macro-character #\# #\s new)
+             (get-dispatch-macro-character #\# #\S new))))
+
+(test readtable-3
+      (let ((new (copy-readtable nil)))
+        (and (get-dispatch-macro-character #\# #\= new)
+             (get-dispatch-macro-character #\# #\# new)
+             (get-dispatch-macro-character #\# #\I new)
+             (get-dispatch-macro-character #\# #\! new)
+             (get-dispatch-macro-character #\# #\a new)
+             (get-dispatch-macro-character #\# #\A new)
+             (get-dispatch-macro-character #\# #\s new)
+             (get-dispatch-macro-character #\# #\S new))))
 
 

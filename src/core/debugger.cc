@@ -2048,16 +2048,6 @@ void dbg_lowLevelDescribe(T_sp obj) {
   fflush(stdout);
 }
 
-void dbg_mv_lowLevelDescribe(T_mv mv_obj) {
-  gc::Vec0<core::T_sp> values;
-  mv_obj.saveToVec0(values);
-  for (int i(0), iEnd(values.size()); i < iEnd; ++i) {
-    printf("Multiple value#%d\n", i);
-    dbg_lowLevelDescribe(values[i]);
-  }
-  fflush(stdout);
-}
-
 void dbg_describe_tagged_T_Optr(T_O *p) {
   client_describe(p);
   T_sp obj((gctools::Tagged) reinterpret_cast<T_O *>(p));
@@ -2102,7 +2092,7 @@ void dbg_describeActivationFrame(ActivationFrame_sp obj) {
   printf("dbg_describe: %s\n", ss.str().c_str());
 }
 
-void dbg_describeTPtr(uintptr_clasp_t raw) {
+void dbg_describeTPtr(uintptr_t raw) {
   if (raw == 0) {
     printf("dbg_describe: NULL\n");
     return;
@@ -2117,7 +2107,7 @@ void dbg_describeTPtr(uintptr_clasp_t raw) {
   fflush(stdout);
 }
 
-void dbg_printTPtr(uintptr_clasp_t raw, bool print_pretty) {
+void dbg_printTPtr(uintptr_t raw, bool print_pretty) {
   core::T_sp sout = cl::_sym_STARstandard_outputSTAR->symbolValue();
   T_sp obj = gctools::smart_ptr<T_O>((gc::Tagged)raw);
   clasp_write_string((BF("dbg_printTPtr Raw pointer value: %p\n") % (void *)obj.raw_()).str(), sout);
@@ -2167,7 +2157,7 @@ __attribute__((optnone)) std::string dbg_safe_repr(uintptr_t raw) {
   } else if (obj.consp()) {
     ss << "(";
     while (obj.consp()) {
-      ss << dbg_safe_repr((uintptr_t)CONS_CAR(obj).raw_()) << " ";
+      ss << dbg_safe_repr((uintptr_t)CONS_CAR(obj).raw_()) << "@" << (void*)CONS_CAR(obj).raw_() << " ";
       obj = CONS_CDR(obj);
     }
     if (obj.notnilp()) {
@@ -2283,7 +2273,7 @@ extern "C" {
 
 void tprint(void* ptr)
 {
-  core::dbg_printTPtr((uintptr_clasp_t) ptr,false);
+  core::dbg_printTPtr((uintptr_t) ptr,false);
 }
 
 void c_ehs() {

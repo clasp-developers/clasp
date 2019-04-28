@@ -162,7 +162,7 @@ void lisp_decrement_recursive_allocation_counter(core::ThreadLocalState* thread)
 
 namespace gctools {
 #if 0
-AllocationRecord* allocation_backtrace(size_t kind, uintptr_clasp_t stamp, size_t size, AllocationRecord* prev) {
+AllocationRecord* allocation_backtrace(size_t kind, uintptr_t stamp, size_t size, AllocationRecord* prev) {
 // Play with Unix backtrace(3)
 #define BACKTRACE_SIZE 1024
   void *buffer[BACKTRACE_SIZE];
@@ -224,16 +224,16 @@ void clasp_dealloc(char* buffer) {
 
 
 namespace gctools {
-void rawHeaderDescribe(const uintptr_clasp_t *headerP) {
-  uintptr_clasp_t headerTag = (*headerP) & Header_s::tag_mask;
+void rawHeaderDescribe(const uintptr_t *headerP) {
+  uintptr_t headerTag = (*headerP) & Header_s::tag_mask;
   switch (headerTag) {
   case 0:
-      printf("  %p : %" Puintptr_clasp_t "(%p) %" Puintptr_clasp_t "(%p)\n", headerP, *headerP, (void*)*headerP, *(headerP + 1), (void*)*(headerP + 1));
+      printf("  %p : %" PRIuPTR "(%p) %" PRIuPTR "(%p)\n", headerP, *headerP, (void*)*headerP, *(headerP + 1), (void*)*(headerP + 1));
       printf(" Not an object header!\n");
       break;
   case Header_s::stamp_tag: {
-    printf("  %p : %" Puintptr_clasp_t " (%p)\n", headerP, *headerP, (void*)*headerP);
-    printf("  %p : %" Puintptr_clasp_t " (%p)\n", (headerP+1), *(headerP+1), (void*)*(headerP+1));
+    printf("  %p : %" PRIuPTR " (%p)\n", headerP, *headerP, (void*)*headerP);
+    printf("  %p : %" PRIuPTR " (%p)\n", (headerP+1), *(headerP+1), (void*)*(headerP+1));
 #ifdef DEBUG_GUARD
     printf("  %p : %p\n", (headerP+2), (void*)*(headerP+2));
     printf("  %p : %p\n", (headerP+3), (void*)*(headerP+3));
@@ -247,19 +247,19 @@ void rawHeaderDescribe(const uintptr_clasp_t *headerP) {
   } break;
   case Header_s::fwd_tag: {
     Header_s *hdr = (Header_s *)headerP;
-    printf("  0x%p : 0x%" Puintptr_clasp_t " 0x%" Puintptr_clasp_t "\n", headerP, *headerP, *(headerP + 1));
-    printf(" fwd_tag - fwd address: 0x%" Puintptr_clasp_t "\n", (*headerP) & Header_s::fwd_ptr_mask);
-    printf("     fwdSize = %" Puintptr_clasp_t "/0x%" Puintptr_clasp_t "\n", hdr->fwdSize(), hdr->fwdSize());
+    printf("  0x%p : 0x%" PRIuPTR " 0x%" PRIuPTR "\n", headerP, *headerP, *(headerP + 1));
+    printf(" fwd_tag - fwd address: 0x%" PRIuPTR "\n", (*headerP) & Header_s::fwd_ptr_mask);
+    printf("     fwdSize = %" PRIuPTR "/0x%" PRIuPTR "\n", hdr->fwdSize(), hdr->fwdSize());
   } break;
   case Header_s::pad_tag:
-      printf("  0x%p : 0x%" PRu " 0x%" PRu "\n", headerP, *headerP, *(headerP + 1));
+      printf("  0x%p : 0x%" PRIuPTR " 0x%" PRIuPTR "\n", headerP, *headerP, *(headerP + 1));
       if (((*headerP) & Header_s::pad1_tag) == Header_s::pad1_tag) {
         printf("   pad1_tag\n");
-        printf("  0x%p : 0x%" PRu "\n", headerP, *headerP);
+        printf("  0x%p : 0x%" PRIuPTR "\n", headerP, *headerP);
       } else {
         printf("   pad_tag\n");
-        printf("  0x%p : 0x%" PRu "\n", headerP, *headerP);
-        printf("  0x%p : 0x%" PRu "\n", (headerP+1), *(headerP+1));
+        printf("  0x%p : 0x%" PRIuPTR "\n", headerP, *headerP);
+        printf("  0x%p : 0x%" PRIuPTR "\n", (headerP+1), *(headerP+1));
       }
       break;
   }
@@ -279,18 +279,18 @@ void client_describe(void *taggedClient) {
     // Currently this assumes that Conses and General objects share the same header
     // this may not be true in the future
     // conses may be moved into a separate pool and dealt with in a different way
-    const uintptr_clasp_t *headerP;
+    const uintptr_t *headerP;
     if (gctools::tagged_generalp(taggedClient)) {
-      headerP = reinterpret_cast<const uintptr_clasp_t *>(gctools::ClientPtrToBasePtr(gctools::untag_general(taggedClient)));
+      headerP = reinterpret_cast<const uintptr_t *>(gctools::ClientPtrToBasePtr(gctools::untag_general(taggedClient)));
     } else {
-      headerP = reinterpret_cast<const uintptr_clasp_t *>(gctools::ClientPtrToBasePtr(gctools::untag_cons(taggedClient)));
+      headerP = reinterpret_cast<const uintptr_t *>(gctools::ClientPtrToBasePtr(gctools::untag_cons(taggedClient)));
     }
     gctools::rawHeaderDescribe(headerP);
   } else {
     printf("%s:%d Not a tagged pointer - might be immediate value\n", __FILE__, __LINE__);
     printf("    Trying to interpret as client pointer\n");
-    const uintptr_clasp_t* headerP;
-    headerP = reinterpret_cast<const uintptr_clasp_t*>(gctools::ClientPtrToBasePtr(taggedClient));
+    const uintptr_t* headerP;
+    headerP = reinterpret_cast<const uintptr_t*>(gctools::ClientPtrToBasePtr(taggedClient));
     gctools::rawHeaderDescribe(headerP);
   }
 };
@@ -322,7 +322,7 @@ void client_validate_tagged(gctools::Tagged taggedClient) {
 
 
 void header_describe(gctools::Header_s* headerP) {
-  gctools::rawHeaderDescribe((uintptr_clasp_t*)headerP);
+  gctools::rawHeaderDescribe((uintptr_t*)headerP);
 };
 };
 
@@ -383,7 +383,7 @@ namespace gctools {
 std::atomic<Stamp>   global_NextStamp = ATOMIC_VAR_INIT(STAMP_max+1);
 
 void OutOfStamps() {
-    printf("%s:%d Hello future entity!  Congratulations! - you have run clasp long enough to run out of STAMPs - %" PRu " are allowed - change the clasp header layout or add another word for the stamp\n", __FILE__, __LINE__, Header_s::largest_possible_stamp );
+    printf("%s:%d Hello future entity!  Congratulations! - you have run clasp long enough to run out of STAMPs - %" Ptagged_stamp_t " are allowed - change the clasp header layout or add another word for the stamp\n", __FILE__, __LINE__, Header_s::largest_possible_stamp );
     abort();
 }
 
@@ -545,7 +545,7 @@ void initialize_gcroots_in_module(GCRootsInModule* roots, core::T_O** root_addre
   shadow_mem = reinterpret_cast<core::T_O**>(boehm_create_shadow_table(num_roots));
 #endif
   // Get the address of the memory space in the llvm::Module
-  uintptr_clasp_t address = reinterpret_cast<uintptr_clasp_t>(root_address);
+  uintptr_t address = reinterpret_cast<uintptr_t>(root_address);
   core::T_O** module_mem = reinterpret_cast<core::T_O**>(address);
 //  printf("%s:%d:%s address=%p nargs=%" PRu "\n", __FILE__, __LINE__, __FUNCTION__, (void*)address, nargs);
 //  printf("%s:%d:%s constants-table contents: vvvvv\n", __FILE__, __LINE__, __FUNCTION__ );
@@ -600,7 +600,7 @@ CL_DEFUN void gctools__register_roots(core::T_sp taddress, core::List_sp args) {
   shadow_mem = reinterpret_cast<core::T_O**>(boehm_create_shadow_table(nargs));
 #endif
   // Get the address of the memory space in the llvm::Module
-  uintptr_clasp_t address = translate::from_object<uintptr_clasp_t>(taddress)._v;
+  uintptr_t address = translate::from_object<uintptr_t>(taddress)._v;
   core::T_O** module_mem = reinterpret_cast<core::T_O**>(address);
 //  printf("%s:%d:%s address=%p nargs=%" PRu "\n", __FILE__, __LINE__, __FUNCTION__, (void*)address, nargs);
 //  printf("%s:%d:%s constants-table contents: vvvvv\n", __FILE__, __LINE__, __FUNCTION__ );

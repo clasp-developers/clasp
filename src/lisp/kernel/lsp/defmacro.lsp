@@ -118,7 +118,7 @@
                                                  (consp (cadr ,whole))
                                                  (eq (caadr ,whole) 'cl:function)
                                                  (consp (cdadr ,whole))
-                                                 (eq (second (second ,whole)) ',macro-name))
+                                                 (equal (second (second ,whole)) ',macro-name))
                                             (cddr (the cons ,whole))
                                             (cdr (the cons ,whole)))
                                        `(cdr (the cons ,whole)))

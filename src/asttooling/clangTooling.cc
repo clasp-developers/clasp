@@ -731,7 +731,7 @@ void initialize_clangTooling() {
   initialize_matchers();
   // overloaded functions that had trouble resolving
   clang::ASTContext &(clang::ASTUnit::*clang_ASTUnit_getASTContext)() = &clang::ASTUnit::getASTContext;
-  package(AstToolingPkg, {"CLANG"}, {}) // , {"CL", "CORE", "AST-TOOLING"})
+  package(AstToolingPkg, {}, {}) // {"CLANG"}, {}) // , {"CL", "CORE", "AST-TOOLING"})
     [
      class_<clang::tooling::CompilationDatabase>("CompilationDatabase", no_default_constructor)
      .def("getAllFiles", &clang::tooling::CompilationDatabase::getAllFiles)

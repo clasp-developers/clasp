@@ -84,7 +84,6 @@ redirect its virtual functions to the Derivable<T> functions. */
       printf("dynamic_cast to Derivable<Alien>* --> %p\n", dynamic_cast<Derivable<Alien> *>(this));
 
       printf("alien pointer = %p\n", this->pointerToAlienWithin());
-      printf("isgf %d\n", this->_isgf);
       printf("_Class: %s\n", _rep_(this->_Class).c_str());
       for (int i(0); i < this->_Slots.size(); ++i) {
         printf("_Slots[%d]: %s\n", i, _rep_(this->_Slots[i]).c_str());

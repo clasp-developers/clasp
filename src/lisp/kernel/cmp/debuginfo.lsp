@@ -157,11 +157,13 @@
 (defvar *with-debug-info-generator* nil)
 (defmacro with-debug-info-generator ((&key module pathname) &rest body)
   "One macro that uses three other macros"
-  `(let ((*with-debug-info-generator* t))
-     (with-dibuilder (,module)
-       (with-dbg-file-descriptor (,pathname)
-         (with-dbg-compile-unit (,pathname)
-	   ,@body)))))
+  (let ((body-func (gensym)))
+    `(flet ((,body-func () ,@body))
+       (let ((*with-debug-info-generator* t))
+         (with-dibuilder (,module)
+           (with-dbg-file-descriptor (,pathname)
+             (with-dbg-compile-unit (,pathname)
+               (funcall #',body-func))))))))
 
 
 
@@ -198,7 +200,6 @@
                                         :lineno lineno))
                (*dbg-current-scope* *dbg-current-function*))
           (llvm-sys:set-subprogram function *dbg-current-function*)
-          (cmp-log "do-dbg-function *dbg-compile-unit*: %s%N" *dbg-compile-unit*)
           (cmp-log "do-dbg-function *dbg-current-function*: %s%N" *dbg-current-function*)
           (cmp-log "do-dbg-function name: [%s]%N" name)
           (cmp-log "do-dbg-function linkage-name: [%s]%N" linkage-name)

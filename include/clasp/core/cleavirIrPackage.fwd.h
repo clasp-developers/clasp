@@ -1,5 +1,5 @@
 /*
-    File: cleavirEnvPackage.h
+    File: cleavirIrPackage.fwd.h
 */
 
 /*
@@ -24,15 +24,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef _cleavirEnv_H
-#define _cleavirEnv_H
+#ifndef cleavirIrPackage_fwd_H
+#define cleavirIrPackage_fwd_H
 
-#include <clasp/core/object.h>
-#include <clasp/core/cleavirEnvPackage.fwd.h>
+NAMESPACE_PACKAGE_ASSOCIATION(cleavirIr, CleavirIrPkg, "CLEAVIR-IR")
 
-namespace cleavirEnv {
-
-void initialize_cleavirEnvPackage();
-};
-
+  
 #endif

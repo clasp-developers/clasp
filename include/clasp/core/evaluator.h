@@ -40,6 +40,7 @@ extern core::Symbol_sp& _sym_name;
 };
 
 namespace core {
+T_mv cl__eval(T_sp form);
 T_mv cl__apply(T_sp head, VaList_sp args);
 T_mv core__apply0( Function_sp func, T_sp args);
 
@@ -176,6 +177,62 @@ inline LCC_RETURN funcall(T_sp fn, ARG0 arg0, ARG1 arg1, ARG2 arg2) {
      need to be made consistent with lispCallingConvention.h */
   ASSERT(4 == LCC_ARGS_IN_REGISTERS);
   Function_sp func = interpreter_lookup_function_or_error(fn, _Nil<T_O>());
+  ASSERT(gc::IsA<Function_sp>(func));
+  size_t vnargs = sizeof...(ARGS);
+  size_t nargs = vnargs + LCC_FIXED_NUM;
+  return func->entry.load()(func.raw_(), nargs, LCC_FROM_SMART_PTR(arg0), LCC_FROM_SMART_PTR(arg1), LCC_FROM_SMART_PTR(arg2), LCC_FROM_SMART_PTR(arg3), std::forward<ARGS>(args).raw_()...);
+}
+
+inline LCC_RETURN funcall_function(Function_sp func) {
+  /* If the following assertion fails then the funcall functions in this header
+     need to be made consistent with lispCallingConvention.h */
+  ASSERT(4 == LCC_ARGS_IN_REGISTERS);
+  ASSERT(gc::IsA<Function_sp>(func));
+  return func->entry.load()(LCC_PASS_ARGS0_ELLIPSIS(func.raw_()));
+}
+
+template <class ARG0>
+inline LCC_RETURN funcall_function(Function_sp func, ARG0 arg0) {
+  /* If the following assertion fails then the funcall functions in this header
+     need to be made consistent with lispCallingConvention.h */
+  ASSERT(4 == LCC_ARGS_IN_REGISTERS);
+  ASSERT(gc::IsA<Function_sp>(func));
+  return func->entry.load()(LCC_PASS_ARGS1_ELLIPSIS(func.raw_(),arg0.raw_()));
+}
+
+template <class ARG0, class ARG1>
+inline LCC_RETURN funcall_function(Function_sp func, ARG0 arg0, ARG1 arg1) {
+  /* If the following assertion fails then the funcall functions in this header
+     need to be made consistent with lispCallingConvention.h */
+  ASSERT(4 == LCC_ARGS_IN_REGISTERS);
+  ASSERT(gc::IsA<Function_sp>(func));
+  return func->entry.load()(LCC_PASS_ARGS2_ELLIPSIS(func.raw_(),arg0.raw_(), arg1.raw_()));
+}
+
+template <class ARG0, class ARG1, class ARG2>
+inline LCC_RETURN funcall_function(Function_sp func, ARG0 arg0, ARG1 arg1, ARG2 arg2) {
+  /* If the following assertion fails then the funcall functions in this header
+     need to be made consistent with lispCallingConvention.h */
+  ASSERT(4 == LCC_ARGS_IN_REGISTERS);
+  ASSERT(gc::IsA<Function_sp>(func));
+  return func->entry.load()(LCC_PASS_ARGS3_ELLIPSIS(func.raw_(),LCC_FROM_SMART_PTR(arg0), LCC_FROM_SMART_PTR(arg1), LCC_FROM_SMART_PTR(arg2)));
+}
+
+ template <class ARG0, class ARG1, class ARG2, class ARG3>
+   inline LCC_RETURN funcall_function(Function_sp func, ARG0 arg0, ARG1 arg1, ARG2 arg2, ARG3 arg3) {
+  /* If the following assertion fails then the funcall functions in this header
+     need to be made consistent with lispCallingConvention.h */
+  ASSERT(4 == LCC_ARGS_IN_REGISTERS);
+  ASSERT(gc::IsA<Function_sp>(func));
+  return func->entry.load()(LCC_PASS_ARGS4_ELLIPSIS(func.raw_(),LCC_FROM_SMART_PTR(arg0), LCC_FROM_SMART_PTR(arg1), LCC_FROM_SMART_PTR(arg2), LCC_FROM_SMART_PTR(arg3)));
+}
+
+// Do I need a variadic funcall???
+ template <class ARG0, class ARG1, class ARG2, class ARG3, class... ARGS>
+  inline LCC_RETURN funcall_function(Function_sp func, ARG0 arg0, ARG1 arg1, ARG2 arg2, ARG3 arg3, ARGS &&... args) {
+  /* If the following assertion fails then the funcall functions in this header
+     need to be made consistent with lispCallingConvention.h */
+  ASSERT(4 == LCC_ARGS_IN_REGISTERS);
   ASSERT(gc::IsA<Function_sp>(func));
   size_t vnargs = sizeof...(ARGS);
   size_t nargs = vnargs + LCC_FIXED_NUM;

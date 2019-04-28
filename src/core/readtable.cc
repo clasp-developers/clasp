@@ -115,19 +115,20 @@ CL_LAMBDA(readtable);
 CL_DECLARE();
 CL_DOCSTRING("clhs: readtable-case");
 CL_DEFUN T_sp cl__readtable_case(T_sp readtable) {
+  // FIXME: Should be possible to declare readtable ReadTable_sp, but isn't
   if (gc::IsA<ReadTable_sp>(readtable))
     return gc::As<ReadTable_sp>(readtable)->getReadTableCase();
   else if (core::_sym_sicl_readtable_case->fboundp())
     return eval::funcall(core::_sym_sicl_readtable_case, readtable);
-  else SIMPLE_ERROR(BF("BUG: readtable-case called too early"));
+  else TYPE_ERROR(readtable, cl::_sym_ReadTable_O);
 }
 
 CL_LISPIFY_NAME("cl:readtable-case")
 CL_LAMBDA(mode readtable);
 CL_DECLARE();
 CL_DOCSTRING("clhs: (setf readtable-case)");
-CL_DEFUN_SETF void core__readtable_case_set(T_sp mode, ReadTable_sp readTable) {
-  readTable->setf_readtable_case(gc::As<Symbol_sp>(mode));
+CL_DEFUN_SETF Symbol_sp core__readtable_case_set(T_sp mode, ReadTable_sp readTable) {
+  return readTable->setf_readtable_case(gc::As<Symbol_sp>(mode));
 }
 
 CL_LAMBDA(dispChar subChar newFunction &optional (readtable *readtable*));
@@ -405,9 +406,7 @@ CL_DEFUN T_mv core__sharp_dot(T_sp sin, Character_sp ch, T_sp num) {
                    Cons_O::create(object,_Nil<T_O>()),
                    sin);
     }
-//    T_mv result = eval::funcall(core::_sym_STAReval_with_env_hookSTAR->symbolValue(), object, _Nil<T_O>());
-//    return result;
-    return eval::evaluate(object,_Nil<T_O>());
+    return cl__eval(object);
   }
   return _Nil<T_O>();
 }
@@ -850,6 +849,9 @@ ReadTable_sp ReadTable_O::create_standard_readtable() {
     Symbol_sp sym = gc::As<Symbol_sp>(oCadr(cur));
     rt->set_dispatch_macro_character(sharp, ch, sym);
   }
+  //reinstall the things defined in lisp
+  if (core::_sym_sharpmacros_lisp_redefine->fboundp())
+    eval::funcall(core::_sym_sharpmacros_lisp_redefine, rt);
   return rt;
 }
 
@@ -907,7 +909,7 @@ Symbol_sp ReadTable_O::setf_readtable_case(Symbol_sp newCase) {
     this->_Case = newCase;
     return newCase;
   } else {
-    SIMPLE_ERROR(BF("Illegal newValue[%s] for (setf (readtable-case {readtable}) newValue) - it can only be :upcase, :downcase, :preserve or :invert") % _rep_(newCase));
+    TYPE_ERROR(newCase,Cons_O::createList(cl::_sym_member,kw::_sym_upcase,kw::_sym_downcase, kw::_sym_preserve,kw::_sym_invert));
   }
 }
 

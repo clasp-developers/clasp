@@ -2,7 +2,7 @@
 PID=$1
 TIME=${2:-60s}
 RATE=${3:-97}
-FRAMES=${4:-1000}
+FRAMES=${4:-6000}
 ## in case there is no symbols file
 #sudo rm -f /tmp/out-$1.user_stacks && sudo dtrace -p $PID -x ustackframes=${FRAMES} -n  "profile-$RATE /pid == $PID && arg1 / { @[ustack()] = count(); } tick-$TIME { exit(0); }" -o /tmp/out-$1.user_stacks
 #if [ -f /tmp/clasp-symbols-$1 ]; then
@@ -11,6 +11,6 @@ FRAMES=${4:-1000}
 #   cp /tmp/out-$1.user_stacks /tmp/out-symbol-$1.user_stacks
 #fi
 ./do-dtrace $PID $TIME $RATE $FRAMES
-$FLAME_GRAPH_HOME/stackcollapse.pl /tmp/out-$1.stacks >/tmp/out-$1.folded
-$FLAME_GRAPH_HOME/flamegraph.pl /tmp/out-$1.folded >/tmp/out-$1.svg
+./collapse -i /tmp/out-$1.stacks -o /tmp/out-$1.folded -m 400
+$FLAME_GRAPH_HOME/flamegraph.pl -color clasp /tmp/out-$1.folded >/tmp/out-$1.svg
 echo /tmp/out-$1.svg

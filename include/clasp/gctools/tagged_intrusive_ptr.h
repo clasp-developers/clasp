@@ -80,18 +80,18 @@ private:
   typedef tagged_intrusive_ptr this_type;
 
 public:
-  static const uintptr_clasp_t tag_mask = BOOST_BINARY(0011);
-  static const uintptr_clasp_t ptr_tag = BOOST_BINARY(0000);       // xxx00 means ptr
-  static const uintptr_clasp_t special_tag = BOOST_BINARY(0001);   // xxx01 means special val
-  static const uintptr_clasp_t character_tag = BOOST_BINARY(0010); // xxx10 means character
-  static const uintptr_clasp_t fixnum_tag = BOOST_BINARY(0011);    // xxx11 means fixnum
-  static const uintptr_clasp_t ptr_mask = ~tag_mask;
+  static const uintptr_t tag_mask = BOOST_BINARY(0011);
+  static const uintptr_t ptr_tag = BOOST_BINARY(0000);       // xxx00 means ptr
+  static const uintptr_t special_tag = BOOST_BINARY(0001);   // xxx01 means special val
+  static const uintptr_t character_tag = BOOST_BINARY(0010); // xxx10 means character
+  static const uintptr_t fixnum_tag = BOOST_BINARY(0011);    // xxx11 means fixnum
+  static const uintptr_t ptr_mask = ~tag_mask;
 
 public:
-  static const uintptr_clasp_t tagged_NULL = BOOST_BINARY(0000) | special_tag;
-  static const uintptr_clasp_t tagged_unbound = BOOST_BINARY(0100) | special_tag;
-  static const uintptr_clasp_t tagged_nil = BOOST_BINARY(1000) | special_tag;
-  static const uintptr_clasp_t tagged_deleted = BOOST_BINARY(1100) | special_tag;
+  static const uintptr_t tagged_NULL = BOOST_BINARY(0000) | special_tag;
+  static const uintptr_t tagged_unbound = BOOST_BINARY(0100) | special_tag;
+  static const uintptr_t tagged_nil = BOOST_BINARY(1000) | special_tag;
+  static const uintptr_t tagged_deleted = BOOST_BINARY(1100) | special_tag;
 
 public:
   typedef T element_type;
@@ -117,7 +117,7 @@ public:
   explicit tagged_intrusive_ptr(claspChar c) : px(reinterpret_cast<T *>((c << 8) | character_tag)){};
   explicit tagged_intrusive_ptr(int p) : px(reinterpret_cast<T *>((p << 2) | fixnum_tag)){};
 
-  explicit tagged_intrusive_ptr(uintptr_clasp_t p) : px(reinterpret_cast<T *>(p)) {
+  explicit tagged_intrusive_ptr(uintptr_t p) : px(reinterpret_cast<T *>(p)) {
   }
 
 #if !defined(BOOST_NO_MEMBER_TEMPLATES) || defined(BOOST_MSVC6_MEMBER_TEMPLATES)
@@ -142,7 +142,7 @@ public:
       return;
     }
     // Copy the bit pattern in rhs.px into this->px
-    uintptr_clasp_t upx = (uintptr_clasp_t)rhs.pxget();
+    uintptr_t upx = (uintptr_t)rhs.pxget();
     px = (T *)upx;
   }
 
@@ -207,7 +207,7 @@ public:
 
   /*! Return true if px contains a pointer */
   bool pointerp() const {
-    return ((uintptr_clasp_t)(this->px) & tag_mask) == ptr_tag && ((uintptr_clasp_t)(this->px) & ptr_mask);
+    return ((uintptr_t)(this->px) & tag_mask) == ptr_tag && ((uintptr_t)(this->px) & ptr_mask);
   };
 
   bool not_pointerp() const { return !this->pointerp(); };
@@ -215,22 +215,22 @@ public:
   /*! THROW exception if px is not a pointer */
   void assert_pointer() const { BOOST_ASSERT(this->pointerp()); }
 
-  uintptr_clasp_t tag() const { return reinterpret_cast<uintptr_clasp_t>(this->px) & tag_mask; };
+  uintptr_t tag() const { return reinterpret_cast<uintptr_t>(this->px) & tag_mask; };
   bool taggedp() const { return (this->px & tag_mask); };
 
-  bool _NULLp() const { return (uintptr_clasp_t) this->px == tagged_NULL; };
+  bool _NULLp() const { return (uintptr_t) this->px == tagged_NULL; };
 
-  bool unboundp() const { return (uintptr_clasp_t) this->px == tagged_unbound; };
+  bool unboundp() const { return (uintptr_t) this->px == tagged_unbound; };
   bool notunboundp() const { return !this->unboundp(); };
 
-  bool nilp() const { return (uintptr_clasp_t) this->px == tagged_nil; };
+  bool nilp() const { return (uintptr_t) this->px == tagged_nil; };
 
-  bool characterp() const { return ((reinterpret_cast<uintptr_clasp_t>(this->px) & tag_mask) == character_tag); };
-  bool fixnump() const { return ((reinterpret_cast<uintptr_clasp_t>(this->px) & tag_mask) == fixnum_tag); };
+  bool characterp() const { return ((reinterpret_cast<uintptr_t>(this->px) & tag_mask) == character_tag); };
+  bool fixnump() const { return ((reinterpret_cast<uintptr_t>(this->px) & tag_mask) == fixnum_tag); };
   // Handle get_fixnum
 
-  inline claspChar character() const { return ((reinterpret_cast<uintptr_clasp_t>(this->px) >> 8)); };
-  inline Fixnum fixnum() const { return ((reinterpret_cast<uintptr_clasp_t>(this->px) >> 2)); };
+  inline claspChar character() const { return ((reinterpret_cast<uintptr_t>(this->px) >> 8)); };
+  inline Fixnum fixnum() const { return ((reinterpret_cast<uintptr_t>(this->px) >> 2)); };
 
   T *pxget() const {
     return px;

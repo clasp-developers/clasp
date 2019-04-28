@@ -69,9 +69,11 @@
     (primitive         "ltvc_make_t" %ltvc-return% (list %gcroots-in-module*% %i8% %size_t%) :ltvc t)
     (primitive         "ltvc_make_ratio" %ltvc-return% (list %gcroots-in-module*% %i8% %size_t% %t*% %t*%) :ltvc t)
     (primitive         "ltvc_make_complex" %ltvc-return% (list %gcroots-in-module*% %i8% %size_t% %t*% %t*%) :ltvc t)
-    (primitive         "ltvc_make_cons" %ltvc-return% (list %gcroots-in-module*% %i8% %size_t% %t*% %t*%) :ltvc t)
-    (primitive         "ltvc_nconc" %ltvc-return% (list %gcroots-in-module*% %i8% %size_t% %t*% %t*%) :ltvc t)
-    (primitive         "ltvc_make_list" %ltvc-return% (list %gcroots-in-module*% %i8% %size_t% %size_t%) :varargs t :ltvc t)
+    (primitive         "ltvc_make_cons" %ltvc-return% (list %gcroots-in-module*% %i8% %size_t%) :ltvc t)
+    (primitive         "ltvc_rplaca" %ltvc-return% (list %gcroots-in-module*% %t*% %t*%) :ltvc t)
+    (primitive         "ltvc_rplacd" %ltvc-return% (list %gcroots-in-module*% %t*% %t*%) :ltvc t)
+    (primitive         "ltvc_make_list" %ltvc-return% (list %gcroots-in-module*% %i8% %size_t% %size_t%) :ltvc t)
+    (primitive         "ltvc_fill_list" %ltvc-return% (list %gcroots-in-module*% %t*% %size_t%) :varargs t :ltvc t)
     (primitive         "ltvc_make_array" %ltvc-return% (list %gcroots-in-module*% %i8% %size_t% %t*% %t*%) :ltvc t)
     (primitive         "ltvc_setf_row_major_aref" %ltvc-return% (list %gcroots-in-module*% %t*% %size_t% %t*%) :ltvc t)
     (primitive         "ltvc_make_hash_table" %ltvc-return% (list %gcroots-in-module*% %i8% %size_t% %t*%) :ltvc t)
@@ -93,7 +95,6 @@
     (primitive-unwinds "ltvc_set_mlf_creator_funcall" %ltvc-return% (list %gcroots-in-module*% %i8% %size_t% %size_t% #|fn-prototype*%|# %i8*%) :ltvc t)
     (primitive-unwinds "ltvc_mlf_init_funcall" %ltvc-return% (list %gcroots-in-module*% %size_t% #|%fn-prototype*%|# %i8*%) :ltvc t)
     (primitive-unwinds "ltvc_set_ltv_funcall" %ltvc-return% (list %gcroots-in-module*% %i8% %size_t% %size_t% #|%fn-prototype*%|# %i8*%) :ltvc t)
-    (primitive-unwinds "ltvc_set_ltv_funcall_cleavir" %ltvc-return% (list %gcroots-in-module*% %i8% %size_t% %size_t% #|%fn-prototype*%|# %i8*%) :ltvc t)
     (primitive-unwinds "ltvc_toplevel_funcall" %ltvc-return% (list %gcroots-in-module*% %size_t% #|%fn-prototype*%|# %i8*%) :ltvc t)))
 
 (defmacro primitives-in-thread-macro ()
@@ -103,8 +104,6 @@
      ,@*startup-primitives-as-list*
      ,@'((primitive         "ltvc_lookup_literal" %t*% (list %gcroots-in-module*% %size_t%))
          (primitive         "ltvc_lookup_transient" %t*% (list %gcroots-in-module*% %i8% %size_t%))
-
-         (primitive         "newTmv" %void% (list %tmv*%))
          (primitive         "isTrue" %i32% (list %t*%))
          (primitive         "isBound" %i32% (list %t*%))
          (primitive         "valueOrNilIfZero" %t*% (list %return_type%))
@@ -191,9 +190,9 @@
          (primitive-unwinds "throwIllegalSwitchValue" %void% (list %size_t% %size_t%) :does-not-return t)
     
          (primitive         "clasp_terminate" %void% nil)
-         (primitive         "__gxx_personality_v0" %i32% nil :varargs t) ;; varargs
+         (primitive         "__gxx_personality_v0" %i32% nil :varargs t)
          (primitive         "__cxa_begin_catch" %i8*% (list %i8*%) )
-         (primitive-unwinds "__cxa_end_catch" %void% nil) ;; This DOES UNWIND!!!!!   use primitive-unwind once you figure out how to make it work
+         (primitive-unwinds "__cxa_end_catch" %void% nil)
          (primitive-unwinds "__cxa_rethrow" %void% nil)
          (primitive         "llvm.eh.typeid.for" %i32% (list %i8*%))
     
@@ -211,8 +210,8 @@
     
          (primitive         "saveToMultipleValue0" %void% (list %tmv*%))
          (primitive         "restoreFromMultipleValue0" %return_type% nil)
-;;;    (primitive         "saveValues" %t*% (list %tmv*%))
-;;;    (primitive         "loadValues" %void% (list %tmv*% %t*%))
+         (primitive         "cc_save_values" %void% (list %size_t% %t*% %t**%))
+         (primitive         "cc_load_values" %return_type% (list %size_t% %t**%))
     
          (primitive         "pushDynamicBinding" %void% (list %t*%))
          (primitive         "popDynamicBinding" %void% (list %t*%))
@@ -224,8 +223,8 @@
          (primitive         "cc_fastgf_nil" %t*% nil)
          (primitive-unwinds "cc_dispatch_invalid" %return_type% (list %t*% %t*%)) ;; gf gf-args
          (primitive-unwinds "cc_dispatch_miss" %return_type% (list %t*% %t*%)) ;; gf gf-args
-;;;    (primitive-unwinds "cc_dispatch_slot_reader_index_debug"   %return_type% (list %t*% %size_t% %t*% %t*%)) ; effective-method gf gf-args
-;;;    (primitive-unwinds "cc_dispatch_slot_writer_index_debug"   %return_type% (list %t*% %size_t% %t*% %t*%)) ; effective-method gf gf-args
+;;;    (primitive-unwinds "cc_dispatch_slot_reader_index_debug"   %t*% (list %t*% %size_t% %t*% %t*%)) ; effective-method gf gf-args
+;;;    (primitive-unwinds "cc_dispatch_slot_writer_index_debug"   %t*% (list %t*% %size_t% %t*% %t*%)) ; effective-method gf gf-args
          (primitive         "cc_dispatch_slot_reader_index"  %t*% (list %size_t% %t*%)) ; index instance
          (primitive         "cc_dispatch_slot_reader_cons"   %t*% (list %t*%)) ; cons
          (primitive         "cc_dispatch_slot_writer_index"  %t*% (list %t*% %size_t% %t*%)) ; value index instance
@@ -424,7 +423,6 @@
 
          ;; POINTER / VOID *
 
-         ;;(format *debug-io* "~%*** +VOID+ = ~S, +VOID*+ = ~S~%" %void% %void*%)
          ;; Note: using %void*% causes an error - so we use %i64*% instead here!
          (primitive-unwinds "from_object_pointer" %i64*% (list %t*%))
          (primitive-unwinds "to_object_pointer" %t*% (list %i64*%))

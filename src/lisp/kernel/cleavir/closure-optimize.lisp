@@ -33,34 +33,29 @@ PROGN."
   (when-let* ((definers (cleavir-ir:defining-instructions input))
               (only-one-definer (= (length definers) 1))
               (definer (first definers))
-              (is-enclose (cleavir-ir:enclose-instruction-p definer)))
+              (is-enclose (typep definer 'cleavir-ir:enclose-instruction)))
     (setf (cleavir-ir:dynamic-extent-p definer) t)))
 
 ;;; This function finds calls to certain functions that we generate for special operators,
 ;;; and marks their thunk arguments as stack allocatable (dynamic extent).
 ;;; TODO/FIXME: A more principled way to do this, in Cleavir.
 ;;; Current functions: cleavir-primop:call-with-variable-bound,
-;;;                    core:progv-function,
-;;;                    core:catch-function, core:throw-function,
-;;;                    core:funwind-protect, core:multiple-value-prog1-function
+;;;                    core:progv-function, core:funwind-protect
+;;;                    core:catch-function, core:throw-function
 (defun optimize-stack-enclose (top-instruction)
   (cleavir-ir:map-instructions-arbitrary-order
    (lambda (i)
-     (when-let* ((is-funcall (cleavir-ir:funcall-instruction-p i))
+     (when-let* ((is-funcall (typep i 'cleavir-ir:funcall-instruction))
                  (input1 (first (cleavir-ir:inputs i)))
                  (fdefs (cleavir-ir:defining-instructions input1))
                  (only-one-fdef (= (length fdefs) 1))
                  (fdef (first fdefs))
-                 (is-fdef (cleavir-ir:fdefinition-instruction-p fdef))
+                 (is-fdef (typep fdef 'cleavir-ir:fdefinition-instruction))
                  (fdef-input (first (cleavir-ir:inputs fdef)))
                  (fdef-input-definers (cleavir-ir:defining-instructions fdef-input))
                  (only-one-fdef-input-definer (= (length fdef-input-definers) 1))
                  (precalc (first fdef-input-definers))
-                 (is-precalc (progn
-                               (unless (and (typep precalc 'clasp-cleavir-hir:precalc-value-instruction)
-                                            (clasp-cleavir-hir:precalc-value-instruction-p precalc))
-                                 (error "The typep test for ~s failed to match the predicate" precalc))
-                               (clasp-cleavir-hir:precalc-value-instruction-p precalc)))
+                 (is-precalc (typep precalc 'clasp-cleavir-hir:precalc-value-instruction))
                  (callee (let ((original-object (clasp-cleavir-hir:precalc-value-instruction-original-object precalc)))
                            (if (consp original-object)
                                (second original-object)
@@ -72,8 +67,7 @@ PROGN."
                   ((core:catch-function
                     core:throw-function)
                    (maybe-mark-enclose (third (cleavir-ir:inputs i))))
-                  ((core:funwind-protect
-                    core:multiple-value-prog1-function)
+                  ((core:funwind-protect)
                    (maybe-mark-enclose (second (cleavir-ir:inputs i)))
                    (maybe-mark-enclose (third (cleavir-ir:inputs i)))))))
    top-instruction))

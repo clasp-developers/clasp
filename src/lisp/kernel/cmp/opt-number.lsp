@@ -7,7 +7,7 @@
       form
       (let ((arg0 (first args)) (args (rest args)))
         (if (null args)
-            `(the t ,arg0) ; preserve nontoplevelness
+            `(the real ,arg0) ; preserve nontoplevelness
             (let ((s (gensym)))
               `(let ((,s ,arg0)
                      (minrest (min ,@args)))
@@ -17,7 +17,7 @@
       form
       (let ((arg0 (first args)) (args (rest args)))
         (if (null args)
-            `(the t ,arg0) ; preserve nontoplevelness
+            `(the real ,arg0) ; preserve nontoplevelness
             (let ((s (gensym)))
               `(let ((,s ,arg0)
                      (maxrest (max ,@args)))
@@ -37,22 +37,22 @@
       (error "The - operator can not be part of a form that is a dotted list.")))
 
 (define-compiler-macro < (&whole form &rest numbers)
-  (core:expand-compare form 'core:two-arg-< numbers))
+  (core:expand-compare form 'core:two-arg-< numbers 'real))
 
 (define-compiler-macro <= (&whole form &rest numbers)
-  (core:expand-compare form 'core:two-arg-<= numbers))
+  (core:expand-compare form 'core:two-arg-<= numbers 'real))
 
 (define-compiler-macro > (&whole form &rest numbers)
-  (core:expand-compare form 'core:two-arg-> numbers))
+  (core:expand-compare form 'core:two-arg-> numbers 'real))
 
 (define-compiler-macro >= (&whole form &rest numbers)
-  (core:expand-compare form 'core:two-arg->= numbers))
+  (core:expand-compare form 'core:two-arg->= numbers 'real))
 
 (define-compiler-macro = (&whole form &rest numbers)
-  (core:expand-compare form 'core:two-arg-= numbers))
+  (core:expand-compare form 'core:two-arg-= numbers 'number))
 
 (define-compiler-macro /= (&whole form &rest numbers)
-  (core:expand-uncompare form 'core:two-arg-= numbers))
+  (core:expand-uncompare form 'core:two-arg-= numbers 'number))
 
 (define-compiler-macro 1+ (x)
   `(core:two-arg-+ ,x 1))

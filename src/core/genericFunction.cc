@@ -50,22 +50,6 @@ SYMBOL_EXPORT_SC_(ClPkg, compute_applicable_methods);
 SYMBOL_SC_(ClosPkg, compute_applicable_methods_using_classes);
 SYMBOL_SC_(ClosPkg, compute_effective_method_function);
 
-LCC_RETURN invalidated_dispatch(gctools::Tagged tgf, gctools::Tagged tvargs) {
-  FuncallableInstance_sp gf(tgf);
-  VaList_sp vargs(tvargs);
-  // This goes straight to clos::dispatch-miss
-  return eval::funcall(clos::_sym_invalidated_dispatch_function,gf,vargs);
-}
-
-/*! Reproduces functionality in FEnot_funcallable_vararg */
-LCC_RETURN not_funcallable_dispatch(gctools::Tagged tgf, gctools::Tagged tvargs) {
-  FuncallableInstance_sp gf(tgf);
-  VaList_sp vargs(tvargs);
-  SIMPLE_ERROR(BF("Not a funcallable instance %s") % _rep_(gf));
-}
-
-
-
 CL_DEFUN void core__print_object_address(T_sp obj)
 {
   printf("%s:%d print_object %s @%p\n", __FILE__, __LINE__, _rep_(obj).c_str(), (void*)obj.raw_());

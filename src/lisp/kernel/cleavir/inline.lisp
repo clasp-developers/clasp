@@ -39,7 +39,7 @@
   `(define-compiler-macro ,name (,@lambda-list)
      ;; I just picked this since it's the first variable in auto-compile.lisp.
      (unless (eq cmp:*cleavir-compile-hook* 'cclasp-compile*)
-       (return-from ,name ,(second lambda-list)))
+       (return-from ,(core:function-block-name name) ,(second lambda-list)))
      ,@body))
 
 (progn
@@ -127,8 +127,17 @@
     (the t object)))
 
 ;;; Type predicates.
-#+(or) ; recursion problem: e.g. (streamp x) => (typeq x stream) => (typep x 'stream) => (streamp x)
 (macrolet ((defpred (name type)
+             ;; We have to be careful about recursion - if one of these ended up
+             ;; as a TYPEP call there could be disastrous recursion.
+             ;; Here's a sanity check to make sure the type is something simple
+             ;; enough to be done as a header check.
+             ;; Since some aren't actually THAT simple but still won't be typep
+             ;; it's not actually used, but, you know, it's there.
+             #+(or)
+             (unless (or (member type '(fixnum cons character single-float))
+                         (gethash type core:+type-header-value-map+))
+               (error "BUG: See comment in inline.lisp DEFPRED"))
              `(progn
                 (debug-inline ,(symbol-name name))
                 (declaim (inline ,name))
@@ -138,44 +147,48 @@
              `(progn
                 ,@(loop for (fun name) on rest by #'cddr
                         collect `(defpred ,fun ,name)))))
+  ;; Ideally, we want to cover standard type predicates, plus everything with a
+  ;; core::simple-type-predicate,= as those will show up from TYPEP.
+
+  ;; numbers are a bit weird cos of fixnums, but nonetheless
+  ;; shouldn't revert to typep.
+  ;; string is (or simple-base-string simple-character-string) so should be ok.
+  ;; list is (or cons null) so should be ok.
+  ;; atom is (not cons)
   (defpreds consp cons
-    hash-table-p hash-table
-    simple-string-p simple-string
+    core:fixnump fixnum
+    characterp character
+    core:single-float-p single-float
+
+    arrayp array
     atom atom
-    simple-vector-p simple-vector
+    complexp complex
+    core:double-float-p double-float
+    floatp float
+    functionp function
+    hash-table-p hash-table
     integerp integer
+    listp list
+    ;; null null ; defined with EQ below
     numberp number
     random-state-p random-state
-    compiled-function-p compiled-function
-    standard-char-p standard-char
-    simple-bit-vector-p simple-bit-vector
+    rationalp rational
     realp real
-    stringp string
-    functionp function
-    streamp stream
-    floatp float
-    symbolp symbol
-    pathnamep pathname
-    arrayp array
-    vectorp vector
-    characterp character
     packagep package
-    listp list
-    complexp complex
-    rationalp rational))
-
-(define-cleavir-compiler-macro typep
-    (&whole whole object type &optional env &environment macro-env)
-  (if (and (null env) (constantp type macro-env))
-      `(if (cleavir-primop:typeq ,object ,(ext:constant-form-value type macro-env))
-           t nil)
-      whole))
-
-(progn
-  (debug-inline "consp")
-  (declaim (inline cl:consp))
-  (defun cl:consp (x)
-    (if (cleavir-primop:typeq x cons) t nil)))
+    pathnamep pathname
+    simple-array-p simple-array
+    simple-bit-vector-p simple-bit-vector
+    simple-string-p simple-string
+    simple-vector-p simple-vector
+    stringp string
+    symbolp symbol
+    vectorp vector)
+  ;; standard predicates we can't define like this
+  #+(or)
+  (defpreds
+    ;; standard-char-p standard-char ; not actually a type pred - only accepts chars
+      ;; streamp stream ; no good as it's an extensible class... FIXME do it anyway?
+      compiled-function-p compiled-function))
 
 (progn
   (debug-inline "null")
@@ -192,24 +205,6 @@
     (cond ((cleavir-primop:typeq list cons) nil) ; common case
           ((null list) t)
           (t (error 'type-error :datum list :expected-type 'list)))))
-
-(progn
-  (debug-inline "fixnump")
-  (declaim (inline core:fixnump))
-  (defun core:fixnump (x)
-    (if (cleavir-primop:typeq x cl:fixnum) t nil)))
-
-#+(or)
-(progn
-  (declaim (inline cl:characterp))
-  (defun cl:characterp (x)
-    (if (cleavir-primop:typeq x cl:character) t nil)))
-
-#+(or)
-(progn
-  (declaim (inline core:single-float-p))
-  (defun core:single-float-p (x)
-    (if (cleavir-primop:typeq x cl:single-float) t nil)))
 
 (progn
   (debug-inline "car")
@@ -401,17 +396,17 @@
             `(primop:inlined-two-arg-/ 1 ,dividend))
         (error "The / operator can not be part of a form that is a dotted list.")))
   (define-cleavir-compiler-macro < (&whole form &rest numbers)
-    (core:expand-compare form 'primop:inlined-two-arg-< numbers))
+    (core:expand-compare form 'primop:inlined-two-arg-< numbers 'real))
   (define-cleavir-compiler-macro <= (&whole form &rest numbers)
-    (core:expand-compare form 'primop:inlined-two-arg-<= numbers))
+    (core:expand-compare form 'primop:inlined-two-arg-<= numbers 'real))
   (define-cleavir-compiler-macro = (&whole form &rest numbers)
-    (core:expand-compare form 'primop:inlined-two-arg-= numbers))
+    (core:expand-compare form 'primop:inlined-two-arg-= numbers 'number))
   (define-cleavir-compiler-macro /= (&whole form &rest numbers)
-    (core:expand-uncompare form 'primop:inlined-two-arg-= numbers))
+    (core:expand-uncompare form 'primop:inlined-two-arg-= numbers 'number))
   (define-cleavir-compiler-macro > (&whole form &rest numbers)
-    (core:expand-compare form 'primop:inlined-two-arg-> numbers))
+    (core:expand-compare form 'primop:inlined-two-arg-> numbers 'real))
   (define-cleavir-compiler-macro >= (&whole form &rest numbers)
-    (core:expand-compare form 'primop:inlined-two-arg->= numbers))
+    (core:expand-compare form 'primop:inlined-two-arg->= numbers 'real))
   (define-cleavir-compiler-macro 1+ (&whole form x)
     `(primop:inlined-two-arg-+ ,x 1))
   (define-cleavir-compiler-macro 1- (&whole form x)
@@ -420,14 +415,24 @@
 (progn
   (debug-inline "plusp")
   (declaim (inline plusp))
-  (defun plusp (number)
-    (> number 0)))
+  (defun plusp (real) (> real 0)))
 
 (progn
   (debug-inline "minusp")
   (declaim (inline minusp))
-  (defun minusp (number)
-    (< number 0)))
+  (defun minusp (number) (< number 0)))
+
+(progn
+  (debug-inline "zerop")
+  (declaim (inline zerop))
+  (defun zerop (number)
+    (etypecase number
+      (fixnum (if (cleavir-primop:fixnum-equal number 0) t nil))
+      (single-float (if (cleavir-primop:float-equal single-float number 0.0f0) t nil))
+      (double-float (if (cleavir-primop:float-equal double-float number 0.0d0) t nil))
+      ;; a zero ratio or bignum would be normalized into a fixnum.
+      ;; a zero complex would be normalized into a fixnum or a float.
+      (number nil))))
 
 ;;; ------------------------------------------------------------
 ;;;
@@ -563,6 +568,13 @@
     (array
      (and (<= 0 index) (< index (core::%array-total-size array))))))
 
+;;; Array indices are all fixnums. If we're sure sizes are valid, we don't want
+;;; to use general arithmetic. We can just use this to do unsafe modular arithmetic.
+;;; (Used in this file only)
+(defmacro add-indices (a b)
+  `(cleavir-primop:let-uninitialized (z)
+     (if (cleavir-primop:fixnum-add ,a ,b z) z z)))
+
 ;; FIXME: This could be a function returning two values. But that's
 ;; quite inefficient at the moment.
 (defmacro with-array-data ((arrayname offsetname array) &body body)
@@ -575,21 +587,10 @@
        (array
         (loop
           (psetf ,arrayname (core::%displacement ,arrayname)
-                 ,offsetname (+ ,offsetname (core::%displaced-index-offset ,arrayname)))
+                 ,offsetname (add-indices ,offsetname
+                                          (core::%displaced-index-offset ,arrayname)))
           (when (typep ,arrayname '(simple-array * (*))) (return)))))
      ,@body))
-
-
-#|
-(defun %non-empty-array-p (array)
-  (> (array-total-size array) 0))
-
-(deftype non-empty-array ()
-  `(and array (satisfies %non-empty-array-p)))
-
-(typep (make-array 0) 'NON-EMPTY-ARRAY)
-(typep (make-array 1) 'NON-EMPTY-ARRAY)
-|#
 
 (declaim (inline vector-read))
 (defun vector-read (vector index)
@@ -601,7 +602,7 @@
     (unless (vector-in-bounds-p vector index)
       ;; From elt: Should signal an error of type type-error if index is not a valid sequence index for sequence.
       (etypecase vector
-        ((simple-vector *)
+        ((simple-vector *) ; FIXME: why is this not simple-array * (*)
          (let ((max (core::vector-length vector)))
            (if (zerop max)
              (error 'simple-type-error :FORMAT-CONTROL "Array ~a not valid for index ~a~%" :format-arguments (list vector index) :datum index :expected-type '(integer 0 (0)))
@@ -616,7 +617,7 @@
   (with-array-data (underlying-array offset vector)
     ;; Okay, now array is a vector/simple, and index is valid.
     ;; This function takes care of element type discrimination.
-    (%unsafe-vector-ref underlying-array (+ index offset))))
+    (%unsafe-vector-ref underlying-array (add-indices index offset))))
 
 (declaim (inline cl:row-major-aref))
 (defun cl:row-major-aref (array index)
@@ -640,7 +641,7 @@
                (error 'type-error :datum index :expected-type `(integer 0 ,(1- max))))))))
     ;; Okay, now array is a vector/simple, and index is valid.
     ;; This function takes care of element type discrimination.
-    (%unsafe-vector-ref underlying-array (+ index offset))))
+    (%unsafe-vector-ref underlying-array (add-indices index offset))))
 
 (declaim (inline vector-set))
 (defun vector-set (vector index value)
@@ -650,8 +651,7 @@
           (error 'simple-type-error :FORMAT-CONTROL "Array ~a not valid for index ~a~%" :format-arguments (list vector index) :datum index :expected-type '(integer 0 (0)))
           (error 'type-error :datum index :expected-type `(integer 0 ,max)))))
   (with-array-data (underlying-array offset vector)
-    (%unsafe-vector-set underlying-array (+ index offset) value))
-  )
+    (%unsafe-vector-set underlying-array (add-indices index offset) value)))
 
 (declaim (inline core:row-major-aset))
 (defun core:row-major-aset (array index value)
@@ -668,7 +668,7 @@
            (if (zerop max)
                (error 'simple-type-error :FORMAT-CONTROL "Array ~a not valid for index ~a~%" :format-arguments (list array index) :datum index :expected-type '(integer 0 (0)))
                (error 'type-error :datum index :expected-type `(integer 0 ,max)))))))
-    (%unsafe-vector-set underlying-array (+ index offset) value)))
+    (%unsafe-vector-set underlying-array (add-indices index offset) value)))
 
 
 (declaim (inline schar (setf schar) char (setf char)))
@@ -753,7 +753,16 @@
         `(let* ((,sarray ,array)
                 (rmi (array-row-major-index ,sarray ,@subscripts)))
            (with-array-data (data offset ,sarray)
-             (%unsafe-vector-ref data (+ offset rmi)))))))
+             (%unsafe-vector-ref data (add-indices offset rmi)))))))
+
+(define-cleavir-compiler-macro (setf aref) (&whole form new array &rest subscripts)
+  (if (> (length subscripts) 1)
+      form
+      (let ((sarray (gensym "ARRAY")))
+        `(let* ((,sarray ,array)
+                (rmi (array-row-major-index ,sarray ,@subscripts)))
+           (with-array-data (data offset ,sarray)
+             (%unsafe-vector-set data (add-indices offset rmi) ,new))))))
 
 ;;; ------------------------------------------------------------
 ;;;
@@ -889,11 +898,15 @@
   ;; If we have (funcall #'foo ...), we might be able to apply the FOO compiler macro.
   (when (and (consp function) (eq (first function) 'function)
              (consp (cdr function)) (null (cddr function)))
-    (let ((cmf (compiler-macro-function (second function) env)))
-      (when cmf
-        (return-from funcall
-          ;; incidentally, this funcall should be okay given that it's compile-time.
-          (funcall cmf form env)))))
+    (let ((name (second function)))
+      (when (core:valid-function-name-p name)
+        (let ((cmf (compiler-macro-function name env))
+              (notinline (eq 'notinline
+                             (cleavir-env:inline
+                              (cleavir-env:function-info env name)))))
+          (when (and cmf (not notinline))
+            (return-from funcall
+              (funcall *macroexpand-hook* cmf form env)))))))
   ;; If not, we can stil eliminate the call to FUNCALL as follows.
   (let ((fsym (gensym "FUNCTION")))
     `(let ((,fsym ,function))
@@ -918,3 +931,26 @@
                      collecting `(,var ,sym)))
          ,@body))))
 
+;;; I'm not sure I understand the order of evaluation issues entirely,
+;;; so I'm antsy about using the m-v-setq primop directly... and this
+;;; equivalence is guaranteed.
+;;; SETF VALUES will expand into a multiple-value-bind, which will use
+;;; the m-v-setq primop as above, so it works out about the same.
+;;; Not a cleavir macro because all we need is setf. FIXME: Move earlier?
+(define-compiler-macro multiple-value-setq ((&rest vars) form)
+  ;; SETF VALUES will return no values if it sets none, but m-v-setq
+  ;; always returns the primary value.
+  (if (null vars)
+      `(values ,form)
+      `(values (setf (values ,@vars) ,form))))
+
+;;; FIXME: Move to earlier, if possible
+(define-compiler-macro nth-value (&whole form n expr &environment env)
+  (let ((n (and (constantp n env) (ext:constant-form-value n env))))
+    (if (or (null n) (> n 100)) ; completely arbitrary limit
+        form
+        (let ((dummies (loop repeat n collect (gensym "DUMMY")))
+              (keeper (gensym "SMARTIE")))
+          `(multiple-value-bind (,@dummies ,keeper) ,expr
+             (declare (ignore ,@dummies))
+             ,keeper)))))

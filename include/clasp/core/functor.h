@@ -311,7 +311,7 @@ namespace core {
           return _Nil<T_O>();
       };
     }
-    T_sp interpretedSourceCode();
+    CL_DEFMETHOD T_sp interpretedSourceCode();
     CL_DEFMETHOD T_sp closedEnvironment() const {
       ASSERT(this->closureType!=cclaspClosure); // Never call on a cclaspClosure
       return (*this)[ENVIRONMENT_SLOT];
@@ -326,7 +326,7 @@ namespace core {
     bool interpretedP() const {
       return (this->closureType==interpretedClosure);
     }
-      
+    bool openP();
     inline T_sp &operator[](size_t idx) {
       BOUNDS_ASSERT(idx<this->_Slots._Length);
       return this->_Slots[idx];

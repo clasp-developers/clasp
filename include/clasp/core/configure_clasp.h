@@ -31,7 +31,7 @@ THE SOFTWARE.
 //  SYSTEM INCLUDES
 // ----------------------------------------------------------------------------
 
-#include <cstdint>
+#include <cinttypes>
 #include <climits>
 
 // ----------------------------------------------------------------------------
@@ -54,11 +54,8 @@ THE SOFTWARE.
 #define POLL_TICKS_PER_GC   1024000
 
 // ----------------------------------------------------------------------------
-//  ADRESS-MDOEL DEPENDENT CLASP FUNDAMENTAL DEFINITIONS
+//  ADDRESS-MODEL DEPENDENT CLASP FUNDAMENTAL DEFINITIONS
 // ----------------------------------------------------------------------------
-
-#undef CLASP_INTPTR_IS_INT32
-#undef CLASP_INTPTR_IS_INT64
 
 #if defined( _ADDRESS_MODEL_64 )
 
@@ -67,17 +64,11 @@ THE SOFTWARE.
 
 #define BIT_ARRAY_BYTE_SIZE 32
 
-typedef uint64_t   uintptr_clasp_t;
-#define CLASP_UINTPTR_IS_UINT64 1  // == true
-typedef int64_t    intptr_clasp_t;
-#define CLASP_INTPTR_IS_INT64 1  // == true
-
 typedef int64_t    Fixnum; // Signed Fixnum immediate value
 #define CLASP_FIXNUM_IS_INT64 1  // == true
 
 #if defined( _TARGET_OS_DARWIN )
-#define Puintptr_clasp_t "llu"
-#define Ptagged_stamp_t "llu"
+#define Ptagged_stamp_t PRIuPTR
 #define PFixnum "lld"
 #define Plu "lu"
 #define PRu "llu"
@@ -86,12 +77,10 @@ typedef int64_t    Fixnum; // Signed Fixnum immediate value
 #define PRFoctal "llo"
 #define PRFhex "llX"
 #define Puint "u"
-#define PXuintptr_t "llX"
 #define PRsize_t "lu"
 #endif
 #if defined( _TARGET_OS_LINUX ) || defined( _TARGET_OS_FREEBSD)
-#define Puintptr_clasp_t "lu"
-#define Ptagged_stamp_t "lu"
+#define Ptagged_stamp_t PRIuPTR
 #define PFixnum "ld"
 #define Plu "lu"
 #define PRu "lu"
@@ -99,7 +88,6 @@ typedef int64_t    Fixnum; // Signed Fixnum immediate value
 #define PRF "ld"
 #define PRFoctal "lo"
 #define Puint "u"
-#define PXuintptr_t "llX"
 #define PRFhex "lX"
 #define PRsize_t "lu"
 #endif
@@ -112,11 +100,6 @@ typedef int64_t    Fixnum; // Signed Fixnum immediate value
 #error "32 bit address model not supported so far."
 
 #define INTPTR_BITS 32
-
-typedef uint32_t   uintptr_clasp_t;
-#define CLASP_UINTPTR_IS_UINT32 1  // == true
-typedef int32_t    intptr_clasp_t;
-#define CLASP_INTPTR_IS_INT32 1  // == true
 
 typedef int32_t    Fixnum; // Signed Fixnum immediate value
 #define CLASP_FIXNUM_IS_INT32 1  // == true
@@ -131,8 +114,6 @@ typedef int32_t    Fixnum; // Signed Fixnum immediate value
 #endif // _ADDRESS_MODEL_32
 
 #endif // _ADDRESS_MODEL_64
-
-typedef uintptr_clasp_t cl_intptr_t;
 
 // ----------------------------------------------------------------------------
 //  PLATFORM INDEPENDENT CLASP FUNDAMENTAL DEFINITIONS
@@ -156,7 +137,7 @@ typedef uintptr_clasp_t cl_intptr_t;
 #endif
 
 // ----------------------------------------------------------------------------
-//  ADRESS-MDOEL INDEPENDENT CLASP FUNDAMENTAL DEFINITIONS
+//  ADDRESS-MODEL INDEPENDENT CLASP FUNDAMENTAL DEFINITIONS
 // ----------------------------------------------------------------------------
 
 #define GMP_LONG(z)  (static_cast<long>(z))
@@ -213,9 +194,6 @@ typedef int  claspCharacter;
 
 /*! Don't use LongFloat - they are doubles */
 //#define CLASP_LONG_FLOAT 1
-
-// Use an array on the stack to store multiple_values
-#define USE_MULTIPLE_VALUES_ARRAY
 
 #define CLASP_ARRAY_DIMENSION_LIMIT (1024 * 1024)
 #define CLASP_ARRAY_RANK_LIMIT 8

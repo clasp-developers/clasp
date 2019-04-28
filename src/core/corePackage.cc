@@ -45,7 +45,8 @@ THE SOFTWARE.
 #include <clasp/core/grayPackage.h>
 #include <clasp/core/closPackage.h>
 #include <clasp/core/cleavirPrimopsPackage.h>
-#include <clasp/core/cleavirEnvPackage.h>
+#include <clasp/core/cleavirEnvPackage.fwd.h>
+#include <clasp/core/cleavirIrPackage.fwd.h>
 #include <clasp/core/hashTable.h>
 #include <clasp/core/posixTime.h>
 #include <clasp/core/random.h>
@@ -157,7 +158,6 @@ SYMBOL_EXPORT_SC_(CorePkg, clbind_cxx_class);
 SYMBOL_EXPORT_SC_(CorePkg, derivable_cxx_class);
 SYMBOL_EXPORT_SC_(CorePkg, derivable_cxx_object);
 SYMBOL_EXPORT_SC_(CorePkg, stack_closure);
-SYMBOL_EXPORT_SC_(CorePkg, STARminimum_number_generic_function_slotsSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, make_source_pos_info);
 SYMBOL_EXPORT_SC_(CorePkg, STARtop_level_form_stackSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARloadHooksSTAR);
@@ -167,6 +167,7 @@ SYMBOL_EXPORT_SC_(CorePkg, STARmodule_shutdown_function_nameSTAR);
 SYMBOL_EXPORT_SC_(ExtPkg, STARinvoke_debugger_hookSTAR);
 SYMBOL_EXPORT_SC_(CorePkg,variable_source_location)
 SYMBOL_EXPORT_SC_(CorePkg,class_source_location)
+SYMBOL_EXPORT_SC_(CorePkg,STARdebug_hash_tableSTAR)
 SYMBOL_EXPORT_SC_(CorePkg,bt)
 SYMBOL_EXPORT_SC_(CorePkg,btcl)
 SYMBOL_EXPORT_SC_(CorePkg,STARdebug_fastgfSTAR);
@@ -816,6 +817,8 @@ SYMBOL_EXPORT_SC_(ClPkg, copy_structure);
 SYMBOL_EXPORT_SC_(CorePkg, defcallback);
 SYMBOL_EXPORT_SC_(CorePkg, sharp_a_reader);
 SYMBOL_EXPORT_SC_(CorePkg, sharp_s_reader);
+SYMBOL_EXPORT_SC_(CorePkg, sharpmacros_lisp_redefine);
+
 
 void testConses() {
   printf("%s:%d Testing Conses and iterators\n", __FILE__, __LINE__);
@@ -1090,7 +1093,6 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   comp::_sym_STARsave_module_for_disassembleSTAR->defparameter(_Nil<core::T_O>());
   comp::_sym_STARsaved_module_from_clasp_jitSTAR->defparameter(_Nil<core::T_O>());
   comp::_sym_STARdebug_jitSTAR->defparameter(_Nil<core::T_O>());
-  _sym_STARminimum_number_generic_function_slotsSTAR->defparameter(make_fixnum(FuncallableInstance_O::MIN_GFUN_SLOTS));
   _sym_STARallCxxClassesSTAR->defparameter(_Nil<T_O>());
   _sym_STARtopLevelCommandHookSTAR->defparameter(_Nil<T_O>());
   _sym_STARllvmFunctionNameHookSTAR->defparameter(_Nil<T_O>());
@@ -1187,6 +1189,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARdebug_fastgfSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARdebug_dispatchSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARdebug_valuesSTAR->defparameter(_Nil<core::T_O>());
+  _sym_STARdebug_hash_tableSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARforeign_data_reader_callbackSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARinformation_callbackSTAR->defparameter(_Nil<core::T_O>());
   gctools::_sym_STARdebug_gcrootsSTAR->defparameter(_Nil<core::T_O>());

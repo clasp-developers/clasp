@@ -18,18 +18,18 @@
 (defparameter *clos-booted* nil)
 (export '*clos-booted*)
 
+;;; Returns a closure usable as a discriminating function
+;;; when the generic function is in the invalidated state.
+(defun invalidated-discriminating-function-closure (gf)
+  (lambda (core:&va-rest args)
+    (declare (core:lambda-name invalidated-discriminating-function))
+    (invalidated-dispatch-function gf args)))
+
 ;;; Sets a GF's discrminating function to the "invalidated" state.
 ;;; In this state, the next call will compute a real discriminating function.
 (defun invalidate-discriminating-function (gf)
-  ;; It may seem weird to set the thing to a symbol. And it is.
-  ;; We special case set-funcallable-instance-function (in core/funcallableInstance.cc) so that it
-  ;; becomes a C++ method that just calls clos:invalidated-dispatch-function with the gf and vaslist.
-  ;; (clos:invalidated-dispatch-function is a normal lisp function defined in closfastgf.lisp.)
-  ;; This is basically equivalent to
-  ;; (set-funcallable-instance-function gf (lambda (core:&va-rest args) (invalidated-dispatch-function gf args)))
-  ;; but without allocating a closure.
-  ;; In the future, this special casing will probably go away.
-  (set-funcallable-instance-function gf 'invalidated-dispatch-function))
+  (set-funcallable-instance-function
+   gf (invalidated-discriminating-function-closure gf)))
 
 ;;; ----------------------------------------------------------------------
 ;;;
@@ -113,7 +113,7 @@
 ;;; Will be the standard method after fixup.
 (defun compute-discriminating-function (generic-function)
   (declare (ignore generic-function))
-  'invalidated-dispatch-function)
+  (invalidated-discriminating-function-closure generic-function))
 
 ;;; ----------------------------------------------------------------------
 ;;; COMPUTE-APPLICABLE-METHODS

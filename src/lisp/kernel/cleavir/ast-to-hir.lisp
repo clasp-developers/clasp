@@ -22,6 +22,43 @@
 		 :successors (cleavir-ast-to-hir::successors context)))
 
 
+;;; We have to shadow Cleavir's method, as we have to save and load multiple values explicitly.
+(defmethod cleavir-ast-to-hir:compile-ast :around
+    ((ast cleavir-ast:multiple-value-prog1-ast) context)
+  (with-accessors ((results cleavir-ast-to-hir::results)
+                   (successors cleavir-ast-to-hir::successors)
+                   (invocation cleavir-ast-to-hir::invocation))
+      context
+    (cond ((null (cleavir-ast:form-asts ast)) ; trivial case
+           (cleavir-ast-to-hir:compile-ast (cleavir-ast:first-form-ast ast) context))
+          ((typep results 'cleavir-ir:values-location) ; hard case
+           (let* (;; Values location for the first form. Despite the hoopla, means nothing
+                  ;; in the runtime.
+                  (mv (cleavir-ir:make-values-location))
+                  ;; These two (lexical!) temporaries store the values.
+                  ;; They will be typed in hir-to-mir, and are not used for anything else.
+                  (nvals-temp (cleavir-ir:new-temporary))
+                  (values-temp (cleavir-ir:new-temporary))
+                  ;; Our final instruction - load the temporaries back into the values location.
+                  (load (clasp-cleavir-hir:make-load-values-instruction
+                         (list nvals-temp values-temp) results (first successors)))
+                  ;; Now we're set up to compile the rest forms.
+                  (next (loop with successor = load
+                              for form-ast in (reverse (cleavir-ast:form-asts ast))
+                              do (setf successor
+                                       (cleavir-ast-to-hir:compile-ast
+                                        form-ast (cleavir-ast-to-hir:context
+                                                  () (list successor) invocation)))
+                              finally (return successor)))
+                  ;; This instruction stores the result(s) of the first form into the temporaries.
+                  (store (clasp-cleavir-hir:make-save-values-instruction
+                          mv (list nvals-temp values-temp) next)))
+             ;; Finally, we can compile the first form.
+             (cleavir-ast-to-hir:compile-ast
+              (cleavir-ast:first-form-ast ast)
+              (cleavir-ast-to-hir:context mv (list store) invocation))))
+          (t ; simple case - results are just lexical locations - no special effort needed
+           (call-next-method)))))
 
 (defmethod cleavir-ast-to-hir:compile-ast ((ast clasp-cleavir-ast:multiple-value-foreign-call-ast) context)
   (with-accessors ((results cleavir-ast-to-hir::results)
@@ -35,12 +72,12 @@
        temps
        (ecase (length successors)
 	 (1
-	  (if (cleavir-ir:values-location-p results)
-                (make-instance 'clasp-cleavir-hir:multiple-value-foreign-call-instruction
-                               :function-name (clasp-cleavir-ast:function-name ast)
-                               :inputs temps
-                               :outputs (list results)
-                               :successors successors)
+	  (if (typep results 'cleavir-ir:values-location)
+              (make-instance 'clasp-cleavir-hir:multiple-value-foreign-call-instruction
+                             :function-name (clasp-cleavir-ast:function-name ast)
+                             :inputs temps
+                             :outputs (list results)
+                             :successors successors)
 	      (let* ((values-temp (make-instance 'cleavir-ir:values-location)))
 		(make-instance 'clasp-cleavir-hir:multiple-value-foreign-call-instruction
                                :function-name (clasp-cleavir-ast:function-name ast)
@@ -65,14 +102,14 @@
        temps
        (ecase (length successors)
 	 (1
-	  (if (cleavir-ir:lexical-location-p (car results))
+	  (if (typep (car results) 'cleavir-ir:lexical-location)
               (make-instance 'clasp-cleavir-hir:foreign-call-instruction
                              :function-name (clasp-cleavir-ast:function-name ast)
                              :foreign-types (clasp-cleavir-ast:foreign-types ast)
                              :inputs temps
                              :outputs results
                              :successors successors)
-	      (let* ((result-temp (cleavir-ir:new-temporary))) ;; make-instance 'cleavir-ir:lexical-location)))
+	      (let ((result-temp (cleavir-ir:new-temporary)))
 		(make-instance 'clasp-cleavir-hir:foreign-call-instruction
                                :function-name (clasp-cleavir-ast:function-name ast)
                                :foreign-types (clasp-cleavir-ast:foreign-types ast)
@@ -95,13 +132,13 @@
        temps
        (ecase (length successors)
 	 (1
-	  (if (cleavir-ir:lexical-location-p (car results))
+	  (if (typep (car results) 'cleavir-ir:lexical-location)
               (make-instance 'clasp-cleavir-hir:foreign-call-pointer-instruction
                              :foreign-types (clasp-cleavir-ast:foreign-types ast)
                              :inputs temps
                              :outputs results
                              :successors successors)
-	      (let* ((result-temp (cleavir-ir:new-temporary))) ;; make-instance 'cleavir-ir:lexical-location)))
+	      (let ((result-temp (cleavir-ir:new-temporary)))
 		(make-instance 'clasp-cleavir-hir:foreign-call-pointer-instruction
                                :foreign-types (clasp-cleavir-ast:foreign-types ast)
                                :inputs temps
@@ -301,88 +338,3 @@
 				      (cleavir-ast-to-hir::context (list tag-temp)
 					       (list result-successor)
 					       (cleavir-ast-to-hir::invocation context))))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Compile an INVOKE-AST.
-;;;
-;;; Duplicates Cleavir's method on call-ast. KLUDGE if I can figure out how to mod Cleavir.
-
-(defun compile-destinations (destinations)
-  (loop for dest in destinations
-        collect (etypecase dest
-                  (cleavir-ast:block-ast
-                   (cdr (cleavir-ast-to-hir::block-info dest)))
-                  (cleavir-ast:tag-ast
-                   (car (cleavir-ast-to-hir::go-info dest))))))
-
-(defmethod cleavir-ast-to-hir:compile-ast ((ast clasp-cleavir-ast:invoke-ast) context)
-  (with-accessors ((results cleavir-ast-to-hir::results)
-		   (successors cleavir-ast-to-hir::successors))
-      context
-    (cleavir-ast-to-hir::assert-context ast context nil 1)
-    (let* ((all-args (cons (cleavir-ast:callee-ast ast)
-			   (cleavir-ast:argument-asts ast)))
-	   (temps (cleavir-ast-to-hir::make-temps all-args))
-           (destinations (compile-destinations
-                          (clasp-cleavir-ast:destinations ast))))
-      (cleavir-ast-to-hir:compile-arguments
-       all-args
-       temps
-       (if (cleavir-ir:values-location-p results)
-	   (make-instance 'clasp-cleavir-hir:invoke-instruction
-	     :inputs temps
-	     :outputs (list results)
-             :destinations destinations
-	     :successors successors)
-	   (let* ((values-temp (make-instance 'cleavir-ir:values-location)))
-	     (make-instance 'clasp-cleavir-hir:invoke-instruction
-	       :inputs temps
-	       :outputs (list values-temp)
-               :destinations destinations
-	       :successors
-	       (list (cleavir-ir:make-multiple-to-fixed-instruction
-		      values-temp results (first successors))))))
-       (cleavir-ast-to-hir::invocation context)))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Compile a MULTIPLE-VALUE-INVOKE-AST.
-;;;
-;;; Duplicates Cleavir's method on m-v-call-ast. KLUDGE: figure out how to mod Cleavir.
-
-(defmethod cleavir-ast-to-hir:compile-ast ((ast cc-ast:multiple-value-invoke-ast) context)
-  (with-accessors ((results cleavir-ast-to-hir::results)
-		   (successors cleavir-ast-to-hir::successors)
-		   (invocation cleavir-ast-to-hir::invocation))
-      context
-    (cleavir-ast-to-hir::assert-context ast context nil 1)
-    (let ((function-temp (cleavir-ast-to-hir:make-temp))
-	  (form-temps (loop repeat (length (cleavir-ast:form-asts ast))
-			    collect (cleavir-ir:make-values-location)))
-          (destinations (compile-destinations
-                         (clasp-cleavir-ast:destinations ast))))
-      (let ((successor
-	      (if (cleavir-ir:values-location-p results)
-		  (make-instance 'clasp-cleavir-hir:multiple-value-invoke-instruction
-		    :inputs (cons function-temp form-temps)
-		    :outputs (list results)
-                    :destinations destinations
-		    :successors successors)
-		  (let* ((values-temp (make-instance 'cleavir-ir:values-location)))
-		    (make-instance 'clasp-cleavir-hir:multiple-value-invoke-instruction
-		      :inputs (cons function-temp form-temps)
-		      :outputs (list values-temp)
-                      :destinations destinations
-		      :successors
-		      (list (cleavir-ir:make-multiple-to-fixed-instruction
-			     values-temp results (first successors))))))))
-	(loop for form-ast in (reverse (cleavir-ast:form-asts ast))
-	      for form-temp in (reverse form-temps)
-	      do (setf successor
-		       (cleavir-ast-to-hir:compile-ast
-			form-ast
-			(cleavir-ast-to-hir:context form-temp (list successor) invocation))))
-	(cleavir-ast-to-hir:compile-ast
-	 (cleavir-ast:function-form-ast ast)
-	 (cleavir-ast-to-hir:context (list function-temp) (list successor) invocation))))))
