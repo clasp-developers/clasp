@@ -908,18 +908,18 @@
                                      (cleavir-env:inline func-info))))
                   (when (not notinline)
                     (return-from funcall
-                      (funcall *macroexpand-hook* cmf form env))))))))))
-    ;; If not, we can still eliminate the call to FUNCALL as follows.
-    (let ((fsym (gensym "FUNCTION")))
-      `(let ((,fsym ,function))
-         (cleavir-primop:funcall
-          (cond
-            ((cleavir-primop:typeq ,fsym function)
-             ,fsym)
-            ((cleavir-primop:typeq ,fsym symbol)
-             (symbol-function ,fsym))
-            (t (error 'type-error :datum ,fsym :expected-type '(or symbol function))))
-          ,@arguments)))))
+                      (funcall *macroexpand-hook* cmf form env)))))))))))
+  ;; If not, we can still eliminate the call to FUNCALL as follows.
+  (let ((fsym (gensym "FUNCTION")))
+    `(let ((,fsym ,function))
+       (cleavir-primop:funcall
+        (cond
+          ((cleavir-primop:typeq ,fsym function)
+           ,fsym)
+          ((cleavir-primop:typeq ,fsym symbol)
+           (symbol-function ,fsym))
+          (t (error 'type-error :datum ,fsym :expected-type '(or symbol function))))
+        ,@arguments))))
 
 (define-cleavir-compiler-macro values (&whole form &rest values)
   `(cleavir-primop:values ,@values))
