@@ -529,7 +529,7 @@ and cannot be added to ~A." method other-gf gf)))
         (when (classp spec) ; sanity check against eql specialization
           (recursively-update-class-initargs-cache spec))))))
 
-(let ((x (make-instance 'initargs-updater)))
+(let ((x (locally (declare (notinline make-instance)) (make-instance 'initargs-updater))))
   (add-dependent #'shared-initialize x)
   (add-dependent #'initialize-instance x)
   (add-dependent #'allocate-instance x))
