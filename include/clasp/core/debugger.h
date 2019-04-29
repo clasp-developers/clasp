@@ -135,5 +135,6 @@ std::string dbg_safe_repr(uintptr_t raw);
 void dbg_safe_print(uintptr_t raw);
 void dbg_safe_println(uintptr_t raw);
 void dbg_safe_backtrace();
+void dbg_safe_backtrace_stderr();
 };
 #endif

@@ -2198,13 +2198,13 @@ void dbg_safe_println(uintptr_t raw) {
   printf(" %s\n", dbg_safe_repr(raw).c_str());
 }
 
-void dbg_print_frame(const std::vector<core::BacktraceEntry>& backtrace, size_t idx, bool printArgs)
+void dbg_print_frame(FILE* fout, const std::vector<core::BacktraceEntry>& backtrace, size_t idx, bool printArgs)
 {
   stringstream ss;
-  printf("%lu: ", idx);
-  fflush(stdout);
-  printf("(%s ", backtrace[idx]._SymbolName.c_str());
-  fflush(stdout);
+  fprintf(fout,"%lu: ", idx);
+  fflush(fout);
+  fprintf(fout,"(%s ", backtrace[idx]._SymbolName.c_str());
+  fflush(fout);
   if (printArgs&&backtrace[idx]._BasePointer!=0&&backtrace[idx]._FrameOffset!=0) {
     // printf("%s:%s:%d Printing \n", __FILE__, __FUNCTION__, __LINE__);
     core::T_sp closure((gctools::Tagged)core::get_raw_argument_from_stack(backtrace[idx]._FunctionStart,backtrace[idx]._BasePointer,backtrace[idx]._FrameOffset,0));
@@ -2213,13 +2213,13 @@ void dbg_print_frame(const std::vector<core::BacktraceEntry>& backtrace, size_t 
     for ( size_t i=0; i<nargs; ++i ) {
       // printf("%s:%s:%d Printing arg %lu of %lu\n", __FILE__, __FUNCTION__, __LINE__, i, nargs);
       uintptr_t raw_arg = core::get_raw_argument_from_stack(backtrace[idx]._FunctionStart,backtrace[idx]._BasePointer,backtrace[idx]._FrameOffset,2+i);
-      printf("%s ", dbg_safe_repr(raw_arg).c_str());
+      fprintf(fout,"%s ", dbg_safe_repr(raw_arg).c_str());
     }
   } else {
-    printf("ARGS-NOT-SHOWN");
+    fprintf(fout,"ARGS-NOT-SHOWN");
   }
   // printf("%s:%s:%d Printing\n", __FILE__, __FUNCTION__, __LINE__);
-  printf(")\n");
+  fprintf(fout,")\n");
 }
 
 void dbg_safe_backtrace() {
@@ -2229,9 +2229,21 @@ void dbg_safe_backtrace() {
   core::fill_backtrace(backtrace,false);
   printf("Got %lu backtrace frames - dumping\n", backtrace.size());
   for ( size_t idx=2; idx<backtrace.size()-2; ++idx ) {
-    dbg_print_frame(backtrace,idx,true);
+    dbg_print_frame(stdout,backtrace,idx,true);
   }
 }
+
+void dbg_safe_backtrace_stderr() {
+//  gc::SafeGCPark park;
+  std::vector<core::BacktraceEntry> backtrace;
+  fprintf(stderr,"Safe-backtrace\n");
+  core::fill_backtrace(backtrace,false);
+  fprintf(stderr,"Got %lu backtrace frames - dumping\n", backtrace.size());
+  for ( size_t idx=2; idx<backtrace.size()-2; ++idx ) {
+    dbg_print_frame(stderr,backtrace,idx,true);
+  }
+}
+
 void dbg_safe_backtrace_no_args() {
 //  gc::SafeGCPark park;
   std::vector<core::BacktraceEntry> backtrace;
@@ -2239,7 +2251,7 @@ void dbg_safe_backtrace_no_args() {
   core::fill_backtrace(backtrace,false);
   printf("Got backtrace frames - dumping\n");
   for ( size_t idx=0; idx<backtrace.size()-2; ++idx ) {
-    dbg_print_frame(backtrace,idx,false);
+    dbg_print_frame(stdout,backtrace,idx,false);
   }
 }
 void dbg_safe_lisp_backtrace() {
@@ -2249,7 +2261,7 @@ void dbg_safe_lisp_backtrace() {
   core::fill_backtrace(backtrace,false);
   for ( size_t idx=0; idx<backtrace.size()-2; ++idx ) {
     if (backtrace[idx]._Stage == core::lispFrame) {
-      dbg_print_frame(backtrace,idx,true);
+      dbg_print_frame(stdout,backtrace,idx,true);
     }
   }
 }
