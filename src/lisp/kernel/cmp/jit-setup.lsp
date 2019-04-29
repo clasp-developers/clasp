@@ -613,6 +613,7 @@ The passed module is modified as a side-effect."
 ;;; jit-register-symbol is a call
 #+threads(defvar *jit-log-lock* (mp:make-lock :name 'jit-log-lock :recursive t))
 (defvar *jit-log-stream*)
+(defvar *jit-pid*)
 
 (defun jit-register-symbol (symbol-name-string symbol-info)
   "This is a callback from llvmoExpose.cc::save_symbol_info for registering JITted symbols"
@@ -621,10 +622,22 @@ The passed module is modified as a side-effect."
       (unwind-protect
            (progn
              #+threads(mp:lock *jit-log-lock* t)
-             (if (not (boundp '*jit-log-stream*))
-                 (let ((filename (core:bformat nil "/tmp/clasp-symbols-%s" (core:getpid))))
-                   (core:bformat *error-output* "Writing jitted symbols to %s%N" filename)
-                   (setq *jit-log-stream* (open filename :direction :output))))
+             (cond
+               ;; If this is the first process to generate a symbol then create the master symbol file
+               ((not (boundp '*jit-pid*))
+                (setf *jit-pid* (core:getpid))
+                (let ((filename (core:bformat nil "/tmp/clasp-symbols-%s" (core:getpid))))
+                  (core:bformat *error-output* "Writing jitted symbols to %s%N" filename)
+                  (setq *jit-log-stream* (open filename :direction :output))))
+               ;; If we are in a forked child then we need to create a new clasp-symbols-<pid> file and
+               ;; refer to the parent clasp-symbols-<ppid> file.
+               ((not (= *jit-pid* (core:getpid)))
+                (let ((filename (core:bformat nil "/tmp/clasp-symbols-%s" (core:getpid))))
+                  (core:bformat *error-output* "Forked process %s writing jitted symbols to %s%N" (core:getpid) filename)
+                  (setq *jit-log-stream* (open filename :direction :output))
+                  (core:bformat *jit-log-stream* "l /tmp/clasp-symbols-%s%N" (core:getppid))
+                  (setq *jit-pid* (core:getpid)))))
+             (write-string "a " *jit-log-stream*)
              (write-string (core:pointer-as-string (cadr symbol-info)) *jit-log-stream*)
              (write-char #\space *jit-log-stream*)
              ;; car of symbol-info is a fixnum
