@@ -72,9 +72,6 @@
 ;;; For the next accessor we define a method.
 ;;;
 
-(defmethod class-name ((what t))
-  (error "Never call class-name on ~a" what))
-
 (defmethod class-name ((class class))
   (class-id class))
 
