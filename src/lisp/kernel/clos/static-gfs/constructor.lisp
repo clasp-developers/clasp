@@ -16,7 +16,6 @@
                                 (fallback-constructor class-name keys))))
             (setf (gethash keys table) new)
             (update-constructor-cell new)
-            (start-constructor-updates new)
             new)))))
 
 ;;; debug
@@ -37,20 +36,6 @@
                  (return-from constructor-cells nil)))
     cells))
 
-;;; See dependents.lisp
-(defun start-constructor-updates (cell)
-  (clos:add-dependent #'make-instance cell)
-  (clos:add-dependent #'initialize-instance cell)
-  (clos:add-dependent #'shared-initialize cell))
-
-;;; debug
-;;; Caution: Calling this and then defining a method can make the constructor
-;;; do undefined behavior, up to and including out of bounds memory access.
-(defun stop-constructor-updates (cell)
-  (clos:remove-dependent #'make-instance cell)
-  (clos:remove-dependent #'initialize-instance cell)
-  (clos:remove-dependent #'shared-initialize cell))
-
 (defun update-constructor-cell (cell)
   (setf (cell-function cell)
         (compute-constructor (cell-name cell) (cell-keys cell))))
@@ -65,6 +50,12 @@
 
 (defun update-constructors (name)
   (map-constructor-cells #'update-constructor-cell name))
+
+(defun update-class-and-subclass-constructors (class)
+  (let ((name (class-name class)))
+    (when name (update-constructors name))
+    (mapcar #'update-class-and-subclass-constructors
+            (clos:class-direct-subclasses class))))
 
 ;;; debug
 (defun clear-constructors (name)
