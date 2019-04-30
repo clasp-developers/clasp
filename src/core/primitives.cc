@@ -208,6 +208,7 @@ CL_DOCSTRING("lisp-implementation-version");
 CL_DEFUN T_sp cl__lisp_implementation_version() {
   stringstream ss;
   List_sp cleavir = gc::As<Cons_sp>(cl::_sym_STARfeaturesSTAR->symbolValue())->memberEq(kw::_sym_cclasp);
+  List_sp cst = gc::As<Cons_sp>(cl::_sym_STARfeaturesSTAR->symbolValue())->memberEq(kw::_sym_cst);
   if (cleavir.notnilp()) {
     ss << "c";
   }
@@ -220,6 +221,10 @@ CL_DEFUN T_sp cl__lisp_implementation_version() {
   ss << "boehm-";
 #endif
   ss << CLASP_VERSION;
+  if (cst.notnilp())
+    ss << "-cst";
+  else
+    ss << "-non-cst";
   return SimpleBaseString_O::make(ss.str());
 };
 
