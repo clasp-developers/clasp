@@ -62,14 +62,17 @@
       (return-from make-instance form))
     (multiple-value-bind (keys syms bindings validp)
         (extract initargs env)
-      (unless validp
-        (return-from make-instance form))
-      ;; keeping binding in case we do handle literal classes later.
-      (let ((classn class-designator)
-            (cellg (gensym "CONSTRUCTOR-CELL")))
-        `(let ((,cellg
-                 (cell-function
-                  (load-time-value
-                   (ensure-constructor-cell ',classn ',keys))))
-               ,@bindings)
-           (funcall ,cellg ,@syms))))))
+      (if validp
+          ;; keeping binding in case we do handle literal classes later.
+          (let ((classn class-designator)
+                (cellg (gensym "CONSTRUCTOR-CELL")))
+            `(let ((,cellg
+                     (cell-function
+                      (load-time-value
+                       (ensure-constructor-cell ',classn ',keys))))
+                   ,@bindings)
+               (funcall ,cellg ,@syms)))
+          ;; We have non constant arguments, but we can still do just a bit.
+          ;; (Compiler macro expansion won't recurse, as (find-class ...) is
+          ;;  not a constant.)
+          `(make-instance (find-class ',class-designator) ,@initargs)))))
