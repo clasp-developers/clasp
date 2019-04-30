@@ -50,3 +50,8 @@
     (when name (update-constructors name))
     (mapcar #'update-class-and-subclass-constructors
             (clos:class-direct-subclasses class))))
+
+;;; For the user - compile constructors ahead of time.
+(defmacro precompile-constructor (class-name keys)
+  `(force-constructor ',class-name ',keys
+                      ,(constructor-form (find-class class-name) keys)))

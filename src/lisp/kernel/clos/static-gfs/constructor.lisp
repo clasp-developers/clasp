@@ -22,12 +22,18 @@ a constructor ought to be computed, before make-instance.
     (setf (cell-function cell) (invalidated-constructor cell))
     cell))
 
+(defun ensure-name-table (class-name)
+  (ensure-gethash class-name *constructor-cells*
+                  (make-hash-table :test #'equal)))
+
 (defun ensure-constructor-cell (class-name keys)
-  (ensure-gethash
-   keys
-   (ensure-gethash class-name *constructor-cells*
-                   (make-hash-table :test #'equal))
-   (make-invalid-cell class-name keys)))
+  (ensure-gethash keys (ensure-name-table class-name)
+                  (make-invalid-cell class-name keys)))
+
+;;; used in precompile
+(defun force-constructor (class-name keys function)
+  (setf (gethash keys (ensure-name-table class-name))
+        (make-cell class-name keys function)))
 
 ;;; debug
 (defun find-constructor-cell (class-name keys)
@@ -36,6 +42,15 @@ a constructor ought to be computed, before make-instance.
     (if presentp
         (gethash keys table)
         (values nil nil))))
+
+;;; debug
+(defun named-constructors ()
+  (let (names)
+    (maphash (lambda (name table)
+               (declare (ignore table))
+               (push name names))
+             *constructor-cells*)
+    names))
 
 ;;; debug
 (defun constructor-cells (name)
