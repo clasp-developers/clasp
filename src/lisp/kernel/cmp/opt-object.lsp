@@ -36,6 +36,7 @@
 ;;; These macros allow the above FIND-CLASS optimization to be used, avoiding a runtime lookup.
 ;;; They're ordered from most to least important.
 
+#+(or) ; see clos/static-gfs/compiler-macros.lisp
 (define-compiler-macro make-instance (&whole form class &rest initargs &environment env)
   (if (constantp class env)
     (let ((class (ext:constant-form-value class env)))
