@@ -12,18 +12,20 @@
 
 (defclass cell-updater () ())
 
-(let ((updater
-        (locally (declare (notinline make-instance)) (make-instance 'cell-updater))))
+;; See KLUDGE in fixup.lisp.
+(let ((updater (apply #'make-instance 'cell-updater nil)))
   (clos:add-dependent #'make-instance updater)
   (clos:add-dependent #'initialize-instance updater)
   (clos:add-dependent #'shared-initialize updater))
 
+;; FIXME?: With diamond inheritance will do redundant work.
+;; Doesn't matter with invalidate-cell though.
 (defun map-class-and-subclass-constructor-cells (function class)
   (let ((name (proper-class-name class)))
     (when name
       (map-constructor-cells function name)))
-  (mapc #'map-class-and-subclass-constructor-cells
-        (clos:class-direct-subclasses class)))
+  (loop for subclass in (clos:class-direct-subclasses class)
+        do (map-class-and-subclass-constructor-cells function subclass)))
 
 (defun invalidate-class-and-subclass-constructor-cells (class)
   (map-class-and-subclass-constructor-cells
