@@ -378,7 +378,7 @@ because it contains a reference to the undefined class~%  ~A"
 
 (defmethod finalize-inheritance :after ((class std-class))
   #+static-gfs
-  (static-gfs:update-constructors (class-name class))
+  (static-gfs:invalidate-class-constructors class)
   (std-class-generate-accessors class))
 
 (defmethod compute-class-precedence-list ((class class))

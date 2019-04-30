@@ -18,12 +18,23 @@
   (clos:add-dependent #'initialize-instance updater)
   (clos:add-dependent #'shared-initialize updater))
 
+(defun map-class-and-subclass-constructor-cells (function class)
+  (let ((name (proper-class-name class)))
+    (when name
+      (map-constructor-cells function name)))
+  (mapc #'map-class-and-subclass-constructor-cells
+        (clos:class-direct-subclasses class)))
+
+(defun invalidate-class-and-subclass-constructor-cells (class)
+  (map-class-and-subclass-constructor-cells
+   #'invalidate-cell class))
+
 (defmethod clos:update-dependent
     ((f (eql #'make-instance)) (updater cell-updater) &rest initargs)
   ;; I don't quite understand what a make-instance method would be doing.
   ;; Also they're rare, so I don't mind just updating everything.
   (declare (ignore initargs))
-  (update-class-and-subclass-constructors (find-class 'standard-object)))
+  (invalidate-class-and-subclass-constructor-cells (find-class 'standard-object)))
 
 (defun update-dependent-with-initargs (initargs)
   (destructuring-bind (&optional key method &rest more) initargs
@@ -32,7 +43,7 @@
       ;; For the functions we're interested in, the first argument
       ;; is the class.
       (let ((class (first (clos:method-specializers method))))
-        (update-class-and-subclass-constructors class)))))
+        (invalidate-class-and-subclass-constructor-cells class)))))
 
 (defmethod clos:update-dependent
     ((f (eql #'initialize-instance)) (updater cell-updater) &rest initargs)

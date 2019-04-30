@@ -1,22 +1,33 @@
 (in-package #:static-gfs)
 
+;;;; NOTE: This file is compiled/loaded before CLOS is up.
+
+#|
+We use a lazy strategy for constructor cells. That is, things like finalize-inheritance
+that render constructors invalid only mark them, and the actual computation of a new
+constructor is only done when MAKE-INSTANCE is actually called.
+This may seem unintuitive - why not be aggressive? The reason is that if we re/load a
+file full of class and method definitions, we don't want to clog up the works with a
+ton of unnecessary constructor recompilations. It's not possible (as far as I can think)
+to give a way to the compiler to figure out when a class is "finished" enough that
+a constructor ought to be computed, before make-instance.
+|#
+
 ;;; MAPPING
 
 (defvar *constructor-cells* (make-hash-table :test #'eq))
 
+(defun make-invalid-cell (class-name keys)
+  (let ((cell (make-cell class-name keys (constantly nil))))
+    (setf (cell-function cell) (invalidated-constructor cell))
+    cell))
+
 (defun ensure-constructor-cell (class-name keys)
-  (let ((table (ensure-gethash class-name *constructor-cells*
-                               (make-hash-table :test #'equal))))
-    ;; See fallback-constructor note for why we don't just
-    ;; ensure-gethash here.
-    (multiple-value-bind (cell presentp) (gethash keys table)
-      (if presentp
-          cell
-          (let ((new (make-cell class-name keys
-                                (fallback-constructor class-name keys))))
-            (setf (gethash keys table) new)
-            (update-constructor-cell new)
-            new)))))
+  (ensure-gethash
+   keys
+   (ensure-gethash class-name *constructor-cells*
+                   (make-hash-table :test #'equal))
+   (make-invalid-cell class-name keys)))
 
 ;;; debug
 (defun find-constructor-cell (class-name keys)
@@ -36,10 +47,6 @@
                  (return-from constructor-cells nil)))
     cells))
 
-(defun update-constructor-cell (cell)
-  (setf (cell-function cell)
-        (compute-constructor (cell-name cell) (cell-keys cell))))
-
 (defun map-constructor-cells (function name)
   (let ((table (gethash name *constructor-cells*)))
     (when table
@@ -48,37 +55,33 @@
                  (funcall function value))
                table))))
 
-(defun update-constructors (name)
-  (map-constructor-cells #'update-constructor-cell name))
-
-(defun update-class-and-subclass-constructors (class)
+(defun proper-class-name (class)
   (let ((name (class-name class)))
-    (when name (update-constructors name))
-    (mapcar #'update-class-and-subclass-constructors
-            (clos:class-direct-subclasses class))))
+    (when (and name (eq (find-class name nil) class))
+      name)))
 
-;;; debug
-(defun clear-constructors (name)
-  (remhash name *constructor-cells*))
+(defun invalidate-cell (cell)
+  (setf (cell-function cell) (invalidated-constructor cell)))
 
-;;; THE BUSINESS
+(defun invalidate-named-constructors (name)
+  (map-constructor-cells #'invalidate-cell name))
 
-(defun compute-constructor (class-name keys)
-  ;; We try to be aggressive and compute a constructor immediately.
-  (let ((class (find-class class-name nil)))
-    (if class
-        ;; FIXME: Better types?
-        (etypecase class
-          (structure-class (structure-class-constructor class))
-          (built-in-class (built-in-class-constructor class))
-          (class
-           #+(or) ; can't do this if finalize-inheritance updates.
-           (clos::finalize-unless-forward class)
-           (if (clos:class-finalized-p class)
-               ;; bclasp-compile because cclasp is full of make-instance
-               (cmp:bclasp-compile nil (constructor-form class keys))
-               (unfinalized-constructor class))))
-        (undefined-constructor class-name))))
+(defun invalidate-class-constructors (class)
+  (let ((name (proper-class-name class)))
+    (when name (invalidate-named-constructors name))))
+
+;;; CONSTRUCTORS
+;;; These are no-compile ones- "constructing" them is just allocating a closure,
+;;; so there's no chance of recursion (unless closures use make-instance, eheh).
+;;; The real constructors are built in compute-constructor.
+
+(defun invalidated-constructor (cell)
+  (lambda (&rest args)
+    (declare (core:lambda-name invalidated-constructor))
+    ;; Defined in compute-constructor.lisp
+    (update-constructor-cell cell)
+    ;; Alternately could just use make-instance.
+    (apply (cell-function cell) args)))
 
 ;;; Temporary constructor put in place in case compute-constructor ends up
 ;;; calling make-instance (e.g. in the compiler).
@@ -109,26 +112,3 @@
     (declare (core:lambda-name undefined-constructor))
     (declare (ignore args))
     (error 'ext:undefined-class :name name)))
-
-(defun unfinalized-constructor (class)
-  (lambda (&rest args)
-    (declare (core:lambda-name unfinalized-constructor))
-    (clos:finalize-inheritance class)
-    ;; finalize-inheritance should update the cell.
-    ;; We say this call's a loss and use the runtime.
-    (apply #'make-instance class args)))
-
-(defun make-params (keys)
-  (loop for key in keys
-        collect (make-symbol (symbol-name key))))
-
-;; aesthetic
-(defun constructor-name (class)
-  (make-symbol (format nil "OPTIMIZED-~a-CONSTRUCTOR" (class-name class))))
-
-(defun constructor-form (class keys)
-  (let ((params (make-params keys)))
-    `(lambda (,@params)
-       (declare (core:lambda-name ,(constructor-name class)))
-       (declare (ignorable ,@params)) ; e.g. duplicate initargs
-       ,(make-instance-form class keys params))))

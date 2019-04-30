@@ -42,7 +42,7 @@
 ;;; name slot of the class, they only lookup and change the association from
 ;;; name to class.
 ;;; 
-;;; This is only used during boot. The real one is in built-in.
+;;; This is only used during boot.
 (eval-when (:compile-toplevel #+clasp-boot :load-toplevel)
   (defun (setf find-class) (new-value class &optional errorp env)
     (warn "Ignoring class definition for ~S" class)))
@@ -60,7 +60,7 @@
       ((or (classp new-value) (null new-value))
        (core:setf-find-class new-value name)
        #+static-gfs
-       (static-gfs:update-constructors name))
+       (static-gfs:invalidate-named-constructors name))
       (t (error 'simple-type-error :datum new-value :expected-type '(or class null)
                                    :format-control "~A is not a valid class for (setf find-class)"
                                    :format-arguments (list new-value)))))
