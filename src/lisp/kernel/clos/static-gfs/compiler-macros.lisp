@@ -48,9 +48,8 @@
 
 (defun create-instance (class &rest initargs) (apply #'make-instance class initargs))
 
-(define-compiler-macro create-instance ;make-instance
+(define-compiler-macro make-instance
     (&whole form class-designatorf &rest initargs &environment env)
-  (block make-instance
   (let ((class-designator
           (and (constantp class-designatorf env)
                (ext:constant-form-value class-designatorf env))))
@@ -74,4 +73,3 @@
                    (ensure-constructor-cell ',classn ',keys))))
                ,@bindings)
            (funcall ,cellg ,@syms))))))
-)
