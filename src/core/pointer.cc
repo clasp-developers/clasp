@@ -14,7 +14,6 @@ See directory 'clasp/licenses' for full details.
  
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
-
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -28,6 +27,7 @@ THE SOFTWARE.
 #include <clasp/core/common.h>
 #include <clasp/core/pointer.h>
 #include <clasp/core/wrappers.h>
+#include <clasp/core/fli.h>
 
 namespace core {
 
@@ -78,12 +78,12 @@ CL_DEFUN bool core__pointer_in_pointer_range(Pointer_sp test, Pointer_sp low, T_
   SIMPLE_ERROR(BF("Illegal range for pointer comparison %s - %s") % _rep_(low) % _rep_(high_or_size));
 }
 
-CL_DEFUN void core__fill_foreign_memory(Pointer_sp ptr, size_t length, size_t value)
+CL_DEFUN void core__fill_foreign_memory(clasp_ffi::ForeignData_sp ptr, size_t length, size_t value)
 {
   memset(ptr->ptr(), value&0xFF,length);
 }
 
-CL_DEFUN void core__replace_foreign_memory(Pointer_sp dest, Pointer_sp src, size_t length)
+CL_DEFUN void core__replace_foreign_memory(clasp_ffi::ForeignData_sp dest, clasp_ffi::ForeignData_sp src, size_t length)
 {
   memcpy(dest->ptr(),src->ptr(),length);
 }

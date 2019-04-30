@@ -3147,14 +3147,14 @@ CL_DEFUN clasp_ffi::ForeignData_sp core__coerce_memory_to_foreign_data(Array_sp 
   SIMPLE_ERROR(BF("Add support for coercing %s to a simple-base-string") % _rep_(source));
 }
 
-CL_DEFUN Pointer_sp core__static_vector_address(Array_sp source)
+CL_DEFUN clasp_ffi::ForeignData_sp core__static_vector_address(Array_sp source)
 {
-  return Pointer_O::create(&*source);
+  return clasp_ffi::ForeignData_O::create(source->rowMajorAddressOfElement_(0));
 };
 
-CL_DEFUN Pointer_sp core__static_vector_pointer(Array_sp source, size_t offset )
+CL_DEFUN clasp_ffi::ForeignData_sp core__static_vector_pointer(Array_sp source, size_t offset )
 {
-  return Pointer_O::create((char*)source->rowMajorAddressOfElement_(0)+offset);
+  return clasp_ffi::ForeignData_O::create((char*)source->rowMajorAddressOfElement_(0)+offset);
 }
 
 CL_DOCSTRING("Return the simple-vector that stores the data for this array - this is like sbcl sb-ext:array-storage-vector");
@@ -3171,9 +3171,9 @@ CL_DEFUN Array_sp ext__array_storage_vector(Array_sp source )
 }
 
 CL_DOCSTRING("Return a pointer to the data in the array source");
-CL_DEFUN Pointer_sp ext__array_pointer(Array_sp source )
+CL_DEFUN clasp_ffi::ForeignData_sp ext__array_pointer(Array_sp source )
 {
-  return Pointer_O::create(source->rowMajorAddressOfElement_(0));
+  return clasp_ffi::ForeignData_O::create(source->rowMajorAddressOfElement_(0));
 }
 
 CL_DOCSTRING("Pin the objects in the list in memory and then call the thunk");
