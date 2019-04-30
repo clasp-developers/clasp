@@ -96,12 +96,19 @@
   (loop for slotd in (clos:class-slots class)
         append (clos:slot-definition-initargs slotd)))
 
-(defun bad-initargs (class keys)
+(defun valid-keywords (class)
+  ;; NOTE: Some keywords may be in the return list twice. It doesn't matter.
   ;; Extremely pedantic note: CLHS 7.1.2 specifically says :allow-other-keys is a
-  ;; valid initialization argument, so :allow-other-keys nil is still valid.
-  (loop with valid-keywords = (list* :allow-other-keys
-                                     (append (make-instance-method-keywords class)
-                                             (slot-keywords class)))
+  ;; valid initialization argument, so :allow-other-keys nil is still a valid argument.
+  (let ((method-keywords (make-instance-method-keywords class))
+        (slot-keywords (slot-keywords class)))
+    (cons :allow-other-keys
+          (if (eq method-keywords t)
+              slot-keywords
+              (append method-keywords slot-keywords)))))
+
+(defun bad-initargs (class keys)
+  (loop with valid-keywords = (valid-keywords class)
         for key in keys
         unless (member key valid-keywords)
           collect key))
