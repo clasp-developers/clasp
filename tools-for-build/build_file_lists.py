@@ -324,6 +324,7 @@ def collect_bclasp_lisp_files(**kwargs):
         "src/lisp/kernel/clos/fixup",
         "src/lisp/kernel/clos/static-gfs/cell",
         "src/lisp/kernel/clos/static-gfs/effective-method",
+        "src/lisp/kernel/clos/static-gfs/svuc",
         "src/lisp/kernel/clos/static-gfs/shared-initialize",
         "src/lisp/kernel/clos/static-gfs/initialize-instance",
         "src/lisp/kernel/clos/static-gfs/allocate-instance",

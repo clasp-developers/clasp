@@ -7,7 +7,8 @@
    ;; (clos depends on the above files, a bit)
    (:file "cell" :depends-on ("package"))
    (:file "effective-method" :depends-on ("package"))
-   (:file "shared-initialize" :depends-on ("effective-method" "package"))
+   (:file "svuc" :depends-on ("package"))
+   (:file "shared-initialize" :depends-on ("effective-method" "svuc" "package"))
    (:file "initialize-instance" :depends-on ("shared-initialize"
                                              "effective-method" "package"))
    (:file "allocate-instance" :depends-on ("package"))

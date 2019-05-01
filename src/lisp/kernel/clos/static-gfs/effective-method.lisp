@@ -11,6 +11,10 @@
 ;;; Technically, we could allow LESS-specific primary methods, which would be
 ;;; called by whatever method we're worrying about... but given we're doing
 ;;; this for standard functions there's no chance of that.
+;;; TODO?: If we tracked whether methods use complex call-next-method
+;;; (i.e., anything with it beyond (call-next-method)) we could work with
+;;; primary and :around methods as long as they didn't use complex c-n-m.
+
 (defun around-method-p (method)
   (equal (method-qualifiers method) '(:around)))
 (defun unknown-primary-method-p (method patch-list)
