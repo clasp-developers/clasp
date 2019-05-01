@@ -48,8 +48,8 @@
                            ,(initarg-error-form class bad-initargs))))
                      (return-from standard-make-instance-form
                        (initarg-error-form class bad-initargs)))))
-           ;; TODO: static-gfs for allocate-instance
-           (let ((,instance (allocate-instance
+           ;; See allocate-instance.lisp
+           (let ((,instance (static-allocate-instance
                              ,class
                              ,@(loop for key in keys for param in params
                                      collect `',key collect param))))

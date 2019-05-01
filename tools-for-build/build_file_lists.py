@@ -326,6 +326,7 @@ def collect_bclasp_lisp_files(**kwargs):
         "src/lisp/kernel/clos/static-gfs/effective-method",
         "src/lisp/kernel/clos/static-gfs/shared-initialize",
         "src/lisp/kernel/clos/static-gfs/initialize-instance",
+        "src/lisp/kernel/clos/static-gfs/allocate-instance",
         "src/lisp/kernel/clos/static-gfs/make-instance",
         "src/lisp/kernel/clos/static-gfs/compute-constructor",
         "src/lisp/kernel/clos/static-gfs/dependents",
