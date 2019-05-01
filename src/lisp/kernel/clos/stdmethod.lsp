@@ -55,6 +55,9 @@
     (flet ((get-it ()
              (or (gethash object table nil)
                  (setf (gethash object table)
+                       ;; KLUDGE to avoid compiler macro, see fixup.lsp
+                       (apply #'make-instance 'eql-specializer :object object nil)
+                       #+(or)
                        (make-instance 'eql-specializer :object object)))))
       #+threads (mp:with-lock (*eql-specializer-lock*) (get-it))
       #-threads (get-it))))

@@ -18,9 +18,21 @@ a constructor ought to be computed, before make-instance.
 (defvar *constructor-cells* (make-hash-table :test #'eq))
 
 (defun make-invalid-cell (class-name keys)
-  (let ((cell (make-cell class-name keys (constantly nil))))
+  (let ((cell (make-constructor-cell class-name keys)))
     (setf (cell-function cell) (invalidated-constructor cell))
     cell))
+
+(defmacro ensure-gethash (key table &optional default)
+  (let ((valueg (gensym "VALUE"))
+        (presentpg (gensym "PRESENTP"))
+        (keyo (gensym "KEY"))
+        (tableo (gensym "TABLE")))
+    `(let ((,keyo ,key) (,tableo ,table))
+       (multiple-value-bind (,valueg ,presentpg)
+           (gethash ,keyo ,tableo)
+         (if ,presentpg
+             ,valueg
+             (setf (gethash ,keyo ,tableo) ,default))))))
 
 (defun ensure-name-table (class-name)
   (ensure-gethash class-name *constructor-cells*
@@ -33,7 +45,7 @@ a constructor ought to be computed, before make-instance.
 ;;; used in precompile
 (defun force-constructor (class-name keys function)
   (setf (gethash keys (ensure-name-table class-name))
-        (make-cell class-name keys function)))
+        (make-constructor-cell class-name keys function)))
 
 ;;; debug
 (defun find-constructor-cell (class-name keys)
@@ -96,7 +108,7 @@ a constructor ought to be computed, before make-instance.
     ;; Defined in compute-constructor.lisp
     (update-constructor-cell cell)
     ;; Alternately could just use make-instance.
-    (apply (cell-function cell) args)))
+    (apply cell args)))
 
 ;;; Temporary constructor put in place in case compute-constructor ends up
 ;;; calling make-instance (e.g. in the compiler).

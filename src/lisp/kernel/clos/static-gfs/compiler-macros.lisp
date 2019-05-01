@@ -67,9 +67,8 @@
           (let ((classn class-designator)
                 (cellg (gensym "CONSTRUCTOR-CELL")))
             `(let ((,cellg
-                     (cell-function
-                      (load-time-value
-                       (ensure-constructor-cell ',classn ',keys))))
+                     (load-time-value
+                      (ensure-constructor-cell ',classn ',keys)))
                    ,@bindings)
                (funcall ,cellg ,@syms)))
           ;; We have non constant arguments, but we can still do just a bit.
