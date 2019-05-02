@@ -925,28 +925,18 @@
   `(cleavir-primop:values ,@values))
 
 ;;; Written as a compiler macro to avoid confusing bclasp.
-(define-cleavir-compiler-macro multiple-value-bind (&whole form vars form &body body)
+(define-cleavir-compiler-macro multiple-value-bind (&whole form vars values-form &body body)
   (let ((syms (loop for var in vars collecting (gensym (symbol-name var)))))
     `(cleavir-primop:let-uninitialized (,@syms)
-       (cleavir-primop:multiple-value-setq (,@syms) ,form)
+       (cleavir-primop:multiple-value-setq (,@syms) ,values-form)
        (let (,@(loop for var in vars for sym in syms
                      collecting `(,var ,sym)))
          ,@body))))
 
-;;; I'm not sure I understand the order of evaluation issues entirely,
-;;; so I'm antsy about using the m-v-setq primop directly... and this
-;;; equivalence is guaranteed.
-;;; SETF VALUES will expand into a multiple-value-bind, which will use
-;;; the m-v-setq primop as above, so it works out about the same.
-;;; Not a cleavir macro because all we need is setf. FIXME: Move earlier?
-(define-compiler-macro multiple-value-setq ((&rest vars) form)
-  ;; SETF VALUES will return no values if it sets none, but m-v-setq
-  ;; always returns the primary value.
-  (if (null vars)
-      `(values ,form)
-      `(values (setf (values ,@vars) ,form))))
+;;; NOTE: The following two macros don't actually rely on anything cleavir-specific
+;;; for validity. However, they do rely on their efficiency being from
+;;; multiple-value-bind being efficient, which it is not without the above version.
 
-;;; FIXME: Move to earlier, if possible
 (define-compiler-macro nth-value (&whole form n expr &environment env)
   (let ((n (and (constantp n env) (ext:constant-form-value n env))))
     (if (or (null n) (> n 100)) ; completely arbitrary limit
@@ -956,3 +946,16 @@
           `(multiple-value-bind (,@dummies ,keeper) ,expr
              (declare (ignore ,@dummies))
              ,keeper)))))
+
+;;; I'm not sure I understand the order of evaluation issues entirely,
+;;; so I'm antsy about using the m-v-setq primop directly... and this
+;;; equivalence is guaranteed.
+;;; SETF VALUES will expand into a multiple-value-bind, which will use
+;;; the m-v-setq primop as above, so it works out about the same.
+;;; Not a cleavir macro because all we need is setf.
+(define-compiler-macro multiple-value-setq ((&rest vars) form)
+  ;; SETF VALUES will return no values if it sets none, but m-v-setq
+  ;; always returns the primary value.
+  (if (null vars)
+      `(values ,form)
+      `(values (setf (values ,@vars) ,form))))
