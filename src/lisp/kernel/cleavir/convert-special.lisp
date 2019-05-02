@@ -30,6 +30,10 @@
           (cst:reconstruct (progn ,@body) ,cst ,system))
         ,environment ,system))))
 
+(defmacro def-convert-macro (name lambda-list &body body)
+  `(progn (def-ast-macro ,name ,lambda-list ,@body)
+          (def-cst-macro ,name ,lambda-list ,@body)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Define how to convert a special form that's "functionlike".
@@ -75,17 +79,9 @@
 ;;; it gets converted into a function call to CORE:MULTIPLE-VALUE-FUNCALL.
 ;;;
 
-(def-ast-macro multiple-value-call (function-form &rest forms)
+(def-convert-macro multiple-value-call (function-form &rest forms)
   ;;; Technically we could convert the 0-forms case to FUNCALL, but it's
-  ;;; probably not a big deal. (In practice, almost all MULTIPLE-VALUE-CALLs
-  ;;; result from MULTIPLE-VALUE-BIND, which uses only have one argument form.)
-  (if (eql (length forms) 1)
-      `(cleavir-primop:multiple-value-call (core::coerce-fdesignator ,function-form) ,@forms)
-      `(core:multiple-value-funcall
-        (core::coerce-fdesignator ,function-form)
-        ,@(mapcar (lambda (x) `#'(lambda () (progn ,x))) forms))))
-
-(def-cst-macro multiple-value-call (function-form &rest forms)
+  ;;; probably not a big deal.
   (if (eql (length forms) 1)
       `(cleavir-primop:multiple-value-call (core::coerce-fdesignator ,function-form) ,@forms)
       `(core:multiple-value-funcall
@@ -439,3 +435,33 @@
         (cleavir-ast:make-load-time-value-ast `',name
                                               t
                                               :origin (cst:source cst)))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Converting CORE:INSTANCE-REF/SET
+;;;
+;;; FIXME: Maybe just use the primops instead.
+
+(defmethod cleavir-generate-ast:convert-special
+    ((symbol (eql 'core:instance-ref)) form environment (system clasp-cleavir:clasp))
+  (cleavir-generate-ast:convert-special 'cleavir-primop:slot-read form environment system))
+
+;;; the slot-read method will do this anyway.
+(defmethod cleavir-generate-ast:check-special-form-syntax
+    ((head (eql 'core:instance-ref)) form))
+
+(defmethod cleavir-cst-to-ast:convert-special
+    ((symbol (eql 'core:instance-ref)) cst environment (system clasp-cleavir:clasp))
+  (cleavir-cst-to-ast:convert-special 'cleavir-primop:slot-read cst environment system))
+
+;;; For -set it's mildly more complicated, as slot-write returns no values.
+(def-convert-macro core:instance-set (instance index value)
+  (let ((ig (gensym)) (ing (gensym)) (vg (gensym)))
+    `(let ((,ig ,instance) (,ing ,index) (,vg ,value))
+       (cleavir-primop:slot-write ,ig ,ing ,vg)
+       ,vg)))
+
+(defmethod cleavir-generate-ast:check-special-form-syntax
+    ((head (eql 'core:instance-set)) form)
+  (cleavir-code-utilities:check-form-proper-list form)
+  (cleavir-code-utilities:check-argcount form 3 3))
