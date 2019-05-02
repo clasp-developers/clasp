@@ -69,7 +69,7 @@
           for function-form
             = `(load-time-value
                 (let ((spec (find ',key (clos:class-default-initargs ,class)
-                                  :test #'eq)))
+                                  :key #'first :test #'eq)))
                   (if spec
                       (third spec)
                       (error "BUG: Default initarg ~a disappeared" ',key))))
