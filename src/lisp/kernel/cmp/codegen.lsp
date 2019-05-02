@@ -324,6 +324,8 @@ then compile it and return (values compiled-llvm-function lambda-name)"
          ((eq sym 'cleavir-primop:cdr) t)
          ((eq sym 'core:vaslist-pop) t)
          ((eq sym 'core:instance-stamp) t)
+         ((eq sym 'core:instance-ref) t)
+         ((eq sym 'core:instance-set) t)
          ((eq sym 'core:defcallback) t)
          (t (special-operator-p sym)))))
 

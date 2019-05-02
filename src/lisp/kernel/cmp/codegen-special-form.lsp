@@ -38,6 +38,8 @@
     (cleavir-primop:cdr codegen-cdr convert-cdr)
     (core:vaslist-pop codegen-vaslist-pop convert-vaslist-pop)
     (core:instance-stamp codegen-instance-stamp convert-instance-stamp)
+    (core:instance-ref codegen-instance-ref convert-instance-ref)
+    (core:instance-set codegen-instance-set convert-instance-set)
     (llvm-inline codegen-llvm-inline convert-llvm-inline)
     (:gc-profiling codegen-gc-profiling convert-gc-profiling)
     (core::debug-message codegen-debug-message convert-debug-message)
@@ -918,6 +920,42 @@ jump to blocks within this tagbody."
         (object (alloca-t* "instance-stamp-instance")))
     (codegen object form env)
     (irc-t*-result (irc-intrinsic "cx_read_stamp" (irc-load object)) result)))
+
+;;; CORE:INSTANCE-REF
+;;; the gen- are for cclasp. At the moment they're unused, but that's just because
+;;; the runtime fastgf compiler uses bclasp so it's a bit lower priority.
+
+(defun gen-instance-ref (instance index)
+  (irc-intrinsic "cc_read_slot" instance
+                 (irc-untag-fixnum index %size_t% "slot-location")))
+
+(defun codegen-instance-ref (result rest env)
+  (let ((instance (first rest)) (index (second rest))
+        (instancet (alloca-t* "instance-ref-instance"))
+        (indext (alloca-t* "instance-ref-index")))
+    (codegen instancet instance env)
+    (codegen indext index env)
+    (irc-t*-result (gen-instance-ref (irc-load instancet) (irc-load indext))
+                   result)))
+
+;;; CORE:INSTANCE-SET
+
+(defun gen-instance-set (instance index value)
+  (irc-intrinsic "cc_write_slot" instance
+                 (irc-untag-fixnum index %size_t% "slot-location")
+                 value))
+
+(defun codegen-instance-set (result rest env)
+  (let ((instance (first rest)) (index (second rest)) (value (third rest))
+        (instancet (alloca-t* "instance-set-instance"))
+        (indext (alloca-t* "instance-set-index"))
+        (valuet (alloca-t* "instance-set-value")))
+    (codegen instancet instance env)
+    (codegen indext index env)
+    (codegen valuet value env)
+    (irc-t*-result
+     (gen-instance-set (irc-load instancet) (irc-load indext) (irc-load valuet))
+     result)))
 
 ;;; DBG-i32
 
