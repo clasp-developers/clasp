@@ -288,6 +288,7 @@ def collect_bclasp_lisp_files(**kwargs):
         "src/lisp/kernel/cmp/opt-character",
         "src/lisp/kernel/cmp/opt-number",
         "src/lisp/kernel/cmp/opt-type",
+        "src/lisp/kernel/cmp/opt-control",
         "src/lisp/kernel/cmp/opt-sequence",
         "src/lisp/kernel/cmp/opt-cons",
         "src/lisp/kernel/cmp/opt-array",

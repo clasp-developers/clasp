@@ -25,11 +25,16 @@
                  (second form)
                  ;; invalid function form; could warn, but compiler should get it
                  nil))
-            ;; FIXME: commented out because there could be a local binding; need to be smarter w/environment
-            #+(or)
+            ;; FIXME: This covers common cases like (whatever :key 'eql),
+            ;; but the good way to do it would be to query the environment to see
+            ;; if the name has been shadowed. (CL names cannot be shadowed, ofc.)
             ((eq (car form) 'quote)
              (if (and (consp (cdr form)) (null (cddr form)))
-                 (second form)
+                 (let ((name (second form)))
+                   (if (and (symbolp name)
+                            (eq (symbol-package name) (find-package "CL")))
+                       name
+                       nil))
                  nil))
             ((eq (car form) 'lambda) form)
             (t nil))
@@ -62,22 +67,21 @@
                      `((,test-function ,test)))))))))
 
 ;; Like the above, but with a key function.
-(defun opt-key-function (key env)
-  (cond ((null key)
-         (values #'identity nil))
-        (t (let ((maybe-head (constant-function-expression key env)))
-             (if maybe-head
-                 (values #'(lambda (elt)
-                             `(,maybe-head ,elt))
-                         nil)
-                 (si::with-unique-names (key-function)
-                   (values #'(lambda (elt)
-                               `(funcall ,key-function ,elt))
-                           `((,key-function (or ,key #'identity))))))))))
+(defun opt-key-function (key-flag key env)
+  (if (null key-flag) ; no :key provided
+      (values #'identity nil)
+      (let ((maybe-head (constant-function-expression key env)))
+        (if maybe-head
+            (values #'(lambda (elt) `(,maybe-head ,elt))
+                    nil)
+            (si::with-unique-names (key-function)
+              (values #'(lambda (elt) `(funcall ,key-function ,elt))
+                      ;; explicit :key nil is allowed.
+                      `((,key-function (or ,key #'identity)))))))))
 
 ;;; Use the above to do an entire two-arg test, and allow for START and END as well.
 ;;; Returns (VALUES KEYF TESTF INITS KEYK TESTK TEST START END)
-;;; KEYF and TESTF are the functions returned by SEQ-OPT-ETC above. INITS are from them as well.
+;;; KEYF and TESTF are the functions returned by OPT-x-FUNCTION above. INITS are from them as well.
 ;;; KEYK and TESTK are the keywords for them, i.e. KEYK is :key if :key was specified or else NIL,
 ;;;  and TESTK is :test or :test-not or nil.
 ;;; TEST is the form passed as a :test or :test-not, or #'eql if none was passed.
@@ -131,7 +135,7 @@
                  (t (return nil)))
         finally
            (multiple-value-bind (key-function key-init)
-               (opt-key-function key environment)
+               (opt-key-function key-flag key environment)
              (multiple-value-bind (test-function test-init)
                  (opt-test-function test-flag test environment)
                (return (values key-function
