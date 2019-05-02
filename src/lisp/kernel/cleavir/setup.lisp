@@ -308,17 +308,18 @@ when this is t a lot of graphs will be generated.")
 (defvar *use-ast-interpreter* nil)
 
 (defmethod cleavir-environment:eval (form env (dispatch-env clasp-global-environment))
-  (cond (core:*use-interpreter-for-eval*
-         (core:interpret form (cleavir-env->interpreter env)))
-        (*use-ast-interpreter*
-         (handler-case
-             (ast-interpret-form form env)
-           (interpret-ast:cannot-interpret (c)
-             (declare (ignore c))
-             ;; If the AST interpreter doesn't work, fall back.
-             (cclasp-eval form env))))
-        (t
-         (cclasp-eval form env))))
+  (simple-eval form env
+               (cond (core:*use-interpreter-for-eval*
+                      (lambda (form env)
+                        (core:interpret form (cleavir-env->interpreter env))))
+                     (*use-ast-interpreter*
+                      (lambda (form env)
+                        (handler-case
+                            (ast-interpret-form form env)
+                          (interpret-ast:cannot-interpret (c)
+                            (declare (ignore c))
+                            (cclasp-eval-with-env form env)))))
+                     (t #'cclasp-eval-with-env))))
 
 (defmethod cleavir-environment:eval (form env (dispatch-env NULL))
   "Evaluate the form in Clasp's top level environment"
@@ -327,7 +328,6 @@ when this is t a lot of graphs will be generated.")
 #+(or)
 (defmacro ext::lambda-block (name (&rest lambda-list) &body body &environment env)
   `(lambda ,lambda-list (block ,(if (listp name) (second name) name) ,@body)))
-
 
 (defun build-and-draw-ast (filename cst)
   (let ((ast (cleavir-cst-to-ast:cst-to-ast cst *clasp-env* *clasp-system*)))
