@@ -218,7 +218,6 @@ DEBUG_OPTIONS = [
     "DEBUG_LONG_CALL_HISTORY",   # The GF call histories used to blow up - this triggers an error if they get too long
     "DEBUG_BOUNDS_ASSERT",  # check bounds 
     "DEBUG_GFDISPATCH",  # debug call history manipulation
-    "DEBUG_CMPFASTGF",  # debug dispatch functions by inserting code into them that traces them
     "DEBUG_FASTGF",   # generate slow gf dispatch logging and write out dispatch functions to /tmp/dispatch-history-**
     "DEBUG_SLOT_ACCESSORS", # GF accessors have extra debugging added to them
     "DEBUG_THREADS",
@@ -1316,7 +1315,6 @@ def build(bld):
     # Always build the C++ code
     intrinsics_bitcode_node = bld.path.find_or_declare(variant.inline_bitcode_archive_name("intrinsics"))
     builtins_bitcode_node = bld.path.find_or_declare(variant.inline_bitcode_archive_name("builtins"))
-    fastgf_bitcode_node = bld.path.find_or_declare(variant.inline_bitcode_archive_name("fastgf"))
     cclasp_common_lisp_output_name_list = variant.common_lisp_output_name_list(bld,bld.clasp_cclasp,stage='c')
     cxx_all_bitcode_node = bld.path.find_or_declare(variant.cxx_all_bitcode_name())
     out_dir_node = bld.path.find_dir(out)
@@ -1345,8 +1343,7 @@ def build(bld):
         task = compile_aclasp(env=bld.env)
         task.set_inputs([bld.iclasp_executable,
                          intrinsics_bitcode_node,
-                         builtins_bitcode_node,
-                         fastgf_bitcode_node] +
+                         builtins_bitcode_node] +
                         waf_nodes_for_lisp_files(bld, bld.clasp_aclasp))
         aclasp_common_lisp_output_name_list = variant.common_lisp_output_name_list(bld, bld.clasp_aclasp, stage = 'a')
         log.debug("find_or_declare aclasp_common_lisp_output_name_list = %s", aclasp_common_lisp_output_name_list)
@@ -1355,8 +1352,7 @@ def build(bld):
 
         aclasp_link_product = variant.fasl_name(bld,stage = 'a')
         task = link_fasl(env=bld.env)
-        task.set_inputs([fastgf_bitcode_node,
-                         builtins_bitcode_node,
+        task.set_inputs([builtins_bitcode_node,
                          intrinsics_bitcode_node] +
                          aclasp_common_lisp_output_name_list)
         task.set_outputs([aclasp_link_product])
@@ -1371,7 +1367,6 @@ def build(bld):
         task.set_inputs([bld.iclasp_executable,
                          aclasp_link_product,
                          intrinsics_bitcode_node,
-                         fastgf_bitcode_node,
                          builtins_bitcode_node] +
                         waf_nodes_for_lisp_files(bld, bld.clasp_bclasp))
         bclasp_common_lisp_output_name_list = variant.common_lisp_output_name_list(bld, bld.clasp_bclasp, stage = 'b')
@@ -1379,8 +1374,7 @@ def build(bld):
         bld.add_to_group(task)
 
         task = link_fasl(env=bld.env)
-        task.set_inputs([fastgf_bitcode_node,
-                         builtins_bitcode_node,
+        task.set_inputs([builtins_bitcode_node,
                          intrinsics_bitcode_node] +
                          bclasp_common_lisp_output_name_list)
         task.set_outputs([bld.bclasp_fasl])
@@ -1442,8 +1436,7 @@ def build(bld):
         bld.add_to_group(task)
     if (bld.stage == 'dangerzone' or bld.stage == 'rebuild' or bld.stage_val >= 3):
         task = link_fasl(env=bld.env)
-        task.set_inputs([fastgf_bitcode_node,
-                         builtins_bitcode_node,
+        task.set_inputs([builtins_bitcode_node,
                          intrinsics_bitcode_node] +
                          cclasp_common_lisp_output_name_list)
         task.set_outputs([bld.cclasp_fasl])
@@ -1880,7 +1873,6 @@ def postprocess_all_c_tasks(self):
     all_cxx_nodes = []
     intrinsics_o = None
     builtins_o = None
-    fastgf_o = None
     for task in self.compiled_tasks:
         log.debug("Scrape taskgen inspecting C task %s", task)
         if ( task.__class__.__name__ == 'cxx' ):
@@ -1890,8 +1882,6 @@ def postprocess_all_c_tasks(self):
                     intrinsics_cc = node
                 if ends_with(node.name, 'builtins.cc'):
                     builtins_cc = node
-                if ends_with(node.name, 'fastgf.cc'):
-                    fastgf_cc = node
 ##switch back to old way to create scraper tasks                    
 #                sif_node = node.change_ext('.sif')
 #                self.create_task('generate_one_sif', node, [sif_node])
@@ -1902,8 +1892,6 @@ def postprocess_all_c_tasks(self):
                     intrinsics_o = node
                 if ends_with(node.name, 'builtins.cc'):
                     builtins_o = node
-                if ends_with(node.name, 'fastgf.cc'):
-                    fastgf_o = node
         if ( task.__class__.__name__ == 'c' ):
             for node in task.outputs:
                 all_o_nodes.append(node)
@@ -1968,19 +1956,6 @@ def postprocess_all_c_tasks(self):
                      builtins_bitcode_archive_node)
     install('lib/clasp/', builtins_bitcode_archive_node)
     install('lib/clasp/', builtins_bitcode_alone_node)
-
-# fastgf
-    fastgf_bitcode_archive_node = self.path.find_or_declare(variant.inline_bitcode_archive_name("fastgf"))
-    fastgf_bitcode_alone_node = self.path.find_or_declare(variant.inline_bitcode_name("fastgf"))
-    log.debug("fastgf_cc = %s, fastgf_o.name = %s, fastgf_bitcode_alone_node = %s", fastgf_cc, fastgf_o.name, fastgf_bitcode_alone_node)
-    self.create_task('build_bitcode',
-                     [fastgf_cc] + scraper_output_nodes,
-                     fastgf_bitcode_alone_node)
-    self.create_task('link_bitcode',
-                     [fastgf_o],
-                     fastgf_bitcode_archive_node)
-    install('lib/clasp/', fastgf_bitcode_archive_node)
-    install('lib/clasp/', fastgf_bitcode_alone_node)
 
 # all of C
     cxx_all_bitcode_node = self.path.find_or_declare(variant.cxx_all_bitcode_name())

@@ -218,7 +218,7 @@ core::T_O* to_object_pointer( void * x );
 };
 
 extern "C" {
-extern int64_t cc_read_stamp(void* tagged_pointer);
+extern core::T_O* cx_read_stamp(core::T_O* tagged_pointer);
 }
 namespace llvmo {
 

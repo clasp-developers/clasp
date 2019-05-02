@@ -41,7 +41,6 @@
 ;;; Bound thread-local when the builtins module is needed
 (defvar *thread-local-builtins-module* nil)
 
-(defvar *thread-local-fastgf-module* nil)
 (defvar *thread-local-jit-engine* nil)
 
 ;;;(defvar *llvm-context* (llvm-sys:create-llvm-context))
@@ -55,7 +54,6 @@
   (mp:push-default-special-binding 'cmp:*llvm-context* '(llvm-sys:create-llvm-context))
   (mp:push-default-special-binding 'cmp:*primitives* nil)
   (mp:push-default-special-binding 'cmp::*thread-local-builtins-module* nil)
-  (mp:push-default-special-binding 'cmp::*thread-local-fastgf-module* nil)
 ;;;  (mp:push-default-special-binding 'cmp::*thread-local-jit-engine* nil)
   ;;; more thread-local special variables may be added in the future
   )
@@ -456,23 +454,6 @@ The passed module is modified as a side-effect."
     (llvm-sys:link-in-module linker builtins-clone))
   module)
 
-(defun link-fastgf-module (module)
-  "Merge the intrinsics module with the passed module.
-The passed module is modified as a side-effect."
-  (unless *thread-local-fastgf-module*
-    (let* ((fastgf-bitcode-name (namestring (truename (build-inline-bitcode-pathname :compile :fastgf))))
-           (fastgf-module (llvm-sys:parse-bitcode-file fastgf-bitcode-name *llvm-context*)))
-      (llvm-sys:remove-useless-global-ctors fastgf-module)
-      (setf *thread-local-fastgf-module* fastgf-module)))
-  ;; Clone the intrinsics module and link it in
-  (quick-module-dump module "module before linking fastgf-clone")
-  (let ((linker (llvm-sys:make-linker module))
-        (fastgf-clone (llvm-sys:clone-module *thread-local-fastgf-module*)))
-    ;;(remove-always-inline-from-functions fastgf-clone)
-    (quick-module-dump fastgf-clone "fastgf-clone")
-    (llvm-sys:link-in-module linker fastgf-clone))
-  module)
-
 (defun jit-engine ()
   "Lazy initialize the *thread-local-jit-engine* and return it"
   (if *thread-local-jit-engine*
@@ -567,15 +548,6 @@ The passed module is modified as a side-effect."
       #+(or)(remove-llvm.used-if-exists module)
       (llvm-sys:remove-always-inline-functions module))))
 
-
-(defun link-inline-remove-fastgf (module)
-  (when (>= *optimization-level* 2)
-    (with-track-llvm-time
-        (link-fastgf-module module)
-      (optimize-module-for-compile-file module)
-      #+(or)(remove-llvm.used-if-exists module)
-      (llvm-sys:remove-always-inline-functions module))))
-
 (defun switch-always-inline-to-inline (module)
   (let ((functions (llvm-sys:module-get-function-list module))
         inline-functions)
@@ -652,21 +624,12 @@ The passed module is modified as a side-effect."
 (progn
   (export '(jit-add-module-return-function jit-add-module-return-dispatch-function jit-remove-module))
   (defparameter *jit-lock* (mp:make-lock :name 'jit-lock :recursive t))
-  (defun jit-add-module-return-function (original-module main-fn startup-fn shutdown-fn literals-list &key dispatcher output-path )
+  (defun jit-add-module-return-function (original-module main-fn startup-fn shutdown-fn literals-list
+                                         &key output-path)
     ;; Link the builtins into the module and optimize them
-    (if (null dispatcher)
-        (progn
-          (quick-module-dump original-module "before-link-builtins")
-          (link-inline-remove-builtins original-module)
-          (quick-module-dump original-module "module-before-optimize"))
-        (progn
-          (link-inline-remove-fastgf original-module)
-          ;; If there is an output-path - then for debugging - save this final, inlined module before it's passed to llvm
-          (when output-path
-            (let* ((filename (pathname-name output-path))
-                   (filename-inlined (concatenate 'string filename "-inlined"))
-                   (output-path-inlined (make-pathname :name filename-inlined :defaults output-path)))
-              (cmp::debug-save-dispatcher original-module output-path-inlined)))))
+    (quick-module-dump original-module "before-link-builtins")
+    (link-inline-remove-builtins original-module)
+    (quick-module-dump original-module "module-before-optimize")
     (let ((module original-module))
       ;; (irc-verify-module-safe module)
       (let ((jit-engine (jit-engine))
@@ -685,10 +648,6 @@ The passed module is modified as a side-effect."
                      (llvm-sys:jit-finalize-repl-function jit-engine handle repl-name startup-name shutdown-name literals-list)))
               (mp:unlock *jit-lock*))))))
 
-  (defun jit-add-module-return-dispatch-function (original-module dispatch-fn startup-fn shutdown-fn literals-list &key output-path)
-    (jit-add-module-return-function original-module dispatch-fn startup-fn shutdown-fn literals-list :dispatcher :dispatch
-                                    :output-path output-path))
-     
   (defun jit-remove-module (handle)
     (llvm-sys:clasp-jit-remove-module (jit-engine) handle))
   (defun jit-kernel-module (original-module)
@@ -700,6 +659,4 @@ The passed module is modified as a side-effect."
             (setf run-all-function f)))
       (let ((main-fn (add-main-function module run-all-function)))
         (let ((run (jit-add-module-return-function module main-fn nil nil nil)))
-          (funcall run)
-          )))))
-
+          (funcall run))))))
