@@ -893,23 +893,35 @@
     (mapfoo-macro 'on 'nconc function (cons list more-lists)))
   )
 
+;;; If FORM is of the form #'valid-function-name, return valid-function-name.
+;;; FIXME?: Give up on expansion and warn if it's invalid?
+(defun constant-function-form (form env)
+  (declare (ignore env))
+  (and (consp form) (eq (first form) 'function)
+       (consp (cdr form)) (null (cddr form))
+       (core:valid-function-name-p (second form))
+       (second form)))
+
 (define-cleavir-compiler-macro funcall
     (&whole form function &rest arguments &environment env)
   ;; If we have (funcall #'foo ...), we might be able to apply the FOO compiler macro.
-  (when (and (consp function) (eq (first function) 'function)
-             (consp (cdr function)) (null (cddr function)))
-    (let ((name (second function)))
-      (when (core:valid-function-name-p name)
-        (let ((func-info (cleavir-env:function-info env name)))
-          (when func-info
-            (let ((cmf (compiler-macro-function name env)))
-              (when cmf
-                (let ((notinline (eq 'notinline
-                                     (cleavir-env:inline func-info))))
-                  (when (not notinline)
-                    (return-from funcall
-                      (funcall *macroexpand-hook* cmf form env)))))))))))
-  ;; If not, we can still eliminate the call to FUNCALL as follows.
+  ;; Failing that, we can at least skip any coercion - #'foo is obviously a function.
+  ;; (funcall #'(setf foo) ...) is fairly common, so this is nice to do.
+  (let ((name (constant-function-form function env)))
+    (when name
+      (return-from funcall
+        (let* ((func-info (cleavir-env:function-info env name))
+               (notinline (and func-info
+                               (eq 'notinline (cleavir-env:inline func-info))))
+               ;; We can't get this from the func-info because it might be
+               ;; a local-function-info, which doesn't have that slot.
+               (cmf (compiler-macro-function name env)))
+          (if (and cmf (not notinline))
+              (funcall *macroexpand-hook* cmf form env)
+              `(cleavir-primop:funcall ,function ,@arguments))))))
+  ;; For other forms, we just inline the type coercion.
+  ;; FIXME?: Expand into (primop:funcall (coerce-fdesignator ,function) ,@args)
+  ;; and use it in bclasp too?
   (let ((fsym (gensym "FUNCTION")))
     `(let ((,fsym ,function))
        (cleavir-primop:funcall
