@@ -73,14 +73,6 @@
 ;;; Convert a generic function call-history to an internal representation
 ;;;   called a DTREE (dispatch-tree) made up of the structs below.
 
-(defvar *outcomes* nil
-  "Map effective methods to indices in the *gf-data* and then to basic-blocks")
-(defvar *gf-data-id* nil)
-(defvar *gf-data* nil
-  "Store the global variable that will store effective methods")
-(defvar *bad-tag-bb*)
-(defvar *eql-selectors*)
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Sanity check for slot index value
@@ -652,39 +644,10 @@
       (core:bformat fout "%s [ label = \"Start\", shape = diamond ];%N" (string startid))
       (core:bformat fout "%s -> %s;%N" (string startid) (string (draw-node fout (dtree-root dtree)))))))
 
-(defun register-runtime-data (value table)
-  "Register a integer index into the run time literal table for the discriminating function.
-   This table stores eql specializers and effective method functions."
-  (let ((existing-index (gethash value table)))
-    (if existing-index
-        existing-index
-        (let ((index (prog1 *gf-data-id* (incf *gf-data-id*))))
-          (setf (gethash value table) index)
-          index))))
-
-(defun lookup-eql-selector (eql-test)
-  (let ((tagged-immediate (core:create-tagged-immediate-value-or-nil eql-test)))
-    (if tagged-immediate
-	(irc-int-to-ptr (jit-constant-i64 tagged-immediate) %t*%)
-	(let ((eql-selector-id (gethash eql-test *eql-selectors*)))
-	  (unless eql-selector-id
-            (setf eql-selector-id (register-runtime-data eql-test *eql-selectors*)))
-	  (let* ((eql-selector (irc-load (irc-gep *gf-data*
-                                                  (list (jit-constant-size_t 0)
-                                                        (jit-constant-size_t eql-selector-id))) "load")))
-	    eql-selector)))))
-
 ;;; --------------------------------------------------
 ;;;
 ;;; Debugging a generic function dispatcher
 ;;;
-(defun debug-save-dispatcher (module &optional (output-path #P"/tmp/dispatcher.ll"))
-  "Save everything about the generic function so that it can be saved to a file and then edited and re-installed"
-  (when (wild-pathname-p output-path)
-    (setf output-path (pathname (substitute #\_ #\* (namestring output-path)))))
-  (let ((fout (open output-path :direction :output)))
-    (unwind-protect (llvm-sys:dump-module module fout)
-      (close fout))))
 
 (defun gather-sorted-outcomes (eql-selectors outcomes)
   (labels ((extract-outcome (outcome)
@@ -729,9 +692,6 @@
 
 (defun call-history-needs-vaslist-p (call-history)
   ;; Functions, i.e. method functions or full EMFs, are the only things that need vaslists.
-  ;; Debugging note: If this is not computed correctly, you'll get an error like
-  ;; type-error: datum NIL, expected type LLVM-SYS:VALUE
-  ;; in code generation - because the vaslist holder will be nil instead of an llvm value.
   (mapc (lambda (entry)
           (when (or (effective-method-outcome-p (cdr entry))
                     (function-outcome-p (cdr entry)))
