@@ -420,7 +420,7 @@
          ;; === END OF TRANSLATORS ===
          (primitive         "cx_read_stamp" %t*% (list %t*%))
          (primitive         "cc_read_slot" %t*% (list %t*% %size_t%))
-         (primitive         "cc_write_slot" %t*% (list %t*% %t*% %size_t%))
+         (primitive         "cc_write_slot" %t*% (list %t*% %size_t% %t*%))
          )
      *primitives*
      ))
