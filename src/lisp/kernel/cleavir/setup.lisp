@@ -17,11 +17,6 @@ when this is t a lot of graphs will be generated.")
 (defvar *hir* nil)
 (defvar *mir* nil)
 
-;;; Save top level forms for source tracking
-(defmethod cleavir-generate-ast::convert-form :around (form info env system)
-  (let ((core:*top-level-form-stack* (cons form core:*top-level-form-stack*)))
-    (call-next-method)))
-
 (defmethod cst:reconstruct :around (expression cst (client clasp) &key (default-source nil default-source-p))
   (call-next-method expression cst client :default-source (if default-source-p
                                                               default-source

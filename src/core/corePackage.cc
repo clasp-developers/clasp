@@ -160,7 +160,6 @@ SYMBOL_EXPORT_SC_(CorePkg, derivable_cxx_class);
 SYMBOL_EXPORT_SC_(CorePkg, derivable_cxx_object);
 SYMBOL_EXPORT_SC_(CorePkg, stack_closure);
 SYMBOL_EXPORT_SC_(CorePkg, make_source_pos_info);
-SYMBOL_EXPORT_SC_(CorePkg, STARtop_level_form_stackSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARloadHooksSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARcache_macroexpandSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARmodule_startup_function_nameSTAR);
@@ -1183,7 +1182,6 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARclasp_packageSTAR->defparameter(_lisp->makePackage("CLASP!",nicknames,use_packages));
   _sym_STARdebug_fsetSTAR->defparameter(_Nil<core::T_O>());
   ext::_sym_ignore_signal->defparameter(SimpleBaseString_O::make("Ignore signal"));
-  _sym_STARtop_level_form_stackSTAR->defparameter(_Nil<core::T_O>());
   ext::_sym_STARinvoke_debugger_hookSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARuse_cleavir_compilerSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARinterrupts_enabledSTAR->defparameter(_lisp->_true());

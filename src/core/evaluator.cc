@@ -2456,19 +2456,8 @@ T_mv t1SymbolMacrolet(List_sp args, T_sp env) {
   return do_symbolMacrolet(args, env, true);
 }
 
-struct SafeTopLevelFormStack {
-  SafeTopLevelFormStack(T_sp exp) {
-    List_sp tlf = _sym_STARtop_level_form_stackSTAR->symbolValue();
-    _sym_STARtop_level_form_stackSTAR->setf_symbolValue(Cons_O::create(exp,tlf));
-  };
-  ~SafeTopLevelFormStack() {
-    _sym_STARtop_level_form_stackSTAR->setf_symbolValue(oCdr(_sym_STARtop_level_form_stackSTAR->symbolValue()));
-  };
-};
-
 T_mv t1Evaluate(T_sp exp, T_sp environment) {
   if ((exp).consp()) {
-    SafeTopLevelFormStack topLevelForm(exp);
     T_sp head = oCar(exp);
     if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
       printf("%s:%d Checking if top-level head: %s  cl::_sym_eval_when: %s eq=%d    form: %s\n", __FILE__, __LINE__, _rep_(head).c_str(), _rep_(cl::_sym_eval_when).c_str(), (head == cl::_sym_eval_when), _rep_(exp).c_str());
