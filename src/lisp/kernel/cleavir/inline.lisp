@@ -422,18 +422,6 @@
   (declaim (inline minusp))
   (defun minusp (number) (< number 0)))
 
-(progn
-  (debug-inline "zerop")
-  (declaim (inline zerop))
-  (defun zerop (number)
-    (etypecase number
-      (fixnum (if (cleavir-primop:fixnum-equal number 0) t nil))
-      (single-float (if (cleavir-primop:float-equal single-float number 0.0f0) t nil))
-      (double-float (if (cleavir-primop:float-equal double-float number 0.0d0) t nil))
-      ;; a zero ratio or bignum would be normalized into a fixnum.
-      ;; a zero complex would be normalized into a fixnum or a float.
-      (number nil))))
-
 ;;; ------------------------------------------------------------
 ;;;
 ;;; Array functions
@@ -448,7 +436,7 @@
     (array (core::%array-total-size array))))
 
 (debug-inline "array-rank")
-(declaim (inline array-rank))
+(declaim (inline array-vrank))
 (defun array-rank (array)
   (etypecase array
     ((simple-array * (*)) 1)
