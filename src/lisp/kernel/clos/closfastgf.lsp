@@ -173,8 +173,6 @@
   (defun incf-debug-fastgf-indent ())
   (defun decf-debug-fastgf-indent ())
   )
-  
-
 
 ;;; --------------------------------------------------
 ;;;
@@ -182,68 +180,6 @@
 ;;;   update generic-function-call-history and to call
 ;;;   codegen-dispatcher to generate a new dispatch function when needed
 ;;;
-
-;;; Called from cc_bound_or_error -> intrinsic_slot_unbound
-(defun fastgf-slot-unbound (opt-slot-reader instance)
-  (slot-unbound (cmp::optimized-slot-reader-class opt-slot-reader)
-                instance
-                (cmp::optimized-slot-reader-slot-name opt-slot-reader)))
-
-;;; Takes three arguments ((x cmp::optimized-slot-reader) instance vargs)
-(defun dispatch-slot-reader-index-debug (opt-slot-reader instance vargs)
-  ;; Do the slot read and check against the slot index
-  (let ((opt-method (cmp::optimized-slot-reader-method opt-slot-reader))
-        (opt-class (cmp::optimized-slot-reader-class opt-slot-reader))
-        (slot-name (cmp::optimized-slot-reader-slot-name opt-slot-reader))
-        (opt-index (cmp::optimized-slot-reader-index opt-slot-reader)))
-    (let* ((slot (effective-slotd-from-accessor-method opt-method opt-class))
-           (lookup-index (slot-definition-location slot)))
-      (unless (= opt-index lookup-index)
-        (error "The dispatch-slot-reader-index-debug function caught a difference between the slot opt-index ~a and the looked up slot index ~a for opt-method ~a/ opt-class ~a/ slot-name ~a" opt-index lookup-index opt-method opt-class slot-name))
-      (let ((direct-result (core:instance-ref instance opt-index))
-            (efm-result (funcall (cmp::optimized-slot-reader-effective-method-function opt-slot-reader) vargs nil)))
-        (unless (eql direct-result efm-result)
-          ;; Do what std-class-optimized-accessors does...
-          (let* ((efm-class (si:instance-class instance))
-                 (efm-table (class-location-table efm-class))
-                 (efm-index (gethash slot-name efm-table))
-                 (efm-value (if (si::fixnump efm-index)
-                                (si:instance-ref instance (the fixnum efm-index))
-                                (car (the cons efm-index)))))
-            (format *error-output* "DATA FOR READER ERROR!!!!!!!!!!!!!!!!!!!!!~%")
-            (format *error-output* "slot-name -----> ~s~%" slot-name)
-            (format *error-output* "opt-index -----> ~s~%" opt-index)
-            (format *error-output* "opt-method ----> ~s~%" opt-method)
-            (format *error-output* "opt-class -----> ~s~%" opt-class)
-            (format *error-output* "(core:instance-stamp instance) --------------------------------------------> ~s~%" (core:instance-stamp instance))
-            (format *error-output* "(core:lookup-class-with-stamp (core:instance-stamp instance)) -------------> ~s~%" (core:lookup-class-with-stamp (core:instance-stamp instance)))
-            (format *error-output* "(core:class-stamp-for-instances opt-class) --------------------------------> ~s~%" (core:class-stamp-for-instances opt-class))
-            (format *error-output* "(core:lookup-class-with-stamp (core:class-stamp-for-instances opt-class)) -> ~s~%" (core:lookup-class-with-stamp (core:class-stamp-for-instances opt-class)))
-            (format *error-output* "efm-class -----> ~s~%" efm-class)
-            (format *error-output* "efm-index -----> ~s~%" efm-index)
-            (format *error-output* "efm-value -----> ~s~%" efm-value)
-            (format *error-output* "(core::object-address instance) -> ~s~%" (core::object-address instance))
-            (error "The dispatch-slot-reader-index-debug function caught a difference between reading the slot and calling the effective-method-function")))
-        efm-result))))
-
-;;; Takes four arguments ((x cmp::optimized-slot-writer) value instance vargs)
-(defun dispatch-slot-writer-index-debug (opt-slot-writer value instance vargs)
-  ;; Check against the slot index and Do the slot write and check against the slot index
-  (let ((opt-method (cmp::optimized-slot-writer-method opt-slot-writer))
-        (class (cmp::optimized-slot-writer-class opt-slot-writer))
-        (slot-name (cmp::optimized-slot-writer-slot-name opt-slot-writer))
-        (opt-index (cmp::optimized-slot-writer-index opt-slot-writer)))
-    (let* ((slot (effective-slotd-from-accessor-method opt-method class))
-           (lookup-index (slot-definition-location slot)))
-      (unless (= opt-index lookup-index)
-        (error "The dispatch-slot-writer-index-debug function caught a difference between the optimized slot index ~a and the looked up slot index ~a for opt-method ~a/ class ~a/ slot-name ~a" opt-index lookup-index opt-method class slot-name))
-      (let ((efm-result (funcall (cmp::optimized-slot-writer-effective-method-function opt-slot-writer) vargs nil))
-            (after-write-read (core:instance-ref instance opt-index)))
-        (unless (eql efm-result after-write-read)
-          (let ((*print-circle* nil))
-            (error "The dispatch-slot-writer-index-debug function caught a difference between what should be in the slot opt-index ~a~% (read value -> ~s)~% after writing ~s into it using the effective-method-function.~% This is for opt-method ~s/class ~s/slot-name ~s~% and (core:class-stamp-for-instances class) -> ~s    (core:instance-stamp instance) -> ~s~%  (core:object-address instance) -> ~s~%" 
-                   opt-index after-write-read efm-result opt-method class slot-name (core:class-stamp-for-instances class) (core:instance-stamp instance) (core:object-address instance))))
-        efm-result))))
 
 (defun maybe-update-instances (arguments)
   (let ((invalid-instance nil))

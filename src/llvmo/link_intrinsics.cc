@@ -144,14 +144,6 @@ core::T_sp functionNameOrNilFromFunctionDescription(core::FunctionDescription* f
 
 };
 
-namespace llvmo {
-core::T_sp intrinsic_slot_unbound(core::T_sp slot_info, core::T_sp instance ) {
-  return core::eval::funcall(clos::_sym_fastgf_slot_unbound,slot_info,instance);
-};
-};
-
-
-
 extern "C" {
 
 void cc_initialize_gcroots_in_module(gctools::GCRootsInModule* holder,

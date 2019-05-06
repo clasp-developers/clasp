@@ -61,10 +61,6 @@ SYMBOL_EXPORT_SC_(ClosPkg, SPECIALIZER_MUTEX);
 SYMBOL_EXPORT_SC_(ClosPkg, NUMBER_OF_SLOTS_IN_STANDARD_CLASS);
 SYMBOL_EXPORT_SC_(ClosPkg, NUMBER_OF_SLOTS_IN_STRUCTURE_CLASS);
 
-SYMBOL_EXPORT_SC_(ClosPkg, fastgf_slot_unbound);
-SYMBOL_EXPORT_SC_(ClosPkg, dispatch_slot_reader_index_debug);
-SYMBOL_EXPORT_SC_(ClosPkg, dispatch_slot_writer_index_debug);
-
 void initialize_closPackage() {
   list<string> lnicknames;
   list<string> luse = {"COMMON-LISP"};
