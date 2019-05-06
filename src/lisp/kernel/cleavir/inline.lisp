@@ -919,19 +919,9 @@
           (if (and cmf (not notinline))
               (funcall *macroexpand-hook* cmf form env)
               `(cleavir-primop:funcall ,function ,@arguments))))))
-  ;; For other forms, we just inline the type coercion.
-  ;; FIXME?: Expand into (primop:funcall (coerce-fdesignator ,function) ,@args)
-  ;; and use it in bclasp too?
-  (let ((fsym (gensym "FUNCTION")))
-    `(let ((,fsym ,function))
-       (cleavir-primop:funcall
-        (cond
-          ((cleavir-primop:typeq ,fsym function)
-           ,fsym)
-          ((cleavir-primop:typeq ,fsym symbol)
-           (symbol-function ,fsym))
-          (t (error 'type-error :datum ,fsym :expected-type '(or symbol function))))
-        ,@arguments))))
+  `(cleavir-primop:funcall
+    (core::coerce-fdesignator ,function)
+    ,@arguments))
 
 (define-cleavir-compiler-macro values (&whole form &rest values)
   `(cleavir-primop:values ,@values))
