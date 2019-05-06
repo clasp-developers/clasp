@@ -52,49 +52,49 @@ Set this to other IRBuilders to make code go where you want")
 (defun llvm-print (msg)
   (irc-intrinsic "debugMessage" (irc-bit-cast (module-make-global-string msg) %i8*%)))
 
-(define-symbol-macro %i1% (llvm-sys:type-get-int1-ty *llvm-context*))
+(define-symbol-macro %i1% (llvm-sys:type-get-int1-ty (thread-local-llvm-context)))
 
-(define-symbol-macro %i8% (llvm-sys:type-get-int8-ty *llvm-context*)) ;; -> CHAR / BYTE
+(define-symbol-macro %i8% (llvm-sys:type-get-int8-ty (thread-local-llvm-context))) ;; -> CHAR / BYTE
 (define-symbol-macro %i8*% (llvm-sys:type-get-pointer-to %i8%))
 (define-symbol-macro %i8**% (llvm-sys:type-get-pointer-to %i8*%))
 
-(define-symbol-macro %i16% (llvm-sys:type-get-int16-ty *llvm-context*)) ;; -> SHORT
+(define-symbol-macro %i16% (llvm-sys:type-get-int16-ty (thread-local-llvm-context))) ;; -> SHORT
 (define-symbol-macro %i16*% (llvm-sys:type-get-pointer-to %i16%))
 (define-symbol-macro %i16**% (llvm-sys:type-get-pointer-to %i16*%))
 
-(define-symbol-macro %i32% (llvm-sys:type-get-int32-ty *llvm-context*)) ;; -> INT
+(define-symbol-macro %i32% (llvm-sys:type-get-int32-ty (thread-local-llvm-context))) ;; -> INT
 (define-symbol-macro %i32*% (llvm-sys:type-get-pointer-to %i32%))
 (define-symbol-macro %i32**% (llvm-sys:type-get-pointer-to %i32*%))
 
-(define-symbol-macro %i64% (llvm-sys:type-get-int64-ty *llvm-context*)) ;; -> LONG, LONG LONG
+(define-symbol-macro %i64% (llvm-sys:type-get-int64-ty (thread-local-llvm-context))) ;; -> LONG, LONG LONG
 (define-symbol-macro %i64*% (llvm-sys:type-get-pointer-to %i64%))
 (define-symbol-macro %i64**% (llvm-sys:type-get-pointer-to %i64*%))
 
-(define-symbol-macro %i128% (llvm-sys:type-get-int128-ty *llvm-context*)) ;; -> NOT USED !!!
+(define-symbol-macro %i128% (llvm-sys:type-get-int128-ty (thread-local-llvm-context))) ;; -> NOT USED !!!
 
 (define-symbol-macro %fixnum% #+address-model-64 %i64%
                               #+address-model-32 %i32%)
 (define-symbol-macro %uint% %i32%) ; FIXME: export from C++ probably
 
-(define-symbol-macro %float% (llvm-sys:type-get-float-ty *llvm-context*))
-(define-symbol-macro %double% (llvm-sys:type-get-double-ty *llvm-context*))
-#+long-float (define-symbol-macro %long-float% (llvm-sys:type-get-long-float-ty *llvm-context*))
+(define-symbol-macro %float% (llvm-sys:type-get-float-ty (thread-local-llvm-context)))
+(define-symbol-macro %double% (llvm-sys:type-get-double-ty (thread-local-llvm-context)))
+#+long-float (define-symbol-macro %long-float% (llvm-sys:type-get-long-float-ty (thread-local-llvm-context)))
 
 (define-symbol-macro %size_t% #+address-model-64 %i64%
                               #+address-model-32 %i32%)
 (define-symbol-macro %size_t*% (llvm-sys:type-get-pointer-to %size_t%))
 (define-symbol-macro %size_t**% (llvm-sys:type-get-pointer-to %size_t*%))
 
-(define-symbol-macro %void% (llvm-sys:type-get-void-ty *llvm-context*))
+(define-symbol-macro %void% (llvm-sys:type-get-void-ty (thread-local-llvm-context)))
 (define-symbol-macro %void*% (llvm-sys:type-get-pointer-to %void%))
 (define-symbol-macro %void**% (llvm-sys:type-get-pointer-to %void*%))
 
 (define-symbol-macro %vtable*% %i8*%)
 
-;;(define-symbol-macro %exception-struct% (llvm-sys:struct-type-get *llvm-context* (list %i8*% %i32%) "exception-struct" nil))
-(define-symbol-macro %exception-struct% (llvm-sys:struct-type-get *llvm-context* (list %i8*% %i32%) nil))
-(define-symbol-macro %{i32.i1}% (llvm-sys:struct-type-get *llvm-context* (list %i32% %i1%) nil))
-(define-symbol-macro %{i64.i1}% (llvm-sys:struct-type-get *llvm-context* (list %i64% %i1%) nil))
+;;(define-symbol-macro %exception-struct% (llvm-sys:struct-type-get (thread-local-llvm-context) (list %i8*% %i32%) "exception-struct" nil))
+(define-symbol-macro %exception-struct% (llvm-sys:struct-type-get (thread-local-llvm-context) (list %i8*% %i32%) nil))
+(define-symbol-macro %{i32.i1}% (llvm-sys:struct-type-get (thread-local-llvm-context) (list %i32% %i1%) nil))
+(define-symbol-macro %{i64.i1}% (llvm-sys:struct-type-get (thread-local-llvm-context) (list %i64% %i1%) nil))
 
 
 ;;  "A ctor void ()* function prototype"
@@ -111,7 +111,7 @@ Set this to other IRBuilders to make code go where you want")
 (define-symbol-macro %fn-start-up*% (llvm-sys:type-get-pointer-to %fn-start-up%))
 
 
-(define-symbol-macro %global-ctors-struct% (llvm-sys:struct-type-get *llvm-context* (list %i32% %fn-ctor*% %i8*%) nil))
+(define-symbol-macro %global-ctors-struct% (llvm-sys:struct-type-get (thread-local-llvm-context) (list %i32% %fn-ctor*% %i8*%) nil))
 
 ;;;  "An array of pointers to the global-ctors-struct")
 (define-symbol-macro %global-ctors-struct[1]% (llvm-sys:array-type-get %global-ctors-struct% 1))
@@ -139,9 +139,9 @@ Set this to other IRBuilders to make code go where you want")
              type size +void*-size+))
     (make-list num-pointers :initial-element %i8*%)))
 
-(define-symbol-macro %sp-counted-base% (llvm-sys:struct-type-get *llvm-context* (list %i32% %i32%) nil)) ;; "sp-counted-base-ty"
+(define-symbol-macro %sp-counted-base% (llvm-sys:struct-type-get (thread-local-llvm-context) (list %i32% %i32%) nil)) ;; "sp-counted-base-ty"
 (define-symbol-macro %sp-counted-base-ptr% (llvm-sys:type-get-pointer-to %sp-counted-base%))
-(define-symbol-macro %shared-count% (llvm-sys:struct-type-get *llvm-context* (list %sp-counted-base-ptr%) nil)) ;; "shared_count"
+(define-symbol-macro %shared-count% (llvm-sys:struct-type-get (thread-local-llvm-context) (list %sp-counted-base-ptr%) nil)) ;; "shared_count"
 
 ;;
 ;; Setup setjmp_buf type
@@ -154,7 +154,7 @@ Set this to other IRBuilders to make code go where you want")
 ;; For TAGBODY/GO Word2 will contain an i32 and the rest is padding
 ;; For BLOCK/RETURN-FROM Word2..4 will contain a T_mv pointer - it should fit
 
-(define-symbol-macro %setjmp.buf% (llvm-sys:struct-type-get *llvm-context* (list %i8*% %i8*% %i8*% %i8*% %i8*%) nil))
+(define-symbol-macro %setjmp.buf% (llvm-sys:struct-type-get (thread-local-llvm-context) (list %i8*% %i8*% %i8*% %i8*% %i8*%) nil))
 (define-symbol-macro %setjmp.buf*% (llvm-sys:type-get-pointer-to %setjmp.buf%))
 
 ;;
@@ -176,40 +176,40 @@ Boehm and MPS use a single pointer"
 ;;
 ;; If I use an opaque type then the symbol type gets duplicated and that causes
 ;; problems - try just using an int
-;;(define-symbol-macro %sym% (llvm-sys:struct-type-get *llvm-context* nil nil)) ;; "Symbol_O"
-(define-symbol-macro %sym% (llvm-sys:type-get-int32-ty *llvm-context*))
+;;(define-symbol-macro %sym% (llvm-sys:struct-type-get (thread-local-llvm-context) nil nil)) ;; "Symbol_O"
+(define-symbol-macro %sym% (llvm-sys:type-get-int32-ty (thread-local-llvm-context)))
 (define-symbol-macro %sym-ptr% (llvm-sys:type-get-pointer-to %sym%))
-(define-symbol-macro %symsp% (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields %sym-ptr%) nil)) ;; "Sym_sp"
+(define-symbol-macro %symsp% (llvm-sys:struct-type-get (thread-local-llvm-context) (smart-pointer-fields %sym-ptr%) nil)) ;; "Sym_sp"
 (define-symbol-macro %symsp*% (llvm-sys:type-get-pointer-to %symsp%))
 
 
 ;;
 ;; Store a core::Function_sp pointer
 ;;
-(define-symbol-macro %Function% (llvm-sys:type-get-int32-ty *llvm-context*))
+(define-symbol-macro %Function% (llvm-sys:type-get-int32-ty (thread-local-llvm-context)))
 (define-symbol-macro %Function-ptr% (llvm-sys:type-get-pointer-to %Function%))
-(define-symbol-macro %Function_sp% (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields %Function-ptr%) nil)) ;; "Cfn_sp"
+(define-symbol-macro %Function_sp% (llvm-sys:struct-type-get (thread-local-llvm-context) (smart-pointer-fields %Function-ptr%) nil)) ;; "Cfn_sp"
 (define-symbol-macro %Function_sp*% (llvm-sys:type-get-pointer-to %Function_sp%))
 
 
 
 ;; Define the T_O struct - right now just put in a dummy i32 - later put real fields here
-(define-symbol-macro %t% (llvm-sys:struct-type-get *llvm-context* nil  nil)) ;; "T_O"
+(define-symbol-macro %t% (llvm-sys:struct-type-get (thread-local-llvm-context) nil  nil)) ;; "T_O"
 (define-symbol-macro %t*% (llvm-sys:type-get-pointer-to %t%))
 (define-symbol-macro %t**% (llvm-sys:type-get-pointer-to %t*%))
 (define-symbol-macro %t*[0]% (llvm-sys:array-type-get %t*% 0))
 (define-symbol-macro %t*[0]*% (llvm-sys:type-get-pointer-to %t*[0]%))
 (define-symbol-macro %t*[DUMMY]% (llvm-sys:array-type-get %t*% 64))
 (define-symbol-macro %t*[DUMMY]*% (llvm-sys:type-get-pointer-to %t*[DUMMY]%))
-(define-symbol-macro %tsp% (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields %t*%) nil))  ;; "T_sp"
+(define-symbol-macro %tsp% (llvm-sys:struct-type-get (thread-local-llvm-context) (smart-pointer-fields %t*%) nil))  ;; "T_sp"
 (define-symbol-macro %tsp*% (llvm-sys:type-get-pointer-to %tsp%))
 (define-symbol-macro %tsp**% (llvm-sys:type-get-pointer-to %tsp*%))
 
-(define-symbol-macro %cons% (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields %t*% %t*%) nil))
+(define-symbol-macro %cons% (llvm-sys:struct-type-get (thread-local-llvm-context) (smart-pointer-fields %t*% %t*%) nil))
 
 ;; This structure must match the gctools::GCRootsInModule structure
 (define-symbol-macro %gcroots-in-module% (llvm-sys:struct-type-get
-                                          *llvm-context*
+                                          (thread-local-llvm-context)
                                           (list
                                            %size_t% ; _index_offset
                                            %i8*% ; _boehm_shadow_memory
@@ -223,37 +223,37 @@ Boehm and MPS use a single pointer"
 (define-symbol-macro %gcroots-in-module*% (llvm-sys:type-get-pointer-to %gcroots-in-module%))
 
 ;; The definition of %tmv% doesn't quite match T_mv because T_mv inherits from T_sp
-(define-symbol-macro %tmv% (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields %t*% %size_t%) nil))  ;; "T_mv"
+(define-symbol-macro %tmv% (llvm-sys:struct-type-get (thread-local-llvm-context) (smart-pointer-fields %t*% %size_t%) nil))  ;; "T_mv"
 (define-symbol-macro %return_type% %tmv%)
 (define-symbol-macro %tmv*% (llvm-sys:type-get-pointer-to %tmv%))
 (define-symbol-macro %tmv**% (llvm-sys:type-get-pointer-to %tmv*%))
 
-(define-symbol-macro %gcvector-tsp% (llvm-sys:struct-type-get *llvm-context* (list %size_t% %size_t% %tsp%) nil))
-(define-symbol-macro %gcvector-symsp% (llvm-sys:struct-type-get *llvm-context* (list %size_t% %size_t% %symsp%) nil))
-(define-symbol-macro %vec0-tsp% (llvm-sys:struct-type-get *llvm-context* (list %gcvector-tsp%) nil))
-(define-symbol-macro %vec0-symsp% (llvm-sys:struct-type-get *llvm-context* (list %gcvector-symsp%) nil))
+(define-symbol-macro %gcvector-tsp% (llvm-sys:struct-type-get (thread-local-llvm-context) (list %size_t% %size_t% %tsp%) nil))
+(define-symbol-macro %gcvector-symsp% (llvm-sys:struct-type-get (thread-local-llvm-context) (list %size_t% %size_t% %symsp%) nil))
+(define-symbol-macro %vec0-tsp% (llvm-sys:struct-type-get (thread-local-llvm-context) (list %gcvector-tsp%) nil))
+(define-symbol-macro %vec0-symsp% (llvm-sys:struct-type-get (thread-local-llvm-context) (list %gcvector-symsp%) nil))
 
 ;; Define the LoadTimeValue_O struct - right now just put in a dummy i32 - later put real fields here
-(define-symbol-macro %ltv% (llvm-sys:struct-type-get *llvm-context* (list %vtable*% #+(or) %vec0-tsp%)  nil)) ;; "LoadTimeValue_O"
+(define-symbol-macro %ltv% (llvm-sys:struct-type-get (thread-local-llvm-context) (list %vtable*% #+(or) %vec0-tsp%)  nil)) ;; "LoadTimeValue_O"
 (define-symbol-macro %ltv*% (llvm-sys:type-get-pointer-to %ltv%))
 (define-symbol-macro %ltv**% (llvm-sys:type-get-pointer-to %ltv*%))
-(define-symbol-macro %ltvsp% (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields %ltv*%) nil))  ;; "LoadTimeValue_sp"
+(define-symbol-macro %ltvsp% (llvm-sys:struct-type-get (thread-local-llvm-context) (smart-pointer-fields %ltv*%) nil))  ;; "LoadTimeValue_sp"
 #+(or)(defvar +ltvsp*+ (llvm-sys:type-get-pointer-to %ltvsp%))
 #+(or)(defvar +ltvsp**+ (llvm-sys:type-get-pointer-to +ltvsp*+))
 
 
 (define-symbol-macro %mv-limit% +multiple-values-limit+)
 (define-symbol-macro %mv-values-array% (llvm-sys:array-type-get %t*% %mv-limit%))
-(define-symbol-macro %mv-struct% (llvm-sys:struct-type-get *llvm-context* (list %size_t% %mv-values-array%) nil #|| is-packed ||#))
+(define-symbol-macro %mv-struct% (llvm-sys:struct-type-get (thread-local-llvm-context) (list %size_t% %mv-values-array%) nil #|| is-packed ||#))
 (define-symbol-macro %mv-struct*% (llvm-sys:type-get-pointer-to %mv-struct%))
-(define-symbol-macro %thread-info-struct% (llvm-sys:struct-type-get *llvm-context* (list %mv-struct%) nil))
+(define-symbol-macro %thread-info-struct% (llvm-sys:struct-type-get (thread-local-llvm-context) (list %mv-struct%) nil))
 
 
 
 #+(or)(progn
-        (defvar +af+ (llvm-sys:struct-type-get *llvm-context* nil  nil)) ;; "ActivationFrame_O"
+        (defvar +af+ (llvm-sys:struct-type-get (thread-local-llvm-context) nil  nil)) ;; "ActivationFrame_O"
         (defvar +af*+ (llvm-sys:type-get-pointer-to +af+))
-        (define-symbol-macro %afsp% (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +af*+)  nil)) ;; "ActivationFrame_sp"
+        (define-symbol-macro %afsp% (llvm-sys:struct-type-get (thread-local-llvm-context) (smart-pointer-fields +af*+)  nil)) ;; "ActivationFrame_sp"
         (define-symbol-macro %afsp*% (llvm-sys:type-get-pointer-to %afsp%))
         )
 
@@ -289,7 +289,7 @@ Boehm and MPS use a single pointer"
 
 (defun simple-vector-llvm-type (element-type)
   (llvm-sys:struct-type-get
-   *llvm-context*
+   (thread-local-llvm-context)
    (list
     ;; Spacer to get to the stuff that matters
     (llvm-sys:array-type-get %i8% (- +simple-vector._length-offset+ +general-tag+))
@@ -311,12 +311,12 @@ Boehm and MPS use a single pointer"
 ;;;
 (progn
   ;; Tack on a size_t to store the number of remaining arguments
-  #+X86-64(define-symbol-macro %va_list% (llvm-sys:struct-type-get *llvm-context* (list %i32% %i32% %i8*% %i8*%) nil))
+  #+X86-64(define-symbol-macro %va_list% (llvm-sys:struct-type-get (thread-local-llvm-context) (list %i32% %i32% %i8*% %i8*%) nil))
   #-X86-64
   (error "I need a va_list struct definition for this system")
 
   (define-symbol-macro %va_list*% (llvm-sys:type-get-pointer-to %va_list%))
-  (define-symbol-macro %vaslist% (llvm-sys:struct-type-get *llvm-context* (list %va_list% %size_t%) nil))
+  (define-symbol-macro %vaslist% (llvm-sys:struct-type-get (thread-local-llvm-context) (list %va_list% %size_t%) nil))
   (define-symbol-macro %vaslist*% (llvm-sys:type-get-pointer-to %vaslist%))
 
 ;;;    "Function prototype for generic functions")
@@ -482,7 +482,7 @@ eg:  (f closure-ptr nargs a b c d ...)
 ;;; source-info/function-name are stored in a CONS cell CAR/CDR
 ;;; lambda-list/docstring are stored in a CONS cell CAR/CDR
 (define-symbol-macro %function-description%
-    (llvm-sys:struct-type-get *llvm-context*
+    (llvm-sys:struct-type-get (thread-local-llvm-context)
                               (list %fn-prototype*%
                                     %gcroots-in-module*%
                                     %size_t% ; source-info.function-name index
@@ -499,12 +499,12 @@ eg:  (f closure-ptr nargs a b c d ...)
 ;; %"class.core::InvocationHistoryFrame" = type { i32 (...)**, i32, %"class.core::InvocationHistoryStack"*, %"class.core::InvocationHistoryFrame"*, i8, i32 }
 ;;"Make this a generic pointer"
 (define-symbol-macro %InvocationHistoryStack*% %i8*%)
-(define-symbol-macro %InvocationHistoryFrame% (llvm-sys:struct-type-get *llvm-context* (list %i8*% %va_list% %size_t% #| %size_t% #|Removed BDS|# |#) "InvocationHistoryFrame"))
+(define-symbol-macro %InvocationHistoryFrame% (llvm-sys:struct-type-get (thread-local-llvm-context) (list %i8*% %va_list% %size_t% #| %size_t% #|Removed BDS|# |#) "InvocationHistoryFrame"))
 (define-symbol-macro %InvocationHistoryFrame*% (llvm-sys:type-get-pointer-to %InvocationHistoryFrame%))
 ;;  (llvm-sys:set-body %InvocationHistoryFrame% (list %i32**% %i32% #|%InvocationHistoryStack*% %InvocationHistoryFrame*%|# %i8*% %i8*% %i8% %i32%) nil)
-;(define-symbol-macro %LispFunctionIHF% (llvm-sys:struct-type-create *llvm-context* :elements (list %InvocationHistoryFrame% %tsp% %tsp% %tsp% %i32% %i32%) :name "LispFunctionIHF"))
+;(define-symbol-macro %LispFunctionIHF% (llvm-sys:struct-type-create (thread-local-llvm-context) :elements (list %InvocationHistoryFrame% %tsp% %tsp% %tsp% %i32% %i32%) :name "LispFunctionIHF"))
 ;; %"class.core::LispCompiledFunctionIHF" = type { %"class.core::LispFunctionIHF" }
-;(define-symbol-macro %LispCompiledFunctionIHF% (llvm-sys:struct-type-create *llvm-context* :elements (list %LispFunctionIHF%) :name "LispCompiledFunctionIHF"))
+;(define-symbol-macro %LispCompiledFunctionIHF% (llvm-sys:struct-type-create (thread-local-llvm-context) :elements (list %LispFunctionIHF%) :name "LispCompiledFunctionIHF"))
 
 #|
   (defun make-gv-source-file-info-handle (module &optional handle)
@@ -529,7 +529,7 @@ have it call the main-function"
               'llvm-sys:internal-linkage
               *the-module*
               :argument-names +fn-ctor-argument-names+)))
-    (let* ((irbuilder-body (llvm-sys:make-irbuilder *llvm-context*))
+    (let* ((irbuilder-body (llvm-sys:make-irbuilder (thread-local-llvm-context)))
            (*current-function* fn)
            (entry-bb (irc-basic-block-create "entry" fn)))
       (irc-set-insert-point-basic-block entry-bb irbuilder-body)
@@ -555,7 +555,7 @@ have it call the main-function"
               cmp:*default-linkage*
               *the-module*
               :argument-names +fn-start-up-argument-names+)))
-    (let* ((irbuilder-body (llvm-sys:make-irbuilder *llvm-context*))
+    (let* ((irbuilder-body (llvm-sys:make-irbuilder (thread-local-llvm-context)))
            (*current-function* fn)
            (entry-bb (irc-basic-block-create "entry" fn)))
       (irc-set-insert-point-basic-block entry-bb irbuilder-body)
@@ -682,15 +682,15 @@ and initialize it with an array consisting of one function pointer."
 
 
 (defun codegen-startup-shutdown (module &optional gcroots-in-module roots-array-or-nil (number-of-roots 0) ordered-literals array)
-  (let ((startup-fn (irc-simple-function-create core:*module-startup-function-name*
+  (let ((startup-fn (irc-simple-function-create (jit-startup-function-name)
                                                 (llvm-sys:function-type-get %void% (list %t*%))
-                                                'llvm-sys::External-linkage
+                                                'llvm-sys:external-linkage
                                                 module
                                                 :argument-names (list "values" )))
-
         (ordered-raw-literals-list nil))
-    (let* ((irbuilder-alloca (llvm-sys:make-irbuilder *llvm-context*))
-           (irbuilder-body (llvm-sys:make-irbuilder *llvm-context*))
+    (llvm-sys:set-unnamed-addr startup-fn 'llvm-sys:none)
+    (let* ((irbuilder-alloca (llvm-sys:make-irbuilder (thread-local-llvm-context)))
+           (irbuilder-body (llvm-sys:make-irbuilder (thread-local-llvm-context)))
            (*irbuilder-function-alloca* irbuilder-alloca)
            (*irbuilder-function-body* irbuilder-body)
            (*current-function* startup-fn)
@@ -731,13 +731,13 @@ and initialize it with an array consisting of one function pointer."
           (when gcroots-in-module
             (irc-intrinsic-call "cc_finish_gcroots_in_module" (list gcroots-in-module)))
           (irc-ret-void))))
-    (let ((shutdown-fn (irc-simple-function-create core:*module-shutdown-function-name*
+    (let ((shutdown-fn (irc-simple-function-create (jit-shutdown-function-name)
                                                    (llvm-sys:function-type-get %void% nil)
                                                    'llvm-sys::External-linkage
                                                    module
                                                    :argument-names nil)))
-      (let* ((irbuilder-alloca (llvm-sys:make-irbuilder *llvm-context*))
-             (irbuilder-body (llvm-sys:make-irbuilder *llvm-context*))
+      (let* ((irbuilder-alloca (llvm-sys:make-irbuilder (thread-local-llvm-context)))
+             (irbuilder-body (llvm-sys:make-irbuilder (thread-local-llvm-context)))
              (*irbuilder-function-alloca* irbuilder-alloca)
              (*irbuilder-function-body* irbuilder-body)
              (*current-function* shutdown-fn)

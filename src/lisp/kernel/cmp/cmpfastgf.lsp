@@ -1128,8 +1128,8 @@
           ;;      the va_list passed.
           ;;(4) Reach an outcome and either call the effective method with the saved va_list
           ;;      or call the miss function with the saved va_list
-          (let* ((irbuilder-alloca (llvm-sys:make-irbuilder *llvm-context*))
-                 (irbuilder-body (llvm-sys:make-irbuilder *llvm-context*))
+          (let* ((irbuilder-alloca (llvm-sys:make-irbuilder (thread-local-llvm-context)))
+                 (irbuilder-body (llvm-sys:make-irbuilder (thread-local-llvm-context)))
                  (*irbuilder-function-alloca* irbuilder-alloca)
                  (*irbuilder-function-body* irbuilder-body)
                  (*current-function* disp-fn)

@@ -83,8 +83,8 @@ def options(ctx):
 top = '.'
 out = 'build'
 APP_NAME = 'clasp'
-CLANG_VERSION = 6
-CLANG_SPECIFIC_VERSION = "6.0.1"
+CLANG_VERSION = 9
+CLANG_SPECIFIC_VERSION = "9.0.0"
 
 STAGE_CHARS = [ 'r', 'i', 'a', 'b', 'f', 'c', 'd' ]
 # Full LTO  -flto
@@ -101,6 +101,7 @@ CLANG_LIBRARIES = [
             'clangTooling',
             'clangFormat',
             'clangToolingCore',
+            'clangToolingInclusions',
             'clangBasic',
             'clangCodeGen',
             'clangDriver',

@@ -557,6 +557,8 @@ namespace core {
     static void never_invoke_allocator() {gctools::GCAbstractAllocator<template_SimpleVector>::never_invoke_allocator();};
   public:
     // NULL terminated strings use this - so the ASSERT needs to accept it
+    value_type& unsafe_indirectReference(size_t index) {return this->_Data[index];}
+    const value_type& unsafe_indirectReference(size_t index) const {return this->_Data[index];}
     value_type& operator[](size_t index) { BOUNDS_ASSERT(index<this->length());return this->_Data[index];};
     const value_type& operator[](size_t index) const { BOUNDS_ASSERT(index<this->length());return this->_Data[index];};
     iterator begin() { return &this->_Data[0];};

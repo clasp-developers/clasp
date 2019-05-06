@@ -37,6 +37,7 @@
             *gv-source-namestring*
             *implicit-compile-hook*
             *irbuilder*
+            llvm-context
             *llvm-context*
             *load-time-value-holder-global-var*
             *low-level-trace*

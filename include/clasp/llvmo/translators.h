@@ -88,6 +88,20 @@ struct to_object<llvm::StringRef> {
    }
  };
 
+ template <>
+ struct from_object<llvm::DISubprogram::DISPFlags> {
+   typedef llvm::DISubprogram::DISPFlags DeclareType;
+   DeclareType _v;
+   from_object(core::T_sp o) {
+     if (o.fixnump()) {
+       llvm::DISubprogram::DISPFlags f = static_cast<llvm::DISubprogram::DISPFlags>(o.unsafe_fixnum());
+       this->_v = f;
+       return;
+     }
+     SIMPLE_ERROR_SPRINTF("Only fixnums can be converted to llvm::DISubprogram::DISPFlags");
+   }
+ };
+
   template <>
    struct from_object<llvm::DITemplateParameterArray> {
    typedef llvm::DITemplateParameterArray DeclareType;

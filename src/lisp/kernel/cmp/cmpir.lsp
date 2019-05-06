@@ -331,7 +331,7 @@
 
 (defun irc-basic-block-create (name &optional (function *current-function*))
   "Create a llvm::BasicBlock with (name) in the (function)"
-  (llvm-sys:basic-block-create *llvm-context* name function))
+  (llvm-sys:basic-block-create (thread-local-llvm-context) name function))
 
 (defun irc-get-insert-block ()
   (llvm-sys:get-insert-block *irbuilder*))
@@ -631,8 +631,7 @@ the type LLVMContexts don't match - so they were defined in different threads!"
          (with-irbuilder (*irbuilder-function-body*)
            (with-new-function-prepare-for-try (,fn)
              (with-try
-              (with-dbg-function (,function-name
-                                  :lineno (core:source-pos-info-lineno core:*current-source-pos-info*)
+              (with-dbg-function (:lineno (core:source-pos-info-lineno core:*current-source-pos-info*)
                                   :linkage-name *current-function-name*
                                   :function ,fn
                                   :function-type ,function-type)
@@ -658,12 +657,12 @@ the type LLVMContexts don't match - so they were defined in different threads!"
   (let ((function-name (llvm-sys:get-name function)))
     (core:bformat nil "%s^DESC" function-name)))
 
-(defun irc-function-create (function-type linkage llvm-function-name module
+(defun irc-function-create (function-type linkage function-name module
                             &key
                               (function-attributes *default-function-attributes* function-attributes-p ))
   (let* ((fn (llvm-sys:function-create function-type
                                        linkage
-                                       llvm-function-name
+                                       function-name
                                        module)))
     (dolist (temp function-attributes)
       (cond
@@ -675,7 +674,7 @@ the type LLVMContexts don't match - so they were defined in different threads!"
     fn))
 
 
-(defun irc-simple-function-create (llvm-function-name function-type linkage module
+(defun irc-simple-function-create (function-name function-type linkage module
                                    &key (function-attributes *default-function-attributes* function-attributes-p )
                                      argument-names ;;; '("result-ptr" "activation-frame-ptr") argument-names-p))
                                      )
@@ -683,7 +682,7 @@ the type LLVMContexts don't match - so they were defined in different threads!"
 But no irbuilders or basic-blocks. Return the fn."
   (let ((fn (irc-function-create function-type
                                  linkage
-                                 llvm-function-name
+                                 function-name
                                  module
                                  :function-attributes function-attributes)))
     (llvm-sys:set-personality-fn fn (irc-personality-function))
@@ -817,9 +816,9 @@ and then the irbuilder-alloca, irbuilder-body."
          (*current-function* fn)
 	 (func-env (make-function-container-environment env (car (llvm-sys:get-argument-list fn)) fn))
 	 cleanup-block traceid
-	 (irbuilder-cur (llvm-sys:make-irbuilder *llvm-context*))
-	 (irbuilder-alloca (llvm-sys:make-irbuilder *llvm-context*))
-	 (irbuilder-body (llvm-sys:make-irbuilder *llvm-context*)))
+	 (irbuilder-cur (llvm-sys:make-irbuilder (thread-local-llvm-context)))
+	 (irbuilder-alloca (llvm-sys:make-irbuilder (thread-local-llvm-context)))
+	 (irbuilder-body (llvm-sys:make-irbuilder (thread-local-llvm-context))))
     (let ((entry-bb (irc-basic-block-create "entry" fn)))
       (irc-set-insert-point-basic-block entry-bb irbuilder-cur))
     ;; Setup exception handling and cleanup landing pad
@@ -1164,7 +1163,7 @@ and then the irbuilder-alloca, irbuilder-body."
     (when does-not-return (push 'llvm-sys:attribute-no-return fnattrs))
     (push '("no-frame-pointer-elim" "true") fnattrs)
     (push "no-frame-pointer-elim-non-leaf" fnattrs)
-    (let ((function (cmp:irc-function-create (llvm-sys:function-type-get return-ty argument-types varargs)
+    (let ((function (irc-function-create (llvm-sys:function-type-get return-ty argument-types varargs)
                                              'llvm-sys::External-linkage
                                              dispatch-name
                                              module

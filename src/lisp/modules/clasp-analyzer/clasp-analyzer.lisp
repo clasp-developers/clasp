@@ -1532,7 +1532,7 @@ and the inheritance hierarchy that the garbage collector will need"
                     (classified (classify-ctype tsty-new))
                     (class-location (clang-tool:mtag-loc-start match-info :whole))
                     (arg-decl (cast:get-decl tsty-new)) ;; Should I convert to canonical type?????
-                    (arg-location (clang-tool:source-loc-as-string match-info (get-loc-start arg-decl)))
+                    (arg-location (clang-tool:source-loc-as-string match-info (get-begin-loc arg-decl)))
                     (arg-name (cast:get-name arg-decl)))
                (unless (gethash class-key class-results)
                  (gclog "Adding class name: ~a~%" class-name)
@@ -1586,7 +1586,7 @@ and the inheritance hierarchy that the garbage collector will need"
                     (classified (classify-ctype tsty-new))
                     (class-location (clang-tool:mtag-loc-start match-info :whole))
                     (arg-decl (cast:get-decl tsty-new)) ;; Should I convert to canonical type?????
-                    (arg-location (clang-tool:source-loc-as-string match-info (get-loc-start arg-decl)))
+                    (arg-location (clang-tool:source-loc-as-string match-info (get-begin-loc arg-decl)))
                     (arg-name (cast:get-name arg-decl)))
                (unless (gethash class-key class-results)
                  (gclog "Adding class name: ~a~%" class-name)
@@ -1640,7 +1640,7 @@ and the inheritance hierarchy that the garbage collector will need"
                     (classified (classify-ctype tsty-new))
                     (class-location (clang-tool:mtag-loc-start match-info :whole))
                     (arg-decl (cast:get-decl tsty-new)) ;; Should I convert to canonical type?????
-                    (arg-location (clang-tool:source-loc-as-string match-info (get-loc-start arg-decl)))
+                    (arg-location (clang-tool:source-loc-as-string match-info (get-begin-loc arg-decl)))
                     (arg-name (cast:get-name arg-decl)))
                (unless (gethash class-key class-results)
                  (gclog "Adding class name: ~a~%" class-name)
@@ -1874,7 +1874,7 @@ and the inheritance hierarchy that the garbage collector will need"
                     (classified (classify-ctype tsty-new))
                     (class-location (clang-tool:mtag-loc-start match-info :whole))
                     (arg-decl (cast:get-decl tsty-new)) ;; Should I convert to canonical type?????
-                    (arg-location (clang-tool:source-loc-as-string match-info (get-loc-start arg-decl)))
+                    (arg-location (clang-tool:source-loc-as-string match-info (get-begin-loc arg-decl)))
                     (arg-name (cast:get-name arg-decl)))
                (unless (gethash class-key class-results)
                  (gclog "Adding class name: ~a~%" class-name)

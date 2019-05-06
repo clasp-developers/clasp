@@ -191,7 +191,7 @@ eg: '(block ((exception var) code...))"
     rethrow-cleanup))
 
 (defun generate-ehcleanup-and-resume-code (function exn.slot ehselector.slot)
-  (let* ((ehbuilder       (llvm-sys:make-irbuilder *llvm-context*))
+  (let* ((ehbuilder       (llvm-sys:make-irbuilder (thread-local-llvm-context)))
          (ehcleanup       (irc-basic-block-create "TRY.ehcleanup" function))
          (ehresume        (irc-basic-block-create "TRY.ehresume" function))
          (_               (irc-set-insert-point-basic-block ehcleanup ehbuilder))
@@ -208,7 +208,7 @@ eg: '(block ((exception var) code...))"
 
 (defun generate-terminate-code (function)
   (let* ((terminate-basic-block     (irc-basic-block-create "TRY.terminate" function))
-         (ehbuilder                 (llvm-sys:make-irbuilder *llvm-context*))
+         (ehbuilder                 (llvm-sys:make-irbuilder (thread-local-llvm-context)))
          (_                         (irc-set-insert-point-basic-block terminate-basic-block ehbuilder)))
     (with-irbuilder (ehbuilder)
       (let* ((landpad                   (irc-create-landing-pad 1))

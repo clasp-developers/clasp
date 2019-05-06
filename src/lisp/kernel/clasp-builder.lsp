@@ -168,7 +168,7 @@ Return files."
 (defun load-kernel-file (path type)
   (if (or (eq type :object) (eq type :bitcode))
       (progn
-        (cmp:load-bitcode path))
+        (cmp:load-bitcode path (cmp:thread-local-llvm-context)))
       (if (eq type :fasl)
           (load (make-pathname :type "fasl" :defaults path))
           (error "Illegal type ~a for load-kernel-file ~a" type path)))

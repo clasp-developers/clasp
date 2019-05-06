@@ -187,11 +187,12 @@ when this is t a lot of graphs will be generated.")
           (t (core:make-source-pos-info "no-source-info-available" 0 0 0)))))
 
 (defun layout-procedure* (the-function body-irbuilder
-                                       body-block
-                                       first-basic-block
-                                       rest-basic-blocks
-                                       function-info
-                                       initial-instruction abi &key (linkage 'llvm-sys:internal-linkage))
+                          body-block
+                          first-basic-block
+                          rest-basic-blocks
+                          function-info
+                          initial-instruction abi
+                          &key (linkage 'llvm-sys:internal-linkage))
   (with-debug-info-disabled
    (let ((return-value (cmp:alloca-return "return-value")))
      (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
@@ -296,18 +297,17 @@ when this is t a lot of graphs will be generated.")
          (llvm-function-name cmp:*current-function-name*))
     (multiple-value-bind
      (the-function function-description)
-     (cmp:irc-cclasp-function-create
-      llvm-function-type
-      linkage
-      llvm-function-name
-      cmp:*the-module*
-      (calculate-function-info enter lambda-name))
+        (cmp:irc-cclasp-function-create llvm-function-type
+                                        linkage
+                                        llvm-function-name
+                                        cmp:*the-module*
+                                        (calculate-function-info enter lambda-name))
      (let* ((cmp:*current-function* the-function)
             (cmp:*current-function-description* function-description)
             (entry-block (cmp:irc-basic-block-create "entry" the-function))
             (*function-current-multiple-value-array-address* nil)
-            (cmp:*irbuilder-function-alloca* (llvm-sys:make-irbuilder cmp:*llvm-context*))
-            (body-irbuilder (llvm-sys:make-irbuilder cmp:*llvm-context*))
+            (cmp:*irbuilder-function-alloca* (llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
+            (body-irbuilder (llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
             (body-block (cmp:irc-basic-block-create "body"))
             (metadata (setup-function-scope-metadata lambda-name
                                                      function-info
@@ -348,7 +348,8 @@ when this is t a lot of graphs will be generated.")
                           first-basic-block
                           rest-basic-blocks
                           function-info
-                          enter abi :linkage linkage)))))
+                          enter abi
+                          :linkage linkage)))))
 
 ;; A hash table of enter instructions to llvm functions.
 ;; This is used to avoid recompiling ENTERs, which may be
@@ -358,10 +359,11 @@ when this is t a lot of graphs will be generated.")
 (defun memoized-layout-procedure (enter lambda-name abi &key (linkage 'llvm-sys:internal-linkage) ignore-arguments)
   (or (gethash enter *compiled-enters*)
       (setf (gethash enter *compiled-enters*)
-            (layout-procedure enter lambda-name abi :linkage linkage :ignore-arguments ignore-arguments))))
+            (layout-procedure enter lambda-name abi :linkage linkage
+                                                    :ignore-arguments ignore-arguments))))
 
 (defun log-translate (initial-instruction)
-  (let ((mir-pathname (make-pathname :name (format nil "mir~a" (incf *debug-log-index*))
+  (let ((mir-pathname (make-pathname :name (sys:bformat nil "mir%d" (incf *debug-log-index*))
                                      :type "gml" :defaults (pathname *debug-log*))))
     (format *debug-log* "About to write mir to ~a~%" (namestring mir-pathname))
     (finish-output *debug-log*)
@@ -410,7 +412,8 @@ when this is t a lot of graphs will be generated.")
          (lambda-name (get-or-create-lambda-name initial-instruction)))
     (cc-dbg-when *debug-log* (log-translate initial-instruction))
     (let ((function
-            (memoized-layout-procedure initial-instruction lambda-name abi :linkage linkage :ignore-arguments ignore-arguments)))
+            (memoized-layout-procedure initial-instruction lambda-name abi :linkage linkage
+                                                                           :ignore-arguments ignore-arguments)))
       (cmp::cmp-log-compile-file-dump-module cmp:*the-module* "after-translate")
       (setf *ct-translate* (compiler-timer-elapsed))
       (values function lambda-name))))
@@ -614,7 +617,7 @@ This works like compile-lambda-function in bclasp."
 ;; Set this to T to watch cclasp-compile* run
 (defvar *cleavir-compile-verbose* nil)
 (export '*cleavir-compile-verbose*)
-(defun cclasp-compile* (name form env pathname &key (linkage 'llvm-sys:internal-linkage))
+(defun cclasp-compile* (name form env pathname &key (linkage 'llvm-sys:internal-linkage) linkage-name)
   (when *cleavir-compile-verbose*
     (format *trace-output* "Cleavir compiling t1expr: ~s~%" form)
     (format *trace-output* "          in environment: ~s~%" env ))
@@ -639,7 +642,8 @@ This works like compile-lambda-function in bclasp."
                   (hir->mir hir env)
                 (multiple-value-setq (function lambda-name)
                   (translate mir function-info-map go-indices
-                             :abi *abi-x86-64* :linkage linkage)))))))
+                             :abi *abi-x86-64*
+                             :linkage linkage)))))))
     (unless function
       (error "There was no function returned by translate-ast"))
     (cmp:cmp-log "fn --> %s%N" fn)
@@ -744,18 +748,25 @@ This works like compile-lambda-function in bclasp."
               (core:with-memory-ramp (:pattern 'gctools:ramp)
                 (cleavir-compile-file-form form))))))))
 
-(defun cclasp-compile-in-env (name form &optional env)
+(defun cclasp-compile-in-env (name &key definition env)
   (let ((cleavir-generate-ast:*compiler* 'cl:compile)
         (core:*use-cleavir-compiler* t))
-    (if cmp::*debug-compile-file*
-        (compiler-time
-         (cmp:compile-in-env name form env #'cclasp-compile* cmp:*default-compile-linkage*))
-        (cmp:compile-in-env name form env #'cclasp-compile* cmp:*default-compile-linkage*))))
+    (flet ((do-compile-in-env ()
+             (cmp:compile-in-env name
+                                 :definition definition
+                                 :env env
+                                 :compile-hook #'cclasp-compile*
+                                 :linkage cmp:*default-compile-linkage*)))
+      (if cmp::*debug-compile-file*
+          (compiler-time (do-compile-in-env))
+          (do-compile-in-env)))))
         
 (defun cleavir-compile (name form &key (debug *debug-cleavir*))
   (let ((cmp:*compile-debug-dump-module* debug)
 	(*debug-cleavir* debug))
-    (cclasp-compile-in-env name form nil)))
+    (cclasp-compile-in-env name
+                           :definition form
+                           :env nil)))
 
 (defun cleavir-compile-file (given-input-pathname &rest args)
   (let ((*debug-log-index* 0)

@@ -2982,9 +2982,9 @@ T_sp template_search_string(const T1& sub, const T2& outer, size_t sub_start, si
   // The std::search convention is reversed -->  std::search(outer,sub,...)
   const typename T2::simple_element_type* startp = &outer[0];
   const typename T2::simple_element_type* cps = &outer[outer_start];
-  const typename T2::simple_element_type* cpe = &outer[outer_end];
+  const typename T2::simple_element_type* cpe = &outer.unsafe_indirectReference(outer_end);
   const typename T1::simple_element_type* s_cps = &sub[sub_start];
-  const typename T1::simple_element_type* s_cpe = &sub[sub_end];
+  const typename T1::simple_element_type* s_cpe = &sub.unsafe_indirectReference(sub_end);
   const typename T2::simple_element_type* pos = std::search(cps,cpe,s_cps,s_cpe);
   if (pos == cpe ) return _Nil<T_O>();
   // this should return the absolute position starting from 0, not relative to outer_start

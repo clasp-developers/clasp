@@ -109,6 +109,7 @@ THE SOFTWARE.
 #include <clasp/core/wrappers.h>
 
 
+
 namespace llvmo {
 
 CL_LAMBDA(module);
@@ -172,15 +173,58 @@ CL_VALUE_ENUM(_sym_DIFlagsBitField,llvm::DINode::FlagBitField);
 CL_VALUE_ENUM(_sym_DIFlagsNoReturn,llvm::DINode::FlagNoReturn);
 CL_END_ENUM(_sym_DIFlagsEnum);
 
+
+
+
+SYMBOL_EXPORT_SC_(LlvmoPkg, DISPFlagZero); // Use it as zero value.
+SYMBOL_EXPORT_SC_(LlvmoPkg, DISPFlagVirtual);
+SYMBOL_EXPORT_SC_(LlvmoPkg, DISPFlagPureVirtual);
+SYMBOL_EXPORT_SC_(LlvmoPkg, DISPFlagLocalToUnit);
+SYMBOL_EXPORT_SC_(LlvmoPkg, DISPFlagDefinition);
+SYMBOL_EXPORT_SC_(LlvmoPkg, DISPFlagOptimized);
+SYMBOL_EXPORT_SC_(LlvmoPkg, DISPFlagPure);
+SYMBOL_EXPORT_SC_(LlvmoPkg, DISPFlagElemental);
+SYMBOL_EXPORT_SC_(LlvmoPkg, DISPFlagRecursive);
+SYMBOL_EXPORT_SC_(LlvmoPkg, DISPFlagMainSubprogram);
+SYMBOL_EXPORT_SC_(LlvmoPkg, DISPFlagNonvirtual);
+SYMBOL_EXPORT_SC_(LlvmoPkg, DISPFlagVirtuality);
+SYMBOL_EXPORT_SC_(LlvmoPkg, DISPFlagEnum);
+CL_BEGIN_ENUM(llvm::DISubprogram::DISPFlags,_sym_DISPFlagEnum,"DISPFlagEnum");
+CL_VALUE_ENUM(_sym_DISPFlagVirtual,llvm::DISubprogram::SPFlagVirtual);
+CL_VALUE_ENUM(_sym_DISPFlagPureVirtual,llvm::DISubprogram::SPFlagPureVirtual);
+CL_VALUE_ENUM(_sym_DISPFlagLocalToUnit,llvm::DISubprogram::SPFlagLocalToUnit);
+CL_VALUE_ENUM(_sym_DISPFlagDefinition,llvm::DISubprogram::SPFlagDefinition);
+CL_VALUE_ENUM(_sym_DISPFlagOptimized,llvm::DISubprogram::SPFlagOptimized);
+CL_VALUE_ENUM(_sym_DISPFlagPure,llvm::DISubprogram::SPFlagPure);
+CL_VALUE_ENUM(_sym_DISPFlagElemental,llvm::DISubprogram::SPFlagElemental);
+CL_VALUE_ENUM(_sym_DISPFlagRecursive,llvm::DISubprogram::SPFlagRecursive);
+CL_VALUE_ENUM(_sym_DISPFlagMainSubprogram,llvm::DISubprogram::SPFlagMainSubprogram);
+CL_VALUE_ENUM(_sym_DISPFlagNonvirtual,llvm::DISubprogram::SPFlagNonvirtual);
+CL_VALUE_ENUM(_sym_DISPFlagVirtuality,llvm::DISubprogram::SPFlagVirtuality);
+CL_END_ENUM(_sym_DISPFlagEnum);
+
+
+
 SYMBOL_EXPORT_SC_(KeywordPkg, CSK_None);
 SYMBOL_EXPORT_SC_(KeywordPkg, CSK_MD5);
 SYMBOL_EXPORT_SC_(KeywordPkg, CSK_SHA1);
 SYMBOL_EXPORT_SC_(LlvmoPkg, CSKEnum);
 CL_BEGIN_ENUM(llvm::DIFile::ChecksumKind,_sym_CSKEnum,"CSKEnum");
-CL_VALUE_ENUM(kw::_sym_CSK_None,llvm::DIFile::CSK_None); // Use it as zero value.
 CL_VALUE_ENUM(kw::_sym_CSK_MD5,llvm::DIFile::CSK_MD5); // Use it as zero value.
 CL_VALUE_ENUM(kw::_sym_CSK_SHA1,llvm::DIFile::CSK_SHA1); // Use it as zero value.
 CL_END_ENUM(_sym_CSKEnum);
+
+
+
+SYMBOL_EXPORT_SC_(KeywordPkg, DNTK_Default);
+SYMBOL_EXPORT_SC_(KeywordPkg, DNTK_GNU);
+SYMBOL_EXPORT_SC_(KeywordPkg, DNTK_None);
+SYMBOL_EXPORT_SC_(LlvmoPkg, DNTKEnum);
+CL_BEGIN_ENUM(llvm::DICompileUnit::DebugNameTableKind,_sym_DNTKEnum,"DNTKEnum");
+CL_VALUE_ENUM(kw::_sym_DNTK_Default,llvm::DICompileUnit::DebugNameTableKind::Default); // Use it as zero value.
+CL_VALUE_ENUM(kw::_sym_DNTK_GNU,llvm::DICompileUnit::DebugNameTableKind::GNU);
+CL_VALUE_ENUM(kw::_sym_DNTK_None,llvm::DICompileUnit::DebugNameTableKind::None);
+CL_END_ENUM(_sym_DNTKEnum);
 
 
 CL_LISPIFY_NAME(createCompileUnit);
@@ -189,22 +233,21 @@ CL_LISPIFY_NAME(createFile);
 CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::createFile);
 CL_LISPIFY_NAME(createFunction);
 CL_EXTERN_DEFMETHOD(DIBuilder_O,
-                    (llvm::DISubprogram* (llvm::DIBuilder::*)
-                     (llvm::DIScope*,    // Scope
-                      llvm::StringRef,       // Name
-                      llvm::StringRef,       // LinkageName
-                      llvm::DIFile*,          // File
-                      unsigned,        // lineno
-                      llvm::DISubroutineType*, // Ty
-                      bool, //isLocalToUnit
-                      bool, //isDefinition
-                      unsigned, // scopeLine
-                      unsigned, //flags
-                      bool, // isOptimized
-                      llvm::DITemplateParameterArray, // TParams
-                      llvm::DISubprogram *, // decl
-                      llvm::DITypeArray
-))&llvm::DIBuilder::createFunction );
+                    (llvm::DISubprogram *
+                    (llvm::DIBuilder::*)
+                     (llvm::DIScope *Scope,
+                      llvm::StringRef Name,
+                      llvm::StringRef LinkageName,
+                      llvm::DIFile *File,
+                      unsigned LineNo,
+                      llvm::DISubroutineType *Ty,
+                      unsigned ScopeLine,
+                      llvm::DINode::DIFlags Flags,
+                      llvm::DISubprogram::DISPFlags SPFlags,
+                      llvm::DITemplateParameterArray TParams,
+                      llvm::DISubprogram *Decl,
+                      llvm::DITypeArray ThrownTypes))
+                    &llvm::DIBuilder::createFunction );
 CL_LISPIFY_NAME(createLexicalBlock);
 CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::createLexicalBlock);
 CL_LISPIFY_NAME(createBasicType);
@@ -217,6 +260,8 @@ CL_LISPIFY_NAME(createSubroutineType);
 CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::createSubroutineType);
 CL_LISPIFY_NAME(finalize);
 CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::finalize);;
+CL_LISPIFY_NAME(finalizeSubprogram);
+CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::finalizeSubprogram);;
 
 
 

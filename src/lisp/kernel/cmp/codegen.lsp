@@ -28,7 +28,8 @@
                                          &key wrap-block ; wrap code in a block
                                            ;; Name of the block to wrap in
                                          block-name
-                                         (linkage 'llvm-sys:internal-linkage))
+                                         (linkage 'llvm-sys:internal-linkage)
+                                         linkage-name)
   "This is where llvm::Function are generated from code, declares, 
 lambda-list, environment.
 All code generation comes through here.   Return (llvm:function lambda-name)
@@ -42,7 +43,7 @@ Could return more functions that provide lambda-list for swank for example"
       (cmp-log "new-body -> %s%N" new-body)
 ;;;    (bformat *error-output* "old  -> %s %s %s %s%N" lambda-list-handler declares docstring code)
 ;;;    (bformat *error-output* "new-body -> %s%N" new-body)
-      (let* ((name (core:extract-lambda-name-from-declares declares (or given-name 'cl:lambda)))
+      (let* ((name (format nil "~a-~a" (or linkage-name (core:extract-lambda-name-from-declares declares (or given-name 'cl:lambda))) (sys:next-number)))
              (fn (with-new-function (fn fn-env result
                                         :function-name name
                                         :parent-env env-around-lambda
@@ -86,18 +87,18 @@ Could return more functions that provide lambda-list for swank for example"
         (values fn name lambda-list)))))
 
 
-(defun compile-lambda-function (lambda-or-lambda-block &optional env &key (linkage 'llvm-sys:internal-linkage))
+(defun compile-lambda-function (&key definition env (linkage 'llvm-sys:internal-linkage) linkage-name)
   "Compile a lambda form and return an llvm-ir function that evaluates it.
 Return the same things that generate-llvm-function-from-code returns"
   (let* (wrap-block block-name lambda-list body lambda-block-name)
-    (if (eq (car lambda-or-lambda-block) 'ext::lambda-block)
+    (if (eq (car definition) 'ext::lambda-block)
 	(setq wrap-block t
-	      block-name (function-block-name (cadr lambda-or-lambda-block))
-	      lambda-block-name (cadr lambda-or-lambda-block) ;; bformat nil "%s" (cadr lambda))
-	      lambda-list (caddr lambda-or-lambda-block)
-	      body (cdddr lambda-or-lambda-block))
-	(setq lambda-list (cadr lambda-or-lambda-block)
-	      body (cddr lambda-or-lambda-block)))
+	      block-name (function-block-name (cadr definition))
+	      lambda-block-name (cadr definition) ;; bformat nil "%s" (cadr lambda))
+	      lambda-list (caddr definition)
+	      body (cdddr definition))
+	(setq lambda-list (cadr definition)
+	      body (cddr definition)))
     (multiple-value-bind (declares code docstring specials )
 	(process-declarations body t)
       (cmp-log "About to create lambda-list-handler%N")
@@ -109,7 +110,8 @@ Return the same things that generate-llvm-function-from-code returns"
                                         env
                                         :wrap-block wrap-block
                                         :block-name block-name
-                                        :linkage linkage))))
+                                        :linkage linkage
+                                        :linkage-name linkage-name))))
 
 (defun generate-llvm-function-from-interpreted-function (fn)
   "Extract everything necessary to compile an interpreted function and
@@ -143,12 +145,15 @@ then compile it and return (values compiled-llvm-function lambda-name)"
       ((consp name) (bformat nil "%s" name))
       (t (error "Add support for function-name-from-lambda with ~a as arg" name))))
 
-(defun compile-to-module (form env pathname &key (linkage 'llvm-sys:internal-linkage))
+(defun compile-to-module (&key definition env pathname (linkage 'llvm-sys:internal-linkage) linkage-name)
   (with-lexical-variable-optimizer (t)
       (multiple-value-bind (fn function-kind wrapped-env lambda-name)
           (with-debug-info-generator (:module *the-module* :pathname pathname)
             (multiple-value-bind (llvm-function-from-lambda lambda-name)
-                (compile-lambda-function form env :linkage linkage)
+                (compile-lambda-function :definition definition
+                                         :env env
+                                         :linkage linkage
+                                         :linkage-name linkage-name)
               (or llvm-function-from-lambda (error "There was no function returned by compile-lambda-function inner: ~a" llvm-function-from-lambda))
               (or lambda-name (error "Inner lambda-name is nil - this shouldn't happen"))
               (values llvm-function-from-lambda :function env lambda-name)))
@@ -158,18 +163,28 @@ then compile it and return (values compiled-llvm-function lambda-name)"
         (cmp-log-dump-module *the-module*)
         (values fn function-kind wrapped-env lambda-name))))
 
-(defun compile-to-module-with-run-time-table (definition env pathname &key (linkage 'llvm-sys:internal-linkage))
+(defun compile-to-module-with-run-time-table (&key definition env pathname (linkage 'llvm-sys:internal-linkage) linkage-name)
   (let* (fn function-kind wrapped-env lambda-name)
     (multiple-value-bind (ordered-raw-constants-list constants-table startup-fn shutdown-fn)
         (literal:with-rtv
             (multiple-value-setq (fn function-kind wrapped-env lambda-name)
-              (compile-to-module definition env pathname :linkage linkage)))
+              (compile-to-module
+               :definition definition
+               :env env
+               :pathname pathname
+               :linkage linkage
+               :linkage-name linkage-name)))
       (values fn function-kind wrapped-env lambda-name ordered-raw-constants-list constants-table startup-fn shutdown-fn))))
 
-(defun bclasp-compile* (bind-to-name &optional definition env pathname &key (linkage 'llvm-sys:internal-linkage))
+(defun bclasp-compile* (&key definition env pathname (linkage 'llvm-sys:internal-linkage) linkage-name)
   "Compile the definition"
   (multiple-value-bind (fn function-kind wrapped-env lambda-name ordered-raw-constants-list constants-table startup-fn shutdown-fn)
-      (compile-to-module-with-run-time-table definition env pathname :linkage linkage)
+      (compile-to-module-with-run-time-table
+       :definition definition
+       :env env
+       :pathname pathname
+       :linkage linkage
+       :linkage-name linkage-name)
     (quick-module-dump *the-module* "preoptimize")
     (let ((compiled-function (jit-add-module-return-function *the-module* fn startup-fn shutdown-fn ordered-raw-constants-list)))
       compiled-function)))

@@ -44,12 +44,11 @@
            (multiple-value-bind (compiled-function warn fail)
                (core:with-memory-ramp (:pattern 'gctools:ramp)
                  (compile-in-env 'repl
-                                 `(lambda () 
-                                    (declare (core:lambda-name from-bclasp-implicit-compile-repl-form))
-                                    ,form)
-                                 environment
-                                 nil
-                                 'llvm-sys:external-linkage))
+                                 :definition `(lambda () ,form)
+                                 :env environment
+                                 :compile-hook nil
+                                 :linkage 'llvm-sys:external-linkage
+                                 :linkage-name (format nil "BCLASP-REPL-~d" (sys:next-number))))
              (funcall compiled-function))))))
 
 ;;;

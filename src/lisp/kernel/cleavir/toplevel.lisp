@@ -47,7 +47,8 @@
                   (thunk (cclasp-compile-in-env
                           nil
                           ;; PROGN is needed to avoid processing declarations
-                          `(lambda () (progn ,form)) env))
+                          :definition `(lambda () (progn ,form))
+                          :env env))
                   (end-time (get-universal-time)))
              (when *dump-eval-compile*
                (format *error-output* "toplevel time: ~7,3f us~%"

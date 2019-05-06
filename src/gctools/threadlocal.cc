@@ -181,7 +181,7 @@ void DynamicBindingStack::pop_binding() {
   }
 #endif
 #ifdef CLASP_THREADS
-  ASSERT(this->_ThreadLocalBindings.size()>bind._Var->_Binding.load()); 
+  ASSERT(this->_ThreadLocalBindings.size()>bind._Var->_BindingIdx.load()); 
   this->_ThreadLocalBindings[bind._Var->_BindingIdx.load()] = bind._Val;
   this->_Bindings.pop_back();
 #else

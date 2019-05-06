@@ -63,7 +63,7 @@
 - otherwise return the cons of llvm-sys::Function_sp's that were compiled for the lambda"
   (assert-result-isa-llvm-value result)
   (multiple-value-bind (compiled-fn lambda-name lambda-list)
-      (compile-lambda-function lambda-or-lambda-block env)
+      (compile-lambda-function :definition lambda-or-lambda-block :env env)
     (if (null lambda-name) (error "The lambda doesn't have a name"))
     (if result
         (let* ((lambda-list (irc-load (literal:compile-reference-to-literal lambda-list)))
@@ -1124,7 +1124,7 @@ jump to blocks within this tagbody."
                                                  *the-module*))
              (*current-function* new-func)
              (*current-function-name* c-name))
-        (with-irbuilder ((llvm-sys:make-irbuilder *llvm-context*))
+        (with-irbuilder ((llvm-sys:make-irbuilder (thread-local-llvm-context)))
           (let ((bb (irc-basic-block-create "entry" new-func)))
             (irc-set-insert-point-basic-block bb)
             (let* ((c-args (mapcar (lambda (arg argname)

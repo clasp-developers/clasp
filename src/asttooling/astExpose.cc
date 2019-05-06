@@ -800,8 +800,8 @@ void initialize_astExpose() {
      .def("isImplicit", &clang::Decl::isImplicit)
      .def("setImplicit", &clang::Decl::setImplicit)
      .def("dump", (void (clang::Decl::*)() const) & clang::Decl::dump)
-     .def("getLocStart", &clang::Decl::getLocStart)
-     .def("getLocEnd", &clang::Decl::getLocEnd)
+     .def("getBeginLoc", &clang::Decl::getBeginLoc)
+     .def("getEndLoc", &clang::Decl::getEndLoc)
      .def("getAccess",&clang::Decl::getAccess)
     .enum_<clang::AccessSpecifier>(asttooling::_sym_STARclangAccessSpecifierSTAR)[
       value("AS_public", clang::AS_public),
@@ -924,8 +924,8 @@ void initialize_astExpose() {
     ,
     class_<Stmt>("Stmt", no_default_constructor)
         .def("dump", (void (clang::Stmt::*)() const) & clang::Stmt::dump)
-        .def("getLocStart", &clang::Stmt::getLocStart)
-        .def("getLocEnd", &clang::Stmt::getLocEnd)
+        .def("getBeginLoc", &clang::Stmt::getBeginLoc)
+        .def("getEndLoc", &clang::Stmt::getEndLoc)
 #define CLASS_STMT(_Class_, _Base_) class_<_Class_, _Base_>(#_Class_, no_default_constructor)
     ,
     CLASS_STMT(AsmStmt, Stmt),
@@ -1186,8 +1186,8 @@ void initialize_astExpose() {
     class_<clang::TypeLoc>("TypeLoc", no_default_constructor)
         .def("getSourceRange", &clang::TypeLoc::getSourceRange)
         .def("getLocalSourceRange", &clang::TypeLoc::getLocalSourceRange)
-        .def("getLocStart", &clang::TypeLoc::getLocStart)
-        .def("getLocEnd", &clang::TypeLoc::getLocEnd),
+        .def("getBeginLoc", &clang::TypeLoc::getBeginLoc)
+        .def("getEndLoc", &clang::TypeLoc::getEndLoc),
     class_<clang::CXXBaseSpecifier>("CXXBaseSpecifier", no_default_constructor)
         .def("getType", &clang::CXXBaseSpecifier::getType),
     class_<clang::TemplateArgument>("TemplateArgument", no_default_constructor)

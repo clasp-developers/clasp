@@ -465,7 +465,7 @@
 ;;;; FORMAT
 
 ;;#-ecl
-(defun format (destination control-string &rest format-arguments)
+(defun format-function (destination control-string &rest format-arguments)
   "Provides various facilities for formatting output.
   CONTROL-STRING contains a string to be output, possibly with embedded
   directives, which are flagged with the escape character \"~\".  Directives
@@ -2925,3 +2925,7 @@
           (let ((nreq (if (zerop posn) 2 1)))
             (values nreq nreq remaining)))))
   )
+
+
+(eval-when (:execute :load-toplevel)
+  (setf (fdefinition 'format) #'format-function))

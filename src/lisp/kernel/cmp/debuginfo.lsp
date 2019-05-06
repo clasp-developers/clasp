@@ -55,7 +55,7 @@
   (let ((arg-array (llvm-sys:get-or-create-type-array
 		    *the-module-dibuilder*
 		    (list
-		     (llvm-sys:create-basic-type *the-module-dibuilder* "int" 64 llvm-sys:+dw-ate-signed-fixed+)
+		     (llvm-sys:create-basic-type *the-module-dibuilder* "int" 64 llvm-sys:+dw-ate-signed-fixed+ (core:enum-logical-or llvm-sys:diflags-enum '(llvm-sys:diflags-zero)))
 		     ))))
     (llvm-sys:create-subroutine-type *the-module-dibuilder* arg-array
                                      (core:enum-logical-or llvm-sys:diflags-enum '(llvm-sys:diflags-zero))
@@ -76,16 +76,16 @@
                (llvm-sys:finalize *the-module-dibuilder*)
                ;; add the flag that defines the Dwarf Version
                (llvm-sys:add-module-flag *the-module*
-                                         (llvm-sys:mdnode-get *llvm-context*
+                                         (llvm-sys:mdnode-get (thread-local-llvm-context)
                                                               (list
                                                                (llvm-sys:value-as-metadata-get (jit-constant-i32 2))
-                                                               (llvm-sys:mdstring-get *llvm-context* "Dwarf Version")
+                                                               (llvm-sys:mdstring-get (thread-local-llvm-context) "Dwarf Version")
                                                                (llvm-sys:value-as-metadata-get (jit-constant-i32 +debug-dwarf-version+)))))
                (llvm-sys:add-module-flag *the-module*
-                                         (llvm-sys:mdnode-get *llvm-context*
+                                         (llvm-sys:mdnode-get (thread-local-llvm-context)
                                                               (list
                                                                (llvm-sys:value-as-metadata-get (jit-constant-i32 2))
-                                                               (llvm-sys:mdstring-get *llvm-context* "Debug Info Version")
+                                                               (llvm-sys:mdstring-get (thread-local-llvm-context) "Debug Info Version")
                                                                (llvm-sys:value-as-metadata-get (jit-constant-i32 llvm-sys:+debug-metadata-version+))))) ;; Debug Info Version
                "This should not be the return value - it should be what is returned in the unwind-protect body"
                )))
@@ -104,17 +104,18 @@
 		  (*dbg-compile-unit* (llvm-sys:create-compile-unit
 				       *the-module-dibuilder* ; dibuilder
 				       llvm-sys:dw-lang-c-plus-plus ; 1 llvm-sys:dw-lang-common-lisp
-				       ,file   ; 2 file
+				       ,file ; 2 file
 				       "clasp Common Lisp compiler" ; 4 producer
 				       nil  ; 5 isOptimized
 				       "-v" ; 6 compiler flags
 				       1    ; 7 RV run-time version
 				       "the-split-name.log" ; 8 splitname
                                        :line-tables-only ; 9 DebugEmissionKind (:full-debug :line-tables-only)
-                                       0 ; 10 DWOld
-                                       t ; 11 SplitDebugInlining
+                                       0                 ; 10 DWOld
+                                       t   ; 11 SplitDebugInlining
                                        nil ; 12 DebugInfoForProfiling
-                                       nil ; 13 GnuPubnames
+                                       :dntk-default ; 13 DebugNameTableKind
+                                       nil ; RangesBaseAddress
 				       )))
 	     (cmp-log "with-dbg-compile-unit *dbg-compile-unit*: %s%N" *dbg-compile-unit*)
 	     (cmp-log "with-dbg-compile-unit source-pathname: %s%N" ,source-pathname)
@@ -140,8 +141,8 @@
     (llvm-sys:create-file *the-module-dibuilder*
                           (namestring file-name)
                           (namestring dir-name)
-                          :csk-none
-                          "")))
+                          nil
+                          nil)))
 
 (defmacro with-dbg-file-descriptor ((source-pathname) &rest body)
   (let ((path (gensym))
@@ -169,27 +170,27 @@
 
 (defun make-function-metadata (&key file-metadata linkage-name function-type lineno)
   (llvm-sys:create-function
-                       *the-module-dibuilder*   ; 0 DIBuilder
-                       file-metadata ; 1 function scope
-                       linkage-name            ; 2 function name
-                       linkage-name    ; 3 mangled function name
-                       file-metadata ; 4 file where function is defined
-                       lineno            ; 5 lineno
-                       (dbg-create-function-type file-metadata function-type) ; 6 function-type
-                       nil ; 7 isLocalToUnit - true if this function is not externally visible
-                       t ; 8 isDefinition - true if this is a function definition
-                       lineno ; 9 scopeLine - set to the beginning of the scope this starts
-                       (core:enum-logical-or llvm-sys:diflags-enum '(llvm-sys:diflags-zero)) ; 10 flags
-                       nil ; 11 isOptimized - true if optimization is on
-                       nil ; 12 TParam = nullptr
-                       nil ; 13 Decl = nullptr
-                       nil ; 14 ThrownTypes = nullptr
-                       ))
+   *the-module-dibuilder*               ; 0 DIBuilder
+   file-metadata                        ; 1 |param Scope
+   linkage-name                         ; 2 |param Name
+   linkage-name                         ; 3 |param LinkageName
+   file-metadata                        ; 4 |param File where function is defined
+   lineno                               ; 5 |param LineNo  Line number
+   (dbg-create-function-type file-metadata function-type) ; 6 |param Ty Function type
+   lineno                      ; 7 |param ScopeLine 
+   (core:enum-logical-or llvm-sys:diflags-enum '(llvm-sys:diflags-zero)) ; 8 |param Flags
+                                        ;  If this function prototypes or not
+                                        ;  These flags are used to emit dwarf attributes
+   (core:enum-logical-or llvm-sys:dispflag-enum '(llvm-sys:dispflag-definition)) ; 9 |param SPFlags
+   nil                   ; 10 TParams = nullptr
+   nil                   ; Decl
+   nil                   ; 11 ThrownTypes = nullptr
+   ))
 
 (defvar *with-dbg-function* nil)
 ;; Set to NIL in with-dbg-function and T in dbg-set-current-source-pos
 (defvar *dbg-set-current-source-pos* nil)
-(defun do-dbg-function (closure name lineno linkage-name function-type function)
+(defun do-dbg-function (closure lineno linkage-name function-type function)
   (let ((*with-dbg-function* t)
         (*dbg-set-current-source-pos* nil))
     (if (and *dbg-generate-dwarf* *the-module-dibuilder*)
@@ -201,13 +202,13 @@
                (*dbg-current-scope* *dbg-current-function*))
           (llvm-sys:set-subprogram function *dbg-current-function*)
           (cmp-log "do-dbg-function *dbg-current-function*: %s%N" *dbg-current-function*)
-          (cmp-log "do-dbg-function name: [%s]%N" name)
           (cmp-log "do-dbg-function linkage-name: [%s]%N" linkage-name)
-          (funcall closure))
+          (funcall closure)
+          (llvm-sys:finalize-subprogram *the-module-dibuilder* *dbg-current-function*))
       (funcall closure))))
 
-(defmacro with-dbg-function ((name &key lineno linkage-name function-type function) &rest body)
-  `(do-dbg-function (lambda () (progn ,@body)) ,name ,lineno ,linkage-name ,function-type ,function))
+(defmacro with-dbg-function ((&key lineno linkage-name function-type function) &rest body)
+  `(do-dbg-function (lambda () (progn ,@body)) ,lineno ,linkage-name ,function-type ,function))
 
 (defvar *with-dbg-lexical-block* nil)
 (defun do-dbg-lexical-block (closure lineno)

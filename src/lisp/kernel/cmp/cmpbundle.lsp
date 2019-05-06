@@ -244,7 +244,7 @@
               (dolist (part-pn part-pathnames)
                 (let* ((bc-file (make-pathname :type (if cmp::*use-human-readable-bitcode* "ll" "bc") :defaults part-pn)))
 ;;;                (bformat t "Linking %s%N" bc-file)
-                  (let* ((part-module (parse-bitcode (namestring (truename bc-file)) *llvm-context*)))
+                  (let* ((part-module (parse-bitcode (namestring (truename bc-file)) (thread-local-llvm-context))))
                     (incf part-index)
                     (multiple-value-bind (failure error-msg)
                         (llvm-sys:link-in-module linker part-module)
@@ -260,7 +260,7 @@
               (dolist (part-pn additional-bitcode-pathnames)
                 (let* ((bc-file part-pn))
 ;;;                (bformat t "Linking %s%N" bc-file)
-                  (let* ((part-module (llvm-sys:parse-bitcode-file (namestring (truename bc-file)) *llvm-context*)))
+                  (let* ((part-module (llvm-sys:parse-bitcode-file (namestring (truename bc-file)) (thread-local-llvm-context))))
                     (multiple-value-bind (failure error-msg)
                         (llvm-sys:link-in-module linker part-module)
                       (when failure
