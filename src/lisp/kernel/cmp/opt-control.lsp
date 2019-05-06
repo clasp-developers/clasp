@@ -6,7 +6,7 @@
            (eq (car objectf) 'not)
            (consp (cdr objectf))
            (null (cddr objectf)))
-      (second objectf)
+      `(if ,(second objectf) t nil)
       form))
 
 ;;; every, etc. defined in opt-sequence
