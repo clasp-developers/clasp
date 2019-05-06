@@ -28,45 +28,6 @@
 (defvar *log-gf* nil)
 (defvar *debug-cmpfastgf-trace* nil)
 (defvar *message-counter* nil)
-#+debug-cmpfastgf
-(progn
-  (defun debug-argument (arg arg-tag)
-    (when *debug-cmpfastgf-trace*
-      (irc-intrinsic-call-or-invoke "cc_dispatch_debug" (list (jit-constant-i32 1) arg))
-      (irc-intrinsic-call-or-invoke "cc_dispatch_debug" (list (jit-constant-i32 2) arg-tag))))
-  (defun debug-pointer (ptr)
-    (when *debug-cmpfastgf-trace*
-      (irc-intrinsic-call-or-invoke "cc_dispatch_debug" (list (jit-constant-i32 4) ptr))))
-  (defun debug-arglist (ptr)
-    (when *debug-cmpfastgf-trace*
-      (irc-intrinsic-call-or-invoke "cc_dispatch_debug" (list (jit-constant-i32 3) ptr))))
-  (defun debug-va_list (ptr)
-    (when *debug-cmpfastgf-trace*
-      (irc-intrinsic-call-or-invoke "cc_dispatch_debug" (list (jit-constant-i32 5) ptr))))
-  (defun debug-stamp (ptr)
-    (when *debug-cmpfastgf-trace*
-      (irc-intrinsic-call-or-invoke "cc_dispatch_debug" (list (jit-constant-i32 6) ptr))))
-  (defun debug-dispatch (ptr)
-    (when *debug-cmpfastgf-trace*
-      (irc-intrinsic-call-or-invoke "cc_dispatch_debug" (list (jit-constant-i32 7) ptr))))
-  (defun debug-call (fn args)
-    (when *debug-cmpfastgf-trace*
-      (irc-intrinsic-call-or-invoke fn args))))
-
-#-debug-cmpgf
-(progn
-  (defun debug-argument (arg arg-tag))
-  (defun debug-pointer (ptr))
-  (defun debug-arglist (ptr))
-  (defun debug-va_list (ptr))
-  (defun debug-stamp (ptr))
-  (defun debug-dispatch (ptr))
-  (defun debug-call (fn args)))
-
-
-(defmacro cf-log (fmt &body args)
-  #+(or)nil
-  `(core:bformat *log-gf* ,fmt ,@args))
 
 ;;; ------------------------------------------------------------
 ;;;
@@ -439,7 +400,7 @@
                            (error "Probably a BUG: slot ~a in ~a stopped existing between compile and load"
                                   ',slot-name ,class)))))
                    (value (car location)))
-              (if (eq value (core:unbound))
+              (if (cleavir-primop:eq value (core:unbound))
                   (slot-unbound ,class ,(first arguments) ',slot-name)
                   value)))
           (t (error "BUG: Slot location ~a is not a fixnum or cons" location)))))
