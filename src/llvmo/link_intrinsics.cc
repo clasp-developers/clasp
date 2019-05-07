@@ -772,10 +772,6 @@ __attribute__((optnone,noinline)) void cc_protect_alloca(char* ptr)
   (void)ptr;
 }
 
-void cc_invoke_startup_functions() {
-  startup_functions_invoke();
-};
-
 void cc_invoke_byte_code_interpreter(gctools::GCRootsInModule* roots, char* byte_code, size_t bytes) {
 //  printf("%s:%d byte_code: %p\n", __FILE__, __LINE__, byte_code);
   core::SimpleBaseString_sp str = core::SimpleBaseString_O::make(bytes,'\0',false,bytes,(const unsigned char*)byte_code);
