@@ -91,7 +91,7 @@
              (let* ((class (first specializers))
                     (slot (early-effective-slot-from-accessor-method
                            first (first specializers))))
-               (cmp::make-optimized-slot-reader :index (slot-definition-location slot)
+               (make-optimized-slot-reader :index (slot-definition-location slot)
                                                 :effective-method-function efm
                                                 :slot-name (slot-definition-name slot)
                                                 :method first
@@ -100,14 +100,14 @@
              (let* ((class (second specializers))
                     (slot (early-effective-slot-from-accessor-method
                            first (first specializers))))
-               (cmp::make-optimized-slot-writer :index (slot-definition-location slot)
+               (make-optimized-slot-writer :index (slot-definition-location slot)
                                                 :effective-method-function efm
                                                 :slot-name (slot-definition-name slot)
                                                 :method first
                                                 :class class)))
             ((leaf-method-p first)
              (if (fast-method-function first)
-                 (cmp::make-fast-method-call :function (fast-method-function first))
+                 (make-fast-method-call :function (fast-method-function first))
                  (method-function first)))
             (t efm)))))
 
@@ -340,12 +340,12 @@
         collect (cons (coerce list-of-specializers 'vector)
                       (cond
                         (standard-slotd-p
-                         (cond (readerp (cmp::make-optimized-slot-reader
+                         (cond (readerp (make-optimized-slot-reader
                                          :index (slot-definition-location slotd)
                                          :slot-name (slot-definition-name slotd)
                                          :method method
                                          :class accessor-class))
-                               (writerp (cmp::make-optimized-slot-writer
+                               (writerp (make-optimized-slot-writer
                                          :index (slot-definition-location slotd)
                                          :slot-name (slot-definition-name slotd)
                                          :method method
@@ -354,7 +354,7 @@
                                          generic-function list-of-specializer-names))))
                         (fmf (or (cdr (assoc method fmf-binds))
                                  (let* ((sym (gensym "FAST-METHOD-FUNCTION"))
-                                        (outcome (cmp::make-fast-method-call :function sym)))
+                                        (outcome (make-fast-method-call :function sym)))
                                    (push (cons method outcome) fmf-binds)
                                    outcome)))
                         (leafp (or (cdr (assoc method mfo-binds))
@@ -362,7 +362,7 @@
                                                   (let ((sym (gensym "METHOD-FUNCTION")))
                                                     (push (cons method sym) mf-binds)
                                                     sym)))
-                                          (outcome (cmp::make-function-outcome :function mf)))
+                                          (outcome (make-function-outcome :function mf)))
                                      (push (cons method outcome) mfo-binds)
                                      outcome)))
                         (t (or (cdr (assoc am emf-binds :test #'equal))
@@ -374,7 +374,7 @@
                                                                 (let ((sym (gensym "METHOD-FUNCTION")))
                                                                   (push (cons m sym) mf-binds)
                                                                   sym)))))
-                                      (outcome (cmp::make-effective-method-outcome
+                                      (outcome (make-effective-method-outcome
                                                 :applicable-methods am
                                                 :function (wrap-call-method em local-mf))))
                                  (push (cons am outcome) emf-binds)
@@ -382,7 +382,7 @@
           into entries
         finally (return (values entries
                                 (loop for (key . val) in fmf-binds
-                                      collect (cons key (cmp::fast-method-call-function val)))
+                                      collect (cons key (fast-method-call-function val)))
                                 mf-binds))))
 
 (defun method-specializers-form (specializers)
@@ -426,9 +426,9 @@
   (multiple-value-bind (call-history fmf-binds mf-binds)
       (apply #'compile-time-call-history generic-function lists-of-specializer-names)
     (let ((name (generic-function-name generic-function)))
-      (cmp::generate-dispatcher-from-dtree
+      (generate-dispatcher-from-dtree
        generic-function
-       (cmp::calculate-dtree call-history (generic-function-specializer-profile generic-function))
+       (calculate-dtree call-history (generic-function-specializer-profile generic-function))
        :extra-bindings (compile-time-bindings-junk fmf-binds mf-binds)
        :generic-function-name name
        :generic-function-form `(load-time-value (fdefinition ',name) t)))))
@@ -528,11 +528,11 @@
                           "METHOD-FUNCTION"))
                (ensure-method-function-outcome (method)
                  `(ensure ,method method-function-outcome-binds
-                          `(cmp::make-function-outcome :function ,(ensure-method-function ,method))
+                          `(make-function-outcome :function ,(ensure-method-function ,method))
                           "METHOD-FUNCTION-OUTCOME"))
                (ensure-emfo (method-list effective-method)
                  `(ensure ,method-list emfo-binds
-                          `(cmp::make-effective-method-outcome
+                          `(make-effective-method-outcome
                             :applicable-methods (list ,@(loop for method in ,method-list
                                                               collect (ensure-method method)))
                             :function (lambda (.method-args. .next-methods.)
@@ -541,7 +541,7 @@
                           "EFFECTIVE-METHOD-OUTCOME"))
                (ensure-fmf (method)
                  `(ensure ,method fmf-binds
-                          `(cmp::make-fast-method-call
+                          `(make-fast-method-call
                             :function (fast-method-function ,(ensure-method ,method)))
                           "FAST-METHOD-FUNCTION")))
       (let* ((generic-function (fdefinition generic-function-name))
@@ -578,12 +578,12 @@
                      collect `(cons ,(coerce list-of-specializers 'vector)
                                     ,(cond
                                        (standard-slotd-p
-                                        (cond (readerp `(cmp::make-optimized-slot-reader
+                                        (cond (readerp `(make-optimized-slot-reader
                                                          :index ',(slot-definition-location slotd)
                                                          :slot-name ',(slot-definition-name slotd)
                                                          :method ,(ensure-method method)
                                                          :class ,accessor-class))
-                                              (writerp `(cmp::make-optimized-slot-writer
+                                              (writerp `(make-optimized-slot-writer
                                                          :index ',(slot-definition-location slotd)
                                                          :slot-name ',(slot-definition-name slotd)
                                                          :method ,(ensure-method method)
