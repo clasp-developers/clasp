@@ -24,7 +24,7 @@ namespace core {
 template <>
 struct gctools::GCInfo<core::ObjectFile_O> {
   static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = false;
+  static bool constexpr NeedsFinalization = true;
   static GCInfo_policy constexpr Policy = normal;
 };
 
@@ -50,7 +50,7 @@ namespace core {
 
   /*! Set to something other than NIL to dump functions as they are defined at startup */
   
-  extern char* global_dump_functions;
+extern char* global_dump_functions;
   
   /* The following MUST MATCH %function-description% in cmpintrinsics.lsp
 Each thread maintains a current GCRootsInModule structure that stores roots
@@ -67,32 +67,45 @@ I used a virtual function because different subclasses store the FunctionDescrip
 pointer at different offsets so that FuncallableInstance_O can have its _Class and _Rack
 fields at the same offset as Instance_O.
    */ 
-  struct FunctionDescription {
+struct FunctionDescription {
 // There are six slots below that end with Index
     // They need space opened up in the GCRoots vector
-    static const size_t Roots = 2;
-    void* functionPrototype;
-    gctools::GCRootsInModule* gcrootsInModule;
-    size_t sourcePathname_functionName_Index;
-    size_t lambdaList_docstring_Index;
-    int lineno;
-    int column;
-    int filepos;
-  };
+  static const size_t Roots = 2;
+  void* functionPrototype;
+  gctools::GCRootsInModule* gcrootsInModule;
+  size_t sourcePathname_functionName_Index;
+  size_t lambdaList_docstring_Index;
+  int lineno;
+  int column;
+  int filepos;
+};
 
-  FunctionDescription* makeFunctionDescription(T_sp functionName, T_sp lambda_list=_Unbound<T_O>(), T_sp docstring=_Unbound<T_O>(), T_sp sourcePathname=_Unbound<T_O>(), int lineno=-1, int column=-1, int filePos=-1);
+FunctionDescription* makeFunctionDescription(T_sp functionName, T_sp lambda_list=_Unbound<T_O>(), T_sp docstring=_Unbound<T_O>(), T_sp sourcePathname=_Unbound<T_O>(), int lineno=-1, int column=-1, int filePos=-1);
 
-  void validateFunctionDescription(const char* filename, size_t lineno, Function_sp function);
+void validateFunctionDescription(const char* filename, size_t lineno, Function_sp function);
 
+};
+
+
+namespace core {
 
 FORWARD(ObjectFile);
 class ObjectFile_O : public General_O {
   LISP_ABSTRACT_CLASS(core,CorePkg,ObjectFile_O,"OBJECT-FILE",General_O);
 public:
-  void* ObjectFilePtr;
-  size_t ObjectFileSize;
+  void*   _ObjectFilePtr;
+  size_t  _ObjectFileSize;
+  ObjectFile_O(void* ptr, size_t sz) : _ObjectFilePtr(ptr), _ObjectFileSize(sz) {};
+  ObjectFile_O() : _ObjectFilePtr(NULL), _ObjectFileSize(0) {};
+  ~ObjectFile_O();
+  virtual string __repr__() const;
 };
 
+};
+
+
+
+namespace core {
   /*! Function_O is a Funcallable object that adds no fields to anything that inherits from it
 */
   class Function_O : public General_O {
