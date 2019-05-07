@@ -105,7 +105,7 @@ Set this to other IRBuilders to make code go where you want")
 (define-symbol-macro %fn-ctor*% (llvm-sys:type-get-pointer-to %fn-ctor%))
 
 ;;;  "A run-all void ()* function prototype")
-(define-symbol-macro %fn-start-up% (llvm-sys:function-type-get %void% nil))
+(define-symbol-macro %fn-start-up% (llvm-sys:function-type-get %void% (list %t*%)))
 (defvar +fn-start-up-argument-names+ nil)
 ;;;  "A pointer to the run-all function prototype")
 (define-symbol-macro %fn-start-up*% (llvm-sys:type-get-pointer-to %fn-start-up%))
@@ -517,11 +517,9 @@ eg:  (f closure-ptr nargs a b c d ...)
                                    "source-file-info-handle"))
 |#
 
-(defun add-global-ctor-function (module main-function &key position register-library)
+(defun add-global-ctor-function (module main-function &key (position 1))
   "Create a function with the name core:+clasp-ctor-function-name+ and
 have it call the main-function"
-  #+(or)(unless (eql module (llvm-sys:get-parent main-function))
-    (error "The parent of the func-ptr ~a (a module) does not match the module ~a" (llvm-sys:get-parent main-function) module))
   (let* ((*the-module* module)
          (fn (irc-simple-function-create
               (core:bformat nil "%s_%d" core::+clasp-ctor-function-name+ (core:next-number))
@@ -533,18 +531,13 @@ have it call the main-function"
            (*current-function* fn)
            (entry-bb (irc-basic-block-create "entry" fn)))
       (irc-set-insert-point-basic-block entry-bb irbuilder-body)
-      (with-irbuilder (irbuilder-body)
-        #+(or)(let* ((internal-functions-names-global (llvm-sys:get-named-global cmp:*the-module* *internal-functions-names-global-name*))
-              (internal-functions-global (llvm-sys:get-named-global cmp:*the-module* *internal-functions-global-name*))
-              (internal-functions-length-global (llvm-sys:get-named-global cmp:*the-module* *internal-functions-length-global-name*))
-              (internal-functions-names-global-bf (irc-bit-cast internal-functions-names-global %i8*% "internal-functions-names-ptr"))
-              (internal-functions-global-bf (irc-bit-cast internal-functions-global %i8*% "internal-functions-ptr")))
-          (irc-intrinsic "cc_register_library" fn internal-functions-names-global-bf internal-functions-global-bf internal-functions-length-global))
-        (let* ((bc-bf (irc-bit-cast main-function %fn-start-up*% "fnptr-pointer"))
-               (_     (irc-intrinsic "cc_register_startup_function" (jit-constant-size_t position) bc-bf))
-               (_     (irc-ret-void))))
-        ;;(llvm-sys:dump fn)
-        fn))))
+      (with-landing-pad nil
+        (with-irbuilder (irbuilder-body)
+          (let* ((bc-main-function (irc-bit-cast main-function %fn-start-up*% "fnptr-pointer"))
+                 (_                (irc-intrinsic "cc_register_startup_function" (jit-constant-size_t position) bc-main-function))
+                 (_                (irc-ret-void))))
+          ;;(llvm-sys:dump fn)
+          fn)))))
 
 (defun add-main-function (module run-all-function)
   "Create an external function with the name main have it call the run-all-function"
@@ -599,7 +592,7 @@ have it call the main-function"
                                     (llvm-sys:constant-pointer-null-get %i8*%)))))
    "llvm.global_ctors"))
 
-(defun make-boot-function-global-variable (module func-designator &key position register-library)
+(defun make-boot-function-global-variable (module func-designator &key (position 1))
   "* Arguments
 - module :: An llvm module
 - func-ptr :: An llvm function
@@ -614,11 +607,7 @@ and initialize it with an array consisting of one function pointer."
                       (t (error "~a must be a function name or llvm-sys:function" func-designator)))))
     (unless startup-fn
       (error "Could not find ~a in module" func-designator))
-    #+(or)(unless (eql module (llvm-sys:get-parent func-ptr))
-            (error "The parent of the func-ptr ~a (a module) does not match the module ~a" (llvm-sys:get-parent func-ptr) module))
-    (let* ((global-ctor (add-global-ctor-function module startup-fn
-                                                  :position position
-                                                  :register-library register-library)))
+    (let* ((global-ctor (add-global-ctor-function module startup-fn :position position)))
       (incf *compilation-unit-module-index*)
       (add-llvm.global_ctors module *compilation-unit-module-index* global-ctor))))
 
@@ -752,6 +741,7 @@ and initialize it with an array consisting of one function pointer."
             (if gcroots-in-module
                 (irc-intrinsic-call "cc_remove_gcroots_in_module" (list gcroots-in-module)))
             (irc-ret-void))))
+      (make-boot-function-global-variable module startup-fn)
       (values startup-fn shutdown-fn ordered-raw-literals-list))))
 
 

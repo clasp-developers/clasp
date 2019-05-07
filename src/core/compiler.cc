@@ -292,7 +292,7 @@ size_t startup_functions_are_waiting()
 };
 
 /*! Invoke the startup functions and clear the array of startup functions */
-void startup_functions_invoke()
+void startup_functions_invoke(T_O* literals)
 {
   size_t startup_count = 0;
   Startup* startup_functions = NULL;
@@ -331,7 +331,7 @@ void startup_functions_invoke()
       printf("%s:%d     About to invoke fn@%p\n", __FILE__, __LINE__, fn );
 #endif
 //      T_mv result = (fn)(LCC_PASS_MAIN());
-      (startup._Function)(); // invoke the startup function
+      (startup._Function)(literals); // invoke the startup function
     }
 #ifdef DEBUG_STARTUP
     printf("%s:%d Done with startup_functions_invoke()\n", __FILE__, __LINE__ );
@@ -374,9 +374,9 @@ NOINLINE CL_DEFUN T_sp core__trigger_dtrace_stop()
   
 
 
-CL_DEFUN void core__startup_functions_invoke()
+CL_DEFUN void core__startup_functions_invoke(List_sp literals)
 {
-  startup_functions_invoke();
+  startup_functions_invoke((T_O*)literals.raw_());
   printf("%s:%d startup_functions_invoke returned -   this should never happen\n", __FILE__, __LINE__ );
   abort();
 };
@@ -586,13 +586,11 @@ LOAD:
   Pointer_sp handle_ptr = Pointer_O::create(handle);
   scope.pushSpecialVariableAndSet(_sym_STARcurrent_dlopen_handleSTAR, handle_ptr);
   if (startup_functions_are_waiting()) {
-    startup_functions_invoke();
+    startup_functions_invoke(NULL);
   } else {
     SIMPLE_ERROR(BF("This is not a proper FASL file - there were no global ctors - there have to be global ctors for load-bundle"));
   }
   T_mv result;
-//  cc_invoke_startup_functions();
-//  process_llvm_stackmaps();
   return (Values(Pointer_O::create(handle), _Nil<T_O>()));
 };
 

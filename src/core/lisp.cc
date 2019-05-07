@@ -2548,7 +2548,7 @@ int Lisp_O::run() {
   try {
     if (!this->_IgnoreInitImage) {
       if ( startup_functions_are_waiting() ) {
-        startup_functions_invoke();
+        startup_functions_invoke(NULL);
       } else {
         Pathname_sp initPathname = gc::As<Pathname_sp>(_sym_STARcommandLineImageSTAR->symbolValue());
         DynamicScopeManager scope(_sym_STARuseInterpreterForEvalSTAR, _lisp->_true());

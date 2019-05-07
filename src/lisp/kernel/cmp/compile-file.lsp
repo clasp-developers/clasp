@@ -283,8 +283,7 @@ Compile a lisp source file into an LLVM module."
               (quick-module-dump *the-module* "preoptimize") 
               ;; (2) Add the CTOR next
               (make-boot-function-global-variable module run-all-name
-                                                  :position image-startup-position
-                                                  :register-library t)
+                                                  :position image-startup-position)
               ;; (3) If optimize ALWAYS link the builtins in, inline them and then remove them - then optimize.
               (if (> optimize-level 0)
                   (link-inline-remove-builtins *the-module*)))
