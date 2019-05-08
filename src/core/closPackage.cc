@@ -46,6 +46,7 @@ SYMBOL_EXPORT_SC_(ClosPkg,update_instance);
 SYMBOL_EXPORT_SC_(ClosPkg,dispatch_miss);
 SYMBOL_EXPORT_SC_(ClosPkg,_PLUS_the_standard_class_PLUS_);
 SYMBOL_EXPORT_SC_(ClosPkg,funcallable_standard_class);
+SYMBOL_EXPORT_SC_(ClosPkg,dispatcher_count);
 
 SYMBOL_EXPORT_SC_(ClosPkg, DIRECT_SUPERCLASSES);
 SYMBOL_EXPORT_SC_(ClosPkg, DIRECT_SUBCLASSES);
