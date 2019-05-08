@@ -173,6 +173,39 @@ and the pathname of the source file - this will also be used as the module initi
             (llvm-sys:pass-manager-add pm tli)
             (llvm-sys:add-passes-to-emit-file-and-run-pass-manager target-machine pm output-stream nil #|<-dwo_stream|# file-type module))))))
 
+
+;;; This is an attempt to generate object files in memory and then
+;;; concatenate them to create a new kind of fasl file
+;;; - I'm not sure this is a good idea but I may want to revisit this
+;;; Christian Schafmeister, May 2019
+#+(or)
+(defun generate-in-memory-object-file (module &key (reloc-model 'llvm-sys:reloc-model-undefined))
+  "Generate an in-memory object-file object for the module"
+  (with-track-llvm-time
+      (let* ((triple-string (llvm-sys:get-target-triple module))
+             (normalized-triple-string (llvm-sys:triple-normalize triple-string))
+             (triple (llvm-sys:make-triple normalized-triple-string))
+             (target-options (llvm-sys:make-target-options)))
+        (multiple-value-bind (target msg)
+            (llvm-sys:target-registry-lookup-target "" triple)
+          (unless target (error msg))
+          (let* ((target-machine (llvm-sys:create-target-machine target
+                                                                 (llvm-sys:get-triple triple)
+                                                                 ""
+                                                                 ""
+                                                                 target-options
+                                                                 reloc-model
+                                                                 *default-code-model*
+                                                                 'llvm-sys:code-gen-opt-default
+                                                                 NIL ; JIT?
+                                                                 ))
+                 (pm (llvm-sys:make-pass-manager))
+                 (tli (llvm-sys:make-target-library-info-wrapper-pass triple #||LLVM3.7||#))
+                 (data-layout (llvm-sys:create-data-layout target-machine)))
+            (llvm-sys:set-data-layout module data-layout)
+            (llvm-sys:pass-manager-add pm tli)
+            (llvm-sys:generate-object-file-from-module target-machine pm module))))))
+
 (defun compile-file-results (output-file conditions)
   (let (warnings-p failures-p)
     (dolist (cond conditions)
@@ -387,7 +420,17 @@ Compile a lisp source file into an LLVM module."
                (when verbose
                  (bformat t "Writing fasl file to: %s%N" output-file)
                  (finish-output))
-               (llvm-link output-file :input-files (list temp-bitcode-file) :input-type :bitcode)))
+               (progn
+                 (llvm-link output-file :input-files (list temp-bitcode-file) :input-type :bitcode)
+                 #+(or)
+                 (let ((reloc-model (cond
+                                      ((or (member :target-os-linux *features*) (member :target-os-freebsd *features*))
+                                       'llvm-sys:reloc-model-pic-)
+                                      (t 'llvm-sys:reloc-model-undefined))))
+                   (let ((object-files (list (generate-in-memory-object-file module :reloc-model reloc-model))))
+                     (with-open-file (fout output-path :direction :output)
+                       (sys:write-fasl-file fout object-files))))
+                 )))
             (t ;; fasl
              (error "Add support to file of type: ~a" output-type)))
           (dolist (c conditions)

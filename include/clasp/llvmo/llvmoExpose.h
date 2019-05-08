@@ -853,6 +853,9 @@ public:
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
     this->_ptr = ptr;
   }
+
+  core::ObjectFile_sp generate_object_file_from_module(PassManager_sp passManager, Module_sp module);
+  
   /*! Return (values CodeGenFileType-symbol) */
   void addPassesToEmitFileAndRunPassManager(PassManager_sp passManager,
                                             core::T_sp stream,

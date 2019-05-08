@@ -426,6 +426,25 @@ namespace llvmo {
 
 namespace llvmo {
 
+CL_LISPIFY_NAME("generate-object-file-from-module");
+CL_DEFMETHOD core::ObjectFile_sp TargetMachine_O::generate_object_file_from_module(PassManager_sp passManager, Module_sp module) {
+  llvm::SmallString<1024> bufferOutput;
+  llvm::raw_svector_ostream ostream(bufferOutput);
+//  ostreamP = new llvm::raw_svector_ostream(stringOutput);
+  if (this->wrappedPtr()->addPassesToEmitFile(*passManager->wrappedPtr(), ostream, NULL, llvm::TargetMachine::CGFT_ObjectFile, true, nullptr)) {
+    SIMPLE_ERROR(BF("Could not generate object file"));
+  }
+  passManager->wrappedPtr()->run(*module->wrappedPtr());
+  unsigned char* memory_buffer = (unsigned char*)malloc(bufferOutput.size_in_bytes());
+  if (!memory_buffer) {
+    printf("%s:%d:%s Could not allocate memory buffer for ObjectFile\n", __FILE__, __LINE__, __FUNCTION__);
+    abort();
+  }
+  std::memcpy( memory_buffer, bufferOutput.data(), bufferOutput.size_in_bytes());
+  GC_ALLOCATE_VARIADIC(core::ObjectFile_O, objectFile, memory_buffer, bufferOutput.size_in_bytes());
+  return objectFile;
+}
+
 
 
 CL_LISPIFY_NAME("addPassesToEmitFileAndRunPassManager");
@@ -3049,7 +3068,7 @@ CL_DEFUN void finalizeEngineAndRegisterWithGcAndRunMainFunctions(ExecutionEngine
     finalizeEngineAndTime(engine);
     engine->runStaticConstructorsDestructors(false);
     if ( core::startup_functions_are_waiting() ) {
-      core::startup_functions_invoke();
+      core::startup_functions_invoke(NULL);
     } else {
       SIMPLE_ERROR(BF("There were no startup functions to invoke\n"));
     }
@@ -3886,11 +3905,22 @@ CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, co
                                                    kw::_sym_function,
                                                    _Nil<core::T_O>(),
                                                    _Nil<core::T_O>() );
+  // As of May 2019 we use a static ctor to register the startup function
+  // 
+#if 0
+  // Run the static constructors
+  llvm::ExitOnError ExitOnErr;
+  ExitOnErr(this->_Jit->runConstructors());
+  if (core::startup_functions_are_waiting()) {
+    core::startup_functions_invoke(initialData.raw_());
+  }
+#else
   if (startupPtr) {
     core::module_startup_function_type startup = reinterpret_cast<core::module_startup_function_type>(gc::As_unsafe<core::Pointer_sp>(startupPtr)->ptr());
 //    printf("%s:%d:%s About to invoke startup @p=%p\n", __FILE__, __LINE__, __FUNCTION__, (void*)startup);
     startup(initialData.tagged_());
   }
+#endif
   return functoid;
 }
 };
