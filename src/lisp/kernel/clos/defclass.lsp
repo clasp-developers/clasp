@@ -53,11 +53,7 @@
           (processed-class-options (process-class-options options)))
       `(progn
          (eval-when (:compile-toplevel)
-           ;; Don't wipe classes at compile time if we don't have to.
-           ;; Per CLHS we do need a class object returned from find-class at compile time, but it
-           ;; doesn't actually need any information or anything.
-           (unless (find-class ',name nil)
-             (load-defclass ',name ',superclasses ,parsed-slots ,processed-class-options)))
+           (setf (core::class-info ',name) t))
          (eval-when (:load-toplevel :execute)
            (load-defclass ',name ',superclasses ,parsed-slots ,processed-class-options))))))
 
@@ -99,7 +95,7 @@
          (let ((class (and name
                            (find-class name nil))))
            ;; Only classes which have a PROPER name are redefined. If a class
-           ;; with the same name is register, but the name of the class does not
+           ;; with the same name is registered, but the name of the class does not
            ;; correspond to the registered name, a new class is returned.
            ;; [Hyperspec 7.7 for DEFCLASS]
            (when (and class (eq name (class-name class)))
