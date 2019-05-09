@@ -92,12 +92,12 @@
 ;;; of the remaining methods. The resulting closure (or effective method)
 ;;; is the equivalent of (CALL-METHOD method rest-methods)
 (defun combine-method-functions (method rest-methods)
-  (lambda (.method-args. .next-methods.)
-    (declare (ignorable .next-methods. #|no-next-methods|#)
-             (core:lambda-name combine-method-functions.lambda))
-    ;; TODO: Optimize this application and GF dispatch should be more efficient
-    ;; .method-args. can be a valist or a regular list
-    (funcall method .method-args. rest-methods)))
+  (if (null rest-methods)
+      method
+      (lambda (.method-args. .next-methods.)
+        (declare (ignorable .next-methods. #|no-next-methods|#)
+                 (core:lambda-name combine-method-functions.lambda))
+        (funcall method .method-args. rest-methods))))
 
 (defmacro call-method (method &optional rest-methods)
   `(funcall ,(emf-call-method method)
