@@ -31,7 +31,11 @@ It is used by PROVIDE and REQUIRE.")
 (defun provide (module-name)
   "Adds a new module name to *MODULES* indicating that it has been loaded.
 Module-name is a string designator"
-  (pushnew (string module-name) *modules* :test #'string=)
+  (let ((module-as-string (string module-name)))
+    (pushnew module-as-string *modules* :test #'string=)
+    (when (and (find-package :asdf)(string= "ASDF" (string-upcase module-as-string)))
+      (funcall (find-symbol (string-upcase "register-immutable-system") :asdf) :asdf))
+    )
   t)
 
 (defparameter *requiring* nil)
