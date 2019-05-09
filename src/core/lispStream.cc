@@ -5611,6 +5611,8 @@ CL_DEFUN T_sp cl__read_byte(T_sp strm, T_sp eof_error_p, T_sp eof_value) {
   // Should signal an error of type error if stream is not a binary input stream.
   if (strm.nilp())
     TYPE_ERROR(strm, cl::_sym_Stream_O);
+   if (!AnsiStreamP(strm))
+     return eval::funcall(gray::_sym_stream_read_byte, strm);
   // as a side effect verifies that strm is really a stream.
   T_sp elt_type = clasp_stream_element_type(strm);
   if (elt_type == cl::_sym_character || elt_type == cl::_sym_base_char)
