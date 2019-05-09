@@ -521,8 +521,7 @@ a relative path from there."
   (let ((name (cond
                 ((eq filetype :intrinsics) "intrinsics")
                 ((eq filetype :builtins) "builtins")
-                ((eq filetype :fastgf) "fastgf")
-                (t (error "illegal filetype - only :intrinsics, :builtins or :fastgf allowed")))))
+                (t (error "illegal filetype - only :intrinsics or :fastgf allowed")))))
     (cond
       ((eq link-type :fasl)
        (translate-logical-pathname (bformat nil "lib:%s-%s-cxx.a" +bitcode-name+ name)))

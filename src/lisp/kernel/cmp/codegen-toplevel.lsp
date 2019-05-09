@@ -83,29 +83,26 @@
 
 (defun t1expr (form &optional env)
   (cmp-log "t1expr-> %s%N" form)
-  (push form core:*top-level-form-stack*)
-  (unwind-protect
-       (let ((head (if (atom form) form (car form))))
-         (cond
-           ((eq head 'cl:eval-when) (t1eval-when (cdr form) env))
-           ((eq head 'cl:progn) (t1progn (cdr form) env))
-           ((eq head 'cl:locally) (t1locally (cdr form) env))
-           ((eq head 'cl:macrolet) (t1macrolet (cdr form) env))
-           ((eq head 'cl:symbol-macrolet) (t1symbol-macrolet (cdr form) env))
-           ((and (listp form)
-                 ;;(symbolp (car form))
-                 (not (core:lexical-function (car form) env))
-                 (not (core:lexical-macro-function (car form) env))
-                 (not (core:declared-global-notinline-p (car form)))
-                 (let ((expansion (core:compiler-macroexpand form env)))
-                   (if (eq expansion form)
-                       nil
-                       (progn
-                         (t1expr expansion env)
-                         t)))))
-           ((and (symbolp head) ; it's unlikely, but we could have a constant toplevel form.
-                 (macro-function head env))
-            (let ((expanded (macroexpand form env)))
-              (t1expr expanded env)))
-           (t (compile-top-level form env))))
-    (pop core:*top-level-form-stack*)))
+  (let ((head (if (atom form) form (car form))))
+    (cond
+      ((eq head 'cl:eval-when) (t1eval-when (cdr form) env))
+      ((eq head 'cl:progn) (t1progn (cdr form) env))
+      ((eq head 'cl:locally) (t1locally (cdr form) env))
+      ((eq head 'cl:macrolet) (t1macrolet (cdr form) env))
+      ((eq head 'cl:symbol-macrolet) (t1symbol-macrolet (cdr form) env))
+      ((and (listp form)
+            ;;(symbolp (car form))
+            (not (core:lexical-function (car form) env))
+            (not (core:lexical-macro-function (car form) env))
+            (not (core:declared-global-notinline-p (car form)))
+            (let ((expansion (core:compiler-macroexpand form env)))
+              (if (eq expansion form)
+                  nil
+                  (progn
+                    (t1expr expansion env)
+                    t)))))
+      ((and (symbolp head) ; it's unlikely, but we could have a constant toplevel form.
+            (macro-function head env))
+       (let ((expanded (macroexpand form env)))
+         (t1expr expanded env)))
+      (t (compile-top-level form env)))))

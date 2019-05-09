@@ -88,7 +88,7 @@
        (core:bformat (debug-fastgf-stream) (subseq *dmspaces* 0 (min (length *dmspaces*) (debug-fastgf-indent))))
        (core:bformat (debug-fastgf-stream) ,fmt ,@args)))
   (defun graph-call-history (generic-function output)
-    (cmp:generate-dot-file generic-function output))
+    (generate-dot-file generic-function output))
   (defun log-cmpgf-filename (gfname suffix extension)
     (pathname (core:bformat nil "%s/dispatch-thread%s-%s%05d-%s.%s"
                             *dispatch-history-dir*
@@ -150,7 +150,7 @@
              (gf-print-entry index entry)))
          (let* ((call-history (generic-function-call-history generic-function))
                 (specializer-profile (generic-function-specializer-profile generic-function))
-                (optimized-call-history (cmp::optimized-call-history call-history specializer-profile))
+                (optimized-call-history (optimized-call-history call-history specializer-profile))
                 (index 0))
            (bformat-indent "    optimized call-history (length -> %d):%N" (length optimized-call-history))
            (dolist (entry optimized-call-history)
@@ -173,8 +173,6 @@
   (defun incf-debug-fastgf-indent ())
   (defun decf-debug-fastgf-indent ())
   )
-  
-
 
 ;;; --------------------------------------------------
 ;;;
@@ -183,82 +181,20 @@
 ;;;   codegen-dispatcher to generate a new dispatch function when needed
 ;;;
 
-;;; Called from cc_bound_or_error -> intrinsic_slot_unbound
-(defun fastgf-slot-unbound (opt-slot-reader instance)
-  (slot-unbound (cmp::optimized-slot-reader-class opt-slot-reader)
-                instance
-                (cmp::optimized-slot-reader-slot-name opt-slot-reader)))
-
-;;; Takes three arguments ((x cmp::optimized-slot-reader) instance vargs)
-(defun dispatch-slot-reader-index-debug (opt-slot-reader instance vargs)
-  ;; Do the slot read and check against the slot index
-  (let ((opt-method (cmp::optimized-slot-reader-method opt-slot-reader))
-        (opt-class (cmp::optimized-slot-reader-class opt-slot-reader))
-        (slot-name (cmp::optimized-slot-reader-slot-name opt-slot-reader))
-        (opt-index (cmp::optimized-slot-reader-index opt-slot-reader)))
-    (let* ((slot (effective-slotd-from-accessor-method opt-method opt-class))
-           (lookup-index (slot-definition-location slot)))
-      (unless (= opt-index lookup-index)
-        (error "The dispatch-slot-reader-index-debug function caught a difference between the slot opt-index ~a and the looked up slot index ~a for opt-method ~a/ opt-class ~a/ slot-name ~a" opt-index lookup-index opt-method opt-class slot-name))
-      (let ((direct-result (core:instance-ref instance opt-index))
-            (efm-result (funcall (cmp::optimized-slot-reader-effective-method-function opt-slot-reader) vargs nil)))
-        (unless (eql direct-result efm-result)
-          ;; Do what std-class-optimized-accessors does...
-          (let* ((efm-class (si:instance-class instance))
-                 (efm-table (class-location-table efm-class))
-                 (efm-index (gethash slot-name efm-table))
-                 (efm-value (if (si::fixnump efm-index)
-                                (si:instance-ref instance (the fixnum efm-index))
-                                (car (the cons efm-index)))))
-            (format *error-output* "DATA FOR READER ERROR!!!!!!!!!!!!!!!!!!!!!~%")
-            (format *error-output* "slot-name -----> ~s~%" slot-name)
-            (format *error-output* "opt-index -----> ~s~%" opt-index)
-            (format *error-output* "opt-method ----> ~s~%" opt-method)
-            (format *error-output* "opt-class -----> ~s~%" opt-class)
-            (format *error-output* "(core:instance-stamp instance) --------------------------------------------> ~s~%" (core:instance-stamp instance))
-            (format *error-output* "(core:lookup-class-with-stamp (core:instance-stamp instance)) -------------> ~s~%" (core:lookup-class-with-stamp (core:instance-stamp instance)))
-            (format *error-output* "(core:class-stamp-for-instances opt-class) --------------------------------> ~s~%" (core:class-stamp-for-instances opt-class))
-            (format *error-output* "(core:lookup-class-with-stamp (core:class-stamp-for-instances opt-class)) -> ~s~%" (core:lookup-class-with-stamp (core:class-stamp-for-instances opt-class)))
-            (format *error-output* "efm-class -----> ~s~%" efm-class)
-            (format *error-output* "efm-index -----> ~s~%" efm-index)
-            (format *error-output* "efm-value -----> ~s~%" efm-value)
-            (format *error-output* "(core::object-address instance) -> ~s~%" (core::object-address instance))
-            (error "The dispatch-slot-reader-index-debug function caught a difference between reading the slot and calling the effective-method-function")))
-        efm-result))))
-
-;;; Takes four arguments ((x cmp::optimized-slot-writer) value instance vargs)
-(defun dispatch-slot-writer-index-debug (opt-slot-writer value instance vargs)
-  ;; Check against the slot index and Do the slot write and check against the slot index
-  (let ((opt-method (cmp::optimized-slot-writer-method opt-slot-writer))
-        (class (cmp::optimized-slot-writer-class opt-slot-writer))
-        (slot-name (cmp::optimized-slot-writer-slot-name opt-slot-writer))
-        (opt-index (cmp::optimized-slot-writer-index opt-slot-writer)))
-    (let* ((slot (effective-slotd-from-accessor-method opt-method class))
-           (lookup-index (slot-definition-location slot)))
-      (unless (= opt-index lookup-index)
-        (error "The dispatch-slot-writer-index-debug function caught a difference between the optimized slot index ~a and the looked up slot index ~a for opt-method ~a/ class ~a/ slot-name ~a" opt-index lookup-index opt-method class slot-name))
-      (let ((efm-result (funcall (cmp::optimized-slot-writer-effective-method-function opt-slot-writer) vargs nil))
-            (after-write-read (core:instance-ref instance opt-index)))
-        (unless (eql efm-result after-write-read)
-          (let ((*print-circle* nil))
-            (error "The dispatch-slot-writer-index-debug function caught a difference between what should be in the slot opt-index ~a~% (read value -> ~s)~% after writing ~s into it using the effective-method-function.~% This is for opt-method ~s/class ~s/slot-name ~s~% and (core:class-stamp-for-instances class) -> ~s    (core:instance-stamp instance) -> ~s~%  (core:object-address instance) -> ~s~%" 
-                   opt-index after-write-read efm-result opt-method class slot-name (core:class-stamp-for-instances class) (core:instance-stamp instance) (core:object-address instance))))
-        efm-result))))
-
 (defun maybe-update-instances (arguments)
   (let ((invalid-instance nil))
     (dolist (x arguments)
       (when (core:instancep x)
         (let* ((i x)
-               (s (si::instance-sig i)))
-          (clos::with-early-accessors (clos::+standard-class-slots+)
-            (when (si::sl-boundp s)
+               (s (si:instance-sig i)))
+          (clos::with-early-accessors (+standard-class-slots+)
+            (when (si:sl-boundp s)
               (unless (= (core:instance-stamp i) (core:class-stamp-for-instances (core:instance-class i)))
                 (gf-log "   instance-stamp matches that of class -> %s%N"  (= (core:instance-stamp i) (core:class-stamp-for-instances (core:instance-class i))))
                 (gf-log "(core:instance-stamp i) -> %s%N" (core:instance-stamp i))
                 (gf-log "(core:class-stamp-for-instances (core:instance-class i)) -> %s%N" (core:class-stamp-for-instances (core:instance-class i)))
                 (setf invalid-instance t)
-                (clos::update-instance i)
+                (update-instance i)
                 (core:instance-stamp-set i (core:class-stamp-for-instances (si:instance-class i)))))))))
     invalid-instance))
 
@@ -324,8 +260,8 @@
 ;; (with this scheme they're just removed with the call history entries).
 (defun find-existing-emf (call-history methods)
   (loop for (ignore . outcome) in call-history
-        when (and (cmp::effective-method-outcome-p outcome)
-                  (equal methods (cmp::effective-method-outcome-applicable-methods outcome)))
+        when (and (effective-method-outcome-p outcome)
+                  (equal methods (effective-method-outcome-applicable-methods outcome)))
           return outcome))
 
 (defun compute-outcome
@@ -348,7 +284,7 @@
     ;; so we pick that off first.
     ;; Similarly to nrm below, we return a sort of fake emf.
     (return-from compute-outcome
-      (cmp::make-function-outcome
+      (make-function-outcome
        :function
        (lambda (vaslist-args ignore)
          (declare (ignore ignore))
@@ -378,13 +314,13 @@
            (cond ((not standard-slotd-p)
                   (cond (fmf
                          (gf-log "Using fast method %s function as emf%N" method)
-                         (cmp::make-fast-method-call :function fmf))
+                         (make-fast-method-call :function fmf))
                         (leafp
                          (gf-log "Using method %s function as emf%N" method)
-                         (cmp::make-function-outcome :function (method-function method)))
+                         (make-function-outcome :function (method-function method)))
                         (nrm-group-name ; missing a required (probably primary) method.
                          ;; FIXME: this is kind of ugly, to say the least. inlining would be nice.
-                         (cmp::make-function-outcome
+                         (make-function-outcome
                           :function
                           (lambda (vaslist-args ignore)
                             (declare (ignore ignore))
@@ -397,7 +333,7 @@
                          (gf-log "Using default effective method function%N")
                          (gf-log "(compute-effective-method generic-function method-combination methods) -> %N")
                          (gf-log "%s%N" em)
-                         (cmp::make-effective-method-outcome
+                         (make-effective-method-outcome
                           :applicable-methods methods
                           :function (effective-method-function em)))))
                  (readerp
@@ -405,17 +341,17 @@
                           (slot-definition-location slotd)
                           (slot-definition-name slotd)
                           class)
-                  (cmp::make-optimized-slot-reader :index (slot-definition-location slotd)
-                                                   :slot-name (slot-definition-name slotd)
-                                                   :method method :class class))
+                  (make-optimized-slot-reader :index (slot-definition-location slotd)
+                                              :slot-name (slot-definition-name slotd)
+                                              :method method :class class))
                  (writerp
                   (gf-log "make-optimized-slot-writer index: %s slot-name: %s class: %s%N"
                           (slot-definition-location slotd)
                           (slot-definition-name slotd)
                           class)
-                  (cmp::make-optimized-slot-writer :index (slot-definition-location slotd)
-                                                   :slot-name (slot-definition-name slotd)
-                                                   :method method :class class))
+                  (make-optimized-slot-writer :index (slot-definition-location slotd)
+                                              :slot-name (slot-definition-name slotd)
+                                              :method method :class class))
                  ;; I think these are unreachable, but better safe than sorry.
                  ((setf existing-emf (find-existing-emf (generic-function-call-history generic-function)
                                                         methods))
@@ -425,7 +361,7 @@
                   (gf-log "Using !SUPPOSEDLY UNREACHABLE! default effective method function%N")
                   (gf-log "(compute-effective-method generic-function method-combination methods) -> %N")
                   (gf-log "%s%N" em)
-                  (cmp::make-effective-method-outcome
+                  (make-effective-method-outcome
                    :applicable-methods methods
                    :function (effective-method-function em))))))
     #+debug-fastgf
@@ -547,7 +483,7 @@ FIXME!!!! This code will have problems with multithreading if a generic function
                #+debug-fastgf(let ((specializer-profile (clos:generic-function-specializer-profile generic-function)))
                                (when call-history
                                  (gf-log "The dtree calculated for the call-history/specializer-profile:%N")
-                                 (gf-log "%s%N" (cmp::calculate-dtree call-history specializer-profile)))))
+                                 (gf-log "%s%N" (calculate-dtree call-history specializer-profile)))))
           when exchanged do (gf-log "Successfully exchanged call history%N")
             until (eq exchanged new-call-history))
     (loop for idx from 0 below (length memoized-key)
@@ -562,25 +498,25 @@ FIXME!!!! This code will have problems with multithreading if a generic function
 
 (defun perform-outcome (outcome arguments vaslist-arguments)
   (cond
-    ((cmp::optimized-slot-reader-p outcome)
+    ((optimized-slot-reader-p outcome)
      ;; Call is like (name instance)
-     (let ((value (standard-instance-access (first arguments) (cmp::optimized-slot-reader-index outcome))))
+     (let ((value (standard-instance-access (first arguments) (optimized-slot-reader-index outcome))))
        (if (si:sl-boundp value)
            value
-           (values (slot-unbound (cmp::optimized-slot-reader-class outcome) (first arguments)
-                                 (cmp::optimized-slot-reader-slot-name outcome))))))
-    ((cmp::optimized-slot-writer-p outcome)
+           (values (slot-unbound (optimized-slot-reader-class outcome) (first arguments)
+                                 (optimized-slot-reader-slot-name outcome))))))
+    ((optimized-slot-writer-p outcome)
      ;; Call is like ((setf name) new-value instance)
-     (setf (standard-instance-access (second arguments) (cmp::optimized-slot-writer-index outcome))
+     (setf (standard-instance-access (second arguments) (optimized-slot-writer-index outcome))
            (first arguments)))
-    ((cmp::fast-method-call-p outcome)
-     (apply (cmp::fast-method-call-function outcome) arguments))
+    ((fast-method-call-p outcome)
+     (apply (fast-method-call-function outcome) arguments))
     ;; Effective method functions take the same arguments as method functions - vasargs and next-methods
     ;; for now, at least. Obviously they don't actually need the next-methods.
-    ((cmp::effective-method-outcome-p outcome)
-     (funcall (cmp::effective-method-outcome-function outcome) vaslist-arguments nil))
-    ((cmp::function-outcome-p outcome)
-     (funcall (cmp::function-outcome-function outcome) vaslist-arguments nil))
+    ((effective-method-outcome-p outcome)
+     (funcall (effective-method-outcome-function outcome) vaslist-arguments nil))
+    ((function-outcome-p outcome)
+     (funcall (function-outcome-function outcome) vaslist-arguments nil))
     (t (error "BUG: Bad thing to be an outcome: ~a" outcome))))
 
 #+debug-fastgf
@@ -757,13 +693,13 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
         (gf-log "calculate-fastgf-dispatch-function generic-function: %s (core:function-name generic-function) -> %s%N"
                 generic-function
                 (core:function-name generic-function))
-        (cmp:codegen-dispatcher call-history
-                                specializer-profile
-                                generic-function
-                                :generic-function-name (core:function-name generic-function)
-                                :output-path output-path
-                                #+debug-fastgf :log-gf
-                                #+debug-fastgf (debug-fastgf-stream))) ;; the stream better be initialized
+        (codegen-dispatcher call-history
+                            specializer-profile
+                            generic-function
+                            :generic-function-name (core:function-name generic-function)
+                            :output-path output-path
+                            #+debug-fastgf :log-gf
+                            #+debug-fastgf (debug-fastgf-stream))) ;; the stream better be initialized
       (invalidated-discriminating-function-closure generic-function)))
 
 (defun force-dispatcher (generic-function)
@@ -915,7 +851,7 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
                                  (incf-debug-fastgf-didx))
                  (if edited-call-history
                      (let* ((specializer-profile (generic-function-specializer-profile gf))
-                            (discriminating-function (cmp:codegen-dispatcher edited-call-history specializer-profile gf :output-path log-output)))
+                            (discriminating-function (codegen-dispatcher edited-call-history specializer-profile gf :output-path log-output)))
                        (set-funcallable-instance-function gf discriminating-function))
                      (invalidate-discriminating-function gf)))))))
 

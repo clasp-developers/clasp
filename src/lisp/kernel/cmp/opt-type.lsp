@@ -318,8 +318,8 @@
            ;; for this problem is STREAM, but it's caught by the previous case.
            ((gethash type core:+type-header-value-map+)
             `(if (cleavir-primop:typeq ,object ,type) t nil))
-           ;; Maybe it's a class name?
-           ((and (symbolp type) (find-class type nil macro-env))
+           ;; Maybe it's a class name? (See also, comment in clos/defclass.lsp.)
+           ((and (symbolp type) (class-info type macro-env))
             ;; By semantic constraints, classes that are defined at compile time
             ;; must still be defined at load time, and have the same superclasses
             ;; and metaclass. This would let us just serialize and check the CPL,

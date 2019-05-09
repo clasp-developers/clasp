@@ -101,7 +101,7 @@
 
 (defmethod allocate-instance ((class standard-class) &rest initargs)
   (declare (ignore initargs))
-  ;; CLHS says allocate-instance finalizes the class first, but we don't.
+  ;; CLHS says allocate-instance finalizes the class first.
   ;; Dr. Strandh argues that this is impossible since the initargs should be the
   ;; defaulted initargs, which cannot be computed without the class being finalized.
   ;; More fundamentally but less legalistically, allocate-instance is not usually
@@ -109,6 +109,7 @@
   ;; If allocate-instance is nonetheless somehow called on an unfinalized class,
   ;; class-size (also computed during finalization) will be unbound and error
   ;; before anything terrible can happen.
+  ;; So we don't finalize here.
   (dbg-standard "About to allocate-new-instance class->~a~%" class)
   (let ((x (core:allocate-new-instance class (class-size class))))
     (dbg-standard "Done allocate-new-instance unbound x ->~a~%" (eq (core:unbound) x))
@@ -121,6 +122,13 @@
   ;; (And allocate-new-instance uses the creator, so it'll do any C++ junk.)
   (core:allocate-new-instance class (class-size class)))
 
+(defun uninitialized-funcallable-instance-closure (funcallable-instance)
+  (lambda (core:&va-rest args)
+    (declare (core:lambda-name uninitialized-funcallable-instance))
+    (declare (ignore args))
+    (error "The funcallable instance ~a has not been initialized with a function"
+           funcallable-instance)))
+
 (defmethod allocate-instance ((class funcallable-standard-class) &rest initargs)
   (declare (ignore initargs))
   (dbg-standard "About to allocate-new-funcallable-instance class->~a~%" class)
@@ -130,11 +138,7 @@
     ;; MOP says if you call a funcallable instance before setting its function,
     ;; the effects are undefined. (In the entry for set-funcallable-instance-function.)
     ;; But we can be nice.
-    (set-funcallable-instance-function
-     x (lambda (core:&va-rest args)
-         (declare (core:lambda-name uninitialized-funcallable-instance))
-         (declare (ignore args))
-         (error "The funcallable instance ~a has not been initialized with a function" x)))
+    (set-funcallable-instance-function x (uninitialized-funcallable-instance-closure x))
     x))
 
 (defmethod make-instance ((class class) &rest initargs)
@@ -373,6 +377,8 @@ because it contains a reference to the undefined class~%  ~A"
 
 
 (defmethod finalize-inheritance :after ((class std-class))
+  #+static-gfs
+  (static-gfs:invalidate-class-constructors class)
   (std-class-generate-accessors class))
 
 (defmethod compute-class-precedence-list ((class class))

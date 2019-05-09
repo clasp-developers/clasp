@@ -436,6 +436,19 @@
     (out (%intrinsic-call "cx_read_stamp" (list (in input))) output)))
 
 (defmethod translate-simple-instruction
+    ((instruction cleavir-ir:slot-read-instruction) return-value abi function-infoO)
+  (declare (ignore return-value abi function-info))
+  (let ((inputs (cleavir-ir:inputs instruction)))
+    (out (cmp::gen-instance-ref (in (first inputs)) (in (second inputs)))
+         (first (cleavir-ir:outputs instruction)))))
+
+(defmethod translate-simple-instruction
+    ((instruction cleavir-ir:slot-write-instruction) return-value abi function-infoO)
+  (declare (ignore return-value abi function-info))
+  (let ((inputs (cleavir-ir:inputs instruction)))
+    (cmp::gen-instance-set (in (first inputs)) (in (second inputs)) (in (third inputs)))))
+
+(defmethod translate-simple-instruction
     ((instruction cleavir-ir:memref2-instruction) return-value abi function-info)
   (declare (ignore return-value abi function-info))
   (out (cmp:irc-load

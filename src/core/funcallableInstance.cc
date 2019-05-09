@@ -339,15 +339,15 @@ CL_DEFUN void clos__set_generic_function_compiled_dispatch_function(T_sp obj, T_
 }
 }
 
-SYMBOL_EXPORT_SC_(CompPkg,node);
-SYMBOL_EXPORT_SC_(CompPkg,outcome);
-SYMBOL_EXPORT_SC_(CompPkg,range);
-SYMBOL_EXPORT_SC_(CompPkg,skip);
-SYMBOL_EXPORT_SC_(CompPkg,optimized_slot_reader);
-SYMBOL_EXPORT_SC_(CompPkg,optimized_slot_writer);
-SYMBOL_EXPORT_SC_(CompPkg,fast_method_call);
-SYMBOL_EXPORT_SC_(CompPkg,function_outcome);
-SYMBOL_EXPORT_SC_(CompPkg,effective_method_outcome);
+SYMBOL_EXPORT_SC_(ClosPkg,node);
+SYMBOL_EXPORT_SC_(ClosPkg,outcome);
+SYMBOL_EXPORT_SC_(ClosPkg,range);
+SYMBOL_EXPORT_SC_(ClosPkg,skip);
+SYMBOL_EXPORT_SC_(ClosPkg,optimized_slot_reader);
+SYMBOL_EXPORT_SC_(ClosPkg,optimized_slot_writer);
+SYMBOL_EXPORT_SC_(ClosPkg,fast_method_call);
+SYMBOL_EXPORT_SC_(ClosPkg,function_outcome);
+SYMBOL_EXPORT_SC_(ClosPkg,effective_method_outcome);
 
 #include <clasp/llvmo/read-stamp.cc>
 
@@ -355,7 +355,7 @@ namespace core {
 #if 1
 
 CL_DEF_CLASS_METHOD DtreeInterpreter_sp DtreeInterpreter_O::make_dtree_interpreter(T_sp generic_function, T_sp tdtree) {
-  FunctionDescription* fdesc = makeFunctionDescription(comp::_sym_node,_Nil<T_O>());
+  FunctionDescription* fdesc = makeFunctionDescription(clos::_sym_node,_Nil<T_O>());
   SimpleVector_sp dtree = gc::As_unsafe<SimpleVector_sp>(tdtree);
   SimpleVector_sp node = gc::As_unsafe<SimpleVector_sp>((*dtree)[REF_DTREE_NODE]);
   if (!gc::IsA<SimpleVector_sp>(node)) {
@@ -372,10 +372,9 @@ CL_DEF_CLASS_METHOD DtreeInterpreter_sp DtreeInterpreter_O::make_dtree_interpret
 #define DTLOG(x)
 #endif
 
-SYMBOL_EXPORT_SC_(CompPkg,codegen_dispatcher);
+SYMBOL_EXPORT_SC_(ClosPkg,codegen_dispatcher);
 SYMBOL_EXPORT_SC_(KeywordPkg,force_compile);
 SYMBOL_EXPORT_SC_(KeywordPkg,generic_function_name);
-SYMBOL_EXPORT_SC_(CompPkg,compiled_discriminator);
 /*!
 * The Closure that is passed to LISP_CALLING_CONVENTION is a FuncallableInstance_O that contains 
   a DtreeInterpreter_sp.   In the code below the funcallable_instance is the FuncallableInstance_O closure
@@ -400,7 +399,7 @@ LCC_RETURN DtreeInterpreter_O::LISP_CALLING_CONVENTION() {
     T_sp call_history = generic_function->GFUN_CALL_HISTORY();
     T_sp specializer_profile = generic_function->GFUN_SPECIALIZER_PROFILE();
 //    printf("%s:%d:%s  About to call compiler\n", __FILE__, __LINE__, __FUNCTION__);
-    T_sp compiled_discriminator = eval::funcall(comp::_sym_codegen_dispatcher,call_history,specializer_profile,generic_function->asSmartPtr(),
+    T_sp compiled_discriminator = eval::funcall(clos::_sym_codegen_dispatcher,call_history,specializer_profile,generic_function->asSmartPtr(),
                                                 kw::_sym_force_compile,_lisp->_true(),
                                                 kw::_sym_generic_function_name, fn );
 //    printf("%s:%d:%s about to setFuncallableInstanceFunction\n", __FILE__, __LINE__, __FUNCTION__);
@@ -428,7 +427,7 @@ LCC_RETURN DtreeInterpreter_O::LISP_CALLING_CONVENTION() {
     }
     core::T_sp type = (*node)[REF_TYPE];
     DTLOG(("%s:%d:%s type = %s\n", __FILE__, __LINE__, __FUNCTION__, dbg_safe_repr((uintptr_t)(type).raw_()).c_str()));
-    if (type == comp::_sym_node) {
+    if (type == clos::_sym_node) {
       if (nargs<=0) {
         SIMPLE_ERROR(BF("Insufficient arguments"));
       }
@@ -438,7 +437,7 @@ LCC_RETURN DtreeInterpreter_O::LISP_CALLING_CONVENTION() {
       SimpleVector_sp class_specializers = gc::As_unsafe<SimpleVector_sp>((*node)[REF_NODE_INTERPRETER]);
       DTLOG(("%s:%d:%s Checking class specializers: %s \n", __FILE__, __LINE__, __FUNCTION__, dbg_safe_repr((uintptr_t)(class_specializers).raw_()).c_str()));
       T_sp action = (*class_specializers)[0];
-      if (action == comp::_sym_range) {
+      if (action == clos::_sym_range) {
         HashTableEql_sp eql_specializers = gc::As_unsafe<HashTableEql_sp>((*node)[REF_NODE_EQL_SPECIALIZERS]);
         if (eql_specializers->hashTableCount()!=0) {
           T_sp found = eql_specializers->gethash(arg);
@@ -465,7 +464,7 @@ LCC_RETURN DtreeInterpreter_O::LISP_CALLING_CONVENTION() {
         }
         DTLOG(("%s:%d:%s    Fell through to DISPATCH_MISS!!!\n", __FILE__, __LINE__, __FUNCTION__));
         goto DISPATCH_MISS;
-      } else if (action == comp::_sym_skip) {
+      } else if (action == clos::_sym_skip) {
         DTLOG(("%s:%d:%s    It's a SKIP!!!\n", __FILE__, __LINE__, __FUNCTION__));
         node = gc::As_unsafe<SimpleVector_sp>((*class_specializers)[1]);
         goto TOP;
@@ -473,10 +472,10 @@ LCC_RETURN DtreeInterpreter_O::LISP_CALLING_CONVENTION() {
         DTLOG(("%s:%d:%s Bad interpreter\n", __FILE__, __LINE__, __FUNCTION__ ));
         abort();
       }
-    } else if (type == comp::_sym_outcome) {
+    } else if (type == clos::_sym_outcome) {
       DTLOG(("%s:%d:%s Handle outcome %s\n", __FILE__, __LINE__, __FUNCTION__, dbg_safe_repr((uintptr_t)(node).raw_()).c_str()));
       T_sp outcome_type = (*node)[REF_OUTCOME_SUBTYPE];
-      if (outcome_type == comp::_sym_optimized_slot_reader) {
+      if (outcome_type == clos::_sym_optimized_slot_reader) {
         T_sp location = (*node)[REF_OPTIMIZED_SLOT_READER_INDEX];
         T_sp slot_name = (*node)[REF_OPTIMIZED_SLOT_READER_SLOT_NAME];
         T_sp class_ = (*node)[REF_OPTIMIZED_SLOT_READER_CLASS];
@@ -493,7 +492,7 @@ LCC_RETURN DtreeInterpreter_O::LISP_CALLING_CONVENTION() {
           if (value.unboundp()) return core::eval::funcall(cl::_sym_slot_unbound,class_,instance,slot_name);
           return gctools::return_type(value.raw_(),1);
         }
-      } else if (outcome_type == comp::_sym_optimized_slot_writer) {
+      } else if (outcome_type == clos::_sym_optimized_slot_writer) {
         T_sp location = (*node)[REF_OPTIMIZED_SLOT_READER_INDEX];
         if (location.fixnump()) {
           size_t index = location.unsafe_fixnum();
@@ -507,13 +506,13 @@ LCC_RETURN DtreeInterpreter_O::LISP_CALLING_CONVENTION() {
           cell->rplaca(value);
           return gctools::return_type(value.raw_(),1);
         }
-      } else if (outcome_type == comp::_sym_fast_method_call) {
+      } else if (outcome_type == clos::_sym_fast_method_call) {
         Function_sp func = gc::As_unsafe<Function_sp>((*node)[REF_FAST_METHOD_CALL_FUNCTION]);
         return (*func).entry.load()(func.raw_(),lcc_nargs,lcc_fixed_arg0,lcc_fixed_arg1,lcc_fixed_arg2,lcc_fixed_arg3);
-      } else if (outcome_type == comp::_sym_function_outcome) {
+      } else if (outcome_type == clos::_sym_function_outcome) {
         Function_sp func = gc::As_unsafe<Function_sp>((*node)[REF_FUNCTION_OUTCOME_FUNCTION]);
         return core::eval::funcall(func,lcc_vargs,_Nil<T_O>());
-      } else if (outcome_type == comp::_sym_effective_method_outcome) {
+      } else if (outcome_type == clos::_sym_effective_method_outcome) {
         Function_sp func = gc::As_unsafe<Function_sp>((*node)[REF_EFFECTIVE_METHOD_OUTCOME_FUNCTION]);
         return core::eval::funcall(func,lcc_vargs,_Nil<T_O>());
       }

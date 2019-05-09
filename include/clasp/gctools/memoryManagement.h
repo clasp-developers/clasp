@@ -254,7 +254,7 @@ namespace gctools {
       The STAMP is also used by the fastgf generic function dispatch method.
       Exposed C++ classes that inherit from Instance_O store an extended-stamp in the rack.
       The header stamp is used to tell the system when it needs to look elsewhere for the extended-stamp.
-      See cc_read_stamp in fastgf.cc for details
+      See cx_read_stamp in builtins.cc for details
       If an object has an extended-stamp then the extended-stamp is used for fastgf generic function
       dispatch and stamp is used by MPS to determine the object layout and C++ IsA relationships.
       Each time a standard-class is redefined a new STAMP is generated and that 

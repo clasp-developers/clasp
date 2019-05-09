@@ -422,18 +422,6 @@
   (declaim (inline minusp))
   (defun minusp (number) (< number 0)))
 
-(progn
-  (debug-inline "zerop")
-  (declaim (inline zerop))
-  (defun zerop (number)
-    (etypecase number
-      (fixnum (if (cleavir-primop:fixnum-equal number 0) t nil))
-      (single-float (if (cleavir-primop:float-equal single-float number 0.0f0) t nil))
-      (double-float (if (cleavir-primop:float-equal double-float number 0.0d0) t nil))
-      ;; a zero ratio or bignum would be normalized into a fixnum.
-      ;; a zero complex would be normalized into a fixnum or a float.
-      (number nil))))
-
 ;;; ------------------------------------------------------------
 ;;;
 ;;; Array functions
@@ -448,7 +436,7 @@
     (array (core::%array-total-size array))))
 
 (debug-inline "array-rank")
-(declaim (inline array-rank))
+(declaim (inline array-vrank))
 (defun array-rank (array)
   (etypecase array
     ((simple-array * (*)) 1)
@@ -893,60 +881,52 @@
     (mapfoo-macro 'on 'nconc function (cons list more-lists)))
   )
 
+;;; If FORM is of the form #'valid-function-name, return valid-function-name.
+;;; FIXME?: Give up on expansion and warn if it's invalid?
+(defun constant-function-form (form env)
+  (declare (ignore env))
+  (and (consp form) (eq (first form) 'function)
+       (consp (cdr form)) (null (cddr form))
+       (core:valid-function-name-p (second form))
+       (second form)))
+
 (define-cleavir-compiler-macro funcall
     (&whole form function &rest arguments &environment env)
   ;; If we have (funcall #'foo ...), we might be able to apply the FOO compiler macro.
-  (when (and (consp function) (eq (first function) 'function)
-             (consp (cdr function)) (null (cddr function)))
-    (let ((name (second function)))
-      (when (core:valid-function-name-p name)
-        (let ((func-info (cleavir-env:function-info env name)))
-          (when func-info
-            (let ((cmf (compiler-macro-function name env)))
-              (when cmf
-                (let ((notinline (eq 'notinline
-                                     (cleavir-env:inline func-info))))
-                  (when (not notinline)
-                    (return-from funcall
-                      (funcall *macroexpand-hook* cmf form env)))))))))))
-  ;; If not, we can still eliminate the call to FUNCALL as follows.
-  (let ((fsym (gensym "FUNCTION")))
-    `(let ((,fsym ,function))
-       (cleavir-primop:funcall
-        (cond
-          ((cleavir-primop:typeq ,fsym function)
-           ,fsym)
-          ((cleavir-primop:typeq ,fsym symbol)
-           (symbol-function ,fsym))
-          (t (error 'type-error :datum ,fsym :expected-type '(or symbol function))))
-        ,@arguments))))
+  ;; Failing that, we can at least skip any coercion - #'foo is obviously a function.
+  ;; (funcall #'(setf foo) ...) is fairly common, so this is nice to do.
+  (let ((name (constant-function-form function env)))
+    (when name
+      (return-from funcall
+        (let* ((func-info (cleavir-env:function-info env name))
+               (notinline (and func-info
+                               (eq 'notinline (cleavir-env:inline func-info))))
+               ;; We can't get this from the func-info because it might be
+               ;; a local-function-info, which doesn't have that slot.
+               (cmf (compiler-macro-function name env)))
+          (if (and cmf (not notinline))
+              (funcall *macroexpand-hook* cmf form env)
+              `(cleavir-primop:funcall ,function ,@arguments))))))
+  `(cleavir-primop:funcall
+    (core::coerce-fdesignator ,function)
+    ,@arguments))
 
 (define-cleavir-compiler-macro values (&whole form &rest values)
   `(cleavir-primop:values ,@values))
 
 ;;; Written as a compiler macro to avoid confusing bclasp.
-(define-cleavir-compiler-macro multiple-value-bind (&whole form vars form &body body)
+(define-cleavir-compiler-macro multiple-value-bind (&whole form vars values-form &body body)
   (let ((syms (loop for var in vars collecting (gensym (symbol-name var)))))
     `(cleavir-primop:let-uninitialized (,@syms)
-       (cleavir-primop:multiple-value-setq (,@syms) ,form)
+       (cleavir-primop:multiple-value-setq (,@syms) ,values-form)
        (let (,@(loop for var in vars for sym in syms
                      collecting `(,var ,sym)))
          ,@body))))
 
-;;; I'm not sure I understand the order of evaluation issues entirely,
-;;; so I'm antsy about using the m-v-setq primop directly... and this
-;;; equivalence is guaranteed.
-;;; SETF VALUES will expand into a multiple-value-bind, which will use
-;;; the m-v-setq primop as above, so it works out about the same.
-;;; Not a cleavir macro because all we need is setf. FIXME: Move earlier?
-(define-compiler-macro multiple-value-setq ((&rest vars) form)
-  ;; SETF VALUES will return no values if it sets none, but m-v-setq
-  ;; always returns the primary value.
-  (if (null vars)
-      `(values ,form)
-      `(values (setf (values ,@vars) ,form))))
+;;; NOTE: The following two macros don't actually rely on anything cleavir-specific
+;;; for validity. However, they do rely on their efficiency being from
+;;; multiple-value-bind being efficient, which it is not without the above version.
 
-;;; FIXME: Move to earlier, if possible
 (define-compiler-macro nth-value (&whole form n expr &environment env)
   (let ((n (and (constantp n env) (ext:constant-form-value n env))))
     (if (or (null n) (> n 100)) ; completely arbitrary limit
@@ -956,3 +936,16 @@
           `(multiple-value-bind (,@dummies ,keeper) ,expr
              (declare (ignore ,@dummies))
              ,keeper)))))
+
+;;; I'm not sure I understand the order of evaluation issues entirely,
+;;; so I'm antsy about using the m-v-setq primop directly... and this
+;;; equivalence is guaranteed.
+;;; SETF VALUES will expand into a multiple-value-bind, which will use
+;;; the m-v-setq primop as above, so it works out about the same.
+;;; Not a cleavir macro because all we need is setf.
+(define-compiler-macro multiple-value-setq ((&rest vars) form)
+  ;; SETF VALUES will return no values if it sets none, but m-v-setq
+  ;; always returns the primary value.
+  (if (null vars)
+      `(values ,form)
+      `(values (setf (values ,@vars) ,form))))

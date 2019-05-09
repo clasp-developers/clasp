@@ -35,6 +35,19 @@
 ;;; MEMBER
 ;;;
 
+;;; (member foo '(...)) is a common idiom. Notably, our *CASE expand into it.
+;;; So we put something in so it won't actually iterate.
+(defun expand-constant-member (valuef list key-function test-function init)
+  (si::with-unique-names (%value)
+    `(let ((,%value ,valuef)
+           ,@init)
+       (cond ,@(loop for lst on list
+                     for elt = (car lst)
+                     collecting `(,(funcall test-function
+                                            %value
+                                            (funcall key-function `',elt))
+                                  ',lst))))))
+
 (defun expand-member (env value list &rest sequence-args)
   (multiple-value-bind (key-function test-function init
                         key-flag test-flag test)
@@ -43,6 +56,13 @@
     ;; we just give up.
     (when (null key-function)
       (return-from expand-member nil))
+    ;; If the list is constant and short, use the special expansion.
+    (when (constantp list env)
+      (let ((list (ext:constant-form-value list env)))
+        (when (and (core:proper-list-p list)
+                   (< (length list) 10)) ; completely arbitrary
+          (return-from expand-member
+            (expand-constant-member value list key-function test-function init)))))
     (si::with-unique-names (%value %sublist %elt)
       `(let ((,%value ,value)
              ,@init)

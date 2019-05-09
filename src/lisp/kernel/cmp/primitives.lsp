@@ -220,16 +220,6 @@
 
          (primitive         "cc_eql" %i32% (list %t*% %t*%)) ;; eql test
          (primitive-unwinds "cc_bad_tag" %void% (list %t*%)) ;; gf
-         (primitive         "cc_fastgf_nil" %t*% nil)
-         (primitive-unwinds "cc_dispatch_invalid" %return_type% (list %t*% %t*%)) ;; gf gf-args
-         (primitive-unwinds "cc_dispatch_miss" %return_type% (list %t*% %t*%)) ;; gf gf-args
-;;;    (primitive-unwinds "cc_dispatch_slot_reader_index_debug"   %t*% (list %t*% %size_t% %t*% %t*%)) ; effective-method gf gf-args
-;;;    (primitive-unwinds "cc_dispatch_slot_writer_index_debug"   %t*% (list %t*% %size_t% %t*% %t*%)) ; effective-method gf gf-args
-         (primitive         "cc_dispatch_slot_reader_index"  %t*% (list %size_t% %t*%)) ; index instance
-         (primitive         "cc_dispatch_slot_reader_cons"   %t*% (list %t*%)) ; cons
-         (primitive         "cc_dispatch_slot_writer_index"  %t*% (list %t*% %size_t% %t*%)) ; value index instance
-         (primitive         "cc_dispatch_slot_writer_cons"   %t*% (list %t*% %t*%)) ; value cons
-         (primitive-unwinds "cc_dispatch_debug" %void% (list %i32% %uintptr_t%))
          (primitive-unwinds "cc_bound_or_error" %t*% (list %t*% %t*% %t*%)) ; optimized-data instance value
          (primitive         "cc_vaslist_end" %void% (list %t*%))
 
@@ -428,8 +418,9 @@
          (primitive-unwinds "to_object_pointer" %t*% (list %i64*%))
          (primitive-unwinds "to_object_void" %t*% (list))
          ;; === END OF TRANSLATORS ===
-         (primitive         "cc_read_stamp" %i64% (list %i8*%))
          (primitive         "cx_read_stamp" %t*% (list %t*%))
+         (primitive         "cc_read_slot" %t*% (list %t*% %size_t%))
+         (primitive         "cc_write_slot" %t*% (list %t*% %size_t% %t*%))
          )
      *primitives*
      ))

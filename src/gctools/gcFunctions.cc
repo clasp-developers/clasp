@@ -298,14 +298,13 @@ CL_DEFUN Fixnum core__header_kind(core::T_sp obj) {
 CL_DOCSTRING("Return the stamp for the object, the flags and the header stamp");
 CL_DEFUN core::T_mv core__instance_stamp(core::T_sp obj)
 {
-  void* tagged_pointer = reinterpret_cast<void*>(obj.raw_());
-  Fixnum stamp = cc_read_stamp(tagged_pointer);
+  core::T_sp stamp((Tagged)cx_read_stamp(obj.raw_()));
   if (obj.generalp()) {
     Header_s* header = reinterpret_cast<Header_s*>(ClientPtrToBasePtr(obj.unsafe_general()));
-    return Values(core::make_fixnum(stamp),
+    return Values(stamp,
                   core::make_fixnum(static_cast<Fixnum>(header->header.stamp())));
   }
-  return Values(core::make_fixnum(stamp),_Nil<core::T_O>());
+  return Values(stamp, _Nil<core::T_O>());
 }
 
 CL_DOCSTRING("Set the header stamp for the object");
@@ -1088,14 +1087,6 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #endif
   if (buildReport) ss << (BF("DEBUG_SLOT_ACCESSORS = %s\n") % (debug_slot_accessors ? "**DEFINED**" : "undefined") ).str();
 
-  bool debug_cmpfastgf = false;
-#ifdef DEBUG_CMPFASTGF
-  debug_cmpfastgf = true;
-  debugging = true;
-  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-CMPFASTGF"),features);
-#endif
-  if (buildReport) ss << (BF("DEBUG_CMPFASTGF = %s\n") % (debug_cmpfastgf ? "**DEFINED**" : "undefined") ).str();
-  
   bool debug_fastgf = false;
 #ifdef DEBUG_FASTGF
   debug_fastgf = true;

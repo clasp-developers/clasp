@@ -396,3 +396,33 @@ values of the last FORM.  If no FORM is given, returns NIL."
   (if (and (consp form) (eq (car form) 'quote))
       (second form)
       form))
+
+#|
+CLHS specifies that
+
+"If a defclass form appears as a top level form, the compiler must make the class name be recognized as a valid type name in subsequent declarations (as for deftype) and be recognized as a valid class name for defmethod parameter specializers and for use as the :metaclass option of a subsequent defclass. The compiler must make the class definition available to be returned by find-class when its environment argument is a value received as the environment parameter of a macro."
+
+Our DEFMETHOD and :metaclass do not need any compile time info. We do want to know what classes are classes for the TYPEP compiler macro.
+
+The CLHS's last requirement about find-class is a problem. We can't fully make classes at compile time. There might be methods on validate-superclass, ensure-class-using-class, *-slot-definition-class, etc., without which a class definition will be invalid, and which won't necessarily be defined at compile time. I am writing this comment because of such a problem with validate-superclass in a real library (bug #736).
+
+Partway making a class probably isn't valid either. We definitely can't make an actual instance of any specified metaclass, or actual slot definitions, for the above reasons, etc, etc.
+
+So we just ignore the CLHS requirement here and use a CLASS-INFO mechanism. This is a function that returns compile-time information about a class. A toplevel DEFCLASS form will, at compile time, register the class in the class-info table.
+
+Right now the only such information is that it exists. In the future I'd like to include real information (e.g. unparsed class options or slot definitions) for use in optimization or to the user.
+
+(This is early on here because bootstrapping sucks)
+|#
+
+(defvar *class-infos* (make-hash-table :test #'eq))
+
+(defun class-info (name &optional env)
+  (or (find-class name nil env)
+      (values (gethash name *class-infos*))))
+
+(defun (setf class-info) (value name &optional env)
+  (declare (ignore env))
+  (if (null value)
+      (progn (remhash name *class-infos*) value)
+      (core:hash-table-setf-gethash *class-infos* name value)))

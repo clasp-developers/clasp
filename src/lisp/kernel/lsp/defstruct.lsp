@@ -56,9 +56,7 @@
 (defun (setf structure-constructor) (constructor name)
   (put-sysprop name 'structure-constructor constructor))
 (defun names-structure-p (name)
-  (or (structure-type name)
-      (let ((class (find-class name nil)))
-        (and class (typep class 'structure-class)))))
+  (structure-type name))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -486,8 +484,9 @@
      ,@(with-defstruct-delay (all-slots name include
                               slot-descriptions overwriting-slot-descriptions env)
          `((eval-when (:compile-toplevel :load-toplevel :execute)
-               (setf (structure-size ',name) ,(length all-slots)
-                     (structure-slot-descriptions ',name) ',all-slots))
+             (setf (structure-type ',name) 'structure-object
+                   (structure-size ',name) ,(length all-slots)
+                   (structure-slot-descriptions ',name) ',all-slots))
            (define-class-struct-constructors ,name ,constructors ,all-slots)
            (define-class-struct-accessors ,name ,conc-name ,all-slots)))))
 

@@ -71,8 +71,8 @@
     ;; Put in a call history to speed things up a little.
     (loop ;; either a fast method function, or just the method function.
           with outcome = (if fmfp
-                             (cmp::make-fast-method-call :function function)
-                             (cmp::make-function-outcome :function mf))
+                             (make-fast-method-call :function function)
+                             (make-function-outcome :function mf))
           for specializers in satiation-specializers
           collect (cons (map 'vector #'find-class specializers) outcome)
             into new-call-history
@@ -529,7 +529,9 @@ and cannot be added to ~A." method other-gf gf)))
         (when (classp spec) ; sanity check against eql specialization
           (recursively-update-class-initargs-cache spec))))))
 
-(let ((x (make-instance 'initargs-updater)))
+;; KLUDGE: bclasp doesn't respect notinline, so we do this.
+;; (It needs to be notinline - we haven't booted static-gfs yet.)
+(let ((x (apply #'make-instance 'initargs-updater nil)))
   (add-dependent #'shared-initialize x)
   (add-dependent #'initialize-instance x)
   (add-dependent #'allocate-instance x))

@@ -79,8 +79,8 @@ MaybeDebugStartup::MaybeDebugStartup(void* fp, const char* n) : fptr(fp), start_
   if (n) this->name = n;
   if (core::_sym_STARdebugStartupSTAR->symbolValue().notnilp()) {
     this->start = PosixTime_O::createNow();
-    if (comp::_sym_dispatcher_count->fboundp()) {
-      core::T_sp nu = core::eval::funcall(comp::_sym_dispatcher_count);
+    if (clos::_sym_dispatcher_count->fboundp()) {
+      core::T_sp nu = core::eval::funcall(clos::_sym_dispatcher_count);
       this->start_dispatcher_count = nu.unsafe_fixnum();
     } else {
       this->start_dispatcher_count = 0;
@@ -95,8 +95,8 @@ MaybeDebugStartup::~MaybeDebugStartup() {
     PosixTimeDuration_sp diff = end->sub(this->start);
     mpz_class ms = diff->totalMicroseconds();
     size_t end_dispatcher_count = 0;
-    if (comp::_sym_dispatcher_count->fboundp()) {
-      core::T_sp nu = core::eval::funcall(comp::_sym_dispatcher_count);
+    if (clos::_sym_dispatcher_count->fboundp()) {
+      core::T_sp nu = core::eval::funcall(clos::_sym_dispatcher_count);
       end_dispatcher_count = nu.unsafe_fixnum();
     }
     size_t dispatcher_delta = end_dispatcher_count - this->start_dispatcher_count;

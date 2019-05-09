@@ -7,7 +7,7 @@
 
 (define-compiler-macro find-class
     (&whole form classf &optional (errorpf 't) env &environment cenv)
-  (if (and (constantp classf env) (null env))
+  (if (and (constantp classf cenv) (null env))
       (let ((class (ext:constant-form-value classf cenv))
             (class-holder-gs (gensym "CLASS-HOLDER"))
             (errorp-gs (gensym "ERRORP")))
@@ -26,7 +26,7 @@
                    (ext:class-get ,class-holder-gs)))
             ;; Class is constant but not a symbol - type error. just let the call do it.
             form))
-      ;; Class is not constant or we're in some weird environment - punt
+      ;; Class is not constant or there's an environment argument - punt
       form))
 
 ;;; generic functions are usually hard to work with at compile time,
@@ -36,6 +36,7 @@
 ;;; These macros allow the above FIND-CLASS optimization to be used, avoiding a runtime lookup.
 ;;; They're ordered from most to least important.
 
+#+(or) ; see clos/static-gfs/compiler-macros.lisp
 (define-compiler-macro make-instance (&whole form class &rest initargs &environment env)
   (if (constantp class env)
     (let ((class (ext:constant-form-value class env)))
