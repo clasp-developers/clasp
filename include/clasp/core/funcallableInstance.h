@@ -268,15 +268,12 @@ FORWARD(DtreeInterpreter);
                    REF_FAST_METHOD_CALL_SUBTYPE = 1,
                    REF_FAST_METHOD_CALL_FUNCTION = 2,
                    REF_FAST_METHOD_CALL_END = 3 } FastMethodCallSlots;
-    typedef enum { REF_FUNCTION_OUTCOME_TYPE = 0,
-                   REF_FUNCTION_OUTCOME_SUBTYPE = 1,
-                   REF_FUNCTION_OUTCOME_FUNCTION = 2,
-                   REF_FUNCTION_OUTCOME_END = 3 } FunctionOutcome;
     typedef enum { REF_EFFECTIVE_METHOD_OUTCOME_TYPE = 0,
                    REF_EFFECTIVE_METHOD_OUTCOME_SUBTYPE = 1,
                    REF_EFFECTIVE_METHOD_OUTCOME_APPLICABLE_METHODS = 2,
-                   REF_EFFECTIVE_METHOD_OUTCOME_FUNCTION = 3,
-                   REF_EFFECTIVE_METHOD_OUTCOME_END = 4 } EffectiveMethodOutcome;
+                   REF_EFFECTIVE_METHOD_OUTCOME_FORM = 3,
+                   REF_EFFECTIVE_METHOD_OUTCOME_FUNCTION = 4,
+                   REF_EFFECTIVE_METHOD_OUTCOME_END = 5 } EffectiveMethodOutcome;
   public:
     T_sp            _GenericFunction;
     core::T_sp      _Dtree;

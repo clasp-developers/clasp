@@ -67,12 +67,15 @@
    `(lambda (.method-args. .next-methods.)
       (declare (ignore .next-methods.))
       ,form)))
+(defun make-method-form-p (form)
+  (and (consp form)
+       (eq (first form) 'make-method)
+       (consp (cdr form))))
 ;; process a "method" argument to call-method
 (defun emf-call-method (form)
   (cond ((method-p form) (method-function form))
-        ((and (consp form) (eq (first form) 'make-method) (consp (cdr form)))
-         (emf-make-method (second form)))
-        (t "Invalid argument to CALL-METHOD: ~a" form)))
+        ((make-method-form-p form) (emf-make-method (second form)))
+        (t (error "Invalid argument to CALL-METHOD: ~a" form))))
 
 (defun effective-method-function (form)
   (if (consp form)
@@ -99,13 +102,23 @@
                  (core:lambda-name combine-method-functions.lambda))
         (funcall method .method-args. rest-methods))))
 
+(defun call-method-aux (method)
+  (cond ((method-p method) (method-function method))
+        ((make-method-form-p method)
+         `(lambda (.method-args. .next-methods.)
+            (declare (ignore .next-methods.))
+            ,method))
+        (t `(error "Invalid argument to CALL-METHOD: ~a" ',method))))
+
 (defmacro call-method (method &optional rest-methods)
-  `(funcall ,(emf-call-method method)
-            ;; This macro is only invoked from effective-method-function, above,
-            ;; in the case of having to fall back to the compiler.
-            ;; Therefore .method-args. will always be bound in the environment.
-            .method-args.
-            ',(and rest-methods (mapcar #'emf-call-method rest-methods))))
+  (cond ((method-p method)
+         `(funcall ,(method-function method)
+                   .method-args. ; will be bound in context
+                   ,(if (or (leaf-method-p method) (null rest-methods))
+                        nil
+                        `(list ,@(mapcar #'call-method-aux rest-methods)))))
+        ((make-method-form-p method) (second method))
+        (t `(error "Invalid argument to CALL-METHOD: ~a" ',method))))
 
 (defun error-qualifier (m qualifier)
   (error "Standard method combination allows only one qualifier ~
@@ -193,8 +206,7 @@
 			      (group-names '())
 			      (group-checks '())
 			      (group-after '())
-			      (generic-function '.generic-function.)
-			      (method-arguments '()))
+			      (generic-function '.generic-function.))
 	form
       (unless (symbolp name) (syntax-error))
       (let ((x (first body)))
@@ -233,10 +245,8 @@
                      ;; is impossible. Lacking a required method is by contrast a problem that only needs to
                      ;; be signaled when the function is actually being called. So we return an error form.
                      ;; (NO-REQUIRED-METHOD is defined in fixup, but we could move it here.)
-                     ;; FIXME: This form is not actually evaluated, in favor of weird bullshit.
-                     ;; See compute-effective-function-maybe-optimize.
                      (return-from ,name
-                       '(no-required-method ,generic-function ',group-name .arguments.)))
+                       '(no-required-method .generic-function. ',group-name .method-args.)))
 		  group-after))
 	  (case order
 	    (:most-specific-first

@@ -346,7 +346,6 @@ SYMBOL_EXPORT_SC_(ClosPkg,skip);
 SYMBOL_EXPORT_SC_(ClosPkg,optimized_slot_reader);
 SYMBOL_EXPORT_SC_(ClosPkg,optimized_slot_writer);
 SYMBOL_EXPORT_SC_(ClosPkg,fast_method_call);
-SYMBOL_EXPORT_SC_(ClosPkg,function_outcome);
 SYMBOL_EXPORT_SC_(ClosPkg,effective_method_outcome);
 
 #include <clasp/llvmo/read-stamp.cc>
@@ -509,9 +508,6 @@ LCC_RETURN DtreeInterpreter_O::LISP_CALLING_CONVENTION() {
       } else if (outcome_type == clos::_sym_fast_method_call) {
         Function_sp func = gc::As_unsafe<Function_sp>((*node)[REF_FAST_METHOD_CALL_FUNCTION]);
         return (*func).entry.load()(func.raw_(),lcc_nargs,lcc_fixed_arg0,lcc_fixed_arg1,lcc_fixed_arg2,lcc_fixed_arg3);
-      } else if (outcome_type == clos::_sym_function_outcome) {
-        Function_sp func = gc::As_unsafe<Function_sp>((*node)[REF_FUNCTION_OUTCOME_FUNCTION]);
-        return core::eval::funcall(func,lcc_vargs,_Nil<T_O>());
       } else if (outcome_type == clos::_sym_effective_method_outcome) {
         Function_sp func = gc::As_unsafe<Function_sp>((*node)[REF_EFFECTIVE_METHOD_OUTCOME_FUNCTION]);
         return core::eval::funcall(func,lcc_vargs,_Nil<T_O>());

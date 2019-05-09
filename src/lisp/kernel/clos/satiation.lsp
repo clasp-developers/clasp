@@ -291,13 +291,15 @@
                                (or (cdr (assoc method mfs))
                                    (error "BUG: Horrible things are occurring."))))
                         `(funcall ,(mf method) .method-args.
-                                  (list
-                                   ,@(loop for next in nexts
-                                           collect (if (consp next) ; make-method
-                                                       `(lambda (.method-args. .next-methods.)
-                                                          (declare (ignore .next-methods.))
-                                                          ,(second next))
-                                                       (mf next))))))))))
+                                  ,(if (or (leaf-method-p method) (null nexts))
+                                       nil
+                                       `(list
+                                         ,@(loop for next in nexts
+                                                 collect (if (consp next) ; make-method
+                                                             `(lambda (.method-args. .next-methods.)
+                                                                (declare (ignore .next-methods.))
+                                                                ,(second next))
+                                                             (mf next)))))))))))
      ,effective-method))
 
 ;;; FIXME: duplicates satiated-call-history heavily. not sure of the best way to fix it,
@@ -361,7 +363,8 @@
                                                   (let ((sym (gensym "METHOD-FUNCTION")))
                                                     (push (cons method sym) mf-binds)
                                                     sym)))
-                                          (outcome (make-function-outcome :function mf)))
+                                          (outcome (make-effective-method-outcome
+                                                    :applicable-methods am :function mf)))
                                      (push (cons method outcome) mfo-binds)
                                      outcome)))
                         (t (or (cdr (assoc am emf-binds :test #'equal))
@@ -525,9 +528,12 @@
                  `(ensure ,method method-function-binds
                           `(method-function ,(ensure-method ,method))
                           "METHOD-FUNCTION"))
-               (ensure-method-function-outcome (method)
+               (ensure-method-function-outcome (method-list method)
                  `(ensure ,method method-function-outcome-binds
-                          `(make-function-outcome :function ,(ensure-method-function ,method))
+                          `(make-effective-method-outcome
+                            :applicable-methods (list ,@(loop for method in ,method-list
+                                                              collect (ensure-method method)))
+                            :function ,(ensure-method-function ,method))
                           "METHOD-FUNCTION-OUTCOME"))
                (ensure-emfo (method-list effective-method)
                  `(ensure ,method-list emfo-binds
@@ -590,7 +596,7 @@
                                               (t (error "BUG: Unreachable weirdness in SATIATE for ~a, ~a"
                                                         generic-function list-of-specializer-names))))
                                        (fmf (ensure-fmf method))
-                                       (leafp (ensure-method-function-outcome method))
+                                       (leafp (ensure-method-function-outcome am method))
                                        (t
                                         ;; Force method functions, so that call-method can use them.
                                         (loop for method in am do (ensure-method-function method))

@@ -284,11 +284,12 @@
     ;; so we pick that off first.
     ;; Similarly to nrm below, we return a sort of fake emf.
     (return-from compute-outcome
-      (make-function-outcome
-       :function
-       (lambda (vaslist-args ignore)
-         (declare (ignore ignore))
-         (apply #'no-applicable-method generic-function vaslist-args)))))
+      (make-effective-method-outcome
+       :applicable-methods nil
+       :form '(apply #'no-applicable-method .generic-function. .method-args.)
+       :function (lambda (vaslist-args ignore)
+                   (declare (ignore ignore))
+                   (apply #'no-applicable-method generic-function vaslist-args)))))
   (let* ((em (compute-effective-method generic-function method-combination methods))
          (method (and (consp em)
                       (eq (first em) 'call-method)
@@ -305,36 +306,28 @@
                       (t nil)))
          (slotd (when class (effective-slotd-from-accessor-method method class)))
          (standard-slotd-p (when slotd (eq (class-of slotd) (find-class 'standard-effective-slot-definition))))
-         ;; When there is no applicable method in a required group (e.g. qualifier-less methods, for standard mc)
-         ;; the effective method will be a call to no-required-method. See combin.lsp.
-         ;; the SECOND is because the symbol is quoted.
-         (nrm-group-name (and (consp em) (eq (first em) 'no-required-method) (second (third em))))
          existing-emf
          (optimized
            (cond ((not standard-slotd-p)
                   (cond (fmf
                          (gf-log "Using fast method %s function as emf%N" method)
                          (make-fast-method-call :function fmf))
-                        (leafp
-                         (gf-log "Using method %s function as emf%N" method)
-                         (make-function-outcome :function (method-function method)))
-                        (nrm-group-name ; missing a required (probably primary) method.
-                         ;; FIXME: this is kind of ugly, to say the least. inlining would be nice.
-                         (make-function-outcome
-                          :function
-                          (lambda (vaslist-args ignore)
-                            (declare (ignore ignore))
-                            (apply #'no-required-method generic-function nrm-group-name vaslist-args))))
-                        ((setf existing-emf (find-existing-emf (generic-function-call-history generic-function)
-                                                               methods))
+                        ((setf existing-emf
+                               (find-existing-emf (generic-function-call-history generic-function)
+                                                  methods))
                          (gf-log "Using existing effective method function%N")
                          existing-emf)
+                        (leafp
+                         (gf-log "Using method %s function as emf%N" method)
+                         (make-effective-method-outcome
+                          :applicable-methods methods :form em
+                          :function (method-function method)))
                         (t
                          (gf-log "Using default effective method function%N")
                          (gf-log "(compute-effective-method generic-function method-combination methods) -> %N")
                          (gf-log "%s%N" em)
                          (make-effective-method-outcome
-                          :applicable-methods methods
+                          :applicable-methods methods :form em
                           :function (effective-method-function em)))))
                  (readerp
                   (gf-log "make-optimized-slot-reader index: %s slot-name: %s class: %s%N"
@@ -362,7 +355,7 @@
                   (gf-log "(compute-effective-method generic-function method-combination methods) -> %N")
                   (gf-log "%s%N" em)
                   (make-effective-method-outcome
-                   :applicable-methods methods
+                   :applicable-methods methods :form em
                    :function (effective-method-function em))))))
     #+debug-fastgf
     (when log
@@ -515,8 +508,6 @@ FIXME!!!! This code will have problems with multithreading if a generic function
     ;; for now, at least. Obviously they don't actually need the next-methods.
     ((effective-method-outcome-p outcome)
      (funcall (effective-method-outcome-function outcome) vaslist-arguments nil))
-    ((function-outcome-p outcome)
-     (funcall (function-outcome-function outcome) vaslist-arguments nil))
     (t (error "BUG: Bad thing to be an outcome: ~a" outcome))))
 
 #+debug-fastgf

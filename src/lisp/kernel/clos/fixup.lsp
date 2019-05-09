@@ -72,7 +72,8 @@
     (loop ;; either a fast method function, or just the method function.
           with outcome = (if fmfp
                              (make-fast-method-call :function function)
-                             (make-function-outcome :function mf))
+                             (make-effective-method-outcome
+                              :applicable-methods (list method) :function mf))
           for specializers in satiation-specializers
           collect (cons (map 'vector #'find-class specializers) outcome)
             into new-call-history

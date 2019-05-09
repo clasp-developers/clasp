@@ -17,11 +17,9 @@
 (defstruct (optimized-slot-writer (:type vector) (:include outcome) :named)
   index slot-name method class)
 (defstruct (fast-method-call (:type vector) (:include outcome) :named) function)
-;; a thing that will be called like an effective method function, but isn't cached or anything.
-(defstruct (function-outcome (:type vector) (:include outcome) :named) function)
 ;; see closfastgf.lsp's find-existing-emf for use of applicable-methods slot
 (defstruct (effective-method-outcome (:type vector) (:include outcome) :named)
-  applicable-methods function)
+  applicable-methods form function)
 
 (defstruct (match (:type vector) :named) outcome)
 (defstruct (range (:include match) (:type vector) :named) first-stamp last-stamp reversed-classes)

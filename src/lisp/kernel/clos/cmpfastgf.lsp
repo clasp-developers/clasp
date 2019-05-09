@@ -44,28 +44,22 @@
          ;; and we need this to see if we can manage that
          (need-vaslist-p (call-history-needs-vaslist-p
                           (generic-function-call-history generic-function)))
-         (vaslist-args (if need-vaslist-p
-                           '.method-args.
-                           '(error "BUG: Discriminator tried to use vaslist")))
          (block-name (if generic-function-name
                          (core:function-block-name generic-function-name)
                          (gensym "DISCRIMINATION-BLOCK")))
-         (gfsym (gensym "GENERIC-FUNCTION"))
          ;; List of gensyms, one for each required argument
          (required-args (let ((res nil))
                           (dotimes (i nreq res)
                             (push (gensym "DISPATCH-ARG") res))))
          (*generate-outcomes* nil))
     `(lambda ,(if need-vaslist-p
-                  `(core:&va-rest ,vaslist-args)
+                  `(core:&va-rest .method-args.)
                   required-args)
        (let (,@extra-bindings
-             ;; Bound because at some point in the unknown future we may actually support
-             ;; the :generic-function option to define-method-combination.
-             (,gfsym ,generic-function-form)
+             (.generic-function. ,generic-function-form)
              ,@(if need-vaslist-p
                    (mapcar (lambda (req)
-                             `(,req (core:vaslist-pop ,vaslist-args)))
+                             `(,req (core:vaslist-pop .method-args.)))
                            required-args)
                    nil))
          (declare (ignorable ,@required-args))
@@ -76,11 +70,11 @@
               ,@(generate-tagged-outcomes *generate-outcomes* block-name required-args)
             dispatch-miss
               ,@(if need-vaslist-p
-                    `((core:vaslist-rewind ,vaslist-args)
+                    `((core:vaslist-rewind .method-args.)
                       (return-from ,block-name
-                        (dispatch-miss ,gfsym ,vaslist-args)))
+                        (dispatch-miss .generic-function. .method-args.)))
                     `((return-from ,block-name
-                        (dispatch-miss-with-args ,gfsym ,@required-args))))))))))
+                        (dispatch-miss-with-args .generic-function. ,@required-args))))))))))
 
 (defun generate-node-or-outcome (arguments node-or-outcome)
   (if (outcome-p node-or-outcome)
@@ -120,8 +114,6 @@
          (generate-fast-method-call reqargs outcome))
         ((effective-method-outcome-p outcome)
          (generate-effective-method-call (effective-method-outcome-function outcome)))
-        ((function-outcome-p outcome)
-         (generate-effective-method-call (function-outcome-function outcome)))
         (t (error "BUG: Bad thing to be an outcome: ~a" outcome))))
 
 (defun generate-slot-reader (arguments outcome)
@@ -283,8 +275,7 @@
 (defun call-history-needs-vaslist-p (call-history)
   ;; Functions, i.e. method functions or full EMFs, are the only things that need vaslists.
   (mapc (lambda (entry)
-          (when (or (effective-method-outcome-p (cdr entry))
-                    (function-outcome-p (cdr entry)))
+          (when (effective-method-outcome-p (cdr entry))
             (return-from call-history-needs-vaslist-p t)))
         call-history)
   nil)
