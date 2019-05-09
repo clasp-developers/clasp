@@ -8,9 +8,14 @@
 ;;; We use vectors instead of real structures because we're in the middle of CLOS.
 ;;; This is also why EQL specializers are conses instead of themselves, etc.
 
+;;; WARNING! The structures here are known intimately in C++ for the dtree interpreter.
+;;; Make sure funcallableInstance.h agrees with these definitions if you change anything.
+
 (defstruct (outcome (:type vector) :named))
-(defstruct (optimized-slot-reader (:type vector) (:include outcome) :named) index #| << must be here |# effective-method-function slot-name method class)
-(defstruct (optimized-slot-writer (:type vector) (:include outcome) :named) index #| << must be here |# effective-method-function slot-name method class)
+(defstruct (optimized-slot-reader (:type vector) (:include outcome) :named)
+  index slot-name method class)
+(defstruct (optimized-slot-writer (:type vector) (:include outcome) :named)
+  index slot-name method class)
 (defstruct (fast-method-call (:type vector) (:include outcome) :named) function)
 ;; a thing that will be called like an effective method function, but isn't cached or anything.
 (defstruct (function-outcome (:type vector) (:include outcome) :named) function)

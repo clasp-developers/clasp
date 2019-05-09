@@ -80,11 +80,7 @@
           methods)
     ;; Methods are sorted by std-compute-applicable-methods-using-classes, so
     ;; we're just doing (call-method ,first (,@rest))
-    (let* ((first (first methods)) (rest (rest methods))
-           (efm (combine-method-functions
-                 (method-function first)
-                 ;; with-early-accessors does macrolet, hence this awkwardness.
-                 (mapcar (lambda (method) (method-function method)) rest))))
+    (let ((first (first methods)))
       ;; realistically, anything we satiate is going to be standard classes, but
       ;; paranoia doesn't hurt here.
       (cond ((eq (class-of first) (find-class 'standard-reader-method))
@@ -92,24 +88,27 @@
                     (slot (early-effective-slot-from-accessor-method
                            first (first specializers))))
                (make-optimized-slot-reader :index (slot-definition-location slot)
-                                                :effective-method-function efm
-                                                :slot-name (slot-definition-name slot)
-                                                :method first
-                                                :class class)))
+                                           :slot-name (slot-definition-name slot)
+                                           :method first
+                                           :class class)))
             ((eq (class-of first) (find-class 'standard-writer-method))
              (let* ((class (second specializers))
                     (slot (early-effective-slot-from-accessor-method
                            first (first specializers))))
                (make-optimized-slot-writer :index (slot-definition-location slot)
-                                                :effective-method-function efm
-                                                :slot-name (slot-definition-name slot)
-                                                :method first
-                                                :class class)))
+                                           :slot-name (slot-definition-name slot)
+                                           :method first
+                                           :class class)))
             ((leaf-method-p first)
              (if (fast-method-function first)
                  (make-fast-method-call :function (fast-method-function first))
                  (method-function first)))
-            (t efm)))))
+            (t ; general effective method function
+             (combine-method-functions
+              (method-function first)
+              ;; with-early-accessors does macrolet, hence this awkwardness.
+              (mapcar (lambda (method) (method-function method))
+                      (rest methods))))))))
 
 ;;; Add fictitious call history entries.
 (defun add-satiation-entries (generic-function lists-of-specializers)
