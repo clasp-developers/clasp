@@ -45,7 +45,7 @@
          (need-vaslist-p (call-history-needs-vaslist-p
                           (generic-function-call-history generic-function)))
          (vaslist-args (if need-vaslist-p
-                           (gensym "DISPATCH-VA-ARGS")
+                           '.method-args.
                            '(error "BUG: Discriminator tried to use vaslist")))
          (block-name (if generic-function-name
                          (core:function-block-name generic-function-name)
@@ -73,7 +73,7 @@
            (tagbody
               ,(generate-node-or-outcome required-args (dtree-root dtree))
               ;; note: we need generate-node-or-outcome to run to fill *generate-outcomes*.
-              ,@(generate-tagged-outcomes *generate-outcomes* block-name vaslist-args required-args)
+              ,@(generate-tagged-outcomes *generate-outcomes* block-name required-args)
             dispatch-miss
               ,@(if need-vaslist-p
                     `((core:vaslist-rewind ,vaslist-args)
@@ -102,16 +102,16 @@
         ;; match: goto existing tag
         `(go ,(cdr existing)))))
 
-(defun generate-tagged-outcomes (list block-name vaslist-arguments required-arguments)
+(defun generate-tagged-outcomes (list block-name required-arguments)
   (mapcan (lambda (pair)
             (let ((outcome (car pair)) (tag (cdr pair)))
               (list tag
                     `(return-from ,block-name
-                       ,(generate-outcome vaslist-arguments required-arguments outcome)))))
+                       ,(generate-outcome required-arguments outcome)))))
           list))
 
 
-(defun generate-outcome (vaslist-arguments reqargs outcome)
+(defun generate-outcome (reqargs outcome)
   (cond ((optimized-slot-reader-p outcome)
          (generate-slot-reader reqargs outcome))
         ((optimized-slot-writer-p outcome)
@@ -119,9 +119,9 @@
         ((fast-method-call-p outcome)
          (generate-fast-method-call reqargs outcome))
         ((effective-method-outcome-p outcome)
-         (generate-effective-method-call vaslist-arguments (effective-method-outcome-function outcome)))
+         (generate-effective-method-call (effective-method-outcome-function outcome)))
         ((function-outcome-p outcome)
-         (generate-effective-method-call vaslist-arguments (function-outcome-function outcome)))
+         (generate-effective-method-call (function-outcome-function outcome)))
         (t (error "BUG: Bad thing to be an outcome: ~a" outcome))))
 
 (defun generate-slot-reader (arguments outcome)
@@ -175,19 +175,18 @@
   (let ((fmf (fast-method-call-function outcome)))
     `(funcall ,fmf ,@arguments)))
 
-(defun generate-effective-method-call (arguments outcome)
+(defun generate-effective-method-call (outcome)
   (if (consp outcome)
       ;; if the outcome is a cons, we magically assume it's a form to include entirely.
       ;; This happens from the COMPILE-TIME-DISCRIMINATOR machinery in satiation.lsp.
       ;; FIXME: probably clean up. 
       `(progn
-         (core:vaslist-rewind ,arguments)
-         (let ((.method-args. ,arguments))
-           ,outcome))
+         (core:vaslist-rewind .method-args.)
+         ,outcome)
       (let ((emf outcome))
         `(progn
-           (core:vaslist-rewind ,arguments)
-           (funcall ,emf ,arguments nil)))))
+           (core:vaslist-rewind .method-args.)
+           (funcall ,emf .method-args. nil)))))
 
 ;;; discrimination
 
