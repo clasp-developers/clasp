@@ -33,6 +33,21 @@
                                             ,initform))
 	    output-list))))
 
+(defun gen-note-accessors (slots)
+  (flet ((gen-note (name)
+           `(cmp::register-global-function-def 'defmethod ',name)))
+    (loop with result = nil
+          for slot in slots
+          when (consp slot)
+            do (loop for (key value) on (rest slot) by #'cddr
+                     do (case key
+                          ((:reader :writer)
+                           (push (gen-note value) result))
+                          ((:accessor)
+                           (push (gen-note value) result)
+                           (push (gen-note `(setf ,value)) result))))
+          finally (return result))))
+
 (defmacro defclass (&whole form &rest args)
   (unless (>= (length args) 3)
     (si::simple-program-error "Illegal defclass form: the class name, the superclasses and the slots should always be provided"))
@@ -53,6 +68,7 @@
           (processed-class-options (process-class-options options)))
       `(progn
          (eval-when (:compile-toplevel)
+           ,@(gen-note-accessors slots)
            (setf (core::class-info ',name) t))
          (eval-when (:load-toplevel :execute)
            (load-defclass ',name ',superclasses ,parsed-slots ,processed-class-options))))))
