@@ -308,28 +308,7 @@
          (standard-slotd-p (when slotd (eq (class-of slotd) (find-class 'standard-effective-slot-definition))))
          existing-emf
          (optimized
-           (cond ((not standard-slotd-p)
-                  (cond (fmf
-                         (gf-log "Using fast method %s function as emf%N" method)
-                         (make-fast-method-call :function fmf))
-                        ((setf existing-emf
-                               (find-existing-emf (generic-function-call-history generic-function)
-                                                  methods))
-                         (gf-log "Using existing effective method function%N")
-                         existing-emf)
-                        (leafp
-                         (gf-log "Using method %s function as emf%N" method)
-                         (make-effective-method-outcome
-                          :applicable-methods methods ;:form em
-                          :function (method-function method)))
-                        (t
-                         (gf-log "Using default effective method function%N")
-                         (gf-log "(compute-effective-method generic-function method-combination methods) -> %N")
-                         (gf-log "%s%N" em)
-                         (make-effective-method-outcome
-                          :applicable-methods methods ;:form em
-                          :function (effective-method-function em)))))
-                 (readerp
+           (cond ((and standard-slotd-p readerp)
                   (gf-log "make-optimized-slot-reader index: %s slot-name: %s class: %s%N"
                           (slot-definition-location slotd)
                           (slot-definition-name slotd)
@@ -337,7 +316,7 @@
                   (make-optimized-slot-reader :index (slot-definition-location slotd)
                                               :slot-name (slot-definition-name slotd)
                                               :method method :class class))
-                 (writerp
+                 ((and standard-slotd-p writerp)
                   (gf-log "make-optimized-slot-writer index: %s slot-name: %s class: %s%N"
                           (slot-definition-location slotd)
                           (slot-definition-name slotd)
@@ -345,13 +324,32 @@
                   (make-optimized-slot-writer :index (slot-definition-location slotd)
                                               :slot-name (slot-definition-name slotd)
                                               :method method :class class))
-                 ;; I think these are unreachable, but better safe than sorry.
-                 ((setf existing-emf (find-existing-emf (generic-function-call-history generic-function)
-                                                        methods))
-                  (gf-log "Using !SUPPOSEDLY UNREACHABLE! existing effective method function%N")
+                 (fmf
+                  (gf-log "Using fast method %s function as emf%N" method)
+                  (make-fast-method-call :function fmf))
+                 ((setf existing-emf
+                        (find-existing-emf (generic-function-call-history generic-function)
+                                           methods))
+                  (gf-log "Using existing effective method function%N")
                   existing-emf)
+                 (leafp
+                  (gf-log "Using method %s function as emf%N" method)
+                  (make-effective-method-outcome
+                   :applicable-methods methods ;:form em
+                   :function (method-function method)))
+                 ;; NOTE: This case is not required if we always use :form and don't use the
+                 ;; interpreter. See also, comment in combin.lsp.
+                 ((and (consp em) (eq (first em) '%magic-no-required-method))
+                  (gf-log "No-required-method as effective method%N")
+                  (gf-log "em: %s%N" em)
+                  (let ((group-name (second em)))
+                    (make-effective-method-outcome
+                     :applicable-methods methods :form em
+                     :function (lambda (vaslist-args ignore)
+                                 (declare (ignore ignore))
+                                 (apply #'no-required-method generic-function group-name vaslist-args)))))
                  (t
-                  (gf-log "Using !SUPPOSEDLY UNREACHABLE! default effective method function%N")
+                  (gf-log "Using default effective method function%N")
                   (gf-log "(compute-effective-method generic-function method-combination methods) -> %N")
                   (gf-log "%s%N" em)
                   (make-effective-method-outcome

@@ -200,6 +200,10 @@
 	      main-effective-method)
 	     (t (second main-effective-method))))))
 
+;;; See comment below.
+(defmacro %magic-no-required-method (group-name)
+  `(apply #'no-required-method .generic-function. ',group-name .method-args.))
+
 (defun define-complex-method-combination (form)
   (flet ((syntax-error ()
 	   (error "~S is not a valid DEFINE-METHOD-COMBINATION form"
@@ -246,9 +250,10 @@
                      ;; As such, compute-effective-method should not signal an error unless the computation
                      ;; is impossible. Lacking a required method is by contrast a problem that only needs to
                      ;; be signaled when the function is actually being called. So we return an error form.
-                     ;; (NO-REQUIRED-METHOD is defined in fixup, but we could move it here.)
-                     (return-from ,name
-                       '(no-required-method ,generic-function ',group-name .method-args.)))
+                     ;; ...but because we want an independent function for the dtree interpreter, we return
+                     ;; something specially recognizable by compute-outcome, so the generic function etc.
+                     ;; can be hooked up.
+                     (return-from ,name '(%magic-no-required-method ,group-name)))
 		  group-after))
 	  (case order
 	    (:most-specific-first
