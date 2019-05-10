@@ -191,26 +191,14 @@ in the generic function lambda-list to the generic function lambda-list"
           (values `(lambda (.method-args. .next-methods.)
                      (declare ,lambda-name-declaration)
                      ,doc
-                     (flet (,@(and call-next-method-p
-                                `((call-next-method (&va-rest args)    #|DANGER|#
-                                    (if (not .next-methods.)
-                                        ;; But how do I generate code that can be compiled
-                                        ;; that will get access to the current method and
-                                        ;; current generic function? The method does not yet exist.
-                                        (error "No next method") ;; FIXME: should call no-next-method.
-                                        (let ((use-args (if (> (vaslist-length args) 0) args .method-args.)))
-                                          (funcall (car .next-methods.)
-                                                   use-args ; (or args .method-args.)
-                                                   (cdr .next-methods.)))))))
-                            ,@(and next-method-p-p
-                                `((next-method-p ()
-                                                 (and .next-methods. t)))))
+                     ,(gen-lexical-method-function-binds
+                       call-next-method-p next-method-p-p
                        ;; Per CLHS 7.6.4, methods do not do keyword argument checking- the gf does.
                        ;; BIND-VA-LIST is therefore set up to pass :safep nil to the argument parser
                        ;; generator, which essentially implies &allow-other-keys.
-                       (core::bind-va-list ,lambda-list .method-args.
-                         (declare ,@declarations)
-                         ,@body)))
+                       `(core::bind-va-list ,lambda-list .method-args.
+                          (declare ,@declarations)
+                          ,@body)))
                   ;; double quotes as per evaluation, explained above in defmethod.
                   (list ''leaf-method-p `',leaf-method-p
                         ;; FIXME: This is kind of a messy way of arranging things. Both the lambda list check
@@ -222,6 +210,45 @@ in the generic function lambda-list to the generic function lambda-list"
                                                      ,doc
                                                      ,@body)
                                                   nil))))))))
+
+;;; We want to avoid consing closures for call-next-method and next-method-p when possible,
+;;; which is most of the time. We don't need a closure for just (call-next-method).
+;;; The right way to do this would be to flet unconditionally, declare the functions inline,
+;;; and let the compiler handle it. We're getting there, but right now the compiler isn't
+;;; smart enough. So what we do is use a macrolet in the case that the walker only found
+;;; (call-next-method ...) at worst.
+;;; NOTE: We still cons a closure for (call-next-method actual-args...) because of how
+;;; &va-rest works, so that's suboptimal.
+(defun gen-lexical-method-function-binds (call-next-method-p next-method-p-p form)
+  (cond ((or (eq call-next-method-p 'function) (eq next-method-p-p 'function))
+         `(flet ((call-next-method (&va-rest args)
+                   (if (null .next-methods.)
+                       ;; FIXME: should call no-next-method.
+                       ;; This is hard, because the method doesn't exist when this
+                       ;; function is created.
+                       (error "No next method")
+                       (let ((use-args (if (> (vaslist-length args) 0) args .method-args.)))
+                         (funcall (car .next-methods.)
+                                  use-args
+                                  (cdr .next-methods.)))))
+                 (next-method-p () (and .next-methods. t)))
+            ,form))
+        ((or call-next-method-p next-method-p-p)
+         `(macrolet ((call-next-method (&rest args)
+                       `(if (null .next-methods.)
+                            (error "No next method")
+                            ,(if args
+                                 `(let ((next (car .next-methods.))
+                                        (more (cdr .next-methods.)))
+                                    ((lambda (&va-rest args)
+                                       (funcall next args more))
+                                     ,@args))
+                                 `(funcall (car .next-methods.)
+                                           .method-args.
+                                           (cdr .next-methods.)))))
+                     (next-method-p () '(and .next-methods. t)))
+            ,form))
+        (t form)))
 
 (defun walk-method-lambda (method-lambda env)
   (let ((call-next-method-p nil)
