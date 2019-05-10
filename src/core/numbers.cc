@@ -2006,8 +2006,10 @@ void Ratio_O::setFromString(const string &str) {
 // --------------------------------------------------------------------------------
 
 Number_sp Complex_O::signum_() const {
-  return clasp_make_complex(gc::As<Real_sp>(clasp_signum(this->_real)),
-                            gc::As<Real_sp>(clasp_signum(this->_imaginary)));
+  if (this->zerop_())
+    return this->asSmartPtr();
+  else
+    return clasp_divide(this->asSmartPtr(), this->abs_());
 }
 
 string Complex_O::__repr__() const {
