@@ -107,7 +107,7 @@
         ((make-method-form-p method)
          `(lambda (.method-args. .next-methods.)
             (declare (ignore .next-methods.))
-            ,method))
+            ,(second method)))
         (t `(error "Invalid argument to CALL-METHOD: ~a" ',method))))
 
 (defmacro call-method (method &optional rest-methods)
@@ -116,7 +116,9 @@
                    .method-args. ; will be bound in context
                    ,(if (or (leaf-method-p method) (null rest-methods))
                         nil
-                        `(list ,@(mapcar #'call-method-aux rest-methods)))))
+                        `(load-time-value
+                          (list ,@(mapcar #'call-method-aux rest-methods))
+                          t))))
         ((make-method-form-p method) (second method))
         (t `(error "Invalid argument to CALL-METHOD: ~a" ',method))))
 
@@ -246,7 +248,7 @@
                      ;; be signaled when the function is actually being called. So we return an error form.
                      ;; (NO-REQUIRED-METHOD is defined in fixup, but we could move it here.)
                      (return-from ,name
-                       '(no-required-method .generic-function. ',group-name .method-args.)))
+                       '(no-required-method ,generic-function ',group-name .method-args.)))
 		  group-after))
 	  (case order
 	    (:most-specific-first

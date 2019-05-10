@@ -286,7 +286,7 @@
     (return-from compute-outcome
       (make-effective-method-outcome
        :applicable-methods nil
-       :form '(apply #'no-applicable-method .generic-function. .method-args.)
+       ;;:form '(apply #'no-applicable-method .generic-function. .method-args.)
        :function (lambda (vaslist-args ignore)
                    (declare (ignore ignore))
                    (apply #'no-applicable-method generic-function vaslist-args)))))
@@ -320,14 +320,14 @@
                         (leafp
                          (gf-log "Using method %s function as emf%N" method)
                          (make-effective-method-outcome
-                          :applicable-methods methods :form em
+                          :applicable-methods methods ;:form em
                           :function (method-function method)))
                         (t
                          (gf-log "Using default effective method function%N")
                          (gf-log "(compute-effective-method generic-function method-combination methods) -> %N")
                          (gf-log "%s%N" em)
                          (make-effective-method-outcome
-                          :applicable-methods methods :form em
+                          :applicable-methods methods ;:form em
                           :function (effective-method-function em)))))
                  (readerp
                   (gf-log "make-optimized-slot-reader index: %s slot-name: %s class: %s%N"
@@ -355,7 +355,7 @@
                   (gf-log "(compute-effective-method generic-function method-combination methods) -> %N")
                   (gf-log "%s%N" em)
                   (make-effective-method-outcome
-                   :applicable-methods methods :form em
+                   :applicable-methods methods ;:form em
                    :function (effective-method-function em))))))
     #+debug-fastgf
     (when log

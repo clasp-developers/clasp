@@ -378,7 +378,7 @@
                                                                   sym)))))
                                       (outcome (make-effective-method-outcome
                                                 :applicable-methods am
-                                                :function (wrap-call-method em local-mf))))
+                                                :form (wrap-call-method em local-mf))))
                                  (push (cons am outcome) emf-binds)
                                  outcome)))))
           into entries

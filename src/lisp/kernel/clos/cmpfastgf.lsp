@@ -113,7 +113,7 @@
         ((fast-method-call-p outcome)
          (generate-fast-method-call reqargs outcome))
         ((effective-method-outcome-p outcome)
-         (generate-effective-method-call (effective-method-outcome-function outcome)))
+         (generate-effective-method-call outcome))
         (t (error "BUG: Bad thing to be an outcome: ~a" outcome))))
 
 (defun generate-slot-reader (arguments outcome)
@@ -168,17 +168,17 @@
     `(funcall ,fmf ,@arguments)))
 
 (defun generate-effective-method-call (outcome)
-  (if (consp outcome)
-      ;; if the outcome is a cons, we magically assume it's a form to include entirely.
-      ;; This happens from the COMPILE-TIME-DISCRIMINATOR machinery in satiation.lsp.
-      ;; FIXME: probably clean up. 
-      `(progn
-         (core:vaslist-rewind .method-args.)
-         ,outcome)
-      (let ((emf outcome))
-        `(progn
-           (core:vaslist-rewind .method-args.)
-           (funcall ,emf .method-args. nil)))))
+  `(progn
+     (core:vaslist-rewind .method-args.)
+     ;; if a form was provided, just throw it in.
+     ;; Otherwise generate a function call.
+     ;; NOTE: We use NIL to mean "no form provided".
+     ;; Hypothetically the form could actually BE nil,
+     ;; but I'm not holding my breath here- the backup is probably fine.
+     ,(cond ((effective-method-outcome-form outcome))
+            ((functionp (effective-method-outcome-function outcome))
+             `(funcall ,(effective-method-outcome-function outcome) .method-args. nil))
+            (t (error "BUG: Outcome ~a is messed up" outcome)))))
 
 ;;; discrimination
 

@@ -19,7 +19,7 @@
 (defstruct (fast-method-call (:type vector) (:include outcome) :named) function)
 ;; see closfastgf.lsp's find-existing-emf for use of applicable-methods slot
 (defstruct (effective-method-outcome (:type vector) (:include outcome) :named)
-  applicable-methods form function)
+  applicable-methods (form nil) (function nil))
 
 (defstruct (match (:type vector) :named) outcome)
 (defstruct (range (:include match) (:type vector) :named) first-stamp last-stamp reversed-classes)
