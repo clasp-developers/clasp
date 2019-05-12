@@ -89,7 +89,7 @@ CLANG_SPECIFIC_VERSION = "6.0.1"
 STAGE_CHARS = [ 'r', 'i', 'a', 'b', 'f', 'c', 'd' ]
 # Full LTO  -flto
 # thin LTO  -flto=thin
-LTO_OPTION = "-flto"
+LTO_OPTION = "-flto=thin"
 GCS_NAMES = [ 'boehm',
               'mpsprep',
               'mps' ]
