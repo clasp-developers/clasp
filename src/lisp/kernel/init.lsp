@@ -520,8 +520,8 @@ a relative path from there."
 (defun build-inline-bitcode-pathname (link-type &optional (filetype :intrinsics))
   (let ((name (cond
                 ((eq filetype :intrinsics) "intrinsics")
-                ((eq filetype :builtins) "builtins")
-                (t (error "illegal filetype - only :intrinsics or :fastgf allowed")))))
+                ((eq filetype :builtins) "builtins-no-debug-info")
+                (t (error "illegal filetype - only :intrinsics or :builtins allowed")))))
     (cond
       ((eq link-type :fasl)
        (translate-logical-pathname (bformat nil "lib:%s-%s-cxx.a" +bitcode-name+ name)))
