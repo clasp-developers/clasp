@@ -229,3 +229,14 @@ Set gather-all-frames to T and you can gather C++ and Common Lisp frames"
      (core:trigger-dtrace-stop)))
 
 (defparameter core:*information-callback* 'core:safe-backtrace)
+
+
+(defun ext::code-source-position (address)
+  (multiple-value-bind (err error-msg stream)
+      (ext:vfork-execvp (list "atos" "-p" (format nil "~a" (core:getpid))
+                            (format nil "0x~x" (core:pointer-integer address))) t)
+    (let ((result (read-line stream)))
+      result)))
+
+
+(export 'ext::code-source-position :ext)
