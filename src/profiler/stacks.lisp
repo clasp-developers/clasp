@@ -307,6 +307,7 @@ exec sbcl --noinform --dynamic-space-size 2048 --disable-ldb --lose-on-corruptio
   (finish-output *debug-io*)
   (let ((header (read-dtrace-header fin))
         (cleavir-p (member "cleavir" options :test 'string=)))
+     (declare (ignore cleavir-p))
     (write-dtrace-header fout header)
     (loop for backtrace = (read-dtrace-backtrace-raw fin nil :eof)
           until (eq backtrace :eof)
