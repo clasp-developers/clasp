@@ -696,6 +696,8 @@ This works like compile-lambda-function in bclasp."
   (alexandria:alist-hash-table '(("NULL"   . #.(code-char 0))
                                  ("NUL"    . #.(code-char 0))
                                  ("BELL"   . #.(code-char 7))
+                                 ("BEL"    . #.(code-char 7))
+                                 ("VT"     . #.(code-char 11))
                                  ("ESCAPE" . #.(code-char 27))
                                  ("DEL"    . #.(code-char 127))
                                  ("CR"     . #.(code-char 13)))
