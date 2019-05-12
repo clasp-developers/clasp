@@ -89,4 +89,8 @@ CL_DEFUN void core__replace_foreign_memory(clasp_ffi::ForeignData_sp dest, clasp
 }
 
 
+CL_DEFMETHOD Integer_sp Pointer_O::pointer_integer() const {
+  return Integer_O::create((uintptr_t)this->ptr());
+};
+
 };
