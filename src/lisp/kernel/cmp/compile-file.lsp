@@ -362,10 +362,11 @@ Compile a lisp source file into an LLVM module."
                                           (t 'llvm-sys:reloc-model-undefined))))
                        (generate-obj-asm module fout :file-type 'llvm-sys:code-gen-file-type-object-file :reloc-model reloc-model)))
                  (when (eq type :kernel)
-                   (when verbose
-                     (bformat t "Writing kernel fasl file to: %s%N" output-file)
-                     (finish-output))
-                   (llvm-link (make-pathname :type "fasl" :defaults output-file) :input-files (list temp-bitcode-file) :input-type :bitcode)))))
+                   (let ((fasl-output-file (make-pathname :type "fasl" :defaults output-file)))
+                     (when verbose
+                       (bformat t "Writing %s kernel fasl file to: %s%N" output-type fasl-output-file)
+                       (finish-output))
+                     (llvm-link fasl-output-file :input-files (list temp-bitcode-file) :input-type :bitcode))))))
             ((eq output-type :bitcode)
              (when verbose (bformat t "Writing bitcode to %s%N" (core:coerce-to-filename output-path)))
              (ensure-directories-exist output-path)
@@ -373,10 +374,11 @@ Compile a lisp source file into an LLVM module."
                  (with-track-llvm-time
                      (write-bitcode module (core:coerce-to-filename output-path)))
                (when (eq type :kernel)
-                 (when verbose
-                   (bformat t "Writing kernel fasl file to: %s%N" output-file)
-                   (finish-output))
-                 (llvm-link (make-pathname :type "fasl" :defaults output-file) :input-files (list output-path) :input-type :bitcode))))
+                 (let ((fasl-output-file (make-pathname :type "fasl" :defaults output-file)))
+                   (when verbose
+                     (bformat t "Writing %s kernel fasl file to: %s%N" output-type fasl-output-file)
+                     (finish-output))
+                   (llvm-link fasl-output-file :input-files (list output-path) :input-type :bitcode)))))
             ((eq output-type :fasl)
              (ensure-directories-exist output-path)
              (let ((temp-bitcode-file (compile-file-pathname input-file :output-file output-file :output-type :bitcode)))
