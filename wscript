@@ -1315,6 +1315,7 @@ def build(bld):
     # Always build the C++ code
     intrinsics_bitcode_node = bld.path.find_or_declare(variant.inline_bitcode_archive_name("intrinsics"))
     builtins_bitcode_node = bld.path.find_or_declare(variant.inline_bitcode_archive_name("builtins"))
+    builtins_no_debug_info_bitcode_node = bld.path.find_or_declare(variant.inline_bitcode_archive_name("builtins-no-debug-info"))
     cclasp_common_lisp_output_name_list = variant.common_lisp_output_name_list(bld,bld.clasp_cclasp,stage='c')
     cxx_all_bitcode_node = bld.path.find_or_declare(variant.cxx_all_bitcode_name())
     out_dir_node = bld.path.find_dir(out)
@@ -1743,8 +1744,25 @@ class link_bitcode(clasp_task):
         return self.exec_command(cmd)
 
 class build_bitcode(clasp_task):
-    ext_out = ['.sif']    # this affects the task execution order
+    def run(self):
+        env = self.env
+        cmd = [] + \
+              env.CXX + \
+              self.colon("ARCH_ST", "ARCH") + \
+              env.CXXFLAGS + env.CPPFLAGS + \
+              [ '-emit-llvm' ] + \
+              self.colon("FRAMEWORKPATH_ST", "FRAMEWORKPATH") + \
+              self.colon("CPPPATH_ST", "INCPATHS") + \
+              self.colon("DEFINES_ST", "DEFINES") + \
+              [ self.inputs[0].abspath() ] + \
+              [ '-c' ] + \
+              [ '-g' ] + \
+              [ '-o', self.outputs[0].abspath() ]
+#        cmd.remove("-g")
+        return self.exec_command(cmd)
 
+
+class build_bitcode_no_debug_info(clasp_task):
     def run(self):
         env = self.env
         cmd = [] + \
@@ -1873,6 +1891,7 @@ def postprocess_all_c_tasks(self):
     all_cxx_nodes = []
     intrinsics_o = None
     builtins_o = None
+    builtins_no_debug_info_o = None
     for task in self.compiled_tasks:
         log.debug("Scrape taskgen inspecting C task %s", task)
         if ( task.__class__.__name__ == 'cxx' ):
@@ -1892,6 +1911,7 @@ def postprocess_all_c_tasks(self):
                     intrinsics_o = node
                 if ends_with(node.name, 'builtins.cc'):
                     builtins_o = node
+                    builtins_no_debug_info_o = node
         if ( task.__class__.__name__ == 'c' ):
             for node in task.outputs:
                 all_o_nodes.append(node)
@@ -1957,7 +1977,20 @@ def postprocess_all_c_tasks(self):
     install('lib/clasp/', builtins_bitcode_archive_node)
     install('lib/clasp/', builtins_bitcode_alone_node)
 
-# all of C
+# builtins with no debug info
+    builtins_no_debug_info_bitcode_archive_node = self.path.find_or_declare(variant.inline_bitcode_archive_name("builtins-no-debug-info"))
+    builtins_no_debug_info_bitcode_alone_node = self.path.find_or_declare(variant.inline_bitcode_name("builtins-no-debug-info"))
+    log.debug("No debug-info builtins_cc = %s, builtins_no_debug_info_o.name = %s, builtins_no_debug_info_bitcode_alone_node = %s", builtins_cc, builtins_no_debug_info_o.name, builtins_no_debug_info_bitcode_alone_node)
+    self.create_task('build_bitcode_no_debug_info',
+                     [builtins_cc] + scraper_output_nodes,
+                     builtins_no_debug_info_bitcode_alone_node)
+    self.create_task('link_bitcode',
+                     [builtins_no_debug_info_o],
+                     builtins_no_debug_info_bitcode_archive_node)
+    install('lib/clasp/', builtins_no_debug_info_bitcode_archive_node)
+    install('lib/clasp/', builtins_no_debug_info_bitcode_alone_node)
+
+#all of C
     cxx_all_bitcode_node = self.path.find_or_declare(variant.cxx_all_bitcode_name())
     self.create_task('link_bitcode',
                      all_o_nodes,
