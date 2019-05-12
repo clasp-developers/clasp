@@ -30,7 +30,7 @@ exec sbcl --dynamic-space-size 4096 --noinform --disable-ldb --lose-on-corruptio
                (if (char= cmd #\l)
                    (let ((filename (read-string sin)))
                      (load-symbol-table-into-entries filename entries))
-                   (let ((hex (read-string sin))
+                   (let* ((hex (read-string sin))
                          (start (parse-integer hex :start 2 :radix 16))
                          (size (parse-integer (read-string sin)))
                          (symbol (read-line sin)))
