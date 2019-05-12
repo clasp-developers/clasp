@@ -366,7 +366,7 @@ Character_sp clasp_character_create_from_name(string const &name) {
     ch = clasp_make_standard_character(' ');
   else if ((ssup == "BACKSPACE") || (ssup == "Backspace"))
     ch = clasp_make_standard_character(8);
-  else if ((ssup == "BELL") || (ssup == "Bell"))
+  else if ((ssup == "BELL") || (ssup == "Bell") || (ssup == "Bel"))
     ch = clasp_make_standard_character(BELL_CHAR);
   else {
     SIMPLE_ERROR(BF("Unknown character name[%s]") % ssup);
