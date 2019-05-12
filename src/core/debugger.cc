@@ -257,7 +257,8 @@ struct OpenDynamicLibraryInfo {
   std::string    _Filename;
   void*          _Handle;
   SymbolTable    _SymbolTable;
-  OpenDynamicLibraryInfo(const std::string& f, void* h, const SymbolTable& symbol_table) : _Filename(f), _Handle(h), _SymbolTable(symbol_table) {};
+  uintptr_t      _LibraryOrigin;
+  OpenDynamicLibraryInfo(const std::string& f, void* h, const SymbolTable& symbol_table, uintptr_t liborig) : _Filename(f), _Handle(h), _SymbolTable(symbol_table), _LibraryOrigin(liborig) {};
   OpenDynamicLibraryInfo() {};
 };
 
@@ -1010,7 +1011,8 @@ void add_dynamic_library_impl(bool is_executable, const std::string& libraryName
   symbol_table.optimize();
   symbol_table.sort();
 #endif
-  OpenDynamicLibraryInfo odli(libraryName,handle,symbol_table);
+  BT_LOG((buf,"OpenDynamicLibraryInfo libraryName: %s handle: %p library_origin: %p\n", libraryName.c_str(),(void*)handle,(void*)library_origin));
+  OpenDynamicLibraryInfo odli(libraryName,handle,symbol_table,library_origin);
   debugInfo()._OpenDynamicLibraryHandles[libraryName] = odli;
 }
 
@@ -1054,8 +1056,9 @@ CL_DEFUN List_sp core__dynamic_library_handles() {
   return result.cons();
 }
 
-bool lookup_address(uintptr_t address, const char*& symbol, uintptr_t& start, uintptr_t& end, char& type)
+bool lookup_address_main(uintptr_t address, const char*& symbol, uintptr_t& start, uintptr_t& end, char& type, bool& foundLibrary, std::string& libraryName, uintptr_t& libraryStart )
 {
+  foundLibrary = false;
 #ifdef CLASP_THREADS
   WITH_READ_LOCK(debugInfo()._OpenDynamicLibraryMutex);
 #endif
@@ -1063,6 +1066,9 @@ bool lookup_address(uintptr_t address, const char*& symbol, uintptr_t& start, ui
   for ( auto entry : debugInfo()._OpenDynamicLibraryHandles ) {
     SymbolTable symtab = entry.second._SymbolTable;
     if (symtab.findSymbolForAddress(address,symbol,start,end,type,index)) {
+      foundLibrary = true;
+      libraryName = entry.second._Filename;
+      libraryStart = entry.second._LibraryOrigin;
       return true;
     }
   }
@@ -1084,6 +1090,12 @@ bool lookup_address(uintptr_t address, const char*& symbol, uintptr_t& start, ui
   return false;
 }
 
+bool lookup_address(uintptr_t address, const char*& symbol, uintptr_t& start, uintptr_t& end, char& type) {
+  bool libraryFound;
+  std::string libraryName;
+  uintptr_t libraryStart;  
+  return lookup_address_main(address,symbol,start,end,type,libraryFound,libraryName,libraryStart);
+}
 
 void search_symbol_table(std::vector<BacktraceEntry>& backtrace, const char* filename, size_t& symbol_table_size)
 {
@@ -1626,8 +1638,7 @@ void fill_in_interpreted_frames(std::vector<BacktraceEntry>& backtrace) {
       if (bp<=reg && reg <bpNext) {
         backtrace[idx]._Stage = lispFrame; // Interpreted frames are lisp frames
         backtrace[idx]._SymbolName = gc::As<Symbol_sp>(gc::As<Closure_sp>(frame->function())->functionName())->formattedName(true);
-        printf("%s:%d:%s  What do I do with the interpreted arguments?????\n", __FILE__, __LINE__, __FUNCTION__ );
-//        backtrace[idx]._Arguments = frame->arguments();
+        backtrace[idx]._InvocationHistoryFrameAddress = (uintptr_t)frame;
         //printf("%s:%d:%s %s %s  MATCH!!!!\n", __FILE__, __LINE__, __FUNCTION__, backtrace[idx]._SymbolName.c_str(), _rep_(backtrace[idx]._Arguments).c_str());
       }
     }
@@ -2006,12 +2017,26 @@ CL_DEFUN core::T_mv core__lookup_address(core::Pointer_sp address) {
   const char* symbol;
   uintptr_t start, end;
   char type;
-  bool foundSymbol = lookup_address((uintptr_t)address->ptr(),symbol,start,end,type);
+  bool libraryFound;
+  std::string sLibraryName;
+  uintptr_t libraryStart;  
+  bool foundSymbol = lookup_address_main((uintptr_t)address->ptr(),symbol,start,end,type,libraryFound,sLibraryName,libraryStart);
   if (foundSymbol) {
+    core::T_sp libraryName = _Nil<T_O>();
+    core::T_sp offsetFromStartOfLibraryAddress = _Nil<T_O>();
+    core::T_sp library_origin = _Nil<T_O>();
+    if (libraryFound) {
+      libraryName = SimpleBaseString_O::make(sLibraryName);
+      library_origin = Integer_O::create((uintptr_t)libraryStart);
+      offsetFromStartOfLibraryAddress = Integer_O::create((uintptr_t)address->ptr()-libraryStart);
+    }
     return Values(core::SimpleBaseString_O::make(symbol),
                   core::Pointer_O::create((void*)start),
                   core::Pointer_O::create((void*)end),
-                  core::clasp_make_character(type));
+                  core::clasp_make_character(type),
+                  libraryName,
+                  library_origin,
+                  offsetFromStartOfLibraryAddress);
   }
   return Values(_Nil<core::T_O>());
 }
