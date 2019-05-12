@@ -203,7 +203,7 @@ Return files."
                    :print print
                    :verbose verbose
                    :unique-symbol-prefix (format nil "~a~a" (pathname-name source-path) position)
-                   :type :kernel
+                   :type (if reload :kernel nil)
                    (if position
                        (list* :image-startup-position position (entry-compile-file-options entry))
                        (entry-compile-file-options entry)))
@@ -715,9 +715,9 @@ Return files."
          (unwind-protect
               (progn
                 (push :compiling-cleavir *features*)
-                (load-system (select-source-files #P"src/lisp/kernel/tag/bclasp"
-                                                  #P"src/lisp/kernel/tag/pre-epilogue-cclasp"
-                                                  :system system) :compile-file-load nil))
+                  (load-system (select-source-files #P"src/lisp/kernel/tag/bclasp"
+                                                    #P"src/lisp/kernel/tag/pre-epilogue-cclasp"
+                                                    :system system) :compile-file-load nil))
            (pop *features*))
          (push :cleavir *features*)
          (compile-cclasp* output-file system))))))
