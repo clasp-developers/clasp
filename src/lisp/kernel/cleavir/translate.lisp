@@ -52,19 +52,21 @@ when this is t a lot of graphs will be generated.")
 (defvar *current-source-position* nil)
 (defvar *current-function-metadata* nil)
 
-(defun do-debug-info-source-position (origin function-metadata body-lambda)
-  (unwind-protect
-       (let ((*current-source-position* origin)
-             (*current-function-metadata* function-metadata))
-         (set-instruction-source-position origin function-metadata)
-         (funcall body-lambda))
-    (set-instruction-source-position *current-source-position* *current-function-metadata*)))
+(defun do-debug-info-source-position (enabledp origin function-metadata body-lambda)
+  (if (and enabledp (null origin))
+      (funcall body-lambda)
+      (unwind-protect
+           (let ((*current-source-position* origin)
+                 (*current-function-metadata* function-metadata))
+             (set-instruction-source-position origin function-metadata)
+             (funcall body-lambda))
+        (set-instruction-source-position *current-source-position* *current-function-metadata*))))
 
 (defmacro with-debug-info-source-position (origin function-metadata &body body)
-  `(do-debug-info-source-position ,origin ,function-metadata (lambda () ,@body)))
+  `(do-debug-info-source-position t ,origin ,function-metadata (lambda () ,@body)))
 
 (defmacro with-debug-info-disabled (&body body)
-  `(do-debug-info-source-position nil nil (lambda () ,@body)))
+  `(do-debug-info-source-position nil nil nil (lambda () ,@body)))
 
 ;;;
 ;;; the first argument to this function is an instruction that has a
