@@ -111,11 +111,11 @@ void register_llvm_stackmaps(uintptr_t startAddress, uintptr_t endAddress, size_
  
  void startup_register_loaded_objects();
 
-bool lookup_address(uintptr_t address, const char*& symbol, uintptr_t& start, uintptr_t& end, char& type);
+bool lookup_address(uintptr_t address, const char*& symbol, uintptr_t& start, uintptr_t& end, char& type );
 
  typedef enum {undefined,symbolicated,lispFrame,cFrame} BacktraceFrameEnum ;
 struct BacktraceEntry {
-BacktraceEntry() : _Stage(undefined),_ReturnAddress(0),_FunctionStart(0),_FunctionEnd(~0),_BasePointer(0),_InstructionOffset(0),_FrameSize(0),_FrameOffset(0), _FunctionDescription(0) {};
+  BacktraceEntry() : _Stage(undefined),_ReturnAddress(0),_FunctionStart(0),_FunctionEnd(~0),_BasePointer(0),_InstructionOffset(0),_FrameSize(0),_FrameOffset(0), _FunctionDescription(0), _InvocationHistoryFrameAddress(0) {};
   BacktraceFrameEnum   _Stage;
   uintptr_t            _ReturnAddress;
   uintptr_t            _FunctionStart;
@@ -126,6 +126,7 @@ BacktraceEntry() : _Stage(undefined),_ReturnAddress(0),_FunctionStart(0),_Functi
   int                  _FrameOffset;
   std::string          _SymbolName;
   uintptr_t            _FunctionDescription;
+  uintptr_t            _InvocationHistoryFrameAddress;
 };
 
 };

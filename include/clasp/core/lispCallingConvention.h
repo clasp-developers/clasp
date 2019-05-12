@@ -424,7 +424,7 @@ inline gctools::return_type funcall_consume_valist_(gc::Tagged func_tagged, VaLi
   SIMPLE_ERROR_SPRINTF("Unsupported arity %lu must be less than %lu",  nargs, CALL_ARGUMENTS_LIMIT );
 }
 /*! Return (values arguments closure) */
-T_mv capture_arguments(uintptr_t functionAddress, uintptr_t basePointer, int frameOffset);
+T_mv capture_arguments(uintptr_t functionAddress, uintptr_t basePointer, int frameOffset, uintptr_t invocationHistoryFrameAddress);
 
 
 

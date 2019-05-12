@@ -1667,10 +1667,19 @@ argIndex==1 is the number of arguments
 argIndex==2... are the passed arguments
 */
 
-uintptr_t get_raw_argument_from_stack(uintptr_t functionAddress, uintptr_t basePointer, int frameOffset, size_t argIndex)
+uintptr_t get_raw_argument_from_stack(uintptr_t functionAddress, uintptr_t basePointer, int frameOffset, size_t argIndex, uintptr_t invocationHistoryFrameAddress)
 {
+  T_O** register_save_area;
+  if (invocationHistoryFrameAddress) {
+    // this is an interpreted function - use the invocationHistoryFrameAddress to get the register save area
+    printf("%s:%d Using the invocationHistoryFrameAddress@%p to get the register save area of interpreted function\n", __FILE__, __LINE__, (void*)invocationHistoryFrameAddress);
+    InvocationHistoryFrame* ihf = (InvocationHistoryFrame*)invocationHistoryFrameAddress;
+    register_save_area = (core::T_O**)ihf->_args->reg_save_area;
+  } else {
+    // This is a compiled function - use the frameOffset to get the register-save-area
   // printf("%s:%s:%d start basePointer: %lu frameOffset: %d\n", __FILE__, __FUNCTION__, __LINE__, basePointer, frameOffset );
-  T_O** register_save_area = (T_O**)(basePointer+frameOffset);
+    register_save_area = (T_O**)(basePointer+frameOffset);
+  }
 //  printf("%s:%d:%s basePointer@%p frameOffset %d reg_save_area %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)basePointer, frameOffset, register_save_area);
   // printf("%s:%s:%d get nargs basePointer: %lu frameOffset: %d\n", __FILE__, __FUNCTION__, __LINE__, basePointer, frameOffset );
   size_t nargs = (uintptr_t)register_save_area[1];
@@ -1691,17 +1700,17 @@ uintptr_t get_raw_argument_from_stack(uintptr_t functionAddress, uintptr_t baseP
 
 
 
-core::T_mv capture_arguments(uintptr_t functionAddress, uintptr_t basePointer, int frameOffset, bool asPointers)
+core::T_mv capture_arguments(uintptr_t functionAddress, uintptr_t basePointer, int frameOffset, bool asPointers, uintptr_t invocationHistoryFrameAddress)
 {
-  T_sp closure((gctools::Tagged)get_raw_argument_from_stack(functionAddress,basePointer,frameOffset,0));
-  size_t nargs = core::get_raw_argument_from_stack(functionAddress,basePointer,frameOffset,1);
+  T_sp closure((gctools::Tagged)get_raw_argument_from_stack(functionAddress,basePointer,frameOffset,0,invocationHistoryFrameAddress));
+  size_t nargs = core::get_raw_argument_from_stack(functionAddress,basePointer,frameOffset,1,invocationHistoryFrameAddress);
   SimpleVector_sp args = SimpleVector_O::make(nargs);
   for ( size_t i=0; i<nargs; ++i ) {
     T_sp tobj;
     if (asPointers) {
-      tobj = Pointer_O::create((void*)get_raw_argument_from_stack(functionAddress,basePointer,frameOffset,2+i));
+      tobj = Pointer_O::create((void*)get_raw_argument_from_stack(functionAddress,basePointer,frameOffset,2+i,invocationHistoryFrameAddress));
     } else {
-      T_sp temp((gctools::Tagged)get_raw_argument_from_stack(functionAddress,basePointer,frameOffset,2+i));
+      T_sp temp((gctools::Tagged)get_raw_argument_from_stack(functionAddress,basePointer,frameOffset,2+i,invocationHistoryFrameAddress));
       tobj = temp;
     }
     (*args)[i] = tobj;
@@ -1712,6 +1721,8 @@ core::T_mv capture_arguments(uintptr_t functionAddress, uintptr_t basePointer, i
   return Values(args,closure);
 }
 
+
+#if 0
 CL_DOCSTRING("Return the arguments and the closure for the frame at base-pointer/frame-offset. If you pass as-pointers as T then pointers to the objects will be returned.");
 CL_LAMBDA(function-address base-pointer frame-offset &optional as-pointers)
 CL_DEFUN core::T_mv core__capture_arguments(Pointer_sp functionAddressP, Pointer_sp basePointerP, int frameOffset, bool asPointers)
@@ -1720,7 +1731,9 @@ CL_DEFUN core::T_mv core__capture_arguments(Pointer_sp functionAddressP, Pointer
   uintptr_t basePointer = (uintptr_t)basePointerP->ptr();
   return capture_arguments(functionAddress,basePointer,frameOffset,asPointers);
 }
+#endif
 
+#if 0
 CL_DEFUN core::T_mv core__get_raw_arguments_from_stack(Pointer_sp functionAddressP, Pointer_sp basePointerP, int frameOffset) {
   uintptr_t functionAddress = (uintptr_t)functionAddressP->ptr();
   uintptr_t basePointer = (uintptr_t)basePointerP->ptr();
@@ -1732,8 +1745,10 @@ CL_DEFUN core::T_mv core__get_raw_arguments_from_stack(Pointer_sp functionAddres
   }
   return Values(closure, core::make_fixnum(nargs), rest.cons());
 }
+#endif
 
-void fill_backtrace(std::vector<BacktraceEntry>& backtrace,bool captureArguments) {
+
+void fill_backtrace(std::vector<BacktraceEntry>& backtrace) {
   char *funcname = (char *)malloc(1024);
   size_t funcnamesize = 1024;
   uintptr_t stackTop = (uintptr_t)my_thread_low_level->_StackTop;
@@ -1763,7 +1778,7 @@ void fill_backtrace(std::vector<BacktraceEntry>& backtrace,bool captureArguments
   // printf("%s:%s:%d\n", __FILE__, __FUNCTION__, __LINE__);
     // fill in the interpreted frames here
   BT_LOG((buf,"fill in interpreted frames here\n"));;
-  // if (!captureArguments) fill_in_interpreted_frames(backtrace);
+  fill_in_interpreted_frames(backtrace);
 };
 
 CL_DOCSTRING("Call the thunk after setting core:*stack-top-hint* to somewhere in the current stack frame.");
@@ -1780,7 +1795,7 @@ CL_DOCSTRING(R"doc(Generate a backtrace and pass it to the closure for printing 
  If args-as-pointers is T then arguments and the closure are wrapped in Pointer_O objects.)doc");
 CL_DEFUN T_mv core__call_with_backtrace(Function_sp closure, bool args_as_pointers) {
   std::vector<BacktraceEntry> backtrace;
-  fill_backtrace(backtrace,true);
+  fill_backtrace(backtrace);
   uintptr_t stack_top_hint = ~0;
   if (_sym_STARstack_top_hintSTAR->symbolValue().notnilp()) {
     if (gc::IsA<Pointer_sp>(_sym_STARstack_top_hintSTAR->symbolValue())) {
@@ -1793,7 +1808,6 @@ CL_DEFUN T_mv core__call_with_backtrace(Function_sp closure, bool args_as_pointe
   uintptr_t bp = (uintptr_t)__builtin_frame_address(0);
   ql::list result;
   for ( size_t i=1; i<backtrace.size(); ++i ) {
-    // printf("%s:%d Examining bp %p frame %p\n", __FILE__, __LINE__, (void*)bp, (void*)backtrace[i]._BasePointer);
     if (bp<backtrace[i]._BasePointer && backtrace[i]._BasePointer!=0 && backtrace[i]._BasePointer<stack_top_hint) {
       T_sp entry;
       Symbol_sp stype;
@@ -1809,8 +1823,8 @@ CL_DEFUN T_mv core__call_with_backtrace(Function_sp closure, bool args_as_pointe
       ql::list args;
       core::T_sp arguments = _Nil<core::T_O>();
       core::T_sp closure = _Nil<core::T_O>();
-      if (backtrace[i]._FrameOffset!=0) {
-        core::T_mv args_closure = core::capture_arguments(backtrace[i]._FunctionStart,backtrace[i]._BasePointer,backtrace[i]._FrameOffset,args_as_pointers);
+      if (backtrace[i]._FrameOffset!=0 || backtrace[i]._InvocationHistoryFrameAddress!=0) {
+        core::T_mv args_closure = capture_arguments(backtrace[i]._FunctionStart,backtrace[i]._BasePointer,backtrace[i]._FrameOffset,args_as_pointers,backtrace[i]._InvocationHistoryFrameAddress);
         arguments = args_closure;
         closure = args_closure.second();
       }
@@ -2205,14 +2219,15 @@ void dbg_print_frame(FILE* fout, const std::vector<core::BacktraceEntry>& backtr
   fflush(fout);
   fprintf(fout,"(%s ", backtrace[idx]._SymbolName.c_str());
   fflush(fout);
-  if (printArgs&&backtrace[idx]._BasePointer!=0&&backtrace[idx]._FrameOffset!=0) {
+  if (printArgs&&((backtrace[idx]._BasePointer!=0&&backtrace[idx]._FrameOffset!=0)||backtrace[idx]._InvocationHistoryFrameAddress!=0)) {
+    uintptr_t invocationHistoryFrameAddress = backtrace[idx]._InvocationHistoryFrameAddress;
     // printf("%s:%s:%d Printing \n", __FILE__, __FUNCTION__, __LINE__);
-    core::T_sp closure((gctools::Tagged)core::get_raw_argument_from_stack(backtrace[idx]._FunctionStart,backtrace[idx]._BasePointer,backtrace[idx]._FrameOffset,0));
+    core::T_sp closure((gctools::Tagged)core::get_raw_argument_from_stack(backtrace[idx]._FunctionStart,backtrace[idx]._BasePointer,backtrace[idx]._FrameOffset,0,invocationHistoryFrameAddress));
     // printf("%s:%s:%d Printing \n", __FILE__, __FUNCTION__, __LINE__);
-    size_t nargs = core::get_raw_argument_from_stack(backtrace[idx]._FunctionStart,backtrace[idx]._BasePointer,backtrace[idx]._FrameOffset,1);
+    size_t nargs = core::get_raw_argument_from_stack(backtrace[idx]._FunctionStart,backtrace[idx]._BasePointer,backtrace[idx]._FrameOffset,1,invocationHistoryFrameAddress);
     for ( size_t i=0; i<nargs; ++i ) {
       // printf("%s:%s:%d Printing arg %lu of %lu\n", __FILE__, __FUNCTION__, __LINE__, i, nargs);
-      uintptr_t raw_arg = core::get_raw_argument_from_stack(backtrace[idx]._FunctionStart,backtrace[idx]._BasePointer,backtrace[idx]._FrameOffset,2+i);
+      uintptr_t raw_arg = core::get_raw_argument_from_stack(backtrace[idx]._FunctionStart,backtrace[idx]._BasePointer,backtrace[idx]._FrameOffset,2+i,invocationHistoryFrameAddress);
       fprintf(fout,"%s ", dbg_safe_repr(raw_arg).c_str());
     }
   } else {
@@ -2226,7 +2241,7 @@ void dbg_safe_backtrace() {
 //  gc::SafeGCPark park;
   std::vector<core::BacktraceEntry> backtrace;
   printf("Safe-backtrace\n");
-  core::fill_backtrace(backtrace,false);
+  core::fill_backtrace(backtrace);
   printf("Got %lu backtrace frames - dumping\n", backtrace.size());
   for ( size_t idx=2; idx<backtrace.size()-2; ++idx ) {
     dbg_print_frame(stdout,backtrace,idx,true);
@@ -2237,7 +2252,7 @@ void dbg_safe_backtrace_stderr() {
 //  gc::SafeGCPark park;
   std::vector<core::BacktraceEntry> backtrace;
   fprintf(stderr,"Safe-backtrace\n");
-  core::fill_backtrace(backtrace,false);
+  core::fill_backtrace(backtrace);
   fprintf(stderr,"Got %lu backtrace frames - dumping\n", backtrace.size());
   for ( size_t idx=2; idx<backtrace.size()-2; ++idx ) {
     dbg_print_frame(stderr,backtrace,idx,true);
@@ -2248,7 +2263,7 @@ void dbg_safe_backtrace_no_args() {
 //  gc::SafeGCPark park;
   std::vector<core::BacktraceEntry> backtrace;
   printf("Safe-backtrace\n");
-  core::fill_backtrace(backtrace,false);
+  core::fill_backtrace(backtrace);
   printf("Got backtrace frames - dumping\n");
   for ( size_t idx=0; idx<backtrace.size()-2; ++idx ) {
     dbg_print_frame(stdout,backtrace,idx,false);
@@ -2258,7 +2273,7 @@ void dbg_safe_lisp_backtrace() {
 //  gc::SafeGCPark park;
   std::vector<core::BacktraceEntry> backtrace;
   printf("Safe-backtrace\n");
-  core::fill_backtrace(backtrace,false);
+  core::fill_backtrace(backtrace);
   for ( size_t idx=0; idx<backtrace.size()-2; ++idx ) {
     if (backtrace[idx]._Stage == core::lispFrame) {
       dbg_print_frame(stdout,backtrace,idx,true);
