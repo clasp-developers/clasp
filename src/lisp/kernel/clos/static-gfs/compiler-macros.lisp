@@ -1,12 +1,7 @@
 (in-package #:static-gfs)
 
-(defun symbol< (symbol1 symbol2)
-  (or (string< (symbol-name symbol1) (symbol-name symbol2))
-      (string< (package-name (symbol-package symbol1))
-               (package-name (symbol-package symbol2)))))
-
 ;; Returns values:
-;; INITARGS, a sorted list of initargs.
+;; INITARGS, a list of initargs.
 ;; GENSYMS, a corresponding list of gensyms.
 ;; BINDINGS, a list of variable bindings.
 ;; VALIDP: if false, the above are invalid and give up.
@@ -29,18 +24,11 @@
                       into x
                   else return (values nil nil nil nil)
                   finally (return
-                            (let ((sorted
-                                    ;; Stable sort because if the same
-                                    ;; keyword is specified twice, we
-                                    ;; want the value forms to be in
-                                    ;; the right order for evaluation.
-                                    (stable-sort (copy-list x) #'symbol<
-                                                 :key #'first)))
-                              (values
-                               (mapcar #'first sorted)
-                               (mapcar #'second sorted)
-                               (mapcar #'cdr x)
-                               t))))
+                            (values
+                             (mapcar #'first x)
+                             (mapcar #'second x)
+                             (mapcar #'cdr x)
+                             t)))
             ;; odd list length
             (values nil nil nil nil)))
       ;; circular or dotted list

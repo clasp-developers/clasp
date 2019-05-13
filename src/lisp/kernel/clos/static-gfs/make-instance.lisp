@@ -7,11 +7,6 @@
                  #'standard-make-instance-form)))
         (methods (compute-applicable-methods #'make-instance (list class))))
     (if (can-static-effective-method-p methods patch-list)
-        ;; FIXME: Probably should reproduce the ACTUAL initargs list,
-        ;; i.e. without the sorting... it will only matter if a user
-        ;; method is doing something unusual, though.
-        ;; Actually, with the sorting we cannot reproduce the original.
-        ;; Hopefully it will be fine. If not, we just have a few more cells.
         (static-effective-method
          #'make-instance methods (list class keys params) patch-list
          (reconstruct-arguments keys params))
