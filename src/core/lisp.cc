@@ -476,6 +476,7 @@ CL_DEFUN std::string core__monitor_directory() {
 }
 
 void ensure_monitor_file_exists() {
+#ifdef DEBUG_MONITOR
   struct stat st = {0};
   std::string dir = core__monitor_directory();
   if (stat(dir.c_str(),&st) == -1 ) {
@@ -485,6 +486,7 @@ void ensure_monitor_file_exists() {
   ss << dir << "log.txt";
   _lisp->_Roots._LogStream.open(ss.str(), std::fstream::out);
   printf("%s:%d   Opening file %s for logging\n", __FILE__, __LINE__, ss.str().c_str());
+#endif
 }
   
 int global_pid = 0;
