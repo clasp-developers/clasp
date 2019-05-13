@@ -1,0 +1,9 @@
+#!/bin/bash
+
+PID=$1
+TIME=${2:-30s}
+RATE=${3:-97}
+FRAMES=${4:-4000}
+
+sudo rm -f /tmp/out-$PID.* && sudo perf record -p $PID -F $RATE -g -o /tmp/out-$PID.data -- sleep $TIME && sudo perf script -i /tmp/out-$PID.data > /tmp/out-$PID.perf
+
