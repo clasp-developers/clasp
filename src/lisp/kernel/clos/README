@@ -1,6 +1,6 @@
 Like most CLOS implementations, Clasp's goes through some weirdness to have things work correctly with the MOP. These conceptual notes are intended to aid reading of the code, because comments can't do it all.
 
-Of course, internals notes tend to not be updated, so it's possible the information here isn't accurate. It ought to be as of December 2018 (git commit hash ). Hopefully you're reading a file under version control, in which case you could try looking at the history of this directory to see if there have been any major changes since now.
+Of course, internals notes tend to not be updated, so it's possible the information here isn't accurate. It ought to be as of May 2019 (git commit hash 69f6eb7e6ffcbf45edbc13ad8baa66fd67b9ccc1). Hopefully you're reading a file under version control, in which case you could try looking at the history of this directory to see if there have been any major changes since now.
 
 Booting
 =======
@@ -94,7 +94,7 @@ Operation
 Dispatch/fastgf
 ---------------
 
-The code for fastgf is mainly in clos/closfastgf.lsp and cmp/cmpfastgf.lsp. The latter is separate and uses bclasp for bootstrap reasons- since cleavir itself uses CLOS, recompiling a generic function in cleavir with cleavir would have unfortunate results.
+The code for fastgf is mainly in closfastgf.lsp and cmpfastgf.lsp. The latter is separate and uses bclasp for bootstrap reasons- since cleavir itself uses CLOS, recompiling a generic function in cleavir with cleavir would have unfortunate results. (But see "Interpreter", below.)
 
 Basic dispatch technique is as follows. The discriminating function has a slow path and a fast path. We start with the fast path. The fast path is a discrimination tree, or "dtree". Each required argument position goes through a binary search based on its class stamp (a natural number each class has). Each leaf of the tree is an "outcome", which is an effective method function or something fancier that does the same thing (see below). If the search fails at any time, it goes to the slow path.
 
@@ -151,17 +151,17 @@ Those common effective methods are as follows:
 
 To do any optimization we essentially need the effective method form to consist of (call-method #<some-method> ...). This some-method is referred to as "the method" below.
 
-Effective methods consisting of a call to a standard slot reader or writer method are represented by cmp::optimized-slot-{reader,writer} instances. The outcome object contains the slot location along with some other things for debugging. It will be compiled into an inline instance reference, probably an inlined call to cc_dispatch_slot_something depending on whether it's a reader or writer and whether the location is an integer or a cons (i.e., :instance versus :class allocation). For the reader there is additionally a boundedness check. "standard slot reader or writer" means that there is no possibility of a slot-value-using-class or (setf slot-value-using-class) method imposing other behavior. Note that we have to use the direct classes of arguments for all of this, not just the classes the accessor methods are specialized on, because slot locations can change with ineritance.
+Effective methods consisting of a call to a standard slot reader or writer method are represented by optimized-slot-{reader,writer} instances. The outcome object contains the slot location along with some other things for debugging. It will be compiled into an inline instance reference, e.g. INSTANCE-REF which is specially compiled (i.e. not a function call). For the reader there is additionally a boundedness check. "standard slot reader or writer" means that there is no possibility of a slot-value-using-class or (setf slot-value-using-class) method imposing other behavior - see static-gfs/README and static-gfs/svuc.lisp for a potential way to optimize even when there is customization. Note that we have to use the direct classes of arguments for all of this, not just the classes the accessor methods are specialized on, because slot locations can change with ineritance.
 
-"Leaf" methods are recognized by the standard method on MAKE-METHOD-LAMBDA. The body is analyzed for use of call-next-method and next-method-p, and if they're not present the method is a leaf. If the method called in an effective method is a leaf, the method-function is just called as an effective method. The actual outcome structure is cmp::function-outcome.
+"Leaf" methods are recognized by the standard method on MAKE-METHOD-LAMBDA. The body is analyzed for use of call-next-method and next-method-p, and if they're not present the method is a leaf. If the method called in an effective method is a leaf, the method-function is just called as an effective method. The outcomes used are effective-method-outcomes.
 
-If a leaf method has all required arguments, and few enough that they can fit in registers (I'm working on abating this condition), the standard MAKE-METHOD-LAMBDA will additionally attach a "fast method function" to the method object. This is basically the method as a simple function, e.g. for (defmethod foo ((x integer)) (1+ x)) the fast method function is just (lambda (x) (1+ x)). This has the advantage of being called with just arguments, rather than a list of arguments and list of next-methods like a usual method-function. This is through the cmp::fast-method-call outcome.
+If a leaf method has all required arguments, and few enough that they can fit in registers (I'm working on abating this condition), the standard MAKE-METHOD-LAMBDA will additionally attach a "fast method function" to the method object. This is basically the method as a simple function, e.g. for (defmethod foo ((x integer)) (1+ x)) the fast method function is just (lambda (x) (1+ x)). This has the advantage of being called with just arguments, rather than a list of arguments and list of next-methods like a usual method-function. This is through the fast-method-call outcome.
 
-If there are no applicable methods, the outcome is not memoized (because it's probably just clutter). It is still computed, and consists of a cmp::function-outcome that just calls NO-APPLICABLE-METHOD as per the standard.
+If there are no applicable methods, the outcome is not memoized (because it's probably just clutter). It is still computed, and consists of a effective-method-outcome that just calls NO-APPLICABLE-METHOD as per the standard.
 
-If there is a lack of required methods - i.e. the method combination has some required method group, like PRIMARY in the standard combination, and it is found that no applicable methods are in this group - the outcome is memoized, just for lack of effort. It consists of a cmp::function-outcome that calls NO-REQUIRED-METHOD.
+If there is a lack of required methods - i.e. the method combination has some required method group, like PRIMARY in the standard combination, and it is found that no applicable methods are in this group - the outcome is memoized, just for lack of effort. It consists of a effective-method-outcome that calls NO-REQUIRED-METHOD.
 
-The general case of an effective method that doesn't fit any of the above is represented by an cmp::effective-method-outcome. The object contains an effective method function and a list of applicable methods. The applicable methods slot is used so that if two call history entries have the same applicable methods, they can use the same effective method outcome, thus saving a bit of time and space. This can also make the dispatch tree more compact - if stamps 347-350 result in the same outcome, we can just test (<= 347 stamp 350) instead of doing four (= ...) tests.
+The general case of an effective method that doesn't fit any of the above is represented by an effective-method-outcome. The object contains an effective method function and a list of applicable methods. The applicable methods slot is used so that if two call history entries have the same applicable methods, they can use the same effective method outcome, thus saving a bit of time and space. This can also make the dispatch tree more compact - if stamps 347-350 result in the same outcome, we can just test (<= 347 stamp 350) instead of doing four (= ...) tests.
 
 Note that this caching relies on the assumpion that COMPUTE-EFFECTIVE-METHOD is basically well behaved, in that if called with EQUAL method lists (and no redefinitions of the gf, etc. inbetween) it will return morally identical results. Note when I say "morally", it's because an effective method is a behavior, and the intuitive equivalence relation of behaviors is uncomputable. So if a programmer defines a COMPUTE-EFFECTIVE-METHOD method that use randomness or depend on the time of day or whatnot, fastgf won't pick it up. Given how often COMPUTE-EFFECTIVE-METHOD is specialized at all, let alone in such a pathological way, I think this is a reasonable condition to impose. We should document this better, though (FIXME).
 
@@ -190,6 +190,18 @@ As a bonus, if you have a literal (CLOS:SATIATE ...) form, a compiler macro will
 
 As a further extension that I'm still working on, the source of the discriminating function will appear in the compiler macroexpansion of CLOS:SATIATE, so that it isn't computed at load time at all. This requires coordination between the compiler and loader, because the stamp numbers have to appear literally in the code, meaning they have to be the same at compile-time and load-time. This may not be practical for non-internal code.
 
+Interpreter
+-----------
+
+Another way of fighting the compiler is the "dtree interpreter". This is a C++ function living in funcallableInstance.cc that can serve as as funcallable instance function. It uses the same call history, outcomes, etc. as the fastgf algorithms described above, but it interprets the dtree rather than compiling a new discriminator when necessary. This can save time as compilation is avoided, at the expense of the discrimination itself being rather slower. By default, we use the interpreter for functions until an arbitrary number (1024 at the moment) of calls are performed, at which point the compiler comes into play.
+
+An interesting consequence of having the interpreter is that we could use the cleavir compiler for compiling discriminating functions. What we'd do is, when we hit a dispatch-miss, first put the interpreter into place, then compile the new discriminator. If the compilation recursively calls the function we're trying to compile a discriminator for, it will just use the interpreter and there will be no problem.
+
+Static GFs (make-instance "ctors")
+----------------------------------
+
+See static-gfs/README.
+
 Modification
 ============
 
@@ -208,4 +220,3 @@ It should basically work. There are a few conformance issues though, especially 
 
  * As mentioned, we let illegal modifications to standard functionality go through with nary a peep.
  * Method functions take a va-list rather than a list. Custom methods could run into problems there.
- * Infinitely many optimizations, including caching at make-instance call sites ("ctors"), which i have also implemented before being stymied by the build system.

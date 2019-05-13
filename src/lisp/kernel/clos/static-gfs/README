@@ -1,0 +1,52 @@
+The files in this directory implement a system for optimizing "static generic function" calls. These are calls to generic functions with constant arguments, so that the effective method invoked is known to the compiler. This gives an opportunity to skip discrimination, but more importantly (since discrimination itself is usually pretty quick), somewhat optimize the actual method invoked.
+
+The basic idea of the optimization is to rewrite each call site (e.g. `(make-instance 'foo :bar 17)`) as a call to a `load-time-value`'d closure cell. This closure is optimized for the particular form of the call site, including the constant arguments. If there is a change to the system (e.g. new methods being defined for the function), the cell will be updated for the new behavior. This optimization is therefore invisible to the user except in terms of speed.
+
+This is heavily based on SBCL's CTOR mechanism, which does the same thing. This basis is only in the idea - this code is not based on PCL, because I cannot make heads or tails of PCL.
+
+make-instance
+-------------
+
+In standard Lisp, the only functions of this sort are `make-instance` and `allocate-instance`. `make-instance` is the main target of this implementation at the moment, because large parts of its action can be optimized greatly in this case:
+
+ * Keywords can be checked and defaulted ahead of time, rather than going through the whole 7.1.2 and 7.1.3 processes.
+ * The class is known, so we don't have to call `allocate-instance` either.
+ * The effective slots and their initargs are available ahead of time. Rather than looping over slots and initargs, as in the runtime version, slots can be set one at a time in whatever order we like.
+
+This adds up to `(make-instance 'foo ...)` with no custom methods or slot definition classes comprising
+
+ 1. One function call of the cell closure.
+ 2. One call to `core:allocate-new-(funcallable-)instance`.
+ 3. Several inline `instance-set`s and such to set the slots.
+
+Pretty fast. In informal tests it can be ~10 times faster than having no optimization.
+
+If there _are_ methods on `make-instance`, `initialize-instance`, or `shared-initialize`, the closure will reconstruct a list of arguments and call the method functions directly at the appropriate times - that is, unless there's an `:around` or primary method, in which case it has to give up (as they could change arguments in unknown ways) and call the regular methods. It's still faster most of the time.
+
+Satiation
+---------
+
+Similar to fastgf, our wild use of the compiler at runtime can be unfortunate at times. There are some semi-preliminary mechanisms to abate this by compiling the closures ahead of time (i.e. at `compile-file`/system build time). Basically you just do `(precompile-constructor class-name keys)` - like, for `(make-instance 'foo :bar bar)` you'd have `(precompile-constructor foo (:bar))`, and then bam, constructor in the fasl.
+
+Laziness
+--------
+
+The system works lazily, in that it does not build an optimized cell until it actually has to, i.e. `make-instance` is called. This is so that you don't get a lot of runtime compilations as you load class definitions, but does mean the first time you call `make-instance` will be way slower as the compiler is invoked.
+
+Cells
+-----
+
+The optimized closure cells, or constructor cells, are funcallable instances, which saves doing `read-cell` of some kind, but also means you can't grab the function easily. Oh well.
+
+CLOS implementation integration
+-------------------------------
+
+This optimization is unfortunately not portable, and hooks into Clasp's CLOS implementation. These hooks are marked with `#+static-gfs` conditionalization. There's one on `(setf find-class)` and one in the inheritance finalizer.
+
+Future
+------
+
+ * Do something similar for `allocate-instance` so custom metaclasses can be allocated almost as quickly as standard ones.
+ * Do something similar for `slot-value-using-class` so instances of custom metaclasses can be set and read more quickly.
+   See comments in svuc.lisp.
+ * Track more class information at compile time so the satiater can be nicer.
