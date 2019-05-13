@@ -1029,10 +1029,14 @@ CL_DEFUN T_mv core__progv_function(List_sp symbols, List_sp values, Function_sp 
   int index = 0;
   for (auto curSym : symbols) {
     if (index < lengthValues) {
-    Symbol_sp symbol = gc::As<Symbol_sp>(oCar(curSym));
-    T_sp value = oCar(values);
-    manager.pushSpecialVariableAndSet(symbol, value);
-    values = oCdr(values);
+      Symbol_sp symbol = gc::As<Symbol_sp>(oCar(curSym));
+      T_sp value = oCar(values);
+      manager.pushSpecialVariableAndSet(symbol, value);
+      values = oCdr(values);
+    } else {
+      // Makunbound the symbol but only within the scope of this progv
+      Symbol_sp symbol = gc::As<Symbol_sp>(oCar(curSym));
+      manager.pushSpecialVariableAndSet(symbol, _Unbound<T_O>());
     }
     index++;
   }
