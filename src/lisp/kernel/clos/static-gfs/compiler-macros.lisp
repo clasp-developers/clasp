@@ -46,8 +46,6 @@
       ;; circular or dotted list
       (values nil nil nil nil)))
 
-(defun create-instance (class &rest initargs) (apply #'make-instance class initargs))
-
 (define-compiler-macro make-instance
     (&whole form class-designatorf &rest initargs &environment env)
   (let ((class-designator
