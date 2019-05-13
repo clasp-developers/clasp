@@ -105,8 +105,6 @@
      ,@'((primitive         "ltvc_lookup_literal" %t*% (list %gcroots-in-module*% %size_t%))
          (primitive         "ltvc_lookup_transient" %t*% (list %gcroots-in-module*% %i8% %size_t%))
          (primitive         "isTrue" %i32% (list %t*%))
-         (primitive         "isBound" %i32% (list %t*%))
-         (primitive         "valueOrNilIfZero" %t*% (list %return_type%))
     
          (primitive         "makeCompiledFunction" %t*% (list %fn-prototype*% ; funcPtr
                                                          %i8*% ; function-description
@@ -234,7 +232,6 @@
          (primitive         "cc_readCell" %t*% (list %t*%))
          (primitive         "cc_t_reference" %t**% nil)
          (primitive         "cc_nil_reference" %t**% nil)
-         (primitive         "cc_builtin_nil" %t*% nil)
          (primitive         "cc_fetch" %t*% (list %t*% %size_t%))
          ;;    (primitive         "cc_va_arg" %t*% (list %vaslist*%))
          ;;    (primitive         "cc_va_list_length" %size_t% (list %vaslist*%))
@@ -276,8 +273,6 @@
          (primitive         "cc_unsafe_symbol_value" %t*% (list %t*%))
          (primitive         "cc_setSymbolValue" %void% (list %t*% %t*%))
 
-         (primitive         "cc_setup_vaslist" %t*% (list %vaslist*% %va_list*% %size_t%))
-         (primitive         "cc_setup_vaslist_internal" %t*% (list %vaslist*% %size_t%))
          (primitive         "cx_vaslist_pop" %t*% (list %t*%))
          (primitive         "cc_rewind_va_list" %void% (list %va_list*% %register-save-area*%))
          (primitive         "cc_rewind_vaslist" %t*% (list %vaslist*% %va_list*% %register-save-area*%))

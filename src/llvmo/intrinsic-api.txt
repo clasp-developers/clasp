@@ -7,7 +7,6 @@ _resetTmv
 _copyTmvOrSlice
 _isNilTsp
 _isTrue
-_isBound
 _internSymbol_tsp
 _makeSymbol_tsp
 _internSymbol_symsp

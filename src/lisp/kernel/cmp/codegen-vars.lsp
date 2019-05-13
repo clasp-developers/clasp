@@ -663,50 +663,6 @@ Use cases:
      (define-binding-in-value-environment* ,env ,target)
      ))
 
-(defmacro with-target-reference-no-bind-do ((target-ref target env) &rest body)
-  "This function generates code to write val into target
-\(special-->Symbol value slot or lexical-->ActivationFrame) at run-time.
-Use cases:
-- generate code to copy a value into the target-ref
-\(with-target-reference-do (target-ref target env)
-  (irc-intrinsic \"copyTsp\" target-ref val))
-- compile arbitrary code that writes result into the target-ref
-\(with-target-reference-do (target-ref target env)
-  (codegen target-ref form env))"
-  `(progn
-     (let ((,target-ref (compile-target-reference* ,env ,target)))
-       ,@body)
-     ;; Add the target to the ValueEnvironment AFTER storing it in the target reference
-     ;; otherwise the target may shadow a variable in the lexical environment
-;;     (define-binding-in-value-environment* ,env ,target)
-     ))
-
-
-
-(defmacro with-target-reference-if-runtime-unbound-do ((target-ref target env) &rest body)
-  "Generate code that does everything with-target-reference-do does
-but tests if the value in target-ref is unbound and if it is only-then evaluate body which
-will put a value into target-ref."
-  (let ((i1-target-is-bound-gs (gensym))
-	(unbound-do-block-gs (gensym))
-	(unbound-cont-block-gs (gensym)))
-    `(progn
-       (with-target-reference-do (,target-ref ,target ,env)
-	 (let ((,i1-target-is-bound-gs (irc-trunc (irc-intrinsic "isBound" (irc-load ,target-ref)) %i1%))
-	       (,unbound-do-block-gs (irc-basic-block-create "unbound-do"))
-	       (,unbound-cont-block-gs (irc-basic-block-create "unbound-cont"))
-	       )
-	   (irc-cond-br ,i1-target-is-bound-gs ,unbound-cont-block-gs ,unbound-do-block-gs)
-	   (irc-begin-block ,unbound-do-block-gs)
-	   ,@body
-	   (irc-br ,unbound-cont-block-gs)
-	   (irc-begin-block ,unbound-cont-block-gs)
-	   ))
-       ;; Add the target to the ValueEnvironment AFTER storing it in the target reference
-       ;; otherwise the target may shadow a variable in the lexical environment
-       (define-binding-in-value-environment* ,env ,target)
-       )))
-
 (defun compile-target-reference* (env target)
   "This function determines if target is special or lexical and generates
 code to get the reference to the target.
