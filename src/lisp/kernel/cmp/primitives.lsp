@@ -216,8 +216,6 @@
     
          ;; Primitives for Cleavir code
 
-         (primitive         "cc_eql" %i32% (list %t*% %t*%)) ;; eql test
-         (primitive-unwinds "cc_bad_tag" %void% (list %t*%)) ;; gf
          (primitive-unwinds "cc_bound_or_error" %t*% (list %t*% %t*% %t*%)) ; optimized-data instance value
          (primitive         "cc_vaslist_end" %void% (list %t*%))
 
@@ -225,17 +223,10 @@
          (primitive         "cc_ensure_valid_object" %t*% (list %t*%))
          (primitive         "cc_getPointer" %i8*% (list %t*%))
          (primitive         "cc_setTmvToNil" %void% (list %tmv*%))
-         (primitive         "cc_precalcSymbol" %t*% (list %ltv**% %size_t%))
-         (primitive         "cc_precalcValue" %t*% (list %ltv**% %size_t%))
          (primitive-unwinds "cc_makeCell" %t*% nil)
          (primitive         "cc_writeCell" %void% (list %t*% %t*%))
          (primitive         "cc_readCell" %t*% (list %t*%))
-         (primitive         "cc_t_reference" %t**% nil)
-         (primitive         "cc_nil_reference" %t**% nil)
          (primitive         "cc_fetch" %t*% (list %t*% %size_t%))
-         ;;    (primitive         "cc_va_arg" %t*% (list %vaslist*%))
-         ;;    (primitive         "cc_va_list_length" %size_t% (list %vaslist*%))
-         (primitive         "cc_copy_va_list" %void% (list %size_t% %t*[0]*% %vaslist*%))
          (primitive         "cc_realArrayDisplacement" %t*% (list %t*%))
          (primitive         "cc_realArrayDisplacedIndexOffset" %size_t% (list %t*%))
          (primitive         "cc_arrayTotalSize" %size_t% (list %t*%))
@@ -270,7 +261,6 @@
          (primitive         "cc_fdefinition" %t*% (list %t*%))
          (primitive         "cc_setfdefinition" %t*% (list %t*%))
          (primitive-unwinds "cc_safe_symbol_value" %t*% (list %t*%))
-         (primitive         "cc_unsafe_symbol_value" %t*% (list %t*%))
          (primitive         "cc_setSymbolValue" %void% (list %t*% %t*%))
 
          (primitive         "cx_vaslist_pop" %t*% (list %t*%))
@@ -278,14 +268,6 @@
          (primitive         "cc_rewind_vaslist" %t*% (list %vaslist*% %va_list*% %register-save-area*%))
          (primitive-unwinds "cc_call_multipleValueOneFormCall" %return_type% (list %t*%))
          (primitive-unwinds "cc_call_multipleValueOneFormCallWithRet0" %return_type% (list %t*% %return_type%))
-         (primitive-unwinds "cc_call"   %return_type% (list* %t*% %size_t%
-                                                       (make-list core:+number-of-fixed-arguments+
-                                                        :initial-element %t*%))
-          :varargs t)
-         (primitive-unwinds "cc_call_callback"   %return_type% (list* %t*% %size_t%
-                                                                (make-list core:+number-of-fixed-arguments+
-                                                                 :initial-element %t*%))
-          :varargs t)
          (primitive-unwinds "cc_oddKeywordException" %void% (list %function-description*%))
          (primitive         "cc_multipleValuesArrayAddress" %t*[0]*% nil)
          (primitive-unwinds "cc_unwind" %void% (list %t*% %size_t%))

@@ -102,14 +102,6 @@ ALWAYS_INLINE core::T_O** functionFrameReference(core::T_O* frameP, int idx) {
   return &cell.rawRef_();
 }
 
-ALWAYS_INLINE extern int compareTspTptr(core::T_sp *xP, core::T_O *yP)
-{NO_UNWIND_BEGIN();
-  return ((*xP).raw_() == (yP)) ? 1 : 0;
-  NO_UNWIND_END();
-}
-
-
-
 ALWAYS_INLINE core::T_O** symbolValueReference(core::T_O *symbolP)
 {
   core::Symbol_sp sym((gctools::Tagged)symbolP);
@@ -126,65 +118,9 @@ ALWAYS_INLINE core::T_O* symbolValueRead(const core::T_O* tsymP) {
 
 extern "C" {
 
-ALWAYS_INLINE T_O** cc_t_reference()
-{NO_UNWIND_BEGIN();
-  return &_lisp->_true().rawRef_();
-  NO_UNWIND_END();
-}
-
-ALWAYS_INLINE T_O** cc_nil_reference()
-{NO_UNWIND_BEGIN();
-  return &_Nil<core::T_O>().rawRef_();
-  NO_UNWIND_END();
-}
-
 ALWAYS_INLINE core::T_O* cc_ensure_valid_object(core::T_O* tagged_object)
 {NO_UNWIND_BEGIN();
   return ensure_valid_object(tagged_object);
-  NO_UNWIND_END();
-}
-
-
-ALWAYS_INLINE T_O *cc_precalcSymbol(core::LoadTimeValues_O **tarray, size_t idx)
-{NO_UNWIND_BEGIN();
-  core::LoadTimeValues_O *tagged_ltvP = *tarray;
-  core::LoadTimeValues_O *array = gctools::untag_general<core::LoadTimeValues_O *>(tagged_ltvP);
-#ifdef DEBUG_CC
-  printf("%s:%d precalcSymbol idx[%zu] symbol = %p\n", __FILE__, __LINE__, idx, (*array).symbols_element(idx).px);
-#endif
-  T_O *res = (*array)[idx].raw_();
-  ASSERT(res != NULL);
-  return res;
-  NO_UNWIND_END();
-}
-
-
-ALWAYS_INLINE T_O *cc_precalcValue(core::LoadTimeValues_O **tarray, size_t idx)
-{NO_UNWIND_BEGIN();
-  core::LoadTimeValues_O *tagged_ltvP = *tarray;
-  core::LoadTimeValues_O *array = gctools::untag_general<core::LoadTimeValues_O *>(tagged_ltvP);
-#ifdef DEBUG_CC
-  printf("%s:%d precalcValue idx[%zu] value = %p\n", __FILE__, __LINE__, idx, (*array).data_element(idx).px);
-#endif
-  T_O *res = (*array)[idx].raw_();
-  return res;
-  NO_UNWIND_END();
-}
-
-ALWAYS_INLINE void cc_copy_va_list(size_t nargs, T_O **mvPtr, Vaslist *va_args)
-{NO_UNWIND_BEGIN();
-  Vaslist *vl = reinterpret_cast<Vaslist *>(gc::untag_vaslist((void *)va_args));
-  for (int i = LCC_FIXED_ARGS; i < nargs; ++i) {
-    mvPtr[i] = va_arg(vl->_Args, core::T_O *);
-  }
-  va_end(vl->_Args);
-  NO_UNWIND_END();
-}
-
-ALWAYS_INLINE T_O *cc_unsafe_symbol_value(core::T_O *sym)
-{NO_UNWIND_BEGIN();
-  core::Symbol_O *symP = reinterpret_cast<core::Symbol_O *>(gctools::untag_general<core::T_O *>(sym));
-  return symP->symbolValueRef().raw_();
   NO_UNWIND_END();
 }
 
@@ -209,32 +145,6 @@ ALWAYS_INLINE T_O *cc_setfdefinition(core::T_O *sym)
   core::Symbol_O *symP = reinterpret_cast<core::Symbol_O *>(gctools::untag_general<core::T_O *>(sym));
   return symP->_SetfFunction.raw_();
   NO_UNWIND_END();
-}
-
-ALWAYS_INLINE gc::return_type cc_call(LCC_ARGS_CC_CALL_ELLIPSIS) {
-  //	core::Function_O* func = gctools::DynamicCast<core::Function_O*,core::T_O*>::castOrNULL(tfunc);
-  core::Closure_O *tagged_closure = reinterpret_cast<core::Closure_O *>(lcc_closure);
-  core::Closure_O* closure = gc::untag_general<core::Closure_O *>(tagged_closure);
-#ifdef ENABLE_BACKTRACE_ARGS
-  Vaslist lcc_arglist_s;
-  va_start(lcc_arglist_s._Args, LCC_VA_START_ARG);
-  LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST(lcc_arglist_s);
-#endif
-  core::T_O *lcc_arglist = lcc_arglist_s.asTaggedPtr();
-  return closure->entry.load()(LCC_PASS_ARGS);
-}
-
-ALWAYS_INLINE gc::return_type cc_call_callback(LCC_ARGS_CC_CALL_ELLIPSIS) {
-  //	core::Function_O* func = gctools::DynamicCast<core::Function_O*,core::T_O*>::castOrNULL(tfunc);
-  auto closure = reinterpret_cast<CompiledClosure_fptr_type>(lcc_closure);
-  Vaslist lcc_arglist_s;
-  va_start(lcc_arglist_s._Args, LCC_VA_START_ARG);
-#ifdef ENABLE_BACKTRACE_ARGS
-  LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST(lcc_arglist_s);
-#endif
-  core::T_O *lcc_arglist = lcc_arglist_s.asTaggedPtr();
-  lcc_closure = NULL;
-  return closure(LCC_PASS_ARGS);
 }
 
 ALWAYS_INLINE core::T_O *cc_gatherVaRestArguments(va_list vargs, std::size_t nargs, Vaslist untagged_vargs_rest[2])
@@ -403,34 +313,6 @@ ALWAYS_INLINE core::T_O *cc_stack_enclose(void* closure_address,
   return functoid.raw_();
   NO_UNWIND_END();
 }
-
-// Used by fastgf, and not in implementing cl:eql.
-int cc_eql(core::T_O* x, core::T_O* y)
-{NO_UNWIND_BEGIN();
-  // The eql part of the test only eq part was handled by caller
-  T_sp tx((gctools::Tagged)x);
-  T_sp ty((gctools::Tagged)y);
-  // single floats could hypothetically not be eq, if their (otherwise ignored)
-  // high bits are distinct.
-  if (tx.single_floatp()) {
-    if (ty.single_floatp()) {
-      if (tx.unsafe_single_float()==ty.unsafe_single_float()) return 1;
-      else return 0;
-    }
-  } else if (tx.generalp()) {
-    if (ty.generalp()) {
-      return tx.unsafe_general()->equal(ty) ? 1 : 0;
-    }
-  }
-  return 0;
-  NO_UNWIND_END();
-};
-
-void cc_bad_tag(core::T_O* gf)
-{
-  printf("%s:%d  A bad tag was encountered - aborting\n", __FILE__, __LINE__ );
-  abort();
-};
 
 
 };
