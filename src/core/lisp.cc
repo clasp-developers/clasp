@@ -31,7 +31,9 @@ THE SOFTWARE.
 #include <sys/wait.h>
 #include <stdlib.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <unistd.h>
+
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Warray-bounds"
 #pragma GCC diagnostic ignored "-Wunused-variable"
@@ -441,19 +443,6 @@ Lisp_sp Lisp_O::createLispEnvironment(bool mpiEnabled, int mpiRank, int mpiSize)
   return _lisp;
 }
 
-#ifdef DEBUG_MONITOR
-void monitor_message(const std::string& msg)
-{
-#ifdef CLASP_THREADS
-  _lisp->_Roots._LogMutex.lock();
-#endif
-  _lisp->_Roots._LogStream << msg;
-  _lisp->_Roots._LogStream.flush();
-#ifdef CLASP_THREADS
-  _lisp->_Roots._LogMutex.unlock();
-#endif
-}
-#endif
 void Lisp_O::setupMpi(bool mpiEnabled, int mpiRank, int mpiSize) {
   this->_Roots._MpiEnabled = mpiEnabled;
   this->_Roots._MpiRank = mpiRank;
@@ -480,15 +469,47 @@ void testStrings() {
   //        printf("%s:%d  string = %s\n", __FILE__, __LINE__, str->c_str() );
 }
 
-void Lisp_O::startupLispEnvironment(Bundle *bundle) {
-#ifdef DEBUG_MONITOR
-  {
-    stringstream ss;
-    ss << "/tmp/clasp-log-" << getpid();
-    this->_Roots._LogStream.open(ss.str(), std::fstream::out);
-    printf("%s:%d   Opening file %s for logging\n", __FILE__, __LINE__, ss.str().c_str());
+CL_DEFUN std::string core__monitor_directory() {
+  stringstream ss;
+  ss << "/tmp/clasp-log-" << getpid() << "/";
+  return ss.str();
+}
+
+void ensure_monitor_file_exists() {
+  struct stat st = {0};
+  std::string dir = core__monitor_directory();
+  if (stat(dir.c_str(),&st) == -1 ) {
+    mkdir(dir.c_str(),0700);
   }
+  stringstream ss;
+  ss << dir << "log.txt";
+  _lisp->_Roots._LogStream.open(ss.str(), std::fstream::out);
+  printf("%s:%d   Opening file %s for logging\n", __FILE__, __LINE__, ss.str().c_str());
+}
+  
+int global_pid = 0;
+void monitor_message(const std::string& msg)
+{
+#ifdef DEBUG_MONITOR
+  _lisp->_Roots._LogMutex.lock();
+  if (getpid()!=global_pid) {
+    ensure_monitor_file_exists();
+    _lisp->_Roots._LogStream << "Forked from process " << global_pid << "\n";
+    global_pid = getpid();
+  }
+  _lisp->_Roots._LogStream << msg;
+  _lisp->_Roots._LogStream.flush();
+  _lisp->_Roots._LogMutex.unlock();
 #endif
+}
+
+
+CL_DEFUN void core__monitor_message(const std::string& msg) {
+  monitor_message(msg);
+}
+
+
+void Lisp_O::startupLispEnvironment(Bundle *bundle) {
   global_dump_functions = getenv("CLASP_DUMP_FUNCTIONS");
   char* pause_startup = getenv("CLASP_PAUSE_STARTUP");
   if (pause_startup) {
