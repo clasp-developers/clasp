@@ -431,7 +431,11 @@ when this is t a lot of graphs will be generated.")
   ;; required by most of the below
   (cleavir-hir-transformations:process-captured-variables init-instr)
   (setf *ct-process-captured-variables* (compiler-timer-elapsed))
-  (quick-draw-hir init-instr "hir-after-pcv") 
+  (quick-draw-hir init-instr "hir-after-pcv")
+  #+cst
+  (cleavir-partial-inlining:do-inlining init-instr t)
+  #+cst
+  (quick-draw-hir init-instr "hir-after-inlining-post-pcv")
   (clasp-cleavir:optimize-stack-enclose init-instr) ; see FIXME at definition
   (setf *ct-optimize-stack-enclose* (compiler-timer-elapsed))
   (cleavir-kildall-type-inference:thes->typeqs init-instr clasp-cleavir:*clasp-env*)
