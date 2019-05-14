@@ -329,9 +329,10 @@ CL_DEFUN core::T_sp mp__process_name(Process_sp p) {
   return p->_Name;
 }
 
+CL_LAMBDA(&optional (process mp:*current-process*));
 CL_DEFUN core::T_sp mp__thread_id(Process_sp p) {
   auto tid = p->_ThreadInfo->_Tid;
-  return core::Pointer_O::create((void*)tid);
+  return core::Integer_O::create((uintptr_t)tid);
 }
 
 
