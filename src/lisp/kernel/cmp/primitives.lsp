@@ -162,7 +162,6 @@
     
          (primitive-unwinds "va_tooManyArgumentsException" %void% (list %i8*% %size_t% %size_t%))
          (primitive-unwinds "va_notEnoughArgumentsException" %void% (list %i8*% %size_t% %size_t%))
-         (primitive-unwinds "va_ifExcessKeywordArgumentsException" %void% (list %i8*% %size_t% %va_list*% %size_t%))
          (primitive-unwinds "cc_symbol_function" %t*% (list %t*%))
          (primitive         "va_lexicalFunction" %t*% (list %size_t% %size_t% %t*%))
     
@@ -179,8 +178,7 @@
     
          (primitive-unwinds "throwReturnFrom" %void% (list %size_t% %t*%) :does-not-return t)
          (primitive-unwinds "throwDynamicGo" %void% (list %size_t% %size_t% %t*%) :does-not-return t)
-    
-         (primitive         "exceptionStackUnwind" %void% (list %size_t%))
+
          (primitive         "ignore_exceptionStackUnwind" %void% nil)
          (primitive-unwinds "blockHandleReturnFrom_or_rethrow" %return_type% (list %i8*% %t*%))
          (primitive-unwinds "ignore_blockHandleReturnFrom_or_rethrow" %return_type% (list %i8*% %t*%))
@@ -222,7 +220,6 @@
          (primitive-unwinds "cc_check_if_wrong_number_of_arguments" %void% (list %size_t% %size_t% %size_t% %function-description*%))
          (primitive         "cc_ensure_valid_object" %t*% (list %t*%))
          (primitive         "cc_getPointer" %i8*% (list %t*%))
-         (primitive         "cc_setTmvToNil" %void% (list %tmv*%))
          (primitive-unwinds "cc_makeCell" %t*% nil)
          (primitive         "cc_writeCell" %void% (list %t*% %t*%))
          (primitive         "cc_readCell" %t*% (list %t*%))
@@ -256,8 +253,6 @@
                                                      %fn-prototype*%
                                                      %i8*%
                                                      %size_t% ) :varargs t)
-         (primitive         "cc_saveThreadLocalMultipleValues" %void% (list %tmv*% %mv-struct*%))
-         (primitive         "cc_loadThreadLocalMultipleValues" %void% (list %tmv*% %mv-struct*%))
          (primitive         "cc_fdefinition" %t*% (list %t*%))
          (primitive         "cc_setfdefinition" %t*% (list %t*%))
          (primitive-unwinds "cc_safe_symbol_value" %t*% (list %t*%))

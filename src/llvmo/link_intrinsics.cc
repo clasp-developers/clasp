@@ -131,12 +131,6 @@ core::T_sp functionNameOrNilFromFunctionDescription(core::FunctionDescription* f
     {
       SIMPLE_ERROR(BF("The object with pointer %p is not a cell") % arg0.raw_());
     }
-  case slot_reader_problem: {
-    SIMPLE_ERROR(BF("TRAPPED SLOT READER PROBLEM!!!   The slot accessor efm returned %s and the direct slot read at %d returned %s") % _rep_(arg0) % _rep_(arg1) % _rep_(arg2));
-  }
-  case slot_writer_problem: {
-    SIMPLE_ERROR(BF("TRAPPED SLOT WRITER PROBLEM!!!   The expected slot at %d value %s was unchanged!  The value should be %s") % _rep_(arg0) % _rep_(arg1) % _rep_(arg2) );
-  }
   default:
       SIMPLE_ERROR(BF("An intrinsicError %d was signaled and there needs to be a more descriptive error message for it in gctools::intrinsic_error arg0: %s arg1: %s arg2: %s") % err % _rep_(arg0) % _rep_(arg1) % _rep_(arg2));
   };
@@ -585,23 +579,6 @@ NOINLINE void va_notEnoughArgumentsException(const char *funcName, std::size_t g
   SIMPLE_ERROR(BF("Too few arguments for %s - got %d and expected %d") % funcName % givenNumberOfArguments % requiredNumberOfArguments);
 }
 
-NOINLINE extern void va_ifExcessKeywordArgumentsException(char *fnName, std::size_t nargs, Vaslist *varglist, size_t argIdx) {
-  if (argIdx >= nargs)
-    return;
-  Vaslist *vl = reinterpret_cast<Vaslist *>(gc::untag_vaslist((void *)varglist));
-  va_list vrest;
-  va_copy(vrest, vl->_Args);
-  stringstream ss;
-  for (int i(argIdx); i < nargs; ++i) {
-    T_sp obj(va_arg(vrest, T_O *));
-    ss << _rep_(obj).c_str() << " ";
-  }
-  SIMPLE_ERROR(BF("va_ifExcessKeywordArgumentsException>> Excess keyword arguments fnName: %s nargs: %d argIdx: %d  args: %s") % fnName % nargs % argIdx % ss.str());
-  //        core::throwUnrecognizedKeywordArgumentError(argArray[argIdx]);
-}
-
-
-
 ALWAYS_INLINE T_O *va_lexicalFunction(size_t depth, size_t index, core::T_O* evaluateFrameP)
 {NO_UNWIND_BEGIN();
   core::ActivationFrame_sp af((gctools::Tagged)evaluateFrameP);
@@ -667,22 +644,6 @@ void cc_ifBadKeywordArgumentException(core::T_O *allowOtherKeys, core::T_O *kw,
     badKeywordArgumentError(core::T_sp((gc::Tagged)kw), functionDescription);
 }
 
-extern void mv_copyTmv(core::T_mv *destP, core::T_mv *sourceP)
-{NO_UNWIND_BEGIN();
-  ASSERT(sourceP != NULL);
-  ASSERT(destP != NULL);
-  *destP = *sourceP;
-  NO_UNWIND_END();
-}
-
-/* This function slices a T_mv down to a T_sp */
-extern void sp_copyTmv(core::T_sp *destP, core::T_mv *sourceP)
-{NO_UNWIND_BEGIN();
-  ASSERT(sourceP != NULL);
-  ASSERT(destP != NULL);
-  *destP = *sourceP;
-  NO_UNWIND_END();
-}
 };
 
 extern "C" {
@@ -707,46 +668,6 @@ DONT_OPTIMIZE_WHEN_DEBUG_RELEASE core::T_O* makeCompiledFunction(fnLispCallingCo
 };
 
 extern "C" {
-#if 0
-void invokeTopLevelFunction(core::T_mv *resultP,
-                            fnLispCallingConvention fptr,
-                            char *cpname,
-                            int *sourceFileInfoHandleP,
-                            size_t filePos,
-                            size_t lineno,
-                            size_t column,
-                            core::LoadTimeValues_O **ltvPP) {
-  ASSERT(ltvPP != NULL);
-  core::SimpleBaseString_sp name = core::SimpleBaseString_O::make(cpname);
-  Closure_sp tc = Closure_O::create(fptr,name, kw::_sym_function, *sourceFileInfoHandleP, filePos, lineno, column);
-#define TIME_TOP_LEVEL_FUNCTIONS
-#ifdef TIME_TOP_LEVEL_FUNCTIONS
-  core::Number_sp startTime;
-  if (core::_sym_STARdebugStartupSTAR->symbolValue().notnilp()) {
-    startTime = gc::As<core::Number_sp>(core::cl__get_internal_real_time());
-  }
-#endif
-  // Evaluate the function
-  MAKE_STACK_FRAME( onearg, tc.raw_(), 1);
-  (*onearg)[0] = *ltvPP; // Leave the tag on
-  core::Vaslist onearg_valist_s(onearg);
-  LCC_SPILL_CLOSURE_TO_VA_LIST(onearg_valist_s,tc.raw_());
-  core::InvocationHistoryFrame invFrame(onearg_valist_s._Args,onearg_valist_s.remaining_nargs());
-  *resultP = fptr(LCC_PASS_ARGS0_VA_LIST(tc.raw_()));
-#ifdef TIME_TOP_LEVEL_FUNCTIONS
-  if (core::_sym_STARdebugStartupSTAR->symbolValue().notnilp()) {
-    core::Number_sp endTime = gc::As<core::Number_sp>(core::cl__get_internal_real_time());
-    core::Number_sp diff = core::contagen_sub(endTime, startTime);
-    core::Number_sp seconds = core::contagen_div(diff, gc::As<Number_sp>(cl::_sym_internalTimeUnitsPerSecond->symbolValue()));
-    double dseconds = clasp_to_double(seconds);
-    core::SourceFileInfo_sp sfi = core::core__source_file_info(core::make_fixnum(*sourceFileInfoHandleP));
-    printf("TOP-LEVEL-FUNCTION-TIME %lf %s %zu\n", dseconds, sfi->namestring().c_str(), lineno);
-  }
-#endif
-  ASSERTNOTNULL(*resultP);
-};
-#endif
-
 
 /*! Invoke the main functions from the main function array.
 If isNullTerminatedArray is 1 then there is a NULL terminated array of functions to call.
@@ -1029,22 +950,6 @@ core::T_mv proto_ifCatchFrameMatchesStoreResultElseRethrow(size_t catchFrame, un
 }
 
 extern "C" {
-void sp_ifCatchFrameMatchesStoreResultElseRethrow(core::T_sp *resultP, size_t catchFrame, unsigned char *exceptionP) {
-  (*resultP) = proto_ifCatchFrameMatchesStoreResultElseRethrow(catchFrame, exceptionP);
-  ASSERTNOTNULL(*resultP);
-}
-void mv_ifCatchFrameMatchesStoreResultElseRethrow(core::T_mv *resultP, size_t catchFrame, unsigned char *exceptionP) {
-  (*resultP) = proto_ifCatchFrameMatchesStoreResultElseRethrow(catchFrame, exceptionP);
-  ASSERTNOTNULL(*resultP);
-}
-};
-
-extern "C" {
-void exceptionStackUnwind(size_t frame)
-{NO_UNWIND_BEGIN();
-  my_thread->exceptionStack().unwind(frame);
-  NO_UNWIND_END();
-}
 
 void throwIllegalSwitchValue(size_t val, size_t max) {
   SIMPLE_ERROR(BF("Illegal switch value %d - max value is %d") % val % max);
@@ -1183,13 +1088,6 @@ extern "C" {
 
 //#define DEBUG_CC
 
-void cc_setTmvToNil(core::T_mv *sharedP)
-{NO_UNWIND_BEGIN();
-  *sharedP = Values(_Nil<core::T_O>());
-  NO_UNWIND_END();
-}
-
-
 #define PROTO_cc_setSymbolValue "void (t* t*)"
 #define CATCH_cc_setSymbolValue false
 void cc_setSymbolValue(core::T_O *sym, core::T_O *val)
@@ -1268,25 +1166,6 @@ LCC_RETURN cc_call_multipleValueOneFormCallWithRet0(core::Function_O *tfunc, gct
 #endif
   core::Function_sp func((gctools::Tagged)tfunc);
   return core::funcall_frame(func,mvargs);
-}
-
-void cc_saveThreadLocalMultipleValues(core::T_mv *result, core::MultipleValues *mv)
-{NO_UNWIND_BEGIN();
-  core::MultipleValues &mvThread = core::lisp_multipleValues();
-  (*mv)._Size = result->number_of_values();
-  (*mv)[0] = ENSURE_VALID_OBJECT((*result).raw_());
-  for (size_t i = 1; i < (*mv)._Size; ++i) (*mv)[i] = ENSURE_VALID_OBJECT(mvThread[i]);
-  NO_UNWIND_END();
-}
-
-void cc_loadThreadLocalMultipleValues(core::T_mv *result, core::MultipleValues *mv)
-{NO_UNWIND_BEGIN();
-  core::MultipleValues &mvThread = core::lisp_multipleValues();
-  *result = gctools::multiple_values<core::T_O>(gctools::smart_ptr<core::T_O>((gc::Tagged)ENSURE_VALID_OBJECT((*mv)[0])), (*mv)._Size);
-  for (size_t i = 1; i < (*mv)._Size; ++i) {
-    mvThread[i] = ENSURE_VALID_OBJECT((*mv)[i]);
-  }
-  NO_UNWIND_END();
 }
 
 void cc_oddKeywordException(core::FunctionDescription* functionDescription) {

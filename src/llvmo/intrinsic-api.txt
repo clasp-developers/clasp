@@ -60,7 +60,6 @@ _unreachableError
 _singleStepCallback
 _va_tooManyArgumentsException
 _va_notEnoughArgumentsException
-_va_ifExcessKeywordArgumentsException
 _va_symbolFunction
 _va_lexicalFunction
 _FUNCALL
@@ -74,7 +73,6 @@ _throwCatchThrow
 _throwReturnFrom
 _throwDynamicGo
 _ifCatchFrameMatchesStoreResultElseRethrow
-_exceptionStackUnwind
 _blockHandleReturnFrom
 _tagbodyDynamicGoIndexElseRethrow
 _throwIllegalSwitchValue
@@ -116,7 +114,6 @@ _loadValues
 _setjmp_set_jump_address
 _pushDynamicBinding
 _popDynamicBinding
-_cc_setTmvToNil
 _cc_makeCell
 _cc_writeCell
 _cc_readCell
