@@ -230,7 +230,7 @@ namespace core {
     Array_sp templated_ranged_nreverse(MaybeTemplatedSimpleType& me, size_t start, size_t end) {
     size_t length = end - start;
     size_t halfpoint = start + length/2;
-    size_t lastElement = length - 1;
+    size_t lastElement = end - 1;
     for (size_t i = start; i < halfpoint; ++i) {
       size_t ri = lastElement - i;
       templated_swapElements(me, i, ri);
