@@ -170,9 +170,12 @@ Return files."
       (progn
         (cmp:load-bitcode path))
       (if (eq type :fasl)
-          (load (make-pathname :type "fasl" :defaults path))
+          (if (probe-file (make-pathname :type "fasl" :defaults path))
+              (load (make-pathname :type "fasl" :defaults path))
+              (cmp:load-bitcode path))
           (error "Illegal type ~a for load-kernel-file ~a" type path)))
   path)
+
 
 (defun compile-kernel-file (entry &key (reload nil) load-bitcode (force-recompile nil) position total-files (output-type core:*clasp-build-mode*) verbose print silent)
   #+dbg-print(bformat t "DBG-PRINT compile-kernel-file: %s%N" entry)
