@@ -469,35 +469,51 @@ void testStrings() {
   //        printf("%s:%d  string = %s\n", __FILE__, __LINE__, str->c_str() );
 }
 
+int global_monitor_pid = 0;
+std::string global_monitor_dir = "";
+
 CL_DEFUN std::string core__monitor_directory() {
-  stringstream ss;
-  ss << "/tmp/clasp-log-" << getpid() << "/";
-  return ss.str();
+  return global_monitor_dir;
 }
 
 void ensure_monitor_file_exists() {
 #ifdef DEBUG_MONITOR
   struct stat st = {0};
-  std::string dir = core__monitor_directory();
+  stringstream sd;
+  if (global_monitor_dir=="") {
+    global_monitor_dir = "/tmp/";
+  }
+  sd << global_monitor_dir;
+  sd << "clasp-log-" << getpid() << "/";
+  std::string dir = sd.str();
+  global_monitor_dir = dir;
   if (stat(dir.c_str(),&st) == -1 ) {
     mkdir(dir.c_str(),0700);
   }
   stringstream ss;
   ss << dir << "log.txt";
+  if (_lisp->_Roots._LogStream.is_open()) _lisp->_Roots._LogStream.close();
   _lisp->_Roots._LogStream.open(ss.str(), std::fstream::out);
-  printf("%s:%d   Opening file %s for logging\n", __FILE__, __LINE__, ss.str().c_str());
+  if (_lisp->_Roots._LogStream.is_open()) {
+    printf("%s:%d   Opened file %s for logging\n", __FILE__, __LINE__, ss.str().c_str());
+    _lisp->_Roots._LogStream << "Start logging\n";
+    _lisp->_Roots._LogStream.flush();
+  } else {
+    printf("%s:%d   Could not open file %s for logging\n", __FILE__, __LINE__, ss.str().c_str());
+  }
 #endif
 }
   
-int global_pid = 0;
 void monitor_message(const std::string& msg)
 {
 #ifdef DEBUG_MONITOR
   _lisp->_Roots._LogMutex.lock();
-  if (getpid()!=global_pid) {
+  if (getpid()!=global_monitor_pid) {
     ensure_monitor_file_exists();
-    _lisp->_Roots._LogStream << "Forked from process " << global_pid << "\n";
-    global_pid = getpid();
+    if (global_monitor_pid!=0) {
+      _lisp->_Roots._LogStream << "Forked from process " << global_monitor_pid << "\n";
+    }
+    global_monitor_pid = getpid();
   }
   _lisp->_Roots._LogStream << msg;
   _lisp->_Roots._LogStream.flush();
@@ -506,12 +522,14 @@ void monitor_message(const std::string& msg)
 }
 
 
-CL_DEFUN void core__monitor_message(const std::string& msg) {
+CL_DEFUN void core__monitor_write(const std::string& msg) {
   monitor_message(msg);
 }
 
 
+
 void Lisp_O::startupLispEnvironment(Bundle *bundle) {
+  monitor_message("Starting lisp environment\n");
   global_dump_functions = getenv("CLASP_DUMP_FUNCTIONS");
   char* pause_startup = getenv("CLASP_PAUSE_STARTUP");
   if (pause_startup) {

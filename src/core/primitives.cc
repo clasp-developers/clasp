@@ -124,11 +124,6 @@ CL_DEFUN T_sp cl__sleep(Real_sp oseconds) {
 }
 
 
-CL_DEFUN void core__monitor_write(T_sp message)
-{
-  MONITOR(BF("%s") % _rep_(message));
-}
-
 CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("A list of all symbols defined in C++");
