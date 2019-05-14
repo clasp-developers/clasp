@@ -1029,7 +1029,7 @@ namespace core {
   public:
     void this_asAbstractSimpleVectorRange(AbstractSimpleVector_sp& sv, size_t& start, size_t& end) const  {
       unlikely_if (gc::IsA<my_smart_ptr_type>(this->_Data)) {
-        this->asAbstractSimpleVectorRange(sv,start,end);
+        this->_Data->asAbstractSimpleVectorRange(sv,start,end);
         start += this->_DisplacedIndexOffset;
         end = this->length()+this->_DisplacedIndexOffset;
         return;
