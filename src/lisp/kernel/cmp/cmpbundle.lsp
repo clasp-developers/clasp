@@ -129,7 +129,8 @@
            (temp-bundle-file (ensure-string (core:mkstemp bundle-file))))
       (let ((clang-args (cond
                           ((member :target-os-darwin *features*)
-                           (let ((clang-args `( "-save-temps" "-flto"
+                           (let ((clang-args `( #+(or) "-save-temps"
+                                                  "-flto"
                                                 ,@options
                                                 ,(core:bformat nil "-O%d" *optimization-level*)
                                                 ,@all-object-files
