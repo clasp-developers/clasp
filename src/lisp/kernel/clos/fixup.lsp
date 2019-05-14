@@ -56,18 +56,18 @@
                (apply function .method-args.)))
          (fmfp (lambda-list-fast-callable-p lambda-list))
          (method
-           ;; we're still using the old add-method, which adds things to *early-methods*.
-           ;; We don't want to do that here, so we rebind and discard.
-           (let ((*early-methods* nil))
-             (add-method f
-                         (make-method (find-class 'standard-method)
-                                      nil
-                                      (mapcar #'find-class specializers)
-                                      lambda-list
-                                      mf
-                                      (list
-                                       'leaf-method-p t
-                                       'fast-method-function (if fmfp function nil)))))))
+           (make-method (find-class 'standard-method)
+                        nil
+                        (mapcar #'find-class specializers)
+                        lambda-list
+                        mf
+                        (list
+                         'leaf-method-p t
+                         'fast-method-function (if fmfp function nil)))))
+    ;; we're still using the old add-method, which adds things to *early-methods*.
+    ;; We don't want to do that here, so we rebind *early-methods* and discard the value.
+    (let ((*early-methods* nil))
+      (add-method f method))
     ;; Put in a call history to speed things up a little.
     (loop ;; either a fast method function, or just the method function.
           with outcome = (if fmfp
