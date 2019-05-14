@@ -212,12 +212,11 @@ namespace core {
 
   template <class SimpleType>
     Array_sp templated_ranged_reverse(const SimpleType& me, size_t start, size_t end) {
-    size_t meLength = end - start;
-    size_t lastElement = meLength - 1;
-    gctools::smart_ptr<SimpleType> newVec = SimpleType::make(meLength);
-    for (size_t i = start; i < meLength; ++i) {
-      size_t ri = lastElement-i;
-      (*newVec)[ri] = me[i];
+    size_t new_length = end - start;
+    size_t last_index = end-1;
+    gctools::smart_ptr<SimpleType> newVec = SimpleType::make(new_length);
+    for (size_t i = 0; i < new_length; ++i) {
+      (*newVec)[i] = me[last_index - i];
     }
     return newVec;
   }
@@ -228,13 +227,13 @@ namespace core {
     x[yi] = u;
   }
   template <class MaybeTemplatedSimpleType>
-    Array_sp templated_ranged_nreverse(MaybeTemplatedSimpleType& me,size_t start, size_t end) {
-    size_t meLength = end-start;
-    size_t halfLength = meLength/2;
-    size_t lastElement = meLength - 1;
-    for (size_t i = start; i < halfLength; ++i) {
-      size_t ri = lastElement-i;
-      templated_swapElements(me,i,ri);
+    Array_sp templated_ranged_nreverse(MaybeTemplatedSimpleType& me, size_t start, size_t end) {
+    size_t length = end - start;
+    size_t halfpoint = start + length/2;
+    size_t lastElement = length - 1;
+    for (size_t i = start; i < halfpoint; ++i) {
+      size_t ri = lastElement - i;
+      templated_swapElements(me, i, ri);
     }
     return me.asSmartPtr();
   }
