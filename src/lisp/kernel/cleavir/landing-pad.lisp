@@ -7,20 +7,16 @@
 ;;; and if so, extract the go-index and jump table and so on in a catch block.
 ;;; Saves a landing pad and my comprehension.
 (defun generate-match-unwind (return-value abi frame landing-pad-for-unwind-rethrow exn.slot)
-  ;; We do this weird thing to get the index while still generating the other code around it.
-  ;; FIXME: with-begin-end-catch should maybe abstract away so it can return an actual thing.
-  (let (go-index)
-    (cmp:with-begin-end-catch ((cmp:irc-load exn.slot "exn") exception-ptr nil)
-      ;; Check if frame is correct against tagbody and jump to jumpid
-      (cmp:with-landing-pad landing-pad-for-unwind-rethrow
-        (setq go-index
-              (%intrinsic-invoke-if-landing-pad-or-call
-               "cc_landingpadUnwindMatchFrameElseRethrow" 
-               (list exception-ptr frame)
-               "go-index"))
+  (cmp:with-begin-end-catch ((cmp:irc-load exn.slot "exn") exception-ptr nil)
+    ;; Check if frame is correct against tagbody and jump to jumpid
+    (cmp:with-landing-pad landing-pad-for-unwind-rethrow
+      (prog1
+          (%intrinsic-invoke-if-landing-pad-or-call
+           "cc_landingpadUnwindMatchFrameElseRethrow" 
+           (list exception-ptr frame)
+           "go-index")
         ;; Restore multiple values before going to whichever block.
-        (%intrinsic-call "cc_restoreMultipleValue0" (list return-value))))
-    go-index))
+        (%intrinsic-call "cc_restoreMultipleValue0" (list return-value))))))
 
 ;;; Generates a landing pad and code to deal with unwinds to this function.
 ;;; See note on previous and possibly future operation below for the purpose of the first argument,

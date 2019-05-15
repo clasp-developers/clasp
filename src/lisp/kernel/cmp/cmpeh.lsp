@@ -89,21 +89,17 @@ eg: '(block ((exception var) code...))"
     (when includes-all-other-exceptions
       (irc-add-clause landpad (llvm-sys:constant-pointer-null-get %i8*%)))))
 
-
-
 (defmacro with-begin-end-catch ((exn exception-ptr rethrow-bb) &rest body)
   (let ((cont-gs (gensym))
         (exn-gs (gensym)))
     `(let ((,exn-gs ,exn))
-       (with-landing-pad ,rethrow-bb
-         (let ((,exception-ptr (irc-intrinsic "__cxa_begin_catch" ,exn-gs)))
-           #+debug-eh(irc-intrinsic "debugPrintI32" (jit-constant-i32 (incf *next-i32*)))
-           ,@body))
-       (with-landing-pad nil
-         (irc-intrinsic "__cxa_end_catch")))))
-
-
-
+       (multiple-value-prog1
+           (with-landing-pad ,rethrow-bb
+             (let ((,exception-ptr (irc-intrinsic "__cxa_begin_catch" ,exn-gs)))
+               #+debug-eh(irc-intrinsic "debugPrintI32" (jit-constant-i32 (incf *next-i32*)))
+               ,@body))
+         (with-landing-pad nil
+           (irc-intrinsic "__cxa_end_catch"))))))
 
 (defun try.one-dispatcher-and-handler (cur-dispatcher-block
 				       next-dispatcher-block
