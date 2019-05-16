@@ -129,22 +129,25 @@
            (temp-bundle-file (ensure-string (core:mkstemp bundle-file))))
       (let ((clang-args (cond
                           ((member :target-os-darwin *features*)
-                           (let ((clang-args `( #+(or) "-save-temps"
-                                                  "-flto"
-                                                ,@options
-                                                ,(core:bformat nil "-O%d" *optimization-level*)
-                                                ,@all-object-files
+                           (let* ((object-lto-pathname (make-pathname :type "o"
+                                                                      :name (sys:bformat nil "%s-lto" (pathname-name bundle-file))
+                                                                      :defaults bundle-file))
+                                  (clang-args `( "-flto"
+                                                 ,(sys:bformat nil "-Wl,-object_path_lto,%s" (namestring object-lto-pathname))
+                                                 ,@options
+                                                 ,(core:bformat nil "-O%d" *optimization-level*)
+                                                 ,@all-object-files
 ;;;                                 "-macosx_version_min" "10.10"
-                                                "-flat_namespace"
-                                                #+(or)"-fvisibility=default"
-                                                "-undefined" "suppress"
-                                                ,@*debug-link-options*
-                                                #+(or)"-Wl,-save-temps"
-                                                ,output-flag
+                                                 "-flat_namespace"
+                                                 #+(or)"-fvisibility=default"
+                                                 "-undefined" "suppress"
+                                                 ,@*debug-link-options*
+                                                 #+(or)"-Wl,-save-temps"
+                                                 ,output-flag
 ;;;                        ,@link-flags
 ;;;                        ,(bformat nil "-Wl,-object_path_lto,%s.lto.o" exec-file)
-                                                "-o"
-                                                ,temp-bundle-file)))
+                                                 "-o"
+                                                 ,temp-bundle-file)))
                              clang-args))
                           ((or (member :target-os-linux *features*)
                                (member :target-os-freebsd *features*))
@@ -175,6 +178,9 @@
           (unless (probe-file temp-bundle-file)
             (error "~%!~%!~%! There is a HUGE problem - an execute-link-fasl command with the arguments:   /path-to-clang ~a~%~%!        failed to generate the output file ~a~%" clang-args temp-bundle-file)))
         (rename-file temp-bundle-file bundle-file :if-exists :supersede)
+        ;; Run dsymutil on darwin
+        (when (member :target-os-darwin *features*)
+          (ext:system (sys:bformat nil "dsymutil %s" (namestring bundle-file))))
         (truename bundle-file)))))
 
 (defun execute-link-fasl (in-bundle-file in-all-names &key input-type)
