@@ -732,6 +732,7 @@ This works like compile-lambda-function in bclasp."
              (cst (eclector.concrete-syntax-tree:cst-read source-sin nil eof-value))
              #-cst
              (form (read source-sin nil eof-value)))
+        #+debug-monitor(sys:monitor-message "source-pos ~a" core:*current-source-pos-info*)
         #+cst
         (if (eq cst eof-value)
             (return nil)

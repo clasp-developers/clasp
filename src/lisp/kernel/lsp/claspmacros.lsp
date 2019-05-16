@@ -144,14 +144,25 @@
       (core:str-w-ns (intrinsic-call "StrWNs_get" str idx)))))
 
 
-(defmacro with-metrics-message ((message) &body body)
-  `(unwind-protect
-        (progn
-          (core:monitor-write (core:bformat nil "{{{ %s%N" ,message))
-          ,@body)
-     (core:monitor-write (core:bformat nil "}}} ;;; %s%N" ,message))))
+(defmacro with-monitor-message-scope ((fmt &rest args) &body body)
+  #+debug-monitor
+  (let ((msg (gensym)))
+    `(let ((,msg (format nil ,fmt ,@args)))
+       (unwind-protect
+            (progn
+              (core:monitor-write (core:bformat nil "{{{ ;;; %s%N" ,msg))
+              ,@body)
+         (core:monitor-write (core:bformat nil "}}} ;;; %s%N" ,msg)))))
+  #-debug-monitor
+  nil)
 
-(export 'with-metrics-message)
+(defmacro monitor-message (fmt &rest args)
+  #+debug-monitor
+  `(sys:monitor-write (core:bformat nil "%s%N" (format nil ,fmt ,@args)))
+  #-debug-monitor
+  nil)
+
+(export '(with-monitor-message-scope monitor-message))
 
 #|
 (define-compiler-macro new-apply (function-desig &rest args)
