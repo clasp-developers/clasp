@@ -363,7 +363,7 @@
 (defmethod cleavir-cst-to-ast:convert-special
     ((symbol (eql 'core::bind-va-list)) cst environment (system clasp-cleavir:clasp))
   (cst:db origin (op lambda-list-cst va-list-cst . body-cst) cst
-    (declare (ignore op origin))
+    (declare (ignore op))
     (let ((parsed-lambda-list
             (cst:parse-ordinary-lambda-list system lambda-list-cst :error-p nil)))
       (when (null parsed-lambda-list)
@@ -390,7 +390,9 @@
               (let ((ast (cleavir-cst-to-ast::process-parameter-groups
                           (cst:children parsed-lambda-list)
                           idspecs entries
-                          (cleavir-cst-to-ast::make-body rdspecs (cst:listify forms-cst) nil)
+                          (cleavir-cst-to-ast::make-body
+                           rdspecs
+                           (cleavir-cst-to-ast::cst-for-body forms-cst nil origin))
                           environment system)))
                 (cc-ast:make-bind-va-list-ast
                  lexical-lambda-list
