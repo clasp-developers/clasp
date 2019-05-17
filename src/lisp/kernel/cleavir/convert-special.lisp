@@ -423,20 +423,19 @@
 
 (defmethod cleavir-cst-to-ast:convert-global-function-reference (cst info global-env (system clasp-cleavir:clasp))
   (declare (ignore global-env))
-  (let ((name (cleavir-env:name info)))
-    (cond 
+  (let ((name (cleavir-env:name info))
+        (source (cst:source cst)))
+    (cond
       ((and (consp name) (eq (car name) 'cl:setf))
        (clasp-cleavir-ast:make-setf-fdefinition-ast
-        (cleavir-ast:make-load-time-value-ast `',(cadr name)
-                                              t
-                                              :origin (cst:source cst))))
+        (cleavir-ast:make-load-time-value-ast `',(cadr name) t :origin source)
+        :origin source))
       ((consp name)
        (error "Illegal name for function - must be (setf xxx)"))
       (t
        (cleavir-ast:make-fdefinition-ast
-        (cleavir-ast:make-load-time-value-ast `',name
-                                              t
-                                              :origin (cst:source cst)))))))
+        (cleavir-ast:make-load-time-value-ast `',name t :origin (cst:source cst))
+        :origin source)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
