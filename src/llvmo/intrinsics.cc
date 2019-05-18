@@ -133,19 +133,6 @@ ALWAYS_INLINE T_O *cc_safe_symbol_value(core::T_O *sym) {
   return sv;
 }
 
-ALWAYS_INLINE T_O *cc_fdefinition(core::T_O *sym)
-{NO_UNWIND_BEGIN();
-  core::Symbol_O *symP = reinterpret_cast<core::Symbol_O *>(gctools::untag_general<core::T_O *>(sym));
-  return symP->_Function.raw_();
-  NO_UNWIND_END();
-}
-
-ALWAYS_INLINE T_O *cc_setfdefinition(core::T_O *sym)
-{NO_UNWIND_BEGIN();
-  core::Symbol_O *symP = reinterpret_cast<core::Symbol_O *>(gctools::untag_general<core::T_O *>(sym));
-  return symP->_SetfFunction.raw_();
-  NO_UNWIND_END();
-}
 
 ALWAYS_INLINE core::T_O *cc_gatherVaRestArguments(va_list vargs, std::size_t nargs, Vaslist untagged_vargs_rest[2])
 {NO_UNWIND_BEGIN();
