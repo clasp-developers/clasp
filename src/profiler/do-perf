@@ -7,5 +7,5 @@ FRAMES=${4:-4000}
 
 sudo rm -f /tmp/out-$PID.*
 sudo perf record -p $PID -F $RATE -g -o /tmp/out-$PID.data -- sleep $TIME
-sudo perf script -i /tmp/out-$PID.data --max-stack 4000 > /tmp/out-$PID.perf
+sudo perf script -i /tmp/out-$PID.data --max-stack $FRAMES > /tmp/out-$PID.perf
 
