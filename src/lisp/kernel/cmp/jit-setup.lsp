@@ -598,26 +598,23 @@ The passed module is modified as a side-effect."
                ;; If this is the first process to generate a symbol then create the master symbol file
                ((not (boundp '*jit-pid*))
                 (setf *jit-pid* (core:getpid))
-                (let ((filename (core:bformat nil "/tmp/clasp-symbols-%s" (core:getpid))))
+                (let ((filename (core:bformat nil "/tmp/perf-%s.map" (core:getpid))))
                   (core:bformat *error-output* "Writing jitted symbols to %s%N" filename)
                   (setq *jit-log-stream* (open filename :direction :output))))
                ;; If we are in a forked child then we need to create a new clasp-symbols-<pid> file and
                ;; refer to the parent clasp-symbols-<ppid> file.
-               ((not (= *jit-pid* (core:getpid)))
-                (let ((filename (core:bformat nil "/tmp/clasp-symbols-%s" (core:getpid))))
-                  (core:bformat *error-output* "Forked process %s writing jitted symbols to %s%N" (core:getpid) filename)
-                  (setq *jit-log-stream* (open filename :direction :output))
-                  (core:bformat *jit-log-stream* "l /tmp/clasp-symbols-%s%N" (core:getppid))
-                  (setq *jit-pid* (core:getpid)))))
-             (write-string "a " *jit-log-stream*)
-             (write-string (core:pointer-as-string (cadr symbol-info)) *jit-log-stream*)
-             (write-char #\space *jit-log-stream*)
-             ;; car of symbol-info is a fixnum
-             (write (car symbol-info) :stream *jit-log-stream* :pretty nil)
-             (write-char #\space *jit-log-stream*)
-             (write-string symbol-name-string *jit-log-stream*)
-             (terpri *jit-log-stream*)
-             (finish-output *jit-log-stream*))
+               ((and *jit-log-stream* (not (= *jit-pid* (core:getpid))))
+                (close *jit-log-stream*) ; Shut down symbols for forked children
+                (setq *jit-log-stream* nil)))
+             (when *jit-log-stream*
+               (write (core:pointer-integer (cadr symbol-info)) :base 16 :stream *jit-log-stream*)
+               (write-char #\space *jit-log-stream*)
+               ;; car of symbol-info is a fixnum
+               (write (car symbol-info) :base 16 :stream *jit-log-stream* :pretty nil)
+               (write-char #\space *jit-log-stream*)
+               (write-string symbol-name-string *jit-log-stream*)
+               (terpri *jit-log-stream*)
+               (finish-output *jit-log-stream*)))
         (progn
           #+threads(mp:unlock *jit-log-lock*)))))
 
