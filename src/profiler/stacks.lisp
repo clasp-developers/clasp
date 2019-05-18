@@ -428,15 +428,21 @@ exec sbcl --noinform --dynamic-space-size 2048 --disable-ldb --lose-on-corruptio
   (format stream "  0  64091                        :tick-60s~%")
   (loop repeat 2 do (terpri stream)))
                                         ; we don't use the dtrace headers anyway
+(defun starts-with-p (str1 str2)
+  "Determine whether `str1` starts with `str2`"
+  (let ((p (search str2 str1)))
+    (and p (= 0 p))))
 
 (defun perf-frame-to-dtrace-frame (raw-frame)
   (let* ((frame (uiop:split-string
                  (string-left-trim " 	"  raw-frame)))
-         ;(address (first frame))
+         (address (first frame))
          (process (car (last frame)))
          (function (format nil "~{~a~^ ~}" (subseq (butlast frame) 1)))
          (process-name (second (reverse (uiop:split-string process :separator '(#\( #\) #\/))))))
-    (format nil "              ~a`~a" process-name function)
+    (if (or (starts-with-p process-name "[unknown]") (starts-with-p process-name "perf"))
+        (format nil "              `0x~a" address)
+        (format nil "              ~a`~a" process-name function))
     ;(vector address function process-name)
    ))
 
@@ -446,7 +452,8 @@ exec sbcl --noinform --dynamic-space-size 2048 --disable-ldb --lose-on-corruptio
                                         (uiop:split-string
                                          (string-right-trim " " (first backtrace-lines)))))))
          (raw-frames (cdr backtrace-lines))
-         (frames (mapcar #'perf-frame-to-dtrace-frame raw-frames)))
+         (frames (remove-if #'null
+                            (mapcar #'perf-frame-to-dtrace-frame raw-frames))))
     (make-dtrace-backtrace :count count :frames frames)))
 
 (defun collect-perf-data (in-stream)
