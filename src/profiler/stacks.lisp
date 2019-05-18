@@ -446,7 +446,7 @@ exec sbcl --noinform --dynamic-space-size 2048 --disable-ldb --lose-on-corruptio
          (raw-frames (cdr backtrace-lines))
          (frames (remove-if #'null
                             (mapcar #'perf-frame-to-dtrace-frame raw-frames))))
-    (make-dtrace-backtrace :count count :frames frames)))
+    (make-dtrace-backtrace :count 1 :frames frames)))
 
 (defun collect-perf-data (in-stream)
   (let* ((raw-lines (loop with line = (read-line in-stream nil :eof)
