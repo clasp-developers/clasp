@@ -13,14 +13,22 @@ FRAMES=${4:-6000}
 if [[ "$OSTYPE" == "darwin"* ]]; then
 
 ./do-dtrace $PID $TIME $RATE $FRAMES
-./collapse -i /tmp/out-$1.stacks -o /tmp/out-$1.folded -m 400
 
 elif [[ "$OSTYPE" == "linux-gnu" ]]; then
 
 ./do-perf $PID $TIME $RATE $FRAMES
-$FLAME_GRAPH_HOME/stackcollapse-perf.pl /tmp/out-$PID.perf > /tmp/out-$1.folded
+./perf2dtrace -i /tmp/out-$1.perf -o /tmp/out-$1.raw.stacks
+
+#if [ -f /tmp/clasp-symbols-$PID ]; then
+#   ./symbolicate.lisp -i /tmp/out-$PID.raw.stacks -o /tmp/out-$PID.sym.stacks -s /tmp/clasp-symbols-$PID
+#else
+   cp /tmp/out-$PID.raw.stacks /tmp/out-$PID.sym.stacks
+#fi
+./cleanup-stacks -i /tmp/out-$PID.sym.stacks -o /tmp/out-$PID.stacks
 
 fi
+
+./collapse -i /tmp/out-$1.stacks -o /tmp/out-$1.folded -m 400
 
 $FLAME_GRAPH_HOME/flamegraph.pl -color clasp /tmp/out-$1.folded >/tmp/out-$1.svg
 echo /tmp/out-$1.svg

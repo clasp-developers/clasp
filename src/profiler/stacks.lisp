@@ -10,7 +10,6 @@ exec sbcl --noinform --dynamic-space-size 2048 --disable-ldb --lose-on-corruptio
 |#
 
 
-
 (defun split-str-1 (string &optional (separator " ") (r nil))
   (let ((n (position separator string
                      :from-end t
@@ -416,6 +415,64 @@ exec sbcl --noinform --dynamic-space-size 2048 --disable-ldb --lose-on-corruptio
         (loop for (count . name) in sorted
               do (format out-stream "~5d ~20a~%" count name))))))
 
+(defun write-dtrace-header-for-perf (stream)
+  (format stream "CPU     ID                    FUNCTION:NAME~%")
+  (format stream "  0  64091                        :tick-60s~%")
+  (loop repeat 2 do (terpri stream)))
+                                        ; we don't use the dtrace headers anyway
+
+(defun perf-frame-to-dtrace-frame (raw-frame)
+  (let* ((frame (uiop:split-string
+                 (string-left-trim " 	"  raw-frame)))
+         ;(address (first frame))
+         (process (car (last frame)))
+         (function (format nil "~{~a~^ ~}" (subseq (butlast frame) 1)))
+         (process-name (second (reverse (uiop:split-string process :separator '(#\( #\) #\/))))))
+    (format nil "              ~a`~a" process-name function)
+    ;(vector address function process-name)
+   ))
+
+(defun perf-to-dtrace-backtrace (backtrace-lines)
+  ;(format t (first backtrace-lines))
+  (let* ((count (parse-integer (second (reverse
+                                        (uiop:split-string
+                                         (string-right-trim " " (first backtrace-lines)))))))
+         (raw-frames (cdr backtrace-lines))
+         (frames (mapcar #'perf-frame-to-dtrace-frame raw-frames)))
+    (make-dtrace-backtrace :count count :frames frames)))
+
+(defun collect-perf-data (in-stream)
+  (let* ((raw-lines (loop with line = (read-line in-stream nil :eof)
+                          collect line
+                          do (setf line (read-line in-stream nil :eof))
+                          until (eq line :eof)))
+         (data (remove-if #'null
+                          (loop with curr = nil
+                                for x in raw-lines
+                                when (string= x "")
+                                collect curr into lists
+                                when (string= x "")
+                                do (setf curr nil)
+                                when (not (string= x ""))
+                                do (push x curr)
+                                finally (return (mapcar #'reverse lists)))))
+        (backtraces (mapcar #'perf-to-dtrace-backtrace data))
+         )
+    backtraces))
+
+(defun perf-to-dtrace (perf-in-stream dtrace-out-stream)
+  "Converts perf output to dtrace output for use with the profiler."
+  (format *debug-io* "In perf-to-dtrace~%")
+  (write-dtrace-header-for-perf dtrace-out-stream)
+  (loop for backtrace in (collect-perf-data perf-in-stream)
+        do (progn
+             (format dtrace-out-stream "~{~a~%~}" (dtrace-backtrace-frames backtrace))
+             (format dtrace-out-stream "                ~a~%~%" (dtrace-backtrace-count backtrace))))
+  (format *debug-io* "Finished perf-to-dtrace~%")
+  
+  ;(format *standard-output* "~s" (first (collect-perf-data perf-in-stream)))
+  )
+
 ;;; ----------------------------------------------------------------------
 ;;;
 ;;;  Invoke functions using either ./stacks.lisp <operation> <arguments>
@@ -451,7 +508,7 @@ exec sbcl --noinform --dynamic-space-size 2048 --disable-ldb --lose-on-corruptio
           (out-file (gethash "-o" args))
           (out-stream (let ((out-file (gethash "-o" args)))
                         (if out-file
-                            (open out-file :direction :output :if-exists :supersede :external-format '(:utf-8 :replacement #\?))
+                            (open out-file :direction :output :if-exists :supersede :if-does-not-exist :create :external-format '(:utf-8 :replacement #\?))
                             *standard-output*))))
       (cond
         ((search "cleanup-stacks" cmd)
@@ -475,6 +532,8 @@ exec sbcl --noinform --dynamic-space-size 2048 --disable-ldb --lose-on-corruptio
              (error "You must provide the name (-c name) of the callee function"))
            (format *debug-io* "Callers of ~a~%" callee-name)
            (callers in-stream out-stream callee-name)))
+        ((search "perf2dtrace" cmd)
+         (perf-to-dtrace in-stream out-stream))
         ((search "collapse" cmd)
          (let ((max-frames (parse-integer (gethash "-m" args))))
            (format *debug-io* "Maximum number of frames: ~s~%" max-frames)
@@ -485,5 +544,4 @@ exec sbcl --noinform --dynamic-space-size 2048 --disable-ldb --lose-on-corruptio
       (unless (eq out-stream *standard-output*)
         (when out-file (format *debug-io* "~a~%" out-file))
         (close out-stream))))
-  (sb-ext:exit)
-  )
+  (sb-ext:exit))
