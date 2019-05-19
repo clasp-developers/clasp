@@ -3,9 +3,11 @@
 PID=$1
 TIME=${2:-10s}
 RATE=${3:-97}
-FRAMES=${4:-4000}
+FRAMES=${4:-6000}
 
 sudo rm -f /tmp/out-$PID.*
-sudo perf record -p $PID -F $RATE -g -o /tmp/out-$PID.data -- sleep $TIME
-sudo perf script -i /tmp/out-$PID.data --max-stack $FRAMES > /tmp/out-$PID.perf
-
+sudo perf record -p $PID -F $RATE --call-graph dwarf -o /tmp/out-$PID.data -- sleep $TIME
+sudo perf script -i /tmp/out-$PID.data --max-stack 6000 > /tmp/out-$PID.perf
+$FLAME_GRAPH_HOME/stackcollapse-perf.pl /tmp/out-$PID.perf > /tmp/out-$PID.folded
+$FLAME_GRAPH_HOME/flamegraph.pl --color=clasp /tmp/out-$PID.folded > /tmp/out-$PID.svg
+echo /tmp/out-$PID.svg
