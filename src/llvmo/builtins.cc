@@ -58,28 +58,6 @@ BUILTIN_ATTRIBUTES void cc_rewind_va_list(va_list va_args, void** register_save_
   NO_UNWIND_END_BUILTINS();
 }
 
-
-/* cc_setup_vaslist
-
-   Builds a vaslist rewound to the first required argument from a va_list.
-   Return the tagged vaslist.
-*/
-BUILTIN_ATTRIBUTES core::T_O* cc_setup_vaslist(core::Vaslist* vaslist, va_list va_args, size_t nargs)
-{
-  new (vaslist) core::Vaslist(nargs,va_args);
-  LCC_REWIND_VA_LIST_KEEP_REGISTER_SAVE_AREA(vaslist->_Args);
-  return gctools::tag_vaslist<core::T_O*>(vaslist);
-}
-
-/* Setup the vaslist and rewind it using the va_list inside of the vaslist.
-   Return the tagged vaslist. */
-BUILTIN_ATTRIBUTES core::T_O* cc_setup_vaslist_internal(core::Vaslist* vaslist, size_t nargs)
-{
-  LCC_REWIND_VA_LIST_KEEP_REGISTER_SAVE_AREA(vaslist->_Args);
-  vaslist->remaining_nargs() = nargs;
-  return gctools::tag_vaslist<core::T_O*>(vaslist);
-}
-
 /* Remove one item from the vaslist and return it.
    Do not call this unless you are sure there are elements to pop without DEBUG_BUILD */
 BUILTIN_ATTRIBUTES core::T_O* cx_vaslist_pop(core::T_O *preVaslist)
@@ -199,22 +177,10 @@ BUILTIN_ATTRIBUTES core::T_O* invisible_makeValueFrameSetParentFromClosure(core:
 }
 #endif
 
-
-/*! Return i32 1 if (valP) is != unbound 0 if it is */
-BUILTIN_ATTRIBUTES int isBound(core::T_O *valP)
-{
-  return gctools::tagged_unboundp<core::T_O*>(valP) ? 0 : 1;
-}
-
 /*! Return i32 1 if (valP) is != nil 0 if it is */
 BUILTIN_ATTRIBUTES int isTrue(core::T_O* valP)
 {
   return gctools::tagged_nilp<core::T_O*>(valP) ? 0 : 1;
-}
-
-/*! Return i32 1 if (valP) is != nil 0 if it is */
-BUILTIN_ATTRIBUTES core::T_O* valueOrNilIfZero(gctools::return_type val) {
-  return val.nvals ? val.ret0[0] : _Nil<core::T_O>().raw_();
 }
 
 BUILTIN_ATTRIBUTES core::T_O** activationFrameReferenceFromClosure(core::T_O* closureRaw)
@@ -225,6 +191,21 @@ BUILTIN_ATTRIBUTES core::T_O** activationFrameReferenceFromClosure(core::T_O* cl
     return &closure->closedEnvironment_rawRef();
   }
   return NULL;
+}
+
+
+BUILTIN_ATTRIBUTES core::T_O *cc_fdefinition(core::T_O *sym)
+{NO_UNWIND_BEGIN_BUILTINS();
+  core::Symbol_O *symP = reinterpret_cast<core::Symbol_O *>(gctools::untag_general<core::T_O *>(sym));
+  return symP->_Function.raw_();
+  NO_UNWIND_END_BUILTINS();
+}
+
+BUILTIN_ATTRIBUTES core::T_O *cc_setfdefinition(core::T_O *sym)
+{NO_UNWIND_BEGIN_BUILTINS();
+  core::Symbol_O *symP = reinterpret_cast<core::Symbol_O *>(gctools::untag_general<core::T_O *>(sym));
+  return symP->_SetfFunction.raw_();
+  NO_UNWIND_END_BUILTINS();
 }
 
 BUILTIN_ATTRIBUTES void* cc_vaslist_va_list_address(core::T_O* vaslist)
@@ -249,11 +230,6 @@ BUILTIN_ATTRIBUTES core::T_O *cc_readCell(core::T_O *cell)
   core::Cons_sp cp((gctools::Tagged)cell);
   return CONS_CAR(cp).raw_();
 }
-
-BUILTIN_ATTRIBUTES core::T_O* cc_builtin_nil()
-{
-  return _Nil<core::T_O>().raw_();
-};
 
 BUILTIN_ATTRIBUTES core::T_O* bc_function_from_function_designator(core::T_O* function_designator)
 {

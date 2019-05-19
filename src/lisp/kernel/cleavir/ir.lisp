@@ -200,7 +200,7 @@ And convert everything to JIT constants."
 ;;;
 
 (defun closure-call-or-invoke (closure return-value arguments &key (label ""))
-  (let* ((entry-point (cmp::irc-calculate-entry closure)) ;; intrinsic-name "cc_call")
+  (let* ((entry-point (cmp::irc-calculate-entry closure))
          (real-args (if (< (length arguments) core:+number-of-fixed-arguments+)
                         (append arguments (make-list (- core:+number-of-fixed-arguments+ (length arguments)) :initial-element (cmp:null-t-ptr)))
                         arguments)))

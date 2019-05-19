@@ -720,7 +720,6 @@ This works like compile-lambda-function in bclasp."
 (defun cclasp-loop-read-and-compile-file-forms (source-sin environment)
   (let ((eof-value (gensym))
         (eclector.reader:*client* *cst-client*)
-        (read-function 'eclector.concrete-syntax-tree:cst-read)
         (*llvm-metadata* (make-hash-table :test 'eql))
         (cleavir-generate-ast:*compiler* 'cl:compile-file)
         (core:*use-cleavir-compiler* t))
@@ -733,6 +732,7 @@ This works like compile-lambda-function in bclasp."
              (cst (eclector.concrete-syntax-tree:cst-read source-sin nil eof-value))
              #-cst
              (form (read source-sin nil eof-value)))
+        #+debug-monitor(sys:monitor-message "source-pos ~a" core:*current-source-pos-info*)
         #+cst
         (if (eq cst eof-value)
             (return nil)

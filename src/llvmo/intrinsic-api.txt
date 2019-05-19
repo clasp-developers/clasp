@@ -2,12 +2,10 @@ _newFunction_sp
 _newTsp
 _copyTsp
 _copyTspTptr
-_compareTspTptr
 _resetTmv
 _copyTmvOrSlice
 _isNilTsp
 _isTrue
-_isBound
 _internSymbol_tsp
 _makeSymbol_tsp
 _internSymbol_symsp
@@ -62,7 +60,6 @@ _unreachableError
 _singleStepCallback
 _va_tooManyArgumentsException
 _va_notEnoughArgumentsException
-_va_ifExcessKeywordArgumentsException
 _va_symbolFunction
 _va_lexicalFunction
 _FUNCALL
@@ -76,7 +73,6 @@ _throwCatchThrow
 _throwReturnFrom
 _throwDynamicGo
 _ifCatchFrameMatchesStoreResultElseRethrow
-_exceptionStackUnwind
 _blockHandleReturnFrom
 _tagbodyDynamicGoIndexElseRethrow
 _throwIllegalSwitchValue
@@ -118,9 +114,6 @@ _loadValues
 _setjmp_set_jump_address
 _pushDynamicBinding
 _popDynamicBinding
-_cc_setTmvToNil
-_cc_precalcSymbol
-_cc_precalcValue
 _cc_makeCell
 _cc_writeCell
 _cc_readCell
@@ -137,10 +130,8 @@ _cc_safe_fdefinition
 _cc_unsafe_fdefinition
 _cc_safe_setfdefinition
 _cc_unsafe_setfdefinition
-_cc_unsafe_symbol_value
 _cc_safe_symbol_value
 _cc_setSymbolValue
-_cc_call
 _cc_allowOtherKeywords
 _cc_ifNotKeywordException
 _cc_multipleValuesArrayAddress

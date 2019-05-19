@@ -254,6 +254,24 @@ string Function_O::__repr__() const {
   return ss.str();
 }
 
+
+string ObjectFile_O::__repr__() const {
+  stringstream ss;
+  ss << "#<OBJECT-FILE :ptr ";
+  ss << (void*)this->_ObjectFilePtr;
+  ss << " :size ";
+  ss << (void*)this->_ObjectFileSize;
+  ss << ">";
+  return ss.str();
+}
+    
+ObjectFile_O::~ObjectFile_O() {
+  if (this->_ObjectFilePtr!=NULL) {
+    free(this->_ObjectFilePtr);
+    this->_ObjectFilePtr = NULL;
+  }
+}
+
 ObjectFile_sp Function_O::objectFile() const
 {
   SUBCLASS_MUST_IMPLEMENT();

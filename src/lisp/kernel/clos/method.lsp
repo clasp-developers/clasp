@@ -404,7 +404,7 @@ have disappeared."
       (maybe-augment-generic-function-lambda-list gf (method-lambda-list method))
       (compute-g-f-spec-list gf)
       (invalidate-discriminating-function gf)
-      method)))
+      gf)))
 
 ;; Upgraded into method in fixup.
 (defun find-method (gf qualifiers specializers &optional (errorp t))

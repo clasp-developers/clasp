@@ -3,7 +3,6 @@
 
 namespace core {
 T_sp
-core_float_to_string_free(T_sp buffer_or_nil, Float_sp number,
-                          Number_sp e_min, Number_sp e_max);
+core_float_to_string_free(Float_sp number, Number_sp e_min, Number_sp e_max);
 };
 #endif

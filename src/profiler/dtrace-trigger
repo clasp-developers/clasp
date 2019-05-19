@@ -12,7 +12,7 @@ FRAMES=${3:-4000}
 sudo rm -f /tmp/out-$PID*
 sudo ./trigger.d -x ustackframes=${FRAMES} -p $PID -o /tmp/out-$PID.raw.stacks
 sudo chown $USER /tmp/out-$PID.raw.stacks
-./symbolicate.lisp -i /tmp/out-$PID.raw.stacks -o /tmp/out-$PID.sym.stacks -s /tmp/clasp-symbols-$PPIDO
+./symbolicate.lisp -i /tmp/out-$PID.raw.stacks -o /tmp/out-$PID.sym.stacks -s /tmp/perf-$PPIDO.map
 ./cleanup-stacks -i /tmp/out-$PID.sym.stacks -o /tmp/out-$PID.strip.stacks -O cleavir
 ./flame /tmp/out-$PID.strip.stacks
 open -a /Applications/Google\ Chrome.app/ /tmp/out-flame.svg -F

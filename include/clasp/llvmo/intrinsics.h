@@ -43,11 +43,6 @@ THE SOFTWARE.
   #define NO_UNWIND_END()
 #endif
 
-namespace llvmo {
-  extern core::T_sp  global_arg0;
-  extern core::T_sp  global_arg1;
-  extern core::T_sp  global_arg2;
-};
 extern "C" {
 
 typedef void LtvcReturn;
@@ -84,10 +79,6 @@ LtvcReturn ltvc_mlf_init_funcall(gctools::GCRootsInModule* holder, size_t fptr_i
 LtvcReturn ltvc_set_ltv_funcall(gctools::GCRootsInModule* holder, char tag, size_t index, size_t fptr_index, const char* name);
 LtvcReturn ltvc_toplevel_funcall(gctools::GCRootsInModule* holder, size_t fptr_index, const char* name) ;
 
- 
-void cc_call_with_variable_bound(core::T_mv *result, core::T_O *symbol, core::T_O *value, core::T_O *thunk);
-void cc_funwind_protect(core::T_mv *result, core::T_O *protected_fn, core::T_O *cleanup_fn);
-void cc_catch(core::T_mv *result, core::T_O *tag, core::T_O *func);
 void cc_throw(core::T_O *tag, core::T_O *resultP);
 
 void cc_invoke_startup_functions();
@@ -236,8 +227,6 @@ namespace llvmo {
                  unboundSymbolValue,
                  unboundSymbolFunction,
                  unboundSymbolSetfFunction,
-                 slot_reader_problem,
-                 slot_writer_problem,
                  dummyErrorCode
   } ErrorCode;
 
@@ -248,14 +237,5 @@ namespace llvmo {
   [[noreturn]] void not_function_designator_error(core::T_sp datum);
   void initialize_raw_translators( void );
 }
-
-extern "C" {
-uint8_t * 
-mygetsectiondata( void* mhp, //const struct mach_header_64 *mhp,
-                  const char *segname,
-                  const char *sectname,
-                  unsigned long *size);
-};
-
 
 #endif

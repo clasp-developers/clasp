@@ -764,7 +764,7 @@ Return the index of the load-time-value"
                                                                       (cmp:jit-constant-size_t 0)))
                                                    cmp:%i8**%)
                                                   (cmp:irc-bit-cast
-                                                   (cmp:irc-gep function-vector
+                                                   (cmp:irc-gep function-descs
                                                                 (list (cmp:jit-constant-size_t 0)
                                                                       (cmp:jit-constant-size_t 0)))
                                                    cmp:%i8**%))))))

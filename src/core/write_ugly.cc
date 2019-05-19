@@ -203,8 +203,7 @@ void write_single_float(T_sp strm, SingleFloat_sp i) {
 
 void
 write_float(Float_sp f, T_sp stream) {
-  SafeBufferStr8Ns s;
-  StrNs_sp result = gc::As<StrNs_sp>(core_float_to_string_free(s.string(), f, clasp_make_fixnum(-3), clasp_make_fixnum(8)));
+  T_sp result = core_float_to_string_free(f, clasp_make_fixnum(-3), clasp_make_fixnum(8));
   cl__write_sequence(result, stream, clasp_make_fixnum(0), _Nil<T_O>());
 }
 

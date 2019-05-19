@@ -54,16 +54,6 @@ insert_char(StrNs_sp buffer, cl_index where, gc::Fixnum c) {
     }
 }
 
-static T_sp
-push_base_string(T_sp buffer, SimpleBaseString_sp s) {
-    buffer = _clasp_ensure_buffer(buffer, s->length());
-    StrNs_sp sbuffer = gc::As<StrNs_sp>(buffer);
-    for ( size_t i(0),iEnd(s->length()); i<iEnd; ++i ) {
-	sbuffer->vectorPush(s->rowMajorAref(i));
-    }
-    return buffer;
-}
-
 /**********************************************************************
      * FREE FORMAT (FIXED OR EXPONENT) OF FLOATS
      */
@@ -102,18 +92,14 @@ print_float_exponent(T_sp buffer, T_sp number, gc::Fixnum exp) {
   }
 }
 
-T_sp core_float_to_string_free(T_sp buffer_or_nil, Float_sp number,
-                          Number_sp e_min, Number_sp e_max) {
-  gc::Fixnum base, e;
+T_sp core_float_to_string_free(Float_sp number, Number_sp e_min, Number_sp e_max) {
+  gc::Fixnum base = 0, e;
   if (clasp_float_nan_p(number)) {
-    T_sp s = eval::funcall(ext::_sym_float_nan_string, number);
-    return push_base_string(buffer_or_nil, gc::As<SimpleBaseString_sp>(s));
+    return eval::funcall(ext::_sym_float_nan_string, number);
   } else if (clasp_float_infinity_p(number)) {
-    T_sp s = eval::funcall(ext::_sym_float_infinity_string, number);
-    return push_base_string(buffer_or_nil, gc::As<SimpleBaseString_sp>(s));
+    return eval::funcall(ext::_sym_float_infinity_string, number);
   }
-  base = cl__length(buffer_or_nil);
-  T_mv mv_exp = core__float_to_digits(buffer_or_nil, number, _Nil<T_O>(), _Nil<T_O>());
+  T_mv mv_exp = core__float_to_digits(_Nil<T_O>(), number, _Nil<T_O>(), _Nil<T_O>());
   Fixnum_sp exp = gc::As_unsafe<Fixnum_sp>(mv_exp);
   StrNs_sp buffer = gc::As<StrNs_sp>(mv_exp.second());
   e = exp.unsafe_fixnum();
