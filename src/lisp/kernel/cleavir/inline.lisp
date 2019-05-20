@@ -210,9 +210,9 @@
   (debug-inline "car")
   (declaim (inline cl:car))
   (defun cl:car (x)
-    (if (consp x)
+    (if (cleavir-primop:typeq x cons)
         (cleavir-primop:car x)
-        (if (null x)
+        (if (eq x nil)
             nil
             (error 'type-error :datum x :expected-type 'list)))))
 
@@ -592,16 +592,16 @@
       (etypecase vector
         ((simple-vector *) ; FIXME: why is this not simple-array * (*)
          (let ((max (core::vector-length vector)))
-           (if (zerop max)
-             (error 'simple-type-error :FORMAT-CONTROL "Array ~a not valid for index ~a~%" :format-arguments (list vector index) :datum index :expected-type '(integer 0 (0)))
-               (error 'type-error :datum index :expected-type `(integer 0 ,(1- max))))))
+           (error 'core:array-out-of-bounds :datum index
+                                            :expected-type `(integer 0 (,max))
+                                            :array vector)))
         (array
          (let ((max (core::%array-total-size vector)))
            (when (array-has-fill-pointer-p vector)
                (setq max (min max (fill-pointer vector))))
-           (if (zerop max)
-             (error 'simple-type-error :FORMAT-CONTROL "Array ~a not valid for index ~a~%" :format-arguments (list vector index) :datum index :expected-type '(integer 0 (0)))
-               (error 'type-error :datum index :expected-type `(integer 0 ,(1- max))))))))
+           (error 'core:array-out-of-bounds :datum index
+                                            :expected-type `(integer 0 (,max))
+                                            :array vector)))))
   (with-array-data (underlying-array offset vector)
     ;; Okay, now array is a vector/simple, and index is valid.
     ;; This function takes care of element type discrimination.
@@ -619,14 +619,14 @@
       (etypecase array
         ((simple-array * (*))
          (let ((max (core::vector-length array)))
-           (if (zerop max)
-               (error 'simple-type-error :FORMAT-CONTROL "Array not valid ~a for index ~a ~%" :format-arguments (list array index) :datum index :expected-type '(integer 0 (0)))
-               (error 'type-error :datum index :expected-type `(integer 0 ,(1- max))))))
+           (error 'core:array-out-of-bounds :datum index
+                                            :expected-type `(integer 0 (,max))
+                                            :array array)))
         (array
          (let ((max (core::%array-total-size array)))
-           (if (zerop max)
-               (error 'simple-type-error :FORMAT-CONTROL "Array not valid ~a for index ~a ~%" :format-arguments (list array index) :datum index :expected-type '(integer 0 (0)))
-               (error 'type-error :datum index :expected-type `(integer 0 ,(1- max))))))))
+           (error 'core:array-out-of-bounds :datum index
+                                            :expected-type `(integer 0 (,max))
+                                            :array array)))))
     ;; Okay, now array is a vector/simple, and index is valid.
     ;; This function takes care of element type discrimination.
     (%unsafe-vector-ref underlying-array (add-indices index offset))))
@@ -635,9 +635,9 @@
 (defun vector-set (vector index value)
   (unless (vector-in-bounds-p vector index)
     (let ((max (core::vector-length vector)))
-      (if (zerop max)
-          (error 'simple-type-error :FORMAT-CONTROL "Array ~a not valid for index ~a~%" :format-arguments (list vector index) :datum index :expected-type '(integer 0 (0)))
-          (error 'type-error :datum index :expected-type `(integer 0 ,max)))))
+      (error 'core:array-out-of-bounds :datum index
+                                       :expected-type `(integer 0 (,max))
+                                       :array vector)))
   (with-array-data (underlying-array offset vector)
     (%unsafe-vector-set underlying-array (add-indices index offset) value)))
 
@@ -648,14 +648,14 @@
       (etypecase array
         ((simple-array * (*))
          (let ((max (core::vector-length array)))
-           (if (zerop max)
-               (error 'simple-type-error :FORMAT-CONTROL "Array ~a not valid for index~a~%" :format-arguments (list array index) :datum index :expected-type '(integer 0 (0)))
-               (error 'type-error :datum index :expected-type `(integer 0 ,max)))))
+           (error 'core:array-out-of-bounds :datum index
+                                            :expected-type `(integer 0 (,max))
+                                            :array array)))
         (array
          (let ((max (core::%array-total-size array)))
-           (if (zerop max)
-               (error 'simple-type-error :FORMAT-CONTROL "Array ~a not valid for index ~a~%" :format-arguments (list array index) :datum index :expected-type '(integer 0 (0)))
-               (error 'type-error :datum index :expected-type `(integer 0 ,max)))))))
+           (error 'core:array-out-of-bounds :datum index
+                                            :expected-type `(integer 0 (,max))
+                                            :array array)))))
     (%unsafe-vector-set underlying-array (add-indices index offset) value)))
 
 

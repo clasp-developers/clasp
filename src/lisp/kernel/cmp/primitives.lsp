@@ -138,7 +138,11 @@
 ;;;    (primitive-unwinds "invokeTopLevelFunction" %void% (list %tmv*% %fn-prototype*% %i8*% %i32*% %size_t% %size_t% %size_t% %ltv**%))
          (primitive-unwinds "cc_register_startup_function" %void% (list %size_t% %fn-start-up*%))
          (primitive         "cc_protect_alloca" %void% (list %i8*%))
-    
+
+         (primitive-unwinds "cc_error_type_error" %void% (list %t*% %t*%) :does-not-return t)
+         (primitive-unwinds "cc_error_array_out_of_bounds" %void% (list %t*% %t*% %t*%) :does-not-return t)
+
+         
          (primitive         "cc_trackFirstUnexpectedKeyword" %size_t% (list %size_t% %size_t%))
          (primitive-unwinds "bc_function_from_function_designator" %t*% (list %t*%))
     

@@ -628,6 +628,16 @@ memory limits before executing the program again."))
 	     (type-error-datum condition)
 	     (type-error-expected-type condition)))))
 
+
+(define-condition array-out-of-bounds (type-error)
+  ((array :INITARG :ARRAY :READER array-out-of-bounds-array))
+  (:REPORT
+   (lambda (condition stream)
+     (format stream "array index ~S is out of bounds ~s for array ~S."
+             (type-error-datum condition)
+             (type-error-expected-type condition)
+             (array-out-of-bounds-array condition)))))
+
 (define-condition simple-type-error (simple-condition type-error) ())
 
 (define-condition case-failure (type-error)

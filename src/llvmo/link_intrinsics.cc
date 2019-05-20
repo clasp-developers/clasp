@@ -1094,6 +1094,27 @@ void cc_setSymbolValue(core::T_O *sym, core::T_O *val)
   NO_UNWIND_END();
 }
 
+SYMBOL_EXPORT_SC_(KeywordPkg,datum);
+SYMBOL_EXPORT_SC_(KeywordPkg,expected_type);
+void cc_error_type_error(T_O* datum, T_O* expected_type)
+{
+  T_sp tdatum((gctools::Tagged)datum);
+  T_sp texpected_type((gctools::Tagged)expected_type);
+  core::eval::funcall(cl::_sym_error,cl::_sym_type_error,kw::_sym_datum,tdatum,kw::_sym_expected_type,texpected_type);
+}
+
+void cc_error_array_out_of_bounds(T_O* index, T_O* expected_type, T_O* array)
+{
+  core::T_sp tindex((gctools::Tagged)index);
+  core::T_sp texpected_type((gctools::Tagged)expected_type);
+  core::T_sp tarray((gctools::Tagged)array);
+  core::eval::funcall(cl::_sym_error,
+                      core::_sym_array_out_of_bounds,
+                      kw::_sym_datum, tindex,
+                      kw::_sym_expected_type, texpected_type,
+                      kw::_sym_array,tarray);
+}
+
 core::T_O *cc_enclose(fnLispCallingConvention llvm_func,
                       void* functionDescription,
                       std::size_t numCells, ...)
