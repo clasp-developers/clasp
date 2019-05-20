@@ -563,7 +563,7 @@ void af_wrongTypeKeyArg(const string &sourceFile, int lineno,
                 _Nil<T_O>(),                  // arg1
                 SimpleBaseString_O::make(message.str()), // arg2
                 Cons_O::createList(function, key, value, type),
-                kw::_sym_expectedType, type,
+                kw::_sym_expected_type, type,
                 kw::_sym_datum, value);
 };
 
@@ -581,7 +581,7 @@ void af_wrongTypeOnlyArg(const string &sourceFile, int lineno, Symbol_sp functio
                   _Nil<T_O>(),                  // arg1
                   SimpleBaseString_O::make(message.str()), // arg2
                   Cons_O::createList(value, type),
-                  kw::_sym_expectedType, type,
+                  kw::_sym_expected_type, type,
                   kw::_sym_datum, value);
   } else {
     message << "In function ~A,";
@@ -592,7 +592,7 @@ void af_wrongTypeOnlyArg(const string &sourceFile, int lineno, Symbol_sp functio
                   _Nil<T_O>(),                  // arg1
                   SimpleBaseString_O::make(message.str()), // arg2
                   Cons_O::createList(function, value, type),
-                  kw::_sym_expectedType, type,
+                  kw::_sym_expected_type, type,
                   kw::_sym_datum, value);
   }
 };
@@ -609,7 +609,7 @@ CL_DEFUN void core__function_wrong_type_argument(Symbol_sp function, T_sp value,
                   _Nil<T_O>(),                  // arg1
                   SimpleBaseString_O::make(message.str()), // arg2
                   Cons_O::createList(value, type),
-                  kw::_sym_expectedType, type,
+                  kw::_sym_expected_type, type,
                   kw::_sym_datum, value);
   } else {
     message << "In function ~A, "
@@ -620,7 +620,7 @@ CL_DEFUN void core__function_wrong_type_argument(Symbol_sp function, T_sp value,
                   _Nil<T_O>(),                  // arg1
                   SimpleBaseString_O::make(message.str()), // arg2
                   Cons_O::createList(function, value, type),
-                  kw::_sym_expectedType, type,
+                  kw::_sym_expected_type, type,
                   kw::_sym_datum, value);
   }
 };
@@ -639,7 +639,7 @@ CL_DEFUN void core__wrong_type_argument(const string &sourceFile, int lineno, Sy
                   _Nil<T_O>(),                  // arg1
                   SimpleBaseString_O::make(message.str()), // arg2
                   Cons_O::createList(value, type),
-                  kw::_sym_expectedType, type,
+                  kw::_sym_expected_type, type,
                   kw::_sym_datum, value);
   } else {
     message << "In function ~A, "
@@ -650,7 +650,7 @@ CL_DEFUN void core__wrong_type_argument(const string &sourceFile, int lineno, Sy
                   _Nil<T_O>(),                  // arg1
                   SimpleBaseString_O::make(message.str()), // arg2
                   Cons_O::createList(function, value, type),
-                  kw::_sym_expectedType, type,
+                  kw::_sym_expected_type, type,
                   kw::_sym_datum, value);
   }
 };
@@ -669,7 +669,7 @@ CL_DEFUN void core__wrong_type_nth_arg(const string &sourceFile, int lineno, Sym
                   _Nil<T_O>(),                  // arg1
                   SimpleBaseString_O::make(message.str()), // arg2
                   Cons_O::createList(make_fixnum(narg), value, type),
-                  kw::_sym_expectedType, type,
+                  kw::_sym_expected_type, type,
                   kw::_sym_datum, value);
   } else {
     stringstream message;
@@ -681,7 +681,7 @@ CL_DEFUN void core__wrong_type_nth_arg(const string &sourceFile, int lineno, Sym
                   _Nil<T_O>(),                  // arg1
                   SimpleBaseString_O::make(message.str()), // arg2
                   Cons_O::createList(function, make_fixnum(narg), value, type),
-                  kw::_sym_expectedType, type,
+                  kw::_sym_expected_type, type,
                   kw::_sym_datum, value);
   }
 };
@@ -708,7 +708,7 @@ CL_DEFUN void core__wrong_index(const string &sourceFile, int lineno, Symbol_sp 
                   _Nil<T_O>(),        // arg1
                   message,            // arg2
                   Cons_O::createList(make_fixnum(which + 1), array, index, type),
-                  kw::_sym_expectedType, type,
+                  kw::_sym_expected_type, type,
                   kw::_sym_datum, index);
   } else {
     const char *message1 =
@@ -728,7 +728,7 @@ CL_DEFUN void core__wrong_index(const string &sourceFile, int lineno, Symbol_sp 
                   _Nil<T_O>(),        // arg1
                   message,            // arg2
                   Cons_O::createList(function, make_fixnum(which + 1), array, index, type),
-                  kw::_sym_expectedType, type,
+                  kw::_sym_expected_type, type,
                   kw::_sym_datum, index);
   }
 };

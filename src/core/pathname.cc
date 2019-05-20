@@ -1002,10 +1002,10 @@ CL_DEFUN T_sp cl__logical_pathname(T_sp x) {
   if (x.nilp()) ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_logicalPathname, x, Cons_O::createList(cl::_sym_or, cl::_sym_fileStream, cl::_sym_string, cl::_sym_pathname));
   x = cl__pathname(x);
   if (!core__logical_pathname_p(x)) {
-      cl__error(cl::_sym_simpleTypeError, Cons_O::createList(kw::_sym_formatControl,
+      cl__error(cl::_sym_simpleTypeError, Cons_O::createList(kw::_sym_format_control,
                                                         SimpleBaseString_O::make("~S cannot be coerced to a logical pathname."),
-                                                        kw::_sym_formatArguments, Cons_O::createList(x),
-                                                        kw::_sym_expectedType, cl::_sym_LogicalPathname_O,
+                                                        kw::_sym_format_arguments, Cons_O::createList(x),
+                                                        kw::_sym_expected_type, cl::_sym_LogicalPathname_O,
                                                         kw::_sym_datum, x));
   }
   return x;

@@ -5222,48 +5222,48 @@ clasp_integer_to_off_t(T_sp offset) {
 static T_sp
 not_a_file_stream(T_sp strm) {
   cl__error(cl::_sym_simpleTypeError,
-           Cons_O::createList(kw::_sym_formatControl,
+           Cons_O::createList(kw::_sym_format_control,
                               SimpleBaseString_O::make("~A is not an file stream"),
-                              kw::_sym_formatArguments, Cons_O::createList(strm),
-                              kw::_sym_expectedType, cl::_sym_FileStream_O,
+                              kw::_sym_format_arguments, Cons_O::createList(strm),
+                              kw::_sym_expected_type, cl::_sym_FileStream_O,
                               kw::_sym_datum, strm));
   UNREACHABLE();
 }
 
 static void
 not_an_input_stream(T_sp strm) {
-  cl__error(cl::_sym_simpleTypeError, Cons_O::createList(kw::_sym_formatControl,
+  cl__error(cl::_sym_simpleTypeError, Cons_O::createList(kw::_sym_format_control,
                                                         SimpleBaseString_O::make("~A is not an input stream"),
-                                                        kw::_sym_formatArguments, Cons_O::createList(strm),
-                                                        kw::_sym_expectedType,
+                                                        kw::_sym_format_arguments, Cons_O::createList(strm),
+                                                        kw::_sym_expected_type,
                                                         Cons_O::createList(cl::_sym_satisfies, cl::_sym_input_stream_p),
                                                         kw::_sym_datum, strm));
 }
 
 static void
 not_an_output_stream(T_sp strm) {
-  cl__error(cl::_sym_simpleTypeError, Cons_O::createList(kw::_sym_formatControl,
+  cl__error(cl::_sym_simpleTypeError, Cons_O::createList(kw::_sym_format_control,
                                                         SimpleBaseString_O::make("~A is not an output stream"),
-                                                        kw::_sym_formatArguments, Cons_O::createList(strm),
-                                                        kw::_sym_expectedType, Cons_O::createList(cl::_sym_satisfies, cl::_sym_output_stream_p),
+                                                        kw::_sym_format_arguments, Cons_O::createList(strm),
+                                                        kw::_sym_expected_type, Cons_O::createList(cl::_sym_satisfies, cl::_sym_output_stream_p),
                                                         kw::_sym_datum, strm));
 }
 
 static void
 not_a_character_stream(T_sp s) {
-  cl__error(cl::_sym_simpleTypeError, Cons_O::createList(kw::_sym_formatControl,
+  cl__error(cl::_sym_simpleTypeError, Cons_O::createList(kw::_sym_format_control,
                                                         SimpleBaseString_O::make("~A is not a character stream"),
-                                                        kw::_sym_formatArguments, Cons_O::createList(s),
-                                                        kw::_sym_expectedType, cl::_sym_character,
+                                                        kw::_sym_format_arguments, Cons_O::createList(s),
+                                                        kw::_sym_expected_type, cl::_sym_character,
                                                         kw::_sym_datum, cl__stream_element_type(s)));
 }
 
 static void
 not_a_binary_stream(T_sp s) {
-  cl__error(cl::_sym_simpleTypeError, Cons_O::createList(kw::_sym_formatControl,
+  cl__error(cl::_sym_simpleTypeError, Cons_O::createList(kw::_sym_format_control,
                                                         SimpleBaseString_O::make("~A is not a binary stream"),
-                                                        kw::_sym_formatArguments, Cons_O::createList(s),
-                                                        kw::_sym_expectedType, cl::_sym_Integer_O,
+                                                        kw::_sym_format_arguments, Cons_O::createList(s),
+                                                        kw::_sym_expected_type, cl::_sym_Integer_O,
                                                         kw::_sym_datum, cl__stream_element_type(s)));
 }
 

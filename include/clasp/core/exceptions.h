@@ -72,44 +72,44 @@ extern core::Symbol_sp& _sym_name;
 #define SIMPLE_ERROR(_boost_fmt_) ::core::lisp_error_simple(__FUNCTION__, __FILE__, __LINE__, _boost_fmt_)
 #define NOT_ENVIRONMENT_ERROR(_e_)                                                                  \
   ERROR(cl::_sym_simpleTypeError,                                                                      \
-        core::lisp_createList(kw::_sym_formatControl, core::lisp_createStr("~S is not a bclasp environment"), \
-                              kw::_sym_formatArguments, core::lisp_createList(_e_),                  \
-                              kw::_sym_expectedType, core::_sym_Environment_O, \
+        core::lisp_createList(kw::_sym_format_control, core::lisp_createStr("~S is not a bclasp environment"), \
+                              kw::_sym_format_arguments, core::lisp_createList(_e_),                  \
+                              kw::_sym_expected_type, core::_sym_Environment_O, \
                               kw::_sym_datum, _e_));
 #define SIMPLE_ERROR_BF(_str_) SIMPLE_ERROR(BF(_str_))
 
 /*! Error for when an index is out of range - eg: beyond the end of a string */
 #define OLD_TYPE_ERROR_INDEX(_seq_, _idx_) \
   ERROR(cl::_sym_simpleTypeError, \
-        core::lisp_createList(kw::_sym_formatControl, core::lisp_createStr("~S is not a valid index into the object ~S"), \
-                              kw::_sym_formatArguments, core::lisp_createList(clasp_make_fixnum(_idx_), _seq_), \
-                              kw::_sym_expectedType, core::lisp_createList(cl::_sym_integer, clasp_make_fixnum(0), make_fixnum((gc::IsA<Instance_sp>(_seq_) ? gc::As<Instance_sp>(_seq_)->numberOfSlots() : (_seq_)->length()) - 1)), \
+        core::lisp_createList(kw::_sym_format_control, core::lisp_createStr("~S is not a valid index into the object ~S"), \
+                              kw::_sym_format_arguments, core::lisp_createList(clasp_make_fixnum(_idx_), _seq_), \
+                              kw::_sym_expected_type, core::lisp_createList(cl::_sym_integer, clasp_make_fixnum(0), make_fixnum((gc::IsA<Instance_sp>(_seq_) ? gc::As<Instance_sp>(_seq_)->numberOfSlots() : (_seq_)->length()) - 1)), \
                               kw::_sym_datum, clasp_make_fixnum(_idx_)));
 
 /*! Error for when an index is out of range - eg: beyond the end of a string */
 #define TYPE_ERROR_INDEX(_seq_, _idx_) \
   ERROR(cl::_sym_simpleTypeError, \
-        core::lisp_createList(kw::_sym_formatControl, core::lisp_createStr("~S is not a valid index into the object ~S"), \
-                              kw::_sym_formatArguments, core::lisp_createList(make_fixnum(_idx_), _seq_), \
-                              kw::_sym_expectedType, core::lisp_createList(cl::_sym_integer, \
+        core::lisp_createList(kw::_sym_format_control, core::lisp_createStr("~S is not a valid index into the object ~S"), \
+                              kw::_sym_format_arguments, core::lisp_createList(make_fixnum(_idx_), _seq_), \
+                              kw::_sym_expected_type, core::lisp_createList(cl::_sym_integer, \
                                                                            make_fixnum(0), \
                                                                            make_fixnum((_seq_)->length()-1)), \
                               kw::_sym_datum, make_fixnum(_idx_)));
 
 #define TYPE_ERROR_INDEX_VARIABLE(message, seqobject, idxobject,len) \
   ERROR(cl::_sym_simpleTypeError, \
-        core::lisp_createList(kw::_sym_formatControl, core::lisp_createStr(message), \
-                              kw::_sym_formatArguments, core::lisp_createList(idxobject, seqobject), \
-                              kw::_sym_expectedType, core::lisp_createList(cl::_sym_integer, \
+        core::lisp_createList(kw::_sym_format_control, core::lisp_createStr(message), \
+                              kw::_sym_format_arguments, core::lisp_createList(idxobject, seqobject), \
+                              kw::_sym_expected_type, core::lisp_createList(cl::_sym_integer, \
                                                                            make_fixnum(0), \
                                                                            make_fixnum(len-1)), \
                               kw::_sym_datum, idxobject));
 
 #define TYPE_ERROR_PROPER_LIST(_lst_)                                                                  \
   ERROR(cl::_sym_simpleTypeError,                                                                      \
-        core::lisp_createList(kw::_sym_formatControl, core::lisp_createStr("~S is not a proper list"), \
-                              kw::_sym_formatArguments, core::lisp_createList(_lst_),                  \
-                              kw::_sym_expectedType, cl::_sym_cons,                                    \
+        core::lisp_createList(kw::_sym_format_control, core::lisp_createStr("~S is not a proper list"), \
+                              kw::_sym_format_arguments, core::lisp_createList(_lst_),                  \
+                              kw::_sym_expected_type, cl::_sym_cons,                                    \
                               kw::_sym_datum, _lst_));
 
 // this might be a copy-paste error _obj_ is declared, but _lst_ is used
@@ -117,26 +117,26 @@ extern core::Symbol_sp& _sym_name;
 // can't find a use in all clasp
 #define TYPE_ERROR_NO_FILL_POINTER(_obj_)                                                                  \
   ERROR(cl::_sym_simpleTypeError,                                                                      \
-        core::lisp_createList(kw::_sym_formatControl, core::lisp_createStr("~S is not a proper list"), \
-                              kw::_sym_formatArguments, core::lisp_createList(_lst_),                  \
-                              kw::_sym_expectedType, cl::_sym_cons,                                    \
+        core::lisp_createList(kw::_sym_format_control, core::lisp_createStr("~S is not a proper list"), \
+                              kw::_sym_format_arguments, core::lisp_createList(_lst_),                  \
+                              kw::_sym_expected_type, cl::_sym_cons,                                    \
                               kw::_sym_datum, _lst_));
 
 #define TYPE_ERROR_LIST(_lst_)                                                                  \
   ERROR(cl::_sym_simpleTypeError,                                                               \
-        core::lisp_createList(kw::_sym_formatControl, core::lisp_createStr("~S is not a list"), \
-                              kw::_sym_formatArguments, core::lisp_createList(_lst_),           \
-                              kw::_sym_expectedType, cl::_sym_cons,                             \
+        core::lisp_createList(kw::_sym_format_control, core::lisp_createStr("~S is not a list"), \
+                              kw::_sym_format_arguments, core::lisp_createList(_lst_),           \
+                              kw::_sym_expected_type, cl::_sym_cons,                             \
                               kw::_sym_datum, _lst_));
 
-#define TYPE_ERROR(_datum_, _expectedType_) ERROR(::cl::_sym_typeError, core::lisp_createList(kw::_sym_datum, _datum_, kw::_sym_expectedType, _expectedType_))
+#define TYPE_ERROR(_datum_, _expectedType_) ERROR(::cl::_sym_type_error, core::lisp_createList(kw::_sym_datum, _datum_, kw::_sym_expected_type, _expectedType_))
 #define PROGRAM_ERROR() ERROR(cl::_sym_programError, (_Nil<T_O>()))
 #define SIMPLE_PROGRAM_ERROR(message, datum)                                                     \
         ERROR(core::_sym_simpleProgramError,                                                     \
-              core::lisp_createList(kw::_sym_formatControl, core::lisp_createStr(message),kw::_sym_formatArguments, core::lisp_createList(datum)))
+              core::lisp_createList(kw::_sym_format_control, core::lisp_createStr(message),kw::_sym_format_arguments, core::lisp_createList(datum)))
 #define SIMPLE_PROGRAM_ERROR_2_ARGS(message, datum1, datum2)                                                     \
         ERROR(core::_sym_simpleProgramError,                                                     \
-              core::lisp_createList(kw::_sym_formatControl, core::lisp_createStr(message),kw::_sym_formatArguments, core::lisp_createList(datum1, datum2)))
+              core::lisp_createList(kw::_sym_format_control, core::lisp_createStr(message),kw::_sym_format_arguments, core::lisp_createList(datum1, datum2)))
 
 #define FILE_ERROR(_file_) ERROR(cl::_sym_fileError, core::lisp_createList(kw::_sym_pathname, _file_))
 #define CANNOT_OPEN_FILE_ERROR(_file_) FILE_ERROR(_file_)
@@ -149,11 +149,11 @@ extern core::Symbol_sp& _sym_name;
 // core::_sym_simplePackageError with message and datum
 #define SIMPLE_PACKAGE_ERROR(message, datum)                                                     \
         ERROR(core::_sym_simplePackageError,                                                     \
-              core::lisp_createList(kw::_sym_formatControl, core::lisp_createStr(message),kw::_sym_formatArguments, core::lisp_createList(core::lisp_createStr(datum))))
+              core::lisp_createList(kw::_sym_format_control, core::lisp_createStr(message),kw::_sym_format_arguments, core::lisp_createList(core::lisp_createStr(datum))))
 #define SIMPLE_PACKAGE_ERROR_2_args(message, datum1, datum2)                                     \
         ERROR(core::_sym_simplePackageError,                                                     \
-              core::lisp_createList(kw::_sym_formatControl, core::lisp_createStr(message),       \
-              kw::_sym_formatArguments, core::lisp_createList(core::lisp_createStr(datum1), core::lisp_createStr(datum2))))
+              core::lisp_createList(kw::_sym_format_control, core::lisp_createStr(message),       \
+              kw::_sym_format_arguments, core::lisp_createList(core::lisp_createStr(datum1), core::lisp_createStr(datum2))))
 
 #define PACKAGE_ERROR(p) ERROR(cl::_sym_package_error, core::lisp_createList(kw::_sym_package, p))
 #define ERROR_END_OF_FILE(st) ERROR(cl::_sym_endOfFile, core::lisp_createList(kw::_sym_stream, st))

@@ -125,17 +125,17 @@ void notVectorError(T_sp array) {
 }
 void noFillPointerError(Symbol_sp fn_name, T_sp thing) {
   ERROR(cl::_sym_simpleTypeError,
-        core::lisp_createList(kw::_sym_formatControl, core::lisp_createStr("When calling ~S the argument ~S is not an array with a fill pointer."),
-                              kw::_sym_formatArguments, core::lisp_createList(fn_name, thing),
-                              kw::_sym_expectedType, core::lisp_createList(cl::_sym_and,cl::_sym_vector,core::lisp_createList(cl::_sym_satisfies,cl::_sym_array_has_fill_pointer_p)),
+        core::lisp_createList(kw::_sym_format_control, core::lisp_createStr("When calling ~S the argument ~S is not an array with a fill pointer."),
+                              kw::_sym_format_arguments, core::lisp_createList(fn_name, thing),
+                              kw::_sym_expected_type, core::lisp_createList(cl::_sym_and,cl::_sym_vector,core::lisp_createList(cl::_sym_satisfies,cl::_sym_array_has_fill_pointer_p)),
                               kw::_sym_datum, thing));
 }
 void noFillPointerSpecializedArrayError(T_sp thing) {
   Array_sp athing = gc::As<Array_sp>(thing);
   ERROR(cl::_sym_simpleTypeError,
-        core::lisp_createList(kw::_sym_formatControl, core::lisp_createStr("When calling vectorPushExtend for a ~S specialized array ~S the argument ~S is not an array with a fill pointer."),
-                              kw::_sym_formatArguments, core::lisp_createList(athing->element_type(), thing),
-                              kw::_sym_expectedType, core::lisp_createList(cl::_sym_and,cl::_sym_vector,core::lisp_createList(cl::_sym_satisfies,cl::_sym_array_has_fill_pointer_p)),
+        core::lisp_createList(kw::_sym_format_control, core::lisp_createStr("When calling vectorPushExtend for a ~S specialized array ~S the argument ~S is not an array with a fill pointer."),
+                              kw::_sym_format_arguments, core::lisp_createList(athing->element_type(), thing),
+                              kw::_sym_expected_type, core::lisp_createList(cl::_sym_and,cl::_sym_vector,core::lisp_createList(cl::_sym_satisfies,cl::_sym_array_has_fill_pointer_p)),
                               kw::_sym_datum, thing));
 }
 
