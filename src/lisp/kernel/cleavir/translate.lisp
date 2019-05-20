@@ -417,6 +417,29 @@ when this is t a lot of graphs will be generated.")
       (setf *ct-translate* (compiler-timer-elapsed))
       (values function lambda-name))))
 
+#+debug-monitor
+(defun monitor-instructions-with-origins (top-instruction)
+  (let ((instr-count (make-hash-table))
+        (total 0)
+        (have-origins 0))
+    (cleavir-ir:map-instructions-arbitrary-order
+     (lambda (instr)
+       (if (cleavir-ir:origin instr)
+           (incf have-origins)
+           (incf (gethash (class-of instr) instr-count 0)))
+       (incf total))
+     top-instruction)
+    (sys:monitor-message "instr-origins ~d ~d frac ~f" have-origins total (/ have-origins (float total)))
+    (let ((instr-count-list nil))
+      (maphash (lambda (class count)
+                 (push (cons count class) instr-count-list))
+               instr-count)
+      (let ((sorted-instr-count-list (sort instr-count-list #'> :key #'car)))
+        (loop for num below 5
+              for count-class in sorted-instr-count-list
+              when count-class
+                do (sys:monitor-message "instr-miss-origin-class-count ~a ~a" (car count-class) (cdr count-class)))))))
+    
 (defun my-hir-transformations (init-instr system env)
   ;; FIXME: Per Cleavir rules, we shouldn't need the environment at this point.
   ;; We do anyway because of the possibility that a load-time-value input is introduced
@@ -437,7 +460,6 @@ when this is t a lot of graphs will be generated.")
   (cleavir-kildall-type-inference:thes->typeqs init-instr clasp-cleavir:*clasp-env*)
   (quick-draw-hir init-instr "hir-after-thes-typeqs")
   (setf *ct-thes->typeqs* (compiler-timer-elapsed))
-
   ;;; See comment in policy.lisp. tl;dr these analyses are slow.
   #+(or)
   (let ((do-dx (policy-anywhere-p init-instr 'do-dx-analysis))
@@ -468,6 +490,7 @@ when this is t a lot of graphs will be generated.")
   (clasp-cleavir::eliminate-load-time-value-inputs init-instr system env)
   (quick-draw-hir init-instr "hir-after-eliminate-load-time-value-inputs")
   (setf *ct-eliminate-load-time-value-inputs* (compiler-timer-elapsed))
+  #+debug-monitor(monitor-instructions-with-origins init-instr)
   #+(or)
   (cleavir-remove-useless-instructions:remove-useless-instructions init-instr)
   #+(or)
@@ -539,8 +562,35 @@ Does not hoist."
       (clasp-cleavir-ast:hoist-load-time-value ast dynenv env)
     (setf *ct-hoist-ast* (compiler-timer-elapsed))))
 
+
+#+debug-monitor
+(defun monitor-ast-with-origins (ast)
+  (let ((ast-count (make-hash-table))
+        (total 0)
+        (have-origins 0))
+    (cleavir-ast:map-ast-depth-first-preorder
+     (lambda (ast)
+       (if (cleavir-ast:origin ast)
+           (incf have-origins)
+           (incf (gethash (class-of ast) ast-count 0)))
+       (incf total))
+     ast)
+    (sys:monitor-message "ast-origins ~d ~d frac ~f" have-origins total (/ have-origins (float total)))
+    (let ((ast-count-list nil))
+      (maphash (lambda (class count)
+                 (push (cons count class) ast-count-list))
+               ast-count)
+      (let ((sorted-ast-count-list (sort ast-count-list #'> :key #'car)))
+        (loop for num below 5
+              for count-class in sorted-ast-count-list
+              when count-class
+                do (sys:monitor-message "ast-miss-origin-class-count ~a ~a" (car count-class) (cdr count-class)))))))
+
+
+
 (defun ast->hir (ast)
   "Compile an AST down to HIR and return it."
+  #+debug-monitor(monitor-ast-with-origins ast)
   (prog1 (cleavir-ast-to-hir:compile-toplevel ast)
     (setf *ct-generate-hir* (compiler-timer-elapsed))))
 
