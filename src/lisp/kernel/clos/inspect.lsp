@@ -455,11 +455,11 @@ q (or Q):             quits the inspection.~%~
     (setf (slot-value object 'docstring) new-value)))
 
 (defmethod documentation ((object function) doc-type)
-  (when (member doc-type '(t function))
+  (when (member doc-type '(t function compiler-macro))
     (core:function-docstring object)))
 
 (defmethod (setf documentation) (new-value (object function) doc-type)
-  (when (member doc-type '(t function))
+  (when (member doc-type '(t function compiler-macro))
     (setf (core:function-docstring object) new-value)))
 
 (defmethod documentation ((object slot-definition) doc-type)
