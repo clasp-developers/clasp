@@ -13,4 +13,22 @@
 (TEST-EXPECT-ERROR
  sleep-3
  (sleep -1)
-  :type type-error)
+ :type type-error)
+
+(defun %%test%% (n)
+  (* n 2))
+
+(define-compiler-macro %%test%% (&whole form arg)
+  (if (constantp arg)
+      (* arg 2)
+      form))
+
+(test DOCUMENTATION.LIST.COMPILER-MACRO.2
+      (let ((doc "Buh"))
+        (setf (documentation '%%test%% 'compiler-macro) doc)
+        (string= doc (documentation '%%test%% 'compiler-macro))))
+
+;;; (funcall (compiler-macro-function '%%test%%) '(%%test%% 2) nil)
+
+
+
