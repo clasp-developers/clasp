@@ -894,3 +894,16 @@ is dumped to a file before the block and after the block."
      (multiple-value-prog1 (progn ,@body)
        (llvm-sys:sanity-check-module *the-module* 2)
        (quick-module-dump *the-module* ,(bformat nil "%s-end" info)))))
+
+
+(defun module-report (module)
+  (let ((total 0))
+    (dolist (func (llvm-sys:module-get-function-list module))
+      (let ((num-instructions 0))
+        (dolist (bb (llvm-sys:basic-blocks func))
+          (let ((bb-instr (llvm-sys:number-of-instructions bb)))
+            (incf num-instructions bb-instr)))
+        (incf total num-instructions)
+        (format t "~a Function ~a~%" num-instructions func)))
+    (format t "~a total~%" total)))
+

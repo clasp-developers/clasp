@@ -3483,6 +3483,7 @@ public:
   Instruction_sp back();
 
   core::List_sp instructions() const;
+  size_t number_of_instructions() const;
 
 }; // BasicBlock_O
 }; // llvmo

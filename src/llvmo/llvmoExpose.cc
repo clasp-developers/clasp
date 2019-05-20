@@ -2629,13 +2629,14 @@ CL_DEFMETHOD BasicBlock_sp Function_O::getEntryBlock() const {
 CL_LISPIFY_NAME("basic-blocks");
 CL_DEFMETHOD core::List_sp Function_O::basic_blocks() const {
   llvm::Function::BasicBlockListType& Blocks = this->wrappedPtr()->getBasicBlockList();
-  core::List_sp result = _Nil<core::T_O>();
+  ql::list result;
   for (llvm::Function::iterator b = this->wrappedPtr()->begin(), be = this->wrappedPtr()->end(); b != be; ++b) {
     llvm::BasicBlock& BB = *b;
     // Delete the basic block from the old function, and the list of blocks
-    result = core::Cons_O::create(translate::to_object<llvm::BasicBlock*>::convert(&BB),_Nil<T_O>());
+    core::T_sp tbb = translate::to_object<llvm::BasicBlock*>::convert(&BB);
+    result << tbb;
   }
-  return result;
+  return result.cons();
 }
 
   CL_LISPIFY_NAME(getFunctionType);
@@ -2713,6 +2714,12 @@ CL_DEFMETHOD core::List_sp BasicBlock_O::instructions() const {
     result << translate::to_object<llvm::Instruction*>::convert(&II);
   }
   return result.cons();
+}
+
+CL_LISPIFY_NAME("number-of-instructions");
+CL_DEFMETHOD size_t BasicBlock_O::number_of_instructions() const {
+  llvm::BasicBlock* bb = const_cast<BasicBlock_O*>(this)->wrappedPtr();
+  return std::distance(bb->begin(),bb->end());
 }
 
 CL_LISPIFY_NAME("BasicBlockBack");
