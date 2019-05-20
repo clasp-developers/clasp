@@ -2,6 +2,7 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (export '(
             with-interpreter
+            module-report
             *debug-link-options* ;; A list of strings to inject into link commands
             *compile-file-debug-dump-module* ;; Dump intermediate modules
             *compile-debug-dump-module* ;; Dump intermediate modules
