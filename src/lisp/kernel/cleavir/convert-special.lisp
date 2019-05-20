@@ -98,6 +98,13 @@
     ((symbol (eql 'core:debug-message)) form environment (system clasp-cleavir:clasp))
   (make-instance 'clasp-cleavir-ast:debug-message-ast :debug-message (cadr form)))
 
+(defmethod cleavir-cst-to-ast::convert-special
+    ((symbol (eql 'core:debug-message)) cst environment (system clasp-cleavir:clasp))
+  (assert (typep (cst:raw (cst:second cst)) 'string))
+  (make-instance 'clasp-cleavir-ast:debug-message-ast
+                 :debug-message (cst:raw (cst:second cst))
+                 :origin (cst:source cst)))
+
 (defmethod cleavir-generate-ast::check-special-form-syntax ((head (eql 'core:debug-message)) form)
   (cleavir-code-utilities:check-form-proper-list form)
   (cleavir-code-utilities:check-argcount form 1 1))
@@ -112,6 +119,11 @@
 (defmethod cleavir-generate-ast::convert-special
     ((symbol (eql 'core:debug-break)) form environment (system clasp-cleavir:clasp))
   (make-instance 'clasp-cleavir-ast:debug-break-ast))
+
+(defmethod cleavir-cst-to-ast::convert-special
+    ((symbol (eql 'core:debug-break)) cst environment (system clasp-cleavir:clasp))
+  (make-instance 'clasp-cleavir-ast:debug-break-ast
+                 :origin (cst:source cst)))
 
 (defmethod cleavir-generate-ast::check-special-form-syntax ((head (eql 'core:debug-break)) form)
   (cleavir-code-utilities:check-form-proper-list form)

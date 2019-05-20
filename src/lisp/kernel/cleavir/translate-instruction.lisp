@@ -588,6 +588,7 @@
     ((instruction cleavir-ir:consp-instruction) return-value successors abi function-info)
   (let* ((x (in (first (cleavir-ir:inputs instruction))))
          (tag (cmp:irc-and (cmp:irc-ptr-to-int x cmp:%i32%) (%i32 cmp:+tag-mask+) "tag-only"))
+;;;         (_ (core:debug-message "In consp"))
          (cmp (cmp:irc-icmp-eq tag (%i32 cmp:+cons-tag+) "consp-test")))
     (cmp:irc-cond-br cmp (first successors) (second successors))))
 
