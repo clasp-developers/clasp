@@ -177,10 +177,11 @@
               (warn "execute-link-fasl worked after removing ~a from the argument list --- FIGURE OUT WHAT IS GOING WRONG WITH THAT ARGUMENT!!!" (car clang-args))))
           (unless (probe-file temp-bundle-file)
             (error "~%!~%!~%! There is a HUGE problem - an execute-link-fasl command with the arguments:   /path-to-clang ~a~%~%!        failed to generate the output file ~a~%" clang-args temp-bundle-file)))
-        (rename-file temp-bundle-file bundle-file :if-exists :supersede)
+        ;; Now rename the library to make compilation atomic
         ;; Run dsymutil on darwin
+        (rename-file temp-bundle-file bundle-file :if-exists :supersede)
         (when (member :target-os-darwin *features*)
-          (ext:system (sys:bformat nil "dsymutil %s" (namestring bundle-file))))
+          (ext:run-dsymutil (list "-f" (namestring bundle-file))))
         (truename bundle-file)))))
 
 (defun execute-link-fasl (in-bundle-file in-all-names &key input-type)

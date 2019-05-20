@@ -94,4 +94,24 @@
     (setf llvm-sys:*accumulated-clang-link-time* (+ llvm-sys:*accumulated-clang-link-time* (* (/ 1.0 internal-time-units-per-second) (- (get-internal-run-time) start-time))))
     (incf llvm-sys:*number-of-clang-links*)))
 
-(export 'run-clang)
+
+#+target-os-darwin
+(defun run-dsymutil (args &key (clang core:*clang-bin*) output-file-name)
+  "Run the discovered clang compiler on the arguments. This replaces a simpler version of run-clang."
+  (unless clang
+    (error "There is no clang compiler path defined!!!!"))
+  (let ((dsymutil (make-pathname :name "llvm-dsymutil" :type nil :defaults core:*clang-bin*)))
+    (unless (probe-file dsymutil)
+      (error "Could not find dsymutil at ~a" dsymutil))
+    (when (member :debug-run-clang *features*)
+      (let ((cmd (with-output-to-string (sout)
+                   (core:bformat sout "%s" (namestring dsymutil))
+                   (dolist (arg args)
+                     (core:bformat sout " %s" arg)))))
+        (core:bformat t "run-dsymutil:  %s%N" cmd)))
+    (let ((start-time (get-internal-run-time)))
+      (cmp::safe-system (list* (namestring dsymutil) args) :output-file-name output-file-name)
+      (setf llvm-sys:*accumulated-clang-link-time* (+ llvm-sys:*accumulated-clang-link-time* (* (/ 1.0 internal-time-units-per-second) (- (get-internal-run-time) start-time))))
+      (incf llvm-sys:*number-of-clang-links*))))
+
+(export '(run-clang run-dsymutil))
