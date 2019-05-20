@@ -981,12 +981,30 @@ and then the irbuilder-alloca, irbuilder-body."
 (defun irc-tsp-result (tsp result)
   (irc-t*-result (irc-smart-ptr-extract tsp) result))
 
-(defun irc-calculate-entry (closure &optional (label "entry-point"))
+
+(defun irc-calculate-entry (closure &optional (label "entry-point-gep"))
+  (let* ((closure-i8*           (irc-bit-cast closure %i8*%))
+         (entry-point-addr-i8*  (irc-gep closure-i8* (list (- +closure-entry-point-offset+ +general-tag+))))
+         (entry-point-addr-fp** (irc-bit-cast entry-point-addr-i8* %fn-prototype**%))
+         (entry-point           (irc-load entry-point-addr-fp** (core:bformat nil "%s-gep" label))))
+    entry-point))
+
+
+#+(or)
+(defun irc-calculate-entry-ptr (closure &optional (label "entry-point"))
   (let* ((closure-uintptr        (irc-ptr-to-int closure %uintptr_t%))
-         (entry-point-addr-uint  (irc-add closure-uintptr (jit-constant-uintptr_t (- +closure-entry-point-offset+ +general-tag+)) "entry-point-addr-uint"))
+         (entry-point-addr-uint  (irc-add closure-uintptr (jit-constant-uintptr_t (- +closure-entry-point-offset+ +general-tag+)) "entry-point-addr-uintff"))
          (entry-point-addr       (irc-int-to-ptr entry-point-addr-uint %fn-prototype**% "entry-point-addr"))
          (entry-point            (irc-load entry-point-addr label)))
     entry-point))
+
+#+(or)
+(progn
+  (defparameter *use-gep* nil)
+  (defun irc-calculate-entry (closure &optional (label "entry-point"))
+    (if *use-gep*
+        (irc-calculate-entry-gep closure label)
+        (irc-calculate-entry-ptr closure label))))
 
 (defun irc-calculate-real-args (args)
   (let* ((nargs                  (length args))
@@ -1000,7 +1018,7 @@ and then the irbuilder-alloca, irbuilder-body."
     real-args))
 
 (defun irc-funcall-results-in-registers (closure args &optional (label ""))
-  (let* ((entry-point         (irc-calculate-entry closure label))   ; Calculate the function pointer
+  (let* ((entry-point         (irc-calculate-entry closure label))
          (real-args           (irc-calculate-real-args args))  ; fill in NULL for missing register arguments
          (result-in-registers (irc-call-or-invoke entry-point (list* closure (jit-constant-size_t (length args)) real-args) *current-unwind-landing-pad-dest*)))
     result-in-registers))
