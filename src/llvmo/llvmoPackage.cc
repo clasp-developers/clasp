@@ -262,8 +262,12 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   return list;
 }
 
-CL_LAMBDA(&key tsp tmv ihf contab valist register-save-area function-description);
-CL_DEFUN void llvm_sys__throwIfMismatchedStructureSizes(core::Fixnum_sp tspSize, core::Fixnum_sp tmvSize, gc::Nilable<core::Fixnum_sp> givenIhfSize, core::T_sp contabSize, core::T_sp tvalistsize, core::T_sp tRegisterSaveAreaSize, core::T_sp tFunctionDescriptionSize ) {
+CL_LAMBDA(&key tsp tmv symbol symbol-function-offset symbol-setf-function-offset function function-entry-offset ihf contab valist register-save-area function-description);
+CL_DEFUN void llvm_sys__throwIfMismatchedStructureSizes(core::Fixnum_sp tspSize, core::Fixnum_sp tmvSize,
+                                                        core::Fixnum_sp symbolSize, core::Fixnum_sp symbol_function_offset, core::Fixnum_sp symbol_setf_function_offset,
+                                                        core::Fixnum_sp functionSize,
+                                                        core::Fixnum_sp function_entry_offset,
+                                                        gc::Nilable<core::Fixnum_sp> givenIhfSize, core::T_sp contabSize, core::T_sp tvalistsize, core::T_sp tRegisterSaveAreaSize, core::T_sp tFunctionDescriptionSize ) {
   int T_sp_size = sizeof(core::T_sp);
   if (unbox_fixnum(tspSize) != T_sp_size) {
     SIMPLE_ERROR(BF("Mismatch between tsp size[%d] and core::T_sp size[%d]") % unbox_fixnum(tspSize) % T_sp_size);
@@ -271,6 +275,24 @@ CL_DEFUN void llvm_sys__throwIfMismatchedStructureSizes(core::Fixnum_sp tspSize,
   int T_mv_size = sizeof(core::T_mv);
   if (unbox_fixnum(tmvSize) != T_mv_size) {
     SIMPLE_ERROR(BF("Mismatch between tmv size[%d] and core::T_mv size[%d]") % unbox_fixnum(tmvSize) % T_mv_size);
+  }
+  int Symbol_O_size = sizeof(core::Symbol_O);
+  if (unbox_fixnum(symbolSize) != Symbol_O_size) {
+    SIMPLE_ERROR(BF("Mismatch between symbol size[%d] and core::Symbol_O size[%d]") % unbox_fixnum(symbolSize) % Symbol_O_size);
+  }
+  if (symbol_function_offset.unsafe_fixnum()!=offsetof(core::Symbol_O,_Function)) {
+    SIMPLE_ERROR(BF("Mismatch between symbol function offset[%d] and core::Symbol_O._Function offset[%d]") % symbol_function_offset.unsafe_fixnum() % offsetof(core::Symbol_O,_Function));
+  }
+  if (symbol_setf_function_offset.unsafe_fixnum()!=offsetof(core::Symbol_O,_SetfFunction)) {
+    SIMPLE_ERROR(BF("Mismatch between symbol setf function offset[%d] and core::Symbol_O._SetfFunction offset[%d]") % symbol_setf_function_offset.unsafe_fixnum() % offsetof(core::Symbol_O,_SetfFunction));
+  }
+  
+  int Function_O_size = sizeof(core::Function_O);
+  if (unbox_fixnum(functionSize) != Function_O_size) {
+    SIMPLE_ERROR(BF("Mismatch between function size[%d] and core::Function_O size[%d]") % unbox_fixnum(functionSize) % Function_O_size);
+  }
+  if (function_entry_offset.unsafe_fixnum()!=offsetof(core::Function_O,entry)) {
+    SIMPLE_ERROR(BF("Mismatch between function entry offset[%d] and core::Function_O.entry offset[%d]") % function_entry_offset.unsafe_fixnum() % offsetof(core::Function_O,entry));
   }
   int InvocationHistoryFrame_size = sizeof(core::InvocationHistoryFrame);
   if (givenIhfSize.notnilp() && unbox_fixnum(givenIhfSize) != InvocationHistoryFrame_size) {

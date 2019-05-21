@@ -73,6 +73,7 @@
             %t**%
             %t*[DUMMY]%
             %t*[DUMMY]*%
+            %symbol%
             %float%
             %double%
             null-t-ptr

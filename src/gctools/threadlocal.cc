@@ -109,7 +109,7 @@ SYMBOL_EXPORT_SC_(CorePkg,STARwatchDynamicBindingStackSTAR);
 void DynamicBindingStack::push_with_value_coming(Symbol_sp var, T_sp* globalValuePtr) {
   T_sp* current_value_ptr = this->reference(var,globalValuePtr);
 #ifdef CLASP_THREADS
-  size_t no_binding = NO_THREAD_LOCAL_BINDINGS;
+  uint32_t no_binding = NO_THREAD_LOCAL_BINDINGS;
   if ( var->_BindingIdx.load() == no_binding ) {
     // Get a new index and if we cant exchange it in to _Binding then another
     // thread got to it before us and we release the index
@@ -118,7 +118,7 @@ void DynamicBindingStack::push_with_value_coming(Symbol_sp var, T_sp* globalValu
       this->release_binding_index(new_index);
     }
   }
-  uintptr_t index = var->_BindingIdx.load();
+  uint32_t index = var->_BindingIdx.load();
   // If it has a _Binding value but our table is not big enough, then expand the table.
   unlikely_if (index >= this->_ThreadLocalBindings.size()) {
     this->_ThreadLocalBindings.resize(index+1,_NoThreadLocalBinding<T_O>());
@@ -140,16 +140,16 @@ void DynamicBindingStack::push_with_value_coming(Symbol_sp var, T_sp* globalValu
 
 void DynamicBindingStack::push_binding(Symbol_sp var, T_sp* globalValuePtr, T_sp value) {
 #ifdef CLASP_THREADS
-  size_t no_binding = NO_THREAD_LOCAL_BINDINGS;
+  uint32_t no_binding = NO_THREAD_LOCAL_BINDINGS;
   if ( var->_BindingIdx.load() == no_binding ) {
     // Get a new index and if we cant exchange it in to _Binding then another
     // thread got to it before us and we release the index
-    size_t new_index = this->new_binding_index();
+    uint32_t new_index = this->new_binding_index();
     if (!var->_BindingIdx.compare_exchange_strong(no_binding,new_index)) {
       this->release_binding_index(new_index);
     }
   }
-  uintptr_t index = var->_BindingIdx.load();
+  uint32_t index = var->_BindingIdx.load();
   // If it has a _Binding value but our table is not big enough, then expand the table.
   unlikely_if (index >= this->_ThreadLocalBindings.size()) {
     this->_ThreadLocalBindings.resize(index+1,_NoThreadLocalBinding<T_O>());
@@ -181,7 +181,7 @@ void DynamicBindingStack::pop_binding() {
   }
 #endif
 #ifdef CLASP_THREADS
-  ASSERT(this->_ThreadLocalBindings.size()>bind._Var->_Binding.load()); 
+  ASSERT(this->_ThreadLocalBindings.size()>bind._Var->_BindingIdx.load()); 
   this->_ThreadLocalBindings[bind._Var->_BindingIdx.load()] = bind._Val;
   this->_Bindings.pop_back();
 #else

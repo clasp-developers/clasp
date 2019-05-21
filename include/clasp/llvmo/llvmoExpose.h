@@ -1243,6 +1243,8 @@ struct to_object<llvm::Attribute> {
 
 namespace llvmo {
 FORWARD(DataLayout);
+FORWARD(StructLayout);
+FORWARD(StructType);
  /*! DataLayout_O
 As of llvm3.7 the llvm::DataLayout seems to be passed around as a simple object
 and pointers to it are no longer required by functions or returned by functions.
@@ -1257,6 +1259,7 @@ public:
   CL_DEFMETHOD std::string getStringRepresentation() const { return this->_DataLayout->getStringRepresentation(); };
   size_t getTypeAllocSize(llvm::Type* ty);
   const llvm::DataLayout& dataLayout() { return *(this->_DataLayout); };
+  StructLayout_sp getStructLayout(StructType_sp ty) const;
  DataLayout_O(const llvm::DataLayout& orig)  {
    this->_DataLayout = new llvm::DataLayout(orig);
   };
@@ -1300,6 +1303,68 @@ namespace translate {
     }
   };
 };
+
+
+
+namespace llvmo {
+FORWARD(StructLayout);
+ /*! StructLayout_O
+As of llvm3.7 the llvm::StructLayout seems to be passed around as a simple object
+and pointers to it are no longer required by functions or returned by functions.
+So I'm changing StructLayout_O so that it wraps a complete llvm::StructLayout object
+*/
+class StructLayout_O : public core::General_O {
+  LISP_CLASS(llvmo, LlvmoPkg, StructLayout_O, "StructLayout", core::General_O);
+ protected:
+  const llvm::StructLayout* _StructLayout;
+public:
+  const llvm::StructLayout& structLayout() { return *(this->_StructLayout); };
+  size_t getSizeInBytes() const;
+  size_t getElementOffset(size_t idx) const;
+  /*! Delete the default constructor because llvm::StructLayout doesn't have one */
+  StructLayout_O(const llvm::StructLayout* orig)  {
+    this->_StructLayout = orig;
+  };
+  StructLayout_O() = delete;
+  ~StructLayout_O() {delete this->_StructLayout;}
+
+}; // StructLayout_O
+}; // llvmo
+/* from_object translators */
+
+#if 0
+namespace translate {
+  // Since llvm3.8 there don't appear to be functions that
+  // take or return llvm::StructLayout* pointers.  So I am commenting out
+  // their converters and I changed the StructLayout_O class to store a llvm::StructLayout
+  template <>
+    struct from_object<llvm::StructLayout const &, std::true_type> {
+    typedef llvm::StructLayout const &DeclareType;
+    DeclareType _v;
+  from_object(T_P object) : _v(gc::As<llvmo::StructLayout_sp>(object)->structLayout()) {};
+  };
+
+  // ----------   to_object converters
+  template <>
+    struct to_object<const llvm::StructLayout &> {
+    static core::T_sp convert(const llvm::StructLayout & ref) {
+      // Use the copy constructor to create a StructLayout_O
+      GC_ALLOCATE_VARIADIC(llvmo::StructLayout_O,val,ref);
+      return val;
+    }
+  };
+
+  /*! This copies the StructLayout so it doesn't deal with pointers at all */
+  template <>
+    struct to_object<llvm::StructLayout const, translate::dont_adopt_pointer> {
+    static core::T_sp convert(llvm::StructLayout orig) {
+      // Use the copy constructor to create a StructLayout_O
+      GC_ALLOCATE_VARIADIC(llvmo::StructLayout_O,val,orig);
+      return val;
+    }
+  };
+};
+#endif
 
 
 namespace llvmo {

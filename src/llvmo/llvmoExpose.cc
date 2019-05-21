@@ -1317,6 +1317,14 @@ CL_DEFMETHOD DataLayout_sp DataLayout_O::copy() const {
 };
 
 
+CL_LISPIFY_NAME("data-layout-get-struct-layout");
+CL_DEFMETHOD StructLayout_sp DataLayout_O::getStructLayout(StructType_sp ty) const {
+  llvm::StructType* sty = ty->wrapped();
+  const llvm::StructLayout* layout = this->_DataLayout->getStructLayout(sty);
+  GC_ALLOCATE_VARIADIC(StructLayout_O,sl,layout);
+  return sl;
+}
+
 
 CL_LISPIFY_NAME(DataLayout-getTypeAllocSize);
 CL_DEFMETHOD size_t DataLayout_O::getTypeAllocSize(llvm::Type* ty)
@@ -1327,6 +1335,13 @@ CL_DEFMETHOD size_t DataLayout_O::getTypeAllocSize(llvm::Type* ty)
 CL_LISPIFY_NAME(getStringRepresentation);
 CL_EXTERN_DEFMETHOD(DataLayout_O,&llvm::DataLayout::getStringRepresentation);
 
+
+CL_LISPIFY_NAME(struct-layout-get-element-offset);
+CL_DEFMETHOD size_t StructLayout_O::getElementOffset(size_t idx) const
+{
+  size_t offset = this->_StructLayout->getElementOffset(idx);
+  return this->_StructLayout->getElementOffset(idx);
+}
 
 }; // llvmo
 
@@ -2308,7 +2323,7 @@ CL_EXTERN_DEFMETHOD(IRBuilder_O, (llvm::Value *(IRBuilder_O::ExternalType::*)(ll
   CL_LISPIFY_NAME(CreateConstInBoundsGEP2-64);
   CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateConstInBoundsGEP2_64);
   CL_LISPIFY_NAME(CreateStructGEP);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateStructGEP);
+CL_EXTERN_DEFMETHOD(IRBuilder_O, (llvm::Value *(IRBuilder_O::ExternalType::*)(llvm::Type* Type, llvm::Value *Ptr, unsigned Idx0, const llvm::Twine &Name )) &IRBuilder_O::ExternalType::CreateStructGEP);
   CL_LISPIFY_NAME(CreateGlobalStringPtr);
   CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateGlobalStringPtr);
   CL_LISPIFY_NAME(CreateTrunc);

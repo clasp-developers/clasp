@@ -172,27 +172,6 @@ Set this to other IRBuilders to make code go where you want")
 Boehm and MPS use a single pointer"
   (list* data-ptr-type additional-fields))
 
-
-;;
-;; If I use an opaque type then the symbol type gets duplicated and that causes
-;; problems - try just using an int
-;;(define-symbol-macro %sym% (llvm-sys:struct-type-get *llvm-context* nil nil)) ;; "Symbol_O"
-(define-symbol-macro %sym% (llvm-sys:type-get-int32-ty *llvm-context*))
-(define-symbol-macro %sym-ptr% (llvm-sys:type-get-pointer-to %sym%))
-(define-symbol-macro %symsp% (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields %sym-ptr%) nil)) ;; "Sym_sp"
-(define-symbol-macro %symsp*% (llvm-sys:type-get-pointer-to %symsp%))
-
-
-;;
-;; Store a core::Function_sp pointer
-;;
-(define-symbol-macro %Function% (llvm-sys:type-get-int32-ty *llvm-context*))
-(define-symbol-macro %Function-ptr% (llvm-sys:type-get-pointer-to %Function%))
-(define-symbol-macro %Function_sp% (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields %Function-ptr%) nil)) ;; "Cfn_sp"
-(define-symbol-macro %Function_sp*% (llvm-sys:type-get-pointer-to %Function_sp%))
-
-
-
 ;; Define the T_O struct - right now just put in a dummy i32 - later put real fields here
 (define-symbol-macro %t% (llvm-sys:struct-type-get *llvm-context* nil  nil)) ;; "T_O"
 (define-symbol-macro %t*% (llvm-sys:type-get-pointer-to %t%))
@@ -205,7 +184,31 @@ Boehm and MPS use a single pointer"
 (define-symbol-macro %tsp*% (llvm-sys:type-get-pointer-to %tsp%))
 (define-symbol-macro %tsp**% (llvm-sys:type-get-pointer-to %tsp*%))
 
+;;;
+;;; The %symbol% type MUST match the layout and size of Symbol_O in symbol.h
+;;;
+(define-symbol-macro %symbol%
+    (llvm-sys:struct-type-get
+     *llvm-context*
+     (list %i8*%                        ; 0 vtable
+           %t*%                         ; 1 _Name
+           %t*%                         ; 2 _HomePackage
+           %t*%                         ; 3 _GlobalValue
+           %t*%                         ; 4 _Function
+           %t*%                         ; 5 _SetfFunction
+           %i32%                        ; 6 _BindingIdx
+           %i32%                        ; 7 _Flags
+           %t*%                         ; 8 _PropertyList
+           ) nil))
+(defconstant +symbol.function-index+ 4)
+(defconstant +symbol.setf-function-index+ 5)
+
+(define-symbol-macro %symbol*% (llvm-sys:type-get-pointer-to %sym%))
+(define-symbol-macro %symsp% (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields %sym-ptr%) nil)) ;; "Sym_sp"
+(define-symbol-macro %symsp*% (llvm-sys:type-get-pointer-to %symsp%))
+
 (define-symbol-macro %cons% (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields %t*% %t*%) nil))
+(define-symbol-macro %cons*% (llvm-sys:type-get-pointer-to %cons%))
 
 ;; This structure must match the gctools::GCRootsInModule structure
 (define-symbol-macro %gcroots-in-module% (llvm-sys:struct-type-get
@@ -475,6 +478,18 @@ eg:  (f closure-ptr nargs a b c d ...)
 (define-symbol-macro %fn-prototype*[2]% (llvm-sys:array-type-get %fn-prototype*% 2))
 
 
+;;
+;; The %function% type MUST match the layout and size of Function_O in functor.h
+;;
+(define-symbol-macro %Function% (llvm-sys:struct-type-get *llvm-context* (list %i8*%    ; vtable
+                                                                               %fn-prototype*%     ; entry
+                                                                               ) nil))
+(defconstant +function.entry-index+ 1)
+
+(define-symbol-macro %Function-ptr% (llvm-sys:type-get-pointer-to %Function%))
+(define-symbol-macro %Function_sp% (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields %Function-ptr%) nil)) ;; "Cfn_sp"
+(define-symbol-macro %Function_sp*% (llvm-sys:type-get-pointer-to %Function_sp%))
+
 ;;; ------------------------------------------------------------
 ;;;
 ;;; This must match FunctionDescription in functor.h
@@ -636,6 +651,13 @@ and initialize it with an array consisting of one function pointer."
          (data-layout (llvm-sys:get-data-layout execution-engine))
          (tsp-size (llvm-sys:data-layout-get-type-alloc-size data-layout %tsp%))
          (tmv-size (llvm-sys:data-layout-get-type-alloc-size data-layout %tmv%))
+         (symbol-size (llvm-sys:data-layout-get-type-alloc-size data-layout %symbol%))
+         (symbol-layout (llvm-sys:data-layout-get-struct-layout data-layout %symbol%))
+         (symbol-function-offset (llvm-sys:struct-layout-get-element-offset symbol-layout +symbol.function-index+))
+         (symbol-setf-function-offset (llvm-sys:struct-layout-get-element-offset symbol-layout +symbol.setf-function-index+))
+         (function-size (llvm-sys:data-layout-get-type-alloc-size data-layout %function%))
+         (function-layout (llvm-sys:data-layout-get-struct-layout data-layout %function%))
+         (function-entry-offset (llvm-sys:struct-layout-get-element-offset function-layout +function.entry-index+))
          (vaslist-size (llvm-sys:data-layout-get-type-alloc-size data-layout %vaslist%))
          (register-save-area-size (llvm-sys:data-layout-get-type-alloc-size data-layout %register-save-area%))
          (invocation-history-frame-size (llvm-sys:data-layout-get-type-alloc-size data-layout %InvocationHistoryFrame%))
@@ -643,6 +665,11 @@ and initialize it with an array consisting of one function pointer."
          (function-description-size (llvm-sys:data-layout-get-type-alloc-size data-layout %function-description%)))
     (llvm-sys:throw-if-mismatched-structure-sizes :tsp tsp-size
                                                   :tmv tmv-size
+                                                  :symbol symbol-size
+                                                  :symbol-function-offset symbol-function-offset
+                                                  :symbol-setf-function-offset symbol-setf-function-offset
+                                                  :function function-size
+                                                  :function-entry-offset function-entry-offset
                                                   :contab gcroots-in-module-size
                                                   :valist vaslist-size
                                                   :ihf invocation-history-frame-size

@@ -46,7 +46,7 @@ THE SOFTWARE.
 #define IS_MACRO    0x04
 
 namespace core {
-#define NO_THREAD_LOCAL_BINDINGS std::numeric_limits<size_t>::max()
+#define NO_THREAD_LOCAL_BINDINGS std::numeric_limits<uint32_t>::max()
 SMART(Package);
 SMART(NamedFunction);
 FORWARD(ClassHolder);
@@ -57,18 +57,15 @@ class Symbol_O : public General_O {
   struct metadata_gc_do_not_move {};
 
 public:
+  // This MUST match the layout for %sym% in cmpintrinsics.lsp and the sanity check core__symbol_layout_sanity_check
   SimpleString_sp _Name;
-  size_t _Flags;
   std::atomic<T_sp> _HomePackage; // NIL or Package
   T_sp _GlobalValue;
   Function_sp _Function;
   Function_sp _SetfFunction;
-  mutable std::atomic<size_t> _BindingIdx;
-  List_sp _PropertyList;
-#ifdef SYMBOL_CLASS
-  #error "Don't define SYMBOL_CLASS"
-  std::atomic<T_sp> _Class; // NIL or an Instance_sp/class
-#endif
+  mutable std::atomic<uint32_t> _BindingIdx;
+  uint32_t  _Flags;
+  List_sp   _PropertyList;
 
 private:
   friend class Instance_O;
