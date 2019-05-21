@@ -84,8 +84,7 @@
 (defun defun-inline-hook (name function-form env)
   (when (core:declared-global-inline-p name)
     `(eval-when (:compile-toplevel :load-toplevel :execute)
-       (when (and (core:declared-global-inline-p ',name)
-                  (fboundp ',name)) ; FIXME: why?
+       (when (core:declared-global-inline-p ',name)
          (setf (inline-ast ',name)
                (cleavir-primop:cst-to-ast ,function-form))))))
 

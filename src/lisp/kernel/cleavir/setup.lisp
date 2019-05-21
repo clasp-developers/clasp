@@ -136,12 +136,11 @@ when this is t a lot of graphs will be generated.")
     ;; The expansion calls cmp::register-global-function-def at compile time,
     ;; which is hooked up so that among other things this works.
     ((cmp:known-function-p function-name)
-     ;; Note that since the function doesn't actually exist, it has no AST.
-     ;; FIXME: Store ASTs in the environment.
      (make-instance 'cleavir-env:global-function-info
                     :name function-name
                     :compiler-macro (compiler-macro-function function-name)
-                    :inline (core:global-inline-status function-name)))
+                    :inline (core:global-inline-status function-name)
+                    :ast (inline-ast function-name)))
     ( ;; If it is neither of the cases above, then this name does
      ;; not have any function-info associated with it.
      t
@@ -300,7 +299,7 @@ when this is t a lot of graphs will be generated.")
        result))
     (cleavir-env::entry (cleavir-env->interpreter (cleavir-env::next env)))))
 
-(defvar *use-ast-interpreter* nil)
+(defvar *use-ast-interpreter* t)
 
 (defmethod cleavir-environment:eval (form env (dispatch-env clasp-global-environment))
   (simple-eval form env
@@ -311,14 +310,32 @@ when this is t a lot of graphs will be generated.")
                       (lambda (form env)
                         (handler-case
                             (ast-interpret-form form env)
-                          (interpret-ast:cannot-interpret (c)
-                            (declare (ignore c))
+                          (interpret-ast:cannot-interpret ()
                             (cclasp-eval-with-env form env)))))
                      (t #'cclasp-eval-with-env))))
 
 (defmethod cleavir-environment:eval (form env (dispatch-env NULL))
   "Evaluate the form in Clasp's top level environment"
   (cleavir-environment:eval form env *clasp-env*))
+
+(defmethod cleavir-environment:cst-eval (cst env (dispatch-env clasp-global-environment)
+                                         system)
+  (declare (ignore system))
+  ;; NOTE: We want the interpreter to deal with CSTs when we care about source info.
+  ;; That is mainly when saving inline definitions.
+  ;; At the moment, only ast-interpret-cst actually deals with the CST, so we want to
+  ;; be using that case when saving definitions.
+  (cond (core:*use-interpreter-for-eval*
+         (core:interpret (cst:raw cst) (cleavir-env->interpreter env)))
+        (*use-ast-interpreter*
+         (handler-case
+             (ast-interpret-cst cst env)
+           (interpret-ast:cannot-interpret ()
+             (cclasp-eval-with-env (cst:raw cst) env))))
+        (t (cclasp-eval-with-env (cst:raw cst) env))))
+
+(defmethod cleavir-environment:cst-eval (cst env (dispatch-env null) system)
+  (cleavir-environment:cst-eval cst env *clasp-env* system))
 
 #+(or)
 (defmacro ext::lambda-block (name (&rest lambda-list) &body body &environment env)

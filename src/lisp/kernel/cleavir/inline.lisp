@@ -206,6 +206,18 @@
           ((null list) t)
           (t (error 'type-error :datum list :expected-type 'list)))))
 
+(eval-when (:compile-toplevel)
+  (let ((ast (cleavir-primop:cst-to-ast nil)))
+    (print ast)
+    (format t "Weirdo source: ~a~%" (cleavir-ast:origin ast))))
+
+(eval-when (:compile-toplevel)
+  (let ((ast (inline-ast 'car)))
+    (setf (symbol-value '*8car8*) ast)
+    (format t "~&CAR AST before definition: ~a~%" ast)
+    (when ast
+      (format t "Source: ~a~%" (cleavir-ast:origin ast)))))
+
 (progn
   (debug-inline "car")
   (declaim (inline cl:car))
@@ -215,6 +227,13 @@
         (if (eq x nil)
             nil
             (error 'type-error :datum x :expected-type 'list)))))
+
+(eval-when (:compile-toplevel)
+  (let ((ast (inline-ast 'car)))
+    (format t "~&CAR AST after definition: ~a~%" ast)
+    (format t "EQ old one? ~a~%" (eq ast (symbol-value '*8car8*)))
+    (when ast
+      (format t "Source: ~a~%" (cleavir-ast:origin ast)))))
 
 (progn
   (debug-inline "cdr")
@@ -237,7 +256,14 @@
                        `(,(first ops) ,(rec (rest ops))))))
           (rec ops)))))
 
-(defcr caar   car car)
+(eval-when (:compile-toplevel)
+  (format t "CAR inline AST source: ~a~%"
+          (cleavir-ast:origin
+           (clasp-cleavir:inline-ast 'car))))
+(declaim (inline caar))
+(defun caar (x) (car (car x)))
+
+;(defcr caar   car car)
 (defcr cadr   car cdr)
 (defcr cdar   cdr car)
 (defcr cddr   cdr cdr)
