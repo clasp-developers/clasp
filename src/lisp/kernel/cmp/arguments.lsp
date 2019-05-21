@@ -571,8 +571,7 @@ a_p = a_p_temp; a = a_temp;
 (defun maybe-alloc-cc-setup (cleavir-lambda-list debug-on)
   "Maybe allocate slots in the stack frame to handle the calls
    depending on what is in the lambda-list (&rest, &key etc) and debug-on.
-   Return a calling-convention-configuration object that describes what was allocated.
-   See the bclasp version in lambdalistva.lsp."
+   Return a calling-convention-configuration object that describes what was allocated."
   ;; Parse a cleavir lambda list a little bit.
   ;; Form is (req+ [&optional (o -p)+] [&rest r] [&key (:k k -p)+] [&allow-other-keys])
   (let ((nreq 0) (nopt 0) (req-opt-only t)
