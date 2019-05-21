@@ -85,13 +85,13 @@
 
 (defun codegen-global-function-lookup (result sym env)
   ;; Was symbolFunctionRead
-  (let ((val (irc-intrinsic "cc_symbol_function" (irc-global-symbol sym env))))
-    (irc-t*-result val result)))
+  (let ((symbol-function (irc-fdefinition (irc-global-symbol sym env))))
+    (irc-t*-result symbol-function result)))
 
 (defun codegen-global-setf-function-lookup (result setf-function-name env)
-  (let ((setf-symbol (cadr setf-function-name)))
-    (let ((val (irc-intrinsic "setfSymbolFunctionRead" (irc-global-setf-symbol setf-symbol env))))
-      (irc-t*-result val result))))
+  (let* ((setf-symbol (cadr setf-function-name))
+         (setf-symbol-function (irc-setf-fdefinition (irc-global-setf-symbol setf-symbol env))))
+    (irc-t*-result setf-symbol-function result)))
 
 (defun codegen-lexical-function-lookup (result classified env)
   (let ((lexical-function (irc-lexical-function-lookup classified env)))

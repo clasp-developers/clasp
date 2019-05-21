@@ -90,21 +90,6 @@ BUILTIN_ATTRIBUTES core::T_O* cc_write_slot(core::T_O* tinstance, size_t index, 
   return value.raw_();
 }
 
-BUILTIN_ATTRIBUTES
-core::T_O *cc_symbol_function(core::T_O *symP) {
-  core::Symbol_sp sym((gctools::Tagged)symP);
-  core::Function_sp func((gc::Tagged)(sym)->_Function.theObject);
-  return func.raw_();
-}
-
-/*! Invoke a symbol function with the given arguments and put the result in (*resultP) */
-BUILTIN_ATTRIBUTES core::T_O* setfSymbolFunctionRead(const core::T_O *tsymP)
-{NO_UNWIND_BEGIN();
-  const core::Symbol_sp sym((gctools::Tagged)tsymP);
-  core::Function_sp setfFunc = sym->getSetfFdefinition(); //_lisp->get_setfDefinition(*symP);
-  return setfFunc.raw_();
-  NO_UNWIND_END();
-}
 
 BUILTIN_ATTRIBUTES core::T_O** lexicalValueReference(size_t depth, size_t index, core::ActivationFrame_O *frameP)
 {

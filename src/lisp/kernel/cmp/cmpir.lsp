@@ -433,6 +433,26 @@
 (defun irc-ptr-to-int (val int-type &optional (label "ptrtoint"))
   (llvm-sys:create-ptr-to-int *irbuilder* val int-type label))
 
+(defun irc-fdefinition (symbol &optional (label ""))
+  (let* ((untagged-symbol (irc-untag-general symbol %symbol%))
+         (fdefinition (irc-load (irc-struct-gep %symbol% untagged-symbol +symbol.function-index+))))
+    fdefinition))
+
+(defun irc-setf-fdefinition (symbol &optional (label ""))
+  (let* ((untagged-symbol (irc-untag-general symbol %symbol%))
+         (setf-fdefinition (irc-load (irc-struct-gep %symbol% untagged-symbol +symbol.setf-function-index+))))
+    setf-fdefinition))
+
+(defun irc-untag-general (tagged-ptr &optional (type %t*%))
+  (let* ((ptr-i8* (irc-bit-cast tagged-ptr %i8*%))
+         (ptr-untagged (irc-gep ptr-i8* (list (- +general-tag+)))))
+    (irc-bit-cast ptr-untagged type)))
+
+(defun irc-untag-cons (tagged-ptr &optional (type %cons*%))
+  (let* ((ptr-i8* (irc-bit-cast tagged-ptr %i8*%))
+         (ptr-untagged (irc-gep ptr-i8* (list (- +cons-tag+)))))
+    (irc-bit-cast ptr-untagged type)))
+
 (defun irc-int-to-ptr (val ptr-type &optional (label "inttoptr"))
   (llvm-sys:create-int-to-ptr *irbuilder* val ptr-type label))
 
@@ -936,9 +956,12 @@ and then the irbuilder-alloca, irbuilder-body."
 
 (defun null-t-ptr ()
   (llvm-sys:constant-pointer-null-get %t*%))
-	
-(defun irc-struct-gep (struct idx &optional (label ""))
-  (llvm-sys:create-struct-gep *irbuilder* struct idx label ))
+
+(defun undef-t-ptr ()
+  (llvm-sys:undef-value-get %t*%))
+
+(defun irc-struct-gep (type struct idx &optional (label ""))
+  (llvm-sys:create-struct-gep *irbuilder* type struct idx label ))
 
 (defun irc-insert-value (struct val idx-list &optional (label ""))
   (llvm-sys:create-insert-value *irbuilder* struct val idx-list label))
@@ -955,6 +978,7 @@ and then the irbuilder-alloca, irbuilder-body."
   "Extract the t-ptr from the smart-ptr"
   (unless (llvm-sys:type-equal (llvm-sys:get-type smart-ptr) %tsp%)
     (error "The argument ~s is not a tsp" smart-ptr))
+  
   (irc-extract-value smart-ptr (list 0) label))
 
 (defun irc-t*-result (t* result)
@@ -1013,7 +1037,7 @@ and then the irbuilder-alloca, irbuilder-body."
 ;;; If there are < core:+number-of-fixed-arguments+ pad the list up to that
 	 (real-args              (if (< nargs core:+number-of-fixed-arguments+)
                                      (append args (make-list (- core:+number-of-fixed-arguments+ nargs)
-                                                             :initial-element (null-t-ptr)))
+                                                             :initial-element (undef-t-ptr)))
                                      args)))
     real-args))
 

@@ -236,11 +236,10 @@
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:fdefinition-instruction) return-value abi function-info)
   ;; How do we figure out if we should use safe or unsafe version
-  (let* ((cell (in (first (cleavir-ir:inputs instruction)) "func-name"))
+  (let* ((symbol (in (first (cleavir-ir:inputs instruction)) "func-name"))
          (output (first (cleavir-ir:outputs instruction)))
-         (result (%intrinsic-invoke-if-landing-pad-or-call
-                  "cc_fdefinition" (list cell) (datum-name-as-string output))))
-      (out result output)))
+         (symbol-function (cmp:irc-fdefinition symbol)))
+      (out symbol-function output)))
 
 (defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir:debug-message-instruction) return-value abi function-info)
@@ -253,11 +252,10 @@
 
 (defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir:setf-fdefinition-instruction) return-value abi function-info)
-  (let* ((cell (in (first (cleavir-ir:inputs instruction)) "setf-func-name"))
+  (let* ((setf-symbol (in (first (cleavir-ir:inputs instruction)) "setf-func-name"))
          (output (first (cleavir-ir:outputs instruction)))
-         (result (%intrinsic-invoke-if-landing-pad-or-call
-                  "cc_setfdefinition" (list cell) (datum-name-as-string output))))
-    (out result output)))
+         (setf-symbol-function (cmp:irc-setf-fdefinition setf-symbol)))
+    (out setf-symbol-function output)))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:symbol-value-instruction) return-value abi function-info)

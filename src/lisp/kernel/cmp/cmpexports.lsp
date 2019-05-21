@@ -187,6 +187,10 @@
             irc-trunc
             irc-unreachable
             irc-untag-fixnum
+            irc-untag-general
+            irc-untag-cons
+            irc-fdefinition
+            irc-setf-fdefinition
             jit-constant-i1
             jit-constant-i8
             jit-constant-i32

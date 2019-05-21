@@ -116,7 +116,7 @@
          (primitive         "lexicalValueReference" %t**% (list %size_t% %size_t% %t*%))
          (primitive         "registerReference" %t**% (list %t**%))
 ;;;    (primitive         "symbolFunctionRead" %t*% (list %t*%))
-         (primitive         "setfSymbolFunctionRead" %t*% (list %t*%))
+;;;         (primitive         "setfSymbolFunctionRead" %t*% (list %t*%))
     
          (primitive         "activationFrameReferenceFromClosure" %t**% (list %t*%))
          (primitive         "setParentOfActivationFrame" %void% (list %t*% %t*%))
@@ -166,7 +166,7 @@
     
          (primitive-unwinds "va_tooManyArgumentsException" %void% (list %i8*% %size_t% %size_t%))
          (primitive-unwinds "va_notEnoughArgumentsException" %void% (list %i8*% %size_t% %size_t%))
-         (primitive-unwinds "cc_symbol_function" %t*% (list %t*%))
+;;;         (primitive-unwinds "cc_symbol_function" %t*% (list %t*%))
          (primitive         "va_lexicalFunction" %t*% (list %size_t% %size_t% %t*%))
     
          (primitive         "cc_gatherRestArguments" %t*% (list %va_list*% %size_t%))
