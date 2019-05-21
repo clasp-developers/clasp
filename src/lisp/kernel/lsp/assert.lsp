@@ -170,8 +170,7 @@ be used as a TYPE to specify the default case."
           (setq form
                 `(if (typep ,key (quote ,(caar l)))
                      (progn ,@(cdar l))
-                     ,form))))
-  )
+                     ,form)))))
 
 (defun etypecase-error (value types)
   (error 'CASE-FAILURE :name 'ETYPECASE
@@ -190,9 +189,7 @@ the last FORM.  If not, signals an error."
        ((endp l) `(let ((,key ,keyform)) ,form))
        (setq form `(if (typep ,key ',(caar l))
                        (progn ,@(cdar l))
-                       ,form))
-       )
-   )
+                       ,form))))
 
 #-clasp-min
 (defun ctypecase-error (keyplace value types)

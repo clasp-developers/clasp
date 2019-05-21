@@ -598,7 +598,7 @@
         (array
          (let ((max (core::%array-total-size vector)))
            (when (array-has-fill-pointer-p vector)
-               (setq max (min max (fill-pointer vector))))
+             (setq max (min max (fill-pointer vector))))
            (error 'core:array-out-of-bounds :datum index
                                             :expected-type `(integer 0 (,max))
                                             :array vector)))))

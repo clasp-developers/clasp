@@ -628,7 +628,6 @@ memory limits before executing the program again."))
 	     (type-error-datum condition)
 	     (type-error-expected-type condition)))))
 
-
 (define-condition array-out-of-bounds (type-error)
   ((array :INITARG :ARRAY :READER array-out-of-bounds-array))
   (:REPORT
