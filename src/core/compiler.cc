@@ -100,18 +100,13 @@ MaybeDebugStartup::~MaybeDebugStartup() {
       end_dispatcher_count = nu.unsafe_fixnum();
     }
     size_t dispatcher_delta = end_dispatcher_count - this->start_dispatcher_count;
-    std::string name_ = this->name;
-    if (name_=="") {
-      Dl_info di;
-      dladdr((void*)this->fptr,&di);
-      name_ = di.dli_sname;
-      if (name_ == "") {
-        stringstream ss;
-        ss << (void*)this->fptr;
-        name_ = ss.str();
-      }
-    }
-    printf("%s us %zu gfds : %s\n", _rep_(Integer_O::create(ms)).c_str(), dispatcher_delta, name_.c_str());
+    stringstream name_;
+    if (this->name!="") name_ << this->name << " ";
+    Dl_info di;
+    dladdr((void*)this->fptr,&di);
+    name_ << di.dli_sname;
+    if (name_.str() == "") name_ << (void*)this->fptr;
+    printf("%s us %zu gfds : %s\n", _rep_(Integer_O::create(ms)).c_str(), dispatcher_delta, name_.str().c_str());
   }
 }
 
@@ -326,7 +321,6 @@ void startup_functions_invoke()
         printf("%s:%d At startup there were two adjacent startup functions with the same position value %lu - this could mean a startup order catastrophe\n", __FILE__, __LINE__, startup._Position);
       }
       previous = startup;
-      MaybeDebugStartup maybe_debug_startup((void*)startup._Function);
 #ifdef DEBUG_STARTUP
       printf("%s:%d     About to invoke fn@%p\n", __FILE__, __LINE__, fn );
 #endif
