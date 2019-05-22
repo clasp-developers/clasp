@@ -263,7 +263,6 @@ def collect_aclasp_lisp_files(wrappers = True):
         "src/lisp/kernel/cmp/compile",
         "src/lisp/kernel/cmp/codegen-toplevel",
         "src/lisp/kernel/cmp/compile-file",
-        "src/lisp/kernel/cmp/disassemble",
         "src/lisp/kernel/cmp/external-clang",
         "src/lisp/kernel/cmp/cmpname",
         "src/lisp/kernel/cmp/cmpbundle",
@@ -282,6 +281,7 @@ def collect_bclasp_lisp_files(**kwargs):
         "src/lisp/kernel/lsp/describe",
         "src/lisp/kernel/lsp/module",
         "src/lisp/kernel/lsp/loop2",
+        "src/lisp/kernel/cmp/disassemble",
         "src/lisp/kernel/cmp/opt", # need loop
         "src/lisp/kernel/cmp/opt-character",
         "src/lisp/kernel/cmp/opt-number",
