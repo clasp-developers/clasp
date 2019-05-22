@@ -47,20 +47,6 @@
       (funcall *code-walker* form *simple-environment*))
     (call-next-method)))
 
-
-(define-compiler-macro error (&whole whole datum &rest arguments)
-  (cond
-    ((and (consp datum) (eq (car datum) 'quote) (eq (cadr datum) 'type-error))
-     (let ((the-datum (getf arguments :datum))
-           (expected-type (getf arguments :expected-type)))
-       `(core:multiple-value-foreign-call "cc_error_type_error" ,the-datum ,expected-type)))
-    ((and (consp datum) (eq (car datum) 'quote) (eq (cadr datum) 'core::array-out-of-bounds))
-     (let ((the-datum (getf arguments :datum))
-           (expected-type (getf arguments :expected-type))
-           (array (getf arguments :array)))
-       `(core:multiple-value-foreign-call "cc_error_array_out_of_bounds" ,the-datum ,expected-type ,array)))
-    (t whole)))
-
 (defun code-walk-using-cleavir (form env &key code-walker-function)
   (let* ((cleavir-generate-ast:*compiler* 'cl:compile)
          (core:*use-cleavir-compiler* t)

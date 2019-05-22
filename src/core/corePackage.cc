@@ -802,7 +802,6 @@ SYMBOL_EXPORT_SC_(ClPkg, list);
 SYMBOL_SC_(CorePkg, key);
 SYMBOL_SC_(CorePkg, test_not);
 
-SYMBOL_EXPORT_SC_(KeywordPkg, name);
 SYMBOL_EXPORT_SC_(ClPkg, standard_class);
 SYMBOL_EXPORT_SC_(ClPkg, rest);
 

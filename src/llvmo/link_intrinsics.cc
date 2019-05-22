@@ -1115,6 +1115,22 @@ void cc_error_array_out_of_bounds(T_O* index, T_O* expected_type, T_O* array)
                       kw::_sym_array,tarray);
 }
 
+SYMBOL_EXPORT_SC_(CorePkg,case_failure);
+SYMBOL_EXPORT_SC_(KeywordPkg,possibilities);
+void cc_error_case_failure(T_O* datum, T_O* expected_type, T_O* name, T_O* possibilities)
+{
+  core::T_sp tdatum((gctools::Tagged)datum);
+  core::T_sp texpected_type((gctools::Tagged)expected_type);
+  core::T_sp tname((gctools::Tagged)name);
+  core::T_sp tpossibilities((gctools::Tagged)possibilities);
+  core::eval::funcall(cl::_sym_error,
+                      core::_sym_case_failure,
+                      kw::_sym_datum, tdatum,
+                      kw::_sym_expected_type, texpected_type,
+                      kw::_sym_name, tname,
+                      kw::_sym_possibilities, tpossibilities);
+}
+
 core::T_O *cc_enclose(fnLispCallingConvention llvm_func,
                       void* functionDescription,
                       std::size_t numCells, ...)
