@@ -67,6 +67,12 @@ Return T if disassembly was achieved - otherwise NIL"
                                      :start-byte-offset start-byte-offset
                                      :end-byte-offset end-byte-offset))
 
+(defun disassemble-function-asm (function)
+  (multiple-value-bind (symbol start end type)
+      (core:lookup-address (core:function-pointer function))
+    (disassemble-assembly start end)
+    (bformat t "Done%N")))
+
 (defun disassemble (desig &key (type :asm))
   "If type is :ASM then disassemble to assembly language from the START instruction, disassembling NUM instructions
    if type is :IR then dump the llvm-ir for all of the associated functions and ignore START and NUM"
@@ -82,13 +88,13 @@ Return T if disassembly was achieved - otherwise NIL"
                              (values desig name)))
         ((and (consp desig) (eq (car desig) 'lambda))
          (let* ((*save-module-for-disassemble* t)
-                (cmp:*saved-module-from-clasp-jit* nil))
-           (compile nil desig)
+                (cmp:*saved-module-from-clasp-jit* nil)
+                (fn (compile nil desig)))
            (let ((module cmp:*saved-module-from-clasp-jit*))
              (if module
                  (cond
                    ((eq type :ir) (llvm-sys:dump-module module))
-                   ((eq type :asm) (warn "Handle disassemble of lambda-form to assembly"))
+                   ((eq type :asm) (disassemble-function-asm fn))
                    (t (error 'type-error :datum type :expected-type '(or :ir :asm))))
                  (error "Could not recover jitted module -> ~a" module))))
          (return-from disassemble nil))
@@ -104,10 +110,7 @@ Return T if disassembly was achieved - otherwise NIL"
          (cond
            ((compiled-function-p fn)
             (if (eq type :asm)
-                (multiple-value-bind (symbol start end type)
-                    (core:lookup-address (core:function-pointer fn))
-                  (disassemble-assembly start end)
-                  (bformat t "Done%N"))
+                (disassemble-function-asm fn)
                 (error "LLVM-IR is not saved for functions - use :type :asm to disassemble to native code")))
            ((interpreted-function-p fn)
             (format t "This is a interpreted function - compile it first~%")
