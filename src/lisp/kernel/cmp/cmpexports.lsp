@@ -76,7 +76,6 @@
             %symbol%
             %float%
             %double%
-            null-t-ptr
             %gcroots-in-module%
             %gcroots-in-module*%
             %function-description%
@@ -103,6 +102,8 @@
             make-function-info
             irc-create-call
             irc-create-invoke
+            irc-calculate-entry
+            irc-calculate-real-args
             compile-file-to-module
             link-builtins-module
             optimize-module-for-compile

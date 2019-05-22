@@ -1030,6 +1030,14 @@ and then the irbuilder-alloca, irbuilder-body."
         (irc-calculate-entry-gep closure label)
         (irc-calculate-entry-ptr closure label))))
 
+;;; Our present convention is that Lisp functions uniformly have
+;;; (closure nargs arg0 .. argm ...) as parameters, where m is
+;;; core:+number-of-fixed-arguments+; the final ... will be a va_list,
+;;; which is more expensive.
+;;; If we want to pass fewer than four arguments, we still need to pass
+;;; enough to match the type; since the function will check nargs and
+;;; ignore anything past, undef is fine. (NULL results in pointless
+;;; register zeroing.)
 (defun irc-calculate-real-args (args)
   (let* ((nargs                  (length args))
          #+debug-guard-exhaustive-validate

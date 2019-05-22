@@ -200,20 +200,16 @@ And convert everything to JIT constants."
 ;;;
 
 (defun closure-call-or-invoke (closure return-value arguments &key (label ""))
-  (let* ((entry-point (cmp::irc-calculate-entry closure))
-         (real-args (if (< (length arguments) core:+number-of-fixed-arguments+)
-                        (append arguments (make-list (- core:+number-of-fixed-arguments+ (length arguments)) :initial-element (cmp:null-t-ptr)))
-                        arguments)))
-    (let ((args (list*
-                 closure
-                 ;;                   (cmp:null-t-ptr)
-                 (%size_t (length arguments))
-                 real-args)))
-      (let* ((result-in-registers
-               (if cmp::*current-unwind-landing-pad-dest*
-                   (cmp:irc-create-invoke entry-point args cmp::*current-unwind-landing-pad-dest* label)
-                   (cmp:irc-create-call entry-point args label))))
-        (cmp:irc-store result-in-registers return-value)))))
+  (let* ((entry-point (cmp:irc-calculate-entry closure))
+         (real-args (cmp:irc-calculate-real-args arguments))
+         (args (list* closure
+                      (%size_t (length arguments))
+                      real-args))
+         (result-in-registers
+           (if cmp::*current-unwind-landing-pad-dest*
+               (cmp:irc-create-invoke entry-point args cmp::*current-unwind-landing-pad-dest* label)
+               (cmp:irc-create-call entry-point args label))))
+    (cmp:irc-store result-in-registers return-value)))
 
 (defun unsafe-multiple-value-foreign-call (intrinsic-name return-value args abi &key (label ""))
   (let* ((func (or (llvm-sys:get-function cmp:*the-module* intrinsic-name)
