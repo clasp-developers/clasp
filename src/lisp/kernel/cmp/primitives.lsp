@@ -252,11 +252,13 @@
 
          (primitive-unwinds "cc_enclose" %t*% (list %fn-prototype*%
                                                %i8*%
-                                               %size_t% ) :varargs t)
+                                               %size_t%))
          (primitive         "cc_stack_enclose" %t*% (list %i8*%
                                                      %fn-prototype*%
                                                      %i8*%
-                                                     %size_t% ) :varargs t)
+                                                     %size_t% ))
+         (primitive-unwinds "cc_initialize_closure" %void% (list %t*%
+                                                            %size_t% ) :varargs t)
          (primitive         "cc_fdefinition" %t*% (list %t*%))
          (primitive         "cc_setfdefinition" %t*% (list %t*%))
          (primitive-unwinds "cc_safe_symbol_value" %t*% (list %t*%))

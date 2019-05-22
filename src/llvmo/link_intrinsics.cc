@@ -1133,26 +1133,31 @@ void cc_error_case_failure(T_O* datum, T_O* expected_type, T_O* name, T_O* possi
 
 core::T_O *cc_enclose(fnLispCallingConvention llvm_func,
                       void* functionDescription,
-                      std::size_t numCells, ...)
+                      std::size_t numCells)
 {
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid =
     gctools::GC<core::ClosureWithSlots_O>::allocate_container( false, numCells
                                                               , llvm_func
                                                                , (core::FunctionDescription*)functionDescription,
                                                                core::ClosureWithSlots_O::cclaspClosure);
+  return functoid.raw_();
+}
+
+void cc_initialize_closure(core::T_O* functoid,
+                           std::size_t numCells, ...)
+{
   core::T_O *p;
   va_list argp;
   va_start(argp, numCells);
   int idx = 0;
+  ClosureWithSlots_sp closure((gctools::Tagged)functoid);
   for (; numCells; --numCells) {
     p = ENSURE_VALID_OBJECT(va_arg(argp, core::T_O *));
-    (*functoid)[idx] = gctools::smart_ptr<core::T_O>((gc::Tagged)p);
+    (*closure)[idx] = gctools::smart_ptr<core::T_O>((gc::Tagged)p);
     ++idx;
   }
   va_end(argp);
-  return functoid.raw_();
 }
-
 
 /*! Take the multiple-value inputs from the thread local MultipleValues and call tfunc with them.
      This function looks exactly like the cc_invoke_multipleValueOneFormCall intrinsic but
