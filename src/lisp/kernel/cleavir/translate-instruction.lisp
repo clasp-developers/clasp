@@ -278,14 +278,12 @@
          (lambda-name (get-or-create-lambda-name enter-instruction))
          (enclosed-function (memoized-layout-procedure enter-instruction lambda-name abi))
          (function-description (llvm-sys:get-named-global cmp:*the-module* (cmp::function-description-name enclosed-function)))
-         (loaded-inputs (mapcar (lambda (x) (in x "cell")) (cleavir-ir:inputs instruction)))
-         (ninputs (length loaded-inputs))
+         (ninputs (cleavir-ir:closure-size enter-instruction))
          (dx-p (cleavir-ir:dynamic-extent-p instruction))
          (enclose-args
-           (list* enclosed-function
-                  (cmp:irc-bit-cast function-description cmp:%i8*%)
-                  (%size_t ninputs)
-                  loaded-inputs))
+           (list enclosed-function
+                 (cmp:irc-bit-cast function-description cmp:%i8*%)
+                 (%size_t ninputs)))
          (result
            (progn
              (cond
@@ -298,9 +296,22 @@
                  (format nil "closure->~a" lambda-name)))
                (t
                 ;; General case.
-                (%intrinsic-invoke-if-landing-pad-or-call "cc_enclose" enclose-args
-                                                          (format nil "closure->~a" lambda-name)))))))
+                (%intrinsic-invoke-if-landing-pad-or-call "cc_enclose" enclose-args))))))
     (out result (first (cleavir-ir:outputs instruction)))))
+
+(defmethod translate-simple-instruction
+    ((instruction cleavir-ir:initialize-closure-instruction) return-from abi function-info)
+  (let* ((closure (in (first (cleavir-ir:inputs instruction))))
+         (loaded-inputs (mapcar (lambda (x) (in x "closure_var"))
+                                (rest (cleavir-ir:inputs instruction))))
+         (ninputs (length loaded-inputs))
+         (closure-vars
+           (list* closure
+                  (%size_t ninputs)
+                  loaded-inputs)))
+    (%intrinsic-invoke-if-landing-pad-or-call "cc_initialize_closure"
+                                              closure-vars
+                                              (format nil "init-closure->"))))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:multiple-value-call-instruction) return-value abi function-info)
