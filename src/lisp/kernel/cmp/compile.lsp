@@ -35,10 +35,9 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
       (bclasp-compile* definition env pathname :linkage linkage)))
 
 (defun compile-in-env (definition env &optional (compile-hook *cleavir-compile-hook*)
-                                        (linkage 'llvm-sys:internal-linkage)
-                       &aux conditions)
+                                        (linkage 'llvm-sys:internal-linkage))
   "Compile in the given environment"
-  (with-compiler-env (conditions)
+  (with-compiler-env ()
     (let* ((module (create-run-time-module-for-compile)))
       ;; Link the C++ intrinsics into the module
       (with-module (:module module

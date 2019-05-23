@@ -284,12 +284,11 @@ Compile a lisp source file into an LLVM module."
                                 ;; but passed to hook functions
                                 environment
                                 ;; Use as little llvm as possible for timing
-                                dry-run ast-only
-                              &aux conditions)
+                                dry-run ast-only)
   "See CLHS compile-file."
   (if system-p-p (error "I don't support system-p keyword argument - use output-type"))
   (if (not output-file-p) (setq output-file (cfp-output-file-default input-file output-type)))
-  (with-compiler-env (conditions)
+  (with-compiler-env ()
     ;; Do the different kind of compile-file here
     (let* ((*compile-print* print)
            (*compile-verbose* verbose)
@@ -364,11 +363,8 @@ Compile a lisp source file into an LLVM module."
                                                            result)
                                       :link-type :object)))
             (t ;; fasl
-             (error "Add support for output-type: ~a" output-type)))          
-          (dolist (c conditions)
-            (when verbose
-              (bformat t "conditions: %s%N" c)))
-          (compile-file-results output-path conditions))))))
+             (error "Add support for output-type: ~a" output-type)))
+          (compile-file-results output-path))))))
 
 (defvar *compile-file-parallel* nil)
                               

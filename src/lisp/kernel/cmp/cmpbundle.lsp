@@ -233,10 +233,9 @@
     (truename output-file-name)))
 
 (defun link-bitcode-modules (output-pathname part-pathnames
-                             &key additional-bitcode-pathnames
-                             &aux conditions)
+                             &key additional-bitcode-pathnames)
   "Link a bunch of modules together, return the linked module"
-  (with-compiler-env (conditions)
+  (with-compiler-env ()
     (let* ((module (llvm-create-module (pathname-name output-pathname)))
            (*compile-file-pathname* (pathname (merge-pathnames output-pathname)))
            (*compile-file-truename* (translate-logical-pathname *compile-file-pathname*))

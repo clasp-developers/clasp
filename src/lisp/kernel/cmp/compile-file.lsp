@@ -173,16 +173,9 @@ and the pathname of the source file - this will also be used as the module initi
             (llvm-sys:pass-manager-add pm tli)
             (llvm-sys:add-passes-to-emit-file-and-run-pass-manager target-machine pm output-stream file-type module))))))
 
-(defun compile-file-results (output-file conditions)
-  (let (warnings-p failures-p)
-    (dolist (cond conditions)
-      (cond
-        ((typep cond 'compiler-error)
-         (setq failures-p t))
-        ((typep cond 'compiler-warning)
-         (setq warnings-p t))
-        (t (error "Illegal condition ~a" cond))))
-    (values output-file warnings-p failures-p)))
+(defun compile-file-results (output-file)
+  ;; FIXME
+  (values output-file nil nil))
 
 (defvar *debug-compile-file* nil)
 (defvar *debug-compile-file-counter* 0)
@@ -258,7 +251,6 @@ Compile a lisp source file into an LLVM module."
         (core:source-file-info (namestring input-pathname) source-debug-pathname source-debug-offset nil))
       (when *compile-verbose*
 	(bformat t "; Compiling file: %s%N" (namestring input-pathname)))
-      (cmp-log "About to start with-compilation-unit%N")
       (with-compilation-unit ()
         (let* ((*compile-file-pathname* (pathname (merge-pathnames given-input-pathname)))
                (*compile-file-truename* (translate-logical-pathname *compile-file-pathname*))
@@ -321,13 +313,12 @@ Compile a lisp source file into an LLVM module."
                               (image-startup-position (core:next-startup-position))
                               ;; ignored by bclasp
                               ;; but passed to hook functions
-                              environment
-                            &aux conditions)
+                              environment)
   "See CLHS compile-file."
   #+debug-monitor(sys:monitor-message "compile-file ~a" input-file)
   (if system-p-p (error "I don't support system-p keyword argument - use output-type"))
   (if (not output-file-p) (setq output-file (cfp-output-file-default input-file output-type)))
-  (with-compiler-env (conditions)
+  (with-compiler-env ()
     ;; Do the different kind of compile-file here
     (let* ((*compile-print* print)
            (*compile-verbose* verbose)
@@ -394,12 +385,9 @@ Compile a lisp source file into an LLVM module."
                (llvm-link output-file :input-files (list temp-bitcode-file) :input-type :bitcode)))
             (t ;; fasl
              (error "Add support to file of type: ~a" output-type)))
-          (dolist (c conditions)
-            (when verbose
-              (bformat t "conditions: %s%N" c)))
           (with-track-llvm-time
               (llvm-sys:module-delete module))
-          (compile-file-results output-path conditions))))))
+          (compile-file-results output-path))))))
 
 (export 'compile-file)
 

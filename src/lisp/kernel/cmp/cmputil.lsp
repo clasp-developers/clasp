@@ -166,11 +166,13 @@
 
 (defun print-compiler-message (c stream)
   (let ((msg (core:bformat nil (compiler-message-format c) (compiler-message-message c))))
+    (fresh-line stream)
     (bformat stream ";;; %s%N" msg)
     (bformat stream ";;;     at %s %N" (describe-source-location (compiler-message-source-pos-info c)))))
 
-(defmacro with-compiler-env ( (conditions &rest options) &rest body )
+(defmacro with-compiler-env ((&rest options) &rest body )
   "Initialize the environment to protect nested compilations from each other"
+  (declare (ignore options)) ; FIXME: Find a use or remove
   `(let ((*the-module* nil)
 	 (*irbuilder-ltv-function-alloca* nil)
 	 (*irbuilder-ltv-function-body* nil)
@@ -185,10 +187,7 @@
 	 (*the-module-dibuilder* nil)
 	 (*readtable* *readtable*)
 	 (*package* *package*))
-     (with-compilation-unit ()
-       (unwind-protect (progn ,@body)
-         (setq ,conditions *compilation-messages*)))))
-
+     (with-compilation-unit () ,@body)))
 
 (defstruct (global-function-def (:type vector) :named)
   type

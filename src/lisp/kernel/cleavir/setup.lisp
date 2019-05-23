@@ -365,8 +365,8 @@ when this is t a lot of graphs will be generated.")
 
 (defun draw-form-cst-hir (form)
   "Generate a HIR graph for the form using the cst compiler"
-  (let (conditions result)
-    (cmp::with-compiler-env (conditions)
+  (let (result)
+    (cmp::with-compiler-env ()
       (let* ((module (cmp::create-run-time-module-for-compile)))
         ;; Link the C++ intrinsics into the module
         (cmp::with-module (:module module
@@ -384,20 +384,19 @@ when this is t a lot of graphs will be generated.")
 
 (defun draw-form-ast-hir (form)
   "Generate a HIR graph for the form using the ast compiler"
-  (let (conditions)
-    (cmp::with-compiler-env (conditions)
-      (let* ((module (cmp::create-run-time-module-for-compile)))
-        ;; Link the C++ intrinsics into the module
-        (cmp::with-module (:module module
-                           :optimize nil)
-          (cmp:with-debug-info-generator (:module module :pathname "dummy-file")
-            (literal:with-rtv
-                (let* ((cleavir-generate-ast:*compiler* 'cl:compile)
-                       (ast (cleavir-generate-ast:generate-ast form nil clasp-cleavir::*clasp-system*))
-                       (hoisted-ast (clasp-cleavir::hoist-ast ast))
-                       (hir (clasp-cleavir::ast->hir hoisted-ast)))
-                  (clasp-cleavir::draw-hir hir "/tmp/foo.dot")
-                  hir))))))))
+  (cmp::with-compiler-env ()
+    (let* ((module (cmp::create-run-time-module-for-compile)))
+      ;; Link the C++ intrinsics into the module
+      (cmp::with-module (:module module
+                         :optimize nil)
+        (cmp:with-debug-info-generator (:module module :pathname "dummy-file")
+          (literal:with-rtv
+              (let* ((cleavir-generate-ast:*compiler* 'cl:compile)
+                     (ast (cleavir-generate-ast:generate-ast form nil clasp-cleavir::*clasp-system*))
+                     (hoisted-ast (clasp-cleavir::hoist-ast ast))
+                     (hir (clasp-cleavir::ast->hir hoisted-ast)))
+                (clasp-cleavir::draw-hir hir "/tmp/foo.dot")
+                hir)))))))
 
 (defun draw-ast (&optional (ast *ast*) filename)
   (unless filename (setf filename (pathname (core:mkstemp "/tmp/ast"))))
