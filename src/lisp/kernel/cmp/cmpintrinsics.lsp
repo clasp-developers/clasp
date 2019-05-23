@@ -928,9 +928,14 @@ is dumped to a file before the block and after the block."
     (dolist (func (llvm-sys:module-get-function-list module))
       (let ((num-instructions 0))
         (dolist (bb (llvm-sys:basic-blocks func))
-          (let ((bb-instr (llvm-sys:number-of-instructions bb)))
-            (incf num-instructions bb-instr)))
-        (incf total num-instructions)
+          (dolist (instr (llvm-sys:instructions bb))
+            (incf num-instructions)
+            (multiple-value-bind (valid lineno column)
+                (llvm-sys:get-debug-loc-info instr)
+              (if valid
+                  (format t "(Line: ~s col: ~s) ~s~%" lineno column instr)
+                  (format t "INVALID-DebugLoc ~s~%" instr)))
+            (incf total num-instructions)))
         (format t "~a Function ~a~%" num-instructions func)))
     (format t "~a total~%" total)))
 
