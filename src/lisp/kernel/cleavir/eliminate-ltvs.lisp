@@ -9,7 +9,8 @@
                   (cleavir-ir:*dynamic-environment*
                     (cleavir-ir:dynamic-environment instr))
                   (pvi (clasp-cleavir-hir:make-precalc-value-instruction
-                        index input :original-object value)))
+                        index input :original-object value
+                        :origin (cleavir-ir:origin instr))))
              (cleavir-ir:insert-instruction-before pvi instr))))
 
 (defun replace-constant-with-immediate (value input)
@@ -31,7 +32,8 @@
                   (cleavir-ir:*dynamic-environment*
                     (cleavir-ir:dynamic-environment instr))
                   (pvi (clasp-cleavir-hir:make-precalc-value-instruction
-                        index input :original-object form)))
+                        index input :original-object form
+                        :origin (cleavir-ir:origin instr))))
              (cleavir-ir:insert-instruction-before pvi instr))))
 
 (defun replace-load-time-value-with-immediate (value input)

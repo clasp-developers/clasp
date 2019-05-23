@@ -403,10 +403,15 @@
   ((%index :initarg :index :accessor precalc-value-instruction-index)
    (%original-object :initarg :original-object :accessor precalc-value-instruction-original-object)))
 
-(defun make-precalc-value-instruction (index output &key successor original-object)
+(defun make-precalc-value-instruction (index output &key successor original-object
+                                                      (origin (if (boundp 'cleavir-ir:*origin*)
+                                                                  cleavir-ir:*origin*
+                                                                  nil)
+                                                              originp))
   (make-instance 'precalc-value-instruction
     :outputs (list output)
     :successors (if (null successor) nil (list successor))
+    :origin origin
     :index index
     :original-object original-object))
 

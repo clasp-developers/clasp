@@ -330,6 +330,7 @@
         (con (second (cleavir-ir:successors typeq-instruction)))
         (preds (cleavir-ir:predecessors typeq-instruction))
         (cleavir-ir:*policy* (cleavir-ir:policy typeq-instruction))
+        (cleavir-ir:*origin* (cleavir-ir:origin typeq-instruction))
         (cleavir-ir:*dynamic-environment*
           (cleavir-ir:dynamic-environment typeq-instruction)))
     (let ((new (gen-type-check object type pro con)))

@@ -295,6 +295,7 @@
      (first (cleavir-ast-to-hir::results context))
      :successor (first (cleavir-ast-to-hir::successors context))
      :original-object (clasp-cleavir-ast:precalc-value-reference-ast-original-object ast)
+     :origin (clasp-cleavir::ensure-origin (cleavir-ast:origin ast) 999990)
      )))
 
 
