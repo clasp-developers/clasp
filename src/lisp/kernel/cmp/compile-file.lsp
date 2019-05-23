@@ -83,7 +83,6 @@
   (if (or (not *active-protection*) ; we're not in a do-compilation-unit
           override) ; we are, but we're overriding it
       (let* ((*active-protection* t)
-             (*compilation-unit-module-index* 0)
              (*compilation-messages* nil)
              (*global-function-defs* (make-hash-table :test #'equal))
              (*global-function-refs* (make-hash-table :test #'equal
@@ -251,41 +250,41 @@ Compile a lisp source file into an LLVM module."
         (core:source-file-info (namestring input-pathname) source-debug-pathname source-debug-offset nil))
       (when *compile-verbose*
 	(bformat t "; Compiling file: %s%N" (namestring input-pathname)))
-      (with-compilation-unit ()
-        (let* ((*compile-file-pathname* (pathname (merge-pathnames given-input-pathname)))
-               (*compile-file-truename* (translate-logical-pathname *compile-file-pathname*))
-               run-all-name)
-          (with-module (:module module
-                        :optimize (when optimize #'optimize-module-for-compile-file)
-                        :optimize-level optimize-level)
-            (with-source-pathnames (:source-pathname *compile-file-truename* ;(namestring source-location)
-                                    :source-debug-pathname source-debug-pathname
-                                    :source-debug-offset source-debug-offset)
-              ;; (1) Generate the code
-              (with-debug-info-generator (:module *the-module*
-                                          :pathname *compile-file-truename*)
-                (or module (error "module is NIL"))
-                (with-make-new-run-all (run-all-function)
-                  (with-literal-table
-                      (loop-read-and-compile-file-forms source-sin environment compile-file-hook))
-                  (setf run-all-name (llvm-sys:get-name run-all-function))))
-              (cmp-log "About to verify the module%N")
-              (cmp-log-dump-module *the-module*)
-              (irc-verify-module-safe *the-module*)
-              (quick-module-dump *the-module* "preoptimize") 
-              ;; (2) Add the CTOR next
-              (make-boot-function-global-variable module run-all-name
-                                                  :position image-startup-position
-                                                  :register-library t)
-              ;; (3) If optimize ALWAYS link the builtins in, inline them and then remove them - then optimize.
-              (if (> optimize-level 0)
-                  (link-inline-remove-builtins *the-module*)))
-              ;; Now at the end of with-module another round of optimization is done
-            ;; but the RUN-ALL is now referenced by the CTOR and so it won't be optimized away
-            ;; ---- MOVE OPTIMIZATION in with-module to HERE ----
-            )
-          (quick-module-dump module "postoptimize")
-          module)))))
+      (let* ((*compilation-module-index* 0) ; FIXME: necessary?
+             (*compile-file-pathname* (pathname (merge-pathnames given-input-pathname)))
+             (*compile-file-truename* (translate-logical-pathname *compile-file-pathname*))
+             run-all-name)
+        (with-module (:module module
+                      :optimize (when optimize #'optimize-module-for-compile-file)
+                      :optimize-level optimize-level)
+          (with-source-pathnames (:source-pathname *compile-file-truename* ;(namestring source-location)
+                                  :source-debug-pathname source-debug-pathname
+                                  :source-debug-offset source-debug-offset)
+            ;; (1) Generate the code
+            (with-debug-info-generator (:module *the-module*
+                                        :pathname *compile-file-truename*)
+              (or module (error "module is NIL"))
+              (with-make-new-run-all (run-all-function)
+                (with-literal-table
+                    (loop-read-and-compile-file-forms source-sin environment compile-file-hook))
+                (setf run-all-name (llvm-sys:get-name run-all-function))))
+            (cmp-log "About to verify the module%N")
+            (cmp-log-dump-module *the-module*)
+            (irc-verify-module-safe *the-module*)
+            (quick-module-dump *the-module* "preoptimize")
+            ;; (2) Add the CTOR next
+            (make-boot-function-global-variable module run-all-name
+                                                :position image-startup-position
+                                                :register-library t)
+            ;; (3) If optimize ALWAYS link the builtins in, inline them and then remove them - then optimize.
+            (if (> optimize-level 0)
+                (link-inline-remove-builtins *the-module*)))
+          ;; Now at the end of with-module another round of optimization is done
+          ;; but the RUN-ALL is now referenced by the CTOR and so it won't be optimized away
+          ;; ---- MOVE OPTIMIZATION in with-module to HERE ----
+          )
+        (quick-module-dump module "postoptimize")
+        module))))
 
 (defun compile-file-serial (input-file
                             &key

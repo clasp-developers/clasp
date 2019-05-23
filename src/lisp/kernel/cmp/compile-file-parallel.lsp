@@ -228,7 +228,6 @@ Compile a lisp source file into an LLVM module."
            (if (pathname-match-p given-input-pathname clasp-source)
                (enough-namestring given-input-pathname clasp-source-root)
                given-input-pathname))
-         
          (source-sin (open given-input-pathname :direction :input))
          warnings-p failure-p)
     (with-open-stream (sin source-sin)
@@ -238,26 +237,25 @@ Compile a lisp source file into an LLVM module."
         (core:source-file-info (namestring given-input-pathname) source-debug-pathname source-debug-offset nil))
       (when *compile-verbose*
         (bformat t "; Compiling file parallel: %s%N" (namestring given-input-pathname)))
-      (cmp-log "About to start with-compilation-unit%N")
-      (with-compilation-unit ()
-        (let* ((*compile-file-pathname* (pathname (merge-pathnames given-input-pathname)))
-               (*compile-file-truename* (translate-logical-pathname *compile-file-pathname*)))
-          (with-source-pathnames (:source-pathname *compile-file-truename* ;(namestring source-location)
-                                  :source-debug-pathname source-debug-pathname
-                                  :source-debug-offset source-debug-offset)
-            (let ((intermediate-output-type (case output-type
-                                              (:fasl :object)
-                                              (:object :object)
-                                              (:bitcode :bitcode))))
-              (cclasp-loop2 given-input-pathname source-sin environment
-                            :dry-run dry-run
-                            :optimize optimize
-                            :optimize-level optimize-level
-                            :working-dir working-dir
-                            :output-path output-path
-                            :intermediate-output-type intermediate-output-type
-                            :ast-only ast-only
-                            :verbose verbose))))))))
+      (let* ((*compilation-module-index* 0)
+             (*compile-file-pathname* (pathname (merge-pathnames given-input-pathname)))
+             (*compile-file-truename* (translate-logical-pathname *compile-file-pathname*)))
+        (with-source-pathnames (:source-pathname *compile-file-truename* ;(namestring source-location)
+                                :source-debug-pathname source-debug-pathname
+                                :source-debug-offset source-debug-offset)
+          (let ((intermediate-output-type (case output-type
+                                            (:fasl :object)
+                                            (:object :object)
+                                            (:bitcode :bitcode))))
+            (cclasp-loop2 given-input-pathname source-sin environment
+                          :dry-run dry-run
+                          :optimize optimize
+                          :optimize-level optimize-level
+                          :working-dir working-dir
+                          :output-path output-path
+                          :intermediate-output-type intermediate-output-type
+                          :ast-only ast-only
+                          :verbose verbose)))))))
 
 
 

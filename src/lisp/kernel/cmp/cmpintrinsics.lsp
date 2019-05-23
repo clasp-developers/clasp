@@ -36,8 +36,8 @@ Set this to other IRBuilders to make code go where you want")
   "Maintains an IRBuilder for function alloca instructions")
 (defvar *irbuilder-function-body* nil
   "Maintains an IRBuilder for function body IR code")
-(defvar *compilation-unit-module-index* 0
-  "Incremented for each module build within a compilation-unit.
+(defvar *compilation-module-index* 0
+  "Incremented for each module build within a compile-file.
    It's used to get the proper order for ctor initialization.")
 
 ;;
@@ -634,8 +634,8 @@ and initialize it with an array consisting of one function pointer."
     (let* ((global-ctor (add-global-ctor-function module startup-fn
                                                   :position position
                                                   :register-library register-library)))
-      (incf *compilation-unit-module-index*)
-      (add-llvm.global_ctors module *compilation-unit-module-index* global-ctor))))
+      (incf *compilation-module-index*)
+      (add-llvm.global_ctors module *compilation-module-index* global-ctor))))
 
 ;;
 ;; Ensure that the LLVM model of
