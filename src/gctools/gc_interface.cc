@@ -51,6 +51,7 @@ typedef bool _Bool;
 #include <llvm/Transforms/Instrumentation.h>
 #include <llvm/Transforms/IPO.h>
 #include <llvm/IR/InlineAsm.h>
+#include <llvm/CodeGen/TargetPassConfig.h>
 #include <llvm/Support/FormattedStream.h>
 #include <llvm/Support/TargetRegistry.h>
 #include <llvm/Support/MathExtras.h>

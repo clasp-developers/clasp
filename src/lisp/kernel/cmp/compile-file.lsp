@@ -166,6 +166,8 @@ and the pathname of the source file - this will also be used as the module initi
                                                                  NIL ; JIT?
                                                                  ))
                  (pm (llvm-sys:make-pass-manager))
+                 (target-pass-config (llvm-sys:create-pass-config target-machine pm))
+                 (_ (llvm-sys:set-enable-tail-merge target-pass-config nil))
                  (tli (llvm-sys:make-target-library-info-wrapper-pass triple #||LLVM3.7||#))
                  (data-layout (llvm-sys:create-data-layout target-machine)))
             (llvm-sys:set-data-layout module data-layout)

@@ -847,6 +847,76 @@ struct to_object<llvm::FunctionPass *> {
 };
     ;
 
+
+namespace llvmo {
+FORWARD(TargetPassConfig);
+FORWARD(PassManager);
+class TargetPassConfig_O : public core::ExternalObject_O {
+  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::TargetPassConfig, TargetPassConfig_O, "TargetPassConfig", core::ExternalObject_O);
+  typedef llvm::TargetPassConfig ExternalType;
+  typedef llvm::TargetPassConfig *PointerToExternalType;
+
+protected:
+  PointerToExternalType _ptr;
+
+public:
+  virtual void *externalObject() const {
+    return this->_ptr;
+  };
+  PointerToExternalType wrappedPtr() const {
+    return this->_ptr;
+  }
+
+public:
+  void set_wrapped(PointerToExternalType ptr) {
+    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    this->_ptr = ptr;
+  }
+
+  TargetPassConfig_O() : Base(), _ptr(NULL){};
+  ~TargetPassConfig_O() {
+    if (_ptr != NULL) { /* delete _ptr;*/
+      _ptr = NULL;
+    };
+  }
+}; // TargetPassConfig_O
+}; // llvmo
+/* from_object translators */
+
+namespace translate {
+template <>
+struct from_object<llvm::TargetPassConfig *, std::true_type> {
+  typedef llvm::TargetPassConfig *DeclareType;
+  DeclareType _v;
+  from_object(T_P object) : _v(object.nilp() ? NULL : gc::As<llvmo::TargetPassConfig_sp>(object)->wrappedPtr()){};
+};
+};
+
+/* to_object translators */
+
+namespace translate {
+  template <>
+    struct to_object<llvm::TargetPassConfig *> {
+    static core::T_sp convert(llvm::TargetPassConfig *ptr) {
+      return ((core::RP_Create_wrapped<llvmo::TargetPassConfig_O, llvm::TargetPassConfig *>(ptr)));
+    }
+  };
+};
+
+namespace translate {
+  template <>
+    struct to_object<llvm::TargetPassConfig&> {
+    static core::T_sp convert(llvm::TargetPassConfig& obj) {
+      return ((core::RP_Create_wrapped<llvmo::TargetPassConfig_O, llvm::TargetPassConfig *>(&obj)));
+    }
+  };
+};
+
+
+
+
+
+
 namespace llvmo {
 FORWARD(ModulePass);
 class ModulePass_O : public Pass_O {

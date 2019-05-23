@@ -231,13 +231,56 @@ Set gather-all-frames to T and you can gather C++ and Common Lisp frames"
 
 (defparameter core:*information-callback* 'core:safe-backtrace)
 
+(in-package :ext)
 
-(defun ext::code-source-position (address)
-  (multiple-value-bind (err error-msg stream)
-      (ext:vfork-execvp (list "atos" "-p" (format nil "~a" (core:getpid))
-                            (format nil "0x~x" (core:pointer-integer address))) t)
-    (let ((result (read-line stream)))
-      result)))
+(defstruct (code-source-line (:type vector) :named)
+  source-pathname line-number)
 
+(export '(code-source-line code-source-line-source-pathname code-source-line-line-number))
 
-(export 'ext::code-source-position :ext)
+(defun code-source-position (return-address)
+  (let ((address (1- (core:pointer-integer return-address))))
+    #+target-os-darwin
+    (multiple-value-bind (err error-msg stream)
+        (ext:vfork-execvp (list "atos" "-fullPath" "-p" (format nil "~a" (core:getpid))
+                                (format nil "0x~x" address)) t)
+      (let ((result (read-line stream)))
+        (close stream)
+        (let* ((open-paren (position #\( result :from-end t))
+               (close-paren (position #\) result :from-end t))
+               (source-info (subseq result (1+ open-paren) close-paren))
+               (colon-pos (position #\: source-info))
+               (source-file-name (subseq source-info 0 colon-pos))
+               (source-pathname (pathname source-file-name))
+               (line-number-string (subseq source-info (1+ colon-pos)))
+               (line-number (parse-integer line-number-string :junk-allowed t))
+               )
+          (format t "The code-source-position function will return ~s : ~s~%" source-file-name line-number)
+          (make-code-source-line
+           :source-pathname source-pathname
+           :line-number line-number))))
+    #+target-os-linux
+    (progn
+      (warn "Add support for ext:code-source-position for linux"))
+    ))
+
+(export 'code-source-position)
+
+(defun source-info-backtrace (backtrace)
+  (let ((pid (core:getpid)))
+    (loop for frame in backtrace
+          for num from 0 below 10
+          for return-address = (core::backtrace-frame-return-address frame)
+          for in-call-address = (core:pointer-increment return-address -1)
+          for atos = (code-source-position in-call-address)
+          do (multiple-value-bind (first second third fourth fifth sixth lib-offset)
+                 (core:lookup-address in-call-address)
+               (format t  "[~a] 0x~x 0x~x ~40a ~a~%"
+                       num
+                       lib-offset
+                       (core:pointer-integer in-call-address)
+                       (core::backtrace-frame-print-name frame)
+                       atos)))))
+
+(export 'source-info-backtrace)
+

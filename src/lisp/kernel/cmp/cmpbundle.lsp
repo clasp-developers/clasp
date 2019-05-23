@@ -135,6 +135,10 @@
                                   (clang-args `( "-flto"
                                                  ,(sys:bformat nil "-Wl,-object_path_lto,%s" (namestring object-lto-pathname))
                                                  ,@options
+                                                 ;; Disable the BranchFolding optimization that
+                                                 ;; merges tails of branches as they join
+                                                 ;; and was messing up debug source location info.
+                                                 "-Wl,-mllvm,-enable-tail-merge=false"
                                                  ,(core:bformat nil "-O%d" *optimization-level*)
                                                  ,@all-object-files
 ;;;                                 "-macosx_version_min" "10.10"
