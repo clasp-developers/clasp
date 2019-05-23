@@ -199,7 +199,6 @@
 (defun compile-file-to-result (given-input-pathname
                                &key
                                  compile-file-hook
-                                 type
                                  output-type
                                  output-path
                                  working-dir
@@ -215,7 +214,6 @@
 - given-input-pathname :: A pathname.
 - output-path :: A pathname.
 - compile-file-hook :: A function that will do the compile-file
-- type :: :kernel or :user (I'm not sure this is useful anymore)
 - source-debug-pathname :: A pathname.
 - source-debug-offset :: An integer.
 - environment :: Arbitrary, passed only to hook
@@ -257,7 +255,33 @@ Compile a lisp source file into an LLVM module."
                           :ast-only ast-only
                           :verbose verbose)))))))
 
+(defun cfp-result-files (result extension)
+  (mapcar (lambda (name)
+            (make-pathname :type extension :defaults name))
+          result))
 
+(defun output-cfp-result (result output-path output-type)
+  (ensure-directories-exist output-path)
+  (cond
+    #+(or)
+    ((eq output-type :bitcode)
+     (cf2-log "output-type :bitcode  result -> ~s~%" result)
+     (link-modules output-path result))
+    ((eq output-type :fasl)
+     (let ((output-path (make-pathname :type (bitcode-extension) :defaults output-path)))
+       (llvm-link output-path :input-files (cfp-result-files result (bitcode-extension))
+                              :link-type :bitcode))
+     (llvm-link output-path :input-files (cfp-result-files result "o")
+                            :input-type :object))
+    ((eq output-type :object)
+     (let ((output-path (make-pathname :type (bitcode-extension) :defaults output-path)))
+       (llvm-link output-path :input-files (cfp-result-files result (bitcode-extension))
+                              :link-type :bitcode))
+     (let ((output-path (make-pathname :type "o" :defaults output-path)))
+       (llvm-link output-path :input-files (cfp-result-files result "o")
+                              :link-type :object)))
+    (t ;; unknown
+     (error "Add support for output-type: ~a" output-type))))
 
 (defun compile-file-parallel (input-file
                               &key
@@ -276,7 +300,7 @@ Compile a lisp source file into an LLVM module."
                                 (source-debug-offset 0)
                                 ;; output-type can be (or :fasl :bitcode :object)
                                 (output-type :fasl)
-                                ;; type can be either :kernel or :user
+                                ;; type can be either :kernel or :user (FIXME? unused)
                                 (type :user)
                                 ;; ignored by bclasp
                                 ;; but passed to hook functions
@@ -300,7 +324,6 @@ Compile a lisp source file into an LLVM module."
            (*compile-file-output-pathname* output-path))
       (with-compiler-timer (:message "Compile-file-parallel" :report-link-time t :verbose verbose)
         (let ((result (compile-file-to-result input-pathname
-                                              :type type
                                               :output-type output-type
                                               :output-path output-path
                                               :source-debug-pathname source-debug-pathname
@@ -315,53 +338,10 @@ Compile a lisp source file into an LLVM module."
                                               :dry-run dry-run)))
           (cf2-log "Came out of compile-file-to-result with result: ~s~%" result)
 ;;;          (loop for one in result do (format t "Result: ~s~%" one))
-          (cond
-            (dry-run
-             (format t "Doing nothing further~%"))
-            ((null output-path)
-             (error "The output-file is nil for input filename ~a~%" input-file))
-            #+(or)((eq output-type :object)
-                   (error "Implement me")
-                   (when verbose (bformat t "Writing object to %s%N" (core:coerce-to-filename output-path)))
-                   (ensure-directories-exist output-path)
-                   ;; Save the bitcode so we can take a look at it
-                   (with-track-llvm-time
-                       (write-bitcode module (core:coerce-to-filename (cfp-output-file-default output-path :bitcode))))
-                   (with-open-file (fout output-path :direction :output)
-                     (let ((reloc-model (cond
-                                          ((or (member :target-os-linux *features*) (member :target-os-freebsd *features*))
-                                           'llvm-sys:reloc-model-pic-)
-                                          (t 'llvm-sys:reloc-model-undefined))))
-                       (unless dry-run (generate-obj-asm module fout :file-type 'llvm-sys:code-gen-file-type-object-file :reloc-model reloc-model)))))
-            #+(or)
-            ((eq output-type :bitcode)
-             (cf2-log "output-type :bitcode  result -> ~s~%" result)
-             (link-modules output-path result))
-            ((eq output-type :fasl)
-             (ensure-directories-exist output-path)
-             (let ((output-path (make-pathname :type (bitcode-extension) :defaults output-path)))
-               (llvm-link output-path :input-files (mapcar (lambda (name)
-                                                             (make-pathname :type (bitcode-extension) :defaults name))
-                                                           result)
-                                      :link-type :bitcode))
-             (llvm-link output-path :input-files (mapcar (lambda (name)
-                                                           (make-pathname :type "o" :defaults name))
-                                                         result)
-                                    :input-type :object))
-            ((eq output-type :object)
-             (ensure-directories-exist output-path)
-             (let ((output-path (make-pathname :type (bitcode-extension) :defaults output-path)))
-               (llvm-link output-path :input-files (mapcar (lambda (name)
-                                                             (make-pathname :type (bitcode-extension) :defaults name))
-                                                           result)
-                                      :link-type :bitcode))
-             (let ((output-path (make-pathname :type "o" :defaults output-path)))
-               (llvm-link output-path :input-files (mapcar (lambda (name)
-                                                             (make-pathname :type "o" :defaults name))
-                                                           result)
-                                      :link-type :object)))
-            (t ;; fasl
-             (error "Add support for output-type: ~a" output-type)))
+          (cond (dry-run (format t "Doing nothing further~%"))
+                ((null output-path)
+                 (error "The output-file is nil for input filename ~a~%" input-file))
+                (t (output-cfp-result output-path result)))
           (compile-file-results output-path))))))
 
 (defvar *compile-file-parallel* nil)

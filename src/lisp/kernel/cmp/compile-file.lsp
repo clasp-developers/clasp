@@ -335,58 +335,66 @@ Compile a lisp source file into an LLVM module."
                                               :image-startup-position image-startup-position
                                               :optimize optimize
                                               :optimize-level optimize-level)))
-          (cond
-            ((null output-path)
-             (error "The output-path is nil for input filename ~a~%" input-file))
-            ((eq output-type :object)
-             (when verbose (bformat t "Writing object to %s%N" (core:coerce-to-filename output-path)))
-             (ensure-directories-exist output-path)
-             (let ((temp-bitcode-file (compile-file-pathname input-file :output-file output-file :output-type :bitcode)))
-               (ensure-directories-exist temp-bitcode-file) ;; Save the bitcode so we can take a look at it
-               (with-track-llvm-time
-                   (write-bitcode module temp-bitcode-file))
-               (prog1
-                   (with-open-file (fout output-path :direction :output)
-                     (let ((reloc-model (cond
-                                          ((or (member :target-os-linux *features*) (member :target-os-freebsd *features*))
-                                           'llvm-sys:reloc-model-pic-)
-                                          (t 'llvm-sys:reloc-model-undefined))))
-                       (generate-obj-asm module fout :file-type 'llvm-sys:code-gen-file-type-object-file :reloc-model reloc-model)))
-                 (when (eq type :kernel)
-                   (let ((fasl-output-file (make-pathname :type "fasl" :defaults output-file)))
-                     (when verbose
-                       (bformat t "Writing %s kernel fasl file to: %s%N" output-type fasl-output-file)
-                       (finish-output))
-                     (llvm-link fasl-output-file :input-files (list temp-bitcode-file) :input-type :bitcode))))))
-            ((eq output-type :bitcode)
-             (when verbose (bformat t "Writing bitcode to %s%N" (core:coerce-to-filename output-path)))
-             (ensure-directories-exist output-path)
-             (prog1
-                 (with-track-llvm-time
-                     (write-bitcode module (core:coerce-to-filename output-path)))
-               (when (eq type :kernel)
-                 (let ((fasl-output-file (make-pathname :type "fasl" :defaults output-file)))
-                   (when verbose
-                     (bformat t "Writing %s kernel fasl file to: %s%N" output-type fasl-output-file)
-                     (finish-output))
-                   (llvm-link fasl-output-file :input-files (list output-path) :input-type :bitcode)))))
-            ((eq output-type :fasl)
-             (ensure-directories-exist output-path)
-             (let ((temp-bitcode-file (compile-file-pathname input-file :output-file output-file :output-type :bitcode)))
-               (ensure-directories-exist temp-bitcode-file)
-               (when verbose
-                 (bformat t "Writing temporary bitcode file to: %s%N" temp-bitcode-file))
-               (with-track-llvm-time
-                   (write-bitcode module (core:coerce-to-filename temp-bitcode-file)))
-               (when verbose
-                 (bformat t "Writing fasl file to: %s%N" output-file)
-                 (finish-output))
-               (llvm-link output-file :input-files (list temp-bitcode-file) :input-type :bitcode)))
-            (t ;; fasl
-             (error "Add support to file of type: ~a" output-type)))
-          (with-track-llvm-time
-              (llvm-sys:module-delete module))
+          (output-module module output-file output-type output-path input-file type)
           (compile-file-results output-path))))))
+
+(defun reloc-model ()
+  (cond
+    ((or (member :target-os-linux *features*) (member :target-os-freebsd *features*))
+     'llvm-sys:reloc-model-pic-)
+    (t 'llvm-sys:reloc-model-undefined)))
+
+(defun output-bitcode (module file)
+  (with-track-llvm-time
+      (write-bitcode module file)))
+
+(defun output-kernel-fasl (output-file input-file output-type)
+  (let ((fasl-output-file (make-pathname :type "fasl" :defaults output-file)))
+    (when *compile-verbose*
+      (bformat t "Writing %s kernel fasl file to: %s%N" output-type fasl-output-file)
+      (finish-output))
+    (llvm-link fasl-output-file :input-files (list input-file) :input-type :bitcode)))
+
+(defun output-module (module output-file output-type output-path input-file type)
+  (when (null output-path)
+    (error "The output-path is nil for input filename ~a~%" input-file))
+  (ensure-directories-exist output-path)
+  (cond ((eq output-type :object)
+         (when *compile-verbose*
+           (bformat t "Writing object to: %s%N" (core:coerce-to-filename output-path)))
+         ;; save the bitcode so we can look at it.
+         (let ((temp-bitcode-file
+                 (compile-file-pathname input-file :output-file output-file :output-type :bitcode)))
+           (ensure-directories-exist temp-bitcode-file)
+           (output-bitcode module temp-bitcode-file)
+           (prog1
+               (with-open-file (fout output-path :direction :output)
+                 (generate-obj-asm module fout
+                                   :file-type 'llvm-sys:code-gen-file-type-object-file
+                                   :reloc-model (reloc-model)))
+             (when (eq type :kernel)
+               (output-kernel-fasl output-file temp-bitcode-file :object)))))
+        ((eq output-type :bitcode)
+         (when *compile-verbose*
+           (bformat t "Writing bitcode to: %s%N" (core:coerce-to-filename output-path)))
+         (prog1 (output-bitcode module (core:coerce-to-filename output-path))
+           (when (eq type :kernel)
+             (output-kernel-fasl output-file output-path :bitcode))))
+        ((eq output-type :fasl)
+         (let ((temp-bitcode-file (compile-file-pathname input-file
+                                                         :output-file output-file :output-type :bitcode)))
+           (ensure-directories-exist temp-bitcode-file)
+           (when *compile-verbose*
+             (bformat t "Writing temporary bitcode file to: %s%N" temp-bitcode-file))
+           (output-bitcode module (core:coerce-to-filename temp-bitcode-file))
+           (when *compile-verbose*
+             (bformat t "Writing fasl file to: %s%N" output-file)
+             (finish-output))
+           (llvm-link output-file :input-files (list temp-bitcode-file) :input-type :bitcode)))
+        (t ;; Unknown
+         (error "Add support to file of type: ~a" output-type)))
+  (with-track-llvm-time
+      (llvm-sys:module-delete module)))
 
 (export 'compile-file)
 
