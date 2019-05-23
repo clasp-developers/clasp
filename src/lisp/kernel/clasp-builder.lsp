@@ -226,17 +226,6 @@ Return files."
                    `',result))
              t))
 
-(defun compile-file-and-load (entry)
-  (let* ((filename (entry-filename entry))
-         (pathname (probe-file (build-pathname filename :lisp)))
-         (name (namestring pathname)))
-    (bformat t "Compiling/loading source: %s%N" (namestring name))
-    (let ((m (cmp::compile-file-to-module name :print nil)))
-      (progn
-        (cmp::link-builtins-module m)
-        (cmp::optimize-module-for-compile m))
-      (llvm-sys:load-module m))))
-
 (defun interpreter-iload (entry)
   (let* ((filename (entry-filename entry))
          (pathname (probe-file (build-pathname filename :lisp)))
@@ -274,7 +263,7 @@ Return files."
                (load lsp-path)))
             (bformat t "No interpreted or bitcode file for %s could be found%N" lsp-path)))))
 
-(defun load-system (files &key compile-file-load interp load-bitcode (target-backend *target-backend*) system)
+(defun load-system (files &key interp load-bitcode (target-backend *target-backend*) system)
   #+dbg-print(bformat t "DBG-PRINT  load-system: %s - %s%N" first-file last-file )
   (let* ((*target-backend* target-backend)
          (*compile-verbose* t)
@@ -286,11 +275,9 @@ Return files."
          (if (not interp)
              (if (bitcode-exists-and-up-to-date (car cur))
                  (iload (car cur) :load-bitcode load-bitcode)
-                 (if compile-file-load
-                     (compile-file-and-load (car cur))
-                     (progn
-                       (setq load-bitcode nil)
-                       (interpreter-iload (car cur)))))
+                 (progn
+                   (setq load-bitcode nil)
+                   (interpreter-iload (car cur))))
              (interpreter-iload (car cur))))
        (gctools:cleanup)
        (setq cur (cdr cur))
@@ -700,12 +687,6 @@ Return files."
   (if clean (clean-system #P"src/lisp/kernel/tag/start" :no-prompt t))
   (compile-cclasp* output-file system))
 
-(defun load-cclasp (&key (system (command-line-arguments-as-list)))
-  (progn
-    (load-system (select-source-files #P"src/lisp/kernel/tag/bclasp" #P"src/lisp/kernel/cleavir/inline-prep" :system system) :compile-file-load t)
-    (load-system (select-source-files #P"src/lisp/kernel/cleavir/auto-compile" #P"src/lisp/kernel/tag/cclasp" :system system) :compile-file-load nil )))
-(export '(load-cclasp))
-
 (defun compile-cclasp (&key clean (output-file (build-common-lisp-bitcode-pathname)) (system (command-line-arguments-as-list)))
   (handler-bind
       ((error #'build-failure))
@@ -720,7 +701,7 @@ Return files."
                 (push :compiling-cleavir *features*)
                   (load-system (select-source-files #P"src/lisp/kernel/tag/bclasp"
                                                     #P"src/lisp/kernel/tag/pre-epilogue-cclasp"
-                                                    :system system) :compile-file-load nil))
+                                                    :system system)))
            (pop *features*))
          (push :cleavir *features*)
          (compile-cclasp* output-file system))))))
