@@ -666,7 +666,7 @@ This works like compile-lambda-function in bclasp."
 ;; Set this to T to watch cclasp-compile* run
 (defvar *cleavir-compile-verbose* nil)
 (export '*cleavir-compile-verbose*)
-(defun cclasp-compile* (name form env pathname &key (linkage 'llvm-sys:internal-linkage))
+(defun cclasp-compile* (form env pathname &key (linkage 'llvm-sys:internal-linkage))
   (when *cleavir-compile-verbose*
     (format *trace-output* "Cleavir compiling t1expr: ~s~%" form)
     (format *trace-output* "          in environment: ~s~%" env ))
@@ -798,18 +798,19 @@ This works like compile-lambda-function in bclasp."
               (core:with-memory-ramp (:pattern 'gctools:ramp)
                 (cleavir-compile-file-form form))))))))
 
-(defun cclasp-compile-in-env (name form &optional env)
+(defun cclasp-compile-in-env (form &optional env)
   (let ((cleavir-generate-ast:*compiler* 'cl:compile)
         (core:*use-cleavir-compiler* t))
     (if cmp::*debug-compile-file*
         (compiler-time
-         (cmp:compile-in-env name form env #'cclasp-compile* cmp:*default-compile-linkage*))
-        (cmp:compile-in-env name form env #'cclasp-compile* cmp:*default-compile-linkage*))))
+         (cmp:compile-in-env form env #'cclasp-compile* cmp:*default-compile-linkage*))
+        (cmp:compile-in-env form env #'cclasp-compile* cmp:*default-compile-linkage*))))
         
 (defun cleavir-compile (name form &key (debug *debug-cleavir*))
+  (declare (ignore name)) ; only there to match COMPILE- FIXME?
   (let ((cmp:*compile-debug-dump-module* debug)
 	(*debug-cleavir* debug))
-    (cclasp-compile-in-env name form nil)))
+    (cclasp-compile-in-env form)))
 
 (defun cleavir-compile-file (given-input-pathname &rest args)
   (let ((*debug-log-index* 0)

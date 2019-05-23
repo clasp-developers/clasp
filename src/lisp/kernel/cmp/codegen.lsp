@@ -166,7 +166,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
               (compile-to-module definition env pathname :linkage linkage)))
       (values fn function-kind wrapped-env lambda-name ordered-raw-constants-list constants-table startup-fn shutdown-fn))))
 
-(defun bclasp-compile* (bind-to-name &optional definition env pathname &key (linkage 'llvm-sys:internal-linkage))
+(defun bclasp-compile* (definition env pathname &key (linkage 'llvm-sys:internal-linkage))
   "Compile the definition"
   (multiple-value-bind (fn function-kind wrapped-env lambda-name ordered-raw-constants-list constants-table startup-fn shutdown-fn)
       (compile-to-module-with-run-time-table definition env pathname :linkage linkage)

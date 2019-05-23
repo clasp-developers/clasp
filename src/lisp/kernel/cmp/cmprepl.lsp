@@ -43,8 +43,7 @@
          (with-compilation-unit (:override nil)
            (multiple-value-bind (compiled-function warn fail)
                (core:with-memory-ramp (:pattern 'gctools:ramp)
-                 (compile-in-env 'repl
-                                 `(lambda () 
+                 (compile-in-env `(lambda ()
                                     (declare (core:lambda-name from-bclasp-implicit-compile-repl-form))
                                     ,form)
                                  environment
