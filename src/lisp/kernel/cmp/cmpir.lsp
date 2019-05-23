@@ -434,19 +434,22 @@
   (llvm-sys:create-ptr-to-int *irbuilder* val int-type label))
 
 (defun irc-fdefinition (symbol &optional (label ""))
-  (let* ((untagged-symbol (irc-untag-general symbol %symbol%))
+  (let* ((untagged-symbol (irc-untag-general symbol %symbol*%))
          (fdefinition (irc-load (irc-struct-gep %symbol% untagged-symbol +symbol.function-index+))))
     fdefinition))
 
 (defun irc-setf-fdefinition (symbol &optional (label ""))
-  (let* ((untagged-symbol (irc-untag-general symbol %symbol%))
+  (let* ((untagged-symbol (irc-untag-general symbol %symbol*%))
          (setf-fdefinition (irc-load (irc-struct-gep %symbol% untagged-symbol +symbol.setf-function-index+))))
     setf-fdefinition))
 
 (defun irc-untag-general (tagged-ptr &optional (type %t*%))
-  (let* ((ptr-i8* (irc-bit-cast tagged-ptr %i8*%))
+  #+(or)(let* ((ptr-i8* (irc-bit-cast tagged-ptr %i8*%))
          (ptr-untagged (irc-gep ptr-i8* (list (- +general-tag+)))))
-    (irc-bit-cast ptr-untagged type)))
+          (irc-bit-cast ptr-untagged type))
+  (let* ((ptr-int (irc-ptr-to-int tagged-ptr %uintptr_t%))
+         (ptr-adjusted (irc-sub ptr-int (jit-constant-i64 1))))
+    (irc-int-to-ptr ptr-adjusted type)))
 
 (defun irc-untag-cons (tagged-ptr &optional (type %cons*%))
   (let* ((ptr-i8* (irc-bit-cast tagged-ptr %i8*%))
@@ -659,8 +662,8 @@ the type LLVMContexts don't match - so they were defined in different threads!"
                    (with-dbg-lexical-block (:lineno (core:source-pos-info-lineno core:*current-source-pos-info*))
                      (when core:*current-source-pos-info*
                        (let ((lineno (core:source-pos-info-lineno core:*current-source-pos-info*)))
-                         (dbg-set-current-source-pos-for-irbuilder ,irbuilder-alloca lineno)
-                         (dbg-set-current-source-pos-for-irbuilder ,irbuilder-body lineno)))
+                         (dbg-set-irbuilder-source-location-impl ,irbuilder-alloca lineno 0 *dbg-current-scope*)
+                         (dbg-set-irbuilder-source-location-impl ,irbuilder-body lineno 0 *dbg-current-scope*)))
                      (with-irbuilder (*irbuilder-function-body*)
                        (or *the-module* (error "with-new-function *the-module* is NIL"))
                        (cmp-log "with-landing-pad around body%N")

@@ -181,6 +181,7 @@
             irc-ret
             irc-undef-value-get
             irc-store
+            irc-struct-gep
             irc-t*-result
             irc-tmv-result
             irc-switch
