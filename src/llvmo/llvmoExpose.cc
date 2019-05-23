@@ -65,6 +65,7 @@ THE SOFTWARE.
 #include <llvm/Transforms/Utils/BasicBlockUtils.h>
 #include <llvm/Transforms/IPO.h>
 #include <llvm/IR/InlineAsm.h>
+#include <llvm/CodeGen/TargetPassConfig.h>
 #include <llvm/Support/FormattedStream.h>
 #include <llvm/Support/TargetRegistry.h>
 #include <llvm/Support/MathExtras.h>
@@ -357,8 +358,24 @@ CL_DEFUN void llvm_sys__sanity_check_module(Module_sp module, int depth)
 namespace llvmo {
 
 
-  CL_LISPIFY_NAME(createTargetMachine);
-  CL_EXTERN_DEFMETHOD(Target_O, &llvm::Target::createTargetMachine);
+CL_LISPIFY_NAME(createTargetMachine);
+CL_EXTERN_DEFMETHOD(Target_O, &llvm::Target::createTargetMachine);
+
+
+CL_DEFUN TargetPassConfig_sp llvm_sys__createPassConfig(TargetMachine_sp targetMachine, PassManagerBase_sp pmb) {
+  llvm::TargetMachine* tm = targetMachine->wrappedPtr();
+  llvm::LLVMTargetMachine* ltm = dynamic_cast<llvm::LLVMTargetMachine*>(tm);
+  if (ltm==NULL) {
+    SIMPLE_ERROR(BF("Could not get LLVMTargetMachine"));
+  }
+  llvm::TargetPassConfig* tpc = ltm->createPassConfig(*pmb->wrappedPtr());
+  TargetPassConfig_sp tpcsp = gc::As_unsafe<TargetPassConfig_sp>(translate::to_object<llvm::TargetPassConfig*>::convert(tpc));
+  return tpcsp;
+}
+
+
+CL_LISPIFY_NAME(setEnableTailMerge);
+CL_EXTERN_DEFMETHOD(TargetPassConfig_O, &llvm::TargetPassConfig::setEnableTailMerge);
 
 ;
 
@@ -1631,6 +1648,17 @@ CL_DEFMETHOD void Instruction_O::setMetadata(core::String_sp kind, MDNode_sp mdn
 
   CL_LISPIFY_NAME(getParent);
   CL_EXTERN_DEFMETHOD(Instruction_O, (llvm::BasicBlock * (llvm::Instruction::*)()) & llvm::Instruction::getParent);
+
+CL_LISPIFY_NAME(getDebugLocInfo);
+CL_DEFUN core::T_mv llvm_sys__getDebugLocInfo(Instruction_sp instr) {
+  const llvm::DebugLoc& debugLoc = instr->wrappedPtr()->getDebugLoc();
+  if (debugLoc) {
+    size_t lineno = debugLoc.getLine();
+    size_t column = debugLoc.getCol();
+    return Values(_lisp->_true(),core::make_fixnum(lineno),core::make_fixnum(column));
+  }
+  return Values(_Nil<core::T_O>());
+}
 
   CL_LISPIFY_NAME(eraseFromParent);
   CL_EXTERN_DEFMETHOD(Instruction_O, & llvm::Instruction::eraseFromParent);

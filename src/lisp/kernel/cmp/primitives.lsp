@@ -149,7 +149,7 @@
          (primitive-unwinds "gdb" %void% nil)
          (primitive         "debugInspectTPtr" %void% (list %t*%))
          (primitive         "debugInspectT_mv" %void% (list %tmv*%))
-         (primitive         "debugInspect_return_type" %void% (list %return_type%))
+         (primitive         "debugInspect_return_type" %void% (list %return-type%))
 
          (primitive         "debugPointer" %void% (list %i8*%))
          (primitive         "debug_vaslistPtr" %void% (list %vaslist*%))
@@ -184,8 +184,8 @@
          (primitive-unwinds "throwDynamicGo" %void% (list %size_t% %size_t% %t*%) :does-not-return t)
 
          (primitive         "ignore_exceptionStackUnwind" %void% nil)
-         (primitive-unwinds "blockHandleReturnFrom_or_rethrow" %return_type% (list %i8*% %t*%))
-         (primitive-unwinds "ignore_blockHandleReturnFrom_or_rethrow" %return_type% (list %i8*% %t*%))
+         (primitive-unwinds "blockHandleReturnFrom_or_rethrow" %return-type% (list %i8*% %t*%))
+         (primitive-unwinds "ignore_blockHandleReturnFrom_or_rethrow" %return-type% (list %i8*% %t*%))
          (primitive-unwinds "tagbodyHandleDynamicGoIndex_or_rethrow" %size_t% (list %i8*% %t*%))
          (primitive-unwinds "throwIllegalSwitchValue" %void% (list %size_t% %size_t%) :does-not-return t)
     
@@ -209,9 +209,9 @@
          (primitive         "debugSourceFileInfoHandle" %void% (list %i32*%))
     
          (primitive         "saveToMultipleValue0" %void% (list %tmv*%))
-         (primitive         "restoreFromMultipleValue0" %return_type% nil)
+         (primitive         "restoreFromMultipleValue0" %return-type% nil)
          (primitive         "cc_save_values" %void% (list %size_t% %t*% %t**%))
-         (primitive         "cc_load_values" %return_type% (list %size_t% %t**%))
+         (primitive         "cc_load_values" %return-type% (list %size_t% %t**%))
     
          (primitive         "pushDynamicBinding" %void% (list %t*%))
          (primitive         "popDynamicBinding" %void% (list %t*%))
@@ -265,8 +265,8 @@
          (primitive         "cx_vaslist_pop" %t*% (list %t*%))
          (primitive         "cc_rewind_va_list" %void% (list %va_list*% %register-save-area*%))
          (primitive         "cc_rewind_vaslist" %t*% (list %vaslist*% %va_list*% %register-save-area*%))
-         (primitive-unwinds "cc_call_multipleValueOneFormCall" %return_type% (list %t*%))
-         (primitive-unwinds "cc_call_multipleValueOneFormCallWithRet0" %return_type% (list %t*% %return_type%))
+         (primitive-unwinds "cc_call_multipleValueOneFormCall" %return-type% (list %t*%))
+         (primitive-unwinds "cc_call_multipleValueOneFormCallWithRet0" %return-type% (list %t*% %return-type%))
          (primitive-unwinds "cc_oddKeywordException" %void% (list %function-description*%))
          (primitive         "cc_multipleValuesArrayAddress" %t*[0]*% nil)
          (primitive-unwinds "cc_unwind" %void% (list %t*% %size_t%))

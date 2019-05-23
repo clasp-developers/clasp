@@ -924,7 +924,7 @@ and then the irbuilder-alloca, irbuilder-body."
     (llvm-sys:set-alignment alloca 8) ; 8-byte alignment
     alloca))
 
-(defun alloca-return (&optional (label "")) (alloca %return_type% 1 label))
+(defun alloca-return (&optional (label "")) (alloca %return-type% 1 label))
 (defun alloca-t* (&optional (label "")) (alloca %t*% 1 label))
 (defun alloca-tmv (&optional (label "")) (alloca %tmv% 1 label))
 (defun alloca-af* (&key (label "")) (alloca %af*% 1 label))

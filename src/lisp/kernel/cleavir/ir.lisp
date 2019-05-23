@@ -169,13 +169,14 @@ And convert everything to JIT constants."
 (defgeneric make-return-nret (return-value abi))
 
 (defmethod make-return-nret (return-value (abi abi-x86-64))
-  (cmp:irc-gep-variable return-value (list (%i32 0) (%i32 1)) "ret-nvals"))
+  (cmp:irc-struct-gep cmp:%return-type% return-value 1 "ret-nvals"))
 
 (defgeneric make-return-regs (return-value abi))
 
 (defmethod make-return-regs (return-value (abi abi-x86-64))
   (list ; only one register.
-   (cmp:irc-gep-variable return-value (list (%i32 0) (%i32 0)) "reg-regs")))
+   (cmp:irc-bit-cast return-value cmp:%t**% "reg-regs")
+   #+(or)(cmp:irc-struct-gep cmp::%return-type% return-value 0 "reg-regs")))
 
 (defun return-value-elt (return-regs idx)
   (if (< idx +pointers-returned-in-registers+)
@@ -216,7 +217,7 @@ And convert everything to JIT constants."
                    (let ((arg-types (make-list (length args) :initial-element cmp:%t*%))
                          (varargs nil))
                      (cmp:irc-function-create
-                      (llvm-sys:function-type-get cmp:%return_type% arg-types varargs)
+                      (llvm-sys:function-type-get cmp:%return-type% arg-types varargs)
                       'llvm-sys::External-linkage
                       intrinsic-name
                       cmp:*the-module*))))

@@ -1045,7 +1045,7 @@ jump to blocks within this tagbody."
                      (let ((arg-types (make-list (length args) :initial-element %t*%))
                            (varargs nil))
                        (irc-function-create
-                        (llvm-sys:function-type-get %return_type% arg-types varargs)
+                        (llvm-sys:function-type-get %return-type% arg-types varargs)
                         'llvm-sys::External-linkage
                         intrinsic-name
                         *the-module*))))

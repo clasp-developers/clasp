@@ -227,7 +227,7 @@ Boehm and MPS use a single pointer"
 
 ;; The definition of %tmv% doesn't quite match T_mv because T_mv inherits from T_sp
 (define-symbol-macro %tmv% (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields %t*% %size_t%) nil))  ;; "T_mv"
-(define-symbol-macro %return_type% %tmv%)
+(define-symbol-macro %return-type% %tmv%)
 (define-symbol-macro %tmv*% (llvm-sys:type-get-pointer-to %tmv%))
 (define-symbol-macro %tmv**% (llvm-sys:type-get-pointer-to %tmv*%))
 

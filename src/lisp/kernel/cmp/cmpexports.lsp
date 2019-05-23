@@ -232,7 +232,7 @@
             +cons-cdr-offset+
             +simple-vector._length-offset+
             %uintptr_t%
-            %return_type%
+            %return-type%
             %vaslist%
             %InvocationHistoryFrame%
             %register-save-area%
