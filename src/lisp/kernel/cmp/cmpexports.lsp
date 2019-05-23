@@ -219,8 +219,9 @@
             with-new-function
             with-dbg-function
             with-dbg-lexical-block
+            dbg-clear-irbuilder-source-location-impl
+            dbg-set-irbuilder-source-location-impl
             dbg-set-current-source-pos
-            dbg-set-current-source-pos-for-irbuilder
             with-try
             with-new-function-prepare-for-try
             with-debug-info-generator

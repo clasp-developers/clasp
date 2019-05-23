@@ -230,6 +230,19 @@
 (defmacro with-dbg-lexical-block ((&key (lineno (core:source-pos-info-lineno core:*current-source-pos-info*))) &body body)
   `(do-dbg-lexical-block (lambda () ,@body) ,lineno))
 
+(defun dbg-clear-irbuilder-source-location-impl (irbuilder)
+  (llvm-sys:clear-current-debug-location irbuilder))
+
+(defparameter *trap-zero-lineno* nil)
+(defun dbg-set-irbuilder-source-location-impl (irbuilder lineno column &optional (scope *dbg-current-scope*))
+  (unless scope (error "scope must not be NIL"))
+  (when *trap-zero-lineno*
+    (when (= lineno 0)
+      (format *error-output* "In dbg-set-irbuilder-source-location-impl lineno was zero! Setting to 666666~%")
+      (setf lineno 666666)))
+  (when *dbg-generate-dwarf*
+    (llvm-sys:set-current-debug-location-to-line-column-scope irbuilder lineno column scope)))
+
 (defun dbg-set-current-source-pos (form)
   (when *dbg-generate-dwarf*
     (setq *dbg-set-current-source-pos* t)
@@ -237,14 +250,8 @@
     (cmp-log "dbg-set-current-source-pos on form: %s%N" form)
     (unless *dbg-current-scope*
       (error "*dbg-current-scope* must not be NIL"))
-    (llvm-sys:set-current-debug-location-to-line-column-scope
+    (dbg-set-irbuilder-source-location-impl
      *irbuilder* (core:source-pos-info-lineno *current-source-pos-info*) 0 *dbg-current-scope*))))
-
-(defun dbg-set-current-source-pos-for-irbuilder (irbuilder lineno)
-  (unless *dbg-current-scope*
-    (error "*dbg-current-scope* must not be NIL"))
-  (when *dbg-generate-dwarf*
-    (llvm-sys:set-current-debug-location-to-line-column-scope irbuilder lineno 0 *dbg-current-scope*)))
 
 (defun check-debug-info-setup (irbuilder)
   "Signal an error if debug-info for the irbuilder is not setup properly for inlining"
@@ -258,10 +265,7 @@
         (core:source-pos-info-unpack source-pos)
       (when file-handle
         (let ((scope (gethash file-handle *llvm-metadata*)))
-          #+(or)(unless scope
-                  (setq scope (mdnode-file-descriptor filename pathname))
-                  (setf (gethash file-handle *llvm-metadata*) scope))
-          (llvm-sys:set-current-debug-location-to-line-column-scope *irbuilder* lineno column scope))))))
+          (dbg-set-irbuilder-source-location-impl *irbuilder* lineno column scope))))))
 
 (defun dbg-set-current-debug-location (filename pathname lineno column)
   (when *dbg-generate-dwarf*
@@ -270,11 +274,7 @@
       (unless scope
         (setq scope (mdnode-file-descriptor filename pathname))
         (core::hash-table-setf-gethash *llvm-metadata* scope-name scope))
-      (let ((debugloc (llvm-sys:debug-loc-get lineno column scope)))
-	(llvm-sys:set-current-debug-location *irbuilder* debugloc))
-      #+(or)(warn "Dwarf metadata is not currently being generated - the llvm-sys:set-current-debug-location-to-line-column-scope call is disabled")
-      (llvm-sys:set-current-debug-location-to-line-column-scope *irbuilder* lineno column scope)
-      )))
+      (dbg-set-irbuilder-source-location-impl *irbuilder* lineno column scope))))
 
 (defvar *current-file-metadata-node* nil
   "Store the metadata node for the current source file info")
