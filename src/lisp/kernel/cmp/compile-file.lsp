@@ -172,10 +172,6 @@ and the pathname of the source file - this will also be used as the module initi
             (llvm-sys:pass-manager-add pm tli)
             (llvm-sys:add-passes-to-emit-file-and-run-pass-manager target-machine pm output-stream file-type module))))))
 
-(defun compile-file-results (output-file)
-  ;; FIXME
-  (values output-file nil nil))
-
 (defvar *debug-compile-file* nil)
 (defvar *debug-compile-file-counter* 0)
 
@@ -325,18 +321,19 @@ Compile a lisp source file into an LLVM module."
            (*compile-file-output-pathname* output-path)
            (*compile-file-unique-symbol-prefix* unique-symbol-prefix))
       (with-compiler-timer (:message "Compile-file" :report-link-time t :verbose verbose)
-        (let ((module (compile-file-to-module input-file
-                                              :type type
-                                              :output-type output-type
-                                              :source-debug-pathname source-debug-pathname
-                                              :source-debug-offset source-debug-offset
-                                              :compile-file-hook *cleavir-compile-file-hook*
-                                              :environment environment
-                                              :image-startup-position image-startup-position
-                                              :optimize optimize
-                                              :optimize-level optimize-level)))
-          (output-module module output-file output-type output-path input-file type)
-          (compile-file-results output-path))))))
+        (with-compilation-results ()
+          (let ((module (compile-file-to-module input-file
+                                                :type type
+                                                :output-type output-type
+                                                :source-debug-pathname source-debug-pathname
+                                                :source-debug-offset source-debug-offset
+                                                :compile-file-hook *cleavir-compile-file-hook*
+                                                :environment environment
+                                                :image-startup-position image-startup-position
+                                                :optimize optimize
+                                                :optimize-level optimize-level)))
+            (output-module module output-file output-type output-path input-file type)
+            output-path))))))
 
 (defun reloc-model ()
   (cond

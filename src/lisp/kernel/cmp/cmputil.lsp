@@ -30,6 +30,9 @@
 (defvar *global-function-refs*)
 (defvar *compilation-messages*)
 
+(defvar *cmp-warningsp*)
+(defvar *cmp-failurep*)
+
 (core:defconstant-equal +note-format+        "Note:          %s")
 (core:defconstant-equal +style-warn-format+  "Style warning: %s")
 (core:defconstant-equal +warn-format+        "Warning:       %s")
@@ -37,12 +40,9 @@
 (core:defconstant-equal +fatal-format+       "Fatal-error:   %s")
 
 (defstruct (compiler-message (:type vector))
-  (prefix "Note")
   (format +note-format+)
   message
-  source-pos-info
-  top-level-form
-  form)
+  source-pos-info)
 
 (defstruct (compiler-note (:include compiler-message)
                           (:type vector)))
@@ -50,119 +50,62 @@
 (defstruct (compiler-warning
              (:type vector)
              (:include compiler-message
-                       (prefix "Warning")
-                       (format +warn-format+))))
+              (format +warn-format+))))
 
 (defstruct (compiler-error
              (:type vector)
              (:include compiler-message
-                       (prefix "Error")
-                       (format +error-format+))))
+              (format +error-format+))))
 
 (defstruct (compiler-fatal-error
              (:type vector)
              (:include compiler-error
-                       (prefix "Fatal Error")
-                       (format +fatal-format+))))
+              (format +fatal-format+))))
 
 (defstruct (compiler-style-warning
              (:type vector)
              (:include compiler-warning
-                       (prefix "Style Warning")
-                       (format +style-warn-format+))))
+              (format +style-warn-format+))))
 
-(defun compiler-error (form message &rest args)
-  (let* ((cspi (ext:current-source-location)))
-    (let ((err (make-compiler-error :message (apply #'core:bformat nil message args)
-                                    :source-pos-info cspi
-                                    :form form)))
-      (push err *compilation-messages*))))
+;;; defined analogously to WARN, etc.
+(defun coerce-compiler-message (datum args)
+  (cond ((stringp datum) ; it's a bformat string
+         (apply #'core:bformat nil datum args))
+        ((null args) ; it's some kind of object, e.g. a condition
+         (princ-to-string datum))
+        (t (error "BUG: Bad arguments to compiler-warn/error/something: ~a ~a"
+                  datum args))))
 
-(defun compiler-warning (form message &rest args)
-  (let* ((cspi (ext:current-source-location)))
-    (let ((err (make-compiler-warning :message (apply #'core:bformat nil message args)
-                                      :source-pos-info cspi
-                                      :form form)))
-      (push err *compilation-messages*))))
+(defun compiler-error (spi datum &rest args)
+  (setf *cmp-failurep* (setf *cmp-warningsp* t))
+  (let* ((cspi (or spi (ext:current-source-location)))
+         (err (make-compiler-error :message (coerce-compiler-message datum args)
+                                   :source-pos-info cspi)))
+      (push err *compilation-messages*)))
 
-(defun compiler-style-warning (form message &rest args)
-  (let* ((cspi (ext:current-source-location)))
-    (let ((err (make-compiler-style-warning :message (apply #'core:bformat nil message args)
-                                            :source-pos-info cspi
-                                            :form form)))
-      (push err *compilation-messages*))))
+(defun compiler-warn (spi datum &rest args)
+  (setf *cmp-failurep* (setf *cmp-warningsp* t))
+  (let* ((cspi (or spi (ext:current-source-location)))
+         (err (make-compiler-warning :message (coerce-compiler-message datum args)
+                                     :source-pos-info cspi)))
+    (push err *compilation-messages*)))
 
+(defun compiler-warn-undefined-global-variable (spi var)
+  (compiler-warn spi "Undefined variable %s" var))
 
-#||
-(defstruct (
-    ((prefix :initform "Warning")
-     (format :initform +warn-format+)))
+(defun compiler-style-warn (spi datum &rest args)
+  (setf *cmp-warningsp* t)
+  (let* ((cspi (or spi (ext:current-source-location)))
+         (err (make-compiler-style-warning :message (coerce-compiler-message datum args)
+                                           :source-pos-info cspi)))
+    (push err *compilation-messages*)))
 
-  (define-condition compiler-error (compiler-message)
-    ((prefix :initform "Error")
-     (format :initform +error-format+)))
-
-
-
-  (define-condition compiler-message (simple-condition)
-    ((prefix :initform "Note" :accessor compiler-message-prefix)
-     (format :initform +note-format+ :accessor compiler-message-format)
-     (file :initarg :file :initform *compile-file-pathname*
-           :accessor compiler-message-file)
-     (position :initarg :file :initform *compile-file-position*
-               :accessor compiler-message-file-position)
-     (toplevel-form :initarg :form :initform *current-toplevel-form*
-                    :accessor compiler-message-toplevel-form)
-     (form :initarg :form :initform *current-form*
-           :accessor compiler-message-form))
-    (:report (lambda (c stream)
-               (apply #'compiler-message-report stream c
-                      (simple-condition-format-control c)
-                      (simple-condition-format-arguments c)))))
-
-  (define-condition compiler-note (compiler-message) ())
-
-  (define-condition compiler-debug-note (compiler-note) ())
-
-  (define-condition compiler-warning (compiler-message style-warning)
-    ((prefix :initform "Warning")
-     (format :initform +warn-format+)))
-
-  (define-condition compiler-macro-expansion-failed (compiler-warning)
-    ())
-
-  (define-condition compiler-error (compiler-message)
-    ((prefix :initform "Error")
-     (format :initform +error-format+)))
-
-  (define-condition compiler-fatal-error (compiler-error)
-    ((format :initform +fatal-format+)))
-
-  (define-condition compiler-internal-error (compiler-fatal-error)
-    ((prefix :initform "Internal error")))
-
-  (define-condition compiler-style-warning (compiler-message style-warning)
-    ((prefix :initform "Style warning")
-     (format :initform +warn-format+)))
-
-  (define-condition compiler-undefined-variable (compiler-style-warning)
-    ((variable :initarg :name :initform nil))
-    (:report
-     (lambda (c stream)
-       (compiler-message-report stream c
-                                "Variable ~A was undefined. ~
-                               Compiler assumes it is a global."
-                                (slot-value c 'variable)))))
-  )
-
-||#
-
-(defun describe-source-location (cspi)
-  (let* ((lineno (source-pos-info-lineno cspi))
-         (filepos (source-pos-info-filepos cspi))
-         (source-file-info (source-file-info cspi))
+(defun describe-source-location (spi)
+  (let* ((lineno (source-pos-info-lineno spi))
+         (filepos (source-pos-info-filepos spi))
+         (source-file-info (source-file-info spi))
          (pathname (source-file-info-pathname source-file-info)))
-  (core:bformat nil "%s filepos: %d  lineno: %d" (namestring pathname) filepos lineno)))
+  (bformat nil "%s filepos: %d  lineno: %d" (namestring pathname) filepos lineno)))
 
 (defun print-compiler-message (c stream)
   (let ((msg (core:bformat nil (compiler-message-format c) (compiler-message-message c))))
@@ -170,7 +113,7 @@
     (bformat stream ";;; %s%N" msg)
     (bformat stream ";;;     at %s %N" (describe-source-location (compiler-message-source-pos-info c)))))
 
-(defmacro with-compiler-env ((&rest options) &rest body )
+(defmacro with-compiler-env ((&rest options) &rest body)
   "Initialize the environment to protect nested compilations from each other"
   (declare (ignore options)) ; FIXME: Find a use or remove
   `(let ((*the-module* nil)
@@ -215,9 +158,9 @@
                (not (and (eq type 'defmethod)
                          (or (eq (global-function-def-type existing) 'defgeneric)
                              (eq (global-function-def-type existing) 'defmethod)))))
-          (compiler-warning name "The %s %s was previously defined as a %s at %s%N"
-                            type name (global-function-def-type existing)
-                            (describe-source-location (global-function-def-source-pos-info existing)))
+          (compiler-warn nil "The %s %s was previously defined as a %s at %s%N"
+                         type name (global-function-def-type existing)
+                         (describe-source-location (global-function-def-source-pos-info existing)))
           (setf (gethash name *global-function-defs*)
                 (make-global-function-def :type type
                                        :name name
@@ -228,9 +171,6 @@
     (push (make-global-function-ref :name name
                                     :source-pos-info (ext:current-source-location)) refs)
     (setf (gethash name *global-function-refs*) refs)))
-
-(defun compiler-warning-undefined-global-variable (var)
-  (compiler-warning var "Undefined variable %s" var))
 
 (defun function-info (env func)
   (let ((info (classify-function-lookup env func)))
@@ -243,14 +183,14 @@
   "Lookup the variable in the lexical environment - if not found then check if it is a special"
   (let (#+(or)(core:*environment-debug* (null (symbol-package var))))
     (let ((info (classify-variable env var)))
-      (unless info
-        ;; We treat constants pretty much identically to specials in bclasp.
-        ;; It's not the best way to compile constants.
-        (setq info (cons 'ext:special-var var))
-        (unless (or (ext:specialp var) (core:symbol-constantp var))
-          (when (not *code-walking*)
-            (compiler-warning-undefined-global-variable var))))
-      info)))
+      (cond (info)
+            (t
+             ;; We treat constants pretty much identically to specials in bclasp.
+             ;; It's not the best way to compile constants.
+             (unless (or (ext:specialp var) (core:symbol-constantp var))
+               (when (not *code-walking*)
+                 (compiler-warn-undefined-global-variable nil var)))
+             (cons 'ext:special-var var))))))
 
 (defun compilation-unit-finished (messages)
   ;; Add messages for global function references that were never satisfied
@@ -260,9 +200,19 @@
                (dolist (ref references)
                  (pushnew (make-compiler-style-warning
                            :message (core:bformat nil "Undefined function %s" name)
-                           :source-pos-info (global-function-ref-source-pos-info ref)
-                           :form name)
+                           :source-pos-info (global-function-ref-source-pos-info ref))
                           messages :test #'equalp))))
            *global-function-refs*)
   (dolist (m (reverse messages))
     (print-compiler-message m *error-output*)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Stuff for taking care of the second & third return values
+;;; of COMPILE, COMPILE-FILE, etc.
+
+(defmacro with-compilation-results ((&rest options) &body body)
+  (declare (ignore options)) ; maybe later
+  `(let ((*cmp-warningsp* nil)
+         (*cmp-failurep* nil))
+     (values (progn ,@body) *cmp-warningsp* *cmp-failurep*)))

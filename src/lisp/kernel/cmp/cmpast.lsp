@@ -114,7 +114,7 @@
   (ensure-args form :min 2)
   (db (block name . body) form
       (or (symbolp name)
-          (compiler-error form "Block must have a symbol as second argument: %s" form))
+          (compiler-error nil "Block must have a symbol as second argument: %s" form))
       (let* ((ast (make-block-ast :body-ast nil))
              (new-env (clcenv:add-block env name ast)))
         (setf (block-ast-body-ast ast) (process-progn (convert-sequence body new-env))))))
@@ -298,7 +298,7 @@
         (gethash head *special-operator-dispatch*)
       (if found
           (funcall (first funcs) form env)
-          (compiler-error "Add support for special operator %s" head)))))
+          (compiler-error nil "Add support for special operator %s" head)))))
 
 (defun convert (form env)
   (let ((*current-form-is-top-level-p *subforms-are-top-level-p*)

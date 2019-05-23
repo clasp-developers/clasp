@@ -30,9 +30,10 @@
 (defun compile-with-hook (compile-hook definition env pathname &key (linkage 'llvm-sys:internal-linkage))
   "Dispatch to clasp compiler or cleavir-clasp compiler if available.
 We could do more fancy things here - like if cleavir-clasp fails, use the clasp compiler as backup."
-  (if compile-hook
-      (funcall compile-hook definition env pathname :linkage linkage)
-      (bclasp-compile* definition env pathname :linkage linkage)))
+  (with-compilation-results ()
+    (if compile-hook
+        (funcall compile-hook definition env pathname :linkage linkage)
+        (bclasp-compile* definition env pathname :linkage linkage))))
 
 (defun compile-in-env (definition env &optional (compile-hook *cleavir-compile-hook*)
                                         (linkage 'llvm-sys:internal-linkage))
