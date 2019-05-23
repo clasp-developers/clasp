@@ -93,4 +93,9 @@ CL_DEFMETHOD Integer_sp Pointer_O::pointer_integer() const {
   return Integer_O::create((uintptr_t)this->ptr());
 };
 
+CL_DEFUN Pointer_sp core__pointer_increment(Pointer_sp ptr,Fixnum inc)
+{
+  return Pointer_O::create((void*)(((intptr_t)ptr->ptr())+inc));
+};
+
 };
