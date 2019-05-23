@@ -45,9 +45,21 @@ CL_DEFUN DebugLoc_sp DebugLoc_O::get(int lineno, int column, MDNode_sp scope) {
   return oip;
 }
 
+CL_LISPIFY_NAME(DebugLoc_make);
+CL_DEFUN DebugLoc_sp DebugLoc_O::make(const llvm::DebugLoc& dl) {
+  GC_ALLOCATE(DebugLoc_O, oip);
+  oip->_DebugLoc = dl;
+  return oip;
+}
+
 CL_LISPIFY_NAME("getScope");
 CL_DEFMETHOD MDNode_sp DebugLoc_O::getScope() const {
   return translate::to_object<llvm::MDNode *>::convert(this->_DebugLoc.getScope());
+}
+
+CL_LISPIFY_NAME(DebugLoc_is_valid);
+CL_DEFMETHOD bool DebugLoc_O::is_valid() const {
+  return !!this->_DebugLoc; // bool operator
 }
 
 };

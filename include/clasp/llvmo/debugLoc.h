@@ -48,7 +48,8 @@ public: // Simple default ctor/dtor
 
 public:
   static DebugLoc_sp get(int lineno, int column, MDNode_sp scope);
-
+  static DebugLoc_sp make(const llvm::DebugLoc& dl);
+  
 private: // instance variables here
   llvm::DebugLoc _DebugLoc;
 
@@ -59,6 +60,8 @@ CL_DEFMETHOD   uint getLine() const { return this->_DebugLoc.getLine(); };
 CL_LISPIFY_NAME("getCol");
 CL_DEFMETHOD   uint getCol() const { return this->_DebugLoc.getCol(); };
   MDNode_sp getScope() const;
+  bool is_valid() const;
+  
 }; // DebugLoc class
 
 }; // llvmo namespace
