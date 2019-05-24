@@ -266,7 +266,7 @@ Compile a lisp source file into an LLVM module."
             (with-debug-info-generator (:module *the-module*
                                         :pathname *compile-file-truename*)
               (or module (error "module is NIL"))
-              (with-make-new-run-all (run-all-function)
+              (with-make-new-run-all (run-all-function (namestring input-pathname))
                 (with-literal-table
                     (loop-read-and-compile-file-forms source-sin environment compile-file-hook))
                 (setf run-all-name (llvm-sys:get-name run-all-function))))
