@@ -527,7 +527,7 @@ COMPILE-FILE will use the default *clasp-env*."
   (handler-bind
       ((cleavir-env:no-variable-info
          (lambda (condition)
-           (cmp:compiler-warn-undefined-global-variable
+           (cmp:warn-undefined-global-variable
             (origin-spi (cleavir-env:origin condition)) (cleavir-environment:name condition))
            (invoke-restart 'cleavir-cst-to-ast:consider-special)))
        (cleavir-env:no-function-info
@@ -664,26 +664,6 @@ This works like compile-lambda-function in bclasp."
 (defparameter *debug-final-gml* nil)
 (defparameter *debug-final-next-id* 0)
 
-(defun compiler-style-warn (condition)
-  (cmp:compiler-style-warn nil condition)
-  (muffle-warning condition))
-(defun compiler-warn (condition)
-  (cmp:compiler-warn nil condition)
-  (muffle-warning condition))
-#+(or)
-(defun compiler-error (condition)
-  (cmp:compiler-error nil condition))
-
-;;; FIXME: I think that this conceptually may belong in with-compilation-unit?
-;;; We need it for COMPILE calls too, though.
-(defmacro with-conditions-noted (() &body body)
-  `(handler-bind
-       ((style-warning #'compiler-style-warn)
-        ((and warning (not style-warning)) #'compiler-warn)
-        #+(or)
-        (error #'compiler-error))
-     ,@body))
-
 ;;; Clasp cleavir entry point for CL:COMPILE.
 
 ;; Set this to T to watch cclasp-compile* run
@@ -694,28 +674,27 @@ This works like compile-lambda-function in bclasp."
     (format *trace-output* "Cleavir compiling t1expr: ~s~%" form)
     (format *trace-output* "          in environment: ~s~%" env ))
   (setf *ct-start* (compiler-timer-elapsed))
-  (let (function lambda-name
-        ordered-raw-constants-list constants-table startup-fn shutdown-fn)
-    (with-conditions-noted ()
-      (let* ((cleavir-generate-ast:*compiler* 'cl:compile)
-             (*llvm-metadata* (make-hash-table :test 'eql))
-             (dynenv (make-dynenv env))
-             #+cst
-             (cst (cst:cst-from-expression form))
-             #+cst
-             (ast (cst->ast cst dynenv env))
-             #-cst
-             (ast (generate-ast form dynenv env)))
-        (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
-          (multiple-value-setq (ordered-raw-constants-list constants-table startup-fn shutdown-fn)
-            (literal:with-rtv
-                (let* ((ast (hoist-ast ast dynenv env))
-                       (hir (ast->hir ast)))
-                  (multiple-value-bind (mir function-info-map go-indices)
-                      (hir->mir hir env)
-                    (multiple-value-setq (function lambda-name)
-                      (translate mir function-info-map go-indices
-                                 :abi *abi-x86-64* :linkage linkage)))))))))
+  (let* (function lambda-name
+         ordered-raw-constants-list constants-table startup-fn shutdown-fn
+         (cleavir-generate-ast:*compiler* 'cl:compile)
+         (*llvm-metadata* (make-hash-table :test 'eql))
+         (dynenv (make-dynenv env))
+         #+cst
+         (cst (cst:cst-from-expression form))
+         #+cst
+         (ast (cst->ast cst dynenv env))
+         #-cst
+         (ast (generate-ast form dynenv env)))
+    (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
+      (multiple-value-setq (ordered-raw-constants-list constants-table startup-fn shutdown-fn)
+        (literal:with-rtv
+            (let* ((ast (hoist-ast ast dynenv env))
+                   (hir (ast->hir ast)))
+              (multiple-value-bind (mir function-info-map go-indices)
+                  (hir->mir hir env)
+                (multiple-value-setq (function lambda-name)
+                  (translate mir function-info-map go-indices
+                             :abi *abi-x86-64* :linkage linkage)))))))
     (unless function
       (error "There was no function returned by translate-ast"))
     (cmp:cmp-log "fn --> %s%N" fn)
@@ -797,31 +776,30 @@ This works like compile-lambda-function in bclasp."
         (*llvm-metadata* (make-hash-table :test 'eql))
         (cleavir-generate-ast:*compiler* 'cl:compile-file)
         (core:*use-cleavir-compiler* t))
-    (with-conditions-noted ()
-      (loop
-        ;; Required to update the source pos info. FIXME!?
-        (peek-char t source-sin nil)
-        ;; FIXME: if :environment is provided we should probably use a different read somehow
-        (let* ((core:*current-source-pos-info* (core:input-stream-source-pos-info source-sin))
-               #+cst
-               (cst (eclector.concrete-syntax-tree:cst-read source-sin nil eof-value))
-               #-cst
-               (form (read source-sin nil eof-value)))
-          #+debug-monitor(sys:monitor-message "source-pos ~a" core:*current-source-pos-info*)
-          #+cst
-          (if (eq cst eof-value)
-              (return nil)
-              (progn
-                (when *compile-print* (cmp::describe-form (cst:raw cst)))
-                (core:with-memory-ramp (:pattern 'gctools:ramp)
-                  (cleavir-compile-file-cst cst environment))))
-          #-cst
-          (if (eq form eof-value)
-              (return nil)
-              (progn
-                (when *compile-print* (cmp::describe-form form))
-                (core:with-memory-ramp (:pattern 'gctools:ramp)
-                  (cleavir-compile-file-form form)))))))))
+    (loop
+      ;; Required to update the source pos info. FIXME!?
+      (peek-char t source-sin nil)
+      ;; FIXME: if :environment is provided we should probably use a different read somehow
+      (let* ((core:*current-source-pos-info* (core:input-stream-source-pos-info source-sin))
+             #+cst
+             (cst (eclector.concrete-syntax-tree:cst-read source-sin nil eof-value))
+             #-cst
+             (form (read source-sin nil eof-value)))
+        #+debug-monitor(sys:monitor-message "source-pos ~a" core:*current-source-pos-info*)
+        #+cst
+        (if (eq cst eof-value)
+            (return nil)
+            (progn
+              (when *compile-print* (cmp::describe-form (cst:raw cst)))
+              (core:with-memory-ramp (:pattern 'gctools:ramp)
+                (cleavir-compile-file-cst cst environment))))
+        #-cst
+        (if (eq form eof-value)
+            (return nil)
+            (progn
+              (when *compile-print* (cmp::describe-form form))
+              (core:with-memory-ramp (:pattern 'gctools:ramp)
+                (cleavir-compile-file-form form))))))))
 
 (defun cclasp-compile-in-env (form &optional env)
   (let ((cleavir-generate-ast:*compiler* 'cl:compile)

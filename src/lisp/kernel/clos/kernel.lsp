@@ -115,7 +115,6 @@
 
 ;;; Will be the standard method after fixup.
 (defun compute-discriminating-function (generic-function)
-  (declare (ignore generic-function))
   (invalidated-discriminating-function-closure generic-function))
 
 ;;; ----------------------------------------------------------------------

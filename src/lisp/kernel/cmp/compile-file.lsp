@@ -72,31 +72,6 @@
 (defmacro with-compiler-timer ((&key message report-link-time verbose override) &rest body)
   `(do-compiler-timer (lambda () (progn ,@body)) :message ,message :report-link-time ,report-link-time :verbose ,verbose))
 
-
-;;; ------------------------------------------------------------
-;;;
-;;; BE VERY CAREFUL WHAT YOU DO HERE!!!
-;;; This function must return the result* of evaluating the closure.
-;;; I have put things in the wrong place (following the UNWIND-PROTECT)
-;;; and it introduced subtle bugs that were very difficult to track down.
-(defun do-compilation-unit (closure &key override)
-  (if (or (not *active-protection*) ; we're not in a do-compilation-unit
-          override) ; we are, but we're overriding it
-      (let* ((*active-protection* t)
-             (*compilation-messages* nil)
-             (*global-function-defs* (make-hash-table :test #'equal))
-             (*global-function-refs* (make-hash-table :test #'equal
-                                                      :thread-safe t)))
-        (unwind-protect
-             (funcall closure) ; --> result*
-          (compilation-unit-finished *compilation-messages*))) ; --> result*
-      (funcall closure)))
-
-(export 'do-compilation-unit)
-
-(defmacro with-compilation-unit ((&rest options) &body body)
-  `(do-compilation-unit #'(lambda () ,@body) ,@options))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Compile-file pathnames

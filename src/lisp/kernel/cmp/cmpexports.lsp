@@ -122,7 +122,7 @@
             compiler-fatal-error
             compiler-message-file
             compiler-message-file-position
-            compiler-warn-undefined-global-variable
+            warn-undefined-global-variable
             register-global-function-def
             register-global-function-ref
             analyze-top-level-form

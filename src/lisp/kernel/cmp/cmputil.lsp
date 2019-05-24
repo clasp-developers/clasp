@@ -24,14 +24,18 @@
 
 ;; -^-
 
+;;;; This is the compiler signaling system as used by bclasp, i.e. before
+;;;; the CLOS condition system exists. Most of this file will be redefined
+;;;; in compiler-conditions.lsp.
+
 (in-package :cmp)
 
 (defvar *global-function-defs*)
 (defvar *global-function-refs*)
 (defvar *compilation-messages*)
 
-(defvar *cmp-warningsp*)
-(defvar *cmp-failurep*)
+(defvar *warnings-p*)
+(defvar *failure-p*)
 
 (core:defconstant-equal +note-format+        "Note:          %s")
 (core:defconstant-equal +style-warn-format+  "Style warning: %s")
@@ -77,24 +81,24 @@
                   datum args))))
 
 (defun compiler-error (spi datum &rest args)
-  (setf *cmp-failurep* (setf *cmp-warningsp* t))
+  (setf *failure-p* (setf *warnings-p* t))
   (let* ((cspi (or spi (ext:current-source-location)))
          (err (make-compiler-error :message (coerce-compiler-message datum args)
                                    :source-pos-info cspi)))
       (push err *compilation-messages*)))
 
 (defun compiler-warn (spi datum &rest args)
-  (setf *cmp-failurep* (setf *cmp-warningsp* t))
+  (setf *failure-p* (setf *warnings-p* t))
   (let* ((cspi (or spi (ext:current-source-location)))
          (err (make-compiler-warning :message (coerce-compiler-message datum args)
                                      :source-pos-info cspi)))
     (push err *compilation-messages*)))
 
-(defun compiler-warn-undefined-global-variable (spi var)
+(defun warn-undefined-global-variable (spi var)
   (compiler-warn spi "Undefined variable %s" var))
 
 (defun compiler-style-warn (spi datum &rest args)
-  (setf *cmp-warningsp* t)
+  (setf *warnings-p* t)
   (let* ((cspi (or spi (ext:current-source-location)))
          (err (make-compiler-style-warning :message (coerce-compiler-message datum args)
                                            :source-pos-info cspi)))
@@ -132,6 +136,43 @@
 	 (*package* *package*))
      (with-compilation-unit () ,@body)))
 
+(defmacro with-compilation-unit ((&rest options) &body body)
+  `(do-compilation-unit #'(lambda () ,@body) ,@options))
+
+(defun make-global-function-defs-table ()
+  (make-hash-table :test #'equal))
+
+(defun make-global-function-refs-table ()
+  (make-hash-table :test #'equal :thread-safe t))
+
+;;; Will be redefined in compiler-conditions.lsp
+(defun do-compilation-unit (closure &key override)
+  (if (or (not *active-protection*) ; we're not in a do-compilation-unit
+          override) ; we are, but we're overriding it
+      (let* ((*active-protection* t)
+             (*compilation-messages* nil)
+             (*global-function-defs* (make-global-function-defs-table))
+             (*global-function-refs* (make-global-function-refs-table)))
+        (unwind-protect
+             (funcall closure) ; --> result*
+          (compilation-unit-finished *compilation-messages*)))
+      (funcall closure)))
+
+;;; Redefined in compiler-conditions.lsp
+(defun compilation-unit-finished (messages)
+  ;; Add messages for global function references that were never satisfied
+  (maphash (lambda (name references)
+             (unless (or (fboundp name)
+                         (gethash name *global-function-defs*))
+               (dolist (ref references)
+                 (pushnew (make-compiler-style-warning
+                           :message (core:bformat nil "Undefined function %s" name)
+                           :source-pos-info (global-function-ref-source-pos-info ref))
+                          messages :test #'equalp))))
+           *global-function-refs*)
+  (dolist (m (reverse messages))
+    (print-compiler-message m *error-output*)))
+
 (defstruct (global-function-def (:type vector) :named)
   type
   name
@@ -148,9 +189,16 @@
 
 (export '(known-function-p)) ; FIXME MOVE
 
+;;; Redefined in compiler-conditions.lsp
+(defun warn-redefined-function (name new-type new-origin old-type old-origin)
+  (compiler-warn new-origin "The %s %s was previously defined as a %s at %s%N"
+                 new-type name
+                 old-type (describe-source-location old-origin)))
+
 (defun register-global-function-def (type name)
   (when (boundp '*global-function-defs*)
-    (let ((existing (gethash name *global-function-defs*)))
+    (let ((existing (gethash name *global-function-defs*))
+          (cspi (ext:current-source-location)))
       (if (and existing
                ;; defmethod can define a gf, so we still want to note it-
                ;; but multiple defmethods, or a defmethod after a defgeneric,
@@ -158,13 +206,14 @@
                (not (and (eq type 'defmethod)
                          (or (eq (global-function-def-type existing) 'defgeneric)
                              (eq (global-function-def-type existing) 'defmethod)))))
-          (compiler-warn nil "The %s %s was previously defined as a %s at %s%N"
-                         type name (global-function-def-type existing)
-                         (describe-source-location (global-function-def-source-pos-info existing)))
+          (warn-redefined-function
+           name type cspi
+           (global-function-def-type existing)
+           (global-function-def-source-pos-info existing))
           (setf (gethash name *global-function-defs*)
                 (make-global-function-def :type type
-                                       :name name
-                                       :source-pos-info (ext:current-source-location)))))))
+                                          :name name
+                                          :source-pos-info cspi))))))
 
 (defun register-global-function-ref (name)
   (let ((refs (gethash name *global-function-refs*)))
@@ -189,22 +238,8 @@
              ;; It's not the best way to compile constants.
              (unless (or (ext:specialp var) (core:symbol-constantp var))
                (when (not *code-walking*)
-                 (compiler-warn-undefined-global-variable nil var)))
+                 (warn-undefined-global-variable nil var)))
              (cons 'ext:special-var var))))))
-
-(defun compilation-unit-finished (messages)
-  ;; Add messages for global function references that were never satisfied
-  (maphash (lambda (name references)
-             (unless (or (fboundp name)
-                         (gethash name *global-function-defs*))
-               (dolist (ref references)
-                 (pushnew (make-compiler-style-warning
-                           :message (core:bformat nil "Undefined function %s" name)
-                           :source-pos-info (global-function-ref-source-pos-info ref))
-                          messages :test #'equalp))))
-           *global-function-refs*)
-  (dolist (m (reverse messages))
-    (print-compiler-message m *error-output*)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -212,7 +247,11 @@
 ;;; of COMPILE, COMPILE-FILE, etc.
 
 (defmacro with-compilation-results ((&rest options) &body body)
+  `(call-with-compilation-results (lambda () ,@body) ,@options))
+
+;;; Redefined in compiler-conditions.lsp
+(defun call-with-compilation-results (thunk &rest options)
   (declare (ignore options)) ; maybe later
-  `(let ((*cmp-warningsp* nil)
-         (*cmp-failurep* nil))
-     (values (progn ,@body) *cmp-warningsp* *cmp-failurep*)))
+  (let ((*warnings-p* nil)
+        (*failure-p* nil))
+    (values (funcall thunk) *warnings-p* *failure-p*)))
