@@ -341,7 +341,7 @@ Compile a lisp source file into an LLVM module."
           (cond (dry-run (format t "Doing nothing further~%"))
                 ((null output-path)
                  (error "The output-file is nil for input filename ~a~%" input-file))
-                (t (output-cfp-result output-path result)))
+                (t (output-cfp-result result output-path output-type)))
           (compile-file-results output-path))))))
 
 (defvar *compile-file-parallel* nil)
