@@ -641,6 +641,7 @@ The passed module is modified as a side-effect."
             (unwind-protect
                  (progn
                    (mp:lock *jit-lock* t)
+                   (core:increment-jit-compile-counter)
                    (let ((handle (llvm-sys:clasp-jit-add-module jit-engine module)))
                      (llvm-sys:jit-finalize-repl-function jit-engine handle repl-name startup-name shutdown-name literals-list)))
               (mp:unlock *jit-lock*))))))

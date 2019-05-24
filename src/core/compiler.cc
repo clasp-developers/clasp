@@ -75,8 +75,20 @@ THE SOFTWARE.
 namespace core {
 
 
+std::atomic<size_t> global_jit_compile_counter;
+
+CL_DEFUN void core__increment_jit_compile_counter() {
+  global_jit_compile_counter++;
+}
+
+CL_DEFUN size_t core__jit_compile_counter() {
+  return global_jit_compile_counter;
+}
+
+
 MaybeDebugStartup::MaybeDebugStartup(void* fp, const char* n) : fptr(fp), start_dispatcher_count(0) {
   if (n) this->name = n;
+  this->start_jit_compile_counter = global_jit_compile_counter;
   if (core::_sym_STARdebugStartupSTAR->symbolValue().notnilp()) {
     this->start = PosixTime_O::createNow();
     if (clos::_sym_dispatcher_count->fboundp()) {
@@ -95,6 +107,7 @@ MaybeDebugStartup::~MaybeDebugStartup() {
     PosixTimeDuration_sp diff = end->sub(this->start);
     mpz_class ms = diff->totalMicroseconds();
     size_t end_dispatcher_count = 0;
+    
     if (clos::_sym_dispatcher_count->fboundp()) {
       core::T_sp nu = core::eval::funcall(clos::_sym_dispatcher_count);
       end_dispatcher_count = nu.unsafe_fixnum();
@@ -106,7 +119,7 @@ MaybeDebugStartup::~MaybeDebugStartup() {
     dladdr((void*)this->fptr,&di);
     name_ << di.dli_sname;
     if (name_.str() == "") name_ << (void*)this->fptr;
-    printf("%s us %zu gfds : %s\n", _rep_(Integer_O::create(ms)).c_str(), dispatcher_delta, name_.str().c_str());
+    printf("%s us %zu gfds %zu jits: %s\n", _rep_(Integer_O::create(ms)).c_str(), dispatcher_delta, (global_jit_compile_counter-this->start_jit_compile_counter),name_.str().c_str());
   }
 }
 
