@@ -34,7 +34,7 @@
                       :optimize-level optimize-level)
           (with-debug-info-generator (:module module
                                       :pathname *compile-file-truename*)
-            (with-make-new-run-all (run-all-function (core:bformat nil "-top-%d" (core:next-number)))
+            (with-make-new-run-all (run-all-function (namestring (ast-job-form-output-path job)))
               (with-literal-table
                   (let ((clasp-cleavir::*llvm-metadata* (make-hash-table :test 'eql)))
                     (core:with-memory-ramp (:pattern 'gctools:ramp)
