@@ -491,6 +491,7 @@ rewrite the slot in the literal table to store a closure."
   "Convert the args from Lisp form into llvm::Value*'s"
   (mapcar #'fix-arg args))
 
+#+(or)
 (defun generate-run-all-from-literal-nodes (nodes)
   (cmp::with-make-new-run-all (foo)
     (dolist (node nodes)
