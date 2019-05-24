@@ -623,7 +623,6 @@ a_p = a_p_temp; a = a_temp;
   (let ((setup (maybe-alloc-cc-setup cleavir-lambda-list debug-on)))
     (let ((cc (initialize-calling-convention arguments
                                              setup
-                                             :rewind t
                                              :rest-alloc rest-alloc
                                              :cleavir-lambda-list cleavir-lambda-list)))
       (calling-convention-args.va-start cc)

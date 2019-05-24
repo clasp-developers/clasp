@@ -352,7 +352,8 @@ Return files."
                (dolist (entry entries)
                  (reload-one entry)))
              (one-compile-kernel-file (entry)
-               (compile-kernel-file entry :reload reload :output-type output-type :position (entry-position entry) :total-files total :silent t :verbose t))
+               ;; Don't reload in the child process - there is no point
+               (compile-kernel-file entry :reload nil :output-type output-type :position (entry-position entry) :total-files total :silent t :verbose t))
              (some-compile-kernel-files (entries)
                (dolist (entry entries)
                  (one-compile-kernel-file entry))))

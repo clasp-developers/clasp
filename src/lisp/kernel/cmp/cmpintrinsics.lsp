@@ -358,7 +358,7 @@ Boehm and MPS use a single pointer"
 ;; Parse the function arguments into a calling-convention
 ;;
 ;; What if we don't want/need to spill the registers to the register-save-area?
-(defun initialize-calling-convention (arguments setup &key (rewind t) cleavir-lambda-list rest-alloc)
+(defun initialize-calling-convention (arguments setup &key cleavir-lambda-list rest-alloc)
   (let ((register-save-area* (calling-convention-configuration-register-save-area* setup)))
     (if (null register-save-area*)
         ;; If there's no RSA, we determined we only need registers and don't need to dump things.
@@ -371,13 +371,14 @@ Boehm and MPS use a single pointer"
         ;; The register arguments need to be spilled to the register-save-area
         ;;    and the va_list needs to be initialized.
         ;;    If a InvocationHistoryFrame is available, then initialize it.
-        (progn
+        (let* ((use-only-registers (calling-convention-configuration-use-only-registers setup))
+               (create-a-va-list (null use-only-registers)))
           (maybe-spill-to-register-save-area arguments register-save-area*)
           (make-calling-convention-impl :closure (first arguments)
                                         :nargs (second arguments) ;; The number of arguments
                                         :register-args (nthcdr 2 arguments)
-                                        :use-only-registers (calling-convention-configuration-use-only-registers setup)
-                                        :va-list* (alloca-va_list)
+                                        :use-only-registers use-only-registers
+                                        :va-list* (when create-a-va-list (alloca-va_list)) ; Only create va-list* if we need to rewind it
                                         :register-save-area* register-save-area*
                                         :cleavir-lambda-list cleavir-lambda-list
                                         :rest-alloc rest-alloc)))))
