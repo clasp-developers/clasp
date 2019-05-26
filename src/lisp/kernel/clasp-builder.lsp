@@ -4,6 +4,7 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (core:select-package :core)
 ;;;  (setq *features* (cons :dbg-print *features*))
+;;;  (setq *features* (cons :dump-child-process-output *features*))
   )
 
 (defparameter *number-of-jobs* 1)
@@ -200,16 +201,16 @@ Return files."
                 (bformat t "Compiling [%d of %d] %s%N    to %s - will reload: %s%N" position total-files source-path output-path reload)
                 (bformat t "Compiling %s%N   to %s - will reload: %s%N" source-path output-path reload)))
           (let ((cmp::*module-startup-prefix* "kernel")
-                (compile-file-arguments (list (probe-file source-path)
-                                              :output-file output-path
-                                              :output-type output-type
-                                              :print print
-                                              :verbose verbose
-                                              :unique-symbol-prefix (format nil "~a~a" (pathname-name source-path) position)
-                                              :type (if reload :kernel nil)
-                                              (if position
-                                                  (list* :image-startup-position position (entry-compile-file-options entry))
-                                                  (entry-compile-file-options entry)))))
+                (compile-file-arguments (list* (probe-file source-path)
+                                               :output-file output-path
+                                               :output-type output-type
+                                               :print print
+                                               :verbose verbose
+                                               :unique-symbol-prefix (format nil "~a~a" (pathname-name source-path) position)
+                                               :type :kernel ;; (if reload :kernel nil)
+                                               (if position
+                                                   (list* :image-startup-position position (entry-compile-file-options entry))
+                                                   (entry-compile-file-options entry)))))
             #+dbg-print(bformat t "DBG-PRINT  source-path = %s%N" source-path)
             (apply #'cmp::compile-file-serial compile-file-arguments)
             (if reload
@@ -403,17 +404,19 @@ Return files."
                          (progn
                            ;; Turn off interactive mode so that errors cause clasp to die with backtrace
                            (core:set-interactive-lisp nil)
-                           (let ((new-sigset (core:make-cxx-object 'core:sigset))
-                                 (old-sigset (core:make-cxx-object 'core:sigset)))
-                             (core:sigset-sigaddset new-sigset 'core:signal-sigint)
-                             (core:sigset-sigaddset new-sigset 'core:signal-sigchld)
-                             (multiple-value-bind (fail errno)
-                                 (core:sigthreadmask :sig-setmask new-sigset old-sigset)
-                               (some-compile-kernel-files entries)
-                               (core:sigthreadmask :sig-setmask old-sigset nil)
-                               (when fail
-                                 (error "sigthreadmask has an error errno = ~a" errno))
-                               (core:exit))))
+                           (let ((*standard-output* #+dump-child-process-output(open (core:bformat nil "/tmp/clasp-child-%s" (core:getpid)) :direction :output :if-exists :supersede)
+                                                    #-dump-child-process-output *standard-output*))
+                             (let ((new-sigset (core:make-cxx-object 'core:sigset))
+                                   (old-sigset (core:make-cxx-object 'core:sigset)))
+                               (core:sigset-sigaddset new-sigset 'core:signal-sigint)
+                               (core:sigset-sigaddset new-sigset 'core:signal-sigchld)
+                               (multiple-value-bind (fail errno)
+                                   (core:sigthreadmask :sig-setmask new-sigset old-sigset)
+                                 (some-compile-kernel-files entries)
+                                 (core:sigthreadmask :sig-setmask old-sigset nil)
+                                 (when fail
+                                   (error "sigthreadmask has an error errno = ~a" errno))
+                                 (core:exit)))))
                          (progn
                            (started-some entries pid)
                            (setf (gethash pid jobs) (list entries :dummy result-stream))
