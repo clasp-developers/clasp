@@ -31,7 +31,8 @@
 ;;; (defvar *dbg-generate-dwarf* t) <<--- defined in init.lsp
 (defvar *dbg-compile-unit* )
 (defvar *dbg-current-file* )
-(defvar *dbg-current-function*)
+(defvar *dbg-current-function-metadata*)
+(defvar *dbg-current-function-lineno*)
 (defvar *dbg-current-scope* nil
   "Stores the current enclosing lexical scope for debugging info")
 
@@ -193,21 +194,20 @@
   (let ((*with-dbg-function* t)
         (*dbg-set-current-source-pos* nil))
     (if (and *dbg-generate-dwarf* *the-module-dibuilder*)
-        (let* ((*dbg-current-function*
-                (make-function-metadata :file-metadata *dbg-current-file*
+        (let* ((*dbg-current-function-metadata* (make-function-metadata :file-metadata *dbg-current-file*
                                         :linkage-name linkage-name
                                         :function-type function-type
-                                        :lineno lineno))
-               (*dbg-current-scope* *dbg-current-function*))
-          (llvm-sys:set-subprogram function *dbg-current-function*)
-          (cmp-log "do-dbg-function *dbg-current-function*: %s%N" *dbg-current-function*)
-          (cmp-log "do-dbg-function name: [%s]%N" name)
-          (cmp-log "do-dbg-function linkage-name: [%s]%N" linkage-name)
+                                                                        :lineno lineno))
+               (*dbg-current-scope* *dbg-current-function-metadata*)
+               (*dbg-current-function-lineno* lineno))
+          (llvm-sys:set-subprogram function *dbg-current-function-metadata*)
           (funcall closure))
       (funcall closure))))
 
 (defmacro with-dbg-function ((name &key lineno linkage-name function-type function) &rest body)
-  `(do-dbg-function (lambda () (progn ,@body)) ,name ,lineno ,linkage-name ,function-type ,function))
+  `(do-dbg-function
+       (lambda () (progn ,@body))
+     ,name ,lineno ,linkage-name ,function-type ,function))
 
 (defvar *with-dbg-lexical-block* nil)
 (defun do-dbg-lexical-block (closure lineno)
@@ -276,5 +276,24 @@
         (core::hash-table-setf-gethash *llvm-metadata* scope-name scope))
       (dbg-set-irbuilder-source-location-impl *irbuilder* lineno column scope))))
 
+
+(defun dbg-create-parameter-variable (&key (scope *dbg-current-scope*)
+                                        name
+                                        argno
+                                        (file *dbg-current-file*)
+                                        lineno
+                                        type
+                                        always-preserve)
+  (llvm-sys:create-parameter-variable *the-module-dibuilder*
+                                      scope
+                                      name
+                                      argno
+                                      file
+                                      lineno
+                                      type
+                                      always-preserve
+                                      (core:enum-logical-or llvm-sys:diflags-enum '(llvm-sys:diflags-zero))))
+
+                                           
 (defvar *current-file-metadata-node* nil
   "Store the metadata node for the current source file info")

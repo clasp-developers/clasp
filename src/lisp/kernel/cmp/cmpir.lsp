@@ -550,7 +550,7 @@ Otherwise do a variable shift."
 (defun irc-load (source &optional (label ""))
   (llvm-sys:create-load-value-twine *irbuilder* source label))
 
-(defun irc-store (val destination &optional (label ""))
+(defun irc-store (val destination &optional (label "") (is-volatile nil))
   ;; Mismatch in store type sis a very common bug we hit when rewriting codegen.
   ;; LLVM doesn't deal with it gracefully except with a debug build, so we just
   ;; check it ourselves. We also check that types are in the same context-
@@ -560,7 +560,7 @@ Otherwise do a variable shift."
   (let ((val-type (llvm-sys:get-type val))
         (dest-contained-type (llvm-sys:get-contained-type (llvm-sys:get-type destination) 0)))
     (cond ((llvm-sys:type-equal val-type dest-contained-type)
-           (llvm-sys:create-store *irbuilder* val destination nil))
+           (llvm-sys:create-store *irbuilder* val destination is-volatile))
           ((llvm-sys:llvmcontext-equal
             (llvm-sys:get-context val-type) (llvm-sys:get-context dest-contained-type))
            (error "BUG: Mismatch in irc-store between val type ~a and destination contained type ~a%N"
@@ -636,6 +636,7 @@ the type LLVMContexts don't match - so they were defined in different threads!"
 	(traceid-gs (gensym "traceid"))
 	(irbuilder-alloca (gensym))
         (temp (gensym))
+        (function-metadata-name (gensym))
 	(irbuilder-body (gensym))
         (function-description (gensym)))
     `(multiple-value-bind (,fn ,fn-env ,cleanup-block-gs ,irbuilder-alloca ,irbuilder-body ,result ,function-description)
@@ -654,7 +655,7 @@ the type LLVMContexts don't match - so they were defined in different threads!"
          (with-irbuilder (*irbuilder-function-body*)
            (with-new-function-prepare-for-try (,fn)
              (with-try
-              (with-dbg-function (,function-name
+                 (with-dbg-function (,function-name
                                   :lineno (core:source-pos-info-lineno core:*current-source-pos-info*)
                                   :linkage-name *current-function-name*
                                   :function ,fn

@@ -184,6 +184,8 @@ Boehm and MPS use a single pointer"
 (define-symbol-macro %tsp*% (llvm-sys:type-get-pointer-to %tsp%))
 (define-symbol-macro %tsp**% (llvm-sys:type-get-pointer-to %tsp*%))
 
+(define-symbol-macro %metadata% (llvm-sys:type-get-metadata-ty *llvm-context*))
+
 ;;;
 ;;; The %symbol% type MUST match the layout and size of Symbol_O in symbol.h
 ;;;
@@ -432,12 +434,24 @@ eg:  (f closure-ptr nargs a b c d ...)
                                              (/ +register-save-area-size+ +void*-size+)))
   (define-symbol-macro %register-save-area*% (llvm-sys:type-get-pointer-to %register-save-area%))
   ;; (Maybe) generate code to store registers in memory. Return value unspecified.
+
+  (defun dbg-register-parameter (register name argno &optional (type-name "T_O*") (type llvm-sys:+dw-ate-address+))
+    (let* ((dbg-arg0 (dbg-create-parameter-variable :name name
+                                                    :argno argno
+                                                    :lineno *dbg-current-function-lineno*
+                                                    :type (llvm-sys:create-basic-type *the-module-dibuilder* type-name 64 type)
+                                                    :always-preserve t))
+           (diexpression (llvm-sys:create-expression-none *the-module-dibuilder*))
+           (dbg-arg0-value (llvm-sys:metadata-as-value-get *llvm-context* dbg-arg0))
+           (diexpr-value (llvm-sys:metadata-as-value-get *llvm-context* diexpression)))
+      (irc-intrinsic "llvm.dbg.value" (llvm-sys:metadata-as-value-get *llvm-context* (llvm-sys:value-as-metadata-get register)) dbg-arg0-value diexpr-value)))
+  
   (defun maybe-spill-to-register-save-area (registers register-save-area*)
     (if registers
         (labels ((spill-reg (idx reg addr-name)
                    (let* ((addr          (irc-gep register-save-area* (list (jit-constant-size_t 0) (jit-constant-size_t idx)) addr-name))
                           (reg-i8*       (irc-bit-cast reg %i8*% "reg-i8*"))
-                          (_             (irc-store reg-i8* addr)))
+                          (_             (irc-store reg-i8* addr "" t)))
                      addr)))
           (let* ((addr-closure  (spill-reg 0 (elt registers 0) "closure0"))
                  (addr-nargs    (spill-reg 1 (irc-int-to-ptr (elt registers 1) %i8*%) "nargs1"))
@@ -445,7 +459,13 @@ eg:  (f closure-ptr nargs a b c d ...)
                  (addr-farg1    (spill-reg 3 (elt registers 3) "arg1"))
                  (addr-farg2    (spill-reg 4 (elt registers 4) "arg2"))
                  (addr-farg3    (spill-reg 5 (elt registers 5) "arg3")))
-            (irc-intrinsic "cc_protect_alloca" (irc-bit-cast register-save-area* %i8*%))))
+            (dbg-register-parameter (elt registers 0) "closure" 0)
+            (dbg-register-parameter (elt registers 1) "nargs" 1 "int" llvm-sys:+dw-ate-signed-fixed+)
+            (dbg-register-parameter (elt registers 2) "farg0" 2)
+            (dbg-register-parameter (elt registers 3) "farg1" 3)
+            (dbg-register-parameter (elt registers 4) "farg2" 4)
+            (dbg-register-parameter (elt registers 5) "farg3" 5)
+            ))
         (unless register-save-area*
           (error "If registers is NIL then register-save-area* also must be NIL"))))
 

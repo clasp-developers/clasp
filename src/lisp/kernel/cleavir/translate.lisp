@@ -21,22 +21,6 @@ when this is t a lot of graphs will be generated.")
         (setf (gethash fileid *llvm-metadata*) file-metadata)))
     file-metadata))
 
-
-(defun setup-function-scope-metadata (name function-info
-                                      &key function llvm-function-name llvm-function llvm-function-type)
-  (let* ((instruction (enter-instruction function-info))
-         (source-pos-info (instruction-source-pos-info instruction))
-         (fileid (core:source-pos-info-file-handle source-pos-info))
-         (lineno (core:source-pos-info-lineno source-pos-info))
-         (file-metadata (get-or-register-file-metadata fileid))
-         (function-metadata (cmp:make-function-metadata :file-metadata file-metadata
-                                                        :linkage-name llvm-function-name
-                                                        :function-type llvm-function-type
-                                                        :lineno lineno)))
-    (llvm-sys:set-subprogram function function-metadata)
-    (setf (metadata function-info) function-metadata)
-    function-metadata))
-
 (defun set-instruction-source-position (origin function-metadata)
   (when cmp:*dbg-generate-dwarf*
     (if origin
@@ -62,11 +46,11 @@ when this is t a lot of graphs will be generated.")
              (funcall body-lambda))
         (set-instruction-source-position *current-source-position* *current-function-metadata*))))
 
-(defmacro with-debug-info-source-position (origin function-metadata &body body)
+(defmacro with-debug-info-source-position ((origin function-metadata) &body body)
   `(do-debug-info-source-position t ,origin ,function-metadata (lambda () ,@body)))
 
 (defmacro with-debug-info-disabled ((metadata) &body body)
-  `(with-debug-info-source-position (ensure-origin nil 999998) ,metadata
+  `(with-debug-info-source-position ((ensure-origin nil 999998) ,metadata)
      ,@body))
 
 #+(or)
@@ -91,7 +75,7 @@ when this is t a lot of graphs will be generated.")
                  (ssablep (first (cleavir-ir:inputs instruction)))
                  (ssablep (first (cleavir-ir:outputs instruction))))
         (format *error-output* "   but it doesn't matter because both input and output are ssablep~%")))
-    (with-debug-info-source-position (ensure-origin origin 999993) (metadata current-function-info)
+    (with-debug-info-source-position ((ensure-origin origin 999993) (metadata current-function-info))
       (call-next-method))))
 
 (defgeneric translate-branch-instruction
@@ -103,7 +87,7 @@ when this is t a lot of graphs will be generated.")
     (when (and *trap-null-origin* (null (cleavir-ir:origin instruction)))
 ;;;    (error "translate-branch-instruction :around")
       (format *error-output* "Instruction with nil origin: ~a  origin: ~a~%" instruction (cleavir-ir:origin instruction)))
-    (with-debug-info-source-position (ensure-origin origin 9995) (metadata current-function-info)
+    (with-debug-info-source-position ((ensure-origin origin 9995) (metadata current-function-info))
       (call-next-method))))
 
 
@@ -180,7 +164,7 @@ when this is t a lot of graphs will be generated.")
                         ;; one successor: we have to do branching ourselves.
                         (translate-simple-instruction
                          instruction return-value abi current-function-info)
-                        (with-debug-info-source-position (ensure-origin (cleavir-ir:origin instruction) 999981) (metadata current-function-info)
+                        (with-debug-info-source-position ((ensure-origin (cleavir-ir:origin instruction) 999981) (metadata current-function-info))
                           (cmp:irc-br (first successor-tags))))
                        (t ; 0 or 2 or more successors: it handles branching.
                         (translate-branch-instruction
@@ -224,7 +208,7 @@ when this is t a lot of graphs will be generated.")
       (with-return-values (return-value abi nret ret-regs)
         (cmp:irc-store (%size_t 0) nret))
       (cmp:with-irbuilder (body-irbuilder)
-        (with-debug-info-source-position (ensure-origin (cleavir-ir:origin initial-instruction) 999970) cmp:*dbg-current-function*
+        (with-debug-info-source-position ((ensure-origin (cleavir-ir:origin initial-instruction) 999970) cmp:*dbg-current-function-metadata*)
           (cmp:with-dbg-lexical-block
               (:lineno (core:source-pos-info-lineno (instruction-source-pos-info (cleavir-basic-blocks:first-instruction first-basic-block))))
             (cmp:irc-set-insert-point-basic-block body-block body-irbuilder)
@@ -233,12 +217,12 @@ when this is t a lot of graphs will be generated.")
               (layout-basic-block first-basic-block return-value abi function-info)
               (loop for block in rest-basic-blocks
                     for instruction = (cleavir-basic-blocks:first-instruction block)
-                    do (with-debug-info-source-position (ensure-origin (cleavir-ir:origin instruction) 999983) cmp:*dbg-current-function*
+                    do (with-debug-info-source-position ((ensure-origin (cleavir-ir:origin instruction) 999983) cmp:*dbg-current-function-metadata*)
                          (cmp:irc-begin-block (gethash instruction *tags*)))
                        (layout-basic-block block return-value abi function-info)))
             ;; finish up by jumping from the entry block to the body block
             (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
-              (with-debug-info-source-position (ensure-origin (cleavir-ir:origin initial-instruction) 999985) cmp:*dbg-current-function*
+              (with-debug-info-source-position ((ensure-origin (cleavir-ir:origin initial-instruction) 999985) cmp:*dbg-current-function-metadata*)
                 (cmp:irc-br body-block)))
             (cc-dbg-when *debug-log* (format *debug-log* "----------end layout-procedure ~a~%"
                                              (llvm-sys:get-name the-function)))
@@ -336,46 +320,50 @@ when this is t a lot of graphs will be generated.")
              (cmp:*irbuilder-function-alloca* (llvm-sys:make-irbuilder cmp:*llvm-context*))
              (body-irbuilder (llvm-sys:make-irbuilder cmp:*llvm-context*))
              (body-block (cmp:irc-basic-block-create "body"))
-             (metadata (setup-function-scope-metadata lambda-name
-                                                      function-info
-                                                      :function the-function
-                                                      :llvm-function-name llvm-function-name
-                                                      :llvm-function the-function
-                                                      :llvm-function-type llvm-function-type))
-             (cmp:*dbg-current-function* metadata) ; layout-procedure* uses with-dbg-lexical-block - so set cmp:*dbg-current-function*
-             (cmp:*dbg-current-scope* cmp:*dbg-current-function*)) ; and cmp:*dbg-current-scope*
-        (llvm-sys:set-personality-fn the-function (cmp:irc-personality-function))
-        (llvm-sys:add-fn-attr the-function 'llvm-sys:attribute-uwtable)
-        (cc-dbg-when *debug-log* (log-layout-procedure the-function basic-blocks))
-        (let ((args (llvm-sys:get-argument-list the-function)))
-          (mapc #'(lambda (arg argname) (llvm-sys:set-name arg argname))
-                (llvm-sys:get-argument-list the-function) cmp:+fn-prototype-argument-names+))
-        ;; create a basic-block for every remaining tag
-        (loop for block in rest-basic-blocks
-              for instruction = (cleavir-basic-blocks:first-instruction block)
-              do (setf (gethash instruction *tags*) (cmp:irc-basic-block-create "tag")))
-        (cmp:irc-set-insert-point-basic-block entry-block cmp:*irbuilder-function-alloca*)
-        ;; Generate code to get the arguments into registers.
-        ;; (Actual lambda list stuff is covered by ENTER-INSTRUCTION.)
-        (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
-          (with-debug-info-source-position (ensure-origin (cleavir-ir:origin enter) 999980) (metadata function-info)
-            (let* ((fn-args (llvm-sys:get-argument-list cmp:*current-function*))
-                   (lambda-list (cleavir-ir:lambda-list enter))
-                   (calling-convention
-                     (cmp:setup-calling-convention
-                      fn-args
-                      :debug-on (and (null ignore-arguments) (debug-on function-info))
-                      :cleavir-lambda-list lambda-list
-                      :rest-alloc (clasp-cleavir-hir:rest-alloc enter)
-                      :ignore-arguments ignore-arguments)))
-              (setf (calling-convention function-info) calling-convention))
-            (layout-procedure* the-function
-                               body-irbuilder
-                               body-block
-                               first-basic-block
-                               rest-basic-blocks
-                               function-info
-                               enter abi :linkage linkage)))))))
+             ;; The following was drawn from setup-function-scope-metadata to get the lineno
+             (instruction (enter-instruction function-info))
+             (source-pos-info (instruction-source-pos-info instruction))
+             (fileid (core:source-pos-info-file-handle source-pos-info))
+             (lineno (core:source-pos-info-lineno source-pos-info))
+             ;; The above should be changed to work with with-dbg-function
+             )
+        (cmp:with-dbg-function (lambda-name :lineno lineno
+                                            :linkage-name llvm-function-name
+                                            :function-type llvm-function-type
+                                            :function the-function)
+          (setf (metadata function-info) cmp:*dbg-current-function-metadata*)
+          (llvm-sys:set-personality-fn the-function (cmp:irc-personality-function))
+          (llvm-sys:add-fn-attr the-function 'llvm-sys:attribute-uwtable)
+          (cc-dbg-when *debug-log* (log-layout-procedure the-function basic-blocks))
+          (let ((args (llvm-sys:get-argument-list the-function)))
+            (mapc #'(lambda (arg argname) (llvm-sys:set-name arg argname))
+                  (llvm-sys:get-argument-list the-function) cmp:+fn-prototype-argument-names+))
+          ;; create a basic-block for every remaining tag
+          (loop for block in rest-basic-blocks
+                for instruction = (cleavir-basic-blocks:first-instruction block)
+                do (setf (gethash instruction *tags*) (cmp:irc-basic-block-create "tag")))
+          (cmp:irc-set-insert-point-basic-block entry-block cmp:*irbuilder-function-alloca*)
+          ;; Generate code to get the arguments into registers.
+          ;; (Actual lambda list stuff is covered by ENTER-INSTRUCTION.)
+          (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
+            (with-debug-info-source-position ((ensure-origin (cleavir-ir:origin enter) 999980) (metadata function-info))
+              (let* ((fn-args (llvm-sys:get-argument-list cmp:*current-function*))
+                     (lambda-list (cleavir-ir:lambda-list enter))
+                     (calling-convention
+                       (cmp:setup-calling-convention
+                        fn-args
+                        :debug-on (and (null ignore-arguments) (debug-on function-info))
+                        :cleavir-lambda-list lambda-list
+                        :rest-alloc (clasp-cleavir-hir:rest-alloc enter)
+                        :ignore-arguments ignore-arguments)))
+                (setf (calling-convention function-info) calling-convention))
+              (layout-procedure* the-function
+                                 body-irbuilder
+                                 body-block
+                                 first-basic-block
+                                 rest-basic-blocks
+                                 function-info
+                                 enter abi :linkage linkage))))))))
 
 ;; A hash table of enter instructions to llvm functions.
 ;; This is used to avoid recompiling ENTERs, which may be

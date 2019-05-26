@@ -1252,6 +1252,48 @@ public:
 /* to_object translators */
 
 namespace llvmo {
+FORWARD(MetadataAsValue);
+class MetadataAsValue_O : public Value_O {
+  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::MetadataAsValue, MetadataAsValue_O, "MetadataAsValue", Value_O);
+  typedef llvm::MetadataAsValue ExternalType;
+  typedef llvm::MetadataAsValue *PointerToExternalType;
+public:
+  PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
+  void set_wrapped(PointerToExternalType ptr) {
+    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    this->_ptr = ptr;
+  }
+  MetadataAsValue_O() : Base(){};
+  ~MetadataAsValue_O() {}
+
+}; // MetadataAsValue_O
+}; // llvmo
+/* from_object translators */
+/* to_object translators */
+
+
+namespace translate {
+template <>
+struct from_object<llvm::MetadataAsValue *, std::true_type> {
+  typedef llvm::MetadataAsValue *DeclareType;
+  DeclareType _v;
+  from_object(T_P object) : _v(gc::As<llvmo::MetadataAsValue_sp>(object)->wrappedPtr()){};
+};
+};
+
+namespace translate {
+template <>
+struct to_object<llvm::MetadataAsValue*> {
+  static core::T_sp convert(llvm::MetadataAsValue* mav) {
+    GC_ALLOCATE(llvmo::MetadataAsValue_O, oattr);
+    oattr->set_wrapped(mav);
+    return oattr;
+  }
+};
+};
+
+namespace llvmo {
+FORWARD(Attribute);
 class Attribute_O : public core::General_O {
   LISP_CLASS(llvmo, LlvmoPkg, Attribute_O, "Attribute",core::General_O);
   //    DECLARE_ARCHIVE();
@@ -3331,6 +3373,16 @@ struct from_object<llvm::ConstantPointerNull *, std::true_type> {
 
 };
     ;
+
+
+
+
+
+
+
+
+
+
 
 namespace llvmo {
 FORWARD(MDNode);

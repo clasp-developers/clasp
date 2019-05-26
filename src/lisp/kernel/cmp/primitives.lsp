@@ -205,7 +205,14 @@
          (primitive         "llvm.va_copy" %void% (list %i8*% %i8*%))
          (primitive         "llvm.va_start" %void% (list %i8*%))
          (primitive         "llvm.va_end" %void% (list %i8*%))
-    
+
+         (primitive         "llvm.dbg.addr" %void% (list %metadata% %metadata% %metadata%))
+         (primitive         "llvm.dbg.declare" %void% (list %metadata% %metadata% %metadata%))
+         (primitive         "llvm.dbg.value" %void% (list %metadata% %metadata% %metadata%))
+
+         (primitive         "llvm.lifetime.start" %void% (list %i64% %i8*%))
+         (primitive         "llvm.lifetime.end" %void% (list %i64% %i8*%))
+         
          (primitive         "debugSourceFileInfoHandle" %void% (list %i32*%))
     
          (primitive         "saveToMultipleValue0" %void% (list %tmv*%))

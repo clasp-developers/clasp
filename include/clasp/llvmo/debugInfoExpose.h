@@ -105,6 +105,47 @@ namespace translate {
   };
 };
 
+
+namespace llvmo {
+FORWARD(DIExpression);
+class DIExpression_O : public MDNode_O {
+  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::DIExpression, DIExpression_O, "DIExpression", MDNode_O );
+  typedef llvm::DIExpression ExternalType;
+  typedef ExternalType* PointerToExternalType;
+public:
+  typedef llvm::DIExpression OtherType;
+public:
+  virtual operator llvm::DIExpression *() { return reinterpret_cast<llvm::DIExpression*>(this->_ptr); };
+  virtual operator llvm::MDNode *() { return reinterpret_cast<llvm::MDNode*>(this->_ptr); };
+  PointerToExternalType wrappedPtr() const { return static_cast<PointerToExternalType>(this->_ptr); };
+  void set_wrapped(PointerToExternalType ptr) {
+    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    this->_ptr = ptr;
+  }
+ 
+  //	virtual llvm::DIExpression* operator ->() const { return (llvm::DIExpression*)(this);};
+ DIExpression_O() : Base() {};
+  virtual ~DIExpression_O(){};
+}; // DIExpression_O
+}; // llvmo
+TRANSLATE(llvmo::DIExpression_O);
+
+namespace translate {
+  template <>
+    struct from_object<llvm::DIExpression*,std::true_type> {
+    typedef llvm::DIExpression* DeclareType;
+    DeclareType _v;
+  from_object(core::T_sp o) : _v(o.nilp() ? NULL : gc::As<llvmo::DIExpression_sp>(o)->wrappedPtr()) {};
+  };
+  template <>
+    struct to_object<llvm::DIExpression*> {
+    static core::T_sp convert(const llvm::DIExpression* ptr) {
+      return (core::RP_Create_wrapped<llvmo::DIExpression_O, llvm::DIExpression*>(const_cast<llvm::DIExpression*>(ptr)));
+    };
+  };
+};
+
+
 namespace llvmo {
 FORWARD(DIScope);
 class DIScope_O : public DINode_O {
@@ -653,6 +694,87 @@ struct from_object<llvm::DIBuilder &, std::true_type> {
   from_object(T_P object) : _v(*gc::As<llvmo::DIBuilder_sp>(object)->wrappedPtr()){};
 };
 };
+
+
+
+namespace llvmo {
+FORWARD(DIVariable);
+class DIVariable_O : public DINode_O {
+  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::DIVariable, DIVariable_O, "DIVariable", DINode_O);
+  typedef llvm::DIVariable ExternalType;
+  typedef ExternalType* PointerToExternalType;
+public:
+  virtual operator llvm::DINode *() { return reinterpret_cast<llvm::DINode*>(this->_ptr); };
+  PointerToExternalType wrappedPtr() const { return static_cast<PointerToExternalType>(this->_ptr); };
+  void set_wrapped(PointerToExternalType ptr) {
+    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    this->_ptr = ptr;
+  }
+  DIVariable_O(){};
+  virtual ~DIVariable_O() {}
+}; // DIVariable_O
+}; // llvmo
+TRANSLATE(llvmo::DIVariable_O);
+/* from_object translators */
+/* to_object translators */
+
+namespace translate {
+  template <>
+    struct from_object<llvm::DIVariable*,std::true_type> {
+    typedef llvm::DIVariable* DeclareType;
+    DeclareType _v;
+  from_object(core::T_sp o) : _v(o.nilp() ? NULL : gc::As<llvmo::DIVariable_sp>(o)->wrappedPtr()) {};
+  };
+  template <>
+    struct to_object<llvm::DIVariable*> {
+    static core::T_sp convert(const llvm::DIVariable* ptr) {
+      return (core::RP_Create_wrapped<llvmo::DIVariable_O, llvm::DIVariable*>(const_cast<llvm::DIVariable*>(ptr)));
+    };
+  };
+};
+
+
+namespace llvmo {
+FORWARD(DILocalVariable);
+class DILocalVariable_O : public DIVariable_O {
+  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::DILocalVariable, DILocalVariable_O, "DILocalVariable", DIVariable_O);
+  typedef llvm::DILocalVariable ExternalType;
+  typedef ExternalType* PointerToExternalType;
+public:
+  virtual operator llvm::DINode *() { return reinterpret_cast<llvm::DINode*>(this->_ptr); };
+  PointerToExternalType wrappedPtr() const { return static_cast<PointerToExternalType>(this->_ptr); };
+  void set_wrapped(PointerToExternalType ptr) {
+    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    this->_ptr = ptr;
+  }
+  DILocalVariable_O(){};
+  virtual ~DILocalVariable_O() {}
+};
+}; // llvmo
+TRANSLATE(llvmo::DILocalVariable_O);
+/* from_object translators */
+/* to_object translators */
+
+namespace translate {
+  template <>
+    struct from_object<llvm::DILocalVariable*,std::true_type> {
+    typedef llvm::DILocalVariable* DeclareType;
+    DeclareType _v;
+  from_object(core::T_sp o) : _v(o.nilp() ? NULL : gc::As<llvmo::DILocalVariable_sp>(o)->wrappedPtr()) {};
+  };
+  template <>
+    struct to_object<llvm::DILocalVariable*> {
+    static core::T_sp convert(const llvm::DILocalVariable* ptr) {
+      return (core::RP_Create_wrapped<llvmo::DILocalVariable_O, llvm::DILocalVariable*>(const_cast<llvm::DILocalVariable*>(ptr)));
+    };
+  };
+};
+
+
+
+
+
+
 
 
 // ------------------------------------------------------------

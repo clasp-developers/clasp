@@ -786,6 +786,21 @@ namespace llvmo {
 
 
 namespace llvmo {
+  CL_LISPIFY_NAME(MetadataAsValue-get);
+  CL_EXTERN_DEFUN(&llvm::MetadataAsValue::get);
+  CL_LISPIFY_NAME(MetadataAsValue-getIfExists);
+  CL_EXTERN_DEFUN(&llvm::MetadataAsValue::getIfExists);
+
+}; // llvmo
+
+
+namespace llvmo {
+  CL_LISPIFY_NAME(ValueAsMetadata-get);
+  CL_EXTERN_DEFUN(&llvm::ValueAsMetadata::get);
+}; // llvmo
+
+
+namespace llvmo {
 
 
 CL_DEFUN core::T_mv llvm_sys__verifyModule(Module_sp module, core::Symbol_sp action) {
@@ -2826,7 +2841,11 @@ CL_EXTERN_DEFMETHOD(Type_O, &llvm::Type::getSequentialElementType);;
   CL_EXTERN_DEFUN((llvm::Type * (*) (llvm::LLVMContext &C)) &llvm::Type::getFloatTy);
   CL_LISPIFY_NAME("type-get-double-ty");
   CL_EXTERN_DEFUN((llvm::Type * (*) (llvm::LLVMContext &C)) &llvm::Type::getDoubleTy);
-  CL_LISPIFY_NAME("type-get-int-nty");
+
+  CL_LISPIFY_NAME("type-get-metadata-ty");
+  CL_EXTERN_DEFUN((llvm::Type * (*) (llvm::LLVMContext &C)) &llvm::Type::getMetadataTy);
+
+CL_LISPIFY_NAME("type-get-int-nty");
 CL_EXTERN_DEFUN((llvm::IntegerType * (*) (llvm::LLVMContext &C, unsigned N)) &llvm::Type::getIntNTy);
   CL_LISPIFY_NAME("type-get-int1-ty");
   CL_EXTERN_DEFUN((llvm::IntegerType * (*) (llvm::LLVMContext &C))&llvm::Type::getInt1Ty);
@@ -3905,20 +3924,20 @@ std::shared_ptr<llvm::Module> optimizeModule(std::shared_ptr<llvm::Module> M) {
 
     removeAlwaysInlineFunctions(&*M);
 
-    if ((!comp::_sym_STARsave_module_for_disassembleSTAR.unboundp()) &&
-        comp::_sym_STARsave_module_for_disassembleSTAR->symbolValue().notnilp()) {
+  }
+  if ((!comp::_sym_STARsave_module_for_disassembleSTAR.unboundp()) &&
+      comp::_sym_STARsave_module_for_disassembleSTAR->symbolValue().notnilp()) {
     //printf("%s:%d     About to save the module *save-module-for-disassemble*->%s\n",__FILE__, __LINE__, _rep_(comp::_sym_STARsave_module_for_disassembleSTAR->symbolValue()).c_str());
-      llvm::Module* o = &*M;
-      std::unique_ptr<llvm::Module> cm = llvm::CloneModule(o);
-      Module_sp module = core::RP_Create_wrapped<Module_O,llvm::Module*>(cm.release());
-      comp::_sym_STARsaved_module_from_clasp_jitSTAR->setf_symbolValue(module);
-    }
+    llvm::Module* o = &*M;
+    std::unique_ptr<llvm::Module> cm = llvm::CloneModule(o);
+    Module_sp module = core::RP_Create_wrapped<Module_O,llvm::Module*>(cm.release());
+    comp::_sym_STARsaved_module_from_clasp_jitSTAR->setf_symbolValue(module);
+  }
   // Check if we should dump the module for debugging
-    {
-      Module_sp module = core::RP_Create_wrapped<Module_O,llvm::Module*>(&*M);
-      core::SimpleBaseString_sp label = core::SimpleBaseString_O::make("after-optimize");
-      core::eval::funcall(comp::_sym_compile_quick_module_dump,module,label);
-    }
+  {
+    Module_sp module = core::RP_Create_wrapped<Module_O,llvm::Module*>(&*M);
+    core::SimpleBaseString_sp label = core::SimpleBaseString_O::make("after-optimize");
+    core::eval::funcall(comp::_sym_compile_quick_module_dump,module,label);
   }
   //printf("%s:%d  Done optimizeModule\n", __FILE__, __LINE__ );
   return M;

@@ -215,7 +215,8 @@
             with-begin-end-catch
             preserve-exception-info
             *dbg-generate-dwarf*
-            *dbg-current-function*
+            *dbg-current-function-metadata*
+            *dbg-current-function-lineno*
             *dbg-current-scope*
             with-new-function
             with-dbg-function

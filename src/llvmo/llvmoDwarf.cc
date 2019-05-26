@@ -235,5 +235,7 @@ void initialize_dwarf_constants() {
 
   SYMBOL_EXPORT_SC_(LlvmoPkg, _PLUS_DW_ATE_SIGNED_FIXED_PLUS_);
   _sym__PLUS_DW_ATE_SIGNED_FIXED_PLUS_->defconstant(core::make_fixnum(llvm::dwarf::DW_ATE_signed_fixed));
+  SYMBOL_EXPORT_SC_(LlvmoPkg, _PLUS_DW_ATE_ADDRESS_PLUS_);
+  _sym__PLUS_DW_ATE_ADDRESS_PLUS_->defconstant(core::make_fixnum(llvm::dwarf::DW_ATE_address));
 };
 };
