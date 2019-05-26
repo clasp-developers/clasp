@@ -2,7 +2,9 @@
 ;; Clasp builder code
 ;;
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (core:select-package :core))
+  (core:select-package :core)
+;;;  (setq *features* (cons :dbg-print *features*))
+  )
 
 (defparameter *number-of-jobs* 1)
 
@@ -177,7 +179,7 @@ Return files."
   path)
 
 
-(defun compile-kernel-file (entry &key (reload nil) load-bitcode (force-recompile nil) position total-files (output-type core:*clasp-build-mode*) verbose print silent)
+(defun compile-kernel-file (entry &rest args &key (reload nil) load-bitcode (force-recompile nil) position total-files (output-type core:*clasp-build-mode*) verbose print silent)
   #+dbg-print(bformat t "DBG-PRINT compile-kernel-file: %s%N" entry)
   ;;  (if *target-backend* nil (error "*target-backend* is undefined"))
   (let* ((filename (entry-filename entry))
@@ -197,19 +199,19 @@ Return files."
             (if (and position total-files)
                 (bformat t "Compiling [%d of %d] %s%N    to %s - will reload: %s%N" position total-files source-path output-path reload)
                 (bformat t "Compiling %s%N   to %s - will reload: %s%N" source-path output-path reload)))
-          (let ((cmp::*module-startup-prefix* "kernel"))
+          (let ((cmp::*module-startup-prefix* "kernel")
+                (compile-file-arguments (list (probe-file source-path)
+                                              :output-file output-path
+                                              :output-type output-type
+                                              :print print
+                                              :verbose verbose
+                                              :unique-symbol-prefix (format nil "~a~a" (pathname-name source-path) position)
+                                              :type (if reload :kernel nil)
+                                              (if position
+                                                  (list* :image-startup-position position (entry-compile-file-options entry))
+                                                  (entry-compile-file-options entry)))))
             #+dbg-print(bformat t "DBG-PRINT  source-path = %s%N" source-path)
-            (apply #'cmp::compile-file-serial
-                   (probe-file source-path)
-                   :output-file output-path
-                   :output-type output-type
-                   :print print
-                   :verbose verbose
-                   :unique-symbol-prefix (format nil "~a~a" (pathname-name source-path) position)
-                   :type (if reload :kernel nil)
-                   (if position
-                       (list* :image-startup-position position (entry-compile-file-options entry))
-                       (entry-compile-file-options entry)))
+            (apply #'cmp::compile-file-serial compile-file-arguments)
             (if reload
                 (let ((reload-file (make-pathname :type "fasl" :defaults output-path)))
 		  (unless silent
@@ -263,8 +265,8 @@ Return files."
                (load lsp-path)))
             (bformat t "No interpreted or bitcode file for %s could be found%N" lsp-path)))))
 
-(defun load-system (files &key interp load-bitcode (target-backend *target-backend*) system)
-  #+dbg-print(bformat t "DBG-PRINT  load-system: %s - %s%N" first-file last-file )
+(defun load-system (files &rest args &key interp load-bitcode (target-backend *target-backend*) system)
+  #+dbg-print(bformat t "DBG-PRINT  load-system: %s%N" args)
   (let* ((*target-backend* target-backend)
          (*compile-verbose* t)
 	 (cur files))
