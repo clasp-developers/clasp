@@ -238,8 +238,16 @@ Set gather-all-frames to T and you can gather C++ and Common Lisp frames"
 
 (export '(code-source-line code-source-line-source-pathname code-source-line-line-number))
 
+(defparameter *debug-code-source-position* nil)
 (defun code-source-position (return-address)
   (let ((address (1- (core:pointer-integer return-address))))
+    (when *debug-code-source-position*
+      (let* ((address (core:pointer-increment return-address -1))
+             (address-int (core:pointer-integer address)))
+        (multiple-value-bind (symbol start end type library-name library-origin offset-from-start-of-library)
+            (core:lookup-address address)
+          (format t "Lookup of address 0x~x 0x~x ~s ~s~%" address-int offset-from-start-of-library library-name symbol)
+          )))
     #+target-os-darwin
     (multiple-value-bind (err error-msg stream)
         (ext:vfork-execvp (list "atos" "-fullPath" "-p" (format nil "~a" (core:getpid))
