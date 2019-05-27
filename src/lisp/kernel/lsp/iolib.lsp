@@ -321,7 +321,7 @@ the one used internally by ECL compiled files."
     ((symbolp mapping)
      (let ((var (intern (symbol-name mapping) (find-package "EXT"))))
        (unless (boundp var)
-         (setf (symbol-value var) (ext::make-encoding (load-encoding mapping))))
+         (setf (symbol-value var) (ext::make-encoding (ext:load-encoding mapping))))
        (symbol-value var)))
     ((consp mapping)
      (let ((output (make-hash-table :size 512 :test 'eq)))

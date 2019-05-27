@@ -397,6 +397,7 @@
   "Args: ()
 ECL specific.
 The top-level loop of ECL. It is called by default when ECL is invoked."
+  (error "Is this even active")
   (catch *quit-tag*
     (let* ((*debugger-hook* nil)
 	   + ++ +++ - * ** *** / // ///)
@@ -404,17 +405,8 @@ The top-level loop of ECL. It is called by default when ECL is invoked."
       (when set-package
         (in-package "CL-USER"))
 
-      (unless (or *lisp-initialized* (null process-command-line))
-        (process-command-args)
-	(format t "ECL (Embeddable Common-Lisp) ~A (git:~D)"
-                (lisp-implementation-version)
-                (ext:lisp-implementation-vcs-id))
-	(format t "~%Copyright (C) 1984 Taiichi Yuasa and Masami Hagiya~@
-Copyright (C) 1993 Giuseppe Attardi~@
-Copyright (C) 2000 Juan J. Garcia-Ripoll
-ECL is free software, and you are welcome to redistribute it~@
-under certain conditions; see file 'Copyright' for details.")
-	(format *standard-output* "~%Type :h for Help.  "))
+      (error "Is this even active")
+ 
       (setq *lisp-initialized* t)
 
       (let ((*tpl-level* -1))
@@ -983,6 +975,12 @@ Use special code 0 to cancel this operation.")
 (defun tpl-frs-command (&optional n)
   (format *debug-io* "tpl-frs-command   ignored~%"))
 
+(defun frs-bds (&rest args)
+  (error "This function frs-bds does nothing ~a" args))
+
+(defun frs-ihs (&rest args)
+  (error "This function frs-ihs does nothing ~a" args))
+
 (defun print-frs (i)
   (format *debug-io* "    FRS[~d]: ---> IHS[~d],BDS[~d]~%"
 	  i (frs-ihs i) (frs-bds i)))
@@ -1101,7 +1099,8 @@ Use special code 0 to cancel this operation.")
   (when string (apropos string pkg)))
 
 (defun tpl-document-command (&optional symbol)
-  (when symbol (help symbol)))
+  (error "tpl-document-command doesn't work because clasp doesn't supply help")
+  #+(or)(when symbol (help symbol)))
 
 (defun tpl-step-command (&optional form)
   (when form (step* form)))
@@ -1232,7 +1231,8 @@ package."
       (when (< (+ *default-debugger-maximum-depth* 3) *break-level*)
 	;; we tried to be polite but it does not seem to work.
 	(quit -1))
-      (exit-process))
+      (format t "Exiting from check-default-debugger-runaway~%")
+      (core:exit -1))
     #-threads
     (progn
       (format *error-output*
