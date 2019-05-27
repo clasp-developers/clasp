@@ -2,7 +2,9 @@
 ;; Clasp builder code
 ;;
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (core:select-package :core))
+  (core:select-package :core)
+;;;  (setq *features* (cons :test-clasp-builder *features*))
+  )
 
 (defparameter *number-of-jobs* 1)
 
@@ -374,11 +376,12 @@ Return files."
                (tagbody
                 top
                   (multiple-value-setq (wpid status) (core:wait))
-                  (core:bformat t "wpid -> %s  status -> %s\n" wpid status)
+                  (unless (= status 0)
+                    (core:bformat t "wpid -> %s  status -> %s\n" wpid status))
                   (when (core:wifexited status) (go done))
                   (when (core:wifsignaled status)
                     (let ((signal (core:wtermsig status)))
-                      (warn "Child process with pid ~a got signal ~a" signal)))
+                      (warn "Child process with pid ~a got signal ~a" wpid signal)))
                   (go top)
                 done
                   ))
@@ -397,7 +400,7 @@ Return files."
                    (error "Could not fork when trying to build ~a" entries)
                    (let ((pid pid-or-error))
                      (if (= pid 0)
-                         (progn
+                         (let ((*error-output* *standard-output*))
                            ;; Turn off interactive mode so that errors cause clasp to die with backtrace
                            (core:set-interactive-lisp nil)
                            (let ((new-sigset (core:make-cxx-object 'core:sigset))
@@ -699,9 +702,10 @@ Return files."
          (unwind-protect
               (progn
                 (push :compiling-cleavir *features*)
-                  (load-system (select-source-files #P"src/lisp/kernel/tag/bclasp"
-                                                    #P"src/lisp/kernel/tag/pre-epilogue-cclasp"
-                                                    :system system)))
+                (let ((files (select-source-files #P"src/lisp/kernel/tag/bclasp"
+                                                  #P"src/lisp/kernel/tag/pre-epilogue-cclasp"
+                                                  :system system)))
+                  (load-system files)))
            (pop *features*))
          (push :cleavir *features*)
          (compile-cclasp* output-file system))))))
