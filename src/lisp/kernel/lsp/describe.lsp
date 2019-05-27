@@ -454,7 +454,7 @@ inspect commands, or type '?' to the inspector."
 
 (defun inspect (object)
   (if ext:*inspector-hook*
-      (funcall *inspector-hook* object)
+      (funcall ext:*inspector-hook* object)
       (default-inspector object))
   object)
 

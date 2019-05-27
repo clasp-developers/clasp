@@ -95,6 +95,9 @@
     (incf llvm-sys:*number-of-clang-links*)))
 
 
+(export 'run-clang)
+
+
 #+target-os-darwin
 (defun run-dsymutil (args &key (clang core:*clang-bin*) output-file-name)
   "Run the discovered clang compiler on the arguments. This replaces a simpler version of run-clang."
@@ -114,4 +117,5 @@
       (setf llvm-sys:*accumulated-clang-link-time* (+ llvm-sys:*accumulated-clang-link-time* (* (/ 1.0 internal-time-units-per-second) (- (get-internal-run-time) start-time))))
       (incf llvm-sys:*number-of-clang-links*))))
 
+#+target-os-darwin
 (export '(run-clang run-dsymutil))

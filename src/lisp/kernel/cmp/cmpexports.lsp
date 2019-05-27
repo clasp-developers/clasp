@@ -117,10 +117,12 @@
             bclasp-compile-form
             compile-form
             compiler-error
+            compiler-warn
+            compiler-style-warn
             compiler-fatal-error
             compiler-message-file
             compiler-message-file-position
-            compiler-warning-undefined-global-variable
+            warn-undefined-global-variable
             register-global-function-def
             register-global-function-ref
             analyze-top-level-form

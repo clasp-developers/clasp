@@ -271,6 +271,7 @@
   (when *dbg-generate-dwarf*
     (let* ((scope-name (bformat nil "%s>>%s" pathname filename))
 	   (scope (gethash scope-name *llvm-metadata*)))
+      #+(or)
       (unless scope
         (setq scope (mdnode-file-descriptor filename pathname))
         (core::hash-table-setf-gethash *llvm-metadata* scope-name scope))

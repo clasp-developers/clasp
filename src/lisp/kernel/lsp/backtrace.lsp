@@ -58,6 +58,7 @@ For C/C++ frames - return (list 'c-function name)."
 (defconstant-equal +interpreted-closure-entry-point+ "core::interpretedClosureEntryPoint")
 (defconstant +interpreted-closure-entry-point-length+ (length +interpreted-closure-entry-point+))
 ;;; Interpreted closures have their shadow stack frames merged in a different way
+#+(or)
 (defun add-interpreter-frames (frames)
   (let (new-frames)
     (dolist (frame frames)

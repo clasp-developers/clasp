@@ -93,15 +93,6 @@
     ((null name) (error "The argument to ensure-string is NIL"))
     (t (string name))))
 
-(in-package :ext)
-
-(defun run-ld (args &key output-file-name)
-  (safe-system `("ld" ,@args :output-file-name output-file-name)))
-
-(export 'run-ld)
-
-(in-package :cmp)
-
 (defparameter *link-options* nil)
 
 (defun execute-link-library (in-bundle-file in-all-names &key input-type (output-type :dynamic))
@@ -184,8 +175,8 @@
         ;; Now rename the library to make compilation atomic
         ;; Run dsymutil on darwin
         (rename-file temp-bundle-file bundle-file :if-exists :supersede)
-        (when (member :target-os-darwin *features*)
-          (ext:run-dsymutil (list "-f" (namestring bundle-file))))
+        #+target-os-darwin
+        (ext:run-dsymutil (list "-f" (namestring bundle-file)))
         (truename bundle-file)))))
 
 (defun execute-link-fasl (in-bundle-file in-all-names &key input-type)

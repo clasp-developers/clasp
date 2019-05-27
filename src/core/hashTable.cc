@@ -240,9 +240,16 @@ HashTable_sp HashTable_O::create_thread_safe(T_sp test, SimpleBaseString_sp read
 void HashTable_O::maphash(T_sp function_desig) {
     //        printf("%s:%d starting maphash on hash-table@%p\n", __FILE__, __LINE__, hash_table.raw_());
   Function_sp func = coerce::functionDesignator(function_desig);
-  HT_READ_LOCK(this);
-  for (size_t it = 0, itEnd = this->_Table.size(); it < itEnd; ++it) {
-    Cons_O& entry = this->_Table[it];
+  gctools::Vec0<Cons_O> tableCopy;
+  tableCopy.resize(this->_Table.size());
+  {
+    HT_READ_LOCK(this);
+    for ( size_t i=0; i<this->_Table.size(); ++i ) {
+      tableCopy[i] = this->_Table[i];
+    }
+  }
+  for (size_t it(0), itEnd(tableCopy.size()); it < itEnd; ++it) {
+    Cons_O& entry = tableCopy[it];
     if (!entry._Car.unboundp()&&!entry._Car.deletedp()) {
       eval::funcall(func,entry._Car,entry._Cdr);
     }
@@ -976,9 +983,16 @@ CL_DEFMETHOD string HashTable_O::hash_table_dump(Fixnum start, T_sp end) const {
 }
 
   void HashTable_O::mapHash(std::function<void(T_sp, T_sp)> const &fn) {
-    HT_READ_LOCK(this);
-    for (size_t it(0), itEnd(this->_Table.size()); it < itEnd; ++it) {
-      Cons_O& entry = this->_Table[it];
+    gctools::Vec0<Cons_O> tableCopy;
+    tableCopy.resize(this->_Table.size());
+    {
+      HT_READ_LOCK(this);
+      for ( size_t i=0; i<this->_Table.size(); ++i ) {
+        tableCopy[i] = this->_Table[i];
+      }
+    }
+    for (size_t it(0), itEnd(tableCopy.size()); it < itEnd; ++it) {
+      Cons_O& entry = tableCopy[it];
       T_sp key = entry._Car;
       T_sp value = entry._Cdr;
       if (!entry._Car.unboundp()&&!entry._Car.deletedp()) {
@@ -989,9 +1003,16 @@ CL_DEFMETHOD string HashTable_O::hash_table_dump(Fixnum start, T_sp end) const {
 
   bool HashTable_O::map_while_true(std::function<bool(T_sp, T_sp)> const &fn) const {
   //        HASH_TABLE_LOCK();
-    HT_READ_LOCK(this);
-    for (size_t it(0), itEnd(this->_Table.size()); it < itEnd; ++it) {
-      const Cons_O& entry = this->_Table[it];
+    gctools::Vec0<Cons_O> tableCopy;
+    tableCopy.resize(this->_Table.size());
+    {
+      HT_READ_LOCK(this);
+      for ( size_t i=0; i<this->_Table.size(); ++i ) {
+        tableCopy[i] = this->_Table[i];
+      }
+    }
+    for (size_t it(0), itEnd(tableCopy.size()); it < itEnd; ++it) {
+      const Cons_O& entry = tableCopy[it];
       T_sp key = entry._Car;
       T_sp value = entry._Cdr;
       if (!entry._Car.unboundp()&&!entry._Car.deletedp()) {
@@ -1004,9 +1025,16 @@ CL_DEFMETHOD string HashTable_O::hash_table_dump(Fixnum start, T_sp end) const {
   }
 
   void HashTable_O::lowLevelMapHash(KeyValueMapper *mapper) const {
-    HT_READ_LOCK(this);
-    for (size_t it(0), itEnd(this->_Table.size()); it < itEnd; ++it) {
-      const Cons_O& entry = this->_Table[it];
+    gctools::Vec0<Cons_O> tableCopy;
+    tableCopy.resize(this->_Table.size());
+    {
+      HT_READ_LOCK(this);
+      for ( size_t i=0; i<this->_Table.size(); ++i ) {
+        tableCopy[i] = this->_Table[i];
+      }
+    }
+    for (size_t it(0), itEnd(tableCopy.size()); it < itEnd; ++it) {
+      const Cons_O& entry = tableCopy[it];
       T_sp key = entry._Car;
       T_sp value = entry._Cdr;
       if (!entry._Car.unboundp()&&!entry._Car.deletedp()) {

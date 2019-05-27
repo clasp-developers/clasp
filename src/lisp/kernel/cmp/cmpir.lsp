@@ -93,7 +93,7 @@
   (llvm-sys:create-in-bounds-geptype *irbuilder* type value indices label))
 
 (defun irc-exception-typeid** (name)
-  (exception-typeid**-from-name name))
+  (exception-typeid*-from-name name))
 
 (defun irc-exception-typeid* (name)
   (exception-typeid*-from-name name))
@@ -525,7 +525,7 @@ representing a tagged fixnum."
   (llvm-sys:create-srem *irbuilder* lhs rhs label))
 
 (defun irc-udiv (dividend divisor &key (label "") exact)
-  (llvm-sys:create-udiv cmp:*irbuilder* divident divisor label exact))
+  (llvm-sys:create-udiv cmp:*irbuilder* dividend divisor label exact))
 (defun irc-urem (dividend divisor &key (label ""))
   (llvm-sys:create-urem cmp:*irbuilder* dividend divisor label))
 
@@ -1191,7 +1191,7 @@ and then the irbuilder-alloca, irbuilder-body."
 (defun irc-verify-function (fn &optional (continue t))
   (when *verify-llvm-functions*
     (cmp-log "At top of irc-verify-function  ---- about to verify-function - if there is a problem it will not return%N")
-    (multiple-value-bind (failed-verify xerror-msg)
+    (multiple-value-bind (failed-verify error-msg)
         (llvm-sys:verify-function fn)
       (if failed-verify
           (progn

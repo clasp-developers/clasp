@@ -192,7 +192,7 @@ when this is t a lot of graphs will be generated.")
 (defun instruction-source-pos-info (instruction)
   "Return a source-pos-info object for the instruction"
   (let ((origin (cleavir-ir:origin instruction)))
-    (cond (origin (if (consp origin) (car origin) origin))
+    (cond (origin (origin-spi origin))
           (core:*current-source-pos-info*)
           (t (core:make-source-pos-info "no-source-info-available" 0 0 0)))))
 
@@ -263,7 +263,7 @@ when this is t a lot of graphs will be generated.")
 
 (defun calculate-function-info (enter llvm-function-name)
   (let* ((origin (cleavir-ir:origin enter))
-         (source-pos-info (if (consp origin) (car origin) origin))
+         (source-pos-info (origin-spi origin))
          (lineno 0)
          (column 0)
          (filepos 0))
@@ -536,12 +536,11 @@ COMPILE-FILE will use the default *clasp-env*."
   (handler-bind
       ((cleavir-env:no-variable-info
          (lambda (condition)
-           #+verbose-compiler(warn "Condition: ~a" condition)
-           (cmp:compiler-warning-undefined-global-variable (cleavir-environment:name condition))
+           (cmp:warn-undefined-global-variable
+            (origin-spi (cleavir-env:origin condition)) (cleavir-environment:name condition))
            (invoke-restart 'cleavir-cst-to-ast:consider-special)))
        (cleavir-env:no-function-info
          (lambda (condition)
-           #+verbose-compiler(warn "Condition: ~a" condition)
            (cmp:register-global-function-ref (cleavir-environment:name condition))
            (invoke-restart 'cleavir-cst-to-ast:consider-global))))
     (let ((ast (cleavir-cst-to-ast:cst-to-ast cst env *clasp-system* dynenv)))
@@ -557,11 +556,11 @@ Does not hoist."
   (handler-bind
       ((cleavir-env:no-variable-info
          (lambda (condition)
-           (cmp:compiler-warning-undefined-global-variable (cleavir-environment:name condition))
+           (cmp:compiler-warn-undefined-global-variable
+            (origin-spi (cleavir-env:origin condition)) (cleavir-environment:name condition))
            (invoke-restart 'cleavir-generate-ast:consider-special)))
        (cleavir-env:no-function-info
          (lambda (condition)
-           #+verbose-compiler(warn "Condition: ~a" condition)
            (cmp:register-global-function-ref (cleavir-environment:name condition))
            (invoke-restart 'cleavir-generate-ast:consider-global))))
     (let ((ast (cleavir-generate-ast:generate-ast form env *clasp-system* dynenv)))
@@ -684,7 +683,9 @@ This works like compile-lambda-function in bclasp."
     (format *trace-output* "Cleavir compiling t1expr: ~s~%" form)
     (format *trace-output* "          in environment: ~s~%" env ))
   (setf *ct-start* (compiler-timer-elapsed))
-  (let* ((cleavir-generate-ast:*compiler* 'cl:compile)
+  (let* (function lambda-name
+         ordered-raw-constants-list constants-table startup-fn shutdown-fn
+         (cleavir-generate-ast:*compiler* 'cl:compile)
          (*llvm-metadata* (make-hash-table :test 'eql))
          (dynenv (make-dynenv env))
          #+cst
@@ -692,9 +693,7 @@ This works like compile-lambda-function in bclasp."
          #+cst
          (ast (cst->ast cst dynenv env))
          #-cst
-         (ast (generate-ast form dynenv env))
-         function lambda-name
-         ordered-raw-constants-list constants-table startup-fn shutdown-fn)
+         (ast (generate-ast form dynenv env)))
     (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
       (multiple-value-setq (ordered-raw-constants-list constants-table startup-fn shutdown-fn)
         (literal:with-rtv
