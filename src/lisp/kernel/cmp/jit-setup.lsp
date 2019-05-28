@@ -628,7 +628,7 @@ The passed module is modified as a side-effect."
     (link-inline-remove-builtins original-module)
     (quick-module-dump original-module "module-before-optimize")
     (let ((module original-module))
-      ;; (irc-verify-module-safe module)
+      (irc-verify-module-safe module)
       (let ((jit-engine (jit-engine))
             (repl-name (if main-fn (llvm-sys:get-name main-fn) nil))
             (startup-name (if startup-fn (llvm-sys:get-name startup-fn) nil))

@@ -1174,19 +1174,22 @@ and then the irbuilder-alloca, irbuilder-body."
 
 
 (defun irc-verify-module (module return-action)
-  (when *verify-llvm-modules*
-    (llvm-sys:verify-module module return-action)))
+  (llvm-sys:verify-module module return-action))
 
 (defun irc-verify-module-safe (module)
-  (multiple-value-bind (found-errors error-message)
-      (progn
-        (cmp-log "About to verify module prior to writing bitcode%N")
-        (irc-verify-module *the-module* 'llvm-sys::return-status-action))
-    (cmp-log "Done verify module%N")
-    (if found-errors
+  (when *verify-llvm-modules*
+    (core:bformat t "Entered irc-verify-module-safe%N")
+    (llvm-sys:dump-module module)
+    (multiple-value-bind (found-errors error-message)
         (progn
-          (format t "Module error: ~a~%" error-message)
-          (break "Verify module found errors")))))
+          (cmp-log "About to verify module prior to writing bitcode%N")
+          (irc-verify-module *the-module* 'llvm-sys::return-status-action))
+      (cmp-log "Done verify module%N")
+      (core:bformat t "irc-verify-module-safe found-errors: %s  message: %s%N" found-errors error-message)
+      (if found-errors
+          (progn
+            (format t "Module error: ~a~%" error-message)
+            (error "Verify module found errors"))))))
 
 (defun irc-verify-function (fn &optional (continue t))
   (when *verify-llvm-functions*
