@@ -532,6 +532,30 @@ when this is t a lot of graphs will be generated.")
    :policy (cleavir-env:environment-policy env)))
 
 #+cst
+(defun conversion-error-handler (condition)
+  ;; Resignal the condition to see if anything higher up wants to handle it.
+  ;; If not, continue compilation by replacing the errant form with a form
+  ;; that will signal an error if it's reached at runtime.
+  ;; The nature of this form is a bit tricky because it can't just include
+  ;; the original condition, if we're in COMPILE-FILE - conditions aren't
+  ;; necessarily dumpable, and nor is the source.
+  ;; For now we just assume we're in COMPILE-FILE.
+  (signal condition)
+  (let* ((cst (cleavir-cst-to-ast:cst condition))
+         (form (cst:raw cst))
+         (origin (cst:source cst)))
+    (invoke-restart 'cleavir-cst-to-ast:substitute-cst
+                    (cst:reconstruct
+                     `(error 'cmp:compiled-program-error
+                             :form ,(with-standard-io-syntax
+                                      (write-to-string form
+                                                       :escape t :pretty t
+                                                       :circle t :array nil))
+                             :origin ',(origin-spi origin)
+                             :condition ,(princ-to-string condition))
+                     cst clasp-cleavir:*clasp-system* :default-source origin))))
+
+#+cst
 (defun cst->ast (cst dynenv &optional (env *clasp-env*))
   "Compile a cst into an AST and return it.
 Does not hoist.
@@ -546,7 +570,8 @@ COMPILE-FILE will use the default *clasp-env*."
        (cleavir-env:no-function-info
          (lambda (condition)
            (cmp:register-global-function-ref (cleavir-environment:name condition))
-           (invoke-restart 'cleavir-cst-to-ast:consider-global))))
+           (invoke-restart 'cleavir-cst-to-ast:consider-global)))
+       (cleavir-cst-to-ast:compilation-program-error #'conversion-error-handler))
     (let ((ast (cleavir-cst-to-ast:cst-to-ast cst env *clasp-system* dynenv)))
       (when *interactive-debug* (draw-ast ast))
       (cc-dbg-when *debug-log* (log-cst-to-ast ast))

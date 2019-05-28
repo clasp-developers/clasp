@@ -21,6 +21,29 @@
 ;;;
 ;;; Condition classes.
 
+;;; This class is signaled AT RUNTIME if the compiler (at COMPILE TIME)
+;;; signaled an error while compiling some form. So e.g.
+;;; (compile nil '(lambda () (progv))) gets you a function, but if you
+;;; call that function, this error is signaled.
+;;; Right now (and probably indefinitely) only cclasp uses this.
+;;; See comment in translate.lisp.
+(define-condition compiled-program-error (program-error)
+  (;; Despite the names, FORM and ORIGINAL-CONDITIONS are actually strings,
+   ;; so that COMPILE-FILE can dump error forms properly.
+   (%form :reader compiled-program-error-form :initarg :form)
+   (%origin :reader compiled-program-error-origin :initarg :origin)
+   (%original-condition :reader compiled-program-error-original-condition
+                        :initarg :condition))
+  (:report (lambda (condition stream)
+             (format stream "Cannot evaluate form the compiler failed to compile.~@
+                             Form:~%  ~a~@
+                             Compile-time error:~%  ~a"
+                     (compiled-program-error-form condition)
+                     (compiled-program-error-original-condition condition)))))
+
+(export '(compiled-program-error))
+
+;;; Abstract class.
 (define-condition compiler-condition (condition)
   ((%origin :reader compiler-condition-origin :initarg :origin)))
 
@@ -118,14 +141,18 @@
 (defvar *compiler-warning-count*)
 (defvar *compiler-style-warning-count*)
 
-;;; Resignal the condition. If it's not handled, mark warningsp/failurep and print it.
-;;; Muffle any warnings, but let errors continue - we want to handle errors more
-;;; specifically at lower levels.
+;;; Let errors through - lower level code should handle them if able, and otherwise
+;;; it's a compiler bug and we ought to enter the debugger.
+;;; This does mean that even if a higher level handler handles the condition,
+;;; compilation fails. FIXME?
+;;; In sbcl this is bracketed in signal ... continue, but we have more specific things
+;;; to do than continue.
 (defun compiler-error-handler (condition)
-  (signal condition)
   (incf *compiler-error-count*)
   (setf *warnings-p* t *failure-p* t)
   (print-compiler-condition condition))
+;;; Resignal the condition so higher level handlers can get at it. If it's not handled,
+;;; mark warningsp/failurep and print the condition. Muffle the warning.
 (defun compiler-warning-handler (condition)
   (signal condition)
   (incf *compiler-warning-count*)
