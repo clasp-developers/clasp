@@ -560,8 +560,8 @@ Does not hoist."
   (handler-bind
       ((cleavir-env:no-variable-info
          (lambda (condition)
-           (cmp:compiler-warn-undefined-global-variable
-            (origin-spi (cleavir-env:origin condition)) (cleavir-environment:name condition))
+           (cmp:warn-undefined-global-variable
+            (origin-spi (cleavir-env:origin condition))(cleavir-environment:name condition))
            (invoke-restart 'cleavir-generate-ast:consider-special)))
        (cleavir-env:no-function-info
          (lambda (condition)
