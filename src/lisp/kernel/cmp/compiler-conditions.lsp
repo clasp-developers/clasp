@@ -5,11 +5,17 @@
 ;;;; Much or most of this was originally cribbed from SBCL,
 ;;;; especially ir1report.lisp and main.lisp.
 
+;;; For later
+(defgeneric deencapsulate-compiler-condition (condition)
+  (:method (condition) condition))
+
 ;;; If a condition has source info associated with it, return that.
 ;;; Otherwise NIL.
 ;;; This has methods defined on it for cleavir condition types later.
 (defgeneric compiler-condition-origin (condition)
   (:method (condition) nil))
+
+(export '(deencapsulate-compiler-condition compiler-condition-origin))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -49,6 +55,9 @@
                 (source-file-info origin))
                (source-pos-info-lineno origin)
                (source-pos-info-column origin))))))
+
+(export '(compiler-condition undefined-variable-warning
+          undefined-function-warning redefined-function-warning))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -185,8 +194,8 @@
       (format *error-output* "~&compilation unit ~:[finished~;aborted~]"
               abortedp)
       (format *error-output* "~[~:;~:*~&  caught ~w ERROR condition~:P~]~
-                            ~[~:;~:*~&  caught ~w WARNING condition~:P~]~
-                            ~[~:;~:*~&  caught ~w STYLE-WARNING condition~:P~]"
+                              ~[~:;~:*~&  caught ~w WARNING condition~:P~]~
+                              ~[~:;~:*~&  caught ~w STYLE-WARNING condition~:P~]"
               *compiler-error-count*
               *compiler-warning-count*
               *compiler-style-warning-count*))
