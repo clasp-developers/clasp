@@ -436,7 +436,7 @@
     (array (core::%array-total-size array))))
 
 (debug-inline "array-rank")
-(declaim (inline array-vrank))
+(declaim (inline array-rank))
 (defun array-rank (array)
   (etypecase array
     ((simple-array * (*)) 1)
