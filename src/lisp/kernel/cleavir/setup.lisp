@@ -337,9 +337,9 @@ when this is t a lot of graphs will be generated.")
 (defmethod cleavir-environment:cst-eval (cst env (dispatch-env null) system)
   (cleavir-environment:cst-eval cst env *clasp-env* system))
 
-#+(or)
-(defmacro ext::lambda-block (name (&rest lambda-list) &body body &environment env)
-  `(lambda ,lambda-list (block ,(if (listp name) (second name) name) ,@body)))
+(defmethod cmp:compiler-condition-origin ((condition cleavir-cst-to-ast:compilation-condition))
+  ;; FIXME: ignore-errors is a bit paranoid
+  (ignore-errors (car (cst:source (cleavir-cst-to-ast:cst condition)))))
 
 (defun build-and-draw-ast (filename cst)
   (let ((ast (cleavir-cst-to-ast:cst-to-ast cst *clasp-env* *clasp-system*)))
