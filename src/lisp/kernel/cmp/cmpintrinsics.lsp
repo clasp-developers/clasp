@@ -836,19 +836,34 @@ It has appending linkage.")
 (defvar *gv-current-function-name* nil "Store the global value in the module of the current function name ")
 
 
-(defparameter *quick-module-index* 0)
-(defun compile-file-quick-module-pathname (file-name-modifier)
-  (let* ((name-suffix (bformat nil "%05d-%s" (incf *quick-module-index*) file-name-modifier))
+(defun compile-file-quick-module-pathname (file-name-modifier &optional (cfo-pathname *compile-file-output-pathname*))
+  (let* ((name-suffix (bformat nil "%05d-%s" (core:next-number) file-name-modifier))
+         (base-path (pathname (core:monitor-directory)))
+         (cfo-directory0 (pathname-directory cfo-pathname))
+;;;         (_ (format t "cfo-directory0: ~s~%" cfo-directory0))
+;;;         (_ (format t "test ~s~%" (and (consp cfo-directory0) (eq (car cfo-directory0) :absolute))))
+         (cfo-directory (make-pathname :directory
+                                       (cond
+                                         ((and (consp cfo-directory0)
+                                               (eq (car cfo-directory0) :absolute))
+                                          (list* :relative (cdr cfo-directory0)))
+                                         (t cfo-directory0))))
+;;;         (_ (format t "cfo-directory: ~s~%" cfo-directory))
+         (full-directory (if cfo-directory
+                             (merge-pathnames cfo-directory (core:monitor-directory))
+                             (core:monitor-directory)))
+;;;         (_ (format t "full-directory: ~s~%" full-directory))
          (output-path (make-pathname
                        :name (concatenate
                               'string
-                              (pathname-name *compile-file-output-pathname*)
+                              (pathname-name cfo-pathname)
                               "-" name-suffix)
                        :type "ll"
-                       :defaults *compile-file-output-pathname*)))
+                       :defaults full-directory)))
     (cmp-log "Dumping module to %s%N" output-path)
     (ensure-directories-exist output-path)
     output-path))
+
 (defun compile-file-quick-module-dump (module file-name-modifier compile-file-debug-dump-module)
   "Dump the module as a .ll file"
   (if compile-file-debug-dump-module
@@ -860,11 +875,11 @@ It has appending linkage.")
             (close fout))))))
 
 (defun compile-quick-module-pathname (file-name-modifier)
-  (let* ((name-suffix (bformat nil "module-%05d-%s" (incf *quick-module-index*) file-name-modifier))
+  (let* ((name-suffix (bformat nil "module-%05d-%s" (core:next-number) file-name-modifier))
          (output-path (make-pathname
                        :name name-suffix
-                       :directory '(:absolute "tmp")
-                       :type "ll")))
+                       :type "ll"
+                       :defaults (core:monitor-directory))))
     (ensure-directories-exist output-path)
     output-path))
 
@@ -896,42 +911,6 @@ they are dumped into /tmp"
   (if *compile-file-output-pathname*
       (compile-file-quick-module-dump module name-modifier *compile-file-debug-dump-module*)
       (compile-quick-module-dump module name-modifier *compile-debug-dump-module*)))
-
-
-(defun compile-file-quick-message (file-name-modifier msg args)
-  (let* ((name-suffix (bformat nil "%05d-%s" (incf *quick-module-index*) file-name-modifier))
-         (output-path (make-pathname
-                       :name (concatenate
-                              'string
-                              (pathname-name *compile-file-output-pathname*)
-                              "-" name-suffix)
-                       :type "txt"
-                       :defaults *compile-file-output-pathname*)))
-    (ensure-directories-exist output-path)
-    (with-open-file (fout output-path :direction :output)
-      (apply #'bformat fout msg args))))
-
-(defun compile-quick-message (file-name-modifier msg args)
-  (if *compile-debug-dump-module*
-      (let* ((name-suffix (bformat nil "module-%05d-%s" (incf *quick-module-index*) file-name-modifier))
-             (output-path (make-pathname
-                           :name name-suffix
-                           :directory '(:absolute "tmp")
-                           :type "txt")))
-        (ensure-directories-exist output-path)
-        (let* ((output-name (namestring output-path))
-               (fout (open output-name :direction :output)))
-          (unwind-protect
-               (llvm-sys:dump-module *the-module* fout)
-            (close fout))))))
-
-
-(defun quick-message (file-name-modifier msg &rest args)
-  "Write a message into a file and write it to the same directory
-as quick-module-dump would write it"
-  (if *compile-file-debug-dump-module*
-      (compile-file-quick-message file-name-modifier msg args)
-      (compile-quick-message file-name-modifier msg args)))
 
 (defmacro log-module ((info) &rest body)
   "Wrap quick-module-dump around a block of code so that the module

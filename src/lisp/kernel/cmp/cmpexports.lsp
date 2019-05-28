@@ -9,7 +9,6 @@
             *default-linkage*
             *default-compile-linkage*
             quick-module-dump
-            quick-message-dump
             write-bitcode
             load-bitcode
             *irbuilder*
