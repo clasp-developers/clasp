@@ -284,7 +284,7 @@ def update_dependencies(cfg):
 #                       "master")
     fetch_git_revision("src/lisp/kernel/contrib/sicl",
                        "https://github.com/Bike/SICL.git",
-                       "4afe47b68cb639c893b8c59785e366672f3910bd")
+                       "618b24e7d7ad98cb7b7fb24e7e5485169ad02f10")
     fetch_git_revision("src/lisp/kernel/contrib/Concrete-Syntax-Tree",
                        "https://github.com/robert-strandh/Concrete-Syntax-Tree.git",
                        "8d8c5abf8f1690cb2b765241d81c2eb86d60d77e")
