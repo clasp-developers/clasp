@@ -444,7 +444,7 @@ eg:  (f closure-ptr nargs a b c d ...)
            (diexpression (llvm-sys:create-expression-none *the-module-dibuilder*))
            (dbg-arg0-value (llvm-sys:metadata-as-value-get *llvm-context* dbg-arg0))
            (diexpr-value (llvm-sys:metadata-as-value-get *llvm-context* diexpression)))
-      (irc-intrinsic "llvm.dbg.value" (llvm-sys:metadata-as-value-get *llvm-context* (llvm-sys:value-as-metadata-get register)) dbg-arg0-value diexpr-value)))
+      #+(or)(irc-intrinsic "llvm.dbg.value" (llvm-sys:metadata-as-value-get *llvm-context* (llvm-sys:value-as-metadata-get register)) dbg-arg0-value diexpr-value)))
   
   (defun maybe-spill-to-register-save-area (registers register-save-area*)
     (if registers
