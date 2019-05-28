@@ -32,7 +32,7 @@
 ;; The macros that are invoked here must be the same macros that are used
 ;; in compile-file to set up the environment that the code needs to compile forms
 ;; as compile-file does.
-(defun code-walk-using-bclasp (form env &key code-walker-function)
+(defun code-walk-using-bclasp (code-walker-function form env)
   "This is used in clos/method.lsp to code walk defmethod bodies"
   (and core:*use-cleavir-compiler* (error "The core:*use-cleavir-compiler* is set to T"))
   (let* ((module (llvm-create-module "code-walk-for-defmethod"))
@@ -48,25 +48,22 @@
                   (let ((fn (literal:with-top-level-form (compile-thunk 'walk-thunk form env nil))))
                     ;; Do nothing (irc-intrinsic-call "ltvc_toplevel_funcall" (list fn))
                     )))))
-        (llvm-sys::module-delete module)))))
+        (llvm-sys::module-delete module))))
+  t)
 
-(defun code-walk (form env &key code-walker-function (errorp t))
+(defun code-walk (code-walker-function form env)
   "Walk the form using whichever compiler we are currently using
    within env and call the code-walker-function on each internal form.
 code-walker-function takes two arguments (form env).
-Set errorp nil if you don't want an error to be generated if the code can't be walked.
-Returns T if walked, NIL if not (if errorp NIL)."
+Returns T if walked, NIL if not (e.g. because the compiler signaled an error)."
   (let ((*code-walking* t))
     (if (not core:*use-cleavir-compiler*)
-        (code-walk-using-bclasp form env :code-walker-function code-walker-function)
+        (code-walk-using-bclasp code-walker-function form env)
         (let* ((clasp-cleavir-pkg (find-package :clasp-cleavir))
                (code-walk-using-cleavir-symbol (find-symbol "CODE-WALK-USING-CLEAVIR" clasp-cleavir-pkg)))
           (if (fboundp code-walk-using-cleavir-symbol)
-              (funcall (fdefinition code-walk-using-cleavir-symbol) form env :code-walker-function code-walker-function)
-              (if errorp
-                  (error "Could not walk the code using code-walk-using-cleavir - the symbol is present - but it is not fbound")
-                  nil))))
-    t))
+              (funcall (fdefinition code-walk-using-cleavir-symbol) code-walker-function form env)
+              nil)))))
 
 (export '(code-walk code-walk-using-bclasp))
 

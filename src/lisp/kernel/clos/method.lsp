@@ -268,10 +268,9 @@ in the generic function lambda-list to the generic function lambda-list"
 		    (when (eq (second form) 'NEXT-METHOD-P)
                       (setf next-method-p-p 'FUNCTION))))))
 	     form))
-      ;; Determine how to walk the code in clasp
-      ;; Either use the bclasp compiler or if clasp-cleavir is available
-      ;; then use the clasp-cleavir compiler
-      (unless (cmp:code-walk method-lambda env :code-walker-function #'code-walker :errorp nil)
+      ;; CODE-WALK returns NIL if the walk could not be completed,
+      ;; e.g. due to an error. Otherwise we just use the side effects.
+      (unless (cmp:code-walk #'code-walker method-lambda env)
         (setq call-next-method-p t
               next-method-p-p t)))
     (values call-next-method-p next-method-p-p)))
