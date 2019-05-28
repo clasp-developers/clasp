@@ -119,13 +119,13 @@
 (defvar *compiler-style-warning-count*)
 
 ;;; Resignal the condition. If it's not handled, mark warningsp/failurep and print it.
-;;; If possible, continue from an error, and for warnings just muffle (since we print)
+;;; Muffle any warnings, but let errors continue - we want to handle errors more
+;;; specifically at lower levels.
 (defun compiler-error-handler (condition)
   (signal condition)
   (incf *compiler-error-count*)
   (setf *warnings-p* t *failure-p* t)
-  (print-compiler-condition condition)
-  (continue condition))
+  (print-compiler-condition condition))
 (defun compiler-warning-handler (condition)
   (signal condition)
   (incf *compiler-warning-count*)
