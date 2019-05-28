@@ -494,23 +494,45 @@
   (let ((dynenv (make-dynenv env)))
     (interpret-ast:interpret
      (let ((cleavir-generate-ast:*compiler* 'cl:eval))
-       #-cst
-       (cleavir-generate-ast:generate-ast
-        form env clasp-cleavir:*clasp-system* dynenv)
-       #+cst
-       (cleavir-cst-to-ast:cst-to-ast
-        (cst:cst-from-expression form)
-        env clasp-cleavir:*clasp-system* dynenv))
+       (handler-bind
+           ((cleavir-env:no-variable-info
+              (lambda (condition)
+                (declare (ignore condition))
+                (invoke-restart #+cst 'cleavir-cst-to-ast:consider-special
+                                #-cst 'cleavir-generate-ast:consider-special)))
+            (cleavir-env:no-function-info
+              (lambda (condition)
+                (declare (ignore condition))
+                (invoke-restart #+cst 'cleavir-cst-to-ast:consider-global
+                                #-cst 'cleavir-generate-ast:consider-global))))
+         #-cst
+         (cleavir-generate-ast:generate-ast
+          form env clasp-cleavir:*clasp-system* dynenv)
+         #+cst
+         (cleavir-cst-to-ast:cst-to-ast
+          (cst:cst-from-expression form)
+          env clasp-cleavir:*clasp-system* dynenv)))
      dynenv)))
 
 (defun ast-interpret-cst (cst env)
   (let ((dynenv (make-dynenv env)))
     (interpret-ast:interpret
      (let ((cleavir-generate-ast:*compiler* 'cl:eval))
+       (handler-bind
+           ((cleavir-env:no-variable-info
+              (lambda (condition)
+                (declare (ignore condition))
+                (invoke-restart #+cst 'cleavir-cst-to-ast:consider-special
+                                #-cst 'cleavir-generate-ast:consider-special)))
+            (cleavir-env:no-function-info
+              (lambda (condition)
+                (declare (ignore condition))
+                (invoke-restart #+cst 'cleavir-cst-to-ast:consider-global
+                                #-cst 'cleavir-generate-ast:consider-global))))
        #-cst
        (cleavir-generate-ast:generate-ast
         (cst:raw form) env clasp-cleavir:*clasp-system* dynenv)
        #+cst
        (cleavir-cst-to-ast:cst-to-ast
-        cst env clasp-cleavir:*clasp-system* dynenv))
+        cst env clasp-cleavir:*clasp-system* dynenv)))
      dynenv)))
