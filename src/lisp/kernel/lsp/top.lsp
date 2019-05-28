@@ -395,9 +395,8 @@
 
 (defun top-level (&optional (process-command-line nil) (set-package nil))
   "Args: ()
-ECL specific.
-The top-level loop of ECL. It is called by default when ECL is invoked."
-  (error "Is this even active")
+Clasp specific.
+The top-level loop of Clasp. It is called by default when Clasp is invoked."
   (catch *quit-tag*
     (let* ((*debugger-hook* nil)
 	   + ++ +++ - * ** *** / // ///)
@@ -405,8 +404,6 @@ The top-level loop of ECL. It is called by default when ECL is invoked."
       (when set-package
         (in-package "CL-USER"))
 
-      (error "Is this even active")
- 
       (setq *lisp-initialized* t)
 
       (let ((*tpl-level* -1))
