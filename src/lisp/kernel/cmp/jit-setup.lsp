@@ -644,7 +644,4 @@ The passed module is modified as a side-effect."
                    (core:increment-jit-compile-counter)
                    (let ((handle (llvm-sys:clasp-jit-add-module jit-engine module)))
                      (llvm-sys:jit-finalize-repl-function jit-engine handle repl-name startup-name shutdown-name literals-list)))
-              (mp:unlock *jit-lock*))))))
-
-  (defun jit-remove-module (handle)
-    (llvm-sys:clasp-jit-remove-module (jit-engine) handle)))
+              (mp:unlock *jit-lock*)))))))
