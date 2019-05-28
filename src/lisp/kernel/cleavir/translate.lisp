@@ -21,6 +21,10 @@ when this is t a lot of graphs will be generated.")
         (setf (gethash fileid *llvm-metadata*) file-metadata)))
     file-metadata))
 
+;;; In CSTs and stuff the origin is (spi . spi). Use the head.
+(defun origin-spi (origin)
+  (if (consp origin) (car origin) origin))
+
 (defun set-instruction-source-position (origin function-metadata)
   (when cmp:*dbg-generate-dwarf*
     (if origin

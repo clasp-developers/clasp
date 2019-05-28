@@ -339,11 +339,11 @@ Compile a lisp source file into an LLVM module."
                                                 :dry-run dry-run)))
             (cf2-log "Came out of compile-file-to-result with result: ~s~%" result)
 ;;;          (loop for one in result do (format t "Result: ~s~%" one))
-          (cond (dry-run (format t "Doing nothing further~%"))
-                ((null output-path)
-                 (error "The output-file is nil for input filename ~a~%" input-file))
-                (t (output-cfp-result result output-path output-type)))
-          (compile-file-results output-path))))))
+            (cond (dry-run (format t "Doing nothing further~%"))
+                  ((null output-path)
+                   (error "The output-file is nil for input filename ~a~%" input-file))
+                  (t (output-cfp-result result output-path output-type)))
+            output-path))))))
 
 (defvar *compile-file-parallel* nil)
                               
