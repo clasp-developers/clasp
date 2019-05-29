@@ -6132,14 +6132,29 @@ SYMBOL_EXPORT_SC_(KeywordPkg,input);
   SYMBOL_EXPORT_SC_(CorePkg, streamColumn);
   SYMBOL_EXPORT_SC_(ClPkg, synonymStreamSymbol);
 
-CL_DOCSTRING("Use read to read 1 character if its available - othewise return NIL");
-CL_DEFUN T_sp core__unix_read1(int filedes) {
+CL_DOCSTRING("Use read to read characters if they are available - return (values num-read errno-or-nil)");
+CL_DEFUN T_mv core__read_fd(int filedes, SimpleBaseString_sp buffer) {
   char c;
-  size_t num = read(filedes,&c,1);
-  if (num==1) {
-    return clasp_make_character(c);
+  size_t buffer_length = cl__length(buffer);
+  unsigned char* buffer_data = &(*buffer)[0];
+  int num = read(filedes,buffer_data,buffer_length);
+  int error = 0;
+  if (num<0) {
+    return Values(make_fixnum(num),make_fixnum(errno));
   }
-  return _Nil<T_O>();
+  return Values(make_fixnum(num),_Nil<T_O>());
+};
+
+
+CL_DOCSTRING("Set filedescriptor to nonblocking");
+CL_DEFUN void core__fcntl_non_blocking(int filedes) {
+  int flags = fcntl(filedes,F_GETFL,0);
+  fcntl(filedes,F_SETFL, flags | O_NONBLOCK);
+};
+
+CL_DOCSTRING("Close the file descriptor");
+CL_DEFUN void core__close_fd(int filedes) {
+  close(filedes);
 };
 
 };

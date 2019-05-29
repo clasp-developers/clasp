@@ -527,6 +527,11 @@ CL_DEFUN void core__monitor_write(const std::string& msg) {
 }
 
 
+CL_DEFUN void core__getchar_pause()
+{
+  getchar();
+}
+
 
 void Lisp_O::startupLispEnvironment(Bundle *bundle) {
   monitor_message("Starting lisp environment\n");

@@ -2069,12 +2069,16 @@ CL_DEFMETHOD void FdSet_O::fd_zero_() {
 }
 
 CL_DOCSTRING("See unix select");
-CL_DEFUN int core__select(int nfds, FdSet_sp readfds, FdSet_sp writefds, FdSet_sp errorfds,  size_t seconds, size_t microseconds )
+CL_DEFUN T_mv core__select(int nfds, FdSet_sp readfds, FdSet_sp writefds, FdSet_sp errorfds,  size_t seconds, size_t microseconds )
 {
   struct timeval timeout;
   timeout.tv_sec = seconds;
   timeout.tv_usec = microseconds;
-  return select(nfds,&readfds->_fd_set,&writefds->_fd_set,&errorfds->_fd_set,&timeout);
+  int num =  select(nfds,&readfds->_fd_set,&writefds->_fd_set,&errorfds->_fd_set,&timeout);
+  if (num<0) {
+    return Values(make_fixnum(num), make_fixnum(errno));
+  }
+  return Values(make_fixnum(num), _Nil<T_O>());
 }
 
 CL_DEFUN FdSet_sp core__make_fd_set() {

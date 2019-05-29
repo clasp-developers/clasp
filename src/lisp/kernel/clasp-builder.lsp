@@ -7,14 +7,18 @@
 
 (defparameter *number-of-jobs* 1)
 
-#+(or)
-(si:fset 'core::mmsg #'(lambda (whole env)
-                         (let ((fmt (cadr whole))
-                               (args (cddr whole)))
-                           `(core:bformat t ,fmt ,@args)))
-         t)
-
 ;;;#+(or)
+(progn
+  (defparameter *log* (open "/tmp/clasp-builder-log.txt" :direction :output :if-exists :supersede))
+  (si:fset 'core::mmsg #'(lambda (whole env)
+                           (let ((fmt (cadr whole))
+                                 (args (cddr whole)))
+                             `(progn
+                                (core:bformat *log* ,fmt ,@args)
+                                (finish-output *log*))))
+           t))
+
+#+(or)
 (si:fset 'core::mmsg #'(lambda (whole env)
                          nil)
          t)
@@ -326,7 +330,7 @@ Return files."
 (defconstant +pid-of+ 1)
 (defconstant +signals-of+ 2)
 (defconstant +entries-of+ 3)
-(defconstant +child-stream-of+ 4)
+(defconstant +child-filedes-of+ 4)
 (defconstant +result-stream-of+ 5)
 
 (defun setf-pjob-done (pjob value) (setf-elt pjob +done-of+ value))
@@ -334,61 +338,75 @@ Return files."
 (defun setf-pjob-pid (pjob value) (setf-elt pjob +pid-of+ value))
 (defun setf-pjob-signals (pjob value) (setf-elt pjob +signals-of+ value))
 (defun setf-pjob-entries (pjob value) (setf-elt pjob +entries-of+ value))
-(defun setf-pjob-child-stream (pjob value) (setf-elt pjob +child-stream-of+ value))
+(defun setf-pjob-child-filedes (pjob value) (setf-elt pjob +child-filedes-of+ value))
 (defun setf-pjob-result-stream (pjob value) (setf-elt pjob +result-stream-of+ value))
 
 (defun pjob-done (pjob) (elt pjob +done-of+))
 (defun pjob-pid (pjob) (elt pjob +pid-of+)) 
 (defun pjob-signals (pjob) (elt pjob +signals-of+)) 
 (defun pjob-entries (pjob) (elt pjob +entries-of+)) 
-(defun pjob-child-stream (pjob) (elt pjob +child-stream-of+)) 
+(defun pjob-child-filedes (pjob) (elt pjob +child-filedes-of+)) 
 (defun pjob-result-stream (pjob) (elt pjob +result-stream-of+)) 
 
-(defun make-pjob (&key done pid signals entries child-stream result-stream)
+(defun make-pjob (&key done pid signals entries child-filedes result-stream)
   (let ((pjob (make-array 6)))
     (setf-pjob-done pjob done)
     (setf-pjob-pid pjob pid)
     (setf-pjob-signals pjob signals)
     (setf-pjob-entries pjob entries)
-    (setf-pjob-child-stream pjob child-stream)
+    (setf-pjob-child-filedes pjob child-filedes)
     (setf-pjob-result-stream pjob result-stream)
     pjob))
 
 
-(defun read-all-child-streams (jobs)
+(defun read-all-child-filedes (jobs)
   (let ((readfds (core:make-fd-set))
         (writefds (core:make-fd-set))
         (errorfds (core:make-fd-set))
         (max-fd -1)
         (fds (make-hash-table :test #'eql)))
     (maphash (lambda (pid pjob)         ; (dolist (wpid waiting-pids)
-               (let* ((child-stream (pjob-child-stream pjob))
-                      (child-fd (core:file-stream-fd child-stream)))
-                 (core:hash-table-setf-gethash fds child-fd pjob)
-                 (core:fd-set readfds child-fd)
-                 (setq max-fd (if (< max-fd child-fd) child-fd max-fd))))
+               (let ((child-filedes (pjob-child-filedes pjob)))
+                 (when child-filedes
+                   (core:hash-table-setf-gethash fds child-filedes pjob)
+                   (core:fd-set readfds child-filedes)
+                   (setq max-fd (if (< max-fd child-filedes) child-filedes max-fd)))))
              jobs)
     (let ((sret (core:select (1+ max-fd) readfds writefds errorfds 0 50000)))
       (if (> sret 0)
           (progn
+            (mmsg "Reading child streams number ->  %s%N" sret)
             (dotimes (ifd (1+ max-fd))
-;;;            (mmsg "Checking fd: %d of sret: %d  --> %s%N" ifd sret (core:fd-isset readfds ifd))
+              (mmsg "Checking fd: %d of sret: %d  --> %s%N" ifd sret (core:fd-isset readfds ifd))
               (when (core:fd-isset readfds ifd)
                 (let* ((pjob (gethash ifd fds))
-                       (child-stream (pjob-child-stream pjob))
-                       (result-stream (pjob-result-stream pjob)))
-                  (block char-block
+                       (child-filedes (pjob-child-filedes pjob))
+                       (result-stream (pjob-result-stream pjob))
+                       (buffer (make-array 1024 :element-type 'base-char)))
+                  (block copy-block
                     (tagbody
-                     char-top
-                       (let ((c (core:unix-read1 ifd)))
-                         (if c
-                             (write-char c result-stream)
-                             (return-from char-block nil)))
-                       (go char-top))))))
+                     read-top
+                       (mmsg "About to read %d%N" ifd)
+                       (multiple-value-bind (num-chars errno)
+                           (core:read-fd ifd buffer)
+                         (mmsg "Done read - got %d characters  errno: %s%N" num-chars errno)
+                         (if errno
+                             (progn
+                               (core:close-fd child-filedes)
+                               (mmsg "Closed fileds %d%N" child-filedes)
+                               (setf-pjob-child-filedes pjob nil)
+                               (return-from copy-block))
+                             (if (> num-chars 0)
+                                 (progn
+                                   (mmsg "About to write sequence <%s>%N" (subseq buffer 0 num-chars))
+                                   (write-sequence buffer result-stream :start 0 :end num-chars)
+                                   (mmsg "Done with write sequence %N"))))))))))
             (let ((after-sret (core:select (1+ max-fd) readfds writefds errorfds 0 50000)))
               (if (/= after-sret sret)
                   (mmsg "After reading %s streams there are %s stream to read%N" sret after-sret)))
-            )))))
+            ))))
+  (sleep 1)
+  )
                             
 (defun wait-for-child-to-exit (jobs &optional (children-remain t))
   (block done
@@ -408,18 +426,19 @@ Return files."
                         (progn
                           (unless (= status 0)
                             (core:bformat t "wpid -> %s  status -> %s%N" wpid status))
-                          (when (core:wifsignaled status)
-                            (let ((signal (core:wtermsig status)))
-                              (warn "Child process with pid ~a got signal ~a" wpid signal)))
                           (when (core:wifexited status)
                             (mmsg "A child exited wpid: %s  status: %s%N" wpid status)
-                            (return-from done (values wpid status)))))))
+                            (return-from done (values wpid status)))
+                          (when (core:wifsignaled status)
+                            (let ((signal (core:wtermsig status)))
+                              (mmsg "Child process with pid %s got signal %s%N" wpid signal)
+                              (warn "Child process with pid ~a got signal ~a" wpid signal)))))))
                 (go wait-done)          ; (core:sigchld-count) == 0
                 )
             (go wait-top)
           wait-done
             ))
-       (read-all-child-streams jobs)
+       (read-all-child-filedes jobs)
        (go top))))
       
 (defun compile-system-parallel (files &key reload (output-type core:*clasp-build-mode*) total-files (parallel-jobs *number-of-jobs*) (batch-min 1) (batch-max 1) file-order)
@@ -511,6 +530,8 @@ Return files."
                         (let ((pid pid-or-error))
                           (if (= pid 0)
                               (let ((*error-output* *standard-output*))
+                              (core:bformat t "A child started up with pid %d - hit enter to continue:%N" (core:getpid))
+                                #+(or)(core:getchar-pause)
                                 ;; Turn off interactive mode so that errors cause clasp to die with backtrace
                                 (core:set-interactive-lisp nil)
                                 (let ((*standard-output* #+dump-child-process-output(open (core:bformat nil "/tmp/clasp-child-%s" (core:getpid)) :direction :output :if-exists :supersede)
@@ -526,19 +547,21 @@ Return files."
                                       (when fail
                                         (error "sigthreadmask has an error errno = ~a" errno))
                                       (core:exit)))))
-                              (let ((one-pjob (make-pjob
+                              (let* ((child-filedes (core:file-stream-fd child-stream))
+                                     (_             (core:fcntl-non-blocking child-filedes))
+                                     (one-pjob (make-pjob
                                                :done nil
                                                :pid pid
                                                :signals nil
                                                :entries entries
-                                               :child-stream child-stream
+                                               :child-filedes child-filedes
                                                :result-stream (make-string-output-stream))))
                                 (started-some entries pid)
                                 (core:hash-table-setf-gethash jobs pid one-pjob)
                                 (incf child-count)))))))
                 (when (> child-count 0) (go top)))))
          (mmsg "Last wait-for-child-to-exit to clean out fds%N")
-         (read-all-child-streams jobs)
+         (read-all-child-filedes jobs)
          )
     (core:uninstall-sigchld))
   (format t "Leaving compile-system-parallel~%"))
