@@ -93,9 +93,8 @@
       (error "Too few arguments supplied to a inlined lambda form.")))
 
 (defun sys::destructure (vl macro &optional macro-name
-                         &aux (basis-form (gensym))
+                         &aux dl arg-check (basis-form (gensym))
                            (destructure-symbols (list basis-form)))
-  (declare (special *dl* *arg-check*))
   (labels ((tempsym ()
 	     (let ((x (gensym)))
 	       (push x destructure-symbols)
@@ -162,14 +161,14 @@
 		 (cond (key-flag
 			(push `(check-keyword ,pointer ',all-keywords
                                               ,@(if allow-other-keys '(t) '()))
-			      *arg-check*))
+			      arg-check))
 		       ((not no-check)
 			(push `(if ,pointer (dm-too-many-arguments ,basis-form))
-			      *arg-check*))))))
+			      arg-check))))))
 	   (dm-v (v init)
 	     (cond ((and v (symbolp v))
                     (let ((push-val (if init (list v init) v)))
-                      (push push-val *dl*)))
+                      (push push-val dl)))
                    ((and v (atom v))
                     (error "destructure: ~A is not a list nor a symbol" v))
                    ((eq (first v) '&whole)
@@ -184,24 +183,21 @@
                    (t
                     (let* ((temp (tempsym))
                            (push-val (if init (list temp init) temp)))
-		      (push push-val *dl*)
+		      (push push-val dl)
 		      (dm-vl v temp nil))))))
-    (let* ((whole basis-form)
-	   (*dl* nil)
-	   (*arg-check* nil))
-      (declare (special *dl* *arg-check*))
+    (let ((whole basis-form))
       (cond ((listp vl)
 	     (when (eq (first vl) '&whole)
                (let ((named-whole (second vl)))
                  (setq vl (cddr vl))
                  (if (listp named-whole)
                      (dm-vl named-whole whole nil)
-                     (setq *dl* (list (list named-whole whole)))))))
+                     (setq dl (list (list named-whole whole)))))))
 	    ((symbolp vl)
 	     (setq vl (list '&rest vl)))
 	    (t (error "The destructuring-lambda-list ~s is not a list." vl)))
       (dm-vl vl whole macro)
-      (values whole (nreverse *dl*) *arg-check* destructure-symbols))))
+      (values whole (nreverse dl) arg-check destructure-symbols))))
 
 ;;; valid lambda-list to DEFMACRO is:
 ;;;
