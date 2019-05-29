@@ -76,7 +76,7 @@ object's representation."
                 (file-position stream))
         (values (read stream eof-error-p eof-value)
                 (file-position stream)))))
-#+(or)
+
 (defun write-to-string (object &rest rest
                         &aux (stream (make-string-output-stream)))
   "Args: (object &key (escape *print-escape*) (radix *print-radix*)
@@ -93,6 +93,8 @@ mode.  See the variable docs of *PRINT-...* for the mode."
 ;;; Christian Schafmeister - June 24 2018
 ;;; Use a thread-local string-output-stream for write-to-string
 ;;; I get almost a 2x speedup with this.
+;;; kpoeck, might be fast, but does not work, see issue 609
+#+(or)
 (defun write-to-string (object core:&va-rest rest ; only used for apply, so no problem.
                         &aux (stream (core:thread-local-write-to-string-output-stream)))
   "Args: (object &key (escape *print-escape*) (radix *print-radix*)
