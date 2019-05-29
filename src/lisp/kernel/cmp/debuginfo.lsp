@@ -253,12 +253,6 @@
     (dbg-set-irbuilder-source-location-impl
      *irbuilder* (core:source-pos-info-lineno *current-source-pos-info*) 0 *dbg-current-scope*))))
 
-(defun check-debug-info-setup (irbuilder)
-  "Signal an error if debug-info for the irbuilder is not setup properly for inlining"
-  (unless (llvm-sys:current-debug-location irbuilder)
-    (format t "Check the module~%")
-    (break "The debug-info is not set for the current irbuilder")))
-
 (defun dbg-set-source-pos (source-pos)
   (when *dbg-generate-dwarf*
     (multiple-value-bind (file-handle file-pos lineno column)

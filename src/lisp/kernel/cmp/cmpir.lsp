@@ -1099,7 +1099,6 @@ and then the irbuilder-alloca, irbuilder-body."
           required-args-ty passed-args-ty args)))
 
 (defun irc-create-invoke (entry-point args unwind-dest &optional (label ""))
-  ;;  (check-debug-info-setup *irbuilder*)
   (unless unwind-dest (error "unwind-dest should not be nil"))
   (unless (null (stringp entry-point)) (error "entry-point for irc-create-invoke cannot be a string - it is ~a" entry-point))
   (let ((normal-dest (irc-basic-block-create "normal-dest")))
