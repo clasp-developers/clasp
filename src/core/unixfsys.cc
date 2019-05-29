@@ -2038,26 +2038,34 @@ FdSet_O::FdSet_O() {
   FD_ZERO(&this->_fd_set);
 };
 
-CL_DEFMETHOD void FdSet_O::fd_clr(int fd) {
+CL_LISPIFY_NAME(fd_clr);
+CL_DEFMETHOD void FdSet_O::fd_clr_(int fd) {
   if (fd <0 || fd >= FD_SETSIZE) { error_bad_fd(fd); };
   FD_CLR(fd,&this->_fd_set);
 }
 
-CL_DEFMETHOD void FdSet_O::fd_set(int fd) {
+CL_LISPIFY_NAME(fd_set);
+CL_DEFMETHOD void FdSet_O::fd_set_(int fd) {
   if (fd <0 || fd >= FD_SETSIZE) { error_bad_fd(fd); };
   FD_SET(fd,&this->_fd_set);
 }
 
-CL_DEFMETHOD void FdSet_O::fd_copy(FdSet_sp copy) {
+#if 0
+// remove this for now - it's not on debian
+CL_LISPIFY_NAME(fd_copy);
+CL_DEFMETHOD void FdSet_O::fd_copy_(FdSet_sp copy) {
   FD_COPY(&this->_fd_set,&copy->_fd_set);
 }
+#endif
 
-CL_DEFMETHOD bool FdSet_O::fd_isset(int fd) {
+CL_LISPIFY_NAME(fd_isset);
+CL_DEFMETHOD bool FdSet_O::fd_isset_(int fd) {
   if (fd <0 || fd >= FD_SETSIZE) { error_bad_fd(fd); };
   return FD_ISSET(fd,&this->_fd_set);
 }
 
-CL_DEFMETHOD void FdSet_O::fd_zero() {
+CL_LISPIFY_NAME(fd_zero);
+CL_DEFMETHOD void FdSet_O::fd_zero_() {
   FD_ZERO(&this->_fd_set);
 }
 

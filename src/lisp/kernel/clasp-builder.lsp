@@ -380,7 +380,7 @@ Return files."
                   (block char-block
                     (tagbody
                      char-top
-                       (let ((c (core:unix-read ifd)))
+                       (let ((c (core:unix-read1 ifd)))
                          (if c
                              (write-char c result-stream)
                              (return-from char-block nil)))

@@ -88,11 +88,14 @@ namespace core {
     fd_set _fd_set;
   public: // Functions here
     
-    void fd_clr(int fd);
-    void fd_set(int fd);
-    void fd_copy(FdSet_sp copy);
-    bool fd_isset(int fd);
-    void fd_zero();
+    void fd_clr_(int fd);
+    void fd_set_(int fd);
+#if 0
+      // remove this for now - its not on debian
+    void fd_copy_(FdSet_sp copy);
+#endif
+    bool fd_isset_(int fd);
+    void fd_zero_();
     
   }; // fdset class
 
