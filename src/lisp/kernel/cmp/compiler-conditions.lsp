@@ -146,7 +146,8 @@
 ;;; This does mean that even if a higher level handler handles the condition,
 ;;; compilation fails. FIXME?
 ;;; In sbcl this is bracketed in signal ... continue, but we have more specific things
-;;; to do than continue.
+;;; to do than continue. We could maybe use signal ... continue if lower level handlers
+;;; resignaled (as they already do) but in a restart-case establishing a CONTINUE.
 (defun compiler-error-handler (condition)
   (incf *compiler-error-count*)
   (setf *warnings-p* t *failure-p* t)
@@ -162,7 +163,7 @@
 (defun compiler-style-warning-handler (condition)
   (signal condition)
   (incf *compiler-style-warning-count*)
-  (setf *warnings-p* t *failure-p* t)
+  (setf *warnings-p* t)
   (print-compiler-condition condition)
   (muffle-warning condition))
 
