@@ -31,7 +31,11 @@ THE SOFTWARE.
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/pathname.fwd.h>
 
-
+#if !defined(_TARGET_OS_DARWIN) && !defined(_TARGET_OS_FREEBSD)
+#if !defined( FD_COPY )
+#define FD_COPY(dest,src) memcpy((dest),(src),sizeof *(dest))
+#endif
+#endif
 
 namespace core {
 
@@ -90,10 +94,7 @@ namespace core {
     
     void fd_clr_(int fd);
     void fd_set_(int fd);
-#if 0
-      // remove this for now - its not on debian
     void fd_copy_(FdSet_sp copy);
-#endif
     bool fd_isset_(int fd);
     void fd_zero_();
     
