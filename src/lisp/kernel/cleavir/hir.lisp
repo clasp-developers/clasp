@@ -6,7 +6,8 @@
 ;;;
 ;;; This instruction is an DEBUG-MESSAGE-INSTRUCTION that prints a message at runtime.
 
-(defclass debug-message-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+(defclass debug-message-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin
+                                     cleavir-ir:side-effect-mixin)
   ((%debug-message :initarg :debug-message :accessor debug-message)))
 
 (defmethod cleavir-ir-graphviz:label ((instr debug-message-instruction))
@@ -22,7 +23,8 @@
 ;;;
 ;;; This instruction is an DEBUG-BREAK-INSTRUCTION that invokes the debugger
 
-(defclass debug-break-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+(defclass debug-break-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin
+                                   cleavir-ir:side-effect-mixin)
   ())
 
 (defmethod cleavir-ir-graphviz:label ((instr debug-break-instruction))
@@ -76,7 +78,8 @@
 ;;;
 ;;; Calls a foreign function (designated by its name, a string) and receives its result as values.
 
-(defclass multiple-value-foreign-call-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+(defclass multiple-value-foreign-call-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin
+                                                   cleavir-ir:side-effect-mixin)
   ((%function-name :initarg :function-name :accessor function-name)))
 
 (defmethod cleavir-ir-graphviz:label ((instr multiple-value-foreign-call-instruction))
@@ -100,7 +103,8 @@
 ;;;
 ;;; This instruction is an FOREIGN-call-INSTRUCTION that prints a message
 
-(defclass foreign-call-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+(defclass foreign-call-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin
+                                    cleavir-ir:side-effect-mixin)
   ((%foreign-types :initarg :foreign-types :accessor foreign-types)
    (%function-name :initarg :function-name :accessor function-name)))
 
@@ -127,7 +131,8 @@
 ;;;
 ;;; This instruction is an foreign-call-pointer-INSTRUCTION that prints a message
 
-(defclass foreign-call-pointer-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+(defclass foreign-call-pointer-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin
+                                            cleavir-ir:side-effect-mixin)
   ((%foreign-types :initarg :foreign-types :accessor foreign-types)))
 
 (defmethod cleavir-ir-graphviz:label ((instr foreign-call-pointer-instruction))
@@ -453,7 +458,8 @@
 ;;; throw-instruction
 ;;;
 
-(defclass throw-instruction (cleavir-ir:instruction cleavir-ir:no-successors-mixin)
+(defclass throw-instruction (cleavir-ir:instruction cleavir-ir:no-successors-mixin
+                             cleavir-ir:side-effect-mixin)
   ((%throw-tag :initform nil :initarg :throw-tag :accessor throw-tag)))
 
 
@@ -470,15 +476,3 @@
 
 (defmethod cl:print-object ((instr throw-instruction) stream)
   (format stream "#<throw>"))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction debug-message-instruction)) nil)
-
-(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction debug-break-instruction)) nil)
-
-;(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction precalc-value-instruction)) t)
-
-(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction setf-fdefinition-instruction)) nil)
-
-(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction throw-instruction)) nil)
