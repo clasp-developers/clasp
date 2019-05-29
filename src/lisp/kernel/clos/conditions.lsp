@@ -834,6 +834,33 @@ memory limits before executing the program again."))
               (format-error-control-string condition)
               (format-error-offset condition)))))
 
+;;; Conditions the FORMAT compiler macro signals if there's an argument count mismatch.
+;;; CLHS 22.3.10.2 says that having too few arguments is undefined, so that's a warning,
+;;; but having too many just means they're ignored, so that's a style-warning.
+;;; (Alternately we could not complain at all.)
+(define-condition format-warning-too-few-arguments (warning)
+  ((control-string :initarg :control :reader format-warning-control-string)
+   (expected :initarg :expected :reader format-warning-expected)
+   (observed :initarg :observed :reader format-warning-observed))
+  (:report (lambda (condition stream)
+             (format stream
+                     "Format string ~s expects at least ~d arguments,~@
+                      but is only provided ~d."
+                     (format-warning-control-string condition)
+                     (format-warning-expected condition)
+                     (format-warning-observed condition)))))
+(define-condition format-warning-too-many-arguments (style-warning)
+  ((control-string :initarg :control :reader format-warning-control-string)
+   (expected :initarg :expected :reader format-warning-expected)
+   (observed :initarg :observed :reader format-warning-observed))
+  (:report (lambda (condition stream)
+             (format stream
+                     "Format string ~s expects at most ~d arguments,~@
+                      but is provided ~d."
+                     (format-warning-control-string condition)
+                     (format-warning-expected condition)
+                     (format-warning-observed condition)))))
+
 (define-condition ext:interactive-interrupt (serious-condition)
   ()
   (:report "Console interrupt."))
