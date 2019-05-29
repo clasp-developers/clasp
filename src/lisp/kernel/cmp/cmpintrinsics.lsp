@@ -406,6 +406,8 @@ eg:  (f closure-ptr nargs a b c d ...)
       (when rewind (calling-convention-rewind-va-list-to-start-on-third-argument cc)))))
 
 
+(defparameter *debug-register-parameter* nil)
+
 #+x86-64
 (progn
 ;;; X86_64 calling convention The general function prototypes pass the following pass:
@@ -444,7 +446,8 @@ eg:  (f closure-ptr nargs a b c d ...)
            (diexpression (llvm-sys:create-expression-none *the-module-dibuilder*))
            (dbg-arg0-value (llvm-sys:metadata-as-value-get *llvm-context* dbg-arg0))
            (diexpr-value (llvm-sys:metadata-as-value-get *llvm-context* diexpression)))
-      #+(or)(irc-intrinsic "llvm.dbg.value" (llvm-sys:metadata-as-value-get *llvm-context* (llvm-sys:value-as-metadata-get register)) dbg-arg0-value diexpr-value)))
+      (if *debug-register-parameter*
+          (irc-intrinsic "llvm.dbg.value" (llvm-sys:metadata-as-value-get *llvm-context* (llvm-sys:value-as-metadata-get register)) dbg-arg0-value diexpr-value))))
   
   (defun maybe-spill-to-register-save-area (registers register-save-area*)
     (if registers

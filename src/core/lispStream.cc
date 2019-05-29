@@ -6131,4 +6131,15 @@ SYMBOL_EXPORT_SC_(KeywordPkg,input);
   SYMBOL_EXPORT_SC_(CorePkg, streamLinenumber);
   SYMBOL_EXPORT_SC_(CorePkg, streamColumn);
   SYMBOL_EXPORT_SC_(ClPkg, synonymStreamSymbol);
+
+CL_DOCSTRING("Use read to read 1 character if its available - othewise return NIL");
+CL_DEFUN T_sp core__unix_read1(int filedes) {
+  char c;
+  size_t num = read(filedes,&c,1);
+  if (num==1) {
+    return clasp_make_character(c);
+  }
+  return _Nil<T_O>();
+};
+
 };

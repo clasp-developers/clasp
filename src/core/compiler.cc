@@ -1449,6 +1449,36 @@ void initialize_compiler_primitives(Lisp_sp lisp) {
 }; /* namespace */
 
 
+
+
+namespace core {
+
+std::atomic<int> global_sigchld_count{0};
+
+CL_DEFUN int core__sigchld_count() {
+  return global_sigchld_count;
+}
+
+CL_DEFUN int core__decf_sigchld_count() {
+  global_sigchld_count--;
+  return global_sigchld_count;
+}
+
+void sigchld(int signal) {
+  global_sigchld_count++;
+}
+
+CL_DEFUN void core__install_sigchld() {
+  signal(SIGCHLD, sigchld);
+}
+
+CL_DEFUN void core__uninstall_sigchld() {
+  signal(SIGCHLD, SIG_DFL);
+}
+
+};
+
+
 extern "C" {
 
 void clasp_trap(core::T_O* val) {

@@ -353,12 +353,12 @@ CL_DEFUN bool core__wifsignaled(Fixnum_sp fstatus) {
 CL_LAMBDA(pid options);
 CL_DECLARE();
 CL_DOCSTRING("waitpid - see unix waitpid - returns status");
-CL_DEFUN int core__waitpid(Fixnum_sp pid, Fixnum_sp options) {
+CL_DEFUN T_mv core__waitpid(Fixnum_sp pid, Fixnum_sp options) {
   pid_t p = unbox_fixnum(pid);
   int status(0);
   int iopts = unbox_fixnum(options);
-  waitpid(p, &status, iopts);
-  return status;
+  int wpid = waitpid(p, &status, iopts);
+  return Values(make_fixnum(wpid),make_fixnum(status));
 };
 
 CL_LAMBDA();
@@ -2028,4 +2028,52 @@ SYMBOL_EXPORT_SC_(ClPkg, probe_file);
 SYMBOL_EXPORT_SC_(ClPkg, deleteFile);
 SYMBOL_EXPORT_SC_(ClPkg, file_write_date);
 SYMBOL_EXPORT_SC_(ClPkg, userHomedirPathname);
+
+
+void error_bad_fd(int fd) {
+  SIMPLE_ERROR(BF("Invalid file-descriptor %d") % fd);
+}
+
+FdSet_O::FdSet_O() {
+  FD_ZERO(&this->_fd_set);
+};
+
+CL_DEFMETHOD void FdSet_O::fd_clr(int fd) {
+  if (fd <0 || fd >= FD_SETSIZE) { error_bad_fd(fd); };
+  FD_CLR(fd,&this->_fd_set);
+}
+
+CL_DEFMETHOD void FdSet_O::fd_set(int fd) {
+  if (fd <0 || fd >= FD_SETSIZE) { error_bad_fd(fd); };
+  FD_SET(fd,&this->_fd_set);
+}
+
+CL_DEFMETHOD void FdSet_O::fd_copy(FdSet_sp copy) {
+  FD_COPY(&this->_fd_set,&copy->_fd_set);
+}
+
+CL_DEFMETHOD bool FdSet_O::fd_isset(int fd) {
+  if (fd <0 || fd >= FD_SETSIZE) { error_bad_fd(fd); };
+  return FD_ISSET(fd,&this->_fd_set);
+}
+
+CL_DEFMETHOD void FdSet_O::fd_zero() {
+  FD_ZERO(&this->_fd_set);
+}
+
+CL_DOCSTRING("See unix select");
+CL_DEFUN int core__select(int nfds, FdSet_sp readfds, FdSet_sp writefds, FdSet_sp errorfds,  size_t seconds, size_t microseconds )
+{
+  struct timeval timeout;
+  timeout.tv_sec = seconds;
+  timeout.tv_usec = microseconds;
+  return select(nfds,&readfds->_fd_set,&writefds->_fd_set,&errorfds->_fd_set,&timeout);
+}
+
+CL_DEFUN FdSet_sp core__make_fd_set() {
+  GC_ALLOCATE(FdSet_O,fdset);
+  return fdset;
+}
+
+
 }; // namespace core

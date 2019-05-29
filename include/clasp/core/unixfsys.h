@@ -27,6 +27,7 @@ THE SOFTWARE.
 #ifndef core_unixfsys_H
 #define core_unixfsys_H
 #include <csignal>
+#include <sys/select.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/pathname.fwd.h>
 
@@ -75,8 +76,25 @@ namespace core {
     sigset_t _sigset;
   public: // Functions here
     int sigset_sigaddset(SignalEnum sym);
+  }; // Sigset class
+
+  FORWARD(FdSet);
+  class FdSet_O : public General_O {
+    CL_DOCSTRING(R"(Wraps the unix fdset data type used by select.)");
+    LISP_CLASS(core, CorePkg, FdSet_O, "FdSet", General_O);
+  public: // Simple default ctor/dtor
+    FdSet_O();
+  public: // instance variables here
+    fd_set _fd_set;
+  public: // Functions here
     
-  }; // Pointer class
+    void fd_clr(int fd);
+    void fd_set(int fd);
+    void fd_copy(FdSet_sp copy);
+    bool fd_isset(int fd);
+    void fd_zero();
+    
+  }; // fdset class
 
   
 }; // core namespace

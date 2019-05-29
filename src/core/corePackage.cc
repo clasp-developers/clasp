@@ -312,7 +312,7 @@ SYMBOL_EXPORT_SC_(CorePkg, _PLUS_standardReadtable_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg, syntax_type);
 SYMBOL_EXPORT_SC_(CorePkg, sicl_readtable_case);
 SYMBOL_EXPORT_SC_(CorePkg, sicl_syntax_type);
-SYMBOL_EXPORT_SC_(CorePkg, _PLUS_NOHANG_PLUS_);
+SYMBOL_EXPORT_SC_(CorePkg, _PLUS_WNOHANG_PLUS_);
 SYMBOL_EXPORT_SC_(KeywordPkg, create);
 SYMBOL_EXPORT_SC_(KeywordPkg, append);
 SYMBOL_EXPORT_SC_(KeywordPkg, debugStartup);
@@ -1127,7 +1127,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARuseBuildForkRedirectSTAR->defparameter(_Nil<T_O>());
 #endif
   _sym__PLUS_numberOfFixedArguments_PLUS_->defconstant(make_fixnum(LCC_ARGS_IN_REGISTERS));
-  _sym__PLUS_NOHANG_PLUS_->defconstant(make_fixnum(WNOHANG));
+  _sym__PLUS_WNOHANG_PLUS_->defconstant(make_fixnum(WNOHANG));
   cl::_sym_STARrandom_stateSTAR->defparameter(RandomState_O::create());
   // Set up a hash table to save JIT info
   HashTableEqual_sp jit_save = HashTableEqual_O::create_default();
