@@ -272,8 +272,12 @@
 ;;; ----------------------------------------------------------------------
 ;;; Condition Data Type
 
+(defun default-condition-reporter (condition stream)
+  (format stream "Condition of type ~a was signaled." (type-of condition)))
+
 (defclass condition ()
-  ((report-function :allocation :class :initform nil)))
+  ((report-function :allocation :class
+                    :initform #'default-condition-reporter)))
 
 (defmethod print-object ((c condition) stream)
   (if *print-escape*
@@ -281,7 +285,7 @@
       (let ((reporter (slot-value c 'report-function)))
 	(cond ((stringp reporter)
 	       (write-string reporter stream))
-	      ((null reporter)
+	      ((null reporter) ; Should never happen.
 	       (call-next-method))
 	      (t
 	       (funcall reporter c stream))))))
@@ -563,10 +567,10 @@ returns with NIL."
 		     :ACCESSOR simple-condition-format-arguments))
   (:REPORT
    (lambda (condition stream)
-     (handler-case 
-         (format stream "~?"
-                 (simple-condition-format-control condition)
-                 (simple-condition-format-arguments condition))
+     (handler-case
+         (apply #'format stream
+                (simple-condition-format-control condition)
+                (simple-condition-format-arguments condition))
        (format-error (p)
          (declare (ignore p))
          (format stream "~%#<Error while printing condition>~%"))))))
@@ -968,8 +972,7 @@ bstrings."
 	 (signal condition)
 	 (invoke-debugger condition)))
       ((stringp continue-string)
-       (with-simple-restart
-	 (continue "~A" (format nil "~?" continue-string args))
+       (with-simple-restart (continue "~?" continue-string args)
 	 (signal condition)
 	 (invoke-debugger condition)))
       ((and continue-string (symbolp continue-string))
@@ -981,7 +984,6 @@ bstrings."
 	       (with-simple-restart (continue "Continue, using ~S" continue-string)
 		 (signal condition)
 		 (invoke-debugger condition))
-
 	       (if used-restart continue-string rv)))
 	   (if used-restart t rv))))
       (t
