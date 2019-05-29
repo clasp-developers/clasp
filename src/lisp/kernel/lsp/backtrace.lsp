@@ -274,22 +274,3 @@ Set gather-all-frames to T and you can gather C++ and Common Lisp frames"
     ))
 
 (export 'code-source-position)
-
-(defun source-info-backtrace (backtrace)
-  (let ((pid (core:getpid)))
-    (loop for frame in backtrace
-          for num from 0 below 10
-          for return-address = (core::backtrace-frame-return-address frame)
-          for in-call-address = (core:pointer-increment return-address -1)
-          for atos = (code-source-position in-call-address)
-          do (multiple-value-bind (first second third fourth fifth sixth lib-offset)
-                 (core:lookup-address in-call-address)
-               (format t  "[~a] 0x~x 0x~x ~40a ~a~%"
-                       num
-                       lib-offset
-                       (core:pointer-integer in-call-address)
-                       (core::backtrace-frame-print-name frame)
-                       atos)))))
-
-(export 'source-info-backtrace)
-
