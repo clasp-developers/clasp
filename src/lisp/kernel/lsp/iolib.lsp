@@ -292,7 +292,7 @@ the one used internally by ECL compiled files."
 
 (defun ext:load-encoding (name)
   #-unicode
-  (warn "EXT:LOAD-ENCODING not available when ECL is built without support for Unicode")
+  (warn "EXT:LOAD-ENCODING not available when clasp is built without support for Unicode")
   #+unicode
   (let ((filename (make-pathname :name (symbol-name name) :defaults "sys:encodings;")))
     (cond ((probe-file filename)
@@ -316,7 +316,7 @@ the one used internally by ECL compiled files."
     ((symbolp mapping)
      (let ((var (intern (symbol-name mapping) (find-package "EXT"))))
        (unless (boundp var)
-         (setf (symbol-value var) (ext::make-encoding (ext:load-encoding mapping))))
+         (setf (symbol-value var) (ext:make-encoding (ext:load-encoding mapping))))
        (symbol-value var)))
     ((consp mapping)
      (let ((output (make-hash-table :size 512 :test 'eq)))
