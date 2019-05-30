@@ -46,6 +46,7 @@ THE SOFTWARE.
 //#define DEBUG_LEVEL_FULL
 #include <stdio.h>
 #include <fcntl.h>
+#include <unistd.h>
 #include <sys/stat.h>
 #include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
@@ -6137,12 +6138,15 @@ CL_DEFUN T_mv core__read_fd(int filedes, SimpleBaseString_sp buffer) {
   char c;
   size_t buffer_length = cl__length(buffer);
   unsigned char* buffer_data = &(*buffer)[0];
-  int num = read(filedes,buffer_data,buffer_length);
-  int error = 0;
-  if (num<0) {
-    return Values(make_fixnum(num),make_fixnum(errno));
+  while (1) {
+    int num = read(filedes,buffer_data,buffer_length);
+    if (!(num<0 && errno==EINTR)) {
+      if (num<0) {
+        return Values(make_fixnum(num),make_fixnum(errno));
+      }
+      return Values(make_fixnum(num),_Nil<T_O>());
+    }
   }
-  return Values(make_fixnum(num),_Nil<T_O>());
 };
 
 
@@ -6155,6 +6159,25 @@ CL_DEFUN void core__fcntl_non_blocking(int filedes) {
 CL_DOCSTRING("Close the file descriptor");
 CL_DEFUN void core__close_fd(int filedes) {
   close(filedes);
+};
+
+SYMBOL_EXPORT_SC_(KeywordPkg,seek_set);
+SYMBOL_EXPORT_SC_(KeywordPkg,seek_cur);
+SYMBOL_EXPORT_SC_(KeywordPkg,seek_end);
+CL_DEFUN int64_t core__lseek(int fd, int64_t offset, Symbol_sp whence)
+{
+  int iwhence;
+  if (whence==kw::_sym_seek_set) {
+    iwhence = SEEK_SET;
+  } else if (whence == kw::_sym_seek_cur) {
+    iwhence = SEEK_CUR;
+  } else if (whence == kw::_sym_seek_end) {
+    iwhence = SEEK_END;
+  } else {
+    SIMPLE_ERROR(BF("whence must be one of :seek-set, :seek-cur, :seek-end - it was %s") % _rep_(whence));
+  }
+  size_t off = lseek(fd,offset,iwhence);
+  return off;
 };
 
 };

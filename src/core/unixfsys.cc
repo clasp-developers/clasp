@@ -210,6 +210,36 @@ CL_DEFUN T_mv core__fork(bool bReturnStream) {
 };
 
 
+CL_LAMBDA(stdout-fd stderr-fd);
+CL_DECLARE();
+CL_DOCSTRING("fork-redirect");
+CL_DEFUN T_mv core__fork_redirect(int stdout_fd, int stderr_fd) {
+  pid_t child_PID = fork();
+  if (child_PID >= 0) {
+    if (child_PID == 0) {
+      // Child
+      if (stdout_fd!= STDOUT_FILENO) {
+        while ((dup2(stdout_fd,STDOUT_FILENO) == -1) && (errno == EINTR)) {}
+        close(stdout_fd);
+      }
+      if (stderr_fd!= STDERR_FILENO) {
+        while ((dup2(stderr_fd,STDERR_FILENO) == -1) && (errno == EINTR)) {}
+        close(stderr_fd);
+      }
+      int flags = fcntl(STDOUT_FILENO,F_GETFL,0);
+      fcntl(STDOUT_FILENO,F_SETFL,flags|FD_CLOEXEC);
+      flags = fcntl(STDERR_FILENO,F_GETFL,0);
+      fcntl(STDERR_FILENO,F_SETFL,flags|FD_CLOEXEC);
+      return Values(_Nil<T_O>(),make_fixnum(child_PID));
+    } else {
+      // Parent
+      return Values(_Nil<T_O>(),clasp_make_fixnum(child_PID));
+    }
+  }
+  return Values(clasp_make_fixnum(-1), SimpleBaseString_O::make(std::strerror(errno)));
+};
+
+
 CL_DOCSTRING(R"(wait - see unix wait - returns (values pid status).
 The status can be passed to //core:wifexited// and //core:wifsignaled//. )");
 CL_DEFUN T_mv core__wait() {
@@ -1275,6 +1305,33 @@ CL_DEFUN T_sp core__mkstemp(String_sp thetemplate) {
     output = cl__truename(SimpleBaseString_O::make(outname));
   }
   return output;
+}
+
+CL_LAMBDA(template);
+CL_DECLARE();
+CL_DOCSTRING("mkstemp-fd - return a file descriptor");
+CL_DEFUN T_sp core__mkstemp_fd(String_sp thetemplate) {
+  //  cl_index l;
+  int fd;
+  ASSERT(cl__stringp(thetemplate));
+  if (thetemplate.nilp()) SIMPLE_ERROR(BF("In %s the template is NIL") % __FUNCTION__);
+  thetemplate = core__coerce_to_filename(thetemplate);
+  stringstream outss;
+  outss << thetemplate->get();
+  outss << "XXXXXX";
+  string outname = outss.str();
+  std::vector<char> dst_path(outname.begin(), outname.end());
+  dst_path.push_back('\0');
+  clasp_disable_interrupts();
+  fd = mkstemp(&dst_path[0]);
+  outname.assign(dst_path.begin(), dst_path.end() - 1);
+  clasp_enable_interrupts();
+  T_sp output;
+  if (fd < 0) {
+    output = _Nil<T_O>();
+  }
+  unlink(outname.c_str());
+  return make_fixnum(fd);
 }
 
  CL_LAMBDA(template);
