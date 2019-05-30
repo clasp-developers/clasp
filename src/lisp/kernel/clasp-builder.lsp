@@ -386,6 +386,7 @@ Return files."
         (job-counter 0)
         (batch-size 0)
         (child-count 0)
+        child-died
         (jobs (make-hash-table :test #'eql)))
     (labels ((entry-position (entry)
                (let ((pos (gethash (entry-filename entry) file-order)))
