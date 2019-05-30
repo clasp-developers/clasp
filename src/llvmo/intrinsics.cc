@@ -265,7 +265,7 @@ ALWAYS_INLINE void setParentOfActivationFrame(core::T_O *resultP, core::T_O *par
 ALWAYS_INLINE core::T_O *cc_stack_enclose(void* closure_address,
                                           fnLispCallingConvention llvm_func,
                                           core::FunctionDescription* functionDescription,
-                                          std::size_t numCells, ...)
+                                          std::size_t numCells)
 {NO_UNWIND_BEGIN();
   ASSERT(((uintptr_t)(closure_address)&0x7)==0); //
   gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(closure_address);
@@ -286,16 +286,6 @@ ALWAYS_INLINE core::T_O *cc_stack_enclose(void* closure_address,
                                                                            core::ClosureWithSlots_O::cclaspClosure);
 
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid = gctools::smart_ptr<core::ClosureWithSlots_O>(obj);
-  core::T_O *p;
-  va_list argp;
-  va_start(argp, numCells);
-  int idx = 0;
-  for (; numCells; --numCells) {
-    p = ENSURE_VALID_OBJECT(va_arg(argp, core::T_O *));
-    (*functoid)[idx] = gctools::smart_ptr<core::T_O>((gc::Tagged)p);
-    ++idx;
-  }
-  va_end(argp);
 //  printf("%s:%d  Allocating closure on stack at %p  stack_closure_p()->%d\n", __FILE__, __LINE__, functoid.raw_(), functoid->stack_closure_p());
   return functoid.raw_();
   NO_UNWIND_END();
