@@ -79,24 +79,6 @@
 	Evaluate form in single step mode.  While stepping, a new break~@
 	level is invoked before every evaluation.  Extra commands are~@
 	available at this time to control stepping and form evaluation.~%")
-     ((:tr :trace) tpl-trace-command nil
-      ":tr(ace)	Trace function"
-      ":trace &rest functions				[Top level command]~@
-	:tr &rest functions				[Abbreviation]~@
-	~@
-	Trace specified functions.  With no arguments, show currently~@
-	traced functions.~@
-	~@
-	See also: :untrace.~%")
-     ((:untr :untrace) tpl-untrace-command nil
-      ":untr(ace)	Untrace function"
-      ":untrace &rest functions			[Top level command]~@
-	:untr &rest functions				[Abbreviation]~@
-	~@
-	Untrace specified functions.  With no arguments, untrace~@
-	all functions.~@
-	~@
-	See also: :trace.~%")
      ((:pwd :print-working-directory) tpl-default-pathname-defaults-command nil
       ":pwd	Print the current value of *default-pathname-defaults*"
       "See also: :cd.~%")
@@ -833,68 +815,6 @@ Use special code 0 to cancel this operation.")
         nil
         env)))
 
-#+(or)
-(defun ihs-environment (ihs-index)
-  (labels ((newly-bound-special-variables (bds-min bds-max)
-             (loop for i from bds-min to bds-max
-                for variable = (bds-var i)
-                unless (member variable output :test #'eq)
-                collect variable into output
-                finally (return output)))
-           (special-variables-alist (ihs-index)
-             (let ((top (ihs-top)))
-               (unless (> ihs-index top)
-                 (let* ((bds-min (1+ (ihs-bds ihs-index)))
-                        (bds-top (bds-top))
-                        (bds-max (if (= ihs-index top)
-                                     bds-top
-                                     (ihs-bds (1+ ihs-index))))
-                        (variables (newly-bound-special-variables bds-min bds-max)))
-                   (loop with output = '()
-                      for i from (1+ bds-max) to bds-top
-                      for var = (bds-var i)
-                      when (member var variables :test #'eq)
-                      do (setf variables (delete var variables)
-                               output (acons var (bds-val i) output))
-                      finally (return
-                                (append (loop for v in variables
-                                           collect (cons v (symbol-value v)))
-                                        output)))))))
-           (extract-restarts (variables-alist)
-             (let ((record (assoc '*restart-clusters* variables-alist)))
-               (if record
-                   (let* ((bindings (cdr record))
-                          (new-bindings (first bindings)))
-                     (values (delete record variables-alist) new-bindings))
-                   (values variables-alist nil)))))
-    (let* ((functions '())
-           (blocks '())
-           (local-variables '())
-           (special-variables '())
-           (restarts '())
-	   record0 record1)
-      (dolist (record (decode-ihs-env (ihs-env ihs-index)))
-        (cond ((atom record)
-               (push (ext:compiled-function-name record) functions))
-              ((progn
-                 (setf record0 (car record) record1 (cdr record))
-                 (when (stringp record0)
-                   (setf record0
-                         (let ((*package* (find-package "KEYWORD")))
-                           (with-standard-io-syntax
-                             (read-from-string record0)))))
-                 (or (symbolp record0) (stringp record0)))
-               (setq local-variables (acons record0 record1 local-variables)))
-              ((symbolp record1)
-               (push record1 blocks))
-              (t
-               )))
-      (multiple-value-bind (special-variables restarts)
-          (extract-restarts (special-variables-alist ihs-index))
-        (values (nreverse local-variables)
-                special-variables
-                functions blocks restarts)))))
-
 (defun tpl-print-variables (prefix variables no-values)
   ;; This format is what was in the orignal code.
   ;; It simply does not work when no-values is t.
@@ -934,43 +854,12 @@ Use special code 0 to cancel this operation.")
       (let ((val (cdr val-pair)))
 	(inspect val)))))
 
-#+(or)
-(defun tpl-bds-command (&optional var)
-  (if var
-    (do ((bi (1+ (frs-bds (max 0 (1- *frs-base*)))) (1+ bi))
-	 (last (frs-bds (1+ *frs-top*))))
-	((> bi last)
-	 (format t "Variable not found.~%")
-	 (values))
-      (when (eq (bds-var bi) var)
-	(return (let ((val (bds-val bi)))
-		  (if (eq val (core:unbound)) "<unbound value>" val)))))
-    (do ((bi (1+ (frs-bds (max 0 (1- *frs-base*)))) (1+ bi))
-	 (last (frs-bds (1+ *frs-top*)))
-	 (fi *frs-base*)
-	 (*print-level* 2)
-	 (*print-length* 4)
-	 (*print-pretty* t))
-	((> bi last) (values))
-      (do ()
-	  ((or (> fi *frs-top*) (>= (frs-bds fi) bi)))
-	(print-frs fi)
-	(incf fi))
-      (format t "BDS[~d]: ~s = ~s~%"
-	      bi (bds-var bi)
-	      (let ((val (bds-val bi)))
-		(if (eq val (core:unbound)) "<unbound value>" val))))))
-
 (defun clasp-backtrace (&optional (n 99999999))
   (core:btcl))
 
 (defun tpl-backtrace (&optional n)
   (core:dump-backtrace *backtrace*)
   (values))
-
-#+(or)
-(defun tpl-frs-command (&optional n)
-  (format *debug-io* "tpl-frs-command   ignored~%"))
 
 (defun frs-bds (&rest args)
   (error "This function frs-bds does nothing ~a" args))
@@ -1101,13 +990,6 @@ Use special code 0 to cancel this operation.")
 
 (defun tpl-step-command (&optional form)
   (when form (step* form)))
-
-(defun tpl-trace-command (&rest functions)
-  (trace* functions))
-
-(defun tpl-untrace-command (&rest functions)
-  (untrace* functions))
-
 
 (defun tpl-default-pathname-defaults-command ()
   (print *default-pathname-defaults*))
@@ -1353,24 +1235,3 @@ package."
 (eval-when (:execute :load-toplevel)
   (when (null (core:is-interactive-lisp))
     (setq ext:*invoke-debugger-hook* 'debugger-disabled-hook)))
-
-(defun safe-eval (form env &optional (err-value nil err-value-p))
-  "Args: (FORM ENV &optional ERR-VALUE)
-Evaluates FORM in the given environment, which may be NIL. If the form
-signals an error, or tries to jump to an outer point, the function has two
-choices: by default, it will invoke a debugger, but if a third value is
-supplied, then SAFE-EVAL will not use a debugger but rather return that
-value."
-  (let ((output nil) (ok nil))
-    (unwind-protect
-         (handler-bind ((serious-condition
-                         (if err-value-p
-                             #'(lambda (condition)
-				 (declare (ignore condition))
-                                 (return-from safe-eval err-value))
-                             #'invoke-debugger)))
-           (setf output
-                 (funcall core:*eval-with-env-hook* form env)
-                 ok t))
-      (return-from safe-eval (if ok output err-value)))))
-
