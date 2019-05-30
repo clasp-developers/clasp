@@ -47,19 +47,22 @@
 (define-condition compiler-condition (condition)
   ((%origin :reader compiler-condition-origin :initarg :origin)))
 
-(define-condition undefined-variable-warning
-    (warning compiler-condition)
-  ((%name :reader compiler-warning-name :initarg :name))
+;;; Abstract
+(define-condition undefined-warning (compiler-condition)
+  ((%name :reader undefined-warning-name :initarg :name)
+   (%kind :reader undefined-warning-kind :allocation :class))
   (:report (lambda (condition stream)
-             (format stream "Undefined variable ~a"
-                     (compiler-warning-name condition)))))
+             (format stream "Undefined ~(~a~) ~a"
+                     (undefined-warning-kind condition)
+                     (undefined-warning-name condition)))))
+
+(define-condition undefined-variable-warning
+    (warning undefined-warning)
+  ((%kind :initform 'variable)))
 
 (define-condition undefined-function-warning
-    (style-warning compiler-condition)
-  ((%name :reader compiler-warning-name :initarg :name))
-  (:report (lambda (condition stream)
-             (format stream "Undefined function ~a"
-                     (compiler-warning-name condition)))))
+    (style-warning undefined-warning)
+  ((%kind :initform 'function)))
 
 (define-condition redefined-function-warning
     (warning compiler-condition)
