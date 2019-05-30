@@ -767,8 +767,7 @@ This works like compile-lambda-function in bclasp."
                                  ("CR"     . #.(code-char 13))
                                  ("SUB"    . #.(code-char 26))
                                  ("ESCAPE" . #.(code-char 27))
-                                 ("DEL"    . #.(code-char 127))
-                                 ("RUBOUT" . #.(code-char 127)))
+                                 ("DEL"    . #.(code-char 127)))
                                :test 'equal))
 
 (defun simple-unicode-name (name)
