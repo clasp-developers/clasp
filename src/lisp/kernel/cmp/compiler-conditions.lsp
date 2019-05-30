@@ -15,8 +15,6 @@
 (defgeneric compiler-condition-origin (condition)
   (:method (condition) nil))
 
-(export '(deencapsulate-compiler-condition compiler-condition-origin))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Condition classes.
@@ -41,8 +39,6 @@
                      (compiled-program-error-form condition)
                      (compiled-program-error-original-condition condition)))))
 
-(export '(compiled-program-error))
-
 ;;; Abstract class.
 (define-condition compiler-condition (condition)
   ((%origin :reader compiler-condition-origin :initarg :origin)))
@@ -64,6 +60,10 @@
     (style-warning undefined-warning)
   ((%kind :initform 'function)))
 
+(define-condition undefined-type-warning
+    (style-warning undefined-warning)
+  ((%kind :initform 'type)))
+
 (define-condition redefined-function-warning
     (warning compiler-condition)
   ((%name :reader compiler-warning-name :initarg :name)
@@ -82,9 +82,6 @@
                (source-pos-info-lineno origin)
                (source-pos-info-column origin))))))
 
-(export '(compiler-condition undefined-variable-warning
-          undefined-function-warning redefined-function-warning))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Redefining some earlier error-noting calls, so that they
@@ -102,6 +99,13 @@
 (defun warn-undefined-global-variable (origin name)
   (warn 'undefined-variable-warning
         :name name
+        :origin origin))
+
+;;; This condition is signaled from compiler macros, and Cleavir will
+;;; encapsulate it in a condition with better source info.
+(defun warn-undefined-type (origin type)
+  (warn 'undefined-type-warning
+        :name type
         :origin origin))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

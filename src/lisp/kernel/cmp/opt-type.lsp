@@ -331,6 +331,8 @@
             `(subclassp (class-of ,object) ,type))
            ;; We know nothing.
            (t
+            ;; NOTE: In cclasp cleavir will wrap this with better source info.
+            (cmp:warn-undefined-type (ext:current-source-location) type)
             whole)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -97,6 +97,9 @@
 (defun warn-undefined-global-variable (spi var)
   (compiler-warn spi "Undefined variable %s" var))
 
+(defun warn-undefined-type (spi type)
+  (compiler-style-warn spi "Undefined type %s" type))
+
 (defun compiler-style-warn (spi datum &rest args)
   (setf *warnings-p* t)
   (let* ((cspi (or spi (ext:current-source-location)))
