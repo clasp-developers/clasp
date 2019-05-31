@@ -136,7 +136,9 @@
   (let ((type (ext:constant-form-value type env)))
     (multiple-value-bind (element-type length success)
         (si::closest-sequence-type type)
-      (cond ((not success) form) ; give up for runtime error or unknown; we could warn too?
+      (cond ((not success) ; give up for runtime error or unknown, and warn
+             (cmp:warn-undefined-type nil type)
+             form)
             ((eq element-type 'list)
              (if (eq length '*)
                      (let ((ss (gensym "SIZE")))
@@ -153,10 +155,10 @@
                           (si::error-sequence-length ,r ',type ,ss))))))
             (t (let ((r (gensym "RESULT")) (ss (gensym "SIZE")))
                  `(let* ((,ss ,size)
-                             ;;; negative size will crash sys:make-vector
-                             (,r (if (< ,ss 0)
-                                     (error 'type-error :datum ,ss :expected-type '(integer 0 *))
-                                     (sys:make-vector ',(if (eq element-type '*) t element-type)
+                         ;; negative size will crash sys:make-vector
+                         (,r (if (< ,ss 0)
+                                 (error 'type-error :datum ,ss :expected-type '(integer 0 *))
+                                 (sys:make-vector ',(if (eq element-type '*) t element-type)
                                                   ,ss nil nil nil 0))))
                     ,@(when iesp
                         `((si::fill-array-with-elt ,r ,initial-element 0 nil)))

@@ -94,11 +94,21 @@
                                      :source-pos-info cspi)))
     (push err *compilation-messages*)))
 
+;;; We redefine all these warn-specific-thing functions later to signal actual
+;;; conditions using actual format strings.
+
 (defun warn-undefined-global-variable (spi var)
   (compiler-warn spi "Undefined variable %s" var))
 
 (defun warn-undefined-type (spi type)
   (compiler-style-warn spi "Undefined type %s" type))
+
+(defun warn-invalid-number-type (spi type)
+  (compiler-warn spi "Invalid number type: %s" type))
+
+(defun warn-icsp-iesp-both-specified (spi)
+  (compiler-warn
+   spi ":initial-contents and :initial-element both specified"))
 
 (defun compiler-style-warn (spi datum &rest args)
   (setf *warnings-p* t)

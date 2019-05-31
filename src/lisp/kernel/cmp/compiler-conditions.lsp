@@ -82,6 +82,10 @@
                (source-pos-info-lineno origin)
                (source-pos-info-column origin))))))
 
+(define-condition simple-compiler-warning
+    (simple-warning compiler-condition)
+  ())
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Redefining some earlier error-noting calls, so that they
@@ -107,6 +111,18 @@
   (warn 'undefined-type-warning
         :name type
         :origin origin))
+
+(defun warn-invalid-number-type (origin type)
+  (warn 'simple-compiler-warning
+        :origin origin
+        :format-control "Invalid number type: ~s"
+        :format-arguments (list type)))
+
+(defun warn-icsp-iesp-both-specified (origin)
+  (warn 'simple-compiler-warning
+        :origin origin
+        :format-control ":initial-contents and :initial-element both specified"
+        :format-arguments nil))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

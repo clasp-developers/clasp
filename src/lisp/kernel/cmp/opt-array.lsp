@@ -33,43 +33,48 @@
                                           (displaced-to nil dp) (displaced-index-offset 0 diop)
                                           &environment env)
   (if (constantp element-type env)
-      (multiple-value-bind (make-sv make-smdarray)
-          (uaet-info (upgraded-array-element-type (ext:constant-form-value element-type env) env))
-        (cond ((null make-sv) form) ; unknown UAET; fall back
-              ((or (or ap fp dp diop) ; complex array; for now punt, could be more specific later
-                   (and iesp icsp)) ; error; let the full function handle it. could warn
-               form)
-              ((constantp dimensions env)
-               ;; do constant dimensions ahead of time
-               ;; FIXME: ideally this clause wouldn't exist, and constant propagation/types
-               ;; would fix it from the next clause. probably.
-               (let* ((dimensions (ext:constant-form-value dimensions env))
-                      (form
-                        (typecase dimensions
-                          (ext:array-index
-                           `(,make-sv ,dimensions ,initial-element ,iesp))
-                          ((cons ext:array-index null)
-                           `(,make-sv ,(car dimensions) ,initial-element ,iesp))
-                          (list
-                           `(,make-smdarray ',dimensions ,initial-element ,iesp))
-                          (t ; type error, but let the full function handle it. could warn
-                           form))))
-                 (if icsp
-                     `(core::fill-array-with-seq ,form ,initial-contents)
-                     form)))
-              (t (let* ((dimsym (gensym "DIMENSIONS"))
-                        (iesym (gensym "INITIAL-ELEMENT"))
+      (let ((et (ext:constant-form-value element-type env)))
+        (multiple-value-bind (make-sv make-smdarray)
+            (uaet-info (upgraded-array-element-type et env))
+          (cond ((null make-sv) ; unknown UAET; fall back
+                 (cmp:warn-undefined-type nil et)
+                 form)
+                ((or ap fp dp diop) ; complex array; for now punt, could be more specific later
+                 form)
+                ((and iesp icsp) ; error; let the full function handle it and warn.
+                 (cmp:warn-icsp-iesp-both-specified nil)
+                 form)
+                ((constantp dimensions env)
+                 ;; do constant dimensions ahead of time
+                 ;; FIXME: ideally this clause wouldn't exist, and constant propagation/types
+                 ;; would fix it from the next clause. probably.
+                 (let* ((dimensions (ext:constant-form-value dimensions env))
                         (form
-                          `(let ((,dimsym ,dimensions) (,iesym ,initial-element))
-                             (etypecase ,dimsym
-                               ;; vectors are (probably) most common; check that first.
-                               (ext:array-index
-                                (,make-sv ,dimsym ,iesym ,iesp))
-                               ((cons ext:array-index null)
-                                (,make-sv (car ,dimsym) ,iesym ,iesp))
-                               (list
-                                (,make-smdarray ,dimsym ,iesym ,iesp))))))
+                          (typecase dimensions
+                            (ext:array-index
+                             `(,make-sv ,dimensions ,initial-element ,iesp))
+                            ((cons ext:array-index null)
+                             `(,make-sv ,(car dimensions) ,initial-element ,iesp))
+                            (list
+                             `(,make-smdarray ',dimensions ,initial-element ,iesp))
+                            (t ; type error, but let the full function handle it. FIXME: warn
+                             form))))
                    (if icsp
                        `(core::fill-array-with-seq ,form ,initial-contents)
-                       form)))))
+                       form)))
+                (t (let* ((dimsym (gensym "DIMENSIONS"))
+                          (iesym (gensym "INITIAL-ELEMENT"))
+                          (form
+                            `(let ((,dimsym ,dimensions) (,iesym ,initial-element))
+                               (etypecase ,dimsym
+                                 ;; vectors are (probably) most common; check that first.
+                                 (ext:array-index
+                                  (,make-sv ,dimsym ,iesym ,iesp))
+                                 ((cons ext:array-index null)
+                                  (,make-sv (car ,dimsym) ,iesym ,iesp))
+                                 (list
+                                  (,make-smdarray ,dimsym ,iesym ,iesp))))))
+                     (if icsp
+                         `(core::fill-array-with-seq ,form ,initial-contents)
+                         form))))))
       form))
