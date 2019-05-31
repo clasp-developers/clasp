@@ -1,10 +1,15 @@
 (in-package :clasp-cleavir)
 
+(defun proclaim-ftype (type fnames)
+  (loop for fname in fnames
+        do (setf (global-ftype fname) type)))
+
 (defun proclaim-hook (decl)
   (let ((head (car decl)))
     (cond
       ((eq head 'cl:ftype)
-       #+verbose-compiler(warn "*** Do something with proclaim ftype ~s~%" decl))
+       (destructuring-bind (type &rest fnames) (cdr decl)
+         (proclaim-ftype type fnames)))
       ((eq head 'cl:optimize)
        (setf *global-optimize*
              (cleavir-policy:normalize-optimize
