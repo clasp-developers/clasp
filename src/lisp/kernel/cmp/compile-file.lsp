@@ -266,7 +266,6 @@ Compile a lisp source file into an LLVM module."
                               (print *compile-print*)
                               (optimize t)
                               (optimize-level *optimization-level*)
-                              (system-p nil system-p-p)
                               (external-format :default)
                               ;; If we are spoofing the source-file system to treat given-input-name
                               ;; as a part of another file then use source-debug-pathname to provide the
@@ -288,7 +287,6 @@ Compile a lisp source file into an LLVM module."
                               environment)
   "See CLHS compile-file."
   #+debug-monitor(sys:monitor-message "compile-file ~a" input-file)
-  (if system-p-p (error "I don't support system-p keyword argument - use output-type"))
   (if (not output-file-p) (setq output-file (cfp-output-file-default input-file output-type)))
   (with-compiler-env ()
     ;; Do the different kind of compile-file here
