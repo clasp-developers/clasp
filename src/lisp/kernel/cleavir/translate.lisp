@@ -25,42 +25,6 @@ when this is t a lot of graphs will be generated.")
 (defun origin-spi (origin)
   (if (consp origin) (car origin) origin))
 
-(defun set-instruction-source-position (origin function-metadata)
-  (when cmp:*dbg-generate-dwarf*
-    (if origin
-        (let ((source-pos-info (if (consp origin) (car origin) origin)))
-          (cmp:dbg-set-irbuilder-source-location-impl
-           cmp:*irbuilder*
-           (core:source-pos-info-lineno source-pos-info)
-           (1+ (core:source-pos-info-column source-pos-info))
-           function-metadata))
-        (cmp:dbg-clear-irbuilder-source-location-impl cmp:*irbuilder*))))
-
-
-(defvar *current-source-position* nil)
-(defvar *current-function-metadata* nil)
-
-(defun do-debug-info-source-position (enabledp origin function-metadata body-lambda)
-  (if (and enabledp (null origin))
-      (funcall body-lambda)
-      (unwind-protect
-           (let ((*current-source-position* origin)
-                 (*current-function-metadata* function-metadata))
-             (set-instruction-source-position origin function-metadata)
-             (funcall body-lambda))
-        (set-instruction-source-position *current-source-position* *current-function-metadata*))))
-
-(defmacro with-debug-info-source-position ((origin function-metadata) &body body)
-  `(do-debug-info-source-position t ,origin ,function-metadata (lambda () ,@body)))
-
-(defmacro with-debug-info-disabled ((metadata) &body body)
-  `(with-debug-info-source-position ((ensure-origin nil 999998) ,metadata)
-     ,@body))
-
-#+(or)
-(defmacro with-debug-info-disabled (&body body)
-  `(do-debug-info-source-position nil nil nil (lambda () ,@body)))
-
 ;;;
 ;;; the first argument to this function is an instruction that has a
 ;;; single successor.  whether a go is required at the end of this
@@ -79,7 +43,7 @@ when this is t a lot of graphs will be generated.")
                  (ssablep (first (cleavir-ir:inputs instruction)))
                  (ssablep (first (cleavir-ir:outputs instruction))))
         (format *error-output* "   but it doesn't matter because both input and output are ssablep~%")))
-    (with-debug-info-source-position ((ensure-origin origin 999993) (metadata current-function-info))
+    (cmp:with-debug-info-source-position ((ensure-origin origin 999993))
       (call-next-method))))
 
 (defgeneric translate-branch-instruction
@@ -90,7 +54,7 @@ when this is t a lot of graphs will be generated.")
   (let ((origin (cleavir-ir:origin instruction)))
     (when (and *trap-null-origin* (null (cleavir-ir:origin instruction)))
       (format *error-output* "Instruction with nil origin: ~a  origin: ~a~%" instruction (cleavir-ir:origin instruction)))
-    (with-debug-info-source-position ((ensure-origin origin 9995) (metadata current-function-info))
+    (cmp:with-debug-info-source-position ((ensure-origin origin 9995))
       (call-next-method))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -199,7 +163,7 @@ when this is t a lot of graphs will be generated.")
                         ;; one successor: we have to do branching ourselves.
                         (translate-simple-instruction
                          instruction return-value abi current-function-info)
-                        (with-debug-info-source-position ((ensure-origin (cleavir-ir:origin instruction) 999981) (metadata current-function-info))
+                        (cmp:with-debug-info-source-position ((ensure-origin (cleavir-ir:origin instruction) 999981))
                           (cmp:irc-br (first successor-tags))))
                        (t ; 0 or 2 or more successors: it handles branching.
                         (translate-branch-instruction
@@ -243,7 +207,7 @@ when this is t a lot of graphs will be generated.")
       (with-return-values (return-value abi nret ret-regs)
         (cmp:irc-store (%size_t 0) nret))
       (cmp:with-irbuilder (body-irbuilder)
-        (with-debug-info-source-position ((ensure-origin (cleavir-ir:origin initial-instruction) 999970) cmp:*dbg-current-function-metadata*)
+        (cmp:with-debug-info-source-position ((ensure-origin (cleavir-ir:origin initial-instruction) 999970) )
           (cmp:with-dbg-lexical-block
               (:lineno (core:source-pos-info-lineno (instruction-source-pos-info (cleavir-basic-blocks:first-instruction first-basic-block))))
             (cmp:irc-set-insert-point-basic-block body-block body-irbuilder)
@@ -252,12 +216,12 @@ when this is t a lot of graphs will be generated.")
               (layout-basic-block first-basic-block return-value abi function-info)
               (loop for block in rest-basic-blocks
                     for instruction = (cleavir-basic-blocks:first-instruction block)
-                    do (with-debug-info-source-position ((ensure-origin (cleavir-ir:origin instruction) 999983) cmp:*dbg-current-function-metadata*)
+                    do (cmp:with-debug-info-source-position ((ensure-origin (cleavir-ir:origin instruction) 999983))
                          (cmp:irc-begin-block (gethash instruction *tags*)))
                        (layout-basic-block block return-value abi function-info)))
             ;; finish up by jumping from the entry block to the body block
             (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
-              (with-debug-info-source-position ((ensure-origin (cleavir-ir:origin initial-instruction) 999985) cmp:*dbg-current-function-metadata*)
+              (cmp:with-debug-info-source-position ((ensure-origin (cleavir-ir:origin initial-instruction) 999985))
                 (cmp:irc-br body-block)))
             (cc-dbg-when *debug-log* (format *debug-log* "----------end layout-procedure ~a~%"
                                              (llvm-sys:get-name the-function)))
@@ -381,7 +345,7 @@ when this is t a lot of graphs will be generated.")
           ;; Generate code to get the arguments into registers.
           ;; (Actual lambda list stuff is covered by ENTER-INSTRUCTION.)
           (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
-            (with-debug-info-source-position ((ensure-origin (cleavir-ir:origin enter) 999980) (metadata function-info))
+            (cmp:with-debug-info-source-position ((ensure-origin (cleavir-ir:origin enter) 999980))
               (let* ((fn-args (llvm-sys:get-argument-list cmp:*current-function*))
                      (lambda-list (cleavir-ir:lambda-list enter))
                      (calling-convention

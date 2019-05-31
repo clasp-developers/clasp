@@ -1,6 +1,7 @@
 (in-package :cmp)
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (export '(
+            with-debug-info-source-position
             with-interpreter
             module-report
             *debug-link-options* ;; A list of strings to inject into link commands

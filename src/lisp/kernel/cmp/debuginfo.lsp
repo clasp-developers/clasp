@@ -30,6 +30,7 @@
 
 ;;; (defvar *dbg-generate-dwarf* t) <<--- defined in init.lsp
 (defvar *dbg-compile-unit* )
+(defvar *dbg-compile-unit-types*)
 (defvar *dbg-current-file* )
 (defvar *dbg-current-function-metadata*)
 (defvar *dbg-current-function-lineno*)
@@ -93,39 +94,45 @@
          (progn
            ,@body))))
 
+(defun setup-basic-dbg-types (types)
+  (setf (gethash :long-unsigned-int types)
+        (llvm-sys:create-basic-type "long unsigned int" 64 llvm-sys:+DW-ATE-unsigned+)))
+
+    
 (defmacro with-dbg-compile-unit ((source-pathname) &rest body)
   (let ((path (gensym))
-	(file (gensym))
-	(dir-name (gensym)))
+        (file (gensym))
+        (dir-name (gensym)))
     `(if (and *dbg-generate-dwarf* *the-module-dibuilder*)
-	 (progn
-	   (let* ((,path (pathname ,source-pathname))
-		  (,file *dbg-current-file*)
-		  (,dir-name (directory-namestring ,path))
-		  (*dbg-compile-unit* (llvm-sys:create-compile-unit
-				       *the-module-dibuilder* ; dibuilder
-				       llvm-sys:dw-lang-c-plus-plus ; 1 llvm-sys:dw-lang-common-lisp
-				       ,file   ; 2 file
-				       "clasp Common Lisp compiler" ; 4 producer
-				       nil  ; 5 isOptimized
-				       "-v" ; 6 compiler flags
-				       1    ; 7 RV run-time version
-				       "the-split-name.log" ; 8 splitname
+         (progn
+           (let* ((,path (pathname ,source-pathname))
+                  (,file *dbg-current-file*)
+                  (,dir-name (directory-namestring ,path))
+                  (*dbg-compile-unit* (llvm-sys:create-compile-unit
+                                       *the-module-dibuilder* ; dibuilder
+                                       llvm-sys:dw-lang-c-plus-plus ; 1 llvm-sys:dw-lang-common-lisp
+                                       ,file ; 2 file
+                                       "clasp Common Lisp compiler" ; 4 producer
+                                       nil  ; 5 isOptimized
+                                       "-v" ; 6 compiler flags
+                                       1    ; 7 RV run-time version
+                                       "the-split-name.log" ; 8 splitname
                                        :full-debug ; 9 DebugEmissionKind (:full-debug :line-tables-only)
-                                       0 ; 10 DWOld
-                                       t ; 11 SplitDebugInlining
+                                       0           ; 10 DWOld
+                                       t   ; 11 SplitDebugInlining
                                        nil ; 12 DebugInfoForProfiling
                                        nil ; 13 GnuPubnames
-				       )))
-	     (cmp-log "with-dbg-compile-unit *dbg-compile-unit*: %s%N" *dbg-compile-unit*)
-	     (cmp-log "with-dbg-compile-unit source-pathname: %s%N" ,source-pathname)
-	     (cmp-log "with-dbg-compile-unit file-name: [%s]%N" ,file)
-	     (cmp-log "with-dbg-compile-unit dir-name: [%s]%N" ,dir-name)
-	     ,@body
-	     ))
-	 (progn
-	   (cmp-log "with-dbg-compile-unit not generating *dbg-compile-unit*%N")
-	   ,@body))))
+                                       ))
+                  (*dbg-compile-unit-types* (make-hash-table)))
+             (cmp-log "with-dbg-compile-unit *dbg-compile-unit*: %s%N" *dbg-compile-unit*)
+             (cmp-log "with-dbg-compile-unit source-pathname: %s%N" ,source-pathname)
+             (cmp-log "with-dbg-compile-unit file-name: [%s]%N" ,file)
+             (cmp-log "with-dbg-compile-unit dir-name: [%s]%N" ,dir-name)
+             ,@body
+             ))
+         (progn
+           (cmp-log "with-dbg-compile-unit not generating *dbg-compile-unit*%N")
+           ,@body))))
 
 
 (namestring (make-pathname :directory (pathname-directory #P"a/b/c/d.txt")))
@@ -292,3 +299,32 @@
                                            
 (defvar *current-file-metadata-node* nil
   "Store the metadata node for the current source file info")
+
+
+(defvar *current-source-position* nil)
+(defvar *current-function-metadata* nil)
+
+(defun set-instruction-source-position (origin function-metadata)
+  (when *dbg-generate-dwarf*
+    (if origin
+        (let ((source-pos-info (if (consp origin) (car origin) origin)))
+          (dbg-set-irbuilder-source-location-impl
+           *irbuilder*
+           (core:source-pos-info-lineno source-pos-info)
+           (1+ (core:source-pos-info-column source-pos-info))
+           function-metadata))
+        (dbg-clear-irbuilder-source-location-impl *irbuilder*))))
+
+
+(defun do-debug-info-source-position (enabledp origin body-lambda)
+  (if (and enabledp (null origin))
+      (funcall body-lambda)
+      (unwind-protect
+           (let ((*current-source-position* origin))
+             (set-instruction-source-position origin *dbg-current-function-metadata*)
+             (funcall body-lambda))
+        (set-instruction-source-position *current-source-position* *dbg-current-function-metadata*))))
+
+(defmacro with-debug-info-source-position ((origin) &body body)
+  `(do-debug-info-source-position t ,origin (lambda () ,@body)))
+
