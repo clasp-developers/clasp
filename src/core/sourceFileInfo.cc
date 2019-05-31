@@ -299,6 +299,22 @@ SourcePosInfo_sp SourcePosInfo_O::make(const string& filename, size_t filepos, s
 }
 
 
+CL_DEFMETHOD SourcePosInfo_sp SourcePosInfo_O::source_pos_info_copy() const {
+  GC_COPY(SourcePosInfo_O, copy, *this);
+  return copy;
+}
+
+CL_DEFMETHOD T_sp SourcePosInfo_O::source_pos_info_inlined_at() const {
+  return this->_InlinedAt;
+}
+
+CL_DEFMETHOD T_sp SourcePosInfo_O::setf_source_pos_info_inlined_at(T_sp inlinedAt) {
+  this->_InlinedAt = inlinedAt;
+  return inlinedAt;
+}
+
+
+
 void SourcePosInfo_O::fields(Record_sp node)
 {
   node->field(INTERN_(kw,fp),this->_Filepos);
