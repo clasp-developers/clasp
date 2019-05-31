@@ -7,7 +7,7 @@
 
 (defparameter *number-of-jobs* 1)
 
-;;;#+(or)
+#+(or)
 (progn
   (defparameter *log* (open "/tmp/clasp-builder-log.txt" :direction :output :if-exists :supersede))
   (si:fset 'core::mmsg #'(lambda (whole env)
@@ -18,7 +18,7 @@
                                 (finish-output *log*))))
            t))
 
-#+(or)
+;;;#+(or)
 (si:fset 'core::mmsg #'(lambda (whole env)
                          nil)
          t)
