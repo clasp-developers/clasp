@@ -809,6 +809,9 @@ This works like compile-lambda-function in bclasp."
       (gethash name *additional-clasp-character-names*)
       (simple-unicode-name name)))
 
+(defmethod eclector.reader:make-structure-instance ((client clasp-cst-client) name initargs)
+  (core::make-structure name initargs))
+
 (defun cclasp-loop-read-and-compile-file-forms (source-sin environment)
   (let ((eof-value (gensym))
         (eclector.reader:*client* *cst-client*)

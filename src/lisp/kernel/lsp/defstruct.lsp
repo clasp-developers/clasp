@@ -60,6 +60,18 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; Miscellaneous
+
+;;; Used by #S reader
+(defun make-structure (name initargs)
+  (unless (names-structure-p name) (error "~s is not a structure class." name))
+  (let ((constructor (structure-constructor name)))
+    (if constructor
+        (apply constructor initargs)
+        (error "The structure class ~s has no standard constructor." name))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; Delaying definitions
 ;;;
 ;;; A DEFSTRUCT can :include other structures not defined at compile time

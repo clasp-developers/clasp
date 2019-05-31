@@ -191,16 +191,9 @@ printed.  If FORMAT-STRING is NIL, however, no prompt will appear."
   (let ((l (read stream t nil t)))
     (when *read-suppress*
       (return-from sharp-s-reader nil))
-    (unless (names-structure-p (car l))
-            (error "~S is not a structure." (car l)))
     ;; Intern keywords in the keyword package.
     (do ((ll (cdr l) (cddr ll)))
-        ((endp ll)
-         ;; Do the construction.
-         (let ((constructor (structure-constructor (car l))))
-           (if constructor
-               (apply constructor (cdr l))
-               (error "The structure ~S has no standard constructor." (car l)))))
+        ((endp ll) (make-structure (car l) (cdr l)))
       (rplaca ll (intern (string (car ll)) 'keyword)))))
 
 (set-dispatch-macro-character #\# #\s 'sharp-s-reader)
