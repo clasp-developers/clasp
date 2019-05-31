@@ -351,7 +351,7 @@ void make_str_preserve_case(StrNs_sp sout, List_sp cur_char) {
 /*! Works like SACLA readtable::make-str but accumulates the characters
       into a stringstream */
 void make_str(StrNs_sp sout, List_sp cur_char) {
-  ReadTable_sp readtable = gc::As<ReadTable_sp>(cl::_sym_STARreadtableSTAR->symbolValue());
+  ReadTable_sp readtable = gc::As<ReadTable_sp>(_lisp->getCurrentReadTable());
   if (readtable->_Case == kw::_sym_invert) {
     UnEscapedCase strcase = check_case(cur_char,undefined);
     switch (strcase) {
@@ -505,7 +505,7 @@ void token_downcase(Token& token, size_t start, size_t end) {
 
 
 void apply_readtable_case(Token& token, size_t start, size_t end) {
-  ReadTable_sp readtable = gc::As<ReadTable_sp>(cl::_sym_STARreadtableSTAR->symbolValue());
+  ReadTable_sp readtable = gc::As<ReadTable_sp>(_lisp->getCurrentReadTable());
   if (readtable->_Case == kw::_sym_invert) {
     UnEscapedCase strcase = token_check_case(token,start,end);
     switch (strcase) {

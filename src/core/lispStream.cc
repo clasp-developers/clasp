@@ -5657,7 +5657,7 @@ CL_DEFUN T_sp cl__peek_char(T_sp peek_type, T_sp strm, T_sp eof_errorp, T_sp eof
   if (peek_type != _lisp->_true()) {
     SIMPLE_ERROR(BF("Illegal first argument for PEEK-CHAR %s") % _rep_(peek_type));
   } else {
-    T_sp readtable = cl::_sym_STARreadtableSTAR->symbolValue();
+    T_sp readtable = _lisp->getCurrentReadTable();
     while (1) {
       int c = clasp_peek_char(strm);
       if (c == EOF)

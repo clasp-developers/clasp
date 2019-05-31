@@ -96,7 +96,7 @@ CL_DECLARE();
 CL_DOCSTRING("getMacroCharacter");
 CL_DEFUN T_mv cl__get_macro_character(Character_sp chr, T_sp readtable) {
   if (readtable.nilp()) {
-    readtable = gc::As<ReadTable_sp>(cl::_sym_STARreadtableSTAR->symbolValue());
+    readtable = _lisp->getCurrentReadTable();
   }
   return gc::As<ReadTable_sp>(readtable)->get_macro_character(chr);
 };
@@ -347,7 +347,7 @@ CL_DEFUN T_mv core__dispatch_macro_character(T_sp sin, Character_sp ch) {
   if (sawnumarg)
     onumarg = make_fixnum(numarg);
   Character_sp subchar = gc::As<Character_sp>(cl__read_char(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true()));
-  T_sp macro_func = gc::As<ReadTable_sp>(cl::_sym_STARreadtableSTAR->symbolValue())->get_dispatch_macro_character(ch, subchar);
+  T_sp macro_func = gc::As<ReadTable_sp>(_lisp->getCurrentReadTable())->get_dispatch_macro_character(ch, subchar);
   if (macro_func.nilp()){
     //SIMPLE_ERROR(BF("Undefined reader macro for %s %s") % _rep_(ch) % _rep_(subchar));
     // Need to be a reader error
@@ -481,7 +481,7 @@ CL_DOCSTRING("sharp_asterisk");
 CL_DEFUN T_mv core__sharp_asterisk(T_sp sin, Character_sp ch, T_sp num) {
   int dimcount, dim = 0;
   stringstream pattern;
-  ReadTable_sp rtbl = gc::As<ReadTable_sp>(cl::_sym_STARreadtableSTAR->symbolValue());
+  ReadTable_sp rtbl = gc::As<ReadTable_sp>(_lisp->getCurrentReadTable());
   if (cl::_sym_STARread_suppressSTAR->symbolValue().isTrue()) {
     cl__read(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true());
     return Values(_Nil<T_O>());
