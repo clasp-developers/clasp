@@ -686,4 +686,32 @@ CL_DEFUN AtomicT_Holder_sp ext__make_atomic(T_sp value)
 }
 
 
+CL_DEFMETHOD T_sp AtomicFixnumHolder_O::atomic_fixnum_get() const {
+  T_sp value((gctools::Tagged)this->_Object.load());
+  return value;
+}
+
+CL_DEFMETHOD void AtomicFixnumHolder_O::atomic_fixnum_set_unsafe(T_sp val) {
+  ASSERT(val.fixnump());
+  this->_Object.store((Fixnum)val.raw_());
+}
+
+CL_LAMBDA((self core:atomic-fixnum-holder) &optional (increment 1));
+CL_DEFMETHOD void AtomicFixnumHolder_O::atomic_fixnum_incf_unsafe(T_sp increment) {
+  ASSERT(increment.fixnump());
+  this->_Object += (Fixnum)increment.raw_();
+};
+
+CL_LISPIFY_NAME(ext:make_atomic_fixnum);
+CL_LAMBDA(&optional (fixnum-value 0));
+CL_DEF_CLASS_METHOD AtomicFixnumHolder_sp AtomicFixnumHolder_O::make_atomic_fixnum(T_sp cl) {
+  if (cl.fixnump()) {
+    GC_ALLOCATE_VARIADIC(AtomicFixnumHolder_O,ch,(Fixnum)cl.raw_());
+    return ch;
+  }
+  SIMPLE_ERROR(BF("The argument %s must be a fixnum") % _rep_(cl));
+}
+
+  
+
 };
