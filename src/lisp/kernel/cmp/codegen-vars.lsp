@@ -164,14 +164,10 @@
     (multiple-value-bind (the-function primitive-info)
         (get-or-declare-function-or-error *the-module* "registerReference")
       (let ((the-function (get-or-declare-function-or-error *the-module* "registerReference"))
-            (ignore-ensure-frame-unique-id (get-or-declare-function-or-error *the-module* "ignore_ensureFrameUniqueId"))
             (orig-instr (lexical-variable-reference-instruction var-ref)))
         (llvm-sys:replace-call the-function
                                orig-instr
                                (list register))
-        #+debug-lexical-depth(llvm-sys:replace-call ignore-ensure-frame-unique-id
-                                                    (first ensure-frame-unique-id)
-                                                    nil)
         (cv-log "Finished replace call%N")))))
 
 (defun convert-instructions-to-use-registers (refs variable-map)
@@ -194,7 +190,6 @@
              (let* ((new-env (value-frame-maker-reference-new-env env-maker))
                     (new-renv (value-frame-maker-reference-new-renv env-maker))
                     (instr (value-frame-maker-reference-instruction env-maker))
-                    #+debug-lexical-depth (set-frame-unique-id (value-frame-maker-reference-set-frame-unique-id env-maker))
                     (closure-size (gethash new-env closure-environments)))
                (if closure-size
                    ;;rewrite the allocation to be the optimized size
@@ -205,16 +200,12 @@
                        (llvm-sys:replace-call the-function
                                               instr                                      
                                               (list (jit-constant-i64 closure-size) parent-renv))))
-                   (let ((the-function (get-or-declare-function-or-error *the-module* "invisible_makeValueFrameSetParent"))
-                         #+debug-lexical-depth(ignore-set-frame-unique-id (get-or-declare-function-or-error *the-module* "ignore_setFrameUniqueId")))
+                   (progn
                      (core:set-invisible new-env t)
                      (let* ((args (llvm-sys:call-or-invoke-get-argument-list instr))
                             (parent-renv (car (last args))))
-                       (llvm-sys:replace-call the-function instr (list parent-renv))
-                       #+debug-lexical-depth (funcall 'llvm-sys:replace-call
-                                                      ignore-set-frame-unique-id
-                                                      (car set-frame-unique-id)
-                                                      nil))))))
+                       (llvm-sys:replace-all-uses-with instr parent-renv)
+                       (llvm-sys:instruction-erase-from-parent instr))))))
            new-value-environment-instructions))
 
 (defun rewrite-lexical-variable-references-for-new-depth (variable-map instructions)
@@ -307,76 +298,62 @@
                                                               (third args)))))
         (cv-log "Done%N")))))
 
+
+
+(defvar *rewrite-blocks* t)
+
 (defstruct (track-rewrites (:type vector) :named)
   (total 0)
   (removed 0)
   (mutex (mp:make-lock :name 'rewrites)))
 
-(defvar *block-rewrite-counter* (make-track-rewrites)
-  "Keep track of block special operators that were seen and those that were rewritten to be removed")
-  
-(defvar *rewrite-blocks* t)
+
+(defparameter *use-null* nil)
+(defvar *block-rewrite-counter-total* (ext:make-atomic-fixnum 0))
+(defvar *block-rewrite-counter-removed* (ext:make-atomic-fixnum 0))
 (defun rewrite-blocks-with-no-return-froms (block-info)
   (when *rewrite-blocks*
-    (let ((ignore-make-block-frame-function (get-or-declare-function-or-error *the-module* "invisible_makeBlockFrameSetParent"))
-          (ignore-initialize-block-closure-function (get-or-declare-function-or-error *the-module* "ignore_initializeBlockClosure"))
-          #+debug-lexical-depth(ignore-set-frame-unique-id (get-or-declare-function-or-error *the-module* "ignore_setFrameUniqueId")))
-      (let ((total 0)
-            (removed 0))
-        (maphash (lambda (env block-info)
-                   (incf total)
-                   (unless (block-frame-info-needed block-info)
-                     (incf removed)
-                     (core:set-invisible (block-frame-info-block-environment block-info) t)
-                     (funcall 'llvm-sys:replace-call-keep-args ignore-make-block-frame-function
-                            (car (block-frame-info-make-block-frame-instruction block-info)))
-                     (funcall 'llvm-sys:replace-call-keep-args
-                            ignore-initialize-block-closure-function
-                            (car (block-frame-info-initialize-block-closure-instruction block-info)))
-                     #+debug-lexical-depth(funcall 'llvm-sys:replace-call
-                                                   ignore-set-frame-unique-id
-                                                   (car (block-frame-info-set-frame-unique-id block-info))
-                                                   nil)))
-                 block-info)
-        (unwind-protect
-             (progn
-               (mp:get-lock (track-rewrites-mutex *block-rewrite-counter*) nil)
-               (let ((total-sum (+ (track-rewrites-total *block-rewrite-counter*) total))
-                     (removed-sum (+ (track-rewrites-removed *block-rewrite-counter*) removed)))
-                 (setf (track-rewrites-total *block-rewrite-counter*) total-sum)
-                 (setf (track-rewrites-removed *block-rewrite-counter*) removed-sum)))
-          (mp:giveup-lock (track-rewrites-mutex *block-rewrite-counter*)))
-        (cv-log "Done%N")))))
+    (maphash (lambda (env block-info)
+               (core:atomic-fixnum-incf-unsafe *block-rewrite-counter-total*)
+               (unless (block-frame-info-needed block-info)
+                 (core:atomic-fixnum-incf-unsafe *block-rewrite-counter-removed*)
+                 (core:set-invisible (block-frame-info-block-environment block-info) t)
+                 (let ((ibc-call (car (block-frame-info-initialize-block-closure-instruction block-info))))
+                   (llvm-sys:replace-all-uses-with ibc-call (llvm-sys:constant-pointer-null-get %t*%))
+                   (llvm-sys:instruction-erase-from-parent ibc-call))
+                 (let* ((mbf-call (car (block-frame-info-make-block-frame-instruction block-info)))
+                        (mbf-arg0 (car (llvm-sys:call-or-invoke-get-argument-list mbf-call))))
+                   (llvm-sys:replace-all-uses-with mbf-call mbf-arg0)
+                   (llvm-sys:instruction-erase-from-parent mbf-call))))
+             block-info)
+    (cv-log "Done%N")))
+
+
+
 
 (defvar *tagbody-rewrite-counter* (make-track-rewrites)
   "Keep track of tagbody special operators that were seen and those that were rewritten to be removed")
   
 (defvar *rewrite-tagbody* t)
+(defvar *tagbody-rewrite-counter-total* (ext:make-atomic-fixnum 0))
+(defvar *tagbody-rewrite-counter-removed* (ext:make-atomic-fixnum 0))
+
 (defun rewrite-tagbody-with-no-go (tagbody-info)
   (when *rewrite-tagbody*
-    (let ((ignore-make-tagbody-frame-function (get-or-declare-function-or-error *the-module* "invisible_makeTagbodyFrameSetParent"))
-          (ignore-initialize-tagbody-closure-function (get-or-declare-function-or-error *the-module* "ignore_initializeTagbodyClosure")))
-      (let ((total 0)
-            (removed 0))
-        (maphash (lambda (env tagbody-info)
-                   (incf total)
-                   (unless (tagbody-frame-info-needed tagbody-info)
-                     (incf removed)
-                     (core:set-invisible (tagbody-frame-info-tagbody-environment tagbody-info) t)
-                     (funcall 'llvm-sys:replace-call-keep-args ignore-initialize-tagbody-closure-function
-                            (car (tagbody-frame-info-initialize-tagbody-closure tagbody-info)))
-                     (funcall 'llvm-sys:replace-call-keep-args ignore-make-tagbody-frame-function
-                              (car (tagbody-frame-info-make-tagbody-frame-instruction tagbody-info)))))
-                 tagbody-info)
-        (unwind-protect
-             (progn
-               (mp:get-lock (track-rewrites-mutex *tagbody-rewrite-counter*) nil)
-(let ((total-sum (+ (track-rewrites-total *tagbody-rewrite-counter*) total))
-                     (removed-sum (+ (track-rewrites-removed *tagbody-rewrite-counter*) removed)))
-                 (setf (track-rewrites-total *tagbody-rewrite-counter*) total-sum)
-                 (setf (track-rewrites-removed *tagbody-rewrite-counter*) removed-sum)))
-          (mp:giveup-lock (track-rewrites-mutex *tagbody-rewrite-counter*)))
-        (cv-log "Done%N")))))
+    (maphash (lambda (env tagbody-info)
+               (core:atomic-fixnum-incf-unsafe *tagbody-rewrite-counter-total*)
+               (unless (tagbody-frame-info-needed tagbody-info)
+                 (core:atomic-fixnum-incf-unsafe *tagbody-rewrite-counter-removed*)
+                 (core:set-invisible (tagbody-frame-info-tagbody-environment tagbody-info) t)
+                 (let ((itc (car (tagbody-frame-info-initialize-tagbody-closure tagbody-info))))
+                   (llvm-sys:replace-all-uses-with itc (llvm-sys:constant-pointer-null-get %t*%))
+                   (llvm-sys:instruction-erase-from-parent itc))
+                 (let* ((tfi (car (tagbody-frame-info-make-tagbody-frame-instruction tagbody-info)))
+                        (tfi-arg0 (car (llvm-sys:call-or-invoke-get-argument-list tfi))))
+                   (llvm-sys:replace-all-uses-with tfi tfi-arg0)
+                   (llvm-sys:instruction-erase-from-parent tfi))))
+             tagbody-info)
+    (cv-log "Done%N")))
 
 (defun rewrite-lexical-function-references-for-new-depth (lexical-function-references)
   (dolist (funcref lexical-function-references)

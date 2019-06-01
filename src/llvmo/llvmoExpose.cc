@@ -1674,9 +1674,11 @@ CL_DEFUN core::T_mv llvm_sys__getDebugLocInfo(Instruction_sp instr) {
   }
   return Values(_Nil<core::T_O>());
 }
-
-  CL_LISPIFY_NAME(eraseFromParent);
-  CL_EXTERN_DEFMETHOD(Instruction_O, & llvm::Instruction::eraseFromParent);
+CL_DOCSTRING("Erase the instruction from its parent basic block and return the next instruction or NIL");
+CL_DEFUN void llvm_sys__instruction_eraseFromParent(Instruction_sp instr)
+{
+  llvm::SymbolTableList<llvm::Instruction>::iterator next = instr->wrappedPtr()->eraseFromParent();
+}
 
 ;
 

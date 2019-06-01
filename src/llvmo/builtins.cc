@@ -138,30 +138,6 @@ BUILTIN_ATTRIBUTES void cc_simpleBitVectorAset(core::T_O* tarray, size_t index, 
   array->setBit(index, v);
 }
 
-BUILTIN_ATTRIBUTES core::T_O* invisible_makeValueFrameSetParent(core::T_O* parent) {
-  return parent;
-}
-
-BUILTIN_ATTRIBUTES core::T_O* invisible_makeBlockFrameSetParent(core::T_O* parent) {
-  return parent;
-}
-
-BUILTIN_ATTRIBUTES core::T_O* invisible_makeTagbodyFrameSetParent(core::T_O* parent) {
-  return parent;
-}
-
-#if 0
-BUILTIN_ATTRIBUTES core::T_O* invisible_makeValueFrameSetParentFromClosure(core::T_O* closureRaw) {
-  if (closureRaw!=NULL) {
-    core::Closure_O* closureP = reinterpret_cast<core::Closure_O*>(gc::untag_general<core::T_O*>(closureRaw));
-    core::T_sp activationFrame = closureP->closedEnvironment();
-    return activationFrame.raw_(); // >rawRef_() = closureRaw; //  = activationFrame;
-  } else {
-    return _Nil<core::T_O>().raw_();
-  }
-}
-#endif
-
 /*! Return i32 1 if (valP) is != nil 0 if it is */
 BUILTIN_ATTRIBUTES int isTrue(core::T_O* valP)
 {
@@ -233,38 +209,3 @@ BUILTIN_ATTRIBUTES core::T_O* bc_function_from_function_designator(core::T_O* fu
 };
 
 
-extern "C" {
-BUILTIN_ATTRIBUTES core::T_O* ignore_initializeBlockClosure( core::T_O** dummy)
-{
-// Do nothing but return NULL which will never match a handle
-  return NULL;
-}
-
-BUILTIN_ATTRIBUTES core::T_O* ignore_initializeTagbodyClosure(core::T_O** dummy)
-{
-// Do nothing but return NULL which will never match a handle
-  return NULL;
-}
-
-
-BUILTIN_ATTRIBUTES gctools::return_type ignore_blockHandleReturnFrom(unsigned char *exceptionP, core::T_O* handle) {
-#if 1
-  core::ReturnFrom &returnFrom = (core::ReturnFrom &)*((core::ReturnFrom *)(exceptionP));
-  if (returnFrom.getHandle() == handle) {
-    printf("%s:%d There is a serious problem - an ignore_blockHandleReturnFrom expecting frame %p recieved a returnFrom with frame %p - no such returnFrom should be sent - the block/return-from optimization is broken\n", __FILE__, __LINE__, handle, returnFrom.getHandle());
-    abort();
-  }
-#endif
-  throw;
-}
-
-
-BUILTIN_ATTRIBUTES void debugBreak() {
-  asm("int $03");
-}
-
-BUILTIN_ATTRIBUTES void ignore_exceptionStackUnwind()
-{
-// Do nothing
-}
-};

@@ -1051,10 +1051,6 @@ void setFrameUniqueId(size_t id, core::ActivationFrame_O* frameP) {
 #endif
 }
 
-void ignore_setFrameUniqueId() {
-  // Do nothing
-}
-
 void ensureFrameUniqueId(size_t id, size_t depth, core::ActivationFrame_O* frameP) {
 #ifdef DEBUG_LEXICAL_DEPTH
   ActivationFrame_sp src((gctools::Tagged)frameP);
@@ -1064,10 +1060,6 @@ void ensureFrameUniqueId(size_t id, size_t depth, core::ActivationFrame_O* frame
     abort();
   }
 #endif
-}
-
-void ignore_ensureFrameUniqueId() {
-  // Do nothing
 }
 
 };
