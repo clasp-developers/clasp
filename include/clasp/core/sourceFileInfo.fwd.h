@@ -28,7 +28,7 @@ THE SOFTWARE.
 #define _core__source_file_info_fwd_H_
 
 namespace core {
-FORWARD(SourceFileInfo);
+FORWARD(FileScope);
 FORWARD(SourcePosInfo);
 
 uint clasp_sourcePosInfo_fileHandle(SourcePosInfo_sp info);

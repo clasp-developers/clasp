@@ -219,7 +219,7 @@ CL_LAMBDA(sin ch);
 CL_DECLARE();
 CL_DOCSTRING("Error signaler for when a comma (or splice) is outside a backquote.");
 CL_DEFUN T_mv core__reader_error_backquote_context(T_sp sin) {
-  SourceFileInfo_sp info = gc::As<SourceFileInfo_sp>(core__source_file_info(sin));
+  FileScope_sp info = gc::As<FileScope_sp>(core__file_scope(sin));
   // FIXME: Use a real condition class.
   // SIMPLE_ERROR(BF("Comma outside of backquote in file: %s line: %s") % info->fileName() % clasp_input_lineno(sin));
   string fn = info->fileName();
@@ -250,7 +250,7 @@ CL_DEFUN T_sp core__reader_comma_form(T_sp sin, Character_sp ch) {
   Fixnum_sp new_backquote_level = make_fixnum(unbox_fixnum(backquote_level) - 1);
   DynamicScopeManager scope(_sym_STARbackquote_levelSTAR, new_backquote_level);
   char nextc = clasp_peek_char(sin);
-  //	ql::source_code_list list(sin->lineNumber(),sin->column(),core__source_file_info(sin));
+  //	ql::source_code_list list(sin->lineNumber(),sin->column(),core__file_scope(sin));
   ql::list list;
   Symbol_sp head = _sym_unquote;
   if (nextc == '@') {
@@ -277,7 +277,7 @@ CL_LAMBDA(sin ch);
 CL_DECLARE();
 CL_DOCSTRING("reader_error_unmatched_close_parenthesis");
 CL_DEFUN T_mv core__reader_error_unmatched_close_parenthesis(T_sp sin, Character_sp ch) {
-  SourceFileInfo_sp info = gc::As<SourceFileInfo_sp>(core__source_file_info(sin));
+  FileScope_sp info = gc::As<FileScope_sp>(core__file_scope(sin));
   string fn = info->fileName();
   if (fn.compare("-no-name-") == 0) {
       	READER_ERROR(SimpleBaseString_O::make("Unmatched close parenthesis in stream at line: ~a column ~a."),
@@ -299,7 +299,7 @@ CL_LAMBDA(sin ch);
 CL_DECLARE();
 CL_DOCSTRING("reader_quote");
 CL_DEFUN T_sp core__reader_quote(T_sp sin, Character_sp ch) {
-  //	ql::source_code_list result(sin->lineNumber(),sin->column(),core__source_file_info(sin));
+  //	ql::source_code_list result(sin->lineNumber(),sin->column(),core__file_scope(sin));
   ql::list acc;
   T_sp quoted_object = cl__read(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true());
   acc << cl::_sym_quote << quoted_object;
@@ -351,7 +351,7 @@ CL_DEFUN T_mv core__dispatch_macro_character(T_sp sin, Character_sp ch) {
   if (macro_func.nilp()){
     //SIMPLE_ERROR(BF("Undefined reader macro for %s %s") % _rep_(ch) % _rep_(subchar));
     // Need to be a reader error
-    SourceFileInfo_sp info = gc::As<SourceFileInfo_sp>(core__source_file_info(sin));
+    FileScope_sp info = gc::As<FileScope_sp>(core__file_scope(sin));
     string fn = info->fileName();	
     if (fn.compare("-no-name-") == 0) {
       	READER_ERROR(SimpleBaseString_O::make("Undefined reader macro for char '~a' subchar '~a' in stream at line: ~a column ~a."),
@@ -416,7 +416,7 @@ CL_DECLARE();
 CL_DOCSTRING("sharp_single_quote");
 CL_DEFUN T_sp core__sharp_single_quote(T_sp sin, Character_sp ch, T_sp num) {
   T_sp quoted_object = cl__read(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true());
-  //	ql::source_code_list result(sin->lineNumber(),sin->column(),core__source_file_info(sin));
+  //	ql::source_code_list result(sin->lineNumber(),sin->column(),core__file_scope(sin));
   ql::list result;
   result << cl::_sym_function << quoted_object;
   T_sp tresult = result.cons();

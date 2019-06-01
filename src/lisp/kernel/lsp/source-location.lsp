@@ -53,11 +53,11 @@
     (when csp
       ;; FIXME: Move this source debug stuff to an interface
       ;; (in SPI, probably)
-      (let ((csi (core:source-file-info
+      (let ((csi (core:file-scope
                   (core:source-pos-info-file-handle csp))))
         (make-source-location
-         :pathname (core:source-file-info-source-debug-pathname csi)
-         :offset (+ (core:source-file-info-source-debug-offset csi)
+         :pathname (core:file-scope-source-debug-pathname csi)
+         :offset (+ (core:file-scope-source-debug-offset csi)
                     (core:source-pos-info-filepos csp)))))))
 
 ;;; Method combinations don't have source positions. In fact,

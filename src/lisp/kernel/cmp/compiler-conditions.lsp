@@ -77,8 +77,8 @@
                (redefinition-new-type condition)
                (compiler-warning-name condition)
                (redefinition-old-type condition)
-               (source-file-info-pathname
-                (source-file-info origin))
+               (file-scope-pathname
+                (file-scope origin))
                (source-pos-info-lineno origin)
                (source-pos-info-column origin))))))
 
@@ -141,8 +141,8 @@
   (let ((origin (compiler-condition-origin condition)))
     (when origin
       (format *error-output* "~&    at ~a ~d:~d~%"
-              (source-file-info-pathname
-               (source-file-info origin))
+              (file-scope-pathname
+               (file-scope origin))
               (source-pos-info-lineno origin)
               (source-pos-info-column origin)))))
 

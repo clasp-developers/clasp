@@ -546,14 +546,14 @@ eg:  (f closure-ptr nargs a b c d ...)
 ;(define-symbol-macro %LispCompiledFunctionIHF% (llvm-sys:struct-type-create *llvm-context* :elements (list %LispFunctionIHF%) :name "LispCompiledFunctionIHF"))
 
 #|
-  (defun make-gv-source-file-info-handle (module &optional handle)
+  (defun make-gv-file-scope-handle (module &optional handle)
     (if (null handle) (setq handle -1))
     (llvm-sys:make-global-variable module
                                    %i32%  ; type
                                    nil    ; constant
                                    'llvm-sys:internal-linkage
                                    (jit-constant-i32 handle)
-                                   "source-file-info-handle"))
+                                   "file-scope-handle"))
 |#
 
 (defun add-global-ctor-function (module main-function &key position register-library)
@@ -823,7 +823,7 @@ and initialize it with an array consisting of one function pointer."
 (defvar *compile-file-pathname* nil "Store the pathname of the currently compiled file")
 (defvar *compile-file-truename* nil "Store the truename of the currently compiled file")
 (defvar *compile-file-unique-symbol-prefix* "" "Store a unique prefix for symbols that are external-linkage")
-(defvar *compile-file-source-file-info* nil "Store the SourceFileInfo object for the compile-file target")
+(defvar *compile-file-file-scope* nil "Store the SourceFileInfo object for the compile-file target")
 
 (defvar *source-debug-pathname*)
 (defvar *source-debug-offset* 0)

@@ -220,7 +220,7 @@ Compile a lisp source file into an LLVM module."
       ;; If a truename is provided then spoof the file-system to treat input-pathname
       ;; as source-truename with the given offset
       (when source-debug-pathname
-        (core:source-file-info (namestring input-pathname) source-debug-pathname source-debug-offset nil))
+        (core:file-scope (namestring input-pathname) source-debug-pathname source-debug-offset nil))
       (when *compile-verbose*
 	(bformat t "; Compiling file: %s%N" (namestring input-pathname)))
       (let* ((*compilation-module-index* 0) ; FIXME: necessary?

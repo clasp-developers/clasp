@@ -1502,10 +1502,10 @@ void low_level_backtrace(bool with_args) {
             name = "-BAD-NAME-";
           }
         }
-        /*Nilable?*/ T_sp sfi = core__source_file_info(func->sourcePathname());
+        /*Nilable?*/ T_sp sfi = core__file_scope(func->sourcePathname());
         string sourceName = "cannot-determine";
         if (sfi.notnilp()) {
-          sourceName = gc::As<SourceFileInfo_sp>(sfi)->fileName();
+          sourceName = gc::As<FileScope_sp>(sfi)->fileName();
         }
         printf("#%4d frame@%p closure@%p %s/%3d\n    %40s ", index, cur, closure.raw_(), sourceName.c_str(), func->lineNumber(), name.c_str() );
         if (with_args) {

@@ -1314,8 +1314,8 @@ T_sp lisp_createFixnum(int fn) {
 
 SourcePosInfo_sp lisp_createSourcePosInfo(const string &fileName, size_t filePos, int lineno) {
   SimpleBaseString_sp fn = SimpleBaseString_O::make(fileName);
-  T_mv sfi_mv = core__source_file_info(fn);
-  SourceFileInfo_sp sfi = gc::As<SourceFileInfo_sp>(sfi_mv);
+  T_mv sfi_mv = core__file_scope(fn);
+  FileScope_sp sfi = gc::As<FileScope_sp>(sfi_mv);
   Fixnum_sp handle = gc::As<Fixnum_sp>(sfi_mv.valueGet_(1));
   int sfindex = unbox_fixnum(handle);
   return SourcePosInfo_O::create(sfindex, filePos, lineno, 0);

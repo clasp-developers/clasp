@@ -141,7 +141,7 @@ size_t clasp_input_filePos(T_sp strm);
 int clasp_input_lineno(T_sp strm);
 int clasp_input_column(T_sp strm);
 SourcePosInfo_sp core__input_stream_source_pos_info(T_sp strm);
-SourceFileInfo_sp clasp_input_source_file_info(T_sp strm);
+FileScope_sp clasp_input_source_file_info(T_sp strm);
 Pathname_sp clasp_input_pathname(T_sp strm);
 /*! Return the filename of the stream if possible, error if errorp=true and no name can be determined */
 T_sp clasp_filename(T_sp strm, bool errorp = false);

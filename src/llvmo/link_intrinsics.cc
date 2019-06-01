@@ -169,11 +169,11 @@ void cc_remove_gcroots_in_module(gctools::GCRootsInModule* holder)
 
 void ltvc_assign_source_file_info_handle(const char *moduleName, const char *sourceDebugPathname, size_t sourceDebugOffset, int useLineno, int *sourceFileInfoHandleP) {
   NO_UNWIND_BEGIN();
-  //	printf("%s:%d assignSourceFileInfoHandle %s\n", __FILE__, __LINE__, moduleName );
+  //	printf("%s:%d assignFileScopeHandle %s\n", __FILE__, __LINE__, moduleName );
   core::SimpleBaseString_sp mname = core::SimpleBaseString_O::make(moduleName);
   core::SimpleBaseString_sp struename = core::SimpleBaseString_O::make(sourceDebugPathname);
-  T_mv sfi_mv = core::core__source_file_info(mname, struename, sourceDebugOffset, useLineno ? true : false);
-  SourceFileInfo_sp sfi = gc::As<SourceFileInfo_sp>(sfi_mv);
+  T_mv sfi_mv = core::core__file_scope(mname, struename, sourceDebugOffset, useLineno ? true : false);
+  FileScope_sp sfi = gc::As<FileScope_sp>(sfi_mv);
   int sfindex = unbox_fixnum(gc::As<core::Fixnum_sp>(sfi_mv.valueGet_(1)));
   *sourceFileInfoHandleP = sfindex;
   NO_UNWIND_END();
@@ -649,12 +649,12 @@ void cc_ifBadKeywordArgumentException(core::T_O *allowOtherKeys, core::T_O *kw,
 extern "C" {
 
 
-DONT_OPTIMIZE_WHEN_DEBUG_RELEASE core::T_O* makeCompiledFunction(fnLispCallingConvention funcPtr,
+core::T_O* makeCompiledFunction(fnLispCallingConvention funcPtr,
                                                                  void* functionDescription,
                                                                  core::T_O* frameP
                                                                  )
 {NO_UNWIND_BEGIN();
-  // TODO: If a pointer to an integer was passed here we could write the sourceName SourceFileInfo_sp index into it for source line debugging
+  // TODO: If a pointer to an integer was passed here we could write the sourceName FileScope_sp index into it for source line debugging
   core::T_sp frame((gctools::Tagged)frameP);
   core::ClosureWithSlots_sp toplevel_closure =
     gctools::GC<core::ClosureWithSlots_O>::allocate_container(false, BCLASP_CLOSURE_SLOTS,
@@ -855,7 +855,7 @@ void debugPrint_size_t(size_t v)
   NO_UNWIND_END();
 }
 
-DONT_OPTIMIZE_WHEN_DEBUG_RELEASE void throwReturnFrom(size_t depth, core::ActivationFrame_O* frameP) {
+void throwReturnFrom(size_t depth, core::ActivationFrame_O* frameP) {
 #ifdef DEBUG_TRACK_UNWINDS
   global_ReturnFrom_count++;
 #endif
@@ -871,7 +871,7 @@ DONT_OPTIMIZE_WHEN_DEBUG_RELEASE void throwReturnFrom(size_t depth, core::Activa
 
 extern "C" {
 
-DONT_OPTIMIZE_WHEN_DEBUG_RELEASE gctools::return_type blockHandleReturnFrom_or_rethrow(unsigned char *exceptionP, core::T_O* handle) {
+gctools::return_type blockHandleReturnFrom_or_rethrow(unsigned char *exceptionP, core::T_O* handle) {
   core::ReturnFrom &returnFrom = (core::ReturnFrom &)*((core::ReturnFrom *)(exceptionP));
   if (returnFrom.getHandle() == handle) {
     core::MultipleValues &mv = core::lisp_multipleValues();
@@ -906,7 +906,7 @@ DONT_OPTIMIZE_WHEN_DEBUG_RELEASE gctools::return_type blockHandleReturnFrom_or_r
 
 extern "C" {
 
-DONT_OPTIMIZE_WHEN_DEBUG_RELEASE core::T_O* initializeBlockClosure(core::T_O** afP)
+core::T_O* initializeBlockClosure(core::T_O** afP)
 {NO_UNWIND_BEGIN();
   ValueFrame_sp vf = ValueFrame_sp((gc::Tagged)*reinterpret_cast<ValueFrame_O**>(afP));
 #ifdef DEBUG_FLOW_TRACKER
@@ -978,12 +978,12 @@ size_t tagbodyHandleDynamicGoIndex_or_rethrow(char *exceptionP, T_O* handle) {
 }
 
 
-void debugSourceFileInfoHandle(int *sourceFileInfoHandleP)
+void debugFileScopeHandle(int *sourceFileInfoHandleP)
 {NO_UNWIND_BEGIN();
   int sfindex = *sourceFileInfoHandleP;
   core::Fixnum_sp fn = core::make_fixnum(sfindex);
-  SourceFileInfo_sp sfi = gc::As<SourceFileInfo_sp>(core::core__source_file_info(fn));
-  printf("%s:%d debugSourceFileInfoHandle[%d] --> %s\n", __FILE__, __LINE__, sfindex, _rep_(sfi).c_str());
+  FileScope_sp sfi = gc::As<FileScope_sp>(core::core__file_scope(fn));
+  printf("%s:%d debugFileScopeHandle[%d] --> %s\n", __FILE__, __LINE__, sfindex, _rep_(sfi).c_str());
   NO_UNWIND_END();
 }
 };

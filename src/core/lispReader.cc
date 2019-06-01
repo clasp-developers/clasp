@@ -111,7 +111,7 @@ struct Token {
   {                                                     \
       if ((x).consp()) {                                  \
       LOG_READ(BF("About to try trap bad cons"));            \
-      string ssss = core__source_file_info(x)->fileName(); \
+      string ssss = core__file_scope(x)->fileName(); \
     }                                                   \
   }
 #endif
@@ -994,9 +994,9 @@ List_sp read_list(T_sp sin, claspCharacter end_char, bool allow_consing_dot) {
         }
         Cons_sp one = Cons_O::create(obj, _Nil<T_O>());
         LOG_READ(BF("One = %s") % _rep_(one));
-//        LOG_READ(BF("one->sourceFileInfo()=%s") % _rep_(core__source_file_info(one)));
-//        LOG_READ(BF("one->sourceFileInfo()->fileName()=%s") % core__source_file_info(one)->fileName());
-//        LOG_READ(BF("one->sourceFileInfo()->fileName().c_str() = %s") % core__source_file_info(one)->fileName().c_str());
+//        LOG_READ(BF("one->sourceFileInfo()=%s") % _rep_(core__file_scope(one)));
+//        LOG_READ(BF("one->sourceFileInfo()->fileName()=%s") % core__file_scope(one)->fileName());
+//        LOG_READ(BF("one->sourceFileInfo()->fileName().c_str() = %s") % core__file_scope(one)->fileName().c_str());
         TRAP_BAD_CONS(one);
         cur.asCons()->setCdr(one);
         cur = one;

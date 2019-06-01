@@ -120,8 +120,8 @@
 (defun describe-source-location (spi)
   (let* ((lineno (source-pos-info-lineno spi))
          (filepos (source-pos-info-filepos spi))
-         (source-file-info (source-file-info spi))
-         (pathname (source-file-info-pathname source-file-info)))
+         (file-scope (file-scope spi))
+         (pathname (file-scope-pathname file-scope)))
   (bformat nil "%s filepos: %d  lineno: %d" (namestring pathname) filepos lineno)))
 
 (defun print-compiler-message (c stream)

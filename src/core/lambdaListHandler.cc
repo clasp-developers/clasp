@@ -477,7 +477,7 @@ List_sp LambdaListHandler_O::process_macro_lambda_list(List_sp lambda_list) {
 
   Symbol_sp name_symbol = cl__gensym(SimpleBaseString_O::make("macro-name"));
   //	SourceCodeList_sp new_name_ll = SourceCodeCons_O::createWithDuplicateSourceCodeInfo(name_symbol,new_lambda_list,lambda_list,_lisp);
-  ql::list sclist; // (af_lineNumber(lambda_list),af_column(lambda_list),core__source_file_info(lambda_list));
+  ql::list sclist; // (af_lineNumber(lambda_list),af_column(lambda_list),core__file_scope(lambda_list));
   sclist << whole_symbol << environment_symbol << Cons_O::create(name_symbol, new_lambda_list);
   List_sp macro_ll = sclist.cons();
   return macro_ll;

@@ -232,7 +232,7 @@ Compile a lisp source file into an LLVM module."
       ;; If a truename is provided then spoof the file-system to treat input-pathname
       ;; as source-truename with the given offset
       (when source-debug-pathname
-        (core:source-file-info (namestring given-input-pathname) source-debug-pathname source-debug-offset nil))
+        (core:file-scope (namestring given-input-pathname) source-debug-pathname source-debug-offset nil))
       (when *compile-verbose*
         (bformat t "; Compiling file parallel: %s%N" (namestring given-input-pathname)))
       (let* ((*compilation-module-index* 0)

@@ -5477,7 +5477,7 @@ CL_DECLARE();
 CL_DOCSTRING("sourcePosInfo");
 CL_DEFUN SourcePosInfo_sp core__input_stream_source_pos_info(T_sp strm) {
   strm = coerce::inputStreamDesignator(strm);
-  SourceFileInfo_sp sfi = clasp_input_source_file_info(strm);
+  FileScope_sp sfi = clasp_input_source_file_info(strm);
   size_t filePos = clasp_input_filePos(strm);
   uint lineno, column;
   lineno = clasp_input_lineno(strm);
@@ -5486,9 +5486,9 @@ CL_DEFUN SourcePosInfo_sp core__input_stream_source_pos_info(T_sp strm) {
   return spi;
 }
 
-SourceFileInfo_sp clasp_input_source_file_info(T_sp strm) {
+FileScope_sp clasp_input_source_file_info(T_sp strm) {
   T_sp filename = clasp_filename(strm);
-  SourceFileInfo_sp sfi = gc::As<SourceFileInfo_sp>(core__source_file_info(filename));
+  FileScope_sp sfi = gc::As<FileScope_sp>(core__file_scope(filename));
   return sfi;
 }
 };

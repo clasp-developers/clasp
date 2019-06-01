@@ -37,18 +37,25 @@ THE SOFTWARE.
 #include <clasp/core/sourceFileInfo.fwd.h>
 
 namespace core {
-class SourceFileInfo_O : public General_O {
-  LISP_CLASS(core, CorePkg, SourceFileInfo_O, "SourceFileInfo",General_O);
+
+class Scope_O : public General_O {
+  LISP_CLASS(core, CorePkg, Scope_O, "Scope", General_O);
+public:
+};
+
+
+class FileScope_O : public Scope_O {
+  LISP_CLASS(core, CorePkg, FileScope_O, "FileScope",Scope_O);
  public:
   bool fieldsp() const { return true; };
   void fields(Record_sp node);
 public:
-  static SourceFileInfo_sp create(Pathname_sp path, int handle, T_sp truename = _Nil<T_O>(), size_t offset = 0, bool useLineno = true);
-  static SourceFileInfo_sp create(const string &fileNamePath, int handle, T_sp truename = _Nil<T_O>(), size_t offset = 0, bool useLineno = true);
+  static FileScope_sp create(Pathname_sp path, int handle, T_sp truename = _Nil<T_O>(), size_t offset = 0, bool useLineno = true);
+  static FileScope_sp create(const string &fileNamePath, int handle, T_sp truename = _Nil<T_O>(), size_t offset = 0, bool useLineno = true);
 
 public: // ctor/dtor for classes with shared virtual base
-  explicit SourceFileInfo_O();
-  virtual ~SourceFileInfo_O(){};
+  explicit FileScope_O();
+  virtual ~FileScope_O(){};
   void initialize();
 GCPRIVATE: // instance variables here
   Pathname_sp _pathname;
@@ -72,21 +79,27 @@ public: // Functions here
   string fileName() const;
   string parentPathName() const;
   string namestring() const;
-CL_LISPIFY_NAME("SourceFileInfo-pathname");
+CL_LISPIFY_NAME("FileScope-pathname");
 CL_DEFMETHOD   Pathname_sp pathname() const { return this->_pathname; };
   const char *permanentPathName();
   const char *permanentFileName();
 
-CL_LISPIFY_NAME("SourceFileInfo-useLineno");
+CL_LISPIFY_NAME("FileScope-useLineno");
 CL_DEFMETHOD   bool useLineno() const { return this->_TrackLineno; };
-CL_LISPIFY_NAME("SourceFileInfo-sourceDebugOffset");
+CL_LISPIFY_NAME("FileScope-sourceDebugOffset");
 CL_DEFMETHOD   size_t sourceDebugOffset() const { return this->_SourceDebugOffset; };
   string __repr__() const;
-}; // SourceFileInfo class
+}; // FileScope class
+
+
+
+
+
+
 
 FORWARD(SourcePosInfo);
 class SourcePosInfo_O : public General_O {
-  friend T_mv core__source_file_info(T_sp sourceFile, T_sp truename, size_t offset, bool useLineno);
+  friend T_mv core__file_scope(T_sp sourceFile, T_sp truename, size_t offset, bool useLineno);
 
   LISP_CLASS(core, CorePkg, SourcePosInfo_O, "SourcePosInfo",General_O);
  public:
@@ -165,7 +178,7 @@ struct gctools::GCInfo<core::SourcePosInfo_O> {
 
 namespace core {
 
-T_mv core__source_file_info(T_sp sourceFile, T_sp truename = _Nil<T_O>(), size_t offset = 0, bool useLineno = true);
+T_mv core__file_scope(T_sp sourceFile, T_sp truename = _Nil<T_O>(), size_t offset = 0, bool useLineno = true);
 
 }; // core namespace
 
