@@ -172,9 +172,9 @@
            ;; No recursive expansion even if we had a constant head,
            ;; since integer => (integer * *) and we checked * already.
            (typep low head)
-           (and (consp high)
-                (null (cdr high))
-                (typep (car high) head)))
+           (and (consp low)
+                (null (cdr low))
+                (typep (car low) head)))
        (or (eq high '*)
            (typep high head)
            (and (consp high)
