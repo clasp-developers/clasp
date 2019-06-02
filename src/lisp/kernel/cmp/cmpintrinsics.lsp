@@ -82,8 +82,10 @@ Set this to other IRBuilders to make code go where you want")
 
 (define-symbol-macro %size_t% #+address-model-64 %i64%
                               #+address-model-32 %i32%)
+(define-symbol-macro %atomic<size_t>% %size_t%)
 (define-symbol-macro %size_t*% (llvm-sys:type-get-pointer-to %size_t%))
 (define-symbol-macro %size_t**% (llvm-sys:type-get-pointer-to %size_t*%))
+(define-symbol-macro %size_t[0]% (llvm-sys:array-type-get %size_t% 0))
 
 (define-symbol-macro %void% (llvm-sys:type-get-void-ty *llvm-context*))
 (define-symbol-macro %void*% (llvm-sys:type-get-pointer-to %void%))
@@ -181,10 +183,113 @@ Boehm and MPS use a single pointer"
 (define-symbol-macro %t*[DUMMY]% (llvm-sys:array-type-get %t*% 64))
 (define-symbol-macro %t*[DUMMY]*% (llvm-sys:type-get-pointer-to %t*[DUMMY]%))
 (define-symbol-macro %tsp% (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields %t*%) nil))  ;; "T_sp"
+(define-symbol-macro %atomic<tsp>% %tsp%)
 (define-symbol-macro %tsp*% (llvm-sys:type-get-pointer-to %tsp%))
 (define-symbol-macro %tsp**% (llvm-sys:type-get-pointer-to %tsp*%))
+(define-symbol-macro %tsp[0]% (llvm-sys:array-type-get %tsp% 0))
 
 (define-symbol-macro %metadata% (llvm-sys:type-get-metadata-ty *llvm-context*))
+
+;;; MUST match Instance_O layout
+(define-symbol-macro %instance%
+  (llvm-sys:struct-type-get
+   *llvm-context*
+   (list %i8*%     ; 0 vtable
+         %t*%      ; 1 _Sig
+         %t*%      ; 2 _Class
+         %t*%      ; 3 _Rack
+         )
+   nil))
+(defconstant +instance.rack-index+ 3)
+(define-symbol-macro %instance*% (llvm-sys:type-get-pointer-to %instance%))
+
+
+;;; Must match SimpleVector_O aka GCArray_moveable<T_sp>
+(define-symbol-macro %simple-vector%
+  (llvm-sys:struct-type-get
+   *llvm-context*
+   (list %i8*%     ; 0 vtable
+         %size_t%  ; 1 length
+         %tsp[0]%  ; 2 zeroth element of data
+         )
+   nil))
+(defconstant +simple-vector.length-index+ 1)
+(defconstant +simple-vector.data-index+ 2)
+
+(define-symbol-macro %rack%
+  (llvm-sys:struct-type-get
+   *llvm-context*
+   (list %i8*%     ; 0 vtable
+         %size_t%  ; 1 length
+         %tsp%     ; 2 Stamp
+         %t*[0]%  ; 3 zeroth element of data
+         )
+   nil))
+(define-symbol-macro %rack*% (llvm-sys:type-get-pointer-to %rack%))
+
+(defconstant +rack.stamp-index+ 2)
+(defconstant +rack.data-index+ 3)
+
+
+(define-symbol-macro %mdarray%
+  (llvm-sys:struct-type-get
+   *llvm-context*
+   (list %i8*%   ; 0 vtable
+         %size_t% ; 1 _FillPointerOrLengthOrDummy
+         %size_t% ; 2 _ArrayTotalSize
+         %t*%     ; 3 _Data
+         %size_t% ; 4 _DisplacedIndexOffset
+         %size_t% ; 5 _Flags
+         %size_t% ; 6 rank
+         %size_t[0]% ; 7 dimensions
+         )
+   nil))
+
+
+(defconstant +mdarray._FillPointerOrLengthOrDummy-index+ 1)
+(defconstant +mdarray._ArrayTotalSize-index+ 2)
+(defconstant +mdarray._Data-index+ 3)
+(defconstant +mdarray._DisplacedIndexOffset-index+ 4)
+(defconstant +mdarray._Flags-index+ 5)
+(defconstant +mdarray.rank-index+ 6)
+(defconstant +mdarray.dimensions-index+ 7)
+
+
+(define-symbol-macro %value-frame%
+  (llvm-sys:struct-type-get
+   *llvm-context*
+   (list %i8*%     ; 0 vtable
+         %tsp%     ; 1 _Parent
+         %size_t%  ; 2 length
+         %tsp[0]%  ; 3 zeroth element of data
+         )
+   nil))
+(define-symbol-macro %value-frame*% (llvm-sys:type-get-pointer-to %value-frame%))
+(defconstant +value-frame.parent-index+ 1)
+(defconstant +value-frame.length-index+ 2)
+(defconstant +value-frame.data-index+ 3)
+
+
+
+;;; MUST match FuncallableInstance_O layout
+(define-symbol-macro %funcallable-instance%
+  (llvm-sys:struct-type-get
+   *llvm-context*
+   (list %i8*%     ; 0 vtable
+         %i8*%     ; 1 entry (From Function_O)
+         %t*%      ; 2 _Class
+         %t*%      ; 3 _Rack
+         %t*%      ; 4 _Sig
+         %function-description*%   ; 5 FunctionDescription*
+         %atomic<size_t>%          ; 6 _Compilations
+         %atomic<tsp>%             ; 7 _CallHistory
+         %atomic<tsp>%             ; 7 _SpecializerProfile
+         %atomic<tsp>%             ; 8 _CompiledDispatchFunction
+         )
+   nil))
+(define-symbol-macro %funcallable-instance*% (llvm-sys:type-get-pointer-to %funcallable-instance%))
+(defconstant +funcallable-instance.rack-index+ 3)
+(define-symbol-macro %funcallable-instance*% (llvm-sys:type-get-pointer-to %funcallable-instance%))
 
 ;;;
 ;;; The %symbol% type MUST match the layout and size of Symbol_O in symbol.h
@@ -698,7 +803,49 @@ and initialize it with an array consisting of one function pointer."
                                                   :valist vaslist-size
                                                   :ihf invocation-history-frame-size
                                                   :register-save-area register-save-area-size
-                                                  :function-description function-description-size)))
+                                                  :function-description function-description-size)
+
+    (let* ((instance-size (llvm-sys:data-layout-get-type-alloc-size data-layout %instance%))
+           (instance-layout (llvm-sys:data-layout-get-struct-layout data-layout %instance%))
+           (instance-rack-offset (llvm-sys:struct-layout-get-element-offset instance-layout +instance.rack-index+)))
+      (core:verify-instance-layout instance-size instance-rack-offset))
+
+    (unless (= +instance.rack-index+ +funcallable-instance.rack-index+)
+      (error "The +instance.rack-index+ ~d MUST match +funcallable-instance.rack-index+ ~d"
+             +instance.rack-index+ +funcallable-instance.rack-index+))
+    (let* ((funcallable-instance-size (llvm-sys:data-layout-get-type-alloc-size data-layout %funcallable-instance%))
+           (funcallable-instance-layout (llvm-sys:data-layout-get-struct-layout data-layout %funcallable-instance%))
+           (funcallable-instance-rack-offset (llvm-sys:struct-layout-get-element-offset funcallable-instance-layout +funcallable-instance.rack-index+)))
+      (core:verify-funcallable-instance-layout funcallable-instance-size funcallable-instance-rack-offset))
+    (let* ((simple-vector-layout (llvm-sys:data-layout-get-struct-layout data-layout %simple-vector%))
+           (simple-vector-length-offset (llvm-sys:struct-layout-get-element-offset simple-vector-layout +simple-vector.length-index+))
+           (simple-vector-data-offset (llvm-sys:struct-layout-get-element-offset simple-vector-layout +simple-vector.data-index+)))
+      (core:verify-simple-vector-layout simple-vector-length-offset simple-vector-data-offset))
+    (let* ((rack-layout (llvm-sys:data-layout-get-struct-layout data-layout %rack%))
+           (rack-stamp-offset (llvm-sys:struct-layout-get-element-offset rack-layout +rack.stamp-index+))
+           (rack-data-offset (llvm-sys:struct-layout-get-element-offset rack-layout +rack.data-index+)))
+      (core:verify-rack-layout rack-stamp-offset rack-data-offset))
+    (let* ((mdarray-layout (llvm-sys:data-layout-get-struct-layout data-layout %mdarray%))
+           (mdarray._FillPointerOrLengthOrDummy-offset (llvm-sys:struct-layout-get-element-offset mdarray-layout +mdarray._FillPointerOrLengthOrDummy-index+))
+           (mdarray._ArrayTotalSize-offset (llvm-sys:struct-layout-get-element-offset mdarray-layout +mdarray._ArrayTotalSize-index+))
+           (mdarray._Data-offset (llvm-sys:struct-layout-get-element-offset mdarray-layout +mdarray._Data-index+))
+           (mdarray._DisplacedIndexOffset-offset (llvm-sys:struct-layout-get-element-offset mdarray-layout +mdarray._DisplacedIndexOffset-index+))
+           (mdarray._Flags-offset (llvm-sys:struct-layout-get-element-offset mdarray-layout +mdarray._Flags-index+))
+           (mdarray.rank-offset (llvm-sys:struct-layout-get-element-offset mdarray-layout +mdarray.rank-index+))
+           (mdarray.dimensions-offset (llvm-sys:struct-layout-get-element-offset mdarray-layout +mdarray.dimensions-index+)))
+      (core:verify-mdarray-layout mdarray._FillPointerOrLengthOrDummy-offset
+                                  mdarray._ArrayTotalSize-offset
+                                  mdarray._Data-offset
+                                  mdarray._DisplacedIndexOffset-offset
+                                  mdarray._Flags-offset
+                                  mdarray.rank-offset
+                                  mdarray.dimensions-offset))
+    (let* ((value-frame-layout (llvm-sys:data-layout-get-struct-layout data-layout %value-frame%))
+           (value-frame-parent-offset (llvm-sys:struct-layout-get-element-offset value-frame-layout +value-frame.parent-index+))
+           (value-frame-length-offset (llvm-sys:struct-layout-get-element-offset value-frame-layout +value-frame.length-index+))
+           (value-frame-data-offset (llvm-sys:struct-layout-get-element-offset value-frame-layout +value-frame.data-index+)))
+      (core:verify-value-frame-layout value-frame-parent-offset value-frame-length-offset value-frame-data-offset))
+    ))
 
 ;;
 ;; Define exception types in the module

@@ -51,18 +51,12 @@ class ActivationFrame_O : public Environment_O {
   LISP_ABSTRACT_CLASS(core, CorePkg, ActivationFrame_O, "ActivationFrame",Environment_O);
  public:
   T_sp _Parent;
-#ifdef DEBUG_LEXICAL_DEPTH
-  size_t _UniqueId;
-#endif
 public:
   static string clasp_asString(T_sp af);
   T_sp &parentFrameRef_() { return this->_Parent; };
   T_sp parentFrame() const { return this->_Parent; };
 public:
  ActivationFrame_O() : Base(), _Parent(_Nil<T_O>())
-#ifdef DEBUG_LEXICAL_DEPTH
-    , _UniqueId((size_t)-1)
-#endif
   {};
  ActivationFrame_O(T_sp p) : Base(), _Parent(p) {};
   virtual ~ActivationFrame_O(){};
@@ -129,9 +123,8 @@ struct gctools::GCInfo<core::ValueFrame_O> {
 namespace core {
 class ValueFrame_O : public ActivationFrame_O {
   LISP_CLASS(core, CorePkg, ValueFrame_O, "ValueFrame",ActivationFrame_O);
-public:
-  core::T_sp _DebuggingInfo;
   typedef T_sp value_type;
+public:
   gctools::GCArray_moveable<value_type> _Objects;
 public:
   template <class... ARGS>
@@ -169,23 +162,11 @@ public:
   template <typename...ARGS>
     ValueFrame_O(size_t capacity, /*const T_sp& initial_element,*/ T_sp parent, size_t initialContentsSize=0, T_sp* initialContents=NULL)
     : Base(parent)
-    , _DebuggingInfo(_Nil<T_O>())
     ,_Objects(capacity,_Unbound<T_O>(),true,initialContentsSize,initialContents) /*GCArray_moveable ctor*/ {};
   virtual ~ValueFrame_O(){
       //            printf("%s::%d dtor ValueFrame@%p\n", __FILE__, __LINE__, this);
   };
 public:
-  inline void attachDebuggingInfo(core::T_sp debuggingInfo) {
-    if (!debuggingInfo) {
-      printf("%s:%d attachDebuggingInfo being set to NULL!\n", __FILE__, __LINE__);
-    }
-    this->_DebuggingInfo = debuggingInfo;
-  }
-
-  core::T_sp debuggingInfo() const {
-    return this->_DebuggingInfo;
-  }
-
 public:
   inline T_sp &operator[](size_t idx) {
     BOUNDS_ASSERT(idx<this->_Objects._Length);

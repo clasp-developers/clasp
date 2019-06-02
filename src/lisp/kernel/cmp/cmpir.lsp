@@ -481,8 +481,55 @@ representing a tagged fixnum."
       (if (llvm-sys:type-equal (llvm-sys:get-type val) %t*%)
           val
           (error "The val ~s type ~s is not a t* or fixnum " val (type-of val)))))
-  
 
+
+(defun irc-rack (instance-tagged)
+  (let* ((instance* (irc-untag-general instance-tagged %instance*%))
+         (rack (irc-load (irc-struct-gep %instance% instance* +instance.rack-index+) "rack-tagged")))
+    rack))
+
+(defun irc-instance-slot-address (instance index)
+  "Return a %t**% a pointer to a slot in the rack of an instance"
+  (let* ((rack-tagged (irc-rack instance))
+         (rack* (irc-untag-general rack-tagged %rack*%))
+         (data0* (irc-struct-gep %rack% rack* +rack.data-index+))
+         (dataN* (irc-gep data0* (list 0 index))))
+    dataN*))
+
+(defun irc-read-slot (instance index)
+  "Read a value from the rack of an instance"
+  (let ((dataN* (irc-instance-slot-address instance index)))
+    (irc-load dataN*)))
+
+(defun irc-write-slot (instance index value)
+  "Write a value into the rack of an instance"
+  (let ((dataN* (irc-instance-slot-address instance index)))
+    (irc-store value dataN*)))
+
+(defun irc-value-frame-parent (value-frame)
+  "Return the parent of the value-frame"
+  (let* ((value-frame* (irc-untag-general value-frame))
+         (parent* (irc-struct-gep %value-frame% value-frame* +value-frame.parent-index+)))
+    (irc-load parent*)))
+
+(defun irc-nth-value-frame-parent (value-frame depth)
+  "Return the nth parent of the value-frame"
+  (let ((cur value-frame))
+    (dotimes (idx depth)
+      (setq cur (irc-value-frame-parent cur)))
+    cur))
+
+(defun irc-value-frame-value (value-frame index)
+  "Return the nth cell of the value-frame"
+  (let* ((value-frame* (irc-untag-general value-frame))
+         (data0* (irc-struct-gep %value-frame% value-frame* +value-frame.data-index+))
+         (dataN* (irc-gep data0* (list 0 index))))
+    (irc-load dataN*)))
+
+(defun irc-depth-index-value-frame (value-frame depth index)
+  (let* ((depth-value-frame (irc-nth-value-frame-parent value-frame depth)))
+    (irc-value-frame-value depth-value-frame index)))
+  
 (defun irc-ret-void ()
   (llvm-sys:create-ret-void *irbuilder*))
 

@@ -710,6 +710,14 @@ CL_DEFUN bool ext__class_unboundp(ClassHolder_sp holder) {
 }
 
 
+CL_DEFUN void core__verify_instance_layout(size_t instance_size, size_t instance_rack_offset)
+{
+  if (instance_size!=sizeof(Instance_O)) SIMPLE_ERROR(BF("The cmpintrinsics.lsp instance_size %lu does not match sizeof(Instance_O)") % instance_size % sizeof(Instance_O));
+  if (instance_rack_offset!=offsetof(Instance_O,_Rack))
+    SIMPLE_ERROR(BF("instance_rack_offset %lu does not match offsetof(_Rack,Instance_O) %lu") % instance_rack_offset % offsetof(Instance_O,_Rack));
+}
+
+
 
 };
 

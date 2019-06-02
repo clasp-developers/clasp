@@ -86,7 +86,7 @@ CL_DEFUN T_sp core__environment_debug_names(T_sp frame) {
   if (frame.nilp())
     return _Nil<T_O>();
   else if (ValueFrame_sp vf = frame.asOrNull<ValueFrame_O>()) {
-    return vf->debuggingInfo();
+    return _Nil<T_O>();
   } else if (ActivationFrame_sp af = frame.asOrNull<ActivationFrame_O>()) {
     (void)af;
     return _Nil<T_O>();

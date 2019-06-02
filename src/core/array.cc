@@ -2979,6 +2979,51 @@ CL_DEFUN Fixnum_sp cl__vector_push_extend(T_sp newElement, Vector_sp vec, size_t
   return vec->vectorPushExtend(newElement, extension);
 }
 
+CL_DEFUN void core__verify_simple_vector_layout(size_t length_offset, size_t data_offset)
+{
+  size_t cxx_length_offset = offsetof(SimpleVector_O,_Data._Length);
+  size_t cxx_data_offset = offsetof(SimpleVector_O,_Data._Data);
+  if (length_offset!=cxx_length_offset)
+    SIMPLE_ERROR(BF("length_offset %lu does not match cxx_length_offset %lu") % length_offset % cxx_length_offset );
+  if (data_offset!=cxx_data_offset)
+    SIMPLE_ERROR(BF("data_offset %lu does not match cxx_data_offset %lu") % data_offset % cxx_data_offset );
+}
+
+CL_DEFUN void core__verify_rack_layout(size_t stamp_offset, size_t data_offset)
+{
+  size_t cxx_stamp_offset = offsetof(SimpleVector_O,_Data._Data)+sizeof(T_sp)*(RACK_SLOT_START-1);
+  size_t cxx_data_offset = offsetof(SimpleVector_O,_Data._Data)+sizeof(T_sp)*(RACK_SLOT_START);
+  if (stamp_offset!=cxx_stamp_offset)
+    SIMPLE_ERROR(BF("stamp_offset %lu does not match cxx_stamp_offset %lu") % stamp_offset % cxx_stamp_offset);
+  if (data_offset!=cxx_data_offset)
+    SIMPLE_ERROR(BF("data_offset %lu does not match cxx_data_offset %lu") % data_offset % cxx_data_offset);
+}
+
+
+CL_DEFUN void core__verify_mdarray_layout(size_t FillPointerOfLengthOfDummy_offset, size_t ArrayTotalSize_offset, size_t Data_offset, size_t DisplacedIndexOffset_offset, size_t Flags_offset, size_t rank_offset, size_t dimensions_offset)
+{
+  size_t cxx_FillPointerOfLengthOfDummy_offset = offsetof(MDArray_O,_FillPointerOrLengthOrDummy);
+  size_t cxx_ArrayTotalSize_offset = offsetof(MDArray_O,_ArrayTotalSize);
+  size_t cxx_Data_offset = offsetof(MDArray_O,_Data);
+  size_t cxx_DisplacedIndexOffset_offset = offsetof(MDArray_O,_DisplacedIndexOffset);
+  size_t cxx_Flags_offset = offsetof(MDArray_O,_Flags);
+  size_t cxx_rank_offset = offsetof(MDArray_O,_Dimensions._Length);
+  size_t cxx_dimensions_offset = offsetof(MDArray_O,_Dimensions._Data);
+  if (FillPointerOfLengthOfDummy_offset!=cxx_FillPointerOfLengthOfDummy_offset)
+    SIMPLE_ERROR(BF("FillPointerOfLengthOfDummy_offset %lu does not match cxx_FillPointerOfLengthOfDummy_offset %lu") % FillPointerOfLengthOfDummy_offset % cxx_FillPointerOfLengthOfDummy_offset );
+  if (ArrayTotalSize_offset!=cxx_ArrayTotalSize_offset)
+    SIMPLE_ERROR(BF("ArrayTotalSize_offset %lu does not match cxx_ArrayTotalSize_offset %lu") % ArrayTotalSize_offset % cxx_ArrayTotalSize_offset );
+  if (Data_offset!=cxx_Data_offset)
+    SIMPLE_ERROR(BF("Data_offset %lu does not match cxx_Data_offset %lu") % Data_offset % cxx_Data_offset );
+  if (DisplacedIndexOffset_offset!=cxx_DisplacedIndexOffset_offset)
+    SIMPLE_ERROR(BF("DisplacedIndexOffset_offset %lu does not match cxx_DisplacedIndexOffset_offset %lu") % DisplacedIndexOffset_offset % cxx_DisplacedIndexOffset_offset );
+  if (Flags_offset!=cxx_Flags_offset)
+    SIMPLE_ERROR(BF("Flags_offset %lu does not match cxx_Flags_offset %lu") % Flags_offset % cxx_Flags_offset );
+  if (rank_offset!=cxx_rank_offset)
+    SIMPLE_ERROR(BF("rank_offset %lu does not match cxx_rank_offset %lu") % rank_offset % cxx_rank_offset );
+  if (dimensions_offset!=cxx_dimensions_offset)
+    SIMPLE_ERROR(BF("dimensions_offset %lu does not match cxx_dimensions_offset %lu") % dimensions_offset % cxx_dimensions_offset );
+}
 
 
 

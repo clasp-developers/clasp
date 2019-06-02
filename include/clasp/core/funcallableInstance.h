@@ -59,7 +59,6 @@ namespace core {
     // entry_point is the LISP_CALLING_CONVENTION() macro
   FuncallableInstance_O(FunctionDescription* fdesc) :
     Base(funcallable_entry_point)
-      , _DebugOn(false)
       , _Class(_Nil<Instance_O>())
       , _Sig(_Nil<T_O>())
       , _FunctionDescription(fdesc)
@@ -70,7 +69,6 @@ namespace core {
     explicit FuncallableInstance_O(FunctionDescription* fdesc,Instance_sp metaClass, size_t slots) :
     Base(funcallable_entry_point),
       _Class(metaClass)
-      ,_DebugOn(false)
       ,_Sig(_Unbound<T_O>())
       ,_FunctionDescription(fdesc)
       , _CallHistory(_Nil<T_O>())
@@ -93,8 +91,6 @@ namespace core {
     gc::atomic_wrapper<T_sp>   _SpecializerProfile;
 //    T_sp   _Lock;
     gc::atomic_wrapper<T_sp>   _CompiledDispatchFunction;
-    bool   _DebugOn;
-  public:
   public:
     T_sp GFUN_NAME() const { return this->instanceRef(REF_GFUN_NAME); };
     T_sp GFUN_SPECIALIZERS() const { return this->instanceRef(REF_GFUN_SPECIALIZERS); };

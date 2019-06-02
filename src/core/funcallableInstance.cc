@@ -265,14 +265,6 @@ void FuncallableInstance_O::describe(T_sp stream) {
   clasp_write_string(ss.str(), stream);
 }
 
-CL_DEFUN void core__set_funcallable_instance_debug_on(FuncallableInstance_sp instance, bool debugOn) {
-  instance->_DebugOn = debugOn;
-}
-
-CL_DEFUN bool core__get_funcallable_instance_debug_on(FuncallableInstance_sp instance) {
-  return instance->_DebugOn;
-}
-
 CL_DEFUN T_mv clos__getFuncallableInstanceFunction(T_sp obj) {
   if (FuncallableInstance_sp iobj = obj.asOrNull<FuncallableInstance_O>()) {
     return Values(_lisp->_true(),Pointer_O::create((void*)iobj->entry.load()));
@@ -524,5 +516,13 @@ LCC_RETURN DtreeInterpreter_O::LISP_CALLING_CONVENTION() {
       return core::eval::funcall(clos::_sym_dispatch_miss,generic_function,lcc_vargs);
     }
 #endif
+
+
+CL_DEFUN void core__verify_funcallable_instance_layout(size_t funcallableInstance_size, size_t funcallableInstance_rack_offset)
+{
+  if (funcallableInstance_size!=sizeof(FuncallableInstance_O)) SIMPLE_ERROR(BF("The cmpintrinsics.lsp funcallableInstance_size %lu does not match sizeof(FuncallableInstance_O)") % funcallableInstance_size % sizeof(FuncallableInstance_O));
+  if (funcallableInstance_rack_offset!=offsetof(FuncallableInstance_O,_Rack))
+    SIMPLE_ERROR(BF("funcallableInstance_rack_offset %lu does not match offsetof(_Rack,FuncallableInstance_O) %lu") % funcallableInstance_rack_offset % offsetof(FuncallableInstance_O,_Rack));
+}
 
 };
