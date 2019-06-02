@@ -488,7 +488,7 @@ Return files."
                        (finished-some wpid pjob)
                        (when (and (numberp status)
                                   (not (zerop status)))
-                         (format t "wait returned for process ~d status ~d: exiting compile-system~%" wpid status)
+                         (format *error-output* "wait returned for process ~d status ~d: exiting compile-system~%" wpid status)
                          (core:exit 1))
                        (when reload (reload-some finished-entries))
                        (decf child-count))
@@ -645,11 +645,11 @@ Return files."
 
 
 (defun build-failure (condition)
-  (bformat t "\nBuild aborted.\n")
-  (bformat t "Received condition of type: %s\n%s\n"
+  (bformat *error-output* "\nBuild aborted.\n")
+  (bformat *error-output* "Received condition of type: %s\n%s\n"
            (type-of condition)
            condition)
-  (bformat t "About to exit clasp")
+  (bformat *error-output* "About to exit clasp")
   (core:exit 1))
 
 (defun load-aclasp (&key clean
