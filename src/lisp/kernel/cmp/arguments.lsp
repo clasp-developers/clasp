@@ -473,13 +473,15 @@ a_p = a_p_temp; a = a_temp;
               (irc-phi-add-incoming (car var-phis) (car registers) default-cont))
             (irc-begin-block default)
             ;; Test for too many arguments
-            (compile-error-if-too-many-arguments (+ nreq nopt) nargs)
+            (when safep
+              (compile-error-if-too-many-arguments (+ nreq nopt) nargs))
             (irc-branch-to-and-begin-block default-cont)
             (irc-br assn)
             ;; and, done.
             (irc-begin-block after)))
         ;; No optional arguments, so not much to do
-        (compile-error-if-too-many-arguments nreq nargs))))
+        (when safep
+          (compile-error-if-too-many-arguments nreq nargs)))))
 
 (defun process-cleavir-lambda-list (lambda-list)
   ;; We assume that the lambda list is in its correct format:
