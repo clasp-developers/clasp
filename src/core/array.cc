@@ -324,6 +324,12 @@ CL_DEFUN size_t cl__arrayDimension(Array_sp array, size_t idx)
   return array->arrayDimension(idx);
 }
 
+CL_LISPIFY_NAME("core:simple-array-p");
+CL_DEFUN bool core__simple_array_p(T_sp obj)
+{
+  return gc::IsA<AbstractSimpleVector_sp>(obj);
+}
+
 // ------------------------------------------------------------
 //
 // MDArray_O
@@ -581,7 +587,6 @@ CL_DEFUN  size_t cl__array_rank(Array_sp array)
   return array->rank();
 }
 
-
 CL_LAMBDA(core::array);
 CL_DECLARE();
 CL_DOCSTRING("arrayDisplacement");
@@ -591,6 +596,16 @@ CL_DEFUN T_mv cl__array_displacement(Array_sp array) {
   }
   MDArray_O* mdarray = reinterpret_cast<MDArray_O*>(&*array);
   return Values(mdarray->displacedTo(),clasp_make_fixnum(mdarray->displacedIndexOffset()));
+}
+
+// Next two used internally. In the compiler they'll be inlined.
+CL_LISPIFY_NAME("core:%displacement");
+CL_DEFUN T_sp core__PERCENTdisplacement(MDArray_sp array) {
+  return array->realDisplacedTo();
+}
+CL_LISPIFY_NAME("core:%displaced-index-offset");
+CL_DEFUN T_sp core__PERCENTdisplaced_index_offset(MDArray_sp array) {
+  return clasp_make_fixnum(array->displacedIndexOffset());
 }
 
 void core__copy_subarray(Array_sp dest, Fixnum_sp destStart, Array_sp orig, Fixnum_sp origStart, Fixnum_sp len) {
