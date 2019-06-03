@@ -233,10 +233,12 @@ void handle_all_queued_interrupts()
 }
 
 void handle_or_queue(core::ThreadLocalState* thread, core::T_sp signal_code ) {
-  if (!signal_code) {
-    printf("%s:%d handle_or_queue   signal_code is NULL\n", __FILE__, __LINE__ );
+  if (signal_code.nilp() || !signal_code.fixnump())
+    return;
+  gc::Fixnum signal_int = signal_code.unsafe_fixnum();
+  if ((signal_int == SIGSEGV || signal_int == SIGBUS || signal_int == SIGILL) {
+     handle_signal_now(signal_code,thread->_Process);
   }
-  if (signal_code.nilp() || !signal_code) return;
   if (interrupts_disabled_by_lisp()) {
     queue_signal(thread,signal_code,false);
   }
