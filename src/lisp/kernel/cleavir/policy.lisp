@@ -20,11 +20,13 @@
 
 (defmethod cleavir-policy:policy-qualities append ((env clasp-global-environment))
   '((maintain-shadow-stack boolean t)
+    (insert-array-bounds-checks boolean t)
     (do-type-inference boolean t)
     (do-dx-analysis boolean t)))
 ;;; FIXME: Can't just punt like normal since it's an APPEND method combo.
 (defmethod cleavir-policy:policy-qualities append ((env null))
   '((maintain-shadow-stack boolean t)
+    (insert-array-bounds-checks boolean t)
     (do-type-inference boolean t)
     (do-dx-analysis boolean t)))
 
@@ -69,8 +71,22 @@
   (> (cleavir-policy:optimize-value optimize 'space)
      (cleavir-policy:optimize-value optimize 'compilation-speed)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Policy INSERT-ARRAY-BOUNDS-CHECKS
+
+(defmethod cleavir-policy:compute-policy-quality
+    ((quality (eql 'insert-array-bounds-checks))
+     optimize
+     (environment clasp-global-environment))
+  (> (cleavir-policy:optimize-value optimize 'safety) 0))
+
 (defun has-policy-p (instruction quality)
   (cleavir-policy:policy-value (cleavir-ir:policy instruction) quality))
+
+(defun environment-has-policy-p (environment quality)
+  (cleavir-policy:policy-value
+   (cleavir-env:policy (cleavir-env:optimize-info environment)) quality))
 
 ;;; Kildall can only be done on whole functions, due to how control flow in
 ;;; HIR works. But do not affect the top level enter instruction most of the time.

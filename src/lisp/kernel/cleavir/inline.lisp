@@ -488,6 +488,35 @@
           (error 'type-error :datum index :expected-type 'fixnum))
       (error 'type-error :datum vector :expected-type 'simple-vector)))
 
+;;; Unsafe versions to use that don't check bounds (but still check type)
+(debug-inline "svref/no-bounds-check")
+(declaim (inline svref/no-bounds-check))
+(defun svref/no-bounds-check (vector index)
+  (if (typep vector 'simple-vector)
+      (if (typep index 'fixnum)
+          (cleavir-primop:aref vector index t t t)
+          (error 'type-error :datum index :expected-type 'fixnum))
+      (error 'type-error :datum vector :expected-type 'simple-vector)))
+
+(declaim (inline (setf svref/no-bounds-check)))
+(defun (setf svref/no-bounds-check) (value vector index)
+  (if (typep vector 'simple-vector)
+      (if (typep index 'fixnum)
+          (progn (cleavir-primop:aset vector index value t t t)
+                 value)
+          (error 'type-error :datum index :expected-type 'fixnum))
+      (error 'type-error :datum vector :expected-type 'simple-vector)))
+
+(define-cleavir-compiler-macro svref (&whole whole vector index &environment env)
+  (if (environment-has-policy-p env 'insert-array-bounds-checks)
+      whole
+      `(svref/no-bounds-check ,vector ,index)))
+(define-cleavir-compiler-macro (setf svref)
+    (&whole whole value vector index &environment env)
+  (if (environment-has-policy-p env 'insert-array-bounds-checks)
+      whole
+      `(funcall #'(setf svref/no-bounds-check) ,value ,vector ,index)))
+
 (debug-inline "%unsafe-vector-ref")
 (declaim (inline %unsafe-vector-ref))
 (defun %unsafe-vector-ref (array index)
@@ -590,7 +619,7 @@
     (unless (vector-in-bounds-p vector index)
       ;; From elt: Should signal an error of type type-error if index is not a valid sequence index for sequence.
       (etypecase vector
-        ((simple-vector *) ; FIXME: why is this not simple-array * (*)
+        ((simple-array * (*))
          (let ((max (core::vector-length vector)))
            (error 'core:array-out-of-bounds :datum index
                                             :expected-type `(integer 0 (,max))
@@ -607,30 +636,6 @@
     ;; This function takes care of element type discrimination.
     (%unsafe-vector-ref underlying-array (add-indices index offset))))
 
-(declaim (inline cl:row-major-aref))
-(defun cl:row-major-aref (array index)
-  ;; First, undisplace. This can be done independently
-  ;; of the index, meaning it could potentially be
-  ;; moved out of loops, though that can invite inconsistency
-  ;; in a multithreaded environment.
-  (with-array-data (underlying-array offset array)
-    ;; Now bounds check. Use the original arguments.
-    (unless (row-major-array-in-bounds-p array index)
-      (etypecase array
-        ((simple-array * (*))
-         (let ((max (core::vector-length array)))
-           (error 'core:array-out-of-bounds :datum index
-                                            :expected-type `(integer 0 (,max))
-                                            :array array)))
-        (array
-         (let ((max (core::%array-total-size array)))
-           (error 'core:array-out-of-bounds :datum index
-                                            :expected-type `(integer 0 (,max))
-                                            :array array)))))
-    ;; Okay, now array is a vector/simple, and index is valid.
-    ;; This function takes care of element type discrimination.
-    (%unsafe-vector-ref underlying-array (add-indices index offset))))
-
 (declaim (inline vector-set))
 (defun vector-set (vector index value)
   (unless (vector-in-bounds-p vector index)
@@ -641,23 +646,43 @@
   (with-array-data (underlying-array offset vector)
     (%unsafe-vector-set underlying-array (add-indices index offset) value)))
 
-(declaim (inline core:row-major-aset))
-(defun core:row-major-aset (array index value)
+(declaim (inline row-major-aref/no-bounds-check))
+(defun row-major-aref/no-bounds-check (array index)
+  ;; First, undisplace. This can be done independently
+  ;; of the index, meaning it could potentially be
+  ;; moved out of loops, though that can invite inconsistency
+  ;; in a multithreaded environment.
   (with-array-data (underlying-array offset array)
-    (unless (row-major-array-in-bounds-p array index)
-      (etypecase array
-        ((simple-array * (*))
-         (let ((max (core::vector-length array)))
-           (error 'core:array-out-of-bounds :datum index
-                                            :expected-type `(integer 0 (,max))
-                                            :array array)))
-        (array
-         (let ((max (core::%array-total-size array)))
-           (error 'core:array-out-of-bounds :datum index
-                                            :expected-type `(integer 0 (,max))
-                                            :array array)))))
+    ;; Array is a vector/simple, and we assume index is valid.
+    (%unsafe-vector-ref underlying-array (add-indices index offset))))
+
+(declaim (inline cl:row-major-aref))
+(defun cl:row-major-aref (array index)
+  ;; Bounds check. Use the original arguments.
+  (unless (row-major-array-in-bounds-p array index)
+    (let ((max (etypecase array
+                 ((simple-array * (*)) (core::vector-length array))
+                 (array (core::%array-total-size array)))))
+      (error 'core:array-out-of-bounds :datum index
+                                       :expected-type `(integer 0 (,max))
+                                       :array array)))
+  (row-major-aref/no-bounds-check array index))
+
+(declaim (inline row-major-aset/no-bounds-check))
+(defun row-major-aset/no-bounds-check (array index value)
+  (with-array-data (underlying-array offset array)
     (%unsafe-vector-set underlying-array (add-indices index offset) value)))
 
+(declaim (inline core:row-major-aset))
+(defun core:row-major-aset (array index value)
+  (unless (row-major-array-in-bounds-p array index)
+    (let ((max (etypecase array
+                 ((simple-array * (*)) (core::vector-length array))
+                 (array (core::%array-total-size array)))))
+      (error 'core:array-out-of-bounds :datum index
+                                       :expected-type `(integer 0 (,max))
+                                       :array array)))
+  (row-major-aset/no-bounds-check array index value))
 
 (declaim (inline schar (setf schar) char (setf char)))
 (defun schar (string index)
@@ -694,7 +719,13 @@
                           for subsym in (reverse subsyms)
                           collect `(* ,sub ,subsym)))))))))
 
-(define-cleavir-compiler-macro array-row-major-index (&whole form array &rest subscripts)
+;;; Insert some form if the policy is in effect, otherwise nil.
+;;; intended use is like ,@(when-policy ...)
+(defun when-policy (env policy form)
+  (when (environment-has-policy-p env policy) (list form)))
+
+(define-cleavir-compiler-macro array-row-major-index
+    (&whole form array &rest subscripts &environment env)
   ;; FIXME: Cleavir arithmetic is not yet clever enough for this to be fast in the
   ;; >1dimensional case. We need wrapped fixnum multiplication and addition, basically,
   ;; where overflow jumps to an error.
@@ -711,22 +742,25 @@
                ,@(loop for ssub in ssubscripts for sub in subscripts
                        collecting `(,ssub ,sub)))
            (declare (type fixnum ,@ssubscripts))
-           ;; Now verify that the rank is correct
-           (unless (eq (array-rank ,sarray) ,rank)
-             (error "Wrong number of subscripts, ~d, for an array of rank ~d."
-                    ,rank (array-rank ,sarray)))
+           ;; Now verify that the rank is correct (maybe)
+           ,@(when-policy
+              env 'insert-array-bounds-checks
+              `(unless (eq (array-rank ,sarray) ,rank)
+                 (error "Wrong number of subscripts, ~d, for an array of rank ~d."
+                        ,rank (array-rank ,sarray))))
            ;; We need the array dimensions, so bind those
            (let (,@(loop for dimsym in dimsyms
                          for axis below rank
                          collect `(,dimsym (%array-dimension ,sarray ,axis))))
              (declare (type fixnum ,@dimsyms))
-             ;; Check that the index is valid
-             ,@(loop for ssub in ssubscripts
-                     for dimsym in dimsyms
-                     for axis below rank
-                     collect `(unless (and (>= ,ssub 0) (< ,ssub ,dimsym))
-                                (error "Invalid index ~d for axis ~d of array: expected 0-~d"
-                                       ,ssub ,axis ,dimsym)))
+             ;; Check that the index is valid (maybe)
+             ,@(when (environment-has-policy-p env 'insert-array-bounds-checks)
+                 (loop for ssub in ssubscripts
+                       for dimsym in dimsyms
+                       for axis below rank
+                       collect `(unless (and (>= ,ssub 0) (< ,ssub ,dimsym))
+                                  (error "Invalid index ~d for axis ~d of array: expected 0-~d"
+                                         ,ssub ,axis ,dimsym))))
              ;; Now we know we're good, do the actual computation
              ,(row-major-index-computer sarray dimsyms ssubscripts))))))
 
