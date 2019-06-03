@@ -510,6 +510,19 @@ CL_DEFUN  T_sp cl__rowMajorAref(Array_sp array, size_t idx)
   return array->rowMajorAref(idx);
 }
 
+CL_LISPIFY_NAME("core:vref");
+CL_DEFUN T_sp core__vref(AbstractSimpleVector_sp vec, size_t idx)
+{
+  return vec->vref(idx);
+}
+
+CL_LISPIFY_NAME("CORE:vref");
+CL_DEFUN_SETF T_sp core__vset(T_sp value, AbstractSimpleVector_sp vec, size_t idx)
+{
+  vec->vset(idx, value);
+  return value;
+}
+
 CL_DEFUN size_t core__arrayFlags(Array_sp a)
 {
   if (gc::IsA<AbstractSimpleVector_sp>(a)) {

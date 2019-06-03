@@ -510,6 +510,8 @@ namespace core {
     virtual size_t arrayTotalSize() const { return this->length(); };
     virtual void rowMajorAset(size_t idx, T_sp value) = 0;
     virtual T_sp rowMajorAref(size_t idx) const = 0;
+    virtual void vset(size_t idx, T_sp value) = 0;
+    virtual T_sp vref(size_t idx) const = 0;
     virtual size_t rank() const override { return 1; };
     virtual bool adjustableArrayP() const final {return false;};
     virtual size_t displacedIndexOffset() const override { return 0; };
@@ -582,6 +584,8 @@ namespace core {
     virtual Array_sp nreverse() final { return templated_ranged_nreverse(*this,0,this->length()); };
     CL_METHOD_OVERLOAD virtual void rowMajorAset(size_t idx, T_sp value) final {(*this)[idx] = leaf_type::from_object(value);}
     CL_METHOD_OVERLOAD virtual T_sp rowMajorAref(size_t idx) const final {return leaf_type::to_object((*this)[idx]);}
+    CL_METHOD_OVERLOAD virtual void vset(size_t idx, T_sp value) final {(*this)[idx] = leaf_type::from_object(value);}
+    CL_METHOD_OVERLOAD virtual T_sp vref(size_t idx) const final {return leaf_type::to_object((*this)[idx]);}
     virtual Array_sp unsafe_subseq(size_t start, size_t end) const final {
       BOUNDS_ASSERT(start<=end&&end<=this->length());
       return leaf_type::make(end-start,value_type(),true,end-start,&(*this)[start]);
@@ -917,6 +921,8 @@ namespace core {
   public:
     CL_METHOD_OVERLOAD virtual void rowMajorAset(size_t idx, T_sp value) final {this->setBit(idx,value.unsafe_fixnum());};
     CL_METHOD_OVERLOAD virtual T_sp rowMajorAref(size_t idx) const final {return clasp_make_fixnum(this->testBit(idx)); };
+    CL_METHOD_OVERLOAD virtual void vset(size_t idx, T_sp value) final {this->setBit(idx,value.unsafe_fixnum());};
+    CL_METHOD_OVERLOAD virtual T_sp vref(size_t idx) const final {return clasp_make_fixnum(this->testBit(idx)); };
     virtual void sxhash_(HashGenerator& hg) const final {this->ranged_sxhash(hg,0,this->length());}
     virtual void ranged_sxhash(HashGenerator& hg, size_t start, size_t end) const final {
       if (hg.isFilling()) {
