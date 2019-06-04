@@ -298,6 +298,12 @@ and is not adjustable."
 ;;			TYPEP
 ;;************************************************************
 
+(defun simple-array-p (x)
+  (and (arrayp x)
+       (not (adjustable-array-p x))
+       (not (array-has-fill-pointer-p x))
+       (not (array-displacement x))))
+
 (defun complex-array-p (x)
   (and (arrayp x)
        (or (adjustable-array-p x)

@@ -176,6 +176,7 @@
     realp real
     packagep package
     pathnamep pathname
+    core:data-vector-p core:abstract-simple-vector
     simple-array-p simple-array
     simple-bit-vector-p simple-bit-vector
     simple-string-p simple-string

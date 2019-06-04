@@ -324,8 +324,8 @@ CL_DEFUN size_t cl__arrayDimension(Array_sp array, size_t idx)
   return array->arrayDimension(idx);
 }
 
-CL_LISPIFY_NAME("core:simple-array-p");
-CL_DEFUN bool core__simple_array_p(T_sp obj)
+CL_LISPIFY_NAME("core:data-vector-p");
+CL_DEFUN bool core__data_vector_p(T_sp obj)
 {
   return gc::IsA<AbstractSimpleVector_sp>(obj);
 }
