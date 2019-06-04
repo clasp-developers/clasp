@@ -127,7 +127,7 @@ default value of INITIAL-ELEMENT depends on TYPE."
                      ;;; ecl  tests instead for (or (and (subtypep type 'NULL) (plusp size))
                      ;;;                            (and (subtypep type 'CONS) (zerop size)))
                      (if (subtypep 'LIST type)
-                 result
+                         result
                          (if (and (subtypep type 'CONS) (zerop size))
                              (error-sequence-length result type 0)
                              result))
@@ -236,25 +236,40 @@ default value of INITIAL-ELEMENT depends on TYPE."
 (defun coerce-to-list (object)
   (if (listp object)
       object
-      (do ((it (make-seq-iterator object) (seq-iterator-next object it))
-	   (output nil))
-	  ((null it) (nreverse output))
-	(push (seq-iterator-ref object it) output))))
+      (let* ((head (list nil)) (tail head))
+        (dosequence (elt object (cdr head))
+          (let ((new-tail (list elt)))
+            (rplacd tail new-tail)
+            (setq tail new-tail))))))
+
+;;; separate because it's easier to not make the whole list at once.
+;;; Only used in a compiler macroexpansion, for now
+(defun concatenate-to-list (core:&va-rest sequences)
+  (let* ((head (list nil)) (tail head))
+    (dovaslist (sequence sequences (cdr head))
+      (dosequence (elt sequence)
+        (let ((new-tail (list elt)))
+          (rplacd tail new-tail)
+          (setq tail new-tail))))))
 
 (defun concatenate (result-type &rest sequences)
-  "Args: (type &rest sequences)
-Returns a new sequence of the specified type, consisting of all elements of
-SEQUENCEs."
-  (do* ((length-list (mapcar #'length sequences))
-	(output (make-sequence result-type (apply #'+ length-list)))
-        (sequences sequences (rest sequences))
-        (i (make-seq-iterator output)))
-       ((null sequences) output)
-    (do* ((s (first sequences))
-	  (j (make-seq-iterator s) (seq-iterator-next s j)))
-	 ((seq-iterator-endp s j))
-      (seq-iterator-set output i (seq-iterator-ref s j))
-      (setq i (seq-iterator-next output i)))))
+  (let* ((lengths-list (mapcar #'length sequences))
+         (result (make-sequence result-type (apply #'+ lengths-list))))
+    (if (listp result)
+        (let ((cons result))
+          (do* ((sequences sequences (rest sequences))
+                (sequence (first sequences) (first sequences)))
+               ((null sequences) result)
+            (dosequence (elt sequence)
+              (rplaca cons elt)
+              (setq cons (cdr cons)))))
+        (with-array-data ((vec result) index)
+          (do* ((sequences sequences (rest sequences))
+                (sequence (first sequences) (first sequences)))
+               ((null sequences) result)
+            (dosequence (elt sequence)
+              (setf (vref vec index) elt)
+              (incf index)))))))
 
 ;;; This is not called anywhere yet (just used for a compiler macro)
 ;;; but it might be useful to have.

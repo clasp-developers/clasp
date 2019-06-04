@@ -19,14 +19,6 @@
 (eval-when (:execute)
   (load (merge-pathnames "seqmacros.lsp" *load-truename*)))
 
-(defun seqtype (sequence)
-  (cond ((listp sequence) 'list)
-	((base-string-p sequence) 'base-string)
-        ((stringp sequence) 'string)
-        ((bit-vector-p sequence) 'bit-vector)
-        ((vectorp sequence) (list 'vector (array-element-type sequence)))
-        (t (error "~S is not a sequence." sequence))))
-
 (defun sequence-count (count)
   (cond ((null count)
          most-positive-fixnum)
@@ -89,15 +81,15 @@
                (unless ivsp
                  (setf initial-value (key (aref sequence (1- end)))
                        end (1- end)))
-               (do-vector(elt sequence start end :from-end t
-                              :output initial-value)
+               (do-subvector (elt sequence start end :from-end t
+                                                     :output initial-value)
                  (setf initial-value
                        (funcall function (key elt) initial-value))))
               (t
                (unless ivsp
                  (setf initial-value (key (aref sequence start))
                        start (1+ start)))
-               (do-vector(elt sequence start end :output initial-value)
+               (do-subvector (elt sequence start end :output initial-value)
                  (setf initial-value
                        (funcall function initial-value (key elt))))
                  ))))))
@@ -179,19 +171,19 @@
                                       :key key)))
               (setf skip (if (< existing %count) 0 (- existing %count))))
             (if (eq out in)
-                (do-vector (elt in start end :index index)
+                (do-subvector (elt in start end :index index)
                   (when (and (compare which (key elt))
                              (minusp (decf skip)))
                     (return))
                   (incf start))
-                (do-vector (elt in start end :index index)
+                (do-subvector (elt in start end :index index)
                   (when (and (compare which (key elt))
                              (minusp (decf skip)))
                     (return))
                   (setf (aref (the vector out) start) elt
                         start (1+ start)))))
           ;; ... now filter the rest
-          (do-vector (elt in start end :index index)
+          (do-subvector (elt in start end :index index)
             (if (compare which (key elt))
                 (when (zerop (decf %count))
                   (setf end (1+ index))
@@ -335,12 +327,11 @@
                 (count item (reverse sequence)
                        :start (- l end) :end (- l start)
                        :test test :test-not test-not :key key)
-		(do-vector (elt sequence start end :from-end t
-                                :output counter)
+		(do-subvector (elt sequence start end :from-end t
+                                                      :output counter)
 		  (when (compare item (key elt))
 		    (incf counter))))
-	    (do-sequence (elt sequence start end :specialize t
-                              :output counter)
+	    (do-subsequence (elt sequence start end :output counter)
 	      (when (compare item (key elt))
 		(incf counter))))))))
 
@@ -387,14 +378,14 @@
                               :start (- l end) :end (- l start)
                               :key key :test test :test-not test-not
                               :count count))
-                (do-vector (elt sequence start end :setter setf-elt
-                                :from-end t :output sequence)
+                (do-subvector (elt sequence start end :setter setf-elt
+                                                      :from-end t :output sequence)
                   (when (compare old (key elt))
                     (setf-elt new)
                     (when (zerop (decf %count))
                       (return sequence)))))
-            (do-sequence (elt sequence start end :setter setf-elt
-                              :output sequence :specialize t)
+            (do-subsequence (elt sequence start end :setter setf-elt
+                                                    :output sequence)
               (when (compare old (key elt))
                 (setf-elt new)
                 (when (zerop (decf %count))
@@ -419,8 +410,7 @@
     (with-start-end (start end sequence length)
       (declare (ignore length))
       (let ((output nil))
-        (do-sequence (elt sequence start end
-                          :output output :index index :specialize t)
+        (do-subsequence (elt sequence start end :output output :index index)
           (when (compare item (key elt))
             (unless from-end
               (return elt))
@@ -442,8 +432,8 @@
     (declare (optimize (speed 3) (safety 0) (debug 0)))
     (with-start-end (start end sequence)
       (let ((output nil))
-        (do-sequence (elt sequence start end
-                      :output output :index index :specialize t)
+        (do-subsequence (elt sequence start end
+                             :output output :index index)
           (when (compare item (key elt))
             (unless from-end
               (return index))
@@ -572,7 +562,7 @@ Returns a copy of SEQUENCE without duplicated elements."
                    (setf end current)
                    (setf start (1+ current)))
                (let ((base (key (aref sequence current))))
-                 (do-vector (elt sequence start end :output nil)
+                 (do-subvector (elt sequence start end :output nil)
                    (when (compare base (key elt))
                      (return t))))))
         (let ((index start)
