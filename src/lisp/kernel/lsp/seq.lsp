@@ -252,6 +252,14 @@ default value of INITIAL-ELEMENT depends on TYPE."
           (rplacd tail new-tail)
           (setq tail new-tail))))))
 
+(defun concatenate-into-vector (vector core:&va-rest sequences)
+  ;; vector is assumed to be non complex and have the correct length.
+  (let ((index 0))
+    (dovaslist (sequence sequences vector)
+      (dosequence (elt sequence)
+        (setf (vref vector index) elt)
+        (incf index)))))
+
 (defun concatenate (result-type &rest sequences)
   (let* ((lengths-list (mapcar #'length sequences))
          (result (make-sequence result-type (apply #'+ lengths-list))))

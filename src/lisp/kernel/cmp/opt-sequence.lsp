@@ -15,43 +15,6 @@
 
 (in-package "COMPILER")
 
-#+(or)
-(define-compiler-macro si::make-seq-iterator (seq &optional (start 0))
-  (with-clean-symbols (%seq %start)
-    `(let ((%seq (optional-type-check ,seq sequence))
-           (%start ,start))
-       (cond ((consp %seq)
-              (nthcdr %start %seq))
-             ((< %start (length %seq))
-              %start)
-             (t
-              nil)))))
-
-#+(or)
-(define-compiler-macro si::seq-iterator-ref (seq iterator)
-  (with-clean-symbols (%seq %iterator)
-    `(let* ((%seq ,seq)
-            (%iterator ,iterator))
-       (declare (optimize (safety 0)))
-       (if (si::fixnump %iterator)
-           ;; Fixnum iterators are always fine
-           (aref %seq %iterator)
-           ;; Error check in case we may have been passed an improper list
-           (cons-car (checked-value cons %iterator))))))
-
-#+(or)
-(define-compiler-macro si::seq-iterator-next (seq iterator)
-  (with-clean-symbols (%seq %iterator)
-    `(let* ((%seq ,seq)
-            (%iterator ,iterator))
-       (declare (optimize (safety 0)))
-       (if (si::fixnump %iterator)
-           (let ((%iterator (1+ (the fixnum %iterator))))
-             (declare (fixnum %iterator))
-             (and (< %iterator (length (the vector %seq)))
-                  %iterator))
-           (cons-cdr %iterator)))))
-
 (defmacro do-in-seq ((%elt sequence &key (start 0) end output) &body body)
   (si::with-unique-names (%start %iterator %counter %sequence)
     (flet ((optional-end (&rest forms)
@@ -159,13 +122,38 @@
                          (,r (if (< ,ss 0)
                                  (error 'type-error :datum ,ss :expected-type '(integer 0 *))
                                  (sys:make-vector ',(if (eq element-type '*) t element-type)
-                                                  ,ss nil nil nil 0))))
+                                                  ,ss))))
                     ,@(when iesp
                         `((si::fill-array-with-elt ,r ,initial-element 0 nil)))
                     ,@(unless (eql length '*)
                         `((unless (eql ,length ,ss)
                             (si::error-sequence-length ,r ',type ,ss))))
                     ,r)))))))
+
+;;;
+;;; CONCATENATE
+;;;
+
+(define-compiler-macro concatenate
+    (&whole form result-type &rest sequences &environment env)
+  (unless (constantp result-type env) (return-from concatenate form))
+  (let ((type (ext:constant-form-value result-type env)))
+    (multiple-value-bind (element-type length success)
+        (si::closest-sequence-type type)
+      (cond ((not success)
+             (cmp:warn-undefined-type nil type)
+             form)
+            ((eq element-type 'list)
+             `(si::concatenate-to-list ,@sequences))
+            (t
+             (let ((symlist (gensym-list sequences "SEQUENCE")))
+               `(let (,@(loop for s in symlist for ss in sequences
+                              collect `(,s ,ss)))
+                  (si::concatenate-into-vector
+                   (sys:make-vector ',(if (eq element-type '*) t element-type)
+                                    (+ ,@(loop for s in symlist
+                                               collect `(length ,s))))
+                   ,@sequences))))))))
 
 ;;;
 ;;; MAP
