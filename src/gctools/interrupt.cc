@@ -236,7 +236,7 @@ void handle_or_queue(core::ThreadLocalState* thread, core::T_sp signal_code ) {
   if (signal_code.nilp() || !signal_code.fixnump())
     return;
   gc::Fixnum signal_int = signal_code.unsafe_fixnum();
-  if ((signal_int == SIGSEGV || signal_int == SIGBUS || signal_int == SIGILL) {
+  if (signal_int == SIGSEGV || signal_int == SIGBUS || signal_int == SIGILL) {
      handle_signal_now(signal_code,thread->_Process);
   }
   if (interrupts_disabled_by_lisp()) {
