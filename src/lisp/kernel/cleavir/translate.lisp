@@ -6,7 +6,7 @@
   "controls if cleavir debugging is carried out on literal compilation. 
 when this is t a lot of graphs will be generated.")
 
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Set the source-position for an instruction
 ;;;
@@ -89,16 +89,28 @@ when this is t a lot of graphs will be generated.")
     (instruction return-value successors abi current-function-info)
   (let ((origin (cleavir-ir:origin instruction)))
     (when (and *trap-null-origin* (null (cleavir-ir:origin instruction)))
-;;;    (error "translate-branch-instruction :around")
       (format *error-output* "Instruction with nil origin: ~a  origin: ~a~%" instruction (cleavir-ir:origin instruction)))
     (with-debug-info-source-position ((ensure-origin origin 9995) (metadata current-function-info))
       (call-next-method))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Helpers for translating HIR locations to LLVM variables.
 
-(defvar *basic-blocks*)
-(defvar *ownerships*)
-(defvar *tags*)
-(defvar *vars*)
+;;; HIR is not in SSA form, so in general we can use allocas and load/store to
+;;; simulate those variables in llvm - it can then run the mem2reg pass to
+;;; convert that to SSA and avoid touching memory if possible.
+;;; We try to make things easier for LLVM by translating HIR data as SSA
+;;; variables if they happen to have only one static definition already.
+;;; This ALMOST works, but due to how HIR is generated, in one obscure case
+;;; with unwinds, the correct HIR has a use-before-define. See bug #642.
+;;; Example: (values (block nil ((lambda () (return (loop))))))
+;;; As such, we fall back to an alloca rather than signaling an error.
+;;; The better thing to do would be to have Cleavir not generate this kind of
+;;; HIR, so we could treat a use-before-define as a bug. FIXME FIXME FIXME
+
+(defvar *datum-variables*)
+(defvar *datum-allocas*)
 
 (defun datum-name-as-string (datum)
   ;; We need to write out setf names as well as symbols, in a simple way.
@@ -115,9 +127,22 @@ when this is t a lot of graphs will be generated.")
     (cleavir-ir:lexical-location
      (cmp:alloca-t* (datum-name-as-string datum)))))
 
+(defun new-datum-alloca (datum)
+  (setf (gethash datum *datum-allocas*) (make-datum-alloca datum)))
+
 (defun datum-alloca (datum)
-  (or (gethash datum *vars*)
-      (setf (gethash datum *vars*) (make-datum-alloca datum))))
+  (gethash datum *datum-allocas*))
+
+(defun ensure-datum-alloca (datum)
+  (or (datum-alloca datum) (new-datum-alloca datum)))
+
+(defun datum-variable (datum)
+  (gethash datum *datum-variables*))
+
+(defun new-datum-variable (datum value)
+  (unless (null (datum-variable datum))
+    (error "BUG: SSAable output ~a previously defined" datum))
+  (setf (gethash datum *datum-variables*) value))
 
 (defun ssablep (location)
   (let ((defs (cleavir-ir:defining-instructions location)))
@@ -128,22 +153,28 @@ when this is t a lot of graphs will be generated.")
     ((typep datum 'cleavir-ir:immediate-input)
      (cmp:irc-int-to-ptr (%i64 (cleavir-ir:value datum)) cmp:%t*%))
     ((typep datum 'cleavir-ir:lexical-location)
-     (let ((existing (gethash datum *vars*)))
-       (if (null existing)
-           (error "BUG: Input ~a not previously defined" datum)
-           (if (ssablep datum)
-               existing
-               (cmp:irc-load existing label)))))
+     (let ((alloca (datum-alloca datum)))
+       (if (null alloca)
+           (or (datum-variable datum)
+               #+(or)
+               (error "BUG: Input ~a not previously defined" datum)
+               (cmp:irc-load (new-datum-alloca datum) label))
+           (cmp:irc-load alloca))))
     (t (error "datum ~s must be an immediate-input or lexical-location"
               datum))))
 
 (defun out (value datum &optional (label ""))
   (if (ssablep datum)
-      (progn
-        (unless (null (gethash datum *vars*))
-          (error "BUG: SSAable output ~a previously defined" datum))
-        (setf (gethash datum *vars*) value))
-      (cmp:irc-store value (datum-alloca datum) label)))
+      (new-datum-variable datum value)
+      (cmp:irc-store value (ensure-datum-alloca datum) label)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Translate
+
+(defvar *basic-blocks*)
+(defvar *ownerships*)
+(defvar *tags*)
 
 (defun layout-basic-block (basic-block return-value abi current-function-info)
   (with-accessors ((first cleavir-basic-blocks:first-instruction)
@@ -421,7 +452,8 @@ when this is t a lot of graphs will be generated.")
       (error "Uninitialized inputs: ~a" uninitialized)))
   (let* ((*basic-blocks* (cleavir-basic-blocks:basic-blocks initial-instruction))
          (*tags* (make-hash-table :test #'eq))
-         (*vars* (make-hash-table :test #'eq))
+         (*datum-variables* (make-hash-table :test #'eq))
+         (*datum-allocas* (make-hash-table :test #'eq))
          (*compiled-enters* (make-hash-table :test #'eq))
          (*instruction-go-indices* go-indices)
          (*map-enter-to-function-info* map-enter-to-function-info)
