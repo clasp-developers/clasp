@@ -232,7 +232,17 @@ Return files."
                                                    (list* :image-startup-position position (entry-compile-file-options entry))
                                                    (entry-compile-file-options entry)))))
             #+dbg-print(bformat t "DBG-PRINT  source-path = %s%N" source-path)
-            (apply #'cmp::compile-file-serial compile-file-arguments)
+            (if verbose
+                (let ((before-ms (get-internal-run-time))
+                      (before-bytes (gctools:bytes-allocated)))
+                  (apply #'cmp::compile-file-serial compile-file-arguments)
+                  (let ((after-ms (get-internal-run-time))
+                        (after-bytes (gctools:bytes-allocated)))
+                    (core:bformat t
+                                  "Time run(%.3f secs) consed(%d bytes)%N"
+                                   (float (/ (- after-ms before-ms) internal-time-units-per-second))
+                                  (- after-bytes before-bytes))))
+                (apply #'cmp::compile-file-serial compile-file-arguments))
             (if reload
                 (let ((reload-file (make-pathname :type "fasl" :defaults output-path)))
 		  (unless silent
