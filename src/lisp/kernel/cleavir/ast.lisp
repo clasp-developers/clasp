@@ -111,14 +111,16 @@
 ;;; This AST is used to represent a call to an intrinsic function inserted into the generated code.
 
 (defclass base-foreign-call-ast (cleavir-ast:ast)
-  ((%argument-asts :initarg :argument-asts :reader argument-asts)))
+  ((%foreign-types :initarg :foreign-types :accessor foreign-types :initform nil)
+   (%argument-asts :initarg :argument-asts :reader argument-asts)))
 
 (cleavir-io:define-save-info base-foreign-call-ast
-  (:argument-asts argument-asts))
+    (:foreign-types foreign-types)
+    (:argument-asts argument-asts))
 
 (defmethod cleavir-ast-graphviz::label ((ast base-foreign-call-ast))
   (with-output-to-string (s)
-    (format s "base-foreign-call")))
+    (format s "base-foreign-call ~a" (foreign-types ast))))
 
 (defmethod cleavir-ast:children ((ast base-foreign-call-ast))
   (argument-asts ast))
@@ -150,11 +152,9 @@
 ;;;   inserted into the generated code.
 
 (defclass foreign-call-ast (base-foreign-call-ast cleavir-ast:one-value-ast-mixin)
-  ((%foreign-types :initarg :foreign-types :accessor foreign-types)
-   (%function-name :initarg :function-name :accessor function-name)))
+  ((%function-name :initarg :function-name :accessor function-name)))
 
 (cleavir-io:define-save-info foreign-call-ast
-    (:foreign-types foreign-types)
     (:function-name function-name))
 
 (defmethod cleavir-ast-graphviz::label ((ast foreign-call-ast))
