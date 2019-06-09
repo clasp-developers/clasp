@@ -83,7 +83,7 @@ namespace core {
     // _Class   (matches offset of Instance_O)
     // _Rack    (matches offset of Instance_O)
     Instance_sp _Class;
-    SimpleVector_sp _Rack;
+    Rack_sp _Rack;
     T_sp   _Sig;
     FunctionDescription* _FunctionDescription;
     std::atomic<size_t>         _Compilations;
@@ -140,8 +140,8 @@ namespace core {
     virtual int column() const { return 0; };
     virtual T_sp lambdaListHandler() const { HARD_IMPLEMENT_ME(); };
   public: // The hard-coded indexes above are defined below to be used by Class
-    void initializeSlots(gctools::Stamp is, size_t numberOfSlots);
-    void initializeClassSlots(Creator_sp creator, gctools::Stamp class_stamp);
+    void initializeSlots(gctools::ShiftedStamp is, size_t numberOfSlots);
+    void initializeClassSlots(Creator_sp creator, gctools::ShiftedStamp class_stamp);
     virtual void setf_lambda_list(List_sp lambda_list) { this->GFUN_LAMBDA_LIST_set(lambda_list); };
     virtual T_sp lambda_list() const { return this->GFUN_LAMBDA_LIST(); };
   public:
@@ -226,15 +226,28 @@ FORWARD(DtreeInterpreter);
   class DtreeInterpreter_O : public Closure_O {
     LISP_CLASS(core, CorePkg, DtreeInterpreter_O, "DtreeInterpreter",Closure_O);
   public:
+    static const size_t dtree_eql_test_step = 2; // size of the step between dtree eql_tests
+    static const size_t dtree_eql_test_outcome_index = 0;
+    static const size_t dtree_eql_test_spec_index = 1;
+    static const size_t dtree_range_step = 3; // size of the step between dtree ranges
+    static const size_t dtree_range_outcome_index = 0;
+    static const size_t dtree_range_low_index = 1;
+    static const size_t dtree_range_high_index = 2;
+    inline static size_t dtree_eql_test_step_fn() { return dtree_eql_test_step; };
+    inline static size_t dtree_range_step_fn() { return dtree_range_step; };
+
     typedef enum { REF_TYPE = 0 } NamedStructSlots;
     typedef enum { REF_DTREE_TYPE = 0,
                    REF_DTREE_NODE = 1,
                    REF_DTREE_END = 2 } DtreeSlots;
     typedef enum { REF_NODE_TYPE = 0,
                    REF_NODE_EQL_SPECIALIZERS = 1,
-                   REF_NODE_CLASS_SPECIALIZERS = 2,
-                   REF_NODE_INTERPRETER = 3,
-                   REF_NODE_END = 4} NodeSlots;
+                   REF_NODE_SKIP = 2,
+                   REF_NODE_TAG_TESTS = 3,
+                   REF_NODE_CXX_CLASS_SPECIALIZERS = 4,
+                   REF_NODE_CLASS_SPECIALIZERS = 5,
+                   REF_NODE_NODE = 6,
+                   REF_NODE_END = 7} NodeSlots;
     typedef enum { REF_RANGE_TYPE = 0,
                    REF_RANGE_OUTCOME = 1,
                    REF_RANGE_FIRST_STAMP = 2,
@@ -272,13 +285,13 @@ FORWARD(DtreeInterpreter);
                    REF_EFFECTIVE_METHOD_OUTCOME_END = 5 } EffectiveMethodOutcome;
   public:
     T_sp            _GenericFunction;
-    core::T_sp      _Dtree;
+    core::T_sp      _DtreeRoot;
     size_t          _CallCount;
   public:
     static DtreeInterpreter_sp make_dtree_interpreter(T_sp generic_function, T_sp dtree);
   public:
     static LCC_RETURN LISP_CALLING_CONVENTION();
-    DtreeInterpreter_O(FunctionDescription* fdesc, T_sp generic_function, T_sp dtree) : Closure_O(entry_point,fdesc), _GenericFunction(generic_function), _Dtree(dtree), _CallCount(0) {};
+    DtreeInterpreter_O(FunctionDescription* fdesc, T_sp generic_function, T_sp dtreeRoot) : Closure_O(entry_point,fdesc), _GenericFunction(generic_function), _DtreeRoot(dtreeRoot), _CallCount(0) {};
   };
 
 };

@@ -51,8 +51,15 @@ Set this to other IRBuilders to make code go where you want")
 
 (defun llvm-print (msg)
   (irc-intrinsic "debugMessage" (irc-bit-cast (module-make-global-string msg) %i8*%)))
+(defun llvm-print-pointer (msg ptr)
+  (llvm-print msg)
+  (irc-intrinsic "debugPointer" (irc-bit-cast ptr %i8*%)))
+(defun llvm-print-size_t (msg st)
+  (llvm-print msg)
+  (irc-intrinsic "debugPrint_size_t" (irc-bit-cast st %i64%)))
 
 (define-symbol-macro %i1% (llvm-sys:type-get-int1-ty *llvm-context*))
+(define-symbol-macro %i3% (llvm-sys:type-get-int-nty *llvm-context* 3))
 
 (define-symbol-macro %i8% (llvm-sys:type-get-int8-ty *llvm-context*)) ;; -> CHAR / BYTE
 (define-symbol-macro %i8*% (llvm-sys:type-get-pointer-to %i8%))
@@ -190,6 +197,19 @@ Boehm and MPS use a single pointer"
 
 (define-symbol-macro %metadata% (llvm-sys:type-get-metadata-ty *llvm-context*))
 
+
+;;; MUST match WrappedPointer_O layout
+(define-symbol-macro %wrapped-pointer%
+  (llvm-sys:struct-type-get
+   *llvm-context*
+   (list %i8*%     ; 0 vtable
+         %i64%     ; 1 _Stamp_;
+         %t*%      ; 2 Class_;
+         )
+   nil))
+(defconstant +wrapped-pointer.stamp-index+ 1)
+(define-symbol-macro %wrapped-pointer*% (llvm-sys:type-get-pointer-to %wrapped-pointer%))
+
 ;;; MUST match Instance_O layout
 (define-symbol-macro %instance%
   (llvm-sys:struct-type-get
@@ -220,14 +240,15 @@ Boehm and MPS use a single pointer"
   (llvm-sys:struct-type-get
    *llvm-context*
    (list %i8*%     ; 0 vtable
-         %size_t%  ; 1 length
          %tsp%     ; 2 Stamp
+         %size_t%  ; 1 length
          %t*[0]%  ; 3 zeroth element of data
          )
    nil))
 (define-symbol-macro %rack*% (llvm-sys:type-get-pointer-to %rack%))
 
-(defconstant +rack.stamp-index+ 2)
+(defconstant +rack.stamp-index+ 1)
+(defconstant +rack.length-index+ 2)
 (defconstant +rack.data-index+ 3)
 
 
@@ -845,6 +866,9 @@ and initialize it with an array consisting of one function pointer."
            (value-frame-length-offset (llvm-sys:struct-layout-get-element-offset value-frame-layout +value-frame.length-index+))
            (value-frame-data-offset (llvm-sys:struct-layout-get-element-offset value-frame-layout +value-frame.data-index+)))
       (core:verify-value-frame-layout value-frame-parent-offset value-frame-length-offset value-frame-data-offset))
+    (let* ((wrapped-pointer-layout (llvm-sys:data-layout-get-struct-layout data-layout %wrapped-pointer%))
+           (wrapped-pointer-stamp-offset (llvm-sys:struct-layout-get-element-offset wrapped-pointer-layout +wrapped-pointer.stamp-index+)))
+      (core:verify-wrapped-pointer-layout wrapped-pointer-stamp-offset))
     ))
 
 ;;
@@ -984,7 +1008,6 @@ It has appending linkage.")
 (defvar *current-function-description* nil "The current function description")
 (defvar *current-function-name* nil "Store the current function name")
 (defvar *gv-current-function-name* nil "Store the global value in the module of the current function name ")
-
 
 (defun compile-file-quick-module-pathname (file-name-modifier &optional (cfo-pathname *compile-file-output-pathname*))
   (let* ((name-suffix (bformat nil "%05d-%s" (core:next-number) file-name-modifier))

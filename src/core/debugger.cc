@@ -50,6 +50,7 @@ THE SOFTWARE.
 #include <clasp/core/evaluator.h>
 #include <clasp/core/pathname.h>
 #include <clasp/core/debugger.h>
+#include <clasp/core/funcallableInstance.h>
 #include <clasp/core/hashTableEqual.h>
 #include <clasp/core/primitives.h>
 #include <clasp/core/array.h>
@@ -2186,9 +2187,14 @@ __attribute__((optnone)) std::string dbg_safe_repr(uintptr_t raw) {
       core::SimpleVector_sp svobj = gc::As_unsafe<core::SimpleVector_sp>(obj);
       ss << "#(";
       for ( size_t i=0, iEnd(svobj->length()); i<iEnd; ++i ) {
-        ss << dbg_safe_repr((*svobj)[i]) << " ";
+        ss << dbg_safe_repr((uintptr_t) ((*svobj)[i]).raw_()) << " ";
       }
-      ss << ")";
+      ss << ")@" << (void*)raw;
+    } else if (gc::IsA<core::FuncallableInstance_sp>(obj)) {
+      core::FuncallableInstance_sp fi = gc::As_unsafe<core::FuncallableInstance_sp>(obj);
+      ss << "#<FUNCALLABLE-INSTANCE ";
+      ss << _safe_rep_(fi->GFUN_NAME());
+      ss << ">@" << (void*)raw;;
     } else {
       core::General_sp gen = gc::As_unsafe<core::General_sp>(obj);
       ss << "#<" << gen->className() << " " << (void*)gen.raw_() << ">";
@@ -2196,7 +2202,7 @@ __attribute__((optnone)) std::string dbg_safe_repr(uintptr_t raw) {
   } else if (obj.consp()) {
     ss << "(";
     while (obj.consp()) {
-      ss << dbg_safe_repr((uintptr_t)CONS_CAR(obj).raw_()) << "@" << (void*)CONS_CAR(obj).raw_() << " ";
+      ss << dbg_safe_repr((uintptr_t)CONS_CAR(obj).raw_()) << " ";
       obj = CONS_CDR(obj);
     }
     if (obj.notnilp()) {
@@ -2219,8 +2225,8 @@ __attribute__((optnone)) std::string dbg_safe_repr(uintptr_t raw) {
   } else {
     ss << " #<RAW@" << (void*)obj.raw_() << ">";
   }
-  if (ss.str().size() > 512) {
-    return ss.str().substr(0,512);
+  if (ss.str().size() > 2048) {
+    return ss.str().substr(0,2048);
   }
   return ss.str();
 }
@@ -2228,6 +2234,7 @@ __attribute__((optnone)) std::string dbg_safe_repr(uintptr_t raw) {
 string _safe_rep_(core::T_sp obj) {
   return dbg_safe_repr((uintptr_t)obj.raw_());
 }
+
 
 void dbg_safe_print(uintptr_t raw) {
   printf(" %s", dbg_safe_repr(raw).c_str());
@@ -2349,6 +2356,11 @@ void tsymbol(void* ptr)
 
 };
 namespace core {
+
+CL_DEFUN std::string core__safe_repr(core::T_sp obj) {
+  std::string result = dbg_safe_repr((uintptr_t)obj.raw_());
+  return result;
+}
 
   SYMBOL_EXPORT_SC_(CorePkg, printCurrentIhsFrameEnvironment);
 

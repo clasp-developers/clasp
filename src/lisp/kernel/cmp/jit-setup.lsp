@@ -150,11 +150,23 @@ No DIBuilder is defined for the default module")
 (defun jit-constant-false ()
   (llvm-sys:get-false *llvm-context*))
 
+(defun jit-constant-i<bit-width> (val &key bit-width)
+  "Create an i<numbits> constant in the current context"
+  (unless bit-width (error "You must provide a bit-width"))
+  (let ((ap-arg (llvm-sys:make-apint-width val bit-width nil)))
+    (llvm-sys:constant-int-get *llvm-context* ap-arg)))
+
 (defun jit-constant-i1 (val)
   "Create an i1 constant in the current context"
   (let ((ap-arg (llvm-sys:make-apint1 val)))
     (llvm-sys:constant-int-get *llvm-context* ap-arg)))
 
+
+(defun jit-constant-i3 (val)
+  "Create an i3 constant in the current context"
+    (let ((ap-arg (llvm-sys:make-apint-width val 3 nil)))
+      (llvm-sys:constant-int-get *llvm-context* ap-arg)))
+ 
 (defun jit-constant-i8 (val)
   "Create an i1 constant in the current context"
   (let ((ap-arg (llvm-sys:make-apint-width val 8 nil)))

@@ -197,8 +197,8 @@ Lisp_O::GCRoots::GCRoots() :
   _SourceFilesMutex(SRCFILES_NAMEWORD),
   _PackagesMutex(PKGSMUTX_NAMEWORD),
   _SingleDispatchGenericFunctionHashTableEqualMutex(SINGDISP_NAMEWORD),
-#ifdef DEBUG_MONITOR
-  _LogMutex(LOGMUTEX_NAMEWORD),
+#ifdef DEBUG_MONITOR_SUPPORT
+  _MonitorMutex(LOGMUTEX_NAMEWORD),
 #endif
   _ThePathnameTranslationsMutex(PNTRANSL_NAMEWORD),
   _UnixSignalHandlersMutex(UNIXSIGN_NAMEWORD),
@@ -449,21 +449,6 @@ void Lisp_O::setupMpi(bool mpiEnabled, int mpiRank, int mpiSize) {
   this->_Roots._MpiSize = mpiSize;
 }
 
-#ifdef USE_REFCOUNT
-void testContainers() {
-  Fixnum_sp fn = make_fixnum(1);
-  printf("%s:%d  fn@%p  referenceCount() = %d\n", __FILE__, __LINE__, fn.raw_(), fn->referenceCount());
-  gctools::Vec0<T_sp> container;
-  container.push_back(fn);
-  printf("%s:%d  after push_back to container fn@%p  referenceCount() = %d\n", __FILE__, __LINE__, fn.raw_(), fn->referenceCount());
-  Fixnum_sp fn2 = gc::As<Fixnum_sp>(container.back());
-  printf("%s:%d  after back to container fn@%p  referenceCount() = %d\n", __FILE__, __LINE__, fn.raw_(), fn->referenceCount());
-  container.pop_back();
-  printf("%s:%d  after pop_back to container fn@%p  referenceCount() = %d\n", __FILE__, __LINE__, fn.raw_(), fn->referenceCount());
-  printf("%s:%d  fn2@%p  referenceCount() = %d\n", __FILE__, __LINE__, fn2.raw_(), fn2->referenceCount());
-};
-#endif
-
 void testStrings() {
   //  SimpleBaseString_sp str = SimpleBaseString_O::make("This is a test");
   //        printf("%s:%d  string = %s\n", __FILE__, __LINE__, str->c_str() );
@@ -472,32 +457,58 @@ void testStrings() {
 int global_monitor_pid = 0;
 std::string global_monitor_dir = "";
 
-CL_DEFUN std::string core__monitor_directory() {
+#ifdef DEBUG_MONITOR_SUPPORT
+std::string ensure_monitor_directory_exists_no_lock() {
+  if (global_monitor_dir=="" && getpid()!=global_monitor_pid) {
+    struct stat st = {0};
+    stringstream sd;
+    if (global_monitor_dir=="") {
+      global_monitor_dir = "/tmp/";
+    }
+    sd << global_monitor_dir;
+    sd << "clasp-log-" << getpid() << "/";
+    std::string dir = sd.str();
+    global_monitor_dir = dir;
+    if (stat(dir.c_str(),&st) == -1 ) {
+      mkdir(dir.c_str(),0700);
+    }
+  }
   return global_monitor_dir;
 }
+#endif
 
-void ensure_monitor_file_exists() {
-#ifdef DEBUG_MONITOR
-  struct stat st = {0};
-  stringstream sd;
-  if (global_monitor_dir=="") {
-    global_monitor_dir = "/tmp/";
-  }
-  sd << global_monitor_dir;
-  sd << "clasp-log-" << getpid() << "/";
-  std::string dir = sd.str();
-  global_monitor_dir = dir;
-  if (stat(dir.c_str(),&st) == -1 ) {
-    mkdir(dir.c_str(),0700);
+#if DEBUG_MONITOR_SUPPORT
+CL_DEFUN std::string core__monitor_directory() {
+  WITH_READ_WRITE_LOCK(_lisp->_Roots._MonitorMutex);
+  return ensure_monitor_directory_exists_no_lock();
+}
+#endif
+
+#ifdef DEBUG_MONITOR_SUPPORT
+FILE* monitor_file(const std::string& name) {
+  if (my_thread->_MonitorFiles.find(name)!=my_thread->_MonitorFiles.end()) {
+    return my_thread->_MonitorFiles[name];
   }
   stringstream ss;
+  ss << core__monitor_directory();
+  ss << name << "-" << my_thread->_Tid;
+  FILE* file = fopen(ss.str().c_str(),"w");
+  my_thread->_MonitorFiles[name] = file;
+  return file;
+}
+#endif
+
+void ensure_monitor_file_exists_no_lock() {
+#ifdef DEBUG_MONITOR
+  std::string dir = ensure_monitor_directory_exists_no_lock();
+  stringstream ss;
   ss << dir << "log.txt";
-  if (_lisp->_Roots._LogStream.is_open()) _lisp->_Roots._LogStream.close();
-  _lisp->_Roots._LogStream.open(ss.str(), std::fstream::out);
-  if (_lisp->_Roots._LogStream.is_open()) {
+  if (_lisp->_Roots._MonitorStream.is_open()) _lisp->_Roots._MonitorStream.close();
+  _lisp->_Roots._MonitorStream.open(ss.str(), std::fstream::out);
+  if (_lisp->_Roots._MonitorStream.is_open()) {
     printf("%s:%d   Opened file %s for logging\n", __FILE__, __LINE__, ss.str().c_str());
-    _lisp->_Roots._LogStream << "Start logging\n";
-    _lisp->_Roots._LogStream.flush();
+    _lisp->_Roots._MonitorStream << "Start logging\n";
+    _lisp->_Roots._MonitorStream.flush();
   } else {
     printf("%s:%d   Could not open file %s for logging\n", __FILE__, __LINE__, ss.str().c_str());
   }
@@ -507,17 +518,16 @@ void ensure_monitor_file_exists() {
 void monitor_message(const std::string& msg)
 {
 #ifdef DEBUG_MONITOR
-  _lisp->_Roots._LogMutex.lock();
+  WITH_READ_WRITE_LOCK(_lisp->_Roots._MonitorMutex);
   if (getpid()!=global_monitor_pid) {
-    ensure_monitor_file_exists();
+    ensure_monitor_file_exists_no_lock();
     if (global_monitor_pid!=0) {
-      _lisp->_Roots._LogStream << "Forked from process " << global_monitor_pid << "\n";
+      _lisp->_Roots._MonitorStream << "Forked from process " << global_monitor_pid << "\n";
     }
     global_monitor_pid = getpid();
   }
-  _lisp->_Roots._LogStream << msg;
-  _lisp->_Roots._LogStream.flush();
-  _lisp->_Roots._LogMutex.unlock();
+  _lisp->_Roots._MonitorStream << msg;
+  _lisp->_Roots._MonitorStream.flush();
 #endif
 }
 
@@ -1721,6 +1731,11 @@ CL_DEFUN void core__quit(int exitValue) {
   core__exit(exitValue);
 };
 
+CL_DOCSTRING("abort");
+CL_DEFUN void core__cabort() {
+  abort();
+};
+
 CL_LAMBDA(key datum alist);
 CL_DECLARE();
 CL_DOCSTRING("acons");
@@ -1811,7 +1826,7 @@ CL_DEFUN T_sp core__find_class_holder(Symbol_sp symbol, T_sp env) {
 #ifdef SYMBOL_CLASS
   return symbol->find_class_holder();
 #else
-  ASSERTF(env.nilp(), BF("Handle non nil environment"));
+//  ASSERTF(env.nilp(), BF("Handle non nil environment"));
   // Should only be single threaded here
   if (_lisp->bootClassTableIsValid()) {
     return _lisp->boot_findClassHolder(symbol,false);
@@ -1836,9 +1851,14 @@ CL_LAMBDA(symbol &optional (errorp t) env);
 CL_DECLARE();
 CL_DOCSTRING("find-class");
 CL_DEFUN T_sp cl__find_class(Symbol_sp symbol, bool errorp, T_sp env) {
-  ASSERTF(env.nilp(), BF("Handle non nil environment"));
+  //ASSERTF(env.nilp(), BF("Handle non nil environment"));
 //  ClassReadLock _guard(_lisp->_Roots._ClassTableMutex);
-  ClassHolder_sp cell = gc::As<ClassHolder_sp>(core__find_class_holder(symbol,env));
+  T_sp ch = core__find_class_holder(symbol,env);
+  if (ch.nilp()) {
+    printf("%s:%d core__find_class_holder returned NIL for symbol %s\n", __FILE__, __LINE__, symbol->formattedName(true).c_str() );
+    abort();
+  }
+  ClassHolder_sp cell = gc::As<ClassHolder_sp>(ch);
   if (cell->class_unboundp()) {
     if (errorp) {
       ERROR(ext::_sym_undefinedClass, Cons_O::createList(kw::_sym_name, symbol));

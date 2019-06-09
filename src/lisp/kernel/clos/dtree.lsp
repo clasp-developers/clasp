@@ -23,10 +23,22 @@
 
 (defstruct (match (:type vector) :named) outcome)
 (defstruct (range (:include match) (:type vector) :named) first-stamp last-stamp reversed-classes)
+(defstruct (tag-test (:include match) (:type vector) :named) name)
 (defstruct (skip (:include match) (:type vector) :named))
-(defstruct (node (:type vector) :named) (eql-specializers (make-hash-table :test #'eql) :type hash-table)
-           (class-specializers nil :type list)
-           (interpreter nil :type vector))
+
+(defstruct (node (:type vector) :named)
+  (eql-specializers (make-hash-table :test #'eql) :type hash-table)
+  skip
+  (tag-tests nil :type list)
+  (c++-class-specializers nil :type list)
+  (class-specializers nil :type list))
+
+(defstruct (inode (:type vector) :named)
+  (eql-specializers (make-hash-table :test #'eql) :type hash-table)
+  skip
+  (tag-tests nil :type vector)
+  (c++-class-specializers nil :type vector)
+  (class-specializers nil :type vector))
 
 (defstruct (dtree (:type vector) :named) root)
 
@@ -38,10 +50,6 @@
   (consp spec))
 (defun eql-specializer-value (spec)
   (car spec))
-
-(defun single-p (match)
-  (and (range-p match)
-       (= (range-first-stamp match) (range-last-stamp match))))
 
 (defun ensure-outcome-or-error (obj)
   (unless (outcome-p obj) (error "~s is not an outcome" obj))
@@ -135,10 +143,10 @@
   (or (<= argument-index (length specializers))
       (error "Overflow in argument-index ~a must be <= ~a" argument-index (length specializers)))
   (if spec
-      (let* ((stamp (cond
-                      ((classp spec) (core:class-stamp-for-instances spec))
-                      ((symbolp spec) (core:class-stamp-for-instances (find-class spec)))
-                      (t (error "Illegal specializer ~a" spec))))
+      (let* ((spec-class (cond ((classp spec) spec)
+                               ((symbolp spec) (find-class spec))
+                               (t (error "Illegal specializer ~a" spec))))
+             (stamp (core:class-stamp-for-instances spec-class))
              (match (find stamp (node-class-specializers node) :test #'eql :key #'range-first-stamp)))
         (if match
             (if (outcome-p (match-outcome match))
@@ -149,11 +157,18 @@
                                                      :class spec
                                                      :outcome (ensure-outcome argument-index specializers goal))
                                  (node-class-specializers node)))))
-      (let ((match (first (node-class-specializers node))))
-        (if match
-            (node-add (match-outcome match) (svref specializers argument-index) (1+ argument-index) specializers goal)
-            (setf (node-class-specializers node)
-                  (list (make-skip :outcome (ensure-outcome argument-index specializers goal))))))))
+      (let ((match (node-skip node))) ;; match (first (node-class-specializers node)))) ; I think we are looking for the skip here?
+        (cond
+          ((and match (skip-p match))
+           (node-add (match-outcome match) (svref specializers argument-index) (1+ argument-index) specializers goal))
+          (match
+           (error "I don't think this should ever happen - we get here with (node-class-specializers node) -> ~s and it's not a skip"
+                  (node-class-specializers node)))
+          (t
+           (progn
+             (setf (node-skip node) (make-skip :outcome (ensure-outcome argument-index specializers goal)))
+             (setf (node-class-specializers node)
+                   (list ))))))))
 
 (defun node-add (node spec argument-index specializers goal)
   (if (eql-specializer-p spec)
@@ -186,31 +201,147 @@
   t)
 
 (defun skip-node-p (node)
-  (let ((class-specializers (node-class-specializers node)))
-    (and (= 1 (length class-specializers)) (skip-p (car class-specializers)))))
+  (skip-p (node-skip node)))
+
+(defconstant +dtree-eql-test-step+ 2)
+(defconstant +dtree-eql-test-outcome-index+ 0)
+(defconstant +dtree-eql-test-spec-index+ 1)
+(defconstant +dtree-range-step+ 3)
+(defconstant +dtree-range-outcome-index+ 0)
+(defconstant +dtree-range-low-index+ 1)
+(defconstant +dtree-range-high-index+ 2)
+(eval-when (:compile-toplevel :execute)
+  (core:verify-dtree-interpreter-layout +dtree-eql-test-step+ +dtree-range-step+))
+
+
+(defun maybe-translate-node (node-or-outcome inode-map)
+  "Only translate node-or-outcome if it's a node - return outcomes"
+  (let ((new-node (cond
+                    ((node-p node-or-outcome)
+                     (gethash node-or-outcome inode-map))
+                    ((outcome-p node-or-outcome)
+                     node-or-outcome)
+                    (t (error "maybe-translate-node can't handle ~s" node-or-outcome)))))
+    (prog1 new-node
+      (unless new-node
+        (error "When attempting to translate node-or-outcome to inode the result was NIL  node-or-outcome ~s  inode-map ~s"
+               (core:safe-repr node-or-outcome) (core:safe-repr (let (keys) (maphash (lambda (k v) (push k keys)) inode-map) keys)))))))
+
+(defun optimize-eql-tests-for-interpreter (eql-tests inode-map)
+  (let ((layout (make-array (* +dtree-eql-test-step+ (hash-table-count eql-tests))))
+        (index 0))
+    (maphash (lambda (eql-test node-or-outcome)
+               (setf (elt layout (+ index +dtree-eql-test-spec-index+)) eql-test
+                     (elt layout (+ index +dtree-eql-test-outcome-index+)) (maybe-translate-node node-or-outcome inode-map))
+               (incf index +dtree-eql-test-step+))
+             eql-tests)
+    layout))
+
+(defun optimize-tag-tests-for-interpreter (tag-tests inode-map)
+  (let ((layout (make-array (length *tag-tests*) :initial-element nil)))
+    (dolist (spec tag-tests)
+      (let* ((spec-name (tag-test-name spec))
+             (outcome (tag-test-outcome spec))
+             (tag-test (assoc spec-name *tag-tests*))
+             (tag-index (third tag-test)))
+        (setf (elt layout tag-index) (maybe-translate-node (tag-test-outcome spec) inode-map))))
+    layout))
+
 
 ;;; Put in some extra data to help the dtree interpreter.
-(defun prepare-node-for-interpreter (node)
-  (let* ((specializers (node-class-specializers node))
-         (layout (make-array (1+ (* 3 (length specializers)))))
-         (first-spec (and specializers (elt specializers 0))))
+(defun optimize-specializers-for-interpreter (specializers inode-map)
+  (let ((layout (make-array (* +dtree-range-step+ (length specializers))))
+         (start 0))
+    (when specializers
+      (dotimes (i (length specializers))
+        (let ((spec (car specializers)))
+          (setf (elt layout (+ start +dtree-range-outcome-index+)) (maybe-translate-node (range-outcome spec) inode-map)
+                (elt layout (+ start +dtree-range-low-index+)) (range-first-stamp spec)
+                (elt layout (+ start +dtree-range-high-index+)) (range-last-stamp spec))
+          (unless (elt layout (+ start +dtree-range-outcome-index+))
+            (error "The outcome is NIL!!! spec-> ~s start ~a layout -> ~s~%" spec start layout)))
+        (setf specializers (cdr specializers))
+        (incf start +dtree-range-step+)))
+    layout))
+
+
+(defun walk-nodes (node callback)
+  (cond
+    ((node-p node)
+     (funcall callback node)
+     (maphash (lambda (eql-spec outcome)
+                (walk-nodes outcome callback))
+              (node-eql-specializers node))
+     (if (node-skip node)
+         (walk-nodes (skip-outcome (node-skip node)) callback)
+         (progn
+           (dolist (tag-test (node-tag-tests node))
+             (walk-nodes (tag-test-outcome tag-test) callback))
+           (dolist (spec (node-c++-class-specializers node))
+             (walk-nodes (match-outcome spec) callback))
+           (dolist (spec (node-class-specializers node))
+             (walk-nodes (match-outcome spec) callback)))))
+    ((outcome-p node)
+     #|Do nothing|#)
+    (t (error "Illegal argument for walk-nodes ~s" node))))
+
+
+(defun walk-nodes-and-outcomes (node callback)
+  (cond
+    ((node-p node)
+     (funcall callback node)
+     (maphash (lambda (eql-spec outcome)
+                (walk-nodes-and-outcomes outcome callback))
+              (node-eql-specializers node))
+     (if (node-skip node)
+         (walk-nodes-and-outcomes (skip-outcome (node-skip node)) callback)
+         (progn
+           (dolist (tag-test (node-tag-tests node))
+             (walk-nodes-and-outcomes (tag-test-outcome tag-test) callback))
+           (dolist (spec (node-c++-class-specializers node))
+             (walk-nodes-and-outcomes (match-outcome spec) callback))
+           (dolist (spec (node-class-specializers node))
+             (walk-nodes-and-outcomes (match-outcome spec) callback)))))
+    ((outcome-p node)
+     (funcall callback node))
+    (t (error "Illegal argument for walk-nodes-and-outcomes ~s" node))))
+
+
+(defun compile-interpreted-dtree (dtree)
+  (let ((interpreted-nodes-map (make-hash-table :test #'eq)))
+    (flet ((build-interpreted-node (anode)
+             (setf (gethash anode interpreted-nodes-map) (make-inode)))
+           (setup-interpreted-node (anode)
+             (let* ((inode (gethash anode interpreted-nodes-map))
+                    (interpreted-eql-tests (optimize-eql-tests-for-interpreter (node-eql-specializers anode) interpreted-nodes-map))
+                    (interpreted-skip (if (node-skip anode)
+                                          (maybe-translate-node (skip-outcome (node-skip anode))
+                                                                interpreted-nodes-map)
+                                          nil))
+                    (interpreted-tag-tests (optimize-tag-tests-for-interpreter (node-tag-tests anode) interpreted-nodes-map))
+                    (interpreted-c++-class-specializers (optimize-specializers-for-interpreter (node-c++-class-specializers anode) interpreted-nodes-map))
+                    (interpreted-complex-class-specializers (optimize-specializers-for-interpreter (node-class-specializers anode) interpreted-nodes-map)))
+               (setf (inode-eql-specializers inode) interpreted-eql-tests
+                     (inode-skip inode) interpreted-skip
+                     (inode-tag-tests inode) interpreted-tag-tests
+                     (inode-c++-class-specializers inode) interpreted-c++-class-specializers
+                     (inode-class-specializers inode) interpreted-complex-class-specializers))))
+      (walk-nodes (dtree-root dtree) #'build-interpreted-node)
+      (walk-nodes (dtree-root dtree) #'setup-interpreted-node))
     (cond
-      ((null specializers)
-       (setf (elt layout 0) 'clos:range)) ;; No 
-      ((skip-p first-spec)
-       (setf (elt layout 0) 'clos:skip)
-       (setf (elt layout 1) (skip-outcome first-spec)))
-      ((range-p first-spec)
-       (setf (elt layout 0) 'clos:range)
-       (dotimes (i (length specializers))
-         (let ((spec (car specializers))
-               (start (1+ (* i 3))))
-           (setf (elt layout (+ start 0)) (range-outcome spec)
-                 (elt layout (+ start 1)) (range-first-stamp spec)
-                 (elt layout (+ start 2)) (range-last-stamp spec)))
-         (setf specializers (cdr specializers))))
-      (t (error "cannot prepare interpreter for ~s" specializers)))
-    (setf (node-interpreter node) layout)))
+      ((node-p (dtree-root dtree))
+       (let ((inode (gethash (dtree-root dtree) interpreted-nodes-map)))
+         (if inode
+             inode
+             (progn
+               (format t "There is a NIL inode after compiling a dtree~%") (format t "  (dtree-root dtree) -> ~s~%" (core:safe-repr (dtree-root dtree)))
+               (format t "  interpreted-nodes-map -> ~s~%" interpreted-nodes-map)
+               (format t "  (gethash (dtree-root dtree) interpreted-nodes-map) -> ~s~%" (core:safe-repr (gethash (dtree-root dtree) interpreted-nodes-map)))
+               (error "Whaaaaa? There is no inode after compiling a dtree node for interpretation.~%  (dtree-root dtree)->~s~%  interpreted-nodes-map -> ~s" (dtree-root dtree) interpreted-nodes-map)))))
+      ((outcome-p (dtree-root dtree))
+       (dtree-root dtree))
+      (t (error "The dtree was malformed - the root was ~s" dtree)))))
+
 
 (defun optimize-node (node)
   "Create a list from the argument list and merge matches
@@ -219,8 +350,10 @@
       nil                   ; There is one class-specializer and
                                         ; it's a skip class-specializer do
                                         ; nothing but prepare for the interpreter.
-      (optimize-node-with-class-specializers node))
-  (prepare-node-for-interpreter node))
+      (optimize-node-with-class-specializers node)))
+
+(defvar *tag-tests* (llvm-sys:tag-tests))
+
 
 ;; Given a node that isn't a skip node (i.e. all "specializers" are ranges),
 ;; modify its specializers so that adjacent ranges are merged together.
@@ -234,7 +367,8 @@
       ;; Now we proceed through the list trying to merge the first with the rest.
       ;; Once we find one we can't merge with, throw it on the complete list.
       (dolist (match (rest sorted))
-        (if (and (= (1+ (range-last-stamp working)) (range-first-stamp match))
+        (if (and (= (1+ (core:stamp-index (range-last-stamp working)))
+                    (core:stamp-index (range-first-stamp match)))
                  (outcome= (range-outcome working) (range-outcome match)))
             ;; ranges touch: merge by increasing working's last stamp.
             (setf (range-last-stamp working) (range-last-stamp match)
@@ -245,25 +379,32 @@
             ;; range is distinct: throw working on the pile and continue anew.
             (setf merged (cons working merged) working match)))
       (push working merged)
-      (let ((sorted (nreverse merged)))
-        (setf (node-class-specializers node) sorted)
-        #+debug-fastgf(if (verify-node-class-specializers-sorted-p sorted)
-                          t
-                          (error "optimize-node-with-class-specializers has a problem stamps aren't sorted --> ~a" sorted))
-        sorted))))
+      ;; Right now merged is reverse order of stamps - we will push them into c++-specializers and complex-specializers
+      ;; and they will be in ascending order
+      (let (c++-specializers
+            complex-specializers)
+        (dolist (specializer merged)
+          (if (<= (range-first-stamp specializer) cmp:+c++-stamp-max+)
+              (push specializer c++-specializers)
+              (push specializer complex-specializers)))
+        (setf (node-c++-class-specializers node) c++-specializers)
+        (setf (node-class-specializers node) complex-specializers)
+        ;; Now figure out what tag tests can be used to replace stamp checks,
+        ;; each tag-test will have its own outcome
+        (let (tag-tests)
+          (dolist (test c++-specializers)
+            (let ((outcome (match-outcome test)))
+              (dolist (tag-test *tag-tests*)
+                (let ((tag-test-name (first tag-test))
+                      (tag-stamp (second tag-test)))
+                  (if (and (<= (range-first-stamp test) tag-stamp)
+                           (<= tag-stamp (range-last-stamp test)))
+                      (push (make-tag-test :outcome outcome
+                                           :name tag-test-name) tag-tests))))))
+          (setf (node-tag-tests node) (nreverse tag-tests)))))))
 
 (defun optimize-node-and-children (maybe-node)
-  (when (node-p maybe-node)
-    ;; Loop over eql-specializers
-    (maphash (lambda (specializer maybe-child-node)
-               (optimize-node-and-children maybe-child-node))
-             (node-eql-specializers maybe-node))
-    ;; loop over class-specializers
-    (dolist (spec (node-class-specializers maybe-node))
-      (let ((child-maybe-node (match-outcome spec)))
-	(optimize-node-and-children child-maybe-node)))
-    ;; optimize this node
-    (optimize-node maybe-node)))
+  (walk-nodes maybe-node #'optimize-node))
 
 ;;; Main entry point.
 (defun calculate-dtree (raw-call-history specializer-profile)
@@ -277,6 +418,10 @@
       (optimize-node-and-children (dtree-root dt))
       dt)))
 
+(defun calculate-interpreted-dtree (dtree)
+  (error "Add me here"))
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Draw a picture for debugging
@@ -287,9 +432,8 @@
     ((classp class-designator) (class-name class-designator))
     (t (error "Illegal class-designator"))))
 
-(defun draw-node (fout node)
+(defun draw-node (fout node node-names)
   (cond
-    ((null node) nil)
     ((outcome-p node)
      (let ((nodeid (gensym)))
        (core:bformat fout "%s [shape=ellipse,label=\"HIT-%s\"];%N" (string nodeid) (core:object-address (ensure-outcome-or-error node)))
@@ -301,7 +445,7 @@
                            (maphash (lambda (key value)
                                       (push (list (prog1 idx (incf idx))
                                                   (core:bformat nil "eql %s" key)
-                                                  (draw-node fout value))
+                                                  (gethash value node-names))
                                             result))
                                     (node-eql-specializers node))
                            result))
@@ -310,17 +454,12 @@
                (dolist (x (node-class-specializers node))
                  (push (list (prog1 idx (incf idx))
                              (cond
-                               ((single-p x)
-                                (core:bformat nil "%s;%s" (range-first-stamp x)
-                                              (safe-class-name (first (range-reversed-classes x)))))
                                ((range-p x)
                                 (core:bformat nil "%s-%s;%s"
                                               (range-first-stamp x) (range-last-stamp x)
                                               (mapcar #'safe-class-name (reverse (range-reversed-classes x)))))
-                               ((skip-p x)
-                                (core:bformat nil "SKIP"))
                                (t (error "Unknown class-specializer type ~a" x)))
-                             (draw-node fout (match-outcome x))) result))
+                             (gethash (match-outcome x) node-names)) result))
                (let ((rev-res (reverse result)))
                  rev-res)))
 	    (entries (append eql-entries class-entries)))
@@ -351,9 +490,14 @@
 (defun draw-graph (pathname dtree)
   (with-graph ("G" fout pathname :direction :output)
     (core:bformat fout "graph [ rankdir = \"LR\"];%N")
-    (let ((startid (gensym)))
-      (core:bformat fout "%s [ label = \"Start\", shape = diamond ];%N" (string startid))
-      (core:bformat fout "%s -> %s;%N" (string startid) (string (draw-node fout (dtree-root dtree)))))))
+    (let ((node-names (make-hash-table)))
+      (flet ((assign-name (node)
+               (setf (gethash node node-names) (gensym))))
+        (walk-nodes-and-outcomes (dtree-root dtree) #'assign-name)
+        (let ((startid (gensym)))
+          (core:bformat fout "%s [ label = \"Start\", shape = diamond ];%N" (string startid))
+          (core:bformat fout "%s -> %s;%N" (string startid) (string (gethash (dtree-root dtree) node-names)))
+          (walk-nodes-and-outcomes (dtree-root-dtree) (lambda (node) (draw-node fout node node-names))))))))
 
 (defun generate-dot-file (generic-function output)
   (let* ((raw-call-history (generic-function-call-history generic-function))

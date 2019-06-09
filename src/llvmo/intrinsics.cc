@@ -55,6 +55,7 @@ extern "C" {
 #include <clasp/core/wrappedPointer.h>
 #include <clasp/core/hashTable.h>
 #include <clasp/core/evaluator.h>
+#include <clasp/core/derivableCxxObject.h>
 #include <clasp/core/genericFunction.h>
 #include <clasp/core/sourceFileInfo.h>
 #include <clasp/core/loadTimeValues.h>
@@ -890,12 +891,33 @@ ALWAYS_INLINE core::T_O* to_object_pointer( void * x )
   return clasp_ffi::ForeignData_O::create(x).raw_();
 }
 
+
+
+
+
 // === END OF CORE TRANSLATORS ===
 
 }; // eytern "C"
 
 
 
+
+extern "C" {
+gctools::ShiftedStamp cc_read_derivable_cxx_stamp_untagged_object(core::T_O* untagged_object)
+{
+  core::DerivableCxxObject_O* derivable_cxx_object_ptr = reinterpret_cast<core::DerivableCxxObject_O*>(untagged_object);
+  gctools::ShiftedStamp stamp = (gctools::ShiftedStamp)derivable_cxx_object_ptr->get_stamp_();
+  ASSERT(gctools::Header_s::Value::is_derivable_shifted_stamp(stamp));
+  printf("%s:%d:%s returning stamp %lu - check if it is correct\n", __FILE__, __LINE__, __FUNCTION__, stamp);
+  return stamp;
+}
+
+void cc_match(T_O* object, uint64_t a, uint64_t b) {
+  if (b!=0&&a!=b) {
+    printf("%s:%d There was a mismatch in the object@%p stamp value old stamp %llu  new stamp %llu\n", __FILE__, __LINE__, object, a, b );
+  }
+};
+};
 
 
 
@@ -923,6 +945,10 @@ void initialize_intrinsics( void )
 
   return;
 }
+
+
+
+
 
 }; // namespace llvmo
 

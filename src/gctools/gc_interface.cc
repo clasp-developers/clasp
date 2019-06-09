@@ -622,6 +622,7 @@ void set_one_static_class_symbol(core::BootStrapCoreSymbolMap* symbols, const st
     printf("%s:%d For symbol %s there is a mismatch in the package desired %s and the one retrieved %s\n", __FILE__, __LINE__, full_name.c_str(), package_part.c_str(), store._PackageName.c_str());
     SIMPLE_ERROR(BF("Mismatch of package when setting a class symbol"));
   }
+//  printf("%s:%d Setting static_class_symbol to %s\n", __FILE__, __LINE__, _safe_rep_(store._Symbol).c_str());
   TheClass::set_static_class_symbol(store._Symbol);
 }
 
@@ -652,17 +653,17 @@ void allocate_symbols(core::BootStrapCoreSymbolMap* symbols)
 
 template <class TheClass>
 NOINLINE void set_one_static_class_Header() {
-  Stamp the_stamp = gctools::NextStamp(gctools::GCStamp<TheClass>::Stamp);
+  ShiftedStamp the_stamp = gctools::NextShiftedStampMergeWhere(0 /* Get from the Stamp */,gctools::GCStamp<TheClass>::Stamp);
   if (gctools::GCStamp<TheClass>::Stamp!=0) {
     TheClass::static_HeaderValue = gctools::Header_s::Value::make<TheClass>();
   } else {
-    TheClass::static_HeaderValue = gctools::Header_s::Value::make_unknown((GCStampEnum)the_stamp);
+    TheClass::static_HeaderValue = gctools::Header_s::Value::make_unknown(the_stamp);
   }
 }
 
 
 template <class TheClass>
-NOINLINE  gc::smart_ptr<core::Instance_O> allocate_one_metaclass(Fixnum theStamp, core::Symbol_sp classSymbol, core::Instance_sp metaClass)
+NOINLINE  gc::smart_ptr<core::Instance_O> allocate_one_metaclass(UnshiftedStamp theStamp, core::Symbol_sp classSymbol, core::Instance_sp metaClass)
 {
   core::FunctionDescription* fdesc = core::makeFunctionDescription(kw::_sym_create);
   auto cb = gctools::GC<TheClass>::allocate(fdesc);
@@ -681,7 +682,7 @@ NOINLINE  gc::smart_ptr<core::Instance_O> allocate_one_class(core::Instance_sp m
 {
   core::Creator_sp cb = gc::As<core::Creator_sp>(gctools::GC<core::BuiltInObjectCreator<TheClass>>::allocate());
   TheClass::set_static_creator(cb);
-  gc::smart_ptr<core::Instance_O> class_val = core::Instance_O::createClassUncollectable(TheClass::static_HeaderValue.stamp(),metaClass,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS,cb);
+  gc::smart_ptr<core::Instance_O> class_val = core::Instance_O::createClassUncollectable(TheClass::static_HeaderValue.shifted_stamp(),metaClass,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS,cb);
   class_val->__setup_stage1_with_sharedPtr_lisp_sid(class_val,TheClass::static_classSymbol());
   reg::lisp_associateClassIdWithClassSymbol(reg::registered_class<TheClass>::id,TheClass::static_classSymbol());
   TheClass::setStaticClass(class_val);
@@ -696,16 +697,25 @@ struct TempClass {
 };
 
 
-std::map<std::string,size_t> global_stamp_name_map;
-std::vector<std::string> global_stamp_names;
+std::map<std::string,size_t> global_unshifted_nowhere_stamp_name_map;
+std::vector<std::string> global_unshifted_nowhere_stamp_names;
+// Keep track of the where information given an unshifted_nowhere_stamp
+std::vector<size_t> global_unshifted_nowhere_stamp_where_map;
 size_t _global_last_stamp = 0;
 
-void register_stamp_name(const std::string& stamp_name, size_t stamp_num) {
-  global_stamp_name_map[stamp_name] = stamp_num;
-  if (stamp_num>=global_stamp_names.size()) {
-    global_stamp_names.resize(stamp_num+1,"");
-    global_stamp_names[stamp_num] = stamp_name;
+void register_stamp_name(const std::string& stamp_name, UnshiftedStamp unshifted_stamp) {
+  ASSERT(gctools::Header_s::Value::is_unshifted_stamp(unshifted_stamp));
+  size_t stamp_where = gctools::Header_s::Value::get_stamp_where(unshifted_stamp);
+  size_t stamp_num = gctools::Header_s::Value::make_nowhere_stamp(unshifted_stamp);
+  global_unshifted_nowhere_stamp_name_map[stamp_name] = stamp_num;
+  if (stamp_num>=global_unshifted_nowhere_stamp_names.size()) {
+    global_unshifted_nowhere_stamp_names.resize(stamp_num+1,"");
   }
+  global_unshifted_nowhere_stamp_names[stamp_num] = stamp_name;
+  if (stamp_num>=global_unshifted_nowhere_stamp_where_map.size()) {
+    global_unshifted_nowhere_stamp_where_map.resize(stamp_num+1,0);
+  }
+  global_unshifted_nowhere_stamp_where_map[stamp_num] = stamp_where;
 }
 
 void define_builtin_cxx_classes() {
@@ -871,8 +881,6 @@ void initialize_clasp_Kinds()
 
 
 
-Fixnum global_TheClassRep_stamp;
-
 void initialize_clasp()
 {
   // The bootStrapCoreSymbolMap keeps track of packages and symbols while they
@@ -887,13 +895,19 @@ void initialize_clasp()
   MPS_LOG("initialize_clasp set_static_class_symbols");
   set_static_class_symbols(&bootStrapCoreSymbolMap);
 
-  Fixnum TheClass_stamp = gctools::NextStamp();
-  Fixnum TheBuiltInClass_stamp = gctools::NextStamp();
-  Fixnum TheStandardClass_stamp = gctools::NextStamp();
-  Fixnum TheStructureClass_stamp = gctools::NextStamp();
-  Fixnum TheDerivableCxxClass_stamp = gctools::NextStamp();
-  Fixnum TheClbindCxxClass_stamp = gctools::NextStamp();
-  global_TheClassRep_stamp = gctools::GCStamp<clbind::ClassRep_O>::Stamp;
+  ShiftedStamp TheClass_stamp = gctools::NextShiftedStampMergeWhere(gctools::Header_s::rack_wtag);
+  ASSERT(Header_s::Value::is_rack_shifted_stamp(TheClass_stamp));
+  ShiftedStamp TheBuiltInClass_stamp = gctools::NextShiftedStampMergeWhere(gctools::Header_s::rack_wtag);
+  ASSERT(Header_s::Value::is_rack_shifted_stamp(TheBuiltInClass_stamp));
+  ShiftedStamp TheStandardClass_stamp = gctools::NextShiftedStampMergeWhere(gctools::Header_s::rack_wtag);
+  ASSERT(Header_s::Value::is_rack_shifted_stamp(TheStandardClass_stamp));
+  ShiftedStamp TheStructureClass_stamp = gctools::NextShiftedStampMergeWhere(gctools::Header_s::rack_wtag);
+  ASSERT(Header_s::Value::is_rack_shifted_stamp(TheStructureClass_stamp));
+  ShiftedStamp TheDerivableCxxClass_stamp = gctools::NextShiftedStampMergeWhere(gctools::Header_s::rack_wtag);
+  ASSERT(Header_s::Value::is_rack_shifted_stamp(TheDerivableCxxClass_stamp));
+  ShiftedStamp TheClbindCxxClass_stamp = gctools::NextShiftedStampMergeWhere(gctools::Header_s::rack_wtag);
+  ASSERT(Header_s::Value::is_rack_shifted_stamp(TheClbindCxxClass_stamp));
+//  global_TheClassRep_stamp = gctools::GCStamp<clbind::ClassRep_O>::Stamp;
   _lisp->_Roots._TheClass = allocate_one_metaclass<core::StandardClassCreator_O>(TheClass_stamp,cl::_sym_class,_Unbound<core::Instance_O>());
   _lisp->_Roots._TheBuiltInClass = allocate_one_metaclass<core::StandardClassCreator_O>(TheBuiltInClass_stamp,cl::_sym_built_in_class,_Unbound<core::Instance_O>());
   _lisp->_Roots._TheStandardClass = allocate_one_metaclass<core::StandardClassCreator_O>(TheStandardClass_stamp,cl::_sym_standard_class,_Unbound<core::Instance_O>());

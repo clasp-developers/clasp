@@ -18,6 +18,7 @@
             irc-function-create
             irc-bclasp-function-create
             irc-cclasp-function-create
+            +c++-stamp-max+
             %fn-prototype%
             +fn-prototype-argument-names+
             %fn-prototype*%
@@ -54,6 +55,7 @@
             +single-float-tag+
             +character-tag+
             +general-tag+
+            *test-ir*
             *startup-primitives-as-list*
             %i1%
             %exception-struct%
@@ -187,6 +189,9 @@
             irc-undef-value-get
             irc-store
             irc-struct-gep
+            irc-read-stamp
+            irc-read-slot
+            irc-write-slot
             irc-t*-result
             irc-tmv-result
             irc-switch

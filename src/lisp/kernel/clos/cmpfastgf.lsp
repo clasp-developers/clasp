@@ -311,7 +311,7 @@
              (cmp:bclasp-compile nil (generate-dispatcher-from-dtree
                                       generic-function dtree
                                       :generic-function-name generic-function-name))
-             (core:make-dtree-interpreter generic-function dtree))
+             (core:make-dtree-interpreter generic-function (compile-interpreted-dtree dtree)))
       (let ((delta-seconds (/ (float (- (get-internal-real-time) *fastgf-timer-start*) 1d0)
                               internal-time-units-per-second)))
         (generic-function-increment-compilations generic-function)

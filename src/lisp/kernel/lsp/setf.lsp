@@ -25,6 +25,11 @@
 
 (in-package "EXT")
 
+#+(or) ;;#+cclasp
+(eval-when (:compile-toplevel :execute)
+  (format t "~%~%~%~% Turning on cmp::*compile-debug-dump-module* ~%~%~%")
+  (setq cmp::*compile-debug-dump-module* t))
+
 (defun setf-expander (symbol)
   (core:get-sysprop symbol 'setf-method))
 (defun (setf setf-expander) (expander symbol)

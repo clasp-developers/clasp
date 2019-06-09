@@ -42,12 +42,45 @@ struct gctools::GCInfo<core::Instance_O> {
   static GCInfo_policy constexpr Policy = normal;
 };
 
+
+
+namespace core {
+FORWARD(Rack);
+  class Rack_O final : public General_O {
+    LISP_CLASS(core,CorePkg,Rack_O,"Rack",core::General_O);
+  public:
+    gctools::ShiftedStamp     _ShiftedStamp;
+    typedef core::T_sp value_type;
+    gctools::GCArray_moveable<value_type> _Slots;
+  public:
+    Rack_O(size_t length, value_type initialElement=T_sp(), bool initialElementSupplied=true) : _Slots(length,initialElement,initialElementSupplied) {};
+
+    static Rack_sp make(size_t numberOfSlots, T_sp value);
+    size_t length() const { return this->_Slots._Length; };
+        inline T_sp &operator[](size_t idx) {
+      BOUNDS_ASSERT(idx<this->_Slots._Length);
+      return this->_Slots[idx];
+    };
+    inline const T_sp &operator[](size_t idx) const {
+      BOUNDS_ASSERT(idx<this->_Slots._Length);
+      return this->_Slots[idx];
+    };
+    inline void stamp_set(gctools::ShiftedStamp stamp) {
+      ASSERT(stamp==0||gctools::Header_s::Value::is_rack_shifted_stamp(stamp));
+      this->_ShiftedStamp = stamp;
+    };
+    inline gctools::ShiftedStamp stamp_get() {
+      ASSERT(gctools::Header_s::Value::is_rack_shifted_stamp(this->_ShiftedStamp));
+      return this->_ShiftedStamp;
+    };
+  };
+};
+
 namespace core {
 
   class Instance_O : public General_O {
     LISP_CLASS(core, CorePkg, Instance_O, "Instance",General_O);
     // Store the stamp in slot 0 - so offset all the other slots
-#define RACK_SLOT_START 1
   // These must be exposed in core__class_slot_sanity_check()
 #define NUMBER_OF_SPECIALIZER_SLOTS 5
 #define CLASS_SLOT_OFFSET NUMBER_OF_SPECIALIZER_SLOTS
@@ -74,11 +107,11 @@ namespace core {
     bool fieldsp() const;
     void fields(Record_sp node);
   public: // ctor/dtor for classes with shared virtual base
-  Instance_O() : _Sig(_Unbound<T_O>()), _Class(_Nil<Instance_O>()), _Rack(_Unbound<SimpleVector_O>()) {};
+  Instance_O() : _Sig(_Unbound<T_O>()), _Class(_Nil<Instance_O>()), _Rack(_Unbound<Rack_O>()) {};
     explicit Instance_O(Instance_sp metaClass) :
       _Sig(_Unbound<T_O>())
       ,_Class(metaClass)
-        ,_Rack(_Unbound<SimpleVector_O>())
+        ,_Rack(_Unbound<Rack_O>())
       
 //    ,_NumberOfSlots(slots)
     {};
@@ -90,12 +123,12 @@ namespace core {
     // _Rack  (matches offset of FuncallableInstance_O)
     T_sp _Sig;
     Instance_sp _Class;
-    SimpleVector_sp _Rack;
+    Rack_sp _Rack;
   /*! Mimicking ECL instance->sig generation signature
         This is pointed to the class slots in case they change 
         - then the instances can be updated*/
   public:
-    static Instance_sp createClassUncollectable(gctools::Stamp is,Instance_sp metaClass, size_t number_of_slots, Creator_sp creator);
+    static Instance_sp createClassUncollectable(gctools::ShiftedStamp is,Instance_sp metaClass, size_t number_of_slots, Creator_sp creator);
     static Instance_sp create(Symbol_sp symbol,Instance_sp metaClass,Creator_sp creator);
   
   /*! Setup the instance nil value */
@@ -112,8 +145,12 @@ namespace core {
     void CLASS_set_creator(Creator_sp cb);
     Creator_sp CLASS_get_creator() const { return gc::As_unsafe<Creator_sp>(this->instanceRef(REF_CLASS_CREATOR)); };
     bool CLASS_has_creator() const { return (bool)(!this->instanceRef(REF_CLASS_CREATOR).unboundp()); };
-    Fixnum CLASS_stamp_for_instances() const { return this->instanceRef(REF_CLASS_STAMP_FOR_INSTANCES_).unsafe_fixnum(); };
-    void CLASS_set_stamp_for_instances(Fixnum s);
+    gctools::ShiftedStamp CLASS_stamp_for_instances() const {
+      gctools::ShiftedStamp result = (gctools::ShiftedStamp)this->instanceRef(REF_CLASS_STAMP_FOR_INSTANCES_).raw_();
+      ASSERT(gctools::Header_s::Value::is_shifted_stamp(result));
+      return result;
+    };
+    void CLASS_set_stamp_for_instances(gctools::UnshiftedStamp s);
 
     void CLASS_call_history_generic_functions_push_new(T_sp generic_function);
     void CLASS_call_history_generic_functions_remove(T_sp list_ofgeneric_functions);
@@ -170,13 +207,13 @@ namespace core {
 
     void addInstanceBaseClassDoNotCalculateClassPrecedenceList(Symbol_sp cl);
   public: // The hard-coded indexes above are defined below to be used by Class
-    void initializeSlots(gctools::Stamp is, size_t numberOfSlots);
-    void initializeClassSlots(Creator_sp creator, gctools::Stamp class_stamp);
+    void initializeSlots(gctools::ShiftedStamp is, size_t numberOfSlots);
+    void initializeClassSlots(Creator_sp creator, gctools::ShiftedStamp class_stamp);
   public:
     static size_t rack_stamp_offset();
   public: // Functions here
     Fixnum stamp() const;
-    void stamp_set(Fixnum s);
+    void stamp_set(gctools::ShiftedStamp s);
     size_t numberOfSlots() const;
   /*! Return number of slots if not nil otherwise nil */
 
@@ -211,9 +248,9 @@ namespace core {
   #define OPTIMIZED_SLOT_INDEX_INDEX 1
 
     template <class RackType_sp>
-    inline T_sp low_level_instanceRef(RackType_sp rack, size_t index) { return (*rack)[index+RACK_SLOT_START]; }
+    inline T_sp low_level_instanceRef(RackType_sp rack, size_t index) { return (*rack)[index]; }
   template <class RackType_sp>
-    inline void low_level_instanceSet(RackType_sp rack, size_t index, T_sp value) { (*rack)[index+RACK_SLOT_START] = value; }
+    inline void low_level_instanceSet(RackType_sp rack, size_t index, T_sp value) { (*rack)[index] = value; }
 
 }; // core namespace
 
@@ -264,8 +301,6 @@ namespace core {
   };
 
 };
-
-
 
 
 namespace core {

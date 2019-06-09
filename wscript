@@ -185,8 +185,10 @@ VALID_OPTIONS = [
 ]
 
 DEBUG_OPTIONS = [
+    "DEBUG_DTREE_INTERPRETER", # Generate dtree interpreter log
     "DEBUG_DTRACE_LOCK_PROBE", # Add a Dtrace probe for mutex lock acquisition
     "DEBUG_STACKMAPS", # print messages about stackmap registration
+    "DEBUG_ASSERT", # Turn on DEBUG_ASSERT
     "DEBUG_ASSERT_TYPE_CAST", # Turn on type checking when passing arguments
     "SOURCE_DEBUG", # Allow LOG messages to print - works with CLASP_DEBUG environment variable
     "DEBUG_JIT_LOG_SYMBOLS", # Generate a log of JITted symbols in /tmp/clasp-symbols-<pid>
@@ -210,6 +212,7 @@ DEBUG_OPTIONS = [
     ##  Generate per-thread logs in /tmp/dispatch-history/**  of the slow path of fastgf
     "DEBUG_REHASH_COUNT",   # Keep track of the number of times each hash table has been rehashed
     "DEBUG_MONITOR",   # generate logging messages to a file in /tmp for non-hot code
+    "DEBUG_MONITOR_SUPPORT",   # Must be enabled with other options - do this automatically?
     "DEBUG_MEMORY_PROFILE",  # Profile memory allocations total size and counter
     "DEBUG_BCLASP_LISP",  # Generate debugging frames for all bclasp code - like declaim
     "DEBUG_CCLASP_LISP",  # Generate debugging frames for all cclasp code - like declaim
@@ -1061,7 +1064,9 @@ def configure(cfg):
         cfg.define("DEBUG_GUARD_VALIDATE",1)
     if (cfg.env.DEBUG_GUARD_EXHAUSTIVE_VALIDATE):
         cfg.define("DEBUG_GUARD_EXHAUSTIVE_VALIDATE",1)
+    cfg.define("DEBUG_MONITOR_SUPPORT",1) 
     if (cfg.env.DEBUG_OPTIONS):
+        # on by default - figure out how to shut it off later and remove all of the code that depends on it
         for opt in cfg.env.DEBUG_OPTIONS:
             if (opt in DEBUG_OPTIONS):
                 cfg.define(opt,1)

@@ -295,16 +295,25 @@ CL_DEFUN Fixnum core__header_kind(core::T_sp obj) {
   SIMPLE_ERROR(BF("The object %s doesn't have a stamp") % _rep_(obj));
 }
 
-CL_DOCSTRING("Return the stamp for the object, the flags and the header stamp");
-CL_DEFUN core::T_mv core__instance_stamp(core::T_sp obj)
+CL_DOCSTRING("Return the index part of the stamp.  Stamp indices are adjacent to each other.");
+CL_DEFUN size_t core__stamp_index(size_t stamp)
 {
-  core::T_sp stamp((Tagged)cx_read_stamp(obj.raw_()));
-  if (obj.generalp()) {
-    Header_s* header = reinterpret_cast<Header_s*>(ClientPtrToBasePtr(obj.unsafe_general()));
-    return Values(stamp,
-                  core::make_fixnum(static_cast<Fixnum>(header->header.stamp())));
-  }
-  return Values(stamp, _Nil<core::T_O>());
+  return stamp>>gctools::Header_s::wtag_shift;
+}
+
+CL_DOCSTRING("Shift an unshifted stamp so that it can be put into code in a form where it can be directly matched to a stamp read from an object header with no further shifting");
+CL_DEFUN core::Integer_sp core__shift_stamp_for_compiled_code(core::Integer_sp unshifted_stamp)
+{
+  core::Integer_sp shifted_stamp = core::cl__logior(core::Cons_O::createList(core::clasp_ash(unshifted_stamp,gctools::Header_s::stamp_shift),core::make_fixnum(gctools::Header_s::stamp_tag)));
+  return shifted_stamp;
+}
+
+CL_DOCSTRING("Return the stamp for the object, the flags and the header stamp");
+CL_DEFUN core::T_sp core__instance_stamp(core::T_sp obj)
+{
+  core::T_sp stamp((gctools::Tagged)cx_read_stamp(obj.raw_(),0));
+  if (stamp.fixnump()) return stamp;
+  SIMPLE_ERROR(BF("core:instance-stamp was about to return a non-fixnum %p") % (void*)stamp.raw_());
 }
 
 CL_DOCSTRING("Set the header stamp for the object");
@@ -864,8 +873,9 @@ CL_DEFUN void gctools__register_stamp_name(const std::string& name,size_t stamp_
 }
 
 CL_DEFUN core::T_sp gctools__get_stamp_name_map() {
+  DEPRECATED();
   core::List_sp l = _Nil<core::T_O>();
-  for ( auto it : global_stamp_name_map ) {
+  for ( auto it : global_unshifted_nowhere_stamp_name_map ) {
     l = core::Cons_O::create(core::Cons_O::create(core::SimpleBaseString_O::make(it.first),core::make_fixnum(it.second)),l);
   }
   return l;
@@ -1118,13 +1128,6 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #endif
   if (buildReport) ss << (BF("DEBUG_JIT_LOG_SYMBOLS = %s\n") % (debug_jit_log_symbols ? "**DEFINED**" : "undefined") ).str();
 
-  bool debug_monitor = false;
-#ifdef DEBUG_MONITOR
-  debug_monitor = true;
-  debugging = true;
-  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-MONITOR"),features);
-#endif
-  if (buildReport) ss << (BF("DEBUG_MONITOR = %s\n") % (debug_monitor ? "**DEFINED**" : "undefined") ).str();
 
   bool debug_mps_size = false;
 #ifdef DEBUG_MPS_SIZE
@@ -1174,8 +1177,17 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-LEXICAL-DEPTH"),features);
 #endif
   if (buildReport) ss << (BF("DEBUG_LEXICAL_DEPTH = %s\n") % (debug_lexical_depth ? "**DEFINED**" : "undefined") ).str();
-  
 
+  bool debug_dtree_interpreter = false;
+#ifdef DEBUG_DTREE_INTERPRETER
+  debug_dtree_interpreter = true;
+#ifndef DEBUG_MONITOR_SUPPORT
+#error "You must enable DEBUG_MONITOR_SUPPORT to use DEBUG_DTREE_INTERPRETER"
+#endif
+  debugging = true;
+#endif
+  if (buildReport) ss << (BF("DEBUG_DTREE_INTERPRETER = %s\n") % (debug_dtree_interpreter ? "**DEFINED**" : "undefined") ).str();
+  
   bool debug_cclasp_lisp = false;
 #ifdef DEBUG_CCLASP_LISP
   debug_cclasp_lisp = true;
@@ -1283,6 +1295,28 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #endif
   if (buildReport) ss << (BF("USE_HUMAN_READABLE_BITCODE = %s\n") % (use_human_readable_bitcode ? "**DEFINED**" : "undefined") ).str();
 
+  //
+  // DEBUG_MONITOR must be last - other options turn this on
+  //
+  bool debug_monitor = false;
+#ifdef DEBUG_MONITOR
+#ifndef DEBUG_MONITOR_SUPPORT
+#error "You must enable DEBUG_MONITOR_SUPPORT to use DEBUG_DTREE_INTERPRETER"
+#endif
+  debug_monitor = true;
+  debugging = true;
+  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-MONITOR"),features);
+#endif
+  if (buildReport) ss << (BF("DEBUG_MONITOR = %s\n") % (debug_monitor ? "**DEFINED**" : "undefined") ).str();
+
+  bool debug_monitor_support = false;
+#ifdef DEBUG_MONITOR_SUPPORT
+  debug_monitor_support = true;
+  debugging = true;
+  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-MONITOR-SUPPORT"),features);
+#endif
+  if (buildReport) ss << (BF("DEBUG_MONITOR_SUPPORT = %s\n") % (debug_monitor_support ? "**DEFINED**" : "undefined") ).str();
+  
   // -------------------------------------------------------------
   //
   // The cl:*features* environment variable is set below - so all changes to (features) must be above

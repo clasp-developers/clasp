@@ -941,7 +941,7 @@ string ReadTable_O::__repr__() const {
   return ss.str();
 }
 
-__attribute__((optnone)) Symbol_sp ReadTable_O::syntax_type(Character_sp ch) const {
+Symbol_sp ReadTable_O::syntax_type(Character_sp ch) const {
   _OF();
   Symbol_sp result = this->_SyntaxTypes->gethash(ch, kw::_sym_constituent);
   LOG(BF("character[%s] syntax_type: %s") % _rep_(ch) % _rep_(result));

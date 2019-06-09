@@ -2989,16 +2989,6 @@ CL_DEFUN void core__verify_simple_vector_layout(size_t length_offset, size_t dat
     SIMPLE_ERROR(BF("data_offset %lu does not match cxx_data_offset %lu") % data_offset % cxx_data_offset );
 }
 
-CL_DEFUN void core__verify_rack_layout(size_t stamp_offset, size_t data_offset)
-{
-  size_t cxx_stamp_offset = offsetof(SimpleVector_O,_Data._Data)+sizeof(T_sp)*(RACK_SLOT_START-1);
-  size_t cxx_data_offset = offsetof(SimpleVector_O,_Data._Data)+sizeof(T_sp)*(RACK_SLOT_START);
-  if (stamp_offset!=cxx_stamp_offset)
-    SIMPLE_ERROR(BF("stamp_offset %lu does not match cxx_stamp_offset %lu") % stamp_offset % cxx_stamp_offset);
-  if (data_offset!=cxx_data_offset)
-    SIMPLE_ERROR(BF("data_offset %lu does not match cxx_data_offset %lu") % data_offset % cxx_data_offset);
-}
-
 
 CL_DEFUN void core__verify_mdarray_layout(size_t FillPointerOfLengthOfDummy_offset, size_t ArrayTotalSize_offset, size_t Data_offset, size_t DisplacedIndexOffset_offset, size_t Flags_offset, size_t rank_offset, size_t dimensions_offset)
 {

@@ -395,9 +395,10 @@
          (primitive-unwinds "to_object_pointer" %t*% (list %i64*%))
          (primitive-unwinds "to_object_void" %t*% (list))
          ;; === END OF TRANSLATORS ===
-         (primitive         "cx_read_stamp" %t*% (list %t*%))
-         (primitive         "cc_read_slot" %t*% (list %t*% %size_t%))
-         (primitive         "cc_write_slot" %t*% (list %t*% %size_t% %t*%))
+         (primitive         "cx_read_stamp" %t*% (list %t*% %i64%))
+         (primitive         "cc_read_derivable_cxx_stamp_untagged_object" %i64% (list %i8*%))
+         #+(or)(primitive         "cc_read_slot" %t*% (list %t*% %size_t%))
+         #+(or)(primitive         "cc_write_slot" %t*% (list %t*% %size_t% %t*%))
          )
      *primitives*
      ))

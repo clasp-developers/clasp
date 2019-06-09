@@ -104,13 +104,16 @@
                                        collect (if (< i retn) (cmp:irc-load ret) (%nil))))
                    do (cmp:irc-br final))))
       (cmp:irc-begin-block final)
-      (loop for out in outputs
-            for i from 0
-            for phi = (cmp:irc-phi cmp:%t*% (1+ nouts) (datum-name-as-string out))
-            do (loop for (block . vars) in blocks-and-vars
-                     do (cmp:irc-phi-add-incoming phi (elt vars i) block))
-               (cmp:irc-phi-add-incoming phi (elt default-vars i) default)
-               (out phi out)))))
+      (let ((phis (loop for out in outputs
+                        for i from 0
+                        for phi = (cmp:irc-phi cmp:%t*% (1+ nouts) (datum-name-as-string out))
+                        do (loop for (block . vars) in blocks-and-vars
+                                 do (cmp:irc-phi-add-incoming phi (elt vars i) block))
+                           (cmp:irc-phi-add-incoming phi (elt default-vars i) default)
+                        collect phi)))
+        (loop for phi in phis
+              for out in outputs
+              do (out phi out))))))
 
 (defmethod translate-simple-instruction
     ((instr clasp-cleavir-hir:save-values-instruction) return-value abi function-info)
@@ -439,9 +442,12 @@
 (defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir:instance-stamp-instruction) return-value abi function-info)
   (declare (ignore return-value function-info))
-  (let ((input (first (cleavir-ir:inputs instruction)))
-        (output (first (cleavir-ir:outputs instruction))))
-    (out (%intrinsic-call "cx_read_stamp" (list (in input))) output)))
+  (let* ((input (first (cleavir-ir:inputs instruction)))
+         (output (first (cleavir-ir:outputs instruction))))
+    (if cmp:*test-ir*
+        (let ((new-stamp (cmp:irc-read-stamp (in input))))
+          (out (%intrinsic-call "cx_read_stamp" (list (in input) new-stamp)) output))
+        (out (%intrinsic-call "cx_read_stamp" (list (in input) (cmp:jit-constant-i64 0))) output))))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:slot-read-instruction) return-value abi function-infoO)

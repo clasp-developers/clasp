@@ -919,14 +919,17 @@ jump to blocks within this tagbody."
   (let ((form (car rest))
         (object (alloca-t* "instance-stamp-instance")))
     (codegen object form env)
-    (irc-t*-result (irc-intrinsic "cx_read_stamp" (irc-load object)) result)))
+    (if *test-ir*
+        (let ((new-stamp (irc-read-stamp (irc-load object))))
+          (irc-t*-result (irc-intrinsic "cx_read_stamp" (irc-load object) new-stamp) result))
+        (irc-t*-result (irc-intrinsic "cx_read_stamp" (irc-load object) (jit-constant-i64 0)) result))))
 
 ;;; CORE:INSTANCE-REF
 ;;; the gen- are for cclasp. At the moment they're unused, but that's just because
 ;;; the runtime fastgf compiler uses bclasp so it's a bit lower priority.
-
 (defun gen-instance-ref (instance index)
-  (irc-intrinsic "cc_read_slot" instance
+  (irc-read-slot instance (irc-untag-fixnum index %size_t% "slot-location"))
+  #+(or)(irc-intrinsic "cc_read_slot" instance
                  (irc-untag-fixnum index %size_t% "slot-location")))
 
 (defun codegen-instance-ref (result rest env)
@@ -941,9 +944,10 @@ jump to blocks within this tagbody."
 ;;; CORE:INSTANCE-SET
 
 (defun gen-instance-set (instance index value)
-  (irc-intrinsic "cc_write_slot" instance
-                 (irc-untag-fixnum index %size_t% "slot-location")
-                 value))
+  (irc-write-slot instance (irc-untag-fixnum index %size_t% "slot-location") value)
+  #+(or)(irc-intrinsic "cc_write_slot" instance
+                       (irc-untag-fixnum index %size_t% "slot-location")
+                       value))
 
 (defun codegen-instance-set (result rest env)
   (let ((instance (first rest)) (index (second rest)) (value (third rest))

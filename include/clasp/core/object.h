@@ -647,6 +647,14 @@ public:
 };
 
 
+namespace core {
+// A dummy class for unused tag 
+class Unused_dummy_O : public T_O {
+  LISP_ABSTRACT_CLASS(core, CorePkg, Unused_dummy_O, "UNUSED",T_O);
+};
+};
+
+
 #include <clasp/core/glue.h>
 
 

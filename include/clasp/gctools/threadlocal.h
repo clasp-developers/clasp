@@ -40,6 +40,13 @@ namespace core {
     Fixnum                 _BacktraceStamp;
     int                    _BacktraceFd;
 #endif
+#ifdef DEBUG_MONITOR_SUPPORT
+    // When enabled, maintain a thread-local map of strings to FILE*
+    // used for logging. This is so that per-thread log files can be
+    // generated.  These log files are automatically closed when the
+    // thread exits.
+    std::map<std::string,FILE*> _MonitorFiles;
+#endif
 #if 1
 // thread local caches work fine
     /*! SingleDispatchGenericFunction cache */

@@ -53,6 +53,12 @@ THE SOFTWARE.
 
 namespace core {
 
+Rack_sp Rack_O::make(size_t numSlots, T_sp initialValue )
+{
+  auto bs = gctools::GC<Rack_O>::allocate_container(false,numSlots,initialValue,true);
+  return bs;
+}
+
 CL_LAMBDA(instance func);
 CL_DECLARE();
 CL_DOCSTRING("instanceClassSet");
@@ -75,8 +81,9 @@ CL_DEFUN T_sp core__copy_instance(T_sp obj) {
   SIMPLE_ERROR(BF("copy-instance doesn't support copying %s") % _rep_(obj));
 };
 
-void Instance_O::initializeSlots(gctools::Stamp stamp, size_t numberOfSlots) {
-  this->_Rack = SimpleVector_O::make(numberOfSlots+RACK_SLOT_START,_Unbound<T_O>(),true);
+void Instance_O::initializeSlots(gctools::ShiftedStamp stamp, size_t numberOfSlots) {
+  ASSERT(stamp==0||gctools::Header_s::Value::is_rack_shifted_stamp(stamp));
+  this->_Rack = Rack_O::make(numberOfSlots,_Unbound<T_O>());
   this->stamp_set(stamp);
 #ifdef DEBUG_GUARD_VALIDATE
   client_validate(this->_Rack);
@@ -104,13 +111,16 @@ void Instance_O::CLASS_call_history_generic_functions_push_new(T_sp generic_func
   this->instanceSet(REF_SPECIALIZER_CALL_HISTORY_GENERIC_FUNCTIONS,Cons_O::create(generic_function,gflist));
 }
 
-void Instance_O::CLASS_set_stamp_for_instances(Fixnum s) {
-  this->instanceSet(REF_CLASS_STAMP_FOR_INSTANCES_,clasp_make_fixnum(s));
+void Instance_O::CLASS_set_stamp_for_instances(gctools::ShiftedStamp s) {
+  ASSERT(gctools::Header_s::Value::is_shifted_stamp(s));
+  T_sp stamp((gctools::Tagged)s);
+  this->instanceSet(REF_CLASS_STAMP_FOR_INSTANCES_,stamp); // write shifted stamp - it's automatically a fixnum
 };
 
 // NOT called by regular CL allocate instance. FIXME, find a way to remove this if possible.
-void Instance_O::initializeClassSlots(Creator_sp creator, gctools::Stamp stamp) {
+void Instance_O::initializeClassSlots(Creator_sp creator, gctools::ShiftedStamp stamp) {
   // Should match clos/hierarchy.lsp
+  ASSERT(gctools::Header_s::Value::is_shifted_stamp(stamp));
   this->instanceSet(REF_SPECIALIZER_CALL_HISTORY_GENERIC_FUNCTIONS, _Nil<T_O>());
   this->instanceSet(REF_CLASS_DIRECT_SUBCLASSES, _Nil<T_O>());
   this->instanceSet(REF_CLASS_DIRECT_SUPERCLASSES, _Nil<T_O>());
@@ -192,20 +202,20 @@ void Instance_O::fields(Record_sp node) {
 
 
 size_t Instance_O::rack_stamp_offset() {
-  SimpleVector_O dummy_rack(0);
-  return (char*)(dummy_rack.rowMajorAddressOfElement_(0))-(char*)&dummy_rack;
+  return offsetof(Rack_O,_ShiftedStamp);
 }
 
 Fixnum Instance_O::stamp() const {
-  return (*this->_Rack)[0].unsafe_fixnum();
+  return this->_Rack->stamp_get();
 };
 
-void Instance_O::stamp_set(Fixnum s) {
-  (*this->_Rack)[0] = clasp_make_fixnum(s);
+void Instance_O::stamp_set(gctools::ShiftedStamp s) {
+  ASSERT(s==0||gctools::Header_s::Value::is_rack_shifted_stamp(s));
+  this->_Rack->stamp_set(s);
 };
 
 size_t Instance_O::numberOfSlots() const {
-  return this->_Rack->length()-RACK_SLOT_START;
+  return this->_Rack->length();
 };
 
 
@@ -245,24 +255,26 @@ T_sp Instance_O::instanceRef(size_t idx) const {
   client_validate(this->_Rack);
 #endif
 #if DEBUG_CLOS >= 2
-  printf("\nMLOG INSTANCE-REF[%d] of Instance %p --->%s\n", idx, (void *)(this), this->_Rack[idx+RACK_SLOT_START]->__repr__().c_str());
+  printf("\nMLOG INSTANCE-REF[%d] of Instance %p --->%s\n", idx, (void *)(this), this->_Rack[idx]->__repr__().c_str());
 #endif
-#ifdef DEBUG_BOUNDS_ASSERT
-  if ( (idx+RACK_SLOT_START)>=(this->_Rack)->length()) {
-    SIMPLE_ERROR(BF("The slot index %lu must be less than the size %lu\n") % idx % (this->_Rack->length()-RACK_SLOT_START));
+  T_sp val = low_level_instanceRef(this->_Rack,idx);
+#if 0
+  if (idx==5) {
+    printf("%s:%d Read slot 5 with %s\n", __FILE__, __LINE__, _safe_rep_(val).c_str());
   }
 #endif
-  return low_level_instanceRef(this->_Rack,idx);
+  return val;
+
 //  return ((*this->_Rack)[idx+RACK_SLOT_START]);
 }
 T_sp Instance_O::instanceSet(size_t idx, T_sp val) {
+  if (idx==5) {
+    if (val.fixnump() && val.unsafe_fixnum()>65536) {
+      printf("%s:%d Setting slot 5 rack@%p with %s\n", __FILE__, __LINE__, this, _safe_rep_(val).c_str());
+    }
+  }
 #if DEBUG_CLOS >= 2
   printf("\nMLOG SI-INSTANCE-SET[%d] of Instance %p to val: %s\n", idx, (void *)(this), val->__repr__().c_str());
-#endif
-#ifdef DEBUG_BOUNDS_ASSERT
-  if ( (idx+RACK_SLOT_START)>=(this->_Rack)->length()) {
-    SIMPLE_ERROR(BF("The slot index %lu must be less than the size %lu\n") % idx % (this->_Rack->length()-RACK_SLOT_START));
-  }
 #endif
   low_level_instanceSet(this->_Rack,idx,val);
   // (*this->_Rack)[idx+RACK_SLOT_START] = val;
@@ -339,7 +351,7 @@ bool Instance_O::equalp(T_sp obj) const {
   if (Instance_sp iobj = obj.asOrNull<Instance_O>()) {
     if (this->_Class != iobj->_Class) return false;
     if (this->stamp() != iobj->stamp()) return false;
-    for (size_t i(1), iEnd(this->_Rack->length()); i < iEnd; ++i) {
+    for (size_t i(0), iEnd(this->_Rack->length()); i < iEnd; ++i) {
       if (!cl__equalp((*this->_Rack)[i], (*iobj->_Rack)[i])) return false;
     }
     return true;
@@ -365,7 +377,7 @@ void Instance_O::describe(T_sp stream) {
   stringstream ss;
   ss << (BF("Instance\n")).str();
   ss << (BF("_Class: %s\n") % _rep_(this->_Class).c_str()).str();
-  for (int i(1); i < this->_Rack->length(); ++i) {
+  for (int i(0); i < this->_Rack->length(); ++i) {
     ss << (BF("_Rack[%d]: %s\n") % i % _rep_((*this->_Rack)[i]).c_str()).str();
   }
   clasp_write_string(ss.str(), stream);
@@ -376,7 +388,8 @@ Instance_sp Instance_O::create(Symbol_sp symbol, Instance_sp metaClass, Creator_
   DEPRECATED();
 };
 
-Instance_sp Instance_O::createClassUncollectable(gctools::Stamp stamp, Instance_sp metaClass, size_t number_of_slots, Creator_sp creator ) {
+Instance_sp Instance_O::createClassUncollectable(gctools::ShiftedStamp stamp, Instance_sp metaClass, size_t number_of_slots, Creator_sp creator ) {
+  ASSERT(gctools::Header_s::Value::is_shifted_stamp(stamp));
 #if 0  
   printf("%s:%d:%s stamp -> %llu\n", __FILE__, __LINE__, __FUNCTION__, stamp);
   if (!metaClass.unboundp()) {
@@ -387,10 +400,12 @@ Instance_sp Instance_O::createClassUncollectable(gctools::Stamp stamp, Instance_
 #endif
   GC_ALLOCATE_UNCOLLECTABLE(Instance_O, oclass, metaClass /*, number_of_slots*/);
   oclass->_Class = metaClass;
-  gctools::Stamp class_stamp = 0;
+  gctools::ShiftedStamp class_stamp = 0;
   if (!metaClass.unboundp()) {
     class_stamp = metaClass->CLASS_stamp_for_instances();
+    ASSERT(gctools::Header_s::Value::is_shifted_stamp(class_stamp));
   }
+  // class_stamp may be 0 if metaClass.unboundp();
   oclass->initializeSlots(class_stamp,number_of_slots);
   oclass->initializeClassSlots(creator,stamp);
   return oclass;
@@ -628,8 +643,9 @@ CL_DEFUN List_sp clos__direct_superclasses(Instance_sp c) {
 // FIXME: Perhaps gctools::NextStamp could be exported and used as the stamp slot's initform.
 CL_LAMBDA(class_ &optional (name nil name-p));
 CL_DEFUN void core__class_new_stamp(Instance_sp c, T_sp name, T_sp namep) {
-  Fixnum stamp = gctools::NextStamp();
-  c->CLASS_set_stamp_for_instances(gctools::NextStamp());
+//  printf("%s:%d Something is whacked here - I'm calling NextStamp twice for class %s!!!!\n", __FILE__, __LINE__, _safe_rep_(name).c_str() );
+  gctools::ShiftedStamp stamp = gctools::NextShiftedStampMergeWhere(gctools::Header_s::rack_wtag);
+  c->CLASS_set_stamp_for_instances(stamp); // Was gctools::NextStamp());
   std::string sname;
   if (namep.notnilp()) {
     if (gc::IsA<Symbol_sp>(name)) {
@@ -642,12 +658,16 @@ CL_DEFUN void core__class_new_stamp(Instance_sp c, T_sp name, T_sp namep) {
     sname = c->_className()->formattedName(true);
   }
 //  printf("%s:%d Registering %s with stamp %lld\n", __FILE__, __LINE__, sname.c_str(), stamp);
-  register_stamp_name(sname,stamp);
+  register_stamp_name(sname,gctools::Header_s::Value::unshift_shifted_stamp(stamp));
 }
 
-CL_DEFUN Fixnum core__class_stamp_for_instances(Instance_sp c) {
+CL_DEFUN T_sp core__class_stamp_for_instances(Instance_sp c) {
   if (c->_Class->isSubClassOf(_lisp->_Roots._TheClass)) {
-    return c->CLASS_stamp_for_instances();
+    // DONT convert this to an integer - it is already a shifted stamp and
+    // it can be treated like a fixnum
+    ASSERT(gctools::Header_s::Value::is_shifted_stamp(c->CLASS_stamp_for_instances()));
+    T_sp stamp((gctools::Tagged)c->CLASS_stamp_for_instances());
+    return stamp;
   }
   TYPE_ERROR(c,cl::_sym_class);
 };
@@ -716,6 +736,17 @@ CL_DEFUN void core__verify_instance_layout(size_t instance_size, size_t instance
   if (instance_rack_offset!=offsetof(Instance_O,_Rack))
     SIMPLE_ERROR(BF("instance_rack_offset %lu does not match offsetof(_Rack,Instance_O) %lu") % instance_rack_offset % offsetof(Instance_O,_Rack));
 }
+
+CL_DEFUN void core__verify_rack_layout(size_t stamp_offset, size_t data_offset)
+{
+  size_t cxx_stamp_offset = offsetof(Rack_O,_ShiftedStamp);
+  size_t cxx_data_offset = offsetof(Rack_O,_Slots._Data);
+  if (stamp_offset!=cxx_stamp_offset)
+    SIMPLE_ERROR(BF("stamp_offset %lu does not match cxx_stamp_offset %lu") % stamp_offset % cxx_stamp_offset);
+  if (data_offset!=cxx_data_offset)
+    SIMPLE_ERROR(BF("data_offset %lu does not match cxx_data_offset %lu") % data_offset % cxx_data_offset);
+}
+
 
 
 

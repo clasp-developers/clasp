@@ -50,6 +50,7 @@ THE SOFTWARE.
 #include <clasp/core/hashTableEq.h>
 #include <clasp/core/hashTableEql.h>
 #include <clasp/core/evaluator.h>
+#include <clasp/core/primitives.h>
 #include <clasp/core/genericFunction.h>
 #include <clasp/llvmo/intrinsics.h>
 #include <clasp/core/funcallableInstance.h>
@@ -58,15 +59,17 @@ THE SOFTWARE.
 namespace core {
 
 
-void FuncallableInstance_O::initializeSlots(gctools::Stamp stamp, size_t numberOfSlots) {
-  this->_Rack = SimpleVector_O::make(numberOfSlots+1,_Unbound<T_O>(),true);
+void FuncallableInstance_O::initializeSlots(gctools::ShiftedStamp stamp, size_t numberOfSlots) {
+  ASSERT(gctools::Header_s::Value::is_rack_shifted_stamp(stamp));
+  this->_Rack = Rack_O::make(numberOfSlots,_Unbound<T_O>());
   this->stamp_set(stamp);
 #ifdef DEBUG_GUARD_VALIDATE
   client_validate(this->_Rack);
 #endif
 }
 
-void FuncallableInstance_O::initializeClassSlots(Creator_sp creator, gctools::Stamp stamp) {
+void FuncallableInstance_O::initializeClassSlots(Creator_sp creator, gctools::ShiftedStamp stamp) {
+  ASSERT(gctools::Header_s::Value::is_rack_shifted_stamp(stamp));
   DEPRECATED();
 }
 
@@ -97,15 +100,15 @@ size_t FuncallableInstance_O::rack_stamp_offset() {
 }
 
 Fixnum FuncallableInstance_O::stamp() const {
-  return (*this->_Rack)[0].unsafe_fixnum();
+  return this->_Rack->stamp_get();
 };
 
 void FuncallableInstance_O::stamp_set(Fixnum s) {
-  (*this->_Rack)[0] = clasp_make_fixnum(s);
+  this->_Rack->stamp_set(s);
 };
 
 size_t FuncallableInstance_O::numberOfSlots() const {
-  return this->_Rack->length()-1;
+  return this->_Rack->length();
 };
 
 T_sp FuncallableInstance_O::instanceSig() const {
@@ -124,18 +127,6 @@ T_sp FuncallableInstance_O::instanceSig() const {
 SYMBOL_EXPORT_SC_(ClosPkg, setFuncallableInstanceFunction);
 SYMBOL_EXPORT_SC_(CorePkg, instanceClassSet);
 
-
-
-
-
-
-
-
-
-
-
-
-
 T_sp FuncallableInstance_O::instanceClassSet(Instance_sp mc) {
   this->_Class = mc;
 #ifdef DEBUG_GUARD_VALIDATE
@@ -149,15 +140,15 @@ T_sp FuncallableInstance_O::instanceRef(size_t idx) const {
   client_validate(this->_Rack);
 #endif
 #if DEBUG_CLOS >= 2
-  printf("\nMLOG INSTANCE-REF[%d] of Instance %p --->%s\n", idx, (void *)(this), this->_Rack[idx+1]->__repr__().c_str());
+  printf("\nMLOG INSTANCE-REF[%d] of Instance %p --->%s\n", idx, (void *)(this), this->_Rack[idx]->__repr__().c_str());
 #endif
-  return ((*this->_Rack)[idx+1]);
+  return low_level_instanceRef(this->_Rack,idx);
 }
 T_sp FuncallableInstance_O::instanceSet(size_t idx, T_sp val) {
 #if DEBUG_CLOS >= 2
   printf("\nMLOG SI-INSTANCE-SET[%d] of Instance %p to val: %s\n", idx, (void *)(this), val->__repr__().c_str());
 #endif
-  (*this->_Rack)[idx+1] = val;
+  low_level_instanceSet(this->_Rack,idx,val);
 #ifdef DEBUG_GUARD_VALIDATE
   client_validate(this->_Rack);
 #endif
@@ -331,9 +322,10 @@ CL_DEFUN void clos__set_generic_function_compiled_dispatch_function(T_sp obj, T_
 }
 }
 
-SYMBOL_EXPORT_SC_(ClosPkg,node);
+SYMBOL_EXPORT_SC_(ClosPkg,inode);
 SYMBOL_EXPORT_SC_(ClosPkg,outcome);
 SYMBOL_EXPORT_SC_(ClosPkg,range);
+SYMBOL_EXPORT_SC_(ClosPkg,tag_test);
 SYMBOL_EXPORT_SC_(ClosPkg,skip);
 SYMBOL_EXPORT_SC_(ClosPkg,optimized_slot_reader);
 SYMBOL_EXPORT_SC_(ClosPkg,optimized_slot_writer);
@@ -345,20 +337,18 @@ SYMBOL_EXPORT_SC_(ClosPkg,effective_method_outcome);
 namespace core {
 #if 1
 
-CL_DEF_CLASS_METHOD DtreeInterpreter_sp DtreeInterpreter_O::make_dtree_interpreter(T_sp generic_function, T_sp tdtree) {
-  FunctionDescription* fdesc = makeFunctionDescription(clos::_sym_node,_Nil<T_O>());
-  SimpleVector_sp dtree = gc::As_unsafe<SimpleVector_sp>(tdtree);
-  SimpleVector_sp node = gc::As_unsafe<SimpleVector_sp>((*dtree)[REF_DTREE_NODE]);
-  if (!gc::IsA<SimpleVector_sp>(node)) {
-    printf("%s:%d Trying to create a dtree-interpreter %s with no node\n", __FILE__, __LINE__, _rep_(dtree).c_str());
+CL_DEF_CLASS_METHOD DtreeInterpreter_sp DtreeInterpreter_O::make_dtree_interpreter(T_sp generic_function, T_sp dtree_root) {
+  FunctionDescription* fdesc = makeFunctionDescription(clos::_sym_inode,_Nil<T_O>());
+  if (!gc::IsA<SimpleVector_sp>(dtree_root)) {
+    printf("%s:%d Trying to create a dtree-interpreter %s with no node\n", __FILE__, __LINE__, _rep_(dtree_root).c_str());
   }
-  GC_ALLOCATE_VARIADIC(DtreeInterpreter_O,dt,fdesc,generic_function,dtree);
+  GC_ALLOCATE_VARIADIC(DtreeInterpreter_O,dt,fdesc,generic_function,dtree_root);
 //  printf("%s:%d Created a dtree-interpreter @%p  dtree -> @%p with node -> %s\n", __FILE__, __LINE__, (void*)dt.raw_(), (void*)dtree.raw_(), _rep_(dtree).c_str());
   return dt;
 }
 
-#if 0
-#define DTLOG(x) printf x;
+#if DEBUG_DTREE_INTERPRETER
+#define DTLOG(x) if (_sym_STARdebug_dtree_interpreterSTAR.boundp()&&_sym_STARdebug_dtree_interpreterSTAR->symbolValue().notnilp()) { FILE* fout= monitor_file("dtree-interp");  fprintf( fout, "%s", (x).str().c_str()); fflush(fout); }
 #else
 #define DTLOG(x)
 #endif
@@ -378,11 +368,17 @@ SYMBOL_EXPORT_SC_(KeywordPkg,generic_function_name);
 
 #define COMPILE_TRIGGER 1024
 LCC_RETURN DtreeInterpreter_O::LISP_CALLING_CONVENTION() {
-  DTLOG(("%s:%d:%s Entered\n", __FILE__, __LINE__, __FUNCTION__));
   SETUP_CLOSURE(DtreeInterpreter_O,interpreter);
   FuncallableInstance_sp generic_function = gc::As_unsafe<FuncallableInstance_sp>(interpreter->_GenericFunction);
-  SimpleVector_sp dtree = gc::As_unsafe<SimpleVector_sp>(interpreter->_Dtree);
-#if 1
+  DTLOG(BF("=======================================================\n"));
+  DTLOG(BF("%s:%d:%s Entered generic function -> %s\n") % __FILE__% __LINE__% __FUNCTION__ % _safe_rep_(generic_function));
+  SimpleVector_sp dtree = gc::As_unsafe<SimpleVector_sp>(interpreter->_DtreeRoot);
+#ifdef DEBUG_ASSERT
+  if (!gc::IsA<SimpleVector_sp>(dtree)) {
+    SIMPLE_ERROR(BF("Entered Dtree interpreter entry-point with %s as the dtree - that is NOT allowed") % _rep_(dtree).c_str());
+  }
+#endif
+#if 0
   interpreter->_CallCount++;
   if (interpreter->_CallCount==COMPILE_TRIGGER) {
     T_sp fn = generic_function->functionName();
@@ -402,127 +398,243 @@ LCC_RETURN DtreeInterpreter_O::LISP_CALLING_CONVENTION() {
 #endif
   // Here is where we can check interpreter->_CallCount and maybe compile the dtree and replace ourselves and jump
   // to the compiled version of the dtree.
-  DTLOG(("%s:%d Entered with dtree-interpreter @%p  with node -> %s\n", __FILE__, __LINE__, (void*)interpreter.raw_(), _rep_(interpreter).c_str()))
+  DTLOG(BF("%s:%d Entered with dtree-interpreter @%p with dtree.root -> %s\n") % __FILE__% __LINE__% (void*)interpreter% _rep_(interpreter->_DtreeRoot).c_str());
   INITIALIZE_VA_LIST(); // lcc_vargs now points to the rewound argument list
   Vaslist dispatch_args_s(*lcc_vargs);
   VaList_sp dispatch_args(&dispatch_args_s);
-  DTLOG(("%s:%d     Arguments: %s\n", __FILE__, __LINE__, dbg_safe_repr((uintptr_t)(lcc_vargs).raw_()).c_str()));
+  DTLOG(BF("%s:%d     Arguments: %s\n") % __FILE__% __LINE__% _safe_rep_(lcc_vargs));
   int nargs = dispatch_args->remaining_nargs();
-  ASSERT(gc::IsA<SimpleVector_sp>(interpreter->_Dtree));
-  SimpleVector_sp node = gc::As_unsafe<SimpleVector_sp>((*dtree)[REF_DTREE_NODE]);
+  ASSERT(gc::IsA<SimpleVector_sp>(interpreter->_DtreeRoot));
+  SimpleVector_sp node = gc::As_unsafe<SimpleVector_sp>(interpreter->_DtreeRoot);
  TOP:
-  DTLOG(("%s:%d:%s node = %s\n", __FILE__, __LINE__, __FUNCTION__, dbg_safe_repr((uintptr_t)(node).raw_()).c_str()));
-    core::T_sp arg = dispatch_args->next_arg();
-    if (!gc::IsA<SimpleVector_sp>(node)) {
-      printf("%s:%d node is not a SimpleVector_sp -> |%s|\n", __FILE__, __LINE__, dbg_safe_repr((uintptr_t)(node).raw_()).c_str());
+  DTLOG(BF("%s:%d:%s node parts\n") % __FILE__ % __LINE__ % __FUNCTION__ );
+  DTLOG(BF("%s:%d:%s eql specializers:           %s\n") % __FILE__ % __LINE__ % __FUNCTION__ % _safe_rep_((*node)[REF_NODE_EQL_SPECIALIZERS]));
+  DTLOG(BF("%s:%d:%s skip:                       %s\n") % __FILE__ % __LINE__ % __FUNCTION__ % _safe_rep_((*node)[REF_NODE_SKIP]));
+  DTLOG(BF("%s:%d:%s tag tests:                  %s\n") % __FILE__ % __LINE__ % __FUNCTION__ % _safe_rep_((*node)[REF_NODE_TAG_TESTS]));
+  DTLOG(BF("%s:%d:%s c++ class specializers:     %s\n") % __FILE__ % __LINE__ % __FUNCTION__ % _safe_rep_((*node)[REF_NODE_CXX_CLASS_SPECIALIZERS]));
+  DTLOG(BF("%s:%d:%s complex class specializers: %s\n") % __FILE__ % __LINE__ % __FUNCTION__ % _safe_rep_((*node)[REF_NODE_CLASS_SPECIALIZERS]));
+  core::T_sp arg = dispatch_args->next_arg();
+#ifdef DEBUG_ASSERT
+  if (!gc::IsA<SimpleVector_sp>(node)) {
+    printf("%s:%d node is not a SimpleVector_sp -> |%s| dtree -> |%s|\n", __FILE__, __LINE__, _safe_rep_(node).c_str(), _safe_rep_(dtree).c_str());
+  }
+#endif
+  T_sp type = (*node)[REF_TYPE];
+  DTLOG(BF("%s:%d  node type = %s  nargs remaining %d\n") % __FILE__% __LINE__% _rep_(type).c_str()% nargs);
+  if (type == clos::_sym_inode) {
+    if (nargs<=0) {
+      SIMPLE_ERROR(BF("Insufficient arguments"));
     }
-    core::T_sp type = (*node)[REF_TYPE];
-    DTLOG(("%s:%d:%s type = %s\n", __FILE__, __LINE__, __FUNCTION__, dbg_safe_repr((uintptr_t)(type).raw_()).c_str()));
-    if (type == clos::_sym_node) {
-      if (nargs<=0) {
-        SIMPLE_ERROR(BF("Insufficient arguments"));
-      }
-      nargs--;
-      DTLOG(("%s:%d:%s It's a node\n", __FILE__, __LINE__, __FUNCTION__));
-      // Use a binary search here - the interpreter is sorted
-      SimpleVector_sp class_specializers = gc::As_unsafe<SimpleVector_sp>((*node)[REF_NODE_INTERPRETER]);
-      DTLOG(("%s:%d:%s Checking class specializers: %s \n", __FILE__, __LINE__, __FUNCTION__, dbg_safe_repr((uintptr_t)(class_specializers).raw_()).c_str()));
-      T_sp action = (*class_specializers)[0];
-      if (action == clos::_sym_range) {
-        HashTableEql_sp eql_specializers = gc::As_unsafe<HashTableEql_sp>((*node)[REF_NODE_EQL_SPECIALIZERS]);
-        if (eql_specializers->hashTableCount()!=0) {
-          T_sp found = eql_specializers->gethash(arg);
-          if (found.notnilp()) {
-            node = gc::As_unsafe<SimpleVector_sp>(found);
-            goto TOP;
-          }
-        }
-      // Now check class specializers
-        uintptr_t shifted_stamp = (uintptr_t)(llvmo::template_read_stamp<core::T_O>(arg.raw_())); // The stamp is shifted by the fixnum_shift 
-        DTLOG(("%s:%d:%s Checking stamp %ld\n", __FILE__, __LINE__, __FUNCTION__, shifted_stamp>>gctools::fixnum_shift));
-        for ( size_t index = 1, iEnd(class_specializers->length()); index < iEnd; index = index + 3 ) {
-          uintptr_t low_stamp = (uintptr_t)((*class_specializers)[index+1].raw_());
-          uintptr_t high_stamp = (uintptr_t)((*class_specializers)[index+2].raw_());
-          DTLOG(("%s:%d:%s comparing stamp %lu to [%lu %lu]\n", __FILE__, __LINE__, __FUNCTION__,
-                 (shifted_stamp>>gctools::fixnum_shift),
-                 (low_stamp>>gctools::fixnum_shift),
-                 (high_stamp>>gctools::fixnum_shift)));
-          if (low_stamp <= shifted_stamp && shifted_stamp <= high_stamp) {
-            DTLOG(("%s:%d:%s      It's a match!!!\n", __FILE__, __LINE__, __FUNCTION__));
-            node = gc::As_unsafe<SimpleVector_sp>((*class_specializers)[index]);
-            goto TOP;
-          }
-        }
-        DTLOG(("%s:%d:%s    Fell through to DISPATCH_MISS!!!\n", __FILE__, __LINE__, __FUNCTION__));
-        goto DISPATCH_MISS;
-      } else if (action == clos::_sym_skip) {
-        DTLOG(("%s:%d:%s    It's a SKIP!!!\n", __FILE__, __LINE__, __FUNCTION__));
-        node = gc::As_unsafe<SimpleVector_sp>((*class_specializers)[1]);
+    nargs--;
+    //
+    //  Test EQL specializers
+    //
+    DTLOG(BF("%s:%d:%s On a dtree node\n") % __FILE__% __LINE__% __FUNCTION__);
+    DTLOG(BF("%s:%d:%s      Argument@%p\n") % __FILE__% __LINE__% __FUNCTION__% (void*)arg.raw_());
+    DTLOG(BF("About to check eql_specializers -> %s\n") % _safe_rep_((*node)[REF_NODE_EQL_SPECIALIZERS]));
+    SimpleVector_sp eql_specializers = gc::As_unsafe<SimpleVector_sp>((*node)[REF_NODE_EQL_SPECIALIZERS]);
+    for ( size_t index = 0; index< eql_specializers->length(); index += DtreeInterpreter_O::dtree_eql_test_step) {
+      if (cl__eql(arg,(*eql_specializers)[index+DtreeInterpreter_O::dtree_eql_test_spec_index])) {
+        node = gc::As_unsafe<SimpleVector_sp>((*eql_specializers)[index+DtreeInterpreter_O::dtree_eql_test_outcome_index]);
         goto TOP;
-      } else {
-        DTLOG(("%s:%d:%s Bad interpreter\n", __FILE__, __LINE__, __FUNCTION__ ));
-        abort();
       }
-    } else if (type == clos::_sym_outcome) {
-      DTLOG(("%s:%d:%s Handle outcome %s\n", __FILE__, __LINE__, __FUNCTION__, dbg_safe_repr((uintptr_t)(node).raw_()).c_str()));
-      T_sp outcome_type = (*node)[REF_OUTCOME_SUBTYPE];
-      if (outcome_type == clos::_sym_optimized_slot_reader) {
-        T_sp location = (*node)[REF_OPTIMIZED_SLOT_READER_INDEX];
-        T_sp slot_name = (*node)[REF_OPTIMIZED_SLOT_READER_SLOT_NAME];
-        T_sp class_ = (*node)[REF_OPTIMIZED_SLOT_READER_CLASS];
-        if (location.fixnump()) {
-          size_t index = location.unsafe_fixnum();
-          Instance_sp instance((gc::Tagged)lcc_fixed_arg0);
-          T_sp value = instance->instanceRef(index);
-          if (value.unboundp()) return core::eval::funcall(cl::_sym_slot_unbound,class_,instance,slot_name);
-          return gctools::return_type(value.raw_(),1);
-        } else if (location.consp()) {
-          Instance_sp instance((gc::Tagged)lcc_fixed_arg0);
-          Cons_sp cell = gc::As_unsafe<Cons_sp>(location);
-          T_sp value = oCar(cell);
-          if (value.unboundp()) return core::eval::funcall(cl::_sym_slot_unbound,class_,instance,slot_name);
-          return gctools::return_type(value.raw_(),1);
+    }
+    //
+    // Now check skip
+    //
+    DTLOG(BF("    About to try skip is there skip? -> %s\n") % _safe_rep_((*node)[REF_NODE_SKIP]));
+    if ((*node)[REF_NODE_SKIP].notnilp()) {
+      node = gc::As_unsafe<SimpleVector_sp>((*node)[REF_NODE_SKIP]);
+      goto TOP;
+    }
+
+    //
+    // Now check tag specializers
+    //
+    DTLOG(BF("    About to try tag-tests\n"));
+    SimpleVector_sp tag_tests = gc::As_unsafe<SimpleVector_sp>((*node)[REF_NODE_TAG_TESTS]);
+    if ((*tag_tests)[FIXNUM_TEST].notnilp() && arg.fixnump()) {
+      DTLOG(BF("%s:%d:%s      The arg ptr %p matched fixnump!!!\n") % __FILE__% __LINE__% __FUNCTION__% arg.raw_());
+      node = gc::As_unsafe<SimpleVector_sp>((*tag_tests)[FIXNUM_TEST]);
+      goto TOP;
+    }
+    if ((*tag_tests)[CONS_TEST].notnilp() && arg.consp()) {
+      DTLOG(BF("%s:%d:%s      The arg ptr %p matched consp!!!\n") % __FILE__% __LINE__% __FUNCTION__% arg.raw_());
+      node = gc::As_unsafe<SimpleVector_sp>((*tag_tests)[CONS_TEST]);
+      goto TOP;
+    }
+    if ((*tag_tests)[SINGLE_FLOAT_TEST].notnilp() && arg.single_floatp()) {
+      DTLOG(BF("%s:%d:%s      The arg ptr %p matched single_floatp!!!\n") % __FILE__% __LINE__% __FUNCTION__% arg.raw_());
+      node = gc::As_unsafe<SimpleVector_sp>((*tag_tests)[SINGLE_FLOAT_TEST]);
+      goto TOP;
+    }
+    if ((*tag_tests)[CHARACTER_TEST].notnilp() && arg.characterp()) {
+      DTLOG(BF("%s:%d:%s      The arg ptr %p matched characterp!!!\n") % __FILE__% __LINE__% __FUNCTION__% arg.raw_());
+      node = gc::As_unsafe<SimpleVector_sp>((*tag_tests)[CHARACTER_TEST]);
+      goto TOP;
+    }
+
+    //
+    // Now if this isn't a generalp object then it's a dispatch miss (it may be worse - VASLIST???)
+    //
+    if (!arg.generalp()) {
+      DTLOG(BF("The arg is not generalp goto DISPATCH_MISS\n"));
+      goto DISPATCH_MISS;
+    }
+    //
+    // Read the header
+    //
+    core::General_O* client_ptr = gctools::untag_general<General_O*>((General_O*)arg.raw_());
+    uintptr_t raw_stamp = (uintptr_t)(llvmo::template_read_general_stamp(client_ptr)); // The stamp is shifted by the fixnum_shift
+    // Get the where tag
+    uintptr_t where = raw_stamp&gctools::Header_s::where_mask;
+    DTLOG(BF("Read the raw_stamp %lu  where_tag -> 0x%x  complex_stamp? -> %s\n") % raw_stamp % where % ((where==gctools::Header_s::header_wtag) ? "No" : "Yes" ));
+    //
+    // IS THIS RIGHT???????????????????????????
+    // If this is a complex object - then we can skip cxx_class_specializers
+    //
+
+    if (where != gctools::Header_s::header_wtag) {
+      DTLOG(BF("where is not a simple header_wtag ... Skipping to COMPLEX_SPECIALIZERS\n"));
+      goto COMPLEX_SPECIALIZERS;
+    }
+    //
+    // Check the header stamp against the c++ class specializers
+    //
+    {
+      SimpleVector_sp  cxx_class_specializers = gc::As_unsafe<SimpleVector_sp>((*node)[REF_NODE_CXX_CLASS_SPECIALIZERS]);
+      DTLOG(BF("Checking cxx_class_specializers: %s\n") % _safe_rep_(cxx_class_specializers));
+      for ( size_t index = 0, iEnd(cxx_class_specializers->length()); index < iEnd; index = index + DtreeInterpreter_O::dtree_range_step ) {
+        size_t outcome_index = index + DtreeInterpreter_O::dtree_range_outcome_index;
+        uintptr_t low_stamp = (uintptr_t)((*cxx_class_specializers)[index+DtreeInterpreter_O::dtree_range_low_index].raw_());
+        uintptr_t high_stamp = (uintptr_t)((*cxx_class_specializers)[index+DtreeInterpreter_O::dtree_range_high_index].raw_());
+        DTLOG(BF("  About to compare raw_stamp %lu to range [ %lu %lu ]\n") % raw_stamp % low_stamp % high_stamp );
+        if (low_stamp <= raw_stamp && raw_stamp <= high_stamp) {
+          node = gc::As_unsafe<SimpleVector_sp>((*cxx_class_specializers)[outcome_index]);
+          DTLOG(BF("%s:%d:%s      The stamp %lu matched the C++ class range [%lu %lu]   next node -> %s!!!\n") % __FILE__% __LINE__% __FUNCTION__% raw_stamp% low_stamp% high_stamp% _safe_rep_(node).c_str());
+          goto TOP;
+        } else {
+          DTLOG(BF("  It did not match\n"));
         }
-      } else if (outcome_type == clos::_sym_optimized_slot_writer) {
-        T_sp location = (*node)[REF_OPTIMIZED_SLOT_READER_INDEX];
-        if (location.fixnump()) {
-          size_t index = location.unsafe_fixnum();
-          T_sp value((gc::Tagged)lcc_fixed_arg0);
-          Instance_sp instance((gc::Tagged)lcc_fixed_arg1);
-          instance->instanceSet(index,value);
-          return gctools::return_type(value.raw_(),1);
-        } else if (location.consp()) {
-          Cons_sp cell = gc::As_unsafe<Cons_sp>(location);
-          T_sp value((gc::Tagged)lcc_fixed_arg0);
-          cell->rplaca(value);
-          return gctools::return_type(value.raw_(),1);
-        }
-      } else if (outcome_type == clos::_sym_fast_method_call) {
-        Function_sp func = gc::As_unsafe<Function_sp>((*node)[REF_FAST_METHOD_CALL_FUNCTION]);
-        return (*func).entry.load()(func.raw_(),lcc_nargs,lcc_fixed_arg0,lcc_fixed_arg1,lcc_fixed_arg2,lcc_fixed_arg3);
-      } else if (outcome_type == clos::_sym_effective_method_outcome) {
-        Function_sp func = gc::As_unsafe<Function_sp>((*node)[REF_EFFECTIVE_METHOD_OUTCOME_FUNCTION]);
-        return core::eval::funcall(func,lcc_vargs,_Nil<T_O>());
       }
-      DTLOG(("%s:%d:%s Bad outcome %s\n", __FILE__, __LINE__, __FUNCTION__, dbg_safe_repr((uintptr_t)(outcome_type).raw_()).c_str()));
-      abort();
+    }
+  COMPLEX_SPECIALIZERS:
+    //
+    // IS THIS RIGHT????????
+    // If the raw_stamp is <= shifted STAMP_max then we have a dispatch miss
+    //
+    if (where == gctools::Header_s::header_wtag) {
+      DTLOG(BF("About to check complex specializers but the where tag says it's a simple header tag - jumping to DISPATCH_MISS\n"));
+      goto DISPATCH_MISS;
+    }
+    SimpleVector_sp complex_class_specializers = gc::As_unsafe<SimpleVector_sp>((*node)[REF_NODE_CLASS_SPECIALIZERS]);
+      // If there are no complex specializers then it's a dispatch miss
+    if (complex_class_specializers->length() == 0) {
+      DTLOG(BF("There are no complex_class_specializers - going to DISPATCH_MISS\n"));
+      goto DISPATCH_MISS;
+    }
+      // If where is header_wtag then it's a C++ class but we just exhausted those outcomes.
+    switch (where) {
+    case gctools::Header_s::header_wtag: goto DISPATCH_MISS;  // Redundant?????
+    case gctools::Header_s::rack_wtag:
+        raw_stamp = (uintptr_t)(llvmo::template_read_rack_stamp(client_ptr));
+        DTLOG(BF("Read the rack_wtag stamp -> %lu\n") % raw_stamp);
+        break;
+    case gctools::Header_s::wrapped_wtag:
+        raw_stamp = (uintptr_t)(llvmo::template_read_wrapped_stamp(client_ptr));
+        DTLOG(BF("Read the wrapped_wtag stamp -> %lu\n") % raw_stamp);
+        break;
+    case gctools::Header_s::derivable_wtag:
+        raw_stamp = (uintptr_t)(llvmo::template_read_derived_stamp(client_ptr));
+        DTLOG(BF("Read the derivable_wtag stamp -> %lu\n") % raw_stamp);
+        break;
+    }
+    DTLOG(BF("Checking complex_class_specializers: %s\n") % _safe_rep_(complex_class_specializers));
+    for ( size_t index = 0, iEnd(complex_class_specializers->length()); index < iEnd; index = index + DtreeInterpreter_O::dtree_range_step ) {
+      size_t outcome_index = index + DtreeInterpreter_O::dtree_range_outcome_index;
+      uintptr_t low_stamp = (uintptr_t)((*complex_class_specializers)[index+DtreeInterpreter_O::dtree_range_low_index].raw_());
+      uintptr_t high_stamp = (uintptr_t)((*complex_class_specializers)[index+DtreeInterpreter_O::dtree_range_high_index].raw_());
+      if (low_stamp <= raw_stamp && raw_stamp <= high_stamp) {
+        node = gc::As_unsafe<SimpleVector_sp>((*complex_class_specializers)[outcome_index]);
+        DTLOG(BF("%s:%d:%s      The stamp %lu matched the range [%lu %lu]   next node -> %s!!!\n") % __FILE__% __LINE__% __FUNCTION__% raw_stamp% low_stamp% high_stamp% _safe_rep_(node).c_str());
+        goto TOP;
+      }
+    }
+    DTLOG(BF("Fell through to DISPATCH_MISS\n"));
+    goto DISPATCH_MISS;
+  } else if (type == clos::_sym_outcome) {
+    DTLOG(BF("%s:%d:%s Handle outcome %s\n") % __FILE__% __LINE__% __FUNCTION__% _safe_rep_(node));
+    T_sp outcome_type = (*node)[REF_OUTCOME_SUBTYPE];
+    if (outcome_type == clos::_sym_optimized_slot_reader) {
+      T_sp location = (*node)[REF_OPTIMIZED_SLOT_READER_INDEX];
+      T_sp slot_name = (*node)[REF_OPTIMIZED_SLOT_READER_SLOT_NAME];
+      T_sp class_ = (*node)[REF_OPTIMIZED_SLOT_READER_CLASS];
+      if (location.fixnump()) {
+        size_t index = location.unsafe_fixnum();
+        Instance_sp instance((gc::Tagged)lcc_fixed_arg0);
+        T_sp value = instance->instanceRef(index);
+        if (value.unboundp()) return core::eval::funcall(cl::_sym_slot_unbound,class_,instance,slot_name);
+        return gctools::return_type(value.raw_(),1);
+      } else if (location.consp()) {
+        Instance_sp instance((gc::Tagged)lcc_fixed_arg0);
+        Cons_sp cell = gc::As_unsafe<Cons_sp>(location);
+        T_sp value = oCar(cell);
+        if (value.unboundp()) return core::eval::funcall(cl::_sym_slot_unbound,class_,instance,slot_name);
+        return gctools::return_type(value.raw_(),1);
+      }
+    } else if (outcome_type == clos::_sym_optimized_slot_writer) {
+      T_sp location = (*node)[REF_OPTIMIZED_SLOT_READER_INDEX];
+      if (location.fixnump()) {
+        size_t index = location.unsafe_fixnum();
+        T_sp value((gc::Tagged)lcc_fixed_arg0);
+        Instance_sp instance((gc::Tagged)lcc_fixed_arg1);
+        instance->instanceSet(index,value);
+        return gctools::return_type(value.raw_(),1);
+      } else if (location.consp()) {
+        Cons_sp cell = gc::As_unsafe<Cons_sp>(location);
+        T_sp value((gc::Tagged)lcc_fixed_arg0);
+        cell->rplaca(value);
+        return gctools::return_type(value.raw_(),1);
+      }
+    } else if (outcome_type == clos::_sym_fast_method_call) {
+      Function_sp func = gc::As_unsafe<Function_sp>((*node)[REF_FAST_METHOD_CALL_FUNCTION]);
+      return (*func).entry.load()(func.raw_(),lcc_nargs,lcc_fixed_arg0,lcc_fixed_arg1,lcc_fixed_arg2,lcc_fixed_arg3);
+    } else if (outcome_type == clos::_sym_effective_method_outcome) {
+      Function_sp func = gc::As_unsafe<Function_sp>((*node)[REF_EFFECTIVE_METHOD_OUTCOME_FUNCTION]);
+      return core::eval::funcall(func,lcc_vargs,_Nil<T_O>());
+    }
+    DTLOG(BF("%s:%d:%s Bad outcome %s\n") % __FILE__% __LINE__% __FUNCTION__% _safe_rep_(outcome_type));
+    abort();
       // Do outcomes.
-    }
-    DISPATCH_MISS:
-      DTLOG(("%s:%d:%s    It's a DISPATCH-MISS!!! Invoking (%s %s %s)\n", __FILE__, __LINE__, __FUNCTION__,
-             dbg_safe_repr((uintptr_t)clos::_sym_dispatch_miss.tagged_()).c_str(),
-             dbg_safe_repr((uintptr_t)tclosure.raw_()).c_str(),
-             dbg_safe_repr((uintptr_t)lcc_vargs.raw_()).c_str()));
-      return core::eval::funcall(clos::_sym_dispatch_miss,generic_function,lcc_vargs);
-    }
+  }
+DISPATCH_MISS:
+  DTLOG(BF("%s:%d:%s    It's a DISPATCH-MISS!!! For gf %s  -- invoking with args: %s\n") % __FILE__% __LINE__% __FUNCTION__
+        % _safe_rep_(generic_function)
+        % _safe_rep_(core__list_from_va_list(lcc_vargs)));
+  DTLOG(BF(" Call-history: %s\n") % _safe_rep_(generic_function->GFUN_CALL_HISTORY()));
+  DTLOG(BF(" Specializer-profile: %s\n") % _safe_rep_(generic_function->GFUN_SPECIALIZER_PROFILE()));
+  DTLOG(BF("%s:%d:%s      (core:next-number) -> %s\n") % __FILE__ % __LINE__ % __FUNCTION__ % _rep_(core__next_number()));
+  DTLOG(BF("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n"));
+  return core::eval::funcall(clos::_sym_dispatch_miss,generic_function,lcc_vargs);
+}
 #endif
 
 
-CL_DEFUN void core__verify_funcallable_instance_layout(size_t funcallableInstance_size, size_t funcallableInstance_rack_offset)
-{
-  if (funcallableInstance_size!=sizeof(FuncallableInstance_O)) SIMPLE_ERROR(BF("The cmpintrinsics.lsp funcallableInstance_size %lu does not match sizeof(FuncallableInstance_O)") % funcallableInstance_size % sizeof(FuncallableInstance_O));
-  if (funcallableInstance_rack_offset!=offsetof(FuncallableInstance_O,_Rack))
-    SIMPLE_ERROR(BF("funcallableInstance_rack_offset %lu does not match offsetof(_Rack,FuncallableInstance_O) %lu") % funcallableInstance_rack_offset % offsetof(FuncallableInstance_O,_Rack));
-}
+  CL_DEFUN void core__verify_funcallable_instance_layout(size_t funcallableInstance_size, size_t funcallableInstance_rack_offset)
+  {
+    if (funcallableInstance_size!=sizeof(FuncallableInstance_O)) SIMPLE_ERROR(BF("The cmpintrinsics.lsp funcallableInstance_size %lu does not match sizeof(FuncallableInstance_O)") % funcallableInstance_size % sizeof(FuncallableInstance_O));
+    if (funcallableInstance_rack_offset!=offsetof(FuncallableInstance_O,_Rack))
+      SIMPLE_ERROR(BF("funcallableInstance_rack_offset %lu does not match offsetof(_Rack,FuncallableInstance_O) %lu") % funcallableInstance_rack_offset % offsetof(FuncallableInstance_O,_Rack));
+  }
+
+  CL_DEFUN void core__verify_dtree_interpreter_layout(size_t eql_test_step, size_t range_step)
+  {
+    if (eql_test_step != DtreeInterpreter_O::dtree_eql_test_step_fn()) {
+      SIMPLE_ERROR(BF("eql_test_step %lu does not match DtreeInterpreter_O::dtree_eql_test_step %lu") % eql_test_step % DtreeInterpreter_O::dtree_eql_test_step_fn());
+    }
+    if (range_step != DtreeInterpreter_O::dtree_range_step_fn()) {
+      SIMPLE_ERROR(BF("range_step %lu does not match DtreeInterpreter_O::dtree_range_step %lu") % range_step % DtreeInterpreter_O::dtree_range_step_fn());
+    }
+  }
 
 };

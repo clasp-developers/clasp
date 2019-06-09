@@ -28,6 +28,10 @@
   (pushnew :debug-fastgf *features*))
 
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (core:bformat t "!%N!%N!%N!%N!%N!%N!%N!%N Remove this message from closfastgf.lsp and turn off cmp::*compile-debug-dump-module*%N")
+  (setq cmp::*compile-debug-dump-module* nil))
+
 #+debug-fastgf
 (eval-when (:execute :load-toplevel)
   (defstruct (debug-fastgf-struct (:type vector))
@@ -39,7 +43,7 @@
 ;;; Cleanup up the directory
 
   (defvar *dispatch-history-dir*
-    (let ((dir (core:bformat nil "/tmp/dispatch-history-%d/" (core:getpid))))
+    (let ((dir (core:monitor-directory)))
       (ensure-directories-exist dir)
       (core:bformat *error-output* "!!!!  Created gf dispatch monitor directory: %s%N" dir)
       (core:bformat *error-output* "!!!!     Run clasp with --feature fastgf-dump-module to write dispatchers to this directory%N")
@@ -50,7 +54,7 @@
     (unless core:*debug-fastgf*
       (let ((filename (core:bformat nil "%s/debug-miss-thread%s.log"
                                     *dispatch-history-dir*
-                                    (core:pointer-as-string (mp:thread-id mp:*current-process*)))))
+                                    (mp:thread-id mp:*current-process*))))
         (setf core:*debug-fastgf* (make-debug-fastgf-struct :stream (open filename :direction :output)
                                                             :didx 0
                                                             :indent 0
@@ -92,7 +96,7 @@
   (defun log-cmpgf-filename (gfname suffix extension)
     (pathname (core:bformat nil "%s/dispatch-thread%s-%s%05d-%s.%s"
                             *dispatch-history-dir*
-                            (pointer-as-string (mp:thread-id mp:*current-process*))
+                            (mp:thread-id mp:*current-process*)
                             suffix
                             (debug-fastgf-didx)
                             (core:bformat nil "%s" gfname)
@@ -309,6 +313,7 @@
          existing-emf
          (optimized
            (cond ((and standard-slotd-p readerp)
+                  (gf-log "About to invoke slot-definition-name in (cond ((and standard-slotd-p readerp)...))%N")
                   (gf-log "make-optimized-slot-reader index: %s slot-name: %s class: %s%N"
                           (slot-definition-location slotd)
                           (slot-definition-name slotd)
@@ -463,7 +468,7 @@ FIXME!!!! This code will have problems with multithreading if a generic function
           for found-key = (call-history-find-key call-history memoized-key)
           for new-call-history = (if found-key
                                      (progn
-                                       (gf-log "For generic function: %s - the key was already in the history - either bad dtree, incorrect lowering to llvm-ir or maybe (unlikely) put there by another thread.%N"
+                                       (gf-log "Error: For generic function: %s - the key was already in the history - either bad dtree, incorrect lowering to llvm-ir or maybe (unlikely) put there by another thread.%N"
                                                (generic-function-name generic-function))
                                        call-history)
                                      (progn
@@ -559,6 +564,7 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
                        :log t
                        :actual-arguments arguments)))
         ;; Can we memoize the call, i.e. add it to the call history?
+        (gf-log "Done with compute-outcome%N")
         (cond ((null method-list) ; we avoid memoizing no-applicable-methods, as it's probably just a mistake,
                ;; and will just pollute the call history.
                ;; This assumption would be wrong if an application frequently called a gf wrong and relied on
@@ -624,9 +630,9 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
                (progn
                  #+debug-fastgf
                  (progn
-                   (gf-log "----{---- A dispatch-miss occurred -> %s  %N" (clos::generic-function-name generic-function))
+                   (gf-log "----{---- A dispatch-miss occurred[(1- (core:next-number))->%s]  -> %s  %N" (1- (core:next-number)) (clos::generic-function-name generic-function))
                    (dolist (arg (core:list-from-va-list valist-args))
-                     (gf-log "%s[%s/%d] " arg (class-of arg) (core:instance-stamp arg)))
+                     (gf-log "%s[%s/%d] " (core:safe-repr arg) (core:safe-repr (class-of arg)) (core:instance-stamp arg)))
                    (gf-log-noindent "%N"))
                  (do-dispatch-miss generic-function valist-args arguments)))))
     (decf-debug-fastgf-indent)))

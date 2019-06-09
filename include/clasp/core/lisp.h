@@ -237,10 +237,10 @@ class Lisp_O {
     HashTable_sp _ClassTable;
     Integer_sp _IntegerOverflowAdjust;
     CharacterInfo charInfo;
-    gctools::Vec0<core::Symbol_sp> _ClassSymbolsHolder;
-    gctools::Vec0<Instance_sp> staticClasses;
-    gctools::Vec0<Symbol_sp> staticClassSymbols;
-    gctools::Vec0<Creator_sp> staticInstanceCreators;
+    gctools::Vec0<core::Symbol_sp> _ClassSymbolsHolderUnshiftedNowhere;
+    gctools::Vec0<Instance_sp> staticClassesUnshiftedNowhere;
+    gctools::Vec0<Symbol_sp> staticClassSymbolsUnshiftedNowhere;
+    gctools::Vec0<Creator_sp> staticInstanceCreatorsUnshiftedNowhere;
 //    DynamicBindingStack _Bindings;
     gctools::Vec0<FileScope_sp> _SourceFiles;
     map<string, int> _SourceFileIndices; // map<string,FileScope_sp> 	_SourceFiles;
@@ -294,11 +294,9 @@ class Lisp_O {
     mutable mp::SharedMutex _SingleDispatchGenericFunctionHashTableEqualMutex;
 #endif
 
-#ifdef DEBUG_MONITOR
-#ifdef CLASP_THREADS
-    mutable mp::Mutex _LogMutex;
-#endif
-    std::ofstream _LogStream;
+#ifdef DEBUG_MONITOR_SUPPORT
+    mutable mp::SharedMutex _MonitorMutex;
+    std::ofstream _MonitorStream;
 #endif
     
     /*! True object */
@@ -495,7 +493,7 @@ public:
   CharacterInfo &characterInfo() { return this->_Roots.charInfo; };
 
 public:
-  gctools::Vec0<core::Symbol_sp> &classSymbolsHolder() { return this->_Roots._ClassSymbolsHolder; };
+  gctools::Vec0<core::Symbol_sp> &classSymbolsHolder() { return this->_Roots._ClassSymbolsHolderUnshiftedNowhere; };
 
 public:
   FileScope_mv getOrRegisterFileScope(const string &fileName, T_sp truename = _Nil<T_O>(), size_t offset = 0, bool useLineno = true);
@@ -1033,6 +1031,11 @@ namespace core {
 
 namespace core {
   void initialize_Lisp_O();
+#ifdef DEBUG_MONITOR_SUPPORT
+std::string core__monitor_directory();
+FILE* monitor_file(const std::string& filename_prefix);
+#endif
+
 #ifdef DEBUG_MONITOR
   void monitor_message(const std::string& msg);
 #define MONITOR(x) monitor_message((x).str());

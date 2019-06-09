@@ -72,23 +72,29 @@ BUILTIN_ATTRIBUTES core::T_O* cx_vaslist_pop(core::T_O *preVaslist)
 #include <clasp/llvmo/read-stamp.cc>
 
 extern "C" {
-BUILTIN_ATTRIBUTES core::T_O* cx_read_stamp(core::T_O* obj)
+BUILTIN_ATTRIBUTES uint64_t cx_read_stamp(core::T_O* obj, uint64_t stamp)
 {
-  return llvmo::template_read_stamp<core::T_O>(obj);
+  uint64_t old_stamp = (uint64_t)llvmo::template_read_stamp<core::T_O>(obj);
+  cc_match(obj, old_stamp,stamp);
+  return old_stamp;
 }
 
+#if 0
 BUILTIN_ATTRIBUTES core::T_O* cc_read_slot(core::T_O* tinstance, size_t index) {
   core::Instance_sp instance((gctools::Tagged)tinstance);
   core::T_sp value = low_level_instanceRef(instance->_Rack, index);
   return value.raw_();
 }
+#endif
 
+#if 0
 BUILTIN_ATTRIBUTES core::T_O* cc_write_slot(core::T_O* tinstance, size_t index, core::T_O* tvalue) {
   core::T_sp value((gctools::Tagged)tvalue);
   core::Instance_sp instance((gctools::Tagged)tinstance);
   low_level_instanceSet(instance->_Rack, index, value);
   return value.raw_();
 }
+#endif
 
 
 BUILTIN_ATTRIBUTES core::T_O** lexicalValueReference(size_t depth, size_t index, core::ActivationFrame_O *frameP)
