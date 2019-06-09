@@ -40,7 +40,7 @@ namespace gctools {
    
  GlobalAllocationProfiler() :
    _AllocationSizeThreshold(1024*1024)
-   , _AllocationNumberThreshold(1024)
+   , _AllocationNumberThreshold(16386)
      , _HitAllocationNumberCounter(0)
      , _HitAllocationSizeCounter(0)
    {};
