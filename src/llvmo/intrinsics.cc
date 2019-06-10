@@ -903,6 +903,14 @@ ALWAYS_INLINE core::T_O* to_object_pointer( void * x )
 
 
 extern "C" {
+core::T_O** lexicalValueReference(size_t depth, size_t index, core::ActivationFrame_O *frameP)
+{
+  core::ActivationFrame_sp af((gctools::Tagged)frameP);
+  core::T_sp& value_ref = core::value_frame_lookup_reference(af, depth, index);
+  return &value_ref.rawRef_();
+}
+
+
 gctools::ShiftedStamp cc_read_derivable_cxx_stamp_untagged_object(core::T_O* untagged_object)
 {
   core::DerivableCxxObject_O* derivable_cxx_object_ptr = reinterpret_cast<core::DerivableCxxObject_O*>(untagged_object);
@@ -912,10 +920,11 @@ gctools::ShiftedStamp cc_read_derivable_cxx_stamp_untagged_object(core::T_O* unt
   return stamp;
 }
 
-void cc_match(T_O* object, uint64_t a, uint64_t b) {
-  if (b!=0&&a!=b) {
-    printf("%s:%d There was a mismatch in the object@%p stamp value old stamp %llu  new stamp %llu\n", __FILE__, __LINE__, object, a, b );
+T_O* cc_match(T_O* old_value, T_O* new_value ) {
+  if (new_value!=NULL&&old_value!=new_value) {
+    printf("%s:%d There was a mismatch old value %p  new value %p\n", __FILE__, __LINE__, old_value, new_value );
   }
+  return old_value;
 };
 };
 

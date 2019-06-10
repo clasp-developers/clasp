@@ -443,7 +443,7 @@
          (setf-fdefinition (irc-load (irc-struct-gep %symbol% untagged-symbol +symbol.setf-function-index+))))
     setf-fdefinition))
 
-(defun irc-untag-general (tagged-ptr &optional (type %t*%))
+(defun irc-untag-general (tagged-ptr &optional (type %t**%))
   #+(or)(let* ((ptr-i8* (irc-bit-cast tagged-ptr %i8*%))
          (ptr-untagged (irc-gep ptr-i8* (list (- +general-tag+)))))
           (irc-bit-cast ptr-untagged type))
@@ -507,11 +507,12 @@ representing a tagged fixnum."
     (irc-store value dataN*)
     value))
 
-(defun irc-value-frame-parent (value-frame)
-  "Return the parent of the value-frame"
-  (let* ((value-frame* (irc-untag-general value-frame))
-         (parent* (irc-struct-gep %value-frame% value-frame* +value-frame.parent-index+)))
-    (irc-load parent*)))
+(defun irc-value-frame-parent (renv)
+  (let* ((value-frame (irc-untag-general renv %value-frame*%))
+         (parent-tsp* (irc-struct-gep %value-frame% value-frame +value-frame.parent-index+))
+         (parent-t** (irc-struct-gep %tsp% parent-tsp* 0))
+         (parent-t* (irc-load parent-t**)))
+    parent-t*))
 
 (defun irc-nth-value-frame-parent (value-frame depth)
   "Return the nth parent of the value-frame"
@@ -520,16 +521,58 @@ representing a tagged fixnum."
       (setq cur (irc-value-frame-parent cur)))
     cur))
 
-(defun irc-value-frame-value (value-frame index)
+(defun irc-value-frame-reference (value-frame index)
   "Return the nth cell of the value-frame"
-  (let* ((value-frame* (irc-untag-general value-frame))
-         (data0* (irc-struct-gep %value-frame% value-frame* +value-frame.data-index+))
-         (dataN* (irc-gep data0* (list 0 index))))
-    (irc-load dataN*)))
+  (let* ((value-frame* (irc-untag-general value-frame %value-frame*%))
+         (data0tsp* (irc-struct-gep %value-frame% value-frame* +value-frame.data-index+))
+         (dataNtsp* (irc-gep data0tsp* (list 0 index)))
+         (dataNt** (irc-struct-gep %tsp% dataNtsp* 0)))
+    dataNt**))
 
-(defun irc-depth-index-value-frame (value-frame depth index)
+(defun irc-depth-index-value-frame-reference (value-frame depth index)
   (let* ((depth-value-frame (irc-nth-value-frame-parent value-frame depth)))
-    (irc-value-frame-value depth-value-frame index)))
+    (irc-value-frame-reference depth-value-frame index)))
+
+(defun irc-make-irbuilder-insert-before-instruction (instruction)
+  (let ((irbuilder (llvm-sys:make-irbuilder *llvm-context*)))
+    (if instruction
+        (progn
+          (irc-set-insert-point-instruction instruction irbuilder)
+          irbuilder)
+        (error "There must be an instruction to insert before"))))
+
+(defun irc-insert-bclasp-lexical-reference (instruction depth index start-renv)
+  (let ((irbuilder (irc-make-irbuilder-insert-before-instruction instruction))
+        (renv start-renv))
+    (with-irbuilder (irbuilder)
+      (irc-depth-index-value-frame-reference start-renv depth index))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Array functions
+;;;
+
+(defun irc-mdarray-slot-value (tarray slot-index &optional (label ""))
+  (let* ((tarray* (irc-untag-general tarray %mdarray*%))
+         (slot* (irc-struct-gep %mdarray% tarray* slot-index)))
+    (irc-load slot* label)))
+  
+(defun irc-real-array-displacement (tarray)
+  (irc-mdarray-slot-value tarray +mdarray._Data-index+ "real-array-displacement"))
+
+(defun irc-real-array-index-offset (tarray)
+  (irc-mdarray-slot-value tarray +mdarray._DisplacedIndexOffset-index+ "real-array-displaced-index"))
+
+(defun irc-array-total-size (tarray) (irc-mdarray-slot-value +mdarray._ArrayTotalSize-index+ "array-total-size"))
+
+(defun irc-array-rank (tarray) (irc-mdarray-slot-value +mdarray._rank-index+ "array-rank"))
+(defun irc-array-dimension (tarray axis)
+  (let* ((tarray* (irc-untag-general tarray %mdarray*%))
+         (axis0* (irc-struct-gep %mdarray% tarray* slot-index))
+         (axisN* (irc-gep slot0* axis)))
+    (irc-load slotN*)))
+
+
 
 (defparameter *test-ir* t)
 (eval-when (:compile-toplevel :execute :load-toplevel)

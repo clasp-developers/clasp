@@ -210,7 +210,7 @@ core::T_O* to_object_pointer( void * x );
 
 extern "C" {
 extern uint64_t cx_read_stamp(core::T_O* tagged_pointer, uint64_t new_stamp);
-extern void cc_match(core::T_O* obj, uint64_t a, uint64_t b);
+extern core::T_O* cc_match(core::T_O* old_value, core::T_O* new_value );
 extern void unreachableError();
 }
 namespace llvmo {

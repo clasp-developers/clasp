@@ -114,7 +114,8 @@
          (primitive-unwinds "symbolValueRead" %t*% (list %t*%))
          (primitive         "symbolValueReference" %t**% (list %t*%))
          (primitive         "lexicalValueReference" %t**% (list %size_t% %size_t% %t*%))
-         (primitive         "registerReference" %t**% (list %t**%))
+         (primitive         "cc_match" %t*% (list %t*% %t*%))
+;;         (primitive         "registerReference" %t**% (list %t**%))
 ;;;    (primitive         "symbolFunctionRead" %t*% (list %t*%))
 ;;;         (primitive         "setfSymbolFunctionRead" %t*% (list %t*%))
     

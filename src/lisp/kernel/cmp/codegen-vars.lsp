@@ -157,7 +157,6 @@
               variable-map))
     variable-map))
 
-(defparameter *use-ir* nil)
 (defun convert-to-register-access (register var-ref)
   (let* ((symbol (lexical-variable-reference-symbol var-ref))
          #+debug-lexical-depth(ensure-frame-unique-id (lexical-variable-reference-ensure-frame-unique-id var-ref)))
@@ -232,20 +231,30 @@
           (cv-log "About to replace lexicalValueReference for %s  (old depth/index %d/%d)  (new depth/index %d/%d) to env %s  from env %s !!!!!!%N"
                   symbol depth index new-depth new-index (core:environment-address ref-env) start-env)
           (let* ((args (llvm-sys:call-or-invoke-get-argument-list instr))
-                 (start-renv (car (last args)))
-                 (new-instr (llvm-sys:replace-call the-function
-                                                   instr
-                                                   (list (jit-constant-size_t new-depth)
-                                                         (jit-constant-size_t new-index)
-                                                         start-renv))))
-            #+debug-lexical-depth(let* ((instr (first ensure-frame-unique-id))
-                                        (args (llvm-sys:call-or-invoke-get-argument-list instr)))
-                                   (llvm-sys:replace-call ensure-frame-unique-id-function
-                                                          instr
-                                                          (list (first (second ensure-frame-unique-id))
-                                                                (jit-constant-size_t new-depth)
-                                                                (third args))))
-            new-instr))))))
+                 (start-renv (car (last args))))
+            ;; This is the new stuff compared to the old stuff
+            #+(or)
+            (let* ((new-result (irc-insert-bclasp-lexical-reference instr new-depth new-index start-renv))
+                   (old-result (llvm-sys:replace-call the-function
+                                                      instr
+                                                      (list (jit-constant-size_t new-depth)
+                                                            (jit-constant-size_t new-index)
+                                                            start-renv)))
+                   (next-instr (llvm-sys:instruction-get-next-non-debug-instruction old-result))
+                   (irbuilder (irc-make-irbuilder-insert-before-instruction next-instr)))
+              (with-irbuilder (irbuilder)
+                (irc-intrinsic "cc_match" (irc-bit-cast old-result %t*%) (irc-bit-cast new-result %t*%))))
+            ;; This is what we used originally
+            #+(or)
+            (llvm-sys:replace-call the-function
+                                   instr
+                                   (list (jit-constant-size_t new-depth)
+                                         (jit-constant-size_t new-index)
+                                         start-renv))
+            ;; This is what we will use now
+            (let ((new-value (irc-insert-bclasp-lexical-reference instr new-depth new-index start-renv)))
+              (llvm-sys:replace-all-uses-with instr new-value) 
+              (llvm-sys:instruction-erase-from-parent instr))))))))
 
 (defun rewrite-return-from-for-new-depth (instructions)
   (dolist (return-from instructions)

@@ -265,7 +265,7 @@ Boehm and MPS use a single pointer"
          %size_t[0]% ; 7 dimensions
          )
    nil))
-
+(define-symbol-macro %mdarray*% (llvm-sys:type-get-pointer-to %mdarray%))
 
 (defconstant +mdarray._FillPointerOrLengthOrDummy-index+ 1)
 (defconstant +mdarray._ArrayTotalSize-index+ 2)

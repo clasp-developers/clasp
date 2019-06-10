@@ -60,6 +60,7 @@ THE SOFTWARE.
 #include <llvm/IR/CallingConv.h>
 #include <llvm/IR/BasicBlock.h>
 #include <llvm/IR/Instructions.h>
+#include <llvm/IR/IntrinsicInst.h>
 #include <llvm/IR/Mangler.h>
 #include <llvm/Transforms/Instrumentation.h>
 #include <llvm/Transforms/Utils/BasicBlockUtils.h>
@@ -1680,6 +1681,22 @@ CL_DEFUN void llvm_sys__instruction_eraseFromParent(Instruction_sp instr)
   llvm::SymbolTableList<llvm::Instruction>::iterator next = instr->wrappedPtr()->eraseFromParent();
 }
 
+CL_DOCSTRING("Return the next non-debug instruction or NIL if there is none");
+CL_DEFUN core::T_sp llvm_sys__instruction_getNextNonDebugInstruction(Instruction_sp instr)
+{
+#if (LLVM_VERSION_X100<900)  
+  const llvm::Instruction* next = instr->wrappedPtr()->getNextNode();
+  for (; next; next = next->getNextNode()) {
+    if (!llvm::isa<llvm::DbgInfoIntrinsic>(next)) break;
+  }
+#else
+  const llvm::Instruction* next = instr->wrappedPtr()->getNextNonDebugInstruction();
+#endif
+  if (next!=NULL) {
+    return translate::to_object<llvm::Instruction*>::convert(const_cast<llvm::Instruction*>(next));
+  }
+  return _Nil<core::T_O>();
+}
 ;
 
 

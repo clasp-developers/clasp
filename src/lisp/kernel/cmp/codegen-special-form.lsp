@@ -919,6 +919,7 @@ jump to blocks within this tagbody."
   (let ((form (car rest))
         (object (alloca-t* "instance-stamp-instance")))
     (codegen object form env)
+    (irc-read-stamp (irc-load object))
     (if *test-ir*
         (let ((new-stamp (irc-read-stamp (irc-load object))))
           (irc-t*-result (irc-intrinsic "cx_read_stamp" (irc-load object) new-stamp) result))
