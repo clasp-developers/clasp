@@ -571,13 +571,11 @@ void dumpLowLevelTrace(int numLowLevels) {
 
 extern "C" {
 
-NOINLINE void va_tooManyArgumentsException(const char *funcName, std::size_t givenNumberOfArguments, std::size_t requiredNumberOfArguments) {
-  SIMPLE_ERROR(BF("Too many arguments for %s - got %d and expected %d") % funcName % givenNumberOfArguments % requiredNumberOfArguments);
+[[noreturn]] NOINLINE void cc_wrong_number_of_arguments(core::T_O* tfunction, std::size_t givenNumberOfArguments, std::size_t requiredNumberOfArguments) {
+  Function_sp function((gctools::Tagged)tfunction);
+  SIMPLE_ERROR(BF("Calling %s - got %d arguments and expected %d") % _rep_(function->functionName()) % givenNumberOfArguments % requiredNumberOfArguments);
 }
 
-NOINLINE void va_notEnoughArgumentsException(const char *funcName, std::size_t givenNumberOfArguments, std::size_t requiredNumberOfArguments) {
-  SIMPLE_ERROR(BF("Too few arguments for %s - got %d and expected %d") % funcName % givenNumberOfArguments % requiredNumberOfArguments);
-}
 
 ALWAYS_INLINE T_O *va_lexicalFunction(size_t depth, size_t index, core::T_O* evaluateFrameP)
 {NO_UNWIND_BEGIN();

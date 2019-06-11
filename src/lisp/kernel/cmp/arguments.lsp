@@ -7,34 +7,32 @@
 ;; In order to work with cclasp's SSA stuff, it must be called exactly once for each variable.
 (defvar *argument-out*)
 
+(defun compile-wrong-number-arguments-block (closure nargs expected-args)
+  (let ((nargs (if (integerp nargs) (irc-size_t nargs) nargs))
+        (expected-args (if (integerp expected-args) (irc-size_t expected-args) expected-args))
+        (continue-block (irc-basic-block-create "cont"))
+        (error-block (irc-basic-block-create "wrong-num-args")))
+    (irc-br continue-block)
+    (irc-begin-block error-block)
+    (irc-intrinsic-call-or-invoke "cc_wrong_number_of_arguments" (list closure nargs expected-args))
+    (irc-unreachable)
+    (irc-begin-block continue-block)
+    error-block))
+
 ;; Generate code to signal an error iff there weren't enough arguments provided.
-(defun compile-error-if-not-enough-arguments (minimum nargs)
+(defun compile-error-if-not-enough-arguments (error-block minimum nargs)
   (let* ((cmin (irc-size_t minimum))
-         (error-block (irc-basic-block-create "not-enough-arguments"))
          (cont-block (irc-basic-block-create "enough-arguments"))
          (cmp (irc-icmp-ult nargs cmin)))
     (irc-cond-br cmp error-block cont-block)
-    (irc-begin-block error-block)
-    (irc-intrinsic-call-or-invoke
-     "va_notEnoughArgumentsException"
-     (list (irc-constant-string-ptr *gv-current-function-name*) ; FIXME: use function desc instead?
-           nargs cmin))
-    (irc-unreachable)
     (irc-begin-block cont-block)))
 
 ;; Ditto but with too many.
-(defun compile-error-if-too-many-arguments (maximum nargs)
+(defun compile-error-if-too-many-arguments (error-block maximum nargs)
   (let* ((cmax (irc-size_t maximum))
-         (error-block (irc-basic-block-create "not-enough-arguments"))
          (cont-block (irc-basic-block-create "enough-arguments"))
          (cmp (irc-icmp-ugt nargs cmax)))
     (irc-cond-br cmp error-block cont-block)
-    (irc-begin-block error-block)
-    (irc-intrinsic-call-or-invoke
-     "va_tooManyArgumentsException"
-     (list (irc-constant-string-ptr *gv-current-function-name*) ; FIXME: use function desc instead?
-           nargs cmax))
-    (irc-unreachable)
     (irc-begin-block cont-block)))
 
 ;; Generate code to bind the required arguments.
@@ -376,7 +374,11 @@ a_p = a_p_temp; a = a_temp;
          (nfixed (+ nreq nopt)))
     (unless (zerop nreq)
       (when safep
-        (compile-error-if-not-enough-arguments nreq nargs))
+        (let ((error-block (compile-wrong-number-arguments-block
+                            (calling-convention-closure calling-conv)
+                            nargs
+                            nreq)))
+          (compile-error-if-not-enough-arguments error-block nreq nargs)))
       (compile-required-arguments reqargs calling-conv))
     (let (;; NOTE: Sometimes we don't actually need these.
           We could save miniscule time by not generating.
@@ -403,13 +405,16 @@ a_p = a_p_temp; a = a_temp;
               ;; we could use it in the error check to save a subtraction, though.
               (compile-optional-arguments optargs nreq calling-conv iNIL iT))
             (when safep
-              (compile-error-if-too-many-arguments nfixed nargs)))))))
+              (let ((error-block (compile-wrong-number-arguments-block (calling-convention-closure calling-conv)
+                                                                       nargs
+                                                                       nfixed)))
+                (compile-error-if-too-many-arguments error-block nfixed nargs))))))))
 
 (defun compile-only-reg-and-opt-arguments (reqargs optargs cc &key argument-out (safep t))
-  (let ((register-args (calling-convention-register-args cc))
-        (nargs (calling-convention-nargs cc))
-        (nreq (car reqargs))
-        (nopt (car optargs)))
+  (let* ((register-args (calling-convention-register-args cc))
+         (nargs (calling-convention-nargs cc))
+         (nreq (car reqargs))
+         (nopt (car optargs)))
     ;; FIXME: It would probably be nicer to generate one switch such that not-enough-arguments
     ;; goes to an error block and too-many goes to another. Then we'll only have one test on
     ;; the argument count. LLVM might reduce it to that anyway, though.
@@ -417,7 +422,10 @@ a_p = a_p_temp; a = a_temp;
     ;; Required arguments
     (when (> nreq 0)
       (when safep
-        (compile-error-if-not-enough-arguments nreq nargs))
+        (let ((error-block (compile-wrong-number-arguments-block (calling-convention-closure cc)
+                                                                 nargs
+                                                                 nreq)))
+          (compile-error-if-not-enough-arguments error-block nreq nargs)))
       (dolist (req (cdr reqargs))
         ;; we POP the register-args so that the optionals below won't use em.
         (funcall argument-out (pop register-args) req)))
@@ -439,7 +447,7 @@ a_p = a_p_temp; a = a_temp;
           (do ((cur-opt (cdr optargs) (cdddr cur-opt))
                (var-phis var-phis (cdr var-phis))
                (suppliedp-phis suppliedp-phis (cdr suppliedp-phis)))
-               ((endp cur-opt))
+              ((endp cur-opt))
             (funcall argument-out (car suppliedp-phis) (second cur-opt))
             (funcall argument-out (car var-phis) (first cur-opt)))
           (irc-br after)
@@ -453,10 +461,10 @@ a_p = a_p_temp; a = a_temp;
                    (registers register-args (cdr registers))
                    (optj nreq (1+ optj)))
                   ((endp var-phis))
-                (cond ((< optj opti) ; enough arguments
+                (cond ((< optj opti)    ; enough arguments
                        (irc-phi-add-incoming (car suppliedp-phis) true blck)
                        (irc-phi-add-incoming (car var-phis) (car registers) blck))
-                      (t ; nope
+                      (t                ; nope
                        (irc-phi-add-incoming (car suppliedp-phis) false blck)
                        (irc-phi-add-incoming (car var-phis) undef blck))))
               (irc-begin-block blck) (irc-br assn)))
@@ -474,14 +482,20 @@ a_p = a_p_temp; a = a_temp;
             (irc-begin-block default)
             ;; Test for too many arguments
             (when safep
-              (compile-error-if-too-many-arguments (+ nreq nopt) nargs))
+              (let ((error-block (compile-wrong-number-arguments-block (calling-convention-closure cc)
+                                                                       nargs
+                                                                       (+ nreq nopt))))
+                (compile-error-if-too-many-arguments error-block (+ nreq nopt) nargs)))
             (irc-branch-to-and-begin-block default-cont)
             (irc-br assn)
             ;; and, done.
             (irc-begin-block after)))
         ;; No optional arguments, so not much to do
         (when safep
-          (compile-error-if-too-many-arguments nreq nargs)))))
+          (let ((error-block (compile-wrong-number-arguments-block (calling-convention-closure cc)
+                                                                   nargs
+                                                                   nreq)))
+            (compile-error-if-too-many-arguments error-block nreq nargs))))))
 
 (defun process-cleavir-lambda-list (lambda-list)
   ;; We assume that the lambda list is in its correct format:
@@ -603,16 +617,17 @@ a_p = a_p_temp; a = a_temp;
     ;; In the future add support for required + optional 
     ;; (x &optional y)
     ;; (x y &optional z) etc
-    (let (;; If only required or optional arguments are used
-          ;; and the sum of required and optional arguments is less
-          ;; than the number +args-in-register+ then use only registers.
-          (may-use-only-registers (and req-opt-only (<= (+ nreq nopt) +args-in-registers+))))
-      (if (and may-use-only-registers (null debug-on))
-           (make-calling-convention-configuration
-            :use-only-registers t)
-           (make-calling-convention-configuration
-            :use-only-registers may-use-only-registers ; if may-use-only-registers then debug-on is T and we could use only registers
-            :register-save-area* (irc-register-save-area :label "register-save-area"))))))
+    (let* (;; If only required or optional arguments are used
+           ;; and the sum of required and optional arguments is less
+           ;; than the number +args-in-register+ then use only registers.
+           (may-use-only-registers (and req-opt-only (<= (+ nreq nopt) +args-in-registers+)))
+           ;; If (not may-use-only-registers) then we absolutely need a register-save-area
+           (need-register-save-area (not may-use-only-registers)))
+      (if (or need-register-save-area debug-on)
+          (make-calling-convention-configuration
+           :use-only-registers may-use-only-registers
+           :register-save-area* (alloca-register-save-area :label "register-save-area"))
+          (make-calling-convention-configuration :use-only-registers t)))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -851,7 +851,6 @@ the type LLVMContexts don't match - so they were defined in different threads!"
 
 
 (defun irc-unreachable ()
-  (irc-intrinsic "unreachableError" )
   (llvm-sys:create-unreachable *irbuilder*))
 
 

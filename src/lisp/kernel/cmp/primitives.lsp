@@ -161,8 +161,7 @@
          (primitive         "lowLevelTrace" %void% (list %i32%))
          (primitive         "unreachableError" %void% nil)
     
-         (primitive-unwinds "va_tooManyArgumentsException" %void% (list %i8*% %size_t% %size_t%))
-         (primitive-unwinds "va_notEnoughArgumentsException" %void% (list %i8*% %size_t% %size_t%))
+         (primitive-unwinds "cc_wrong_number_of_arguments" %void% (list %t*% %size_t% %size_t%))
 ;;;         (primitive-unwinds "cc_symbol_function" %t*% (list %t*%))
          (primitive         "va_lexicalFunction" %t*% (list %size_t% %size_t% %t*%))
     
