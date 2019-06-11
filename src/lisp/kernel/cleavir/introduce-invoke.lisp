@@ -27,7 +27,7 @@
          (cleavir-ir:catch-instruction
           (push instruction (catches (gethash owner result)))))
        ;; If an instruction is marked as wanting good debug info, the whole function gets it.
-       (when (has-policy-p instruction 'maintain-shadow-stack)
+       (when (has-policy-p instruction 'save-register-args)
          (setf (debug-on (gethash owner result)) t)))
      initial-instruction)
     result))

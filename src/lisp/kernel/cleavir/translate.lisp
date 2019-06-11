@@ -291,7 +291,7 @@ when this is t a lot of graphs will be generated.")
                                :filepos filepos))
       (t (error "layout-procedure enter is not a known type of enter-instruction - it is a ~a - handle it" enter)))))
 
-(defun layout-procedure (enter lambda-name abi &key (linkage 'llvm-sys:internal-linkage) ignore-arguments)
+(defun layout-procedure (enter lambda-name abi &key (linkage 'llvm-sys:internal-linkage))
   (let* ((function-info (gethash enter *map-enter-to-function-info*))
          ;; Gather the basic blocks of this procedure in basic-blocks
          (basic-blocks (function-basic-blocks enter))
@@ -351,10 +351,9 @@ when this is t a lot of graphs will be generated.")
                      (calling-convention
                        (cmp:setup-calling-convention
                         fn-args
-                        :debug-on (and (null ignore-arguments) (debug-on function-info))
+                        :debug-on (debug-on function-info)
                         :cleavir-lambda-list lambda-list
-                        :rest-alloc (clasp-cleavir-hir:rest-alloc enter)
-                        :ignore-arguments ignore-arguments)))
+                        :rest-alloc (clasp-cleavir-hir:rest-alloc enter))))
                 (setf (calling-convention function-info) calling-convention))
               (layout-procedure* the-function
                                  body-irbuilder
@@ -369,10 +368,10 @@ when this is t a lot of graphs will be generated.")
 ;; multiply accessible in the HIR.
 ;; We assume that the ABI and linkage will not change.
 (defvar *compiled-enters*)
-(defun memoized-layout-procedure (enter lambda-name abi &key (linkage 'llvm-sys:internal-linkage) ignore-arguments)
+(defun memoized-layout-procedure (enter lambda-name abi &key (linkage 'llvm-sys:internal-linkage))
   (or (gethash enter *compiled-enters*)
       (setf (gethash enter *compiled-enters*)
-            (layout-procedure enter lambda-name abi :linkage linkage :ignore-arguments ignore-arguments))))
+            (layout-procedure enter lambda-name abi :linkage linkage))))
 
 (defun log-translate (initial-instruction)
   (let ((mir-pathname (make-pathname :name (format nil "mir~a" (incf *debug-log-index*))
@@ -408,8 +407,7 @@ when this is t a lot of graphs will be generated.")
     uninitialized))
 
 (defun translate (initial-instruction map-enter-to-function-info go-indices
-                  &key (abi *abi-x86-64*) (linkage 'llvm-sys:internal-linkage)
-                    ignore-arguments)
+                  &key (abi *abi-x86-64*) (linkage 'llvm-sys:internal-linkage))
   #+(or)
   (let ((uninitialized (check-for-uninitialized-inputs-dumb initial-instruction)))
     (unless (null uninitialized)
@@ -425,7 +423,7 @@ when this is t a lot of graphs will be generated.")
          (lambda-name (get-or-create-lambda-name initial-instruction)))
     (cc-dbg-when *debug-log* (log-translate initial-instruction))
     (let ((function
-            (memoized-layout-procedure initial-instruction lambda-name abi :linkage linkage :ignore-arguments ignore-arguments)))
+            (memoized-layout-procedure initial-instruction lambda-name abi :linkage linkage)))
       (cmp::cmp-log-compile-file-dump-module cmp:*the-module* "after-translate")
       (setf *ct-translate* (compiler-timer-elapsed))
       (values function lambda-name))))
@@ -655,20 +653,19 @@ and go-indices as third."
 
 ;;; Convenience. AST must have been hoisted already.
 (defun translate-hoisted-ast (ast &key (abi *abi-x86-64*) (linkage 'llvm-sys:internal-linkage)
-                            (env *clasp-env*) ignore-arguments)
+                            (env *clasp-env*))
   (let ((hir (ast->hir ast)))
     (multiple-value-bind (mir function-info-map go-indices)
         (hir->mir hir env)
       (translate mir function-info-map go-indices
-                 :abi abi :linkage linkage :ignore-arguments ignore-arguments))))
+                 :abi abi :linkage linkage))))
 
 
 (defun translate-ast (ast dynenv &key (abi *abi-x86-64*) (linkage 'llvm-sys:internal-linkage)
-                                   (env *clasp-env*) ignore-arguments)
+                                   (env *clasp-env*))
   (let ((hoisted-ast (hoist-ast ast dynenv env)))
     (translate-hoisted-ast hoisted-ast
-                           :abi abi :linkage linkage :env env
-                           :ignore-arguments ignore-arguments)))
+                           :abi abi :linkage linkage :env env)))
 
 (defun translate-lambda-expression-to-llvm-function (lambda-expression)
   "Compile a lambda expression into an llvm-function and return it.

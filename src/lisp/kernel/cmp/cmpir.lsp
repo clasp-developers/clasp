@@ -1221,7 +1221,7 @@ and then the irbuilder-alloca, irbuilder-body."
   ;; Also VLA
   (llvm-sys:create-alloca *irbuilder* %t*% size label))
 
-(defun irc-register-save-area (&key (irbuilder *irbuilder-function-alloca*) (label "va_list"))
+(defun alloca-register-save-area (&key (irbuilder *irbuilder-function-alloca*) (label "va_list"))
   "Alloca space for a register save area, and keep it in the stack map."
   (with-irbuilder (irbuilder)
     (let ((rsa
