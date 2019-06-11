@@ -3477,11 +3477,31 @@ void __attribute__((noinline)) __jit_debug_register_code () { }
 /* Make sure to specify the version statically, because the
    debugger may check the version before we can set it.  */
 struct jit_descriptor __jit_debug_descriptor = { 1, 0, 0, 0 };
+mp::Mutex* global_jit_descriptor = NULL;
 
-
-
+void register_object_file_with_gdb(void* object_file, size_t size)
+{
+    if (global_jit_descriptor==NULL) {
+        global_jit_descriptor = new mp::Mutex(JITGDBIF_NAMEWORD);
+    }
+    global_jit_descriptor->lock();
+    jit_code_entry* entry = (jit_code_entry*)malloc(sizeof(jit_code_entry));
+    entry->symfile_addr = (const char*)object_file;
+    entry->symfile_size = size;
+    entry->prev_entry = __jit_debug_descriptor.relevant_entry;
+    __jit_debug_descriptor.relevant_entry = entry;
+    if (entry->prev_entry != NULL) {
+        entry->prev_entry->next_entry = entry;
+    } else {
+        __jit_debug_descriptor.first_entry = entry;
+    }
+    __jit_debug_descriptor.action_flag = JIT_REGISTER_FN;
+    __jit_debug_register_code();
+    printf("%s:%d Registered object file at %p size: %lu\n", __FILE__, __LINE__, object_file, size );
+    global_jit_descriptor->unlock();
 };
 
+};
 SYMBOL_EXPORT_SC_(LlvmoPkg,make_StkSizeRecord);
 SYMBOL_EXPORT_SC_(LlvmoPkg,make_StkMapRecord_Location);
 SYMBOL_EXPORT_SC_(LlvmoPkg,make_StkMapRecord_LiveOut);
@@ -3508,20 +3528,8 @@ CL_DEFUN core::T_sp llvm_sys__vmmap()
 
 
 SYMBOL_EXPORT_SC_(LlvmoPkg,library);
-#if 0
-CL_DEFUN llvm_sys__load_object_file(core::Pathname_sp name)
-{
-  core::T_sp filename = cl__namestring(name);
-  if (core::cl__stringp(filename)) {
-    core::String_sp str = gc::As_unsafe<core::String_sp>(filename);
-    int fd = open(str->get(),O_RDONLY);
-    if (fd<0) SIMPLE_ERROR(BF("Could not read file %s") % str->get());
-    GC_ALLOCATE(fli::ForeignData_O,data);
-    data.allocate(llvmo::_sym_library,data = 
-
-#endif
 };
-  
+    
 namespace llvmo {
 
 class ClaspSectionMemoryManager : public SectionMemoryManager {
@@ -3565,6 +3573,31 @@ class ClaspSectionMemoryManager : public SectionMemoryManager {
 
   void 	notifyObjectLoaded (RuntimeDyld &RTDyld, const object::ObjectFile &Obj) {
 //    printf("%s:%d:%s entered\n", __FILE__, __LINE__, __FUNCTION__ );
+#if 0
+      // DONT DELETE DONT DELETE DONT DELETE
+      // This is trying to use the gdb jit interface described here.
+      // https://v8.dev/docs/gdb-jit
+      // https://llvm.org/docs/DebuggingJITedCode.html
+      // https://doc.ecoscentric.com/gnutools/doc/gdb/JIT-Interface.html
+      // Example: https://sourceware.org/git/gitweb.cgi?p=binutils-gdb.git;a=blob;f=gdb/testsuite/gdb.base/jit-main.c
+      // Simple example: https://stackoverflow.com/questions/20046943/gdb-jit-interface-simpliest-example
+      //
+      // What I don't like about this is that the ObjectFile is going to be destroyed by the caller
+      // and so I make a copy of the ObjectFile here.
+      //
+      {
+          llvm::MemoryBufferRef mem = Obj.getMemoryBufferRef();
+#if 1
+          // Copy the ObjectFile - I can't be sure that it will persist once this callback returns
+          void* obj_file_copy = (void*)malloc(mem.getBufferSize());
+          memcpy( (void*)obj_file_copy,mem.getBufferStart(),mem.getBufferSize());
+          register_object_file_with_gdb(obj_file_copy,mem.getBufferSize());
+#else
+          // Try using the ObjectFile directly - see the comment above about it persisting
+          register_object_file_with_gdb((void*)mem.getBufferStart(),mem.getBufferSize());
+#endif
+      }
+#endif
 #if 0
     uintptr_t stackmap = 0;
     size_t stackmap_size = 0;
