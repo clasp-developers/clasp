@@ -301,12 +301,24 @@
 
 (defvar *fastgf-use-compiler* nil)
 (defvar *fastgf-timer-start*)
-(defun codegen-dispatcher (raw-call-history specializer-profile generic-function
+(defun codegen-dispatcher (call-history specializer-profile generic-function
                            &rest args &key generic-function-name output-path log-gf force-compile)
   (let* ((*log-gf* log-gf)
          (*fastgf-timer-start* (get-internal-real-time))
-         (dtree (calculate-dtree raw-call-history specializer-profile)))
+         (tree (compile-tree (basic-tree call-history specializer-profile)))
+         (prg (linearize tree))
+         (program (compute-dispatch-program call-history specializer-profile)))
+    #+(or)
+    (when output-path
+      (with-open-file (s output-path :direction :output :if-does-not-exist :create
+                         :if-exists :append)
+        (write prg :stream s)
+        (terpri s)))
     (unwind-protect
+         (lambda (core:&va-rest args)
+           (declare (core:lambda-name interpreted-discriminating-function))
+           (clos:interpret-dtree-program program generic-function args))
+         #+(or)
          (if (or force-compile *fastgf-use-compiler*)
              (cmp:bclasp-compile nil (generate-dispatcher-from-dtree
                                       generic-function dtree

@@ -337,6 +337,8 @@ SYMBOL_EXPORT_SC_(ClosPkg,effective_method_outcome);
 namespace core {
 #if 1
 
+#define DTILOG(x) { FILE* fout= monitor_file("dtree-interp"); fprintf( fout, "%s", (x).str().c_str()); fflush(fout); }
+
 #define DTREE_OP_MISS 0
 #define DTREE_OP_ADVANCE 1
 #define DTREE_OP_TAG_TEST 2
@@ -386,9 +388,9 @@ namespace core {
 
 #define DTREE_EFFECTIVE_METHOD_OFFSET 1
 
-CL_LAMBDA(program gf core:&va-rest args);
-CL_DEFUN T_mv clos__interpret_test_dtree(SimpleVector_sp program, T_sp generic_function,
-                                         VaList_sp args) {
+CL_LAMBDA(program gf args);
+CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generic_function,
+                                            VaList_sp args) {
   Vaslist valist_copy(*args);
   VaList_sp dispatch_args(&valist_copy);
   T_sp arg;
@@ -403,30 +405,40 @@ CL_DEFUN T_mv clos__interpret_test_dtree(SimpleVector_sp program, T_sp generic_f
         goto DISPATCH_MISS;
     case DTREE_OP_ADVANCE:
         arg = dispatch_args->next_arg();
+        DTILOG(BF("Got arg %s\n") % arg);
         ++ip;
         break;
     case DTREE_OP_TAG_TEST:
+        DTILOG(BF("tag-test: "));
         if (arg.fixnump()) {
+          DTILOG(BF("fixnum\n"));
           ip = (*program)[ip+DTREE_FIXNUM_TAG_OFFSET].unsafe_fixnum();
           break;
         } else if (arg.consp()) {
+          DTILOG(BF("cons\n"));
           ip = (*program)[ip+DTREE_CONS_TAG_OFFSET].unsafe_fixnum();
           break;
         } else if (arg.single_floatp()) {
+          DTILOG(BF("single-float\n"));
           ip = (*program)[ip+DTREE_SINGLE_FLOAT_TAG_OFFSET].unsafe_fixnum();
           break;
         } else if (arg.characterp()) {
+          DTILOG(BF("character\n"));
           ip = (*program)[ip+DTREE_CHARACTER_TAG_OFFSET].unsafe_fixnum();
           break;
         } else if (arg.generalp()) {
+          DTILOG(BF("general\n"));
           ip += DTREE_GENERAL_TAG_OFFSET;
           break;
         }
+        DTILOG(BF("unknown\n"));
         // FIXME: We should be able to specialize on class valist and stuff.
+        SIMPLE_ERROR(BF("unknown tag for arg ~s") % arg);
         goto DISPATCH_MISS;
     case DTREE_OP_HEADER_STAMP_READ:
         client_ptr = gctools::untag_general<General_O*>((General_O*)arg.raw_());
         stamp = (uintptr_t)(llvmo::template_read_general_stamp(client_ptr));
+        DTILOG(BF("read header stamp: %s\n") % stamp);
         ++ip;
         break;
     case DTREE_OP_WHERE_BRANCH:
@@ -445,11 +457,14 @@ CL_DEFUN T_mv clos__interpret_test_dtree(SimpleVector_sp program, T_sp generic_f
         case gctools::Header_s::derivable_wtag:
             stamp = (uintptr_t)(llvmo::template_read_derived_stamp(client_ptr)); break;
         }
+        DTILOG(BF("read complex stamp: %s\n") % stamp);
         ++ip;
         break;
     case DTREE_OP_LT_BRANCH:
       {
-        uintptr_t pivot = (*program)[ip+DTREE_LT_PIVOT_OFFSET].unsafe_fixnum();
+        // The stamps are from Common Lisp, so they're tagged fixnums. Don't untag.
+        uintptr_t pivot = (*program)[ip+DTREE_LT_PIVOT_OFFSET].tagged_();
+        DTILOG(BF("testing < pivot %s\n") % pivot);
         if (stamp < pivot)
           ip = (*program)[ip+DTREE_LT_LEFT_OFFSET].unsafe_fixnum();
         else ip += DTREE_LT_RIGHT_OFFSET;
@@ -457,15 +472,17 @@ CL_DEFUN T_mv clos__interpret_test_dtree(SimpleVector_sp program, T_sp generic_f
       }
     case DTREE_OP_EQ_CHECK:
       {
-        uintptr_t pivot = (*program)[ip+DTREE_EQ_PIVOT_OFFSET].unsafe_fixnum();
+        uintptr_t pivot = (*program)[ip+DTREE_EQ_PIVOT_OFFSET].tagged_();
+        DTILOG(BF("testing = pivot %s\n") % pivot);
         if (stamp != pivot) goto DISPATCH_MISS;
         ip += DTREE_EQ_NEXT_OFFSET;
         break;
       }
     case DTREE_OP_RANGE_CHECK:
       {
-        uintptr_t min = (*program)[ip+DTREE_RANGE_MIN_OFFSET].unsafe_fixnum();
-        uintptr_t max = (*program)[ip+DTREE_RANGE_MAX_OFFSET].unsafe_fixnum();
+        uintptr_t min = (*program)[ip+DTREE_RANGE_MIN_OFFSET].tagged_();
+        uintptr_t max = (*program)[ip+DTREE_RANGE_MAX_OFFSET].tagged_();
+        DTILOG(BF("testing > %s and < %s\n") % min % max);
         if (stamp < min || stamp > max) goto DISPATCH_MISS;
         ip += DTREE_RANGE_NEXT_OFFSET;
         break;
@@ -480,17 +497,21 @@ CL_DEFUN T_mv clos__interpret_test_dtree(SimpleVector_sp program, T_sp generic_f
       }
     case DTREE_OP_SLOT_READ:
       {
+        DTILOG(BF("reading slot: "));
         T_sp location = (*program)[ip+DTREE_SLOT_READER_INDEX_OFFSET];
         T_sp slot_name = (*program)[ip+DTREE_SLOT_READER_SLOT_NAME_OFFSET];
         T_sp class_ = (*program)[ip+DTREE_SLOT_READER_CLASS_OFFSET];
         if (location.fixnump()) {
           size_t index = location.unsafe_fixnum();
-          Instance_sp instance((gc::Tagged)args->next_arg());
+          T_sp tinstance = args->next_arg();
+          Instance_sp instance((gc::Tagged)tinstance);
+          DTILOG(BF("instance %p index %s\n") % instance.raw_() % index);
           T_sp value = instance->instanceRef(index);
           if (value.unboundp())
             return core::eval::funcall(cl::_sym_slot_unbound,class_,instance,slot_name);
           return gctools::return_type(value.raw_(),1);
         } else if (location.consp()) {
+          DTILOG(BF("class cell\n"));
           Instance_sp instance((gc::Tagged)args->next_arg());
           Cons_sp cell = gc::As_unsafe<Cons_sp>(location);
           T_sp value = oCar(cell);
@@ -501,14 +522,18 @@ CL_DEFUN T_mv clos__interpret_test_dtree(SimpleVector_sp program, T_sp generic_f
       }
     case DTREE_OP_SLOT_WRITE:
       {
+        DTILOG(BF("writing slot: "));
         T_sp location = (*program)[ip+DTREE_SLOT_WRITER_INDEX_OFFSET];
         if (location.fixnump()) {
           size_t index = location.unsafe_fixnum();
+          DTILOG(BF("index %s\n") % index);
           T_sp value((gc::Tagged)args->next_arg());
-          Instance_sp instance((gc::Tagged)args->next_arg());
+          T_sp tinstance = args->next_arg();
+          Instance_sp instance((gc::Tagged)tinstance);
           instance->instanceSet(index,value);
           return gctools::return_type(value.raw_(),1);
         } else if (location.consp()) {
+          DTILOG(BF("class cell\n"));
           Cons_sp cell = gc::As_unsafe<Cons_sp>(location);
           T_sp value((gc::Tagged)args->next_arg());
           cell->rplaca(value);
@@ -517,12 +542,14 @@ CL_DEFUN T_mv clos__interpret_test_dtree(SimpleVector_sp program, T_sp generic_f
       }
     case DTREE_OP_FAST_METHOD_CALL:
       {
+        DTILOG(BF("fast method call\n"));
         T_sp tfunc = (*program)[ip+DTREE_FAST_METHOD_FUNCTION_OFFSET];
         Function_sp func = gc::As_unsafe<Function_sp>(tfunc);
         return funcall_consume_valist_<core::Function_O>(func.tagged_(), args);
       }
     case DTREE_OP_EFFECTIVE_METHOD:
       {
+        DTILOG(BF("effective method call\n"));
         T_sp tfunc = (*program)[ip+DTREE_EFFECTIVE_METHOD_OFFSET];
         Function_sp func = gc::As_unsafe<Function_sp>(tfunc);
         return core::eval::funcall(func,args,_Nil<T_O>());
@@ -532,6 +559,7 @@ CL_DEFUN T_mv clos__interpret_test_dtree(SimpleVector_sp program, T_sp generic_f
     }
   }
  DISPATCH_MISS:
+  DTILOG(BF("dispatch miss. arg %s stamp %s\n") % arg % stamp);
   return core::eval::funcall(clos::_sym_dispatch_miss,generic_function,args);
 }
 
