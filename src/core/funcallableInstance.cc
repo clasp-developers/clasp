@@ -337,6 +337,204 @@ SYMBOL_EXPORT_SC_(ClosPkg,effective_method_outcome);
 namespace core {
 #if 1
 
+#define DTREE_OP_MISS 0
+#define DTREE_OP_ADVANCE 1
+#define DTREE_OP_TAG_TEST 2
+#define DTREE_OP_HEADER_STAMP_READ 3
+#define DTREE_OP_WHERE_BRANCH 4
+#define DTREE_OP_COMPLEX_STAMP_READ 5
+#define DTREE_OP_LT_BRANCH 6
+#define DTREE_OP_EQ_CHECK 7
+#define DTREE_OP_RANGE_CHECK 8
+#define DTREE_OP_EQL 9
+#define DTREE_OP_SLOT_READ 10
+#define DTREE_OP_SLOT_WRITE 11
+#define DTREE_OP_FAST_METHOD_CALL 12
+#define DTREE_OP_EFFECTIVE_METHOD 13
+
+#define DTREE_FIXNUM_TAG_OFFSET 1
+#define DTREE_SINGLE_FLOAT_TAG_OFFSET 2
+#define DTREE_CHARACTER_TAG_OFFSET 3
+#define DTREE_CONS_TAG_OFFSET 4
+#define DTREE_GENERAL_TAG_OFFSET 5
+
+#define DTREE_WHERE_HEADER_OFFSET 1
+#define DTREE_WHERE_OTHER_OFFSET 2
+
+#define DTREE_LT_PIVOT_OFFSET 1
+#define DTREE_LT_LEFT_OFFSET 2
+#define DTREE_LT_RIGHT_OFFSET 3
+
+#define DTREE_EQ_PIVOT_OFFSET 1
+#define DTREE_EQ_NEXT_OFFSET 2
+
+#define DTREE_RANGE_MIN_OFFSET 1
+#define DTREE_RANGE_MAX_OFFSET 2
+#define DTREE_RANGE_NEXT_OFFSET 3
+
+#define DTREE_EQL_OBJECT_OFFSET 1
+#define DTREE_EQL_BRANCH_OFFSET 2
+#define DTREE_EQL_NEXT_OFFSET 3
+
+#define DTREE_SLOT_READER_INDEX_OFFSET 1
+#define DTREE_SLOT_READER_SLOT_NAME_OFFSET 2
+#define DTREE_SLOT_READER_CLASS_OFFSET 3
+
+#define DTREE_SLOT_WRITER_INDEX_OFFSET 1
+
+#define DTREE_FAST_METHOD_FUNCTION_OFFSET 1
+
+#define DTREE_EFFECTIVE_METHOD_OFFSET 1
+
+CL_LAMBDA(program gf core:&va-rest args);
+CL_DEFUN T_mv clos__interpret_test_dtree(SimpleVector_sp program, T_sp generic_function,
+                                         VaList_sp args) {
+  Vaslist valist_copy(*args);
+  VaList_sp dispatch_args(&valist_copy);
+  T_sp arg;
+  uintptr_t stamp;
+  uintptr_t where;
+  core::General_O* client_ptr;
+  size_t ip = 0;
+  while (1) {
+    size_t op = (*program)[ip].unsafe_fixnum();
+    switch (op) {
+    case DTREE_OP_MISS:
+        goto DISPATCH_MISS;
+    case DTREE_OP_ADVANCE:
+        arg = dispatch_args->next_arg();
+        ++ip;
+        break;
+    case DTREE_OP_TAG_TEST:
+        if (arg.fixnump()) {
+          ip = (*program)[ip+DTREE_FIXNUM_TAG_OFFSET].unsafe_fixnum();
+          break;
+        } else if (arg.consp()) {
+          ip = (*program)[ip+DTREE_CONS_TAG_OFFSET].unsafe_fixnum();
+          break;
+        } else if (arg.single_floatp()) {
+          ip = (*program)[ip+DTREE_SINGLE_FLOAT_TAG_OFFSET].unsafe_fixnum();
+          break;
+        } else if (arg.characterp()) {
+          ip = (*program)[ip+DTREE_CHARACTER_TAG_OFFSET].unsafe_fixnum();
+          break;
+        } else if (arg.generalp()) {
+          ip += DTREE_GENERAL_TAG_OFFSET;
+          break;
+        }
+        // FIXME: We should be able to specialize on class valist and stuff.
+        goto DISPATCH_MISS;
+    case DTREE_OP_HEADER_STAMP_READ:
+        client_ptr = gctools::untag_general<General_O*>((General_O*)arg.raw_());
+        stamp = (uintptr_t)(llvmo::template_read_general_stamp(client_ptr));
+        ++ip;
+        break;
+    case DTREE_OP_WHERE_BRANCH:
+        where = stamp & gctools::Header_s::where_mask;
+        if (where == gctools::Header_s::header_wtag)
+          ip = (*program)[ip+DTREE_WHERE_HEADER_OFFSET].unsafe_fixnum();
+        else ip += DTREE_WHERE_OTHER_OFFSET;
+        break;
+    case DTREE_OP_COMPLEX_STAMP_READ:
+        switch (where) {
+        case gctools::Header_s::header_wtag: goto DISPATCH_MISS;  // Redundant?????
+        case gctools::Header_s::rack_wtag:
+            stamp = (uintptr_t)(llvmo::template_read_rack_stamp(client_ptr)); break;
+        case gctools::Header_s::wrapped_wtag:
+            stamp = (uintptr_t)(llvmo::template_read_wrapped_stamp(client_ptr)); break;
+        case gctools::Header_s::derivable_wtag:
+            stamp = (uintptr_t)(llvmo::template_read_derived_stamp(client_ptr)); break;
+        }
+        ++ip;
+        break;
+    case DTREE_OP_LT_BRANCH:
+      {
+        uintptr_t pivot = (*program)[ip+DTREE_LT_PIVOT_OFFSET].unsafe_fixnum();
+        if (stamp < pivot)
+          ip = (*program)[ip+DTREE_LT_LEFT_OFFSET].unsafe_fixnum();
+        else ip += DTREE_LT_RIGHT_OFFSET;
+        break;
+      }
+    case DTREE_OP_EQ_CHECK:
+      {
+        uintptr_t pivot = (*program)[ip+DTREE_EQ_PIVOT_OFFSET].unsafe_fixnum();
+        if (stamp != pivot) goto DISPATCH_MISS;
+        ip += DTREE_EQ_NEXT_OFFSET;
+        break;
+      }
+    case DTREE_OP_RANGE_CHECK:
+      {
+        uintptr_t min = (*program)[ip+DTREE_RANGE_MIN_OFFSET].unsafe_fixnum();
+        uintptr_t max = (*program)[ip+DTREE_RANGE_MAX_OFFSET].unsafe_fixnum();
+        if (stamp < min || stamp > max) goto DISPATCH_MISS;
+        ip += DTREE_RANGE_NEXT_OFFSET;
+        break;
+      }
+    case DTREE_OP_EQL:
+      {
+        T_sp object = (*program)[ip+DTREE_EQL_OBJECT_OFFSET];
+        if (cl__eql(arg, object))
+          ip = (*program)[ip+DTREE_EQL_BRANCH_OFFSET];
+        else ip += DTREE_EQL_NEXT_OFFSET;
+        break;
+      }
+    case DTREE_OP_SLOT_READ:
+      {
+        T_sp location = (*program)[ip+DTREE_SLOT_READER_INDEX_OFFSET];
+        T_sp slot_name = (*program)[ip+DTREE_SLOT_READER_SLOT_NAME_OFFSET];
+        T_sp class_ = (*program)[ip+DTREE_SLOT_READER_CLASS_OFFSET];
+        if (location.fixnump()) {
+          size_t index = location.unsafe_fixnum();
+          Instance_sp instance((gc::Tagged)args->next_arg());
+          T_sp value = instance->instanceRef(index);
+          if (value.unboundp())
+            return core::eval::funcall(cl::_sym_slot_unbound,class_,instance,slot_name);
+          return gctools::return_type(value.raw_(),1);
+        } else if (location.consp()) {
+          Instance_sp instance((gc::Tagged)args->next_arg());
+          Cons_sp cell = gc::As_unsafe<Cons_sp>(location);
+          T_sp value = oCar(cell);
+          if (value.unboundp())
+            return core::eval::funcall(cl::_sym_slot_unbound,class_,instance,slot_name);
+          return gctools::return_type(value.raw_(),1);
+        }
+      }
+    case DTREE_OP_SLOT_WRITE:
+      {
+        T_sp location = (*program)[ip+DTREE_SLOT_WRITER_INDEX_OFFSET];
+        if (location.fixnump()) {
+          size_t index = location.unsafe_fixnum();
+          T_sp value((gc::Tagged)args->next_arg());
+          Instance_sp instance((gc::Tagged)args->next_arg());
+          instance->instanceSet(index,value);
+          return gctools::return_type(value.raw_(),1);
+        } else if (location.consp()) {
+          Cons_sp cell = gc::As_unsafe<Cons_sp>(location);
+          T_sp value((gc::Tagged)args->next_arg());
+          cell->rplaca(value);
+          return gctools::return_type(value.raw_(),1);
+        }
+      }
+    case DTREE_OP_FAST_METHOD_CALL:
+      {
+        T_sp tfunc = (*program)[ip+DTREE_FAST_METHOD_FUNCTION_OFFSET];
+        Function_sp func = gc::As_unsafe<Function_sp>(tfunc);
+        return funcall_consume_valist_<core::Function_O>(func.tagged_(), args);
+      }
+    case DTREE_OP_EFFECTIVE_METHOD:
+      {
+        T_sp tfunc = (*program)[ip+DTREE_EFFECTIVE_METHOD_OFFSET];
+        Function_sp func = gc::As_unsafe<Function_sp>(tfunc);
+        return core::eval::funcall(func,args,_Nil<T_O>());
+      }
+    default:
+        SIMPLE_ERROR(BF("%zu is not a valid dtree opcode") % op);
+    }
+  }
+ DISPATCH_MISS:
+  return core::eval::funcall(clos::_sym_dispatch_miss,generic_function,args);
+}
+
 CL_DEF_CLASS_METHOD DtreeInterpreter_sp DtreeInterpreter_O::make_dtree_interpreter(T_sp generic_function, T_sp dtree_root) {
   FunctionDescription* fdesc = makeFunctionDescription(clos::_sym_inode,_Nil<T_O>());
   if (!gc::IsA<SimpleVector_sp>(dtree_root)) {
