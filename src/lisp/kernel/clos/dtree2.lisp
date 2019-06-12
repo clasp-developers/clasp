@@ -341,3 +341,12 @@
                    (error "BUG: In fastgf linker, undefined tag: ~a" (second item)))
                item))
          program)))
+
+;;; SIMPLE ENTRY POINT
+
+(defun compute-dispatch-program (call-history specializer-profile)
+  (let* ((basic (basic-tree call-history specializer-profile))
+         (compiled (compile-tree basic))
+         (linear (linearize compiled))
+         (final (link linear)))
+    final))
