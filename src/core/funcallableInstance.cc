@@ -337,8 +337,13 @@ SYMBOL_EXPORT_SC_(ClosPkg,effective_method_outcome);
 namespace core {
 #if 1
 
+#if 0 // for debugging
 #define DTILOG(x) { FILE* fout= monitor_file("dtree-interp"); fprintf( fout, "%s", (x).str().c_str()); fflush(fout); }
 #define DTIDO(x) { x; };
+#else
+#define DTILOG(x)
+#define DTIDO(x)
+#endif
 
 #define DTREE_OP_MISS 0
 #define DTREE_OP_ADVANCE 1
@@ -528,7 +533,7 @@ __attribute__((optnone)) CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVecto
       {
         T_sp object = (*program)[ip+DTREE_EQL_OBJECT_OFFSET];
         if (cl__eql(arg, object))
-          ip = (*program)[ip+DTREE_EQL_BRANCH_OFFSET];
+          ip = (*program)[ip+DTREE_EQL_BRANCH_OFFSET].unsafe_fixnum();
         else ip += DTREE_EQL_NEXT_OFFSET;
         break;
       }
@@ -546,9 +551,6 @@ __attribute__((optnone)) CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVecto
           DTILOG(BF("tinstance.raw_() -> %p\n") % tinstance.raw_());
           DTILOG(BF("About to dump args Vaslist AFTER next_arg\n"));
           DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*args));
-// The problem is this...   Instance_sp instance((gc::Tagged)tinstance);
-// It should be what is below
-// For some reason we can cast tinstance to (gc::Tagged) and it returns 0x1          
           Instance_sp instance((gc::Tagged)tinstance.raw_());
           DTILOG(BF("instance %p index %s\n") % instance.raw_() % index);
           T_sp value = instance->instanceRef(index);
