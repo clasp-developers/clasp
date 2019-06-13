@@ -415,6 +415,11 @@ CL_LAMBDA(program gf args);
 __attribute__((optnone)) CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generic_function,
                                             VaList_sp args) {
   DTILOG(BF("=============================== Entered clos__interpret_dtree_program\n"));
+  DTILOG(BF("---- generic function: %s\n") % _safe_rep_(generic_function));
+  DTILOG(BF("---- program length: %d\n") % program->length());
+  for ( size_t i=0; i<program->length(); ++i ) {
+    DTILOG(BF("[%3d] : %s\n") % i % _safe_rep_((*program)[i]));
+  }
   Vaslist valist_copy(*args);
   VaList_sp dispatch_args(&valist_copy);
   DTILOG(BF("About to dump incoming args Vaslist\n"));
