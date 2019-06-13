@@ -306,12 +306,6 @@
   (let* ((*log-gf* log-gf)
          (*fastgf-timer-start* (get-internal-real-time))
          (program (compute-dispatch-program call-history specializer-profile)))
-    #+(or)
-    (when output-path
-      (with-open-file (s output-path :direction :output :if-does-not-exist :create
-                         :if-exists :append)
-        (write prg :stream s)
-        (terpri s)))
     (unwind-protect
          (lambda (core:&va-rest args)
            (declare (core:lambda-name interpreted-discriminating-function))
