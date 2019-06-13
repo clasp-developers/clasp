@@ -337,7 +337,7 @@
               do (push label labels)
               do (push (linearize next) bodies)
               collect 'eql
-              collect object
+              collect `',object
               collect `(go ,label))
         (linearize (eql-search-default tree))
         (loop for label in labels
@@ -350,7 +350,7 @@
   (cond ((optimized-slot-reader-p outcome)
          (list 'optimized-slot-reader
                (optimized-slot-reader-index outcome)
-               (optimized-slot-reader-slot-name outcome)
+               `',(optimized-slot-reader-slot-name outcome)
                (optimized-slot-reader-class outcome)))
         ((optimized-slot-writer-p outcome)
          (list 'optimized-slot-writer
@@ -362,15 +362,17 @@
          (list 'effective-method-outcome
                (effective-method-outcome-function outcome)))))
 
-(defvar *isa*
+(defparameter *isa*
   '((miss 0) (advance 1) (tag-test 2) (header-stamp-read 3) (where-branch 4)
-    (complex-stamp-read 5) (<-branch 6) (=-check 7) (range-check 8) (eql-search 9)
+    (complex-stamp-read 5) (<-branch 6) (=-check 7) (range-check 8) (eql 9)
     (optimized-slot-reader 10) (optimized-slot-writer 11)
     (fast-method-call 12) (effective-method-outcome 13)))
 
 (defun opcode (inst)
-  ;; we sometimes have non-inst symbols and objects, such as slot names.
-  (or (second (assoc inst *isa*)) inst))
+  (or (second (assoc inst *isa*))
+      (if (symbolp inst)
+          (error "BUG: In fastgf linker, symbol is not an op: ~a" inst)
+          inst)))
 
 (defun link (linear)
   (let* ((tags (make-hash-table :test #'eq))
