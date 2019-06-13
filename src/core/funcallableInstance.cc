@@ -338,6 +338,7 @@ namespace core {
 #if 1
 
 #define DTILOG(x) { FILE* fout= monitor_file("dtree-interp"); fprintf( fout, "%s", (x).str().c_str()); fflush(fout); }
+#define DTIDO(x) { x; };
 
 #define DTREE_OP_MISS 0
 #define DTREE_OP_ADVANCE 1
@@ -388,11 +389,38 @@ namespace core {
 
 #define DTREE_EFFECTIVE_METHOD_OFFSET 1
 
+#define CASE_OP_NAME(op) case op: return #op;
+std::string dtree_op_name(int dtree_op) {
+  switch (dtree_op) {
+    CASE_OP_NAME(DTREE_OP_MISS);
+    CASE_OP_NAME(DTREE_OP_ADVANCE);
+    CASE_OP_NAME(DTREE_OP_TAG_TEST);
+    CASE_OP_NAME(DTREE_OP_HEADER_STAMP_READ);
+    CASE_OP_NAME(DTREE_OP_WHERE_BRANCH);
+    CASE_OP_NAME(DTREE_OP_COMPLEX_STAMP_READ);
+    CASE_OP_NAME(DTREE_OP_LT_BRANCH);
+    CASE_OP_NAME(DTREE_OP_EQ_CHECK);
+    CASE_OP_NAME(DTREE_OP_RANGE_CHECK);
+    CASE_OP_NAME(DTREE_OP_EQL);
+    CASE_OP_NAME(DTREE_OP_SLOT_READ);
+    CASE_OP_NAME(DTREE_OP_SLOT_WRITE);
+    CASE_OP_NAME(DTREE_OP_FAST_METHOD_CALL);
+    CASE_OP_NAME(DTREE_OP_EFFECTIVE_METHOD);
+  default: return "UNKNOWN_OP";
+  };
+};
+
+
 CL_LAMBDA(program gf args);
-CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generic_function,
+__attribute__((optnone)) CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generic_function,
                                             VaList_sp args) {
+  DTILOG(BF("=============================== Entered clos__interpret_dtree_program\n"));
   Vaslist valist_copy(*args);
   VaList_sp dispatch_args(&valist_copy);
+  DTILOG(BF("About to dump incoming args Vaslist\n"));
+  DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*args));
+  DTILOG(BF("About to dump copied dispatch_args Vaslist\n"));
+  DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*dispatch_args));
   T_sp arg;
   uintptr_t stamp;
   uintptr_t where;
@@ -400,12 +428,16 @@ CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generi
   size_t ip = 0;
   while (1) {
     size_t op = (*program)[ip].unsafe_fixnum();
+    DTILOG(BF("ip[%lu]: %lu/%s\n") % ip % op % dtree_op_name(op));
     switch (op) {
     case DTREE_OP_MISS:
         goto DISPATCH_MISS;
     case DTREE_OP_ADVANCE:
+        DTILOG(BF("About to read arg dispatch_args-> %p\n") % dispatch_args.raw_());
+        DTILOG(BF("About to dump dispatch_args Vaslist\n"));
+        DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*dispatch_args));
         arg = dispatch_args->next_arg();
-        DTILOG(BF("Got arg %s\n") % arg);
+        DTILOG(BF("Got arg@%p %s\n") % arg.raw_() % _safe_rep_(arg));
         ++ip;
         break;
     case DTREE_OP_TAG_TEST:
@@ -503,8 +535,16 @@ CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generi
         T_sp class_ = (*program)[ip+DTREE_SLOT_READER_CLASS_OFFSET];
         if (location.fixnump()) {
           size_t index = location.unsafe_fixnum();
+          DTILOG(BF("About to dump args Vaslist\n"));
+          DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*args));
           T_sp tinstance = args->next_arg();
-          Instance_sp instance((gc::Tagged)tinstance);
+          DTILOG(BF("tinstance.raw_() -> %p\n") % tinstance.raw_());
+          DTILOG(BF("About to dump args Vaslist AFTER next_arg\n"));
+          DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*args));
+// The problem is this...   Instance_sp instance((gc::Tagged)tinstance);
+// It should be what is below
+// For some reason we can cast tinstance to (gc::Tagged) and it returns 0x1          
+          Instance_sp instance((gc::Tagged)tinstance.raw_());
           DTILOG(BF("instance %p index %s\n") % instance.raw_() % index);
           T_sp value = instance->instanceRef(index);
           if (value.unboundp())
@@ -512,7 +552,9 @@ CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generi
           return gctools::return_type(value.raw_(),1);
         } else if (location.consp()) {
           DTILOG(BF("class cell\n"));
-          Instance_sp instance((gc::Tagged)args->next_arg());
+          DTILOG(BF("About to dump args Vaslist\n"));
+          DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*args));
+          Instance_sp instance((gc::Tagged)args->next_arg().raw_());
           Cons_sp cell = gc::As_unsafe<Cons_sp>(location);
           T_sp value = oCar(cell);
           if (value.unboundp())
@@ -527,15 +569,21 @@ CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generi
         if (location.fixnump()) {
           size_t index = location.unsafe_fixnum();
           DTILOG(BF("index %s\n") % index);
-          T_sp value((gc::Tagged)args->next_arg());
+          DTILOG(BF("About to dump args Vaslist\n"));
+          DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*args));
+          T_sp value((gc::Tagged)args->next_arg().raw_());
+          DTILOG(BF("About to dump args Vaslist\n"));
+          DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*args));
           T_sp tinstance = args->next_arg();
-          Instance_sp instance((gc::Tagged)tinstance);
+          Instance_sp instance((gc::Tagged)tinstance.raw_());
           instance->instanceSet(index,value);
           return gctools::return_type(value.raw_(),1);
         } else if (location.consp()) {
           DTILOG(BF("class cell\n"));
           Cons_sp cell = gc::As_unsafe<Cons_sp>(location);
-          T_sp value((gc::Tagged)args->next_arg());
+          DTILOG(BF("About to dump args Vaslist\n"));
+          DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*args));
+          T_sp value((gc::Tagged)args->next_arg().raw_());
           cell->rplaca(value);
           return gctools::return_type(value.raw_(),1);
         }
