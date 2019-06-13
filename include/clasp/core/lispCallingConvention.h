@@ -353,39 +353,39 @@ typedef LCC_RETURN (*ShutdownFunction_fptr_type)();
 extern "C" {
 
 // Return true if the Vaslist is at the head of the list and false if it is used up
-inline void dump_va_list(va_list val) {
+inline void dump_va_list(FILE* fout, va_list val) {
   const char* atpos = "";
   if (val[0].gp_offset==0x10) atpos = "atStartReg";
   else if (val[0].gp_offset==0x30) atpos = "pastEnd";
-  printf("           gp_offset = %p (%s)\n", reinterpret_cast<void*>(val[0].gp_offset),  atpos );
-  printf("           fp_offset = %p\n", reinterpret_cast<void*>(val[0].fp_offset) );
-  printf("   overflow_arg_area = %p\n", reinterpret_cast<void*>(val[0].overflow_arg_area) );
-  printf("       reg_save_area = %p\n", reinterpret_cast<void*>(val[0].reg_save_area) );
-  printf("---Register save area@%p (NOTE: Often in other stack frame)\n", val[0].reg_save_area);
-  printf("       CLOSURE_REGISTER@%p = %p\n", reinterpret_cast<void*>(LCC_CLOSURE_REGISTER*8), ((core::T_O* *)val[0].reg_save_area)[LCC_CLOSURE_REGISTER] );
-  printf("         NARGS_REGISTER@%p = %zu\n", reinterpret_cast<void*>(LCC_NARGS_REGISTER*8),reinterpret_cast<size_t>(((core::T_O* *)val[0].reg_save_area)[LCC_NARGS_REGISTER]) );
-  printf("          ARG0_REGISTER@%p = %p\n", reinterpret_cast<void*>(LCC_ARG0_REGISTER*8), ((core::T_O* *)val[0].reg_save_area)[LCC_ARG0_REGISTER] );
-  printf("          ARG1_REGISTER@%p = %p\n", reinterpret_cast<void*>(LCC_ARG1_REGISTER*8), ((core::T_O* *)val[0].reg_save_area)[LCC_ARG1_REGISTER] );
-  printf("          ARG2_REGISTER@%p = %p\n", reinterpret_cast<void*>(LCC_ARG2_REGISTER*8), ((core::T_O* *)val[0].reg_save_area)[LCC_ARG2_REGISTER] );
-  printf("          ARG3_REGISTER@%p = %p\n", reinterpret_cast<void*>(LCC_ARG3_REGISTER*8), ((core::T_O* *)val[0].reg_save_area)[LCC_ARG3_REGISTER] );
+  fprintf(fout,"           gp_offset = %p (%s)\n", reinterpret_cast<void*>(val[0].gp_offset),  atpos );
+  fprintf(fout,"           fp_offset = %p\n", reinterpret_cast<void*>(val[0].fp_offset) );
+  fprintf(fout,"   overflow_arg_area = %p\n", reinterpret_cast<void*>(val[0].overflow_arg_area) );
+  fprintf(fout,"       reg_save_area = %p\n", reinterpret_cast<void*>(val[0].reg_save_area) );
+  fprintf(fout,"---Register save area@%p (NOTE: Often in other stack frame)\n", val[0].reg_save_area);
+  fprintf(fout,"       CLOSURE_REGISTER@%p = %p\n", reinterpret_cast<void*>(LCC_CLOSURE_REGISTER*8), ((core::T_O* *)val[0].reg_save_area)[LCC_CLOSURE_REGISTER] );
+  fprintf(fout,"         NARGS_REGISTER@%p = %zu\n", reinterpret_cast<void*>(LCC_NARGS_REGISTER*8),reinterpret_cast<size_t>(((core::T_O* *)val[0].reg_save_area)[LCC_NARGS_REGISTER]) );
+  fprintf(fout,"          ARG0_REGISTER@%p = %p\n", reinterpret_cast<void*>(LCC_ARG0_REGISTER*8), ((core::T_O* *)val[0].reg_save_area)[LCC_ARG0_REGISTER] );
+  fprintf(fout,"          ARG1_REGISTER@%p = %p\n", reinterpret_cast<void*>(LCC_ARG1_REGISTER*8), ((core::T_O* *)val[0].reg_save_area)[LCC_ARG1_REGISTER] );
+  fprintf(fout,"          ARG2_REGISTER@%p = %p\n", reinterpret_cast<void*>(LCC_ARG2_REGISTER*8), ((core::T_O* *)val[0].reg_save_area)[LCC_ARG2_REGISTER] );
+  fprintf(fout,"          ARG3_REGISTER@%p = %p\n", reinterpret_cast<void*>(LCC_ARG3_REGISTER*8), ((core::T_O* *)val[0].reg_save_area)[LCC_ARG3_REGISTER] );
 };
 
 
 // Return true if the Vaslist is at the head of the list and false if it is used up
-inline bool dump_Vaslist_ptr(Vaslist* args_orig) {
+inline bool dump_Vaslist_ptr(FILE* fout, Vaslist* args_orig) {
   Vaslist args(*args_orig);
-  printf("va_list dump @%p\n", (void*)args_orig);
-  printf("va_list remaining_args = %lu\n", args.remaining_nargs());
+  fprintf(fout,"va_list dump @%p\n", (void*)args_orig);
+  fprintf(fout,"va_list remaining_args = %lu\n", args.remaining_nargs());
   bool atHead = (args.remaining_nargs() != args.total_nargs());
-  dump_va_list((args)._Args);
+  dump_va_list(fout,(args)._Args);
   int iEnd = args.remaining_nargs();
   if (iEnd>CALL_ARGUMENTS_LIMIT) {
     iEnd = 0;
-    printf("%s:%d      args.remaining_nargs()-> %lu !!!!  A BAD VALUE\n", __FILE__, __LINE__, args.remaining_nargs());
+    fprintf(fout,"%s:%d      args.remaining_nargs()-> %lu !!!!  A BAD VALUE\n", __FILE__, __LINE__, args.remaining_nargs());
   }
   for ( int i=0; i<iEnd; ++i ) {
     T_O* arg = args.next_arg_raw();
-    printf("     [%d] --> %p\n", i, arg);
+    fprintf(fout,"     [%d] --> %p\n", i, arg);
   }
   return atHead;
 };
