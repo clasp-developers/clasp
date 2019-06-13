@@ -305,8 +305,6 @@
                            &rest args &key generic-function-name output-path log-gf force-compile)
   (let* ((*log-gf* log-gf)
          (*fastgf-timer-start* (get-internal-real-time))
-         (tree (compile-tree (basic-tree call-history specializer-profile)))
-         (prg (linearize tree))
          (program (compute-dispatch-program call-history specializer-profile)))
     #+(or)
     (when output-path
