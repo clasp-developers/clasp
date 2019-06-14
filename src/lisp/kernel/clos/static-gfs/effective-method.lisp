@@ -64,7 +64,7 @@
                    collect method into before
             else if (equal qualifiers '(:after))
                    collect method into after
-            finally (return (values primary before after)))
+            finally (return (values primary before (nreverse after))))
     (assert (= (length primary) 1))
     (let ((prim (first primary)))
       (if (and (null before) (null after))
