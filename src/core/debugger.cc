@@ -2050,7 +2050,7 @@ void dbg_VaList_sp_describe(T_sp obj) {
   Vaslist vlcopy_s(*vl);
   VaList_sp vlcopy(&vlcopy_s);
   printf("Calling dump_Vaslist_ptr\n");
-  bool atHead = dump_Vaslist_ptr(&vlcopy_s);
+  bool atHead = dump_Vaslist_ptr(stdout,&vlcopy_s);
   if (atHead) {
     for (size_t i(0), iEnd(vlcopy->remaining_nargs()); i < iEnd; ++i) {
       T_sp v = vlcopy->next_arg();
