@@ -531,7 +531,7 @@
                                 #-cst 'cleavir-generate-ast:consider-global))))
        #-cst
        (cleavir-generate-ast:generate-ast
-        (cst:raw form) env clasp-cleavir:*clasp-system* dynenv)
+        (cst:raw cst) env clasp-cleavir:*clasp-system* dynenv)
        #+cst
        (cleavir-cst-to-ast:cst-to-ast
         cst env clasp-cleavir:*clasp-system* dynenv)))
