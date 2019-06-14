@@ -307,15 +307,13 @@
          (*fastgf-timer-start* (get-internal-real-time))
          (program (compute-dispatch-program call-history specializer-profile)))
     (unwind-protect
-         (lambda (core:&va-rest args)
-           (declare (core:lambda-name interpreted-discriminating-function))
-           (clos:interpret-dtree-program program generic-function args))
-         #+(or)
-         (if (or force-compile *fastgf-use-compiler*)
+         (if #+(or)(or force-compile *fastgf-use-compiler*) #-(or)nil
              (cmp:bclasp-compile nil (generate-dispatcher-from-dtree
                                       generic-function dtree
                                       :generic-function-name generic-function-name))
-             (core:make-dtree-interpreter generic-function (compile-interpreted-dtree dtree)))
+             (lambda (core:&va-rest args)
+               (declare (core:lambda-name interpreted-discriminating-function))
+               (clos:interpret-dtree-program program generic-function args)))
       (let ((delta-seconds (/ (float (- (get-internal-real-time) *fastgf-timer-start*) 1d0)
                               internal-time-units-per-second)))
         (generic-function-increment-compilations generic-function)
