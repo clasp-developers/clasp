@@ -2,28 +2,6 @@
 
 . ./lib.sh
 
-# setting up environment for build.
-#
-# There are basically two build modes:
-# - distribution build with everything
-#   in /opt/clasp
-#   That is the default, encoded in
-#   ./env-default.sh
-#   as committed to the git tree
-# - personal build with quicklisp in
-#   ~/quicklisp, including all jupyter
-#   and cando modules
-#   To use this version put
-#   CLASP_QUICKLISP_HOMEDIR=1
-#   in a newly created file
-#   ./env-local.sh
-#
-# Notes:
-# - you can kill variables from
-#   env-default.sh that you do not
-#   like by setting them to the
-#   empty string
-
 # this should exist, it is checked
 # into the git tree
 . ./env-default.sh || exit
