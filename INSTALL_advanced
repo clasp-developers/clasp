@@ -17,6 +17,16 @@ file ./env-local.sh.  It overrides values in the distributed
 env-default.sh.  You should not directly modify the latter because
 that creates a git diff.
 
+Control variables:
+
+  To prevent this script from touching the git trees:
+    CLASP_BUILD_NO_UPDATES=1
+  You need to have checked out git trees.  Neither new
+  checkouts not updates will happen.  That applies to all
+  git trees under control of lib.sh.  At this time it does
+  not apply to sub-trees of Clasp such as SICL.
+
+
 %%
 
 Config examples:
