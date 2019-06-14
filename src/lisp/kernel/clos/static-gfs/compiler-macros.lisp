@@ -18,8 +18,8 @@
                     collect (let ((keyc (ext:constant-form-value key env)))
                               (unless (symbolp keyc)
                                 (return (values nil nil nil nil)))
-                              (list (ext:constant-form-value key env)
-                                    (gensym (symbol-name key))
+                              (list keyc
+                                    (gensym (symbol-name keyc))
                                     form))
                       into x
                   else return (values nil nil nil nil)
