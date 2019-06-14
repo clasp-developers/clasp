@@ -417,7 +417,7 @@ std::string dtree_op_name(int dtree_op) {
 
 
 CL_LAMBDA(program gf args);
-__attribute__((optnone)) CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generic_function,
+CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generic_function,
                                             VaList_sp args) {
   DTILOG(BF("=============================== Entered clos__interpret_dtree_program\n"));
   DTILOG(BF("---- generic function: %s\n") % _safe_rep_(generic_function));
