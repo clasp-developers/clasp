@@ -17,9 +17,9 @@
   ;; but it's rare to define methods on make-instance.
   `(locally
        (declare (notinline make-instance))
-     (make-instance (find-class ',(class-name class)
-                                ,@(loop for key in keys for param in params
-                                        collect `',key collect param)))))
+     (make-instance (find-class ',(class-name class))
+                    ,@(loop for key in keys for param in params
+                            collect `',key collect param))))
 
 (defun initarg-error-form (class bad-initargs)
   ;; TODO: proper error
