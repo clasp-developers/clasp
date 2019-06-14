@@ -337,17 +337,15 @@ namespace core {
 #define DTREE_OP_MISS 0
 #define DTREE_OP_ADVANCE 1
 #define DTREE_OP_TAG_TEST 2
-#define DTREE_OP_HEADER_STAMP_READ 3
-#define DTREE_OP_WHERE_BRANCH 4
-#define DTREE_OP_COMPLEX_STAMP_READ 5
-#define DTREE_OP_LT_BRANCH 6
-#define DTREE_OP_EQ_CHECK 7
-#define DTREE_OP_RANGE_CHECK 8
-#define DTREE_OP_EQL 9
-#define DTREE_OP_SLOT_READ 10
-#define DTREE_OP_SLOT_WRITE 11
-#define DTREE_OP_FAST_METHOD_CALL 12
-#define DTREE_OP_EFFECTIVE_METHOD 13
+#define DTREE_OP_STAMP_READ 3
+#define DTREE_OP_LT_BRANCH 4
+#define DTREE_OP_EQ_CHECK 5
+#define DTREE_OP_RANGE_CHECK 6
+#define DTREE_OP_EQL 7
+#define DTREE_OP_SLOT_READ 8
+#define DTREE_OP_SLOT_WRITE 9
+#define DTREE_OP_FAST_METHOD_CALL 10
+#define DTREE_OP_EFFECTIVE_METHOD 11
 
 #define DTREE_FIXNUM_TAG_OFFSET 1
 #define DTREE_SINGLE_FLOAT_TAG_OFFSET 2
@@ -355,8 +353,8 @@ namespace core {
 #define DTREE_CONS_TAG_OFFSET 4
 #define DTREE_GENERAL_TAG_OFFSET 5
 
-#define DTREE_WHERE_HEADER_OFFSET 1
-#define DTREE_WHERE_OTHER_OFFSET 2
+#define DTREE_READ_HEADER_OFFSET 1
+#define DTREE_READ_OTHER_OFFSET 2
 
 #define DTREE_LT_PIVOT_OFFSET 1
 #define DTREE_LT_LEFT_OFFSET 2
@@ -389,9 +387,7 @@ std::string dtree_op_name(int dtree_op) {
     CASE_OP_NAME(DTREE_OP_MISS);
     CASE_OP_NAME(DTREE_OP_ADVANCE);
     CASE_OP_NAME(DTREE_OP_TAG_TEST);
-    CASE_OP_NAME(DTREE_OP_HEADER_STAMP_READ);
-    CASE_OP_NAME(DTREE_OP_WHERE_BRANCH);
-    CASE_OP_NAME(DTREE_OP_COMPLEX_STAMP_READ);
+    CASE_OP_NAME(DTREE_OP_STAMP_READ);
     CASE_OP_NAME(DTREE_OP_LT_BRANCH);
     CASE_OP_NAME(DTREE_OP_EQ_CHECK);
     CASE_OP_NAME(DTREE_OP_RANGE_CHECK);
@@ -422,8 +418,6 @@ CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generi
   DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*dispatch_args));
   T_sp arg;
   uintptr_t stamp;
-  uintptr_t where;
-  core::General_O* client_ptr;
   size_t ip = 0;
   while (1) {
     size_t op = (*program)[ip].unsafe_fixnum();
@@ -466,31 +460,26 @@ CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generi
         // FIXME: We should be able to specialize on class valist and stuff.
         SIMPLE_ERROR(BF("unknown tag for arg ~s") % arg);
         goto DISPATCH_MISS;
-    case DTREE_OP_HEADER_STAMP_READ:
-        client_ptr = gctools::untag_general<General_O*>((General_O*)arg.raw_());
+    case DTREE_OP_STAMP_READ:
+      {
+        General_O* client_ptr = gctools::untag_general<General_O*>((General_O*)arg.raw_());
         stamp = (uintptr_t)(llvmo::template_read_general_stamp(client_ptr));
-        DTILOG(BF("read header stamp: %s\n") % stamp);
-        ++ip;
-        break;
-    case DTREE_OP_WHERE_BRANCH:
-        where = stamp & gctools::Header_s::where_mask;
-        if (where == gctools::Header_s::header_wtag)
-          ip = (*program)[ip+DTREE_WHERE_HEADER_OFFSET].unsafe_fixnum();
-        else ip += DTREE_WHERE_OTHER_OFFSET;
-        break;
-    case DTREE_OP_COMPLEX_STAMP_READ:
+        uintptr_t where = stamp & gctools::Header_s::where_mask;
         switch (where) {
-        case gctools::Header_s::header_wtag: goto DISPATCH_MISS;  // Redundant?????
+        case gctools::Header_s::header_wtag:
+            ip = (*program)[ip+DTREE_READ_HEADER_OFFSET].unsafe_fixnum(); break;
         case gctools::Header_s::rack_wtag:
-            stamp = (uintptr_t)(llvmo::template_read_rack_stamp(client_ptr)); break;
+            stamp = (uintptr_t)(llvmo::template_read_rack_stamp(client_ptr));
+            ip += DTREE_READ_OTHER_OFFSET; break;
         case gctools::Header_s::wrapped_wtag:
-            stamp = (uintptr_t)(llvmo::template_read_wrapped_stamp(client_ptr)); break;
+            stamp = (uintptr_t)(llvmo::template_read_wrapped_stamp(client_ptr));
+            ip += DTREE_READ_OTHER_OFFSET; break;
         case gctools::Header_s::derivable_wtag:
-            stamp = (uintptr_t)(llvmo::template_read_derived_stamp(client_ptr)); break;
+            stamp = (uintptr_t)(llvmo::template_read_derived_stamp(client_ptr));
+            ip += DTREE_READ_OTHER_OFFSET; break;
         }
-        DTILOG(BF("read complex stamp: %s\n") % stamp);
-        ++ip;
         break;
+      }
     case DTREE_OP_LT_BRANCH:
       {
         // The stamps are from Common Lisp, so they're tagged fixnums. Don't untag.

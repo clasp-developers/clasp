@@ -123,17 +123,15 @@
 ;;; Compiling a basic tree into concrete tests and sundry.
 ;;; The node/possibly DAG here basically forms a slightly weird VM defined as follows.
 ;;; There are two registers, ARG and STAMP. Each node performs an action and then branches.
-;;; (WHERE is also an even more implicit register-
-;;;  used by WHERE-BRANCH and COMPLEX-STAMP-READ.)
 ;;;
 ;;; ADVANCE: assign ARG = get next arg. unconditional jump to NEXT.
 ;;; TAG-TEST: check the tag of ARG. If it's one of the discriminatable tags, jump to the
 ;;;           tag-th entry of the tag-test's vector. Otherwise, jump to the default.
-;;; WHERE-BRANCH: check where of STAMP (a header stamp). If it indicates C++ object,
-;;;               jump to C++. Otherwise jump to OTHER.
-;;;               N.b. this could be expanded into a multi-way branch.
-;;; HEADER-STAMP-READ: assign STAMP = header stamp of ARG. unconditional jump to NEXT.
-;;; COMPLEX-STAMP-READ: assign STAMP = complex stamp of ARG. unconditional jump to NEXT.
+;;; STAMP-READ: assign STAMP = header stamp of ARG. If STAMP indicates a C++
+;;;             object, jump to C++. Otherwise, STAMP = read the complex stamp,
+;;;             then jump to OTHER.
+;;;             NOTE: This could be expanded into a multi-way branch
+;;;             for derivables versus instances, etc.
 ;;; <-BRANCH: If STAMP < PIVOT (a constant), jump to LEFT. Otherwise jump to RIGHT.
 ;;; =-CHECK: If STAMP = PIVOT (a constant), jump to NEXT. Otherwise jump to miss.
 ;;; RANGE-CHECK: If MIN <= STAMP <= MAX (constants), jump to NEXT, otherwise miss.
@@ -143,9 +141,7 @@
 
 (defstruct (advance (:type vector) :named) next)
 (defstruct (tag-test (:type vector) :named) tags default)
-(defstruct (where-branch (:type vector) :named) c++ other)
-(defstruct (header-stamp-read (:type vector) :named) next)
-(defstruct (complex-stamp-read (:type vector) :named) next)
+(defstruct (stamp-read (:type vector) :named) c++ other)
 (defstruct (<-branch (:type vector) :named) pivot left right)
 (defstruct (=-check (:type vector) :named) pivot next)
 (defstruct (range-check (:type vector) :named) min max next)
@@ -160,25 +156,18 @@
 (defun compile-test (test)
   (multiple-value-bind (eqls tags c++-classes other-classes)
       (differentiate-specializers (test-paths test))
-    (let* (;; Convert the classes into ranges.
-           (c++-ranges (classes-to-ranges c++-classes))
-           (other-ranges (classes-to-ranges other-classes))
-           ;; Build our tests, in reverse order so they can refer to their successors.
-           (other-search
-            (if other-classes
-                (make-complex-stamp-read :next (compile-ranges other-ranges))
-                (make-miss)))
-           (c++-search (compile-ranges c++-ranges)) ; header read already
-           (where-test
+    (let* (;; Build our tests, in reverse order so they can refer to their successors.
+           (c++-search (compile-ranges (classes-to-ranges c++-classes)))
+           (other-search (compile-ranges (classes-to-ranges other-classes)))
+           (stamp
              (if (and (miss-p c++-search) (miss-p other-search))
-                 c++-search ; don't bother with a where, miss immediately
-                 (make-header-stamp-read
-                  :next (make-where-branch :c++ c++-search :other other-search))))
+                 c++-search ; no need to branch - miss immediately.
+                 (make-stamp-read :c++ c++-search :other other-search)))
            (tag-test
-             (if (and (miss-p where-test)
+             (if (and (miss-p stamp)
                       (every #'null tags))
-                 where-test ; miss immediately
-                 (compile-tag-test tags where-test))))
+                 stamp ; miss immediately
+                 (compile-tag-test tags stamp))))
       (make-advance
        ;; we do EQL tests before anything else. they could be moved later if we altered
        ;; when eql tests are stored in the call history, i think.
@@ -286,15 +275,23 @@
 ;;;
 
 (defparameter *isa*
-  '((miss 0) (advance 1) (tag-test 2) (header-stamp-read 3) (where-branch 4)
-    (complex-stamp-read 5) (<-branch 6) (=-check 7) (range-check 8) (eql 9)
-    (optimized-slot-reader 10) (optimized-slot-writer 11)
-    (fast-method-call 12) (effective-method-outcome 13)))
+  '((miss 0) (advance 1) (tag-test 2) (stamp-read 3)
+    (<-branch 4) (=-check 5) (range-check 6) (eql 7)
+    (optimized-slot-reader 8) (optimized-slot-writer 9)
+    (fast-method-call 10) (effective-method-outcome 11)))
 
 (defun opcode (inst)
   (or (second (assoc inst *isa*))
       (error "BUG: In fastgf linker, symbol is not an op: ~a" inst)))
 
+;;; Build a linear program (list of opcodes and objects) from a compiled tree.
+;;; We do this in one pass to save memory (an actual problem, if this is done
+;;; naively) and time.
+;;; collect1 collects a new cons with some value. straightforward.
+;;; wait takes a tree, puts a blank cons in the list, puts the tree in a todo
+;;; list, and then returns. once a tree is finished, it does (cont). if there
+;;; is a tree in the todo list, it pops one and sets the corresponding cons
+;;; to have the current ip instead of nil, then continues generating from there.
 (defun linearize (tree)
   (let* ((links nil) (ip 0) (head (list nil)) (tail head))
     (macrolet ((collect1 (x)
@@ -330,16 +327,10 @@
                    (loop for tag across (tag-test-tags tree)
                          do (wait tag))
                    (next (tag-test-default tree)))
-                  ((header-stamp-read-p tree)
-                   (collect (opcode 'header-stamp-read))
-                   (next (header-stamp-read-next tree)))
-                  ((where-branch-p tree)
-                   (collect (opcode 'where-branch))
-                   (wait (where-branch-c++ tree))
-                   (next (where-branch-other tree)))
-                  ((complex-stamp-read-p tree)
-                   (collect (opcode 'complex-stamp-read))
-                   (next (complex-stamp-read-next tree)))
+                  ((stamp-read-p tree)
+                   (collect (opcode 'stamp-read))
+                   (wait (stamp-read-c++ tree))
+                   (next (stamp-read-other tree)))
                   ((<-branch-p tree)
                    (collect (opcode '<-branch)
                             (<-branch-pivot tree))
