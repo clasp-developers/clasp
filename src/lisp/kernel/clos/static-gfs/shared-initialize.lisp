@@ -26,7 +26,7 @@
 (defun default-shared-initialize-form (iform keys params)
   `(locally
        (declare (notinline shared-initialize))
-     (apply #'shared-initialize ,iform ,@(reconstruct-arguments keys params))))
+     (shared-initialize ,iform ,@(reconstruct-arguments keys params))))
 
 (defun initarg-position (initargs keys)
   (position-if (lambda (key) (member key initargs :test #'eq)) keys))

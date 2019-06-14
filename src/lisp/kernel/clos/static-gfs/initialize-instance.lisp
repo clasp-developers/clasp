@@ -16,7 +16,7 @@
 (defun default-initialize-instance-form (iform keys params)
   `(locally
        (declare (notinline initialize-instance))
-     (apply #'initialize-instance ,iform ,@(reconstruct-arguments keys params))))
+     (initialize-instance ,iform ,@(reconstruct-arguments keys params))))
 
 (defun standard-initialize-instance-form (class iform keys params)
   (shared-initialize-form class iform keys params))
