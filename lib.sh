@@ -54,6 +54,7 @@ get_quicklisp_cando ()
     do_git_tree "$CLASP_QUICKLISP_DIRECTORY"/local-projects/usocket https://github.com/clasp-developers/usocket.git master
     do_git_tree "$CLASP_QUICKLISP_DIRECTORY"/local-projects/uuid https://github.com/clasp-developers/uuid.git master
     do_git_tree "$CLASP_QUICKLISP_DIRECTORY"/local-projects/trivial-backtrace https://github.com/clasp-developers/trivial-backtrace master
+    do_git_tree "$CLASP_QUICKLISP_DIRECTORY"/local-projects/esrap https://github.com/cando-developers/esrap master
     do_git_tree "$CLASP_QUICKLISP_DIRECTORY"/local-projects/fep https://github.com/cando-developers/cando-fep
 }
 
