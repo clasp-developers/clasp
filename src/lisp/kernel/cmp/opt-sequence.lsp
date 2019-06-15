@@ -153,7 +153,7 @@
                    (sys:make-vector ',(if (eq element-type '*) t element-type)
                                     (+ ,@(loop for s in symlist
                                                collect `(length ,s))))
-                   ,@sequences))))))))
+                   ,@symlist))))))))
 
 ;;;
 ;;; MAP
