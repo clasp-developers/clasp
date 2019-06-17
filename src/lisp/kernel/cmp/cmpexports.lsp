@@ -262,6 +262,8 @@
             %RUN-AND-LOAD-TIME-VALUE-HOLDER-GLOBAL-VAR-TYPE%
             codegen-startup-shutdown
             compute-rest-alloc
+            compile-tag-check
+            compile-header-check
             )))
 
 ;;; exports for runall

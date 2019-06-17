@@ -3,16 +3,15 @@
 ;;;; Checking the type header of objects.
 ;;; This code is used by both bclasp and cclasp.
 
-(defun base-type-check (object-raw mask ctag then-br else-br)
- ;; object at this point is a smart ptr { {}* }
+(defun compile-tag-check (object-raw mask ctag then-br else-br)
+  ;; object at this point is a smart ptr { {}* }
   (let* ((tag (irc-and (irc-ptr-to-int object-raw %uintptr_t%) (jit-constant-uintptr_t mask) "tag-only"))
          (cmp (irc-icmp-eq tag (jit-constant-uintptr_t ctag) "test")))
     (irc-cond-br cmp then-br else-br)))
 
-
 (defun compile-header-check (header-value-min-max object-raw then-br else-br)
   (let ((header-check-br  (irc-basic-block-create "header-check-br")))
-    (base-type-check object-raw +immediate-mask+ +general-tag+ header-check-br else-br)
+    (compile-tag-check object-raw +immediate-mask+ +general-tag+ header-check-br else-br)
     (irc-begin-block header-check-br)
     (let* ((byte-ptr           (irc-bit-cast object-raw %i8*%))
            (header-addr        (irc-gep byte-ptr (list (jit-constant-i64 (- (+ +header-size+ +general-tag+))))))

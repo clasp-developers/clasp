@@ -600,42 +600,33 @@
 
 (defmethod translate-branch-instruction
     ((instruction cleavir-ir:consp-instruction) return-value successors abi function-info)
-  (let* ((x (in (first (cleavir-ir:inputs instruction))))
-         (tag (cmp:irc-and (cmp:irc-ptr-to-int x cmp:%i32%) (%i32 cmp:+tag-mask+) "tag-only"))
-;;;         (_ (core:debug-message "In consp"))
-         (cmp (cmp:irc-icmp-eq tag (%i32 cmp:+cons-tag+) "consp-test")))
-    (cmp:irc-cond-br cmp (first successors) (second successors))))
+  (cmp:compile-tag-check (in (first (cleavir-ir:inputs instruction)))
+                         cmp:+immediate-mask+ cmp:+cons-tag+
+                         (first successors) (second successors)))
 
 (defmethod translate-branch-instruction
     ((instruction cleavir-ir:fixnump-instruction) return-value successors abi function-info)
-  (let* ((x (in (first (cleavir-ir:inputs instruction))))
-         (tag (cmp:irc-and (cmp:irc-ptr-to-int x cmp:%i32%) (%i32 cmp:+fixnum-mask+) "fixnum-tag-only"))
-         (cmp (cmp:irc-icmp-eq tag (%i32 cmp:+fixnum-tag+) "fixnump-test")))
-    (cmp:irc-cond-br cmp (first successors) (second successors))))
+  (cmp:compile-tag-check (in (first (cleavir-ir:inputs instruction)))
+                         cmp:+fixnum-mask+ cmp:+fixnum-tag+
+                         (first successors) (second successors)))
 
 (defmethod translate-branch-instruction
     ((instruction cc-mir:characterp-instruction) return-value successors abi function-info)
-  (let* ((value     (in (first (cleavir-ir:inputs instruction))))
-         (tag       (cmp:irc-and (cmp:irc-ptr-to-int value cmp:%uintptr_t%)
-                                 (%uintptr_t cmp:+immediate-mask+)
-                                 "character-tag-test"))
-         (cmp (cmp:irc-icmp-eq tag (%uintptr_t cmp:+character-tag+))))
-    (cmp:irc-cond-br cmp (first successors) (second successors))))
+  (cmp:compile-tag-check (in (first (cleavir-ir:inputs instruction)))
+                         cmp:+immediate-mask+ cmp:+character-tag+
+                         (first successors) (second successors)))
 
 (defmethod translate-branch-instruction
     ((instruction cc-mir:single-float-p-instruction) return-value successors abi function-info)
-  (let* ((value     (in (first (cleavir-ir:inputs instruction))))
-         (tag       (cmp:irc-and (cmp:irc-ptr-to-int value cmp:%uintptr_t%)
-                                 (%uintptr_t cmp:+immediate-mask+)
-                                 "single-float-tag-test"))
-         (cmp       (cmp:irc-icmp-eq tag (%uintptr_t cmp:+single-float-tag+))))
-    (cmp:irc-cond-br cmp (first successors) (second successors))))
+  (cmp:compile-tag-check (in (first (cleavir-ir:inputs instruction)))
+                         cmp:+immediate-mask+ cmp:+single-float-tag+
+                         (first successors) (second successors)))
 
 
 (defmethod translate-branch-instruction
     ((instruction cc-mir:headerq-instruction) return-value successors abi function-info)
   (declare (ignore return-value outputs abi function-info))
-  (cmp::compile-header-check
+  (cmp:compile-header-check
    (cc-mir:header-value-min-max instruction)
    (in (first (cleavir-ir:inputs instruction))) (first successors) (second successors)))
 

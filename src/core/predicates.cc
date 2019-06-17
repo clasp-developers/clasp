@@ -50,6 +50,10 @@ THE SOFTWARE.
 
 namespace core {
 
+CL_DEFUN bool core__generalp(T_sp obj) {
+  return gc::IsA<General_sp>(obj);
+}
+
 CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("baseCharP");
