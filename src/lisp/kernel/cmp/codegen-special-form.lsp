@@ -37,6 +37,11 @@
     (cleavir-primop:car codegen-car convert-car)
     (cleavir-primop:cdr codegen-cdr convert-cdr)
     (core:vaslist-pop codegen-vaslist-pop convert-vaslist-pop)
+    (core::header-stamp-case codegen-header-stamp-case convert-header-stamp-case)
+    (core::header-stamp codegen-header-stamp convert-header-stamp)
+    (core::rack-stamp codegen-rack-stamp convert-rack-stamp)
+    (core::derivable-stamp codegen-derivable-stamp convert-derivable-stamp)
+    (core::wrapped-stamp codegen-wrapped-stamp convert-wrapped-stamp)
     (core:instance-stamp codegen-instance-stamp convert-instance-stamp)
     (core:instance-ref codegen-instance-ref convert-instance-ref)
     (core:instance-set codegen-instance-set convert-instance-set)
@@ -932,17 +937,90 @@ jump to blocks within this tagbody."
     (codegen vaslist form env)
     (irc-t*-result (irc-intrinsic "cx_vaslist_pop" (irc-load vaslist)) result)))
 
+;;; (CORE:HEADER-STAMP-CASE stamp b1 b2 b3 b4)
+;;; Branch to one of four places depending on the where tag.
+
+(defun codegen-header-stamp-case (result rest env)
+  (let ((stampf (first rest))
+        (stampt (alloca-t* "stamp"))
+        (derivable (second rest))
+        (derivableb (irc-basic-block-create "derivable"))
+        (rack (third rest))
+        (rackb (irc-basic-block-create "rack"))
+        (wrapped (fourth rest))
+        (wrappedb (irc-basic-block-create "wrapped"))
+        (header (fifth rest))
+        (headerb (irc-basic-block-create "header"))
+        (mergeb (irc-basic-block-create "header-stamp-case-after")))
+    (codegen stampt stampf env)
+    (let* ((stamp-i64 (irc-ptr-to-int (irc-load stampt) %i64%))
+           (where (irc-and stamp-i64 (jit-constant-i64 +where-tag-mask+)))
+           ;; NOTE: Technically should have default block hit an error thing-
+           ;; it ought to be unreachable.
+           (sw (irc-switch where mergeb 4)))
+      (irc-add-case sw (jit-constant-i64 +derivable-where-tag+) derivableb)
+      (irc-add-case sw (jit-constant-i64 +rack-where-tag+) rackb)
+      (irc-add-case sw (jit-constant-i64 +wrapped-where-tag+) wrappedb)
+      (irc-add-case sw (jit-constant-i64 +header-where-tag+) headerb)
+      ;; Now generate all these blocks.
+      (irc-begin-block derivableb)
+      (codegen result derivable env)
+      (irc-branch-if-no-terminator-inst mergeb)
+      (irc-begin-block rackb)
+      (codegen result rack env)
+      (irc-branch-if-no-terminator-inst mergeb)
+      (irc-begin-block wrappedb)
+      (codegen result wrapped env)
+      (irc-branch-if-no-terminator-inst mergeb)
+      (irc-begin-block headerb)
+      (codegen result header env)
+      (irc-branch-if-no-terminator-inst mergeb)
+      ;; Done
+      (irc-begin-block mergeb))))
+
+;;; CORE:HEADER-STAMP
+
+(defun codegen-header-stamp (result rest env)
+  (let ((form (car rest))
+        (object (alloca-t* "read-stamp-obj")))
+    (codegen object form env)
+    (irc-t*-result (irc-header-stamp (irc-load object)) result)))
+
+;;; CORE:RACK-STAMP
+
+(defun codegen-rack-stamp (result rest env)
+  (let ((form (car rest))
+        (object (alloca-t* "read-stamp-obj")))
+    (codegen object form env)
+    (irc-t*-result (irc-rack-stamp (irc-load object)) result)))
+
+;;; CORE:WRAPPED-STAMP
+
+(defun codegen-wrapped-stamp (result rest env)
+  (let ((form (car rest))
+        (object (alloca-t* "read-stamp-obj")))
+    (codegen object form env)
+    (irc-t*-result (irc-wrapped-stamp (irc-load object)) result)))
+
+;;; CORE:DERIVED-STAMP
+
+(defun codegen-derived-stamp (result rest env)
+  (let ((form (car rest))
+        (object (alloca-t* "read-stamp-obj")))
+    (codegen object form env)
+    (irc-t*-result (irc-derived-stamp (irc-load object)) result)))
+
 ;;; CORE:INSTANCE-STAMP
 
 (defun codegen-instance-stamp (result rest env)
   (let ((form (car rest))
-        (object (alloca-t* "instance-stamp-instance")))
+        (object (alloca-t* "read-stamp-obj")))
     (codegen object form env)
-    (irc-read-stamp (irc-load object))
-    (if *test-ir*
-        (let ((new-stamp (irc-read-stamp (irc-load object))))
-          (irc-t*-result (irc-intrinsic "cx_read_stamp" (irc-load object) new-stamp) result))
-        (irc-t*-result (irc-intrinsic "cx_read_stamp" (irc-load object) (jit-constant-i64 0)) result))))
+    (irc-t*-result (irc-intrinsic "cx_read_stamp" (irc-load object)
+                                  (if *test-ir*
+                                      (irc-read-stamp (irc-load object))
+                                      (jit-constant-i64 0)))
+                   result)))
 
 ;;; CORE:INSTANCE-REF
 ;;; the gen- are for cclasp. At the moment they're unused, but that's just because

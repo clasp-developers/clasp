@@ -641,8 +641,37 @@ representing a tagged fixnum."
             (values tag-phi general-done-bb)))))))
 |#
 
+(defun irc-header-stamp (object)
+  (let* ((object* (irc-untag-general object))
+         (byte-ptr (irc-bit-cast object* %i8*%))
+         (byte-addr
+           (irc-gep byte-ptr
+                    (list (jit-constant-i64 (- +header-size+)))))
+         (header-addr (irc-bit-cast byte-addr %t**%)))
+    (irc-load header-addr)))
 
-  
+(defun irc-rack-stamp (object)
+  (let* ((instance (irc-untag-general object))
+         (instance* (irc-bit-cast instance %instance*%))
+         (racks* (irc-struct-gep %instance% instance* +instance.rack-index+))
+         (rack (irc-load racks* "rack-tagged"))
+         (rack* (irc-untag-general rack %rack*%))
+         (stamp* (irc-struct-gep %rack% rack* +rack.stamp-index+))
+         (stamp-fixnum* (irc-bit-cast stamp* %t**%)))
+    (irc-load stamp-fixnum*)))
+
+(defun irc-wrapped-stamp (object)
+  (let* ((wrapped (irc-untag-general object))
+         (wrapped* (irc-bit-cast wrapped %wrapped-pointer*%))
+         (stamp* (irc-struct-gep %wrapped-pointer% wrapped* +wrapped-pointer.stamp-index+))
+         (stamp-fixnum* (irc-bit-cast stamp* %t**%)))
+    (irc-load stamp-fixnum*)))
+
+(defun irc-derived-stamp (object)
+  (let* ((derived (irc-untag-general object))
+         (i8* (irc-bit-cast derived %i8*%)))
+    (irc-intrinsic "cc_read_derivable_cxx_stamp_untagged_object" i8*)))
+
 (defun irc-general-stamp (object)
   (let* ((object* (irc-untag-general object))
          (header-i64* (irc-int-to-ptr (irc-sub (irc-ptr-to-int object* %i64%) (jit-constant-i64 +header-size+)) %i64*%))
@@ -781,12 +810,8 @@ representing a tagged fixnum."
   (llvm-sys:create-br *irbuilder* block))
 
 (defun irc-branch-if-no-terminator-inst (block)
-;;; For now always create a branch - testing if the last instruction
-;;; is a terminator is not a good thing to do
-;;; and it's causing a crash
   (when (not (irc-prev-inst-terminator-inst-p))
-          (llvm-sys:create-br *irbuilder* block))
-  #+(or)(llvm-sys:create-br *irbuilder* block))
+          (llvm-sys:create-br *irbuilder* block)))
 
 (defun irc-add (lhs rhs &optional (label ""))
   (llvm-sys:create-add *irbuilder* lhs rhs label nil nil))
