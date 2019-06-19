@@ -1002,13 +1002,13 @@ jump to blocks within this tagbody."
     (codegen object form env)
     (irc-t*-result (irc-wrapped-stamp (irc-load object)) result)))
 
-;;; CORE:DERIVED-STAMP
+;;; CORE:DERIVABLE-STAMP
 
-(defun codegen-derived-stamp (result rest env)
+(defun codegen-derivable-stamp (result rest env)
   (let ((form (car rest))
         (object (alloca-t* "read-stamp-obj")))
     (codegen object form env)
-    (irc-t*-result (irc-derived-stamp (irc-load object)) result)))
+    (irc-t*-result (irc-derivable-stamp (irc-load object)) result)))
 
 ;;; CORE:INSTANCE-STAMP
 
