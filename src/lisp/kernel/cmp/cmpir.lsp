@@ -861,7 +861,7 @@ Otherwise do a variable shift."
            (llvm-sys:create-store *irbuilder* val destination is-volatile))
           ((llvm-sys:llvmcontext-equal
             (llvm-sys:get-context val-type) (llvm-sys:get-context dest-contained-type))
-           (error "BUG: Mismatch in irc-store between val type ~a and destination contained type ~a%N"
+           (error "BUG: Mismatch in irc-store between val type ~a and destination contained type ~a"
                   val-type dest-contained-type))
           (t
            (error "BUG: Mismatch in irc-store involving the val type ~a and destination type ~a -
