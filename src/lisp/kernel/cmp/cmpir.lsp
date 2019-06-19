@@ -669,8 +669,10 @@ representing a tagged fixnum."
 
 (defun irc-derivable-stamp (object)
   (let* ((derivable (irc-untag-general object))
-         (i8* (irc-bit-cast derivable %i8*%)))
-    (irc-intrinsic "cc_read_derivable_cxx_stamp_untagged_object" i8*)))
+         (i8* (irc-bit-cast derivable %i8*%))
+         (stamp-i64
+           (irc-intrinsic "cc_read_derivable_cxx_stamp_untagged_object" i8*)))
+    (irc-int-to-ptr stamp-i64 %t*% "derivable-stamp")))
 
 (defun irc-general-stamp (object)
   (let* ((object* (irc-untag-general object))
