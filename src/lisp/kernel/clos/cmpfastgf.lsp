@@ -65,8 +65,8 @@
          (declare (ignorable ,@required-args))
          (block ,block-name
            (tagbody
-              ,(generate-node-or-outcome required-args (dtree-root dtree))
-              ;; note: we need generate-node-or-outcome to run to fill *generate-outcomes*.
+              ,(generate-node required-args dtree)
+              ;; note: we need generate-node to run to fill *generate-outcomes*.
               ,@(generate-tagged-outcomes *generate-outcomes* block-name required-args)
             dispatch-miss
               ,@(if need-vaslist-p
@@ -76,25 +76,10 @@
                     `((return-from ,block-name
                         (dispatch-miss-with-args .generic-function. ,@required-args))))))))))
 
-(defun generate-node-or-outcome (arguments node-or-outcome)
-  (if (outcome-p node-or-outcome)
-      (generate-go-outcome node-or-outcome)
-      (generate-node arguments node-or-outcome)))
-
 ;;; outcomes
 ;;; we cache them to avoid generating calls/whatever more than once
-;;; they're generated after all the discrimination code is.
-
-(defun generate-go-outcome (outcome)
-  (ensure-outcome-or-error outcome)
-  (let ((existing (assoc outcome *generate-outcomes* :test #'outcome=)))
-    (if (null existing)
-        ;; no match: put it on there
-        (let ((tag (gensym "OUTCOME")))
-          (push (cons outcome tag) *generate-outcomes*)
-          `(go ,tag))
-        ;; match: goto existing tag
-        `(go ,(cdr existing)))))
+;;; they're generated after all the discrimination code is; the
+;;; discriminating part of the function just jumps to these tags.
 
 (defun generate-tagged-outcomes (list block-name required-arguments)
   (mapcan (lambda (pair)
@@ -103,7 +88,6 @@
                     `(return-from ,block-name
                        ,(generate-outcome required-arguments outcome)))))
           list))
-
 
 (defun generate-outcome (reqargs outcome)
   (cond ((optimized-slot-reader-p outcome)
@@ -183,94 +167,78 @@
 ;;; discrimination
 
 (defun generate-node (arguments node)
-  (let ((arg (pop arguments)))
-    (cond ((skip-node-p node)
-           (generate-skip-node arguments node))
-          ;; We avoid the eql CASE when possible. This isn't really necessary,
-          ;; but let's try to avoid pressuring the optimizer when it's easy.
-          ((has-eql-specializers-p node)
-           `(case ,arg
-              ,@(generate-eql-specializers arguments arg node)
-              (otherwise
-               ,(generate-class-specializers arguments arg node))))
-          (t (generate-class-specializers arguments arg node)))))
+  (cond ((outcome-p node) (generate-go-outcome node))
+        ((advance-p node) (generate-advance arguments node))
+        ((tag-test-p node) (generate-tag-test arguments node))
+        ((stamp-read-p node) (generate-stamp-read arguments node))
+        ((<-branch-p node) (generate-<-branch arguments node))
+        ((=-check-p node) (generate-=-check arguments node))
+        ((range-check-p node) (generate-range-check arguments node))
+        ((eql-search-p node) (generate-eql-search arguments node))
+        ((miss-p node) (generate-miss arguments node))
+        (t (error "BUG: Bad thing to be a dtree node: ~a" node))))
 
-(defun generate-skip-node (arguments node)
-  (let ((skip-node (first (node-class-specializers node))))
-    (generate-node-or-outcome arguments (skip-outcome skip-node))))
+(defun generate-go-outcome (outcome)
+  (let ((existing (assoc outcome *generate-outcomes* :test #'outcome=)))
+    (if (null existing)
+        ;; no match: put it on there
+        (let ((tag (gensym "OUTCOME")))
+          (push (cons outcome tag) *generate-outcomes*)
+          `(go ,tag))
+        ;; match: goto existing tag
+        `(go ,(cdr existing)))))
 
-(defun has-eql-specializers-p (node)
-  (not (zerop (hash-table-count (node-eql-specializers node)))))
+(defun generate-advance (arguments node)
+  `(let ((arg ,(pop arguments)))
+     ,(generate-node arguments (advance-next node))))
 
-(defun generate-eql-specializers (arguments arg node)
-  (declare (ignore arg)) ; just for parity with generate-class-specializers
-  ;; could also loop
-  (let ((result nil))
-    (maphash (lambda (spec outcome)
-               (push (generate-eql-specializer arguments spec outcome) result))
-             (node-eql-specializers node))
-    result))
+(defun generate-tag-test (arguments node)
+  `(cond ,@(loop for next across (tag-test-tags node)
+                 for test in '(core:fixnump consp core:single-float-p characterp)
+                 unless (miss-p next)
+                   collect `((,test arg) ,(generate-node arguments next)))
+         ,@(unless (miss-p (tag-test-default node))
+             `(((core:generalp arg) ,(generate-node arguments (tag-test-default node)))))
+         (t (go dispatch-miss))))
 
-(defun generate-eql-specializer (arguments spec outcome)
-  `((,spec) ,(generate-node-or-outcome arguments outcome)))
+(defun generate-stamp-read (arguments node)
+  `(let ((stamp (core::header-stamp arg)))
+     (let ((stamp (core::header-stamp-case stamp
+                                           (core::derivable-stamp arg)
+                                           (core::rack-stamp arg)
+                                           (core::wrapped-stamp arg)
+                                           ;; we rely on the outcome GO-ing somewhere
+                                           ;; to skip returning from here.
+                                           ,(generate-node arguments (stamp-read-c++ node)))))
+       ,(generate-node arguments (stamp-read-other node)))))
 
-(defun generate-class-specializers (arguments arg node)
-  (let ((stamp-var (gensym "STAMP")))
-    `(let ((,stamp-var ,(generate-read-stamp arg)))
-       ,(generate-class-binary-search arguments (node-class-specializers node) stamp-var))))
+(defun generate-<-branch (arguments node)
+  `(if (cleavir-primop:fixnum-less stamp ,(<-branch-pivot node))
+       ,(generate-node arguments (<-branch-left node))
+       ,(generate-node arguments (<-branch-right node))))
 
-(defun generate-read-stamp (arg)
-  `(core:instance-stamp ,arg))
+(defun generate-=-check (arguments node)
+  `(if (cleavir-primop:fixnum-equal stamp ,(=-check-pivot node))
+       ,(generate-node arguments (=-check-next node))
+       (go dispatch-miss)))
 
-(defun generate-class-binary-search (arguments matches stamp-var)
-  (cond
-    ((null matches)
-     `(go dispatch-miss))
-    ((= (length matches) 1)
-     (let ((match (first matches)))
-       (if (single-p match)
-           `(if (cleavir-primop:fixnum-equal ; =
-                 ,stamp-var ,(range-first-stamp match))
-                ,(generate-node-or-outcome arguments (range-outcome match))
-                (go dispatch-miss))
-           ;; note: the primop needs to be the literal IF condition,
-           ;; so the obvious AND isn't quite going to work.
-           `(if (cleavir-primop:fixnum-not-greater ; <=
-                 ,(range-first-stamp match) ,stamp-var)
-                (if (cleavir-primop:fixnum-not-greater ; <=
-                     ,stamp-var ,(range-last-stamp match))
-                    ,(generate-node-or-outcome arguments (match-outcome match))
-                    (go dispatch-miss))
-                (go dispatch-miss)))))
-    (t
-     (let* ((len-div-2 (floor (length matches) 2))
-            (left-matches (subseq matches 0 len-div-2))
-            (right-matches (subseq matches len-div-2))
-            (right-head (first right-matches))
-            (right-stamp (range-first-stamp right-head)))
-       `(if (cleavir-primop:fixnum-less ; <
-             ,stamp-var ,right-stamp)
-            ,(generate-class-binary-search arguments left-matches stamp-var)
-            ,(generate-class-binary-search arguments right-matches stamp-var))))))
+(defun generate-range-check (arguments node)
+  `(if (cleavir-primop:fixnum-not-greater stamp ,(range-check-max node))
+       (if (cleavir-primop:fixnum-not-greater ,(range-check-min node) stamp)
+           ,(generate-node arguments (range-check-next node))
+           (go dispatch-miss))
+       (go dispatch-miss)))
 
-(defun gather-sorted-outcomes (eql-selectors outcomes)
-  (labels ((extract-outcome (outcome)
-             ;; An outcome is an effective-method or an optimized slot reader or writer.
-             ;; Figure out which case it is and return the effective-method or the
-             ;;   optimization info necessary to evaluate the slot reader or writer.
-             (let ((oc (cdr outcome)))
-               (if (consp oc)
-                   (cdr oc)
-                   oc))))
-    (let ((values nil))
-      (maphash (lambda (k v)
-                 (push (cons v k) values))
-               eql-selectors)
-      (maphash (lambda (k v)
-                   (push (cons v k) values))
-               outcomes)
-      (let ((sorted (sort values #'< :key #'car)))
-        (mapcar #'extract-outcome sorted)))))
+(defun generate-eql-search (arguments node)
+  `(case arg
+     ,@(loop for object across (eql-search-objects node)
+             for next across (eql-search-nexts node)
+             collect `((,object) ,(generate-node arguments next)))
+     (otherwise ,(generate-node arguments (eql-search-default node)))))
+
+(defun generate-miss (arguments node)
+  (declare (ignore arguments node))
+  '(go dispatch-miss))
 
 (defun call-history-needs-vaslist-p (call-history)
   ;; Functions, i.e. method functions or full EMFs, are the only things that need vaslists.
@@ -305,15 +273,17 @@
                            &rest args &key generic-function-name output-path log-gf force-compile)
   (let* ((*log-gf* log-gf)
          (*fastgf-timer-start* (get-internal-real-time))
-         (program (compute-dispatch-program call-history specializer-profile)))
+         (basic (basic-tree call-history specializer-profile))
+         (compiled (compile-tree basic)))
     (unwind-protect
-         (if #+(or)(or force-compile *fastgf-use-compiler*) #-(or)nil
+         (if (or force-compile *fastgf-use-compiler*)
              (cmp:bclasp-compile nil (generate-dispatcher-from-dtree
-                                      generic-function dtree
+                                      generic-function compiled
                                       :generic-function-name generic-function-name))
-             (lambda (core:&va-rest args)
-               (declare (core:lambda-name interpreted-discriminating-function))
-               (clos:interpret-dtree-program program generic-function args)))
+             (let ((program (coerce (linearize compiled) 'vector)))
+               (lambda (core:&va-rest args)
+                 (declare (core:lambda-name interpreted-discriminating-function))
+                 (clos:interpret-dtree-program program generic-function args))))
       (let ((delta-seconds (/ (float (- (get-internal-real-time) *fastgf-timer-start*) 1d0)
                               internal-time-units-per-second)))
         (generic-function-increment-compilations generic-function)
