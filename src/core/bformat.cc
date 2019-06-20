@@ -72,9 +72,9 @@ CL_DEFUN T_sp core__bformat(T_sp destination, const string &original_control, Li
   } else {
     control = original_control;
   }
-  boost::format fmter(control);
   string fmter_str;
   TRY() {
+    boost::format fmter(control);
     for (auto farg : args) {
       T_sp fobj = oCar(farg);
       if (fobj.fixnump()) {
