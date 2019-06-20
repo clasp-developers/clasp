@@ -563,16 +563,16 @@ representing a tagged fixnum."
 (defun irc-real-array-index-offset (tarray)
   (irc-mdarray-slot-value tarray +mdarray._DisplacedIndexOffset-index+ "real-array-displaced-index"))
 
-(defun irc-array-total-size (tarray) (irc-mdarray-slot-value +mdarray._ArrayTotalSize-index+ "array-total-size"))
+(defun irc-array-total-size (tarray)
+  (irc-mdarray-slot-value tarray +mdarray._ArrayTotalSize-index+ "array-total-size"))
 
-(defun irc-array-rank (tarray) (irc-mdarray-slot-value +mdarray._rank-index+ "array-rank"))
+(defun irc-array-rank (tarray)
+  (irc-mdarray-slot-value tarray +mdarray.rank-index+ "array-rank"))
+
 (defun irc-array-dimension (tarray axis)
-  (let* ((tarray* (irc-untag-general tarray %mdarray*%))
-         (axis0* (irc-struct-gep %mdarray% tarray* slot-index))
-         (axisN* (irc-gep slot0* axis)))
-    (irc-load slotN*)))
-
-
+  (let* ((dims (irc-mdarray-slot-value tarray +mdarray.dimensions-index+))
+         (axisN* (irc-gep dims (list axis))))
+    (irc-load axisN*)))
 
 (defparameter *test-ir* t)
 (eval-when (:compile-toplevel :execute :load-toplevel)

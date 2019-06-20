@@ -204,6 +204,11 @@
             irc-untag-cons
             irc-fdefinition
             irc-setf-fdefinition
+            irc-real-array-displacement
+            irc-real-array-index-offset
+            irc-array-total-size
+            irc-array-rank
+            gen-%array-dimension
             jit-constant-i1
             jit-constant-i8
             jit-constant-i32
