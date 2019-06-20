@@ -136,9 +136,11 @@
            (and (consp form)
                 (eq (first form) 'list)
                 (core:proper-list-p (rest form)))))
-    (cond ((member-if #'constant-nil-p lists)
-               ;; Remove NILs
-           `(append ,@(remove-if #'constant-nil-p lists)))
+    (cond ((null lists) 'nil)
+          ((null (cdr lists)) `,(first lists))
+          ((member-if #'constant-nil-p (butlast lists))
+          ;; Remove NILs
+          `(append ,@(remove-if #'constant-nil-p (butlast lists)) ,@(last lists)))
           ((every #'list-form-p lists)
            ;; if we have (append (list ...) (list ...)), simplify to (list ...)
            `(list ,@(loop for (op . args) in lists
