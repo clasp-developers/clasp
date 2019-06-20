@@ -169,13 +169,10 @@ in the generic function lambda-list to the generic function lambda-list"
       (values method-lambda declarations documentation))))
 
 (defun lambda-list-fast-callable-p (lambda-list)
-  ;; We only put in an FMF if we have only required parameters, and few enough
-  ;; that they can be passed in registers (that's what number-of-fixed-arguments is).
-  (and
-   (<= (length lambda-list) core:+number-of-fixed-arguments+)
-   (not (find-if (lambda (sym)
-                   (member sym lambda-list-keywords))
-                 lambda-list))))
+  ;; We only put in an FMF if we have only required parameters.
+  (not (find-if (lambda (sym)
+                  (member sym lambda-list-keywords))
+                lambda-list)))
 
 (defun make-method-lambda (gf method method-lambda env)
   (declare (ignore gf method))
