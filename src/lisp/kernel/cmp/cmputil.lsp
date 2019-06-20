@@ -103,6 +103,9 @@
 (defun warn-undefined-type (spi type)
   (compiler-style-warn spi "Undefined type %s" type))
 
+(defun warn-cannot-coerce (spi type)
+  (compiler-style-warn spi "Cannot coerce to type %s: unknown or not defined for coerce" type))
+
 (defun warn-invalid-number-type (spi type)
   (compiler-warn spi "Invalid number type: %s" type))
 

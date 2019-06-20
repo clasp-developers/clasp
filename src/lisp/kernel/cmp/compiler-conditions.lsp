@@ -86,6 +86,10 @@
     (simple-warning compiler-condition)
   ())
 
+(define-condition simple-compiler-style-warning
+    (core::simple-style-warning compiler-condition)
+  ())
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Redefining some earlier error-noting calls, so that they
@@ -111,6 +115,12 @@
   (warn 'undefined-type-warning
         :name type
         :origin origin))
+
+(defun warn-cannot-coerce (origin type)
+  (warn 'simple-compiler-style-warning
+        :origin origin
+        :format-control "Cannot coerce to type ~s: unknown or not defined for coerce"
+        :format-arguments (list type)))
 
 (defun warn-invalid-number-type (origin type)
   (warn 'simple-compiler-warning

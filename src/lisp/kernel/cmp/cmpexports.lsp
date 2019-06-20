@@ -126,6 +126,7 @@
             compiler-message-file-position
             warn-undefined-global-variable
             warn-undefined-type
+            warn-cannot-coerce
             warn-invalid-number-type
             warn-icsp-iesp-both-specified
             register-global-function-def

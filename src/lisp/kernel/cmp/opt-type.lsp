@@ -399,6 +399,15 @@
                                                  :element-type ',uaet
                                                  :initial-contents ,obj))))
                            (t ; Dunno what's going on. Punt to runtime.
-                            (cmp:warn-undefined-type nil type)
+                            ;; COERCE is actually defined for any type, provided
+                            ;; that type exists: if the object is of the given
+                            ;; type, it is returned, and otherwise a type-error
+                            ;; is signaled. Nonetheless, if we reach here with a
+                            ;; constant type, it's either undefined or does not
+                            ;; have a coercion defined (e.g. INTEGER), which would
+                            ;; be a weird thing to do. So we signal a style-warning.
+                            ;; FIXME: We should differentiate "not defined" and
+                            ;; "no coercion behavior", though.
+                            (cmp:warn-cannot-coerce nil type)
                             (return-from coerce form)))))))))))
       form))
