@@ -86,28 +86,6 @@ BUILTIN_ATTRIBUTES core::T_O** registerReference(core::T_O** register_)
 }
 #endif
 
-
-
-// The following two are only valid for non-simple arrays. Be careful!
-BUILTIN_ATTRIBUTES core::T_O* cc_realArrayDisplacement(core::T_O* tarray) {
-  core::MDArray_O* array = reinterpret_cast<core::MDArray_O*>(gctools::untag_general<core::T_O*>(tarray));
-  return array->realDisplacedTo().raw_();
-}
-BUILTIN_ATTRIBUTES size_t cc_realArrayDisplacedIndexOffset(core::T_O* tarray) {
-  core::MDArray_O* array = reinterpret_cast<core::MDArray_O*>(gctools::untag_general<core::T_O*>(tarray));
-  return array->displacedIndexOffset();
-}
-
-BUILTIN_ATTRIBUTES size_t cc_arrayTotalSize(core::T_O* tarray) {
-  core::MDArray_O* array = reinterpret_cast<core::MDArray_O*>(gctools::untag_general<core::T_O*>(tarray));
-  return array->arrayTotalSize();
-}
-
-BUILTIN_ATTRIBUTES size_t cc_arrayRank(core::T_O* tarray) {
-  core::MDArray_O* array = reinterpret_cast<core::MDArray_O*>(gctools::untag_general<core::T_O*>(tarray));
-  return array->rank();
-}
-
 BUILTIN_ATTRIBUTES size_t cc_arrayDimension(core::T_O* tarray, size_t axis) {
   core::MDArray_O* array = reinterpret_cast<core::MDArray_O*>(gctools::untag_general<core::T_O*>(tarray));
   return array->arrayDimension(axis);
