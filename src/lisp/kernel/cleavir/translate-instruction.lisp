@@ -388,48 +388,35 @@
 (defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir::displacement-instruction) return-value abi function-info)
   (declare (ignore return-value function-info abi))
-  (let ((output (first (cleavir-ir:outputs instruction))))
-    (out (%intrinsic-call "cc_realArrayDisplacement"
-                          (list (in (first (cleavir-ir:inputs instruction))))
-                          (datum-name-as-string output))
-         output)))
+  (out (cmp:irc-real-array-displacement (in (first (cleavir-ir:inputs instruction))))
+       (first (cleavir-ir:outputs instruction))))
 
 (defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir::displaced-index-offset-instruction) return-value abi function-info)
   (declare (ignore return-value function-info abi))
-  (let ((output (first (cleavir-ir:outputs instruction))))
-    (out (cmp:irc-tag-fixnum
-          (%intrinsic-call "cc_realArrayDisplacedIndexOffset"
-                           (list (in (first (cleavir-ir:inputs instruction)))))
-          (datum-name-as-string output))
-         output)))
+  (out (cmp:irc-tag-fixnum
+        (cmp:irc-real-array-index-offset (in (first (cleavir-ir:inputs instruction)))))
+       (first (cleavir-ir:outputs instruction))))
 
 (defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir::array-total-size-instruction) return-value abi function-info)
   (declare (ignore return-value function-info abi))
-  (let ((output (first (cleavir-ir:outputs instruction))))
-    (out (cmp:irc-tag-fixnum
-          (%intrinsic-call "cc_arrayTotalSize"
-                           (list (in (first (cleavir-ir:inputs instruction)))))
-          (datum-name-as-string output))
-         output)))
+  (out (cmp:irc-tag-fixnum
+        (cmp:irc-array-total-size (in (first (cleavir-ir:inputs instruction)))))
+       (first (cleavir-ir:outputs instruction))))
 
 (defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir::array-rank-instruction) return-value abi function-info)
   (declare (ignore return-value function-info abi))
-  (let ((output (first (cleavir-ir:outputs instruction))))
-    (out (cmp:irc-tag-fixnum
-          (%intrinsic-call "cc_arrayRank"
-                           (list (in (first (cleavir-ir:inputs instruction)))))
-          (datum-name-as-string output))
-         output)))
+  (out (cmp:irc-tag-fixnum (cmp:irc-array-rank (in (first (cleavir-ir:inputs instruction)))))
+       (first (cleavir-ir:outputs instruction))))
 
 (defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir::array-dimension-instruction) return-value abi function-info)
   (declare (ignore return-value function-info abi))
   (let ((inputs (cleavir-ir:inputs instruction))
         (output (first (cleavir-ir:outputs instruction))))
-    (out (cmp::gen-%array-dimension (in (first inputs)) (in (second inputs)))
+    (out (cmp:gen-%array-dimension (in (first inputs)) (in (second inputs)))
          output)))
 
 (defmethod translate-simple-instruction
