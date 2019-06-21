@@ -570,8 +570,9 @@ representing a tagged fixnum."
   (irc-mdarray-slot-value tarray +mdarray.rank-index+ "array-rank"))
 
 (defun irc-array-dimension (tarray axis)
-  (let* ((dims (irc-mdarray-slot-value tarray +mdarray.dimensions-index+))
-         (axisN* (irc-gep dims (list axis))))
+  (let* ((tarray* (irc-untag-general tarray %mdarray*%))
+         (dims (irc-struct-gep %mdarray% tarray* +mdarray.dimensions-index+))
+         (axisN* (irc-gep dims (list 0 axis))))
     (irc-load axisN*)))
 
 (defparameter *test-ir* t)
