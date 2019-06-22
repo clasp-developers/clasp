@@ -194,7 +194,7 @@
                         start (1+ start)))
               (incf untransformed-index)))
           ;; ... and copy the elements outside the limits
-           (copy-subarray out start in end l)
+          (copy-subarray out start in end l)
           (values out (+ start (- l end))))))))
 
 (defun remove-list (which sequence start end count test test-not key)
