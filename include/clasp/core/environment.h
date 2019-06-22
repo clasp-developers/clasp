@@ -522,6 +522,8 @@ public:
 public:
   Symbol_sp _BlockSymbol;
   ValueFrame_sp _ActivationFrame;
+  T_sp          _LocalReturnBlock;
+  T_sp          _LocalReturnValue;
 public:
   //	typedef vector<HandlerHolder>::iterator	handlerIterator;
 public:
@@ -545,7 +547,14 @@ public:
 	  that defines it return nil if you don't find it*/
   virtual T_sp find_block_named_environment(Symbol_sp tag) const;
 
-  DEFAULT_CTOR_DTOR(BlockEnvironment_O);
+  CL_DEFMETHOD void setf_LocalReturnBlock(T_sp returnBlock) { this->_LocalReturnBlock = returnBlock; };
+  CL_DEFMETHOD T_sp localReturnBlock() const { return this->_LocalReturnBlock; };
+  CL_DEFMETHOD void setf_LocalReturnValue(T_sp returnValue) { this->_LocalReturnValue = returnValue; };
+  CL_DEFMETHOD T_sp localReturnValue() const { return this->_LocalReturnValue; };
+  
+  BlockEnvironment_O() : _BlockSymbol(_Unbound<Symbol_O>()), _ActivationFrame(_Unbound<ValueFrame_O>()),
+                         _LocalReturnBlock(_Unbound<T_O>()),
+                         _LocalReturnValue(_Unbound<T_O>()) {};
 };
 };
 template <>
@@ -652,7 +661,7 @@ class TagbodyEnvironment_O : public RuntimeVisibleEnvironment_O {
   LISP_CLASS(core, CorePkg, TagbodyEnvironment_O, "TagbodyEnvironment",RuntimeVisibleEnvironment_O);
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
-  DEFAULT_CTOR_DTOR(TagbodyEnvironment_O);
+  TagbodyEnvironment_O() : _LocalBlocks(_Unbound<T_O>()) {};
 
 public: // ctor/dtor for classes with shared virtual base
         //    explicit TagbodyEnvironment_O(core::Instance_sp const& mc) : T_O(mc), Environment(mc) {};
@@ -663,6 +672,7 @@ GCPRIVATE: // instance variables here
   HashTableEq_sp _Tags;
   gctools::Vec0<List_sp> _TagCode;
   ActivationFrame_sp _ActivationFrame;
+  T_sp     _LocalBlocks;
 public: // Codes here
   static TagbodyEnvironment_sp make(T_sp env);
 
@@ -690,6 +700,9 @@ public:
 	  that defines it return nil if you don't find it*/
   virtual T_sp find_tagbody_tag_environment(Symbol_sp tag) const;
 
+  CL_DEFMETHOD void setf_LocalBlocks(T_sp blocks) { this->_LocalBlocks = blocks; };
+  CL_DEFMETHOD T_sp localBlocks() const { return this->_LocalBlocks; };
+  
 }; // TagbodyEnvironment class
 
 }; // core namespace

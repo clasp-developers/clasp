@@ -36,13 +36,6 @@
 (defun irc-single-step-callback (env)
   (irc-intrinsic "singleStepCallback" ))
 
-
-(defun handle-exit-scope (scope-info env)
-  (let ((scope-exit-fn (bformat nil "trace_exit%sScope" (cadr scope-info)))
-	(scope-level (caddr scope-info))
-	(scope-msg (cadddr scope-info)))
-    (irc-intrinsic scope-exit-fn scope-level scope-msg)))
-
 (defun irc-lexical-function-lookup (classified start-env)
   (let* ((depth (third classified))
          (index (fourth classified))
@@ -198,6 +191,12 @@
     (irc-set-renv block-env new-renv)
     (values block-env instr (list parent-renv))))
 
+(defun irc-make-local-block-environment-set-parent (name parent-env)
+  "This returns a block environment that is only good for local return-from's"
+  (let ((block-env (make-block-environment name parent-env)))
+    (core:set-invisible block-env t)
+    (values block-env nil nil)))
+
 (defun irc-set-renv (env renv)
   (set-runtime-environment env renv))
 
@@ -302,18 +301,23 @@
     (codegen unwind-result unwind-form (get-parent-environment env))
     ))
 
-(defun irc-do-unwind-environment (env)
+(defun irc-do-unwind-environment (env &optional verbose)
+  "Unwind the environment and return whatever was unwound"
   (cmp-log "irc-do-unwind-environment for: %s%N" env)
-  (let ((unwind (local-metadata env :unwind)))
+  (let ((unwind (local-metadata env :unwind))
+        unwound-something)
     (dolist (cc unwind)
       (let ((head (car cc)))
 	(cond
 	  ((eq head 'symbolValueRestore)
 	   (cmp-log "popDynamicBinding of %s%N" (cadr cc))
+           (when verbose (core:bformat t "Pop dynamic binding for %s%N" (irc-global-symbol (cadr cc) env)))
+           (setq unwound-something t)
 	   (irc-intrinsic "popDynamicBinding" (irc-global-symbol (cadr cc) env)))
 	  (t (error (bformat nil "Unknown cleanup code: %s" cc))))
-	)))
-  )
+	))
+    (when (and verbose (null unwound-something))
+      (core:bformat t "In irc-do-unwind-environment - nothing was unwound%N"))))
 
 (defun irc-unwind-environment (env)
   (cmp-log "in irc-unwind-environment with: %s u-p-e?: %s%N" (type-of env) (unwind-protect-environment-p env))
@@ -970,9 +974,7 @@ the type LLVMContexts don't match - so they were defined in different threads!"
                        (cmp-log "with-landing-pad around body%N")
                        (progn ,@body))))
                ((cleanup)
-                (irc-cleanup-function-environment ,fn-env)
-                #++(with-landing-pad (irc-get-terminate-landing-pad-block ,fn-env)
-                     (irc-function-cleanup-and-return ,fn-env ,result :return-void ,return-void)))))
+                (irc-cleanup-function-environment ,fn-env))))
            (if ,return-void
                (llvm-sys:create-ret-void *irbuilder*)
                (llvm-sys:create-ret *irbuilder* (irc-load ,result)))
@@ -1165,26 +1167,9 @@ and then the irbuilder-alloca, irbuilder-body."
     (values fn fn-description)))
 
 (defun irc-cleanup-function-environment (env)
-  "Generate the code to cleanup the environment"
-  (if env
-      (progn
-;;	(dbg-pop-invocation-history-stack)
-	(irc-do-unwind-environment env)
-	(let ((cleanup (local-metadata env :cleanup)))
-	  ;;      (cmp-log "Cleaning up env: %s%N" env)
-	  (cmp-log "About to cleanup local-metadata :cleanup --> %s%N" cleanup)
-	  (dolist (cc cleanup)
-	    (let ((h (car cc)))
-	      (cond
-		((functionp h) (funcall h (cadr cc)))
-		((null h) (bformat t "Cleanup code of NIL!!!!!%N"))
-		((eq h 'destructTsp) (irc-dtor "destructTsp" (cadr cc)))
-		((eq h 'destructTmv) (irc-dtor "destructTmv" (cadr cc)))
-		((eq h 'destructAFsp) (irc-dtor "destructAFsp" (cadr cc)))
-		((eq h 'exit-lexical-scope) (handle-exit-scope cc env))
-		((stringp h) (irc-intrinsic h (cadr cc)))
-		(t (break (bformat nil "Unknown cleanup code: %s" h))))
-	      ))))))
+  "This may be deprecated by just calling irc-do-unwind-environment!!!!!!
+  Generate the code to cleanup the environment"
+  (if env (irc-do-unwind-environment env t)))
 
 (defun irc-pointer-cast (from totype &optional (label ""))
   (llvm-sys:create-pointer-cast *irbuilder* from totype label))
@@ -1202,11 +1187,6 @@ and then the irbuilder-alloca, irbuilder-body."
 (defun irc-dtor (name obj)
   (declare (special *compiler-suppress-dtors*))
   (unless *compiler-suppress-dtors* (irc-intrinsic name obj)))
-
-(defun irc-push-cleanup (env cleanup-code)
-  (multiple-value-bind (cleanup-cur found metadata-env)
-      (lookup-metadata env :cleanup)
-    (push-metadata metadata-env :cleanup cleanup-code)))
 
 (defun irc-push-unwind (env unwind-code)
   "Push code that should be executed when this environment is left"
