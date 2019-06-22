@@ -192,9 +192,11 @@
   `(let ((arg ,(pop arguments)))
      ,(generate-node arguments (advance-next node))))
 
+(defvar *ordered-tag-tests* (mapcar #'fourth (llvm-sys:tag-tests)))
+
 (defun generate-tag-test (arguments node)
   `(cond ,@(loop for next across (tag-test-tags node)
-                 for test in '(core:fixnump consp core:single-float-p characterp)
+                 for test in *ordered-tag-tests*
                  unless (miss-p next)
                    collect `((,test arg) ,(generate-node arguments next)))
          ,@(unless (miss-p (tag-test-default node))

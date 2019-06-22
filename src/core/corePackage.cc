@@ -126,6 +126,8 @@ namespace core {
 const char *CorePkg_nicknames[] = {
     "SYSTEM", "sys", "SYS", "si", "SI", "" /*guard*/
 };
+SYMBOL_EXPORT_SC_(CorePkg, fixnump);
+SYMBOL_EXPORT_SC_(CorePkg, single_float_p);
 SYMBOL_EXPORT_SC_(CorePkg, STARuse_cleavir_compilerSTAR);  // nil (clasp) or T (cleavir)
 SYMBOL_EXPORT_SC_(CorePkg, STARstack_top_hintSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_contab_name_PLUS_);
