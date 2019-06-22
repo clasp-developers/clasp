@@ -183,15 +183,18 @@
                   (setf (aref (the vector out) start) elt
                         start (1+ start)))))
           ;; ... now filter the rest
-          (do-subvector (elt in start end :index index)
-            (if (compare which (key elt))
-                (when (zerop (decf %count))
-                  (setf end (1+ index))
-                  (return))
-                (setf (aref (the vector out) start) elt
-                      start (1+ start))))
+          (let ((untransformed-index start))
+            (do-subvector (elt in start end :index index)
+              (if (compare which (key elt))
+                  (when (zerop (decf %count))
+                    ;;; need the index w/o evtl. %DISPLACED-INDEX-OFFSET since it refers to the original array
+                    (setf end (1+ untransformed-index))
+                    (return))
+                  (setf (aref (the vector out) start) elt
+                        start (1+ start)))
+              (incf untransformed-index)))
           ;; ... and copy the elements outside the limits
-          (copy-subarray out start in end l)
+           (copy-subarray out start in end l)
           (values out (+ start (- l end))))))))
 
 (defun remove-list (which sequence start end count test test-not key)
