@@ -268,11 +268,6 @@ T_sp Instance_O::instanceRef(size_t idx) const {
 //  return ((*this->_Rack)[idx+RACK_SLOT_START]);
 }
 T_sp Instance_O::instanceSet(size_t idx, T_sp val) {
-  if (idx==5) {
-    if (val.fixnump() && val.unsafe_fixnum()>65536) {
-      printf("%s:%d Setting slot 5 rack@%p with %s\n", __FILE__, __LINE__, this, _safe_rep_(val).c_str());
-    }
-  }
 #if DEBUG_CLOS >= 2
   printf("\nMLOG SI-INSTANCE-SET[%d] of Instance %p to val: %s\n", idx, (void *)(this), val->__repr__().c_str());
 #endif
