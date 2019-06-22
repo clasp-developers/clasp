@@ -200,10 +200,10 @@ SYMBOL_EXPORT_SC_(KeywordPkg, cons_tag);
 
 CL_DEFUN core::T_sp llvm_sys__tag_tests() {
   ql::list l;
-  l << core::Cons_O::createList(kw::_sym_fixnum_tag,core::make_fixnum(gctools::STAMP_FIXNUM),core::make_fixnum(FIXNUM_TEST));
-  l << core::Cons_O::createList(kw::_sym_single_float_tag,core::make_fixnum(gctools::STAMP_SINGLE_FLOAT),core::make_fixnum(SINGLE_FLOAT_TEST));
-  l << core::Cons_O::createList(kw::_sym_character_tag,core::make_fixnum(gctools::STAMP_CHARACTER),core::make_fixnum(CHARACTER_TEST));
-  l << core::Cons_O::createList(kw::_sym_cons_tag,core::make_fixnum(gctools::STAMP_CONS),core::make_fixnum(CONS_TEST));
+  l << core::Cons_O::createList(kw::_sym_fixnum_tag,core::make_fixnum(gctools::STAMP_FIXNUM),core::make_fixnum(FIXNUM_TEST),core::_sym_fixnump);
+  l << core::Cons_O::createList(kw::_sym_single_float_tag,core::make_fixnum(gctools::STAMP_SINGLE_FLOAT),core::make_fixnum(SINGLE_FLOAT_TEST), core::_sym_single_float_p);
+  l << core::Cons_O::createList(kw::_sym_character_tag,core::make_fixnum(gctools::STAMP_CHARACTER),core::make_fixnum(CHARACTER_TEST), ::cl::_sym_characterp);
+  l << core::Cons_O::createList(kw::_sym_cons_tag,core::make_fixnum(gctools::STAMP_CONS),core::make_fixnum(CONS_TEST), ::cl::_sym_consp);
   return l.cons();
 }
 
