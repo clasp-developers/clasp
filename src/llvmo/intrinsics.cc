@@ -879,10 +879,25 @@ ALWAYS_INLINE core::T_O* to_object_pointer( void * x )
 
 // === END OF CORE TRANSLATORS ===
 
-}; // eytern "C"
+}; // extern "C"
 
 
 
+////////////////////////////////////////////////////////////
+//
+// builtins.cc moved here.
+//
+
+#include <clasp/llvmo/read-stamp.cc>
+
+extern "C" {
+uint64_t cx_read_stamp(core::T_O* obj, uint64_t stamp)
+{
+  uint64_t old_stamp = (uint64_t)llvmo::template_read_stamp<core::T_O>(obj);
+  cc_match((core::T_O*)old_stamp,(core::T_O*)stamp);
+  return old_stamp;
+}
+};
 
 extern "C" {
 core::T_O** lexicalValueReference(size_t depth, size_t index, core::ActivationFrame_O *frameP)

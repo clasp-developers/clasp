@@ -69,15 +69,7 @@ BUILTIN_ATTRIBUTES core::T_O* cx_vaslist_pop(core::T_O *preVaslist)
 };
 
 
-#include <clasp/llvmo/read-stamp.cc>
-
 extern "C" {
-BUILTIN_ATTRIBUTES uint64_t cx_read_stamp(core::T_O* obj, uint64_t stamp)
-{
-  uint64_t old_stamp = (uint64_t)llvmo::template_read_stamp<core::T_O>(obj);
-  cc_match((core::T_O*)old_stamp,(core::T_O*)stamp);
-  return old_stamp;
-}
 
 #if 0
 BUILTIN_ATTRIBUTES core::T_O** registerReference(core::T_O** register_)
