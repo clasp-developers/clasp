@@ -631,9 +631,12 @@ eg:  (f closure-ptr nargs a b c d ...)
 ;;
 ;; The %function% type MUST match the layout and size of Function_O in functor.h
 ;;
-(define-symbol-macro %Function% (llvm-sys:struct-type-get *llvm-context* (list %i8*%    ; vtable
-                                                                               %fn-prototype*%     ; entry
-                                                                               ) nil))
+(define-symbol-macro %Function%
+    (llvm-sys:struct-type-get
+     *llvm-context*
+     (list %i8*%    ; vtable
+           %fn-prototype*%     ; entry
+           ) nil))
 (defconstant +function.entry-index+ 1)
 
 (define-symbol-macro %Function-ptr% (llvm-sys:type-get-pointer-to %Function%))
