@@ -165,24 +165,6 @@ ALWAYS_INLINE core::T_O *cc_makeCell()
   return res.raw_();
 }
 
-ALWAYS_INLINE void cc_writeCell(core::T_O *cell, core::T_O* val)
-{NO_UNWIND_BEGIN();
-  //	core::Cons_sp c = gctools::smart_ptr<core::Cons_O>(reinterpret_cast<core::Cons_O*>(cell));
-  if (!gc::tagged_consp(cell)) {
-    core::T_sp arg((gc::Tagged)cell);
-    intrinsic_error(llvmo::badCell,arg,_Nil<core::T_O>(),_Nil<core::T_O>());
-  }
-  core::Cons_O* cp = reinterpret_cast<core::Cons_O*>(gctools::untag_cons(cell));
-//  core::Cons_sp c = gctools::smart_ptr<core::Cons_O>((gc::Tagged)cell);
-#ifdef DEBUG_CC
-  printf("%s:%d writeCell cell[%p]  val[%p]\n", __FILE__, __LINE__, cell, val);
-#endif
-  cp->setCar(gctools::smart_ptr<core::T_O>((gc::Tagged)ENSURE_VALID_OBJECT(val)));
-  NO_UNWIND_END();
-}
-
-
-
 ALWAYS_INLINE void cc_push_InvocationHistoryFrame(core::T_O* tagged_closure, InvocationHistoryFrame* frame, va_list va_args, size_t nargs)
 {NO_UNWIND_BEGIN();
   core::core__stack_monitor(_Nil<core::T_O>());

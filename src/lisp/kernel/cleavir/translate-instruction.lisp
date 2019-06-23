@@ -214,21 +214,6 @@
     (out result output)))
 
 (defmethod translate-simple-instruction
-    ((instruction cleavir-ir:write-cell-instruction) return-value abi function-info)
-  (let* ((inputs (cleavir-ir:inputs instruction))
-         (cell (in (first inputs) "cell"))
-         (val (in (second inputs) "val")))
-    (%intrinsic-call "cc_writeCell" (list cell val))))
-
-(defmethod translate-simple-instruction
-    ((instruction cleavir-ir:read-cell-instruction) return-value abi function-info)
-  (let* ((cell (in (first (cleavir-ir:inputs instruction)) "cell"))
-         (output (first (cleavir-ir:outputs instruction)))
-         (result (%intrinsic-call
-                  "cc_readCell" (list cell) (datum-name-as-string output))))
-    (out result output)))
-
-(defmethod translate-simple-instruction
     ((instruction cleavir-ir:fetch-instruction) return-value abi function-info)
   (let* ((inputs (cleavir-ir:inputs instruction))
          (output (first (cleavir-ir:outputs instruction)))

@@ -129,12 +129,6 @@ BUILTIN_ATTRIBUTES core::T_O *cc_fetch(core::T_O *tagged_closure, std::size_t id
   return (*c)[idx].raw_();
 }
 
-BUILTIN_ATTRIBUTES core::T_O *cc_readCell(core::T_O *cell)
-{
-  core::Cons_sp cp((gctools::Tagged)cell);
-  return CONS_CAR(cp).raw_();
-}
-
 BUILTIN_ATTRIBUTES core::T_O* bc_function_from_function_designator(core::T_O* function_designator)
 {
   core::T_sp tfunction_designator((gctools::Tagged)function_designator);
