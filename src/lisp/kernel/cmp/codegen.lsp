@@ -24,10 +24,7 @@
                                          code
                                          ;; environment of the lambda
                                          env-around-lambda
-                                         ;; key argument: T if code should be wrapped in a block with block-name
-                                         &key wrap-block ; wrap code in a block
-                                           ;; Name of the block to wrap in
-                                         block-name
+                                         &key
                                          (linkage 'llvm-sys:internal-linkage))
   "This is where llvm::Function are generated from code, declares, 
 lambda-list, environment.
@@ -75,16 +72,11 @@ Could return more functions that provide lambda-list for swank for example"
                        ;; in which case the (with-try ...) can be removed
                        ;; Christian Schafmeister June 2019
                        (if (irc-environment-has-cleanup new-env)
-                           (with-try
-                               (progn
-                                 (if wrap-block
-                                     (codegen-block result (list* block-name (list new-body)) new-env)
-                                     (codegen-progn result (list new-body) new-env)))
+                           (with-try "TRY.func"
+                               (codegen-progn result (list new-body) new-env)
                              ((cleanup)
                               (irc-unwind-environment new-env)))
-                           (if wrap-block
-                               (codegen-block result (list* block-name (list new-body)) new-env)
-                               (codegen-progn result (list new-body) new-env))))))))
+                           (codegen-progn result (list new-body) new-env)))))))
         (cmp-log "About to dump the function constructed by generate-llvm-function-from-code%N")
         (cmp-log-dump-function fn)
         (unless *suppress-llvm-output* (irc-verify-function fn))
@@ -96,15 +88,8 @@ Could return more functions that provide lambda-list for swank for example"
 (defun compile-lambda-function (lambda-or-lambda-block &optional env &key (linkage 'llvm-sys:internal-linkage))
   "Compile a lambda form and return an llvm-ir function that evaluates it.
 Return the same things that generate-llvm-function-from-code returns"
-  (let* (wrap-block block-name lambda-list body lambda-block-name)
-    (if (eq (car lambda-or-lambda-block) 'ext::lambda-block)
-	(setq wrap-block t
-	      block-name (function-block-name (cadr lambda-or-lambda-block))
-	      lambda-block-name (cadr lambda-or-lambda-block) ;; bformat nil "%s" (cadr lambda))
-	      lambda-list (caddr lambda-or-lambda-block)
-	      body (cdddr lambda-or-lambda-block))
-	(setq lambda-list (cadr lambda-or-lambda-block)
-	      body (cddr lambda-or-lambda-block)))
+  (let ((lambda-list (cadr lambda-or-lambda-block))
+	(body (cddr lambda-or-lambda-block)))
     (multiple-value-bind (declares code docstring specials )
 	(process-declarations body t)
       (cmp-log "About to create lambda-list-handler%N")
@@ -114,8 +99,6 @@ Return the same things that generate-llvm-function-from-code returns"
                                         docstring
                                         code
                                         env
-                                        :wrap-block wrap-block
-                                        :block-name block-name
                                         :linkage linkage))))
 
 (defun generate-llvm-function-from-interpreted-function (fn)

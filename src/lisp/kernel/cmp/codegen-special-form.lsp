@@ -381,7 +381,7 @@ env is the parent environment of the (result-af) value frame"
 				 ((eq operator-symbol 'let*) new-env)
 				 (t (error "let/let* doesn't understand operator symbol[~a]" operator-symbol))))
 		 traceid)
-	    (with-try
+	    (with-try "TRY.let/let*"
                 (progn
                   (irc-branch-to-and-begin-block (irc-basic-block-create
                                                   (bformat nil "%s-start" (symbol-name operator-symbol))))
@@ -541,7 +541,7 @@ jump to blocks within this tagbody."
               (make-tagbody-frame-info :tagbody-environment tagbody-env
                                        :make-tagbody-frame-instruction (list instruction (list (irc-load (irc-renv env))))
                                        :initialize-tagbody-closure (list handle (list (irc-renv tagbody-env)))))
-        (with-try
+        (with-try "TRY.tagbody"
             (progn
               (let ((go-blocks nil))
                 (mapl #'(lambda (cur)
@@ -693,7 +693,7 @@ jump to blocks within this tagbody."
                 (setf (block-frame-info-frame-unique-id info) frame-unique-id)
                 (setf (block-frame-info-set-frame-unique-id info) (list set-frame-unique-id (list (jit-constant-size_t frame-unique-id) (irc-load (irc-renv block-env))))))
               (setf (gethash block-env *block-frame-info*) info))
-            (with-try
+            (with-try "TRY.block"
                 (codegen-progn result body block-env)
               ((cleanup)
                (irc-unwind-environment block-env))
@@ -823,7 +823,7 @@ jump to blocks within this tagbody."
 			      ((eq operator-symbol 'flet) env)
 			      ((eq operator-symbol 'labels) function-env)
 			      (t (error "flet/labels doesn't understand operator symbol[~a]" operator-symbol)))))
-	  (with-try
+	  (with-try "TRY.flet/labels"
 	    (progn
 	      (irc-branch-to-and-begin-block (irc-basic-block-create
 					      (bformat nil "%s-start"
