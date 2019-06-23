@@ -308,6 +308,28 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; Converting core::local-tagbody to tagbody
+;;;        and core::local-block to block
+;;;
+
+(defmethod cleavir-generate-ast::convert-special
+    ((symbol (eql 'core::local-tagbody)) form environment (system clasp-cleavir:clasp))
+  (cleavir-generate-ast::convert-special 'tagbody form environment system))
+
+(defmethod cleavir-generate-ast::convert-special
+    ((symbol (eql 'core::local-block)) form environment (system clasp-cleavir:clasp))
+  (cleavir-generate-ast::convert-special 'block form environment system))
+
+(defmethod cleavir-cst-to-ast::convert-special
+    ((symbol (eql 'core::local-tagbody)) cst environment (system clasp-cleavir:clasp))
+  (cleavir-cst-to-ast::convert-special 'tagbody cst environment system))
+
+(defmethod cleavir-cst-to-ast::convert-special
+    ((symbol (eql 'core::local-block)) cst environment (system clasp-cleavir:clasp))
+  (cleavir-cst-to-ast::convert-special 'block cst environment system))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; Converting THROW
 ;;;
 ;;; Convert throw into a call

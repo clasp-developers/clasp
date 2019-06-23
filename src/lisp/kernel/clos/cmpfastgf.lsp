@@ -63,8 +63,8 @@
                            required-args)
                    nil))
          (declare (ignorable ,@required-args))
-         (block ,block-name
-           (tagbody
+         (core::local-block ,block-name
+           (core::local-tagbody
               ,(generate-node required-args dtree)
               ;; note: we need generate-node to run to fill *generate-outcomes*.
               ,@(generate-tagged-outcomes *generate-outcomes* block-name required-args)
