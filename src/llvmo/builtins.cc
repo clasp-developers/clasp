@@ -66,7 +66,6 @@ BUILTIN_ATTRIBUTES core::T_O* cx_vaslist_pop(core::T_O *preVaslist)
   return vaslist->next_arg_raw();
   NO_UNWIND_END();
 }
-};
 
 
 extern "C" {
