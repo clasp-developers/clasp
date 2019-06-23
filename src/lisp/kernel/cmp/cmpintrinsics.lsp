@@ -49,6 +49,15 @@ Set this to other IRBuilders to make code go where you want")
 ;; - ssize_t
 ;; - time_t
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (let* ((module (llvm-create-module (next-run-time-module-name)))
+         (engine-builder (llvm-sys:make-engine-builder module))
+         (target-options (llvm-sys:make-target-options))
+         (_ (llvm-sys:set-target-options engine-builder target-options))
+         (execution-engine (llvm-sys:create engine-builder))
+         (data-layout (llvm-sys:get-data-layout execution-engine)))
+    (defvar *system-data-layout* data-layout)))
+
 (defun llvm-print (msg)
   (irc-intrinsic "debugMessage" (irc-bit-cast (module-make-global-string msg) %i8*%)))
 (defun llvm-print-pointer (msg ptr)
@@ -795,13 +804,9 @@ and initialize it with an array consisting of one function pointer."
 ;;   tsp matches shared_ptr<xxx> and
 ;;   tmv matches multiple_values<xxx>
 ;;
-(let* ((module (llvm-create-module (next-run-time-module-name)))
-       (engine-builder (llvm-sys:make-engine-builder module))
-       (target-options (llvm-sys:make-target-options)))
-  ;; module is invalid after make-engine-builder call
-  (llvm-sys:set-target-options engine-builder target-options)
-  (let* ((execution-engine (llvm-sys:create engine-builder))
-         (data-layout (llvm-sys:get-data-layout execution-engine))
+                                                   
+(progn
+  (let* ((data-layout *system-data-layout*)
          (tsp-size (llvm-sys:data-layout-get-type-alloc-size data-layout %tsp%))
          (tmv-size (llvm-sys:data-layout-get-type-alloc-size data-layout %tmv%))
          (symbol-size (llvm-sys:data-layout-get-type-alloc-size data-layout %symbol%))
