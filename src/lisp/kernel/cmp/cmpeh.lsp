@@ -228,8 +228,8 @@ eg: '(block ((exception var) code...))"
           (*current-function-exn.slot* (alloca-i8* "exn.slot"))
           (*current-function-ehselector.slot* (alloca-i32 "ehselector.slot"))
           (*exception-handler-cleanup-block* (generate-ehcleanup-and-resume-code ,function *current-function-exn.slot* *current-function-ehselector.slot*))
-          (*current-function-terminate-landing-pad* (generate-terminate-code ,function))
-          (*current-unwind-landing-pad-dest* *current-function-terminate-landing-pad*))
+          (*current-function-terminate-landing-pad* nil) ; (generate-terminate-code ,function))
+          (*current-unwind-landing-pad-dest* nil)) ; *current-function-terminate-landing-pad*))
      ,@body))
 
 (defmacro with-try (code &rest catch-clauses)

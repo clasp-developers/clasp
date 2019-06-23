@@ -293,6 +293,10 @@
 ;; Environment unwinding
 ;;
 
+(defun irc-environment-has-cleanup (env)
+  "Return NIL if the environment doesn't need unwinding."
+  (let ((unwind (local-metadata env :unwind)))
+    unwind))
 
 (defun irc-unwind-unwind-protect-environment (env)
   (let ((unwind-form (unwind-protect-environment-cleanup-form env))
@@ -311,13 +315,8 @@
 	(cond
 	  ((eq head 'symbolValueRestore)
 	   (cmp-log "popDynamicBinding of %s%N" (cadr cc))
-           (when verbose (core:bformat t "Pop dynamic binding for %s%N" (irc-global-symbol (cadr cc) env)))
-           (setq unwound-something t)
 	   (irc-intrinsic "popDynamicBinding" (irc-global-symbol (cadr cc) env)))
-	  (t (error (bformat nil "Unknown cleanup code: %s" cc))))
-	))
-    (when (and verbose (null unwound-something))
-      (core:bformat t "In irc-do-unwind-environment - nothing was unwound%N"))))
+	  (t (error (bformat nil "Unknown cleanup code: %s" cc))))))))
 
 (defun irc-unwind-environment (env)
   (cmp-log "in irc-unwind-environment with: %s u-p-e?: %s%N" (type-of env) (unwind-protect-environment-p env))
@@ -573,6 +572,7 @@ representing a tagged fixnum."
 (defun irc-array-rank (tarray)
   (irc-mdarray-slot-value tarray +mdarray.rank-index+ "array-rank"))
 
+(defun irc-array-rank (tarray) (irc-mdarray-slot-value +mdarray.rank-index+ "array-rank"))
 (defun irc-array-dimension (tarray axis)
   (let* ((tarray* (irc-untag-general tarray %mdarray*%))
          (dims (irc-struct-gep %mdarray% tarray* +mdarray.dimensions-index+))
@@ -958,7 +958,8 @@ the type LLVMContexts don't match - so they were defined in different threads!"
               (*gv-current-function-name* (module-make-global-string *current-function-name* "fn-name")))
          (with-irbuilder (*irbuilder-function-body*)
            (with-new-function-prepare-for-try (,fn)
-             (with-try
+             (progn
+;;;             (with-try
                  (with-dbg-function (,function-name
                                   :lineno (core:source-pos-info-lineno core:*current-source-pos-info*)
                                   :linkage-name *current-function-name*
@@ -973,8 +974,9 @@ the type LLVMContexts don't match - so they were defined in different threads!"
                        (or *the-module* (error "with-new-function *the-module* is NIL"))
                        (cmp-log "with-landing-pad around body%N")
                        (progn ,@body))))
-               ((cleanup)
-                (irc-cleanup-function-environment ,fn-env))))
+                 (irc-verify-no-function-environment-cleanup ,fn-env)
+;;;               ((cleanup) (irc-cleanup-function-environment ,fn-env)))
+                 ))
            (if ,return-void
                (llvm-sys:create-ret-void *irbuilder*)
                (llvm-sys:create-ret *irbuilder* (irc-load ,result)))
@@ -1166,10 +1168,14 @@ and then the irbuilder-alloca, irbuilder-body."
          (fn-description (irc-create-function-description llvm-function-name fn module function-info)))
     (values fn fn-description)))
 
+(defun irc-verify-no-function-environment-cleanup (env)
+  (let ((unwind (local-metadata env :unwind)))
+    (when unwind (error "There are clauses in the function environment that need to be evaluated for cleanup: ~a" unwind))))
+
 (defun irc-cleanup-function-environment (env)
   "This may be deprecated by just calling irc-do-unwind-environment!!!!!!
   Generate the code to cleanup the environment"
-  (if env (irc-do-unwind-environment env t)))
+  (if env (irc-do-unwind-environment env)))
 
 (defun irc-pointer-cast (from totype &optional (label ""))
   (llvm-sys:create-pointer-cast *irbuilder* from totype label))

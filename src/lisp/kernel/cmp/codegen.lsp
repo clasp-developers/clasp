@@ -71,13 +71,20 @@ Could return more functions that provide lambda-list for swank for example"
                                            :rest-alloc rest-alloc)))
                      (let ((new-env (bclasp-compile-lambda-list-code fn-env callconv)))
                        (cmp-log "Created new register environment -> %s%N" new-env)
-                       (with-try
-                           (progn
-                             (if wrap-block
-                                 (codegen-block result (list* block-name (list new-body)) new-env)
-                                 (codegen-progn result (list new-body) new-env)))
-                         ((cleanup)
-                          (irc-unwind-environment new-env))))))))
+                       ;; I am not certain - but I suspect that (irc-environment-has-cleanup new-env) is always FALSE
+                       ;; in which case the (with-try ...) can be removed
+                       ;; Christian Schafmeister June 2019
+                       (if (irc-environment-has-cleanup new-env)
+                           (with-try
+                               (progn
+                                 (if wrap-block
+                                     (codegen-block result (list* block-name (list new-body)) new-env)
+                                     (codegen-progn result (list new-body) new-env)))
+                             ((cleanup)
+                              (irc-unwind-environment new-env)))
+                           (if wrap-block
+                               (codegen-block result (list* block-name (list new-body)) new-env)
+                               (codegen-progn result (list new-body) new-env))))))))
         (cmp-log "About to dump the function constructed by generate-llvm-function-from-code%N")
         (cmp-log-dump-function fn)
         (unless *suppress-llvm-output* (irc-verify-function fn))
