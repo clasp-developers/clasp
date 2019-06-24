@@ -253,8 +253,6 @@
                                                      %size_t% ))
          (primitive-unwinds "cc_initialize_closure" %void% (list %t*%
                                                             %size_t% ) :varargs t)
-         (primitive         "cc_fdefinition" %t*% (list %t*%))
-         (primitive         "cc_setfdefinition" %t*% (list %t*%))
          (primitive-unwinds "cc_safe_symbol_value" %t*% (list %t*%))
          (primitive         "cc_setSymbolValue" %void% (list %t*% %t*%))
 

@@ -112,21 +112,6 @@ BUILTIN_ATTRIBUTES core::T_O** activationFrameReferenceFromClosure(core::T_O* cl
   return NULL;
 }
 
-
-BUILTIN_ATTRIBUTES core::T_O *cc_fdefinition(core::T_O *sym)
-{NO_UNWIND_BEGIN_BUILTINS();
-  core::Symbol_O *symP = reinterpret_cast<core::Symbol_O *>(gctools::untag_general<core::T_O *>(sym));
-  return symP->_Function.raw_();
-  NO_UNWIND_END_BUILTINS();
-}
-
-BUILTIN_ATTRIBUTES core::T_O *cc_setfdefinition(core::T_O *sym)
-{NO_UNWIND_BEGIN_BUILTINS();
-  core::Symbol_O *symP = reinterpret_cast<core::Symbol_O *>(gctools::untag_general<core::T_O *>(sym));
-  return symP->_SetfFunction.raw_();
-  NO_UNWIND_END_BUILTINS();
-}
-
 BUILTIN_ATTRIBUTES void* cc_vaslist_va_list_address(core::T_O* vaslist)
 {
   return &(gctools::untag_vaslist(vaslist)->_Args);
