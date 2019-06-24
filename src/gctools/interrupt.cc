@@ -544,7 +544,7 @@ void initialize_unix_signal_handlers() {
         ADD_SIGNAL( SIGWINCH, "SIGWINCH", _Nil<core::T_O>());
 #endif
 #ifdef SIGINFO
-        ADD_SIGNAL( SIGINFO, "SIGINFO", core::_sym_STARinformation_callbackSTAR);
+        ADD_SIGNAL( SIGINFO, "SIGINFO", ext::_sym_information_interrupt);
 #endif
 #ifdef SIGUSR1
         ADD_SIGNAL( SIGUSR1, "SIGUSR1", _Nil<core::T_O>());
@@ -554,7 +554,7 @@ void initialize_unix_signal_handlers() {
         ADD_SIGNAL( SIGUSR2, "SIGUSR2", _Nil<core::T_O>());
 #endif
 #ifdef _TARGET_OS_LINUX
-        ADD_SIGNAL( SIGUSR2, "SIGUSR2", core::_sym_STARinformation_callbackSTAR);
+        ADD_SIGNAL( SIGUSR2, "SIGUSR2", core::_sym_information_interrupt);
 #endif
 #endif
 #ifdef SIGTHR
