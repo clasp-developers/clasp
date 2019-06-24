@@ -104,7 +104,6 @@
      ,@*startup-primitives-as-list*
      ,@'((primitive         "ltvc_lookup_literal" %t*% (list %gcroots-in-module*% %size_t%))
          (primitive         "ltvc_lookup_transient" %t*% (list %gcroots-in-module*% %i8% %size_t%))
-         (primitive         "isTrue" %i32% (list %t*%))
     
          (primitive         "makeCompiledFunction" %t*% (list %fn-prototype*% ; funcPtr
                                                          %i8*% ; function-description

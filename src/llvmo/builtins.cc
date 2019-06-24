@@ -81,12 +81,6 @@ BUILTIN_ATTRIBUTES void cc_simpleBitVectorAset(core::T_O* tarray, size_t index, 
   array->setBit(index, v);
 }
 
-/*! Return i32 1 if (valP) is != nil 0 if it is */
-BUILTIN_ATTRIBUTES int isTrue(core::T_O* valP)
-{
-  return gctools::tagged_nilp<core::T_O*>(valP) ? 0 : 1;
-}
-
 BUILTIN_ATTRIBUTES core::T_O** activationFrameReferenceFromClosure(core::T_O* closureRaw)
 {
   ASSERT(closureRaw);

@@ -473,11 +473,9 @@ env is the parent environment of the (result-af) value frame"
   "Generate code for cond that branches to one of the provided successor blocks"
   (let ((test-temp-store (alloca-t* "if-cond-tsp")))
     (codegen test-temp-store cond env)
-    (let ((test-result (llvm-sys:create-icmp-eq *irbuilder*
-                                                (irc-intrinsic "isTrue" (irc-load test-temp-store))
-                                                (jit-constant-i32 1)
-                                                "ifcond")))
-      (irc-cond-br test-result thenb elseb))))
+    (irc-cond-br
+     (irc-icmp-eq (irc-load test-temp-store) (irc-nil))
+     elseb thenb)))
 
 (defun compile-if-cond (cond env thenb elseb)
   (if (consp cond)
