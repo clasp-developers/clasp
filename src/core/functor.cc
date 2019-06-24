@@ -35,6 +35,7 @@ THE SOFTWARE.
 #include <clasp/core/designators.h>
 #include <clasp/core/primitives.h>
 #include <clasp/core/instance.h>
+#include <clasp/core/compiler.h>
 #include <clasp/core/sourceFileInfo.h>
 #include <clasp/core/activationFrame.h>
 #include <clasp/core/lambdaListHandler.h>
@@ -137,6 +138,26 @@ CL_DEFUN_SETF T_sp setf_function_docstring(T_sp doc, Function_sp func) {
   return doc;
 }
 
+SYMBOL_SC_(CompPkg,vtable);
+SYMBOL_SC_(CompPkg,entry);
+SYMBOL_SC_(CompPkg,function_description);
+SYMBOL_SC_(CorePkg,object_file);
+SYMBOL_SC_(CompPkg,closure_type);
+SYMBOL_SC_(CompPkg,data_length);
+SYMBOL_SC_(CompPkg,data0);
+
+
+CL_DEFUN void core__verify_closure_with_slots(T_sp alist)
+{
+  expect_offset(comp::_sym_entry,alist,offsetof(ClosureWithSlots_O,entry)-gctools::general_tag);
+  expect_offset(comp::_sym_function_description,alist,offsetof(ClosureWithSlots_O,_FunctionDescription)-gctools::general_tag);
+  expect_offset(core::_sym_object_file,alist,offsetof(ClosureWithSlots_O,_ObjectFile)-gctools::general_tag);
+  expect_offset(comp::_sym_closure_type,alist,offsetof(ClosureWithSlots_O,closureType)-gctools::general_tag);
+  expect_offset(comp::_sym_data_length,alist,offsetof(ClosureWithSlots_O,_Slots._Length)-gctools::general_tag);
+  expect_offset(comp::_sym_data0,alist,offsetof(ClosureWithSlots_O,_Slots._Data)-gctools::general_tag);
+}
+
+    
 ClosureWithSlots_sp ClosureWithSlots_O::make_interpreted_closure(T_sp name, T_sp type, T_sp lambda_list, LambdaListHandler_sp lambda_list_handler, T_sp declares, T_sp docstring, T_sp form, T_sp environment, SOURCE_INFO) {
   FileScope_sp sfi = gc::As<FileScope_sp>(core__file_scope(core::make_fixnum(sourceFileInfoHandle)));
   FunctionDescription* interpretedFunctionDescription = makeFunctionDescription(name,lambda_list,docstring,sfi,lineno,column,filePos);

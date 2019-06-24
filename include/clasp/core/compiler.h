@@ -83,6 +83,9 @@ struct MaybeDebugStartup {
 };
 
 
+namespace core {
+void expect_offset(T_sp key, T_sp alist, size_t expected);
+};
 
 typedef void*(*fnStartUp)();
 

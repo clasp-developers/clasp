@@ -67,6 +67,73 @@ Set this to other IRBuilders to make code go where you want")
   (llvm-print msg)
   (irc-intrinsic "debugPrint_size_t" (irc-bit-cast st %i64%)))
 
+
+(defstruct (c++-struct :named (:type vector))
+  name ; The symbol-macro name of the type
+  tag  ; The tag of the objects of this type
+  type-getter ; A single argument lambda that when passed an *llvm-context* returns the type
+  field-offsets
+  field-indices) 
+  
+(defmacro define-c++-struct (name tag fields)
+  "Defines the llvm struct and the dynamic variable OFFSETS.name that contains an alist of field
+names to offsets."
+  (let ((gs-layout (gensym))
+        (gs-field (gensym))
+        (field-index (gensym)))
+    `(progn
+       (define-symbol-macro ,name
+           (llvm-sys:struct-type-get
+            *llvm-context*
+            (list ,@(mapcar #'first fields))
+            nil))
+       (let ((,gs-layout (llvm-sys:data-layout-get-struct-layout *system-data-layout* ,name)))
+         (defparameter ,(intern (core:bformat nil "INFO.%s" (string name)))
+           (make-c++-struct :name ,name
+                            :tag ,tag
+                            :type-getter (lambda (context) (let ((*llvm-context* context)) ,name))
+                            :field-offsets (let ((,field-index 0))
+                                                 (mapcar (lambda (,gs-field)
+                                                           (prog1
+                                                               (cons (second ,gs-field) (- (llvm-sys:struct-layout-get-element-offset ,gs-layout ,field-index) ,tag))
+                                                             (incf ,field-index)))
+                                                         ',fields))
+                            :field-indices (let ((,field-index 0))
+                                                 (mapcar (lambda (,gs-field)
+                                                           (prog1
+                                                               (cons (second ,gs-field) ,field-index)
+                                                             (incf ,field-index)))
+                                                         ',fields))))))))
+
+(defun c++-field-offset (field-name info)
+  "Return the integer byte offset of the field for the c++-struct including the tag"
+  (let* ((entry (assoc field-name (c++-struct-fields-to-offsets info)))
+         (_ (unless entry (error "Could not find field ~a in ~s" field-name info)))
+         (offset (cdr entry)))
+    offset))
+
+(defun c++-field-index (field-name info)
+  "Return the index of the field "
+  (let* ((entry (assoc field-name (c++-struct-fields-to-index info)))
+         (_ (unless entry (error "Could not find field ~a in ~s" field-name info)))
+         (index (cdr entry)))
+    index))
+
+(defun c++-struct-type (struct-info)
+  (funcall (c++-struct-type-getter struct-info) *llvm-context*))
+
+(defun c++-struct*-type (struct-info)
+  (llvm-sys:type-get-pointer-to (funcall (c++-struct-type-getter struct-info) *llvm-context*)))
+  
+(defun c++-field-ptr (struct-info tagged-object field-name)
+  (let* ((tag (c++-struct-tag struct-info))
+         (tagged-object-i64 (irc-ptr-to-int object %i64%))
+         (object-i64 (irc-sub tagged-object-i64 tag))
+         (object (irc-int-to-ptr object-i64 (c++-struct*-type struct-info)))
+         (field-ptr (irc-struct-gep (c++-struct-type struct-info) object (c++-field-index field-name struct-info))))
+    field-ptr))
+
+                                     
 (define-symbol-macro %i1% (llvm-sys:type-get-int1-ty *llvm-context*))
 (define-symbol-macro %i3% (llvm-sys:type-get-int-nty *llvm-context* 3))
 
@@ -261,29 +328,17 @@ Boehm and MPS use a single pointer"
 (defconstant +rack.data-index+ 3)
 
 
-(define-symbol-macro %mdarray%
-  (llvm-sys:struct-type-get
-   *llvm-context*
-   (list %i8*%   ; 0 vtable
-         %size_t% ; 1 _FillPointerOrLengthOrDummy
-         %size_t% ; 2 _ArrayTotalSize
-         %t*%     ; 3 _Data
-         %size_t% ; 4 _DisplacedIndexOffset
-         %size_t% ; 5 _Flags
-         %size_t% ; 6 rank
-         %size_t[0]% ; 7 dimensions
-         )
-   nil))
+(define-c++-struct %mdarray% +general-tag+
+  ((%i8*% vtable)
+   (%size_t% :Fill-Pointer-Or-Length-Or-Dummy)
+   (%size_t% :Array-Total-Size)
+   (%t*%     :Data)
+   (%size_t% :Displaced-Index-Offset)
+   (%size_t% :Flags)
+   (%size_t% :rank)
+   (%size_t[0]% :dimensions)))
+
 (define-symbol-macro %mdarray*% (llvm-sys:type-get-pointer-to %mdarray%))
-
-(defconstant +mdarray._FillPointerOrLengthOrDummy-index+ 1)
-(defconstant +mdarray._ArrayTotalSize-index+ 2)
-(defconstant +mdarray._Data-index+ 3)
-(defconstant +mdarray._DisplacedIndexOffset-index+ 4)
-(defconstant +mdarray._Flags-index+ 5)
-(defconstant +mdarray.rank-index+ 6)
-(defconstant +mdarray.dimensions-index+ 7)
-
 
 (define-symbol-macro %value-frame%
   (llvm-sys:struct-type-get
@@ -670,6 +725,26 @@ eg:  (f closure-ptr nargs a b c d ...)
                                     ) nil ))
 (define-symbol-macro %function-description*% (llvm-sys:type-get-pointer-to %function-description%))
 
+
+
+(define-c++-struct %closure-with-slots% +general-tag+
+  ((%i8*% vtable)
+   (%fn-prototype*% entry)
+   (%function-description*% function-description)
+   (%tsp% core::object-file)
+   (%i32% closure-type)
+   (%size_t% data-length)
+   (%tsp[0]% data0))
+  )
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (verify-closure-with-slots (c++-struct-field-offsets info.%closure-with-slots%)))
+
+(defun %closure-with-slots%.offset-of[n]/t* (index)
+  "This assumes that the t* offset coincides with the tsp start"
+  (let* ((offset-of-data (cdr (assoc 'data0 (c++-struct-field-offsets info.%closure-with-slots%))))
+         (sizeof-element (llvm-sys:data-layout-get-type-alloc-size *system-data-layout* %tsp%)))
+    (+ (* sizeof-element index) offset-of-data)))
+
 ;;
 ;; Define the InvocationHistoryFrame type for LispCompiledFunctionIHF
 ;;
@@ -854,21 +929,7 @@ and initialize it with an array consisting of one function pointer."
            (rack-stamp-offset (llvm-sys:struct-layout-get-element-offset rack-layout +rack.stamp-index+))
            (rack-data-offset (llvm-sys:struct-layout-get-element-offset rack-layout +rack.data-index+)))
       (core:verify-rack-layout rack-stamp-offset rack-data-offset))
-    (let* ((mdarray-layout (llvm-sys:data-layout-get-struct-layout data-layout %mdarray%))
-           (mdarray._FillPointerOrLengthOrDummy-offset (llvm-sys:struct-layout-get-element-offset mdarray-layout +mdarray._FillPointerOrLengthOrDummy-index+))
-           (mdarray._ArrayTotalSize-offset (llvm-sys:struct-layout-get-element-offset mdarray-layout +mdarray._ArrayTotalSize-index+))
-           (mdarray._Data-offset (llvm-sys:struct-layout-get-element-offset mdarray-layout +mdarray._Data-index+))
-           (mdarray._DisplacedIndexOffset-offset (llvm-sys:struct-layout-get-element-offset mdarray-layout +mdarray._DisplacedIndexOffset-index+))
-           (mdarray._Flags-offset (llvm-sys:struct-layout-get-element-offset mdarray-layout +mdarray._Flags-index+))
-           (mdarray.rank-offset (llvm-sys:struct-layout-get-element-offset mdarray-layout +mdarray.rank-index+))
-           (mdarray.dimensions-offset (llvm-sys:struct-layout-get-element-offset mdarray-layout +mdarray.dimensions-index+)))
-      (core:verify-mdarray-layout mdarray._FillPointerOrLengthOrDummy-offset
-                                  mdarray._ArrayTotalSize-offset
-                                  mdarray._Data-offset
-                                  mdarray._DisplacedIndexOffset-offset
-                                  mdarray._Flags-offset
-                                  mdarray.rank-offset
-                                  mdarray.dimensions-offset))
+    (core:verify-mdarray-layout (c++-struct-field-offsets info.%mdarray%))
     (let* ((value-frame-layout (llvm-sys:data-layout-get-struct-layout data-layout %value-frame%))
            (value-frame-parent-offset (llvm-sys:struct-layout-get-element-offset value-frame-layout +value-frame.parent-index+))
            (value-frame-length-offset (llvm-sys:struct-layout-get-element-offset value-frame-layout +value-frame.length-index+))

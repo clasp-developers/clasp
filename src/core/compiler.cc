@@ -1476,6 +1476,22 @@ CL_DEFUN void core__uninstall_sigchld() {
   signal(SIGCHLD, SIG_DFL);
 }
 
+/* Match the offset in the alist to the expected offset
+*/
+void expect_offset(T_sp key, T_sp alist, size_t expected) {
+  List_sp pair = core__alist_assoc_eq(alist,key);
+  if (pair.nilp()) {
+    SIMPLE_ERROR(BF("Could not find key %s in alist %s") % _rep_(key) % _rep_(alist));
+  }
+  T_sp value = CONS_CDR(pair);
+  if (!value.fixnump()) {
+    SIMPLE_ERROR(BF("The value %s in alist %s at key %s must be a fixnum") % _rep_(value) % _rep_(alist) % _rep_(key));
+  }
+  if (value.unsafe_fixnum()!=expected) {
+    SIMPLE_ERROR(BF("The value %s in alist %s at key %s must match the C++ tagged offset of %d") % _rep_(value) % _rep_(alist) % _rep_(key) % expected);
+  }
+}
+
 };
 
 

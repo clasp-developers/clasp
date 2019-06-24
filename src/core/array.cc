@@ -34,6 +34,7 @@ THE SOFTWARE.
 #include <clasp/core/bformat.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/evaluator.h>
+#include <clasp/core/compiler.h>
 #include <clasp/core/numbers.h>
 #include <clasp/core/hashTable.h>
 #include <clasp/core/primitives.h>
@@ -2989,30 +2990,24 @@ CL_DEFUN void core__verify_simple_vector_layout(size_t length_offset, size_t dat
     SIMPLE_ERROR(BF("data_offset %lu does not match cxx_data_offset %lu") % data_offset % cxx_data_offset );
 }
 
+SYMBOL_SC_(KeywordPkg,vtable);
+SYMBOL_SC_(KeywordPkg,FillPointerOrLengthOrDummy);
+SYMBOL_SC_(KeywordPkg,ArrayTotalSize);
+SYMBOL_SC_(KeywordPkg,Data);
+SYMBOL_SC_(KeywordPkg,DisplacedIndexOffset);
+SYMBOL_SC_(KeywordPkg,Flags);
+SYMBOL_SC_(KeywordPkg,Rank);
+SYMBOL_SC_(KeywordPkg,Dimensions);
 
-CL_DEFUN void core__verify_mdarray_layout(size_t FillPointerOfLengthOfDummy_offset, size_t ArrayTotalSize_offset, size_t Data_offset, size_t DisplacedIndexOffset_offset, size_t Flags_offset, size_t rank_offset, size_t dimensions_offset)
+CL_DEFUN void core__verify_mdarray_layout(T_sp alist)
 {
-  size_t cxx_FillPointerOfLengthOfDummy_offset = offsetof(MDArray_O,_FillPointerOrLengthOrDummy);
-  size_t cxx_ArrayTotalSize_offset = offsetof(MDArray_O,_ArrayTotalSize);
-  size_t cxx_Data_offset = offsetof(MDArray_O,_Data);
-  size_t cxx_DisplacedIndexOffset_offset = offsetof(MDArray_O,_DisplacedIndexOffset);
-  size_t cxx_Flags_offset = offsetof(MDArray_O,_Flags);
-  size_t cxx_rank_offset = offsetof(MDArray_O,_Dimensions._Length);
-  size_t cxx_dimensions_offset = offsetof(MDArray_O,_Dimensions._Data);
-  if (FillPointerOfLengthOfDummy_offset!=cxx_FillPointerOfLengthOfDummy_offset)
-    SIMPLE_ERROR(BF("FillPointerOfLengthOfDummy_offset %lu does not match cxx_FillPointerOfLengthOfDummy_offset %lu") % FillPointerOfLengthOfDummy_offset % cxx_FillPointerOfLengthOfDummy_offset );
-  if (ArrayTotalSize_offset!=cxx_ArrayTotalSize_offset)
-    SIMPLE_ERROR(BF("ArrayTotalSize_offset %lu does not match cxx_ArrayTotalSize_offset %lu") % ArrayTotalSize_offset % cxx_ArrayTotalSize_offset );
-  if (Data_offset!=cxx_Data_offset)
-    SIMPLE_ERROR(BF("Data_offset %lu does not match cxx_Data_offset %lu") % Data_offset % cxx_Data_offset );
-  if (DisplacedIndexOffset_offset!=cxx_DisplacedIndexOffset_offset)
-    SIMPLE_ERROR(BF("DisplacedIndexOffset_offset %lu does not match cxx_DisplacedIndexOffset_offset %lu") % DisplacedIndexOffset_offset % cxx_DisplacedIndexOffset_offset );
-  if (Flags_offset!=cxx_Flags_offset)
-    SIMPLE_ERROR(BF("Flags_offset %lu does not match cxx_Flags_offset %lu") % Flags_offset % cxx_Flags_offset );
-  if (rank_offset!=cxx_rank_offset)
-    SIMPLE_ERROR(BF("rank_offset %lu does not match cxx_rank_offset %lu") % rank_offset % cxx_rank_offset );
-  if (dimensions_offset!=cxx_dimensions_offset)
-    SIMPLE_ERROR(BF("dimensions_offset %lu does not match cxx_dimensions_offset %lu") % dimensions_offset % cxx_dimensions_offset );
+  expect_offset(kw::_sym_FillPointerOrLengthOrDummy,alist,offsetof(MDArray_O,_FillPointerOrLengthOrDummy)-gctools::general_tag);
+  expect_offset(kw::_sym_ArrayTotalSize,alist,offsetof(MDArray_O,_ArrayTotalSize)-gctools::general_tag);
+  expect_offset(kw::_sym_Data,alist,offsetof(MDArray_O,_Data)-gctools::general_tag);
+  expect_offset(kw::_sym_DisplacedIndexOffset,alist,offsetof(MDArray_O,_DisplacedIndexOffset)-gctools::general_tag);
+  expect_offset(kw::_sym_Flags,alist,offsetof(MDArray_O,_Flags)-gctools::general_tag);
+  expect_offset(kw::_sym_Rank,alist,offsetof(MDArray_O,_Dimensions._Length)-gctools::general_tag);
+  expect_offset(kw::_sym_Dimensions,alist,offsetof(MDArray_O,_Dimensions._Data)-gctools::general_tag);
 }
 
 
