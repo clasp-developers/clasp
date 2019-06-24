@@ -38,6 +38,7 @@
     (core::%array-dimension codegen-%array-dimension convert-%array-dimension)
     (cleavir-primop:car codegen-car convert-car)
     (cleavir-primop:cdr codegen-cdr convert-cdr)
+    (cleavir-primop:funcall codegen-primop-funcall convert-primop-funcall)
     (core:vaslist-pop codegen-vaslist-pop convert-vaslist-pop)
     (core::header-stamp-case codegen-header-stamp-case convert-header-stamp-case)
     (core::header-stamp codegen-header-stamp convert-header-stamp)
@@ -189,7 +190,7 @@
 (defmacro progv (symbols values &body forms)
   `(core:progv-function ,symbols ,values (lambda () (progn ,@forms))))
 
-;; MULTIPLE-VALUE-CALL
+;;; MULTIPLE-VALUE-CALL
 
 (defun codegen-multiple-value-call (result rest env)
   (with-dbg-lexical-block ()
@@ -1000,6 +1001,20 @@ jump to blocks within this tagbody."
                               (irc-load cons-alloca)
                               (- +cons-cdr-offset+ +cons-tag+)))
                    result)))
+
+;;; CLEAVIR-PRIMOP:FUNCALL
+
+(defun codegen-primop-funcall (result rest env)
+  (let ((func (first rest))
+        (funcy (alloca-t* "function"))
+        (args (rest rest))
+        argsz)
+    (codegen funcy func env)
+    (dolist (arg args)
+      (let ((temp (alloca-t* "arg")))
+        (codegen temp arg env)
+        (push (irc-load temp) argsz)))
+    (irc-funcall result (irc-load funcy) (nreverse argsz))))
 
 ;;; CORE:VASLIST-POP
 
