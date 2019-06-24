@@ -61,7 +61,6 @@ core::T_mv gctools__signal_info(int sig) {
 
 static bool do_interrupt_thread(mp::Process_sp process)
 {
-  printf("%s:%d do_interrupt_thread of process %s\n", __FILE__, __LINE__, _rep_(process).c_str());
   fflush(stdout);
 # ifdef ECL_WINDOWS_THREADS
 #  ifndef ECL_USE_GUARD_PAGE
@@ -104,8 +103,6 @@ static bool do_interrupt_thread(mp::Process_sp process)
   return ok;
 # else
   int signal = global_signal;
-  printf("%s:%d Sending signal %d to thread\n", __FILE__, __LINE__, signal);
-  fflush(stdout);
   if (pthread_kill(process->_Thread,signal)) {
     FElibc_error("Unable to interrupt process ~A", 1,
                  process);
@@ -129,8 +126,6 @@ void clasp_interrupt_process(mp::Process_sp process, core::T_sp function)
          * If FUNCTION is NIL, we just intend to wake up the process
          * from some call to ecl_musleep() Queue the interrupt for any
          * process stage that can potentially receive a signal  */
-  printf("%s:%d clasp_interrupt_process process: %s\n", __FILE__, __LINE__, _rep_(process).c_str());
-  fflush(stdout);
   if (function.notnilp() && (process->_Phase >= mp::Booting)) {
     printf("%s:%d clasp_interrupt_process queuing signal\n", __FILE__, __LINE__);
     function = core::coerce::functionDesignator(function);
@@ -139,12 +134,6 @@ void clasp_interrupt_process(mp::Process_sp process, core::T_sp function)
         /* ... but only deliver if the process is still alive */
   if (process->_Phase == mp::Active) do_interrupt_thread(process);
 }
-
-
-
-
-
-
 
 inline bool interrupts_disabled_by_C() {
   return my_thread_low_level->_DisableInterrupts;
@@ -157,7 +146,6 @@ inline bool interrupts_disabled_by_lisp() {
 
 void handle_signal_now( core::T_sp signal_code, core::T_sp process ) {
   if ( signal_code.fixnump() ) {
-    printf("%s:%d Received a unix signal with code: %lu\n", __FILE__, __LINE__, (size_t)signal_code.unsafe_fixnum());
     core::Symbol_sp handler = gc::As<core::Symbol_sp>(safe_signal_handler(signal_code.unsafe_fixnum()));
     if (handler->fboundp()) {
       core::eval::funcall(handler->symbolFunction());
