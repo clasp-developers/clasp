@@ -38,6 +38,16 @@
                 :offset (- cmp:+cons-cdr-offset+ cmp:+cons-tag+)
                 :outputs nil))
 
+
+(defmethod cleavir-hir-to-mir:specialize ((instr cleavir-ir:fetch-instruction)
+                                          (impl clasp-cleavir:clasp) proc os)
+  (let ((env (first (cleavir-ir:inputs instr)))
+        (idx (cleavir-ir:value (second (cleavir-ir:inputs instr)))))
+    (change-class instr 'cleavir-ir:memref2-instruction
+                  :inputs (list env)
+                  :offset (cmp:%closure-with-slots%.offset-of[n]/t* idx)
+                  :outputs (cleavir-ir:outputs instr))))
+
 (defmethod cleavir-hir-to-mir:specialize ((instr cleavir-ir:read-cell-instruction)
                                           (impl clasp-cleavir:clasp) proc os)
   (change-class instr 'cleavir-ir:memref2-instruction

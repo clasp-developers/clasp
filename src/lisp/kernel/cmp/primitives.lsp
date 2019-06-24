@@ -224,7 +224,6 @@
          (primitive         "cc_ensure_valid_object" %t*% (list %t*%))
          (primitive         "cc_getPointer" %i8*% (list %t*%))
          (primitive-unwinds "cc_makeCell" %t*% nil)
-         (primitive         "cc_fetch" %t*% (list %t*% %size_t%))
          (primitive         "cc_simpleBitVectorAref" %uint% (list %t*% %size_t%))
          (primitive         "cc_simpleBitVectorAset" %void% (list %t*% %size_t% %uint%))
          (primitive         "cc_initialize_gcroots_in_module" %void% (list %gcroots-in-module*% ; holder

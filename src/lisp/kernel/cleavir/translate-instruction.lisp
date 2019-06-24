@@ -214,14 +214,6 @@
     (out result output)))
 
 (defmethod translate-simple-instruction
-    ((instruction cleavir-ir:fetch-instruction) return-value abi function-info)
-  (let* ((inputs (cleavir-ir:inputs instruction))
-         (output (first (cleavir-ir:outputs instruction)))
-         (env (in (first inputs) "env"))
-         (idx (cmp:irc-ptr-to-int (in (second inputs)) cmp:%size_t% "idx")))
-    (out (%intrinsic-call "cc_fetch" (list env idx) (datum-name-as-string output)) output)))
-
-(defmethod translate-simple-instruction
     ((instruction cleavir-ir:fdefinition-instruction) return-value abi function-info)
   ;; How do we figure out if we should use safe or unsafe version
   (let* ((symbol (in (first (cleavir-ir:inputs instruction)) "func-name"))
