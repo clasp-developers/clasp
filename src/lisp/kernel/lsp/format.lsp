@@ -2921,7 +2921,7 @@
              (setq max-req (max 1 sub-max)))
             ((loop for p in (format-directive-params conditional)
                      thereis (or (integerp (cdr p))
-                                 (member (cdr p) '(:remaining :arg) :type #'eq)))
+                                 (member (cdr p) '(:remaining :arg) :test #'eq)))
              (setq min-req 0)
              (setq max-req sub-max))
             (t
