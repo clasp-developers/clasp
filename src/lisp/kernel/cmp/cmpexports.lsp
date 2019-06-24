@@ -288,7 +288,8 @@
           undefined-variable-warning
           undefined-function-warning
           undefined-type-warning
-          redefined-function-warning))
+          redefined-function-warning
+          compiler-macro-expansion-error-warning))
 
 (in-package :literal)
 

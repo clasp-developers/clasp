@@ -30,14 +30,13 @@
    ;; so that COMPILE-FILE can dump error forms properly.
    (%form :reader compiled-program-error-form :initarg :form)
    (%origin :reader compiled-program-error-origin :initarg :origin)
-   (%original-condition :reader compiled-program-error-original-condition
-                        :initarg :condition))
+   (%original-condition :reader original-condition :initarg :condition))
   (:report (lambda (condition stream)
              (format stream "Cannot evaluate form the compiler failed to compile.~@
                              Form:~%  ~a~@
                              Compile-time error:~%  ~a"
                      (compiled-program-error-form condition)
-                     (compiled-program-error-original-condition condition)))))
+                     (original-condition condition)))))
 
 ;;; Abstract class.
 (define-condition compiler-condition (condition)
@@ -81,6 +80,16 @@
                 (file-scope origin))
                (source-pos-info-lineno origin)
                (source-pos-info-column origin))))))
+
+;; not my greatest name, i admit.
+;; this condition is signaled when a compiler-macroexpander signals an error.
+;; it's only a warning because we can ignore the compiler macro.
+(define-condition compiler-macro-expansion-error-warning
+    (warning compiler-condition)
+  ((%original-condition :reader original-condition :initarg :condition))
+  (:report (lambda (condition stream)
+             (format stream "~a~%(Using original form instead.)"
+                     (original-condition condition)))))
 
 (define-condition simple-compiler-warning
     (simple-warning compiler-condition)

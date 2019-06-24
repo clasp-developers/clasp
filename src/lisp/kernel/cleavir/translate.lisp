@@ -565,6 +565,12 @@ COMPILE-FILE will use the default *clasp-env*."
          (lambda (condition)
            (cmp:register-global-function-ref (cleavir-environment:name condition))
            (invoke-restart 'cleavir-cst-to-ast:consider-global)))
+       (cleavir-cst-to-ast:compiler-macro-expansion-error
+         (lambda (condition)
+           (warn 'cmp:compiler-macro-expansion-error-warning
+                 :origin (origin-spi (cst:source (cleavir-cst-to-ast:cst condition)))
+                 :condition condition)
+           (continue condition)))
        (cleavir-cst-to-ast:compilation-program-error #'conversion-error-handler))
     (let ((ast (cleavir-cst-to-ast:cst-to-ast cst env *clasp-system* dynenv)))
       (when *interactive-debug* (draw-ast ast))
