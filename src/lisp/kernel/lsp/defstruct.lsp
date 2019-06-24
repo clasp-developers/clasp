@@ -359,7 +359,7 @@
                                     nil
                                     `((define-setf-expander ,accname (object &environment env)
                                         (get-setf-expansion (list 'nth ,index object) env))))))
-                         (list* `(declaim (ftype (function (,name) ,type) ,accname) ; useless
+                         (list* `(declaim #+(or) (ftype (function (t) ,type) ,accname) ; useless
                                           (inline ,accname))
                                 `(defun ,accname (instance)
                                    (the ,type (nth ,index instance)))
