@@ -555,27 +555,20 @@ representing a tagged fixnum."
 ;;; Array functions
 ;;;
 
-(defun irc-mdarray-slot-value (tarray slot-index &optional (label ""))
-  (let* ((tarray* (irc-untag-general tarray %mdarray*%))
-         (slot* (irc-struct-gep %mdarray% tarray* slot-index)))
-    (irc-load slot* label)))
-  
 (defun irc-real-array-displacement (tarray)
-  (irc-mdarray-slot-value tarray +mdarray._Data-index+ "real-array-displacement"))
+  (irc-load (c++-field-ptr info.%mdarray% tarray :data) "real-array-displacement"))
 
 (defun irc-real-array-index-offset (tarray)
-  (irc-mdarray-slot-value tarray +mdarray._DisplacedIndexOffset-index+ "real-array-displaced-index"))
+  (irc-load (c++-field-ptr info.%mdarray% tarray :displaced-index-offset) "real-array-displaced-index"))
 
 (defun irc-array-total-size (tarray)
-  (irc-mdarray-slot-value tarray +mdarray._ArrayTotalSize-index+ "array-total-size"))
+  (irc-load (c++-field-ptr info.%mdarray% tarray :array-total-size) "array-total-size"))
 
 (defun irc-array-rank (tarray)
-  (irc-mdarray-slot-value tarray +mdarray.rank-index+ "array-rank"))
+  (irc-load (c++-field-ptr info.%mdarray% tarray :rank) "array-rank"))
 
-(defun irc-array-rank (tarray) (irc-mdarray-slot-value +mdarray.rank-index+ "array-rank"))
 (defun irc-array-dimension (tarray axis)
-  (let* ((tarray* (irc-untag-general tarray %mdarray*%))
-         (dims (irc-struct-gep %mdarray% tarray* +mdarray.dimensions-index+))
+  (let* ((dims (c++-field-ptr info.%mdarray% tarray :dimensions))
          (axisN* (irc-gep dims (list 0 axis))))
     (irc-load axisN*)))
 

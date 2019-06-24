@@ -107,14 +107,14 @@ names to offsets."
 
 (defun c++-field-offset (field-name info)
   "Return the integer byte offset of the field for the c++-struct including the tag"
-  (let* ((entry (assoc field-name (c++-struct-fields-to-offsets info)))
+  (let* ((entry (assoc field-name (c++-struct-field-offsets info)))
          (_ (unless entry (error "Could not find field ~a in ~s" field-name info)))
          (offset (cdr entry)))
     offset))
 
 (defun c++-field-index (field-name info)
   "Return the index of the field "
-  (let* ((entry (assoc field-name (c++-struct-fields-to-index info)))
+  (let* ((entry (assoc field-name (c++-struct-field-indices info)))
          (_ (unless entry (error "Could not find field ~a in ~s" field-name info)))
          (index (cdr entry)))
     index))
@@ -127,8 +127,8 @@ names to offsets."
   
 (defun c++-field-ptr (struct-info tagged-object field-name)
   (let* ((tag (c++-struct-tag struct-info))
-         (tagged-object-i64 (irc-ptr-to-int object %i64%))
-         (object-i64 (irc-sub tagged-object-i64 tag))
+         (tagged-object-i64 (irc-ptr-to-int tagged-object %i64%))
+         (object-i64 (irc-sub tagged-object-i64 (jit-constant-i64 tag)))
          (object (irc-int-to-ptr object-i64 (c++-struct*-type struct-info)))
          (field-ptr (irc-struct-gep (c++-struct-type struct-info) object (c++-field-index field-name struct-info))))
     field-ptr))
