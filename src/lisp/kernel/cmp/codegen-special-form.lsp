@@ -886,9 +886,6 @@ jump to blocks within this tagbody."
 
 (defun gen-%array-dimension (array axisn)
   (let* ((untagged-axisn (irc-untag-fixnum axisn %i64% "untagged-axisn"))
-         (untagged-dim (irc-intrinsic-call "cc_arrayDimension"
-                                           (list array untagged-axisn)))
-         #+(or)
          (untagged-dim (irc-array-dimension array untagged-axisn)))
     (irc-tag-fixnum untagged-dim "array-dimension")))
 
