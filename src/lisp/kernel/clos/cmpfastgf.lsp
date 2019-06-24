@@ -149,7 +149,7 @@
 
 (defun generate-fast-method-call (arguments outcome)
   (let ((fmf (fast-method-call-function outcome)))
-    `(funcall ,fmf ,@arguments)))
+    `(cleavir-primop:funcall ,fmf ,@arguments)))
 
 (defun generate-effective-method-call (outcome)
   `(progn
@@ -161,7 +161,8 @@
      ;; but I'm not holding my breath here- the backup is probably fine.
      ,(cond ((effective-method-outcome-form outcome))
             ((functionp (effective-method-outcome-function outcome))
-             `(funcall ,(effective-method-outcome-function outcome) .method-args. nil))
+             `(cleavir-primop:funcall
+               ,(effective-method-outcome-function outcome) .method-args. nil))
             (t (error "BUG: Outcome ~a is messed up" outcome)))))
 
 ;;; discrimination
