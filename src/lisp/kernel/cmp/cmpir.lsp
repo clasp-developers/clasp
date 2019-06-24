@@ -951,25 +951,21 @@ the type LLVMContexts don't match - so they were defined in different threads!"
               (*gv-current-function-name* (module-make-global-string *current-function-name* "fn-name")))
          (with-irbuilder (*irbuilder-function-body*)
            (with-new-function-prepare-for-try (,fn)
-             (progn
-;;;             (with-try
-                 (with-dbg-function (,function-name
-                                  :lineno (core:source-pos-info-lineno core:*current-source-pos-info*)
-                                  :linkage-name *current-function-name*
-                                  :function ,fn
-                                  :function-type ,function-type)
-                   (with-dbg-lexical-block (:lineno (core:source-pos-info-lineno core:*current-source-pos-info*))
-                     (when core:*current-source-pos-info*
-                       (let ((lineno (core:source-pos-info-lineno core:*current-source-pos-info*)))
-                         (dbg-set-irbuilder-source-location-impl ,irbuilder-alloca lineno 0 *dbg-current-scope*)
-                         (dbg-set-irbuilder-source-location-impl ,irbuilder-body lineno 0 *dbg-current-scope*)))
-                     (with-irbuilder (*irbuilder-function-body*)
-                       (or *the-module* (error "with-new-function *the-module* is NIL"))
-                       (cmp-log "with-landing-pad around body%N")
-                       (progn ,@body))))
-                 (irc-verify-no-function-environment-cleanup ,fn-env)
-;;;               ((cleanup) (irc-cleanup-function-environment ,fn-env)))
-                 ))
+             (with-dbg-function (,function-name
+                                 :lineno (core:source-pos-info-lineno core:*current-source-pos-info*)
+                                 :linkage-name *current-function-name*
+                                 :function ,fn
+                                 :function-type ,function-type)
+               (with-dbg-lexical-block (:lineno (core:source-pos-info-lineno core:*current-source-pos-info*))
+                 (when core:*current-source-pos-info*
+                   (let ((lineno (core:source-pos-info-lineno core:*current-source-pos-info*)))
+                     (dbg-set-irbuilder-source-location-impl ,irbuilder-alloca lineno 0 *dbg-current-scope*)
+                     (dbg-set-irbuilder-source-location-impl ,irbuilder-body lineno 0 *dbg-current-scope*)))
+                 (with-irbuilder (*irbuilder-function-body*)
+                   (or *the-module* (error "with-new-function *the-module* is NIL"))
+                   (cmp-log "with-landing-pad around body%N")
+                   (progn ,@body))))
+             (irc-verify-no-function-environment-cleanup ,fn-env))
            (if ,return-void
                (llvm-sys:create-ret-void *irbuilder*)
                (llvm-sys:create-ret *irbuilder* (irc-load ,result)))

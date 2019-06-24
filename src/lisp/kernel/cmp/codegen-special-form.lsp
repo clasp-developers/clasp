@@ -372,17 +372,23 @@ env is the parent environment of the (result-af) value frame"
 			   env
 			   :number-of-arguments (number-of-lexical-variables lambda-list-handler) ;; lambda-list-handler lambda-list-handler
 			   :label (symbol-name operator-symbol)))
-		 ;; There is a huge problem with setting evaluate-env for 'let
-		 ;; in that the let evaluate-environment is not the same environment
-		 ;; used by with-try and codegen-fill-let/let*-environment
-		 ;; The problem is that the code generated within codegen-fill-let/let*-environment
-		 ;; connects to the env dispatcher rather than the new-env dispatcher
 		 (evaluate-env (cond
 				 ((eq operator-symbol 'let) env) ;;; This is a problem right here
 				 ((eq operator-symbol 'let*) new-env)
 				 (t (error "let/let* doesn't understand operator symbol[~a]" operator-symbol))))
 		 traceid)
-	    (with-try "TRY.let/let*"
+            (if (core:special-variables lambda-list-handler)
+                (with-try "TRY.let/let*"
+                  (progn
+                    (irc-branch-to-and-begin-block (irc-basic-block-create
+                                                    (bformat nil "%s-start" (symbol-name operator-symbol))))
+                    (if (eq operator-symbol 'let)
+                        (codegen-fill-let-environment new-env lambda-list-handler expressions env evaluate-env)
+                        (codegen-fill-let*-environment new-env lambda-list-handler expressions env evaluate-env))
+                    (cmp-log "About to evaluate codegen-progn%N")
+                    (codegen-progn result code new-env))
+	          ((cleanup)
+	           (irc-unwind-environment new-env)))
                 (progn
                   (irc-branch-to-and-begin-block (irc-basic-block-create
                                                   (bformat nil "%s-start" (symbol-name operator-symbol))))
@@ -390,13 +396,7 @@ env is the parent environment of the (result-af) value frame"
                       (codegen-fill-let-environment new-env lambda-list-handler expressions env evaluate-env)
                       (codegen-fill-let*-environment new-env lambda-list-handler expressions env evaluate-env))
                   (cmp-log "About to evaluate codegen-progn%N")
-                  (codegen-progn result code new-env))
-	      ((cleanup)
-               ;;               (dbg-set-activation-frame-for-ihs-top (irc-renv new-env))
-	       (irc-unwind-environment new-env)
-	       ))
-	    )
-	  ))))
+                  (codegen-progn result code new-env))))))))
   (cmp-log "Done codegen-let/let*%N"))
 
 (defun codegen-let (result rest env)
@@ -822,17 +822,12 @@ jump to blocks within this tagbody."
 			      ((eq operator-symbol 'flet) env)
 			      ((eq operator-symbol 'labels) function-env)
 			      (t (error "flet/labels doesn't understand operator symbol[~a]" operator-symbol)))))
-	  (with-try "TRY.flet/labels"
-	    (progn
-	      (irc-branch-to-and-begin-block (irc-basic-block-create
-					      (bformat nil "%s-start"
-						       (symbol-name operator-symbol))))
-	      (codegen-fill-function-frame operator-symbol function-env functions env evaluate-env)
-;;              (dbg-set-activation-frame-for-ihs-top (irc-renv function-env))
-	      (codegen-progn result code function-env))
-	    ((cleanup)
-	     (irc-unwind-environment function-env)))
-	  )))))
+	  (irc-branch-to-and-begin-block (irc-basic-block-create
+					  (bformat nil "%s-start"
+						   (symbol-name operator-symbol))))
+	  (codegen-fill-function-frame operator-symbol function-env functions env evaluate-env)
+          ;;              (dbg-set-activation-frame-for-ihs-top (irc-renv function-env))
+	  (codegen-progn result code function-env))))))
 
 (defun codegen-flet (result rest env)
   (codegen-flet/labels 'flet result rest env))

@@ -1390,6 +1390,18 @@ CL_DEFMETHOD List_sp LambdaListHandler_O::namesOfLexicalVariables() const {
   return cl__nreverse(namesRev);
 }
 
+
+CL_LISPIFY_NAME("special-variables");
+CL_DEFMETHOD List_sp LambdaListHandler_O::specialVariables() const {
+  List_sp namesRev = _Nil<T_O>();
+  for (auto cur : this->_ClassifiedSymbolList) {
+    if (oCar(oCar(cur)) == ext::_sym_specialVar) {
+      namesRev = Cons_O::create(oCadr(oCar(cur)), namesRev);
+    }
+  }
+  return cl__nreverse(namesRev);
+}
+
 void LambdaListHandler_O::calculateNamesOfLexicalVariablesForDebugging() {
   List_sp names = this->namesOfLexicalVariables();
   this->_LexicalVariableNamesForDebugging = ComplexVector_T_O::make(cl__length(names),_Nil<T_O>());
