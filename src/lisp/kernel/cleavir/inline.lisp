@@ -595,6 +595,7 @@
 
 ;; FIXME: This could be a function returning two values. But that's
 ;; quite inefficient at the moment.
+;; FIXME: Duplicate code from seqmacros.lsp.
 (defmacro with-array-data ((arrayname offsetname array) &body body)
   `(let ((,arrayname ,array) (,offsetname 0))
      (declare (type fixnum ,offsetname))
