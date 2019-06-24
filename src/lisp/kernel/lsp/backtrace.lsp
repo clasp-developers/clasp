@@ -230,7 +230,8 @@ Set gather-all-frames to T and you can gather C++ and Common Lisp frames"
              ,@body)))
      (core:trigger-dtrace-stop)))
 
-(defparameter core:*information-callback* 'core:safe-backtrace)
+(defun ext:information-interrupt (&rest args)
+  (core:safe-backtrace))
 
 (in-package :ext)
 
