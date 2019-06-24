@@ -552,7 +552,7 @@ The passed module is modified as a side-effect."
 	  t)
 
 
-(defun link-inline-remove-builtins (module)
+#+(or)(defun link-inline-remove-builtins (module)
   (when (>= *optimization-level* 2)
     (with-track-llvm-time
         (link-builtins-module module)
@@ -636,8 +636,10 @@ The passed module is modified as a side-effect."
   (defun jit-add-module-return-function (original-module main-fn startup-fn shutdown-fn literals-list
                                          &key output-path)
     ;; Link the builtins into the module and optimize them
-    (quick-module-dump original-module "before-link-builtins")
-    (link-inline-remove-builtins original-module)
+    #+(or)
+    (progn
+      (quick-module-dump original-module "before-link-builtins")
+      (link-inline-remove-builtins original-module))
     (quick-module-dump original-module "module-before-optimize")
     (let ((module original-module))
       (irc-verify-module-safe module)

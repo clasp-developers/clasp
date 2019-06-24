@@ -250,6 +250,7 @@ Compile a lisp source file into an LLVM module."
                                                 :position image-startup-position
                                                 :register-library t)
             ;; (3) If optimize ALWAYS link the builtins in, inline them and then remove them - then optimize.
+            #+(or)
             (if (> optimize-level 0)
                 (link-inline-remove-builtins *the-module*)))
           ;; Now at the end of with-module another round of optimization is done

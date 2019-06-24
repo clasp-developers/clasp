@@ -49,7 +49,7 @@
           (irc-verify-module-safe module)
           (quick-module-dump module (format nil "preoptimize~a" (ast-job-form-index job)))
           ;; ALWAYS link the builtins in, inline them and then remove them.
-          (link-inline-remove-builtins module))
+          #+(or)(link-inline-remove-builtins module))
         (cond
           ((eq intermediate-output-type :object)
            (let ((object-file-path (make-pathname :type "o" :defaults (ast-job-form-output-path job))))
