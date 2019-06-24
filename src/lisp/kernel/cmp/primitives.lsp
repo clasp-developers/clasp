@@ -157,7 +157,8 @@
          (primitive         "lowLevelTrace" %void% (list %i32%))
          (primitive         "unreachableError" %void% nil)
     
-         (primitive-unwinds "cc_wrong_number_of_arguments" %void% (list %t*% %size_t% %size_t%))
+         (primitive-unwinds "cc_wrong_number_of_arguments" %void% (list %t*% %size_t% %size_t%) :does-not-return t)
+;;;         (primitive-unwinds "cc_symbol_function" %t*% (list %t*%))
          (primitive         "va_lexicalFunction" %t*% (list %size_t% %size_t% %t*%))
     
          (primitive         "cc_gatherRestArguments" %t*% (list %va_list*% %size_t%))
