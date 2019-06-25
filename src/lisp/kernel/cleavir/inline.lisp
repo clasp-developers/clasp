@@ -571,7 +571,7 @@
 (declaim (inline vector-in-bounds-p))
 (defun vector-in-bounds-p (vector index)
   (etypecase vector
-    ((simple-vector *)
+    ((simple-array * (*))
      (and (<= 0 index) (< index (core::vector-length vector))))
     (array
      (and (<= 0 index) (< index (if (array-has-fill-pointer-p vector)
