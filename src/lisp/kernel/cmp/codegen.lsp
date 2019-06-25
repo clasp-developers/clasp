@@ -245,7 +245,6 @@ then compile it and return (values compiled-llvm-function lambda-name)"
          ((eq sym 'core::derivable-stamp) t)
          ((eq sym 'core::wrapped-stamp) t)
          ((eq sym 'core::rack-stamp) t)
-         ((eq sym 'core:instance-stamp) t)
          ((eq sym 'core:instance-ref) t)
          ((eq sym 'core:instance-set) t)
          ((eq sym 'core:defcallback) t)

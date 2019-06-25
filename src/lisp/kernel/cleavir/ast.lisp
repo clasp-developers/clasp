@@ -329,24 +329,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Class INSTANCE-STAMP-AST
-;;;
-;;; Get the stamp of an object.
-
-(defclass instance-stamp-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
-  ((%arg-ast :initarg :arg :reader cleavir-ast:arg-ast)))
-
-(cleavir-io:define-save-info instance-stamp-ast
-    (:arg cleavir-ast:arg-ast))
-
-(defmethod cleavir-ast-graphviz::label ((ast instance-stamp-ast))
-  "instance-stamp")
-
-(defmethod cleavir-ast:children ((ast instance-stamp-ast))
-  (list (cleavir-ast:arg-ast ast)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
 ;;; Class PRECALC-VECTOR-FUNCTION-AST
 ;;;
 ;;; This AST is a subclass of FUNCTION-AST. It is used when an AST

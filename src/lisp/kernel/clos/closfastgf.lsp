@@ -27,11 +27,6 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (pushnew :debug-fastgf *features*))
 
-
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (core:bformat t "!%N!%N!%N!%N!%N!%N!%N!%N Remove this message from closfastgf.lsp and turn off cmp::*compile-debug-dump-module*%N")
-  (setq cmp::*compile-debug-dump-module* nil))
-
 #+debug-fastgf
 (eval-when (:execute :load-toplevel)
   (defstruct (debug-fastgf-struct (:type vector))
