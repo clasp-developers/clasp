@@ -58,10 +58,6 @@ BUILTIN_ATTRIBUTES void cc_rewind_va_list(va_list va_args, void** register_save_
   NO_UNWIND_END_BUILTINS();
 }
 
-};
-
-extern "C" {
-
 BUILTIN_ATTRIBUTES uint cc_simpleBitVectorAref(core::T_O* tarray, size_t index) {
   core::SimpleBitVector_O* array = reinterpret_cast<core::SimpleBitVector_O*>(gctools::untag_general<core::T_O*>(tarray));
   return array->testBit(index);
@@ -81,19 +77,5 @@ BUILTIN_ATTRIBUTES core::T_O** activationFrameReferenceFromClosure(core::T_O* cl
   }
   return NULL;
 }
-
-BUILTIN_ATTRIBUTES core::T_O* bc_function_from_function_designator(core::T_O* function_designator)
-{
-  core::T_sp tfunction_designator((gctools::Tagged)function_designator);
-  if (gc::IsA<core::Function_sp>(tfunction_designator)) {
-    return function_designator;
-  } else if (gc::IsA<core::Symbol_sp>(tfunction_designator)) {
-    core::Symbol_sp sym = gc::As_unsafe<core::Symbol_sp>(tfunction_designator);
-    core::Function_sp func((gc::Tagged)(sym)->_Function.theObject);
-    return func.raw_();
-  }
-  llvmo::not_function_designator_error(tfunction_designator);
-};
-
 
 };

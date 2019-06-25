@@ -197,23 +197,6 @@ then compile it and return (values compiled-llvm-function lambda-name)"
       (codegen-lookup-function fname env)
     (codegen-call result closure args env label)))
 
-;;; Codegen a (funcall ...) form.
-(defun codegen-funcall (result form env)
-  (let ((closure-arg (second form))
-        (call-args (cddr form)))
-    (cond
-      ;; (funcall 'foo ...) = (foo ...)
-      ((and (consp closure-arg)
-            (eq (first closure-arg) 'quote)
-            (= (length closure-arg) 2)
-            (symbolp (second closure-arg)))
-       (codegen-named-call result (second closure-arg) call-args env))
-      (t
-       (let ((temp-closure (alloca-t*)))
-         (codegen temp-closure closure-arg env)
-         (let ((closure (irc-intrinsic "bc_function_from_function_designator" (irc-load temp-closure))))
-           (codegen-call result closure call-args env)))))))
-
 (defun codegen-lambda-form (result lambda args env)
   (let ((temp-closure (alloca-t*)))
     (codegen temp-closure lambda env)
@@ -298,10 +281,6 @@ then compile it and return (values compiled-llvm-function lambda-name)"
       ((and (not (core:lexical-function head env))
             (macro-function head env))
        (codegen result (macroexpand-1 form env) env))
-      ;; invocation of FUNCALL
-      ;; FIXME: compiler macro should be fine here
-      ((eq head 'funcall)
-       (codegen-funcall result form env))
       ;; regular function call
       (t
        (codegen-named-call result head rest env)))))
