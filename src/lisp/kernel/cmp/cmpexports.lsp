@@ -55,7 +55,6 @@
             +single-float-tag+
             +character-tag+
             +general-tag+
-            *test-ir*
             *startup-primitives-as-list*
             %i1%
             %exception-struct%
@@ -190,7 +189,6 @@
             irc-undef-value-get
             irc-store
             irc-struct-gep
-            irc-read-stamp
             irc-read-slot
             irc-write-slot
             irc-t*-result
