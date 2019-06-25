@@ -194,20 +194,6 @@ For sbcl
          (_               (llvm-sys:create-resume ehbuilder lpad.val8)))
     ehcleanup))
 
-
-(defun generate-terminate-code (function)
-  (let* ((terminate-basic-block     (irc-basic-block-create "TRY.terminate" function))
-         (ehbuilder                 (llvm-sys:make-irbuilder *llvm-context*))
-         (_                         (irc-set-insert-point-basic-block terminate-basic-block ehbuilder)))
-    (with-irbuilder (ehbuilder)
-      (let* ((landpad                   (irc-create-landing-pad 1))
-             (_                         (llvm-sys:add-clause landpad (llvm-sys:constant-pointer-null-get %i8*%)))
-             (_                         (irc-intrinsic "clasp_terminate"))
-             (_                         (irc-unreachable)))))
-    terminate-basic-block))
-                           
-
-
 ;;; ------------------------------------------------------------
 ;;;
 ;;; This macro sets up the function for exception handling.
@@ -221,7 +207,7 @@ For sbcl
           (*current-function-exn.slot* (alloca-i8* "exn.slot"))
           (*current-function-ehselector.slot* (alloca-i32 "ehselector.slot"))
           (*exception-handler-cleanup-block* (generate-ehcleanup-and-resume-code ,function *current-function-exn.slot* *current-function-ehselector.slot*))
-          (*current-function-terminate-landing-pad* nil) ; (generate-terminate-code ,function))
+          (*current-function-terminate-landing-pad* nil)
           (*current-unwind-landing-pad-dest* nil)) ; *current-function-terminate-landing-pad*))
      ,@body))
 

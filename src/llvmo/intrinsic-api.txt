@@ -41,7 +41,6 @@ _activationFrameSize
 _copyArgs
 _throwTooManyArgumentsException
 _throwNotEnoughArgumentsException
-_cc_trackFirstUnexpectedKeyword
 _gdb
 _debugInspectActivationFrame
 _debugInspectT_sp
@@ -76,7 +75,6 @@ _ifCatchFrameMatchesStoreResultElseRethrow
 _blockHandleReturnFrom
 _tagbodyDynamicGoIndexElseRethrow
 _throwIllegalSwitchValue
-_clasp_terminate
 ___gxx_personality_v0
 ___cxa_begin_catch
 ___cxa_end_catch
@@ -123,7 +121,6 @@ _cc_va_arg
 _cc_copy_va_list
 _cc_enclose
 _cc_stack_enclose
-_cc_call_multipleValueOneFormCall
 _cc_saveThreadLocalMultipleValues
 _cc_loadThreadLocalMultipleValues
 _cc_safe_fdefinition
