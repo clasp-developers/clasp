@@ -184,11 +184,10 @@ then compile it and return (values compiled-llvm-function lambda-name)"
 ;; given an llvm value for the function (which is an actual function, not a name or lambda),
 ;; and a list of argument forms, codegen a call.
 (defun codegen-call (result fn args env &optional (label ""))
-  (let ((argsz nil))
+  (let ((argsz nil) (temp (alloca-t* "arg")))
     (dolist (arg args)
-      (let ((temp (alloca-t* "arg")))
-        (codegen temp arg env)
-        (push (irc-load temp) argsz)))
+      (codegen temp arg env)
+      (push (irc-load temp) argsz))
     (irc-funcall result fn (nreverse argsz) label)))
 
 ;; Codegen a call to a named function.
