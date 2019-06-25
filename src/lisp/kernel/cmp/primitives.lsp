@@ -252,7 +252,6 @@
          (primitive-unwinds "cc_safe_symbol_value" %t*% (list %t*%))
          (primitive         "cc_setSymbolValue" %void% (list %t*% %t*%))
 
-         (primitive         "cx_vaslist_pop" %t*% (list %t*%))
          (primitive         "cc_rewind_va_list" %void% (list %va_list*% %register-save-area*%))
          (primitive         "cc_rewind_vaslist" %t*% (list %vaslist*% %va_list*% %register-save-area*%))
          (primitive-unwinds "cc_call_multipleValueOneFormCall" %return-type% (list %t*%))

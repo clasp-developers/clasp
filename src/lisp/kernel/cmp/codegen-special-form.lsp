@@ -1010,12 +1010,25 @@ jump to blocks within this tagbody."
     (irc-funcall result (irc-load funcy) (nreverse argsz))))
 
 ;;; CORE:VASLIST-POP
+;;; Remove one item from the vaslist and return it.
+;;; Without DEBUG_BUILD, does not actually check if there is an element to pop.
+;;; Use caution.
+
+(defun gen-vaslist-pop (vaslist)
+  ;; We need to decrement the remaining nargs, then return va_arg.
+  (let* ((nargs* (irc-vaslist-remaining-nargs-address vaslist))
+         (nargs (irc-load nargs*))
+         (nargs-- (irc-sub nargs (jit-constant-size_t 1))))
+    ;; Decrement.
+    (irc-store nargs-- nargs*)
+    ;; va_arg.
+    (irc-va_arg (irc-vaslist-va_list-address vaslist) %t*%)))
 
 (defun codegen-vaslist-pop (result rest env)
   (let ((form (car rest))
         (vaslist (alloca-t* "vaslist-pop-vaslist")))
     (codegen vaslist form env)
-    (irc-t*-result (irc-intrinsic "cx_vaslist_pop" (irc-load vaslist)) result)))
+    (irc-t*-result (gen-vaslist-pop (irc-load vaslist)) result)))
 
 ;;; (CORE:HEADER-STAMP-CASE stamp b1 b2 b3 b4)
 ;;; Branch to one of four places depending on the where tag.

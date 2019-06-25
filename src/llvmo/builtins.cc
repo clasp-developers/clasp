@@ -58,15 +58,6 @@ BUILTIN_ATTRIBUTES void cc_rewind_va_list(va_list va_args, void** register_save_
   NO_UNWIND_END_BUILTINS();
 }
 
-/* Remove one item from the vaslist and return it.
-   Do not call this unless you are sure there are elements to pop without DEBUG_BUILD */
-BUILTIN_ATTRIBUTES core::T_O* cx_vaslist_pop(core::T_O *preVaslist)
-{NO_UNWIND_BEGIN(); // check_remaining_nargs doesn't actually throw.
-  core::VaList_sp vaslist((gctools::Tagged)preVaslist);
-  return vaslist->next_arg_raw();
-  NO_UNWIND_END();
-}
-
 };
 
 extern "C" {

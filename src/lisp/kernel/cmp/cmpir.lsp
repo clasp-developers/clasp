@@ -886,8 +886,8 @@ the type LLVMContexts don't match - so they were defined in different threads!"
 (defun irc-and (x y &optional (label "and"))
   (llvm-sys:create-and-value-value *irbuilder* x y label))
 
-(defun irc-va_arg (valist type &optional (name "vaarg"))
-  (llvm-sys:create-vaarg *irbuilder* valist type name))
+(defun irc-va_arg (valist* type &optional (name "vaarg"))
+  (llvm-sys:create-vaarg *irbuilder* valist* type name))
 
 (defun irc-vaslist-va_list-address (vaslist &optional (label "va_list_address"))
   (c++-field-ptr info.%vaslist% vaslist 'va_list))

@@ -398,9 +398,8 @@
 (defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir:vaslist-pop-instruction) return-value abi function-info)
   (declare (ignore return-value function-info))
-  (let ((input (first (cleavir-ir:inputs instruction)))
-        (output (first (cleavir-ir:outputs instruction))))
-    (out (%intrinsic-call "cx_vaslist_pop" (list (in input))) output)))
+  (out (cmp:gen-vaslist-pop (in (first (cleavir-ir:inputs instruction))))
+       (first (cleavir-ir:outputs instruction))))
 
 (defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir:instance-stamp-instruction) return-value abi function-info)
