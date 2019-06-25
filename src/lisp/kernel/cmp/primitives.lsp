@@ -140,7 +140,6 @@
          (primitive-unwinds "cc_error_case_failure" %void% (list %t*% %t*% %t*% %t*%) :does-not-return t)
          
          (primitive         "cc_trackFirstUnexpectedKeyword" %size_t% (list %size_t% %size_t%))
-         (primitive-unwinds "bc_function_from_function_designator" %t*% (list %t*%))
     
          (primitive-unwinds "gdb" %void% nil)
          (primitive         "debugInspectTPtr" %void% (list %t*%))
