@@ -1395,8 +1395,9 @@ CL_LISPIFY_NAME("special-variables");
 CL_DEFMETHOD List_sp LambdaListHandler_O::specialVariables() const {
   List_sp namesRev = _Nil<T_O>();
   for (auto cur : this->_ClassifiedSymbolList) {
-    if (oCar(oCar(cur)) == ext::_sym_specialVar) {
-      namesRev = Cons_O::create(oCadr(oCar(cur)), namesRev);
+    T_sp entry = CONS_CAR(cur);
+    if (oCar(entry) == ext::_sym_specialVar) {
+      namesRev = Cons_O::create(oCdr(entry), namesRev);
     }
   }
   return cl__nreverse(namesRev);
