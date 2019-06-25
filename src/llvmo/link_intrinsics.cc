@@ -1002,14 +1002,6 @@ gctools::return_type restoreFromMultipleValue0()
   NO_UNWIND_END();
 }
 
-size_t cc_trackFirstUnexpectedKeyword(size_t badKwIdx, size_t newBadKwIdx)
-{NO_UNWIND_BEGIN();
-  // 65536 is the magic number for badKwIdx has not been assigned yet
-  if (badKwIdx != 65536)
-    return badKwIdx;
-  return newBadKwIdx;
-  NO_UNWIND_END();
-}
 };
 
 extern "C" {
@@ -1149,31 +1141,6 @@ void cc_initialize_closure(core::T_O* functoid,
   va_end(argp);
 }
 
-/*! Take the multiple-value inputs from the thread local MultipleValues and call tfunc with them.
-     This function looks exactly like the cc_invoke_multipleValueOneFormCall intrinsic but
-    in cmpintrinsics.lsp it is set not to require a landing pad */
-//    void cc_call_multipleValueOneFormCall(core::T_mv* result, core::T_O* tfunc )
-
-LCC_RETURN cc_call_multipleValueOneFormCall(core::Function_O *tfunc) {
-  ASSERTF(gctools::tagged_generalp(tfunc), BF("The argument %p does not have a general tag!") % (void*)tfunc);
-  core::MultipleValues &mvThreadLocal = core::lisp_multipleValues();
-  size_t lcc_nargs = mvThreadLocal.getSize();
-  MAKE_STACK_FRAME( mvargs, tfunc, lcc_nargs);
-  for (size_t i(0); i < lcc_nargs; ++i) (*mvargs)[i] = ENSURE_VALID_OBJECT(mvThreadLocal[i]);
-#ifdef DEBUG_VALUES
-  if (_sym_STARdebug_valuesSTAR &&
-        _sym_STARdebug_valuesSTAR->boundP() &&
-        _sym_STARdebug_valuesSTAR->symbolValue().notnilp()) {
-    for (size_t i(0); i < lcc_nargs; ++i) {
-      core::T_sp mvobj((gctools::Tagged)(*mvargs)[i]);
-      printf("%s:%d  ....  cc_call_multipleValueOneFormCall[%lu] -> %s\n", __FILE__, __LINE__, i, _rep_(mvobj).c_str());
-    }
-  }
-#endif
-  core::Function_sp func((gctools::Tagged)tfunc);
-  return core::funcall_frame(func,mvargs);
-}
-
 LCC_RETURN cc_call_multipleValueOneFormCallWithRet0(core::Function_O *tfunc, gctools::return_type ret0 ) {
   ASSERTF(gctools::tagged_generalp(tfunc), BF("The argument %p does not have a general tag!") % (void*)tfunc);
   MAKE_STACK_FRAME( mvargs, tfunc, ret0.nvals);
@@ -1262,11 +1229,6 @@ size_t cc_landingpadUnwindMatchFrameElseRethrow(char *exceptionP, core::T_O *thi
   throw;
 }
 
-void clasp_terminate()
-{
-  printf("Terminating clasp from clasp_terminate\n");
-  abort();
-}
 };
 
 #pragma GCC visibility pop

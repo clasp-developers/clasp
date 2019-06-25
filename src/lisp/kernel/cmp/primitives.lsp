@@ -139,8 +139,6 @@
          (primitive-unwinds "cc_error_array_out_of_bounds" %void% (list %t*% %t*% %t*%) :does-not-return t)
          (primitive-unwinds "cc_error_case_failure" %void% (list %t*% %t*% %t*% %t*%) :does-not-return t)
          
-         (primitive         "cc_trackFirstUnexpectedKeyword" %size_t% (list %size_t% %size_t%))
-    
          (primitive-unwinds "gdb" %void% nil)
          (primitive         "debugInspectTPtr" %void% (list %t*%))
          (primitive         "debugInspectT_mv" %void% (list %tmv*%))
@@ -160,7 +158,6 @@
          (primitive         "unreachableError" %void% nil)
     
          (primitive-unwinds "cc_wrong_number_of_arguments" %void% (list %t*% %size_t% %size_t%))
-;;;         (primitive-unwinds "cc_symbol_function" %t*% (list %t*%))
          (primitive         "va_lexicalFunction" %t*% (list %size_t% %size_t% %t*%))
     
          (primitive         "cc_gatherRestArguments" %t*% (list %va_list*% %size_t%))
@@ -179,7 +176,6 @@
          (primitive-unwinds "tagbodyHandleDynamicGoIndex_or_rethrow" %size_t% (list %i8*% %t*%))
          (primitive-unwinds "throwIllegalSwitchValue" %void% (list %size_t% %size_t%) :does-not-return t)
     
-         (primitive         "clasp_terminate" %void% nil)
          (primitive         "__gxx_personality_v0" %i32% nil :varargs t)
          (primitive         "__cxa_begin_catch" %i8*% (list %i8*%) )
          (primitive-unwinds "__cxa_end_catch" %void% nil)
@@ -215,10 +211,6 @@
     
          ;; Primitives for Cleavir code
 
-         (primitive-unwinds "cc_bound_or_error" %t*% (list %t*% %t*% %t*%)) ; optimized-data instance value
-         (primitive         "cc_vaslist_end" %void% (list %t*%))
-
-         (primitive-unwinds "cc_check_if_wrong_number_of_arguments" %void% (list %size_t% %size_t% %size_t% %function-description*%))
          (primitive         "cc_ensure_valid_object" %t*% (list %t*%))
          (primitive         "cc_getPointer" %i8*% (list %t*%))
          (primitive-unwinds "cc_makeCell" %t*% nil)
@@ -252,8 +244,6 @@
          (primitive         "cc_setSymbolValue" %void% (list %t*% %t*%))
 
          (primitive         "cc_rewind_va_list" %void% (list %va_list*% %register-save-area*%))
-         (primitive         "cc_rewind_vaslist" %t*% (list %vaslist*% %va_list*% %register-save-area*%))
-         (primitive-unwinds "cc_call_multipleValueOneFormCall" %return-type% (list %t*%))
          (primitive-unwinds "cc_call_multipleValueOneFormCallWithRet0" %return-type% (list %t*% %return-type%))
          (primitive-unwinds "cc_oddKeywordException" %void% (list %function-description*%))
          (primitive         "cc_multipleValuesArrayAddress" %t*[0]*% nil)
