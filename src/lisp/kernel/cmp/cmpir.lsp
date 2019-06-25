@@ -889,6 +889,13 @@ the type LLVMContexts don't match - so they were defined in different threads!"
 (defun irc-va_arg (valist type &optional (name "vaarg"))
   (llvm-sys:create-vaarg *irbuilder* valist type name))
 
+(defun irc-vaslist-va_list-address (vaslist &optional (label "va_list_address"))
+  (c++-field-ptr info.%vaslist% vaslist 'va_list))
+
+(defun irc-vaslist-remaining-nargs-address (vaslist
+                                            &optional (label "va_list_remaining_nargs_address"))
+  (c++-field-ptr info.%vaslist% vaslist 'remaining-nargs))
+
 (defparameter *default-function-attributes* '(llvm-sys:attribute-uwtable
                                               ("no-frame-pointer-elim" "true")
                                               "no-frame-pointer-elim-non-leaf"))

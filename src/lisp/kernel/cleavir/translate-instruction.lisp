@@ -23,9 +23,8 @@
   (let* ((lambda-list          (cleavir-ir:lambda-list instr))
          (vaslist              (first (cleavir-ir:inputs instr)))
          (vaslist-value        (in vaslist))
-         (src-remaining-nargs* (%intrinsic-call "cc_vaslist_remaining_nargs_address" (list vaslist-value)))
-         (src-va_list*         (%intrinsic-call "cc_vaslist_va_list_address" (list vaslist-value)
-                                                "vaslist_address"))
+         (src-remaining-nargs* (cmp:irc-vaslist-remaining-nargs-address vaslist-value))
+         (src-va_list*         (cmp:irc-vaslist-va_list-address vaslist-value))
          (local-va_list*       (cmp:alloca-va_list "local-va_list"))
          (_                    (%intrinsic-call "llvm.va_copy"
                                                 (list (cmp:irc-pointer-cast local-va_list* cmp:%i8*%)

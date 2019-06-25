@@ -511,7 +511,9 @@ Boehm and MPS use a single pointer"
   (error "I need a va_list struct definition for this system")
 
   (define-symbol-macro %va_list*% (llvm-sys:type-get-pointer-to %va_list%))
-  (define-symbol-macro %vaslist% (llvm-sys:struct-type-get *llvm-context* (list %va_list% %size_t%) nil))
+  (define-c++-struct %vaslist% +vaslist-tag+
+    ((%va_list% va_list)
+     (%size_t% remaining-nargs)))
   (define-symbol-macro %vaslist*% (llvm-sys:type-get-pointer-to %vaslist%))
 
 ;;;    "Function prototype for generic functions")

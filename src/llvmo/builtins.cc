@@ -91,17 +91,6 @@ BUILTIN_ATTRIBUTES core::T_O** activationFrameReferenceFromClosure(core::T_O* cl
   return NULL;
 }
 
-BUILTIN_ATTRIBUTES void* cc_vaslist_va_list_address(core::T_O* vaslist)
-{
-  return &(gctools::untag_vaslist(vaslist)->_Args);
-};
-
-BUILTIN_ATTRIBUTES size_t* cc_vaslist_remaining_nargs_address(core::Vaslist* vaslist)
-{
-  return &(gctools::untag_vaslist(vaslist)->_remaining_nargs);
-};
-
-
 BUILTIN_ATTRIBUTES core::T_O* bc_function_from_function_designator(core::T_O* function_designator)
 {
   core::T_sp tfunction_designator((gctools::Tagged)function_designator);
