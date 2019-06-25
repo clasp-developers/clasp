@@ -182,8 +182,8 @@ namespace core {
   template <typename T1,typename T2>
     bool template_string_EQ_equal(const T1& string1, const T2& string2, size_t start1, size_t end1, size_t start2, size_t end2)
   {
-    const typename T1::simple_element_type* cp1(&string1[start1]);
-    const typename T2::simple_element_type* cp2(&string2[start2]);
+    const typename T1::simple_element_type* cp1((const typename T1::simple_element_type*)string1.rowMajorAddressOfElement_(start1));
+    const typename T2::simple_element_type* cp2((const typename T2::simple_element_type*)string2.rowMajorAddressOfElement_(start2));
     size_t num1 = end1 - start1;
     size_t num2 = end2 - start2;
 //    printf("%s:%d:%s string1@%p string2=@%p sizeof(*cp1)=%lu sizeof(*cp2)=%lu cp1=%p cp2=%p start1=%lu end1=%lu start2=%lu end2=%lu num1=%lu num2=%lu\n", __FILE__, __LINE__, __FUNCTION__, (void*)&string1, (void*)&string2, sizeof(*cp1), sizeof(*cp2), (void*)cp1, (void*)cp2, start1, end1, start2, end2, num1, num2);
@@ -557,8 +557,8 @@ namespace core {
     static void never_invoke_allocator() {gctools::GCAbstractAllocator<template_SimpleVector>::never_invoke_allocator();};
   public:
     // NULL terminated strings use this - so the ASSERT needs to accept it
-    value_type& operator[](size_t index) { BOUNDS_ASSERT(index<this->length());return this->_Data[index];};
-    const value_type& operator[](size_t index) const { BOUNDS_ASSERT(index<this->length());return this->_Data[index];};
+    value_type& operator[](size_t index) { BOUNDS_ASSERT_LT(index,this->length());return this->_Data[index];};
+    const value_type& operator[](size_t index) const { BOUNDS_ASSERT_LT(index,this->length());return this->_Data[index];};
     iterator begin() { return &this->_Data[0];};
     iterator end() { return &this->_Data[this->_Data._Length]; }
     const_iterator begin() const { return &this->_Data[0];};
@@ -588,7 +588,7 @@ namespace core {
     CL_METHOD_OVERLOAD virtual T_sp vref(size_t idx) const final {return leaf_type::to_object((*this)[idx]);}
     virtual Array_sp unsafe_subseq(size_t start, size_t end) const final {
       BOUNDS_ASSERT(start<=end&&end<=this->length());
-      return leaf_type::make(end-start,value_type(),true,end-start,&(*this)[start]);
+      return leaf_type::make(end-start,value_type(),true,end-start,(value_type*)this->rowMajorAddressOfElement_(start));
     }
     virtual Array_sp unsafe_setf_subseq(size_t start, size_t end, Array_sp newSubseq) final {
       // TODO: Write specialized versions of this to speed it up

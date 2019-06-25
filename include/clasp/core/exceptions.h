@@ -574,6 +574,7 @@ extern bool stackmap_log;
 
 
  void assert_failure(const char* file, size_t line, const char* func, const char* msg);
+void assert_failure_bounds_error_lt(const char* file, size_t line, const char* func, int64_t x, int64_t y);
  
 #ifdef DEBUG_ASSERT
 #define lisp_ASSERT(x) if (!(x)) ::core::assert_failure(__FILE__,__LINE__,__FUNCTION__,#x)
@@ -582,8 +583,10 @@ extern bool stackmap_log;
 #ifdef DEBUG_BOUNDS_ASSERT
 #define lisp_BOUNDS_ASSERT(x) if (!(x)) ::core::assert_failure(__FILE__,__LINE__,__FUNCTION__,#x)
 #define BOUNDS_ASSERT(x) lisp_BOUNDS_ASSERT(x)
+#define BOUNDS_ASSERT_LT(x,y) {if (!((x)<(y))) ::core::assert_failure_bounds_error_lt(__FILE__,__LINE__,__FUNCTION__,x,y);}
  #else
 #define BOUNDS_ASSERT(x)
+#define BOUNDS_ASSERT_LT(x,y)
 #endif
 #ifdef DEBUG_ASSERT
 #define lisp_ASSERTP( x, e) if (!(x)) ::core::assert_failure(__FILE__,__LINE__,__FUNCTION__,(e));

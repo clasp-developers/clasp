@@ -66,6 +66,11 @@ void assert_failure(const char* file, size_t line, const char* func, const char*
   SIMPLE_ERROR(BF("%s:%d:%s  Assertion failure: %s") % file % line % func % msg);
 }
 
+void assert_failure_bounds_error_lt(const char* file, size_t line, const char* func, int64_t x, int64_t y)
+{
+  SIMPLE_ERROR(BF("%s:%d:%s  Assertion failure: bounds error - %s must be less than %s") % file % line % func % x % y);
+}
+
 /*! These are here just so that the clang compiler
       will assign the __attribute__((weak)) to the vtable of each of these classes
     */
