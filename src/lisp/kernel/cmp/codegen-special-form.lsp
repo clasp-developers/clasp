@@ -1000,14 +1000,9 @@ jump to blocks within this tagbody."
 (defun codegen-primop-funcall (result rest env)
   (let ((func (first rest))
         (funcy (alloca-t* "function"))
-        (args (rest rest))
-        argsz)
+        (args (rest rest)))
     (codegen funcy func env)
-    (dolist (arg args)
-      (let ((temp (alloca-t* "arg")))
-        (codegen temp arg env)
-        (push (irc-load temp) argsz)))
-    (irc-funcall result (irc-load funcy) (nreverse argsz))))
+    (codegen-call result (irc-load funcy) args env)))
 
 ;;; CORE:VASLIST-POP
 ;;; Remove one item from the vaslist and return it.

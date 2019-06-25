@@ -1073,8 +1073,6 @@ and initialize it with an array consisting of one function pointer."
 (defvar *gv-boot-functions* nil
   "A global value that stores a pointer to the boot function for the Module.
 It has appending linkage.")
-(defvar *current-form* nil "The current form being compiled")
-(defvar *current-env* nil "Current environment")
 (defvar *current-function* nil "The current function")
 (defvar *current-function-description* nil "The current function description")
 (defvar *current-function-name* nil "Store the current function name")
