@@ -54,7 +54,7 @@ Return T if disassembly was achieved - otherwise NIL"
     success))
 
 (defun disassemble-assembly (start end)
-  (format t "disassemble-assembly ~s ~s~%" start end)
+  (format t "; disassemble-assembly Size: ~s Origin: ~s~%" (- (core:pointer-integer end) (core:pointer-integer start)) start)
   (llvm-sys:disassemble-instructions (get-builtin-target-triple-and-data-layout)
                                      start end))
 
