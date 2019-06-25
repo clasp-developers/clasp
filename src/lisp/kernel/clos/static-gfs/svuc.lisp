@@ -89,7 +89,8 @@ TODO 2: Build a cell system like we do for make-instance.
        `(si:instance-set ,instancef ,(clos:slot-definition-location slotd) ,value))
       ((:class)
        `(rplaca (load-time-value
-                 (clos:slot-definition-location ,(slotd-form class slotd))))))))
+                 (clos:slot-definition-location ,(slotd-form class slotd)))
+                ,value)))))
 
 (defun gen-fast-setf-svuc (value class instancef slotd)
   (gen-fast-value-write value class instancef slotd))
