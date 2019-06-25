@@ -45,7 +45,6 @@
     (core::rack-stamp codegen-rack-stamp convert-rack-stamp)
     (core::derivable-stamp codegen-derivable-stamp convert-derivable-stamp)
     (core::wrapped-stamp codegen-wrapped-stamp convert-wrapped-stamp)
-    (core:instance-stamp codegen-instance-stamp convert-instance-stamp)
     (core:instance-ref codegen-instance-ref convert-instance-ref)
     (core:instance-set codegen-instance-set convert-instance-set)
     (llvm-inline codegen-llvm-inline convert-llvm-inline)
@@ -1098,25 +1097,11 @@ jump to blocks within this tagbody."
     (codegen object form env)
     (irc-t*-result (irc-derivable-stamp (irc-load object)) result)))
 
-;;; CORE:INSTANCE-STAMP
-
-(defun codegen-instance-stamp (result rest env)
-  (let ((form (car rest))
-        (object (alloca-t* "read-stamp-obj")))
-    (codegen object form env)
-    (irc-t*-result (irc-intrinsic "cx_read_stamp" (irc-load object)
-                                  (if *test-ir*
-                                      (irc-read-stamp (irc-load object))
-                                      (jit-constant-i64 0)))
-                   result)))
-
 ;;; CORE:INSTANCE-REF
 ;;; the gen- are for cclasp. At the moment they're unused, but that's just because
 ;;; the runtime fastgf compiler uses bclasp so it's a bit lower priority.
 (defun gen-instance-ref (instance index)
-  (irc-read-slot instance (irc-untag-fixnum index %size_t% "slot-location"))
-  #+(or)(irc-intrinsic "cc_read_slot" instance
-                 (irc-untag-fixnum index %size_t% "slot-location")))
+  (irc-read-slot instance (irc-untag-fixnum index %size_t% "slot-location")))
 
 (defun codegen-instance-ref (result rest env)
   (let ((instance (first rest)) (index (second rest))
@@ -1130,10 +1115,7 @@ jump to blocks within this tagbody."
 ;;; CORE:INSTANCE-SET
 
 (defun gen-instance-set (instance index value)
-  (irc-write-slot instance (irc-untag-fixnum index %size_t% "slot-location") value)
-  #+(or)(irc-intrinsic "cc_write_slot" instance
-                       (irc-untag-fixnum index %size_t% "slot-location")
-                       value))
+  (irc-write-slot instance (irc-untag-fixnum index %size_t% "slot-location") value))
 
 (defun codegen-instance-set (result rest env)
   (let ((instance (first rest)) (index (second rest)) (value (third rest))

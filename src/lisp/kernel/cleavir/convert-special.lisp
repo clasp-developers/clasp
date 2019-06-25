@@ -285,8 +285,6 @@
   (:mdarray :axis))
 (define-functionlike-special-form core:vaslist-pop cc-ast:vaslist-pop-ast
   (:vaslist))
-(define-functionlike-special-form core:instance-stamp cc-ast:instance-stamp-ast
-  (:arg))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

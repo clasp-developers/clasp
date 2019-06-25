@@ -402,16 +402,6 @@
        (first (cleavir-ir:outputs instruction))))
 
 (defmethod translate-simple-instruction
-    ((instruction clasp-cleavir-hir:instance-stamp-instruction) return-value abi function-info)
-  (declare (ignore return-value function-info))
-  (let* ((input (first (cleavir-ir:inputs instruction)))
-         (output (first (cleavir-ir:outputs instruction))))
-    (if cmp:*test-ir*
-        (let ((new-stamp (cmp:irc-read-stamp (in input))))
-          (out (%intrinsic-call "cx_read_stamp" (list (in input) new-stamp)) output))
-        (out (%intrinsic-call "cx_read_stamp" (list (in input) (cmp:jit-constant-i64 0))) output))))
-
-(defmethod translate-simple-instruction
     ((instruction cleavir-ir:slot-read-instruction) return-value abi function-infoO)
   (declare (ignore return-value abi function-info))
   (let ((inputs (cleavir-ir:inputs instruction)))
