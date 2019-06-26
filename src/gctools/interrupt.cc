@@ -542,7 +542,7 @@ void initialize_unix_signal_handlers() {
         ADD_SIGNAL( SIGUSR2, "SIGUSR2", _Nil<core::T_O>());
 #endif
 #ifdef _TARGET_OS_LINUX
-        ADD_SIGNAL( SIGUSR2, "SIGUSR2", core::_sym_information_interrupt);
+        ADD_SIGNAL( SIGUSR2, "SIGUSR2", ext::_sym_information_interrupt);
 #endif
 #endif
 #ifdef SIGTHR
