@@ -141,7 +141,7 @@ CL_DEFUN_SETF T_sp setf_function_docstring(T_sp doc, Function_sp func) {
 SYMBOL_SC_(CompPkg,vtable);
 SYMBOL_SC_(CompPkg,entry);
 SYMBOL_SC_(CompPkg,function_description);
-SYMBOL_SC_(CorePkg,object_file);
+SYMBOL_EXPORT__SC_(CorePkg,object_file);
 SYMBOL_SC_(CompPkg,closure_type);
 SYMBOL_SC_(CompPkg,data_length);
 SYMBOL_SC_(CompPkg,data0);
