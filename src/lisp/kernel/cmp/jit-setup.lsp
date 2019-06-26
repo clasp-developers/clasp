@@ -53,6 +53,10 @@
 (eval-when (:load-toplevel :execute)
   (mp:push-default-special-binding 'cmp:*llvm-context* '(llvm-sys:create-llvm-context))
   (mp:push-default-special-binding 'cmp:*primitives* nil)
+  (mp:push-default-special-binding '*debugger-hook* nil)
+  (mp:push-default-special-binding 'core::*handler-clusters* nil)
+  (mp:push-default-special-binding 'core::*restart-clusters* nil)
+  (mp:push-default-special-binding 'core::*condition-restarts* nil)
   (mp:push-default-special-binding 'cmp::*thread-local-builtins-module* nil)
 ;;;  (mp:push-default-special-binding 'cmp::*thread-local-jit-engine* nil)
   ;;; more thread-local special variables may be added in the future

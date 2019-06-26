@@ -2990,14 +2990,14 @@ CL_DEFUN void core__verify_simple_vector_layout(size_t length_offset, size_t dat
     SIMPLE_ERROR(BF("data_offset %lu does not match cxx_data_offset %lu") % data_offset % cxx_data_offset );
 }
 
-SYMBOL_SC_(KeywordPkg,vtable);
-SYMBOL_SC_(KeywordPkg,FillPointerOrLengthOrDummy);
-SYMBOL_SC_(KeywordPkg,ArrayTotalSize);
-SYMBOL_SC_(KeywordPkg,Data);
-SYMBOL_SC_(KeywordPkg,DisplacedIndexOffset);
-SYMBOL_SC_(KeywordPkg,Flags);
-SYMBOL_SC_(KeywordPkg,Rank);
-SYMBOL_SC_(KeywordPkg,Dimensions);
+SYMBOL_EXPORT_SC_(KeywordPkg,vtable);
+SYMBOL_EXPORT_SC_(KeywordPkg,FillPointerOrLengthOrDummy);
+SYMBOL_EXPORT_SC_(KeywordPkg,ArrayTotalSize);
+SYMBOL_EXPORT_SC_(KeywordPkg,Data);
+SYMBOL_EXPORT_SC_(KeywordPkg,DisplacedIndexOffset);
+SYMBOL_EXPORT_SC_(KeywordPkg,Flags);
+SYMBOL_EXPORT_SC_(KeywordPkg,Rank);
+SYMBOL_EXPORT_SC_(KeywordPkg,Dimensions);
 
 CL_DEFUN void core__verify_mdarray_layout(T_sp alist)
 {
