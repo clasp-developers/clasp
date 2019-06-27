@@ -71,7 +71,7 @@
   (if *use-human-readable-bitcode*
       (let* ((filename (make-pathname :type "ll" :defaults (pathname output-path)))
              (output-name (or (namestring filename)
-                              (error "In write-bitcode the output file for ~a could not be coerced to a namestring")))
+                              (error "In write-bitcode the output file for ~a could not be coerced to a namestring" output-path)))
              (fout (open output-name :direction :output)))
         (unwind-protect
              (llvm-sys:dump-module module fout)

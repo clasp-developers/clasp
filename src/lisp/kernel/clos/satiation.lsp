@@ -337,7 +337,8 @@
              (error "No applicable methods for SATIATE of ~a with ~a"
                     generic-function list-of-specializer-names))
         do (when (and (consp em) (eq (first em) 'no-required-method))
-             (error "No required methods for SATIATE of ~a with ~a"))
+             (error "No required methods for SATIATE of ~a with ~a"
+                    generic-function list-of-specializer-names))
         collect (cons (coerce list-of-specializers 'vector)
                       (cond
                         (standard-slotd-p

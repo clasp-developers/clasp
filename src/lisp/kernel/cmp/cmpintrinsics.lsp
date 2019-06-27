@@ -971,7 +971,7 @@ and initialize it with an array consisting of one function pointer."
 
 (defun assert-result-isa-llvm-value (result)
   (unless (llvm-sys:llvm-value-p result)
-      (error "result must be an instance of llvm-sys:Value_O but instead it has the value %s" result)))
+    (error "result must be an instance of llvm-sys:Value_O but instead it has the value ~s" result)))
 
 
 (defun codegen-startup-shutdown (module &optional gcroots-in-module roots-array-or-nil (number-of-roots 0) ordered-literals array)
