@@ -365,7 +365,6 @@ void* to_fixnum(int8_t v) {
 
 int main( int argc, char *argv[] )
 {
-    printf("%s:%d Starting main\n", __FILE__, __LINE__);
   // Do not touch debug log until after MPI init
 
   bool mpiEnabled = false;

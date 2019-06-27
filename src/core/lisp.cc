@@ -506,11 +506,11 @@ void ensure_monitor_file_exists_no_lock() {
   if (_lisp->_Roots._MonitorStream.is_open()) _lisp->_Roots._MonitorStream.close();
   _lisp->_Roots._MonitorStream.open(ss.str(), std::fstream::out);
   if (_lisp->_Roots._MonitorStream.is_open()) {
-    printf("%s:%d   Opened file %s for logging\n", __FILE__, __LINE__, ss.str().c_str());
+    fprintf(stderr,"%s:%d   Opened file %s for logging\n", __FILE__, __LINE__, ss.str().c_str());
     _lisp->_Roots._MonitorStream << "Start logging\n";
     _lisp->_Roots._MonitorStream.flush();
   } else {
-    printf("%s:%d   Could not open file %s for logging\n", __FILE__, __LINE__, ss.str().c_str());
+    fprintf(stderr,"%s:%d   Could not open file %s for logging\n", __FILE__, __LINE__, ss.str().c_str());
   }
 #endif
 }
