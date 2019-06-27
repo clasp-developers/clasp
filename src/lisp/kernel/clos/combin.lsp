@@ -124,9 +124,9 @@
 
 (defun error-qualifier (m qualifier)
   (error "Standard method combination allows only one qualifier ~
-          per method, either :BEFORE, :AFTER, or :AROUND; while ~
+          per method, either :BEFORE, :AFTER, or :AROUND; but ~
           a method with ~S was found."
-	 m qualifier))
+	 qualifier))
 
 ;; ----------------------------------------------------------------------
 ;; DEFINE-METHOD-COMBINATION
