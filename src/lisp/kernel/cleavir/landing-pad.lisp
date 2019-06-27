@@ -123,8 +123,8 @@
 (defun compute-dynenv-destinations (location)
   (let ((definers (cleavir-ir:defining-instructions location)))
     (unless (= (length definers) 1)
-      (error "BUG: Dynamic-environment ~a def-use chain is messed up"
-             location))
+      (error "BUG: Dynamic-environment ~a def-use chain is messed up - definers: ~a"
+             location definers))
     (let ((definer (first definers)))
       (etypecase definer
         (cleavir-ir:assignment-instruction
