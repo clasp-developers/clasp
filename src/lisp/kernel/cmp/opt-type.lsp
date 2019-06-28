@@ -181,73 +181,107 @@
                 (null (cdr high))
                 (typep (car high) head)))))
 
-(defun number-typep-form (head low high)
-  ;; First, we special case FIXNUM and subintervals of fixnum.
-  ;; Since the compiler macro normalizes, a literal 'fixnum type will
-  ;; resolve as an integer interval,
-  ;; but we don't want or need to do the compares.
-  ;; NOTE: Even partially fixnum intervals could be optimized by
-  ;; dividing into fixnum and bignum intervals - probably not
-  ;; a priority though given how big fixnums can be
-  (when (eq head 'integer)
-    ;; We can turn exclusive ranges into inclusive ones.
-    ;; (Even if it turns out to not be a fixnum- as long as it's an integer)
-    (when (consp low) (setf low (1+ (car low))))
-    (when (consp high) (setf high (1- (car high))))
-    ;; OK, now check for fixnumitude.
-    (when (and (not (eq low '*))
-               (>= low most-negative-fixnum)
-               (not (eq high '*))
-               (<= high most-positive-fixnum))
-      ;; It's a fixnum- this type test can therefore be very cheap,
-      ;; doing only a header check and fixnum comparisons.
-      ;; We can skip bounds checks if they happen to equal most-*-fixnum.
-      ;; With that plus the strictness of the primops as conditions, this code
-      ;; is written a little oddly, but generates something pretty obvious.
-      ;; Remember: fixnum-not-greater is <=
-      (let* ((highc (if (= high most-positive-fixnum)
-                        't
-                        `(if (cleavir-primop:fixnum-not-greater object ,high)
-                             t nil)))
-             (lowc (if (= low most-negative-fixnum)
-                       highc
-                       `(if (cleavir-primop:fixnum-not-greater ,low object)
-                            ,highc nil))))
-        (return-from number-typep-form
-          `(if (cleavir-primop:typeq object fixnum)
-               ,lowc
-               nil)))))
-  ;; Non-fixnum, the general case.
-  ;; TODO: Speed up float intervals by using primitive arithmetic.
-  ;; bclasp typeq isn't smart enough to check the fixnum tag for types
-  ;; like REAL, so we do that manually.
-  `(if ,(cond
-          ((eq head 'real)
-           `(if (cleavir-primop:typeq object fixnum)
-                t
-                (if (cleavir-primop:typeq object single-float)
-                    t
-                    (if (cleavir-primop:typeq object ,head)
-                        t nil))))
-          ((member head '(integer rational))
-           `(if (cleavir-primop:typeq object fixnum)
-                t
-                (if (cleavir-primop:typeq object ,head)
-                    t nil)))
-          ((eq head 'float)
-           `(if (cleavir-primop:typeq object single-float)
-                t
-                (if (cleavir-primop:typeq object ,head)
-                    t nil)))
-          (t `(if (cleavir-primop:typeq object ,head)
-                  t nil)))
-       (and ,@(cond ((eq low '*) nil)
-                    ((listp low) `((> object ',(car low))))
-                    (t `((>= object ',low))))
-            ,@(cond ((eq high '*) nil)
-                    ((listp high) `((< object ',(car high))))
-                    (t `((<= object ',high)))))
-       nil))
+;;; This is more complicated than for the other real types because of
+;;; the fixnum/bignum split.
+(defun integral-interval-typep-form (low high)
+  ;; Turn exclusive ranges into inclusive ones.
+  (when (consp low) (setf low (1+ (car low))))
+  (when (consp high) (setf high (1- (car high))))
+  ;; Now we basically want to break things up into three ranges:
+  ;; fixnum, negative bignum, and positive bignum.
+  ;; at most two of these may be empty.
+  ;; FIXME: Check for stupid empty types like (integer (0) 0) or (integer 3 -3)
+  (multiple-value-bind (bignum-low fixnum-low)
+      (cond
+        ;; All negative bignums are included, and no limit for fixnums
+        ((eq low '*) (values low low))
+        ;; Some negative bignums are included, and no limit for fixnums
+        ((< low most-negative-fixnum) (values low '*))
+        ;; No negative bignums are included, but all negative fixnums are
+        ((= low most-negative-fixnum) (values nil '*))
+        ;; No negative bignums, some fixnums
+        ((<= low most-positive-fixnum) (values nil low))
+        ;; No negative bignums and no fixnums
+        (t (values nil nil)))
+    (multiple-value-bind (bignum-high fixnum-high)
+        (cond
+          ((eq high '*) (values high high))
+          ((> high most-positive-fixnum) (values high '*))
+          ((= high most-positive-fixnum) (values nil '*))
+          ((>= high most-negative-fixnum) (values nil high))
+          (t (values nil nil)))
+      ;; Now the actual tests
+      (let ((bignum-test
+              (if (and (null bignum-low) (null bignum-high)) ; none
+                  'nil
+                  `(if (cleavir-primop:typeq object bignum)
+                       (and ,@(cond ((null bignum-low) ; no negative bignums
+                                     `((core:two-arg-> object ,most-positive-fixnum)))
+                                    ((eq bignum-low '*) ; all negative bignums
+                                     nil)
+                                    (t ; only some
+                                     `((core:two-arg->= object ,bignum-low))))
+                            ,@(cond ((null bignum-high) ; no positive bignums
+                                     `((core:two-arg-< object ,most-negative-fixnum)))
+                                    ((eq bignum-high '*) ; all positive bignums
+                                     nil)
+                                    (t ; only some
+                                     `((core:two-arg-<= object ,bignum-high)))))
+                       'nil))))
+        ;; fixnums
+        (if (or (null fixnum-low) (null fixnum-high)) ; none
+            bignum-test
+            (let* ((high-test
+                     (if (eq fixnum-high '*)
+                         't
+                         `(if (cleavir-primop:fixnum-not-greater object ,fixnum-high) t nil)))
+                   (low-test
+                     (if (eq fixnum-low '*)
+                         high-test
+                         `(if (cleavir-primop:fixnum-not-greater ,fixnum-low object)
+                              ,high-test
+                              nil))))
+              `(if (cleavir-primop:typeq object fixnum) ,low-test ,bignum-test)))))))
+
+;;; The simpler version
+;;; FIXME: Use floating point compares, etc, when available
+(defun real-interval-test (low high)
+  `(and ,@(cond ((eq high '*) nil)
+                ((consp high) `((< object ,(car high))))
+                (t `((<= object ,high))))
+        ,@(cond ((eq low '*) nil)
+                ((consp low) `((> object ,(car low))))
+                (t `((>= object ,low))))))
+
+(defun real-interval-typep-form (head low high)
+  (ecase head
+    ((integer) (integral-interval-typep-form low high))
+    ((rational)
+     `(or ,(integral-interval-typep-form low high)
+          (if (cleavir-primop:typeq object ratio)
+              ,(real-interval-test low high)
+              nil)))
+    ((short-float single-float double-float long-float)
+     `(if (cleavir-primop:typeq object ,head)
+          ,(real-interval-test low high)
+          nil))
+    ((float)
+     ;; only singles and doubles actually exist.
+     ;; FIXME: write in this assumption better in case we change it later.
+     `(if (if (cleavir-primop:typeq object single-float)
+              t
+              (if (cleavir-primop:typeq object double-float) t nil))
+          ,(real-interval-test low high)
+          nil))
+    ((real)
+     `(or ,(integral-interval-typep-form low high)
+          (if (if (cleavir-primop:typeq object single-float)
+                  t
+                  (if (cleavir-primop:typeq object double-float)
+                      t
+                      (if (cleavir-primop:typeq object ratio) t nil)))
+              ,(real-interval-test low high)
+              nil)))))
 
 (defun typep-expansion (type env &optional (form nil formp))
   (flet ((default () (if formp form `(typep object ',type))))
@@ -291,7 +325,7 @@
            ;; We use primitives for testing with them, so we want
            ;; to be sure that they're valid.
            (cond ((valid-number-type-p head low high)
-                  (number-typep-form head low high))
+                  (real-interval-typep-form head low high))
                  (t (cmp:warn-invalid-number-type nil type)
                     (default)))))
         ((complex)
