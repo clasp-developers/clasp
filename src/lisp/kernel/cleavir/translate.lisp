@@ -112,10 +112,15 @@ when this is t a lot of graphs will be generated.")
   (let ((defs (cleavir-ir:defining-instructions location)))
     (= (length defs) 1)))
 
+(defun translate-immediate-input-value (value)
+  (if (literal::immediate-datum-p value)
+      (literal::immediate-datum-value value)
+      value))
+
 (defun in (datum &optional (label ""))
   (cond
     ((typep datum 'cleavir-ir:immediate-input)
-     (cmp:irc-int-to-ptr (%i64 (cleavir-ir:value datum)) cmp:%t*%))
+     (cmp:irc-int-to-ptr (%i64 (translate-immediate-input-value (cleavir-ir:value datum))) cmp:%t*%))
     ((typep datum 'cleavir-ir:lexical-location)
      (let ((alloca (datum-alloca datum)))
        (if (null alloca)
