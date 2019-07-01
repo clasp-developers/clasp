@@ -89,6 +89,8 @@
    #:array-rank-ast
    #:array-dimension-ast
    #:vaslist-pop-ast
+   #:header-stamp-ast #:rack-stamp-ast
+   #:wrapped-stamp-ast #:derivable-stamp-ast
    #:bind-va-list-ast #:make-bind-va-list-ast #:va-list-ast
    #:invoke-ast #:multiple-value-invoke-ast #:destinations
    #:introduce-invoke
@@ -138,6 +140,8 @@
    #:array-total-size-instruction
    #:array-rank-instruction
    #:array-dimension-instruction
+   #:header-stamp-instruction #:rack-stamp-instruction
+   #:wrapped-stamp-instruction #:derivable-stamp-instruction
    #:vaslist-pop-instruction #:make-vaslist-pop-instruction
    #:bind-va-list-instruction #:make-bind-va-list-instruction
    #:defcallback-instruction #:defcallback-args

@@ -181,6 +181,19 @@
   (cleavir-ast:arg1-ast cleavir-ast:arg2-ast))
 
 (cleavir-ast-to-hir::define-compile-functional-ast
+    cc-ast:header-stamp-ast clasp-cleavir-hir:header-stamp-instruction
+  (cleavir-ast:arg-ast))
+(cleavir-ast-to-hir::define-compile-functional-ast
+    cc-ast:rack-stamp-ast clasp-cleavir-hir:rack-stamp-instruction
+  (cleavir-ast:arg-ast))
+(cleavir-ast-to-hir::define-compile-functional-ast
+    cc-ast:wrapped-stamp-ast clasp-cleavir-hir:wrapped-stamp-instruction
+  (cleavir-ast:arg-ast))
+(cleavir-ast-to-hir::define-compile-functional-ast
+    cc-ast:derivable-stamp-ast clasp-cleavir-hir:derivable-stamp-instruction
+  (cleavir-ast:arg-ast))
+
+(cleavir-ast-to-hir::define-compile-functional-ast
     cc-ast:vaslist-pop-ast clasp-cleavir-hir:vaslist-pop-instruction
   (cleavir-ast:arg-ast))
 
@@ -200,8 +213,6 @@
          context)))
       (cleavir-ast-to-hir::invocation context)))))
 
-
-
 (defmethod cleavir-ast-to-hir:compile-ast ((ast clasp-cleavir-ast:precalc-value-reference-ast) context)
   (cleavir-ast-to-hir::assert-context ast context 1 1)
   (let ((index (clasp-cleavir-ast:precalc-value-reference-ast-index ast)))
@@ -212,7 +223,6 @@
      :original-object (clasp-cleavir-ast:precalc-value-reference-ast-original-object ast)
      :origin (clasp-cleavir::ensure-origin (cleavir-ast:origin ast) 999990)
      )))
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

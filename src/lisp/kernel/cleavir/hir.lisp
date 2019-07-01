@@ -269,6 +269,38 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; Instruction HEADER-STAMP-INSTRUCTION
+;;;
+
+(defclass header-stamp-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin) ())
+(defmethod cleavir-ir-graphviz:label ((instr header-stamp-instruction)) "header-stamp")
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Instruction RACK-STAMP-INSTRUCTION
+;;;
+
+(defclass rack-stamp-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin) ())
+(defmethod cleavir-ir-graphviz:label ((instr rack-stamp-instruction)) "rack-stamp")
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Instruction WRAPPED-STAMP-INSTRUCTION
+;;;
+
+(defclass wrapped-stamp-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin) ())
+(defmethod cleavir-ir-graphviz:label ((instr wrapped-stamp-instruction)) "wrapped-stamp")
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Instruction DERIVABLE-STAMP-INSTRUCTION
+;;;
+
+(defclass derivable-stamp-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin) ())
+(defmethod cleavir-ir-graphviz:label ((instr derivable-stamp-instruction)) "derivable-stamp")
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; Instruction VASLIST-POP-INSTRUCTION
 ;;;
 
