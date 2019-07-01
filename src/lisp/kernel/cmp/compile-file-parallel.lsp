@@ -260,28 +260,47 @@ Compile a lisp source file into an LLVM module."
             (make-pathname :type extension :defaults name))
           result))
 
-(defun output-cfp-result (result output-path output-type)
-  (ensure-directories-exist output-path)
-  (cond
-    #+(or)
-    ((eq output-type :bitcode)
-     (cf2-log "output-type :bitcode  result -> ~s~%" result)
-     (link-modules output-path result))
-    ((eq output-type :fasl)
-     (let ((output-path (make-pathname :type (bitcode-extension) :defaults output-path)))
-       (llvm-link output-path :input-files (cfp-result-files result (bitcode-extension))
-                              :link-type :bitcode))
-     (llvm-link output-path :input-files (cfp-result-files result "o")
-                            :input-type :object))
-    ((eq output-type :object)
-     (let ((output-path (make-pathname :type (bitcode-extension) :defaults output-path)))
-       (llvm-link output-path :input-files (cfp-result-files result (bitcode-extension))
-                              :link-type :bitcode))
-     (let ((output-path (make-pathname :type "o" :defaults output-path)))
-       (llvm-link output-path :input-files (cfp-result-files result "o")
-                              :link-type :object)))
-    (t ;; unknown
-     (error "Add support for output-type: ~a" output-type))))
+
+(defun output-cfp-result (result output-path output-type input-file &key verbose)
+  (flet ((delete-intermediate-files (intermediate-files expected-extension error-message)
+           (dolist (file intermediate-files)
+             (if (string= expected-extension (pathname-type file))
+                 (delete-file file)
+                 (warn t error-message file)))))
+    (ensure-directories-exist output-path)
+    (cond
+      #+(or)
+      ((eq output-type :bitcode)
+       (cf2-log "output-type :bitcode  result -> ~s~%" result)
+       (link-modules output-path result))
+      ((or (eq output-type :fasl)(eq output-type :object))
+       (let* ((bc-ext (bitcode-extension))
+              (output-path-intermediate (make-pathname :type bc-ext :defaults output-path))
+              (input-files-intermediate (cfp-result-files result bc-ext)))
+         ;;; there is no need to link all bc-files in one big one
+         ;;; and worse linking it might break some limits (ll-files for cl-jpeg are > 3 GB)
+         ;;; need to change build-fasl for that to work
+         #+(or) (llvm-link output-path-intermediate :input-files input-files-intermediate :link-type :bitcode)
+         ;;; now cleanup the mess part1 ,intermediate bc or ll-files
+         (delete-intermediate-files input-files-intermediate bc-ext "Unknown Bitcode file ~s~%")
+         (let ((intermediate-object-files (cfp-result-files result "o")))
+           (ecase output-type
+             (:fasl
+              (let ((output-path-fasl (make-pathname :type "fasl" :defaults output-path-intermediate)))
+                (llvm-link output-path-fasl :input-files intermediate-object-files :input-type :object)))
+             (:object
+              (let ((output-path-object (make-pathname :type "o" :defaults output-path-intermediate)))
+                (llvm-link output-path-object :input-files intermediate-object-files :link-type :object))))
+           ;;;  now cleanup the mess part2 ,intermediate o-files
+           (delete-intermediate-files intermediate-object-files "o" "Unknown Object file ~s~%")
+           ;;;  now cleanup the mess part3, the directory, beware, result list might be empty if source file was empty
+           (when result
+                 ;;; otherwise does not exist
+             (let* ((file (first result))
+                    (temp-dir (make-pathname :name nil :type nil :version nil :defaults file)))
+               (core::rmdir temp-dir))))))
+      (t ;; unknown
+       (error "Add support for output-type: ~a" output-type)))))
 
 (defun compile-file-parallel (input-file
                               &key
@@ -340,7 +359,7 @@ Compile a lisp source file into an LLVM module."
             (cond (dry-run (format t "Doing nothing further~%"))
                   ((null output-path)
                    (error "The output-file is nil for input filename ~a~%" input-file))
-                  (t (output-cfp-result result output-path output-type)))
+                  (t (output-cfp-result result output-path output-type input-file :verbose verbose)))
             output-path))))))
 
 (defvar *compile-file-parallel* nil)
