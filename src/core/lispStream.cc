@@ -3448,10 +3448,12 @@ input_stream_read_byte8(T_sp strm, unsigned char *c, cl_index n) {
   }
   else {
     FILE *f = IOStreamStreamFile(strm);
+    int filedes = fileno(f);
     gctools::Fixnum out = 0;
     clasp_disable_interrupts();
     do {
-      out = fread(c, sizeof(char), n, f);
+//      out = fread(c, sizeof(char), n, f);
+      out = read(filedes,c,sizeof(char)*n);
     } while (out < n && ferror(f) && restartable_io_error(strm, "fread"));
     clasp_enable_interrupts();
     return out;
