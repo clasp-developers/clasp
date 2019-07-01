@@ -82,12 +82,12 @@
    #:result-ast
    #:tag-ast
    #:datum-id
-   #:vector-length-ast #:vl-ast-vector
-   #:displacement-ast #:displacement-ast-mdarray
-   #:displaced-index-offset-ast #:displaced-index-offset-ast-mdarray
-   #:array-total-size-ast #:array-total-size-ast-mdarray
-   #:array-rank-ast #:array-rank-ast-mdarray
-   #:array-dimension-ast #:array-dimension-ast-mdarray #:array-dimension-ast-axis
+   #:vector-length-ast
+   #:displacement-ast
+   #:displaced-index-offset-ast
+   #:array-total-size-ast
+   #:array-rank-ast
+   #:array-dimension-ast
    #:vaslist-pop-ast
    #:bind-va-list-ast #:make-bind-va-list-ast #:va-list-ast
    #:invoke-ast #:multiple-value-invoke-ast #:destinations
@@ -132,16 +132,12 @@
    #:precalc-value-instruction-index
    #:precalc-value-instruction-original-object
    #:instruction-id
-   #:push-special-binding-instruction
-   #:make-push-special-binding-instruction
-   #:pop-special-binding-instruction
-   #:make-pop-special-binding-instruction
-   #:make-vector-length-instruction
-   #:make-displacement-instruction
-   #:make-displaced-index-offset-instruction
-   #:make-array-total-size-instruction
-   #:make-array-rank-instruction
-   #:make-array-dimension-instruction
+   #:vector-length-instruction
+   #:displacement-instruction
+   #:displaced-index-offset-instruction
+   #:array-total-size-instruction
+   #:array-rank-instruction
+   #:array-dimension-instruction
    #:vaslist-pop-instruction #:make-vaslist-pop-instruction
    #:bind-va-list-instruction #:make-bind-va-list-instruction
    #:defcallback-instruction #:defcallback-args

@@ -204,16 +204,16 @@
 ;;; as the length and fill pointer have the same offset.
 
 (defclass vector-length-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
-  ((%vector :initarg :vector :accessor vl-ast-vector)))
+  ((%vector :initarg :vector :accessor cleavir-ast:arg-ast)))
 
 (cleavir-io:define-save-info vector-length-ast
-    (:vector vl-ast-vector))
+    (:vector cleavir-ast:arg-ast))
 
 (defmethod cleavir-ast-graphviz::label ((ast vector-length-ast))
   "vlength")
 
 (defmethod cleavir-ast:children ((ast vector-length-ast))
-  (list (vl-ast-vector ast)))
+  (list (cleavir-ast:arg-ast ast)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -222,16 +222,16 @@
 ;;; Gets the actual underlying array of any mdarray.
 
 (defclass displacement-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
-  ((%mdarray :initarg :mdarray :accessor displacement-ast-mdarray)))
+  ((%mdarray :initarg :mdarray :accessor cleavir-ast:arg-ast)))
 
 (cleavir-io:define-save-info displacement-ast
-    (:mdarray displacement-ast-mdarray))
+    (:mdarray cleavir-ast:arg-ast))
 
 (defmethod cleavir-ast-graphviz::label ((ast displacement-ast))
   "displacement")
 
 (defmethod cleavir-ast:children ((ast displacement-ast))
-  (list (displacement-ast-mdarray ast)))
+  (list (cleavir-ast:arg-ast ast)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -240,16 +240,16 @@
 ;;; Gets the actual underlying DIO of any mdarray.
 
 (defclass displaced-index-offset-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
-  ((%mdarray :initarg :mdarray :accessor displaced-index-offset-ast-mdarray)))
+  ((%mdarray :initarg :mdarray :accessor cleavir-ast:arg-ast)))
 
 (cleavir-io:define-save-info displaced-index-offset-ast
-    (:mdarray displaced-index-offset-ast-mdarray))
+    (:mdarray cleavir-ast:arg-ast))
 
 (defmethod cleavir-ast-graphviz::label ((ast displaced-index-offset-ast))
   "d-offset")
 
 (defmethod cleavir-ast:children ((ast displaced-index-offset-ast))
-  (list (displaced-index-offset-ast-mdarray ast)))
+  (list (cleavir-ast:arg-ast ast)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -258,16 +258,16 @@
 ;;; Gets the total size of any mdarray.
 
 (defclass array-total-size-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
-  ((%mdarray :initarg :mdarray :accessor array-total-size-ast-mdarray)))
+  ((%mdarray :initarg :mdarray :accessor cleavir-ast:arg-ast)))
 
 (cleavir-io:define-save-info array-total-size-ast
-    (:mdarray array-total-size-ast-mdarray))
+    (:mdarray cleavir-ast:arg-ast))
 
 (defmethod cleavir-ast-graphviz::label ((ast array-total-size-ast))
   "ATS")
 
 (defmethod cleavir-ast:children ((ast array-total-size-ast))
-  (list (array-total-size-ast-mdarray ast)))
+  (list (cleavir-ast:arg-ast ast)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -276,16 +276,16 @@
 ;;; Gets the rank of any mdarray.
 
 (defclass array-rank-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
-  ((%mdarray :initarg :mdarray :accessor array-rank-ast-mdarray)))
+  ((%mdarray :initarg :mdarray :accessor cleavir-ast:arg-ast)))
 
 (cleavir-io:define-save-info array-rank-ast
-    (:mdarray array-rank-ast-mdarray))
+    (:mdarray cleavir-ast:arg-ast))
 
 (defmethod cleavir-ast-graphviz::label ((ast array-rank-ast))
   "rank")
 
 (defmethod cleavir-ast:children ((ast array-rank-ast))
-  (list (array-rank-ast-mdarray ast)))
+  (list (cleavir-ast:arg-ast ast)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -294,19 +294,19 @@
 ;;; Gets the dimensions of any mdarray.
 
 (defclass array-dimension-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
-  ((%mdarray :initarg :mdarray :accessor array-dimension-ast-mdarray)
-   (%axis :initarg :axis :accessor array-dimension-ast-axis)))
+  ((%mdarray :initarg :mdarray :accessor cleavir-ast:arg1-ast)
+   (%axis :initarg :axis :accessor cleavir-ast:arg2-ast)))
 
 (cleavir-io:define-save-info array-dimension-ast
-    (:mdarray array-dimension-ast-mdarray)
-  (:axis array-dimension-ast-axis))
+    (:mdarray cleavir-ast:arg1-ast)
+  (:axis cleavir-ast:arg2-ast))
 
 (defmethod cleavir-ast-graphviz::label ((ast array-dimension-ast))
   "AD")
 
 (defmethod cleavir-ast:children ((ast array-dimension-ast))
-  (list (array-dimension-ast-mdarray ast)
-        (array-dimension-ast-axis ast)))
+  (list (cleavir-ast:arg1-ast ast)
+        (cleavir-ast:arg2-ast ast)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
