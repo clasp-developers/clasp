@@ -1038,13 +1038,12 @@ jump to blocks within this tagbody."
         (wrappedb (irc-basic-block-create "wrapped"))
         (header (fifth rest))
         (headerb (irc-basic-block-create "header"))
+        (defaultb (irc-basic-block-create "impossible-default"))
         (mergeb (irc-basic-block-create "header-stamp-case-after")))
     (codegen stampt stampf env)
     (let* ((stamp-i64 (irc-ptr-to-int (irc-load stampt) %i64%))
            (where (irc-and stamp-i64 (jit-constant-i64 +where-tag-mask+)))
-           ;; NOTE: Technically should have default block hit an error thing-
-           ;; it ought to be unreachable.
-           (sw (irc-switch where mergeb 4)))
+           (sw (irc-switch where defaultb 4)))
       (irc-add-case sw (jit-constant-i64 +derivable-where-tag+) derivableb)
       (irc-add-case sw (jit-constant-i64 +rack-where-tag+) rackb)
       (irc-add-case sw (jit-constant-i64 +wrapped-where-tag+) wrappedb)
@@ -1062,6 +1061,9 @@ jump to blocks within this tagbody."
       (irc-begin-block headerb)
       (codegen result header env)
       (irc-branch-if-no-terminator-inst mergeb)
+      ;; Generate the default block, which is just unreachable.
+      (irc-begin-block defaultb)
+      (irc-unreachable)
       ;; Done
       (irc-begin-block mergeb))))
 
