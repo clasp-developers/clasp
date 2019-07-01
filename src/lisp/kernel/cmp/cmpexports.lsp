@@ -147,6 +147,7 @@
             alloca-i8
             alloca-i8*
             alloca-i32
+            alloca-size_t
             alloca-return
             alloca-va_list
             alloca-temp-values
@@ -191,6 +192,9 @@
             irc-struct-gep
             irc-read-slot
             irc-write-slot
+            irc-make-tmv
+            irc-tmv-primary
+            irc-tmv-nret
             irc-t*-result
             irc-tmv-result
             irc-switch

@@ -202,10 +202,7 @@ when this is t a lot of graphs will be generated.")
                           function-info
                           initial-instruction abi &key (linkage 'llvm-sys:internal-linkage))
   (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
-    (let ((return-value (cmp:alloca-return "return-value")))
-      ;; in case of a non-local exit, zero out the number of returned values
-      (with-return-values (return-value abi nret ret-regs)
-        (cmp:irc-store (%size_t 0) nret))
+    (let ((return-value (alloca-return)))
       (cmp:with-irbuilder (body-irbuilder)
         (cmp:with-debug-info-source-position ((ensure-origin (cleavir-ir:origin initial-instruction) 999970) )
           (cmp:with-dbg-lexical-block
@@ -450,7 +447,52 @@ when this is t a lot of graphs will be generated.")
               for count-class in sorted-instr-count-list
               when count-class
                 do (sys:monitor-message "instr-miss-origin-class-count ~a ~a" (car count-class) (cdr count-class)))))))
-    
+
+;;; testy
+
+(defvar *replacement-cache*)
+(defvar *assignments-to-delete*)
+;;; given a replacement, return a location that all of its uses can
+;;; use instead. that may be the location itself if there is no replacement.
+(defun replacement (location)
+  (or (gethash location *replacement-cache*)
+      (setf (gethash location *replacement-cache*)
+            (compute-replacement location))))
+
+(defun compute-replacement (location)
+  (if (and (typep location 'cleavir-ir:lexical-location) (ssablep location))
+      (let ((def (first (cleavir-ir:defining-instructions location))))
+        (if (typep def 'cleavir-ir:assignment-instruction)
+            ;; okay, it's a temp; now, is it necessary?
+            (let ((pre (first (cleavir-ir:inputs def))))
+              (if (ssablep pre)
+                  ;; no - get a replacement by recursion,
+                  ;; and mark the assignment for deletion
+                  (progn (push def *assignments-to-delete*)
+                         (replacement pre))
+                  ;; yes
+                  location))
+            location))
+      location))
+
+#+(or)
+(defun replace-alias (location replacement)
+  (loop for user in (cleavir-ir:using-instructions location)
+        do (cleavir-ir:substitute-input replacement location user)))
+
+(defun replace-aliases (initial-instruction)
+  (let ((*replacement-cache* (make-hash-table :test #'eq))
+        (*assignments-to-delete* nil))
+    (cleavir-ir:map-instructions-arbitrary-order
+     (lambda (i)
+       (setf (cleavir-ir:dynamic-environment i)
+             (replacement (cleavir-ir:dynamic-environment i)))
+       (setf (cleavir-ir:inputs i)
+             (mapcar #'replacement (cleavir-ir:inputs i))))
+     initial-instruction)
+    ;; now delete assignments with unused outputs
+    (mapc #'cleavir-ir:delete-instruction *assignments-to-delete*)))
+
 (defun my-hir-transformations (init-instr system env)
   ;; FIXME: Per Cleavir rules, we shouldn't need the environment at this point.
   ;; We do anyway because of the possibility that a load-time-value input is introduced
@@ -502,6 +544,8 @@ when this is t a lot of graphs will be generated.")
   (quick-draw-hir init-instr "hir-after-eliminate-load-time-value-inputs")
   (setf *ct-eliminate-load-time-value-inputs* (compiler-timer-elapsed))
   #+debug-monitor(monitor-instructions-with-origins init-instr)
+
+  (replace-aliases init-instr)
   #+(or)
   (cleavir-remove-useless-instructions:remove-useless-instructions init-instr)
   #+(or)

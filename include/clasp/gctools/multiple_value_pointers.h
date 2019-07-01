@@ -56,7 +56,8 @@ public:
   // Save this T_mv's primary value to the multiple value vector,
   // probably so we can restore it later.
   // With our multiple value protocol, the primary value is not
-  // written into the vector by default.
+  // written into the vector by default; this function does so
+  // explicitly.
   void saveToMultipleValue0() const {
     core::MultipleValues &mv = core::lisp_multipleValues();
     mv.setSize(0);

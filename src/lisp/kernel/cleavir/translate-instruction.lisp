@@ -116,32 +116,32 @@
 
 (defmethod translate-simple-instruction
     ((instr clasp-cleavir-hir:save-values-instruction) return-value abi function-info)
-  (declare (ignore abi function-info))
-  (let* ((outputs (cleavir-ir:outputs instr))
-         (nvals-loc (first outputs))
-         (vals-loc (second outputs))
-         ;; Get the values.
-         (ret (cmp:irc-load return-value))
-         ;; Get the parts we need.
-         (primary (cmp:irc-extract-value ret '(0) "primary"))
-         (nvals (cmp:irc-extract-value ret '(1) "nvals"))
-         ;; Allocate storage. Note this is in-line.
-         (mv-temp (cmp:alloca-temp-values nvals)))
-    ;; Do the actual storing into mv-temp
-    (%intrinsic-call "cc_save_values" (list nvals primary mv-temp))
-    ;; Put the stuff in the outputs
-    (out nvals nvals-loc)
-    (out mv-temp vals-loc)))
+  (declare (ignore function-info))
+  (with-return-values (return-value abi nvalsl return-regs)
+    (let* ((outputs (cleavir-ir:outputs instr))
+           (nvals (cmp:irc-load nvalsl))
+           (temp-nvals-loc (first outputs))
+           (temp-vals-loc (second outputs))
+           ;; Get the part we need.
+           (primary (cmp:irc-load (return-value-elt return-regs 0)))
+           ;; Allocate storage. Note this is in-line, not in the alloca-irbuilder,
+           ;; of course because it's of variable size.
+           (mv-temp (cmp:alloca-temp-values nvals)))
+      ;; Do the actual storing into mv-temp
+      (%intrinsic-call "cc_save_values" (list nvals primary mv-temp))
+      ;; Put the stuff in the outputs
+      (out nvals temp-nvals-loc)
+      (out mv-temp temp-vals-loc))))
 
 (defmethod translate-simple-instruction
     ((instr clasp-cleavir-hir:load-values-instruction) return-value abi function-info)
   (declare (ignore abi function-info))
   (let* ((inputs (cleavir-ir:inputs instr))
          (nvals-loc (first inputs))
-         (vals-loc (second inputs)))
-    (cmp:irc-store
-     (%intrinsic-call "cc_load_values" (list (in nvals-loc) (in vals-loc)))
-     return-value)))
+         (vals-loc (second inputs))
+         (loaded
+           (%intrinsic-call "cc_load_values" (list (in nvals-loc) (in vals-loc)))))
+    (store-tmv loaded return-value)))
 
 (defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir:multiple-value-foreign-call-instruction) return-value (abi abi-x86-64) function-info)
@@ -299,9 +299,9 @@
     (let ((call-result (%intrinsic-invoke-if-landing-pad-or-call
                         "cc_call_multipleValueOneFormCallWithRet0" 
                         (list (in (first (cleavir-ir:inputs instruction)))
-                              (cmp:irc-load return-value)))))
+                              (load-return-value return-value)))))
       ;; call-result is a T_mv, and return-valuea  T_mv*
-      (cmp:irc-store call-result return-value)
+      (store-tmv call-result return-value)
       (cc-dbg-when *debug-log*
                    (format *debug-log*
                            "    translate-simple-instruction multiple-value-call-instruction: ~a~%" 
@@ -587,7 +587,7 @@
   (declare (ignore successors function-info))
   ;; we don't use the second input to the unwind - the dynenv - at the moment.
   ;; Save whatever is in return-vals in the multiple-value array
-  (%intrinsic-call "cc_saveMultipleValue0" (list return-value))
+  (save-multiple-value-0 return-value)
   (let ((static-index
           (instruction-go-index
            (nth (cleavir-ir:unwind-index instruction)
@@ -618,7 +618,7 @@
 (defmethod translate-branch-instruction
     ((instruction cleavir-ir:return-instruction) return-value successors abi function-info)
   (declare (ignore successors))
-  (cmp:irc-ret (cmp:irc-load return-value)))
+  (cmp:irc-ret (load-return-value return-value)))
 
 (defmethod translate-branch-instruction
     ((instruction cleavir-ir:funcall-no-return-instruction)

@@ -1185,15 +1185,17 @@ void cc_unwind(T_O *targetFrame, size_t index) {
     throw unwind;
 }
 
-void cc_saveMultipleValue0(core::T_mv *result)
+void cc_saveMultipleValue0(core::T_mv result)
 {NO_UNWIND_BEGIN();
-  (*result).saveToMultipleValue0();
+  result.saveToMultipleValue0();
   NO_UNWIND_END();
 }
 
-void cc_restoreMultipleValue0(core::T_mv *result)
+gctools::return_type cc_restoreMultipleValue0()
 {NO_UNWIND_BEGIN();
-  (*result).readFromMultipleValue0();
+  MultipleValues &mv = lisp_multipleValues();
+  size_t nret = mv.getSize();
+  return gctools::return_type((nret == 0) ? _Nil<T_O>().raw_() : mv[0], nret);
   NO_UNWIND_END();
 }
 

@@ -226,8 +226,8 @@
         (let ((tmvp (alloca-tmv "mvp1-tmv")))
           (codegen tmvp first-form env)
           (let* ((tmv (irc-load tmvp))
-                 (primary (irc-extract-value tmv '(0)))
-                 (nvals (irc-extract-value tmv '(1)))
+                 (primary (irc-tmv-primary tmv))
+                 (nvals (irc-tmv-nret tmv))
                  (temp (alloca-temp-values nvals "mvp1-temp")))
             (irc-intrinsic "cc_save_values" nvals primary temp)
             ;; we have extracted what we need from the tmv, so just reuse it
@@ -1364,7 +1364,7 @@ jump to blocks within this tagbody."
                   (let ((c-result (irc-intrinsic-call
                                    return-translator-name
                                    ;; get the 0th value.
-                                   (list (irc-extract-value cl-result (list 0) "primary"))
+                                   (list (irc-tmv-primary cl-result))
                                    "c-result")))
                     (irc-ret c-result))))))))))
 
