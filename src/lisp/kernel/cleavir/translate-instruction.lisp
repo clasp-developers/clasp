@@ -356,44 +356,68 @@
                                        (%default-int-type abi))))))
 
 (defmethod translate-simple-instruction
-    ((instruction clasp-cleavir-hir::vector-length-instruction) return-value abi function-info)
+    ((instruction clasp-cleavir-hir:vector-length-instruction) return-value abi function-info)
   (declare (ignore return-value function-info))
   (out (cmp::gen-vector-length (in (first (cleavir-ir:inputs instruction))))
        (first (cleavir-ir:outputs instruction))))
 
 (defmethod translate-simple-instruction
-    ((instruction clasp-cleavir-hir::displacement-instruction) return-value abi function-info)
+    ((instruction clasp-cleavir-hir:displacement-instruction) return-value abi function-info)
   (declare (ignore return-value function-info abi))
   (out (cmp:irc-real-array-displacement (in (first (cleavir-ir:inputs instruction))))
        (first (cleavir-ir:outputs instruction))))
 
 (defmethod translate-simple-instruction
-    ((instruction clasp-cleavir-hir::displaced-index-offset-instruction) return-value abi function-info)
+    ((instruction clasp-cleavir-hir:displaced-index-offset-instruction) return-value abi function-info)
   (declare (ignore return-value function-info abi))
   (out (cmp:irc-tag-fixnum
         (cmp:irc-real-array-index-offset (in (first (cleavir-ir:inputs instruction)))))
        (first (cleavir-ir:outputs instruction))))
 
 (defmethod translate-simple-instruction
-    ((instruction clasp-cleavir-hir::array-total-size-instruction) return-value abi function-info)
+    ((instruction clasp-cleavir-hir:array-total-size-instruction) return-value abi function-info)
   (declare (ignore return-value function-info abi))
   (out (cmp:irc-tag-fixnum
         (cmp:irc-array-total-size (in (first (cleavir-ir:inputs instruction)))))
        (first (cleavir-ir:outputs instruction))))
 
 (defmethod translate-simple-instruction
-    ((instruction clasp-cleavir-hir::array-rank-instruction) return-value abi function-info)
+    ((instruction clasp-cleavir-hir:array-rank-instruction) return-value abi function-info)
   (declare (ignore return-value function-info abi))
   (out (cmp:irc-tag-fixnum (cmp:irc-array-rank (in (first (cleavir-ir:inputs instruction)))))
        (first (cleavir-ir:outputs instruction))))
 
 (defmethod translate-simple-instruction
-    ((instruction clasp-cleavir-hir::array-dimension-instruction) return-value abi function-info)
+    ((instruction clasp-cleavir-hir:array-dimension-instruction) return-value abi function-info)
   (declare (ignore return-value function-info abi))
   (let ((inputs (cleavir-ir:inputs instruction))
         (output (first (cleavir-ir:outputs instruction))))
     (out (cmp:gen-%array-dimension (in (first inputs)) (in (second inputs)))
          output)))
+
+(defmethod translate-simple-instruction
+    ((instruction clasp-cleavir-hir:header-stamp-instruction) return-value abi function-info)
+  (declare (ignore return-value abi function-info))
+  (out (cmp:irc-header-stamp (in (first (cleavir-ir:inputs instruction))))
+       (first (cleavir-ir:outputs instruction))))
+
+(defmethod translate-simple-instruction
+    ((instruction clasp-cleavir-hir:rack-stamp-instruction) return-value abi function-info)
+  (declare (ignore return-value abi function-info))
+  (out (cmp:irc-rack-stamp (in (first (cleavir-ir:inputs instruction))))
+       (first (cleavir-ir:outputs instruction))))
+
+(defmethod translate-simple-instruction
+    ((instruction clasp-cleavir-hir:wrapped-stamp-instruction) return-value abi function-info)
+  (declare (ignore return-value abi function-info))
+  (out (cmp:irc-wrapped-stamp (in (first (cleavir-ir:inputs instruction))))
+       (first (cleavir-ir:outputs instruction))))
+
+(defmethod translate-simple-instruction
+    ((instruction clasp-cleavir-hir:derivable-stamp-instruction) return-value abi function-info)
+  (declare (ignore return-value abi function-info))
+  (out (cmp:irc-derivable-stamp (in (first (cleavir-ir:inputs instruction))))
+       (first (cleavir-ir:outputs instruction))))
 
 (defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir:vaslist-pop-instruction) return-value abi function-info)

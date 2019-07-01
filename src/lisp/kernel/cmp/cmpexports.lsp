@@ -197,6 +197,10 @@
             irc-tmv-nret
             irc-t*-result
             irc-tmv-result
+            irc-header-stamp
+            irc-rack-stamp
+            irc-wrapped-stamp
+            irc-derivable-stamp
             irc-switch
             irc-tag-fixnum
             irc-trunc

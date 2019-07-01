@@ -310,6 +310,50 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; Class HEADER-STAMP-AST
+
+(defclass header-stamp-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
+  ((%arg :initarg :arg :accessor cleavir-ast:arg-ast)))
+(cleavir-io:define-save-info header-stamp-ast (:arg cleavir-ast:arg-ast))
+(defmethod cleavir-ast-graphviz::label ((ast header-stamp-ast)) "header-stamp")
+(defmethod cleavir-ast:children ((ast header-stamp-ast))
+  (list (cleavir-ast:arg-ast ast)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Class RACK-STAMP-AST
+
+(defclass rack-stamp-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
+  ((%arg :initarg :arg :accessor cleavir-ast:arg-ast)))
+(cleavir-io:define-save-info rack-stamp-ast (:arg cleavir-ast:arg-ast))
+(defmethod cleavir-ast-graphviz::label ((ast rack-stamp-ast)) "rack-stamp")
+(defmethod cleavir-ast:children ((ast rack-stamp-ast))
+  (list (cleavir-ast:arg-ast ast)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Class WRAPPED-STAMP-AST
+
+(defclass wrapped-stamp-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
+  ((%arg :initarg :arg :accessor cleavir-ast:arg-ast)))
+(cleavir-io:define-save-info wrapped-stamp-ast (:arg cleavir-ast:arg-ast))
+(defmethod cleavir-ast-graphviz::label ((ast wrapped-stamp-ast)) "wrapped-stamp")
+(defmethod cleavir-ast:children ((ast wrapped-stamp-ast))
+  (list (cleavir-ast:arg-ast ast)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Class DERIVABLE-STAMP-AST
+
+(defclass derivable-stamp-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
+  ((%arg :initarg :arg :accessor cleavir-ast:arg-ast)))
+(cleavir-io:define-save-info derivable-stamp-ast (:arg cleavir-ast:arg-ast))
+(defmethod cleavir-ast-graphviz::label ((ast derivable-stamp-ast)) "derivable-stamp")
+(defmethod cleavir-ast:children ((ast derivable-stamp-ast))
+  (list (cleavir-ast:arg-ast ast)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; Class VASLIST-POP-AST
 ;;;
 ;;; Pops an element off a valist.
