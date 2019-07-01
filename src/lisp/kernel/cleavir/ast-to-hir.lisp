@@ -160,102 +160,29 @@
               :successors (cleavir-ast-to-hir::successors context)))
       (cleavir-ast-to-hir:invocation context)))))
 
-(defmethod cleavir-ast-to-hir:compile-ast ((ast cc-ast:vector-length-ast) context)
-  (cleavir-ast-to-hir::assert-context ast context 1 1)
-  (let ((temp (cleavir-ir:new-temporary)))
-    (cleavir-ast-to-hir:compile-ast
-     (cc-ast:vl-ast-vector ast)
-     (cleavir-ast-to-hir::context
-      (list temp)
-      (list (clasp-cleavir-hir:make-vector-length-instruction
-             temp (first (cleavir-ast-to-hir::results context))
-             (first (cleavir-ast-to-hir::successors context))))
-      (cleavir-ast-to-hir::invocation context)))))
+;; FIXME: export names, deexport make-, have macroexpansion assert context
+(cleavir-ast-to-hir::define-compile-functional-ast
+    cc-ast:vector-length-ast clasp-cleavir-hir:vector-length-instruction
+  (cleavir-ast:arg-ast))
+(cleavir-ast-to-hir::define-compile-functional-ast
+    cc-ast:displacement-ast clasp-cleavir-hir:displacement-instruction
+  (cleavir-ast:arg-ast))
+(cleavir-ast-to-hir::define-compile-functional-ast
+    cc-ast:displaced-index-offset-ast clasp-cleavir-hir:displaced-index-offset-instruction
+  (cleavir-ast:arg-ast))
+(cleavir-ast-to-hir::define-compile-functional-ast
+    cc-ast:array-total-size-ast clasp-cleavir-hir:array-total-size-instruction
+  (cleavir-ast:arg-ast))
+(cleavir-ast-to-hir::define-compile-functional-ast
+    cc-ast:array-rank-ast clasp-cleavir-hir:array-rank-instruction
+  (cleavir-ast:arg-ast))
+(cleavir-ast-to-hir::define-compile-functional-ast
+    cc-ast:array-dimension-ast clasp-cleavir-hir:array-dimension-instruction
+  (cleavir-ast:arg1-ast cleavir-ast:arg2-ast))
 
-
-(defmethod cleavir-ast-to-hir:compile-ast ((ast cc-ast:displacement-ast) context)
-  (cleavir-ast-to-hir::assert-context ast context 1 1)
-  (let ((temp (cleavir-ir:new-temporary)))
-    (cleavir-ast-to-hir:compile-ast
-     (cc-ast:displacement-ast-mdarray ast)
-     (cleavir-ast-to-hir::context
-      (list temp)
-      (list (clasp-cleavir-hir:make-displacement-instruction
-             temp (first (cleavir-ast-to-hir::results context))
-             (first (cleavir-ast-to-hir::successors context))))
-      (cleavir-ast-to-hir::invocation context)))))
-
-
-(defmethod cleavir-ast-to-hir:compile-ast ((ast cc-ast:displaced-index-offset-ast) context)
-  (cleavir-ast-to-hir::assert-context ast context 1 1)
-  (let ((temp (cleavir-ir:new-temporary)))
-    (cleavir-ast-to-hir:compile-ast
-     (cc-ast:displaced-index-offset-ast-mdarray ast)
-     (cleavir-ast-to-hir::context
-      (list temp)
-      (list (clasp-cleavir-hir:make-displaced-index-offset-instruction
-             temp (first (cleavir-ast-to-hir::results context))
-             (first (cleavir-ast-to-hir::successors context))))
-      (cleavir-ast-to-hir::invocation context)))))
-
-
-(defmethod cleavir-ast-to-hir:compile-ast ((ast cc-ast:array-total-size-ast) context)
-  (cleavir-ast-to-hir::assert-context ast context 1 1)
-  (let ((temp (cleavir-ir:new-temporary)))
-    (cleavir-ast-to-hir:compile-ast
-     (cc-ast:array-total-size-ast-mdarray ast)
-     (cleavir-ast-to-hir::context
-      (list temp)
-      (list (clasp-cleavir-hir:make-array-total-size-instruction
-             temp (first (cleavir-ast-to-hir::results context))
-             (first (cleavir-ast-to-hir::successors context))))
-      (cleavir-ast-to-hir::invocation context)))))
-
-
-(defmethod cleavir-ast-to-hir:compile-ast ((ast cc-ast:array-rank-ast) context)
-  (cleavir-ast-to-hir::assert-context ast context 1 1)
-  (let ((temp (cleavir-ir:new-temporary)))
-    (cleavir-ast-to-hir:compile-ast
-     (cc-ast:array-rank-ast-mdarray ast)
-     (cleavir-ast-to-hir::context
-      (list temp)
-      (list (clasp-cleavir-hir:make-array-rank-instruction
-             temp (first (cleavir-ast-to-hir::results context))
-             (first (cleavir-ast-to-hir::successors context))))
-      (cleavir-ast-to-hir::invocation context)))))
-
-
-(defmethod cleavir-ast-to-hir:compile-ast ((ast cc-ast:array-dimension-ast) context)
-  (cleavir-ast-to-hir::assert-context ast context 1 1)
-  (let ((mdarray-temp (cleavir-ir:new-temporary))
-        (axis-temp (cleavir-ir:new-temporary)))
-    (cleavir-ast-to-hir:compile-ast
-     (cc-ast:array-dimension-ast-mdarray ast)
-     (cleavir-ast-to-hir::context
-      (list mdarray-temp)
-      (list (cleavir-ast-to-hir:compile-ast
-             (cc-ast:array-dimension-ast-axis ast)
-             (cleavir-ast-to-hir::context
-              (list axis-temp)
-              (list (clasp-cleavir-hir:make-array-dimension-instruction
-                     mdarray-temp axis-temp
-                     (first (cleavir-ast-to-hir::results context))
-                     (first (cleavir-ast-to-hir::successors context))))
-              (cleavir-ast-to-hir::invocation context))))
-      (cleavir-ast-to-hir::invocation context)))))
-
-
-(defmethod cleavir-ast-to-hir:compile-ast ((ast cc-ast:vaslist-pop-ast) context)
-  (cleavir-ast-to-hir::assert-context ast context 1 1)
-  (let ((temp (cleavir-ir:new-temporary)))
-    (cleavir-ast-to-hir:compile-ast
-     (cleavir-ast:arg-ast ast)
-     (cleavir-ast-to-hir::context
-      (list temp)
-      (list (clasp-cleavir-hir:make-vaslist-pop-instruction
-             temp (first (cleavir-ast-to-hir::results context))
-             (first (cleavir-ast-to-hir::successors context))))
-      (cleavir-ast-to-hir::invocation context)))))
+(cleavir-ast-to-hir::define-compile-functional-ast
+    cc-ast:vaslist-pop-ast clasp-cleavir-hir:vaslist-pop-instruction
+  (cleavir-ast:arg-ast))
 
 (defmethod cleavir-ast-to-hir:compile-ast ((ast cc-ast:bind-va-list-ast) context)
   (let ((temp (cleavir-ir:new-temporary)))
