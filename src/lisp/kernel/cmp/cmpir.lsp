@@ -1087,22 +1087,30 @@ and then the irbuilder-alloca, irbuilder-body."
   
   (irc-extract-value smart-ptr (list 0) label))
 
+(defun irc-make-tmv (nret val0)
+  (let* ((undef (llvm-sys:undef-value-get %tmv%))
+         (ret-tmv0 (llvm-sys:create-insert-value *irbuilder* undef val0 '(0) "ret0"))
+         (ret-tmvn (llvm-sys:create-insert-value *irbuilder* ret-tmv0 nret '(1) "nret")))
+    ret-tmvn))
+
+(defun irc-tmv-primary (tmv &optional (label "primary-return-value"))
+  (irc-extract-value tmv '(0) label))
+
+(defun irc-tmv-nret (tmv &optional (label "nret"))
+  (irc-extract-value tmv '(1) label))
+
 (defun irc-t*-result (t* result)
   (let ((return-type (llvm-sys:get-type result)))
     (cond ((llvm-sys:type-equal return-type %t**%)
            (irc-store t* result))
           ((llvm-sys:type-equal return-type %tmv*%)
-           (let* ((undef (llvm-sys:undef-value-get %tmv%))
-                  (ret-tmv0 (llvm-sys:create-insert-value *irbuilder* undef t* '(0) "ret0"))
-                  (one (jit-constant-size_t 1))
-                  (ret-tmv1 (llvm-sys:create-insert-value *irbuilder* ret-tmv0 one '(1) "nret")))
-             (irc-store ret-tmv1 result)))
+           (irc-store (irc-make-tmv (jit-constant-size_t 1) t*) result))
           (t (error "Unknown return-type in irc-t*-result")))))
 
 (defun irc-tmv-result (tmv result)
   (let ((return-type (llvm-sys:get-type result)))
     (cond ((llvm-sys:type-equal return-type %t**%)
-           (let ((primary (irc-extract-value tmv (list 0))))
+           (let ((primary (irc-tmv-primary tmv)))
              (irc-store primary result)))
           ((llvm-sys:type-equal return-type %tmv*%)
            (irc-store tmv result))

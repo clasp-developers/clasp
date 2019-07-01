@@ -16,7 +16,7 @@
            (list exception-ptr frame)
            "go-index")
         ;; Restore multiple values before going to whichever block.
-        (%intrinsic-call "cc_restoreMultipleValue0" (list return-value))))))
+        (restore-multiple-value-0 return-value)))))
 
 ;;; Generates a landing pad and code to deal with unwinds to this function.
 ;;; See note on previous and possibly future operation below for the purpose of the first argument,
