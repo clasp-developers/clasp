@@ -160,7 +160,7 @@
      ;; Hypothetically the form could actually BE nil,
      ;; but I'm not holding my breath here- the backup is probably fine.
      ,(cond ((effective-method-outcome-form outcome))
-            ((functionp (effective-method-outcome-function outcome))
+            ((effective-method-outcome-function outcome)
              `(cleavir-primop:funcall
                ,(effective-method-outcome-function outcome) .method-args. nil))
             (t (error "BUG: Outcome ~a is messed up" outcome)))))
@@ -276,8 +276,7 @@
                            &rest args &key generic-function-name output-path log-gf force-compile)
   (let* ((*log-gf* log-gf)
          (*fastgf-timer-start* (get-internal-real-time))
-         (basic (basic-tree call-history specializer-profile))
-         (compiled (compile-tree basic)))
+         (compiled (calculate-dtree call-history specializer-profile)))
     (unwind-protect
          (if (or force-compile *fastgf-use-compiler*)
              (cmp:bclasp-compile nil (generate-dispatcher-from-dtree

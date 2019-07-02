@@ -375,7 +375,10 @@
                    (cont))
                   (t (error "Unknown dtree: ~a" tree)))))))
 
-;;; SIMPLE ENTRY POINT
+;;; SIMPLE ENTRY POINTS
+
+(defun calculate-dtree (call-history specializer-profile)
+  (compile-tree (basic-tree call-history specializer-profile)))
 
 (defun compute-dispatch-program (call-history specializer-profile)
   (let* ((basic (basic-tree call-history specializer-profile))
