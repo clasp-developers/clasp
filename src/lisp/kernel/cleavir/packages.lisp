@@ -68,6 +68,8 @@
    #:function-name
    #:foreign-types
    #:defcallback-ast #:defcallback-args
+   #:header-stamp-case-ast #:make-header-stamp-case-ast
+   #:stamp-ast #:derivable-ast #:rack-ast #:wrapped-ast #:header-ast
    #:make-throw-ast
    #:cleanup-ast
    #:make-setf-fdefinition-ast
@@ -145,7 +147,7 @@
    #:vaslist-pop-instruction #:make-vaslist-pop-instruction
    #:bind-va-list-instruction #:make-bind-va-list-instruction
    #:defcallback-instruction #:defcallback-args
-   #:invoke-instruction #:multiple-value-invoke-instruction #:destinations
+   #:header-stamp-case-instruction #:make-header-stamp-case-instruction
    ))
 
 (defpackage #:clasp-cleavir-ast-to-hir

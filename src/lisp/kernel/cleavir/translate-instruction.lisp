@@ -607,6 +607,21 @@
    (in (first (cleavir-ir:inputs instruction))) (first successors) (second successors)))
 
 (defmethod translate-branch-instruction
+    ((instruction clasp-cleavir-hir:header-stamp-case-instruction)
+     return-value successors abi function-info)
+  (let* ((stamp (in (first (cleavir-ir:inputs instruction))))
+         (stamp-i64 (cmp:irc-ptr-to-int stamp cmp:%i64%))
+         (where (cmp:irc-and stamp-i64 (%i64 cmp:+where-tag-mask+)))
+         (defaultb (cmp:irc-basic-block-create "impossible-default"))
+         (sw (cmp:irc-switch where defaultb 4)))
+    (cmp:irc-add-case sw (%i64 cmp:+derivable-where-tag+) (first successors))
+    (cmp:irc-add-case sw (%i64 cmp:+rack-where-tag+) (second successors))
+    (cmp:irc-add-case sw (%i64 cmp:+wrapped-where-tag+) (third successors))
+    (cmp:irc-add-case sw (%i64 cmp:+header-where-tag+) (fourth successors))
+    (cmp:irc-begin-block defaultb)
+    (cmp:irc-unreachable)))
+
+(defmethod translate-branch-instruction
     ((instruction cleavir-ir:unwind-instruction) return-value successors abi function-info)
   (declare (ignore successors function-info))
   ;; we don't use the second input to the unwind - the dynenv - at the moment.

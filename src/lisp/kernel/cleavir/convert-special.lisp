@@ -293,6 +293,36 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; Converting CORE::HEADER-STAMP-CASE
+;;;
+
+(defmethod cleavir-generate-ast:convert-special
+    ((symbol (eql 'core::header-stamp-case)) form env (system clasp-cleavir:clasp))
+  (destructuring-bind (stamp derivable rack wrapped header) (rest form)
+    (clasp-cleavir-ast:make-header-stamp-case-ast
+     (cleavir-generate-ast:convert stamp env system)
+     (cleavir-generate-ast:convert derivable env system)
+     (cleavir-generate-ast:convert rack env system)
+     (cleavir-generate-ast:convert wrapped env system)
+     (cleavir-generate-ast:convert header env system))))
+
+(defmethod cleavir-generate-ast:check-special-form-syntax ((head (eql 'core::header-stamp-case)) form)
+  (cleavir-code-utilities:check-form-proper-list form)
+  (cleavir-code-utilities:check-argcount form 5 5))
+
+(defmethod cleavir-cst-to-ast:convert-special
+    ((symbol (eql 'core::header-stamp-case)) cst env (system clasp-cleavir:clasp))
+  (cst:db origin (stamp derivable rack wrapped header) (cst:rest cst)
+    (clasp-cleavir-ast:make-header-stamp-case-ast
+     (cleavir-cst-to-ast:convert stamp env system)
+     (cleavir-cst-to-ast:convert derivable env system)
+     (cleavir-cst-to-ast:convert rack env system)
+     (cleavir-cst-to-ast:convert wrapped env system)
+     (cleavir-cst-to-ast:convert header env system)
+     origin)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; Converting CATCH
 ;;;
 ;;; Convert catch into a call
@@ -315,21 +345,21 @@
 ;;;        and core::local-block to block
 ;;;
 
-(defmethod cleavir-generate-ast::convert-special
+(defmethod cleavir-generate-ast:convert-special
     ((symbol (eql 'core::local-tagbody)) form environment (system clasp-cleavir:clasp))
-  (cleavir-generate-ast::convert-special 'tagbody form environment system))
+  (cleavir-generate-ast:convert-special 'tagbody form environment system))
 
-(defmethod cleavir-generate-ast::convert-special
+(defmethod cleavir-generate-ast:convert-special
     ((symbol (eql 'core::local-block)) form environment (system clasp-cleavir:clasp))
-  (cleavir-generate-ast::convert-special 'block form environment system))
+  (cleavir-generate-ast:convert-special 'block form environment system))
 
-(defmethod cleavir-cst-to-ast::convert-special
+(defmethod cleavir-cst-to-ast:convert-special
     ((symbol (eql 'core::local-tagbody)) cst environment (system clasp-cleavir:clasp))
-  (cleavir-cst-to-ast::convert-special 'tagbody cst environment system))
+  (cleavir-cst-to-ast:convert-special 'tagbody cst environment system))
 
-(defmethod cleavir-cst-to-ast::convert-special
+(defmethod cleavir-cst-to-ast:convert-special
     ((symbol (eql 'core::local-block)) cst environment (system clasp-cleavir:clasp))
-  (cleavir-cst-to-ast::convert-special 'block cst environment system))
+  (cleavir-cst-to-ast:convert-special 'block cst environment system))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -357,8 +387,8 @@
     (cleavir-cst-to-ast::convert `(core:throw-function ,tag ,result-cst) environment system)
     ;; If I decide to go with a throw-ast node use the following
     (clasp-cleavir-ast:make-throw-ast
-     (cleavir-cst-to-ast::convert tag environment system)
-     (cleavir-cst-to-ast::convert result-cst environment system)
+     (cleavir-cst-to-ast:convert tag environment system)
+     (cleavir-cst-to-ast:convert result-cst environment system)
      origin)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
