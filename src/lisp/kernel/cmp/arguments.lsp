@@ -7,30 +7,27 @@
 ;; In order to work with cclasp's SSA stuff, it must be called exactly once for each variable.
 (defvar *argument-out*)
 
-(defun compile-wrong-number-arguments-block (closure nargs expected-args)
-  (let ((nargs (if (integerp nargs) (irc-size_t nargs) nargs))
-        (expected-args (if (integerp expected-args) (irc-size_t expected-args) expected-args))
-        (continue-block (irc-basic-block-create "cont"))
-        (error-block (irc-basic-block-create "wrong-num-args")))
-    (irc-br continue-block)
-    (irc-begin-block error-block)
-    (irc-intrinsic-call-or-invoke "cc_wrong_number_of_arguments" (list closure nargs expected-args))
-    (irc-unreachable)
-    (irc-begin-block continue-block)
-    error-block))
+(defun compile-wrong-number-arguments-block (closure nargs min max)
+  ;; make a new irbuilder, so as to not disturb anything
+  (with-irbuilder ((llvm-sys:make-irbuilder *llvm-context*))
+    (let ((errorb (irc-basic-block-create "wrong-num-args")))
+      (irc-begin-block errorb)
+      (irc-intrinsic-call-or-invoke "cc_wrong_number_of_arguments"
+                                    ;; We use low max to indicate no upper limit.
+                                    (list closure nargs min (or max (irc-size_t 0))))
+      (irc-unreachable)
+      errorb)))
 
 ;; Generate code to signal an error iff there weren't enough arguments provided.
-(defun compile-error-if-not-enough-arguments (error-block minimum nargs)
-  (let* ((cmin (irc-size_t minimum))
-         (cont-block (irc-basic-block-create "enough-arguments"))
+(defun compile-error-if-not-enough-arguments (error-block cmin nargs)
+  (let* ((cont-block (irc-basic-block-create "enough-arguments"))
          (cmp (irc-icmp-ult nargs cmin)))
     (irc-cond-br cmp error-block cont-block)
     (irc-begin-block cont-block)))
 
 ;; Ditto but with too many.
-(defun compile-error-if-too-many-arguments (error-block maximum nargs)
-  (let* ((cmax (irc-size_t maximum))
-         (cont-block (irc-basic-block-create "enough-arguments"))
+(defun compile-error-if-too-many-arguments (error-block cmax nargs)
+  (let* ((cont-block (irc-basic-block-create "enough-arguments"))
          (cmp (irc-icmp-ugt nargs cmax)))
     (irc-cond-br cmp error-block cont-block)
     (irc-begin-block cont-block)))
@@ -371,14 +368,22 @@ a_p = a_p_temp; a = a_temp;
          (nargs (calling-convention-nargs calling-conv))
          (nreq (car reqargs))
          (nopt (car optargs))
-         (nfixed (+ nreq nopt)))
+         (nfixed (+ nreq nopt))
+         (creq (irc-size_t nreq))
+         (cmax (if (or rest-var key-flag)
+                   nil
+                   (irc-size_t nfixed)))
+         (wrong-nargs-block
+           ;; KLUDGE: BIND-VA-LIST gets here with a calling-convention-closure of NIL,
+           ;; which ends badly. But bind-va-list also specifies safep nil.
+           ;; Of course, without safep we won't use the block anyway, but still.
+           (when safep
+             (compile-wrong-number-arguments-block
+              (calling-convention-closure calling-conv)
+              nargs creq cmax))))
     (unless (zerop nreq)
       (when safep
-        (let ((error-block (compile-wrong-number-arguments-block
-                            (calling-convention-closure calling-conv)
-                            nargs
-                            nreq)))
-          (compile-error-if-not-enough-arguments error-block nreq nargs)))
+        (compile-error-if-not-enough-arguments wrong-nargs-block creq nargs))
       (compile-required-arguments reqargs calling-conv))
     (let (;; NOTE: Sometimes we don't actually need these.
           We could save miniscule time by not generating.
@@ -389,7 +394,7 @@ a_p = a_p_temp; a = a_temp;
           (let ((nremaining
                   (if (zerop nopt)
                       ;; With no optional arguments it's trivial.
-                      (irc-sub nargs (irc-size_t nreq) "nremaining")
+                      (irc-sub nargs creq "nremaining")
                       ;; Otherwise
                       (compile-optional-arguments optargs nreq calling-conv iNIL iT))))
             ;; Note that we don't need to check for too many arguments here.
@@ -405,27 +410,29 @@ a_p = a_p_temp; a = a_temp;
               ;; we could use it in the error check to save a subtraction, though.
               (compile-optional-arguments optargs nreq calling-conv iNIL iT))
             (when safep
-              (let ((error-block (compile-wrong-number-arguments-block (calling-convention-closure calling-conv)
-                                                                       nargs
-                                                                       nfixed)))
-                (compile-error-if-too-many-arguments error-block nfixed nargs))))))))
+              (compile-error-if-too-many-arguments wrong-nargs-block cmax nargs)))))))
 
 (defun compile-only-reg-and-opt-arguments (reqargs optargs cc &key argument-out (safep t))
   (let* ((register-args (calling-convention-register-args cc))
          (nargs (calling-convention-nargs cc))
          (nreq (car reqargs))
-         (nopt (car optargs)))
+         (creq (irc-size_t nreq))
+         (nopt (car optargs))
+         (cmax (irc-size_t (+ nreq nopt)))
+         (error-block
+           ;; See KLUDGE above
+           (when safep
+             (compile-wrong-number-arguments-block
+              (calling-convention-closure cc)
+              nargs creq cmax))))
     ;; FIXME: It would probably be nicer to generate one switch such that not-enough-arguments
     ;; goes to an error block and too-many goes to another. Then we'll only have one test on
     ;; the argument count. LLVM might reduce it to that anyway, though.
-    
+
     ;; Required arguments
     (when (> nreq 0)
       (when safep
-        (let ((error-block (compile-wrong-number-arguments-block (calling-convention-closure cc)
-                                                                 nargs
-                                                                 nreq)))
-          (compile-error-if-not-enough-arguments error-block nreq nargs)))
+        (compile-error-if-not-enough-arguments error-block creq nargs))
       (dolist (req (cdr reqargs))
         ;; we POP the register-args so that the optionals below won't use em.
         (funcall argument-out (pop register-args) req)))
@@ -482,20 +489,14 @@ a_p = a_p_temp; a = a_temp;
             (irc-begin-block default)
             ;; Test for too many arguments
             (when safep
-              (let ((error-block (compile-wrong-number-arguments-block (calling-convention-closure cc)
-                                                                       nargs
-                                                                       (+ nreq nopt))))
-                (compile-error-if-too-many-arguments error-block (+ nreq nopt) nargs)))
+              (compile-error-if-too-many-arguments error-block cmax nargs))
             (irc-branch-to-and-begin-block default-cont)
             (irc-br assn)
             ;; and, done.
             (irc-begin-block after)))
         ;; No optional arguments, so not much to do
         (when safep
-          (let ((error-block (compile-wrong-number-arguments-block (calling-convention-closure cc)
-                                                                   nargs
-                                                                   nreq)))
-            (compile-error-if-too-many-arguments error-block nreq nargs))))))
+          (compile-error-if-too-many-arguments error-block cmax nargs)))))
 
 (defun process-cleavir-lambda-list (lambda-list)
   ;; We assume that the lambda list is in its correct format:
