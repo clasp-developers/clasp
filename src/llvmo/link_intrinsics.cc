@@ -571,9 +571,25 @@ void dumpLowLevelTrace(int numLowLevels) {
 
 extern "C" {
 
-[[noreturn]] NOINLINE void cc_wrong_number_of_arguments(core::T_O* tfunction, std::size_t givenNumberOfArguments, std::size_t requiredNumberOfArguments) {
+[[noreturn]] NOINLINE void cc_wrong_number_of_arguments(core::T_O* tfunction, std::size_t nargs,
+                                                        std::size_t min, std::size_t max) {
   Function_sp function((gctools::Tagged)tfunction);
-  SIMPLE_ERROR(BF("Calling %s - got %d arguments and expected %d") % _rep_(function->functionName()) % givenNumberOfArguments % requiredNumberOfArguments);
+  if (min == max) {
+    SIMPLE_ERROR(BF("Calling %s - got %d arguments, but expected exactly %d")
+                 % _rep_(function->functionName())
+                 % nargs % min);
+  } else if (min < max) {
+    SIMPLE_ERROR(BF("Calling %s - got %d arguments, but expected between %d and %d")
+                 % _rep_(function->functionName())
+                 % nargs % min % max);
+  } else {
+    // This is kind of a KLUDGE, but basically we use smaller max to indicate
+    // there is no limit on the number of arguments.
+    // Check how this function is called in arguments.lsp.
+    SIMPLE_ERROR(BF("Calling %s - got %d arguments, but expected at least %d")
+                 % _rep_(function->functionName())
+                 % nargs % min);
+  }
 }
 
 
