@@ -55,6 +55,11 @@
             +single-float-tag+
             +character-tag+
             +general-tag+
+            +where-tag-mask+
+            +derivable-where-tag+
+            +rack-where-tag+
+            +wrapped-where-tag+
+            +header-where-tag+
             *startup-primitives-as-list*
             %i1%
             %exception-struct%
@@ -202,6 +207,7 @@
             irc-wrapped-stamp
             irc-derivable-stamp
             irc-switch
+            irc-add-case
             irc-tag-fixnum
             irc-trunc
             irc-unreachable

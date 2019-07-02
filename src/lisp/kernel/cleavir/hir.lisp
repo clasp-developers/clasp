@@ -161,6 +161,20 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; Instruction HEADER-STAMP-CASE-INSTRUCTION
+;;;
+
+(defclass header-stamp-case-instruction (cleavir-ir:instruction
+                                         cleavir-ir:multiple-successors-mixin)
+  ())
+(defun make-header-stamp-case-instruction (stamp &rest successors)
+  (make-instance 'header-stamp-case-instruction
+                 :inputs (list stamp)
+                 :outputs nil
+                 :successors successors))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; Instruction VECTOR-LENGTH-INSTRUCTION
 ;;;
 ;;; This instruction gets the length of a vector, as CL:LENGTH.

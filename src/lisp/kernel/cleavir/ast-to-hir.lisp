@@ -160,6 +160,20 @@
               :successors (cleavir-ast-to-hir::successors context)))
       (cleavir-ast-to-hir:invocation context)))))
 
+(defmethod cleavir-ast-to-hir:compile-ast ((ast cc-ast:header-stamp-case-ast) context)
+  (let ((derivable (cleavir-ast-to-hir:compile-ast (cc-ast:derivable-ast ast) context))
+        (rack (cleavir-ast-to-hir:compile-ast (cc-ast:rack-ast ast) context))
+        (wrapped (cleavir-ast-to-hir:compile-ast (cc-ast:wrapped-ast ast) context))
+        (header (cleavir-ast-to-hir:compile-ast (cc-ast:header-ast ast) context))
+        (temp (cleavir-ir:new-temporary)))
+    (cleavir-ast-to-hir:compile-ast
+     (cc-ast:stamp-ast ast)
+     (cleavir-ast-to-hir:context
+      (list temp)
+      (list (clasp-cleavir-hir:make-header-stamp-case-instruction
+             temp derivable rack wrapped header))
+      (cleavir-ast-to-hir:invocation context)))))
+
 ;; FIXME: export names, deexport make-, have macroexpansion assert context
 (cleavir-ast-to-hir::define-compile-functional-ast
     cc-ast:vector-length-ast clasp-cleavir-hir:vector-length-instruction

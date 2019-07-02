@@ -197,6 +197,28 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; Class HEADER-STAMP-CASE-AST
+;;;
+
+(defclass header-stamp-case-ast (cleavir-ast:ast)
+  ((%stamp-ast :initarg :stamp-ast :reader stamp-ast)
+   (%derivable-ast :initarg :derivable-ast :reader derivable-ast)
+   (%rack-ast :initarg :rack-ast :reader rack-ast)
+   (%wrapped-ast :initarg :wrapped-ast :reader wrapped-ast)
+   (%header-ast :initarg :header-ast :reader header-ast)))
+
+(defmethod cleavir-ast:children ((ast header-stamp-case-ast))
+  (list (stamp-ast ast) (derivable-ast ast) (rack-ast ast)
+        (wrapped-ast ast) (header-ast ast)))
+
+(defun make-header-stamp-case-ast (stamp derivable rack wrapped header &optional origin)
+  (make-instance 'header-stamp-case-ast
+                 :stamp-ast stamp :derivable-ast derivable :rack-ast rack
+                 :wrapped-ast wrapped :header-ast header
+                 :origin origin))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; Class VECTOR-LENGTH-AST
 ;;;
 ;;; Represents an operation to get the length of a vector.
