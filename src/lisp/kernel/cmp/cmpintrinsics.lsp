@@ -72,38 +72,56 @@ Set this to other IRBuilders to make code go where you want")
   name ; The symbol-macro name of the type
   tag  ; The tag of the objects of this type
   type-getter ; A single argument lambda that when passed an *llvm-context* returns the type
+  field-type-getters ; An alist of name/type-getter-functions
   field-offsets
   field-indices) 
   
 (defmacro define-c++-struct (name tag fields)
   "Defines the llvm struct and the dynamic variable OFFSETS.name that contains an alist of field
 names to offsets."
-  (let ((gs-layout (gensym))
+  (let ((layout (gensym))
         (gs-field (gensym))
+        (type-name (gensym "type-name"))
+        (context (gensym "context"))
         (field-index (gensym)))
-    `(progn
-       (define-symbol-macro ,name
-           (llvm-sys:struct-type-get
-            *llvm-context*
-            (list ,@(mapcar #'first fields))
-            nil))
-       (let ((,gs-layout (llvm-sys:data-layout-get-struct-layout *system-data-layout* ,name)))
-         (defparameter ,(intern (core:bformat nil "INFO.%s" (string name)))
-           (make-c++-struct :name ,name
-                            :tag ,tag
-                            :type-getter (lambda (context) (let ((*llvm-context* context)) ,name))
-                            :field-offsets (let ((,field-index 0))
-                                                 (mapcar (lambda (,gs-field)
-                                                           (prog1
-                                                               (cons (second ,gs-field) (- (llvm-sys:struct-layout-get-element-offset ,gs-layout ,field-index) ,tag))
-                                                             (incf ,field-index)))
-                                                         ',fields))
-                            :field-indices (let ((,field-index 0))
-                                                 (mapcar (lambda (,gs-field)
-                                                           (prog1
-                                                               (cons (second ,gs-field) ,field-index)
-                                                             (incf ,field-index)))
-                                                         ',fields))))))))
+    (let ((define-symbol-macro `(define-symbol-macro ,name
+                                    (llvm-sys:struct-type-get
+                                     *llvm-context*
+                                     (list ,@(mapcar #'first fields))
+                                     nil))))
+      (let ((field-offsets `(let ((,layout (llvm-sys:data-layout-get-struct-layout *system-data-layout* ,name))
+                                  (,field-index 0))
+                              (mapcar (lambda (,gs-field)
+                                        (prog1
+                                            (cons (second ,gs-field) (- (llvm-sys:struct-layout-get-element-offset ,layout ,field-index) ,tag))
+                                          (incf ,field-index)))
+                                      ',fields)))
+            (field-indices `(let ((,field-index 0))    ;
+                              (mapcar (lambda (,gs-field) ;
+                                        (prog1         ;
+                                            (cons (second ,gs-field) ,field-index) ;
+                                          (incf ,field-index))) ;
+                                      ',fields)))
+            (field-type-getters-list (mapcar (lambda (type-name) ;
+                                               #+(or)(format t "type-name -> ~s cadr -> ~s  ,car -> ~s~%" type-name (cadr type-name) (car type-name)) ;
+                                               `(cons ',(cadr type-name) (lambda (context) (let ((*llvm-context* context)) (llvm-sys:type-get-pointer-to ,(macroexpand (car type-name)))))))
+                                             fields)))
+        #+(or)
+        (progn
+          (format t "define-symbol-macro = ~s~%" define-symbol-macro)
+          (format t "field-offsets -> ~s~%" field-offsets)
+          (format t "field-indices -> ~s~%" field-indices)
+          (format t "field-type-getters-list -> ~s~%" field-type-getters-list))
+        (let ((final `(progn
+                        ,define-symbol-macro
+                        (defparameter ,(intern (core:bformat nil "INFO.%s" (string name)))
+                          (make-c++-struct :name ,name
+                                           :tag ,tag
+                                           :type-getter (lambda (context) (let ((*llvm-context* context)) ,name))
+                                           :field-type-getters (list ,@field-type-getters-list)
+                                           :field-offsets ,field-offsets
+                                           :field-indices ,field-indices)))))
+          final)))))
 
 (defun c++-field-offset (field-name info)
   "Return the integer byte offset of the field for the c++-struct including the tag"
@@ -127,10 +145,10 @@ names to offsets."
   
 (defun c++-field-ptr (struct-info tagged-object field-name)
   (let* ((tag (c++-struct-tag struct-info))
-         (tagged-object-i64 (irc-ptr-to-int tagged-object %i64%))
-         (object-i64 (irc-sub tagged-object-i64 (jit-constant-i64 tag)))
-         (object (irc-int-to-ptr object-i64 (c++-struct*-type struct-info)))
-         (field-ptr (irc-struct-gep (c++-struct-type struct-info) object (c++-field-index field-name struct-info))))
+         (tagged-object-i8* tagged-object)
+         (field* (irc-gep tagged-object-i8* (list (jit-constant-i64 (c++-field-offset field-name struct-info)))))
+         (field-type-getter (cdr (assoc field-name (c++-struct-field-type-getters struct-info))))
+         (field-ptr (irc-bit-cast field* (funcall field-type-getter *llvm-context*))))
     field-ptr))
 
                                      
@@ -258,7 +276,7 @@ Boehm and MPS use a single pointer"
   (list* data-ptr-type additional-fields))
 
 ;; Define the T_O struct - right now just put in a dummy i32 - later put real fields here
-(define-symbol-macro %t% (llvm-sys:struct-type-get *llvm-context* nil  nil)) ;; "T_O"
+(define-symbol-macro %t% %i8%) ; (llvm-sys:struct-type-get *llvm-context* nil  nil)) ;; "T_O"
 (define-symbol-macro %t*% (llvm-sys:type-get-pointer-to %t%))
 (define-symbol-macro %t**% (llvm-sys:type-get-pointer-to %t*%))
 (define-symbol-macro %t*[0]% (llvm-sys:array-type-get %t*% 0))
@@ -329,7 +347,7 @@ Boehm and MPS use a single pointer"
 
 
 (define-c++-struct %mdarray% +general-tag+
-  ((%i8*% vtable)
+  ((%i8*% :vtable)
    (%size_t% :Fill-Pointer-Or-Length-Or-Dummy)
    (%size_t% :Array-Total-Size)
    (%t*%     :Data)
@@ -379,19 +397,17 @@ Boehm and MPS use a single pointer"
 ;;;
 ;;; The %symbol% type MUST match the layout and size of Symbol_O in symbol.h
 ;;;
-(define-symbol-macro %symbol%
-    (llvm-sys:struct-type-get
-     *llvm-context*
-     (list %i8*%                        ; 0 vtable
-           %t*%                         ; 1 _Name
-           %t*%                         ; 2 _HomePackage
-           %t*%                         ; 3 _GlobalValue
-           %t*%                         ; 4 _Function
-           %t*%                         ; 5 _SetfFunction
-           %i32%                        ; 6 _BindingIdx
-           %i32%                        ; 7 _Flags
-           %t*%                         ; 8 _PropertyList
-           ) nil))
+(define-c++-struct %symbol% +general-tag+
+  ((%i8*% :sym-vtable)
+   (%t*% :name)
+   (%t*% :home-package)
+   (%t*% :global-value)
+   (%t*% :function)
+   (%t*% :setf-function)
+   (%i32% :binding-idx)
+   (%i32% :flags)
+   (%t*% :property-list)))
+
 (defconstant +symbol.function-index+ 4)
 (defconstant +symbol.setf-function-index+ 5)
 
