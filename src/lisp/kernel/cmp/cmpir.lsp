@@ -437,14 +437,10 @@
   (llvm-sys:create-ptr-to-int *irbuilder* val int-type label))
 
 (defun irc-fdefinition (symbol &optional (label ""))
-  (let* ((untagged-symbol (irc-untag-general symbol %symbol*%))
-         (fdefinition (irc-load (irc-struct-gep %symbol% untagged-symbol +symbol.function-index+))))
-    fdefinition))
+  (irc-load (c++-field-ptr info.%symbol% symbol :function)))
 
 (defun irc-setf-fdefinition (symbol &optional (label ""))
-  (let* ((untagged-symbol (irc-untag-general symbol %symbol*%))
-         (setf-fdefinition (irc-load (irc-struct-gep %symbol% untagged-symbol +symbol.setf-function-index+))))
-    setf-fdefinition))
+  (irc-load (c++-field-ptr info.%symbol% symbol :setf-function)))
 
 (defun irc-untag-general (tagged-ptr &optional (type %t**%))
   #+(or)(let* ((ptr-i8* (irc-bit-cast tagged-ptr %i8*%))
