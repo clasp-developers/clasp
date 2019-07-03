@@ -42,6 +42,9 @@
                  'cleavir-env:optimize-info)))
     (frob)))
 
+;;; See explanation in clos/static-gfs/compiler-macros.lisp
+(static-gfs::precompile-build-constructors)
+
 ;;; Functions go here (TODO)
 
 ;;; cleavir-env
