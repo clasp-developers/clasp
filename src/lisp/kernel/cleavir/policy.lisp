@@ -20,13 +20,13 @@
 
 (defmethod cleavir-policy:policy-qualities append ((env clasp-global-environment))
   '((save-register-args boolean t)
-    (insert-array-bounds-checks boolean t)
+    (core::insert-array-bounds-checks boolean t)
     (do-type-inference boolean t)
     (do-dx-analysis boolean t)))
 ;;; FIXME: Can't just punt like normal since it's an APPEND method combo.
 (defmethod cleavir-policy:policy-qualities append ((env null))
   '((save-register-args boolean t)
-    (insert-array-bounds-checks boolean t)
+    (core::insert-array-bounds-checks boolean t)
     (do-type-inference boolean t)
     (do-dx-analysis boolean t)))
 
@@ -73,10 +73,12 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Policy INSERT-ARRAY-BOUNDS-CHECKS
+;;; Policy CORE::INSERT-ARRAY-BOUNDS-CHECKS
+
+;;; In CORE package so we can use it in earlier code.
 
 (defmethod cleavir-policy:compute-policy-quality
-    ((quality (eql 'insert-array-bounds-checks))
+    ((quality (eql 'core::insert-array-bounds-checks))
      optimize
      (environment clasp-global-environment))
   (> (cleavir-policy:optimize-value optimize 'safety) 0))
