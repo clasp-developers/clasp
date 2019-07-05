@@ -518,51 +518,55 @@
       whole
       `(funcall #'(setf svref/no-bounds-check) ,value ,vector ,index)))
 
-(debug-inline "core:vref")
-(declaim (inline core:vref))
-(defun core:vref (array index)
-  ;; FIXME: type inference should be able to remove the redundant
-  ;; checking that it's an array... maybe?
-  (macrolet ((mycase (&rest specs)
-               `(typecase array
-                  ,@(loop for (type boxed) in specs
-                          collect `((simple-array ,type (*))
-                                    (cleavir-primop:aref array index ,type t ,boxed)))
-                  (t
-                   (core:bformat t "vref array-element-type: %s%N" (array-element-type array))
-                   (error "BUG: vref unknown vector ~a" array)))))
-    (mycase (t t) (base-char nil) (character nil)
-            (double-float nil) (single-float nil)
-            (fixnum nil)
-            (ext:integer64 nil) (ext:integer32 nil)
-            (ext:integer16 nil) (ext:integer8 nil)
-            (ext:byte64 nil) (ext:byte32 nil)
-            (ext:byte16 nil) (ext:byte8 nil)
-            (bit t))))
+#+(or)
+(progn
+  (debug-inline "core:vref")
+  (declaim (inline core:vref))
+  (defun core:vref (array index)
+    ;; FIXME: type inference should be able to remove the redundant
+    ;; checking that it's an array... maybe?
+    (macrolet ((mycase (&rest specs)
+                 `(typecase array
+                    ,@(loop for (type boxed) in specs
+                            collect `((simple-array ,type (*))
+                                      (cleavir-primop:aref array index ,type t ,boxed)))
+                    (t
+                     (core:bformat t "vref array-element-type: %s%N" (array-element-type array))
+                     (error "BUG: vref unknown vector ~a" array)))))
+      (mycase (t t) (base-char nil) (character nil)
+              (double-float nil) (single-float nil)
+              (fixnum nil)
+              (ext:integer64 nil) (ext:integer32 nil)
+              (ext:integer16 nil) (ext:integer8 nil)
+              (ext:byte64 nil) (ext:byte32 nil)
+              (ext:byte16 nil) (ext:byte8 nil)
+              (bit t)))))
 
 ;;; This is unsafe in that it doesn't bounds check.
 ;;; It DOES check that the value is of the correct type,
 ;;; because this is the only place we know the type.
-(declaim (inline (setf core:vref)))
-(defun (setf core:vref) (value array index)
-  (macrolet ((mycase (&rest specs)
-               `(typecase array
-                  ,@(loop for (type boxed) in specs
-                          collect `((simple-array ,type (*))
-                                    (unless (typep value ',type)
-                                      (error 'type-error :datum value :expected-type ',type))
-                                    (cleavir-primop:aset array index value ,type t ,boxed)
-                                    value))
-                  ;; should be unreachable
-                  (t (error "BUG: Unknown vector ~a" array)))))
-    (mycase (t t) (base-char nil) (character nil)
-            (double-float nil) (single-float nil)
-            (fixnum nil)
-            (ext:integer64 nil) (ext:integer32 nil)
-            (ext:integer16 nil) (ext:integer8 nil)
-            (ext:byte64 nil) (ext:byte32 nil)
-            (ext:byte16 nil) (ext:byte8 nil)
-            (bit t))))
+#+(or)
+(progn
+  (declaim (inline (setf core:vref)))
+  (defun (setf core:vref) (value array index)
+    (macrolet ((mycase (&rest specs)
+                 `(typecase array
+                    ,@(loop for (type boxed) in specs
+                            collect `((simple-array ,type (*))
+                                      (unless (typep value ',type)
+                                        (error 'type-error :datum value :expected-type ',type))
+                                      (cleavir-primop:aset array index value ,type t ,boxed)
+                                      value))
+                    ;; should be unreachable
+                    (t (error "BUG: Unknown vector ~a" array)))))
+      (mycase (t t) (base-char nil) (character nil)
+              (double-float nil) (single-float nil)
+              (fixnum nil)
+              (ext:integer64 nil) (ext:integer32 nil)
+              (ext:integer16 nil) (ext:integer8 nil)
+              (ext:byte64 nil) (ext:byte32 nil)
+              (ext:byte16 nil) (ext:byte8 nil)
+              (bit t)))))
 
 ;;; If the array has a fill-pointer, this might be wrong, at least when called from elt
 ;;; (elt (make-array 10 :initial-contents '(0 1 2 3 4 5 6 7 8 9) :fill-pointer 3) 5)
@@ -593,22 +597,19 @@
   `(cleavir-primop:let-uninitialized (z)
      (if (cleavir-primop:fixnum-add ,a ,b z) z z)))
 
-;; FIXME: This could be a function returning two values. But that's
-;; quite inefficient at the moment.
 ;; FIXME: Duplicate code from seqmacros.lsp.
 (defmacro with-array-data ((arrayname offsetname array) &body body)
-  `(let ((,arrayname ,array) (,offsetname 0))
-     (declare (type fixnum ,offsetname))
-     (etypecase ,arrayname
-       ((simple-array * (*))) ; already all set
-       (simple-array ; multidimensional. guaranteed to have offset zero and no recursion.
-        (setf ,arrayname (core::%displacement ,arrayname)))
-       (array
-        (loop
-          (psetf ,arrayname (core::%displacement ,arrayname)
-                 ,offsetname (add-indices ,offsetname
-                                          (core::%displaced-index-offset ,arrayname)))
-          (when (typep ,arrayname '(simple-array * (*))) (return)))))
+  `(multiple-value-bind (,arrayname ,offsetname)
+       (let ((,arrayname ,array) (,offsetname 0))
+         (loop
+           (if (cleavir-primop:typeq ,arrayname core:abstract-simple-vector)
+               (return (values ,arrayname ,offsetname)))
+           (psetf ,arrayname (core::%displacement ,arrayname)
+                  ,offsetname (add-indices
+                               ,offsetname
+                               (core::%displaced-index-offset ,arrayname)))))
+     (declare (type (simple-array * (*)) ,arrayname)
+              (type fixnum ,offsetname))
      ,@body))
 
 (declaim (inline vector-read))
@@ -726,6 +727,9 @@
 (defun when-policy (env policy form)
   (when (environment-has-policy-p env policy) (list form)))
 
+;;; FIXME: core::%array-dimension won't work for simple vectors. Might need to
+;;; shuffle type checks around to do things properly.
+#+(or)
 (define-cleavir-compiler-macro array-row-major-index
     (&whole form array &rest subscripts &environment env)
   ;; FIXME: Cleavir arithmetic is not yet clever enough for this to be fast in the
@@ -747,46 +751,64 @@
            ;; Now verify that the rank is correct (maybe)
            ,@(when-policy
               env 'insert-array-bounds-checks
-              `(unless (eq (array-rank ,sarray) ,rank)
-                 (error "Wrong number of subscripts, ~d, for an array of rank ~d."
-                        ,rank (array-rank ,sarray))))
+              `(core:check-rank ,sarray ,rank))
            ;; We need the array dimensions, so bind those
            (let (,@(loop for dimsym in dimsyms
                          for axis below rank
-                         collect `(,dimsym (%array-dimension ,sarray ,axis))))
+                         collect `(,dimsym (core::%array-dimension ,sarray ,axis))))
              (declare (type fixnum ,@dimsyms))
              ;; Check that the index is valid (maybe)
              ,@(when (environment-has-policy-p env 'insert-array-bounds-checks)
                  (loop for ssub in ssubscripts
                        for dimsym in dimsyms
                        for axis below rank
-                       collect `(unless (and (>= ,ssub 0) (< ,ssub ,dimsym))
-                                  (error "Invalid index ~d for axis ~d of array: expected 0-~d"
-                                         ,ssub ,axis ,dimsym))))
+                       collect `(core:check-index ,ssub ,dimsym ,axis)))
              ;; Now we know we're good, do the actual computation
              ,(row-major-index-computer sarray dimsyms ssubscripts))))))
 
-(define-cleavir-compiler-macro aref (&whole form array &rest subscripts)
+(define-cleavir-compiler-macro aref (&whole form array &rest subscripts
+                                            &environment env)
   ;; FIXME: See tragic comment above in array-row-major-index.
   (if (> (length subscripts) 1)
       form
-      (let ((sarray (gensym "ARRAY")))
-        ;; array-row-major-index does bounds checking.
-        ;; Therefore, we basically just do what row-major-aref does sans a
-        ;; here-redundant check.
-        `(let* ((,sarray ,array)
-                (rmi (array-row-major-index ,sarray ,@subscripts)))
+      (let ((sarray (gensym "ARRAY"))
+            (index0 (gensym "INDEX0")))
+        `(let ((,sarray ,array)
+               (,index0 ,(first subscripts)))
+           ,@(when-policy
+              env 'cleavir-kildall-type-inference:insert-type-checks
+              `(if (cleavir-primop:typeq ,sarray array)
+                   nil
+                   (error 'type-error :datum ,sarray :expected-type '(array * 1))))
+           ,@(when-policy
+              env 'insert-array-bounds-checks
+              `(core:check-index
+                ,index0
+                (if (cleavir-primop:typeq ,sarray core:abstract-simple-vector)
+                    (core::vector-length ,sarray)
+                    (core::%array-dimension ,sarray 0))
+                0))
            (with-array-data (data offset ,sarray)
-             (core:vref data (add-indices offset rmi)))))))
+             (core:vref data (add-indices offset ,index0)))))))
 
-(define-cleavir-compiler-macro (setf aref) (&whole form new array &rest subscripts)
+(define-cleavir-compiler-macro (setf aref) (&whole form new array &rest subscripts
+                                                   &environment env)
   (if (> (length subscripts) 1)
       form
-      (let ((sarray (gensym "ARRAY")))
-        `(let* ((,sarray ,array)
-                (rmi (array-row-major-index ,sarray ,@subscripts)))
+      (let ((sarray (gensym "ARRAY"))
+            (index0 (gensym "INDEX0")))
+        `(let ((,sarray ,array)
+               (,index0 ,(first subscripts)))
+           ,@(when-policy
+              env 'insert-array-bounds-checks
+              `(core:check-index
+                ,index0
+                (if (cleavir-primop:typeq ,sarray core:abstract-simple-vector)
+                    (core::vector-length ,sarray)
+                    (core::%array-dimension ,sarray 0))
+                0))
            (with-array-data (data offset ,sarray)
-             (setf (core:vref data (add-indices offset rmi)) ,new))))))
+             (setf (core:vref data (add-indices offset ,index0)) ,new))))))
 
 ;;; ------------------------------------------------------------
 ;;;
@@ -807,6 +829,7 @@
                    (etypecase next
                      (cons (setf sequence next length (1+ length)))
                      (null (return-from length length))))))))
+      ;; note: vector-length returns the fill pointer if there is one.
       (vector (core::vector-length sequence))
       (null 0))))
 
