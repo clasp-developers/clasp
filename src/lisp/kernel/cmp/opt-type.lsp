@@ -134,11 +134,14 @@
                               `(eq (core::%array-dimension object 0) ',length)
                               'nil))))
         ((*) ; anything, and dimensions are unspecified
-         (generate-test simple-vector-type complex-vector-type
-                        't 't
-                        (generate-test simple-mdarray-type
-                                       mdarray-type
-                                       't 't 'nil)))
+         ;; for general arrays we have a superclass to use
+         (if (eq uaet '*)
+             `(if (cleavir-primop:typeq object array) t nil)
+             (generate-test simple-vector-type complex-vector-type
+                            't 't
+                            (generate-test simple-mdarray-type
+                                           mdarray-type
+                                           't 't 'nil))))
         (otherwise ; an mdarray with possibly specified dimensions
          `(block nil
             ;; We use a block so the dimensions check code is only
