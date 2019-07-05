@@ -6,13 +6,13 @@
 # into the git tree
 . ./env-default.sh || exit
 
-if [ -f env-local.sh ] ; then
-    . ./env-local.sh
-    if [ "${CLASP_QUICKLISP_HOMEDIR-}" = 1 ] ; then
-        unset ASDF_OUTPUT_TRANSLATIONS
-        unset CLASP_QUICKLISP_DIRECTORY
-    fi
-fi
+if [ -f env.sh ] ; then
+    echo `pwd`/env.sh exists
+    echo This is probably an error.
+    echo The correct name for local variable overrides is
+    echo env-local.sh
+    exit 1
+fi 1>&2
 
 if [ "${CLASP_WANT_JUPYTER}" = 1 ] ; then
     export CLASP_WANT_CANDO=1
