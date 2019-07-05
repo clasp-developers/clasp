@@ -13,19 +13,21 @@ The upcoming release is [Clasp 0.9](https://github.com/clasp-developers/clasp/re
 See the [RELEASE-NOTES](RELEASE-NOTES)
 
 ### Building Clasp
-At the moment, Clasp is supported on Linux and Mac OS X. On these systems, you should be able to build it from source. 
+At the moment, Clasp is supported on Linux, Mac OS X and FreeBSD. On these systems, you should be able to build it from source. 
 
 [Follow the instructions.](https://github.com/clasp-developers/clasp/wiki/Build-Instructions)
 
 In case things go wrong, the quickest way to get help is to either [file an issue](#reporting-problems), or to [chat with us directly](#irc).
 
-Building on most systems will take around 8-12GB of memory and ~1-2 hours with a relatively modern processor, so be prepared to watch a movie or do some other useful work until Clasp is all done. You may also want to activate a large enough swap file if your system does not have enough DRAM.
-
-Building can be greately accelerated if you have a multi-core machine - but it requires a specially configured version of the Boehm garbage collector found here: (https://github.com/clasp-developers/forkable-boehm.git)
-
-Currently there are no binary releases available.
+Building takes a lot of resources.  In parallel mode
+('USE_PARALLEL_BUILD = True' in wscript.config)
+you will not be able to survive with only 8 GB of RAM and it will be 1-2 hours build time.
+If you have 8 GB of RAM you can turn off the parallel build which will then run for a day or so.  Make sure to have some paging space ("swapfile") configured.
 
 There is a docker image for a superset of Clasp called [Cando](https://hub.docker.com/r/drmeister/cando/)
+
+Currently there are no binary releases available, however you can extract a working /opt/clasp tree for Debian 10 out of the docker image.
+
 
 ### Common Lisp Ecosystem Support
 Clasp supports the following major components:

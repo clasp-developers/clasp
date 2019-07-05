@@ -1,0 +1,109 @@
+The ./build-more-systems.sh script allows you to build Clasp with
+expensions.
+
+Extensions currently available:
+- pull in and build cando
+- pull in and build jupyter (currently implies cando, but we'll fix
+  this soon)
+
+In addition it will take care of placing quicklisp and asdf module
+building locations.
+- By default it will put the quicklisp library into a machine-wide
+  directory in /opt/clasp/.
+  To prevent it from doing that add to file:
+    ./env-local.sh
+  a line:
+    CLASP_QUICKLISP_DIRECTORY=""
+  
+- By default configures compilation so that fasl files live alongside
+  the lisp files (namely in /opt/clasp/lib/quicklisp), not in
+  ~/.cache.
+  To prevent it from doing that add to file:
+    ./env-local.sh
+  a line:
+    ASDF_OUTPUT_TRANSLATIONS=""
+
+Again to re-iterate: if you only want the Clasp Common Lisp system
+(without Cando or Jupyter) then use ./waf as described in README.md.
+Since plain Clasp does not have quicklisp components you don't have to
+worry about the variables above.
+
+Configuring systems you want from build-more-systems.sh
+-------------------------------------------------------
+
+Usage:
+- do not edit env-default.sh
+- create env-local.sh, empty
+- set ONLY those lines you want to change from defaults
+  (system will always first pick up env-default.sh and then
+   override individual lines from env-local.sh)
+- if you want to delete a variable in env-local.sh just set it
+  to the empty string like this:
+  ASDF_OUTPUT_TRANSLATIONS=""
+
+Control variables currently supported:
+
+  To prevent this script from touching the git trees:
+    CLASP_BUILD_NO_UPDATES=1
+  You need to have checked out git trees.  Neither new
+  checkouts not updates will happen.  That applies to all
+  git trees under control of lib.sh.  At this time it does
+  not apply to sub-trees of Clasp such as SICL.
+
+Control where fasl files are placed:
+  ASDF_OUTPUT_TRANSLATIONS=/:
+Default is "/:", which means fasl files live next to their lisp
+files.  A typical user action would be:
+  ASDF_OUTPUT_TRANSLATIONS=""
+which makes the system use ~/.cache
+
+Control where quicklisp modules live:
+  CLASP_QUICKLISP_DIRECTORY=/opt/clasp/lib/clasp/src/lisp/modules/quicklisp
+The default places it within the Clasp install directory.  A typical
+user action would be:
+  CLASP_QUICKLISP_DIRECTORY=""
+That will make the system fall through to other defaults, which
+usually ends up a $HOME/quicklisp
+
+%%
+
+Config defaults:
+- pull in Cando
+- do not pull in Jupyter
+- fasl files along with Lisp files
+- quicklisp inside clasp install directory
+
+%%
+
+Config examples:
+
+%%
+
+If you want cando and jupyter, but you want this thing not to change
+anything about where quicklisp and fasl files go it looks like this:
+
+  CLASP_WANT_CANDO=1
+  CLASP_WANT_JUPYTER=1
+
+%%
+
+This configuration makes ./build.sh ... behave like ./waf
+That means it just builds clasp with no other systems.  Since that
+means there is no quicklisp involved the fasl and quicklisp variables
+do not matter.
+
+  CLASP_WANT_CANDO=""
+  CLASP_WANT_JUPYTER=""
+
+%%
+
+NOTES:
+
+- if you want kill a variable that is set in env-default.sh in
+  env-local.sh set it to the empty string:
+    CLASP_WANT_CANDO=""
+  you do not have to unset it
+
+- normally turning a feature on works with a "1" in the variable.
+  For turning things off please use the empty string "", not "0",
+  (although that probably works right now)

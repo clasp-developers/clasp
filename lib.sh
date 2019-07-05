@@ -15,10 +15,7 @@ check_quicklisp ()
         return 0
     fi
 
-    if ! [ -n "${CLASP_QUICKLISP_DIRECTORY-}" ] ; then
-        echo WARNING: '$CLASP_QUICKLISP_DIRECTORY' is not set 1>&2
-        sleep 3
-    else
+    if [ -n "${CLASP_QUICKLISP_DIRECTORY-}" ] ; then
         if [ "$init_quicklisp_p" = t ] ; then
             do_git_tree "$CLASP_QUICKLISP_DIRECTORY" https://github.com/quicklisp/quicklisp-client.git master
         else
@@ -28,11 +25,6 @@ check_quicklisp ()
                 sleep 3
             fi
         fi
-    fi
-
-    if ! [ -n "${ASDF_OUTPUT_TRANSLATIONS-}" ] ; then
-        echo WARNING: '$ASDF_OUTPUT_TRANSLATIONS' is not set 1>&2
-        sleep 3
     fi
 }
 
