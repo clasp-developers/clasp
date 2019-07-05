@@ -349,9 +349,15 @@
     ((symbol (eql 'core::local-tagbody)) form environment (system clasp-cleavir:clasp))
   (cleavir-generate-ast:convert-special 'tagbody form environment system))
 
+(defmethod cleavir-generate-ast:check-special-form-syntax ((head (eql 'core::local-tagbody)) form)
+  (cleavir-generate-ast:check-special-form-syntax 'tagbody form))
+
 (defmethod cleavir-generate-ast:convert-special
     ((symbol (eql 'core::local-block)) form environment (system clasp-cleavir:clasp))
   (cleavir-generate-ast:convert-special 'block form environment system))
+
+(defmethod cleavir-generate-ast:check-special-form-syntax ((head (eql 'core::local-block)) form)
+  (cleavir-generate-ast:check-special-form-syntax 'block form))
 
 (defmethod cleavir-cst-to-ast:convert-special
     ((symbol (eql 'core::local-tagbody)) cst environment (system clasp-cleavir:clasp))
