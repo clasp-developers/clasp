@@ -545,7 +545,7 @@ when this is t a lot of graphs will be generated.")
   (setf *ct-eliminate-load-time-value-inputs* (compiler-timer-elapsed))
   #+debug-monitor(monitor-instructions-with-origins init-instr)
 
-  (replace-aliases init-instr)
+  #+(or)(replace-aliases init-instr)
   #+(or)
   (cleavir-remove-useless-instructions:remove-useless-instructions init-instr)
   #+(or)
