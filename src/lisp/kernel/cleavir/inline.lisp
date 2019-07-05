@@ -509,12 +509,12 @@
       (error 'type-error :datum vector :expected-type 'simple-vector)))
 
 (define-cleavir-compiler-macro svref (&whole whole vector index &environment env)
-  (if (environment-has-policy-p env 'insert-array-bounds-checks)
+  (if (environment-has-policy-p env 'core::insert-array-bounds-checks)
       whole
       `(svref/no-bounds-check ,vector ,index)))
 (define-cleavir-compiler-macro (setf svref)
     (&whole whole value vector index &environment env)
-  (if (environment-has-policy-p env 'insert-array-bounds-checks)
+  (if (environment-has-policy-p env 'core::insert-array-bounds-checks)
       whole
       `(funcall #'(setf svref/no-bounds-check) ,value ,vector ,index)))
 
@@ -750,7 +750,7 @@
            (declare (type fixnum ,@ssubscripts))
            ;; Now verify that the rank is correct (maybe)
            ,@(when-policy
-              env 'insert-array-bounds-checks
+              env 'core::insert-array-bounds-checks
               `(core:check-rank ,sarray ,rank))
            ;; We need the array dimensions, so bind those
            (let (,@(loop for dimsym in dimsyms
@@ -758,7 +758,7 @@
                          collect `(,dimsym (core::%array-dimension ,sarray ,axis))))
              (declare (type fixnum ,@dimsyms))
              ;; Check that the index is valid (maybe)
-             ,@(when (environment-has-policy-p env 'insert-array-bounds-checks)
+             ,@(when (environment-has-policy-p env 'core::insert-array-bounds-checks)
                  (loop for ssub in ssubscripts
                        for dimsym in dimsyms
                        for axis below rank
@@ -781,7 +781,7 @@
                    nil
                    (error 'type-error :datum ,sarray :expected-type '(array * 1))))
            ,@(when-policy
-              env 'insert-array-bounds-checks
+              env 'core::insert-array-bounds-checks
               `(core:check-index
                 ,index0
                 (if (cleavir-primop:typeq ,sarray core:abstract-simple-vector)
@@ -800,7 +800,7 @@
         `(let ((,sarray ,array)
                (,index0 ,(first subscripts)))
            ,@(when-policy
-              env 'insert-array-bounds-checks
+              env 'core::insert-array-bounds-checks
               `(core:check-index
                 ,index0
                 (if (cleavir-primop:typeq ,sarray core:abstract-simple-vector)
