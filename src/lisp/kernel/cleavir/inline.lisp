@@ -518,9 +518,9 @@
       whole
       `(funcall #'(setf svref/no-bounds-check) ,value ,vector ,index)))
 
-(debug-inline "%unsafe-vector-ref")
-(declaim (inline %unsafe-vector-ref))
-(defun %unsafe-vector-ref (array index)
+(debug-inline "core:vref")
+(declaim (inline core:vref))
+(defun core:vref (array index)
   ;; FIXME: type inference should be able to remove the redundant
   ;; checking that it's an array... maybe?
   (macrolet ((mycase (&rest specs)
@@ -529,8 +529,8 @@
                           collect `((simple-array ,type (*))
                                     (cleavir-primop:aref array index ,type t ,boxed)))
                   (t
-                   (core:bformat t "unsafe-vector-ref array-element-type: %s%N" (array-element-type array))
-                   (error "BUG: unsafe-vector-ref unknown vector ~a" array)))))
+                   (core:bformat t "vref array-element-type: %s%N" (array-element-type array))
+                   (error "BUG: vref unknown vector ~a" array)))))
     (mycase (t t) (base-char nil) (character nil)
             (double-float nil) (single-float nil)
             (fixnum nil)
@@ -540,11 +540,11 @@
             (ext:byte16 nil) (ext:byte8 nil)
             (bit t))))
 
-;;; This is "unsafe" in that it doesn't bounds check.
+;;; This is unsafe in that it doesn't bounds check.
 ;;; It DOES check that the value is of the correct type,
 ;;; because this is the only place we know the type.
-(declaim (inline %unsafe-vector-set))
-(defun %unsafe-vector-set (array index value)
+(declaim (inline (setf core:vref)))
+(defun (setf core:vref) (value array index)
   (macrolet ((mycase (&rest specs)
                `(typecase array
                   ,@(loop for (type boxed) in specs
@@ -636,7 +636,7 @@
   (with-array-data (underlying-array offset vector)
     ;; Okay, now array is a vector/simple, and index is valid.
     ;; This function takes care of element type discrimination.
-    (%unsafe-vector-ref underlying-array (add-indices index offset))))
+    (vref underlying-array (add-indices index offset))))
 
 (declaim (inline vector-set))
 (defun vector-set (vector index value)
@@ -646,7 +646,7 @@
                                        :expected-type `(integer 0 (,max))
                                        :array vector)))
   (with-array-data (underlying-array offset vector)
-    (%unsafe-vector-set underlying-array (add-indices index offset) value)))
+    (setf (core:vref underlying-array (add-indices index offset)) value)))
 
 (declaim (inline row-major-aref/no-bounds-check))
 (defun row-major-aref/no-bounds-check (array index)
@@ -656,7 +656,7 @@
   ;; in a multithreaded environment.
   (with-array-data (underlying-array offset array)
     ;; Array is a vector/simple, and we assume index is valid.
-    (%unsafe-vector-ref underlying-array (add-indices index offset))))
+    (core:vref underlying-array (add-indices index offset))))
 
 (declaim (inline cl:row-major-aref))
 (defun cl:row-major-aref (array index)
@@ -673,7 +673,7 @@
 (declaim (inline row-major-aset/no-bounds-check))
 (defun row-major-aset/no-bounds-check (array index value)
   (with-array-data (underlying-array offset array)
-    (%unsafe-vector-set underlying-array (add-indices index offset) value)))
+    (setf (core:vref underlying-array (add-indices index offset)) value)))
 
 (declaim (inline core:row-major-aset))
 (defun core:row-major-aset (array index value)
@@ -777,7 +777,7 @@
         `(let* ((,sarray ,array)
                 (rmi (array-row-major-index ,sarray ,@subscripts)))
            (with-array-data (data offset ,sarray)
-             (%unsafe-vector-ref data (add-indices offset rmi)))))))
+             (core:vref data (add-indices offset rmi)))))))
 
 (define-cleavir-compiler-macro (setf aref) (&whole form new array &rest subscripts)
   (if (> (length subscripts) 1)
@@ -786,7 +786,7 @@
         `(let* ((,sarray ,array)
                 (rmi (array-row-major-index ,sarray ,@subscripts)))
            (with-array-data (data offset ,sarray)
-             (%unsafe-vector-set data (add-indices offset rmi) ,new))))))
+             (setf (core:vref data (add-indices offset rmi)) ,new))))))
 
 ;;; ------------------------------------------------------------
 ;;;
