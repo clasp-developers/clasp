@@ -215,7 +215,8 @@ DEBUG_OPTIONS = [
     "DEBUG_MONITOR_SUPPORT",   # Must be enabled with other options - do this automatically?
     "DEBUG_MEMORY_PROFILE",  # Profile memory allocations total size and counter
     "DEBUG_BCLASP_LISP",  # Generate debugging frames for all bclasp code - like declaim
-    "DEBUG_CCLASP_LISP",  # Generate debugging frames for all cclasp code - like declaim
+    "DEBUG_CCLASP_LISP",  # Generate debugging frames for all cclasp code - like declaim (default on)
+    "DISABLE_DEBUG_CCLASP_LISP", # turn OFF debugging frames for cclasp code
     "DEBUG_COUNT_ALLOCATIONS", # count per-thread allocations of instances of classes
     "DEBUG_COMPILER", # Turn on compiler debugging
     "DEBUG_LONG_CALL_HISTORY",   # The GF call histories used to blow up - this triggers an error if they get too long
@@ -233,7 +234,8 @@ DEBUG_OPTIONS = [
     "DEBUG_LLVM_OPTIMIZATION_LEVEL_0",
     "DEBUG_SLOW",    # Code runs slower due to checks - undefine to remove checks
     "USE_HUMAN_READABLE_BITCODE",
-    "CST", # build the CST version
+    "DISABLE_CST", # build the AST version of the compiler
+    "CST", # build the CST version of the compiler (default)
     "CONFIG_VAR_COOL" # mps setting
 ]
 
@@ -786,6 +788,20 @@ def configure(cfg):
     #
     log.pprint("BLUE", "cfg.options.enable_mpi = %s" % cfg.options.enable_mpi)
     log.pprint('BLUE', 'configure()')
+
+    if ("DISABLE_CST" in cfg.env.DEBUG_OPTIONS):
+        pass
+    else:
+        cfg.define("CST",1)
+        if ("CST" not in cfg.env.DEBUG_OPTIONS):
+            cfg.env.DEBUG_OPTIONS.append(["CST"])
+            
+    if ("DISABLE_DEBUG_CCLASP_LISP" in cfg.env.DEBUG_OPTIONS):
+        pass
+    else:
+        cfg.define("DEBUG_CCLASP_LISP",1)
+        if ("DEBUG_CCLASP_LISP" not in cfg.env.DEBUG_OPTIONS):
+            cfg.env.DEBUG_OPTIONS.append(["DEBUG_CCLASP_LISP"])
 
     cfg.env["BUILD_ROOT"] = os.path.abspath(top) # KLUDGE there should be a better way than this
     load_local_config(cfg)
