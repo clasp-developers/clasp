@@ -14,22 +14,41 @@
    (%metadata :accessor metadata)))
 
 (defun make-function-info-map (initial-instruction)
-  (let ((result (make-hash-table :test #'eq)))
+  (let ((result (make-hash-table :test #'eq))
+        (owner-save-register-args (make-hash-table)))
     ;; Do the basic construction: collect catches.
     (cleavir-ir:map-instructions-with-owner
      (lambda (instruction owner)
        ;; map-instructions-with-owner guarantees we hit the enter before anything it owns,
        ;; so this should create the info before setting any properties.
        (typecase instruction
+         (cleavir-ir:top-level-enter-instruction
+          (setf (gethash instruction result)
+                (make-instance 'function-info :enter-instruction instruction))
+          (setf (gethash instruction owner-save-register-args) nil))
          (cleavir-ir:enter-instruction
           (setf (gethash instruction result)
-                (make-instance 'function-info :enter-instruction instruction)))
+                (make-instance 'function-info :enter-instruction instruction))
+          (setf (gethash instruction owner-save-register-args)
+                (has-policy-p instruction 'save-register-args)))
          (cleavir-ir:catch-instruction
-          (push instruction (catches (gethash owner result)))))
-       ;; If an instruction is marked as wanting good debug info, the whole function gets it.
-       (when (has-policy-p instruction 'save-register-args)
-         (setf (debug-on (gethash owner result)) t)))
+          (push instruction (catches (gethash owner result))))
+         ;; If an instruction is marked as wanting a different save-register-args policy
+         ;;  from the owner - then follow the instructions policy for the entire function.
+         ;;  This is because the owner by default has the default policy and a
+         ;;  programmer declared (declare (optimize (debug xxx))) will sets the policy for
+         ;;  instructions within the function and the policy.
+         ;;  Since only one policy can apply to the function - allow the programmer declared one
+         ;;  to override the default.
+         (otherwise (unless (eq (has-policy-p owner 'save-register-args)
+                                (has-policy-p instruction 'save-register-args))
+                      (setf (gethash owner owner-save-register-args)
+                            (has-policy-p instruction 'save-register-args))))))
      initial-instruction)
+    ;; Set the debug-on flag for the function-info
+    (maphash (lambda (enter-instruction save-register-args)
+               (setf (debug-on (gethash enter-instruction result)) save-register-args))
+             owner-save-register-args)
     result))
 
 ;; HT from instructions to their go-indices, for unwinding

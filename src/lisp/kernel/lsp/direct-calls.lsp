@@ -20,6 +20,7 @@
           `(progn
              (let ((,source-info (core:function-description-address (fdefinition ',lisp-name)))) ;;save source info
                (defun ,lisp-name ,lambda-list
+                 (declare (optimize (debug 0)))
                  ,@(if declare-forms
                       (list `(declare ,@declare-forms))
                       nil)
@@ -45,6 +46,7 @@
           `(progn
              (let ((,source-info (core:function-description-address (fdefinition ',lisp-name)))) ;;save source info
                (defun ,lisp-name ,lambda-list
+                 (declare (optimize (debug 0)))
                  ,@(if declare-forms
                       (list `(declare ,@declare-forms))
                       nil)
