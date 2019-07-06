@@ -204,7 +204,7 @@ namespace core {
 	} else {
 	    cl_index ndx;
 	    writestr_stream("#*", stream);
-	    if (clasp_print_array()) {
+	    if (clasp_print_array() || clasp_print_readably()) {
 	    	for (ndx=0; ndx<this->length(); ++ndx)
 			//      if (x->vector.self.bit[(ndx /*+ x->vector.offset*/) / 8] & (0200 >> (ndx /*+ x->vector.offset*/) % 8))
 			if (this->testBit(ndx))
@@ -223,7 +223,7 @@ namespace core {
 	} else {
 	    cl_index ndx;
 	    writestr_stream("#*", stream);
-	    if  (clasp_print_array()) {
+	    if  (clasp_print_array() || clasp_print_readably()) {
 	    	for (ndx = 0; ndx < this->length(); ndx++)
 			//      if (x->vector.self.bit[(ndx /*+ x->vector.offset*/) / 8] & (0200 >> (ndx /*+ x->vector.offset*/) % 8))
 			if (this->testBit(ndx))
