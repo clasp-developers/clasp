@@ -49,6 +49,7 @@ THE SOFTWARE.
 #include <llvm/ExecutionEngine/Interpreter.h>
 #include <llvm/IR/Verifier.h>
 #include <llvm/Analysis/Passes.h>
+#include <llvm/IR/MDBuilder.h>
 #include <llvm/IR/LegacyPassManager.h>
 #include <llvm/Transforms/IPO/PassManagerBuilder.h>
 #include <llvm/ADT/Triple.h>
@@ -4366,6 +4367,45 @@ namespace llvmo {
 
   std::shared_ptr<llvm::Module> optimizeModule(std::shared_ptr<llvm::Module> M);
 };
+
+namespace llvmo {
+class MDBuilder_O;
+};
+
+template <>
+struct gctools::GCInfo<llvmo::MDBuilder_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = false;
+  static GCInfo_policy constexpr Policy = normal;
+};
+
+namespace llvmo {
+FORWARD(MDBuilder);
+class MDBuilder_O : public core::CxxObject_O {
+  LISP_CLASS(llvmo, LlvmoPkg, MDBuilder_O, "MDBuilder", core::CxxObject_O);
+protected:
+  llvm::MDBuilder _Builder;
+public:
+  MDBuilder_O(llvm::LLVMContext& context) : _Builder(context) {};
+public:
+  CL_LISPIFY_NAME(make_mdbuilder);
+  CL_DEF_CLASS_METHOD
+  static MDBuilder_sp make(LLVMContext_sp context) {
+    GC_ALLOCATE_VARIADIC(MDBuilder_O,mdb,*context->wrappedPtr());
+    return mdb;
+  };
+public:
+
+  CL_DEFMETHOD MDNode* createBranchWeightsTrueFalse(uint32_t trueWeight, uint32_t falseWeight)
+  {
+    return this->_Builder.createBranchWeights(trueWeight,falseWeight);
+  };
+    
+}; // MDBuilder_O
+}; // llvmo
+/* from_object translators */
+
+    ;
 
 
 
