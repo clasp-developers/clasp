@@ -923,9 +923,37 @@ T_O* cc_match(T_O* old_value, T_O* new_value ) {
   }
   return old_value;
 };
+
+
+gctools::return_type cm_check_index(T_O* index, T_O* max, T_O* axis )
+{
+  if (((intptr_t)(index)<0) || (((intptr_t)(index)>=(intptr_t)max))) {
+    SIMPLE_ERROR(BF("Invalid index %d for axis %d of array: expected 0-%d")
+                 % untag_fixnum(index) % untag_fixnum(axis) % untag_fixnum(max));
+  }
+  gctools::return_type result(_Nil<T_O>().raw_(),0);
+  return result;
+}
+
+
+gctools::return_type cm_vset(T_O* vector, T_O* idx, T_O* value)
+{
+  AbstractSimpleVector_sp asv((gctools::Tagged)vector);
+  T_sp tvalue((gctools::Tagged)value);
+  asv->vset(untag_fixnum(idx),tvalue);
+  gctools::return_type result(value,1);
+  return result;
 };
 
 
+gctools::return_type cm_vref(T_O* vector, T_O* idx)
+{
+  AbstractSimpleVector_sp asv((gctools::Tagged)vector);
+  gctools::return_type result(asv->vref(untag_fixnum(idx)).raw_(),1);
+  return result;
+};
+
+};
 
 
 

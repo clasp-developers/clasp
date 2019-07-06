@@ -213,6 +213,9 @@
     
          ;; Primitives for Cleavir code
 
+         (primitive         "cm_check_index" %return-type% (list %t*% %t*% %t*%))
+         (primitive         "cm_vref" %return-type% (list %t*% %t*%))
+         (primitive         "cm_vset" %return-type% (list %t*% %t*% %t*%))
          (primitive         "cc_ensure_valid_object" %t*% (list %t*%))
          (primitive         "cc_getPointer" %i8*% (list %t*%))
          (primitive-unwinds "cc_makeCell" %t*% nil)
