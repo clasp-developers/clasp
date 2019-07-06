@@ -45,7 +45,7 @@
      optimize
      (environment clasp-global-environment))
   #-debug-cclasp-lisp(= (cleavir-policy:optimize-value optimize 'debug) 3)
-  #+debug-cclasp-lisp t)
+  #+debug-cclasp-lisp (> (cleavir-policy:optimize-value optimize 'debug) 0))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
