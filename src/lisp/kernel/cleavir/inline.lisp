@@ -775,22 +775,25 @@
             (index0 (gensym "INDEX0")))
         `(let ((,sarray ,array)
                (,index0 ,(first subscripts)))
-           ,@(when-policy
-              env 'cleavir-kildall-type-inference:insert-type-checks
-              `(if (cleavir-primop:typeq ,sarray array)
-                   nil
-                   (error 'type-error :datum ,sarray :expected-type '(array * 1))))
-           ,@(when-policy
-              env 'core::insert-array-bounds-checks
-              `(core::multiple-value-foreign-call
-                "cm_check_index"
-                ,index0
-                (if (cleavir-primop:typeq ,sarray core:abstract-simple-vector)
-                    (core::vector-length ,sarray)
-                    (core::%array-dimension ,sarray 0))
-                0))
-           (with-array-data (data offset ,sarray)
-             (core::MULTIPLE-VALUE-FOREIGN-CALL "cm_vref" data (add-indices offset ,index0)))))))
+           (cond ((null ,index0)
+                  (row-major-aref ,sarray 0))
+                 (t
+                  ,@(when-policy
+                     env 'cleavir-kildall-type-inference:insert-type-checks
+                     `(if (cleavir-primop:typeq ,sarray array)
+                          nil
+                          (error 'type-error :datum ,sarray :expected-type '(array * 1))))
+                  ,@(when-policy
+                     env 'core::insert-array-bounds-checks
+                     `(core::multiple-value-foreign-call
+                       "cm_check_index"
+                       ,index0
+                       (if (cleavir-primop:typeq ,sarray core:abstract-simple-vector)
+                           (core::vector-length ,sarray)
+                           (core::%array-dimension ,sarray 0))
+                       0))
+                  (with-array-data (data offset ,sarray)
+                    (core::MULTIPLE-VALUE-FOREIGN-CALL "cm_vref" data (add-indices offset ,index0)))))))))
 
 (define-cleavir-compiler-macro (setf aref) (&whole form new array &rest subscripts
                                                    &environment env)
@@ -800,17 +803,20 @@
             (index0 (gensym "INDEX0")))
         `(let ((,sarray ,array)
                (,index0 ,(first subscripts)))
-           ,@(when-policy
-              env 'core::insert-array-bounds-checks
-              `(core::multiple-value-foreign-call
-                "cm_check_index"
-                ,index0
-                (if (cleavir-primop:typeq ,sarray core:abstract-simple-vector)
-                    (core::vector-length ,sarray)
-                    (core::%array-dimension ,sarray 0))
-                0))
-           (with-array-data (data offset ,sarray)
-             (core::MULTIPLE-VALUE-FOREIGN-CALL "cm_vset" data (add-indices offset ,index0) ,new))))))
+           (cond ((null ,index0)
+                  (setf (row-major-aref ,sarray 0) ,new))
+                 (t
+                  ,@(when-policy
+                     env 'core::insert-array-bounds-checks
+                     `(core::multiple-value-foreign-call
+                       "cm_check_index"
+                       ,index0
+                       (if (cleavir-primop:typeq ,sarray core:abstract-simple-vector)
+                           (core::vector-length ,sarray)
+                           (core::%array-dimension ,sarray 0))
+                       0))
+                  (with-array-data (data offset ,sarray)
+                    (core::MULTIPLE-VALUE-FOREIGN-CALL "cm_vset" data (add-indices offset ,index0) ,new))))))))
 
 ;;; ------------------------------------------------------------
 ;;;
