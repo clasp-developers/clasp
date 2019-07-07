@@ -20,7 +20,7 @@
 (test make-array-3 (let ((array (handler-case
                                     (list (make-array '(0) :element-type nil))
                                   (error () nil))))
-                     (or (null array)(arrrayp array))))
+                     (or (null array)(arrayp array))))
 
 (test make-array-4 (let ((please-inline (MAKE-ARRAY '(2 3) :INITIAL-ELEMENT #\a :ELEMENT-TYPE 'character)))
                      (char= #\a (aref please-inline 0 0))))
@@ -31,3 +31,13 @@
 (test-expect-error make-array-6
                    (make-array 5 :element-type (array-element-type "") :displaced-index-offset 2 :displaced-to "")
                    :type simple-error)
+
+(test aref-nil-array
+      (let ((array (make-array nil)))
+        (aref array)
+        array))
+
+(test setf-aref-nil-array
+      (let ((array (make-array nil)))
+        (setf (aref array) 23)
+        array))
