@@ -52,30 +52,30 @@ THE SOFTWARE.
 
 extern "C" {
 
-BUILTIN_ATTRIBUTES void cc_rewind_va_list(va_list va_args, void** register_save_areaP)
-{NO_UNWIND_BEGIN_BUILTINS();
-  LCC_REWIND_VA_LIST(va_args,register_save_areaP);
-  NO_UNWIND_END_BUILTINS();
-}
-
-BUILTIN_ATTRIBUTES uint cc_simpleBitVectorAref(core::T_O* tarray, size_t index) {
-  core::SimpleBitVector_O* array = reinterpret_cast<core::SimpleBitVector_O*>(gctools::untag_general<core::T_O*>(tarray));
-  return array->testBit(index);
-}
-
-BUILTIN_ATTRIBUTES void cc_simpleBitVectorAset(core::T_O* tarray, size_t index, uint v) {
-  core::SimpleBitVector_O* array = reinterpret_cast<core::SimpleBitVector_O*>(gctools::untag_general<core::T_O*>(tarray));
-  array->setBit(index, v);
-}
-
-BUILTIN_ATTRIBUTES core::T_O** activationFrameReferenceFromClosure(core::T_O* closureRaw)
+gctools::return_type cm_check_index(void* index, void* max, void* axis )
 {
-  ASSERT(closureRaw);
-  if (closureRaw!=NULL) {
-    core::ClosureWithSlots_sp closure = core::ClosureWithSlots_sp((gctools::Tagged)closureRaw);
-    return &closure->closedEnvironment_rawRef();
-  }
-  return NULL;
+  if (((intptr_t)(index)<0) || (((intptr_t)(index)>=(intptr_t)max))) invalid_index_error(index,max,axis);
+  gctools::return_type result(_Nil<core::T_O>().raw_(),0);
+  return result;
 }
+
+
+gctools::return_type cm_vset(void* vector, void* idx, void* value)
+{
+  core::AbstractSimpleVector_sp asv((gctools::Tagged)vector);
+  core::T_sp tvalue((gctools::Tagged)value);
+  asv->vset(untag_fixnum((core::T_O*)idx),tvalue);
+  gctools::return_type result(value,1);
+  return result;
+};
+
+
+gctools::return_type cm_vref(void* vector, void* idx)
+{
+  core::AbstractSimpleVector_sp asv((gctools::Tagged)vector);
+  gctools::return_type result(asv->vref(untag_fixnum((core::T_O*)idx)).raw_(),1);
+  return result;
+};
+
 
 };

@@ -212,6 +212,7 @@ extern "C" {
 extern uint64_t cx_read_stamp(core::T_O* tagged_pointer, uint64_t new_stamp);
 extern core::T_O* cc_match(core::T_O* old_value, core::T_O* new_value );
 extern void unreachableError();
+[[noreturn]] void invalid_index_error(void* fixnum_index, void* fixnum_max, void* fixnum_axis);
 }
 namespace llvmo {
 
