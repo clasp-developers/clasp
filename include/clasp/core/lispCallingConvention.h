@@ -34,18 +34,18 @@ namespace gctools {
 #if (LCC_RETURN_VALUES_IN_REGISTERS!=1)
 #error "The number of return values in registers does not match core::return_type"
 #endif
-    core::T_O* ret0[LCC_RETURN_VALUES_IN_REGISTERS];  // One for every LCC_RETURN_VALUES_IN_REGISTERS
+    void* ret0[LCC_RETURN_VALUES_IN_REGISTERS];  // One for every LCC_RETURN_VALUES_IN_REGISTERS
     size_t nvals;
   return_type() : ret0{NULL}, nvals(0){};
   return_type(core::T_O *r0, size_t nv) : ret0{r0}, nvals(nv) {};
     template <typename T>
-    return_type(T* r0, size_t nv) : ret0{reinterpret_cast<core::T_O*>(r0)}, nvals(nv) {};
+    return_type(T* r0, size_t nv) : ret0{reinterpret_cast<void*>(r0)}, nvals(nv) {};
   };
 };
 
 #define FILL_FRAME_WITH_RETURN_REGISTERS(frame,retval) \
   for ( size_t _i = 0, _iEnd(MIN(retval.nvals,LCC_RETURN_VALUES_IN_REGISTERS)); _i<_iEnd; ++_i) { \
-    (*frame)[_i] = retval.ret0[_i]; \
+    (*frame)[_i] = reinterpret_cast<T_O*>(retval.ret0[_i]); \
   }
   
 #define LCC_UNUSED NULL

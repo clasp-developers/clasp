@@ -529,7 +529,7 @@ namespace gctools {
 //
 template <typename To_SP>
 inline bool IsA(return_type const &rhs) {
-  return TaggedCast<typename To_SP::Type *, typename core::T_O *>::isA(rhs.ret0[0]);
+  return TaggedCast<typename To_SP::Type *, typename core::T_O *>::isA(reinterpret_cast<core::T_O*>(rhs.ret0[0]));
 };
 template <typename To_SP, typename From_SP>
 inline bool IsA(From_SP const &rhs) {

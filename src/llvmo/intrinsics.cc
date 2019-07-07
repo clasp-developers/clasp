@@ -78,6 +78,17 @@ using namespace core;
 namespace core {
 extern const char* debug_InvocationHistoryFrame_name;
 };
+
+
+extern "C" {
+void invalid_index_error(void* fixnum_index, void* fixnum_max, void* fixnum_axis)
+{
+  SIMPLE_ERROR(BF("Invalid index %d for axis %d of array: expected 0-%d")
+               % untag_fixnum((core::T_O*)fixnum_index) % untag_fixnum((core::T_O*)fixnum_axis) % untag_fixnum((core::T_O*)fixnum_max));
+}
+
+};
+
 extern "C" {
 
 extern void dump_backtrace(core::InvocationHistoryFrame* frame);
@@ -925,33 +936,33 @@ T_O* cc_match(T_O* old_value, T_O* new_value ) {
 };
 
 
-gctools::return_type cm_check_index(T_O* index, T_O* max, T_O* axis )
+
+
+
+void cc_rewind_va_list(va_list va_args, void** register_save_areaP)
 {
-  if (((intptr_t)(index)<0) || (((intptr_t)(index)>=(intptr_t)max))) {
-    SIMPLE_ERROR(BF("Invalid index %d for axis %d of array: expected 0-%d")
-                 % untag_fixnum(index) % untag_fixnum(axis) % untag_fixnum(max));
-  }
-  gctools::return_type result(_Nil<T_O>().raw_(),0);
-  return result;
+  LCC_REWIND_VA_LIST(va_args,register_save_areaP);
 }
 
+uint cc_simpleBitVectorAref(core::T_O* tarray, size_t index) {
+  core::SimpleBitVector_O* array = reinterpret_cast<core::SimpleBitVector_O*>(gctools::untag_general<core::T_O*>(tarray));
+  return array->testBit(index);
+}
 
-gctools::return_type cm_vset(T_O* vector, T_O* idx, T_O* value)
+void cc_simpleBitVectorAset(core::T_O* tarray, size_t index, uint v) {
+  core::SimpleBitVector_O* array = reinterpret_cast<core::SimpleBitVector_O*>(gctools::untag_general<core::T_O*>(tarray));
+  array->setBit(index, v);
+}
+
+core::T_O** activationFrameReferenceFromClosure(core::T_O* closureRaw)
 {
-  AbstractSimpleVector_sp asv((gctools::Tagged)vector);
-  T_sp tvalue((gctools::Tagged)value);
-  asv->vset(untag_fixnum(idx),tvalue);
-  gctools::return_type result(value,1);
-  return result;
-};
-
-
-gctools::return_type cm_vref(T_O* vector, T_O* idx)
-{
-  AbstractSimpleVector_sp asv((gctools::Tagged)vector);
-  gctools::return_type result(asv->vref(untag_fixnum(idx)).raw_(),1);
-  return result;
-};
+  ASSERT(closureRaw);
+  if (closureRaw!=NULL) {
+    core::ClosureWithSlots_sp closure = core::ClosureWithSlots_sp((gctools::Tagged)closureRaw);
+    return &closure->closedEnvironment_rawRef();
+  }
+  return NULL;
+}
 
 };
 
