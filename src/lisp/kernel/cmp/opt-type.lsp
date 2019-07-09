@@ -134,8 +134,8 @@
                               `(eq (core::%array-dimension object 0) ',length)
                               'nil))))
         ((*) ; anything, and dimensions are unspecified
-         ;; for general arrays we have a superclass to use
-         (if (eq uaet '*)
+         ;; for general arrays we have superclasses to use
+         (if (and (eq uaet '*) (eq simplicity 'array))
              `(if (cleavir-primop:typeq object array) t nil)
              (generate-test simple-vector-type complex-vector-type
                             't 't
