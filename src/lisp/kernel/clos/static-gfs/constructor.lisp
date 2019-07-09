@@ -44,8 +44,9 @@ a constructor ought to be computed, before make-instance.
 
 ;;; used in precompile
 (defun force-constructor (class-name keys function)
-  (setf (gethash keys (ensure-name-table class-name))
-        (make-constructor-cell class-name keys function)))
+  (setf (cell-function
+         (ensure-constructor-cell class-name keys))
+        function))
 
 ;;; debug
 (defun find-constructor-cell (class-name keys)
