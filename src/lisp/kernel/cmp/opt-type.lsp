@@ -98,7 +98,7 @@
     core:mdarray-character
     core:mdarray-t))
 
-(defun array-typep-form (simplicity dims uaet)
+(defun array-typep-form (simplicity dims uaet &optional form)
   (let ((rank (if (eq dims '*) '* (length dims)))
         (simple-vector-type (simple-vector-type uaet))
         (complex-vector-type (complex-vector-type uaet))
@@ -136,7 +136,7 @@
         ((*) ; anything, and dimensions are unspecified
          ;; for general arrays we have a superclass to use
          (if (eq uaet '*)
-             `(if (cleavir-primop:typeq object array) t nil)
+             form
              (generate-test simple-vector-type complex-vector-type
                             't 't
                             (generate-test simple-mdarray-type
@@ -312,7 +312,8 @@
                 dims)
             (if (eq et '*)
                 et
-                (upgraded-array-element-type et env)))))
+                (upgraded-array-element-type et env))
+            (default))))
         ((sequence)
          `(or (listp object) (vectorp object)))
         ((standard-char)
