@@ -769,7 +769,7 @@
 (define-cleavir-compiler-macro aref (&whole form array &rest subscripts
                                             &environment env)
   ;; FIXME: See tragic comment above in array-row-major-index.
-  (if (> (length subscripts) 1)
+  (if (or (> (length subscripts) 1) (null subscripts))
       form
       (let ((sarray (gensym "ARRAY"))
             (index0 (gensym "INDEX0")))
@@ -794,7 +794,7 @@
 
 (define-cleavir-compiler-macro (setf aref) (&whole form new array &rest subscripts
                                                    &environment env)
-  (if (> (length subscripts) 1)
+  (if (or (> (length subscripts) 1) (null subscripts))
       form
       (let ((sarray (gensym "ARRAY"))
             (index0 (gensym "INDEX0")))
