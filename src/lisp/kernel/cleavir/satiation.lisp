@@ -274,6 +274,101 @@
                                         collect `'(,sp cons))))))
     (satiate-check)))
 
+#+cst
+(eval-when (:load-toplevel)
+  ;; A lot of these have pretty empty specializer profiles, and there's no point in a complete
+  ;; listing as long as the specialized points are covered.
+  ;; SP NIL T NIL NIL
+  (clos:satiate #'cleavir-cst-to-ast:convert-function-reference
+                '(cst:atom-cst cleavir-env:local-function-info null clasp-64bit)
+                '(cst:atom-cst cleavir-env:global-function-info null clasp-64bit))
+  ;; ditto
+  (clos:satiate #'cleavir-cst-to-ast:convert-called-function-reference
+                '(cst:atom-cst cleavir-env:local-function-info null clasp-64bit))
+  ;; SP T NIL NIL NIL NIL NIL NIL NIL NIL
+  (clos:satiate #'cleavir-cst-to-ast:process-parameter-group
+                . #.(loop for method in (clos:generic-function-methods
+                                         #'cleavir-cst-to-ast:process-parameter-group)
+                          for class = (first (clos:method-specializers method))
+                          collect `'(,class null null null null null
+                                     cleavir-cst-to-ast::body null clasp-64bit)))
+  (clos:satiate #'cleavir-cst-to-ast:items-from-parameter-group
+                . #.(loop for method in (clos:generic-function-methods
+                                         #'cleavir-cst-to-ast:items-from-parameter-group)
+                          for class = (first (clos:method-specializers method))
+                          collect `'(,class)))
+  ;; SP NIL NIL NIL T
+  (clos:satiate #'cleavir-cst-to-ast:convert-code
+                '(cst:atom-cst cst:cons-cst null clasp-64bit))
+  ;; SP T NIL
+  (clos:satiate #'cleavir-cst-to-ast:lambda-list-from-parameter-group
+                . #.(loop for method in (clos:generic-function-methods
+                                         #'cleavir-cst-to-ast:lambda-list-from-parameter-group)
+                          for class = (first (clos:method-specializers method))
+                          collect `'(,class null)))
+  (clos:satiate #'cleavir-cst-to-ast:convert-special-variable
+                '(cst:atom-cst cleavir-env:special-variable-info null clasp-64bit))
+  (clos:satiate #'cleavir-cst-to-ast:convert-variable
+                '(cst:atom-cst cleavir-env:lexical-variable clasp-64bit))
+  #+(or) ;; problematic as we define a method later in inline-prep
+  (clos:satiate #'cleavir-cst-to-ast:convert
+                '(cst:cons-cst cleavir-env:special-variable clasp-64bit))
+  ;; SP NIL NIL NIL
+  (clos:satiate #'cleavir-cst-to-ast:convert-let
+                '(cst:cons-cst cleavir-env:special-variable clasp-64bit))
+  ;; ditto
+  (clos:satiate #'cleavir-cst-to-ast:convert-let*
+                '(cst:cons-cst cleavir-env:special-variable clasp-64bit))
+  (clos:satiate #'cleavir-cst-to-ast:convert-setq-special-variable
+                '(cst:atom-cst cleavir-ast:load-time-value-ast
+                  cleavir-env:special-variable-info null))
+  ;; SP T NIL NIL NIL NIL NIL NIL NIL NIL
+  (clos:satiate #'cleavir-cst-to-ast:process-parameters-in-group
+                '(null null null null null null cleavir-cst-to-ast::body null clasp-64bit)
+                '(cons null null null null null cleavir-cst-to-ast::body null clasp-64bit))
+  ;; SP T NIL NIL NIL NIL NIL
+  (clos:satiate #'cleavir-cst-to-ast:process-parameter-groups
+                '(null null null cleavir-cst-to-ast::body null clasp-64bit)
+                '(cons null null cleavir-cst-to-ast::body null clasp-64bit))
+  (clos:satiate #'cleavir-cst-to-ast:entries-from-parameter-group
+                . #.(loop for method in (clos:generic-function-methods
+                                         #'cleavir-cst-to-ast:entries-from-parameter-group)
+                          for class = (first (clos:method-specializers method))
+                          collect `'(,class)))
+  (clos:satiate #'cleavir-cst-to-ast:convert-special-binding
+                '(cst:atom-cst cleavir-ast:lexical-ast function
+                  cleavir-env:variable-ignore clasp-64bit))
+  ;; SP T NIL NIL T
+  (macrolet ((satiate-special ()
+               (let* ((special-operators
+                        ;; Just grab them from the function itself, rather than maintain another damn list
+                        (loop for method
+                                in (clos:generic-function-methods #'cleavir-cst-to-ast:convert-special)
+                              for specs = (clos:method-specializers method)
+                              for espec = (first specs)
+                              when (typep espec 'clos:eql-specializer)
+                                collect `(eql ,(clos:eql-specializer-object espec))))
+                      (lists (loop for sp in special-operators
+                                   collecting `'(,sp cst:cons-cst null clasp-64bit))))
+                 `(clos:satiate #'cleavir-cst-to-ast:convert-special ,@lists))))
+    (satiate-special))
+  ;; SP NIL NIL T NIL NIL
+  (clos:satiate #'cleavir-cst-to-ast:convert-setq
+                '(cst:atom-cst cst:atom-cst cleavir-env:special-variable-info null clasp-64bit)
+                '(cst:atom-cst cst:atom-cst cleavir-env:lexical-variable-info null clasp-64bit))
+  (clos:satiate #'cleavir-cst-to-ast:entry-from-parameter
+                . #.(loop for method in (clos:generic-function-methods
+                                         #'cleavir-cst-to-ast:entry-from-parameter)
+                          for class = (first (clos:method-specializers method))
+                          collect `'(,class)))
+  ;; SP T NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL (woof)
+  (clos:satiate #'cleavir-cst-to-ast:process-parameter
+                . #.(loop for method in (clos:generic-function-methods
+                                         #'cleavir-cst-to-ast:process-parameter)
+                          for class = (first (clos:method-specializers method))
+                          collect `'(,class null null null null null null
+                                     cleavir-cst-to-ast::body null clasp-64bit))))
+
 ;;; cleavir-ast-to-hir
 (eval-when (:load-toplevel)
   (clos:satiate #'cleavir-ast-to-hir:compile-function '(clasp-cleavir-ast:named-function-ast))
