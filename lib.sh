@@ -15,7 +15,10 @@ check_quicklisp ()
         return 0
     fi
 
-    if [ -n "${CLASP_QUICKLISP_DIRECTORY-}" ] ; then
+    if ! [ -n "${CLASP_QUICKLISP_DIRECTORY-}" ] ; then
+        echo WARNING: '$CLASP_QUICKLISP_DIRECTORY' is not set 1>&2
+        sleep 3
+    else
         if [ "$init_quicklisp_p" = t ] ; then
             do_git_tree "$CLASP_QUICKLISP_DIRECTORY" https://github.com/quicklisp/quicklisp-client.git master
         else
@@ -26,6 +29,34 @@ check_quicklisp ()
             fi
         fi
     fi
+
+    if ! [ -n "${ASDF_OUTPUT_TRANSLATIONS-}" ] ; then
+        echo WARNING: '$ASDF_OUTPUT_TRANSLATIONS' is not set 1>&2
+        sleep 3
+    fi
+}
+
+f_setenv_clasp ()
+{
+    echo '# written by the clasp deploy script'
+    echo '#if ! echo $LD_LIBRARY_PATH | grep -q /opt/clasp ; then'
+    echo '    export LD_LIBRARY_PATH="/opt/clasp/lib:$LD_LIBRARY_PATH"'
+    echo '    export PATH="/opt/clasp/bin:$PATH"'
+    echo '    #export PKG_CONFIG_PATH="/opt/clasp/lib/pkgconfig,$PKG_CONFIG_PATH"'
+    echo '    export ACLOCAL_FLAGS="-I /opt/clasp/share/aclocal ${ACLOCAL_FLAGS-}"'
+    echo '    export JUPYTERLAB_DIR=/opt/clasp/jupyter/lab'
+    echo '    export JUPYTER_PATH=/opt/clasp/run'
+    echo '    export XDG_CACHE_HOME="/opt/clasp/lib/cache"'
+    echo "    export PYTHONPATH=$PYTHONPATH"
+    echo '    export ASDF_OUTPUT_TRANSLATIONS=${ASDF_OUTPUT_TRANSLATION-/:}'
+    echo '    export CLASP_QUICKLISP_DIRECTORY=${CLASP_QUICKLISP_DIRECTORY-/opt/clasp/lib/clasp/src/lisp/modules/quicklisp}'
+    echo '#fi'
+    echo 'export CRAENVPROMPT="$clasp"'
+}
+
+f_write_setenv_clasp ()
+{
+    f_setenv_clasp > /opt/clasp/bin/setenv-clasp
 }
 
 prepare_quicklisp_compilation ()
@@ -47,7 +78,6 @@ get_quicklisp_cando ()
     do_git_tree "$CLASP_QUICKLISP_DIRECTORY"/local-projects/uuid https://github.com/clasp-developers/uuid.git master
     do_git_tree "$CLASP_QUICKLISP_DIRECTORY"/local-projects/trivial-backtrace https://github.com/clasp-developers/trivial-backtrace master
     do_git_tree "$CLASP_QUICKLISP_DIRECTORY"/local-projects/esrap https://github.com/cando-developers/esrap master
-    do_git_tree "$CLASP_QUICKLISP_DIRECTORY"/local-projects/fep https://github.com/cando-developers/cando-fep
 }
 
 # this is a superset
@@ -257,6 +287,7 @@ copy_tarfile ()
             ;;
         *:*)
             # rsync target
+            echo copying tarfile "$DISTFILES_TMP_DIR/$tarfile" to "$CLASP_DEPLOY_S3_BUCKET/."
             rsync -a "$DISTFILES_TMP_DIR/$tarfile" "$CLASP_DEPLOY_S3_BUCKET/." || return 1
             ;;
     esac
@@ -289,6 +320,8 @@ tar_to ()
             mv "$DISTFILES_TMP_DIR/$tarfile.tmp" "$DISTFILES_TMP_DIR/$tarfile" || return 1
             ;;
         *)
+            mkdir -p "$CLASP_DEPLOY_S3_BUCKET"
+            echo creating tarfile "$CLASP_DEPLOY_S3_BUCKET/$tarfile.tmp" from "$@" in `pwd`
             tar c -f "$CLASP_DEPLOY_S3_BUCKET/$tarfile.tmp" "$@" || return 1
             mv "$CLASP_DEPLOY_S3_BUCKET/$tarfile.tmp" "$CLASP_DEPLOY_S3_BUCKET/$tarfile" || return 1
             ;;
@@ -327,7 +360,6 @@ tar_from ()
     # 2) target directory
     # 3-n) random tar flags, e.g. -z
 
-    mkdir -p "$DISTFILES_TMP_DIR"
     local tarfile="${1-}"; shift
     case "$tarfile" in
         "") echo tar_from tarfilename arg empty 1>&2; return 1;;
@@ -345,5 +377,6 @@ tar_from ()
     fi
 
     fetch_tarfiles_if_not_here $tarfile || return 1
+    echo extracting "$DISTFILES_TMP_DIR/$tarfile" to "$target_dir"
     tar x -f "$DISTFILES_TMP_DIR/$tarfile" -C "$target_dir" "$@" || return 1
 }
