@@ -29,6 +29,12 @@ if [ "$1" = configure ] && ! [ "${CLASP_BUILD_NO_UPDATES-}" = 1 ] ; then
     fi
 fi
 
+# TODO:
+# - write /opt/clasp/bin/setenv-clasp (function in lib.sh)
+# - take quicklisp compilation entirely out of waf
+#   (that means the part where it is invoked by simply
+#   loading cando or fep)
+
 # that 3>&1 business is a debugging trick.  It allows output
 # to escape waf.
 # Currently that is used during during install_cboehm when
