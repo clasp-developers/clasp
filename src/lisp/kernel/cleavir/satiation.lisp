@@ -144,12 +144,14 @@
   (clos:satiate #'cleavir-compilation-policy:compute-policy
                 '(cons clasp-global-environment))
   (clos:satiate #'cleavir-compilation-policy:policy-qualities
-                '(clasp-global-environment))
+                '(clasp-global-environment) '(null)
+                '(cleavir-env:lexical-variable))
   (clos:satiate #'cleavir-compilation-policy:normalize-optimize
                 '(cons clasp-global-environment))
   (clos:satiate #'cleavir-compilation-policy:compute-policy-quality
                 '((eql cleavir-kildall-type-inference:insert-type-checks) cons clasp-global-environment)
                 '((eql cleavir-escape:trust-dynamic-extent) cons clasp-global-environment)
+                '((eql core::insert-array-bounds-checks) cons clasp-global-environment)
                 '((eql save-register-args) cons clasp-global-environment)
                 '((eql do-type-inference) cons clasp-global-environment)
                 '((eql do-dx-analysis) cons clasp-global-environment)))
@@ -394,7 +396,9 @@
                     (clos:satiate #'cleavir-ir:successors ,@tail)
                     (clos:satiate #'cleavir-ir:inputs ,@tail)
                     (clos:satiate #'cleavir-ir:outputs ,@tail)
-                    (clos:satiate #'cleavir-ir:policy ,@tail))))
+                    (clos:satiate #'cleavir-ir:policy ,@tail)
+                    ;; not actually a reader, but close enough
+                    (clos:satiate #'cleavir-ir:clone-initargs ,@tail))))
              (satiate-writers ()
                (let* ((instructions (rest (clos:subclasses* (find-class 'cleavir-ir:instruction))))
                       (tail (loop for i in instructions
@@ -427,6 +431,20 @@
     (satiate-with-methods cleavir-ir:offset)
     (satiate-with-methods cleavir-ir:value)
     (satiate-with-methods cleavir-ir:value-type)))
+
+;;; cleavir-hir-transformations
+#+(or)
+(eval-when (:load-toplevel)
+  ;; specializer profile NIL NIL NIL T NIL
+  (clos:satiate #'cleavir-partial-inlining:inline-one-instruction
+                . #.(loop for class
+                            in (append
+                                (clos:subclasses* (find-class 'cleavir-ir:one-successor-mixin))
+                                (clos:subclasses* (find-class 'cleavir-ir:no-successors-mixin))
+                                (clos:subclasses* (find-class 'cleavir-ir:multiple-successors-mixin)))
+                          collect `'(cleavir-ir:enclose-instruction cleavir-ir:funcall-instruction
+                                     clasp-cleavir-hir:named-enter-instruction ,class
+                                     core:hash-table-eq))))
 
 ;;; cleavir-hir-to-mir
 (eval-when (:load-toplevel)
