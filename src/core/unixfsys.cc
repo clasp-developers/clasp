@@ -489,7 +489,7 @@ CL_DEFUN core::Str8Ns_sp ext__getcwd() {
       // However, I don't want to make it a non-const function
       // at this time.
       const char *nowpwd = ::getcwd(NULL,0);
-      if (ok && nowpwd) {
+      if (nowpwd) {
         if (strcmp(ok, nowpwd) == 0) {
         // OK, we should use the shell's/user's idea of "cd"
           ::free((void*)ok);
