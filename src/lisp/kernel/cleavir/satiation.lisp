@@ -278,6 +278,31 @@
 
 #+cst
 (eval-when (:load-toplevel)
+  (clos:satiate #'cst:raw '(cst:atom-cst) '(cst:cons-cst))
+  (clos:satiate #'cst:source '(cst:atom-cst) '(cst:cons-cst))
+  ;; SP NIL NIL
+  (clos:satiate #'cst:cons '(cst:atom-cst cst:atom-cst))
+  (clos:satiate #'cst:listify '(cst:atom-cst) '(cst:cons-cst))
+  (clos:satiate #'cst:cstify '(null) '(cons))
+  (clos:satiate #'cst:parse '(cst:parser))
+  (clos:satiate #'cst:atom '(cst:atom-cst) '(cst:cons-cst))
+  (clos:satiate #'cst:null '(cst:atom-cst) '(cst:atom-cst))
+  (clos:satiate #'cst:consp '(cst:atom-cst) '(cst:cons-cst))
+  (clos:satiate #'cst:rest '(cst:cons-cst))
+  (clos:satiate #'cst:first '(cst:cons-cst))
+  (clos:satiate #'cst:second '(cst:cons-cst))
+  (clos:satiate #'cst:third '(cst:cons-cst))
+  (clos:satiate #'cst:nth '(fixnum cst:cons-cst))
+  (clos:satiate #'cst:nthrest '(fixnum cst:cons-cst))
+  ;; SP NIL T T
+  (clos:satiate #'cst:reconstruct
+                '(cons cst:atom-cst clasp-64bit)
+                '(cons cst:cons-cst clasp-64bit)
+                '(cons null clasp-64bit)
+                '(cons cons clasp-64bit)))
+
+#+cst
+(eval-when (:load-toplevel)
   ;; A lot of these have pretty empty specializer profiles, and there's no point in a complete
   ;; listing as long as the specialized points are covered.
   ;; SP NIL T NIL NIL
@@ -433,18 +458,20 @@
     (satiate-with-methods cleavir-ir:value-type)))
 
 ;;; cleavir-hir-transformations
-#+(or)
 (eval-when (:load-toplevel)
+  ;; specializer profile T NIL
+  (clos:satiate #'cleavir-partial-inlining::copy-instruction
+                . #.(loop for class in (clos:subclasses* (find-class 'cleavir-ir:instruction))
+                          collect `'(,class hash-table)))
   ;; specializer profile NIL NIL NIL T NIL
+  #+(or)
   (clos:satiate #'cleavir-partial-inlining:inline-one-instruction
-                . #.(loop for class
-                            in (append
-                                (clos:subclasses* (find-class 'cleavir-ir:one-successor-mixin))
-                                (clos:subclasses* (find-class 'cleavir-ir:no-successors-mixin))
-                                (clos:subclasses* (find-class 'cleavir-ir:multiple-successors-mixin)))
-                          collect `'(cleavir-ir:enclose-instruction cleavir-ir:funcall-instruction
-                                     clasp-cleavir-hir:named-enter-instruction ,class
-                                     core:hash-table-eq))))
+                . #.(append
+                     (loop for class
+                             in (clos:subclasses* (find-class 'cleavir-ir:one-successor-mixin))
+                           collect `'(cleavir-ir:enclose-instruction cleavir-ir:funcall-instruction
+                                      clasp-cleavir-hir:named-enter-instruction ,class
+                                      hash-table)))))
 
 ;;; cleavir-hir-to-mir
 (eval-when (:load-toplevel)
