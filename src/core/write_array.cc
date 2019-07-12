@@ -202,14 +202,13 @@ namespace core {
                     clasp_write_addr(this->asSmartPtr(), stream);
                     clasp_write_char('>', stream);
             } else {
-                    if (clasp_print_array() || clasp_print_readably()) {
-                            writestr_stream("#*", stream);
-                            for (cl_index ndx=0; ndx<this->length(); ++ndx)
-                                    if (this->testBit(ndx))
-                                            clasp_write_char('1', stream);
-                                    else
-                                            clasp_write_char('0', stream);
-                    }
+                    writestr_stream("#*", stream);
+                    for (cl_index ndx=0; ndx<this->length(); ++ndx)
+                            if (this->testBit(ndx))
+                                    clasp_write_char('1', stream);
+                            else
+                                    clasp_write_char('0', stream);
+
             }	
     }
 
@@ -219,14 +218,12 @@ namespace core {
                     clasp_write_addr(this->asSmartPtr(), stream);
                     clasp_write_char('>', stream);
             } else {
-                    if (clasp_print_array() || clasp_print_readably()) {
-                            writestr_stream("#*", stream);
-                            for (cl_index ndx = 0; ndx < this->length(); ndx++)
-                                    if (this->testBit(ndx))
-                                            clasp_write_char('1', stream);
-                                    else
-                                            clasp_write_char('0', stream);
-		    }
+                    writestr_stream("#*", stream);
+                    for (cl_index ndx = 0; ndx < this->length(); ndx++)
+                            if (this->testBit(ndx))
+                                    clasp_write_char('1', stream);
+                            else
+                                    clasp_write_char('0', stream);
             }
     }
 
