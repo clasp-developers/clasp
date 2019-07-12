@@ -375,6 +375,34 @@
                    (cont))
                   (t (error "Unknown dtree: ~a" tree)))))))
 
+;;; used in cmpfastgf
+;;; T if any outcomes are effective method outcomes
+;;; dtree must be a compiled tree
+
+(defun dtree-requires-vaslist-p (dtree)
+  (cond ((effective-method-outcome-p dtree) t)
+        ((outcome-p dtree) nil) ; other outcomes are fine
+        ((advance-p dtree)
+         (dtree-requires-vaslist-p (advance-next dtree)))
+        ((tag-test-p dtree)
+         (or (dtree-requires-vaslist-p (tag-test-default dtree))
+             (some #'dtree-requires-vaslist-p (tag-test-tags dtree))))
+        ((stamp-read-p dtree)
+         (or (dtree-requires-vaslist-p (stamp-read-c++ dtree))
+             (dtree-requires-vaslist-p (stamp-read-other dtree))))
+        ((<-branch-p dtree)
+         (or (dtree-requires-vaslist-p (<-branch-left dtree))
+             (dtree-requires-vaslist-p (<-branch-right dtree))))
+        ((=-check-p dtree)
+         (dtree-requires-vaslist-p (=-check-next dtree)))
+        ((range-check-p dtree)
+         (dtree-requires-vaslist-p (range-check-next dtree)))
+        ((eql-search-p dtree)
+         (or (dtree-requires-vaslist-p (eql-search-default dtree))
+             (some #'dtree-requires-vaslist-p (eql-search-nexts dtree))))
+        ((miss-p dtree) nil)
+        (t (error "Unknown dtree: ~a" dtree))))
+
 ;;; SIMPLE ENTRY POINTS
 
 (defun calculate-dtree (call-history specializer-profile)

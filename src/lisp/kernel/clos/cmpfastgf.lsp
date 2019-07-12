@@ -42,8 +42,12 @@
          ;; but it's weird and indirect.
          (nreq (length (generic-function-specializer-profile generic-function)))
          ;; and we need this to see if we can manage that
-         (need-vaslist-p (call-history-needs-vaslist-p
-                          (generic-function-call-history generic-function)))
+         ;; NOTE: We used to use the call history here. This won't work:
+         ;; During compile time satiation, the dtree may be artificially produced
+         ;; i.e. out of sync with the call history. Or in a multithreaded environment,
+         ;; the gf could maybe be called in one thread while another thread is here.
+         ;; Keep these inconsistencies in mind.
+         (need-vaslist-p (dtree-requires-vaslist-p dtree))
          (block-name (if generic-function-name
                          (core:function-block-name generic-function-name)
                          (gensym "DISCRIMINATION-BLOCK")))
@@ -242,14 +246,6 @@
 (defun generate-miss (arguments node)
   (declare (ignore arguments node))
   '(go dispatch-miss))
-
-(defun call-history-needs-vaslist-p (call-history)
-  ;; Functions, i.e. method functions or full EMFs, are the only things that need vaslists.
-  (mapc (lambda (entry)
-          (when (effective-method-outcome-p (cdr entry))
-            (return-from call-history-needs-vaslist-p t)))
-        call-history)
-  nil)
 
 ;;; Keeps track of the number of dispatchers that were compiled and
 ;;;   is used to give the roots array in each dispatcher a unique name.
