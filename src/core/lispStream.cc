@@ -210,13 +210,14 @@ CL_DEFUN String_sp core__get_thread_local_write_to_string_output_stream_string(S
 {
   // This is like get-string-output-stream-string but it checks the size of the
   // buffer string and if it is too large it knocks it down to 128 characters
-  String_sp buffer = StringOutputStreamOutputString(my_stream);
+  String_sp& buffer = StringOutputStreamOutputString(my_stream);
   String_sp result = gc::As_unsafe<String_sp>(cl__copy_seq(buffer));
   if (buffer->length()>1024) {
     StringOutputStreamOutputString(my_stream) = Str8Ns_O::createBufferString(128);
   } else {
     SetStringFillp(buffer,core::make_fixnum(0));
   }
+  StreamOutputColumn(my_stream) = 0;
   return result;
 }
 
