@@ -70,6 +70,7 @@ THE SOFTWARE.
 #include <clasp/core/designators.h>
 #include <clasp/core/unixfsys.h>
 #include <clasp/core/lispReader.h>
+#include <clasp/core/sequence.h>
 #include <clasp/core/fileSystem.h>
 #include <clasp/core/wrappers.h>
 namespace core {
@@ -119,8 +120,8 @@ int &StreamClosed(T_sp strm) {
 }
 
 bool AnsiStreamP(T_sp strm) {
-  if (Stream_sp s = strm.asOrNull<Stream_O>()) {
-    (void)s;
+  if (gc::IsA<Stream_sp>(strm)) {
+    Stream_sp s = gc::As_unsafe<Stream_sp>(strm);
     return true;
   }
   return false;
@@ -4332,13 +4333,13 @@ SYMBOL_EXPORT_SC_(CorePkg, dispatchTable);
 
 const FileOps &
 stream_dispatch_table(T_sp strm) {
-  if (Instance_sp instance = strm.asOrNull<Instance_O>()) {
-    (void)instance;
+  if (AnsiStreamP(strm)) {
+    return StreamOps(strm);
+  }
+  if (gc::IsA<Instance_sp>(strm)) {
     return clos_stream_ops;
   }
-  if (!AnsiStreamP(strm))
-    ERROR_WRONG_TYPE_ONLY_ARG(core::_sym_dispatchTable, strm, cl::_sym_Stream_O);
-  return StreamOps(strm);
+  ERROR_WRONG_TYPE_ONLY_ARG(core::_sym_dispatchTable, strm, cl::_sym_Stream_O);
 }
 
 cl_index
@@ -4799,10 +4800,12 @@ CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("streamp");
 CL_DEFUN bool cl__streamp(T_sp strm) {
-  if (Instance_sp instance = strm.asOrNull<Instance_O>()) {
+  if (AnsiStreamP(strm)) return true;
+  if (gc::IsA<Instance_sp>(strm)) {
+    Instance_sp instance = gc::As_unsafe<Instance_sp>(strm);
     return T_sp(eval::funcall(gray::_sym_streamp, instance)).isTrue();
   }
-  return AnsiStreamP(strm);
+  return false;
 }
 
 /**********************************************************************
@@ -5763,6 +5766,87 @@ CL_LAMBDA(&optional input-stream (eof-error-p t) eof-value recursive-p);
 CL_DECLARE();
 CL_DOCSTRING("See clhs");
 CL_DEFUN T_mv cl__read_line(T_sp sin, T_sp eof_error_p, T_sp eof_value, T_sp recursive_p) {
+  // TODO Handle encodings from sin - currently only Str8Ns is supported
+  bool eofErrorP = eof_error_p.isTrue();
+  sin = coerce::inputStreamDesignator(sin);
+  if (!AnsiStreamP(sin)) {
+    T_mv results = eval::funcall(gray::_sym_stream_read_line, sin);
+    if (results.second().isTrue()) {
+      if (eof_error_p.notnilp()) {
+        ERROR_END_OF_FILE(sin);
+      } else {
+        return Values(eof_value,_lisp->_true());
+      }
+    }
+  }
+  //    bool recursiveP = translate::from_object<bool>::convert(env->lookup(_sym_recursive_p));
+  bool small = true;
+  Str8Ns_sp sbuf_small = _lisp->get_Str8Ns_buffer_string();
+  StrWNs_sp sbuf_wide;
+  while (1) {
+    T_sp tch = cl__read_char(sin, _Nil<T_O>(), _Nil<T_O>(), recursive_p);
+    if (tch.nilp()) {
+      if (eofErrorP) {
+        // If something has been read in this line, no error and it must be returned
+        if (small) {
+          if (sbuf_small->length()>0)
+            return Values(sbuf_small, _lisp->_true());
+          else ERROR_END_OF_FILE(sin);
+        }
+        else {
+          if (sbuf_wide->length()>0)
+            return Values(sbuf_wide, _lisp->_true());
+          else ERROR_END_OF_FILE(sin);
+        }
+      } else {
+        // tch == nil but no eof
+        if (small) {
+          if (sbuf_small->length()>0)
+            return Values(sbuf_small, _Nil<T_O>());
+          else return Values(eof_value, _lisp->_true());
+        }
+        else {
+          if (sbuf_wide->length()>0)
+            return Values(sbuf_wide, _Nil<T_O>());
+          else return Values(eof_value, _lisp->_true());
+        }
+      }
+    } else {
+      claspCharacter cc = (gc::As<Character_sp>(tch)).unsafe_character();
+      if (small && (!clasp_base_char_p(cc))) {
+        // first wide char read
+        small = false;
+        sbuf_wide = _lisp->get_StrWNs_buffer_string();
+        sbuf_wide->unsafe_setf_subseq(0,sbuf_small->length(),sbuf_small->asSmartPtr());
+       }
+      if (cc == '\n') {
+        break;
+      } else if (cc == '\r') {
+        if (clasp_peek_char(sin) == '\n') {
+          clasp_read_char(sin);
+        }
+        break;
+      }
+      if (small)
+        sbuf_small->vectorPushExtend_claspChar(cc);
+      else sbuf_wide->vectorPushExtend_claspCharacter(cc);
+    }
+  }
+  LOG(BF("Read line result -->[%s]") % sbuf.str());
+  if (small) {
+    T_sp result = cl__copy_seq(sbuf_small);
+    _lisp->put_Str8Ns_buffer_string(sbuf_small);
+    return Values(result, _Nil<T_O>());
+  } else {
+    T_sp result = cl__copy_seq(sbuf_wide);
+    _lisp->put_StrWNs_buffer_string(sbuf_wide);
+    return Values(result, _Nil<T_O>());
+  }
+}
+
+
+CL_LAMBDA(&optional input-stream (eof-error-p t) eof-value recursive-p);
+CL_DEFUN T_mv core__read_line_old(T_sp sin, T_sp eof_error_p, T_sp eof_value, T_sp recursive_p) {
   // TODO Handle encodings from sin - currently only Str8Ns is supported
   bool eofErrorP = eof_error_p.isTrue();
   sin = coerce::inputStreamDesignator(sin);
