@@ -69,7 +69,6 @@ THE SOFTWARE.
 #include <clasp/core/specialForm.h>
 #include <clasp/core/documentation.h>
 #include <clasp/core/backquote.h>
-#include <clasp/core/testing.h>
 #include <clasp/core/bformat.h>
 #include <clasp/core/cache.h>
 #include <clasp/core/environment.h>
