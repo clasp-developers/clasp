@@ -751,6 +751,8 @@ This works like compile-lambda-function in bclasp."
 (defvar *cleavir-compile-verbose* nil)
 (export '*cleavir-compile-verbose*)
 (defun cclasp-compile* (form env pathname &key (linkage 'llvm-sys:internal-linkage))
+  (when core:*debug-startup*
+    (core:monitor-write (core:bformat nil "startup cclasp-compile* form: %s%N" form)))
   (when *cleavir-compile-verbose*
     (format *trace-output* "Cleavir compiling t1expr: ~s~%" form)
     (format *trace-output* "          in environment: ~s~%" env ))
