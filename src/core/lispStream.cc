@@ -119,8 +119,7 @@ int &StreamClosed(T_sp strm) {
 }
 
 bool AnsiStreamP(T_sp strm) {
-  if (Stream_sp s = strm.asOrNull<Stream_O>()) {
-    (void)s;
+  if (gc::IsA<Stream_sp>(strm)) {
     return true;
   }
   return false;
@@ -3370,8 +3369,7 @@ set_stream_elt_type(T_sp tstream, gctools::Fixnum byte_size, int flags,
 }
 
 void si_stream_external_format_set(T_sp stream, T_sp format) {
-  if (Instance_sp instance = stream.asOrNull<Instance_O>()) {
-    (void)instance;
+  if (gc::IsA<Instance_sp>(stream)) {
     FEerror("Cannot change external format of stream ~A", 1, stream.raw_());
   }
   switch (StreamMode(stream)) {
@@ -4331,8 +4329,7 @@ SYMBOL_EXPORT_SC_(CorePkg, dispatchTable);
 
 const FileOps &
 stream_dispatch_table(T_sp strm) {
-  if (Instance_sp instance = strm.asOrNull<Instance_O>()) {
-    (void)instance;
+  if (gc::IsA<Instance_sp>(strm)) {
     return clos_stream_ops;
   }
   if (!AnsiStreamP(strm))
@@ -4502,8 +4499,7 @@ CL_DEFUN T_sp cl__file_string_length(T_sp stream, T_sp tstring) {
 	 * streams one cannot write to???
 	 */
 BEGIN:
-  if (Instance_sp instance = stream.asOrNull<Instance_O>()) {
-    (void)instance;
+  if (gc::IsA<Instance_sp>(stream)) {
     return _Nil<T_O>();
   }
   unlikely_if(!AnsiStreamP(stream)) {
@@ -4778,8 +4774,7 @@ CL_DEFUN T_sp cl__stream_element_type(T_sp strm) {
 CL_DEFUN T_sp cl__stream_external_format(T_sp strm) {
   T_sp output;
 AGAIN:
-  if (Instance_sp instance = strm.asOrNull<Instance_O>()) {
-    (void)instance;
+  if (gc::IsA<Instance_sp>(strm)) {
     output = kw::_sym_default;
     return output;
   } else if (Stream_sp s = strm.asOrNull<Stream_O>()) {
@@ -5450,7 +5445,7 @@ size_t clasp_input_filePos(T_sp strm) {
   } else if (position.nilp()) {
     return 0;
     //	    SIMPLE_ERROR(BF("Stream does not have file position"));
-  } else if (position.fixnump()) { // Fixnum_sp ii = position.asOrNull<Fixnum_O>() ) {
+  } else if (position.fixnump()) {
     return unbox_fixnum(gc::As<Fixnum_sp>(position));
   }
   return 0;

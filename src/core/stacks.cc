@@ -218,7 +218,7 @@ string InvocationHistoryFrame::argumentsAsString(int maxWidth) const {
   int nargs = cl__length(vargs);
   for (int i(0); i < nargs; ++i) {
     T_sp obj = vargs->rowMajorAref(i);
-    if (Instance_sp iobj = obj.asOrNull<Instance_O>()) {
+    if (gc::IsA<Instance_sp>(obj)) {
       clasp_write_string("#<", sout);
       write_ugly_object(cl__class_of(obj), sout);
       clasp_write_string("> ", sout);

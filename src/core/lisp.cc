@@ -1996,7 +1996,7 @@ CL_DEFUN T_mv cl__macroexpand_1(T_sp form, T_sp env) {
       Symbol_sp headSymbol = gc::As<Symbol_sp>(head);
       if (env.nilp()) {
         expansionFunction = eval::funcall(cl::_sym_macroFunction, headSymbol, env);
-      } else if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
+      } else if (gc::IsA<Environment_sp>(env)) {
         expansionFunction = eval::funcall(cl::_sym_macroFunction, headSymbol, env);
 #if 0        
       } else if (clcenv::Entry_sp ce = env.asOrNull<clcenv::Entry_O>() ) {

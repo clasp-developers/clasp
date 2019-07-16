@@ -248,8 +248,7 @@ CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("hashTableP");
 CL_DEFUN bool cl__hash_table_p(T_sp obj) {
-  if (HashTable_sp ht = obj.asOrNull<HashTable_O>()) {
-    (void)ht;
+  if (gc::IsA<HashTable_sp>(obj)) {
     return true;
   }
   return false;

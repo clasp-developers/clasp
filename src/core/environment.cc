@@ -85,10 +85,9 @@ CL_DOCSTRING("environmentDebugNames - number of entries in this environment");
 CL_DEFUN T_sp core__environment_debug_names(T_sp frame) {
   if (frame.nilp())
     return _Nil<T_O>();
-  else if (ValueFrame_sp vf = frame.asOrNull<ValueFrame_O>()) {
+  else if (gc::IsA<ValueFrame_sp>(frame)) {
     return _Nil<T_O>();
-  } else if (ActivationFrame_sp af = frame.asOrNull<ActivationFrame_O>()) {
-    (void)af;
+  } else if (gc::IsA<ActivationFrame_sp>(frame)) {
     return _Nil<T_O>();
   }
   SIMPLE_ERROR(BF("Trying to get environment-debug-names of something not an activation-frame: %s") % _rep_(frame));
@@ -111,8 +110,7 @@ CL_DEFUN T_sp core__environment_debug_values(T_sp frame) {
       vo->rowMajorAset(i, val);
     }
     return vo;
-  } else if (ActivationFrame_sp af = frame.asOrNull<ActivationFrame_O>()) {
-    (void)af;
+  } else if (gc::IsA<ActivationFrame_sp>(frame)) {
     return _Nil<T_O>();
   }
   SIMPLE_ERROR(BF("Trying to get environment-debug-values of something not an activation-frame: %s") % _rep_(frame));
@@ -750,7 +748,7 @@ T_sp LexicalEnvironment_O::setf_metadata(Symbol_sp key, T_sp val) {
 };
 
 void LexicalEnvironment_O::setupParent(T_sp environ) {
-  ASSERT(environ.nilp()||environ.asOrNull<Environment_O>());
+  ASSERT(environ.nilp()||gc::IsA<Environment_O>(environ));
   this->_ParentEnvironment = environ;
   this->Base::setupParent(environ);
 }
@@ -1127,7 +1125,7 @@ bool ValueEnvironment_O::_updateValue(Symbol_sp sym, T_sp obj) {
   }
 #if 0 // def DEBUG_ASSERT
   if ( sym->symbolNameAsString()== "ENV") {
-    if ( !(obj.nilp() || obj.asOrNull<Environment_O>()) ) {
+    if ( !(obj.nilp() || gc::IsA<Environment_O>(obj))) {
       printf("%s:%d ValueEnvironment_O@%p::_updateValue to lexical ENV --> %s\n",
              __FILE__, __LINE__, (void*)this, _rep_(obj).c_str() );
       printf("%s:%d     The value isn't an environment - trap this\n", __FILE__, __LINE__ );
@@ -1153,7 +1151,7 @@ T_sp ValueEnvironment_O::new_binding(Symbol_sp sym, int idx, T_sp obj) {
 #endif
 #if 0 // def DEBUG_ASSERT
   if ( sym->symbolNameAsString()== "ENV") {
-    if ( !(obj.nilp() || obj.asOrNull<Environment_O>()) ) {
+    if ( !(obj.nilp() || gc::IsA<Environment_O>(obj))) {
       printf("%s:%d ValueEnvironment_O@%p::new_binding lexical ENV --> %s\n",
              __FILE__, __LINE__, (void*)this, _rep_(obj).c_str() );
       printf("%s:%d     The value isn't an environment - trap this\n", __FILE__, __LINE__ );

@@ -1759,7 +1759,7 @@ CL_DEFUN T_sp core__mkdir(T_sp directory, T_sp mode) {
   int modeint = 0;
   int ok;
   String_sp filename = coerce::stringDesignator(directory);
-  if (mode.fixnump()) { // Fixnum_sp fn = mode.asOrNull<Fixnum_O>() ) {
+  if (mode.fixnump()) {
     Fixnum_sp fnMode(gc::As<Fixnum_sp>(mode));
     modeint = unbox_fixnum(fnMode);
     if (modeint < 0 || modeint > 0777) {

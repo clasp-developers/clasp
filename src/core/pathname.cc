@@ -357,7 +357,7 @@ Pathname_sp Pathname_O::makePathname(T_sp host, T_sp device, T_sp directory,
   if (directory.nilp()) {
 // do nothing
 #ifdef CLASP_UNICODE
-  } else if (String_sp sd = directory.asOrNull<String_O>()) {
+  } else if (gc::IsA<String_sp>(directory)) {
     directory = lisp_createList(kw::_sym_absolute, directory);
 #endif
   } else if (cl__stringp(directory)) {
@@ -1839,7 +1839,7 @@ static T_sp
 coerce_to_from_pathname(T_sp x, T_sp host) {
   if (cl__stringp(x)) {
 #ifdef CLASP_UNICODE
-  if (String_sp stringx = x.asOrNull<String_O>()) {
+    if (gc::IsA<String_sp>(x)) {
     x = cl__parse_namestring(x, host);
   } else
 #endif

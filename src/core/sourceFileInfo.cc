@@ -58,7 +58,7 @@ CL_DEFUN T_mv core__file_scope(T_sp sourceFile, T_sp sourceDebugPathname, size_t
       SIMPLE_ERROR(BF("No namestring could be generated for %s") % _rep_(pnSourceFile));
     }
     return _lisp->getOrRegisterFileScope(gc::As<String_sp>(ns)->get_std_string(), sourceDebugPathname, sourceDebugOffset, useLineno);
-  } else if (sourceFile.fixnump()) { // Fixnum_sp fnSourceFile = sourceFile.asOrNull<Fixnum_O>() ) {
+  } else if (sourceFile.fixnump()) {
     WITH_READ_LOCK(_lisp->_Roots._SourceFilesMutex);
     Fixnum_sp fnSourceFile(gc::As<Fixnum_sp>(sourceFile));
     size_t idx = unbox_fixnum(fnSourceFile);
@@ -178,8 +178,7 @@ uint af_lineno(T_sp obj) {
 uint af_column(T_sp obj) {
   if (obj.nilp()) {
     return 0;
-  } else if (Cons_sp co = obj.asOrNull<Cons_O>()) {
-    (void)co;
+  } else if (gc::IsA<Cons_sp>(obj)) {
     IMPLEMENT_MEF("Handle cons for af_column");
   } else if (cl__streamp(obj)) {
     return clasp_input_column(obj);

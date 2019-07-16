@@ -54,7 +54,7 @@ SingleDispatchMethod_sp SingleDispatchMethod_O::create(T_sp name,
                                                        Function_sp body) {
   SingleDispatchMethodFunction_sp method_body;
   FunctionDescription* fdesc = makeFunctionDescription(name,llh->lambdaList(),docstr,core::_sym_no_filename_single_dispatch_method,0,0,0);
-  if ( BuiltinClosure_sp bif = body.asOrNull<BuiltinClosure_O>() ) {
+  if (gc::IsA<BuiltinClosure_sp>(body)) {
     method_body = gctools::GC<CxxMethodFunction_O>::allocate(fdesc,body);
   } else {
     method_body = gctools::GC<SingleDispatchMethodFunction_O>::allocate(fdesc,body);

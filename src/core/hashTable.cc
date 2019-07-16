@@ -213,8 +213,7 @@ CL_LAMBDA(ht);
 CL_DECLARE();
 CL_DOCSTRING("hash_table_weakness");
 CL_DEFUN Symbol_sp core__hash_table_weakness(T_sp ht) {
-  if (WeakKeyHashTable_sp wkht = ht.asOrNull<WeakKeyHashTable_O>()) {
-    (void)wkht;
+  if (gc::IsA<WeakKeyHashTable_sp>(ht)) {
     return kw::_sym_key;
   }
   return _Nil<Symbol_O>();
