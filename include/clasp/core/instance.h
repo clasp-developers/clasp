@@ -265,6 +265,7 @@ namespace gctools {
       if (tagged_generalp(ptr)) {
       // Maybe
         core::General_O* raw_client = (core::General_O*)untag_general<FromType>(ptr);
+        if (cast::Cast<core::Instance_O*,core::General_O*>::isA(raw_client)) return true;
         core::Instance_O* iptr = dynamic_cast<core::Instance_O*>(raw_client);
         return iptr!=NULL;
       }
@@ -274,6 +275,9 @@ namespace gctools {
       if ( tagged_generalp(client) ) {
       // maybe
         core::General_O* raw_client = (core::General_O*)untag_general<FromType>(client);
+        if (cast::Cast<core::Instance_O*,core::General_O*>::isA(raw_client)) {
+          return tag_general<core::Instance_O*>(reinterpret_cast<core::Instance_O*>(raw_client));
+        }
         core::Instance_O* iclient = dynamic_cast<core::Instance_O*>(raw_client);
         if ( iclient ) return tag_general<ToType>(iclient);
         return NULL;
