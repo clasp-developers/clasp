@@ -469,7 +469,10 @@ CL_DOCSTRING("Return the unix current working directory");
 CL_DEFUN core::Str8Ns_sp ext__getcwd() {
   // TESTME :   Test this function with the new code
   const char *ok = ::getcwd(NULL,0);
-  
+  if (!ok) {
+    SIMPLE_ERROR(BF("There was an error in ext__getcwd - errno %d") % errno);
+  }
+    
   // Take into account what the shell, if any, might think about
   // the current working directory.  This is important in symlinked
   // trees.  However, we need to make sure that the information is
@@ -486,17 +489,18 @@ CL_DEFUN core::Str8Ns_sp ext__getcwd() {
       // However, I don't want to make it a non-const function
       // at this time.
       const char *nowpwd = ::getcwd(NULL,0);
-      if (strcmp(ok, nowpwd) == 0) {
+      if (nowpwd) {
+        if (strcmp(ok, nowpwd) == 0) {
         // OK, we should use the shell's/user's idea of "cd"
-        ::free((void*)ok);
-        ok = strdup(spwd);
+          ::free((void*)ok);
+          ok = strdup(spwd);
+        }
       }
     }
   } else {
     // was found to be invalid, save us re-testing on next call
     unsetenv("PWD");
   }
-
   size_t cwdsize = strlen(ok);
   // Pad with 4 characters for / and terminator \0
   core::Str8Ns_sp output = core::Str8Ns_O::make(cwdsize+2,'\0',true,core::clasp_make_fixnum(0));
