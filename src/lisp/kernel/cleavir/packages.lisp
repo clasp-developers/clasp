@@ -173,6 +173,8 @@
    #:make-characterp-instruction
    #:single-float-p-instruction
    #:make-single-float-p-instruction
+   #:generalp-instruction
+   #:make-generalp-instruction
    #:headerq-instruction
    #:header-value-min-max
    #:make-headerq-instruction
