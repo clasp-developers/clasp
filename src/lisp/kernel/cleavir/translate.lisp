@@ -822,7 +822,9 @@ This works like compile-lambda-function in bclasp."
 
 (defclass clasp-cst-client (eclector.concrete-syntax-tree:cst-client) ())
 
-(defvar *cst-client* (make-instance 'clasp-cst-client))
+;; singleton- don't bother with constructor
+(defvar *cst-client*
+  (locally (declare (notinline make-instance)) (make-instance 'clasp-cst-client)))
 
 (defmethod eclector.parse-result:source-position
     ((client clasp-cst-client) stream)
