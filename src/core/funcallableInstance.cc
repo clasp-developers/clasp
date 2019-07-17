@@ -429,6 +429,9 @@ CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generi
         DTILOG(BF("About to read arg dispatch_args-> %p\n") % dispatch_args.raw_());
         DTILOG(BF("About to dump dispatch_args Vaslist\n"));
         DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*dispatch_args));
+        if (dispatch_args->remaining_nargs() == 0)
+          SIMPLE_ERROR(BF("Not enough arguments to generic function: %s")
+                       % generic_function);
         arg = dispatch_args->next_arg();
         DTILOG(BF("Got arg@%p %s\n") % arg.raw_() % _safe_rep_(arg));
         ++ip;
@@ -458,7 +461,7 @@ CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generi
         }
         DTILOG(BF("unknown\n"));
         // FIXME: We should be able to specialize on class valist and stuff.
-        SIMPLE_ERROR(BF("unknown tag for arg ~s") % arg);
+        SIMPLE_ERROR(BF("unknown tag for arg %s") % arg);
         goto DISPATCH_MISS;
     case DTREE_OP_STAMP_READ:
       {

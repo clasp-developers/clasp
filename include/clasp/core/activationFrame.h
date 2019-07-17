@@ -86,7 +86,7 @@ virtual T_sp currentVisibleEnvironment() const;
     this->parentFrameRef_().rawRef_() = parent;
 #ifdef DEBUG_ASSERT
     T_sp p((gctools::Tagged)parent);
-    if (!(p.nilp() || p.asOrNull<Environment_O>()) ) {
+    if (!(p.nilp() || gc::IsA<Environment_sp>(p))) {
       SIMPLE_ERROR_SPRINTF("Activation frame is not an activation frame - it is a %s", _rep_(p).c_str());
     }
 #endif

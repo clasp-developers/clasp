@@ -77,7 +77,6 @@ SRC_CORE_FILES = \
         'commonLispUserPackage',
         'metaClass',
         'multipleValues',
-        'testing',
         'predicates',
         'write_list',
         'package',

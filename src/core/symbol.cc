@@ -510,7 +510,7 @@ T_sp Symbol_O::getPackage() const {
 
 void Symbol_O::setPackage(T_sp p) {
   ASSERTF(p, BF("The package is UNDEFINED"));
-  ASSERT(p.nilp() || p.asOrNull<Package_O>());
+  ASSERT(p.nilp() || gc::IsA<Package_sp>(p));
   this->_HomePackage = p;
 }
 
