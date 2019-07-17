@@ -543,7 +543,7 @@ CL_DEFUN void core__getchar_pause()
 
 
 void Lisp_O::startupLispEnvironment(Bundle *bundle) {
-  MONITOR("Starting lisp environment\n");
+  MONITOR(BF("Starting lisp environment\n"));
   global_dump_functions = getenv("CLASP_DUMP_FUNCTIONS");
   char* pause_startup = getenv("CLASP_PAUSE_STARTUP");
   if (pause_startup) {

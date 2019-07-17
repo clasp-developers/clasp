@@ -1038,7 +1038,7 @@ FILE* monitor_file(const std::string& filename_prefix);
 
 #ifdef DEBUG_MONITOR
   void monitor_message(const std::string& msg);
-#define MONITOR(x) monitor_message((x).str());
+#define MONITOR(x) core::monitor_message((x).str());
 #else
 #define MONITOR(x)
 #endif

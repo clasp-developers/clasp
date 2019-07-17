@@ -4016,9 +4016,7 @@ CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, Mo
   // Stuff to support MCJIT
 #ifdef DEBUG_MONITOR  
   if (core::_sym_STARdebugStartupSTAR->symbolValue().notnilp()) {
-    MONITOR("startup llvm_sys__jitFinalizeReplFunction replName->");
-    MONITOR(replName);
-    MONITOR("\n");
+    MONITOR(BF("startup llvm_sys__jitFinalizeReplFunction replName-> %s\n") % replName);
   }
 #endif
   core::Pointer_sp replPtr;
