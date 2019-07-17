@@ -197,41 +197,34 @@ namespace core {
 #endif
 
     void SimpleBitVector_O::__write__(T_sp stream) const {
-	if (!clasp_print_array() && !clasp_print_readably()) {
-	    writestr_stream("#<simple-bit-vector ", stream);
-	    clasp_write_addr(this->asSmartPtr(), stream);
-	    clasp_write_char('>', stream);
-	} else {
-	    cl_index ndx;
-	    writestr_stream("#*", stream);
-	    if (clasp_print_array()) {
-	    	for (ndx=0; ndx<this->length(); ++ndx)
-			//      if (x->vector.self.bit[(ndx /*+ x->vector.offset*/) / 8] & (0200 >> (ndx /*+ x->vector.offset*/) % 8))
-			if (this->testBit(ndx))
-		    	clasp_write_char('1', stream);
-			else
-		    	clasp_write_char('0', stream);
-		    	}
-		}	
+            if (!clasp_print_array() && !clasp_print_readably()) {
+                    writestr_stream("#<simple-bit-vector ", stream);
+                    clasp_write_addr(this->asSmartPtr(), stream);
+                    clasp_write_char('>', stream);
+            } else {
+                    writestr_stream("#*", stream);
+                    for (cl_index ndx=0; ndx<this->length(); ++ndx)
+                            if (this->testBit(ndx))
+                                    clasp_write_char('1', stream);
+                            else
+                                    clasp_write_char('0', stream);
+
+            }	
     }
 
     void BitVector_O::__write__(T_sp stream) const {
-	if (!clasp_print_array() && !clasp_print_readably()) {
-	    writestr_stream("#<bit-vector ", stream);
-	    clasp_write_addr(this->asSmartPtr(), stream);
-	    clasp_write_char('>', stream);
-	} else {
-	    cl_index ndx;
-	    writestr_stream("#*", stream);
-	    if  (clasp_print_array()) {
-	    	for (ndx = 0; ndx < this->length(); ndx++)
-			//      if (x->vector.self.bit[(ndx /*+ x->vector.offset*/) / 8] & (0200 >> (ndx /*+ x->vector.offset*/) % 8))
-			if (this->testBit(ndx))
-		    	clasp_write_char('1', stream);
-			else
-		    	clasp_write_char('0', stream);
-		    }
-		}
+            if (!clasp_print_array() && !clasp_print_readably()) {
+                    writestr_stream("#<bit-vector ", stream);
+                    clasp_write_addr(this->asSmartPtr(), stream);
+                    clasp_write_char('>', stream);
+            } else {
+                    writestr_stream("#*", stream);
+                    for (cl_index ndx = 0; ndx < this->length(); ndx++)
+                            if (this->testBit(ndx))
+                                    clasp_write_char('1', stream);
+                            else
+                                    clasp_write_char('0', stream);
+            }
     }
 
     static void write_simple_vector_simple (const char *title, Array_sp x, T_sp stream) {
