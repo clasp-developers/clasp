@@ -421,6 +421,7 @@ env is the parent environment of the (result-af) value frame"
           ((cons) (compile-tag-check object-raw +immediate-mask+ +cons-tag+ thenb elseb))
           ((character) (compile-tag-check object-raw +immediate-mask+ +character-tag+ thenb elseb))
           ((single-float) (compile-tag-check object-raw +immediate-mask+ +single-float-tag+ thenb elseb))
+          ((core:general) (compile-tag-check object-raw +immediate-mask+ +general-tag+ thenb elseb))
           (t
            (let ((header-value-min-max (gethash type core:+type-header-value-map+)))
              (when (null header-value-min-max)

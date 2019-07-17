@@ -205,7 +205,8 @@
                  unless (miss-p next)
                    collect `((,test arg) ,(generate-node arguments next)))
          ,@(unless (miss-p (tag-test-default node))
-             `(((core:generalp arg) ,(generate-node arguments (tag-test-default node)))))
+             `(((cleavir-primop:typeq arg core:general)
+                ,(generate-node arguments (tag-test-default node)))))
          (t (go dispatch-miss))))
 
 (defun generate-stamp-read (arguments node)
