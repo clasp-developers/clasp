@@ -275,21 +275,34 @@ CL_DEFUN T_sp cl__char_NE_(VaList_sp args) {
   }
 }
 
-CL_LAMBDA(&rest args);
+CL_LAMBDA(core:&va-rest args);
 CL_DECLARE();
 CL_DOCSTRING("EQ_");
-CL_DEFUN T_sp cl__char_EQ_(List_sp args) {
-  if (args.nilp())
+CL_DEFUN T_sp cl__char_EQ_(VaList_sp args) {
+  switch (args->remaining_nargs()) {
+  case 0:
       PROGRAM_ERROR();
-  claspCharacter a = clasp_as_claspCharacter(gc::As<Character_sp>(oCar(args)));
-  args = oCdr(args);
-  while (args.notnilp()) {
-    claspCharacter b = clasp_as_claspCharacter(gc::As<Character_sp>(oCar(args)));
-    if (a != b)
-      return ((_Nil<T_O>()));
-    args = oCdr(args);
+  case 1: {
+    gc::As<Character_sp>(args->next_arg());
+    return _lisp->_true();
   }
-  return ((_lisp->_true()));
+  case 2: {
+    claspCharacter a = clasp_as_claspCharacter(gc::As<Character_sp>(args->next_arg()));
+    claspCharacter b = clasp_as_claspCharacter(gc::As<Character_sp>(args->next_arg()));
+    if (a == b) return _lisp->_true();
+    return _Nil<T_O>();
+  }
+  default: {
+    claspCharacter a = clasp_as_claspCharacter(gc::As<Character_sp>(args->next_arg()));
+    while (args->remaining_nargs()) {
+      claspCharacter b = clasp_as_claspCharacter(gc::As<Character_sp>(args->next_arg()));
+      if (a!=b) {
+        return ((_Nil<T_O>()));
+      }
+    }
+    return _lisp->_true();
+  }
+  };
 };
 
 CL_LAMBDA(&rest args);
@@ -320,22 +333,38 @@ bool clasp_charEqual2(T_sp x, T_sp y) {
   return false;
 }
 
-CL_LAMBDA(&rest args);
+CL_LAMBDA(core:&va-rest args);
 CL_DECLARE();
-CL_DOCSTRING("Like char_EQ_, ignore case");
-CL_DEFUN bool cl__char_equal(List_sp args) {
-  if (args.nilp())
+CL_DOCSTRING("EQ_");
+CL_DEFUN T_sp cl__char_equal(VaList_sp args) {
+  switch (args->remaining_nargs()) {
+  case 0:
       PROGRAM_ERROR();
-  claspCharacter a = clasp_as_claspCharacter(gc::As<Character_sp>(oCar(args)));
-  a = claspCharacter_upcase(a);
-  args = oCdr(args);
-  while (args.notnilp()) {
-    claspCharacter b = clasp_as_claspCharacter(gc::As<Character_sp>(oCar(args)));
-    b = claspCharacter_upcase(b);
-    if (a != b) return false;
-    args = oCdr(args);
+  case 1: {
+    gc::As<Character_sp>(args->next_arg());
+    return _lisp->_true();
   }
-  return true;
+  case 2: {
+    claspCharacter a = clasp_as_claspCharacter(gc::As<Character_sp>(args->next_arg()));
+    a = claspCharacter_upcase(a);
+    claspCharacter b = clasp_as_claspCharacter(gc::As<Character_sp>(args->next_arg()));
+    b = claspCharacter_upcase(b);
+    if (a == b) return _lisp->_true();
+    return _Nil<T_O>();
+  }
+  default: {
+    claspCharacter a = clasp_as_claspCharacter(gc::As<Character_sp>(args->next_arg()));
+    a = claspCharacter_upcase(a);
+    while (args->remaining_nargs()) {
+      claspCharacter b = clasp_as_claspCharacter(gc::As<Character_sp>(args->next_arg()));
+      b = claspCharacter_upcase(b);
+      if (a!=b) {
+        return ((_Nil<T_O>()));
+      }
+    }
+    return _lisp->_true();
+  }
+  };
 };
 
 #define BELL_CHAR 7
