@@ -4334,10 +4334,10 @@ stream_dispatch_table(T_sp strm) {
   if (AnsiStreamP(strm)) {
     return StreamOps(strm);
   }
-  if (gc::IsA<Instance_sp>(strm)) {
-    return clos_stream_ops;
+  if (!gc::IsA<Instance_sp>(strm)) {
+    ERROR_WRONG_TYPE_ONLY_ARG(core::_sym_dispatchTable, strm, cl::_sym_Stream_O);
   }
-  ERROR_WRONG_TYPE_ONLY_ARG(core::_sym_dispatchTable, strm, cl::_sym_Stream_O);
+  return clos_stream_ops;
 }
 
 cl_index
@@ -5785,26 +5785,36 @@ CL_DEFUN T_mv cl__read_line(T_sp sin, T_sp eof_error_p, T_sp eof_value, T_sp rec
       if (eofErrorP) {
         // If something has been read in this line, no error and it must be returned
         if (small) {
-          if (sbuf_small->length()>0)
-            return Values(sbuf_small, _lisp->_true());
-          else ERROR_END_OF_FILE(sin);
+          if (sbuf_small->length()>0) {
+            T_sp result = cl__copy_seq(sbuf_small);
+            _lisp->put_Str8Ns_buffer_string(sbuf_small);
+            return Values(result, _lisp->_true());
+          } else ERROR_END_OF_FILE(sin);
         }
         else {
-          if (sbuf_wide->length()>0)
-            return Values(sbuf_wide, _lisp->_true());
-          else ERROR_END_OF_FILE(sin);
+          if (sbuf_wide->length()>0) {
+            T_sp result = cl__copy_seq(sbuf_wide);
+            _lisp->put_StrWNs_buffer_string(sbuf_wide);
+            return Values(result, _lisp->_true());
+          } else ERROR_END_OF_FILE(sin);
         }
       } else {
         // tch == nil but no eof
         if (small) {
-          if (sbuf_small->length()>0)
-            return Values(sbuf_small, _Nil<T_O>());
-          else return Values(eof_value, _lisp->_true());
+          if (sbuf_small->length()>0) {
+            T_sp result = cl__copy_seq(sbuf_small);
+            _lisp->put_Str8Ns_buffer_string(sbuf_small);
+            return Values(result, _Nil<T_O>());
+//          return Values(sbuf_small, _Nil<T_O>());
+          } else return Values(eof_value, _lisp->_true());
         }
         else {
-          if (sbuf_wide->length()>0)
-            return Values(sbuf_wide, _Nil<T_O>());
-          else return Values(eof_value, _lisp->_true());
+          if (sbuf_wide->length()>0) {
+            T_sp result = cl__copy_seq(sbuf_wide);
+            _lisp->put_StrWNs_buffer_string(sbuf_wide);
+            return Values(result, _Nil<T_O>());
+//          return Values(sbuf_wide, _Nil<T_O>());
+          } else return Values(eof_value, _lisp->_true());
         }
       }
     } else {

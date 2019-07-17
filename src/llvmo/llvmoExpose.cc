@@ -4014,11 +4014,13 @@ SYMBOL_EXPORT_SC_(CorePkg,repl);
 
 CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, ModuleHandle_sp handle, const string& replName, const string& startupName, const string& shutdownName, core::T_sp initialData) {
   // Stuff to support MCJIT
+#ifdef DEBUG_MONITOR  
   if (core::_sym_STARdebugStartupSTAR->symbolValue().notnilp()) {
-    core::monitor_message("startup llvm_sys__jitFinalizeReplFunction replName->");
-    core::monitor_message(replName);
-    core::monitor_message("\n");
+    MONITOR("startup llvm_sys__jitFinalizeReplFunction replName->");
+    MONITOR(replName);
+    MONITOR("\n");
   }
+#endif
   core::Pointer_sp replPtr;
   if (replName!="") {
     replPtr = jit->findSymbolIn(handle,replName,false);
