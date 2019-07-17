@@ -4336,10 +4336,10 @@ stream_dispatch_table(T_sp strm) {
   if (AnsiStreamP(strm)) {
     return StreamOps(strm);
   }
-  if (gc::IsA<Instance_sp>(strm)) {
-    return clos_stream_ops;
+  if (!gc::IsA<Instance_sp>(strm)) {
+    ERROR_WRONG_TYPE_ONLY_ARG(core::_sym_dispatchTable, strm, cl::_sym_Stream_O);
   }
-  ERROR_WRONG_TYPE_ONLY_ARG(core::_sym_dispatchTable, strm, cl::_sym_Stream_O);
+  return clos_stream_ops;
 }
 
 cl_index
