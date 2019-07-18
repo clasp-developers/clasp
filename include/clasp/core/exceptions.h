@@ -79,14 +79,6 @@ extern core::Symbol_sp& _sym_name;
 #define SIMPLE_ERROR_BF(_str_) SIMPLE_ERROR(BF(_str_))
 
 /*! Error for when an index is out of range - eg: beyond the end of a string */
-#define OLD_TYPE_ERROR_INDEX(_seq_, _idx_) \
-  ERROR(cl::_sym_simpleTypeError, \
-        core::lisp_createList(kw::_sym_format_control, core::lisp_createStr("~S is not a valid index into the object ~S"), \
-                              kw::_sym_format_arguments, core::lisp_createList(clasp_make_fixnum(_idx_), _seq_), \
-                              kw::_sym_expected_type, core::lisp_createList(cl::_sym_integer, clasp_make_fixnum(0), make_fixnum((gc::IsA<Instance_sp>(_seq_) ? gc::As<Instance_sp>(_seq_)->numberOfSlots() : (_seq_)->length()) - 1)), \
-                              kw::_sym_datum, clasp_make_fixnum(_idx_)));
-
-/*! Error for when an index is out of range - eg: beyond the end of a string */
 #define TYPE_ERROR_INDEX(_seq_, _idx_) \
   ERROR(cl::_sym_simpleTypeError, \
         core::lisp_createList(kw::_sym_format_control, core::lisp_createStr("~S is not a valid index into the object ~S"), \
