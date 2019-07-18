@@ -5773,7 +5773,7 @@ CL_DEFUN T_mv cl__read_line(T_sp sin, T_sp eof_error_p, T_sp eof_value, T_sp rec
       } else {
         return Values(eof_value,_lisp->_true());
       }
-    }
+    } else return results;
   }
   //    bool recursiveP = translate::from_object<bool>::convert(env->lookup(_sym_recursive_p));
   bool small = true;
