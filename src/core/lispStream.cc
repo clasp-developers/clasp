@@ -5775,154 +5775,70 @@ CL_DEFUN T_mv cl__read_line(T_sp sin, T_sp eof_error_p, T_sp eof_value, T_sp rec
       }
     } else return results;
   }
-  //    bool recursiveP = translate::from_object<bool>::convert(env->lookup(_sym_recursive_p));
+  // Now we have an ANSI stream. Get read_char so we don't need to dispatch every iteration.
+  const FileOps &ops = stream_dispatch_table(sin);
+  claspCharacter (*read_char)(T_sp) = ops.read_char;
+  claspCharacter (*peek_char)(T_sp) = ops.peek_char;
+  // This is the second return value.
+  T_sp missing_newline_p = _Nil<T_O>();
+  // We set things up so that we accumulate a bytestring when possible, and revert to a real
+  // character string if we hit multibyte characters.
   bool small = true;
   Str8Ns_sp sbuf_small = _lisp->get_Str8Ns_buffer_string();
   StrWNs_sp sbuf_wide;
+  // Read loop
   while (1) {
-    T_sp tch = cl__read_char(sin, _Nil<T_O>(), _Nil<T_O>(), recursive_p);
-    if (tch.nilp()) {
-      if (eofErrorP) {
-        // If something has been read in this line, no error and it must be returned
+    claspCharacter cc = read_char(sin);
+    if (cc == EOF) { // hit end of file
+      missing_newline_p = _lisp->_true();
+      if (small) { // have a bytestring
+        if (sbuf_small->length() > 0) break; // we've read something - return it.
+        else if (eofErrorP) { // we need to signal an error.
+          _lisp->put_Str8Ns_buffer_string(sbuf_small); // return our buffer first
+          ERROR_END_OF_FILE(sin);
+        } else { // return the eof value.
+          _lisp->put_Str8Ns_buffer_string(sbuf_small);
+          return Values(eof_value, missing_newline_p);
+        }
+      } else break; // Otherwise we have a wide string- this implies we've read something.
+    } else { // have a real character
+      if (!clasp_base_char_p(cc)) {
+        // wide character.
+        // NOTE: We assume that wide characters are not newlines.
+        // In unicode this is false, e.g. U+2028 LINE SEPARATOR.
+        // However, CLHS specifies #\Newline as the only newline. Maybe look at this more.
         if (small) {
-          if (sbuf_small->length()>0) {
-            T_sp result = cl__copy_seq(sbuf_small);
-            _lisp->put_Str8Ns_buffer_string(sbuf_small);
-            return Values(result, _lisp->_true());
-          } else ERROR_END_OF_FILE(sin);
+          // We've read our first wide character - set up a wide buffer to use now
+          small = false;
+          sbuf_wide = _lisp->get_StrWNs_buffer_string();
+          // copy in the small buffer, then release the small buffer
+          sbuf_wide->unsafe_setf_subseq(0,sbuf_small->length(),sbuf_small->asSmartPtr());
+          _lisp->put_Str8Ns_buffer_string(sbuf_small);
         }
-        else {
-          if (sbuf_wide->length()>0) {
-            T_sp result = cl__copy_seq(sbuf_wide);
-            _lisp->put_StrWNs_buffer_string(sbuf_wide);
-            return Values(result, _lisp->_true());
-          } else ERROR_END_OF_FILE(sin);
-        }
-      } else {
-        // tch == nil but no eof
-        if (small) {
-          if (sbuf_small->length()>0) {
-            T_sp result = cl__copy_seq(sbuf_small);
-            _lisp->put_Str8Ns_buffer_string(sbuf_small);
-            return Values(result, _Nil<T_O>());
-//          return Values(sbuf_small, _Nil<T_O>());
-          } else return Values(eof_value, _lisp->_true());
-        }
-        else {
-          if (sbuf_wide->length()>0) {
-            T_sp result = cl__copy_seq(sbuf_wide);
-            _lisp->put_StrWNs_buffer_string(sbuf_wide);
-            return Values(result, _Nil<T_O>());
-//          return Values(sbuf_wide, _Nil<T_O>());
-          } else return Values(eof_value, _lisp->_true());
-        }
-      }
-    } else {
-      claspCharacter cc = (gc::As<Character_sp>(tch)).unsafe_character();
-      if (small && (!clasp_base_char_p(cc))) {
-        // first wide char read
-        small = false;
-        sbuf_wide = _lisp->get_StrWNs_buffer_string();
-        sbuf_wide->unsafe_setf_subseq(0,sbuf_small->length(),sbuf_small->asSmartPtr());
-       }
-      if (cc == '\n') {
+        // actually put in the wide character
+        sbuf_wide->vectorPushExtend_claspCharacter(cc);
+      } else if (cc == '\n') break; // hit a newline, get ready to return a result
+      else if (cc == '\r') {
+        // Treat a CR or CRLF as a newline.
+        if (peek_char(sin) == '\n') read_char(sin); // lose any LF first tho
         break;
-      } else if (cc == '\r') {
-        if (clasp_peek_char(sin) == '\n') {
-          clasp_read_char(sin);
-        }
-        break;
+      } else { // ok, we have a real non-newline character. accumulate.
+        if (small) sbuf_small->vectorPushExtend_claspChar(cc);
+        else sbuf_wide->vectorPushExtend_claspCharacter(cc);
       }
-      if (small)
-        sbuf_small->vectorPushExtend_claspChar(cc);
-      else sbuf_wide->vectorPushExtend_claspCharacter(cc);
     }
-  }
+  } // while(1)
+  // We've accumulated a line. Copy it into a simple string, release the buffer, and return.
   LOG(BF("Read line result -->[%s]") % sbuf.str());
   if (small) {
     T_sp result = cl__copy_seq(sbuf_small);
     _lisp->put_Str8Ns_buffer_string(sbuf_small);
-    return Values(result, _Nil<T_O>());
+    return Values(result, missing_newline_p);
   } else {
     T_sp result = cl__copy_seq(sbuf_wide);
     _lisp->put_StrWNs_buffer_string(sbuf_wide);
-    return Values(result, _Nil<T_O>());
+    return Values(result, missing_newline_p);
   }
-}
-
-
-CL_LAMBDA(&optional input-stream (eof-error-p t) eof-value recursive-p);
-CL_DEFUN T_mv core__read_line_old(T_sp sin, T_sp eof_error_p, T_sp eof_value, T_sp recursive_p) {
-  // TODO Handle encodings from sin - currently only Str8Ns is supported
-  bool eofErrorP = eof_error_p.isTrue();
-  sin = coerce::inputStreamDesignator(sin);
-  if (!AnsiStreamP(sin)) {
-    T_mv results = eval::funcall(gray::_sym_stream_read_line, sin);
-    if (results.second().isTrue()) {
-      if (eof_error_p.notnilp()) {
-        ERROR_END_OF_FILE(sin);
-      } else {
-        return Values(eof_value,_lisp->_true());
-      }
-    }
-  }
-  //    bool recursiveP = translate::from_object<bool>::convert(env->lookup(_sym_recursive_p));
-  bool small = true;
-  Str8Ns_sp sbuf_small = Str8Ns_O::createBufferString();
-  StrWNs_sp sbuf_wide;
-  while (1) {
-    T_sp tch = cl__read_char(sin, _Nil<T_O>(), _Nil<T_O>(), recursive_p);
-    if (tch.nilp()) {
-      if (eofErrorP) {
-        // If something has been read in this line, no error and it must be returned
-        if (small) {
-          if (sbuf_small->length()>0)
-            return Values(sbuf_small, _lisp->_true());
-          else ERROR_END_OF_FILE(sin);
-        }
-        else {
-          if (sbuf_wide->length()>0)
-            return Values(sbuf_wide, _lisp->_true());
-          else ERROR_END_OF_FILE(sin);
-        }
-      } else {
-        // tch == nil but no eof
-        if (small) {
-          if (sbuf_small->length()>0)
-            return Values(sbuf_small, _Nil<T_O>());
-          else return Values(eof_value, _lisp->_true());
-        }
-        else {
-          if (sbuf_wide->length()>0)
-            return Values(sbuf_wide, _Nil<T_O>());
-          else return Values(eof_value, _lisp->_true());
-        }
-      }
-    } else {
-      claspCharacter cc = (gc::As<Character_sp>(tch)).unsafe_character();
-      if (small && (!clasp_base_char_p(cc))) {
-        // first wide char read
-        small = false;
-        sbuf_wide = StrWNs_O::createBufferString();
-        sbuf_wide->unsafe_setf_subseq(0,sbuf_small->length(),sbuf_small->asSmartPtr());
-       }
-      if (cc == '\n') {
-        break;
-      } else if (cc == '\r') {
-        if (clasp_peek_char(sin) == '\n') {
-          clasp_read_char(sin);
-        }
-        break;
-      }
-      if (small)
-        sbuf_small->vectorPushExtend_claspChar(cc);
-      else sbuf_wide->vectorPushExtend_claspCharacter(cc);
-    }
-  }
-  LOG(BF("Read line result -->[%s]") % sbuf.str());
-   if (small)
-     return Values(sbuf_small, _Nil<T_O>());
-   else return Values(sbuf_wide, _Nil<T_O>());
 }
 
 void clasp_terpri(T_sp s) {
