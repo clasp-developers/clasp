@@ -9,7 +9,6 @@
 ;;; but only for cclasp, which means while bclasp is loading cclasp.
 #+bclasp
 (eval-when (:load-toplevel)
-  (format t "Setting *constructors-during-build*~%")
   (setf *constructors-during-build* nil))
 
 (defmacro precompile-build-constructors ()
