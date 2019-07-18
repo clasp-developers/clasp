@@ -869,6 +869,7 @@ and  return the sorted values and the constant-table or (values nil nil)."
 
 (defvar *run-time-coalesce*)
 
+(declaim (ftype (function (t boolean) (values (or immediate-datum literal-node) boolean)) run-time-reference-literal))
 (defun run-time-reference-literal (object read-only-p)
   "If the object is an immediate object return (values immediate nil nil).
    Otherwise return (values creator T index)."
