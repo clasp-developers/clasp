@@ -130,8 +130,9 @@
 ;;; Immediate objects don't need to be put into tables
 ;;;
 
-;;; Return NIL if the object is not immediate - or return
-;;;     a fixnum that can be cast directly to a tagged pointer that represents the immediate object.
+;;; Return NIL if the object is not immediate
+;;; - if it is an immediate then return an immediate-datum object that
+;;; contains the tagged immediate value.
 (defun immediate-datum-or-nil (original)
   (let ((immediate (core:create-tagged-immediate-value-or-nil original)))
     (if immediate
