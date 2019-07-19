@@ -5789,6 +5789,7 @@ CL_DEFUN T_mv cl__read_line(T_sp sin, T_sp eof_error_p, T_sp eof_value, T_sp rec
           sbuf_wide = _lisp->get_StrWNs_buffer_string();
           // copy in the small buffer, then release the small buffer
           sbuf_wide->unsafe_setf_subseq(0,sbuf_small->length(),sbuf_small->asSmartPtr());
+          sbuf_wide->fillPointerSet(sbuf_small->length());
           _lisp->put_Str8Ns_buffer_string(sbuf_small);
         }
         // actually put in the wide character
