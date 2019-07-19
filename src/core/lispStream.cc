@@ -740,23 +740,6 @@ generic_write_vector(T_sp strm, T_sp data, cl_index start, cl_index end) {
       write_byte(vec->rowMajorAref(start), strm);
     }
   }
-
-  clasp_elttype elttype = clasp_array_elttype(data);
-  if (elttype == clasp_aet_bc ||
-#ifdef CLASP_UNICODE
-      elttype == clasp_aet_ch ||
-#endif
-      (elttype == clasp_aet_object && cl__elt(data, 0).characterp())) {
-    claspCharacter (*write_char)(T_sp, claspCharacter) = ops.write_char;
-    for (; start < end; start++) {
-      write_char(strm, clasp_as_claspCharacter(gc::As<Character_sp>(cl__elt(data, start))));
-    }
-  } else {
-    void (*write_byte)(T_sp, T_sp) = ops.write_byte;
-    for (; start < end; start++) {
-      write_byte(cl__elt(data, start), strm);
-    }
-  }
   return start;
 }
 
