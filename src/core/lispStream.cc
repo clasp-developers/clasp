@@ -5874,13 +5874,15 @@ CL_DEFUN bool cl__fresh_line(T_sp outputStreamDesig) {
   return clasp_freshLine(outputStreamDesig);
 };
 
-String_sp clasp_writeString(String_sp str, T_sp stream, int istart, T_sp end) {
-  ASSERT(cl__stringp(str));
+CL_LAMBDA(string &optional (output-stream cl:*standard-output*) &key (start 0) end);
+CL_DECLARE();
+CL_DOCSTRING("writeString");
+CL_LISPIFY_NAME("cl:write-string");
+CL_DEFUN String_sp clasp_writeString(String_sp str, T_sp stream, int istart, T_sp end) {
   stream = coerce::outputStreamDesignator(stream);
   if (!AnsiStreamP(stream)) {
     Fixnum_sp fnstart = make_fixnum(istart);
-    eval::funcall(gray::_sym_stream_write_string, stream, str, fnstart, end);
-    return str;
+    return eval::funcall(gray::_sym_stream_write_string, stream, str, fnstart, end);
   }
   int iend = cl__length(str);
   if (end.notnilp()) {
@@ -5891,40 +5893,11 @@ String_sp clasp_writeString(String_sp str, T_sp stream, int istart, T_sp end) {
   return str;
 }
 
-CL_LAMBDA(string &optional (output-stream cl:*standard-output*) &key (start 0) end);
-CL_DECLARE();
-CL_DOCSTRING("writeString");
-CL_DEFUN T_sp cl__write_string(T_sp tstr, T_sp tstream, int start, T_sp end) {
-  T_sp stream = coerce::outputStreamDesignator(tstream);
-  if ( cl__stringp(tstr)) {
-    String_sp str = gc::As_unsafe<String_sp>(tstr);
-    clasp_writeString(str, stream, start, end);
-  } else if ( Vector_sp vstr = tstr.asOrNull<Vector_O>() ) {
-    if ( clasp_is_character_type(vstr->arrayElementType()) ) {
-      size_t send;
-      if (end.nilp()) {
-        send = vstr->arrayTotalSize();
-      } else if (end.fixnump()) {
-        send = MIN(end.unsafe_fixnum(),vstr->arrayTotalSize());
-      } else {
-        TYPE_ERROR(end,cl::_sym_integer);
-      }
-      for (size_t i=start; i<send; ++i ) {
-        clasp_write_char(gctools::As<Character_sp>(vstr->rowMajorAref(i)).unsafe_character(),stream);
-      }
-    } else {
-      TYPE_ERROR(tstr,cl::_sym_string);
-    }
-  }
-  return tstr;
-};
-
 CL_LAMBDA(string &optional output-stream &key (start 0) end);
 CL_DECLARE();
 CL_DOCSTRING("writeLine");
-CL_DEFUN String_sp cl__write_line(String_sp str, T_sp stream, Fixnum_sp start, T_sp end) {
-  stream = coerce::outputStreamDesignator(stream);
-  clasp_writeString(str, stream, unbox_fixnum(start), end);
+CL_DEFUN String_sp cl__write_line(String_sp str, T_sp stream, int istart, T_sp end) {
+  clasp_writeString(str, stream, istart, end);
   clasp_terpri(stream);
   return str;
 };
