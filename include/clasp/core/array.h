@@ -1953,7 +1953,6 @@ namespace core {
   T_sp core__search_string(String_sp sub, size_t sub_start, T_sp sub_end, String_sp outer, size_t outer_start, T_sp outer_end );
   bool core__fits_in_base_string(T_sp str);
   T_sp core__copy_to_simple_base_string(T_sp buffer);
-  clasp_elttype clasp_array_elttype(T_sp array);
 
 CL_LAMBDA(dest destStart orig origStart len);
 CL_DECLARE();
