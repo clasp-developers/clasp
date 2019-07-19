@@ -5401,8 +5401,10 @@ CL_DEFUN int core__stream_column(T_sp tstream) {
 
 namespace core {
 void clasp_write_characters(const char *buf, int sz, T_sp strm) {
+  claspCharacter (*write_char)(T_sp, claspCharacter);
+  write_char = stream_dispatch_table(strm).write_char;
   for (int i(0); i < sz; ++i) {
-    clasp_write_char(buf[i], strm);
+    write_char(strm, buf[i]);
   }
 }
 
