@@ -17,6 +17,19 @@
 (TEST-EXPECT-ERROR TEST-CHAR-10 (CHAR-NOT-GREATERP) :TYPE PROGRAM-ERROR)
 (TEST-EXPECT-ERROR TEST-CHAR-11 (CHAR-NOT-EQUAL) :TYPE PROGRAM-ERROR)
 
+(TEST-EXPECT-ERROR TEST-CHAR-0a (CHAR= (make-hash-table)) :TYPE type-error)
+(TEST-EXPECT-ERROR TEST-CHAR-1a (CHAR/= (make-hash-table)) :TYPE type-error)
+(TEST-EXPECT-ERROR TEST-CHAR-2a (CHAR< (make-hash-table)) :TYPE type-error)
+(TEST-EXPECT-ERROR TEST-CHAR-3a (CHAR> (make-hash-table)) :TYPE type-error)
+(TEST-EXPECT-ERROR TEST-CHAR-4a (CHAR<= (make-hash-table)) :TYPE type-error)
+(TEST-EXPECT-ERROR TEST-CHAR-5a (CHAR>= (make-hash-table)) :TYPE type-error)
+(TEST-EXPECT-ERROR TEST-CHAR-6a (CHAR-LESSP (make-hash-table)) :TYPE type-error)
+(TEST-EXPECT-ERROR TEST-CHAR-7a (CHAR-GREATERP (make-hash-table)) :TYPE type-error)
+(TEST-EXPECT-ERROR TEST-CHAR-8a (CHAR-EQUAL (make-hash-table)) :TYPE type-error)
+(TEST-EXPECT-ERROR TEST-CHAR-9a (CHAR-NOT-LESSP (make-hash-table)) :TYPE type-error)
+(TEST-EXPECT-ERROR TEST-CHAR-10a (CHAR-NOT-GREATERP (make-hash-table)) :TYPE type-error)
+(TEST-EXPECT-ERROR TEST-CHAR-11a (CHAR-NOT-EQUAL (make-hash-table)) :TYPE type-error)
+
 (test TEST-CHAR-12
       (char= #\RETURN
              (name-char 
@@ -106,3 +119,5 @@
 
 (test test-char-17 (char/= #\a #\b #\c #\d))
 (test test-char-18 (let ()(char/= #\a #\b #\c #\d)))
+
+(test test-char-19 (eql #\Rubout #\Del))

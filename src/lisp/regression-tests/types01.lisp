@@ -55,3 +55,20 @@
        (subtype-p valid-p)
      (subtypep (find-class 'short-float) 'short-float)
    (and subtype-p valid-p)))
+
+(TEST
+ types-classes-9
+ (multiple-value-bind
+       (subtype-p valid-p)
+     (subtypep (type-of #2A((NIL NIL) (NIL NIL)))(class-of #2A((NIL NIL) (NIL NIL))))
+   (and subtype-p valid-p)))
+
+(TEST
+ types-classes-10
+ (multiple-value-bind
+       (subtype-p valid-p)
+     (subtypep (type-of #'car) 'function)
+   (and subtype-p valid-p)))
+
+(test ARRAY.9.8
+ (let () (TYPEP #2A((A B) (C D) (E F)) '(SIMPLE-ARRAY * (* 2)))))
