@@ -21,6 +21,7 @@ typedef enum { boole_clr = 0,
                boole_set = 15 } boole_ops;
 
 void initialize_bits();
+T_sp cl__logbitp(Integer_sp p, Integer_sp x);
 };
 
 #endif

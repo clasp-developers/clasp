@@ -142,6 +142,7 @@ public: // Functions here
   Bignum get() const;
   Bignum get_or_if_nil_default(Bignum default_value) const;
   Number_sp abs_() const;
+  Number_sp log1_() const;
   Number_sp sqrt_() const;
   Number_sp reciprocal_() const;
   Number_sp rational_() const final { return this->asSmartPtr(); };

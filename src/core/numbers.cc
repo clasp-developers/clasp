@@ -49,6 +49,7 @@ THE SOFTWARE.
 #include <clasp/gctools/pointer_tagging.h>
 #include <clasp/core/wrappers.h>
 #include <clasp/core/num_co.h>
+#include <clasp/core/bits.h>
 
 
 namespace core {
@@ -1921,10 +1922,74 @@ float Ratio_O::as_float_() const {
   return d;
 }
 
+#define prepare_ratio_to_float_iterations 50
+/* adapted from ecl */
+__attribute__((optnone)) static Integer_sp prepare_ratio_to_float(Bignum_sp num, Bignum_sp den, int digits, gc::Fixnum *scaleout) {
+  /* We have to cook our own routine because GMP does not round.
+   * The recipe is simple: we multiply the numberator by a large
+   * enough number so that the division by the denominator fits
+   * the floating point number. The result is scaled back by the
+   * appropriate exponent.
+   */
+  /* Scale down the denominator, eliminating the zeros
+   * so that we have smaller operands.
+   */
+  gc::Fixnum scale = 0; //remove_zeros(den);
+  gc::Fixnum num_size = clasp_integer_length(num);
+  gc::Fixnum den_size = clasp_integer_length(den);
+  gc::Fixnum delta = den_size - num_size;
+  scale -= delta;
+  {
+    gc::Fixnum adjust = digits + delta + 1;
+    if (adjust > 0) {
+      num = gc::As<Bignum_sp>(clasp_ash(num, adjust));
+    } else if (adjust < 0) {
+      den = gc::As<Bignum_sp>(clasp_ash(den, -adjust));
+    }
+  }
+  int iterations = 0;
+  do {
+    Real_mv fraction_mv = clasp_truncate2(num, den); // really (values Integer Float)
+    Real_sp fraction = fraction_mv;
+    Integer_sp fraction_integer = gc::As<Integer_sp>(fraction);
+    Real_sp rem = gc::As<Real_sp>(fraction_mv.second());
+    gc::Fixnum len = clasp_integer_length(fraction_integer);
+    if ((len - digits) == 1) {
+      if (clasp_oddp(fraction_integer)) {
+        Fixnum_sp one = clasp_minusp(num) ? clasp_make_fixnum(-1) : clasp_make_fixnum(1);
+        if (clasp_zerop(rem)) {
+          if (cl__logbitp(clasp_make_fixnum(1), fraction_integer) == _lisp->_true())
+            fraction = gc::As<Integer_sp>(clasp_plus(fraction_integer, one));
+        } else {
+          fraction = gc::As<Integer_sp>(clasp_plus(fraction_integer, one));
+        }
+      }
+      *scaleout = scale - (digits + 1);
+      return fraction_integer;
+    }
+    den =  gc::As<Bignum_sp>(clasp_ash(den, 1));
+    scale++;
+    iterations++;
+  } while (1 && (iterations < prepare_ratio_to_float_iterations));
+  SIMPLE_ERROR(BF("Cannot prepare_ratio_to_float"));
+}
+
 double Ratio_O::as_double_() const {
-  double d = clasp_to_double(this->_numerator);
-  d /= clasp_to_double(this->_denominator);
-  return d;
+  if (core__bignump(this->_numerator) && core__bignump(this->_denominator)) {
+    gc::Fixnum scale;
+    Integer_sp bits = prepare_ratio_to_float(gc::As<Bignum_sp>(this->_numerator), gc::As<Bignum_sp>(this->_denominator), DBL_MANT_DIG, &scale);
+    double output;
+    if (bits.fixnump())
+      output = gc::As<Fixnum_sp>(bits).unsafe_fixnum();
+    else
+      output = bits->as_double_();
+    return ldexp(output, scale);
+  }
+  else {
+    double d = clasp_to_double(this->_numerator);
+    d /= clasp_to_double(this->_denominator);
+    return d;
+  }
 }
 
 LongFloat Ratio_O::as_long_float_() const {
