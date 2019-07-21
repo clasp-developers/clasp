@@ -1734,7 +1734,7 @@ CL_DEFUN bool core__unix_daylight_saving_time(Integer_sp unix_time) {
 CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("unixGetLocalTimeZone");
-CL_DEFUN Ratio_sp core__unix_get_local_time_zone() {
+CL_DEFUN Rational_sp core__unix_get_local_time_zone() {
   gctools::Fixnum mw;
 #if 0 && defined(HAVE_TZSET)
   tzset();
@@ -1752,8 +1752,11 @@ CL_DEFUN Ratio_sp core__unix_get_local_time_zone() {
     mw -= 24 * 60;
   else if (gtm.tm_wday == (ltm.tm_wday + 1) % 7)
     mw += 24 * 60;
+  // Fix from ecl
+  if (ltm.tm_isdst)
+    mw += 60;
 #endif
-  return Ratio_O::create(make_fixnum(mw), make_fixnum(60));
+  return Rational_O::create(make_fixnum(mw), make_fixnum(60));
 }
 
 CL_LAMBDA(dir mode);
