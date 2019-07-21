@@ -219,8 +219,26 @@ Set gather-all-frames to T and you can gather C++ and Common Lisp frames"
      (dump-backtrace raw-backtrace :stream stream :args args :all all)))
   (finish-output stream))
 
+(defun bt-argument (frame-index argument-index)
+  "Get argument argument-index (or all if argument-index is not a number) from frame frame-index in current backtrace"
+  (core:call-with-backtrace
+   #'(lambda (raw-backtrace)
+       (let ((frames (common-lisp-backtrace-frames raw-backtrace))
+             (index 0))
+         (dolist (frame frames)
+           (when (= index frame-index)
+             (let ((arguments-vector (backtrace-frame-arguments frame)))
+               (return-from bt-argument
+                 (if (numberp argument-index)
+                     (if (> (length arguments-vector) argument-index)
+                         (aref arguments-vector argument-index)
+                         :invalid-argument-index)
+                     arguments-vector))))
+           (incf index)))
+       (return-from bt-argument :invalid-frame-index))))
+
 (export '(btcl dump-backtrace common-lisp-backtrace-frames
-          backtrace-frame-function-name backtrace-frame-arguments))
+          backtrace-frame-function-name backtrace-frame-arguments bt-argument))
 
 (defmacro with-dtrace-trigger (&body body)
   `(unwind-protect
