@@ -10,6 +10,7 @@
 (defparameter *expected-failures* nil)
 (defparameter *files-failed-to-compile* nil)
 (defparameter *test-marker-table* (make-hash-table))
+(defparameter *duplicate-tests* nil)
 
 (defun reset-clasp-tests ()
   (setq *passes* 0
@@ -57,10 +58,15 @@
       (when unexpected-successes
         (format t "~%unexpected success ~a~%" (nreverse unexpected-successes))))))
 
+(defvar *all-runtime-errors* nil)
 (defmacro test (name form &key description )
   `(if (progn
          (note-test ',name)
-         (ignore-errors ,form))
+         (multiple-value-bind (result error)
+             (ignore-errors ,form)
+           (when error
+             (push (list ',name error) *all-runtime-errors*))
+           result))
        (progn
          (format t "Passed ~s~%" ',name)
          (incf *passes*))
@@ -88,7 +94,7 @@
   (handler-case
       (multiple-value-bind
             (fasl warnings-p failure-p)
-          (let ((cmp::*compile-file-parallel* nil))
+          (let (#+(or) (cmp::*compile-file-parallel* t))
             (compile-file file))
         (declare (ignore warnings-p failure-p))
         (when fasl

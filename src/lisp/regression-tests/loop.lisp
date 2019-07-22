@@ -8,7 +8,6 @@
      (progn
        ,@body)))
 
-;;; seems to work now
 (test loop-complex-1
       (equal (complex 10 14)
              (wrap-loop-as-in-ansi-tests
