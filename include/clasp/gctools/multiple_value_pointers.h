@@ -156,9 +156,8 @@ namespace core {
  }
 
  // Similar to returnTypeSaveToTemp, but saves only from lisp_multipleValues.
- inline void multipleValuesSaveToTemp(T_O** temp) {
+ inline void multipleValuesSaveToTemp(size_t nvals, T_O** temp) {
    core::MultipleValues& mv = core::lisp_multipleValues();
-   size_t nvals = mv.getSize();
    for (size_t i = 0; i < nvals; ++i) {
      temp[i] = mv._Values[i];
    }
