@@ -203,6 +203,14 @@ when this is t a lot of graphs will be generated.")
                           initial-instruction abi &key (linkage 'llvm-sys:internal-linkage))
   (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
     (let ((return-value (alloca-return)))
+      ;; NOTE: This initialization is required due to the possibility that a function
+      ;; nonlocally exits without having set the return-value, as happens with e.g.
+      ;; the (lambda (c) (go outside)) functions handler-case uses.
+      ;; The unwind-instruction will save an uninitialized nret into the multiple value
+      ;; vector and try to write in that many values; this causes crashes.
+      (with-return-values (return-value abi nret ret-regs)
+        (declare (ignore ret-regs))
+        (cmp:irc-store (%size_t 0) nret))
       (cmp:with-irbuilder (body-irbuilder)
         (cmp:with-debug-info-source-position ((ensure-origin (cleavir-ir:origin initial-instruction) 999970) )
           (cmp:with-dbg-lexical-block
