@@ -623,7 +623,11 @@ COMPILE-FILE will use the default *clasp-env*."
                  :origin (origin-spi (cst:source (cleavir-cst-to-ast:cst condition)))
                  :condition condition)
            (continue condition)))
-       (cleavir-cst-to-ast:compilation-program-error #'conversion-error-handler))
+       ((and cleavir-cst-to-ast:compilation-program-error
+             ;; If something goes wrong evaluating an eval-when, we just want a normal error
+             ;; signal- we can't recover and keep compiling.
+             (not cleavir-cst-to-ast:eval-error))
+         #'conversion-error-handler))
     (let ((ast (cleavir-cst-to-ast:cst-to-ast cst env *clasp-system* dynenv)))
       (when *interactive-debug* (draw-ast ast))
       (cc-dbg-when *debug-log* (log-cst-to-ast ast))
