@@ -571,27 +571,28 @@ void dumpLowLevelTrace(int numLowLevels) {
 
 extern "C" {
 
-[[noreturn]] NOINLINE void cc_wrong_number_of_arguments(core::T_O* tfunction, std::size_t nargs,
+// FIXME: This should be [[noreturn]], but I'm not sure how to communicate to clang that the
+// error calls won't return, so it complains if that's declared.
+NOINLINE void cc_wrong_number_of_arguments(core::T_O* tfunction, std::size_t nargs,
                                                         std::size_t min, std::size_t max) {
   Function_sp function((gctools::Tagged)tfunction);
-  if (min == max) {
-    SIMPLE_ERROR(BF("Calling %s - got %d arguments, but expected exactly %d")
-                 % _rep_(function->functionName())
-                 % nargs % min);
-  } else if (min < max) {
-    SIMPLE_ERROR(BF("Calling %s - got %d arguments, but expected between %d and %d")
-                 % _rep_(function->functionName())
-                 % nargs % min % max);
-  } else {
-    // This is kind of a KLUDGE, but basically we use smaller max to indicate
-    // there is no limit on the number of arguments.
-    // Check how this function is called in arguments.lsp.
-    SIMPLE_ERROR(BF("Calling %s - got %d arguments, but expected at least %d")
-                 % _rep_(function->functionName())
-                 % nargs % min);
-  }
+  /* This is kind of a KLUDGE, but we use a smaller max to indicate there is no
+   * limit on the number of arguments (i.e., &rest or &key).
+   * Check how calls to this function are generated in cmp/arguments.lsp. */
+  if (max < min)
+    core::eval::funcall(cl::_sym_error,
+                        core::_sym_wrongNumberOfArguments,
+                        kw::_sym_calledFunction, function,
+                        kw::_sym_givenNargs, core::make_fixnum(nargs),
+                        kw::_sym_minNargs, core::make_fixnum(min));
+  else
+    core::eval::funcall(cl::_sym_error,
+                        core::_sym_wrongNumberOfArguments,
+                        kw::_sym_calledFunction, function,
+                        kw::_sym_givenNargs, core::make_fixnum(nargs),
+                        kw::_sym_minNargs, core::make_fixnum(min),
+                        kw::_sym_maxNargs, core::make_fixnum(max));
 }
-
 
 ALWAYS_INLINE T_O *va_lexicalFunction(size_t depth, size_t index, core::T_O* evaluateFrameP)
 {NO_UNWIND_BEGIN();
