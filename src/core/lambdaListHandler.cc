@@ -39,12 +39,13 @@ THE SOFTWARE.
 #include <clasp/core/evaluator.h>
 #include <clasp/core/hashTableEq.h>
 #include <clasp/core/wrappers.h>
+
 namespace core {
 
-
 SYMBOL_EXPORT_SC_(KeywordPkg, calledFunction);
-SYMBOL_EXPORT_SC_(KeywordPkg, givenNumberOfArguments);
-SYMBOL_EXPORT_SC_(KeywordPkg, requiredNumberOfArguments);
+SYMBOL_EXPORT_SC_(KeywordPkg, givenNargs);
+SYMBOL_EXPORT_SC_(KeywordPkg, minNargs);
+SYMBOL_EXPORT_SC_(KeywordPkg, maxNargs);
 SYMBOL_EXPORT_SC_(KeywordPkg, unrecognizedKeyword);
 
 /*! Return true if the form represents a type
@@ -569,8 +570,6 @@ void LambdaListHandler_O::recursively_build_handlers_count_arguments(List_sp dec
     }
   }
 }
-
-SYMBOL_SC_(CorePkg, tooFewArguments);
 
 #define PASS_FUNCTION_REQUIRED bind_required_va_list
 #define PASS_FUNCTION_OPTIONAL bind_optional_va_list

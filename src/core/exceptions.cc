@@ -81,15 +81,15 @@ void DynamicGo::keyFunctionForVtable(){};
 void Unwind::keyFunctionForVtable(){};
 
 void throwTooFewArgumentsError(size_t given, size_t required) {
-  lisp_error(core::_sym_tooFewArgumentsError,
-             lisp_createList(kw::_sym_givenNumberOfArguments, make_fixnum(given),
-                             kw::_sym_requiredNumberOfArguments, make_fixnum(required)));
+  lisp_error(core::_sym_wrongNumberOfArguments,
+             lisp_createList(kw::_sym_givenNargs, make_fixnum(given),
+                             kw::_sym_minNargs, make_fixnum(required)));
 }
 
 void throwTooManyArgumentsError(size_t given, size_t required) {
-  lisp_error(core::_sym_tooManyArgumentsError,
-             lisp_createList(kw::_sym_givenNumberOfArguments, make_fixnum(given),
-                             kw::_sym_requiredNumberOfArguments, make_fixnum(required)));
+  lisp_error(core::_sym_wrongNumberOfArguments,
+             lisp_createList(kw::_sym_givenNargs, make_fixnum(given),
+                             kw::_sym_maxNargs, make_fixnum(required)));
 }
 
 void throwUnrecognizedKeywordArgumentError(T_sp kw) {
