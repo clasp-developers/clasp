@@ -132,8 +132,6 @@ extern core::Symbol_sp& _sym_name;
 
 #define FILE_ERROR(_file_) ERROR(cl::_sym_fileError, core::lisp_createList(kw::_sym_pathname, _file_))
 #define CANNOT_OPEN_FILE_ERROR(_file_) FILE_ERROR(_file_)
-#define TOO_FEW_ARGUMENTS_ERROR() NO_INITIALIZERS_ERROR(core::_sym_tooFewArgumentsError)
-//#define TOO_MANY_ARGUMENTS_ERROR() NO_INITIALIZERS_ERROR(core::_sym_tooManyArgumentsError)
 #define UNRECOGNIZED_KEYWORD_ARGUMENTS_ERROR(obj) ERROR(core::_sym_unrecognizedKeywordArgumentsError,obj)
 // the following class does not exist in conditions.lsp and is not used
 // #define INVALID_KEYWORD_ARGUMENT_ERROR(obj) ERROR(core::_sym_invalidKeywordArgumentError, obj)
@@ -306,27 +304,6 @@ public:
   size_t index() const { return this->_Index; };
 };
 
-struct TooManyArgumentsError {
-  int givenNumberOfArguments;
-  int requiredNumberOfArguments;
-  TooManyArgumentsError(int given, int required);
-};
-
-class TooFewArgumentsError {
-private:
-  TooFewArgumentsError();
-
-public:
-  int givenNumberOfArguments;
-  int requiredNumberOfArguments;
-  TooFewArgumentsError(int given, int required);
-};
-
-struct UnrecognizedKeywordArgumentError {
-  core::T_sp argument;
-  UnrecognizedKeywordArgumentError(core::T_sp arg) : argument(arg){};
-};
-
 #pragma GCC visibility pop
 
 void throwTooFewArgumentsError(size_t given, size_t required);
@@ -336,10 +313,6 @@ void throwTooManyArgumentsError(size_t given, size_t required);
 void throwUnrecognizedKeywordArgumentError(T_sp kw);
 
 void wrongNumberOfArguments(size_t givenNumberOfArguments, size_t requiredNumberOfArguments);
-
-/*! Used by the debugger to resume the read-eval-print-loop */
-class ResumeREPL {
-};
 
 /*! Set a break-point in _trapThrow to catch
          * every exception except those thrown by THROW_noTrap

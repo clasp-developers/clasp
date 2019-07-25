@@ -47,7 +47,6 @@ int PASS_FUNCTION_REQUIRED(gctools::Vec0<RequiredArgument> const &reqs,
   size_t reqs_size(reqs.size());
   if (length_args < reqs_size) {
     throwTooFewArgumentsError(length_args, reqs_size);
-    //	TOO_FEW_ARGUMENTS_ERROR();
   }
   if (reqs.size()>0) {
     _BLOCK_TRACE("Assigning required arguments");

@@ -659,32 +659,60 @@ memory limits before executing the program again."))
              (format stream "Cannot call special operator as function: ~s"
                      (operator condition)))))
 
-(define-condition core:too-few-arguments-error (error)
+#+(or)
+(define-condition core:wrong-number-of-arguments (program-error)
   ((called-function :initarg :called-function :reader called-function)
+   (given-nargs :initarg :given-nargs :reader given-nargs)
+   ;; may be NIL if this is called from the interpreter and we don't know anything
+   ;; (KLUDGE, FIXME?)
+   (min-nargs :initarg :min :reader min-nargs :initform nil)
+   ;; may be NIL to indicate no maximum.
+   (max-nargs :initarg :max :reader max-nargs :initform nil))
+  (:report (lambda (condition stream)
+             (let ((min (min-required-nargs condition))
+                   (max (max-required-nargs condition)))
+               (format stream "Calling ~s - got ~d arguments, but expected ~@?"
+                       (core:function-name (called-function condition))
+                       (given-nargs condition)
+                       (cond ((null max)  "at least ~d")
+                             ((null min)  "at most ~*~d")
+                             ;; I think "exactly 0" is better than "at most 0", thus duplication
+                             ((= min max) "exactly ~d")
+                             ((zerop min) "at most ~*~d")
+                             (t           "between ~d and ~d"))
+                       min max)))))
+
+(define-condition core:too-few-arguments-error (error)
+  (;; Lambda list handlers sometimes create this without knowing (or passing) the function.
+   ;; In this case the called-function will be NIL.
+   (called-function :initarg :called-function :reader called-function :initform nil)
    (given-number-of-arguments :initarg :given-number-of-arguments :reader given-number-of-arguments)
    (required-number-of-arguments :initarg :required-number-of-arguments :reader required-number-of-arguments))
   (:report (lambda (condition stream)
-             (format stream "Too few arguments for ~S, given ~S - required ~S."
+             (format stream "Too few arguments~[~; for ~S~], given ~S - required ~S."
+                     (called-function condition)
                      (core:function-name (called-function condition))
                      (given-number-of-arguments condition)
                      (required-number-of-arguments condition)))))
 
 (define-condition core:too-many-arguments-error (error)
-  ((called-function :initarg :called-function :reader called-function)
+  ((called-function :initarg :called-function :reader called-function :initform nil)
    (given-number-of-arguments :initarg :given-number-of-arguments :reader given-number-of-arguments)
    (required-number-of-arguments :initarg :required-number-of-arguments :reader required-number-of-arguments))
   (:report (lambda (condition stream)
-             (format stream "Too many arguments for ~S, given ~S - required ~S."
+             (format stream "Too many arguments~[~; for ~S~], given ~S - required ~S."
+                     (called-function condition)
                      (core:function-name (called-function condition))
                      (given-number-of-arguments condition)
                      (required-number-of-arguments condition)))))
 
 (define-condition core:unrecognized-keyword-argument-error (error)
-  ((called-function :initarg :called-function :reader called-function)
+  ((called-function :initarg :called-function :reader called-function :initform nil)
    (unrecognized-keyword :initarg :unrecognized-keyword :reader unrecognized-keyword))
   (:report (lambda (condition stream)
-             (format stream "Unrecognized keyword argument ~S for ~S."
+             (format stream "Unrecognized keyword argument ~S~[~; for ~S~]."
                      (unrecognized-keyword condition)
+                     (called-function condition)
                      (core:function-name (called-function condition))))))
 
 (define-condition print-not-readable (error)

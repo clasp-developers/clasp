@@ -47,20 +47,6 @@ SYMBOL_EXPORT_SC_(KeywordPkg, givenNumberOfArguments);
 SYMBOL_EXPORT_SC_(KeywordPkg, requiredNumberOfArguments);
 SYMBOL_EXPORT_SC_(KeywordPkg, unrecognizedKeyword);
 
-void handleArgumentHandlingExceptions(Closure_sp closure) {
-  Function_sp func = closure;
-  try {
-    throw;
-  } catch (TooManyArgumentsError &error) {
-    lisp_error(core::_sym_tooManyArgumentsError, lisp_createList(kw::_sym_calledFunction, func, kw::_sym_givenNumberOfArguments, make_fixnum(error.givenNumberOfArguments), kw::_sym_requiredNumberOfArguments, make_fixnum(error.requiredNumberOfArguments)));
-  } catch (TooFewArgumentsError &error) {
-    lisp_error(core::_sym_tooFewArgumentsError, lisp_createList(kw::_sym_calledFunction, func, kw::_sym_givenNumberOfArguments, make_fixnum(error.givenNumberOfArguments), kw::_sym_requiredNumberOfArguments, make_fixnum(error.requiredNumberOfArguments)));
-  } catch (UnrecognizedKeywordArgumentError &error) {
-    lisp_error(core::_sym_unrecognizedKeywordArgumentError, lisp_createList(kw::_sym_calledFunction, func, kw::_sym_unrecognizedKeyword, error.argument));
-  }
-}
-
-
 /*! Return true if the form represents a type
 */
 CL_DEFUN bool core__is_a_type(T_sp form)
@@ -215,12 +201,8 @@ void lambdaListHandler_createBindings(Closure_sp closure, core::LambdaListHandle
       return;
     }
   }
-  try {
-    LOG(BF("About to createBindingsInScopeVaList with\n llh->%s\n    VaList->%s") % _rep_(llh) % _rep_(lcc_vargs));
-    llh->createBindingsInScopeVaList(lcc_nargs, lcc_vargs, scope);
-  } catch (...) {
-    handleArgumentHandlingExceptions(closure);
-  }
+  LOG(BF("About to createBindingsInScopeVaList with\n llh->%s\n    VaList->%s") % _rep_(llh) % _rep_(lcc_vargs));
+  llh->createBindingsInScopeVaList(lcc_nargs, lcc_vargs, scope);
   return;
 }
 
@@ -636,7 +618,6 @@ void LambdaListHandler_O::createBindingsInScopeVaList(size_t nargs, VaList_sp va
   }
   if (UNLIKELY(arg_idx < nargs && !(this->_RestArgument.isDefined()) && (this->_KeywordArguments.size() == 0))) {
     throwTooManyArgumentsError(nargs, this->numberOfLexicalVariables());
-    //	    TOO_MANY_ARGUMENTS_ERROR();
   }
   if (UNLIKELY(this->_RestArgument.isDefined())) {
     // Make and use a copy of the arglist so that keyword processing can parse the args as well

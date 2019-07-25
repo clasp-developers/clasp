@@ -80,27 +80,24 @@ void LexicalGo::keyFunctionForVtable(){};
 void DynamicGo::keyFunctionForVtable(){};
 void Unwind::keyFunctionForVtable(){};
 
-TooFewArgumentsError::TooFewArgumentsError(int given, int required) : givenNumberOfArguments(given), requiredNumberOfArguments(required) {
-  printf("%s:%d Constructed TooFewArgumentsError given %d required %d\n", __FILE__, __LINE__, given, required);
-};
-TooManyArgumentsError::TooManyArgumentsError(int given, int required) : givenNumberOfArguments(given), requiredNumberOfArguments(required){};
-
 void throwTooFewArgumentsError(size_t given, size_t required) {
-  SIMPLE_ERROR(BF("Too few arguments given %d required %d") % given % required);
-  //        throw(TooFewArgumentsError(given,required));
+  lisp_error(core::_sym_tooFewArgumentsError,
+             lisp_createList(kw::_sym_givenNumberOfArguments, make_fixnum(given),
+                             kw::_sym_requiredNumberOfArguments, make_fixnum(required)));
 }
 
 void throwTooManyArgumentsError(size_t given, size_t required) {
-  SIMPLE_ERROR(BF("Too many arguments error given: %d required: %d") % given % required);
-  //        throw(TooManyArgumentsError(given,required));
+  lisp_error(core::_sym_tooManyArgumentsError,
+             lisp_createList(kw::_sym_givenNumberOfArguments, make_fixnum(given),
+                             kw::_sym_requiredNumberOfArguments, make_fixnum(required)));
 }
 
 void throwUnrecognizedKeywordArgumentError(T_sp kw) {
-  SIMPLE_ERROR(BF("Unrecognized keyword argument error: %s") % _rep_(kw));
-  //        throw(UnrecognizedKeywordArgumentError(kw));
+  lisp_error(core::_sym_unrecognizedKeywordArgumentError,
+             lisp_createList(kw::_sym_unrecognizedKeyword, kw));
 }
 
-void wrongNumberOfArguments(std::size_t givenNumberOfArguments, std::size_t requiredNumberOfArguments) {
+void wrongNumberOfArguments(size_t givenNumberOfArguments, size_t requiredNumberOfArguments) {
   if (givenNumberOfArguments < requiredNumberOfArguments)
     throwTooFewArgumentsError(givenNumberOfArguments, requiredNumberOfArguments);
   else
