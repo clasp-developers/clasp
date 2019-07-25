@@ -2825,26 +2825,21 @@
         (let ((fun-sym (gensym "FUN"))
               (out-sym (gensym "OUT"))
               (dest-sym (gensym "DEST"))
+              (stream (gensym "STREAM"))
               ;; We call %formatter early because it has the side effect
               ;; of signaling an error if the control string is invalid.
               (formatter (%formatter control-string)))
           (check-min/max-format-arguments control-string (length args))
-          `(let ((,fun-sym ,formatter)
-                 (,dest-sym ,destination))
-             (cond
-               ((eq ,dest-sym t)
-                (funcall ,fun-sym *standard-output* ,@args)
-                nil)
-               ((null ,dest-sym)
-                (with-output-to-string (,out-sym)
-                  (funcall ,fun-sym ,out-sym ,@args)))
-               ((stringp ,dest-sym)
-                (with-output-to-string (,out-sym ,dest-sym)
-                  (funcall ,fun-sym ,out-sym ,@args))
-                nil)
-               (t
-                (funcall ,fun-sym ,dest-sym ,@args)
-                nil))))
+          `(let* ((,dest-sym ,destination)
+                  (,stream (cond ((null ,dest-sym) (make-string-output-stream))
+                                 ((eq ,dest-sym t) *standard-output*)
+                                 ((stringp ,dest-sym)
+                                  (core:make-string-output-stream-from-string ,dest-sym))
+                                 (t ,dest-sym))))
+             (,formatter ,stream ,@args)
+             (if (null ,dest-sym)
+                 (get-output-stream-string ,stream)
+                 nil)))
         whole)))
 
 ;;;; Compile-time checking of format arguments and control string
