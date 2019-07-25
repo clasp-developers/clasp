@@ -669,12 +669,13 @@ memory limits before executing the program again."))
    ;; may be NIL to indicate no maximum.
    (max-nargs :initarg :max-nargs :reader max-nargs :initform nil))
   (:report (lambda (condition stream)
-             (let ((min (min-nargs condition))
-                   (max (max-nargs condition))
-                   (name (and (called-function condition)
-                              (core:function-name (called-function condition)))))
-               (format stream "~@[Calling ~s - ~]Got ~d arguments, but expected ~@?"
-                       name (given-nargs condition)
+             (let* ((min (min-nargs condition))
+                    (max (max-nargs condition))
+                    (function (called-function condition))
+                    (name (and function (core:function-name function)))
+                    (dname (if (eq name 'cl:lambda) "anonymous function" name)))
+               (format stream "~@[Calling ~a - ~]Got ~d arguments, but expected ~@?"
+                       dname (given-nargs condition)
                        (cond ((null max)  "at least ~d")
                              ((null min)  "at most ~*~d")
                              ;; I think "exactly 0" is better than "at most 0", thus duplication
