@@ -77,51 +77,47 @@ object's representation."
         (values (read stream eof-error-p eof-value)
                 (file-position stream)))))
 
-#+(or)
-(defun write-to-string (object &rest rest
-                        &aux (stream (make-string-output-stream)))
-  "Args: (object &key (escape *print-escape*) (radix *print-radix*)
-                   (base *print-base*) (circle *print-circle*)
-                   (pretty *print-pretty*) (level *print-level*)
-                   (length *print-length*) (case *print-case*)
-                   (array *print-array*) (gensym *print-gensym*))
-Returns as a string the printed representation of OBJECT in the specified
-mode.  See the variable docs of *PRINT-...* for the mode."
-  (apply #'write object :stream stream rest)
-  (get-output-stream-string stream))
+(defun stringify (object)
+  ;; By not making a fresh stream every time, we save some time.
+  (let ((stream (core:thread-local-write-to-string-output-stream)))
+    (write-object object stream)
+    (core:get-thread-local-write-to-string-output-stream-string stream)))
 
-;;;
-;;; Christian Schafmeister - June 24 2018
-;;; Use a thread-local string-output-stream for write-to-string
-;;; I get almost a 2x speedup with this.
-;;; kpoeck, might be fast, but does not work, see issue 609
-(defun write-to-string (object core:&va-rest rest ; only used for apply, so no problem.
-                        &aux (stream (core:thread-local-write-to-string-output-stream)))
-  "Args: (object &key (escape *print-escape*) (radix *print-radix*)
-                   (base *print-base*) (circle *print-circle*)
-                   (pretty *print-pretty*) (level *print-level*)
-                   (length *print-length*) (case *print-case*)
-                   (array *print-array*) (gensym *print-gensym*))
-Returns as a string the printed representation of OBJECT in the specified
+(defun write-to-string (object &key ((:escape *print-escape*) *print-escape*)
+                                 ((:radix *print-radix*) *print-radix*)
+                                 ((:base *print-base*) *print-base*)
+                                 ((:circle *print-circle*) *print-circle*)
+                                 ((:pretty *print-pretty*) *print-pretty*)
+                                 ((:level *print-level*) *print-level*)
+                                 ((:length *print-length*) *print-length*)
+                                 ((:case *print-case*) *print-case*)
+                                 ((:array *print-array*) *print-array*)
+                                 ((:gensym *print-gensym*) *print-gensym*)
+                                 ((:readably *print-readably*) *print-readably*)
+                                 ((:right-margin *print-right-margin*)
+                                  *print-right-margin*)
+                                 ((:miser-width *print-miser-width*)
+                                  *print-miser-width*)
+                                 ((:lines *print-lines*) *print-lines*)
+                                 ((:pprint-dispatch *print-pprint-dispatch*)
+                                  *print-pprint-dispatch*))
+  "Returns as a string the printed representation of OBJECT in the specified
 mode.  See the variable docs of *PRINT-...* for the mode."
-  (apply #'write object :stream stream rest)
-  (core:get-thread-local-write-to-string-output-stream-string stream))
+  (stringify object))
 
-(defun prin1-to-string (object
-                        &aux (stream (make-string-output-stream)))
+(defun prin1-to-string (object)
   "Args: (object)
 PRIN1s OBJECT to a new string and returns the result.  Equivalent to
-(WRITE-TO-STRING OBJECT :ESCAPE T)."
-   (prin1 object stream)
-   (get-output-stream-string stream))
+ (WRITE-TO-STRING OBJECT :ESCAPE T)."
+  (let ((*print-escape* t))
+    (stringify object)))
 
-(defun princ-to-string (object
-                        &aux (stream (make-string-output-stream)))
+(defun princ-to-string (object)
   "Args: (object)
 PRINCs OBJECT to a new string and returns the result.  Equivalent to
-(WRITE-TO-STRING OBJECT :ESCAPE NIL)."
-  (princ object stream)
-  (get-output-stream-string stream))
+ (WRITE-TO-STRING OBJECT :ESCAPE NIL :READABLY NIL)."
+  (let ((*print-escape* nil) (*print-readably* nil))
+    (stringify object)))
 
 (defmacro with-open-file ((stream . filespec) &rest body)
   "Syntax: (with-open-file (var filespec-form {options}*) {decl}* {form}*)
