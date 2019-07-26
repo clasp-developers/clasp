@@ -2848,35 +2848,53 @@
     (if (stringp control-string)
         (let ((fun-sym (gensym "FUN"))
               (out-sym (gensym "OUT"))
-              (dest-sym (gensym "DEST"))
-              (stream (gensym "STREAM")))
+              (dest-sym (gensym "DEST")))
           (multiple-value-bind (guts variables)
               ;; We call %formatter-guts here because it has the side effect
               ;; of signaling an error if the control string is invalid.
               ;; We want to do that before check-min/max-format-arguments.
               (%formatter-guts control-string)
             (check-min/max-format-arguments control-string (length args))
-            `(let* ((,dest-sym ,destination)
-                    (,stream (cond ((null ,dest-sym) (make-string-output-stream))
-                                   ((eq ,dest-sym t) *standard-output*)
-                                   ((stringp ,dest-sym)
-                                    (core:make-string-output-stream-from-string ,dest-sym))
-                                   (t ,dest-sym))))
-               ,(if (eq variables 't)
-                    ;; need required arguments
-                    `(,(%formatter-lambda control-string guts variables) ,stream ,@args)
-                    ;; simple arguments - generate in-line
-                    (gen-inline-format control-string guts variables stream args))
-               (if (null ,dest-sym)
-                   (get-output-stream-string ,stream)
-                   nil))))
+            (let* ((body
+                     (if (eq variables 't)
+                         `(,(%formatter-lambda control-string guts variables)
+                           stream ,@args)
+                         (gen-inline-format control-string guts variables args)))
+                   (dest-constantp (constantp destination env))
+                   (dest (and dest-constantp
+                              (ext:constant-form-value destination env))))
+              ;; If the destination is constant T or NIL, avoid bothering with it
+              ;; at runtime.
+              ;; NOTE: With constant propagation this would be unnecessary.
+              (cond ((and dest-constantp (eq dest nil))
+                     `(with-output-to-string (stream) ,body))
+                    ((eq dest 't) ; must be constant
+                     `(let ((stream *standard-output*)) ,body))
+                    (t
+                     ;; no dice - runtime dispatch
+                     ;; NOTE: If the body exits abnormally, which it can because of
+                     ;; ~// or just argument evaluations, the string stream is not
+                     ;; closed. However unlike normal with-output-to-string, nothing
+                     ;; can refer to it, so hopefully it'll just be GC'd normally.
+                     `(let* ((,dest-sym ,destination)
+                             (stream (cond ((null ,dest-sym)
+                                            (make-string-output-stream))
+                                           ((eq ,dest-sym t) *standard-output*)
+                                           ((stringp ,dest-sym)
+                                            (core:make-string-output-stream-from-string
+                                             ,dest-sym))
+                                           (t ,dest-sym))))
+                        ,body
+                        (if (null ,dest-sym)
+                            (get-output-stream-string stream)
+                            nil)))))))
         whole)))
 
 ;;; Given a formatter form that doesn't do anything fancy with arguments,
 ;;; expand into some code to execute it with the given args.
 ;;; NOTE: If we could inline functions with &optional &rest, this would be
 ;;; redundant. At the moment we can't.
-(defun gen-inline-format (control-string guts variables stream args)
+(defun gen-inline-format (control-string guts variables args)
   (if (> (length variables) (length args))
       ;; not enough args is special cased.
       ;; note check-min/max-format-arguments already issued a warning.
@@ -2890,8 +2908,7 @@
                                              first-unsupplied-offset)))
       ;; Normal case
       (let* ((varsyms (mapcar #'car variables)))
-        `(let ((stream ,stream)
-               ,@(mapcar #'list varsyms args)
+        `(let (,@(mapcar #'list varsyms args)
                ;; Remaining arguments are collected in a list.
                ;; They can be used by e.g. ~@{
                (args (list ,@(nthcdr (length variables) args))))
