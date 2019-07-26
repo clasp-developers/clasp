@@ -162,7 +162,6 @@ CL_DEFUN T_sp cl__write(T_sp x, T_sp strm, T_sp array, T_sp base,
   scope.pushSpecialVariableAndSet(cl::_sym_STARprint_right_marginSTAR, right_margin);
   T_sp ostrm = coerce::outputStreamDesignator(strm);
   write_object(x, ostrm);
-  clasp_force_output(ostrm);
   return Values(x);
 };
 
@@ -212,7 +211,6 @@ CL_DEFUN void cl__pprint(T_sp obj, T_sp stream) {
   stream = coerce::outputStreamDesignator(stream);
   clasp_write_char('\n', stream);
   write_object(obj, stream);
-  clasp_force_output(stream);
 }
 
 CL_LAMBDA(obj &optional output-stream-desig);
@@ -245,7 +243,6 @@ CL_DEFUN T_sp cl__print(T_sp obj, T_sp output_stream_desig) {
   clasp_write_string("\n", sout);
   cl__prin1(obj, sout);
   clasp_write_string(" ", sout);
-  clasp_force_output(sout);
   return obj;
 }
 
