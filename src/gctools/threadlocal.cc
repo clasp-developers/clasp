@@ -243,7 +243,11 @@ void ThreadLocalState::initialize_thread(mp::Process_sp process, bool initialize
   this->_Process = process;
   process->_ThreadInfo = this;
   this->_BFormatStringOutputStream = gc::As<StringOutputStream_sp>(clasp_make_string_output_stream());
-  this->_WriteToStringOutputStream = gc::As<StringOutputStream_sp>(clasp_make_string_output_stream());
+#ifdef CLASP_UNICODE
+  this->_WriteToStringOutputStream = gc::As<StringOutputStream_sp>(clasp_make_string_output_stream(clasp_string_output_stream_default_size,1));
+#else
+   this->_WriteToStringOutputStream = gc::As<StringOutputStream_sp>(clasp_make_string_output_stream());
+#endif
   this->_BignumRegister0 = Bignum_O::create( (gc::Fixnum) 0);
   this->_BignumRegister1 = Bignum_O::create( (gc::Fixnum) 0);
   this->_BignumRegister2 = Bignum_O::create( (gc::Fixnum) 0);
