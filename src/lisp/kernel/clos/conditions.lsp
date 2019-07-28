@@ -413,13 +413,18 @@ If FORMAT-STRING is non-NIL, it is used as the format string to be output to
 *ERROR-OUTPUT* before entering the break loop.  ARGs are arguments to the
 format string."
   (let ((*debugger-hook* nil))
-    (core:call-with-stack-top-hint
-     (lambda ()
-       (with-simple-restart (continue "Return from BREAK.")
-         (invoke-debugger
-          (make-condition 'SIMPLE-CONDITION
-                          :FORMAT-CONTROL format-control
-                          :FORMAT-ARGUMENTS format-arguments))))))
+    #+(or)(core:call-with-stack-top-hint
+           (lambda ()
+             (with-simple-restart (continue "Return from BREAK.")
+               (invoke-debugger
+                (make-condition 'SIMPLE-CONDITION
+                                :FORMAT-CONTROL format-control
+                                :FORMAT-ARGUMENTS format-arguments))))))
+  (with-simple-restart (continue "Return from BREAK.")
+    (invoke-debugger
+     (make-condition 'SIMPLE-CONDITION
+                     :FORMAT-CONTROL format-control
+                     :FORMAT-ARGUMENTS format-arguments)))
   nil)
 
 (defun warn (datum &rest arguments)

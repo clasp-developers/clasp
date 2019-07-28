@@ -1857,6 +1857,13 @@ CL_DEFUN T_mv core__call_with_backtrace(Function_sp closure, bool args_as_pointe
         entry = core::Cons_O::create(_sym_make_backtrace_frame,args.cons());
       }
       result << entry;
+    } else {
+#if 0
+      printf("%s:%d Skipping frame %lu name %s\n", __FILE__, __LINE__, i, backtrace[i]._SymbolName.c_str());
+      printf("%s:%d bp<backtrace[i]._BasePointer -> %d\n", __FILE__, __LINE__, bp<backtrace[i]._BasePointer);
+      printf("%s:%d backtrace[i]._BasePointer!=0 -> %d\n", __FILE__, __LINE__, backtrace[i]._BasePointer!=0);
+      printf("%s:%d backtrace[i]._BasePointer<stack_top_hint -> %d\n", __FILE__, __LINE__, backtrace[i]._BasePointer<stack_top_hint);
+#endif
     }
   }
   return eval::funcall(closure,result.cons());
