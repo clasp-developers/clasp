@@ -291,6 +291,7 @@ def collect_bclasp_lisp_files(**kwargs):
         "src/lisp/kernel/cmp/opt-array",
         "src/lisp/kernel/cmp/opt-object",
         "src/lisp/kernel/cmp/opt-condition",
+        "src/lisp/kernel/cmp/opt-print",
         "src/lisp/kernel/lsp/shiftf-rotatef",
         "src/lisp/kernel/lsp/assorted",
         "src/lisp/kernel/lsp/packlib",
