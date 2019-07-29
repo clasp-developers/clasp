@@ -59,16 +59,40 @@
     `(lambda ,(if need-vaslist-p
                   `(core:&va-rest .method-args.)
                   required-args)
-       (let (,@extra-bindings
-             (.generic-function. ,generic-function-form)
-             ,@(if need-vaslist-p
-                   (mapcar (lambda (req)
-                             `(,req (core:vaslist-pop .method-args.)))
-                           required-args)
-                   nil))
-         (declare (ignorable ,@required-args))
-         (core::local-block ,block-name
-           (core::local-tagbody
+       (let ((.generic-function. ,generic-function-form))
+         ,(when need-vaslist-p
+            ;; Our discriminating function ll is just (&va-rest r), so we need
+            ;; to check argument counts. What we really need to check is the minimum,
+            ;; since vaslist-pop has undefined behavior if there's nothing to pop,
+            ;; but we ought to do both, really.
+            ;; FIXME: Should be possible to not check, on low safety.
+            ;; Remember that argument checking by methods is disabled (see method.lsp)
+            (multiple-value-bind (min max)
+                (generic-function-min-max-args generic-function)
+              `(let ((nargs (core:vaslist-length .method-args.)))
+                 ;; stupid tagbody to avoid redundant error signaling code
+                 (core::local-tagbody
+                  (if (cleavir-primop:fixnum-less nargs ,min)
+                      (go err))
+                  ,@(when max
+                      `((if (cleavir-primop:fixnum-less ,max nargs)
+                            (go err))))
+                  (go done)
+                  err
+                  (error 'core:wrong-number-of-arguments
+                         :called-function .generic-function.
+                         :given-nargs nargs
+                         :min-nargs ,min :max-nargs ,max)
+                  done))))
+         (let (,@extra-bindings
+               ,@(if need-vaslist-p
+                     (mapcar (lambda (req)
+                               `(,req (core:vaslist-pop .method-args.)))
+                             required-args)
+                     nil))
+           (declare (ignorable ,@required-args))
+           (core::local-block ,block-name
+             (core::local-tagbody
               ,(generate-node required-args dtree)
               ;; note: we need generate-node to run to fill *generate-outcomes*.
               ,@(generate-tagged-outcomes *generate-outcomes* block-name required-args)
@@ -78,7 +102,7 @@
                       (return-from ,block-name
                         (dispatch-miss .generic-function. .method-args.)))
                     `((return-from ,block-name
-                        (dispatch-miss-with-args .generic-function. ,@required-args))))))))))
+                        (dispatch-miss-with-args .generic-function. ,@required-args)))))))))))
 
 ;;; outcomes
 ;;; we cache them to avoid generating calls/whatever more than once
