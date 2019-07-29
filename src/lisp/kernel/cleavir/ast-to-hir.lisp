@@ -210,6 +210,9 @@
 (cleavir-ast-to-hir::define-compile-functional-ast
     cc-ast:vaslist-pop-ast clasp-cleavir-hir:vaslist-pop-instruction
   (cleavir-ast:arg-ast))
+(cleavir-ast-to-hir::define-compile-functional-ast
+    cc-ast:vaslist-length-ast clasp-cleavir-hir:vaslist-length-instruction
+  (cleavir-ast:arg-ast))
 
 (defmethod cleavir-ast-to-hir:compile-ast ((ast cc-ast:bind-va-list-ast) context)
   (let ((temp (cleavir-ir:new-temporary)))

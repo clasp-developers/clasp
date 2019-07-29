@@ -224,6 +224,7 @@
             irc-vaslist-va_list-address
             irc-vaslist-remaining-nargs-address
             gen-vaslist-pop
+            gen-vaslist-length
             jit-constant-i1
             jit-constant-i8
             jit-constant-i32
