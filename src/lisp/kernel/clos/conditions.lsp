@@ -80,7 +80,7 @@
   (let ((fn (restart-report-function restart)))
     (if fn
 	(funcall fn stream)
-	(format stream "~s" (or (restart-name restart) restart)))))
+        (prin1 (or (restart-name restart) restart) stream))))
 
 (defmacro restart-bind (bindings &body forms)
   `(let ((*restart-clusters*
