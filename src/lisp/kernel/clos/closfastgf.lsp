@@ -525,20 +525,15 @@ FIXME!!!! This code will have problems with multithreading if a generic function
         finally (return (coerce key 'simple-vector))))
 
 (defun do-dispatch-miss (generic-function vaslist-arguments arguments)
-  "This effectively does what compute-discriminator-function does and maybe memoizes the result 
+  "This effectively does what compute-discriminating-function does and maybe memoizes the result
 and calls the effective-method-function that is calculated.
 It takes the arguments in two forms, as a vaslist and as a list of arguments."
   (multiple-value-bind (min max) (generic-function-min-max-args generic-function)
-    (cond ((< (length arguments) min)
-           (error 'simple-program-error
-                  :format-control "Not enough arguments when calling ~a - you provided ~d and ~d are required"
-                  :format-arguments (list (generic-function-name generic-function)
-                                          (length arguments) min)))
-          ((and max (> (length arguments) max))
-           (error 'simple-program-error
-                  :format-control "Too many arguments when calling ~a - you provided ~d and ~d are allowed"
-                  :format-arguments (list (generic-function-name generic-function)
-                                          (length arguments) max)))))
+    (let ((nargs (length arguments)))
+      (when (or (< nargs min) (and max (> nargs max)))
+        (error 'core:wrong-number-of-arguments
+               :called-function generic-function :given-nargs nargs
+               :min-nargs min :max-nargs max))))
   (let ((argument-classes (mapcar #'class-of arguments))
         #+debug-fastgf
         (*dispatch-miss-start-time* (get-internal-real-time)))
