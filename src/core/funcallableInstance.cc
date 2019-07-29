@@ -430,6 +430,8 @@ CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generi
         DTILOG(BF("About to dump dispatch_args Vaslist\n"));
         DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*dispatch_args));
         if (dispatch_args->remaining_nargs() == 0)
+          // FIXME: This should use throwTooFewArgumentsError, but we don't
+          // actually know the minimum required arguments here.
           SIMPLE_ERROR(BF("Not enough arguments to generic function: %s")
                        % generic_function);
         arg = dispatch_args->next_arg();
