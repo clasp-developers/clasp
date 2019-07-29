@@ -79,10 +79,15 @@ when this is t a lot of graphs will be generated.")
 (defun datum-name-as-string (datum)
   ;; We need to write out setf names as well as symbols, in a simple way.
   ;; "simple" means no pretty printer, for a start.
-  (write-to-string (cleavir-ir:name datum)
-                   :escape nil
-                   :readably nil
-                   :pretty nil))
+  ;; Using SYMBOL-NAME like this is about 25x faster than using write-to-string,
+  ;; and this function is called rather a lot so it's nice to make it faster.
+  (let ((name (cleavir-ir:name datum)))
+    (if (symbolp name)
+        (symbol-name name)
+        (write-to-string name
+                         :escape nil
+                         :readably nil
+                         :pretty nil))))
 
 (defun make-datum-alloca (datum)
   (etypecase datum
