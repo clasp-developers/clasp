@@ -458,6 +458,12 @@
        (first (cleavir-ir:outputs instruction))))
 
 (defmethod translate-simple-instruction
+    ((instruction clasp-cleavir-hir:vaslist-length-instruction) return-value abi function-info)
+  (declare (ignore return-value function-info))
+  (out (cmp:gen-vaslist-length (in (first (cleavir-ir:inputs instruction))))
+       (first (cleavir-ir:outputs instruction))))
+
+(defmethod translate-simple-instruction
     ((instruction cleavir-ir:slot-read-instruction) return-value abi function-infoO)
   (declare (ignore return-value abi function-info))
   (let ((inputs (cleavir-ir:inputs instruction)))

@@ -40,6 +40,7 @@
     (cleavir-primop:cdr codegen-cdr convert-cdr)
     (cleavir-primop:funcall codegen-primop-funcall convert-primop-funcall)
     (core:vaslist-pop codegen-vaslist-pop convert-vaslist-pop)
+    (core:vaslist-length codegen-vaslist-length convert-vaslist-length)
     (core::header-stamp-case codegen-header-stamp-case convert-header-stamp-case)
     (core::header-stamp codegen-header-stamp convert-header-stamp)
     (core::rack-stamp codegen-rack-stamp convert-rack-stamp)
@@ -1003,6 +1004,20 @@ jump to blocks within this tagbody."
         (args (rest rest)))
     (codegen funcy func env)
     (codegen-call result (irc-load funcy) args env)))
+
+;;; CORE:VASLIST-LENGTH
+;;; Get the count of remaining args in a vaslist.
+
+(defun gen-vaslist-length (vaslist)
+  (irc-tag-fixnum
+   (irc-load
+    (irc-vaslist-remaining-nargs-address vaslist))))
+
+(defun codegen-vaslist-length (result rest env)
+  (let ((form (car rest))
+        (vaslist (alloca-t* "vaslist-length-vaslist")))
+    (codegen vaslist form env)
+    (irc-t*-result (gen-vaslist-length (irc-load vaslist)) result)))
 
 ;;; CORE:VASLIST-POP
 ;;; Remove one item from the vaslist and return it.
