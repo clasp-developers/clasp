@@ -608,7 +608,7 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
 (defun dispatch-miss (generic-function core:&va-rest valist-args)
   (core:stack-monitor (lambda () (format t "In clos::dispatch-miss with generic function ~a~%"
                                          (clos::generic-function-name generic-function))))
-  (unwind-protect
+  (#+debug-fastgf unwind-protect #-debug-fastgf multiple-value-prog1
        (progn
          (incf-debug-fastgf-indent)
          ;; Update any invalid instances
