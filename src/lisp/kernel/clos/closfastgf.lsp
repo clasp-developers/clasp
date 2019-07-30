@@ -605,13 +605,13 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
         #-debug-fastgf
         (perform-outcome outcome arguments vaslist-arguments)))))
 
-(defun dispatch-miss (generic-function valist-args)
-  (core:stack-monitor (lambda () (format t "In clos::dispatch-miss with generic function ~a~%" (clos::generic-function-name generic-function))))
-  ;; update instances
-  ;; Update any invalid instances
+(defun dispatch-miss (generic-function core:&va-rest valist-args)
+  (core:stack-monitor (lambda () (format t "In clos::dispatch-miss with generic function ~a~%"
+                                         (clos::generic-function-name generic-function))))
   (unwind-protect
        (progn
          (incf-debug-fastgf-indent)
+         ;; Update any invalid instances
          (let* ((arguments (core:list-from-va-list valist-args))
                 (invalid-instance (maybe-update-instances arguments)))
            (if invalid-instance
@@ -626,14 +626,12 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
                  (do-dispatch-miss generic-function valist-args arguments)))))
     (decf-debug-fastgf-indent)))
 
-;; (apply #'dispatch-miss-with-args gf vaslist) = (dispatch-miss gf vaslist)
-;; TODO: Make APPLY good enough that we can lose one.
-(defun dispatch-miss-with-args (generic-function core:&va-rest valist-args)
-  (dispatch-miss generic-function valist-args))
+;;; Called from the dtree interpreter, because APPLY from C++ is kind of annoying.
+(defun dispatch-miss-va (generic-function valist-args)
+  (apply #'dispatch-miss generic-function valist-args))
 
 ;;; change-class requires removing call-history entries involving the class
 ;;; and invalidating the generic functions
-
 (defun update-specializer-profile (generic-function specializers)
   (if (vectorp (generic-function-specializer-profile generic-function))
       (loop for vec = (generic-function-specializer-profile generic-function)
@@ -717,7 +715,7 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
       (progn
         (force-dispatcher generic-function)
         (apply generic-function valist-args))
-      (dispatch-miss generic-function valist-args)))
+      (apply #'dispatch-miss generic-function valist-args)))
 
 ;;; I don't believe the following few functions are called from anywhere, but they may be useful for debugging.
 

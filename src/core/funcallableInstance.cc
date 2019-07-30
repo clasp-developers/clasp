@@ -599,7 +599,7 @@ CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generi
   }
  DISPATCH_MISS:
   DTILOG(BF("dispatch miss. arg %s stamp %s\n") % arg % stamp);
-  return core::eval::funcall(clos::_sym_dispatch_miss,generic_function,args);
+  return core::eval::funcall(clos::_sym_dispatch_miss_va,generic_function,args);
 }
 
 SYMBOL_EXPORT_SC_(ClosPkg,codegen_dispatcher);

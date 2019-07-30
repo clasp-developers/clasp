@@ -100,9 +100,9 @@
               ,@(if need-vaslist-p
                     `((core:vaslist-rewind .method-args.)
                       (return-from ,block-name
-                        (dispatch-miss .generic-function. .method-args.)))
+                        (apply #'dispatch-miss .generic-function. .method-args.)))
                     `((return-from ,block-name
-                        (dispatch-miss-with-args .generic-function. ,@required-args)))))))))))
+                        (dispatch-miss .generic-function. ,@required-args)))))))))))
 
 ;;; outcomes
 ;;; we cache them to avoid generating calls/whatever more than once
