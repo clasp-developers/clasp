@@ -112,13 +112,12 @@ Fixnum search_print_circle(T_sp x) {
 T_sp write_object(T_sp x, T_sp stream) {
   // With *print-pretty*, go immediately to the pretty printer, which does its own *print-circle* etc.
   if (!cl::_sym_STARprint_prettySTAR.unboundp() && cl::_sym_STARprint_prettySTAR->symbolValueUnsafe().notnilp()) {
-    T_sp objx = x;
-    T_mv mv_f = eval::funcall(cl::_sym_pprint_dispatch, objx);
+    T_mv mv_f = eval::funcall(cl::_sym_pprint_dispatch, x);
     T_sp f0 = mv_f;
     T_sp f1 = mv_f.valueGet_(1);
     if (f1.notnilp()) {
-      eval::funcall(f0, stream, objx);
-      return objx;
+      eval::funcall(f0, stream, x);
+      return x;
     }
   }
 
@@ -180,7 +179,7 @@ OUTPUT:
 
 CL_LAMBDA(obj &optional strm);
 CL_DECLARE();
-CL_DOCSTRING("writeObject");
+CL_DOCSTRING("Identical to WRITE, but doesn't bind printer control variables.");
 CL_DEFUN T_sp core__write_object(T_sp obj, T_sp ostrm) {
   T_sp strm = coerce::outputStreamDesignator(ostrm);
   return write_object(obj, strm);

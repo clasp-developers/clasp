@@ -492,7 +492,7 @@
   details."
   (etypecase destination
     (null
-     (with-output-to-string (stream)
+     (with-write-to-string (stream)
        (formatter-aux stream control-string format-arguments)))
     (string
      (with-output-to-string (stream destination)
@@ -2867,7 +2867,7 @@
               ;; at runtime.
               ;; NOTE: With constant propagation this would be unnecessary.
               (cond ((and dest-constantp (eq dest nil))
-                     `(with-output-to-string (stream) ,body))
+                     `(with-write-to-string (stream) ,body))
                     ((eq dest 't) ; must be constant
                      `(let ((stream *standard-output*)) ,body))
                     (t
@@ -2878,7 +2878,7 @@
                      ;; can refer to it, so hopefully it'll just be GC'd normally.
                      `(let* ((,dest-sym ,destination)
                              (stream (cond ((null ,dest-sym)
-                                            (make-string-output-stream))
+                                            (core:thread-local-write-to-string-output-stream))
                                            ((eq ,dest-sym t) *standard-output*)
                                            ((stringp ,dest-sym)
                                             (core:make-string-output-stream-from-string
@@ -2886,7 +2886,7 @@
                                            (t ,dest-sym))))
                         ,body
                         (if (null ,dest-sym)
-                            (get-output-stream-string stream)
+                            (core:get-thread-local-write-to-string-output-stream-string stream)
                             nil)))))))
         whole)))
 
