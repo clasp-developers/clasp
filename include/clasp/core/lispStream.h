@@ -175,8 +175,8 @@ T_sp cl__make_synonym_stream(T_sp sym);
 T_sp cl__make_two_way_stream(T_sp in, T_sp out);
 
 T_sp cl__make_string_input_stream(String_sp strng, cl_index istart, T_sp iend);
-#define clasp_string_output_stream_default_size 128
-T_sp clasp_make_string_output_stream(cl_index line_length = clasp_string_output_stream_default_size, bool extended = false);
+#define STRING_OUTPUT_STREAM_DEFAULT_SIZE 128
+T_sp clasp_make_string_output_stream(cl_index line_length = STRING_OUTPUT_STREAM_DEFAULT_SIZE, bool extended = false);
 T_sp cl__make_string_output_stream(Symbol_sp elementType);
 T_sp cl__get_output_stream_string(T_sp strm);
 
