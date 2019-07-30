@@ -1,47 +1,42 @@
 ;;; ------------------------------------------------------------
 ;;;
 ;;; Generic function dispatch compiler
-;;;   This implements the algorithm described by Robert Strandh for fast generic function dispatch
-;;;
-;;;   generic-function-call-history is an alist of (past-call-signature . outcome)
-;;;      Outcome is either a function, or one of the outcome structures defined below.
-;;;        Functions must have lambda-list (vaslist ignore), and will be passed the arguments and NIL.
-;;;      The past-call-signature is a simple-vector of class specializers or (list eql-spec)
-;;;        for eql-specializers. The CAR of eql-spec is the EQL value.
+;;;   This implements the algorithm described by Robert Strandh for fast generic function dispatch.
+;;;   See dtree.lsp for an explanation of dtrees.
 
 (in-package :clos)
-
-#+(or)
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (setf *echo-repl-read* t))
 
 (defvar *log-gf* nil)
 (defvar *debug-cmpfastgf-trace* nil)
 (defvar *message-counter* nil)
 
-;;; ------------------------------------------------------------
-;;;
-;;; Generate Common Lisp code for a fastgf dispatcher given a
-;;;   DTREE internal representation
-
 (defvar *generate-outcomes*) ; alist (outcome . tag)
 
-;;; main entry point
-(defun generate-dispatcher-from-dtree (generic-function dtree
+;;; Basic entry point for codegen (bottom of this file)
+(defun generate-dispatcher (generic-function dtree &key generic-function-name)
+  (multiple-value-bind (min max)
+      (generic-function-min-max-args generic-function)
+    (generate-dispatcher-from-dtree dtree
+                                    :nreq min
+                                    :max-nargs max
+                                    :generic-function-name generic-function-name
+                                    :generic-function-form generic-function)))
+
+;;; Actual code generator
+;;; It's written to not need an actual generic-function object.
+;;; This is useful during satiation (because with some work, we could do it without
+;;;  actually having a gf) and for non-generic discriminators, like typeq or vref.
+(defun generate-dispatcher-from-dtree (dtree
                                        &key extra-bindings generic-function-name
-                                         (generic-function-form generic-function))
+                                         nreq max-nargs generic-function-form
+                                         (miss-operator 'dispatch-miss))
   ;; GENERIC-FUNCTION-FORM is used when we want to feed this form to COMPILE-FILE,
   ;; in which case it can't have literal generic functions in it.
   ;; If we're doing this at runtime, though, we should put the actual GF in, so that
   ;; things don't break if we have an anonymous GF or suchlike.
   ;; EXTRA-BINDINGS is also used in the compile-file case, and gets methods and stuff
   ;; with load-time-value.
-  (let* (;; We need to know the number of arguments to dispatch on, and to have
-         ;; to the discriminating function if we can manage that.
-         ;; FIXME: This will work, due to how the s-profile is initialized,
-         ;; but it's weird and indirect.
-         (nreq (length (generic-function-specializer-profile generic-function)))
-         ;; and we need this to see if we can manage that
+  (let* (;; Can we use just required parameters?
          ;; NOTE: We used to use the call history here. This won't work:
          ;; During compile time satiation, the dtree may be artificially produced
          ;; i.e. out of sync with the call history. Or in a multithreaded environment,
@@ -67,23 +62,21 @@
             ;; but we ought to do both, really.
             ;; FIXME: Should be possible to not check, on low safety.
             ;; Remember that argument checking by methods is disabled (see method.lsp)
-            (multiple-value-bind (min max)
-                (generic-function-min-max-args generic-function)
-              `(let ((nargs (core:vaslist-length .method-args.)))
-                 ;; stupid tagbody to avoid redundant error signaling code
-                 (core::local-tagbody
-                  (if (cleavir-primop:fixnum-less nargs ,min)
-                      (go err))
-                  ,@(when max
-                      `((if (cleavir-primop:fixnum-less ,max nargs)
-                            (go err))))
-                  (go done)
-                  err
-                  (error 'core:wrong-number-of-arguments
-                         :called-function .generic-function.
-                         :given-nargs nargs
-                         :min-nargs ,min :max-nargs ,max)
-                  done))))
+            `(let ((nargs (core:vaslist-length .method-args.)))
+               ;; stupid tagbody to avoid redundant error signaling code
+               (core::local-tagbody
+                (if (cleavir-primop:fixnum-less nargs ,nreq)
+                    (go err))
+                ,@(when max-nargs
+                    `((if (cleavir-primop:fixnum-less ,max-nargs nargs)
+                          (go err))))
+                (go done)
+                err
+                (error 'core:wrong-number-of-arguments
+                       :called-function .generic-function.
+                       :given-nargs nargs
+                       :min-nargs ,nreq :max-nargs ,max-nargs)
+                done)))
          (let (,@extra-bindings
                ,@(if need-vaslist-p
                      (mapcar (lambda (req)
@@ -100,9 +93,9 @@
               ,@(if need-vaslist-p
                     `((core:vaslist-rewind .method-args.)
                       (return-from ,block-name
-                        (apply #'dispatch-miss .generic-function. .method-args.)))
+                        (apply #',miss-operator .generic-function. .method-args.)))
                     `((return-from ,block-name
-                        (dispatch-miss .generic-function. ,@required-args)))))))))))
+                        (,miss-operator .generic-function. ,@required-args)))))))))))
 
 ;;; outcomes
 ;;; we cache them to avoid generating calls/whatever more than once
@@ -300,7 +293,7 @@
          (compiled (calculate-dtree call-history specializer-profile)))
     (unwind-protect
          (if (or force-compile *fastgf-use-compiler*)
-             (cmp:bclasp-compile nil (generate-dispatcher-from-dtree
+             (cmp:bclasp-compile nil (generate-dispatcher
                                       generic-function compiled
                                       :generic-function-name generic-function-name))
              (let ((program (coerce (linearize compiled) 'vector)))
