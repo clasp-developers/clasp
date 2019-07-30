@@ -310,4 +310,11 @@
    (copy-pprint-dispatch 0))
  :type type-error)
 
+(test write-to-string.1.simplified
+      (let ((unicode-string (make-array 4 :element-type 'character
+                                        :initial-contents (mapcar #'code-char (list 40340 25579 40824 28331)))))
+        (string=
+         (with-output-to-string (s)(write unicode-string :stream s))
+         (write-to-string unicode-string))))
+
 

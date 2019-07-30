@@ -209,11 +209,15 @@ CL_DEFUN StringOutputStream_sp core__thread_local_write_to_string_output_stream(
 CL_DEFUN String_sp core__get_thread_local_write_to_string_output_stream_string(StringOutputStream_sp my_stream)
 {
   // This is like get-string-output-stream-string but it checks the size of the
-  // buffer string and if it is too large it knocks it down to 128 characters
+  // buffer string and if it is too large it knocks it down to STRING_OUTPUT_STREAM_DEFAULT_SIZE characters
   String_sp& buffer = StringOutputStreamOutputString(my_stream);
   String_sp result = gc::As_unsafe<String_sp>(cl__copy_seq(buffer));
   if (buffer->length()>1024) {
-    StringOutputStreamOutputString(my_stream) = Str8Ns_O::createBufferString(128);
+#ifdef CLASP_UNICODE
+    StringOutputStreamOutputString(my_stream) = StrWNs_O::createBufferString(STRING_OUTPUT_STREAM_DEFAULT_SIZE);
+#else
+    StringOutputStreamOutputString(my_stream) = Str8Ns_O::createBufferString(STRING_OUTPUT_STREAM_DEFAULT_SIZE);
+#endif
   } else {
     SetStringFillp(buffer,core::make_fixnum(0));
   }
@@ -1697,7 +1701,7 @@ CL_DEFUN T_sp cl__make_string_output_stream(Symbol_sp elementType) {
     FEerror("In MAKE-STRING-OUTPUT-STREAM, the argument :ELEMENT-TYPE (~A) must be a subtype of character",
             1, elementType.raw_());
   }
-  return clasp_make_string_output_stream(128, extended);
+  return clasp_make_string_output_stream(STRING_OUTPUT_STREAM_DEFAULT_SIZE, extended);
 }
 
 CL_LAMBDA(strm);
@@ -5530,7 +5534,8 @@ void StringOutputStream_O::fill(const string &data) {
 /*! Get the contents and reset them */
 String_sp StringOutputStream_O::getAndReset() {
   String_sp contents = this->_Contents;
-  StringOutputStreamOutputString(this->asSmartPtr()) = Str8Ns_O::createBufferString(128);
+  // This is not unicode safe
+  StringOutputStreamOutputString(this->asSmartPtr()) = Str8Ns_O::createBufferString(STRING_OUTPUT_STREAM_DEFAULT_SIZE);
   StreamOutputColumn(this->asSmartPtr()) = 0;
   return contents;
 };
