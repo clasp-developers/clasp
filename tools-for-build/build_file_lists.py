@@ -12,7 +12,6 @@ SRC_CORE_FILES = \
         'evaluator',
         'functor',
         'creator',
-        'queue',
         'sharpEqualWrapper',
         'stacks',
         'weakKeyMapping',
