@@ -839,4 +839,10 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
                        (set-funcallable-instance-function gf discriminating-function))
                      (invalidate-discriminating-function gf)))))))
 
-(export '(invalidate-generic-functions-with-class-selector))
+;;; This is called by the dtree interpreter when it doesn't get enough arguments,
+;;; because computing this stuff in C++ would be needlessly annoying.
+(defun interp-wrong-nargs (generic-function given-nargs)
+  (multiple-value-bind (min max) (generic-function-min-max-args generic-function)
+    (error 'core:wrong-number-of-arguments
+           :called-function generic-function :given-nargs given-nargs
+           :min-nargs min :max-nargs max)))

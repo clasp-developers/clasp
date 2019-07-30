@@ -219,7 +219,7 @@
   ;; Now this removes the class from all generic function fast paths. This ensures that
   ;; if a generic function is specialized where an obsolete instance is, it will go to
   ;; the slow path, which will call MAYBE-UPDATE-INSTANCES.
-  (clos:invalidate-generic-functions-with-class-selector class)
+  (invalidate-generic-functions-with-class-selector class)
   class)
 
 (defmethod initialize-instance ((class class) &rest initargs &key direct-slots)
