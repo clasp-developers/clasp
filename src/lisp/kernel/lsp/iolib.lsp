@@ -119,16 +119,6 @@ object's representation."
                        c)
                    capitalize (not (alphanumericp c))))))))))
 
-;;; Like WITH-OUTPUT-TO-STRING but never appending, and using a cache.
-;;; By not making a fresh stream every time, we save some time.
-;;; also used in format.
-(defmacro with-write-to-string ((stream-name) &body body)
-  `(let ((,stream-name
-           (core:thread-local-write-to-string-output-stream)))
-     ,@body
-     (core:get-thread-local-write-to-string-output-stream-string
-      ,stream-name)))
-
 (defun stringify (object)
   (when (and (not *print-escape*) (not *print-readably*))
     (typecase object
@@ -139,7 +129,10 @@ object's representation."
                       *print-case*)))
       (string (return-from stringify (copy-seq object)))
       (character (return-from stringify (string object)))))
-  (with-write-to-string (stream) (write-object object stream)))
+  ;; By not making a fresh stream every time, we save some time.
+  (let ((stream (core:thread-local-write-to-string-output-stream)))
+    (write-object object stream)
+    (core:get-thread-local-write-to-string-output-stream-string stream)))
 
 (defun write-to-string (object &key ((:escape *print-escape*) *print-escape*)
                                  ((:radix *print-radix*) *print-radix*)
