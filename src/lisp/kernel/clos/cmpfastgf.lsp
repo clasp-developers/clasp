@@ -54,6 +54,8 @@
     `(lambda ,(if need-vaslist-p
                   `(core:&va-rest .method-args.)
                   required-args)
+       ,@(when generic-function-name
+           `((declare (core:lambda-name ,generic-function-name))))
        (let ((.generic-function. ,generic-function-form))
          ,(when need-vaslist-p
             ;; Our discriminating function ll is just (&va-rest r), so we need
@@ -119,6 +121,8 @@
          (generate-fast-method-call reqargs outcome))
         ((effective-method-outcome-p outcome)
          (generate-effective-method-call outcome))
+        ((custom-outcome-p outcome)
+         (generate-custom reqargs outcome))
         (t (error "BUG: Bad thing to be an outcome: ~a" outcome))))
 
 (defun generate-slot-reader (arguments outcome)
@@ -185,6 +189,13 @@
              `(cleavir-primop:funcall
                ,(effective-method-outcome-function outcome) .method-args. nil))
             (t (error "BUG: Outcome ~a is messed up" outcome)))))
+
+(defun generate-custom (reqargs outcome)
+  `(progn
+     ,@(when (custom-outcome-requires-vaslist-p outcome)
+         '((core:vaslist-rewind .method-args.)))
+     ,(funcall (custom-outcome-generator outcome)
+               reqargs (custom-outcome-data outcome))))
 
 ;;; discrimination
 
