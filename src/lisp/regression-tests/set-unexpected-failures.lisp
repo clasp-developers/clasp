@@ -112,7 +112,7 @@
         TEST-CHAR-0A
         TEST-CHAR-1A
 
-        ;;; READ-FROM-STRING0
+        READ-FROM-STRING0
         READ-PRINT-CONSISTENCY-ARRAYS
 
         ;;; glsl-toolkit-grammar.lisp-1 errors while compiling in ast
