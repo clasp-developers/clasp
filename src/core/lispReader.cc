@@ -174,10 +174,12 @@ trait_chr_type constituentChar(Character_sp ch, trait_chr_type trait = 0) {
     return (TRAIT_ALPHABETIC | x);
   // 2.1.4.2 Constituent Traits specifies the invalid traits
   // Backspace Tab Newline Linefeed Page Return Space Rubout
-  // I assume all others ar not defined (like Nul)
-  if (x == BACKSPACE_CHAR || x == TAB_CHAR || x == NEWLINE_CHAR || x == LINE_FEED_CHAR || x == PAGE_CHAR || x == RETURN_CHAR || x == ' ' || x == RUBOUT_CHAR)
+  // Nothing is said about other characters not in the list
+  // We treat them as TRAIT_ALPHABETIC.
+  if (x == BACKSPACE_CHAR || x == TAB_CHAR || x == NEWLINE_CHAR || x == LINE_FEED_CHAR
+      || x == PAGE_CHAR || x == RETURN_CHAR || x == ' ' || x == RUBOUT_CHAR)
     return (TRAIT_INVALID | x);
-  else return (x);
+  else return (TRAIT_ALPHABETIC | x);
 LETTER:
   if (x == 'd' || x == 'D' || x == 'e' || x == 'E' || x == 'f' || x == 'F' || x == 's' || x == 'S' || x == 'l' || x == 'L')
     result |= TRAIT_EXPONENTMARKER;
