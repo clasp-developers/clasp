@@ -250,6 +250,10 @@
 		(values (slot-missing class self slot-name 'SLOT-BOUNDP))))))))
 
 
+;;; 7.7.12 slot-missing
+;;; If slot-missing returns, its values will be treated as follows:
+;;;     If the operation is setf or slot-makunbound, any values will be ignored by the caller.
+;;;     -> returning value after the calls to slot-missing
 (defun (setf slot-value) (value self slot-name)
   (with-early-accessors (+standard-class-slots+
 			 +slot-definition-slots+)
@@ -259,16 +263,20 @@
 	  (let ((location (gethash slot-name location-table nil)))
 	    (if location
                 (setf (standard-instance-access self location) value)
-		(slot-missing class self slot-name 'SETF value)))
+                (progn
+                  (slot-missing class self slot-name 'SETF value)
+                  value)))
 	  (let ((slotd
-                  #+(or) (find slot-name (class-slots class) :key #'slot-definition-name)
-                  (loop for prospect in (class-slots class)
-                        for prospect-name = (slot-definition-name prospect)
-                        when (eql slot-name prospect-name)
-                          return prospect)))
+                 #+(or) (find slot-name (class-slots class) :key #'slot-definition-name)
+                 (loop for prospect in (class-slots class)
+                    for prospect-name = (slot-definition-name prospect)
+                    when (eql slot-name prospect-name)
+                    return prospect)))
 	    (if slotd
 		(setf (slot-value-using-class class self slotd) value)
-		(slot-missing class self slot-name 'SETF value)))))))
+		(progn
+                  (slot-missing class self slot-name 'SETF value)
+                  value)))))))
 
 
 ;;;

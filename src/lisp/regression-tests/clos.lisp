@@ -22,4 +22,17 @@
 
 (test issue-698
       (vectorp (foo-bar (make-array 23 :adjustable T))))
+
 #+cst (test-expect-error make-instance.error.5 (let ()(make-instance)) :type program-error)
+
+(defclass slot-missing-class-01 () (a))
+
+(defmethod slot-missing ((class t) (obj slot-missing-class-01)
+                         (slot-name t) (operation t)
+                         &optional (new-value nil new-value-p))
+  42)
+
+(test slot-missing-2-simplified
+      (eq 'bar
+          (let ((obj (make-instance 'slot-missing-class-01)))
+            (setf (slot-value obj 'foo) 'bar))))
