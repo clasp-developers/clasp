@@ -6,6 +6,11 @@ at_least_one ()
     test "$1" "$2"
 }
 
+ctime ()
+{
+    gtime -f "${CTIME_PREFIX}%E %e real %U user %S sys %P CPU %F/%R faults${CTIME_POSTFIX}" "$@"
+}
+
 check_quicklisp ()
 {
     local init_quicklisp_p="$1"
@@ -36,6 +41,34 @@ check_quicklisp ()
     fi
 }
 
+set_python_variables ()
+{
+    local vers
+    for vers in 3.7 3.6 3.5 3.4 ; do
+        if which python$vers > /dev/null 2> /dev/null ; then
+            PYTHON_VERSION=$vers
+            break
+        fi
+    done
+
+    if [ "$OS" = "Linux" ] ; then
+        export DEPLOY_PYTHONPATH="/usr/lib/python3/dist-packages"
+    elif [ "$OS" = "Darwin" ] ; then
+        export DEPLOY_PYTHONPATH="/usr/local/Cellar/ipython/6.5.0/libexec/lib/python3.7/site-packages:/usr/local/Cellar/ipython/6.5.0/libexec/vendor/lib/python3.7/site-packages"
+    elif [ "$OS" = "FreeBSD" ] ; then
+        export DEPLOY_PYTHONPATH="/usr/local/lib/python3/dist-packages"
+    else
+        : # not an error.  User can set.
+    fi
+
+    if ! [ -d "$DEPLOY_PYTHONPATH" ] ; then
+        # not an error, use can set pythonpath from outside
+        unset DEPLOY_PYTHONPATH
+    fi
+
+    export PYTHONPATH="/opt/clasp/lib/python$PYTHON_VERSION/site-packages:$DEPLOY_PYTHONPATH"
+}
+
 f_setenv_clasp ()
 {
     echo '# written by the clasp deploy script'
@@ -44,14 +77,21 @@ f_setenv_clasp ()
     echo '    export PATH="/opt/clasp/bin:$PATH"'
     echo '    #export PKG_CONFIG_PATH="/opt/clasp/lib/pkgconfig,$PKG_CONFIG_PATH"'
     echo '    export ACLOCAL_FLAGS="-I /opt/clasp/share/aclocal ${ACLOCAL_FLAGS-}"'
-    echo '    export JUPYTERLAB_DIR=/opt/clasp/jupyter/lab'
-    echo '    export JUPYTER_PATH=/opt/clasp/run'
-    echo '    export XDG_CACHE_HOME="/opt/clasp/lib/cache"'
-    echo "    export PYTHONPATH=$PYTHONPATH"
+    echo '    export JUPYTERLAB_DIR=${JUPYTERLAB_DIR-/opt/clasp/jupyter/lab}'
+    echo '    export JUPYTER_PATH=${JUPYTER_PATH-/opt/clasp/run}'
+    echo '    export XDG_CACHE_HOME="${XDG_CACHE_HOME-/opt/clasp/lib/cache}"'
     echo '    export ASDF_OUTPUT_TRANSLATIONS=${ASDF_OUTPUT_TRANSLATION-/:}'
     echo '    export CLASP_QUICKLISP_DIRECTORY=${CLASP_QUICKLISP_DIRECTORY-/opt/clasp/lib/clasp/src/lisp/modules/quicklisp}'
+
+    if ! [ -n "$PYTHON_VERSION" ] ; then
+        set_python_variables
+    fi
+    if [ -n "$PYTHONPATH" ] ; then
+        echo "    export PYTHONPATH=\"${PYTHONPATH%:}:\$PYTHONPATH\""
+    fi
+
     echo '#fi'
-    echo 'export CRAENVPROMPT="$clasp"'
+    echo 'export CRAENVPROMPT="clasp"'
 }
 
 f_write_setenv_clasp ()
