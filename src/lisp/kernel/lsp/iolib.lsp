@@ -120,7 +120,7 @@ object's representation."
                    capitalize (not (alphanumericp c))))))))))
 
 (defun stringify (object)
-  (when (and (not *print-escape*) (not *print-readably*)(not *print-pretty*))
+  (when (and (not *print-escape*) (not *print-readably*) (not *print-pretty*))
     (typecase object
       (symbol
        (return-from stringify
