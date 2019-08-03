@@ -113,3 +113,8 @@
 (test last-ansi-7 (equal (cons 'a 'b) (last '(a . b) 1)))
 (test last-ansi-8 (equal (cons 'a 'b) (last '(a . b) 2)))
 (test ACONS.3 (acons :a :b :c))
+
+(test APPEND.7
+      (not
+      (LET ((X (LIST 'A 'B 'C 'D)))
+        (EQ (APPEND X NIL) X))))

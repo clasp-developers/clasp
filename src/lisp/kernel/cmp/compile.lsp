@@ -38,6 +38,8 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
 (defun compile-in-env (definition env &optional (compile-hook *cleavir-compile-hook*)
                                         (linkage 'llvm-sys:internal-linkage))
   "Compile in the given environment"
+  (when core:*debug-startup*
+    (core:monitor-write (core:bformat nil "startup compile-in-env form: %s%N" definition)))
   (with-compiler-env ()
     (let* ((module (create-run-time-module-for-compile)))
       ;; Link the C++ intrinsics into the module

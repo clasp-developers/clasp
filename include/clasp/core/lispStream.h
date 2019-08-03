@@ -175,8 +175,9 @@ T_sp cl__make_synonym_stream(T_sp sym);
 T_sp cl__make_two_way_stream(T_sp in, T_sp out);
 
 T_sp cl__make_string_input_stream(String_sp strng, cl_index istart, T_sp iend);
-T_sp clasp_make_string_output_stream(cl_index line_length = 128, bool extended = false);
- T_sp cl__make_string_output_stream(Symbol_sp elementType);
+#define STRING_OUTPUT_STREAM_DEFAULT_SIZE 128
+T_sp clasp_make_string_output_stream(cl_index line_length = STRING_OUTPUT_STREAM_DEFAULT_SIZE, bool extended = false);
+T_sp cl__make_string_output_stream(Symbol_sp elementType);
 T_sp cl__get_output_stream_string(T_sp strm);
 
 T_sp cl__close(T_sp strm, T_sp abort = _Nil<T_O>());
@@ -616,8 +617,6 @@ namespace core {
 
 T_sp cl__peek_char(T_sp peek_type, T_sp strm, T_sp eof_errorp, T_sp eof_value, T_sp recursivep);
 T_sp cl__read_char(T_sp ostrm, T_sp eof_error_p, T_sp eof_value, T_sp recursive_p);
-
-T_sp cl__write_string(T_sp str, T_sp stream, int start, T_sp end);
 
 T_sp cl__write_sequence(T_sp seq, T_sp stream, Fixnum_sp start, T_sp end);
 

@@ -80,7 +80,7 @@
   (let ((fn (restart-report-function restart)))
     (if fn
 	(funcall fn stream)
-	(format stream "~s" (or (restart-name restart) restart)))))
+        (prin1 (or (restart-name restart) restart) stream))))
 
 (defmacro restart-bind (bindings &body forms)
   `(let ((*restart-clusters*
@@ -413,13 +413,18 @@ If FORMAT-STRING is non-NIL, it is used as the format string to be output to
 *ERROR-OUTPUT* before entering the break loop.  ARGs are arguments to the
 format string."
   (let ((*debugger-hook* nil))
-    (core:call-with-stack-top-hint
-     (lambda ()
-       (with-simple-restart (continue "Return from BREAK.")
-         (invoke-debugger
-          (make-condition 'SIMPLE-CONDITION
-                          :FORMAT-CONTROL format-control
-                          :FORMAT-ARGUMENTS format-arguments))))))
+    #+(or)(core:call-with-stack-top-hint
+           (lambda ()
+             (with-simple-restart (continue "Return from BREAK.")
+               (invoke-debugger
+                (make-condition 'SIMPLE-CONDITION
+                                :FORMAT-CONTROL format-control
+                                :FORMAT-ARGUMENTS format-arguments))))))
+  (with-simple-restart (continue "Return from BREAK.")
+    (invoke-debugger
+     (make-condition 'SIMPLE-CONDITION
+                     :FORMAT-CONTROL format-control
+                     :FORMAT-ARGUMENTS format-arguments)))
   nil)
 
 (defun warn (datum &rest arguments)
@@ -659,32 +664,38 @@ memory limits before executing the program again."))
              (format stream "Cannot call special operator as function: ~s"
                      (operator condition)))))
 
-(define-condition core:too-few-arguments-error (error)
-  ((called-function :initarg :called-function :reader called-function)
-   (given-number-of-arguments :initarg :given-number-of-arguments :reader given-number-of-arguments)
-   (required-number-of-arguments :initarg :required-number-of-arguments :reader required-number-of-arguments))
+(define-condition core:wrong-number-of-arguments (program-error)
+  (;; may be NIL if this is called from the interpreter and we don't know anything
+   ;; (KLUDGE, FIXME?)
+   (called-function :initarg :called-function :reader called-function)
+   (given-nargs :initarg :given-nargs :reader given-nargs)
+   ;; also may be NIL, same reason (KLUDGE, FIXME?)
+   (min-nargs :initarg :min-nargs :reader min-nargs :initform nil)
+   ;; may be NIL to indicate no maximum.
+   (max-nargs :initarg :max-nargs :reader max-nargs :initform nil))
   (:report (lambda (condition stream)
-             (format stream "Too few arguments for ~S, given ~S - required ~S."
-                     (core:function-name (called-function condition))
-                     (given-number-of-arguments condition)
-                     (required-number-of-arguments condition)))))
-
-(define-condition core:too-many-arguments-error (error)
-  ((called-function :initarg :called-function :reader called-function)
-   (given-number-of-arguments :initarg :given-number-of-arguments :reader given-number-of-arguments)
-   (required-number-of-arguments :initarg :required-number-of-arguments :reader required-number-of-arguments))
-  (:report (lambda (condition stream)
-             (format stream "Too many arguments for ~S, given ~S - required ~S."
-                     (core:function-name (called-function condition))
-                     (given-number-of-arguments condition)
-                     (required-number-of-arguments condition)))))
+             (let* ((min (min-nargs condition))
+                    (max (max-nargs condition))
+                    (function (called-function condition))
+                    (name (and function (core:function-name function)))
+                    (dname (if (eq name 'cl:lambda) "anonymous function" name)))
+               (format stream "~@[Calling ~a - ~]Got ~d arguments, but expected ~@?"
+                       dname (given-nargs condition)
+                       (cond ((null max)  "at least ~d")
+                             ((null min)  "at most ~*~d")
+                             ;; I think "exactly 0" is better than "at most 0", thus duplication
+                             ((= min max) "exactly ~d")
+                             ((zerop min) "at most ~*~d")
+                             (t           "between ~d and ~d"))
+                       min max)))))
 
 (define-condition core:unrecognized-keyword-argument-error (error)
-  ((called-function :initarg :called-function :reader called-function)
+  ((called-function :initarg :called-function :reader called-function :initform nil)
    (unrecognized-keyword :initarg :unrecognized-keyword :reader unrecognized-keyword))
   (:report (lambda (condition stream)
-             (format stream "Unrecognized keyword argument ~S for ~S."
+             (format stream "Unrecognized keyword argument ~S~[~; for ~S~]."
                      (unrecognized-keyword condition)
+                     (called-function condition)
                      (core:function-name (called-function condition))))))
 
 (define-condition print-not-readable (error)

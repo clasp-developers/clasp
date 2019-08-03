@@ -79,10 +79,15 @@ when this is t a lot of graphs will be generated.")
 (defun datum-name-as-string (datum)
   ;; We need to write out setf names as well as symbols, in a simple way.
   ;; "simple" means no pretty printer, for a start.
-  (write-to-string (cleavir-ir:name datum)
-                   :escape nil
-                   :readably nil
-                   :pretty nil))
+  ;; Using SYMBOL-NAME like this is about 25x faster than using write-to-string,
+  ;; and this function is called rather a lot so it's nice to make it faster.
+  (let ((name (cleavir-ir:name datum)))
+    (if (symbolp name)
+        (symbol-name name)
+        (write-to-string name
+                         :escape nil
+                         :readably nil
+                         :pretty nil))))
 
 (defun make-datum-alloca (datum)
   (etypecase datum
@@ -203,6 +208,14 @@ when this is t a lot of graphs will be generated.")
                           initial-instruction abi &key (linkage 'llvm-sys:internal-linkage))
   (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
     (let ((return-value (alloca-return)))
+      ;; NOTE: This initialization is required due to the possibility that a function
+      ;; nonlocally exits without having set the return-value, as happens with e.g.
+      ;; the (lambda (c) (go outside)) functions handler-case uses.
+      ;; The unwind-instruction will save an uninitialized nret into the multiple value
+      ;; vector and try to write in that many values; this causes crashes.
+      (with-return-values (return-value abi nret ret-regs)
+        (declare (ignore ret-regs))
+        (cmp:irc-store (%size_t 0) nret))
       (cmp:with-irbuilder (body-irbuilder)
         (cmp:with-debug-info-source-position ((ensure-origin (cleavir-ir:origin initial-instruction) 999970) )
           (cmp:with-dbg-lexical-block
@@ -615,7 +628,11 @@ COMPILE-FILE will use the default *clasp-env*."
                  :origin (origin-spi (cst:source (cleavir-cst-to-ast:cst condition)))
                  :condition condition)
            (continue condition)))
-       (cleavir-cst-to-ast:compilation-program-error #'conversion-error-handler))
+       ((and cleavir-cst-to-ast:compilation-program-error
+             ;; If something goes wrong evaluating an eval-when, we just want a normal error
+             ;; signal- we can't recover and keep compiling.
+             (not cleavir-cst-to-ast:eval-error))
+         #'conversion-error-handler))
     (let ((ast (cleavir-cst-to-ast:cst-to-ast cst env *clasp-system* dynenv)))
       (when *interactive-debug* (draw-ast ast))
       (cc-dbg-when *debug-log* (log-cst-to-ast ast))
@@ -751,6 +768,8 @@ This works like compile-lambda-function in bclasp."
 (defvar *cleavir-compile-verbose* nil)
 (export '*cleavir-compile-verbose*)
 (defun cclasp-compile* (form env pathname &key (linkage 'llvm-sys:internal-linkage))
+  (when core:*debug-startup*
+    (core:monitor-write (core:bformat nil "startup cclasp-compile* form: %s%N" form)))
   (when *cleavir-compile-verbose*
     (format *trace-output* "Cleavir compiling t1expr: ~s~%" form)
     (format *trace-output* "          in environment: ~s~%" env ))
@@ -820,7 +839,9 @@ This works like compile-lambda-function in bclasp."
 
 (defclass clasp-cst-client (eclector.concrete-syntax-tree:cst-client) ())
 
-(defvar *cst-client* (make-instance 'clasp-cst-client))
+;; singleton- don't bother with constructor
+(defvar *cst-client*
+  (locally (declare (notinline make-instance)) (make-instance 'clasp-cst-client)))
 
 (defmethod eclector.parse-result:source-position
     ((client clasp-cst-client) stream)

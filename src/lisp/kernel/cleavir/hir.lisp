@@ -331,6 +331,22 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; Instruction VASLIST-LENGTH-INSTRUCTION
+;;;
+
+(defclass vaslist-length-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+  ())
+
+(defmethod cleavir-ir-graphviz:label ((instr vaslist-length-instruction)) "vaslist-length")
+
+(defun make-vaslist-length-instruction (vaslist output &optional (successor nil successorp))
+  (make-instance 'vaslist-length-instruction
+                 :inputs (list vaslist)
+                 :outputs (list output)
+                 :successors (if successorp (list successor) nil)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; Instruction BIND-VA-LIST-INSTRUCTION
 ;;;
 ;;; Sort of like destructuring-bind, but with a va-list

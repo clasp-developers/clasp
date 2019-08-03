@@ -268,6 +268,7 @@
     ((cons) (cleavir-ir:make-consp-instruction object (list pro con)))
     ((character) (cc-mir:make-characterp-instruction object (list pro con)))
     ((single-float) (cc-mir:make-single-float-p-instruction object (list pro con)))
+    ((core:general) (cc-mir:make-generalp-instruction object (list pro con)))
     (t (let ((header-info (gethash primitive-type core:+type-header-value-map+)))
          (cond (header-info
                 (check-type header-info (or integer cons)) ; sanity check

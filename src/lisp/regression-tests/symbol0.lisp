@@ -53,13 +53,18 @@
 
 (test-expect-error gensym-8
                    (let ((*gensym-counter* -1))
-                     (gensym)
-                     *gensym-counter*))
+                     (gensym))
+                    :type type-error)
 
 (test-expect-error gensym-9
                    (let ((*gensym-counter* (1- most-negative-fixnum)))
-                     (gensym)
-                     *gensym-counter*))
+                     (gensym))
+                   :type type-error)
+
+(test-expect-error gensym-10
+                   (let ((*gensym-counter* 'defun))
+                     (gensym))
+                    :type type-error)
       
 
 (test-expect-error gentemp-1

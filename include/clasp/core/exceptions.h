@@ -79,14 +79,6 @@ extern core::Symbol_sp& _sym_name;
 #define SIMPLE_ERROR_BF(_str_) SIMPLE_ERROR(BF(_str_))
 
 /*! Error for when an index is out of range - eg: beyond the end of a string */
-#define OLD_TYPE_ERROR_INDEX(_seq_, _idx_) \
-  ERROR(cl::_sym_simpleTypeError, \
-        core::lisp_createList(kw::_sym_format_control, core::lisp_createStr("~S is not a valid index into the object ~S"), \
-                              kw::_sym_format_arguments, core::lisp_createList(clasp_make_fixnum(_idx_), _seq_), \
-                              kw::_sym_expected_type, core::lisp_createList(cl::_sym_integer, clasp_make_fixnum(0), make_fixnum((gc::IsA<Instance_sp>(_seq_) ? gc::As<Instance_sp>(_seq_)->numberOfSlots() : (_seq_)->length()) - 1)), \
-                              kw::_sym_datum, clasp_make_fixnum(_idx_)));
-
-/*! Error for when an index is out of range - eg: beyond the end of a string */
 #define TYPE_ERROR_INDEX(_seq_, _idx_) \
   ERROR(cl::_sym_simpleTypeError, \
         core::lisp_createList(kw::_sym_format_control, core::lisp_createStr("~S is not a valid index into the object ~S"), \
@@ -140,8 +132,6 @@ extern core::Symbol_sp& _sym_name;
 
 #define FILE_ERROR(_file_) ERROR(cl::_sym_fileError, core::lisp_createList(kw::_sym_pathname, _file_))
 #define CANNOT_OPEN_FILE_ERROR(_file_) FILE_ERROR(_file_)
-#define TOO_FEW_ARGUMENTS_ERROR() NO_INITIALIZERS_ERROR(core::_sym_tooFewArgumentsError)
-//#define TOO_MANY_ARGUMENTS_ERROR() NO_INITIALIZERS_ERROR(core::_sym_tooManyArgumentsError)
 #define UNRECOGNIZED_KEYWORD_ARGUMENTS_ERROR(obj) ERROR(core::_sym_unrecognizedKeywordArgumentsError,obj)
 // the following class does not exist in conditions.lsp and is not used
 // #define INVALID_KEYWORD_ARGUMENT_ERROR(obj) ERROR(core::_sym_invalidKeywordArgumentError, obj)
@@ -314,27 +304,6 @@ public:
   size_t index() const { return this->_Index; };
 };
 
-struct TooManyArgumentsError {
-  int givenNumberOfArguments;
-  int requiredNumberOfArguments;
-  TooManyArgumentsError(int given, int required);
-};
-
-class TooFewArgumentsError {
-private:
-  TooFewArgumentsError();
-
-public:
-  int givenNumberOfArguments;
-  int requiredNumberOfArguments;
-  TooFewArgumentsError(int given, int required);
-};
-
-struct UnrecognizedKeywordArgumentError {
-  core::T_sp argument;
-  UnrecognizedKeywordArgumentError(core::T_sp arg) : argument(arg){};
-};
-
 #pragma GCC visibility pop
 
 void throwTooFewArgumentsError(size_t given, size_t required);
@@ -344,10 +313,6 @@ void throwTooManyArgumentsError(size_t given, size_t required);
 void throwUnrecognizedKeywordArgumentError(T_sp kw);
 
 void wrongNumberOfArguments(size_t givenNumberOfArguments, size_t requiredNumberOfArguments);
-
-/*! Used by the debugger to resume the read-eval-print-loop */
-class ResumeREPL {
-};
 
 /*! Set a break-point in _trapThrow to catch
          * every exception except those thrown by THROW_noTrap

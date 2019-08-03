@@ -1469,47 +1469,33 @@ CL_DEFUN Symbol_mv core__type_to_symbol(T_sp x) {
     return (Values(cl::_sym_list));
   else if (x.generalp()) {
     General_sp gx(x.unsafe_general());
-    if (DoubleFloat_sp dfx = gx.asOrNull<DoubleFloat_O>())
+    if (gc::IsA<DoubleFloat_sp>(gx))
       return (Values(cl::_sym_DoubleFloat_O));
-    else if (Symbol_sp sx = gx.asOrNull<Symbol_O>())
+    else if (gc::IsA<Symbol_sp>(gx))
       return (Values(cl::_sym_Symbol_O));
     else if (gx.nilp())
       return (Values(cl::_sym_Symbol_O)); // Return _sym_null??
-    else if (Bignum_sp bnx = gx.asOrNull<Bignum_O>())
+    else if (gc::IsA<Bignum_sp>(gx))
       return (Values(cl::_sym_Bignum_O));
-    else if (Ratio_sp rx = gx.asOrNull<Ratio_O>())
+    else if (gc::IsA<Ratio_sp>(gx))
       return (Values(cl::_sym_Ratio_O));
 #ifdef CLASP_LONG_FLOAT
-    else if (LongFloat_sp lfx = gx.asOrNull<LongFloat_O>())
+    else if (gc::IsA<LongFloat_sp>(gx))
       return (Values(cl::_sym_LongFloat_O));
 #endif
-    else if (Complex_sp cx = gx.asOrNull<Complex_O>())
+    else if (gc::IsA<Complex_sp>(gx))
       return (Values(cl::_sym_Complex_O));
-    else if (Package_sp px = gx.asOrNull<Package_O>())
+    else if (gc::IsA<Package_sp>(gx))
       return (Values(cl::_sym_Package_O));
-    else if (HashTable_sp htx = gx.asOrNull<HashTable_O>())
+    else if (gc::IsA<HashTable_sp>(gx))
       return (Values(cl::_sym_HashTable_O));
-#if 1
     else if (Array_sp ax = gx.asOrNull<Array_O>())
       // Handle all of the array subclasses using type_as_symbol()
       return Values(ax->array_type());
-#else
-    return (Values(cl::_sym_Array_O));
-    else if (SimpleVector_sp vx = gx.asOrNull<SimpleVector_O>())
-      return (Values(cl::_sym_simple_vector));
-    else if (VectorNs_sp vx = gx.asOrNull<VectorNs_O>())
-      return (Values(cl::_sym_vector));
-    else if (BitVector_sp bvx = gx.asOrNull<BitVector_O>())
-      return Values(bvx->type_symbol());
-    else if (BitVector_sp bvx = gx.asOrNull<BitVector_O>())
-      return Values(bvx->type_symbol());
-    else if (cl__stringp(gx))
-      return (Values(cl::_sym_string));
-#endif
-  //    else if ( x.isA<BaseString_O>() ) return(Values(_sym_BaseString_O));
-    else if (Stream_sp streamx = gx.asOrNull<Stream_O>())
+  //    else if ( x.isA<BaseString_sp>() ) return(Values(_sym_BaseString_O));
+    else if (gc::IsA<Stream_sp>(gx))
       return (Values(cl::_sym_Stream_O));
-    else if (ReadTable_sp rtx = gx.asOrNull<ReadTable_O>())
+    else if (gc::IsA<ReadTable_sp>(gx))
       return (Values(cl::_sym_ReadTable_O));
     return Values(gx->__class()->_className());
   }

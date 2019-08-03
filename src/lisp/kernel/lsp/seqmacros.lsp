@@ -109,24 +109,29 @@
 (defmacro do-subvector ((elt vector start end
                          &key from-end output setter (index (gensym "INDEX")))
                         &body body)
-  (with-unique-names (%vector %limit)
+  (with-unique-names (%vector %limit %uindex %offset)
     (let ((body (if setter
                     `((macrolet ((,setter (value)
-                                   `(setf (vref ,',%vector ,',index) ,value)))
+                                   `(setf (vref ,',%vector ,',%uindex) ,value)))
                         ,@body))
                     body)))
-      `(with-array-data ((,%vector ,vector) ,index)
+      `(with-array-data ((,%vector ,vector) ,%offset)
          ,(if from-end
-              `(do ((,index (+ ,index ,end))
-                    (,%limit (+ ,index ,start)))
-                   ((= ,index ,%limit) ,output)
-                 (let ((,elt (vref ,%vector (decf ,index))))
-                   ,@body))
-              `(do ((,index (+ ,index ,start) (1+ ,index))
-                    (,%limit (+ ,index ,end)))
-                   ((= ,index ,%limit) ,output)
-                 (let ((,elt (vref ,%vector ,index)))
-                   ,@body)))))))
+              `(do ((,%uindex (+ ,%offset ,end))
+                    (,%limit (+ ,%offset ,start)))
+                   ((= ,%uindex ,%limit) ,output)
+                 (let ((,elt (vref ,%vector (decf ,%uindex))))
+                   ;; The index is bound in coordinates of the original array.
+                   ;; ...but since in actual uses of do-subvector we don't
+                   ;; use the index in every index, this is slightly faster.
+                   (symbol-macrolet ((,index (- ,%uindex ,%offset)))
+                     ,@body)))
+              `(do ((,%uindex (+ ,%offset ,start) (1+ ,%uindex))
+                    (,%limit (+ ,%offset ,end)))
+                   ((= ,%uindex ,%limit) ,output)
+                 (let ((,elt (vref ,%vector ,%uindex)))
+                   (symbol-macrolet ((,index (- ,%uindex ,%offset)))
+                     ,@body))))))))
 
 (defmacro do-sublist ((elt list start end &key output
                        setter (index (gensym)))

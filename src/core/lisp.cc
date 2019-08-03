@@ -69,7 +69,6 @@ THE SOFTWARE.
 #include <clasp/core/specialForm.h>
 #include <clasp/core/documentation.h>
 #include <clasp/core/backquote.h>
-#include <clasp/core/testing.h>
 #include <clasp/core/bformat.h>
 #include <clasp/core/cache.h>
 #include <clasp/core/environment.h>
@@ -544,7 +543,7 @@ CL_DEFUN void core__getchar_pause()
 
 
 void Lisp_O::startupLispEnvironment(Bundle *bundle) {
-  monitor_message("Starting lisp environment\n");
+  MONITOR(BF("Starting lisp environment\n"));
   global_dump_functions = getenv("CLASP_DUMP_FUNCTIONS");
   char* pause_startup = getenv("CLASP_PAUSE_STARTUP");
   if (pause_startup) {
@@ -1996,7 +1995,7 @@ CL_DEFUN T_mv cl__macroexpand_1(T_sp form, T_sp env) {
       Symbol_sp headSymbol = gc::As<Symbol_sp>(head);
       if (env.nilp()) {
         expansionFunction = eval::funcall(cl::_sym_macroFunction, headSymbol, env);
-      } else if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
+      } else if (gc::IsA<Environment_sp>(env)) {
         expansionFunction = eval::funcall(cl::_sym_macroFunction, headSymbol, env);
 #if 0        
       } else if (clcenv::Entry_sp ce = env.asOrNull<clcenv::Entry_O>() ) {

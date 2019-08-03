@@ -469,7 +469,10 @@ CL_DOCSTRING("Return the unix current working directory");
 CL_DEFUN core::Str8Ns_sp ext__getcwd() {
   // TESTME :   Test this function with the new code
   const char *ok = ::getcwd(NULL,0);
-  
+  if (!ok) {
+    SIMPLE_ERROR(BF("There was an error in ext__getcwd - errno %d") % errno);
+  }
+    
   // Take into account what the shell, if any, might think about
   // the current working directory.  This is important in symlinked
   // trees.  However, we need to make sure that the information is
@@ -486,17 +489,18 @@ CL_DEFUN core::Str8Ns_sp ext__getcwd() {
       // However, I don't want to make it a non-const function
       // at this time.
       const char *nowpwd = ::getcwd(NULL,0);
-      if (strcmp(ok, nowpwd) == 0) {
+      if (nowpwd) {
+        if (strcmp(ok, nowpwd) == 0) {
         // OK, we should use the shell's/user's idea of "cd"
-        ::free((void*)ok);
-        ok = strdup(spwd);
+          ::free((void*)ok);
+          ok = strdup(spwd);
+        }
       }
     }
   } else {
     // was found to be invalid, save us re-testing on next call
     unsetenv("PWD");
   }
-
   size_t cwdsize = strlen(ok);
   // Pad with 4 characters for / and terminator \0
   core::Str8Ns_sp output = core::Str8Ns_O::make(cwdsize+2,'\0',true,core::clasp_make_fixnum(0));
@@ -1730,7 +1734,7 @@ CL_DEFUN bool core__unix_daylight_saving_time(Integer_sp unix_time) {
 CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("unixGetLocalTimeZone");
-CL_DEFUN Ratio_sp core__unix_get_local_time_zone() {
+CL_DEFUN Rational_sp core__unix_get_local_time_zone() {
   gctools::Fixnum mw;
 #if 0 && defined(HAVE_TZSET)
   tzset();
@@ -1748,8 +1752,11 @@ CL_DEFUN Ratio_sp core__unix_get_local_time_zone() {
     mw -= 24 * 60;
   else if (gtm.tm_wday == (ltm.tm_wday + 1) % 7)
     mw += 24 * 60;
+  // Fix from ecl
+  if (ltm.tm_isdst)
+    mw += 60;
 #endif
-  return Ratio_O::create(make_fixnum(mw), make_fixnum(60));
+  return Rational_O::create(make_fixnum(mw), make_fixnum(60));
 }
 
 CL_LAMBDA(dir mode);
@@ -1759,7 +1766,7 @@ CL_DEFUN T_sp core__mkdir(T_sp directory, T_sp mode) {
   int modeint = 0;
   int ok;
   String_sp filename = coerce::stringDesignator(directory);
-  if (mode.fixnump()) { // Fixnum_sp fn = mode.asOrNull<Fixnum_O>() ) {
+  if (mode.fixnump()) {
     Fixnum_sp fnMode(gc::As<Fixnum_sp>(mode));
     modeint = unbox_fixnum(fnMode);
     if (modeint < 0 || modeint > 0777) {

@@ -3090,15 +3090,6 @@ CL_DEFUN List_sp core__split(const string& all, const string &chars) {
   return first;
 }
 
-
-clasp_elttype clasp_array_elttype(T_sp a)
-{
-  return gc::As<Array_sp>(a)->elttype();
-}
-
-
-
-
 CL_DEFUN T_sp core__copy_to_simple_base_string(T_sp x)
 {
  AGAIN:

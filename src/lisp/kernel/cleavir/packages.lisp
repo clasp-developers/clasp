@@ -91,6 +91,7 @@
    #:array-rank-ast
    #:array-dimension-ast
    #:vaslist-pop-ast
+   #:vaslist-length-ast
    #:header-stamp-ast #:rack-stamp-ast
    #:wrapped-stamp-ast #:derivable-stamp-ast
    #:bind-va-list-ast #:make-bind-va-list-ast #:va-list-ast
@@ -145,6 +146,7 @@
    #:header-stamp-instruction #:rack-stamp-instruction
    #:wrapped-stamp-instruction #:derivable-stamp-instruction
    #:vaslist-pop-instruction #:make-vaslist-pop-instruction
+   #:vaslist-length-instruction #:make-vaslist-length-instruction
    #:bind-va-list-instruction #:make-bind-va-list-instruction
    #:defcallback-instruction #:defcallback-args
    #:header-stamp-case-instruction #:make-header-stamp-case-instruction
@@ -173,6 +175,8 @@
    #:make-characterp-instruction
    #:single-float-p-instruction
    #:make-single-float-p-instruction
+   #:generalp-instruction
+   #:make-generalp-instruction
    #:headerq-instruction
    #:header-value-min-max
    #:make-headerq-instruction

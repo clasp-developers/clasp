@@ -301,8 +301,7 @@ string Instance_O::__repr__() const {
         if ((obj).consp()) {
           sslot << "CONS...";
           ss << sslot.str() << std::endl;
-        } else if (Instance_sp inst = obj.asOrNull<Instance_O>()) {
-          (void)inst; // turn off warning
+        } else if (gc::IsA<Instance_sp>(obj)) {
           sslot << "INSTANCE...";
           ss << sslot.str() << std::endl;
         } else {

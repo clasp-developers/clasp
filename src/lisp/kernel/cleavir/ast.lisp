@@ -395,6 +395,24 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; Class VASLIST-LENGTH-AST
+;;;
+;;; Gets the remaining number of arguments of a vaslist.
+
+(defclass vaslist-length-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
+  ((%arg-ast :initarg :vaslist :reader cleavir-ast:arg-ast)))
+
+(cleavir-io:define-save-info vaslist-length-ast
+    (:vaslist cleavir-ast:arg-ast))
+
+(defmethod cleavir-ast-graphviz::label ((ast vaslist-length-ast))
+  "vaslist-length")
+
+(defmethod cleavir-ast:children ((ast vaslist-length-ast))
+  (list (cleavir-ast:arg-ast ast)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; Class PRECALC-VECTOR-FUNCTION-AST
 ;;;
 ;;; This AST is a subclass of FUNCTION-AST. It is used when an AST

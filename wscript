@@ -789,6 +789,9 @@ def configure(cfg):
     log.pprint("BLUE", "cfg.options.enable_mpi = %s" % cfg.options.enable_mpi)
     log.pprint('BLUE', 'configure()')
 
+    cfg.env["BUILD_ROOT"] = os.path.abspath(top) # KLUDGE there should be a better way than this
+    load_local_config(cfg)
+    
     if ("DISABLE_CST" in cfg.env.DEBUG_OPTIONS):
         pass
     else:
@@ -803,8 +806,6 @@ def configure(cfg):
         if ("DEBUG_CCLASP_LISP" not in cfg.env.DEBUG_OPTIONS):
             cfg.env.DEBUG_OPTIONS.append(["DEBUG_CCLASP_LISP"])
 
-    cfg.env["BUILD_ROOT"] = os.path.abspath(top) # KLUDGE there should be a better way than this
-    load_local_config(cfg)
     cfg.load("why")
     cfg.check_waf_version(mini = '1.7.5')
     cfg.env["DEST_OS"] = cfg.env["DEST_OS"] or Utils.unversioned_sys_platform()

@@ -167,6 +167,7 @@
  :type PROGRAM-ERROR)
 
 (test cl-symbols-1 (not (fboundp 'cl:reader-error)))
+(test cl-symbols-2 (not (fboundp 'cl:variable)))
 
 (test-expect-error
  special-operator-p-1
@@ -175,4 +176,23 @@
 
 (test-expect-error special-operator-p-2 (funcall 'go 23) :type undefined-function)
 
-                 
+(test ast-interpreter-1
+      (equal (list most-positive-fixnum most-negative-fixnum)
+             (funcall
+              (compile nil #'(lambda()
+                               (load-time-value (list most-positive-fixnum most-negative-fixnum)))))))
+
+(test ast-interpreter-2
+      (equal (list (1+ most-positive-fixnum)(1- most-negative-fixnum))
+             (funcall
+              (compile nil #'(lambda()
+                               (load-time-value (list (1+ most-positive-fixnum)(1- most-negative-fixnum))))))))
+
+(test issue-797
+      (functionp
+       (compile nil                                                           
+                '(lambda()
+                  (LOAD-TIME-VALUE
+                   (FLET ((%F4 (&OPTIONAL &KEY (KEY1 9911946289546) (KEY2 -19296971321001))
+                            3904101166444))
+                     -128503000536183044))))))

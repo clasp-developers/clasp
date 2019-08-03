@@ -97,33 +97,27 @@ CL_DEFUN T_sp core__compute_instance_creator(T_sp tinstance, T_sp tmetaclass, Li
     Creator_sp funcallableInstanceCreator = gc::GC<FuncallableInstanceCreator_O>::allocate(fdesc,instance);
     return funcallableInstanceCreator;
   };
-  Instance_sp aCxxDerivableAncestorClass_unsafe; // Danger!  Unitialized!
+  Instance_sp aCxxDerivableAncestorClass_unsafe; // The constructor will initialize this pointer to NULL.
 #ifdef DEBUG_CLASS_INSTANCE
   printf("%s:%d:%s   for class -> %s   superclasses -> %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(instance->name()).c_str(), _rep_(superclasses).c_str());
 #endif
   for (auto cur : superclasses) {
     T_sp tsuper = oCar(cur);
-    if (Instance_sp aSuperClass = tsuper.asOrNull<Instance_O>() ) {
-      if (aSuperClass->cxxClassP() && !aSuperClass->cxxDerivableClassP()) {
-        SIMPLE_ERROR(BF("You cannot derive from the non-derivable C++ class %s\n"
-                        "any C++ class you want to derive from must inherit from the clbind derivable class") %
-                     _rep_(aSuperClass->_className()));
+    Instance_sp aSuperClass = gc::As<Instance_sp>(tsuper);
+    if (aSuperClass->cxxClassP() && !aSuperClass->cxxDerivableClassP()) {
+      SIMPLE_ERROR(BF("You cannot derive from the non-derivable C++ class %s\n"
+                      "any C++ class you want to derive from must inherit from the clbind derivable class") %
+                   _rep_(aSuperClass->_className()));
+    }
+    gc::Nilable<Instance_sp> aPossibleCxxDerivableAncestorClass = identifyCxxDerivableAncestorClass(aSuperClass);
+    if (aPossibleCxxDerivableAncestorClass.notnilp()) {
+      if (!aCxxDerivableAncestorClass_unsafe) {
+        aCxxDerivableAncestorClass_unsafe = aPossibleCxxDerivableAncestorClass;
+      } else {
+        SIMPLE_ERROR(BF("Only one derivable C++ class is allowed to be"
+                        " derived from at a time instead we have two %s and %s ") %
+                     _rep_(aCxxDerivableAncestorClass_unsafe->_className()) % _rep_(aPossibleCxxDerivableAncestorClass->_className()));
       }
-      gc::Nilable<Instance_sp> aPossibleCxxDerivableAncestorClass = identifyCxxDerivableAncestorClass(aSuperClass);
-      if (aPossibleCxxDerivableAncestorClass.notnilp()) {
-        if (!aCxxDerivableAncestorClass_unsafe) {
-          aCxxDerivableAncestorClass_unsafe = aPossibleCxxDerivableAncestorClass;
-        } else {
-          SIMPLE_ERROR(BF("Only one derivable C++ class is allowed to be"
-                          " derived from at a time instead we have two %s and %s ") %
-                       _rep_(aCxxDerivableAncestorClass_unsafe->_className()) % _rep_(aPossibleCxxDerivableAncestorClass->_className()));
-        }
-      }
-    } else if ( Instance_sp iSuperClass = tsuper.asOrNull<Instance_O>() ) {
-      SIMPLE_ERROR(BF("In Clasp, Instances are never Classes - so instance error should never occur.  If it does - figure out why tsuper is an Instance"));
-      // I don't think I do anything here
-      // If aCxxDerivableAncestorClass_unsafe is left unchanged then
-      // an InstanceCreator_O will be created for this class.
     }
   }
   if (aCxxDerivableAncestorClass_unsafe) {

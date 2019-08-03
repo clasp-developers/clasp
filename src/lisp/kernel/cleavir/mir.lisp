@@ -46,6 +46,20 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; GENERALP-INSTRUCTION
+;;;
+;;; Generates code for core:generalp
+;;;
+
+(defclass generalp-instruction (cleavir-ir:instruction cleavir-ir:multiple-successors-mixin) ())
+
+(defun make-generalp-instruction (input successors)
+  (make-instance 'generalp-instruction
+                 :inputs (list input)
+                 :successors successors))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; HEADERQ-INSTRUCTION
 ;;;
 ;;; Branch based on the type header of an object.

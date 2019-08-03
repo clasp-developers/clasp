@@ -11,6 +11,10 @@
 ;; see closfastgf.lsp's find-existing-emf for use of applicable-methods slot
 (defstruct (effective-method-outcome (:type vector) (:include outcome) :named)
   applicable-methods (form nil) (function nil))
+;;; Used for custom generation outside of CLOS per se. See cmpfastgf.
+;;; NOTE: These never take a vaslist at the moment.
+(defstruct (custom-outcome (:type vector) (:include outcome) :named)
+  generator (data nil) (requires-vaslist-p nil))
 
 (defun outcome= (outcome1 outcome2)
   (or (eq outcome1 outcome2) ; covers effective-method-outcome due to closfastgf caching
@@ -373,7 +377,39 @@
                    (collect (opcode 'effective-method-outcome)
                             (effective-method-outcome-function tree))
                    (cont))
-                  (t (error "Unknown dtree: ~a" tree)))))))
+                  ((custom-outcome-p tree)
+                   (error "BUG: Custom outcome ended up in the interpreter somehow."))
+                  (t (error "BUG: Unknown dtree: ~a" tree)))))))
+
+;;; used in cmpfastgf
+;;; T if any outcomes require a vaslist to run
+;;; dtree must be a compiled tree
+
+(defun dtree-requires-vaslist-p (dtree)
+  (cond ((custom-outcome-p dtree)
+         (custom-outcome-requires-vaslist-p dtree))
+        ((effective-method-outcome-p dtree) t)
+        ((outcome-p dtree) nil) ; other outcomes are fine
+        ((advance-p dtree)
+         (dtree-requires-vaslist-p (advance-next dtree)))
+        ((tag-test-p dtree)
+         (or (dtree-requires-vaslist-p (tag-test-default dtree))
+             (some #'dtree-requires-vaslist-p (tag-test-tags dtree))))
+        ((stamp-read-p dtree)
+         (or (dtree-requires-vaslist-p (stamp-read-c++ dtree))
+             (dtree-requires-vaslist-p (stamp-read-other dtree))))
+        ((<-branch-p dtree)
+         (or (dtree-requires-vaslist-p (<-branch-left dtree))
+             (dtree-requires-vaslist-p (<-branch-right dtree))))
+        ((=-check-p dtree)
+         (dtree-requires-vaslist-p (=-check-next dtree)))
+        ((range-check-p dtree)
+         (dtree-requires-vaslist-p (range-check-next dtree)))
+        ((eql-search-p dtree)
+         (or (dtree-requires-vaslist-p (eql-search-default dtree))
+             (some #'dtree-requires-vaslist-p (eql-search-nexts dtree))))
+        ((miss-p dtree) nil)
+        (t (error "BUG: Unknown dtree: ~a" dtree))))
 
 ;;; SIMPLE ENTRY POINTS
 

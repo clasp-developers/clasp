@@ -39,27 +39,14 @@ THE SOFTWARE.
 #include <clasp/core/evaluator.h>
 #include <clasp/core/hashTableEq.h>
 #include <clasp/core/wrappers.h>
+
 namespace core {
 
-
 SYMBOL_EXPORT_SC_(KeywordPkg, calledFunction);
-SYMBOL_EXPORT_SC_(KeywordPkg, givenNumberOfArguments);
-SYMBOL_EXPORT_SC_(KeywordPkg, requiredNumberOfArguments);
+SYMBOL_EXPORT_SC_(KeywordPkg, givenNargs);
+SYMBOL_EXPORT_SC_(KeywordPkg, minNargs);
+SYMBOL_EXPORT_SC_(KeywordPkg, maxNargs);
 SYMBOL_EXPORT_SC_(KeywordPkg, unrecognizedKeyword);
-
-void handleArgumentHandlingExceptions(Closure_sp closure) {
-  Function_sp func = closure;
-  try {
-    throw;
-  } catch (TooManyArgumentsError &error) {
-    lisp_error(core::_sym_tooManyArgumentsError, lisp_createList(kw::_sym_calledFunction, func, kw::_sym_givenNumberOfArguments, make_fixnum(error.givenNumberOfArguments), kw::_sym_requiredNumberOfArguments, make_fixnum(error.requiredNumberOfArguments)));
-  } catch (TooFewArgumentsError &error) {
-    lisp_error(core::_sym_tooFewArgumentsError, lisp_createList(kw::_sym_calledFunction, func, kw::_sym_givenNumberOfArguments, make_fixnum(error.givenNumberOfArguments), kw::_sym_requiredNumberOfArguments, make_fixnum(error.requiredNumberOfArguments)));
-  } catch (UnrecognizedKeywordArgumentError &error) {
-    lisp_error(core::_sym_unrecognizedKeywordArgumentError, lisp_createList(kw::_sym_calledFunction, func, kw::_sym_unrecognizedKeyword, error.argument));
-  }
-}
-
 
 /*! Return true if the form represents a type
 */
@@ -215,12 +202,8 @@ void lambdaListHandler_createBindings(Closure_sp closure, core::LambdaListHandle
       return;
     }
   }
-  try {
-    LOG(BF("About to createBindingsInScopeVaList with\n llh->%s\n    VaList->%s") % _rep_(llh) % _rep_(lcc_vargs));
-    llh->createBindingsInScopeVaList(lcc_nargs, lcc_vargs, scope);
-  } catch (...) {
-    handleArgumentHandlingExceptions(closure);
-  }
+  LOG(BF("About to createBindingsInScopeVaList with\n llh->%s\n    VaList->%s") % _rep_(llh) % _rep_(lcc_vargs));
+  llh->createBindingsInScopeVaList(lcc_nargs, lcc_vargs, scope);
   return;
 }
 
@@ -588,8 +571,6 @@ void LambdaListHandler_O::recursively_build_handlers_count_arguments(List_sp dec
   }
 }
 
-SYMBOL_SC_(CorePkg, tooFewArguments);
-
 #define PASS_FUNCTION_REQUIRED bind_required_va_list
 #define PASS_FUNCTION_OPTIONAL bind_optional_va_list
 #define PASS_FUNCTION_REST bind_rest_va_list
@@ -636,7 +617,6 @@ void LambdaListHandler_O::createBindingsInScopeVaList(size_t nargs, VaList_sp va
   }
   if (UNLIKELY(arg_idx < nargs && !(this->_RestArgument.isDefined()) && (this->_KeywordArguments.size() == 0))) {
     throwTooManyArgumentsError(nargs, this->numberOfLexicalVariables());
-    //	    TOO_MANY_ARGUMENTS_ERROR();
   }
   if (UNLIKELY(this->_RestArgument.isDefined())) {
     // Make and use a copy of the arglist so that keyword processing can parse the args as well

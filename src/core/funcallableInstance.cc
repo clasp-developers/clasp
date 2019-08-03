@@ -400,6 +400,7 @@ std::string dtree_op_name(int dtree_op) {
   };
 };
 
+SYMBOL_EXPORT_SC_(ClosPkg,interp_wrong_nargs);
 
 CL_LAMBDA(program gf args);
 CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generic_function,
@@ -418,7 +419,8 @@ CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generi
   DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*dispatch_args));
   T_sp arg;
   uintptr_t stamp;
-  size_t ip = 0;
+  size_t ip = 0; // instruction pointer
+  size_t nargs = dispatch_args->remaining_nargs(); // used in error signalling
   while (1) {
     size_t op = (*program)[ip].unsafe_fixnum();
     DTILOG(BF("ip[%lu]: %lu/%s\n") % ip % op % dtree_op_name(op));
@@ -429,6 +431,10 @@ CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generi
         DTILOG(BF("About to read arg dispatch_args-> %p\n") % dispatch_args.raw_());
         DTILOG(BF("About to dump dispatch_args Vaslist\n"));
         DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*dispatch_args));
+        if (dispatch_args->remaining_nargs() == 0)
+          // we use an intermediate function, in lisp, to get a nice error message.
+          return core::eval::funcall(clos::_sym_interp_wrong_nargs,
+                                     generic_function, make_fixnum(nargs));
         arg = dispatch_args->next_arg();
         DTILOG(BF("Got arg@%p %s\n") % arg.raw_() % _safe_rep_(arg));
         ++ip;
@@ -458,7 +464,7 @@ CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generi
         }
         DTILOG(BF("unknown\n"));
         // FIXME: We should be able to specialize on class valist and stuff.
-        SIMPLE_ERROR(BF("unknown tag for arg ~s") % arg);
+        SIMPLE_ERROR(BF("unknown tag for arg %s") % arg);
         goto DISPATCH_MISS;
     case DTREE_OP_STAMP_READ:
       {
@@ -593,7 +599,7 @@ CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generi
   }
  DISPATCH_MISS:
   DTILOG(BF("dispatch miss. arg %s stamp %s\n") % arg % stamp);
-  return core::eval::funcall(clos::_sym_dispatch_miss,generic_function,args);
+  return core::eval::funcall(clos::_sym_dispatch_miss_va,generic_function,args);
 }
 
 SYMBOL_EXPORT_SC_(ClosPkg,codegen_dispatcher);
