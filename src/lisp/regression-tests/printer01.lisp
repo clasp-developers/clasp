@@ -310,11 +310,63 @@
    (copy-pprint-dispatch 0))
  :type type-error)
 
+(test read-print-consistency-arrays
+      (with-standard-io-syntax
+        (let ((*PRINT-CIRCLE* T)
+              (*PRINT-READABLY* T)
+              (*PRINT-PRETTY* T))
+          (arrayp 
+           (read-from-string
+            (with-output-to-string (s)
+              (write #2A((3 4 5)) :stream s)))))))
+
 (test write-to-string.1.simplified
       (let ((unicode-string (make-array 4 :element-type 'character
                                         :initial-contents (mapcar #'code-char (list 40340 25579 40824 28331)))))
         (string=
          (with-output-to-string (s)(write unicode-string :stream s))
          (write-to-string unicode-string))))
+
+(test drmeister-fep-problem
+      (string=
+       (format nil "!~36,3,'0r" 1)
+       "!001"))
+
+(test PPRINT-DISPATCH.6-simplified
+      (string= "ABC"
+               (WITH-STANDARD-IO-SYNTAX
+                 (LET ((*PRINT-PPRINT-DISPATCH* (COPY-PPRINT-DISPATCH NIL))
+                       (*PRINT-READABLY* NIL)
+                       (*PRINT-ESCAPE* NIL)
+                       (*PRINT-PRETTY* T))
+                   (LET ((F
+                          #'(LAMBDA (STREAM OBJ)
+                              (DECLARE (IGNORE OBJ))
+                              (WRITE "ABC" :STREAM STREAM))))
+                     (SET-PPRINT-DISPATCH '(EQL X) F)
+                     (WRITE-TO-STRING 'X))))))
+
+(test PPRINT-DISPATCH.6
+      (multiple-value-bind (a b c d e)
+          (WITH-STANDARD-IO-SYNTAX
+            (LET ((*PRINT-PPRINT-DISPATCH* (COPY-PPRINT-DISPATCH NIL))
+                  (*PRINT-READABLY* NIL)
+                  (*PRINT-ESCAPE* NIL)
+                  (*PRINT-PRETTY* T))
+              (LET ((F
+                     #'(LAMBDA (STREAM OBJ)
+                         (DECLARE (IGNORE OBJ))
+                         (WRITE "ABC" :STREAM STREAM))))
+                (VALUES (WRITE-TO-STRING 'X)
+                        (SET-PPRINT-DISPATCH '(EQL X) F)
+                        (WRITE-TO-STRING 'X)
+                        (SET-PPRINT-DISPATCH '(EQL X) NIL)
+                        (WRITE-TO-STRING 'X)))))
+        (and
+         (string= a "X")
+         (null b)
+         (string= c "ABC")
+         (null d)
+         (string= e "X"))))
 
 
