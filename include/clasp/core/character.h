@@ -30,6 +30,18 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <clasp/core/array.fwd.h>
 #include <clasp/core/character.fwd.h>
+
+#define NULL_CHAR 0
+#define BELL_CHAR 7
+#define BACKSPACE_CHAR 8
+#define TAB_CHAR 9
+#define NEWLINE_CHAR 10
+#define LINE_FEED_CHAR 10
+#define PAGE_CHAR 12
+#define RETURN_CHAR 13
+#define ESCAPE_CHAR 27
+#define RUBOUT_CHAR 127
+
 namespace core {
 
   // Utility

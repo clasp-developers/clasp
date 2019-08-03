@@ -40,6 +40,8 @@
              (name-char 
               (char-name (code-char 128)))))
 
+#+(or) (test-expect-error test-unicode-out-of-range #\U110000)
+
 (test TEST-CHAR-13
       (typep  
        (name-char 

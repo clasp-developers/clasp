@@ -1,5 +1,10 @@
 (in-package #:clasp-tests)
 
+(test read-from-string0
+      (eq
+       (read-from-string (concatenate 'string "abc" (string #\nul) "AA"))
+       (intern (concatenate 'string "ABC" (string #\nul) "AA"))))
+
 (test read-1
       (equalp (list 1.111 1.111 1.111d0 1.111d0)
               (let ((result nil))

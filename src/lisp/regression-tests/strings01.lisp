@@ -1,6 +1,5 @@
 (in-package #:clasp-tests)
 
-(test read-from-string0 (eq (read-from-string (concatenate 'string "abc" (string #\nul) "AA")) (intern (concatenate 'string "ABC" (string #\nul) "AA"))))
 (test reverse-string (let ((s "abc")) (string= (reverse s) "cba")))
 (test-expect-error subseq-oob (subseq "abc" 0 5))
 (test strings-with-nul0
