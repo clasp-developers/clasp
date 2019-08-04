@@ -263,9 +263,7 @@
 	  (let ((location (gethash slot-name location-table nil)))
 	    (if location
                 (setf (standard-instance-access self location) value)
-                (progn
-                  (slot-missing class self slot-name 'SETF value)
-                  value)))
+                (slot-missing class self slot-name 'SETF value)))
 	  (let ((slotd
                  #+(or) (find slot-name (class-slots class) :key #'slot-definition-name)
                  (loop for prospect in (class-slots class)
@@ -274,9 +272,8 @@
                     return prospect)))
 	    (if slotd
 		(setf (slot-value-using-class class self slotd) value)
-		(progn
-                  (slot-missing class self slot-name 'SETF value)
-                  value)))))))
+		(slot-missing class self slot-name 'SETF value))))))
+  value)
 
 
 ;;;
