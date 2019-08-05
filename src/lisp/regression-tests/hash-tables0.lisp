@@ -113,3 +113,31 @@
              t)))
 
 
+(test equalp-hash-table-1
+      (let ((key-1 #\a)
+            (key-2 #\A))
+        (multiple-value-bind (value present-p)
+            (let ((ht (make-hash-table :test #'equalp)))
+              (setf (gethash key-1 ht) t)
+              (gethash key-2 ht))
+          (and value present-p))))
+
+(test equalp-hash-table-2
+      (let ((key-1 #*0010)
+            (key-2 #(0 0 1 0)))
+        (multiple-value-bind (value present-p)
+            (let ((ht (make-hash-table :test #'equalp)))
+              (setf (gethash key-1 ht) t)
+              (gethash key-2 ht))
+          (and value present-p))))
+
+(test equalp-hash-table-3
+      (let ((key-2 #*0010)
+            (key-1 #(0 0 1 0)))
+        (multiple-value-bind (value present-p)
+            (let ((ht (make-hash-table :test #'equalp)))
+              (setf (gethash key-1 ht) t)
+              (gethash key-2 ht))
+          (and value present-p))))
+
+
