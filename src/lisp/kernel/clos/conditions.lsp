@@ -565,21 +565,6 @@ memory limits before executing the program again."))
 
 (define-condition core:simple-program-error (simple-condition program-error) ())
 
-(define-condition core:argument-number-error (program-error)
-  ((supplied :initarg :supplied :reader argument-number-error-supplied)
-   (min :initarg :min :reader argument-number-error-min)
-   (max :initarg :max :reader argument-number-error-max))
-  (:report
-   (lambda (condition stream)
-     (let ((supplied (argument-number-error-supplied condition))
-           (max (argument-number-error-max condition))
-           (min (argument-number-error-min condition)))
-       (if (and max (> supplied max))
-           (format stream "No more than ~s argument~:p allowed, ~s argument~:p supplied."
-                   max supplied)
-           (format stream "At least ~s argument~:p required, ~s argument~:p supplied."
-                   min supplied))))))
-
 (define-condition control-error (error) ())
 
 (define-condition core:simple-control-error (simple-condition control-error) ())
