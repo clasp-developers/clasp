@@ -652,7 +652,7 @@ memory limits before executing the program again."))
 (define-condition core:wrong-number-of-arguments (program-error)
   (;; may be NIL if this is called from the interpreter and we don't know anything
    ;; (KLUDGE, FIXME?)
-   (called-function :initarg :called-function :reader called-function)
+   (called-function :initform nil :initarg :called-function :reader called-function)
    (given-nargs :initarg :given-nargs :reader given-nargs)
    ;; also may be NIL, same reason (KLUDGE, FIXME?)
    (min-nargs :initarg :min-nargs :reader min-nargs :initform nil)
