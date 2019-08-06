@@ -152,7 +152,7 @@ namespace core {
    for (size_t i = 1; i < nvals; ++i) {
      mv._Values[i] = temp[i];
    }
-   return gctools::return_type(temp[0], nvals);
+   return gctools::return_type(nvals == 0 ? _Nil<core::T_O>().raw_() : temp[0], nvals);
  }
 
  // Similar to returnTypeSaveToTemp, but saves only from lisp_multipleValues.
