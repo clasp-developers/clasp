@@ -909,7 +909,6 @@ namespace core {
     virtual Array_sp reverse() const final;
     virtual Array_sp nreverse() final;
     virtual bool equal(T_sp other) const final;
-    virtual bool equalp(T_sp other) const final {return this->equal(other);};
     virtual Array_sp unsafe_subseq(size_t start, size_t end) const final;
     virtual Array_sp unsafe_setf_subseq(size_t start, size_t end, Array_sp newSubseq) override;
     virtual vector<size_t> arrayDimensionsAsVector() const final {
