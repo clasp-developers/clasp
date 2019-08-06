@@ -378,11 +378,9 @@ struct ReachableClass {
 typedef map<gctools::GCStampEnum, ReachableClass> ReachableClassMap;
 static ReachableClassMap *static_ReachableClassKinds;
 static size_t invalidHeaderTotalSize = 0;
-int globalSearchMarker = 0;
 extern "C" {
 void boehm_callback_reachable_object(void *ptr, size_t sz, void *client_data) {
   gctools::Header_s *h = reinterpret_cast<gctools::Header_s *>(ptr);
-//  if (h->markerMatches(globalSearchMarker)) {
     ReachableClassMap::iterator it = static_ReachableClassKinds->find(h->stamp());
     if (it == static_ReachableClassKinds->end()) {
       ReachableClass reachableClass(h->stamp());
@@ -391,9 +389,6 @@ void boehm_callback_reachable_object(void *ptr, size_t sz, void *client_data) {
     } else {
       it->second.update(sz);
     }
-//  } else {
-//    invalidHeaderTotalSize += sz;
-//  }
 }
 };
 
@@ -579,16 +574,11 @@ CL_DEFUN core::Symbol_sp gctools__alloc_pattern_end() {
   return pattern;
 };
 
-CL_LAMBDA(&optional x (marker 0) msg);
+CL_LAMBDA(&optional x);
 CL_DECLARE();
-CL_DOCSTRING("room - Return info about the reachable objects.  x can be T, nil, :default - as in ROOM.  marker can be a fixnum (0 - matches everything, any other number/only objects with that marker)");
-CL_DEFUN core::T_mv cl__room(core::T_sp x, core::Fixnum_sp marker, core::T_sp tmsg) {
+CL_DOCSTRING("room - Return info about the reachable objects in memory. x can be T, nil, :default.");
+CL_DEFUN core::T_mv cl__room(core::T_sp x) {
   std::ostringstream OutputStream;
-  string smsg = "Total";
-  if (cl__stringp(tmsg)) {
-    core::String_sp msg = gc::As_unsafe<core::String_sp>(tmsg);
-    smsg = msg->get();
-  }
 #ifdef USE_MPS
   mps_word_t numCollections = mps_collections(global_arena);
   size_t arena_committed = mps_arena_committed(global_arena);
@@ -620,7 +610,6 @@ CL_DEFUN core::T_mv cl__room(core::T_sp x, core::Fixnum_sp marker, core::T_sp tm
                                                                 
 #endif
 #ifdef USE_BOEHM
-  globalSearchMarker = core::unbox_fixnum(marker);
   static_ReachableClassKinds = new (ReachableClassMap);
   invalidHeaderTotalSize = 0;
 #ifdef BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE
@@ -635,15 +624,15 @@ CL_DEFUN core::T_mv cl__room(core::T_sp x, core::Fixnum_sp marker, core::T_sp tm
   OutputStream << "Skipping objects with less than 96 total_size\n";
   OutputStream << "Done walk of memory  " << static_cast<uintptr_t>(static_ReachableClassKinds->size()) << " ClassKinds\n";
 #if USE_CXX_DYNAMIC_CAST
-  OutputStream << smsg << " live memory total size = " << std::setw(12) << invalidHeaderTotalSize << '\n';
+  OutputStream << "Total live memory total size = " << std::setw(12) << invalidHeaderTotalSize << '\n';
 #else
-  OutputStream << smsg << " invalidHeaderTotalSize = " << std::setw(12) << invalidHeaderTotalSize << '\n';
+  OutputStream << "Total invalidHeaderTotalSize = " << std::setw(12) << invalidHeaderTotalSize << '\n';
 #endif
-  OutputStream << smsg << " memory usage (bytes):    " << std::setw(12) << totalSize << '\n';
-  OutputStream << smsg << " GC_get_heap_size()       " << std::setw(12) << GC_get_heap_size() << '\n';
-  OutputStream << smsg << " GC_get_free_bytes()      " << std::setw(12) << GC_get_free_bytes() << '\n';
-  OutputStream << smsg << " GC_get_bytes_since_gc()  " <<  std::setw(12) << GC_get_bytes_since_gc() << '\n';
-  OutputStream << smsg << " GC_get_total_bytes()     " <<  std::setw(12) << GC_get_total_bytes() << '\n';
+  OutputStream << "Total memory usage (bytes):    " << std::setw(12) << totalSize << '\n';
+  OutputStream << "Total GC_get_heap_size()       " << std::setw(12) << GC_get_heap_size() << '\n';
+  OutputStream << "Total GC_get_free_bytes()      " << std::setw(12) << GC_get_free_bytes() << '\n';
+  OutputStream << "Total GC_get_bytes_since_gc()  " <<  std::setw(12) << GC_get_bytes_since_gc() << '\n';
+  OutputStream << "Total GC_get_total_bytes()     " <<  std::setw(12) << GC_get_total_bytes() << '\n';
 
   delete static_ReachableClassKinds;
 #endif
@@ -783,13 +772,6 @@ CL_DEFUN void gctools__definalize(core::T_sp object) {
 
 };
 
-
-
-extern "C" {
-void dbg_room() {
-  cl__room(_Nil<core::T_O>(), core::make_fixnum(0), _Nil<core::T_O>());
-}
-}
 namespace gctools {
 
 #ifdef DEBUG_COUNT_ALLOCATIONS
