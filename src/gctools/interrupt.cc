@@ -224,9 +224,6 @@ void handle_or_queue(core::ThreadLocalState* thread, core::T_sp signal_code ) {
   if (signal_code.nilp() || !signal_code.fixnump())
     return;
   gc::Fixnum signal_int = signal_code.unsafe_fixnum();
-  if (signal_int == SIGSEGV || signal_int == SIGBUS || signal_int == SIGILL) {
-     handle_signal_now(signal_code,thread->_Process);
-  }
   if (interrupts_disabled_by_lisp()) {
     queue_signal(thread,signal_code,false);
   }
@@ -249,50 +246,22 @@ int global_pollTicksPerCleanup = INITIAL_GLOBAL_POLL_TICKS_PER_CLEANUP;
 int global_signalTrap = 0;
 int global_pollTicksGC = INITIAL_GLOBAL_POLL_TICKS_PER_CLEANUP;
 
-
-#if 0
-void do_pollSignals() {
-  int signo = global_signalTrap;
-  SET_SIGNAL(0);
-  if (signo == SIGINT) {
-    printf("You pressed Ctrl+C - ignoring for now\n");
-#if 0
-    core::eval::funcall(cl::_sym_break, core::SimpleBaseString_O::make("Break on Ctrl+C"));
-#endif
-      //    core__invoke_internal_debugger(_Nil<core::T_O>());
-    printf("Resuming after Ctrl+C\n");
-  } else if (signo == SIGCHLD) {
-      //            printf("A child terminated\n");
-  } else if (signo == SIGFPE) {
-    printf("%s:%d A floating point error occurred\n", __FILE__, __LINE__);
-    core__invoke_internal_debugger(_Nil<core::T_O>());
-  } else if (signo == SIGABRT) {
-    printf("ABORT was called!!!!!!!!!!!!\n");
-    core__invoke_internal_debugger(_Nil<core::T_O>());
-      //    core:eval::funcall(cl::_sym_break,core::SimpleBaseString_O::make("ABORT was called"));
-  }
-#ifdef USE_MPS
-  if (--global_pollTicksGC == 0 ) {
-    global_pollTicksGC = global_pollTicksPerCleanup;
-    gctools::gctools__cleanup();
-  }
-#endif
-}
-#endif
-
-
-void handle_signals(int signo) {
-  //
+void handle_signal(int signo) {
   // Indicate that a signal was caught and handle it at a safe-point
-  //
   handle_or_queue(my_thread,core::clasp_make_fixnum(signo));
 }
 
+void handle_signal_sync(int signo) {
+  // Handle a signal without queuing it. With some signals, like SIGSEGV, we
+  // can't continue normal execution.
+  // FIXME?: If a SEGV is sent e.g. by kill(1), we could still continue from
+  // it. This situation is indicated by the code in a siginfo_t.
+  // But maybe it's not important.
+  handle_signal_now(core::clasp_make_fixnum(signo), my_thread->_Process);
+}
 
-void interrupt_handle_signals(int signo) {
-  //
+void handle_interrupt_signal(int signo) {
   // Indicate that a signal was caught and handle it at a safe-point
-  //
   printf("%s:%d  Process %s received an interrupt signal %d\n", __FILE__, __LINE__, _rep_(my_thread->_Process).c_str(), signo);
   handle_or_queue(my_thread,core::clasp_make_fixnum(signo));
 }
@@ -309,61 +278,6 @@ void fatal_error_handler(void *user_data, const std::string &reason, bool gen_cr
   abort();
 }
 
-#ifdef HAVE_SIGPROCMASK
-static sigset_t main_thread_sigmask;
-# define handler_fn_prototype(name, sig, info, aux) name(sig, info, aux)
-# define call_handler(name, sig, info, aux) name(sig, info, aux)
-# define reinstall_signal(x,y)
-#if 0
-static void
-mysignal(int code, void *handler)
-{
-        struct sigaction action;
-        sigaction(code, NULL, &action);
-        if (handler == SIG_IGN || handler == SIG_DFL) {
-                action.sa_handler = handler;
-        } else {
-#ifdef SA_SIGINFO
-                /* void (*handler)(int, siginfo_t *, void*) */
-                action.sa_sigaction = handler;
-                action.sa_flags = SA_SIGINFO;
-#else
-                /* void (*handler)(int) */
-                action.sa_handler = handler;
-                action.sa_flags = 0;
-#endif
-                sigfillset(&action.sa_mask);
-        }
-        sigaction(code, &action, NULL);
-}
-#endif
-#else /* HAVE_SIGPROCMASK */
-# define handler_fn_prototype(name, sig, info, aux) name(sig)
-# define call_handler(name, sig, info, aux) name(sig)
-# define mysignal(x,y) signal(x,y)
-# define reinstall_signal(x,y) signal(x,y)
-#endif
-
-#if 0
-static void
-handler_fn_prototype(non_evil_signal_handler, int sig, siginfo_t *siginfo, void *data)
-{
-  int old_errno = errno;
-  cl_env_ptr the_env;
-  cl_object signal_object;
-  reinstall_signal(sig, non_evil_signal_handler);
-        /* The lisp environment might not be installed. */
-  the_env = ecl_process_env();
-  unlikely_if (zombie_process(the_env))
-    return;
-  signal_object = ecl_gethash_safe(ecl_make_fixnum(sig),
-                                   cl_core.known_signals,
-                                   ECL_NIL);
-  handle_or_queue(the_env, signal_object, sig);
-  errno = old_errno;
-}
-#endif
-
 void wake_up_thread(int sig)
 {
   const char* msg = "In wake_up_thread interrupt.cc\n";
@@ -371,64 +285,29 @@ void wake_up_thread(int sig)
   write(1,msg,len);
 }
 
-
 void initialize_signals(int clasp_signal) {
+  // clasp_signal is the signal that we use as a thread interrupt.
+
+#define INIT_SIGNAL(sig,flags,handler)         \
+  new_action.sa_handler = handler;             \
+  sigemptyset (&new_action.sa_mask);           \
+  new_action.sa_flags = flags;                 \
+  if (sigaction (sig, &new_action, NULL) != 0) \
+    printf("failed to register " #sig " signal-handler with kernel error: %s\n", strerror(errno));
+
   struct sigaction new_action, old_action;
-  /* Set up the structure to specify the new action. */
-  new_action.sa_handler = interrupt_handle_signals;
-  sigemptyset (&new_action.sa_mask);
-  new_action.sa_flags = SA_RESTART | SA_ONSTACK;
-  if (sigaction (clasp_signal, &new_action, NULL) != 0) {
-    printf("failed to register clasp_signal signal-handler with kernel error: %s\n", strerror(errno));
-  }
-  new_action.sa_handler = wake_up_thread;
-  sigemptyset (&new_action.sa_mask);
-  new_action.sa_flags = SA_RESTART;
-  if (sigaction (SIGUSR2, &new_action, NULL) != 0) {
-    printf("failed to register SIGUSR2 signal-handler with kernel error: %s\n", strerror(errno));
-  }
-  new_action.sa_handler = handle_signals;
-  sigemptyset (&new_action.sa_mask);
-  new_action.sa_flags = SA_RESTART;
-  if (sigaction (SIGINT, &new_action, NULL) != 0) {
-    printf("failed to register SIGINT signal-handler with kernel error: %s\n", strerror(errno));
-  }
+
+  INIT_SIGNAL(clasp_signal, (SA_RESTART | SA_ONSTACK), handle_interrupt_signal);
+  INIT_SIGNAL(SIGUSR2, (SA_RESTART), wake_up_thread);
+  INIT_SIGNAL(SIGINT, (SA_RESTART), handle_signal);
 #ifdef SIGINFO
-  new_action.sa_handler = handle_signals;
-  sigemptyset (&new_action.sa_mask);
-  new_action.sa_flags = SA_RESTART;
-  if (sigaction (SIGINFO, &new_action, NULL) != 0) {
-    printf("failed to register SIGINFO signal-handler with kernel error: %s\n", strerror(errno));
-  }
+  INIT_SIGNAL(SIGINFO, (SA_RESTART), handle_signal);
 #endif
-  new_action.sa_handler = handle_signals;
-  sigemptyset (&new_action.sa_mask);
-  new_action.sa_flags = SA_RESTART | SA_ONSTACK;
-  if (sigaction (SIGABRT, &new_action, NULL) != 0) {
-    printf("failed to register SIGABRT signal-handler with kernel error: %s\n", strerror(errno));
-  }
-  new_action.sa_handler = handle_signals;
-  sigemptyset (&new_action.sa_mask);
-  new_action.sa_flags = SA_RESTART | SA_ONSTACK;
-  if (sigaction (SIGSEGV, &new_action, NULL) != 0) {
-    printf("failed to register SIGSEGV signal-handler with kernel error: %s\n", strerror(errno));
-  }
-#if 0
-  if (signal(SIGCHLD, handle_signals) == SIG_ERR) {
-    printf("failed to register SIGCHLD signal-handler with kernel\n");
-  }
-#endif
-#if 0
-#ifdef _TARGET_OS_LINUX
-  feenableexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW | FE_UNDERFLOW);
-#endif
-#ifdef _TARGET_OS_DARWIN
-  feenableexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW | FE_UNDERFLOW);
-#endif
-  if (signal(SIGFPE, handle_signals) == SIG_ERR) {
-    printf("failed to register SIGFPE signal-handler with kernel\n");
-  }
-#endif
+  INIT_SIGNAL(SIGABRT, (SA_RESTART | SA_ONSTACK), handle_signal);
+  INIT_SIGNAL(SIGSEGV, (SA_RESTART | SA_ONSTACK), handle_signal_sync);
+  INIT_SIGNAL(SIGFPE, (SA_RESTART | SA_ONSTACK), handle_signal_sync);
+  INIT_SIGNAL(SIGBUS, (SA_RESTART | SA_ONSTACK), handle_signal_sync);
+  INIT_SIGNAL(SIGILL, (SA_RESTART | SA_ONSTACK), handle_signal_sync);
   llvm::install_fatal_error_handler(fatal_error_handler, NULL);
 }
 
