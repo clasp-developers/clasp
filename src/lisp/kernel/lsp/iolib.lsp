@@ -76,50 +76,99 @@ object's representation."
                 (file-position stream))
         (values (read stream eof-error-p eof-value)
                 (file-position stream)))))
-#+(or)
-(defun write-to-string (object &rest rest
-                        &aux (stream (make-string-output-stream)))
-  "Args: (object &key (escape *print-escape*) (radix *print-radix*)
-                   (base *print-base*) (circle *print-circle*)
-                   (pretty *print-pretty*) (level *print-level*)
-                   (length *print-length*) (case *print-case*)
-                   (array *print-array*) (gensym *print-gensym*))
-Returns as a string the printed representation of OBJECT in the specified
-mode.  See the variable docs of *PRINT-...* for the mode."
-  (apply #'write object :stream stream rest)
-  (get-output-stream-string stream))
 
-;;;
-;;; Christian Schafmeister - June 24 2018
-;;; Use a thread-local string-output-stream for write-to-string
-;;; I get almost a 2x speedup with this.
-(defun write-to-string (object core:&va-rest rest ; only used for apply, so no problem.
-                        &aux (stream (core:thread-local-write-to-string-output-stream)))
-  "Args: (object &key (escape *print-escape*) (radix *print-radix*)
-                   (base *print-base*) (circle *print-circle*)
-                   (pretty *print-pretty*) (level *print-level*)
-                   (length *print-length*) (case *print-case*)
-                   (array *print-array*) (gensym *print-gensym*))
-Returns as a string the printed representation of OBJECT in the specified
-mode.  See the variable docs of *PRINT-...* for the mode."
-  (apply #'write object :stream stream rest)
-  (core:get-thread-local-write-to-string-output-stream-string stream))
+;;; This function does what write-to-string does to a symbol name,
+;;; when printer escaping is off.
+;;; It's over five times as far as write-to-string.
+(defun printcasify (symbol-name readtable-case print-case)
+  (let ((result (copy-seq symbol-name))
+        (len (length symbol-name)))
+    (case readtable-case
+      ((:preserve) result)
+      ((:invert)
+       (dotimes (i len result)
+         (let ((c (aref result i)))
+           (setf (aref result i)
+                 (cond ((upper-case-p c)
+                        (char-downcase c))
+                       ((lower-case-p c)
+                        (char-upcase c))
+                       (t c))))))
+      ((:upcase)
+       (let ((capitalize t))
+         (dotimes (i len result)
+           (let ((c (aref result i)))
+             (setf (aref result i)
+                   (if (and (upper-case-p c)
+                            (or (eq print-case :downcase)
+                                (and (eq print-case :capitalize)
+                                     (not capitalize))))
+                       (char-downcase c)
+                       c)
+                   capitalize (not (alphanumericp c)))))))
+      ((:downcase)
+       (let ((capitalize t))
+         (dotimes (i len result)
+           (let ((c (aref result i)))
+             (setf (aref result i)
+                   (if (and (lower-case-p c)
+                            (or (eq print-case :downcase)
+                                (and (eq print-case :capitalize)
+                                     capitalize)))
+                       (char-downcase c)
+                       c)
+                   capitalize (not (alphanumericp c))))))))))
 
-(defun prin1-to-string (object
-                        &aux (stream (make-string-output-stream)))
+(defun stringify (object)
+  (when (and (not *print-escape*) (not *print-readably*) (not *print-pretty*))
+    (typecase object
+      (symbol
+       (return-from stringify
+         (printcasify (symbol-name object)
+                      (readtable-case *readtable*)
+                      *print-case*)))
+      (string (return-from stringify (copy-seq object)))
+      (character (return-from stringify (string object)))))
+  ;; By not making a fresh stream every time, we save some time.
+  (let ((stream (core:thread-local-write-to-string-output-stream)))
+    (write-object object stream)
+    (core:get-thread-local-write-to-string-output-stream-string stream)))
+
+(defun write-to-string (object &key ((:escape *print-escape*) *print-escape*)
+                                 ((:radix *print-radix*) *print-radix*)
+                                 ((:base *print-base*) *print-base*)
+                                 ((:circle *print-circle*) *print-circle*)
+                                 ((:pretty *print-pretty*) *print-pretty*)
+                                 ((:level *print-level*) *print-level*)
+                                 ((:length *print-length*) *print-length*)
+                                 ((:case *print-case*) *print-case*)
+                                 ((:array *print-array*) *print-array*)
+                                 ((:gensym *print-gensym*) *print-gensym*)
+                                 ((:readably *print-readably*) *print-readably*)
+                                 ((:right-margin *print-right-margin*)
+                                  *print-right-margin*)
+                                 ((:miser-width *print-miser-width*)
+                                  *print-miser-width*)
+                                 ((:lines *print-lines*) *print-lines*)
+                                 ((:pprint-dispatch *print-pprint-dispatch*)
+                                  *print-pprint-dispatch*))
+  "Returns as a string the printed representation of OBJECT in the specified
+mode.  See the variable docs of *PRINT-...* for the mode."
+  (stringify object))
+
+(defun prin1-to-string (object)
   "Args: (object)
 PRIN1s OBJECT to a new string and returns the result.  Equivalent to
-(WRITE-TO-STRING OBJECT :ESCAPE T)."
-   (prin1 object stream)
-   (get-output-stream-string stream))
+ (WRITE-TO-STRING OBJECT :ESCAPE T)."
+  (let ((*print-escape* t))
+    (stringify object)))
 
-(defun princ-to-string (object
-                        &aux (stream (make-string-output-stream)))
+(defun princ-to-string (object)
   "Args: (object)
 PRINCs OBJECT to a new string and returns the result.  Equivalent to
-(WRITE-TO-STRING OBJECT :ESCAPE NIL)."
-  (princ object stream)
-  (get-output-stream-string stream))
+ (WRITE-TO-STRING OBJECT :ESCAPE NIL :READABLY NIL)."
+  (let ((*print-escape* nil) (*print-readably* nil))
+    (stringify object)))
 
 (defmacro with-open-file ((stream . filespec) &rest body)
   "Syntax: (with-open-file (var filespec-form {options}*) {decl}* {form}*)
@@ -191,16 +240,9 @@ printed.  If FORMAT-STRING is NIL, however, no prompt will appear."
   (let ((l (read stream t nil t)))
     (when *read-suppress*
       (return-from sharp-s-reader nil))
-    (unless (names-structure-p (car l))
-            (error "~S is not a structure." (car l)))
     ;; Intern keywords in the keyword package.
     (do ((ll (cdr l) (cddr ll)))
-        ((endp ll)
-         ;; Do the construction.
-         (let ((constructor (structure-constructor (car l))))
-           (if constructor
-               (apply constructor (cdr l))
-               (error "The structure ~S has no standard constructor." (car l)))))
+        ((endp ll) (make-structure (car l) (cdr l)))
       (rplaca ll (intern (string (car ll)) 'keyword)))))
 
 (set-dispatch-macro-character #\# #\s 'sharp-s-reader)
@@ -297,7 +339,7 @@ the one used internally by ECL compiled files."
 
 (defun ext:load-encoding (name)
   #-unicode
-  (warn "EXT:LOAD-ENCODING not available when ECL is built without support for Unicode")
+  (warn "EXT:LOAD-ENCODING not available when clasp is built without support for Unicode")
   #+unicode
   (let ((filename (make-pathname :name (symbol-name name) :defaults "sys:encodings;")))
     (cond ((probe-file filename)
@@ -321,7 +363,7 @@ the one used internally by ECL compiled files."
     ((symbolp mapping)
      (let ((var (intern (symbol-name mapping) (find-package "EXT"))))
        (unless (boundp var)
-         (setf (symbol-value var) (ext::make-encoding (load-encoding mapping))))
+         (setf (symbol-value var) (ext:make-encoding (ext:load-encoding mapping))))
        (symbol-value var)))
     ((consp mapping)
      (let ((output (make-hash-table :size 512 :test 'eq)))

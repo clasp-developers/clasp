@@ -529,7 +529,7 @@ namespace gctools {
 //
 template <typename To_SP>
 inline bool IsA(return_type const &rhs) {
-  return TaggedCast<typename To_SP::Type *, typename core::T_O *>::isA(rhs.ret0[0]);
+  return TaggedCast<typename To_SP::Type *, typename core::T_O *>::isA(reinterpret_cast<core::T_O*>(rhs.ret0[0]));
 };
 template <typename To_SP, typename From_SP>
 inline bool IsA(From_SP const &rhs) {
@@ -945,12 +945,12 @@ public:
 
 namespace cl {
 extern gctools::smart_ptr<core::Symbol_O>& _sym_list;
-extern gctools::smart_ptr<core::Symbol_O>& _sym_typeError;
+extern gctools::smart_ptr<core::Symbol_O>& _sym_type_error;
 }
 
 namespace kw {
 extern gctools::smart_ptr<core::Symbol_O>& _sym_datum;
-extern gctools::smart_ptr<core::Symbol_O>& _sym_expectedType;
+extern gctools::smart_ptr<core::Symbol_O>& _sym_expected_type;
 }
 namespace core {
 extern gctools::smart_ptr<core::T_O> lisp_createList(gctools::smart_ptr<core::T_O> a1, gctools::smart_ptr<core::T_O> a2, gctools::smart_ptr<core::T_O> a3, gctools::smart_ptr<core::T_O> a4);
@@ -1074,7 +1074,7 @@ public:
     } else if (other.nilp()) {
       this->theObject = other.theObject;
     } else {
-      lisp_error(cl::_sym_typeError, core::lisp_createList(kw::_sym_datum, other, kw::_sym_expectedType, cl::_sym_list));
+      lisp_error(cl::_sym_type_error, core::lisp_createList(kw::_sym_datum, other, kw::_sym_expected_type, cl::_sym_list));
     }
   }
   inline smart_ptr(smart_ptr<core::Cons_O> other) : theObject(other.raw_()) {
@@ -1279,7 +1279,7 @@ public:
     } else if (tagged_nilp<From *>(other.theObject)) {
       this->theObject = other.theObject;
     } else {
-      lisp_error(cl::_sym_typeError, core::lisp_createList(kw::_sym_datum, other, kw::_sym_expectedType, cl::_sym_list));
+      lisp_error(cl::_sym_type_error, core::lisp_createList(kw::_sym_datum, other, kw::_sym_expected_type, cl::_sym_list));
     }
     return *this;
   };

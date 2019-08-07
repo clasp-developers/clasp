@@ -148,12 +148,12 @@ void Integer_O::__write__(T_sp stream) const {
 void Ratio_O::__write__(T_sp stream) const {  
   SafeBufferStr8Ns buffer;
   int print_base = clasp_print_base();
-  core__integer_to_string(buffer._Buffer, this->num()->const_sharedThis<Integer_O>(),
+  core__integer_to_string(buffer._Buffer, this->num(),
                        make_fixnum(print_base),
                        cl::_sym_STARprint_radixSTAR->symbolValue().isTrue(),
                        false);
   buffer._Buffer->vectorPushExtend(clasp_make_character('/'));
-  core__integer_to_string(buffer._Buffer, this->den()->const_sharedThis<Integer_O>(),
+  core__integer_to_string(buffer._Buffer, this->den(),
                        make_fixnum(print_base),
                        false,
                        false);

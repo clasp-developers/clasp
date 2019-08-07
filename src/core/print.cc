@@ -56,21 +56,27 @@ cl_index clasp_print_base(void) {
 cl_index clasp_print_level(void) {
   T_sp object = cl::_sym_STARprint_levelSTAR->symbolValue();
   gctools::Fixnum level;
+  // See note about fixnumness in clasp_print_length.
   if (object.nilp()) {
     level = MOST_POSITIVE_FIXNUM;
   } else if (core__fixnump(object)) {
     level = unbox_fixnum(gc::As<Fixnum_sp>(object));
     if (level < 0) {
     ERROR:
-      cl::_sym_STARprint_levelSTAR->setf_symbolValue(_Nil<T_O>());
-      SIMPLE_ERROR(BF("The value of *PRINT-LEVEL*\n %s\n"
-                      "is not of the expected type (or NULL (INTEGER 0 %s))")
-                   % _rep_(object) % MOST_POSITIVE_FIXNUM);
+      {
+        // Bind *print-level* to something valid so that we don't get
+        // recursive errors while printing error messages.
+        DynamicScopeManager scope(cl::_sym_STARprint_levelSTAR, _Nil<T_O>());
+        SIMPLE_ERROR(BF("The value of *PRINT-LEVEL*\n %s\n"
+                        "is not of the expected type (OR NULL (INTEGER 0))")
+                     % _rep_(object));
+      }
     }
   } else if (core__bignump(object)) {
-    goto ERROR;
-  } else {
+    // FIXME?: We could check if it's negative here to be really scrupulous.
     level = MOST_POSITIVE_FIXNUM;
+  } else {
+    goto ERROR;
   }
   return level;
 }
@@ -81,21 +87,26 @@ cl_index clasp_print_level(void) {
 cl_index clasp_print_length(void) {
   T_sp object = cl::_sym_STARprint_lengthSTAR->symbolValue();
   gctools::Fixnum length;
+  // We pretty much assume we'll never have a sequence with a bignum count of elements.
+  // This is standardly true with vectors, but lists could hypothetically have any
+  // number of elements. Hypothetically. Still, keep this in mind.
   if (object.nilp()) {
     length = MOST_POSITIVE_FIXNUM;
   } else if (core__fixnump(object)) {
     length = unbox_fixnum(gc::As<Fixnum_sp>(object));
     if (length < 0) {
     ERROR:
-      cl::_sym_STARprint_lengthSTAR->setf_symbolValue(_Nil<T_O>());
-      SIMPLE_ERROR(BF("The value of *PRINT-LENGTH*\n %s\n"
-                      "is not of the expected type (or NULL (INTEGER 0 %s))")
-                   % _rep_(object) % MOST_POSITIVE_FIXNUM);
+      {
+        DynamicScopeManager scope(cl::_sym_STARprint_lengthSTAR, _Nil<T_O>());
+        SIMPLE_ERROR(BF("The value of *PRINT-LENGTH*\n %s\n"
+                        "is not of the expected type (OR NULL (INTEGER 0))")
+                     % _rep_(object));
+      }
     }
   } else if (core__bignump(object)) {
-    goto ERROR;
-  } else {
     length = MOST_POSITIVE_FIXNUM;
+  } else {
+    goto ERROR;
   }
   return length;
 }
@@ -162,7 +173,6 @@ CL_DEFUN T_sp cl__write(T_sp x, T_sp strm, T_sp array, T_sp base,
   scope.pushSpecialVariableAndSet(cl::_sym_STARprint_right_marginSTAR, right_margin);
   T_sp ostrm = coerce::outputStreamDesignator(strm);
   write_object(x, ostrm);
-  clasp_force_output(ostrm);
   return Values(x);
 };
 
@@ -212,7 +222,6 @@ CL_DEFUN void cl__pprint(T_sp obj, T_sp stream) {
   stream = coerce::outputStreamDesignator(stream);
   clasp_write_char('\n', stream);
   write_object(obj, stream);
-  clasp_force_output(stream);
 }
 
 CL_LAMBDA(obj &optional output-stream-desig);
@@ -245,7 +254,6 @@ CL_DEFUN T_sp cl__print(T_sp obj, T_sp output_stream_desig) {
   clasp_write_string("\n", sout);
   cl__prin1(obj, sout);
   clasp_write_string(" ", sout);
-  clasp_force_output(sout);
   return obj;
 }
 

@@ -400,6 +400,7 @@
 (test signum-1a (= -1 (signum (1- most-negative-fixnum))))
 (test signum-2 (= 1 (signum most-positive-fixnum)))
 (test signum-2a (= 1 (signum (1+ most-positive-fixnum))))
+(test signum-3 (equal (SIGNUM (COMPLEX 3/5 4/5)) #c(0.6 0.8)))
 
 (test sqrt-big-ratio-1 
       (let ((result 
@@ -468,3 +469,134 @@
 (test-expect-error number-comparison-number-14a (let ()(>= "jd")) :type type-error)
 
 (test complex-reciprocal (/ #c(1 1)))
+(test-expect-error number-unary-operations-1-inline (let ()(+ "jd")) :type type-error)
+(test-expect-error number-unary-operations-1-notinline (locally
+                                                           (declare (notinline +))
+                                                         (+ "jd")) :type type-error)
+
+;;; 12.2.62 logand, logandc1, logandc2, logeqv, logior, lognand, lognor, lognot, logorc1, logorc2, logxor
+(test log-functions-1 (= (logior 1 2 4 8) 15))
+(test log-functions-2 (= (logxor 1 3 7 15) 10))
+(test log-functions-3 (= (logeqv) -1))
+(test log-functions-4 (= (logand 16 31) 16))
+(test log-functions-5 (= (lognot 0) -1))
+(test log-functions-5a (= (lognot 1) -2))
+(test log-functions-5b (= (lognot (1+ (lognot 1000))) 999))
+
+;;; borrowed from ansi-tests
+(test logand.1 (= (logand) -1))
+(test logand.2 (= (logand 1231) 1231))
+(test logand.3 (= (logand -198) -198))
+(test logand.order.2.simple (= (logand #b11011 #b10110 #b110101)  #b10000))
+(test logand.3a (= (logand (1+ most-positive-fixnum)) (1+ most-positive-fixnum)))
+(test logand.3b (= (logand (1+ most-negative-fixnum)) (1+ most-negative-fixnum)))
+(test logand.3c (= (logand (1+ most-positive-fixnum)(1+ (1+ most-positive-fixnum))) (1+ most-positive-fixnum)))
+(test logand.3d (= (logand (1- most-negative-fixnum)(1- (1- most-negative-fixnum))) (- most-negative-fixnum 2)))
+(test logand.5.simple
+      (let ((x 33300140732146818380750772381422989832214186835186851059977249))
+        (zerop (logand x (lognot x)))))
+
+(test logandc1.1 (= 0 (logandc1 0 0)))
+(test logandc1.2 (= -1 (logandc1 0 -1)))
+(test logandc1.3 (= 123 (logandc1 0 123)))
+(test logandc1.4.simple
+      (let ((x 33300140732146818380750772381422989832214186835186851059977249))
+        (and (eql x (logandc1 0 x))
+                    (eql 0 (logandc1 x x))
+                    (eql x (logandc1 (lognot x) x))
+                    (eql (lognot x) (logandc1 x (lognot x))))))
+
+(test logandc2.1 (= 0 (logandc2 0 0)))
+(test logandc2.2 (= -1 (logandc2 -1 0)))
+(test logandc2.3 (= (1+ most-positive-fixnum) (logandc2 (1+ most-positive-fixnum) 0)))
+(test logandc2.4.simple
+      (let ((x 33300140732146818380750772381422989832214186835186851059977249))
+        (and (eql x (logandc2 x 0))
+                    (eql 0 (logandc2 x x))
+                    (eql x (logandc2 x (lognot x)))
+                    (eql (lognot x) (logandc2 (lognot x) x)))))
+
+(test logeqv.1 (= -1 (logeqv)))
+(test logeqv.2 (= 1231 (logeqv 1231)))
+(test logeqv.3 (= -198 (logeqv -198)))
+(test logeqv.3a (= #b111000 (logeqv  #b11011  #b10110 #b110101)))
+(test LOGEQV.5.simple (zerop (logeqv 2305843009213693953 (LOGNOT 2305843009213693953))))
+(test LOGEQV.5.simple.inline (let ()(zerop (logeqv 2305843009213693953 (LOGNOT 2305843009213693953)))))
+
+(test logior.1 (= 0 (logior)))
+(test logior.2 (= 1231 (logior 1231)))
+(test logior.3 (= -198 (logior -198)))
+(test logior.3a (= #b110111 (logior #b10011 #b10110  #b110101)))
+(test logior.5.simple
+      (let ((x 33300140732146818380750772381422989832214186835186851059977249))
+        (eql -1 (logior x (lognot x)))))
+
+(test lognand.1 (= -1 (lognand 0 0))) 
+(test lognand.2 (= -1 (lognand 0 -1)))
+(test lognand.3 (= -124 (lognand -1 123)))
+(test lognand.3a (= 3 (lognand -2 -3)))
+(test lognand.4.simple
+      (let ((x 33300140732146818380750772381422989832214186835186851059977249))
+        (and (eql -1 (lognand 0 x))
+                    (eql (lognot x) (lognand x x))
+                    (eql -1 (lognand (lognot x) x))
+                    (eql -1 (lognand x (lognot x))))))
+
+(test lognor.1 (= -1 (lognor 0 0)))
+(test lognor.2 (= 0 (lognor 0 -1)))
+(test lognor.3 (= 0 (lognor -1 123)))
+(test lognor.3a (= 0 (lognor -2 -3)))
+(test lognor.4.simple
+      (let ((x 33300140732146818380750772381422989832214186835186851059977249))
+        (and (eql (lognot x) (lognor 0 x))
+                    (eql (lognot x) (lognor x x))
+                    (eql 0 (lognor (lognot x) x))
+                    (eql 0 (lognor x (lognot x))))))
+
+(test logorc1.1 (= -1 (logorc1 0 0)))
+(test logorc1.2 (= -1 (logorc1 0 -1)))
+(test logorc1.3 (= 0 (logorc1 -1 0)))
+(test logorc1.4 (= -124 (logorc1 123 0)))
+(test logorc1.4a (= 19 (logorc1 -3 19)))
+(test logorc1.4.simple
+      (let ((x 33300140732146818380750772381422989832214186835186851059977249))
+        (and (eql -1 (logorc1 0 x))
+                    (eql x (logorc1 -1 x))
+                    (eql -1 (logorc1 x x))
+                    (eql x (logorc1 (lognot x) x))
+                    (eql (lognot x) (logorc1 x (lognot x))))))
+
+(test logorc2.1 (= -1 (logorc2 0 0)))
+(test logorc2.2 (= -1 (logorc2 -1 0)))
+(test logorc2.3 (= 0 (logorc2 0 -1)))
+(test logorc2.4 (= -124 (logorc2 0 123)))
+(test logorc2.4a (= 27 (logorc2 27 -1)))
+(test logorc2.4.simple
+      (let ((x 33300140732146818380750772381422989832214186835186851059977249))
+        (and (eql -1 (logorc2 x 0))
+                    (eql x (logorc2 x -1))
+                    (eql -1 (logorc2 x x))
+                    (eql x (logorc2 x (lognot x)))
+                    (eql (lognot x) (logorc2 (lognot x) x)))))
+
+(test logxor.1 (= 0 (logxor)))
+(test logxor.2 (= 1231 (logxor 1231)))
+(test logxor.3 (= -198 (logxor -198)))
+(test logxor.3a (= #b111000 (logxor #b11011 #b10110 #b110101)))
+(test logxor.4.simple
+      (let ((x 33300140732146818380750772381422989832214186835186851059977249))
+        (eql x (logxor x))))
+(test logxor.5.simple
+      (let ((x 33300140732146818380750772381422989832214186835186851059977249))
+        (and (eql -1 (logxor x (lognot x)))
+                    (eql 0 (logxor x x))
+                    (eql x (logxor x x x)))))
+
+(test log-bignum
+      (labels ((factorial (n)(if (<= n 1) 1 (* n (factorial (1- n))))))
+        (typep (log (factorial 200)) 'float)))
+
+(test load-log-bignum
+      (labels ((factorial (n)(if (<= n 1) 1 (* n (factorial (1- n))))))
+        (loop for x from 1 to 500 collect
+             (log (factorial x)))))

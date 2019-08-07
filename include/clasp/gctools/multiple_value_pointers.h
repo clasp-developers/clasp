@@ -56,7 +56,8 @@ public:
   // Save this T_mv's primary value to the multiple value vector,
   // probably so we can restore it later.
   // With our multiple value protocol, the primary value is not
-  // written into the vector by default.
+  // written into the vector by default; this function does so
+  // explicitly.
   void saveToMultipleValue0() const {
     core::MultipleValues &mv = core::lisp_multipleValues();
     mv.setSize(0);
@@ -151,13 +152,12 @@ namespace core {
    for (size_t i = 1; i < nvals; ++i) {
      mv._Values[i] = temp[i];
    }
-   return gctools::return_type(temp[0], nvals);
+   return gctools::return_type(nvals == 0 ? _Nil<core::T_O>().raw_() : temp[0], nvals);
  }
 
  // Similar to returnTypeSaveToTemp, but saves only from lisp_multipleValues.
- inline void multipleValuesSaveToTemp(T_O** temp) {
+ inline void multipleValuesSaveToTemp(size_t nvals, T_O** temp) {
    core::MultipleValues& mv = core::lisp_multipleValues();
-   size_t nvals = mv.getSize();
    for (size_t i = 0; i < nvals; ++i) {
      temp[i] = mv._Values[i];
    }

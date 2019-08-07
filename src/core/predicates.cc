@@ -50,6 +50,10 @@ THE SOFTWARE.
 
 namespace core {
 
+CL_DEFUN bool core__generalp(T_sp obj) {
+  return gc::IsA<General_sp>(obj);
+}
+
 CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("baseCharP");
@@ -244,8 +248,7 @@ CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("hashTableP");
 CL_DEFUN bool cl__hash_table_p(T_sp obj) {
-  if (HashTable_sp ht = obj.asOrNull<HashTable_O>()) {
-    (void)ht;
+  if (gc::IsA<HashTable_sp>(obj)) {
     return true;
   }
   return false;

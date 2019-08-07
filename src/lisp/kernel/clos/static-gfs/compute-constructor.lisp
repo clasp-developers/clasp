@@ -1,9 +1,13 @@
 (in-package #:static-gfs)
 
+
+(defvar *compute-constructor-calls* (ext:make-atomic-fixnum 0))
+
 ;;; This function is called when an actual make-instance call is happening.
 ;;; So it should return something immediately valid or error.
 (defun compute-constructor (class-name keys)
   ;; NOTE: For recursion reasons, this function MUST NOT return invalidated-constructor.
+  (core:atomic-fixnum-incf-unsafe *compute-constructor-calls*)
   (let ((class (find-class class-name nil)))
     (if class
         ;; FIXME: Better types?

@@ -556,29 +556,53 @@
   `#',(%formatter control-string))
 
 (defun %formatter (control-string)
-  (block nil
-    (catch 'need-orig-args
-      (let* ((*simple-args* nil)
-	     (*only-simple-args* t)
-	     (guts (expand-control-string control-string))
-	     (args nil))
-	(dolist (arg *simple-args*)
-	  (push `(,(car arg)
-		  (error
-		   'format-error
-		   :complaint "Required argument missing"
-		   :control-string ,control-string
-		   :offset ,(cdr arg)))
-		args))
-	(return `(lambda (stream &optional ,@args &rest args)
-		   ,guts
-		   args))))
-    (let ((*orig-args-available* t)
-	  (*only-simple-args* nil))
+  (multiple-value-bind (guts variables)
+      (%formatter-guts control-string)
+    (%formatter-lambda control-string guts variables)))
+
+(defun %formatter-lambda (control-string guts variables)
+  (if (eq variables 't)
+      ;; need the original args
       `(lambda (stream &rest orig-args)
-	 (let ((args orig-args))
-	   ,(expand-control-string control-string)
-	   args)))))
+         (let ((args orig-args))
+           ,guts
+           args))
+      ;; happy day, we can use simple args
+      `(lambda (stream
+                &optional ,@(simple-formatter-params
+                             control-string variables)
+                &rest args)
+         ,guts
+         args)))
+
+;;; Return (values form variables), where variables is either
+;;; a list of (symbol . offset) entries, or T if orig-args are required.
+(defun %formatter-guts (control-string)
+  ;; First try without the original args.
+  (catch 'need-orig-args
+    (let* ((*simple-args* nil) (*only-simple-args* t)
+           (guts (expand-control-string control-string)))
+      (return-from %formatter-guts
+        (values guts (nreverse *simple-args*)))))
+  ;; Failing that,
+  (let ((*orig-args-available* t)
+        (*only-simple-args* nil))
+    (values (expand-control-string control-string) t)))
+
+(defun simple-formatter-params (control-string args)
+  (mapcar (lambda (arg) (simple-formatter-param control-string arg))
+          args))
+
+;;; Return an optional parameter corresponding to a simple arg.
+(defun simple-formatter-param (control-string arg)
+  `(,(car arg)
+    ,(simple-formatter-param-err-form control-string (cdr arg))))
+
+(defun simple-formatter-param-err-form (control-string offset)
+  `(error 'format-error
+          :complaint "Required argument missing"
+          :control-string ,control-string
+          :offset ,offset))
 
 (defun expand-control-string (string)
   (let* ((string (etypecase string
@@ -2810,118 +2834,172 @@
                 (t name))
               package))))
 
-;;; Contributed by stassats May 24, 2016
-(define-compiler-macro format (&whole whole destination control-string &rest args)
-  (if (stringp control-string)
-      (let ((fun-sym (gensym "FUN"))
-            (out-sym (gensym "OUT"))
-            (dest-sym (gensym "DEST")))
-        `(let ((,fun-sym ,(%formatter control-string))
-               (,dest-sym ,destination))
-           (cond
-             ((eq ,dest-sym t)
-              (funcall ,fun-sym *standard-output* ,@args)
-              nil)
-             ((null ,dest-sym)
-              (with-output-to-string (,out-sym)
-                (funcall ,fun-sym ,out-sym ,@args)))
-             ((stringp ,dest-sym)
-              (with-output-to-string (,out-sym ,dest-sym)
-                (funcall ,fun-sym ,out-sym ,@args))
-              nil)
-             (t
-              (funcall ,fun-sym ,dest-sym ,@args)
-              nil))))
-      whole))
+;;; Originally contributed by stassats May 24, 2016
+(define-compiler-macro format (&whole whole destination control-string &rest args
+                                      &environment env)
+  ;; Be especially nice about the common programmer error of
+  ;; (format "control-string" ...)
+  (when (and (constantp destination env)
+             (stringp (ext:constant-form-value destination env)))
+    (warn "Literal string as destination in FORMAT:~%  ~s" whole)
+    (return-from format whole))
+  (let ((control-string (and (constantp control-string env)
+                             (ext:constant-form-value control-string env))))
+    (if (stringp control-string)
+        (let ((fun-sym (gensym "FUN"))
+              (out-sym (gensym "OUT"))
+              (dest-sym (gensym "DEST")))
+          (multiple-value-bind (guts variables)
+              ;; We call %formatter-guts here because it has the side effect
+              ;; of signaling an error if the control string is invalid.
+              ;; We want to do that before check-min/max-format-arguments.
+              (%formatter-guts control-string)
+            (check-min/max-format-arguments control-string (length args))
+            (let* ((body
+                     (if (eq variables 't)
+                         `(,(%formatter-lambda control-string guts variables)
+                           stream ,@args)
+                         (gen-inline-format control-string guts variables args)))
+                   (dest-constantp (constantp destination env))
+                   (dest (and dest-constantp
+                              (ext:constant-form-value destination env))))
+              ;; If the destination is constant T or NIL, avoid bothering with it
+              ;; at runtime.
+              ;; NOTE: With constant propagation this would be unnecessary.
+              (cond ((and dest-constantp (eq dest nil))
+                     `(with-output-to-string (stream) ,body))
+                    ((eq dest 't) ; must be constant
+                     `(let ((stream *standard-output*)) ,body))
+                    (t
+                     ;; no dice - runtime dispatch
+                     ;; NOTE: If the body exits abnormally, which it can because of
+                     ;; ~// or just argument evaluations, the string stream is not
+                     ;; closed. However unlike normal with-output-to-string, nothing
+                     ;; can refer to it, so hopefully it'll just be GC'd normally.
+                     `(let* ((,dest-sym ,destination)
+                             (stream (cond ((null ,dest-sym)
+                                            (make-string-output-stream))
+                                           ((eq ,dest-sym t) *standard-output*)
+                                           ((stringp ,dest-sym)
+                                            (core:make-string-output-stream-from-string
+                                             ,dest-sym))
+                                           (t ,dest-sym))))
+                        ,body
+                        (if (null ,dest-sym)
+                            (get-output-stream-string stream)
+                            nil)))))))
+        whole)))
+
+;;; Given a formatter form that doesn't do anything fancy with arguments,
+;;; expand into some code to execute it with the given args.
+;;; NOTE: If we could inline functions with &optional &rest, this would be
+;;; redundant. At the moment we can't.
+(defun gen-inline-format (control-string guts variables args)
+  (if (> (length variables) (length args))
+      ;; not enough args is special cased.
+      ;; note check-min/max-format-arguments already issued a warning.
+      (let* ((nargs (length args))
+             (first-unsupplied-offset (cdr (nth nargs variables)))
+             (varsyms (mapcar #'car variables))
+             (bound-vars (subseq varsyms 0 nargs)))
+        `(let (,@(mapcar #'list bound-vars args))
+           (declare (ignore ,@bound-vars))
+           ,(simple-formatter-param-err-form control-string
+                                             first-unsupplied-offset)))
+      ;; Normal case
+      (let* ((varsyms (mapcar #'car variables)))
+        `(let (,@(mapcar #'list varsyms args)
+               ;; Remaining arguments are collected in a list.
+               ;; They can be used by e.g. ~@{
+               (args (list ,@(nthcdr (length variables) args))))
+           ,guts))))
 
 ;;;; Compile-time checking of format arguments and control string
 
-#-(or ecl clasp)
-(progn
 ;;;
-;;; Return the min/max numbers of arguments required for a call to
-;;; FORMAT with control string FORMAT-STRING, null if we can't tell,
-;;; or a string with an error message if parsing the control string
-;;; causes a FORMAT-ERROR.
+;;; Signal a warning if the given control string will not work with
+;;; the given number of arguments. Assumes the control string's validity.
 ;;;
-;;; This is called from FORMAT deftransforms.
-;;;
-  (defun min/max-format-arguments-count (string)
-    (handler-case
-        (catch 'give-up
-          ;; For the side effect of validating the control string.
-          (%formatter string)
-          (%min/max-format-args (tokenize-control-string string)))
-      (format-error (e)
-        (format nil "~a" e))))
+(defun check-min/max-format-arguments (control-string nargs)
+  (multiple-value-bind (min max)
+      (catch 'give-up
+        (%min/max-format-args (tokenize-control-string control-string)))
+    (cond ((and min (< nargs min))
+           (warn 'format-warning-too-few-arguments
+                 :control control-string
+                 :expected min
+                 :observed nargs))
+          ((and max (> nargs max))
+           (warn 'format-warning-too-many-arguments
+                 :control control-string
+                 :expected min :observed nargs)))))
 
-  (defun %min/max-format-args (directives)
-    (let ((min-req 0) (max-req 0))
-      (flet ((incf-both (&optional (n 1))
-               (incf min-req n)
-               (incf max-req n)))
-        (loop
-           (let ((dir (pop directives)))
-             (when (null dir)
-               (return (values min-req max-req)))
-             (when (format-directive-p dir)
-               (incf-both (count :arg (format-directive-params dir) :key #'cdr))
-               (let ((c (format-directive-character dir)))
-                 (cond ((find c "ABCDEFGORSWX$/")
-                        (incf-both))
-                       ((char= c #\P)
-                        (unless (format-directive-colonp dir)
-                          (incf-both)))
-                       ((or (find c "IT%&|_<>();") (char= c #\newline)))
-                       ((char= c #\[)
-                        (multiple-value-bind (min max remaining)
-                            (%min/max-conditional-args dir directives)
-                          (setq directives remaining)
-                          (incf min-req min)
-                          (incf max-req max)))
-                       ((char= c #\{)
-                        (multiple-value-bind (min max remaining)
-                            (%min/max-iteration-args dir directives)
-                          (setq directives remaining)
-                          (incf min-req min)
-                          (incf max-req max)))
-                       ((char= c #\?)
-                        (cond ((format-directive-atsignp dir)
-                               (incf min-req)
-                               (setq max-req most-positive-fixnum))
-                              (t (incf-both 2))))
-                       (t (throw 'give-up nil))))))))))
+(defun %min/max-format-args (directives)
+  (let ((min-req 0) (max-req 0))
+    (flet ((incf-both (&optional (n 1))
+             (incf min-req n)
+             (incf max-req n)))
+      (loop
+        (let ((dir (pop directives)))
+          (when (null dir)
+            (return (values min-req max-req)))
+          (when (format-directive-p dir)
+            (incf-both (count :arg (format-directive-params dir) :key #'cdr))
+            (let ((c (format-directive-character dir)))
+              (cond ((find c "ABCDEFGORSWX$/")
+                     (incf-both))
+                    ((char= c #\P)
+                     (unless (format-directive-colonp dir)
+                       (incf-both)))
+                    ((or (find c "IT%&|_<>();") (char= c #\newline)))
+                    ((char= c #\[)
+                     (multiple-value-bind (min max remaining)
+                         (%min/max-conditional-args dir directives)
+                       (setq directives remaining)
+                       (incf min-req min)
+                       (incf max-req max)))
+                    ((char= c #\{)
+                     (multiple-value-bind (min max remaining)
+                         (%min/max-iteration-args dir directives)
+                       (setq directives remaining)
+                       (incf min-req min)
+                       (incf max-req max)))
+                    ((char= c #\?)
+                     (cond ((format-directive-atsignp dir)
+                            (incf min-req)
+                            (setq max-req most-positive-fixnum))
+                           (t (incf-both 2))))
+                    (t (throw 'give-up nil))))))))))
 
 ;;;
 ;;; ANSI: if arg is out of range, no clause is selected.  That means
 ;;; the minimum number of args required for the interior of ~[~] is
 ;;; always zero.
 ;;;
-  (defun %min/max-conditional-args (conditional directives)
-    (multiple-value-bind (sublists last-semi-with-colon-p remaining)
-        (parse-conditional-directive directives)
-      (declare (ignore last-semi-with-colon-p))
-      (let ((sub-max (loop for s in sublists maximize
-                                             (nth-value 1 (%min/max-format-args s))))
-            (min-req 1)
-            max-req)
-        (cond ((format-directive-atsignp conditional)
-               (setq max-req (max 1 sub-max)))
-              ((loop for p in (format-directive-params conditional)
-                       thereis (or (integerp (cdr p))
-                                   (memq (cdr p) '(:remaining :arg))))
-               (setq min-req 0)
-               (setq max-req sub-max))
-              (t
-               (setq max-req (1+ sub-max))))
-        (values min-req max-req remaining))))
-  
-  (defun %min/max-iteration-args (iteration directives)
-    (let* ((close (find-directive directives #\} nil))
-           (posn (position close directives))
-           (remaining (nthcdr (1+ posn) directives)))
-      (if (format-directive-atsignp iteration)
-          (values (if (zerop posn) 1 0) most-positive-fixnum remaining)
-          (let ((nreq (if (zerop posn) 2 1)))
-            (values nreq nreq remaining)))))
-  )
+(defun %min/max-conditional-args (conditional directives)
+  (multiple-value-bind (sublists last-semi-with-colon-p remaining)
+      (parse-conditional-directive directives)
+    (declare (ignore last-semi-with-colon-p))
+    (let ((sub-max (loop for s in sublists maximize
+                                           (nth-value 1 (%min/max-format-args s))))
+          (min-req 1)
+          max-req)
+      (cond ((format-directive-atsignp conditional)
+             (setq max-req (max 1 sub-max)))
+            ((loop for p in (format-directive-params conditional)
+                     thereis (or (integerp (cdr p))
+                                 (member (cdr p) '(:remaining :arg) :test #'eq)))
+             (setq min-req 0)
+             (setq max-req sub-max))
+            (t
+             (setq max-req (1+ sub-max))))
+      (values min-req max-req remaining))))
+
+(defun %min/max-iteration-args (iteration directives)
+  (let* ((close (find-directive directives #\} nil))
+         (posn (position close directives))
+         (remaining (nthcdr (1+ posn) directives)))
+    (if (format-directive-atsignp iteration)
+        (values (if (zerop posn) 1 0) most-positive-fixnum remaining)
+        (let ((nreq (if (zerop posn) 2 1)))
+          (values nreq nreq remaining)))))

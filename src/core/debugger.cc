@@ -50,6 +50,7 @@ THE SOFTWARE.
 #include <clasp/core/evaluator.h>
 #include <clasp/core/pathname.h>
 #include <clasp/core/debugger.h>
+#include <clasp/core/funcallableInstance.h>
 #include <clasp/core/hashTableEqual.h>
 #include <clasp/core/primitives.h>
 #include <clasp/core/array.h>
@@ -1502,10 +1503,10 @@ void low_level_backtrace(bool with_args) {
             name = "-BAD-NAME-";
           }
         }
-        /*Nilable?*/ T_sp sfi = core__source_file_info(func->sourcePathname());
+        /*Nilable?*/ T_sp sfi = core__file_scope(func->sourcePathname());
         string sourceName = "cannot-determine";
         if (sfi.notnilp()) {
-          sourceName = gc::As<SourceFileInfo_sp>(sfi)->fileName();
+          sourceName = gc::As<FileScope_sp>(sfi)->fileName();
         }
         printf("#%4d frame@%p closure@%p %s/%3d\n    %40s ", index, cur, closure.raw_(), sourceName.c_str(), func->lineNumber(), name.c_str() );
         if (with_args) {
@@ -1856,6 +1857,13 @@ CL_DEFUN T_mv core__call_with_backtrace(Function_sp closure, bool args_as_pointe
         entry = core::Cons_O::create(_sym_make_backtrace_frame,args.cons());
       }
       result << entry;
+    } else {
+#if 0
+      printf("%s:%d Skipping frame %lu name %s\n", __FILE__, __LINE__, i, backtrace[i]._SymbolName.c_str());
+      printf("%s:%d bp<backtrace[i]._BasePointer -> %d\n", __FILE__, __LINE__, bp<backtrace[i]._BasePointer);
+      printf("%s:%d backtrace[i]._BasePointer!=0 -> %d\n", __FILE__, __LINE__, backtrace[i]._BasePointer!=0);
+      printf("%s:%d backtrace[i]._BasePointer<stack_top_hint -> %d\n", __FILE__, __LINE__, backtrace[i]._BasePointer<stack_top_hint);
+#endif
     }
   }
   return eval::funcall(closure,result.cons());
@@ -2049,7 +2057,7 @@ void dbg_VaList_sp_describe(T_sp obj) {
   Vaslist vlcopy_s(*vl);
   VaList_sp vlcopy(&vlcopy_s);
   printf("Calling dump_Vaslist_ptr\n");
-  bool atHead = dump_Vaslist_ptr(&vlcopy_s);
+  bool atHead = dump_Vaslist_ptr(stdout,&vlcopy_s);
   if (atHead) {
     for (size_t i(0), iEnd(vlcopy->remaining_nargs()); i < iEnd; ++i) {
       T_sp v = vlcopy->next_arg();
@@ -2186,9 +2194,14 @@ __attribute__((optnone)) std::string dbg_safe_repr(uintptr_t raw) {
       core::SimpleVector_sp svobj = gc::As_unsafe<core::SimpleVector_sp>(obj);
       ss << "#(";
       for ( size_t i=0, iEnd(svobj->length()); i<iEnd; ++i ) {
-        ss << dbg_safe_repr((*svobj)[i]) << " ";
+        ss << dbg_safe_repr((uintptr_t) ((*svobj)[i]).raw_()) << " ";
       }
-      ss << ")";
+      ss << ")@" << (void*)raw;
+    } else if (gc::IsA<core::FuncallableInstance_sp>(obj)) {
+      core::FuncallableInstance_sp fi = gc::As_unsafe<core::FuncallableInstance_sp>(obj);
+      ss << "#<FUNCALLABLE-INSTANCE ";
+      ss << _safe_rep_(fi->GFUN_NAME());
+      ss << ">@" << (void*)raw;;
     } else {
       core::General_sp gen = gc::As_unsafe<core::General_sp>(obj);
       ss << "#<" << gen->className() << " " << (void*)gen.raw_() << ">";
@@ -2196,7 +2209,7 @@ __attribute__((optnone)) std::string dbg_safe_repr(uintptr_t raw) {
   } else if (obj.consp()) {
     ss << "(";
     while (obj.consp()) {
-      ss << dbg_safe_repr((uintptr_t)CONS_CAR(obj).raw_()) << "@" << (void*)CONS_CAR(obj).raw_() << " ";
+      ss << dbg_safe_repr((uintptr_t)CONS_CAR(obj).raw_()) << " ";
       obj = CONS_CDR(obj);
     }
     if (obj.notnilp()) {
@@ -2219,8 +2232,8 @@ __attribute__((optnone)) std::string dbg_safe_repr(uintptr_t raw) {
   } else {
     ss << " #<RAW@" << (void*)obj.raw_() << ">";
   }
-  if (ss.str().size() > 512) {
-    return ss.str().substr(0,512);
+  if (ss.str().size() > 2048) {
+    return ss.str().substr(0,2048);
   }
   return ss.str();
 }
@@ -2228,6 +2241,7 @@ __attribute__((optnone)) std::string dbg_safe_repr(uintptr_t raw) {
 string _safe_rep_(core::T_sp obj) {
   return dbg_safe_repr((uintptr_t)obj.raw_());
 }
+
 
 void dbg_safe_print(uintptr_t raw) {
   printf(" %s", dbg_safe_repr(raw).c_str());
@@ -2349,6 +2363,11 @@ void tsymbol(void* ptr)
 
 };
 namespace core {
+
+CL_DEFUN std::string core__safe_repr(core::T_sp obj) {
+  std::string result = dbg_safe_repr((uintptr_t)obj.raw_());
+  return result;
+}
 
   SYMBOL_EXPORT_SC_(CorePkg, printCurrentIhsFrameEnvironment);
 

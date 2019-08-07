@@ -240,6 +240,8 @@ CL_DEFMETHOD   List_sp classifiedSymbols() const { return this->_ClassifiedSymbo
 	  debugging - you can attach this symbols list (as a Vector of symbols) to runtime ActivationFrames */
   List_sp namesOfLexicalVariables() const;
 
+  List_sp specialVariables() const;
+
   /*! Return a ComplexVector_T of the symbols of all of the lexical variables for attaching to ActivationFrames */
   ComplexVector_T_sp namesOfLexicalVariablesForDebugging();
 

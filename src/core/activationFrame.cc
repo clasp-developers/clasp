@@ -104,16 +104,8 @@ namespace core {
 string ValueFrame_O::summaryOfContents() const {
   stringstream ss;
   ss << "---" << this->_instanceClass()->_classNameAsString() << " :len " << this->length() << std::endl;
-  T_sp debuggingInfo = _Nil<T_O>();
-  if (this->_DebuggingInfo.notnilp()) {
-    debuggingInfo = gc::As<Vector_sp>(this->_DebuggingInfo);
-  }
   for (int i = 0; i < this->_Objects.length(); ++i) {
-    if (debuggingInfo.notnilp() && (i < cl__length(gc::As<Vector_sp>(debuggingInfo)))) {
-      ss << _rep_(gc::As<Vector_sp>(debuggingInfo)->rowMajorAref(i)) << " ";
-    } else {
-      ss << ":arg" << i << "@" << (void *)(&(this->operator[](i))) << " ";
-    }
+    ss << ":arg" << i << "@" << (void *)(&(this->operator[](i))) << " ";
     if (!this->operator[](i)) {
       ss << "UNDEFINED";
     } else if (!this->boundp_entry(i)) {
@@ -181,18 +173,7 @@ ValueFrame_sp ValueFrame_O::createFromReversedCons(List_sp values, T_sp parent) 
      This is only used by the interpreter and so it isn't expected to be fast
     */
 bool ValueFrame_O::_updateValue(Symbol_sp sym, T_sp obj) {
-  if (this->_DebuggingInfo.nilp()) {
-    return this->Base::_updateValue(sym, obj);
-  }
-  Vector_sp debuggingInfo = gc::As<Vector_sp>(this->_DebuggingInfo);
-  for (int i(0), iEnd(this->length()); i < iEnd; ++i) {
-    if (gc::As<Symbol_sp>(debuggingInfo->rowMajorAref(i)) == sym) {
-      this->_Objects[i] = obj;
-      return true;
-    }
-  }
-  if (this->parentFrame().nilp()) return false;
-  return clasp_updateValue(this->parentFrame(), sym, obj);
+  return this->Base::_updateValue(sym, obj);
 }
 
 /*! Find the value bound to a symbol based on the symbol name.
@@ -200,25 +181,7 @@ bool ValueFrame_O::_updateValue(Symbol_sp sym, T_sp obj) {
     */
 bool ValueFrame_O::_findValue(T_sp sym, int &depth, int &index, bool& crossesFunction, ValueKind &valueKind, T_sp &value, T_sp& env) const {
   //	printf("%s:%d ValueFrame_O::_findValue - switch to DWARF debugging to look up values\n", __FILE__, __LINE__ );
-  if (this->_DebuggingInfo.nilp()) {
-    return ((this->Base::_findValue(sym, depth, index, crossesFunction, valueKind, value, env)));
-  }
-  if (!this->_DebuggingInfo) {
-    printf("%s:%d The debugging info was NULL!!!!! Why is this happening?\n",__FILE__,__LINE__);
-    return ((this->Base::_findValue(sym, depth, index, crossesFunction, valueKind, value, env)));
-  }
-  Vector_sp debuggingInfo = gc::As<Vector_sp>(this->_DebuggingInfo);
-  int i = 0;
-  for (; i < this->length(); ++i) {
-    if (gc::As<Symbol_sp>(debuggingInfo->rowMajorAref(i)) == sym) {
-      index = i;
-      value = this->_Objects[i];
-      valueKind = lexicalValue;
-      return true;
-    }
-  }
-  ++depth;
-  return Environment_O::clasp_findValue(this->parentFrame(), sym, depth, index, crossesFunction, valueKind, value, env);
+  return ((this->Base::_findValue(sym, depth, index, crossesFunction, valueKind, value, env)));
 }
 
 
@@ -238,6 +201,20 @@ string FunctionFrame_O::asString() const {
   }
   ss << "]>";
   return ((ss.str()));
+}
+
+
+CL_DEFUN void core__verify_value_frame_layout(size_t parent_offset, size_t length_offset, size_t data_offset)
+{
+  size_t cxx_parent_offset = offsetof(ValueFrame_O,_Parent);
+  size_t cxx_length_offset = offsetof(ValueFrame_O,_Objects._Length);
+  size_t cxx_data_offset = offsetof(ValueFrame_O,_Objects._Data);
+  if (parent_offset!=cxx_parent_offset)
+    SIMPLE_ERROR(BF("parent_offset %lu does not match cxx_parent_offset %lu") % parent_offset % cxx_parent_offset );
+  if (length_offset!=cxx_length_offset)
+    SIMPLE_ERROR(BF("length_offset %lu does not match cxx_length_offset %lu") % length_offset % cxx_length_offset );
+  if (data_offset!=cxx_data_offset)
+    SIMPLE_ERROR(BF("data_offset %lu does not match cxx_data_offset %lu") % data_offset % cxx_data_offset );
 }
 
 };

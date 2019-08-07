@@ -202,6 +202,7 @@ ABI's  */
   static const uintptr_t valist_tag = VASLIST_TAG; // means a valist
                                                        /*! Immediate value tags */
   static const uintptr_t immediate_mask   = IMMEDIATE_MASK;
+  static const uintptr_t unused_tag       = UNUSED_TAG;
   static const uintptr_t character_tag    = CHARACTER_TAG;
   static const uintptr_t character_shift  = CHARACTER_SHIFT;
   static const uintptr_t single_float_tag = SINGLE_FLOAT_TAG;
@@ -220,12 +221,13 @@ ABI's  */
        If the ranges aren't sufficiently large (general or alien)
        then move the numbers around.
        We need at least 62 bits to represent general CLOS objects.  */
-  static const uintptr_t stamp_first_general   = 1; //skip 0
-  static const uintptr_t stamp_last_general   = 4095;
-  static const uintptr_t stamp_first_alien    = 4096;
-  static const uintptr_t stamp_last_alien     = 65535;
-  static const uintptr_t stamp_first_instance = 65536;
-  static const uintptr_t stamp_last_instance  = ((uintptr_t)most_positive_fixnum)<<1;
+  static const uintptr_t stamp_unused = 1;
+  static const uintptr_t unshifted_stamp_first_general   = 17; //skip 16
+  static const uintptr_t unshifted_stamp_last_general   = 4095;
+  static const uintptr_t unshifted_stamp_first_alien    = 4096;
+  static const uintptr_t unshifted_stamp_last_alien     = 65535;
+  static const uintptr_t unshifted_stamp_first_instance = 65536;
+// static const uintptr_t unshifted_stamp_last_instance  = ((uintptr_t)most_positive_fixnum)<<1;
 
   static const char * tagged_fixnum_str = "FIXNUM";
   static const char * tagged_character_str = "CHARACTER";
@@ -262,7 +264,7 @@ ABI's  */
   template <class T>
     inline T tag_general(T p) {
     GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(p) & tag_mask) == 0);
-    return reinterpret_cast<T>(reinterpret_cast<uintptr_t>(p) + general_tag);
+    return reinterpret_cast<T>(&reinterpret_cast<char*>(p)[general_tag]);
   }
 
   template <class T>
@@ -330,7 +332,7 @@ template <class T>
   template <class T>
     inline T untag_general(T ptr) {
     GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr) & tag_mask) == general_tag);
-    return reinterpret_cast<T>(reinterpret_cast<uintptr_t>(ptr) - general_tag);
+    return reinterpret_cast<T>(&reinterpret_cast<char*>(ptr)[-general_tag]);
   }
   template <class T>
     inline core::Vaslist* untag_vaslist(T ptr) {

@@ -60,11 +60,13 @@ THE SOFTWARE.
 #include <llvm/IR/CallingConv.h>
 #include <llvm/IR/BasicBlock.h>
 #include <llvm/IR/Instructions.h>
+#include <llvm/IR/IntrinsicInst.h>
 #include <llvm/IR/Mangler.h>
 #include <llvm/Transforms/Instrumentation.h>
 #include <llvm/Transforms/Utils/BasicBlockUtils.h>
 #include <llvm/Transforms/IPO.h>
 #include <llvm/IR/InlineAsm.h>
+#include <llvm/CodeGen/TargetPassConfig.h>
 #include <llvm/Support/FormattedStream.h>
 #include <llvm/Support/TargetRegistry.h>
 #include <llvm/Support/MathExtras.h>
@@ -357,8 +359,24 @@ CL_DEFUN void llvm_sys__sanity_check_module(Module_sp module, int depth)
 namespace llvmo {
 
 
-  CL_LISPIFY_NAME(createTargetMachine);
-  CL_EXTERN_DEFMETHOD(Target_O, &llvm::Target::createTargetMachine);
+CL_LISPIFY_NAME(createTargetMachine);
+CL_EXTERN_DEFMETHOD(Target_O, &llvm::Target::createTargetMachine);
+
+
+CL_DEFUN TargetPassConfig_sp llvm_sys__createPassConfig(TargetMachine_sp targetMachine, PassManagerBase_sp pmb) {
+  llvm::TargetMachine* tm = targetMachine->wrappedPtr();
+  llvm::LLVMTargetMachine* ltm = dynamic_cast<llvm::LLVMTargetMachine*>(tm);
+  if (ltm==NULL) {
+    SIMPLE_ERROR(BF("Could not get LLVMTargetMachine"));
+  }
+  llvm::TargetPassConfig* tpc = ltm->createPassConfig(*pmb->wrappedPtr());
+  TargetPassConfig_sp tpcsp = gc::As_unsafe<TargetPassConfig_sp>(translate::to_object<llvm::TargetPassConfig*>::convert(tpc));
+  return tpcsp;
+}
+
+
+CL_LISPIFY_NAME(setEnableTailMerge);
+CL_EXTERN_DEFMETHOD(TargetPassConfig_O, &llvm::TargetPassConfig::setEnableTailMerge);
 
 ;
 
@@ -765,6 +783,21 @@ namespace llvmo {
   CL_LISPIFY_NAME(replaceAllUsesWith);
   CL_EXTERN_DEFMETHOD(Value_O, &llvm::Value::replaceAllUsesWith);;
 
+}; // llvmo
+
+
+namespace llvmo {
+  CL_LISPIFY_NAME(MetadataAsValue-get);
+  CL_EXTERN_DEFUN(&llvm::MetadataAsValue::get);
+  CL_LISPIFY_NAME(MetadataAsValue-getIfExists);
+  CL_EXTERN_DEFUN(&llvm::MetadataAsValue::getIfExists);
+
+}; // llvmo
+
+
+namespace llvmo {
+  CL_LISPIFY_NAME(ValueAsMetadata-get);
+  CL_EXTERN_DEFUN(&llvm::ValueAsMetadata::get);
 }; // llvmo
 
 
@@ -1317,6 +1350,14 @@ CL_DEFMETHOD DataLayout_sp DataLayout_O::copy() const {
 };
 
 
+CL_LISPIFY_NAME("data-layout-get-struct-layout");
+CL_DEFMETHOD StructLayout_sp DataLayout_O::getStructLayout(StructType_sp ty) const {
+  llvm::StructType* sty = ty->wrapped();
+  const llvm::StructLayout* layout = this->_DataLayout->getStructLayout(sty);
+  GC_ALLOCATE_VARIADIC(StructLayout_O,sl,layout);
+  return sl;
+}
+
 
 CL_LISPIFY_NAME(DataLayout-getTypeAllocSize);
 CL_DEFMETHOD size_t DataLayout_O::getTypeAllocSize(llvm::Type* ty)
@@ -1327,6 +1368,13 @@ CL_DEFMETHOD size_t DataLayout_O::getTypeAllocSize(llvm::Type* ty)
 CL_LISPIFY_NAME(getStringRepresentation);
 CL_EXTERN_DEFMETHOD(DataLayout_O,&llvm::DataLayout::getStringRepresentation);
 
+
+CL_LISPIFY_NAME(struct-layout-get-element-offset);
+CL_DEFMETHOD size_t StructLayout_O::getElementOffset(size_t idx) const
+{
+  size_t offset = this->_StructLayout->getElementOffset(idx);
+  return this->_StructLayout->getElementOffset(idx);
+}
 
 }; // llvmo
 
@@ -1617,9 +1665,38 @@ CL_DEFMETHOD void Instruction_O::setMetadata(core::String_sp kind, MDNode_sp mdn
   CL_LISPIFY_NAME(getParent);
   CL_EXTERN_DEFMETHOD(Instruction_O, (llvm::BasicBlock * (llvm::Instruction::*)()) & llvm::Instruction::getParent);
 
-  CL_LISPIFY_NAME(eraseFromParent);
-  CL_EXTERN_DEFMETHOD(Instruction_O, & llvm::Instruction::eraseFromParent);
+CL_LISPIFY_NAME(getDebugLocInfo);
+CL_DEFUN core::T_mv llvm_sys__getDebugLocInfo(Instruction_sp instr) {
+  const llvm::DebugLoc& debugLoc = instr->wrappedPtr()->getDebugLoc();
+  if (debugLoc) {
+    size_t lineno = debugLoc.getLine();
+    size_t column = debugLoc.getCol();
+    return Values(_lisp->_true(),core::make_fixnum(lineno),core::make_fixnum(column));
+  }
+  return Values(_Nil<core::T_O>());
+}
+CL_DOCSTRING("Erase the instruction from its parent basic block and return the next instruction or NIL");
+CL_DEFUN void llvm_sys__instruction_eraseFromParent(Instruction_sp instr)
+{
+  llvm::SymbolTableList<llvm::Instruction>::iterator next = instr->wrappedPtr()->eraseFromParent();
+}
 
+CL_DOCSTRING("Return the next non-debug instruction or NIL if there is none");
+CL_DEFUN core::T_sp llvm_sys__instruction_getNextNonDebugInstruction(Instruction_sp instr)
+{
+#if (LLVM_VERSION_X100<900)  
+  const llvm::Instruction* next = instr->wrappedPtr()->getNextNode();
+  for (; next; next = next->getNextNode()) {
+    if (!llvm::isa<llvm::DbgInfoIntrinsic>(next)) break;
+  }
+#else
+  const llvm::Instruction* next = instr->wrappedPtr()->getNextNonDebugInstruction();
+#endif
+  if (next!=NULL) {
+    return translate::to_object<llvm::Instruction*>::convert(const_cast<llvm::Instruction*>(next));
+  }
+  return _Nil<core::T_O>();
+}
 ;
 
 
@@ -2308,7 +2385,7 @@ CL_EXTERN_DEFMETHOD(IRBuilder_O, (llvm::Value *(IRBuilder_O::ExternalType::*)(ll
   CL_LISPIFY_NAME(CreateConstInBoundsGEP2-64);
   CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateConstInBoundsGEP2_64);
   CL_LISPIFY_NAME(CreateStructGEP);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateStructGEP);
+CL_EXTERN_DEFMETHOD(IRBuilder_O, (llvm::Value *(IRBuilder_O::ExternalType::*)(llvm::Type* Type, llvm::Value *Ptr, unsigned Idx0, const llvm::Twine &Name )) &IRBuilder_O::ExternalType::CreateStructGEP);
   CL_LISPIFY_NAME(CreateGlobalStringPtr);
   CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateGlobalStringPtr);
   CL_LISPIFY_NAME(CreateTrunc);
@@ -2629,13 +2706,14 @@ CL_DEFMETHOD BasicBlock_sp Function_O::getEntryBlock() const {
 CL_LISPIFY_NAME("basic-blocks");
 CL_DEFMETHOD core::List_sp Function_O::basic_blocks() const {
   llvm::Function::BasicBlockListType& Blocks = this->wrappedPtr()->getBasicBlockList();
-  core::List_sp result = _Nil<core::T_O>();
+  ql::list result;
   for (llvm::Function::iterator b = this->wrappedPtr()->begin(), be = this->wrappedPtr()->end(); b != be; ++b) {
     llvm::BasicBlock& BB = *b;
     // Delete the basic block from the old function, and the list of blocks
-    result = core::Cons_O::create(translate::to_object<llvm::BasicBlock*>::convert(&BB),_Nil<T_O>());
+    core::T_sp tbb = translate::to_object<llvm::BasicBlock*>::convert(&BB);
+    result << tbb;
   }
-  return result;
+  return result.cons();
 }
 
   CL_LISPIFY_NAME(getFunctionType);
@@ -2715,6 +2793,12 @@ CL_DEFMETHOD core::List_sp BasicBlock_O::instructions() const {
   return result.cons();
 }
 
+CL_LISPIFY_NAME("number-of-instructions");
+CL_DEFMETHOD size_t BasicBlock_O::number_of_instructions() const {
+  llvm::BasicBlock* bb = const_cast<BasicBlock_O*>(this)->wrappedPtr();
+  return std::distance(bb->begin(),bb->end());
+}
+
 CL_LISPIFY_NAME("BasicBlockBack");
 CL_DEFMETHOD Instruction_sp BasicBlock_O::back() {
   llvm::BasicBlock* bbp = this->wrappedPtr();
@@ -2776,7 +2860,11 @@ CL_EXTERN_DEFMETHOD(Type_O, &llvm::Type::getSequentialElementType);;
   CL_EXTERN_DEFUN((llvm::Type * (*) (llvm::LLVMContext &C)) &llvm::Type::getFloatTy);
   CL_LISPIFY_NAME("type-get-double-ty");
   CL_EXTERN_DEFUN((llvm::Type * (*) (llvm::LLVMContext &C)) &llvm::Type::getDoubleTy);
-  CL_LISPIFY_NAME("type-get-int-nty");
+
+  CL_LISPIFY_NAME("type-get-metadata-ty");
+  CL_EXTERN_DEFUN((llvm::Type * (*) (llvm::LLVMContext &C)) &llvm::Type::getMetadataTy);
+
+CL_LISPIFY_NAME("type-get-int-nty");
 CL_EXTERN_DEFUN((llvm::IntegerType * (*) (llvm::LLVMContext &C, unsigned N)) &llvm::Type::getIntNTy);
   CL_LISPIFY_NAME("type-get-int1-ty");
   CL_EXTERN_DEFUN((llvm::IntegerType * (*) (llvm::LLVMContext &C))&llvm::Type::getInt1Ty);
@@ -3389,11 +3477,31 @@ void __attribute__((noinline)) __jit_debug_register_code () { }
 /* Make sure to specify the version statically, because the
    debugger may check the version before we can set it.  */
 struct jit_descriptor __jit_debug_descriptor = { 1, 0, 0, 0 };
+mp::Mutex* global_jit_descriptor = NULL;
 
-
-
+void register_object_file_with_gdb(void* object_file, size_t size)
+{
+    if (global_jit_descriptor==NULL) {
+        global_jit_descriptor = new mp::Mutex(JITGDBIF_NAMEWORD);
+    }
+    global_jit_descriptor->lock();
+    jit_code_entry* entry = (jit_code_entry*)malloc(sizeof(jit_code_entry));
+    entry->symfile_addr = (const char*)object_file;
+    entry->symfile_size = size;
+    entry->prev_entry = __jit_debug_descriptor.relevant_entry;
+    __jit_debug_descriptor.relevant_entry = entry;
+    if (entry->prev_entry != NULL) {
+        entry->prev_entry->next_entry = entry;
+    } else {
+        __jit_debug_descriptor.first_entry = entry;
+    }
+    __jit_debug_descriptor.action_flag = JIT_REGISTER_FN;
+    __jit_debug_register_code();
+    printf("%s:%d Registered object file at %p size: %lu\n", __FILE__, __LINE__, object_file, size );
+    global_jit_descriptor->unlock();
 };
 
+};
 SYMBOL_EXPORT_SC_(LlvmoPkg,make_StkSizeRecord);
 SYMBOL_EXPORT_SC_(LlvmoPkg,make_StkMapRecord_Location);
 SYMBOL_EXPORT_SC_(LlvmoPkg,make_StkMapRecord_LiveOut);
@@ -3420,20 +3528,8 @@ CL_DEFUN core::T_sp llvm_sys__vmmap()
 
 
 SYMBOL_EXPORT_SC_(LlvmoPkg,library);
-#if 0
-CL_DEFUN llvm_sys__load_object_file(core::Pathname_sp name)
-{
-  core::T_sp filename = cl__namestring(name);
-  if (core::cl__stringp(filename)) {
-    core::String_sp str = gc::As_unsafe<core::String_sp>(filename);
-    int fd = open(str->get(),O_RDONLY);
-    if (fd<0) SIMPLE_ERROR(BF("Could not read file %s") % str->get());
-    GC_ALLOCATE(fli::ForeignData_O,data);
-    data.allocate(llvmo::_sym_library,data = 
-
-#endif
 };
-  
+    
 namespace llvmo {
 
 class ClaspSectionMemoryManager : public SectionMemoryManager {
@@ -3477,6 +3573,31 @@ class ClaspSectionMemoryManager : public SectionMemoryManager {
 
   void 	notifyObjectLoaded (RuntimeDyld &RTDyld, const object::ObjectFile &Obj) {
 //    printf("%s:%d:%s entered\n", __FILE__, __LINE__, __FUNCTION__ );
+#if 0
+      // DONT DELETE DONT DELETE DONT DELETE
+      // This is trying to use the gdb jit interface described here.
+      // https://v8.dev/docs/gdb-jit
+      // https://llvm.org/docs/DebuggingJITedCode.html
+      // https://doc.ecoscentric.com/gnutools/doc/gdb/JIT-Interface.html
+      // Example: https://sourceware.org/git/gitweb.cgi?p=binutils-gdb.git;a=blob;f=gdb/testsuite/gdb.base/jit-main.c
+      // Simple example: https://stackoverflow.com/questions/20046943/gdb-jit-interface-simpliest-example
+      //
+      // What I don't like about this is that the ObjectFile is going to be destroyed by the caller
+      // and so I make a copy of the ObjectFile here.
+      //
+      {
+          llvm::MemoryBufferRef mem = Obj.getMemoryBufferRef();
+#if 1
+          // Copy the ObjectFile - I can't be sure that it will persist once this callback returns
+          void* obj_file_copy = (void*)malloc(mem.getBufferSize());
+          memcpy( (void*)obj_file_copy,mem.getBufferStart(),mem.getBufferSize());
+          register_object_file_with_gdb(obj_file_copy,mem.getBufferSize());
+#else
+          // Try using the ObjectFile directly - see the comment above about it persisting
+          register_object_file_with_gdb((void*)mem.getBufferStart(),mem.getBufferSize());
+#endif
+      }
+#endif
 #if 0
     uintptr_t stackmap = 0;
     size_t stackmap_size = 0;
@@ -3855,20 +3976,20 @@ std::shared_ptr<llvm::Module> optimizeModule(std::shared_ptr<llvm::Module> M) {
 
     removeAlwaysInlineFunctions(&*M);
 
-    if ((!comp::_sym_STARsave_module_for_disassembleSTAR.unboundp()) &&
-        comp::_sym_STARsave_module_for_disassembleSTAR->symbolValue().notnilp()) {
+  }
+  if ((!comp::_sym_STARsave_module_for_disassembleSTAR.unboundp()) &&
+      comp::_sym_STARsave_module_for_disassembleSTAR->symbolValue().notnilp()) {
     //printf("%s:%d     About to save the module *save-module-for-disassemble*->%s\n",__FILE__, __LINE__, _rep_(comp::_sym_STARsave_module_for_disassembleSTAR->symbolValue()).c_str());
-      llvm::Module* o = &*M;
-      std::unique_ptr<llvm::Module> cm = llvm::CloneModule(o);
-      Module_sp module = core::RP_Create_wrapped<Module_O,llvm::Module*>(cm.release());
-      comp::_sym_STARsaved_module_from_clasp_jitSTAR->setf_symbolValue(module);
-    }
+    llvm::Module* o = &*M;
+    std::unique_ptr<llvm::Module> cm = llvm::CloneModule(o);
+    Module_sp module = core::RP_Create_wrapped<Module_O,llvm::Module*>(cm.release());
+    comp::_sym_STARsaved_module_from_clasp_jitSTAR->setf_symbolValue(module);
+  }
   // Check if we should dump the module for debugging
-    {
-      Module_sp module = core::RP_Create_wrapped<Module_O,llvm::Module*>(&*M);
-      core::SimpleBaseString_sp label = core::SimpleBaseString_O::make("after-optimize");
-      core::eval::funcall(comp::_sym_compile_quick_module_dump,module,label);
-    }
+  {
+    Module_sp module = core::RP_Create_wrapped<Module_O,llvm::Module*>(&*M);
+    core::SimpleBaseString_sp label = core::SimpleBaseString_O::make("after-optimize");
+    core::eval::funcall(comp::_sym_compile_quick_module_dump,module,label);
   }
   //printf("%s:%d  Done optimizeModule\n", __FILE__, __LINE__ );
   return M;
@@ -3893,6 +4014,11 @@ SYMBOL_EXPORT_SC_(CorePkg,repl);
 
 CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, ModuleHandle_sp handle, const string& replName, const string& startupName, const string& shutdownName, core::T_sp initialData) {
   // Stuff to support MCJIT
+#ifdef DEBUG_MONITOR  
+  if (core::_sym_STARdebugStartupSTAR->symbolValue().notnilp()) {
+    MONITOR(BF("startup llvm_sys__jitFinalizeReplFunction replName-> %s\n") % replName);
+  }
+#endif
   core::Pointer_sp replPtr;
   if (replName!="") {
     replPtr = jit->findSymbolIn(handle,replName,false);

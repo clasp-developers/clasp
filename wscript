@@ -185,8 +185,10 @@ VALID_OPTIONS = [
 ]
 
 DEBUG_OPTIONS = [
+    "DEBUG_DTREE_INTERPRETER", # Generate dtree interpreter log
     "DEBUG_DTRACE_LOCK_PROBE", # Add a Dtrace probe for mutex lock acquisition
     "DEBUG_STACKMAPS", # print messages about stackmap registration
+    "DEBUG_ASSERT", # Turn on DEBUG_ASSERT
     "DEBUG_ASSERT_TYPE_CAST", # Turn on type checking when passing arguments
     "SOURCE_DEBUG", # Allow LOG messages to print - works with CLASP_DEBUG environment variable
     "DEBUG_JIT_LOG_SYMBOLS", # Generate a log of JITted symbols in /tmp/clasp-symbols-<pid>
@@ -210,9 +212,11 @@ DEBUG_OPTIONS = [
     ##  Generate per-thread logs in /tmp/dispatch-history/**  of the slow path of fastgf
     "DEBUG_REHASH_COUNT",   # Keep track of the number of times each hash table has been rehashed
     "DEBUG_MONITOR",   # generate logging messages to a file in /tmp for non-hot code
+    "DEBUG_MONITOR_SUPPORT",   # Must be enabled with other options - do this automatically?
     "DEBUG_MEMORY_PROFILE",  # Profile memory allocations total size and counter
     "DEBUG_BCLASP_LISP",  # Generate debugging frames for all bclasp code - like declaim
-    "DEBUG_CCLASP_LISP",  # Generate debugging frames for all cclasp code - like declaim
+    "DEBUG_CCLASP_LISP",  # Generate debugging frames for all cclasp code - like declaim (default on)
+    "DISABLE_DEBUG_CCLASP_LISP", # turn OFF debugging frames for cclasp code
     "DEBUG_COUNT_ALLOCATIONS", # count per-thread allocations of instances of classes
     "DEBUG_COMPILER", # Turn on compiler debugging
     "DEBUG_LONG_CALL_HISTORY",   # The GF call histories used to blow up - this triggers an error if they get too long
@@ -230,7 +234,8 @@ DEBUG_OPTIONS = [
     "DEBUG_LLVM_OPTIMIZATION_LEVEL_0",
     "DEBUG_SLOW",    # Code runs slower due to checks - undefine to remove checks
     "USE_HUMAN_READABLE_BITCODE",
-    "CST", # build the CST version
+    "DISABLE_CST", # build the AST version of the compiler
+    "CST", # build the CST version of the compiler (default)
     "CONFIG_VAR_COOL" # mps setting
 ]
 
@@ -247,34 +252,6 @@ def fetch_git_revision(path, url, revision = "", label = "master"):
     if ( ret != 0 ):
         raise Exception("Failed to fetch git url %s" % url)
 
-def add_cando_extension_dev(cfg):
-    log.pprint('BLUE', 'add_cando_extension_dev')
-    fetch_git_revision("extensions/cando",
-                       "https://github.com/drmeister/cando.git",
-                       label="dev")
-
-def add_cando_extension_testing(cfg):
-    log.pprint('BLUE', 'add_cando_extension_testing')
-    fetch_git_revision("extensions/cando",
-                       "https://github.com/drmeister/cando.git",
-                       label="testing")
-
-def add_cando_extension_preview(cfg):
-    log.pprint('BLUE', 'add_cando_extension_preview')
-    fetch_git_revision("extensions/cando",
-                       "https://github.com/drmeister/cando.git",
-                       label="preview")
-
-def add_cando_extension_master(cfg):
-    log.pprint('BLUE', 'add_cando_extension_master')
-    fetch_git_revision("extensions/cando",
-                       "https://github.com/drmeister/cando.git",
-                       label="master")
-
-def add_cando(cfg):
-    add_cando_extension_master(cfg)
-
-    
 def update_dependencies(cfg):
     # Specifying only label = "some-tag" will check out that tag into a "detached head", but
     # specifying both label = "master" and revision = "some-tag" will stay on master and reset to that revision.
@@ -284,10 +261,10 @@ def update_dependencies(cfg):
 #                       "master")
     fetch_git_revision("src/lisp/kernel/contrib/sicl",
                        "https://github.com/Bike/SICL.git",
-                       "892eb91f6421cd3c284c31e2231b8b5bee1d7f95")
+                       "1398dbfe5c899a0aa675d8516c424fd004ed7e1e")
     fetch_git_revision("src/lisp/kernel/contrib/Concrete-Syntax-Tree",
                        "https://github.com/robert-strandh/Concrete-Syntax-Tree.git",
-                       "8d8c5abf8f1690cb2b765241d81c2eb86d60d77e")
+                       "06938649a8e04e10666186153371cc82ae90b24e")
     fetch_git_revision("src/lisp/kernel/contrib/closer-mop",
                        "https://github.com/pcostanza/closer-mop.git",
                        "d4d1c7aa6aba9b4ac8b7bb78ff4902a52126633f")
@@ -296,8 +273,7 @@ def update_dependencies(cfg):
                        "dd15c86b0866fc5d8b474be0da15c58a3c04c45c")
     fetch_git_revision("src/lisp/kernel/contrib/Eclector",
                        "https://github.com/robert-strandh/Eclector.git",
-                       "287ce817c0478668bd389051d2cc6b26ddc62ec9")
-    
+                       "66cf5e2370eef4be659212269272a5e79a82fa1c")
 #                      "7b63e7bbe6c60d3ad3413a231835be6f5824240a") works with AST clasp
     fetch_git_revision("src/lisp/kernel/contrib/alexandria",
                        "https://github.com/clasp-developers/alexandria.git",
@@ -815,6 +791,21 @@ def configure(cfg):
 
     cfg.env["BUILD_ROOT"] = os.path.abspath(top) # KLUDGE there should be a better way than this
     load_local_config(cfg)
+    
+    if ("DISABLE_CST" in cfg.env.DEBUG_OPTIONS):
+        pass
+    else:
+        cfg.define("CST",1)
+        if ("CST" not in cfg.env.DEBUG_OPTIONS):
+            cfg.env.DEBUG_OPTIONS.append(["CST"])
+            
+    if ("DISABLE_DEBUG_CCLASP_LISP" in cfg.env.DEBUG_OPTIONS):
+        pass
+    else:
+        cfg.define("DEBUG_CCLASP_LISP",1)
+        if ("DEBUG_CCLASP_LISP" not in cfg.env.DEBUG_OPTIONS):
+            cfg.env.DEBUG_OPTIONS.append(["DEBUG_CCLASP_LISP"])
+
     cfg.load("why")
     cfg.check_waf_version(mini = '1.7.5')
     cfg.env["DEST_OS"] = cfg.env["DEST_OS"] or Utils.unversioned_sys_platform()
@@ -983,8 +974,8 @@ def configure(cfg):
 #    cfg.define("EXPAT",1)
     cfg.define("INCLUDED_FROM_CLASP",1)
     cfg.define("INHERITED_FROM_SRC",1)
-    cfg.define("LLVM_VERSION_X100",400)
-    cfg.define("LLVM_VERSION","4.0")
+    cfg.define("LLVM_VERSION_X100",600)
+    cfg.define("LLVM_VERSION","6.0")
     cfg.define("NDEBUG",1)
 #    cfg.define("READLINE",1)
 #    cfg.define("USE_EXPENSIVE_BACKTRACE",1)
@@ -1062,7 +1053,9 @@ def configure(cfg):
         cfg.define("DEBUG_GUARD_VALIDATE",1)
     if (cfg.env.DEBUG_GUARD_EXHAUSTIVE_VALIDATE):
         cfg.define("DEBUG_GUARD_EXHAUSTIVE_VALIDATE",1)
+    cfg.define("DEBUG_MONITOR_SUPPORT",1) 
     if (cfg.env.DEBUG_OPTIONS):
+        # on by default - figure out how to shut it off later and remove all of the code that depends on it
         for opt in cfg.env.DEBUG_OPTIONS:
             if (opt in DEBUG_OPTIONS):
                 cfg.define(opt,1)

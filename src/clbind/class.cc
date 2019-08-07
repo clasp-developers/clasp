@@ -81,10 +81,13 @@ class_registration::class_registration(const std::string &name) : m_default_cons
 void class_registration::register_() const {
   ClassRegistry_sp registry = ClassRegistry_O::get_registry();
   clbind::ClassRep_sp crep;
+  size_t where = 0;
   if (!this->m_derivable) {
     crep = clbind::ClassRep_O::create(core::lisp_clbind_cxx_class(), this->m_type, this->m_name, this->m_derivable);
+    where = gctools::Header_s::rack_wtag;
   } else {
     crep = clbind::ClassRep_O::create(core::lisp_derivable_cxx_class(), this->m_type, this->m_name, this->m_derivable);
+    where = gctools::Header_s::derivable_wtag;
   }
 #ifdef DEBUG_CLASS_INSTANCE
   printf("%s:%d   Registering clbind class\n", __FILE__, __LINE__ );
@@ -98,7 +101,7 @@ void class_registration::register_() const {
   } else {
     creator = gctools::GC<DummyCreator_O>::allocate(classNameString);
   }
-  crep->initializeClassSlots(creator,gctools::NextStamp());
+  crep->initializeClassSlots(creator,gctools::NextShiftedStampMergeWhere(where));
   core::Symbol_sp className = core::lispify_intern(classNameString, _lisp->getCurrentPackage()->packageName());
   className->exportYourself();
   crep->_setClassName(className);

@@ -4,17 +4,21 @@
 (defclass clasp () ())
 (defclass clasp-64bit (clasp) ())
 
-(defvar *clasp-system* (make-instance 'clasp-64bit))
+;; singleton- don't bother with constructor
+(defvar *clasp-system*
+  (locally (declare (notinline make-instance)) (make-instance 'clasp-64bit)))
 
 (defclass clasp-global-environment () () )
-(defvar *clasp-env* (make-instance 'clasp-global-environment))
+(defvar *clasp-env*
+  (locally (declare (notinline make-instance)) (make-instance 'clasp-global-environment)))
 
 ;;
 ;; Define the ABI for x86-64
 (defclass abi-x86-64 () ())
 (defclass abi-x86-32 () ())
 
-(defvar *abi-x86-64* (make-instance 'abi-x86-64))
+(defvar *abi-x86-64*
+  (locally (declare (notinline make-instance)) (make-instance 'abi-x86-64)))
 
 (export '(clasp-global-environment
           *clasp-env*

@@ -183,6 +183,14 @@ CL_VALUE_ENUM(kw::_sym_CSK_SHA1,llvm::DIFile::CSK_SHA1); // Use it as zero value
 CL_END_ENUM(_sym_CSKEnum);
 
 
+CL_LISPIFY_NAME(createExpression);
+CL_EXTERN_DEFMETHOD(DIBuilder_O, (llvm::DIExpression* (llvm::DIBuilder::*)
+                                  (llvm::ArrayRef<uint64_t>))&llvm::DIBuilder::createExpression);
+CL_LISPIFY_NAME(createExpressionNone);
+CL_DEFUN llvm::DIExpression* llvm_sys__createExpressionNone(DIBuilder_sp dib) {
+  return dib->wrappedPtr()->createExpression();
+}
+  
 CL_LISPIFY_NAME(createCompileUnit);
 CL_EXTERN_DEFMETHOD(DIBuilder_O,&llvm::DIBuilder::createCompileUnit);
 CL_LISPIFY_NAME(createFile);
@@ -209,12 +217,31 @@ CL_LISPIFY_NAME(createLexicalBlock);
 CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::createLexicalBlock);
 CL_LISPIFY_NAME(createBasicType);
 CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::createBasicType);
+CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::createTypedef);
+CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::createPointerType);
+
 CL_LISPIFY_NAME(createNullPtrType);
 CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::createNullPtrType);
 CL_LISPIFY_NAME(createUnspecifiedParameter);
 CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::createUnspecifiedParameter);
 CL_LISPIFY_NAME(createSubroutineType);
 CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::createSubroutineType);
+CL_LISPIFY_NAME(createAutoVariable);
+CL_EXTERN_DEFMETHOD(DIBuilder_O,&llvm::DIBuilder::createAutoVariable);
+CL_LISPIFY_NAME(createParameterVariable);
+CL_EXTERN_DEFMETHOD(DIBuilder_O,&llvm::DIBuilder::createParameterVariable);
+
+CL_LISPIFY_NAME(insertDbgValueIntrinsicBasicBlock);
+CL_EXTERN_DEFMETHOD(DIBuilder_O,
+                    (llvm::Instruction * (llvm::DIBuilder::*)
+                     (llvm::Value *Val,
+                      llvm::DILocalVariable *VarInfo,
+                      llvm::DIExpression *Expr,
+                      const llvm::DILocation *DL,
+                      llvm::BasicBlock *InsertAtEnd))
+                    &llvm::DIBuilder::insertDbgValueIntrinsic);
+
+
 CL_LISPIFY_NAME(finalize);
 CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::finalize);;
 

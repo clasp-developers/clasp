@@ -100,7 +100,7 @@ namespace gctools {
     true_size += tail_size;
 #endif
     Header_s* header = reinterpret_cast<Header_s*>(GC_MALLOC_ATOMIC(true_size));
-    my_thread_low_level->_Allocations.registerAllocation(the_header.stamp(),true_size);
+    my_thread_low_level->_Allocations.registerAllocation(the_header.unshifted_stamp(),true_size);
 #ifdef DEBUG_GUARD
     memset(header,0x00,true_size);
     new (header) Header_s(the_header,size,tail_size,true_size);
@@ -118,7 +118,7 @@ namespace gctools {
     true_size += tail_size;
 #endif
     Header_s* header = reinterpret_cast<Header_s*>(GC_MALLOC(true_size));
-    my_thread_low_level->_Allocations.registerAllocation(the_header.stamp(),true_size);
+    my_thread_low_level->_Allocations.registerAllocation(the_header.unshifted_stamp(),true_size);
 #ifdef DEBUG_GUARD
     memset(header,0x00,true_size);
     new (header) Header_s(the_header,size,tail_size,true_size);
@@ -136,7 +136,7 @@ namespace gctools {
     true_size += tail_size;
 #endif
     Header_s* header = reinterpret_cast<Header_s*>(GC_MALLOC_UNCOLLECTABLE(true_size));
-    my_thread_low_level->_Allocations.registerAllocation(the_header.stamp(),true_size);
+    my_thread_low_level->_Allocations.registerAllocation(the_header.unshifted_stamp(),true_size);
 #ifdef DEBUG_GUARD
     memset(header,0x00,true_size);
     new (header) Header_s(the_header,size,tail_size,true_size);
@@ -224,7 +224,7 @@ extern void bad_general_mps_reserve_error(mps_ap_t* allocation_point);
         new (obj) (typename PTR_TYPE::Type)(std::forward<ARGS>(args)...);
         tagged_obj = PTR_TYPE(obj);
       } while (!mps_commit(allocation_point, addr, true_size));
-      my_thread_low_level->_Allocations.registerAllocation(the_header.stamp(),true_size);
+      my_thread_low_level->_Allocations.registerAllocation(the_header.unshifted_stamp(),true_size);
     }
 #ifdef DEBUG_VALIDATE_GUARD
     header->validate();

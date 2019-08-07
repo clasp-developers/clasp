@@ -43,6 +43,7 @@
 ;;; name to class.
 ;;; 
 ;;; This is only used during boot.
+#+(or)
 (eval-when (:compile-toplevel #+clasp-boot :load-toplevel)
   (defun (setf find-class) (new-value class &optional errorp env)
     (warn "Ignoring class definition for ~S" class)))
@@ -115,7 +116,6 @@
 
 ;;; Will be the standard method after fixup.
 (defun compute-discriminating-function (generic-function)
-  (declare (ignore generic-function))
   (invalidated-discriminating-function-closure generic-function))
 
 ;;; ----------------------------------------------------------------------

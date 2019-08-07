@@ -460,8 +460,8 @@ and cannot be added to ~A." method other-gf gf)))
 
 (defmethod make-load-form ((object core:source-pos-info) &optional environment)
   `(core:make-cxx-object 'core:source-pos-info
-                         :sfi (core:decode (core:make-cxx-object 'core:source-file-info)
-                                           ',(core:encode (core:source-file-info
+                         :sfi (core:decode (core:make-cxx-object 'core:file-scope)
+                                           ',(core:encode (core:file-scope
                                                            (core:source-pos-info-file-handle object))))
                          :fp ,(core:source-pos-info-filepos object)
                          :l ,(core:source-pos-info-lineno object)

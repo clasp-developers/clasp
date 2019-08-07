@@ -43,7 +43,6 @@
 (defparameter *restart-clusters* ())
 (defparameter *condition-restarts* ())
 
-;;; do we need copy-list if *restart-clusters* has only one element? Beppe
 (defun compute-restarts (&optional condition)
   (let* ((assoc-restart ())
 	 (other ())
@@ -69,10 +68,7 @@
       (restart-report restart stream))
   restart)
 
-
-
-
-(defstruct (restart (:PRINT-FUNCTION restart-print))
+(defstruct (restart (:print-function restart-print))
   name
   function
   report-function
@@ -84,31 +80,7 @@
   (let ((fn (restart-report-function restart)))
     (if fn
 	(funcall fn stream)
-	(format stream "~s" (or (restart-name restart) restart)))))
-
-(defun bind-simple-restarts (tag names)
-  (flet ((simple-restart-function (tag code)
-	   #'(lambda (&rest args)
-               (declare (core:lambda-name bind-simple-restarts.lambda))
-               (throw tag (values code args)))))
-    (cons (loop for i from 1
-	     for n in (if (atom names) (list names) names)
-	     for f = (simple-restart-function tag i)
-	     collect (let ((v i))
-		       (make-restart :name n
-				     :function f)))
-	  *restart-clusters*)))
-
-(defparameter *handler-clusters* nil)
-
-(defun bind-simple-handlers (tag names)
-  (flet ((simple-handler-function (tag code)
-	   #'(lambda (c) (throw tag (values code c)))))
-    (cons (loop for i from 1
-	     for n in (if (atom names) (list names) names)
-	     for f = (simple-handler-function tag i)
-	     collect (cons n f))
-	  *handler-clusters*)))
+        (prin1 (or (restart-name restart) restart) stream))))
 
 (defmacro restart-bind (bindings &body forms)
   `(let ((*restart-clusters*
@@ -163,6 +135,39 @@
 		 '())))))
 
 
+(defun munge-with-condition-restarts-form (original-form env)
+  (let ((form (macroexpand original-form env)))
+    (if (consp form)
+        (let* ((name (first form))
+               (condition-form
+                 (case name
+                   ((signal)
+                    `(coerce-to-condition ,(second form)
+                                          (list ,@(cddr form))
+                                          'simple-condition 'signal))
+                   ((warn)
+                    `(coerce-to-condition ,(second form)
+                                          (list ,@(cddr form))
+                                          'simple-warning 'warn))
+                   ((error)
+                    `(coerce-to-condition ,(second form)
+                                          (list ,@(cddr form))
+                                          'simple-error 'error))
+                   ((cerror)
+                    `(coerce-to-condition ,(third form)
+                                          (list ,@(cdddr form))
+                                          'simple-error 'cerror)))))
+          (if condition-form
+              (let ((condition-var (gensym "CONDITION")))
+                `(let ((,condition-var ,condition-form))
+                   (with-condition-restarts ,condition-var
+                       (first *restart-clusters*)
+                     ,(if (eq name 'cerror)
+                          `(cerror ,(second form) ,condition-var)
+                          `(,name ,condition-var)))))
+              original-form))
+        original-form)))
+
 (defmacro restart-case (expression &body clauses &environment env)
   (flet ((transform-keywords (&key report interactive test)
 	   (let ((keywords '()))
@@ -198,38 +203,8 @@
                                             keywords)
                                      (cadr clause)		;BVL=3
                                      forms))) 			;Body=4
-                         clauses)))
-      (let ((expression2 (macroexpand expression env)))
-	(when (consp expression2)
-	  (let* ((condition-form nil)
-		 (condition-var (gensym))
-		 (name (first expression2)))
-	    (case name
-	      (SIGNAL
-               (setq condition-form `(coerce-to-condition ,(second expression2)
-                                                          (list ,@(cddr expression2))
-                                                          'simple-condition 'signal)))
-	      (ERROR
-	       (setq condition-form `(coerce-to-condition ,(second expression2)
-				      (list ,@(cddr expression2))
-				      'SIMPLE-ERROR 'ERROR)))
-	      (CERROR
-	       (setq condition-form `(coerce-to-condition ,(third expression2)
-				      (list ,@(cdddr expression2))
-				      'SIMPLE-ERROR 'CERROR)))
-	      (WARN
-	       (setq condition-form `(coerce-to-condition ,(second expression2)
-				      (list ,@(cddr expression2))
-				      'SIMPLE-WARNING 'WARN))))
-	    (when condition-form
-	      (setq expression
-		    `(let ((,condition-var ,condition-form))
-		      (with-condition-restarts ,condition-var
-			(first *restart-clusters*)
-			,(if (eq name 'CERROR)
-			     `(cerror ,(second expression2) ,condition-var)
-			     (list name condition-var)))))
-	      ))))
+                         clauses))
+           (expression (munge-with-condition-restarts-form expression env)))
       `(block ,block-tag
 	 (let ((,temp-var nil))
 	   (tagbody
@@ -272,35 +247,37 @@
 ;;; ----------------------------------------------------------------------
 ;;; Condition Data Type
 
+(defun default-condition-reporter (condition stream)
+  (format stream "Condition of type ~a was signaled." (type-of condition)))
+
 (defclass condition ()
-  ((report-function :allocation :class :initform nil)))
+  ((reporter :allocation :class
+             :reader condition-reporter
+             :type function
+             :initform #'default-condition-reporter)))
 
 (defmethod print-object ((c condition) stream)
   (if *print-escape*
       (call-next-method)
-      (let ((reporter (slot-value c 'report-function)))
-	(cond ((stringp reporter)
-	       (write-string reporter stream))
-	      ((null reporter)
-	       (call-next-method))
-	      (t
-	       (funcall reporter c stream))))))
+      (funcall (condition-reporter c) c stream)))
 
 (defmacro define-condition (name parent-list slot-specs &rest options)
   ;; CAUTION: ANSI states the equivalence between :REPORT and a method.
-  ;; Does this mean that CALL-NEXT-METHOD should be available? SBCL does
-  ;; not do it this way, and so don't we.
+  ;; This does not mean CALL-NEXT-METHOD should be available, as it also
+  ;; says the function is evaluated in the CURRENT lexical environment.
   (let* ((class-options nil))
     (dolist (option options)
       (case (car option)
 	((:DEFAULT-INITARGS :DOCUMENTATION)
 	 (push option class-options))
 	(:REPORT
-	 (let ((report-function (cadr option)))
-	   (push `(report-function :initform ,(if (symbolp report-function)
-						  (list 'quote report-function)
-						  report-function))
-		 slot-specs)))
+         (let ((reporter (cadr option)))
+           (push `(reporter :initform #',(if (stringp reporter)
+                                             `(lambda (condition stream)
+                                                (declare (ignore condition))
+                                                (write-string ,reporter stream))
+                                             reporter))
+                 slot-specs)))
 	(otherwise (cerror "Ignore this DEFINE-CONDITION option."
 			   "Invalid DEFINE-CONDITION option: ~S" option))))
     `(PROGN
@@ -326,96 +303,9 @@
 	     :FORMAT-ARGUMENTS (list type)))
     (apply #'make-instance class slot-initializations)))
 
-#| For the moment, do not redefine these. Beppe.
-(eval-when (eval compile load)
-
-(defun accumulate-cases (macro-name cases list-is-atom-p)
-  (do ((c cases (cdr c))
-       (l '()))
-      ((null c) (nreverse l))
-    (let ((keys (caar c)))
-      (cond ((atom keys)
-	     (cond ((null keys))
-		   ((member keys '(OTHERWISE T))
-		    (error "OTHERWISE is not allowed in ~S expressions."
-			   macro-name))
-		   (t (push keys l))))
-	    (list-is-atom-p
-	     (push keys l))
-	    (t (setq l (append keys l)))))))
-
-);nehw-lave
-
-(defmacro ecase (keyform &rest cases)
-  (let ((keys (accumulate-cases 'ECASE cases nil)))
-    `(case ,keyform
-      ,@cases
-      (otherwise
-       (error 'CASE-FAILURE :name 'ECASE
-	:datum ,keyform
-	:expected-type '(MEMBER ,@keys)
-	:possibilities ',keys))))))
-
-(defmacro ccase (keyplace &rest cases)
-  (let ((keys (accumulate-cases 'CCASE cases nil))
-	(tag1 (gensym))
-	(tag2 (gensym)))
-    `(block ,tag1
-       (tagbody ,tag2
-	 (return-from ,tag1
-	   (case ,keyplace
-	     ,@cases
-	     (otherwise
-	       (restart-case (error 'CASE-FAILURE
-				    :name 'CCASE
-				    :datum ,keyplace
-				    :expected-type '(MEMBER ,@keys)
-				    :possibilities ',keys)
-		 (store-value (value)
-		     :report (lambda (stream)
-			       (format stream "Supply a new value of ~S."
-				       ',keyplace))
-		     :interactive read-evaluated-form
-		   (setf ,keyplace value)
-		   (go ,tag2))))))))))
-
 
 
-(defmacro etypecase (keyform &rest cases)
-  (let ((types (accumulate-cases 'ETYPECASE cases t)))
-    `(typecase ,keyform
-      ,@cases
-      (otherwise
-       (error 'CASE-FAILURE :name 'ETYPECASE
-	:datum ,keyform
-	:expected-type '(OR ,@types)
-	:possibilities ',types)))))
-
-(defmacro ctypecase (keyplace &rest cases)
-  (let ((types (accumulate-cases 'CTYPECASE cases t))
-	(tag1 (gensym))
-	(tag2 (gensym)))
-    `(block ,tag1
-       (tagbody ,tag2
-	 (return-from ,tag1
-	   (typecase ,keyplace
-	     ,@cases
-	     (otherwise
-	       (restart-case (error 'CASE-FAILURE
-				    :name 'CTYPECASE
-				    :datum ,keyplace
-				    :expected-type '(OR ,@types)
-				    :possibilities ',types)
-		 (store-value (value)
-		     :REPORT (lambda (stream)
-			       (format stream "Supply a new value of ~S."
-				       ',keyplace))
-		     :INTERACTIVE read-evaluated-form
-		   (setf ,keyplace value)
-		   (go ,tag2))))))))))
-
-|#
-
+(defparameter *handler-clusters* nil)
 
 (defmacro handler-bind (bindings &body forms)
   (unless (every #'(lambda (x) (and (listp x) (= (length x) 2))) bindings)
@@ -426,20 +316,22 @@
 		*handler-clusters*)))
      ,@forms))
 
-(defun signal (datum &rest arguments)
-  (let* ((condition
-	  (coerce-to-condition datum arguments 'SIMPLE-CONDITION 'SIGNAL))
-	 (*handler-clusters* *handler-clusters*))
-    (if (typep condition *break-on-signals*)
-	(break "~A~%Break entered because of *BREAK-ON-SIGNALS*."
-	       condition))
+(defun %signal (condition)
+  ;; We pop as we go, rather than just iterating, so that if a condition
+  ;; is signaled by the type test or by the handler function, it doesn't
+  ;; find itself or lower handlers as active.
+  (let ((*handler-clusters* *handler-clusters*))
+    (when (typep condition *break-on-signals*)
+      (break "~a~%Break entered because of *BREAK-ON-SIGNALS*." condition))
     (loop (unless *handler-clusters* (return))
           (let ((cluster (pop *handler-clusters*)))
-	    (dolist (handler cluster)
-	      (when (typep condition (car handler))
-		(funcall (cdr handler) condition)
-		))))
-    nil))
+            (dolist (handler cluster)
+              (when (typep condition (car handler))
+                (funcall (cdr handler) condition))))))
+  nil)
+
+(defun signal (datum &rest arguments)
+  (%signal (coerce-to-condition datum arguments 'simple-condition 'signal)))
 
 
 
@@ -490,28 +382,29 @@
 ;;;  by all the other routines.
 
 (defun coerce-to-condition (datum arguments default-type function-name)
-  (cond ((typep datum 'CONDITION)
-	 (when arguments
-	   (cerror "Ignore the additional arguments."
-		   'SIMPLE-TYPE-ERROR
-		   :DATUM arguments
-		   :EXPECTED-TYPE 'NULL
-		   :FORMAT-CONTROL "You may not supply additional arguments ~
+  (typecase datum
+    (condition
+     (when arguments
+       (cerror "Ignore the additional arguments."
+               'SIMPLE-TYPE-ERROR
+               :DATUM arguments
+               :EXPECTED-TYPE 'NULL
+               :FORMAT-CONTROL "You may not supply additional arguments ~
 				     when giving ~S to ~S."
-		   :FORMAT-ARGUMENTS (list datum function-name)))
-	 datum)
-        ((symbolp datum)                  ;roughly, (subtypep datum 'CONDITION)
-         (apply #'make-condition datum arguments))
-        ((or (stringp datum) (functionp datum))
-	 (make-condition default-type
-                         :FORMAT-CONTROL datum
-                         :FORMAT-ARGUMENTS arguments))
-        (t
-         (error 'SIMPLE-TYPE-ERROR
-		:DATUM datum
-		:EXPECTED-TYPE '(OR SYMBOL STRING)
-		:FORMAT-CONTROL "Bad argument to ~S: ~S"
-		:FORMAT-ARGUMENTS (list function-name datum)))))
+               :FORMAT-ARGUMENTS (list datum function-name)))
+     datum)
+    (symbol                  ;roughly, (subtypep datum 'CONDITION)
+     (apply #'make-condition datum arguments))
+    ((or string function)
+     (make-condition default-type
+                     :FORMAT-CONTROL datum
+                     :FORMAT-ARGUMENTS arguments))
+    (t
+     (error 'SIMPLE-TYPE-ERROR
+            :DATUM datum
+            :EXPECTED-TYPE '(or condition symbol string function)
+            :FORMAT-CONTROL "Bad argument to ~S: ~S"
+            :FORMAT-ARGUMENTS (list function-name datum)))))
 
 (defun break (&optional (format-control "Break") &rest format-arguments)
   "Enters a break loop.  The execution of the program can be resumed by typing
@@ -520,13 +413,18 @@ If FORMAT-STRING is non-NIL, it is used as the format string to be output to
 *ERROR-OUTPUT* before entering the break loop.  ARGs are arguments to the
 format string."
   (let ((*debugger-hook* nil))
-    (core:call-with-stack-top-hint
-     (lambda ()
-       (with-simple-restart (continue "Return from BREAK.")
-         (invoke-debugger
-          (make-condition 'SIMPLE-CONDITION
-                          :FORMAT-CONTROL format-control
-                          :FORMAT-ARGUMENTS format-arguments))))))
+    #+(or)(core:call-with-stack-top-hint
+           (lambda ()
+             (with-simple-restart (continue "Return from BREAK.")
+               (invoke-debugger
+                (make-condition 'SIMPLE-CONDITION
+                                :FORMAT-CONTROL format-control
+                                :FORMAT-ARGUMENTS format-arguments))))))
+  (with-simple-restart (continue "Return from BREAK.")
+    (invoke-debugger
+     (make-condition 'SIMPLE-CONDITION
+                     :FORMAT-CONTROL format-control
+                     :FORMAT-ARGUMENTS format-arguments)))
   nil)
 
 (defun warn (datum &rest arguments)
@@ -537,6 +435,8 @@ returns with NIL."
   (let ((condition
 	  (coerce-to-condition datum arguments 'SIMPLE-WARNING 'WARN)))
     (check-type condition warning "a warning condition")
+    ;; FIXME? We could use %signal, but then with-condition-restarts wouldn't
+    ;; happen correctly.
     (restart-case (signal condition)
       (muffle-warning ()
 	  :REPORT "Skip warning."
@@ -563,10 +463,10 @@ returns with NIL."
 		     :ACCESSOR simple-condition-format-arguments))
   (:REPORT
    (lambda (condition stream)
-     (handler-case 
-         (format stream "~?"
-                 (simple-condition-format-control condition)
-                 (simple-condition-format-arguments condition))
+     (handler-case
+         (apply #'format stream
+                (simple-condition-format-control condition)
+                (simple-condition-format-arguments condition))
        (format-error (p)
          (declare (ignore p))
          (format stream "~%#<Error while printing condition>~%"))))))
@@ -628,6 +528,15 @@ memory limits before executing the program again."))
 	     (type-error-datum condition)
 	     (type-error-expected-type condition)))))
 
+(define-condition array-out-of-bounds (type-error)
+  ((array :INITARG :ARRAY :READER array-out-of-bounds-array))
+  (:REPORT
+   (lambda (condition stream)
+     (format stream "array index ~S is out of bounds ~s for array ~S."
+             (type-error-datum condition)
+             (type-error-expected-type condition)
+             (array-out-of-bounds-array condition)))))
+
 (define-condition simple-type-error (simple-condition type-error) ())
 
 (define-condition case-failure (type-error)
@@ -655,21 +564,6 @@ memory limits before executing the program again."))
 (define-condition program-error (error) ())
 
 (define-condition core:simple-program-error (simple-condition program-error) ())
-
-(define-condition core:argument-number-error (program-error)
-  ((supplied :initarg :supplied :reader argument-number-error-supplied)
-   (min :initarg :min :reader argument-number-error-min)
-   (max :initarg :max :reader argument-number-error-max))
-  (:report
-   (lambda (condition stream)
-     (let ((supplied (argument-number-error-supplied condition))
-           (max (argument-number-error-max condition))
-           (min (argument-number-error-min condition)))
-       (if (and max (> supplied max))
-           (format stream "No more than ~s argument~:p allowed, ~s argument~:p supplied."
-                   max supplied)
-           (format stream "At least ~s argument~:p required, ~s argument~:p supplied."
-                   min supplied))))))
 
 (define-condition control-error (error) ())
 
@@ -749,46 +643,45 @@ memory limits before executing the program again."))
 
 (define-condition floating-point-invalid-operation (arithmetic-error) ())
 
-;;;An error of type undefined-function should be signaled if function is a symbol that does not have
-;;;a global definition as a function or that has a global definition as a macro or a special operator.
-#+clasp (define-condition core:do-not-funcall-special-operator (undefined-function)
-          ((operator :initarg :operator :reader operator))
-          (:report (lambda (condition stream)
-                     (format stream "You should never funcall special operator: ~s"
-                             (operator condition)))))
+(define-condition core:do-not-funcall-special-operator (undefined-function)
+  ((operator :initarg :operator :reader operator))
+  (:report (lambda (condition stream)
+             (format stream "Cannot call special operator as function: ~s"
+                     (operator condition)))))
 
-#+clasp (define-condition core:too-few-arguments-error (error)
-         ((called-function :initarg :called-function :reader called-function)
-          (given-number-of-arguments :initarg :given-number-of-arguments :reader given-number-of-arguments)
-          (required-number-of-arguments :initarg :required-number-of-arguments :reader required-number-of-arguments))
-         (:report (lambda (condition stream)
-                    (format stream "Too few arguments for ~S, given ~S - required ~S."
-                            (core:function-name (called-function condition))
-                            (given-number-of-arguments condition)
-                            (required-number-of-arguments condition)))))
+(define-condition core:wrong-number-of-arguments (program-error)
+  (;; may be NIL if this is called from the interpreter and we don't know anything
+   ;; (KLUDGE, FIXME?)
+   (called-function :initform nil :initarg :called-function :reader called-function)
+   (given-nargs :initarg :given-nargs :reader given-nargs)
+   ;; also may be NIL, same reason (KLUDGE, FIXME?)
+   (min-nargs :initarg :min-nargs :reader min-nargs :initform nil)
+   ;; may be NIL to indicate no maximum.
+   (max-nargs :initarg :max-nargs :reader max-nargs :initform nil))
+  (:report (lambda (condition stream)
+             (let* ((min (min-nargs condition))
+                    (max (max-nargs condition))
+                    (function (called-function condition))
+                    (name (and function (core:function-name function)))
+                    (dname (if (eq name 'cl:lambda) "anonymous function" name)))
+               (format stream "~@[Calling ~a - ~]Got ~d arguments, but expected ~@?"
+                       dname (given-nargs condition)
+                       (cond ((null max)  "at least ~d")
+                             ((null min)  "at most ~*~d")
+                             ;; I think "exactly 0" is better than "at most 0", thus duplication
+                             ((= min max) "exactly ~d")
+                             ((zerop min) "at most ~*~d")
+                             (t           "between ~d and ~d"))
+                       min max)))))
 
-#+clasp (define-condition core:too-many-arguments-error (error)
-         ((called-function :initarg :called-function :reader called-function)
-          (given-number-of-arguments :initarg :given-number-of-arguments :reader given-number-of-arguments)
-          (required-number-of-arguments :initarg :required-number-of-arguments :reader required-number-of-arguments))
-         (:report (lambda (condition stream)
-                    (format stream "Too many arguments for ~S, given ~S - required ~S."
-                            (core:function-name (called-function condition))
-                            (given-number-of-arguments condition)
-                            (required-number-of-arguments condition)))))
-
-#+clasp (define-condition core:unrecognized-keyword-argument-error (error)
-         (
-          (called-function :initarg :called-function :reader called-function)
-          (unrecognized-keyword :initarg :unrecognized-keyword :reader unrecognized-keyword))
-         (:report (lambda (condition stream)
-                    (format stream "Unrecognized keyword argument ~S for ~S."
-                            (unrecognized-keyword condition)
-                            (core:function-name (called-function condition))))))
-
-
-(define-condition abort-failure (control-error) ()
-  (:REPORT "Abort failed."))
+(define-condition core:unrecognized-keyword-argument-error (error)
+  ((called-function :initarg :called-function :reader called-function :initform nil)
+   (unrecognized-keyword :initarg :unrecognized-keyword :reader unrecognized-keyword))
+  (:report (lambda (condition stream)
+             (format stream "Unrecognized keyword argument ~S~[~; for ~S~]."
+                     (unrecognized-keyword condition)
+                     (called-function condition)
+                     (core:function-name (called-function condition))))))
 
 (define-condition print-not-readable (error)
   ((object :INITARG :OBJECT :READER print-not-readable-object))
@@ -825,6 +718,33 @@ memory limits before executing the program again."))
               (format-error-control-string condition)
               (format-error-offset condition)))))
 
+;;; Conditions the FORMAT compiler macro signals if there's an argument count mismatch.
+;;; CLHS 22.3.10.2 says that having too few arguments is undefined, so that's a warning,
+;;; but having too many just means they're ignored, so that's a style-warning.
+;;; (Alternately we could not complain at all.)
+(define-condition format-warning-too-few-arguments (warning)
+  ((control-string :initarg :control :reader format-warning-control-string)
+   (expected :initarg :expected :reader format-warning-expected)
+   (observed :initarg :observed :reader format-warning-observed))
+  (:report (lambda (condition stream)
+             (format stream
+                     "Format string ~s expects at least ~d arguments,~@
+                      but is only provided ~d."
+                     (format-warning-control-string condition)
+                     (format-warning-expected condition)
+                     (format-warning-observed condition)))))
+(define-condition format-warning-too-many-arguments (style-warning)
+  ((control-string :initarg :control :reader format-warning-control-string)
+   (expected :initarg :expected :reader format-warning-expected)
+   (observed :initarg :observed :reader format-warning-observed))
+  (:report (lambda (condition stream)
+             (format stream
+                     "Format string ~s expects at most ~d arguments,~@
+                      but is provided ~d."
+                     (format-warning-control-string condition)
+                     (format-warning-expected condition)
+                     (format-warning-observed condition)))))
+
 (define-condition ext:interactive-interrupt (serious-condition)
   ()
   (:report "Console interrupt."))
@@ -845,8 +765,7 @@ memory limits before executing the program again."))
      (error (condition) (values nil condition))))
 
 (defun abort (&optional c)
-  (invoke-restart (coerce-restart-designator 'ABORT c))
-  (error 'ABORT-FAILURE))
+  (invoke-restart (coerce-restart-designator 'ABORT c)))
 
 (defun continue (&optional c)
   (let ((restart (find-restart 'CONTINUE c)))
@@ -921,20 +840,16 @@ error and NIL for a fatal error.  FUNCTION-NAME is the name of the function
 that caused the error.  CONTINUE-FORMAT-STRING and ERROR-FORMAT-STRING are the
 format strings of the error message.  ARGS are the arguments to the format
 bstrings."
-  (declare (inline apply) ;; So as not to get bogus frames in debugger
-	   #-(or ecl-min clasp)
-           (c::policy-debug-ihs-frame))
   (let ((condition (coerce-to-condition datum args 'simple-error 'error)))
     (cond
       ((eq t continue-string)
        ; from CEerror; mostly allocation errors
        (with-simple-restart (ignore "Ignore the error, and try the operation again")
-	 (signal condition)
+	 (%signal condition)
 	 (invoke-debugger condition)))
       ((stringp continue-string)
-       (with-simple-restart
-	 (continue "~A" (format nil "~?" continue-string args))
-	 (signal condition)
+       (with-simple-restart (continue "~?" continue-string args)
+	 (%signal condition)
 	 (invoke-debugger condition)))
       ((and continue-string (symbolp continue-string))
        ; from CEerror
@@ -943,15 +858,10 @@ bstrings."
 	   (with-simple-restart (ignore "Ignore the error, and try the operation again")
 	     (multiple-value-bind (rv used-restart)
 	       (with-simple-restart (continue "Continue, using ~S" continue-string)
-		 (signal condition)
+		 (%signal condition)
 		 (invoke-debugger condition))
-
 	       (if used-restart continue-string rv)))
 	   (if used-restart t rv))))
       (t
-       (signal condition)
+       (%signal condition)
        (invoke-debugger condition)))))
-
-(defun sys::tpl-continue-command (&rest any)
-  (apply #'invoke-restart 'continue any))
-

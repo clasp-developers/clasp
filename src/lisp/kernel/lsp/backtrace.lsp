@@ -58,6 +58,7 @@ For C/C++ frames - return (list 'c-function name)."
 (defconstant-equal +interpreted-closure-entry-point+ "core::interpretedClosureEntryPoint")
 (defconstant +interpreted-closure-entry-point-length+ (length +interpreted-closure-entry-point+))
 ;;; Interpreted closures have their shadow stack frames merged in a different way
+#+(or)
 (defun add-interpreter-frames (frames)
   (let (new-frames)
     (dolist (frame frames)
@@ -218,8 +219,26 @@ Set gather-all-frames to T and you can gather C++ and Common Lisp frames"
      (dump-backtrace raw-backtrace :stream stream :args args :all all)))
   (finish-output stream))
 
+(defun bt-argument (frame-index argument-index)
+  "Get argument argument-index (or all if argument-index is not a number) from frame frame-index in current backtrace"
+  (core:call-with-backtrace
+   #'(lambda (raw-backtrace)
+       (let ((frames (common-lisp-backtrace-frames raw-backtrace))
+             (index 0))
+         (dolist (frame frames)
+           (when (= index frame-index)
+             (let ((arguments-vector (backtrace-frame-arguments frame)))
+               (return-from bt-argument
+                 (if (numberp argument-index)
+                     (if (> (length arguments-vector) argument-index)
+                         (aref arguments-vector argument-index)
+                         :invalid-argument-index)
+                     arguments-vector))))
+           (incf index)))
+       (return-from bt-argument :invalid-frame-index))))
+
 (export '(btcl dump-backtrace common-lisp-backtrace-frames
-          backtrace-frame-function-name backtrace-frame-arguments))
+          backtrace-frame-function-name backtrace-frame-arguments bt-argument))
 
 (defmacro with-dtrace-trigger (&body body)
   `(unwind-protect
@@ -229,15 +248,48 @@ Set gather-all-frames to T and you can gather C++ and Common Lisp frames"
              ,@body)))
      (core:trigger-dtrace-stop)))
 
-(defparameter core:*information-callback* 'core:safe-backtrace)
+(defun ext:information-interrupt (&rest args)
+  (core:safe-backtrace))
 
+(in-package :ext)
 
-(defun ext::code-source-position (address)
-  (multiple-value-bind (err error-msg stream)
-      (ext:vfork-execvp (list "atos" "-p" (format nil "~a" (core:getpid))
-                            (format nil "0x~x" (core:pointer-integer address))) t)
-    (let ((result (read-line stream)))
-      result)))
+(defstruct (code-source-line (:type vector) :named)
+  source-pathname line-number)
 
+(export '(code-source-line code-source-line-source-pathname code-source-line-line-number))
 
-(export 'ext::code-source-position :ext)
+(defparameter *debug-code-source-position* nil)
+(defun code-source-position (return-address)
+  (let ((address (1- (core:pointer-integer return-address))))
+    (when *debug-code-source-position*
+      (let* ((address (core:pointer-increment return-address -1))
+             (address-int (core:pointer-integer address)))
+        (multiple-value-bind (symbol start end type library-name library-origin offset-from-start-of-library)
+            (core:lookup-address address)
+          (format t "Lookup of address 0x~x 0x~x ~s ~s~%" address-int offset-from-start-of-library library-name symbol)
+          )))
+    #+target-os-darwin
+    (multiple-value-bind (err error-msg stream)
+        (ext:vfork-execvp (list "atos" "-fullPath" "-p" (format nil "~a" (core:getpid))
+                                (format nil "0x~x" address)) t)
+      (let ((result (read-line stream)))
+        (close stream)
+        (let* ((open-paren (position #\( result :from-end t))
+               (close-paren (position #\) result :from-end t))
+               (source-info (subseq result (1+ open-paren) close-paren))
+               (colon-pos (position #\: source-info))
+               (source-file-name (subseq source-info 0 colon-pos))
+               (source-pathname (pathname source-file-name))
+               (line-number-string (subseq source-info (1+ colon-pos)))
+               (line-number (parse-integer line-number-string :junk-allowed t))
+               )
+          (format t "The code-source-position function will return ~s : ~s~%" source-file-name line-number)
+          (make-code-source-line
+           :source-pathname source-pathname
+           :line-number line-number))))
+    #+target-os-linux
+    (progn
+      (warn "Add support for ext:code-source-position for linux"))
+    ))
+
+(export 'code-source-position)

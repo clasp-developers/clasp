@@ -61,7 +61,8 @@ CL_DEFUN void core__pointer_delete(T_sp ptr) {
 
 T_sp WrappedPointer_O::_instanceClassSet(Instance_sp cl) {
   this->Class_ = cl;
-  this->Stamp_ = cl->CLASS_stamp_for_instances();
+  this->ShiftedStamp_ = cl->CLASS_stamp_for_instances();
+  ASSERT(gctools::Header_s::Value::is_wrapped_shifted_stamp(this->ShiftedStamp_));
   return this->asSmartPtr();
 }
 
@@ -95,6 +96,12 @@ CL_DEFUN T_sp core__pointer_address(T_sp ptr) {
   SIMPLE_ERROR(BF("Could not get address of pointer for %s") % _rep_(ptr));
 };
 
+CL_DEFUN void core__verify_wrapped_pointer_layout(size_t stamp_offset)
+{
+  size_t cxx_stamp_offset = offsetof(WrappedPointer_O,ShiftedStamp_);
+  if (stamp_offset!=cxx_stamp_offset)
+    SIMPLE_ERROR(BF("stamp_offset %lu does not match cxx_stamp_offset %lu") % stamp_offset % cxx_stamp_offset );
+}
 
 
 };

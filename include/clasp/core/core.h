@@ -742,8 +742,8 @@ typedef void (*LispCallingConventionPtr)(T_mv *result, int nargs, T_sp arg1, T_s
 #include <clasp/core/core_globals.h>
 
 namespace kw {
-extern core::Symbol_sp& _sym_formatControl;
-extern core::Symbol_sp& _sym_formatArguments;
+extern core::Symbol_sp& _sym_format_control;
+extern core::Symbol_sp& _sym_format_arguments;
 };
 
 // Can I get rid of this?

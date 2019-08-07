@@ -93,15 +93,6 @@
     ((null name) (error "The argument to ensure-string is NIL"))
     (t (string name))))
 
-(in-package :ext)
-
-(defun run-ld (args &key output-file-name)
-  (safe-system `("ld" ,@args :output-file-name output-file-name)))
-
-(export 'run-ld)
-
-(in-package :cmp)
-
 (defparameter *link-options* nil)
 
 (defun execute-link-library (in-bundle-file in-all-names &key input-type (output-type :dynamic))
@@ -135,6 +126,10 @@
                                   (clang-args `( "-flto"
                                                  ,(sys:bformat nil "-Wl,-object_path_lto,%s" (namestring object-lto-pathname))
                                                  ,@options
+                                                 ;; Disable the BranchFolding optimization that
+                                                 ;; merges tails of branches as they join
+                                                 ;; and was messing up debug source location info.
+                                                 "-Wl,-mllvm,-enable-tail-merge=false"
                                                  ,(core:bformat nil "-O%d" *optimization-level*)
                                                  ,@all-object-files
 ;;;                                 "-macosx_version_min" "10.10"
@@ -177,10 +172,11 @@
               (warn "execute-link-fasl worked after removing ~a from the argument list --- FIGURE OUT WHAT IS GOING WRONG WITH THAT ARGUMENT!!!" (car clang-args))))
           (unless (probe-file temp-bundle-file)
             (error "~%!~%!~%! There is a HUGE problem - an execute-link-fasl command with the arguments:   /path-to-clang ~a~%~%!        failed to generate the output file ~a~%" clang-args temp-bundle-file)))
-        (rename-file temp-bundle-file bundle-file :if-exists :supersede)
+        ;; Now rename the library to make compilation atomic
         ;; Run dsymutil on darwin
-        (when (member :target-os-darwin *features*)
-          (ext:system (sys:bformat nil "dsymutil %s" (namestring bundle-file))))
+        (rename-file temp-bundle-file bundle-file :if-exists :supersede)
+        #+target-os-darwin
+        (ext:run-dsymutil (list "-f" (namestring bundle-file)))
         (truename bundle-file)))))
 
 (defun execute-link-fasl (in-bundle-file in-all-names &key input-type)
@@ -232,10 +228,9 @@
     (truename output-file-name)))
 
 (defun link-bitcode-modules (output-pathname part-pathnames
-                             &key additional-bitcode-pathnames
-                             &aux conditions)
+                             &key additional-bitcode-pathnames)
   "Link a bunch of modules together, return the linked module"
-  (with-compiler-env (conditions)
+  (with-compiler-env ()
     (let* ((module (llvm-create-module (pathname-name output-pathname)))
            (*compile-file-pathname* (pathname (merge-pathnames output-pathname)))
            (*compile-file-truename* (translate-logical-pathname *compile-file-pathname*))

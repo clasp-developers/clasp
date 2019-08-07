@@ -49,6 +49,7 @@ THE SOFTWARE.
 #include <llvm/ExecutionEngine/Interpreter.h>
 #include <llvm/IR/Verifier.h>
 #include <llvm/Analysis/Passes.h>
+#include <llvm/IR/MDBuilder.h>
 #include <llvm/IR/LegacyPassManager.h>
 #include <llvm/Transforms/IPO/PassManagerBuilder.h>
 #include <llvm/ADT/Triple.h>
@@ -847,6 +848,76 @@ struct to_object<llvm::FunctionPass *> {
 };
     ;
 
+
+namespace llvmo {
+FORWARD(TargetPassConfig);
+FORWARD(PassManager);
+class TargetPassConfig_O : public core::ExternalObject_O {
+  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::TargetPassConfig, TargetPassConfig_O, "TargetPassConfig", core::ExternalObject_O);
+  typedef llvm::TargetPassConfig ExternalType;
+  typedef llvm::TargetPassConfig *PointerToExternalType;
+
+protected:
+  PointerToExternalType _ptr;
+
+public:
+  virtual void *externalObject() const {
+    return this->_ptr;
+  };
+  PointerToExternalType wrappedPtr() const {
+    return this->_ptr;
+  }
+
+public:
+  void set_wrapped(PointerToExternalType ptr) {
+    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    this->_ptr = ptr;
+  }
+
+  TargetPassConfig_O() : Base(), _ptr(NULL){};
+  ~TargetPassConfig_O() {
+    if (_ptr != NULL) { /* delete _ptr;*/
+      _ptr = NULL;
+    };
+  }
+}; // TargetPassConfig_O
+}; // llvmo
+/* from_object translators */
+
+namespace translate {
+template <>
+struct from_object<llvm::TargetPassConfig *, std::true_type> {
+  typedef llvm::TargetPassConfig *DeclareType;
+  DeclareType _v;
+  from_object(T_P object) : _v(object.nilp() ? NULL : gc::As<llvmo::TargetPassConfig_sp>(object)->wrappedPtr()){};
+};
+};
+
+/* to_object translators */
+
+namespace translate {
+  template <>
+    struct to_object<llvm::TargetPassConfig *> {
+    static core::T_sp convert(llvm::TargetPassConfig *ptr) {
+      return ((core::RP_Create_wrapped<llvmo::TargetPassConfig_O, llvm::TargetPassConfig *>(ptr)));
+    }
+  };
+};
+
+namespace translate {
+  template <>
+    struct to_object<llvm::TargetPassConfig&> {
+    static core::T_sp convert(llvm::TargetPassConfig& obj) {
+      return ((core::RP_Create_wrapped<llvmo::TargetPassConfig_O, llvm::TargetPassConfig *>(&obj)));
+    }
+  };
+};
+
+
+
+
+
+
 namespace llvmo {
 FORWARD(ModulePass);
 class ModulePass_O : public Pass_O {
@@ -1182,6 +1253,48 @@ public:
 /* to_object translators */
 
 namespace llvmo {
+FORWARD(MetadataAsValue);
+class MetadataAsValue_O : public Value_O {
+  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::MetadataAsValue, MetadataAsValue_O, "MetadataAsValue", Value_O);
+  typedef llvm::MetadataAsValue ExternalType;
+  typedef llvm::MetadataAsValue *PointerToExternalType;
+public:
+  PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
+  void set_wrapped(PointerToExternalType ptr) {
+    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    this->_ptr = ptr;
+  }
+  MetadataAsValue_O() : Base(){};
+  ~MetadataAsValue_O() {}
+
+}; // MetadataAsValue_O
+}; // llvmo
+/* from_object translators */
+/* to_object translators */
+
+
+namespace translate {
+template <>
+struct from_object<llvm::MetadataAsValue *, std::true_type> {
+  typedef llvm::MetadataAsValue *DeclareType;
+  DeclareType _v;
+  from_object(T_P object) : _v(gc::As<llvmo::MetadataAsValue_sp>(object)->wrappedPtr()){};
+};
+};
+
+namespace translate {
+template <>
+struct to_object<llvm::MetadataAsValue*> {
+  static core::T_sp convert(llvm::MetadataAsValue* mav) {
+    GC_ALLOCATE(llvmo::MetadataAsValue_O, oattr);
+    oattr->set_wrapped(mav);
+    return oattr;
+  }
+};
+};
+
+namespace llvmo {
+FORWARD(Attribute);
 class Attribute_O : public core::General_O {
   LISP_CLASS(llvmo, LlvmoPkg, Attribute_O, "Attribute",core::General_O);
   //    DECLARE_ARCHIVE();
@@ -1243,6 +1356,8 @@ struct to_object<llvm::Attribute> {
 
 namespace llvmo {
 FORWARD(DataLayout);
+FORWARD(StructLayout);
+FORWARD(StructType);
  /*! DataLayout_O
 As of llvm3.7 the llvm::DataLayout seems to be passed around as a simple object
 and pointers to it are no longer required by functions or returned by functions.
@@ -1257,6 +1372,7 @@ public:
   CL_DEFMETHOD std::string getStringRepresentation() const { return this->_DataLayout->getStringRepresentation(); };
   size_t getTypeAllocSize(llvm::Type* ty);
   const llvm::DataLayout& dataLayout() { return *(this->_DataLayout); };
+  StructLayout_sp getStructLayout(StructType_sp ty) const;
  DataLayout_O(const llvm::DataLayout& orig)  {
    this->_DataLayout = new llvm::DataLayout(orig);
   };
@@ -1300,6 +1416,68 @@ namespace translate {
     }
   };
 };
+
+
+
+namespace llvmo {
+FORWARD(StructLayout);
+ /*! StructLayout_O
+As of llvm3.7 the llvm::StructLayout seems to be passed around as a simple object
+and pointers to it are no longer required by functions or returned by functions.
+So I'm changing StructLayout_O so that it wraps a complete llvm::StructLayout object
+*/
+class StructLayout_O : public core::General_O {
+  LISP_CLASS(llvmo, LlvmoPkg, StructLayout_O, "StructLayout", core::General_O);
+ protected:
+  const llvm::StructLayout* _StructLayout;
+public:
+  const llvm::StructLayout& structLayout() { return *(this->_StructLayout); };
+  size_t getSizeInBytes() const;
+  size_t getElementOffset(size_t idx) const;
+  /*! Delete the default constructor because llvm::StructLayout doesn't have one */
+  StructLayout_O(const llvm::StructLayout* orig)  {
+    this->_StructLayout = orig;
+  };
+  StructLayout_O() = delete;
+  ~StructLayout_O() {delete this->_StructLayout;}
+
+}; // StructLayout_O
+}; // llvmo
+/* from_object translators */
+
+#if 0
+namespace translate {
+  // Since llvm3.8 there don't appear to be functions that
+  // take or return llvm::StructLayout* pointers.  So I am commenting out
+  // their converters and I changed the StructLayout_O class to store a llvm::StructLayout
+  template <>
+    struct from_object<llvm::StructLayout const &, std::true_type> {
+    typedef llvm::StructLayout const &DeclareType;
+    DeclareType _v;
+  from_object(T_P object) : _v(gc::As<llvmo::StructLayout_sp>(object)->structLayout()) {};
+  };
+
+  // ----------   to_object converters
+  template <>
+    struct to_object<const llvm::StructLayout &> {
+    static core::T_sp convert(const llvm::StructLayout & ref) {
+      // Use the copy constructor to create a StructLayout_O
+      GC_ALLOCATE_VARIADIC(llvmo::StructLayout_O,val,ref);
+      return val;
+    }
+  };
+
+  /*! This copies the StructLayout so it doesn't deal with pointers at all */
+  template <>
+    struct to_object<llvm::StructLayout const, translate::dont_adopt_pointer> {
+    static core::T_sp convert(llvm::StructLayout orig) {
+      // Use the copy constructor to create a StructLayout_O
+      GC_ALLOCATE_VARIADIC(llvmo::StructLayout_O,val,orig);
+      return val;
+    }
+  };
+};
+#endif
 
 
 namespace llvmo {
@@ -3197,6 +3375,16 @@ struct from_object<llvm::ConstantPointerNull *, std::true_type> {
 };
     ;
 
+
+
+
+
+
+
+
+
+
+
 namespace llvmo {
 FORWARD(MDNode);
 class MDNode_O : public Metadata_O {
@@ -3483,6 +3671,7 @@ public:
   Instruction_sp back();
 
   core::List_sp instructions() const;
+  size_t number_of_instructions() const;
 
 }; // BasicBlock_O
 }; // llvmo
@@ -4178,6 +4367,45 @@ namespace llvmo {
 
   std::shared_ptr<llvm::Module> optimizeModule(std::shared_ptr<llvm::Module> M);
 };
+
+namespace llvmo {
+class MDBuilder_O;
+};
+
+template <>
+struct gctools::GCInfo<llvmo::MDBuilder_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = false;
+  static GCInfo_policy constexpr Policy = normal;
+};
+
+namespace llvmo {
+FORWARD(MDBuilder);
+class MDBuilder_O : public core::CxxObject_O {
+  LISP_CLASS(llvmo, LlvmoPkg, MDBuilder_O, "MDBuilder", core::CxxObject_O);
+protected:
+  llvm::MDBuilder _Builder;
+public:
+  MDBuilder_O(llvm::LLVMContext& context) : _Builder(context) {};
+public:
+  CL_LISPIFY_NAME(make_mdbuilder);
+  CL_DEF_CLASS_METHOD
+  static MDBuilder_sp make(LLVMContext_sp context) {
+    GC_ALLOCATE_VARIADIC(MDBuilder_O,mdb,*context->wrappedPtr());
+    return mdb;
+  };
+public:
+
+  CL_DEFMETHOD MDNode* createBranchWeightsTrueFalse(uint32_t trueWeight, uint32_t falseWeight)
+  {
+    return this->_Builder.createBranchWeights(trueWeight,falseWeight);
+  };
+    
+}; // MDBuilder_O
+}; // llvmo
+/* from_object translators */
+
+    ;
 
 
 

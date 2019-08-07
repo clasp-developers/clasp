@@ -1,14 +1,15 @@
 (in-package :cmp)
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (export '(
+            with-debug-info-source-position
             with-interpreter
+            module-report
             *debug-link-options* ;; A list of strings to inject into link commands
             *compile-file-debug-dump-module* ;; Dump intermediate modules
             *compile-debug-dump-module* ;; Dump intermediate modules
             *default-linkage*
             *default-compile-linkage*
             quick-module-dump
-            quick-message-dump
             write-bitcode
             load-bitcode
             *irbuilder*
@@ -17,6 +18,7 @@
             irc-function-create
             irc-bclasp-function-create
             irc-cclasp-function-create
+            +c++-stamp-max+
             %fn-prototype%
             +fn-prototype-argument-names+
             %fn-prototype*%
@@ -53,6 +55,11 @@
             +single-float-tag+
             +character-tag+
             +general-tag+
+            +where-tag-mask+
+            +derivable-where-tag+
+            +rack-where-tag+
+            +wrapped-where-tag+
+            +header-where-tag+
             *startup-primitives-as-list*
             %i1%
             %exception-struct%
@@ -72,9 +79,9 @@
             %t**%
             %t*[DUMMY]%
             %t*[DUMMY]*%
+            %symbol%
             %float%
             %double%
-            null-t-ptr
             %gcroots-in-module%
             %gcroots-in-module*%
             %function-description%
@@ -101,6 +108,8 @@
             make-function-info
             irc-create-call
             irc-create-invoke
+            irc-calculate-entry
+            irc-calculate-real-args
             compile-file-to-module
             link-builtins-module
             optimize-module-for-compile
@@ -114,10 +123,16 @@
             bclasp-compile-form
             compile-form
             compiler-error
+            compiler-warn
+            compiler-style-warn
             compiler-fatal-error
             compiler-message-file
             compiler-message-file-position
-            compiler-warning-undefined-global-variable
+            warn-undefined-global-variable
+            warn-undefined-type
+            warn-cannot-coerce
+            warn-invalid-number-type
+            warn-icsp-iesp-both-specified
             register-global-function-def
             register-global-function-ref
             analyze-top-level-form
@@ -137,6 +152,7 @@
             alloca-i8
             alloca-i8*
             alloca-i32
+            alloca-size_t
             alloca-return
             alloca-va_list
             alloca-temp-values
@@ -178,13 +194,37 @@
             irc-ret
             irc-undef-value-get
             irc-store
+            irc-struct-gep
+            irc-read-slot
+            irc-write-slot
+            irc-make-tmv
+            irc-tmv-primary
+            irc-tmv-nret
             irc-t*-result
             irc-tmv-result
+            irc-header-stamp
+            irc-rack-stamp
+            irc-wrapped-stamp
+            irc-derivable-stamp
             irc-switch
+            irc-add-case
             irc-tag-fixnum
             irc-trunc
             irc-unreachable
             irc-untag-fixnum
+            irc-untag-general
+            irc-untag-cons
+            irc-fdefinition
+            irc-setf-fdefinition
+            irc-real-array-displacement
+            irc-real-array-index-offset
+            irc-array-total-size
+            irc-array-rank
+            gen-%array-dimension
+            irc-vaslist-va_list-address
+            irc-vaslist-remaining-nargs-address
+            gen-vaslist-pop
+            gen-vaslist-length
             jit-constant-i1
             jit-constant-i8
             jit-constant-i32
@@ -207,13 +247,21 @@
             with-begin-end-catch
             preserve-exception-info
             *dbg-generate-dwarf*
-            *dbg-current-function*
+            *dbg-current-function-metadata*
+            *dbg-current-function-lineno*
             *dbg-current-scope*
             with-new-function
             with-dbg-function
             with-dbg-lexical-block
+            dbg-clear-irbuilder-source-location-impl
+            dbg-set-irbuilder-source-location-impl
             dbg-set-current-source-pos
-            dbg-set-current-source-pos-for-irbuilder
+            c++-field-offset
+            c++-field-index
+            c++-struct-type
+            c++-struct*-type
+            c++-field-ptr
+            %closure-with-slots%.offset-of[n]/t*
             with-try
             with-new-function-prepare-for-try
             with-debug-info-generator
@@ -225,7 +273,7 @@
             +cons-cdr-offset+
             +simple-vector._length-offset+
             %uintptr_t%
-            %return_type%
+            %return-type%
             %vaslist%
             %InvocationHistoryFrame%
             %register-save-area%
@@ -242,6 +290,8 @@
             %RUN-AND-LOAD-TIME-VALUE-HOLDER-GLOBAL-VAR-TYPE%
             codegen-startup-shutdown
             compute-rest-alloc
+            compile-tag-check
+            compile-header-check
             )))
 
 ;;; exports for runall
@@ -252,6 +302,16 @@
           generate-load-time-values
           ))
 
+;;; exports for conditions
+(export '(deencapsulate-compiler-condition
+          compiler-condition-origin
+          compiled-program-error
+          compiler-condition
+          undefined-variable-warning
+          undefined-function-warning
+          undefined-type-warning
+          redefined-function-warning
+          compiler-macro-expansion-error-warning))
 
 (in-package :literal)
 

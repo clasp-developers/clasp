@@ -1927,7 +1927,7 @@ T_mv sp_unwindProtect(List_sp args, T_sp environment) {
     // save the multiple values (from the vector)
     size_t nvals = lisp_multipleValues().getSize();
     T_O* mv_temp[nvals];
-    multipleValuesSaveToTemp(mv_temp);
+    multipleValuesSaveToTemp(nvals, mv_temp);
     eval::sp_progn(oCdr(args), environment);
     multipleValuesLoadFromTemp(nvals, mv_temp);
     throw;

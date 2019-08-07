@@ -59,7 +59,6 @@ namespace core {
     // entry_point is the LISP_CALLING_CONVENTION() macro
   FuncallableInstance_O(FunctionDescription* fdesc) :
     Base(funcallable_entry_point)
-      , _DebugOn(false)
       , _Class(_Nil<Instance_O>())
       , _Sig(_Nil<T_O>())
       , _FunctionDescription(fdesc)
@@ -70,7 +69,6 @@ namespace core {
     explicit FuncallableInstance_O(FunctionDescription* fdesc,Instance_sp metaClass, size_t slots) :
     Base(funcallable_entry_point),
       _Class(metaClass)
-      ,_DebugOn(false)
       ,_Sig(_Unbound<T_O>())
       ,_FunctionDescription(fdesc)
       , _CallHistory(_Nil<T_O>())
@@ -85,7 +83,7 @@ namespace core {
     // _Class   (matches offset of Instance_O)
     // _Rack    (matches offset of Instance_O)
     Instance_sp _Class;
-    SimpleVector_sp _Rack;
+    Rack_sp _Rack;
     T_sp   _Sig;
     FunctionDescription* _FunctionDescription;
     std::atomic<size_t>         _Compilations;
@@ -93,8 +91,6 @@ namespace core {
     gc::atomic_wrapper<T_sp>   _SpecializerProfile;
 //    T_sp   _Lock;
     gc::atomic_wrapper<T_sp>   _CompiledDispatchFunction;
-    bool   _DebugOn;
-  public:
   public:
     T_sp GFUN_NAME() const { return this->instanceRef(REF_GFUN_NAME); };
     T_sp GFUN_SPECIALIZERS() const { return this->instanceRef(REF_GFUN_SPECIALIZERS); };
@@ -144,8 +140,8 @@ namespace core {
     virtual int column() const { return 0; };
     virtual T_sp lambdaListHandler() const { HARD_IMPLEMENT_ME(); };
   public: // The hard-coded indexes above are defined below to be used by Class
-    void initializeSlots(gctools::Stamp is, size_t numberOfSlots);
-    void initializeClassSlots(Creator_sp creator, gctools::Stamp class_stamp);
+    void initializeSlots(gctools::ShiftedStamp is, size_t numberOfSlots);
+    void initializeClassSlots(Creator_sp creator, gctools::ShiftedStamp class_stamp);
     virtual void setf_lambda_list(List_sp lambda_list) { this->GFUN_LAMBDA_LIST_set(lambda_list); };
     virtual T_sp lambda_list() const { return this->GFUN_LAMBDA_LIST(); };
   public:
@@ -216,75 +212,4 @@ namespace gctools {
   };
 };
 
-
-template <>
-struct gctools::GCInfo<core::DtreeInterpreter_O> {
-  static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = false;
-  static GCInfo_policy constexpr Policy = normal;
-};
-
-namespace core {
-
-FORWARD(DtreeInterpreter);
-  class DtreeInterpreter_O : public Closure_O {
-    LISP_CLASS(core, CorePkg, DtreeInterpreter_O, "DtreeInterpreter",Closure_O);
-  public:
-    typedef enum { REF_TYPE = 0 } NamedStructSlots;
-    typedef enum { REF_DTREE_TYPE = 0,
-                   REF_DTREE_NODE = 1,
-                   REF_DTREE_END = 2 } DtreeSlots;
-    typedef enum { REF_NODE_TYPE = 0,
-                   REF_NODE_EQL_SPECIALIZERS = 1,
-                   REF_NODE_CLASS_SPECIALIZERS = 2,
-                   REF_NODE_INTERPRETER = 3,
-                   REF_NODE_END = 4} NodeSlots;
-    typedef enum { REF_RANGE_TYPE = 0,
-                   REF_RANGE_OUTCOME = 1,
-                   REF_RANGE_FIRST_STAMP = 2,
-                   REF_RANGE_LAST_STAMP = 3,
-                   REF_RANGE_REVERSED_CLASSES = 4,
-                   REF_RANGE_END = 5} RangeSlots;
-    typedef enum { REF_SKIP_TYPE = 0,
-                   REF_SKIP_OUTCOME = 1,
-                   REF_SKIP_END = 2 } SkipSlots;
-    typedef enum { REF_OUTCOME_TYPE = 0,
-                   REF_OUTCOME_SUBTYPE = 1 } OutcomeSlots;
-    typedef enum { REF_OPTIMIZED_SLOT_READER_TYPE = 0,
-                   REF_OPTIMIZED_SLOT_READER_SUBTYPE = 1,
-                   REF_OPTIMIZED_SLOT_READER_INDEX = 2,
-                   REF_OPTIMIZED_SLOT_READER_SLOT_NAME = 3,
-                   REF_OPTIMIZED_SLOT_READER_METHOD = 4,
-                   REF_OPTIMIZED_SLOT_READER_CLASS = 5,
-                   REF_OPTIMIZED_SLOT_READER_END = 6 } OptimizedSlotReaderSlots;
-    typedef enum { REF_OPTIMIZED_SLOT_WRITER_TYPE = 0,
-                   REF_OPTIMIZED_SLOT_WRITER_SUBTYPE = 1,
-                   REF_OPTIMIZED_SLOT_WRITER_INDEX = 2,
-                   REF_OPTIMIZED_SLOT_WRITER_SLOT_NAME = 3,
-                   REF_OPTIMIZED_SLOT_WRITER_METHOD = 4,
-                   REF_OPTIMIZED_SLOT_WRITER_CLASS = 5,
-                   REF_OPTIMIZED_SLOT_WRITER_END = 6 } OptimizedSlotWriterSlots;
-    typedef enum { REF_FAST_METHOD_CALL_TYPE = 0,
-                   REF_FAST_METHOD_CALL_SUBTYPE = 1,
-                   REF_FAST_METHOD_CALL_FUNCTION = 2,
-                   REF_FAST_METHOD_CALL_END = 3 } FastMethodCallSlots;
-    typedef enum { REF_EFFECTIVE_METHOD_OUTCOME_TYPE = 0,
-                   REF_EFFECTIVE_METHOD_OUTCOME_SUBTYPE = 1,
-                   REF_EFFECTIVE_METHOD_OUTCOME_APPLICABLE_METHODS = 2,
-                   REF_EFFECTIVE_METHOD_OUTCOME_FORM = 3,
-                   REF_EFFECTIVE_METHOD_OUTCOME_FUNCTION = 4,
-                   REF_EFFECTIVE_METHOD_OUTCOME_END = 5 } EffectiveMethodOutcome;
-  public:
-    T_sp            _GenericFunction;
-    core::T_sp      _Dtree;
-    size_t          _CallCount;
-  public:
-    static DtreeInterpreter_sp make_dtree_interpreter(T_sp generic_function, T_sp dtree);
-  public:
-    static LCC_RETURN LISP_CALLING_CONVENTION();
-    DtreeInterpreter_O(FunctionDescription* fdesc, T_sp generic_function, T_sp dtree) : Closure_O(entry_point,fdesc), _GenericFunction(generic_function), _Dtree(dtree), _CallCount(0) {};
-  };
-
-};
-
-#endif /* _core_instance_H_ */
+#endif /* _core_funcallable_instance_H_ */

@@ -106,7 +106,6 @@ contiguous block."
        x))
     (t (error "Illegal dimensions ~a for make-array" dimensions ))))
 
-
 (defun fill-array-with-seq (array initial-contents)
   (declare (array array)
            (sequence initial-contents)
@@ -184,7 +183,6 @@ INDEXes must be equal to the rank of ARRAY."
         (setf j (* j d)
               j (+ j ndx))))))
 
-
 (defun bit (bit-array &rest indices)
   "Args: (bit-array &rest indexes)
 Returns the bit of BIT-ARRAY specified by INDEXes."
@@ -194,7 +192,6 @@ Returns the bit of BIT-ARRAY specified by INDEXes."
   #+(not clasp-min)
   (check-type bit-array (array bit))
   (row-major-aref bit-array (row-major-index-inner bit-array indices)))
-
 
 (defun sbit (bit-array &rest indices)
   "Args: (simple-bit-array &rest subscripts)
@@ -428,9 +425,7 @@ adjustable array."
     ;Kpoeck
     (if (adjustable-array-p array)
         (sys:replace-array array x)
-        x)
-    ))
-
+        x)))
 
 ;;; Copied from cmuci-compat.lisp of CLSQL by Kevin M. Rosenberg (LLGPL-licensed)
 (defun shrink-vector (vec len)
@@ -439,7 +434,8 @@ adjustable array."
 	 (adjust-array vec len))
 	((typep vec 'simple-array)
 	 (let ((new-vec (make-array len :element-type (array-element-type vec))))
-	   (copy-subarray new-vec 0 vec 0 len)))
+	   (copy-subarray new-vec 0 vec 0 len)
+           new-vec))
 	((typep vec 'vector)
 	 (setf (fill-pointer vec) len)
 	 vec)

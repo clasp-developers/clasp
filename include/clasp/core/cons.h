@@ -35,13 +35,13 @@ THE SOFTWARE.
 //#include <clasp/core/lispList.h>
 
 namespace cl {
-extern core::Symbol_sp& _sym_typeError;
+extern core::Symbol_sp& _sym_type_error;
 extern core::Symbol_sp& _sym_Cons_O;
 };
 
 namespace kw {
 extern core::Symbol_sp& _sym_datum;
-extern core::Symbol_sp& _sym_expectedType;
+extern core::Symbol_sp& _sym_expected_type;
 };
 
 namespace core {

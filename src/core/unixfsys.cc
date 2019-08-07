@@ -210,6 +210,36 @@ CL_DEFUN T_mv core__fork(bool bReturnStream) {
 };
 
 
+CL_LAMBDA(stdout-fd stderr-fd);
+CL_DECLARE();
+CL_DOCSTRING("fork-redirect");
+CL_DEFUN T_mv core__fork_redirect(int stdout_fd, int stderr_fd) {
+  pid_t child_PID = fork();
+  if (child_PID >= 0) {
+    if (child_PID == 0) {
+      // Child
+      if (stdout_fd!= STDOUT_FILENO) {
+        while ((dup2(stdout_fd,STDOUT_FILENO) == -1) && (errno == EINTR)) {}
+        close(stdout_fd);
+      }
+      if (stderr_fd!= STDERR_FILENO) {
+        while ((dup2(stderr_fd,STDERR_FILENO) == -1) && (errno == EINTR)) {}
+        close(stderr_fd);
+      }
+      int flags = fcntl(STDOUT_FILENO,F_GETFL,0);
+      fcntl(STDOUT_FILENO,F_SETFL,flags|FD_CLOEXEC);
+      flags = fcntl(STDERR_FILENO,F_GETFL,0);
+      fcntl(STDERR_FILENO,F_SETFL,flags|FD_CLOEXEC);
+      return Values(_Nil<T_O>(),make_fixnum(child_PID));
+    } else {
+      // Parent
+      return Values(_Nil<T_O>(),clasp_make_fixnum(child_PID));
+    }
+  }
+  return Values(clasp_make_fixnum(-1), SimpleBaseString_O::make(std::strerror(errno)));
+};
+
+
 CL_DOCSTRING(R"(wait - see unix wait - returns (values pid status).
 The status can be passed to //core:wifexited// and //core:wifsignaled//. )");
 CL_DEFUN T_mv core__wait() {
@@ -353,12 +383,12 @@ CL_DEFUN bool core__wifsignaled(Fixnum_sp fstatus) {
 CL_LAMBDA(pid options);
 CL_DECLARE();
 CL_DOCSTRING("waitpid - see unix waitpid - returns status");
-CL_DEFUN int core__waitpid(Fixnum_sp pid, Fixnum_sp options) {
+CL_DEFUN T_mv core__waitpid(Fixnum_sp pid, Fixnum_sp options) {
   pid_t p = unbox_fixnum(pid);
   int status(0);
   int iopts = unbox_fixnum(options);
-  waitpid(p, &status, iopts);
-  return status;
+  int wpid = waitpid(p, &status, iopts);
+  return Values(make_fixnum(wpid),make_fixnum(status));
 };
 
 CL_LAMBDA();
@@ -439,7 +469,10 @@ CL_DOCSTRING("Return the unix current working directory");
 CL_DEFUN core::Str8Ns_sp ext__getcwd() {
   // TESTME :   Test this function with the new code
   const char *ok = ::getcwd(NULL,0);
-  
+  if (!ok) {
+    SIMPLE_ERROR(BF("There was an error in ext__getcwd - errno %d") % errno);
+  }
+    
   // Take into account what the shell, if any, might think about
   // the current working directory.  This is important in symlinked
   // trees.  However, we need to make sure that the information is
@@ -456,17 +489,18 @@ CL_DEFUN core::Str8Ns_sp ext__getcwd() {
       // However, I don't want to make it a non-const function
       // at this time.
       const char *nowpwd = ::getcwd(NULL,0);
-      if (strcmp(ok, nowpwd) == 0) {
+      if (nowpwd) {
+        if (strcmp(ok, nowpwd) == 0) {
         // OK, we should use the shell's/user's idea of "cd"
-        ::free((void*)ok);
-        ok = strdup(spwd);
+          ::free((void*)ok);
+          ok = strdup(spwd);
+        }
       }
     }
   } else {
     // was found to be invalid, save us re-testing on next call
     unsetenv("PWD");
   }
-
   size_t cwdsize = strlen(ok);
   // Pad with 4 characters for / and terminator \0
   core::Str8Ns_sp output = core::Str8Ns_O::make(cwdsize+2,'\0',true,core::clasp_make_fixnum(0));
@@ -1277,6 +1311,33 @@ CL_DEFUN T_sp core__mkstemp(String_sp thetemplate) {
   return output;
 }
 
+CL_LAMBDA(template);
+CL_DECLARE();
+CL_DOCSTRING("mkstemp-fd - return a file descriptor");
+CL_DEFUN T_sp core__mkstemp_fd(String_sp thetemplate) {
+  //  cl_index l;
+  int fd;
+  ASSERT(cl__stringp(thetemplate));
+  if (thetemplate.nilp()) SIMPLE_ERROR(BF("In %s the template is NIL") % __FUNCTION__);
+  thetemplate = core__coerce_to_filename(thetemplate);
+  stringstream outss;
+  outss << thetemplate->get();
+  outss << "XXXXXX";
+  string outname = outss.str();
+  std::vector<char> dst_path(outname.begin(), outname.end());
+  dst_path.push_back('\0');
+  clasp_disable_interrupts();
+  fd = mkstemp(&dst_path[0]);
+  outname.assign(dst_path.begin(), dst_path.end() - 1);
+  clasp_enable_interrupts();
+  T_sp output;
+  if (fd < 0) {
+    output = _Nil<T_O>();
+  }
+  unlink(outname.c_str());
+  return make_fixnum(fd);
+}
+
  CL_LAMBDA(template);
 CL_DECLARE();
 CL_DOCSTRING("mkdtemp");
@@ -1673,7 +1734,7 @@ CL_DEFUN bool core__unix_daylight_saving_time(Integer_sp unix_time) {
 CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("unixGetLocalTimeZone");
-CL_DEFUN Ratio_sp core__unix_get_local_time_zone() {
+CL_DEFUN Rational_sp core__unix_get_local_time_zone() {
   gctools::Fixnum mw;
 #if 0 && defined(HAVE_TZSET)
   tzset();
@@ -1691,8 +1752,11 @@ CL_DEFUN Ratio_sp core__unix_get_local_time_zone() {
     mw -= 24 * 60;
   else if (gtm.tm_wday == (ltm.tm_wday + 1) % 7)
     mw += 24 * 60;
+  // Fix from ecl
+  if (ltm.tm_isdst)
+    mw += 60;
 #endif
-  return Ratio_O::create(make_fixnum(mw), make_fixnum(60));
+  return Rational_O::create(make_fixnum(mw), make_fixnum(60));
 }
 
 CL_LAMBDA(dir mode);
@@ -1702,7 +1766,7 @@ CL_DEFUN T_sp core__mkdir(T_sp directory, T_sp mode) {
   int modeint = 0;
   int ok;
   String_sp filename = coerce::stringDesignator(directory);
-  if (mode.fixnump()) { // Fixnum_sp fn = mode.asOrNull<Fixnum_O>() ) {
+  if (mode.fixnump()) {
     Fixnum_sp fnMode(gc::As<Fixnum_sp>(mode));
     modeint = unbox_fixnum(fnMode);
     if (modeint < 0 || modeint > 0777) {
@@ -2028,4 +2092,63 @@ SYMBOL_EXPORT_SC_(ClPkg, probe_file);
 SYMBOL_EXPORT_SC_(ClPkg, deleteFile);
 SYMBOL_EXPORT_SC_(ClPkg, file_write_date);
 SYMBOL_EXPORT_SC_(ClPkg, userHomedirPathname);
+
+
+void error_bad_fd(int fd) {
+  SIMPLE_ERROR(BF("Invalid file-descriptor %d") % fd);
+}
+
+FdSet_O::FdSet_O() {
+  fd_set * fdsetp = &(this->_fd_set);
+  FD_ZERO(fdsetp);
+};
+
+CL_LISPIFY_NAME(fd_clr);
+CL_DEFMETHOD void FdSet_O::fd_clr_(int fd) {
+  if (fd <0 || fd >= FD_SETSIZE) { error_bad_fd(fd); };
+  FD_CLR(fd,&this->_fd_set);
+}
+
+CL_LISPIFY_NAME(fd_set);
+CL_DEFMETHOD void FdSet_O::fd_set_(int fd) {
+  if (fd <0 || fd >= FD_SETSIZE) { error_bad_fd(fd); };
+  FD_SET(fd,&this->_fd_set);
+}
+
+CL_LISPIFY_NAME(fd_copy);
+CL_DEFMETHOD void FdSet_O::fd_copy_(FdSet_sp copy) {
+  FD_COPY(&this->_fd_set,&copy->_fd_set);
+}
+
+CL_LISPIFY_NAME(fd_isset);
+CL_DEFMETHOD bool FdSet_O::fd_isset_(int fd) {
+  if (fd <0 || fd >= FD_SETSIZE) { error_bad_fd(fd); };
+  return FD_ISSET(fd,&this->_fd_set);
+}
+
+CL_LISPIFY_NAME(fd_zero);
+CL_DEFMETHOD void FdSet_O::fd_zero_() {
+  fd_set * fdsetp = &(this->_fd_set);
+  FD_ZERO(fdsetp);
+}
+
+CL_DOCSTRING("See unix select");
+CL_DEFUN T_mv core__select(int nfds, FdSet_sp readfds, FdSet_sp writefds, FdSet_sp errorfds,  size_t seconds, size_t microseconds )
+{
+  struct timeval timeout;
+  timeout.tv_sec = seconds;
+  timeout.tv_usec = microseconds;
+  int num =  select(nfds,&readfds->_fd_set,&writefds->_fd_set,&errorfds->_fd_set,&timeout);
+  if (num<0) {
+    return Values(make_fixnum(num), make_fixnum(errno));
+  }
+  return Values(make_fixnum(num), _Nil<T_O>());
+}
+
+CL_DEFUN FdSet_sp core__make_fd_set() {
+  GC_ALLOCATE(FdSet_O,fdset);
+  return fdset;
+}
+
+
 }; // namespace core

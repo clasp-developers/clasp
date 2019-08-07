@@ -115,10 +115,9 @@
 
 (defmethod cclasp-eval-with-env (form env)
   (funcall
-   (cclasp-compile-in-env nil
-                          ;; PROGN is needed to avoid processing declarations
-                          `(lambda () (progn ,form))
-                          env)))
+   (cclasp-compile-in-env
+    ;; PROGN is needed to avoid processing declarations
+    `(lambda () (progn ,form)) env)))
 
 (defmethod cclasp-eval-with-env (form (env core:value-frame))
   (cclasp-eval-with-env form (core:get-parent-environment env)))

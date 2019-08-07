@@ -127,7 +127,7 @@ default value of INITIAL-ELEMENT depends on TYPE."
                      ;;; ecl  tests instead for (or (and (subtypep type 'NULL) (plusp size))
                      ;;;                            (and (subtypep type 'CONS) (zerop size)))
                      (if (subtypep 'LIST type)
-                 result
+                         result
                          (if (and (subtypep type 'CONS) (zerop size))
                              (error-sequence-length result type 0)
                              result))
@@ -236,43 +236,48 @@ default value of INITIAL-ELEMENT depends on TYPE."
 (defun coerce-to-list (object)
   (if (listp object)
       object
-      (do ((it (make-seq-iterator object) (seq-iterator-next object it))
-	   (output nil))
-	  ((null it) (nreverse output))
-	(push (seq-iterator-ref object it) output))))
+      (let* ((head (list nil)) (tail head))
+        (dosequence (elt object (cdr head))
+          (let ((new-tail (list elt)))
+            (rplacd tail new-tail)
+            (setq tail new-tail))))))
 
-(defun coerce-to-vector (object elt-type length simple-array-p)
-  (let ((output object))
-    (unless (and (vectorp object)
-                 (or (null simple-array-p) (simple-array-p object))
-		 (eq (array-element-type object) elt-type))
-      (let* ((final-length (if (eq length '*) (length object) length)))
-	(setf output (make-vector elt-type final-length nil nil nil 0))
-	(do ((i (make-seq-iterator object) (seq-iterator-next output i))
-	     (j 0 (the index (1+ j))))
-	    ((= j final-length)
-	     (setf object output))
-	  (declare (index j))
-	  (setf (aref output j) (seq-iterator-ref object i)))))
-    (unless (eq length '*)
-      (unless (= length (length output))
-	(check-type output `(vector ,elt-type (,length)) "coerced object")))
-    output))
+;;; separate because it's easier to not make the whole list at once.
+;;; Only used in a compiler macroexpansion, for now
+(defun concatenate-to-list (core:&va-rest sequences)
+  (let* ((head (list nil)) (tail head))
+    (dovaslist (sequence sequences (cdr head))
+      (dosequence (elt sequence)
+        (let ((new-tail (list elt)))
+          (rplacd tail new-tail)
+          (setq tail new-tail))))))
+
+(defun concatenate-into-vector (vector core:&va-rest sequences)
+  ;; vector is assumed to be non complex and have the correct length.
+  (let ((index 0))
+    (dovaslist (sequence sequences vector)
+      (dosequence (elt sequence)
+        (setf (vref vector index) elt)
+        (incf index)))))
 
 (defun concatenate (result-type &rest sequences)
-  "Args: (type &rest sequences)
-Returns a new sequence of the specified type, consisting of all elements of
-SEQUENCEs."
-  (do* ((length-list (mapcar #'length sequences) (rest length-list))
-	(output (make-sequence result-type (apply #'+ length-list)))
-        (sequences sequences (rest sequences))
-        (i (make-seq-iterator output)))
-      ((null sequences) output)
-    (do* ((s (first sequences))
-	  (j (make-seq-iterator s) (seq-iterator-next s j)))
-	 ((seq-iterator-endp s j))
-      (seq-iterator-set output i (seq-iterator-ref s j))
-      (setq i (seq-iterator-next output i)))))
+  (let* ((lengths-list (mapcar #'length sequences))
+         (result (make-sequence result-type (apply #'+ lengths-list))))
+    (if (listp result)
+        (let ((cons result))
+          (do* ((sequences sequences (rest sequences))
+                (sequence (first sequences) (first sequences)))
+               ((null sequences) result)
+            (dosequence (elt sequence)
+              (rplaca cons elt)
+              (setq cons (cdr cons)))))
+        (with-array-data ((vec result) index)
+          (do* ((sequences sequences (rest sequences))
+                (sequence (first sequences) (first sequences)))
+               ((null sequences) result)
+            (dosequence (elt sequence)
+              (setf (vref vec index) elt)
+              (incf index)))))))
 
 ;;; This is not called anywhere yet (just used for a compiler macro)
 ;;; but it might be useful to have.
@@ -332,8 +337,6 @@ have the same length; NIL otherwise."
   (and (apply #'= (mapcar #'length sequences))
        (apply #'every predicate sequences)))
 
-
-
 (defun notany (predicate sequence &rest more-sequences)
   "Args: (predicate sequence &rest more-sequences)
 Returns T if none of the elements in SEQUENCEs satisfies PREDICATE; NIL
@@ -345,7 +348,6 @@ otherwise."
 Returns T if at least one of the elements in SEQUENCEs does not satisfy
 PREDICATE; NIL otherwise."
   (not (apply #'every predicate sequence more-sequences)))
-
 
 (defun map-into (result-sequence function &rest sequences)
 "Fills the output sequence with the values returned by applying FUNCTION to the

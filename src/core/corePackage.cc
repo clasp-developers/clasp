@@ -126,6 +126,8 @@ namespace core {
 const char *CorePkg_nicknames[] = {
     "SYSTEM", "sys", "SYS", "si", "SI", "" /*guard*/
 };
+SYMBOL_EXPORT_SC_(CorePkg, fixnump);
+SYMBOL_EXPORT_SC_(CorePkg, single_float_p);
 SYMBOL_EXPORT_SC_(CorePkg, STARuse_cleavir_compilerSTAR);  // nil (clasp) or T (cleavir)
 SYMBOL_EXPORT_SC_(CorePkg, STARstack_top_hintSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_contab_name_PLUS_);
@@ -150,6 +152,7 @@ SYMBOL_EXPORT_SC_(CorePkg, make_source_pos_info);
 SYMBOL_EXPORT_SC_(ExtPkg, STARclasp_clang_pathSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARinterrupts_enabledSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARdebug_threadsSTAR);
+SYMBOL_EXPORT_SC_(CorePkg, STARdebug_dtree_interpreterSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARallow_with_interruptsSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, signal_servicing);
 SYMBOL_EXPORT_SC_(CorePkg, handle_signal);
@@ -194,7 +197,7 @@ SYMBOL_EXPORT_SC_(ExtPkg,unix_signal_received);
 SYMBOL_EXPORT_SC_(KeywordPkg,process);
 SYMBOL_EXPORT_SC_(KeywordPkg,code);
 SYMBOL_EXPORT_SC_(KeywordPkg,handler);
-SYMBOL_EXPORT_SC_(CorePkg,STARinformation_callbackSTAR);
+SYMBOL_EXPORT_SC_(ExtPkg,information_interrupt);
 
 
 SYMBOL_EXPORT_SC_(CorePkg, STARmpi_rankSTAR);
@@ -240,8 +243,8 @@ SYMBOL_EXPORT_SC_(ClPkg, parseError);
 SYMBOL_EXPORT_SC_(ClPkg, readerError);
 SYMBOL_EXPORT_SC_(ClPkg, STARrandom_stateSTAR);
 SYMBOL_EXPORT_SC_(ClPkg, controlError);
-SYMBOL_EXPORT_SC_(ClPkg, typeError);
-SYMBOL_EXPORT_SC_(ClPkg, simpleTypeError);
+SYMBOL_EXPORT_SC_(ClPkg, type_error);
+SYMBOL_EXPORT_SC_(ClPkg, simple_type_error);
 SYMBOL_EXPORT_SC_(ClPkg, simpleError);
 SYMBOL_EXPORT_SC_(ClPkg, storageCondition);
 SYMBOL_EXPORT_SC_(ClPkg, simpleCondition);
@@ -312,11 +315,13 @@ SYMBOL_EXPORT_SC_(CorePkg, _PLUS_standardReadtable_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg, syntax_type);
 SYMBOL_EXPORT_SC_(CorePkg, sicl_readtable_case);
 SYMBOL_EXPORT_SC_(CorePkg, sicl_syntax_type);
+SYMBOL_EXPORT_SC_(CorePkg, _PLUS_WNOHANG_PLUS_);
 SYMBOL_EXPORT_SC_(KeywordPkg, create);
 SYMBOL_EXPORT_SC_(KeywordPkg, append);
 SYMBOL_EXPORT_SC_(KeywordPkg, debugStartup);
 SYMBOL_EXPORT_SC_(KeywordPkg, debugStartupVerbose);
 SYMBOL_EXPORT_SC_(KeywordPkg, cclasp);
+SYMBOL_EXPORT_SC_(KeywordPkg, cst);
 SYMBOL_EXPORT_SC_(KeywordPkg, bclasp);
 SYMBOL_EXPORT_SC_(KeywordPkg, load);
 SYMBOL_EXPORT_SC_(KeywordPkg, eval);
@@ -567,10 +572,10 @@ SYMBOL_EXPORT_SC_(ClPkg, break);
 SYMBOL_EXPORT_SC_(ClPkg, STARbreakOnSignalsSTAR);
 SYMBOL_SC_(CorePkg, STARnestedErrorDepthSTAR);
 SYMBOL_SC_(CorePkg, universalErrorHandler);
-SYMBOL_EXPORT_SC_(KeywordPkg, typeError);
+SYMBOL_EXPORT_SC_(KeywordPkg, type_error);
 SYMBOL_EXPORT_SC_(KeywordPkg, datum);
-SYMBOL_EXPORT_SC_(KeywordPkg, expectedType);
-SYMBOL_EXPORT_SC_(ClPkg, typeError);
+SYMBOL_EXPORT_SC_(KeywordPkg, expected_type);
+SYMBOL_EXPORT_SC_(ClPkg, type_error);
 SYMBOL_EXPORT_SC_(CorePkg, STARliteral_print_objectSTAR);
 SYMBOL_EXPORT_SC_(ClPkg, printObject);
 SYMBOL_EXPORT_SC_(ClPkg, makeCondition);
@@ -578,11 +583,10 @@ SYMBOL_EXPORT_SC_(ClPkg, controlError);
 SYMBOL_EXPORT_SC_(KeywordPkg, print);
 SYMBOL_EXPORT_SC_(KeywordPkg, pathname);
 SYMBOL_SC_(CorePkg, setThrowPosition);
-SYMBOL_EXPORT_SC_(CorePkg, tooFewArgumentsError);
-SYMBOL_EXPORT_SC_(CorePkg, tooManyArgumentsError);
+SYMBOL_EXPORT_SC_(CorePkg, wrongNumberOfArguments);
 SYMBOL_EXPORT_SC_(KeywordPkg, object);
-SYMBOL_EXPORT_SC_(KeywordPkg, formatControl);
-SYMBOL_EXPORT_SC_(KeywordPkg, formatArguments);
+SYMBOL_EXPORT_SC_(KeywordPkg, format_control);
+SYMBOL_EXPORT_SC_(KeywordPkg, format_arguments);
 SYMBOL_EXPORT_SC_(KeywordPkg, name);
 SYMBOL_EXPORT_SC_(KeywordPkg, stream);
 SYMBOL_EXPORT_SC_(KeywordPkg, package);
@@ -596,6 +600,8 @@ SYMBOL_EXPORT_SC_(ClPkg, simple_bit_vector);
 SYMBOL_EXPORT_SC_(ClPkg, bit_vector);
 
 
+SYMBOL_EXPORT_SC_(CorePkg, array_out_of_bounds);
+SYMBOL_EXPORT_SC_(KeywordPkg, array);
 SYMBOL_EXPORT_SC_(CorePkg, replaceArray);
 SYMBOL_EXPORT_SC_(CorePkg, fillArrayWithElt );
 SYMBOL_EXPORT_SC_(CorePkg, fillPointerSet );
@@ -800,7 +806,6 @@ SYMBOL_EXPORT_SC_(ClPkg, list);
 SYMBOL_SC_(CorePkg, key);
 SYMBOL_SC_(CorePkg, test_not);
 
-SYMBOL_EXPORT_SC_(KeywordPkg, name);
 SYMBOL_EXPORT_SC_(ClPkg, standard_class);
 SYMBOL_EXPORT_SC_(ClPkg, rest);
 
@@ -1125,6 +1130,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARuseBuildForkRedirectSTAR->defparameter(_Nil<T_O>());
 #endif
   _sym__PLUS_numberOfFixedArguments_PLUS_->defconstant(make_fixnum(LCC_ARGS_IN_REGISTERS));
+  _sym__PLUS_WNOHANG_PLUS_->defconstant(make_fixnum(WNOHANG));
   cl::_sym_STARrandom_stateSTAR->defparameter(RandomState_O::create());
   // Set up a hash table to save JIT info
   HashTableEqual_sp jit_save = HashTableEqual_O::create_default();
@@ -1195,7 +1201,6 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARdebug_valuesSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARdebug_hash_tableSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARforeign_data_reader_callbackSTAR->defparameter(_Nil<core::T_O>());
-  _sym_STARinformation_callbackSTAR->defparameter(_Nil<core::T_O>());
   gctools::_sym_STARdebug_gcrootsSTAR->defparameter(_Nil<core::T_O>());
   int optimization_level = 3;
   const char* optLevel = getenv("CLASP_OPTIMIZATION_LEVEL");
@@ -1219,6 +1224,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARreader_cst_resultSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARcache_macroexpandSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARdebugByteCodeSTAR->defparameter(_Nil<core::T_O>());
+  _sym_STARdebug_dtree_interpreterSTAR->defparameter(_Nil<core::T_O>());
 #if defined(__x86_64__)
   SYMBOL_EXPORT_SC_(KeywordPkg, address_model_64);
   Symbol_sp address_model = kw::_sym_address_model_64;

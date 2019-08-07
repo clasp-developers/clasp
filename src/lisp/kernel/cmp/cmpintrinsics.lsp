@@ -36,8 +36,8 @@ Set this to other IRBuilders to make code go where you want")
   "Maintains an IRBuilder for function alloca instructions")
 (defvar *irbuilder-function-body* nil
   "Maintains an IRBuilder for function body IR code")
-(defvar *compilation-unit-module-index* 0
-  "Incremented for each module build within a compilation-unit.
+(defvar *compilation-module-index* 0
+  "Incremented for each module build within a compile-file.
    It's used to get the proper order for ctor initialization.")
 
 ;;
@@ -49,10 +49,111 @@ Set this to other IRBuilders to make code go where you want")
 ;; - ssize_t
 ;; - time_t
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (let* ((module (llvm-create-module (next-run-time-module-name)))
+         (engine-builder (llvm-sys:make-engine-builder module))
+         (target-options (llvm-sys:make-target-options))
+         (_ (llvm-sys:set-target-options engine-builder target-options))
+         (execution-engine (llvm-sys:create engine-builder))
+         (data-layout (llvm-sys:get-data-layout execution-engine)))
+    (defvar *system-data-layout* data-layout)))
+
 (defun llvm-print (msg)
   (irc-intrinsic "debugMessage" (irc-bit-cast (module-make-global-string msg) %i8*%)))
+(defun llvm-print-pointer (msg ptr)
+  (llvm-print msg)
+  (irc-intrinsic "debugPointer" (irc-bit-cast ptr %i8*%)))
+(defun llvm-print-size_t (msg st)
+  (llvm-print msg)
+  (irc-intrinsic "debugPrint_size_t" (irc-bit-cast st %i64%)))
 
+
+(defstruct (c++-struct :named (:type vector))
+  name ; The symbol-macro name of the type
+  tag  ; The tag of the objects of this type
+  type-getter ; A single argument lambda that when passed an *llvm-context* returns the type
+  field-type-getters ; An alist of name/type-getter-functions
+  field-offsets
+  field-indices) 
+  
+(defmacro define-c++-struct (name tag fields)
+  "Defines the llvm struct and the dynamic variable OFFSETS.name that contains an alist of field
+names to offsets."
+  (let ((layout (gensym))
+        (gs-field (gensym))
+        (type-name (gensym "type-name"))
+        (context (gensym "context"))
+        (field-index (gensym)))
+    (let ((define-symbol-macro `(define-symbol-macro ,name
+                                    (llvm-sys:struct-type-get
+                                     *llvm-context*
+                                     (list ,@(mapcar #'first fields))
+                                     nil))))
+      (let ((field-offsets `(let ((,layout (llvm-sys:data-layout-get-struct-layout *system-data-layout* ,name))
+                                  (,field-index 0))
+                              (mapcar (lambda (,gs-field)
+                                        (prog1
+                                            (cons (second ,gs-field) (- (llvm-sys:struct-layout-get-element-offset ,layout ,field-index) ,tag))
+                                          (incf ,field-index)))
+                                      ',fields)))
+            (field-indices `(let ((,field-index 0))    ;
+                              (mapcar (lambda (,gs-field) ;
+                                        (prog1         ;
+                                            (cons (second ,gs-field) ,field-index) ;
+                                          (incf ,field-index))) ;
+                                      ',fields)))
+            (field-type-getters-list (mapcar (lambda (type-name) ;
+                                               #+(or)(format t "type-name -> ~s cadr -> ~s  ,car -> ~s~%" type-name (cadr type-name) (car type-name)) ;
+                                               `(cons ',(cadr type-name) (lambda (context) (let ((*llvm-context* context)) (llvm-sys:type-get-pointer-to ,(macroexpand (car type-name)))))))
+                                             fields)))
+        #+(or)
+        (progn
+          (format t "define-symbol-macro = ~s~%" define-symbol-macro)
+          (format t "field-offsets -> ~s~%" field-offsets)
+          (format t "field-indices -> ~s~%" field-indices)
+          (format t "field-type-getters-list -> ~s~%" field-type-getters-list))
+        (let ((final `(progn
+                        ,define-symbol-macro
+                        (defparameter ,(intern (core:bformat nil "INFO.%s" (string name)))
+                          (make-c++-struct :name ,name
+                                           :tag ,tag
+                                           :type-getter (lambda (context) (let ((*llvm-context* context)) ,name))
+                                           :field-type-getters (list ,@field-type-getters-list)
+                                           :field-offsets ,field-offsets
+                                           :field-indices ,field-indices)))))
+          final)))))
+
+(defun c++-field-offset (field-name info)
+  "Return the integer byte offset of the field for the c++-struct including the tag"
+  (let* ((entry (assoc field-name (c++-struct-field-offsets info)))
+         (_ (unless entry (error "Could not find field ~a in ~s" field-name info)))
+         (offset (cdr entry)))
+    offset))
+
+(defun c++-field-index (field-name info)
+  "Return the index of the field "
+  (let* ((entry (assoc field-name (c++-struct-field-indices info)))
+         (_ (unless entry (error "Could not find field ~a in ~s" field-name info)))
+         (index (cdr entry)))
+    index))
+
+(defun c++-struct-type (struct-info)
+  (funcall (c++-struct-type-getter struct-info) *llvm-context*))
+
+(defun c++-struct*-type (struct-info)
+  (llvm-sys:type-get-pointer-to (funcall (c++-struct-type-getter struct-info) *llvm-context*)))
+  
+(defun c++-field-ptr (struct-info tagged-object field-name)
+  (let* ((tag (c++-struct-tag struct-info))
+         (tagged-object-i8* tagged-object)
+         (field* (irc-gep tagged-object-i8* (list (jit-constant-i64 (c++-field-offset field-name struct-info)))))
+         (field-type-getter (cdr (assoc field-name (c++-struct-field-type-getters struct-info))))
+         (field-ptr (irc-bit-cast field* (funcall field-type-getter *llvm-context*))))
+    field-ptr))
+
+                                     
 (define-symbol-macro %i1% (llvm-sys:type-get-int1-ty *llvm-context*))
+(define-symbol-macro %i3% (llvm-sys:type-get-int-nty *llvm-context* 3))
 
 (define-symbol-macro %i8% (llvm-sys:type-get-int8-ty *llvm-context*)) ;; -> CHAR / BYTE
 (define-symbol-macro %i8*% (llvm-sys:type-get-pointer-to %i8%))
@@ -82,8 +183,10 @@ Set this to other IRBuilders to make code go where you want")
 
 (define-symbol-macro %size_t% #+address-model-64 %i64%
                               #+address-model-32 %i32%)
+(define-symbol-macro %atomic<size_t>% %size_t%)
 (define-symbol-macro %size_t*% (llvm-sys:type-get-pointer-to %size_t%))
 (define-symbol-macro %size_t**% (llvm-sys:type-get-pointer-to %size_t*%))
+(define-symbol-macro %size_t[0]% (llvm-sys:array-type-get %size_t% 0))
 
 (define-symbol-macro %void% (llvm-sys:type-get-void-ty *llvm-context*))
 (define-symbol-macro %void*% (llvm-sys:type-get-pointer-to %void%))
@@ -172,29 +275,8 @@ Set this to other IRBuilders to make code go where you want")
 Boehm and MPS use a single pointer"
   (list* data-ptr-type additional-fields))
 
-
-;;
-;; If I use an opaque type then the symbol type gets duplicated and that causes
-;; problems - try just using an int
-;;(define-symbol-macro %sym% (llvm-sys:struct-type-get *llvm-context* nil nil)) ;; "Symbol_O"
-(define-symbol-macro %sym% (llvm-sys:type-get-int32-ty *llvm-context*))
-(define-symbol-macro %sym-ptr% (llvm-sys:type-get-pointer-to %sym%))
-(define-symbol-macro %symsp% (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields %sym-ptr%) nil)) ;; "Sym_sp"
-(define-symbol-macro %symsp*% (llvm-sys:type-get-pointer-to %symsp%))
-
-
-;;
-;; Store a core::Function_sp pointer
-;;
-(define-symbol-macro %Function% (llvm-sys:type-get-int32-ty *llvm-context*))
-(define-symbol-macro %Function-ptr% (llvm-sys:type-get-pointer-to %Function%))
-(define-symbol-macro %Function_sp% (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields %Function-ptr%) nil)) ;; "Cfn_sp"
-(define-symbol-macro %Function_sp*% (llvm-sys:type-get-pointer-to %Function_sp%))
-
-
-
 ;; Define the T_O struct - right now just put in a dummy i32 - later put real fields here
-(define-symbol-macro %t% (llvm-sys:struct-type-get *llvm-context* nil  nil)) ;; "T_O"
+(define-symbol-macro %t% %i8%) ; (llvm-sys:struct-type-get *llvm-context* nil  nil)) ;; "T_O"
 (define-symbol-macro %t*% (llvm-sys:type-get-pointer-to %t%))
 (define-symbol-macro %t**% (llvm-sys:type-get-pointer-to %t*%))
 (define-symbol-macro %t*[0]% (llvm-sys:array-type-get %t*% 0))
@@ -202,10 +284,139 @@ Boehm and MPS use a single pointer"
 (define-symbol-macro %t*[DUMMY]% (llvm-sys:array-type-get %t*% 64))
 (define-symbol-macro %t*[DUMMY]*% (llvm-sys:type-get-pointer-to %t*[DUMMY]%))
 (define-symbol-macro %tsp% (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields %t*%) nil))  ;; "T_sp"
+(define-symbol-macro %atomic<tsp>% %tsp%)
 (define-symbol-macro %tsp*% (llvm-sys:type-get-pointer-to %tsp%))
 (define-symbol-macro %tsp**% (llvm-sys:type-get-pointer-to %tsp*%))
+(define-symbol-macro %tsp[0]% (llvm-sys:array-type-get %tsp% 0))
+
+(define-symbol-macro %metadata% (llvm-sys:type-get-metadata-ty *llvm-context*))
+
+
+;;; MUST match WrappedPointer_O layout
+(define-symbol-macro %wrapped-pointer%
+  (llvm-sys:struct-type-get
+   *llvm-context*
+   (list %i8*%     ; 0 vtable
+         %i64%     ; 1 _Stamp_;
+         %t*%      ; 2 Class_;
+         )
+   nil))
+(defconstant +wrapped-pointer.stamp-index+ 1)
+(define-symbol-macro %wrapped-pointer*% (llvm-sys:type-get-pointer-to %wrapped-pointer%))
+
+;;; MUST match Instance_O layout
+(define-symbol-macro %instance%
+  (llvm-sys:struct-type-get
+   *llvm-context*
+   (list %i8*%     ; 0 vtable
+         %t*%      ; 1 _Sig
+         %t*%      ; 2 _Class
+         %t*%      ; 3 _Rack
+         )
+   nil))
+(defconstant +instance.rack-index+ 3)
+(define-symbol-macro %instance*% (llvm-sys:type-get-pointer-to %instance%))
+
+
+;;; Must match SimpleVector_O aka GCArray_moveable<T_sp>
+(define-symbol-macro %simple-vector%
+  (llvm-sys:struct-type-get
+   *llvm-context*
+   (list %i8*%     ; 0 vtable
+         %size_t%  ; 1 length
+         %tsp[0]%  ; 2 zeroth element of data
+         )
+   nil))
+(defconstant +simple-vector.length-index+ 1)
+(defconstant +simple-vector.data-index+ 2)
+
+(define-symbol-macro %rack%
+  (llvm-sys:struct-type-get
+   *llvm-context*
+   (list %i8*%     ; 0 vtable
+         %tsp%     ; 2 Stamp
+         %size_t%  ; 1 length
+         %t*[0]%  ; 3 zeroth element of data
+         )
+   nil))
+(define-symbol-macro %rack*% (llvm-sys:type-get-pointer-to %rack%))
+
+(defconstant +rack.stamp-index+ 1)
+(defconstant +rack.length-index+ 2)
+(defconstant +rack.data-index+ 3)
+
+
+(define-c++-struct %mdarray% +general-tag+
+  ((%i8*% :vtable)
+   (%size_t% :Fill-Pointer-Or-Length-Or-Dummy)
+   (%size_t% :Array-Total-Size)
+   (%t*%     :Data)
+   (%size_t% :Displaced-Index-Offset)
+   (%size_t% :Flags)
+   (%size_t% :rank)
+   (%size_t[0]% :dimensions)))
+
+(define-symbol-macro %mdarray*% (llvm-sys:type-get-pointer-to %mdarray%))
+
+(define-symbol-macro %value-frame%
+  (llvm-sys:struct-type-get
+   *llvm-context*
+   (list %i8*%     ; 0 vtable
+         %tsp%     ; 1 _Parent
+         %size_t%  ; 2 length
+         %tsp[0]%  ; 3 zeroth element of data
+         )
+   nil))
+(define-symbol-macro %value-frame*% (llvm-sys:type-get-pointer-to %value-frame%))
+(defconstant +value-frame.parent-index+ 1)
+(defconstant +value-frame.length-index+ 2)
+(defconstant +value-frame.data-index+ 3)
+
+
+
+;;; MUST match FuncallableInstance_O layout
+(define-symbol-macro %funcallable-instance%
+  (llvm-sys:struct-type-get
+   *llvm-context*
+   (list %i8*%     ; 0 vtable
+         %i8*%     ; 1 entry (From Function_O)
+         %t*%      ; 2 _Class
+         %t*%      ; 3 _Rack
+         %t*%      ; 4 _Sig
+         %function-description*%   ; 5 FunctionDescription*
+         %atomic<size_t>%          ; 6 _Compilations
+         %atomic<tsp>%             ; 7 _CallHistory
+         %atomic<tsp>%             ; 7 _SpecializerProfile
+         %atomic<tsp>%             ; 8 _CompiledDispatchFunction
+         )
+   nil))
+(define-symbol-macro %funcallable-instance*% (llvm-sys:type-get-pointer-to %funcallable-instance%))
+(defconstant +funcallable-instance.rack-index+ 3)
+(define-symbol-macro %funcallable-instance*% (llvm-sys:type-get-pointer-to %funcallable-instance%))
+
+;;;
+;;; The %symbol% type MUST match the layout and size of Symbol_O in symbol.h
+;;;
+(define-c++-struct %symbol% +general-tag+
+  ((%i8*% :sym-vtable)
+   (%t*% :name)
+   (%t*% :home-package)
+   (%t*% :global-value)
+   (%t*% :function)
+   (%t*% :setf-function)
+   (%i32% :binding-idx)
+   (%i32% :flags)
+   (%t*% :property-list)))
+
+(defconstant +symbol.function-index+ 4)
+(defconstant +symbol.setf-function-index+ 5)
+
+(define-symbol-macro %symbol*% (llvm-sys:type-get-pointer-to %symbol%))
+(define-symbol-macro %symsp% (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields %symbol*%) nil)) ;; "Sym_sp"
+(define-symbol-macro %symsp*% (llvm-sys:type-get-pointer-to %symsp%))
 
 (define-symbol-macro %cons% (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields %t*% %t*%) nil))
+(define-symbol-macro %cons*% (llvm-sys:type-get-pointer-to %cons%))
 
 ;; This structure must match the gctools::GCRootsInModule structure
 (define-symbol-macro %gcroots-in-module% (llvm-sys:struct-type-get
@@ -224,7 +435,7 @@ Boehm and MPS use a single pointer"
 
 ;; The definition of %tmv% doesn't quite match T_mv because T_mv inherits from T_sp
 (define-symbol-macro %tmv% (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields %t*% %size_t%) nil))  ;; "T_mv"
-(define-symbol-macro %return_type% %tmv%)
+(define-symbol-macro %return-type% %tmv%)
 (define-symbol-macro %tmv*% (llvm-sys:type-get-pointer-to %tmv%))
 (define-symbol-macro %tmv**% (llvm-sys:type-get-pointer-to %tmv*%))
 
@@ -316,7 +527,9 @@ Boehm and MPS use a single pointer"
   (error "I need a va_list struct definition for this system")
 
   (define-symbol-macro %va_list*% (llvm-sys:type-get-pointer-to %va_list%))
-  (define-symbol-macro %vaslist% (llvm-sys:struct-type-get *llvm-context* (list %va_list% %size_t%) nil))
+  (define-c++-struct %vaslist% +vaslist-tag+
+    ((%va_list% va_list)
+     (%size_t% remaining-nargs)))
   (define-symbol-macro %vaslist*% (llvm-sys:type-get-pointer-to %vaslist%))
 
 ;;;    "Function prototype for generic functions")
@@ -355,7 +568,7 @@ Boehm and MPS use a single pointer"
 ;; Parse the function arguments into a calling-convention
 ;;
 ;; What if we don't want/need to spill the registers to the register-save-area?
-(defun initialize-calling-convention (arguments setup &key (rewind t) cleavir-lambda-list rest-alloc)
+(defun initialize-calling-convention (arguments setup &key cleavir-lambda-list rest-alloc)
   (let ((register-save-area* (calling-convention-configuration-register-save-area* setup)))
     (if (null register-save-area*)
         ;; If there's no RSA, we determined we only need registers and don't need to dump things.
@@ -368,13 +581,14 @@ Boehm and MPS use a single pointer"
         ;; The register arguments need to be spilled to the register-save-area
         ;;    and the va_list needs to be initialized.
         ;;    If a InvocationHistoryFrame is available, then initialize it.
-        (progn
+        (let* ((use-only-registers (calling-convention-configuration-use-only-registers setup))
+               (create-a-va-list (null use-only-registers)))
           (maybe-spill-to-register-save-area arguments register-save-area*)
           (make-calling-convention-impl :closure (first arguments)
                                         :nargs (second arguments) ;; The number of arguments
                                         :register-args (nthcdr 2 arguments)
-                                        :use-only-registers (calling-convention-configuration-use-only-registers setup)
-                                        :va-list* (alloca-va_list)
+                                        :use-only-registers use-only-registers
+                                        :va-list* (when create-a-va-list (alloca-va_list)) ; Only create va-list* if we need to rewind it
                                         :register-save-area* register-save-area*
                                         :cleavir-lambda-list cleavir-lambda-list
                                         :rest-alloc rest-alloc)))))
@@ -399,6 +613,8 @@ eg:  (f closure-ptr nargs a b c d ...)
       (irc-intrinsic "llvm.va_start" (irc-bit-cast va-list* %i8*%))
       (when rewind (calling-convention-rewind-va-list-to-start-on-third-argument cc)))))
 
+
+(defparameter *debug-register-parameter* nil)
 
 #+x86-64
 (progn
@@ -428,12 +644,25 @@ eg:  (f closure-ptr nargs a b c d ...)
                                              (/ +register-save-area-size+ +void*-size+)))
   (define-symbol-macro %register-save-area*% (llvm-sys:type-get-pointer-to %register-save-area%))
   ;; (Maybe) generate code to store registers in memory. Return value unspecified.
+
+  (defun dbg-register-parameter (register name argno &optional (type-name "T_O*") (type llvm-sys:+dw-ate-address+))
+    (let* ((dbg-arg0 (dbg-create-parameter-variable :name name
+                                                    :argno argno
+                                                    :lineno *dbg-current-function-lineno*
+                                                    :type (llvm-sys:create-basic-type *the-module-dibuilder* type-name 64 type)
+                                                    :always-preserve t))
+           (diexpression (llvm-sys:create-expression-none *the-module-dibuilder*))
+           (dbg-arg0-value (llvm-sys:metadata-as-value-get *llvm-context* dbg-arg0))
+           (diexpr-value (llvm-sys:metadata-as-value-get *llvm-context* diexpression)))
+      (if *debug-register-parameter*
+          (irc-intrinsic "llvm.dbg.value" (llvm-sys:metadata-as-value-get *llvm-context* (llvm-sys:value-as-metadata-get register)) dbg-arg0-value diexpr-value))))
+  
   (defun maybe-spill-to-register-save-area (registers register-save-area*)
     (if registers
         (labels ((spill-reg (idx reg addr-name)
                    (let* ((addr          (irc-gep register-save-area* (list (jit-constant-size_t 0) (jit-constant-size_t idx)) addr-name))
                           (reg-i8*       (irc-bit-cast reg %i8*% "reg-i8*"))
-                          (_             (irc-store reg-i8* addr)))
+                          (_             (irc-store reg-i8* addr "" t)))
                      addr)))
           (let* ((addr-closure  (spill-reg 0 (elt registers 0) "closure0"))
                  (addr-nargs    (spill-reg 1 (irc-int-to-ptr (elt registers 1) %i8*%) "nargs1"))
@@ -441,7 +670,13 @@ eg:  (f closure-ptr nargs a b c d ...)
                  (addr-farg1    (spill-reg 3 (elt registers 3) "arg1"))
                  (addr-farg2    (spill-reg 4 (elt registers 4) "arg2"))
                  (addr-farg3    (spill-reg 5 (elt registers 5) "arg3")))
-            (irc-intrinsic "cc_protect_alloca" (irc-bit-cast register-save-area* %i8*%))))
+            (dbg-register-parameter (elt registers 0) "closure" 0)
+            (dbg-register-parameter (elt registers 1) "nargs" 1 "int" llvm-sys:+dw-ate-signed-fixed+)
+            (dbg-register-parameter (elt registers 2) "farg0" 2)
+            (dbg-register-parameter (elt registers 3) "farg1" 3)
+            (dbg-register-parameter (elt registers 4) "farg2" 4)
+            (dbg-register-parameter (elt registers 5) "farg3" 5)
+            ))
         (unless register-save-area*
           (error "If registers is NIL then register-save-area* also must be NIL"))))
 
@@ -475,6 +710,21 @@ eg:  (f closure-ptr nargs a b c d ...)
 (define-symbol-macro %fn-prototype*[2]% (llvm-sys:array-type-get %fn-prototype*% 2))
 
 
+;;
+;; The %function% type MUST match the layout and size of Function_O in functor.h
+;;
+(define-symbol-macro %Function%
+    (llvm-sys:struct-type-get
+     *llvm-context*
+     (list %i8*%    ; vtable
+           %fn-prototype*%     ; entry
+           ) nil))
+(defconstant +function.entry-index+ 1)
+
+(define-symbol-macro %Function-ptr% (llvm-sys:type-get-pointer-to %Function%))
+(define-symbol-macro %Function_sp% (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields %Function-ptr%) nil)) ;; "Cfn_sp"
+(define-symbol-macro %Function_sp*% (llvm-sys:type-get-pointer-to %Function_sp%))
+
 ;;; ------------------------------------------------------------
 ;;;
 ;;; This must match FunctionDescription in functor.h
@@ -493,6 +743,26 @@ eg:  (f closure-ptr nargs a b c d ...)
                                     ) nil ))
 (define-symbol-macro %function-description*% (llvm-sys:type-get-pointer-to %function-description%))
 
+
+
+(define-c++-struct %closure-with-slots% +general-tag+
+  ((%i8*% vtable)
+   (%fn-prototype*% entry)
+   (%function-description*% function-description)
+   (%tsp% core::object-file)
+   (%i32% closure-type)
+   (%size_t% data-length)
+   (%tsp[0]% data0))
+  )
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (verify-closure-with-slots (c++-struct-field-offsets info.%closure-with-slots%)))
+
+(defun %closure-with-slots%.offset-of[n]/t* (index)
+  "This assumes that the t* offset coincides with the tsp start"
+  (let* ((offset-of-data (cdr (assoc 'data0 (c++-struct-field-offsets info.%closure-with-slots%))))
+         (sizeof-element (llvm-sys:data-layout-get-type-alloc-size *system-data-layout* %tsp%)))
+    (+ (* sizeof-element index) offset-of-data)))
+
 ;;
 ;; Define the InvocationHistoryFrame type for LispCompiledFunctionIHF
 ;;
@@ -507,14 +777,14 @@ eg:  (f closure-ptr nargs a b c d ...)
 ;(define-symbol-macro %LispCompiledFunctionIHF% (llvm-sys:struct-type-create *llvm-context* :elements (list %LispFunctionIHF%) :name "LispCompiledFunctionIHF"))
 
 #|
-  (defun make-gv-source-file-info-handle (module &optional handle)
+  (defun make-gv-file-scope-handle (module &optional handle)
     (if (null handle) (setq handle -1))
     (llvm-sys:make-global-variable module
                                    %i32%  ; type
                                    nil    ; constant
                                    'llvm-sys:internal-linkage
                                    (jit-constant-i32 handle)
-                                   "source-file-info-handle"))
+                                   "file-scope-handle"))
 |#
 
 (defun add-global-ctor-function (module main-function &key position register-library)
@@ -619,23 +889,26 @@ and initialize it with an array consisting of one function pointer."
     (let* ((global-ctor (add-global-ctor-function module startup-fn
                                                   :position position
                                                   :register-library register-library)))
-      (incf *compilation-unit-module-index*)
-      (add-llvm.global_ctors module *compilation-unit-module-index* global-ctor))))
+      (incf *compilation-module-index*)
+      (add-llvm.global_ctors module *compilation-module-index* global-ctor))))
 
 ;;
 ;; Ensure that the LLVM model of
 ;;   tsp matches shared_ptr<xxx> and
 ;;   tmv matches multiple_values<xxx>
 ;;
-(let* ((module (llvm-create-module (next-run-time-module-name)))
-       (engine-builder (llvm-sys:make-engine-builder module))
-       (target-options (llvm-sys:make-target-options)))
-  ;; module is invalid after make-engine-builder call
-  (llvm-sys:set-target-options engine-builder target-options)
-  (let* ((execution-engine (llvm-sys:create engine-builder))
-         (data-layout (llvm-sys:get-data-layout execution-engine))
+                                                   
+(progn
+  (let* ((data-layout *system-data-layout*)
          (tsp-size (llvm-sys:data-layout-get-type-alloc-size data-layout %tsp%))
          (tmv-size (llvm-sys:data-layout-get-type-alloc-size data-layout %tmv%))
+         (symbol-size (llvm-sys:data-layout-get-type-alloc-size data-layout %symbol%))
+         (symbol-layout (llvm-sys:data-layout-get-struct-layout data-layout %symbol%))
+         (symbol-function-offset (llvm-sys:struct-layout-get-element-offset symbol-layout +symbol.function-index+))
+         (symbol-setf-function-offset (llvm-sys:struct-layout-get-element-offset symbol-layout +symbol.setf-function-index+))
+         (function-size (llvm-sys:data-layout-get-type-alloc-size data-layout %function%))
+         (function-layout (llvm-sys:data-layout-get-struct-layout data-layout %function%))
+         (function-entry-offset (llvm-sys:struct-layout-get-element-offset function-layout +function.entry-index+))
          (vaslist-size (llvm-sys:data-layout-get-type-alloc-size data-layout %vaslist%))
          (register-save-area-size (llvm-sys:data-layout-get-type-alloc-size data-layout %register-save-area%))
          (invocation-history-frame-size (llvm-sys:data-layout-get-type-alloc-size data-layout %InvocationHistoryFrame%))
@@ -643,11 +916,47 @@ and initialize it with an array consisting of one function pointer."
          (function-description-size (llvm-sys:data-layout-get-type-alloc-size data-layout %function-description%)))
     (llvm-sys:throw-if-mismatched-structure-sizes :tsp tsp-size
                                                   :tmv tmv-size
+                                                  :symbol symbol-size
+                                                  :symbol-function-offset symbol-function-offset
+                                                  :symbol-setf-function-offset symbol-setf-function-offset
+                                                  :function function-size
+                                                  :function-entry-offset function-entry-offset
                                                   :contab gcroots-in-module-size
                                                   :valist vaslist-size
                                                   :ihf invocation-history-frame-size
                                                   :register-save-area register-save-area-size
-                                                  :function-description function-description-size)))
+                                                  :function-description function-description-size)
+
+    (let* ((instance-size (llvm-sys:data-layout-get-type-alloc-size data-layout %instance%))
+           (instance-layout (llvm-sys:data-layout-get-struct-layout data-layout %instance%))
+           (instance-rack-offset (llvm-sys:struct-layout-get-element-offset instance-layout +instance.rack-index+)))
+      (core:verify-instance-layout instance-size instance-rack-offset))
+
+    (unless (= +instance.rack-index+ +funcallable-instance.rack-index+)
+      (error "The +instance.rack-index+ ~d MUST match +funcallable-instance.rack-index+ ~d"
+             +instance.rack-index+ +funcallable-instance.rack-index+))
+    (let* ((funcallable-instance-size (llvm-sys:data-layout-get-type-alloc-size data-layout %funcallable-instance%))
+           (funcallable-instance-layout (llvm-sys:data-layout-get-struct-layout data-layout %funcallable-instance%))
+           (funcallable-instance-rack-offset (llvm-sys:struct-layout-get-element-offset funcallable-instance-layout +funcallable-instance.rack-index+)))
+      (core:verify-funcallable-instance-layout funcallable-instance-size funcallable-instance-rack-offset))
+    (let* ((simple-vector-layout (llvm-sys:data-layout-get-struct-layout data-layout %simple-vector%))
+           (simple-vector-length-offset (llvm-sys:struct-layout-get-element-offset simple-vector-layout +simple-vector.length-index+))
+           (simple-vector-data-offset (llvm-sys:struct-layout-get-element-offset simple-vector-layout +simple-vector.data-index+)))
+      (core:verify-simple-vector-layout simple-vector-length-offset simple-vector-data-offset))
+    (let* ((rack-layout (llvm-sys:data-layout-get-struct-layout data-layout %rack%))
+           (rack-stamp-offset (llvm-sys:struct-layout-get-element-offset rack-layout +rack.stamp-index+))
+           (rack-data-offset (llvm-sys:struct-layout-get-element-offset rack-layout +rack.data-index+)))
+      (core:verify-rack-layout rack-stamp-offset rack-data-offset))
+    (core:verify-mdarray-layout (c++-struct-field-offsets info.%mdarray%))
+    (let* ((value-frame-layout (llvm-sys:data-layout-get-struct-layout data-layout %value-frame%))
+           (value-frame-parent-offset (llvm-sys:struct-layout-get-element-offset value-frame-layout +value-frame.parent-index+))
+           (value-frame-length-offset (llvm-sys:struct-layout-get-element-offset value-frame-layout +value-frame.length-index+))
+           (value-frame-data-offset (llvm-sys:struct-layout-get-element-offset value-frame-layout +value-frame.data-index+)))
+      (core:verify-value-frame-layout value-frame-parent-offset value-frame-length-offset value-frame-data-offset))
+    (let* ((wrapped-pointer-layout (llvm-sys:data-layout-get-struct-layout data-layout %wrapped-pointer%))
+           (wrapped-pointer-stamp-offset (llvm-sys:struct-layout-get-element-offset wrapped-pointer-layout +wrapped-pointer.stamp-index+)))
+      (core:verify-wrapped-pointer-layout wrapped-pointer-stamp-offset))
+    ))
 
 ;;
 ;; Define exception types in the module
@@ -678,7 +987,7 @@ and initialize it with an array consisting of one function pointer."
 
 (defun assert-result-isa-llvm-value (result)
   (unless (llvm-sys:llvm-value-p result)
-      (error "result must be an instance of llvm-sys:Value_O but instead it has the value %s" result)))
+    (error "result must be an instance of llvm-sys:Value_O but instead it has the value ~s" result)))
 
 
 (defun codegen-startup-shutdown (module &optional gcroots-in-module roots-array-or-nil (number-of-roots 0) ordered-literals array)
@@ -772,7 +1081,7 @@ and initialize it with an array consisting of one function pointer."
 (defvar *compile-file-pathname* nil "Store the pathname of the currently compiled file")
 (defvar *compile-file-truename* nil "Store the truename of the currently compiled file")
 (defvar *compile-file-unique-symbol-prefix* "" "Store a unique prefix for symbols that are external-linkage")
-(defvar *compile-file-source-file-info* nil "Store the SourceFileInfo object for the compile-file target")
+(defvar *compile-file-file-scope* nil "Store the SourceFileInfo object for the compile-file target")
 
 (defvar *source-debug-pathname*)
 (defvar *source-debug-offset* 0)
@@ -780,27 +1089,39 @@ and initialize it with an array consisting of one function pointer."
 (defvar *gv-boot-functions* nil
   "A global value that stores a pointer to the boot function for the Module.
 It has appending linkage.")
-(defvar *current-form* nil "The current form being compiled")
-(defvar *current-env* nil "Current environment")
 (defvar *current-function* nil "The current function")
 (defvar *current-function-description* nil "The current function description")
 (defvar *current-function-name* nil "Store the current function name")
 (defvar *gv-current-function-name* nil "Store the global value in the module of the current function name ")
 
-
-(defparameter *quick-module-index* 0)
-(defun compile-file-quick-module-pathname (file-name-modifier)
-  (let* ((name-suffix (bformat nil "%05d-%s" (incf *quick-module-index*) file-name-modifier))
+(defun compile-file-quick-module-pathname (file-name-modifier &optional (cfo-pathname *compile-file-output-pathname*))
+  (let* ((name-suffix (bformat nil "%05d-%s" (core:next-number) file-name-modifier))
+         (base-path (pathname (core:monitor-directory)))
+         (cfo-directory0 (pathname-directory cfo-pathname))
+;;;         (_ (format t "cfo-directory0: ~s~%" cfo-directory0))
+;;;         (_ (format t "test ~s~%" (and (consp cfo-directory0) (eq (car cfo-directory0) :absolute))))
+         (cfo-directory (make-pathname :directory
+                                       (cond
+                                         ((and (consp cfo-directory0)
+                                               (eq (car cfo-directory0) :absolute))
+                                          (list* :relative (cdr cfo-directory0)))
+                                         (t cfo-directory0))))
+;;;         (_ (format t "cfo-directory: ~s~%" cfo-directory))
+         (full-directory (if cfo-directory
+                             (merge-pathnames cfo-directory (core:monitor-directory))
+                             (core:monitor-directory)))
+;;;         (_ (format t "full-directory: ~s~%" full-directory))
          (output-path (make-pathname
                        :name (concatenate
                               'string
-                              (pathname-name *compile-file-output-pathname*)
+                              (pathname-name cfo-pathname)
                               "-" name-suffix)
                        :type "ll"
-                       :defaults *compile-file-output-pathname*)))
+                       :defaults full-directory)))
     (cmp-log "Dumping module to %s%N" output-path)
     (ensure-directories-exist output-path)
     output-path))
+
 (defun compile-file-quick-module-dump (module file-name-modifier compile-file-debug-dump-module)
   "Dump the module as a .ll file"
   (if compile-file-debug-dump-module
@@ -812,11 +1133,11 @@ It has appending linkage.")
             (close fout))))))
 
 (defun compile-quick-module-pathname (file-name-modifier)
-  (let* ((name-suffix (bformat nil "module-%05d-%s" (incf *quick-module-index*) file-name-modifier))
+  (let* ((name-suffix (bformat nil "module-%05d-%s" (core:next-number) file-name-modifier))
          (output-path (make-pathname
                        :name name-suffix
-                       :directory '(:absolute "tmp")
-                       :type "ll")))
+                       :type "ll"
+                       :defaults (core:monitor-directory))))
     (ensure-directories-exist output-path)
     output-path))
 
@@ -849,42 +1170,6 @@ they are dumped into /tmp"
       (compile-file-quick-module-dump module name-modifier *compile-file-debug-dump-module*)
       (compile-quick-module-dump module name-modifier *compile-debug-dump-module*)))
 
-
-(defun compile-file-quick-message (file-name-modifier msg args)
-  (let* ((name-suffix (bformat nil "%05d-%s" (incf *quick-module-index*) file-name-modifier))
-         (output-path (make-pathname
-                       :name (concatenate
-                              'string
-                              (pathname-name *compile-file-output-pathname*)
-                              "-" name-suffix)
-                       :type "txt"
-                       :defaults *compile-file-output-pathname*)))
-    (ensure-directories-exist output-path)
-    (with-open-file (fout output-path :direction :output)
-      (apply #'bformat fout msg args))))
-
-(defun compile-quick-message (file-name-modifier msg args)
-  (if *compile-debug-dump-module*
-      (let* ((name-suffix (bformat nil "module-%05d-%s" (incf *quick-module-index*) file-name-modifier))
-             (output-path (make-pathname
-                           :name name-suffix
-                           :directory '(:absolute "tmp")
-                           :type "txt")))
-        (ensure-directories-exist output-path)
-        (let* ((output-name (namestring output-path))
-               (fout (open output-name :direction :output)))
-          (unwind-protect
-               (llvm-sys:dump-module *the-module* fout)
-            (close fout))))))
-
-
-(defun quick-message (file-name-modifier msg &rest args)
-  "Write a message into a file and write it to the same directory
-as quick-module-dump would write it"
-  (if *compile-file-debug-dump-module*
-      (compile-file-quick-message file-name-modifier msg args)
-      (compile-quick-message file-name-modifier msg args)))
-
 (defmacro log-module ((info) &rest body)
   "Wrap quick-module-dump around a block of code so that the module
 is dumped to a file before the block and after the block."
@@ -894,3 +1179,21 @@ is dumped to a file before the block and after the block."
      (multiple-value-prog1 (progn ,@body)
        (llvm-sys:sanity-check-module *the-module* 2)
        (quick-module-dump *the-module* ,(bformat nil "%s-end" info)))))
+
+
+(defun module-report (module)
+  (let ((total 0))
+    (dolist (func (llvm-sys:module-get-function-list module))
+      (let ((num-instructions 0))
+        (dolist (bb (llvm-sys:basic-blocks func))
+          (dolist (instr (llvm-sys:instructions bb))
+            (incf num-instructions)
+            (multiple-value-bind (valid lineno column)
+                (llvm-sys:get-debug-loc-info instr)
+              (if valid
+                  (format t "(Line: ~s col: ~s) ~s~%" lineno column instr)
+                  (format t "INVALID-DebugLoc ~s~%" instr)))
+            (incf total num-instructions)))
+        (format t "~a Function ~a~%" num-instructions func)))
+    (format t "~a total~%" total)))
+

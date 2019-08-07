@@ -139,9 +139,11 @@ public:
   static gctools::smart_ptr<WrapperType> make_wrapper(OT *naked, class_id classId) {
     GC_ALLOCATE_VARIADIC(WrapperType, obj, naked, classId);
     core::Symbol_sp classSymbol = reg::lisp_classSymbol<OT>();
-    ASSERT(!classSymbol.unboundp());
-    obj->_setInstanceClassUsingSymbol(classSymbol);
-    return obj;
+    if (!classSymbol.unboundp()) {
+      obj->_setInstanceClassUsingSymbol(classSymbol);
+      return obj;
+    }
+    SIMPLE_ERROR(BF("In make_wrapper for a class class_id %d - the classSymbol could not be identified - this probably means that you are trying to wrap an unexposed class") % classId );
   }
 
   static gctools::smart_ptr<WrapperType> make_wrapper(const OT &val, class_id classId) {

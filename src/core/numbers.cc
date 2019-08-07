@@ -1225,6 +1225,19 @@ T_sp numbers_monotonic(int s, int t, List_sp args) {
   return _lisp->_true();
 };
 
+T_sp numbers_monotonic_vaslist(int s, int t, VaList_sp args) {
+  Real_sp c = gc::As<Real_sp>(args->next_arg());
+  Real_sp d;
+  int dir;
+  while (args->remaining_nargs()>0) {
+    d = gc::As<Real_sp>(args->next_arg());
+    dir = s * basic_compare(c, d);
+    if (dir < t) return _lisp->_false();
+    c = d;
+  }
+  return _lisp->_true();
+};
+
 CL_NAME("TWO-ARG-<");
 CL_DEFUN bool two_arg__LT_(Number_sp x, Number_sp y) {
   return basic_compare(x, y) == -1;
@@ -1245,32 +1258,36 @@ CL_DEFUN bool two_arg__GE_(Number_sp x, Number_sp y) {
   return basic_compare(x, y) != -1;
 }
 
-CL_LAMBDA(&rest args);
-CL_DEFUN T_sp cl___LT_(List_sp args) {
-  if (args.nilp())
-      SIMPLE_PROGRAM_ERROR("< needs at least 1 argument",_Nil<T_O>());
-  return numbers_monotonic(-1, 1, args);
+CL_LAMBDA(core:&va-rest args);
+CL_DEFUN T_sp cl___LT_(VaList_sp args) {
+  if (args->remaining_nargs()<1) {
+    SIMPLE_ERROR(BF("< needs at least one argument"));
+  }
+  return numbers_monotonic_vaslist(-1, 1, args);
 };
 
-CL_LAMBDA(&rest args);
-CL_DEFUN T_sp cl___GT_(List_sp args) {
-  if (args.nilp())
-      SIMPLE_PROGRAM_ERROR("> needs at least 1 argument",_Nil<T_O>());
-  return numbers_monotonic(1, 1, args);
+CL_LAMBDA(core:&va-rest args);
+CL_DEFUN T_sp cl___GT_(VaList_sp args) {
+  if (args->remaining_nargs()<1) {
+    SIMPLE_ERROR(BF("> needs at least one argument"));
+  }
+  return numbers_monotonic_vaslist(1, 1, args);
 };
 
-CL_LAMBDA(&rest args);
-CL_DEFUN T_sp cl___LE_(List_sp args) {
-  if (args.nilp())
-      SIMPLE_PROGRAM_ERROR("<= needs at least 1 argument",_Nil<T_O>());
-  return numbers_monotonic(-1, 0, args);
+CL_LAMBDA(core:&va-rest args);
+CL_DEFUN T_sp cl___LE_(VaList_sp args) {
+  if (args->remaining_nargs()<1) {
+    SIMPLE_ERROR(BF("> needs at least one argument"));
+  }
+  return numbers_monotonic_vaslist(-1, 0, args);
 };
 
-CL_LAMBDA(&rest args);
-CL_DEFUN T_sp cl___GE_(List_sp args) {
-  if (args.nilp())
-      SIMPLE_PROGRAM_ERROR(">= needs at least 1 argument",_Nil<T_O>());
-  return numbers_monotonic(1, 0, args);
+CL_LAMBDA(core:&va-rest args);
+CL_DEFUN T_sp cl___GE_(VaList_sp args) {
+  if (args->remaining_nargs()<1) {
+    SIMPLE_ERROR(BF(">= needs at least one argument"));
+  }
+  return numbers_monotonic_vaslist(1, 0, args);
 };
 
 /*! Return true if two numbers are equal otherwise false */

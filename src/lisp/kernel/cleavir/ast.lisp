@@ -111,12 +111,12 @@
 ;;; This AST is used to represent a call to an intrinsic function inserted into the generated code.
 
 (defclass base-foreign-call-ast (cleavir-ast:ast)
-  ((%foreign-types :initarg :foreign-types :accessor foreign-types)
+  ((%foreign-types :initarg :foreign-types :accessor foreign-types :initform nil)
    (%argument-asts :initarg :argument-asts :reader argument-asts)))
 
 (cleavir-io:define-save-info base-foreign-call-ast
-  (:foreign-types foreign-types)
-  (:argument-asts argument-asts))
+    (:foreign-types foreign-types)
+    (:argument-asts argument-asts))
 
 (defmethod cleavir-ast-graphviz::label ((ast base-foreign-call-ast))
   (with-output-to-string (s)
@@ -197,6 +197,28 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; Class HEADER-STAMP-CASE-AST
+;;;
+
+(defclass header-stamp-case-ast (cleavir-ast:ast)
+  ((%stamp-ast :initarg :stamp-ast :reader stamp-ast)
+   (%derivable-ast :initarg :derivable-ast :reader derivable-ast)
+   (%rack-ast :initarg :rack-ast :reader rack-ast)
+   (%wrapped-ast :initarg :wrapped-ast :reader wrapped-ast)
+   (%header-ast :initarg :header-ast :reader header-ast)))
+
+(defmethod cleavir-ast:children ((ast header-stamp-case-ast))
+  (list (stamp-ast ast) (derivable-ast ast) (rack-ast ast)
+        (wrapped-ast ast) (header-ast ast)))
+
+(defun make-header-stamp-case-ast (stamp derivable rack wrapped header &optional origin)
+  (make-instance 'header-stamp-case-ast
+                 :stamp-ast stamp :derivable-ast derivable :rack-ast rack
+                 :wrapped-ast wrapped :header-ast header
+                 :origin origin))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; Class VECTOR-LENGTH-AST
 ;;;
 ;;; Represents an operation to get the length of a vector.
@@ -204,16 +226,16 @@
 ;;; as the length and fill pointer have the same offset.
 
 (defclass vector-length-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
-  ((%vector :initarg :vector :accessor vl-ast-vector)))
+  ((%vector :initarg :vector :accessor cleavir-ast:arg-ast)))
 
 (cleavir-io:define-save-info vector-length-ast
-    (:vector vl-ast-vector))
+    (:vector cleavir-ast:arg-ast))
 
 (defmethod cleavir-ast-graphviz::label ((ast vector-length-ast))
   "vlength")
 
 (defmethod cleavir-ast:children ((ast vector-length-ast))
-  (list (vl-ast-vector ast)))
+  (list (cleavir-ast:arg-ast ast)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -222,16 +244,16 @@
 ;;; Gets the actual underlying array of any mdarray.
 
 (defclass displacement-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
-  ((%mdarray :initarg :mdarray :accessor displacement-ast-mdarray)))
+  ((%mdarray :initarg :mdarray :accessor cleavir-ast:arg-ast)))
 
 (cleavir-io:define-save-info displacement-ast
-    (:mdarray displacement-ast-mdarray))
+    (:mdarray cleavir-ast:arg-ast))
 
 (defmethod cleavir-ast-graphviz::label ((ast displacement-ast))
   "displacement")
 
 (defmethod cleavir-ast:children ((ast displacement-ast))
-  (list (displacement-ast-mdarray ast)))
+  (list (cleavir-ast:arg-ast ast)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -240,16 +262,16 @@
 ;;; Gets the actual underlying DIO of any mdarray.
 
 (defclass displaced-index-offset-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
-  ((%mdarray :initarg :mdarray :accessor displaced-index-offset-ast-mdarray)))
+  ((%mdarray :initarg :mdarray :accessor cleavir-ast:arg-ast)))
 
 (cleavir-io:define-save-info displaced-index-offset-ast
-    (:mdarray displaced-index-offset-ast-mdarray))
+    (:mdarray cleavir-ast:arg-ast))
 
 (defmethod cleavir-ast-graphviz::label ((ast displaced-index-offset-ast))
   "d-offset")
 
 (defmethod cleavir-ast:children ((ast displaced-index-offset-ast))
-  (list (displaced-index-offset-ast-mdarray ast)))
+  (list (cleavir-ast:arg-ast ast)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -258,16 +280,16 @@
 ;;; Gets the total size of any mdarray.
 
 (defclass array-total-size-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
-  ((%mdarray :initarg :mdarray :accessor array-total-size-ast-mdarray)))
+  ((%mdarray :initarg :mdarray :accessor cleavir-ast:arg-ast)))
 
 (cleavir-io:define-save-info array-total-size-ast
-    (:mdarray array-total-size-ast-mdarray))
+    (:mdarray cleavir-ast:arg-ast))
 
 (defmethod cleavir-ast-graphviz::label ((ast array-total-size-ast))
   "ATS")
 
 (defmethod cleavir-ast:children ((ast array-total-size-ast))
-  (list (array-total-size-ast-mdarray ast)))
+  (list (cleavir-ast:arg-ast ast)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -276,16 +298,16 @@
 ;;; Gets the rank of any mdarray.
 
 (defclass array-rank-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
-  ((%mdarray :initarg :mdarray :accessor array-rank-ast-mdarray)))
+  ((%mdarray :initarg :mdarray :accessor cleavir-ast:arg-ast)))
 
 (cleavir-io:define-save-info array-rank-ast
-    (:mdarray array-rank-ast-mdarray))
+    (:mdarray cleavir-ast:arg-ast))
 
 (defmethod cleavir-ast-graphviz::label ((ast array-rank-ast))
   "rank")
 
 (defmethod cleavir-ast:children ((ast array-rank-ast))
-  (list (array-rank-ast-mdarray ast)))
+  (list (cleavir-ast:arg-ast ast)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -294,19 +316,63 @@
 ;;; Gets the dimensions of any mdarray.
 
 (defclass array-dimension-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
-  ((%mdarray :initarg :mdarray :accessor array-dimension-ast-mdarray)
-   (%axis :initarg :axis :accessor array-dimension-ast-axis)))
+  ((%mdarray :initarg :mdarray :accessor cleavir-ast:arg1-ast)
+   (%axis :initarg :axis :accessor cleavir-ast:arg2-ast)))
 
 (cleavir-io:define-save-info array-dimension-ast
-    (:mdarray array-dimension-ast-mdarray)
-  (:axis array-dimension-ast-axis))
+    (:mdarray cleavir-ast:arg1-ast)
+  (:axis cleavir-ast:arg2-ast))
 
 (defmethod cleavir-ast-graphviz::label ((ast array-dimension-ast))
   "AD")
 
 (defmethod cleavir-ast:children ((ast array-dimension-ast))
-  (list (array-dimension-ast-mdarray ast)
-        (array-dimension-ast-axis ast)))
+  (list (cleavir-ast:arg1-ast ast)
+        (cleavir-ast:arg2-ast ast)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Class HEADER-STAMP-AST
+
+(defclass header-stamp-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
+  ((%arg :initarg :arg :accessor cleavir-ast:arg-ast)))
+(cleavir-io:define-save-info header-stamp-ast (:arg cleavir-ast:arg-ast))
+(defmethod cleavir-ast-graphviz::label ((ast header-stamp-ast)) "header-stamp")
+(defmethod cleavir-ast:children ((ast header-stamp-ast))
+  (list (cleavir-ast:arg-ast ast)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Class RACK-STAMP-AST
+
+(defclass rack-stamp-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
+  ((%arg :initarg :arg :accessor cleavir-ast:arg-ast)))
+(cleavir-io:define-save-info rack-stamp-ast (:arg cleavir-ast:arg-ast))
+(defmethod cleavir-ast-graphviz::label ((ast rack-stamp-ast)) "rack-stamp")
+(defmethod cleavir-ast:children ((ast rack-stamp-ast))
+  (list (cleavir-ast:arg-ast ast)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Class WRAPPED-STAMP-AST
+
+(defclass wrapped-stamp-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
+  ((%arg :initarg :arg :accessor cleavir-ast:arg-ast)))
+(cleavir-io:define-save-info wrapped-stamp-ast (:arg cleavir-ast:arg-ast))
+(defmethod cleavir-ast-graphviz::label ((ast wrapped-stamp-ast)) "wrapped-stamp")
+(defmethod cleavir-ast:children ((ast wrapped-stamp-ast))
+  (list (cleavir-ast:arg-ast ast)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Class DERIVABLE-STAMP-AST
+
+(defclass derivable-stamp-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
+  ((%arg :initarg :arg :accessor cleavir-ast:arg-ast)))
+(cleavir-io:define-save-info derivable-stamp-ast (:arg cleavir-ast:arg-ast))
+(defmethod cleavir-ast-graphviz::label ((ast derivable-stamp-ast)) "derivable-stamp")
+(defmethod cleavir-ast:children ((ast derivable-stamp-ast))
+  (list (cleavir-ast:arg-ast ast)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -329,20 +395,20 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Class INSTANCE-STAMP-AST
+;;; Class VASLIST-LENGTH-AST
 ;;;
-;;; Get the stamp of an object.
+;;; Gets the remaining number of arguments of a vaslist.
 
-(defclass instance-stamp-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
-  ((%arg-ast :initarg :arg :reader cleavir-ast:arg-ast)))
+(defclass vaslist-length-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
+  ((%arg-ast :initarg :vaslist :reader cleavir-ast:arg-ast)))
 
-(cleavir-io:define-save-info instance-stamp-ast
-    (:arg cleavir-ast:arg-ast))
+(cleavir-io:define-save-info vaslist-length-ast
+    (:vaslist cleavir-ast:arg-ast))
 
-(defmethod cleavir-ast-graphviz::label ((ast instance-stamp-ast))
-  "instance-stamp")
+(defmethod cleavir-ast-graphviz::label ((ast vaslist-length-ast))
+  "vaslist-length")
 
-(defmethod cleavir-ast:children ((ast instance-stamp-ast))
+(defmethod cleavir-ast:children ((ast vaslist-length-ast))
   (list (cleavir-ast:arg-ast ast)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -506,6 +572,7 @@ precalculated-vector and returns the index."
                             :value index-or-immediate)
               (change-class ltv 'precalc-value-reference-ast
                             :index index-or-immediate
+                            :origin (clasp-cleavir::ensure-origin (cleavir-ast:origin ltv) 9999912)
                             :original-object form)))
         (push form forms)))
     (let ((cleavir-ast:*dynamic-environment* dynenv))

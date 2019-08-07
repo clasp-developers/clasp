@@ -631,6 +631,29 @@ public:
 };
 };
 
+namespace core {
+SMART(AtomicFixnumHolder);
+class AtomicFixnumHolder_O : public core::General_O {
+  LISP_CLASS(core, CorePkg, AtomicFixnumHolder_O, "AtomicFixnumHolder",core::General_O);
+public:
+  static AtomicFixnumHolder_sp make_atomic_fixnum(T_sp cl);
+  std::atomic<Fixnum> _Object;
+public:
+  T_sp atomic_fixnum_get() const;
+  void atomic_fixnum_set_unsafe(T_sp cl);
+  void atomic_fixnum_incf_unsafe(T_sp val);
+  explicit AtomicFixnumHolder_O(Fixnum c) : _Object(c) {};
+};
+};
+
+
+namespace core {
+// A dummy class for unused tag 
+class Unused_dummy_O : public T_O {
+  LISP_ABSTRACT_CLASS(core, CorePkg, Unused_dummy_O, "UNUSED",T_O);
+};
+};
+
 
 #include <clasp/core/glue.h>
 

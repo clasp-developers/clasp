@@ -34,6 +34,7 @@ THE SOFTWARE.
 #include <clasp/core/bformat.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/evaluator.h>
+#include <clasp/core/compiler.h>
 #include <clasp/core/numbers.h>
 #include <clasp/core/hashTable.h>
 #include <clasp/core/primitives.h>
@@ -125,17 +126,17 @@ void notVectorError(T_sp array) {
 }
 void noFillPointerError(Symbol_sp fn_name, T_sp thing) {
   ERROR(cl::_sym_simpleTypeError,
-        core::lisp_createList(kw::_sym_formatControl, core::lisp_createStr("When calling ~S the argument ~S is not an array with a fill pointer."),
-                              kw::_sym_formatArguments, core::lisp_createList(fn_name, thing),
-                              kw::_sym_expectedType, core::lisp_createList(cl::_sym_and,cl::_sym_vector,core::lisp_createList(cl::_sym_satisfies,cl::_sym_array_has_fill_pointer_p)),
+        core::lisp_createList(kw::_sym_format_control, core::lisp_createStr("When calling ~S the argument ~S is not an array with a fill pointer."),
+                              kw::_sym_format_arguments, core::lisp_createList(fn_name, thing),
+                              kw::_sym_expected_type, core::lisp_createList(cl::_sym_and,cl::_sym_vector,core::lisp_createList(cl::_sym_satisfies,cl::_sym_array_has_fill_pointer_p)),
                               kw::_sym_datum, thing));
 }
 void noFillPointerSpecializedArrayError(T_sp thing) {
   Array_sp athing = gc::As<Array_sp>(thing);
   ERROR(cl::_sym_simpleTypeError,
-        core::lisp_createList(kw::_sym_formatControl, core::lisp_createStr("When calling vectorPushExtend for a ~S specialized array ~S the argument ~S is not an array with a fill pointer."),
-                              kw::_sym_formatArguments, core::lisp_createList(athing->element_type(), thing),
-                              kw::_sym_expectedType, core::lisp_createList(cl::_sym_and,cl::_sym_vector,core::lisp_createList(cl::_sym_satisfies,cl::_sym_array_has_fill_pointer_p)),
+        core::lisp_createList(kw::_sym_format_control, core::lisp_createStr("When calling vectorPushExtend for a ~S specialized array ~S the argument ~S is not an array with a fill pointer."),
+                              kw::_sym_format_arguments, core::lisp_createList(athing->element_type(), thing),
+                              kw::_sym_expected_type, core::lisp_createList(cl::_sym_and,cl::_sym_vector,core::lisp_createList(cl::_sym_satisfies,cl::_sym_array_has_fill_pointer_p)),
                               kw::_sym_datum, thing));
 }
 
@@ -324,6 +325,29 @@ CL_DEFUN size_t cl__arrayDimension(Array_sp array, size_t idx)
   return array->arrayDimension(idx);
 }
 
+CL_LISPIFY_NAME("core:data-vector-p");
+CL_DEFUN bool core__data_vector_p(T_sp obj)
+{
+  return gc::IsA<AbstractSimpleVector_sp>(obj);
+}
+
+CL_LISPIFY_NAME("core:check-rank");
+CL_DEFUN T_mv core__check_rank(Array_sp array, size_t vs_rank) {
+  size_t rank = array->rank();
+  if (rank != vs_rank)
+    SIMPLE_ERROR(BF("Wrong number of subscripts, %d, for an array of rank %d.")
+                 % vs_rank % rank);
+  return Values0<T_O>();
+}
+
+CL_LISPIFY_NAME("core:check-index");
+CL_DEFUN T_mv core__check_index (size_t index, size_t max, size_t axis) {
+  if (!((index >= 0) && (index < max)))
+    SIMPLE_ERROR(BF("Invalid index %d for axis %d of array: expected 0-%d")
+                 % index % axis % max);
+  return Values0<T_O>();
+}
+
 // ------------------------------------------------------------
 //
 // MDArray_O
@@ -510,6 +534,19 @@ CL_DEFUN  T_sp cl__rowMajorAref(Array_sp array, size_t idx)
   return array->rowMajorAref(idx);
 }
 
+CL_LISPIFY_NAME("core:vref");
+CL_DEFUN T_sp core__vref(AbstractSimpleVector_sp vec, size_t idx)
+{
+  return vec->vref(idx);
+}
+
+CL_LISPIFY_NAME("CORE:vref");
+CL_DEFUN_SETF T_sp core__vset(T_sp value, AbstractSimpleVector_sp vec, size_t idx)
+{
+  vec->vset(idx, value);
+  return value;
+}
+
 CL_DEFUN size_t core__arrayFlags(Array_sp a)
 {
   if (gc::IsA<AbstractSimpleVector_sp>(a)) {
@@ -568,7 +605,6 @@ CL_DEFUN  size_t cl__array_rank(Array_sp array)
   return array->rank();
 }
 
-
 CL_LAMBDA(core::array);
 CL_DECLARE();
 CL_DOCSTRING("arrayDisplacement");
@@ -578,6 +614,16 @@ CL_DEFUN T_mv cl__array_displacement(Array_sp array) {
   }
   MDArray_O* mdarray = reinterpret_cast<MDArray_O*>(&*array);
   return Values(mdarray->displacedTo(),clasp_make_fixnum(mdarray->displacedIndexOffset()));
+}
+
+// Next two used internally. In the compiler they'll be inlined.
+CL_LISPIFY_NAME("core:%displacement");
+CL_DEFUN T_sp core__PERCENTdisplacement(MDArray_sp array) {
+  return array->realDisplacedTo();
+}
+CL_LISPIFY_NAME("core:%displaced-index-offset");
+CL_DEFUN T_sp core__PERCENTdisplaced_index_offset(MDArray_sp array) {
+  return clasp_make_fixnum(array->displacedIndexOffset());
 }
 
 void core__copy_subarray(Array_sp dest, Fixnum_sp destStart, Array_sp orig, Fixnum_sp origStart, Fixnum_sp len) {
@@ -2951,6 +2997,35 @@ CL_DEFUN Fixnum_sp cl__vector_push_extend(T_sp newElement, Vector_sp vec, size_t
   return vec->vectorPushExtend(newElement, extension);
 }
 
+CL_DEFUN void core__verify_simple_vector_layout(size_t length_offset, size_t data_offset)
+{
+  size_t cxx_length_offset = offsetof(SimpleVector_O,_Data._Length);
+  size_t cxx_data_offset = offsetof(SimpleVector_O,_Data._Data);
+  if (length_offset!=cxx_length_offset)
+    SIMPLE_ERROR(BF("length_offset %lu does not match cxx_length_offset %lu") % length_offset % cxx_length_offset );
+  if (data_offset!=cxx_data_offset)
+    SIMPLE_ERROR(BF("data_offset %lu does not match cxx_data_offset %lu") % data_offset % cxx_data_offset );
+}
+
+SYMBOL_EXPORT_SC_(KeywordPkg,vtable);
+SYMBOL_EXPORT_SC_(KeywordPkg,FillPointerOrLengthOrDummy);
+SYMBOL_EXPORT_SC_(KeywordPkg,ArrayTotalSize);
+SYMBOL_EXPORT_SC_(KeywordPkg,Data);
+SYMBOL_EXPORT_SC_(KeywordPkg,DisplacedIndexOffset);
+SYMBOL_EXPORT_SC_(KeywordPkg,Flags);
+SYMBOL_EXPORT_SC_(KeywordPkg,Rank);
+SYMBOL_EXPORT_SC_(KeywordPkg,Dimensions);
+
+CL_DEFUN void core__verify_mdarray_layout(T_sp alist)
+{
+  expect_offset(kw::_sym_FillPointerOrLengthOrDummy,alist,offsetof(MDArray_O,_FillPointerOrLengthOrDummy)-gctools::general_tag);
+  expect_offset(kw::_sym_ArrayTotalSize,alist,offsetof(MDArray_O,_ArrayTotalSize)-gctools::general_tag);
+  expect_offset(kw::_sym_Data,alist,offsetof(MDArray_O,_Data)-gctools::general_tag);
+  expect_offset(kw::_sym_DisplacedIndexOffset,alist,offsetof(MDArray_O,_DisplacedIndexOffset)-gctools::general_tag);
+  expect_offset(kw::_sym_Flags,alist,offsetof(MDArray_O,_Flags)-gctools::general_tag);
+  expect_offset(kw::_sym_Rank,alist,offsetof(MDArray_O,_Dimensions._Length)-gctools::general_tag);
+  expect_offset(kw::_sym_Dimensions,alist,offsetof(MDArray_O,_Dimensions._Data)-gctools::general_tag);
+}
 
 
 
@@ -3014,15 +3089,6 @@ CL_DEFUN List_sp core__split(const string& all, const string &chars) {
   }
   return first;
 }
-
-
-clasp_elttype clasp_array_elttype(T_sp a)
-{
-  return gc::As<Array_sp>(a)->elttype();
-}
-
-
-
 
 CL_DEFUN T_sp core__copy_to_simple_base_string(T_sp x)
 {

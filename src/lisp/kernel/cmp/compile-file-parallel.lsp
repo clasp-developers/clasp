@@ -34,7 +34,7 @@
                       :optimize-level optimize-level)
           (with-debug-info-generator (:module module
                                       :pathname *compile-file-truename*)
-            (with-make-new-run-all (run-all-function (core:bformat nil "-top-%d" (core:next-number)))
+            (with-make-new-run-all (run-all-function (namestring (ast-job-form-output-path job)))
               (with-literal-table
                   (let ((clasp-cleavir::*llvm-metadata* (make-hash-table :test 'eql)))
                     (core:with-memory-ramp (:pattern 'gctools:ramp)
@@ -49,7 +49,7 @@
           (irc-verify-module-safe module)
           (quick-module-dump module (format nil "preoptimize~a" (ast-job-form-index job)))
           ;; ALWAYS link the builtins in, inline them and then remove them.
-          (link-inline-remove-builtins module))
+          #+(or)(link-inline-remove-builtins module))
         (cond
           ((eq intermediate-output-type :object)
            (let ((object-file-path (make-pathname :type "o" :defaults (ast-job-form-output-path job))))
@@ -199,7 +199,6 @@
 (defun compile-file-to-result (given-input-pathname
                                &key
                                  compile-file-hook
-                                 type
                                  output-type
                                  output-path
                                  working-dir
@@ -215,7 +214,6 @@
 - given-input-pathname :: A pathname.
 - output-path :: A pathname.
 - compile-file-hook :: A function that will do the compile-file
-- type :: :kernel or :user (I'm not sure this is useful anymore)
 - source-debug-pathname :: A pathname.
 - source-debug-offset :: An integer.
 - environment :: Arbitrary, passed only to hook
@@ -228,38 +226,62 @@ Compile a lisp source file into an LLVM module."
            (if (pathname-match-p given-input-pathname clasp-source)
                (enough-namestring given-input-pathname clasp-source-root)
                given-input-pathname))
-         
          (source-sin (open given-input-pathname :direction :input))
          warnings-p failure-p)
     (with-open-stream (sin source-sin)
       ;; If a truename is provided then spoof the file-system to treat input-pathname
       ;; as source-truename with the given offset
       (when source-debug-pathname
-        (core:source-file-info (namestring given-input-pathname) source-debug-pathname source-debug-offset nil))
+        (core:file-scope (namestring given-input-pathname) source-debug-pathname source-debug-offset nil))
       (when *compile-verbose*
         (bformat t "; Compiling file parallel: %s%N" (namestring given-input-pathname)))
-      (cmp-log "About to start with-compilation-unit%N")
-      (with-compilation-unit ()
-        (let* ((*compile-file-pathname* (pathname (merge-pathnames given-input-pathname)))
-               (*compile-file-truename* (translate-logical-pathname *compile-file-pathname*)))
-          (with-source-pathnames (:source-pathname *compile-file-truename* ;(namestring source-location)
-                                  :source-debug-pathname source-debug-pathname
-                                  :source-debug-offset source-debug-offset)
-            (let ((intermediate-output-type (case output-type
-                                              (:fasl :object)
-                                              (:object :object)
-                                              (:bitcode :bitcode))))
-              (cclasp-loop2 given-input-pathname source-sin environment
-                            :dry-run dry-run
-                            :optimize optimize
-                            :optimize-level optimize-level
-                            :working-dir working-dir
-                            :output-path output-path
-                            :intermediate-output-type intermediate-output-type
-                            :ast-only ast-only
-                            :verbose verbose))))))))
+      (let* ((*compilation-module-index* 0)
+             (*compile-file-pathname* (pathname (merge-pathnames given-input-pathname)))
+             (*compile-file-truename* (translate-logical-pathname *compile-file-pathname*)))
+        (with-source-pathnames (:source-pathname *compile-file-truename* ;(namestring source-location)
+                                :source-debug-pathname source-debug-pathname
+                                :source-debug-offset source-debug-offset)
+          (let ((intermediate-output-type (case output-type
+                                            (:fasl :object)
+                                            (:object :object)
+                                            (:bitcode :bitcode))))
+            (cclasp-loop2 given-input-pathname source-sin environment
+                          :dry-run dry-run
+                          :optimize optimize
+                          :optimize-level optimize-level
+                          :working-dir working-dir
+                          :output-path output-path
+                          :intermediate-output-type intermediate-output-type
+                          :ast-only ast-only
+                          :verbose verbose)))))))
 
+(defun cfp-result-files (result extension)
+  (mapcar (lambda (name)
+            (make-pathname :type extension :defaults name))
+          result))
 
+(defun output-cfp-result (result output-path output-type)
+  (ensure-directories-exist output-path)
+  (cond
+    #+(or)
+    ((eq output-type :bitcode)
+     (cf2-log "output-type :bitcode  result -> ~s~%" result)
+     (link-modules output-path result))
+    ((eq output-type :fasl)
+     (let ((output-path (make-pathname :type (bitcode-extension) :defaults output-path)))
+       (llvm-link output-path :input-files (cfp-result-files result (bitcode-extension))
+                              :link-type :bitcode))
+     (llvm-link output-path :input-files (cfp-result-files result "o")
+                            :input-type :object))
+    ((eq output-type :object)
+     (let ((output-path (make-pathname :type (bitcode-extension) :defaults output-path)))
+       (llvm-link output-path :input-files (cfp-result-files result (bitcode-extension))
+                              :link-type :bitcode))
+     (let ((output-path (make-pathname :type "o" :defaults output-path)))
+       (llvm-link output-path :input-files (cfp-result-files result "o")
+                              :link-type :object)))
+    (t ;; unknown
+     (error "Add support for output-type: ~a" output-type))))
 
 (defun compile-file-parallel (input-file
                               &key
@@ -268,7 +290,6 @@ Compile a lisp source file into an LLVM module."
                                 (print *compile-print*)
                                 (optimize t)
                                 (optimize-level *optimization-level*)
-                                (system-p nil system-p-p)
                                 (external-format :default)
                                 ;; If we are spoofing the source-file system to treat given-input-name
                                 ;; as a part of another file then use source-debug-pathname to provide the
@@ -278,18 +299,16 @@ Compile a lisp source file into an LLVM module."
                                 (source-debug-offset 0)
                                 ;; output-type can be (or :fasl :bitcode :object)
                                 (output-type :fasl)
-                                ;; type can be either :kernel or :user
+                                ;; type can be either :kernel or :user (FIXME? unused)
                                 (type :user)
                                 ;; ignored by bclasp
                                 ;; but passed to hook functions
                                 environment
                                 ;; Use as little llvm as possible for timing
-                                dry-run ast-only
-                              &aux conditions)
+                                dry-run ast-only)
   "See CLHS compile-file."
-  (if system-p-p (error "I don't support system-p keyword argument - use output-type"))
   (if (not output-file-p) (setq output-file (cfp-output-file-default input-file output-type)))
-  (with-compiler-env (conditions)
+  (with-compiler-env ()
     ;; Do the different kind of compile-file here
     (let* ((*compile-print* print)
            (*compile-verbose* verbose)
@@ -302,73 +321,27 @@ Compile a lisp source file into an LLVM module."
            (working-dir (core:mkdtemp (namestring output-path)))
            (*compile-file-output-pathname* output-path))
       (with-compiler-timer (:message "Compile-file-parallel" :report-link-time t :verbose verbose)
-        (let ((result (compile-file-to-result input-pathname
-                                              :type type
-                                              :output-type output-type
-                                              :output-path output-path
-                                              :source-debug-pathname source-debug-pathname
-                                              :source-debug-offset source-debug-offset
-                                              :working-dir working-dir
-                                              :compile-file-hook *cleavir-compile-file-hook*
-                                              :environment environment
-                                              :optimize optimize
-                                              :optimize-level optimize-level
-                                              :verbose verbose
-                                              :ast-only ast-only
-                                              :dry-run dry-run)))
-          (cf2-log "Came out of compile-file-to-result with result: ~s~%" result)
+        (with-compilation-results ()
+          (let ((result (compile-file-to-result input-pathname
+                                                :output-type output-type
+                                                :output-path output-path
+                                                :source-debug-pathname source-debug-pathname
+                                                :source-debug-offset source-debug-offset
+                                                :working-dir working-dir
+                                                :compile-file-hook *cleavir-compile-file-hook*
+                                                :environment environment
+                                                :optimize optimize
+                                                :optimize-level optimize-level
+                                                :verbose verbose
+                                                :ast-only ast-only
+                                                :dry-run dry-run)))
+            (cf2-log "Came out of compile-file-to-result with result: ~s~%" result)
 ;;;          (loop for one in result do (format t "Result: ~s~%" one))
-          (cond
-            (dry-run
-             (format t "Doing nothing further~%"))
-            ((null output-path)
-             (error "The output-file is nil for input filename ~a~%" input-file))
-            #+(or)((eq output-type :object)
-                   (error "Implement me")
-                   (when verbose (bformat t "Writing object to %s%N" (core:coerce-to-filename output-path)))
-                   (ensure-directories-exist output-path)
-                   ;; Save the bitcode so we can take a look at it
-                   (with-track-llvm-time
-                       (write-bitcode module (core:coerce-to-filename (cfp-output-file-default output-path :bitcode))))
-                   (with-open-file (fout output-path :direction :output)
-                     (let ((reloc-model (cond
-                                          ((or (member :target-os-linux *features*) (member :target-os-freebsd *features*))
-                                           'llvm-sys:reloc-model-pic-)
-                                          (t 'llvm-sys:reloc-model-undefined))))
-                       (unless dry-run (generate-obj-asm module fout :file-type 'llvm-sys:code-gen-file-type-object-file :reloc-model reloc-model)))))
-            #+(or)
-            ((eq output-type :bitcode)
-             (cf2-log "output-type :bitcode  result -> ~s~%" result)
-             (link-modules output-path result))
-            ((eq output-type :fasl)
-             (ensure-directories-exist output-path)
-             (let ((output-path (make-pathname :type (bitcode-extension) :defaults output-path)))
-               (llvm-link output-path :input-files (mapcar (lambda (name)
-                                                             (make-pathname :type (bitcode-extension) :defaults name))
-                                                           result)
-                                      :link-type :bitcode))
-             (llvm-link output-path :input-files (mapcar (lambda (name)
-                                                           (make-pathname :type "o" :defaults name))
-                                                         result)
-                                    :input-type :object))
-            ((eq output-type :object)
-             (ensure-directories-exist output-path)
-             (let ((output-path (make-pathname :type (bitcode-extension) :defaults output-path)))
-               (llvm-link output-path :input-files (mapcar (lambda (name)
-                                                             (make-pathname :type (bitcode-extension) :defaults name))
-                                                           result)
-                                      :link-type :bitcode))
-             (let ((output-path (make-pathname :type "o" :defaults output-path)))
-               (llvm-link output-path :input-files (mapcar (lambda (name)
-                                                             (make-pathname :type "o" :defaults name))
-                                                           result)
-                                      :link-type :object)))
-            (t ;; fasl
-             (error "Add support for output-type: ~a" output-type)))          
-          (dolist (c conditions)
-            (when verbose
-              (bformat t "conditions: %s%N" c)))
-          (compile-file-results output-path conditions))))))
+            (cond (dry-run (format t "Doing nothing further~%"))
+                  ((null output-path)
+                   (error "The output-file is nil for input filename ~a~%" input-file))
+                  (t (output-cfp-result result output-path output-type)))
+            output-path))))))
 
 (defvar *compile-file-parallel* nil)
                               
@@ -378,5 +351,4 @@ Compile a lisp source file into an LLVM module."
       (apply #'compile-file-serial input-file args)))
 
 (eval-when (:load-toplevel)
-  (setf *compile-file-parallel* t)
-  (setf clasp-cleavir::*use-ast-interpreter* t))
+  (setf *compile-file-parallel* nil))

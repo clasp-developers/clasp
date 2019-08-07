@@ -54,7 +54,7 @@ Return T if disassembly was achieved - otherwise NIL"
     success))
 
 (defun disassemble-assembly (start end)
-  (format t "disassemble-assembly ~s ~s~%" start end)
+  (format t "; disassemble-assembly Size: ~s Origin: ~s~%" (- (core:pointer-integer end) (core:pointer-integer start)) start)
   (llvm-sys:disassemble-instructions (get-builtin-target-triple-and-data-layout)
                                      start end))
 
@@ -67,54 +67,41 @@ Return T if disassembly was achieved - otherwise NIL"
                                      :start-byte-offset start-byte-offset
                                      :end-byte-offset end-byte-offset))
 
+(defun disassemble-function-to-asm (function)
+  (multiple-value-bind (symbol start end type)
+      (core:lookup-address (core:function-pointer function))
+    (disassemble-assembly start end)
+    (bformat t "Done%N")))
+
+;;; should work for both lambda expressions and interpreted functions.
+(defun disassemble-to-ir (thing)
+  (let* ((*save-module-for-disassemble* t)
+         (cmp:*saved-module-from-clasp-jit* nil))
+    (compile nil thing)
+    (let ((module cmp:*saved-module-from-clasp-jit*))
+      (if module
+          (llvm-sys:dump-module module)
+          (error "Could not recover jitted module -> ~a" module)))))
+
 (defun disassemble (desig &key (type :asm))
-  "If type is :ASM then disassemble to assembly language from the START instruction, disassembling NUM instructions
-   if type is :IR then dump the llvm-ir for all of the associated functions and ignore START and NUM"
-  (check-type type (member :ir :asm))
-  (multiple-value-bind (func-or-lambda name)
-      (cond
-        ((null desig) (error 'type-error :datum desig :expected-type '(or symbol function (CONS (EQL SETF) (CONS SYMBOL NULL)))))
-        ((symbolp desig) (if (fboundp desig)
-                             (values (fdefinition desig) desig)
-                             (error "No function bound to ~A" desig)))
-        ((functionp desig) (multiple-value-bind (fn-lambda closurep name)
-                               (function-lambda-expression desig)
-                             (values desig name)))
-        ((and (consp desig) (eq (car desig) 'lambda))
-         (let* ((*save-module-for-disassemble* t)
-                (cmp:*saved-module-from-clasp-jit* nil))
-           (compile nil desig)
-           (let ((module cmp:*saved-module-from-clasp-jit*))
-             (if module
-                 (cond
-                   ((eq type :ir) (llvm-sys:dump-module module))
-                   ((eq type :asm) (warn "Handle disassemble of lambda-form to assembly"))
-                   (t (error 'type-error :datum type :expected-type '(or :ir :asm))))
-                 (error "Could not recover jitted module -> ~a" module))))
-         (return-from disassemble nil))
-         ;; treat setf functions
-         ((and (consp desig) (eq (car desig) 'setf)(fdefinition desig))
-         (values (fdefinition desig) desig))
-        (t (error 'type-error :datum desig :expected-type '(or symbol function (CONS (EQL SETF) (CONS SYMBOL NULL))))))
-    (setq name (if name name 'lambda))
-    (bformat t "Disassembling function: %s%N" (repr func-or-lambda))
-    (cond
-      ((functionp func-or-lambda)
-       (let ((fn func-or-lambda))
-         (cond
-           ((compiled-function-p fn)
-            (if (eq type :asm)
-                (multiple-value-bind (symbol start end type)
-                    (core:lookup-address (core:function-pointer fn))
-                  (disassemble-assembly start end)
-                  (bformat t "Done%N"))
-                (error "LLVM-IR is not saved for functions - use :type :asm to disassemble to native code")))
-           ((interpreted-function-p fn)
-            (format t "This is a interpreted function - compile it first~%")
-	        (error 'type-error :datum fn :expected-type '(or symbol function (CONS (EQL SETF) (CONS SYMBOL NULL)))))
-           ((eq type :asm)
-	        ;;; How is it possible to come to this branch
-            (llvm-sys:disassemble-instructions (get-builtin-target-triple-and-data-layout) (core:function-pointer fn)))
-           (t (error 'type-error :datum fn :expected-type '(or symbol function (CONS (EQL SETF) (CONS SYMBOL NULL))))))))
-      (t (error 'type-error :datum func-or-lambda :expected-type '(or symbol function (CONS (EQL SETF) (CONS SYMBOL NULL)))))))
+  "If type is :ASM (the default) then disassemble to machine assembly language.
+If type is :IR then dump the LLVM-IR for all of the associated functions.
+ Because Clasp does not normally store LLVM-IR for compiled functions,
+ this case only works if a lambda expression or interpreted function is provided."
+  (etypecase desig
+    (compiled-function
+     (ecase type
+       ((:ir)
+        (error "Dissassembly to LLVM-IR is not supported for already-compiled function: ~a"
+               desig))
+       ((:asm) (disassemble-function-to-asm desig))))
+    ((or symbol (cons (eql setf) (cons symbol null))) ; function name
+     (bformat t "Disassembling function: %s%N" desig)
+     ;; This will (correctly) signal an error if the name is unbound.
+     (disassemble (fdefinition desig) :type type))
+    ((or (cons (eql lambda)) ; lambda expression (roughly)
+         (satisfies core:interpreted-function-p))
+     (ecase type
+       ((:ir) (disassemble-to-ir desig))
+       ((:asm) (disassemble-function-to-asm (compile nil desig))))))
   nil)

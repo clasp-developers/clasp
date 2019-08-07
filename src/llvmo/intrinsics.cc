@@ -55,6 +55,7 @@ extern "C" {
 #include <clasp/core/wrappedPointer.h>
 #include <clasp/core/hashTable.h>
 #include <clasp/core/evaluator.h>
+#include <clasp/core/derivableCxxObject.h>
 #include <clasp/core/genericFunction.h>
 #include <clasp/core/sourceFileInfo.h>
 #include <clasp/core/loadTimeValues.h>
@@ -77,6 +78,17 @@ using namespace core;
 namespace core {
 extern const char* debug_InvocationHistoryFrame_name;
 };
+
+
+extern "C" {
+void invalid_index_error(void* fixnum_index, void* fixnum_max, void* fixnum_axis)
+{
+  SIMPLE_ERROR(BF("Invalid index %d for axis %d of array: expected 0-%d")
+               % untag_fixnum((core::T_O*)fixnum_index) % untag_fixnum((core::T_O*)fixnum_axis) % untag_fixnum((core::T_O*)fixnum_max));
+}
+
+};
+
 extern "C" {
 
 extern void dump_backtrace(core::InvocationHistoryFrame* frame);
@@ -164,24 +176,6 @@ ALWAYS_INLINE core::T_O *cc_makeCell()
   return res.raw_();
 }
 
-ALWAYS_INLINE void cc_writeCell(core::T_O *cell, core::T_O* val)
-{NO_UNWIND_BEGIN();
-  //	core::Cons_sp c = gctools::smart_ptr<core::Cons_O>(reinterpret_cast<core::Cons_O*>(cell));
-  if (!gc::tagged_consp(cell)) {
-    core::T_sp arg((gc::Tagged)cell);
-    intrinsic_error(llvmo::badCell,arg,_Nil<core::T_O>(),_Nil<core::T_O>());
-  }
-  core::Cons_O* cp = reinterpret_cast<core::Cons_O*>(gctools::untag_cons(cell));
-//  core::Cons_sp c = gctools::smart_ptr<core::Cons_O>((gc::Tagged)cell);
-#ifdef DEBUG_CC
-  printf("%s:%d writeCell cell[%p]  val[%p]\n", __FILE__, __LINE__, cell, val);
-#endif
-  cp->setCar(gctools::smart_ptr<core::T_O>((gc::Tagged)ENSURE_VALID_OBJECT(val)));
-  NO_UNWIND_END();
-}
-
-
-
 ALWAYS_INLINE void cc_push_InvocationHistoryFrame(core::T_O* tagged_closure, InvocationHistoryFrame* frame, va_list va_args, size_t nargs)
 {NO_UNWIND_BEGIN();
   core::core__stack_monitor(_Nil<core::T_O>());
@@ -265,7 +259,7 @@ ALWAYS_INLINE void setParentOfActivationFrame(core::T_O *resultP, core::T_O *par
 ALWAYS_INLINE core::T_O *cc_stack_enclose(void* closure_address,
                                           fnLispCallingConvention llvm_func,
                                           core::FunctionDescription* functionDescription,
-                                          std::size_t numCells, ...)
+                                          std::size_t numCells)
 {NO_UNWIND_BEGIN();
   ASSERT(((uintptr_t)(closure_address)&0x7)==0); //
   gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(closure_address);
@@ -286,16 +280,6 @@ ALWAYS_INLINE core::T_O *cc_stack_enclose(void* closure_address,
                                                                            core::ClosureWithSlots_O::cclaspClosure);
 
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid = gctools::smart_ptr<core::ClosureWithSlots_O>(obj);
-  core::T_O *p;
-  va_list argp;
-  va_start(argp, numCells);
-  int idx = 0;
-  for (; numCells; --numCells) {
-    p = ENSURE_VALID_OBJECT(va_arg(argp, core::T_O *));
-    (*functoid)[idx] = gctools::smart_ptr<core::T_O>((gc::Tagged)p);
-    ++idx;
-  }
-  va_end(argp);
 //  printf("%s:%d  Allocating closure on stack at %p  stack_closure_p()->%d\n", __FILE__, __LINE__, functoid.raw_(), functoid->stack_closure_p());
   return functoid.raw_();
   NO_UNWIND_END();
@@ -900,14 +884,87 @@ ALWAYS_INLINE core::T_O* to_object_pointer( void * x )
   return clasp_ffi::ForeignData_O::create(x).raw_();
 }
 
+
+
+
+
 // === END OF CORE TRANSLATORS ===
 
-}; // eytern "C"
+}; // extern "C"
+
+
+
+////////////////////////////////////////////////////////////
+//
+// builtins.cc moved here.
+//
+
+#include <clasp/llvmo/read-stamp.cc>
+
+extern "C" {
+uint64_t cx_read_stamp(core::T_O* obj, uint64_t stamp)
+{
+  uint64_t old_stamp = (uint64_t)llvmo::template_read_stamp<core::T_O>(obj);
+  cc_match((core::T_O*)old_stamp,(core::T_O*)stamp);
+  return old_stamp;
+}
+};
+
+extern "C" {
+core::T_O** lexicalValueReference(size_t depth, size_t index, core::ActivationFrame_O *frameP)
+{
+  core::ActivationFrame_sp af((gctools::Tagged)frameP);
+  core::T_sp& value_ref = core::value_frame_lookup_reference(af, depth, index);
+  return &value_ref.rawRef_();
+}
+
+
+gctools::ShiftedStamp cc_read_derivable_cxx_stamp_untagged_object(core::T_O* untagged_object)
+{
+  core::DerivableCxxObject_O* derivable_cxx_object_ptr = reinterpret_cast<core::DerivableCxxObject_O*>(untagged_object);
+  gctools::ShiftedStamp stamp = (gctools::ShiftedStamp)derivable_cxx_object_ptr->get_stamp_();
+  ASSERT(gctools::Header_s::Value::is_derivable_shifted_stamp(stamp));
+  printf("%s:%d:%s returning stamp %lu - check if it is correct\n", __FILE__, __LINE__, __FUNCTION__, stamp);
+  return stamp;
+}
+
+T_O* cc_match(T_O* old_value, T_O* new_value ) {
+  if (new_value!=NULL&&old_value!=new_value) {
+    printf("%s:%d There was a mismatch old value %p  new value %p\n", __FILE__, __LINE__, old_value, new_value );
+  }
+  return old_value;
+};
 
 
 
 
 
+void cc_rewind_va_list(va_list va_args, void** register_save_areaP)
+{
+  LCC_REWIND_VA_LIST(va_args,register_save_areaP);
+}
+
+uint cc_simpleBitVectorAref(core::T_O* tarray, size_t index) {
+  core::SimpleBitVector_O* array = reinterpret_cast<core::SimpleBitVector_O*>(gctools::untag_general<core::T_O*>(tarray));
+  return array->testBit(index);
+}
+
+void cc_simpleBitVectorAset(core::T_O* tarray, size_t index, uint v) {
+  core::SimpleBitVector_O* array = reinterpret_cast<core::SimpleBitVector_O*>(gctools::untag_general<core::T_O*>(tarray));
+  array->setBit(index, v);
+}
+
+core::T_O** activationFrameReferenceFromClosure(core::T_O* closureRaw)
+{
+  ASSERT(closureRaw);
+  if (closureRaw!=NULL) {
+    core::ClosureWithSlots_sp closure = core::ClosureWithSlots_sp((gctools::Tagged)closureRaw);
+    return &closure->closedEnvironment_rawRef();
+  }
+  return NULL;
+}
+
+};
 
 
 
@@ -933,6 +990,10 @@ void initialize_intrinsics( void )
 
   return;
 }
+
+
+
+
 
 }; // namespace llvmo
 

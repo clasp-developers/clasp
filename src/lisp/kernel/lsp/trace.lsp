@@ -14,11 +14,14 @@
 (in-package "SYSTEM")
 
 (defparameter *trace-level* 0)
-(defparameter *trace-list* nil) ; In all_symbols.d !
+(defparameter *trace-list* nil)
 (defparameter *trace-max-indent* 20)
 
-(defmacro trace (&rest r)
-"Syntax: (trace ({function-name | ({function-name}+)} {keyword [form]\}*)
+(defun currently-traced ()
+  (mapcar #'first *trace-list*))
+
+(defmacro trace (&rest specs)
+"Syntax: (trace ({function-name | ({function-name}+)} {keyword [form|(form*)]}*)
 Begins tracing the specified functions.  With no FUNCTION-NAMEs, returns a
 list of functions currently being traced. The printed information consists of
 the name of function followed at entry by its arguments and on exit by its
@@ -43,12 +46,9 @@ The possible keywords are:
 
 Forms can refer to the list of arguments of the function through the variable
 SI::ARGS."
-  `(trace* ',r))
-
-(defun trace* (r)
-  (if (null r)
-      (mapcar #'first *trace-list*)
-      (mapc #'trace-one r)))
+  (if (null specs)
+      `(currently-traced)
+      `(progn ,@(mapcan #'one-trace specs))))
 
 (defmacro untrace (&rest r)
   "Syntax: (untrace {function-name}*)
@@ -58,19 +58,22 @@ all functions."
   `(untrace* ',r))
 
 (defun untrace* (r)
-  (mapc #'untrace-one (or r (trace* nil))))
+  (mapc #'untrace-one (or r (currently-traced))))
 
+;;; Used to prevent problems when tracing functions used by trace.
 (defparameter *inside-trace* nil)
 
-(defun trace-one (spec)
-  (let* (break exitbreak (entrycond t) (exitcond t) entry exit
-	       step (barfp t) fname oldf)
-    (cond ((si::valid-function-name-p spec)
-           (setq fname spec))
-          ((not (si::proper-list-p spec))
-           (error "Not a valid argument to TRACE: ~S" spec))
-	  ((si::valid-function-name-p (first spec))
-	   (setq fname (first spec))
+;;; Expands into a list of forms that will trace the given fname.
+;;; Most of the work is done in one-trace*; this just parses.
+(defun one-trace (spec)
+  (let (break exitbreak (entrycond t) (exitcond t) entry exit
+        step (barfp t))
+    (cond ((valid-function-name-p spec) ; short form
+           (list
+            (one-trace* spec break exitbreak entrycond exitcond entry exit step)))
+          ((not (proper-list-p spec))
+           (error "Not a valid argument to TRACE: ~s" spec))
+          (t ; long form
 	   (do ((specs (cdr spec) (cdr specs)))
 	       ((null specs))
 	     (case (car specs)
@@ -84,107 +87,143 @@ all functions."
 	       (:print (setq barfp specs specs (cdr specs) entry (car specs)))
 	       (:print-after (setq barfp specs specs (cdr specs) exit (car specs)))
 	       (t (error "Meaningless TRACE keyword: ~S" (car specs))))
-	     (unless barfp (error "Parameter missing"))))
-	  ((si::proper-list-p (first spec))
-	   (let (results)
-             (dolist (fname (first spec))
-               (push (trace-one (list* fname (rest spec))) results))
-             (return-from trace-one (nreverse results))))
-          (t
-           (error "Not a valid argument to TRACE: ~S" spec)))
-    (when (null (fboundp fname))
-      (warn "The function ~S is not defined." fname)
-      (return-from trace-one nil))
-    (when (symbolp fname)
-      (when (special-operator-p fname)
-	(warn "Unable to trace special form ~S." fname)
-	(return-from trace-one nil))
-      (when (macro-function fname)
-	(warn "Unable to trace macro ~S." fname)
-	(return-from trace-one nil)))
-    (let ((record (trace-record fname)))
-      (when record
-        (cond ((traced-and-redefined-p record)
-               (delete-from-trace-list fname))
-              (t
-               (warn "The function ~S is already traced. Statement has no effect." fname)
-               (return-from trace-one nil)))))
-    (setq oldf (fdefinition fname))
-    (eval
-     `(defun ,fname (&rest args)
-	  (let* (values (*trace-level* (1+ *trace-level*)))
-	    (if *inside-trace*
-		(setq values (multiple-value-list (apply ',oldf args)))
-		(let ((*inside-trace* t))
-		  ,@(when entrycond
-		       (if (eq t entrycond)
-			 `((trace-print 'ENTER ',fname args ,@entry))
-			 `((when ,entrycond
-			     (trace-print 'ENTER ',fname args ,@entry)))))
-		  ,@(when break
-		      `((when ,break (let (*inside-trace*)
-				       (break "tracing ~S" ',fname)))))
-		  (setq values
-			(let (*inside-trace*)
-			  (multiple-value-list
-			      (apply ',oldf args)
-			      #+nil
-			      ,(if step
-				   `(let (*step-quit*)
-				     (applyhook ',oldf args #'stepper nil))
-				   `(apply ',oldf args)))))
-		  ,@(when exitcond
-		      (if (eq t exitcond)
-			  `((trace-print 'EXIT ',fname values ,@exit))
-			  `((when ,exitcond
-			      (trace-print 'EXIT ',fname values ,@exit)))))
-		  ,@(when exitbreak
-		      `((when ,exitbreak
-			  (let (*inside-trace*)
-			    (break "after tracing ~S" ',fname)))))))
-	    (values-list values))))
-  (add-to-trace-list fname oldf)
-  (list fname)))
+	     (unless barfp (error "Parameter missing")))
+           (cond ((proper-list-p (first spec))
+                  (let (results)
+                    (dolist (fname (first spec) (nreverse results))
+                      (unless (valid-function-name-p fname)
+                        (error "Invalid function name for TRACE: ~s" fname))
+                      (let ((one (one-trace* spec break exitbreak
+                                             entrycond exitcond entry exit step)))
+                        (push one results)))))
+                 ((valid-function-name-p (first spec))
+                  (list
+                   (one-trace* (first spec) break exitbreak entrycond exitcond entry exit step)))
+                 (t (error "Invalid function name or list for TRACE: ~s" (first spec))))))))
+
+(defun one-trace* (fname break exitbreak entrycond exitcond entry exit step)
+  `(when (traceable ',fname)
+     ,(if (and (not break) (not exitbreak) (not entry) (not exit) (not step)
+               (eq entrycond 't) (eq exitcond 't))
+          `(simple-trace ',fname)
+          (complex-trace fname break exitbreak entrycond exitcond entry exit step))))
+
+(defun traceable (fname)
+  (when (null (fboundp fname))
+    (warn "The function ~S is not defined." fname)
+    (return-from traceable nil))
+  (when (symbolp fname)
+    (when (special-operator-p fname)
+      (warn "Unable to trace special form ~S." fname)
+      (return-from traceable nil))
+    (when (macro-function fname)
+      (warn "Unable to trace macro ~S." fname)
+      (return-from traceable nil)))
+  (let ((record (trace-record fname)))
+    (when record
+      (cond ((traced-and-redefined-p record)
+             (delete-from-trace-list fname))
+            (t
+             (warn "The function ~S is already traced. Statement has no effect." fname)
+             (return-from traceable nil)))))
+  t)
+
+;;; This traces a function without doing any complicated stuff.
+;;; In fact the compiler shouldn't be invoked at all. This is nice if you
+;;; just broke the compiler and want to do some tracing to find the problem.
+(defun simple-trace (fname)
+  (let ((oldf (fdefinition fname)))
+    (funcall #'(setf fdefinition)
+             (make-trace-closure fname oldf)
+             fname)
+    (add-to-trace-list fname oldf))
+  (list fname))
+
+(defun make-trace-closure (fname oldf)
+  (lambda (&rest args)
+    (declare (core:lambda-name trace-lambda))
+    (let ((*trace-level* (1+ *trace-level*)))
+      (if *inside-trace*
+          (apply oldf args)
+          (let ((*inside-trace* t))
+            (trace-print 'enter fname args)
+            (let ((results
+                    (let ((*inside-trace* nil))
+                      (multiple-value-list (apply oldf args)))))
+              (trace-print 'exit fname results)
+              (values-list results)))))))
+
+(defun complex-trace (fname break exitbreak entrycond exitcond entry exit step)
+  `(let ((oldf (fdefinition ',fname)))
+     (defun ,fname (&rest args)
+       (let ((*trace-level* (1+ *trace-level*)))
+         (if *inside-trace*
+             (apply oldf args)
+             (let ((*inside-trace* t)
+                   values)
+               ,@(when entrycond
+                   (if (eq t entrycond)
+                       `((trace-print 'ENTER ',fname args ,@entry))
+                       `((when ,entrycond
+                           (trace-print 'ENTER ',fname args ,@entry)))))
+               ,@(when break
+                   `((when ,break (let ((*inside-trace* nil))
+                                    (break "tracing ~S" ',fname)))))
+               (setq values
+                     (let ((*inside-trace* nil))
+                       (multiple-value-list
+                        (apply oldf args))))
+               ,@(when exitcond
+                   (if (eq t exitcond)
+                       `((trace-print 'EXIT ',fname values ,@exit))
+                       `((when ,exitcond
+                           (trace-print 'EXIT ',fname values ,@exit)))))
+               ,@(when exitbreak
+                   `((when ,exitbreak
+                       (let ((*inside-trace* nil))
+                         (break "after tracing ~S" ',fname)))))
+               (values-list values)))))
+     (add-to-trace-list ',fname oldf)
+     (list ',fname)))
 
 (defun trace-print (direction fname vals &rest extras)
   (let ((indent (min (* (1- *trace-level*) 2) *trace-max-indent*))
         (*print-circle* t))
     (princ
-      (with-output-to-string (*trace-output*)
-        (fresh-line *trace-output*)
-        (case direction
-          (ENTER
-            (multiple-value-bind (bars rem)
-              (floor indent 4)
-              (dotimes (i bars) (princ (if (< i 10) "|   " "|    ") *trace-output*))
-              (when (plusp rem) (format *trace-output* "~V,,,' A" rem "|")))
-            #-clasp-min(format *trace-output*
-			       "~D> (~S~{ ~S~})~%"
-			       *trace-level* fname vals)
-	    #+clasp-min(format *trace-output*
-			       "~D> (~S ~S)~%" *trace-level* fname vals)
-	    )
-          (EXIT
-            (multiple-value-bind (bars rem)
-              (floor indent 4)
-              (dotimes (i bars) (princ "|   " *trace-output*))
-              (when (plusp rem) (format *trace-output* "~V,,,' A" rem "|")))
-            #-clasp-min(format *trace-output*
-			       "<~D (~S~{ ~S~})~%"
-			       *trace-level* fname vals)
-	    #+clasp-min(format *trace-output*
-			       "<~D (~S ~S)~%" *trace-level* fname vals)
-            ))
-        (when extras
+     (with-output-to-string (*trace-output*)
+       (fresh-line *trace-output*)
+       (case direction
+         (ENTER
           (multiple-value-bind (bars rem)
-            (floor indent 4)
+              (floor indent 4)
+            (dotimes (i bars) (princ (if (< i 10) "|   " "|    ") *trace-output*))
+            (when (plusp rem) (format *trace-output* "~V,,,' A" rem "|")))
+          #-clasp-min
+          (format *trace-output*
+                  "~D> (~S~{ ~S~})~%" *trace-level* fname vals)
+          #+clasp-min
+          (format *trace-output*
+                  "~D> (~S ~S)~%" *trace-level* fname vals))
+         (EXIT
+          (multiple-value-bind (bars rem)
+              (floor indent 4)
             (dotimes (i bars) (princ "|   " *trace-output*))
             (when (plusp rem) (format *trace-output* "~V,,,' A" rem "|")))
+          #-clasp-min
           (format *trace-output*
-                  "~0,4@T\\\\ ~{ ~S~}~%"
-                  extras))
-        *trace-output*)
-      *trace-output*)))
+                  "<~D (~S~{ ~S~})~%" *trace-level* fname vals)
+          #+clasp-min
+          (format *trace-output*
+                  "<~D (~S ~S)~%" *trace-level* fname vals)))
+       (when extras
+         (multiple-value-bind (bars rem)
+             (floor indent 4)
+           (dotimes (i bars) (princ "|   " *trace-output*))
+           (when (plusp rem) (format *trace-output* "~V,,,' A" rem "|")))
+         (format *trace-output*
+                 "~0,4@T\\\\ ~{ ~S~}~%" extras))
+       *trace-output*)
+     *trace-output*)))
 
 (defun trace-record (fname)
   (find fname *trace-list* :key #'first :test #'equal))
@@ -211,7 +250,6 @@ all functions."
   (push (list fname (fdefinition fname) old-definition)
         *trace-list*))
 
-
 ;;; will only work if trace-record-name is still fbound
 (defun traced-and-redefined-p (record)
   (and record (not (eq (trace-record-definition record)
@@ -227,7 +265,7 @@ all functions."
           ((traced-and-redefined-p record)
            (warn "The function ~S was traced, but redefined." fname))
           (t
-           (sys:fset fname (trace-record-old-definition record))))
+           (funcall #'(setf fdefinition) (trace-record-old-definition record) fname)))
     (delete-from-trace-list fname)
     (values)))
 

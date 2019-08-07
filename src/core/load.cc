@@ -60,7 +60,7 @@ T_sp load_stream(T_sp strm, bool print) {
     }
     if (x.number_of_values() > 0) {
       if (print)
-        write_bf_stream(BF(";; -read- %s") % _rep_(x));
+        write_bf_stream(BF(";; -read- %s\n") % _rep_(x));
       eval::funcall(core::_sym_STAReval_with_env_hookSTAR->symbolValue(), x, _Nil<T_O>());
     }
   }

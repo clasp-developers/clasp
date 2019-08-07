@@ -24,10 +24,7 @@
                                          code
                                          ;; environment of the lambda
                                          env-around-lambda
-                                         ;; key argument: T if code should be wrapped in a block with block-name
-                                         &key wrap-block ; wrap code in a block
-                                           ;; Name of the block to wrap in
-                                         block-name
+                                         &key
                                          (linkage 'llvm-sys:internal-linkage))
   "This is where llvm::Function are generated from code, declares, 
 lambda-list, environment.
@@ -71,13 +68,15 @@ Could return more functions that provide lambda-list for swank for example"
                                            :rest-alloc rest-alloc)))
                      (let ((new-env (bclasp-compile-lambda-list-code fn-env callconv)))
                        (cmp-log "Created new register environment -> %s%N" new-env)
-                       (with-try
-                           (progn
-                             (if wrap-block
-                                 (codegen-block result (list* block-name (list new-body)) new-env)
-                                 (codegen-progn result (list new-body) new-env)))
-                         ((cleanup)
-                          (irc-unwind-environment new-env))))))))
+                       ;; I am not certain - but I suspect that (irc-environment-has-cleanup new-env) is always FALSE
+                       ;; in which case the (with-try ...) can be removed
+                       ;; Christian Schafmeister June 2019
+                       (if (irc-environment-has-cleanup new-env)
+                           (with-try "TRY.func"
+                               (codegen-progn result (list new-body) new-env)
+                             ((cleanup)
+                              (irc-unwind-environment new-env)))
+                           (codegen-progn result (list new-body) new-env)))))))
         (cmp-log "About to dump the function constructed by generate-llvm-function-from-code%N")
         (cmp-log-dump-function fn)
         (unless *suppress-llvm-output* (irc-verify-function fn))
@@ -89,15 +88,8 @@ Could return more functions that provide lambda-list for swank for example"
 (defun compile-lambda-function (lambda-or-lambda-block &optional env &key (linkage 'llvm-sys:internal-linkage))
   "Compile a lambda form and return an llvm-ir function that evaluates it.
 Return the same things that generate-llvm-function-from-code returns"
-  (let* (wrap-block block-name lambda-list body lambda-block-name)
-    (if (eq (car lambda-or-lambda-block) 'ext::lambda-block)
-	(setq wrap-block t
-	      block-name (function-block-name (cadr lambda-or-lambda-block))
-	      lambda-block-name (cadr lambda-or-lambda-block) ;; bformat nil "%s" (cadr lambda))
-	      lambda-list (caddr lambda-or-lambda-block)
-	      body (cdddr lambda-or-lambda-block))
-	(setq lambda-list (cadr lambda-or-lambda-block)
-	      body (cddr lambda-or-lambda-block)))
+  (let ((lambda-list (cadr lambda-or-lambda-block))
+	(body (cddr lambda-or-lambda-block)))
     (multiple-value-bind (declares code docstring specials )
 	(process-declarations body t)
       (cmp-log "About to create lambda-list-handler%N")
@@ -107,8 +99,6 @@ Return the same things that generate-llvm-function-from-code returns"
                                         docstring
                                         code
                                         env
-                                        :wrap-block wrap-block
-                                        :block-name block-name
                                         :linkage linkage))))
 
 (defun generate-llvm-function-from-interpreted-function (fn)
@@ -166,7 +156,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
               (compile-to-module definition env pathname :linkage linkage)))
       (values fn function-kind wrapped-env lambda-name ordered-raw-constants-list constants-table startup-fn shutdown-fn))))
 
-(defun bclasp-compile* (bind-to-name &optional definition env pathname &key (linkage 'llvm-sys:internal-linkage))
+(defun bclasp-compile* (definition env pathname &key (linkage 'llvm-sys:internal-linkage))
   "Compile the definition"
   (multiple-value-bind (fn function-kind wrapped-env lambda-name ordered-raw-constants-list constants-table startup-fn shutdown-fn)
       (compile-to-module-with-run-time-table definition env pathname :linkage linkage)
@@ -183,109 +173,34 @@ then compile it and return (values compiled-llvm-function lambda-name)"
   (if (atom fn-designator)
       (let ((classified (function-info evaluate-env fn-designator)))
 	(if (eq (car classified) 'core::global-function)
-            (multiple-value-bind (sym-arg label)
+            (multiple-value-bind (symbol label)
                 (irc-global-symbol fn-designator evaluate-env)
-              (values (irc-intrinsic-call-or-invoke "cc_symbol_function" (list sym-arg) label) label))
+              (values (irc-fdefinition symbol) label))
             (values (irc-lexical-function-lookup classified evaluate-env) "lexical-func")))
       (if (eq (car fn-designator) 'cl:lambda)
 	  (error "Handle lambda expressions at head of form")
 	  (error "Illegal head of form: ~a" fn-designator))))
 
-(defun codegen-call (result form evaluate-env)
-  "Evaluate each of the arguments into an alloca and invoke the function"
-  ;; setup the ActivationFrame for passing arguments to this function in the setup arena
-  (assert-result-isa-llvm-value result)
-  (let* ((head (car form)))
-    (cond
-      ((and (atom head) (symbolp head))
-       (let ((nargs (length (cdr form)))
-             args
-             (temp-result (alloca-t*)))
-         ;; evaluate the arguments into the array
-         ;;  used to be done by --->    (codegen-evaluate-arguments (cdr form) evaluate-env)
-         (do* ((cur-exp (cdr form) (cdr cur-exp))
-               (exp (car cur-exp) (car cur-exp))
-               (i 0 (+ 1 i)))
-              ((endp cur-exp) nil)
-           (codegen temp-result exp evaluate-env)
-           (push (irc-load temp-result) args))
-         (multiple-value-bind (closure label)
-             (codegen-lookup-function head evaluate-env)
-	   (irc-low-level-trace :flow)
-           (irc-funcall result closure (reverse args) label)
-	   (irc-low-level-trace :flow))))
-      ((and (consp head) (eq head 'lambda))
-       (error "Handle lambda applications"))
-      (t (compiler-error form "Illegal head for form %s" head)))))
+;; given an llvm value for the function (which is an actual function, not a name or lambda),
+;; and a list of argument forms, codegen a call.
+(defun codegen-call (result fn args env &optional (label ""))
+  (let ((argsz nil) (temp (alloca-t* "arg")))
+    (dolist (arg args)
+      (codegen temp arg env)
+      (push (irc-load temp) argsz))
+    (irc-funcall result fn (nreverse argsz) label)))
 
-;;; Codegen a (funcall ...) form.
-(defun codegen-funcall (result form env)
-  (let ((closure-arg (second form))
-        (call-args (cddr form)))
-    (cond
-      ((and (consp closure-arg)
-            (eq (first closure-arg) 'quote)
-            (= (length closure-arg) 2)
-            (symbolp (second closure-arg)))
-       (codegen-call result (cons (second closure-arg) call-args) env))
-      #+(or)((and (consp closure-arg)
-                  (eq (first closure-arg) 'function)
-                  (= (length closure-arg) 2)
-                  (symbolp (second closure-arg)))
-             (codegen-call result (cons (second closure-arg) call-args) env))
-      (t
-       (let ((nargs (length call-args))
-             args
-             (temp-closure (alloca-t*))
-             (temp-result (alloca-t*)))
-         ;; evaluate the arguments into the array
-         ;;  used to be done by --->    (codegen-evaluate-arguments (cdr form) evaluate-env)
-         (do* ((cur-exp call-args (cdr cur-exp))
-               (exp (car cur-exp) (car cur-exp))
-               (i 0 (+ 1 i)))
-              ((endp cur-exp) nil)
-           (codegen temp-result exp env)
-           (push (irc-load temp-result) args))
-         (codegen temp-closure closure-arg env)
-         (let ((closure (irc-intrinsic "bc_function_from_function_designator" (irc-load temp-closure))))
-           (irc-funcall result closure (reverse args))))))))
-
-(defun codegen-application (result form env)
-  "A compiler macro function, macro function or a regular function"
+;; Codegen a call to a named function.
+(defun codegen-named-call (result fname args env)
   (assert-result-isa-llvm-value result)
-  (dbg-set-current-source-pos form)
-  (prog1
-      (cond
-        ;; A compiler macro
-        ((and (symbolp (car form))
-              (not (core:lexical-function (car form) env))
-              (not (core:lexical-macro-function (car form) env))
-              (not (core:declared-global-notinline-p (car form)))
-              (let ((expansion (core:compiler-macroexpand form env)))
-                (if (eq expansion form)
-                    nil
-                    (progn
-                      (codegen result expansion env) 
-                      t)))))
-        ;; A regular macro
-        ((and (symbolp (car form))
-              (not (core:lexical-function (car form) env))
-              (macro-function (car form) env))
-         (multiple-value-bind (expansion expanded-p)
-             (macroexpand form env)
-           (declare (core:lambda-name codegen-application--about-to-macroexpand))
-           (cmp-log "MACROEXPANDed form[%s] expanded to [%s]%N" form expansion )
-           (irc-low-level-trace)
-           (codegen result expansion env) 
-           ))
-        ;; An invocation of FUNCALL
-        ((and (symbolp (car form))
-              (eq (car form) 'funcall))
-         (codegen-funcall result form env))
-        ;; It's a regular function call
-        (t
-         (codegen-call result form env))) 
-    ))
+  (multiple-value-bind (closure label)
+      (codegen-lookup-function fname env)
+    (codegen-call result closure args env label)))
+
+(defun codegen-lambda-form (result lambda args env)
+  (let ((temp-closure (alloca-t*)))
+    (codegen temp-closure lambda env)
+    (codegen-call result (irc-load temp-closure) args env)))
 
 (defun codegen-special-operator (result head rest env)
   (cmp-log "entered codegen-special-operator head: %s rest: %s%N" head rest)
@@ -297,8 +212,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
          (function (cadr functions)))
     (if function
 	(funcall function result rest env)
-	(error "Unknown special operator : ~a" head)))
-  )
+	(error "Unknown special operator : ~a" head))))
 
 ;;; Return true if the symbol should be treated as a special operator
 ;;; Special operators that are handled as macros are exempt
@@ -322,8 +236,16 @@ then compile it and return (values compiled-llvm-function lambda-name)"
          ((eq sym 'core::%array-dimension) t)
          ((eq sym 'cleavir-primop:car) t)
          ((eq sym 'cleavir-primop:cdr) t)
+         ((eq sym 'cleavir-primop:funcall) t)
          ((eq sym 'core:vaslist-pop) t)
-         ((eq sym 'core:instance-stamp) t)
+         ((eq sym 'core:vaslist-length) t)
+         ((eq sym 'core::local-block) t)
+         ((eq sym 'core::local-tagbody) t)
+         ((eq sym 'core::header-stamp-case) t)
+         ((eq sym 'core::header-stamp) t)
+         ((eq sym 'core::derivable-stamp) t)
+         ((eq sym 'core::wrapped-stamp) t)
+         ((eq sym 'core::rack-stamp) t)
          ((eq sym 'core:instance-ref) t)
          ((eq sym 'core:instance-set) t)
          ((eq sym 'core:defcallback) t)
@@ -331,37 +253,53 @@ then compile it and return (values compiled-llvm-function lambda-name)"
 
 (export 'treat-as-special-operator-p)
 
+(defun codegen-cons (result form env)
+  (let ((head (car form))
+        (rest (cdr form)))
+    (cmp-log "About to codegen special-operator or application for: %s%N" form)
+    (cond
+      ;; special form
+      ((treat-as-special-operator-p head)
+       (codegen-special-operator result head rest env))
+      ;; lambda form
+      ((and (consp head) (eq (car head) 'cl:lambda))
+       (codegen-lambda-form result head rest env))
+      ;; invalid
+      ((not (symbolp head))
+       (error "Invalid form head: ~a" head))
+      ;; compiler macro
+      ((and (not (core:lexical-function head env))
+            (not (core:lexical-macro-function head env))
+            (not (core:declared-global-notinline-p head))
+            (let ((expansion (core:compiler-macroexpand form env)))
+              (if (eq expansion form)
+                  nil
+                  (progn
+                    (codegen result expansion env)
+                    t)))))
+      ;; macro
+      ((and (not (core:lexical-function head env))
+            (macro-function head env))
+       (codegen result (macroexpand-1 form env) env))
+      ;; regular function call
+      (t
+       (codegen-named-call result head rest env)))))
+
 (defun codegen (result form env)
 ;;;  (declare (optimize (debug 3)))
   (assert-result-isa-llvm-value result)
   (multiple-value-bind (source-directory source-filename lineno column)
       (dbg-set-current-source-pos form)
-    (let* ((*current-form* form)
-           (*current-env* env))
-      (cmp-log "codegen stack-used[%d bytes]%N" (stack-used))
-      (cmp-log "codegen evaluate-depth[%d]  %s%N" (evaluate-depth) form)
-      ;;
-      ;; If a *code-walker* is defined then invoke the code-walker
-      ;; with the current form and environment
-      (when *code-walker*
-        (setq form (funcall *code-walker* form env)))
-      (if (atom form)
-          (if (symbolp form)
-              (codegen-symbol-value result form env)
-              (codegen-literal result form env))
-          (let ((head (car form))
-                (rest (cdr form)))
-            (cmp-log "About to codegen special-operator or application for: %s%N" form)
-            ;;  (trace-linenumber-column (walk-to-find-parse-pos form) env)
-            (cond
-              ((treat-as-special-operator-p head)
-               (codegen-special-operator result head rest env))
-              ((and head (consp head) (eq (car head) 'cl:lambda))
-               (codegen result `(funcall ,head ,@rest) env))
-              ((and head (symbolp head))
-               (codegen-application result form env))
-              (t
-               (error "Handle codegen of cons: ~a" form))))))))
+    (cmp-log "codegen stack-used[%d bytes]%N" (stack-used))
+    (cmp-log "codegen evaluate-depth[%d]  %s%N" (evaluate-depth) form)
+    ;;
+    ;; If a *code-walker* is defined then invoke the code-walker
+    ;; with the current form and environment
+    (when *code-walker*
+      (setq form (funcall *code-walker* form env)))
+    (cond ((symbolp form) (codegen-symbol-value result form env))
+          ((consp form) (codegen-cons result form env))
+          (t (codegen-literal result form env)))))
 
 (defun compile-thunk (name form env optimize)
   "Compile the form into an llvm function and return that function"

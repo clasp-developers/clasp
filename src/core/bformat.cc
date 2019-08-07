@@ -72,9 +72,9 @@ CL_DEFUN T_sp core__bformat(T_sp destination, const string &original_control, Li
   } else {
     control = original_control;
   }
-  boost::format fmter(control);
-  string fmter_str;
   TRY() {
+    boost::format fmter(control);
+    string fmter_str;
     for (auto farg : args) {
       T_sp fobj = oCar(farg);
       if (fobj.fixnump()) {
@@ -102,6 +102,17 @@ CL_DEFUN T_sp core__bformat(T_sp destination, const string &original_control, Li
       }
     }
     fmter_str = fmter.str();
+    if (output == _sym_printf) {
+      printf("%s", fmter_str.c_str());
+    } else {
+      clasp_write_string(fmter_str, output);
+    }
+    if (destination.nilp()) {
+      StringOutputStream_sp sout = gc::As_unsafe<StringOutputStream_sp>(output);
+      String_sp result = sout->getAndReset();
+      return result;
+    }
+    return _Nil<T_O>();
   }
   catch (boost::io::bad_format_string &err) {
     SIMPLE_ERROR(BF("bformat command error: bad format string: \"%s\"") % control);
@@ -118,17 +129,6 @@ CL_DEFUN T_sp core__bformat(T_sp destination, const string &original_control, Li
   catch (...) {
     SIMPLE_ERROR(BF("Unknown bformat command error in format string: \"%s\""));
   }
-  if (output == _sym_printf) {
-    printf("%s", fmter_str.c_str());
-  } else {
-    clasp_write_string(fmter_str, output);
-  }
-  if (destination.nilp()) {
-    StringOutputStream_sp sout = gc::As_unsafe<StringOutputStream_sp>(output);
-    String_sp result = sout->getAndReset();
-    return result;
-  }
-  return _Nil<T_O>();
 }
 
 CL_DEFUN void core__fflush() {

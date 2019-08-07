@@ -182,8 +182,8 @@ namespace core {
   template <typename T1,typename T2>
     bool template_string_EQ_equal(const T1& string1, const T2& string2, size_t start1, size_t end1, size_t start2, size_t end2)
   {
-    const typename T1::simple_element_type* cp1(&string1[start1]);
-    const typename T2::simple_element_type* cp2(&string2[start2]);
+    const typename T1::simple_element_type* cp1((const typename T1::simple_element_type*)string1.rowMajorAddressOfElement_(start1));
+    const typename T2::simple_element_type* cp2((const typename T2::simple_element_type*)string2.rowMajorAddressOfElement_(start2));
     size_t num1 = end1 - start1;
     size_t num2 = end2 - start2;
 //    printf("%s:%d:%s string1@%p string2=@%p sizeof(*cp1)=%lu sizeof(*cp2)=%lu cp1=%p cp2=%p start1=%lu end1=%lu start2=%lu end2=%lu num1=%lu num2=%lu\n", __FILE__, __LINE__, __FUNCTION__, (void*)&string1, (void*)&string2, sizeof(*cp1), sizeof(*cp2), (void*)cp1, (void*)cp2, start1, end1, start2, end2, num1, num2);
@@ -510,6 +510,8 @@ namespace core {
     virtual size_t arrayTotalSize() const { return this->length(); };
     virtual void rowMajorAset(size_t idx, T_sp value) = 0;
     virtual T_sp rowMajorAref(size_t idx) const = 0;
+    virtual void vset(size_t idx, T_sp value) = 0;
+    virtual T_sp vref(size_t idx) const = 0;
     virtual size_t rank() const override { return 1; };
     virtual bool adjustableArrayP() const final {return false;};
     virtual size_t displacedIndexOffset() const override { return 0; };
@@ -555,8 +557,8 @@ namespace core {
     static void never_invoke_allocator() {gctools::GCAbstractAllocator<template_SimpleVector>::never_invoke_allocator();};
   public:
     // NULL terminated strings use this - so the ASSERT needs to accept it
-    value_type& operator[](size_t index) { BOUNDS_ASSERT(index<this->length());return this->_Data[index];};
-    const value_type& operator[](size_t index) const { BOUNDS_ASSERT(index<this->length());return this->_Data[index];};
+    value_type& operator[](size_t index) { BOUNDS_ASSERT_LT(index,this->length());return this->_Data[index];};
+    const value_type& operator[](size_t index) const { BOUNDS_ASSERT_LT(index,this->length());return this->_Data[index];};
     iterator begin() { return &this->_Data[0];};
     iterator end() { return &this->_Data[this->_Data._Length]; }
     const_iterator begin() const { return &this->_Data[0];};
@@ -582,9 +584,11 @@ namespace core {
     virtual Array_sp nreverse() final { return templated_ranged_nreverse(*this,0,this->length()); };
     CL_METHOD_OVERLOAD virtual void rowMajorAset(size_t idx, T_sp value) final {(*this)[idx] = leaf_type::from_object(value);}
     CL_METHOD_OVERLOAD virtual T_sp rowMajorAref(size_t idx) const final {return leaf_type::to_object((*this)[idx]);}
+    CL_METHOD_OVERLOAD virtual void vset(size_t idx, T_sp value) final {(*this)[idx] = leaf_type::from_object(value);}
+    CL_METHOD_OVERLOAD virtual T_sp vref(size_t idx) const final {return leaf_type::to_object((*this)[idx]);}
     virtual Array_sp unsafe_subseq(size_t start, size_t end) const final {
       BOUNDS_ASSERT(start<=end&&end<=this->length());
-      return leaf_type::make(end-start,value_type(),true,end-start,&(*this)[start]);
+      return leaf_type::make(end-start,value_type(),true,end-start,(value_type*)this->rowMajorAddressOfElement_(start));
     }
     virtual Array_sp unsafe_setf_subseq(size_t start, size_t end, Array_sp newSubseq) final {
       // TODO: Write specialized versions of this to speed it up
@@ -905,7 +909,6 @@ namespace core {
     virtual Array_sp reverse() const final;
     virtual Array_sp nreverse() final;
     virtual bool equal(T_sp other) const final;
-    virtual bool equalp(T_sp other) const final {return this->equal(other);};
     virtual Array_sp unsafe_subseq(size_t start, size_t end) const final;
     virtual Array_sp unsafe_setf_subseq(size_t start, size_t end, Array_sp newSubseq) override;
     virtual vector<size_t> arrayDimensionsAsVector() const final {
@@ -917,6 +920,8 @@ namespace core {
   public:
     CL_METHOD_OVERLOAD virtual void rowMajorAset(size_t idx, T_sp value) final {this->setBit(idx,value.unsafe_fixnum());};
     CL_METHOD_OVERLOAD virtual T_sp rowMajorAref(size_t idx) const final {return clasp_make_fixnum(this->testBit(idx)); };
+    CL_METHOD_OVERLOAD virtual void vset(size_t idx, T_sp value) final {this->setBit(idx,value.unsafe_fixnum());};
+    CL_METHOD_OVERLOAD virtual T_sp vref(size_t idx) const final {return clasp_make_fixnum(this->testBit(idx)); };
     virtual void sxhash_(HashGenerator& hg) const final {this->ranged_sxhash(hg,0,this->length());}
     virtual void ranged_sxhash(HashGenerator& hg, size_t start, size_t end) const final {
       if (hg.isFilling()) {
@@ -1947,7 +1952,6 @@ namespace core {
   T_sp core__search_string(String_sp sub, size_t sub_start, T_sp sub_end, String_sp outer, size_t outer_start, T_sp outer_end );
   bool core__fits_in_base_string(T_sp str);
   T_sp core__copy_to_simple_base_string(T_sp buffer);
-  clasp_elttype clasp_array_elttype(T_sp array);
 
 CL_LAMBDA(dest destStart orig origStart len);
 CL_DECLARE();

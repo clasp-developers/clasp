@@ -288,10 +288,10 @@ namespace core {
 #define BCLASP_CLOSURE_SLOTS  1
 #define BCLASP_CLOSURE_ENVIRONMENT_SLOT ENVIRONMENT_SLOT
   public:
-    core::T_sp _lambdaList;
-    ClosureType   closureType;
-  //! Slots must be the last field
+      //! Slots must be the last field
     typedef core::T_sp value_type;
+  public:
+    ClosureType   closureType;
     gctools::GCArray_moveable<value_type> _Slots;
   public:
     virtual const char *describe() const { return "CompiledClosure"; };

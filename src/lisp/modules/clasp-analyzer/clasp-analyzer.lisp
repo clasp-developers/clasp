@@ -399,6 +399,42 @@
     (verify-stamp-values-are-contiguous-return-range *accumulate-stamps*)))
 
 
+(defgeneric stamp-value (class &optional stamp))
+
+
+(defconstant +stamp-shift+    2)
+(defconstant +derivable-wtag+ #B00)
+(defconstant +rack-wtag+      #B01)
+(defconstant +wrapped-wtag+   #B10)
+(defconstant +header-wtag+    #B11)
+(defconstant +max-wtag+       #B11)
+
+(defmethod stamp-value ((class gc-managed-type) &optional stamp)
+  (if stamp
+      (logior (ash stamp +stamp-shift+) +max-wtag+)
+      (logior (ash (stamp% class) +stamp-shift+) +header-wtag+)))
+
+
+(defmethod stamp-value ((class t) &optional stamp)
+  "This could change the value of stamps for specific classes - but that would break quick typechecks like (typeq x Number)"
+;;;  (format t "Assigning stamp-value for class ~s~%" (class-key% class))
+  (if stamp
+      (logior (ash stamp +stamp-shift+) +max-wtag+) ;; Cover the entire range
+      (cond ((member (class-key% class) '("core::Instance_O" "core::FuncallableInstance_O" "clbind::ClassRep_O") :test #'string=)
+;;;         (format t "---> stamp in rack~%")
+             (logior (ash (stamp% class) +stamp-shift+) +rack-wtag+))
+            ((member (class-key% class) '("core::WrappedPointer_O") :test #'string=)
+;;;         (format t "---> stamp in wrapped~%")
+             (logior (ash (stamp% class) +stamp-shift+) +wrapped-wtag+))
+            ((member (class-key% class) '("core::DerivableCxxObject_O") :test #'string=)
+;;;         (format t "---> stamp in derivable~%")
+             (logior (ash (stamp% class) +stamp-shift+) +derivable-wtag+))
+            (t
+;;;         (format t "---> stamp in header~%")
+             (logior (ash (stamp% class) +stamp-shift+) +header-wtag+)))))
+
+
+
 (defun generate-dynamic-cast-code (fout analysis)
   (maphash (lambda (key stamp) 
              (declare (core:lambda-name generate-dynamic-cast-code.lambda))
@@ -409,7 +445,7 @@
                (format fout "template <typename FP> struct Cast<~a*,FP> {~%" key )
                (format fout "  inline static bool isA(FP client) {~%" key)
                (format fout "      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));~%")
-               (format fout "      int kindVal = header->stamp();~%")
+               (format fout "      int kindVal = header->shifted_stamp();~%")
                (multiple-value-bind (contig stamp-value-low stamp-value-high)
                    (hierarchy-class-stamp-range key analysis)
                  ;; Check the stamp-value range and ensure that it matches what the scraper found
@@ -422,12 +458,12 @@
                        (if (string= key "core::Instance_O") ; special case core::Instance_O
                            (progn
                              (if (= stamp-value-low stamp-value-high)
-                                 (format fout "      if (kindVal == ~a) return true;~%" stamp-value-low)
-                                 (format fout "      if ((~a <= kindVal) && (kindVal <= ~a)) return true;~%" stamp-value-low stamp-value-high))
+                                 (format fout "      if (kindVal == ISA_ADJUST_STAMP(~a)) return true;~%" stamp-value-low)
+                                 (format fout "      if ((ISA_ADJUST_STAMP(~a) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(~a))) return true;~%" stamp-value-low stamp-value-high))
                              (format fout "      return (dynamic_cast<core::Instance_O*>(client)!=NULL);~%"))
                            (if (= stamp-value-low stamp-value-high)
-                               (format fout "      return (kindVal == ~a);~%" stamp-value-low)
-                               (format fout "      return ((~a <= kindVal) && (kindVal <= ~a));~%" stamp-value-low stamp-value-high))))))
+                               (format fout "      return (kindVal == ISA_ADJUST_STAMP(~a));~%" stamp-value-low)
+                               (format fout "      return ((ISA_ADJUST_STAMP(~a) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(~a)));~%" stamp-value-low stamp-value-high))))))
                (format fout "  };~%")
                (format fout "};~%")))
            (analysis-stamps analysis)))
@@ -445,11 +481,11 @@
                      (format fout "#error \"The stamp values of child classes of ~a do not form a contiguious range!!!\"~%" key)
                      (if (string= key "core::Instance_O") ; special case core::Instance_O
                          (if (= low high)
-                             (format fout "      ADD_SINGLE_TYPEQ_TEST_INSTANCE(~a,~a);~%" key low)
-                             (format fout "      ADD_RANGE_TYPEQ_TEST_INSTANCE(~a,~a,~a,~a);~%" key (stamp-key high-stamp) low high))
+                             (format fout "      ADD_SINGLE_TYPEQ_TEST_INSTANCE(~a,TYPEQ_ADJUST_STAMP(~a));~%" key low)
+                             (format fout "      ADD_RANGE_TYPEQ_TEST_INSTANCE(~a,~a,TYPEQ_ADJUST_STAMP(~a),TYPEQ_ADJUST_STAMP(~a));~%" key (stamp-key high-stamp) low high))
                          (if (= low high)
-                             (format fout "      ADD_SINGLE_TYPEQ_TEST(~a,~a);~%" key low)
-                             (format fout "      ADD_RANGE_TYPEQ_TEST(~a,~a,~a,~a);~%" key (stamp-key high-stamp) low high)))))))
+                             (format fout "      ADD_SINGLE_TYPEQ_TEST(~a,TYPEQ_ADJUST_STAMP(~a));~%" key low)
+                             (format fout "      ADD_RANGE_TYPEQ_TEST(~a,~a,TYPEQ_ADJUST_STAMP(~a),TYPEQ_ADJUST_STAMP(~a));~%" key (stamp-key high-stamp) low high)))))))
            (analysis-stamps analysis)))
 
 
@@ -3238,7 +3274,7 @@ Recursively analyze x and return T if x contains fixable pointers."
   (let ((maxstamp 0))
     (format fout "STAMP_null = 0, ~%")
     #+(or)(let ((hardwired-kinds (core:hardwired-kinds)))
-            (mapc (lambda (kv) (format fout "STAMP_~a = ~a, ~%" (car kv) (cdr kv))) hardwired-kinds))
+            (mapc (lambda (kv) (format fout "STAMP_~a = ADJUST_STAMP(~a), ~%" (car kv) (cdr kv))) hardwired-kinds))
     (mapc (lambda (stamp)
             (format fout "~A = ~A,~%" (get-stamp-name stamp) (stamp-value stamp))
             #+(or)(when (and (eq (stamp-value-source stamp) :from-static-analyzer)
@@ -3261,7 +3297,7 @@ Recursively analyze x and return T if x contains fixable pointers."
 (defun generate-register-stamp-names (&optional (fout t) (analysis *analysis*))
   (format fout "register_stamp_name(\"STAMP_null\",0); ~%")
   (mapc (lambda (stamp)
-          (format fout "register_stamp_name(\"~A\", ~A);~%" (get-stamp-name stamp) (stamp-value stamp)))
+          (format fout "register_stamp_name(\"~A\", ADJUST_STAMP(~A));~%" (get-stamp-name stamp) (stamp-value stamp)))
         (analysis-sorted-stamps analysis))
   (format fout "~%" ))
 

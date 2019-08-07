@@ -73,8 +73,7 @@ class SharpEqualWrapper_O : public General_O {
  CL_DOCSTRING("Return true if sharp-tag");
  CL_DEFUN inline bool core__sharp_equal_wrapper_p(T_sp o)
  {
-   SharpEqualWrapper_sp sp = o.asOrNull<SharpEqualWrapper_O>();
-   return !!sp;
+   return gc::IsA<SharpEqualWrapper_sp>(o);
  }
 
 };

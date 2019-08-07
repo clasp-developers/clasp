@@ -38,6 +38,31 @@
                 :offset (- cmp:+cons-cdr-offset+ cmp:+cons-tag+)
                 :outputs nil))
 
+
+(defmethod cleavir-hir-to-mir:specialize ((instr cleavir-ir:fetch-instruction)
+                                          (impl clasp-cleavir:clasp) proc os)
+  (let ((env (first (cleavir-ir:inputs instr)))
+        (idx (cleavir-ir:value (second (cleavir-ir:inputs instr)))))
+    (change-class instr 'cleavir-ir:memref2-instruction
+                  :inputs (list env)
+                  :offset (cmp:%closure-with-slots%.offset-of[n]/t* idx)
+                  :outputs (cleavir-ir:outputs instr))))
+
+(defmethod cleavir-hir-to-mir:specialize ((instr cleavir-ir:read-cell-instruction)
+                                          (impl clasp-cleavir:clasp) proc os)
+  (change-class instr 'cleavir-ir:memref2-instruction
+                :inputs (list (first (cleavir-ir:inputs instr)))
+                :offset (- cmp:+cons-car-offset+ cmp:+cons-tag+)
+                :outputs (cleavir-ir:outputs instr)))
+
+(defmethod cleavir-hir-to-mir:specialize ((instr cleavir-ir:write-cell-instruction)
+                                          (impl clasp-cleavir:clasp) proc os)
+  (change-class instr 'cleavir-ir:memset2-instruction
+                :inputs (list (first (cleavir-ir:inputs instr))
+                              (second (cleavir-ir:inputs instr)))
+                :offset (- cmp:+cons-car-offset+ cmp:+cons-tag+)
+                :outputs (cleavir-ir:outputs instr)))
+
 (defun gen-sv-call (fname args result succ)
   (let ((fdef (cleavir-ir:new-temporary))
         (vals (cleavir-ir:make-values-location)))
@@ -243,6 +268,7 @@
     ((cons) (cleavir-ir:make-consp-instruction object (list pro con)))
     ((character) (cc-mir:make-characterp-instruction object (list pro con)))
     ((single-float) (cc-mir:make-single-float-p-instruction object (list pro con)))
+    ((core:general) (cc-mir:make-generalp-instruction object (list pro con)))
     (t (let ((header-info (gethash primitive-type core:+type-header-value-map+)))
          (cond (header-info
                 (check-type header-info (or integer cons)) ; sanity check
@@ -330,6 +356,7 @@
         (con (second (cleavir-ir:successors typeq-instruction)))
         (preds (cleavir-ir:predecessors typeq-instruction))
         (cleavir-ir:*policy* (cleavir-ir:policy typeq-instruction))
+        (cleavir-ir:*origin* (cleavir-ir:origin typeq-instruction))
         (cleavir-ir:*dynamic-environment*
           (cleavir-ir:dynamic-environment typeq-instruction)))
     (let ((new (gen-type-check object type pro con)))

@@ -255,7 +255,12 @@ static void clasp_terminate_handler( void )
 #if DEBUG_FLOW_TRACKER
   flow_tracker_last_throw_backtrace_dump();
 #endif
-  fprintf(stderr, "%s:%d There was an unhandled exception - do something about it.\n", __FILE__, __LINE__ );
+  try { throw; }
+  catch (const std::exception& e) {
+      fprintf(stderr, "%s:%d There was an unhandled std::exception in process [pid: %d] e.what()=[%s] - do something about it.\n", __FILE__, __LINE__, getpid(), e.what()  );
+  } catch (...) {
+      fprintf(stderr, "%s:%d There was an unhandled unknown exception in process [pid: %d] - do something about it.\n", __FILE__, __LINE__, getpid() );
+  };
   abort();
 }
 
@@ -360,7 +365,6 @@ void* to_fixnum(int8_t v) {
 
 int main( int argc, char *argv[] )
 {
-
   // Do not touch debug log until after MPI init
 
   bool mpiEnabled = false;

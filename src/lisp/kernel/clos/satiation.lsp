@@ -337,7 +337,8 @@
              (error "No applicable methods for SATIATE of ~a with ~a"
                     generic-function list-of-specializer-names))
         do (when (and (consp em) (eq (first em) 'no-required-method))
-             (error "No required methods for SATIATE of ~a with ~a"))
+             (error "No required methods for SATIATE of ~a with ~a"
+                    generic-function list-of-specializer-names))
         collect (cons (coerce list-of-specializers 'vector)
                       (cond
                         (standard-slotd-p
@@ -427,13 +428,15 @@
 (defun compile-time-discriminator (generic-function &rest lists-of-specializer-names)
   (multiple-value-bind (call-history fmf-binds mf-binds)
       (apply #'compile-time-call-history generic-function lists-of-specializer-names)
-    (let ((name (generic-function-name generic-function)))
-      (generate-dispatcher-from-dtree
-       generic-function
-       (calculate-dtree call-history (generic-function-specializer-profile generic-function))
-       :extra-bindings (compile-time-bindings-junk fmf-binds mf-binds)
-       :generic-function-name name
-       :generic-function-form `(load-time-value (fdefinition ',name) t)))))
+    (multiple-value-bind (min max)
+        (generic-function-min-max-args generic-function)
+      (let ((name (generic-function-name generic-function)))
+        (generate-dispatcher-from-dtree
+         (calculate-dtree call-history (generic-function-specializer-profile generic-function))
+         :extra-bindings (compile-time-bindings-junk fmf-binds mf-binds)
+         :nreq min :max-nargs max
+         :generic-function-name name
+         :generic-function-form `(load-time-value (fdefinition ',name) t))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -631,14 +634,14 @@
      (append-generic-function-call-history
       gf
       (satiated-call-history ,generic-function-name ,@lists-of-specializer-names))
-     #+(or)
+;;;     #+(or)
      (set-funcallable-instance-function
       gf
       ,(apply #'compile-time-discriminator
               (fdefinition generic-function-name)
               lists-of-specializer-names))
      ;; put in the actual discriminator
-;;;     #+(or)
+     #+(or)
      (force-dispatcher gf)))
 
 ;;; Exported auxiliary version for the common case of wanting to skip recompilations

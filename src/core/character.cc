@@ -275,21 +275,34 @@ CL_DEFUN T_sp cl__char_NE_(VaList_sp args) {
   }
 }
 
-CL_LAMBDA(&rest args);
+CL_LAMBDA(core:&va-rest args);
 CL_DECLARE();
 CL_DOCSTRING("EQ_");
-CL_DEFUN T_sp cl__char_EQ_(List_sp args) {
-  if (args.nilp())
+CL_DEFUN T_sp cl__char_EQ_(VaList_sp args) {
+  switch (args->remaining_nargs()) {
+  case 0:
       PROGRAM_ERROR();
-  claspCharacter a = clasp_as_claspCharacter(gc::As<Character_sp>(oCar(args)));
-  args = oCdr(args);
-  while (args.notnilp()) {
-    claspCharacter b = clasp_as_claspCharacter(gc::As<Character_sp>(oCar(args)));
-    if (a != b)
-      return ((_Nil<T_O>()));
-    args = oCdr(args);
+  case 1: {
+    gc::As<Character_sp>(args->next_arg());
+    return _lisp->_true();
   }
-  return ((_lisp->_true()));
+  case 2: {
+    claspCharacter a = clasp_as_claspCharacter(gc::As<Character_sp>(args->next_arg()));
+    claspCharacter b = clasp_as_claspCharacter(gc::As<Character_sp>(args->next_arg()));
+    if (a == b) return _lisp->_true();
+    return _Nil<T_O>();
+  }
+  default: {
+    claspCharacter a = clasp_as_claspCharacter(gc::As<Character_sp>(args->next_arg()));
+    while (args->remaining_nargs()) {
+      claspCharacter b = clasp_as_claspCharacter(gc::As<Character_sp>(args->next_arg()));
+      if (a!=b) {
+        return ((_Nil<T_O>()));
+      }
+    }
+    return _lisp->_true();
+  }
+  };
 };
 
 CL_LAMBDA(&rest args);
@@ -320,38 +333,47 @@ bool clasp_charEqual2(T_sp x, T_sp y) {
   return false;
 }
 
-CL_LAMBDA(&rest args);
+CL_LAMBDA(core:&va-rest args);
 CL_DECLARE();
-CL_DOCSTRING("Like char_EQ_, ignore case");
-CL_DEFUN bool cl__char_equal(List_sp args) {
-  if (args.nilp())
+CL_DOCSTRING("EQ_");
+CL_DEFUN T_sp cl__char_equal(VaList_sp args) {
+  switch (args->remaining_nargs()) {
+  case 0:
       PROGRAM_ERROR();
-  claspCharacter a = clasp_as_claspCharacter(gc::As<Character_sp>(oCar(args)));
-  a = claspCharacter_upcase(a);
-  args = oCdr(args);
-  while (args.notnilp()) {
-    claspCharacter b = clasp_as_claspCharacter(gc::As<Character_sp>(oCar(args)));
-    b = claspCharacter_upcase(b);
-    if (a != b) return false;
-    args = oCdr(args);
+  case 1: {
+    gc::As<Character_sp>(args->next_arg());
+    return _lisp->_true();
   }
-  return true;
+  case 2: {
+    claspCharacter a = clasp_as_claspCharacter(gc::As<Character_sp>(args->next_arg()));
+    a = claspCharacter_upcase(a);
+    claspCharacter b = clasp_as_claspCharacter(gc::As<Character_sp>(args->next_arg()));
+    b = claspCharacter_upcase(b);
+    if (a == b) return _lisp->_true();
+    return _Nil<T_O>();
+  }
+  default: {
+    claspCharacter a = clasp_as_claspCharacter(gc::As<Character_sp>(args->next_arg()));
+    a = claspCharacter_upcase(a);
+    while (args->remaining_nargs()) {
+      claspCharacter b = clasp_as_claspCharacter(gc::As<Character_sp>(args->next_arg()));
+      b = claspCharacter_upcase(b);
+      if (a!=b) {
+        return ((_Nil<T_O>()));
+      }
+    }
+    return _lisp->_true();
+  }
+  };
 };
-
-#define BELL_CHAR 7
-#define LINE_FEED_CHAR 10
-#define PAGE_CHAR 12
-#define RETURN_CHAR 13
-#define ESCAPE_CHAR 27
-#define RUBOUT_CHAR 127
 
 Character_sp clasp_character_create_from_name(string const &name) {
   Character_sp ch;
   string ssup = boost::to_upper_copy(name);
   if ((ssup == "TAB") || (ssup == "Tab"))
-    ch = clasp_make_standard_character(9);
+    ch = clasp_make_standard_character(TAB_CHAR);
   else if ((ssup == "NEWLINE") || (ssup == "Newline"))
-    ch = clasp_make_standard_character('\n');
+    ch = clasp_make_standard_character(NEWLINE_CHAR);
   else if ((ssup == "LINEFEED") || (ssup == "Linefeed"))
     ch = clasp_make_standard_character(LINE_FEED_CHAR);
   else if ((ssup == "PAGE") || (ssup == "Page"))
@@ -365,7 +387,9 @@ Character_sp clasp_character_create_from_name(string const &name) {
   else if ((ssup == "SPACE") || (ssup == "Space"))
     ch = clasp_make_standard_character(' ');
   else if ((ssup == "BACKSPACE") || (ssup == "Backspace"))
-    ch = clasp_make_standard_character(8);
+    ch = clasp_make_standard_character(BACKSPACE_CHAR);
+  else if ((ssup == "RUBOUT") || (ssup == "Rubout"))
+    ch = clasp_make_standard_character(RUBOUT_CHAR);
   else if ((ssup == "BELL") || (ssup == "Bell") || (ssup == "Bel"))
     ch = clasp_make_standard_character(BELL_CHAR);
   else {
@@ -437,11 +461,12 @@ void CharacterInfo::initialize() {
     this->gCharacterNames[fci] = SimpleBaseString_O::make(std::string(name));
   }
   // we later compare with Uppercase
-  gNamesToCharacterIndex["NULL"] = 0;
+  gNamesToCharacterIndex["NULL"] = NULL_CHAR;
   gNamesToCharacterIndex["BELL"] = BELL_CHAR;
   gNamesToCharacterIndex["LINEFEED"] = LINE_FEED_CHAR;
   gNamesToCharacterIndex["ESCAPE"] = ESCAPE_CHAR;
   gNamesToCharacterIndex["DEL"] = RUBOUT_CHAR;
+  gNamesToCharacterIndex["CR"] = RETURN_CHAR;
 }
 
 CL_LAMBDA(ch);
@@ -2486,9 +2511,10 @@ CL_DEFUN T_mv cl__name_char(T_sp sname) {
   if (it != _lisp->characterInfo().gNamesToCharacterIndex.end()) {
     return (Values(_lisp->characterInfo().gIndexedCharacters[it->second]));
   }
-  // Treat U100 until U110000 to be consistent with char-name
+  // The upper exclusive bound on the value returned by the function char-code.
+  // Treat U100 until U110000 -1 to be consistent with char-name
   claspCharacter conversion = unicodeHex2int(upname);
-  if ((conversion >= 0) && (conversion <= CHAR_CODE_LIMIT))
+  if ((conversion >= 0) && (conversion < CHAR_CODE_LIMIT))
     return (Values (clasp_make_standard_character(conversion)));
     else return (Values(_Nil<T_O>()));
 };

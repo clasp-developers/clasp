@@ -27,7 +27,6 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (pushnew :debug-fastgf *features*))
 
-
 #+debug-fastgf
 (eval-when (:execute :load-toplevel)
   (defstruct (debug-fastgf-struct (:type vector))
@@ -39,7 +38,7 @@
 ;;; Cleanup up the directory
 
   (defvar *dispatch-history-dir*
-    (let ((dir (core:bformat nil "/tmp/dispatch-history-%d/" (core:getpid))))
+    (let ((dir (core:monitor-directory)))
       (ensure-directories-exist dir)
       (core:bformat *error-output* "!!!!  Created gf dispatch monitor directory: %s%N" dir)
       (core:bformat *error-output* "!!!!     Run clasp with --feature fastgf-dump-module to write dispatchers to this directory%N")
@@ -50,7 +49,7 @@
     (unless core:*debug-fastgf*
       (let ((filename (core:bformat nil "%s/debug-miss-thread%s.log"
                                     *dispatch-history-dir*
-                                    (core:pointer-as-string (mp:thread-id mp:*current-process*)))))
+                                    (mp:thread-id mp:*current-process*))))
         (setf core:*debug-fastgf* (make-debug-fastgf-struct :stream (open filename :direction :output)
                                                             :didx 0
                                                             :indent 0
@@ -92,7 +91,7 @@
   (defun log-cmpgf-filename (gfname suffix extension)
     (pathname (core:bformat nil "%s/dispatch-thread%s-%s%05d-%s.%s"
                             *dispatch-history-dir*
-                            (pointer-as-string (mp:thread-id mp:*current-process*))
+                            (mp:thread-id mp:*current-process*)
                             suffix
                             (debug-fastgf-didx)
                             (core:bformat nil "%s" gfname)
@@ -150,10 +149,9 @@
              (gf-print-entry index entry)))
          (let* ((call-history (generic-function-call-history generic-function))
                 (specializer-profile (generic-function-specializer-profile generic-function))
-                (optimized-call-history (optimized-call-history call-history specializer-profile))
                 (index 0))
-           (bformat-indent "    optimized call-history (length -> %d):%N" (length optimized-call-history))
-           (dolist (entry optimized-call-history)
+           (bformat-indent "    call-history (length -> %d):%N" (length call-history))
+           (dolist (entry call-history)
              (gf-print-entry index entry))))
        (finish-output (debug-fastgf-stream))))
   (defmacro gf-log (fmt &rest fmt-args) `(bformat-indent ,fmt ,@fmt-args))
@@ -309,6 +307,7 @@
          existing-emf
          (optimized
            (cond ((and standard-slotd-p readerp)
+                  (gf-log "About to invoke slot-definition-name in (cond ((and standard-slotd-p readerp)...))%N")
                   (gf-log "make-optimized-slot-reader index: %s slot-name: %s class: %s%N"
                           (slot-definition-location slotd)
                           (slot-definition-name slotd)
@@ -463,7 +462,7 @@ FIXME!!!! This code will have problems with multithreading if a generic function
           for found-key = (call-history-find-key call-history memoized-key)
           for new-call-history = (if found-key
                                      (progn
-                                       (gf-log "For generic function: %s - the key was already in the history - either bad dtree, incorrect lowering to llvm-ir or maybe (unlikely) put there by another thread.%N"
+                                       (gf-log "Error: For generic function: %s - the key was already in the history - either bad dtree, incorrect lowering to llvm-ir or maybe (unlikely) put there by another thread.%N"
                                                (generic-function-name generic-function))
                                        call-history)
                                      (progn
@@ -474,7 +473,7 @@ FIXME!!!! This code will have problems with multithreading if a generic function
                #+debug-fastgf(let ((specializer-profile (clos:generic-function-specializer-profile generic-function)))
                                (when call-history
                                  (gf-log "The dtree calculated for the call-history/specializer-profile:%N")
-                                 (gf-log "%s%N" (calculate-dtree call-history specializer-profile)))))
+                                 (gf-log "%s%N" (basic-tree call-history specializer-profile)))))
           when exchanged do (gf-log "Successfully exchanged call history%N")
             until (eq exchanged new-call-history))
     (loop for idx from 0 below (length memoized-key)
@@ -526,20 +525,15 @@ FIXME!!!! This code will have problems with multithreading if a generic function
         finally (return (coerce key 'simple-vector))))
 
 (defun do-dispatch-miss (generic-function vaslist-arguments arguments)
-  "This effectively does what compute-discriminator-function does and maybe memoizes the result 
+  "This effectively does what compute-discriminating-function does and maybe memoizes the result
 and calls the effective-method-function that is calculated.
 It takes the arguments in two forms, as a vaslist and as a list of arguments."
   (multiple-value-bind (min max) (generic-function-min-max-args generic-function)
-    (cond ((< (length arguments) min)
-           (error 'simple-program-error
-                  :format-control "Not enough arguments when calling ~a - you provided ~d and ~d are required"
-                  :format-arguments (list (generic-function-name generic-function)
-                                          (length arguments) min)))
-          ((and max (> (length arguments) max))
-           (error 'simple-program-error
-                  :format-control "Too many arguments when calling ~a - you provided ~d and ~d are allowed"
-                  :format-arguments (list (generic-function-name generic-function)
-                                          (length arguments) max)))))
+    (let ((nargs (length arguments)))
+      (when (or (< nargs min) (and max (> nargs max)))
+        (error 'core:wrong-number-of-arguments
+               :called-function generic-function :given-nargs nargs
+               :min-nargs min :max-nargs max))))
   (let ((argument-classes (mapcar #'class-of arguments))
         #+debug-fastgf
         (*dispatch-miss-start-time* (get-internal-real-time)))
@@ -559,6 +553,7 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
                        :log t
                        :actual-arguments arguments)))
         ;; Can we memoize the call, i.e. add it to the call history?
+        (gf-log "Done with compute-outcome%N")
         (cond ((null method-list) ; we avoid memoizing no-applicable-methods, as it's probably just a mistake,
                ;; and will just pollute the call history.
                ;; This assumption would be wrong if an application frequently called a gf wrong and relied on
@@ -610,13 +605,13 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
         #-debug-fastgf
         (perform-outcome outcome arguments vaslist-arguments)))))
 
-(defun dispatch-miss (generic-function valist-args)
-  (core:stack-monitor (lambda () (format t "In clos::dispatch-miss with generic function ~a~%" (clos::generic-function-name generic-function))))
-  ;; update instances
-  ;; Update any invalid instances
-  (unwind-protect
+(defun dispatch-miss (generic-function core:&va-rest valist-args)
+  (core:stack-monitor (lambda () (format t "In clos::dispatch-miss with generic function ~a~%"
+                                         (clos::generic-function-name generic-function))))
+  (#+debug-fastgf unwind-protect #-debug-fastgf multiple-value-prog1
        (progn
          (incf-debug-fastgf-indent)
+         ;; Update any invalid instances
          (let* ((arguments (core:list-from-va-list valist-args))
                 (invalid-instance (maybe-update-instances arguments)))
            (if invalid-instance
@@ -624,21 +619,19 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
                (progn
                  #+debug-fastgf
                  (progn
-                   (gf-log "----{---- A dispatch-miss occurred -> %s  %N" (clos::generic-function-name generic-function))
+                   (gf-log "----{---- A dispatch-miss occurred[(1- (core:next-number))->%s]  -> %s  %N" (1- (core:next-number)) (clos::generic-function-name generic-function))
                    (dolist (arg (core:list-from-va-list valist-args))
-                     (gf-log "%s[%s/%d] " arg (class-of arg) (core:instance-stamp arg)))
+                     (gf-log "%s[%s/%d] " (core:safe-repr arg) (core:safe-repr (class-of arg)) (core:instance-stamp arg)))
                    (gf-log-noindent "%N"))
                  (do-dispatch-miss generic-function valist-args arguments)))))
     (decf-debug-fastgf-indent)))
 
-;; (apply #'dispatch-miss-with-args gf vaslist) = (dispatch-miss gf vaslist)
-;; TODO: Make APPLY good enough that we can lose one.
-(defun dispatch-miss-with-args (generic-function core:&va-rest valist-args)
-  (dispatch-miss generic-function valist-args))
+;;; Called from the dtree interpreter, because APPLY from C++ is kind of annoying.
+(defun dispatch-miss-va (generic-function valist-args)
+  (apply #'dispatch-miss generic-function valist-args))
 
 ;;; change-class requires removing call-history entries involving the class
 ;;; and invalidating the generic functions
-
 (defun update-specializer-profile (generic-function specializers)
   (if (vectorp (generic-function-specializer-profile generic-function))
       (loop for vec = (generic-function-specializer-profile generic-function)
@@ -722,7 +715,7 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
       (progn
         (force-dispatcher generic-function)
         (apply generic-function valist-args))
-      (dispatch-miss generic-function valist-args)))
+      (apply #'dispatch-miss generic-function valist-args)))
 
 ;;; I don't believe the following few functions are called from anywhere, but they may be useful for debugging.
 
@@ -844,4 +837,10 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
                        (set-funcallable-instance-function gf discriminating-function))
                      (invalidate-discriminating-function gf)))))))
 
-(export '(invalidate-generic-functions-with-class-selector))
+;;; This is called by the dtree interpreter when it doesn't get enough arguments,
+;;; because computing this stuff in C++ would be needlessly annoying.
+(defun interp-wrong-nargs (generic-function given-nargs)
+  (multiple-value-bind (min max) (generic-function-min-max-args generic-function)
+    (error 'core:wrong-number-of-arguments
+           :called-function generic-function :given-nargs given-nargs
+           :min-nargs min :max-nargs max)))

@@ -6,7 +6,8 @@
 ;;;
 ;;; This instruction is an DEBUG-MESSAGE-INSTRUCTION that prints a message at runtime.
 
-(defclass debug-message-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+(defclass debug-message-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin
+                                     cleavir-ir:side-effect-mixin)
   ((%debug-message :initarg :debug-message :accessor debug-message)))
 
 (defmethod cleavir-ir-graphviz:label ((instr debug-message-instruction))
@@ -22,7 +23,8 @@
 ;;;
 ;;; This instruction is an DEBUG-BREAK-INSTRUCTION that invokes the debugger
 
-(defclass debug-break-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+(defclass debug-break-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin
+                                   cleavir-ir:side-effect-mixin)
   ())
 
 (defmethod cleavir-ir-graphviz:label ((instr debug-break-instruction))
@@ -76,7 +78,8 @@
 ;;;
 ;;; Calls a foreign function (designated by its name, a string) and receives its result as values.
 
-(defclass multiple-value-foreign-call-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+(defclass multiple-value-foreign-call-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin
+                                                   cleavir-ir:side-effect-mixin)
   ((%function-name :initarg :function-name :accessor function-name)))
 
 (defmethod cleavir-ir-graphviz:label ((instr multiple-value-foreign-call-instruction))
@@ -100,7 +103,8 @@
 ;;;
 ;;; This instruction is an FOREIGN-call-INSTRUCTION that prints a message
 
-(defclass foreign-call-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+(defclass foreign-call-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin
+                                    cleavir-ir:side-effect-mixin)
   ((%foreign-types :initarg :foreign-types :accessor foreign-types)
    (%function-name :initarg :function-name :accessor function-name)))
 
@@ -127,7 +131,8 @@
 ;;;
 ;;; This instruction is an foreign-call-pointer-INSTRUCTION that prints a message
 
-(defclass foreign-call-pointer-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+(defclass foreign-call-pointer-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin
+                                            cleavir-ir:side-effect-mixin)
   ((%foreign-types :initarg :foreign-types :accessor foreign-types)))
 
 (defmethod cleavir-ir-graphviz:label ((instr foreign-call-pointer-instruction))
@@ -153,6 +158,20 @@
 (defclass defcallback-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin
                                    cleavir-ir:side-effect-mixin)
   ((%args :initarg :args :reader defcallback-args)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Instruction HEADER-STAMP-CASE-INSTRUCTION
+;;;
+
+(defclass header-stamp-case-instruction (cleavir-ir:instruction
+                                         cleavir-ir:multiple-successors-mixin)
+  ())
+(defun make-header-stamp-case-instruction (stamp &rest successors)
+  (make-instance 'header-stamp-case-instruction
+                 :inputs (list stamp)
+                 :outputs nil
+                 :successors successors))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -264,6 +283,38 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; Instruction HEADER-STAMP-INSTRUCTION
+;;;
+
+(defclass header-stamp-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin) ())
+(defmethod cleavir-ir-graphviz:label ((instr header-stamp-instruction)) "header-stamp")
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Instruction RACK-STAMP-INSTRUCTION
+;;;
+
+(defclass rack-stamp-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin) ())
+(defmethod cleavir-ir-graphviz:label ((instr rack-stamp-instruction)) "rack-stamp")
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Instruction WRAPPED-STAMP-INSTRUCTION
+;;;
+
+(defclass wrapped-stamp-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin) ())
+(defmethod cleavir-ir-graphviz:label ((instr wrapped-stamp-instruction)) "wrapped-stamp")
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Instruction DERIVABLE-STAMP-INSTRUCTION
+;;;
+
+(defclass derivable-stamp-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin) ())
+(defmethod cleavir-ir-graphviz:label ((instr derivable-stamp-instruction)) "derivable-stamp")
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; Instruction VASLIST-POP-INSTRUCTION
 ;;;
 
@@ -280,17 +331,17 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Instruction INSTANCE-STAMP-INSTRUCTION
+;;; Instruction VASLIST-LENGTH-INSTRUCTION
 ;;;
 
-(defclass instance-stamp-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+(defclass vaslist-length-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
   ())
 
-(defmethod cleavir-ir-graphviz:label ((instr instance-stamp-instruction)) "instance-stamp")
+(defmethod cleavir-ir-graphviz:label ((instr vaslist-length-instruction)) "vaslist-length")
 
-(defun make-instance-stamp-instruction (arg output &optional (successor nil successorp))
-  (make-instance 'instance-stamp-instruction
-                 :inputs (list arg)
+(defun make-vaslist-length-instruction (vaslist output &optional (successor nil successorp))
+  (make-instance 'vaslist-length-instruction
+                 :inputs (list vaslist)
                  :outputs (list output)
                  :successors (if successorp (list successor) nil)))
 
@@ -403,10 +454,15 @@
   ((%index :initarg :index :accessor precalc-value-instruction-index)
    (%original-object :initarg :original-object :accessor precalc-value-instruction-original-object)))
 
-(defun make-precalc-value-instruction (index output &key successor original-object)
+(defun make-precalc-value-instruction (index output &key successor original-object
+                                                      (origin (if (boundp 'cleavir-ir:*origin*)
+                                                                  cleavir-ir:*origin*
+                                                                  nil)
+                                                              originp))
   (make-instance 'precalc-value-instruction
     :outputs (list output)
     :successors (if (null successor) nil (list successor))
+    :origin origin
     :index index
     :original-object original-object))
 
@@ -448,7 +504,8 @@
 ;;; throw-instruction
 ;;;
 
-(defclass throw-instruction (cleavir-ir:instruction cleavir-ir:no-successors-mixin)
+(defclass throw-instruction (cleavir-ir:instruction cleavir-ir:no-successors-mixin
+                             cleavir-ir:side-effect-mixin)
   ((%throw-tag :initform nil :initarg :throw-tag :accessor throw-tag)))
 
 
@@ -465,15 +522,3 @@
 
 (defmethod cl:print-object ((instr throw-instruction) stream)
   (format stream "#<throw>"))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction debug-message-instruction)) nil)
-
-(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction debug-break-instruction)) nil)
-
-;(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction precalc-value-instruction)) t)
-
-(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction setf-fdefinition-instruction)) nil)
-
-(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction throw-instruction)) nil)

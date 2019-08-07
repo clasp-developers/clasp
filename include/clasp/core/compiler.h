@@ -72,6 +72,7 @@ FORWARD(PosixTime);
 struct MaybeDebugStartup {
   PosixTime_sp start;
   std::string  name;
+  size_t start_jit_compile_counter;
   void* fptr;
   size_t start_dispatcher_count;
   MaybeDebugStartup(void* fp, const char* n = NULL);
@@ -82,6 +83,9 @@ struct MaybeDebugStartup {
 };
 
 
+namespace core {
+void expect_offset(T_sp key, T_sp alist, size_t expected);
+};
 
 typedef void*(*fnStartUp)();
 

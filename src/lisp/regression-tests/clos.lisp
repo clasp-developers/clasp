@@ -6,7 +6,7 @@
 
 (test-expect-error defclass-1 (eval '(defclass foo ()(bar bar))) :type program-error)
 
-(test 'JIT-FUNCTION-NAME-1
+(test JIT-FUNCTION-NAME-1
       (equal '(NIL (3 (3 . 2)))
              (multiple-value-list
               (let* ((sym (gensym))
@@ -15,3 +15,24 @@
                 (values
                  (fboundp sym)
                  (let ((x (cons 1 2))) (list (funcall (fdefinition `(setf ,sym)) 3 x) x)))))))
+
+(test-expect-error defclass-2 (eval '(defclass xxx nil nil nil))  :type program-error)
+
+(defmethod foo-bar ((vector vector)) vector)
+
+(test issue-698
+      (vectorp (foo-bar (make-array 23 :adjustable T))))
+
+#+cst (test-expect-error make-instance.error.5 (let ()(make-instance)) :type program-error)
+
+(defclass slot-missing-class-01 () (a))
+
+(defmethod slot-missing ((class t) (obj slot-missing-class-01)
+                         (slot-name t) (operation t)
+                         &optional (new-value nil new-value-p))
+  42)
+
+(test slot-missing-2-simplified
+      (eq 'bar
+          (let ((obj (make-instance 'slot-missing-class-01)))
+            (setf (slot-value obj 'foo) 'bar))))

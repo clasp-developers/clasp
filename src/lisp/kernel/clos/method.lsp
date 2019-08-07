@@ -169,13 +169,10 @@ in the generic function lambda-list to the generic function lambda-list"
       (values method-lambda declarations documentation))))
 
 (defun lambda-list-fast-callable-p (lambda-list)
-  ;; We only put in an FMF if we have only required parameters, and few enough
-  ;; that they can be passed in registers (that's what number-of-fixed-arguments is).
-  (and
-   (<= (length lambda-list) core:+number-of-fixed-arguments+)
-   (not (find-if (lambda (sym)
-                   (member sym lambda-list-keywords))
-                 lambda-list))))
+  ;; We only put in an FMF if we have only required parameters.
+  (not (find-if (lambda (sym)
+                  (member sym lambda-list-keywords))
+                lambda-list)))
 
 (defun make-method-lambda (gf method method-lambda env)
   (declare (ignore gf method))
@@ -268,10 +265,9 @@ in the generic function lambda-list to the generic function lambda-list"
 		    (when (eq (second form) 'NEXT-METHOD-P)
                       (setf next-method-p-p 'FUNCTION))))))
 	     form))
-      ;; Determine how to walk the code in clasp
-      ;; Either use the bclasp compiler or if clasp-cleavir is available
-      ;; then use the clasp-cleavir compiler
-      (unless (cmp:code-walk method-lambda env :code-walker-function #'code-walker :errorp nil)
+      ;; CODE-WALK returns NIL if the walk could not be completed,
+      ;; e.g. due to an error. Otherwise we just use the side effects.
+      (unless (cmp:code-walk #'code-walker method-lambda env)
         (setq call-next-method-p t
               next-method-p-p t)))
     (values call-next-method-p next-method-p-p)))

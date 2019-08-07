@@ -341,6 +341,12 @@
       (let ((vector (make-array 3 :fill-pointer 2 :initial-contents (list 1 2 3))))
         (equalp vector (copy-seq vector))))
 
+;;; COERCE.6
+(test equalp-8 (equalp #* #()))
+
+;;; COERCE.7 + 8
+(test equalp-9 (equalp #*10 #(1 0)))
+
 (test nreverse-1
       (let ((array (MAKE-ARRAY 10 :INITIAL-CONTENTS '(1 2 3 4 5 6 7 8 9 10) :FILL-POINTER 5)))
         (let ((new (nreverse array)))
@@ -349,6 +355,13 @@
 (test reverse-1
       (equalp #(3 2 1)
               (reverse
+               (make-array 3 :displaced-to
+                           (make-array 5 :initial-contents (list 0 1 2 3 4))
+                           :displaced-index-offset 1))))
+
+(test nreverse-2
+      (equalp #(3 2 1)
+              (nreverse
                (make-array 3 :displaced-to
                            (make-array 5 :initial-contents (list 0 1 2 3 4))
                            :displaced-index-offset 1))))
@@ -387,7 +400,7 @@
 ;;; fixed in the function and  in the compiler-macro
 (test-expect-error make-sequence-3
                    (locally (declare (notinline make-sequence))
-                     (MAKE-sequence 'cons 0) :type type-error))
+                     (MAKE-sequence 'cons 0)) :type type-error)
 (test-expect-error make-sequence-3a (let ()
                                       (MAKE-sequence 'cons 0)) :type type-error)
 ;;; find
@@ -399,3 +412,39 @@
 (test-expect-error find-2a
                    (locally (declare (notinline find))
                      (find 5 '(1 2 3 . 4))) :type type-error)
+
+(test remove-if-1
+      (string= "123def4"
+               (let ((s (make-array 10 :element-type 'base-char
+                                    :displaced-to (make-array 15
+                                                              :initial-contents "XXab1c23def4YYY"
+                                                              :element-type 'base-char)
+                                    :displaced-index-offset 2)))
+                 (remove-if #'ALPHA-CHAR-P s :count 3))))
+
+(test position-1
+      (= 2
+         (LET* ((S1 (COPY-SEQ "xxxabcdyyyyy"))
+             (S2
+              (MAKE-ARRAY '(4)
+                          :DISPLACED-TO
+                          S1
+                          :DISPLACED-INDEX-OFFSET
+                          3
+                          :ELEMENT-TYPE
+                          (ARRAY-ELEMENT-TYPE S1))))
+           (POSITION #\c S2))))
+
+(test position-2
+      (= 6
+         (LET* ((S1 (COPY-SEQ "xxxabcdabcdyyyyyyyy"))
+             (S2
+              (MAKE-ARRAY '(8)
+                          :DISPLACED-TO
+                          S1
+                          :DISPLACED-INDEX-OFFSET
+                          3
+                          :ELEMENT-TYPE
+                          (ARRAY-ELEMENT-TYPE S1))))
+        (POSITION #\c S2 :FROM-END T))))
+      

@@ -104,7 +104,6 @@
      ,@*startup-primitives-as-list*
      ,@'((primitive         "ltvc_lookup_literal" %t*% (list %gcroots-in-module*% %size_t%))
          (primitive         "ltvc_lookup_transient" %t*% (list %gcroots-in-module*% %i8% %size_t%))
-         (primitive         "isTrue" %i32% (list %t*%))
     
          (primitive         "makeCompiledFunction" %t*% (list %fn-prototype*% ; funcPtr
                                                          %i8*% ; function-description
@@ -114,23 +113,20 @@
          (primitive-unwinds "symbolValueRead" %t*% (list %t*%))
          (primitive         "symbolValueReference" %t**% (list %t*%))
          (primitive         "lexicalValueReference" %t**% (list %size_t% %size_t% %t*%))
-         (primitive         "registerReference" %t**% (list %t**%))
+         (primitive         "cc_match" %t*% (list %t*% %t*%))
+;;         (primitive         "registerReference" %t**% (list %t**%))
 ;;;    (primitive         "symbolFunctionRead" %t*% (list %t*%))
-         (primitive         "setfSymbolFunctionRead" %t*% (list %t*%))
+;;;         (primitive         "setfSymbolFunctionRead" %t*% (list %t*%))
     
          (primitive         "activationFrameReferenceFromClosure" %t**% (list %t*%))
          (primitive         "setParentOfActivationFrame" %void% (list %t*% %t*%))
          (primitive         "makeValueFrameSetParent" %t*% (list %i64% %t*%))
          (primitive         "invisible_makeValueFrameSetParent" %t*% (list %t*%))
          (primitive         "makeBlockFrameSetParent" %t*% (list %t*%))
-         (primitive         "invisible_makeBlockFrameSetParent" %t*% (list %t*%))
          (primitive         "makeTagbodyFrameSetParent" %t*% (list %t*%))
-         (primitive         "invisible_makeTagbodyFrameSetParent" %t*% (list %t*%))
 
          (primitive         "setFrameUniqueId" %void% (list %size_t% %t*%))
-         (primitive         "ignore_setFrameUniqueId" %void% nil)
          (primitive         "ensureFrameUniqueId" %void% (list %size_t% %size_t% %t*%))
-         (primitive         "ignore_ensureFrameUniqueId" %void% nil)
 
          (primitive-unwinds "makeFunctionFrame" %t*% (list %i32% %t*%))
          (primitive-unwinds "functionFrameReference" %t**% (list %t*% %i32%))
@@ -138,14 +134,15 @@
 ;;;    (primitive-unwinds "invokeTopLevelFunction" %void% (list %tmv*% %fn-prototype*% %i8*% %i32*% %size_t% %size_t% %size_t% %ltv**%))
          (primitive-unwinds "cc_register_startup_function" %void% (list %size_t% %fn-start-up*%))
          (primitive         "cc_protect_alloca" %void% (list %i8*%))
-    
-         (primitive         "cc_trackFirstUnexpectedKeyword" %size_t% (list %size_t% %size_t%))
-         (primitive-unwinds "bc_function_from_function_designator" %t*% (list %t*%))
-    
+
+         (primitive-unwinds "cc_error_type_error" %void% (list %t*% %t*%) :does-not-return t)
+         (primitive-unwinds "cc_error_array_out_of_bounds" %void% (list %t*% %t*% %t*%) :does-not-return t)
+         (primitive-unwinds "cc_error_case_failure" %void% (list %t*% %t*% %t*% %t*%) :does-not-return t)
+         
          (primitive-unwinds "gdb" %void% nil)
          (primitive         "debugInspectTPtr" %void% (list %t*%))
          (primitive         "debugInspectT_mv" %void% (list %tmv*%))
-         (primitive         "debugInspect_return_type" %void% (list %return_type%))
+         (primitive         "debugInspect_return_type" %void% (list %return-type%))
 
          (primitive         "debugPointer" %void% (list %i8*%))
          (primitive         "debug_vaslistPtr" %void% (list %vaslist*%))
@@ -160,9 +157,9 @@
          (primitive         "lowLevelTrace" %void% (list %i32%))
          (primitive         "unreachableError" %void% nil)
     
-         (primitive-unwinds "va_tooManyArgumentsException" %void% (list %i8*% %size_t% %size_t%))
-         (primitive-unwinds "va_notEnoughArgumentsException" %void% (list %i8*% %size_t% %size_t%))
-         (primitive-unwinds "cc_symbol_function" %t*% (list %t*%))
+         (primitive-unwinds "cc_wrong_number_of_arguments" %void% (list %t*% %size_t% %size_t% %size_t%)
+          :does-not-return t)
+
          (primitive         "va_lexicalFunction" %t*% (list %size_t% %size_t% %t*%))
     
          (primitive         "cc_gatherRestArguments" %t*% (list %va_list*% %size_t%))
@@ -171,21 +168,16 @@
          (primitive-unwinds "cc_ifBadKeywordArgumentException" %void% (list %t*% %t*% %function-description*%))
     
          (primitive         "initializeBlockClosure" %t*% (list %t**%))
-         (primitive         "ignore_initializeBlockClosure" %t*% (list %t**%))
          (primitive         "initializeTagbodyClosure" %t*% (list %t**%))
-         (primitive         "ignore_initializeTagbodyClosure" %t*% (list %t**%))
          (primitive         "pushTagbodyFrame" %size_t% (list %t*%))
     
          (primitive-unwinds "throwReturnFrom" %void% (list %size_t% %t*%) :does-not-return t)
          (primitive-unwinds "throwDynamicGo" %void% (list %size_t% %size_t% %t*%) :does-not-return t)
 
-         (primitive         "ignore_exceptionStackUnwind" %void% nil)
-         (primitive-unwinds "blockHandleReturnFrom_or_rethrow" %return_type% (list %i8*% %t*%))
-         (primitive-unwinds "ignore_blockHandleReturnFrom_or_rethrow" %return_type% (list %i8*% %t*%))
+         (primitive-unwinds "blockHandleReturnFrom_or_rethrow" %return-type% (list %i8*% %t*%))
          (primitive-unwinds "tagbodyHandleDynamicGoIndex_or_rethrow" %size_t% (list %i8*% %t*%))
          (primitive-unwinds "throwIllegalSwitchValue" %void% (list %size_t% %size_t%) :does-not-return t)
     
-         (primitive         "clasp_terminate" %void% nil)
          (primitive         "__gxx_personality_v0" %i32% nil :varargs t)
          (primitive         "__cxa_begin_catch" %i8*% (list %i8*%) )
          (primitive-unwinds "__cxa_end_catch" %void% nil)
@@ -201,34 +193,32 @@
          (primitive         "llvm.va_copy" %void% (list %i8*% %i8*%))
          (primitive         "llvm.va_start" %void% (list %i8*%))
          (primitive         "llvm.va_end" %void% (list %i8*%))
-    
+
+         (primitive         "llvm.dbg.addr" %void% (list %metadata% %metadata% %metadata%))
+         (primitive         "llvm.dbg.declare" %void% (list %metadata% %metadata% %metadata%))
+         (primitive         "llvm.dbg.value" %void% (list %metadata% %metadata% %metadata%))
+
+         (primitive         "llvm.lifetime.start" %void% (list %i64% %i8*%))
+         (primitive         "llvm.lifetime.end" %void% (list %i64% %i8*%))
+         
          (primitive         "debugSourceFileInfoHandle" %void% (list %i32*%))
     
          (primitive         "saveToMultipleValue0" %void% (list %tmv*%))
-         (primitive         "restoreFromMultipleValue0" %return_type% nil)
+         (primitive         "restoreFromMultipleValue0" %return-type% nil)
          (primitive         "cc_save_values" %void% (list %size_t% %t*% %t**%))
-         (primitive         "cc_load_values" %return_type% (list %size_t% %t**%))
+         (primitive         "cc_load_values" %return-type% (list %size_t% %t**%))
     
          (primitive         "pushDynamicBinding" %void% (list %t*%))
          (primitive         "popDynamicBinding" %void% (list %t*%))
     
          ;; Primitives for Cleavir code
 
-         (primitive-unwinds "cc_bound_or_error" %t*% (list %t*% %t*% %t*%)) ; optimized-data instance value
-         (primitive         "cc_vaslist_end" %void% (list %t*%))
-
-         (primitive-unwinds "cc_check_if_wrong_number_of_arguments" %void% (list %size_t% %size_t% %size_t% %function-description*%))
+         (primitive         "cm_check_index" %return-type% (list %t*% %t*% %t*%))
+         (primitive         "cm_vref" %return-type% (list %t*% %t*%))
+         (primitive         "cm_vset" %return-type% (list %t*% %t*% %t*%))
          (primitive         "cc_ensure_valid_object" %t*% (list %t*%))
          (primitive         "cc_getPointer" %i8*% (list %t*%))
          (primitive-unwinds "cc_makeCell" %t*% nil)
-         (primitive         "cc_writeCell" %void% (list %t*% %t*%))
-         (primitive         "cc_readCell" %t*% (list %t*%))
-         (primitive         "cc_fetch" %t*% (list %t*% %size_t%))
-         (primitive         "cc_realArrayDisplacement" %t*% (list %t*%))
-         (primitive         "cc_realArrayDisplacedIndexOffset" %size_t% (list %t*%))
-         (primitive         "cc_arrayTotalSize" %size_t% (list %t*%))
-         (primitive         "cc_arrayRank" %size_t% (list %t*%))
-         (primitive         "cc_arrayDimension" %size_t% (list %t*% %size_t%))
          (primitive         "cc_simpleBitVectorAref" %uint% (list %t*% %size_t%))
          (primitive         "cc_simpleBitVectorAset" %void% (list %t*% %size_t% %uint%))
          (primitive         "cc_initialize_gcroots_in_module" %void% (list %gcroots-in-module*% ; holder
@@ -248,34 +238,28 @@
 
          (primitive-unwinds "cc_enclose" %t*% (list %fn-prototype*%
                                                %i8*%
-                                               %size_t% ) :varargs t)
+                                               %size_t%))
          (primitive         "cc_stack_enclose" %t*% (list %i8*%
                                                      %fn-prototype*%
                                                      %i8*%
-                                                     %size_t% ) :varargs t)
-         (primitive         "cc_fdefinition" %t*% (list %t*%))
-         (primitive         "cc_setfdefinition" %t*% (list %t*%))
+                                                     %size_t% ))
+         (primitive-unwinds "cc_initialize_closure" %void% (list %t*%
+                                                            %size_t% ) :varargs t)
          (primitive-unwinds "cc_safe_symbol_value" %t*% (list %t*%))
          (primitive         "cc_setSymbolValue" %void% (list %t*% %t*%))
 
-         (primitive         "cx_vaslist_pop" %t*% (list %t*%))
          (primitive         "cc_rewind_va_list" %void% (list %va_list*% %register-save-area*%))
-         (primitive         "cc_rewind_vaslist" %t*% (list %vaslist*% %va_list*% %register-save-area*%))
-         (primitive-unwinds "cc_call_multipleValueOneFormCall" %return_type% (list %t*%))
-         (primitive-unwinds "cc_call_multipleValueOneFormCallWithRet0" %return_type% (list %t*% %return_type%))
+         (primitive-unwinds "cc_call_multipleValueOneFormCallWithRet0" %return-type% (list %t*% %return-type%))
          (primitive-unwinds "cc_oddKeywordException" %void% (list %function-description*%))
          (primitive         "cc_multipleValuesArrayAddress" %t*[0]*% nil)
          (primitive-unwinds "cc_unwind" %void% (list %t*% %size_t%))
          (primitive-unwinds "cc_throw" %void% (list %t*%) :does-not-return t)
-         (primitive         "cc_saveMultipleValue0" %void% (list %tmv*%))
-         (primitive         "cc_restoreMultipleValue0" %void% (list %tmv*%))
+         (primitive         "cc_saveMultipleValue0" %void% (list %tmv%))
+         (primitive         "cc_restoreMultipleValue0" %return-type% nil)
          (primitive         "cc_pushLandingPadFrame" %t*% nil)
          (primitive         "cc_popLandingPadFrame" %void% (list %t*%))
          (primitive-unwinds "cc_landingpadUnwindMatchFrameElseRethrow" %size_t% (list %i8*% %t*%))
 
-         (primitive         "cc_vaslist_va_list_address" %va_list*% (list %t*%))
-         (primitive         "cc_vaslist_remaining_nargs_address" %size_t*% (list %t*%))
-    
          ;; === CLASP-FFI TRANSLATORS ===
 
          ;; !!! NOTE !!! => PORTING ISSUE/TODO !
@@ -390,9 +374,10 @@
          (primitive-unwinds "to_object_pointer" %t*% (list %i64*%))
          (primitive-unwinds "to_object_void" %t*% (list))
          ;; === END OF TRANSLATORS ===
-         (primitive         "cx_read_stamp" %t*% (list %t*%))
-         (primitive         "cc_read_slot" %t*% (list %t*% %size_t%))
-         (primitive         "cc_write_slot" %t*% (list %t*% %size_t% %t*%))
+         (primitive         "cx_read_stamp" %t*% (list %t*% %i64%))
+         (primitive         "cc_read_derivable_cxx_stamp_untagged_object" %i64% (list %i8*%))
+         #+(or)(primitive         "cc_read_slot" %t*% (list %t*% %size_t%))
+         #+(or)(primitive         "cc_write_slot" %t*% (list %t*% %size_t% %t*%))
          )
      *primitives*
      ))

@@ -130,9 +130,10 @@
 ;;; Immediate objects don't need to be put into tables
 ;;;
 
-;;; Return NIL if the object is not immediate - or return
-;;;     a fixnum that can be cast directly to a tagged pointer that represents the immediate object.
-(defun immediate-object-or-nil (original)
+;;; Return NIL if the object is not immediate
+;;; - if it is an immediate then return an immediate-datum object that
+;;; contains the tagged immediate value.
+(defun immediate-datum-or-nil (original)
   (let ((immediate (core:create-tagged-immediate-value-or-nil original)))
     (if immediate
         (make-immediate-datum :value immediate)
@@ -491,6 +492,7 @@ rewrite the slot in the literal table to store a closure."
   "Convert the args from Lisp form into llvm::Value*'s"
   (mapcar #'fix-arg args))
 
+#+(or)
 (defun generate-run-all-from-literal-nodes (nodes)
   (cmp::with-make-new-run-all (foo)
     (dolist (node nodes)
@@ -827,14 +829,14 @@ and  return the sorted values and the constant-table or (values nil nil)."
   "If the object is an immediate object return (values immediate nil).
    Otherwise return (values creator T)."
   (llog "load-time-reference-literal object: ~s~%" object)
-  (let ((immediate (immediate-object-or-nil object))
+  (let ((immediate-datum (immediate-datum-or-nil object))
         (desired-kind (if toplevelp :literal :transient)))
-    (if immediate
+    (if immediate-datum
         (progn
-          (llog "immediate ~s~%" immediate)
-          (let ((val (immediate-datum-value immediate)))
-            (llog "immediate value ~s~%" val)
-            (values immediate nil)))
+          (llog "immediate-datum ~s~%" immediate-datum)
+          (let ((val (immediate-datum-value immediate-datum)))
+            (llog "immediate-datum value ~s~%" val)
+            (values immediate-datum nil)))
         (multiple-value-bind (similarity creator)
             (object-similarity-table-and-creator object read-only-p)
           (llog "non-immediate~%")
@@ -867,12 +869,13 @@ and  return the sorted values and the constant-table or (values nil nil)."
 
 (defvar *run-time-coalesce*)
 
+(declaim (ftype (function (t boolean) (values (or immediate-datum literal-node) boolean)) run-time-reference-literal))
 (defun run-time-reference-literal (object read-only-p)
   "If the object is an immediate object return (values immediate nil nil).
    Otherwise return (values creator T index)."
-  (let ((immediate (immediate-object-or-nil object)))
-    (if immediate
-        (values immediate NIL)
+  (let ((immediate-datum (immediate-datum-or-nil object)))
+    (if immediate-datum
+        (values immediate-datum NIL)
         (let* ((similarity *run-time-coalesce*)
                (existing (find-similar object :literal similarity)))
           (if existing
@@ -950,17 +953,17 @@ and  return the sorted values and the constant-table or (values nil nil)."
                             (cmp:irc-maybe-cast-integer-to-t* (immediate-datum-value data)))
                           (error "data must be a immediate-datum - instead its ~s" data))
                       nil)))
-        (multiple-value-bind (immediate?literal-node-runtime in-array)
+        (multiple-value-bind (immediate-datum?literal-node-runtime in-array)
             (run-time-reference-literal object read-only-p)
-          (llog "result from run-time-reference-literal -> ~s in-array -> ~s~%" immediate?literal-node-runtime in-array)
+          (llog "result from run-time-reference-literal -> ~s in-array -> ~s~%" immediate-datum?literal-node-runtime in-array)
           (if in-array
-              (let* ((literal-node-runtime immediate?literal-node-runtime)
+              (let* ((literal-node-runtime immediate-datum?literal-node-runtime)
                      (index (literal-node-index literal-node-runtime)))
                 (values index T))
-              (let ((immediate immediate?literal-node-runtime))
-                (values (if (immediate-datum-p immediate)
-                            (cmp:irc-maybe-cast-integer-to-t* (immediate-datum-value immediate))
-                            (error "data must be a immediate-datum - instead its ~s" immediate))
+              (let ((immediate-datum immediate-datum?literal-node-runtime))
+                (values (if (immediate-datum-p immediate-datum)
+                            (cmp:irc-maybe-cast-integer-to-t* (immediate-datum-value immediate-datum))
+                            (error "data must be a immediate-datum - instead its ~s" immediate-datum))
                         nil)))))))
 
 ;;; ------------------------------------------------------------
@@ -1020,29 +1023,29 @@ and  return the sorted values and the constant-table or (values nil nil)."
   "bclasp calls this to get copy the run-time-value for obj into result.
 Returns (value index t) if the value was put in the literal vector or it
 returns (value immediate nil) if the value is an immediate value."
-  (multiple-value-bind (immediate?literal-node-runtime in-array)
+  (multiple-value-bind (immediate-datum?literal-node-runtime in-array)
       (run-time-reference-literal obj t)
     (if in-array
-        (let* ((literal-node-runtime immediate?literal-node-runtime)
+        (let* ((literal-node-runtime immediate-datum?literal-node-runtime)
                (index (literal-node-index literal-node-runtime)))
           (cmp:irc-t*-result (constants-table-value index) result)
           index)
-        (let ((immediate immediate?literal-node-runtime))
-          (cmp:irc-t*-result immediate result)
+        (let ((immediate-datum immediate-datum?literal-node-runtime))
+          (cmp:irc-t*-result (cmp:jit-constant-i64 (immediate-datum-value immediate-datum)) result)
           :poison-value-from-codegen-rtv-bclasp))))
 
 (defun codegen-rtv-cclasp (obj)
   "bclasp calls this to get copy the run-time-value for obj into result.
 Returns (value index t) if the value was put in the literal vector or it
 returns (value immediate nil) if the value is an immediate value."
-  (multiple-value-bind (immediate?literal-node-runtime in-array)
+  (multiple-value-bind (immediate-datum?literal-node-runtime in-array)
       (run-time-reference-literal obj t)
     (if in-array
-        (let* ((literal-node-runtime immediate?literal-node-runtime)
+        (let* ((literal-node-runtime immediate-datum?literal-node-runtime)
                (index (literal-node-index literal-node-runtime)))
           (values index t))
-        (let ((immediate immediate?literal-node-runtime))
-          (values immediate nil)))))
+        (let ((immediate-datum immediate-datum?literal-node-runtime))
+          (values (immediate-datum-value immediate-datum) nil)))))
 
 (defun codegen-literal (result object env)
   "This is called by bclasp.  If result is nil then just return the ltv index.

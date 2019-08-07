@@ -66,6 +66,11 @@ void assert_failure(const char* file, size_t line, const char* func, const char*
   SIMPLE_ERROR(BF("%s:%d:%s  Assertion failure: %s") % file % line % func % msg);
 }
 
+void assert_failure_bounds_error_lt(const char* file, size_t line, const char* func, int64_t x, int64_t y)
+{
+  SIMPLE_ERROR(BF("%s:%d:%s  Assertion failure: bounds error - %s must be less than %s") % file % line % func % x % y);
+}
+
 /*! These are here just so that the clang compiler
       will assign the __attribute__((weak)) to the vtable of each of these classes
     */
@@ -75,27 +80,24 @@ void LexicalGo::keyFunctionForVtable(){};
 void DynamicGo::keyFunctionForVtable(){};
 void Unwind::keyFunctionForVtable(){};
 
-TooFewArgumentsError::TooFewArgumentsError(int given, int required) : givenNumberOfArguments(given), requiredNumberOfArguments(required) {
-  printf("%s:%d Constructed TooFewArgumentsError given %d required %d\n", __FILE__, __LINE__, given, required);
-};
-TooManyArgumentsError::TooManyArgumentsError(int given, int required) : givenNumberOfArguments(given), requiredNumberOfArguments(required){};
-
 void throwTooFewArgumentsError(size_t given, size_t required) {
-  SIMPLE_ERROR(BF("Too few arguments given %d required %d") % given % required);
-  //        throw(TooFewArgumentsError(given,required));
+  lisp_error(core::_sym_wrongNumberOfArguments,
+             lisp_createList(kw::_sym_givenNargs, make_fixnum(given),
+                             kw::_sym_minNargs, make_fixnum(required)));
 }
 
 void throwTooManyArgumentsError(size_t given, size_t required) {
-  SIMPLE_ERROR(BF("Too many arguments error given: %d required: %d") % given % required);
-  //        throw(TooManyArgumentsError(given,required));
+  lisp_error(core::_sym_wrongNumberOfArguments,
+             lisp_createList(kw::_sym_givenNargs, make_fixnum(given),
+                             kw::_sym_maxNargs, make_fixnum(required)));
 }
 
 void throwUnrecognizedKeywordArgumentError(T_sp kw) {
-  SIMPLE_ERROR(BF("Unrecognized keyword argument error: %s") % _rep_(kw));
-  //        throw(UnrecognizedKeywordArgumentError(kw));
+  lisp_error(core::_sym_unrecognizedKeywordArgumentError,
+             lisp_createList(kw::_sym_unrecognizedKeyword, kw));
 }
 
-void wrongNumberOfArguments(std::size_t givenNumberOfArguments, std::size_t requiredNumberOfArguments) {
+void wrongNumberOfArguments(size_t givenNumberOfArguments, size_t requiredNumberOfArguments) {
   if (givenNumberOfArguments < requiredNumberOfArguments)
     throwTooFewArgumentsError(givenNumberOfArguments, requiredNumberOfArguments);
   else
@@ -563,7 +565,7 @@ void af_wrongTypeKeyArg(const string &sourceFile, int lineno,
                 _Nil<T_O>(),                  // arg1
                 SimpleBaseString_O::make(message.str()), // arg2
                 Cons_O::createList(function, key, value, type),
-                kw::_sym_expectedType, type,
+                kw::_sym_expected_type, type,
                 kw::_sym_datum, value);
 };
 
@@ -581,7 +583,7 @@ void af_wrongTypeOnlyArg(const string &sourceFile, int lineno, Symbol_sp functio
                   _Nil<T_O>(),                  // arg1
                   SimpleBaseString_O::make(message.str()), // arg2
                   Cons_O::createList(value, type),
-                  kw::_sym_expectedType, type,
+                  kw::_sym_expected_type, type,
                   kw::_sym_datum, value);
   } else {
     message << "In function ~A,";
@@ -592,7 +594,7 @@ void af_wrongTypeOnlyArg(const string &sourceFile, int lineno, Symbol_sp functio
                   _Nil<T_O>(),                  // arg1
                   SimpleBaseString_O::make(message.str()), // arg2
                   Cons_O::createList(function, value, type),
-                  kw::_sym_expectedType, type,
+                  kw::_sym_expected_type, type,
                   kw::_sym_datum, value);
   }
 };
@@ -609,7 +611,7 @@ CL_DEFUN void core__function_wrong_type_argument(Symbol_sp function, T_sp value,
                   _Nil<T_O>(),                  // arg1
                   SimpleBaseString_O::make(message.str()), // arg2
                   Cons_O::createList(value, type),
-                  kw::_sym_expectedType, type,
+                  kw::_sym_expected_type, type,
                   kw::_sym_datum, value);
   } else {
     message << "In function ~A, "
@@ -620,7 +622,7 @@ CL_DEFUN void core__function_wrong_type_argument(Symbol_sp function, T_sp value,
                   _Nil<T_O>(),                  // arg1
                   SimpleBaseString_O::make(message.str()), // arg2
                   Cons_O::createList(function, value, type),
-                  kw::_sym_expectedType, type,
+                  kw::_sym_expected_type, type,
                   kw::_sym_datum, value);
   }
 };
@@ -639,7 +641,7 @@ CL_DEFUN void core__wrong_type_argument(const string &sourceFile, int lineno, Sy
                   _Nil<T_O>(),                  // arg1
                   SimpleBaseString_O::make(message.str()), // arg2
                   Cons_O::createList(value, type),
-                  kw::_sym_expectedType, type,
+                  kw::_sym_expected_type, type,
                   kw::_sym_datum, value);
   } else {
     message << "In function ~A, "
@@ -650,7 +652,7 @@ CL_DEFUN void core__wrong_type_argument(const string &sourceFile, int lineno, Sy
                   _Nil<T_O>(),                  // arg1
                   SimpleBaseString_O::make(message.str()), // arg2
                   Cons_O::createList(function, value, type),
-                  kw::_sym_expectedType, type,
+                  kw::_sym_expected_type, type,
                   kw::_sym_datum, value);
   }
 };
@@ -669,7 +671,7 @@ CL_DEFUN void core__wrong_type_nth_arg(const string &sourceFile, int lineno, Sym
                   _Nil<T_O>(),                  // arg1
                   SimpleBaseString_O::make(message.str()), // arg2
                   Cons_O::createList(make_fixnum(narg), value, type),
-                  kw::_sym_expectedType, type,
+                  kw::_sym_expected_type, type,
                   kw::_sym_datum, value);
   } else {
     stringstream message;
@@ -681,7 +683,7 @@ CL_DEFUN void core__wrong_type_nth_arg(const string &sourceFile, int lineno, Sym
                   _Nil<T_O>(),                  // arg1
                   SimpleBaseString_O::make(message.str()), // arg2
                   Cons_O::createList(function, make_fixnum(narg), value, type),
-                  kw::_sym_expectedType, type,
+                  kw::_sym_expected_type, type,
                   kw::_sym_datum, value);
   }
 };
@@ -708,7 +710,7 @@ CL_DEFUN void core__wrong_index(const string &sourceFile, int lineno, Symbol_sp 
                   _Nil<T_O>(),        // arg1
                   message,            // arg2
                   Cons_O::createList(make_fixnum(which + 1), array, index, type),
-                  kw::_sym_expectedType, type,
+                  kw::_sym_expected_type, type,
                   kw::_sym_datum, index);
   } else {
     const char *message1 =
@@ -728,7 +730,7 @@ CL_DEFUN void core__wrong_index(const string &sourceFile, int lineno, Symbol_sp 
                   _Nil<T_O>(),        // arg1
                   message,            // arg2
                   Cons_O::createList(function, make_fixnum(which + 1), array, index, type),
-                  kw::_sym_expectedType, type,
+                  kw::_sym_expected_type, type,
                   kw::_sym_datum, index);
   }
 };

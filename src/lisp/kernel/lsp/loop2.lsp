@@ -1562,7 +1562,10 @@ collected result will be returned as the value of the LOOP."
 				(t (setq length (length vector-value)))))
 	     (first-test `(>= ,index-var ,length-form))
 	     (other-test first-test)
-	     (step `(,var (aref ,vector-var ,index-var)))
+             ;; FIXME: We could do even better by extracting
+             ;; the underlying (simple-array * (*)) outside of the loop.
+	     (step `(,var (locally (declare (optimize (core::insert-array-bounds-checks nil)))
+                            (aref ,vector-var ,index-var))))
 	     (pstep `(,index-var (1+ ,index-var))))
 	(declare (fixnum length))
 	(when constantp

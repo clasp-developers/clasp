@@ -16,7 +16,7 @@
            (list exception-ptr frame)
            "go-index")
         ;; Restore multiple values before going to whichever block.
-        (%intrinsic-call "cc_restoreMultipleValue0" (list return-value))))))
+        (restore-multiple-value-0 return-value)))))
 
 ;;; Generates a landing pad and code to deal with unwinds to this function.
 ;;; See note on previous and possibly future operation below for the purpose of the first argument,
@@ -123,8 +123,8 @@
 (defun compute-dynenv-destinations (location)
   (let ((definers (cleavir-ir:defining-instructions location)))
     (unless (= (length definers) 1)
-      (error "BUG: Dynamic-environment ~a def-use chain is messed up"
-             location))
+      (error "BUG: Dynamic-environment ~a def-use chain is messed up - definers: ~a"
+             location definers))
     (let ((definer (first definers)))
       (etypecase definer
         (cleavir-ir:assignment-instruction

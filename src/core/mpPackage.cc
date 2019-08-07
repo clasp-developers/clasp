@@ -44,10 +44,10 @@ THE SOFTWARE.
 
 
 extern "C" {
-__attribute__((optnone)) void mutex_lock_enter(char* nameword) {
+void mutex_lock_enter(char* nameword) {
   (void)0;
 };
-__attribute__((optnone)) void mutex_lock_return(char* nameword) {
+void mutex_lock_return(char* nameword) {
   (void)0;
 };
 
@@ -207,6 +207,15 @@ void* start_thread(void* claspProcess) {
   //
   start_thread_inner(process,cold_end_of_stack);
 
+#ifdef DEBUG_MONITOR_SUPPORT
+    // When enabled, maintain a thread-local map of strings to FILE*
+    // used for logging. This is so that per-thread log files can be
+    // generated.  These log files are automatically closed here when
+    // the thread exits.
+  for ( auto it : my_thread->_MonitorFiles ) {
+    fclose(it.second);
+  }
+#endif
 #if 0
 #ifdef USE_BOEHM
   GC_unregister_my_thread();

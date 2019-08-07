@@ -34,6 +34,7 @@ THE SOFTWARE.
 #include <clasp/core/hashTable.h>
 #include <clasp/core/functor.h>
 #include <clasp/core/numbers.h>
+#include <clasp/core/compiler.h>
 #include <clasp/core/lispList.h>
 #include <clasp/core/instance.h>
 #include <clasp/core/package.h>
@@ -509,7 +510,7 @@ T_sp Symbol_O::getPackage() const {
 
 void Symbol_O::setPackage(T_sp p) {
   ASSERTF(p, BF("The package is UNDEFINED"));
-  ASSERT(p.nilp() || p.asOrNull<Package_O>());
+  ASSERT(p.nilp() || gc::IsA<Package_sp>(p));
   this->_HomePackage = p;
 }
 
@@ -589,6 +590,31 @@ This bypasses thread local storage of symbol value slots and any threads that st
 after this has been set will start with the value set here.)");
 CL_DEFUN void core__symbol_global_value_set(Symbol_sp symbol, T_sp value) {
   symbol->_GlobalValue = value;
+}
+
+
+
+
+SYMBOL_EXPORT_SC_(KeywordPkg,vtable);
+SYMBOL_EXPORT_SC_(KeywordPkg,name);
+SYMBOL_EXPORT_SC_(KeywordPkg,home_package);
+SYMBOL_EXPORT_SC_(KeywordPkg,global_value);
+SYMBOL_EXPORT_SC_(KeywordPkg,function);
+SYMBOL_EXPORT_SC_(KeywordPkg,setf_function);
+SYMBOL_EXPORT_SC_(KeywordPkg,binding_idx);
+SYMBOL_EXPORT_SC_(KeywordPkg,flags);
+SYMBOL_EXPORT_SC_(KeywordPkg,property_list);
+
+CL_DEFUN void core__verify_symbol_layout(T_sp alist)
+{
+  expect_offset(kw::_sym_name,alist,offsetof(Symbol_O,_Name)-gctools::general_tag);
+  expect_offset(kw::_sym_home_package,alist,offsetof(Symbol_O,_HomePackage)-gctools::general_tag);
+  expect_offset(kw::_sym_global_value,alist,offsetof(Symbol_O,_GlobalValue)-gctools::general_tag);
+  expect_offset(kw::_sym_function,alist,offsetof(Symbol_O,_Function)-gctools::general_tag);
+  expect_offset(kw::_sym_setf_function,alist,offsetof(Symbol_O,_SetfFunction)-gctools::general_tag);
+  expect_offset(kw::_sym_binding_idx,alist,offsetof(Symbol_O,_BindingIdx)-gctools::general_tag);
+  expect_offset(kw::_sym_flags,alist,offsetof(Symbol_O,_Flags)-gctools::general_tag);
+  expect_offset(kw::_sym_property_list,alist,offsetof(Symbol_O,_PropertyList)-gctools::general_tag);
 }
 
 };

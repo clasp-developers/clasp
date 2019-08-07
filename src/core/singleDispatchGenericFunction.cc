@@ -57,8 +57,7 @@ CL_DEFUN SingleDispatchGenericFunctionClosure_sp core__ensure_single_dispatch_ge
       if (setf_gfname->fboundp_setf()) {
         T_sp symFunc = setf_gfname->getSetfFdefinition();
       // printf("%s:%d   gfname->symbolFunction() --> %p\n", __FILE__, __LINE__, gfname->symbolFunction().raw_());
-        if (SingleDispatchGenericFunctionClosure_sp existingGf = symFunc.asOrNull<SingleDispatchGenericFunctionClosure_O>()) {
-          (void)existingGf;
+        if (gc::IsA<SingleDispatchGenericFunctionClosure_sp>(symFunc)) {
           SIMPLE_ERROR(BF("The name %s has a SingleDispatchGenericFunction bound to its function slot but no SingleDispatchGenericFunction with that name was found") % _rep_(gfname));
         } else {
           SIMPLE_ERROR(BF("The name %s already has a function %s bound to it and it is not a SingleDispatchGenericFunction - it cannot become a SingleDispatchGenericFunction") % _rep_(gfname) % _rep_(symFunc) );
@@ -73,8 +72,7 @@ CL_DEFUN SingleDispatchGenericFunctionClosure_sp core__ensure_single_dispatch_ge
       Symbol_sp gfname_symbol = gc::As_unsafe<Symbol_sp>(gfname);
       if (gfname_symbol->fboundp()) {
         T_sp symFunc = gfname_symbol->symbolFunction();
-        if (SingleDispatchGenericFunctionClosure_sp existingGf = symFunc.asOrNull<SingleDispatchGenericFunctionClosure_O>()) {
-          (void)existingGf;
+        if (gc::IsA<SingleDispatchGenericFunctionClosure_sp>(symFunc)) {
           SIMPLE_ERROR(BF("The symbol %s has a SingleDispatchGenericFunction bound to its function slot but no SingleDispatchGenericFunction with that name was found") % _rep_(gfname));
         } else {
           SIMPLE_ERROR(BF("The symbol %s already has a function bound to it and it is not a SingleDispatchGenericFunction - it cannot become a SingleDispatchGenericFunction") % _rep_(gfname));

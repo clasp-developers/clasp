@@ -52,234 +52,30 @@ THE SOFTWARE.
 
 extern "C" {
 
-BUILTIN_ATTRIBUTES void cc_rewind_va_list(va_list va_args, void** register_save_areaP)
-{NO_UNWIND_BEGIN_BUILTINS();
-  LCC_REWIND_VA_LIST(va_args,register_save_areaP);
-  NO_UNWIND_END_BUILTINS();
+gctools::return_type cm_check_index(void* index, void* max, void* axis )
+{
+  if (((intptr_t)(index)<0) || (((intptr_t)(index)>=(intptr_t)max))) invalid_index_error(index,max,axis);
+  gctools::return_type result(_Nil<core::T_O>().raw_(),0);
+  return result;
 }
 
-/* Remove one item from the vaslist and return it.
-   Do not call this unless you are sure there are elements to pop without DEBUG_BUILD */
-BUILTIN_ATTRIBUTES core::T_O* cx_vaslist_pop(core::T_O *preVaslist)
-{NO_UNWIND_BEGIN(); // check_remaining_nargs doesn't actually throw.
-  core::VaList_sp vaslist((gctools::Tagged)preVaslist);
-  return vaslist->next_arg_raw();
-  NO_UNWIND_END();
-}
+
+gctools::return_type cm_vset(void* vector, void* idx, void* value)
+{
+  core::AbstractSimpleVector_sp asv((gctools::Tagged)vector);
+  core::T_sp tvalue((gctools::Tagged)value);
+  asv->vset(untag_fixnum((core::T_O*)idx),tvalue);
+  gctools::return_type result(value,1);
+  return result;
 };
 
 
-#include <clasp/llvmo/read-stamp.cc>
-
-extern "C" {
-BUILTIN_ATTRIBUTES core::T_O* cx_read_stamp(core::T_O* obj)
+gctools::return_type cm_vref(void* vector, void* idx)
 {
-  return llvmo::template_read_stamp<core::T_O>(obj);
-}
-
-BUILTIN_ATTRIBUTES core::T_O* cc_read_slot(core::T_O* tinstance, size_t index) {
-  core::Instance_sp instance((gctools::Tagged)tinstance);
-  core::T_sp value = low_level_instanceRef(instance->_Rack, index);
-  return value.raw_();
-}
-
-BUILTIN_ATTRIBUTES core::T_O* cc_write_slot(core::T_O* tinstance, size_t index, core::T_O* tvalue) {
-  core::T_sp value((gctools::Tagged)tvalue);
-  core::Instance_sp instance((gctools::Tagged)tinstance);
-  low_level_instanceSet(instance->_Rack, index, value);
-  return value.raw_();
-}
-
-BUILTIN_ATTRIBUTES
-core::T_O *cc_symbol_function(core::T_O *symP) {
-  core::Symbol_sp sym((gctools::Tagged)symP);
-  core::Function_sp func((gc::Tagged)(sym)->_Function.theObject);
-  return func.raw_();
-}
-
-/*! Invoke a symbol function with the given arguments and put the result in (*resultP) */
-BUILTIN_ATTRIBUTES core::T_O* setfSymbolFunctionRead(const core::T_O *tsymP)
-{NO_UNWIND_BEGIN();
-  const core::Symbol_sp sym((gctools::Tagged)tsymP);
-  core::Function_sp setfFunc = sym->getSetfFdefinition(); //_lisp->get_setfDefinition(*symP);
-  return setfFunc.raw_();
-  NO_UNWIND_END();
-}
-
-BUILTIN_ATTRIBUTES core::T_O** lexicalValueReference(size_t depth, size_t index, core::ActivationFrame_O *frameP)
-{
-  core::ActivationFrame_sp af((gctools::Tagged)frameP);
-  core::T_sp& value_ref = core::value_frame_lookup_reference(af, depth, index);
-  return &value_ref.rawRef_();
-}
-
-BUILTIN_ATTRIBUTES core::T_O** registerReference(core::T_O** register_)
-{
-  return register_;
-}
-
-// The following two are only valid for non-simple arrays. Be careful!
-BUILTIN_ATTRIBUTES core::T_O* cc_realArrayDisplacement(core::T_O* tarray) {
-  core::MDArray_O* array = reinterpret_cast<core::MDArray_O*>(gctools::untag_general<core::T_O*>(tarray));
-  return array->realDisplacedTo().raw_();
-}
-BUILTIN_ATTRIBUTES size_t cc_realArrayDisplacedIndexOffset(core::T_O* tarray) {
-  core::MDArray_O* array = reinterpret_cast<core::MDArray_O*>(gctools::untag_general<core::T_O*>(tarray));
-  return array->displacedIndexOffset();
-}
-
-BUILTIN_ATTRIBUTES size_t cc_arrayTotalSize(core::T_O* tarray) {
-  core::MDArray_O* array = reinterpret_cast<core::MDArray_O*>(gctools::untag_general<core::T_O*>(tarray));
-  return array->arrayTotalSize();
-}
-
-BUILTIN_ATTRIBUTES size_t cc_arrayRank(core::T_O* tarray) {
-  core::MDArray_O* array = reinterpret_cast<core::MDArray_O*>(gctools::untag_general<core::T_O*>(tarray));
-  return array->rank();
-}
-
-BUILTIN_ATTRIBUTES size_t cc_arrayDimension(core::T_O* tarray, size_t axis) {
-  core::MDArray_O* array = reinterpret_cast<core::MDArray_O*>(gctools::untag_general<core::T_O*>(tarray));
-  return array->arrayDimension(axis);
-}
-
-BUILTIN_ATTRIBUTES uint cc_simpleBitVectorAref(core::T_O* tarray, size_t index) {
-  core::SimpleBitVector_O* array = reinterpret_cast<core::SimpleBitVector_O*>(gctools::untag_general<core::T_O*>(tarray));
-  return array->testBit(index);
-}
-
-BUILTIN_ATTRIBUTES void cc_simpleBitVectorAset(core::T_O* tarray, size_t index, uint v) {
-  core::SimpleBitVector_O* array = reinterpret_cast<core::SimpleBitVector_O*>(gctools::untag_general<core::T_O*>(tarray));
-  array->setBit(index, v);
-}
-
-BUILTIN_ATTRIBUTES core::T_O* invisible_makeValueFrameSetParent(core::T_O* parent) {
-  return parent;
-}
-
-BUILTIN_ATTRIBUTES core::T_O* invisible_makeBlockFrameSetParent(core::T_O* parent) {
-  return parent;
-}
-
-BUILTIN_ATTRIBUTES core::T_O* invisible_makeTagbodyFrameSetParent(core::T_O* parent) {
-  return parent;
-}
-
-#if 0
-BUILTIN_ATTRIBUTES core::T_O* invisible_makeValueFrameSetParentFromClosure(core::T_O* closureRaw) {
-  if (closureRaw!=NULL) {
-    core::Closure_O* closureP = reinterpret_cast<core::Closure_O*>(gc::untag_general<core::T_O*>(closureRaw));
-    core::T_sp activationFrame = closureP->closedEnvironment();
-    return activationFrame.raw_(); // >rawRef_() = closureRaw; //  = activationFrame;
-  } else {
-    return _Nil<core::T_O>().raw_();
-  }
-}
-#endif
-
-/*! Return i32 1 if (valP) is != nil 0 if it is */
-BUILTIN_ATTRIBUTES int isTrue(core::T_O* valP)
-{
-  return gctools::tagged_nilp<core::T_O*>(valP) ? 0 : 1;
-}
-
-BUILTIN_ATTRIBUTES core::T_O** activationFrameReferenceFromClosure(core::T_O* closureRaw)
-{
-  ASSERT(closureRaw);
-  if (closureRaw!=NULL) {
-    core::ClosureWithSlots_sp closure = core::ClosureWithSlots_sp((gctools::Tagged)closureRaw);
-    return &closure->closedEnvironment_rawRef();
-  }
-  return NULL;
-}
-
-
-BUILTIN_ATTRIBUTES core::T_O *cc_fdefinition(core::T_O *sym)
-{NO_UNWIND_BEGIN_BUILTINS();
-  core::Symbol_O *symP = reinterpret_cast<core::Symbol_O *>(gctools::untag_general<core::T_O *>(sym));
-  return symP->_Function.raw_();
-  NO_UNWIND_END_BUILTINS();
-}
-
-BUILTIN_ATTRIBUTES core::T_O *cc_setfdefinition(core::T_O *sym)
-{NO_UNWIND_BEGIN_BUILTINS();
-  core::Symbol_O *symP = reinterpret_cast<core::Symbol_O *>(gctools::untag_general<core::T_O *>(sym));
-  return symP->_SetfFunction.raw_();
-  NO_UNWIND_END_BUILTINS();
-}
-
-BUILTIN_ATTRIBUTES void* cc_vaslist_va_list_address(core::T_O* vaslist)
-{
-  return &(gctools::untag_vaslist(vaslist)->_Args);
-};
-
-BUILTIN_ATTRIBUTES size_t* cc_vaslist_remaining_nargs_address(core::Vaslist* vaslist)
-{
-  return &(gctools::untag_vaslist(vaslist)->_remaining_nargs);
+  core::AbstractSimpleVector_sp asv((gctools::Tagged)vector);
+  gctools::return_type result(asv->vref(untag_fixnum((core::T_O*)idx)).raw_(),1);
+  return result;
 };
 
 
-BUILTIN_ATTRIBUTES core::T_O *cc_fetch(core::T_O *tagged_closure, std::size_t idx)
-{
-  gctools::smart_ptr<core::ClosureWithSlots_O> c = gctools::smart_ptr<core::ClosureWithSlots_O>((gc::Tagged)tagged_closure);
-  return (*c)[idx].raw_();
-}
-
-BUILTIN_ATTRIBUTES core::T_O *cc_readCell(core::T_O *cell)
-{
-  core::Cons_sp cp((gctools::Tagged)cell);
-  return CONS_CAR(cp).raw_();
-}
-
-BUILTIN_ATTRIBUTES core::T_O* bc_function_from_function_designator(core::T_O* function_designator)
-{
-  core::T_sp tfunction_designator((gctools::Tagged)function_designator);
-  if (gc::IsA<core::Function_sp>(tfunction_designator)) {
-    return function_designator;
-  } else if (gc::IsA<core::Symbol_sp>(tfunction_designator)) {
-    core::Symbol_sp sym = gc::As_unsafe<core::Symbol_sp>(tfunction_designator);
-    core::Function_sp func((gc::Tagged)(sym)->_Function.theObject);
-    return func.raw_();
-  }
-  llvmo::not_function_designator_error(tfunction_designator);
-};
-
-
-};
-
-
-extern "C" {
-BUILTIN_ATTRIBUTES core::T_O* ignore_initializeBlockClosure( core::T_O** dummy)
-{
-// Do nothing but return NULL which will never match a handle
-  return NULL;
-}
-
-BUILTIN_ATTRIBUTES core::T_O* ignore_initializeTagbodyClosure(core::T_O** dummy)
-{
-// Do nothing but return NULL which will never match a handle
-  return NULL;
-}
-
-
-BUILTIN_ATTRIBUTES gctools::return_type ignore_blockHandleReturnFrom(unsigned char *exceptionP, core::T_O* handle) {
-#if 1
-  core::ReturnFrom &returnFrom = (core::ReturnFrom &)*((core::ReturnFrom *)(exceptionP));
-  if (returnFrom.getHandle() == handle) {
-    printf("%s:%d There is a serious problem - an ignore_blockHandleReturnFrom expecting frame %p recieved a returnFrom with frame %p - no such returnFrom should be sent - the block/return-from optimization is broken\n", __FILE__, __LINE__, handle, returnFrom.getHandle());
-    abort();
-  }
-#endif
-  throw;
-}
-
-
-BUILTIN_ATTRIBUTES void debugBreak() {
-  asm("int $03");
-}
-
-BUILTIN_ATTRIBUTES void ignore_exceptionStackUnwind()
-{
-// Do nothing
-}
 };

@@ -186,7 +186,7 @@ namespace core {
     return x + y;
   }
   
-/*! Return the SourceFileInfo for the obj - if obj is nil then return 
+/*! Return the FileScope for the obj - if obj is nil then return 
       one for anonymous */
 
 /*! Expose the primitives to cando */

@@ -207,12 +207,16 @@ Compare the symbol against previous definitions of symbols - if there is a misma
             (warn "The symbol ~a in package ~a was declared twice with different shadow status - c++-names ~a ~a" (lisp-name% symbol) (package% symbol) (c++-name% symbol) (c++-name% previous))))
         (setf (gethash key previous-symbols) symbol))))
 
+(defun shift-stamp (unshifted-stamp)
+  "Stamps are now preshifted two bits and have the object tag #B01 attached to them"
+  unshifted-stamp)
+
 (defun calculate-class-stamps-and-flags (classes gc-managed-types)
   (declare (optimize (debug 3)))
-  (let ((cur-stamp 0)
+  (let ((cur-unshifted-stamp 0) ; start at 1
         top-classes)
     (labels ((traverse-assign-stamps (class flags)
-               (setf (stamp% class) (incf cur-stamp))
+               (setf (stamp% class) (shift-stamp (incf cur-unshifted-stamp)))
                (cond
                  ((string= "core::WrappedPointer_O" (class-key% class))
                   (setf flags :FLAGS_STAMP_IN_WRAPPER))
@@ -237,7 +241,7 @@ Compare the symbol against previous definitions of symbols - if there is a misma
       (dolist (top-class top-classes)
         (traverse-assign-stamps top-class :FLAGS_STAMP_IN_HEADER)))
     (maphash (lambda (key type)
-               (setf (stamp% type) (incf cur-stamp)))
+               (setf (stamp% type) (shift-stamp (incf cur-unshifted-stamp))))
              gc-managed-types)))
 
 (defun interpret-tags (tags)

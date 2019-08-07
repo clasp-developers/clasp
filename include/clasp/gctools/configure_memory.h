@@ -48,6 +48,7 @@
 #define FIXNUM1_TAG         0x04
 #define VASLIST_TAG         0x05
 #define SINGLE_FLOAT_TAG    0x06
+#define UNUSED_TAG          0x07
 #define IMMEDIATE_MASK      0x07
 #define SINGLE_FLOAT_SHIFT  3
 #define CHARACTER_SHIFT     3

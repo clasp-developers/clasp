@@ -60,6 +60,18 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; Miscellaneous
+
+;;; Used by #S reader
+(defun make-structure (name initargs)
+  (unless (names-structure-p name) (error "~s is not a structure class." name))
+  (let ((constructor (structure-constructor name)))
+    (if constructor
+        (apply constructor initargs)
+        (error "The structure class ~s has no standard constructor." name))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; Delaying definitions
 ;;;
 ;;; A DEFSTRUCT can :include other structures not defined at compile time
@@ -256,7 +268,7 @@
                  (multiple-value-bind (constructor-name lambda-list ftype-parameters vars)
                      (constructor-helper constructor slotds)
                    (list `(declaim (ftype (function ,ftype-parameters vector)
-                                          ,constructor-name)) ; useless atm
+                                          ,constructor-name))
                          `(defun ,constructor-name ,lambda-list
                             (let ((result (make-array ,(length vars) :element-type ',element-type)))
                               ,@(let ((index 0))
@@ -282,7 +294,7 @@
                                     nil
                                     `((define-setf-expander ,accname (object &environment env)
                                         (get-setf-expansion (list 'row-major-aref object ,index) env))))))
-                         (list* `(declaim (ftype (function ((vector ,element-type)) ,type) ,accname) ; useless
+                         (list* `(declaim (ftype (function ((vector ,element-type)) ,type) ,accname)
                                           (inline ,accname))
                                 `(defun ,accname (instance)
                                    (the ,type (row-major-aref instance ,index)))
@@ -328,7 +340,7 @@
                  (multiple-value-bind (constructor-name lambda-list ftype-parameters vars)
                      (constructor-helper constructor slotds)
                    (list `(declaim (ftype (function ,ftype-parameters list)
-                                          ,constructor-name)) ; useless atm
+                                          ,constructor-name))
                          `(defun ,constructor-name ,lambda-list (list ,@vars)))))
                constructors)))
 
@@ -347,7 +359,7 @@
                                     nil
                                     `((define-setf-expander ,accname (object &environment env)
                                         (get-setf-expansion (list 'nth ,index object) env))))))
-                         (list* `(declaim (ftype (function (,name) ,type) ,accname) ; useless
+                         (list* `(declaim (ftype (function (list) ,type) ,accname)
                                           (inline ,accname))
                                 `(defun ,accname (instance)
                                    (the ,type (nth ,index instance)))
@@ -400,7 +412,7 @@
                      ;; in the lambda list.
                      (constructor-helper constructor slot-descriptions)
                    (list `(declaim (ftype (function ,ftype-parameters ,name)
-                                          ,constructor-name)) ; useless atm
+                                          ,constructor-name))
                          (let ((instance (gensym "INSTANCE"))
                                (index 0))
                            `(defun ,constructor-name ,lambda-list
@@ -434,7 +446,7 @@
                                     (list 'si:instance-set
                                       (list 'the ',name object)
                                       ,index new))))))
-                     (list* `(declaim (ftype (function (,name) ,type) ,accname) ; useless
+                     (list* `(declaim (ftype (function (,name) ,type) ,accname)
                                       (inline ,accname))
                             `(defun ,accname (instance)
                                ;; FIXME: remove decls once ftype can take care of it.
@@ -477,7 +489,7 @@
          ;; It might seem like we can do better here- basically copy
          ;; a fixed number of slots - but CLHS is clear that the copier
          ;; must be COPY-STRUCTURE, and so it has to deal correctly with subclasses.
-         `((declaim (ftype (function (,name) ,name) ,copier) ; useless atm
+         `((declaim (ftype (function (,name) ,name) ,copier)
                     (inline ,copier))
              (defun ,copier (instance) (copy-structure instance))))
 

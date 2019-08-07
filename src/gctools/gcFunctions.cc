@@ -295,16 +295,25 @@ CL_DEFUN Fixnum core__header_kind(core::T_sp obj) {
   SIMPLE_ERROR(BF("The object %s doesn't have a stamp") % _rep_(obj));
 }
 
-CL_DOCSTRING("Return the stamp for the object, the flags and the header stamp");
-CL_DEFUN core::T_mv core__instance_stamp(core::T_sp obj)
+CL_DOCSTRING("Return the index part of the stamp.  Stamp indices are adjacent to each other.");
+CL_DEFUN size_t core__stamp_index(size_t stamp)
 {
-  core::T_sp stamp((Tagged)cx_read_stamp(obj.raw_()));
-  if (obj.generalp()) {
-    Header_s* header = reinterpret_cast<Header_s*>(ClientPtrToBasePtr(obj.unsafe_general()));
-    return Values(stamp,
-                  core::make_fixnum(static_cast<Fixnum>(header->header.stamp())));
-  }
-  return Values(stamp, _Nil<core::T_O>());
+  return stamp>>gctools::Header_s::wtag_shift;
+}
+
+CL_DOCSTRING("Shift an unshifted stamp so that it can be put into code in a form where it can be directly matched to a stamp read from an object header with no further shifting");
+CL_DEFUN core::Integer_sp core__shift_stamp_for_compiled_code(core::Integer_sp unshifted_stamp)
+{
+  core::Integer_sp shifted_stamp = core::cl__logior(core::Cons_O::createList(core::clasp_ash(unshifted_stamp,gctools::Header_s::stamp_shift),core::make_fixnum(gctools::Header_s::stamp_tag)));
+  return shifted_stamp;
+}
+
+CL_DOCSTRING("Return the stamp for the object, the flags and the header stamp");
+CL_DEFUN core::T_sp core__instance_stamp(core::T_sp obj)
+{
+  core::T_sp stamp((gctools::Tagged)cx_read_stamp(obj.raw_(),0));
+  if (stamp.fixnump()) return stamp;
+  SIMPLE_ERROR(BF("core:instance-stamp was about to return a non-fixnum %p") % (void*)stamp.raw_());
 }
 
 CL_DOCSTRING("Set the header stamp for the object");
@@ -369,11 +378,9 @@ struct ReachableClass {
 typedef map<gctools::GCStampEnum, ReachableClass> ReachableClassMap;
 static ReachableClassMap *static_ReachableClassKinds;
 static size_t invalidHeaderTotalSize = 0;
-int globalSearchMarker = 0;
 extern "C" {
 void boehm_callback_reachable_object(void *ptr, size_t sz, void *client_data) {
   gctools::Header_s *h = reinterpret_cast<gctools::Header_s *>(ptr);
-//  if (h->markerMatches(globalSearchMarker)) {
     ReachableClassMap::iterator it = static_ReachableClassKinds->find(h->stamp());
     if (it == static_ReachableClassKinds->end()) {
       ReachableClass reachableClass(h->stamp());
@@ -382,9 +389,6 @@ void boehm_callback_reachable_object(void *ptr, size_t sz, void *client_data) {
     } else {
       it->second.update(sz);
     }
-//  } else {
-//    invalidHeaderTotalSize += sz;
-//  }
 }
 };
 
@@ -570,16 +574,11 @@ CL_DEFUN core::Symbol_sp gctools__alloc_pattern_end() {
   return pattern;
 };
 
-CL_LAMBDA(&optional x (marker 0) msg);
+CL_LAMBDA(&optional x);
 CL_DECLARE();
-CL_DOCSTRING("room - Return info about the reachable objects.  x can be T, nil, :default - as in ROOM.  marker can be a fixnum (0 - matches everything, any other number/only objects with that marker)");
-CL_DEFUN core::T_mv cl__room(core::T_sp x, core::Fixnum_sp marker, core::T_sp tmsg) {
+CL_DOCSTRING("room - Return info about the reachable objects in memory. x can be T, nil, :default.");
+CL_DEFUN core::T_mv cl__room(core::T_sp x) {
   std::ostringstream OutputStream;
-  string smsg = "Total";
-  if (cl__stringp(tmsg)) {
-    core::String_sp msg = gc::As_unsafe<core::String_sp>(tmsg);
-    smsg = msg->get();
-  }
 #ifdef USE_MPS
   mps_word_t numCollections = mps_collections(global_arena);
   size_t arena_committed = mps_arena_committed(global_arena);
@@ -611,7 +610,6 @@ CL_DEFUN core::T_mv cl__room(core::T_sp x, core::Fixnum_sp marker, core::T_sp tm
                                                                 
 #endif
 #ifdef USE_BOEHM
-  globalSearchMarker = core::unbox_fixnum(marker);
   static_ReachableClassKinds = new (ReachableClassMap);
   invalidHeaderTotalSize = 0;
 #ifdef BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE
@@ -626,15 +624,15 @@ CL_DEFUN core::T_mv cl__room(core::T_sp x, core::Fixnum_sp marker, core::T_sp tm
   OutputStream << "Skipping objects with less than 96 total_size\n";
   OutputStream << "Done walk of memory  " << static_cast<uintptr_t>(static_ReachableClassKinds->size()) << " ClassKinds\n";
 #if USE_CXX_DYNAMIC_CAST
-  OutputStream << smsg << " live memory total size = " << std::setw(12) << invalidHeaderTotalSize << '\n';
+  OutputStream << "Total live memory total size = " << std::setw(12) << invalidHeaderTotalSize << '\n';
 #else
-  OutputStream << smsg << " invalidHeaderTotalSize = " << std::setw(12) << invalidHeaderTotalSize << '\n';
+  OutputStream << "Total invalidHeaderTotalSize = " << std::setw(12) << invalidHeaderTotalSize << '\n';
 #endif
-  OutputStream << smsg << " memory usage (bytes):    " << std::setw(12) << totalSize << '\n';
-  OutputStream << smsg << " GC_get_heap_size()       " << std::setw(12) << GC_get_heap_size() << '\n';
-  OutputStream << smsg << " GC_get_free_bytes()      " << std::setw(12) << GC_get_free_bytes() << '\n';
-  OutputStream << smsg << " GC_get_bytes_since_gc()  " <<  std::setw(12) << GC_get_bytes_since_gc() << '\n';
-  OutputStream << smsg << " GC_get_total_bytes()     " <<  std::setw(12) << GC_get_total_bytes() << '\n';
+  OutputStream << "Total memory usage (bytes):    " << std::setw(12) << totalSize << '\n';
+  OutputStream << "Total GC_get_heap_size()       " << std::setw(12) << GC_get_heap_size() << '\n';
+  OutputStream << "Total GC_get_free_bytes()      " << std::setw(12) << GC_get_free_bytes() << '\n';
+  OutputStream << "Total GC_get_bytes_since_gc()  " <<  std::setw(12) << GC_get_bytes_since_gc() << '\n';
+  OutputStream << "Total GC_get_total_bytes()     " <<  std::setw(12) << GC_get_total_bytes() << '\n';
 
   delete static_ReachableClassKinds;
 #endif
@@ -774,13 +772,6 @@ CL_DEFUN void gctools__definalize(core::T_sp object) {
 
 };
 
-
-
-extern "C" {
-void dbg_room() {
-  cl__room(_Nil<core::T_O>(), core::make_fixnum(0), _Nil<core::T_O>());
-}
-}
 namespace gctools {
 
 #ifdef DEBUG_COUNT_ALLOCATIONS
@@ -864,8 +855,9 @@ CL_DEFUN void gctools__register_stamp_name(const std::string& name,size_t stamp_
 }
 
 CL_DEFUN core::T_sp gctools__get_stamp_name_map() {
+  DEPRECATED();
   core::List_sp l = _Nil<core::T_O>();
-  for ( auto it : global_stamp_name_map ) {
+  for ( auto it : global_unshifted_nowhere_stamp_name_map ) {
     l = core::Cons_O::create(core::Cons_O::create(core::SimpleBaseString_O::make(it.first),core::make_fixnum(it.second)),l);
   }
   return l;
@@ -1118,13 +1110,6 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #endif
   if (buildReport) ss << (BF("DEBUG_JIT_LOG_SYMBOLS = %s\n") % (debug_jit_log_symbols ? "**DEFINED**" : "undefined") ).str();
 
-  bool debug_monitor = false;
-#ifdef DEBUG_MONITOR
-  debug_monitor = true;
-  debugging = true;
-  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-MONITOR"),features);
-#endif
-  if (buildReport) ss << (BF("DEBUG_MONITOR = %s\n") % (debug_monitor ? "**DEFINED**" : "undefined") ).str();
 
   bool debug_mps_size = false;
 #ifdef DEBUG_MPS_SIZE
@@ -1174,8 +1159,17 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-LEXICAL-DEPTH"),features);
 #endif
   if (buildReport) ss << (BF("DEBUG_LEXICAL_DEPTH = %s\n") % (debug_lexical_depth ? "**DEFINED**" : "undefined") ).str();
-  
 
+  bool debug_dtree_interpreter = false;
+#ifdef DEBUG_DTREE_INTERPRETER
+  debug_dtree_interpreter = true;
+#ifndef DEBUG_MONITOR_SUPPORT
+#error "You must enable DEBUG_MONITOR_SUPPORT to use DEBUG_DTREE_INTERPRETER"
+#endif
+  debugging = true;
+#endif
+  if (buildReport) ss << (BF("DEBUG_DTREE_INTERPRETER = %s\n") % (debug_dtree_interpreter ? "**DEFINED**" : "undefined") ).str();
+  
   bool debug_cclasp_lisp = false;
 #ifdef DEBUG_CCLASP_LISP
   debug_cclasp_lisp = true;
@@ -1283,6 +1277,28 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #endif
   if (buildReport) ss << (BF("USE_HUMAN_READABLE_BITCODE = %s\n") % (use_human_readable_bitcode ? "**DEFINED**" : "undefined") ).str();
 
+  //
+  // DEBUG_MONITOR must be last - other options turn this on
+  //
+  bool debug_monitor = false;
+#ifdef DEBUG_MONITOR
+#ifndef DEBUG_MONITOR_SUPPORT
+#error "You must enable DEBUG_MONITOR_SUPPORT to use DEBUG_DTREE_INTERPRETER"
+#endif
+  debug_monitor = true;
+  debugging = true;
+  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-MONITOR"),features);
+#endif
+  if (buildReport) ss << (BF("DEBUG_MONITOR = %s\n") % (debug_monitor ? "**DEFINED**" : "undefined") ).str();
+
+  bool debug_monitor_support = false;
+#ifdef DEBUG_MONITOR_SUPPORT
+  debug_monitor_support = true;
+  debugging = true;
+  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-MONITOR-SUPPORT"),features);
+#endif
+  if (buildReport) ss << (BF("DEBUG_MONITOR_SUPPORT = %s\n") % (debug_monitor_support ? "**DEFINED**" : "undefined") ).str();
+  
   // -------------------------------------------------------------
   //
   // The cl:*features* environment variable is set below - so all changes to (features) must be above
