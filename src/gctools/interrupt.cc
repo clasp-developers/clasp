@@ -193,18 +193,19 @@ static void queue_signal(core::ThreadLocalState* thread, core::T_sp code, bool a
   }
 }
 
+// NOTE: Don't call this unless you're holding the spare records spinlock.
 core::T_sp pop_signal(core::ThreadLocalState* thread) {
-  core::T_sp record, value;
-  if (!thread->_PendingInterrupts.consp()) return _Nil<core::T_O>();
+  core::T_sp value;
+  core::Cons_sp record;
   { // <---- brace for spinlock scope
     mp::SafeSpinLock spinlock(thread->_SparePendingInterruptRecordsSpinLock);
-    record = thread->_PendingInterrupts;
-    value = record.unsafe_cons()->_Car;
-    thread->_PendingInterrupts = record.unsafe_cons()->_Cdr;
+    record = gc::As<core::Cons_sp>(thread->_PendingInterrupts);
+    value = record->_Car;
+    thread->_PendingInterrupts = record->_Cdr;
     if (value.fixnump() || gc::IsA<core::Symbol_sp>(value)) {
       // Conses that contain fixnum or symbol values are recycled onto the
       // _SparePendingInterruptRecords stack
-      record.unsafe_cons()->_Cdr = thread->_SparePendingInterruptRecords;
+      record->_Cdr = thread->_SparePendingInterruptRecords;
       thread->_SparePendingInterruptRecords = record;
     }
   }
@@ -230,11 +231,8 @@ void handle_or_queue(core::ThreadLocalState* thread, core::T_sp signal_code ) {
   else if(interrupts_disabled_by_C()) {
     my_thread_low_level->_DisableInterrupts = 3;
     queue_signal(thread,signal_code,false);
-//    set_guard_page(thread);
   }
   else {
-//    if (code) unblock_signal(thread,code);
-//    si_trap_fpe(cl::_sym_last,_lisp->_true());
     handle_signal_now(signal_code,thread->_Process);
   }
 }
