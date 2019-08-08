@@ -11,6 +11,7 @@
 #include <clasp/core/mpPackage.h>
 #include <clasp/core/designators.h>
 #include <clasp/core/lispList.h>
+#include <clasp/core/fp_env.h>
 #include <clasp/gctools/interrupt.h>
 
 SYMBOL_EXPORT_SC_(CorePkg,terminal_interrupt);
@@ -257,6 +258,7 @@ void handle_signal_sync(int signo) {
 
 void handle_fpe(int signo, siginfo_t* info, void* context) {
   (void)context; // unused
+  init_float_traps(); // WHY
   // TODO: Get operation and operands when possible.
   // Probably off the call stack.
   switch (info->si_code) {
@@ -322,11 +324,13 @@ void initialize_signals(int clasp_signal) {
 #ifdef SIGINFO
   INIT_SIGNAL(SIGINFO, (SA_RESTART), handle_signal);
 #endif
-  INIT_SIGNAL(SIGABRT, (SA_RESTART | SA_ONSTACK), handle_signal);
+  INIT_SIGNAL(SIGABRT, (SA_RESTART), handle_signal);
   INIT_SIGNAL(SIGSEGV, (SA_RESTART | SA_ONSTACK), handle_signal_sync);
-  INIT_SIGNALI(SIGFPE, (SA_RESTART | SA_ONSTACK | SA_SIGINFO), handle_fpe);
-  INIT_SIGNAL(SIGBUS, (SA_RESTART | SA_ONSTACK), handle_signal_sync);
-  INIT_SIGNAL(SIGILL, (SA_RESTART | SA_ONSTACK), handle_signal_sync);
+  INIT_SIGNALI(SIGFPE, (SA_NODEFER | SA_RESTART | SA_SIGINFO), handle_fpe);
+  INIT_SIGNAL(SIGBUS, (SA_RESTART), handle_signal_sync);
+  INIT_SIGNAL(SIGILL, (SA_RESTART), handle_signal_sync);
+  // FIXME: Move?
+  init_float_traps();
   llvm::install_fatal_error_handler(fatal_error_handler, NULL);
 }
 
