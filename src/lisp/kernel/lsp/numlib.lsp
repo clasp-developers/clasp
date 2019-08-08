@@ -65,7 +65,8 @@
   "The smallest positive long-float E that satisfies
 	(not (= (float 1 E) (- (float 1 E) E)))")
 
-;;; This needs to be loaded, used in ext::float-infinity-string 
+;;; This needs to be loaded, used in ext::float-infinity-string
+#+(or)
 (locally (declare (notinline -))
   (progn
     (let ((a (/ (coerce 1 'short-float) (coerce 0.0 'short-float))))
