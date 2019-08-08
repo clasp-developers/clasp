@@ -1,6 +1,5 @@
 #include <signal.h>
 #include <llvm/Support/ErrorHandling.h>
-#include <signal.h>
 #include <clasp/core/foundation.h>
 #include <clasp/core/symbol.h>
 #include <clasp/core/symbolTable.h>
@@ -166,8 +165,6 @@ void handle_signal_now( core::T_sp signal_code, core::T_sp process ) {
   }
 }
 
-
-
 static void queue_signal(core::ThreadLocalState* thread, core::T_sp code, bool allocate)
 {
   if (!code) {
@@ -258,6 +255,22 @@ void handle_signal_sync(int signo) {
   handle_signal_now(core::clasp_make_fixnum(signo), my_thread->_Process);
 }
 
+void handle_fpe(int signo, siginfo_t* info, void* context) {
+  (void)context; // unused
+  // TODO: Get operation and operands when possible.
+  // Probably off the call stack.
+  switch (info->si_code) {
+  case FPE_FLTDIV: NO_INITIALIZERS_ERROR(cl::_sym_divisionByZero);
+  case FPE_FLTOVF: NO_INITIALIZERS_ERROR(cl::_sym_floatingPointOverflow);
+  case FPE_FLTUND: NO_INITIALIZERS_ERROR(cl::_sym_floatingPointUnderflow);
+  case FPE_FLTRES: NO_INITIALIZERS_ERROR(cl::_sym_floatingPointInexact);
+  case FPE_FLTINV: NO_INITIALIZERS_ERROR(cl::_sym_floatingPointInvalidOperation);
+  default: // FIXME: signal a better error.
+      // Can end up here with e.g. SI_USER if it originated from kill
+      handle_signal_sync(signo);
+  }
+}
+
 void handle_interrupt_signal(int signo) {
   // Indicate that a signal was caught and handle it at a safe-point
   printf("%s:%d  Process %s received an interrupt signal %d\n", __FILE__, __LINE__, _rep_(my_thread->_Process).c_str(), signo);
@@ -293,7 +306,15 @@ void initialize_signals(int clasp_signal) {
   if (sigaction (sig, &new_action, NULL) != 0) \
     printf("failed to register " #sig " signal-handler with kernel error: %s\n", strerror(errno));
 
-  struct sigaction new_action, old_action;
+  // identical but with a sigaction. CLEANUP
+#define INIT_SIGNALI(sig,flags,handler)        \
+  new_action.sa_sigaction = handler;           \
+  sigemptyset (&new_action.sa_mask);           \
+  new_action.sa_flags = flags;                 \
+  if (sigaction (sig, &new_action, NULL) != 0) \
+    printf("failed to register " #sig " signal-handler with kernel error: %s\n", strerror(errno));
+
+  struct sigaction new_action;
 
   INIT_SIGNAL(clasp_signal, (SA_RESTART | SA_ONSTACK), handle_interrupt_signal);
   INIT_SIGNAL(SIGUSR2, (SA_RESTART), wake_up_thread);
@@ -303,7 +324,7 @@ void initialize_signals(int clasp_signal) {
 #endif
   INIT_SIGNAL(SIGABRT, (SA_RESTART | SA_ONSTACK), handle_signal);
   INIT_SIGNAL(SIGSEGV, (SA_RESTART | SA_ONSTACK), handle_signal_sync);
-  INIT_SIGNAL(SIGFPE, (SA_RESTART | SA_ONSTACK), handle_signal_sync);
+  INIT_SIGNALI(SIGFPE, (SA_RESTART | SA_ONSTACK | SA_SIGINFO), handle_fpe);
   INIT_SIGNAL(SIGBUS, (SA_RESTART | SA_ONSTACK), handle_signal_sync);
   INIT_SIGNAL(SIGILL, (SA_RESTART | SA_ONSTACK), handle_signal_sync);
   llvm::install_fatal_error_handler(fatal_error_handler, NULL);

@@ -630,8 +630,11 @@ memory limits before executing the program again."))
                      (cell-error-name condition)))))
 
 (define-condition arithmetic-error (error)
-  ((operation :INITARG :OPERATION :READER arithmetic-error-operation)
-   (operands :INITARG :OPERANDS :INITFORM '() :READER arithmetic-error-operands)))
+  (;; NOTE/FIXME: Sometimes we have the OPERATION be NIL - if we can't determine what
+   ;; it was, as happens with floating point traps sometimes (currently all the time).
+   ;; This is probably nonconforming.
+   (operation :initform nil :INITARG :OPERATION :READER arithmetic-error-operation)
+   (operands :initform nil :INITARG :OPERANDS :READER arithmetic-error-operands)))
 
 (define-condition division-by-zero (arithmetic-error) ())
 
