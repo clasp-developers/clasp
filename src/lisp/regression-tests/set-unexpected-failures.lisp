@@ -2,9 +2,9 @@
 
 (setq *expected-failures*
       '(ANSI-PUSHNEW.14A 
-        EQUALP-2
+        ;;; EQUALP-2
         ;;; EQUALP-CLHS-2
-        EQUALP-3 EQUALP-4
+        ;;; EQUALP-3 EQUALP-4
         ;;; EQUALP-6 EQUALP-7
         ;;; NREVERSE-1
         ;;; REVERSE-1
@@ -31,12 +31,12 @@
         PRINT-READ-1
         ;;; GENTEMP-1 SPECIAL-OPERATOR-P-1
 
-        EQUALP-8 EQUALP-9
+        ;;; EQUALP-8 EQUALP-9
         TYPES-CLASSES-9 TYPES-CLASSES-10
         HASH-TABLE-SIZE-WEAK-KEY
         #-cst BABEL-SIMPLE-STRINGS-1
         LISTEN-3
-        ;;; what is correct syntax for a funcion name
+        ;;; what is correct syntax for a function name
         FBOUNDP.ERROR.3
         FBOUNDP.ERROR.4
         FBOUNDP.ERROR.5
@@ -114,7 +114,7 @@
 
         ;;; READ-FROM-STRING0
         READ-PRINT-CONSISTENCY-ARRAYS
-        EQUALP-HASH-TABLE-2
+        ;;; EQUALP-HASH-TABLE-2
 
         ;;; glsl-toolkit-grammar.lisp-1 errors while compiling in ast
         ;;; make-instance.error.5 the same
