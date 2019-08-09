@@ -228,6 +228,14 @@ SYMBOL_EXPORT_SC_(ClPkg, leastPositiveNormalizedSingleFloat);
 SYMBOL_EXPORT_SC_(ClPkg, leastPositiveNormalizedShortFloat);
 SYMBOL_EXPORT_SC_(ClPkg, leastPositiveNormalizedDoubleFloat);
 SYMBOL_EXPORT_SC_(ClPkg, leastPositiveNormalizedLongFloat);
+SYMBOL_EXPORT_SC_(ExtPkg, singleFloatPositiveInfinity);
+SYMBOL_EXPORT_SC_(ExtPkg, singleFloatNegativeInfinity);
+SYMBOL_EXPORT_SC_(ExtPkg, shortFloatPositiveInfinity);
+SYMBOL_EXPORT_SC_(ExtPkg, shortFloatNegativeInfinity);
+SYMBOL_EXPORT_SC_(ExtPkg, doubleFloatPositiveInfinity);
+SYMBOL_EXPORT_SC_(ExtPkg, doubleFloatNegativeInfinity);
+SYMBOL_EXPORT_SC_(ExtPkg, longFloatPositiveInfinity);
+SYMBOL_EXPORT_SC_(ExtPkg, longFloatNegativeInfinity);
 SYMBOL_EXPORT_SC_(ClPkg, pi);
 
 void exposeCando_Numerics() {
@@ -257,6 +265,15 @@ void exposeCando_Numerics() {
   cl::_sym_leastPositiveNormalizedDoubleFloat->defconstant(DoubleFloat_O::create(std::numeric_limits<double>::denorm_min()));
   cl::_sym_leastPositiveNormalizedLongFloat->defconstant(LongFloat_O::create(std::numeric_limits<LongFloat>::denorm_min()));
   cl::_sym_pi->defconstant(DoubleFloat_O::create(3.14159265358979323846264338));
+  // extensions
+  ext::_sym_singleFloatPositiveInfinity->defconstant(clasp_make_single_float(std::numeric_limits<float>::infinity()));
+  ext::_sym_singleFloatNegativeInfinity->defconstant(clasp_make_single_float(-std::numeric_limits<float>::infinity()));
+  ext::_sym_shortFloatPositiveInfinity->defconstant(clasp_make_single_float(std::numeric_limits<float>::infinity()));
+  ext::_sym_shortFloatNegativeInfinity->defconstant(clasp_make_single_float(-std::numeric_limits<float>::infinity()));
+  ext::_sym_doubleFloatPositiveInfinity->defconstant(DoubleFloat_O::create(std::numeric_limits<double>::infinity()));
+  ext::_sym_doubleFloatNegativeInfinity->defconstant(DoubleFloat_O::create(-std::numeric_limits<double>::infinity()));
+  ext::_sym_longFloatPositiveInfinity->defconstant(DoubleFloat_O::create(std::numeric_limits<double>::infinity()));
+  ext::_sym_longFloatNegativeInfinity->defconstant(DoubleFloat_O::create(-std::numeric_limits<double>::infinity()));
 }
 
 };

@@ -175,14 +175,6 @@
           load-encoding
           make-encoding
           assume-right-type
-          short-float-positive-infinity
-          short-float-negative-infinity
-          single-float-positive-infinity
-          single-float-negative-infinity
-          double-float-positive-infinity
-          double-float-negative-infinity
-          long-float-positive-infinity
-          long-float-negative-infinity
           assert-error
           float-nan-p
           float-infinity-p))
