@@ -14,10 +14,11 @@ TODO: Rounding mode stuff should go here too.
 #ifndef _core_fp_env_H
 #define _core_fp_env_H
 
+#include <clasp/core/foundation.h> // needed for _TARGET, indirectly
 #include <cfenv>
-//#ifdef _TARGET_OS_DARWIN
+#ifdef _TARGET_OS_DARWIN
 #include <xmmintrin.h>
-//#endif
+#endif
 
 /* Our model for traps is as follows:
  * The FPU has a bit flags register.
@@ -44,8 +45,7 @@ TODO: Rounding mode stuff should go here too.
 #define CLASP_FPT_UNDERFLOW FE_UNDERFLOW
 #define clasp_feenablexcept(flags) feenableexcept(flags)
 #define clasp_fegetexcept() fegetexcept()
-//#elif defined(_TARGET_OS_DARWIN) // FIXME: indicate x86-64 only
-#else
+#elif defined(_TARGET_OS_DARWIN) // FIXME: indicate x86-64 only
 #define CLASP_FPT_SUPPORT
 // On Darwin all floating point operations use SSE,
 // so we use those flags.
@@ -69,8 +69,6 @@ TODO: Rounding mode stuff should go here too.
 #define CLASP_FPT_INIT_EXCEPT                 \
   (CLASP_FPT_DIVBYZERO | CLASP_FPT_INVALID    \
    | CLASP_FPT_OVERFLOW | CLASP_FPT_UNDERFLOW)
-#else
-#error "No FPT support"
 #endif
 
 // Function called from image initialization to set the flags to

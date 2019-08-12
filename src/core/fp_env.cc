@@ -1,7 +1,7 @@
 // Dealing with the FPU environment. Check the header for more info.
 
+#include <clasp/core/foundation.h>
 #include <clasp/core/fp_env.h>
-#include <clasp/core/common.h>
 #include <stdbool.h>
 
 void init_float_traps(void) {
