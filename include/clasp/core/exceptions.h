@@ -453,35 +453,6 @@ public:
 extern void debugLogProcessRank(int rank);
 extern void debugBreakPoint();
 
-#define EXCEPTION_ATOM_NOT_FOUND 1
-#define EXCEPTION_FRAGMENT_NOT_FOUND 2
-#define EXCEPTION_LOOP_OVER_NULL 3
-#define EXCEPTION_CONTENT_NOT_FOUND 4
-#define EXCEPTION_255_TYPES_ALLOWED_MAX 5
-#define EXCEPTION_BOND_NOT_FOUND 6
-#define EXCEPTION_ANGLE_NOT_FOUND 7
-#define EXCEPTION_TORSION_NOT_FOUND 8
-#define EXCEPTION_TYPE_NOT_FOUND 9
-#define EXCEPTION_NONBOND_NOT_FOUND 10
-#define EXCEPTION_FILE_ERROR 11
-#define EXCEPTION_ZERO_VECTOR_CANNOT_BE_NORMALIZED 12
-#define EXCEPTION_ILLEGAL_LOOP 13
-#define EXCEPTION_DKP_NOT_FOUND 14
-#define EXCEPTION_INVALID_MOE_HEADER 15
-#define EXCEPTION_UNKNOWN_MOE_TYPE 16
-#define EXCEPTION_UNKNOWN_MOE_ATOM_TYPE 17
-
-typedef struct {
-  int exception;
-  char message[500];
-} Exception;
-
-#define NOT_DONE_YET() \
-  { printf("\n\n\n%s:%d FUNCTION NOT DONE YET!!!!\n\n\n\n", __FILE__, __LINE__); };
-
-#define EXCEPTION_ID(e) (e.exception)
-#define EXCEPTION_MESSAGE(e) (e.message)
-
 void debugSuppressMessages(bool s);
 /*! Write to the debug log file without any translation of special
  *   XML characters
@@ -503,7 +474,6 @@ extern bool stackmap_log;
 
 #ifdef DEBUG_ON
 //#error "TURN OFF DEBUG_ON"
-#define TESTMEMORY()
 
 #define HARD_BREAK_POINT() __asm int 3;
 #define lisp_LOG(___fmt)                                                     \
@@ -523,7 +493,6 @@ extern bool stackmap_log;
 #define SHOUT(___fmt) lisp_SHOUT(___fmt)
 
 #else //DEBUG_ON
-#define TESTMEMORY()
 #define HARD_BREAK_POINT() \
   {}
 #define LOG(___fmt) \
@@ -629,13 +598,6 @@ void assert_failure_bounds_error_lt(const char* file, size_t line, const char* f
   {}
 #endif
 
-extern void _stackTraceEnter(uint debugFlags);
-extern void _stackTraceLineNumberAndColumnUpdate(uint ln, uint col);
-extern void _stackTraceExit();
-extern void _stackTraceDump();
-extern void _stackTraceTakeSnapshot();
-extern string _stackTraceAsString();
-
 //
 // Define the _lisp variable but don't create a debugging stack frame
 //
@@ -709,15 +671,13 @@ void core__wrong_index(const string &sourceFile, int lineno, Symbol_sp function,
 void core__reader_error_internal(const string &sourceFile, uint lineno,
                     String_sp fmt, List_sp fmtargs, T_sp stream = _Nil<T_O>());
 
-void assert_type_integer(T_sp p, int idx);
-
 T_sp core__signal_simple_error(T_sp baseCondition, T_sp continueMessage, T_sp formatControl, T_sp formatArgs, T_sp args);
 
 [[noreturn]] void FEerror(const string &fmt, int numArgs, ...);
 void FEtype_error_list(T_sp thing);
 void FElibc_error(const char *fmt, int nargs, ...);
 void FEcannot_open(T_sp fn);
- void FEargument_number_error(T_sp supplied, T_sp min, T_sp max);
+void FEargument_number_error(T_sp supplied, T_sp min, T_sp max);
 T_sp CEerror(T_sp c, const char *fmt, int numArgs, ...);
 
 void FEpackage_error(const char *fmt, T_sp package, int nargs, ...);
