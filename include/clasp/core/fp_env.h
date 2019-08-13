@@ -11,14 +11,21 @@ so it's a bit of a mess.
 TODO: Rounding mode stuff should go here too.
 */
 
+// NOTE: IMPORTANT NOTE: None of this works at the moment.
+// Some day.
+
 #ifndef _core_fp_env_H
 #define _core_fp_env_H
+
+/** // support is nonexistent at the moment
 
 #include <clasp/core/foundation.h> // needed for _TARGET, indirectly
 #include <cfenv>
 #ifdef _TARGET_OS_DARWIN
 #include <xmmintrin.h>
 #endif
+
+*/
 
 /* Our model for traps is as follows:
  * The FPU has a bit flags register.
@@ -30,6 +37,8 @@ TODO: Rounding mode stuff should go here too.
  * clasp_feenableexcept UNmasks the given exceptions; exceptions
  * it doesn't flag are masked.
  */
+
+/** // still commenting stuff out
 
 // FIXME: Add arch-specific flags (mostly denormals I think)
 
@@ -70,6 +79,8 @@ TODO: Rounding mode stuff should go here too.
   (CLASP_FPT_DIVBYZERO | CLASP_FPT_INVALID    \
    | CLASP_FPT_OVERFLOW | CLASP_FPT_UNDERFLOW)
 #endif
+
+**/ // everything commented out
 
 // Function called from image initialization to set the flags to
 // CLASP_FPT_INIT_EXCEPT
