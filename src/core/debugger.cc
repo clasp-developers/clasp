@@ -1594,6 +1594,7 @@ CL_DEFUN T_sp core__maybe_demangle(core::String_sp s)
 }
 
 bool check_for_frame(uintptr_t frame) {
+  // We only actually do a check if we have libunwind capabilities.
 #ifdef USE_LIBUNWIND
   unw_context_t context; unw_cursor_t cursor;
   unw_word_t sp;
