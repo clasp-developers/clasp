@@ -153,14 +153,6 @@ void handle_signal_now( core::T_sp signal_code, core::T_sp process ) {
       core::cl__cerror(ext::_sym_ignore_signal->symbolValue(),ext::_sym_unix_signal_received,
                        core::Cons_O::createList(kw::_sym_code, signal_code, kw::_sym_handler, handler));
     }
-  } else if (gc::IsA<core::Symbol_sp>(signal_code)) {
-    if (core::cl__find_class(signal_code,false,_Nil<core::T_O>()).notnilp()) {
-      core::cl__cerror(ext::_sym_ignore_signal->symbolValue(),signal_code,_Nil<core::T_O>());
-    } else if (process.notnilp()) {
-      core::eval::funcall(signal_code,kw::_sym_process,process);
-    } else {
-      core::eval::funcall(signal_code);
-    }
   } else if (gc::IsA<core::Function_sp>(signal_code)) {
     core::eval::funcall(signal_code);
   }
