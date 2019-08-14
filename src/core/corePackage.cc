@@ -580,6 +580,7 @@ SYMBOL_EXPORT_SC_(CorePkg, STARliteral_print_objectSTAR);
 SYMBOL_EXPORT_SC_(ClPkg, printObject);
 SYMBOL_EXPORT_SC_(ClPkg, makeCondition);
 SYMBOL_EXPORT_SC_(ClPkg, controlError);
+SYMBOL_EXPORT_SC_(CorePkg, outOfExtentUnwind);
 SYMBOL_EXPORT_SC_(KeywordPkg, print);
 SYMBOL_EXPORT_SC_(KeywordPkg, pathname);
 SYMBOL_SC_(CorePkg, setThrowPosition);
@@ -983,28 +984,6 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   cl::_sym_most_negative_fixnum->defconstant(make_fixnum(MOST_NEGATIVE_FIXNUM));
   SYMBOL_EXPORT_SC_(ClPkg, most_positive_fixnum);
   cl::_sym_most_positive_fixnum->defconstant(make_fixnum(MOST_POSITIVE_FIXNUM));
-
-  // SYMBOL_EXPORT_SC_(ClPkg,most_negative_double_float);
-  // cl::_sym_most_negative_double_float->defconstant(DoubleFloat_O::create(DBL_MIN));
-  // SYMBOL_EXPORT_SC_(ClPkg,most_negative_long_float);
-  // cl::_sym_most_negative_long_float->defconstant(DoubleFloat_O::create(DBL_MIN));
-  // SYMBOL_EXPORT_SC_(ClPkg,most_negative_short_float);
-  // cl::_sym_most_negative_short_float->defconstant(DoubleFloat_O::create(DBL_MIN));
-  // SYMBOL_EXPORT_SC_(ClPkg,most_negative_single_float);
-  // cl::_sym_most_negative_single_float->defconstant(DoubleFloat_O::create(DBL_MIN));
-  // SYMBOL_EXPORT_SC_(ClPkg,most_positive_double_float);
-  // cl::_sym_most_positive_double_float->defconstant(DoubleFloat_O::create(DBL_MAX));
-  // SYMBOL_EXPORT_SC_(ClPkg,least_negative_normalized_long_float);
-  // cl::_sym_least_negative_normalized_long_float->defconstant(DoubleFloat_O::create(-std::numeric_limits<LongFloat>::denorm_min()));
-  // SYMBOL_EXPORT_SC_(ClPkg,least_positive_normalized_long_float);
-  // cl::_sym_least_positive_normalized_long_float->defconstant(DoubleFloat_O::create(std::numeric_limits<LongFloat>::denorm_min()));
-
-  // SYMBOL_EXPORT_SC_(ClPkg,most_positive_long_float);
-  // cl::_sym_most_positive_long_float->defconstant(DoubleFloat_O::create(DBL_MAX));
-  // SYMBOL_EXPORT_SC_(ClPkg,most_positive_short_float);
-  // cl::_sym_most_positive_short_float->defconstant(DoubleFloat_O::create(DBL_MAX));
-  // SYMBOL_EXPORT_SC_(ClPkg,most_positive_single_float);
-  // cl::_sym_most_positive_single_float->defconstant(DoubleFloat_O::create(DBL_MAX));
 
   cl::_sym_STARread_baseSTAR->defparameter(make_fixnum(10));
   SYMBOL_EXPORT_SC_(CorePkg, cl_fixnum_bits);

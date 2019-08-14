@@ -40,6 +40,7 @@ SRC_CORE_FILES = \
         'num_arith',
         'numberToString',
         'num_co',
+        'fp_env',
         'load',
         'bignum',
         'write_object',

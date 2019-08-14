@@ -65,22 +65,6 @@
   "The smallest positive long-float E that satisfies
 	(not (= (float 1 E) (- (float 1 E) E)))")
 
-;;; This needs to be loaded, used in ext::float-infinity-string 
-(locally (declare (notinline -))
-  (progn
-    (let ((a (/ (coerce 1 'short-float) (coerce 0.0 'short-float))))
-      (defconstant ext:short-float-positive-infinity a)
-      (defconstant ext:short-float-negative-infinity (- a)))
-    (let ((a (/ (coerce 1 'single-float) (coerce 0.0 'single-float))))
-      (defconstant ext:single-float-positive-infinity a)
-      (defconstant ext:single-float-negative-infinity (- a)))
-    (let ((a (/ (coerce 1 'double-float) (coerce 0.0 'double-float))))
-      (defconstant ext:double-float-positive-infinity a)
-      (defconstant ext::double-float-negative-infinity (- a)))
-    (let ((a (/ (coerce 1 'long-float) (coerce 0.0 'long-float))))
-      (defconstant ext:long-float-positive-infinity a)
-      (defconstant ext:long-float-negative-infinity (- a)))))
-
 (defun isqrt (i)
   "Args: (integer)
 Returns the integer square root of INTEGER."

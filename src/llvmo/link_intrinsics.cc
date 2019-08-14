@@ -517,7 +517,6 @@ LispCallingConventionPtr lccGlobalFunction(core::Symbol_sp sym) {
 extern "C" {
 
 const std::type_info &typeidCoreCatchThrow = typeid(core::CatchThrow);
-const std::type_info &typeidCoreLexicalGo = typeid(core::LexicalGo);
 const std::type_info &typeidCoreDynamicGo = typeid(core::DynamicGo);
 const std::type_info &typeidCoreReturnFrom = typeid(core::ReturnFrom);
 const std::type_info &typeidCoreUnwind = typeid(core::Unwind);
@@ -1198,8 +1197,15 @@ void cc_unwind(T_O *targetFrame, size_t index) {
 #ifdef DEBUG_TRACK_UNWINDS
   global_unwind_count++;
 #endif
+  // Signal an error if the frame we're trying to return to is no longer on the stack.
+  // FIXME: This is kind of a kludge. It iterates through the stack frame. But c++ throw
+  // does so as well - twice - so we end up iterating three times.
+  // The correct thing to do would probably be to use the Itanium EH ABI (which we already
+  // rely on the C++ part of) and write our own throw, that signals an error instead of
+  // calling std::terminate in the event no handler is present.
+  core::frame_check((uintptr_t)targetFrame);
   core::Unwind unwind(targetFrame, index);
-    throw unwind;
+  throw unwind;
 }
 
 void cc_saveMultipleValue0(core::T_mv result)

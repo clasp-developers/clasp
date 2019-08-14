@@ -83,6 +83,9 @@ void af_backtrace();
 void dbg_lowLevelDescribe(T_sp obj);
 void dbg_describe_tagged_T_Optr(T_O *p);
 
+ bool check_for_frame(uintptr_t);
+ void frame_check(uintptr_t);
+
 extern "C" {
 void af_gotoIhsTop();
 void af_gotoIhsNext();

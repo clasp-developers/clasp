@@ -45,7 +45,6 @@ THE SOFTWARE.
 #include <clasp/core/hashTable.h>
 #include <clasp/core/mathDispatch.h>
 #include <clasp/core/num_arith.h>
-#include <clasp/core/math_fenv.h>
 #include <clasp/gctools/pointer_tagging.h>
 #include <clasp/core/wrappers.h>
 #include <clasp/core/num_co.h>
@@ -86,35 +85,8 @@ CL_DEFUN core::Number_sp add_mod8(core::T_O* x, core::T_O* y)
   return core::Number_sp((gc::Tagged)reinterpret_cast<core::T_O*>(z));
 };
 
-SYMBOL_EXPORT_SC_(ClPkg, divisionByZero);
-SYMBOL_EXPORT_SC_(ClPkg, floatingPointInvalidOperation);
-SYMBOL_EXPORT_SC_(ClPkg, floatingPointOverflow);
-SYMBOL_EXPORT_SC_(ClPkg, floatingPointUnderflow);
-SYMBOL_EXPORT_SC_(ClPkg, floatingPointInexact);
-SYMBOL_EXPORT_SC_(ClPkg, arithmeticError);
-
 void clasp_report_divide_by_zero(Number_sp x) {
    ERROR_DIVISION_BY_ZERO(clasp_make_fixnum(1),x);
-}
-
-void clasp_deliver_fpe(int status) {
-  int bits = status & _lisp->trapFpeBits();
-  if (bits) {
-    T_sp condition;
-    if (bits & FE_DIVBYZERO)
-      condition = cl::_sym_divisionByZero;
-    else if (bits & FE_INVALID)
-      condition = cl::_sym_floatingPointInvalidOperation;
-    else if (bits & FE_OVERFLOW)
-      condition = cl::_sym_floatingPointOverflow;
-    else if (bits & FE_UNDERFLOW)
-      condition = cl::_sym_floatingPointUnderflow;
-    else if (bits & FE_INEXACT)
-      condition = cl::_sym_floatingPointInexact;
-    else
-      condition = cl::_sym_arithmeticError;
-    eval::funcall(cl::_sym_error, condition);
-  }
 }
 
 Number_sp clasp_make_complex (Real_sp r, Real_sp i) {
@@ -2673,7 +2645,6 @@ clasp_expt(Number_sp x, Number_sp y) {
     z = clasp_expt(x, z);
     z = clasp_divide(clasp_make_fixnum(1), z);
   } else {
-    CLASP_MATHERR_CLEAR;
     z = clasp_make_fixnum(1);
     Integer_sp iy = gc::As<Integer_sp>(y);
     do {
@@ -2685,7 +2656,6 @@ clasp_expt(Number_sp x, Number_sp y) {
         break;
       x = clasp_times(x, x);
     } while (1);
-    CLASP_MATHERR_TEST;
   }
   return z;
 }
@@ -2779,7 +2749,6 @@ clasp_atan2_LongFloat(LongFloat y, LongFloat x) {
 
 Number_sp clasp_atan2(Number_sp y, Number_sp x) {
   Number_sp output;
-  CLASP_MATHERR_CLEAR;
   {
 #ifdef CLASP_LONG_FLOAT
     NumberType tx = clasp_t_of(x);
@@ -2811,7 +2780,6 @@ Number_sp clasp_atan2(Number_sp y, Number_sp x) {
     }
 #endif
   }
-  CLASP_MATHERR_TEST;
   return output;
 }
 
