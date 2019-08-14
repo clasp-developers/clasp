@@ -1611,9 +1611,8 @@ bool check_for_frame(uintptr_t frame) {
 }
 
 void frame_check(uintptr_t frame) {
-  // FIXME: Actual condition class
   if (!check_for_frame(frame))
-    SIMPLE_ERROR(BF("Return frame not present!\n"));
+    NO_INITIALIZERS_ERROR(core::_sym_outOfExtentUnwind);
 }
 
 CL_DEFUN T_sp core__libunwind_backtrace_as_list() {

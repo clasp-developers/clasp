@@ -580,6 +580,7 @@ SYMBOL_EXPORT_SC_(CorePkg, STARliteral_print_objectSTAR);
 SYMBOL_EXPORT_SC_(ClPkg, printObject);
 SYMBOL_EXPORT_SC_(ClPkg, makeCondition);
 SYMBOL_EXPORT_SC_(ClPkg, controlError);
+SYMBOL_EXPORT_SC_(CorePkg, outOfExtentUnwind);
 SYMBOL_EXPORT_SC_(KeywordPkg, print);
 SYMBOL_EXPORT_SC_(KeywordPkg, pathname);
 SYMBOL_SC_(CorePkg, setThrowPosition);

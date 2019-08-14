@@ -569,6 +569,12 @@ memory limits before executing the program again."))
 
 (define-condition core:simple-control-error (simple-condition control-error) ())
 
+;; FIXME: We could probably try to at least include the name of the block or
+;; tag that was supposed to be returned to.
+(define-condition core:out-of-extent-unwind (control-error)
+  ()
+  (:report "Attempted to return or go to an expired block or tagbody tag."))
+
 (define-condition stream-error (error)
   ((stream :initarg :stream :reader stream-error-stream)))
 
