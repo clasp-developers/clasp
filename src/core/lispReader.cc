@@ -1058,7 +1058,6 @@ T_sp read_lisp_object(T_sp sin, bool eofErrorP, T_sp eofValue, bool recursiveP) 
         if (cl::_sym_STARread_suppressSTAR->symbolValue().isTrue()) {
           LOG_READ(BF("read_suppress == true"));
           result = _Nil<T_O>();
-          break;
         }
         break;
       }
@@ -1071,7 +1070,6 @@ T_sp read_lisp_object(T_sp sin, bool eofErrorP, T_sp eofValue, bool recursiveP) 
     LOG_READ(BF("Came out of read_lisp_object with: |%s|") % _rep_(result).c_str());
   }
   LOG_READ(BF("Returning from read_lisp_object"));
-  if (result.nilp()) return (Values(_Nil<T_O>()));
   return (result);
 }
 
