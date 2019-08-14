@@ -76,7 +76,6 @@ void assert_failure_bounds_error_lt(const char* file, size_t line, const char* f
     */
 void CatchThrow::keyFunctionForVtable(){};
 void ReturnFrom::keyFunctionForVtable(){};
-void LexicalGo::keyFunctionForVtable(){};
 void DynamicGo::keyFunctionForVtable(){};
 void Unwind::keyFunctionForVtable(){};
 

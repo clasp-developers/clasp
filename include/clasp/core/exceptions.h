@@ -256,26 +256,6 @@ public:
   /*ATTR_WEAK*/ virtual ~ReturnFrom(){};
 };
 
-/*! Thrown by slot_ref when a slot_ref call fails because the symbol_name is invalid */
-
-class SlotRefFailed {
-};
-
-
-class ATTR_WEAK LexicalGo {
-  virtual void keyFunctionForVtable() ATTR_WEAK;
-
-private:
-  T_O* _Handle;
-  int _Index;
-
-public:
-  ATTR_WEAK LexicalGo(T_O* handle, int index) : _Handle(handle), _Index(index){};
-  T_O* getHandle() const { return this->_Handle; };
-  int index() const { return this->_Index; };
-  /*ATTR_WEAK*/ virtual ~LexicalGo(){};
-};
-
 class ATTR_WEAK DynamicGo //: public gctools::HeapRoot
     {
   virtual void keyFunctionForVtable() ATTR_WEAK;
