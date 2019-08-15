@@ -22,11 +22,8 @@ SYMBOL_EXPORT_SC_(CorePkg,wait_for_all_processes);
 
 namespace gctools {
 
-
 /*! The value of the signal that clasp uses to interrupt threads */
 int global_signal = SIGUSR2;
-
-static void queue_signal(core::ThreadLocalState* thread, core::T_sp code, bool allocate);
 
 /*! Signal info is in CONS set by ADD_SIGNAL macro at bottom */
 core::T_sp safe_signal_name(int sig) {
@@ -54,10 +51,11 @@ core::T_sp safe_signal_handler(int sig) {
   return key;
 }
 
-
 core::T_mv gctools__signal_info(int sig) {
   return Values(safe_signal_name(sig),safe_signal_handler(sig));
 }
+
+// INTERRUPTS
 
 static bool do_interrupt_thread(mp::Process_sp process)
 {
@@ -111,6 +109,7 @@ static bool do_interrupt_thread(mp::Process_sp process)
 # endif
 }
 
+static void queue_signal_or_interrupt(core::ThreadLocalState*, core::T_sp, bool);
 void clasp_interrupt_process(mp::Process_sp process, core::T_sp function)
 {
         /*
@@ -129,7 +128,7 @@ void clasp_interrupt_process(mp::Process_sp process, core::T_sp function)
   if (function.notnilp() && (process->_Phase >= mp::Booting)) {
     printf("%s:%d clasp_interrupt_process queuing signal\n", __FILE__, __LINE__);
     function = core::coerce::functionDesignator(function);
-    queue_signal(process->_ThreadInfo, function, true);
+    queue_signal_or_interrupt(process->_ThreadInfo, function, true);
   }
         /* ... but only deliver if the process is still alive */
   if (process->_Phase == mp::Active) do_interrupt_thread(process);
@@ -144,25 +143,14 @@ inline bool interrupts_disabled_by_lisp() {
                                     &core::_sym_STARinterrupts_enabledSTAR->_GlobalValue).notnilp();
 }
 
-void handle_signal_now( core::T_sp signal_code, core::T_sp process ) {
-  if ( signal_code.fixnump() ) {
-    core::Symbol_sp handler = gc::As<core::Symbol_sp>(safe_signal_handler(signal_code.unsafe_fixnum()));
-    if (handler->fboundp()) {
-      core::eval::funcall(handler->symbolFunction());
-    } else {
-      core::cl__cerror(ext::_sym_ignore_signal->symbolValue(),ext::_sym_unix_signal_received,
-                       core::Cons_O::createList(kw::_sym_code, signal_code, kw::_sym_handler, handler));
-    }
-  } else if (gc::IsA<core::Function_sp>(signal_code)) {
-    core::eval::funcall(signal_code);
-  }
-}
+// SIGNAL QUEUE
+// This is a regular lisp list. We keep a few extra conses lying around
+// and use those rather than allocate within signal handlers.
+// Objects in the queue are either fixnums, representing signals, or
+// functions, representing interrupts.
 
-static void queue_signal(core::ThreadLocalState* thread, core::T_sp code, bool allocate)
+static void queue_signal_or_interrupt(core::ThreadLocalState* thread, core::T_sp thing, bool allocate)
 {
-  if (!code) {
-    printf("%s:%d queue_signal code = NULL\n", __FILE__, __LINE__ );
-  }
   mp::SafeSpinLock spinlock(thread->_SparePendingInterruptRecordsSpinLock);
   core::T_sp record;
   if (allocate) {
@@ -174,17 +162,19 @@ static void queue_signal(core::ThreadLocalState* thread, core::T_sp code, bool a
     }
   }
   if (record.consp()) {
-//    printf("%s:%d  queue_signal\n",__FILE__, __LINE__ );
-//    core::dbg_lowLevelDescribe(code);
-    record.unsafe_cons()->_Car = code;
+    record.unsafe_cons()->_Car = thing;
     record.unsafe_cons()->_Cdr = _Nil<core::T_O>();
     thread->_PendingInterrupts = clasp_nconc(thread->_PendingInterrupts,record);
-//    core::dbg_lowLevelDescribe(thread->_PendingInterrupts);
   }
 }
 
+static void queue_signal(int signo) {
+  queue_signal_or_interrupt(my_thread, core::clasp_make_fixnum(signo), false);
+}
+
+// Pop a thing from the queue.
 // NOTE: Don't call this unless you're holding the spare records spinlock.
-core::T_sp pop_signal(core::ThreadLocalState* thread) {
+core::T_sp pop_signal_or_interrupt(core::ThreadLocalState* thread) {
   core::T_sp value;
   core::Cons_sp record;
   { // <---- brace for spinlock scope
@@ -201,29 +191,58 @@ core::T_sp pop_signal(core::ThreadLocalState* thread) {
   }
   return value;
 }
+
+// Perform one action (presumably popped from the queue).
+void handle_queued_signal_or_interrupt(core::T_sp signal_code) {
+  if (signal_code.fixnump()) { // signal
+    handle_signal_now(signal_code.unsafe_fixnum());
+  } else if (gc::IsA<core::Function_sp>(signal_code)) { // interrupt
+    core::eval::funcall(signal_code);
+  }
+}
+
+// Do all the queued actions, emptying the queue.
 void handle_all_queued_interrupts()
 {
   while (my_thread->_PendingInterrupts.consp()) {
     printf("%s:%d:%s Handling a signal - there are pending interrupts\n", __FILE__, __LINE__, __FUNCTION__ );
-    core::T_sp sig = pop_signal(my_thread);
+    core::T_sp sig = pop_signal_or_interrupt(my_thread);
     printf("%s:%d:%s Handling a signal: %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(sig).c_str() );
-    handle_signal_now(sig, my_thread->_Process);
+    handle_queued_signal_or_interrupt(sig);
   }
 }
 
-void handle_or_queue(core::ThreadLocalState* thread, core::T_sp signal_code ) {
-  if (signal_code.nilp() || !signal_code.fixnump())
-    return;
-  gc::Fixnum signal_int = signal_code.unsafe_fixnum();
+CL_DEFUN void core__check_pending_interrupts() {
+  handle_all_queued_interrupts();
+}
+
+// HANDLERS
+
+// This is both a signal handler and called by signal handlers.
+void handle_signal_now(int sig) {
+  // If there's a handler function in the alist, call it.
+  // Otherwise signal a generic, resumable error.
+  core::Symbol_sp handler = safe_signal_handler(sig);
+  if (handler->fboundp()) {
+    core::eval::funcall(handler->symbolFunction());
+  } else {
+    core::T_sp signal_code = core::clasp_make_fixnum(sig);
+    core::cl__cerror(ext::_sym_ignore_signal->symbolValue(),
+                     ext::_sym_unix_signal_received,
+                     core::Cons_O::createList(kw::_sym_code, signal_code, kw::_sym_handler, handler));
+  }
+}
+
+void handle_or_queue_signal(int signo) {
   if (interrupts_disabled_by_lisp()) {
-    queue_signal(thread,signal_code,false);
+    queue_signal(signo);
   }
   else if(interrupts_disabled_by_C()) {
     my_thread_low_level->_DisableInterrupts = 3;
-    queue_signal(thread,signal_code,false);
+    queue_signal(signo);
   }
   else {
-    handle_signal_now(signal_code,thread->_Process);
+    handle_signal_now(signo);
   }
 }
   
@@ -233,20 +252,6 @@ bool global_debuggerOnSIGABRT = true;
 int global_pollTicksPerCleanup = INITIAL_GLOBAL_POLL_TICKS_PER_CLEANUP;
 int global_signalTrap = 0;
 int global_pollTicksGC = INITIAL_GLOBAL_POLL_TICKS_PER_CLEANUP;
-
-void handle_signal(int signo) {
-  // Indicate that a signal was caught and handle it at a safe-point
-  handle_or_queue(my_thread,core::clasp_make_fixnum(signo));
-}
-
-void handle_signal_sync(int signo) {
-  // Handle a signal without queuing it. With some signals, like SIGSEGV, we
-  // can't continue normal execution.
-  // FIXME?: If a SEGV is sent e.g. by kill(1), we could still continue from
-  // it. This situation is indicated by the code in a siginfo_t.
-  // But maybe it's not important.
-  handle_signal_now(core::clasp_make_fixnum(signo), my_thread->_Process);
-}
 
 void handle_fpe(int signo, siginfo_t* info, void* context) {
   (void)context; // unused
@@ -261,18 +266,8 @@ void handle_fpe(int signo, siginfo_t* info, void* context) {
   case FPE_FLTINV: NO_INITIALIZERS_ERROR(cl::_sym_floatingPointInvalidOperation);
   default: // FIXME: signal a better error.
       // Can end up here with e.g. SI_USER if it originated from kill
-      handle_signal_sync(signo);
+      handle_signal_now(signo);
   }
-}
-
-void handle_interrupt_signal(int signo) {
-  // Indicate that a signal was caught and handle it at a safe-point
-  printf("%s:%d  Process %s received an interrupt signal %d\n", __FILE__, __LINE__, _rep_(my_thread->_Process).c_str(), signo);
-  handle_or_queue(my_thread,core::clasp_make_fixnum(signo));
-}
-
-CL_DEFUN void core__check_pending_interrupts() {
-  handle_all_queued_interrupts();
 }
 
 void fatal_error_handler(void *user_data, const std::string &reason, bool gen_crash_diag) {
@@ -289,6 +284,8 @@ void wake_up_thread(int sig)
   int len = strlen(msg);
   write(1,msg,len);
 }
+
+// SIGNALS INITIALIZATION
 
 void initialize_signals(int clasp_signal) {
   // clasp_signal is the signal that we use as a thread interrupt.
@@ -310,17 +307,17 @@ void initialize_signals(int clasp_signal) {
 
   struct sigaction new_action;
 
-  INIT_SIGNAL(clasp_signal, (SA_RESTART | SA_ONSTACK), handle_interrupt_signal);
-  INIT_SIGNAL(SIGUSR2, (SA_RESTART), wake_up_thread);
-  INIT_SIGNAL(SIGINT, (SA_RESTART), handle_signal);
+  INIT_SIGNAL(clasp_signal, (SA_RESTART | SA_ONSTACK), handle_or_queue_signal);
+  INIT_SIGNAL(global_signal, (SA_RESTART), wake_up_thread);
+  INIT_SIGNAL(SIGINT, (SA_RESTART), handle_or_queue_signal);
 #ifdef SIGINFO
-  INIT_SIGNAL(SIGINFO, (SA_RESTART), handle_signal);
+  INIT_SIGNAL(SIGINFO, (SA_RESTART), handle_or_queue_signal);
 #endif
-  INIT_SIGNAL(SIGABRT, (SA_RESTART), handle_signal);
-  INIT_SIGNAL(SIGSEGV, (SA_RESTART | SA_ONSTACK), handle_signal_sync);
+  INIT_SIGNAL(SIGABRT, (SA_RESTART), handle_or_queue_signal);
+  INIT_SIGNAL(SIGSEGV, (SA_RESTART | SA_ONSTACK), handle_signal_now);
   INIT_SIGNALI(SIGFPE, (SA_NODEFER | SA_RESTART | SA_SIGINFO), handle_fpe);
-  INIT_SIGNAL(SIGBUS, (SA_RESTART), handle_signal_sync);
-  INIT_SIGNAL(SIGILL, (SA_RESTART), handle_signal_sync);
+  INIT_SIGNAL(SIGBUS, (SA_RESTART), handle_signal_now);
+  INIT_SIGNAL(SIGILL, (SA_RESTART), handle_signal_now);
   // FIXME: Move?
   init_float_traps();
   llvm::install_fatal_error_handler(fatal_error_handler, NULL);
