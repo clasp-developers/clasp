@@ -18,6 +18,7 @@ SYMBOL_EXPORT_SC_(CorePkg,terminal_interrupt);
 SYMBOL_EXPORT_SC_(CorePkg,wake_up_thread);
 SYMBOL_EXPORT_SC_(ExtPkg,illegal_instruction);
 SYMBOL_EXPORT_SC_(ExtPkg,segmentation_violation);
+SYMBOL_EXPORT_SC_(ExtPkg,bus_error);
 SYMBOL_EXPORT_SC_(CorePkg,wait_for_all_processes);
 
 namespace gctools {
@@ -366,7 +367,7 @@ void initialize_unix_signal_handlers() {
         ADD_SIGNAL( SIGKILL, "SIGKILL", _Nil<core::T_O>());
 #endif
 #ifdef SIGBUS
-        ADD_SIGNAL( SIGBUS, "SIGBUS", ext::_sym_segmentation_violation);
+        ADD_SIGNAL( SIGBUS, "SIGBUS", ext::_sym_bus_error);
 #endif
 #ifdef SIGSEGV
         ADD_SIGNAL( SIGSEGV, "SIGSEGV", ext::_sym_segmentation_violation);

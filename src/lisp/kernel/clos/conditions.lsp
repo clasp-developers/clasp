@@ -483,7 +483,12 @@ returns with NIL."
 
 (define-condition ext:segmentation-violation (storage-condition)
   ()
-  (:REPORT "Detected access to an invalid or protected memory address."))
+  (:REPORT "Segmentation fault. Attempted to access a resticted memory area.
+
+This is due either to a problem in foreign code (e.g., C++), or a bug in Clasp itself."))
+
+;; Called by signal handlers in gctools/interrupt.cc.
+(defun ext:segmentation-violation () (error 'ext:segmentation-violation))
 
 (define-condition ext:stack-overflow (storage-condition)
   ((size :initarg :size :initform 0 :reader ext:stack-overflow-size)
@@ -503,9 +508,21 @@ or return to an outer frame, undoing all the function calls so far."
   (:REPORT "Memory limit reached. Please jump to an outer pointer, quit program and enlarge the
 memory limits before executing the program again."))
 
-(define-condition ext:illegal-instruction (serious-condition)
+(define-condition ext:illegal-instruction (error)
   ()
-  (:REPORT "Illegal instruction."))
+  (:REPORT "Illegal instruction.
+
+No information available on cause. This may be a bug in Clasp."))
+
+;; Called by signal handlers
+(defun ext:illegal-instruction () (error 'ext:illegal-instruction))
+
+(define-condition ext:bus-error (error)
+  ()
+  (:report "Bus error. Attempted to access invalid memory.
+
+This is due to either a problem in foreign code (e.g., C++), or a bug in Clasp itself."))
+(defun ext:bus-error () (error 'ext:bus-error))
 
 (define-condition ext:unix-signal-received ()
   ((code :type fixnum
