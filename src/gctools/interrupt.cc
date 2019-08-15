@@ -308,17 +308,23 @@ void initialize_signals(int clasp_signal) {
 
   struct sigaction new_action;
 
-  INIT_SIGNAL(clasp_signal, (SA_RESTART | SA_ONSTACK), handle_or_queue_signal);
+  // NOTE that for most signals we specify SA_NODEFER. This is because
+  // the handlers often signal errors (in handle_signal_now), and if they
+  // do a restart could wrest control from the handler back to normal
+  // Lisp code. If that happens, and a signal is received again, we want
+  // to deal with it the same way - not defer.
+  
+  INIT_SIGNAL(clasp_signal, (SA_NODEFER | SA_RESTART | SA_ONSTACK), handle_or_queue_signal);
   INIT_SIGNAL(global_signal, (SA_RESTART), wake_up_thread);
-  INIT_SIGNAL(SIGINT, (SA_RESTART), handle_or_queue_signal);
+  INIT_SIGNAL(SIGINT, (SA_NODEFER | SA_RESTART), handle_or_queue_signal);
 #ifdef SIGINFO
-  INIT_SIGNAL(SIGINFO, (SA_RESTART), handle_or_queue_signal);
+  INIT_SIGNAL(SIGINFO, (SA_NODEFER | SA_RESTART), handle_or_queue_signal);
 #endif
-  INIT_SIGNAL(SIGABRT, (SA_RESTART), handle_or_queue_signal);
-  INIT_SIGNAL(SIGSEGV, (SA_RESTART | SA_ONSTACK), handle_signal_now);
+  INIT_SIGNAL(SIGABRT, (SA_NODEFER | SA_RESTART), handle_or_queue_signal);
+  INIT_SIGNAL(SIGSEGV, (SA_NODEFER | SA_RESTART | SA_ONSTACK), handle_signal_now);
   INIT_SIGNALI(SIGFPE, (SA_NODEFER | SA_RESTART | SA_SIGINFO), handle_fpe);
-  INIT_SIGNAL(SIGBUS, (SA_RESTART), handle_signal_now);
-  INIT_SIGNAL(SIGILL, (SA_RESTART), handle_signal_now);
+  INIT_SIGNAL(SIGBUS, (SA_NODEFER | SA_RESTART), handle_signal_now);
+  INIT_SIGNAL(SIGILL, (SA_NODEFER | SA_RESTART), handle_signal_now);
   // FIXME: Move?
   init_float_traps();
   llvm::install_fatal_error_handler(fatal_error_handler, NULL);
