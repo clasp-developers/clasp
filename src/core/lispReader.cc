@@ -1014,37 +1014,11 @@ List_sp read_list(T_sp sin, claspCharacter end_char, bool allow_consing_dot) {
 
 SYMBOL_SC_(CorePkg, STARsharp_equal_final_tableSTAR);
 
-struct increment_read_lisp_object_recursion_depth {
-  increment_read_lisp_object_recursion_depth() {
-    ++my_thread->read_recursion_depth;
-  }
-  ~increment_read_lisp_object_recursion_depth() {
-    --my_thread->read_recursion_depth;
-  }
-  static void reset() {
-    my_thread->read_recursion_depth = 0;
-  }
-  int value() const {
-    return my_thread->read_recursion_depth;
-  }
-  int max() const {
-    return 1024;
-  }
-};
-
-
 T_sp read_lisp_object(T_sp sin, bool eofErrorP, T_sp eofValue, bool recursiveP) {
   LOG_READ_SETUP();
   LOG_READ(BF("Entered read_lisp_object recursiveP=%d") % recursiveP);
   T_sp result = _Nil<T_O>();
   if (recursiveP) {
-    increment_read_lisp_object_recursion_depth recurse;
-#if 0
-    if (recurse.value() > recurse.max()) {
-      printf("%s:%d read_lisp_object_recursion_depth %d has exceeded max (%d) - there is a problem reading line %d",
-             __FILE__, __LINE__, recurse.value(), recurse.max(), clasp_input_lineno(sin));
-    }
-#endif
     while (1) {
       LOG_READ(BF("At top of while loop"));
       T_mv mv = lisp_object_query(sin, eofErrorP, eofValue, recursiveP);
@@ -1063,7 +1037,6 @@ T_sp read_lisp_object(T_sp sin, bool eofErrorP, T_sp eofValue, bool recursiveP) 
       }
     }
   } else {
-    increment_read_lisp_object_recursion_depth::reset();
     DynamicScopeManager scope(_sym_STARsharp_equal_final_tableSTAR, _Nil<T_O>());
     LOG_READ(BF("About to call read_lisp_object"));
     result = read_lisp_object(sin, eofErrorP, eofValue, true);
