@@ -60,6 +60,19 @@
 (define-compiler-macro 1- (x)
   `(core:two-arg-- ,x 1))
 
+;;; log* operations
+(define-compiler-macro logand (&rest numbers)
+  (core:expand-associative 'logand 'core:logand-2op numbers -1))
+
+(define-compiler-macro logxor (&rest numbers)
+  (core:expand-associative 'logxor 'core:logxor-2op numbers 0))
+
+(define-compiler-macro logior (&rest numbers)
+  (core:expand-associative 'logior 'core:logior-2op numbers 0))
+
+(define-compiler-macro logeqv (&rest numbers)
+  (core:expand-associative 'logeqv 'core:logeqv-2op numbers -1))
+
 ;;; byte operations: look for calls like (foo ... (byte ...) ...)
 
 (in-package #:core)
