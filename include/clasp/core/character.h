@@ -40,6 +40,7 @@ THE SOFTWARE.
 #define PAGE_CHAR 12
 #define RETURN_CHAR 13
 #define ESCAPE_CHAR 27
+#define SPACE_CHAR 32
 #define RUBOUT_CHAR 127
 
 namespace core {

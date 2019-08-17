@@ -404,14 +404,14 @@ namespace core {
 const char* OrderedCharacterNames[] = {
     "NUL",
     "SOH", "STX", "ETX", "EOT",
-    "ENQ", "ACK", "BEL", "Backspace",
-    "Tab", "Newline", "VT",
-    "Page", "Return", "SO", "SI",
+    "ENQ", "ACK", "BEL", "BS",
+    "HT", "LF", "VT",
+    "FF", "CR", "SO", "SI",
     "DLE", "DC1", "DC2", "DC3",
     "DC4", "NAK", "SYN", "ETB",
     "CAN", "EM", "SUB", "ESC",
     "FS", "GS", "RS", "US",
-    "Space", "EXCLAMATION_MARK", "QUOTATION_MARK", "NUMBER_SIGN",
+    "SP", "EXCLAMATION_MARK", "QUOTATION_MARK", "NUMBER_SIGN",
     "DOLLAR_SIGN", "PERCENT_SIGN", "AMPERSAND", "APOSTROPHE",
     "LEFT_PARENTHESIS", "RIGHT_PARENTHESIS", "ASTERISK", "PLUS_SIGN",
     "COMMA", "HYPHEN-MINUS", "FULL_STOP", "SOLIDUS",
@@ -463,10 +463,15 @@ void CharacterInfo::initialize() {
   // we later compare with Uppercase
   gNamesToCharacterIndex["NULL"] = NULL_CHAR;
   gNamesToCharacterIndex["BELL"] = BELL_CHAR;
+  gNamesToCharacterIndex["BACKSPACE"] = BACKSPACE_CHAR;
+  gNamesToCharacterIndex["TAB"] = TAB_CHAR;
+  gNamesToCharacterIndex["NEWLINE"] = NEWLINE_CHAR;
   gNamesToCharacterIndex["LINEFEED"] = LINE_FEED_CHAR;
+  gNamesToCharacterIndex["PAGE"] = PAGE_CHAR;
+  gNamesToCharacterIndex["RETURN"] = RETURN_CHAR;
   gNamesToCharacterIndex["ESCAPE"] = ESCAPE_CHAR;
+  gNamesToCharacterIndex["SPACE"] = SPACE_CHAR;
   gNamesToCharacterIndex["DEL"] = RUBOUT_CHAR;
-  gNamesToCharacterIndex["CR"] = RETURN_CHAR;
 }
 
 CL_LAMBDA(ch);

@@ -123,3 +123,23 @@
 (test test-char-18 (let ()(char/= #\a #\b #\c #\d)))
 
 (test test-char-19 (eql #\Rubout #\Del))
+
+;;; https://en.wikipedia.org/wiki/C0_and_C1_control_codes
+(test test-char-c0
+      (list #\NUL #\SOH #\STX #\ETX
+            #\EOT #\ENQ #\ACK #\BEL
+            #\BS #\HT #\LF #\VT
+            #\FF #\CR #\SO #\SI
+            #\DLE #\DC1 #\DC2 #\DC3
+            #\DC4 #\NAK #\SYN #\ETB
+            #\CAN #\EM #\SUB #\ESC
+            #\FS #\GS #\RS #\US
+            #\SP #\DEL))
+
+(test test-char-standard-names
+      (list #\Backspace #\Tab #\Newline #\Linefeed #\Page #\Return #\Space
+            #\BACKSPACE #\TAB #\NEWLINE #\LINEFEED #\PAGE #\RETURN #\SPACE))
+
+(TEST test-char-semistandard-names
+      (list #\Null #\Bell #\Escape #\Rubout
+            #\NULL #\BELL #\ESCAPE #\RUBOUT))
