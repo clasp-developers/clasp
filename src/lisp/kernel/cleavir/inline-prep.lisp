@@ -76,3 +76,46 @@
 
 (eval-when (:compile-toplevel :execute :load-toplevel)
   (setq core:*proclaim-hook* 'proclaim-hook))
+
+;;; The following code sets up the chain of inlined-at info in AST origins.
+#+cst
+(progn
+
+(defun fix-inline-source-position (spi inlined-at table)
+  (or (gethash spi table)
+      (setf (gethash spi table)
+            (let ((clone (core:source-pos-info-copy spi)))
+              (core:setf-source-pos-info-inlined-at clone inlined-at)
+              clone))))
+
+(defun fix-inline-source-positions (ast inlined-at)
+  (let ((new-origins (make-hash-table :test #'eq)))
+    ;; NEW-ORIGINS is a memoization table.
+    (cleavir-ast:map-ast-depth-first-preorder
+     (lambda (ast)
+       (let ((orig (cleavir-ast:origin ast)))
+         (setf (cleavir-ast:origin ast)
+               (cond ((consp orig)
+                      (cons (fix-inline-source-position (car orig) inlined-at new-origins)
+                            (fix-inline-source-position (cdr orig) inlined-at new-origins)))
+                     ((null orig) nil)
+                     (t (fix-inline-source-position orig inlined-at new-origins))))))
+     ast))
+  ast)
+
+(defmethod cleavir-cst-to-ast:convert-called-function-reference (cst info env (system clasp-64bit))
+  (declare (ignore env))
+  ;; FIXME: Duplicates cleavir.
+  (when (not (eq (cleavir-env:inline info) 'cl:notinline))
+    (let ((ast (cleavir-env:ast info)))
+      (when ast
+        (return-from cleavir-cst-to-ast:convert-called-function-reference
+          (fix-inline-source-positions
+           (cleavir-ast-transformations:clone-ast ast)
+           (let ((source (cst:source cst)))
+             (cond ((consp source) (car source))
+                   ((null source) core:*current-source-pos-info*)
+                   (t source))))))))
+  (call-next-method))
+
+) ; #+cst (progn...)
