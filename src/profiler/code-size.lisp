@@ -160,18 +160,24 @@
     source-code))
 
 (defun read-to-line (sin lineno)
+  "Return T if we can read to the lineno, otherwise if we hit EOF return NIL"
   (loop for l below (1- lineno)
-        do (read-line sin)))
+        do (let ((line (read-line sin nil :eof)))
+             (when (eq line :eof)
+               (return-from read-to-line nil))))
+  t)
 
 
 (defun get-source-at-line-column (directory filename line column)
   (let* ((code (get-source-file directory filename))
          (sin (make-string-input-stream code)))
     (if (< line 99999)
-        (progn
-          (read-to-line sin line)
-          (file-position sin (+ (file-position sin) (if (> column 2) (- column 2) 0)))
-          (read-line sin))
+        (let ((ok (read-to-line sin line)))
+          (if ok
+              (progn
+                (file-position sin (+ (file-position sin) (if (> column 2) (- column 2) 0)))
+                (read-line sin))
+              "***** HIT EOF *****"))
         "********** BOGUS LINE ***********")))
 
 (defun analyze-module (module &optional num)
