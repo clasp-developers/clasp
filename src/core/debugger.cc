@@ -1593,6 +1593,29 @@ CL_DEFUN T_sp core__maybe_demangle(core::String_sp s)
   }
 }
 
+bool check_for_frame(uintptr_t frame) {
+  // We only actually do a check if we have libunwind capabilities.
+#ifdef USE_LIBUNWIND
+  unw_context_t context; unw_cursor_t cursor;
+  unw_word_t sp;
+  unw_word_t csp = (unw_word_t)frame;
+  unw_getcontext(&context);
+  unw_init_local(&cursor, &context);
+  while (unw_step(&cursor) > 0) {
+    unw_get_reg(&cursor, UNW_X86_64_RBP, &sp);
+    if (sp == csp) return true;
+  }
+  return false;
+#else
+  return true;
+#endif
+}
+
+void frame_check(uintptr_t frame) {
+  if (!check_for_frame(frame))
+    NO_INITIALIZERS_ERROR(core::_sym_outOfExtentUnwind);
+}
+
 CL_DEFUN T_sp core__libunwind_backtrace_as_list() {
 #ifdef USE_LIBUNWIND
   unw_context_t context;
@@ -1924,11 +1947,10 @@ CL_DEFUN void core__clib_backtrace(int depth) {
 
 CL_LAMBDA();
 CL_DECLARE();
-CL_DOCSTRING("framePointers");
-CL_DEFUN void core__frame_pointers() {
+CL_DOCSTRING("framePointer");
+CL_DEFUN Fixnum_sp core__frame_pointer() {
   void *fp = __builtin_frame_address(0); // Constant integer only
-  if (fp != NULL)
-    printf("Frame pointer --> %p\n", fp);
+  return make_fixnum((uintptr_t)fp);
 };
 
 

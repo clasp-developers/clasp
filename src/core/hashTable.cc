@@ -477,8 +477,8 @@ void HashTable_O::sxhash_equalp(HashGenerator &hg, T_sp obj, LocationDependencyP
       hg.addPart(std::abs(::floor(obj.unsafe_single_float())));
     return;
   } else if (obj.characterp()) {
-    if (hg.isFilling())
-      hg.addPart(obj.unsafe_character());
+    if (hg.isFilling()) 
+      hg.addPart(claspCharacter_upcase(clasp_as_claspCharacter(gc::As<Character_sp>(obj))));
     return;
   } else if (obj.consp()) {
     Cons_sp cobj = gc::As_unsafe<Cons_sp>(obj);

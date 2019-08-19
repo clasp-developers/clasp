@@ -235,7 +235,19 @@
 (defmethod translate-simple-instruction
     ((instruction cc-mir:save-frame-instruction) return-value abi function-info)
   (setf (frame-value function-info)
-        (%intrinsic-call "cc_pushLandingPadFrame" nil "FRAME")))
+        ;; NOTE: Considered as a T_O*, the frame address could, hypothetically, have nonzero
+        ;; low bits (though that's pretty unlikely given how machines work), and therefore be
+        ;; some invalid object instead of a fixnum. But that's okay, since we only use this
+        ;; for pointer equality anyway.
+        ;; FIXME: The frame address is not adequate as a frame identifier. If a BLOCK extent
+        ;; ends but a closure returning to it survives, a new frame could be established that
+        ;; happens to have the same stack frame address as the disestablished one. If the
+        ;; closure was then called, we'd "return" to that new frame, but the IP would be
+        ;; deranged and bad things would happen. There should be an additional value to
+        ;; distinguish frames - some arbitrary integer, like a counter or the time.
+        (cmp:irc-bit-cast
+         (%intrinsic-call "llvm.frameaddress" (list (%i32 0)) "frame")
+         cmp:%t*%)))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:create-cell-instruction) return-value abi function-info)

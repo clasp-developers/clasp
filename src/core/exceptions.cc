@@ -76,7 +76,6 @@ void assert_failure_bounds_error_lt(const char* file, size_t line, const char* f
     */
 void CatchThrow::keyFunctionForVtable(){};
 void ReturnFrom::keyFunctionForVtable(){};
-void LexicalGo::keyFunctionForVtable(){};
 void DynamicGo::keyFunctionForVtable(){};
 void Unwind::keyFunctionForVtable(){};
 
@@ -527,25 +526,6 @@ char *internalPrintf(const Lisp_sp &lisp, const char *fmt, va_list arg_ptr) {
   return outBuffer;
 }
 
-void _stackTraceEnter_WriteEntryToLog(int entryIndex) {
-  IMPLEMENT_ME();
-}
-
-void _stackTraceEnter(uint debugFlags) {
-  IMPLEMENT_ME();
-}
-
-void _stackTraceLineNumberAndColumnUpdate(uint ln, uint col) {
-}
-
-void _stackTraceExit() {
-  IMPLEMENT_ME();
-}
-
-void _stackTraceDump() {
-  IMPLEMENT_ME();
-}
-
 #define ARGS_af_wrongTypeKeyArg "(source-file lineno function narg value type)"
 #define DECL_af_wrongTypeKeyArg ""
 #define DOCS_af_wrongTypeKeyArg "wrongTypeKeyArg"
@@ -755,12 +735,6 @@ void core__reader_error_internal(const string &sourceFile, uint lineno,
                   kw::_sym_stream, stream);
   }
 };
-
-void assert_type_integer(int index, T_sp p) {
-  if (!gc::IsA<Integer_sp>(p)) {
-    QERROR_WRONG_TYPE_NTH_ARG(index, p, cl::_sym_Integer_O);
-  }
-}
 
 void FEerror(const string &fmt, int nargs, ...) {
   SimpleBaseString_sp sfmt = SimpleBaseString_O::make(fmt);

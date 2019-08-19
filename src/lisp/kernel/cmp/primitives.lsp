@@ -256,6 +256,7 @@
          (primitive-unwinds "cc_throw" %void% (list %t*%) :does-not-return t)
          (primitive         "cc_saveMultipleValue0" %void% (list %tmv%))
          (primitive         "cc_restoreMultipleValue0" %return-type% nil)
+         (primitive         "llvm.frameaddress" %t*% (list %i32%))
          (primitive         "cc_pushLandingPadFrame" %t*% nil)
          (primitive         "cc_popLandingPadFrame" %void% (list %t*%))
          (primitive-unwinds "cc_landingpadUnwindMatchFrameElseRethrow" %size_t% (list %i8*% %t*%))

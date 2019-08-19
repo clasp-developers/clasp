@@ -45,7 +45,6 @@ THE SOFTWARE.
 #include <clasp/core/hashTable.h>
 #include <clasp/core/mathDispatch.h>
 #include <clasp/core/num_arith.h>
-#include <clasp/core/math_fenv.h>
 #include <clasp/gctools/pointer_tagging.h>
 #include <clasp/core/wrappers.h>
 #include <clasp/core/num_co.h>
@@ -86,35 +85,8 @@ CL_DEFUN core::Number_sp add_mod8(core::T_O* x, core::T_O* y)
   return core::Number_sp((gc::Tagged)reinterpret_cast<core::T_O*>(z));
 };
 
-SYMBOL_EXPORT_SC_(ClPkg, divisionByZero);
-SYMBOL_EXPORT_SC_(ClPkg, floatingPointInvalidOperation);
-SYMBOL_EXPORT_SC_(ClPkg, floatingPointOverflow);
-SYMBOL_EXPORT_SC_(ClPkg, floatingPointUnderflow);
-SYMBOL_EXPORT_SC_(ClPkg, floatingPointInexact);
-SYMBOL_EXPORT_SC_(ClPkg, arithmeticError);
-
 void clasp_report_divide_by_zero(Number_sp x) {
    ERROR_DIVISION_BY_ZERO(clasp_make_fixnum(1),x);
-}
-
-void clasp_deliver_fpe(int status) {
-  int bits = status & _lisp->trapFpeBits();
-  if (bits) {
-    T_sp condition;
-    if (bits & FE_DIVBYZERO)
-      condition = cl::_sym_divisionByZero;
-    else if (bits & FE_INVALID)
-      condition = cl::_sym_floatingPointInvalidOperation;
-    else if (bits & FE_OVERFLOW)
-      condition = cl::_sym_floatingPointOverflow;
-    else if (bits & FE_UNDERFLOW)
-      condition = cl::_sym_floatingPointUnderflow;
-    else if (bits & FE_INEXACT)
-      condition = cl::_sym_floatingPointInexact;
-    else
-      condition = cl::_sym_arithmeticError;
-    eval::funcall(cl::_sym_error, condition);
-  }
 }
 
 Number_sp clasp_make_complex (Real_sp r, Real_sp i) {
@@ -246,20 +218,237 @@ CL_DEFUN Real_sp cl__max(Real_sp max, List_sp nums) {
   return max;
 }
 
+// logand, logxor, logior, logeqv are all nearly the same, apart from the operation
+// logandc1_id until lognor_id as well
+
+typedef enum {
+    logand_id = 0,
+    logxor_id = 1,
+    logior_id = 2,
+    logeqv_id = 3,
+    logandc1_id = 4,
+    logandc2_id =5,
+    logorc1_id = 6,
+    logorc2_id = 7,
+    lognand_id = 8,
+    lognor_id = 9
+} log_operations;
+
+Integer_sp log_operation_2op(log_operations operation, Integer_sp first, Integer_sp second) {
+  // if the arguments are all fixnum, don't convert everything to mpz, but stay in fixnums
+  if (first.fixnump() && second.fixnump()){
+    gc::Fixnum first_internal = first.unsafe_fixnum();
+    gc::Fixnum second_internal = second.unsafe_fixnum();
+    gc::Fixnum result;
+    switch (operation) {
+    case logand_id:
+        result = first_internal & second_internal;
+        break;
+    case logxor_id:
+        result = first_internal ^ second_internal;
+        break;
+    case logior_id:
+        result = first_internal | second_internal;
+        break;
+    case logeqv_id:
+        result = (~(first_internal ^ second_internal));
+        break;
+    case logandc1_id:
+        result = (~first_internal) & second_internal;
+        break;
+    case logandc2_id:
+        result = first_internal & (~second_internal);
+        break;
+    case logorc1_id:
+        result = (~first_internal) | second_internal;
+        break;
+    case logorc2_id:
+        result = first_internal | (~second_internal);
+        break;
+    case lognand_id:
+        result = ~(first_internal & second_internal);
+        break;
+    case lognor_id:
+        result = ~(first_internal | second_internal);
+        break;
+    default:
+        SIMPLE_ERROR(BF("Unknown operation in log_operation_2op"));
+    }
+    return clasp_make_fixnum(result);
+  }
+  else {
+    mpz_class result_bignum;
+    mpz_class temp_bignum;
+    switch (operation) {
+    case logand_id:
+        mpz_and(result_bignum.get_mpz_t(), clasp_to_mpz(first).get_mpz_t(), clasp_to_mpz(second).get_mpz_t());
+        break;
+    case logxor_id:
+        mpz_xor(result_bignum.get_mpz_t(), clasp_to_mpz(first).get_mpz_t(), clasp_to_mpz(second).get_mpz_t());
+        break;
+    case logior_id:
+        mpz_ior(result_bignum.get_mpz_t(), clasp_to_mpz(first).get_mpz_t(), clasp_to_mpz(second).get_mpz_t());
+        break;
+    case logeqv_id:
+        mpz_xor(temp_bignum.get_mpz_t(), clasp_to_mpz(first).get_mpz_t(), clasp_to_mpz(second).get_mpz_t());
+        mpz_com(result_bignum.get_mpz_t(), temp_bignum.get_mpz_t());
+        break;
+    case logandc1_id:
+        mpz_com(temp_bignum.get_mpz_t(), clasp_to_mpz(first).get_mpz_t());
+        mpz_and(result_bignum.get_mpz_t(), temp_bignum.get_mpz_t(), clasp_to_mpz(second).get_mpz_t());
+        break;
+    case logandc2_id:
+        mpz_com(temp_bignum.get_mpz_t(), clasp_to_mpz(second).get_mpz_t());
+        mpz_and(result_bignum.get_mpz_t(), clasp_to_mpz(first).get_mpz_t(), temp_bignum.get_mpz_t());
+        break;
+    case logorc1_id:
+        mpz_com(temp_bignum.get_mpz_t(), clasp_to_mpz(first).get_mpz_t());
+        mpz_ior(result_bignum.get_mpz_t(), temp_bignum.get_mpz_t(), clasp_to_mpz(second).get_mpz_t());
+        break;
+    case logorc2_id:
+        mpz_com(temp_bignum.get_mpz_t(), clasp_to_mpz(second).get_mpz_t());
+        mpz_ior(result_bignum.get_mpz_t(), clasp_to_mpz(first).get_mpz_t(), temp_bignum.get_mpz_t());
+        break;
+    case lognand_id:
+        mpz_and(temp_bignum.get_mpz_t(), clasp_to_mpz(first).get_mpz_t(), clasp_to_mpz(second).get_mpz_t());
+        mpz_com(result_bignum.get_mpz_t(), temp_bignum.get_mpz_t());
+        break;
+    case lognor_id:
+        mpz_ior(temp_bignum.get_mpz_t(), clasp_to_mpz(first).get_mpz_t(), clasp_to_mpz(second).get_mpz_t());
+        mpz_com(result_bignum.get_mpz_t(), temp_bignum.get_mpz_t());
+        break;
+    default:
+        SIMPLE_ERROR(BF("Unknown operation in cl__log_operation_rest"));
+    }
+    return Integer_O::create(result_bignum);
+  }
+}
+
+CL_LAMBDA(first second);
+CL_DECLARE();
+CL_DOCSTRING("logand_2op");
+CL_DEFUN Integer_sp core__logand_2op(Integer_sp first, Integer_sp second) {
+  return log_operation_2op(logand_id, first, second);
+}
+
+CL_LAMBDA(first second);
+CL_DECLARE();
+CL_DOCSTRING("logxor_2op");
+CL_DEFUN Integer_sp core__logxor_2op(Integer_sp first, Integer_sp second) {
+  return log_operation_2op(logxor_id, first, second);
+}
+
+CL_LAMBDA(first second);
+CL_DECLARE();
+CL_DOCSTRING("logior_2op");
+CL_DEFUN Integer_sp core__logior_2op(Integer_sp first, Integer_sp second) {
+  return log_operation_2op(logior_id, first, second);
+}
+
+CL_LAMBDA(first second);
+CL_DECLARE();
+CL_DOCSTRING("logeqv_2op");
+CL_DEFUN Integer_sp core__logeqv_2op(Integer_sp first, Integer_sp second) {
+  return log_operation_2op(logeqv_id, first, second);
+}
+
+Integer_sp log_operation_rest(List_sp integers, log_operations operation) {
+  // if the arguments are all fixnum, don't convert everything to mpz, but stay in fixnums
+  bool acc_fixnum_p = true;
+  Integer_sp first = gc::As<Integer_sp>(oCar(integers));
+  gc::Fixnum acc_fixnum;
+  mpz_class acc_bignum;
+  if (first.fixnump()) {
+    acc_fixnum = first.unsafe_fixnum();
+  }
+  else {
+    acc_fixnum_p = false;
+    acc_bignum = clasp_to_mpz(first);
+  }
+  for (auto cur : (List_sp)oCdr(integers)) {
+    Integer_sp icur = gc::As<Integer_sp>(oCar(cur));
+    if (acc_fixnum_p) {
+      if (icur.fixnump()) {
+        // we stay in fixnum
+        switch (operation) {
+        case logand_id:
+            acc_fixnum = acc_fixnum & icur.unsafe_fixnum();
+            break;
+        case logxor_id:
+            acc_fixnum = acc_fixnum ^ icur.unsafe_fixnum();
+            break;
+        case logior_id:
+            acc_fixnum = acc_fixnum | icur.unsafe_fixnum();
+            break;
+        case logeqv_id:
+            acc_fixnum = (~(acc_fixnum ^ icur.unsafe_fixnum()));
+            break;
+        default:
+            SIMPLE_ERROR(BF("Unknown operation in cl__log_operation_rest"));
+        }
+      }
+      else {
+        // need to go bignum
+        acc_fixnum_p = false;
+        acc_bignum = clasp_to_mpz(Integer_O::create(acc_fixnum));
+        mpz_class temp;
+        mpz_class temp1;
+        switch (operation) {
+        case logand_id:
+            mpz_and(temp.get_mpz_t(), acc_bignum.get_mpz_t(), clasp_to_mpz(icur).get_mpz_t());
+            break;
+        case logxor_id:
+            mpz_xor(temp.get_mpz_t(),  acc_bignum.get_mpz_t(), clasp_to_mpz(icur).get_mpz_t());
+            break;
+        case logior_id:
+            mpz_ior(temp.get_mpz_t(),  acc_bignum.get_mpz_t(), clasp_to_mpz(icur).get_mpz_t());
+            break;
+        case logeqv_id:
+            mpz_xor(temp1.get_mpz_t(), acc_bignum.get_mpz_t(), clasp_to_mpz(icur).get_mpz_t());
+            mpz_com(temp.get_mpz_t(), temp1.get_mpz_t());
+        default:
+            SIMPLE_ERROR(BF("Unknown operation in cl__log_operation_rest"));
+        }
+        acc_bignum = temp;
+      }
+    } else {
+      mpz_class temp;
+      mpz_class temp1;
+      switch (operation) {
+      case logand_id:
+          mpz_and(temp.get_mpz_t(), acc_bignum.get_mpz_t(), clasp_to_mpz(icur).get_mpz_t());
+          break;
+      case logxor_id:
+          mpz_xor(temp.get_mpz_t(),  acc_bignum.get_mpz_t(), clasp_to_mpz(icur).get_mpz_t());
+          break;
+      case logior_id:
+          mpz_ior(temp.get_mpz_t(),  acc_bignum.get_mpz_t(), clasp_to_mpz(icur).get_mpz_t());
+          break;
+      case logeqv_id:
+          mpz_xor(temp1.get_mpz_t(), acc_bignum.get_mpz_t(), clasp_to_mpz(icur).get_mpz_t());
+          mpz_com(temp.get_mpz_t(), temp1.get_mpz_t());
+          break;
+      default:
+          SIMPLE_ERROR(BF("Unknown operation in cl__log_operation_rest"));
+      }
+      acc_bignum = temp;
+    }
+  }
+  if (acc_fixnum_p)
+    return Integer_O::create(acc_fixnum);
+  else
+    return Integer_O::create(acc_bignum);
+}
+
 CL_LAMBDA(&rest integers);
 CL_DECLARE();
 CL_DOCSTRING("logand");
 CL_DEFUN Integer_sp cl__logand(List_sp integers) {
+  // if the arguments are all fixnum, don't convert everything to mpz, but stay in fixnums
   if (integers.nilp())
-    return Integer_O::create((gc::Fixnum) - 1);
-  mpz_class acc = clasp_to_mpz(gc::As<Integer_sp>(oCar(integers)));
-  for (auto cur : (List_sp)oCdr(integers)) {
-    Integer_sp icur = gc::As<Integer_sp>(oCar(cur));
-    mpz_class temp;
-    mpz_and(temp.get_mpz_t(), acc.get_mpz_t(), clasp_to_mpz(icur).get_mpz_t());
-    acc = temp;
-  }
-  return Integer_O::create(acc);
+    return clasp_make_fixnum(-1);
+  else
+    return log_operation_rest(integers, logand_id); 
 };
 
 CL_LAMBDA(&rest integers);
@@ -267,17 +456,9 @@ CL_DECLARE();
 CL_DOCSTRING("logior");
 CL_DEFUN Integer_sp cl__logior(List_sp integers) {
   if (integers.nilp())
-    return Integer_O::create((gc::Fixnum)0);
-  Integer_sp ifirst = gc::As<Integer_sp>(oCar(integers));
-  mpz_class acc = clasp_to_mpz(ifirst);
-  List_sp rints = oCdr(integers);
-  for (auto cur : rints) {
-    Integer_sp icur = gc::As<Integer_sp>(oCar(cur));
-    mpz_class temp;
-    mpz_ior(temp.get_mpz_t(), acc.get_mpz_t(), clasp_to_mpz(icur).get_mpz_t());
-    acc = temp;
-  }
-  return Integer_O::create(acc);
+    return clasp_make_fixnum(0);
+  else
+    return log_operation_rest(integers, logior_id); 
 };
 
 CL_LAMBDA(&rest integers);
@@ -285,129 +466,77 @@ CL_DECLARE();
 CL_DOCSTRING("logxor");
 CL_DEFUN Integer_sp cl__logxor(List_sp integers) {
   if (integers.nilp())
-    return Integer_O::create((gc::Fixnum)0);
-  Integer_sp ifirst = gc::As<Integer_sp>(oCar(integers));
-  mpz_class acc = clasp_to_mpz(ifirst);
-  for (auto cur : (List_sp)oCdr(integers)) {
-    Integer_sp icur = gc::As<Integer_sp>(oCar(cur));
-    mpz_class temp;
-    mpz_xor(temp.get_mpz_t(), acc.get_mpz_t(), clasp_to_mpz(icur).get_mpz_t());
-    acc = temp;
-  }
-  return Integer_O::create(acc);
+    return clasp_make_fixnum(0);
+  else
+    return log_operation_rest(integers, logxor_id);
 };
 
 CL_LAMBDA(&rest integers);
 CL_DECLARE();
 CL_DOCSTRING("logeqv");
-CL_DEFUN Integer_mv cl__logeqv(List_sp integers) {
+CL_DEFUN Integer_sp cl__logeqv(List_sp integers) {
   if (integers.nilp())
     return Integer_O::create((gc::Fixnum) - 1);
-  Integer_sp ifirst = gc::As<Integer_sp>(oCar(integers));
-  mpz_class x = clasp_to_mpz(ifirst);
-  for (auto cur : (List_sp)oCdr(integers)) {
-    Integer_sp icur = gc::As<Integer_sp>(oCar(cur));
-    mpz_class y = clasp_to_mpz(icur);
-    mpz_class x_and_y;
-    mpz_and(x_and_y.get_mpz_t(), x.get_mpz_t(), y.get_mpz_t());
-    mpz_class compx;
-    mpz_com(compx.get_mpz_t(), x.get_mpz_t());
-    mpz_class compy;
-    mpz_com(compy.get_mpz_t(), y.get_mpz_t());
-    mpz_class compx_and_compy;
-    mpz_and(compx_and_compy.get_mpz_t(), compx.get_mpz_t(), compy.get_mpz_t());
-    // calculate ex-nor
-    mpz_ior(x.get_mpz_t(), x_and_y.get_mpz_t(), compx_and_compy.get_mpz_t());
-  }
-  return (Values(Integer_O::create(x)));
+  else
+    return log_operation_rest(integers, logeqv_id);
 };
 
 CL_LAMBDA(a b);
 CL_DECLARE();
 CL_DOCSTRING("logandc1");
-CL_DEFUN T_mv cl__logandc1(Integer_sp a, Integer_sp b) {
-  mpz_class za = clasp_to_mpz(a);
-  mpz_class zb = clasp_to_mpz(b);
-  mpz_class cza;
-  mpz_com(cza.get_mpz_t(), za.get_mpz_t());
-  mpz_class r;
-  mpz_and(r.get_mpz_t(), cza.get_mpz_t(), zb.get_mpz_t());
-  return (Values(Integer_O::create(r)));
+CL_DEFUN Integer_sp cl__logandc1(Integer_sp a, Integer_sp b) {
+  return log_operation_2op(logandc1_id, a, b);
 };
 
 CL_LAMBDA(a b);
 CL_DECLARE();
 CL_DOCSTRING("logandc2");
-CL_DEFUN T_mv cl__logandc2(Integer_sp a, Integer_sp b) {
-  mpz_class za = clasp_to_mpz(a);
-  mpz_class zb = clasp_to_mpz(b);
-  mpz_class czb;
-  mpz_com(czb.get_mpz_t(), zb.get_mpz_t());
-  mpz_class r;
-  mpz_and(r.get_mpz_t(), za.get_mpz_t(), czb.get_mpz_t());
-  return (Values(Integer_O::create(r)));
+CL_DEFUN Integer_sp cl__logandc2(Integer_sp a, Integer_sp b) {
+  return log_operation_2op(logandc2_id, a, b);
 };
 
 CL_LAMBDA(a b);
 CL_DECLARE();
 CL_DOCSTRING("logorc1");
-CL_DEFUN T_mv cl__logorc1(Integer_sp a, Integer_sp b) {
-  mpz_class za = clasp_to_mpz(a);
-  mpz_class zb = clasp_to_mpz(b);
-  mpz_class cza;
-  mpz_com(cza.get_mpz_t(), za.get_mpz_t());
-  mpz_class r;
-  mpz_ior(r.get_mpz_t(), cza.get_mpz_t(), zb.get_mpz_t());
-  return (Values(Integer_O::create(r)));
+CL_DEFUN Integer_sp cl__logorc1(Integer_sp a, Integer_sp b) {
+  return log_operation_2op(logorc1_id, a, b);
 };
 
 CL_LAMBDA(a b);
 CL_DECLARE();
 CL_DOCSTRING("logorc2");
-CL_DEFUN T_mv cl__logorc2(Integer_sp a, Integer_sp b) {
-  mpz_class za = clasp_to_mpz(a);
-  mpz_class zb = clasp_to_mpz(b);
-  mpz_class czb;
-  mpz_com(czb.get_mpz_t(), zb.get_mpz_t());
-  mpz_class r;
-  mpz_ior(r.get_mpz_t(), za.get_mpz_t(), czb.get_mpz_t());
-  return (Values(Integer_O::create(r)));
+CL_DEFUN Integer_sp cl__logorc2(Integer_sp a, Integer_sp b) {
+  return log_operation_2op(logorc2_id, a, b);
 };
 
 CL_LAMBDA(a);
 CL_DECLARE();
 CL_DOCSTRING("lognot");
-CL_DEFUN T_mv cl__lognot(Integer_sp a) {
-  mpz_class za = clasp_to_mpz(a);
-  mpz_class cza;
-  mpz_com(cza.get_mpz_t(), za.get_mpz_t());
-  return (Values(Integer_O::create(cza)));
+CL_DEFUN Integer_sp cl__lognot(Integer_sp a) {
+  if (a.fixnump()) {
+    // in ecl return @logxor(2,x,ecl_make_fixnum(-1))
+    return clasp_make_fixnum(a.unsafe_fixnum() ^ -1);   
+  }
+  else {
+    mpz_class za = clasp_to_mpz(a);
+    mpz_class cza;
+    mpz_com(cza.get_mpz_t(), za.get_mpz_t());
+    return Integer_O::create(cza);
+  }
 };
 
 CL_LAMBDA(a b);
 CL_DECLARE();
 CL_DOCSTRING("lognand");
-CL_DEFUN T_mv cl__lognand(Integer_sp a, Integer_sp b) {
-  mpz_class za = clasp_to_mpz(a);
-  mpz_class zb = clasp_to_mpz(b);
-  mpz_class zand;
-  mpz_and(zand.get_mpz_t(), za.get_mpz_t(), zb.get_mpz_t());
-  mpz_class r;
-  mpz_com(r.get_mpz_t(), zand.get_mpz_t());
-  return (Values(Integer_O::create(r)));
+CL_DEFUN Integer_sp cl__lognand(Integer_sp a, Integer_sp b) {
+  return log_operation_2op(lognand_id, a, b);
 };
 
 CL_LAMBDA(a b);
 CL_DECLARE();
 CL_DOCSTRING("lognor");
-CL_DEFUN T_mv cl__lognor(Integer_sp a, Integer_sp b) {
-  mpz_class za = clasp_to_mpz(a);
-  mpz_class zb = clasp_to_mpz(b);
-  mpz_class zor;
-  mpz_ior(zor.get_mpz_t(), za.get_mpz_t(), zb.get_mpz_t());
-  mpz_class r;
-  mpz_com(r.get_mpz_t(), zor.get_mpz_t());
-  return (Values(Integer_O::create(r)));
+CL_DEFUN Integer_sp cl__lognor(Integer_sp a, Integer_sp b) {
+  return log_operation_2op(lognor_id, a, b);
 };
 
 CL_NAME("TWO-ARG-+-FIXNUM-FIXNUM");
@@ -1507,7 +1636,10 @@ SYMBOL_EXPORT_SC_(ClPkg, _PLUS_);
 SYMBOL_EXPORT_SC_(ClPkg, _TIMES_);
 SYMBOL_EXPORT_SC_(ClPkg, _MINUS_);
 SYMBOL_EXPORT_SC_(ClPkg, _DIVIDE_);
-
+SYMBOL_EXPORT_SC_(CorePkg, logand_2op);
+SYMBOL_EXPORT_SC_(CorePkg, logxor_2op);
+SYMBOL_EXPORT_SC_(CorePkg, logior_2op);
+SYMBOL_EXPORT_SC_(CorePkg, logeqv_2op);
 
 
 Number_sp Number_O::create(double val) {
@@ -2673,7 +2805,6 @@ clasp_expt(Number_sp x, Number_sp y) {
     z = clasp_expt(x, z);
     z = clasp_divide(clasp_make_fixnum(1), z);
   } else {
-    CLASP_MATHERR_CLEAR;
     z = clasp_make_fixnum(1);
     Integer_sp iy = gc::As<Integer_sp>(y);
     do {
@@ -2685,7 +2816,6 @@ clasp_expt(Number_sp x, Number_sp y) {
         break;
       x = clasp_times(x, x);
     } while (1);
-    CLASP_MATHERR_TEST;
   }
   return z;
 }
@@ -2779,7 +2909,6 @@ clasp_atan2_LongFloat(LongFloat y, LongFloat x) {
 
 Number_sp clasp_atan2(Number_sp y, Number_sp x) {
   Number_sp output;
-  CLASP_MATHERR_CLEAR;
   {
 #ifdef CLASP_LONG_FLOAT
     NumberType tx = clasp_t_of(x);
@@ -2811,7 +2940,6 @@ Number_sp clasp_atan2(Number_sp y, Number_sp x) {
     }
 #endif
   }
-  CLASP_MATHERR_TEST;
   return output;
 }
 

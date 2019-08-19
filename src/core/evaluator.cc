@@ -1692,12 +1692,6 @@ T_mv sp_tagbody(List_sp args, T_sp env) {
     if ((tagOrForm).consp()) {
       try {
         eval::evaluate(tagOrForm, tagbodyEnv);
-      } catch (LexicalGo &go) {
-        if (go.getHandle() != handle) {
-          throw go;
-        }
-        int index = go.index();
-        ip = tagbodyEnv->codePos(index);
       } catch (DynamicGo &dgo) {
         if (dgo.getHandle() != handle) {
           throw dgo;

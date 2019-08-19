@@ -56,21 +56,27 @@ cl_index clasp_print_base(void) {
 cl_index clasp_print_level(void) {
   T_sp object = cl::_sym_STARprint_levelSTAR->symbolValue();
   gctools::Fixnum level;
+  // See note about fixnumness in clasp_print_length.
   if (object.nilp()) {
     level = MOST_POSITIVE_FIXNUM;
   } else if (core__fixnump(object)) {
     level = unbox_fixnum(gc::As<Fixnum_sp>(object));
     if (level < 0) {
     ERROR:
-      cl::_sym_STARprint_levelSTAR->setf_symbolValue(_Nil<T_O>());
-      SIMPLE_ERROR(BF("The value of *PRINT-LEVEL*\n %s\n"
-                      "is not of the expected type (or NULL (INTEGER 0 %s))")
-                   % _rep_(object) % MOST_POSITIVE_FIXNUM);
+      {
+        // Bind *print-level* to something valid so that we don't get
+        // recursive errors while printing error messages.
+        DynamicScopeManager scope(cl::_sym_STARprint_levelSTAR, _Nil<T_O>());
+        SIMPLE_ERROR(BF("The value of *PRINT-LEVEL*\n %s\n"
+                        "is not of the expected type (OR NULL (INTEGER 0))")
+                     % _rep_(object));
+      }
     }
   } else if (core__bignump(object)) {
-    goto ERROR;
-  } else {
+    // FIXME?: We could check if it's negative here to be really scrupulous.
     level = MOST_POSITIVE_FIXNUM;
+  } else {
+    goto ERROR;
   }
   return level;
 }
@@ -81,21 +87,26 @@ cl_index clasp_print_level(void) {
 cl_index clasp_print_length(void) {
   T_sp object = cl::_sym_STARprint_lengthSTAR->symbolValue();
   gctools::Fixnum length;
+  // We pretty much assume we'll never have a sequence with a bignum count of elements.
+  // This is standardly true with vectors, but lists could hypothetically have any
+  // number of elements. Hypothetically. Still, keep this in mind.
   if (object.nilp()) {
     length = MOST_POSITIVE_FIXNUM;
   } else if (core__fixnump(object)) {
     length = unbox_fixnum(gc::As<Fixnum_sp>(object));
     if (length < 0) {
     ERROR:
-      cl::_sym_STARprint_lengthSTAR->setf_symbolValue(_Nil<T_O>());
-      SIMPLE_ERROR(BF("The value of *PRINT-LENGTH*\n %s\n"
-                      "is not of the expected type (or NULL (INTEGER 0 %s))")
-                   % _rep_(object) % MOST_POSITIVE_FIXNUM);
+      {
+        DynamicScopeManager scope(cl::_sym_STARprint_lengthSTAR, _Nil<T_O>());
+        SIMPLE_ERROR(BF("The value of *PRINT-LENGTH*\n %s\n"
+                        "is not of the expected type (OR NULL (INTEGER 0))")
+                     % _rep_(object));
+      }
     }
   } else if (core__bignump(object)) {
-    goto ERROR;
-  } else {
     length = MOST_POSITIVE_FIXNUM;
+  } else {
+    goto ERROR;
   }
   return length;
 }
