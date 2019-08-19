@@ -106,13 +106,14 @@ class SourcePosInfo_O : public General_O {
   bool fieldsp() const { return true; };
   void fields(Record_sp node);
 public:                                                                                    // ctor/dtor for classes with shared virtual base
-  explicit SourcePosInfo_O() : _FileId(UNDEF_UINT), _Filepos(0), _Lineno(0), _Column(0), _InlinedAt(_Nil<T_O>()){}; //, _Filepos(0) {};
+  explicit SourcePosInfo_O() : _FileId(UNDEF_UINT), _Filepos(0), _Lineno(0), _Column(0), _FunctionScope(_Nil<T_O>()), _InlinedAt(_Nil<T_O>()){}; //, _Filepos(0) {};
 public:                                                                                    // instance variables here
   SourcePosInfo_O(uint spf, size_t filepos, uint spln, uint spc)                           // , Function_sp expander=_Nil<Function_O>())
       : _FileId(spf),
         _Filepos(filepos),
         _Lineno(spln),
         _Column(spc), //, _Expander(expander) {}
+        _FunctionScope(_Nil<T_O>()), 
         _InlinedAt(_Nil<T_O>())
         {};
 
@@ -128,12 +129,13 @@ public:
   size_t filepos() const { return this->_Filepos; };
   uint lineno() const { return this->_Lineno; };
   int column() const { return this->_Column; };
-  bool equalp(T_sp obj) const;
+//  bool equalp(T_sp obj) const;
 public:
   uint _FileId;
   size_t _Filepos;
   uint _Lineno;
   uint _Column;
+  T_sp _FunctionScope;
   T_sp _InlinedAt;
   //	Function_sp 	_Expander;
   CL_DEFMETHOD size_t source_file_pos_filepos() const { return this->_Filepos;}
@@ -142,6 +144,8 @@ public:
   SourcePosInfo_sp source_pos_info_copy() const;
   T_sp setf_source_pos_info_inlined_at(T_sp inlinedAt);
   T_sp source_pos_info_inlined_at() const;
+  T_sp setf_source_pos_info_function_scope(T_sp function_scope);
+  T_sp source_pos_info_function_scope() const;
 };
 inline core::Fixnum safe_fileId(T_sp spi) {
   if (spi.nilp())

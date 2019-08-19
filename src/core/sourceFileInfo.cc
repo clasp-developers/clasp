@@ -355,6 +355,7 @@ string SourcePosInfo_O::__repr__() const {
   return ss.str();
 }
 
+#if 0
 bool SourcePosInfo_O::equalp(T_sp other) const {
   if (this == &*other) { return true; };
   if (!gc::IsA<SourcePosInfo_sp>(other)) return false;
@@ -365,6 +366,7 @@ bool SourcePosInfo_O::equalp(T_sp other) const {
   if (this->_Column != spi_other->_Column) return false;
   return true;
 }
+#endif
 
 SYMBOL_EXPORT_SC_(CorePkg, lookupFileScope);
 
