@@ -42,7 +42,7 @@ namespace core {
       }
       return 0.0;
     }
-    static value_type from_object(T_sp obj) { return clasp_to_double(gc::As_unsafe<DoubleFloat_sp>(obj));};
+    static value_type from_object(T_sp obj) { return clasp_to_double(obj);};
     static T_sp to_object(const value_type& v) { return core::clasp_make_double_float(v); };
   public:
   SimpleVector_double_O(size_t length, value_type initialElement=value_type(),
