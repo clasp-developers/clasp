@@ -314,6 +314,17 @@ CL_DEFMETHOD T_sp SourcePosInfo_O::setf_source_pos_info_inlined_at(T_sp inlinedA
 
 
 
+CL_DEFMETHOD T_sp SourcePosInfo_O::source_pos_info_function_scope() const {
+  return this->_FunctionScope;
+}
+
+CL_DEFMETHOD T_sp SourcePosInfo_O::setf_source_pos_info_function_scope(T_sp function_scope) {
+  this->_FunctionScope = function_scope;
+  return function_scope;
+}
+
+
+
 void SourcePosInfo_O::fields(Record_sp node)
 {
   node->field(INTERN_(kw,fp),this->_Filepos);
