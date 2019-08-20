@@ -271,6 +271,19 @@ void handle_fpe(int signo, siginfo_t* info, void* context) {
   }
 }
 
+void handle_segv(int signo, siginfo_t* info, void* context) {
+  (void)context; // unused
+  core::eval::funcall(ext::_sym_segmentation_violation,
+                      core::Integer_O::create((uintptr_t)(info->si_addr)));
+}
+
+void handle_bus(int signo, siginfo_t* info, void* context) {
+  (void)context;
+  core::eval::funcall(ext::_sym_bus_error,
+                      core::Integer_O::create((uintptr_t)(info->si_addr)));
+}
+  
+
 void fatal_error_handler(void *user_data, const std::string &reason, bool gen_crash_diag) {
   printf("%s:%d Hit a fatal error in llvm: %s\n", __FILE__, __LINE__, reason.c_str());
   printf("Clasp is sleeping for 1000 seconds in case you want to connect in with the debugger - after which it will abort().\n");
@@ -302,7 +315,7 @@ void initialize_signals(int clasp_signal) {
 #define INIT_SIGNALI(sig,flags,handler)        \
   new_action.sa_sigaction = handler;           \
   sigemptyset (&new_action.sa_mask);           \
-  new_action.sa_flags = flags;                 \
+  new_action.sa_flags = SA_SIGINFO | (flags);  \
   if (sigaction (sig, &new_action, NULL) != 0) \
     printf("failed to register " #sig " signal-handler with kernel error: %s\n", strerror(errno));
 
@@ -321,8 +334,8 @@ void initialize_signals(int clasp_signal) {
   INIT_SIGNAL(SIGINFO, (SA_NODEFER | SA_RESTART), handle_or_queue_signal);
 #endif
   INIT_SIGNAL(SIGABRT, (SA_NODEFER | SA_RESTART), handle_or_queue_signal);
-  INIT_SIGNAL(SIGSEGV, (SA_NODEFER | SA_RESTART | SA_ONSTACK), handle_signal_now);
-  INIT_SIGNALI(SIGFPE, (SA_NODEFER | SA_RESTART | SA_SIGINFO), handle_fpe);
+  INIT_SIGNALI(SIGSEGV, (SA_NODEFER | SA_RESTART | SA_ONSTACK), handle_segv);
+  INIT_SIGNALI(SIGFPE, (SA_NODEFER | SA_RESTART), handle_fpe);
   INIT_SIGNAL(SIGBUS, (SA_NODEFER | SA_RESTART), handle_signal_now);
   INIT_SIGNAL(SIGILL, (SA_NODEFER | SA_RESTART), handle_signal_now);
   // FIXME: Move?
