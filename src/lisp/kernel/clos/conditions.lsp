@@ -482,13 +482,17 @@ returns with NIL."
 (define-condition storage-condition (serious-condition) ())
 
 (define-condition ext:segmentation-violation (storage-condition)
-  ()
-  (:REPORT "Segmentation fault. Attempted to access a resticted memory area.
+  ((address :initarg :address :accessor memory-condition-address))
+  (:REPORT
+   (lambda (condition stream)
+     (format stream "Segmentation fault. Attempted to access resticted memory address #x~x.
 
-This is due either to a problem in foreign code (e.g., C++), or a bug in Clasp itself."))
+This is due either to a problem in foreign code (e.g., C++), or a bug in Clasp itself."
+             (memory-condition-address condition)))))
 
 ;; Called by signal handlers in gctools/interrupt.cc.
-(defun ext:segmentation-violation () (error 'ext:segmentation-violation))
+(defun ext:segmentation-violation (address)
+  (error 'ext:segmentation-violation :address address))
 
 (define-condition ext:stack-overflow (storage-condition)
   ((size :initarg :size :initform 0 :reader ext:stack-overflow-size)
@@ -518,11 +522,14 @@ No information available on cause. This may be a bug in Clasp."))
 (defun ext:illegal-instruction () (error 'ext:illegal-instruction))
 
 (define-condition ext:bus-error (error)
-  ()
-  (:report "Bus error. Attempted to access invalid memory.
+  ((address :initarg :address :accessor memory-condition-address))
+  (:report
+   (lambda (condition stream)
+     (format stream "Bus error. Attempted to access invalid memory address #x~x.
 
-This is due to either a problem in foreign code (e.g., C++), or a bug in Clasp itself."))
-(defun ext:bus-error () (error 'ext:bus-error))
+This is due to either a problem in foreign code (e.g., C++), or a bug in Clasp itself."
+             (memory-condition-address condition)))))
+(defun ext:bus-error (address) (error 'ext:bus-error :address address))
 
 (define-condition ext:unix-signal-received ()
   ((code :type fixnum
