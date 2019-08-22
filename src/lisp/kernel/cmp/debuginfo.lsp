@@ -237,49 +237,48 @@
 (defmacro with-dbg-lexical-block ((&key (lineno (core:source-pos-info-lineno core:*current-source-pos-info*))) &body body)
   `(do-dbg-lexical-block (lambda () ,@body) ,lineno))
 
-(defun dbg-clear-irbuilder-source-location-impl (irbuilder)
+(defun dbg-clear-irbuilder-source-location (irbuilder)
   (llvm-sys:clear-current-debug-location irbuilder))
 
 (defparameter *trap-zero-lineno* nil)
-(defun dbg-set-irbuilder-source-location-impl (irbuilder lineno column &optional (scope *dbg-current-scope*))
-  (unless scope (error "scope must not be NIL"))
-  (when *trap-zero-lineno*
-    (when (= lineno 0)
-      (format *error-output* "In dbg-set-irbuilder-source-location-impl lineno was zero! Setting to 666666~%")
-      (setf lineno 666666)))
+(defun get-dilocation (spi &optional (scope *dbg-current-scope*))
+  (get-dilocation-from-parts
+   (core:source-pos-info-lineno spi)
+   (1+ (core:source-pos-info-column spi)) ; FIXME: why 1+?
+   scope
+   (core:source-pos-info-inlined-at spi)))
+(defun get-dilocation-from-parts (lineno col &optional (scope *dbg-current-scope*) inlined-at)
+  (unless scope (error "In debuginfo, scope must not be NIL"))
+  (when (and *trap-zero-lineno* (zerop lineno))
+    (format *error-output* "In get-dilocation lineno was zero! Setting to ~d~%"
+            (setf lineno 666666)))
+  (llvm-sys:get-dilocation *llvm-context* lineno col scope
+                           (if inlined-at
+                               (get-dilocation inlined-at scope)
+                               nil)))
+
+(defun dbg-set-irbuilder-source-location (irbuilder spi &optional (scope *dbg-current-scope*))
   (when *dbg-generate-dwarf*
     (llvm-sys:set-current-debug-location
      irbuilder
-     (llvm-sys:get-dilocation *llvm-context* lineno column scope))))
+     (get-dilocation spi scope))))
 
 (defun dbg-set-current-source-pos (form)
   (when *dbg-generate-dwarf*
     (setq *dbg-set-current-source-pos* t)
     (when *current-source-pos-info*
-    (cmp-log "dbg-set-current-source-pos on form: %s%N" form)
-    (unless *dbg-current-scope*
-      (error "*dbg-current-scope* must not be NIL"))
-    (dbg-set-irbuilder-source-location-impl
-     *irbuilder* (core:source-pos-info-lineno *current-source-pos-info*) 0 *dbg-current-scope*))))
+      (cmp-log "dbg-set-current-source-pos on form: %s%N" form)
+      (unless *dbg-current-scope*
+        (error "*dbg-current-scope* must not be NIL"))
+      (dbg-set-irbuilder-source-location
+       *irbuilder* *current-source-pos-info* *dbg-current-scope*))))
 
 (defun dbg-set-source-pos (source-pos)
   (when *dbg-generate-dwarf*
-    (multiple-value-bind (file-handle file-pos lineno column)
-        (core:source-pos-info-unpack source-pos)
+    (let ((file-handle (core:source-pos-info-file-handle source-pos)))
       (when file-handle
         (let ((scope (gethash file-handle *llvm-metadata*)))
-          (dbg-set-irbuilder-source-location-impl *irbuilder* lineno column scope))))))
-
-(defun dbg-set-current-debug-location (filename pathname lineno column)
-  (when *dbg-generate-dwarf*
-    (let* ((scope-name (bformat nil "%s>>%s" pathname filename))
-	   (scope (gethash scope-name *llvm-metadata*)))
-      #+(or)
-      (unless scope
-        (setq scope (mdnode-file-descriptor filename pathname))
-        (core::hash-table-setf-gethash *llvm-metadata* scope-name scope))
-      (dbg-set-irbuilder-source-location-impl *irbuilder* lineno column scope))))
-
+          (dbg-set-irbuilder-source-location *irbuilder* source-pos scope))))))
 
 (defun dbg-create-parameter-variable (&key (scope *dbg-current-scope*)
                                         name
@@ -310,12 +309,9 @@
   (when *dbg-generate-dwarf*
     (if origin
         (let ((source-pos-info (if (consp origin) (car origin) origin)))
-          (dbg-set-irbuilder-source-location-impl
-           *irbuilder*
-           (core:source-pos-info-lineno source-pos-info)
-           (1+ (core:source-pos-info-column source-pos-info))
-           function-metadata))
-        (dbg-clear-irbuilder-source-location-impl *irbuilder*))))
+          (dbg-set-irbuilder-source-location
+           *irbuilder* source-pos-info function-metadata))
+        (dbg-clear-irbuilder-source-location *irbuilder*))))
 
 
 (defun do-debug-info-source-position (enabledp origin body-lambda)

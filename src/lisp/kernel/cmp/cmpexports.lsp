@@ -253,8 +253,6 @@
             with-new-function
             with-dbg-function
             with-dbg-lexical-block
-            dbg-clear-irbuilder-source-location-impl
-            dbg-set-irbuilder-source-location-impl
             dbg-set-current-source-pos
             c++-field-offset
             c++-field-index
