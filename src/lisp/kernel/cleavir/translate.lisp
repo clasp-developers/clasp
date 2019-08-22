@@ -11,16 +11,6 @@ when this is t a lot of graphs will be generated.")
 ;;; Set the source-position for an instruction
 ;;;
 
-(defun get-or-register-file-metadata (fileid)
-  (let ((file-metadata (gethash fileid *llvm-metadata*)))
-    (unless file-metadata
-      (let* ((sfi (core:file-scope fileid))
-             (pathname (core:file-scope-pathname sfi))
-             (metadata (cmp:make-file-metadata pathname)))
-        (setf file-metadata metadata)
-        (setf (gethash fileid *llvm-metadata*) file-metadata)))
-    file-metadata))
-
 ;;; In CSTs and stuff the origin is (spi . spi). Use the head.
 (defun origin-spi (origin)
   (if (consp origin) (car origin) origin))
@@ -777,7 +767,6 @@ This works like compile-lambda-function in bclasp."
   (let* (function lambda-name
          ordered-raw-constants-list constants-table startup-fn shutdown-fn
          (cleavir-generate-ast:*compiler* 'cl:compile)
-         (*llvm-metadata* (make-hash-table :test 'eql))
          (dynenv (make-dynenv env))
          #+cst
          (cst (cst:cst-from-expression form))
@@ -879,7 +868,6 @@ This works like compile-lambda-function in bclasp."
 (defun cclasp-loop-read-and-compile-file-forms (source-sin environment)
   (let ((eof-value (gensym))
         (eclector.reader:*client* *cst-client*)
-        (*llvm-metadata* (make-hash-table :test 'eql))
         (cleavir-generate-ast:*compiler* 'cl:compile-file)
         (core:*use-cleavir-compiler* t))
     (loop
