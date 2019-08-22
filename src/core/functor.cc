@@ -36,6 +36,7 @@ THE SOFTWARE.
 #include <clasp/core/primitives.h>
 #include <clasp/core/instance.h>
 #include <clasp/core/compiler.h>
+#include <clasp/core/lispStream.h>
 #include <clasp/core/sourceFileInfo.h>
 #include <clasp/core/activationFrame.h>
 #include <clasp/core/lambdaListHandler.h>
@@ -102,16 +103,16 @@ void validateFunctionDescription(const char* filename, size_t lineno, Function_s
 extern "C" void dumpFunctionDescription(void* vfdesc)
 {
   core::FunctionDescription* fdesc = (core::FunctionDescription*)vfdesc;
-  printf("FunctionDescription @%p\n", fdesc);
+  core::write_bf_stream(BF("FunctionDescription @%p\n") % (void*)fdesc);
   core::Cons_sp sourcePathname_functionName((gctools::Tagged)fdesc->gcrootsInModule->getTaggedIndex(LITERAL_TAG_CHAR,fdesc->sourcePathname_functionName_Index));
   core::Cons_sp lambdaList_docstring((gctools::Tagged)fdesc->gcrootsInModule->getTaggedIndex(LITERAL_TAG_CHAR,fdesc->lambdaList_docstring_Index));
-  printf("sourcePathname CAR[%lu] = %s\n", fdesc->sourcePathname_functionName_Index, _rep_(CONS_CAR(sourcePathname_functionName)).c_str());
-  printf("functionName CDR[%lu] = %s\n", fdesc->sourcePathname_functionName_Index, _rep_(CONS_CDR(sourcePathname_functionName)).c_str());
-  printf("lambdaList CAR[%lu] = %s\n", fdesc->lambdaList_docstring_Index, _rep_(CONS_CAR(lambdaList_docstring)).c_str());
-  printf("docstring CDR[%lu] = %s\n", fdesc->lambdaList_docstring_Index, _rep_(CONS_CDR(lambdaList_docstring)).c_str());
-  printf("lineno = %d\n", fdesc->lineno);
-  printf("column = %d\n", fdesc->column);
-  printf("filepos = %d\n", fdesc->filepos);
+  core::write_bf_stream(BF("sourcePathname CAR[%lu] = %s\n") % fdesc->sourcePathname_functionName_Index % _rep_(CONS_CAR(sourcePathname_functionName)));
+  core::write_bf_stream(BF("functionName CDR[%lu] = %s\n") % fdesc->sourcePathname_functionName_Index % _rep_(CONS_CDR(sourcePathname_functionName)));
+  core::write_bf_stream(BF("lambdaList CAR[%lu] = %s\n") % fdesc->lambdaList_docstring_Index % _rep_(CONS_CAR(lambdaList_docstring)));
+  core::write_bf_stream(BF("docstring CDR[%lu] = %s\n") % fdesc->lambdaList_docstring_Index % _rep_(CONS_CDR(lambdaList_docstring)));
+  core::write_bf_stream(BF("lineno = %d\n") % fdesc->lineno);
+  core::write_bf_stream(BF("column = %d\n") % fdesc->column);
+  core::write_bf_stream(BF("filepos = %d\n") % fdesc->filepos);
 };
 
 namespace core {
