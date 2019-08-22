@@ -141,22 +141,22 @@
 
 (defun make-function-metadata (&key file-metadata linkage-name function-type lineno)
   (llvm-sys:create-function
-                       *the-module-dibuilder*   ; 0 DIBuilder
-                       file-metadata ; 1 function scope
-                       linkage-name            ; 2 function name
-                       linkage-name    ; 3 mangled function name
-                       file-metadata ; 4 file where function is defined
-                       lineno            ; 5 lineno
-                       (dbg-create-function-type file-metadata function-type) ; 6 function-type
-                       nil ; 7 isLocalToUnit - true if this function is not externally visible
-                       t ; 8 isDefinition - true if this is a function definition
-                       lineno ; 9 scopeLine - set to the beginning of the scope this starts
-                       (core:enum-logical-or llvm-sys:diflags-enum '(llvm-sys:diflags-zero)) ; 10 flags
-                       nil ; 11 isOptimized - true if optimization is on
-                       nil ; 12 TParam = nullptr
-                       nil ; 13 Decl = nullptr
-                       nil ; 14 ThrownTypes = nullptr
-                       ))
+   *the-module-dibuilder*   ; 0 DIBuilder
+   file-metadata ; 1 function scope
+   linkage-name            ; 2 function name
+   linkage-name    ; 3 mangled function name
+   file-metadata ; 4 file where function is defined
+   lineno            ; 5 lineno
+   (dbg-create-function-type file-metadata function-type) ; 6 function-type
+   nil ; 7 isLocalToUnit - true if this function is not externally visible
+   t ; 8 isDefinition - true if this is a function definition
+   lineno ; 9 scopeLine - set to the beginning of the scope this starts
+   (core:enum-logical-or llvm-sys:diflags-enum '(llvm-sys:diflags-zero)) ; 10 flags
+   nil ; 11 isOptimized - true if optimization is on
+   nil ; 12 TParam = nullptr
+   nil ; 13 Decl = nullptr
+   nil ; 14 ThrownTypes = nullptr
+   ))
 
 (defvar *with-dbg-function* nil)
 ;; Set to NIL in with-dbg-function and T in dbg-set-current-source-pos
@@ -165,10 +165,11 @@
   (let ((*with-dbg-function* t)
         (*dbg-set-current-source-pos* nil))
     (if (and *dbg-generate-dwarf* *the-module-dibuilder*)
-        (let* ((*dbg-current-function-metadata* (make-function-metadata :file-metadata *dbg-current-file*
-                                        :linkage-name linkage-name
-                                        :function-type function-type
-                                                                        :lineno lineno))
+        (let* ((*dbg-current-function-metadata*
+                 (make-function-metadata :file-metadata *dbg-current-file*
+                                         :linkage-name linkage-name
+                                         :function-type function-type
+                                         :lineno lineno))
                (*dbg-current-scope* *dbg-current-function-metadata*)
                (*dbg-current-function-lineno* lineno))
           (llvm-sys:set-subprogram function *dbg-current-function-metadata*)
