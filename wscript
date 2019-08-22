@@ -797,7 +797,7 @@ def configure(cfg):
     else:
         cfg.define("CST",1)
         if ("CST" not in cfg.env.DEBUG_OPTIONS):
-            cfg.env.DEBUG_OPTIONS.append(["CST"])
+            cfg.env.DEBUG_OPTIONS.append("CST")
             
     if ("DISABLE_DEBUG_CCLASP_LISP" in cfg.env.DEBUG_OPTIONS):
         pass
