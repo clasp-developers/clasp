@@ -248,7 +248,9 @@
       (format *error-output* "In dbg-set-irbuilder-source-location-impl lineno was zero! Setting to 666666~%")
       (setf lineno 666666)))
   (when *dbg-generate-dwarf*
-    (llvm-sys:set-current-debug-location-to-line-column-scope irbuilder lineno column scope)))
+    (llvm-sys:set-current-debug-location
+     irbuilder
+     (llvm-sys:get-dilocation *llvm-context* lineno column scope))))
 
 (defun dbg-set-current-source-pos (form)
   (when *dbg-generate-dwarf*
