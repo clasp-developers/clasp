@@ -33,6 +33,10 @@
 (defvar *dbg-current-function-lineno*)
 (defvar *dbg-current-scope* nil
   "Stores the current enclosing lexical scope for debugging info")
+;;; Unlike other DI structures, each call to create-function seems to result
+;;; in a distinct DISubprogram - not our intention. So we hash on the scope.
+;;; ATM function scopes are lists so an EQUAL hash table is fine here.
+(defvar *dbg-function-metadata-cache*)
 
 (defun dbg-create-function-type (difile function-type)
   "Currently create a bogus function type"
@@ -75,6 +79,7 @@
            (let* ((,path (pathname ,source-pathname))
                   (,file *dbg-current-file*)
                   (,dir-name (directory-namestring ,path))
+                  (*dbg-function-metadata-cache* (make-hash-table :test #'equal))
                   (*dbg-compile-unit* (llvm-sys:create-compile-unit
                                        *the-module-dibuilder* ; dibuilder
                                        llvm-sys:dw-lang-c-plus-plus ; 1 llvm-sys:dw-lang-common-lisp
@@ -205,28 +210,39 @@
 (defun dbg-clear-irbuilder-source-location (irbuilder)
   (llvm-sys:clear-current-debug-location irbuilder))
 
-(defparameter *trap-zero-lineno* nil)
-(defun get-dilocation (spi &optional (scope *dbg-current-scope*))
-  (get-dilocation-from-parts
-   (core:source-pos-info-lineno spi)
-   (1+ (core:source-pos-info-column spi)) ; FIXME: why 1+?
-   scope
-   (core:source-pos-info-inlined-at spi)))
-(defun get-dilocation-from-parts (lineno col &optional (scope *dbg-current-scope*) inlined-at)
-  (unless scope (error "In debuginfo, scope must not be NIL"))
-  (when (and *trap-zero-lineno* (zerop lineno))
-    (format *error-output* "In get-dilocation lineno was zero! Setting to ~d~%"
-            (setf lineno 666666)))
-  (llvm-sys:get-dilocation *llvm-context* lineno col scope
-                           (if inlined-at
-                               (get-dilocation inlined-at scope)
-                               nil)))
+(defun cached-file-metadata (file-handle)
+  ;; n.b. despite the name we don't cache, as llvm seems to handle it
+  (make-file-metadata (file-scope-pathname (file-scope file-handle))))
 
-(defun dbg-set-irbuilder-source-location (irbuilder spi &optional (scope *dbg-current-scope*))
+(defun cached-function-scope (function-scope-info)
+  ;; See production in cleavir/inline-prep.lisp
+  (or (gethash function-scope-info *dbg-function-metadata-cache*)
+      (setf (gethash function-scope-info *dbg-function-metadata-cache*)
+            (destructuring-bind (function-name lineno file-handle)
+                function-scope-info
+              (make-function-metadata
+               :linkage-name function-name :lineno lineno
+               :function-type %fn-prototype%
+               :file-metadata (cached-file-metadata file-handle))))))
+
+(defparameter *trap-zero-lineno* nil)
+(defun get-dilocation (spi)
+  (let ((lineno (core:source-pos-info-lineno spi))
+        (col (core:source-pos-info-column spi))
+        (inlined-at (core:source-pos-info-inlined-at spi)))
+    (when (and *trap-zero-lineno* (zerop lineno))
+      (format *error-output* "In get-dilocation lineno was zero! Setting to ~d~%"
+              (setf lineno 666666)))
+    (if inlined-at
+        (llvm-sys:get-dilocation
+         *llvm-context* lineno col
+         (cached-function-scope (core:source-pos-info-function-scope spi))
+         (get-dilocation inlined-at))
+        (llvm-sys:get-dilocation *llvm-context* lineno col *dbg-current-scope*))))
+
+(defun dbg-set-irbuilder-source-location (irbuilder spi)
   (when *dbg-generate-dwarf*
-    (llvm-sys:set-current-debug-location
-     irbuilder
-     (get-dilocation spi scope))))
+    (llvm-sys:set-current-debug-location irbuilder (get-dilocation spi))))
 
 (defun dbg-set-current-source-pos (form)
   (when *dbg-generate-dwarf*
@@ -236,7 +252,7 @@
       (unless *dbg-current-scope*
         (error "*dbg-current-scope* must not be NIL"))
       (dbg-set-irbuilder-source-location
-       *irbuilder* *current-source-pos-info* *dbg-current-scope*))))
+       *irbuilder* *current-source-pos-info*))))
 
 (defun dbg-create-parameter-variable (&key (scope *dbg-current-scope*)
                                         name
@@ -258,9 +274,9 @@
 (defun set-instruction-source-position (origin function-metadata)
   (when *dbg-generate-dwarf*
     (if origin
-        (let ((source-pos-info (if (consp origin) (car origin) origin)))
-          (dbg-set-irbuilder-source-location
-           *irbuilder* source-pos-info function-metadata))
+        (let ((source-pos-info (if (consp origin) (car origin) origin))
+              (*dbg-current-scope* function-metadata))
+          (dbg-set-irbuilder-source-location *irbuilder* source-pos-info))
         (dbg-clear-irbuilder-source-location *irbuilder*))))
 
 (defun do-debug-info-source-position (origin body-lambda)
