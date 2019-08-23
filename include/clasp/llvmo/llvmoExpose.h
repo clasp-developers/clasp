@@ -2317,7 +2317,7 @@ public:
   void ClearCurrentDebugLocation();
 
   /*! Set the current debug location for generated code */
-  void SetCurrentDebugLocation(DebugLoc_sp loc);
+  void SetCurrentDebugLocation(DILocation_sp diloc);
   /*! Set the current debug location by building a DebugLoc on the fly */
   void SetCurrentDebugLocationToLineColumnScope(int line, int col, DINode_sp scope);
 CL_LISPIFY_NAME("CurrentDebugLocation");

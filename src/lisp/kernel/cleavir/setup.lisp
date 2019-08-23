@@ -4,8 +4,6 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (setq *echo-repl-read* t))
 
-(defvar *llvm-metadata*)
-
 (defvar *debug-cleavir* nil
   "controls if graphs are generated as forms are being compiled.")
 (defvar *debug-cleavir-literals* nil

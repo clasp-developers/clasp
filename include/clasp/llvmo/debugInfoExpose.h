@@ -67,6 +67,48 @@ THE SOFTWARE.
 #include <clasp/llvmo/llvmoExpose.h>
 
 namespace llvmo {
+FORWARD(DILocation);
+class DILocation_O : public MDNode_O {
+  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::DILocation, DILocation_O, "DILocation", MDNode_O );
+  typedef llvm::DILocation ExternalType;
+  typedef ExternalType* PointerToExternalType;
+public:
+  typedef llvm::DILocation OtherType;
+public:
+  static DILocation_sp make(llvm::LLVMContext&, unsigned int, unsigned int, DINode_sp, core::T_sp);
+  virtual operator llvm::DILocation *() { return reinterpret_cast<llvm::DILocation*>(this->_ptr); };
+  virtual operator llvm::MDNode *() { return reinterpret_cast<llvm::MDNode*>(this->_ptr); };
+  virtual operator llvm::Metadata *() { return reinterpret_cast<llvm::Metadata*>(this->_ptr); }
+  PointerToExternalType wrappedPtr() const { return static_cast<PointerToExternalType>(this->_ptr); };
+  void set_wrapped(PointerToExternalType ptr) {
+    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    this->_ptr = ptr;
+  }
+ 
+  //	virtual llvm::DILocation* operator ->() const { return (llvm::DILocation*)(this);};
+ DILocation_O() : Base() {};
+  virtual ~DILocation_O(){};
+}; // DILocation_O
+}; // llvmo
+TRANSLATE(llvmo::DILocation_O);
+
+namespace translate {
+  template <>
+    struct from_object<llvm::DILocation*,std::true_type> {
+    typedef llvm::DILocation* DeclareType;
+    DeclareType _v;
+  from_object(core::T_sp o) : _v(o.nilp() ? NULL : gc::As<llvmo::DILocation_sp>(o)->wrappedPtr()) {};
+  };
+  template <>
+    struct to_object<llvm::DILocation*> {
+    static core::T_sp convert(const llvm::DILocation* ptr) {
+      return (core::RP_Create_wrapped<llvmo::DILocation_O, llvm::DILocation*>(const_cast<llvm::DILocation*>(ptr)));
+    };
+  };
+};
+
+
+namespace llvmo {
 FORWARD(DINode);
 class DINode_O : public MDNode_O {
   LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::DINode, DINode_O, "DINode", MDNode_O );
@@ -77,6 +119,7 @@ public:
 public:
   virtual operator llvm::DINode *() { return reinterpret_cast<llvm::DINode*>(this->_ptr); };
   virtual operator llvm::MDNode *() { return reinterpret_cast<llvm::MDNode*>(this->_ptr); };
+  virtual operator llvm::Metadata *() { return reinterpret_cast<llvm::Metadata*>(this->_ptr); }
   PointerToExternalType wrappedPtr() const { return static_cast<PointerToExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
@@ -117,6 +160,7 @@ public:
 public:
   virtual operator llvm::DIExpression *() { return reinterpret_cast<llvm::DIExpression*>(this->_ptr); };
   virtual operator llvm::MDNode *() { return reinterpret_cast<llvm::MDNode*>(this->_ptr); };
+  virtual operator llvm::Metadata *() { return reinterpret_cast<llvm::Metadata*>(this->_ptr); }
   PointerToExternalType wrappedPtr() const { return static_cast<PointerToExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
     /*        if (this->_ptr != NULL ) delete this->_ptr; */

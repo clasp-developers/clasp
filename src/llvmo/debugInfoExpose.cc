@@ -111,6 +111,23 @@ THE SOFTWARE.
 
 namespace llvmo {
 
+CL_LAMBDA(llvm-context line col scope &optional inlined-at);
+CL_LISPIFY_NAME(get-dilocation);
+CL_DEFUN DILocation_sp DILocation_O::make(llvm::LLVMContext& context,
+                                          unsigned int line, unsigned int col,
+                                          DINode_sp scope, core::T_sp inlinedAt) {
+  llvm::Metadata* realScope = scope->operator llvm::Metadata *();
+  llvm::Metadata* realInlinedAt;
+  if (inlinedAt.nilp()) realInlinedAt = nullptr;
+  else {
+    DILocation_sp temp = gc::As<DILocation_sp>(inlinedAt);
+    realInlinedAt = temp->operator llvm::Metadata *();
+  }
+  GC_ALLOCATE(DILocation_O, ret);
+  ret->set_wrapped(llvm::DILocation::get(context, line, col, realScope, realInlinedAt));
+  return ret;
+}
+
 CL_LAMBDA(module);
 CL_LISPIFY_NAME(make-dibuilder);
 CL_DEFUN DIBuilder_sp DIBuilder_O::make(Module_sp module) {

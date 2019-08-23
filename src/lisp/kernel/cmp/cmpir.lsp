@@ -716,7 +716,7 @@ the type LLVMContexts don't match - so they were defined in different threads!"
                                               ("no-frame-pointer-elim" "true")
                                               "no-frame-pointer-elim-non-leaf"))
 (defmacro with-new-function
-    (( ;; FN is bound to the function being created
+    ((;; FN is bound to the function being created
       fn
       ;; FN-ENV is bound to the function environment
       fn-env
@@ -781,9 +781,10 @@ the type LLVMContexts don't match - so they were defined in different threads!"
                                  :function-type ,function-type)
                (with-dbg-lexical-block (:lineno (core:source-pos-info-lineno core:*current-source-pos-info*))
                  (when core:*current-source-pos-info*
-                   (let ((lineno (core:source-pos-info-lineno core:*current-source-pos-info*)))
-                     (dbg-set-irbuilder-source-location-impl ,irbuilder-alloca lineno 0 *dbg-current-scope*)
-                     (dbg-set-irbuilder-source-location-impl ,irbuilder-body lineno 0 *dbg-current-scope*)))
+                   (dbg-set-irbuilder-source-location ,irbuilder-alloca
+                                                      core:*current-source-pos-info*)
+                   (dbg-set-irbuilder-source-location ,irbuilder-body
+                                                      core:*current-source-pos-info*))
                  (with-irbuilder (*irbuilder-function-body*)
                    (or *the-module* (error "with-new-function *the-module* is NIL"))
                    (cmp-log "with-landing-pad around body%N")

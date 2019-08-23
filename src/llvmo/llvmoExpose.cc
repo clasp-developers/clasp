@@ -2176,19 +2176,16 @@ CL_DEFMETHOD void IRBuilderBase_O::ClearCurrentDebugLocation() {
 }
 
 CL_LISPIFY_NAME("SetCurrentDebugLocation");
-CL_DEFMETHOD void IRBuilderBase_O::SetCurrentDebugLocation(DebugLoc_sp loc) {
-  //	llvm::DebugLoc dlold = this->wrappedPtr()->getCurrentDebugLocation();
-  //	printf("                       old DebugLocation: %d\n", dlold.getLine() );
+CL_DEFMETHOD void IRBuilderBase_O::SetCurrentDebugLocation(DILocation_sp diloc) {
   this->_CurrentDebugLocationSet = true;
-  llvm::DebugLoc &dl = loc->debugLoc();
-  //	printf("%s:%d IRBuilderBase_O::SetCurrentDebugLoc changing to line %d\n", __FILE__, __LINE__, dl.getLine() );
+  llvm::DILocation* real_diloc = diloc->operator llvm::DILocation *();
+  llvm::DebugLoc dl(real_diloc);
   this->wrappedPtr()->SetCurrentDebugLocation(dl);
-  //	llvm::DebugLoc dlnew = this->wrappedPtr()->getCurrentDebugLocation();
-  //	printf("                       new DebugLocation: %d\n", dlnew.getLine() );
 }
 
 CL_LISPIFY_NAME("SetCurrentDebugLocationToLineColumnScope");
-CL_DEFMETHOD void IRBuilderBase_O::SetCurrentDebugLocationToLineColumnScope(int line, int col, DINode_sp scope) {
+CL_DEFMETHOD void IRBuilderBase_O::SetCurrentDebugLocationToLineColumnScope(int line, int col,
+                                                                            DINode_sp scope) {
   this->_CurrentDebugLocationSet = true;
   llvm::MDNode *mdnode = scope->operator llvm::MDNode *();
   llvm::DebugLoc dl = llvm::DebugLoc::get(line, col, mdnode);

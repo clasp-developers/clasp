@@ -26,31 +26,17 @@
 
 (in-package :cmp)
 
-(defconstant +file.dbg+ :file.dbg)
-
 ;;; (defvar *dbg-generate-dwarf* t) <<--- defined in init.lsp
-(defvar *dbg-compile-unit* )
-(defvar *dbg-compile-unit-types*)
-(defvar *dbg-current-file* )
+(defvar *dbg-compile-unit*)
+(defvar *dbg-current-file*)
 (defvar *dbg-current-function-metadata*)
 (defvar *dbg-current-function-lineno*)
 (defvar *dbg-current-scope* nil
   "Stores the current enclosing lexical scope for debugging info")
-
-(defvar *llvm-metadata*
-  nil
-  "Stores map of integers to metadata scopes")
-
-
-(defun walk-form-for-source-info (form)
-  (let* ((cspi (ext:current-source-location))
-         (lineno (source-pos-info-lineno cspi))
-         (filepos (source-pos-info-filepos cspi))
-         (file-scope (file-scope cspi))
-         (pathname (file-scope-pathname file-scope))
-         (source-directory (directory-namestring pathname))
-         (source-filename (file-namestring pathname)))
-    (values source-directory source-filename filepos lineno 0)))
+;;; Unlike other DI structures, each call to create-function seems to result
+;;; in a distinct DISubprogram - not our intention. So we hash on the scope.
+;;; ATM function scopes are lists so an EQUAL hash table is fine here.
+(defvar *dbg-function-metadata-cache*)
 
 (defun dbg-create-function-type (difile function-type)
   "Currently create a bogus function type"
@@ -63,41 +49,26 @@
                                      (core:enum-logical-or llvm-sys:diflags-enum '(llvm-sys:diflags-zero))
                                      0)))
 
-
-(defvar *dibuilder-type-hash-table* nil
-  "Map types to DITypes")
-
 (defmacro with-dibuilder ((module) &rest body)
   `(let ((*the-module-dibuilder* (llvm-sys:make-dibuilder ,module)))
      (if *dbg-generate-dwarf*
-         (let ((*llvm-metadata* (make-hash-table :test #'eql))
-               (*dibuilder-type-hash-table* (make-hash-table :test #'eq)))
-           (unwind-protect
-                (progn ,@body)
-             (progn
-               (llvm-sys:finalize *the-module-dibuilder*)
-               ;; add the flag that defines the Dwarf Version
-               (llvm-sys:add-module-flag *the-module*
-                                         (llvm-sys:mdnode-get *llvm-context*
-                                                              (list
-                                                               (llvm-sys:value-as-metadata-get (jit-constant-i32 2))
-                                                               (llvm-sys:mdstring-get *llvm-context* "Dwarf Version")
-                                                               (llvm-sys:value-as-metadata-get (jit-constant-i32 +debug-dwarf-version+)))))
-               (llvm-sys:add-module-flag *the-module*
-                                         (llvm-sys:mdnode-get *llvm-context*
-                                                              (list
-                                                               (llvm-sys:value-as-metadata-get (jit-constant-i32 2))
-                                                               (llvm-sys:mdstring-get *llvm-context* "Debug Info Version")
-                                                               (llvm-sys:value-as-metadata-get (jit-constant-i32 llvm-sys:+debug-metadata-version+))))) ;; Debug Info Version
-               "This should not be the return value - it should be what is returned in the unwind-protect body"
-               )))
-         (progn
-           ,@body))))
-
-(defun setup-basic-dbg-types (types)
-  (setf (gethash :long-unsigned-int types)
-        (llvm-sys:create-basic-type "long unsigned int" 64 llvm-sys:+DW-ATE-unsigned+)))
-
+         (unwind-protect
+              (progn ,@body)
+           (llvm-sys:finalize *the-module-dibuilder*)
+           ;; add the flag that defines the Dwarf Version
+           (llvm-sys:add-module-flag *the-module*
+                                     (llvm-sys:mdnode-get *llvm-context*
+                                                          (list
+                                                           (llvm-sys:value-as-metadata-get (jit-constant-i32 2))
+                                                           (llvm-sys:mdstring-get *llvm-context* "Dwarf Version")
+                                                           (llvm-sys:value-as-metadata-get (jit-constant-i32 +debug-dwarf-version+)))))
+           (llvm-sys:add-module-flag *the-module*
+                                     (llvm-sys:mdnode-get *llvm-context*
+                                                          (list
+                                                           (llvm-sys:value-as-metadata-get (jit-constant-i32 2))
+                                                           (llvm-sys:mdstring-get *llvm-context* "Debug Info Version")
+                                                           (llvm-sys:value-as-metadata-get (jit-constant-i32 llvm-sys:+debug-metadata-version+))))))
+         (progn ,@body))))
     
 (defmacro with-dbg-compile-unit ((source-pathname) &rest body)
   (let ((path (gensym))
@@ -108,6 +79,7 @@
            (let* ((,path (pathname ,source-pathname))
                   (,file *dbg-current-file*)
                   (,dir-name (directory-namestring ,path))
+                  (*dbg-function-metadata-cache* (make-hash-table :test #'equal))
                   (*dbg-compile-unit* (llvm-sys:create-compile-unit
                                        *the-module-dibuilder* ; dibuilder
                                        llvm-sys:dw-lang-c-plus-plus ; 1 llvm-sys:dw-lang-common-lisp
@@ -122,8 +94,7 @@
                                        t   ; 11 SplitDebugInlining
                                        nil ; 12 DebugInfoForProfiling
                                        nil ; 13 GnuPubnames
-                                       ))
-                  (*dbg-compile-unit-types* (make-hash-table)))
+                                       )))
              (cmp-log "with-dbg-compile-unit *dbg-compile-unit*: %s%N" *dbg-compile-unit*)
              (cmp-log "with-dbg-compile-unit source-pathname: %s%N" ,source-pathname)
              (cmp-log "with-dbg-compile-unit file-name: [%s]%N" ,file)
@@ -173,26 +144,24 @@
              (with-dbg-compile-unit (,pathname)
                (funcall #',body-func))))))))
 
-
-
 (defun make-function-metadata (&key file-metadata linkage-name function-type lineno)
   (llvm-sys:create-function
-                       *the-module-dibuilder*   ; 0 DIBuilder
-                       file-metadata ; 1 function scope
-                       linkage-name            ; 2 function name
-                       linkage-name    ; 3 mangled function name
-                       file-metadata ; 4 file where function is defined
-                       lineno            ; 5 lineno
-                       (dbg-create-function-type file-metadata function-type) ; 6 function-type
-                       nil ; 7 isLocalToUnit - true if this function is not externally visible
-                       t ; 8 isDefinition - true if this is a function definition
-                       lineno ; 9 scopeLine - set to the beginning of the scope this starts
-                       (core:enum-logical-or llvm-sys:diflags-enum '(llvm-sys:diflags-zero)) ; 10 flags
-                       nil ; 11 isOptimized - true if optimization is on
-                       nil ; 12 TParam = nullptr
-                       nil ; 13 Decl = nullptr
-                       nil ; 14 ThrownTypes = nullptr
-                       ))
+   *the-module-dibuilder*   ; 0 DIBuilder
+   file-metadata ; 1 function scope
+   linkage-name            ; 2 function name
+   linkage-name    ; 3 mangled function name
+   file-metadata ; 4 file where function is defined
+   lineno            ; 5 lineno
+   (dbg-create-function-type file-metadata function-type) ; 6 function-type
+   nil ; 7 isLocalToUnit - true if this function is not externally visible
+   t ; 8 isDefinition - true if this is a function definition
+   lineno ; 9 scopeLine - set to the beginning of the scope this starts
+   (core:enum-logical-or llvm-sys:diflags-enum '(llvm-sys:diflags-zero)) ; 10 flags
+   nil ; 11 isOptimized - true if optimization is on
+   nil ; 12 TParam = nullptr
+   nil ; 13 Decl = nullptr
+   nil ; 14 ThrownTypes = nullptr
+   ))
 
 (defvar *with-dbg-function* nil)
 ;; Set to NIL in with-dbg-function and T in dbg-set-current-source-pos
@@ -201,10 +170,11 @@
   (let ((*with-dbg-function* t)
         (*dbg-set-current-source-pos* nil))
     (if (and *dbg-generate-dwarf* *the-module-dibuilder*)
-        (let* ((*dbg-current-function-metadata* (make-function-metadata :file-metadata *dbg-current-file*
-                                        :linkage-name linkage-name
-                                        :function-type function-type
-                                                                        :lineno lineno))
+        (let* ((*dbg-current-function-metadata*
+                 (make-function-metadata :file-metadata *dbg-current-file*
+                                         :linkage-name linkage-name
+                                         :function-type function-type
+                                         :lineno lineno))
                (*dbg-current-scope* *dbg-current-function-metadata*)
                (*dbg-current-function-lineno* lineno))
           (llvm-sys:set-subprogram function *dbg-current-function-metadata*)
@@ -237,47 +207,52 @@
 (defmacro with-dbg-lexical-block ((&key (lineno (core:source-pos-info-lineno core:*current-source-pos-info*))) &body body)
   `(do-dbg-lexical-block (lambda () ,@body) ,lineno))
 
-(defun dbg-clear-irbuilder-source-location-impl (irbuilder)
+(defun dbg-clear-irbuilder-source-location (irbuilder)
   (llvm-sys:clear-current-debug-location irbuilder))
 
+(defun cached-file-metadata (file-handle)
+  ;; n.b. despite the name we don't cache, as llvm seems to handle it
+  (make-file-metadata (file-scope-pathname (file-scope file-handle))))
+
+(defun cached-function-scope (function-scope-info)
+  ;; See production in cleavir/inline-prep.lisp
+  (or (gethash function-scope-info *dbg-function-metadata-cache*)
+      (setf (gethash function-scope-info *dbg-function-metadata-cache*)
+            (destructuring-bind (function-name lineno file-handle)
+                function-scope-info
+              (make-function-metadata
+               :linkage-name function-name :lineno lineno
+               :function-type %fn-prototype%
+               :file-metadata (cached-file-metadata file-handle))))))
+
 (defparameter *trap-zero-lineno* nil)
-(defun dbg-set-irbuilder-source-location-impl (irbuilder lineno column &optional (scope *dbg-current-scope*))
-  (unless scope (error "scope must not be NIL"))
-  (when *trap-zero-lineno*
-    (when (= lineno 0)
-      (format *error-output* "In dbg-set-irbuilder-source-location-impl lineno was zero! Setting to 666666~%")
-      (setf lineno 666666)))
+(defun get-dilocation (spi)
+  (let ((lineno (core:source-pos-info-lineno spi))
+        (col (core:source-pos-info-column spi))
+        (inlined-at (core:source-pos-info-inlined-at spi)))
+    (when (and *trap-zero-lineno* (zerop lineno))
+      (format *error-output* "In get-dilocation lineno was zero! Setting to ~d~%"
+              (setf lineno 666666)))
+    (if inlined-at
+        (llvm-sys:get-dilocation
+         *llvm-context* lineno col
+         (cached-function-scope (core:source-pos-info-function-scope spi))
+         (get-dilocation inlined-at))
+        (llvm-sys:get-dilocation *llvm-context* lineno col *dbg-current-scope*))))
+
+(defun dbg-set-irbuilder-source-location (irbuilder spi)
   (when *dbg-generate-dwarf*
-    (llvm-sys:set-current-debug-location-to-line-column-scope irbuilder lineno column scope)))
+    (llvm-sys:set-current-debug-location irbuilder (get-dilocation spi))))
 
 (defun dbg-set-current-source-pos (form)
   (when *dbg-generate-dwarf*
     (setq *dbg-set-current-source-pos* t)
     (when *current-source-pos-info*
-    (cmp-log "dbg-set-current-source-pos on form: %s%N" form)
-    (unless *dbg-current-scope*
-      (error "*dbg-current-scope* must not be NIL"))
-    (dbg-set-irbuilder-source-location-impl
-     *irbuilder* (core:source-pos-info-lineno *current-source-pos-info*) 0 *dbg-current-scope*))))
-
-(defun dbg-set-source-pos (source-pos)
-  (when *dbg-generate-dwarf*
-    (multiple-value-bind (file-handle file-pos lineno column)
-        (core:source-pos-info-unpack source-pos)
-      (when file-handle
-        (let ((scope (gethash file-handle *llvm-metadata*)))
-          (dbg-set-irbuilder-source-location-impl *irbuilder* lineno column scope))))))
-
-(defun dbg-set-current-debug-location (filename pathname lineno column)
-  (when *dbg-generate-dwarf*
-    (let* ((scope-name (bformat nil "%s>>%s" pathname filename))
-	   (scope (gethash scope-name *llvm-metadata*)))
-      #+(or)
-      (unless scope
-        (setq scope (mdnode-file-descriptor filename pathname))
-        (core::hash-table-setf-gethash *llvm-metadata* scope-name scope))
-      (dbg-set-irbuilder-source-location-impl *irbuilder* lineno column scope))))
-
+      (cmp-log "dbg-set-current-source-pos on form: %s%N" form)
+      (unless *dbg-current-scope*
+        (error "*dbg-current-scope* must not be NIL"))
+      (dbg-set-irbuilder-source-location
+       *irbuilder* *current-source-pos-info*))))
 
 (defun dbg-create-parameter-variable (&key (scope *dbg-current-scope*)
                                         name
@@ -296,35 +271,20 @@
                                       always-preserve
                                       (core:enum-logical-or llvm-sys:diflags-enum '(llvm-sys:diflags-zero))))
 
-                                           
-(defvar *current-file-metadata-node* nil
-  "Store the metadata node for the current source file info")
-
-
-(defvar *current-source-position* nil)
-(defvar *current-function-metadata* nil)
-
 (defun set-instruction-source-position (origin function-metadata)
   (when *dbg-generate-dwarf*
     (if origin
-        (let ((source-pos-info (if (consp origin) (car origin) origin)))
-          (dbg-set-irbuilder-source-location-impl
-           *irbuilder*
-           (core:source-pos-info-lineno source-pos-info)
-           (1+ (core:source-pos-info-column source-pos-info))
-           function-metadata))
-        (dbg-clear-irbuilder-source-location-impl *irbuilder*))))
+        (let ((source-pos-info (if (consp origin) (car origin) origin))
+              (*dbg-current-scope* function-metadata))
+          (dbg-set-irbuilder-source-location *irbuilder* source-pos-info))
+        (dbg-clear-irbuilder-source-location *irbuilder*))))
 
-
-(defun do-debug-info-source-position (enabledp origin body-lambda)
-  (if (and enabledp (null origin))
-      (funcall body-lambda)
-      (unwind-protect
-           (let ((*current-source-position* origin))
-             (set-instruction-source-position origin *dbg-current-function-metadata*)
-             (funcall body-lambda))
-        (set-instruction-source-position *current-source-position* *dbg-current-function-metadata*))))
+(defun do-debug-info-source-position (origin body-lambda)
+  (unwind-protect
+       (progn
+         (set-instruction-source-position origin *dbg-current-function-metadata*)
+         (funcall body-lambda))
+    (set-instruction-source-position nil *dbg-current-function-metadata*)))
 
 (defmacro with-debug-info-source-position ((origin) &body body)
-  `(do-debug-info-source-position t ,origin (lambda () ,@body)))
-
+  `(do-debug-info-source-position ,origin (lambda () ,@body)))

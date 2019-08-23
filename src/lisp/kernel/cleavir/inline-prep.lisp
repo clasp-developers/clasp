@@ -76,3 +76,61 @@
 
 (eval-when (:compile-toplevel :execute :load-toplevel)
   (setq core:*proclaim-hook* 'proclaim-hook))
+
+;;; The following code sets up the chain of inlined-at info in AST origins.
+#+cst
+(progn
+
+(defun fix-inline-source-position (spi fsi inlined-at table)
+  (or (gethash spi table)
+      (setf (gethash spi table)
+            (let ((clone (core:source-pos-info-copy spi)))
+              (core:setf-source-pos-info-function-scope clone fsi)
+              (core:setf-source-pos-info-inlined-at clone inlined-at)
+              clone))))
+
+(defun fix-inline-source-positions (ast inlined-at)
+  (let* ((new-origins (make-hash-table :test #'eq))
+         (orig (let ((orig (cleavir-ast:origin ast)))
+                 (cond ((consp orig) (car orig))
+                       ((null orig)
+                        ;; KLUDGE?: If no source info, just forget the whole thing
+                        (return-from fix-inline-source-positions ast))
+                       (t orig))))
+         (function-scope-info
+          ;; See usage in cmp/debuginfo.lsp
+          (list (cmp:jit-function-name (clasp-cleavir-ast:lambda-name ast))
+                (core:source-pos-info-lineno orig)
+                (core:source-pos-info-file-handle orig))))
+    ;; NEW-ORIGINS is a memoization table.
+    (cleavir-ast:map-ast-depth-first-preorder
+     (lambda (ast)
+       (let ((orig (cleavir-ast:origin ast)))
+         (setf (cleavir-ast:origin ast)
+               (cond ((consp orig)
+                      (cons (fix-inline-source-position
+                             (car orig) function-scope-info inlined-at new-origins)
+                            (fix-inline-source-position
+                             (cdr orig) function-scope-info inlined-at new-origins)))
+                     ((null orig) nil)
+                     (t (fix-inline-source-position
+                         orig function-scope-info inlined-at new-origins))))))
+     ast))
+  ast)
+
+(defmethod cleavir-cst-to-ast:convert-called-function-reference (cst info env (system clasp-64bit))
+  (declare (ignore env))
+  ;; FIXME: Duplicates cleavir.
+  (when (not (eq (cleavir-env:inline info) 'cl:notinline))
+    (let ((ast (cleavir-env:ast info)))
+      (when ast
+        (return-from cleavir-cst-to-ast:convert-called-function-reference
+          (fix-inline-source-positions
+           (cleavir-ast-transformations:clone-ast ast)
+           (let ((source (cst:source cst)))
+             (cond ((consp source) (car source))
+                   ((null source) core:*current-source-pos-info*)
+                   (t source))))))))
+  (call-next-method))
+
+) ; #+cst (progn...)

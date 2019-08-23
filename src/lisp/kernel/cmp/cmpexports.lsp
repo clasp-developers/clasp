@@ -243,7 +243,6 @@
             initialize-calling-convention
             treat-as-special-operator-p
             typeid-core-unwind
-            walk-form-for-source-info
             with-begin-end-catch
             preserve-exception-info
             *dbg-generate-dwarf*
@@ -253,8 +252,6 @@
             with-new-function
             with-dbg-function
             with-dbg-lexical-block
-            dbg-clear-irbuilder-source-location-impl
-            dbg-set-irbuilder-source-location-impl
             dbg-set-current-source-pos
             c++-field-offset
             c++-field-index
