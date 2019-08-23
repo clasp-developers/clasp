@@ -889,9 +889,6 @@ namespace core {
   signed char clasp_toSignedInt8(T_sp n);
   cl_index clasp_toSize(T_sp f);
 
-  Integer_sp cl__logior(List_sp integers);
-  Integer_sp cl__logand(List_sp integers);
-
   gctools::Fixnum fixint(T_sp x);
 
 }; // namespace core

@@ -302,10 +302,10 @@ CL_DEFUN size_t core__stamp_index(size_t stamp)
 }
 
 CL_DOCSTRING("Shift an unshifted stamp so that it can be put into code in a form where it can be directly matched to a stamp read from an object header with no further shifting");
-CL_DEFUN core::Integer_sp core__shift_stamp_for_compiled_code(core::Integer_sp unshifted_stamp)
+CL_DEFUN core::Integer_sp core__shift_stamp_for_compiled_code(size_t unshifted_stamp)
 {
-  core::Integer_sp shifted_stamp = core::cl__logior(core::Cons_O::createList(core::clasp_ash(unshifted_stamp,gctools::Header_s::stamp_shift),core::make_fixnum(gctools::Header_s::stamp_tag)));
-  return shifted_stamp;
+  return core::make_fixnum((unshifted_stamp << gctools::Header_s::stamp_shift)
+                           | gctools::Header_s::stamp_tag);
 }
 
 CL_DOCSTRING("Return the stamp for the object, the flags and the header stamp");
