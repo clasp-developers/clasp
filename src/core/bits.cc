@@ -111,26 +111,6 @@ b_c2_op(gctools::Fixnum i, gctools::Fixnum j) {
 
 typedef gctools::Fixnum (*bit_operator)(gctools::Fixnum, gctools::Fixnum);
 
-typedef enum {
-    b_clr_op_id=0,
-    and_op_id  =1,
-    andc2_op_id=2,
-    b_1_op_id  =3,
-    andc1_op_id=4,
-    b_2_op_id  =5,
-    xor_op_id  =6,
-    ior_op_id  =7,
-    nor_op_id  =8,
-    eqv_op_id  =9,
-    b_c2_op_id =10,
-    orc2_op_id =11,
-    b_c1_op_id =12,
-    orc1_op_id =13,
-    nand_op_id =14,
-    b_set_op_id =15} bit_op_id;
-
-#define boolOpsMax 16
-
 static bit_operator fixnum_operations[boolOpsMax] = {
     b_clr_op,
     and_op,
@@ -692,57 +672,41 @@ void initialize_bits() {
 //  af_def(ClPkg, "logbitp", &cl_logbitp);
 };
 
-// logand, logxor, logior, logeqv are all nearly the same, apart from the operation
-// logandc1_id until lognor_id as well
-
-typedef enum {
-    logand_id = 0,
-    logxor_id = 1,
-    logior_id = 2,
-    logeqv_id = 3,
-    logandc1_id = 4,
-    logandc2_id =5,
-    logorc1_id = 6,
-    logorc2_id = 7,
-    lognand_id = 8,
-    lognor_id = 9
-} log_operations;
-
-Integer_sp log_operation_2op(log_operations operation, Integer_sp first, Integer_sp second) {
+Integer_sp log_operation_2op(boole_ops operation, Integer_sp first, Integer_sp second) {
   // if the arguments are all fixnum, don't convert everything to mpz, but stay in fixnums
   if (first.fixnump() && second.fixnump()){
     gc::Fixnum first_internal = first.unsafe_fixnum();
     gc::Fixnum second_internal = second.unsafe_fixnum();
     gc::Fixnum result;
     switch (operation) {
-    case logand_id:
+    case boole_and:
         result = first_internal & second_internal;
         break;
-    case logxor_id:
+    case boole_xor:
         result = first_internal ^ second_internal;
         break;
-    case logior_id:
+    case boole_ior:
         result = first_internal | second_internal;
         break;
-    case logeqv_id:
+    case boole_eqv:
         result = (~(first_internal ^ second_internal));
         break;
-    case logandc1_id:
+    case boole_andc1:
         result = (~first_internal) & second_internal;
         break;
-    case logandc2_id:
+    case boole_andc2:
         result = first_internal & (~second_internal);
         break;
-    case logorc1_id:
+    case boole_orc1:
         result = (~first_internal) | second_internal;
         break;
-    case logorc2_id:
+    case boole_orc2:
         result = first_internal | (~second_internal);
         break;
-    case lognand_id:
+    case boole_nand:
         result = ~(first_internal & second_internal);
         break;
-    case lognor_id:
+    case boole_nor:
         result = ~(first_internal | second_internal);
         break;
     default:
@@ -754,40 +718,40 @@ Integer_sp log_operation_2op(log_operations operation, Integer_sp first, Integer
     mpz_class result_bignum;
     mpz_class temp_bignum;
     switch (operation) {
-    case logand_id:
+    case boole_and:
         mpz_and(result_bignum.get_mpz_t(), clasp_to_mpz(first).get_mpz_t(), clasp_to_mpz(second).get_mpz_t());
         break;
-    case logxor_id:
+    case boole_xor:
         mpz_xor(result_bignum.get_mpz_t(), clasp_to_mpz(first).get_mpz_t(), clasp_to_mpz(second).get_mpz_t());
         break;
-    case logior_id:
+    case boole_ior:
         mpz_ior(result_bignum.get_mpz_t(), clasp_to_mpz(first).get_mpz_t(), clasp_to_mpz(second).get_mpz_t());
         break;
-    case logeqv_id:
+    case boole_eqv:
         mpz_xor(temp_bignum.get_mpz_t(), clasp_to_mpz(first).get_mpz_t(), clasp_to_mpz(second).get_mpz_t());
         mpz_com(result_bignum.get_mpz_t(), temp_bignum.get_mpz_t());
         break;
-    case logandc1_id:
+    case boole_andc1:
         mpz_com(temp_bignum.get_mpz_t(), clasp_to_mpz(first).get_mpz_t());
         mpz_and(result_bignum.get_mpz_t(), temp_bignum.get_mpz_t(), clasp_to_mpz(second).get_mpz_t());
         break;
-    case logandc2_id:
+    case boole_andc2:
         mpz_com(temp_bignum.get_mpz_t(), clasp_to_mpz(second).get_mpz_t());
         mpz_and(result_bignum.get_mpz_t(), clasp_to_mpz(first).get_mpz_t(), temp_bignum.get_mpz_t());
         break;
-    case logorc1_id:
+    case boole_orc1:
         mpz_com(temp_bignum.get_mpz_t(), clasp_to_mpz(first).get_mpz_t());
         mpz_ior(result_bignum.get_mpz_t(), temp_bignum.get_mpz_t(), clasp_to_mpz(second).get_mpz_t());
         break;
-    case logorc2_id:
+    case boole_orc2:
         mpz_com(temp_bignum.get_mpz_t(), clasp_to_mpz(second).get_mpz_t());
         mpz_ior(result_bignum.get_mpz_t(), clasp_to_mpz(first).get_mpz_t(), temp_bignum.get_mpz_t());
         break;
-    case lognand_id:
+    case boole_nand:
         mpz_and(temp_bignum.get_mpz_t(), clasp_to_mpz(first).get_mpz_t(), clasp_to_mpz(second).get_mpz_t());
         mpz_com(result_bignum.get_mpz_t(), temp_bignum.get_mpz_t());
         break;
-    case lognor_id:
+    case boole_nor:
         mpz_ior(temp_bignum.get_mpz_t(), clasp_to_mpz(first).get_mpz_t(), clasp_to_mpz(second).get_mpz_t());
         mpz_com(result_bignum.get_mpz_t(), temp_bignum.get_mpz_t());
         break;
@@ -802,31 +766,31 @@ CL_LAMBDA(first second);
 CL_DECLARE();
 CL_DOCSTRING("logand_2op");
 CL_DEFUN Integer_sp core__logand_2op(Integer_sp first, Integer_sp second) {
-  return log_operation_2op(logand_id, first, second);
+  return log_operation_2op(boole_and, first, second);
 }
 
 CL_LAMBDA(first second);
 CL_DECLARE();
 CL_DOCSTRING("logxor_2op");
 CL_DEFUN Integer_sp core__logxor_2op(Integer_sp first, Integer_sp second) {
-  return log_operation_2op(logxor_id, first, second);
+  return log_operation_2op(boole_xor, first, second);
 }
 
 CL_LAMBDA(first second);
 CL_DECLARE();
 CL_DOCSTRING("logior_2op");
 CL_DEFUN Integer_sp core__logior_2op(Integer_sp first, Integer_sp second) {
-  return log_operation_2op(logior_id, first, second);
+  return log_operation_2op(boole_ior, first, second);
 }
 
 CL_LAMBDA(first second);
 CL_DECLARE();
 CL_DOCSTRING("logeqv_2op");
 CL_DEFUN Integer_sp core__logeqv_2op(Integer_sp first, Integer_sp second) {
-  return log_operation_2op(logeqv_id, first, second);
+  return log_operation_2op(boole_eqv, first, second);
 }
 
-Integer_sp log_operation_rest(List_sp integers, log_operations operation) {
+Integer_sp log_operation_rest(List_sp integers, boole_ops operation) {
   // if the arguments are all fixnum, don't convert everything to mpz, but stay in fixnums
   bool acc_fixnum_p = true;
   Integer_sp first = gc::As<Integer_sp>(oCar(integers));
@@ -845,16 +809,16 @@ Integer_sp log_operation_rest(List_sp integers, log_operations operation) {
       if (icur.fixnump()) {
         // we stay in fixnum
         switch (operation) {
-        case logand_id:
+        case boole_and:
             acc_fixnum = acc_fixnum & icur.unsafe_fixnum();
             break;
-        case logxor_id:
+        case boole_xor:
             acc_fixnum = acc_fixnum ^ icur.unsafe_fixnum();
             break;
-        case logior_id:
+        case boole_ior:
             acc_fixnum = acc_fixnum | icur.unsafe_fixnum();
             break;
-        case logeqv_id:
+        case boole_eqv:
             acc_fixnum = (~(acc_fixnum ^ icur.unsafe_fixnum()));
             break;
         default:
@@ -868,16 +832,16 @@ Integer_sp log_operation_rest(List_sp integers, log_operations operation) {
         mpz_class temp;
         mpz_class temp1;
         switch (operation) {
-        case logand_id:
+        case boole_and:
             mpz_and(temp.get_mpz_t(), acc_bignum.get_mpz_t(), clasp_to_mpz(icur).get_mpz_t());
             break;
-        case logxor_id:
+        case boole_xor:
             mpz_xor(temp.get_mpz_t(),  acc_bignum.get_mpz_t(), clasp_to_mpz(icur).get_mpz_t());
             break;
-        case logior_id:
+        case boole_ior:
             mpz_ior(temp.get_mpz_t(),  acc_bignum.get_mpz_t(), clasp_to_mpz(icur).get_mpz_t());
             break;
-        case logeqv_id:
+        case boole_eqv:
             mpz_xor(temp1.get_mpz_t(), acc_bignum.get_mpz_t(), clasp_to_mpz(icur).get_mpz_t());
             mpz_com(temp.get_mpz_t(), temp1.get_mpz_t());
         default:
@@ -889,16 +853,16 @@ Integer_sp log_operation_rest(List_sp integers, log_operations operation) {
       mpz_class temp;
       mpz_class temp1;
       switch (operation) {
-      case logand_id:
+      case boole_and:
           mpz_and(temp.get_mpz_t(), acc_bignum.get_mpz_t(), clasp_to_mpz(icur).get_mpz_t());
           break;
-      case logxor_id:
+      case boole_xor:
           mpz_xor(temp.get_mpz_t(),  acc_bignum.get_mpz_t(), clasp_to_mpz(icur).get_mpz_t());
           break;
-      case logior_id:
+      case boole_ior:
           mpz_ior(temp.get_mpz_t(),  acc_bignum.get_mpz_t(), clasp_to_mpz(icur).get_mpz_t());
           break;
-      case logeqv_id:
+      case boole_eqv:
           mpz_xor(temp1.get_mpz_t(), acc_bignum.get_mpz_t(), clasp_to_mpz(icur).get_mpz_t());
           mpz_com(temp.get_mpz_t(), temp1.get_mpz_t());
           break;
@@ -922,7 +886,7 @@ CL_DEFUN Integer_sp cl__logand(List_sp integers) {
   if (integers.nilp())
     return clasp_make_fixnum(-1);
   else
-    return log_operation_rest(integers, logand_id); 
+    return log_operation_rest(integers, boole_and); 
 };
 
 CL_LAMBDA(&rest integers);
@@ -932,7 +896,7 @@ CL_DEFUN Integer_sp cl__logior(List_sp integers) {
   if (integers.nilp())
     return clasp_make_fixnum(0);
   else
-    return log_operation_rest(integers, logior_id); 
+    return log_operation_rest(integers, boole_ior); 
 };
 
 CL_LAMBDA(&rest integers);
@@ -942,7 +906,7 @@ CL_DEFUN Integer_sp cl__logxor(List_sp integers) {
   if (integers.nilp())
     return clasp_make_fixnum(0);
   else
-    return log_operation_rest(integers, logxor_id);
+    return log_operation_rest(integers, boole_xor);
 };
 
 CL_LAMBDA(&rest integers);
@@ -952,35 +916,35 @@ CL_DEFUN Integer_sp cl__logeqv(List_sp integers) {
   if (integers.nilp())
     return Integer_O::create((gc::Fixnum) - 1);
   else
-    return log_operation_rest(integers, logeqv_id);
+    return log_operation_rest(integers, boole_eqv);
 };
 
 CL_LAMBDA(a b);
 CL_DECLARE();
 CL_DOCSTRING("logandc1");
 CL_DEFUN Integer_sp cl__logandc1(Integer_sp a, Integer_sp b) {
-  return log_operation_2op(logandc1_id, a, b);
+  return log_operation_2op(boole_andc1, a, b);
 };
 
 CL_LAMBDA(a b);
 CL_DECLARE();
 CL_DOCSTRING("logandc2");
 CL_DEFUN Integer_sp cl__logandc2(Integer_sp a, Integer_sp b) {
-  return log_operation_2op(logandc2_id, a, b);
+  return log_operation_2op(boole_andc2, a, b);
 };
 
 CL_LAMBDA(a b);
 CL_DECLARE();
 CL_DOCSTRING("logorc1");
 CL_DEFUN Integer_sp cl__logorc1(Integer_sp a, Integer_sp b) {
-  return log_operation_2op(logorc1_id, a, b);
+  return log_operation_2op(boole_orc1, a, b);
 };
 
 CL_LAMBDA(a b);
 CL_DECLARE();
 CL_DOCSTRING("logorc2");
 CL_DEFUN Integer_sp cl__logorc2(Integer_sp a, Integer_sp b) {
-  return log_operation_2op(logorc2_id, a, b);
+  return log_operation_2op(boole_orc2, a, b);
 };
 
 CL_LAMBDA(a);
@@ -1003,14 +967,14 @@ CL_LAMBDA(a b);
 CL_DECLARE();
 CL_DOCSTRING("lognand");
 CL_DEFUN Integer_sp cl__lognand(Integer_sp a, Integer_sp b) {
-  return log_operation_2op(lognand_id, a, b);
+  return log_operation_2op(boole_nand, a, b);
 };
 
 CL_LAMBDA(a b);
 CL_DECLARE();
 CL_DOCSTRING("lognor");
 CL_DEFUN Integer_sp cl__lognor(Integer_sp a, Integer_sp b) {
-  return log_operation_2op(lognor_id, a, b);
+  return log_operation_2op(boole_nor, a, b);
 };
 
 }; // namespace core
