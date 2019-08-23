@@ -810,68 +810,44 @@ Integer_sp log_operation_rest(List_sp integers, boole_ops operation) {
         // we stay in fixnum
         switch (operation) {
         case boole_and:
-            acc_fixnum = acc_fixnum & icur.unsafe_fixnum();
-            break;
+            acc_fixnum = acc_fixnum & icur.unsafe_fixnum(); continue;
         case boole_xor:
-            acc_fixnum = acc_fixnum ^ icur.unsafe_fixnum();
-            break;
+            acc_fixnum = acc_fixnum ^ icur.unsafe_fixnum(); continue;
         case boole_ior:
-            acc_fixnum = acc_fixnum | icur.unsafe_fixnum();
-            break;
+            acc_fixnum = acc_fixnum | icur.unsafe_fixnum(); continue;
         case boole_eqv:
-            acc_fixnum = (~(acc_fixnum ^ icur.unsafe_fixnum()));
-            break;
+            acc_fixnum = (~(acc_fixnum ^ icur.unsafe_fixnum())); continue;
         default:
             SIMPLE_ERROR(BF("Unknown operation in cl__log_operation_rest"));
         }
-      }
-      else {
+      } else {
         // need to go bignum
         acc_fixnum_p = false;
         acc_bignum = clasp_to_mpz(Integer_O::create(acc_fixnum));
-        mpz_class temp;
-        mpz_class temp1;
-        switch (operation) {
-        case boole_and:
-            mpz_and(temp.get_mpz_t(), acc_bignum.get_mpz_t(), clasp_to_mpz(icur).get_mpz_t());
-            break;
-        case boole_xor:
-            mpz_xor(temp.get_mpz_t(),  acc_bignum.get_mpz_t(), clasp_to_mpz(icur).get_mpz_t());
-            break;
-        case boole_ior:
-            mpz_ior(temp.get_mpz_t(),  acc_bignum.get_mpz_t(), clasp_to_mpz(icur).get_mpz_t());
-            break;
-        case boole_eqv:
-            mpz_xor(temp1.get_mpz_t(), acc_bignum.get_mpz_t(), clasp_to_mpz(icur).get_mpz_t());
-            mpz_com(temp.get_mpz_t(), temp1.get_mpz_t());
-        default:
-            SIMPLE_ERROR(BF("Unknown operation in cl__log_operation_rest"));
-        }
-        acc_bignum = temp;
       }
-    } else {
-      mpz_class temp;
-      mpz_class temp1;
-      switch (operation) {
-      case boole_and:
-          mpz_and(temp.get_mpz_t(), acc_bignum.get_mpz_t(), clasp_to_mpz(icur).get_mpz_t());
-          break;
-      case boole_xor:
-          mpz_xor(temp.get_mpz_t(),  acc_bignum.get_mpz_t(), clasp_to_mpz(icur).get_mpz_t());
-          break;
-      case boole_ior:
-          mpz_ior(temp.get_mpz_t(),  acc_bignum.get_mpz_t(), clasp_to_mpz(icur).get_mpz_t());
-          break;
-      case boole_eqv:
-          mpz_xor(temp1.get_mpz_t(), acc_bignum.get_mpz_t(), clasp_to_mpz(icur).get_mpz_t());
-          mpz_com(temp.get_mpz_t(), temp1.get_mpz_t());
-          break;
-      default:
-          SIMPLE_ERROR(BF("Unknown operation in cl__log_operation_rest"));
-      }
-      acc_bignum = temp;
     }
-  }
+    // Now either acc_fixnum_p was false and icur is a fixnum, or acc_fixnum_p was true.
+    mpz_class temp;
+    mpz_class temp1;
+    switch (operation) {
+    case boole_and:
+        mpz_and(temp.get_mpz_t(), acc_bignum.get_mpz_t(), clasp_to_mpz(icur).get_mpz_t());
+        break;
+    case boole_xor:
+        mpz_xor(temp.get_mpz_t(),  acc_bignum.get_mpz_t(), clasp_to_mpz(icur).get_mpz_t());
+        break;
+    case boole_ior:
+        mpz_ior(temp.get_mpz_t(),  acc_bignum.get_mpz_t(), clasp_to_mpz(icur).get_mpz_t());
+        break;
+    case boole_eqv:
+        mpz_xor(temp1.get_mpz_t(), acc_bignum.get_mpz_t(), clasp_to_mpz(icur).get_mpz_t());
+        mpz_com(temp.get_mpz_t(), temp1.get_mpz_t());
+        break;
+    default:
+        SIMPLE_ERROR(BF("Unknown operation in cl__log_operation_rest"));
+    }
+    acc_bignum = temp;
+  } // loop over integers
   if (acc_fixnum_p)
     return Integer_O::create(acc_fixnum);
   else
