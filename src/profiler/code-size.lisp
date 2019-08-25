@@ -1,12 +1,13 @@
 
 (defstruct code metadata)
-(defstruct location line column scope)
+(defstruct location line column scope inlined-at)
 (defstruct subprogram function-name linkage-name scope file)
 (defstruct file filename directory)
 
 (defstruct module
   (source-lines (make-array 1024 :adjustable t :element-type t :fill-pointer 0))
-  (metadata (make-hash-table :test #'eql)))
+  (metadata (make-hash-table :test #'eql))
+  (inlined-at (make-hash-table :test #'eql)))
 
 (defparameter *code*
   (cl-ppcre:create-scanner
@@ -17,6 +18,9 @@
 (defparameter *dilocation*
   (cl-ppcre:create-scanner
    "^!([0-9]+) = !DILocation\\(line: ([0-9]+), column: ([0-9]+), scope: !([0-9]+)"))
+(defparameter *dilocation-inlined-at*
+  (cl-ppcre:create-scanner
+   "^!([0-9]+) = !DILocation\\(line: ([0-9]+), column: ([0-9]+), scope: !([0-9]+), inlinedAt: !([0-9]+)"))
 (defparameter *disubprogram*
   (cl-ppcre:create-scanner
    "^!([0-9]+) = !DISubprogram\\(name: \"([^\"]*)\", linkageName: \"([^\"]*)\", scope: !([0-9]+), file: !([0-9]+), line: ([0-9]+)"))
@@ -39,6 +43,18 @@
                (scope (parse-integer (elt parts 2))))
            (setf (gethash key (module-metadata module))
                  (make-location :line line :column 0 :scope scope)))
+         t)))
+    ((multiple-value-bind (match parts)
+         (cl-ppcre:scan-to-strings *dilocation-inlined-at* line)
+       (when match
+         (let* ((key (parse-integer (elt parts 0)))
+                (line (parse-integer (elt parts 1)))
+                (column (parse-integer (elt parts 2)))
+                (scope (parse-integer (elt parts 3)))
+                (inlined-at (parse-integer (elt parts 4)))
+                (location (make-location :line line :column column :scope scope :inlined-at inlined-at)))
+           (setf (gethash key (module-metadata module)) location
+                 (gethash key (module-inlined-at module)) inlined-at))
          t)))
     ((multiple-value-bind (match parts)
          (cl-ppcre:scan-to-strings *dilocation* line)
@@ -90,7 +106,6 @@
          t)))
     (t)))
 
-    
 (defun parse-line (line module)
   (let ((first-char (elt line 0)))
     (cond
@@ -174,16 +189,39 @@
     (if (< line 99999)
         (let ((ok (read-to-line sin line)))
           (if ok
-              (progn
-                (file-position sin (+ (file-position sin) (if (> column 2) (- column 2) 0)))
-                (read-line sin))
+              (let ((pos (+ (file-position sin) (if (> column 2) (- column 2) 0))))
+                (file-position sin pos)
+                (read-line sin nil "HIT EOF"))
               "***** HIT EOF *****"))
         "********** BOGUS LINE ***********")))
 
-(defun analyze-module (module &optional num)
-  (let ((analysis (make-hash-table)))
+(defun analyze-module (module &optional num func-num)
+  (let ((analysis (make-hash-table :test #'eql))
+        (function-count (make-hash-table :test #'equal)))
     (loop for code across (module-source-lines module)
-          do (incf (gethash (code-metadata code) analysis 0)))
+;;          do (format t "code ~a~%" code)
+          do (loop named inlined-at
+                   for index = (code-metadata code)
+                     then (progn
+                            (gethash index (module-inlined-at module)))
+                   for dilocation = (gethash index (module-metadata module))
+                   for function-scope = (gethash (location-scope dilocation)
+                                                 (module-metadata module))
+                   do (unless index
+                        (return-from inlined-at nil))
+                      #+(or)(when (< (location-line dilocation) 9999)
+                        (format t "dilocation ~a~%" dilocation)
+                        (format t "function-scope ~a~%" function-scope))
+                      (when (location-inlined-at dilocation)
+                        (if (gethash (subprogram-function-name function-scope)
+                                     function-count)
+                            (incf (gethash (subprogram-function-name function-scope)
+                                           function-count))
+                            (setf (gethash (subprogram-function-name function-scope)
+                                           function-count) 1)))
+                      (if (gethash index analysis)
+                          (incf (gethash index analysis))
+                          (setf (gethash index analysis) 1))))
     (let (counts)
       (maphash (lambda (metadata count)
                  (push (cons count metadata) counts))
@@ -196,12 +234,24 @@
               do (multiple-value-bind (directory filename line column)
                      (extract-source-location module metadata-key)
                    (let ((source (get-source-at-line-column directory filename line column)))
-                     (format t "~10a ~a:~a:~a~%" count filename line column)
-                     (format t "   ---> ~a~%" source))))))))
+                     (unless (or (> line 65536) (= line 9995))
+                       (format t "~10a ~a:~a:~a~%" count filename line column)
+                       (format t "   ---> ~a~%" source)))))))
+    (let (counts)
+      (format t "Instructions generated by inlined functions~%")
+      (maphash (lambda (name count)
+                 (push (cons count name) counts))
+               function-count)
+      (let ((result (sort counts #'> :key #'car)))
+        (loop for x in result
+              for count = (car x)
+              for name = (cdr x)
+              until (< count func-num)
+              do (format t "~10a ~a~%" count name))))))
 
 
-(defun analyze-llvm-ir (filename &optional (num 100))
+(defun analyze-llvm-ir (filename &optional (num 100) (func-num 10))
   "Analyze the llvm-ir file and print the CL source locations that generate at least NUM lines of llvm-ir code"
   (let ((m (with-open-file (fin filename :direction :input)
              (parse-file fin))))
-    (analyze-module m num)))
+    (analyze-module m num func-num)))
