@@ -1,0 +1,38 @@
+* Workbench for build clasp-docs
+
+Basic setup of clasp-docs.
+Output is written into cando/src/docs/
+
+#+BEGIN_SRC lisp
+(load "~/quicklisp/setup.lisp")
+#+END_SRC
+
+#+RESULTS:
+: T
+
+#+BEGIN_SRC lisp  :results output replace
+(push #P"~/Development/cando-dev/src/lisp/modules/docs/" asdf:*central-registry*)
+(asdf:register-immutable-system :eclector)
+(ql:quickload :clasp-docs))
+#+END_SRC
+
+#+RESULTS:
+: To load "clasp-docs":
+:   Load 1 ASDF system:
+:     clasp-docs
+: ; Loading "clasp-docs"
+: ..................................................
+: [package clasp-docs].
+
+#+BEGIN_SRC lisp :results output replace
+(staple:generate :clasp-docs :if-exists :supersede))
+(format t "Done 1234~%")
+#+END_SRC
+
+#+RESULTS:
+: In find-project with CLASP-DOCS
+: Leaving find-project name
+
+
+* Then open the documentation
+[[file:~/Development/cando-dev/src/docs/index.html][Documentation]]
