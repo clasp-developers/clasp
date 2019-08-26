@@ -81,11 +81,13 @@
 ;;; Stuff to put function scope infos into inline ast SPIs.
 (defun insert-function-scope-info-into-spi (spi fsi)
   ;; If something already has an FSI, we're in a nested inline AST
-  ;; and don't want to interfere.
-  ;; FIXME: even better would be to map over the ast in such a way that we
-  ;; don't bother following into deeper function asts
-  (unless (core:source-pos-info-function-scope spi)
-    (core:setf-source-pos-info-function-scope spi fsi)))
+  ;; and don't want to interfere with it, but need to hit the one that
+  ;; doesn't deeper in.
+  (if (core:source-pos-info-function-scope spi)
+      (let ((next (core:source-pos-info-inlined-at spi)))
+        (when next
+          (insert-function-scope-info-into-spi next fsi)))
+      (core:setf-source-pos-info-function-scope spi fsi)))
 (defun insert-function-scope-info-into-ast (ast fsi)
   (let ((orig (cleavir-ast:origin ast)))
     (cond ((consp orig)
@@ -122,11 +124,19 @@
 #+cst
 (progn
 
+;;; Basically we want to recurse until we hit a SPI with no inlined-at,
+;;; and set its inlined-at to the provided value. Also we clone everything,
+;;; and memoize to avoid cloning too much.
 (defun fix-inline-source-position (spi inlined-at table)
   (or (gethash spi table)
       (setf (gethash spi table)
             (let ((clone (core:source-pos-info-copy spi)))
-              (core:setf-source-pos-info-inlined-at clone inlined-at)
+              (core:setf-source-pos-info-inlined-at
+               clone
+               (let ((next (core:source-pos-info-inlined-at clone)))
+                 (if next
+                     (fix-inline-source-position next inlined-at table)
+                     inlined-at)))
               clone))))
 
 (defun fix-inline-source-positions (ast inlined-at)
