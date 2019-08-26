@@ -467,9 +467,13 @@ and cannot be added to ~A." method other-gf gf)))
                           :fp ,(core:source-pos-info-filepos object)
                           :l ,(core:source-pos-info-lineno object)
                           :c ,(core:source-pos-info-column object))
-   `(core:setf-source-pos-info-inlined-at
-     ',object
-     ',(core:source-pos-info-inlined-at object))))
+   `(progn
+      (core:setf-source-pos-info-inlined-at
+       ',object
+       ',(core:source-pos-info-inlined-at object))
+      (core:setf-source-pos-info-function-scope
+       ',object
+       ',(core:source-pos-info-function-scope object)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
