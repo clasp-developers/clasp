@@ -65,12 +65,53 @@
 
 (export 'code-walk-using-cleavir)
 
+;;; Given a FUNCTION-AST, return the function-scope-info to insert into its body ASTs.
+(defun compute-fsi (ast)
+  (let ((orig (let ((orig (cleavir-ast:origin ast)))
+                (cond ((consp orig) (car orig))
+                      ((null orig)
+                       ;; KLUDGE?: If no source info, just forget the whole thing
+                       (return-from compute-fsi ast))
+                      (t orig)))))
+    ;; See usage in cmp/debuginfo.lsp
+    (list (cmp:jit-function-name (clasp-cleavir-ast:lambda-name ast))
+          (core:source-pos-info-lineno orig)
+          (core:source-pos-info-file-handle orig))))
+
+;;; Stuff to put function scope infos into inline ast SPIs.
+(defun insert-function-scope-info-into-spi (spi fsi)
+  ;; If something already has an FSI, we're in a nested inline AST
+  ;; and don't want to interfere.
+  ;; FIXME: even better would be to map over the ast in such a way that we
+  ;; don't bother following into deeper function asts
+  (unless (core:source-pos-info-function-scope spi)
+    (core:setf-source-pos-info-function-scope spi fsi)))
+(defun insert-function-scope-info-into-ast (ast fsi)
+  (let ((orig (cleavir-ast:origin ast)))
+    (cond ((consp orig)
+           (insert-function-scope-info-into-spi (car orig) fsi)
+           (insert-function-scope-info-into-spi (cdr orig) fsi))
+          ((null orig)
+           (return-from insert-function-scope-info-into-ast ast))
+          (t
+           (insert-function-scope-info-into-spi orig fsi)))))
+(defun fix-inline-ast (ast)
+  (check-type ast cleavir-ast:function-ast)
+  (let ((fsi (compute-fsi ast)))
+    (cleavir-ast:map-ast-depth-first-preorder
+     (lambda (ast)
+       (insert-function-scope-info-into-ast ast fsi))
+     ast))
+  ast)
+
+;;; Incorporated into DEFUN expansion (see lsp/evalmacros.lsp)
 (defun defun-inline-hook (name function-form env)
   (when (core:declared-global-inline-p name)
     `(eval-when (:compile-toplevel :load-toplevel :execute)
        (when (core:declared-global-inline-p ',name)
          (setf (inline-ast ',name)
-               (cleavir-primop:cst-to-ast ,function-form))))))
+               (fix-inline-ast
+                (cleavir-primop:cst-to-ast ,function-form)))))))
 
 (export '(*code-walker*))
 
@@ -81,27 +122,15 @@
 #+cst
 (progn
 
-(defun fix-inline-source-position (spi fsi inlined-at table)
+(defun fix-inline-source-position (spi inlined-at table)
   (or (gethash spi table)
       (setf (gethash spi table)
             (let ((clone (core:source-pos-info-copy spi)))
-              (core:setf-source-pos-info-function-scope clone fsi)
               (core:setf-source-pos-info-inlined-at clone inlined-at)
               clone))))
 
 (defun fix-inline-source-positions (ast inlined-at)
-  (let* ((new-origins (make-hash-table :test #'eq))
-         (orig (let ((orig (cleavir-ast:origin ast)))
-                 (cond ((consp orig) (car orig))
-                       ((null orig)
-                        ;; KLUDGE?: If no source info, just forget the whole thing
-                        (return-from fix-inline-source-positions ast))
-                       (t orig))))
-         (function-scope-info
-          ;; See usage in cmp/debuginfo.lsp
-          (list (cmp:jit-function-name (clasp-cleavir-ast:lambda-name ast))
-                (core:source-pos-info-lineno orig)
-                (core:source-pos-info-file-handle orig))))
+  (let ((new-origins (make-hash-table :test #'eq)))
     ;; NEW-ORIGINS is a memoization table.
     (cleavir-ast:map-ast-depth-first-preorder
      (lambda (ast)
@@ -109,12 +138,12 @@
          (setf (cleavir-ast:origin ast)
                (cond ((consp orig)
                       (cons (fix-inline-source-position
-                             (car orig) function-scope-info inlined-at new-origins)
+                             (car orig) inlined-at new-origins)
                             (fix-inline-source-position
-                             (cdr orig) function-scope-info inlined-at new-origins)))
+                             (cdr orig) inlined-at new-origins)))
                      ((null orig) nil)
                      (t (fix-inline-source-position
-                         orig function-scope-info inlined-at new-origins))))))
+                         orig inlined-at new-origins))))))
      ast))
   ast)
 
