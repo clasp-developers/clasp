@@ -73,6 +73,7 @@ THE SOFTWARE.
 #include <clasp/core/sequence.h>
 #include <clasp/core/fileSystem.h>
 #include <clasp/core/wrappers.h>
+#include <clasp/core/bits.h>
 namespace core {
 FileOps &StreamOps(T_sp strm) {
   Stream_sp stream = gc::As<Stream_sp>(strm);

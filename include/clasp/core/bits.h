@@ -20,7 +20,13 @@ typedef enum { boole_clr = 0,
                boole_nand = 14,
                boole_set = 15 } boole_ops;
 
+#define boolOpsMax 16
+
 void initialize_bits();
+
+Integer_sp cl__logior(List_sp integers);
+Integer_sp cl__logand(List_sp integers);
+
 };
 
 #endif
