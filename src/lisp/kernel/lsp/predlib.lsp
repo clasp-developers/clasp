@@ -207,12 +207,6 @@ into the structure at their position.  For example,
 	`(a b ,.c d e) expands to (list* 'a 'b (nconc c '(d e)))"
   '(OR CONS NULL))
 
-(deftype proper-list ()
-  '(OR (CONS T PROPER-LIST) NULL))
-
-(deftype property-list ()
-  '(OR (CONS T (CONS T PROPERTY-LIST)) NULL))
-
 (deftype atom ()
   "An ATOM is an object that is not a CONS."
   '(NOT CONS))
