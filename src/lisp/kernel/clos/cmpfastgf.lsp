@@ -49,8 +49,7 @@
          ;; List of gensyms, one for each required argument
          (required-args (let ((res nil))
                           (dotimes (i nreq res)
-                            (push (gensym "DISPATCH-ARG") res))))
-         (*generate-outcomes* nil))
+                            (push (gensym "DISPATCH-ARG") res)))))
     `(lambda ,(if need-vaslist-p
                   `(core:&va-rest .method-args.)
                   required-args)
@@ -86,18 +85,26 @@
                              required-args)
                      nil))
            (declare (ignorable ,@required-args))
-           (core::local-block ,block-name
-             (core::local-tagbody
-              ,(generate-node required-args dtree)
-              ;; note: we need generate-node to run to fill *generate-outcomes*.
-              ,@(generate-tagged-outcomes *generate-outcomes* block-name required-args)
-            dispatch-miss
-              ,@(if need-vaslist-p
-                    `((core:vaslist-rewind .method-args.)
-                      (return-from ,block-name
-                        (apply #',miss-operator .generic-function. .method-args.)))
-                    `((return-from ,block-name
-                        (,miss-operator .generic-function. ,@required-args)))))))))))
+           ,(generate-dispatch
+             dtree required-args
+             (if need-vaslist-p
+                 `(progn
+                    (core:vaslist-rewind .method-args.)
+                    (apply #',miss-operator .generic-function. .method-args.))
+                 `(,miss-operator .generic-function. ,@required-args))
+             block-name))))))
+
+;;; code generator part two
+;;; This generates the actual dispatch code. MISS is the form to return the value
+;;; of if the dtree hits a dispatch-miss. BLOCK-NAME is internal.
+(defun generate-dispatch (dtree dispatch-args miss &optional block-name)
+  (let ((*generate-outcomes* nil))
+    `(core::local-block ,block-name
+       (core::local-tagbody
+          ,(generate-node dispatch-args dtree)
+          ,@(generate-tagged-outcomes *generate-outcomes* block-name dispatch-args)
+        dispatch-miss
+          (return-from ,block-name ,miss)))))
 
 ;;; outcomes
 ;;; we cache them to avoid generating calls/whatever more than once
