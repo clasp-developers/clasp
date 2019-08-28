@@ -568,20 +568,6 @@
               (ext:byte16 nil) (ext:byte8 nil)
               (bit t)))))
 
-;;; If the array has a fill-pointer, this might be wrong, at least when called from elt
-;;; (elt (make-array 10 :initial-contents '(0 1 2 3 4 5 6 7 8 9) :fill-pointer 3) 5)
-;;; sbcl -> The index 5 is too large, but no error in clasp
-;;; aref allows access further than the fill pointer
-(declaim (inline vector-in-bounds-p))
-(defun vector-in-bounds-p (vector index)
-  (etypecase vector
-    ((simple-array * (*))
-     (and (<= 0 index) (< index (core::vector-length vector))))
-    (array
-     (and (<= 0 index) (< index (if (array-has-fill-pointer-p vector)
-                                    (min (core::%array-total-size vector) (fill-pointer vector))
-                                    (core::%array-total-size vector)))))))
-
 (declaim (inline row-major-array-in-bounds-p))
 (defun row-major-array-in-bounds-p (array index)
   (etypecase array
@@ -619,21 +605,21 @@
   ;; of the index, meaning it could potentially be
   ;; moved out of loops, though that can invite inconsistency
   ;; in a multithreaded environment.
-    (unless (vector-in-bounds-p vector index)
-      ;; From elt: Should signal an error of type type-error if index is not a valid sequence index for sequence.
-      (etypecase vector
-        ((simple-array * (*))
-         (let ((max (core::vector-length vector)))
-           (error 'core:array-out-of-bounds :datum index
-                                            :expected-type `(integer 0 (,max))
-                                            :array vector)))
-        (array
-         (let ((max (core::%array-total-size vector)))
-           (when (array-has-fill-pointer-p vector)
-             (setq max (min max (fill-pointer vector))))
-           (error 'core:array-out-of-bounds :datum index
-                                            :expected-type `(integer 0 (,max))
-                                            :array vector)))))
+  (etypecase vector
+    ((simple-array * (*))
+     (let ((max (core::vector-length vector)))
+       (when (or (< index 0) (>= index max))
+         (error 'core:array-out-of-bounds :datum index
+                                          :expected-type `(integer 0 (,max))
+                                          :array vector))))
+    (array
+     (let ((max (core::%array-total-size vector)))
+       (when (array-has-fill-pointer-p vector)
+         (setq max (min max (fill-pointer vector))))
+       (when (or (< index 0) (>= index max))
+         (error 'core:array-out-of-bounds :datum index
+                                          :expected-type `(integer 0 (,max))
+                                          :array vector)))))
   (with-array-data (underlying-array offset vector)
     ;; Okay, now array is a vector/simple, and index is valid.
     ;; This function takes care of element type discrimination.
@@ -641,11 +627,21 @@
 
 (declaim (inline vector-set))
 (defun vector-set (vector index value)
-  (unless (vector-in-bounds-p vector index)
-    (let ((max (core::vector-length vector)))
-      (error 'core:array-out-of-bounds :datum index
-                                       :expected-type `(integer 0 (,max))
-                                       :array vector)))
+  (etypecase vector
+    ((simple-array * (*))
+     (let ((max (core::vector-length vector)))
+       (when (or (< index 0) (>= index max))
+         (error 'core:array-out-of-bounds :datum index
+                                          :expected-type `(integer 0 (,max))
+                                          :array vector))))
+    (array
+     (let ((max (core::%array-total-size vector)))
+       (when (array-has-fill-pointer-p vector)
+         (setq max (min max (fill-pointer vector))))
+       (when (or (< index 0) (>= index max))
+         (error 'core:array-out-of-bounds :datum index
+                                          :expected-type `(integer 0 (,max))
+                                          :array vector)))))
   (with-array-data (underlying-array offset vector)
     (setf (core:vref underlying-array (add-indices index offset)) value)))
 
