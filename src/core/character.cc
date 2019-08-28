@@ -463,10 +463,15 @@ void CharacterInfo::initialize() {
   // we later compare with Uppercase
   gNamesToCharacterIndex["NULL"] = NULL_CHAR;
   gNamesToCharacterIndex["BELL"] = BELL_CHAR;
+  gNamesToCharacterIndex["BS"] = BACKSPACE_CHAR;
+  gNamesToCharacterIndex["HT"] = TAB_CHAR;
+  gNamesToCharacterIndex["LF"] = LINE_FEED_CHAR;
   gNamesToCharacterIndex["LINEFEED"] = LINE_FEED_CHAR;
-  gNamesToCharacterIndex["ESCAPE"] = ESCAPE_CHAR;
-  gNamesToCharacterIndex["DEL"] = RUBOUT_CHAR;
+  gNamesToCharacterIndex["FF"] = PAGE_CHAR;
   gNamesToCharacterIndex["CR"] = RETURN_CHAR;
+  gNamesToCharacterIndex["ESCAPE"] = ESCAPE_CHAR;
+  gNamesToCharacterIndex["SP"] = SPACE_CHAR;
+  gNamesToCharacterIndex["DEL"] = RUBOUT_CHAR;
 }
 
 CL_LAMBDA(ch);
