@@ -661,9 +661,20 @@ List_sp Cons_O::copyTreeCar() const {
   return ((rootCopy));
 }
 
+CL_DEFUN size_t core__cons_length(Cons_sp cons) {
+  size_t sz = 1;
+  T_sp cur;
+  for (cur = oCdr(cons); cur.consp(); cur = gc::As_unsafe<Cons_sp>(cur)->_Cdr) ++sz;
+  if (cur.notnilp()) {
+    TYPE_ERROR_PROPER_LIST(cur->asSmartPtr());
+  }
+  return sz;
+};
+
+// FIXME: Redundant
 size_t Cons_O::length() const {
   size_t sz = 1;
-  T_sp cur = _Nil<T_O>();
+  T_sp cur;
   for (cur = this->_Cdr; cur.consp(); cur = gc::As_unsafe<Cons_sp>(cur)->_Cdr) ++sz;
   if (cur.notnilp()) {
     TYPE_ERROR_PROPER_LIST(cur->asSmartPtr());
@@ -736,7 +747,7 @@ CL_DEFUN List_sp core__alist_assoc_eql(List_sp alist, T_sp key) {
 }
 
 
-
+SYMBOL_EXPORT_SC_(CorePkg, cons_length);
 SYMBOL_EXPORT_SC_(ClPkg, make_list);
   SYMBOL_EXPORT_SC_(ClPkg, cons);
   SYMBOL_EXPORT_SC_(ClPkg, getf);

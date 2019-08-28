@@ -818,15 +818,7 @@
   (declaim (inline length))
   (defun length (sequence)
     (etypecase sequence
-      (cons
-       (locally
-           (declare      ;(optimize speed)
-            (type cons sequence))
-         (let ((length 1))
-           (loop (let ((next (cdr sequence)))
-                   (etypecase next
-                     (cons (setf sequence next length (1+ length)))
-                     (null (return-from length length))))))))
+      (cons (core:cons-length sequence))
       ;; note: vector-length returns the fill pointer if there is one.
       (vector (core::vector-length sequence))
       (null 0))))
