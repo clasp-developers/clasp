@@ -39,6 +39,7 @@
     (cleavir-primop:car codegen-car convert-car)
     (cleavir-primop:cdr codegen-cdr convert-cdr)
     (cleavir-primop:funcall codegen-primop-funcall convert-primop-funcall)
+    (cleavir-primop:unreachable codegen-unreachable convert-unreachable)
     (core:vaslist-pop codegen-vaslist-pop convert-vaslist-pop)
     (core:vaslist-length codegen-vaslist-length convert-vaslist-length)
     (core::header-stamp-case codegen-header-stamp-case convert-header-stamp-case)
@@ -1004,6 +1005,17 @@ jump to blocks within this tagbody."
         (args (rest rest)))
     (codegen funcy func env)
     (codegen-call result (irc-load funcy) args env)))
+
+;;; CLEAVIR-PRIMOP:UNREACHABLE
+
+(defun codegen-unreachable (result rest env)
+  (declare (ignore result rest env))
+  (irc-unreachable)
+  ;; This is necessary if we keep generating more instructions.
+  ;; I don't think we actually do - and clasp compiles without this-
+  ;; but if we were to, the llvm error would be kind of hard to understand,
+  ;; so I'm leaving this in.
+  (irc-begin-block (irc-basic-block-create "unreachable")))
 
 ;;; CORE:VASLIST-LENGTH
 ;;; Get the count of remaining args in a vaslist.
