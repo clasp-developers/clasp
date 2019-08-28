@@ -10,16 +10,18 @@
        (destructuring-bind (&key (datum nil datump) (expected-type nil expp))
            arguments
          (if (and datump expp)
-             `(core:multiple-value-foreign-call
-               "cc_error_type_error" ,datum ,expected-type)
+             `(progn (core:multiple-value-foreign-call
+                      "cc_error_type_error" ,datum ,expected-type)
+                     (cleavir-primop:unreachable))
              whole)))
       ((core::array-out-of-bounds)
        (destructuring-bind (&key (datum nil datump) (expected-type nil expp)
                               (array nil arrayp))
            arguments
          (if (and datump expp arrayp)
-             `(core:multiple-value-foreign-call
-               "cc_error_array_out_of_bounds" ,datum ,expected-type ,array)
+             `(progn (core:multiple-value-foreign-call
+                      "cc_error_array_out_of_bounds" ,datum ,expected-type ,array)
+                     (cleavir-primop:unreachable))
              whole)))
       ;; this will include the non-constant case (datum = nil)
       (otherwise whole))))
