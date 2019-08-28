@@ -60,6 +60,13 @@ So don't make this external-linkage until you understand where this is coming fr
 ;;
 (defvar *debug-generate-prepass-llvm-ir* nil)
 
+;; Cleavir tracks what functions are inlined using this variable
+;;
+(defvar *track-inlinee-name* nil
+  "Keep track of the function that is being inlined into")
+(defvar *track-inlined-functions* nil
+  "Keep track of cleavir inlined functions")
+
 ;; Generate C++ destructors for reference-counting otherwise don't
 ;;
 

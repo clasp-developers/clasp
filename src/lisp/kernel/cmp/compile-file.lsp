@@ -263,6 +263,24 @@ Compile a lisp source file into an LLVM module."
         (quick-module-dump module "postoptimize")
         module))))
 
+(defun generate-info (input-file output-info-pathname)
+  "Write information about the compile-file to the .info file"
+  (with-open-file (fout output-info-pathname :direction :output :if-exists :supersede)
+    (format fout "Compile-file-info ~a~%" input-file)
+    (maphash (lambda (inlinee-name count-ht)
+               (let ((is-inline (gethash :inline count-ht)))
+                 (maphash (lambda (inlined-name count)
+                            (unless (eq :inline inlined-name)
+                              (let ((real-count (if is-inline
+                                                    (/ count 3)
+                                                    count)))
+                                (format fout "inlined-into \"~a\" \"~a\" ~a~%"
+                                        (cmp:jit-function-name inlinee-name)
+                                        (cmp:jit-function-name inlined-name)
+                                        real-count))))
+                          count-ht)))
+             *track-inlined-functions*)))
+
 (defun compile-file-serial (input-file
                             &key
                               (output-file nil output-file-p)
@@ -285,7 +303,9 @@ Compile a lisp source file into an LLVM module."
                               ;; will be linked together
                               (unique-symbol-prefix "")
                               ;; Control the order of startup functions
-                              (image-startup-position (core:next-startup-position))
+                              (image-startup-position (core:next-startup-position)) 
+                              ;; Generate an info file for the compilation T or NIL
+                              (output-info (member :DEBUG-COMPILE-FILE-OUTPUT-INFO *features*))
                               ;; ignored by bclasp
                               ;; but passed to hook functions
                               environment)
@@ -297,6 +317,8 @@ Compile a lisp source file into an LLVM module."
     (let* ((*compile-print* print)
            (*compile-verbose* verbose)
            (output-path (compile-file-pathname input-file :output-file output-file :output-type output-type ))
+           (*track-inlined-functions* (make-hash-table :test #'equal))
+           (output-info-pathname (when output-info (make-pathname :type "info" :defaults output-path)))
            (*compile-file-output-pathname* output-path)
            (*compile-file-unique-symbol-prefix* unique-symbol-prefix))
       (with-compiler-timer (:message "Compile-file" :report-link-time t :verbose verbose)
@@ -312,6 +334,7 @@ Compile a lisp source file into an LLVM module."
                                                 :optimize optimize
                                                 :optimize-level optimize-level)))
             (output-module module output-file output-type output-path input-file type)
+            (when output-info-pathname (generate-info input-file output-info-pathname))
             output-path))))))
 
 (defun reloc-model ()

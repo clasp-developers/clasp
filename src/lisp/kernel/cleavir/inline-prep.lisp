@@ -157,12 +157,27 @@
      ast))
   ast)
 
+(defun track-inline-counts (inlinee-names inlined-name)
+  (let (inlinee-name)
+    (loop for iname in inlinee-names
+          when iname
+            do (setf inlinee-name iname))
+    (let ((inlinee-ht (gethash inlinee-name cmp:*track-inlined-functions*)))
+      (unless inlinee-ht
+        (setf inlinee-ht (make-hash-table :test #'equal))
+        (setf (gethash inlinee-name cmp:*track-inlined-functions*) inlinee-ht))
+      (incf (gethash inlined-name inlinee-ht 0))
+      (when (core:global-inline-status inlinee-name)
+        (setf (gethash :inline inlinee-ht) t)))))
+
 (defmethod cleavir-cst-to-ast:convert-called-function-reference (cst info env (system clasp-64bit))
   (declare (ignore env))
   ;; FIXME: Duplicates cleavir.
   (when (not (eq (cleavir-env:inline info) 'cl:notinline))
     (let ((ast (cleavir-env:ast info)))
       (when ast
+        (when (hash-table-p cmp:*track-inlined-functions*)
+          (track-inline-counts cmp:*track-inlinee-name* (cleavir-environment:name info)))
         (return-from cleavir-cst-to-ast:convert-called-function-reference
           (fix-inline-source-positions
            (cleavir-ast-transformations:clone-ast ast)
