@@ -234,6 +234,7 @@ DEBUG_OPTIONS = [
     "DEBUG_LLVM_OPTIMIZATION_LEVEL_0",
     "DEBUG_SLOW",    # Code runs slower due to checks - undefine to remove checks
     "USE_HUMAN_READABLE_BITCODE",
+    "DEBUG_COMPILE_FILE_OUTPUT_INFO",
     "DISABLE_CST", # build the AST version of the compiler
     "CST", # build the CST version of the compiler (default)
     "CONFIG_VAR_COOL" # mps setting

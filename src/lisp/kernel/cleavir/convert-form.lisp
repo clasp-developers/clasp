@@ -32,6 +32,7 @@
              (lambda-name-info (find 'core:lambda-name dspecs :key (lambda (cst) (cst:raw (cst:first cst)))))
              (lambda-name (if lambda-name-info
                               (car (cdr (cst:raw lambda-name-info)))))
+             (cmp:*track-inlinee-name* (cons lambda-name cmp:*track-inlinee-name*))
              (original-lambda-list (if lambda-list (cst:raw lambda-list) nil))
              (rest-position (position '&rest original-lambda-list))
              ;; ditto FIXME in c-g-a version

@@ -4,6 +4,8 @@
             with-debug-info-source-position
             with-interpreter
             module-report
+            *track-inlined-functions*
+            *track-inlinee-name*
             *debug-link-options* ;; A list of strings to inject into link commands
             *compile-file-debug-dump-module* ;; Dump intermediate modules
             *compile-debug-dump-module* ;; Dump intermediate modules
