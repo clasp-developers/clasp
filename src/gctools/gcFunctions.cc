@@ -1277,6 +1277,14 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #endif
   if (buildReport) ss << (BF("USE_HUMAN_READABLE_BITCODE = %s\n") % (use_human_readable_bitcode ? "**DEFINED**" : "undefined") ).str();
 
+  bool debug_compile_file_output_info = false;
+#if DEBUG_COMPILE_FILE_OUTPUT_INFO==1
+  debug_compile_file_output_info = true;
+  debugging = true;
+  if (setFeatures)  features = core::Cons_O::create(_lisp->internKeyword("DEBUG-COMPILE-FILE-OUTPUT-INFO"),features);
+#endif
+  if (buildReport) ss << (BF("DEBUG_COMPILE_FILE_OUTPUT_INFO = %s\n") % (debug_compile_file_output_info ? "**DEFINED**" : "undefined") ).str();
+
   //
   // DEBUG_MONITOR must be last - other options turn this on
   //
