@@ -53,7 +53,7 @@
   (declaim (inline cl:eql))
   (deftype eq-incomparable () '(and number (not fixnum) (not single-float)))
   (defun eql (x y)
-    (cond ((eq x y) t)
+    (cond ((cleavir-primop:eq x y) t)
           ((cleavir-primop:typeq x eq-incomparable)
            (if (cleavir-primop:typeq y eq-incomparable)
                (core:eql-underlying x y)
