@@ -555,6 +555,8 @@ This is due to either a problem in foreign code (e.g., C++), or a bug in Clasp i
 (define-condition out-of-bounds (type-error)
   ;; the type-error DATUM is the index, and its EXPECTED-TYPE is the range.
   ;; This is the sequence and/or array.
+  ;; We don't generally display it because it could be huge,
+  ;; but it might be nice to have.
   ((object :INITARG :ARRAY :READER out-of-bounds-object)))
 
 ;; for row-major-aref
@@ -562,20 +564,18 @@ This is due to either a problem in foreign code (e.g., C++), or a bug in Clasp i
   ()
   (:report
    (lambda (condition stream)
-     (format stream "Row-major index ~d is out of bounds ~s for array ~s."
+     (format stream "Row-major array index ~d is out of bounds ~s."
              (type-error-datum condition)
-             (type-error-expected-type condition)
-             (out-of-bounds-object condition)))))
+             (type-error-expected-type condition)))))
 
 ;; for aref
 (define-condition array-out-of-bounds (out-of-bounds)
   ((axis :initarg :axis :reader out-of-bounds-axis))
   (:REPORT
    (lambda (condition stream)
-     (format stream "Index ~d is out of bounds ~s for array ~S on axis ~d."
+     (format stream "Index ~d is out of bounds ~s on axis ~d."
              (type-error-datum condition)
              (type-error-expected-type condition)
-             (out-of-bounds-object condition)
              (out-of-bounds-axis condition)))))
 
 ;; for elt
@@ -583,10 +583,9 @@ This is due to either a problem in foreign code (e.g., C++), or a bug in Clasp i
   ()
   (:report
    (lambda (condition stream)
-     (format stream "Sequence index ~d is out of bounds ~s for sequence ~s."
+     (format stream "Sequence index ~d is out of bounds ~s."
              (type-error-datum condition)
-             (type-error-expected-type condition)
-             (out-of-bounds-object condition)))))
+             (type-error-expected-type condition)))))
 
 (define-condition simple-type-error (simple-condition type-error) ())
 
