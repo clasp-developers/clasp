@@ -174,7 +174,6 @@ namespace core {
   [[noreturn]] void notSequenceError(T_sp obj);
   [[noreturn]] void noFillPointerError(Symbol_sp fn_name, T_sp array);
   [[noreturn]] void noFillPointerSpecializedArrayError(T_sp array);
-  [[noreturn]] void vectorNotArrayError(Symbol_sp fn_name, T_sp array);
   [[noreturn]] void notAdjustableError(Symbol_sp fn_name, T_sp array);
   [[noreturn]] void notVectorError(T_sp array);
   bool ranged_bit_vector_EQ_(const SimpleBitVector_O& x, const SimpleBitVector_O& y, size_t startx, size_t endx, size_t starty, size_t endy );
@@ -516,7 +515,9 @@ namespace core {
     virtual bool adjustableArrayP() const final {return false;};
     virtual size_t displacedIndexOffset() const override { return 0; };
     virtual size_t arrayDimension(size_t axisNumber) const override {
-      unlikely_if (axisNumber!=0) { vectorNotArrayError(cl::_sym_arrayDimension,this->asSmartPtr()); }
+      unlikely_if (axisNumber!=0) {
+        badAxisNumberError(cl::_sym_arrayDimension,1,axisNumber);
+      }
       return this->length();
     }
     virtual T_sp vectorPush(T_sp newElement) override {noFillPointerError(cl::_sym_vectorPush,this->asSmartPtr());  };

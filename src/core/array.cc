@@ -115,9 +115,6 @@ void cannotAdjustSizeOfSimpleArrays(T_sp obj) {
 void notSequenceError(T_sp obj) {
   TYPE_ERROR(obj,cl::_sym_string);
 }
-void vectorNotArrayError(Symbol_sp fn_name, T_sp array) {
-  SIMPLE_ERROR(BF("In %s - vector is not an array") % _rep_(fn_name));
-}
 void notAdjustableError(Symbol_sp fn_name, T_sp array) {
   SIMPLE_ERROR(BF("In %s - array is not adjustable") % _rep_(fn_name));
 }
@@ -319,9 +316,6 @@ CL_DEFUN bool cl__adjustable_array_p(Array_sp array)
 CL_LISPIFY_NAME("cl:array-dimension");
 CL_DEFUN size_t cl__arrayDimension(Array_sp array, size_t idx)
 {
-  if (idx >= array->rank()) {
-    SIMPLE_ERROR(BF("array-dimension index %d is out of bounds - must be less than %d") % idx % array->rank());
-  }
   return array->arrayDimension(idx);
 }
 
