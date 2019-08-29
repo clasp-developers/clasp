@@ -605,45 +605,36 @@
   ;; of the index, meaning it could potentially be
   ;; moved out of loops, though that can invite inconsistency
   ;; in a multithreaded environment.
-  (etypecase vector
-    ((simple-array * (*))
-     (let ((max (core::vector-length vector)))
-       (when (or (< index 0) (>= index max))
-         (error 'core:sequence-out-of-bounds :datum index
-                                             :expected-type `(integer 0 (,max))
-                                             :object vector))))
-    (array
-     (let ((max (core::%array-total-size vector)))
-       (when (array-has-fill-pointer-p vector)
-         (setq max (min max (fill-pointer vector))))
-       (when (or (< index 0) (>= index max))
-         (error 'core:sequence-out-of-bounds :datum index
-                                             :expected-type `(integer 0 (,max))
-                                             :object vector)))))
-  (with-array-data (underlying-array offset vector)
-    ;; Okay, now array is a vector/simple, and index is valid.
-    ;; This function takes care of element type discrimination.
-    (vref underlying-array (add-indices index offset))))
+  ;; NOTE: vector-length will be the fill pointer, if there is one.
+  ;; ALSO NOTE: This function is only used in ELT. We know already
+  ;; that vector really is a vector.
+  (let ((max (core::vector-length vector)))
+    (cond ((or (< index 0) (>= index max))
+           (error 'core:sequence-out-of-bounds :datum index
+                                               :expected-type `(integer 0 (,max))
+                                               :object vector))
+          ;; Handle simple arrays separately, because they're easy.
+          ((core:data-vector-p vector) (vref vector index))
+          (t (with-array-data (underlying-array offset vector)
+               ;; Okay, now array is a vector/simple, and index is valid.
+               ;; This function takes care of element type discrimination.
+               (vref underlying-array (add-indices index offset)))))))
 
 (declaim (inline vector-set))
 (defun vector-set (vector index value)
-  (etypecase vector
-    ((simple-array * (*))
-     (let ((max (core::vector-length vector)))
-       (when (or (< index 0) (>= index max))
-         (error 'core:sequence-out-of-bounds :datum index
-                                             :expected-type `(integer 0 (,max))
-                                             :object vector))))
-    (array
-     (let ((max (core::%array-total-size vector)))
-       (when (array-has-fill-pointer-p vector)
-         (setq max (min max (fill-pointer vector))))
-       (when (or (< index 0) (>= index max))
-         (error 'core:sequence-out-of-bounds :datum index
-                                             :expected-type `(integer 0 (,max))
-                                             :object vector)))))
-  (with-array-data (underlying-array offset vector)
-    (setf (core:vref underlying-array (add-indices index offset)) value)))
+  ;; NOTE: This function is only used in CORE:SETF-ELT. We know already
+  ;; that vector really is a vector.
+  (let ((max (core::vector-length vector)))
+    (cond ((or (< index 0) (>= index max))
+           (error 'core:sequence-out-of-bounds :datum index
+                                               :expected-type `(integer 0 (,max))
+                                               :object vector))
+          ;; Handle simple arrays separately, because they're easy.
+          ((core:data-vector-p vector) (setf (vref vector index) value))
+          (t (with-array-data (underlying-array offset vector)
+               ;; Okay, now array is a vector/simple, and index is valid.
+               ;; This function takes care of element type discrimination.
+               (setf (vref underlying-array (add-indices index offset)) value))))))
 
 (declaim (inline row-major-aref/no-bounds-check))
 (defun row-major-aref/no-bounds-check (array index)
