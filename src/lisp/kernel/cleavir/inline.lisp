@@ -836,7 +836,7 @@
                        :datum index :object sequence
                        :expected-type `(integer 0 ,(1- (core:cons-length sequence)))))
                (t ; improper list.
-                (error 'type-error :datum cell :expected-type 'sequence)))))
+                (error 'type-error :datum sequence :expected-type 'sequence)))))
       (vector (vector-read sequence index))
       (null (error 'core:sequence-out-of-bounds :datum index :expected-type '(integer 0 (0))
                                                 :object sequence))))
@@ -853,7 +853,7 @@
                        :datum index :object sequence
                        :expected-type `(integer 0 ,(1- (core:cons-length sequence)))))
                (t ; improper list.
-                (error 'type-error :datum cell :expected-type 'sequence)))))
+                (error 'type-error :datum sequence :expected-type 'sequence)))))
       (vector (vector-set sequence index new-value))
       (null (error 'core:sequence-out-of-bounds :datum index :expected-type '(integer 0 (0))
                                                 :object sequence)))))
