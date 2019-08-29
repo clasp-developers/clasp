@@ -97,8 +97,15 @@ void tooManyIndicesListError(List_sp indices) {
 void badAxisNumberError(Symbol_sp fn_name, size_t rank, size_t axisNumber) {
   SIMPLE_ERROR(BF("In %s illegal axis number %d must be less than rank %d") % _rep_(fn_name) % axisNumber % rank );
 }
-void badIndexError(gc::Fixnum oneIndex, size_t curDimension) {
-  SIMPLE_ERROR(BF("The index %" PFixnum " must be less than %d") % oneIndex % curDimension );
+void badIndexError(T_sp array, size_t axis, gc::Fixnum index, size_t dimension) {
+  ERROR(core::_sym_array_out_of_bounds,
+        core::lisp_createList(kw::_sym_expected_type,
+                              // `(integer 0 (,dimension))
+                              core::lisp_createList(cl::_sym_integer, clasp_make_fixnum(0),
+                                                    core::lisp_createList(clasp_make_fixnum(dimension))),
+                              kw::_sym_datum, clasp_make_fixnum(index),
+                              kw::_sym_object, array,
+                              kw::_sym_axis, clasp_make_fixnum(axis)));
 }
 void indexNotFixnumError(T_sp index) {
   TYPE_ERROR(index,cl::_sym_fixnum);
@@ -247,7 +254,7 @@ size_t Array_O::arrayRowMajorIndex(List_sp indices) const {
       LIKELY_if (index.fixnump()) {
         gc::Fixnum oneIndex = index.unsafe_fixnum();
         unlikely_if (oneIndex < 0 || oneIndex >= curDimension) {
-          badIndexError(oneIndex, curDimension);
+          badIndexError(this->asSmartPtr(), idx, oneIndex, curDimension);
         }
         offset = offset * curDimension + oneIndex;
       } else {
@@ -286,7 +293,7 @@ size_t Array_O::arrayRowMajorIndex(VaList_sp indices) const {
     LIKELY_if (one.fixnump()) {
       gc::Fixnum oneIndex = one.unsafe_fixnum();
       unlikely_if (oneIndex < 0 || oneIndex >= curDimension) {
-        badIndexError(oneIndex, curDimension);
+        badIndexError(this->asSmartPtr(), idx, oneIndex, curDimension);
       }
       offset = offset * curDimension + oneIndex;
     } else {

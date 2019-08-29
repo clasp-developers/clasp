@@ -557,7 +557,7 @@ This is due to either a problem in foreign code (e.g., C++), or a bug in Clasp i
   ;; This is the sequence and/or array.
   ;; We don't generally display it because it could be huge,
   ;; but it might be nice to have.
-  ((object :INITARG :ARRAY :READER out-of-bounds-object)))
+  ((object :INITARG :object :READER out-of-bounds-object)))
 
 ;; for row-major-aref
 (define-condition row-major-out-of-bounds (out-of-bounds)
@@ -573,7 +573,7 @@ This is due to either a problem in foreign code (e.g., C++), or a bug in Clasp i
   ((axis :initarg :axis :reader out-of-bounds-axis))
   (:REPORT
    (lambda (condition stream)
-     (format stream "Index ~d is out of bounds ~s on axis ~d."
+     (format stream "Array index ~d is out of bounds ~s on axis ~d."
              (type-error-datum condition)
              (type-error-expected-type condition)
              (out-of-bounds-axis condition)))))

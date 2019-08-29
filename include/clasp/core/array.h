@@ -165,7 +165,7 @@ namespace core {
   [[noreturn]] void missingValueVaListError(VaList_sp indices);
   [[noreturn]] void tooManyIndicesVaListError(VaList_sp indices);
   [[noreturn]] void badAxisNumberError(Symbol_sp fn_name, size_t rank, size_t axisNumber);
-  [[noreturn]] void badIndexError(size_t oneIndex, size_t curDimension);
+  [[noreturn]] void badIndexError(T_sp arr, size_t axis, size_t oneIndex, size_t curDimension);
   [[noreturn]] void indexNotFixnumError(T_sp index);
   [[noreturn]] void insufficientIndexListError(List_sp indices);
   [[noreturn]] void insufficientIndexVaListError(VaList_sp indices);
