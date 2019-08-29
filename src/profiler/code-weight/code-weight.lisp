@@ -350,7 +350,9 @@
   "Analyze the llvm-ir file and print the CL source locations that generate at least NUM lines of llvm-ir code"
   (let ((tree (make-hash-table :test #'equal)))
     (loop for filename in filenames
-          do (load-inline-counts (make-pathname :type "info" :defaults filename) tree))
+          for info-filename = (make-pathname :type "info" :defaults filename)
+          when (probe-file info-filename)
+            do (load-inline-counts (make-pathname :type "info" :defaults filename) tree))
     tree))
 
 (defun analyze-code (filenames &key (func-num 10))
