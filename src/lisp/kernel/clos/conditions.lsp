@@ -552,14 +552,41 @@ This is due to either a problem in foreign code (e.g., C++), or a bug in Clasp i
 	     (type-error-datum condition)
 	     (type-error-expected-type condition)))))
 
-(define-condition array-out-of-bounds (type-error)
-  ((array :INITARG :ARRAY :READER array-out-of-bounds-array))
-  (:REPORT
+(define-condition out-of-bounds (type-error)
+  ;; the type-error DATUM is the index, and its EXPECTED-TYPE is the range.
+  ;; This is the sequence and/or array.
+  ((object :INITARG :ARRAY :READER out-of-bounds-object)))
+
+;; for row-major-aref
+(define-condition row-major-out-of-bounds (out-of-bounds)
+  ()
+  (:report
    (lambda (condition stream)
-     (format stream "array index ~S is out of bounds ~s for array ~S."
+     (format stream "Row-major index ~d is out of bounds ~s for array ~s."
              (type-error-datum condition)
              (type-error-expected-type condition)
-             (array-out-of-bounds-array condition)))))
+             (out-of-bounds-object condition)))))
+
+;; for aref
+(define-condition array-out-of-bounds (out-of-bounds)
+  ((axis :initarg :axis :reader out-of-bounds-axis))
+  (:REPORT
+   (lambda (condition stream)
+     (format stream "Index ~d is out of bounds ~s for array ~S on axis ~d."
+             (type-error-datum condition)
+             (type-error-expected-type condition)
+             (out-of-bounds-object condition)
+             (out-of-bounds-axis condition)))))
+
+;; for elt
+(define-condition sequence-out-of-bounds (out-of-bounds)
+  ()
+  (:report
+   (lambda (condition stream)
+     (format stream "Sequence index ~d is out of bounds ~s for sequence ~s."
+             (type-error-datum condition)
+             (type-error-expected-type condition)
+             (out-of-bounds-object condition)))))
 
 (define-condition simple-type-error (simple-condition type-error) ())
 
