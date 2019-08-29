@@ -600,8 +600,9 @@ SYMBOL_EXPORT_SC_(ClPkg, array_has_fill_pointer_p);
 SYMBOL_EXPORT_SC_(ClPkg, simple_bit_vector);
 SYMBOL_EXPORT_SC_(ClPkg, bit_vector);
 
-
+SYMBOL_EXPORT_SC_(CorePkg, row_major_out_of_bounds);
 SYMBOL_EXPORT_SC_(CorePkg, array_out_of_bounds);
+SYMBOL_EXPORT_SC_(CorePkg, sequence_out_of_bounds);
 SYMBOL_EXPORT_SC_(KeywordPkg, array);
 SYMBOL_EXPORT_SC_(CorePkg, replaceArray);
 SYMBOL_EXPORT_SC_(CorePkg, fillArrayWithElt );

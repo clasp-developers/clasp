@@ -609,17 +609,17 @@
     ((simple-array * (*))
      (let ((max (core::vector-length vector)))
        (when (or (< index 0) (>= index max))
-         (error 'core:array-out-of-bounds :datum index
-                                          :expected-type `(integer 0 (,max))
-                                          :array vector))))
+         (error 'core:sequence-out-of-bounds :datum index
+                                             :expected-type `(integer 0 (,max))
+                                             :object vector))))
     (array
      (let ((max (core::%array-total-size vector)))
        (when (array-has-fill-pointer-p vector)
          (setq max (min max (fill-pointer vector))))
        (when (or (< index 0) (>= index max))
-         (error 'core:array-out-of-bounds :datum index
-                                          :expected-type `(integer 0 (,max))
-                                          :array vector)))))
+         (error 'core:sequence-out-of-bounds :datum index
+                                             :expected-type `(integer 0 (,max))
+                                             :object vector)))))
   (with-array-data (underlying-array offset vector)
     ;; Okay, now array is a vector/simple, and index is valid.
     ;; This function takes care of element type discrimination.
@@ -631,17 +631,17 @@
     ((simple-array * (*))
      (let ((max (core::vector-length vector)))
        (when (or (< index 0) (>= index max))
-         (error 'core:array-out-of-bounds :datum index
-                                          :expected-type `(integer 0 (,max))
-                                          :array vector))))
+         (error 'core:sequence-out-of-bounds :datum index
+                                             :expected-type `(integer 0 (,max))
+                                             :object vector))))
     (array
      (let ((max (core::%array-total-size vector)))
        (when (array-has-fill-pointer-p vector)
          (setq max (min max (fill-pointer vector))))
        (when (or (< index 0) (>= index max))
-         (error 'core:array-out-of-bounds :datum index
-                                          :expected-type `(integer 0 (,max))
-                                          :array vector)))))
+         (error 'core:sequence-out-of-bounds :datum index
+                                             :expected-type `(integer 0 (,max))
+                                             :object vector)))))
   (with-array-data (underlying-array offset vector)
     (setf (core:vref underlying-array (add-indices index offset)) value)))
 
@@ -662,9 +662,9 @@
     (let ((max (etypecase array
                  ((simple-array * (*)) (core::vector-length array))
                  (array (core::%array-total-size array)))))
-      (error 'core:array-out-of-bounds :datum index
-                                       :expected-type `(integer 0 (,max))
-                                       :array array)))
+      (error 'core:row-major-out-of-bounds :datum index
+                                           :expected-type `(integer 0 (,max))
+                                           :object array)))
   (row-major-aref/no-bounds-check array index))
 
 (declaim (inline row-major-aset/no-bounds-check))
@@ -678,9 +678,9 @@
     (let ((max (etypecase array
                  ((simple-array * (*)) (core::vector-length array))
                  (array (core::%array-total-size array)))))
-      (error 'core:array-out-of-bounds :datum index
-                                       :expected-type `(integer 0 (,max))
-                                       :array array)))
+      (error 'core:row-major-out-of-bounds :datum index
+                                           :expected-type `(integer 0 (,max))
+                                           :object array)))
   (row-major-aset/no-bounds-check array index value))
 
 (declaim (inline schar (setf schar) char (setf char)))
@@ -827,37 +827,36 @@
   (debug-inline "elt")
   (declaim (inline elt))
   (defun elt (sequence index)
-  (etypecase sequence
-    (list (if (null sequence)
-              (error 'type-error :datum sequence :expected-type 'cons)
-              (let ((cell (nthcdr index sequence)))
-                (if (consp cell)
-                    (car (the cons cell))
-                    (if cell
-                        ;;; we expect a proper list
-                        (error 'type-error :datum cell :expected-type 'list)
-                        ;;; index must be wrong
-                        (error 'type-error :datum index :expected-type (list 'integer 0 (1- (length sequence)))))))))
-    (vector (vector-read sequence index))
-    (t (error 'type-error :datum sequence :expected-type 'sequence))))
+    (etypecase sequence
+      (cons
+       (let ((cell (nthcdr index sequence)))
+         (cond ((consp cell) (car (the cons cell)))
+               ((null cell) ; Ran out of conses - index is too large.
+                (error 'core:sequence-out-of-bounds
+                       :datum index :object sequence
+                       :expected-type `(integer 0 ,(1- (core:cons-length sequence)))))
+               (t ; improper list.
+                (error 'type-error :datum cell :expected-type 'sequence)))))
+      (vector (vector-read sequence index))
+      (null (error 'core:sequence-out-of-bounds :datum index :expected-type '(integer 0 (0))
+                                                :object sequence))))
 
   (debug-inline "core:setf-elt")
   (declaim (inline core:setf-elt))
   (defun core:setf-elt (sequence index new-value)
     (etypecase sequence
-      (list (if (null sequence)
-                (error 'type-error :datum sequence :expected-type 'cons)
-                (let ((cell (nthcdr index sequence)))
-                  (if (consp cell)
-                      (setf (car cell) new-value)
-                      (if cell
-                        ;;; we expect a proper list
-                          (error 'type-error :datum sequence :expected-type 'list)
-                        ;;; index must be wrong
-                          (error 'type-error :datum index :expected-type (list 'integer 0 (1- (length sequence)))))))))
-      ;;; Need to test if index fits respecting the fill-pointer
+      (cons
+       (let ((cell (nthcdr index sequence)))
+         (cond ((consp cell) (setf (car (the cons cell)) new-value))
+               ((null cell) ; Ran out of conses - index is too large.
+                (error 'core:sequence-out-of-bounds
+                       :datum index :object sequence
+                       :expected-type `(integer 0 ,(1- (core:cons-length sequence)))))
+               (t ; improper list.
+                (error 'type-error :datum cell :expected-type 'sequence)))))
       (vector (vector-set sequence index new-value))
-      (t (error 'type-error :datum sequence :expected-type 'sequence)))))
+      (null (error 'core:sequence-out-of-bounds :datum index :expected-type '(integer 0 (0))
+                                                :object sequence)))))
 
 ;;; ------------------------------------------------------------
 ;;;
