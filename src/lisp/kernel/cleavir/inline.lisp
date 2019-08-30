@@ -65,11 +65,10 @@
 (progn
   (debug-inline "eql")
   (declaim (inline cl:eql))
-  (deftype eq-incomparable () '(and number (not fixnum) (not single-float)))
   (defun eql (x y)
     (cond ((cleavir-primop:eq x y) t)
-          ((cleavir-primop:typeq x eq-incomparable)
-           (if (cleavir-primop:typeq y eq-incomparable)
+          ((cleavir-primop:typeq x core::eq-incomparable)
+           (if (cleavir-primop:typeq y core::eq-incomparable)
                (core:eql-underlying x y)
                nil))
           (t nil))))

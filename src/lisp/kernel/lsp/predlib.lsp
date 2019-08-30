@@ -112,6 +112,15 @@ bignums."
 (deftype bignum ()
   '(OR (INTEGER * (#.most-negative-fixnum)) (INTEGER (#.most-positive-fixnum) *)))
 
+(deftype general-number ()
+  "The type of numbers that are not immediates. Clasp-specific, internal."
+  '(and number (not fixnum) (not single-float)))
+
+(deftype eq-incomparable ()
+  "The type of objects that have different results for EQL and EQ.
+Clasp-specific, internal. Used in optimizations of EQL."
+  'general-number)
+
 (deftype ext::byte8 () '(INTEGER 0 255))
 (deftype ext::integer8 () '(INTEGER -128 127))
 (deftype ext::byte16 () '(INTEGER 0 #xFFFF))
