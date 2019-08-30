@@ -42,6 +42,20 @@
        (return-from ,(core:function-block-name name) ,(second lambda-list)))
      ,@body))
 
+;;; This stupid little macro is to tighten up
+;;; (if (and (fixnump x) (>= x c1) (< x c2)) ...)
+;;; which is useful for bounds checks.
+;;; The compiler can't optimize this condition very well as I write this.
+;;; NOTE: Evaluates VAL more than once.
+(defmacro if-in-bounds ((val low high) then else)
+  `(core::local-block nil
+     (if (cleavir-primop:typeq ,val fixnum)
+         (if (cleavir-primop:fixnum-not-less ,val ,low)
+             (if (cleavir-primop:fixnum-less ,val ,high)
+                 (return ,then)))
+         (error 'type-error :datum ,val :expected-type 'fixnum))
+     ,else))
+
 (progn
   (debug-inline "eq")
   (declaim (inline cl:eq))
@@ -452,9 +466,10 @@
          (core::vector-length array)
          (error "Invalid axis number ~d for array of rank ~d" axis-number 1)))
     (array
-     (if (and (>= axis-number 0) (< axis-number (core::%array-rank array)))
-         (core::%array-dimension array axis-number)
-         (error "Invalid axis number ~d for array of rank ~d" axis-number (core::%array-rank array))))))
+     (if-in-bounds (axis-number 0 (core::%array-rank array))
+                   (core::%array-dimension array axis-number)
+                   (error "Invalid axis number ~d for array of rank ~d"
+                          axis-number (core::%array-rank array))))))
 
 ;; Unsafe version for array-row-major-index
 (debug-inline "%array-dimension")
@@ -469,24 +484,20 @@
 (declaim (inline svref))
 (defun svref (vector index)
   (if (typep vector 'simple-vector)
-      (if (typep index 'fixnum)
-          (let ((ats (core::vector-length vector)))
-            (if (and (<= 0 index) (< index ats))
-                (cleavir-primop:aref vector index t t t)
-                (error "Invalid index ~d for vector of length ~d" index ats)))
-          (error 'type-error :datum index :expected-type 'fixnum))
+      (let ((ats (core::vector-length vector)))
+        (if-in-bounds (index 0 ats)
+                      (cleavir-primop:aref vector index t t t)
+                      (error "Invalid index ~d for vector of length ~d" index ats)))
       (error 'type-error :datum vector :expected-type 'simple-vector)))
 
 (declaim (inline (setf svref)))
 (defun (setf svref) (value vector index)
   (if (typep vector 'simple-vector)
-      (if (typep index 'fixnum)
-          (let ((ats (core::vector-length vector)))
-            (if (and (<= 0 index) (< index ats))
-                (progn (cleavir-primop:aset vector index value t t t)
-                       value)
-                (error "Invalid index ~d for vector of length ~d" index ats)))
-          (error 'type-error :datum index :expected-type 'fixnum))
+      (let ((ats (core::vector-length vector)))
+        (if-in-bounds (index 0 ats)
+                      (progn (cleavir-primop:aset vector index value t t t)
+                             value)
+                      (error "Invalid index ~d for vector of length ~d" index ats)))
       (error 'type-error :datum vector :expected-type 'simple-vector)))
 
 ;;; Unsafe versions to use that don't check bounds (but still check type)
@@ -494,7 +505,7 @@
 (declaim (inline svref/no-bounds-check))
 (defun svref/no-bounds-check (vector index)
   (if (typep vector 'simple-vector)
-      (if (typep index 'fixnum)
+      (if (cleavir-primop:typeq index fixnum)
           (cleavir-primop:aref vector index t t t)
           (error 'type-error :datum index :expected-type 'fixnum))
       (error 'type-error :datum vector :expected-type 'simple-vector)))
@@ -502,7 +513,7 @@
 (declaim (inline (setf svref/no-bounds-check)))
 (defun (setf svref/no-bounds-check) (value vector index)
   (if (typep vector 'simple-vector)
-      (if (typep index 'fixnum)
+      (if (cleavir-primop:typeq index fixnum)
           (progn (cleavir-primop:aset vector index value t t t)
                  value)
           (error 'type-error :datum index :expected-type 'fixnum))
@@ -609,32 +620,36 @@
   ;; ALSO NOTE: This function is only used in ELT. We know already
   ;; that vector really is a vector.
   (let ((max (core::vector-length vector)))
-    (cond ((or (< index 0) (>= index max))
-           (error 'core:sequence-out-of-bounds :datum index
-                                               :expected-type `(integer 0 (,max))
-                                               :object vector))
-          ;; Handle simple arrays separately, because they're easy.
-          ((core:data-vector-p vector) (vref vector index))
-          (t (with-array-data (underlying-array offset vector)
-               ;; Okay, now array is a vector/simple, and index is valid.
-               ;; This function takes care of element type discrimination.
-               (vref underlying-array (add-indices index offset)))))))
+    (if-in-bounds (index 0 max)
+                  nil
+                  (error 'core:sequence-out-of-bounds
+                         :datum index :expected-type `(integer 0 (,max))
+                         :object vector))
+    ;; Handle simple arrays separately, because they're easy.
+    (if (core:data-vector-p vector)
+        (vref vector index)
+        (with-array-data (underlying-array offset vector)
+          ;; Okay, now array is a vector/simple, and index is valid.
+          ;; This function takes care of element type discrimination.
+          (vref underlying-array (add-indices index offset))))))
 
 (declaim (inline vector-set))
 (defun vector-set (vector index value)
   ;; NOTE: This function is only used in CORE:SETF-ELT. We know already
   ;; that vector really is a vector.
   (let ((max (core::vector-length vector)))
-    (cond ((or (< index 0) (>= index max))
-           (error 'core:sequence-out-of-bounds :datum index
-                                               :expected-type `(integer 0 (,max))
-                                               :object vector))
-          ;; Handle simple arrays separately, because they're easy.
-          ((core:data-vector-p vector) (setf (vref vector index) value))
-          (t (with-array-data (underlying-array offset vector)
-               ;; Okay, now array is a vector/simple, and index is valid.
-               ;; This function takes care of element type discrimination.
-               (setf (vref underlying-array (add-indices index offset)) value))))))
+    (if-in-bounds (index 0 max)
+                  nil
+                  (error 'core:sequence-out-of-bounds
+                         :datum index :expected-type `(integer 0 (,max))
+                         :object vector))
+    ;; Handle simple arrays separately, because they're easy.
+    (if (core:data-vector-p vector)
+        (setf (vref vector index) value)
+        (with-array-data (underlying-array offset vector)
+          ;; Okay, now array is a vector/simple, and index is valid.
+          ;; This function takes care of element type discrimination.
+          (setf (vref underlying-array (add-indices index offset)) value)))))
 
 (declaim (inline row-major-aref/no-bounds-check))
 (defun row-major-aref/no-bounds-check (array index)
@@ -648,14 +663,14 @@
 
 (declaim (inline cl:row-major-aref))
 (defun cl:row-major-aref (array index)
-  ;; Bounds check. Use the original arguments.
-  (unless (row-major-array-in-bounds-p array index)
-    (let ((max (etypecase array
-                 ((simple-array * (*)) (core::vector-length array))
-                 (array (core::%array-total-size array)))))
-      (error 'core:row-major-out-of-bounds :datum index
-                                           :expected-type `(integer 0 (,max))
-                                           :object array)))
+  (let ((max (etypecase array
+               ((simple-array * (*)) (core::vector-length array))
+               (array (core::%array-total-size array)))))
+    (if-in-bounds (index 0 max)
+                  nil
+                  (error 'core:row-major-out-of-bounds :datum index
+                                                       :expected-type `(integer 0 (,max))
+                                                       :object array)))
   (row-major-aref/no-bounds-check array index))
 
 (declaim (inline row-major-aset/no-bounds-check))
@@ -665,13 +680,14 @@
 
 (declaim (inline core:row-major-aset))
 (defun core:row-major-aset (array index value)
-  (unless (row-major-array-in-bounds-p array index)
-    (let ((max (etypecase array
-                 ((simple-array * (*)) (core::vector-length array))
-                 (array (core::%array-total-size array)))))
-      (error 'core:row-major-out-of-bounds :datum index
-                                           :expected-type `(integer 0 (,max))
-                                           :object array)))
+  (let ((max (etypecase array
+               ((simple-array * (*)) (core::vector-length array))
+               (array (core::%array-total-size array)))))
+    (if-in-bounds (index 0 max)
+                  nil
+                  (error 'core:row-major-out-of-bounds :datum index
+                                                       :expected-type `(integer 0 (,max))
+                                                       :object array)))
   (row-major-aset/no-bounds-check array index value))
 
 (declaim (inline schar (setf schar) char (setf char)))
