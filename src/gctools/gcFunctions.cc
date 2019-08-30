@@ -316,6 +316,12 @@ CL_DEFUN core::T_sp core__instance_stamp(core::T_sp obj)
   SIMPLE_ERROR(BF("core:instance-stamp was about to return a non-fixnum %p") % (void*)stamp.raw_());
 }
 
+CL_DOCSTRING("Determine if stamp A is immediately less than stamp B, so that they can be merged into a range.");
+CL_DEFUN bool core__stamps_adjacent_p(size_t stamp_a, size_t stamp_b) {
+  return (((stamp_a >> gctools::Header_s::stamp_shift) + 1)
+          == (stamp_b >> gctools::Header_s::stamp_shift));
+}
+
 CL_DOCSTRING("Set the header stamp for the object");
 CL_DEFUN void core__instance_stamp_set(core::T_sp obj, core::T_sp stamp)
 {

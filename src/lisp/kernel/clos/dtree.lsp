@@ -236,7 +236,7 @@
               with result = (list current)
               for ((class . next) . more) on (rest pairs)
               for stamp = (core:class-stamp-for-instances class)
-              if (and (= (1+ (cdar current)) stamp)
+              if (and (core:stamps-adjacent-p (cdar current) stamp)
                       (next= (cdr current) next))
                 do (setf (cdar current) stamp)
               else do (push (setf current (fresh stamp next)) result)
