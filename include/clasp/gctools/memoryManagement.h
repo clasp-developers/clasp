@@ -252,29 +252,47 @@ namespace gctools {
       The (header) uintptr_t is a tagged value where the
       two least significant bits are the tag.
 
-                              data       tag
-      64 bits total -> |    62 bits | 2 bits |
+                         stamp value   where-tag    mtag
+      64 bits total -> |    60 bits |   2 bits  | 2 bits
 
-      The 'tag' - two least-significant bits of the header uintptr_t value describe
+      The 'mtag' - two least-significant bits of the header uintptr_t value describe
       what the rest of the header data means.  This is used for General_O and derived objects.
-      #B00 == This is an illegal value for the two lsbs,
-              it indictates that this is not a valid header.
-      #B01 == This is the 'stamp_tag' and indicates that the other bits in the header
+      #B00 == THIS MUST ALWAYS BE #B00 !!!!!!! EXCEPT MPS WILL CHANGE THEM FOR ITS PURPOSES.
+              To be a valid Clasp object they must be #B00  The header MUST look like a FIXNUM
+              This is the 'stamp_tag' and indicates that the other bits in the header
               represent a stamp value that indicate 
               whether there is an extended-stamp and where to find the extended-stamp.
-      #B10 == This tag indicates that the remaining data bits in the header contains a forwarding
+      #B01 == (unused) This is an illegal value for the two lsbs,
+              it indictates that this is not a valid header.
+      #B10 == (MPS specific) FWD_MTAG - This tag indicates that the remaining data bits in the header contains a forwarding
               pointer.  The uintptr_t in additional_data[0] contains the length of
               the block from the client pointer.
-      #B11 == This indicates that the header contains a pad; check the
+      #B11 == (MPS specific) This indicates that the header contains a pad; check the
               bit at #B100 to see if the pad is a pad1 (==0) or a pad (==1)
 
+      IMPORTANT!!!!!:
+          The header values are designed to look like FIXNUMs - so we can read them
+          out of the header and compare them to stamps without shifting or masking anything.
+          This is confusing because if you read the header value #B10100 in Clasp
+          and print it you will see 5 (five) but you expect 20 (twenty).
+          This is because the value is treated as a FIXNUM within Clasp and 
+          it looks like it's shifted >>2
+
+
       If the tag is a 'stamp_tag' then the data bits have this meaning...
-                              stamp      tag
-      64 bits total -> |    62 bits | 2 bits |
+                              stamp   where_tag
+      64 bits total -> |    60 bits | 2 bits |
       
-      The 'stamp' is a 62 bit value (zero extended, 0==illegal) that tells
-      the MPS GC what the layout of the object is and is used to determine
+      The 'stamp' is a 60 bit value (zero extended) that tells
+      the MPS GC and the TYPEQ machinery what the layout of the object is and is used to determine
       IsA relationships between classes.
+
+      The 'where_tag' (see derivable_wtag,rack_wtag,wrapped_wtag,header_wtag) 
+      tells clasp where to find the stamp value that is useful for fastgf dispatch.
+      header_wtag says its in the header
+      rack_wtag says it's in the rack
+      wrapped_wtag says its in the wrapped pointer object
+      derivable_wtag is complicated.  A C++ virtual method is called that returns the stamp.
 
       The STAMP is also used by the fastgf generic function dispatch method.
       Exposed C++ classes that inherit from Instance_O store an extended-stamp in the rack.
