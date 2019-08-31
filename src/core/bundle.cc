@@ -309,15 +309,6 @@ Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
         }
       }
     }
-    if (!gotQuicklispPath) {
-      std::string opt_clasp_quicklisp_string = "/opt/clasp/lib/quicklisp/";
-      bf::path opt_clasp_quicklisp_path = bf::path(opt_clasp_quicklisp_string);
-      if (bf::exists(opt_clasp_quicklisp_path)) {
-        if (safe_is_directory(opt_clasp_quicklisp_path)) {
-          this->_Directories->_QuicklispDir = opt_clasp_quicklisp_path;
-        }
-      }
-    }
   }
   if (verbose) {
     printf("%s:%d  Final bundle setup:\n", __FILE__, __LINE__ );
