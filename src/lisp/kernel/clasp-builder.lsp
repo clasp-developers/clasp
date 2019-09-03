@@ -775,18 +775,6 @@ Return files."
 
 (export '(compile-cclasp recompile-cclasp))
 
-
-(defun remove-files-for-boehmdc (system)
-  "boehmdc doesn't do inlining and type inference properly - so we remove inline.lisp from the build system"
-  #+(or)(let (keep)
-          (dolist (file system)
-            (if (string= "inline" (pathname-name file))
-                nil
-                (setq keep (cons file keep))))
-          (nreverse keep))
-  system)
-
-
 (defun link-cclasp (&key (output-file (build-common-lisp-bitcode-pathname)) (system (command-line-arguments-as-list)))
   (let ((all-output (output-object-pathnames #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/cclasp" :system system)))
     (link-modules output-file all-output)))
