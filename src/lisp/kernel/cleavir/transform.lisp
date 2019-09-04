@@ -1,5 +1,32 @@
 (in-package #:clasp-cleavir)
 
+;;;; TRANSFORMS are like compiler macros, but use the context (environment)
+;;;; more heavily. Currently they are implemented through compiler macros,
+;;;; but the intent is that in the future they will be used after the source
+;;;; stage, when much more information has been made available through analysis.
+;;;; Syntax is as follows:
+;;;; deftransform (op-name (&rest lambda-list) &body body)
+;;;; op-name is the name of a function or macro.
+;;;; lambda-list is a typed lambda list, kind of like defmethod, but with
+;;;;  types allowed as "specializers". Currently the lambda list can only have
+;;;;  required parameters.
+;;;; Semantics are as follows:
+;;;; When the compiler sees a call to op-name, it will determine the types
+;;;; of the argument forms as best it can. Then it will try to find a
+;;;; transform such that the argument types are subtypes of the types of the
+;;;; transform's lambda list. If it finds one, it calls the transform function
+;;;; with the given argument forms. If the transform returns NIL, the compiler
+;;;; tries another valid transform if there is one, or else gives up.
+;;;; Otherwise, the compiler substitutes the result for the original op-name.
+;;;; Here's a simple example:
+;;;; (deftransform eql ((x symbol) y) 'eq)
+;;;; Now when the compiler sees (eql 'foo x), this transform might be used
+;;;; because it's easy to see 'FOO is a symbol. The transform unconditionally
+;;;; returns EQ, so the compiler replaces the form with (eq 'foo x) and
+;;;; compiles that instead.
+;;;; More complicated examples return a lambda expression.
+;;;: NOTE: The order in which transforms are tried is not defined.
+
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defun values-type-primary (values-type)
     ;; VALUES-TYPE is an actual values type spec, i.e. a cons (values ...)
