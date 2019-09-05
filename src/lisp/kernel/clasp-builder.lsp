@@ -47,21 +47,6 @@ search for the string 'src', or 'generated' and return the rest of the list that
         (member "generated" rel :test #'string=)
         (error "Could not find \"src\" or \"generated\" in ~a" rel))))
 
-(defun get-pathname-with-type (module &optional (type "lsp"))
-  (error "Depreciated get-pathname-with-type")
-  (cond
-    ((pathnamep module)
-     (merge-pathnames module
-                      (make-pathname
-                       :type type
-                       :defaults (translate-logical-pathname
-                                  (make-pathname :host "sys")))))
-    ((symbolp module)
-     (merge-pathnames (pathname (string module))
-                      (make-pathname :host "sys" :directory '(:absolute) :type type)))
-    (t (error "bad module name: ~s" module))))
-
-
 (defun calculate-file-order (system)
   "Return a hash-table that maps names to an integer index in system"
   (let ((file-order (make-hash-table :test #'equal))
