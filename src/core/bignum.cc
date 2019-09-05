@@ -426,28 +426,4 @@ Bignum CStrToBignum(const char *str) {
   return bn;
 }
 
-
-CL_DEFUN void core__test_bignum_to_int64(Bignum_sp b) {
-  size_t sizeinbase2 = mpz_sizeinbase(b->mpz_ref().get_mpz_t(),2);
-  printf("%s:%d sizeinbase2 = %lu\n", __FILE__, __LINE__, sizeinbase2);
-  if (sizeinbase2>64) goto BAD;
-  {
-    int64_t val;
-    size_t count;
-    int64_t* valP = (int64_t *)::mpz_export(&val, &count,
-                                            _lisp->integer_ordering()._mpz_import_word_order,
-                                            sizeof(int64_t),//_lisp->integer_ordering()._mpz_import_size,
-                                            _lisp->integer_ordering()._mpz_import_endian,
-                                            0,
-                                            b->mpz_ref().get_mpz_t());
-    int sgn = mpz_sgn(b->mpz_ref().get_mpz_t());
-    if (sgn<0) {
-      val = -val;
-    }
-    SIMPLE_WARN(BF("Converted bignum sgn -> %d  val -> %d\n") % sgn % val);
-    return;
-  }
- BAD:
-  SIMPLE_ERROR(BF("The value %s won't fit into an int64_t") % b);
-};
 };

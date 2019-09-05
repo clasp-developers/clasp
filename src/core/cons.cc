@@ -309,12 +309,6 @@ List_sp Cons_O::member1(T_sp item, T_sp key, T_sp test, T_sp testNot) const {
   return ((_Nil<T_O>()));
 }
 
-CL_DEFUN void core__test_proper_list(T_sp l) {
-  for (auto cur : (List_sp) l) {
-    printf("%s:%d  element cur -> %s  consp -> %d\n", __FILE__, __LINE__, _rep_(cur).c_str(), cur.consp());
-  }
-}
-
 List_sp Cons_O::assoc(T_sp item, T_sp key, T_sp test, T_sp testNot) const {
   _OF();
   Tester t(item, key, test, testNot, false);

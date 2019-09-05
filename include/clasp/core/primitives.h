@@ -79,13 +79,6 @@ T_sp cl__mapcar(T_sp op, List_sp lists);
 
 namespace core {
 
-  CL_LAMBDA(x y);
-  CL_DECLARE();
-  CL_DOCSTRING(R"doc(add two numbers)doc");
-  inline CL_DEFUN int core__test_add(int x, int y) {
-    return x + y;
-  }
-  
 /*! Return the FileScope for the obj - if obj is nil then return 
       one for anonymous */
 
