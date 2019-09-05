@@ -140,6 +140,14 @@
              `(progn
                 (deftransform ,name ((x single-float) (y single-float))
                   '(lambda (x y) (,op single-float x y)))
+                (deftransform ,name ((x single-float) (y double-float))
+                  '(lambda (x y)
+                    (,op double-float
+                     (cleavir-primop:coerce single-float double-float x) y)))
+                (deftransform ,name ((x double-float) (y single-float))
+                  '(lambda (x y)
+                    (,op double-float
+                     x (cleavir-primop:coerce single-float double-float y))))
                 (deftransform ,name ((x double-float) (y double-float))
                   '(lambda (x y) (,op double-float x y)))))
            (def-float-compare (name op)
