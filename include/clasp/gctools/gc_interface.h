@@ -37,7 +37,6 @@ namespace core {
   class Closure_O;
   class Creator_O;
   class Iterator_O;
-  class SequenceStepper_O;
 };
 namespace asttooling {
 namespace internal {
