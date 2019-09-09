@@ -1872,40 +1872,6 @@ CL_DEFUN T_sp core__bds_val(int idx) {
 
 CL_LAMBDA();
 CL_DECLARE();
-CL_DOCSTRING("exceptionStack");
-CL_DEFUN Vector_sp core__exception_stack() {
-  return my_thread->exceptionStack().backtrace();
-}
-
-CL_LAMBDA();
-CL_DECLARE();
-CL_DOCSTRING("exceptionStackDump");
-CL_DEFUN void core__exception_stack_dump() {
-  ExceptionStack &stack = my_thread->exceptionStack();
-  printf("Exception stack size: %zu members\n", stack.size());
-  for (int i(0); i < stack.size(); ++i) {
-    string kind;
-    switch (stack[i]._FrameKind) {
-    case CatchFrame:
-      kind = "catch";
-      break;
-    case BlockFrame:
-      kind = "block";
-      break;
-    case TagbodyFrame:
-      kind = "tagbody";
-      break;
-    default:
-      kind = "unknown";
-      break;
-    };
-    printf("Exception exceptionstack[%2d] = %8s %s@%p\n", i, kind.c_str(), _rep_(stack[i]._Key).c_str(), stack[i]._Key.raw_());
-  }
-  printf("----Done----\n");
-};
-
-CL_LAMBDA();
-CL_DECLARE();
 CL_DOCSTRING("dynamicBindingStackDump");
 CL_DEFUN void core__dynamic_binding_stack_dump(std::ostream &out) {
   DynamicBindingStack &bd = my_thread->bindings();

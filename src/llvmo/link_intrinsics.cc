@@ -950,15 +950,6 @@ core::T_O* initializeTagbodyClosure(core::T_O *afP)
 }
 };
 
-core::T_mv proto_ifCatchFrameMatchesStoreResultElseRethrow(size_t catchFrame, unsigned char *exceptionP) {
-  core::CatchThrow *ctExceptionP = reinterpret_cast<core::CatchThrow *>(exceptionP);
-  if (catchFrame == ctExceptionP->getFrame()) {
-    return gctools::multiple_values<core::T_O>::createFromValues(); // ctExceptionP->getReturnedObject();
-  }
-// rethrow the exception
-  throw * ctExceptionP;
-}
-
 extern "C" {
 
 void throwIllegalSwitchValue(size_t val, size_t max) {

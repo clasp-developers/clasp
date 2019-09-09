@@ -19,7 +19,6 @@ namespace core {
     uint64_t  _Tid;
     uintptr_t           _BacktraceBasePointer;
     DynamicBindingStack _Bindings;
-    ExceptionStack _ExceptionStack;
     MultipleValues _MultipleValues;
     const InvocationHistoryFrame* _InvocationHistoryStackTop;
     gctools::GCRootsInModule*  _GCRoots;
@@ -64,7 +63,6 @@ namespace core {
     Bignum_sp _BignumRegister1;
     Bignum_sp _BignumRegister2;
     inline core::DynamicBindingStack& bindings() { return this->_Bindings; };
-    inline ExceptionStack& exceptionStack() { return this->_ExceptionStack; };
     Bignum_sp bigRegister0() { return this->_BignumRegister0; };
     Bignum_sp bigRegister1() { return this->_BignumRegister1; };
     Bignum_sp bigRegister2() { return this->_BignumRegister2; };

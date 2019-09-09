@@ -210,38 +210,18 @@ public:
   int getExitResult() { return this->_ExitResult; };
 };
 
-#if 1
 #pragma GCC visibility push(default)
 class ATTR_WEAK CatchThrow {
   virtual void keyFunctionForVtable() ATTR_WEAK;
 
 private:
-  int _Frame;
+  T_sp _Tag;
 
 public:
-  CatchThrow(int frame) : _Frame(frame){};
-  int getFrame() { return this->_Frame; };
+  CatchThrow(T_sp tag) : _Tag(tag){};
+  T_sp getTag() { return this->_Tag; };
   /*ATTR_WEAK*/ virtual ~CatchThrow(){};
 };
-#else
-#pragma GCC visibility push(default)
-class ATTR_WEAK CatchThrow {
-  virtual void keyFunctionForVtable() ATTR_WEAK;
-
-private:
-  T_sp _ThrownTag;
-  T_mv _ReturnedObject;
-
-public:
-  CatchThrow(T_sp thrownTag, T_mv ret) {
-    this->_ThrownTag = thrownTag;
-    this->_ReturnedObject = ret;
-  }
-  ~T_sp getThrownTag() { return this->_ThrownTag; };
-  T_mv getReturnedObject() { return this->_ReturnedObject; };
-  /*ATTR_WEAK*/ virtual ~CatchThrow(){};
-};
-#endif
 
 class ATTR_WEAK ReturnFrom //: public gctools::HeapRoot
     {
