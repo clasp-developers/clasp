@@ -223,6 +223,19 @@ public:
   /*ATTR_WEAK*/ virtual ~CatchThrow(){};
 };
 
+/* Macros for implementing CL:CATCH, like ECL_CATCH_BEGIN.
+ * res is a T_mv variable the results of a throw will be stored in;
+ * for the normal return you have to do that manually.
+ */
+
+#define CLASP_BEGIN_CATCH(tg) try
+#define CLASP_END_CATCH(tg, res)\
+  catch (CatchThrow &catchThrow) {\
+    if (catchThrow.getTag() != tg)\
+      throw catchThrow;\
+    else res = gctools::multiple_values<T_O>::createFromValues();\
+  }
+
 class ATTR_WEAK ReturnFrom //: public gctools::HeapRoot
     {
   virtual void keyFunctionForVtable() ATTR_WEAK; // MUST BE FIRST VIRTUAL FUNCTION

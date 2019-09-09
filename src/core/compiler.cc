@@ -951,14 +951,9 @@ CL_DECLARE();
 CL_DOCSTRING("catchFunction");
 CL_DEFUN T_mv core__catch_function(T_sp tag, Function_sp thunk) {
   T_mv result;
-  try {
+  CLASP_BEGIN_CATCH(tag) {
     result = thunk->entry.load()(LCC_PASS_ARGS0_ELLIPSIS(thunk.raw_()));
-  } catch (CatchThrow &catchThrow) {
-    if (catchThrow.getTag() != tag) {
-      throw catchThrow;
-    }
-    result = gctools::multiple_values<T_O>::createFromValues();
-  }
+  } CLASP_END_CATCH(tag, result);
   return result;
 }
 

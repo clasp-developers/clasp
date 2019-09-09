@@ -1943,14 +1943,9 @@ T_mv sp_catch(List_sp args, T_sp environment) {
   ASSERT(environment.generalp());
   T_sp mytag = eval::evaluate(oCar(args), environment);
   T_mv result;
-  try {
+  CLASP_BEGIN_CATCH(mytag) {
     result = eval::sp_progn(oCdr(args), environment);
-  } catch (CatchThrow &catchThrow) {
-    if (catchThrow.getTag() != mytag) {
-      throw catchThrow;
-    }
-    result = gctools::multiple_values<T_O>::createFromValues();
-  }
+  } CLASP_END_CATCH(mytag, result);
   return result;
 }
 
