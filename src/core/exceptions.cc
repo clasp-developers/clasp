@@ -81,6 +81,15 @@ void Unwind::keyFunctionForVtable(){};
 
 // The control transfer part of CL:THROW
 [[noreturn]] void clasp_throw(T_sp tag) {
+  // Check the list of catches in place to make sure the tag is there.
+  bool found = false;
+  for (auto tag_cons : my_thread->catchTags()) {
+    if (tag == oCar(tag_cons)) {
+      found = true;
+      break;
+    }
+  }
+  if (!found) CONTROL_ERROR();
 #ifdef DEBUG_TRACK_UNWINDS
   global_CatchThrow_count++;
 #endif

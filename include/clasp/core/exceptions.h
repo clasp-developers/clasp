@@ -228,13 +228,18 @@ public:
  * for the normal return you have to do that manually.
  */
 
-#define CLASP_BEGIN_CATCH(tg) try
-#define CLASP_END_CATCH(tg, res)                                  \
-  catch (CatchThrow &catchThrow) {                                \
-    if (catchThrow.getTag() != tg)                                \
-      throw catchThrow;                                           \
-    else res = gctools::multiple_values<T_O>::createFromValues(); \
-  }
+#define CLASP_BEGIN_CATCH(tg) {  \
+    my_thread->pushCatchTag(tg); \
+    try
+#define CLASP_END_CATCH(tg, res)                               \
+  catch (CatchThrow &catchThrow) {                             \
+    if (catchThrow.getTag() != tg)                             \
+      throw catchThrow;                                        \
+    else {                                                     \
+      res = gctools::multiple_values<T_O>::createFromValues(); \
+      my_thread->unwindToTag(tg);                              \
+    }                                                          \
+  } my_thread->unwindOneTag(); }
 
 [[noreturn]] void clasp_throw(T_sp);
 

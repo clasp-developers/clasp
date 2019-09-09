@@ -12,6 +12,9 @@ namespace core {
     void initialize_thread(mp::Process_sp process, bool initialize_GCRoots);
     void create_sigaltstack();
     void destroy_sigaltstack();
+    void pushCatchTag(T_sp);
+    void unwindToTag(T_sp);
+    void unwindOneTag();
     
     uint64_t   _BytesAllocated;
     mp::Process_sp _Process;
@@ -19,6 +22,9 @@ namespace core {
     uint64_t  _Tid;
     uintptr_t           _BacktraceBasePointer;
     DynamicBindingStack _Bindings;
+    inline DynamicBindingStack& bindings() { return this->_Bindings; };
+    List_sp _CatchTags;
+    inline List_sp catchTags() { return this->_CatchTags; };
     MultipleValues _MultipleValues;
     const InvocationHistoryFrame* _InvocationHistoryStackTop;
     gctools::GCRootsInModule*  _GCRoots;
@@ -62,7 +68,6 @@ namespace core {
     Bignum_sp _BignumRegister0;
     Bignum_sp _BignumRegister1;
     Bignum_sp _BignumRegister2;
-    inline core::DynamicBindingStack& bindings() { return this->_Bindings; };
     Bignum_sp bigRegister0() { return this->_BignumRegister0; };
     Bignum_sp bigRegister1() { return this->_BignumRegister1; };
     Bignum_sp bigRegister2() { return this->_BignumRegister2; };
