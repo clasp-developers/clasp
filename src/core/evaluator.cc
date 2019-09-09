@@ -1958,7 +1958,7 @@ T_mv sp_throw(List_sp args, T_sp environment) {
   result.saveToMultipleValue0();
   // I should search for the Catch frame for throwTag and
   // invoke an error if it doesn't exist
-  throw CatchThrow(throwTag);
+  clasp_throw(throwTag);
 }
 
 T_mv sp_multipleValueProg1(List_sp args, T_sp environment) {

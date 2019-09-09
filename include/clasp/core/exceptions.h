@@ -229,12 +229,14 @@ public:
  */
 
 #define CLASP_BEGIN_CATCH(tg) try
-#define CLASP_END_CATCH(tg, res)\
-  catch (CatchThrow &catchThrow) {\
-    if (catchThrow.getTag() != tg)\
-      throw catchThrow;\
-    else res = gctools::multiple_values<T_O>::createFromValues();\
+#define CLASP_END_CATCH(tg, res)                                  \
+  catch (CatchThrow &catchThrow) {                                \
+    if (catchThrow.getTag() != tg)                                \
+      throw catchThrow;                                           \
+    else res = gctools::multiple_values<T_O>::createFromValues(); \
   }
+
+[[noreturn]] void clasp_throw(T_sp);
 
 class ATTR_WEAK ReturnFrom //: public gctools::HeapRoot
     {

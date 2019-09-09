@@ -79,6 +79,14 @@ void ReturnFrom::keyFunctionForVtable(){};
 void DynamicGo::keyFunctionForVtable(){};
 void Unwind::keyFunctionForVtable(){};
 
+// The control transfer part of CL:THROW
+[[noreturn]] void clasp_throw(T_sp tag) {
+#ifdef DEBUG_TRACK_UNWINDS
+  global_CatchThrow_count++;
+#endif
+  throw CatchThrow(tag);
+}
+
 void throwTooFewArgumentsError(size_t given, size_t required) {
   lisp_error(core::_sym_wrongNumberOfArguments,
              lisp_createList(kw::_sym_givenNargs, make_fixnum(given),
