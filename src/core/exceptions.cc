@@ -79,6 +79,13 @@ void ReturnFrom::keyFunctionForVtable(){};
 void DynamicGo::keyFunctionForVtable(){};
 void Unwind::keyFunctionForVtable(){};
 
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("Returns the list of active CL:CATCH tags. Strictly for debugging.");
+CL_DEFUN List_sp core__active_catch_tags() {
+  return my_thread->catchTags();
+}
+
 // The control transfer part of CL:THROW
 [[noreturn]] void clasp_throw(T_sp tag) {
   // Check the list of catches in place to make sure the tag is there.

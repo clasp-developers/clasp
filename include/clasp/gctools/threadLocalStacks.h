@@ -60,6 +60,7 @@ namespace core {
 //    void  setf_value(Symbol_sp var, T_sp value) { *this->reference(var) = value;};
   };
 #pragma GCC visibility pop
-};
+
+}; // namespace core
 
 #endif

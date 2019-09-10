@@ -284,25 +284,6 @@ void ThreadLocalState::pushCatchTag(T_sp tag) {
   this->_CatchTags = Cons_O::create(tag, this->_CatchTags);
 }
 
-// Change the active catches to have the given tag as the most recent.
-// For example, from (A B B C D C), given C, the list would become (C D C).
-void ThreadLocalState::unwindToTag(T_sp tag) {
-  for (auto tag_cons : this->_CatchTags) {
-    if (oCar(tag_cons) == tag) {
-      this->_CatchTags = tag_cons;
-      return;
-    }
-  }
-  // FIXME: It should be impossible to reach here, as clasp_throw checks the
-  // list before this is called. Reaching here is a bug, not just an error.
-  CONTROL_ERROR();
-}
-
-// Pop and discard one tag from the list of active catches.
-void ThreadLocalState::unwindOneTag() {
-  this->_CatchTags = oCdr(this->_CatchTags);
-}
-
 };
 
 

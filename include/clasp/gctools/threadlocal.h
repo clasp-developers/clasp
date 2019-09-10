@@ -13,8 +13,6 @@ namespace core {
     void create_sigaltstack();
     void destroy_sigaltstack();
     void pushCatchTag(T_sp);
-    void unwindToTag(T_sp);
-    void unwindOneTag();
     
     uint64_t   _BytesAllocated;
     mp::Process_sp _Process;
@@ -25,6 +23,7 @@ namespace core {
     inline DynamicBindingStack& bindings() { return this->_Bindings; };
     List_sp _CatchTags;
     inline List_sp catchTags() { return this->_CatchTags; };
+    inline void setCatchTags(List_sp tags) { this->_CatchTags = tags; };
     MultipleValues _MultipleValues;
     const InvocationHistoryFrame* _InvocationHistoryStackTop;
     gctools::GCRootsInModule*  _GCRoots;
@@ -74,7 +73,21 @@ namespace core {
     ~ThreadLocalState();
   };
 
+
+// Thing to maintain the list of valid catch tags correctly.
+struct CatchTagPusher {
+  ThreadLocalState* mthread;
+  List_sp catch_tag_state;
+  CatchTagPusher(ThreadLocalState* thread, T_sp tag) {
+    mthread = thread;
+    catch_tag_state = thread->catchTags();
+    thread->pushCatchTag(tag);
+  }
+  ~CatchTagPusher() { mthread->setCatchTags(this->catch_tag_state); }
 };
+
+
+}; // namespace core
 
 
 namespace gctools {
