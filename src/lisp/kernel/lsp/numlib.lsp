@@ -101,6 +101,7 @@ zero.  Otherwise, returns the value of (/ NUMBER (ABS NUMBER))"
   "Args: (radians)
 Returns a complex number whose realpart and imagpart are the values of (COS
 RADIANS) and (SIN RADIANS) respectively."
+  (declare (type real x))
   (exp (* #c(0.0 1.0) x)))
 
 (defun asin (x)
