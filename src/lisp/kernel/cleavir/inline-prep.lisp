@@ -66,12 +66,13 @@
 (export 'code-walk-using-cleavir)
 
 ;;; Given a FUNCTION-AST, return the function-scope-info to insert into its body ASTs.
+;;; or NIL if there's no source info.
 (defun compute-fsi (ast)
   (let ((orig (let ((orig (cleavir-ast:origin ast)))
                 (cond ((consp orig) (car orig))
                       ((null orig)
                        ;; KLUDGE?: If no source info, just forget the whole thing
-                       (return-from compute-fsi ast))
+                       (return-from compute-fsi nil))
                       (t orig)))))
     ;; See usage in cmp/debuginfo.lsp
     (list (cmp:jit-function-name (clasp-cleavir-ast:lambda-name ast))
@@ -100,10 +101,11 @@
 (defun fix-inline-ast (ast)
   (check-type ast cleavir-ast:function-ast)
   (let ((fsi (compute-fsi ast)))
-    (cleavir-ast:map-ast-depth-first-preorder
-     (lambda (ast)
-       (insert-function-scope-info-into-ast ast fsi))
-     ast))
+    (unless (null fsi)
+      (cleavir-ast:map-ast-depth-first-preorder
+       (lambda (ast)
+         (insert-function-scope-info-into-ast ast fsi))
+       ast)))
   ast)
 
 ;;; Incorporated into DEFUN expansion (see lsp/evalmacros.lsp)
