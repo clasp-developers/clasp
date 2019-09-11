@@ -205,11 +205,11 @@ ThreadLocalStateLowLevel::~ThreadLocalStateLowLevel()
 };
 namespace core {
 
-
 ThreadLocalState::ThreadLocalState() :
   _stackmap(0),
   _stackmap_size(0),
-_PendingInterrupts(_Nil<core::T_O>())
+  _PendingInterrupts(_Nil<core::T_O>()),
+  _CatchTags(_Nil<core::T_O>())
 #ifdef DEBUG_RECURSIVE_ALLOCATIONS
   , _RecursiveAllocationCounter(0)
 #endif
@@ -254,6 +254,7 @@ void ThreadLocalState::initialize_thread(mp::Process_sp process, bool initialize
   this->_SingleDispatchMethodCachePtr = gc::GC<Cache_O>::allocate();
   this->_SingleDispatchMethodCachePtr->setup(2, Lisp_O::SingleDispatchMethodCacheSize);
   this->_PendingInterrupts = _Nil<T_O>();
+  this->_CatchTags = _Nil<T_O>();
   this->_SparePendingInterruptRecords = cl__make_list(clasp_make_fixnum(16),_Nil<T_O>());
 };
 
@@ -278,6 +279,10 @@ void ThreadLocalState::destroy_sigaltstack()
 #endif
 }
 
+// Push a tag onto the list of active catches.
+void ThreadLocalState::pushCatchTag(T_sp tag) {
+  this->_CatchTags = Cons_O::create(tag, this->_CatchTags);
+}
 
 };
 

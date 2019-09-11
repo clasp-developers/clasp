@@ -434,7 +434,7 @@ int handleFatalCondition() {
     // Do nothing
     printf("Caught TerminateProgramIfBatch in %s:%d\n", __FILE__, __LINE__);
   } catch (core::CatchThrow &ee) {
-    _lisp->print(BF("%s:%d Uncaught THROW frame[%s] - this should NEVER happen - the stack should never be unwound unless there is a CATCH clause that matches the THROW") % __FILE__ % __LINE__ % ee.getFrame());
+    _lisp->print(BF("%s:%d Uncaught THROW tag[%s] - this should NEVER happen - the stack should never be unwound unless there is a CATCH clause that matches the THROW") % __FILE__ % __LINE__ % ee.getTag());
   } catch (core::Unwind &ee) {
     _lisp->print(BF("At %s:%d - Unwind caught frame: %d index: %d") % __FILE__ % __LINE__ % ee.getFrame() % ee.index());
   } catch (HardError &ee) {

@@ -433,8 +433,6 @@ public:
   // ------------------------------------------------------------
   // ------------------------------------------------------------
   // ------------------------------------------------------------
-public:
-//  InvocationHistoryStack &invocationHistoryStack();
 
 public:
   /*! Signal a problem if the stack gets too full*/
@@ -451,9 +449,6 @@ public:
   DebugStream &debugLog() {
     return *(this->_DebugStream);
   };
-  //	vector<string>& printfPrefixStack() { return this->_printfPrefixStack;};
-public:
-//  inline ExceptionStack &exceptionStack() { return this->_Roots._ExceptionStack; };
 
 public:
   uint nextReplCounter() { return ++this->_ReplCounter; };

@@ -362,7 +362,6 @@ SYMBOL_EXPORT_SC_(MpPkg,suspend_loop);
 SYMBOL_EXPORT_SC_(MpPkg,break_suspend_loop);
 CL_DEFUN void mp__suspend_loop() {
   printf("%s:%d %s\n", __FILE__, __LINE__, __FUNCTION__);
-  SafeExceptionStackPush save(&my_thread->exceptionStack(), core::CatchFrame,_sym_suspend_loop);
   for ( ; ; ) {
     core::cl__sleep(core::make_fixnum(100));
   }

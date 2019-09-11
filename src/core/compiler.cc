@@ -951,36 +951,22 @@ CL_DECLARE();
 CL_DOCSTRING("catchFunction");
 CL_DEFUN T_mv core__catch_function(T_sp tag, Function_sp thunk) {
   T_mv result;
-  int frame = my_thread->exceptionStack().push(CatchFrame, tag);
-  try {
+  CLASP_BEGIN_CATCH(tag) {
     result = thunk->entry.load()(LCC_PASS_ARGS0_ELLIPSIS(thunk.raw_()));
-  } catch (CatchThrow &catchThrow) {
-    if (catchThrow.getFrame() != frame) {
-      throw catchThrow;
-    }
-    result = gctools::multiple_values<T_O>::createFromValues();
-  }
-  my_thread->exceptionStack().unwind(frame);
+  } CLASP_END_CATCH(tag, result);
   return result;
 }
 
 CL_LAMBDA(tag result);
 CL_DECLARE();
-CL_DOCSTRING("throwFunction TODO: The semantics are not followed here - only the first return value is returned!!!!!!!!");
+CL_DOCSTRING("Like CL:THROW, but takes a thunk");
 CL_DEFUN void core__throw_function(T_sp tag, T_sp result_form) {
-  int frame = my_thread->exceptionStack().findKey(CatchFrame, tag);
-  if (frame < 0) {
-    CONTROL_ERROR();
-  }
   T_mv result;
   Closure_sp closure = result_form.asOrNull<Closure_O>();
   ASSERT(closure);
   result = closure->entry.load()(LCC_PASS_ARGS0_ELLIPSIS(closure.raw_()));
   result.saveToMultipleValue0();
-#ifdef DEBUG_TRACK_UNWINDS
-  global_CatchThrow_count++;
-#endif
-  throw CatchThrow(frame);
+  clasp_throw(tag);
 }
 
 CL_LAMBDA(symbols values func);
