@@ -454,6 +454,7 @@
                (canonicalized-dspecs
                  (cst:canonicalize-declaration-specifiers
                   system
+                  (cleavir-env:declarations environment)
                   declaration-specifiers)))
           (multiple-value-bind (idspecs rdspecs)
               (cleavir-cst-to-ast::itemize-declaration-specifiers-by-parameter-group
