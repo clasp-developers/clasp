@@ -624,13 +624,10 @@
                   (error 'core:sequence-out-of-bounds
                          :datum index :expected-type `(integer 0 (,max))
                          :object vector))
-    ;; Handle simple arrays separately, because they're easy.
-    (if (core:data-vector-p vector)
-        (vref vector index)
-        (with-array-data (underlying-array offset vector)
-          ;; Okay, now array is a vector/simple, and index is valid.
-          ;; This function takes care of element type discrimination.
-          (vref underlying-array (add-indices index offset))))))
+    (with-array-data (underlying-array offset vector)
+      ;; Okay, now array is a vector/simple, and index is valid.
+      ;; This function takes care of element type discrimination.
+      (vref underlying-array (add-indices index offset)))))
 
 (declaim (inline vector-set))
 (defun vector-set (vector index value)
@@ -642,13 +639,10 @@
                   (error 'core:sequence-out-of-bounds
                          :datum index :expected-type `(integer 0 (,max))
                          :object vector))
-    ;; Handle simple arrays separately, because they're easy.
-    (if (core:data-vector-p vector)
-        (setf (vref vector index) value)
-        (with-array-data (underlying-array offset vector)
-          ;; Okay, now array is a vector/simple, and index is valid.
-          ;; This function takes care of element type discrimination.
-          (setf (vref underlying-array (add-indices index offset)) value)))))
+    (with-array-data (underlying-array offset vector)
+      ;; Okay, now array is a vector/simple, and index is valid.
+      ;; This function takes care of element type discrimination.
+      (setf (vref underlying-array (add-indices index offset)) value))))
 
 (declaim (inline row-major-aref/no-bounds-check))
 (defun row-major-aref/no-bounds-check (array index)
