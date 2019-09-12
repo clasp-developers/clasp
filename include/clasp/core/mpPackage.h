@@ -69,29 +69,14 @@ namespace mp {
     core::T_sp old = slot;
     slot = _Nil<core::T_O>();
     return old;
-#if 0 // old code
-      core::T_sp old;
-      do {
-        old = slot.load();
-      } while (!slot.compare_exchange_weak(old,_Nil<core::T_O>()));
-      return old;
-#endif
-    }
+  }
   inline void atomic_push(mp::SpinLock& spinlock, core::T_sp& slot, core::T_sp object) {
     core::Cons_sp cons = core::Cons_O::create(object,_Nil<core::T_O>());
     mp::SafeSpinLock l(spinlock);
     core::T_sp car = slot;
     cons->rplacd(car);
     slot = cons;
-#if 0 // old code
-      core::T_sp tcons = cons;
-      core::T_sp car;
-      do {
-        car = slot.load();
-        cons->rplacd(car);
-      } while (!slot.compare_exchange_weak(car,tcons));
-#endif
-    }
+  }
 };
 
 #define DEFAULT_THREAD_STACK_SIZE 8388608

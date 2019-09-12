@@ -115,15 +115,9 @@ struct Mutex {
   pthread_mutex_t _Mutex;
   gctools::Fixnum _Counter;
   bool _Recursive;
-#if 0
-  Mutex() : _Counter(0), _Recursive(false) {
-    pthread_mutex_init(&this->_Mutex,NULL);
-  }
-#endif
   Mutex(uint64_t nameword, bool recursive=false) : _NameWord(nameword), _Counter(0), _Recursive(recursive) {
     
     if (!recursive) {
-//      printf("%s:%d Creating Mutex@%p\n", __FILE__, __LINE__, (void*)&this->_Mutex);
       pthread_mutex_init(&this->_Mutex,NULL);
     } else {
       pthread_mutexattr_t Attr;
@@ -134,7 +128,6 @@ struct Mutex {
     }
   };
   bool lock(bool waitp=true) {
-//      printf("%s:%d locking Mutex@%p\n", __FILE__, __LINE__, (void*)&this->_Mutex); fflush(stdout);
 #ifdef DEBUG_THREADS
     debug_mutex_lock(this);
 #endif
@@ -149,7 +142,6 @@ struct Mutex {
     return pthread_mutex_trylock(&this->_Mutex)==0;
   };
   void unlock() {
-//      printf("%s:%d unlocking Mutex@%p\n", __FILE__, __LINE__, (void*)&this->_Mutex); fflush(stdout);
 #ifdef DEBUG_THREADS
     debug_mutex_unlock(this);
 #endif

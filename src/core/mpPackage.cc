@@ -76,17 +76,6 @@ void debug_mutex_unlock(Mutex* m) {
 };
 #endif
 
-struct RAIIMutexLock {
-  Mutex _Mutex;
-  RAIIMutexLock(Mutex& m) : _Mutex(m) {
-    int res = this->_Mutex.lock();
-    printf("%s:%d RAIIMutexLock res = %d\n", __FILE__, __LINE__, res );
-  };
-  ~RAIIMutexLock() {
-    this->_Mutex.unlock();
-  }
-};
-
 };
 
 namespace mp {
@@ -154,19 +143,9 @@ void start_thread_inner(Process_sp process, void* cold_end_of_stack) {
   core::List_sp reversed_bindings = core::cl__reverse(process->_InitialSpecialBindings);
   for ( auto cur : reversed_bindings ) {
     core::Cons_sp pair = gc::As<core::Cons_sp>(oCar(cur));
-//    printf("%s:%d  start_thread   setting special variable/(eval value) -> %s\n", __FILE__, __LINE__, _rep_(pair).c_str());
     scope.pushSpecialVariableAndSet(pair->_Car,core::eval::evaluate(pair->_Cdr,_Nil<core::T_O>()));
   }
-//  gctools::register_thread(process,stack_base);
   core::List_sp args = process->_Arguments;
-  
-#if 0
-#ifdef USE_BOEHM
-  GC_stack_base gc_stack_base;
-  GC_get_stack_base(&gc_stack_base);
-  GC_register_my_thread(&gc_stack_base);
-#endif
-#endif
 
   process->_Phase = Active;
   process->_Active.signal();
@@ -174,14 +153,11 @@ void start_thread_inner(Process_sp process, void* cold_end_of_stack) {
   core::T_mv result_mv;
   {
     SafeRegisterDeregisterProcessWithLisp reg(process);
-//    RAIIMutexLock exitBarrier(p->_ExitBarrier);
-//    printf("%s:%d:%s  process locking the ExitBarrier\n", __FILE__, __LINE__, __FUNCTION__);
     try {
       result_mv = core::eval::applyLastArgsPLUSFirst(process->_Function,args);
     } catch (ExitProcess& e) {
       // Do nothing - exiting
     }
-//    printf("%s:%d:%s  process releasing the ExitBarrier\n", __FILE__, __LINE__, __FUNCTION__);
   }
   process->_Phase = Exiting;
   core::T_sp result0 = result_mv;
@@ -191,9 +167,6 @@ void start_thread_inner(Process_sp process, void* cold_end_of_stack) {
   }
   result_list = core::Cons_O::create(result0,result_list);
   process->_ReturnValuesList = result_list;
-  
-//  gctools::unregister_thread(process);
-//  printf("%s:%d leaving start_thread\n", __FILE__, __LINE__);
 
 };
 
@@ -397,12 +370,6 @@ CL_DEFUN core::T_mv mp__process_join(Process_sp process) {
   // ECL has a much more complicated process_join function
   if (process->_Phase>0) {
     pthread_join(process->_Thread,NULL);
-#if 0
-    printf("%s:%d:%s About to lock the ExitBarrier\n", __FILE__,__LINE__,__FUNCTION__);
-    RAIIMutexLock join_(process->_ExitBarrier);
-    printf("          ExitBarrier count = %ld\n", join_._Mutex._Counter);
-    printf("%s:%d:%s Releasing the ExitBarrier\n", __FILE__,__LINE__,__FUNCTION__);
-#endif
   }
   return cl__values_list(process->_ReturnValuesList);
 }
