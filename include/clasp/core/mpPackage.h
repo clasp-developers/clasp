@@ -82,7 +82,7 @@ namespace mp {
 #define DEFAULT_THREAD_STACK_SIZE 8388608
 namespace mp {
 
-  typedef enum {Inactive=0,Booting,Active,Exiting} ProcessPhase;
+  typedef enum {Inactive=0,Booting,Active,Suspended,Exiting} ProcessPhase;
   
   class Process_O : public core::CxxObject_O {
     LISP_CLASS(mp, MpPkg, Process_O, "Process",core::CxxObject_O);
@@ -108,6 +108,8 @@ namespace mp {
     core::List_sp  _ReturnValuesList;
     core::ThreadLocalState* _ThreadInfo;
     std::atomic<ProcessPhase>  _Phase;
+    Mutex _SuspensionMutex;
+    ConditionVariable _SuspensionCV;
     size_t _StackSize;
     pthread_t _Thread;
 #ifdef USE_MPS
@@ -115,7 +117,7 @@ namespace mp {
     mps_root_t root;
 #endif
   public:
-    Process_O(core::T_sp name, core::T_sp function, core::List_sp arguments, core::List_sp initialSpecialBindings=_Nil<core::T_O>(), size_t stack_size=8*1024*1024) : _Name(name), _Function(function), _Arguments(arguments), _InitialSpecialBindings(initialSpecialBindings), _ThreadInfo(NULL), _ReturnValuesList(_Nil<core::T_O>()), _StackSize(stack_size), _Phase(Booting) {
+  Process_O(core::T_sp name, core::T_sp function, core::List_sp arguments, core::List_sp initialSpecialBindings=_Nil<core::T_O>(), size_t stack_size=8*1024*1024) : _Name(name), _Function(function), _Arguments(arguments), _InitialSpecialBindings(initialSpecialBindings), _ThreadInfo(NULL), _ReturnValuesList(_Nil<core::T_O>()), _StackSize(stack_size), _Phase(Booting), _SuspensionMutex(SUSPBARR_NAMEWORD) {
       if (!function) {
         printf("%s:%d Trying to create a process and the function is NULL\n", __FILE__, __LINE__ );
       }

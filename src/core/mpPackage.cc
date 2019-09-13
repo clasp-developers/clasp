@@ -323,28 +323,29 @@ CL_DEFUN core::T_sp mp__process_active_p(Process_sp p) {
   return (p->_Phase == Active) ? _lisp->_true() : _Nil<core::T_O>();
 }
 
+// Internal function used only in process_suspend (which is external).
+// FIXME: Don't actually export.
 SYMBOL_EXPORT_SC_(MpPkg,suspend_loop);
-SYMBOL_EXPORT_SC_(MpPkg,break_suspend_loop);
 CL_DEFUN void mp__suspend_loop() {
-  printf("%s:%d %s\n", __FILE__, __LINE__, __FUNCTION__);
-  for ( ; ; ) {
-    core::cl__sleep(core::make_fixnum(100));
-  }
-};
-
-CL_DEFUN void mp__break_suspend_loop() {
-  printf("%s:%d %s\n", __FILE__, __LINE__, __FUNCTION__);
-  core::core__throw_function(_sym_suspend_loop,_Nil<core::T_O>());
+  Process_sp this_process = gc::As<Process_sp>(_sym_STARcurrent_processSTAR->symbolValue());
+  RAIILock<Mutex> lock(this_process->_SuspensionMutex);
+  this_process->_Phase = Suspended;
+  while (this_process->_Phase == Suspended)
+    // FIXME: check return value
+    this_process->_SuspensionCV.wait(this_process->_SuspensionMutex);
 };
 
 CL_DEFUN void mp__process_suspend(Process_sp process) {
-  printf("%s:%d %s\n", __FILE__, __LINE__, __FUNCTION__);
-  mp__interrupt_process(process,_sym_suspend_loop);
+  if (process->_Phase == Active) // FIXME: error otherwise
+    mp__interrupt_process(process,_sym_suspend_loop);
 };
 
 CL_DEFUN void mp__process_resume(Process_sp process) {
-  printf("%s:%d %s\n", __FILE__, __LINE__, __FUNCTION__);
-  mp__interrupt_process(process,_sym_break_suspend_loop);
+  if (process->_Phase == Suspended) {
+    RAIILock<Mutex> lock(process->_SuspensionMutex);
+    process->_Phase = Active;
+    process->_SuspensionCV.signal(); // FIXME: Check return value
+  } // FIXME: Error here
 };
 
 CL_DEFUN void mp__process_yield() {
