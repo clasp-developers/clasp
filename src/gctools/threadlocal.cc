@@ -259,24 +259,10 @@ void ThreadLocalState::initialize_thread(mp::Process_sp process, bool initialize
 };
 
 void ThreadLocalState::create_sigaltstack() {
-#if 0
-  // Set up a sigaltstack
-  stack_t sigstk;
-  size_t size = SIGNAL_STACK_SIZE+SIGSTKSZ;
-  my_thread->_sigaltstack_buffer = (void*)malloc(size);
-  if (!my_thread->_sigaltstack_buffer) perror("Could not allocate signal stack");
-  sigstk.ss_size = SIGNAL_STACK_SIZE+SIGSTKSZ;
-  sigstk.ss_flags = 0;
-  if (sigaltstack(&sigstk,&my_thread->_original_stack) < 0) perror("sigaltstack problem");
-#endif
 }
 
 void ThreadLocalState::destroy_sigaltstack()
 {
-#if 0
-  if (sigaltstack(&my_thread->_original_stack, (stack_t *)0) < 0) perror("sigaltstack problem");
-  free(my_thread->_sigaltstack_buffer);
-#endif
 }
 
 // Push a tag onto the list of active catches.

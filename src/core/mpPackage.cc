@@ -91,6 +91,7 @@ SYMBOL_SC_(MpPkg, aSingleMpSymbol);
 SYMBOL_EXPORT_SC_(MpPkg, STARcurrent_processSTAR);
 SYMBOL_EXPORT_SC_(MpPkg, roo);
 
+// This keeps track of a process on the list of active threads.
 struct SafeRegisterDeregisterProcessWithLisp {
   Process_sp _Process;
   SafeRegisterDeregisterProcessWithLisp(Process_sp p) : _Process(p)
@@ -170,7 +171,7 @@ void start_thread_inner(Process_sp process, void* cold_end_of_stack) {
 
 };
 
-
+// This is the function actually passed to pthread_create.
 void* start_thread(void* claspProcess) {
   Process_sp process((Process_O*)claspProcess);
   void* cold_end_of_stack = &cold_end_of_stack;
@@ -189,18 +190,12 @@ void* start_thread(void* claspProcess) {
     fclose(it.second);
   }
 #endif
-#if 0
-#ifdef USE_BOEHM
-  GC_unregister_my_thread();
-#endif
-#endif
 #ifdef USE_MPS
   gctools::my_thread_allocation_points.destroyAllocationPoints();
   mps_root_destroy(process->root);
   mps_thread_dereg(process->thr_o);
 #endif
   my_thread->destroy_sigaltstack();
-//  printf("%s:%d  really leaving start_thread\n", __FILE__, __LINE__ );
   return NULL;
 }
 
