@@ -106,7 +106,6 @@ struct SafeRegisterDeregisterProcessWithLisp {
 
 __attribute__((noinline))
 void start_thread_inner(Process_sp process, void* cold_end_of_stack) {
-  process->_ExitBarrier.lock();
 #ifdef USE_MPS
   // use mask
   mps_res_t res = mps_thread_reg(&process->thr_o,global_arena);
@@ -149,8 +148,6 @@ void start_thread_inner(Process_sp process, void* cold_end_of_stack) {
   core::List_sp args = process->_Arguments;
 
   process->_Phase = Active;
-  process->_Active.signal();
-  process->_ExitBarrier.unlock();
   core::T_mv result_mv;
   {
     SafeRegisterDeregisterProcessWithLisp reg(process);

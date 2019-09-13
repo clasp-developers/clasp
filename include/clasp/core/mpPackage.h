@@ -110,14 +110,12 @@ namespace mp {
     std::atomic<ProcessPhase>  _Phase;
     size_t _StackSize;
     pthread_t _Thread;
-    ConditionVariable _Active;
-    Mutex _ExitBarrier;
 #ifdef USE_MPS
     mps_thr_t thr_o;
     mps_root_t root;
 #endif
   public:
-    Process_O(core::T_sp name, core::T_sp function, core::List_sp arguments, core::List_sp initialSpecialBindings=_Nil<core::T_O>(), size_t stack_size=8*1024*1024) : _Name(name), _Function(function), _Arguments(arguments), _InitialSpecialBindings(initialSpecialBindings), _ThreadInfo(NULL), _ReturnValuesList(_Nil<core::T_O>()), _StackSize(stack_size), _Phase(Booting), _ExitBarrier(EXITBARR_NAMEWORD) {
+    Process_O(core::T_sp name, core::T_sp function, core::List_sp arguments, core::List_sp initialSpecialBindings=_Nil<core::T_O>(), size_t stack_size=8*1024*1024) : _Name(name), _Function(function), _Arguments(arguments), _InitialSpecialBindings(initialSpecialBindings), _ThreadInfo(NULL), _ReturnValuesList(_Nil<core::T_O>()), _StackSize(stack_size), _Phase(Booting) {
       if (!function) {
         printf("%s:%d Trying to create a process and the function is NULL\n", __FILE__, __LINE__ );
       }
@@ -129,15 +127,8 @@ namespace mp {
       result = pthread_attr_init(&attr);
       result = pthread_attr_setstacksize(&attr,this->_StackSize);
       if (result!=0) return result;
-      this->_ExitBarrier.lock();
-      // I'm not sure what to do with the this->_Phase variable - if anything.
-      // Does the mutex this->_ExitBarrier and the condition variable this->_Active
-      // take care of all aspects of the synchronization?
       this->_Phase = Booting;
       result = pthread_create(&this->_Thread, &attr, start_thread, (void*)this );
-      this->_Active.wait(this->_ExitBarrier);
-      this->_ExitBarrier.unlock();
-//      while (this->_Phase == Booting) {};
       pthread_attr_destroy(&attr);
       return result;
     }
