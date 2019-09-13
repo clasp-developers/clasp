@@ -330,22 +330,27 @@ CL_DEFUN void mp__suspend_loop() {
   Process_sp this_process = gc::As<Process_sp>(_sym_STARcurrent_processSTAR->symbolValue());
   RAIILock<Mutex> lock(this_process->_SuspensionMutex);
   this_process->_Phase = Suspended;
-  while (this_process->_Phase == Suspended)
-    // FIXME: check return value
-    this_process->_SuspensionCV.wait(this_process->_SuspensionMutex);
+  while (this_process->_Phase == Suspended) {
+    if (!(this_process->_SuspensionCV.wait(this_process->_SuspensionMutex)))
+      SIMPLE_ERROR(BF("BUG: pthread_cond_wait ran into an error"));
+  }
 };
 
 CL_DEFUN void mp__process_suspend(Process_sp process) {
-  if (process->_Phase == Active) // FIXME: error otherwise
+  if (process->_Phase == Active)
     mp__interrupt_process(process,_sym_suspend_loop);
+  else
+    SIMPLE_ERROR(BF("Cannot suspend inactive process %s") % process);
 };
 
 CL_DEFUN void mp__process_resume(Process_sp process) {
   if (process->_Phase == Suspended) {
     RAIILock<Mutex> lock(process->_SuspensionMutex);
     process->_Phase = Active;
-    process->_SuspensionCV.signal(); // FIXME: Check return value
-  } // FIXME: Error here
+    if (!(process->_SuspensionCV.signal()))
+      SIMPLE_ERROR(BF("BUG: pthread_cond_signal ran into an error"));
+  } else
+    SIMPLE_ERROR(BF("Cannot resume a process (%s) that has not been suspended") % process);
 };
 
 CL_DEFUN void mp__process_yield() {

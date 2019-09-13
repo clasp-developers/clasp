@@ -294,21 +294,13 @@ struct Mutex {
       size_t timeout_nsec = static_cast<size_t>((timeout-dtimeout_sec)*1000000000.0);
       timeToWait.tv_sec = now.tv_sec;
       timeToWait.tv_nsec = (now.tv_usec*1000UL);
-#if 0
-      printf("%s:%d pthread_cond_timedwait    timeout = %lf\n",  __FILE__, __LINE__, timeout);
-      printf("%s:%d pthread_cond_timedwait    timeout_sec = %lu  timeout_nsec = %lu\n", __FILE__, __LINE__, timeout_sec, timeout_nsec );
-      printf("%s:%d pthread_cond_timedwait    now.tv_sec = %lu  now.tv_nsec = %lu\n", __FILE__, __LINE__, timeToWait.tv_sec, timeToWait.tv_nsec );
-#endif
       timeToWait.tv_sec += timeout_sec;
       timeToWait.tv_nsec += timeout_nsec;
       if (timeToWait.tv_nsec>1000000000) {
         timeToWait.tv_sec++;
         timeToWait.tv_nsec -= 1000000000;
       }
-//      printf("%s:%d pthread_cond_timedwait    timeToWait.tv_sec = %lu  timeToWait.tv_nsec = %lu\n", __FILE__, __LINE__, timeToWait.tv_sec, timeToWait.tv_nsec );
-//      m.lock();
       int rt = pthread_cond_timedwait(&this->_ConditionVariable,&m._Mutex,&timeToWait);
-//      m.unlock();
       return rt==0;
     }
     bool signal() {
