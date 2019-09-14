@@ -1575,6 +1575,9 @@ class link_fasl(clasp_task):
                   [ "-o", self.outputs[0].abspath() ]
         return self.exec_command(cmd)
 
+    def display(self):
+        return "link_fasl.display() would be VERY long - remove display() to display\n"
+
 class link_executable(clasp_task):
     def run(self):
         if (self.env.LTO_FLAG):
@@ -1673,6 +1676,9 @@ class compile_cclasp(clasp_task):
                                       *self.bld.clasp_cclasp)
         return self.exec_command(cmd)
 
+    def display(self):
+        return "compile_cclasp.display(self) would generate a LONG line - suppressing - disable display(self) to display\n"
+    
 class recompile_cclasp(clasp_task):
     def run(self):
         env = self.env
@@ -1734,9 +1740,12 @@ class link_bitcode(clasp_task):
         for f in self.inputs:
             all_inputs.write(' %s' % f.abspath())
         cmd = "" + self.env.LLVM_AR_BINARY + " ru %s %s" % (self.outputs[0], all_inputs.getvalue())
-        print("link_bitcode command: %s" % cmd);
+        # print("link_bitcode command: %s" % cmd);
         return self.exec_command(cmd)
 
+    def display(self):
+        return "link_bitcode.display(self): generates a LONG line - suppressing output - remove display() to display\n"
+    
 class build_bitcode(clasp_task):
     def run(self):
         env = self.env
@@ -1818,6 +1827,10 @@ class generate_sif_files(scraper_task):
             cmd.append(sif_node.abspath())
         return self.exec_command(cmd)
 
+    def display(self):
+        return "generate_sif_files.display() would be VERY long - remove display() to display\n"
+
+    
 class generate_headers_from_all_sifs(scraper_task):
     waf_print_keyword = "Scraping, generate-headers-from-all-sifs"
 
@@ -1831,6 +1844,9 @@ class generate_headers_from_all_sifs(scraper_task):
             cmd.append(f.abspath())
         return self.exec_command(cmd)
 
+    def display(self):
+        return "generate_headers_from_all_sifs.display() would be VERY long - remove display() to display\n"
+    
 def make_pump_tasks(bld, template_dir, output_dir):
     log.debug("Building pump tasks: %s -> %s", template_dir, output_dir)
     templates = collect_waf_nodes(bld, template_dir, suffix = '.pmp')
