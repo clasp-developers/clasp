@@ -71,8 +71,9 @@
   (let ((orig (let ((orig (cleavir-ast:origin ast)))
                 (cond ((consp orig) (car orig))
                       ((null orig)
-                       ;; KLUDGE?: If no source info, just forget the whole thing
-                       (return-from compute-fsi nil))
+                       ;; KLUDGE?: If no source info, make one up
+                       (return-from compute-fsi
+                         (core:make-source-pos-info "no-source-info-available" 0 0 0)))
                       (t orig)))))
     ;; See usage in cmp/debuginfo.lsp
     (list (cmp:jit-function-name (clasp-cleavir-ast:lambda-name ast))
