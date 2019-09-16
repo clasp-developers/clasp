@@ -23,6 +23,10 @@ clean-modules:
 	find src/lisp/modules/ . -name '*.fasl' -exec rm {} \;
 	find src/lisp/modules/ . -name '*.o' -exec rm {} \;
 
+TAGS:
+	find src/ -type f -iname "*.cc" | etags --append -
+	find include/ -type f -iname "*.h" | etags --append -
+
 pull-sicl-master:
 	(cd src/lisp/kernel/contrib/sicl && git pull origin master)
 	$(MAKE) setup-cleavir
