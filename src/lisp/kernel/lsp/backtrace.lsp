@@ -254,42 +254,94 @@ Set gather-all-frames to T and you can gather C++ and Common Lisp frames"
 (in-package :ext)
 
 (defstruct (code-source-line (:type vector) :named)
-  source-pathname line-number)
+  source-pathname line-number column)
 
 (export '(code-source-line code-source-line-source-pathname code-source-line-line-number))
+
+
+
+(defun parse-llvm-dwarfdump (stream)
+  (let (info)
+    (tagbody
+     top
+       (let ((line (read-line stream nil :eof)))
+         (when (eq line :eof) (go done))
+         (cond
+           ((search "DW_AT_comp_dir" line)
+            (let* ((open-paren-pos (position #\( line))
+                   (close-paren-pos (position #\) line :from-end t))
+                   (data (read-from-string line nil :eof :start (1+ open-paren-pos) :end close-paren-pos)))
+              (push (cons :comp-dir data) info)))
+           ((search "DW_AT_name" line)
+            (let* ((open-paren-pos (position #\( line))
+                   (close-paren-pos (position #\) line :from-end t))
+                   (data (read-from-string line nil :eof :start (1+ open-paren-pos) :end close-paren-pos)))
+              (push (cons :name data) info)))
+           ((search "DW_TAG_inlined_subroutine" line)
+            (push (cons :inlined-subroutine t) info))
+           ((search "DW_AT_call_file" line)
+            (let* ((open-paren-pos (position #\( line))
+                   (close-paren-pos (position #\) line :from-end t))
+                   (call-file (read-from-string line nil :eof :start (1+ open-paren-pos) :end close-paren-pos)))
+              (push (cons :call-file call-file) info)))
+           ((search "DW_AT_call_line" line)
+            (let* ((open-paren-pos (position #\( line))
+                   (close-paren-pos (position #\) line :from-end t))
+                   (call-line (parse-integer line :start (1+ open-paren-pos) :end close-paren-pos)))
+              (push (cons :call-line call-line) info)))
+           ((search "Line info:" line)
+            ;; Parse lines like: "Line info: file '-unknown-file-', line 231, column 12, start line 226"
+            (let* ((line-start (search ", line " line))
+                   (line-pos (+ line-start (length ", line ")))
+                   (column-start (search ", column " line))
+                   (column-pos (+ column-start (length ", column ")))
+                   (start-line-start (search ", start line" line))
+                   (line-no (parse-integer line :start line-pos :end column-start))
+                   (column (parse-integer line :start column-pos :end start-line-start)))
+              (push (cons :line-info-line line-no) info)
+              (go done)))))
+       (go top)
+     done)
+    (close stream)
+    (let ((info (reverse info)))
+      (cond
+        ((assoc :inlined-subroutine info)
+         (let ((file-name (cdr (assoc :call-file info)))
+               (line-no (cdr (assoc :call-line info)))
+               (column 0))
+           (values file-name line-no column)))
+        (t
+         (let ((file-name (concatenate 'string (cdr (assoc :comp-dir info)) "/" (cdr (assoc :name info))))
+               (line-no (cdr (assoc :line-info-line info)))
+               (column (cdr (assoc :line-info-column info))))
+           (values file-name line-no column)))))))
+
+(defun run-llvm-dwarfdump (address file)
+  (let ((pathname #+target-os-darwin (pathname (format nil "~a.dwarf" file))
+                  #+target-os-linux (pathname file)))
+    (if (null (probe-file pathname))
+        (values)
+        (let ((llvm-dwarfdump (namestring (make-pathname :name "llvm-dwarfdump" :type nil :defaults core:*clang-bin*))))
+          (let ((cmd (list llvm-dwarfdump
+                           "-lookup"
+                           (format nil "0x~x" address)
+                           (namestring pathname))))
+            (multiple-value-bind (err error-msg stream)
+                (ext:vfork-execvp cmd t)
+              (parse-llvm-dwarfdump stream)))))))
 
 (defparameter *debug-code-source-position* nil)
 (defun code-source-position (return-address)
   (let ((address (1- (core:pointer-integer return-address))))
-    (when *debug-code-source-position*
-      (let* ((address (core:pointer-increment return-address -1))
-             (address-int (core:pointer-integer address)))
-        (multiple-value-bind (symbol start end type library-name library-origin offset-from-start-of-library)
-            (core:lookup-address address)
-          (format t "Lookup of address 0x~x 0x~x ~s ~s~%" address-int offset-from-start-of-library library-name symbol)
-          )))
-    #+target-os-darwin
-    (multiple-value-bind (err error-msg stream)
-        (ext:vfork-execvp (list "atos" "-fullPath" "-p" (format nil "~a" (core:getpid))
-                                (format nil "0x~x" address)) t)
-      (let ((result (read-line stream)))
-        (close stream)
-        (let* ((open-paren (position #\( result :from-end t))
-               (close-paren (position #\) result :from-end t))
-               (source-info (subseq result (1+ open-paren) close-paren))
-               (colon-pos (position #\: source-info))
-               (source-file-name (subseq source-info 0 colon-pos))
-               (source-pathname (pathname source-file-name))
-               (line-number-string (subseq source-info (1+ colon-pos)))
-               (line-number (parse-integer line-number-string :junk-allowed t))
-               )
-          (format t "The code-source-position function will return ~s : ~s~%" source-file-name line-number)
+    (let* ((address (core:pointer-increment return-address -1))
+           (address-int (core:pointer-integer address)))
+      (multiple-value-bind (symbol start end type library-name library-origin offset-from-start-of-library)
+          (core:lookup-address address)
+        (multiple-value-bind (source-pathname line-number column)
+            (run-llvm-dwarfdump offset-from-start-of-library library-name)
           (make-code-source-line
            :source-pathname source-pathname
-           :line-number line-number))))
-    #+target-os-linux
-    (progn
-      (warn "Add support for ext:code-source-position for linux"))
-    ))
+           :line-number line-number
+           :column column))))))
 
 (export 'code-source-position)
