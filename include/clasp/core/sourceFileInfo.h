@@ -50,8 +50,8 @@ class FileScope_O : public Scope_O {
   bool fieldsp() const { return true; };
   void fields(Record_sp node);
 public:
-  static FileScope_sp create(Pathname_sp path, int handle, T_sp truename = _Nil<T_O>(), size_t offset = 0);
-  static FileScope_sp create(const string &fileNamePath, int handle, T_sp truename = _Nil<T_O>(), size_t offset = 0);
+  static FileScope_sp create(Pathname_sp path, int handle);
+  static FileScope_sp create(const string &fileNamePath, int handle);
 
 public: // ctor/dtor for classes with shared virtual base
   explicit FileScope_O();
@@ -73,8 +73,6 @@ GCPRIVATE: // instance variables here
 
 public: // Functions here
   int fileHandle() const { return this->_FileHandle; };
-  /*! Return the value of _SourceDebugPathname unless nil then return _pathname */
-  Pathname_sp sourceDebugPathname() const;
   string fileName() const;
   string parentPathName() const;
   string namestring() const;
@@ -82,9 +80,6 @@ CL_LISPIFY_NAME("FileScope-pathname");
 CL_DEFMETHOD   Pathname_sp pathname() const { return this->_pathname; };
   const char *permanentPathName();
   const char *permanentFileName();
-
-CL_LISPIFY_NAME("FileScope-sourceDebugOffset");
-CL_DEFMETHOD   size_t sourceDebugOffset() const { return this->_SourceDebugOffset; };
   string __repr__() const;
 }; // FileScope class
 
@@ -96,7 +91,7 @@ CL_DEFMETHOD   size_t sourceDebugOffset() const { return this->_SourceDebugOffse
 
 FORWARD(SourcePosInfo);
 class SourcePosInfo_O : public General_O {
-  friend T_mv core__file_scope(T_sp sourceFile, T_sp truename, size_t offset);
+  friend T_mv core__file_scope(T_sp sourceFile);
 
   LISP_CLASS(core, CorePkg, SourcePosInfo_O, "SourcePosInfo",General_O);
  public:
@@ -179,7 +174,7 @@ struct gctools::GCInfo<core::SourcePosInfo_O> {
 
 namespace core {
 
-T_mv core__file_scope(T_sp sourceFile, T_sp truename = _Nil<T_O>(), size_t offset = 0);
+T_mv core__file_scope(T_sp sourceFile);
 
 }; // core namespace
 

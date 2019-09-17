@@ -210,7 +210,7 @@ struct ThreadInfo {
 #endif
  
 class Lisp_O {
-  friend T_mv core__file_scope(T_sp sourceFile, String_sp truename, size_t offset);
+  friend T_mv core__file_scope(T_sp sourceFile);
   friend gctools::Layout_code* gctools::get_stamp_layout_codes();
   struct GCRoots //: public gctools::HeapRoot
   {
@@ -491,7 +491,7 @@ public:
   gctools::Vec0<core::Symbol_sp> &classSymbolsHolder() { return this->_Roots._ClassSymbolsHolderUnshiftedNowhere; };
 
 public:
-  FileScope_mv getOrRegisterFileScope(const string &fileName, T_sp truename = _Nil<T_O>(), size_t offset = 0);
+  FileScope_mv getOrRegisterFileScope(const string &fileName);
 
 public:
   /*! Get the LoadTimeValues_sp that corresponds to the name.

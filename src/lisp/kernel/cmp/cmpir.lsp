@@ -849,13 +849,18 @@ But no irbuilders or basic-blocks. Return the fn."
   lambda-list docstring declares form
   source-pathname lineno column filepos)
 
-(defun make-function-info (&key function-name lambda-list docstring declares form
-                             lineno column filepos)
-  ;; FIXME: *current-source-pos-info* could be installed already knowing about offsets
-  ;; and such, thus leaving the handling waaaaay up in compile-file.
-  (%make-function-info function-name lambda-list docstring declares form
-                       *source-debug-pathname* lineno column
-                       (+ filepos *source-debug-offset*)))
+(defun make-function-info (&key function-name lambda-list docstring declares form spi)
+  (let ((lineno 0) (column 0) (filepos 0) (source-pathname "-unknown-file-"))
+    (when spi
+      (setf source-pathname (core:file-scope-pathname
+                             (core:file-scope
+                              (core:source-pos-info-file-handle spi)))
+            lineno (core:source-pos-info-lineno spi)
+            ;; FIXME: Why 1+?
+            column (1+ (core:source-pos-info-column spi))
+            filepos (core:source-pos-info-filepos spi)))
+    (%make-function-info function-name lambda-list docstring declares form
+                         source-pathname lineno column filepos)))
 
 (defconstant +maxi32+ 4294967295)
 

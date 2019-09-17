@@ -51,10 +51,7 @@ Could return more functions that provide lambda-list for swank for example"
                                                         :docstring docstring
                                                         :declares declares
                                                         :form code
-                                                        :lineno (core:source-pos-info-lineno core:*current-source-pos-info*)
-                                                        :column (core:source-pos-info-column core:*current-source-pos-info*)
-                                                        :filepos (core:source-pos-info-filepos core:*current-source-pos-info*))
-                                        )
+                                                        :spi core:*current-source-pos-info*))
                    (cmp-log "Starting new function name: %s%N" name)
                    ;; The following injects a debugInspectT_sp at the start of the body
                    ;; it will print the address of the literal which must correspond to an entry in the
@@ -318,10 +315,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
                                                               :docstring nil
                                                               :declares nil
                                                               :form form
-                                                              :lineno (core:source-pos-info-lineno core:*current-source-pos-info*)
-                                                              :column 0
-                                                              :filepos (core:source-pos-info-filepos core:*current-source-pos-info*))
-                                              )
+                                                              :spi core:*current-source-pos-info*))
                             (let* ((given-name (llvm-sys:get-name fn)))
                               ;; Map the function argument names
                               (cmp-log "Creating repl function with name: %s%N" given-name)

@@ -186,8 +186,6 @@ and the pathname of the source file - this will also be used as the module initi
                                  compile-file-hook
                                  type
                                  output-type
-                                 source-debug-pathname
-                                 (source-debug-offset 0)
                                  environment
                                  image-startup-position
                                  (optimize t)
@@ -197,8 +195,6 @@ and the pathname of the source file - this will also be used as the module initi
 - output-path :: A pathname.
 - compile-file-hook :: A function that will do the compile-file
 - type :: :kernel or :user (I'm not sure this is useful anymore)
-- source-debug-pathname :: A pathname.
-- source-debug-offset :: An integer.
 - environment :: Arbitrary, passed only to hook
 Compile a lisp source file into an LLVM module."
   ;; TODO: Save read-table and package with unwind-protect
@@ -220,10 +216,6 @@ Compile a lisp source file into an LLVM module."
 	 warnings-p failure-p)
     (or module (error "module is NIL"))
     (with-open-stream (sin source-sin)
-      ;; If a truename is provided then spoof the file-system to treat input-pathname
-      ;; as source-truename with the given offset
-      (when source-debug-pathname
-        (core:file-scope (namestring input-pathname) source-debug-pathname source-debug-offset nil))
       (when *compile-verbose*
 	(bformat t "; Compiling file: %s%N" (namestring input-pathname)))
       (let* ((*compilation-module-index* 0) ; FIXME: necessary?
@@ -233,35 +225,32 @@ Compile a lisp source file into an LLVM module."
         (with-module (:module module
                       :optimize (when optimize #'optimize-module-for-compile-file)
                       :optimize-level optimize-level)
-          (with-source-pathnames (:source-pathname *compile-file-truename* ;(namestring source-location)
-                                  :source-debug-pathname source-debug-pathname
-                                  :source-debug-offset source-debug-offset)
-            ;; (1) Generate the code
-            (with-debug-info-generator (:module *the-module*
-                                        :pathname *compile-file-truename*)
-              (or module (error "module is NIL"))
-              (with-make-new-run-all (run-all-function (namestring input-pathname))
-                (with-literal-table
-                    (loop-read-and-compile-file-forms source-sin environment compile-file-hook))
-                (setf run-all-name (llvm-sys:get-name run-all-function))))
-            (cmp-log "About to verify the module%N")
-            (cmp-log-dump-module *the-module*)
-            (irc-verify-module-safe *the-module*)
-            (quick-module-dump *the-module* "preoptimize")
-            ;; (2) Add the CTOR next
-            (make-boot-function-global-variable module run-all-name
-                                                :position image-startup-position
-                                                :register-library t)
-            ;; (3) If optimize ALWAYS link the builtins in, inline them and then remove them - then optimize.
-            #+(or)
-            (if (> optimize-level 0)
-                (link-inline-remove-builtins *the-module*)))
-          ;; Now at the end of with-module another round of optimization is done
-          ;; but the RUN-ALL is now referenced by the CTOR and so it won't be optimized away
-          ;; ---- MOVE OPTIMIZATION in with-module to HERE ----
-          )
-        (quick-module-dump module "postoptimize")
-        module))))
+          ;; (1) Generate the code
+          (with-debug-info-generator (:module *the-module*
+                                      :pathname *compile-file-truename*)
+            (or module (error "module is NIL"))
+            (with-make-new-run-all (run-all-function (namestring input-pathname))
+              (with-literal-table
+                  (loop-read-and-compile-file-forms source-sin environment compile-file-hook))
+              (setf run-all-name (llvm-sys:get-name run-all-function))))
+          (cmp-log "About to verify the module%N")
+          (cmp-log-dump-module *the-module*)
+          (irc-verify-module-safe *the-module*)
+          (quick-module-dump *the-module* "preoptimize")
+          ;; (2) Add the CTOR next
+          (make-boot-function-global-variable module run-all-name
+                                              :position image-startup-position
+                                              :register-library t)
+          ;; (3) If optimize ALWAYS link the builtins in, inline them and then remove them - then optimize.
+          #+(or)
+          (if (> optimize-level 0)
+              (link-inline-remove-builtins *the-module*)))
+        ;; Now at the end of with-module another round of optimization is done
+        ;; but the RUN-ALL is now referenced by the CTOR and so it won't be optimized away
+        ;; ---- MOVE OPTIMIZATION in with-module to HERE ----
+        )
+      (quick-module-dump module "postoptimize")
+      module)))
 
 (defun generate-info (input-file output-info-pathname)
   "Write information about the compile-file to the .info file"
@@ -289,12 +278,8 @@ Compile a lisp source file into an LLVM module."
                               (optimize t)
                               (optimize-level *optimization-level*)
                               (external-format :default)
-                              ;; If we are spoofing the source-file system to treat given-input-name
-                              ;; as a part of another file then use source-debug-pathname to provide the
-                              ;; truename of the file we want to mimic
-                              source-debug-pathname
-                              ;; This is the offset we want to spoof
-                              (source-debug-offset 0)
+                              ;; Used for C-c C-c in SLIME. Or rather, will be FIXME
+                              source-debug-pathname source-debug-offset
                               ;; output-type can be (or :fasl :bitcode :object)
                               (output-type :fasl)
                               ;; type can be either :kernel or :user
@@ -326,8 +311,6 @@ Compile a lisp source file into an LLVM module."
           (let ((module (compile-file-to-module input-file
                                                 :type type
                                                 :output-type output-type
-                                                :source-debug-pathname source-debug-pathname
-                                                :source-debug-offset source-debug-offset
                                                 :compile-file-hook *cleavir-compile-file-hook*
                                                 :environment environment
                                                 :image-startup-position image-startup-position

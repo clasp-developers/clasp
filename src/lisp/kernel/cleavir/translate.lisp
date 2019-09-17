@@ -262,14 +262,7 @@ when this is t a lot of graphs will be generated.")
 
 (defun calculate-function-info (enter llvm-function-name)
   (let* ((origin (cleavir-ir:origin enter))
-         (source-pos-info (origin-spi origin))
-         (lineno 0)
-         (column 0)
-         (filepos 0))
-    (when (and source-pos-info (typep source-pos-info 'core:source-pos-info))
-      (setf lineno (core:source-pos-info-lineno source-pos-info)
-            column (1+ (core:source-pos-info-column source-pos-info))
-            filepos (core:source-pos-info-filepos source-pos-info)))
+         (source-pos-info (origin-spi origin)))
     (cond
       ((typep enter 'clasp-cleavir-hir:named-enter-instruction)
        (cmp:make-function-info :function-name llvm-function-name
@@ -277,19 +270,16 @@ when this is t a lot of graphs will be generated.")
                                :docstring (clasp-cleavir-hir:docstring enter)
                                :declares nil
                                :form nil
-                               :lineno lineno
-                               :column column
-                               :filepos filepos))
+                               :spi source-pos-info))
       ((typep enter 'cleavir-ir:enter-instruction)
        (cmp:make-function-info :function-name llvm-function-name
                                :lambda-list nil
                                :docstring nil
                                :declares nil
                                :form nil
-                               :lineno lineno
-                               :column column
-                               :filepos filepos))
-      (t (error "layout-procedure enter is not a known type of enter-instruction - it is a ~a - handle it" enter)))))
+                               :spi source-pos-info))
+      (t (error "layout-procedure enter is not a known type of enter-instruction - it is ~a"
+                enter)))))
 
 (defun layout-procedure (enter lambda-name abi &key (linkage 'llvm-sys:internal-linkage))
   (let* ((function-info (gethash enter *map-enter-to-function-info*))

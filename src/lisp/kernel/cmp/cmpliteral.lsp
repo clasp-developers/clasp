@@ -906,9 +906,7 @@ and  return the sorted values and the constant-table or (values nil nil)."
                                                        :docstring nil
                                                        :declares nil
                                                        :form nil
-                                                       :lineno (core:source-pos-info-lineno core:*current-source-pos-info*)
-                                                       :column (core:source-pos-info-column core:*current-source-pos-info*)
-                                                       :filepos (core:source-pos-info-column core:*current-source-pos-info*)))
+                                                       :spi core:*current-source-pos-info*))
               (let* ((given-name (llvm-sys:get-name fn)))
                 ;; Map the function argument names
                 (cmp:cmp-log "Creating ltv thunk with name: %s%N" given-name)
@@ -1075,10 +1073,7 @@ If it isn't NIL then copy the literal from its index in the LTV into result."
                                                        :docstring nil
                                                        :declares nil
                                                        :form nil
-                                                       :lineno (core:source-pos-info-lineno core:*current-source-pos-info*)
-                                                       :column (core:source-pos-info-column core:*current-source-pos-info*)
-                                                       :filepos (core:source-pos-info-filepos core:*current-source-pos-info*))
-                                       )
+                                                       :spi core:*current-source-pos-info*))
               (let ((given-name (llvm-sys:get-name fn)))
                 (cmp:codegen fn-result form fn-env)))))
     (unless cmp:*suppress-llvm-output* (cmp:irc-verify-function fn t))

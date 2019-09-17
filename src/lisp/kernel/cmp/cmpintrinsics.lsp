@@ -1083,9 +1083,6 @@ and initialize it with an array consisting of one function pointer."
 (defvar *compile-file-unique-symbol-prefix* "" "Store a unique prefix for symbols that are external-linkage")
 (defvar *compile-file-file-scope* nil "Store the SourceFileInfo object for the compile-file target")
 
-(defvar *source-debug-pathname*)
-(defvar *source-debug-offset* 0)
-
 (defvar *gv-boot-functions* nil
   "A global value that stores a pointer to the boot function for the Module.
 It has appending linkage.")
