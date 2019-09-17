@@ -1606,6 +1606,10 @@ class link_executable(clasp_task):
               [ "-o", self.outputs[0].abspath()]
         return self.exec_command(cmd)
 
+    def display(self):
+        return "link_executable.display() would be VERY long - remove display() to display\n"
+
+
 class run_aclasp(clasp_task):
     def run(self):
         executable = self.inputs[0].abspath()
