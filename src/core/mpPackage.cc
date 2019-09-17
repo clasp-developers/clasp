@@ -76,17 +76,6 @@ void debug_mutex_unlock(Mutex* m) {
 };
 #endif
 
-struct RAIIMutexLock {
-  Mutex _Mutex;
-  RAIIMutexLock(Mutex& m) : _Mutex(m) {
-    int res = this->_Mutex.lock();
-    printf("%s:%d RAIIMutexLock res = %d\n", __FILE__, __LINE__, res );
-  };
-  ~RAIIMutexLock() {
-    this->_Mutex.unlock();
-  }
-};
-
 };
 
 namespace mp {
@@ -102,6 +91,7 @@ SYMBOL_SC_(MpPkg, aSingleMpSymbol);
 SYMBOL_EXPORT_SC_(MpPkg, STARcurrent_processSTAR);
 SYMBOL_EXPORT_SC_(MpPkg, roo);
 
+// This keeps track of a process on the list of active threads.
 struct SafeRegisterDeregisterProcessWithLisp {
   Process_sp _Process;
   SafeRegisterDeregisterProcessWithLisp(Process_sp p) : _Process(p)
@@ -116,7 +106,6 @@ struct SafeRegisterDeregisterProcessWithLisp {
 
 __attribute__((noinline))
 void start_thread_inner(Process_sp process, void* cold_end_of_stack) {
-  process->_ExitBarrier.lock();
 #ifdef USE_MPS
   // use mask
   mps_res_t res = mps_thread_reg(&process->thr_o,global_arena);
@@ -154,34 +143,19 @@ void start_thread_inner(Process_sp process, void* cold_end_of_stack) {
   core::List_sp reversed_bindings = core::cl__reverse(process->_InitialSpecialBindings);
   for ( auto cur : reversed_bindings ) {
     core::Cons_sp pair = gc::As<core::Cons_sp>(oCar(cur));
-//    printf("%s:%d  start_thread   setting special variable/(eval value) -> %s\n", __FILE__, __LINE__, _rep_(pair).c_str());
     scope.pushSpecialVariableAndSet(pair->_Car,core::eval::evaluate(pair->_Cdr,_Nil<core::T_O>()));
   }
-//  gctools::register_thread(process,stack_base);
   core::List_sp args = process->_Arguments;
-  
-#if 0
-#ifdef USE_BOEHM
-  GC_stack_base gc_stack_base;
-  GC_get_stack_base(&gc_stack_base);
-  GC_register_my_thread(&gc_stack_base);
-#endif
-#endif
 
   process->_Phase = Active;
-  process->_Active.signal();
-  process->_ExitBarrier.unlock();
   core::T_mv result_mv;
   {
     SafeRegisterDeregisterProcessWithLisp reg(process);
-//    RAIIMutexLock exitBarrier(p->_ExitBarrier);
-//    printf("%s:%d:%s  process locking the ExitBarrier\n", __FILE__, __LINE__, __FUNCTION__);
     try {
       result_mv = core::eval::applyLastArgsPLUSFirst(process->_Function,args);
     } catch (ExitProcess& e) {
       // Do nothing - exiting
     }
-//    printf("%s:%d:%s  process releasing the ExitBarrier\n", __FILE__, __LINE__, __FUNCTION__);
   }
   process->_Phase = Exiting;
   core::T_sp result0 = result_mv;
@@ -191,13 +165,10 @@ void start_thread_inner(Process_sp process, void* cold_end_of_stack) {
   }
   result_list = core::Cons_O::create(result0,result_list);
   process->_ReturnValuesList = result_list;
-  
-//  gctools::unregister_thread(process);
-//  printf("%s:%d leaving start_thread\n", __FILE__, __LINE__);
 
 };
 
-
+// This is the function actually passed to pthread_create.
 void* start_thread(void* claspProcess) {
   Process_sp process((Process_O*)claspProcess);
   void* cold_end_of_stack = &cold_end_of_stack;
@@ -216,18 +187,12 @@ void* start_thread(void* claspProcess) {
     fclose(it.second);
   }
 #endif
-#if 0
-#ifdef USE_BOEHM
-  GC_unregister_my_thread();
-#endif
-#endif
 #ifdef USE_MPS
   gctools::my_thread_allocation_points.destroyAllocationPoints();
   mps_root_destroy(process->root);
   mps_thread_dereg(process->thr_o);
 #endif
   my_thread->destroy_sigaltstack();
-//  printf("%s:%d  really leaving start_thread\n", __FILE__, __LINE__ );
   return NULL;
 }
 
@@ -358,29 +323,34 @@ CL_DEFUN core::T_sp mp__process_active_p(Process_sp p) {
   return (p->_Phase == Active) ? _lisp->_true() : _Nil<core::T_O>();
 }
 
+// Internal function used only in process_suspend (which is external).
+// FIXME: Don't actually export.
 SYMBOL_EXPORT_SC_(MpPkg,suspend_loop);
-SYMBOL_EXPORT_SC_(MpPkg,break_suspend_loop);
 CL_DEFUN void mp__suspend_loop() {
-  printf("%s:%d %s\n", __FILE__, __LINE__, __FUNCTION__);
-  SafeExceptionStackPush save(&my_thread->exceptionStack(), core::CatchFrame,_sym_suspend_loop);
-  for ( ; ; ) {
-    core::cl__sleep(core::make_fixnum(100));
+  Process_sp this_process = gc::As<Process_sp>(_sym_STARcurrent_processSTAR->symbolValue());
+  RAIILock<Mutex> lock(this_process->_SuspensionMutex);
+  this_process->_Phase = Suspended;
+  while (this_process->_Phase == Suspended) {
+    if (!(this_process->_SuspensionCV.wait(this_process->_SuspensionMutex)))
+      SIMPLE_ERROR(BF("BUG: pthread_cond_wait ran into an error"));
   }
 };
 
-CL_DEFUN void mp__break_suspend_loop() {
-  printf("%s:%d %s\n", __FILE__, __LINE__, __FUNCTION__);
-  core::core__throw_function(_sym_suspend_loop,_Nil<core::T_O>());
-};
-
 CL_DEFUN void mp__process_suspend(Process_sp process) {
-  printf("%s:%d %s\n", __FILE__, __LINE__, __FUNCTION__);
-  mp__interrupt_process(process,_sym_suspend_loop);
+  if (process->_Phase == Active)
+    mp__interrupt_process(process,_sym_suspend_loop);
+  else
+    SIMPLE_ERROR(BF("Cannot suspend inactive process %s") % process);
 };
 
 CL_DEFUN void mp__process_resume(Process_sp process) {
-  printf("%s:%d %s\n", __FILE__, __LINE__, __FUNCTION__);
-  mp__interrupt_process(process,_sym_break_suspend_loop);
+  if (process->_Phase == Suspended) {
+    RAIILock<Mutex> lock(process->_SuspensionMutex);
+    process->_Phase = Active;
+    if (!(process->_SuspensionCV.signal()))
+      SIMPLE_ERROR(BF("BUG: pthread_cond_signal ran into an error"));
+  } else
+    SIMPLE_ERROR(BF("Cannot resume a process (%s) that has not been suspended") % process);
 };
 
 CL_DEFUN void mp__process_yield() {
@@ -398,12 +368,6 @@ CL_DEFUN core::T_mv mp__process_join(Process_sp process) {
   // ECL has a much more complicated process_join function
   if (process->_Phase>0) {
     pthread_join(process->_Thread,NULL);
-#if 0
-    printf("%s:%d:%s About to lock the ExitBarrier\n", __FILE__,__LINE__,__FUNCTION__);
-    RAIIMutexLock join_(process->_ExitBarrier);
-    printf("          ExitBarrier count = %ld\n", join_._Mutex._Counter);
-    printf("%s:%d:%s Releasing the ExitBarrier\n", __FILE__,__LINE__,__FUNCTION__);
-#endif
   }
   return cl__values_list(process->_ReturnValuesList);
 }

@@ -578,14 +578,6 @@
               (ext:byte16 nil) (ext:byte8 nil)
               (bit t)))))
 
-(declaim (inline row-major-array-in-bounds-p))
-(defun row-major-array-in-bounds-p (array index)
-  (etypecase array
-    ((simple-array * (*))
-     (and (<= 0 index) (< index (core::vector-length array))))
-    (array
-     (and (<= 0 index) (< index (core::%array-total-size array))))))
-
 ;;; Array indices are all fixnums. If we're sure sizes are valid, we don't want
 ;;; to use general arithmetic. We can just use this to do unsafe modular arithmetic.
 ;;; (Used in this file only)
@@ -624,13 +616,10 @@
                   (error 'core:sequence-out-of-bounds
                          :datum index :expected-type `(integer 0 (,max))
                          :object vector))
-    ;; Handle simple arrays separately, because they're easy.
-    (if (core:data-vector-p vector)
-        (vref vector index)
-        (with-array-data (underlying-array offset vector)
-          ;; Okay, now array is a vector/simple, and index is valid.
-          ;; This function takes care of element type discrimination.
-          (vref underlying-array (add-indices index offset))))))
+    (with-array-data (underlying-array offset vector)
+      ;; Okay, now array is a vector/simple, and index is valid.
+      ;; This function takes care of element type discrimination.
+      (vref underlying-array (add-indices index offset)))))
 
 (declaim (inline vector-set))
 (defun vector-set (vector index value)
@@ -642,13 +631,10 @@
                   (error 'core:sequence-out-of-bounds
                          :datum index :expected-type `(integer 0 (,max))
                          :object vector))
-    ;; Handle simple arrays separately, because they're easy.
-    (if (core:data-vector-p vector)
-        (setf (vref vector index) value)
-        (with-array-data (underlying-array offset vector)
-          ;; Okay, now array is a vector/simple, and index is valid.
-          ;; This function takes care of element type discrimination.
-          (setf (vref underlying-array (add-indices index offset)) value)))))
+    (with-array-data (underlying-array offset vector)
+      ;; Okay, now array is a vector/simple, and index is valid.
+      ;; This function takes care of element type discrimination.
+      (setf (vref underlying-array (add-indices index offset)) value))))
 
 (declaim (inline row-major-aref/no-bounds-check))
 (defun row-major-aref/no-bounds-check (array index)
@@ -671,6 +657,10 @@
                                                        :expected-type `(integer 0 (,max))
                                                        :object array)))
   (row-major-aref/no-bounds-check array index))
+(define-cleavir-compiler-macro row-major-aref (&whole whole array index &environment env)
+  (if (environment-has-policy-p env 'core::insert-array-bounds-checks)
+      whole
+      `(row-major-aref/no-bounds-check ,array ,index)))
 
 (declaim (inline row-major-aset/no-bounds-check))
 (defun row-major-aset/no-bounds-check (array index value)
@@ -688,6 +678,11 @@
                                                        :expected-type `(integer 0 (,max))
                                                        :object array)))
   (row-major-aset/no-bounds-check array index value))
+(define-cleavir-compiler-macro core:row-major-aset
+    (&whole whole array index value &environment env)
+  (if (environment-has-policy-p env 'core::insert-array-bounds-checks)
+      whole
+      `(row-major-aset/no-bounds-check ,array ,index ,value)))
 
 (declaim (inline schar (setf schar) char (setf char)))
 (defun schar (string index)

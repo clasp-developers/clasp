@@ -1064,76 +1064,6 @@ CL_DEFUN T_sp cl__read_preserving_whitespace(T_sp input_stream_designator, T_sp 
 /* -------------------------------------------------------- */
 /*     Sequence primitives                                  */
 
-
-ListOfSequenceSteppers::ListOfSequenceSteppers(List_sp sequences) {
-  this->_AtEnd = false;
-  for (auto cur : sequences) {
-    T_sp obj = oCar(cur);
-    if (Vector_sp vobj = obj.asOrNull<Vector_O>()) {
-      if (cl__length(vobj) == 0)
-        goto EMPTY;
-      VectorStepper_sp  vP(gc::GC<VectorStepper_O>::allocate(vobj));
-      this->_Steppers.push_back(vP);
-    } else if (Cons_sp cobj = obj.asOrNull<Cons_O>()) {
-      ConsStepper_sp cP(gc::GC<ConsStepper_O>::allocate(cobj));
-      this->_Steppers.push_back(cP);
-    } else if (obj.nilp()) {
-      goto EMPTY;
-    } else if (obj.generalp()) {
-      General_sp gobj((gctools::Tagged)obj.raw_());
-      SIMPLE_ERROR(BF("Illegal object for stepper[%s] class[%s]") % _rep_(gobj) % gobj->_instanceClass()->_classNameAsString());
-    }
-  }
-  this->_AtEnd = false;
-  return;
- EMPTY:
-  this->_AtEnd = true;
-}
-
-void ListOfSequenceSteppers::fillValueFrameUsingCurrentSteppers(ActivationFrame_sp frame) const {
-  if (this->_AtEnd)
-    SIMPLE_ERROR(BF("Tried to make list of ended stepper"));
-  int idx = 0;
-  ValueFrame_sp vframe = frame.as<ValueFrame_O>();
-  for (auto rit = this->_Steppers.begin(); rit != this->_Steppers.end(); rit++) {
-    vframe->set_entry(idx, (*rit)->element());
-    ++idx;
-  }
-}
-
-bool ListOfSequenceSteppers::advanceSteppers() {
-  _OF();
-  if (this->_AtEnd)
-    SIMPLE_ERROR(BF("Tried to advance ended stepper"));
-  for (auto it = this->_Steppers.begin(); it != this->_Steppers.end(); it++) {
-    this->_AtEnd |= (*it)->advance();
-  }
-  return !this->_AtEnd;
-}
-
-class ListOfListSteppers : public ListOfSequenceSteppers {
-public:
-  ListOfListSteppers(List_sp lists);
-  virtual ~ListOfListSteppers(){};
-};
-
-ListOfListSteppers::ListOfListSteppers(List_sp sequences) {
-  for (auto cur : sequences) {
-    T_sp obj = oCar(cur);
-    if (Cons_sp cobj = obj.asOrNull<Cons_O>()) {
-      ConsStepper_sp  cP(gc::GC<ConsStepper_O>::allocate(cobj));
-      this->_Steppers.push_back(cP);
-    } else {
-      goto EMPTY;
-    }
-  }
-  this->_AtEnd = false;
-  return;
- EMPTY:
-  this->_AtEnd = true;
-  return;
-}
-
 /* Only works on lists of lists - used to support macroexpansion backquote */
 bool test_every_some_notevery_notany(Function_sp predicate, List_sp sequences, bool elementTest, bool elementReturn, bool fallThroughReturn, T_sp &retVal) {
   if (!sequences.consp()) goto FALLTHROUGH;
@@ -1938,40 +1868,6 @@ CL_DECLARE();
 CL_DOCSTRING("bdsVal");
 CL_DEFUN T_sp core__bds_val(int idx) {
   return my_thread->bindings().val(idx);
-};
-
-CL_LAMBDA();
-CL_DECLARE();
-CL_DOCSTRING("exceptionStack");
-CL_DEFUN Vector_sp core__exception_stack() {
-  return my_thread->exceptionStack().backtrace();
-}
-
-CL_LAMBDA();
-CL_DECLARE();
-CL_DOCSTRING("exceptionStackDump");
-CL_DEFUN void core__exception_stack_dump() {
-  ExceptionStack &stack = my_thread->exceptionStack();
-  printf("Exception stack size: %zu members\n", stack.size());
-  for (int i(0); i < stack.size(); ++i) {
-    string kind;
-    switch (stack[i]._FrameKind) {
-    case CatchFrame:
-      kind = "catch";
-      break;
-    case BlockFrame:
-      kind = "block";
-      break;
-    case TagbodyFrame:
-      kind = "tagbody";
-      break;
-    default:
-      kind = "unknown";
-      break;
-    };
-    printf("Exception exceptionstack[%2d] = %8s %s@%p\n", i, kind.c_str(), _rep_(stack[i]._Key).c_str(), stack[i]._Key.raw_());
-  }
-  printf("----Done----\n");
 };
 
 CL_LAMBDA();

@@ -1942,17 +1942,10 @@ T_mv sp_unwindProtect(List_sp args, T_sp environment) {
 T_mv sp_catch(List_sp args, T_sp environment) {
   ASSERT(environment.generalp());
   T_sp mytag = eval::evaluate(oCar(args), environment);
-  int frame = my_thread->exceptionStack().push(CatchFrame, mytag);
   T_mv result;
-  try {
+  CLASP_BEGIN_CATCH(mytag) {
     result = eval::sp_progn(oCdr(args), environment);
-  } catch (CatchThrow &catchThrow) {
-    if (catchThrow.getFrame() != frame) {
-      throw catchThrow;
-    }
-    result = gctools::multiple_values<T_O>::createFromValues();
-  }
-  my_thread->exceptionStack().unwind(frame);
+  } CLASP_END_CATCH(mytag, result);
   return result;
 }
 
@@ -1960,20 +1953,12 @@ T_mv sp_throw(List_sp args, T_sp environment) {
   ASSERT(environment.generalp());
   T_sp throwTag = eval::evaluate(oCar(args), environment);
   T_mv result = Values(_Nil<T_O>());
-  int frame = my_thread->exceptionStack().findKey(CatchFrame, throwTag);
-  if (frame < 0) {
-    CONTROL_ERROR();
-  }
-  if (oCdr(args).notnilp()) {
-    result = eval::evaluate(oCadr(args), environment);
-  }
+  result = eval::evaluate(oCadr(args), environment);
   // The first return value needs to be saved in MultipleValues
   result.saveToMultipleValue0();
   // I should search for the Catch frame for throwTag and
   // invoke an error if it doesn't exist
-  CatchThrow catchThrow(frame);
-  printf("%s:%d Throwing core::CatchThrow exception@%p tag[%s] frame: %d\n", __FILE__, __LINE__, &catchThrow, _rep_(throwTag).c_str(), frame);
-  throw catchThrow;
+  clasp_throw(throwTag);
 }
 
 T_mv sp_multipleValueProg1(List_sp args, T_sp environment) {

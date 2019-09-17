@@ -1766,15 +1766,6 @@ CL_DEFUN List_sp cl__member(T_sp item, T_sp tlist, T_sp key, T_sp test, T_sp tes
   UNREACHABLE();
 }
 
-CL_LAMBDA(item list &key key test test-not);
-CL_DECLARE();
-CL_DOCSTRING("See CLHS memberTest");
-CL_DEFUN List_sp core__member_test(T_sp item, List_sp list, T_sp key, T_sp test, T_sp test_not) {
-  if (list.nilp())
-    return list;
-  return (list.asCons()->member(item, key, test, test_not));
-}
-
 CL_LAMBDA(item list test test-not key);
 CL_DECLARE();
 CL_DOCSTRING("Like member but if a key function is provided then apply it to the item. See ecl::list.d::member1");

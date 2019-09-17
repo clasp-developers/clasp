@@ -72,106 +72,6 @@ T_sp cl__append(VaList_sp lists);
 
 };
 
-
-namespace core {
-  class SequenceStepper_O;
-  class VectorStepper_O;
-  class ConsStepper_O;
-  FORWARD(SequenceStepper);
-  FORWARD(VectorStepper);
-  FORWARD(ConsStepper);
-};
-
-template <>
-  struct gctools::GCInfo<core::SequenceStepper_O> {
-  static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = false;
-  static GCInfo_policy constexpr Policy = normal;
-};
-
-namespace core {
- class SequenceStepper_O : public General_O {
-   LISP_ABSTRACT_CLASS(core,CorePkg,SequenceStepper_O,"SequenceStepper",General_O);
-public:
-  virtual bool advance() = 0;
-  virtual T_sp element() const = 0;
-  virtual ~SequenceStepper_O(){};
-};
-};
-
-template <>
-  struct gctools::GCInfo<core::VectorStepper_O> {
-  static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = false;
-  static GCInfo_policy constexpr Policy = normal;
-};
-
-namespace core {
-class VectorStepper_O : public SequenceStepper_O {
-  LISP_CLASS(core,CorePkg,VectorStepper_O,"VectorStepper",SequenceStepper_O);
-private:
-  Vector_sp _Domain;
-  int _Index;
-public:
-  VectorStepper_O(Vector_sp domain) : _Domain(domain), _Index(0){};
-  virtual bool advance() {
-    this->_Index++;
-    return (this->_Index >= cl__length(this->_Domain));
-  };
-  virtual T_sp element() const {
-    if (this->_Index < cl__length(this->_Domain)) {
-      return this->_Domain->rowMajorAref(this->_Index);
-    } else {
-      return _Nil<T_O>();
-    }
-  };
-};
-};
-template <>
-  struct gctools::GCInfo<core::ConsStepper_O> {
-  static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = false;
-  static GCInfo_policy constexpr Policy = normal;
-};
-
-namespace core {
-class ConsStepper_O : public SequenceStepper_O {
-  LISP_CLASS(core,CorePkg,ConsStepper_O,"ConsStepper",SequenceStepper_O);
-public: //private
-  List_sp _Cur;
-public:
-  ConsStepper_O(List_sp first) : _Cur(first){};
-  virtual bool advance() {
-    this->_Cur = oCdr(this->_Cur);
-    return this->_Cur.nilp();
-  };
-  virtual T_sp element() const { return oCar(this->_Cur); };
-};
-
-/*! A class that generates lists of elements drawn from a list of sequences.
-      Given (a1 a2 a3) (b1 b2 b3) (c1 c2 c3)
-      Will successively generate (a1 b1 c1) (a2 b2 c2) (a3 b3 c3) */
-class ListOfSequenceSteppers
-    {
-  friend class ListOfListSteppers;
-
-private:
-  gctools::Vec0<SequenceStepper_sp> _Steppers;
-  bool _AtEnd;
-
-public:
-  ListOfSequenceSteppers(){};
-  ListOfSequenceSteppers(List_sp sequences);
-  virtual ~ListOfSequenceSteppers(){};
-  bool atEnd() const { return this->_AtEnd; };
-  //	List_sp makeListFromCurrentSteppers() const;
-  void fillValueFrameUsingCurrentSteppers(ActivationFrame_sp frame) const;
-  /* Advance all of the steppers - return false if the end is hit otherwise true */
-  bool advanceSteppers();
-  int size() { return this->_Steppers.size(); };
-};
-};
-
 namespace core {
 T_sp cl__mapc(T_sp op, List_sp lists);
 T_sp cl__mapcar(T_sp op, List_sp lists);
@@ -179,13 +79,6 @@ T_sp cl__mapcar(T_sp op, List_sp lists);
 
 namespace core {
 
-  CL_LAMBDA(x y);
-  CL_DECLARE();
-  CL_DOCSTRING(R"doc(add two numbers)doc");
-  inline CL_DEFUN int core__test_add(int x, int y) {
-    return x + y;
-  }
-  
 /*! Return the FileScope for the obj - if obj is nil then return 
       one for anonymous */
 

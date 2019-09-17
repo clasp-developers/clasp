@@ -79,6 +79,30 @@ void ReturnFrom::keyFunctionForVtable(){};
 void DynamicGo::keyFunctionForVtable(){};
 void Unwind::keyFunctionForVtable(){};
 
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("Returns the list of active CL:CATCH tags. Strictly for debugging.");
+CL_DEFUN List_sp core__active_catch_tags() {
+  return my_thread->catchTags();
+}
+
+// The control transfer part of CL:THROW
+[[noreturn]] void clasp_throw(T_sp tag) {
+  // Check the list of catches in place to make sure the tag is there.
+  bool found = false;
+  for (auto tag_cons : my_thread->catchTags()) {
+    if (tag == oCar(tag_cons)) {
+      found = true;
+      break;
+    }
+  }
+  if (!found) CONTROL_ERROR();
+#ifdef DEBUG_TRACK_UNWINDS
+  global_CatchThrow_count++;
+#endif
+  throw CatchThrow(tag);
+}
+
 void throwTooFewArgumentsError(size_t given, size_t required) {
   lisp_error(core::_sym_wrongNumberOfArguments,
              lisp_createList(kw::_sym_givenNargs, make_fixnum(given),

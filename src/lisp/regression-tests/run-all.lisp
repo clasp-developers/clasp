@@ -36,6 +36,7 @@
 (load-if-compiled-correctly "sys:regression-tests;types01.lisp")
 (load-if-compiled-correctly "sys:regression-tests;control01.lisp")
 (load-if-compiled-correctly "sys:regression-tests;loop.lisp")
+(load-if-compiled-correctly "sys:regression-tests;numbers-core.lisp")
 
 (progn
   (note-test-finished)

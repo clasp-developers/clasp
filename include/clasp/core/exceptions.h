@@ -210,38 +210,36 @@ public:
   int getExitResult() { return this->_ExitResult; };
 };
 
-#if 1
 #pragma GCC visibility push(default)
 class ATTR_WEAK CatchThrow {
   virtual void keyFunctionForVtable() ATTR_WEAK;
 
 private:
-  int _Frame;
+  T_sp _Tag;
 
 public:
-  CatchThrow(int frame) : _Frame(frame){};
-  int getFrame() { return this->_Frame; };
+  CatchThrow(T_sp tag) : _Tag(tag){};
+  T_sp getTag() { return this->_Tag; };
   /*ATTR_WEAK*/ virtual ~CatchThrow(){};
 };
-#else
-#pragma GCC visibility push(default)
-class ATTR_WEAK CatchThrow {
-  virtual void keyFunctionForVtable() ATTR_WEAK;
 
-private:
-  T_sp _ThrownTag;
-  T_mv _ReturnedObject;
+/* Macros for implementing CL:CATCH, like ECL_CATCH_BEGIN.
+ * res is a T_mv variable the results of a throw will be stored in;
+ * for the normal return you have to do that manually. */
+// Use destructors to keep the list of valid catch tags correct.
+#define CLASP_BEGIN_CATCH(tg) {               \
+    CatchTagPusher tags_dummy(my_thread, tg); \
+    try
+#define CLASP_END_CATCH(tg, res)                               \
+  catch (CatchThrow &catchThrow) {                             \
+    if (catchThrow.getTag() != tg)                             \
+      throw catchThrow;                                        \
+    else {                                                     \
+      res = gctools::multiple_values<T_O>::createFromValues(); \
+    }                                                          \
+  }}
 
-public:
-  CatchThrow(T_sp thrownTag, T_mv ret) {
-    this->_ThrownTag = thrownTag;
-    this->_ReturnedObject = ret;
-  }
-  ~T_sp getThrownTag() { return this->_ThrownTag; };
-  T_mv getReturnedObject() { return this->_ReturnedObject; };
-  /*ATTR_WEAK*/ virtual ~CatchThrow(){};
-};
-#endif
+[[noreturn]] void clasp_throw(T_sp);
 
 class ATTR_WEAK ReturnFrom //: public gctools::HeapRoot
     {

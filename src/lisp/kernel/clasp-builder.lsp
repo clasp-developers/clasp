@@ -47,21 +47,6 @@ search for the string 'src', or 'generated' and return the rest of the list that
         (member "generated" rel :test #'string=)
         (error "Could not find \"src\" or \"generated\" in ~a" rel))))
 
-(defun get-pathname-with-type (module &optional (type "lsp"))
-  (error "Depreciated get-pathname-with-type")
-  (cond
-    ((pathnamep module)
-     (merge-pathnames module
-                      (make-pathname
-                       :type type
-                       :defaults (translate-logical-pathname
-                                  (make-pathname :host "sys")))))
-    ((symbolp module)
-     (merge-pathnames (pathname (string module))
-                      (make-pathname :host "sys" :directory '(:absolute) :type type)))
-    (t (error "bad module name: ~s" module))))
-
-
 (defun calculate-file-order (system)
   "Return a hash-table that maps names to an integer index in system"
   (let ((file-order (make-hash-table :test #'equal))
@@ -774,18 +759,6 @@ Return files."
                     (link-modules output-file all-output)))))))))
 
 (export '(compile-cclasp recompile-cclasp))
-
-
-(defun remove-files-for-boehmdc (system)
-  "boehmdc doesn't do inlining and type inference properly - so we remove inline.lisp from the build system"
-  #+(or)(let (keep)
-          (dolist (file system)
-            (if (string= "inline" (pathname-name file))
-                nil
-                (setq keep (cons file keep))))
-          (nreverse keep))
-  system)
-
 
 (defun link-cclasp (&key (output-file (build-common-lisp-bitcode-pathname)) (system (command-line-arguments-as-list)))
   (let ((all-output (output-object-pathnames #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/cclasp" :system system)))

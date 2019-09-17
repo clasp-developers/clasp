@@ -12,6 +12,7 @@ namespace core {
     void initialize_thread(mp::Process_sp process, bool initialize_GCRoots);
     void create_sigaltstack();
     void destroy_sigaltstack();
+    void pushCatchTag(T_sp);
     
     uint64_t   _BytesAllocated;
     mp::Process_sp _Process;
@@ -19,7 +20,10 @@ namespace core {
     uint64_t  _Tid;
     uintptr_t           _BacktraceBasePointer;
     DynamicBindingStack _Bindings;
-    ExceptionStack _ExceptionStack;
+    inline DynamicBindingStack& bindings() { return this->_Bindings; };
+    List_sp _CatchTags;
+    inline List_sp catchTags() { return this->_CatchTags; };
+    inline void setCatchTags(List_sp tags) { this->_CatchTags = tags; };
     MultipleValues _MultipleValues;
     const InvocationHistoryFrame* _InvocationHistoryStackTop;
     gctools::GCRootsInModule*  _GCRoots;
@@ -63,15 +67,27 @@ namespace core {
     Bignum_sp _BignumRegister0;
     Bignum_sp _BignumRegister1;
     Bignum_sp _BignumRegister2;
-    inline core::DynamicBindingStack& bindings() { return this->_Bindings; };
-    inline ExceptionStack& exceptionStack() { return this->_ExceptionStack; };
     Bignum_sp bigRegister0() { return this->_BignumRegister0; };
     Bignum_sp bigRegister1() { return this->_BignumRegister1; };
     Bignum_sp bigRegister2() { return this->_BignumRegister2; };
     ~ThreadLocalState();
   };
 
+
+// Thing to maintain the list of valid catch tags correctly.
+struct CatchTagPusher {
+  ThreadLocalState* mthread;
+  List_sp catch_tag_state;
+  CatchTagPusher(ThreadLocalState* thread, T_sp tag) {
+    mthread = thread;
+    catch_tag_state = thread->catchTags();
+    thread->pushCatchTag(tag);
+  }
+  ~CatchTagPusher() { mthread->setCatchTags(this->catch_tag_state); }
 };
+
+
+}; // namespace core
 
 
 namespace gctools {

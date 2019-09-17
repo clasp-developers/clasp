@@ -3406,8 +3406,68 @@ LongFloat clasp_to_long_double(Number_sp x)
 
   // --- END OF TRANSLATORS ---
 
+CL_LAMBDA(singleFloat);
+CL_DECLARE();
+CL_DOCSTRING("Return the bit representation of a single float in a lisp Fixnum");
+CL_DEFUN Fixnum_sp core__single_float_bits(SingleFloat_sp singleFloat) {
+  union SingleFloatConversion {
+        float input;
+        long  output;
+  };
+  SingleFloatConversion converter;
+  converter.input = unbox_single_float(singleFloat);
+  return clasp_make_fixnum((gc::Fixnum) converter.output);
+}
+
+CL_LAMBDA(bit-representation);
+CL_DECLARE();
+CL_DOCSTRING("Convert a bit representation in a lisp Fixnum to a single float");
+CL_DEFUN SingleFloat_sp core__single_float_from_unsigned_byte_32(Fixnum_sp fixnum) {
+  union SingleFloatConversion {
+        float input;
+        long  output;
+    };
+  SingleFloatConversion converter;
+  converter.output = unbox_fixnum(fixnum);
+  return make_single_float(converter.input);
 };
 
+CL_LAMBDA(doubleFloat);
+CL_DECLARE();
+CL_DOCSTRING("Return the bit representation of a double float in a lisp Integer if possible a Fixnum");
+CL_DEFUN Integer_sp core__double_float_bits(DoubleFloat_sp doubleFloat) {
+  union DoubleFloatConversion {
+        double input;
+        long   output;
+  };
+  DoubleFloatConversion converter;
+  converter.input = doubleFloat->get();
+  long temp = converter.output;
+  if ((temp >= gc::most_negative_fixnum) && (temp <= gc::most_positive_fixnum))
+    return clasp_make_fixnum((gc::Fixnum) temp);
+  else return Bignum_O::create((gc::Fixnum) temp); // (int64_t)?
+}
+
+CL_LAMBDA(bit-representation);
+CL_DECLARE();
+CL_DOCSTRING("Convert a bit representation in a lisp Integer to a double float");
+CL_DEFUN DoubleFloat_sp core__double_float_from_bits(Integer_sp integer) {
+  union DoubleFloatConversion {
+        double input;
+        long   output;
+    };
+  DoubleFloatConversion converter;
+  if (integer.fixnump()) {
+    converter.output = unbox_fixnum(integer);
+    return clasp_make_double_float(converter.input);
+  } else
+  {
+    converter.output = integer->as_long();
+    return clasp_make_double_float(converter.input);
+  }
+};
+
+}
 
 namespace core {
 
