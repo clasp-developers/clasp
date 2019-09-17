@@ -167,12 +167,12 @@ void cc_remove_gcroots_in_module(gctools::GCRootsInModule* holder)
 }
 
 
-void ltvc_assign_source_file_info_handle(const char *moduleName, const char *sourceDebugPathname, size_t sourceDebugOffset, int useLineno, int *sourceFileInfoHandleP) {
+void ltvc_assign_source_file_info_handle(const char *moduleName, const char *sourceDebugPathname, size_t sourceDebugOffset, int *sourceFileInfoHandleP) {
   NO_UNWIND_BEGIN();
   //	printf("%s:%d assignFileScopeHandle %s\n", __FILE__, __LINE__, moduleName );
   core::SimpleBaseString_sp mname = core::SimpleBaseString_O::make(moduleName);
   core::SimpleBaseString_sp struename = core::SimpleBaseString_O::make(sourceDebugPathname);
-  T_mv sfi_mv = core::core__file_scope(mname, struename, sourceDebugOffset, useLineno ? true : false);
+  T_mv sfi_mv = core::core__file_scope(mname, struename, sourceDebugOffset);
   FileScope_sp sfi = gc::As<FileScope_sp>(sfi_mv);
   int sfindex = unbox_fixnum(gc::As<core::Fixnum_sp>(sfi_mv.valueGet_(1)));
   *sourceFileInfoHandleP = sfindex;

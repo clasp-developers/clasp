@@ -2649,7 +2649,7 @@ int Lisp_O::run() {
   return exit_code;
 };
 
-FileScope_mv Lisp_O::getOrRegisterFileScope(const string &fileName, T_sp sourceDebugPathname, size_t sourceDebugOffset, bool useLineno) {
+FileScope_mv Lisp_O::getOrRegisterFileScope(const string &fileName, T_sp sourceDebugPathname, size_t sourceDebugOffset) {
   WITH_READ_WRITE_LOCK(this->_Roots._SourceFilesMutex);
   map<string, int>::iterator it = this->_Roots._SourceFileIndices.find(fileName);
   if (it == this->_Roots._SourceFileIndices.end()) {
@@ -2659,7 +2659,7 @@ FileScope_mv Lisp_O::getOrRegisterFileScope(const string &fileName, T_sp sourceD
     }
     int idx = this->_Roots._SourceFiles.size();
     this->_Roots._SourceFileIndices[fileName] = idx;
-    FileScope_sp sfi = FileScope_O::create(fileName, idx, sourceDebugPathname, sourceDebugOffset, useLineno);
+    FileScope_sp sfi = FileScope_O::create(fileName, idx, sourceDebugPathname, sourceDebugOffset);
     this->_Roots._SourceFiles.push_back(sfi);
     return Values(sfi, make_fixnum(idx));
   }
@@ -2667,7 +2667,6 @@ FileScope_mv Lisp_O::getOrRegisterFileScope(const string &fileName, T_sp sourceD
   if (sourceDebugPathname.notnilp()) {
     sfi->_SourceDebugPathname = sourceDebugPathname;
     sfi->_SourceDebugOffset = sourceDebugOffset;
-    sfi->_TrackLineno = useLineno;
   }
   return Values(sfi, make_fixnum(it->second));
 }
