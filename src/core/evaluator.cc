@@ -1616,50 +1616,17 @@ T_mv sp_locally(List_sp args, T_sp env) {
   return eval::sp_progn(code, le);
 }
 
-
-#define when_load_p(s) ((s)&FLAG_LOAD)
-#define when_compile_p(s) ((s)&FLAG_COMPILE)
-#define when_execute_p(s) ((s)&FLAG_EXECUTE)
-
 T_mv sp_eval_when(List_sp args, T_sp env) {
+  // The evaluator is always, well, evaluating.
+  // So we only need to worry about :execute and cl:eval.
   ASSERT(env.generalp());
-  List_sp situation_list = oCar(args);
+  List_sp situations = oCar(args);
   List_sp body = oCdr(args);
-  uint situation = 0;
-  for (auto cursit : situation_list) {
-    Symbol_sp s = gc::As<Symbol_sp>(oCar(cursit));
-    if (s == kw::_sym_compile_toplevel)
-      situation |= FLAG_COMPILE;
-    else if (s == cl::_sym_compile)
-      situation |= FLAG_COMPILE;
-    else if (s == kw::_sym_load_toplevel)
-      situation |= FLAG_LOAD;
-    else if (s == cl::_sym_load)
-      situation |= FLAG_LOAD;
-    else if (s == kw::_sym_execute)
-      situation |= FLAG_EXECUTE;
-    else if (s == cl::_sym_eval)
-      situation |= FLAG_EXECUTE;
-    else {
-      SIMPLE_ERROR(BF("Illegal situation[%s] for eval-when - only :compile-toplevel, :load-toplevel, :execute, compile, load or eval allowed") % _rep_(s));
-    }
-  }
-  uint mode = _lisp->mode();
-  if (mode == FLAG_EXECUTE) {
-    if (!when_execute_p(situation))
-      body = _Nil<T_O>();
-  } else if (mode == FLAG_LOAD) {
-    if (!when_load_p(situation)) {
-      body = _Nil<T_O>();
-    }
-  } else if (mode == FLAG_ONLY_LOAD) {
-    if (!when_load_p(situation))
-      body = _Nil<T_O>();
-  } else { /* FLAG_COMPILE */
-    SIMPLE_ERROR(BF("I don't have a compiler yet"));
-  }
-  return eval::sp_progn(body, env);
-//	    return eval::evaluateListReturnLast(body,env,_lisp);
+  bool execute = cl__member(kw::_sym_execute, situations, _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>()).isTrue();
+  execute |= cl__member(cl::_sym_eval, situations, _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>()).isTrue();
+  if (execute)
+    return eval::sp_progn(body, env);
+  else return Values(_Nil<T_O>());
 };
 
 T_mv sp_step(List_sp args, T_sp env) {

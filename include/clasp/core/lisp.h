@@ -174,34 +174,9 @@ public:
   virtual void expose(core::Lisp_sp lisp, WhatToExpose what) const = 0;
 };
 
-// THESE NEED TO BE DEFINED WHERE THEY ARE USED
-//
-//#define EXTERN_SYMBOL(__sym) extern core::Symbol_sp __sym;
-//#define	STATIC_SYMBOL(__sym) core::Symbol_sp __sym = UNDEFINED_SYMBOL;
-
-//#define	DEFINE_FIRST_SYMBOL_FOR_PACKAGE(pkgName) {}
-//#define CREATE_SYMBOL(sidsym,rsid,pkg,name) sidsym = _lisp->internWithPackageName(pkg,name);
-#define DEFAULT_LOOKUP_SYMBOL(pkg, name) _lisp->internUniqueWithPackageName(pkg, name)
-
-#define FLAG_Continue 1
-#define FLAG_Break 2
-#define FLAG_Return 4
-#define FLAG_Exit 8
-
-typedef T_sp (*PrimFuncPtr)(List_sp, Lisp_sp);
-
 template <typename oclass>
 class class_;
 
-/*! Interpreter/compiler modes  see Lisp_O::_Mode
-  See ecl::compiler.d
-*/
-#define FLAG_LOAD 0x01
-#define FLAG_COMPILE 0x02
-#define FLAG_EXECUTE 0x04
-#define FLAG_ONLY_LOAD 0x08
-
- 
 class Lisp_O {
   friend T_mv core__file_scope(T_sp sourceFile);
   friend gctools::Layout_code* gctools::get_stamp_layout_codes();
@@ -381,7 +356,6 @@ public:
 #endif
 public:
   /*! Map source file path strings to FileScope_sp */
-  uint _Mode;
   uint _ReplCounter;
   /*! Store paths to important directories */
   Bundle *_Bundle;
@@ -533,9 +507,6 @@ public:
 public:
   /*! Setup makePackage and exportSymbol callbacks */
   void setMakePackageAndExportSymbolCallbacks(MakePackageCallback mpc, ExportSymbolCallback esc);
-
-public:
-  uint mode() const { return this->_Mode; };
 
 public:
   bool isSingleStepOn() { return this->_SingleStepLevel != UndefinedUnsignedInt; };
