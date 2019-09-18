@@ -5453,10 +5453,21 @@ int clasp_input_column(T_sp strm) {
   return 0;
 }
 
-CL_LAMBDA(arg);
+CL_LAMBDA(stream file positional-offset);
 CL_DECLARE();
 CL_DOCSTRING("sourcePosInfo");
-CL_DEFUN SourcePosInfo_sp core__input_stream_source_pos_info(T_sp strm) {
+CL_DEFUN SourcePosInfo_sp core__input_stream_source_pos_info(T_sp strm, FileScope_sp sfi, size_t pos_offset) {
+  strm = coerce::inputStreamDesignator(strm);
+  size_t filePos = clasp_input_filePos(strm) + pos_offset;
+  uint lineno, column;
+  lineno = clasp_input_lineno(strm);
+  column = clasp_input_column(strm);
+  SourcePosInfo_sp spi = SourcePosInfo_O::create(sfi->fileHandle(), filePos, lineno, column);
+  return spi;
+}
+
+// Called from LOAD
+SourcePosInfo_sp clasp_simple_input_stream_source_pos_info(T_sp strm) {
   strm = coerce::inputStreamDesignator(strm);
   FileScope_sp sfi = clasp_input_source_file_info(strm);
   size_t filePos = clasp_input_filePos(strm);
@@ -5472,23 +5483,6 @@ FileScope_sp clasp_input_source_file_info(T_sp strm) {
   FileScope_sp sfi = gc::As<FileScope_sp>(core__file_scope(filename));
   return sfi;
 }
-};
-
-namespace core {
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 };
 
 namespace core {

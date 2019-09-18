@@ -63,13 +63,6 @@ GCPRIVATE: // instance variables here
   char *_PermanentPathName;
   char *_PermanentFileName;
   int _FileHandle;
-  /* These next two are used for compiling from a temp file like SLIME does.
-   * In that case, the actual tempfile is the pathname, but the file it's
-   * excerpted from has its namestring stored here. The offset is the offset
-   * of the tempfile in that file.
-   */
-  T_sp _SourceDebugPathname;
-  size_t _SourceDebugOffset;
 
 public: // Functions here
   int fileHandle() const { return this->_FileHandle; };

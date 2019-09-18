@@ -824,7 +824,7 @@ This works like compile-lambda-function in bclasp."
 
 (defmethod eclector.parse-result:source-position
     ((client clasp-cst-client) stream)
-  (core:input-stream-source-pos-info stream))
+  (cmp:compile-file-source-pos-info stream))
 
 (defparameter *additional-clasp-character-names*
   (alexandria:alist-hash-table '(("NULL"   . #.(code-char 0))
@@ -892,7 +892,7 @@ This works like compile-lambda-function in bclasp."
       ;; Required to update the source pos info. FIXME!?
       (peek-char t source-sin nil)
       ;; FIXME: if :environment is provided we should probably use a different read somehow
-      (let* ((core:*current-source-pos-info* (core:input-stream-source-pos-info source-sin))
+      (let* ((core:*current-source-pos-info* (cmp:compile-file-source-pos-info source-sin))
              #+cst
              (cst (eclector.concrete-syntax-tree:cst-read source-sin nil eof-value))
              #-cst

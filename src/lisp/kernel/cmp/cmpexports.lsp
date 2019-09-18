@@ -255,6 +255,7 @@
             with-dbg-function
             with-dbg-lexical-block
             dbg-set-current-source-pos
+            compile-file-source-pos-info
             c++-field-offset
             c++-field-index
             c++-struct-type

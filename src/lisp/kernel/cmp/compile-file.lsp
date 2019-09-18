@@ -157,6 +157,10 @@ and the pathname of the source file - this will also be used as the module initi
 
 (defvar *compile-file-output-pathname* nil)
 
+(defun compile-file-source-pos-info (stream)
+  (core:input-stream-source-pos-info
+   stream *compile-file-file-scope*
+   *compile-file-source-debug-offset*))
 
 (defun bclasp-loop-read-and-compile-file-forms (source-sin environment)
   (let ((eof-value (gensym)))
@@ -164,7 +168,7 @@ and the pathname of the source file - this will also be used as the module initi
       ;; Required to update the source pos info. FIXME!?
       (peek-char t source-sin nil)
       ;; FIXME: if :environment is provided we should probably use a different read somehow
-      (let ((core:*current-source-pos-info* (core:input-stream-source-pos-info source-sin))
+      (let ((core:*current-source-pos-info* (compile-file-source-pos-info source-sin))
             (form (read source-sin nil eof-value)))
         (if (eq form eof-value)
             (return nil)
@@ -199,12 +203,6 @@ and the pathname of the source file - this will also be used as the module initi
 Compile a lisp source file into an LLVM module."
   ;; TODO: Save read-table and package with unwind-protect
   (let* ((*package* *package*)
-         (clasp-source-root (translate-logical-pathname "source-dir:"))
-         (clasp-source (merge-pathnames (make-pathname :directory '(:relative :wild-inferiors) :name :wild :type :wild) clasp-source-root))
-         (source-location
-           (if (pathname-match-p given-input-pathname clasp-source)
-               (enough-namestring given-input-pathname clasp-source-root)
-               given-input-pathname))
          (input-pathname (or (probe-file given-input-pathname)
 			     (error 'core:simple-file-error
 				    :pathname given-input-pathname
@@ -218,10 +216,7 @@ Compile a lisp source file into an LLVM module."
     (with-open-stream (sin source-sin)
       (when *compile-verbose*
 	(bformat t "; Compiling file: %s%N" (namestring input-pathname)))
-      (let* ((*compilation-module-index* 0) ; FIXME: necessary?
-             (*compile-file-pathname* (pathname (merge-pathnames given-input-pathname)))
-             (*compile-file-truename* (translate-logical-pathname *compile-file-pathname*))
-             run-all-name)
+      (let (run-all-name)
         (with-module (:module module
                       :optimize (when optimize #'optimize-module-for-compile-file)
                       :optimize-level optimize-level)
@@ -240,11 +235,7 @@ Compile a lisp source file into an LLVM module."
           ;; (2) Add the CTOR next
           (make-boot-function-global-variable module run-all-name
                                               :position image-startup-position
-                                              :register-library t)
-          ;; (3) If optimize ALWAYS link the builtins in, inline them and then remove them - then optimize.
-          #+(or)
-          (if (> optimize-level 0)
-              (link-inline-remove-builtins *the-module*)))
+                                              :register-library t))
         ;; Now at the end of with-module another round of optimization is done
         ;; but the RUN-ALL is now referenced by the CTOR and so it won't be optimized away
         ;; ---- MOVE OPTIMIZATION in with-module to HERE ----
@@ -278,8 +269,8 @@ Compile a lisp source file into an LLVM module."
                               (optimize t)
                               (optimize-level *optimization-level*)
                               (external-format :default)
-                              ;; Used for C-c C-c in SLIME. Or rather, will be FIXME
-                              source-debug-pathname source-debug-offset
+                              (source-debug-pathname nil cfsbdpp)
+                              (source-debug-offset 0)
                               ;; output-type can be (or :fasl :bitcode :object)
                               (output-type :fasl)
                               ;; type can be either :kernel or :user
@@ -298,15 +289,22 @@ Compile a lisp source file into an LLVM module."
   #+debug-monitor(sys:monitor-message "compile-file ~a" input-file)
   (if (not output-file-p) (setq output-file (cfp-output-file-default input-file output-type)))
   (with-compiler-env ()
-    ;; Do the different kind of compile-file here
-    (let* ((*compile-print* print)
-           (*compile-verbose* verbose)
-           (output-path (compile-file-pathname input-file :output-file output-file :output-type output-type ))
+    (let* ((output-path (compile-file-pathname input-file :output-file output-file :output-type output-type ))
            (*track-inlined-functions* (make-hash-table :test #'equal))
            (output-info-pathname (when output-info (make-pathname :type "info" :defaults output-path)))
+           (*compilation-module-index* 0) ; FIXME: necessary?
+           ;; KLUDGE: We could just bind these in the lambda list,
+           ;; except the interpreter can't handle that and will die messily.
+           (*compile-verbose* verbose)
+           (*compile-print* print)
+           (*compile-file-pathname* (pathname (merge-pathnames input-file)))
+           (*compile-file-truename* (translate-logical-pathname *compile-file-pathname*))
+           (*compile-file-file-scope*
+             (core:file-scope (if cfsbdpp source-debug-pathname *compile-file-truename*)))
+           (*compile-file-source-debug-offset* source-debug-offset)
            (*compile-file-output-pathname* output-path)
            (*compile-file-unique-symbol-prefix* unique-symbol-prefix))
-      (with-compiler-timer (:message "Compile-file" :report-link-time t :verbose verbose)
+      (with-compiler-timer (:message "Compile-file" :report-link-time t :verbose *compile-verbose*)
         (with-compilation-results ()
           (let ((module (compile-file-to-module input-file
                                                 :type type
