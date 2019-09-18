@@ -201,13 +201,6 @@ class class_;
 #define FLAG_EXECUTE 0x04
 #define FLAG_ONLY_LOAD 0x08
 
-class PushLispMode;
-
- #if 0
-struct ThreadInfo {
-  MultipleValues multipleValues;
-};
-#endif
  
 class Lisp_O {
   friend T_mv core__file_scope(T_sp sourceFile);
@@ -332,7 +325,6 @@ class Lisp_O {
 
   friend class IncrementTraceLevel;
   friend class MultipleValues;
-  friend class PushLispMode;
   friend class CoreExposer;
   friend class ConditionHandlerManager;
   friend class BootStrapCoreSymbolMap;
@@ -963,21 +955,6 @@ struct SafeBufferStr8Ns {
     _lisp->put_StrWNs_buffer_string(this->_Buffer);
   };
   StrWNs_sp string() const {return this->_Buffer;};
-};
-
-
- 
-/*! Scoped change of lisp mode */
-class PushLispMode {
-private:
-  uint _OldMode;
-
-public:
-  PushLispMode(uint newMode) {
-    this->_OldMode = _lisp->_Mode;
-    _lisp->_Mode = newMode;
-  };
-  virtual ~PushLispMode() { _lisp->_Mode = this->_OldMode; };
 };
 
 void initializeLisp();
