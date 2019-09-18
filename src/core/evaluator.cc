@@ -2468,17 +2468,6 @@ T_mv t1Evaluate(T_sp exp, T_sp environment) {
   return eval::funcall(comp::_sym_STARimplicit_compile_hookSTAR->symbolValue(), exp, environment);
 }
 
-
-int global_interpreter_trace_depth = 0;
-struct InterpreterTrace {
-  InterpreterTrace() {
-    ++global_interpreter_trace_depth;
-  };
-  ~InterpreterTrace() {
-    --global_interpreter_trace_depth;
-  };
-};
-
 DONT_OPTIMIZE_WHEN_DEBUG_RELEASE
 T_mv evaluate(T_sp exp, T_sp environment) {
   //	    Environment_sp localEnvironment = environment;
