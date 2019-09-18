@@ -101,7 +101,10 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
 (defmacro defconstant-equal (var form &optional doc-string)
   `(defconstant-eqx ,var ,form equal ,doc-string))
 
-(export '(defconstant-equal))
+(defmacro defconstant-equalp (var form &optional doc-string)
+  `(defconstant-eqx ,var ,form equalp ,doc-string))
+
+(export '(defconstant-equal defconstant-equalp))
 
 (defmacro defun (name lambda-list &body body &environment env)
    ;; Documentation in help.lsp
