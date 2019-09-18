@@ -1707,7 +1707,7 @@ uintptr_t get_raw_argument_from_stack(uintptr_t functionAddress, uintptr_t baseP
   T_O** register_save_area;
   if (invocationHistoryFrameAddress) {
     // this is an interpreted function - use the invocationHistoryFrameAddress to get the register save area
-    printf("%s:%d Using the invocationHistoryFrameAddress@%p to get the register save area of interpreted function\n", __FILE__, __LINE__, (void*)invocationHistoryFrameAddress);
+    // printf("%s:%d Using the invocationHistoryFrameAddress@%p to get the register save area of interpreted function\n", __FILE__, __LINE__, (void*)invocationHistoryFrameAddress);
     InvocationHistoryFrame* ihf = (InvocationHistoryFrame*)invocationHistoryFrameAddress;
     register_save_area = (core::T_O**)ihf->_args->reg_save_area;
   } else {
