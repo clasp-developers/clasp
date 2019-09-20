@@ -125,8 +125,6 @@ namespace gctools {
 #endif
 };
 
-#include <clasp/gctools/other_tagged_casts.h>
-
 extern "C" {
 const char *obj_name(gctools::stamp_t kind);
 extern void obj_dump_base(void *base);
