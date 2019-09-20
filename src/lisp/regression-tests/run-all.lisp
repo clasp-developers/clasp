@@ -1,3 +1,7 @@
+(in-package :cl-user)
+
+(declaim (optimize (safety 3)))
+
 (load (compile-file "sys:regression-tests;framework.lisp"))
 (load "sys:regression-tests;set-unexpected-failures.lisp")
 
