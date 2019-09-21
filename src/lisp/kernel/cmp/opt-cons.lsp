@@ -33,7 +33,7 @@
 (defmacro do-in-list ((%elt %sublist list &rest output) &body body)
   `(do* ((,%sublist ,list (cdr ,%sublist)))
         ((null ,%sublist) ,@output)
-     (let ((,%elt (car (the cons ,%sublist))))
+     (let ((,%elt (car ,%sublist)))
        ,@body)))
 
 ;;; TODO: Avoid iteration for constant list (but watch out for growth)
@@ -97,7 +97,7 @@
                ,@init)
            (do-in-list (,%elt ,%sublist ,list)
              (when ,%elt
-               (let ((,%car (car (the cons ,%elt))))
+               (let ((,%car (car ,%elt)))
                  (when ,(funcall test-function %value
                                  (funcall key-function %car))
                    (return ,%elt))))))))))
