@@ -446,5 +446,10 @@
                           3
                           :ELEMENT-TYPE
                           (ARRAY-ELEMENT-TYPE S1))))
-        (POSITION #\c S2 :FROM-END T))))
+           (POSITION #\c S2 :FROM-END T))))
+
+
+(test-expect-error stable-sort.error.11
+                   (funcall #'(lambda (x) (stable-sort x #'<)) #'position)
+                   :type type-error)
       

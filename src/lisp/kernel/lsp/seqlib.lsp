@@ -960,7 +960,9 @@ SEQUENCE.  See SORT."
       (list-merge-sort sequence predicate key)
       (if (or (stringp sequence) (bit-vector-p sequence))
           (sort sequence predicate :key key)
-          (vector-merge-sort sequence predicate key))))
+          (if (vectorp sequence)
+              (vector-merge-sort sequence predicate key)
+              (error 'type-error :datum sequence :expected-type 'sequence)))))
 
 
 (defun merge (result-type sequence1 sequence2 predicate &key key
