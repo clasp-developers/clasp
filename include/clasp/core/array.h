@@ -1320,6 +1320,7 @@ namespace core {
     virtual clasp_elttype elttype() const { return clasp_aet_bc; };
   public:
     virtual bool equal(T_sp other) const final;
+    virtual bool equalp(T_sp other) const final;
   public:
     iterator begin() { return &(*this)[0]; };
     iterator end() { return &(*this)[this->length()]; };
@@ -1377,6 +1378,7 @@ namespace core {
     virtual clasp_elttype elttype() const { return clasp_aet_ch; };
   public:
     virtual bool equal(T_sp other) const final;
+    virtual bool equalp(T_sp other) const final;
   public:
     iterator begin() { return &(*this)[0]; };
     iterator end() { return &(*this)[this->length()]; };

@@ -2262,6 +2262,17 @@ bool Str8Ns_O::equal(T_sp other) const {
   return false;
 };
 
+bool Str8Ns_O::equalp(T_sp other) const {
+  if (&*other==this) return true;
+  if (!other.generalp()) return false;
+  if (cl__stringp(other)) {
+    String_sp sother = gc::As_unsafe<String_sp>(other);
+    TEMPLATE_HALF_STRING_DISPATCHER(this,sother,template_string_equalp_bool,0,this->length(),0,sother->length());
+  } else {
+    return this-> MDArray_O::equalp(other);
+  }
+}
+
 // Creators - depreciate these once the new array stuff is working better
 Str8Ns_sp Str8Ns_O::create(const string& nm) {
   auto ss = SimpleBaseString_O::make(nm.size(),'\0',true,nm.size(),(const claspChar*)nm.c_str());
@@ -2345,6 +2356,17 @@ bool StrWNs_O::equal(T_sp other) const {
   }
   return false;
 };
+
+bool StrWNs_O::equalp(T_sp other) const {
+  if (&*other==this) return true;
+  if (!other.generalp()) return false;
+  if (cl__stringp(other)) {
+    String_sp sother = gc::As_unsafe<String_sp>(other);
+    TEMPLATE_HALF_STRING_DISPATCHER(this,sother,template_string_equalp_bool,0,this->length(),0,sother->length());
+  } else {
+    return this->MDArray_O::equalp(other);
+  }
+}
 
 std::string StrWNs_O::get_std_string() const {
   std::string sout(this->length(),' ');
