@@ -160,7 +160,7 @@ and the pathname of the source file - this will also be used as the module initi
 (defun compile-file-source-pos-info (stream)
   (core:input-stream-source-pos-info
    stream *compile-file-file-scope*
-   *compile-file-source-debug-offset*))
+   *compile-file-source-debug-lineno* *compile-file-source-debug-offset*))
 
 (defun bclasp-loop-read-and-compile-file-forms (source-sin environment)
   (let ((eof-value (gensym)))
@@ -222,7 +222,7 @@ Compile a lisp source file into an LLVM module."
                       :optimize-level optimize-level)
           ;; (1) Generate the code
           (with-debug-info-generator (:module *the-module*
-                                      :pathname *compile-file-truename*)
+                                      :pathname *compile-file-source-debug-pathname*)
             (or module (error "module is NIL"))
             (with-make-new-run-all (run-all-function (namestring input-pathname))
               (with-literal-table
@@ -269,7 +269,8 @@ Compile a lisp source file into an LLVM module."
                               (optimize t)
                               (optimize-level *optimization-level*)
                               (external-format :default)
-                              (source-debug-pathname nil cfsbdpp)
+                              (source-debug-pathname nil cfsdpp)
+                              (source-debug-lineno 0)
                               (source-debug-offset 0)
                               ;; output-type can be (or :fasl :bitcode :object)
                               (output-type :fasl)
@@ -299,8 +300,11 @@ Compile a lisp source file into an LLVM module."
            (*compile-print* print)
            (*compile-file-pathname* (pathname (merge-pathnames input-file)))
            (*compile-file-truename* (translate-logical-pathname *compile-file-pathname*))
+           (*compile-file-source-debug-pathname*
+             (if cfsdpp source-debug-pathname *compile-file-truename*))
            (*compile-file-file-scope*
-             (core:file-scope (if cfsbdpp source-debug-pathname *compile-file-truename*)))
+             (core:file-scope *compile-file-source-debug-pathname*))
+           (*compile-file-source-debug-lineno* source-debug-lineno)
            (*compile-file-source-debug-offset* source-debug-offset)
            (*compile-file-output-pathname* output-path)
            (*compile-file-unique-symbol-prefix* unique-symbol-prefix))
