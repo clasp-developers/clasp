@@ -1077,8 +1077,10 @@ and initialize it with an array consisting of one function pointer."
 (defvar *compile-file-pathname* nil "Store the pathname of the currently compiled file")
 (defvar *compile-file-truename* nil "Store the truename of the currently compiled file")
 (defvar *compile-file-unique-symbol-prefix* "" "Store a unique prefix for symbols that are external-linkage")
+(defvar *compile-file-source-debug-pathname*) ; Pathname for source info
 (defvar *compile-file-file-scope*) ; File scope bound by compile-file etc for source file info
 (defvar *compile-file-source-debug-offset*) ; Offset bound by compile-file etc for SFIs
+(defvar *compile-file-source-debug-lineno*) ; ditto
 
 (defvar *gv-boot-functions* nil
   "A global value that stores a pointer to the boot function for the Module.

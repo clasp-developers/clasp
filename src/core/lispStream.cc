@@ -5453,14 +5453,15 @@ int clasp_input_column(T_sp strm) {
   return 0;
 }
 
-CL_LAMBDA(stream file positional-offset);
+CL_LAMBDA(stream file line-offset positional-offset);
 CL_DECLARE();
 CL_DOCSTRING("sourcePosInfo");
-CL_DEFUN SourcePosInfo_sp core__input_stream_source_pos_info(T_sp strm, FileScope_sp sfi, size_t pos_offset) {
+CL_DEFUN SourcePosInfo_sp core__input_stream_source_pos_info(T_sp strm, FileScope_sp sfi,
+                                                             size_t line_offset, size_t pos_offset) {
   strm = coerce::inputStreamDesignator(strm);
   size_t filePos = clasp_input_filePos(strm) + pos_offset;
   uint lineno, column;
-  lineno = clasp_input_lineno(strm);
+  lineno = clasp_input_lineno(strm) + line_offset;
   column = clasp_input_column(strm);
   SourcePosInfo_sp spi = SourcePosInfo_O::create(sfi->fileHandle(), filePos, lineno, column);
   return spi;
