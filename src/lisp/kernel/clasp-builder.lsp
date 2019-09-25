@@ -638,14 +638,12 @@ Return files."
                      ,@body)))
             t)
 
-
-
-
 (defun build-failure (condition)
   (bformat *error-output* "\nBuild aborted.\n")
   (bformat *error-output* "Received condition of type: %s\n%s\n"
            (type-of condition)
            condition)
+  (core:safe-backtrace)
   (when (parallel-build-p)
     (bformat *error-output* "About to exit clasp")
     (core:exit 1)))
@@ -800,23 +798,23 @@ Return files."
   (compile-cclasp* output-file system))
 
 (defun compile-cclasp (&key clean (output-file (build-common-lisp-bitcode-pathname)) (system (command-line-arguments-as-list)))
-  (handler-bind
-      ((error #'build-failure))
-    (cclasp-features)
-    (if clean (clean-system #P"src/lisp/kernel/tag/start" :no-prompt t :system system))
-    (let ((*target-backend* (default-target-backend))
-          (*trace-output* *standard-output*))
-      (time
-       (progn
-         (unwind-protect
-              (progn
-                (push :compiling-cleavir *features*)
-                (let ((files (select-source-files #P"src/lisp/kernel/tag/bclasp"
-                                                  #P"src/lisp/kernel/tag/pre-epilogue-cclasp"
-                                                  :system system)))
-                  (load-system files)))
-           (pop *features*))
-         (push :cleavir *features*)
+  (cclasp-features)
+  (if clean (clean-system #P"src/lisp/kernel/tag/start" :no-prompt t :system system))
+  (let ((*target-backend* (default-target-backend))
+        (*trace-output* *standard-output*))
+    (time
+     (progn
+       (unwind-protect
+            (progn
+              (push :compiling-cleavir *features*)
+              (let ((files (select-source-files #P"src/lisp/kernel/tag/bclasp"
+                                                #P"src/lisp/kernel/tag/pre-epilogue-cclasp"
+                                                :system system)))
+                (load-system files)))
+         (pop *features*))
+       (push :cleavir *features*)
+       (handler-bind
+           ((error #'build-failure))
          (compile-cclasp* output-file system))))))
 
 #+(or bclasp cclasp)
