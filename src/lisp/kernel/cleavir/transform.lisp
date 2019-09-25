@@ -52,40 +52,51 @@
                    (values-type-primary result))
                   (t result)))
           't)))
-  
+
+  ;;; Because some transforms relying on type information are unsafe,
+  ;;; we ignore type declarations unless the TRUST-TYPE-DECLARATIONS policy
+  ;;; is in place (at low SAFETY). See policy.lisp.
   (defun form-type (form env)
-    (cond ((constantp form env)
-           `(eql ,(ext:constant-form-value form env)))
-          ((consp form)
-           (let ((operator (first form)))
-             (if (symbolp operator)
-                 (case operator
-                   ((the)
-                    (let ((type (second form)) (form (third form)))
-                      `(and ,(if (and (consp type) (eq (first type) 'values))
-                                 (values-type-primary type)
-                                 type)
-                            ,(form-type form env))))
-                   ((function)
-                    (if (symbolp (second form))
-                        (let ((info (cleavir-env:function-info
-                                     env (second form))))
-                          (if (typep info '(or cleavir-env:local-function-info
-                                            cleavir-env:global-function-info))
-                              (cleavir-env:type info)
-                              'function))
-                        'function))
-                   (otherwise
-                    (let ((info (cleavir-env:function-info env operator)))
-                      (if (typep info '(or cleavir-env:local-function-info
-                                        cleavir-env:global-function-info))
-                          (function-type-result (cleavir-env:type info))
-                          't))))
-                 't)))
-          (t ; symbol (everything else covered by constantp and consp)
-           (let ((info (cleavir-env:variable-info env form)))
-             (if info
-                 (cleavir-env:type info)
+    (let ((trust-type-decls-p
+            (environment-has-policy-p env 'trust-type-declarations)))
+      (cond ((constantp form env)
+             `(eql ,(ext:constant-form-value form env)))
+            ((consp form)
+             (let ((operator (first form)))
+               (if (symbolp operator)
+                   (case operator
+                     ((the)
+                      (if trust-type-decls-p
+                          (let ((type (second form)) (form (third form)))
+                            `(and ,(if (and (consp type) (eq (first type) 'values))
+                                       (values-type-primary type)
+                                       type)
+                                  ,(form-type form env)))
+                          't))
+                     ((function)
+                      (if (and (symbolp (second form)) trust-type-decls-p)
+                          (let ((info (cleavir-env:function-info
+                                       env (second form))))
+                            (if (typep info '(or cleavir-env:local-function-info
+                                              cleavir-env:global-function-info))
+                                (cleavir-env:type info)
+                                'function))
+                          'function))
+                     (otherwise
+                      (if trust-type-decls-p
+                          (let ((info (cleavir-env:function-info env operator)))
+                            (if (typep info '(or cleavir-env:local-function-info
+                                              cleavir-env:global-function-info))
+                                (function-type-result (cleavir-env:type info))
+                                't))
+                          't)))
+                   't)))
+            (t ; symbol (everything else covered by constantp and consp)
+             (if trust-type-decls-p
+                 (let ((info (cleavir-env:variable-info env form)))
+                   (if info
+                       (cleavir-env:type info)
+                       't))
                  't)))))
 
   (defvar *transformers* (make-hash-table :test #'equal))
