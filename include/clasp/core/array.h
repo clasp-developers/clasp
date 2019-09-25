@@ -458,6 +458,7 @@ namespace core {
 };
 
 namespace core {
+FORWARD(ComplexVector);
 class ComplexVector_O : public MDArray_O {
     LISP_CLASS(core, CorePkg, ComplexVector_O, "ComplexVector",MDArray_O);
     // One dimension vector
