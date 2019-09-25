@@ -103,28 +103,32 @@ CL_DEFUN List_sp core__active_catch_tags() {
   throw CatchThrow(tag);
 }
 
-void throwTooFewArgumentsError(size_t given, size_t required) {
+SYMBOL_EXPORT_SC_(KeywordPkg,called_function);
+void throwTooFewArgumentsError(core::T_sp closure, size_t given, size_t required) {
   lisp_error(core::_sym_wrongNumberOfArguments,
-             lisp_createList(kw::_sym_givenNargs, make_fixnum(given),
+             lisp_createList(kw::_sym_called_function, closure,
+                             kw::_sym_givenNargs, make_fixnum(given),
                              kw::_sym_minNargs, make_fixnum(required)));
 }
 
-void throwTooManyArgumentsError(size_t given, size_t required) {
+void throwTooManyArgumentsError(core::T_sp closure, size_t given, size_t required) {
   lisp_error(core::_sym_wrongNumberOfArguments,
-             lisp_createList(kw::_sym_givenNargs, make_fixnum(given),
+             lisp_createList(kw::_sym_called_function, closure,
+                             kw::_sym_givenNargs, make_fixnum(given),
                              kw::_sym_maxNargs, make_fixnum(required)));
 }
 
-void throwUnrecognizedKeywordArgumentError(T_sp kw) {
+void throwUnrecognizedKeywordArgumentError(core::T_sp closure, T_sp kw) {
   lisp_error(core::_sym_unrecognizedKeywordArgumentError,
-             lisp_createList(kw::_sym_unrecognizedKeyword, kw));
+             lisp_createList(kw::_sym_unrecognizedKeyword, kw,
+                             kw::_sym_called_function,closure));
 }
 
-void wrongNumberOfArguments(size_t givenNumberOfArguments, size_t requiredNumberOfArguments) {
+void wrongNumberOfArguments(core::T_sp closure, size_t givenNumberOfArguments, size_t requiredNumberOfArguments) {
   if (givenNumberOfArguments < requiredNumberOfArguments)
-    throwTooFewArgumentsError(givenNumberOfArguments, requiredNumberOfArguments);
+    throwTooFewArgumentsError(closure,givenNumberOfArguments, requiredNumberOfArguments);
   else
-    throwTooManyArgumentsError(givenNumberOfArguments, requiredNumberOfArguments);
+    throwTooManyArgumentsError(closure,givenNumberOfArguments, requiredNumberOfArguments);
 }
 
 #define DebugOpenLeft "{{{ "

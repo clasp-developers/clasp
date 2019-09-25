@@ -63,7 +63,7 @@ public:
     IteratorMethoid* closure = gctools::untag_general<IteratorMethoid*>((IteratorMethoid*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
     if (lcc_nargs != 1)
-      core::wrongNumberOfArguments(lcc_nargs, 1);
+      core::wrongNumberOfArguments(core::T_sp((gctools::Tagged)lcc_closure),lcc_nargs, 1);
     OT *objPtr = gc::As<core::WrappedPointer_sp>((LCC_ARG0()))->cast<OT>();
     IteratorType itBegin = ((*objPtr).*(closure->_begin))();
     IteratorType itEnd = ((*objPtr).*(closure->_end))();

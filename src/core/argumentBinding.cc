@@ -37,7 +37,8 @@ THE SOFTWARE.
   PASS_NEXT_ARG(arg_idx) 		'gctools::smart_ptr<T_O>(va_arg(ap,TAGGED_PTR))' 	'args->entry(arg_idx)'
 */
 
-int PASS_FUNCTION_REQUIRED(gctools::Vec0<RequiredArgument> const &reqs,
+int PASS_FUNCTION_REQUIRED(core::T_sp closure,
+                           gctools::Vec0<RequiredArgument> const &reqs,
                            PASS_ARGS,
                            int arg_idx,
                            DynamicScopeManager &scope) {
@@ -46,7 +47,7 @@ int PASS_FUNCTION_REQUIRED(gctools::Vec0<RequiredArgument> const &reqs,
   size_t length_args(PASS_ARGS_NUM);
   size_t reqs_size(reqs.size());
   if (length_args < reqs_size) {
-    throwTooFewArgumentsError(length_args, reqs_size);
+    throwTooFewArgumentsError(closure,length_args, reqs_size);
   }
   if (reqs.size()>0) {
     _BLOCK_TRACE("Assigning required arguments");
@@ -65,7 +66,8 @@ int PASS_FUNCTION_REQUIRED(gctools::Vec0<RequiredArgument> const &reqs,
   The optional arguments passed are in (args) starting at (arg_idx).
   If default values are evaluated, they are evaluated in the lambda-list-handlers (closed_env).
 */
-int PASS_FUNCTION_OPTIONAL(gctools::Vec0<OptionalArgument> const &optionals,
+int PASS_FUNCTION_OPTIONAL(core::T_sp closure,
+                           gctools::Vec0<OptionalArgument> const &optionals,
                            PASS_ARGS,
                            int arg_idx,
                            DynamicScopeManager &scope) {
@@ -106,7 +108,8 @@ int PASS_FUNCTION_OPTIONAL(gctools::Vec0<OptionalArgument> const &optionals,
   return arg_idx;
 }
 
-void PASS_FUNCTION_REST(RestArgument const &restarg,
+void PASS_FUNCTION_REST(core::T_sp closure,
+                        RestArgument const &restarg,
                         PASS_ARGS,
                         int arg_idx,
                         DynamicScopeManager &scope) {
@@ -140,7 +143,8 @@ void PASS_FUNCTION_VA_REST(RestArgument const &va_restarg,
 }
 #endif
 
-int PASS_FUNCTION_KEYWORD(gctools::Vec0<KeywordArgument> const &keyed_args,
+int PASS_FUNCTION_KEYWORD(T_sp closure,
+                          gctools::Vec0<KeywordArgument> const &keyed_args,
                           T_sp allow_other_keys,
                           PASS_ARGS,
                           int arg_idx,
@@ -184,7 +188,7 @@ int PASS_FUNCTION_KEYWORD(gctools::Vec0<KeywordArgument> const &keyed_args,
     }
   }
   if (first_illegal_keyword.notnilp() && !passed_allow_other_keys && allow_other_keys.nilp()) {
-    throwUnrecognizedKeywordArgumentError(first_illegal_keyword);
+    throwUnrecognizedKeywordArgumentError(closure,first_illegal_keyword);
     //	UNRECOGNIZED_KEYWORD_ARGUMENTS_ERROR(first_illegal_keyword);
   }
   // Now fill in the default values for the missing parameters

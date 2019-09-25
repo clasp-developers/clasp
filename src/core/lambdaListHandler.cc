@@ -203,7 +203,7 @@ void lambdaListHandler_createBindings(Closure_sp closure, core::LambdaListHandle
     }
   }
   LOG(BF("About to createBindingsInScopeVaList with\n llh->%s\n    VaList->%s") % _rep_(llh) % _rep_(lcc_vargs));
-  llh->createBindingsInScopeVaList(lcc_nargs, lcc_vargs, scope);
+  llh->createBindingsInScopeVaList(closure,lcc_nargs, lcc_vargs, scope);
   return;
 }
 
@@ -587,7 +587,7 @@ void LambdaListHandler_O::recursively_build_handlers_count_arguments(List_sp dec
 #undef PASS_ARGS_NUM
 #undef PASS_NEXT_ARG
 
-void bind_aux(gctools::Vec0<AuxArgument> const &auxs, DynamicScopeManager &scope) {
+void bind_aux(T_sp closure, gctools::Vec0<AuxArgument> const &auxs, DynamicScopeManager &scope) {
   LOG(BF("There are %d aux variables") % auxs.size());
   gctools::Vec0<AuxArgument>::iterator ci;
   {
@@ -604,31 +604,32 @@ void bind_aux(gctools::Vec0<AuxArgument> const &auxs, DynamicScopeManager &scope
   }
 }
 
-void LambdaListHandler_O::createBindingsInScopeVaList(size_t nargs, VaList_sp va,
+void LambdaListHandler_O::createBindingsInScopeVaList(core::T_sp closure,
+                                                      size_t nargs, VaList_sp va,
                                                       DynamicScopeManager &scope) {
   if (UNLIKELY(!this->_CreatesBindings))
     return;
   Vaslist arglist_struct(*va);
   VaList_sp arglist(&arglist_struct);
   int arg_idx = 0;
-  arg_idx = bind_required_va_list(this->_RequiredArguments, nargs, arglist, arg_idx, scope);
+  arg_idx = bind_required_va_list(closure,this->_RequiredArguments, nargs, arglist, arg_idx, scope);
   if (UNLIKELY(this->_OptionalArguments.size() != 0)) {
-    arg_idx = bind_optional_va_list(this->_OptionalArguments, nargs, arglist, arg_idx, scope);
+    arg_idx = bind_optional_va_list(closure,this->_OptionalArguments, nargs, arglist, arg_idx, scope);
   }
   if (UNLIKELY(arg_idx < nargs && !(this->_RestArgument.isDefined()) && (this->_KeywordArguments.size() == 0))) {
-    throwTooManyArgumentsError(nargs, this->numberOfLexicalVariables());
+    throwTooManyArgumentsError(closure,nargs, this->numberOfLexicalVariables());
   }
   if (UNLIKELY(this->_RestArgument.isDefined())) {
     // Make and use a copy of the arglist so that keyword processing can parse the args as well
     Vaslist copy_arglist(*arglist);
     VaList_sp copy_arglist_sp(&copy_arglist);
-    bind_rest_va_list(this->_RestArgument, nargs, copy_arglist_sp, arg_idx, scope);
+    bind_rest_va_list(closure,this->_RestArgument, nargs, copy_arglist_sp, arg_idx, scope);
   }
   if (UNLIKELY(this->_KeywordArguments.size() != 0)) {
-    bind_keyword_va_list(this->_KeywordArguments, this->_AllowOtherKeys, nargs, arglist, arg_idx, scope);
+    bind_keyword_va_list(closure,this->_KeywordArguments, this->_AllowOtherKeys, nargs, arglist, arg_idx, scope);
   }
   if (UNLIKELY(this->_AuxArguments.size() != 0))
-    bind_aux(this->_AuxArguments, scope);
+    bind_aux(closure,this->_AuxArguments, scope);
 }
 
 void LambdaListHandler_O::dump_keywords()

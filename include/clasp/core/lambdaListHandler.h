@@ -196,7 +196,8 @@ public:
 	  context can be one of 'FUNCTION, 'MACRO and other values */
   virtual void parse_lambda_list_declares(List_sp lambda_list, List_sp declares, T_sp context, TargetClassifier &classifier);
 
-  void createBindingsInScopeVaList(size_t n_args, VaList_sp argArray,
+  void createBindingsInScopeVaList(core::T_sp closure,
+                                   size_t n_args, VaList_sp argArray,
                                    DynamicScopeManager &scope);
 
   /*! Return a list of expressions that can be evaluated in (env) to generate a list of values that would
