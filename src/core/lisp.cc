@@ -599,7 +599,6 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
       printf("%s:%d  Trapping intern of %s:%s\n", __FILE__, __LINE__, this->_TrapInternPackage.c_str(),this->_TrapInternName.c_str());
     }
   }
-  this->_Mode = FLAG_EXECUTE;
   ::_lisp = gctools::tagged_pointer<Lisp_O>(this); // this->sharedThis<Lisp_O>();
   //	initializeProfiler(this->profiler(),_lisp);
   this->_TraceLevel = 0;

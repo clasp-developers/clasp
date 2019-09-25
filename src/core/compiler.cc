@@ -123,41 +123,6 @@ MaybeDebugStartup::~MaybeDebugStartup() {
   }
 }
 
-
-#ifdef CLASP_THREADS
-mp::SharedMutex global_internal_functions_mutex(INTRFUNC_NAMEWORD);
-#endif
-struct InternalFunctions {
-  const claspFunction* _InternalFunctions;
-  const char** _InternalFunctionNames;
-  size_t       _Length;
-  InternalFunctions(const claspFunction* funcs, const char** names, size_t len) : _InternalFunctions(funcs), _InternalFunctionNames(names), _Length(len) {};
-};
-  std::map<uintptr_t,InternalFunctions> global_internal_functions;
-
-void register_internal_functions(uintptr_t handle, const claspFunction* funcs, const char** names, size_t len) {
-//  printf("%s:%d:%s handle -> %p  funcs -> %p  names -> %p  len: %lu\n", __FILE__, __LINE__, __FUNCTION__, (void*)handle, (void*)funcs, (void*)names, len);
-  WITH_READ_WRITE_LOCK(global_internal_functions_mutex);
-  global_internal_functions.emplace(std::make_pair(handle,InternalFunctions(funcs,names,len)));
-}
-
-
-claspFunction lookup_internal_functions(uintptr_t handle, const char* name) {
-  WITH_READ_LOCK(global_internal_functions_mutex);
-  std::map<uintptr_t,InternalFunctions>::iterator fi = global_internal_functions.find(handle);
-  if (fi == global_internal_functions.end()) {
-    SIMPLE_ERROR(BF("Could not find the library with handle %lu") % handle);
-  }
-  for ( size_t num=0; num< fi->second._Length; ++num ) {
-    const char* lookup_name = fi->second._InternalFunctionNames[num];
-    if (strcmp(lookup_name,name)==0) {
-      return fi->second._InternalFunctions[num];
-    }
-  }
-  SIMPLE_ERROR(BF("Could not find internal function %s") % name);
-};
-
-  
 };
 
 
@@ -1013,12 +978,8 @@ CL_DEFUN T_sp core__run_function( T_sp object ) {
   if (thandle.notnilp() && gc::IsA<Pointer_sp>(thandle)) {
     handle = (uintptr_t)gc::As_unsafe<Pointer_sp>(thandle)->ptr();
   }
-#if 1
   claspFunction func = (claspFunction)dlsym((void*)handle,name.c_str());
 //  printf("%s:%d:%s running function %s  at %p\n", __FILE__, __LINE__, __FUNCTION__, name.c_str(), (void*)func);
-#else
-  claspFunction func = lookup_internal_functions(handle, name.c_str());
-#endif
 #ifdef DEBUG_SLOW
   MaybeDebugStartup startup((void*)func);
 #endif

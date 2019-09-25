@@ -272,9 +272,10 @@ Compile a lisp source file into an LLVM module."
                                 (optimize t)
                                 (optimize-level *optimization-level*)
                                 (external-format :default)
-                                ;; Used for C-c C-c in SLIME. Or rather, will be FIXME
+                                ;; Used for C-c C-c in SLIME.
                                 (source-debug-pathname nil cfsdpp)
                                 ((:source-debug-offset *compile-file-source-debug-offset*) 0)
+                                ((:source-debug-lineno *compile-file-source-debug-lineno*) 0)
                                 ;; output-type can be (or :fasl :bitcode :object)
                                 (output-type :fasl)
                                 ;; type can be either :kernel or :user (FIXME? unused)
@@ -296,8 +297,10 @@ Compile a lisp source file into an LLVM module."
            (working-dir (core:mkdtemp (namestring output-path)))(*compilation-module-index* 0)
            (*compile-file-pathname* (pathname (merge-pathnames input-file)))
            (*compile-file-truename* (translate-logical-pathname *compile-file-pathname*))
+           (*compile-file-source-debug-pathname*
+             (if cfsdpp source-debug-pathname *compile-file-truename*))
            (*compile-file-file-scope*
-             (core:file-scope (if cfsdpp source-debug-pathname *compile-file-truename*)))
+             (core:file-scope *compile-file-source-debug-pathname*))
            (*compile-file-output-pathname* output-path))
       (with-compiler-timer (:message "Compile-file-parallel" :report-link-time t :verbose *compile-verbose*)
         (with-compilation-results ()

@@ -26,6 +26,10 @@
 
 (in-package :cmp)
 
+;;; These variables are pretty important to what debug information actually goes
+;;; into the file. For example, and as a note to later developers, I just got bit
+;;; by the fact that a source position info's filename is often irrelevant - the
+;;; dbg-current-scope and dbg-current-file are used.
 ;;; (defvar *dbg-generate-dwarf* t) <<--- defined in init.lsp
 (defvar *dbg-compile-unit*)
 (defvar *dbg-current-file*)

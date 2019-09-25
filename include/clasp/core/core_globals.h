@@ -28,16 +28,7 @@ THE SOFTWARE.
 #ifndef globals_H
 #define globals_H
 
-
-namespace core {
-
-/*! Used in lisp.cc to keep track of new predefined symbols
- */
-extern uint __nextPredefinedSymbolIndex;
-};
-
 extern "C" {
-#define _LISP _lisp
 DLL_PUBLIC extern core::Lisp_sp _lisp;
 };
 

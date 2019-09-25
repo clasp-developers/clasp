@@ -38,7 +38,6 @@ THE SOFTWARE.
 #include <clasp/core/corePackage.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/ql.h>
-//#include <clasp/core/useBoostRegex.h>
 #include <clasp/core/fileSystem.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/designators.h>

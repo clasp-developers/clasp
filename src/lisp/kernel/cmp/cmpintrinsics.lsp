@@ -1077,8 +1077,14 @@ and initialize it with an array consisting of one function pointer."
 (defvar *compile-file-pathname* nil "Store the pathname of the currently compiled file")
 (defvar *compile-file-truename* nil "Store the truename of the currently compiled file")
 (defvar *compile-file-unique-symbol-prefix* "" "Store a unique prefix for symbols that are external-linkage")
+;;; These variables are used to let compile-file insert debug information that does not
+;;; correspond to the actual file being compiled. This is useful for editors (SLIME) that
+;;; may present Clasp with a temporary file containing a portion of some other file; we want
+;;; the debug data in the compilation of this file to reflect the other file, not the temp.
+(defvar *compile-file-source-debug-pathname*) ; Pathname for source info
 (defvar *compile-file-file-scope*) ; File scope bound by compile-file etc for source file info
 (defvar *compile-file-source-debug-offset*) ; Offset bound by compile-file etc for SFIs
+(defvar *compile-file-source-debug-lineno*) ; ditto
 
 (defvar *gv-boot-functions* nil
   "A global value that stores a pointer to the boot function for the Module.
