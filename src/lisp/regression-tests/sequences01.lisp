@@ -297,11 +297,32 @@
 (test equalp-1
       (equalp "1234567890" (make-array 15 :element-type 'character :initial-contents "123456789012345" :fill-pointer 10)))
 
-;;; fails
+;;; fails no longer
 (test equalp-2
       (equalp
        (make-array 12 :element-type 'character :initial-contents "123456789012" :fill-pointer 10)
        (make-array 15 :element-type 'character :initial-contents "123456789012345" :fill-pointer 10)))
+
+(test equalp-2a
+      (equalp
+       (make-array 15 :element-type 'base-char :initial-contents "123456789012345" :fill-pointer 10)
+       (make-array 12 :element-type 'base-char :initial-contents "123456789012" :fill-pointer 10)))
+
+(test equalp-2b
+      (equalp
+       (make-array 3 :element-type 'base-char :initial-contents "abc" :fill-pointer 2)
+       (vector #\a #\B)))
+
+(test equalp-2c
+      (equalp
+       (make-array 3 :element-type 'character :initial-contents "abc" :fill-pointer 2)
+       (vector #\a #\B)))
+
+(test equalp-2d
+      (not (equalp
+            (make-array 3 :element-type 'character :initial-contents "abc" :fill-pointer 2)
+            23)))
+
 
 ;;; from clhs Fill-pointer in the second array seem to be respected
 (test equalp-clhs-1
@@ -312,11 +333,20 @@
                                 :fill-pointer 6)))
         (equalp array1 array2)))
 
-;;; from clhs Fill-pointer in the first array not, although I assume that (equalp a b) implies (equalp b a)
-(test equalp-clhs-2
+;;; from clhs 5.3.36 equalp
+;;; If two arrays have the same number of dimensions, the dimensions match, and the corresponding active elements are equalp.
+(test equalp-clhs-2a
       (Let ((array1 (make-array 6 :element-type 'integer
                                 :initial-contents '(1 1 1 3 5 7)))
             (array2 (make-array 8 :element-type 'integer
+                                :initial-contents '(1 1 1 3 5 7 2 6)
+                                :fill-pointer 6)))
+        (equalp array2 array1)))
+
+(test equalp-clhs-2b
+      (Let ((array2 (make-array 6 :element-type 'integer
+                                :initial-contents '(1 1 1 3 5 7)))
+            (array1 (make-array 8 :element-type 'integer
                                 :initial-contents '(1 1 1 3 5 7 2 6)
                                 :fill-pointer 6)))
         (equalp array2 array1)))
@@ -438,13 +468,18 @@
 (test position-2
       (= 6
          (LET* ((S1 (COPY-SEQ "xxxabcdabcdyyyyyyyy"))
-             (S2
-              (MAKE-ARRAY '(8)
-                          :DISPLACED-TO
-                          S1
-                          :DISPLACED-INDEX-OFFSET
-                          3
-                          :ELEMENT-TYPE
-                          (ARRAY-ELEMENT-TYPE S1))))
-        (POSITION #\c S2 :FROM-END T))))
+                (S2
+                 (MAKE-ARRAY '(8)
+                             :DISPLACED-TO
+                             S1
+                             :DISPLACED-INDEX-OFFSET
+                             3
+                             :ELEMENT-TYPE
+                             (ARRAY-ELEMENT-TYPE S1))))
+           (POSITION #\c S2 :FROM-END T))))
+
+
+(test-expect-error stable-sort.error.11
+                   (funcall #'(lambda (x) (stable-sort x #'<)) #'position)
+                   :type type-error)
       

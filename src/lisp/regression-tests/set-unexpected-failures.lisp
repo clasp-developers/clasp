@@ -2,7 +2,7 @@
 
 (setq *expected-failures*
       '(ANSI-PUSHNEW.14A 
-        EQUALP-2
+        ;;; EQUALP-2
         ;;; EQUALP-CLHS-2
         ;;; EQUALP-3 EQUALP-4
         ;;; EQUALP-6 EQUALP-7
@@ -31,12 +31,12 @@
         PRINT-READ-1
         ;;; GENTEMP-1 SPECIAL-OPERATOR-P-1
 
-        ;;;EQUALP-8 EQUALP-9
+        ;;; EQUALP-8 EQUALP-9
         TYPES-CLASSES-9 TYPES-CLASSES-10
         HASH-TABLE-SIZE-WEAK-KEY
         #-cst BABEL-SIMPLE-STRINGS-1
         LISTEN-3
-        ;;; what is correct syntax for a funcion name
+        ;;; what is correct syntax for a function name
         FBOUNDP.ERROR.3
         FBOUNDP.ERROR.4
         FBOUNDP.ERROR.5
@@ -108,7 +108,7 @@
         NUMBER-COMPARISON-NUMBER-12A
         NUMBER-COMPARISON-NUMBER-13A
         NUMBER-COMPARISON-NUMBER-14A
-        ;;; NUMBER-UNARY-OPERATIONS-1-INLINE
+        NUMBER-UNARY-OPERATIONS-1-INLINE
         TEST-CHAR-0A
         TEST-CHAR-1A
 
