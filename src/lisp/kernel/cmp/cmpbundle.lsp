@@ -338,21 +338,12 @@ Return the **output-pathname**."
 
 (export '(builder))
 
-
 (defun build-fasl (out-file &key lisp-files init-name)
   "Link the object files in lisp-files into a shared library in out-file.
 Note: 'object-files' would be a better name than 'lisp-files' - but 'lisp-files' is what asdf provides.
 Return the truename of the output file.
 NOTE: On Linux it looks like we MUST link all of the bitcode files first into one and then convert that into a fasb.
 This is to ensure that the RUN-ALL functions are evaluated in the correct order."
-  ;; fixme cracauer - figure out what FreeBSD needs here
-  (declare (ignore init-name))
-  ;;  (bformat t "cmpbundle.lsp:build-fasl  building fasl for %s from files: %s%N" out-file lisp-files)
-  (with-compiler-timer (:message "build-fasl" :report-link-time t :verbose t)
-    (let ((bitcode-files (mapcar (lambda (p) (make-pathname :type (core:bitcode-extension) :defaults p))
-                                 lisp-files))
-          (temp-bitcode-file (make-pathname :type (core:bitcode-extension) :defaults out-file)))
-      (link-bitcode-modules temp-bitcode-file bitcode-files)
-      (execute-link-fasl out-file (list temp-bitcode-file)))))
-
+  (llvm-link out-file :input-files lisp-files :input-type :object :link-type :fasl))
+  
 (export 'build-fasl)
