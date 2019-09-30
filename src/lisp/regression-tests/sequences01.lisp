@@ -468,13 +468,18 @@
 (test position-2
       (= 6
          (LET* ((S1 (COPY-SEQ "xxxabcdabcdyyyyyyyy"))
-             (S2
-              (MAKE-ARRAY '(8)
-                          :DISPLACED-TO
-                          S1
-                          :DISPLACED-INDEX-OFFSET
-                          3
-                          :ELEMENT-TYPE
-                          (ARRAY-ELEMENT-TYPE S1))))
-        (POSITION #\c S2 :FROM-END T))))
+                (S2
+                 (MAKE-ARRAY '(8)
+                             :DISPLACED-TO
+                             S1
+                             :DISPLACED-INDEX-OFFSET
+                             3
+                             :ELEMENT-TYPE
+                             (ARRAY-ELEMENT-TYPE S1))))
+           (POSITION #\c S2 :FROM-END T))))
+
+
+(test-expect-error stable-sort.error.11
+                   (funcall #'(lambda (x) (stable-sort x #'<)) #'position)
+                   :type type-error)
       
