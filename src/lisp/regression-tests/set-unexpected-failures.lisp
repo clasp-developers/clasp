@@ -108,7 +108,7 @@
         NUMBER-COMPARISON-NUMBER-12A
         NUMBER-COMPARISON-NUMBER-13A
         NUMBER-COMPARISON-NUMBER-14A
-        NUMBER-UNARY-OPERATIONS-1-INLINE
+        ;;; NUMBER-UNARY-OPERATIONS-1-INLINE
         TEST-CHAR-0A
         TEST-CHAR-1A
 
@@ -118,5 +118,9 @@
 
         ;;; glsl-toolkit-grammar.lisp-1 errors while compiling in ast
         ;;; make-instance.error.5 the same
+
+        ;;; encoding-latin-2-plain
+        ;;; encoding-latin-2-lambda
+        ;;; encoding-iso-8859-2-lambda
         )
       )

@@ -76,12 +76,17 @@ CL_DEFUN T_sp core__load_source(T_sp source, bool verbose, bool print, core::T_s
   if (source.nilp()) {
     SIMPLE_ERROR(BF("%s was called with NIL as the source filename") % __FUNCTION__);
   }
+  T_sp final_format;
+  if (externalFormat.nilp())
+    final_format = kw::_sym_default;
+  else
+    final_format = externalFormat;
   strm = cl__open(source,
                   kw::_sym_input,
                   cl::_sym_character,
                   _Nil<T_O>(), false,
                   _Nil<T_O>(), false,
-                   kw::_sym_default,
+                   final_format,
                   _Nil<T_O>());
   if (strm.nilp())
     return _Nil<T_O>();
