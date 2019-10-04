@@ -7,7 +7,7 @@
 (defun %string-char-codes (s)
   (loop :for c :across s :collect (char-code c)))
 
-;;; using :default r utf-8, this should give string length 1 with char char-code 955 for lambda
+;;; using :default or utf-8, this should give string length 1 with char char-code 955 for lambda
 (test encoding-default
       (let ()
         (load #P"sys:modules;asdf;test;lambda.lisp")
@@ -18,7 +18,7 @@
         (load #P"sys:modules;asdf;test;lambda.lisp" :external-format :utf-8)
         (equal (list 955) (%string-char-codes  asdf-test::*LAMBDA-STRING*))))
 
-;;; using :latin-1 or :ISO-8859-1), this should give string length 2 with char char-codes (206 187)
+;;; using :latin-1 or :ISO-8859-1, this should give string length 2 with char char-codes (206 187)
 
 (test encoding-latin-1
       (let ()
@@ -30,7 +30,7 @@
         (load #P"sys:modules;asdf;test;lambda.lisp" :external-format :iso-8859-1)
         (equal (list 206 187) (%string-char-codes  asdf-test::*LAMBDA-STRING*))))
 
-;;; using us-ascii, the should be an ecoding-error
+;;; using us-ascii, the should be an encoding-error
 (test-expect-error encoding-ascii-error
                    (load #P"sys:modules;asdf;test;lambda.lisp" :external-format :us-ascii)
                    :type ext:stream-decoding-error)
