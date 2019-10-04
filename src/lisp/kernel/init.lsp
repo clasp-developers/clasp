@@ -177,7 +177,13 @@
           assume-right-type
           assert-error
           float-nan-p
-          float-infinity-p))
+          float-infinity-p
+          character-coding-error
+          character-encoding-error
+          character-decoding-error
+          stream-encoding-error
+          stream-decoding-error
+          generate-encoding-hashtable))
 (core:*make-special '*module-provider-functions*)
 (core:*make-special '*source-location*)
 (setq *source-location* nil)

@@ -239,7 +239,7 @@ def collect_aclasp_lisp_files(wrappers = True):
         "src/lisp/kernel/lsp/seq",
         "src/lisp/kernel/lsp/seqlib",
         "src/lisp/kernel/lsp/iolib",
-#        "src/lisp/kernel/lsp/sharpmacros",
+ #        "src/lisp/kernel/lsp/sharpmacros",
         "src/lisp/kernel/lsp/backtrace",
         "src/lisp/kernel/lsp/trace",
         "src/lisp/kernel/cmp/cmpexports",
@@ -355,6 +355,8 @@ def collect_cclasp_lisp_files(**kwargs):
     return collect_bclasp_lisp_files(**kwargs) + cleavir_file_list + [
         "src/lisp/kernel/lsp/queue",
         "src/lisp/kernel/cmp/compile-file-parallel",
+        "src/lisp/kernel/lsp/generated-encodings",
+        "src/lisp/kernel/lsp/encodings",
         "src/lisp/kernel/tag/pre-epilogue-cclasp",
         "src/lisp/kernel/lsp/epilogue-cclasp",
         "src/lisp/kernel/tag/cclasp" ]

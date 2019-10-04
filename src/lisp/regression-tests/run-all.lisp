@@ -41,6 +41,8 @@
 (load-if-compiled-correctly "sys:regression-tests;control01.lisp")
 (load-if-compiled-correctly "sys:regression-tests;loop.lisp")
 (load-if-compiled-correctly "sys:regression-tests;numbers-core.lisp")
+#+unicode
+(load-if-compiled-correctly "sys:regression-tests;encodings.lisp")
 
 (progn
   (note-test-finished)
