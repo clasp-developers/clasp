@@ -36,29 +36,26 @@
                    :type ext:stream-decoding-error)
 
 (test encoding-all-encodings-plain
-      (let ((char (code-char 65)))
+      (let ((char (code-char 65))
+            (filename "sys:regression-tests;encoding-test.txt"))
         (dolist (encoding (ext:all-encodings))
-          (with-open-file (stream "sys:regression-tests;latin-2-file.txt"
+          (with-open-file (stream filename
                                   :direction :output
                                   :if-exists :overwrite
                                   :if-does-not-exist :create
                                   :external-format encoding)
             (write-char char stream))
-          (with-open-file (stream "sys:regression-tests;latin-2-file.txt"
+          (with-open-file (stream filename
                                   :direction :input
                                   :external-format encoding)
             (let ((read-char (read-char stream)))
               (unless (member encoding '(:UCS-2 :UCS-4))
                 (unless (char= char read-char)
                   (error "Chars do not match ~s ~s in encoding ~s~%" char read-char encoding))))))
-        (when (probe-file "sys:regression-tests;latin-2-file.txt")
-          (delete-file "sys:regression-tests;latin-2-file.txt"))
+        (when (probe-file filename)
+          (delete-file filename))
         t))
 
-;;; :latin-2 should be defined, but isn't yet
-;;; error-message
-;;; Unable to find mapping file SYS:ENCODINGS;LATIN-2.BIN for encoding LATIN-2
-;;; [Condition of type SIMPLE-ERROR]
 (test encoding-latin-2-plain
       (with-open-file (stream "sys:regression-tests;latin-2-file.txt"
                               :direction :output

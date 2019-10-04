@@ -74,25 +74,6 @@
 
 (export 'ext:all-encodings :ext)
 
-#+(or)
-(defun ext:load-encoding (name)
-  #-unicode
-  (warn "EXT:LOAD-ENCODING not available when clasp is built without support for Unicode")
-  #+unicode
-  (let ((filename (make-pathname :name (symbol-name name) :defaults "sys:encodings;")))
-    (cond ((probe-file filename)
-	   (load filename :verbose nil)
-	   name)
-	  ((probe-file (setf filename (make-pathname :type "BIN" :defaults filename)))
-	   (with-open-file (in filename :element-type '(unsigned-byte 16)
-			       :external-format :big-endian)
-	     (let* ((l (read-byte in))
-		    (s (make-array l :element-type '(unsigned-byte 16) :initial-element 0)))
-	       (read-sequence s in)
-	       s)))
-	  (t
-	   (error "Unable to find mapping file ~A for encoding ~A" filename name)))))
-
 (defun ext:make-encoding (encoding)
   (ecase encoding
     ((:US-ASCII
@@ -164,42 +145,6 @@
     ((:windows-1256 :ms-arab)(ext:generate-encoding-hashtable :windows-cp1256))
     ((:windows-1257 :winbaltrim)(ext:generate-encoding-hashtable :windows-cp1257) )
     (:windows-1258 (ext:generate-encoding-hashtable :windows-cp1258))))
-
-#+(or)
-(defun ext:make-encoding (mapping)
-  #-unicode
-  (error "Not a valid external format ~A" mapping)
-  #+unicode
-  (cond
-    ((symbolp mapping)
-     (let ((var (intern (symbol-name mapping) (find-package "EXT"))))
-       (unless (boundp var)
-         (setf (symbol-value var) (ext:make-encoding (ext:load-encoding mapping))))
-       (symbol-value var)))
-    ((consp mapping)
-     (let ((output (make-hash-table :size 512 :test 'eq)))
-       (dolist (record mapping output)
-	 (let* ((byte (car record))
-		(unicode (cdr record))
-		(unicode-char (code-char unicode)))
-	   (when (> byte #xFF)
-	     (setf (gethash (ash byte -8) output) t))
-	   (setf (gethash byte output) unicode-char)
-	   (setf (gethash unicode-char output) byte)))))
-    ((arrayp mapping)
-     (do* ((l (array-total-size mapping))
-           (output (make-hash-table :size (floor (* 1.5 l)) :test 'eq))
-           (i 0 (+ 2 i)))
-          ((>= i l) output)
-       (let* ((byte (aref mapping i))
-              (unicode (aref mapping (1+ i)))
-              (unicode-char (code-char unicode)))
-         (when (> byte #xFF)
-           (setf (gethash (ash byte -8) output) t))
-         (setf (gethash byte output) unicode-char)
-         (setf (gethash unicode-char output) byte))))
-    (t
-     (error "Not a valid external format ~A" mapping))))
 
 ;;; load this in ecl to generate generated-encodings.lsp
 ;;; e.g. (create-encodings-from-ecl "~/lisp/compiler/clasp-karsten/src/lisp/kernel/lsp/generated-encodings.lsp")
