@@ -470,12 +470,6 @@ public:
     }
 };
 
-// without these c++ seems always to call create_result_bitarray of Array_0
-//Array_sp return_correct_bitvector (SimpleBitVector_sp target, SimpleBitVector_sp result) {
-//  return (* target).create_result_bitarray(result);
-//}
-
-
 CL_LAMBDA(op x y &optional r);
 CL_DECLARE();
 CL_DOCSTRING("bitArrayOp");
@@ -590,6 +584,27 @@ L1:
 ERROR:
   SIMPLE_ERROR(BF("Illegal arguments for bit-array operation."));
 }
+
+// Population count for simple bit vector.
+CL_DEFUN Integer_sp core__sbv_popcnt(SimpleBitVector_sp vec) {
+  ASSERT(sizeof(byte32_t) == sizeof(unsigned int)); // for popcount
+  byte32_t* bytes = vec->bytes();
+  size_t len = vec->length();
+  size_t nwords = len / 32;
+  size_t leftover = len % 32;
+  size_t i;
+  gctools::Fixnum result = 0;
+  for (i = 0; i < nwords; ++i) result += __builtin_popcount(bytes[i]);
+  if (leftover != 0) {
+    // leftover is greater than zero and less than 32,
+    // so none of these shifts can overflow.
+    byte32_t unshifted_mask = (1 << leftover) - 1;
+    byte32_t mask = unshifted_mask << (32 - leftover);
+    result += __builtin_popcount(bytes[nwords] & mask);
+  }
+  return make_fixnum(result);
+}
+
 #endif
 /*! Copied from ECL */
 CL_DEFUN T_sp cl__logbitp(Integer_sp p, Integer_sp x) {
