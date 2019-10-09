@@ -98,7 +98,9 @@ class GCBitUnitArray_moveable : public GCContainer {
     // Mask for all of the word except the target unit.
     bit_array_word mask = ~(bit_unit_mask <<(shift_to_0-offset));
     // The provided unit shifted into position.
-    bit_array_word packedVal = value << (shift_to_0-offset);
+    // NOTE: The & bit_unit_mask shouldn't be necessary if VALUE is always valid,
+    // but I get bad results without it.
+    bit_array_word packedVal = (value & bit_unit_mask) << (shift_to_0-offset);
     this->_Data[block] = (this->_Data[block] & mask) | packedVal;
   }
   unsigned char unsignedBitUnit(size_t idx) const {

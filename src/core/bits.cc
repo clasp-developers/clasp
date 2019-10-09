@@ -317,7 +317,7 @@ CL_DEFUN SimpleBitVector_sp core__sbv_bit_not(SimpleBitVector_sp vec, SimpleBitV
 
 // Population count for simple bit vector.
 CL_DEFUN Integer_sp core__sbv_popcnt(SimpleBitVector_sp vec) {
-  ASSERT(sizeof(bit_array_word) == sizeof(unsigned int)); // for popcount. FIXME
+  ASSERT(sizeof(bit_array_word) == sizeof(unsigned long long)); // for popcount. FIXME
   bit_array_word* bytes = vec->bytes();
   size_t len = vec->length();
   size_t nwords = len / BIT_ARRAY_WORD_BITS;
@@ -328,8 +328,8 @@ CL_DEFUN Integer_sp core__sbv_popcnt(SimpleBitVector_sp vec) {
   if (leftover != 0) {
     // leftover is greater than zero and less than BIT_ARRAY_WORD_BITS,
     // so none of these shifts can overflow.
-    byte32_t unshifted_mask = (1 << leftover) - 1;
-    byte32_t mask = unshifted_mask << (BIT_ARRAY_WORD_BITS - leftover);
+    bit_array_word unshifted_mask = (1 << leftover) - 1;
+    bit_array_word mask = unshifted_mask << (BIT_ARRAY_WORD_BITS - leftover);
     result += bit_array_word_popcount(bytes[nwords] & mask);
   }
   return make_fixnum(result);
