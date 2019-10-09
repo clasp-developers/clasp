@@ -346,8 +346,6 @@ namespace core {
     virtual Array_sp unsafe_subseq(size_t start, size_t end) const = 0;
     virtual Array_sp unsafe_setf_subseq(size_t start, size_t end, Array_sp newSubseq) = 0;
     virtual void unsafe_fillArrayWithElt(T_sp initial_element, size_t start, size_t end) = 0;
-
-    virtual Array_sp create_result_bitarray (SimpleBitVector_sp x) const { SUBIMP(); };
   };
 
 
@@ -890,10 +888,6 @@ namespace core {
     virtual clasp_elttype elttype() const { return clasp_aet_bit; };
     virtual T_sp arrayElementType() const override { return cl::_sym_bit; };
   public:
-      Array_sp create_result_bitarray(SimpleBitVector_sp data) {
-        return data;
-      }
-
     void asAbstractSimpleVectorRange(AbstractSimpleVector_sp& sv, size_t& start, size_t& end) const override {
       sv = this->asSmartPtr();
       start = 0;
@@ -1450,9 +1444,6 @@ namespace core {
       start = this->_DisplacedIndexOffset;
       end = this->length()+this->_DisplacedIndexOffset;
     }
-    Array_sp create_result_bitarray (SimpleBitVector_sp data) {
-      return  BitVectorNs_O::make (this->arrayDimension(0),0,false, clasp_make_fixnum(this->fillPointer()), data,this->displacedToP(),clasp_make_fixnum(this->_DisplacedIndexOffset));
-    }
   public:
     virtual clasp_elttype elttype() const { return clasp_aet_bit; };
     virtual bool equal(T_sp other) const final;
@@ -1707,10 +1698,6 @@ namespace core {
     virtual Array_sp reverse() const final {notVectorError(this->asSmartPtr());};
     virtual Array_sp nreverse() override {notVectorError(this->asSmartPtr());};
     virtual void internalAdjustSize_(size_t size, T_sp init_element=_Nil<T_O>(), bool initElementSupplied=false ) {HARD_IMPLEMENT_ME();};
-
-    Array_sp create_result_bitarray (SimpleBitVector_sp data) {
-      return  MDArrayBit_O::make_multi_dimensional (cl__arrayDimensions(this->asSmartPtr()),_Nil<T_O>(),data,false,clasp_make_fixnum(0));
-    }
   };
 };
 
@@ -1765,10 +1752,6 @@ namespace core {
     virtual Array_sp reverse() const final {notVectorError(this->asSmartPtr());};
     virtual Array_sp nreverse() override {notVectorError(this->asSmartPtr());};
     virtual void internalAdjustSize_(size_t size, T_sp init_element=_Nil<T_O>(), bool initElementSupplied=false ) {HARD_IMPLEMENT_ME();};
-    Array_sp create_result_bitarray (SimpleBitVector_sp data) {
-      return SimpleMDArrayBit_O::make_multi_dimensional(cl__arrayDimensions(this->asSmartPtr()),1,data);
-    }  
-
   };
 };
 
