@@ -31,7 +31,8 @@ namespace gctools {
 
 /* Underlying type for arrays of sub-byte elements.
  * The array is represented as a C++ array of "words", a larger type chosen for efficiency.
- * BitUnitBitWidth is the number of bits in an element, e.g. 4 for (signed-byte 4).
+ * (The bit_array_word type, defined in configure_clasp.h.)
+ * BitUnitBitWidth is the number of bits per element, e.g. 4 for (signed-byte 4).
  * Operations deal with signed or unsigned chars.
  */
 template <size_t BitUnitBitWidth>
@@ -44,7 +45,7 @@ class GCBitUnitArray_moveable : public GCContainer {
   static const size_t shift_to_0 = number_of_bit_units_in_word-1;
   static const bit_array_word bit_unit_mask = (((0x1<<bit_unit_bit_width)-1));
   /* Length is measured in units, not words.
-   * _Data will have more than _Length elements, because there is more than one unit per word. */
+   * _Data will have fewer than _Length elements, because there is more than one unit per word. */
   size_t    _Length;
   bit_array_word _Data[0];
   public:
@@ -105,22 +106,6 @@ class GCBitUnitArray_moveable : public GCContainer {
     size_t offset = (idx % number_of_bit_units_in_word)*bit_unit_bit_width;
     bit_array_word mask = (bit_unit_mask << (shift_to_0-offset)); 
     unsigned char result = (this->_Data[block] & mask)>>(shift_to_0-offset);
-    return result;
-  }
-  void signedSetBitUnit(size_t idx, char value) {
-    size_t block = idx / number_of_bit_units_in_word;
-    size_t offset = (idx % number_of_bit_units_in_word)*bit_unit_bit_width;
-    bit_array_word mask = ~(bit_unit_mask << (shift_to_0-offset));
-    bit_array_word packedVal = (value & bit_unit_mask) << (shift_to_0-offset);
-    this->_Data[block] = (this->_Data[block] & mask) | packedVal;
-  }
-  char signedBitUnit(size_t idx) const {
-    size_t block = idx / number_of_bit_units_in_word;
-    size_t offset = (idx % number_of_bit_units_in_word)*bit_unit_bit_width;
-    size_t right_shift = bits_in_word-(shift_to_0-offset)-bit_unit_bit_width;
-    bit_array_word mask = (bit_unit_mask << (shift_to_0-offset));
-    char result = (this->_Data[block] & mask)<<right_shift; // logical shift right
-    result = result >> (bits_in_word-bit_unit_bit_width);
     return result;
   }
 };
