@@ -275,7 +275,6 @@ SYMBOL_EXPORT_SC_(ClPkg, subseq);
 
 SYMBOL_EXPORT_SC_(CorePkg, make_atom_cst);
 SYMBOL_EXPORT_SC_(CorePkg, make_cons_cst);
-SYMBOL_EXPORT_SC_(CorePkg, STARbits_in_bit_array_wordSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, setf_subseq);
 SYMBOL_EXPORT_SC_(CorePkg,STARextension_startup_loadsSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, multiple_value_foreign_call);
@@ -1199,7 +1198,6 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
 #endif
   }
   comp::_sym_STARoptimization_levelSTAR->defparameter(core::make_fixnum(optimization_level));
-  _sym_STARbits_in_bit_array_wordSTAR->defparameter(core::clasp_make_fixnum(BIT_ARRAY_BYTE_SIZE));
   _sym_STARreader_generate_cstSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARreader_cst_resultSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARcache_macroexpandSTAR->defparameter(_Nil<core::T_O>());

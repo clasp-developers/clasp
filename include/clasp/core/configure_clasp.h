@@ -62,7 +62,9 @@ THE SOFTWARE.
 #define CONTAB_NAME "^CONTAB"
 #define INTPTR_BITS 64
 
-#define BIT_ARRAY_BYTE_SIZE 32
+typedef uint32_t   bit_array_word; // "word" for bit array purposes (see gcbitarray.h)
+#define BIT_ARRAY_WORD_BITS 32
+#define bit_array_word_popcount __builtin_popcount // FIXME: Is uint32_t unsigned int? Who knows
 
 typedef int64_t    Fixnum; // Signed Fixnum immediate value
 #define CLASP_FIXNUM_IS_INT64 1  // == true

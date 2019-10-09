@@ -37,32 +37,25 @@ namespace gctools {
 template <size_t BitUnitBitWidth>
 class GCBitUnitArray_moveable : public GCContainer {
  public:
-#if BIT_ARRAY_BYTE_SIZE==8
-  typedef byte8_t word_type;
-#elif BIT_ARRAY_BYTE_SIZE==32
-  typedef byte32_t word_type;
-#elif
-#error Unsupported bit array byte size
-#endif
-  static const size_t bits_in_word = sizeof(word_type)*CHAR_BIT;
+  static const size_t bits_in_word = sizeof(bit_array_word)*CHAR_BIT;
   static const size_t bit_unit_bit_width = BitUnitBitWidth;
   static const size_t number_of_bit_units_in_word = bits_in_word/bit_unit_bit_width;
   // Used to deal with endianness.
   static const size_t shift_to_0 = number_of_bit_units_in_word-1;
-  static const word_type bit_unit_mask = (((0x1<<bit_unit_bit_width)-1));
+  static const bit_array_word bit_unit_mask = (((0x1<<bit_unit_bit_width)-1));
   /* Length is measured in units, not words.
    * _Data will have more than _Length elements, because there is more than one unit per word. */
   size_t    _Length;
-  word_type _Data[0];
+  bit_array_word _Data[0];
   public:
-  GCBitUnitArray_moveable(size_t length, word_type initialValue,
+  GCBitUnitArray_moveable(size_t length, bit_array_word initialValue,
                           bool initialValueSupplied,
-                          size_t initialContentsSize = 0, word_type* initialContents=NULL)
+                          size_t initialContentsSize = 0, bit_array_word* initialContents=NULL)
   : _Length(length) {
-    word_type initialFillValue = (initialValue!=0) ? ~0 : 0;
-    // Initialize the contents from an array - but it has to be word_type aligned
+    bit_array_word initialFillValue = (initialValue!=0) ? ~0 : 0;
+    // Initialize the contents from an array - but it has to be bit_array_word aligned
     // if you need other than word aligned add another parameter to this constructor
-    size_t numWords = sizeof_for_length(length)/sizeof(word_type);
+    size_t numWords = sizeof_for_length(length)/sizeof(bit_array_word);
 #ifdef DEBUG_BITUNIT_CONTAINER
     printf("%s:%d ctor for GCBitUnitArray_moveable _Data[0] @%p\n", __FILE__, __LINE__, (void*)&this->_Data[0]);
     printf("%s:%d      initialContentsSize = %lu\n", __FILE__, __LINE__, initialContentsSize);
@@ -81,7 +74,7 @@ class GCBitUnitArray_moveable : public GCContainer {
   // sizeof _Data if _Length is the provided value.
   static size_t sizeof_for_length(size_t length) {
     size_t numWords = (length+(number_of_bit_units_in_word-1))/number_of_bit_units_in_word;
-    size_t numBytes = numWords*sizeof(word_type);
+    size_t numBytes = numWords*sizeof(bit_array_word);
 #ifdef DEBUG_BITUNIT_CONTAINER
     printf("%s:%d length = %lu\n", __FILE__, __LINE__, length);
     printf("%s:%d number_of_bit_units_in_word = %lu\n", __FILE__, __LINE__, number_of_bit_units_in_word);
@@ -92,9 +85,9 @@ class GCBitUnitArray_moveable : public GCContainer {
   }
   public:
     /* Word access */
-  size_t number_of_words() const { return sizeof_for_length(this->_Length)/sizeof(word_type);};
-  word_type &operator[](size_t i) { return this->_Data[i]; };
-  const word_type &operator[](size_t i) const { return this->_Data[i]; };
+  size_t number_of_words() const { return sizeof_for_length(this->_Length)/sizeof(bit_array_word);};
+  bit_array_word &operator[](size_t i) { return this->_Data[i]; };
+  const bit_array_word &operator[](size_t i) const { return this->_Data[i]; };
   /* Unsigned BitUnit access */
   void unsignedSetBitUnit(size_t idx, unsigned char value) {
     // Which word are we hitting?
@@ -102,30 +95,30 @@ class GCBitUnitArray_moveable : public GCContainer {
     // Index of the least significant bit of the unit in the word.
     size_t offset = (idx % number_of_bit_units_in_word)*bit_unit_bit_width;
     // Mask for all of the word except the target unit.
-    word_type mask = ~(bit_unit_mask <<(shift_to_0-offset));
+    bit_array_word mask = ~(bit_unit_mask <<(shift_to_0-offset));
     // The provided unit shifted into position.
-    word_type packedVal = value << (shift_to_0-offset);
+    bit_array_word packedVal = value << (shift_to_0-offset);
     this->_Data[block] = (this->_Data[block] & mask) | packedVal;
   }
   unsigned char unsignedBitUnit(size_t idx) const {
     size_t block = idx / number_of_bit_units_in_word;
     size_t offset = (idx % number_of_bit_units_in_word)*bit_unit_bit_width;
-    word_type mask = (bit_unit_mask << (shift_to_0-offset)); 
+    bit_array_word mask = (bit_unit_mask << (shift_to_0-offset)); 
     unsigned char result = (this->_Data[block] & mask)>>(shift_to_0-offset);
     return result;
   }
   void signedSetBitUnit(size_t idx, char value) {
     size_t block = idx / number_of_bit_units_in_word;
     size_t offset = (idx % number_of_bit_units_in_word)*bit_unit_bit_width;
-    word_type mask = ~(bit_unit_mask << (shift_to_0-offset));
-    word_type packedVal = (value & bit_unit_mask) << (shift_to_0-offset);
+    bit_array_word mask = ~(bit_unit_mask << (shift_to_0-offset));
+    bit_array_word packedVal = (value & bit_unit_mask) << (shift_to_0-offset);
     this->_Data[block] = (this->_Data[block] & mask) | packedVal;
   }
   char signedBitUnit(size_t idx) const {
     size_t block = idx / number_of_bit_units_in_word;
     size_t offset = (idx % number_of_bit_units_in_word)*bit_unit_bit_width;
     size_t right_shift = bits_in_word-(shift_to_0-offset)-bit_unit_bit_width;
-    word_type mask = (bit_unit_mask << (shift_to_0-offset));
+    bit_array_word mask = (bit_unit_mask << (shift_to_0-offset));
     char result = (this->_Data[block] & mask)<<right_shift; // logical shift right
     result = result >> (bits_in_word-bit_unit_bit_width);
     return result;

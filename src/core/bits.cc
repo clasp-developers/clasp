@@ -285,327 +285,56 @@ T_sp clasp_boole(int op, T_sp x, T_sp y) {
   return x;
 }
 
-
-#if BIT_ARRAY_BYTE_SIZE==8
-CL_LAMBDA(op x y &optional r);
-CL_DECLARE();
-CL_DOCSTRING("bitArrayOp");
-CL_DEFUN T_sp core__bit_array_op(T_sp o, T_sp tx, T_sp ty, T_sp tr) {
-  int opval = unbox_fixnum(gc::As<Fixnum_sp>(o));
-  gctools::Fixnum i, j, n, d;
-  SimpleBitVector_sp r0;
-  size_t startr0 = 0;
-  bit_operator op;
-  bool replace = false;
-  int xi, yi, ri;
-  byte8_t *xp, *yp, *rp;
-  int xo, yo, ro;
-  AbstractSimpleVector_sp ax;
-  size_t startx, endx;
-  AbstractSimpleVector_sp ay;
-  size_t starty, endy;
-  Array_sp array_x = gc::As<Array_sp>(tx);
-  array_x->asAbstractSimpleVectorRange(ax, startx, endx);
-  SimpleBitVector_sp x = gc::As_unsafe<SimpleBitVector_sp>(ax);
-  Array_sp array_y = gc::As<Array_sp>(ty);
-  array_y->asAbstractSimpleVectorRange(ay, starty, endy);
-  SimpleBitVector_sp y = gc::As_unsafe<SimpleBitVector_sp>(ay);
-  SimpleBitVector_sp r;
-  size_t startr, endr;
-  d = (endx - startx); // x->arrayTotalSize();
-  xp = x->bytes();
-  xo = startx; // x->offset();
-  if (d != array_y->arrayTotalSize())
-    goto ERROR;
-  yp = y->bytes();
-  yo = starty; // y->offset();
-  if (tr == _lisp->_true())
-    tr = x;
-  if (tr.notnilp()) {
-    AbstractSimpleVector_sp ar;
-    Array_sp array_r = gc::As<Array_sp>(tr);
-    array_r->asAbstractSimpleVectorRange(ar, startr, endr);
-    r = gc::As_unsafe<SimpleBitVector_sp>(ar);
-    if (!r) {
-      ERROR_WRONG_TYPE_NTH_ARG(core::_sym_bitArrayOp, 4, tr, cl::_sym_SimpleBitVector_O);
-    }
-    if (endr-startr != d) //(r->arrayTotalSize() != d)
-      goto ERROR;
-//    i = (r->bytes() - xp) * 8 + (r->offset() - xo);
-    i = (r->bytes()-xp)*8+startr-xo;
-    if ((i > 0 && i < d) || (i < 0 && -i < d)) {
-      r0 = r;
-      startr0 = startr;
-      tr = _Nil<T_O>();
-      replace = true;
-      goto L1;
-    }
-    // i = (r->bytes() - yp) * 8 + (r->offset() - yo);
-    i = (r->bytes() - yp) * 8 + (startr - yo);
-    if ((i > 0 && i < d) || (i < 0 && -i < d)) {
-      r0 = r;
-      startr0 = startr;
-      tr = _Nil<T_O>();
-      replace = true;
-    }
+// The division is length/BIT_ARRAY_WORD_BITS, but rounding up.
+#define DEF_SBV_BIT_OP(name, form)\
+  CL_DEFUN SimpleBitVector_sp core__sbv_bit_##name(SimpleBitVector_sp a, SimpleBitVector_sp b,\
+                                                   SimpleBitVector_sp r, size_t length) { \
+    bit_array_word *ab, *bb, *rb;\
+    ab = a->bytes(); bb = b->bytes(); rb = r->bytes();\
+    size_t nwords = 1 + ((length - 1) / BIT_ARRAY_WORD_BITS);\
+    for (size_t i = 0; i < nwords; ++i) rb[i] = form;\
+    return r;\
   }
-L1:
-  if (tr.nilp()) {
-    startr = 0;
-    endr = d;
-    r = SimpleBitVector_O::make(d);
-  }
-  rp = r->bytes();
-  ro = startr; // r->offset();
-  op = fixnum_operations[opval];
-  
-#define set_high8(place, nbits, value) \
-  (place) = ((place) & ~(-0400 >> (nbits))) | ((value) & (-0400 >> (nbits)));
+DEF_SBV_BIT_OP(and, ab[i] & bb[i])
+DEF_SBV_BIT_OP(ior, ab[i] | bb[i])
+DEF_SBV_BIT_OP(xor, ab[i] ^ bb[i])
+DEF_SBV_BIT_OP(nand, ~(ab[i] & bb[i]))
+DEF_SBV_BIT_OP(nor, ~(ab[i] | bb[i]))
+DEF_SBV_BIT_OP(eqv, ~(ab[i] ^ bb[i]))
+DEF_SBV_BIT_OP(andc1, ~(ab[i]) & bb[i])
+DEF_SBV_BIT_OP(andc2, ab[i] & ~(bb[i]))
+DEF_SBV_BIT_OP(orc1, ~(ab[i]) | bb[i])
+DEF_SBV_BIT_OP(orc2, ab[i] | ~(bb[i]))
 
-#define set_low8(place, nbits, value) \
-  (place) = ((place) & (-0400 >> (8 - (nbits)))) | ((value) & ~(-0400 >> (8 - (nbits))));
-  
-#define extract_byte8(integer, pointer, index, offset) \
-  (integer) = (pointer)[(index)+1] & 0377;            \
-  (integer) = ((pointer)[index] << (offset)) | ((integer) >> (8 - (offset)));
-
-#define store_byte8(pointer, index, offset, value)               \
-  set_low8((pointer)[index], 8 - (offset), (value) >> (offset)); \
-  set_high8((pointer)[(index)+1], offset, (value) << (8 - (offset)));
-
-  //
-  if (xo == 0 && yo == 0 && ro == 0) {
-    for (n = d / 8, i = 0; i < n; i++) {
-      rp[i] = (*op)(xp[i], yp[i]);
-    }
-    if ((j = d % 8) > 0) {
-      byte rpt = (*op)(xp[n], yp[n]);
-      set_high8(rp[n], j, rpt);
-    }
-    if (!replace)
-      return r;
-  } else {
-    for (n = d / 8, i = 0; i <= n; i++) {
-      extract_byte8(xi, xp, i, xo);
-      extract_byte8(yi, yp, i, yo);
-      if (i == n) {
-        if ((j = d % 8) == 0)
-          break;
-        extract_byte8(ri, rp, n, ro);
-        set_high8(ri, j, (*op)(xi, yi));
-      } else {
-        ri = (*op)(xi, yi);
-      }
-      store_byte8(rp, i, ro, ri);
-    }
-    if (!replace)
-      return r;
-  }
-  rp = r0->bytes();
-  ro = startr0; // r0->offset();
-  for (n = d / 8, i = 0; i <= n; i++) {
-    if (i == n) {
-      if ((j = d % 8) == 0)
-        break;
-      extract_byte8(ri, rp, n, ro);
-      set_high8(ri, j, r->bytes()[n]);
-    } else
-      ri = r->bytes()[i];
-    store_byte8(rp, i, ro, ri);
-  }
-  return r0;
-ERROR:
-  SIMPLE_ERROR(BF("Illegal arguments for bit-array operation."));
-}
-#endif
-
-
-#if BIT_ARRAY_BYTE_SIZE==32
-#define mask32 0xFFFFFFFF00000000
-template <typename Place, typename Nbits, typename Value>
-inline void set_high32(Place& place, Nbits nbits, Value value)
-{
-  (place) = ((place) & ~(mask32 >> (nbits))) | ((value) & (mask32>> (nbits)));
-}
-
-template <typename Place, typename Nbits, typename Value>
-inline void set_low32(Place& place, Nbits nbits, Value value) {
-  (place) = ((place) & (mask32 >> (32 - (nbits)))) | ((value) & ~(mask32 >> (32 - (nbits))));
-}
-
-template <typename Integer, typename Pointer, typename Index, typename Offset>
-inline void extract_byte32(Integer& integer, Pointer pointer, Index index, Offset offset) {
-  (integer) = (pointer)[(index)+1] & (~mask32);
-  (integer) = ((pointer)[index] << (offset)) | ((integer) >> (32 - (offset)));
-}
-
-template <typename Pointer, typename Index, typename Offset, typename Value>
-inline void store_byte32(Pointer pointer, Index index, Offset offset, Value value) {
-  set_low32((pointer)[index], 32 - (offset), (value) >> (offset));
-  set_high32((pointer)[(index)+1], offset, (value) << (32 - (offset)));
-}
-
-class Dispatcher
-{
-public:
-    virtual Array_sp dispatcher (Array_O *target, SimpleBitVector_sp result) {
-      //std::cout << "listclass is  " << lisp_classNameAsString(core::instance_class(target->asSmartPtr())) << '\n';
-      // Und bist du nicht willig, so brauche ich Gewalt
-      // Don't understand why target->create_result_bitarray(result) does not work
-      SimpleBitVector_O * sbvptr = dynamic_cast<SimpleBitVector_O *>(target);
-      MDArrayBit_O * mdabptr = dynamic_cast<MDArrayBit_O *>(target);
-      SimpleMDArrayBit_O * smbabptr = dynamic_cast<SimpleMDArrayBit_O *>(target);
-      BitVectorNs_O * bvnptr =  dynamic_cast<BitVectorNs_O *>(target);
-      if (sbvptr)
-        return result;
-      else if (mdabptr)
-        return mdabptr->create_result_bitarray(result);
-      else if (smbabptr)
-        return smbabptr->create_result_bitarray(result);
-      else if (bvnptr)
-        return bvnptr->create_result_bitarray(result);
-      else
-        // most likely return a SimpleBitVector_sp but perhaps better than crashing
-        return result;
-    }
-};
-
-CL_LAMBDA(op x y &optional r);
-CL_DECLARE();
-CL_DOCSTRING("bitArrayOp");
-CL_DEFUN T_sp core__bit_array_op(int opval, Array_sp tx, Array_sp ty, T_sp tr) {
-  gctools::Fixnum i, j, n, d;
-  SimpleBitVector_sp r0;
-  size_t startr0 = 0;
-  bit_operator op;
-  bool replace = false;
-  byte64_t xi, yi, ri;
-  byte32_t *xp, *yp, *rp;
-  byte64_t xo, yo, ro;
-  AbstractSimpleVector_sp ax;
-  size_t startx, endx;
-  AbstractSimpleVector_sp ay;
-  size_t starty, endy;
-  Dispatcher dispatcher;
-  Array_sp array_x = gc::As<Array_sp>(tx);
-  array_x->asAbstractSimpleVectorRange(ax, startx, endx);
-  SimpleBitVector_sp x = gc::As_unsafe<SimpleBitVector_sp>(ax);
-  Array_sp array_y = gc::As<Array_sp>(ty);
-  array_y->asAbstractSimpleVectorRange(ay, starty, endy);
-  SimpleBitVector_sp y = gc::As_unsafe<SimpleBitVector_sp>(ay);
-  SimpleBitVector_sp r;
-  size_t startr, endr;
-  d = (endx - startx); // x->arrayTotalSize();
-  xp = x->bytes();
-  xo = startx; // x->offset();
-  if (d != (endy - starty)) //(d != array_y->arrayTotalSize()) gives incorrect result for multi-dimensional arrays
-    goto ERROR;
-  yp = y->bytes();
-  yo = starty; // y->offset();
-  if (tr == _lisp->_true())
-    tr = tx;
-  if (tr.notnilp()) {
-    AbstractSimpleVector_sp ar;
-    Array_sp array_r = gc::As<Array_sp>(tr);
-    array_r->asAbstractSimpleVectorRange(ar, startr, endr);
-    r = gc::As_unsafe<SimpleBitVector_sp>(ar);
-    if (!r) {
-      ERROR_WRONG_TYPE_NTH_ARG(core::_sym_bitArrayOp, 4, tr, cl::_sym_SimpleBitVector_O);
-    }
-    if (endr-startr != d) //(r->arrayTotalSize() != d)
-      goto ERROR;
-    i = (r->bytes()-xp)*32+startr-xo;
-    if ((i > 0 && i < d) || (i < 0 && -i < d)) {
-      r0 = r;
-      startr0 = startr;
-      tr = _Nil<T_O>();
-      replace = true;
-      goto L1;
-    }
-    i = (r->bytes() - yp) * 32 + (startr - yo);
-    if ((i > 0 && i < d) || (i < 0 && -i < d)) {
-      r0 = r;
-      startr0 = startr;
-      tr = _Nil<T_O>();
-      replace = true;
-    }
-  }
-L1:
-  if (tr.nilp()) {
-    startr = 0;
-    endr = d;
-    r = SimpleBitVector_O::make(d);
-  }
-  rp = r->bytes();
-  ro = startr; // r->offset();
-  op = fixnum_operations[opval];
-
-  //
-  if (xo == 0 && yo == 0 && ro == 0) {
-    for (n = d / 32, i = 0; i < n; i++) {
-      rp[i] = (*op)(xp[i], yp[i]);
-    }
-    if ((j = d % 32) > 0) {
-      byte64_t rpt = (*op)(xp[n], yp[n]);
-      set_high32(rp[n], j, rpt);
-    }
-    if (!replace)
-      return dispatcher.dispatcher(&(* tx),r);
-  } else {
-    for (n = d / 32, i = 0; i <= n; i++) {
-      extract_byte32(xi, xp, i, xo);
-      extract_byte32(yi, yp, i, yo);
-      if (i == n) {
-        if ((j = d % 32) == 0)
-          break;
-        extract_byte32(ri, rp, n, ro);
-        set_high32(ri, j, (*op)(xi, yi));
-      } else {
-        ri = (*op)(xi, yi);
-      }
-      store_byte32(rp, i, ro, ri);
-    }
-    if (!replace)
-      return dispatcher.dispatcher(&(* tx),r);
-  }
-  rp = r0->bytes();
-  ro = startr0; // r0->offset();
-  for (n = d / 32, i = 0; i <= n; i++) {
-    if (i == n) {
-      if ((j = d % 32) == 0)
-        break;
-      extract_byte32(ri, rp, n, ro);
-      set_high32(ri, j, r->bytes()[n]);
-    } else
-      ri = r->bytes()[i];
-    store_byte32(rp, i, ro, ri);
-  }
-  return dispatcher.dispatcher(&(* tx),r0);
-ERROR:
-  SIMPLE_ERROR(BF("Illegal arguments for bit-array operation."));
+CL_DEFUN SimpleBitVector_sp core__sbv_bit_not(SimpleBitVector_sp vec, SimpleBitVector_sp res,
+                                              size_t length) {
+  bit_array_word *vecb, *resb;
+  vecb = vec->bytes(); resb = res->bytes();
+  size_t nwords = 1 + ((length - 1) / BIT_ARRAY_WORD_BITS);
+  for (size_t i = 0; i < nwords; ++i) resb[i] = ~(vecb[i]);
+  return res;
 }
 
 // Population count for simple bit vector.
 CL_DEFUN Integer_sp core__sbv_popcnt(SimpleBitVector_sp vec) {
-  ASSERT(sizeof(byte32_t) == sizeof(unsigned int)); // for popcount
-  byte32_t* bytes = vec->bytes();
+  ASSERT(sizeof(bit_array_word) == sizeof(unsigned int)); // for popcount. FIXME
+  bit_array_word* bytes = vec->bytes();
   size_t len = vec->length();
-  size_t nwords = len / 32;
-  size_t leftover = len % 32;
+  size_t nwords = len / BIT_ARRAY_WORD_BITS;
+  size_t leftover = len % BIT_ARRAY_WORD_BITS;
   size_t i;
   gctools::Fixnum result = 0;
-  for (i = 0; i < nwords; ++i) result += __builtin_popcount(bytes[i]);
+  for (i = 0; i < nwords; ++i) result += bit_array_word_popcount(bytes[i]);
   if (leftover != 0) {
     // leftover is greater than zero and less than 32,
     // so none of these shifts can overflow.
     byte32_t unshifted_mask = (1 << leftover) - 1;
-    byte32_t mask = unshifted_mask << (32 - leftover);
-    result += __builtin_popcount(bytes[nwords] & mask);
+    byte32_t mask = unshifted_mask << (BIT_ARRAY_WORD_BITS - leftover);
+    result += bit_array_word_popcount(bytes[nwords] & mask);
   }
   return make_fixnum(result);
 }
 
-#endif
 /*! Copied from ECL */
 CL_DEFUN T_sp cl__logbitp(Integer_sp p, Integer_sp x) {
   // Arguments and Values:p - a non-negative integer,  x - an integer.

@@ -842,7 +842,7 @@ namespace core {
     virtual ~SimpleBitVector_O() {};
   public:
     typedef gctools::GCBitUnitArray_moveable<1> bitunit_array_type;
-    typedef typename bitunit_array_type::word_type value_type;
+    typedef bit_array_word value_type;
     typedef uint bit_element_type;
     static const size_t BitWidth = bitunit_array_type::number_of_bit_units_in_word;
   public:

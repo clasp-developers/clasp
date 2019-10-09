@@ -70,19 +70,6 @@
 (defmacro reckless (&body body)
   `(locally (declare (optimize (safety 0) (speed 3) (debug 0))) ,@body))
 
-(defmacro with-array-data (((vectorname vector) indexname) &body body)
-  `(let ((,vectorname ,vector) (,indexname 0))
-     (cond ((core:data-vector-p ,vectorname))
-           ((arrayp ,vectorname)
-            (tagbody loop
-               (setq ,indexname
-                     (+ ,indexname (%displaced-index-offset ,vectorname))
-                     ,vectorname (%displacement ,vectorname))
-               (if (core:data-vector-p ,vectorname) (go done) (go loop))
-             done))
-           (t (signal-type-error ,vectorname 'array)))
-     ,@body))
-
 (defmacro dovaslist ((elt vaslist &optional result) &body body)
   (once-only (vaslist)
     `(do ((,elt (core:vaslist-pop ,vaslist) (core:vaslist-pop ,vaslist)))
