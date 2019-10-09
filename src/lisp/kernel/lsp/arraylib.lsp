@@ -232,9 +232,7 @@ Returns the specified bit in SIMPLE-BIT-ARRAY."
          (make-array (array-dimensions array1) :element-type 'bit))
         ((eq result t) array1)
         ((typep result '(array bit))
-         (unless (equal (array-dimensions result) (array-dimensions array1))
-           (error "~s and ~s don't have the same dimensions."
-                  array1 result))
+         (check-array-dims-match result array1)
          result)))
 
 (defmacro def-bit-array-function (name simple-name logop doc)
@@ -242,9 +240,7 @@ Returns the specified bit in SIMPLE-BIT-ARRAY."
      ,doc
      (let ((result (pick-result-array opt-arg bit-array1))
            (length (array-total-size bit-array1)))
-       (unless (equal (array-dimensions bit-array1)
-                      (array-dimensions bit-array2))
-         (error "~s and ~s don't have the same dimensions." bit-array1 bit-array2))
+       (check-array-dims-match bit-array1 bit-array2)
        (with-array-data ((b1 bit-array1) b1o)
          (with-array-data ((b2 bit-array2) b2o)
            (with-array-data ((r result) ro)
