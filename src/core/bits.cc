@@ -291,7 +291,7 @@ T_sp clasp_boole(int op, T_sp x, T_sp y) {
                                                    SimpleBitVector_sp r, size_t length) { \
     bit_array_word *ab, *bb, *rb;\
     ab = a->bytes(); bb = b->bytes(); rb = r->bytes();\
-    size_t nwords = 1 + ((length - 1) / BIT_ARRAY_WORD_BITS);\
+    size_t nwords = length/BIT_ARRAY_WORD_BITS + ((length % BIT_ARRAY_WORD_BITS == 0) ? 0 : 1);\
     for (size_t i = 0; i < nwords; ++i) rb[i] = form;\
     return r;\
   }
@@ -310,7 +310,7 @@ CL_DEFUN SimpleBitVector_sp core__sbv_bit_not(SimpleBitVector_sp vec, SimpleBitV
                                               size_t length) {
   bit_array_word *vecb, *resb;
   vecb = vec->bytes(); resb = res->bytes();
-  size_t nwords = 1 + ((length - 1) / BIT_ARRAY_WORD_BITS);
+  size_t nwords = length/BIT_ARRAY_WORD_BITS + ((length % BIT_ARRAY_WORD_BITS == 0) ? 0 : 1);
   for (size_t i = 0; i < nwords; ++i) resb[i] = ~(vecb[i]);
   return res;
 }
@@ -326,7 +326,7 @@ CL_DEFUN Integer_sp core__sbv_popcnt(SimpleBitVector_sp vec) {
   gctools::Fixnum result = 0;
   for (i = 0; i < nwords; ++i) result += bit_array_word_popcount(bytes[i]);
   if (leftover != 0) {
-    // leftover is greater than zero and less than 32,
+    // leftover is greater than zero and less than BIT_ARRAY_WORD_BITS,
     // so none of these shifts can overflow.
     byte32_t unshifted_mask = (1 << leftover) - 1;
     byte32_t mask = unshifted_mask << (BIT_ARRAY_WORD_BITS - leftover);
