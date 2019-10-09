@@ -315,24 +315,36 @@ CL_DEFUN SimpleBitVector_sp core__sbv_bit_not(SimpleBitVector_sp vec, SimpleBitV
   return res;
 }
 
+/* This macro handles iterating over a single bit vector efficiently.
+ * The first argument is a SimpleBitVector_sp. The second is a variable and the third
+ * is zero or more statements. The statements will be executed in such a way that the
+ * variable is bound to the successive bit_array_words of the bit vector.
+ */
+#define DO_BIT_ARRAY_WORDS(vec, word, statement)                                       \
+  do {                                                                                 \
+    bit_array_word* bytes = vec->bytes();                                              \
+    bit_array_word word;                                                               \
+    size_t len = vec->length();                                                        \
+    size_t nwords = len / BIT_ARRAY_WORD_BITS;                                         \
+    size_t leftover = len % BIT_ARRAY_WORD_BITS;                                       \
+    for (size_t i = 0; i < nwords; ++i) { word = bytes[i]; statement}                  \
+    if (leftover != 0) {                                                               \
+      bit_array_word mask = ((1 << leftover) - 1) << (BIT_ARRAY_WORD_BITS - leftover); \
+      word = bytes[nwords] & mask;                                                     \
+      statement}                                                                       \
+  } while (0);
+
 // Population count for simple bit vector.
 CL_DEFUN Integer_sp core__sbv_popcnt(SimpleBitVector_sp vec) {
   ASSERT(sizeof(bit_array_word) == sizeof(unsigned long long)); // for popcount. FIXME
-  bit_array_word* bytes = vec->bytes();
-  size_t len = vec->length();
-  size_t nwords = len / BIT_ARRAY_WORD_BITS;
-  size_t leftover = len % BIT_ARRAY_WORD_BITS;
-  size_t i;
   gctools::Fixnum result = 0;
-  for (i = 0; i < nwords; ++i) result += bit_array_word_popcount(bytes[i]);
-  if (leftover != 0) {
-    // leftover is greater than zero and less than BIT_ARRAY_WORD_BITS,
-    // so none of these shifts can overflow.
-    bit_array_word unshifted_mask = (1 << leftover) - 1;
-    bit_array_word mask = unshifted_mask << (BIT_ARRAY_WORD_BITS - leftover);
-    result += bit_array_word_popcount(bytes[nwords] & mask);
-  }
+  DO_BIT_ARRAY_WORDS(vec, word, result += bit_array_word_popcount(word););
   return make_fixnum(result);
+}
+
+CL_DEFUN bool core__sbv_zerop(SimpleBitVector_sp vec) {
+  DO_BIT_ARRAY_WORDS(vec, word, if (word != 0) return false;);
+  return true;
 }
 
 /*! Copied from ECL */
