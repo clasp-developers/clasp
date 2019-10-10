@@ -316,21 +316,24 @@ CL_DEFUN SimpleBitVector_sp core__sbv_bit_not(SimpleBitVector_sp vec, SimpleBitV
 }
 
 /* This macro handles iterating over a single bit vector efficiently.
- * The first argument is a SimpleBitVector_sp. The second is a variable and the third
- * is zero or more statements. The statements will be executed in such a way that the
- * variable is bound to the successive bit_array_words of the bit vector.
+ * The first argument is a SimpleBitVector_sp. The second and third are variables, and
+ * the fourth is zero or more statements. The statements will be executed in such that
+ * the first variable is bound to the successive bit_array_words of the bit vector, and
+ * the second is bound to the index of the word in the bit vector's words.
  */
-#define DO_BIT_ARRAY_WORDS(vec, word, statement)                                       \
+#define DO_BIT_ARRAY_WORDS(vec, word, i, statement)                                    \
   do {                                                                                 \
     bit_array_word* bytes = vec->bytes();                                              \
     bit_array_word word;                                                               \
     size_t len = vec->length();                                                        \
     size_t nwords = len / BIT_ARRAY_WORD_BITS;                                         \
     size_t leftover = len % BIT_ARRAY_WORD_BITS;                                       \
-    for (size_t i = 0; i < nwords; ++i) { word = bytes[i]; statement}                  \
+    size_t i;                                                                          \
+    for (i = 0; i < nwords; ++i) { word = bytes[i]; statement}                         \
+    i = nwords;                                                                        \
     if (leftover != 0) {                                                               \
       bit_array_word mask = ((1 << leftover) - 1) << (BIT_ARRAY_WORD_BITS - leftover); \
-      word = bytes[nwords] & mask;                                                     \
+      word = bytes[i] & mask;                                                          \
       statement}                                                                       \
   } while (0);
 
@@ -338,13 +341,21 @@ CL_DEFUN SimpleBitVector_sp core__sbv_bit_not(SimpleBitVector_sp vec, SimpleBitV
 CL_DEFUN Integer_sp core__sbv_popcnt(SimpleBitVector_sp vec) {
   ASSERT(sizeof(bit_array_word) == sizeof(unsigned long long)); // for popcount. FIXME
   gctools::Fixnum result = 0;
-  DO_BIT_ARRAY_WORDS(vec, word, result += bit_array_word_popcount(word););
+  DO_BIT_ARRAY_WORDS(vec, word, i, result += bit_array_word_popcount(word););
   return make_fixnum(result);
 }
 
 CL_DEFUN bool core__sbv_zerop(SimpleBitVector_sp vec) {
-  DO_BIT_ARRAY_WORDS(vec, word, if (word != 0) return false;);
+  DO_BIT_ARRAY_WORDS(vec, word, i, if (word != 0) return false;);
   return true;
+}
+
+// Returns the index of the first 1 in the bit vector, or NIL.
+CL_DEFUN T_sp core__sbv_position_one(SimpleBitVector_sp v) {
+  DO_BIT_ARRAY_WORDS(v, w, i,
+                     if (w != 0)
+                       return make_fixnum(i*BIT_ARRAY_WORD_BITS + bit_array_word_clz(w)););
+  return _Nil<T_O>();
 }
 
 /*! Copied from ECL */
