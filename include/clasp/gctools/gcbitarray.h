@@ -49,14 +49,14 @@ class GCBitUnitArray_moveable : public GCContainer {
   size_t    _Length;
   bit_array_word _Data[0];
   public:
-  GCBitUnitArray_moveable(size_t length, bit_array_word initialValue,
-                          bool initialValueSupplied,
-                          size_t initialContentsSize = 0, bit_array_word* initialContents=NULL)
-  : _Length(length) {
+ GCBitUnitArray_moveable(size_t length, bit_array_word initialValue,
+                         bool initialValueSupplied,
+                         size_t initialContentsSize = 0, bit_array_word* initialContents=NULL)
+   : _Length(length) {
     bit_array_word initialFillValue = (initialValue!=0) ? ~0 : 0;
     // Initialize the contents from an array - but it has to be bit_array_word aligned
     // if you need other than word aligned add another parameter to this constructor
-    size_t numWords = sizeof_for_length(length)/sizeof(bit_array_word);
+    size_t numWords = nwords_for_length(length);
 #ifdef DEBUG_BITUNIT_CONTAINER
     printf("%s:%d ctor for GCBitUnitArray_moveable _Data[0] @%p\n", __FILE__, __LINE__, (void*)&this->_Data[0]);
     printf("%s:%d      initialContentsSize = %lu\n", __FILE__, __LINE__, initialContentsSize);
@@ -72,9 +72,18 @@ class GCBitUnitArray_moveable : public GCContainer {
     printf("%s:%d      wrote up to address: %p\n", __FILE__, __LINE__, (void*)&this->_Data[idx]);
 #endif
   }
+ DONT_OPTIMIZE_ALWAYS GCBitUnitArray_moveable(size_t length, bit_array_word* initialContents)
+   : _Length(length) {
+    for (size_t i = 0; i < nwords_for_length(length); ++i)
+      this->_Data[i] = initialContents[i];
+  }
+  static size_t nwords_for_length(size_t length) {
+    // length/number_of_bit_units_in_word, rounded up
+    return (length+number_of_bit_units_in_word-1)/number_of_bit_units_in_word;
+  }
   // sizeof _Data if _Length is the provided value.
   static size_t sizeof_for_length(size_t length) {
-    size_t numWords = (length+(number_of_bit_units_in_word-1))/number_of_bit_units_in_word;
+    size_t numWords = (length+number_of_bit_units_in_word-1)/number_of_bit_units_in_word;
     size_t numBytes = numWords*sizeof(bit_array_word);
 #ifdef DEBUG_BITUNIT_CONTAINER
     printf("%s:%d length = %lu\n", __FILE__, __LINE__, length);
@@ -86,7 +95,6 @@ class GCBitUnitArray_moveable : public GCContainer {
   }
   public:
     /* Word access */
-  size_t number_of_words() const { return sizeof_for_length(this->_Length)/sizeof(bit_array_word);};
   bit_array_word &operator[](size_t i) { return this->_Data[i]; };
   const bit_array_word &operator[](size_t i) const { return this->_Data[i]; };
   /* Unsigned BitUnit access */

@@ -51,13 +51,11 @@ SimpleBitVector_sp SimpleBitVector_O::make(const string& bv) {
   return x;
 }
 
-// Used by Cando
-SimpleBitVector_sp SimpleBitVector_copy(SimpleBitVector_sp orig_sbv)
-{
-  size_t value_type_size = core::SimpleBitVector_O::bitunit_array_type::sizeof_for_length(orig_sbv->length())/sizeof(core::SimpleBitVector_O::value_type);
-  core::SimpleBitVector_sp sbv = core::SimpleBitVector_O::make(orig_sbv->length(),0,true,value_type_size,&orig_sbv->_Data[0]);
-  return sbv;
-}
+// Used by Cando. FIXME: Now a bit redundant.
+SimpleBitVector_sp SimpleBitVector_copy(SimpleBitVector_sp orig_sbv) { return orig_sbv->copy(); }
+
+// test
+CL_DEFUN SimpleBitVector_sp core__sbv_copy(SimpleBitVector_sp orig) { return orig->copy(); }
 
 Array_sp SimpleBitVector_O::unsafe_subseq(size_t start, size_t end) const {
   BOUNDS_ASSERT(0<=start&&start<end&&end<=this->length());

@@ -39,15 +39,18 @@ namespace core {
                     value_type initialElement,
                     bool initialElementSupplied,
                     size_t initialContentsSize=0,
-                    value_type* initialContents=NULL )
+                    value_type* initialContents=NULL)
     : Base(), _Data(length,initialElement,initialElementSupplied,initialContentsSize,initialContents) {};
+  SimpleBitVector_O(size_t length, bit_array_word* data) : Base(), _Data(length, data) {};
     static SimpleBitVector_sp make( size_t length,
                                     value_type initialElement=0,
                                     bool initialElementSupplied=false,
                                     size_t initialContentsSize=0,
                                     value_type* initialContents=NULL) {
-      auto sbv = gctools::GC<SimpleBitVector_O>::allocate_bitunit_container(length,initialElement,initialElementSupplied,initialContentsSize,initialContents);
-      return sbv;
+      return gctools::GC<SimpleBitVector_O>::allocate_bitunit_container(length,initialElement,initialElementSupplied,initialContentsSize,initialContents);
+    }
+    SimpleBitVector_sp copy() {
+      return gctools::GC<SimpleBitVector_O>::allocate_bitunit_container(this->length(), this->bytes());
     }
     static SimpleBitVector_sp make(const string& bv);
   public:
