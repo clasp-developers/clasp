@@ -85,6 +85,7 @@ SRC_CORE_FILES = \
         'keywordPackage',
         'extensionPackage',
         'array',
+        'array_bit',
         'grayPackage',
         'closPackage',
         'cleavirPrimopsPackage',
