@@ -72,7 +72,7 @@ class GCBitUnitArray_moveable : public GCContainer {
     printf("%s:%d      wrote up to address: %p\n", __FILE__, __LINE__, (void*)&this->_Data[idx]);
 #endif
   }
- DONT_OPTIMIZE_ALWAYS GCBitUnitArray_moveable(size_t length, bit_array_word* initialContents)
+ GCBitUnitArray_moveable(size_t length, bit_array_word* initialContents)
    : _Length(length) {
     for (size_t i = 0; i < nwords_for_length(length); ++i)
       this->_Data[i] = initialContents[i];
