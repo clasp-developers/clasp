@@ -8,7 +8,8 @@
 
 /* -*- mode: c; c-basic-offset: 8 -*- */
 /*
-    num_log.c  -- Logical operations on numbers.
+    bits.cc  -- Logical operations on numbers.
+If you're looking for bit array stuff, try array_bit.cc.
 */
 /*
     Copyright (c) 1984, Taiichi Yuasa and Masami Hagiya.
@@ -283,79 +284,6 @@ T_sp clasp_boole(int op, T_sp x, T_sp y) {
     ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_boole, 2, x, cl::_sym_integer);
   }
   return x;
-}
-
-// The division is length/BIT_ARRAY_WORD_BITS, but rounding up.
-#define DEF_SBV_BIT_OP(name, form)\
-  CL_DEFUN SimpleBitVector_sp core__sbv_bit_##name(SimpleBitVector_sp a, SimpleBitVector_sp b,\
-                                                   SimpleBitVector_sp r, size_t length) { \
-    bit_array_word *ab, *bb, *rb;\
-    ab = a->bytes(); bb = b->bytes(); rb = r->bytes();\
-    size_t nwords = length/BIT_ARRAY_WORD_BITS + ((length % BIT_ARRAY_WORD_BITS == 0) ? 0 : 1);\
-    for (size_t i = 0; i < nwords; ++i) rb[i] = form;\
-    return r;\
-  }
-DEF_SBV_BIT_OP(and, ab[i] & bb[i])
-DEF_SBV_BIT_OP(ior, ab[i] | bb[i])
-DEF_SBV_BIT_OP(xor, ab[i] ^ bb[i])
-DEF_SBV_BIT_OP(nand, ~(ab[i] & bb[i]))
-DEF_SBV_BIT_OP(nor, ~(ab[i] | bb[i]))
-DEF_SBV_BIT_OP(eqv, ~(ab[i] ^ bb[i]))
-DEF_SBV_BIT_OP(andc1, ~(ab[i]) & bb[i])
-DEF_SBV_BIT_OP(andc2, ab[i] & ~(bb[i]))
-DEF_SBV_BIT_OP(orc1, ~(ab[i]) | bb[i])
-DEF_SBV_BIT_OP(orc2, ab[i] | ~(bb[i]))
-
-CL_DEFUN SimpleBitVector_sp core__sbv_bit_not(SimpleBitVector_sp vec, SimpleBitVector_sp res,
-                                              size_t length) {
-  bit_array_word *vecb, *resb;
-  vecb = vec->bytes(); resb = res->bytes();
-  size_t nwords = length/BIT_ARRAY_WORD_BITS + ((length % BIT_ARRAY_WORD_BITS == 0) ? 0 : 1);
-  for (size_t i = 0; i < nwords; ++i) resb[i] = ~(vecb[i]);
-  return res;
-}
-
-/* This macro handles iterating over a single bit vector efficiently.
- * The first argument is a SimpleBitVector_sp. The second and third are variables, and
- * the fourth is zero or more statements. The statements will be executed in such that
- * the first variable is bound to the successive bit_array_words of the bit vector, and
- * the second is bound to the index of the word in the bit vector's words.
- */
-#define DO_BIT_ARRAY_WORDS(vec, word, i, statement)                                    \
-  do {                                                                                 \
-    bit_array_word* bytes = vec->bytes();                                              \
-    bit_array_word word;                                                               \
-    size_t len = vec->length();                                                        \
-    size_t nwords = len / BIT_ARRAY_WORD_BITS;                                         \
-    size_t leftover = len % BIT_ARRAY_WORD_BITS;                                       \
-    size_t i;                                                                          \
-    for (i = 0; i < nwords; ++i) { word = bytes[i]; statement}                         \
-    i = nwords;                                                                        \
-    if (leftover != 0) {                                                               \
-      bit_array_word mask = ((1 << leftover) - 1) << (BIT_ARRAY_WORD_BITS - leftover); \
-      word = bytes[i] & mask;                                                          \
-      statement}                                                                       \
-  } while (0);
-
-// Population count for simple bit vector.
-CL_DEFUN Integer_sp core__sbv_popcnt(SimpleBitVector_sp vec) {
-  ASSERT(sizeof(bit_array_word) == sizeof(unsigned long long)); // for popcount. FIXME
-  gctools::Fixnum result = 0;
-  DO_BIT_ARRAY_WORDS(vec, word, i, result += bit_array_word_popcount(word););
-  return make_fixnum(result);
-}
-
-CL_DEFUN bool core__sbv_zerop(SimpleBitVector_sp vec) {
-  DO_BIT_ARRAY_WORDS(vec, word, i, if (word != 0) return false;);
-  return true;
-}
-
-// Returns the index of the first 1 in the bit vector, or NIL.
-CL_DEFUN T_sp core__sbv_position_one(SimpleBitVector_sp v) {
-  DO_BIT_ARRAY_WORDS(v, w, i,
-                     if (w != 0)
-                       return make_fixnum(i*BIT_ARRAY_WORD_BITS + bit_array_word_clz(w)););
-  return _Nil<T_O>();
 }
 
 /*! Copied from ECL */

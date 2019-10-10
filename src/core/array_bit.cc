@@ -51,8 +51,7 @@ SimpleBitVector_sp SimpleBitVector_O::make(const string& bv) {
   return x;
 }
 
-// Restored by drmeister because Cando uses this function
-//  we can remove it if there is a problem with it or it is redundant.
+// Used by Cando
 SimpleBitVector_sp SimpleBitVector_copy(SimpleBitVector_sp orig_sbv)
 {
   size_t value_type_size = core::SimpleBitVector_O::bitunit_array_type::sizeof_for_length(orig_sbv->length())/sizeof(core::SimpleBitVector_O::value_type);
@@ -90,26 +89,6 @@ Array_sp SimpleBitVector_O::unsafe_setf_subseq(size_t start, size_t end, Array_s
   TYPE_ERROR(other,cl::_sym_bit_vector);
 }
 
-// This does not work properly
-/*
-void SimpleBitVector_O::unsafe_fillArrayWithElt(T_sp initialElement, size_t start, size_t end)
-{
-  value_type initBlockValue = (initialElement.nilp()) ? 0 : ~0;
-  // round up start and round down end
-  size_t blockStart = ((start+BitWidth-1)/BitWidth);
-  size_t blockEnd = (end+BitWidth-1)/BitWidth;
-  for (size_t i(start), iEnd(blockStart*BitWidth); i<iEnd; ++i ) {
-    this->setBit(i,initBlockValue);
-  }
-  for (size_t i(blockStart),iEnd(blockEnd); i<iEnd; ++i ) {
-    this->_Data[i] = initBlockValue;
-  }
-  for (size_t i(blockEnd*BitWidth), iEnd(end); i<iEnd; ++i ) {
-    this->setBit(i,initBlockValue);
-  }
-};
-*/
-
 void SimpleBitVector_O::unsafe_fillArrayWithElt(T_sp initialElement, size_t start, size_t end) {
   if (CLASP_FIXNUMP (initialElement))
   {
@@ -123,7 +102,6 @@ void SimpleBitVector_O::unsafe_fillArrayWithElt(T_sp initialElement, size_t star
   }
   else TYPE_ERROR(initialElement, cl::_sym_bit);
 }
-
 
 bool SimpleBitVector_O::equal(T_sp other) const {
   if (this == &*other) return true;
@@ -150,45 +128,106 @@ Array_sp SimpleBitVector_O::nreverse() {
   return this->asSmartPtr();
 }
 
-void SimpleBitVector_inPlaceOr(SimpleBitVector_sp x, SimpleBitVector_sp y) {
-  size_t i;
-  if (x->length() != y->length()) SIMPLE_ERROR(BF("BitVectors aren't the same length for in place or - lengths are %d and %d") % x->length() % y->length());
-  for (size_t i = 0; i<x->_Data.number_of_words(); ++i ) {
-    (*x)._Data[i] |= (*y)._Data[i];
+
+// The division is length/BIT_ARRAY_WORD_BITS, but rounding up.
+#define DEF_SBV_BIT_OP(name, form)\
+  CL_DEFUN SimpleBitVector_sp core__sbv_bit_##name(SimpleBitVector_sp a, SimpleBitVector_sp b,\
+                                                   SimpleBitVector_sp r, size_t length) { \
+    bit_array_word *ab, *bb, *rb;\
+    ab = a->bytes(); bb = b->bytes(); rb = r->bytes();\
+    size_t nwords = length/BIT_ARRAY_WORD_BITS + ((length % BIT_ARRAY_WORD_BITS == 0) ? 0 : 1);\
+    for (size_t i = 0; i < nwords; ++i) rb[i] = form;\
+    return r;\
   }
+DEF_SBV_BIT_OP(and, ab[i] & bb[i])
+DEF_SBV_BIT_OP(ior, ab[i] | bb[i])
+DEF_SBV_BIT_OP(xor, ab[i] ^ bb[i])
+DEF_SBV_BIT_OP(nand, ~(ab[i] & bb[i]))
+DEF_SBV_BIT_OP(nor, ~(ab[i] | bb[i]))
+DEF_SBV_BIT_OP(eqv, ~(ab[i] ^ bb[i]))
+DEF_SBV_BIT_OP(andc1, ~(ab[i]) & bb[i])
+DEF_SBV_BIT_OP(andc2, ab[i] & ~(bb[i]))
+DEF_SBV_BIT_OP(orc1, ~(ab[i]) | bb[i])
+DEF_SBV_BIT_OP(orc2, ab[i] | ~(bb[i]))
+
+CL_DEFUN SimpleBitVector_sp core__sbv_bit_not(SimpleBitVector_sp vec, SimpleBitVector_sp res,
+                                              size_t length) {
+  bit_array_word *vecb, *resb;
+  vecb = vec->bytes(); resb = res->bytes();
+  size_t nwords = length/BIT_ARRAY_WORD_BITS + ((length % BIT_ARRAY_WORD_BITS == 0) ? 0 : 1);
+  for (size_t i = 0; i < nwords; ++i) resb[i] = ~(vecb[i]);
+  return res;
+}
+
+/* This macro handles iterating over a single bit vector efficiently.
+ * The first argument is a SimpleBitVector_sp. The second and third are variables, and
+ * the fourth is zero or more statements. The statements will be executed in such that
+ * the first variable is bound to the successive bit_array_words of the bit vector, and
+ * the second is bound to the index of the word in the bit vector's words.
+ */
+#define DO_BIT_ARRAY_WORDS(vec, word, i, statement)                                    \
+  do {                                                                                 \
+    bit_array_word* bytes = vec->bytes();                                              \
+    bit_array_word word;                                                               \
+    size_t len = vec->length();                                                        \
+    size_t nwords = len / BIT_ARRAY_WORD_BITS;                                         \
+    size_t leftover = len % BIT_ARRAY_WORD_BITS;                                       \
+    size_t i;                                                                          \
+    for (i = 0; i < nwords; ++i) { word = bytes[i]; statement}                         \
+    i = nwords;                                                                        \
+    if (leftover != 0) {                                                               \
+      bit_array_word mask = ((1 << leftover) - 1) << (BIT_ARRAY_WORD_BITS - leftover); \
+      word = bytes[i] & mask;                                                          \
+      statement}                                                                       \
+  } while (0);
+
+// Population count for simple bit vector.
+CL_DEFUN Integer_sp core__sbv_popcnt(SimpleBitVector_sp vec) {
+  ASSERT(sizeof(bit_array_word) == sizeof(unsigned long long)); // for popcount. FIXME
+  gctools::Fixnum result = 0;
+  DO_BIT_ARRAY_WORDS(vec, word, i, result += bit_array_word_popcount(word););
+  return make_fixnum(result);
+}
+
+CL_DEFUN bool core__sbv_zerop(SimpleBitVector_sp vec) {
+  DO_BIT_ARRAY_WORDS(vec, word, i, if (word != 0) return false;);
+  return true;
+}
+
+// Returns the index of the first 1 in the bit vector, or NIL.
+CL_DEFUN T_sp core__sbv_position_one(SimpleBitVector_sp v) {
+  DO_BIT_ARRAY_WORDS(v, w, i,
+                     if (w != 0)
+                       return make_fixnum(i*BIT_ARRAY_WORD_BITS + bit_array_word_clz(w)););
+  return _Nil<T_O>();
+}
+
+// The following SimpleBitVector_ functions are used in Cando.
+// TODO: Rethink API - some are now redundant wrt the above sbv_* functions.
+
+void SimpleBitVector_inPlaceOr(SimpleBitVector_sp x, SimpleBitVector_sp y) {
+  size_t len = x->length();
+  if (len != y->length())
+    SIMPLE_ERROR(BF("BitVectors aren't the same length for in place or - lengths are %d and %d")
+                 % len % y->length());
+  core__sbv_bit_ior(x, y, x, len);
 }
 
 void SimpleBitVector_inPlaceAnd(SimpleBitVector_sp x, SimpleBitVector_sp y) {
-  size_t i;
-  if (x->length() != y->length()) SIMPLE_ERROR(BF("BitVectors aren't the same length for operation"));
-  for (size_t i = 0; i<x->_Data.number_of_words(); ++i ) {
-    (*x)._Data[i] &= (*y)._Data[i];
-  }
+  size_t len = x->length();
+  if (len != y->length())
+    SIMPLE_ERROR(BF("BitVectors aren't the same length for operation"));
+  core__sbv_bit_and(x, y, x, len);
 }
 
 void SimpleBitVector_inPlaceXor(SimpleBitVector_sp x, SimpleBitVector_sp y) {
-  size_t i;
-  if (x->length() != y->length()) SIMPLE_ERROR(BF("BitVectors aren't the same length for operation"));
-  for (size_t i = 0; i<x->_Data.number_of_words(); ++i ) {
-    (*x)._Data[i] ^= (*y)._Data[i];
-  }
+  size_t len = x->length();
+  if (len != y->length())
+    SIMPLE_ERROR(BF("BitVectors aren't the same length for operation"));
+  core__sbv_bit_xor(x, y, x, len);
 }
 
-size_t SimpleBitVector_lowestIndex(SimpleBitVector_sp x) {
-  size_t word_length = x->length()/SimpleBitVector_O::BitWidth;
-  size_t ib = 0;
-  size_t iw = 0;
-  while (iw<word_length && x->_Data[iw]==0) {
-    ++iw;
-    ib = ib + SimpleBitVector_O::BitWidth;
-  }
-  for ( ; ib < x->length(); ib++) {
-    if (x->testBit(ib)) {
-      return ib;
-    }
-  }
-  return ib;
-}
+size_t SimpleBitVector_lowestIndex(SimpleBitVector_sp x) { return core__sbv_position_one(x); }
 
 void SimpleBitVector_getOnIndices(SimpleBitVector_sp x, vector<size_t> &res) {
   size_t i;
@@ -201,23 +240,11 @@ void SimpleBitVector_getOnIndices(SimpleBitVector_sp x, vector<size_t> &res) {
   }
 }
 
-// FIXME: This is redundant with respect to core__sbv_zerop (bits.cc)
-bool SimpleBitVector_isZero(SimpleBitVector_sp vec) {
-  bit_array_word* bytes = vec->bytes();
-  size_t len = vec->length();
-  size_t nwords = len / BIT_ARRAY_WORD_BITS;
-  size_t leftover = len % BIT_ARRAY_WORD_BITS;
-  for (size_t i = 0; i < nwords; ++i) if (bytes[i] != 0) return false;
-  if (leftover != 0) {
-    bit_array_word unshifted_mask = (1 << leftover) - 1;
-    bit_array_word mask = unshifted_mask << (BIT_ARRAY_WORD_BITS - leftover);
-    if ((bytes[nwords] & mask) != 0) return false;
-  }
-  return true;
-}
+bool SimpleBitVector_isZero(SimpleBitVector_sp vec) { return core__sbv_zerop(vec); }
 
 Fixnum_sp BitVectorNs_O::vectorPushExtend(T_sp newElement, size_t extension) {
-  unlikely_if (!this->_Flags.fillPointerP()) noFillPointerError(cl::_sym_vectorPushExtend,this->asSmartPtr());
+  unlikely_if (!this->_Flags.fillPointerP())
+    noFillPointerError(cl::_sym_vectorPushExtend,this->asSmartPtr());
   cl_index idx = this->_FillPointerOrLengthOrDummy;
   unlikely_if (idx >= this->_ArrayTotalSize) {
     unlikely_if (this->displacedToP()) {
