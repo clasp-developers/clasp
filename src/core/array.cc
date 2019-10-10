@@ -2221,8 +2221,19 @@ void SimpleBitVector_getOnIndices(SimpleBitVector_sp x, vector<size_t> &res) {
   }
 }
 
-bool SimpleBitVector_isZero(SimpleBitVector_sp x) {
-  return (SimpleBitVector_lowestIndex(x) == x->length());
+// FIXME: This is redundant with respect to core__sbv_zerop (bits.cc)
+bool SimpleBitVector_isZero(SimpleBitVector_sp vec) {
+  bit_array_word* bytes = vec->bytes();
+  size_t len = vec->length();
+  size_t nwords = len / BIT_ARRAY_WORD_BITS;
+  size_t leftover = len % BIT_ARRAY_WORD_BITS;
+  for (size_t i = 0; i < nwords; ++i) if (bytes[i] != 0) return false;
+  if (leftover != 0) {
+    bit_array_word unshifted_mask = (1 << leftover) - 1;
+    bit_array_word mask = unshifted_mask << (BIT_ARRAY_WORD_BITS - leftover);
+    if ((bytes[nwords] & mask) != 0) return false;
+  }
+  return true;
 }
 // ------------------------------------------------------------
 //
