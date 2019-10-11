@@ -181,29 +181,11 @@ namespace core {
   {
     const typename T1::simple_element_type* cp1((const typename T1::simple_element_type*)string1.rowMajorAddressOfElement_(start1));
     const typename T2::simple_element_type* cp2((const typename T2::simple_element_type*)string2.rowMajorAddressOfElement_(start2));
-    size_t num1 = end1 - start1;
-    size_t num2 = end2 - start2;
-//    printf("%s:%d:%s string1@%p string2=@%p sizeof(*cp1)=%lu sizeof(*cp2)=%lu cp1=%p cp2=%p start1=%lu end1=%lu start2=%lu end2=%lu num1=%lu num2=%lu\n", __FILE__, __LINE__, __FUNCTION__, (void*)&string1, (void*)&string2, sizeof(*cp1), sizeof(*cp2), (void*)cp1, (void*)cp2, start1, end1, start2, end2, num1, num2);
-    while (1) {
-      if (num1 == 0)
-        goto END_STRING1;
-      if (num2 == 0)
-        goto END_STRING2;
+    size_t length = end1 - start1;
+    if (length != (end2 - start2)) return false;
+    for (size_t i = 0; i < length; ++i, ++cp1, ++cp2)
       if ((static_cast<claspCharacter>(*cp1) != static_cast<claspCharacter>(*cp2)))
-        goto RETURN_FALSE;
-      --num1;
-      --num2;
-      ++cp1;
-      ++cp2;
-    }
-  END_STRING1:
-    if (num2 == 0)
-      goto RETURN_TRUE;
-    goto RETURN_FALSE;
-  END_STRING2:
-  RETURN_FALSE:
-    return false;
-  RETURN_TRUE:
+        return false;
     return true;
   }
 
