@@ -1677,9 +1677,9 @@ CL_DEFUN void core__stack_monitor(T_sp fn) {
 
 CL_LAMBDA();
 CL_DECLARE();
-CL_DOCSTRING("Return the soft and hard limits of the stack");
-CL_DEFUN T_mv core__stack_limit() {
-  return Values(clasp_make_fixnum(_lisp->_StackWarnSize));
+CL_DOCSTRING("Return the stack warn size");
+CL_DEFUN T_sp core__stack_limit() {
+  return clasp_make_fixnum(_lisp->_StackWarnSize);
 };
 
 CL_LAMBDA(&key warn-size sample-size);
@@ -1786,14 +1786,14 @@ CL_DEFUN List_sp core__member1(T_sp item, List_sp list, T_sp test, T_sp test_not
 CL_LAMBDA("&optional (prompt \"\")");
 CL_DECLARE();
 CL_DOCSTRING("getline");
-CL_DEFUN T_mv core__getline(String_sp prompt) {
+CL_DEFUN T_sp core__getline(String_sp prompt) {
   ASSERT(cl__stringp(prompt));
   string res;
   string sprompt(prompt->get());
   bool end_of_transmission;
   res = myReadLine(sprompt.c_str(), end_of_transmission);
   SimpleBaseString_sp result = SimpleBaseString_O::make(res);
-  return (Values(result));
+  return result;
 }
 
 CL_DOCSTRING("lookup-class-with-stamp");
@@ -1939,8 +1939,8 @@ CL_DEFUN void core__select_package(T_sp package_designator) {
 CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("mpi_enabled");
-CL_DEFUN T_mv core__mpi_enabled() {
-  return (Values(_lisp->_boolean(_lisp->mpiEnabled())));
+CL_DEFUN T_sp core__mpi_enabled() {
+  return _lisp->_boolean(_lisp->mpiEnabled());
 }
 
 /*
@@ -1953,8 +1953,8 @@ CL_DEFUN T_mv core__mpi_enabled() {
 CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("Return the mpi_rank or 0 if mpi is disabled");
-CL_DEFUN T_mv core__mpi_rank() {
-  return (Values(make_fixnum(_lisp->mpiRank())));
+CL_DEFUN T_sp core__mpi_rank() {
+  return make_fixnum(_lisp->mpiRank());
 }
 
 /*
@@ -1968,8 +1968,8 @@ CL_DEFUN T_mv core__mpi_rank() {
 CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("Return mpi_size or 0 if mpi is not enabled");
-CL_DEFUN T_mv core__mpi_size() {
-  return (Values(make_fixnum(_lisp->mpiSize())));
+CL_DEFUN T_sp core__mpi_size() {
+  return make_fixnum(_lisp->mpiSize());
 }
 
 CL_LAMBDA(form &optional env);
@@ -2346,16 +2346,16 @@ CL_DEFUN void cl__cerror(T_sp cformat, T_sp eformat, List_sp arguments) {
 CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("Return a string representation of the object");
-CL_DEFUN T_mv core__repr(T_sp obj) {
+CL_DEFUN T_sp core__repr(T_sp obj) {
   SimpleBaseString_sp res = SimpleBaseString_O::make(_rep_(obj));
-  return (Values(res));
+  return res;
 }
 
 CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("not");
-CL_DEFUN T_mv cl__not(T_sp x) {
-  return (Values(_lisp->_boolean(!x.isTrue())));
+CL_DEFUN T_sp cl__not(T_sp x) {
+  return _lisp->_boolean(!x.isTrue());
 };
 
 Instance_sp Lisp_O::boot_setf_findClass(Symbol_sp className, Instance_sp mc) {

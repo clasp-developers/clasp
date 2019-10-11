@@ -1541,7 +1541,7 @@ CL_DEFUN T_sp cl__string_EQ_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp 
 CL_LAMBDA(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2);
 CL_DECLARE();
 CL_DOCSTRING("string_NE_");
-CL_DEFUN T_mv cl__string_NE_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
+CL_DEFUN T_sp cl__string_NE_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
   size_t istart1, iend1, istart2, iend2;
   String_sp string1;
   String_sp string2;
@@ -1552,7 +1552,7 @@ CL_DEFUN T_mv cl__string_NE_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp 
 CL_LAMBDA(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2);
 CL_DECLARE();
 CL_DOCSTRING("string_LT_");
-CL_DEFUN T_mv cl__string_LT_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
+CL_DEFUN T_sp cl__string_LT_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
   size_t istart1, iend1, istart2, iend2;
   String_sp string1;
   String_sp string2;
@@ -1563,7 +1563,7 @@ CL_DEFUN T_mv cl__string_LT_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp 
 CL_LAMBDA(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2);
 CL_DECLARE();
 CL_DOCSTRING("string_GT_");
-CL_DEFUN T_mv cl__string_GT_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
+CL_DEFUN T_sp cl__string_GT_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
   size_t istart1, iend1, istart2, iend2;
   String_sp string1;
   String_sp string2;
@@ -1574,7 +1574,7 @@ CL_DEFUN T_mv cl__string_GT_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp 
 CL_LAMBDA(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2);
 CL_DECLARE();
 CL_DOCSTRING("string_LE_");
-CL_DEFUN T_mv cl__string_LE_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
+CL_DEFUN T_sp cl__string_LE_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
   size_t istart1, iend1, istart2, iend2;
   String_sp string1;
   String_sp string2;
@@ -1585,7 +1585,7 @@ CL_DEFUN T_mv cl__string_LE_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp 
 CL_LAMBDA(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2);
 CL_DECLARE();
 CL_DOCSTRING("string_GE_");
-CL_DEFUN T_mv cl__string_GE_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
+CL_DEFUN T_sp cl__string_GE_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
   size_t istart1, iend1, istart2, iend2;
   String_sp string1;
   String_sp string2;
@@ -1607,7 +1607,7 @@ CL_DEFUN T_sp cl__string_equal(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_s
 CL_LAMBDA(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2);
 CL_DECLARE();
 CL_DOCSTRING("string_not_equal");
-CL_DEFUN T_mv cl__string_not_equal(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
+CL_DEFUN T_sp cl__string_not_equal(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
   size_t istart1, iend1, istart2, iend2;
   String_sp string1;
   String_sp string2;
@@ -1617,7 +1617,7 @@ CL_DEFUN T_mv cl__string_not_equal(T_sp strdes1, T_sp strdes2, Fixnum_sp start1,
 CL_LAMBDA(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2);
 CL_DECLARE();
 CL_DOCSTRING("string_lessp");
-CL_DEFUN T_mv cl__string_lessp(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
+CL_DEFUN T_sp cl__string_lessp(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
   size_t istart1, iend1, istart2, iend2;
   String_sp string1;
   String_sp string2;
@@ -1627,7 +1627,7 @@ CL_DEFUN T_mv cl__string_lessp(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_s
 CL_LAMBDA(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2);
 CL_DECLARE();
 CL_DOCSTRING("string_greaterp");
-CL_DEFUN T_mv cl__string_greaterp(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
+CL_DEFUN T_sp cl__string_greaterp(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
   size_t istart1, iend1, istart2, iend2;
   String_sp string1;
   String_sp string2;
@@ -1637,7 +1637,7 @@ CL_DEFUN T_mv cl__string_greaterp(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, 
 CL_LAMBDA(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2);
 CL_DECLARE();
 CL_DOCSTRING("string_not_greaterp");
-CL_DEFUN T_mv cl__string_not_greaterp(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
+CL_DEFUN T_sp cl__string_not_greaterp(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
   size_t istart1, iend1, istart2, iend2;
   String_sp string1;
   String_sp string2;
@@ -1647,7 +1647,7 @@ CL_DEFUN T_mv cl__string_not_greaterp(T_sp strdes1, T_sp strdes2, Fixnum_sp star
 CL_LAMBDA(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2);
 CL_DECLARE();
 CL_DOCSTRING("string_not_lessp");
-CL_DEFUN T_mv cl__string_not_lessp(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
+CL_DEFUN T_sp cl__string_not_lessp(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
   size_t istart1, iend1, istart2, iend2;
   String_sp string1;
   String_sp string2;
