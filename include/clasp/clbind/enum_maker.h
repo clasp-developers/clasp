@@ -118,7 +118,7 @@ struct enum_maker {
   }
 
   From &operator[](const value_vector &values) {
-    core::SymbolToEnumConverter_sp converter = core::SymbolToEnumConverter_O::create(this->_converterSym->symbolName()->get());
+    core::SymbolToEnumConverter_sp converter = core::SymbolToEnumConverter_O::create(this->_converterSym->symbolName()->get_std_string());
     this->_converterSym->defparameter(converter);
     for (value_vector::const_iterator i = values.begin(); i != values.end(); ++i) {
       core::Symbol_sp nameSym = core::lispify_intern(i->name_, core::lisp_currentPackageName(), true);

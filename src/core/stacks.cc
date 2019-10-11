@@ -182,9 +182,9 @@ string InvocationHistoryFrame::argumentsAsString(int maxWidth) const {
   }
   String_sp strres = gc::As<String_sp>(cl__get_output_stream_string(sout));
   if (cl__length(strres) > maxWidth) {
-    return strres->get().substr(0, maxWidth) + "...";
+    return strres->get_std_string().substr(0, maxWidth) + "...";
   }
-  return strres->get();
+  return strres->get_std_string();
 }
 
 string InvocationHistoryFrame::asStringLowLevel(Closure_sp closure,int index) const {

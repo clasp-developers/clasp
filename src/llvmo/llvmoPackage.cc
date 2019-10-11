@@ -177,7 +177,7 @@ CL_DEFUN bool llvm_sys__load_module(Module_sp m, bool verbose, bool print, core:
 CL_DEFUN core::SimpleBaseString_sp llvm_sys__mangleSymbolName(core::String_sp name) {
   ASSERT(cl__stringp(name));
   stringstream sout;
-  const char *cur = name->get().c_str();
+  const char *cur = name->get_std_string().c_str();
   bool first = true;
   while (*cur) {
     if (((*cur) >= 'a' && (*cur) <= 'z') || ((*cur) >= 'A' && (*cur) <= 'Z') || ((*cur) == '_') || (!first && ((*cur) >= '0' && (*cur) <= '9'))) {

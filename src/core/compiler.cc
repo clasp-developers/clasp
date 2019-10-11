@@ -427,7 +427,7 @@ CL_DEFUN T_mv core__mangle_name(Symbol_sp sym, bool is_function) {
       name = SimpleBaseString_O::make("CLASP_T");
     else {
       stringstream ss;
-      ss << "SYM(" << sym->symbolName()->get() << ")";
+      ss << "SYM(" << sym->symbolName()->get_std_string() << ")";
       name = SimpleBaseString_O::make(ss.str());
     }
     return Values(_Nil<T_O>(), name, make_fixnum(0), make_fixnum(CALL_ARGUMENTS_LIMIT));
@@ -490,10 +490,10 @@ CL_DEFUN T_mv core__load_binary(T_sp pathDesig, T_sp verbose, T_sp print, T_sp e
   SIMPLE_ERROR(BF("Could not find bundle %s") % _rep_(pathDesig));
 LOAD:
   String_sp nameStr = gc::As<String_sp>(cl__namestring(cl__probe_file(path)));
-  string name = nameStr->get();
+  string name = nameStr->get_std_string();
 
   /* Look up the initialization function. */
-  string stem = cl__string_downcase(gc::As<String_sp>(path->_Name))->get();
+  string stem = cl__string_downcase(gc::As<String_sp>(path->_Name))->get_std_string();
   size_t dsp = 0;
   if ((dsp = stem.find("_d")) != string::npos)
     stem = stem.substr(0, dsp);

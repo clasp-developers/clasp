@@ -217,7 +217,7 @@ void write_character(T_sp strm, T_sp chr) {
     clasp_write_string("#\\", strm);
     if (i < 32 || i >= 127) {
       SimpleBaseString_sp name = cl__char_name(clasp_make_character(i));
-      clasp_write_string(name->get(), strm);
+      clasp_write_string(name->get_std_string(), strm);
     } else {
       clasp_write_char(i, strm);
     }

@@ -1302,7 +1302,7 @@ void Lisp_O::throwIfBuiltInClassesNotInitialized() {
 Path_sp Lisp_O::translateLogicalPathname(T_sp obj) {
   if (cl__stringp(obj)) {
     String_sp logicalPathName = gc::As_unsafe<String_sp>(obj);
-    string fileName = logicalPathName->get();
+    string fileName = logicalPathName->get_std_string();
     return Path_O::create(fileName);
     SIMPLE_ERROR(BF("include " + fileName + " error, file does not exist"));
   } else {
@@ -1313,7 +1313,7 @@ Path_sp Lisp_O::translateLogicalPathname(T_sp obj) {
 Path_sp Lisp_O::translateLogicalPathnameUsingPaths(T_sp obj) {
   if (cl__stringp(obj)) {
     String_sp logicalPathName = gc::As_unsafe<String_sp>(obj);
-    string fileName = logicalPathName->get();
+    string fileName = logicalPathName->get_std_string();
     LOG(BF("Looking for file: %s") % fileName.c_str());
     LOG(BF("Looking in current directory"));
     boost_filesystem::path onePath("./");
@@ -1325,7 +1325,7 @@ Path_sp Lisp_O::translateLogicalPathnameUsingPaths(T_sp obj) {
     List_sp pathList = pathSym->symbolValue();
     LOG(BF("PATH variable = %s") % _rep_(pathList).c_str());
     while (pathList.notnilp()) {
-      boost_filesystem::path onePath(gc::As<String_sp>(oCar(pathList))->get());
+      boost_filesystem::path onePath(gc::As<String_sp>(oCar(pathList))->get_std_string());
       onePath /= fileName;
       LOG(BF("Checking path[%s]") % onePath.string());
       if (boost_filesystem::exists(onePath)) {
@@ -1788,7 +1788,7 @@ CL_DOCSTRING("getline");
 CL_DEFUN T_mv core__getline(String_sp prompt) {
   ASSERT(cl__stringp(prompt));
   string res;
-  string sprompt(prompt->get());
+  string sprompt(prompt->get_std_string());
   bool end_of_transmission;
   res = myReadLine(sprompt.c_str(), end_of_transmission);
   SimpleBaseString_sp result = SimpleBaseString_O::make(res);

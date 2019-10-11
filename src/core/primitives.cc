@@ -790,7 +790,7 @@ CL_DOCSTRING("hook to invoke gdb");
 CL_DEFUN void core__gdb_inspect(String_sp msg, T_sp o) {
   ASSERT(cl__stringp(msg));
   printf("gdbInspect object: %s\n", _rep_(o).c_str());
-  dbg_hook(msg->get().c_str());
+  dbg_hook(msg->get_std_string().c_str());
   core__invoke_internal_debugger(_Nil<core::T_O>());
 };
 

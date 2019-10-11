@@ -5706,10 +5706,10 @@ CL_DEFUN T_mv cl__read_from_string(String_sp content, T_sp eof_error_p, T_sp eof
   int istart = clasp_to_int(start);
   int iend;
   if (end.nilp())
-    iend = content->get().size();
+    iend = content->get_std_string().size();
   else
     iend = clasp_to_int(gc::As<Fixnum_sp>(end));
-  StringInputStream_sp sin = gc::As_unsafe<StringInputStream_sp>(StringInputStream_O::make(content->get().substr(istart, iend - istart)));
+  StringInputStream_sp sin = gc::As_unsafe<StringInputStream_sp>(StringInputStream_O::make(content->get_std_string().substr(istart, iend - istart)));
   if (iend - istart == 0) {
     if (eofErrorP) {
       ERROR_END_OF_FILE(sin);

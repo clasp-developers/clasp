@@ -101,7 +101,7 @@ CL_DEFUN T_mv cl__ensure_directories_exist(T_sp pathspec) {
     path_to_create = Path_O::create(gc::As_unsafe<String_sp>(pathspec)->get_std_string());
   } else if ( Pathname_sp pn = pathspec.asOrNull<Pathname_O>() ) {
     String_sp spn = gc::As<String_sp>(cl__namestring(pn));
-    path_to_create = Path_O::create(spn->get());
+    path_to_create = Path_O::create(spn->get_std_string());
   } else {
     TYPE_ERROR(pathspec, core::Cons_O::createList(cl::_sym_or,cl::_sym_string,cl::_sym_pathname));
   }
@@ -148,7 +148,7 @@ Path_sp Path_O::create(boost_filesystem::path p) {
 Path_mv af_makePath(List_sp args) {
   Path_sp me(Path_O::create());
   while (args.notnilp()) {
-    me->path_append(gc::As<String_sp>(oCar(args))->get());
+    me->path_append(gc::As<String_sp>(oCar(args))->get_std_string());
     args = oCdr(args);
   }
   return (Values(me));
@@ -598,7 +598,7 @@ Pathname_sp homedirPathname(T_sp tuser) {
 #ifdef HAVE_PWD_H
     struct passwd *pwent = NULL;
 #endif
-    const char *p = user->get().c_str();
+    const char *p = user->get_std_string().c_str();
     i = user->length();
     if (i > 0 && *p == '~') {
       p++;
@@ -631,7 +631,7 @@ Pathname_sp homedirPathname(T_sp tuser) {
   }
   i = namestring->length();
   if (!IS_DIR_SEPARATOR(namestring->rowMajorAref(i - 1).unsafe_character()))
-    namestring = SimpleBaseString_O::make(namestring->get() + DIR_SEPARATOR);
+    namestring = SimpleBaseString_O::make(namestring->get_std_string() + DIR_SEPARATOR);
   return gc::As<Pathname_sp>(cl__parse_namestring(namestring));
 }
 };

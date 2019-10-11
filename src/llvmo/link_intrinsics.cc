@@ -315,7 +315,7 @@ LtvcReturn ltvc_make_fixnum(gctools::GCRootsInModule* holder, char tag, size_t i
 LtvcReturn ltvc_make_bignum(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* bignum_string_t)
 {NO_UNWIND_BEGIN();
   core::SimpleBaseString_sp bignum_string = gctools::As<core::SimpleBaseString_sp>(core::T_sp(bignum_string_t));
-  core::T_sp val = core::Bignum_O::make(bignum_string->get());
+  core::T_sp val = core::Bignum_O::make(bignum_string->get_std_string());
   LTVCRETURN holder->setTaggedIndex(tag,index,val.tagged_());
   NO_UNWIND_END();
 }
@@ -323,7 +323,7 @@ LtvcReturn ltvc_make_bignum(gctools::GCRootsInModule* holder, char tag, size_t i
 LtvcReturn ltvc_make_bitvector(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* bitvector_string_t)
 {NO_UNWIND_BEGIN();
   core::SimpleBaseString_sp bitvector_string = gctools::As<core::SimpleBaseString_sp>(core::T_sp(bitvector_string_t));
-  core::T_sp val = core::SimpleBitVector_O::make(bitvector_string->get());
+  core::T_sp val = core::SimpleBitVector_O::make(bitvector_string->get_std_string());
   LTVCRETURN holder->setTaggedIndex(tag,index,val.tagged_());
   NO_UNWIND_END();
 }
@@ -379,11 +379,12 @@ LtvcReturn ltvc_make_package(gctools::GCRootsInModule* holder, char tag, size_t 
 {
   NO_UNWIND_BEGIN();
   core::SimpleBaseString_sp package_name((gctools::Tagged)package_name_t);
-  core::T_sp tpkg = _lisp->findPackage(package_name->get(),false);
+  core::T_sp tpkg = _lisp->findPackage(package_name->get_std_string(),false);
   if ( tpkg.nilp() ) {
     // If we don't find the package - just make it
     // a more comprehensive defpackage should be coming
-    tpkg = _lisp->makePackage(package_name->get(),std::list<std::string>(), std::list<std::string>());
+    tpkg = _lisp->makePackage(package_name->get_std_string(),
+                              std::list<std::string>(), std::list<std::string>());
   }
   core::T_sp val = tpkg;
   LTVCRETURN holder->setTaggedIndex(tag,index,val.tagged_());
@@ -394,7 +395,7 @@ LtvcReturn ltvc_make_random_state(gctools::GCRootsInModule* holder, char tag, si
 {NO_UNWIND_BEGIN();
   core::SimpleBaseString_sp random_state_string((gctools::Tagged)random_state_string_t);
   core::RandomState_sp rs = core::RandomState_O::create();
-  rs->random_state_set(random_state_string->get());
+  rs->random_state_set(random_state_string->get_std_string());
   core::T_sp val = rs;
   LTVCRETURN holder->setTaggedIndex(tag,index,val.tagged_());
   NO_UNWIND_END();

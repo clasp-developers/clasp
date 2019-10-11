@@ -92,14 +92,14 @@ struct from_object<clang::tooling::CommandLineArguments> {
         _v.clear();
         for (auto cur : args) {
           core::String_sp s = gc::As<core::String_sp>(oCar(cur));
-          _v.push_back(s->get());
+          _v.push_back(s->get_std_string());
         }
         return;
       } else if (core::Vector_sp vargs = o.asOrNull<core::Vector_O>()) {
         _v.clear();
         for (int i(0), iEnd(vargs->length()); i < iEnd; ++i) {
           core::String_sp s = gc::As<core::String_sp>(vargs->rowMajorAref(i));
-          _v.push_back(s->get());
+          _v.push_back(s->get_std_string());
         }
         return;
       }
@@ -721,7 +721,7 @@ namespace asttooling {
 CL_DEFUN core::T_mv ast_tooling__wrapped_JSONCompilationDatabase_loadFromFile(core::T_sp FilePath, core::Symbol_sp ssyntax ) {
   clang::tooling::JSONCommandLineSyntax syntax = translate::from_object<clang::tooling::JSONCommandLineSyntax>(ssyntax)._v;
   std::string ErrorMessage;
-  std::unique_ptr<clang::tooling::JSONCompilationDatabase> result = clang::tooling::JSONCompilationDatabase::loadFromFile(gc::As<core::String_sp>(FilePath)->get(),ErrorMessage,syntax);
+  std::unique_ptr<clang::tooling::JSONCompilationDatabase> result = clang::tooling::JSONCompilationDatabase::loadFromFile(gc::As<core::String_sp>(FilePath)->get_std_string(),ErrorMessage,syntax);
   return Values(translate::to_object<clang::tooling::JSONCompilationDatabase*,translate::adopt_pointer>::convert(result.release()), core::SimpleBaseString_O::make(ErrorMessage));
 }
 

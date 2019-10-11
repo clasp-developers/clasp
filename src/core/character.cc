@@ -2511,7 +2511,7 @@ CL_DECLARE();
 CL_DOCSTRING("name_char");
 CL_DEFUN T_mv cl__name_char(T_sp sname) {
   String_sp name = coerce::stringDesignator(sname);
-  string upname = stringUpper(name->get());
+  string upname = stringUpper(name->get_std_string());
   map<string, int>::const_iterator it = _lisp->characterInfo().gNamesToCharacterIndex.find(upname);
   if (it != _lisp->characterInfo().gNamesToCharacterIndex.end()) {
     return (Values(_lisp->characterInfo().gIndexedCharacters[it->second]));

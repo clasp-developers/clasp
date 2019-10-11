@@ -273,7 +273,6 @@ namespace core {
       multidimensional indices in the (Va)List, using row-major ordering. */
     size_t arrayRowMajorIndex(VaList_sp indices) const;
     size_t arrayRowMajorIndex(List_sp indices) const;
-    virtual LongLongInt setDimensions(List_sp dimensions, T_sp initialElement) { SUBIMP(); };
     virtual Array_sp reverse() const = 0;
     virtual Array_sp nreverse() = 0;
     virtual size_t rank() const = 0;
@@ -297,7 +296,6 @@ namespace core {
   //
   // String functions
     virtual std::string get_std_string() const = 0;
-    std::string get() const {/*DEPRECIATE for get_std_string*/return this->get_std_string(); };
     virtual vector<size_t> arrayDimensionsAsVector() const = 0;
   // ------------------------------------------------------------
   //
@@ -1200,7 +1198,6 @@ namespace core {
     virtual std::string __repr__() const final { return this->get_std_string(); };
   public: // Str8Ns specific functions
     void vectorPushExtend_claspChar(claspChar c, size_t extension=0);
-    std::string get() { /*DEPRECIATE for get_std_string */ return this->get_std_string(); };
     virtual SimpleString_sp asMinimalSimpleString() const final;
   };
 };

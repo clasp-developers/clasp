@@ -301,7 +301,7 @@ CL_DEFUN Instruction_sp llvm_sys__create_invoke_instruction_append_to_basic_bloc
     Value_sp arg = gc::As<Value_sp>(oCar(cur));
     llvm_args.push_back(arg->wrappedPtr());
   }
-  llvm::InvokeInst* llvm_invoke = llvm::InvokeInst::Create(func,normal_dest,unwind_dest,llvm_args,label->get(),append_bb);
+  llvm::InvokeInst* llvm_invoke = llvm::InvokeInst::Create(func,normal_dest,unwind_dest,llvm_args,label->get_std_string(),append_bb);
   Instruction_sp invoke = Instruction_O::create();
   invoke->set_wrapped(llvm_invoke);
   return invoke;
@@ -840,7 +840,7 @@ CL_DEFUN void llvm_sys__printModuleToStream(Module_sp module, core::T_sp stream)
 
 CL_DEFUN void llvm_sys__writeIrToFile(Module_sp module, core::String_sp path) {
   std::error_code errcode;
-  string pathName = path->get();
+  string pathName = path->get_std_string();
   llvm::raw_fd_ostream OS(pathName.c_str(), errcode, ::llvm::sys::fs::OpenFlags::F_None);
   if (errcode) {
     SIMPLE_ERROR(BF("Could not write bitcode to %s - problem: %s") % pathName % errcode.message());
@@ -852,7 +852,7 @@ CL_DEFUN void llvm_sys__writeIrToFile(Module_sp module, core::String_sp path) {
 
 CL_LAMBDA(module pathname &optional (use-thin-lto t));
 CL_DEFUN void llvm_sys__writeBitcodeToFile(Module_sp module, core::String_sp pathname, bool useThinLTO) {
-  string pn = pathname->get();
+  string pn = pathname->get_std_string();
   std::error_code errcode;
   llvm::raw_fd_ostream OS(pn.c_str(), errcode, ::llvm::sys::fs::OpenFlags::F_None);
   if (errcode) {
@@ -1005,14 +1005,14 @@ CL_DEFUN Module_sp llvm_sys__clone_module(Module_sp original)
 CL_LAMBDA(module value &optional label);
 CL_DEFUN Value_sp llvm_sys__makeStringGlobal(Module_sp module, core::String_sp svalue, core::T_sp label) {
     llvm::Module &M = *(module->wrappedPtr());
-    llvm::Constant *StrConstant = llvm::ConstantDataArray::getString(M.getContext(), svalue->get());
+    llvm::Constant *StrConstant = llvm::ConstantDataArray::getString(M.getContext(), svalue->get_std_string());
     llvm::GlobalVariable *GV = new llvm::GlobalVariable(M, StrConstant->getType(),
                                                         true, llvm::GlobalValue::InternalLinkage,
                                                         StrConstant);
     if (label.nilp()) {
       GV->setName(":::str");
     } else {
-      GV->setName(gctools::As<core::String_sp>(label)->get());
+      GV->setName(gctools::As<core::String_sp>(label)->get_std_string());
     }
     GV->setUnnamedAddr(llvm::GlobalValue::UnnamedAddr::Global);
     return gc::As<Value_sp>(translate::to_object<llvm::Value *>::convert(GV));
@@ -1161,7 +1161,7 @@ CL_EXTERN_DEFMETHOD(Module_O, (llvm::Constant*(llvm::Module::*)(llvm::StringRef,
 CL_LISPIFY_NAME("getFunction");
 CL_DEFMETHOD llvm::Function *Module_O::getFunction(core::String_sp dispatchName) {
   llvm::Module *module = this->wrappedPtr();
-  string funcName = dispatchName->get();
+  string funcName = dispatchName->get_std_string();
   llvm::Function *func = module->getFunction(funcName);
   return func;
 }
@@ -1229,9 +1229,9 @@ CL_DEFMETHOD GlobalVariable_sp Module_O::getOrCreateUniquedStringGlobalVariable(
     //	    return holder._LlvmValue;
     return second;
   }
-  if (gc::As<core::String_sp>(oCar(it))->get() != value)
+  if (gc::As<core::String_sp>(oCar(it))->get_std_string() != value)
   {
-    SIMPLE_ERROR(BF("You tried to getOrCreateUniquedStringGlobalVariable with name[%s] and value[%s] - there was already a StringGlobalVariable with that name but it has a different value!!!! value[%s]") % name % value % gc::As<core::String_sp>(oCar(it))->get()); // it->second._String );
+    SIMPLE_ERROR(BF("You tried to getOrCreateUniquedStringGlobalVariable with name[%s] and value[%s] - there was already a StringGlobalVariable with that name but it has a different value!!!! value[%s]") % name % value % gc::As<core::String_sp>(oCar(it))->get_std_string());
   }
   return gc::As<GlobalVariable_sp>(oCdr(it)); // it->second._LlvmValue;
 }
@@ -1323,7 +1323,7 @@ CL_DEFMETHOD bool ExecutionEngine_O::removeModule(Module_sp module) {
 
 CL_LISPIFY_NAME("find_function_named");
 CL_DEFMETHOD Function_sp ExecutionEngine_O::find_function_named(core::String_sp name) {
-  return gc::As<Function_sp>(translate::to_object<llvm::Function *>::convert(this->wrappedPtr()->FindFunctionNamed(name->get().c_str())));
+  return gc::As<Function_sp>(translate::to_object<llvm::Function *>::convert(this->wrappedPtr()->FindFunctionNamed(name->get_std_string().c_str())));
 }
 
 CL_LISPIFY_NAME(clearAllGlobalMappings);
@@ -1636,7 +1636,7 @@ CL_DEFUN GlobalVariable_sp GlobalVariable_O::make(Module_sp mod, Type_sp type, b
     lInsertBefore = gc::As<GlobalVariable_sp>(insertBefore)->wrappedPtr();
   }
   translate::from_object<llvm::GlobalValue::ThreadLocalMode> lThreadLocalMode(threadLocalMode);
-  llvm::GlobalVariable *gv = new llvm::GlobalVariable(*(mod->wrappedPtr()), type->wrappedPtr(), isConstant, llinkage._v, llvm_initializer, name->get(), lInsertBefore, lThreadLocalMode._v);
+  llvm::GlobalVariable *gv = new llvm::GlobalVariable(*(mod->wrappedPtr()), type->wrappedPtr(), isConstant, llinkage._v, llvm_initializer, name->get_std_string(), lInsertBefore, lThreadLocalMode._v);
   me->set_wrapped(gv);
   //	me->set_ptrIsOwned(true); // GlobalVariables made this way are responsible for freeing their pointers - I hope this isn't a disaster
   return me;
@@ -1657,7 +1657,7 @@ namespace llvmo {
 
 CL_LISPIFY_NAME("setMetadata");
 CL_DEFMETHOD void Instruction_O::setMetadata(core::String_sp kind, MDNode_sp mdnode) {
-  this->wrappedPtr()->setMetadata(kind->get(), mdnode->wrappedPtr());
+  this->wrappedPtr()->setMetadata(kind->get_std_string(), mdnode->wrappedPtr());
 }
 
 
@@ -2600,7 +2600,7 @@ namespace llvmo {
 
 CL_LISPIFY_NAME(mdstring-get);
 CL_DEFUN MDString_sp MDString_O::get(LLVMContext_sp context, core::String_sp str) {
-  llvm::MDString *mdstr = llvm::MDString::get(*context->wrappedPtr(), str->get());
+  llvm::MDString *mdstr = llvm::MDString::get(*context->wrappedPtr(), str->get_std_string());
   MDString_sp omd = core::RP_Create_wrapped<llvmo::MDString_O, llvm::MDString *>(mdstr);
   return omd;
 }
@@ -2636,7 +2636,7 @@ CL_DEFUN Function_sp llvm_sys__FunctionCreate(FunctionType_sp tysp, llvm::Global
   translate::from_object<llvm::FunctionType *> ty(tysp);
   translate::from_object<llvm::Module *> m(modulesp);
   //        printf("%s:%d FunctionCreate %s with linkage %d\n", __FILE__, __LINE__, nsp->get().c_str(), linkage);
-  llvm::Function *func = llvm::Function::Create(ty._v, linkage, nsp->get(), m._v);
+  llvm::Function *func = llvm::Function::Create(ty._v, linkage, nsp->get_std_string(), m._v);
   Function_sp funcsp = gc::As<Function_sp>(translate::to_object<llvm::Function *>::convert(func));
   return funcsp;
 };

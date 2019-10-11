@@ -288,7 +288,8 @@ CL_DEFMETHOD T_sp LambdaListHandler_O::lambdaList() {
     for (gctools::Vec0<KeywordArgument>::const_iterator it = this->_KeywordArguments.begin();
          it != this->_KeywordArguments.end(); it++) {
       T_sp keywordTarget = it->_ArgTarget;
-      if (gc::As<Symbol_sp>(it->_Keyword)->symbolName()->get() != gc::As<Symbol_sp>(keywordTarget)->symbolName()->get()) {
+      if (gc::As<Symbol_sp>(it->_Keyword)->symbolName()->get_std_string()
+          != gc::As<Symbol_sp>(keywordTarget)->symbolName()->get_std_string()) {
         keywordTarget = Cons_O::createList(it->_Keyword, keywordTarget);
       }
       if (it->_Sensor._ArgTarget.notnilp()) {

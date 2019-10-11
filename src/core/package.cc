@@ -150,7 +150,7 @@ CL_DEFUN T_mv cl__make_package(T_sp package_name_desig, List_sp nick_names, List
     Package_sp pkg = coerce::packageDesignator(oCar(uc));
     lup.push_front(pkg->packageName());
   }
-  return (Values(_lisp->makePackage(package_name->get(), lnn, lup)));
+  return (Values(_lisp->makePackage(package_name->get_std_string(), lnn, lup)));
 }
 
 /*

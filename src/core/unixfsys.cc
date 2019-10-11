@@ -1111,7 +1111,7 @@ Pathname_sp clasp_homedir_pathname(T_sp tuser) {
     char *p;
     /* This ensures that our string has the right length
 	   and it is terminated with a '\0' */
-    user = SimpleBaseString_O::make(user->get());
+    user = SimpleBaseString_O::make(user->get_std_string());
     std::string suser = user->get_std_string();
     p = (char *)suser.c_str();
     i = user->length();
@@ -1142,11 +1142,11 @@ Pathname_sp clasp_homedir_pathname(T_sp tuser) {
     namestring = SimpleBaseString_O::make("/");
   }
   if (namestring->get_std_string().c_str()[0] == '~') {
-    SIMPLE_ERROR(BF("Not a valid home pathname %s") % namestring->get());
+    SIMPLE_ERROR(BF("Not a valid home pathname %s") % namestring->get_std_string());
   }
   i = namestring->length();
   if (!IS_DIR_SEPARATOR(namestring->get_std_string().c_str()[i - 1]))
-    namestring = SimpleBaseString_O::make(namestring->get() + DIR_SEPARATOR);
+    namestring = SimpleBaseString_O::make(namestring->get_std_string() + DIR_SEPARATOR);
   return gc::As<Pathname_sp>(cl__parse_namestring(namestring));
 }
 
@@ -1292,7 +1292,7 @@ CL_DEFUN T_sp core__mkstemp(String_sp thetemplate) {
   if (thetemplate.nilp()) SIMPLE_ERROR(BF("In %s the template is NIL") % __FUNCTION__);
   thetemplate = core__coerce_to_filename(thetemplate);
   stringstream outss;
-  outss << thetemplate->get();
+  outss << thetemplate->get_std_string();
   outss << "XXXXXX";
   string outname = outss.str();
   std::vector<char> dst_path(outname.begin(), outname.end());
@@ -1321,7 +1321,7 @@ CL_DEFUN T_sp core__mkstemp_fd(String_sp thetemplate) {
   if (thetemplate.nilp()) SIMPLE_ERROR(BF("In %s the template is NIL") % __FUNCTION__);
   thetemplate = core__coerce_to_filename(thetemplate);
   stringstream outss;
-  outss << thetemplate->get();
+  outss << thetemplate->get_std_string();
   outss << "XXXXXX";
   string outname = outss.str();
   std::vector<char> dst_path(outname.begin(), outname.end());
@@ -1347,7 +1347,7 @@ CL_DEFUN T_sp core__mkdtemp(String_sp thetemplate) {
   if (thetemplate.nilp()) SIMPLE_ERROR(BF("In %s the template is NIL") % __FUNCTION__);
   thetemplate = core__coerce_to_filename(thetemplate);
   stringstream outss;
-  outss << thetemplate->get();
+  outss << thetemplate->get_std_string();
   outss << "XXXXXX";
   string outname = outss.str();
   std::vector<char> dst_path(outname.begin(), outname.end());
@@ -1817,7 +1817,7 @@ CL_DOCSTRING("Set environment variable NAME to VALUE");
 CL_DEFUN void ext__setenv(String_sp name, String_sp value, bool overwrite) {
   ASSERT(cl__stringp(name));
   ASSERT(cl__stringp(value));
-  setenv(name->get().c_str(), value->get().c_str(), overwrite);
+  setenv(name->get_std_string().c_str(), value->get_std_string().c_str(), overwrite);
 }
 
 CL_LAMBDA(cmd);
@@ -1825,7 +1825,7 @@ CL_DECLARE();
 CL_DOCSTRING("system");
 CL_DEFUN T_mv ext__system(String_sp cmd) {
   ASSERT(cl__stringp(cmd));
-  string command = cmd->get();
+  string command = cmd->get_std_string();
   int ret = system(command.c_str());
   if (ret == 0) {
     return Values(core::make_fixnum(0));
