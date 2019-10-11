@@ -1379,14 +1379,14 @@ namespace core {
 namespace core
 {
 FORWARD(ComplexVector_T);
-class ComplexVector_T_O : public template_Array< ComplexVector_T_O, ComplexVector_T_O, SimpleVector_O, ComplexVector_O >
+class ComplexVector_T_O : public template_Vector<ComplexVector_T_O, SimpleVector_O, ComplexVector_O >
 {
   LISP_CLASS(core, CorePkg, ComplexVector_T_O, "ComplexVector_T",ComplexVector_O);
   virtual ~ComplexVector_T_O() {};
 
 public:
 
-  typedef template_Array< ComplexVector_T_O, ComplexVector_T_O, SimpleVector_O, ComplexVector_O> TemplatedBase;
+  typedef template_Vector<ComplexVector_T_O, SimpleVector_O, ComplexVector_O> TemplatedBase;
   typedef typename TemplatedBase::simple_element_type simple_element_type;
   typedef typename TemplatedBase::simple_type simple_type;
 

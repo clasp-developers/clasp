@@ -161,11 +161,11 @@ namespace core {
 };
 
 namespace core {
-  class ComplexVector_double_O : public template_Array<ComplexVector_double_O,ComplexVector_double_O,SimpleVector_double_O,ComplexVector_O> {
+  class ComplexVector_double_O : public template_Vector<ComplexVector_double_O,SimpleVector_double_O,ComplexVector_O> {
     LISP_CLASS(core, CorePkg, ComplexVector_double_O, "ComplexVector_double",ComplexVector_O);
     virtual ~ComplexVector_double_O() {};
   public:
-    typedef template_Array<ComplexVector_double_O,ComplexVector_double_O,SimpleVector_double_O,ComplexVector_O> TemplatedBase;
+    typedef template_Vector<ComplexVector_double_O,SimpleVector_double_O,ComplexVector_O> TemplatedBase;
     typedef typename TemplatedBase::simple_element_type simple_element_type;
     typedef typename TemplatedBase::simple_type simple_type;
   public: // make vector

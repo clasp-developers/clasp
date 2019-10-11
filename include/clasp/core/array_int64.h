@@ -144,11 +144,11 @@ namespace core {
 };
 
 namespace core {
-  class ComplexVector_byte64_t_O : public template_Array<ComplexVector_byte64_t_O,ComplexVector_byte64_t_O,SimpleVector_byte64_t_O,ComplexVector_O> {
+  class ComplexVector_byte64_t_O : public template_Vector<ComplexVector_byte64_t_O,SimpleVector_byte64_t_O,ComplexVector_O> {
     LISP_CLASS(core, CorePkg, ComplexVector_byte64_t_O, "ComplexVector_byte64_t",ComplexVector_O);
     virtual ~ComplexVector_byte64_t_O() {};
   public:
-    typedef template_Array<ComplexVector_byte64_t_O,ComplexVector_byte64_t_O,SimpleVector_byte64_t_O,ComplexVector_O> TemplatedBase;
+    typedef template_Vector<ComplexVector_byte64_t_O,SimpleVector_byte64_t_O,ComplexVector_O> TemplatedBase;
     typedef typename TemplatedBase::simple_element_type simple_element_type;
     typedef typename TemplatedBase::simple_type simple_type;
   public: // make vector
@@ -335,11 +335,11 @@ namespace core {
 
 
 namespace core {
-  class ComplexVector_int64_t_O : public template_Array<ComplexVector_int64_t_O,ComplexVector_int64_t_O,SimpleVector_int64_t_O,ComplexVector_O> {
+  class ComplexVector_int64_t_O : public template_Vector<ComplexVector_int64_t_O,SimpleVector_int64_t_O,ComplexVector_O> {
     LISP_CLASS(core, CorePkg, ComplexVector_int64_t_O, "ComplexVector_int64_t",ComplexVector_O);
     virtual ~ComplexVector_int64_t_O() {};
   public:
-    typedef template_Array<ComplexVector_int64_t_O,ComplexVector_int64_t_O,SimpleVector_int64_t_O,ComplexVector_O> TemplatedBase;
+    typedef template_Vector<ComplexVector_int64_t_O,SimpleVector_int64_t_O,ComplexVector_O> TemplatedBase;
     typedef typename TemplatedBase::simple_element_type simple_element_type;
     typedef typename TemplatedBase::simple_type simple_type;
   public: // make vector
