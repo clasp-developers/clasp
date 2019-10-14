@@ -73,7 +73,7 @@ CL_DEFUN StrNs_sp core__bignum_to_string(StrNs_sp buffer, const Bignum &bn, Fixn
     char cpbuffer[str_size+1]; // use a stack allocated array for this
     mpz_get_str(cpbuffer, -unbox_fixnum(base), bn.get_mpz_t());
     for ( size_t idx(0);idx<str_size; ++idx) {
-      bufferw->vectorPushExtend_claspCharacter(cpbuffer[idx]);
+      bufferw->vectorPushExtend(cpbuffer[idx]);
     }
   } else {
     SIMPLE_ERROR(BF("The buffer for the bignum must be a string with a fill-pointer"));

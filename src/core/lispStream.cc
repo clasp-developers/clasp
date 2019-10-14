@@ -5797,15 +5797,15 @@ CL_DEFUN T_mv cl__read_line(T_sp sin, T_sp eof_error_p, T_sp eof_value, T_sp rec
           _lisp->put_Str8Ns_buffer_string(sbuf_small);
         }
         // actually put in the wide character
-        sbuf_wide->vectorPushExtend_claspCharacter(cc);
+        sbuf_wide->vectorPushExtend(cc);
       } else if (cc == '\n') break; // hit a newline, get ready to return a result
       else if (cc == '\r') {
         // Treat a CR or CRLF as a newline.
         if (peek_char(sin) == '\n') read_char(sin); // lose any LF first tho
         break;
       } else { // ok, we have a real non-newline character. accumulate.
-        if (small) sbuf_small->vectorPushExtend_claspChar(cc);
-        else sbuf_wide->vectorPushExtend_claspCharacter(cc);
+        if (small) sbuf_small->vectorPushExtend(cc);
+        else sbuf_wide->vectorPushExtend(cc);
       }
     }
   } // while(1)

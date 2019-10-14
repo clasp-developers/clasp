@@ -1215,7 +1215,6 @@ namespace core {
     virtual std::string get_std_string() const final { return std::string((const char*)this->begin(),this->length());};
     virtual std::string __repr__() const final { return this->get_std_string(); };
   public: // Str8Ns specific functions
-    void vectorPushExtend_claspChar(claspChar c, size_t extension=0);
     virtual SimpleString_sp asMinimalSimpleString() const final;
   };
 };
@@ -1272,7 +1271,6 @@ namespace core {
     virtual std::string get_std_string() const final;
     virtual std::string __repr__() const final;
   public: // StrWNs specific functions
-    void vectorPushExtend_claspCharacter(claspCharacter c, size_t extension=0);
     /*! Return true if all characters are base characters and the string
         can be downgraded to a base-char string */
     bool all_base_char_p() const;

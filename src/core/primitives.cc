@@ -1373,7 +1373,7 @@ CL_DEFUN Symbol_sp cl__gensym(T_sp x) {
   }
   if ((x.fixnump() || gc::IsA<Integer_sp>(x)) && (!(clasp_minusp(gc::As_unsafe<Integer_sp>(x))))) {
     SafeBufferStr8Ns ss;
-    ss.string()->vectorPushExtend_claspChar('G');
+    ss.string()->vectorPushExtend('G');
     core__integer_to_string(ss.string(),gc::As_unsafe<Integer_sp>(x),clasp_make_fixnum(10));
     Symbol_sp sym = Symbol_O::create(ss.string()->asMinimalSimpleString());
     sym->setPackage(_Nil<T_O>());

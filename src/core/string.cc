@@ -1324,20 +1324,6 @@ Str8Ns_sp Str8Ns_O::create(Str8Ns_sp other) {
   return Str8Ns_O::make(len,'\0',false,_Nil<T_O>(),ss,false,0);
 }
 
-SYMBOL_EXPORT_SC_(CorePkg,vectorPushExtend_claspCharacter);
-void Str8Ns_O::vectorPushExtend_claspChar(claspChar newElement, size_t extension) {
-  unlikely_if (!this->_Flags.fillPointerP()) noFillPointerError(_sym_vectorPushExtend_claspCharacter,this->asSmartPtr());
-  cl_index idx = this->_FillPointerOrLengthOrDummy;
-  unlikely_if (idx >= this->_ArrayTotalSize) {
-    if (extension <= 0) extension = calculate_extension(this->_ArrayTotalSize);
-    cl_index new_size = this->_ArrayTotalSize+extension;
-    this->internalAdjustSize_(new_size);
-  }
-  (*this)[idx] = newElement;
-  ++this->_FillPointerOrLengthOrDummy;
-}
-
-
 SimpleString_sp Str8Ns_O::asMinimalSimpleString() const {
   SimpleBaseString_sp str8 = SimpleBaseString_O::make(this->length());
   str8->unsafe_setf_subseq(0,this->length(),this->asSmartPtr());
@@ -1401,19 +1387,6 @@ std::string StrWNs_O::get_std_string() const {
 
 std::string StrWNs_O::__repr__() const {
   return this->get_std_string();
-}
-
-SYMBOL_EXPORT_SC_(CorePkg,vectorPushExtend_claspCharacter);
-void StrWNs_O::vectorPushExtend_claspCharacter(claspCharacter newElement, size_t extension) {
-  unlikely_if (!this->_Flags.fillPointerP()) noFillPointerError(_sym_vectorPushExtend_claspCharacter,this->asSmartPtr());
-  cl_index idx = this->_FillPointerOrLengthOrDummy;
-  unlikely_if (idx >= this->_ArrayTotalSize) {
-    if (extension <= 0) extension = calculate_extension(this->_ArrayTotalSize);
-    cl_index new_size = this->_ArrayTotalSize+extension;
-    this->internalAdjustSize_(new_size);
-  }
-  (*this)[idx] = newElement;
-  ++this->_FillPointerOrLengthOrDummy;
 }
 
 SimpleString_sp StrWNs_O::asMinimalSimpleString() const {

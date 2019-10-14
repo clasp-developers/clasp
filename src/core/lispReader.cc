@@ -553,7 +553,7 @@ SimpleString_sp symbolTokenStr(T_sp stream, Token &token, size_t start, size_t e
                   _Nil<T_O>(), stream);
     claspCharacter c = CHR(token[i]);
     if (c != '.') only_dots = false;
-    buffer.string()->vectorPushExtend_claspCharacter(CHR(token[i]));
+    buffer.string()->vectorPushExtend(CHR(token[i]));
   }
   if ((end-start)>0) {
     if (only_dots) {
@@ -577,7 +577,7 @@ SimpleString_sp tokenStr(T_sp stream, const Token &token, size_t start = 0, size
   for (size_t i=start,iEnd(end); i<iEnd; ++i) {
     claspCharacter c = CHR(token[i]);
     if (c != '.') only_dots = false;
-    buffer.string()->vectorPushExtend_claspCharacter(CHR(token[i]));
+    buffer.string()->vectorPushExtend(CHR(token[i]));
   }
   if ((end-start)>0) {
     if (only_dots) {
@@ -765,7 +765,7 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, Token &token, bool only_dot
     cur = start;
     apply_readtable_case(token,0,package_marker-start);
     while (cur != package_marker) {
-      packageSin.string()->vectorPushExtend_claspCharacter(CHR(*cur));
+      packageSin.string()->vectorPushExtend(CHR(*cur));
       ++cur;
     }
     int separator(0);
