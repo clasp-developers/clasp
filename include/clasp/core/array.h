@@ -1416,11 +1416,45 @@ CL_LAMBDA(dest destStart orig origStart len);
 CL_DECLARE();
 CL_DOCSTRING("copy_subarray");
  CL_DEFUN void core__copy_subarray(Array_sp dest, Fixnum_sp destStart, Array_sp orig, Fixnum_sp origStart, Fixnum_sp len);  
-};
+}; // namespace core
 
+namespace core {
 
-#include <clasp/core/string.h>
+  extern bool clasp_isupper(claspCharacter cc);
+  extern bool clasp_islower(claspCharacter cc);
+  
+template <class StringType>
+int template_string_case(const StringType& s) {
+  int upcase = 0;
+  for (typename StringType::const_iterator it = s.begin(); it!=s.end(); ++it ) {
+    claspCharacter cc = static_cast<claspCharacter>(*it);
+    if (clasp_isupper(cc)) {
+      if (upcase < 0) return 0;
+      upcase = +1;
+    } else if (clasp_islower(cc)) {
+      if (upcase > 0) return 0;
+      upcase = -1;
+    }
+  }
+  return upcase;
+}
 
+inline int clasp_string_case(SimpleString_sp s) {
+  if (SimpleBaseString_sp sb = s.asOrNull<SimpleBaseString_O>())
+    return template_string_case(*sb);
+  return template_string_case(*gc::As_unsafe<SimpleCharacterString_sp>(s));
+}
+inline int clasp_string_case(StrNs_sp s) {
+  if (Str8Ns_sp sb = s.asOrNull<Str8Ns_O>())
+    return template_string_case(*sb);
+  return template_string_case(*gc::As_unsafe<StrWNs_sp>(s));
+}
+inline int clasp_string_case(String_sp s) {
+  if (SimpleString_sp sb = s.asOrNull<SimpleString_O>())
+    return clasp_string_case(sb);
+  return clasp_string_case(gc::As_unsafe<StrNs_sp>(s));
+}
 
+}; // namespace core
 
 #endif /* _core_Array_H */
