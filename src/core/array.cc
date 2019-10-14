@@ -824,45 +824,6 @@ CL_DEFUN Vector_sp cl__vector(List_sp args) {
 };
 SYMBOL_EXPORT_SC_(ClPkg, subtypep);
 
-CL_LAMBDA(element_type);
-CL_DECLARE();
-CL_DOCSTRING("Returns the element used as an initial-element if none is supplied, for the given array element type.");
-CL_DEFUN T_sp core__default_initial_element(T_sp element_type) {
-  if (element_type == cl::_sym_bit)
-    return SimpleBitVector_O::to_object(SimpleBitVector_O::default_initial_element());
-  else if (element_type == cl::_sym_base_char)
-    return SimpleBaseString_O::to_object(SimpleBaseString_O::default_initial_element());
-  else if (element_type == cl::_sym_character)
-    return SimpleCharacterString_O::to_object(SimpleCharacterString_O::default_initial_element());
-  else if (element_type == cl::_sym_T_O)
-    return SimpleVector_O::to_object(SimpleVector_O::default_initial_element());
-  else if (element_type == cl::_sym_double_float)
-    return SimpleVector_double_O::to_object(SimpleVector_double_O::default_initial_element());
-  else if (element_type == cl::_sym_single_float)
-    return SimpleVector_float_O::to_object(SimpleVector_float_O::default_initial_element());
-  else if (element_type == ext::_sym_integer8)
-    return SimpleVector_int8_t_O::to_object(SimpleVector_int8_t_O::default_initial_element());
-  else if (element_type == ext::_sym_byte8)
-    return SimpleVector_byte8_t_O::to_object(SimpleVector_byte8_t_O::default_initial_element());
-  else if (element_type == ext::_sym_integer16)
-    return SimpleVector_int16_t_O::to_object(SimpleVector_int16_t_O::default_initial_element());
-  else if (element_type == ext::_sym_byte16)
-    return SimpleVector_byte16_t_O::to_object(SimpleVector_byte16_t_O::default_initial_element());
-  else if (element_type == ext::_sym_integer32)
-    return SimpleVector_int32_t_O::to_object(SimpleVector_int32_t_O::default_initial_element());
-  else if (element_type == ext::_sym_byte32)
-    return SimpleVector_byte32_t_O::to_object(SimpleVector_byte32_t_O::default_initial_element());
-  else if (element_type == ext::_sym_integer64)
-    return SimpleVector_int64_t_O::to_object(SimpleVector_int64_t_O::default_initial_element());
-  else if (element_type == ext::_sym_byte64)
-    return SimpleVector_byte64_t_O::to_object(SimpleVector_byte64_t_O::default_initial_element());
-  else if (element_type == _sym_size_t)
-    return SimpleVector_size_t_O::to_object(SimpleVector_size_t_O::default_initial_element());
-  else if (element_type == cl::_sym_fixnum)
-    return SimpleVector_fixnum_O::to_object(SimpleVector_fixnum_O::default_initial_element());
-  else SIMPLE_ERROR(BF("Unknown element type %s") % _rep_(element_type));
-}
-
 CL_LAMBDA(dimension initial_element initial_element_supplied_p);
 CL_DECLARE();
 CL_DOCSTRING("Make a (simple-vector t)");
