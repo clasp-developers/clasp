@@ -22,13 +22,6 @@ namespace core {
     virtual ~SimpleVector_size_t_O() {};
   public:
     typedef specialized_SimpleVector_size_t TemplatedBase;
-    typedef typename TemplatedBase::leaf_type leaf_type;
-    typedef typename TemplatedBase::value_type value_type;
-    typedef typename TemplatedBase::simple_element_type simple_element_type;
-    typedef typename TemplatedBase::vector_type vector_type;
-    typedef typename TemplatedBase::iterator iterator;
-    typedef typename TemplatedBase::const_iterator const_iterator;
-    typedef value_type container_value_type;
   public:
     static value_type default_initial_element(void) {return 0;}
     static value_type initial_element_from_object(T_sp obj, bool supplied) {
@@ -68,8 +61,6 @@ namespace core {
     virtual ~MDArray_size_t_O() {};
   public:
     typedef template_Array<MDArray_size_t_O,SimpleMDArray_size_t_O,SimpleVector_size_t_O,MDArray_O> TemplatedBase;
-    typedef typename TemplatedBase::simple_element_type simple_element_type;
-    typedef typename TemplatedBase::simple_type simple_type;
   public: // make array
   MDArray_size_t_O(size_t rank,
                      List_sp dimensions,
@@ -94,8 +85,6 @@ namespace core {
     virtual ~SimpleMDArray_size_t_O() {};
   public:
     typedef template_SimpleArray<SimpleMDArray_size_t_O,SimpleVector_size_t_O,SimpleMDArray_O> TemplatedBase;
-    typedef typename TemplatedBase::simple_element_type simple_element_type;
-    typedef typename TemplatedBase::simple_type simple_type;
   public: // make vector
   SimpleMDArray_size_t_O(size_t rank1, size_t dimension, Array_sp data) : TemplatedBase(dimension,data) {};
     static smart_ptr_type make(size_t dimension, simple_element_type initialElement/*=_Nil<T_O>()*/, T_sp data/*=_Nil<T_O>()*/) {
@@ -129,8 +118,6 @@ namespace core {
     virtual ~ComplexVector_size_t_O() {};
   public:
     typedef template_Vector<ComplexVector_size_t_O,SimpleVector_size_t_O,ComplexVector_O> TemplatedBase;
-    typedef typename TemplatedBase::simple_element_type simple_element_type;
-    typedef typename TemplatedBase::simple_type simple_type;
   public: // make vector
   ComplexVector_size_t_O(size_t dummy_rank_1,
                      size_t dimension,
