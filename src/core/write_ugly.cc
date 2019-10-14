@@ -152,7 +152,7 @@ void Ratio_O::__write__(T_sp stream) const {
                        make_fixnum(print_base),
                        cl::_sym_STARprint_radixSTAR->symbolValue().isTrue(),
                        false);
-  buffer._Buffer->vectorPushExtend(clasp_make_character('/'));
+  buffer._Buffer->vectorPushExtend('/');
   core__integer_to_string(buffer._Buffer, this->den(),
                        make_fixnum(print_base),
                        false,

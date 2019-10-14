@@ -1041,6 +1041,24 @@ namespace core {
     CL_METHOD_OVERLOAD virtual void rowMajorAset(size_t idx, T_sp value) final {(*this)[idx] = simple_type::from_object(value);}
     CL_METHOD_OVERLOAD virtual T_sp rowMajorAref(size_t idx) const final {return simple_type::to_object((*this)[idx]);}
     bool equal(T_sp obj) const override { return this->eq(obj); };
+    // NOTE: For only ComplexVector_T_O this will override the ComplexVector_O function,
+    // since simple_element_type = T_sp, but that's harmless since they have the same effect.
+    Fixnum_sp vectorPushExtend(simple_element_type newElement, size_t extension = 0) {
+      unlikely_if (!this->_Flags.fillPointerP()) noFillPointerSpecializedArrayError(this->asSmartPtr());
+      cl_index idx = this->_FillPointerOrLengthOrDummy;
+      unlikely_if (idx >= this->_ArrayTotalSize) {
+        if (extension <= 0) extension = calculate_extension(this->_ArrayTotalSize);
+        cl_index new_size = this->_ArrayTotalSize+extension;
+        unlikely_if (!cl::_sym_adjust_array || !lisp_boundp(cl::_sym_adjust_array)) {
+          this->internalAdjustSize_(new_size);
+        } else {
+          lisp_adjust_array(this->asSmartPtr(),clasp_make_fixnum(new_size),clasp_make_fixnum(this->_FillPointerOrLengthOrDummy));
+        }
+      }
+      (*this)[idx] = newElement;
+      ++this->_FillPointerOrLengthOrDummy;
+      return make_fixnum(idx);
+    }
   };
 };
 

@@ -2534,7 +2534,7 @@ CL_DEFUN SimpleBaseString_sp cl__char_name(Character_sp och) {
   }
   SafeBufferStr8Ns buffer;
   buffer._Buffer->fillPointerSet(0);
-  buffer._Buffer->vectorPushExtend(clasp_make_character('U'));
+  buffer._Buffer->vectorPushExtend('U');
   core__integer_to_string(buffer._Buffer,Integer_O::create((Fixnum)ch),clasp_make_fixnum(16));
   auto ret = SimpleBaseString_O::make(buffer._Buffer->length(),'\0',false,buffer._Buffer->length(), &(*buffer._Buffer)[0]);
   return ret;

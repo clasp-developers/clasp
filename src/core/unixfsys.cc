@@ -509,7 +509,7 @@ CL_DEFUN core::Str8Ns_sp ext__getcwd() {
 #if defined(_TARGET_OS_DARWIN) || defined(_TARGET_OS_LINUX) || defined(_TARGET_OS_FREEBSD)
   // Add a terminal '/' if there is none.
   if ((*output)[output->fillPointer() - 1] != DIR_SEPARATOR_CHAR) {
-    output->vectorPushExtend(core::clasp_make_character(DIR_SEPARATOR_CHAR));
+    output->vectorPushExtend(DIR_SEPARATOR_CHAR);
   }
 #endif
 #ifdef _MSC_VER
@@ -792,7 +792,7 @@ file_truename(T_sp pathname, T_sp filename, int flags) {
       String_sp spathname = gc::As<String_sp>(filename);
       SafeBufferStr8Ns buffer;
       StringPushString(buffer.string(),spathname);
-      buffer.string()->vectorPushExtend(clasp_make_character(DIR_SEPARATOR_CHAR));
+      buffer.string()->vectorPushExtend(DIR_SEPARATOR_CHAR);
       pathname = cl__truename(buffer.string());
     }
   }
