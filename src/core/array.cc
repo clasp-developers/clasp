@@ -838,7 +838,7 @@ CL_DEFUN SimpleVector_sp core__make_simple_vector_t(size_t dimension,
   CL_DECLARE();\
   CL_DOCSTRING("Make a (simple-vector " #TYPE ")");\
   CL_DEFUN SMART core__make_simple_vector_##TYPE(size_t dimension, T_sp initialElement, bool initialElementSuppliedP) {\
-    OBJECT::value_type init = OBJECT::initial_element_from_object(initialElement, initialElementSuppliedP);\
+    OBJECT::value_type init = initialElementSuppliedP ? OBJECT::from_object(initialElement) : OBJECT::default_initial_element();\
     return OBJECT::make(dimension, init, initialElementSuppliedP);\
   }
 
@@ -872,7 +872,7 @@ CL_DEFUN SimpleMDArrayT_sp core__make_simple_mdarray_t(List_sp dimensions,
   CL_DECLARE();\
   CL_DOCSTRING("Make a (simple-array " #TYPE ") that is not a vector");\
   CL_DEFUN SMART core__make_simple_mdarray_##TYPE(List_sp dimensions, T_sp initialElement, bool initialElementSuppliedP) {\
-    SIMPLE::value_type init = SIMPLE::initial_element_from_object(initialElement, initialElementSuppliedP);\
+    SIMPLE::value_type init = initialElementSuppliedP ? SIMPLE::from_object(initialElement) : SIMPLE::default_initial_element();\
     return OBJECT::make_multi_dimensional(dimensions, init, _Nil<T_O>());\
   }
 
@@ -906,7 +906,7 @@ CL_DEFUN Vector_sp core__make_vector(T_sp element_type,
   if (fillPointer == cl::_sym_T_O) fillPointer = clasp_make_fixnum(dimension);
   if ( fillPointer.notnilp() || displacedTo.notnilp()) adjustable = true;
 #define MAKE(simple, complex)\
-  simple::value_type init = simple::initial_element_from_object(initialElement, initialElementSuppliedP);\
+  simple::value_type init = initialElementSuppliedP ? simple::from_object(initialElement) : simple::default_initial_element();\
   if (adjustable) return complex::make(dimension, initialElement, initialElementSuppliedP, fillPointer, displacedTo, displacedTo.notnilp(), displacedIndexOffset);\
   else return simple::make(dimension, initialElement, initialElementSuppliedP);
   // macro over
@@ -939,7 +939,7 @@ CL_DEFUN Vector_sp core__make_static_vector(T_sp element_type,
                                             T_sp initialElement,
                                             bool initialElementSuppliedP) {
 #define MAKE(simple)\
-  simple::value_type init = simple::initial_element_from_object(initialElement, initialElementSuppliedP);\
+  simple::value_type init = initialElementSuppliedP ? simple::from_object(initialElement) : simple::default_initial_element();\
   return simple::make(dimension, init, initialElementSuppliedP, 0, NULL, true);
   // macro over
   if (element_type == cl::_sym_base_char) { MAKE(SimpleBaseString_O) }
@@ -972,7 +972,7 @@ CL_DEFUN MDArray_sp core__make_mdarray(List_sp dimensions,
                                        bool initialElementSuppliedP) {
   if (displacedTo.notnilp()) adjustable = true;
 #define MAKE(multi, simple)\
-  simple::value_type init = simple::initial_element_from_object(initialElement,initialElementSuppliedP);\
+  simple::value_type init = initialElementSuppliedP ? simple::from_object(initialElement) : simple::default_initial_element();\
   if (adjustable) return multi::make_multi_dimensional(dimensions,initialElement,displacedTo,displacedTo.notnilp(),displacedIndexOffset);\
   else return Simple##multi::make_multi_dimensional(dimensions,initialElement,_Nil<T_O>());
   // macro over

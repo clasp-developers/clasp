@@ -55,16 +55,6 @@ namespace core {
     static SimpleBitVector_sp make(const string& bv);
   public:
     static value_type default_initial_element(void) {return 0;}
-    static value_type initial_element_from_object(T_sp initialElement, bool initialElementSupplied) {
-      if (initialElementSupplied) {
-        if (initialElement.fixnump()) {
-          value_type i = initialElement.unsafe_fixnum();
-          if (i==0||i==1) return i;
-        }
-        TYPE_ERROR(initialElement,cl::_sym_bit);
-      }
-      return 0;
-    }
     static value_type from_object(T_sp object) {
       if (object.fixnump()) {
         value_type i = object.unsafe_fixnum();

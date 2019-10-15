@@ -19,7 +19,6 @@ namespace core {
     typedef specialized_SimpleVector TemplatedBase;
   public:
     static value_type default_initial_element(void) {return _Nil<T_O>();}
-    static value_type initial_element_from_object(T_sp obj, bool supplied) {return supplied ? obj : _Nil<T_O>();};
     static value_type from_object(T_sp obj) {return obj; };
     static T_sp to_object(const value_type& v) { return v; };
   public:

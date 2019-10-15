@@ -24,10 +24,6 @@ namespace core {
     typedef specialized_SimpleVector_byte64_t TemplatedBase;
   public:
     static value_type default_initial_element(void) {return 0;}
-    static value_type initial_element_from_object(T_sp obj, bool supplied) {
-      if (supplied) return from_object(obj);
-      return 0;
-    }
     static value_type from_object(T_sp obj) { return clasp_to_uint64_t(obj); };
     static T_sp to_object(const value_type& v) { return Integer_O::create(v); };
   public:
@@ -161,10 +157,6 @@ namespace core {
     typedef specialized_SimpleVector_int64_t TemplatedBase;
   public:
     static value_type default_initial_element(void) {return 0;}
-    static value_type initial_element_from_object(T_sp obj, bool supplied) {
-      if (supplied) return from_object(obj);
-      return 0;
-    }
     static value_type from_object(T_sp obj) { return clasp_to_int64_t(obj); };
     static T_sp to_object(const value_type& v) { return Integer_O::create(v); };
   public:

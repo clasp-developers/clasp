@@ -24,17 +24,6 @@ namespace core {
     typedef specialized_SimpleVector_float TemplatedBase;
   public:
     static value_type default_initial_element(void) {return 0.0;}
-    static value_type initial_element_from_object(T_sp obj, bool supplied) {
-      if (supplied) {
-        if (obj.single_floatp()) {
-          return obj.unsafe_single_float();
-        } else if (gc::IsA<General_sp>(obj)) {
-          return clasp_to_float(gc::As_unsafe<General_sp>(obj));
-        }
-        TYPE_ERROR(obj,cl::_sym_single_float);
-      }
-      return 0.0;
-    }
     static value_type from_object(T_sp obj) { if (obj.single_floatp()) return obj.unsafe_single_float(); TYPE_ERROR(obj,cl::_sym_single_float); };
     static T_sp to_object(const value_type& v) { return core::clasp_make_single_float(v);};
   public:

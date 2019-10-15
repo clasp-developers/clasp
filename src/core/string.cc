@@ -1162,22 +1162,6 @@ SYMBOL_EXPORT_SC_(ClPkg, parseInteger);
 // Class SimpleBaseString_O
 //
 
-
-    // (element_type == cl::_sym_base_char)
-typename SimpleBaseString_O::value_type SimpleBaseString_O::initial_element_from_object(T_sp obj, bool initialElementSuppliedP) {
-  typename SimpleBaseString_O::value_type initialBaseChar = '\0';
-  if (initialElementSuppliedP) {
-    if (obj.characterp() ) {
-      Character_sp initCharacter = gc::As_unsafe<Character_sp>(obj);
-      if (clasp_base_char_p(initCharacter)) {
-        return (typename SimpleBaseString_O::value_type)initCharacter.unsafe_character();
-      }
-    }
-    TYPE_ERROR(obj,cl::_sym_base_char);
-  }
-  return '\0';
-}
-
 bool SimpleBaseString_O::equal(T_sp other) const {
   if (&*other==this) return true;
   if (!other.generalp()) return false;
@@ -1202,18 +1186,6 @@ bool SimpleBaseString_O::equalp(T_sp other) const {
 //
 // Class SimpleCharacterString_O
 //
-
-typename SimpleCharacterString_O::value_type SimpleCharacterString_O::initial_element_from_object(T_sp obj, bool initialElementSuppliedP) {
-  typename SimpleCharacterString_O::value_type initialCharacter = '\0';
-  if (initialElementSuppliedP) {
-    if (obj.characterp() ) {
-      Character_sp initCharacter = gc::As_unsafe<Character_sp>(obj);
-      return (typename SimpleCharacterString_O::value_type)initCharacter.unsafe_character();
-    }
-    TYPE_ERROR(obj,cl::_sym_character);
-  }
-  return '\0';
-}
 
 bool SimpleCharacterString_O::equal(T_sp other) const {
   if (&*other==this) return true;

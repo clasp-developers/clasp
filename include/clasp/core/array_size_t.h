@@ -24,10 +24,6 @@ namespace core {
     typedef specialized_SimpleVector_size_t TemplatedBase;
   public:
     static value_type default_initial_element(void) {return 0;}
-    static value_type initial_element_from_object(T_sp obj, bool supplied) {
-      if (supplied) return from_object(obj);
-      return 0;
-    }
     static value_type from_object(T_sp obj) { return clasp_to_size(obj); };
     static T_sp to_object(const value_type& v) {return clasp_make_integer(v); };
   public:
