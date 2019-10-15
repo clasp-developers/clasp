@@ -729,7 +729,7 @@ generic_write_vector(T_sp strm, T_sp data, cl_index start, cl_index end) {
     return start;
   const FileOps &ops = stream_dispatch_table(strm);
   Vector_sp vec = gc::As<Vector_sp>(data);
-  T_sp elementType = vec->arrayElementType();
+  T_sp elementType = vec->element_type();
   if (elementType == cl::_sym_base_char ||
 #ifdef CLASP_UNICODE
       elementType == cl::_sym_character ||
@@ -1571,7 +1571,7 @@ static T_sp
 str_out_element_type(T_sp strm) {
   T_sp tstring = StringOutputStreamOutputString(strm);
   ASSERT(cl__stringp(tstring));
-  return gc::As_unsafe<String_sp>(tstring)->arrayElementType();
+  return gc::As_unsafe<String_sp>(tstring)->element_type();
 }
 
 T_sp str_out_get_position(T_sp strm) {
@@ -1767,7 +1767,7 @@ static T_sp
 str_in_element_type(T_sp strm) {
   T_sp tstring = StringInputStreamInputString(strm);
   ASSERT(cl__stringp(tstring));
-  return gc::As_unsafe<String_sp>(tstring)->arrayElementType();
+  return gc::As_unsafe<String_sp>(tstring)->element_type();
 }
 
 static T_sp

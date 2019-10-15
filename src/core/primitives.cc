@@ -1348,7 +1348,7 @@ CL_DEFUN Symbol_sp cl__gensym(T_sp x) {
     TYPE_ERROR(x,Cons_O::createList(cl::_sym_or,cl::_sym_string,cl::_sym_UnsignedByte));
   if (cl__stringp(x)) {
     String_sp sx = gc::As_unsafe<String_sp>(x);
-    StrNs_sp ss = gc::As_unsafe<StrNs_sp>(core__make_vector(sx->arrayElementType(),16,true,clasp_make_fixnum(0)));
+    StrNs_sp ss = gc::As_unsafe<StrNs_sp>(core__make_vector(sx->element_type(),16,true,clasp_make_fixnum(0)));
     StringPushString(ss,sx);
     core__integer_to_string(ss,gc::As<Integer_sp>(cl::_sym_STARgensym_counterSTAR->symbolValue()),clasp_make_fixnum(10));
     // If and only if no explicit suffix is supplied, *gensym-counter* is incremented after it is used.

@@ -88,7 +88,7 @@ CL_DECLARE();
 CL_DOCSTRING("string_upcase");
 CL_DEFUN SimpleString_sp cl__string_upcase(T_sp arg) {
   String_sp str = coerce::stringDesignator(arg);
-  SimpleString_sp result = gc::As_unsafe<SimpleString_sp>(core__make_vector(str->arrayElementType(),str->length(),false));
+  SimpleString_sp result = gc::As_unsafe<SimpleString_sp>(core__make_vector(str->element_type(),str->length(),false));
   for ( size_t i(0), iEnd(str->length()); i<iEnd; ++i ) {
     T_sp cc = str->rowMajorAref(i);
     claspCharacter c = cc.unsafe_character();
@@ -105,7 +105,7 @@ CL_DECLARE();
 CL_DOCSTRING("string_downcase");
 CL_DEFUN SimpleString_sp cl__string_downcase(T_sp arg) {
   String_sp str = coerce::stringDesignator(arg);
-  SimpleString_sp result = gc::As_unsafe<SimpleString_sp>(core__make_vector(str->arrayElementType(),str->length(),false));
+  SimpleString_sp result = gc::As_unsafe<SimpleString_sp>(core__make_vector(str->element_type(),str->length(),false));
   for ( size_t i(0), iEnd(str->length()); i<iEnd; ++i ) {
     claspCharacter c = str->rowMajorAref(i).unsafe_character();
     claspCharacter u = claspCharacter_downcase(c);

@@ -460,7 +460,7 @@ Fixnum_sp MDArray_O::vectorPushExtend(T_sp newElement, size_t extension) {
 CL_LISPIFY_NAME("cl:array-element-type");
 CL_DEFUN  T_sp cl__arrayElementType(Array_sp array)
 {
-  return array->arrayElementType();
+  return array->element_type();
 }
 
 CL_LAMBDA(array core:&va-rest core::indices);

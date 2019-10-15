@@ -321,7 +321,7 @@ CL_DEFUN T_mv cl__gentemp(T_sp prefix, T_sp package_designator) {
     TYPE_ERROR(prefix,cl::_sym_string);
   } else if (cl__stringp(prefix)) {
     String_sp sprefix = gc::As_unsafe<String_sp>(prefix);
-    ss = gc::As_unsafe<StrNs_sp>(core__make_vector(sprefix->arrayElementType(),sprefix->length()+8,true,clasp_make_fixnum(sprefix->length())));
+    ss = gc::As_unsafe<StrNs_sp>(core__make_vector(sprefix->element_type(),sprefix->length()+8,true,clasp_make_fixnum(sprefix->length())));
     ss->unsafe_setf_subseq(0,sprefix->length(),sprefix);
   } else {
     TYPE_ERROR(prefix,cl::_sym_string);
