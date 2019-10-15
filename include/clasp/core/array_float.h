@@ -103,16 +103,6 @@ namespace core {
     typedef template_SimpleArray<SimpleMDArray_float_O,SimpleVector_float_O,SimpleMDArray_O> TemplatedBase;
   public: // make vector
   SimpleMDArray_float_O(size_t rank1, size_t dimension, Array_sp data) : TemplatedBase(dimension,data) {};
-    static smart_ptr_type make(size_t dimension, simple_element_type initialElement/*=_Nil<T_O>()*/, T_sp data/*=_Nil<T_O>()*/) {
-      printf("%s:%d This should never be called\n", __FILE__, __LINE__);
-      LIKELY_if (data.nilp()) {
-        data = simple_type::make(dimension,initialElement,true);
-      }
-      return gctools::GC<my_type>::allocate_container(false,1,dimension,gc::As_unsafe<Array_sp>(data));
-    }
-    static smart_ptr_type make(size_t dimension, simple_element_type initialElement) {
-      return make(dimension,initialElement,_Nil<T_O>());
-    }
   public: // make array
   SimpleMDArray_float_O(size_t rank,
                            List_sp dimensions,

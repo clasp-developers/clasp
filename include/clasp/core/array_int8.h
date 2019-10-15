@@ -86,20 +86,10 @@ namespace core {
     typedef template_SimpleArray<SimpleMDArray_byte8_t_O,SimpleVector_byte8_t_O,SimpleMDArray_O> TemplatedBase;
   public: // make vector
   SimpleMDArray_byte8_t_O(size_t rank1, size_t dimension, Array_sp data) : TemplatedBase(dimension,data) {};
-    static smart_ptr_type make(size_t dimension, simple_element_type initialElement/*=_Nil<T_O>()*/, T_sp data/*=_Nil<T_O>()*/) {
-      printf("%s:%d This should never be called\n", __FILE__, __LINE__);
-      LIKELY_if (data.nilp()) {
-        data = simple_type::make(dimension,initialElement,true);
-      }
-      return gctools::GC<my_type>::allocate_container(false,1,dimension,gc::As_unsafe<Array_sp>(data));
-    }
-    static smart_ptr_type make(size_t dimension, simple_element_type initialElement) {
-      return make(dimension,initialElement,_Nil<T_O>());
-    }
   public: // make array
   SimpleMDArray_byte8_t_O(size_t rank,
-                           List_sp dimensions,
-                           Array_sp data) : TemplatedBase(rank,dimensions,data) {};
+                          List_sp dimensions,
+                          Array_sp data) : TemplatedBase(rank,dimensions,data) {};
     static smart_ptr_type make_multi_dimensional(List_sp dim_desig, simple_element_type initialElement, T_sp data) {
       ASSERT(dim_desig.consp()||dim_desig.nilp());
       size_t rank;
@@ -225,16 +215,6 @@ namespace core {
     typedef template_SimpleArray<SimpleMDArray_int8_t_O,SimpleVector_int8_t_O,SimpleMDArray_O> TemplatedBase;
   public: // make vector
   SimpleMDArray_int8_t_O(size_t rank1, size_t dimension, Array_sp data) : TemplatedBase(dimension,data) {};
-    static smart_ptr_type make(size_t dimension, simple_element_type initialElement/*=_Nil<T_O>()*/, T_sp data/*=_Nil<T_O>()*/) {
-      printf("%s:%d This should never be called\n", __FILE__, __LINE__);
-      LIKELY_if (data.nilp()) {
-        data = simple_type::make(dimension,initialElement,true);
-      }
-      return gctools::GC<my_type>::allocate_container(false,1,dimension,gc::As_unsafe<Array_sp>(data));
-    }
-    static smart_ptr_type make(size_t dimension, simple_element_type initialElement) {
-      return make(dimension,initialElement,_Nil<T_O>());
-    }
   public: // make array
   SimpleMDArray_int8_t_O(size_t rank,
                          List_sp dimensions,

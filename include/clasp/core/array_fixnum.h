@@ -37,9 +37,9 @@ namespace core {
                           const value_type* initialContents=NULL)
     : TemplatedBase(length,initialElement,initialElementSupplied,initialContentsSize,initialContents) {};
     static smart_ptr_type make(size_t length,
-                                         value_type initialElement=value_type(),
-                                         bool initialElementSupplied=false,
-                                         size_t initialContentsSize=0,
+                               value_type initialElement=value_type(),
+                               bool initialElementSupplied=false,
+                               size_t initialContentsSize=0,
                                const value_type* initialContents=NULL,
                                bool static_vector_p = false) {
       auto bs = gctools::GC<my_type>::allocate_container(static_vector_p,length,initialElement,initialElementSupplied,initialContentsSize,initialContents);
@@ -85,15 +85,6 @@ namespace core {
     typedef template_SimpleArray<SimpleMDArray_fixnum_O,SimpleVector_fixnum_O,SimpleMDArray_O> TemplatedBase;
   public: // make vector
   SimpleMDArray_fixnum_O(size_t rank1, size_t dimension, Array_sp data) : TemplatedBase(dimension,data) {};
-    static smart_ptr_type make(size_t dimension, simple_element_type initialElement/*=_Nil<T_O>()*/, T_sp data/*=_Nil<T_O>()*/) {
-      LIKELY_if (data.nilp()) {
-        data = simple_type::make(dimension,initialElement,true);
-      }
-      return gctools::GC<my_type>::allocate_container(false,1,dimension,gc::As_unsafe<Array_sp>(data));
-    }
-    static smart_ptr_type make(size_t dimension, simple_element_type initialElement) {
-      return make(dimension,initialElement,_Nil<T_O>());
-    }
   public: // make array
   SimpleMDArray_fixnum_O(size_t rank,
                            List_sp dimensions,
