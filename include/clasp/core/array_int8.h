@@ -218,24 +218,6 @@ namespace core {
       }
       return gctools::GC<my_type>::allocate_container(false,rank,dim_desig,gc::As<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
     }
-  public:
-//    virtual bool equalp(T_sp o) const final;
-    // vectorPushExtend of the specialized type
-    void vectorPushExtend(value_type newElement, size_t extension = 0) {
-      unlikely_if (!this->_Flags.fillPointerP()) noFillPointerSpecializedArrayError(this->asSmartPtr());
-      cl_index idx = this->_FillPointerOrLengthOrDummy;
-      unlikely_if (idx >= this->_ArrayTotalSize) {
-        if (extension <= 0) extension = calculate_extension(this->_ArrayTotalSize);
-        cl_index new_size = this->_ArrayTotalSize+extension;
-        unlikely_if (!cl::_sym_adjust_array || !lisp_boundp(cl::_sym_adjust_array)) {
-          this->internalAdjustSize_(new_size);
-        } else {
-          lisp_adjust_array(this->asSmartPtr(),clasp_make_fixnum(new_size),clasp_make_fixnum(this->_FillPointerOrLengthOrDummy));
-        }
-      }
-      (*this)[idx] = newElement;
-      ++this->_FillPointerOrLengthOrDummy;
-    }
   };
 };
 
@@ -294,24 +276,6 @@ namespace core {
     }
     static smart_ptr_type make_vector(size_t dimension) {
       return make_vector(dimension,0,_Nil<T_O>(),_Nil<T_O>(),false,clasp_make_fixnum(0));
-    }
-  public:
-//    virtual bool equalp(T_sp o) const final;
-    // vectorPushExtend of the specialized type
-    void vectorPushExtend(value_type newElement, size_t extension = 0) {
-      unlikely_if (!this->_Flags.fillPointerP()) noFillPointerSpecializedArrayError(this->asSmartPtr());
-      cl_index idx = this->_FillPointerOrLengthOrDummy;
-      unlikely_if (idx >= this->_ArrayTotalSize) {
-        if (extension <= 0) extension = calculate_extension(this->_ArrayTotalSize);
-        cl_index new_size = this->_ArrayTotalSize+extension;
-        unlikely_if (!cl::_sym_adjust_array || !lisp_boundp(cl::_sym_adjust_array)) {
-          this->internalAdjustSize_(new_size);
-        } else {
-          lisp_adjust_array(this->asSmartPtr(),clasp_make_fixnum(new_size),clasp_make_fixnum(this->_FillPointerOrLengthOrDummy));
-        }
-      }
-      (*this)[idx] = newElement;
-      ++this->_FillPointerOrLengthOrDummy;
     }
   };
 };
