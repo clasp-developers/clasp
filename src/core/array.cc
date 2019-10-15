@@ -1003,66 +1003,26 @@ CL_DEFUN Vector_sp core__make_static_vector(T_sp element_type,
                                             size_t dimension,
                                             T_sp initialElement,
                                             bool initialElementSuppliedP) {
-  if (element_type == cl::_sym_base_char
-      || element_type == cl::_sym_character) {
-    unlikely_if (element_type == cl::_sym_character) {
-      claspCharacter initialCharacter = SimpleCharacterString_O::initial_element_from_object(initialElement,initialElementSuppliedP);
-      return SimpleCharacterString_O::make(dimension,initialCharacter,initialElementSuppliedP,0,NULL,true);
-    }
-    claspChar initialChar = SimpleBaseString_O::initial_element_from_object(initialElement,initialElementSuppliedP);
-    return SimpleBaseString_O::make(dimension,initialChar,initialElementSuppliedP,0,NULL,true);
-  } else if ( element_type == cl::_sym_double_float ) {
-    double initialValue = SimpleVector_double_O::initial_element_from_object(initialElement,initialElementSuppliedP);
-    return SimpleVector_double_O::make(dimension,initialValue,initialElementSuppliedP,0,NULL,true);
-  } else if ( element_type == cl::_sym_single_float ) {
-    float initialValue = SimpleVector_float_O::initial_element_from_object(initialElement,initialElementSuppliedP);
-    return SimpleVector_float_O::make(dimension,initialValue,initialElementSuppliedP,0,NULL,true);
-
-  } else if ( element_type == ext::_sym_integer8 ) {
-    int8_t initialValue = SimpleVector_int8_t_O::initial_element_from_object(initialElement,initialElementSuppliedP);
-    return SimpleVector_int8_t_O::make(dimension,initialValue,initialElementSuppliedP,0,NULL,true);
-  } else if ( element_type == ext::_sym_byte8 ) {
-    byte8_t initialValue = SimpleVector_byte8_t_O::initial_element_from_object(initialElement,initialElementSuppliedP);
-    return SimpleVector_byte8_t_O::make(dimension,initialValue,initialElementSuppliedP,0,NULL,true);
-
-  } else if ( element_type == ext::_sym_integer16 ) {
-    int16_t initialValue = SimpleVector_int16_t_O::initial_element_from_object(initialElement,initialElementSuppliedP);
-    return SimpleVector_int16_t_O::make(dimension,initialValue,initialElementSuppliedP,0,NULL,true);
-  } else if ( element_type == ext::_sym_byte16 ) {
-    byte16_t initialValue = SimpleVector_byte16_t_O::initial_element_from_object(initialElement,initialElementSuppliedP);
-    return SimpleVector_byte16_t_O::make(dimension,initialValue,initialElementSuppliedP,0,NULL,true);
-
-  } else if ( element_type == ext::_sym_integer32 ) {
-    int32_t initialValue = SimpleVector_int32_t_O::initial_element_from_object(initialElement,initialElementSuppliedP);
-    return SimpleVector_int32_t_O::make(dimension,initialValue,initialElementSuppliedP,0,NULL,true);
-  } else if ( element_type == ext::_sym_byte32 ) {
-    byte32_t initialValue = SimpleVector_byte32_t_O::initial_element_from_object(initialElement,initialElementSuppliedP);
-    return SimpleVector_byte32_t_O::make(dimension,initialValue,initialElementSuppliedP,0,NULL,true);
-
-  } else if ( element_type == ext::_sym_integer64 ) {
-    int64_t initialValue = SimpleVector_int64_t_O::initial_element_from_object(initialElement,initialElementSuppliedP);
-    return SimpleVector_int64_t_O::make(dimension,initialValue,initialElementSuppliedP,0,NULL,true);
-  } else if ( element_type == ext::_sym_byte64 ) {
-    byte64_t initialValue = SimpleVector_byte64_t_O::initial_element_from_object(initialElement,initialElementSuppliedP);
-    return SimpleVector_byte64_t_O::make(dimension,initialValue,initialElementSuppliedP,0,NULL,true);
-
-  } else if ( element_type == ext::_sym_integer64 ) {
-    int64_t initialValue = SimpleVector_int64_t_O::initial_element_from_object(initialElement,initialElementSuppliedP);
-    return SimpleVector_int64_t_O::make(dimension,initialValue,initialElementSuppliedP,0,NULL,true);
-  } else if ( element_type == ext::_sym_byte64 ) {
-    byte64_t initialValue = SimpleVector_byte64_t_O::initial_element_from_object(initialElement,initialElementSuppliedP);
-    return SimpleVector_byte64_t_O::make(dimension,initialValue,initialElementSuppliedP,0,NULL,true);
-
-  } else if ( element_type == _sym_size_t ) {
-    size_t initialValue = SimpleVector_size_t_O::initial_element_from_object(initialElement,initialElementSuppliedP);
-    return SimpleVector_size_t_O::make(dimension,initialValue,initialElementSuppliedP,0,NULL,true);
-
-  } else if ( element_type == cl::_sym_fixnum ) {
-    Fixnum initialValue = SimpleVector_fixnum_O::initial_element_from_object(initialElement,initialElementSuppliedP);
-    return SimpleVector_fixnum_O::make(dimension,initialValue,initialElementSuppliedP,0,NULL,true);
-
-  }
-  SIMPLE_ERROR(BF("Handle make-static-vector :element-type %s") % _rep_(element_type));
+#define MAKE(simple)\
+  simple::value_type init = simple::initial_element_from_object(initialElement, initialElementSuppliedP);\
+  return simple::make(dimension, init, initialElementSuppliedP, 0, NULL, true);
+  // macro over
+  if (element_type == cl::_sym_base_char) { MAKE(SimpleBaseString_O) }
+  else if (element_type == cl::_sym_character) { MAKE(SimpleCharacterString_O) }
+  else if (element_type == cl::_sym_double_float) { MAKE(SimpleVector_double_O) }
+  else if (element_type == cl::_sym_single_float) { MAKE(SimpleVector_float_O) }
+  else if (element_type == ext::_sym_integer8) { MAKE(SimpleVector_int8_t_O) }
+  else if (element_type == ext::_sym_byte8) { MAKE(SimpleVector_byte8_t_O) }
+  else if (element_type == ext::_sym_integer16) { MAKE(SimpleVector_int16_t_O) }
+  else if (element_type == ext::_sym_byte16) { MAKE(SimpleVector_byte16_t_O) }
+  else if (element_type == ext::_sym_integer32) { MAKE(SimpleVector_int32_t_O) }
+  else if (element_type == ext::_sym_byte32) { MAKE(SimpleVector_byte32_t_O) }
+  else if (element_type == ext::_sym_integer64) { MAKE(SimpleVector_int64_t_O) }
+  else if (element_type == ext::_sym_byte64) { MAKE(SimpleVector_byte64_t_O) }
+  else if (element_type == _sym_size_t) { MAKE(SimpleVector_size_t_O) }
+  else if (element_type == cl::_sym_fixnum) { MAKE(SimpleVector_fixnum_O) }
+#undef MAKE
+  else SIMPLE_ERROR(BF("Handle make-static-vector :element-type %s") % _rep_(element_type));
 };
 
 CL_LAMBDA(dimensions element_type adjustable displaced_to displaced_index_offset initial_element initial_element_supplied_p);
