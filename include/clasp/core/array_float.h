@@ -140,5 +140,12 @@ namespace core {
     static smart_ptr_type make_vector(size_t dimension) {
       return make_vector(dimension,0,_Nil<T_O>(),_Nil<T_O>(),false,clasp_make_fixnum(0));
     }
+    static smart_ptr_type make(size_t dimension, simple_element_type initialElement,
+                               bool initialElementSuppliedP, T_sp fillPointer, T_sp dataOrDisplacedTo,
+                               bool displacedToP, Fixnum_sp displacedIndexOffset) {
+      (void)initialElementSuppliedP;
+      return make_vector(dimension, initialElement, fillPointer, dataOrDisplacedTo,
+                         displacedToP, displacedIndexOffset);
+    }
   };
 };

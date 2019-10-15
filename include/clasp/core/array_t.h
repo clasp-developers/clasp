@@ -161,6 +161,12 @@ public: // make vector
     ComplexVector_T_sp array = gctools::GC<ComplexVector_T_O>::allocate_container(false,1,dimension,fillPointer,gc::As_unsafe<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
     return array;
   }
+  static smart_ptr_type make(size_t dimension, simple_element_type initialElement,
+                             bool initialElementSuppliedP, T_sp fillPointer, T_sp dataOrDisplacedTo,
+                             bool displacedToP, Fixnum_sp displacedIndexOffset) {
+    (void)initialElementSuppliedP;
+    return make(dimension, initialElement, fillPointer, dataOrDisplacedTo, displacedToP, displacedIndexOffset);
+  }
   static ComplexVector_T_sp make(size_t dimension, T_sp initialElement) {
     return make(dimension,initialElement,_Nil<T_O>(),_Nil<T_O>(),false,clasp_make_fixnum(0));
   }
