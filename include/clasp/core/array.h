@@ -239,8 +239,6 @@ namespace core {
       in the vector<int>s.  This is in rowMajor order.
       Separate from arrayRowMajorIndex because it's internal and does less error checking. */
     size_t index_vector_int(const vector<int> &indices) const;
-  /*! Return the type returned by this array */
-    virtual T_sp arrayElementType() const = 0;
     virtual bool arrayHasFillPointerP() const { return false; };
     virtual void fillPointerSet(size_t f) {noFillPointerError(cl::_sym_fillPointer,this->asSmartPtr());};
     virtual size_t fillPointer() const {noFillPointerError(cl::_sym_fillPointer,this->asSmartPtr());};
@@ -358,7 +356,6 @@ namespace core {
 
     };
     virtual size_t displacedIndexOffset() const override {return this->_DisplacedIndexOffset;}
-    virtual T_sp arrayElementType() const override { return this->_Data->arrayElementType();};
     virtual bool arrayHasFillPointerP() const override { return this->_Flags.fillPointerP(); };
     virtual T_sp replaceArray(T_sp other) override;
     virtual void sxhash_(HashGenerator& hg) const;

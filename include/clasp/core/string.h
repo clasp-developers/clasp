@@ -82,7 +82,6 @@ namespace core {
     virtual T_sp element_type() const final { return cl::_sym_base_char; };
   public:
     void c_style_null_terminate() { this->_Data[this->length()] = '\0'; };
-    virtual T_sp arrayElementType() const final { return cl::_sym_base_char; };
     virtual bool equal(T_sp other) const final;
     virtual bool equalp(T_sp other) const final;
     virtual void __write__(T_sp strm) const final; // implemented in write_array.cc
@@ -156,8 +155,6 @@ namespace core {
   public:
     virtual T_sp array_type() const final { return cl::_sym_simple_array; };
     virtual T_sp element_type() const final { return cl::_sym_character; };
-  public:
-    virtual T_sp arrayElementType() const override { return cl::_sym_character; };
   public:
     // Implement these methods for simple vectors - some are implemented in parent classes
     // for convenience if not speed

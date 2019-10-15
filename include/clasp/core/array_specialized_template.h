@@ -61,7 +61,6 @@ namespace core {
   public:
     virtual T_sp array_type() const final { return cl::_sym_simple_array; };
     virtual T_sp element_type() const override { return core::_sym_SPECIALIZE_ME;};
-    virtual T_sp arrayElementType() const override { return core::_sym_SPECIALIZE_ME; };
   };
 };
 

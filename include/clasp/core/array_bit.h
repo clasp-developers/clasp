@@ -78,7 +78,6 @@ namespace core {
     virtual T_sp array_type() const final { return cl::_sym_simple_array; };
     virtual T_sp element_type() const override { return cl::_sym_bit; };
   public:
-    virtual T_sp arrayElementType() const override { return cl::_sym_bit; };
   public:
     void asAbstractSimpleVectorRange(AbstractSimpleVector_sp& sv, size_t& start, size_t& end) const override {
       sv = this->asSmartPtr();

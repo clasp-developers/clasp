@@ -48,7 +48,6 @@ namespace core {
   public:
     virtual T_sp array_type() const final { return cl::_sym_simple_array; };
     virtual T_sp element_type() const override { return cl::_sym_fixnum;};
-    virtual T_sp arrayElementType() const override { return cl::_sym_fixnum; };
     virtual void __write__(T_sp stream) const;
   };
 };
