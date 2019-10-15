@@ -38,33 +38,8 @@ THE SOFTWARE.
 
 namespace core {
   size_t calculate_extension(size_t arrayTotalSize);
-  typedef enum {                  /*  array element type  */
-      clasp_aet_non_standard,        /* Non standard array element type */
-      clasp_aet_object,         /*  t                */
-      clasp_aet_sf,             /*  single-float     */
-      clasp_aet_df,             /*  double-float     */
-      clasp_aet_bit,            /*  bit              */
-      clasp_aet_fix,            /*  cl_fixnum        */
-      clasp_aet_index,          /*  cl_index         */
-      clasp_aet_size_t,
-      clasp_aet_byte64_t,
-      clasp_aet_int64_t,
-      clasp_aet_byte32_t,
-      clasp_aet_int32_t,
-      clasp_aet_byte16_t,
-      clasp_aet_int16_t,
-      clasp_aet_byte8_t,
-      clasp_aet_int8_t,
-#ifdef CLASP_UNICODE
-      clasp_aet_ch,                     /*  character        */
-#endif
-      clasp_aet_bc,                     /*  base-char        */
-      clasp_aet_last_type = clasp_aet_bc
-  } clasp_elttype;
-
 };
 
-SYMBOL_EXPORT_SC_(ExtPkg,clasp_elttype);
 SYMBOL_EXPORT_SC_(ExtPkg,cl_index);
 SYMBOL_EXPORT_SC_(ExtPkg,byte8);
 SYMBOL_EXPORT_SC_(ExtPkg,byte16);
@@ -75,7 +50,6 @@ SYMBOL_EXPORT_SC_(ExtPkg,integer16);
 SYMBOL_EXPORT_SC_(ExtPkg,integer32);
 SYMBOL_EXPORT_SC_(ExtPkg,integer64);
 
-CL_BEGIN_ENUM(clasp_elttype,ext::_sym_clasp_elttype,"clasp_elttype");
 CL_VALUE_ENUM(cl::_sym_fixnum,      clasp_aet_fix);
 CL_VALUE_ENUM(ext::_sym_cl_index,      clasp_aet_size_t);
 CL_VALUE_ENUM(ext::_sym_byte64,      clasp_aet_byte64_t);
@@ -86,7 +60,6 @@ CL_VALUE_ENUM(ext::_sym_byte16,      clasp_aet_byte16_t);
 CL_VALUE_ENUM(ext::_sym_integer16,      clasp_aet_int16_t);
 CL_VALUE_ENUM(ext::_sym_byte8,      clasp_aet_byte8_t);
 CL_VALUE_ENUM(ext::_sym_integer8,      clasp_aet_int8_t);
-CL_END_ENUM(ext::_sym_clasp_elttype);
 
 namespace cl {
     extern core::Symbol_sp& _sym_fixnum;
@@ -236,7 +209,6 @@ namespace core {
   public:
   // Low level functions for access to contents
     
-    virtual clasp_elttype elttype() const = 0;
     virtual size_t elementSizeInBytes() const = 0;
     virtual void* rowMajorAddressOfElement_(size_t index) const = 0;
     virtual void asAbstractSimpleVectorRange(AbstractSimpleVector_sp& sv, size_t& start, size_t& end) const = 0;
@@ -360,7 +332,6 @@ namespace core {
   public:
     virtual T_sp array_type() const override { return cl::_sym_array; };
     virtual T_sp element_type() const override { return this->_Data->element_type(); };
-    virtual clasp_elttype elttype() const { return this->_Data->elttype(); };
   public:
     virtual Array_sp data() const { return this->_Data;};
     void set_data(Array_sp a);

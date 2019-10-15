@@ -56,7 +56,6 @@ namespace core {
     virtual T_sp array_type() const final { return cl::_sym_simple_array; };
     virtual T_sp element_type() const override { return cl::_sym_single_float;};
     virtual T_sp arrayElementType() const override { return cl::_sym_single_float; };
-    virtual clasp_elttype elttype() const { return clasp_aet_sf; };
     virtual void __write__(T_sp stream) const;
   public: // Provide the API that I used for NVector_sp
     static SimpleVector_float_sp create(size_t sz) {

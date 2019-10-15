@@ -49,7 +49,6 @@ namespace core {
     virtual T_sp array_type() const final { return cl::_sym_simple_array; };
     virtual T_sp element_type() const override { return ext::_sym_byte8;};
     virtual T_sp arrayElementType() const override { return ext::_sym_byte8; };
-    virtual clasp_elttype elttype() const { return clasp_aet_byte8_t; };
     virtual void __write__(T_sp stream) const;
   };
 };
@@ -191,7 +190,6 @@ namespace core {
     virtual T_sp array_type() const final { return cl::_sym_simple_array; };
     virtual T_sp element_type() const override { return ext::_sym_integer8;};
     virtual T_sp arrayElementType() const override { return ext::_sym_integer8; };
-    virtual clasp_elttype elttype() const { return clasp_aet_int8_t; };
     virtual void __write__(T_sp stream) const;
   };
 };

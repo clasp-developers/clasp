@@ -82,7 +82,6 @@ namespace core {
     virtual T_sp element_type() const final { return cl::_sym_base_char; };
   public:
     void c_style_null_terminate() { this->_Data[this->length()] = '\0'; };
-    virtual clasp_elttype elttype() const { return clasp_aet_bc; };
     virtual T_sp arrayElementType() const final { return cl::_sym_base_char; };
     virtual bool equal(T_sp other) const final;
     virtual bool equalp(T_sp other) const final;
@@ -158,7 +157,6 @@ namespace core {
     virtual T_sp array_type() const final { return cl::_sym_simple_array; };
     virtual T_sp element_type() const final { return cl::_sym_character; };
   public:
-    virtual clasp_elttype elttype() const { return clasp_aet_ch; };
     virtual T_sp arrayElementType() const override { return cl::_sym_character; };
   public:
     // Implement these methods for simple vectors - some are implemented in parent classes
@@ -264,7 +262,6 @@ namespace core {
     static Str8Ns_sp create(size_t numChars);
     static Str8Ns_sp create(Str8Ns_sp orig);
   public:
-    virtual clasp_elttype elttype() const { return clasp_aet_bc; };
   public:
     virtual bool equal(T_sp other) const final;
     virtual bool equalp(T_sp other) const final;
@@ -320,7 +317,6 @@ namespace core {
                             _Nil<T_O>(),false,clasp_make_fixnum(0));
     };
   public:
-    virtual clasp_elttype elttype() const { return clasp_aet_ch; };
   public:
     virtual bool equal(T_sp other) const final;
     virtual bool equalp(T_sp other) const final;

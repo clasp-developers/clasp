@@ -78,7 +78,6 @@ namespace core {
     virtual T_sp array_type() const final { return cl::_sym_simple_array; };
     virtual T_sp element_type() const override { return cl::_sym_bit; };
   public:
-    virtual clasp_elttype elttype() const { return clasp_aet_bit; };
     virtual T_sp arrayElementType() const override { return cl::_sym_bit; };
   public:
     void asAbstractSimpleVectorRange(AbstractSimpleVector_sp& sv, size_t& start, size_t& end) const override {
@@ -176,7 +175,6 @@ namespace core {
       end = this->length()+this->_DisplacedIndexOffset;
     }
   public:
-    virtual clasp_elttype elttype() const { return clasp_aet_bit; };
     virtual bool equal(T_sp other) const final;
     virtual bool equalp(T_sp other) const final { return this->equal(other);};
     virtual void internalAdjustSize_(size_t size, T_sp init_element=_Nil<T_O>(), bool initElementSupplied=false ) override;

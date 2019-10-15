@@ -39,7 +39,6 @@ namespace core {
     virtual T_sp array_type() const final { return cl::_sym_simple_array; };
     virtual T_sp element_type() const override { return cl::_sym_T_O; };
   public:
-    virtual clasp_elttype elttype() const { return clasp_aet_object; };
     virtual T_sp arrayElementType() const override { return cl::_sym_T_O; };
   public:
     virtual bool equal(T_sp other) const override { return this->eq(other);};
