@@ -66,9 +66,9 @@ namespace core {
   public:
     // Always leave space for \0 at end
   SimpleBaseString_O(size_t length, value_type initialElement=value_type(), bool initialElementSupplied=false, size_t initialContentsSize=0, const value_type* initialContents=NULL) : TemplatedBase(length,initialElement,initialElementSupplied,initialContentsSize,initialContents) {};
-    static SimpleBaseString_sp make(size_t length, value_type initialElement='\0', bool initialElementSupplied=false, size_t initialContentsSize=0, const value_type* initialContents=NULL) {
+    static SimpleBaseString_sp make(size_t length, value_type initialElement='\0', bool initialElementSupplied=false, size_t initialContentsSize=0, const value_type* initialContents=NULL, bool static_vector_p = false) {
       // For C/C++ interop make SimpleBaseString 1 character longer and append a \0
-      auto bs = gctools::GC<SimpleBaseString_O>::allocate_container_null_terminated_string(false,length,initialElement,initialElementSupplied,initialContentsSize,initialContents);
+      auto bs = gctools::GC<SimpleBaseString_O>::allocate_container_null_terminated_string(static_vector_p,length,initialElement,initialElementSupplied,initialContentsSize,initialContents);
       bs->c_style_null_terminate(); // (*bs)[length] = '\0';
       return bs;
     }

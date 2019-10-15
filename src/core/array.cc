@@ -1010,7 +1010,7 @@ CL_DEFUN Vector_sp core__make_static_vector(T_sp element_type,
       return SimpleCharacterString_O::make(dimension,initialCharacter,initialElementSuppliedP,0,NULL,true);
     }
     claspChar initialChar = SimpleBaseString_O::initial_element_from_object(initialElement,initialElementSuppliedP);
-    return SimpleBaseString_O::make(dimension,initialChar,initialElementSuppliedP,true);
+    return SimpleBaseString_O::make(dimension,initialChar,initialElementSuppliedP,0,NULL,true);
   } else if ( element_type == cl::_sym_double_float ) {
     double initialValue = SimpleVector_double_O::initial_element_from_object(initialElement,initialElementSuppliedP);
     return SimpleVector_double_O::make(dimension,initialValue,initialElementSuppliedP,0,NULL,true);
