@@ -27,8 +27,6 @@
 namespace core {
     static void
     write_array_inner(bool vector, Array_sp x, T_sp stream) {
-	//	printf("%s:%d write_array_inner\n", __FILE__, __LINE__ );
-	//cl_env_ptr env = ecl_process_env();
 	std::vector<size_t> adims;
 	cl_index subscripts[CLASP_ARRAY_RANK_LIMIT];
 	Fixnum n, j, m, k, i;
@@ -174,27 +172,6 @@ namespace core {
                     write_array_inner(0, this->asSmartPtr(), stream);
             }
     }
-    
-#if 0
-#ifdef CLASP_UNICODE
-    void _clasp_write_string(T_sp x, T_sp stream) {
-	cl_index ndx;
-	if (!clasp_print_escape() && !clasp_print_readably()) {
-	    for (ndx = 0; ndx < x->string.fillp; ndx++)
-		clasp_write_char(x->string.self[ndx], stream);
-	} else {
-	    clasp_write_char('"', stream);
-	    for (ndx = 0; ndx < x->string.fillp; ndx++) {
-		clasp_character c = x->string.self[ndx];
-		if (c == '"' || c == '\\')
-		    clasp_write_char('\\', stream);
-		clasp_write_char(c, stream);
-	    }
-	    clasp_write_char('"', stream);
-	}
-    }
-#endif
-#endif
 
     void SimpleBitVector_O::__write__(T_sp stream) const {
             if (!clasp_print_array() && !clasp_print_readably()) {
