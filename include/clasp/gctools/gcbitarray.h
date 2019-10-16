@@ -53,7 +53,6 @@ class GCBitUnitArray_moveable : public GCContainer {
                          bool initialValueSupplied,
                          size_t initialContentsSize = 0, bit_array_word* initialContents=NULL)
    : _Length(length) {
-    bit_array_word initialFillValue = (initialValue!=0) ? ~0 : 0;
     // Initialize the contents from an array - but it has to be bit_array_word aligned
     // if you need other than word aligned add another parameter to this constructor
     size_t numWords = nwords_for_length(length);
@@ -65,7 +64,7 @@ class GCBitUnitArray_moveable : public GCContainer {
     size_t idx;
     idx = 0;
     for ( ; idx<initialContentsSize; ++idx) this->_Data[idx] = initialContents[idx];
-    for ( ; idx<numWords; ++idx ) this->_Data[idx] = initialFillValue;
+    for ( ; idx<numWords; ++idx ) this->_Data[idx] = initialValue;
 #ifdef DEBUG_BITUNIT_CONTAINER
     printf("%s:%d done initialization of data in ctor for GCBitUnitArray_moveable _Data[0] @%p\n", __FILE__, __LINE__, (void*)&this->_Data[0]);
     printf("%s:%d      final value of idx = %lu\n", __FILE__, __LINE__, idx);

@@ -47,7 +47,8 @@ namespace core {
                                     bool initialElementSupplied=false,
                                     size_t initialContentsSize=0,
                                     value_type* initialContents=NULL) {
-      return gctools::GC<SimpleBitVector_O>::allocate_bitunit_container(length,initialElement,initialElementSupplied,initialContentsSize,initialContents);
+      value_type initialFillElement = (initialElement == 0) ? 0 : ~0;
+      return gctools::GC<SimpleBitVector_O>::allocate_bitunit_container(length,initialFillElement,initialElementSupplied,initialContentsSize,initialContents);
     }
     SimpleBitVector_sp copy() {
       return gctools::GC<SimpleBitVector_O>::allocate_bitunit_container(this->length(), this->bytes());
