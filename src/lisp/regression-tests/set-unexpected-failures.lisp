@@ -9,7 +9,7 @@
         ;;; NREVERSE-1
         ;;; REVERSE-1
         ;;; ACCESSOR-TOO-MANY-ARGS-1
-        HELL-MDBIT-5A
+        ;;; HELL-MDBIT-5A
         ;;; LOAD-STREAM.1
         ;;; LISTEN-2
         ;;; BROADCAST-STREAM
