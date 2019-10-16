@@ -189,14 +189,6 @@ namespace core {
           bool displacedToP,
           Fixnum_sp displacedIndexOffset)
     : Base(dummy,dimension,fillPointer,data,displacedToP,displacedIndexOffset) {};
-#if 0
-  StrNs_O(size_t rank,
-          List_sp dimensions,
-          Array_sp data,
-          bool displacedToP,
-          Fixnum_sp displacedIndexOffset)
-    : Base(rank,dimensions,data,displacedToP,displacedIndexOffset) {};
-#endif
   public:
     virtual void sxhash_(HashGenerator& hg) const final {
       AbstractSimpleVector_sp svec;

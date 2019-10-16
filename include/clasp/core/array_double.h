@@ -33,9 +33,9 @@ namespace core {
                           const value_type* initialContents=NULL)
     : TemplatedBase(length,initialElement,initialElementSupplied,initialContentsSize,initialContents) {};
     static smart_ptr_type make(size_t length,
-                                         value_type initialElement=value_type(),
-                                         bool initialElementSupplied=false,
-                                         size_t initialContentsSize=0,
+                               value_type initialElement=value_type(),
+                               bool initialElementSupplied=false,
+                               size_t initialContentsSize=0,
                                const value_type* initialContents=NULL,
                                bool static_vector_p = false) {
       auto bs = gctools::GC<my_type>::allocate_container(static_vector_p,length,initialElement,initialElementSupplied,initialContentsSize,initialContents);
@@ -90,8 +90,6 @@ namespace core {
     virtual ~SimpleMDArray_double_O() {};
   public:
     typedef template_SimpleArray<SimpleMDArray_double_O,SimpleVector_double_O,SimpleMDArray_O> TemplatedBase;
-  public: // make vector
-  SimpleMDArray_double_O(size_t rank1, size_t dimension, Array_sp data) : TemplatedBase(dimension,data) {};
   public: // make array
   SimpleMDArray_double_O(size_t rank,
                            List_sp dimensions,

@@ -109,8 +109,6 @@ namespace core {
     virtual ~SimpleMDArrayT_O() {};
   public:
     typedef template_SimpleArray<SimpleMDArrayT_O,SimpleVector_O,SimpleMDArray_O> TemplatedBase;
-  public: // make vector
-  SimpleMDArrayT_O(size_t rank, size_t dimension, Array_sp data) : TemplatedBase(dimension,data) {};
   public: // make array
   SimpleMDArrayT_O(size_t rank,
                    List_sp dimensions,

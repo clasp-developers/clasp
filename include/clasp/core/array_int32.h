@@ -80,8 +80,6 @@ namespace core {
     virtual ~SimpleMDArray_byte32_t_O() {};
   public:
     typedef template_SimpleArray<SimpleMDArray_byte32_t_O,SimpleVector_byte32_t_O,SimpleMDArray_O> TemplatedBase;
-  public: // make vector
-  SimpleMDArray_byte32_t_O(size_t rank1, size_t dimension, Array_sp data) : TemplatedBase(dimension,data) {};
   public: // make array
   SimpleMDArray_byte32_t_O(size_t rank,
                            List_sp dimensions,
@@ -212,8 +210,6 @@ namespace core {
     virtual ~SimpleMDArray_int32_t_O() {};
   public:
     typedef template_SimpleArray<SimpleMDArray_int32_t_O,SimpleVector_int32_t_O,SimpleMDArray_O> TemplatedBase;
-  public: // make vector
-  SimpleMDArray_int32_t_O(size_t rank1, size_t dimension, Array_sp data) : TemplatedBase(dimension,data) {};
   public: // make array
   SimpleMDArray_int32_t_O(size_t rank,
                          List_sp dimensions,
