@@ -543,11 +543,11 @@ CL_DEFUN Symbol_sp core__function_block_name(T_sp functionName) {
 CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("validFunctionNameP");
-CL_DEFUN T_mv core__valid_function_name_p(T_sp arg) {
+CL_DEFUN T_sp core__valid_function_name_p(T_sp arg) {
   T_sp name = functionBlockName(arg);
   if (name.nilp())
-    return (Values(_Nil<T_O>()));
-  return (Values(_lisp->_true()));
+    return _Nil<T_O>();
+  return _lisp->_true();
 };
 
 CL_LAMBDA(listOfPairs);
@@ -650,7 +650,7 @@ CL_DEFUN_SETF T_sp setf_macro_function(Function_sp function, Symbol_sp symbol, T
 CL_LAMBDA(symbol);
 CL_DECLARE();
 CL_DOCSTRING("See CLHS: special-operator-p");
-CL_DEFUN T_mv cl__special_operator_p(Symbol_sp sym) {
+CL_DEFUN T_sp cl__special_operator_p(Symbol_sp sym) {
   // should signal type-error if its argument is not a symbol.
   SYMBOL_EXPORT_SC_(ClPkg, let);
   SYMBOL_EXPORT_SC_(ClPkg, letSTAR);
@@ -697,7 +697,7 @@ CL_DEFUN T_mv cl__special_operator_p(Symbol_sp sym) {
       (sym == cl::_sym_throw) ||
       (sym == cl::_sym_progv) ||
       (sym == cl::_sym_quote)) {
-    return (Values(_lisp->_true()));
+    return _lisp->_true();
   }
   // Now check the special operators hash table because
   // there may be a few more there.
@@ -841,17 +841,17 @@ CL_DEFUN bool cl__constantp(T_sp obj, T_sp env) {
 CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("identity");
-CL_DEFUN T_mv cl__identity(T_sp arg) {
-  return (Values(arg));
+CL_DEFUN T_sp cl__identity(T_sp arg) {
+  return arg;
 };
 
 CL_LAMBDA(obj);
 CL_DECLARE();
 CL_DOCSTRING("null test - return true if the object is the empty list otherwise return nil");
-CL_DEFUN T_mv cl__null(T_sp obj) {
+CL_DEFUN T_sp cl__null(T_sp obj) {
   if (obj.nilp())
-    return (Values(_lisp->_true()));
-  return (Values(_Nil<T_O>()));
+    return _lisp->_true();
+  return _Nil<T_O>();
 };
 
 CL_LAMBDA(obj);
@@ -992,19 +992,19 @@ CL_DEFUN bool cl__fboundp(T_sp functionName) {
 CL_LAMBDA(function-name);
 CL_DECLARE();
 CL_DOCSTRING("fmakunbound");
-CL_DEFUN T_mv cl__fmakunbound(T_sp functionName) {
+CL_DEFUN T_sp cl__fmakunbound(T_sp functionName) {
   if ((functionName).consp()) {
     List_sp cname = functionName;
     if (oCar(cname) == cl::_sym_setf) {
       Symbol_sp name = gc::As<Symbol_sp>(oCadr(cname));
       if (name.notnilp()) {
         name->fmakunbound_setf();
-        return (Values(functionName));
+        return functionName;
       }
     }
   } else if (Symbol_sp sym = functionName.asOrNull<Symbol_O>() ) {
     sym->fmakunbound();
-    return (Values(sym));
+    return sym;
   }
   TYPE_ERROR(functionName, // type of function names
              Cons_O::createList(cl::_sym_or, cl::_sym_symbol,
@@ -1015,7 +1015,7 @@ CL_DEFUN T_mv cl__fmakunbound(T_sp functionName) {
 CL_LAMBDA(char &optional input-stream-designator recursive-p);
 CL_DECLARE();
 CL_DOCSTRING("read a list up to a specific character - see CLHS");
-CL_DEFUN T_mv cl__read_delimited_list(Character_sp chr, T_sp input_stream_designator, T_sp recursive_p) {
+CL_DEFUN List_sp cl__read_delimited_list(Character_sp chr, T_sp input_stream_designator, T_sp recursive_p) {
   T_sp sin = coerce::inputStreamDesignator(input_stream_designator);
 #if 0
 	// I think it is safe to ignore recursive_p
@@ -1024,11 +1024,11 @@ CL_DEFUN T_mv cl__read_delimited_list(Character_sp chr, T_sp input_stream_design
     SIMPLE_ERROR(BF("Currently I don't handle recursive-p[true] for read_delimited_list"));
   }
 #endif
-  T_sp result = read_list(sin, clasp_as_claspCharacter(chr), true);
+  List_sp result = read_list(sin, clasp_as_claspCharacter(chr), true);
   if (cl::_sym_STARread_suppressSTAR->symbolValue().isTrue()) {
-    return (Values(_Nil<T_O>()));
+    return _Nil<T_O>();
   }
-  return (Values(result));
+  return result;
 }
 
 CL_LAMBDA(&optional input-stream-designator (eof-error-p t) eof-value recursive-p);
@@ -1260,19 +1260,19 @@ CL_DEFUN T_sp cl__mapl(T_sp func_desig, List_sp lists) {
 CL_LAMBDA(op &rest lists);
 CL_DECLARE();
 CL_DOCSTRING("mapcon");
-CL_DEFUN T_mv cl__mapcon(T_sp op, List_sp lists) {
+CL_DEFUN T_sp cl__mapcon(T_sp op, List_sp lists) {
   List_sp parts = cl__maplist(op, lists);
   T_sp result = cl__nconc(parts);
-  return Values(result);
+  return result;
 };
 
 CL_LAMBDA(op &rest lists);
 CL_DECLARE();
 CL_DOCSTRING("mapcan");
-CL_DEFUN T_mv cl__mapcan(T_sp op, List_sp lists) {
+CL_DEFUN T_sp cl__mapcan(T_sp op, List_sp lists) {
   List_sp parts = cl__mapcar(op, lists);
   T_sp result = cl__nconc(parts);
-  return Values(result);
+  return result;
 };
 
 

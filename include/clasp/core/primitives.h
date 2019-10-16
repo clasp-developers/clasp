@@ -42,7 +42,7 @@ extern Symbol_sp core__function_block_name(T_sp functionName);
 
 //extern void af_ensure_single_dispatch_generic_function(Symbol_sp gfname, LambdaListHandler_sp llh);
 
-extern T_mv cl__read_delimited_list(Character_sp chr, T_sp input_stream_designator, T_sp recursive_p);
+extern List_sp cl__read_delimited_list(Character_sp chr, T_sp input_stream_designator, T_sp recursive_p);
 
 T_sp cl__read(T_sp input_stream_designator, T_sp eof_error_p = _Nil<T_O>(), T_sp eof_value = _Nil<T_O>(), T_sp recursive_p = _Nil<T_O>());
 T_sp cl__read_preserving_whitespace(T_sp input_stream_designator, T_sp eof_error_p = _Nil<T_O>(), T_sp eof_value = _Nil<T_O>(), T_sp recursive_p = _Nil<T_O>());
@@ -148,20 +148,20 @@ namespace core {
 /*! Set the current core:*ihs-current* value.
       If the idx is out of bounds then return a valid value */
 void core__gdb(T_sp msg);
-  T_mv core__valid_function_name_p(T_sp arg);
+  T_sp core__valid_function_name_p(T_sp arg);
   int core__set_ihs_current_frame(int idx);
   void core__exception_stack_dump();
   T_sp core__create_tagged_immediate_value_or_nil(T_sp object);
   bool cl__constantp(T_sp obj, T_sp env = _Nil<T_O>());
   T_mv cl__values_list(List_sp list);
-  T_mv cl__compiler_macro_function(core::T_sp name, core::T_sp env);
+  T_sp cl__compiler_macro_function(core::T_sp name, core::T_sp env);
   bool cl__fboundp(T_sp functionName);
   T_sp core__get_global_inline_status(core::T_sp name, core::T_sp env);
   void core__setf_global_inline_statis(core::T_sp name, bool status, core::T_sp env);
   T_sp cl__fdefinition(T_sp functionName);
-  T_mv cl__special_operator_p(Symbol_sp sym);
+  T_sp cl__special_operator_p(Symbol_sp sym);
   T_sp cl__sleep(Real_sp oseconds);
-List_sp core__list_from_va_list(VaList_sp valist);
+  List_sp core__list_from_va_list(VaList_sp valist);
 
 T_sp core__next_number();
 };

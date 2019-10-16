@@ -813,7 +813,6 @@ void MDArray_size_t_O::vectorPushExtend_size_t(size_t newElement, size_t extensi
 ////////////////////////////////////////////////////////////
 
 namespace core {
-
 CL_LAMBDA(&rest args);
 CL_DECLARE();
 CL_DOCSTRING("vector");
@@ -823,7 +822,6 @@ CL_DEFUN Vector_sp cl__vector(List_sp args) {
   return vec;
 };
 SYMBOL_EXPORT_SC_(ClPkg, subtypep);
-
 CL_LAMBDA(dimension initial_element initial_element_supplied_p);
 CL_DECLARE();
 CL_DOCSTRING("Make a (simple-vector t)");
@@ -841,7 +839,6 @@ CL_DEFUN SimpleVector_sp core__make_simple_vector_t(size_t dimension,
     OBJECT::value_type init = initialElementSuppliedP ? OBJECT::from_object(initialElement) : OBJECT::default_initial_element();\
     return OBJECT::make(dimension, init, initialElementSuppliedP);\
   }
-
 DEFMAKESIMPLEVECTOR(bit, SimpleBitVector_O, SimpleBitVector_sp);
 DEFMAKESIMPLEVECTOR(base_char, SimpleBaseString_O, SimpleBaseString_sp);
 DEFMAKESIMPLEVECTOR(character, SimpleCharacterString_O, SimpleCharacterString_sp);
