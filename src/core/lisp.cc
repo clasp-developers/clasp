@@ -448,11 +448,6 @@ void Lisp_O::setupMpi(bool mpiEnabled, int mpiRank, int mpiSize) {
   this->_Roots._MpiSize = mpiSize;
 }
 
-void testStrings() {
-  //  SimpleBaseString_sp str = SimpleBaseString_O::make("This is a test");
-  //        printf("%s:%d  string = %s\n", __FILE__, __LINE__, str->c_str() );
-}
-
 int global_monitor_pid = 0;
 std::string global_monitor_dir = "";
 
@@ -534,13 +529,6 @@ void monitor_message(const std::string& msg)
 CL_DEFUN void core__monitor_write(const std::string& msg) {
   monitor_message(msg);
 }
-
-
-CL_DEFUN void core__getchar_pause()
-{
-  getchar();
-}
-
 
 void Lisp_O::startupLispEnvironment(Bundle *bundle) {
   MONITOR(BF("Starting lisp environment\n"));
@@ -922,45 +910,6 @@ List_sp Lisp_O::copy_default_special_bindings() const {
 
 #endif
 
-
-
-#ifdef NEW_LTV
-List_sp Lisp_O::loadTimeValuesIds() const {
-  List_sp names = _Nil<T_O>();
-  this->_Roots._LoadTimeValueArrays->mapHash([&names](T_sp key, T_sp val) {
-      names = Cons_O::create(key,names);
-    });
-  return names;
-}
-
-/*! How is this going to work with moving garbage collection?
-     We return a reference to the LoadTimeValues_sp smart_ptr in the LoadtimeValueArrays hash-table
-    What happens when this moves????    Disaster!!!!!!!   */
-LoadTimeValues_sp Lisp_O::getOrCreateLoadTimeValues(const string &name, size_t numberOfLoadTimeValues ) {
-  SimpleBaseString_sp key = SimpleBaseString_O::make(name);
-  T_sp it = this->_Roots._LoadTimeValueArrays->gethash(key, _Nil<T_O>());
-  if (it.nilp()) {
-    LoadTimeValues_sp vo = LoadTimeValues_O::make(numberOfLoadTimeValues);
-    this->_Roots._LoadTimeValueArrays->setf_gethash(key, vo);
-    return vo; // gctools::smart_ptr<LoadTimeValues_O>(reinterpret_cast<LoadTimeValues_O*>(vo.pbase()));
-  }
-  LoadTimeValues_sp ltv = gc::As<LoadTimeValues_sp>(it);
-  return ltv; // return gctools::smart_ptr<LoadTimeValues_O>(reinterpret_cast<LoadTimeValues_O*>(ltv.pbase()));
-}
-
-LoadTimeValues_sp Lisp_O::findLoadTimeValues(const string &name) {
-  SimpleBaseString_sp key = SimpleBaseString_O::make(name);
-  T_sp it = this->_Roots._LoadTimeValueArrays->gethash(key, _Nil<T_O>());
-  if (it.nilp())
-    return _Nil<LoadTimeValues_O>();
-  return gc::As<LoadTimeValues_sp>(it);
-}
-LoadTimeValues_sp Lisp_O::findLoadTimeValuesWithNameContaining(const string &sname, int &count) {
-  DEPRECATED(); // We should get rid of LoadTimeValues
-}
-#endif
-
-
 void Lisp_O::defvar(Symbol_sp sym, T_sp obj) {
   _OF();
   sym->makeSpecial();
@@ -1000,9 +949,6 @@ T_sp Lisp_O::specialFormOrNil(Symbol_sp sym) {
     return _Nil<T_O>();
   return this->_Roots._SpecialForms->gethash(sym);
 }
-
-
-
 
 CL_LAMBDA();
 CL_DECLARE();
@@ -1343,8 +1289,6 @@ uint Lisp_O::nextEnvironmentId() {
   this->_EnvironmentId++;
   return this->_EnvironmentId;
 }
-
-#define DLINE() printf("%s:%d debug\n", __FILE__, __LINE__);
 
 void Lisp_O::parseCommandLineArguments(int argc, char *argv[], const CommandLineOptions& options) {
   int endArg = options._EndArg;
@@ -2178,36 +2122,6 @@ CL_DEFUN T_sp cl__sort(List_sp sequence, T_sp predicate, T_sp key) {
   sort::quickSortVec0(sorted,0,sorted.size(),orderer);
   List_sp result = asCons(sorted);
   return result;
-}
-
-CL_LAMBDA();
-CL_DECLARE();
-CL_DOCSTRING("Return the current sourceFileName");
-CL_DEFUN T_mv core__source_file_name() {
-  Cons_sp ppcons;
-  const InvocationHistoryFrame *frame = my_thread->_InvocationHistoryStackTop;
-  T_sp tclosure = frame->function();
-  if (tclosure.notnilp()) {
-    Function_sp closure = gc::As<Function_sp>(tclosure);
-    string sourcePath = gc::As<FileScope_sp>(core__file_scope(closure->sourcePathname()))->fileName();
-    Path_sp path = Path_O::create(sourcePath);
-    Path_sp parent_path = path->parent_path();
-    return Values(SimpleBaseString_O::make(path->fileName()), SimpleBaseString_O::make(parent_path->asString()));
-  }
-  return Values(SimpleBaseString_O::make("NO-SOURCE-INFO-AVAILABLE"), SimpleBaseString_O::make("NO-PATH-INFO-AVAILABLE"));
-}
-
-CL_LAMBDA();
-CL_DECLARE();
-CL_DOCSTRING("sourceLineColumn");
-CL_DEFUN T_mv core__source_line_column() {
-  const InvocationHistoryFrame *frame = my_thread->_InvocationHistoryStackTop;
-  T_sp tclosure = frame->function();
-  if (tclosure.notnilp()) {
-    Function_sp closure = gc::As<Function_sp>(tclosure);
-    return Values(make_fixnum(closure->lineNumber()), make_fixnum(closure->column()));
-  }
-  return Values(make_fixnum(0),make_fixnum(0));
 }
 
 CL_LAMBDA();
