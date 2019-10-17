@@ -44,7 +44,6 @@ namespace core {
   public:
     virtual T_sp array_type() const final { return cl::_sym_simple_array; };
     virtual T_sp element_type() const override { return cl::_sym_double_float;};
-    virtual void __write__(T_sp stream) const;
   public: // Provide the API that I used for NVector_sp
     static SimpleVector_double_sp create(size_t sz) {
       return make(sz,0.0,false,0,NULL);

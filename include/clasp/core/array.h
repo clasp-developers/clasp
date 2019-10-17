@@ -247,7 +247,7 @@ namespace core {
     virtual size_t arrayDimension(size_t axisNumber) const = 0;
   /*! Return the value at the indices */
     virtual T_sp replaceArray(T_sp other) = 0;
-    virtual void __write__(T_sp strm) const = 0;
+    virtual void __write__(T_sp strm) const;
     virtual string __repr__() const;
   // ------------------------------------------------------------
   //
@@ -365,7 +365,6 @@ namespace core {
     size_t fillPointer() const {
       return this->_FillPointerOrLengthOrDummy;
     };
-    virtual void __write__(T_sp strm) const override;
     virtual bool equalp(T_sp other) const override;
     virtual std::string get_std_string() const {notStringError(this->asSmartPtr()); }
     virtual vector<size_t> arrayDimensionsAsVector() const {
@@ -531,11 +530,6 @@ namespace core {
       }
       return newSubseq;
     }
-    virtual void __write__(T_sp strm) const override {
-      clasp_write_string("#<",strm);
-      clasp_write_string(this->className(),strm);
-      clasp_write_char('>',strm);
-    };
   };
 };
 

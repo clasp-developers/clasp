@@ -31,9 +31,6 @@ namespace core {
       return bs;
     }
   public:
-    // Specific to SimpleVector_O
-    virtual void __write__(T_sp stream) const final;
-  public:
     virtual T_sp type_of() const final {return Cons_O::createList(cl::_sym_simple_vector,clasp_make_fixnum(this->length()));};
     virtual T_sp array_type() const final { return cl::_sym_simple_array; };
     virtual T_sp element_type() const override { return cl::_sym_T_O; };

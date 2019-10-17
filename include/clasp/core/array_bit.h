@@ -80,7 +80,7 @@ namespace core {
   public:
     // Implement these methods for simple vectors - some are implemented in parent classes
     // for convenience if not speed
-    virtual void __write__(T_sp strm) const final;
+    virtual void __write__(T_sp strm) const override final;
     virtual size_t elementSizeInBytes() const override {bitVectorDoesntSupportError();};
     virtual void* rowMajorAddressOfElement_(size_t i) const override {bitVectorDoesntSupportError();};
     value_type* bytes() { return &this->_Data[0]; };
@@ -138,7 +138,7 @@ namespace core {
       return bv;
     }
   public:
-    virtual void __write__(T_sp strm) const;
+    virtual void __write__(T_sp strm) const override final;
     uint testBit(size_t idx) const {
       AbstractSimpleVector_sp bme;
       size_t mstart, mend;
