@@ -793,23 +793,6 @@ ComplexVector_T_sp ComplexVector_T_O::create(const gc::Vec0<T_sp>& objs) {
 
 };
 
-#if 0
-namespace core {
-SYMBOL_EXPORT_SC_(CorePkg,vectorPushExtend_size_t);
-void MDArray_size_t_O::vectorPushExtend_size_t(size_t newElement, size_t extension) {
-  unlikely_if (!this->_Flags.fillPointerP()) noFillPointerError(_sym_vectorPushExtend_size_t,this->asSmartPtr());
-  cl_index idx = this->_FillPointerOrLengthOrDummy;
-  unlikely_if (idx >= this->_ArrayTotalSize) {
-    if (extension <= 0) extension = calculate_extension(this->_ArrayTotalSize);
-    cl_index new_size = this->_ArrayTotalSize+extension;
-    this->internalAdjustSize_(new_size);
-  }
-  (*this)[idx] = newElement;
-  ++this->_FillPointerOrLengthOrDummy;
-}
-};
-#endif
-
 ////////////////////////////////////////////////////////////
 
 namespace core {
