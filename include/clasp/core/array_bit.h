@@ -66,7 +66,6 @@ namespace core {
     static T_sp to_object(const value_type& v) { return clasp_make_integer(v); };
   public:
     virtual T_sp type_of() const final { return Cons_O::createList(cl::_sym_simple_bit_vector,clasp_make_fixnum(this->length()));};
-    virtual T_sp array_type() const final { return cl::_sym_simple_array; };
     virtual T_sp element_type() const override { return cl::_sym_bit; };
   public:
   public:

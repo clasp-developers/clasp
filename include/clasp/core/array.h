@@ -434,7 +434,7 @@ namespace core {
     LISP_CLASS(core, CorePkg, AbstractSimpleVector_O, "AbstractSimpleVector",Array_O);
     virtual ~AbstractSimpleVector_O() {};
   public:
-    virtual T_sp array_type() const override { return cl::_sym_simple_array; };
+    virtual T_sp array_type() const final override { return cl::_sym_simple_array; };
   public:
     virtual Array_sp data() { return gc::As_unsafe<Array_sp>(this->asSmartPtr()); };
     virtual size_t arrayTotalSize() const { return this->length(); };

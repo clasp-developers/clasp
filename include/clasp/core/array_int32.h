@@ -42,7 +42,6 @@ namespace core {
       return bs;
     }
   public:
-    virtual T_sp array_type() const final { return cl::_sym_simple_array; };
     virtual T_sp element_type() const override { return ext::_sym_byte32;};
   };
 };
@@ -172,7 +171,6 @@ namespace core {
       return bs;
     }
   public:
-    virtual T_sp array_type() const final { return cl::_sym_simple_array; };
     virtual T_sp element_type() const override { return ext::_sym_integer32;};
   };
 };

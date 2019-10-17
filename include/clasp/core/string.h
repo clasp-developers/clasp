@@ -77,7 +77,6 @@ namespace core {
   //SimpleBaseString_O(size_t total_size) : Base(), _Data('\0',total_size+1) {};
   public:
     virtual T_sp type_of() const final { return Cons_O::createList(cl::_sym_simple_base_string,clasp_make_fixnum(this->length()));};
-    virtual T_sp array_type() const final { return cl::_sym_simple_array; };
     virtual T_sp element_type() const final { return cl::_sym_base_char; };
   public:
     void c_style_null_terminate() { this->_Data[this->length()] = '\0'; };
@@ -149,9 +148,7 @@ namespace core {
       }
       return bs;
     }
-  //SimpleCharacterString_O(size_t total_size) : Base(), _Data('\0',total_size+1) {};
   public:
-    virtual T_sp array_type() const final { return cl::_sym_simple_array; };
     virtual T_sp element_type() const final { return cl::_sym_character; };
   public:
     // Implement these methods for simple vectors - some are implemented in parent classes
