@@ -884,11 +884,11 @@ CL_DEFUN Vector_sp core__make_vector(T_sp element_type,
                                      T_sp initialElement,
                                      bool initialElementSuppliedP) {
   if (fillPointer == cl::_sym_T_O) fillPointer = clasp_make_fixnum(dimension);
-  if ( fillPointer.notnilp() || displacedTo.notnilp()) adjustable = true;
+  if (fillPointer.notnilp() || displacedTo.notnilp()) adjustable = true;
 #define MAKE(simple, complex)\
   simple::value_type init = initialElementSuppliedP ? simple::from_object(initialElement) : simple::default_initial_element();\
-  if (adjustable) return complex::make(dimension, initialElement, initialElementSuppliedP, fillPointer, displacedTo, displacedTo.notnilp(), displacedIndexOffset);\
-  else return simple::make(dimension, initialElement, initialElementSuppliedP);
+  if (adjustable) return complex::make(dimension, init, initialElementSuppliedP, fillPointer, displacedTo, displacedTo.notnilp(), displacedIndexOffset);\
+  else return simple::make(dimension, init, initialElementSuppliedP);
   // macro over
   if (element_type == cl::_sym_T_O) { MAKE(SimpleVector_O, ComplexVector_T_O) }
   else if (element_type == cl::_sym_bit) { MAKE(SimpleBitVector_O, BitVectorNs_O) }
@@ -953,8 +953,8 @@ CL_DEFUN MDArray_sp core__make_mdarray(List_sp dimensions,
   if (displacedTo.notnilp()) adjustable = true;
 #define MAKE(multi, simple)\
   simple::value_type init = initialElementSuppliedP ? simple::from_object(initialElement) : simple::default_initial_element();\
-  if (adjustable) return multi::make_multi_dimensional(dimensions,initialElement,displacedTo,displacedTo.notnilp(),displacedIndexOffset);\
-  else return Simple##multi::make_multi_dimensional(dimensions,initialElement,_Nil<T_O>());
+  if (adjustable) return multi::make_multi_dimensional(dimensions,init,displacedTo,displacedTo.notnilp(),displacedIndexOffset);\
+  else return Simple##multi::make_multi_dimensional(dimensions,init,_Nil<T_O>());
   // macro over
   if (element_type == cl::_sym_T_O) { MAKE(MDArrayT_O, SimpleVector_O) }
   else if (element_type == cl::_sym_double_float) { MAKE(MDArray_double_O, SimpleVector_double_O) }
