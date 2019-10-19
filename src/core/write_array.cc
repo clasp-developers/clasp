@@ -182,6 +182,18 @@ void Array_O::__write__(T_sp stream) const {
   else write_array_unreadable(this->asSmartPtr(), stream);
 }
 
+void ComplexVector_O::__write__(T_sp stream) const {
+  if (clasp_print_readably() || clasp_print_array()) {
+    writestr_stream("#(", stream);
+    cl_index length = this->length();
+    for (cl_index ndx=0; ndx < length; ++ndx) {
+      write_object(this->rowMajorAref(ndx), stream);
+      if (ndx < length -1) clasp_write_char(' ', stream);
+    }
+    clasp_write_char(')', stream);
+  } else write_array_unreadable(this->asSmartPtr(), stream);
+}
+
 void SimpleBitVector_O::__write__(T_sp stream) const {
   if (clasp_print_readably() || clasp_print_array()) {
     writestr_stream("#*", stream);

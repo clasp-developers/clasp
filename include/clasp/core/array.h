@@ -398,6 +398,8 @@ class ComplexVector_O : public MDArray_O {
                   Array_sp data,
                   bool displacedToP,
                   Fixnum_sp displacedIndexOffset) : MDArray_O(Rank1(),dimension,fillPointer,data,displacedToP,displacedIndexOffset) {};
+    public:
+    virtual void __write__(T_sp strm) const;
 };
 };
 
