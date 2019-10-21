@@ -182,6 +182,8 @@ void Array_O::__write__(T_sp stream) const {
   else write_array_unreadable(this->asSmartPtr(), stream);
 }
 
+// This separate method is necessary because we need to account for fill pointers -
+// the basic stuff above uses array dimensions, so it's not appropriate.
 void ComplexVector_O::__write__(T_sp stream) const {
   if (clasp_print_readably() || clasp_print_array()) {
     writestr_stream("#(", stream);
