@@ -150,6 +150,15 @@ class GCBitUnitArray_moveable : public GCContainer {
       bit_array_word mask = bit_unit_mask << offset;
       return (*word & mask) >> offset;
     }
+    // a[i] = b[i], and yes this is required.
+    // I don't understand C++ deeply enough, luckily, but a[i] = b[i]
+    // seems to be a nop without this.
+    reference& operator=(const reference& x) noexcept {
+        bit_array_word packedVal = ((unsigned char)x & bit_unit_mask) << offset;
+        bit_array_word mask = ~(bit_unit_mask) << offset;
+        *word = (*word & mask) | packedVal;
+        return *this;
+    }
   };
   friend class reference;
   reference ref(size_t idx) { return reference(*this, idx); }
