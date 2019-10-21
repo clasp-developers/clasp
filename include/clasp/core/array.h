@@ -390,15 +390,15 @@ namespace core {
 namespace core {
 FORWARD(ComplexVector);
 class ComplexVector_O : public MDArray_O {
-    LISP_CLASS(core, CorePkg, ComplexVector_O, "ComplexVector",MDArray_O);
+  LISP_CLASS(core, CorePkg, ComplexVector_O, "ComplexVector",MDArray_O);
     // One dimension vector
-  ComplexVector_O(Rank1 dummy,
-                  size_t dimension,
-                  T_sp fillPointer,
-                  Array_sp data,
-                  bool displacedToP,
-                  Fixnum_sp displacedIndexOffset) : MDArray_O(Rank1(),dimension,fillPointer,data,displacedToP,displacedIndexOffset) {};
-    public:
+ ComplexVector_O(Rank1 dummy,
+                 size_t dimension,
+                 T_sp fillPointer,
+                 Array_sp data,
+                 bool displacedToP,
+                 Fixnum_sp displacedIndexOffset) : MDArray_O(Rank1(),dimension,fillPointer,data,displacedToP,displacedIndexOffset) {};
+ public:
     virtual void __write__(T_sp strm) const;
 };
 };
