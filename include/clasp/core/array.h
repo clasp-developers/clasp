@@ -694,8 +694,13 @@ namespace core {
     }
     simple_element_type& operator[](size_t index) {
       BOUNDS_ASSERT(index<this->arrayTotalSize());
-      unlikely_if (gc::IsA<my_smart_ptr_type>(this->_Data)) return this->unsafe_indirectReference(index);
-      return (*reinterpret_cast<simple_type*>(&*(this->_Data)))[this->_DisplacedIndexOffset+index];
+      // FIXME: This is sketchy - we treat everything but a simple vector as being a complex vector.
+      // ASSUMING ComplexVector_O and MDArray_O have the same data layout, this should work.
+      // The definition in template_Array is similarly sketchy in the case of an mdarray displaced
+      // to a complex vector.
+      LIKELY_if (gc::IsA<gc::smart_ptr<simple_type>>(this->_Data))
+        return (*reinterpret_cast<simple_type*>(&*(this->_Data)))[this->_DisplacedIndexOffset+index];
+      else return this->unsafe_indirectReference(index);
     }
     const simple_element_type& unsafe_indirectReference(size_t index) const {
       my_array_type& vecns = *reinterpret_cast<my_array_type*>(&*this->_Data);
@@ -703,8 +708,9 @@ namespace core {
     }
     const simple_element_type& operator[](size_t index) const {
       BOUNDS_ASSERT(index<this->arrayTotalSize());
-      unlikely_if (gc::IsA<my_smart_ptr_type>(this->_Data)) return this->unsafe_indirectReference(index);
-      return (*reinterpret_cast<simple_type*>(&*(this->_Data)))[this->_DisplacedIndexOffset+index];
+      LIKELY_if (gc::IsA<gc::smart_ptr<simple_type>>(this->_Data))
+        return (*reinterpret_cast<simple_type*>(&*(this->_Data)))[this->_DisplacedIndexOffset+index];
+      else return this->unsafe_indirectReference(index);
     }
   public:
     // Iterators
