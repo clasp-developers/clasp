@@ -685,13 +685,6 @@ namespace core {
                  bool displacedToP,
                  Fixnum_sp displacedIndexOffset)
     : Base(dummy,dimension,fillPointer,data,displacedToP,displacedIndexOffset) {};
-    // multidimensional array
-  template_Vector(size_t rank,
-                 List_sp dimensions,
-                 Array_sp data,
-                 bool displacedToP,
-                 Fixnum_sp displacedIndexOffset)
-    : Base(rank,dimensions,data,displacedToP,displacedIndexOffset) {};
   public:
     // Primary functions/operators for operator[] that handle displacement
     // There's a non-const and a const version of each
@@ -751,20 +744,6 @@ namespace core {
       if (!this->_Flags.fillPointerP()) this->_FillPointerOrLengthOrDummy = size;
       this->_DisplacedIndexOffset = 0;
       this->_Flags.set_displacedToP(false);
-    }
-    bool equalp(T_sp o) const {
-      if (&*o == this) return true;
-      if (my_smart_ptr_type other = o.asOrNull<my_array_type>()) {
-        if (this->rank() != other->rank() ) return false;
-        for (size_t i(0); i<this->rank(); ++i ) {
-          if (this->_Dimensions[i] != other->_Dimensions[i]) return false;
-        }
-        for (size_t i(0),iEnd(this->arrayTotalSize()); i<iEnd; ++i) {
-          if (!cl__equalp(this->rowMajorAref(i), other->rowMajorAref(i))) return false;
-        }
-        return true;
-      }
-      return false;
     }
     CL_METHOD_OVERLOAD virtual void rowMajorAset(size_t idx, T_sp value) final {(*this)[idx] = simple_type::from_object(value);}
     CL_METHOD_OVERLOAD virtual T_sp rowMajorAref(size_t idx) const final {return simple_type::to_object((*this)[idx]);}

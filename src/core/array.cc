@@ -397,6 +397,8 @@ bool MDArray_O::equalp(T_sp other) const {
   if (!gc::IsA<Array_sp>(other)) return false;
   Array_sp aother = gc::As_unsafe<Array_sp>(other);
   if (this->rank()!=aother->rank()) return false;
+  // For vectors we need to respect fill pointers, so don't use _Dimensions.
+  // FIXME?: Could move this into ComplexVector_O or something
   if (this->rank() == 1 ) {
     if (aother->length()!=this->length()) return false;
     for (size_t i(0),iEnd(this->length()); i<iEnd; ++i ) {
