@@ -561,6 +561,8 @@ namespace core {
       BOUNDS_ASSERT_LT(index, this->length());
       return this->_Data.unsignedBitUnit(index);
     }
+    bit_array_word* bytes() { return &this->_Data[0]; }
+    size_t byteslen() { return bitunit_array_type::nwords_for_length(this->length()); }
     // Given an initial element, replicate it into a bit_array_word. E.g. 01 becomes 01010101...01
     // Hopefully the compiler unrolls the loop.
     static bit_array_word initialFillValue(value_type initialValue) {

@@ -1063,6 +1063,12 @@ CL_DEFUN Array_sp core__coerce_to_byte8_vector(T_sp object)
   SIMPLE_ERROR(BF("Add support for coercing %s to a byte8 vector") % _rep_(object));
 }
 
+// For debugging. Prepare to delete.
+CL_DEFUN Array_sp core__vector_byte4_to_byte64(SimpleVector_byte4_t_sp vec) {
+  size_t nlen = vec->byteslen();
+  return SimpleVector_byte64_t_O::make(nlen, 0, false, nlen, vec->bytes());
+}
+
 // Create a base-char simple vector from any array
 CL_DEFUN clasp_ffi::ForeignData_sp core__coerce_memory_to_foreign_data(Array_sp source)
 {
