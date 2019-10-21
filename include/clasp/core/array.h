@@ -106,6 +106,7 @@ namespace cl {
   extern core::Symbol_sp& _sym_float;
   extern core::Symbol_sp& _sym_double_float;
   extern core::Symbol_sp& _sym_single_float;
+  extern core::Symbol_sp& _sym_UnsignedByte;
   extern core::Symbol_sp& _sym_T_O;
   extern core::Symbol_sp& _sym_simple_string;
   extern core::Symbol_sp& _sym_simple_array;
@@ -132,6 +133,7 @@ namespace core {
   // ------------------------------------------------------------
   // Utility
 
+  [[noreturn]] void bitVectorDoesntSupportError();
   [[noreturn]] void missingValueListError(List_sp indices);
   [[noreturn]] void tooManyIndicesListError(List_sp indices);
   [[noreturn]] void missingValueVaListError(VaList_sp indices);
@@ -462,6 +464,16 @@ namespace core {
     virtual void sxhash_(HashGenerator& hg) const override {this->General_O::sxhash_(hg);}
     virtual bool equal(T_sp other) const override { return this->eq(other);};
     virtual bool equalp(T_sp other) const;
+    void asAbstractSimpleVectorRange(AbstractSimpleVector_sp& sv, size_t& start, size_t& end) const override {
+      sv = this->asSmartPtr();
+      start = 0;
+      end = this->length();
+    }
+    virtual vector<size_t> arrayDimensionsAsVector() const {
+      vector<size_t> dims;
+      dims.push_back(this->length());
+      return dims;
+    }
   };
 };
 
@@ -497,16 +509,6 @@ namespace core {
     const_iterator end() const { return &this->_Data[this->_Data._Length]; }
     virtual size_t elementSizeInBytes() const override {return sizeof(value_type); };
     virtual void* rowMajorAddressOfElement_(size_t i) const override {return (void*)&(this->_Data[i]);};
-    void asAbstractSimpleVectorRange(AbstractSimpleVector_sp& sv, size_t& start, size_t& end) const override {
-      sv = this->asSmartPtr();
-      start = 0;
-      end = this->length();
-    }
-    virtual vector<size_t> arrayDimensionsAsVector() const {
-      vector<size_t> dims;
-      dims.push_back(this->length());
-      return dims;
-    }
     virtual void unsafe_fillArrayWithElt(T_sp initialElement, size_t start, size_t end) override {
       for (size_t i(start); i<end; ++i ) {
         (*this)[i] = leaf_type::from_object(initialElement);
@@ -532,6 +534,78 @@ namespace core {
     }
   };
 };
+
+namespace core {
+  template <typename MyLeafType, size_t BitUnitBitWidth, typename MyParentType>
+    class template_SimpleBitUnitVector : public MyParentType {
+  public:
+    typedef MyParentType Base;
+    typedef MyLeafType leaf_type;
+    typedef unsigned char value_type;
+    typedef value_type simple_element_type;
+    typedef gctools::smart_ptr<leaf_type> leaf_smart_ptr_type;
+    typedef gctools::GCBitUnitArray_moveable<BitUnitBitWidth> bitunit_array_type;
+  public:
+    bitunit_array_type _Data;
+  template_SimpleBitUnitVector(size_t length, bit_array_word initialElement, bool initialElementSupplied,
+                               size_t initialContentsSize = 0, const bit_array_word* initialContents = NULL)
+    : Base(), _Data(length,initialElement,initialElementSupplied,initialContentsSize,initialContents) {};
+  public:
+    typename bitunit_array_type::reference operator[](size_t index) {
+      BOUNDS_ASSERT_LT(index,this->length());
+      return this->_Data.ref(index);
+    }
+    value_type operator[](size_t index) const {
+      BOUNDS_ASSERT_LT(index, this->length());
+      return this->_Data.unsignedBitUnit(index);
+    }
+    // Given an initial element, replicate it into a bit_array_word. E.g. 01 becomes 01010101...01
+    // Hopefully the compiler unrolls the loop.
+    static bit_array_word initialFillValue(value_type initialValue) {
+      bit_array_word result = initialValue;
+      for (size_t i = BitUnitBitWidth; i < BIT_ARRAY_WORD_BITS; i *= 2) result |= result << i;
+      return result;
+    }
+    // Since we know the element type, we can define these here instead of in the child.
+    static value_type from_object(T_sp object) {
+      if (object.fixnump()) {
+        Fixnum i = object.unsafe_fixnum();
+        if ((0 <= i) && (i < (1 << BitUnitBitWidth))) return i;
+      }
+      TYPE_ERROR(object, Cons_O::createList(cl::_sym_UnsignedByte, clasp_make_fixnum(BitUnitBitWidth)));
+    }
+    static T_sp to_object(value_type v) { return clasp_make_integer(v); }
+    virtual void unsafe_fillArrayWithElt(T_sp initialElement, size_t start, size_t end) override {
+      // FIXME: Could be done more efficiently by writing whole words, but be careful about the ends.
+      for (size_t i = start; i < end; ++i) (*this)[i] = from_object(initialElement);
+    }
+    virtual size_t elementSizeInBytes() const override {bitVectorDoesntSupportError();}
+    virtual void* rowMajorAddressOfElement_(size_t i) const override {bitVectorDoesntSupportError();}
+    static value_type default_initial_element(void) { return 0; }
+    virtual T_sp element_type() const override {
+      return Cons_O::createList(cl::_sym_UnsignedByte, clasp_make_fixnum(BitUnitBitWidth));
+    }
+    virtual Array_sp reverse() const final { return templated_ranged_reverse<leaf_type>(*reinterpret_cast<const leaf_type*>(this),0,this->length()); }
+    virtual Array_sp nreverse() final { return templated_ranged_nreverse(*this,0,this->length()); }
+    CL_METHOD_OVERLOAD virtual void rowMajorAset(size_t idx, T_sp value) final {(*this)[idx] = from_object(value);}
+    CL_METHOD_OVERLOAD virtual T_sp rowMajorAref(size_t idx) const final {return to_object((*this)[idx]);}
+    CL_METHOD_OVERLOAD virtual void vset(size_t idx, T_sp value) final {(*this)[idx] = from_object(value);}
+    CL_METHOD_OVERLOAD virtual T_sp vref(size_t idx) const final {return to_object((*this)[idx]);}
+    Array_sp unsafe_subseq(size_t start, size_t end) const {
+      BOUNDS_ASSERT(0<=start&&start<end&&end<=this->length());
+      leaf_smart_ptr_type sbv = leaf_type::make(end-start);
+      for (size_t i(0),iEnd(end-start);i<iEnd;++i)
+        (*sbv)[i] = (*this)[start+i];
+      return sbv;
+    }
+    Array_sp unsafe_setf_subseq(size_t start, size_t end, Array_sp other) {
+      BOUNDS_ASSERT(0<=start&&start<end&&end<=this->length());
+      for (size_t i = start, ni = 0; i < end; ++i, ++ni)
+        (*this)[i] = from_object(other->rowMajorAref(ni));
+      return other;
+    }
+  };
+}; // namespace core
 
 namespace core {
   Vector_sp core__make_vector(T_sp element_type,
@@ -858,6 +932,7 @@ namespace core {
 #include <clasp/core/array_int32.h>
 #include <clasp/core/array_int16.h>
 #include <clasp/core/array_int8.h>
+#include <clasp/core/array_int4.h>
 #include <clasp/core/array_bit.h>
 
 // ----------------------------------------------------------------------

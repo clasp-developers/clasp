@@ -51,7 +51,7 @@ class GCBitUnitArray_moveable : public GCContainer {
   public:
  GCBitUnitArray_moveable(size_t length, bit_array_word initialValue,
                          bool initialValueSupplied,
-                         size_t initialContentsSize = 0, bit_array_word* initialContents=NULL)
+                         size_t initialContentsSize = 0, const bit_array_word* initialContents=NULL)
    : _Length(length) {
     // Initialize the contents from an array - but it has to be bit_array_word aligned
     // if you need other than word aligned add another parameter to this constructor
@@ -117,6 +117,38 @@ class GCBitUnitArray_moveable : public GCContainer {
     unsigned char result = (this->_Data[block] & mask)>>(shift_to_0-offset);
     return result;
   }
+  bit_array_word& word(size_t idx) { return this->_Data[idx / number_of_bit_units_in_word]; }
+  bit_array_word offset(size_t idx) { return (idx%number_of_bit_units_in_word)*bit_unit_bit_width; }
+  class reference {
+    friend class GCBitUnitArray_moveable;
+    bit_array_word* word;
+    size_t offset;
+  public:
+    // The following is to support operator[] in higher classes.
+    // The idea is taken from std::bitset<n>::reference, and more specifically
+    // libgcc's version.
+    // I don't know why this constructor gets a reference instead of a pointer.
+    reference(GCBitUnitArray_moveable& arr, size_t idx) noexcept {
+      word = &(arr.word(idx));
+      offset = arr.offset(idx);
+    }
+    reference(const reference&) = default;
+    ~reference() noexcept {}
+    // arr[i] = x
+    reference& operator=(unsigned char x) noexcept {
+        bit_array_word packedVal = (x & bit_unit_mask) << (shift_to_0 - offset);
+        bit_array_word mask = ~(bit_unit_mask << (shift_to_0 - offset));
+        *word = (*word & mask) | packedVal;
+        return *this;
+    }
+    // x = arr[i]
+    operator unsigned char() const noexcept {
+      bit_array_word mask = bit_unit_mask << (shift_to_0 - offset);
+      return (*word & mask) >> (shift_to_0 - offset);
+    }
+  };
+  friend class reference;
+  reference ref(size_t idx) { return reference(*this, idx); }
 };
 } // namespace gctools
 

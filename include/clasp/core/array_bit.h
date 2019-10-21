@@ -10,7 +10,6 @@ namespace core {
 }
 
 namespace core {
-  [[noreturn]] void bitVectorDoesntSupportError();
   bool ranged_bit_vector_EQ_(const SimpleBitVector_O& x, const SimpleBitVector_O& y,
                              size_t startx, size_t endx, size_t starty, size_t endy );
 
@@ -39,14 +38,14 @@ namespace core {
                     value_type initialElement,
                     bool initialElementSupplied,
                     size_t initialContentsSize=0,
-                    value_type* initialContents=NULL)
+                    const value_type* initialContents=NULL)
     : Base(), _Data(length,initialElement,initialElementSupplied,initialContentsSize,initialContents) {};
   SimpleBitVector_O(size_t length, bit_array_word* data) : Base(), _Data(length, data) {};
     static SimpleBitVector_sp make( size_t length,
                                     value_type initialElement=0,
                                     bool initialElementSupplied=false,
                                     size_t initialContentsSize=0,
-                                    value_type* initialContents=NULL) {
+                                    const value_type* initialContents=NULL) {
       value_type initialFillElement = (initialElement == 0) ? 0 : ~0;
       return gctools::GC<SimpleBitVector_O>::allocate_bitunit_container(length,initialFillElement,initialElementSupplied,initialContentsSize,initialContents);
     }
@@ -68,12 +67,6 @@ namespace core {
     virtual T_sp type_of() const final { return Cons_O::createList(cl::_sym_simple_bit_vector,clasp_make_fixnum(this->length()));};
     virtual T_sp element_type() const override { return cl::_sym_bit; };
   public:
-  public:
-    void asAbstractSimpleVectorRange(AbstractSimpleVector_sp& sv, size_t& start, size_t& end) const override {
-      sv = this->asSmartPtr();
-      start = 0;
-      end = this->length();
-    }
     void setBit(size_t idx, uint v) {this->_Data.unsignedSetBitUnit(idx,v);}
     uint testBit(size_t idx) const {return this->_Data.unsignedBitUnit(idx);};
   public:
@@ -88,11 +81,6 @@ namespace core {
     virtual bool equal(T_sp other) const final;
     virtual Array_sp unsafe_subseq(size_t start, size_t end) const final;
     virtual Array_sp unsafe_setf_subseq(size_t start, size_t end, Array_sp newSubseq) override;
-    virtual vector<size_t> arrayDimensionsAsVector() const final {
-      vector<size_t> dims;
-      dims.push_back(this->length());
-      return dims;
-    }
     virtual void unsafe_fillArrayWithElt(T_sp initialElement, size_t start, size_t end) final;
   public:
     CL_METHOD_OVERLOAD virtual void rowMajorAset(size_t idx, T_sp value) final {this->setBit(idx,value.unsafe_fixnum());};
@@ -103,7 +91,6 @@ namespace core {
     virtual void ranged_sxhash(HashGenerator& hg, size_t start, size_t end) const final {
       if (hg.isFilling()) {
         Fixnum hash = 5381;
-        Fixnum c;
         for ( size_t i(start); i<end; ++i ) {
           uint c = this->testBit(i);
           hash = ((hash << 5) + hash) + c;
