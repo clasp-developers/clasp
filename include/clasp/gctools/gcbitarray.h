@@ -100,25 +100,29 @@ class GCBitUnitArray_moveable : public GCContainer {
   void unsignedSetBitUnit(size_t idx, unsigned char value) {
     // Which word are we hitting?
     size_t block = idx / number_of_bit_units_in_word;
-    // Index of the least significant bit of the unit in the word.
-    size_t offset = (idx % number_of_bit_units_in_word)*bit_unit_bit_width;
+    // Index of the least significant bit in the word.
+    size_t offset = (shift_to_0 - (idx % number_of_bit_units_in_word))*bit_unit_bit_width;
     // Mask for all of the word except the target unit.
-    bit_array_word mask = ~(bit_unit_mask <<(shift_to_0-offset));
+    bit_array_word mask = ~(bit_unit_mask << offset);
     // The provided unit shifted into position.
     // NOTE: The & bit_unit_mask shouldn't be necessary if VALUE is always valid,
     // but I get bad results without it.
-    bit_array_word packedVal = (value & bit_unit_mask) << (shift_to_0-offset);
+    bit_array_word packedVal = (value & bit_unit_mask) << offset;
     this->_Data[block] = (this->_Data[block] & mask) | packedVal;
   }
   unsigned char unsignedBitUnit(size_t idx) const {
     size_t block = idx / number_of_bit_units_in_word;
-    size_t offset = (idx % number_of_bit_units_in_word)*bit_unit_bit_width;
-    bit_array_word mask = (bit_unit_mask << (shift_to_0-offset)); 
-    unsigned char result = (this->_Data[block] & mask)>>(shift_to_0-offset);
+    size_t offset = (shift_to_0 - (idx % number_of_bit_units_in_word))*bit_unit_bit_width;
+    bit_array_word mask = bit_unit_mask << offset;
+    unsigned char result = (this->_Data[block] & mask) >> offset;
     return result;
   }
-  bit_array_word& word(size_t idx) { return this->_Data[idx / number_of_bit_units_in_word]; }
-  bit_array_word offset(size_t idx) { return (idx%number_of_bit_units_in_word)*bit_unit_bit_width; }
+  // Get a pointer to the word the given index uses.
+  bit_array_word* word(size_t idx) { return &(this->_Data[idx / number_of_bit_units_in_word]); }
+  // Get the offset value for the given index.
+  bit_array_word offset(size_t idx) {
+    return (shift_to_0 - (idx % number_of_bit_units_in_word))*bit_unit_bit_width;
+  }
   class reference {
     friend class GCBitUnitArray_moveable;
     bit_array_word* word;
@@ -129,22 +133,22 @@ class GCBitUnitArray_moveable : public GCContainer {
     // libgcc's version.
     // I don't know why this constructor gets a reference instead of a pointer.
     reference(GCBitUnitArray_moveable& arr, size_t idx) noexcept {
-      word = &(arr.word(idx));
+      word = arr.word(idx);
       offset = arr.offset(idx);
     }
     reference(const reference&) = default;
     ~reference() noexcept {}
     // arr[i] = x
     reference& operator=(unsigned char x) noexcept {
-        bit_array_word packedVal = (x & bit_unit_mask) << (shift_to_0 - offset);
-        bit_array_word mask = ~(bit_unit_mask << (shift_to_0 - offset));
+        bit_array_word packedVal = (x & bit_unit_mask) << offset;
+        bit_array_word mask = ~(bit_unit_mask << offset);
         *word = (*word & mask) | packedVal;
         return *this;
     }
     // x = arr[i]
     operator unsigned char() const noexcept {
-      bit_array_word mask = bit_unit_mask << (shift_to_0 - offset);
-      return (*word & mask) >> (shift_to_0 - offset);
+      bit_array_word mask = bit_unit_mask << offset;
+      return (*word & mask) >> offset;
     }
   };
   friend class reference;
