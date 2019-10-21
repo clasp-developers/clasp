@@ -392,14 +392,16 @@ namespace core {
 namespace core {
 FORWARD(ComplexVector);
 class ComplexVector_O : public MDArray_O {
-    LISP_CLASS(core, CorePkg, ComplexVector_O, "ComplexVector",MDArray_O);
+  LISP_CLASS(core, CorePkg, ComplexVector_O, "ComplexVector",MDArray_O);
     // One dimension vector
-  ComplexVector_O(Rank1 dummy,
-                  size_t dimension,
-                  T_sp fillPointer,
-                  Array_sp data,
-                  bool displacedToP,
-                  Fixnum_sp displacedIndexOffset) : MDArray_O(Rank1(),dimension,fillPointer,data,displacedToP,displacedIndexOffset) {};
+ ComplexVector_O(Rank1 dummy,
+                 size_t dimension,
+                 T_sp fillPointer,
+                 Array_sp data,
+                 bool displacedToP,
+                 Fixnum_sp displacedIndexOffset) : MDArray_O(Rank1(),dimension,fillPointer,data,displacedToP,displacedIndexOffset) {};
+ public:
+    virtual void __write__(T_sp strm) const;
 };
 };
 
@@ -757,13 +759,6 @@ namespace core {
                  bool displacedToP,
                  Fixnum_sp displacedIndexOffset)
     : Base(dummy,dimension,fillPointer,data,displacedToP,displacedIndexOffset) {};
-    // multidimensional array
-  template_Vector(size_t rank,
-                 List_sp dimensions,
-                 Array_sp data,
-                 bool displacedToP,
-                 Fixnum_sp displacedIndexOffset)
-    : Base(rank,dimensions,data,displacedToP,displacedIndexOffset) {};
   public:
     // Primary functions/operators for operator[] that handle displacement
     // There's a non-const and a const version of each
@@ -773,8 +768,13 @@ namespace core {
     }
     simple_element_type& operator[](size_t index) {
       BOUNDS_ASSERT(index<this->arrayTotalSize());
-      unlikely_if (gc::IsA<my_smart_ptr_type>(this->_Data)) return this->unsafe_indirectReference(index);
-      return (*reinterpret_cast<simple_type*>(&*(this->_Data)))[this->_DisplacedIndexOffset+index];
+      // FIXME: This is sketchy - we treat everything but a simple vector as being a complex vector.
+      // ASSUMING ComplexVector_O and MDArray_O have the same data layout, this should work.
+      // The definition in template_Array is similarly sketchy in the case of an mdarray displaced
+      // to a complex vector.
+      LIKELY_if (gc::IsA<gc::smart_ptr<simple_type>>(this->_Data))
+        return (*reinterpret_cast<simple_type*>(&*(this->_Data)))[this->_DisplacedIndexOffset+index];
+      else return this->unsafe_indirectReference(index);
     }
     const simple_element_type& unsafe_indirectReference(size_t index) const {
       my_array_type& vecns = *reinterpret_cast<my_array_type*>(&*this->_Data);
@@ -782,8 +782,9 @@ namespace core {
     }
     const simple_element_type& operator[](size_t index) const {
       BOUNDS_ASSERT(index<this->arrayTotalSize());
-      unlikely_if (gc::IsA<my_smart_ptr_type>(this->_Data)) return this->unsafe_indirectReference(index);
-      return (*reinterpret_cast<simple_type*>(&*(this->_Data)))[this->_DisplacedIndexOffset+index];
+      LIKELY_if (gc::IsA<gc::smart_ptr<simple_type>>(this->_Data))
+        return (*reinterpret_cast<simple_type*>(&*(this->_Data)))[this->_DisplacedIndexOffset+index];
+      else return this->unsafe_indirectReference(index);
     }
   public:
     // Iterators
@@ -823,20 +824,6 @@ namespace core {
       if (!this->_Flags.fillPointerP()) this->_FillPointerOrLengthOrDummy = size;
       this->_DisplacedIndexOffset = 0;
       this->_Flags.set_displacedToP(false);
-    }
-    bool equalp(T_sp o) const {
-      if (&*o == this) return true;
-      if (my_smart_ptr_type other = o.asOrNull<my_array_type>()) {
-        if (this->rank() != other->rank() ) return false;
-        for (size_t i(0); i<this->rank(); ++i ) {
-          if (this->_Dimensions[i] != other->_Dimensions[i]) return false;
-        }
-        for (size_t i(0),iEnd(this->arrayTotalSize()); i<iEnd; ++i) {
-          if (!cl__equalp(this->rowMajorAref(i), other->rowMajorAref(i))) return false;
-        }
-        return true;
-      }
-      return false;
     }
     CL_METHOD_OVERLOAD virtual void rowMajorAset(size_t idx, T_sp value) final {(*this)[idx] = simple_type::from_object(value);}
     CL_METHOD_OVERLOAD virtual T_sp rowMajorAref(size_t idx) const final {return simple_type::to_object((*this)[idx]);}

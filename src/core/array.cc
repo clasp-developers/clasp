@@ -397,6 +397,8 @@ bool MDArray_O::equalp(T_sp other) const {
   if (!gc::IsA<Array_sp>(other)) return false;
   Array_sp aother = gc::As_unsafe<Array_sp>(other);
   if (this->rank()!=aother->rank()) return false;
+  // For vectors we need to respect fill pointers, so don't use _Dimensions.
+  // FIXME?: Could move this into ComplexVector_O or something
   if (this->rank() == 1 ) {
     if (aother->length()!=this->length()) return false;
     for (size_t i(0),iEnd(this->length()); i<iEnd; ++i ) {
@@ -969,7 +971,7 @@ CL_DEFUN MDArray_sp core__make_mdarray(List_sp dimensions,
   else if (element_type == ext::_sym_byte16) { MAKE(MDArray_byte16_t_O, SimpleVector_byte16_t_O) }
   else if (element_type == ext::_sym_integer32) { MAKE(MDArray_int32_t_O, SimpleVector_int32_t_O) }
   else if (element_type == ext::_sym_byte32) { MAKE(MDArray_byte32_t_O, SimpleVector_byte32_t_O) }
-  else if (element_type == ext::_sym_integer64) { MAKE(MDArray_int8_t_O, SimpleVector_int64_t_O) }
+  else if (element_type == ext::_sym_integer64) { MAKE(MDArray_int64_t_O, SimpleVector_int64_t_O) }
   else if (element_type == ext::_sym_byte64) { MAKE(MDArray_byte64_t_O, SimpleVector_byte64_t_O) }
   else if (element_type == _sym_size_t) { MAKE(MDArray_size_t_O, SimpleVector_size_t_O) }
   else if (element_type == cl::_sym_fixnum) { MAKE(MDArray_fixnum_O, SimpleVector_fixnum_O) }

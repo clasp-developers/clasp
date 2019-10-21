@@ -62,6 +62,14 @@
                             0)
                 :READABLY NIL :ARRAY T :PRETTY NIL)))
 
+(test print-5a
+      (string= "#(1 2 3)"
+               (let ((*print-pretty* nil)
+                     (*print-array* t)
+                     (*print-readably* nil))
+                 (write-to-string
+                  (make-array 3 :initial-contents '(1 2 3) :fill-pointer t)))))
+
 ;;; fails to write readably
 ;;; http://www.lispworks.com/documentation/HyperSpec/Body/t_rnd_st.htm#random-state
 ;;; It can be printed out and successfully read back in by the same implementation, 

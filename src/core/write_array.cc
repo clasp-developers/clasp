@@ -112,9 +112,8 @@ static void write_array_dimensions(size_t rank, std::vector<size_t> dims,
 // Write an array in the extension format for readability,
 // #A(ELEMENT-TYPE DIMENSIONS DATA).
 // Ignores *print-length*, *print-level*, and of course *print-array*.
-static void write_array_ext_readable (Array_sp array, T_sp stream) {
+static void write_array_ext_readable (Array_sp array, std::vector<size_t> adims, T_sp stream) {
   size_t rank = array->rank();
-  std::vector<size_t> adims = array->arrayDimensionsAsVector();
   
   writestr_stream("#A(", stream);
   write_object(array->element_type(), stream); // write element type
@@ -129,7 +128,7 @@ static void write_array_ext_readable (Array_sp array, T_sp stream) {
 // This is not readable unless the element-type is T.
 // Ignores *print-array* but respects *print-length*, *print-level*,
 // and *print-readably* except for the element type thing.
-static void write_array_basic(Array_sp array, T_sp stream) {
+static void write_array_basic(Array_sp array, std::vector<size_t> adims, T_sp stream) {
   size_t rank = array->rank();
   bool readably = clasp_print_readably();
   Fixnum print_length, print_level;
@@ -153,33 +152,47 @@ static void write_array_basic(Array_sp array, T_sp stream) {
   if (print_level >= rank) { // We're writing all elements of the array.
     DynamicScopeManager scope;
     scope.pushSpecialVariableAndSet(cl::_sym_STARprint_levelSTAR, clasp_make_fixnum(print_level - rank));
-    write_array_data(rank, array->arrayDimensionsAsVector(), array, stream, print_length, true);
+    write_array_data(rank, adims, array, stream, print_length, true);
   }
   else // nope.
     // We don't need to set print_level since write_array_data itself ignores it,
     // only the inner write_objects use it, and we won't be doing that.
-    write_array_data(print_level, array->arrayDimensionsAsVector(), array, stream, print_length, false);
+    write_array_data(print_level, adims, array, stream, print_length, false);
 }
 
 // Write an array as #<[SIMPLE-]ARRAY ELEMENT-TYPE DIMENSIONS> for *print-array* nil.
 // FIXME: Maybe we should include the address?
-static void write_array_unreadable(Array_sp array, T_sp stream) {
+static void write_array_unreadable(Array_sp array, std::vector<size_t> adims, T_sp stream) {
   writestr_stream("#<", stream);
   write_object(array->array_type(), stream); // simple-array or array
   clasp_write_char(' ', stream);
   write_object(array->element_type(), stream);
   clasp_write_char(' ', stream);
-  write_array_dimensions(array->rank(), array->arrayDimensionsAsVector(), stream);
+  write_array_dimensions(array->rank(), adims, stream);
   clasp_write_char('>', stream);
 }
 
 // Basic method - some overrides are below (FIXME: move them?)
 void Array_O::__write__(T_sp stream) const {
+  std::vector<size_t> adims = this->arrayDimensionsAsVector();
   if (clasp_print_readably())
-    write_array_ext_readable(this->asSmartPtr(), stream);
+    write_array_ext_readable(this->asSmartPtr(), adims, stream);
   else if (clasp_print_array())
-    write_array_basic(this->asSmartPtr(), stream);
-  else write_array_unreadable(this->asSmartPtr(), stream);
+    write_array_basic(this->asSmartPtr(), adims, stream);
+  else write_array_unreadable(this->asSmartPtr(), adims, stream);
+}
+
+// This separate method is necessary because we need to account for fill pointers -
+// the basic stuff above uses array dimensions, so it's not appropriate.
+void ComplexVector_O::__write__(T_sp stream) const {
+  std::vector<size_t> adims;
+  adims.push_back(this->length()); // fill pointer
+  if (clasp_print_readably())
+    write_array_ext_readable(this->asSmartPtr(), adims, stream);
+  else if (clasp_print_array())
+    write_array_basic(this->asSmartPtr(), adims, stream);
+  // NOTE: We could use the dimension here, I guess? Who uses *print-array* nil anyway...
+  else write_array_unreadable(this->asSmartPtr(), adims, stream);
 }
 
 void SimpleBitVector_O::__write__(T_sp stream) const {
@@ -190,7 +203,7 @@ void SimpleBitVector_O::__write__(T_sp stream) const {
         clasp_write_char('1', stream);
       else
         clasp_write_char('0', stream);
-  } else write_array_unreadable(this->asSmartPtr(), stream);
+  } else write_array_unreadable(this->asSmartPtr(), this->arrayDimensionsAsVector(), stream);
 }
 
 // FIXME: Duplicates the above
@@ -202,7 +215,7 @@ void BitVectorNs_O::__write__(T_sp stream) const {
         clasp_write_char('1', stream);
       else
         clasp_write_char('0', stream);
-  } else write_array_unreadable(this->asSmartPtr(), stream);
+  } else write_array_unreadable(this->asSmartPtr(), this->arrayDimensionsAsVector(), stream);
 }
 
 void unsafe_write_SimpleBaseString(SimpleBaseString_sp str, size_t start, size_t end, T_sp stream) {
