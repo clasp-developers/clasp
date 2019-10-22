@@ -701,7 +701,7 @@ namespace core {
     const simple_element_type* begin() const { return &(*this)[0]; };
     const simple_element_type* end() const { return &(*this)[this->length()]; };
   public:
-    void this_asAbstractSimpleVectorRange(AbstractSimpleVector_sp& sv, size_t& start, size_t& end) const  {
+    void asAbstractSimpleVectorRange(AbstractSimpleVector_sp& sv, size_t& start, size_t& end) const final {
       unlikely_if (gc::IsA<my_smart_ptr_type>(this->_Data)) {
         this->_Data->asAbstractSimpleVectorRange(sv,start,end);
         start += this->_DisplacedIndexOffset;
@@ -712,16 +712,13 @@ namespace core {
       start = this->_DisplacedIndexOffset;
       end = this->length()+this->_DisplacedIndexOffset;
     }
-    void asAbstractSimpleVectorRange(AbstractSimpleVector_sp& sv, size_t& start, size_t& end) const final {
-      this->this_asAbstractSimpleVectorRange(sv,start,end);
-    }
     virtual Array_sp reverse() const final { return templated_reverse_VectorNs(*this); };
     virtual Array_sp nreverse() final { templated_nreverse_VectorNs(*this); return this->asSmartPtr(); };
     virtual void internalAdjustSize_(size_t size, T_sp initElement=_Nil<T_O>(), bool initElementSupplied=false ) final {
       if (size == this->_ArrayTotalSize) return;
       AbstractSimpleVector_sp basesv;
       size_t start, end;
-      this->this_asAbstractSimpleVectorRange(basesv,start,end);
+      this->asAbstractSimpleVectorRange(basesv,start,end);
       gctools::smart_ptr<simple_type> sv = gc::As_unsafe<gctools::smart_ptr<simple_type>>(basesv);
       gctools::smart_ptr<simple_type> newData = sv->copy(size, initElementSupplied ? simple_type::from_object(initElement) : simple_type::default_initial_element(), initElementSupplied);
       this->set_data(newData);
@@ -795,7 +792,7 @@ namespace core {
     const simple_element_type* begin() const { return &(*this)[0]; };
     const simple_element_type* end() const { return &(*this)[this->length()]; };
   public:
-    void this_asAbstractSimpleVectorRange(AbstractSimpleVector_sp& sv, size_t& start, size_t& end) const  {
+    void asAbstractSimpleVectorRange(AbstractSimpleVector_sp& sv, size_t& start, size_t& end) const final {
       unlikely_if (gc::IsA<my_smart_ptr_type>(this->_Data)) {
         this->_Data->asAbstractSimpleVectorRange(sv, start, end);
         start += this->_DisplacedIndexOffset;
@@ -806,16 +803,13 @@ namespace core {
       start = this->_DisplacedIndexOffset;
       end = this->length()+this->_DisplacedIndexOffset;
     }
-    void asAbstractSimpleVectorRange(AbstractSimpleVector_sp& sv, size_t& start, size_t& end) const final {
-      this->this_asAbstractSimpleVectorRange(sv,start,end);
-    }
     virtual Array_sp reverse() const final { return templated_reverse_VectorNs(*this); };
     virtual Array_sp nreverse() final { templated_nreverse_VectorNs(*this); return this->asSmartPtr(); };
     virtual void internalAdjustSize_(size_t size, T_sp initElement=_Nil<T_O>(), bool initElementSupplied=false ) final {
       if (size == this->_ArrayTotalSize) return;
       AbstractSimpleVector_sp basesv;
       size_t start, end;
-      this->this_asAbstractSimpleVectorRange(basesv,start,end);
+      this->asAbstractSimpleVectorRange(basesv,start,end);
       gctools::smart_ptr<simple_type> sv = gc::As_unsafe<gctools::smart_ptr<simple_type>>(basesv);
       gctools::smart_ptr<simple_type> newData = sv->copy(size, initElementSupplied ? simple_type::from_object(initElement) : simple_type::default_initial_element(), initElementSupplied);
       this->set_data(newData);
@@ -891,14 +885,11 @@ namespace core {
     virtual Array_sp nreverse() final { templated_nreverse_VectorNs(*this); return this->asSmartPtr(); };
     virtual void internalAdjustSize_(size_t size, T_sp initElement=_Nil<T_O>(), bool initElementSupplied=false ) final {cannotAdjustSizeOfSimpleArrays(this->asSmartPtr());};
 public:
-    void this_asAbstractSimpleVectorRange(AbstractSimpleVector_sp& sv, size_t& start, size_t& end) const  {
+    void asAbstractSimpleVectorRange(AbstractSimpleVector_sp& sv, size_t& start, size_t& end) const final {
       ASSERT(gc::IsA<AbstractSimpleVector_sp>(this->_Data));
       sv = gc::As_unsafe<AbstractSimpleVector_sp>(this->_Data);
       start = this->_DisplacedIndexOffset;
       end = this->length()+this->_DisplacedIndexOffset;
-    }
-    void asAbstractSimpleVectorRange(AbstractSimpleVector_sp& sv, size_t& start, size_t& end) const final {
-      this->this_asAbstractSimpleVectorRange(sv,start,end);
     }
     CL_METHOD_OVERLOAD virtual void rowMajorAset(size_t idx, T_sp value) final {(*this)[idx] = simple_type::from_object(value);}
     CL_METHOD_OVERLOAD virtual T_sp rowMajorAref(size_t idx) const final {return simple_type::to_object((*this)[idx]);}
