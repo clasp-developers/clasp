@@ -383,14 +383,6 @@ Array_sp MDArray_O::unsafe_setf_subseq(size_t start, size_t iend, Array_sp new_s
   return this->_Data->unsafe_setf_subseq(start+this->_DisplacedIndexOffset,iend+this->_DisplacedIndexOffset,new_subseq);
 }
 
-void MDArray_O::ensureSpaceAfterFillPointer(T_sp init_element, size_t size) {
-  ASSERT(this->arrayHasFillPointerP());
-  cl_index left = this->arrayTotalSize() - this->fillPointer();
-  if (left < size) {
-    this->internalAdjustSize_((size-left)+this->_ArrayTotalSize,init_element,true);
-  }
-}
-
 bool MDArray_O::equalp(T_sp other) const {
   if (&*other==this) return true;
   if (!other.generalp()) return false;

@@ -381,7 +381,6 @@ namespace core {
     {
       this->_Data->unsafe_fillArrayWithElt(element,start+this->_DisplacedIndexOffset,end+this->_DisplacedIndexOffset);
     }
-    void ensureSpaceAfterFillPointer(T_sp init_element, size_t size);
     virtual T_sp vectorPush(T_sp newElement) final;
     virtual Fixnum_sp vectorPushExtend(T_sp newElement, size_t extension = 0) override;
     virtual Array_sp unsafe_subseq(size_t start, size_t end) const override;
