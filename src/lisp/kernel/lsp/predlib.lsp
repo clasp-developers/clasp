@@ -361,7 +361,9 @@ and is not adjustable."
     (t nil)))
 
 (defconstant-equal +upgraded-array-element-types+
-  '#.(append '(NIL BASE-CHAR #+unicode CHARACTER BIT EXT:BYTE8 EXT:INTEGER8)
+  '#.(append '(NIL BASE-CHAR #+unicode CHARACTER BIT)
+             '(ext:byte4)
+             '(EXT:BYTE8 EXT:INTEGER8)
              '(EXT:BYTE16 EXT:INTEGER16)
              '(EXT:BYTE32 EXT:INTEGER32)
              '(fixnum)

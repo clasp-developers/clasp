@@ -41,6 +41,7 @@ namespace core {
 };
 
 SYMBOL_EXPORT_SC_(ExtPkg,cl_index);
+SYMBOL_EXPORT_SC_(ExtPkg,byte4);
 SYMBOL_EXPORT_SC_(ExtPkg,byte8);
 SYMBOL_EXPORT_SC_(ExtPkg,byte16);
 SYMBOL_EXPORT_SC_(ExtPkg,byte32);
@@ -49,17 +50,6 @@ SYMBOL_EXPORT_SC_(ExtPkg,integer8);
 SYMBOL_EXPORT_SC_(ExtPkg,integer16);
 SYMBOL_EXPORT_SC_(ExtPkg,integer32);
 SYMBOL_EXPORT_SC_(ExtPkg,integer64);
-
-CL_VALUE_ENUM(cl::_sym_fixnum,      clasp_aet_fix);
-CL_VALUE_ENUM(ext::_sym_cl_index,      clasp_aet_size_t);
-CL_VALUE_ENUM(ext::_sym_byte64,      clasp_aet_byte64_t);
-CL_VALUE_ENUM(ext::_sym_integer64,      clasp_aet_int64_t);
-CL_VALUE_ENUM(ext::_sym_byte32,      clasp_aet_byte32_t);
-CL_VALUE_ENUM(ext::_sym_integer32,      clasp_aet_int32_t);
-CL_VALUE_ENUM(ext::_sym_byte16,      clasp_aet_byte16_t);
-CL_VALUE_ENUM(ext::_sym_integer16,      clasp_aet_int16_t);
-CL_VALUE_ENUM(ext::_sym_byte8,      clasp_aet_byte8_t);
-CL_VALUE_ENUM(ext::_sym_integer8,      clasp_aet_int8_t);
 
 namespace cl {
     extern core::Symbol_sp& _sym_fixnum;
@@ -71,6 +61,7 @@ namespace ext {
   extern core::Symbol_sp& _sym_byte32;
   extern core::Symbol_sp& _sym_byte16;
   extern core::Symbol_sp& _sym_byte8;
+  extern core::Symbol_sp& _sym_byte4;
   extern core::Symbol_sp& _sym_integer64;
   extern core::Symbol_sp& _sym_integer32;
   extern core::Symbol_sp& _sym_integer16;
@@ -478,8 +469,6 @@ namespace core {
   };
 };
 
-
-
 namespace core {
   template <typename MyLeafType, typename ValueType, typename MyParentType >
     class template_SimpleVector : public MyParentType {
@@ -493,6 +482,9 @@ namespace core {
     typedef gctools::GCArray_moveable<value_type> vector_type;
     typedef value_type* iterator;
     typedef const value_type* const_iterator;
+    /* These two are necessary because of bit unit vectors, see below */
+    typedef value_type& reference_type;
+    typedef const value_type& const_reference_type;
   public:
     vector_type _Data;
   public:
@@ -502,8 +494,8 @@ namespace core {
     static void never_invoke_allocator() {gctools::GCAbstractAllocator<template_SimpleVector>::never_invoke_allocator();};
   public:
     // NULL terminated strings use this - so the ASSERT needs to accept it
-    value_type& operator[](size_t index) { BOUNDS_ASSERT_LT(index,this->length());return this->_Data[index];};
-    const value_type& operator[](size_t index) const { BOUNDS_ASSERT_LT(index,this->length());return this->_Data[index];};
+    reference_type operator[](size_t index) { BOUNDS_ASSERT_LT(index,this->length());return this->_Data[index];};
+    const_reference_type operator[](size_t index) const { BOUNDS_ASSERT_LT(index,this->length());return this->_Data[index];};
     iterator begin() { return &this->_Data[0];};
     iterator end() { return &this->_Data[this->_Data._Length]; }
     const_iterator begin() const { return &this->_Data[0];};
@@ -546,17 +538,21 @@ namespace core {
     typedef value_type simple_element_type;
     typedef gctools::smart_ptr<leaf_type> leaf_smart_ptr_type;
     typedef gctools::GCBitUnitArray_moveable<BitUnitBitWidth> bitunit_array_type;
+    /* See GCBitUnitArray_moveable - short version is, we don't have pointers into
+     * sub-byte arrays for obvious reasons, so we use proxies. */
+    typedef typename bitunit_array_type::reference reference_type;
+    typedef value_type const_reference_type;
   public:
     bitunit_array_type _Data;
   template_SimpleBitUnitVector(size_t length, bit_array_word initialElement, bool initialElementSupplied,
                                size_t initialContentsSize = 0, const bit_array_word* initialContents = NULL)
     : Base(), _Data(length,initialElement,initialElementSupplied,initialContentsSize,initialContents) {};
   public:
-    typename bitunit_array_type::reference operator[](size_t index) {
+    reference_type operator[](size_t index) {
       BOUNDS_ASSERT_LT(index,this->length());
       return this->_Data.ref(index);
     }
-    value_type operator[](size_t index) const {
+    const_reference_type operator[](size_t index) const {
       BOUNDS_ASSERT_LT(index, this->length());
       return this->_Data.unsignedBitUnit(index);
     }
@@ -645,6 +641,8 @@ namespace core {
     typedef MySimpleArrayType /*eg: ComplexVector_T_O*/ my_simple_array_type;
     typedef MySimpleType /*eg: SimpleVector_O*/ simple_type;
     typedef typename simple_type::simple_element_type /*eg: T_sp*/ simple_element_type;
+    typedef typename simple_type::reference_type /* e.g. T_sp& */ reference_type;
+    typedef typename simple_type::const_reference_type /* e.g. const T_sp & */ const_reference_type;
     typedef gctools::smart_ptr<my_array_type> my_smart_ptr_type;
     typedef gctools::smart_ptr<my_simple_array_type> my_simple_smart_ptr_type;
     typedef gctools::GCArray_moveable<simple_element_type> simple_vector_type;
@@ -669,11 +667,11 @@ namespace core {
     // Primary functions/operators for operator[] that handle displacement
     // There's a non-const and a const version of each
     template <typename array_type>
-    simple_element_type& unsafe_indirectReference(size_t index) {
+    reference_type unsafe_indirectReference(size_t index) {
       array_type& vecns = *reinterpret_cast<array_type*>(&*this->_Data);
       return vecns[this->_DisplacedIndexOffset+index];
     }
-    simple_element_type& operator[](size_t index) {
+    reference_type operator[](size_t index) {
       BOUNDS_ASSERT(index<this->arrayTotalSize());
       LIKELY_if (gc::IsA<gc::smart_ptr<simple_type>>(this->_Data)) {
         return (*reinterpret_cast<simple_type*>(&*(this->_Data)))[this->_DisplacedIndexOffset+index];
@@ -682,11 +680,11 @@ namespace core {
       return this->unsafe_indirectReference<my_simple_array_type>(index);
     }
     template <typename array_type>
-    const simple_element_type& unsafe_indirectReference(size_t index) const {
+    const_reference_type unsafe_indirectReference(size_t index) const {
       array_type& vecns = *reinterpret_cast<array_type*>(&*this->_Data);
       return vecns[this->_DisplacedIndexOffset+index];
     }
-    const simple_element_type& operator[](size_t index) const {
+    const_reference_type operator[](size_t index) const {
       BOUNDS_ASSERT(index<this->arrayTotalSize());
       LIKELY_if (gc::IsA<gc::smart_ptr<simple_type>>(this->_Data)) {
         return (*reinterpret_cast<simple_type*>(&*(this->_Data)))[this->_DisplacedIndexOffset+index];
@@ -723,8 +721,7 @@ namespace core {
       size_t start, end;
       this->this_asAbstractSimpleVectorRange(basesv,start,end);
       gctools::smart_ptr<simple_type> sv = gc::As_unsafe<gctools::smart_ptr<simple_type>>(basesv);
-      size_t initialContentsSize = MIN(this->length(),size);
-      gctools::smart_ptr<simple_type> newData = simple_type::make(size,initElementSupplied ? simple_type::from_object(initElement) : simple_type::default_initial_element(),initElementSupplied,initialContentsSize,&(*sv)[start]);
+      gctools::smart_ptr<simple_type> newData = sv->copy(size, initElementSupplied ? simple_type::from_object(initElement) : simple_type::default_initial_element(), initElementSupplied);
       this->set_data(newData);
 //      printf("%s:%d:%s  original size=%lu new size=%lu  copied %lu elements\n", __FILE__, __LINE__, __FUNCTION__, this->_ArrayTotalSize, size, initialContentsSize );
       this->_ArrayTotalSize = size;
@@ -748,26 +745,28 @@ namespace core {
     typedef MyArrayType /*eg: ComplexVector_T_O*/ my_array_type;
     typedef MySimpleType /*eg: SimpleVector_O*/ simple_type;
     typedef typename simple_type::simple_element_type /*eg: T_sp*/ simple_element_type;
+    typedef typename simple_type::reference_type /* e.g. T_sp& */ reference_type;
+    typedef typename simple_type::const_reference_type /* e.g. const T_sp & */ const_reference_type;
     typedef gctools::smart_ptr<my_array_type> my_smart_ptr_type;
     typedef gctools::GCArray_moveable<simple_element_type> simple_vector_type;
     typedef typename MDArray_O::value_type dimension_element_type;
   public:
     // vector
   template_Vector(Rank1 dummy,
-                 size_t dimension,
-                 T_sp fillPointer,
-                 Array_sp data,
-                 bool displacedToP,
-                 Fixnum_sp displacedIndexOffset)
+                  size_t dimension,
+                  T_sp fillPointer,
+                  Array_sp data,
+                  bool displacedToP,
+                  Fixnum_sp displacedIndexOffset)
     : Base(dummy,dimension,fillPointer,data,displacedToP,displacedIndexOffset) {};
   public:
     // Primary functions/operators for operator[] that handle displacement
     // There's a non-const and a const version of each
-    simple_element_type& unsafe_indirectReference(size_t index) {
+    reference_type unsafe_indirectReference(size_t index) {
       my_array_type& vecns = *reinterpret_cast<my_array_type*>(&*this->_Data);
       return vecns[this->_DisplacedIndexOffset+index];
     }
-    simple_element_type& operator[](size_t index) {
+    reference_type operator[](size_t index) {
       BOUNDS_ASSERT(index<this->arrayTotalSize());
       // FIXME: This is sketchy - we treat everything but a simple vector as being a complex vector.
       // ASSUMING ComplexVector_O and MDArray_O have the same data layout, this should work.
@@ -777,11 +776,11 @@ namespace core {
         return (*reinterpret_cast<simple_type*>(&*(this->_Data)))[this->_DisplacedIndexOffset+index];
       else return this->unsafe_indirectReference(index);
     }
-    const simple_element_type& unsafe_indirectReference(size_t index) const {
+    const_reference_type unsafe_indirectReference(size_t index) const {
       my_array_type& vecns = *reinterpret_cast<my_array_type*>(&*this->_Data);
       return vecns[this->_DisplacedIndexOffset+index];
     }
-    const simple_element_type& operator[](size_t index) const {
+    const_reference_type operator[](size_t index) const {
       BOUNDS_ASSERT(index<this->arrayTotalSize());
       LIKELY_if (gc::IsA<gc::smart_ptr<simple_type>>(this->_Data))
         return (*reinterpret_cast<simple_type*>(&*(this->_Data)))[this->_DisplacedIndexOffset+index];
@@ -816,8 +815,7 @@ namespace core {
       size_t start, end;
       this->this_asAbstractSimpleVectorRange(basesv,start,end);
       gctools::smart_ptr<simple_type> sv = gc::As_unsafe<gctools::smart_ptr<simple_type>>(basesv);
-      size_t initialContentsSize = MIN(this->length(),size);
-      gctools::smart_ptr<simple_type> newData = simple_type::make(size,initElementSupplied ? simple_type::from_object(initElement) : simple_type::default_initial_element(),initElementSupplied,initialContentsSize,&(*sv)[start]);
+      gctools::smart_ptr<simple_type> newData = sv->copy(size, initElementSupplied ? simple_type::from_object(initElement) : simple_type::default_initial_element(), initElementSupplied);
       this->set_data(newData);
 //      printf("%s:%d:%s  original size=%lu new size=%lu  copied %lu elements\n", __FILE__, __LINE__, __FUNCTION__, this->_ArrayTotalSize, size, initialContentsSize );
       this->_ArrayTotalSize = size;
@@ -859,6 +857,8 @@ namespace core {
     typedef MyArrayType /*eg: ComplexVector_T_O*/ my_array_type;
     typedef MySimpleType /*eg: SimpleVector_O*/ simple_type;
     typedef typename simple_type::simple_element_type /*eg: T_sp*/ simple_element_type;
+    typedef typename simple_type::reference_type /* e.g. T_sp& */ reference_type;
+    typedef typename simple_type::const_reference_type /* e.g. const T_sp & */ const_reference_type;
     typedef gctools::smart_ptr<my_array_type> my_smart_ptr_type;
     typedef gctools::GCArray_moveable<simple_element_type> simple_vector_type;
     typedef typename MDArray_O::value_type dimension_element_type;
@@ -870,11 +870,11 @@ namespace core {
   public:
     // Primary functions/operators for operator[] that handle displacement
     // There's a non-const and a const version of each
-    simple_element_type& operator[](size_t index) {
+    reference_type operator[](size_t index) {
       BOUNDS_ASSERT(index<this->arrayTotalSize());
       return (*reinterpret_cast<simple_type*>(&*(this->_Data)))[index];
     }
-    const simple_element_type& operator[](size_t index) const {
+    const_reference_type operator[](size_t index) const {
       BOUNDS_ASSERT(index<this->arrayTotalSize());
       return (*reinterpret_cast<simple_type*>(&*(this->_Data)))[index];
     }
