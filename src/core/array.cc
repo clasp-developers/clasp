@@ -821,6 +821,7 @@ DEFMAKESIMPLEVECTOR(base_char, SimpleBaseString_O, SimpleBaseString_sp);
 DEFMAKESIMPLEVECTOR(character, SimpleCharacterString_O, SimpleCharacterString_sp);
 DEFMAKESIMPLEVECTOR(single_float, SimpleVector_float_O, SimpleVector_float_sp);
 DEFMAKESIMPLEVECTOR(double_float, SimpleVector_double_O, SimpleVector_double_sp);
+DEFMAKESIMPLEVECTOR(byte2, SimpleVector_byte2_t_O, SimpleVector_byte2_t_sp);
 DEFMAKESIMPLEVECTOR(byte4, SimpleVector_byte4_t_O, SimpleVector_byte4_t_sp);
 DEFMAKESIMPLEVECTOR(int8, SimpleVector_int8_t_O, SimpleVector_int8_t_sp);
 DEFMAKESIMPLEVECTOR(byte8, SimpleVector_byte8_t_O, SimpleVector_byte8_t_sp);
@@ -856,6 +857,7 @@ DEFMAKESIMPLEMDARRAY(base_char, SimpleMDArrayBaseChar_O, SimpleMDArrayBaseChar_s
 DEFMAKESIMPLEMDARRAY(character, SimpleMDArrayCharacter_O, SimpleMDArrayCharacter_sp, SimpleCharacterString_O);
 DEFMAKESIMPLEMDARRAY(single_float, SimpleMDArray_float_O, SimpleMDArray_float_sp, SimpleVector_float_O);
 DEFMAKESIMPLEMDARRAY(double_float, SimpleMDArray_double_O, SimpleMDArray_double_sp, SimpleVector_double_O);
+DEFMAKESIMPLEMDARRAY(byte2, SimpleMDArray_byte2_t_O, SimpleMDArray_byte2_t_sp, SimpleVector_byte2_t_O);
 DEFMAKESIMPLEMDARRAY(byte4, SimpleMDArray_byte4_t_O, SimpleMDArray_byte4_t_sp, SimpleVector_byte4_t_O);
 DEFMAKESIMPLEMDARRAY(int8, SimpleMDArray_int8_t_O, SimpleMDArray_int8_t_sp, SimpleVector_int8_t_O);
 DEFMAKESIMPLEMDARRAY(byte8, SimpleMDArray_byte8_t_O, SimpleMDArray_byte8_t_sp, SimpleVector_byte8_t_O);
@@ -893,6 +895,7 @@ CL_DEFUN Vector_sp core__make_vector(T_sp element_type,
   else if (element_type == cl::_sym_double_float) { MAKE(SimpleVector_double_O, ComplexVector_double_O) }
   else if (element_type == cl::_sym_single_float) { MAKE(SimpleVector_float_O, ComplexVector_float_O) }
   else if (element_type == ext::_sym_integer8) { MAKE(SimpleVector_int8_t_O, ComplexVector_int8_t_O) }
+  else if (element_type == ext::_sym_byte2) { MAKE(SimpleVector_byte2_t_O, ComplexVector_byte2_t_O) }
   else if (element_type == ext::_sym_byte4) { MAKE(SimpleVector_byte4_t_O, ComplexVector_byte4_t_O) }
   else if (element_type == ext::_sym_byte8) { MAKE(SimpleVector_byte8_t_O, ComplexVector_byte8_t_O) }
   else if (element_type == ext::_sym_integer16) { MAKE(SimpleVector_int16_t_O, ComplexVector_int16_t_O) }
@@ -959,6 +962,7 @@ CL_DEFUN MDArray_sp core__make_mdarray(List_sp dimensions,
   else if (element_type == cl::_sym_bit) { MAKE(MDArrayBit_O, SimpleBitVector_O) }
   else if (element_type == cl::_sym_base_char) { MAKE(MDArrayBaseChar_O, SimpleBaseString_O) }
   else if (element_type == cl::_sym_character) { MAKE(MDArrayCharacter_O, SimpleCharacterString_O) }
+  else if (element_type == ext::_sym_byte2) { MAKE(MDArray_byte2_t_O, SimpleVector_byte2_t_O) }
   else if (element_type == ext::_sym_byte4) { MAKE(MDArray_byte4_t_O, SimpleVector_byte4_t_O) }
   else if (element_type == ext::_sym_integer8) { MAKE(MDArray_int8_t_O, SimpleVector_int8_t_O) }
   else if (element_type == ext::_sym_byte8) { MAKE(MDArray_byte8_t_O, SimpleVector_byte8_t_O) }

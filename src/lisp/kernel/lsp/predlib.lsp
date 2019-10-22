@@ -121,6 +121,7 @@ bignums."
 Clasp-specific, internal. Used in optimizations of EQL."
   'general-number)
 
+(deftype ext:byte2 () '(unsigned-byte 2))
 (deftype ext:byte4 () '(unsigned-byte 4))
 
 (deftype ext:byte8 () '(INTEGER 0 255))
@@ -364,6 +365,7 @@ and is not adjustable."
 
 (defconstant-equal +upgraded-array-element-types+
   '#.(append '(NIL BASE-CHAR #+unicode CHARACTER BIT)
+             '(ext:byte2)
              '(ext:byte4)
              '(EXT:BYTE8 EXT:INTEGER8)
              '(EXT:BYTE16 EXT:INTEGER16)
@@ -1138,6 +1140,7 @@ if not possible."
       (SIMPLE-BIT-VECTOR (SIMPLE-ARRAY BIT (*)))
       (VECTOR (ARRAY * (*)))
 
+      #+clasp(core:simple-vector-byte2-t (simple-array ext:byte2 (*)))
       #+clasp(core:simple-vector-byte4-t (simple-array ext:byte4 (*)))
       #+clasp(core:simple-vector-byte8-t (simple-array ext:byte8 (*)))
       #+clasp(core:simple-vector-byte16-t (simple-array ext:byte16 (*)))
@@ -1157,6 +1160,7 @@ if not possible."
       #+clasp(core:MDARRAY-BYTE64-T (array ext:BYTE64 (*)))
       #+clasp(core:MDARRAY-BYTE8-T (array ext:BYTE8 (*)))
       #+clasp(core:mdarray-byte4-t (array ext:byte4 (*)))
+      #+clasp(core:mdarray-byte2-t (array ext:byte2 (*)))
       #+clasp(core:MDARRAY-CHARACTER (array character (*)))
       #+clasp(core:MDARRAY-DOUBLE (array double-float (*)))
       #+clasp(core:MDARRAY-FIXNUM (array fixnum (*)))
@@ -1173,6 +1177,7 @@ if not possible."
       #+clasp(core:SIMPLE-MDARRAY-BYTE64-T (simple-array ext:BYTE64 (*)))
       #+clasp(core:SIMPLE-MDARRAY-BYTE8-T (simple-array ext:BYTE8 (*)))
       #+clasp(core:simple-mdarray-byte4-t (simple-array ext:byte4 (*)))
+      #+clasp(core:simple-mdarray-byte2-t (simple-array ext:byte2 (*)))
       #+clasp(core:SIMPLE-MDARRAY-CHARACTER (simple-array CHARACTER (*)))
       #+clasp(core:SIMPLE-MDARRAY-DOUBLE (simple-array DOUBLE-FLOAT (*)))
       #+clasp(core:SIMPLE-MDARRAY-FIXNUM (simple-array fixnum (*)))

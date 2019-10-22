@@ -41,6 +41,7 @@ namespace core {
 };
 
 SYMBOL_EXPORT_SC_(ExtPkg,cl_index);
+SYMBOL_EXPORT_SC_(ExtPkg,byte2);
 SYMBOL_EXPORT_SC_(ExtPkg,byte4);
 SYMBOL_EXPORT_SC_(ExtPkg,byte8);
 SYMBOL_EXPORT_SC_(ExtPkg,byte16);
@@ -62,6 +63,7 @@ namespace ext {
   extern core::Symbol_sp& _sym_byte16;
   extern core::Symbol_sp& _sym_byte8;
   extern core::Symbol_sp& _sym_byte4;
+  extern core::Symbol_sp& _sym_byte2;
   extern core::Symbol_sp& _sym_integer64;
   extern core::Symbol_sp& _sym_integer32;
   extern core::Symbol_sp& _sym_integer16;
@@ -921,6 +923,7 @@ namespace core {
 #include <clasp/core/array_int16.h>
 #include <clasp/core/array_int8.h>
 #include <clasp/core/array_int4.h>
+#include <clasp/core/array_int2.h>
 #include <clasp/core/array_bit.h>
 
 // ----------------------------------------------------------------------
