@@ -26,7 +26,7 @@ namespace gctools {
     class GCArray_moveable;
   template <class T>
     class GCVector_moveable;
-  template <size_t N>
+  template <size_t N, bool s>
     class GCBitUnitArray_moveable;
   template <class K>
     class SmallOrderedSet;

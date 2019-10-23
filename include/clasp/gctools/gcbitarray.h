@@ -27,6 +27,8 @@ THE SOFTWARE.
 #ifndef gc_gcbitarray_H
 #define gc_gcbitarray_H
 
+#include <type_traits> // for std::conditional
+
 namespace gctools {
 
 /* Underlying type for arrays of sub-byte elements.
@@ -34,8 +36,9 @@ namespace gctools {
  * (The bit_array_word type, defined in configure_clasp.h.)
  * BitUnitBitWidth is the number of bits per element, e.g. 4 for (signed-byte 4).
  * Operations deal with signed or unsigned chars.
+ * Various things assume two's complement.
  */
-template <size_t BitUnitBitWidth>
+template <size_t BitUnitBitWidth, bool signedp>
 class GCBitUnitArray_moveable : public GCContainer {
  public:
   static const size_t bits_in_word = sizeof(bit_array_word)*CHAR_BIT;
@@ -44,11 +47,17 @@ class GCBitUnitArray_moveable : public GCContainer {
   // Used to deal with endianness.
   static const size_t shift_to_0 = number_of_bit_units_in_word-1;
   static const bit_array_word bit_unit_mask = (((0x1<<bit_unit_bit_width)-1));
+  // Used for sign stuff.
+  static const unsigned char sign_mask = 1 << (bit_unit_bit_width - 1);
+  static const unsigned char magnitude_mask = sign_mask - 1;
   /* Length is measured in units, not words.
    * _Data will have fewer than _Length elements, because there is more than one unit per word. */
   size_t    _Length;
   bit_array_word _Data[0];
-  public:
+ public:
+  // Type for bit units, as used by the external inteface.
+  typedef typename std::conditional<signedp, signed char, unsigned char>::type value_type;
+ public:
  GCBitUnitArray_moveable(size_t length, bit_array_word initialValue,
                          bool initialValueSupplied,
                          size_t initialContentsSize = 0, const bit_array_word* initialContents=NULL)
@@ -96,8 +105,27 @@ class GCBitUnitArray_moveable : public GCContainer {
     /* Word access */
   bit_array_word &operator[](size_t i) { return this->_Data[i]; };
   const bit_array_word &operator[](size_t i) const { return this->_Data[i]; };
+  // For signedness. We do our usual operations on raw bits, but may need to turn them to
+  // an unsigned char.
+  // Only one unsign is actually used in any given instantiation. Maybe some template magic
+  // could make the other go away? But it doesn't seem important.
+  static unsigned char unsign(signed char pvalue) {
+    // Low n-1 bits, and then the sign bit.
+    // Note that the & is kind of sketchy on a signed type - we assume two's complement.
+    return (pvalue & magnitude_mask) | ((pvalue < 0) ? sign_mask : 0);
+  }
+  static unsigned char unsign(unsigned char pvalue) { return pvalue; }
+  static value_type sign(unsigned char pvalue) {
+    if (signedp) // template constant
+      return (pvalue & magnitude_mask) - (pvalue & sign_mask);
+    else return pvalue;
+  }
   /* Unsigned BitUnit access */
-  void unsignedSetBitUnit(size_t idx, unsigned char value) {
+  // This function is currently unused, but since it avoids any overhead from the "reference"
+  // class below, it might be useful.
+  void setBitUnit(size_t idx, value_type pvalue) {
+    // If value_type is signed, convert to unsigned.
+    unsigned char value = unsign(pvalue);
     // Which word are we hitting?
     size_t block = idx / number_of_bit_units_in_word;
     // Index of the least significant bit in the word.
@@ -110,17 +138,17 @@ class GCBitUnitArray_moveable : public GCContainer {
     bit_array_word packedVal = (value & bit_unit_mask) << offset;
     this->_Data[block] = (this->_Data[block] & mask) | packedVal;
   }
-  unsigned char unsignedBitUnit(size_t idx) const {
+  value_type bitUnit(size_t idx) const {
     size_t block = idx / number_of_bit_units_in_word;
     size_t offset = (shift_to_0 - (idx % number_of_bit_units_in_word))*bit_unit_bit_width;
     bit_array_word mask = bit_unit_mask << offset;
     unsigned char result = (this->_Data[block] & mask) >> offset;
-    return result;
+    return sign(result);
   }
   // Get a pointer to the word the given index uses.
   bit_array_word* word(size_t idx) { return &(this->_Data[idx / number_of_bit_units_in_word]); }
   // Get the offset value for the given index.
-  bit_array_word offset(size_t idx) {
+  size_t offset(size_t idx) {
     return (shift_to_0 - (idx % number_of_bit_units_in_word))*bit_unit_bit_width;
   }
   class reference {
@@ -139,29 +167,33 @@ class GCBitUnitArray_moveable : public GCContainer {
     reference(const reference&) = default;
     ~reference() noexcept {}
     // arr[i] = x
-    reference& operator=(unsigned char x) noexcept {
-        bit_array_word packedVal = (x & bit_unit_mask) << offset;
+    reference& operator=(value_type x) noexcept {
+        bit_array_word packedVal = (unsign(x) & bit_unit_mask) << offset;
         bit_array_word mask = ~(bit_unit_mask << offset);
         *word = (*word & mask) | packedVal;
         return *this;
     }
-    // x = arr[i]
-    operator unsigned char() const noexcept {
+    // Get raw bits
+    unsigned char raw() const noexcept {
       bit_array_word mask = bit_unit_mask << offset;
       return (*word & mask) >> offset;
     }
+    // x = arr[i]
+    operator value_type() const noexcept { return sign(raw()); }
     // a[i] = b[i], and yes this is required.
     // I don't understand C++ deeply enough, luckily, but a[i] = b[i]
     // seems to be a nop without this.
     reference& operator=(const reference& x) noexcept {
-        bit_array_word packedVal = ((unsigned char)x & bit_unit_mask) << offset;
+        bit_array_word packedVal = (x.raw() & bit_unit_mask) << offset;
         bit_array_word mask = ~(bit_unit_mask) << offset;
         *word = (*word & mask) | packedVal;
         return *this;
     }
   };
   friend class reference;
+  // Like operator[] but for a sub byte unit.
   reference ref(size_t idx) { return reference(*this, idx); }
+  value_type ref(size_t idx) const { return bitUnit(idx); }
 };
 } // namespace gctools
 

@@ -540,7 +540,7 @@ namespace core {
     typedef unsigned char value_type;
     typedef value_type simple_element_type;
     typedef gctools::smart_ptr<leaf_type> leaf_smart_ptr_type;
-    typedef gctools::GCBitUnitArray_moveable<BitUnitBitWidth> bitunit_array_type;
+    typedef gctools::GCBitUnitArray_moveable<BitUnitBitWidth, false> bitunit_array_type;
     /* See GCBitUnitArray_moveable - short version is, we don't have pointers into
      * sub-byte arrays for obvious reasons, so we use proxies. */
     typedef typename bitunit_array_type::reference reference_type;
@@ -560,7 +560,7 @@ namespace core {
     }
     const_reference_type operator[](size_t index) const {
       BOUNDS_ASSERT_LT(index, this->length());
-      return this->_Data.unsignedBitUnit(index);
+      return this->_Data.ref(index);
     }
     bit_array_word* bytes() { return &this->_Data[0]; }
     size_t byteslen() { return bitunit_array_type::nwords_for_length(this->length()); }
