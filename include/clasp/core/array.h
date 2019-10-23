@@ -532,22 +532,23 @@ namespace core {
 
 // FIXME: Iterators are probably very broken for complex bit unit arrays.
 namespace core {
-  template <typename MyLeafType, size_t BitUnitBitWidth, typename MyParentType>
-    class template_SimpleBitUnitVector : public MyParentType {
+  template <typename MyLeafType, size_t BitUnitBitWidth, bool signedp>
+    class template_SimpleBitUnitVector : public AbstractSimpleVector_O {
   public:
-    typedef MyParentType Base;
+    typedef AbstractSimpleVector_O Base;
     typedef MyLeafType leaf_type;
-    typedef unsigned char value_type;
-    typedef value_type simple_element_type;
     typedef gctools::smart_ptr<leaf_type> leaf_smart_ptr_type;
-    typedef gctools::GCBitUnitArray_moveable<BitUnitBitWidth, false> bitunit_array_type;
+    typedef gctools::GCBitUnitArray_moveable<BitUnitBitWidth, signedp> bitunit_array_type;
+    typedef typename bitunit_array_type::value_type value_type;
+    typedef value_type simple_element_type;
     /* See GCBitUnitArray_moveable - short version is, we don't have pointers into
      * sub-byte arrays for obvious reasons, so we use proxies. */
     typedef typename bitunit_array_type::reference reference_type;
     typedef value_type const_reference_type;
   public:
-    static const value_type min_value = 0;
-    static const value_type max_value = (1 << BitUnitBitWidth) - 1;
+    // E.g., for three bits, we range from -4 to 3 signed, or 0 to 7 unsigned.
+    static const value_type min_value = signedp ? -(1 << (BitUnitBitWidth-1)) : 0;
+    static const value_type max_value = (1 << (BitUnitBitWidth - (signedp ? 1 : 0))) - 1;
   public:
     bitunit_array_type _Data;
   template_SimpleBitUnitVector(size_t length, bit_array_word initialElement, bool initialElementSupplied,
@@ -565,11 +566,8 @@ namespace core {
     bit_array_word* bytes() { return &this->_Data[0]; }
     size_t byteslen() { return bitunit_array_type::nwords_for_length(this->length()); }
     // Given an initial element, replicate it into a bit_array_word. E.g. 01 becomes 01010101...01
-    // Hopefully the compiler unrolls the loop.
     static bit_array_word initialFillValue(value_type initialValue) {
-      bit_array_word result = initialValue;
-      for (size_t i = BitUnitBitWidth; i < BIT_ARRAY_WORD_BITS; i *= 2) result |= result << i;
-      return result;
+      return bitunit_array_type::initialFillValue(initialValue);
     }
     // Since we know the element type, we can define these here instead of in the child.
     static value_type from_object(T_sp object) {
@@ -577,7 +575,7 @@ namespace core {
         Fixnum i = object.unsafe_fixnum();
         if (min_value <= i <= max_value) return i;
       }
-      TYPE_ERROR(object, Cons_O::createList(cl::_sym_UnsignedByte, clasp_make_fixnum(BitUnitBitWidth)));
+      TYPE_ERROR(object, leaf_type::static_element_type());
     }
     static T_sp to_object(value_type v) { return clasp_make_integer(v); }
     virtual void unsafe_fillArrayWithElt(T_sp initialElement, size_t start, size_t end) override {
@@ -587,9 +585,7 @@ namespace core {
     virtual size_t elementSizeInBytes() const override {bitVectorDoesntSupportError();}
     virtual void* rowMajorAddressOfElement_(size_t i) const override {bitVectorDoesntSupportError();}
     static value_type default_initial_element(void) { return 0; }
-    virtual T_sp element_type() const override {
-      return Cons_O::createList(cl::_sym_UnsignedByte, clasp_make_fixnum(BitUnitBitWidth));
-    }
+    virtual T_sp element_type() const override final { return leaf_type::static_element_type(); }
     virtual Array_sp reverse() const final { return templated_ranged_reverse<leaf_type>(*reinterpret_cast<const leaf_type*>(this),0,this->length()); }
     virtual Array_sp nreverse() final { return templated_ranged_nreverse(*this,0,this->length()); }
     CL_METHOD_OVERLOAD virtual void rowMajorAset(size_t idx, T_sp value) final {(*this)[idx] = from_object(value);}

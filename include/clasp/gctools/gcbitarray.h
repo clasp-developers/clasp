@@ -101,10 +101,18 @@ class GCBitUnitArray_moveable : public GCContainer {
 #endif
     return numBytes;
   }
-  public:
-    /* Word access */
+  // Given an initial element, replicate it into a bit_array_word. E.g. 01 becomes 01010101...01
+  // Hopefully the compiler unrolls the loop.
+  static bit_array_word initialFillValue(value_type initialValue) {
+    bit_array_word result = unsign(initialValue);
+    for (size_t i = BitUnitBitWidth; i < BIT_ARRAY_WORD_BITS; i *= 2) result |= result << i;
+    return result;
+  }
+ public:
+  /* Word access */
   bit_array_word &operator[](size_t i) { return this->_Data[i]; };
   const bit_array_word &operator[](size_t i) const { return this->_Data[i]; };
+ private:
   // For signedness. We do our usual operations on raw bits, but may need to turn them to
   // an unsigned char.
   // Only one unsign is actually used in any given instantiation. Maybe some template magic
@@ -151,6 +159,7 @@ class GCBitUnitArray_moveable : public GCContainer {
   size_t offset(size_t idx) {
     return (shift_to_0 - (idx % number_of_bit_units_in_word))*bit_unit_bit_width;
   }
+ public:
   class reference {
     friend class GCBitUnitArray_moveable;
     bit_array_word* word;

@@ -24,7 +24,7 @@ struct gctools::GCInfo<core::SimpleBitVector_O> {
 };
 
 namespace core {
-  typedef template_SimpleBitUnitVector<SimpleBitVector_O, 1, AbstractSimpleVector_O> specialized_SimpleBitVector;
+  typedef template_SimpleBitUnitVector<SimpleBitVector_O, 1, false> specialized_SimpleBitVector;
   class SimpleBitVector_O : public specialized_SimpleBitVector {
     LISP_CLASS(core, ClPkg, SimpleBitVector_O, "simple-bit-vector",AbstractSimpleVector_O);
     virtual ~SimpleBitVector_O() {};
@@ -54,8 +54,8 @@ namespace core {
     smart_ptr_type copy() { return copy(this->length(), default_initial_element(), false); }
     static smart_ptr_type make(const string& bv);
   public:
-    virtual T_sp type_of() const final { return Cons_O::createList(cl::_sym_simple_bit_vector,clasp_make_fixnum(this->length()));};
-    virtual T_sp element_type() const override final { return cl::_sym_bit; };
+    virtual T_sp type_of() const final { return Cons_O::createList(cl::_sym_simple_bit_vector,clasp_make_fixnum(this->length()));}
+    static T_sp static_element_type() { return cl::_sym_bit; }
   public:
     // TEMPORARY. These are in place to hold over Cando, which should switch to operator[].
     simple_element_type testBit(size_t idx) const { return (*this)[idx]; }

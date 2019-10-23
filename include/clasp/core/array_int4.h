@@ -16,7 +16,7 @@ struct gctools::GCInfo<core::SimpleVector_byte4_t_O> {
 };
 
 namespace core {
-  typedef template_SimpleBitUnitVector<SimpleVector_byte4_t_O, 4, AbstractSimpleVector_O> specialized_SimpleVector_byte4_t;
+  typedef template_SimpleBitUnitVector<SimpleVector_byte4_t_O, 4, false> specialized_SimpleVector_byte4_t;
   class SimpleVector_byte4_t_O : public specialized_SimpleVector_byte4_t {
     LISP_CLASS(core, CorePkg, SimpleVector_byte4_t_O, "SimpleVector_byte4_t", AbstractSimpleVector_O);
     virtual ~SimpleVector_byte4_t_O() {};
@@ -40,6 +40,7 @@ namespace core {
                   MIN(bitunit_array_type::nwords_for_length(length), byteslen()),
                   bytes());
     }
+    static T_sp static_element_type() { return ext::_sym_byte4; }
   };
 };
 
