@@ -944,14 +944,14 @@ void cc_rewind_va_list(va_list va_args, void** register_save_areaP)
   LCC_REWIND_VA_LIST(va_args,register_save_areaP);
 }
 
-uint cc_simpleBitVectorAref(core::T_O* tarray, size_t index) {
+unsigned char cc_simpleBitVectorAref(core::T_O* tarray, size_t index) {
   core::SimpleBitVector_O* array = reinterpret_cast<core::SimpleBitVector_O*>(gctools::untag_general<core::T_O*>(tarray));
-  return array->testBit(index);
+  return (*array)[index];
 }
 
-void cc_simpleBitVectorAset(core::T_O* tarray, size_t index, uint v) {
+void cc_simpleBitVectorAset(core::T_O* tarray, size_t index, unsigned char v) {
   core::SimpleBitVector_O* array = reinterpret_cast<core::SimpleBitVector_O*>(gctools::untag_general<core::T_O*>(tarray));
-  array->setBit(index, v);
+  (*array)[index] = v;
 }
 
 core::T_O** activationFrameReferenceFromClosure(core::T_O* closureRaw)

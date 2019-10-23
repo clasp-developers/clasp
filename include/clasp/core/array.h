@@ -530,6 +530,7 @@ namespace core {
   };
 };
 
+// FIXME: Iterators are probably very broken for complex bit unit arrays.
 namespace core {
   template <typename MyLeafType, size_t BitUnitBitWidth, typename MyParentType>
     class template_SimpleBitUnitVector : public MyParentType {
@@ -825,6 +826,9 @@ namespace core {
     bool equal(T_sp obj) const override { return this->eq(obj); };
     // NOTE: For only ComplexVector_T_O this will override the ComplexVector_O function,
     // since simple_element_type = T_sp, but that's harmless since they have the same effect.
+    // FIXME: This will be mildly inefficient for bit vectors, as the array total size is not
+    // always the number of elements for which space is allocated. Probably add a capacity()
+    // non virtual function or something, to get the actual size.
     Fixnum_sp vectorPushExtend(simple_element_type newElement, size_t extension = 0) {
       unlikely_if (!this->_Flags.fillPointerP()) noFillPointerSpecializedArrayError(this->asSmartPtr());
       cl_index idx = this->_FillPointerOrLengthOrDummy;

@@ -37,8 +37,7 @@ namespace core {
     }
     smart_ptr_type copy(size_t length, value_type initialElement, bool initialElementSupplied) {
       return make(length, initialElement, initialElementSupplied,
-                  MIN(bitunit_array_type::nwords_for_length(length),
-                      byteslen()),
+                  MIN(bitunit_array_type::nwords_for_length(length), byteslen()),
                   bytes());
     }
   };
