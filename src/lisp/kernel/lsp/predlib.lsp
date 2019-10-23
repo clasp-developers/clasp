@@ -122,7 +122,9 @@ Clasp-specific, internal. Used in optimizations of EQL."
   'general-number)
 
 (deftype ext:byte2 () '(unsigned-byte 2))
+(deftype ext:integer2 () '(signed-byte 2))
 (deftype ext:byte4 () '(unsigned-byte 4))
+(deftype ext:integer4 () '(signed-byte 4))
 
 (deftype ext:byte8 () '(INTEGER 0 255))
 (deftype ext:integer8 () '(INTEGER -128 127))
@@ -365,8 +367,8 @@ and is not adjustable."
 
 (defconstant-equal +upgraded-array-element-types+
   '#.(append '(NIL BASE-CHAR #+unicode CHARACTER BIT)
-             '(ext:byte2)
-             '(ext:byte4)
+             '(ext:byte2 ext:integer2)
+             '(ext:byte4 ext:integer4)
              '(EXT:BYTE8 EXT:INTEGER8)
              '(EXT:BYTE16 EXT:INTEGER16)
              '(EXT:BYTE32 EXT:INTEGER32)

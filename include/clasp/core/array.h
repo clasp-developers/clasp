@@ -47,6 +47,8 @@ SYMBOL_EXPORT_SC_(ExtPkg,byte8);
 SYMBOL_EXPORT_SC_(ExtPkg,byte16);
 SYMBOL_EXPORT_SC_(ExtPkg,byte32);
 SYMBOL_EXPORT_SC_(ExtPkg,byte64);
+SYMBOL_EXPORT_SC_(ExtPkg,integer2);
+SYMBOL_EXPORT_SC_(ExtPkg,integer4);
 SYMBOL_EXPORT_SC_(ExtPkg,integer8);
 SYMBOL_EXPORT_SC_(ExtPkg,integer16);
 SYMBOL_EXPORT_SC_(ExtPkg,integer32);
@@ -68,9 +70,9 @@ namespace ext {
   extern core::Symbol_sp& _sym_integer32;
   extern core::Symbol_sp& _sym_integer16;
   extern core::Symbol_sp& _sym_integer8;
-  
+  extern core::Symbol_sp& _sym_integer4;
+  extern core::Symbol_sp& _sym_integer2;
 };
-
 
 namespace cl {
   extern core::Symbol_sp& _sym_General_O;
