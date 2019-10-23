@@ -926,6 +926,9 @@ CL_DEFUN Vector_sp core__make_static_vector(T_sp element_type,
   else if (element_type == cl::_sym_character) { MAKE(SimpleCharacterString_O) }
   else if (element_type == cl::_sym_double_float) { MAKE(SimpleVector_double_O) }
   else if (element_type == cl::_sym_single_float) { MAKE(SimpleVector_float_O) }
+  else if (element_type == cl::_sym_bit) { MAKE(SimpleBitVector_O) }
+  else if (element_type == ext::_sym_byte2) { MAKE(SimpleVector_byte2_t_O) }
+  else if (element_type == ext::_sym_byte4) { MAKE(SimpleVector_byte4_t_O) }
   else if (element_type == ext::_sym_integer8) { MAKE(SimpleVector_int8_t_O) }
   else if (element_type == ext::_sym_byte8) { MAKE(SimpleVector_byte8_t_O) }
   else if (element_type == ext::_sym_integer16) { MAKE(SimpleVector_int16_t_O) }

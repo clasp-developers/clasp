@@ -756,12 +756,19 @@ namespace gctools {
 
     
     template <typename... ARGS>
-    static smart_pointer_type allocate_bitunit_container( size_t length, ARGS &&... args) {
+    static smart_pointer_type allocate_bitunit_container(bool static_container_p,
+                                                         size_t length, ARGS &&... args) {
       size_t size = sizeof_bitunit_container_with_header<OT>(length);
 #ifdef DEBUG_BITUNIT_CONTAINER
       printf("%s:%d  In allocate_bitunit_container length = %lu  size= %lu\n", __FILE__, __LINE__, length, size );
 #endif
-      smart_pointer_type result = GCObjectAllocator<OT>::allocate_kind(Header_s::Value::make<OT>(),size,length,std::forward<ARGS>(args)...);
+      smart_pointer_type result;
+      if (static_container_p)
+        result = GCObjectAllocator<OT>::static_allocate_kind(Header_s::Value::make<OT>(),size,length,
+                                                             std::forward<ARGS>(args)...);
+      else
+        result = GCObjectAllocator<OT>::allocate_kind(Header_s::Value::make<OT>(),size,length,
+                                                      std::forward<ARGS>(args)...);
 #if DEBUG_BITUNIT_CONTAINER
       {
         printf("%s:%d allocate_bitunit_container \n", __FILE__, __LINE__ );

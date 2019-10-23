@@ -40,10 +40,11 @@ namespace core {
                                bit_array_word initialElement=0,
                                bool initialElementSupplied=false,
                                size_t initialContentsSize=0,
-                               const bit_array_word* initialContents=NULL) {
+                               const bit_array_word* initialContents=NULL,
+                               bool static_vector_p = false) {
       // NOTE: Not using the template here since this is probably (?) better than shifting crap.
       bit_array_word initialFillElement = (initialElement == 0) ? 0 : ~0;
-      return gctools::GC<my_type>::allocate_bitunit_container(length,initialFillElement,initialElementSupplied,initialContentsSize,initialContents);
+      return gctools::GC<my_type>::allocate_bitunit_container(static_vector_p,length,initialFillElement,initialElementSupplied,initialContentsSize,initialContents);
     }
     smart_ptr_type copy(size_t length, bit_array_word initialElement, bool initialElementSupplied) {
       return make(length, initialElement, initialElementSupplied,
