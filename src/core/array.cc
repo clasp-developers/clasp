@@ -645,7 +645,7 @@ CL_DEFUN void core__fillArrayWithElt(Array_sp array, T_sp element, cl_index star
     size_t_pair p = sequenceStartEnd(core::_sym_fillArrayWithElt,
                                      array->arrayTotalSize(),start,end);
     array->unsafe_fillArrayWithElt(element,p.start,p.end);
-  }
+}
 
 CL_LISPIFY_NAME("core:replace-array");
 CL_DEFUN  T_sp core__replace_array(Array_sp array, Array_sp other)

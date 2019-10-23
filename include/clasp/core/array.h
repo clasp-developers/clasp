@@ -546,6 +546,9 @@ namespace core {
     typedef typename bitunit_array_type::reference reference_type;
     typedef value_type const_reference_type;
   public:
+    static const value_type min_value = 0;
+    static const value_type max_value = (1 << BitUnitBitWidth) - 1;
+  public:
     bitunit_array_type _Data;
   template_SimpleBitUnitVector(size_t length, bit_array_word initialElement, bool initialElementSupplied,
                                size_t initialContentsSize = 0, const bit_array_word* initialContents = NULL)
@@ -572,7 +575,7 @@ namespace core {
     static value_type from_object(T_sp object) {
       if (object.fixnump()) {
         Fixnum i = object.unsafe_fixnum();
-        if ((0 <= i) && (i < (1 << BitUnitBitWidth))) return i;
+        if (min_value <= i <= max_value) return i;
       }
       TYPE_ERROR(object, Cons_O::createList(cl::_sym_UnsignedByte, clasp_make_fixnum(BitUnitBitWidth)));
     }
