@@ -579,7 +579,7 @@ namespace core {
       }
       TYPE_ERROR(object, leaf_type::static_element_type());
     }
-    static T_sp to_object(value_type v) { return clasp_make_integer(v); }
+    static T_sp to_object(value_type v) { return Integer_O::create(v); }
     virtual void unsafe_fillArrayWithElt(T_sp initialElement, size_t start, size_t end) override {
       // FIXME: Could be done more efficiently by writing whole words, but be careful about the ends.
       for (size_t i = start; i < end; ++i) (*this)[i] = from_object(initialElement);
