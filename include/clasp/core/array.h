@@ -575,7 +575,7 @@ namespace core {
     static value_type from_object(T_sp object) {
       if (object.fixnump()) {
         Fixnum i = object.unsafe_fixnum();
-        if (min_value <= i <= max_value) return i;
+        if ((min_value <= i) && (i <= max_value)) return i;
       }
       TYPE_ERROR(object, leaf_type::static_element_type());
     }
