@@ -364,7 +364,7 @@
 (defun translate-bit-aref (array index &optional (label ""))
   (let* ((untagged (cmp:irc-untag-fixnum index cmp:%size_t%))
          (bit (%intrinsic-call "cc_simpleBitVectorAref" (list array untagged) "bit-aref")))
-    (cmp:irc-tag-fixnum bit "bit")))
+    (cmp:irc-tag-fixnum (cmp:irc-sext bit) "bit")))
 
 (defun translate-bit-aset (value array index)
   (let ((offset (cmp:irc-untag-fixnum index cmp:%size_t% "untagged-offset"))

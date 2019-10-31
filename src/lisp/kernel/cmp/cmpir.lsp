@@ -458,6 +458,9 @@
 (defun irc-int-to-ptr (val ptr-type &optional (label "inttoptr"))
   (llvm-sys:create-int-to-ptr *irbuilder* val ptr-type label))
 
+(defun irc-sext (val &optional (destty %fixnum%) (label "sext"))
+  (llvm-sys:create-sext *irbuilder* val destty label))
+
 (defun irc-untag-fixnum (t* fixnum-type &optional (label "fixnum"))
   "Given a T* fixnum llvm::Value, returns a Value of the given type
 representing the fixnum with the tag shaved off."
@@ -468,10 +471,11 @@ representing the fixnum with the tag shaved off."
 (defun irc-tag-fixnum (int &optional (label "fixnum"))
   "Given an llvm::Value of integer type, returns a T* value
 representing a tagged fixnum."
-  ;; :NUW T tells LLVM the top bits are zero, i.e. no overflow is possible.
+  ;; :NSW T tells LLVM that the bits shifted out will match the sign bit,
+  ;; which is true for fixnums.
   ;; NOTE: It's okay if the int is short (e.g. a bit) as inttoptr zexts.
   ;; (If the int is too long, it truncates - don't think we ever do that, though)
-  (irc-int-to-ptr (irc-shl int +fixnum-shift+ :nuw t) %t*% label))
+  (irc-int-to-ptr (irc-shl int +fixnum-shift+ :nsw t) %t*% label))
 
 (defun irc-maybe-cast-integer-to-t* (val &optional (label "fixnum-to-t*"))
   "If it's a fixnum then cast it - otherwise just return it - it should already be a t*"

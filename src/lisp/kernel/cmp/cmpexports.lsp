@@ -140,6 +140,7 @@
             analyze-top-level-form
             safe-system
             jit-constant-uintptr_t
+            irc-sext
             irc-int-to-ptr
             irc-ptr-to-int
             irc-verify-module-safe
