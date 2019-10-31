@@ -343,16 +343,6 @@ namespace core {
                   Array_sp data,
                   bool displacedToP,
                   Fixnum_sp displacedIndexOffset) : TemplatedBase(rank,dimensions,data,displacedToP,displacedIndexOffset) {};
-    static MDArrayBaseChar_sp make_multi_dimensional(List_sp dim_desig, simple_element_type initialElement, T_sp dataOrDisplacedTo, bool displacedToP, Fixnum_sp displacedIndexOffset) {
-      ASSERT(dim_desig.consp()||dim_desig.nilp());
-      size_t rank;
-      size_t arrayTotalSize = calculateArrayTotalSizeAndValidateDimensions(dim_desig,rank);
-      LIKELY_if (dataOrDisplacedTo.nilp()) {
-        dataOrDisplacedTo = simple_type::make(arrayTotalSize,initialElement,true);
-      }
-      MDArrayBaseChar_sp array = gctools::GC<MDArrayBaseChar_O>::allocate_container(false,rank,dim_desig,gc::As<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
-      return array;
-    }
   public:
 //    virtual bool equalp(T_sp o) const final;
   };
@@ -370,16 +360,6 @@ namespace core {
   SimpleMDArrayBaseChar_O(size_t rank,
                   List_sp dimensions,
                   Array_sp data) : TemplatedBase(rank,dimensions,data) {};
-    static SimpleMDArrayBaseChar_sp make_multi_dimensional(List_sp dim_desig, simple_element_type initialElement, T_sp data) {
-      ASSERT(dim_desig.consp()||dim_desig.nilp());
-      size_t rank;
-      size_t arrayTotalSize = calculateArrayTotalSizeAndValidateDimensions(dim_desig,rank);
-      LIKELY_if (data.nilp()) {
-        data = SimpleBaseString_O::make(arrayTotalSize,initialElement,true);
-      }
-      SimpleMDArrayBaseChar_sp array = gctools::GC<SimpleMDArrayBaseChar_O>::allocate_container(false,rank,dim_desig,gc::As<Array_sp>(data));
-      return array;
-    }
   };
 }; // namespace core
 
@@ -392,24 +372,12 @@ namespace core {
     virtual ~MDArrayCharacter_O() {};
   public:
     typedef template_Array<MDArrayCharacter_O,SimpleMDArrayCharacter_O,SimpleCharacterString_O,MDArray_O> TemplatedBase;
-    typedef typename TemplatedBase::simple_element_type simple_element_type;
-    typedef typename TemplatedBase::simple_type simple_type;
   public: // make array
   MDArrayCharacter_O(size_t rank,
                   List_sp dimensions,
                   Array_sp data,
                   bool displacedToP,
                   Fixnum_sp displacedIndexOffset) : TemplatedBase(rank,dimensions,data,displacedToP,displacedIndexOffset) {};
-    static MDArrayCharacter_sp make_multi_dimensional(List_sp dim_desig, simple_element_type initialElement, T_sp dataOrDisplacedTo, bool displacedToP, Fixnum_sp displacedIndexOffset) {
-      ASSERT(dim_desig.consp()||dim_desig.nilp());
-      size_t rank;
-      size_t arrayTotalSize = calculateArrayTotalSizeAndValidateDimensions(dim_desig,rank);
-      LIKELY_if (dataOrDisplacedTo.nilp()) {
-        dataOrDisplacedTo = simple_type::make(arrayTotalSize,initialElement,true);
-      }
-      MDArrayCharacter_sp array = gctools::GC<MDArrayCharacter_O>::allocate_container(false,rank,dim_desig,gc::As<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
-      return array;
-    }
   public:
 //    virtual bool equalp(T_sp o) const final;
   };
@@ -421,22 +389,10 @@ namespace core {
     virtual ~SimpleMDArrayCharacter_O() {};
   public:
     typedef template_SimpleArray<SimpleMDArrayCharacter_O,SimpleCharacterString_O,SimpleMDArray_O> TemplatedBase;
-    typedef typename TemplatedBase::simple_element_type simple_element_type;
-    typedef typename TemplatedBase::simple_type simple_type;
   public: // make array
   SimpleMDArrayCharacter_O(size_t rank,
                   List_sp dimensions,
                   Array_sp data) : TemplatedBase(rank,dimensions,data) {};
-    static SimpleMDArrayCharacter_sp make_multi_dimensional(List_sp dim_desig, simple_element_type initialElement, T_sp data) {
-      ASSERT(dim_desig.consp()||dim_desig.nilp());
-      size_t rank;
-      size_t arrayTotalSize = calculateArrayTotalSizeAndValidateDimensions(dim_desig,rank);
-      LIKELY_if (data.nilp()) {
-        data = SimpleCharacterString_O::make(arrayTotalSize,initialElement,true);
-      }
-      SimpleMDArrayCharacter_sp array = gctools::GC<SimpleMDArrayCharacter_O>::allocate_container(false,rank,dim_desig,gc::As<Array_sp>(data));
-      return array;
-    }
   };
 }; // namespace core
 

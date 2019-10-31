@@ -59,15 +59,6 @@ namespace core {
                      Array_sp data,
                      bool displacedToP,
                      Fixnum_sp displacedIndexOffset) : TemplatedBase(rank,dimensions,data,displacedToP,displacedIndexOffset) {};
-    static smart_ptr_type make_multi_dimensional(List_sp dim_desig, simple_element_type initialElement, T_sp dataOrDisplacedTo, bool displacedToP, Fixnum_sp displacedIndexOffset) {
-      ASSERT(dim_desig.consp()||dim_desig.nilp());
-      size_t rank;
-      size_t arrayTotalSize = calculateArrayTotalSizeAndValidateDimensions(dim_desig,rank);
-      LIKELY_if (dataOrDisplacedTo.nilp()) {
-        dataOrDisplacedTo = simple_type::make(arrayTotalSize,initialElement,true);
-      }
-      return gctools::GC<my_type>::allocate_container(false,rank,dim_desig,gc::As<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
-    }
   };
 };
 
@@ -82,15 +73,6 @@ namespace core {
   SimpleMDArray_byte16_t_O(size_t rank,
                            List_sp dimensions,
                            Array_sp data) : TemplatedBase(rank,dimensions,data) {};
-    static smart_ptr_type make_multi_dimensional(List_sp dim_desig, simple_element_type initialElement, T_sp data) {
-      ASSERT(dim_desig.consp()||dim_desig.nilp());
-      size_t rank;
-      size_t arrayTotalSize = calculateArrayTotalSizeAndValidateDimensions(dim_desig,rank);
-      LIKELY_if (data.nilp()) {
-        data = SimpleVector_byte16_t_O::make(arrayTotalSize,initialElement,true);
-      }
-      return gctools::GC<my_type>::allocate_container(false,rank,dim_desig,gc::As<Array_sp>(data));
-    }
   };
 };
 
@@ -188,15 +170,6 @@ namespace core {
                      Array_sp data,
                      bool displacedToP,
                      Fixnum_sp displacedIndexOffset) : TemplatedBase(rank,dimensions,data,displacedToP,displacedIndexOffset) {};
-    static smart_ptr_type make_multi_dimensional(List_sp dim_desig, simple_element_type initialElement, T_sp dataOrDisplacedTo, bool displacedToP, Fixnum_sp displacedIndexOffset) {
-      ASSERT(dim_desig.consp()||dim_desig.nilp());
-      size_t rank;
-      size_t arrayTotalSize = calculateArrayTotalSizeAndValidateDimensions(dim_desig,rank);
-      LIKELY_if (dataOrDisplacedTo.nilp()) {
-        dataOrDisplacedTo = simple_type::make(arrayTotalSize,initialElement,true);
-      }
-      return gctools::GC<my_type>::allocate_container(false,rank,dim_desig,gc::As<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
-    }
   };
 };
 
@@ -210,15 +183,6 @@ namespace core {
   SimpleMDArray_int16_t_O(size_t rank,
                          List_sp dimensions,
                          Array_sp data) : TemplatedBase(rank,dimensions,data) {};
-    static smart_ptr_type make_multi_dimensional(List_sp dim_desig, simple_element_type initialElement, T_sp data) {
-      ASSERT(dim_desig.consp()||dim_desig.nilp());
-      size_t rank;
-      size_t arrayTotalSize = calculateArrayTotalSizeAndValidateDimensions(dim_desig,rank);
-      LIKELY_if (data.nilp()) {
-        data = SimpleVector_int16_t_O::make(arrayTotalSize,initialElement,true);
-      }
-      return gctools::GC<my_type>::allocate_container(false,rank,dim_desig,gc::As<Array_sp>(data));
-    }
   };
 };
 

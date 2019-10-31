@@ -81,16 +81,6 @@ namespace core
              Array_sp data,
              bool displacedToP,
              Fixnum_sp displacedIndexOffset) : TemplatedBase(rank,dimensions,data,displacedToP,displacedIndexOffset) {};
-    static MDArrayT_sp make_multi_dimensional(List_sp dim_desig, T_sp initialElement, T_sp dataOrDisplacedTo, bool displacedToP, Fixnum_sp displacedIndexOffset) {
-      ASSERT(dim_desig.consp()||dim_desig.nilp());
-      size_t rank;
-      size_t arrayTotalSize = calculateArrayTotalSizeAndValidateDimensions(dim_desig,rank);
-      LIKELY_if (dataOrDisplacedTo.nilp()) {
-        dataOrDisplacedTo = SimpleVector_O::make(arrayTotalSize,initialElement,true);
-      }
-      MDArrayT_sp array = gctools::GC<MDArrayT_O>::allocate_container(false,rank,dim_desig,gc::As<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
-      return array;
-    }
   public: // specific to MDArrayT_O
     static MDArrayT_sp create(const gctools::Vec0<T_sp> &objs);
   public:
@@ -109,16 +99,6 @@ namespace core {
   SimpleMDArrayT_O(size_t rank,
                    List_sp dimensions,
                    Array_sp data) : TemplatedBase(rank,dimensions,data) {};
-    static SimpleMDArrayT_sp make_multi_dimensional(List_sp dim_desig, T_sp initialElement, T_sp data) {
-      ASSERT(dim_desig.consp()||dim_desig.nilp());
-      size_t rank;
-      size_t arrayTotalSize = calculateArrayTotalSizeAndValidateDimensions(dim_desig,rank);
-      LIKELY_if (data.nilp()) {
-        data = SimpleVector_O::make(arrayTotalSize,initialElement,true);
-      }
-      SimpleMDArrayT_sp array = gctools::GC<SimpleMDArrayT_O>::allocate_container(false,rank,dim_desig,gc::As<Array_sp>(data));
-      return array;
-    }
   public:
 //    virtual bool equalp(T_sp o) const final;
   };
