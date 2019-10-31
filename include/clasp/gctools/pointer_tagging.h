@@ -318,11 +318,6 @@ template <class T>
     return reinterpret_cast<T>(global_tagged_Symbol_OP_deleted);
   }
   template <class T>
-    inline T tag_sameAsKey() {
-    GCTOOLS_ASSERT(tagged_sameAsKeyP(global_tagged_Symbol_OP_sameAsKey));
-    return reinterpret_cast<T>(global_tagged_Symbol_OP_sameAsKey);
-  }
-  template <class T>
     inline T tag_vaslist(core::Vaslist *p) {
     GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(p) & tag_mask) == 0);
     return reinterpret_cast<T>(reinterpret_cast<uintptr_t>(p) + valist_tag);

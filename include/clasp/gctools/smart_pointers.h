@@ -1321,14 +1321,6 @@ gctools::smart_ptr<T> _Deleted() {
   return x;
 }
 
-template <class T>
-gctools::smart_ptr<T> _SameAsKey() {
-  gctools::smart_ptr<T> x((gctools::Tagged)gctools::tag_sameAsKey<T *>());
-  return x;
-}
-
-//template <class T> inline bool Null(const gctools::smart_ptr<T>& ptr) { return ptr.nilp();};
-
 namespace gctools {
 
 // LambdaListHandler_sp llh(ptr)

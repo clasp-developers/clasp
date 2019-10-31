@@ -14,7 +14,6 @@ SRC_CORE_FILES = \
         'creator',
         'sharpEqualWrapper',
         'stacks',
-        'weakKeyMapping',
         'weakHashTable',
         'weakPointer',
         'compiler',
