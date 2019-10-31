@@ -93,7 +93,7 @@ CL_DEFMETHOD int SymbolToEnumConverter_O::enumIndexForSymbol(T_sp obj) {
 Symbol_sp SymbolToEnumConverter_O::symbolForEnumIndex(int index) {
   _OF();
   Fixnum_sp indexKey = make_fixnum(index);
-  ASSERTF(this->_EnumToSymbol->contains(indexKey), BF("Could not find symbol for EnumIndex(%d) in SymbolToEnumConverter(%s)") % index % this->_WhatTheEnumsRepresent->get().c_str());
+  ASSERTF(this->_EnumToSymbol->contains(indexKey), BF("Could not find symbol for EnumIndex(%d) in SymbolToEnumConverter(%s)") % index % this->_WhatTheEnumsRepresent->get_std_string().c_str());
   return gc::As<Symbol_sp>(this->_EnumToSymbol->gethash(indexKey));
 }
 
