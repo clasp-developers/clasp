@@ -74,10 +74,6 @@ namespace core {
     static SimpleBaseString_sp make(const std::string& str) {
       return SimpleBaseString_O::make(str.size(),'\0',true,str.size(),(const claspChar*)str.c_str());
     }
-    smart_ptr_type copy(size_t length, value_type initialElement, bool initialElementSupplied) {
-      return make(length, initialElement, initialElementSupplied,
-                  MIN(length, this->length()), this->begin());
-    }
   //SimpleBaseString_O(size_t total_size) : Base(), _Data('\0',total_size+1) {};
   public:
     virtual T_sp type_of() const final { return Cons_O::createList(cl::_sym_simple_base_string,clasp_make_fixnum(this->length()));};
@@ -151,10 +147,6 @@ namespace core {
         (*bs)[i] = str[i];
       }
       return bs;
-    }
-    smart_ptr_type copy(size_t length, value_type initialElement, bool initialElementSupplied) {
-      return make(length, initialElement, initialElementSupplied,
-                  MIN(length, this->length()), this->begin());
     }
   public:
     virtual T_sp element_type() const final { return cl::_sym_character; };

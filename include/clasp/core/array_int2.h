@@ -35,11 +35,6 @@ namespace core {
                                                               init, initialElementSupplied,
                                                               initialContentsSize, initialContents);
     }
-    smart_ptr_type copy(size_t length, value_type initialElement, bool initialElementSupplied) {
-      return make(length, initialElement, initialElementSupplied,
-                  MIN(bitunit_array_type::nwords_for_length(length), byteslen()),
-                  bytes());
-    }
     static T_sp static_element_type() { return ext::_sym_byte2; }
   };
 };
@@ -147,11 +142,6 @@ namespace core {
       return gctools::GC<my_type>::allocate_bitunit_container(static_vector_p, length,
                                                               init, initialElementSupplied,
                                                               initialContentsSize, initialContents);
-    }
-    smart_ptr_type copy(size_t length, value_type initialElement, bool initialElementSupplied) {
-      return make(length, initialElement, initialElementSupplied,
-                  MIN(bitunit_array_type::nwords_for_length(length), byteslen()),
-                  bytes());
     }
     static T_sp static_element_type() { return ext::_sym_integer2; }
   };

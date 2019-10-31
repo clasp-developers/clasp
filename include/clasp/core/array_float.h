@@ -41,10 +41,6 @@ namespace core {
       auto bs = gctools::GC<my_type>::allocate_container(static_vector_p,length,initialElement,initialElementSupplied,initialContentsSize,initialContents);
       return bs;
     }
-    smart_ptr_type copy(size_t length, value_type initialElement, bool initialElementSupplied) {
-      return make(length, initialElement, initialElementSupplied,
-                  MIN(length, this->length()), this->begin());
-    }
   public:
     virtual T_sp element_type() const override { return cl::_sym_single_float;};
   public: // Provide the API that I used for NVector_sp

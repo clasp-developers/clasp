@@ -33,8 +33,10 @@ SimpleBitVector_sp SimpleBitVector_O::make(const string& bv) {
   return x;
 }
 
-// Used by Cando. FIXME: Now a bit redundant.
-SimpleBitVector_sp SimpleBitVector_copy(SimpleBitVector_sp orig_sbv) { return orig_sbv->copy(); }
+// Used by Cando.
+SimpleBitVector_sp SimpleBitVector_copy(SimpleBitVector_sp orig_sbv)
+{ return orig_sbv->copy(orig_sbv->length(), SimpleBitVector_O::default_initial_element(), false);
+}
 
 bool SimpleBitVector_O::equal(T_sp other) const {
   if (this == &*other) return true;

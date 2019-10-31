@@ -45,12 +45,6 @@ namespace core {
       bit_array_word init = initialFillValue(initialElement);
       return gctools::GC<my_type>::allocate_bitunit_container(static_vector_p,length,init,initialElementSupplied,initialContentsSize,initialContents);
     }
-    smart_ptr_type copy(size_t length, bit_array_word initialElement, bool initialElementSupplied) {
-      return make(length, initialElement, initialElementSupplied,
-                  MIN(bitunit_array_type::nwords_for_length(length), byteslen()),
-                  bytes());
-    }
-    smart_ptr_type copy() { return copy(this->length(), default_initial_element(), false); }
     static smart_ptr_type make(const string& bv);
   public:
     virtual T_sp type_of() const final { return Cons_O::createList(cl::_sym_simple_bit_vector,clasp_make_fixnum(this->length()));}

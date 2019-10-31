@@ -497,6 +497,11 @@ namespace core {
   public:
     static void never_invoke_allocator() {gctools::GCAbstractAllocator<template_SimpleVector>::never_invoke_allocator();};
   public:
+    leaf_smart_ptr_type copy(size_t length, value_type initialElement, bool initialElementSupplied) {
+      return leaf_type::make(length, initialElement, initialElementSupplied,
+                             MIN(length, this->length()), this->begin());
+    }
+  public:
     // NULL terminated strings use this - so the ASSERT needs to accept it
     reference_type operator[](size_t index) { BOUNDS_ASSERT_LT(index,this->length());return this->_Data[index];};
     const_reference_type operator[](size_t index) const { BOUNDS_ASSERT_LT(index,this->length());return this->_Data[index];};
@@ -556,6 +561,13 @@ namespace core {
   template_SimpleBitUnitVector(size_t length, bit_array_word initialElement, bool initialElementSupplied,
                                size_t initialContentsSize = 0, const bit_array_word* initialContents = NULL)
     : Base(), _Data(length,initialElement,initialElementSupplied,initialContentsSize,initialContents) {};
+  public:
+    leaf_smart_ptr_type copy(size_t length, value_type initialElement, bool initialElementSupplied) {
+      bit_array_word init = initialFillValue(initialElement);
+      return leaf_type::make(length, init, initialElementSupplied,
+                             MIN(bitunit_array_type::nwords_for_length(length), byteslen()),
+                             bytes());
+    }
   public:
     reference_type operator[](size_t index) {
       BOUNDS_ASSERT_LT(index,this->length());
