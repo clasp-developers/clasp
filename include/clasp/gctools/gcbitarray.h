@@ -105,7 +105,11 @@ class GCBitUnitArray_moveable : public GCContainer {
   // Hopefully the compiler unrolls the loop.
   static bit_array_word initialFillValue(value_type initialValue) {
     bit_array_word result = unsign(initialValue);
-    for (size_t i = BitUnitBitWidth; i < BIT_ARRAY_WORD_BITS; i *= 2) result |= result << i;
+    // There's probably a way to express this with template specialization but damn if I can
+    // figure it out
+    if (BitUnitBitWidth == 1) {
+      if (result != 0) result = ~0;
+    } else for (size_t i = BitUnitBitWidth; i < BIT_ARRAY_WORD_BITS; i *= 2) result |= result << i;
     return result;
   }
  public:
