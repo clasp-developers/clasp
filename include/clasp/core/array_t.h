@@ -30,6 +30,12 @@ namespace core {
       auto bs = gctools::GC<SimpleVector_O>::allocate_container(static_vector_p,length,initialElement,initialElementSupplied,initialContentsSize,initialContents);
       return bs;
     }
+    // Used in one place in lisp.cc. FIXME: Maybe remove?
+    static SimpleVector_sp make(const gc::Vec0<T_sp>& objs) {
+      size_t len = objs.size();
+      if (len == 0) return make(0);
+      else return make(len, _Nil<T_O>(), true, len, &(objs[0]));
+    }
   public:
     virtual T_sp type_of() const final {return Cons_O::createList(cl::_sym_simple_vector,clasp_make_fixnum(this->length()));};
     virtual T_sp element_type() const override { return cl::_sym_T_O; };
@@ -53,10 +59,6 @@ namespace core
              Array_sp data,
              bool displacedToP,
              Fixnum_sp displacedIndexOffset) : TemplatedBase(rank,dimensions,data,displacedToP,displacedIndexOffset) {};
-  public: // specific to MDArrayT_O
-    static MDArrayT_sp create(const gctools::Vec0<T_sp> &objs);
-  public:
-//    virtual bool equalp(T_sp o) const final;
   };
 }; // namespace core
 
@@ -71,8 +73,6 @@ namespace core {
   SimpleMDArrayT_O(size_t rank,
                    List_sp dimensions,
                    Array_sp data) : TemplatedBase(rank,dimensions,data) {};
-  public:
-//    virtual bool equalp(T_sp o) const final;
   };
 }; // namespace core
 
@@ -117,10 +117,5 @@ public: // make vector
   static ComplexVector_T_sp make(size_t dimension, T_sp initialElement, T_sp fillPointer ) {
     return make(dimension,initialElement,fillPointer,_Nil<T_O>(),false,clasp_make_fixnum(0));
   }
-
-public: // specific to ComplexVector_T_O
-  static ComplexVector_T_sp create(const gctools::Vec0<T_sp> &objs);
-public:
-//    virtual bool equalp(T_sp o) const final;
  };
 }; // namespace core

@@ -1297,7 +1297,7 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], const CommandLine
   for (int j(endArg + 1); j < argc; ++j) {
     vargs.push_back(SimpleBaseString_O::make(argv[j]));
   }
-  ComplexVector_T_sp args = ComplexVector_T_O::create(vargs);
+  SimpleVector_sp args = SimpleVector_O::make(vargs);
   LOG(BF(" Command line arguments are being set in Lisp to: %s") % _rep_(args));
   SYMBOL_EXPORT_SC_(CorePkg, STARcommandLineArgumentsSTAR);
   _sym_STARcommandLineArgumentsSTAR->defparameter(args);
