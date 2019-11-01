@@ -82,17 +82,16 @@ namespace core {
   public:
     typedef template_Vector<ComplexVector_fixnum_O,SimpleVector_fixnum_O,ComplexVector_O> TemplatedBase;
   public: // make vector
-  ComplexVector_fixnum_O(size_t dummy_rank_1,
-                     size_t dimension,
-                     T_sp fillPointer,
-                     Array_sp data,
-                     bool displacedToP,
-                     Fixnum_sp displacedIndexOffset) : TemplatedBase(Rank1(),dimension,fillPointer,data,displacedToP,displacedIndexOffset) {};
+  ComplexVector_fixnum_O(size_t dimension,
+                         T_sp fillPointer,
+                         Array_sp data,
+                         bool displacedToP,
+                         Fixnum_sp displacedIndexOffset) : TemplatedBase(dimension,fillPointer,data,displacedToP,displacedIndexOffset) {};
     static smart_ptr_type make_vector(size_t dimension, simple_element_type initialElement/*=simple_element_type()*/, T_sp fillPointer/*=_Nil<T_O>()*/, T_sp dataOrDisplacedTo/*=_Nil<T_O>()*/, bool displacedToP/*=false*/, Fixnum_sp displacedIndexOffset/*=clasp_make_fixnum(0)*/ ) {
       LIKELY_if (dataOrDisplacedTo.nilp()) {
         dataOrDisplacedTo = simple_type::make(dimension,initialElement,true);
       }
-      return gctools::GC<my_type>::allocate_container(false,1,dimension,fillPointer,gc::As_unsafe<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
+      return gctools::GC<my_type>::allocate_container(false,dimension,fillPointer,gc::As_unsafe<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
     }
     static smart_ptr_type make_vector(size_t dimension) {
       return make_vector(dimension,0,_Nil<T_O>(),_Nil<T_O>(),false,clasp_make_fixnum(0));

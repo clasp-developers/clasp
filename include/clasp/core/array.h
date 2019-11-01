@@ -390,8 +390,7 @@ FORWARD(ComplexVector);
 class ComplexVector_O : public MDArray_O {
   LISP_CLASS(core, CorePkg, ComplexVector_O, "ComplexVector",MDArray_O);
     // One dimension vector
- ComplexVector_O(Rank1 dummy,
-                 size_t dimension,
+ ComplexVector_O(size_t dimension,
                  T_sp fillPointer,
                  Array_sp data,
                  bool displacedToP,
@@ -407,8 +406,6 @@ namespace core {
     LISP_CLASS(core, CorePkg, SimpleMDArray_O, "simple-mdarray",MDArray_O);
     virtual ~SimpleMDArray_O() {};
   public:
-    SimpleMDArray_O(size_t dimension,
-                    Array_sp data) : MDArray_O(Rank1(),dimension,_Nil<T_O>(),data,false,clasp_make_fixnum(0)) {};
     // multiple dimensions
     SimpleMDArray_O(size_t rank,
                     List_sp dimensions,
@@ -666,14 +663,6 @@ namespace core {
     typedef gctools::GCArray_moveable<simple_element_type> simple_vector_type;
     typedef typename MDArray_O::value_type dimension_element_type;
   public:
-    // vector
-  template_Array(Rank1 dummy,
-                 size_t dimension,
-                 T_sp fillPointer,
-                 Array_sp data,
-                 bool displacedToP,
-                 Fixnum_sp displacedIndexOffset)
-    : Base(dummy,dimension,fillPointer,data,displacedToP,displacedIndexOffset) {};
     // multidimensional array
   template_Array(size_t rank,
                  List_sp dimensions,
@@ -778,13 +767,12 @@ namespace core {
     typedef typename MDArray_O::value_type dimension_element_type;
   public:
     // vector
-  template_Vector(Rank1 dummy,
-                  size_t dimension,
+  template_Vector(size_t dimension,
                   T_sp fillPointer,
                   Array_sp data,
                   bool displacedToP,
                   Fixnum_sp displacedIndexOffset)
-    : Base(dummy,dimension,fillPointer,data,displacedToP,displacedIndexOffset) {};
+    : Base(dimension,fillPointer,data,displacedToP,displacedIndexOffset) {};
   public:
     // Primary functions/operators for operator[] that handle displacement
     // There's a non-const and a const version of each

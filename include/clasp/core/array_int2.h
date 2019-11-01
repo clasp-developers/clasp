@@ -76,7 +76,7 @@ namespace core {
                           T_sp fillPointer,
                           Array_sp data,
                           bool displacedToP,
-                          Fixnum_sp displacedIndexOffset) : TemplatedBase(Rank1(),dimension,fillPointer,data,displacedToP,displacedIndexOffset) {};
+                          Fixnum_sp displacedIndexOffset) : TemplatedBase(dimension,fillPointer,data,displacedToP,displacedIndexOffset) {};
     static smart_ptr_type make(size_t dimension, simple_element_type initialElement,
                                bool initialElementSuppliedP, T_sp fillPointer, T_sp dataOrDisplacedTo,
                                bool displacedToP, Fixnum_sp displacedIndexOffset) {
@@ -165,7 +165,7 @@ namespace core {
                           T_sp fillPointer,
                           Array_sp data,
                           bool displacedToP,
-                          Fixnum_sp displacedIndexOffset) : TemplatedBase(Rank1(),dimension,fillPointer,data,displacedToP,displacedIndexOffset) {};
+                          Fixnum_sp displacedIndexOffset) : TemplatedBase(dimension,fillPointer,data,displacedToP,displacedIndexOffset) {};
     static smart_ptr_type make(size_t dimension, simple_element_type initialElement,
                                bool initialElementSuppliedP, T_sp fillPointer, T_sp dataOrDisplacedTo,
                                bool displacedToP, Fixnum_sp displacedIndexOffset) {

@@ -179,13 +179,12 @@ namespace core {
     LISP_CLASS(core, CorePkg, StrNs_O, "StrNs",ComplexVector_O);
     virtual ~StrNs_O() {};
   public:
-  StrNs_O(Rank1 dummy,
-          size_t dimension,
+  StrNs_O(size_t dimension,
           T_sp fillPointer,
           Array_sp data,
           bool displacedToP,
           Fixnum_sp displacedIndexOffset)
-    : Base(dummy,dimension,fillPointer,data,displacedToP,displacedIndexOffset) {};
+    : Base(dimension,fillPointer,data,displacedToP,displacedIndexOffset) {};
   public:
     virtual void sxhash_(HashGenerator& hg) const final {
       AbstractSimpleVector_sp svec;
@@ -215,18 +214,17 @@ namespace core {
     typedef simple_element_type* iterator;
     typedef const simple_element_type* const_iterator;
   public:
-  Str8Ns_O(size_t dummy_rank_1,
-           size_t dimension,
+  Str8Ns_O(size_t dimension,
            T_sp fillPointer,
            Array_sp data,
            bool displacedToP,
            Fixnum_sp displacedIndexOffset)
-    : TemplatedBase(Rank1(),dimension,fillPointer,data,displacedToP,displacedIndexOffset) {};
+    : TemplatedBase(dimension,fillPointer,data,displacedToP,displacedIndexOffset) {};
     static Str8Ns_sp make(size_t dimension, claspChar initElement/*='\0'*/, bool initialElementSuppliedP/*=false*/, T_sp fillPointer/*=_Nil<T_O>()*/, T_sp dataOrDisplacedTo/*=_Nil<T_O>()*/, bool displacedToP/*=false*/, Fixnum_sp displacedIndexOffset/*=clasp_make_fixnum(0)*/ ) {
       LIKELY_if (dataOrDisplacedTo.nilp()) {
         dataOrDisplacedTo = SimpleBaseString_O::make(dimension,initElement,initialElementSuppliedP);
       }
-      auto s = gctools::GC<Str8Ns_O>::allocate_container(false,1,dimension,fillPointer,gc::As<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
+      auto s = gctools::GC<Str8Ns_O>::allocate_container(false,dimension,fillPointer,gc::As<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
       return s;
     }
     static Str8Ns_sp make(size_t dimension, claspChar initElement/*='\0'*/, bool initialElementSuppliedP/*=false*/, T_sp fillPointer/*=_Nil<T_O>()*/) {
@@ -280,18 +278,17 @@ namespace core {
     typedef simple_element_type* iterator;
     typedef const simple_element_type* const_iterator;
   public:
-  StrWNs_O(size_t dummy_rank_1,
-           size_t dimension,
+  StrWNs_O(size_t dimension,
            T_sp fillPointer,
            Array_sp data,
            bool displacedToP,
            Fixnum_sp displacedIndexOffset)
-    : TemplatedBase(Rank1(),dimension,fillPointer,data,displacedToP,displacedIndexOffset) {};
+    : TemplatedBase(dimension,fillPointer,data,displacedToP,displacedIndexOffset) {};
     static StrWNs_sp make(size_t dimension, claspCharacter initElement/*='\0'*/, bool initialElementSuppliedP/*=false*/, T_sp fillPointer/*=_Nil<T_O>()*/, T_sp dataOrDisplacedTo/*=_Nil<T_O>()*/, bool displacedToP/*=false*/, Fixnum_sp displacedIndexOffset/*=clasp_make_fixnum(0)*/ ) {
       LIKELY_if (dataOrDisplacedTo.nilp()) {
         dataOrDisplacedTo = SimpleCharacterString_O::make(dimension,initElement,initialElementSuppliedP);
       }
-      auto s = gctools::GC<StrWNs_O>::allocate_container(false,1,dimension,fillPointer,gc::As<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
+      auto s = gctools::GC<StrWNs_O>::allocate_container(false,dimension,fillPointer,gc::As<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
       return s;
     }
     static StrWNs_sp make(size_t dimension, claspCharacter initElement/*='\0'*/, bool initialElementSuppliedP/*=false*/, T_sp fillPointer/*=_Nil<T_O>()*/) {

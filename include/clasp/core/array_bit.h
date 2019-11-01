@@ -83,7 +83,7 @@ namespace core {
                 Array_sp data,
                 bool displacedToP,
                 Fixnum_sp displacedIndexOffset)
-    : TemplatedBase(Rank1(),dimension,fillPointer,data,displacedToP,displacedIndexOffset) {};
+    : TemplatedBase(dimension,fillPointer,data,displacedToP,displacedIndexOffset) {};
     static BitVectorNs_sp make(size_t length, simple_element_type initialElement, bool initialElementSuppliedP, T_sp fillPointer, T_sp dataOrDisplacedTo, bool displacedToP, Fixnum_sp displacedIndexOffset ) {
       LIKELY_if (dataOrDisplacedTo.nilp())
         dataOrDisplacedTo = simple_type::make(length,initialElement,initialElementSuppliedP);

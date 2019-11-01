@@ -761,18 +761,6 @@ size_t calculateArrayTotalSizeAndValidateDimensions(List_sp dim_desig, size_t& r
 
 namespace core {
 
-MDArrayT_sp MDArrayT_O::create(const gc::Vec0<T_sp>& objs) {
-  size_t len = objs.size();
-  SimpleVector_sp ss;
-  if (len==0) {
-    ss = SimpleVector_O::make(len,_Nil<T_O>(),true);
-  } else {
-    ss = SimpleVector_O::make(len,_Nil<T_O>(),true,len,&(objs[0]));
-  }
-  MDArrayT_sp result = MDArrayT_O::make(len,_Nil<T_O>(),_Nil<T_O>(),ss,false,clasp_make_fixnum(0));
-  return result;
-}
-
 ComplexVector_T_sp ComplexVector_T_O::create(const gc::Vec0<T_sp>& objs) {
   size_t len = objs.size();
   SimpleVector_sp ss;

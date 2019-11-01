@@ -47,34 +47,6 @@ namespace core
     virtual ~MDArrayT_O() {};
   public:
     typedef template_Array< MDArrayT_O, SimpleMDArrayT_O, SimpleVector_O, MDArray_O> TemplatedBase;
-  public: // make vector
-  MDArrayT_O( size_t dummy_rank_1,
-              size_t dimension,
-              T_sp fillPointer,
-              Array_sp data,
-              bool displacedToP,
-              Fixnum_sp displacedIndexOffset) : TemplatedBase( Rank1(), dimension, fillPointer, data,displacedToP, displacedIndexOffset ) {};
-    static MDArrayT_sp make( size_t dimension,
-                             T_sp initialElement /* =_Nil<T_O>() */,
-                             T_sp fillPointer /* =_Nil<T_O>() */,
-                             T_sp dataOrDisplacedTo /* =_Nil<T_O>() */,
-                             bool displacedToP /* = false */,
-                             Fixnum_sp displacedIndexOffset /* = clasp_make_fixnum(0) */ )
-    {
-      LIKELY_if ( dataOrDisplacedTo.nilp() )
-      {
-        dataOrDisplacedTo = SimpleVector_O::make(dimension,initialElement,true);
-      }
-      MDArrayT_sp array = gctools::GC<MDArrayT_O>::allocate_container(false,1,dimension,fillPointer,gc::As_unsafe<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
-      return array;
-    }
-    static MDArrayT_sp make(size_t dimension, T_sp initialElement) {
-      return make(dimension,initialElement,_Nil<T_O>(),_Nil<T_O>(),false,clasp_make_fixnum(0));
-    }
-    static MDArrayT_sp make(size_t dimension, T_sp initialElement, T_sp fillPointer ) {
-      return make(dimension,initialElement,fillPointer,_Nil<T_O>(),false,clasp_make_fixnum(0));
-    }
-
   public: // make array
   MDArrayT_O(size_t rank,
              List_sp dimensions,
@@ -113,12 +85,11 @@ class ComplexVector_T_O : public template_Vector<ComplexVector_T_O, SimpleVector
 public:
   typedef template_Vector<ComplexVector_T_O, SimpleVector_O, ComplexVector_O> TemplatedBase;
 public: // make vector
-  ComplexVector_T_O( size_t dummy_rank_1,
-                     size_t dimension,
-                     T_sp fillPointer,
-                     Array_sp data,
-                     bool displacedToP,
-                     Fixnum_sp displacedIndexOffset) : TemplatedBase( Rank1(), dimension, fillPointer, data,displacedToP, displacedIndexOffset ) {};
+  ComplexVector_T_O(size_t dimension,
+                    T_sp fillPointer,
+                    Array_sp data,
+                    bool displacedToP,
+                    Fixnum_sp displacedIndexOffset) : TemplatedBase(dimension, fillPointer, data,displacedToP, displacedIndexOffset ) {};
 
   static ComplexVector_T_sp make( size_t dimension,
                                   T_sp initialElement /* =_Nil<T_O>() */,
@@ -131,7 +102,7 @@ public: // make vector
     {
       dataOrDisplacedTo = SimpleVector_O::make(dimension,initialElement,true);
     }
-    ComplexVector_T_sp array = gctools::GC<ComplexVector_T_O>::allocate_container(false,1,dimension,fillPointer,gc::As_unsafe<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
+    ComplexVector_T_sp array = gctools::GC<ComplexVector_T_O>::allocate_container(false,dimension,fillPointer,gc::As_unsafe<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
     return array;
   }
   static smart_ptr_type make(size_t dimension, simple_element_type initialElement,
