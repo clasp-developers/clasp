@@ -98,10 +98,8 @@ public: // make vector
                                   bool displacedToP /* = false */,
                                   Fixnum_sp displacedIndexOffset /* = clasp_make_fixnum(0) */ )
   {
-    LIKELY_if ( dataOrDisplacedTo.nilp() )
-    {
+    LIKELY_if (dataOrDisplacedTo.nilp())
       dataOrDisplacedTo = SimpleVector_O::make(dimension,initialElement,true);
-    }
     ComplexVector_T_sp array = gctools::GC<ComplexVector_T_O>::allocate_container(false,dimension,fillPointer,gc::As_unsafe<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
     return array;
   }

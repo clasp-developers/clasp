@@ -99,9 +99,8 @@ namespace core {
                           bool displacedToP,
                           Fixnum_sp displacedIndexOffset) : TemplatedBase(dimension,fillPointer,data,displacedToP,displacedIndexOffset) {};
     static smart_ptr_type make_vector(size_t dimension, simple_element_type initialElement/*=simple_element_type()*/, T_sp fillPointer/*=_Nil<T_O>()*/, T_sp dataOrDisplacedTo/*=_Nil<T_O>()*/, bool displacedToP/*=false*/, Fixnum_sp displacedIndexOffset/*=clasp_make_fixnum(0)*/ ) {
-      LIKELY_if (dataOrDisplacedTo.nilp()) {
+      LIKELY_if (dataOrDisplacedTo.nilp())
         dataOrDisplacedTo = simple_type::make(dimension,initialElement,true);
-      }
       return gctools::GC<my_type>::allocate_container(false,dimension,fillPointer,gc::As_unsafe<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
     }
     static smart_ptr_type make_vector(size_t dimension) {

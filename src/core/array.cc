@@ -442,12 +442,6 @@ Fixnum_sp MDArray_O::vectorPushExtend(T_sp newElement, size_t extension) {
   return make_fixnum(idx);
 }
 
-// ------------------------------------------------------------
-//
-// ComplexVector
-
-
-
 // ----------------------------------------------------------------------
 //
 
