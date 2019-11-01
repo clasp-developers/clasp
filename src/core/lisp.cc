@@ -312,122 +312,6 @@ void Lisp_O::finalizeSpecialSymbols() {
   //    	Symbol_sp symbol_sameAsKey = gctools::smart_ptr<Symbol_O>(gctools::global_Symbol_OP_sameAsKey);
 }
 
-/*! Run some quick tests to determine if eval::funcall is working properly.
-Changes to the calling convention in lispCallingConvention.h must synchronize with code in evaluator.h
-Sometimes they get out of sync and this code is designed to trap that.
-*/
-void run_quick_tests() {
-  SimpleBaseString_sp slow = SimpleBaseString_O::make("Hello");
-  String_sp sup = cl__string_upcase(slow);
-  printf("%s:%d slow->%s  sup->%s  cl__length(sup)->%lu\n", __FILE__, __LINE__, slow->get_std_string().c_str(), sup->get_std_string().c_str(), cl__length(sup));
-  SimpleBaseString_sp s1 = SimpleBaseString_O::make("Hello");
-  Str8Ns_sp s2 = Str8Ns_O::create("there");
-  Str8Ns_sp s3 = Str8Ns_O::create("Hello");
-  Str8Ns_sp s4 = Str8Ns_O::make(16,'\0',true,clasp_make_fixnum(0));
-  printf("%s:%d  s1 = %s\n", __FILE__, __LINE__, s1->get_std_string().c_str());
-  printf("%s:%d  _rep_(s1) = %s\n", __FILE__, __LINE__, _rep_(s1).c_str());
-  printf("%s:%d  s2 = %s\n", __FILE__, __LINE__, s2->get_std_string().c_str());
-  printf("%s:%d  _rep_(s2) = %s\n", __FILE__, __LINE__, _rep_(s2).c_str());
-  printf("%s:%d  s3 = %s\n", __FILE__, __LINE__, s3->get_std_string().c_str());
-  printf("%s:%d  _rep_(s3) = %s\n", __FILE__, __LINE__, _rep_(s3).c_str());
-  printf("%s:%d  (equal s1 s2) = %d\n", __FILE__, __LINE__, s1->equal(s2));
-  printf("%s:%d  (equal s1 s3) = %d\n", __FILE__, __LINE__, s1->equal(s3));
-#define MATCH_PAIR(fn,x,y) {printf("%s:%d (%s %s %s) ...\n", __FILE__, __LINE__, #fn, #x, #y); printf("%s:%d DONE  (%s %s %s) -> %d\n", __FILE__, __LINE__, #fn, #x, #y, fn(x,y));}
-#define MATCH_PAIR_notnilp(fn,x,y) {printf("%s:%d (%s %s %s) ...\n", __FILE__, __LINE__, #fn, #x, #y); printf("%s:%d DONE  (%s %s %s) -> %d\n", __FILE__, __LINE__, #fn, #x, #y, fn(x,y).notnilp());}
-#define MATCH_PAIRS(fn,a,b,c,d) \
-  printf("%s:%d Running %s\n", __FILE__, __LINE__, #fn);\
-  MATCH_PAIR(fn,a,a); \
-  MATCH_PAIR(fn,a,b); \
-  MATCH_PAIR(fn,a,c); \
-  MATCH_PAIR(fn,a,d); \
-  MATCH_PAIR(fn,b,a); \
-  MATCH_PAIR(fn,b,b); \
-  MATCH_PAIR(fn,b,c); \
-  MATCH_PAIR(fn,b,d); \
-  MATCH_PAIR(fn,c,a); \
-  MATCH_PAIR(fn,c,b); \
-  MATCH_PAIR(fn,c,c); \
-  MATCH_PAIR(fn,c,d); \
-  MATCH_PAIR(fn,d,a); \
-  MATCH_PAIR(fn,d,b); \
-  MATCH_PAIR(fn,d,c); \
-  MATCH_PAIR(fn,d,d);
-#define MATCH_PAIRS_notnilp(fn,a,b,c,d) \
-  printf("%s:%d Running %s\n", __FILE__, __LINE__, #fn);\
-  MATCH_PAIR_notnilp(fn,a,a); \
-  MATCH_PAIR_notnilp(fn,a,b); \
-  MATCH_PAIR_notnilp(fn,a,c); \
-  MATCH_PAIR_notnilp(fn,a,d); \
-  MATCH_PAIR_notnilp(fn,b,a); \
-  MATCH_PAIR_notnilp(fn,b,b); \
-  MATCH_PAIR_notnilp(fn,b,c); \
-  MATCH_PAIR_notnilp(fn,b,d); \
-  MATCH_PAIR_notnilp(fn,c,a); \
-  MATCH_PAIR_notnilp(fn,c,b); \
-  MATCH_PAIR_notnilp(fn,c,c); \
-  MATCH_PAIR_notnilp(fn,c,d); \
-  MATCH_PAIR_notnilp(fn,d,a); \
-  MATCH_PAIR_notnilp(fn,d,b); \
-  MATCH_PAIR_notnilp(fn,d,c); \
-  MATCH_PAIR_notnilp(fn,d,d);
-  auto sbcsTest = SimpleBaseString_O::make("ABCDEFGHIJ");
-  auto sbcs2Test = SimpleBaseString_O::make("ABCDEFGHIJ");
-  auto scsTest = SimpleCharacterString_O::make("ABCDEFGHIJ");
-  auto s8Test = Str8Ns_O::make("ABCDEFGHIJ");
-  auto swTest = StrWNs_O::make("ABCDEFGHIJ");
-  printf("%s:%d   sizeof(claspChar) -> %lu   typeid(claspChar).name() -> %s\n", __FILE__, __LINE__, sizeof(claspChar), typeid(claspChar).name() );
-  printf("%s:%d   sizeof(claspCharacter) -> %lu   typeid(claspCharacter).name() -> %s\n", __FILE__, __LINE__, sizeof(claspCharacter), typeid(claspCharacter).name() );
-  printf("%s:%d   sizeof(SimpleBaseString_O::value_type) -> %lu   typeid(SimpleBaseString_O::value_type).name() -> %s\n", __FILE__, __LINE__, sizeof(SimpleBaseString_O::value_type), typeid(SimpleBaseString_O::value_type).name() );
-  printf("%s:%d   sizeof(SimpleCharacterString_O::value_type) -> %lu   typeid(SimpleCharacterString_O::value_type).name() -> %s\n", __FILE__, __LINE__, sizeof(SimpleCharacterString_O::value_type), typeid(SimpleCharacterString_O::value_type).name() );
-  printf("%s:%d   sizeof(Str8Ns_O::value_type) -> %lu   typeid(Str8Ns_O::value_type).name() -> %s\n", __FILE__, __LINE__, sizeof(Str8Ns_O::simple_element_type), typeid(Str8Ns_O::simple_element_type).name() );
-  printf("%s:%d   sizeof(StrWNs_O::value_type) -> %lu   typeid(StrWNs_O::value_type).name() -> %s\n", __FILE__, __LINE__, sizeof(StrWNs_O::simple_element_type), typeid(StrWNs_O::simple_element_type).name() );
-#define PRINT_STRING(x) { claspCharacter c = (*x)[1]; printf("%s:%d %s -> %s  &(*x)[0]->%p (*x)[1]=%c/0x%X)\n", __FILE__, __LINE__, #x, _rep_(x).c_str(), (void*)&(*x)[0], c, c); }
-  PRINT_STRING(sbcsTest);
-  PRINT_STRING(scsTest);
-  PRINT_STRING(s8Test);
-  PRINT_STRING(swTest);
-  printf("%s:%d match first pair\n", __FILE__, __LINE__ );
-  MATCH_PAIR(cl__equal,sbcsTest,swTest);
-  MATCH_PAIRS(cl__equal,sbcsTest,scsTest,s8Test,swTest);
-  printf("%s:%d --------------cl__string_EQ_\n", __FILE__, __LINE__ );
-  printf("%s:%d   gc::IsA<SimpleString_sp>(sbcsTest) -> %d\n", __FILE__, __LINE__, gc::IsA<SimpleString_sp>(sbcsTest) );
-  printf("%s:%d   gc::IsA<SimpleBaseString_sp>(sbcsTest) -> %d\n", __FILE__, __LINE__, gc::IsA<SimpleBaseString_sp>(sbcsTest) );
-  MATCH_PAIR_notnilp(cl__string_EQ_,sbcsTest,sbcs2Test);
-  MATCH_PAIRS_notnilp(cl__string_EQ_,sbcsTest,scsTest,s8Test,swTest);
-  ComplexVector_T_sp vec9 = ComplexVector_T_O::make(5,_Nil<T_O>(),clasp_make_fixnum(0));
-  for (size_t i=0; i<256; ++i) {
-    printf("%s:%d    Building string of %lu size\n", __FILE__, __LINE__, i);
-    Str8Ns_sp s9 = Str8Ns_O::make(i,'A',true,_Nil<T_O>());
-    printf("%s:%d     doing vectorPushExtend orig length=%lu total size=%lu\n", __FILE__, __LINE__, vec9->length(),vec9->arrayTotalSize());
-    vec9->vectorPushExtend(s9);
-    printf("%s:%d     done vectorPushExtend final length=%lu total size=%lu\n", __FILE__, __LINE__, vec9->length(),vec9->arrayTotalSize());
-  }
-  printf("%s:%d    vec9->length() = %lu\n", __FILE__, __LINE__, vec9->length());
-  ComplexVector_T_sp vec = ComplexVector_T_O::make(5,_Nil<T_O>());
-  printf("%s:%d  vec@%p   length = %lu\n", __FILE__, __LINE__, (void*)&*vec, vec->length());
-  printf("%s:%d  vec@%p   vec->_Data = %p\n", __FILE__, __LINE__, (void*)&*vec, (void*)&*(vec->_Data));
-  printf("%s:%d  vec@%p   vec.data() = %p\n", __FILE__, __LINE__, (void*)&*vec, (void*)&*(vec->data()));
-  printf("%s:%d  vec@%p   vec[0] = %s\n", __FILE__, __LINE__, (void*)&*vec, _rep_((*vec)[0]).c_str());
-  for ( size_t i(0); i<5; ++i ) {
-    (*vec)[i] = clasp_make_fixnum(i);
-    printf("%s:%d   vec[%lu] = %s\n", __FILE__, __LINE__, i, _rep_((*vec)[i]).c_str());
-  }
-  printf("%s:%d  Adjusting size \n", __FILE__, __LINE__ );
-  vec->internalAdjustSize_(17);
-  for ( size_t i(0); i<17; ++i ) {
-    printf("%s:%d   vec[%lu] = %s\n", __FILE__, __LINE__, i, _rep_((*vec)[i]).c_str());
-  }
-  printf("%s:%d  Refilling first 17\n", __FILE__, __LINE__ );
-  for ( size_t i(0); i<17; ++i ) {
-    (*vec)[i] = clasp_make_fixnum(i+100);
-    printf("%s:%d   vec[%lu] = %s\n", __FILE__, __LINE__, i, _rep_((*vec)[i]).c_str());
-  }
-  printf("%s:%d Adjusting and then dumping \n", __FILE__, __LINE__ );
-  vec->internalAdjustSize_(24);
-  for ( size_t i(0); i<24; ++i ) {
-    printf("%s:%d   vec[%lu] = %s\n", __FILE__, __LINE__, i, _rep_((*vec)[i]).c_str());
-  }
-}
 Lisp_sp Lisp_O::createLispEnvironment(bool mpiEnabled, int mpiRank, int mpiSize) {
   initialize_clasp_Kinds();
   Lisp_O::setupSpecialSymbols();
@@ -615,10 +499,6 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
     coreExposer = gc::GC<CoreExposer_O>::allocate(_lisp);
     coreExposer->define_essential_globals(_lisp);
     this->_PackagesInitialized = true;
-  }
-  {
-      // Run some tests to make sure that lisp calling convention is ok.
-//    run_quick_tests();
   }
   {
     _BLOCK_TRACE("Create some housekeeping objects");
