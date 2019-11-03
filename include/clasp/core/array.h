@@ -34,7 +34,8 @@ THE SOFTWARE.
 #include <clasp/core/array.fwd.h>
 #include <clasp/core/sequence.fwd.h>
 #include <clasp/core/corePackage.fwd.h>
-
+#include <clasp/core/exceptions.h>
+#include <clasp/core/foundation.h>
 
 namespace core {
   size_t calculate_extension(size_t arrayTotalSize);
@@ -359,6 +360,10 @@ namespace core {
     virtual T_sp replaceArray(T_sp other) override;
     virtual void sxhash_(HashGenerator& hg) const;
     void fillPointerSet(size_t idx) {
+      // This better not be bigger than the vector size (must be a vector)
+      if (idx > this->_ArrayTotalSize)
+           SIMPLE_ERROR(BF("Attempt to set fill-pointer %d past vector size %d")
+                 % idx % this->_ArrayTotalSize);
       this->_FillPointerOrLengthOrDummy = idx;
     };
     size_t fillPointer() const {
