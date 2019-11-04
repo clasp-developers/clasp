@@ -248,7 +248,8 @@ Returns the specified bit in SIMPLE-BIT-ARRAY."
                  (,simple-name b1 b2 r length)
                  (dotimes (i length)
                    (setf (sbit r (+ i ro))
-                         (,logop (sbit b1 (+ i b1o)) (sbit b2 (+ i b2o)))))))))
+                         (logand #b1 ; get the low bit only
+                                 (,logop (sbit b1 (+ i b1o)) (sbit b2 (+ i b2o))))))))))
        result)))
 
 ;; FIXME: Docstring is redundant, but we don't have FORMAT or CONCATENATE yet.
