@@ -90,8 +90,7 @@
                        start (1+ start)))
                (do-subvector (elt sequence start end :output initial-value)
                  (setf initial-value
-                       (funcall function initial-value (key elt))))
-                 ))))))
+                       (funcall function initial-value (key elt))))))))))
 
 (defun fill (sequence item &key (start 0) end)
   ;; INV: WITH-START-END checks the sequence type and size.
