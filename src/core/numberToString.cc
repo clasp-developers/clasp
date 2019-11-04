@@ -60,16 +60,16 @@ CL_DEFUN StrNs_sp core__bignum_to_string(StrNs_sp buffer, const Bignum &bn, Fixn
   size_t str_size = mpz_sizeinbase(bn.get_mpz_t(), ibase);
   if (bn < 0) str_size++;
   if (Str8Ns_sp buffer8 = buffer.asOrNull<Str8Ns_O>() ) {
-    buffer->ensureSpaceAfterFillPointer(clasp_make_character('\0'),str_size + 2);
+    buffer8->ensureSpaceAfterFillPointer(clasp_make_character('\0'),str_size + 2);
     char *bufferStart = (char*)&(*buffer8)[buffer8->fillPointer()];
     mpz_get_str(bufferStart, -unbox_fixnum(base), bn.get_mpz_t());
     if (bufferStart[str_size - 1] == '\0') {
-      buffer->fillPointerSet(buffer->fillPointer()+str_size-1);
+      buffer8->fillPointerSet(buffer8->fillPointer()+str_size-1);
     } else {
-      buffer->fillPointerSet(buffer->fillPointer()+str_size);
+      buffer8->fillPointerSet(buffer8->fillPointer()+str_size);
     }
   } else if (StrWNs_sp bufferw = buffer.asOrNull<StrWNs_O>()) {
-    buffer->ensureSpaceAfterFillPointer(clasp_make_character(' '),str_size+1);
+    bufferw->ensureSpaceAfterFillPointer(clasp_make_character(' '),str_size+1);
     char cpbuffer[str_size+1]; // use a stack allocated array for this
     mpz_get_str(cpbuffer, -unbox_fixnum(base), bn.get_mpz_t());
     for ( size_t idx(0);idx<str_size; ++idx) {
