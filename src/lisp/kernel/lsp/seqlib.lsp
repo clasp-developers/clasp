@@ -48,7 +48,7 @@
                     (start 0)
                     end
                     key (initial-value nil ivsp))
-  (let ((function (si::coerce-to-function function)))
+  (let ((function (coerce-fdesignator function)))
     (declare (optimize (speed 3) (safety 0) (debug 0)))
     (with-start-end (start end sequence length)
       (declare (ignore length))
@@ -233,12 +233,12 @@
                              test test-not key))))
 
 (defun remove-if (predicate sequence &key (start 0) end from-end count key)
-  (remove (si::coerce-to-function predicate) sequence
+  (remove (coerce-fdesignator predicate) sequence
 	  :start start :end end :from-end from-end :count count
 	  :test #'unsafe-funcall1 :key key))
 
 (defun remove-if-not (predicate sequence &key (start 0) end from-end count key)
-  (remove (si::coerce-to-function predicate) sequence
+  (remove (coerce-fdesignator predicate) sequence
 	  :start start :end end :from-end from-end :count count
 	  :test-not #'unsafe-funcall1 :key key))
 
