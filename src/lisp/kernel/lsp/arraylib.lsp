@@ -316,7 +316,8 @@ RESULT is a bit-array."
         (if (and (zerop bo) (zerop ro))
             (core:sbv-bit-not b r length)
             (dotimes (i length)
-              (setf (sbit r (+ i ro)) (lognot (sbit b (+ i bo))))))))
+              (setf (sbit r (+ i ro))
+                    (logand #b1 (lognot (sbit b (+ i bo)))))))))
     result))
 
 (defun vector-pop (vector)
