@@ -224,7 +224,6 @@ into the structure at their position.  For example,
 (deftype atom ()
   "An ATOM is an object that is not a CONS."
   '(NOT CONS))
-;(deftype null () '(MEMBER NIL))
 
 (deftype vector (&optional (element-type '*) (size '*))
   "A vector is a one-dimensional array.  Strings and bit-vectors are kinds of
@@ -348,7 +347,7 @@ and is not adjustable."
     (KEYWORD 'KEYWORDP)
     (LIST 'LISTP)
     (LOGICAL-PATHNAME 'LOGICAL-PATHNAME-P)
-    (NIL 'CONSTANTLY-NIL)
+    ((NIL) 'CONSTANTLY-NIL)
     (NULL 'NULL)
     (NUMBER 'NUMBERP)
     (PACKAGE 'PACKAGEP)
