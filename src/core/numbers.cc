@@ -485,6 +485,16 @@ CL_NAME("TWO-ARG-*");
 CL_DEFUN Number_sp contagen_mul(Number_sp na, Number_sp nb) {
   MATH_DISPATCH_BEGIN(na, nb) {
   case_Fixnum_v_Fixnum : {
+      // We want to detect when Fixnum * Fixnum multiplication will overflow and only then use bignum arithmetic.
+      // But C++ doesn't give us a way to do that - so we use the __builtin_mul_overflow clang builtin.
+      // It will return false if there is no overflow and the multiplication result will be in fr.
+      // The return value fr may over
+      // If it doesn't overflow - then this will be faster than always using bignum arithmetic.
+      Fixnum fa = na.unsafe_fixnum();
+      Fixnum fb = nb.unsafe_fixnum();
+      Fixnum fr;
+      bool overflow = __builtin_mul_overflow(fa,fb,&fr);
+      if (!overflow) return Integer_O::create(fr);
       mpz_class za(GMP_LONG(unbox_fixnum(gc::As<Fixnum_sp>(na))));
       mpz_class zb(GMP_LONG(unbox_fixnum(gc::As<Fixnum_sp>(nb))));
       mpz_class zc = za * zb;
@@ -1369,7 +1379,6 @@ Integer_sp Integer_O::create( gctools::Fixnum v )
   {
     return make_fixnum(v);
   }
-
   Bignum z(GMP_LONG(v));
   return Bignum_O::create( z );
 }
