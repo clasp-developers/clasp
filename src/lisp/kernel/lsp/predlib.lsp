@@ -1217,6 +1217,14 @@ if not possible."
       (core:SIMPLE-MDARRAY-INT64-T (simple-array ext:INTEGER64 *))
       (core:SIMPLE-MDARRAY-T (simple-array T *))
 
+      (STRING (ARRAY CHARACTER (*)))
+      #+unicode
+      (BASE-STRING (ARRAY BASE-CHAR (*)))
+      (SIMPLE-STRING (SIMPLE-ARRAY CHARACTER (*)))
+      #+unicode
+      (SIMPLE-BASE-STRING (SIMPLE-ARRAY BASE-CHAR (*)))
+      (BIT-VECTOR (ARRAY BIT (*)))
+
       (SEQUENCE (OR CONS (MEMBER NIL) (ARRAY * (*))))
 
       (HASH-TABLE)
