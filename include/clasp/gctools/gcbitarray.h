@@ -179,17 +179,23 @@ class GCBitUnitArray_moveable : public GCContainer {
     }
     reference(const reference&) = default;
     ~reference() noexcept {}
-    // arr[i] = x
-    reference& operator=(value_type x) noexcept {
-        bit_array_word packedVal = (unsign(x) & bit_unit_mask) << offset;
-        bit_array_word mask = ~(bit_unit_mask << offset);
-        *word = (*word & mask) | packedVal;
-        return *this;
-    }
+  private:
     // Get raw bits
     unsigned char raw() const noexcept {
       bit_array_word mask = bit_unit_mask << offset;
       return (*word & mask) >> offset;
+    }
+    // Set raw bits
+    void assign(unsigned char x) noexcept {
+      bit_array_word packedVal = (x & bit_unit_mask) << offset;
+      bit_array_word mask = ~(bit_unit_mask << offset);
+      *word = (*word & mask) | packedVal;
+    }
+  public:
+    // arr[i] = x
+    reference& operator=(value_type x) noexcept {
+        assign(unsign(x));
+        return *this;
     }
     // x = arr[i]
     operator value_type() const noexcept { return sign(raw()); }
@@ -197,9 +203,7 @@ class GCBitUnitArray_moveable : public GCContainer {
     // I don't understand C++ deeply enough, luckily, but a[i] = b[i]
     // seems to be a nop without this.
     reference& operator=(const reference& x) noexcept {
-        bit_array_word packedVal = (x.raw() & bit_unit_mask) << offset;
-        bit_array_word mask = ~(bit_unit_mask) << offset;
-        *word = (*word & mask) | packedVal;
+        assign(x.raw());
         return *this;
     }
   };
