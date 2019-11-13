@@ -53,6 +53,18 @@
                   (t result)))
           't)))
 
+  ;;; Given a type, find what type (aref (the TYPE ...) ...) is.
+  (defun array-type-element-type (type env)
+    (let ((types
+            (loop for et in core::+upgraded-array-element-types+
+                  ;; Exclude any element type that is CERTAINLY not included.
+                  unless (subtypep `(and (array ,et) ,type) nil env)
+                    collect et)))
+      ;; Now simplify a bit for common stupid cases
+      (if (member t types)
+          't
+          (cons 'or (remove nil types)))))
+
   ;;; Because some transforms relying on type information are unsafe,
   ;;; we ignore type declarations unless the TRUST-TYPE-DECLARATIONS policy
   ;;; is in place (at low SAFETY). See policy.lisp.
@@ -82,6 +94,14 @@
                                 (cleavir-env:type info)
                                 'function))
                           'function))
+                     ;; This is really KLUDGEy, but then this whole thing kind of is.
+                     ((aref)
+                      (if (and (consp form) (consp (cdr form)))
+                          (let* ((array-form (second form))
+                                 (array-form-type (form-type array-form env)))
+                            (array-type-element-type array-form-type env))
+                          ;; malformed
+                          't))
                      (otherwise
                       (if trust-type-decls-p
                           (let ((info (cleavir-env:function-info env operator)))
