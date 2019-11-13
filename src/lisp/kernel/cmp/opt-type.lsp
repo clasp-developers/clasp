@@ -151,6 +151,7 @@
                             nil nil '(return nil))
             ;; Now, it is an mdarray, so check dimensions.
             (and
+             (= (core::%array-rank object) ',rank)
              ,@(loop for dim in dims
                      for i from 0
                      unless (eq dim '*)
