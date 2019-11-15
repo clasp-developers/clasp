@@ -70,7 +70,7 @@
   ;;; is in place (at low SAFETY). See policy.lisp.
   (defun form-type (form env)
     (let ((trust-type-decls-p
-            (environment-has-policy-p env 'trust-type-declarations)))
+            (environment-has-policy-p env 'ext:assume-right-type)))
       (cond ((constantp form env)
              `(eql ,(ext:constant-form-value form env)))
             ((consp form)
@@ -205,6 +205,11 @@
   (def-fixnum-compare primop:inlined-two-arg-=  cleavir-primop:fixnum-equal)
   (def-fixnum-compare primop:inlined-two-arg->  cleavir-primop:fixnum-greater)
   (def-fixnum-compare primop:inlined-two-arg->= cleavir-primop:fixnum-not-less))
+
+(deftransform minusp ((number fixnum))
+  '(lambda (n) (if (cleavir-primop:fixnum-less n 0) t nil)))
+(deftransform plusp ((number fixnum))
+  '(lambda (n) (if (cleavir-primop:fixnum-greater n 0) t nil)))
 
 (deftransform array-total-size ((a (simple-array * (*)))) 'core::vector-length)
 ;;(deftransform array-total-size ((a core:mdarray)) 'core::%array-total-size)

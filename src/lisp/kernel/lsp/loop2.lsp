@@ -106,7 +106,7 @@
 ;;;; Miscellaneous Environment Things
 
 (defmacro loop-unsafe (&rest x)
-  `(locally (declare (ext:assume-right-type)) ,@x))
+  `(locally (declare (optimize ext:assume-right-type)) ,@x))
 
 (defun loop-optimization-quantities (env)
   ;; The ANSI conditionalization here is for those lisps that implement
