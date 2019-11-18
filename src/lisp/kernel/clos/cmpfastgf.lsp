@@ -291,7 +291,7 @@
                   *dispatcher-count*)
              (mp:unlock *dispatcher-count-lock*)))
 
-(defvar *fastgf-use-compiler* t)
+(defvar *fastgf-use-compiler* nil)
 (defvar *fastgf-timer-start*)
 (defun codegen-dispatcher (call-history specializer-profile generic-function
                            &rest args &key generic-function-name output-path log-gf force-compile)
