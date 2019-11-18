@@ -21,8 +21,10 @@
              `(progn
                 (defparameter ,map-name
                   ',(loop for element-type in
-                          '(bit fixnum ext:byte8 ext:byte16 ext:byte32 ext:byte64
-                            ext:integer8 ext:integer16 ext:integer32 ext:integer64
+                          '(bit fixnum ext:byte2 ext:byte4 ext:byte8
+                            ext:byte16 ext:byte32 ext:byte64 ext:integer2
+                            ext:integer4 ext:integer8 ext:integer16
+                            ext:integer32 ext:integer64
                             single-float double-float base-char character t)
                           for uaet in types
                           collect (cons element-type uaet)))
@@ -32,14 +34,18 @@
                       (let ((pair (assoc uaet ,map-name)))
                         (if pair
                             (cdr pair)
-                            (error "BUT: Unknown UAET ~a in ~a" uaet ',name))))))))
+                            (error "BUG: Unknown UAET ~a in ~a" uaet ',name))))))))
   (def simple-vector-type +simple-vector-type-map+ core:abstract-simple-vector
     simple-bit-vector
     core:simple-vector-fixnum
+    core:simple-vector-byte2-t
+    core:simple-vector-byte4-t
     core:simple-vector-byte8-t
     core:simple-vector-byte16-t
     core:simple-vector-byte32-t
     core:simple-vector-byte64-t
+    core:simple-vector-int2-t
+    core:simple-vector-int4-t
     core:simple-vector-int8-t
     core:simple-vector-int16-t
     core:simple-vector-int32-t
@@ -52,10 +58,14 @@
   (def complex-vector-type +complex-vector-type-map+ core:complex-vector
     core:bit-vector-ns
     core:complex-vector-fixnum
+    core:complex-vector-byte2-t
+    core:complex-vector-byte4-t
     core:complex-vector-byte8-t
     core:complex-vector-byte16-t
     core:complex-vector-byte32-t
     core:complex-vector-byte64-t
+    core:complex-vector-int2-t
+    core:complex-vector-int4-t
     core:complex-vector-int8-t
     core:complex-vector-int16-t
     core:complex-vector-int32-t
@@ -68,10 +78,14 @@
   (def simple-mdarray-type +simple-mdarray-type-map+ core:simple-mdarray
     core:simple-mdarray-bit
     core:simple-mdarray-fixnum
+    core:simple-mdarray-byte2-t
+    core:simple-mdarray-byte4-t
     core:simple-mdarray-byte8-t
     core:simple-mdarray-byte16-t
     core:simple-mdarray-byte32-t
     core:simple-mdarray-byte64-t
+    core:simple-mdarray-int2-t
+    core:simple-mdarray-int4-t
     core:simple-mdarray-int8-t
     core:simple-mdarray-int16-t
     core:simple-mdarray-int32-t
@@ -84,10 +98,14 @@
   (def complex-mdarray-type +complex-mdarray-type-map+ core:mdarray
     core:mdarray-bit
     core:mdarray-fixnum
+    core:mdarray-byte2-t
+    core:mdarray-byte4-t
     core:mdarray-byte8-t
     core:mdarray-byte16-t
     core:mdarray-byte32-t
     core:mdarray-byte64-t
+    core:mdarray-int2-t
+    core:mdarray-int4-t
     core:mdarray-int8-t
     core:mdarray-int16-t
     core:mdarray-int32-t
