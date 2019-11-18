@@ -482,4 +482,27 @@
 (test-expect-error stable-sort.error.11
                    (funcall #'(lambda (x) (stable-sort x #'<)) #'position)
                    :type type-error)
-      
+
+(test nreverse-bit-vector.2-a
+      (equalp #*1100 (nreverse (copy-seq #*0011))))
+
+(test nreverse-bit-vector.2-b
+      (equalp #*1011011000 (NREVERSE (COPY-SEQ #*0001101101))))
+
+(test nreverse-bit-vector.2-c
+      (equalp #*011011011000 (NREVERSE (COPY-SEQ #*000110110110))))
+
+(test nreverse-bit-vector.3
+      (equalp #*11000
+              (let* ((x (make-array 10 :initial-contents '(0 0 0 1 1 0 1 0 1 0)
+                                    :fill-pointer 5
+                                    :element-type 'bit))
+                     (y (nreverse x)))
+                y)))
+
+(test nreverse-vector.8
+      (equalp
+       #(-1 0 -1 -1 0 -1 0 0)
+       (nreverse 
+        (MAKE-ARRAY 8 :ELEMENT-TYPE '(INTEGER -1 0) :INITIAL-CONTENTS #(0 0 -1 0 -1 -1 0 -1)))))
+
