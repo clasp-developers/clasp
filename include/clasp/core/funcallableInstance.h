@@ -55,6 +55,9 @@ namespace core {
                    REF_GFUN_SPECIALIZERS = 1,  // lock
                    REF_GFUN_LAMBDA_LIST = 3,   // lock
                  } GenericFunctionSlots;
+    // Additionally, this structure is known to the compiler,
+    // in src/lisp/kernel/cmp/cmpintrinsics.lsp.
+    // Changes to the structure here must be reflected there.
   public: // ctor/dtor for classes with shared virtual base
     // entry_point is the LISP_CALLING_CONVENTION() macro
   FuncallableInstance_O(FunctionDescription* fdesc) :
@@ -86,7 +89,8 @@ namespace core {
     Rack_sp _Rack;
     T_sp   _Sig;
     FunctionDescription* _FunctionDescription;
-    std::atomic<size_t>         _Compilations;
+    std::atomic<size_t>        _Compilations;
+    std::atomic<size_t>        _InterpretedCalls;
     gc::atomic_wrapper<T_sp>   _CallHistory;
     gc::atomic_wrapper<T_sp>   _SpecializerProfile;
 //    T_sp   _Lock;
@@ -170,6 +174,8 @@ namespace core {
     T_sp copyInstance() const;
 
     T_sp setFuncallableInstanceFunction(T_sp functionOrT);
+
+    size_t increment_calls () { return this->_InterpretedCalls++; };
 
     void increment_compilations() { this->_Compilations++; };
     size_t compilations() const { return this->_Compilations.load(); };
