@@ -429,9 +429,8 @@
 (defun irc-icmp-eq (lhs rhs &optional (name ""))
   (llvm-sys:create-icmp-eq *irbuilder* lhs rhs name))
 
-
-(defun irc-cond-br (icond true false &optional branchWeights)
-  (llvm-sys:create-cond-br *irbuilder* icond true false branchWeights))
+(defun irc-cond-br (icond true false &optional branchWeights unpredictable)
+  (llvm-sys:create-cond-br *irbuilder* icond true false branchWeights unpredictable))
 
 (defun irc-ptr-to-int (val int-type &optional (label "ptrtoint"))
   (llvm-sys:create-ptr-to-int *irbuilder* val int-type label))
