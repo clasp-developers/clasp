@@ -164,6 +164,15 @@
 (deftransform car ((x cons)) 'cleavir-primop:car)
 (deftransform cdr ((x cons)) 'cleavir-primop:cdr)
 
+(deftransform rplaca ((cons cons) value)
+  '(lambda (cons value)
+    (cleavir-primop:rplaca cons value)
+    cons))
+(deftransform rplacd ((cons cons) value)
+  '(lambda (cons value)
+    (cleavir-primop:rplacd cons value)
+    cons))
+
 (deftransform primop:inlined-two-arg-+ ((x fixnum) (y fixnum))
   'core:two-arg-+-fixnum-fixnum)
 
