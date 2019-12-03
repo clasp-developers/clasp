@@ -143,26 +143,55 @@ default value of INITIAL-ELEMENT depends on TYPE."
                  result))))
       (error 'type-error :datum size :expected-type '(integer 0 *))))
 
-(defun make-seq-iterator (sequence &optional (start 0))
+;;; Sequence iterators.
+;;; An iterator is some object plus functions to deal with it,
+;;; like the extensible sequences extension.
+;;; The iterator represents the state of an iteration in some convenient
+;;; sense; for lists it's the current cons, for vectors the current index.
+;;; When you iterate with these, you call MAKE-SEQ-ITERATOR, which
+;;; returns the iterator and its functions as values. Then you repeatedly
+;;; call them instead of using elt or whatever.
+;;; In my tests, returning and calling a function makes long loops
+;;; go by twice as fast as calling some known function that branches,
+;;; and is slightly shorter for more common short loops.
+;;; Currently there are three iterator functions: ref, set, and next.
+;;; ref gets the current element. set sets it. next returns a new iterator
+;;; (just the object) representing the next iteration, or NIL if there is
+;;; no more sequence to iterate over.
+
+(defun list-iterator-ref (seq it)
+  (declare (optimize (safety 0))
+           (ignore seq))
+  (car (the cons it)))
+
+(defun list-iterator-set (seq it value)
+  (declare (optimize (safety 0)) (ignore seq))
+  ;; rplaca can be transformed easier than setf. KLUDGE
+  (rplaca (the cons it) value)
+  value)
+
+(defun list-iterator-next (seq it)
+  (declare (optimize (safety 0)) (ignore seq))
+  (setf it (cdr (the cons it)))
+  (unless (listp it)
+    (error-not-a-sequence it))
+  it)
+
+(defun vec-iterator-ref (seq it)
   (declare (optimize (safety 0)))
-  (cond ((fixnump start)
-         (let ((aux start))
-           (declare (fixnum aux))
-           (cond ((minusp aux)
-                  (error-sequence-index sequence start))
-                 ((listp sequence)
-                  (nthcdr aux sequence))
-                 ((vectorp sequence)
-                  (and (< start (length (the vector sequence)))
-                       start))
-                 (t
-                  (error-not-a-sequence sequence)))))
-        ((not (or (listp sequence) (vectorp sequence)))
-         (error-not-a-sequence sequence))
-        ((integerp start)
-         nil)
-        (t
-         (error-sequence-index sequence start))))
+  (aref (the vector seq) it))
+
+(defun vec-iterator-set (seq it value)
+  (declare (optimize (safety 0)))
+  (setf (aref (the vector seq) it) value))
+
+(defun vec-iterator-next (seq it)
+  (declare (optimize (safety 0)))
+  (let ((aux (1+ it)))
+    (declare (fixnum aux))
+    (and (< aux (length (the vector seq))) aux)))
+
+;;; Functions that dispatch. Useful for MAP and stuff.
 
 (defun seq-iterator-ref (sequence iterator)
   (declare (optimize (safety 0)))
@@ -174,7 +203,7 @@ default value of INITIAL-ELEMENT depends on TYPE."
   (declare (optimize (safety 0)))
   (if (si::fixnump iterator)
       (setf (aref (the vector sequence) iterator) value)
-      (setf (car (the cons iterator)) value)))
+      (progn (rplaca (the cons iterator) value) value)))
 
 (defun seq-iterator-next (sequence iterator)
   (declare (optimize (safety 0)))
@@ -190,6 +219,36 @@ default value of INITIAL-ELEMENT depends on TYPE."
          (unless (listp iterator)
            (error-not-a-sequence iterator))
          iterator)))
+
+(defun make-seq-iterator (sequence &optional (start 0))
+  (declare (optimize (safety 0)))
+  (cond ((fixnump start)
+         (let ((aux start))
+           (declare (fixnum aux))
+           (cond ((minusp aux)
+                  (error-sequence-index sequence start))
+                 ((listp sequence)
+                  (values (nthcdr aux sequence)
+                          #'list-iterator-ref
+                          #'list-iterator-set
+                          #'list-iterator-next))
+                 ((vectorp sequence)
+                  (values (and (< start (length (the vector sequence)))
+                               start)
+                          #'vec-iterator-ref
+                          #'vec-iterator-set
+                          #'vec-iterator-next))
+                 (t
+                  (error-not-a-sequence sequence)))))
+        ((not (or (listp sequence) (vectorp sequence)))
+         (error-not-a-sequence sequence))
+        ((integerp start)
+         ;; Not a fixnum, so the index is out of bounds.
+         ;; Return the functions for max correctness.
+         (values nil #'seq-iterator-ref #'seq-iterator-set
+                 #'seq-iterator-next))
+        (t
+         (error-sequence-index sequence start))))
 
 (declaim (inline seq-iterator-endp))
 (defun seq-iterator-endp (sequence iterator)
