@@ -198,6 +198,8 @@ default value of INITIAL-ELEMENT depends on TYPE."
 
 (defun seq-iterator-list-pop (values-list seq-list iterator-list)
   (declare (optimize (safety 0)))
+  ;; We don't use type declarations for the cons operations because
+  ;; the variables become NIL at various points.
   (do* ((it-list iterator-list)
         (v-list values-list))
        ((null v-list)
@@ -209,15 +211,16 @@ default value of INITIAL-ELEMENT depends on TYPE."
             ((fixnump it)
              (let* ((n it) (s sequence))
                (declare (fixnum n) (vector s))
-               (rplaca v-list (aref s n))
-               (rplaca it-list (and (< (incf n) (length s)) n))))
+               (rplaca (the cons v-list) (aref s n))
+               (rplaca (the cons it-list)
+                       (and (< (incf n) (length s)) n))))
             ((atom it)
              (error-not-a-sequence it))
             (t
-             (rplaca v-list (cons-car it))
+             (rplaca (the cons v-list) (cons-car it))
              (unless (listp (setf it (cons-cdr it)))
                (error-not-a-sequence it))
-             (rplaca it-list it)))
+             (rplaca (the cons it-list) it)))
       (setf v-list (cons-cdr v-list)
             it-list (cons-cdr it-list)
             seq-list (cons-cdr seq-list)))))
@@ -237,6 +240,8 @@ default value of INITIAL-ELEMENT depends on TYPE."
   (if (listp object)
       object
       (let* ((head (list nil)) (tail head))
+        (declare (type cons head tail)
+                 (optimize (safety 0) (speed 3)))
         (dosequence (elt object (cdr head))
           (let ((new-tail (list elt)))
             (rplacd tail new-tail)
@@ -246,6 +251,8 @@ default value of INITIAL-ELEMENT depends on TYPE."
 ;;; Only used in a compiler macroexpansion, for now
 (defun concatenate-to-list (core:&va-rest sequences)
   (let* ((head (list nil)) (tail head))
+    (declare (type cons head tail)
+             (optimize (safety 0) (speed 3)))
     (dovaslist (sequence sequences (cdr head))
       (dosequence (elt sequence)
         (let ((new-tail (list elt)))

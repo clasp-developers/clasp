@@ -121,10 +121,8 @@ the corresponding VAR.  Returns NIL."
       t)
 
 
-
-
-
-(fset 'cons-cdr #'(lambda (def env) `(cdr ,(cadr def))) t)
+(fset 'cons-car #'(lambda (def env) `(car (the cons ,(cadr def)))) t)
+(fset 'cons-cdr #'(lambda (def env) `(cdr (the cons ,(cadr def)))) t)
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (select-package :ext))
@@ -317,10 +315,6 @@ the corresponding VAR.  Returns NIL."
 
 (defun inform (fmt &rest args)
   (apply #'bformat t fmt args))
-
-(si::fset 'cons-car #'(lambda (w e)
-                        `(car ,(cadr w)))
-          t)
 
 (in-package :cl)
 
