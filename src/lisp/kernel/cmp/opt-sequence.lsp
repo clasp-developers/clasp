@@ -41,7 +41,7 @@
 
 ;;; Somewhat harder to understand version of do-sequences
 ;;; where the list of sequences is known at compile time.
-;;; CALLER is a symbol. It is bound to a function of one argument,
+;;; CALLER is a symbol. It is bound to a macro of one argument, which must evaluate to
 ;;; a function. CALLER calls this function with elements of the
 ;;; sequences as arguments.
 ;;; So, (do-static-sequences (c (list 1 2 3) (list 4 5)) (c (lambda (a b) (print (+ a b)))))
@@ -58,13 +58,15 @@
            ;; We should just have a local function, but as of July 2017 we do very
            ;; badly at eliminating unneeded closures.
            (macrolet ((,caller (fun)
-                        (list 'funcall fun ,@(mapcar (lambda (s i) `'(si::seq-iterator-ref ,s ,i))
-                                                     seqs iters))))
+                        (list 'cleavir-primop:funcall
+                              fun ,@(mapcar (lambda (s i) `'(si::seq-iterator-ref ,s ,i))
+                                            seqs iters))))
              (tagbody ,@body))
            #+(or)
            (flet ((,caller (fun)
-                    (funcall fun ,@(mapcar (lambda (s i) `(seq-iterator-ref ,s ,i))
-                                           seqs iters))))
+                    (cleavir-primop:funcall
+                     fun ,@(mapcar (lambda (s i) `(seq-iterator-ref ,s ,i))
+                                   seqs iters))))
              (declare (inline ,caller))
              (tagbody ,@body)))))))
 
@@ -243,7 +245,7 @@
          (let ((p (gensym "PREDICATE"))
                (b (gensym)))
          `(block ,b
-            (let ((,p ,predicate))
+            (let ((,p (si::coerce-fdesignator ,predicate)))
               (do-static-sequences (call ,@sequences)
                 (let ((it (call ,p)))
                   (,whenless it (return-from ,b ,found))))
