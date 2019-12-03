@@ -89,9 +89,11 @@
 
 (defmacro dosequence ((elt sequence &optional result) &body body)
   (once-only (sequence)
-    `(if (listp ,sequence)
-         (dolist (,elt ,sequence ,result) ,@body)
-         (dovector (,elt ,sequence ,result) ,@body))))
+    `(cond ((listp ,sequence)
+            (dolist (,elt ,sequence ,result) ,@body))
+           ((vectorp ,sequence)
+            (dovector (,elt ,sequence ,result) ,@body))
+           (t (error-not-a-sequence sequence)))))
 
 (defmacro do-subvector ((elt vector start end
                          &key from-end output setter (index (gensym "INDEX")))
@@ -144,9 +146,11 @@
   (with-unique-names (%sequence)
     (let ((args (list* elt %sequence start end args)))
       `(let ((,%sequence ,sequence))
-         (if (listp ,%sequence)
-             (do-sublist ,args ,@body)
-             (do-subvector ,args ,@body))))))
+         (cond ((listp ,%sequence)
+                (do-sublist ,args ,@body))
+               ((vectorp ,%sequence)
+                (do-subvector ,args ,@body))
+               (t (error-not-a-sequence ,%sequence)))))))
 
 (defmacro do-sequences ((elt-list seq-list &key output) &body body)
   (with-unique-names (%iterators %sequences)
