@@ -484,7 +484,8 @@ CL_DEFUN T_mv cl__apply( T_sp head, VaList_sp args ) {
   UNREACHABLE();
 }
 
-/*! A specialized version of the above APPLY for zero fixed arguments. */
+/* A specialized version of the above APPLY for zero fixed arguments.
+ * Also, assumes its function argument is actually a function. */
 CL_DEFUN T_mv core__apply0( Function_sp func, T_sp args) {
   T_O* a0;
   T_O* a1;
@@ -496,7 +497,7 @@ CL_DEFUN T_mv core__apply0( Function_sp func, T_sp args) {
     int nargs = lenRest;
     switch (lenRest) {
     case 0: {
-      return (*func).entry.load()(func.raw_(),0,NULL,NULL,NULL,NULL);
+      return (*func).entry.load()(func.raw_(),nargs,NULL,NULL,NULL,NULL);
     }
     case 1: {
       GET_AND_ADVANCE_VASLIST(a0,lastArgs);
@@ -543,7 +544,7 @@ CL_DEFUN T_mv core__apply0( Function_sp func, T_sp args) {
     int nargs = len;
     switch (len) {
     case 0: {
-      return (*func).entry.load()(func.raw_(),0,NULL,NULL,NULL,NULL);
+      return (*func).entry.load()(func.raw_(),nargs,NULL,NULL,NULL,NULL);
     }
     case 1: {
       GET_AND_ADVANCE_LIST(a0,args);
@@ -595,7 +596,7 @@ CL_DEFUN T_mv core__apply1( Function_sp func, T_sp arg0, T_sp args) {
     int nargs = lenRest+1;
     switch (lenRest) {
     case 0: {
-      return (*func).entry.load()(func.raw_(),0,arg0.raw_(),NULL,NULL,NULL);
+      return (*func).entry.load()(func.raw_(),nargs,arg0.raw_(),NULL,NULL,NULL);
     }
     case 1: {
       GET_AND_ADVANCE_VASLIST(a1,lastArgs);
@@ -634,7 +635,7 @@ CL_DEFUN T_mv core__apply1( Function_sp func, T_sp arg0, T_sp args) {
     if (cur.notnilp()) TYPE_ERROR_PROPER_LIST(args);
     switch (len) {
     case 0: {
-      return (*func).entry.load()(func.raw_(),0,arg0.raw_(),NULL,NULL,NULL);
+      return (*func).entry.load()(func.raw_(),nargs,arg0.raw_(),NULL,NULL,NULL);
     }
     case 1: {
       GET_AND_ADVANCE_LIST(a1,args);
@@ -677,7 +678,7 @@ CL_DEFUN T_mv core__apply2( Function_sp func, T_sp arg0, T_sp arg1, T_sp args) {
     int nargs = lenRest+2;
     switch (lenRest) {
     case 0: {
-      return (*func).entry.load()(func.raw_(),0,arg0.raw_(),arg1.raw_(),NULL,NULL);
+      return (*func).entry.load()(func.raw_(),nargs,arg0.raw_(),arg1.raw_(),NULL,NULL);
     }
     case 1: {
       GET_AND_ADVANCE_VASLIST(a2,lastArgs);
@@ -709,7 +710,7 @@ CL_DEFUN T_mv core__apply2( Function_sp func, T_sp arg0, T_sp arg1, T_sp args) {
     if (cur.notnilp()) TYPE_ERROR_PROPER_LIST(args);
     switch (len) {
     case 0: {
-      return (*func).entry.load()(func.raw_(),0,arg0.raw_(),arg1.raw_(),NULL,NULL);
+      return (*func).entry.load()(func.raw_(),nargs,arg0.raw_(),arg1.raw_(),NULL,NULL);
     }
     case 1: {
       GET_AND_ADVANCE_LIST(a2,args);
