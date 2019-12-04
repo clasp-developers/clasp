@@ -960,6 +960,14 @@
     (core::coerce-fdesignator ,function)
     ,@arguments))
 
+;;; FIXME: Could be moved to bclasp opt-whatever
+(define-compiler-macro apply (&whole form function &rest arguments)
+  (case (length arguments)
+    ((1) `(core:apply0 (core::coerce-fdesignator ,function) ,@arguments))
+    ((2) `(core:apply1 (core::coerce-fdesignator ,function) ,@arguments))
+    ((3) `(core:apply2 (core::coerce-fdesignator ,function) ,@arguments))
+    (otherwise form)))
+
 (define-cleavir-compiler-macro values (&whole form &rest values)
   `(cleavir-primop:values ,@values))
 
