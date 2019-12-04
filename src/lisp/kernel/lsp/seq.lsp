@@ -364,7 +364,9 @@ SEQUENCEs, where K is the minimum length of the given SEQUENCEs."
   (let* ((sequences (list* sequence more-sequences))
          (function (coerce-fdesignator function))
          output
-         it)
+         it ref set next) ; ref isn't used
+    (declare (type function function ref set next)
+             (optimize (safety 0)))
     (when result-type
       (let ((l (length sequence)))
         (when more-sequences
@@ -372,12 +374,12 @@ SEQUENCEs, where K is the minimum length of the given SEQUENCEs."
                           :initial-value l
                           :key #'length)))
         (setf output (make-sequence result-type l)
-              it (make-seq-iterator output))))
+              (values ref set next) (make-seq-iterator output))))
     (do-sequences (elt-list sequences :output output)
       (let ((value (apply function elt-list)))
         (when result-type
-          (seq-iterator-set output it value)
-          (setf it (seq-iterator-next output it)))))))
+          (funcall set output it value)
+          (setf it (funcall next output it)))))))
 
 (defun some (predicate sequence &rest more-sequences)
   "Args: (predicate sequence &rest more-sequences)

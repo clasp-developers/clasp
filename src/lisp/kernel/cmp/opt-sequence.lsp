@@ -16,23 +16,25 @@
 (in-package "COMPILER")
 
 (defmacro do-in-seq ((%elt sequence &key (start 0) end output) &body body)
-  (si::with-unique-names (%start %iterator %counter %sequence)
+  (si::with-unique-names (%start %iterator %ref %set %next %counter %sequence)
     (flet ((optional-end (&rest forms)
              (when end
                `(,@forms))))
       `(let* ((,%sequence ,sequence)
               (,%start ,start)
-              (,%iterator (si::make-seq-iterator ,%sequence ,%start))
               ,@(optional-end `(,%counter (- (or ,end most-positive-fixnum) ,%start))))
          ,@(optional-end `(declare (type fixnum ,%counter)))
-         (loop
-           (unless (and ,%iterator
-                        ,@(optional-end `(plusp ,%counter)))
-             (return ,output))
-           (let ((,%elt (si::seq-iterator-ref ,%sequence ,%iterator)))
-             ,@body)
-           (setf ,%iterator (si::seq-iterator-next ,%sequence ,%iterator))
-           ,@(optional-end `(decf ,%counter)))))))
+         (multiple-value-bind (,%iterator ,%ref ,%set ,%next)
+             (si::make-seq-iterator ,%sequence ,%start)
+           (declare (ignore ,%set))
+           (loop
+             ;; Sequence iterators at their end are NIL. See lsp/seq.lsp.
+             (unless (and ,%iterator
+                          ,@(optional-end `(plusp ,%counter)))
+               (return ,output))
+             (let ((,%elt (funcall ,%ref ,%sequence ,%iterator))) ,@body)
+             (setf ,%iterator (funcall ,%next ,%sequence ,%iterator))
+             ,@(optional-end `(decf ,%counter))))))))
 
 (defun gensym-list (list &optional x)
   (loop
@@ -177,6 +179,8 @@
             (let* ((fun (gensym "FUNCTION"))
                    (output (gensym "OUTPUT"))
                    (output-iter (gensym "OUTPUT-ITER"))
+                   (out-ref (gensym "REF")) (out-set (gensym "SET"))
+                   (out-next (gensym "NEXT"))
                    (sequences (cons sequence more-sequences))
                    (seqs (gensym-list sequences "SEQUENCE")))
               ;; We might turn this into an assertion in later stages.
@@ -189,12 +193,14 @@
                            ,@(mapcar #'list seqs sequences)
                            (,output (make-sequence
                                      ',result-type
-                                     (min ,@(mapcar (lambda (s) `(length ,s)) seqs))))
-                           (,output-iter (si::make-seq-iterator ,output)))
-                      (do-static-sequences (call ,@seqs)
-                        (si::seq-iterator-set ,output ,output-iter (call ,fun))
-                        (setq ,output-iter (si::seq-iterator-next ,output ,output-iter)))
-                      ,output)))
+                                     (min ,@(mapcar (lambda (s) `(length ,s)) seqs)))))
+                      (multiple-value-bind (,output-iter ,out-ref ,out-set ,out-next)
+                          (si::make-seq-iterator ,output)
+                        (declare (ignore ,out-ref))
+                        (do-static-sequences (call ,@seqs)
+                          (funcall ,out-set ,output ,output-iter (call ,fun))
+                          (setq ,output-iter (funcall ,out-next ,output ,output-iter)))
+                        ,output))))
             `(si::map-for-effect ,function ,sequence ,@more-sequences)))
       form))
 
@@ -205,12 +211,14 @@
 
 ;;; MAP-INTO has special behavior on vectors with fill pointers, so we specialize.
 (defmacro map-into-usual (output fun &rest seqs)
-  (let ((output-iter (gensym "OUTPUT-ITERATOR")))
-    `(let ((,output-iter (si::make-seq-iterator ,output)))
+  (si::with-unique-names (output-iter output-ref output-set output-next)
+    `(multiple-value-bind (,output-iter ,output-ref ,output-set ,output-next)
+         (si::make-seq-iterator ,output)
+       (declare (ignore ,output-ref))
        (do-static-sequences (call ,@seqs)
          (when (si::seq-iterator-endp ,output ,output-iter) (return))
-         (si::seq-iterator-set ,output ,output-iter (call ,fun))
-         (setq ,output-iter (si::seq-iterator-next ,output ,output-iter))))))
+         (funcall ,output-set ,output ,output-iter (call ,fun))
+         (setq ,output-iter (funcall ,output-next ,output ,output-iter))))))
 
 (defmacro map-into-fp (output fun &rest seqs)
   (let ((output-index (gensym "OUTPUT-INDEX"))
