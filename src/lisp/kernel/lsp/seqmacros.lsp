@@ -156,6 +156,8 @@
   (with-unique-names (%iterators %sequences)
     `(do* ((,%sequences ,seq-list)
            (,%iterators (mapcar #'make-seq-iterator ,%sequences))
+           ;; Initial elements of this list don't actually matter
+           ;; as it is mutated by seq-iterator-list-pop.
            (,elt-list (copy-list ,%sequences)))
           ((null (setf ,elt-list
                        (seq-iterator-list-pop ,elt-list

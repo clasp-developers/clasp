@@ -255,14 +255,20 @@ default value of INITIAL-ELEMENT depends on TYPE."
   (declare (ignore sequence))
   (null iterator))
 
+;;; Given three lists of equal length - one with indeterminate values,
+;;; one with sequences, and one with iterators on those sequences -
+;;; if none of the iterators are finished,
+;;; mutate the first list's elements to be the iteration's current
+;;; values, and the third's to be iterators for the next iteration,
+;;; and return the first value.
+;;; If any of the iterators are finished, return NIL.
 (defun seq-iterator-list-pop (values-list seq-list iterator-list)
   (declare (optimize (safety 0)))
   ;; We don't use type declarations for the cons operations because
   ;; the variables become NIL at various points.
   (do* ((it-list iterator-list)
         (v-list values-list))
-       ((null v-list)
-        values-list)
+       ((null v-list) values-list)
     (let* ((it (cons-car it-list))
            (sequence (cons-car seq-list)))
       (cond ((seq-iterator-endp sequence it)
@@ -345,13 +351,10 @@ default value of INITIAL-ELEMENT depends on TYPE."
               (setf (vref vec index) elt)
               (incf index)))))))
 
-;;; This is not called anywhere yet (just used for a compiler macro)
-;;; but it might be useful to have.
 (defun map-for-effect (function sequence &rest more-sequences)
   "Does (map nil ...)"
   (let ((sequences (list* sequence more-sequences))
-        (function (coerce-fdesignator function))
-        it)
+        (function (coerce-fdesignator function)))
     (do-sequences (elt-list sequences)
       (apply function elt-list)))
   nil)
@@ -361,25 +364,15 @@ default value of INITIAL-ELEMENT depends on TYPE."
 Creates and returns a sequence of TYPE with K elements, with the N-th element
 being the value of applying FUNCTION to the N-th elements of the given
 SEQUENCEs, where K is the minimum length of the given SEQUENCEs."
-  (let* ((sequences (list* sequence more-sequences))
-         (function (coerce-fdesignator function))
-         output
-         it ref set next) ; ref isn't used
-    (declare (type function function ref set next)
-             (optimize (safety 0)))
-    (when result-type
-      (let ((l (length sequence)))
-        (when more-sequences
-          (setf l (reduce #'min more-sequences
-                          :initial-value l
-                          :key #'length)))
-        (setf output (make-sequence result-type l)
-              (values ref set next) (make-seq-iterator output))))
-    (do-sequences (elt-list sequences :output output)
-      (let ((value (apply function elt-list)))
-        (when result-type
-          (funcall set output it value)
-          (setf it (funcall next output it)))))))
+  (if result-type
+      ;; FIXME: Could avoid this in map-to-list case.
+      (let ((length
+              (reduce #'min more-sequences
+                      :initial-value (length sequence)
+                      :key #'length)))
+        (apply #'map-into (make-sequence result-type length)
+               function sequence more-sequences))
+      (apply #'map-for-effect function sequence more-sequences)))
 
 (defun some (predicate sequence &rest more-sequences)
   "Args: (predicate sequence &rest more-sequences)
@@ -422,25 +415,25 @@ PREDICATE; NIL otherwise."
 elements of the given sequences. The i-th element of RESULT-SEQUENCE is the output
 of applying FUNCTION to the i-th element of each of the sequences. The map routine
 stops when it reaches the end of one of the given sequences."
-  (let ((nel (apply #'min (if (vectorp result-sequence)
-			      (array-dimension result-sequence 0)
-			      (length result-sequence))
-		    (mapcar #'length sequences))))
-    (declare (fixnum nel))
-    ;; Set the fill pointer to the number of iterations
-    (when (and (vectorp result-sequence)
-	       (array-has-fill-pointer-p result-sequence))
-      (setf (fill-pointer result-sequence) nel))
-    ;; Perform mapping
-    (do ((ir (make-seq-iterator result-sequence) (seq-iterator-next result-sequence ir))
-         (it (mapcar #'make-seq-iterator sequences))
-         (val (make-sequence 'list (length sequences))))
-        ((seq-iterator-endp result-sequence ir) result-sequence)
-      (do ((i it (cdr i))
-	   (v val (cdr v))
-           (s sequences (cdr s)))
-	  ((null i))
-	(unless (car i) (return-from map-into result-sequence))
-	(rplaca v (seq-iterator-ref (car s) (car i)))
-	(rplaca i (seq-iterator-next (car s) (car i))))
-      (seq-iterator-set result-sequence ir (apply function val)))))
+  ;; Set the fill pointer to the number of iterations
+  ;; NOTE: We have to do this beforehand, barring more cleverness, because the
+  ;; sequence iterator for the output uses LENGTH (i.e. the fill pointer if there
+  ;; is one) to decide when to stop, and we have to ignore the fill pointer when
+  ;; computing the number of iterations.
+  (when (and (vectorp result-sequence)
+             (array-has-fill-pointer-p result-sequence))
+    (setf (fill-pointer result-sequence)
+          (reduce #'min sequences
+                  :initial-value (if (vectorp result-sequence)
+                                     (array-dimension result-sequence 0)
+                                     (length result-sequence))
+                  :key #'length)))
+  ;; Perform mapping
+  (multiple-value-bind (out-it out-ref out-set out-next)
+      (make-seq-iterator result-sequence)
+    (declare (ignore out-ref))
+    (do-sequences (elt-list sequences :output result-sequence)
+      (when (seq-iterator-endp result-sequence out-it)
+        (return-from map-into result-sequence))
+      (funcall out-set result-sequence out-it (apply function elt-list))
+      (setf out-it (funcall out-next result-sequence out-it)))))
