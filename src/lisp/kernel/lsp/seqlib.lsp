@@ -43,71 +43,126 @@
 	   (optimize (speed 3) (safety 0)))
   (funcall f x))
 
+;;; Duplicate code in REDUCE and stuff is partly in anticipation
+;;; of extended sequences, which are defined not to canonicalize stuff.
+
+(defun list-reduce-from-end (function sequence key start end
+                             initial-value ivsp)
+  (declare (optimize (speed 3) (safety 0))
+           (type function function key)
+           (type fixnum start end))
+  ;; We operate on a freshly consed, reversed sublist.
+  ;; FIXME: There's probably a better way.
+  (let* ((output nil))
+    (do-sublist (elt sequence start end)
+      (setf output (cons elt output)))
+    (setf sequence output
+          end (- end start) start 0))
+  (while (plusp start)
+         (setf sequence (cdr (the cons sequence))
+               start (1- start)
+               end (1- end)))
+  (unless ivsp
+    (setf initial-value (funcall key (car (the cons sequence)))
+          sequence (cdr (the cons sequence))
+          end (1- end)))
+  (do-sublist (elt sequence 0 end :output initial-value)
+    (setf initial-value
+          (funcall function (funcall key elt) initial-value))))
+
+(defun list-reduce (function sequence key start end
+                    initial-value ivsp)
+  (declare (optimize (speed 3) (safety 0))
+           (type function function key)
+           (type fixnum start end))
+  (while (plusp start)
+         (setf sequence (cdr (the cons sequence))
+               start (1- start)
+               end (1- end)))
+  (unless ivsp
+    (setf initial-value (funcall key (car (the cons sequence)))
+          sequence (cdr (the cons sequence))
+          end (1- end)))
+  (do-sublist (elt sequence 0 end :output initial-value)
+    (setf initial-value
+          (funcall function initial-value (funcall key elt)))))
+
+(defun vector-reduce-from-end (function sequence key start end
+                               initial-value ivsp)
+  (declare (optimize (speed 3) (safety 0))
+           (type function function key)
+           (type fixnum start end))
+  (unless ivsp
+    (setf initial-value (funcall key (aref sequence (1- end)))
+          end (1- end)))
+  (do-subvector (elt sequence start end :from-end t
+                                        :output initial-value)
+    (setf initial-value
+          (funcall function (funcall key elt) initial-value))))
+
+(defun vector-reduce (function sequence key start end
+                      initial-value ivsp)
+  (declare (optimize (speed 3) (safety 0))
+           (type function function key)
+           (type fixnum start end))
+  (unless ivsp
+    (setf initial-value (funcall key (aref sequence start))
+          start (1+ start)))
+  (do-subvector (elt sequence start end :output initial-value)
+    (setf initial-value
+          (funcall function initial-value (funcall key elt)))))
+
 (defun reduce (function sequence
                &key from-end
-                    (start 0)
-                    end
-                    key (initial-value nil ivsp))
-  (let ((function (coerce-fdesignator function)))
-    (declare (optimize (speed 3) (safety 0) (debug 0)))
-    (with-start-end (start end sequence)
-      (with-key (key)
-        (cond ((>= start end)
-               (if ivsp
-                   initial-value
-                   (funcall function)))
-              ((listp sequence)
-               (when from-end
-                 (let* ((output nil))
-                   (do-sublist (elt sequence start end)
-                     (setf output (cons elt output)))
-                   (setf sequence output
-                         end (- end start) start 0)))
-               (while (plusp start)
-                 (setf sequence (cdr (the cons sequence))
-                       start (1- start)
-                       end (1- end)))
-               (unless ivsp
-                 (setf initial-value (key (car (the cons sequence)))
-                       sequence (cdr (the cons sequence))
-                       end (1- end)))
-               (do-sublist (elt sequence 0 end :output initial-value)
-                 (setf initial-value
-                       (if from-end
-                           (funcall function (key elt) initial-value)
-                           (funcall function initial-value (key elt))))))
-              ((vectorp sequence)
-               (cond
-                 (from-end
-                  (unless ivsp
-                    (setf initial-value (key (aref sequence (1- end)))
-                          end (1- end)))
-                  (do-subvector (elt sequence start end :from-end t
-                                                        :output initial-value)
-                    (setf initial-value
-                          (funcall function (key elt) initial-value))))
-                 (t
-                  (unless ivsp
-                    (setf initial-value (key (aref sequence start))
-                          start (1+ start)))
-                  (do-subvector (elt sequence start end :output initial-value)
-                    (setf initial-value
-                          (funcall function initial-value (key elt)))))))
-              (t (error-not-a-sequence sequence)))))))
+                 (start 0)
+                 end
+                 key (initial-value nil ivsp))
+  ;; duplicate code is in anticipation of extended sequences.
+  (declare (optimize (speed 3) (safety 0)))
+  (cond ((listp sequence)
+         (let ((function (coerce-fdesignator function)))
+           (with-start-end (start end sequence)
+             (with-key (key)
+               (if (>= start end)
+                   (if ivsp initial-value (funcall function))
+                   (if from-end
+                       (list-reduce-from-end function sequence
+                                             key start end
+                                             initial-value ivsp)
+                       (list-reduce function sequence
+                                    key start end
+                                    initial-value ivsp)))))))
+        ((vectorp sequence)
+         (let ((function (coerce-fdesignator function)))
+           (with-start-end (start end sequence)
+             (with-key (key)
+               (if (>= start end)
+                   (if ivsp initial-value (funcall function))
+                   (if from-end
+                       (vector-reduce-from-end function sequence
+                                               key start end
+                                               initial-value ivsp)
+                       (vector-reduce function sequence
+                                      key start end
+                                      initial-value ivsp)))))))
+        (t (error-not-a-sequence sequence))))
 
 (defun fill (sequence item &key (start 0) end)
   ;; INV: WITH-START-END checks the sequence type and size.
-  (reckless
-   (with-start-end (start end sequence)
-     (if (listp sequence)
-         (do* ((x (nthcdr start sequence) (cdr x))
-               (i (- end start) (1- i)))
-              ((zerop i)
-               sequence)
-           (declare (fixnum i) (cons x))
-           (setf (first x) item))
-         (si::fill-array-with-elt sequence item start end)))
-   sequence))
+  (cond ((listp sequence)
+         (reckless
+          (with-start-end (start end sequence)
+            (do* ((x (nthcdr start sequence) (cdr x))
+                  (i (- end start) (1- i)))
+                 ((zerop i) sequence)
+              (declare (fixnum i) (cons x))
+              (rplaca x item)))))
+        ((vectorp sequence)
+         (reckless
+          (with-start-end (start end sequence)
+            (fill-array-with-elt sequence item start end))
+          sequence))
+        (t (error-not-a-sequence sequence))))
 
 (defun replace (sequence1 sequence2 &key (start1 0) end1 (start2 0) end2)
   (with-start-end (start1 end1 sequence1)
