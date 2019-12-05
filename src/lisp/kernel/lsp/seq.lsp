@@ -290,17 +290,6 @@ default value of INITIAL-ELEMENT depends on TYPE."
             it-list (cons-cdr it-list)
             seq-list (cons-cdr seq-list)))))
 
-;;; FIXME: This should be moved. But right now this file is the earliest
-;;; use. Also we don't have typecase yet.
-;;; This is different from coerce-to-function, which implements the behavior
-;;; of (coerce x 'function). If we get a lambda expression here, that's a
-;;; type error, not a command to implicitly evaluate it.
-(declaim (inline coerce-fdesignator))
-(defun coerce-fdesignator (object)
-  (cond ((functionp object) object)
-        ((symbolp object) (fdefinition object))
-        (t (error 'type-error :datum object :expected-type '(or symbol function)))))
-
 (defun coerce-to-list (object)
   (if (listp object)
       object
@@ -355,6 +344,8 @@ default value of INITIAL-ELEMENT depends on TYPE."
   "Does (map nil ...)"
   (let ((sequences (list* sequence more-sequences))
         (function (coerce-fdesignator function)))
+    (declare (type function function)
+             (optimize (safety 0) (speed 3)))
     (do-sequences (elt-list sequences)
       (apply function elt-list)))
   nil)
@@ -429,11 +420,13 @@ stops when it reaches the end of one of the given sequences."
                                      (length result-sequence))
                   :key #'length)))
   ;; Perform mapping
-  (multiple-value-bind (out-it out-ref out-set out-next)
-      (make-seq-iterator result-sequence)
-    (declare (ignore out-ref))
-    (do-sequences (elt-list sequences :output result-sequence)
-      (when (seq-iterator-endp result-sequence out-it)
-        (return-from map-into result-sequence))
-      (funcall out-set result-sequence out-it (apply function elt-list))
-      (setf out-it (funcall out-next result-sequence out-it)))))
+  (let ((function (coerce-fdesignator function)))
+    (declare (type function function) (optimize (safety 0) (speed 3)))
+    (multiple-value-bind (out-it out-ref out-set out-next)
+        (make-seq-iterator result-sequence)
+      (declare (ignore out-ref))
+      (do-sequences (elt-list sequences :output result-sequence)
+        (when (seq-iterator-endp result-sequence out-it)
+          (return-from map-into result-sequence))
+        (funcall out-set result-sequence out-it (apply function elt-list))
+        (setf out-it (funcall out-next result-sequence out-it))))))
