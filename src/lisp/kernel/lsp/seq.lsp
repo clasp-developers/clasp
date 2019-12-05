@@ -114,16 +114,16 @@
 Creates and returns a sequence of the given TYPE and LENGTH.  If INITIAL-
 ELEMENT is given, then it becomes the elements of the created sequence.  The
 default value of INITIAL-ELEMENT depends on TYPE."
-  (if (and (integerp size)(>= size 0))
-  (multiple-value-bind (element-type length success)
-      (closest-sequence-type type)
-    (cond ((not success)
-           (if (subtypep type 'sequence)
-               (error "Could not determine element type in ~a" type)
-               (error-sequence-type type)))
-          ((eq element-type 'LIST)
-           (let ((result (make-list size :initial-element initial-element)))
-             (if (or (eq length '*) (eql length size))
+  (if (and (integerp size) (>= size 0))
+      (multiple-value-bind (element-type length success)
+          (closest-sequence-type type)
+        (cond ((not success)
+               (if (subtypep type 'sequence)
+                   (error "Could not determine element type in ~a" type)
+                   (error-sequence-type type)))
+              ((eq element-type 'LIST)
+               (let ((result (make-list size :initial-element initial-element)))
+                 (if (or (eq length '*) (eql length size))
                      ;;; ecl  tests instead for (or (and (subtypep type 'NULL) (plusp size))
                      ;;;                            (and (subtypep type 'CONS) (zerop size)))
                      (if (subtypep 'LIST type)
@@ -131,15 +131,15 @@ default value of INITIAL-ELEMENT depends on TYPE."
                          (if (and (subtypep type 'CONS) (zerop size))
                              (error-sequence-length result type 0)
                              result))
-                 (error-sequence-length result type size))))
-          (t
-           (let ((result (sys:make-vector (if (eq element-type '*) 't element-type)
-                                          size nil nil nil 0)))
-             ;; Don't know why we don't just pass make-vector the initial element.
-             (when iesp
-               (si::fill-array-with-elt result initial-element 0 nil))
-             (unless (or (eql length '*) (eql length size))
-               (error-sequence-length result type size))
+                     (error-sequence-length result type size))))
+              (t
+               (let ((result (sys:make-vector (if (eq element-type '*) 't element-type)
+                                              size nil nil nil 0)))
+                 ;; Don't know why we don't just pass make-vector the initial element.
+                 (when iesp
+                   (si::fill-array-with-elt result initial-element 0 nil))
+                 (unless (or (eql length '*) (eql length size))
+                   (error-sequence-length result type size))
                  result))))
       (error 'type-error :datum size :expected-type '(integer 0 *))))
 
