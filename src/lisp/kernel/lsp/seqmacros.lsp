@@ -211,8 +211,8 @@
                     `((macrolet ((,setter (value)
                                    `(funcall ,',%set
                                              ,value ,',sequence ,',%it)))
-                        ,@body)
-                    body))))
+                        ,@body))
+                    body)))
       (once-only (start)
         `(sequence:with-sequence-iterator (,%it ,%limit ,%from-end
                                                 ,%step ,%endp ,%elt ,%set)
