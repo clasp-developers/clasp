@@ -135,13 +135,28 @@
                   (,copy () (list 'funcall ,ncopy ,sequence ,nstate)))
          ,@body))))
 
+(defmacro dosequence-general ((elt sequence &optional result) &body body)
+  (with-unique-names (%it %limit %from-end %step %endp %elt)
+    (once-only (sequence)
+      `(sequence:with-sequence-iterator
+           (,%it ,%limit ,%from-end ,%step ,%endp ,%elt)
+           (,sequence)
+         (do ((,%it ,%it (funcall ,%step ,sequence ,%it ,%from-end)))
+             ((funcall ,%endp ,sequence ,%it ,%limit ,%from-end)
+              ,result)
+           (let ((,elt (funcall ,%elt ,sequence ,%it)))
+             (tagbody ,@body)))))))
+
+;;; NOTE: Might want to consider when we want a triplified body
+;;; and when we don't with some more care.
 (defmacro dosequence ((elt sequence &optional result) &body body)
   (once-only (sequence)
     `(cond ((listp ,sequence)
             (dolist (,elt ,sequence ,result) ,@body))
            ((vectorp ,sequence)
             (dovector (,elt ,sequence ,result) ,@body))
-           (t (error-not-a-sequence ,sequence)))))
+           (t
+            (dosequence-general (,elt ,sequence ,result) ,@body)))))
 
 (defmacro do-subvector ((elt vector start end
                          &key from-end output setter (index (gensym "INDEX")))
@@ -188,6 +203,26 @@
        (let ((,elt (car ,%sublist)))
          ,@body)))))
 
+(defmacro do-subsequence-general ((elt sequence start end
+                                       &key output setter (index (gensym)))
+                                  &body body)
+  (with-unique-names (%it %limit %from-end %step %endp %elt %set)
+    (let ((body (if setter
+                    `((macrolet ((,setter (value)
+                                   `(funcall ,',%set
+                                             ,value ,',sequence ,',%it)))
+                        ,@body)
+                    body))))
+      (once-only (start)
+        `(sequence:with-sequence-iterator (,%it ,%limit ,%from-end
+                                                ,%step ,%endp ,%elt ,%set)
+             (,sequence :start ,start :end ,end)
+           (do ((,index ,start (1+ ,index))
+                (,%it ,%it (funcall ,%step ,sequence ,%it ,%from-end)))
+               ((funcall ,%endp ,sequence ,%it ,%limit) ,output)
+             (declare (fixnum ,index))
+             (let ((,elt (funcall ,%elt ,sequence ,%it))) ,@body)))))))
+
 (defmacro do-subsequence ((elt sequence start end &rest args
                            &key setter index output specialize)
                           &body body)
@@ -198,7 +233,8 @@
                 (do-sublist ,args ,@body))
                ((vectorp ,%sequence)
                 (do-subvector ,args ,@body))
-               (t (error-not-a-sequence ,%sequence)))))))
+               (t
+                (do-subsequence-general ,args ,@body)))))))
 
 ;;; Iterate over a variable number of sequences at once.
 ;;; Once any sequence runs out of elements, OUTPUT is evaluated and returned.
