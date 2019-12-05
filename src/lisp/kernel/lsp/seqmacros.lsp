@@ -89,11 +89,11 @@
 
 (defmacro sequence:with-sequence-iterator
     ((&whole vars
-      &optional iterator limit from-end
+      &optional iterator limit from-end-v
         step endp element set-element index copy)
      (sequence &key from-end (start 0) end)
      &body body)
-  (declare (ignore iterator limit from-end
+  (declare (ignore iterator limit from-end-v
                    step endp element set-element index copy))
   (let* ((ignored nil)
          (vars (mapcar (lambda (v)
