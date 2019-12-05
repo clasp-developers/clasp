@@ -176,10 +176,10 @@
 	     (when (/= (length contents) (first dims))
 	       (error "In MAKE-ARRAY: the elements in :INITIAL-CONTENTS do not match the array dimensions"))
 	     (if (= (length dims) 1)
-                 (dosequence (e contents)
+                 (sequence:dosequence (e contents)
                    (sys:row-major-aset array written e)
                    (incf written))
-                 (dosequence (e contents)
+                 (sequence:dosequence (e contents)
                    (setf written (iterate-over-contents array
 							e
 							(rest dims)

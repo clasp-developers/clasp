@@ -149,7 +149,7 @@
 
 ;;; NOTE: Might want to consider when we want a triplified body
 ;;; and when we don't with some more care.
-(defmacro dosequence ((elt sequence &optional result) &body body)
+(defmacro sequence:dosequence ((elt sequence &optional result) &body body)
   (once-only (sequence)
     `(cond ((listp ,sequence)
             (dolist (,elt ,sequence ,result) ,@body))
