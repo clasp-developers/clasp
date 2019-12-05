@@ -15,27 +15,6 @@
 
 (in-package "COMPILER")
 
-(defmacro do-in-seq ((%elt sequence &key (start 0) end output) &body body)
-  (si::with-unique-names (%start %iterator %ref %set %next %counter %sequence)
-    (flet ((optional-end (&rest forms)
-             (when end
-               `(,@forms))))
-      `(let* ((,%sequence ,sequence)
-              (,%start ,start)
-              ,@(optional-end `(,%counter (- (or ,end most-positive-fixnum) ,%start))))
-         ,@(optional-end `(declare (type fixnum ,%counter)))
-         (multiple-value-bind (,%iterator ,%ref ,%set ,%next)
-             (si::make-seq-iterator ,%sequence ,%start)
-           (declare (ignore ,%set))
-           (loop
-             ;; Sequence iterators at their end are NIL. See lsp/seq.lsp.
-             (unless (and ,%iterator
-                          ,@(optional-end `(plusp ,%counter)))
-               (return ,output))
-             (let ((,%elt (funcall ,%ref ,%sequence ,%iterator))) ,@body)
-             (setf ,%iterator (funcall ,%next ,%sequence ,%iterator))
-             ,@(optional-end `(decf ,%counter))))))))
-
 (defun gensym-list (list &optional x)
   (loop
     :for _ :in list
@@ -48,6 +27,7 @@
 ;;; sequences as arguments.
 ;;; So, (do-static-sequences (c (list 1 2 3) (list 4 5)) (c (lambda (a b) (print (+ a b)))))
 ;;; will print 5, then 7, then stop.
+#+(or)
 (defmacro do-static-sequences ((caller &rest sequences) &body body)
   (let ((seqs (gensym-list sequences "SEQUENCE"))
         (iters (gensym-list sequences "ITERATOR")))
@@ -78,6 +58,7 @@
 ;;; FIND
 ;;;
 
+#+(or)
 (define-compiler-macro find (&whole whole value sequence &rest sequence-args &environment env)
   (multiple-value-bind (key-function test-function init
                         key-flag test-flag test start end)
@@ -86,7 +67,7 @@
         (si::with-unique-names (%value %elt)
           `(let ((,%value ,value)
                  ,@init)
-             (do-in-seq (,%elt ,sequence :start ,start :end ,end)
+             (core::do-subsequence (,%elt ,sequence ,start ,end)
                (when ,(funcall test-function %value
                                (funcall key-function %elt))
                  (return ,%elt)))))
@@ -108,15 +89,13 @@
              form)
             ((eq element-type 'list)
              (if (eq length '*)
-                 (let* ((ss (gensym "SIZE"))
-                        (maker
-                          `(make-list ,ss :initial-element ,initial-element)))
-                   (if (subtypep type 'cons env)
+                 (if (subtypep type 'cons env)
+                     (let ((ss (gensym "SIZE")))
                        `(let* ((,ss ,size))
                           (if (zerop ,ss)
                               (si::error-sequence-length nil ',type ,ss)
-                              ,maker))
-                       maker))
+                              (make-list ,ss :initial-element initial-element))))
+                     `(make-list ,size :initial-element initial-element))
                  (let ((ss (gensym "SIZE"))
                        (r (gensym "RESULT")))
                    `(let* ((,ss ,size)
@@ -168,6 +147,7 @@
 ;;; MAP
 ;;;
 
+#+(or)
 (define-compiler-macro si::map-for-effect
     (function sequence &rest more-sequences)
   (let* ((fun (gensym "FUNCTION")))
@@ -176,6 +156,7 @@
          (call ,fun))
        nil)))
 
+#+(or)
 (define-compiler-macro map
     (&whole form result-type function sequence &rest more-sequences &environment env)
   (if (constantp result-type env)
@@ -215,6 +196,7 @@
 
 
 ;;; MAP-INTO has special behavior on vectors with fill pointers, so we specialize.
+#+(or)
 (defmacro map-into-usual (output fun &rest seqs)
   (si::with-unique-names (output-iter output-ref output-set output-next)
     `(multiple-value-bind (,output-iter ,output-ref ,output-set ,output-next)
@@ -225,6 +207,7 @@
          (funcall ,output-set ,output ,output-iter (call ,fun))
          (setq ,output-iter (funcall ,output-next ,output ,output-iter))))))
 
+#+(or)
 (defmacro map-into-fp (output fun &rest seqs)
   (let ((output-index (gensym "OUTPUT-INDEX"))
         (output-size (gensym "OUTPUT-SIZE")))
@@ -236,6 +219,7 @@
          (incf ,output-index))
        (setf (fill-pointer ,output) ,output-index))))
 
+#+(or)
 (define-compiler-macro map-into (result function &rest sequences)
   ;; handle multiple evaluation up here
   (let ((output (gensym "OUTPUT"))
@@ -254,6 +238,7 @@
 ;;; These are actually part of "Data and Control Flow" but they're basically sequence functions.
 ;;;
 
+#+(or)
 (flet ((body (predicate sequences whenless found unfound)
          (let ((p (gensym "PREDICATE"))
                (b (gensym)))

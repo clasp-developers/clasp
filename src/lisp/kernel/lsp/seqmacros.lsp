@@ -87,13 +87,61 @@
            (let ((,elt (core:vref ,%vector ,%index)))
              ,@body))))))
 
+(defmacro sequence:with-sequence-iterator
+    ((&whole vars
+      &optional iterator limit from-end
+        step endp element set-element index copy)
+     (sequence &key from-end (start 0) end)
+     &body body)
+  (declare (ignore iterator limit from-end
+                   step endp element set-element index copy))
+  (let* ((ignored nil)
+         (vars (mapcar (lambda (v)
+                         (or v
+                             (let ((name (gensym)))
+                               (push name ignored)
+                               name)))
+                       vars)))
+    `(multiple-value-bind (,@vars)
+         (%make-sequence-iterator ,sequence ,from-end ,start ,end)
+       (declare (type function ,@(nthcdr 3 vars))
+                (ignore ,@ignored))
+       ,@body)))
+
+#+(or)
+(defmacro sequence:with-sequence-iterator-macros
+    ((step endp elt setf index copy)
+     (sequence &rest args &key from-end start end)
+     &body body)
+  (declare (ignore from-end start end))
+  (let ((nstate (gensym "STATE")) (nlimit (gensym "LIMIT"))
+        (nfrom-end (gensym "FROM-END")) (nstep (gensym "STEP"))
+        (nendp (gensym "ENDP")) (nelt (gensym "ELT"))
+        (nsetf (gensym "SETF")) (nindex (gensym "INDEX"))
+        (ncopy (gensym "COPY")))
+    `(sequence:with-sequence-iterator
+         (,nstate ,nlimit ,nfrom-end
+                  ,nstep ,nendp ,nelt ,nsetf ,nindex ,ncopy)
+         (,sequence ,@args)
+       (macrolet ((,step ()
+                    (list 'setq ,nstate
+                          (list 'funcall ,nstep ,sequence ,nstate ,nfrom-end)))
+                  (,endp ()
+                    (list 'funcall ,nendp ,sequence ,nstate ,nlimit ,nfrom-end))
+                  (,elt () (list 'funcall ,nelt ,sequence ,nstate))
+                  (,setf (new-value)
+                    (list 'funcall ,nsetf new-value ,sequence ,nstate))
+                  (,index () (list 'funcall ,nindex ,sequence ,nstate))
+                  (,copy () (list 'funcall ,ncopy ,sequence ,nstate)))
+         ,@body))))
+
 (defmacro dosequence ((elt sequence &optional result) &body body)
   (once-only (sequence)
     `(cond ((listp ,sequence)
             (dolist (,elt ,sequence ,result) ,@body))
            ((vectorp ,sequence)
             (dovector (,elt ,sequence ,result) ,@body))
-           (t (error-not-a-sequence sequence)))))
+           (t (error-not-a-sequence ,sequence)))))
 
 (defmacro do-subvector ((elt vector start end
                          &key from-end output setter (index (gensym "INDEX")))
@@ -152,17 +200,18 @@
                 (do-subvector ,args ,@body))
                (t (error-not-a-sequence ,%sequence)))))))
 
-(defmacro do-sequences ((elt-list seq-list &key output) &body body)
-  (with-unique-names (%iterators %sequences)
-    `(do* ((,%sequences ,seq-list)
-           (,%iterators (mapcar #'make-seq-iterator ,%sequences))
-           ;; Initial elements of this list don't actually matter
-           ;; as it is mutated by seq-iterator-list-pop.
-           (,elt-list (copy-list ,%sequences)))
-          ((null (setf ,elt-list
-                       (seq-iterator-list-pop ,elt-list
-                                              ,%sequences
-                                              ,%iterators)))
-           ,@(and output (list output)))
-       ,@body)))
-
+;;; Iterate over a variable number of sequences at once.
+;;; Once any sequence runs out of elements, OUTPUT is evaluated and returned.
+;;; SEQ-LIST is evaluated: its value must be a list of (proper) sequences.
+;;; ELT-LIST is a symbol. In the body, it will be bound to a list of the
+;;;  same length, containing the elements of the sequences for this iter.
+(defmacro do-sequence-list ((elt-list seq-list &optional output) &body body)
+  (with-unique-names (%iterators %limits %sequences)
+    `(let ((,%sequences ,seq-list))
+       (multiple-value-bind (,elt-list ,%iterators ,%limits)
+           (lists-for-do-sequence-list ,%sequences)
+         (do ()
+             ((not (seq-iterator-list-pop ,elt-list ,%sequences
+                                          ,%iterators ,%limits))
+              ,@(and output (list output)))
+           ,@body)))))

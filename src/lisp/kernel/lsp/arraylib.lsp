@@ -59,6 +59,7 @@ contiguous block."
              (error "MAKE-ARRAY: Cannot supply both :INITIAL-ELEMENT and :INITIAL-CONTENTS"))
            #| initial element was filled on construction|#)
           (initial-contents-supplied-p
+           ;; Defined in seqlib.lsp, later.
            (fill-array-with-seq x initial-contents)))
     x))
 
@@ -104,35 +105,7 @@ contiguous block."
        (when (and displaced-to initial-element-supplied-p)
          (fill-array-with-elt x initial-element 0 nil))
        x))
-    (t (error "Illegal dimensions ~a for make-array" dimensions ))))
-
-(defun fill-array-with-seq (array initial-contents)
-  (declare (array array)
-           (sequence initial-contents)
-           (optimize (safety 0)))
-  (labels ((iterate-over-contents (array contents dims written)
-	     (declare (fixnum written)
-		      (array array)
-		      (optimize (safety 0)))
-	     (when (/= (length contents) (first dims))
-	       (error "In MAKE-ARRAY: the elements in :INITIAL-CONTENTS do not match the array dimensions"))
-	     (if (= (length dims) 1)
-		 (do* ((it (make-seq-iterator contents) (seq-iterator-next contents it)))
-		      ((null it))
-		   (sys:row-major-aset array written (seq-iterator-ref contents it))
-		   (incf written))
-		 (do* ((it (make-seq-iterator contents) (seq-iterator-next contents it)))
-		      ((null it))
-		   (setf written (iterate-over-contents array
-							(seq-iterator-ref contents it)
-							(rest dims)
-							written))))
-	     written))
-    (let ((dims (array-dimensions array)))
-      (if dims
-	  (iterate-over-contents array initial-contents dims 0)
-	  (setf (aref array) initial-contents))))
-  array)
+    (t (error "Illegal dimensions ~a for make-array" dimensions))))
 
 (defun array-in-bounds-p (array &rest indices)
   "Args: (array &rest indexes)

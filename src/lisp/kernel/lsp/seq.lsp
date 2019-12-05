@@ -144,151 +144,193 @@ default value of INITIAL-ELEMENT depends on TYPE."
       (error 'type-error :datum size :expected-type '(integer 0 *))))
 
 ;;; Sequence iterators.
-;;; An iterator is some object plus functions to deal with it,
-;;; like the extensible sequences extension.
-;;; The iterator represents the state of an iteration in some convenient
-;;; sense; for lists it's the current cons, for vectors the current index.
-;;; When you iterate with these, you call MAKE-SEQ-ITERATOR, which
-;;; returns the iterator and its functions as values. Then you repeatedly
-;;; call them instead of using elt or whatever.
-;;; In my tests, returning and calling a function makes long loops
-;;; go by twice as fast as calling some known function that branches,
-;;; and is slightly shorter for more common short loops.
-;;; Currently there are three iterator functions: ref, set, and next.
-;;; ref gets the current element. set sets it. next returns a new iterator
-;;; (just the object) representing the next iteration, or NIL if there is
-;;; no more sequence to iterate over.
 
-(defun list-iterator-ref (seq it)
-  (declare (optimize (safety 0))
-           (ignore seq))
-  (car (the cons it)))
+;;; Magic terminator for list :from-end t
+(defvar *exhausted* (list nil))
 
-(defun list-iterator-set (seq it value)
-  (declare (optimize (safety 0)) (ignore seq))
-  ;; rplaca can be transformed easier than setf. KLUDGE
-  (rplaca (the cons it) value)
-  value)
-
-(defun list-iterator-next (seq it)
-  (declare (optimize (safety 0)) (ignore seq))
-  (setf it (cdr (the cons it)))
-  (unless (listp it)
-    (error-not-a-sequence it))
+(defun list-iterator-next (seq it from-end)
+  (declare (ignore seq from-end)
+           (optimize (safety 0))
+           (type cons it))
+  (cdr it))
+(defun list-iterator-prev (seq it from-end)
+  (declare (ignore from-end)
+           (optimize (safety 0))
+           (type list seq it))
+  (if (eq it seq)
+      *exhausted*
+      (do ((cdr seq (cdr seq)))
+          ((eq (cdr cdr) it) cdr))))
+(defun list-iterator-endp (seq it limit from-end)
+  (declare (ignore seq from-end))
+  (eq it limit))
+(defun list-iterator-elt (seq it)
+  (declare (ignore seq)
+           (optimize (safety 0))
+           (type cons it))
+  (car it))
+(defun (setf list-iterator-elt) (new seq it)
+  (declare (ignore seq)
+           (optimize (safety 0))
+           (type cons it))
+  (rplaca it new)
+  new)
+(defun list-iterator-index (seq it)
+  (do ((i 0 (1+ i))
+       (cdr seq (cdr cdr)))
+      ((eq cdr it) i)))
+(defun list-iterator-copy (seq it)
+  (declare (ignore seq))
   it)
+(defun list-iterator-step (seq it from-end)
+  (if from-end
+      (list-iterator-prev seq it from-end)
+      (list-iterator-next seq it from-end)))
 
-(defun vec-iterator-ref (seq it)
+(defun make-simple-list-iterator (list from-end start end)
+  (cond (from-end
+         (let* ((termination
+                  (if (= start 0)
+                      *exhausted*
+                      (nthcdr (1- start) list)))
+                (init (if (<= (or end (length list)) start)
+                          termination
+                          (if end
+                              (last list (- (length list) (1- end)))
+                              (last list)))))
+           (values init termination t)))
+        ((not end) (values (nthcdr start list) nil nil))
+        (t (let ((st (nthcdr start list)))
+             (values st (nthcdr (- end start) st) nil)))))
+
+(defun make-list-iterator (list from-end start end)
+  (multiple-value-bind (iterator limit from-end)
+      (make-simple-list-iterator list from-end start end)
+    (values iterator limit from-end
+            (if from-end #'list-iterator-prev #'list-iterator-next)
+            #'list-iterator-endp
+            #'list-iterator-elt #'(setf list-iterator-elt)
+            #'list-iterator-index #'list-iterator-copy)))
+
+(defun vec-iterator-next (seq it from-end)
+  (declare (ignore seq from-end)
+           (optimize (safety 0))
+           (type fixnum it))
+  (1+ it))
+(defun vec-iterator-prev (seq it from-end)
+  (declare (ignore seq from-end)
+           (optimize (safety 0))
+           (type fixnum it))
+  (1- it))
+(defun vec-iterator-endp (seq it limit from-end)
+  (declare (ignore seq from-end)
+           (optimize (safety 0))
+           (type fixnum it limit))
+  (= it limit))
+(defun vec-iterator-elt (seq it)
   (declare (optimize (safety 0)))
   (aref (the vector seq) it))
-
-(defun vec-iterator-set (seq it value)
+(defun (setf vec-iterator-elt) (new seq it)
   (declare (optimize (safety 0)))
-  (setf (aref (the vector seq) it) value))
+  (setf (aref (the vector seq) it) new))
+(defun vec-iterator-index (seq it)
+  (declare (ignore seq))
+  it)
+(defun vec-iterator-copy (seq it)
+  (declare (ignore seq))
+  it)
+(defun vec-iterator-step (seq it from-end)
+  (if from-end
+      (vec-iterator-prev seq it from-end)
+      (vec-iterator-next seq it from-end)))
 
-(defun vec-iterator-next (seq it)
-  (declare (optimize (safety 0)))
-  (let ((aux (1+ it)))
-    (declare (fixnum aux))
-    (and (< aux (length (the vector seq))) aux)))
+(defun make-vector-iterator (sequence from-end start end)
+  (let* ((end (or end (length sequence)))
+         (iterator (if from-end (1- end) start))
+         (limit (if from-end (1- start) end)))
+    (values iterator limit from-end
+            (if from-end #'vec-iterator-prev #'vec-iterator-next)
+            #'vec-iterator-endp
+            #'vec-iterator-elt #'(setf vec-iterator-elt)
+            #'vec-iterator-index #'vec-iterator-copy)))
 
-;;; Functions that dispatch. Useful for MAP and stuff.
+(macrolet ((def (generic (&rest params) list vec)
+             `(defun ,generic (seq it ,@params)
+                (cond ((listp seq) (,list seq it ,@params))
+                      ((vectorp seq) (,vec seq it ,@params))
+                      (t (error-not-a-sequence seq))))))
+  (def sequence:iterator-step (from-end)
+    list-iterator-step vec-iterator-step)
+  (def sequence:iterator-endp (limit from-end)
+    list-iterator-endp vec-iterator-endp)
+  (def sequence:iterator-elt () list-iterator-elt vec-iterator-elt)
+  (def sequence:iterator-index () list-iterator-index vec-iterator-index)
+  (def sequence:iterator-copy () list-iterator-copy vec-iterator-copy))
+(defun (setf sequence:iterator-elt) (new seq it)
+  (cond ((listp seq) (funcall #'(setf list-iterator-elt) new seq it))
+        ((vectorp seq) (funcall #'(setf vec-iterator-elt) new seq it))
+        (t (error-not-a-sequence seq))))
 
-(defun seq-iterator-ref (sequence iterator)
-  (declare (optimize (safety 0)))
-  (if (si::fixnump iterator)
-      (aref (the vector sequence) iterator)
-      (car (the cons iterator))))
+(defun %make-sequence-iterator (sequence from-end start end)
+  (cond ((listp sequence)
+         (make-list-iterator sequence from-end start end))
+        ((vectorp sequence)
+         (make-vector-iterator sequence from-end start end))
+        (t (error-not-a-sequence sequence))))
 
-(defun seq-iterator-set (sequence iterator value)
-  (declare (optimize (safety 0)))
-  (if (si::fixnump iterator)
-      (setf (aref (the vector sequence) iterator) value)
-      (progn (rplaca (the cons iterator) value) value)))
+(defun sequence:make-sequence-iterator (sequence &key from-end start end)
+  (%make-sequence-iterator sequence from-end start end))
 
-(defun seq-iterator-next (sequence iterator)
-  (declare (optimize (safety 0)))
-  (cond ((fixnump iterator)
-         (let ((aux (1+ iterator)))
-           (declare (fixnum aux))
-           (and (< aux (length (the vector sequence)))
-                aux)))
-        ((atom iterator)
-         (error-not-a-sequence iterator))
-        (t
-         (setf iterator (cdr (the cons iterator)))
-         (unless (listp iterator)
-           (error-not-a-sequence iterator))
-         iterator)))
+;;; If a SEQUENCE:EMPTYP symbol exists, alexandria needs it to be fbound.
+(defun sequence:emptyp (sequence) (zerop (length sequence)))
 
-(defun make-seq-iterator (sequence &optional (start 0))
-  (declare (optimize (safety 0)))
-  (cond ((fixnump start)
-         (let ((aux start))
-           (declare (fixnum aux))
-           (cond ((minusp aux)
-                  (error-sequence-index sequence start))
-                 ((listp sequence)
-                  (values (nthcdr aux sequence)
-                          #'list-iterator-ref
-                          #'list-iterator-set
-                          #'list-iterator-next))
-                 ((vectorp sequence)
-                  (values (and (< start (length (the vector sequence)))
-                               start)
-                          #'vec-iterator-ref
-                          #'vec-iterator-set
-                          #'vec-iterator-next))
-                 (t
-                  (error-not-a-sequence sequence)))))
-        ((not (or (listp sequence) (vectorp sequence)))
-         (error-not-a-sequence sequence))
-        ((integerp start)
-         ;; Not a fixnum, so the index is out of bounds.
-         ;; Return the functions for max correctness.
-         (values nil #'seq-iterator-ref #'seq-iterator-set
-                 #'seq-iterator-next))
-        (t
-         (error-sequence-index sequence start))))
+;;; Given a list of sequences, return three lists of the same length:
+;;; one with irrelevant elements, one with iterators of the sequences,
+;;; and one with limits of the sequences.
+(defun lists-for-do-sequence-list (sequences)
+  (declare (optimize speed (safety 0)))
+  (let* ((elts-head (cons nil nil)) (elts-tail elts-head)
+         (its-head (cons nil nil)) (its-tail its-head)
+         (limits-head (cons nil nil)) (limits-tail limits-head))
+    (declare (type cons elts-head elts-tail)
+             (type cons its-head its-tail)
+             (type cons limits-head limits-tail))
+    (dolist (seq sequences)
+      (let ((new-elts-tail (cons nil nil)))
+        (rplacd elts-tail new-elts-tail)
+        (setq elts-tail new-elts-tail))
+      (sequence:with-sequence-iterator (iterator limit) (seq)
+        (let ((new-its-tail (cons iterator nil)))
+          (rplacd its-tail new-its-tail)
+          (setq its-tail new-its-tail))
+        (let ((new-limits-tail (cons limit nil)))
+          (rplacd limits-tail new-limits-tail)
+          (setq limits-tail new-limits-tail))))
+    (values (cdr elts-head) (cdr its-head) (cdr limits-head))))
 
-(declaim (inline seq-iterator-endp))
-(defun seq-iterator-endp (sequence iterator)
-  (declare (ignore sequence))
-  (null iterator))
-
-;;; Given three lists of equal length - one with indeterminate values,
-;;; one with sequences, and one with iterators on those sequences -
-;;; if none of the iterators are finished,
-;;; mutate the first list's elements to be the iteration's current
-;;; values, and the third's to be iterators for the next iteration,
-;;; and return the first value.
-;;; If any of the iterators are finished, return NIL.
-(defun seq-iterator-list-pop (values-list seq-list iterator-list)
-  (declare (optimize (safety 0)))
-  ;; We don't use type declarations for the cons operations because
-  ;; the variables become NIL at various points.
-  (do* ((it-list iterator-list)
-        (v-list values-list))
-       ((null v-list) values-list)
-    (let* ((it (cons-car it-list))
-           (sequence (cons-car seq-list)))
-      (cond ((seq-iterator-endp sequence it)
-             (return nil))
-            ((fixnump it)
-             (let* ((n it) (s sequence))
-               (declare (fixnum n) (vector s))
-               (rplaca (the cons v-list) (aref s n))
-               (rplaca (the cons it-list)
-                       (and (< (incf n) (length s)) n))))
-            ((atom it)
-             (error-not-a-sequence it))
-            (t
-             (rplaca (the cons v-list) (cons-car it))
-             (unless (listp (setf it (cons-cdr it)))
-               (error-not-a-sequence it))
-             (rplaca (the cons it-list) it)))
-      (setf v-list (cons-cdr v-list)
-            it-list (cons-cdr it-list)
-            seq-list (cons-cdr seq-list)))))
+;;; Given four lists of the same length, with elements:
+;;; 1) irrelevant 2) sequences 3) iterators 4) limits
+;;; If any of the iterations are complete, return NIL.
+;;; Otherwise, mutate 1 to contain the current elements of the
+;;; iterations, mutate 3 to contain the next iterations,
+;;; and return true.
+(defun seq-iterator-list-pop
+    (values-list seq-list iterator-list limit-list)
+  (declare (optimize speed (safety 0)))
+  (do ((v-list values-list (cdr v-list))
+       (s-list seq-list (cdr s-list))
+       (i-list iterator-list (cdr i-list))
+       (l-list limit-list (cdr l-list)))
+      ((null v-list) t)
+    (let ((sequence (cons-car s-list))
+          (it (cons-car i-list))
+          (limit (cons-car l-list)))
+      (when (sequence:iterator-endp sequence it limit nil)
+        (return nil))
+      (rplaca (the cons v-list)
+              (sequence:iterator-elt sequence it))
+      (rplaca (the cons i-list)
+              (sequence:iterator-step sequence it nil)))))
 
 (defun coerce-to-list (object)
   (if (listp object)
@@ -346,7 +388,7 @@ default value of INITIAL-ELEMENT depends on TYPE."
         (function (coerce-fdesignator function)))
     (declare (type function function)
              (optimize (safety 0) (speed 3)))
-    (do-sequences (elt-list sequences)
+    (do-sequence-list (elt-list sequences)
       (apply function elt-list)))
   nil)
 
@@ -370,7 +412,7 @@ SEQUENCEs, where K is the minimum length of the given SEQUENCEs."
 Returns T if at least one of the elements in SEQUENCEs satisfies PREDICATE;
 NIL otherwise."
   (reckless
-   (do-sequences (elt-list (cons sequence more-sequences) :output nil)
+   (do-sequence-list (elt-list (cons sequence more-sequences))
      (let ((x (apply predicate elt-list)))
        (when x (return x))))))
 
@@ -378,7 +420,7 @@ NIL otherwise."
   "Args: (predicate sequence &rest more-sequences)
 Returns T if every elements of SEQUENCEs satisfy PREDICATE; NIL otherwise."
   (reckless
-   (do-sequences (elt-list (cons sequence more-sequences) :output t)
+   (do-sequence-list (elt-list (cons sequence more-sequences) t)
      (unless (apply predicate elt-list)
        (return nil)))))
 
@@ -422,11 +464,11 @@ stops when it reaches the end of one of the given sequences."
   ;; Perform mapping
   (let ((function (coerce-fdesignator function)))
     (declare (type function function) (optimize (safety 0) (speed 3)))
-    (multiple-value-bind (out-it out-ref out-set out-next)
-        (make-seq-iterator result-sequence)
-      (declare (ignore out-ref))
-      (do-sequences (elt-list sequences :output result-sequence)
-        (when (seq-iterator-endp result-sequence out-it)
+    (sequence:with-sequence-iterator (out-it out-limit nil
+                                             out-step out-endp nil out-set)
+        (result-sequence)
+      (do-sequence-list (elt-list sequences result-sequence)
+        (when (funcall out-endp result-sequence out-it out-limit nil)
           (return-from map-into result-sequence))
-        (funcall out-set result-sequence out-it (apply function elt-list))
-        (setf out-it (funcall out-next result-sequence out-it))))))
+        (funcall out-set (apply function elt-list) result-sequence out-it)
+        (setf out-it (funcall out-step result-sequence out-it nil))))))
