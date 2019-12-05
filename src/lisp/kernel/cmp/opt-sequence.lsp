@@ -166,7 +166,7 @@
 (define-compiler-macro si::map-for-effect
     (function sequence &rest more-sequences)
   (let* ((fun (gensym "FUNCTION")))
-    `(let ((,fun (si::coerce-fdesignator ,function)))
+    `(let ((,fun (si:coerce-fdesignator ,function)))
        (do-static-sequences (call ,sequence ,@more-sequences)
          (call ,fun))
        nil)))
@@ -187,7 +187,7 @@
               `(the (values ,result-type &rest nil)
                     ;; this is basically MAP-INTO, except we don't bother checking
                     ;; for the end of output iteration.
-                    (let* ((,fun (si::coerce-fdesignator ,function))
+                    (let* ((,fun (si:coerce-fdesignator ,function))
                            ;; Have to (redundantly) once-only these because
                            ;; we need the lengths.
                            ,@(mapcar #'list seqs sequences)
@@ -237,7 +237,7 @@
         (fun (gensym "FUNCTION"))
         (seqs (gensym-list sequences "SEQUENCE")))
     `(let ((,output ,result)
-           (,fun (si::coerce-fdesignator ,function))
+           (,fun (si:coerce-fdesignator ,function))
            ,@(mapcar #'list seqs sequences))
        (if (and (vectorp ,output) (array-has-fill-pointer-p ,output))
            (map-into-fp ,output ,fun ,@seqs)
@@ -253,7 +253,7 @@
          (let ((p (gensym "PREDICATE"))
                (b (gensym)))
          `(block ,b
-            (let ((,p (si::coerce-fdesignator ,predicate)))
+            (let ((,p (si:coerce-fdesignator ,predicate)))
               (do-static-sequences (call ,@sequences)
                 (let ((it (call ,p)))
                   (,whenless it (return-from ,b ,found))))

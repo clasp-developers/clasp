@@ -10,7 +10,7 @@
                    ((2) 'core:apply2)
                    ((3) 'core:apply3)
                    (otherwise 'core:apply4))))
-        `(,op (core::coerce-fdesignator ,function) ,last ,@fixed))))
+        `(,op (core:coerce-fdesignator ,function) ,last ,@fixed))))
 
 (define-compiler-macro eql (&whole form x y &environment env)
   (if (constantp x env)

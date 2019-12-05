@@ -83,9 +83,9 @@
   ;;; Technically we could convert the 0-forms case to FUNCALL, but it's
   ;;; probably not a big deal.
   (if (eql (length forms) 1)
-      `(cleavir-primop:multiple-value-call (core::coerce-fdesignator ,function-form) ,@forms)
+      `(cleavir-primop:multiple-value-call (core:coerce-fdesignator ,function-form) ,@forms)
       `(core:multiple-value-funcall
-        (core::coerce-fdesignator ,function-form)
+        (core:coerce-fdesignator ,function-form)
         ,@(mapcar (lambda (x) `#'(lambda () (progn ,x))) forms))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -239,5 +239,5 @@
 (deftransform core:setf-elt (value (s vector) index)
   '(lambda (value sequence index) (vector-set sequence index new-value)))
 
-(deftransform core::coerce-fdesignator ((fd symbol)) 'fdefinition)
-(deftransform core::coerce-fdesignator ((fd function)) 'identity)
+(deftransform core:coerce-fdesignator ((fd symbol)) 'fdefinition)
+(deftransform core:coerce-fdesignator ((fd function)) 'identity)
