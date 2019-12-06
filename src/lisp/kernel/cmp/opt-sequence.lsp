@@ -20,38 +20,6 @@
     :for _ :in list
     :collect (if x (gensym x) (gensym))))
 
-;;; Somewhat harder to understand version of do-sequences
-;;; where the list of sequences is known at compile time.
-;;; CALLER is a symbol. It is bound to a macro of one argument, which must evaluate to
-;;; a function. CALLER calls this function with elements of the
-;;; sequences as arguments.
-;;; So, (do-static-sequences (c (list 1 2 3) (list 4 5)) (c (lambda (a b) (print (+ a b)))))
-;;; will print 5, then 7, then stop.
-#+(or)
-(defmacro do-static-sequences ((caller &rest sequences) &body body)
-  (let ((seqs (gensym-list sequences "SEQUENCE"))
-        (iters (gensym-list sequences "ITERATOR")))
-    `(block nil
-       (let (,@(mapcar #'list seqs sequences))
-         (do (,@(mapcar (lambda (s i)
-                          `(,i (si::make-seq-iterator ,s) (si::seq-iterator-next ,s ,i)))
-                        seqs iters))
-             ((or ,@(mapcar (lambda (s i) `(si::seq-iterator-endp ,s ,i)) seqs iters)))
-           ;; We should just have a local function, but as of July 2017 we do very
-           ;; badly at eliminating unneeded closures.
-           (macrolet ((,caller (fun)
-                        (list 'cleavir-primop:funcall
-                              fun ,@(mapcar (lambda (s i) `'(si::seq-iterator-ref ,s ,i))
-                                            seqs iters))))
-             (tagbody ,@body))
-           #+(or)
-           (flet ((,caller (fun)
-                    (cleavir-primop:funcall
-                     fun ,@(mapcar (lambda (s i) `(seq-iterator-ref ,s ,i))
-                                   seqs iters))))
-             (declare (inline ,caller))
-             (tagbody ,@body)))))))
-
 ;;; TODO: Avoid iteration for constant sequence (but watch out for growth)
 
 ;;;
@@ -147,91 +115,50 @@
 ;;; MAP
 ;;;
 
-#+(or)
-(define-compiler-macro si::map-for-effect
-    (function sequence &rest more-sequences)
-  (let* ((fun (gensym "FUNCTION")))
-    `(let ((,fun (si:coerce-fdesignator ,function)))
-       (do-static-sequences (call ,sequence ,@more-sequences)
-         (call ,fun))
-       nil)))
+(define-compiler-macro core::map-for-effect
+    (&whole form function sequence &rest more-sequences)
+  (if (null more-sequences)
+      `(core::map-for-effect/1 ,function ,sequence)
+      form))
 
-#+(or)
+(define-compiler-macro core::map-to-list
+    (&whole form function sequence &rest more-sequences)
+  (if (null more-sequences)
+      `(core::map-to-list/1 ,function ,sequence)
+      form))
+
 (define-compiler-macro map
     (&whole form result-type function sequence &rest more-sequences &environment env)
   (if (constantp result-type env)
-      (let ((result-type (ext:constant-form-value result-type env))) ; constant-form-value
-        (if result-type
-            (let* ((fun (gensym "FUNCTION"))
-                   (output (gensym "OUTPUT"))
-                   (output-iter (gensym "OUTPUT-ITER"))
-                   (out-ref (gensym "REF")) (out-set (gensym "SET"))
-                   (out-next (gensym "NEXT"))
-                   (sequences (cons sequence more-sequences))
-                   (seqs (gensym-list sequences "SEQUENCE")))
-              ;; We might turn this into an assertion in later stages.
-              `(the (values ,result-type &rest nil)
-                    ;; this is basically MAP-INTO, except we don't bother checking
-                    ;; for the end of output iteration.
-                    (let* ((,fun (si:coerce-fdesignator ,function))
-                           ;; Have to (redundantly) once-only these because
-                           ;; we need the lengths.
-                           ,@(mapcar #'list seqs sequences)
-                           (,output (make-sequence
-                                     ',result-type
-                                     (min ,@(mapcar (lambda (s) `(length ,s)) seqs)))))
-                      (multiple-value-bind (,output-iter ,out-ref ,out-set ,out-next)
-                          (si::make-seq-iterator ,output)
-                        (declare (ignore ,out-ref))
-                        (do-static-sequences (call ,@seqs)
-                          (funcall ,out-set ,output ,output-iter (call ,fun))
-                          (setq ,output-iter (funcall ,out-next ,output ,output-iter)))
-                        ,output))))
-            `(si::map-for-effect ,function ,sequence ,@more-sequences)))
+      (let ((result-type (ext:constant-form-value result-type env))
+            (function `(core:coerce-fdesignator ,function))
+            (sequences (cons sequence more-sequences)))
+        (if (null result-type)
+            `(core::map-for-effect ,function ,@sequences)
+            (multiple-value-bind (element-type length success)
+                (core::closest-sequence-type result-type)
+              (cond ((not success) form) ; give up
+                    ((eq element-type 'list)
+                     `(core::map-to-list ,function ,@sequences))
+                    (t
+                     (let ((ssyms (gensym-list sequences "SEQUENCE")))
+                       `(let (,@(mapcar #'list ssyms sequences))
+                          (core::map-into-sequence
+                           (make-sequence ',result-type
+                                          (min ,@(loop for ssym in ssyms
+                                                       collect `(length ,ssym))))
+                           ,function ,@ssyms))))))))
       form))
 
 ;;;
 ;;; MAP-INTO
 ;;;
 
-
-;;; MAP-INTO has special behavior on vectors with fill pointers, so we specialize.
-#+(or)
-(defmacro map-into-usual (output fun &rest seqs)
-  (si::with-unique-names (output-iter output-ref output-set output-next)
-    `(multiple-value-bind (,output-iter ,output-ref ,output-set ,output-next)
-         (si::make-seq-iterator ,output)
-       (declare (ignore ,output-ref))
-       (do-static-sequences (call ,@seqs)
-         (when (si::seq-iterator-endp ,output ,output-iter) (return))
-         (funcall ,output-set ,output ,output-iter (call ,fun))
-         (setq ,output-iter (funcall ,output-next ,output ,output-iter))))))
-
-#+(or)
-(defmacro map-into-fp (output fun &rest seqs)
-  (let ((output-index (gensym "OUTPUT-INDEX"))
-        (output-size (gensym "OUTPUT-SIZE")))
-    `(let ((,output-index 0)
-           (,output-size (array-dimension ,output 0)))
-       (do-static-sequences (call ,@seqs)
-         (when (= ,output-index ,output-size) (return))
-         (setf (aref ,output ,output-index) (call ,fun))
-         (incf ,output-index))
-       (setf (fill-pointer ,output) ,output-index))))
-
-#+(or)
-(define-compiler-macro map-into (result function &rest sequences)
-  ;; handle multiple evaluation up here
-  (let ((output (gensym "OUTPUT"))
-        (fun (gensym "FUNCTION"))
-        (seqs (gensym-list sequences "SEQUENCE")))
-    `(let ((,output ,result)
-           (,fun (si:coerce-fdesignator ,function))
-           ,@(mapcar #'list seqs sequences))
-       (if (and (vectorp ,output) (array-has-fill-pointer-p ,output))
-           (map-into-fp ,output ,fun ,@seqs)
-           (map-into-usual ,output ,fun ,@seqs))
-       ,output)))
+(define-compiler-macro core::map-into-sequence
+    (&whole form result function &rest sequences)
+  (if (and (consp sequences) (null (rest sequences)))
+      `(core::map-into-sequence/1 ,result ,function ,@sequences)
+      form))
 
 ;;;
 ;;; EVERY, SOME, ANY, NOTANY

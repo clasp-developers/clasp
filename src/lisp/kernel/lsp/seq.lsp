@@ -382,15 +382,17 @@ default value of INITIAL-ELEMENT depends on TYPE."
               (setf (vref vec index) elt)
               (incf index)))))))
 
-(defun map-for-effect (function sequence &rest more-sequences)
-  "Does (map nil ...)"
-  (let ((sequences (list* sequence more-sequences))
-        (function (coerce-fdesignator function)))
-    (declare (type function function)
-             (optimize (safety 0) (speed 3)))
-    (do-sequence-list (elt-list sequences)
-      (apply function elt-list)))
+(defun map-for-effect (function &rest sequences)
+  "Does (map nil ...), but the function is already a function."
+  (declare (type function function))
+  (do-sequence-list (elt-list sequences)
+    (reckless (apply function elt-list)))
   nil)
+
+(defun map-for-effect/1 (function sequence)
+  "Does (map nil function sequence), but the function is already a function."
+  (sequence:dosequence (e sequence nil)
+    (reckless (funcall function e))))
 
 (defun map (result-type function sequence &rest more-sequences)
   "Args: (type function sequence &rest more-sequences)
@@ -398,7 +400,7 @@ Creates and returns a sequence of TYPE with K elements, with the N-th element
 being the value of applying FUNCTION to the N-th elements of the given
 SEQUENCEs, where K is the minimum length of the given SEQUENCEs."
   (if result-type
-      ;; FIXME: Could avoid this in map-to-list case.
+      ;; FIXME: Could use map-to-list and avoid reduce, if appropriate.
       (let ((length
               (reduce #'min more-sequences
                       :initial-value (length sequence)
@@ -406,6 +408,26 @@ SEQUENCEs, where K is the minimum length of the given SEQUENCEs."
         (apply #'map-into (make-sequence result-type length)
                function sequence more-sequences))
       (apply #'map-for-effect function sequence more-sequences)))
+
+(defun map-to-list (function &rest sequences)
+  (declare (type function function))
+  (reckless
+   (let* ((head (cons nil nil)) (tail head))
+     (declare (type cons head tail))
+     (do-sequence-list (elt-list sequences (cdr head))
+       (let ((new (cons (apply function elt-list) nil)))
+         (rplacd tail new)
+         (setq tail new))))))
+
+(defun map-to-list/1 (function sequence)
+  (declare (type function function))
+  (reckless
+   (let* ((head (cons nil nil)) (tail head))
+     (declare (type cons head tail))
+     (sequence:dosequence (e sequence (cdr head))
+       (let ((new (cons (funcall function e) nil)))
+         (rplacd tail new)
+         (setq tail new))))))
 
 (defun some (predicate sequence &rest more-sequences)
   "Args: (predicate sequence &rest more-sequences)
@@ -464,11 +486,38 @@ stops when it reaches the end of one of the given sequences."
   ;; Perform mapping
   (let ((function (coerce-fdesignator function)))
     (declare (type function function) (optimize (safety 0) (speed 3)))
-    (sequence:with-sequence-iterator (out-it out-limit nil
+    (sequence:with-sequence-iterator (out-it out-limit out-fe
                                              out-step out-endp nil out-set)
         (result-sequence)
       (do-sequence-list (elt-list sequences result-sequence)
-        (when (funcall out-endp result-sequence out-it out-limit nil)
+        (when (funcall out-endp result-sequence out-it out-limit out-fe)
           (return-from map-into result-sequence))
         (funcall out-set (apply function elt-list) result-sequence out-it)
-        (setf out-it (funcall out-step result-sequence out-it nil))))))
+        (setf out-it (funcall out-step result-sequence out-it out-fe))))))
+
+;;; This is like MAP-INTO with the following specialization:
+;;; 1) FUNCTION is actually a function.
+;;; 2) If RESULT is a vector,
+;;;     we don't need to worry about setting its fill pointer.
+;;; 3) RESULT is at least as long as the shortest input sequence.
+(defun map-into-sequence (result-sequence function &rest sequences)
+  (declare (type function function))
+  (reckless
+    (sequence:with-sequence-iterator (out-it out-limit out-fe
+                                             out-step nil nil out-set)
+        (result-sequence)
+      (do-sequence-list (elt-list sequences result-sequence)
+        (funcall out-set (apply function elt-list) result-sequence out-it)
+        (setf out-it (funcall out-step result-sequence out-it out-fe)))))
+  result-sequence)
+
+(defun map-into-sequence/1 (result-sequence function sequence)
+  (declare (type function function))
+  (reckless
+    (sequence:with-sequence-iterator (out-it out-limit out-fe
+                                             out-step nil nil out-set)
+        (result-sequence)
+      (sequence:dosequence (e sequence)
+        (funcall out-set (funcall function e) result-sequence out-it)
+        (setf out-it (funcall out-step result-sequence out-it out-fe)))))
+  result-sequence)
