@@ -39,6 +39,7 @@ THE SOFTWARE.
 #include <clasp/core/pathname.h>
 #include <clasp/core/lispReader.h>
 #include <clasp/core/evaluator.h>
+#include <clasp/core/compiler.h>
 #include <clasp/gctools/gctoolsPackage.h>
 #include <clasp/core/predicates.h>
 #include <clasp/core/wrappers.h>
@@ -157,7 +158,13 @@ CL_DEFUN T_sp core__load_no_package_set(T_sp lsource, T_sp verbose, T_sp print, 
     }
     filename = core__coerce_to_file_pathname(pathname);
     kind = core__file_kind(gc::As<Pathname_sp>(filename), true);
-    if (kind != kw::_sym_file && kind != kw::_sym_special) {
+    if (kind == kw::_sym_directory) {
+      ok = core__load_binary_directory(filename,verbose,print,external_format);
+      if (ok.nilp()) {
+        SIMPLE_ERROR(BF("LOAD: Could not load file %s") % _rep_(filename));
+      }
+      return _lisp->_true();
+    } else if (kind != kw::_sym_file && kind != kw::_sym_special) {
       filename = _Nil<T_O>();
     } else {
       function = _Nil<T_O>();

@@ -21,7 +21,21 @@
   nil)
 
 (defstruct (ast-job (:type vector) :named)
-  ast environment dynenv form-output-path form-index error current-source-pos-info)
+  ast environment dynenv form-output-path form-index error current-source-pos-info startup-function-name)
+
+
+(defun add-llvm.used (module used-function)
+  (or used-function (error "used-function must not be NIL"))
+  (llvm-sys:make-global-variable
+   module
+   %i8*[1]%
+   nil
+   'llvm-sys:appending-linkage
+   (llvm-sys:constant-array-get
+    %i8*[1]%
+    (list
+     (irc-bit-cast used-function %i8*%)))
+   "llvm.used"))
 
 (defun compile-from-ast (job &key
                                optimize
@@ -43,7 +57,17 @@
                                             (ast-job-ast job)
                                             (ast-job-dynenv job))))
                           (clasp-cleavir::translate-hoisted-ast hoisted-ast :env (ast-job-environment job))))))
-              (make-boot-function-global-variable module run-all-function :position (ast-job-form-index job))))
+              (let ((startup-function (add-global-ctor-function module run-all-function
+                                                                :position (ast-job-form-index job)
+                                                                :linkage 'llvm-sys:external-linkage)))
+                (add-llvm.used module startup-function)
+                (setf (ast-job-startup-function-name job) (llvm-sys:get-name startup-function))
+                ;; The link-once-odrlinkage should keep the startup-function alive and that
+                ;; should keep everything else alive as well.
+                )
+              #+(or)(make-boot-function-global-variable module run-all-function
+                                                        :position (ast-job-form-index job)
+                                                        :linkage 'llvm-sys:link-once-odrlinkage)))
           (cmp-log "About to verify the module%N")
           (cmp-log-dump-module module)
           (irc-verify-module-safe module)
@@ -189,6 +213,11 @@
     (dolist (job ast-jobs)
       (when (ast-job-error job)
         (error "Compile-error ~a ~%" (ast-job-error job))))
+    ;; Now print the names of the startup ctor functions
+    ;;     Next we need to compile a new module that declares these ctor functions and puts them in a ctor list
+    ;;      then it should add this new module to the result list so it can be linked with the others.
+    (dolist (job ast-jobs)
+      (format t "ast-job ctor: ~a~%" (ast-job-startup-function-name job)))
     ;; Now return the results
     (values (nreverse result))))
 
@@ -320,6 +349,7 @@ Compile a lisp source file into an LLVM module."
                   ((null output-path)
                    (error "The output-file is nil for input filename ~a~%" input-file))
                   (t (output-cfp-result result output-path output-type)))
+            (ext:rmtree (namestring working-dir))
             output-path))))))
 
 (defvar *compile-file-parallel* nil)

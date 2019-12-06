@@ -158,6 +158,9 @@ names to offsets."
 (define-symbol-macro %i8% (llvm-sys:type-get-int8-ty *llvm-context*)) ;; -> CHAR / BYTE
 (define-symbol-macro %i8*% (llvm-sys:type-get-pointer-to %i8%))
 (define-symbol-macro %i8**% (llvm-sys:type-get-pointer-to %i8*%))
+(define-symbol-macro %i8*[1]% (llvm-sys:array-type-get %i8*% 1))
+
+
 
 (define-symbol-macro %i16% (llvm-sys:type-get-int16-ty *llvm-context*)) ;; -> SHORT
 (define-symbol-macro %i16*% (llvm-sys:type-get-pointer-to %i16%))
@@ -788,16 +791,19 @@ eg:  (f closure-ptr nargs a b c d ...)
                                    "file-scope-handle"))
 |#
 
-(defun add-global-ctor-function (module main-function &key position register-library)
+(defun add-global-ctor-function (module main-function &key position register-library linkage)
   "Create a function with the name core:+clasp-ctor-function-name+ and
 have it call the main-function"
   #+(or)(unless (eql module (llvm-sys:get-parent main-function))
-    (error "The parent of the func-ptr ~a (a module) does not match the module ~a" (llvm-sys:get-parent main-function) module))
+          (error "The parent of the func-ptr ~a (a module) does not match the module ~a" (llvm-sys:get-parent main-function) module))
+  (unless linkage
+    (error "You must specify the linkage for the global-ctor function"))
   (let* ((*the-module* module)
+         (function-name (core:bformat nil "%s_%d" core::+clasp-ctor-function-name+ (core:next-number)))
          (fn (irc-simple-function-create
-              (core:bformat nil "%s_%d" core::+clasp-ctor-function-name+ (core:next-number))
+              function-name
               %fn-ctor%
-              'llvm-sys:internal-linkage
+              linkage ; 'llvm-sys:link-once-odrlinkage ; 'llvm-sys:internal-linkage
               *the-module*
               :argument-names +fn-ctor-argument-names+)))
     (let* ((irbuilder-body (llvm-sys:make-irbuilder *llvm-context*))
@@ -870,7 +876,7 @@ have it call the main-function"
                                     (llvm-sys:constant-pointer-null-get %i8*%)))))
    "llvm.global_ctors"))
 
-(defun make-boot-function-global-variable (module func-designator &key position register-library)
+(defun make-boot-function-global-variable (module func-designator &key position register-library (linkage 'llvm-sys:internal-linkage))
   "* Arguments
 - module :: An llvm module
 - func-ptr :: An llvm function
@@ -889,6 +895,7 @@ and initialize it with an array consisting of one function pointer."
             (error "The parent of the func-ptr ~a (a module) does not match the module ~a" (llvm-sys:get-parent func-ptr) module))
     (let* ((global-ctor (add-global-ctor-function module startup-fn
                                                   :position position
+                                                  :linkage linkage
                                                   :register-library register-library)))
       (incf *compilation-module-index*)
       (add-llvm.global_ctors module *compilation-module-index* global-ctor))))
