@@ -254,83 +254,70 @@ default value of INITIAL-ELEMENT depends on TYPE."
             #'vec-iterator-elt #'(setf vec-iterator-elt)
             #'vec-iterator-index #'vec-iterator-copy)))
 
-(macrolet ((def (generic (&rest params) list vec)
-             `(defun ,generic (seq it ,@params)
-                (cond ((listp seq) (,list seq it ,@params))
-                      ((vectorp seq) (,vec seq it ,@params))
-                      (t (error-not-a-sequence seq))))))
-  (def sequence:iterator-step (from-end)
-    list-iterator-step vec-iterator-step)
-  (def sequence:iterator-endp (limit from-end)
-    list-iterator-endp vec-iterator-endp)
-  (def sequence:iterator-elt () list-iterator-elt vec-iterator-elt)
-  (def sequence:iterator-index () list-iterator-index vec-iterator-index)
-  (def sequence:iterator-copy () list-iterator-copy vec-iterator-copy))
-(defun (setf sequence:iterator-elt) (new seq it)
-  (cond ((listp seq) (funcall #'(setf list-iterator-elt) new seq it))
-        ((vectorp seq) (funcall #'(setf vec-iterator-elt) new seq it))
-        (t (error-not-a-sequence seq))))
-
 (defun %make-sequence-iterator (sequence from-end start end)
   (cond ((listp sequence)
          (make-list-iterator sequence from-end start end))
         ((vectorp sequence)
          (make-vector-iterator sequence from-end start end))
-        (t (error-not-a-sequence sequence))))
-
-(defun sequence:make-sequence-iterator (sequence &key from-end start end)
-  (%make-sequence-iterator sequence from-end start end))
+        (t
+         (sequence:make-sequence-iterator
+          sequence :from-end from-end :start start :end end))))
 
 ;;; If a SEQUENCE:EMPTYP symbol exists, alexandria needs it to be fbound.
+;;; FIXME: Should instead be defined generically later.
 (defun sequence:emptyp (sequence) (zerop (length sequence)))
 
-;;; Given a list of sequences, return three lists of the same length:
-;;; one with irrelevant elements, one with iterators of the sequences,
-;;; and one with limits of the sequences.
+;;; Given a list of sequences, return two lists of the same length:
+;;; one with irrelevant elements, and one with "iterators" for the sequences.
+;;; These "iterators" are single objects,
+;;; lists of (iterator limit step endp elt) as returned from
+;;; make-sequence-iterator.
+;;; Obviously this conses, and a fair bit.
+;;; FIXME: We could reduce the impact by special casing lists and vectors.
+;;; But it'll be uglier code and I'm hoping we can usually just avoid going
+;;; through do-sequence-list entirely.
 (defun lists-for-do-sequence-list (sequences)
   (declare (optimize speed (safety 0)))
   (let* ((elts-head (cons nil nil)) (elts-tail elts-head)
-         (its-head (cons nil nil)) (its-tail its-head)
-         (limits-head (cons nil nil)) (limits-tail limits-head))
+         (its-head (cons nil nil)) (its-tail its-head))
     (declare (type cons elts-head elts-tail)
-             (type cons its-head its-tail)
-             (type cons limits-head limits-tail))
+             (type cons its-head its-tail))
     (dolist (seq sequences)
       (let ((new-elts-tail (cons nil nil)))
         (rplacd elts-tail new-elts-tail)
         (setq elts-tail new-elts-tail))
-      (sequence:with-sequence-iterator (iterator limit) (seq)
-        (let ((new-its-tail (cons iterator nil)))
+      (sequence:with-sequence-iterator
+          (it limit from-end step endp elt)
+          (seq)
+        (let* ((iterator (list it limit from-end step endp elt))
+               (new-its-tail (cons iterator nil)))
           (rplacd its-tail new-its-tail)
-          (setq its-tail new-its-tail))
-        (let ((new-limits-tail (cons limit nil)))
-          (rplacd limits-tail new-limits-tail)
-          (setq limits-tail new-limits-tail))))
-    (values (cdr elts-head) (cdr its-head) (cdr limits-head))))
+          (setq its-tail new-its-tail))))
+    (values (cdr elts-head) (cdr its-head))))
 
-;;; Given four lists of the same length, with elements:
-;;; 1) irrelevant 2) sequences 3) iterators 4) limits
+;;; Given three lists of the same length, with elements:
+;;; 1) irrelevant 2) sequences 3) iterators
 ;;; If any of the iterations are complete, return NIL.
 ;;; Otherwise, mutate 1 to contain the current elements of the
 ;;; iterations, mutate 3 to contain the next iterations,
 ;;; and return true.
-(defun seq-iterator-list-pop
-    (values-list seq-list iterator-list limit-list)
+(defun seq-iterator-list-pop (values-list seq-list iterator-list)
   (declare (optimize speed (safety 0)))
   (do ((v-list values-list (cdr v-list))
        (s-list seq-list (cdr s-list))
-       (i-list iterator-list (cdr i-list))
-       (l-list limit-list (cdr l-list)))
+       (i-list iterator-list (cdr i-list)))
       ((null v-list) t)
     (let ((sequence (cons-car s-list))
-          (it (cons-car i-list))
-          (limit (cons-car l-list)))
-      (when (sequence:iterator-endp sequence it limit nil)
-        (return nil))
-      (rplaca (the cons v-list)
-              (sequence:iterator-elt sequence it))
-      (rplaca (the cons i-list)
-              (sequence:iterator-step sequence it nil)))))
+          (iterator (cons-car i-list)))
+      (destructuring-bind (it limit from-end step endp elt)
+          iterator
+        (declare (type function step endp elt))
+        (when (funcall endp sequence it limit from-end)
+          (return nil))
+        (rplaca (the cons v-list)
+                (funcall elt sequence it))
+        (let ((next-it (funcall step sequence it from-end)))
+          (rplaca (the cons iterator) next-it))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

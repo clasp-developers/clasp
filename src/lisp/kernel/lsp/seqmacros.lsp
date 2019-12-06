@@ -241,13 +241,14 @@
 ;;; SEQ-LIST is evaluated: its value must be a list of (proper) sequences.
 ;;; ELT-LIST is a symbol. In the body, it will be bound to a list of the
 ;;;  same length, containing the elements of the sequences for this iter.
+;;; Iterating over a variable number of lists requires consing and should
+;;; be avoided as far as is practical.
 (defmacro do-sequence-list ((elt-list seq-list &optional output) &body body)
-  (with-unique-names (%iterators %limits %sequences)
+  (with-unique-names (%sequences %iterators)
     `(let ((,%sequences ,seq-list))
-       (multiple-value-bind (,elt-list ,%iterators ,%limits)
+       (multiple-value-bind (,elt-list ,%iterators)
            (lists-for-do-sequence-list ,%sequences)
          (do ()
-             ((not (seq-iterator-list-pop ,elt-list ,%sequences
-                                          ,%iterators ,%limits))
+             ((not (seq-iterator-list-pop ,elt-list ,%sequences ,%iterators))
               ,@(and output (list output)))
            ,@body)))))
