@@ -339,6 +339,7 @@ def collect_bclasp_lisp_files(**kwargs):
         "src/lisp/kernel/clos/conditions",
         "src/lisp/kernel/clos/print",
         "src/lisp/kernel/clos/streams",
+        "src/lisp/kernel/clos/sequences",
         "src/lisp/kernel/lsp/pprint",
         "src/lisp/kernel/cmp/compiler-conditions",
         "src/lisp/kernel/lsp/packlib2",

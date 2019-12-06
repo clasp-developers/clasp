@@ -70,7 +70,7 @@
                ;; iterator protocol
                iterator-step
                iterator-endp
-               iterator-elt
+               iterator-element
                iterator-index
                iterator-copy
                make-simple-sequence-iterator

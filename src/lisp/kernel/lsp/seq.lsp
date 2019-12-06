@@ -263,10 +263,6 @@ default value of INITIAL-ELEMENT depends on TYPE."
          (sequence:make-sequence-iterator
           sequence :from-end from-end :start start :end end))))
 
-;;; If a SEQUENCE:EMPTYP symbol exists, alexandria needs it to be fbound.
-;;; FIXME: Should instead be defined generically later.
-(defun sequence:emptyp (sequence) (zerop (length sequence)))
-
 ;;; Given a list of sequences, return two lists of the same length:
 ;;; one with irrelevant elements, and one with "iterators" for the sequences.
 ;;; These "iterators" are single objects,
