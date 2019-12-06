@@ -194,3 +194,22 @@
   (:method ((sequence sequence)) (zerop (length sequence)))
   (:method ((sequence null)) t)
   (:method ((sequence cons)) nil))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Clasp extensions
+;;;
+
+;;; This is like CL:MAKE-SEQUENCE, except the type is restricted to be
+;;; either a class or a symbol naming one.
+;;; This mostly only exists to make it possible to call  MAKE-SEQUENCE-LIKE
+;;; from code way before class-prototype exists.
+;;; Oh, and there's :initial-contents.
+;;; FIXME: Add a compiler macro to fold it to make-sequence-like.
+
+(defun sequence:make-sequence (type size
+                               &rest args &key initial-element initial-contents)
+  (declare (ignore initial-element initial-contents))
+  (let* ((class (if (symbolp type) (find-class type) type))
+         (proto (clos:class-prototype class)))
+    (apply #'sequence:make-sequence-like type size args)))

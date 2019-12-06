@@ -42,9 +42,12 @@
 	 :datum object))
 
 ;;; Given a type specifier, returns information about it in its capacity as a sequence.
-;;; Returns three values: An upgraded element type or 'list, a length or '*, and a boolean.
+;;; Returns three values: A "kind", a length or '*, and a boolean.
 ;;; The third value is T if the function could determine the first two.
-(defun closest-sequence-type (type &optional env)
+;;; A "kind" is either the symbol LIST, the symbol NIL,
+;;; a list (VECTOR symbol) where symbol is an upgraded array element type,
+;;; or a class (a user-defined sequence class).
+(defun sequence-type-maker-info (type &optional env)
   (let (elt-type length name args)
     (cond ((consp type)
 	   (setq name (first type) args (cdr type)))
@@ -53,33 +56,36 @@
 	  (t
 	   (setq name type args nil)))
     (case name
-      ((LIST)
-       ;; This is the only descriptor that does not match a real
-       ;; array type.
-       (values 'list '* t))
+      ((LIST) (values 'list '* t))
       ((VECTOR)
-       (values (if (endp args) 't (upgraded-array-element-type (first args) env))
+       (values (list 'vector
+                     (if (or (endp args) (eq (first args) '*))
+                         't
+                         (upgraded-array-element-type (first args) env)))
                (if (endp (rest args)) '* (second args))
                t))
-      ((SIMPLE-VECTOR) (values 't (if (endp args) '* (first args)) t))
+      ((SIMPLE-VECTOR) (values '(vector t) (if (endp args) '* (first args)) t))
       #-unicode
-      ((STRING SIMPLE-STRING) (values 'base-char (if (endp args) '* (first args)) t))
+      ((STRING SIMPLE-STRING)
+       (values '(vector base-char) (if (endp args) '* (first args)) t))
       #+(or unicode clasp)
       ((BASE-STRING SIMPLE-BASE-STRING)
-       (values 'base-char (if (endp args) '* (first args)) t))
+       (values '(vector base-char) (if (endp args) '* (first args)) t))
       #+(or unicode clasp)
-      ((STRING SIMPLE-STRING) (values 'character (if (endp args) '* (first args)) t))
+      ((STRING SIMPLE-STRING)
+       (values '(vector character) (if (endp args) '* (first args)) t))
       ((BIT-VECTOR SIMPLE-BIT-VECTOR)
-       (values 'bit (if (endp args) '* (first args)) t))
+       (values '(vector bit) (if (endp args) '* (first args)) t))
       ((ARRAY SIMPLE-ARRAY)
        ;; It's only a sequence if a rank is specified.
-       (unless (= (length args) 2) (values nil nil nil))
-       (let ((element-type (upgraded-array-element-type (first args)))
+       (let ((uaet (if (or (endp args) (eq (first args) '*))
+                       't
+                       (upgraded-array-element-type (first args) env)))
              (dimension-spec (second args)))
-         (cond ((eql dimension-spec 1) (values element-type '* t))
+         (cond ((eql dimension-spec 1) (values `(vector ,uaet) '* t))
                ((and (consp dimension-spec)
                      (null (cdr dimension-spec)))
-                (values element-type (car dimension-spec) t))
+                (values `(vector ,uaet) (car dimension-spec) t))
                (t (values nil nil nil)))))
       ((null) (values 'list 0 t))
       ;; This is pretty dumb, but we are required to signal a length mismatch
@@ -87,27 +93,30 @@
       ((cons)
        (if (and (consp args) (consp (cdr args))) ; we have (cons x y
            (multiple-value-bind (et len success)
-               (closest-sequence-type (second args) env)
+               (sequence-type-maker-info (second args) env)
              (cond ((or (not success) ; can't figure out what cdr is
                         (not (eq et 'list))) ; (a . #(...)) is not a sequence
                     (values nil nil nil))
                    ((eq len '*) (values 'list '* t))
                    (t (values 'list (1+ len) t))))
            (values 'list '* t)))
+      ((nil) (values nil '* t))
       (t
-       ;; We arrive here when the sequence type is not easy to parse.
-       ;; We give up trying to guess the length of the sequence.
-       ;; Furthermore, we also give up trying to find if the element
-       ;; type is *. Instead we just compare with some specialized
-       ;; types and otherwise fail.
-       (dolist (i '((NIL . NIL)
-                    (LIST . LIST)
-                    (STRING . CHARACTER)
-                    . #.(mapcar #'(lambda (i) `((VECTOR ,i) . ,i))
-                         sys::+upgraded-array-element-types+)) ;; clasp change
-                  (values nil nil nil))
-         (when (subtypep type (car i) env)
-           (return (values (cdr i) '* t))))))))
+       ;; Might have a weird to parse vector or list type,
+       ;; e.g. incorporating OR/AND/NOT.
+       ;; If we make it this far we give up on determining a length.
+       (dolist (i '(nil list
+                    . #.(mapcar #'(lambda (i) `(VECTOR ,i))
+                         sys::+upgraded-array-element-types+)))
+         (when (subtypep type i env)
+           (return-from sequence-type-maker-info (values i '* t))))
+       ;; Might be a user sequence type.
+       (when (symbolp type)
+         (let ((class (find-class type env)))
+           (when class (return-from sequence-type-maker-info
+                         (values class '* t)))))
+       ;; Dunno.
+       (values nil nil nil)))))
 
 (defun make-sequence (type size	&key (initial-element nil iesp))
   "Args: (type length &key initial-element)
@@ -115,13 +124,16 @@ Creates and returns a sequence of the given TYPE and LENGTH.  If INITIAL-
 ELEMENT is given, then it becomes the elements of the created sequence.  The
 default value of INITIAL-ELEMENT depends on TYPE."
   (if (and (integerp size) (>= size 0))
-      (multiple-value-bind (element-type length success)
-          (closest-sequence-type type)
+      (multiple-value-bind (kind length success)
+          (sequence-type-maker-info type)
         (cond ((not success)
                (if (subtypep type 'sequence)
-                   (error "Could not determine element type in ~a" type)
+                   (error "Could not determine how to construct a sequence of type ~a"
+                          type)
                    (error-sequence-type type)))
-              ((eq element-type 'LIST)
+              ((eq kind 'nil)
+               (error "Cannot construct sequence of bottom type (NIL)"))
+              ((eq kind 'LIST)
                (let ((result (make-list size :initial-element initial-element)))
                  (if (or (eq length '*) (eql length size))
                      ;;; ecl  tests instead for (or (and (subtypep type 'NULL) (plusp size))
@@ -132,15 +144,17 @@ default value of INITIAL-ELEMENT depends on TYPE."
                              (error-sequence-length result type 0)
                              result))
                      (error-sequence-length result type size))))
-              (t
-               (let ((result (sys:make-vector (if (eq element-type '*) 't element-type)
-                                              size nil nil nil 0)))
+              ((consp kind) ; (vector uaet)
+               (let* ((uaet (second kind))
+                      (result (sys:make-vector uaet size)))
                  ;; Don't know why we don't just pass make-vector the initial element.
                  (when iesp
                    (si::fill-array-with-elt result initial-element 0 nil))
                  (unless (or (eql length '*) (eql length size))
                    (error-sequence-length result type size))
-                 result))))
+                 result))
+              ;; Must be a user sequence type.
+              (t (sequence:make-sequence kind size :initial-element initial-element))))
       (error 'type-error :datum size :expected-type '(integer 0 *))))
 
 ;;; Sequence iterators.

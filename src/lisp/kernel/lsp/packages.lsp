@@ -104,6 +104,8 @@
                dosequence
                with-sequence-iterator
                with-simple-sequence-iterator
+               ;; clasp extensions
+               make-sequence
                ))
   (core:select-package "CORE"))
 
