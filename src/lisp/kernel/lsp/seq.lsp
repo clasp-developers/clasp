@@ -332,6 +332,14 @@ default value of INITIAL-ELEMENT depends on TYPE."
       (rplaca (the cons i-list)
               (sequence:iterator-step sequence it nil)))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Some sequence functions
+;;;
+;;; Most of the nonstandard functions below are intended for compiler
+;;; macroexpansions from the standard functions. See cmp/opt-sequence.lsp.
+;;;
+
 (defun coerce-to-list (object)
   (if (listp object)
       object
@@ -434,8 +442,15 @@ SEQUENCEs, where K is the minimum length of the given SEQUENCEs."
 Returns T if at least one of the elements in SEQUENCEs satisfies PREDICATE;
 NIL otherwise."
   (reckless
-   (do-sequence-list (elt-list (cons sequence more-sequences))
+   (do-sequence-list (elt-list (cons sequence more-sequences) nil)
      (let ((x (apply predicate elt-list)))
+       (when x (return x))))))
+
+(defun some/1 (predicate sequence)
+  (declare (type function predicate))
+  (reckless
+   (sequence:dosequence (e sequence nil)
+     (let ((x (funcall predicate e)))
        (when x (return x))))))
 
 (defun every (predicate sequence &rest more-sequences)
@@ -444,6 +459,13 @@ Returns T if every elements of SEQUENCEs satisfy PREDICATE; NIL otherwise."
   (reckless
    (do-sequence-list (elt-list (cons sequence more-sequences) t)
      (unless (apply predicate elt-list)
+       (return nil)))))
+
+(defun every/1 (predicate sequence)
+  (declare (type function predicate))
+  (reckless
+   (sequence:dosequence (e sequence t)
+     (unless (funcall predicate e)
        (return nil)))))
 
 (defun every* (predicate &rest sequences)

@@ -165,23 +165,21 @@
 ;;; These are actually part of "Data and Control Flow" but they're basically sequence functions.
 ;;;
 
-#+(or)
-(flet ((body (predicate sequences whenless found unfound)
-         (let ((p (gensym "PREDICATE"))
-               (b (gensym)))
-         `(block ,b
-            (let ((,p (si:coerce-fdesignator ,predicate)))
-              (do-static-sequences (call ,@sequences)
-                (let ((it (call ,p)))
-                  (,whenless it (return-from ,b ,found))))
-              ,unfound)))))
-  (macrolet ((def (name whenless found unfound)
-               `(define-compiler-macro ,name (predicate sequence &rest more-sequences)
-                  (body predicate (cons sequence more-sequences) ',whenless ',found ',unfound))))
-    (def some when it nil)
-    (def every unless nil t)
-    (def notany when nil t)
-    (def notevery unless t nil)))
+(define-compiler-macro every (&whole form predicate sequence &rest more-sequences)
+  (if (null more-sequences)
+      `(core::every/1 (core:coerce-fdesignator ,predicate) ,sequence)
+      form))
+
+(define-compiler-macro some (&whole form predicate sequence &rest more-sequences)
+  (if (null more-sequences)
+      `(core::some/1 (core:coerce-fdesignator ,predicate) ,sequence)
+      form))
+
+(define-compiler-macro notany (predicate sequence &rest more-sequences)
+  `(not (some ,predicate ,sequence ,@more-sequences)))
+
+(define-compiler-macro notevery (predicate sequence &rest more-sequences)
+  `(not (every ,predicate ,sequence ,@more-sequences)))
 
 (define-compiler-macro si::every* (predicate &rest sequences)
   (let ((seqs (gensym-list sequences "SEQUENCE")))
