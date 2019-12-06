@@ -1338,6 +1338,78 @@ CL_DEFUN T_sp core__mkstemp_fd(String_sp thetemplate) {
   return make_fixnum(fd);
 }
 
+
+
+ void rmtree(const char* path)
+ {
+   size_t path_len;
+   DIR *dir;
+   struct stat stat_path, stat_entry;
+   struct dirent *entry;
+
+    // stat for the path
+   stat(path, &stat_path);
+
+    // if path does not exists or is not dir - exit with status -1
+   if (S_ISDIR(stat_path.st_mode) == 0) {
+     if (S_ISREG(stat_path.st_mode) != 0 ||
+         S_ISLNK(stat_path.st_mode) != 0 ) {
+       fprintf(stderr, "Removing file or link %s\n", path);
+       unlink(path);
+       return;
+     }
+     fprintf(stderr, "%s: %s\n", "Is not directory", path);
+     return;
+   }
+
+    // if not possible to read the directory for this user
+   if ((dir = opendir(path)) == NULL) {
+     fprintf(stderr, "%s: %s\n", "Can`t open directory", path);
+     return;
+   }
+
+    // the length of the path
+   path_len = strlen(path);
+
+    // iteration through entries in the directory
+   while ((entry = readdir(dir)) != NULL) {
+
+        // skip entries "." and ".."
+     if (!strcmp(entry->d_name, ".") || !strcmp(entry->d_name, ".."))
+       continue;
+
+        // determinate a full path of an entry
+     std::string full_path = std::string(path) + "/" + std::string(entry->d_name);
+        // stat for the entry
+     stat(full_path.c_str(), &stat_entry);
+
+        // recursively remove a nested directory
+     if (S_ISDIR(stat_entry.st_mode) != 0) {
+       rmtree(full_path.c_str());
+       continue;
+     }
+
+        // remove a file object
+     if (unlink(full_path.c_str()) != 0)
+       printf("Can`t remove a file: %s error: %s\n", full_path.c_str(), std::strerror(errno));
+   }
+
+    // remove the devastated directory and close the object of it
+   if (rmdir(path) != 0)
+     printf("Can`t remove a directory: %s\n", path);
+
+   closedir(dir);
+ }
+
+ CL_DEFUN void ext__rmtree(const string& spath)
+ {
+   const char* path = spath.c_str();
+   rmtree(path);
+ };
+  
+
+
+
  CL_LAMBDA(template);
 CL_DECLARE();
 CL_DOCSTRING("mkdtemp");
