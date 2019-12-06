@@ -203,8 +203,9 @@
        (let ((,elt (car ,%sublist)))
          ,@body)))))
 
-(defmacro do-subsequence-general ((elt sequence start end
-                                       &key output setter (index (gensym)))
+(defmacro do-general-subsequence ((elt sequence start end
+                                   &key output setter
+                                     from-end (index (gensym)))
                                   &body body)
   (with-unique-names (%it %limit %from-end %step %endp %elt %set)
     (let ((body (if setter
@@ -216,7 +217,7 @@
       (once-only (start)
         `(sequence:with-sequence-iterator (,%it ,%limit ,%from-end
                                                 ,%step ,%endp ,%elt ,%set)
-             (,sequence :start ,start :end ,end)
+             (,sequence :start ,start :end ,end :from-end ,from-end)
            (do ((,index ,start (1+ ,index))
                 (,%it ,%it (funcall ,%step ,sequence ,%it ,%from-end)))
                ((funcall ,%endp ,sequence ,%it ,%limit) ,output)
@@ -234,7 +235,7 @@
                ((vectorp ,%sequence)
                 (do-subvector ,args ,@body))
                (t
-                (do-subsequence-general ,args ,@body)))))))
+                (do-general-subsequence ,args ,@body)))))))
 
 ;;; Iterate over a variable number of sequences at once.
 ;;; Once any sequence runs out of elements, OUTPUT is evaluated and returned.

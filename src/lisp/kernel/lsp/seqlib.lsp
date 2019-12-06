@@ -113,6 +113,7 @@
           (funcall function initial-value (funcall key elt)))))
 
 (defun reduce (function sequence
+               &rest args
                &key from-end
                  (start 0)
                  end
@@ -145,9 +146,9 @@
                        (vector-reduce function sequence
                                       key start end
                                       initial-value ivsp)))))))
-        (t (error-not-a-sequence sequence))))
+        (t (apply #'sequence:reduce function sequence args))))
 
-(defun fill (sequence item &key (start 0) end)
+(defun fill (sequence item &rest args &key (start 0) end)
   ;; INV: WITH-START-END checks the sequence type and size.
   (cond ((listp sequence)
          (reckless
@@ -162,7 +163,7 @@
           (with-start-end (start end sequence)
             (fill-array-with-elt sequence item start end))
           sequence))
-        (t (error-not-a-sequence sequence))))
+        (t (apply #'sequence:fill sequence item args))))
 
 ;;; This is used in MAKE-ARRAY to fill an array with initial contents.
 (defun fill-array-with-seq (array initial-contents)
@@ -306,8 +307,9 @@
                (incf index)))
 	  (nreconc output sequence))))))
 
-(defun remove (which sequence &key test test-not (start 0) end
-               from-end count key)
+(defun remove (which sequence &rest args
+               &key test test-not (start 0) end
+                 from-end count key)
   (declare (optimize (speed 3) (safety 1) (debug 0)))
   (cond
     ((listp sequence)
@@ -322,7 +324,7 @@
     ((vectorp sequence)
      (values (filter-vector which nil sequence start end from-end count
                             test test-not key)))
-    (t (error-not-a-sequence sequence))))
+    (t (apply #'sequence:remove which sequence args))))
 
 (defun remove-if (predicate sequence &key (start 0) end from-end count key)
   (remove (coerce-fdesignator predicate) sequence
@@ -370,8 +372,10 @@
 	       (go top)))
           (cdr output))))))
 
-(defun delete (which sequence &key test test-not (start 0) end
-               from-end count key)
+(defun delete (which sequence
+               &rest args
+               &key test test-not (start 0) end
+                 from-end count key)
   (declare (optimize (speed 3) (safety 1) (debug 0))
            (ext:check-arguments-type nil))
   (cond ((listp sequence)
@@ -382,7 +386,8 @@
                              (if end (- l end) 0) (- l start)
                              count test test-not key)))
              (delete-list which sequence start end count test test-not key)))
-        ((not (vectorp sequence)) (error-not-a-sequence sequence))
+        ((not (vectorp sequence))
+         (apply #'sequence:delete which sequence args))
         ((array-has-fill-pointer-p (the vector sequence))
          (multiple-value-bind (sequence l)
              (filter-vector which sequence sequence start end from-end count
@@ -405,7 +410,8 @@
 	  :start start :end end :from-end from-end :count count
 	  :test-not #'unsafe-funcall1 :key key))
 
-(defun count (item sequence &key test test-not from-end (start 0) end key)
+(defun count (item sequence
+              &key test test-not from-end (start 0) end key)
   (with-tests (test test-not key)
     (declare (optimize (speed 3) (safety 0) (debug 0)))
     (with-start-end (start end sequence l)
@@ -422,7 +428,11 @@
                                                      :output counter)
                  (when (compare item (key elt))
                    (incf counter))))
-              (t (error-not-a-sequence sequence)))
+              (t
+               (do-general-subsequence (elt sequence start end
+                                            :from-end t :output counter)
+                 (when (compare item (key elt))
+                   (incf counter)))))
 	    (do-subsequence (elt sequence start end :output counter)
 	      (when (compare item (key elt))
 		(incf counter))))))))
@@ -464,18 +474,29 @@
 	;; but the ANSI test suite complains because it expects always
 	;; a from-end inspection order!
         (if from-end
-            (if (listp sequence)
-                (nreverse
-                 (nsubstitute new old (nreverse sequence)
-                              :start (- l end) :end (- l start)
-                              :key key :test test :test-not test-not
-                              :count count))
-                (do-subvector (elt sequence start end :setter setf-elt
-                                                      :from-end t :output sequence)
-                  (when (compare old (key elt))
-                    (setf-elt new)
-                    (when (zerop (decf %count))
-                      (return sequence)))))
+            (cond ((listp sequence)
+                   (nreverse
+                    (nsubstitute new old (nreverse sequence)
+                                 :start (- l end) :end (- l start)
+                                 :key key :test test :test-not test-not
+                                 :count count)))
+                  ((vectorp sequence)
+                   (do-subvector (elt sequence start end
+                                      :setter setf-elt
+                                      :from-end t :output sequence)
+                     (when (compare old (key elt))
+                       (setf-elt new)
+                       (when (zerop (decf %count))
+                         (return sequence)))))
+                  (t
+                   (do-general-subsequence (elt sequence start end
+                                                :setter setf-elt
+                                                :from-end t
+                                                :output sequence)
+                     (when (compare old (key elt))
+                       (setf-elt new)
+                       (when (zerop (decf %count))
+                         (return sequence))))))
             (do-subsequence (elt sequence start end :setter setf-elt
                                                     :output sequence)
               (when (compare old (key elt))
@@ -581,6 +602,7 @@
                (setf sequence (cdr (the cons sequence))))))))))
 
 (defun remove-duplicates (sequence
+                          &rest args
                           &key test test-not from-end (start 0) end key)
   "Args: (sequence
        &key key (test '#'eql) test-not
@@ -599,8 +621,7 @@ Returns a copy of SEQUENCE without duplicated elements."
                                      start end from-end
                                      test test-not key)
            v))
-        ((not (vectorp sequence))
-         (signal-type-error sequence 'sequence))))
+        (t (apply #'sequence:remove-duplicaates sequence args))))
 
 (defun delete-duplicates-list (sequence start end from-end test test-not key)
   (with-tests (test test-not key)
@@ -672,6 +693,7 @@ Returns a copy of SEQUENCE without duplicated elements."
            (setf index (1+ index))))))))
 
 (defun delete-duplicates (sequence
+                          &rest args
 			  &key test test-not from-end (start 0) end key)
   "Args: (sequence &key key
 		     (test '#'eql) test-not
@@ -680,7 +702,8 @@ Destructive REMOVE-DUPLICATES.  SEQUENCE may be destroyed."
   (cond ((listp sequence)
          (delete-duplicates-list sequence start end from-end
                                  test test-not key))
-        ((not (vectorp sequence)) (error-not-a-sequence sequence))
+        ((not (vectorp sequence))
+         (apply #'sequence:delete-duplicates sequence args))
         ((array-has-fill-pointer-p sequence)
          (let ((l (filter-duplicates-vector sequence sequence
                                             start end from-end
@@ -1041,7 +1064,7 @@ evaluates to NIL.  See STABLE-SORT."
       (setf direction (not direction)))))
 
 
-(defun stable-sort (sequence predicate &key key)
+(defun stable-sort (sequence predicate &rest args &key key)
   "Args: (sequence test &key key)
 Destructively sorts SEQUENCE and returns the result.  TEST should return non-
 NIL if its first argument is to precede its second argument.  For two elements
@@ -1054,11 +1077,13 @@ SEQUENCE.  See SORT."
         predicate (coerce-fdesignator predicate))
   (cond ((listp sequence)
          (list-merge-sort sequence predicate key))
+        ;; TODO: We can actually do this for any non-T vector,
+        ;; as the elements essentially lack discernable identities.
         ((or (stringp sequence) (bit-vector-p sequence))
          (sort sequence predicate :key key))
         ((vectorp sequence)
          (vector-merge-sort sequence predicate key))
-        (t (error-not-a-sequence sequence))))
+        (t (apply #'sequence:stable-sort sequence predicate args))))
 
 (defun merge (result-type sequence1 sequence2 predicate &key key
               &aux (l1 (length sequence1)) (l2 (length sequence2)))
@@ -1102,7 +1127,3 @@ the sense of TEST."
 Returns a new function which first applies F to its arguments and then negates
 the output"
   #'(lambda (&rest x) (not (apply f x))))
-
-
-
-
