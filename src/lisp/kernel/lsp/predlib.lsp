@@ -666,11 +666,8 @@ if not possible."
 	 (unless (typep aux type)
 	   (error-coerce object type))
 	 aux)
-;;	((or (listp object) (vector object))
-         ((or (listp object) #+(and ecl (not clasp))(vector object) #+clasp(vectorp object))
-	 (concatenate type object))
-	(t
-	 (error-coerce object type))))
+        ((typep object 'sequence) (concatenate type object))
+	(t (error-coerce object type))))
 
 ;;************************************************************
 ;;			SUBTYPEP
