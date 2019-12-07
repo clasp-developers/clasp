@@ -188,6 +188,18 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Derived functions
+;;; Optional. Everything here works already if the core protocol is in place.
+;;;
+;;; IMPORTANT PROVISO: Because these functions are specified to work just like
+;;; the CL ones (but with other sequences), Clasp takes the view that it is not
+;;; actually required to call them at any point. That is, a call to CL:FIND with
+;;; an extension sequence _may_ result in a call to SEQUENCE:FIND, but just as
+;;; well may not. Since the semantics of these functions are defined entirely in
+;;; terms of general iteration, no customization is actually required, and can
+;;; only serve as an optimization - not an extension to the semantics.
+;;;
+;;; This is still in flux though. If you think this is a bad idea, contact a
+;;; maintainer to talk.
 ;;;
 
 (defgeneric sequence:emptyp (sequence)
