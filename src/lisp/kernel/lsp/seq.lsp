@@ -196,10 +196,6 @@ default value of INITIAL-ELEMENT depends on TYPE."
 (defun list-iterator-copy (seq it)
   (declare (ignore seq))
   it)
-(defun list-iterator-step (seq it from-end)
-  (if from-end
-      (list-iterator-prev seq it from-end)
-      (list-iterator-next seq it from-end)))
 
 (defun make-simple-list-iterator (list from-end start end)
   (cond (from-end
@@ -226,47 +222,49 @@ default value of INITIAL-ELEMENT depends on TYPE."
             #'list-iterator-elt #'(setf list-iterator-elt)
             #'list-iterator-index #'list-iterator-copy)))
 
-(defun vec-iterator-next (seq it from-end)
+;;; the random-access-iterator- functions are also made
+;;; available through sequence:define-random-access-iterator,
+;;; defined in clos/sequences.lsp.
+(defun random-access-iterator-next (seq it from-end)
   (declare (ignore seq from-end)
-           (optimize (safety 0))
+           (optimize speed (safety 0))
            (type fixnum it))
   (1+ it))
-(defun vec-iterator-prev (seq it from-end)
+(defun random-access-iterator-prev (seq it from-end)
   (declare (ignore seq from-end)
-           (optimize (safety 0))
+           (optimize speed (safety 0))
            (type fixnum it))
   (1- it))
-(defun vec-iterator-endp (seq it limit from-end)
+(defun random-access-iterator-endp (seq it limit from-end)
   (declare (ignore seq from-end)
-           (optimize (safety 0))
+           (optimize speed (safety 0))
            (type fixnum it limit))
   (= it limit))
 (defun vec-iterator-elt (seq it)
-  (declare (optimize (safety 0)))
+  (declare (optimize speed (safety 0)))
   (aref (the vector seq) it))
 (defun (setf vec-iterator-elt) (new seq it)
-  (declare (optimize (safety 0)))
+  (declare (optimize speed (safety 0)))
   (setf (aref (the vector seq) it) new))
-(defun vec-iterator-index (seq it)
-  (declare (ignore seq))
+(defun random-access-iterator-index (seq it)
+  (declare (ignore seq) (optimize speed (safety 0)))
   it)
-(defun vec-iterator-copy (seq it)
-  (declare (ignore seq))
+(defun random-access-iterator-copy (seq it)
+  (declare (ignore seq) (optimize speed (safety 0)))
   it)
-(defun vec-iterator-step (seq it from-end)
-  (if from-end
-      (vec-iterator-prev seq it from-end)
-      (vec-iterator-next seq it from-end)))
 
 (defun make-vector-iterator (sequence from-end start end)
   (let* ((end (or end (length sequence)))
          (iterator (if from-end (1- end) start))
          (limit (if from-end (1- start) end)))
     (values iterator limit from-end
-            (if from-end #'vec-iterator-prev #'vec-iterator-next)
-            #'vec-iterator-endp
+            (if from-end
+                #'random-access-iterator-prev
+                #'random-access-iterator-next)
+            #'random-access-iterator-endp
             #'vec-iterator-elt #'(setf vec-iterator-elt)
-            #'vec-iterator-index #'vec-iterator-copy)))
+            #'random-access-iterator-index
+            #'random-access-iterator-copy)))
 
 (defun %make-sequence-iterator (sequence from-end start end)
   (cond ((listp sequence)

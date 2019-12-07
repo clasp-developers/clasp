@@ -78,15 +78,12 @@
                ;; may be customized or derived
                emptyp
                ;; ditto, but are CL symbols too
-               concatenate
                count count-if count-if-not
                copy-seq
                delete delete-if delete-if-not
                delete-duplicates
                fill
                find find-if find-if-not
-               map
-               merge
                mismatch
                nsubstitute nsubstitute-if nsubstitute-if-not
                nreverse
@@ -106,6 +103,8 @@
                with-simple-sequence-iterator
                ;; clasp extensions
                make-sequence
+               define-random-access-iterator
+               make-random-access-iterator
                ))
   (core:select-package "CORE"))
 

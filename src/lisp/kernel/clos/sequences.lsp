@@ -556,3 +556,33 @@
   (let* ((class (if (symbolp type) (find-class type) type))
          (proto (clos:class-prototype class)))
     (apply #'sequence:make-sequence-like type size args)))
+
+;;; This is a convenience macro to define iteration over sequences that are
+;;; just like vectors (iterating by in/decreasing a fixnum index).
+;;; The extender provides a reader and writer function.
+;;; Intended usage:
+#+(or)
+(defmethod sequence:define-random-access-iterator
+    my-sequence #'my-elt #'(setf my-elt))
+
+(defmacro sequence:define-random-access-iterator (class-name elt setelt)
+  (core::with-unique-names (sequence from-end start end)
+    `(defmethod sequence:make-sequence-iterator
+         ((,sequence ,class-name) &key ,from-end (,start 0) ,end)
+       (let ((,end (or ,end (length ,sequence))))
+         (sequence:make-random-access-iterator
+          ,start ,end ,from-end ,elt ,setelt)))))
+
+;;; END is already normalized (i.e. a fixnum, not NIL)
+(defun sequence:make-random-access-iterator
+    (start end from-end elt setelt)
+  (values (if from-end (1- end) start)
+          (if from-end (1- start) end)
+          from-end
+          (if from-end
+              #'core::random-access-iterator-prev
+              #'core::random-access-iterator-next)
+          #'core::random-access-endp
+          elt setelt
+          #'core::random-access-iterator-index
+          #'core::random-access-iterator-copy))
