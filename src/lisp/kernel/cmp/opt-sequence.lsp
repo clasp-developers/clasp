@@ -91,9 +91,9 @@
                   ,r)))
             (t ; user sequence type
              (if iesp
-                 `(sequence:make-sequence ,kind ,size
+                 `(sequence:make-sequence ',kind ,size
                                           :initial-element ,initial-element)
-                 `(sequence:make-sequence ,kind ,size)))))))
+                 `(sequence:make-sequence ',kind ,size)))))))
 
 ;;;
 ;;; CONCATENATE
@@ -111,18 +111,20 @@
             ((eq kind 'nil) form)
             ((eq kind 'list)
              `(si::concatenate-to-list ,@sequences))
-            ((consp kind) ; (VECTOR uaet)
-             (let ((uaet (second kind))
-                   (symlist (gensym-list sequences "SEQUENCE")))
-               `(let (,@(loop for s in symlist for ss in sequences
-                              collect `(,s ,ss)))
-                  (si::concatenate-into-vector
-                   (sys:make-vector ',uaet
-                                    (+ ,@(loop for s in symlist
-                                               collect `(length ,s))))
-                   ,@symlist))))
-            (t ; user defined sequence type. TODO
-             form)))))
+            (t
+             (let* ((symlist (gensym-list sequences "SEQUENCE"))
+                    (binds (mapcar #'list symlist sequences))
+                    (sum `(+ ,@(loop for s in symlist
+                                     collect `(length ,s))))
+                    (constructor
+                      (if (consp kind)
+                          ;; (VECTOR uaet)
+                          `(sys::make-vector ',(second kind) ,sum)
+                          ;; sequence class
+                          `(sequence:make-sequence ',kind ,sum))))
+               `(let (,@binds)
+                  (si::concatenate-into-sequence
+                   ,constructor ,@symlist))))))))
 
 ;;;
 ;;; MAP

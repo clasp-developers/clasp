@@ -360,32 +360,24 @@ default value of INITIAL-ELEMENT depends on TYPE."
           (rplacd tail new-tail)
           (setq tail new-tail))))))
 
-(defun concatenate-into-vector (vector core:&va-rest sequences)
+(defun concatenate-into-sequence (seq core:&va-rest sequences)
   ;; vector is assumed to be non complex and have the correct length.
-  (let ((index 0))
-    (dovaslist (sequence sequences vector)
-      (sequence:dosequence (elt sequence)
-        (setf (vref vector index) elt)
-        (incf index)))))
+  (reckless
+   (sequence:with-sequence-iterator (it limit from-end step nil nil setelt)
+       (seq)
+     (dovaslist (sequence sequences vector)
+       (sequence:dosequence (elt sequence)
+         (funcall setelt elt seq it)
+         (setq it (funcall step elt seq it from-end)))))))
 
-(defun concatenate (result-type &rest sequences)
-  (let* ((lengths-list (mapcar #'length sequences))
-         (result (make-sequence result-type (apply #'+ lengths-list))))
-    (if (listp result)
-        (let ((cons result))
-          (do* ((sequences sequences (rest sequences))
-                (sequence (first sequences) (first sequences)))
-               ((null sequences) result)
-            (sequence:dosequence (elt sequence)
-              (rplaca cons elt)
-              (setq cons (cdr cons)))))
-        (with-array-data ((vec result) index)
-          (do* ((sequences sequences (rest sequences))
-                (sequence (first sequences) (first sequences)))
-               ((null sequences) result)
-            (sequence:dosequence (elt sequence)
-              (setf (vref vec index) elt)
-              (incf index)))))))
+(defun concatenate (result-type core:&va-rest sequences)
+  ;; SUBTYPEP is slow, but if you're here you already failed to optimize.
+  ;; See compiler macro in cmp/opt-sequence.lsp.
+  (if (subtypep result-type 'list)
+      (apply #'concatenate-to-list sequences)
+      (let* ((lengths-list (mapcar #'length sequences))
+             (result (make-sequence result-type (apply #'+ lengths-list))))
+        (apply #'concatenate-into-sequence result sequences))))
 
 (defun map-for-effect (function &rest sequences)
   "Does (map nil ...), but the function is already a function."
