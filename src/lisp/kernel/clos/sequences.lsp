@@ -195,6 +195,337 @@
   (:method ((sequence null)) t)
   (:method ((sequence cons)) nil))
 
+(defgeneric sequence:count
+    (item sequence &key from-end start end test test-not key)
+  (:argument-precedence-order sequence item))
+(defmethod sequence:count
+    (item (sequence sequence) &key from-end (start 0) end test test-not key)
+  (let ((counter 0))
+    (core::with-tests (test test-not key)
+      (core::do-general-subsequence (e sequence start end
+                                       :from-end from-end :output counter)
+        (when (compare item (key e)) (incf counter))))))
+
+(defgeneric sequence:count-if (pred sequence &key from-end start end key)
+  (:argument-precedence-order sequence pred))
+(defmethod sequence:count-if
+    (pred (sequence sequence) &key from-end (start 0) end key)
+  (let ((counter 0) (pred (core:coerce-fdesignator pred)))
+    (core::with-key (key)
+      (core::do-general-subsequence (e sequence start end
+                                       :from-end from-end :output counter)
+        (when (funcall pred (key e)) (incf counter))))))
+
+(defgeneric sequence:count-if-not (pred sequence &key from-end start end key)
+  (:argument-precedence-order sequence pred))
+(defmethod sequence:count-if-not
+    (pred (sequence sequence) &key from-end (start 0) end key)
+  (let ((counter 0) (pred (core:coerce-fdesignator pred)))
+    (core::with-key (key)
+      (core::do-general-subsequence (e sequence start end
+                                       :from-end from-end :output counter)
+        (unless (funcall pred (key e)) (incf counter))))))
+
+(defgeneric sequence:find
+    (item sequence &key from-end start end test test-not key))
+(defmethod sequence:find
+    (pred (sequence sequence) &key from-end (start 0) end key)
+  (core::with-tests (test test-not key)
+    (core::do-general-subsequence (e sequence start end :from-end from-end)
+      (when (compare item (key elt)) (return elt)))))
+
+(defgeneric sequence:find-if (pred sequence &key from-end start end key)
+  (:argument-precedence-order sequence pred))
+(defmethod sequence:find-if
+    (pred (sequence sequence) &key from-end (start 0) end key)
+  (let ((pred (core:coerce-fdesignator pred)))
+    (core::with-key (key)
+      (core::do-general-subsequence (e sequence start end
+                                       :from-end from-end)
+        (when (funcall pred (key elt)) (return elt))))))
+
+(defgeneric sequence:find-if-not (pred sequence &key from-end start end key)
+  (:argument-precedence-order sequence pred))
+(defmethod sequence:find-if-not
+    (pred (sequence sequence) &key from-end (start 0) end key)
+  (let ((pred (core:coerce-fdesignator pred)))
+    (core::with-key (key)
+      (core::do-general-subsequence (e sequence start end
+                                       :from-end from-end)
+        (unless (funcall pred (key elt)) (return elt))))))
+
+(defgeneric sequence:position
+    (item sequence &key test test-not from-end (start 0) end key))
+(defmethod sequence:position
+    (item (sequence sequence) &key test test-not from-end (start 0) end key)
+  (core::with-tests (test test-not key)
+    (core::do-general-subsequence (elt sequence start end
+                                       :from-end from-end :index index)
+      (when (compare item (key elt)) (return index)))))
+
+(defgeneric sequence:position-if
+    (pred sequence &key from-end (start 0) end key))
+(defmethod sequence:position-if
+    (pred (sequence sequence) &key from-end (start 0) end key)
+  (let ((pred (core:coerce-fdesignator pred)))
+    (core::with-key (key)
+      (core::do-general-subsequence (elt sequence start end
+                                         :from-end from-end :index index)
+        (when (funcall pred (key elt)) (return index))))))
+
+(defgeneric sequence:position-if-not
+    (pred sequence &key from-end (start 0) end key))
+(defmethod sequence:position-if-not
+    (pred (sequence sequence) &key from-end (start 0) end key)
+  (let ((pred (core:coerce-fdesignator pred)))
+    (core::with-key (key)
+      (core::do-general-subsequence (elt sequence start end
+                                         :from-end from-end :index index)
+        (unless (funcall pred (key elt)) (return index))))))
+
+(defgeneric sequence:subseq (sequence start &optional end))
+(defmethod sequence:subseq ((sequence sequence) start &optional end)
+  (let* ((end (or end (length sequence)))
+         (length (- end start))
+         (result (sequence:make-sequence-like sequence length)))
+    (sequence:with-sequence-iterator (state limit from-end step endp elt)
+        (sequence :start start :end end)
+      (declare (ignore limit endp))
+      (sequence:with-sequence-iterator
+          (rstate rlimit rfrom-end rstep rendp relt rsetelt)
+          (result)
+        (declare (ignore rlimit rendp relt))
+        (do ((i 0 (+ i 1)))
+            ((>= i length) result)
+          (funcall rsetelt (funcall elt sequence state) result rstate)
+          (setq state (funcall step sequence state from-end))
+          (setq rstate (funcall rstep result rstate rfrom-end)))))))
+
+(defgeneric sequence:copy-seq (sequence))
+(defmethod sequence:copy-seq ((sequence sequence))
+  (sequence:subseq sequence 0))
+
+(defgeneric sequence:fill (sequence item &key start end))
+(defmethod sequence:fill ((sequence sequence) item &key (start 0) end)
+  (core::do-general-subsequence (nil sequence start end
+                                     :from-end from-end :setter setelt)
+    (setelt item))
+  sequence)
+
+(defgeneric sequence:nsubstitute
+    (new old sequence &key start end from-end test test-not count key)
+  (:argument-precedence-order sequence new old))
+(defmethod sequence:nsubstitute (new old (sequence sequence)
+                                 &key (start 0)
+                                   end from-end test test-not count key)
+  (let ((c 0))
+    (core::with-tests (test test-not key)
+      (core::do-general-subsequence (e sequence :from-end from-end
+                                                :setter setelt)
+        (when (and count (>= c count)) (return))
+        (when (compare old (key e)) (incf c) (setelt new)))))
+  sequence)
+
+(defgeneric sequence:nsubstitute-if
+    (new pred sequence &key start end from-end count key)
+  (:argument-precedence-order sequence new pred))
+(defmethod sequence:nsubstitute-if (new pred (sequence sequence)
+                                    &key (start 0) end from-end count key)
+  (let ((c 0) (pred (core:coerce-fdesignator pred)))
+    (core::with-key (key)
+      (core::do-general-subsequence (e sequence :from-end from-end
+                                                :setter setelt)
+        (when (and count (>= c count)) (return))
+        (when (funcall pred (key e)) (incf c) (setelt new)))))
+  sequence)
+
+(defgeneric sequence:nsubstitute-if=mpt
+    (new pred sequence &key start end from-end count key)
+  (:argument-precedence-order sequence new pred))
+(defmethod sequence:nsubstitute-if-not (new pred (sequence sequence)
+                                        &key (start 0) end from-end count key)
+  (let ((c 0) (pred (core:coerce-fdesignator pred)))
+    (core::with-key (key)
+      (core::do-general-subsequence (e sequence :from-end from-end
+                                                :setter setelt)
+        (when (and count (>= c count)) (return))
+        (unless (funcall pred (key e)) (incf c) (setelt new)))))
+  sequence)
+
+(defgeneric sequence:substitute
+    (new old sequence &key start end from-end test test-not count key)
+  (:argument-precedence-order sequence new old))
+(defmethod sequence:substitute (new old (sequence sequence) &rest args &key
+                                (start 0) end from-end test test-not count key)
+  (declare (dynamic-extent args))
+  (declare (ignore start end from-end test test-not count key))
+  (apply #'sequence:nsubstitute new old (copy-seq sequence) args))
+
+(defgeneric sequence:substitute-if
+    (new predicate sequence &key start end from-end count key)
+  (:argument-precedence-order sequence new predicate))
+(defmethod sequence:substitute-if (new predicate (sequence sequence) &rest args
+                                   &key (start 0) end from-end count key)
+  (declare (dynamic-extent args))
+  (declare (ignore start end from-end count key))
+  (apply #'sequence:nsubstitute-if new predicate (copy-seq sequence) args))
+
+(defgeneric sequence:substitute-if-not
+    (new predicate sequence &key start end from-end count key)
+  (:argument-precedence-order sequence new predicate))
+(defmethod sequence:substitute-if-not
+    (new predicate (sequence sequence)
+     &rest args &key (start 0) end from-end count key)
+  (declare (dynamic-extent args))
+  (declare (ignore start end from-end count key))
+  (apply #'sequence:nsubstitute-if-not new predicate (copy-seq sequence) args))
+
+(defun %sequence-replace (sequence1 sequence2 start1 end1 start2 end2)
+  (sequence:with-sequence-iterator
+      (state1 limit1 from-end1 step1 endp1 elt1 setelt1)
+      (sequence1 :start start1 :end end1)
+    (declare (ignore elt1))
+    (sequence:with-sequence-iterator (state2 limit2 from-end2 step2 endp2 elt2)
+        (sequence2 :start start2 :end end2)
+      (do ()
+          ((or (funcall endp1 sequence1 state1 limit1 from-end1)
+               (funcall endp2 sequence2 state2 limit2 from-end2))
+           sequence1)
+        (funcall setelt1 (funcall elt2 sequence2 state2) sequence1 state1)
+        (setq state1 (funcall step1 sequence1 state1 from-end1))
+        (setq state2 (funcall step2 sequence2 state2 from-end2))))))
+
+(defgeneric sequence:replace
+    (sequence1 sequence2 &key start1 end1 start2 end2)
+  (:argument-precedence-order sequence2 sequence1))
+(defmethod sequence:replace
+    ((sequence1 sequence) (sequence2 sequence)
+     &key (start1 0) end1 (start2 0) end2)
+  (cond
+    ((eq sequence1 sequence2)
+     (let ((replaces (subseq sequence2 start2 end2)))
+       (%sequence-replace sequence1 replaces start1 end1 0 nil)))
+    (t (%sequence-replace sequence1 sequence2 start1 end1 start2 end2))))
+
+(defgeneric sequence:nreverse (sequence))
+(defmethod sequence:nreverse ((sequence sequence))
+  ;; FIXME: this, in particular the :from-end iterator, will suck
+  ;; mightily if the user defines a list-like structure.
+  (let ((length (length sequence)))
+    (sequence:with-sequence-iterator
+        (state1 limit1 from-end1 step1 endp1 elt1 setelt1)
+        (sequence :end (floor length 2))
+      (sequence:with-sequence-iterator
+          (state2 limit2 from-end2 step2 endp2 elt2 setelt2)
+          (sequence :start (ceiling length 2) :from-end t)
+        (declare (ignore limit2 endp2))
+        (do ()
+            ((funcall endp1 sequence state1 limit1 from-end1) sequence)
+          (let ((x (funcall elt1 sequence state1))
+                (y (funcall elt2 sequence state2)))
+            (funcall setelt1 y sequence state1)
+            (funcall setelt2 x sequence state2))
+          (setq state1 (funcall step1 sequence state1 from-end1))
+          (setq state2 (funcall step2 sequence state2 from-end2)))))))
+
+(defgeneric sequence:reverse (sequence))
+(defmethod sequence:reverse ((sequence sequence))
+  (sequence:nreverse (copy-seq sequence)))
+
+(defgeneric sequence:reduce
+    (function sequence &key from-end start end initial-value)
+  (:argument-precedence-order sequence function))
+(defmethod sequence:reduce
+    (function (sequence sequence) &key from-end (start 0) end key
+                                    (initial-value nil ivp))
+  (core::with-key (key)
+    (sequence:with-sequence-iterator (state limit from-end step endp elt)
+        (sequence :start start :end end :from-end from-end)
+      (if (funcall endp sequence state limit from-end)
+          (if ivp initial-value (funcall function))
+          (do* ((state state (funcall step sequence state from-end))
+                (value (cond
+                         (ivp initial-value)
+                         (t (prog1
+                                (funcall key (funcall elt sequence state))
+                              (setq state
+                                    (funcall step sequence state from-end)))))))
+               ((funcall endp sequence state limit from-end) value)
+            (let ((e (key (funcall elt sequence state))))
+              (if from-end
+                  (setq value (funcall function e value))
+                  (setq value (funcall function value e)))))))))
+
+(defgeneric sequence:mismatch (sequence1 sequence2 &key from-end start1 end1
+                               start2 end2 test test-not key))
+(defmethod sequence:mismatch
+    ((sequence1 sequence) (sequence2 sequence)
+     &key from-end (start1 0) end1 (start2 0) end2 test test-not key)
+  (core::with-tests (test test-not key)
+    (sequence:with-sequence-iterator (state1 limit1 from-end1 step1 endp1 elt1)
+        (sequence1 :start start1 :end end1 :from-end from-end)
+      (sequence:with-sequence-iterator
+          (state2 limit2 from-end2 step2 endp2 elt2)
+          (sequence2 :start start2 :end end2 :from-end from-end)
+        (if from-end
+            (do ((result (or end1 (length sequence1)) (1- result))
+                 (e1 (funcall endp1 sequence1 state1 limit1 from-end1)
+                     (funcall endp1 sequence1 state1 limit1 from-end1))
+                 (e2 (funcall endp2 sequence2 state2 limit2 from-end2)
+                     (funcall endp2 sequence2 state2 limit2 from-end2)))
+                ((or e1 e2) (if (and e1 e2) nil result))
+              (let ((o1 (key (funcall elt1 sequence1 state1)))
+                    (o2 (key (funcall elt2 sequence2 state2))))
+                (unless (compare o1 o2) (return result))
+                (setq state1 (funcall step1 sequence1 state1 from-end1))
+                (setq state2 (funcall step2 sequence2 state2 from-end2))))
+            (do ((result start1 (1+ result))
+                 (e1 (funcall endp1 sequence1 state1 limit1 from-end1)
+                     (funcall endp1 sequence1 state1 limit1 from-end1))
+                 (e2 (funcall endp2 sequence2 state2 limit2 from-end2)
+                     (funcall endp2 sequence2 state2 limit2 from-end2)))
+                ((or e1 e2) (if (and e1 e2) nil result))
+              (let ((o1 (key (funcall elt1 sequence1 state1)))
+                    (o2 (key (funcall elt2 sequence2 state2))))
+                (unless (compare o1 o2) (return result)))
+              (setq state1 (funcall step1 sequence1 state1 from-end1))
+              (setq state2 (funcall step2 sequence2 state2 from-end2))))))))
+
+(defgeneric sequence:search (sequence1 sequence2 &key from-end start1 end1
+                             start2 end2 test test-not key))
+(defmethod sequence:search
+    ((sequence1 sequence) (sequence2 sequence)
+     &key from-end (start1 0) end1 (start2 0) end2 test test-not key)
+  (core::search-generic sequence1 start1 (or end1 (length sequence1))
+                        sequence2 start2 (or end2 (length sequence2))
+                        test test-not key from-end))
+
+(defgeneric sort (sequence predicate &key key))
+;;; The SEQEUENCE paper says, in the section on relationships between the
+;;; generic functions in this package,
+;;; "the default method on SORT behaves as if it constructs a vector with the
+;;;  same elements as sequence, calls SORT on that vector, then replaces the
+;;;  elements of sequence with the elements of the sorted vector."
+;;; I don't understand the rationale for this requirement - specifically, how
+;;; could one possibly know that that's what's happening? SORT on a vector
+;;; is nothing the user can specialize. If what it's supposed to mean is that
+;;; the same sequence is returned, this implementation does fine there.
+;;; Incidentally, it could be sped up if we could grab a sequence class's
+;;;  particular ELT.
+;;; Oh, and this will be terrible for a list-like sequence. Maybe the
+;;; requirement is supposed to indicate that list-like sequences shouldn't get
+;;; such terrible performance...?
+(defmethod sequence:sort ((sequence sequence) predicate &key key)
+  (core::with-key (key)
+    (core::quick-sort sequence 0 (1- (length sequence))
+                      (core:coerce-fdesignator predicate) key)))
+
+(defgeneric sequence:stable-sort ((sequence sequence) predicate &key key)
+  ;; FIXME: lazy. REPLACE will do checks it doesn't need to, etc.
+  (core::with-key (key)
+    (replace sequence (stable-sort (coerce sequence 'vector)
+                                   predicate :key key))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Clasp extensions

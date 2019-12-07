@@ -205,24 +205,26 @@
 
 (defmacro do-general-subsequence ((elt sequence start end
                                    &key output setter
-                                     from-end (index (gensym)))
+                                     from-end (index nil indexp))
                                   &body body)
   (with-unique-names (%it %limit %from-end %step %endp %elt %set)
     (let ((body (if setter
                     `((macrolet ((,setter (value)
-                                   `(funcall ,',%set
-                                             ,value ,',sequence ,',%it)))
+                                   `(reckless
+                                     (funcall ,',%set
+                                              ,value ,',sequence ,',%it))))
                         ,@body))
                     body)))
       (once-only (start)
         `(sequence:with-sequence-iterator (,%it ,%limit ,%from-end
                                                 ,%step ,%endp ,%elt ,%set)
              (,sequence :start ,start :end ,end :from-end ,from-end)
-           (do ((,index ,start (1+ ,index))
+           (do (,@(when indexp `((,index ,start (1+ ,index))))
                 (,%it ,%it (funcall ,%step ,sequence ,%it ,%from-end)))
                ((funcall ,%endp ,sequence ,%it ,%limit) ,output)
-             (declare (fixnum ,index))
-             (let ((,elt (funcall ,%elt ,sequence ,%it))) ,@body)))))))
+             ,@(when indexp `((declare (fixnum ,index))))
+             (let (,@(when elt `((,elt (funcall ,%elt ,sequence ,%it)))))
+               ,@body)))))))
 
 (defmacro do-subsequence ((elt sequence start end &rest args
                            &key setter index output specialize)
