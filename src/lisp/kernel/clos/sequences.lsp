@@ -98,95 +98,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Core and iterator protocol specialization for LIST and VECTOR
-;;;
-
-(defun iep-and-icp ()
-  (error "Supplied both ~s and ~s to ~s"
-         :initial-element :initial-contents 'sequence:make-sequence-like))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; List
-;;;
-
-(defmethod sequence:elt ((sequence list) index) (nth index sequence))
-(defmethod (setf sequence:elt) (new (sequence list) index)
-  (setf (nth index sequence) new))
-(defmethod sequence:length ((sequence null)) 0)
-(defmethod sequence:length ((sequence cons)) (core:cons-length sequence))
-
-(defmethod sequence:make-sequence-like
-    ((sequence list) length
-     &key (initial-element nil iep) (initial-contents nil icp))
-  (cond ((and iep icp) (iep-and-icp))
-        (iep (make-list length :initial-element initial-element))
-        (icp (unless (= (length initial-contents) length)
-               (error "Length mismatch in ~s" 'sequence:make-sequence-like))
-             (replace (make-list length) initial-contents))
-        (t (make-list length))))
-
-(defmethod sequence:adjust-sequence
-    ((s list) length &key initial-element (initial-contents nil icp))
-  (if (zerop length)
-      nil
-      (let ((olength (length s)))
-        (cond
-          ((= length olength) (if icp (replace s initial-contents) s))
-          ((< length olength) ; shorten the list
-           (rplacd (nthcdr (1- length) s) nil)
-           (if icp (replace s initial-contents) s))
-          ((null s) ; make a new list
-           (let ((r (make-list length :initial-element initial-element)))
-             (if icp (replace r initial-contents) r)))
-          (t ; lengthen list
-           (rplacd (nthcdr (1- olength) s)
-                   (make-list (- length olength)
-                              :initial-element initial-element))
-           (if icp (replace s initial-contents) s))))))
-
-(defmethod sequence:make-sequence-iterator
-    ((sequence list) &key from-end start end)
-  (core::make-list-iterator sequence from-end start end))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Vector
-;;;
-
-(defmethod sequence:elt ((sequence vector) index) (aref sequence index))
-(defmethod (setf sequence:elt) (new (sequence vector) index)
-  (setf (aref sequence index) new))
-(defmethod sequence:length ((sequence vector)) (core::vector-length sequence))
-
-(defmethod sequence:make-sequence-like
-    ((sequence vector) length
-     &key (initial-element nil iep) (initial-contents nil icp))
-  (cond ((and iep icp) (iep-and-icp))
-        (iep (make-array length :element-type (array-element-type sequence)
-                                :initial-element initial-element))
-        (icp (make-array length :element-type (array-element-type sequence)
-                                :initial-element initial-element))
-        (t (make-array length :element-type (array-element-type sequence)))))
-
-(defmethod sequence:adjust-sequence
-    ((sequence vector) length
-     &rest args &key initial-element (initial-contents nil icp))
-  (declare (ignore initial-element))
-  (cond ((and (array-has-fill-pointer-p sequence)
-              (>= (array-total-size sequence) length))
-         (setf (fill-pointer sequence) length)
-         (if icp (replace sequence initial-contents) sequence))
-        ((= (length sequence) length)
-         (if icp (replace sequence initial-contents) sequence))
-        (t (apply #'adjust-array sequence length args))))
-
-(defmethod sequence:make-sequence-iterator
-    ((sequence vector) &key from-end start end)
-  (core::make-vector-iterator sequence from-end start end))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
 ;;; Derived functions
 ;;; Optional. Everything here works already if the core protocol is in place.
 ;;;
@@ -557,21 +468,73 @@
          (proto (clos:class-prototype class)))
     (apply #'sequence:make-sequence-like type size args)))
 
-;;; This is a convenience macro to define iteration over sequences that are
-;;; just like vectors (iterating by in/decreasing a fixnum index).
-;;; The extender provides a reader and writer function.
-;;; Intended usage:
-#+(or)
-(defmethod sequence:define-random-access-iterator
-    my-sequence #'my-elt #'(setf my-elt))
+;;; This is a convenience macro to define some protocol methods for sequences
+;;; that can be dealt with most efficiently by iterating over them. CL:LIST is
+;;; an example of this kind of sequence.
+;;; The macro defines length, elt, and (setf elt).
+;;; make-sequence-like, adjust-sequence, and the iteration protocol must be
+;;; defined separately.
+;;; The extender provides the class name, four operators, and optionally a fifth
+;;; operator that defaults to CL:IDENTITY. These operators are as follows:
+;;; (GET iterator) returns the element at that iterator
+;;; (SET iterator value) sets the element at that iterator. Return value ignored
+;;; (NEXT iterator) returns the iterator for the next iteration
+;;; (ENDP iterator) returns true iff the iteration is complete
+;;; (MAKE-ITERATOR sequence) returns the iteration object for the above
+;;; Example usage:
+;;; (sequence:define-iterative-sequence list car rplaca cdr null)
 
-(defmacro sequence:define-random-access-iterator (class-name elt setelt)
+(defmacro sequence:define-iterative-sequence
+    (class-name get set next endp
+     &optional (make-iterator 'identity))
+  `(progn
+     (defmethod sequence:length ((sequence ,class-name))
+       (do ((it (,make-iterator sequence) (,next it))
+            (len 0 (1+ len)))
+           ((,endp it) len)))
+     (defmethod sequence:elt ((sequence ,class-name) index)
+       (do ((it (,make-iterator sequence) (,next it))
+            (i 0 (1+ i)))
+           ((,endp it)
+            (error "index ~d out of bounds" index))
+         (when (= i index)
+           (return (,get it)))))
+     (defmethod (setf sequence:elt)
+         (new (sequence ,class-name) index)
+       (do ((it (,make-iterator sequence) (,next it))
+            (i 0 (1+ i)))
+           ((,endp it)
+            (error "index ~d out of bounds" index))
+         (when (= i index)
+           (,set it new)
+           (returnnew))))))
+
+;;; This is a convenience macro to define some protocol methods for sequences
+;;; that can efficiently be "like vectors": i.e. random-access and length are
+;;; cheap, and lengths and indices are fixnums.
+;;; The extender provides the name of length and access operators;
+;;; #'access and #'(setf access) must be defined.
+;;; The macro defines length, elt, (setf elt), and make-sequence-iterator.
+;;; make-sequence-like and adjust-sequence must be defined separately.
+;;; Example usage:
+;;; (sequence:define-random-access-sequence vector length aref)
+
+(defmacro sequence:define-random-access-sequence
+    (class-name length elt)
   (core::with-unique-names (sequence from-end start end)
-    `(defmethod sequence:make-sequence-iterator
-         ((,sequence ,class-name) &key ,from-end (,start 0) ,end)
-       (let ((,end (or ,end (length ,sequence))))
-         (sequence:make-random-access-iterator
-          ,start ,end ,from-end ,elt ,setelt)))))
+    `(progn
+       (defmethod sequence:length ((sequence ,class-name))
+         (,length sequence))
+       (defmethod sequence:elt ((sequence ,class-name) index)
+         (,elt sequence index))
+       (defmethod (setf sequence:elt)
+           (new (sequence ,class-name) index)
+         (setf (,elt sequence index) new))
+       (defmethod sequence:make-sequence-iterator
+           ((,sequence ,class-name) &key ,from-end (,start 0) ,end)
+         (let ((,end (or ,end (,length ,sequence))))
+           (sequence:make-random-access-iterator
+            ,start ,end ,from-end #',elt #'(setf ,elt)))))))
 
 ;;; END is already normalized (i.e. a fixnum, not NIL)
 (defun sequence:make-random-access-iterator
@@ -586,3 +549,88 @@
           elt setelt
           #'core::random-access-iterator-index
           #'core::random-access-iterator-copy))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Core and iterator protocol specialization for LIST and VECTOR
+;;;
+
+(defun iep-and-icp ()
+  (error "Supplied both ~s and ~s to ~s"
+         :initial-element :initial-contents 'sequence:make-sequence-like))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; List
+;;;
+
+(sequence:define-iterative-sequence list car rplaca cdr null)
+
+(defmethod sequence:make-sequence-like
+    ((sequence list) length
+     &key (initial-element nil iep) (initial-contents nil icp))
+  (cond ((and iep icp) (iep-and-icp))
+        (iep (make-list length :initial-element initial-element))
+        (icp (unless (= (length initial-contents) length)
+               (error "Length mismatch in ~s" 'sequence:make-sequence-like))
+             (replace (make-list length) initial-contents))
+        (t (make-list length))))
+
+(defmethod sequence:adjust-sequence
+    ((s list) length &key initial-element (initial-contents nil icp))
+  (if (zerop length)
+      nil
+      (let ((olength (length s)))
+        (cond
+          ((= length olength) (if icp (replace s initial-contents) s))
+          ((< length olength) ; shorten the list
+           (rplacd (nthcdr (1- length) s) nil)
+           (if icp (replace s initial-contents) s))
+          ((null s) ; make a new list
+           (let ((r (make-list length :initial-element initial-element)))
+             (if icp (replace r initial-contents) r)))
+          (t ; lengthen list
+           (rplacd (nthcdr (1- olength) s)
+                   (make-list (- length olength)
+                              :initial-element initial-element))
+           (if icp (replace s initial-contents) s))))))
+
+(defmethod sequence:make-sequence-iterator
+    ((sequence list) &key from-end start end)
+  (core::make-list-iterator sequence from-end start end))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Vector
+;;;
+
+(defmethod sequence:elt ((sequence vector) index) (aref sequence index))
+(defmethod (setf sequence:elt) (new (sequence vector) index)
+  (setf (aref sequence index) new))
+(defmethod sequence:length ((sequence vector)) (core::vector-length sequence))
+
+(defmethod sequence:make-sequence-like
+    ((sequence vector) length
+     &key (initial-element nil iep) (initial-contents nil icp))
+  (cond ((and iep icp) (iep-and-icp))
+        (iep (make-array length :element-type (array-element-type sequence)
+                                :initial-element initial-element))
+        (icp (make-array length :element-type (array-element-type sequence)
+                                :initial-element initial-element))
+        (t (make-array length :element-type (array-element-type sequence)))))
+
+(defmethod sequence:adjust-sequence
+    ((sequence vector) length
+     &rest args &key initial-element (initial-contents nil icp))
+  (declare (ignore initial-element))
+  (cond ((and (array-has-fill-pointer-p sequence)
+              (>= (array-total-size sequence) length))
+         (setf (fill-pointer sequence) length)
+         (if icp (replace sequence initial-contents) sequence))
+        ((= (length sequence) length)
+         (if icp (replace sequence initial-contents) sequence))
+        (t (apply #'adjust-array sequence length args))))
+
+(defmethod sequence:make-sequence-iterator
+    ((sequence vector) &key from-end start end)
+  (core::make-vector-iterator sequence from-end start end))
