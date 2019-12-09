@@ -467,7 +467,7 @@
   (declare (ignore initial-element initial-contents))
   (let* ((class (if (symbolp type) (find-class type) type))
          (proto (clos:class-prototype class)))
-    (apply #'sequence:make-sequence-like type size args)))
+    (apply #'sequence:make-sequence-like proto size args)))
 
 ;;; This is a convenience macro to define some protocol methods for sequences
 ;;; that can be dealt with most efficiently by iterating over them. CL:LIST is
