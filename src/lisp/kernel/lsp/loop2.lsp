@@ -2035,6 +2035,28 @@ collected result will be returned as the value of the LOOP."
 				 ,variable)
 	     (,next-fn)))
       ())))
+
+;;; Extension: for x being the elements of sequence
+(defun loop-sequence-iteration-path (variable data-type prep-phrases)
+  (let (of-phrase)
+    (loop for (prep . rest) in prep-phrases do
+          (ecase prep
+            ((:of :in) (if of-phrase
+                           (loop-error "Too many prepositions")
+                           (setq of-phrase rest)))))
+    (let ((it (gensym "ITER"))
+          (lim (gensym "LIMIT"))
+          (f-e (gensym "FROM-END"))
+          (step (gensym "STEP"))
+          (endp (gensym "ENDP"))
+          (elt (gensym "ELT"))
+          (seq (gensym "SEQ")))
+      (push `(let ((,seq ,(car of-phrase)))) *loop-wrappers*)
+      (push `(sequence:with-sequence-iterator (,it ,lim ,f-e ,step ,endp ,elt) (,seq))
+            *loop-wrappers*)
+      `(((,variable nil ,data-type)) () () nil (funcall ,endp ,seq ,it ,lim ,f-e)
+        (,variable (funcall ,elt ,seq ,it) ,it (funcall ,step ,seq ,it ,f-e))))))
+
 
 ;;;; ANSI Loop
 
@@ -2117,6 +2139,9 @@ collected result will be returned as the value of the LOOP."
 		   :preposition-groups '((:of :in))
 		   :inclusive-permitted nil
 		   :user-data '(:symbol-types (:internal :external)))
+    (add-loop-path '(element elements) 'loop-sequence-iteration-path w
+                   :preposition-groups '((:of :in))
+                   :inclusive-permitted nil)
     w))
 
 

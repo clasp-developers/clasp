@@ -135,6 +135,11 @@
     (make-package "C" :use '(:cl :core)))
 
 (eval-when (:execute :compile-toplevel :load-toplevel)
+  (if (find-package "SEQUENCE")
+      nil
+      (make-package "SEQUENCE" :use '())))
+
+(eval-when (:execute :compile-toplevel :load-toplevel)
   (if (find-package "LITERAL")
       nil
       (make-package "LITERAL" :use '(:cl :core))))

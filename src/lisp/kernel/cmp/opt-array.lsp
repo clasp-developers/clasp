@@ -82,3 +82,20 @@
                          `(core::fill-array-with-seq ,form ,initial-contents)
                          form))))))
       form))
+
+(define-compiler-macro sys:make-vector
+    (&whole form element-type dimension
+            &optional (adjustable nil ap) (fill-pointer nil fp)
+            (displaced-to nil dp) (displaced-index-offset 0 diop)
+            initial-element iesp
+            &environment env)
+  ;; FIXME: This should do better for constant NIL adjustable, etc.
+  ;; As is, we won't expand if initial-element is provided.
+  (if (and (constantp element-type env)
+           (not (or ap fp dp diop)))
+      (let ((make-sv (uaet-info (ext:constant-form-value element-type env))))
+        (if make-sv
+            `(,make-sv ,dimension ,initial-element ,iesp)
+            ;; unknown uaet, give up
+            form))
+      form))

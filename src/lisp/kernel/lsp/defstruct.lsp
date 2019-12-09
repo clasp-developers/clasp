@@ -302,23 +302,20 @@
                (incf index))))
       `(progn ,@(mapcan #'one slotds)))))
 
-(defmacro define-vector-struct (name conc-name type include slot-descriptions
+(defmacro define-vector-struct (name conc-name element-type include slot-descriptions
                                 overwriting-slot-descriptions name-offset
                                 constructors predicate copier
                                 &environment env)
-  (multiple-value-bind (element-type length success)
-      (closest-sequence-type type env)
-    (declare (ignore length))
-    (unless success (setf element-type t)) ; default
+  (let ((element-type (upgraded-array-element-type element-type env)))
     `(progn
        ,@(with-defstruct-delay (slotds name include
                                 slot-descriptions overwriting-slot-descriptions env)
            (let* ((included-size (if include (structure-size include) 0))
                   (name-offset (when name-offset (+ included-size name-offset))))
              `((eval-when (:compile-toplevel :load-toplevel :execute)
-               (setf (structure-type ',name) '(vector ,element-type)
-                     (structure-size ',name) ,(length slotds)
-                     (structure-slot-descriptions ',name) ',slotds))
+                 (setf (structure-type ',name) '(vector ,element-type)
+                       (structure-size ',name) ,(length slotds)
+                       (structure-slot-descriptions ',name) ',slotds))
                ,@(when predicate
                    `((defun ,predicate (object)
                        (and (typep object '(vector ,element-type))
@@ -327,7 +324,7 @@
                (define-vector-struct-constructors ,name ,element-type ,constructors ,slotds)
                (define-vector-struct-accessors ,name ,conc-name ,element-type ,slotds))))
        ,@(when copier
-             `((defun ,copier (instance) (copy-seq instance)))))))
+           `((defun ,copier (instance) (copy-seq instance)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -677,21 +674,29 @@ as a STRUCTURE doc and can be retrieved by (documentation 'NAME 'structure)."
     ;; to define values required by LOAD-TIME-VALUEs
     ;;
     `(progn
+       ;; NOTE about :type. CLHS says the structure :TYPE "must be one of"
+       ;; LIST, VECTOR, or (VECTOR element-type). Nothing about subtypes
+       ;; or expanding deftypes or whatever. We used to use SUBTYPEP here
+       ;; but this is simpler and apparently in line with the standard.
        ,(cond ((null type)
                `(define-class-struct ,name ,conc-name ,include ,slot-descriptions
                   ,overwriting-slot-descriptions ,print-function ,print-object
                   ,constructors ,predicate ,copier ,documentation))
-              ((subtypep type 'list env)
+              ((eq type 'list)
                `(define-list-struct ,name ,conc-name ,include ,slot-descriptions
                   ,overwriting-slot-descriptions ,name-offset
                   ,constructors ,predicate ,copier))
-              ((subtypep type 'vector env)
-               `(define-vector-struct ,name ,conc-name ,type ,include ,slot-descriptions
-                  ,overwriting-slot-descriptions ,name-offset
-                  ,constructors ,predicate ,copier))
               (t
-               (error "~a is not a valid :TYPE in structure definition for ~a"
-                      type name)))
+               (let ((element-type
+                       (cond ((eq type 'vector) 't)
+                             ((and (consp type) (null (cdr type)) (second type)))
+                             (t
+                              (error "~a is not a valid :TYPE in structure definition for ~a"
+                                     type name)))))
+                 `(define-vector-struct ,name ,conc-name ,element-type
+                    ,include ,slot-descriptions
+                    ,overwriting-slot-descriptions ,name-offset
+                    ,constructors ,predicate ,copier))))
        ,@(when (and documentation *keep-documentation*)
            `((set-documentation ',name 'structure ',documentation)))
        (setf (structure-constructor ',name) ',standard-constructor)

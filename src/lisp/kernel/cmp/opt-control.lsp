@@ -1,5 +1,17 @@
 (in-package #:cmp)
 
+(define-compiler-macro apply (&whole form function &rest arguments)
+  (if (null arguments)
+      form ; error, leave it to runtime
+      (let* ((fixed (butlast arguments)) (last (first (last arguments)))
+             (op (case (length fixed)
+                   ((0) 'core:apply0)
+                   ((1) 'core:apply1)
+                   ((2) 'core:apply2)
+                   ((3) 'core:apply3)
+                   (otherwise 'core:apply4))))
+        `(,op (core:coerce-fdesignator ,function) ,last ,@fixed))))
+
 (define-compiler-macro eql (&whole form x y &environment env)
   (if (constantp x env)
       (when (constantp y env)

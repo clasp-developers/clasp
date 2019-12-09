@@ -42,9 +42,12 @@
 	 :datum object))
 
 ;;; Given a type specifier, returns information about it in its capacity as a sequence.
-;;; Returns three values: An upgraded element type or 'list, a length or '*, and a boolean.
+;;; Returns three values: A "kind", a length or '*, and a boolean.
 ;;; The third value is T if the function could determine the first two.
-(defun closest-sequence-type (type &optional env)
+;;; A "kind" is either the symbol LIST, the symbol NIL,
+;;; a list (VECTOR symbol) where symbol is an upgraded array element type,
+;;; or a class (a user-defined sequence class).
+(defun sequence-type-maker-info (type &optional env)
   (let (elt-type length name args)
     (cond ((consp type)
 	   (setq name (first type) args (cdr type)))
@@ -53,33 +56,36 @@
 	  (t
 	   (setq name type args nil)))
     (case name
-      ((LIST)
-       ;; This is the only descriptor that does not match a real
-       ;; array type.
-       (values 'list '* t))
+      ((LIST) (values 'list '* t))
       ((VECTOR)
-       (values (if (endp args) 't (upgraded-array-element-type (first args) env))
+       (values (list 'vector
+                     (if (or (endp args) (eq (first args) '*))
+                         't
+                         (upgraded-array-element-type (first args) env)))
                (if (endp (rest args)) '* (second args))
                t))
-      ((SIMPLE-VECTOR) (values 't (if (endp args) '* (first args)) t))
+      ((SIMPLE-VECTOR) (values '(vector t) (if (endp args) '* (first args)) t))
       #-unicode
-      ((STRING SIMPLE-STRING) (values 'base-char (if (endp args) '* (first args)) t))
+      ((STRING SIMPLE-STRING)
+       (values '(vector base-char) (if (endp args) '* (first args)) t))
       #+(or unicode clasp)
       ((BASE-STRING SIMPLE-BASE-STRING)
-       (values 'base-char (if (endp args) '* (first args)) t))
+       (values '(vector base-char) (if (endp args) '* (first args)) t))
       #+(or unicode clasp)
-      ((STRING SIMPLE-STRING) (values 'character (if (endp args) '* (first args)) t))
+      ((STRING SIMPLE-STRING)
+       (values '(vector character) (if (endp args) '* (first args)) t))
       ((BIT-VECTOR SIMPLE-BIT-VECTOR)
-       (values 'bit (if (endp args) '* (first args)) t))
+       (values '(vector bit) (if (endp args) '* (first args)) t))
       ((ARRAY SIMPLE-ARRAY)
        ;; It's only a sequence if a rank is specified.
-       (unless (= (length args) 2) (values nil nil nil))
-       (let ((element-type (upgraded-array-element-type (first args)))
+       (let ((uaet (if (or (endp args) (eq (first args) '*))
+                       't
+                       (upgraded-array-element-type (first args) env)))
              (dimension-spec (second args)))
-         (cond ((eql dimension-spec 1) (values element-type '* t))
+         (cond ((eql dimension-spec 1) (values `(vector ,uaet) '* t))
                ((and (consp dimension-spec)
                      (null (cdr dimension-spec)))
-                (values element-type (car dimension-spec) t))
+                (values `(vector ,uaet) (car dimension-spec) t))
                (t (values nil nil nil)))))
       ((null) (values 'list 0 t))
       ;; This is pretty dumb, but we are required to signal a length mismatch
@@ -87,43 +93,49 @@
       ((cons)
        (if (and (consp args) (consp (cdr args))) ; we have (cons x y
            (multiple-value-bind (et len success)
-               (closest-sequence-type (second args) env)
+               (sequence-type-maker-info (second args) env)
              (cond ((or (not success) ; can't figure out what cdr is
                         (not (eq et 'list))) ; (a . #(...)) is not a sequence
                     (values nil nil nil))
                    ((eq len '*) (values 'list '* t))
                    (t (values 'list (1+ len) t))))
            (values 'list '* t)))
+      ((nil) (values nil '* t))
       (t
-       ;; We arrive here when the sequence type is not easy to parse.
-       ;; We give up trying to guess the length of the sequence.
-       ;; Furthermore, we also give up trying to find if the element
-       ;; type is *. Instead we just compare with some specialized
-       ;; types and otherwise fail.
-       (dolist (i '((NIL . NIL)
-                    (LIST . LIST)
-                    (STRING . CHARACTER)
-                    . #.(mapcar #'(lambda (i) `((VECTOR ,i) . ,i))
-                         sys::+upgraded-array-element-types+)) ;; clasp change
-                  (values nil nil nil))
-         (when (subtypep type (car i) env)
-           (return (values (cdr i) '* t))))))))
+       ;; Might have a weird to parse vector or list type,
+       ;; e.g. incorporating OR/AND/NOT.
+       ;; If we make it this far we give up on determining a length.
+       (dolist (i '(nil list
+                    . #.(mapcar #'(lambda (i) `(VECTOR ,i))
+                         sys::+upgraded-array-element-types+)))
+         (when (subtypep type i env)
+           (return-from sequence-type-maker-info (values i '* t))))
+       ;; Might be a user sequence type.
+       (when (symbolp type)
+         (let ((class (find-class type env)))
+           (when class (return-from sequence-type-maker-info
+                         (values class '* t)))))
+       ;; Dunno.
+       (values nil nil nil)))))
 
 (defun make-sequence (type size	&key (initial-element nil iesp))
   "Args: (type length &key initial-element)
 Creates and returns a sequence of the given TYPE and LENGTH.  If INITIAL-
 ELEMENT is given, then it becomes the elements of the created sequence.  The
 default value of INITIAL-ELEMENT depends on TYPE."
-  (if (and (integerp size)(>= size 0))
-  (multiple-value-bind (element-type length success)
-      (closest-sequence-type type)
-    (cond ((not success)
-           (if (subtypep type 'sequence)
-               (error "Could not determine element type in ~a" type)
-               (error-sequence-type type)))
-          ((eq element-type 'LIST)
-           (let ((result (make-list size :initial-element initial-element)))
-             (if (or (eq length '*) (eql length size))
+  (if (and (integerp size) (>= size 0))
+      (multiple-value-bind (kind length success)
+          (sequence-type-maker-info type)
+        (cond ((not success)
+               (if (subtypep type 'sequence)
+                   (error "Could not determine how to construct a sequence of type ~a"
+                          type)
+                   (error-sequence-type type)))
+              ((eq kind 'nil)
+               (error "Cannot construct sequence of bottom type (NIL)"))
+              ((eq kind 'LIST)
+               (let ((result (make-list size :initial-element initial-element)))
+                 (if (or (eq length '*) (eql length size))
                      ;;; ecl  tests instead for (or (and (subtypep type 'NULL) (plusp size))
                      ;;;                            (and (subtypep type 'CONS) (zerop size)))
                      (if (subtypep 'LIST type)
@@ -131,110 +143,200 @@ default value of INITIAL-ELEMENT depends on TYPE."
                          (if (and (subtypep type 'CONS) (zerop size))
                              (error-sequence-length result type 0)
                              result))
-                 (error-sequence-length result type size))))
-          (t
-           (let ((result (sys:make-vector (if (eq element-type '*) 't element-type)
-                                          size nil nil nil 0)))
-             ;; Don't know why we don't just pass make-vector the initial element.
-             (when iesp
-               (si::fill-array-with-elt result initial-element 0 nil))
-             (unless (or (eql length '*) (eql length size))
-               (error-sequence-length result type size))
-                 result))))
+                     (error-sequence-length result type size))))
+              ((consp kind) ; (vector uaet)
+               (let* ((uaet (second kind))
+                      (result (sys:make-vector uaet size)))
+                 ;; Don't know why we don't just pass make-vector the initial element.
+                 (when iesp
+                   (si::fill-array-with-elt result initial-element 0 nil))
+                 (unless (or (eql length '*) (eql length size))
+                   (error-sequence-length result type size))
+                 result))
+              ;; Must be a user sequence type.
+              (t
+               (if iesp
+                   (sequence:make-sequence kind size :initial-element initial-element)
+                   (sequence:make-sequence kind size)))))
       (error 'type-error :datum size :expected-type '(integer 0 *))))
 
-(defun make-seq-iterator (sequence &optional (start 0))
-  (declare (optimize (safety 0)))
-  (cond ((fixnump start)
-         (let ((aux start))
-           (declare (fixnum aux))
-           (cond ((minusp aux)
-                  (error-sequence-index sequence start))
-                 ((listp sequence)
-                  (nthcdr aux sequence))
-                 ((vectorp sequence)
-                  (and (< start (length (the vector sequence)))
-                       start))
-                 (t
-                  (error-not-a-sequence sequence)))))
-        ((not (or (listp sequence) (vectorp sequence)))
-         (error-not-a-sequence sequence))
-        ((integerp start)
-         nil)
+;;; Sequence iterators.
+
+;;; Magic terminator for list :from-end t
+(defvar *exhausted* (list nil))
+
+(defun list-iterator-next (seq it from-end)
+  (declare (ignore seq from-end)
+           (optimize (safety 0))
+           (type cons it))
+  (cdr it))
+(defun list-iterator-prev (seq it from-end)
+  (declare (ignore from-end)
+           (optimize (safety 0))
+           (type list seq it))
+  (if (eq it seq)
+      *exhausted*
+      (do ((cdr seq (cdr seq)))
+          ((eq (cdr cdr) it) cdr))))
+(defun list-iterator-endp (seq it limit from-end)
+  (declare (ignore seq from-end))
+  (eq it limit))
+(defun list-iterator-elt (seq it)
+  (declare (ignore seq)
+           (optimize (safety 0))
+           (type cons it))
+  (car it))
+(defun (setf list-iterator-elt) (new seq it)
+  (declare (ignore seq)
+           (optimize (safety 0))
+           (type cons it))
+  (rplaca it new)
+  new)
+(defun list-iterator-index (seq it)
+  (do ((i 0 (1+ i))
+       (cdr seq (cdr cdr)))
+      ((eq cdr it) i)))
+(defun list-iterator-copy (seq it)
+  (declare (ignore seq))
+  it)
+
+(defun make-simple-list-iterator (list from-end start end)
+  (cond (from-end
+         (let* ((termination
+                  (if (= start 0)
+                      *exhausted*
+                      (nthcdr (1- start) list)))
+                (init (if (<= (or end (length list)) start)
+                          termination
+                          (if end
+                              (last list (- (length list) (1- end)))
+                              (last list)))))
+           (values init termination t)))
+        ((not end) (values (nthcdr start list) nil nil))
+        (t (let ((st (nthcdr start list)))
+             (values st (nthcdr (- end start) st) nil)))))
+
+(defun make-list-iterator (list from-end start end)
+  (multiple-value-bind (iterator limit from-end)
+      (make-simple-list-iterator list from-end start end)
+    (values iterator limit from-end
+            (if from-end #'list-iterator-prev #'list-iterator-next)
+            #'list-iterator-endp
+            #'list-iterator-elt #'(setf list-iterator-elt)
+            #'list-iterator-index #'list-iterator-copy)))
+
+;;; the random-access-iterator- functions are also made
+;;; available through sequence:define-random-access-iterator,
+;;; defined in clos/sequences.lsp.
+(defun random-access-iterator-next (seq it from-end)
+  (declare (ignore seq from-end)
+           (optimize speed (safety 0))
+           (type fixnum it))
+  (1+ it))
+(defun random-access-iterator-prev (seq it from-end)
+  (declare (ignore seq from-end)
+           (optimize speed (safety 0))
+           (type fixnum it))
+  (1- it))
+(defun random-access-iterator-endp (seq it limit from-end)
+  (declare (ignore seq from-end)
+           (optimize speed (safety 0))
+           (type fixnum it limit))
+  (= it limit))
+(defun vec-iterator-elt (seq it)
+  (declare (optimize speed (safety 0)))
+  (aref (the vector seq) it))
+(defun (setf vec-iterator-elt) (new seq it)
+  (declare (optimize speed (safety 0)))
+  (setf (aref (the vector seq) it) new))
+(defun random-access-iterator-index (seq it)
+  (declare (ignore seq) (optimize speed (safety 0)))
+  it)
+(defun random-access-iterator-copy (seq it)
+  (declare (ignore seq) (optimize speed (safety 0)))
+  it)
+
+(defun make-vector-iterator (sequence from-end start end)
+  (let* ((end (or end (length sequence)))
+         (iterator (if from-end (1- end) start))
+         (limit (if from-end (1- start) end)))
+    (values iterator limit from-end
+            (if from-end
+                #'random-access-iterator-prev
+                #'random-access-iterator-next)
+            #'random-access-iterator-endp
+            #'vec-iterator-elt #'(setf vec-iterator-elt)
+            #'random-access-iterator-index
+            #'random-access-iterator-copy)))
+
+(defun %make-sequence-iterator (sequence from-end start end)
+  (cond ((listp sequence)
+         (make-list-iterator sequence from-end start end))
+        ((vectorp sequence)
+         (make-vector-iterator sequence from-end start end))
         (t
-         (error-sequence-index sequence start))))
+         (sequence:make-sequence-iterator
+          sequence :from-end from-end :start start :end end))))
 
-(defun seq-iterator-ref (sequence iterator)
-  (declare (optimize (safety 0)))
-  (if (si::fixnump iterator)
-      (aref (the vector sequence) iterator)
-      (car (the cons iterator))))
+;;; Given a list of sequences, return two lists of the same length:
+;;; one with irrelevant elements, and one with "iterators" for the sequences.
+;;; These "iterators" are single objects,
+;;; lists of (iterator limit step endp elt) as returned from
+;;; make-sequence-iterator.
+;;; Obviously this conses, and a fair bit.
+;;; FIXME: We could reduce the impact by special casing lists and vectors.
+;;; But it'll be uglier code and I'm hoping we can usually just avoid going
+;;; through do-sequence-list entirely.
+(defun lists-for-do-sequence-list (sequences)
+  (declare (optimize speed (safety 0)))
+  (let* ((elts-head (cons nil nil)) (elts-tail elts-head)
+         (its-head (cons nil nil)) (its-tail its-head))
+    (declare (type cons elts-head elts-tail)
+             (type cons its-head its-tail))
+    (dolist (seq sequences)
+      (let ((new-elts-tail (cons nil nil)))
+        (rplacd elts-tail new-elts-tail)
+        (setq elts-tail new-elts-tail))
+      (sequence:with-sequence-iterator
+          (it limit from-end step endp elt)
+          (seq)
+        (let* ((iterator (list it limit from-end step endp elt))
+               (new-its-tail (cons iterator nil)))
+          (rplacd its-tail new-its-tail)
+          (setq its-tail new-its-tail))))
+    (values (cdr elts-head) (cdr its-head))))
 
-(defun seq-iterator-set (sequence iterator value)
-  (declare (optimize (safety 0)))
-  (if (si::fixnump iterator)
-      (setf (aref (the vector sequence) iterator) value)
-      (setf (car (the cons iterator)) value)))
-
-(defun seq-iterator-next (sequence iterator)
-  (declare (optimize (safety 0)))
-  (cond ((fixnump iterator)
-         (let ((aux (1+ iterator)))
-           (declare (fixnum aux))
-           (and (< aux (length (the vector sequence)))
-                aux)))
-        ((atom iterator)
-         (error-not-a-sequence iterator))
-        (t
-         (setf iterator (cdr (the cons iterator)))
-         (unless (listp iterator)
-           (error-not-a-sequence iterator))
-         iterator)))
-
-(declaim (inline seq-iterator-endp))
-(defun seq-iterator-endp (sequence iterator)
-  (declare (ignore sequence))
-  (null iterator))
-
+;;; Given three lists of the same length, with elements:
+;;; 1) irrelevant 2) sequences 3) iterators
+;;; If any of the iterations are complete, return NIL.
+;;; Otherwise, mutate 1 to contain the current elements of the
+;;; iterations, mutate 3 to contain the next iterations,
+;;; and return true.
 (defun seq-iterator-list-pop (values-list seq-list iterator-list)
-  (declare (optimize (safety 0)))
-  ;; We don't use type declarations for the cons operations because
-  ;; the variables become NIL at various points.
-  (do* ((it-list iterator-list)
-        (v-list values-list))
-       ((null v-list)
-        values-list)
-    (let* ((it (cons-car it-list))
-           (sequence (cons-car seq-list)))
-      (cond ((seq-iterator-endp sequence it)
-             (return nil))
-            ((fixnump it)
-             (let* ((n it) (s sequence))
-               (declare (fixnum n) (vector s))
-               (rplaca (the cons v-list) (aref s n))
-               (rplaca (the cons it-list)
-                       (and (< (incf n) (length s)) n))))
-            ((atom it)
-             (error-not-a-sequence it))
-            (t
-             (rplaca (the cons v-list) (cons-car it))
-             (unless (listp (setf it (cons-cdr it)))
-               (error-not-a-sequence it))
-             (rplaca (the cons it-list) it)))
-      (setf v-list (cons-cdr v-list)
-            it-list (cons-cdr it-list)
-            seq-list (cons-cdr seq-list)))))
+  (declare (optimize speed (safety 0)))
+  (do ((v-list values-list (cdr v-list))
+       (s-list seq-list (cdr s-list))
+       (i-list iterator-list (cdr i-list)))
+      ((null v-list) t)
+    (let ((sequence (cons-car s-list))
+          (iterator (cons-car i-list)))
+      (destructuring-bind (it limit from-end step endp elt)
+          iterator
+        (declare (type function step endp elt))
+        (when (funcall endp sequence it limit from-end)
+          (return nil))
+        (rplaca (the cons v-list)
+                (funcall elt sequence it))
+        (let ((next-it (funcall step sequence it from-end)))
+          (rplaca (the cons iterator) next-it))))))
 
-;;; FIXME: This should be moved. But right now this file is the earliest
-;;; use. Also we don't have typecase yet.
-;;; This is different from coerce-to-function, which implements the behavior
-;;; of (coerce x 'function). If we get a lambda expression here, that's a
-;;; type error, not a command to implicitly evaluate it.
-(declaim (inline coerce-fdesignator))
-(defun coerce-fdesignator (object)
-  (cond ((functionp object) object)
-        ((symbolp object) (fdefinition object))
-        (t (error 'type-error :datum object :expected-type '(or symbol function)))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Some sequence functions
+;;;
+;;; Most of the nonstandard functions below are intended for compiler
+;;; macroexpansions from the standard functions. See cmp/opt-sequence.lsp.
+;;;
 
 (defun coerce-to-list (object)
   (if (listp object)
@@ -242,7 +344,7 @@ default value of INITIAL-ELEMENT depends on TYPE."
       (let* ((head (list nil)) (tail head))
         (declare (type cons head tail)
                  (optimize (safety 0) (speed 3)))
-        (dosequence (elt object (cdr head))
+        (sequence:dosequence (elt object (cdr head))
           (let ((new-tail (list elt)))
             (rplacd tail new-tail)
             (setq tail new-tail))))))
@@ -254,87 +356,107 @@ default value of INITIAL-ELEMENT depends on TYPE."
     (declare (type cons head tail)
              (optimize (safety 0) (speed 3)))
     (dovaslist (sequence sequences (cdr head))
-      (dosequence (elt sequence)
+      (sequence:dosequence (elt sequence)
         (let ((new-tail (list elt)))
           (rplacd tail new-tail)
           (setq tail new-tail))))))
 
-(defun concatenate-into-vector (vector core:&va-rest sequences)
+(defun concatenate-into-sequence (seq core:&va-rest sequences)
   ;; vector is assumed to be non complex and have the correct length.
-  (let ((index 0))
-    (dovaslist (sequence sequences vector)
-      (dosequence (elt sequence)
-        (setf (vref vector index) elt)
-        (incf index)))))
+  (reckless
+   (sequence:with-sequence-iterator (it limit from-end step nil nil setelt)
+       (seq)
+     (dovaslist (sequence sequences seq)
+       (sequence:dosequence (elt sequence)
+         (funcall setelt elt seq it)
+         (setq it (funcall step seq it from-end)))))))
 
 (defun concatenate (result-type &rest sequences)
-  (let* ((lengths-list (mapcar #'length sequences))
-         (result (make-sequence result-type (apply #'+ lengths-list))))
-    (if (listp result)
-        (let ((cons result))
-          (do* ((sequences sequences (rest sequences))
-                (sequence (first sequences) (first sequences)))
-               ((null sequences) result)
-            (dosequence (elt sequence)
-              (rplaca cons elt)
-              (setq cons (cdr cons)))))
-        (with-array-data ((vec result) index)
-          (do* ((sequences sequences (rest sequences))
-                (sequence (first sequences) (first sequences)))
-               ((null sequences) result)
-            (dosequence (elt sequence)
-              (setf (vref vec index) elt)
-              (incf index)))))))
+  (declare (dynamic-extent sequences))
+  ;; SUBTYPEP is slow, but if you're here you already failed to optimize.
+  ;; See compiler macro in cmp/opt-sequence.lsp.
+  (if (subtypep result-type 'list)
+      (apply #'concatenate-to-list sequences)
+      (let* ((lengths-list (mapcar #'length sequences))
+             (result (make-sequence result-type (apply #'+ lengths-list))))
+        (apply #'concatenate-into-sequence result sequences))))
 
-;;; This is not called anywhere yet (just used for a compiler macro)
-;;; but it might be useful to have.
-(defun map-for-effect (function sequence &rest more-sequences)
-  "Does (map nil ...)"
-  (let ((sequences (list* sequence more-sequences))
-        (function (coerce-fdesignator function))
-        it)
-    (do-sequences (elt-list sequences)
-      (apply function elt-list)))
+(defun map-for-effect (function &rest sequences)
+  "Does (map nil ...), but the function is already a function."
+  (declare (type function function))
+  (do-sequence-list (elt-list sequences)
+    (reckless (apply function elt-list)))
   nil)
+
+(defun map-for-effect/1 (function sequence)
+  "Does (map nil function sequence), but the function is already a function."
+  (sequence:dosequence (e sequence nil)
+    (reckless (funcall function e))))
 
 (defun map (result-type function sequence &rest more-sequences)
   "Args: (type function sequence &rest more-sequences)
 Creates and returns a sequence of TYPE with K elements, with the N-th element
 being the value of applying FUNCTION to the N-th elements of the given
 SEQUENCEs, where K is the minimum length of the given SEQUENCEs."
-  (let* ((sequences (list* sequence more-sequences))
-         (function (coerce-fdesignator function))
-         output
-         it)
-    (when result-type
-      (let ((l (length sequence)))
-        (when more-sequences
-          (setf l (reduce #'min more-sequences
-                          :initial-value l
-                          :key #'length)))
-        (setf output (make-sequence result-type l)
-              it (make-seq-iterator output))))
-    (do-sequences (elt-list sequences :output output)
-      (let ((value (apply function elt-list)))
-        (when result-type
-          (seq-iterator-set output it value)
-          (setf it (seq-iterator-next output it)))))))
+  (if result-type
+      ;; FIXME: Could use map-to-list and avoid reduce, if appropriate.
+      (let ((length
+              (reduce #'min more-sequences
+                      :initial-value (length sequence)
+                      :key #'length)))
+        (apply #'map-into (make-sequence result-type length)
+               function sequence more-sequences))
+      (apply #'map-for-effect function sequence more-sequences)))
+
+(defun map-to-list (function &rest sequences)
+  (declare (type function function))
+  (reckless
+   (let* ((head (cons nil nil)) (tail head))
+     (declare (type cons head tail))
+     (do-sequence-list (elt-list sequences (cdr head))
+       (let ((new (cons (apply function elt-list) nil)))
+         (rplacd tail new)
+         (setq tail new))))))
+
+(defun map-to-list/1 (function sequence)
+  (declare (type function function))
+  (reckless
+   (let* ((head (cons nil nil)) (tail head))
+     (declare (type cons head tail))
+     (sequence:dosequence (e sequence (cdr head))
+       (let ((new (cons (funcall function e) nil)))
+         (rplacd tail new)
+         (setq tail new))))))
 
 (defun some (predicate sequence &rest more-sequences)
   "Args: (predicate sequence &rest more-sequences)
 Returns T if at least one of the elements in SEQUENCEs satisfies PREDICATE;
 NIL otherwise."
   (reckless
-   (do-sequences (elt-list (cons sequence more-sequences) :output nil)
+   (do-sequence-list (elt-list (cons sequence more-sequences) nil)
      (let ((x (apply predicate elt-list)))
+       (when x (return x))))))
+
+(defun some/1 (predicate sequence)
+  (declare (type function predicate))
+  (reckless
+   (sequence:dosequence (e sequence nil)
+     (let ((x (funcall predicate e)))
        (when x (return x))))))
 
 (defun every (predicate sequence &rest more-sequences)
   "Args: (predicate sequence &rest more-sequences)
 Returns T if every elements of SEQUENCEs satisfy PREDICATE; NIL otherwise."
   (reckless
-   (do-sequences (elt-list (cons sequence more-sequences) :output t)
+   (do-sequence-list (elt-list (cons sequence more-sequences) t)
      (unless (apply predicate elt-list)
+       (return nil)))))
+
+(defun every/1 (predicate sequence)
+  (declare (type function predicate))
+  (reckless
+   (sequence:dosequence (e sequence t)
+     (unless (funcall predicate e)
        (return nil)))))
 
 (defun every* (predicate &rest sequences)
@@ -361,25 +483,54 @@ PREDICATE; NIL otherwise."
 elements of the given sequences. The i-th element of RESULT-SEQUENCE is the output
 of applying FUNCTION to the i-th element of each of the sequences. The map routine
 stops when it reaches the end of one of the given sequences."
-  (let ((nel (apply #'min (if (vectorp result-sequence)
-			      (array-dimension result-sequence 0)
-			      (length result-sequence))
-		    (mapcar #'length sequences))))
-    (declare (fixnum nel))
-    ;; Set the fill pointer to the number of iterations
-    (when (and (vectorp result-sequence)
-	       (array-has-fill-pointer-p result-sequence))
-      (setf (fill-pointer result-sequence) nel))
-    ;; Perform mapping
-    (do ((ir (make-seq-iterator result-sequence) (seq-iterator-next result-sequence ir))
-         (it (mapcar #'make-seq-iterator sequences))
-         (val (make-sequence 'list (length sequences))))
-        ((seq-iterator-endp result-sequence ir) result-sequence)
-      (do ((i it (cdr i))
-	   (v val (cdr v))
-           (s sequences (cdr s)))
-	  ((null i))
-	(unless (car i) (return-from map-into result-sequence))
-	(rplaca v (seq-iterator-ref (car s) (car i)))
-	(rplaca i (seq-iterator-next (car s) (car i))))
-      (seq-iterator-set result-sequence ir (apply function val)))))
+  ;; Set the fill pointer to the number of iterations
+  ;; NOTE: We have to do this beforehand, barring more cleverness, because the
+  ;; sequence iterator for the output uses LENGTH (i.e. the fill pointer if there
+  ;; is one) to decide when to stop, and we have to ignore the fill pointer when
+  ;; computing the number of iterations.
+  (when (and (vectorp result-sequence)
+             (array-has-fill-pointer-p result-sequence))
+    (setf (fill-pointer result-sequence)
+          (reduce #'min sequences
+                  :initial-value (if (vectorp result-sequence)
+                                     (array-dimension result-sequence 0)
+                                     (length result-sequence))
+                  :key #'length)))
+  ;; Perform mapping
+  (let ((function (coerce-fdesignator function)))
+    (declare (type function function) (optimize (safety 0) (speed 3)))
+    (sequence:with-sequence-iterator (out-it out-limit out-fe
+                                             out-step out-endp nil out-set)
+        (result-sequence)
+      (do-sequence-list (elt-list sequences result-sequence)
+        (when (funcall out-endp result-sequence out-it out-limit out-fe)
+          (return-from map-into result-sequence))
+        (funcall out-set (apply function elt-list) result-sequence out-it)
+        (setf out-it (funcall out-step result-sequence out-it out-fe))))))
+
+;;; This is like MAP-INTO with the following specialization:
+;;; 1) FUNCTION is actually a function.
+;;; 2) If RESULT is a vector,
+;;;     we don't need to worry about setting its fill pointer.
+;;; 3) RESULT is at least as long as the shortest input sequence.
+(defun map-into-sequence (result-sequence function &rest sequences)
+  (declare (type function function))
+  (reckless
+    (sequence:with-sequence-iterator (out-it out-limit out-fe
+                                             out-step nil nil out-set)
+        (result-sequence)
+      (do-sequence-list (elt-list sequences result-sequence)
+        (funcall out-set (apply function elt-list) result-sequence out-it)
+        (setf out-it (funcall out-step result-sequence out-it out-fe)))))
+  result-sequence)
+
+(defun map-into-sequence/1 (result-sequence function sequence)
+  (declare (type function function))
+  (reckless
+    (sequence:with-sequence-iterator (out-it out-limit out-fe
+                                             out-step nil nil out-set)
+        (result-sequence)
+      (sequence:dosequence (e sequence)
+        (funcall out-set (funcall function e) result-sequence out-it)
+        (setf out-it (funcall out-step result-sequence out-it out-fe)))))
+  result-sequence)

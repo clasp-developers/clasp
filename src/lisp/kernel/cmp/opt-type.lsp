@@ -444,26 +444,25 @@
                          (if (= (length tail) 0)
                              `(the t ,obj)
                              (aux obj tail))))
-                      (t ; a sequence type, we figure
-                       (multiple-value-bind (uaet length validp)
-                           (closest-sequence-type type env)
-                         (cond
-                           (validp
-                            (if (eq uaet 'list)
-                                (da `(coerce-to-list ,obj))
-                                (da `(make-array (length ,obj)
-                                                 :element-type ',uaet
-                                                 :initial-contents ,obj))))
-                           (t ; Dunno what's going on. Punt to runtime.
-                            ;; COERCE is actually defined for any type, provided
-                            ;; that type exists: if the object is of the given
-                            ;; type, it is returned, and otherwise a type-error
-                            ;; is signaled. Nonetheless, if we reach here with a
-                            ;; constant type, it's either undefined or does not
-                            ;; have a coercion defined (e.g. INTEGER), which would
-                            ;; be a weird thing to do. So we signal a style-warning.
-                            ;; FIXME: We should differentiate "not defined" and
-                            ;; "no coercion behavior", though.
-                            (cmp:warn-cannot-coerce nil type)
-                            (return-from coerce form)))))))))))
+                      (t
+                       ;; Might be a sequence type.
+                       (cond
+                         ((subtypep type 'list env)
+                          `(coerce-to-list ,obj))
+                         ((subtypep type 'sequence env)
+                          `(replace (make-sequence ',type (length ,obj)) ,obj))
+                         (t ; Dunno what's going on. Punt to runtime.
+                          ;; COERCE is actually defined for any type, provided
+                          ;; that type exists: if the object is of the given
+                          ;; type, it is returned, and otherwise a type-error
+                          ;; is signaled. Nonetheless, if we reach here with a
+                          ;; constant type, it's either undefined or does not
+                          ;; have a coercion defined (e.g. INTEGER), which would
+                          ;; be a weird thing to do. So we signal a style-warning.
+                          ;; FIXME: We should differentiate "not defined" and
+                          ;; "no coercion behavior", though.
+                          ;; And maybe "can't figure it out at compile time but
+                          ;; will at runtime".
+                          (cmp:warn-cannot-coerce nil type)
+                          (return-from coerce form))))))))))
       form))
