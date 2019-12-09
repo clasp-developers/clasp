@@ -38,4 +38,9 @@ namespace seqext {
 SYMBOL_EXPORT_SC_(SequencePkg, elt);
 SYMBOL_EXPORT_SC_(SequencePkg, length);
 
+SYMBOL_EXPORT_SC_(SequencePkg, copy_seq);
+SYMBOL_EXPORT_SC_(SequencePkg, subseq);
+SYMBOL_EXPORT_SC_(SequencePkg, reverse);
+SYMBOL_EXPORT_SC_(SequencePkg, nreverse);
+
 };
