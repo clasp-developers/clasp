@@ -2039,11 +2039,13 @@ collected result will be returned as the value of the LOOP."
 ;;; Extension: for x being the elements of sequence
 (defun loop-sequence-iteration-path (variable data-type prep-phrases)
   (let (of-phrase)
-    (loop for (prep . rest) in prep-phrases do
-          (ecase prep
-            ((:of :in) (if of-phrase
-                           (loop-error "Too many prepositions")
-                           (setq of-phrase rest)))))
+    (dolist (prep-phrase prep-phrases)
+      (let ((prep (car prep-phrase)) (rest (cdr prep-phrase)))
+        (ecase prep
+          ((:of :in)
+           (if of-phrase
+               (loop-error "Too many prepositions")
+               (setq of-phrase rest))))))
     (let ((it (gensym "ITER"))
           (lim (gensym "LIMIT"))
           (f-e (gensym "FROM-END"))
