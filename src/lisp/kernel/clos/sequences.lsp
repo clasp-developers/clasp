@@ -592,20 +592,18 @@
                    (sequence:adjust-sequence sequence (- (length sequence) c))))
             (declare (dynamic-extent #'finish))
             (do ((end (or end (length sequence)))
-                 (step 0 (1+ step)))
+                 (s 0 (1+ s)))
                 ((funcall endp sequence state2 limit from-end) (finish))
               (let ((e (funcall elt sequence state2)))
                 (loop
-                  ;; FIXME: replace with POSITION once position is
-                  ;; working
-                  (if (> (count (key e) sequence
-                                :test test :key key
-                                :start (if from-end start (+ start step 1))
-                                :end (if from-end (- end step 1) end))
-                      0)
+                  ;; Does the element exist in the previous sequence?
+                  (if (position (key e) sequence
+                                :test test :test-not test-not :key key
+                                :start (if from-end start (+ start s 1))
+                                :end (if from-end (- end s 1) end))
                       (progn
                         (incf c)
-                        (incf step)
+                        (incf s)
                         (setq state2 (funcall step sequence state2 from-end))
                         (when (funcall endp sequence state2 limit from-end)
                           (return-from sequence:delete-duplicates (finish)))
