@@ -154,7 +154,10 @@ default value of INITIAL-ELEMENT depends on TYPE."
                    (error-sequence-length result type size))
                  result))
               ;; Must be a user sequence type.
-              (t (sequence:make-sequence kind size :initial-element initial-element))))
+              (t
+               (if iesp
+                   (sequence:make-sequence kind size :initial-element initial-element)
+                   (sequence:make-sequence kind size)))))
       (error 'type-error :datum size :expected-type '(integer 0 *))))
 
 ;;; Sequence iterators.
