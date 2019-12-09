@@ -79,6 +79,7 @@
 (defmethod sequence:iterator-step ((sequence sequence) iterator from-end)
   (if from-end (1- iterator) (1+ iterator)))
 (defmethod sequence:iterator-endp ((sequence sequence) iterator limit from-end)
+  (declare (ignore from-end))
   (= iterator limit))
 (defmethod sequence:iterator-element ((sequence sequence) iterator)
   (sequence:elt sequence iterator))
@@ -127,7 +128,7 @@
     (core::with-tests (test test-not key)
       (core::do-general-subsequence (e sequence start end
                                        :from-end from-end :output counter)
-        (when (compare item (key e)) (incf counter))))))
+        (when (core::compare item (key e)) (incf counter))))))
 
 (defgeneric sequence:count-if (pred sequence &key from-end start end key)
   (:argument-precedence-order sequence pred))
@@ -152,10 +153,10 @@
 (defgeneric sequence:find
     (item sequence &key from-end start end test test-not key))
 (defmethod sequence:find
-    (pred (sequence sequence) &key from-end (start 0) end key)
+    (item (sequence sequence) &key from-end (start 0) end test test-not key)
   (core::with-tests (test test-not key)
     (core::do-general-subsequence (e sequence start end :from-end from-end)
-      (when (compare item (key elt)) (return elt)))))
+      (when (core::compare item (key e)) (return e)))))
 
 (defgeneric sequence:find-if (pred sequence &key from-end start end key)
   (:argument-precedence-order sequence pred))
@@ -165,7 +166,7 @@
     (core::with-key (key)
       (core::do-general-subsequence (e sequence start end
                                        :from-end from-end)
-        (when (funcall pred (key elt)) (return elt))))))
+        (when (funcall pred (key e)) (return e))))))
 
 (defgeneric sequence:find-if-not (pred sequence &key from-end start end key)
   (:argument-precedence-order sequence pred))
@@ -175,7 +176,7 @@
     (core::with-key (key)
       (core::do-general-subsequence (e sequence start end
                                        :from-end from-end)
-        (unless (funcall pred (key elt)) (return elt))))))
+        (unless (funcall pred (key e)) (return e))))))
 
 (defgeneric sequence:position
     (item sequence &key test test-not from-end (start 0) end key))
@@ -184,7 +185,7 @@
   (core::with-tests (test test-not key)
     (core::do-general-subsequence (elt sequence start end
                                        :from-end from-end :index index)
-      (when (compare item (key elt)) (return index)))))
+      (when (core::compare item (key elt)) (return index)))))
 
 (defgeneric sequence:position-if
     (pred sequence &key from-end (start 0) end key))
@@ -230,8 +231,7 @@
 
 (defgeneric sequence:fill (sequence item &key start end))
 (defmethod sequence:fill ((sequence sequence) item &key (start 0) end)
-  (core::do-general-subsequence (nil sequence start end
-                                     :from-end from-end :setter setelt)
+  (core::do-general-subsequence (nil sequence start end :setter setelt)
     (setelt item))
   sequence)
 
@@ -246,7 +246,7 @@
       (core::do-general-subsequence (e sequence :from-end from-end
                                                 :setter setelt)
         (when (and count (>= c count)) (return))
-        (when (compare old (key e)) (incf c) (setelt new)))))
+        (when (core::compare old (key e)) (incf c) (setelt new)))))
   sequence)
 
 (defgeneric sequence:nsubstitute-if
@@ -262,7 +262,7 @@
         (when (funcall pred (key e)) (incf c) (setelt new)))))
   sequence)
 
-(defgeneric sequence:nsubstitute-if=mpt
+(defgeneric sequence:nsubstitute-if-not
     (new pred sequence &key start end from-end count key)
   (:argument-precedence-order sequence new pred))
 (defmethod sequence:nsubstitute-if-not (new pred (sequence sequence)
@@ -399,7 +399,7 @@
                 ((or e1 e2) (if (and e1 e2) nil result))
               (let ((o1 (key (funcall elt1 sequence1 state1)))
                     (o2 (key (funcall elt2 sequence2 state2))))
-                (unless (compare o1 o2) (return result))
+                (unless (core::compare o1 o2) (return result))
                 (setq state1 (funcall step1 sequence1 state1 from-end1))
                 (setq state2 (funcall step2 sequence2 state2 from-end2))))
             (do ((result start1 (1+ result))
@@ -410,7 +410,7 @@
                 ((or e1 e2) (if (and e1 e2) nil result))
               (let ((o1 (key (funcall elt1 sequence1 state1)))
                     (o2 (key (funcall elt2 sequence2 state2))))
-                (unless (compare o1 o2) (return result)))
+                (unless (core::compare o1 o2) (return result)))
               (setq state1 (funcall step1 sequence1 state1 from-end1))
               (setq state2 (funcall step2 sequence2 state2 from-end2))))))))
 
@@ -423,7 +423,7 @@
                         sequence2 start2 (or end2 (length sequence2))
                         test test-not key from-end))
 
-(defgeneric sort (sequence predicate &key key))
+(defgeneric sequence:sort (sequence predicate &key key))
 ;;; The SEQEUENCE paper says, in the section on relationships between the
 ;;; generic functions in this package,
 ;;; "the default method on SORT behaves as if it constructs a vector with the
@@ -443,7 +443,8 @@
     (core::quick-sort sequence 0 (1- (length sequence))
                       (core:coerce-fdesignator predicate) key)))
 
-(defgeneric sequence:stable-sort ((sequence sequence) predicate &key key)
+(defgeneric sequence:stable-sort (sequence predicate &key key))
+(defmethod sequence:stable-sort ((sequence sequence) predicate &key key)
   ;; FIXME: lazy. REPLACE will do checks it doesn't need to, etc.
   (core::with-key (key)
     (replace sequence (stable-sort (coerce sequence 'vector)
@@ -507,7 +508,7 @@
             (error "index ~d out of bounds" index))
          (when (= i index)
            (,set it new)
-           (returnnew))))))
+           (return new))))))
 
 ;;; This is a convenience macro to define some protocol methods for sequences
 ;;; that can efficiently be "like vectors": i.e. random-access and length are
@@ -545,7 +546,7 @@
           (if from-end
               #'core::random-access-iterator-prev
               #'core::random-access-iterator-next)
-          #'core::random-access-endp
+          #'core::random-access-iterator-endp
           elt setelt
           #'core::random-access-iterator-index
           #'core::random-access-iterator-copy))

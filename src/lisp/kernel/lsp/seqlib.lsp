@@ -621,7 +621,7 @@ Returns a copy of SEQUENCE without duplicated elements."
                                      start end from-end
                                      test test-not key)
            v))
-        (t (apply #'sequence:remove-duplicaates sequence args))))
+        (t (apply #'sequence:remove-duplicates sequence args))))
 
 (defun delete-duplicates-list (sequence start end from-end test test-not key)
   (with-tests (test test-not key)

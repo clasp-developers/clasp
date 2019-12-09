@@ -363,12 +363,13 @@ default value of INITIAL-ELEMENT depends on TYPE."
   (reckless
    (sequence:with-sequence-iterator (it limit from-end step nil nil setelt)
        (seq)
-     (dovaslist (sequence sequences vector)
+     (dovaslist (sequence sequences seq)
        (sequence:dosequence (elt sequence)
          (funcall setelt elt seq it)
-         (setq it (funcall step elt seq it from-end)))))))
+         (setq it (funcall step seq it from-end)))))))
 
-(defun concatenate (result-type core:&va-rest sequences)
+(defun concatenate (result-type &rest sequences)
+  (declare (dynamic-extent sequences))
   ;; SUBTYPEP is slow, but if you're here you already failed to optimize.
   ;; See compiler macro in cmp/opt-sequence.lsp.
   (if (subtypep result-type 'list)

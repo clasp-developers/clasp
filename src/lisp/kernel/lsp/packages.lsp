@@ -103,8 +103,9 @@
                with-simple-sequence-iterator
                ;; clasp extensions
                make-sequence
-               define-random-access-iterator
+               define-random-access-sequence
                make-random-access-iterator
+               define-iterative-sequence
                ))
   (core:select-package "CORE"))
 
