@@ -423,6 +423,206 @@
                         sequence2 start2 (or end2 (length sequence2))
                         test test-not key from-end))
 
+(defgeneric sequence:delete (item sequence
+                             &key from-end test test-not start end count key))
+(defmethod sequence:delete (item (sequence sequence)
+                            &key from-end (start 0) end
+                              test test-not count key)
+  (core::with-tests (test test-not key)
+    (let ((c 0))
+      (sequence:with-sequence-iterator
+          (state1 limit from-end step endp elt setelt nil copy)
+          (sequence :start start :end end :from-end from-end)
+        (let ((state2 (funcall copy sequence state1)))
+          (flet ((finish ()
+                   (if from-end
+                       (replace sequence sequence
+                                :start1 start :end1 (- (length sequence) c)
+                                :start2 (+ start c) :end2 (length sequence))
+                       (unless (or (null end) (= end (length sequence)))
+                         (replace sequence sequence
+                                  :start2 end :start1 (- end c)
+                                  :end1 (- (length sequence) c))))
+                   (sequence:adjust-sequence sequence (- (length sequence) c))))
+            (declare (dynamic-extent #'finish))
+            (do ()
+                ((funcall endp sequence state2 limit from-end) (finish))
+              (let ((e (funcall elt sequence state2)))
+                (loop
+                  (when (and count (>= c count))
+                    (return))
+                  (if (core::compare item (key e))
+                      (progn
+                        (incf c)
+                        (setq state2 (funcall step sequence state2 from-end))
+                        (when (funcall endp sequence state2 limit from-end)
+                          (return-from sequence:delete (finish)))
+                        (setq e (funcall elt sequence state2)))
+                      (return)))
+                (funcall setelt e sequence state1))
+              (setq state1 (funcall step sequence state1 from-end))
+              (setq state2 (funcall step sequence state2 from-end)))))))))
+
+(defgeneric sequence:delete-if (predicate sequence
+                                &key start end from-end count key))
+(defmethod sequence:delete-if (predicate (sequence sequence)
+                               &key (start 0) end from-end count key)
+  (core::with-key (key)
+    (let ((c 0)
+          (predicate (core:coerce-fdesignator predicate)))
+      (sequence:with-sequence-iterator
+          (state1 limit from-end step endp elt setelt nil copy)
+          (sequence :start start :end end :from-end from-end)
+        (let ((state2 (funcall copy sequence state1)))
+          (flet ((finish ()
+                   (if from-end
+                       (replace sequence sequence
+                                :start1 start :end1 (- (length sequence) c)
+                                :start2 (+ start c) :end2 (length sequence))
+                       (unless (or (null end) (= end (length sequence)))
+                         (replace sequence sequence
+                                  :start2 end :start1 (- end c)
+                                  :end1 (- (length sequence) c))))
+                   (sequence:adjust-sequence sequence (- (length sequence) c))))
+            (declare (dynamic-extent #'finish))
+            (do ()
+                ((funcall endp sequence state2 limit from-end) (finish))
+              (let ((e (funcall elt sequence state2)))
+                (loop
+                  (when (and count (>= c count))
+                    (return))
+                  (if (funcall predicate (key e))
+                      (progn
+                        (incf c)
+                        (setq state2 (funcall step sequence state2 from-end))
+                        (when (funcall endp sequence state2 limit from-end)
+                          (return-from sequence:delete-if (finish)))
+                        (setq e (funcall elt sequence state2)))
+                      (return)))
+                (funcall setelt e sequence state1))
+              (setq state1 (funcall step sequence state1 from-end))
+              (setq state2 (funcall step sequence state2 from-end)))))))))
+
+(defgeneric sequence:delete-if-not (predicate sequence
+                                    &key start end from-end count key))
+(defmethod sequence:delete-if-not (predicate (sequence sequence)
+                                   &key (start 0) end from-end count key)
+  (core::with-key (key)
+    (let ((c 0)
+          (predicate (core:coerce-fdesignator predicate)))
+      (sequence:with-sequence-iterator
+          (state1 limit from-end step endp elt setelt nil copy)
+          (sequence :start start :end end :from-end from-end)
+        (let ((state2 (funcall copy sequence state1)))
+          (flet ((finish ()
+                   (if from-end
+                       (replace sequence sequence
+                                :start1 start :end1 (- (length sequence) c)
+                                :start2 (+ start c) :end2 (length sequence))
+                       (unless (or (null end) (= end (length sequence)))
+                         (replace sequence sequence
+                                  :start2 end :start1 (- end c)
+                                  :end1 (- (length sequence) c))))
+                   (sequence:adjust-sequence sequence (- (length sequence) c))))
+            (declare (dynamic-extent #'finish))
+            (do ()
+                ((funcall endp sequence state2 limit from-end) (finish))
+              (let ((e (funcall elt sequence state2)))
+                (loop
+                  (when (and count (>= c count))
+                    (return))
+                  (if (funcall predicate (key e))
+                      (progn
+                        (incf c)
+                        (setq state2 (funcall step sequence state2 from-end))
+                        (when (funcall endp sequence state2 limit from-end)
+                          (return-from sequence:delete-if-not (finish)))
+                        (setq e (funcall elt sequence state2)))
+                      (return)))
+                (funcall setelt e sequence state1))
+              (setq state1 (funcall step sequence state1 from-end))
+              (setq state2 (funcall step sequence state2 from-end)))))))))
+
+(defgeneric sequence:remove
+    (item sequence &key from-end test test-not start end count key)
+  (:argument-precedence-order sequence item))
+(defmethod sequence:remove (item (sequence sequence) &rest args &key
+                            from-end test test-not (start 0) end count key)
+  (declare (dynamic-extent args))
+  (declare (ignore from-end test test-not start end count key))
+  (apply #'sequence:delete item (copy-seq sequence) args))
+
+(defgeneric sequence:remove-if
+    (predicate sequence &key from-end start end count key)
+  (:argument-precedence-order sequence predicate))
+(defmethod sequence:remove-if (predicate (sequence sequence) &rest args &key
+                               from-end (start 0) end count key)
+  (declare (dynamic-extent args))
+  (declare (ignore from-end start end count key))
+  (apply #'sequence:delete-if predicate (copy-seq sequence) args))
+
+(defgeneric sequence:remove-if-not
+    (predicate sequence &key from-end start end count key)
+  (:argument-precedence-order sequence predicate))
+(defmethod sequence:remove-if-not (predicate (sequence sequence) &rest args
+                                   &key from-end (start 0) end count key)
+  (declare (dynamic-extent args))
+  (declare (ignore from-end start end count key))
+  (apply #'sequence:delete-if-not predicate (copy-seq sequence) args))
+
+(defgeneric sequence:delete-duplicates
+    (sequence &key from-end test test-not start end key))
+(defmethod sequence:delete-duplicates
+    ((sequence sequence) &key from-end test test-not (start 0) end key)
+  (core::with-tests (test test-not key)
+    (let ((c 0))
+      (sequence:with-sequence-iterator
+          (state1 limit from-end step endp elt setelt nil copy)
+          (sequence :start start :end end :from-end from-end)
+        (let ((state2 (funcall copy sequence state1)))
+          (flet ((finish ()
+                   (if from-end
+                       (replace sequence sequence
+                                :start1 start :end1 (- (length sequence) c)
+                                :start2 (+ start c) :end2 (length sequence))
+                       (unless (or (null end) (= end (length sequence)))
+                         (replace sequence sequence
+                                  :start2 end :start1 (- end c)
+                                  :end1 (- (length sequence) c))))
+                   (sequence:adjust-sequence sequence (- (length sequence) c))))
+            (declare (dynamic-extent #'finish))
+            (do ((end (or end (length sequence)))
+                 (step 0 (1+ step)))
+                ((funcall endp sequence state2 limit from-end) (finish))
+              (let ((e (funcall elt sequence state2)))
+                (loop
+                  ;; FIXME: replace with POSITION once position is
+                  ;; working
+                  (if (> (count (key e) sequence
+                                :test test :key key
+                                :start (if from-end start (+ start step 1))
+                                :end (if from-end (- end step 1) end))
+                      0)
+                      (progn
+                        (incf c)
+                        (incf step)
+                        (setq state2 (funcall step sequence state2 from-end))
+                        (when (funcall endp sequence state2 limit from-end)
+                          (return-from sequence:delete-duplicates (finish)))
+                        (setq e (funcall elt sequence state2)))
+                      (return)))
+                (funcall setelt e sequence state1))
+              (setq state1 (funcall step sequence state1 from-end))
+              (setq state2 (funcall step sequence state2 from-end)))))))))
+
+(defgeneric sequence:remove-duplicates
+    (sequence &key from-end test test-not start end key))
+(defmethod sequence:remove-duplicates
+    ((sequence sequence) &rest args &key from-end test test-not (start 0) end key)
+  (declare (dynamic-extent args))
+  (declare (ignore from-end test test-not start end key))
+  (apply #'sequence:delete-duplicates (copy-seq sequence) args))
+
 (defgeneric sequence:sort (sequence predicate &key key))
 ;;; The SEQEUENCE paper says, in the section on relationships between the
 ;;; generic functions in this package,
