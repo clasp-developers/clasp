@@ -221,7 +221,7 @@
              (,sequence :start ,start :end ,end :from-end ,from-end)
            (do (,@(when indexp `((,index ,start (1+ ,index))))
                 (,%it ,%it (funcall ,%step ,sequence ,%it ,%from-end)))
-               ((funcall ,%endp ,sequence ,%it ,%limit) ,output)
+               ((funcall ,%endp ,sequence ,%it ,%limit ,%from-end) ,output)
              ,@(when indexp `((declare (fixnum ,index))))
              (let (,@(when elt `((,elt (funcall ,%elt ,sequence ,%it)))))
                ,@body)))))))
