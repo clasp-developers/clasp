@@ -631,43 +631,53 @@ if not possible."
   (when (typep object type)
     ;; Just return as it is.
     (return-from coerce object))
-  (setq type (expand-deftype type))
-  (cond ((atom type)
-	 (case type
-	   ((T) object)
-	   (LIST (coerce-to-list object))
-	   ((CHARACTER BASE-CHAR) (character object))
-	   (FLOAT (float object))
-	   (SINGLE-FLOAT (float object 0.0F0))
-	   #+short-float(SHORT-FLOAT (float object 0.0S0))
-	   (DOUBLE-FLOAT (float object 0.0D0))
-	   #+long-float(LONG-FLOAT (float object 0.0L0))
-	   (COMPLEX (complex (realpart object) (imagpart object)))
-	   (FUNCTION (coerce-to-function object))
-	   ((VECTOR SIMPLE-VECTOR #+unicode SIMPLE-BASE-STRING SIMPLE-STRING #+unicode BASE-STRING STRING BIT-VECTOR SIMPLE-BIT-VECTOR)
-	    (concatenate type object))
-	   (t
-	    (if (or (listp object) #+(and ecl (not clasp))(vector object) #+clasp(vectorp object))
-		(concatenate type object)
-		(error-coerce object type)))))
-	((eq (setq aux (first type)) 'COMPLEX)
-	 (if type
-	     (complex (coerce (realpart object) (second type))
-		      (coerce (imagpart object) (second type)))
-	     (complex (realpart object) (imagpart object))))
-	((member aux '(SINGLE-FLOAT SHORT-FLOAT DOUBLE-FLOAT LONG-FLOAT FLOAT))
-	 (setq aux (coerce object aux))
-	 (unless (typep aux type)
-	   (error-coerce object type))
-	 aux)
-	((eq aux 'AND)
-	 (dolist (type (rest type))
-	   (setq aux (coerce aux type)))
-	 (unless (typep aux type)
-	   (error-coerce object type))
-	 aux)
-        ((typep object 'sequence) (concatenate type object))
-	(t (error-coerce object type))))
+  ;; We use the original type for error messages, and for concatenate,
+  ;; the latter because we have weird cases like STRING. STRING means
+  ;; (vector character) in this context, rather than its actual expansion,
+  ;; which includes multiple element types (base-char and character on clasp)
+  ;; This means deftypes will be expanded more than once, which is inefficient,
+  ;; but any function that takes a type specifier is always going to be kind of
+  ;; inefficient, and we have a coerce compiler macro later to avoid it.
+  (let ((expanded (expand-deftype type)))
+    (cond ((atom expanded)
+           (case expanded
+             ((T) object)
+             (LIST (coerce-to-list object))
+             ((CHARACTER BASE-CHAR) (character object))
+             (FLOAT (float object))
+             (SINGLE-FLOAT (float object 0.0F0))
+             #+short-float(SHORT-FLOAT (float object 0.0S0))
+             (DOUBLE-FLOAT (float object 0.0D0))
+             #+long-float(LONG-FLOAT (float object 0.0L0))
+             (COMPLEX (complex (realpart object) (imagpart object)))
+             (FUNCTION (coerce-to-function object))
+             ((VECTOR SIMPLE-VECTOR #+unicode SIMPLE-BASE-STRING
+               SIMPLE-STRING #+unicode BASE-STRING
+               STRING BIT-VECTOR SIMPLE-BIT-VECTOR)
+              (concatenate type object))
+             (t
+              (if (typep object 'sequence)
+                  (concatenate type object)
+                  (error-coerce object type)))))
+          ((eq (setq aux (first expanded)) 'COMPLEX)
+           (if (rest expanded)
+               (complex (coerce (realpart object) (second expanded))
+                        (coerce (imagpart object) (second expanded)))
+               (complex (realpart object) (imagpart object))))
+          ((member aux '(SINGLE-FLOAT SHORT-FLOAT
+                         DOUBLE-FLOAT LONG-FLOAT FLOAT))
+           (setq aux (coerce object aux))
+           (unless (typep aux type)
+             (error-coerce object type))
+           aux)
+          ((eq aux 'AND)
+           (dolist (type (rest expanded))
+             (setq aux (coerce aux type)))
+           (unless (typep aux type)
+             (error-coerce object type))
+           aux)
+          ((typep object 'sequence) (concatenate type object))
+          (t (error-coerce object type)))))
 
 ;;************************************************************
 ;;			SUBTYPEP
