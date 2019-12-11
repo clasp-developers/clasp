@@ -120,8 +120,13 @@
                                                  (equal (second (second ,whole)) ',macro-name))
                                             (cddr (the cons ,whole))
                                             (cdr (the cons ,whole)))
-                                       ;; defmacro or deftype
-                                       `(cdr (the cons ,whole)))))
+                                       ;; deftype- allow bare symbols- symbol = (symbol)
+                                       (if (eq context 'deftype)
+                                           `(if (symbolp ,whole)
+                                                nil
+                                                (cdr (the cons ,whole)))
+                                           ;; defmacro
+                                           `(cdr (the cons ,whole))))))
 		 (dolist (v (cdr reqs))
 		   (dm-v v `(progn
 			      (if (null ,pointer)
@@ -304,4 +309,8 @@
   (declare (ignore env)) ; also for now
   (sys::expand-defmacro name lambda-list body 'cl:define-compiler-macro))
 
-(export '(parse-macro parse-compiler-macro)) ; FIXME MOVE
+(defun parse-deftype (name lambda-list body &optional env)
+  (declare (ignore env))
+  (sys::expand-defmacro name lambda-list body 'cl:deftype))
+
+(export '(parse-macro parse-compiler-macro parse-deftype)) ; FIXME MOVE

@@ -934,7 +934,10 @@ bool parse_lambda_list(List_sp original_lambda_list,
   throw_if_invalid_context(context);
   T_sp defaultDefault;
   // fix the default for &optional and &key that don't have a default specified
-  if (context == cl::_sym_deftype) defaultDefault = cl::_sym__TIMES_;
+  if (context == cl::_sym_deftype)
+    // Could stuff this list somewhere ahead of time to save a little consing,
+    // but if we're here we're parsing deftype so whatever.
+    defaultDefault = Cons_O::createList(cl::_sym_quote, cl::_sym__TIMES_);
   else defaultDefault = _Nil<T_O>();
   List_sp arguments = cl__copy_list(original_lambda_list);
   LOG(BF("Argument handling mode starts in (required) - interpreting: %s") % _rep_(arguments));

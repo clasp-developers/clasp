@@ -242,14 +242,14 @@ when this is t a lot of graphs will be generated.")
   (macroexpand symbol nil))
 
 (defun type-expand-1 (type-specifier)
-  (let (head tail)
+  (let (head)
     (etypecase type-specifier
       (class (return-from type-expand-1 (values type-specifier nil)))
-      (symbol (setf head type-specifier tail nil))
-      (cons (setf head (first type-specifier) tail (rest type-specifier))))
+      (symbol (setf head type-specifier))
+      (cons (setf head (first type-specifier))))
     (let ((def (ext:type-expander head)))
       (if def
-          (values (apply def tail) t)
+          (values (funcall def type-specifier nil) t)
           (values type-specifier nil)))))
 
 (defmethod cleavir-env:type-expand ((environment clasp-global-environment) type-specifier)

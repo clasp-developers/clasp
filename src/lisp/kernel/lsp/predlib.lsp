@@ -72,28 +72,10 @@ type specifier.  When the symbol NAME is used as a type specifier, the
 expansion function is called with no argument.
 The doc-string DOC, if supplied, is saved as a TYPE doc and can be retrieved
 by (documentation 'NAME 'type)."
-  ;; First fix the optional/key defaults to be 'cl:*
-  (setq lambda-list (copy-list lambda-list))
-  (dolist (x '(&optional &key))
-    (do ((l (rest (member x lambda-list)) (rest l)))
-        ((null l))
-      (let ((variable (first l)))
-        (when (and (symbolp variable)
-                   (not (member variable lambda-list-keywords)))
-          (rplaca l `(,variable '*))))))
-  (multiple-value-bind (decls body doc)
-      (process-declarations body t)
-    ;; FIXME: Use FORMAT to produce a default docstring. Maybe.
-    `(eval-when (:compile-toplevel :load-toplevel :execute)
-       ,@(si::expand-set-documentation name 'type doc)
-       (funcall #'(setf ext:type-expander)
-                #'(lambda ,lambda-list
-                    (declare (core:lambda-name ,name) ,@decls)
-                    ,@(when doc (list doc))
-                    (block ,name ,@body))
-                ',name)
-       ',name)))
-
+  `(eval-when (:compile-toplevel :load-toplevel :execute)
+     (funcall #'(setf ext:type-expander)
+              ,(ext:parse-deftype name lambda-list body env)
+              ',name)))
 
 ;;; Some DEFTYPE definitions.
 
@@ -556,7 +538,7 @@ Returns T if X belongs to TYPE; NIL otherwise."
     (t
      (cond
            ((ext:type-expander tp)
-            (typep object (apply (ext:type-expander tp) i)))
+            (typep object (funcall (ext:type-expander tp) type env)))
 	   ((consp i)
 	    (error-type-specifier type))
 	   ((setq c (find-class type nil))
@@ -576,7 +558,7 @@ Returns T if X belongs to TYPE; NIL otherwise."
   ;; Loops until the car of type has no DEFTYPE definition.
   (cond ((symbolp type)
 	 (if (setq fd (ext:type-expander type))
-             (normalize-type (funcall fd))
+             (normalize-type (funcall fd type nil))
              (values type nil)))
 	#+clos
 	((clos::classp type) (values type nil))
@@ -585,7 +567,7 @@ Returns T if X belongs to TYPE; NIL otherwise."
 	((progn
 	   (setq tp (car type) i (cdr type))
 	   (setq fd (ext:type-expander tp)))
-	 (normalize-type (apply fd i)))
+	 (normalize-type (funcall fd type nil)))
 	((and (eq tp 'INTEGER) (consp (cadr i)))
 	 (values tp (list (car i) (1- (caadr i)))))
 	(t (values tp i))))
@@ -594,13 +576,13 @@ Returns T if X belongs to TYPE; NIL otherwise."
   (cond ((symbolp type)
 	 (let ((fd (ext:type-expander type)))
 	   (if fd
-	       (expand-deftype (funcall fd))
+	       (expand-deftype (funcall fd type nil))
 	       type)))
 	((and (consp type)
 	      (symbolp (first type)))
 	 (let ((fd (ext:type-expander (first type))))
 	   (if fd
-	       (expand-deftype (apply fd (rest type)))
+	       (expand-deftype (funcall fd type nil))
 	       type)))
 	(t type)))
 
@@ -1325,7 +1307,7 @@ if not possible."
         ((symbolp type)
 	 (let ((expander (ext:type-expander type)))
 	   (cond (expander
-		  (canonical-type (funcall expander)))
+		  (canonical-type (funcall expander type nil)))
 		 ((find-built-in-tag type))
 		 (t (let ((class (find-class type nil)))
 		      (if class
@@ -1368,7 +1350,7 @@ if not possible."
 	   (FUNCTION (canonical-type 'FUNCTION))
 	   (t (let ((expander (ext:type-expander (first type))))
 		(if expander
-		    (canonical-type (apply expander (rest type)))
+		    (canonical-type (funcall expander type nil))
 		    (unless (assoc (first type) *elementary-types*)
 		      (throw '+canonical-type-failure+ nil)))))))
 	((clos::classp type)
