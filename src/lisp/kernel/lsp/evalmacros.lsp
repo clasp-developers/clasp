@@ -37,7 +37,7 @@ last FORM.  If not, simply returns NIL."
   (multiple-value-bind (decls body)
       (find-declarations body)
     (multiple-value-bind (whole dl arg-check ignorables)
-        (destructure vl nil)
+        (destructure vl 'destructuring-bind)
       `(let* ((,whole ,list) ,@dl)
 	 (declare (ignorable ,@ignorables))
          ,@decls
