@@ -241,7 +241,7 @@ when this is t a lot of graphs will be generated.")
 (defmethod cleavir-environment:symbol-macro-expansion (symbol (environment NULL))
   (macroexpand symbol nil))
 
-(defun type-expand-1 (type-specifier)
+(defun type-expand-1 (type-specifier &optional env)
   (let (head)
     (etypecase type-specifier
       (class (return-from type-expand-1 (values type-specifier nil)))
@@ -249,13 +249,13 @@ when this is t a lot of graphs will be generated.")
       (cons (setf head (first type-specifier))))
     (let ((def (ext:type-expander head)))
       (if def
-          (values (funcall def type-specifier nil) t)
+          (values (funcall def type-specifier env) t)
           (values type-specifier nil)))))
 
 (defmethod cleavir-env:type-expand ((environment clasp-global-environment) type-specifier)
   (loop with ever-expanded = nil
         do (multiple-value-bind (expansion expanded)
-               (type-expand-1 type-specifier)
+               (type-expand-1 type-specifier environment)
              (if expanded
                  (setf ever-expanded t type-specifier expansion)
                  (return (values type-specifier ever-expanded))))))

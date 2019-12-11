@@ -417,7 +417,7 @@
                ,obj
                ,(flet ((da (form) `(the (values ,type &rest nil) ,form)))
                   (multiple-value-bind (head tail)
-                      (normalize-type type)
+                      (normalize-type type env)
                     (case head
                       ((t) (da obj))
                       ((character base-char) (da `(character ,obj)))

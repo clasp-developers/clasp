@@ -554,11 +554,11 @@ Returns T if X belongs to TYPE; NIL otherwise."
 ;; The result is a pair of values
 ;;  VALUE-1 = normalized type name or object
 ;;  VALUE-2 = normalized type arguments or nil
-(defun normalize-type (type &aux tp i fd)
+(defun normalize-type (type &optional env &aux tp i fd)
   ;; Loops until the car of type has no DEFTYPE definition.
   (cond ((symbolp type)
 	 (if (setq fd (ext:type-expander type))
-             (normalize-type (funcall fd type nil))
+             (normalize-type (funcall fd type env))
              (values type nil)))
 	#+clos
 	((clos::classp type) (values type nil))
@@ -567,24 +567,10 @@ Returns T if X belongs to TYPE; NIL otherwise."
 	((progn
 	   (setq tp (car type) i (cdr type))
 	   (setq fd (ext:type-expander tp)))
-	 (normalize-type (funcall fd type nil)))
+	 (normalize-type (funcall fd type env)))
 	((and (eq tp 'INTEGER) (consp (cadr i)))
 	 (values tp (list (car i) (1- (caadr i)))))
 	(t (values tp i))))
-
-(defun expand-deftype (type)
-  (cond ((symbolp type)
-	 (let ((fd (ext:type-expander type)))
-	   (if fd
-	       (expand-deftype (funcall fd type nil))
-	       type)))
-	((and (consp type)
-	      (symbolp (first type)))
-	 (let ((fd (ext:type-expander (first type))))
-	   (if fd
-	       (expand-deftype (funcall fd type nil))
-	       type)))
-	(t type)))
 
 ;;************************************************************
 ;;			COERCE
@@ -620,46 +606,30 @@ if not possible."
   ;; This means deftypes will be expanded more than once, which is inefficient,
   ;; but any function that takes a type specifier is always going to be kind of
   ;; inefficient, and we have a coerce compiler macro later to avoid it.
-  (let ((expanded (expand-deftype type)))
-    (cond ((atom expanded)
-           (case expanded
-             ((T) object)
-             (LIST (coerce-to-list object))
-             ((CHARACTER BASE-CHAR) (character object))
-             (FLOAT (float object))
-             (SINGLE-FLOAT (float object 0.0F0))
-             #+short-float(SHORT-FLOAT (float object 0.0S0))
-             (DOUBLE-FLOAT (float object 0.0D0))
-             #+long-float(LONG-FLOAT (float object 0.0L0))
-             (COMPLEX (complex (realpart object) (imagpart object)))
-             (FUNCTION (coerce-to-function object))
-             ((VECTOR SIMPLE-VECTOR #+unicode SIMPLE-BASE-STRING
-               SIMPLE-STRING #+unicode BASE-STRING
-               STRING BIT-VECTOR SIMPLE-BIT-VECTOR)
-              (concatenate type object))
-             (t
-              (if (typep object 'sequence)
-                  (concatenate type object)
-                  (error-coerce object type)))))
-          ((eq (setq aux (first expanded)) 'COMPLEX)
-           (if (rest expanded)
-               (complex (coerce (realpart object) (second expanded))
-                        (coerce (imagpart object) (second expanded)))
-               (complex (realpart object) (imagpart object))))
-          ((member aux '(SINGLE-FLOAT SHORT-FLOAT
-                         DOUBLE-FLOAT LONG-FLOAT FLOAT))
-           (setq aux (coerce object aux))
-           (unless (typep aux type)
-             (error-coerce object type))
-           aux)
-          ((eq aux 'AND)
-           (dolist (type (rest expanded))
-             (setq aux (coerce aux type)))
-           (unless (typep aux type)
-             (error-coerce object type))
-           aux)
-          ((typep object 'sequence) (concatenate type object))
-          (t (error-coerce object type)))))
+  (multiple-value-bind (head tail)
+      (normalize-type type)
+    (case head
+      ((t) object)
+      ((character base-char) (character object))
+      ((float) (float object))
+      ((short-float) (float object 0.0s0))
+      ((single-float) (float object 0.0f0))
+      ((double-float) (float object 0.0d0))
+      ((long-float) (float 0.0l0))
+      ((function) (coerce-to-function object))
+      ((complex)
+       (destructuring-bind (&optional (realt t) (imagt t))
+           tail
+         (complex (coerce (realpart object) realt)
+                  (coerce (imagpart object) imagt))))
+      ((and) ; clasp extension
+       (dolist (type tail)
+         (setq aux (coerce object type)))
+       (unless (typep aux type)
+         (error-coerce object type)))
+      (t (if (typep object 'sequence)
+             (concatenate type object)
+             (error-coerce object type))))))
 
 ;;************************************************************
 ;;			SUBTYPEP
