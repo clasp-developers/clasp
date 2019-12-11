@@ -333,30 +333,40 @@ bool clasp_charEqual2(T_sp x, T_sp y) {
   return false;
 }
 
-CL_LAMBDA(core:&va-rest args);
+// FIXME: redundant with the above
+CL_LAMBDA(char1 char2);
+CL_DECLARE();
+CL_DOCSTRING("Two-arg char-equal");
+CL_DEFUN bool core__two_arg_char_equal(Character_sp x, Character_sp y) {
+  claspCharacter cx = claspCharacter_upcase(x.unsafe_character());
+  claspCharacter cy = claspCharacter_upcase(y.unsafe_character());
+  return cx == cy;
+}
+
+CL_LAMBDA(core:&va-rest chars);
 CL_DECLARE();
 CL_DOCSTRING("EQ_");
-CL_DEFUN T_sp cl__char_equal(VaList_sp args) {
-  switch (args->remaining_nargs()) {
+CL_DEFUN T_sp cl__char_equal(VaList_sp chars) {
+  switch (chars->remaining_nargs()) {
   case 0:
       PROGRAM_ERROR();
   case 1: {
-    gc::As<Character_sp>(args->next_arg());
+    gc::As<Character_sp>(chars->next_arg());
     return _lisp->_true();
   }
   case 2: {
-    claspCharacter a = clasp_as_claspCharacter(gc::As<Character_sp>(args->next_arg()));
+    claspCharacter a = clasp_as_claspCharacter(gc::As<Character_sp>(chars->next_arg()));
     a = claspCharacter_upcase(a);
-    claspCharacter b = clasp_as_claspCharacter(gc::As<Character_sp>(args->next_arg()));
+    claspCharacter b = clasp_as_claspCharacter(gc::As<Character_sp>(chars->next_arg()));
     b = claspCharacter_upcase(b);
     if (a == b) return _lisp->_true();
     return _Nil<T_O>();
   }
   default: {
-    claspCharacter a = clasp_as_claspCharacter(gc::As<Character_sp>(args->next_arg()));
+    claspCharacter a = clasp_as_claspCharacter(gc::As<Character_sp>(chars->next_arg()));
     a = claspCharacter_upcase(a);
-    while (args->remaining_nargs()) {
-      claspCharacter b = clasp_as_claspCharacter(gc::As<Character_sp>(args->next_arg()));
+    while (chars->remaining_nargs()) {
+      claspCharacter b = clasp_as_claspCharacter(gc::As<Character_sp>(chars->next_arg()));
       b = claspCharacter_upcase(b);
       if (a!=b) {
         return ((_Nil<T_O>()));
