@@ -152,17 +152,15 @@ bool character_comparison(int s, int t, Character_sp x, Character_sp y,
   return !(dir < t);
 }
 
-bool monotonic(int s, int t, List_sp args, bool preserve_case = true) {
-  Character_sp x = gc::As<Character_sp>(oCar(args));
+bool monotonic(int s, int t, VaList_sp args, bool preserve_case = true) {
+  Character_sp x = gc::As<Character_sp>(args->next_arg());
   Character_sp y;
-  args = oCdr(args);
-  while (args.notnilp()) {
-    y = gc::As<Character_sp>(oCar(args));
+  while (args->remaining_nargs() != 0) {
+    y = gc::As<Character_sp>(args->next_arg());
     // If we find a false comparison we exit immediately.
     if (!(character_comparison(s, t, x, y, preserve_case)))
       return false;
     x = y;
-    args = oCdr(args);
   }
   return true;
 };
@@ -174,13 +172,12 @@ CL_DEFUN bool core__two_arg_char_LT_(Character_sp char1, Character_sp char2) {
   return character_comparison(-1, 1, char1, char2);
 }
 
-CL_LAMBDA(&rest args);
+CL_LAMBDA(core:&va-rest args);
 CL_DECLARE();
 CL_DOCSTRING("Return true if characters are monotonically increasing");
-CL_DEFUN bool cl__char_LT_(List_sp args) {
-  if (args.nilp())
-      PROGRAM_ERROR();
-  return monotonic(-1, 1, args);
+CL_DEFUN bool cl__char_LT_(VaList_sp args) {
+  if (args->remaining_nargs() == 0) PROGRAM_ERROR();
+  else return monotonic(-1, 1, args);
 };
 
 CL_LAMBDA(char1 char2);
@@ -190,13 +187,12 @@ CL_DEFUN bool core__two_arg_char_GT_(Character_sp char1, Character_sp char2) {
   return character_comparison(1, 1, char1, char2);
 }
 
-CL_LAMBDA(&rest args);
+CL_LAMBDA(core:&va-rest args);
 CL_DECLARE();
 CL_DOCSTRING("Return true if characters are monotonically decreasing");
-CL_DEFUN bool cl__char_GT_(List_sp args) {
-  if (args.nilp())
-      PROGRAM_ERROR();
-  return monotonic(1, 1, args);
+CL_DEFUN bool cl__char_GT_(VaList_sp args) {
+  if (args->remaining_nargs() == 0) PROGRAM_ERROR();
+  else return monotonic(1, 1, args);
 };
 
 CL_LAMBDA(char1 char2);
@@ -206,13 +202,12 @@ CL_DEFUN bool core__two_arg_char_LE_(Character_sp char1, Character_sp char2) {
   return character_comparison(-1, 0, char1, char2);
 }
 
-CL_LAMBDA(&rest args);
+CL_LAMBDA(core:&va-rest args);
 CL_DECLARE();
 CL_DOCSTRING("Return true if characters are monotonically non-decreasing");
-CL_DEFUN bool cl__char_LE_(List_sp args) {
-  if (args.nilp())
-      PROGRAM_ERROR();
-  return monotonic(-1, 0, args);
+CL_DEFUN bool cl__char_LE_(VaList_sp args) {
+  if (args->remaining_nargs() == 0) PROGRAM_ERROR();
+  else return monotonic(-1, 0, args);
 };
 
 CL_LAMBDA(char1 char2);
@@ -222,13 +217,12 @@ CL_DEFUN bool core__two_arg_char_GE_(Character_sp char1, Character_sp char2) {
   return character_comparison(1, 0, char1, char2);
 }
 
-CL_LAMBDA(&rest args);
+CL_LAMBDA(core:&va-rest args);
 CL_DECLARE();
 CL_DOCSTRING("Return true if characters are monotonically non-increasing");
-CL_DEFUN bool cl__char_GE_(List_sp args) {
-  if (args.nilp())
-      PROGRAM_ERROR();
-  return monotonic(1, 0, args);
+CL_DEFUN bool cl__char_GE_(VaList_sp args) {
+  if (args->remaining_nargs() == 0) PROGRAM_ERROR();
+  else return monotonic(1, 0, args);
 };
 
 CL_LAMBDA(char1 char2);
@@ -238,13 +232,12 @@ CL_DEFUN bool core__two_arg_char_lessp(Character_sp char1, Character_sp char2) {
   return character_comparison(-1, 1, char1, char2, false);
 }
 
-CL_LAMBDA(&rest args);
+CL_LAMBDA(core:&va-rest args);
 CL_DECLARE();
 CL_DOCSTRING("Return true if characters are monotonically increasing, ignore case");
-CL_DEFUN bool cl__char_lessp(List_sp args) {
-  if (args.nilp())
-      PROGRAM_ERROR();
-  return monotonic(-1, 1, args, false);
+CL_DEFUN bool cl__char_lessp(VaList_sp args) {
+  if (args->remaining_nargs() == 0) PROGRAM_ERROR();
+  else return monotonic(-1, 1, args, false);
 };
 
 CL_LAMBDA(char1 char2);
@@ -254,13 +247,12 @@ CL_DEFUN bool core__two_arg_char_greaterp(Character_sp char1, Character_sp char2
   return character_comparison(1, 1, char1, char2, false);
 }
 
-CL_LAMBDA(&rest args);
+CL_LAMBDA(core:&va-rest args);
 CL_DECLARE();
 CL_DOCSTRING("Return true if characters are monotonically decreasing, ignore case");
-CL_DEFUN bool cl__char_greaterp(List_sp args) {
-  if (args.nilp())
-      PROGRAM_ERROR();
-  return monotonic(1, 1, args, false);
+CL_DEFUN bool cl__char_greaterp(VaList_sp args) {
+  if (args->remaining_nargs() == 0) PROGRAM_ERROR();
+  else return monotonic(1, 1, args, false);
 };
 
 CL_LAMBDA(char1 char2);
@@ -270,13 +262,12 @@ CL_DEFUN bool core__two_arg_char_not_greaterp(Character_sp char1, Character_sp c
   return character_comparison(-1, 0, char1, char2, false);
 }
 
-CL_LAMBDA(&rest args);
+CL_LAMBDA(core:&va-rest args);
 CL_DECLARE();
 CL_DOCSTRING("Return true if characters are monotonically non-increasing, ignore case");
-CL_DEFUN bool cl__char_not_greaterp(List_sp args) {
-  if (args.nilp())
-      PROGRAM_ERROR();
-  return monotonic(-1, 0, args, false);
+CL_DEFUN bool cl__char_not_greaterp(VaList_sp args) {
+  if (args->remaining_nargs() == 0) PROGRAM_ERROR();
+  else return monotonic(-1, 0, args, false);
 };
 
 CL_LAMBDA(char1 char2);
@@ -286,13 +277,12 @@ CL_DEFUN bool core__two_arg_char_not_lessp(Character_sp char1, Character_sp char
   return character_comparison(1, 0, char1, char2, false);
 }
 
-CL_LAMBDA(&rest args);
+CL_LAMBDA(core:&va-rest args);
 CL_DECLARE();
 CL_DOCSTRING("Return true if characters are monotonically non-decreasing, ignore case");
-CL_DEFUN bool cl__char_not_lessp(List_sp args) {
-  if (args.nilp())
-      PROGRAM_ERROR();
-  return monotonic(1, 0, args, false);
+CL_DEFUN bool cl__char_not_lessp(VaList_sp args) {
+  if (args->remaining_nargs() == 0) PROGRAM_ERROR();
+  else return monotonic(1, 0, args, false);
 };
 
 CL_LAMBDA(core:&va-rest args);
