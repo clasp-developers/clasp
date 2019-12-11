@@ -51,35 +51,6 @@ void handleWideCharactersError(claspCharacter cc)
   SIMPLE_ERROR(BF("A wide character with the value %d was encountered in a function that needed a base-char") % cc);
 }
 
-/*! Return -1 if a<b
-      0 if a == b
-      +1 if a > b
-    */
-inline int claspCharacter_basic_compare(claspCharacter na, claspCharacter nb) {
-  if (na < nb)
-    return -1;
-  if (na == nb)
-    return 0;
-  return 1;
-}
-
-T_sp monotonic(int s, int t, List_sp args, bool preserve_case = true) {
-  claspCharacter c = clasp_as_claspCharacter(gc::As<Character_sp>(oCar(args)));
-  if (!preserve_case) c = claspCharacter_upcase(c);
-  claspCharacter d;
-  int dir;
-  args = oCdr(args);
-  while (args.notnilp()) {
-    d = clasp_as_claspCharacter(gc::As<Character_sp>(oCar(args)));
-    if (!preserve_case) d = claspCharacter_upcase(d);
-    dir = s * claspCharacter_basic_compare(c, d);
-    if (dir < t) return _Nil<T_O>();
-    c = d;
-    args = oCdr(args);
-  }
-  return _lisp->_true();
-};
-
 CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("CLHS: graphic-char-p");
@@ -156,76 +127,172 @@ CL_DEFUN Character_sp cl__char_downcase(Character_sp ch) {
   return clasp_make_character(claspCharacter_downcase(clasp_as_claspCharacter(ch)));
 };
 
+/*! Return -1 if a<b
+      0 if a == b
+      +1 if a > b
+    */
+inline int claspCharacter_basic_compare(claspCharacter na, claspCharacter nb) {
+  if (na < nb)
+    return -1;
+  if (na == nb)
+    return 0;
+  return 1;
+}
+
+// Do <=, <, whatever, based on s and t and the above.
+bool character_comparison(int s, int t, Character_sp x, Character_sp y,
+                          bool preserve_case = true) {
+  claspCharacter cx = clasp_as_claspCharacter(x);
+  claspCharacter cy = clasp_as_claspCharacter(y);
+  if (!preserve_case) {
+    cx = claspCharacter_upcase(cx);
+    cy = claspCharacter_upcase(cy);
+  }
+  int dir = s * claspCharacter_basic_compare(cx, cy);
+  return !(dir < t);
+}
+
+bool monotonic(int s, int t, List_sp args, bool preserve_case = true) {
+  Character_sp x = gc::As<Character_sp>(oCar(args));
+  Character_sp y;
+  args = oCdr(args);
+  while (args.notnilp()) {
+    y = gc::As<Character_sp>(oCar(args));
+    // If we find a false comparison we exit immediately.
+    if (!(character_comparison(s, t, x, y, preserve_case)))
+      return false;
+    x = y;
+    args = oCdr(args);
+  }
+  return true;
+};
+
+CL_LAMBDA(char1 char2);
+CL_DECLARE();
+CL_DOCSTRING("two-arg char<");
+CL_DEFUN bool core__two_arg_char_LT_(Character_sp char1, Character_sp char2) {
+  return character_comparison(-1, 1, char1, char2);
+}
+
 CL_LAMBDA(&rest args);
 CL_DECLARE();
 CL_DOCSTRING("Return true if characters are monotonically increasing");
-CL_DEFUN T_sp cl__char_LT_(List_sp args) {
+CL_DEFUN bool cl__char_LT_(List_sp args) {
   if (args.nilp())
       PROGRAM_ERROR();
-  return ((monotonic(-1, 1, args)));
+  return monotonic(-1, 1, args);
 };
+
+CL_LAMBDA(char1 char2);
+CL_DECLARE();
+CL_DOCSTRING("two-arg char>");
+CL_DEFUN bool core__two_arg_char_GT_(Character_sp char1, Character_sp char2) {
+  return character_comparison(1, 1, char1, char2);
+}
 
 CL_LAMBDA(&rest args);
 CL_DECLARE();
 CL_DOCSTRING("Return true if characters are monotonically decreasing");
-CL_DEFUN T_sp cl__char_GT_(List_sp args) {
+CL_DEFUN bool cl__char_GT_(List_sp args) {
   if (args.nilp())
       PROGRAM_ERROR();
-  return ((monotonic(1, 1, args)));
+  return monotonic(1, 1, args);
 };
+
+CL_LAMBDA(char1 char2);
+CL_DECLARE();
+CL_DOCSTRING("two-arg char<=");
+CL_DEFUN bool core__two_arg_char_LE_(Character_sp char1, Character_sp char2) {
+  return character_comparison(-1, 0, char1, char2);
+}
 
 CL_LAMBDA(&rest args);
 CL_DECLARE();
 CL_DOCSTRING("Return true if characters are monotonically non-decreasing");
-CL_DEFUN T_sp cl__char_LE_(List_sp args) {
+CL_DEFUN bool cl__char_LE_(List_sp args) {
   if (args.nilp())
       PROGRAM_ERROR();
-  return (Values(monotonic(-1, 0, args)));
+  return monotonic(-1, 0, args);
 };
+
+CL_LAMBDA(char1 char2);
+CL_DECLARE();
+CL_DOCSTRING("two-arg char>=");
+CL_DEFUN bool core__two_arg_char_GE_(Character_sp char1, Character_sp char2) {
+  return character_comparison(1, 0, char1, char2);
+}
 
 CL_LAMBDA(&rest args);
 CL_DECLARE();
 CL_DOCSTRING("Return true if characters are monotonically non-increasing");
-CL_DEFUN T_mv cl__char_GE_(List_sp args) {
+CL_DEFUN bool cl__char_GE_(List_sp args) {
   if (args.nilp())
       PROGRAM_ERROR();
-  return (Values(monotonic(1, 0, args)));
+  return monotonic(1, 0, args);
 };
+
+CL_LAMBDA(char1 char2);
+CL_DECLARE();
+CL_DOCSTRING("two-arg char-lessp");
+CL_DEFUN bool core__two_arg_char_lessp(Character_sp char1, Character_sp char2) {
+  return character_comparison(-1, 1, char1, char2, false);
+}
 
 CL_LAMBDA(&rest args);
 CL_DECLARE();
 CL_DOCSTRING("Return true if characters are monotonically increasing, ignore case");
-CL_DEFUN T_mv cl__char_lessp(List_sp args) {
+CL_DEFUN bool cl__char_lessp(List_sp args) {
   if (args.nilp())
       PROGRAM_ERROR();
-  return (Values(monotonic(-1, 1, args, false)));
+  return monotonic(-1, 1, args, false);
 };
+
+CL_LAMBDA(char1 char2);
+CL_DECLARE();
+CL_DOCSTRING("two-arg char-greaterp");
+CL_DEFUN bool core__two_arg_char_greaterp(Character_sp char1, Character_sp char2) {
+  return character_comparison(1, 1, char1, char2, false);
+}
 
 CL_LAMBDA(&rest args);
 CL_DECLARE();
 CL_DOCSTRING("Return true if characters are monotonically decreasing, ignore case");
-CL_DEFUN T_mv cl__char_greaterp(List_sp args) {
+CL_DEFUN bool cl__char_greaterp(List_sp args) {
   if (args.nilp())
       PROGRAM_ERROR();
-  return (Values(monotonic(1, 1, args, false)));
+  return monotonic(1, 1, args, false);
 };
+
+CL_LAMBDA(char1 char2);
+CL_DECLARE();
+CL_DOCSTRING("two-arg char-not-greaterp");
+CL_DEFUN bool core__two_arg_char_not_greaterp(Character_sp char1, Character_sp char2) {
+  return character_comparison(-1, 0, char1, char2, false);
+}
 
 CL_LAMBDA(&rest args);
 CL_DECLARE();
 CL_DOCSTRING("Return true if characters are monotonically non-increasing, ignore case");
-CL_DEFUN T_mv cl__char_not_greaterp(List_sp args) {
+CL_DEFUN bool cl__char_not_greaterp(List_sp args) {
   if (args.nilp())
       PROGRAM_ERROR();
-  return (Values(monotonic(-1, 0, args, false)));
+  return monotonic(-1, 0, args, false);
 };
+
+CL_LAMBDA(char1 char2);
+CL_DECLARE();
+CL_DOCSTRING("two-arg char-not-lessp");
+CL_DEFUN bool core__two_arg_char_not_lessp(Character_sp char1, Character_sp char2) {
+  return character_comparison(1, 0, char1, char2, false);
+}
 
 CL_LAMBDA(&rest args);
 CL_DECLARE();
 CL_DOCSTRING("Return true if characters are monotonically non-decreasing, ignore case");
-CL_DEFUN T_sp cl__char_not_lessp(List_sp args) {
+CL_DEFUN bool cl__char_not_lessp(List_sp args) {
   if (args.nilp())
       PROGRAM_ERROR();
-  return ((monotonic(1, 0, args, false)));
+  return monotonic(1, 0, args, false);
 };
 
 CL_LAMBDA(core:&va-rest args);
