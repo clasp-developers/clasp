@@ -434,7 +434,6 @@ and is not adjustable."
 (defun typep (object type &optional env &aux tp i c)
   "Args: (object type)
 Returns T if X belongs to TYPE; NIL otherwise."
-  (declare (ignore env))
   (cond ((symbolp type)
 	 (let ((f (simple-type-predicate type)))
 	   (cond (f (return-from typep (funcall f object)))
