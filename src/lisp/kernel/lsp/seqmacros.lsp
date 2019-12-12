@@ -141,10 +141,12 @@
       `(sequence:with-sequence-iterator
            (,%it ,%limit ,%from-end ,%step ,%endp ,%elt)
            (,sequence)
-         (do ((,%it ,%it (funcall ,%step ,sequence ,%it ,%from-end)))
-             ((funcall ,%endp ,sequence ,%it ,%limit ,%from-end)
+         (do ((,%it ,%it (reckless
+                          (funcall ,%step ,sequence ,%it ,%from-end))))
+             ((reckless
+               (funcall ,%endp ,sequence ,%it ,%limit ,%from-end))
               ,result)
-           (let ((,elt (funcall ,%elt ,sequence ,%it)))
+           (let ((,elt (reckless (funcall ,%elt ,sequence ,%it))))
              (tagbody ,@body)))))))
 
 ;;; NOTE: Might want to consider when we want a triplified body
@@ -220,10 +222,13 @@
                                                 ,%step ,%endp ,%elt ,%set)
              (,sequence :start ,start :end ,end :from-end ,from-end)
            (do (,@(when indexp `((,index ,start (1+ ,index))))
-                (,%it ,%it (funcall ,%step ,sequence ,%it ,%from-end)))
-               ((funcall ,%endp ,sequence ,%it ,%limit ,%from-end) ,output)
+                (,%it ,%it (reckless
+                            (funcall ,%step ,sequence ,%it ,%from-end))))
+               ((reckless (funcall ,%endp ,sequence ,%it ,%limit ,%from-end))
+                ,output)
              ,@(when indexp `((declare (fixnum ,index))))
-             (let (,@(when elt `((,elt (funcall ,%elt ,sequence ,%it)))))
+             (let (,@(when elt `((,elt (reckless
+                                        (funcall ,%elt ,sequence ,%it))))))
                ,@body)))))))
 
 (defmacro do-subsequence ((elt sequence start end &rest args
