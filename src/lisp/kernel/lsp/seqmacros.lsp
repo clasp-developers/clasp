@@ -72,10 +72,14 @@
 
 (defmacro dovaslist ((elt vaslist &optional result) &body body)
   (once-only (vaslist)
-    `(do ((,elt (core:vaslist-pop ,vaslist) (core:vaslist-pop ,vaslist)))
-         (nil)
-       ,@body
-       (when (zerop (core:vaslist-length ,vaslist)) (return ,result)))))
+    (let ((tag (gensym "LOOP")))
+      `(prog (,elt)
+          ,tag
+          (when (zerop (core:vaslist-length ,vaslist))
+            (return ,result))
+          (setq ,elt (core:vaslist-pop ,vaslist))
+          ,@body
+          (go ,tag)))))
 
 (defmacro dovector ((elt sequence &optional result) &body body)
   (with-unique-names (%vector %index %limit)
