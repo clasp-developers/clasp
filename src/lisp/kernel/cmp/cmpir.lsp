@@ -463,7 +463,7 @@
 (defun irc-untag-fixnum (t* fixnum-type &optional (label "fixnum"))
   "Given a T* fixnum llvm::Value, returns a Value of the given type
 representing the fixnum with the tag shaved off."
-  (irc-lshr (irc-ptr-to-int t* fixnum-type) +fixnum-shift+
+  (irc-ashr (irc-ptr-to-int t* fixnum-type) +fixnum-shift+
             :exact t ; fixnum tag is zero.
             :label label))
 
@@ -662,6 +662,15 @@ Otherwise do a variable shift."
       (llvm-sys:create-lshr-value-uint64
        cmp:*irbuilder* value shift label exact)
       (llvm-sys:create-lshr-value-value
+       cmp:*irbuilder* value shift label exact)))
+
+(defun irc-ashr (value shift &key (label "") exact)
+  "If shift is an integer, generate ashr with a constant uint64.
+Otherwise do a variable shift."
+  (if (integerp shift)
+      (llvm-sys:create-ashr-value-uint64
+       cmp:*irbuilder* value shift label exact)
+      (llvm-sys:create-ashr-value-value
        cmp:*irbuilder* value shift label exact)))
 
 (defun irc-load (source &optional (label ""))
