@@ -173,14 +173,13 @@ default value of INITIAL-ELEMENT depends on TYPE."
 (defvar *exhausted* (list nil))
 
 (defun list-iterator-next (seq it from-end)
-  (declare (ignore seq from-end)
-           (optimize (safety 0))
-           (type cons it))
+  (declare (ignore seq from-end))
+  ;; Unfortunately, we can't do this unsafely,
+  ;; because we might be dealing with a dotted list
+  ;; or suchlike.
   (cdr it))
 (defun list-iterator-prev (seq it from-end)
-  (declare (ignore from-end)
-           (optimize (safety 0))
-           (type list seq it))
+  (declare (ignore from-end))
   (if (eq it seq)
       *exhausted*
       (do ((cdr seq (cdr seq)))
@@ -189,14 +188,10 @@ default value of INITIAL-ELEMENT depends on TYPE."
   (declare (ignore seq from-end))
   (eq it limit))
 (defun list-iterator-elt (seq it)
-  (declare (ignore seq)
-           (optimize (safety 0))
-           (type cons it))
+  (declare (ignore seq))
   (car it))
 (defun (setf list-iterator-elt) (new seq it)
-  (declare (ignore seq)
-           (optimize (safety 0))
-           (type cons it))
+  (declare (ignore seq))
   (rplaca it new)
   new)
 (defun list-iterator-index (seq it)
