@@ -669,7 +669,7 @@
 
 (defmacro sequence:define-random-access-sequence
     (class-name length elt)
-  (core::with-unique-names (sequence from-end start end)
+  (core::with-unique-names (sequence)
     `(progn
        (defmethod sequence:length ((sequence ,class-name))
          (,length sequence))
@@ -679,10 +679,10 @@
            (new (sequence ,class-name) index)
          (setf (,elt sequence index) new))
        (defmethod sequence:make-sequence-iterator
-           ((,sequence ,class-name) &key ,from-end (,start 0) ,end)
-         (let ((,end (or ,end (,length ,sequence))))
+           ((,sequence ,class-name) &key from-end (start 0) end)
+         (let ((end (or end (,length ,sequence))))
            (sequence:make-random-access-iterator
-            ,start ,end ,from-end #',elt #'(setf ,elt)))))))
+            start end from-end #',elt #'(setf ,elt)))))))
 
 ;;; END is already normalized (i.e. a fixnum, not NIL)
 (defun sequence:make-random-access-iterator

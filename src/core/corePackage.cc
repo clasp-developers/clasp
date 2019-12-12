@@ -673,6 +673,8 @@ SYMBOL_EXPORT_SC_(KeywordPkg, execute);
 
 SYMBOL_EXPORT_SC_(ClPkg, STARread_evalSTAR);
 SYMBOL_SC_(CorePkg, STARdocumentation_poolSTAR);
+SYMBOL_EXPORT_SC_(ClPkg, defmacro);
+SYMBOL_EXPORT_SC_(ClPkg, define_compiler_macro);
 SYMBOL_EXPORT_SC_(ClPkg, define_modify_macro);
 SYMBOL_EXPORT_SC_(ClPkg, destructuring_bind);
 SYMBOL_EXPORT_SC_(ClPkg, deftype);

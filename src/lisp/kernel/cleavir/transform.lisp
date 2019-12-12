@@ -42,9 +42,9 @@
         ((&rest) (third values-type))
         (t first))))
   
-  (defun function-type-result (type)
+  (defun function-type-result (type &optional env)
     ;; type is any type specifier
-    (multiple-value-bind (head args) (core::normalize-type type)
+    (multiple-value-bind (head args) (core::normalize-type type env)
       (if (eq head 'function)
           (let ((result (second args)))
             (cond ((null result) 't)
@@ -107,7 +107,7 @@
                           (let ((info (cleavir-env:function-info env operator)))
                             (if (typep info '(or cleavir-env:local-function-info
                                               cleavir-env:global-function-info))
-                                (function-type-result (cleavir-env:type info))
+                                (function-type-result (cleavir-env:type info) env)
                                 't))
                           't)))
                    't)))

@@ -65,6 +65,13 @@
                (if (endp (rest args)) '* (second args))
                t))
       ((SIMPLE-VECTOR) (values '(vector t) (if (endp args) '* (first args)) t))
+      ;; Per the CLHS page on class string, when used "for object creation",
+      ;; string means (vector character) rather than its usual meaning as a
+      ;; union. And this function is for object creation.
+      ;; That said, no word on what a type like (and string ...) would mean.
+      ;; The standard is so bad with types...
+      ;; We similarly define simple-string to mean (simple-array character (*))
+      ;; here, which doesn't seem to be mandated, but it's nice.
       #-unicode
       ((STRING SIMPLE-STRING)
        (values '(vector base-char) (if (endp args) '* (first args)) t))

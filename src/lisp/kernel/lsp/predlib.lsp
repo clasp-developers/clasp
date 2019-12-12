@@ -72,28 +72,10 @@ type specifier.  When the symbol NAME is used as a type specifier, the
 expansion function is called with no argument.
 The doc-string DOC, if supplied, is saved as a TYPE doc and can be retrieved
 by (documentation 'NAME 'type)."
-  ;; First fix the optional/key defaults to be 'cl:*
-  (setq lambda-list (copy-list lambda-list))
-  (dolist (x '(&optional &key))
-    (do ((l (rest (member x lambda-list)) (rest l)))
-        ((null l))
-      (let ((variable (first l)))
-        (when (and (symbolp variable)
-                   (not (member variable lambda-list-keywords)))
-          (rplaca l `(,variable '*))))))
-  (multiple-value-bind (decls body doc)
-      (process-declarations body t)
-    ;; FIXME: Use FORMAT to produce a default docstring. Maybe.
-    `(eval-when (:compile-toplevel :load-toplevel :execute)
-       ,@(si::expand-set-documentation name 'type doc)
-       (funcall #'(setf ext:type-expander)
-                #'(lambda ,lambda-list
-                    (declare (core:lambda-name ,name) ,@decls)
-                    ,@(when doc (list doc))
-                    (block ,name ,@body))
-                ',name)
-       ',name)))
-
+  `(eval-when (:compile-toplevel :load-toplevel :execute)
+     (funcall #'(setf ext:type-expander)
+              ,(ext:parse-deftype name lambda-list body env)
+              ',name)))
 
 ;;; Some DEFTYPE definitions.
 
@@ -556,7 +538,7 @@ Returns T if X belongs to TYPE; NIL otherwise."
     (t
      (cond
            ((ext:type-expander tp)
-            (typep object (apply (ext:type-expander tp) i)))
+            (typep object (funcall (ext:type-expander tp) type env)))
 	   ((consp i)
 	    (error-type-specifier type))
 	   ((setq c (find-class type nil))
@@ -572,11 +554,11 @@ Returns T if X belongs to TYPE; NIL otherwise."
 ;; The result is a pair of values
 ;;  VALUE-1 = normalized type name or object
 ;;  VALUE-2 = normalized type arguments or nil
-(defun normalize-type (type &aux tp i fd)
+(defun normalize-type (type &optional env &aux tp i fd)
   ;; Loops until the car of type has no DEFTYPE definition.
   (cond ((symbolp type)
 	 (if (setq fd (ext:type-expander type))
-             (normalize-type (funcall fd))
+             (normalize-type (funcall fd type env))
              (values type nil)))
 	#+clos
 	((clos::classp type) (values type nil))
@@ -585,24 +567,10 @@ Returns T if X belongs to TYPE; NIL otherwise."
 	((progn
 	   (setq tp (car type) i (cdr type))
 	   (setq fd (ext:type-expander tp)))
-	 (normalize-type (apply fd i)))
+	 (normalize-type (funcall fd type env)))
 	((and (eq tp 'INTEGER) (consp (cadr i)))
 	 (values tp (list (car i) (1- (caadr i)))))
 	(t (values tp i))))
-
-(defun expand-deftype (type)
-  (cond ((symbolp type)
-	 (let ((fd (ext:type-expander type)))
-	   (if fd
-	       (expand-deftype (funcall fd))
-	       type)))
-	((and (consp type)
-	      (symbolp (first type)))
-	 (let ((fd (ext:type-expander (first type))))
-	   (if fd
-	       (expand-deftype (apply fd (rest type)))
-	       type)))
-	(t type)))
 
 ;;************************************************************
 ;;			COERCE
@@ -631,43 +599,37 @@ if not possible."
   (when (typep object type)
     ;; Just return as it is.
     (return-from coerce object))
-  (setq type (expand-deftype type))
-  (cond ((atom type)
-	 (case type
-	   ((T) object)
-	   (LIST (coerce-to-list object))
-	   ((CHARACTER BASE-CHAR) (character object))
-	   (FLOAT (float object))
-	   (SINGLE-FLOAT (float object 0.0F0))
-	   #+short-float(SHORT-FLOAT (float object 0.0S0))
-	   (DOUBLE-FLOAT (float object 0.0D0))
-	   #+long-float(LONG-FLOAT (float object 0.0L0))
-	   (COMPLEX (complex (realpart object) (imagpart object)))
-	   (FUNCTION (coerce-to-function object))
-	   ((VECTOR SIMPLE-VECTOR #+unicode SIMPLE-BASE-STRING SIMPLE-STRING #+unicode BASE-STRING STRING BIT-VECTOR SIMPLE-BIT-VECTOR)
-	    (concatenate type object))
-	   (t
-	    (if (or (listp object) #+(and ecl (not clasp))(vector object) #+clasp(vectorp object))
-		(concatenate type object)
-		(error-coerce object type)))))
-	((eq (setq aux (first type)) 'COMPLEX)
-	 (if type
-	     (complex (coerce (realpart object) (second type))
-		      (coerce (imagpart object) (second type)))
-	     (complex (realpart object) (imagpart object))))
-	((member aux '(SINGLE-FLOAT SHORT-FLOAT DOUBLE-FLOAT LONG-FLOAT FLOAT))
-	 (setq aux (coerce object aux))
-	 (unless (typep aux type)
-	   (error-coerce object type))
-	 aux)
-	((eq aux 'AND)
-	 (dolist (type (rest type))
-	   (setq aux (coerce aux type)))
-	 (unless (typep aux type)
-	   (error-coerce object type))
-	 aux)
-        ((typep object 'sequence) (concatenate type object))
-	(t (error-coerce object type))))
+  ;; We use the original type for error messages, and for concatenate,
+  ;; the latter because we have weird cases like STRING. STRING means
+  ;; (vector character) in this context, rather than its actual expansion,
+  ;; which includes multiple element types (base-char and character on clasp)
+  ;; This means deftypes will be expanded more than once, which is inefficient,
+  ;; but any function that takes a type specifier is always going to be kind of
+  ;; inefficient, and we have a coerce compiler macro later to avoid it.
+  (multiple-value-bind (head tail)
+      (normalize-type type)
+    (case head
+      ((t) object)
+      ((character base-char) (character object))
+      ((float) (float object))
+      ((short-float) (float object 0.0s0))
+      ((single-float) (float object 0.0f0))
+      ((double-float) (float object 0.0d0))
+      ((long-float) (float 0.0l0))
+      ((function) (coerce-to-function object))
+      ((complex)
+       (destructuring-bind (&optional (realt t) (imagt t))
+           tail
+         (complex (coerce (realpart object) realt)
+                  (coerce (imagpart object) imagt))))
+      ((and) ; clasp extension
+       (dolist (type tail)
+         (setq aux (coerce object type)))
+       (unless (typep aux type)
+         (error-coerce object type)))
+      (t (if (typep object 'sequence)
+             (concatenate type object)
+             (error-coerce object type))))))
 
 ;;************************************************************
 ;;			SUBTYPEP
@@ -1315,7 +1277,7 @@ if not possible."
         ((symbolp type)
 	 (let ((expander (ext:type-expander type)))
 	   (cond (expander
-		  (canonical-type (funcall expander)))
+		  (canonical-type (funcall expander type nil)))
 		 ((find-built-in-tag type))
 		 (t (let ((class (find-class type nil)))
 		      (if class
@@ -1358,7 +1320,7 @@ if not possible."
 	   (FUNCTION (canonical-type 'FUNCTION))
 	   (t (let ((expander (ext:type-expander (first type))))
 		(if expander
-		    (canonical-type (apply expander (rest type)))
+		    (canonical-type (funcall expander type nil))
 		    (unless (assoc (first type) *elementary-types*)
 		      (throw '+canonical-type-failure+ nil)))))))
 	((clos::classp type)

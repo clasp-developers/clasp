@@ -91,16 +91,16 @@
              form-or-nil)
       (error "Too few arguments supplied to a inlined lambda form.")))
 
-(defun sys::destructure (vl macro &optional macro-name
+(defun sys::destructure (vl context &optional macro-name
                          &aux dl arg-check (basis-form (gensym))
                            (destructure-symbols (list basis-form)))
   (labels ((tempsym ()
 	     (let ((x (gensym)))
 	       (push x destructure-symbols)
 	       x))
-	   (dm-vl (vl whole macro)
+	   (dm-vl (vl whole context)
 	     (multiple-value-bind (reqs opts rest key-flag keys allow-other-keys auxs)
-		 (si::process-lambda-list vl (if macro 'macro 'destructuring-bind))
+		 (si::process-lambda-list vl context)
 	       (let* ((pointer (tempsym))
 		      (cons-pointer `(the cons ,pointer))
 		      (unsafe-car `(car ,cons-pointer))
@@ -109,9 +109,10 @@
 		      (no-check nil)
 		      all-keywords)
 		 ;; In macros, eliminate the name of the macro from the list
-		 (dm-v pointer (if macro
+		 (dm-v pointer (if (eq context 'destructuring-bind)
+                                   whole
                                    ;; Special handling if define-compiler-macro called this
-                                   (if (eq macro 'define-compiler-macro)
+                                   (if (eq context 'define-compiler-macro)
                                        `(if (and (eq (car ,whole) 'cl:funcall)
                                                  (consp (cadr ,whole))
                                                  (eq (caadr ,whole) 'cl:function)
@@ -119,8 +120,13 @@
                                                  (equal (second (second ,whole)) ',macro-name))
                                             (cddr (the cons ,whole))
                                             (cdr (the cons ,whole)))
-                                       `(cdr (the cons ,whole)))
-                                   whole))
+                                       ;; deftype- allow bare symbols- symbol = (symbol)
+                                       (if (eq context 'deftype)
+                                           `(if (symbolp ,whole)
+                                                nil
+                                                (cdr (the cons ,whole)))
+                                           ;; defmacro
+                                           `(cdr (the cons ,whole))))))
 		 (dolist (v (cdr reqs))
 		   (dm-v v `(progn
 			      (if (null ,pointer)
@@ -175,27 +181,27 @@
                       (if (listp whole-var)
                           (let ((new-whole (tempsym)))
                             (dm-v new-whole init)
-                            (dm-vl whole-var new-whole nil)
+                            (dm-vl whole-var new-whole 'destructuring-bind)
                             (setq whole-var new-whole))
                           (dm-v whole-var init))
-                      (dm-vl (cddr v) whole-var nil)))
+                      (dm-vl (cddr v) whole-var 'destructuring-bind)))
                    (t
                     (let* ((temp (tempsym))
                            (push-val (if init (list temp init) temp)))
 		      (push push-val dl)
-		      (dm-vl v temp nil))))))
+		      (dm-vl v temp 'destructuring-bind))))))
     (let ((whole basis-form))
       (cond ((listp vl)
 	     (when (eq (first vl) '&whole)
                (let ((named-whole (second vl)))
                  (setq vl (cddr vl))
                  (if (listp named-whole)
-                     (dm-vl named-whole whole nil)
+                     (dm-vl named-whole whole context)
                      (setq dl (list (list named-whole whole)))))))
 	    ((symbolp vl)
 	     (setq vl (list '&rest vl)))
 	    (t (error "The destructuring-lambda-list ~s is not a list." vl)))
-      (dm-vl vl whole macro)
+      (dm-vl vl whole context)
       (values whole (nreverse dl) arg-check destructure-symbols))))
 
 ;;; valid lambda-list to DEFMACRO is:
@@ -303,4 +309,8 @@
   (declare (ignore env)) ; also for now
   (sys::expand-defmacro name lambda-list body 'cl:define-compiler-macro))
 
-(export '(parse-macro parse-compiler-macro)) ; FIXME MOVE
+(defun parse-deftype (name lambda-list body &optional env)
+  (declare (ignore env))
+  (sys::expand-defmacro name lambda-list body 'cl:deftype))
+
+(export '(parse-macro parse-compiler-macro parse-deftype)) ; FIXME MOVE
