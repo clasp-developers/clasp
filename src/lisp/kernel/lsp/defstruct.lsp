@@ -689,7 +689,7 @@ as a STRUCTURE doc and can be retrieved by (documentation 'NAME 'structure)."
               (t
                (let ((element-type
                        (cond ((eq type 'vector) 't)
-                             ((and (consp type) (null (cdr type)) (second type)))
+                             ((and (consp type) (null (cddr type)) (second type)))
                              (t
                               (error "~a is not a valid :TYPE in structure definition for ~a"
                                      type name)))))
