@@ -173,7 +173,8 @@ public:
     Symbol_sp svalue = gc::As<Symbol_sp>(value);
     SimpleString_sp symbolName = svalue->symbolName();
     SimpleString_sp upcasedSymbolName = cl__string_upcase(symbolName);
-    T_sp pos = core__search_string(this->_substr,0,_Nil<T_O>(),upcasedSymbolName,0,_Nil<T_O>());
+    T_sp pos = core__search_string(this->_substr,0,this->_substr->length(),
+                                   upcasedSymbolName,0,upcasedSymbolName->length());
     if (pos.notnilp()) {
       LOG(BF("    It is apropos"));
       this->_symbols->setf_gethash(svalue, _Nil<T_O>());

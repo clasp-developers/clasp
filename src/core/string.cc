@@ -1437,7 +1437,7 @@ T_sp template_search_string(const T1& sub, const T2& outer, size_t sub_start, si
 SYMBOL_EXPORT_SC_(CorePkg,search_string);
 CL_LAMBDA(sub sub_start sub_end outer outer_start outer_end);
 CL_DOCSTRING("search for the first occurance of sub in outer");
-CL_DEFUN T_sp core__search_string(String_sp sub, size_t sub_start, T_sp sub_end, String_sp outer, size_t outer_start, T_sp outer_end) {
+CL_DEFUN T_sp core__search_string(String_sp sub, size_t sub_start, size_t sub_end, String_sp outer, size_t outer_start, size_t outer_end) {
   TEMPLATE_STRING_DISPATCHER(sub,outer,template_search_string,sub_start,sub_end,outer_start,outer_end);
 };
 

@@ -419,7 +419,7 @@ namespace core {
 
   T_sp cl__string_EQ_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1=clasp_make_fixnum(0), T_sp end1=_Nil<T_O>(), Fixnum_sp start2=clasp_make_fixnum(0), T_sp end2=_Nil<T_O>());
 
-  T_sp core__search_string(String_sp sub, size_t sub_start, T_sp sub_end, String_sp outer, size_t outer_start, T_sp outer_end );
+  T_sp core__search_string(String_sp sub, size_t sub_start, size_t sub_end, String_sp outer, size_t outer_start, size_t outer_end );
   bool core__fits_in_base_string(T_sp str);
   T_sp core__copy_to_simple_base_string(T_sp buffer);
 };
