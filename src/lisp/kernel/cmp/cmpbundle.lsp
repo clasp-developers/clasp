@@ -103,14 +103,12 @@
          (name (pathname-name bundle-pathname))
          (type (pathname-type bundle-pathname))
          (temp-bundle-directory (sys:mkdtemp bundle-namestring))
-         (temp-bundle-file (make-pathname :name name :type type :defaults temp-bundle-directory))
+         (temp-bundle-file (make-pathname :name "fasl" :type type :defaults temp-bundle-directory))
          (bundle-directory (make-pathname :directory (append (pathname-directory bundle-pathname)
                                                                 (list (format nil "~a.~a" name type))))))
     (values temp-bundle-directory
             (ensure-string temp-bundle-file)
             bundle-directory)))
-
-
 
 (defun atomic-delete-fasl (fasl-dir fasl-file)
   (if (and fasl-file (eq (core:file-kind fasl-file nil) :file))
@@ -217,7 +215,6 @@
           (ext:run-dsymutil (list "-f" (namestring temp-bundle-file)))
           ;; Now do a safe atomic rename of the temp-bundle-directory to bundle-directory
           (progn
-            (format t "About to do atomic rename/delete ~s ~s~%" bundle-directory bundle-file)
             (atomic-delete-fasl bundle-directory bundle-file)
             #-cclasp(rename-file temp-bundle-directory bundle-directory)
             #+cclasp
@@ -226,7 +223,7 @@
               (file-error ()
                 (warn "Another process compiled the file - dumping my compilation")
                 (atomic-delete-fasl temp-bundle-directory nil))))
-          (truename bundle-directory))))))
+          bundle-file)))))
 
 #+(or)
 (defun execute-link-library (in-bundle-file in-all-names &key input-type (output-type :dynamic))

@@ -484,7 +484,7 @@ CL_DEFUN T_mv core__load_binary_directory(T_sp pathDesig, T_sp verbose, T_sp pri
     //  /foo/bar/baz.fasl/baz.fasl
     size_t slash_pos = name.find_last_of('/',name.size()-1);
     if (slash_pos != std::string::npos) {
-      name = name + "/" + name.substr(slash_pos+1,std::string::npos);
+      name = name + "/fasl.fasl";
       SimpleBaseString_sp sbspath = SimpleBaseString_O::make(name);
       tpath = cl__pathname(sbspath);
       if (cl__probe_file(tpath).nilp()) {
