@@ -102,6 +102,8 @@
                with-sequence-iterator
                with-simple-sequence-iterator
                ;; clasp extensions
+               protocol-unimplemented
+               protocol-unimplemented-operation
                make-sequence
                define-random-access-sequence
                make-random-access-iterator

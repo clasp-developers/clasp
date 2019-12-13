@@ -99,6 +99,95 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; PROTOCOL-UNIMPLEMENTED is signaled when a function is called but a sequence
+;;; doesn't have a method defined. We do this so that this situation can be
+;;; differentiated from when they're called with a non-sequence.
+;;;
+
+(define-condition sequence:protocol-unimplemented (type-error)
+  ((operation :initarg :operation
+              :reader sequence:protocol-unimplemented-operation))
+  (:report
+   (lambda (condition stream)
+     (let ((operation (sequence:protocol-unimplemented-operation condition))
+           (datum (type-error-datum condition)))
+       (format stream "The operation ~a is not implemented for ~a."
+               operation datum)))))
+
+(defun sequence:protocol-unimplemented (operation sequence)
+  (error 'sequence:protocol-unimplemented
+         :datum sequence
+         :expected-type '(or list vector) ; not sure about this. SBCL crib.
+         :operation operation))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Methods for the protocol functions signaling this error
+;;;
+
+(defmethod sequence:elt ((sequence sequence) index)
+  (declare (ignore index))
+  (sequence:protocol-unimplemented 'sequence:elt sequence))
+(defmethod (setf sequence:elt) (new (sequence sequence) index)
+  (declare (ignore new index))
+  (sequence:protocol-unimplemented '(setf sequence:elt) sequence))
+(defmethod sequence:length ((s sequence))
+  (sequence:protocol-unimplemented 'sequence:length s))
+(defmethod sequence:make-sequence-like
+    ((sequence sequence) length &rest kwargs)
+  (declare (ignore length kwargs))
+  (sequence:protocol-unimplemented 'sequence:make-sequence-like sequence))
+(defmethod sequence:adjust-sequence
+    ((sequence sequence) length &rest kwargs)
+  (declare (ignore length kwargs))
+  (sequence:protocol-unimplemented 'sequence:adjust-sequence sequence))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; And normal type errors
+;;;
+
+(defmethod sequence:elt ((sequence t) index)
+  (declare (ignore index))
+  (core::error-not-a-sequence sequence))
+(defmethod (setf sequence:elt) (new (sequence t) index)
+  (declare (ignore new index))
+  (core::error-not-a-sequence sequence))
+(defmethod sequence:length ((sequence t)) (core::error-not-a-sequence sequence))
+(defmethod sequence:make-sequence-like ((s t) length &rest kwargs)
+  (declare (ignore length kwargs))
+  (core::error-not-a-sequence s))
+(defmethod sequence:adjust-sequence ((s t) length &rest kwargs)
+  (declare (ignore length kwargs))
+  (core::error-not-a-sequence s))
+
+(defmethod sequence:make-sequence-iterator ((s t) &rest kwargs)
+  (declare (ignore kwargs))
+  (core::error-not-a-sequence s))
+(defmethod sequence:make-simple-sequence-iterator ((s t) &rest kwargs)
+  (declare (ignore kwargs))
+  (core::error-not-a-sequence s))
+(defmethod sequence:iterator-step ((s t) it f-e)
+  (declare (ignore it f-e))
+  (core::error-not-a-sequence s))
+(defmethod sequence:iterator-endp ((s t) it l f-e)
+  (declare (ignore it l f-e))
+  (core::error-not-a-sequence s))
+(defmethod sequence:iterator-element ((sequence t) iterator)
+  (declare (ignore iterator))
+  (core::error-not-a-sequence sequence))
+(defmethod (setf sequence:iterator-element) (new (sequence t) iterator)
+  (declare (ignore new iterator))
+  (core::error-not-a-sequence sequence))
+(defmethod sequence:iterator-index ((sequence t) iterator)
+  (declare (ignore iterator))
+  (core::error-not-a-sequence sequence))
+(defmethod sequence:iterator-copy ((sequence t) iterator)
+  (declare (ignore iterator))
+  (core::error-not-a-sequence sequence))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; Derived functions
 ;;; Optional. Everything here works already if the core protocol is in place.
 ;;;
@@ -712,7 +801,7 @@
 
 ;;; This is like CL:MAKE-SEQUENCE, except the type is restricted to be
 ;;; either a class or a symbol naming one.
-;;; This mostly only exists to make it possible to call  MAKE-SEQUENCE-LIKE
+;;; This mostly only exists to make it possible to call MAKE-SEQUENCE-LIKE
 ;;; from code way before class-prototype exists.
 ;;; Oh, and there's :initial-contents.
 ;;; FIXME: Add a compiler macro to fold it to make-sequence-like.
