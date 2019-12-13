@@ -117,11 +117,15 @@
 (defgeneric sequence:emptyp (sequence)
   (:method ((sequence sequence)) (zerop (length sequence)))
   (:method ((sequence null)) t)
-  (:method ((sequence cons)) nil))
+  (:method ((sequence cons)) nil)
+  (:method ((sequence t)) (core::error-not-a-sequence sequence)))
 
 (defgeneric sequence:count
     (item sequence &key from-end start end test test-not key)
-  (:argument-precedence-order sequence item))
+  (:argument-precedence-order sequence item)
+  (:method (item (sequence t) &rest kwargs)
+    (declare (ignore item kwargs))
+    (core::error-not-a-sequence sequence)))
 (defmethod sequence:count
     (item (sequence sequence) &key from-end (start 0) end test test-not key)
   (let ((counter 0))
@@ -131,7 +135,10 @@
         (when (core::compare item (key e)) (incf counter))))))
 
 (defgeneric sequence:count-if (pred sequence &key from-end start end key)
-  (:argument-precedence-order sequence pred))
+  (:argument-precedence-order sequence pred)
+  (:method (pred (sequence t) &rest kwargs)
+    (declare (ignore pred kwargs))
+    (core::error-not-a-sequence sequence)))
 (defmethod sequence:count-if
     (pred (sequence sequence) &key from-end (start 0) end key)
   (let ((counter 0) (pred (core:coerce-fdesignator pred)))
@@ -141,7 +148,10 @@
         (when (funcall pred (key e)) (incf counter))))))
 
 (defgeneric sequence:count-if-not (pred sequence &key from-end start end key)
-  (:argument-precedence-order sequence pred))
+  (:argument-precedence-order sequence pred)
+  (:method (pred (sequence t) &rest kwargs)
+    (declare (ignore pred wargs))
+    (core::error-not-a-sequence sequence)))
 (defmethod sequence:count-if-not
     (pred (sequence sequence) &key from-end (start 0) end key)
   (let ((counter 0) (pred (core:coerce-fdesignator pred)))
@@ -151,7 +161,11 @@
         (unless (funcall pred (key e)) (incf counter))))))
 
 (defgeneric sequence:find
-    (item sequence &key from-end start end test test-not key))
+    (item sequence &key from-end start end test test-not key)
+  (:argument-precedence-order sequence item)
+  (:method (item (sequence t) &rest kwargs)
+    (declare (ignore item kwargs))
+    (core::error-not-a-sequence sequence)))
 (defmethod sequence:find
     (item (sequence sequence) &key from-end (start 0) end test test-not key)
   (core::with-tests (test test-not key)
@@ -159,7 +173,9 @@
       (when (core::compare item (key e)) (return e)))))
 
 (defgeneric sequence:find-if (pred sequence &key from-end start end key)
-  (:argument-precedence-order sequence pred))
+  (:argument-precedence-order sequence pred)
+  (:method (pred (sequence t) &rest kwargs)
+    (core::error-not-a-sequence sequence)))
 (defmethod sequence:find-if
     (pred (sequence sequence) &key from-end (start 0) end key)
   (let ((pred (core:coerce-fdesignator pred)))
@@ -169,7 +185,10 @@
         (when (funcall pred (key e)) (return e))))))
 
 (defgeneric sequence:find-if-not (pred sequence &key from-end start end key)
-  (:argument-precedence-order sequence pred))
+  (:argument-precedence-order sequence pred)
+  (:method (pred (sequence t) &rest kwargs)
+    (declare (ignore pred kwargs))
+    (core::error-not-a-sequence sequence)))
 (defmethod sequence:find-if-not
     (pred (sequence sequence) &key from-end (start 0) end key)
   (let ((pred (core:coerce-fdesignator pred)))
@@ -179,7 +198,11 @@
         (unless (funcall pred (key e)) (return e))))))
 
 (defgeneric sequence:position
-    (item sequence &key test test-not from-end (start 0) end key))
+    (item sequence &key test test-not from-end (start 0) end key)
+  (:argument-precedence-order sequence item)
+  (:method (item (sequence t) &rest kwargs)
+    (declare (ignore item kwargs))
+    (core::error-not-a-sequence sequence)))
 (defmethod sequence:position
     (item (sequence sequence) &key test test-not from-end (start 0) end key)
   (core::with-tests (test test-not key)
@@ -188,7 +211,11 @@
       (when (core::compare item (key elt)) (return index)))))
 
 (defgeneric sequence:position-if
-    (pred sequence &key from-end (start 0) end key))
+    (pred sequence &key from-end (start 0) end key)
+  (:argument-precedence-order sequence pred)
+  (:method (pred (sequence t) &rest kwargs)
+    (declare (ignore pred kwargs))
+    (core::error-not-a-sequence sequence)))
 (defmethod sequence:position-if
     (pred (sequence sequence) &key from-end (start 0) end key)
   (let ((pred (core:coerce-fdesignator pred)))
@@ -198,7 +225,11 @@
         (when (funcall pred (key elt)) (return index))))))
 
 (defgeneric sequence:position-if-not
-    (pred sequence &key from-end (start 0) end key))
+    (pred sequence &key from-end (start 0) end key)
+  (:argument-precedence-order sequence pred)
+  (:method (pred (sequence t) &rest kwargs)
+    (declare (ignore pred kwargs))
+    (core::error-not-a-sequence sequence)))
 (defmethod sequence:position-if-not
     (pred (sequence sequence) &key from-end (start 0) end key)
   (let ((pred (core:coerce-fdesignator pred)))
@@ -207,7 +238,10 @@
                                          :from-end from-end :index index)
         (unless (funcall pred (key elt)) (return index))))))
 
-(defgeneric sequence:subseq (sequence start &optional end))
+(defgeneric sequence:subseq (sequence start &optional end)
+  (:method ((sequence t) start &optional end)
+    (declare (ignore start end))
+    (core::error-not-a-sequence sequence)))
 (defmethod sequence:subseq ((sequence sequence) start &optional end)
   (let* ((end (or end (length sequence)))
          (length (- end start))
@@ -225,11 +259,15 @@
           (setq state (funcall step sequence state from-end))
           (setq rstate (funcall rstep result rstate rfrom-end)))))))
 
-(defgeneric sequence:copy-seq (sequence))
+(defgeneric sequence:copy-seq (sequence)
+  (:method ((sequence t)) (core::error-not-a-sequence sequence)))
 (defmethod sequence:copy-seq ((sequence sequence))
   (sequence:subseq sequence 0))
 
-(defgeneric sequence:fill (sequence item &key start end))
+(defgeneric sequence:fill (sequence item &key start end)
+  (:method ((sequence t) item &rest kwargs)
+    (declare (ignore item kwargs))
+    (core::error-not-a-sequence sequence)))
 (defmethod sequence:fill ((sequence sequence) item &key (start 0) end)
   (core::do-general-subsequence (nil sequence start end :setter setelt)
     (setelt item))
@@ -237,7 +275,10 @@
 
 (defgeneric sequence:nsubstitute
     (new old sequence &key start end from-end test test-not count key)
-  (:argument-precedence-order sequence new old))
+  (:argument-precedence-order sequence new old)
+  (:method (new old (sequence t) &rest kwargs)
+    (declare (ignore new old kwargs))
+    (core::error-not-a-sequence sequence)))
 (defmethod sequence:nsubstitute (new old (sequence sequence)
                                  &key (start 0)
                                    end from-end test test-not count key)
@@ -251,7 +292,10 @@
 
 (defgeneric sequence:nsubstitute-if
     (new pred sequence &key start end from-end count key)
-  (:argument-precedence-order sequence new pred))
+  (:argument-precedence-order sequence new pred)
+  (:method (new pred (sequence t) &rest kwargs)
+    (declare (ignore new pred kwargs))
+    (core::error-not-a-sequence sequence)))
 (defmethod sequence:nsubstitute-if (new pred (sequence sequence)
                                     &key (start 0) end from-end count key)
   (let ((c 0) (pred (core:coerce-fdesignator pred)))
@@ -264,7 +308,10 @@
 
 (defgeneric sequence:nsubstitute-if-not
     (new pred sequence &key start end from-end count key)
-  (:argument-precedence-order sequence new pred))
+  (:argument-precedence-order sequence new pred)
+  (:method (new pred (sequence t) &rest kwargs)
+    (declare (ignore new pred kwargs))
+    (core::error-not-a-sequence sequence)))
 (defmethod sequence:nsubstitute-if-not (new pred (sequence sequence)
                                         &key (start 0) end from-end count key)
   (let ((c 0) (pred (core:coerce-fdesignator pred)))
@@ -277,7 +324,10 @@
 
 (defgeneric sequence:substitute
     (new old sequence &key start end from-end test test-not count key)
-  (:argument-precedence-order sequence new old))
+  (:argument-precedence-order sequence new old)
+  (:method (new old (sequence t) &rest kwargs)
+    (declare (ignore new old kwargs))
+    (core::error-not-a-sequence sequence)))
 (defmethod sequence:substitute (new old (sequence sequence) &rest args &key
                                 (start 0) end from-end test test-not count key)
   (declare (dynamic-extent args))
@@ -286,7 +336,10 @@
 
 (defgeneric sequence:substitute-if
     (new predicate sequence &key start end from-end count key)
-  (:argument-precedence-order sequence new predicate))
+  (:argument-precedence-order sequence new predicate)
+  (:method (new pred (sequence t) &rest kwargs)
+    (declare (ignore new pred kwargs))
+    (core::error-not-a-sequence sequence)))
 (defmethod sequence:substitute-if (new predicate (sequence sequence) &rest args
                                    &key (start 0) end from-end count key)
   (declare (dynamic-extent args))
@@ -295,7 +348,10 @@
 
 (defgeneric sequence:substitute-if-not
     (new predicate sequence &key start end from-end count key)
-  (:argument-precedence-order sequence new predicate))
+  (:argument-precedence-order sequence new predicate)
+  (:method (new pred (sequence t) &rest kwargs)
+    (declare (ignore new pred kwargs))
+    (core::error-not-a-sequence sequence)))
 (defmethod sequence:substitute-if-not
     (new predicate (sequence sequence)
      &rest args &key (start 0) end from-end count key)
@@ -330,7 +386,8 @@
        (%sequence-replace sequence1 replaces start1 end1 0 nil)))
     (t (%sequence-replace sequence1 sequence2 start1 end1 start2 end2))))
 
-(defgeneric sequence:nreverse (sequence))
+(defgeneric sequence:nreverse (sequence)
+  (:method ((sequence t)) (core::error-not-a-sequence sequence)))
 (defmethod sequence:nreverse ((sequence sequence))
   ;; FIXME: this, in particular the :from-end iterator, will suck
   ;; mightily if the user defines a list-like structure.
@@ -351,13 +408,17 @@
           (setq state1 (funcall step1 sequence state1 from-end1))
           (setq state2 (funcall step2 sequence state2 from-end2)))))))
 
-(defgeneric sequence:reverse (sequence))
+(defgeneric sequence:reverse (sequence)
+  (:method ((sequence t)) (core::error-not-a-sequence sequence)))
 (defmethod sequence:reverse ((sequence sequence))
   (sequence:nreverse (copy-seq sequence)))
 
 (defgeneric sequence:reduce
     (function sequence &key from-end start end initial-value)
-  (:argument-precedence-order sequence function))
+  (:argument-precedence-order sequence function)
+  (:method (function (sequence t) &rest kwargs)
+    (declare (ignore function kwargs))
+    (core::error-not-a-sequence sequence)))
 (defmethod sequence:reduce
     (function (sequence sequence) &key from-end (start 0) end key
                                     (initial-value nil ivp))
@@ -379,8 +440,15 @@
                   (setq value (funcall function e value))
                   (setq value (funcall function value e)))))))))
 
-(defgeneric sequence:mismatch (sequence1 sequence2 &key from-end start1 end1
-                               start2 end2 test test-not key))
+(defgeneric sequence:mismatch (sequence1 sequence2
+                               &key from-end start1 end1
+                                 start2 end2 test test-not key)
+  (:method ((sequence1 t) (sequence2 t) &rest kwargs)
+    (declare (ignore kwargs))
+    (core::error-not-a-sequence sequence1))
+  (:method ((sequence1 sequence) (sequence2 t) &rest kwargs)
+    (declare (ignore kwargs))
+    (core::error-not-a-sequence sequence2)))
 (defmethod sequence:mismatch
     ((sequence1 sequence) (sequence2 sequence)
      &key from-end (start1 0) end1 (start2 0) end2 test test-not key)
@@ -414,8 +482,15 @@
               (setq state1 (funcall step1 sequence1 state1 from-end1))
               (setq state2 (funcall step2 sequence2 state2 from-end2))))))))
 
-(defgeneric sequence:search (sequence1 sequence2 &key from-end start1 end1
-                             start2 end2 test test-not key))
+(defgeneric sequence:search (sequence1 sequence2
+                             &key from-end start1 end1
+                               start2 end2 test test-not key)
+  (:method ((sequence1 t) (sequence2 t) &rest kwargs)
+    (declare (ignore kwargs))
+    (core::error-not-a-sequence sequence1))
+  (:method ((sequence1 sequence) (sequence2 t) &rest kwargs)
+    (declare (ignore kwargs))
+    (core::error-not-a-sequence sequence2)))
 (defmethod sequence:search
     ((sequence1 sequence) (sequence2 sequence)
      &key from-end (start1 0) end1 (start2 0) end2 test test-not key)
@@ -469,7 +544,11 @@
                   (setq dst (funcall step sequence dst from-end)))))))))
 
 (defgeneric sequence:delete (item sequence
-                             &key from-end test test-not start end count key))
+                             &key from-end test test-not start end count key)
+  (:argument-precedence-order sequence item)
+  (:method (item (sequence t) &rest kwargs)
+    (declare (ignore item kwargs))
+    (core::error-not-a-sequence sequence)))
 (defmethod sequence:delete (item (sequence sequence)
                             &key from-end (start 0) end
                               test test-not count key)
@@ -477,7 +556,11 @@
     (delete-macro (core::compare item (key e)) t)))
 
 (defgeneric sequence:delete-if (predicate sequence
-                                &key start end from-end count key))
+                                &key start end from-end count key)
+  (:argument-precedence-order sequence predicate)
+  (:method (pred (sequence t) &rest kwargs)
+    (declare (ignore pred kwargs))
+    (core::error-not-a-sequence sequence)))
 (defmethod sequence:delete-if (predicate (sequence sequence)
                                &key (start 0) end from-end count key)
   (core::with-key (key)
@@ -485,7 +568,11 @@
       (delete-macro (funcall predicate (key e)) t))))
 
 (defgeneric sequence:delete-if-not (predicate sequence
-                                    &key start end from-end count key))
+                                    &key start end from-end count key)
+  (:argument-precedence-order sequence predicate)
+  (:method (pred (sequence t) &rest kwargs)
+    (declare (ignore pred kwargs))
+    (core::error-not-a-sequence sequence)))
 (defmethod sequence:delete-if-not (predicate (sequence sequence)
                                    &key (start 0) end from-end count key)
   (core::with-key (key)
@@ -494,7 +581,10 @@
 
 (defgeneric sequence:remove
     (item sequence &key from-end test test-not start end count key)
-  (:argument-precedence-order sequence item))
+  (:argument-precedence-order sequence item)
+  (:method (item (sequence t) &rest kwargs)
+    (declare (ignore item kwargs))
+    (core::error-not-a-sequence sequence)))
 (defmethod sequence:remove (item (sequence sequence) &rest args &key
                             from-end test test-not (start 0) end count key)
   (declare (dynamic-extent args))
@@ -503,7 +593,10 @@
 
 (defgeneric sequence:remove-if
     (predicate sequence &key from-end start end count key)
-  (:argument-precedence-order sequence predicate))
+  (:argument-precedence-order sequence predicate)
+  (:method (pred (sequence t) &rest kwargs)
+    (declare (ignore pred kwargs))
+    (core::error-not-a-sequence sequence)))
 (defmethod sequence:remove-if (predicate (sequence sequence) &rest args &key
                                from-end (start 0) end count key)
   (declare (dynamic-extent args))
@@ -512,7 +605,10 @@
 
 (defgeneric sequence:remove-if-not
     (predicate sequence &key from-end start end count key)
-  (:argument-precedence-order sequence predicate))
+  (:argument-precedence-order sequence predicate)
+  (:method (pred (sequence t) &rest kwargs)
+    (declare (ignore pred kwargs))
+    (core::error-not-a-sequence sequence)))
 (defmethod sequence:remove-if-not (predicate (sequence sequence) &rest args
                                    &key from-end (start 0) end count key)
   (declare (dynamic-extent args))
@@ -520,7 +616,10 @@
   (apply #'sequence:delete-if-not predicate (copy-seq sequence) args))
 
 (defgeneric sequence:delete-duplicates
-    (sequence &key from-end test test-not start end key))
+    (sequence &key from-end test test-not start end key)
+  (:method ((sequence t) &rest kwargs)
+    (declare (ignore kwargs))
+    (core::error-not-a-sequence sequence)))
 (defmethod sequence:delete-duplicates
     ((sequence sequence) &key from-end test test-not (start 0) end key)
   (core::with-tests (test test-not key)
@@ -563,14 +662,20 @@
               (setq state2 (funcall step sequence state2 from-end)))))))))
 
 (defgeneric sequence:remove-duplicates
-    (sequence &key from-end test test-not start end key))
+    (sequence &key from-end test test-not start end key)
+  (:method ((sequence t) &rest kwargs)
+    (declare (ignore kwargs))
+    (core::error-not-a-sequence sequence)))
 (defmethod sequence:remove-duplicates
     ((sequence sequence) &rest args &key from-end test test-not (start 0) end key)
   (declare (dynamic-extent args))
   (declare (ignore from-end test test-not start end key))
   (apply #'sequence:delete-duplicates (copy-seq sequence) args))
 
-(defgeneric sequence:sort (sequence predicate &key key))
+(defgeneric sequence:sort (sequence predicate &key key)
+  (:method ((sequence t) predicate &rest kwargs)
+    (declare (ignore predicate kwargs))
+    (core::error-not-a-sequence sequence)))
 ;;; The SEQEUENCE paper says, in the section on relationships between the
 ;;; generic functions in this package,
 ;;; "the default method on SORT behaves as if it constructs a vector with the
@@ -590,7 +695,10 @@
     (core::quick-sort sequence 0 (1- (length sequence))
                       (core:coerce-fdesignator predicate) key)))
 
-(defgeneric sequence:stable-sort (sequence predicate &key key))
+(defgeneric sequence:stable-sort (sequence predicate &key key)
+  (:method ((sequence t) predicate &rest kwargs)
+    (declare (ignore predicate kwargs))
+    (core::error-not-a-sequence sequence)))
 (defmethod sequence:stable-sort ((sequence sequence) predicate &key key)
   ;; FIXME: lazy. REPLACE will do checks it doesn't need to, etc.
   (core::with-key (key)
