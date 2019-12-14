@@ -75,7 +75,8 @@ by (documentation 'NAME 'type)."
   `(eval-when (:compile-toplevel :load-toplevel :execute)
      (funcall #'(setf ext:type-expander)
               ,(ext:parse-deftype name lambda-list body env)
-              ',name)))
+              ',name)
+     ',name))
 
 ;;; Some DEFTYPE definitions.
 
