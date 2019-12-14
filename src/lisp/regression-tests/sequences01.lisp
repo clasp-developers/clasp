@@ -506,3 +506,12 @@
        (nreverse 
         (MAKE-ARRAY 8 :ELEMENT-TYPE '(INTEGER -1 0) :INITIAL-CONTENTS #(0 0 -1 0 -1 -1 0 -1)))))
 
+(test-expect-error
+ every.error.14
+ (every #'identity '(1 2 3 . 4))
+ :type type-error)
+
+(test-expect-error
+ some.error.14
+ (some #'null '(a b . c))
+  :type type-error)
