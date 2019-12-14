@@ -3079,7 +3079,6 @@ CL_DEFUN void finalizeEngineAndRegisterWithGcAndRunMainFunctions(ExecutionEngine
   SYMBOL_EXPORT_SC_(LlvmoPkg, AvailableExternallyLinkage);
   SYMBOL_EXPORT_SC_(LlvmoPkg, LinkOnceAnyLinkage);
   SYMBOL_EXPORT_SC_(LlvmoPkg, LinkOnceODRLinkage);
-  SYMBOL_EXPORT_SC_(LlvmoPkg, LinkOnceODRAutoHideLinkage);
   SYMBOL_EXPORT_SC_(LlvmoPkg, WeakAnyLinkage);
   SYMBOL_EXPORT_SC_(LlvmoPkg, WeakODRLinkage);
   SYMBOL_EXPORT_SC_(LlvmoPkg, AppendingLinkage);

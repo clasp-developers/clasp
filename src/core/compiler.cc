@@ -29,6 +29,7 @@ THE SOFTWARE.
 // #define EXPOSE_DLLOAD
 //#define DEBUG_LEVEL_FULL
 
+#include <sys/stat.h>
 #include <dlfcn.h>
 #ifdef _TARGET_OS_DARWIN
 #import <mach-o/dyld.h>
@@ -460,6 +461,49 @@ CL_DEFUN T_sp core__startup_image_pathname(char stage) {
   return pn;
 };
 
+
+
+
+
+CL_LAMBDA(name &optional verbose print external-format);
+CL_DOCSTRING("load-binary-directory - load a binary file inside the directory");
+CL_DEFUN T_mv core__load_binary_directory(T_sp pathDesig, T_sp verbose, T_sp print, T_sp external_format) {
+  T_sp tpath;
+  String_sp nameStr = gc::As<String_sp>(cl__namestring(cl__probe_file(pathDesig)));
+  string name = nameStr->get_std_string();
+  if (name[name.size()-1]=='/') {
+    // strip last slash
+    name = name.substr(0,name.size()-1);
+  }
+  struct stat stat_path;
+  stat(name.c_str(),&stat_path);
+  if (S_ISDIR(stat_path.st_mode) != 0) {
+    //
+    // If the fasl name is a directory it has the structure...
+    //  /foo/bar/baz.fasl  change this to...
+    //  /foo/bar/baz.fasl/baz.fasl
+    size_t slash_pos = name.find_last_of('/',name.size()-1);
+    if (slash_pos != std::string::npos) {
+      name = name + "/fasl.fasl";
+      SimpleBaseString_sp sbspath = SimpleBaseString_O::make(name);
+      tpath = cl__pathname(sbspath);
+      if (cl__probe_file(tpath).nilp()) {
+        SIMPLE_ERROR(BF("Could not find bundle %s") % _rep_(sbspath));
+      }
+    } else {
+      SIMPLE_ERROR(BF("Could not open %s as a fasl file") % name);
+    }
+  } else {
+    SIMPLE_ERROR(BF("Could not find bundle %s") % _rep_(pathDesig));
+  }
+  return core__load_binary(tpath,verbose,print,external_format);
+}
+
+
+
+
+
+
 CL_LAMBDA(name &optional verbose print external-format);
 CL_DECLARE();
 CL_DOCSTRING("load-binary");
@@ -492,6 +536,7 @@ LOAD:
   String_sp nameStr = gc::As<String_sp>(cl__namestring(cl__probe_file(path)));
   string name = nameStr->get_std_string();
 
+#if 0
   /* Look up the initialization function. */
   string stem = cl__string_downcase(gc::As<String_sp>(path->_Name))->get_std_string();
   size_t dsp = 0;
@@ -499,7 +544,8 @@ LOAD:
     stem = stem.substr(0, dsp);
   else if ((dsp = stem.find("_o")) != string::npos)
     stem = stem.substr(0, dsp);
-
+#endif
+  
   int mode = RTLD_NOW | RTLD_GLOBAL; // | RTLD_FIRST;
   // Check if we already have this dynamic library loaded
   bool handleIt = if_dynamic_library_loaded_remove(name);

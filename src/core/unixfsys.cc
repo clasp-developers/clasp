@@ -144,6 +144,67 @@ String_sp clasp_strerror(int e) {
   return SimpleBaseString_O::make(std::string(strerror(e)));
 }
 
+ void rmtree(const char* path)
+ {
+   size_t path_len;
+   DIR *dir;
+   struct stat stat_path, stat_entry;
+   struct dirent *entry;
+
+    // stat for the path
+   stat(path, &stat_path);
+
+    // if path does not exists or is not dir - exit with status -1
+   if (S_ISDIR(stat_path.st_mode) == 0) {
+     if (S_ISREG(stat_path.st_mode) != 0 ||
+         S_ISLNK(stat_path.st_mode) != 0 ) {
+       fprintf(stderr, "Removing file or link %s\n", path);
+       unlink(path);
+       return;
+     }
+     fprintf(stderr, "%s: %s\n", "Is not directory", path);
+     return;
+   }
+
+    // if not possible to read the directory for this user
+   if ((dir = opendir(path)) == NULL) {
+     fprintf(stderr, "%s: %s\n", "Can`t open directory", path);
+     return;
+   }
+
+    // the length of the path
+   path_len = strlen(path);
+
+    // iteration through entries in the directory
+   while ((entry = readdir(dir)) != NULL) {
+
+        // skip entries "." and ".."
+     if (!strcmp(entry->d_name, ".") || !strcmp(entry->d_name, ".."))
+       continue;
+
+        // determinate a full path of an entry
+     std::string full_path = std::string(path) + "/" + std::string(entry->d_name);
+        // stat for the entry
+     stat(full_path.c_str(), &stat_entry);
+
+        // recursively remove a nested directory
+     if (S_ISDIR(stat_entry.st_mode) != 0) {
+       rmtree(full_path.c_str());
+       continue;
+     }
+
+        // remove a file object
+     if (unlink(full_path.c_str()) != 0)
+       printf("Can`t remove a file: %s error: %s\n", full_path.c_str(), std::strerror(errno));
+   }
+
+    // remove the devastated directory and close the object of it
+   if (rmdir(path) != 0)
+     printf("Can`t remove a directory: %s\n", path);
+
+   closedir(dir);
+ }
+
 static String_sp coerce_to_posix_filename(T_sp pathname) {
   /* This converts a pathname designator into a namestring, with the
 	 * particularity that directories do not end with a slash '/', because
@@ -925,58 +986,20 @@ CL_DEFUN T_mv cl__rename_file(T_sp oldn, T_sp newn, T_sp if_exists) {
     /* invalid key */
     SIMPLE_ERROR(BF("%s is an illegal IF-EXISTS option for RENAME-FILE.") % _rep_(if_exists));
   }
+  if (cl__equal(new_filename,old_filename)) goto SUCCESS;
+  if (if_exists==_lisp->_true()) {
+    T_sp dkind = core__file_kind(new_filename,false);
+    if (dkind==kw::_sym_directory) {
+      rmtree(new_filename->get_std_string().c_str());
+    }
+  }
   {
     clasp_disable_interrupts();
-#if defined(CLASP_MS_WINDOWS_HOST)
-    int error = SetErrorMode(0);
-    if (MoveFile((char *)old_filename->base_string.self,
-                 (char *)new_filename->base_string.self)) {
-      SetErrorMode(error);
-      goto SUCCESS;
-    }
-    switch (GetLastError()) {
-    case ERROR_ALREADY_EXISTS:
-    case ERROR_FILE_EXISTS:
-      break;
-    default:
-      goto FAILURE_CLOBBER;
-    };
-    if (MoveFileEx((char *)old_filename->base_string.self,
-                   (char *)new_filename->base_string.self,
-                   MOVEFILE_REPLACE_EXISTING)) {
-      SetErrorMode(error);
-      goto SUCCESS;
-    }
-    /* hack for win95/novell */
-    chmod((char *)old_filename->base_string.self, 0777);
-    chmod((char *)new_filename->base_string.self, 0777);
-    SetFileAttributesA((char *)new_filename->base_string.self,
-                       FILE_ATTRIBUTE_NORMAL);
-    SetFileAttributesA((char *)new_filename->base_string.self,
-                       FILE_ATTRIBUTE_TEMPORARY);
-    if (MoveFile((char *)old_filename->base_string.self,
-                 (char *)new_filename->base_string.self)) {
-      SetErrorMode(error);
-      goto SUCCESS;
-    }
-    /* fallback on old behavior */
-    (void)DeleteFileA((char *)new_filename->base_string.self);
-    if (MoveFile((char *)old_filename->base_string.self,
-                 (char *)new_filename->base_string.self)) {
-      SetErrorMode(error);
-      goto SUCCESS;
-    }
-/* fall through */
-#else
     if (rename((char *)old_filename->get_std_string().c_str(),
                (char *)new_filename->get_std_string().c_str()) == 0) {
       goto SUCCESS;
     }
-#endif
   }
-#if defined(CLASP_MS_WINDOWS_HOST)
-FAILURE_CLOBBER:
-#endif
   clasp_enable_interrupts();
   {
     T_sp c_error = clasp_strerror(errno);
@@ -1337,6 +1360,18 @@ CL_DEFUN T_sp core__mkstemp_fd(String_sp thetemplate) {
   unlink(outname.c_str());
   return make_fixnum(fd);
 }
+
+
+
+
+ CL_DEFUN void ext__rmtree(const string& spath)
+ {
+   const char* path = spath.c_str();
+   rmtree(path);
+ };
+  
+
+
 
  CL_LAMBDA(template);
 CL_DECLARE();
