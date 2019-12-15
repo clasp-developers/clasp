@@ -1241,8 +1241,6 @@ def build(bld):
 
     bld.bclasp_executable = bld.path.find_or_declare(variant.executable_name(stage='b'))
     bld.cclasp_executable = bld.path.find_or_declare(variant.executable_name(stage='c'))
-    bld.asdf_fasl_bclasp = bld.path.find_or_declare("%s/src/lisp/modules/asdf/asdf.fasl" % variant.fasl_dir(stage='b'))
-    bld.asdf_fasl_cclasp = bld.path.find_or_declare("%s/src/lisp/modules/asdf/asdf.fasl" % variant.fasl_dir(stage='c'))
     bld.bclasp_fasl = variant.fasl_name(bld,stage='b')
     bld.cclasp_fasl = variant.fasl_name(bld,stage='c')
     bld.iclasp_executable = bld.path.find_or_declare(variant.executable_name(stage='i'))
@@ -1403,12 +1401,6 @@ def build(bld):
             install('bin/%s' % bld.bclasp_executable.name, bld.bclasp_executable, chmod = Utils.O755)
             bld.symlink_as('${PREFIX}/bin/clasp', bld.bclasp_executable.name)
             os.symlink(bld.bclasp_executable.abspath(), bclasp_symlink_node.abspath())
-        # # Build ASDF for bclasp
-        # cmp_asdf = compile_module(env = bld.env)
-        # cmp_asdf.set_inputs([bld.iclasp_executable, bld.bclasp_fasl] + waf_nodes_for_lisp_files(bld, ["src/lisp/modules/asdf/build/asdf"]))
-        # cmp_asdf.set_outputs(bld.asdf_fasl_bclasp)
-        # bld.add_to_group(cmp_asdf)
-        # install_files('lib/clasp/', bld.asdf_fasl_bclasp)
     if (bld.stage_val >= 3):
         log.info("Creating compile_cclasp task")
         # Build cclasp fasl
@@ -1442,24 +1434,33 @@ def build(bld):
         install('lib/clasp/', cclasp_common_lisp_output_name_list)
 
         # Build serve-event
-        serve_event_fasl = bld.path.find_or_declare("%s/src/lisp/modules/serve-event/serve-event.fasl" % variant.fasl_dir(stage = 'c'))
+        serve_event_fasl_dir = bld.path.find_or_declare("%s/src/lisp/modules/serve-event/serve-event.fasl" % variant.fasl_dir(stage = 'c'))
+        serve_event_fasl_file = bld.path.find_or_declare("%s/src/lisp/modules/serve-event/serve-event.fasl/fasl.fasl" % variant.fasl_dir(stage = 'c'))
         task = compile_module(env=bld.env)
         task.set_inputs([bld.iclasp_executable,
                          bld.cclasp_fasl] +
                         waf_nodes_for_lisp_files(bld, ["src/lisp/modules/serve-event/serve-event"]))
-        task.set_outputs(serve_event_fasl)
+        task.set_outputs(serve_event_fasl_dir)
         bld.add_to_group(task)
-        install('lib/clasp/', serve_event_fasl)
+        install('lib/clasp/', serve_event_fasl_file)
+        if ( bld.env['DEST_OS'] == DARWIN_OS ):
+            serve_event_dwarf_file = bld.path.find_or_declare("%s/src/lisp/modules/serve-event/serve-event.fasl/fasl.fasl.dwarf" % variant.fasl_dir(stage = 'c'))
+            install('lib/clasp/', serve_event_dwarf_file)
+            
 
         # Build ASDF
+        cclasp_asdf_fasl_dir = bld.path.find_or_declare("%s/src/lisp/modules/asdf/asdf.fasl" % variant.fasl_dir(stage='c'))
+        cclasp_asdf_fasl_file = bld.path.find_or_declare("%s/src/lisp/modules/asdf/asdf.fasl/fasl.fasl" % variant.fasl_dir(stage='c'))
         task = compile_module(env=bld.env)
         task.set_inputs([bld.iclasp_executable,
                          bld.cclasp_fasl] +
                         waf_nodes_for_lisp_files(bld, ["src/lisp/modules/asdf/build/asdf"]))
-        task.set_outputs(bld.asdf_fasl_cclasp)
+        task.set_outputs(cclasp_asdf_fasl_dir)
         bld.add_to_group(task)
-
-        install('lib/clasp/', bld.asdf_fasl_cclasp)
+        install('lib/clasp/', cclasp_asdf_fasl_file)
+        if ( bld.env['DEST_OS'] == DARWIN_OS ):
+            cclasp_asdf_dwarf_file = bld.path.find_or_declare("%s/src/lisp/modules/serve-event/serve-event.fasl/fasl.fasl.dwarf" % variant.fasl_dir(stage = 'c'))
+            install('lib/clasp/', cclasp_asdf_dwarf_file)
 
         clasp_symlink_node = out_dir_node.make_node("clasp")
         log.debug("clasp_symlink_node =  %s", clasp_symlink_node)
