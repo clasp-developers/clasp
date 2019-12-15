@@ -104,8 +104,11 @@
          (type (pathname-type bundle-pathname))
          (temp-bundle-directory (sys:mkdtemp bundle-namestring))
          (temp-bundle-file (make-pathname :name "fasl" :type type :defaults temp-bundle-directory))
-         (bundle-directory (make-pathname :directory (append (pathname-directory bundle-pathname)
-                                                                (list (format nil "~a.~a" name type))))))
+         (bundle-directory (make-pathname
+                            :directory (append
+                                        ;;; so that it works with logical pathnames
+                                        (pathname-directory (translate-logical-pathname bundle-pathname))
+                                        (list (format nil "~a.~a" name type))))))
     (values temp-bundle-directory
             (ensure-string temp-bundle-file)
             bundle-directory)))
