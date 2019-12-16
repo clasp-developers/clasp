@@ -45,8 +45,8 @@
   (unless (constantp type env)
     (return-from make-sequence form))
   (let ((type (ext:constant-form-value type env)))
-    (multiple-value-bind (kind length success)
-        (si::sequence-type-maker-info type)
+    (multiple-value-bind (kind length exactp success)
+        (si::sequence-type-maker-info type env)
       (cond ((not success)
              ;; give up for runtime error or unknown, and warn
              (cmp:warn-undefined-type nil type)
@@ -55,21 +55,13 @@
              ;; (make-sequence nil...) is weird shit that we leave to runtime.
              form)
             ((eq kind 'list)
-             (if (eq length '*)
-                 (if (subtypep type 'cons env)
-                     (let ((ss (gensym "SIZE")))
-                       `(let* ((,ss ,size))
-                          (if (zerop ,ss)
-                              (si::error-sequence-length nil ',type ,ss)
-                              (make-list ,ss :initial-element ,initial-element))))
-                     `(make-list ,size :initial-element ,initial-element))
-                 (let ((ss (gensym "SIZE"))
-                       (r (gensym "RESULT")))
-                   `(let* ((,ss ,size)
-                           (,r (make-list ,ss :initial-element ,initial-element)))
-                      (if (eql ,length ,ss)
-                          ,r
-                          (si::error-sequence-length ,r ',type ,ss))))))
+             (let ((ss (gensym "SIZE")) (r (gensym "RESULT")))
+               `(let* ((,ss ,size)
+                       (,r (make-list ,ss :initial-element ,initial-element)))
+                  ,@(when length
+                      `((unless (,(if exactp 'eql '>=) ,ss ',length)
+                          (core::error-sequence-length ,r ',type ,ss))))
+                  ,r)))
             ((consp kind) ; (VECTOR uaet)
              (let ((uaet (second kind)) (r (gensym "RESULT")) (ss (gensym "SIZE")))
                `(let* ((,ss ,size)
@@ -80,11 +72,12 @@
                              (sys:make-vector ',uaet ,ss))))
                   ,@(when iesp
                       `((si::fill-array-with-elt ,r ,initial-element 0 nil)))
-                  ,@(unless (eql length '*)
-                      `((unless (eql ,length ,ss)
+                  ,@(unless (null length)
+                      `((unless (eql ,ss ',length)
                           (si::error-sequence-length ,r ',type ,ss))))
                   ,r)))
             (t ; user sequence type
+             ;; Lengths cannot be specified for these
              (if iesp
                  `(sequence:make-sequence ',kind ,size
                                           :initial-element ,initial-element)
@@ -98,28 +91,33 @@
     (&whole form result-type &rest sequences &environment env)
   (unless (constantp result-type env) (return-from concatenate form))
   (let ((type (ext:constant-form-value result-type env)))
-    (multiple-value-bind (kind length success)
-        (si::sequence-type-maker-info type)
+    (multiple-value-bind (kind length exactp success)
+        (si::sequence-type-maker-info type env)
       (cond ((not success)
              (cmp:warn-undefined-type nil type)
              form)
             ((eq kind 'nil) form)
             ((eq kind 'list)
-             `(si::concatenate-to-list ,@sequences))
+             (if length ; have to check
+                 (let ((r (gensym "RESULT")) (l (gensym "LENGTH")))
+                   `(let* ((,r (si::concatenate-to-list ,@sequences))
+                           (,l (length ,r)))
+                      (unless (,(if exactp 'eq '>=) ,l ',length)
+                        (core::error-sequence-length ,r ',result-type ,l))))
+                 `(si::concatenate-to-list ,@sequences)))
             (t
              (let* ((symlist (gensym-list sequences "SEQUENCE"))
                     (binds (mapcar #'list symlist sequences))
                     (sum `(+ ,@(loop for s in symlist
-                                     collect `(length ,s))))
-                    (constructor
-                      (if (consp kind)
-                          ;; (VECTOR uaet)
-                          `(sys::make-vector ',(second kind) ,sum)
-                          ;; sequence class
-                          `(sequence:make-sequence ',kind ,sum))))
+                                     collect `(length ,s)))))
                `(let (,@binds)
                   (si::concatenate-into-sequence
-                   ,constructor ,@symlist))))))))
+                   ;; this means the make-sequence expander will check
+                   ;; sequence-type-maker-info again, which is kind of
+                   ;; redundant, but it means we can let it handle any
+                   ;; length check and stuff like that.
+                   (make-sequence ',type ,sum)
+                   ,@symlist))))))))
 
 ;;;
 ;;; MAP
@@ -140,26 +138,40 @@
 (define-compiler-macro map
     (&whole form result-type function sequence &rest more-sequences &environment env)
   (if (constantp result-type env)
-      (let ((result-type (ext:constant-form-value result-type env))
+      (let ((type (ext:constant-form-value result-type env))
             (function `(core:coerce-fdesignator ,function))
             (sequences (cons sequence more-sequences)))
-        (cond ((null result-type)
-               `(core::map-for-effect ,function ,@sequences))
-              ((subtypep result-type 'list env)
-               `(core::map-to-list ,function ,@sequences))
-              (t
-               ;; vector type or user sequence type or can't determine.
-               ;; note that map-into-sequence will be sorta inefficient (but valid)
-               ;; if the type ends up being a list, but in the case of weird result
-               ;; types we kind of just give up.
-               ;; TODO: Call SEQUENCE:MAP for user sequence types, maybe.
-               (let ((ssyms (gensym-list sequences "SEQUENCE")))
-                 `(let (,@(mapcar #'list ssyms sequences))
-                    (core::map-into-sequence
-                     (make-sequence ',result-type
-                                    (min ,@(loop for ssym in ssyms
-                                                 collect `(length ,ssym))))
-                     ,function ,@ssyms))))))
+        (if (null type)
+            `(core::map-for-effect ,function ,@sequences)
+            (multiple-value-bind (kind length exactp success)
+                (si::sequence-type-maker-info type env)
+              (cond ((not success)
+                     (cmp:warn-undefined-type nil type)
+                     form)
+                    ((eq kind 'list)
+                     (if length ; have to check
+                         (let ((r (gensym "RESULT")) (l (gensym "LENGTH")))
+                           `(let* ((,r (core::map-to-list ,function ,@sequences))
+                                   (,l (length ,r)))
+                              (unless (,(if exactp 'eq '>=) ,l ',length)
+                                (core::error-sequence-length
+                                 ,r ',result-type ,l))
+                              ,r))
+                         `(core::map-to-list ,function ,@sequences)))
+                    (t
+                     ;; vector type or user sequence type or can't determine.
+                     ;; note that map-into-sequence will be sorta inefficient (but valid)
+                     ;; if the type ends up being a list, but in the case of weird result
+                     ;; types we kind of just give up.
+                     ;; MAKE-SEQUENCE handles any length check.
+                     ;; TODO: Call SEQUENCE:MAP for user sequence types, maybe.
+                     (let ((ssyms (gensym-list sequences "SEQUENCE")))
+                       `(let (,@(mapcar #'list ssyms sequences))
+                          (core::map-into-sequence
+                           (make-sequence ',type
+                                          (min ,@(loop for ssym in ssyms
+                                                       collect `(length ,ssym))))
+                           ,function ,@ssyms))))))))
       form))
 
 ;;;

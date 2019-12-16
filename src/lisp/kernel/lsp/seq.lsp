@@ -42,11 +42,12 @@
 	 :datum object))
 
 ;;; Given a type specifier, returns information about it in its capacity as a sequence.
-;;; Returns three values: A "kind", a length or '*, and a boolean.
-;;; The third value is T if the function could determine the first two.
+;;; Returns four values: A "kind", a length or NIL, a boolean, and a boolean.
+;;; The last value is T if the function could determine the others.
 ;;; A "kind" is either the symbol LIST, the symbol NIL,
 ;;; a list (VECTOR symbol) where symbol is an upgraded array element type,
 ;;; or a class (a user-defined sequence class).
+;;; The length is a minimum, and if the third value is true, also a maximum.
 (defun sequence-type-maker-info (type &optional env)
   (let (elt-type length name args)
     (cond ((consp type)
@@ -56,15 +57,16 @@
 	  (t
 	   (setq name type args nil)))
     (case name
-      ((LIST) (values 'list '* t))
+      ((LIST) (values 'list nil nil t))
       ((VECTOR)
        (values (list 'vector
                      (if (or (endp args) (eq (first args) '*))
                          't
                          (upgraded-array-element-type (first args) env)))
-               (if (endp (rest args)) '* (second args))
-               t))
-      ((SIMPLE-VECTOR) (values '(vector t) (if (endp args) '* (first args)) t))
+               ;; will be NIL if there aren't enough arguments, correctly.
+               (second args) t t))
+      ((SIMPLE-VECTOR)
+       (values '(vector t) (first args) t t))
       ;; Per the CLHS page on class string, when used "for object creation",
       ;; string means (vector character) rather than its usual meaning as a
       ;; union. And this function is for object creation.
@@ -74,40 +76,42 @@
       ;; here, which doesn't seem to be mandated, but it's nice.
       #-unicode
       ((STRING SIMPLE-STRING)
-       (values '(vector base-char) (if (endp args) '* (first args)) t))
+       (values '(vector base-char) (first args) t t))
       #+(or unicode clasp)
       ((BASE-STRING SIMPLE-BASE-STRING)
-       (values '(vector base-char) (if (endp args) '* (first args)) t))
+       (values '(vector base-char) (first args) t t))
       #+(or unicode clasp)
       ((STRING SIMPLE-STRING)
-       (values '(vector character) (if (endp args) '* (first args)) t))
+       (values '(vector character) (first args) t t))
       ((BIT-VECTOR SIMPLE-BIT-VECTOR)
-       (values '(vector bit) (if (endp args) '* (first args)) t))
+       (values '(vector bit) (first args) t t))
       ((ARRAY SIMPLE-ARRAY)
        ;; It's only a sequence if a rank is specified.
        (let ((uaet (if (or (endp args) (eq (first args) '*))
                        't
                        (upgraded-array-element-type (first args) env)))
              (dimension-spec (second args)))
-         (cond ((eql dimension-spec 1) (values `(vector ,uaet) '* t))
+         (cond ((eql dimension-spec 1) (values `(vector ,uaet) nil nil t))
                ((and (consp dimension-spec)
                      (null (cdr dimension-spec)))
-                (values `(vector ,uaet) (car dimension-spec) t))
-               (t (values nil nil nil)))))
-      ((null) (values 'list 0 t))
+                (values `(vector ,uaet) (car dimension-spec) t t))
+               (t (values nil nil nil nil)))))
+      ((null) (values 'list 0 t t))
       ;; This is pretty dumb, but we are required to signal a length mismatch
       ;; error in safe code, and this case will probably not come up often.
       ((cons)
        (if (and (consp args) (consp (cdr args))) ; we have (cons x y
-           (multiple-value-bind (et len success)
+           (multiple-value-bind (et length exactp success)
                (sequence-type-maker-info (second args) env)
              (cond ((or (not success) ; can't figure out what cdr is
                         (not (eq et 'list))) ; (a . #(...)) is not a sequence
-                    (values nil nil nil))
-                   ((eq len '*) (values 'list '* t))
-                   (t (values 'list (1+ len) t))))
-           (values 'list '* t)))
-      ((nil) (values nil '* t))
+                    (values nil nil nil nil))
+                   (length
+                    (values 'list (1+ length) exactp success))
+                   (t ; length at least 1
+                    (values 'list 1 nil success))))
+           (values 'list 1 nil t)))
+      ((nil) (values nil nil nil t))
       (t
        ;; Might have a weird to parse vector or list type,
        ;; e.g. incorporating OR/AND/NOT.
@@ -116,56 +120,54 @@
                     . #.(mapcar #'(lambda (i) `(VECTOR ,i))
                          sys::+upgraded-array-element-types+)))
          (when (subtypep type i env)
-           (return-from sequence-type-maker-info (values i '* t))))
+           (return-from sequence-type-maker-info (values i nil nil t))))
        ;; Might be a user sequence type.
        (when (symbolp type)
          (let ((class (find-class type env)))
            (when class (return-from sequence-type-maker-info
-                         (values class '* t)))))
+                         (values class nil nil t)))))
        ;; Dunno.
-       (values nil nil nil)))))
+       (values nil nil nil nil)))))
 
 (defun make-sequence (type size	&key (initial-element nil iesp))
   "Args: (type length &key initial-element)
 Creates and returns a sequence of the given TYPE and LENGTH.  If INITIAL-
 ELEMENT is given, then it becomes the elements of the created sequence.  The
 default value of INITIAL-ELEMENT depends on TYPE."
-  (if (and (integerp size) (>= size 0))
-      (multiple-value-bind (kind length success)
-          (sequence-type-maker-info type)
-        (cond ((not success)
-               (if (subtypep type 'sequence)
-                   (error "Could not determine how to construct a sequence of type ~a"
-                          type)
-                   (error-sequence-type type)))
-              ((eq kind 'nil)
-               (error "Cannot construct sequence of bottom type (NIL)"))
-              ((eq kind 'LIST)
-               (let ((result (make-list size :initial-element initial-element)))
-                 (if (or (eq length '*) (eql length size))
-                     ;;; ecl  tests instead for (or (and (subtypep type 'NULL) (plusp size))
-                     ;;;                            (and (subtypep type 'CONS) (zerop size)))
-                     (if (subtypep 'LIST type)
-                         result
-                         (if (and (subtypep type 'CONS) (zerop size))
-                             (error-sequence-length result type 0)
-                             result))
-                     (error-sequence-length result type size))))
-              ((consp kind) ; (vector uaet)
-               (let* ((uaet (second kind))
-                      (result (sys:make-vector uaet size)))
-                 ;; Don't know why we don't just pass make-vector the initial element.
-                 (when iesp
-                   (si::fill-array-with-elt result initial-element 0 nil))
-                 (unless (or (eql length '*) (eql length size))
-                   (error-sequence-length result type size))
-                 result))
-              ;; Must be a user sequence type.
-              (t
-               (if iesp
-                   (sequence:make-sequence kind size :initial-element initial-element)
-                   (sequence:make-sequence kind size)))))
-      (error 'type-error :datum size :expected-type '(integer 0 *))))
+  (unless (and (integerp size) (>= size 0))
+    (error 'type-error :datum size :expected-type '(integer 0 *)))
+  (multiple-value-bind (kind length exactp success)
+      (sequence-type-maker-info type)
+    (cond ((not success)
+           (if (subtypep type 'sequence)
+               (error "Could not determine how to construct a sequence of type ~a"
+                      type)
+               (error-sequence-type type)))
+          ((eq kind 'nil)
+           (error "Cannot construct sequence of bottom type (NIL)"))
+          ((eq kind 'LIST)
+           (let ((result (make-list size :initial-element initial-element)))
+             (unless (or (not length)
+                         (if exactp (eq size length) (>= size length)))
+               (error-sequence-length result type size))
+             result))
+          ((consp kind) ; (vector uaet)
+           (let* ((uaet (second kind))
+                  (result (sys:make-vector uaet size)))
+             ;; Don't know why we don't just pass make-vector the initial element.
+             (when iesp
+               (si::fill-array-with-elt result initial-element 0 nil))
+             (unless (or (not length) (eq length size))
+               ;; always exactp for a vector
+               (error-sequence-length result type size))
+             result))
+          ;; Must be a user sequence type.
+          (t
+           ;; There's no way for a user to specify a length in the type,
+           ;; so we don't bother with that check.
+           (if iesp
+               (sequence:make-sequence kind size :initial-element initial-element)
+               (sequence:make-sequence kind size))))))
 
 ;;; Sequence iterators.
 
@@ -375,13 +377,22 @@ default value of INITIAL-ELEMENT depends on TYPE."
 
 (defun concatenate (result-type &rest sequences)
   (declare (dynamic-extent sequences))
-  ;; SUBTYPEP is slow, but if you're here you already failed to optimize.
-  ;; See compiler macro in cmp/opt-sequence.lsp.
-  (if (subtypep result-type 'list)
-      (apply #'concatenate-to-list sequences)
-      (let* ((lengths-list (mapcar #'length sequences))
-             (result (make-sequence result-type (apply #'+ lengths-list))))
-        (apply #'concatenate-into-sequence result sequences))))
+  (multiple-value-bind (kind length exactp success)
+      (sequence-type-maker-info result-type)
+    (if (and success (eq kind 'list))
+        (let ((result (apply #'concatenate-to-list sequences)))
+          (unless (not length)
+            (let ((l (length result)))
+              (unless (if exactp (eq l length) (>= l length))
+                (error-sequence-length result result-type l))))
+          result)
+        ;; general sequence. make-sequence handles length check
+        ;; this checks s-t-m-i redundantly, but this is slow path anyway
+        ;; (see cmp/opt-sequence.lsp for faster path)
+        (let* ((lengths-list (mapcar #'length sequences))
+               (result (make-sequence result-type
+                                      (apply #'+ lengths-list))))
+          (apply #'concatenate-into-sequence result sequences)))))
 
 (defun map-for-effect (function &rest sequences)
   "Does (map nil ...), but the function is already a function."
@@ -401,13 +412,23 @@ Creates and returns a sequence of TYPE with K elements, with the N-th element
 being the value of applying FUNCTION to the N-th elements of the given
 SEQUENCEs, where K is the minimum length of the given SEQUENCEs."
   (if result-type
-      ;; FIXME: Could use map-to-list and avoid reduce, if appropriate.
-      (let ((length
-              (reduce #'min more-sequences
-                      :initial-value (length sequence)
-                      :key #'length)))
-        (apply #'map-into (make-sequence result-type length)
-               function sequence more-sequences))
+      (multiple-value-bind (kind length exactp success)
+          (sequence-type-maker-info result-type)
+        (if (and success (eq kind 'list))
+            (let ((result (apply #'map-to-list
+                                 function sequence more-sequences)))
+              (unless (not length)
+                (let ((l (length result)))
+                  (unless (if exactp (eq l length) (>= l length))
+                    (error-sequence-length result result-type l))))
+              result)
+            ;; ditto note in CONCATENATE above
+            (let ((length
+                    (reduce #'min more-sequences
+                            :initial-value (length sequence)
+                            :key #'length)))
+              (apply #'map-into (make-sequence result-type length)
+                     function sequence more-sequences))))
       (apply #'map-for-effect function sequence more-sequences)))
 
 (defun map-to-list (function &rest sequences)
