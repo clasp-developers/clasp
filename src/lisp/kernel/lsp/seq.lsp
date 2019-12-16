@@ -123,9 +123,11 @@
            (return-from sequence-type-maker-info (values i nil nil t))))
        ;; Might be a user sequence type.
        (when (symbolp type)
-         (let ((class (find-class type env)))
-           (when class (return-from sequence-type-maker-info
-                         (values class nil nil t)))))
+         (let ((class (find-class type nil env)))
+           (when (and class (core:subclassp
+                             class (find-class 'sequence t env)))
+             (return-from sequence-type-maker-info
+               (values class nil nil t)))))
        ;; Dunno.
        (values nil nil nil nil)))))
 

@@ -809,9 +809,12 @@
 (defun sequence:make-sequence (type size
                                &rest args &key initial-element initial-contents)
   (declare (ignore initial-element initial-contents))
-  (let* ((class (if (symbolp type) (find-class type) type))
-         (proto (clos:class-prototype class)))
-    (apply #'sequence:make-sequence-like proto size args)))
+  (let ((class (if (symbolp type) (find-class type nil) type)))
+    (when (or (null class) ; no class found
+              (not (core:subclassp class (find-class 'sequence))))
+      (core::error-sequence-type type))
+    (apply #'sequence:make-sequence-like (clos:class-prototype class)
+           size args)))
 
 ;;; This is a convenience macro to define some protocol methods for sequences
 ;;; that can be dealt with most efficiently by iterating over them. CL:LIST is
