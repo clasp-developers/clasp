@@ -15,11 +15,6 @@
 
 (in-package "COMPILER")
 
-(defun gensym-list (list &optional x)
-  (loop
-    :for _ :in list
-    :collect (if x (gensym x) (gensym))))
-
 ;;; TODO: Avoid iteration for constant sequence (but watch out for growth)
 
 ;;;
