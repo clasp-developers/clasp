@@ -103,7 +103,8 @@
                    `(let* ((,r (si::concatenate-to-list ,@sequences))
                            (,l (length ,r)))
                       (unless (,(if exactp 'eq '>=) ,l ',length)
-                        (core::error-sequence-length ,r ',type ,l))))
+                        (core::error-sequence-length ,r ',type ,l))
+                      ,r))
                  `(si::concatenate-to-list ,@sequences)))
             (t
              (let* ((symlist (gensym-list sequences "SEQUENCE"))
