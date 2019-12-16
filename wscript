@@ -1434,32 +1434,30 @@ def build(bld):
         install('lib/clasp/', cclasp_common_lisp_output_name_list)
 
         # Build serve-event
-        serve_event_fasl_dir = bld.path.find_or_declare("%s/src/lisp/modules/serve-event/serve-event.fasl" % variant.fasl_dir(stage = 'c'))
-        serve_event_fasl_file = bld.path.find_or_declare("%s/src/lisp/modules/serve-event/serve-event.fasl/fasl.fasl" % variant.fasl_dir(stage = 'c'))
+        serve_event_fasl = bld.path.find_or_declare("%s/src/lisp/modules/serve-event/serve-event.fasl" % variant.fasl_dir(stage = 'c'))
         task = compile_module(env=bld.env)
         task.set_inputs([bld.iclasp_executable,
                          bld.cclasp_fasl] +
                         waf_nodes_for_lisp_files(bld, ["src/lisp/modules/serve-event/serve-event"]))
-        task.set_outputs(serve_event_fasl_dir)
+        task.set_outputs(serve_event_fasl)
         bld.add_to_group(task)
-        install('lib/clasp/', serve_event_fasl_file)
+        install('lib/clasp/', serve_event_fasl)
         if ( bld.env['DEST_OS'] == DARWIN_OS ):
-            serve_event_dwarf_file = bld.path.find_or_declare("%s/src/lisp/modules/serve-event/serve-event.fasl/fasl.fasl.dwarf" % variant.fasl_dir(stage = 'c'))
+            serve_event_dwarf_file = bld.path.find_or_declare("%s/src/lisp/modules/serve-event/serve-event.fasl.dwarf" % variant.fasl_dir(stage = 'c'))
             install('lib/clasp/', serve_event_dwarf_file)
             
 
         # Build ASDF
-        cclasp_asdf_fasl_dir = bld.path.find_or_declare("%s/src/lisp/modules/asdf/asdf.fasl" % variant.fasl_dir(stage='c'))
-        cclasp_asdf_fasl_file = bld.path.find_or_declare("%s/src/lisp/modules/asdf/asdf.fasl/fasl.fasl" % variant.fasl_dir(stage='c'))
+        cclasp_asdf_fasl = bld.path.find_or_declare("%s/src/lisp/modules/asdf/asdf.fasl" % variant.fasl_dir(stage='c'))
         task = compile_module(env=bld.env)
         task.set_inputs([bld.iclasp_executable,
                          bld.cclasp_fasl] +
                         waf_nodes_for_lisp_files(bld, ["src/lisp/modules/asdf/build/asdf"]))
-        task.set_outputs(cclasp_asdf_fasl_dir)
+        task.set_outputs(cclasp_asdf_fasl)
         bld.add_to_group(task)
-        install('lib/clasp/', cclasp_asdf_fasl_file)
+        install('lib/clasp/', cclasp_asdf_fasl)
         if ( bld.env['DEST_OS'] == DARWIN_OS ):
-            cclasp_asdf_dwarf_file = bld.path.find_or_declare("%s/src/lisp/modules/serve-event/serve-event.fasl/fasl.fasl.dwarf" % variant.fasl_dir(stage = 'c'))
+            cclasp_asdf_dwarf_file = bld.path.find_or_declare("%s/src/lisp/modules/asdf/asdf.fasl.dwarf" % variant.fasl_dir(stage = 'c'))
             install('lib/clasp/', cclasp_asdf_dwarf_file)
 
         clasp_symlink_node = out_dir_node.make_node("clasp")

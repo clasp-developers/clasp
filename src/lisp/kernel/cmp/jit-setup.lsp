@@ -66,17 +66,6 @@
   (warn "Do something with dump-function"))
 (export 'dump-function)
 
-(defun write-bitcode (module output-path)
-  ;; Write bitcode as either .bc files or .ll files
-  (if *use-human-readable-bitcode*
-      (let* ((filename (make-pathname :type "ll" :defaults (pathname output-path)))
-             (output-name (or (namestring filename)
-                              (error "In write-bitcode the output file for ~a could not be coerced to a namestring" output-path)))
-             (fout (open output-name :direction :output)))
-        (unwind-protect
-             (llvm-sys:dump-module module fout)
-          (close fout)))
-      (llvm-sys:write-bitcode-to-file module (namestring output-path))))
 
 (defun load-bitcode (filename)
   (if *use-human-readable-bitcode*

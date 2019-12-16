@@ -82,12 +82,11 @@
              (with-track-llvm-time
                  (let ((bitcode-file (core:coerce-to-filename (cfp-output-file-default object-file-path :bitcode))))
                    (write-bitcode module bitcode-file)))
-             (with-open-file (fout object-file-path :direction :output)
-               (let ((reloc-model (cond
-                                    ((or (member :target-os-linux *features*) (member :target-os-freebsd *features*))
-                                     'llvm-sys:reloc-model-pic-)
-                                    (t 'llvm-sys:reloc-model-undefined))))
-                 (generate-obj-asm module fout :file-type 'llvm-sys:code-gen-file-type-object-file :reloc-model reloc-model)))))
+             (let ((reloc-model (cond
+                                  ((or (member :target-os-linux *features*) (member :target-os-freebsd *features*))
+                                   'llvm-sys:reloc-model-pic-)
+                                  (t 'llvm-sys:reloc-model-undefined))))
+               (generate-obj-asm module object-file-path :file-type 'llvm-sys:code-gen-file-type-object-file :reloc-model reloc-model))))
           ((eq intermediate-output-type :bitcode)
            (with-track-llvm-time
                (let ((bitcode-file (core:coerce-to-filename (cfp-output-file-default (ast-job-form-output-path job) :bitcode))))
