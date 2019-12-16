@@ -366,7 +366,7 @@ default value of INITIAL-ELEMENT depends on TYPE."
           (setq tail new-tail))))))
 
 (defun concatenate-into-sequence (seq core:&va-rest sequences)
-  ;; vector is assumed to be non complex and have the correct length.
+  ;; seq is assumed to be non complex and have the correct length.
   (reckless
    (sequence:with-sequence-iterator (it limit from-end step nil nil setelt)
        (seq)
@@ -411,6 +411,7 @@ default value of INITIAL-ELEMENT depends on TYPE."
 Creates and returns a sequence of TYPE with K elements, with the N-th element
 being the value of applying FUNCTION to the N-th elements of the given
 SEQUENCEs, where K is the minimum length of the given SEQUENCEs."
+  (declare (dynamic-extent more-sequences))
   (if result-type
       (multiple-value-bind (kind length exactp success)
           (sequence-type-maker-info result-type)
