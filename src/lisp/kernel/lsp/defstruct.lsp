@@ -437,18 +437,20 @@
                           (writer
                             (if read-only
                                 nil
-                                ;; FIXME: inlinable setf function would be nicer,
-                                ;; but i'm pretty sure we can't inline setf functions atm.
-                                `((defsetf ,accname (object) (new)
-                                    (list 'si:instance-set
-                                      (list 'the ',name object)
-                                      ,index new))))))
+                                `((defun (setf ,accname) (new object)
+                                    (if (typep object ',name)
+                                        (si:instance-set object ,index new)
+                                        (error 'type-error
+                                               :datum object
+                                               :expected-type ',name)))))))
                      (list* `(declaim (ftype (function (,name) ,type) ,accname)
                                       (inline ,accname))
                             `(defun ,accname (instance)
-                               ;; FIXME: remove decls once ftype can take care of it.
-                               (declare (type ,name instance))
-                               (the ,type (si:instance-ref instance ,index)))
+                               (if (typep instance ',name)
+                                   (the ,type (si:instance-ref instance ,index))
+                                   (error 'type-error
+                                          :datum instance
+                                          :expected-type ',name)))
                             writer))
                  (incf index)))))
       `(progn ,@(mapcan #'one slot-descriptions)))))
