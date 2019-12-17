@@ -785,7 +785,8 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, Token &token, bool only_dot
       sym = sym_mv;
       T_sp status = sym_mv.second();
       if (status != kw::_sym_external) {
-        SIMPLE_ERROR(BF("Cannot find the external symbol %s in %s") % symbol_name_str->get_std_string() % _rep_(pkg));
+        READER_ERROR(SimpleBaseString_O::make("Cannot find the external symbol ~a in ~a"),
+                     Cons_O::createList(symbol_name_str, pkg), sin);
       }
     } else {
       sym = pkg->intern(symbol_name_str);
@@ -988,7 +989,8 @@ List_sp read_list(T_sp sin, claspCharacter end_char, bool allow_consing_dot) {
           got_dotted = true;
           Character_sp cdotp = gc::As<Character_sp>(cl__peek_char(_lisp->_true(), sin, _lisp->_true(), _Nil<Character_O>(), _lisp->_true()));
           if (clasp_as_claspCharacter(cdotp) == end_char) {
-            SIMPLE_ERROR(BF("Nothing after consing dot"));
+            READER_ERROR(SimpleBaseString_O::make("Nothing after consing dot"),
+                         _Nil<T_O>(), sin);
           }
           dotted_object = read_lisp_object(sin, true, _Nil<T_O>(), true);
         } else {
@@ -997,7 +999,8 @@ List_sp read_list(T_sp sin, claspCharacter end_char, bool allow_consing_dot) {
         }
       } else {
         if (got_dotted) {
-          SIMPLE_ERROR(BF("More than one object after consing dot"));
+          READER_ERROR(SimpleBaseString_O::make("More than one object after consing dot"),
+                       _Nil<T_O>(), sin);
         }
         Cons_sp one = Cons_O::create(obj, _Nil<T_O>());
         LOG_READ(BF("One = %s") % _rep_(one));
