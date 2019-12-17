@@ -701,6 +701,27 @@ Otherwise do a variable shift."
 the type LLVMContexts don't match - so they were defined in different threads!"
                   val-type dest-contained-type)))))
 
+(defun irc-%cmpxchg (ptr cmp new)
+  ;; Sanity check I'm putting in when this is new that should maybe be removed, future reader
+  (let ((cmp-type (llvm-sys:get-type cmp)))
+    (assert (llvm-sys:type-equal cmp-type (llvm-sys:get-type new)))
+    ;; check that ptr's type is pointer<old's type>
+    (assert (llvm-sys:type-equal cmp-type (llvm-sys:get-contained-type (llvm-sys:get-type ptr) 0))))
+  ;; actual gen
+  (llvm-sys:create-atomic-cmp-xchg *irbuilder*
+                                   ptr cmp new
+                                   'llvm-sys:sequentially-consistent
+                                   'llvm-sys:sequentially-consistent
+                                   1 #+(or)'llvm-sys:system))
+
+(defun irc-cmpxchg (ptr cmp new &optional (label ""))
+  ;; cmpxchg returns [value, flag] where flag is true iff the swap was done.
+  ;; since we're doing a strong exchange, value = cmp iff the swap was done too,
+  ;; so we don't really need the flag.
+  ;; Of course we might want to work with the flag directly instead, but that's
+  ;; a reorganization at a higher level.
+  (irc-extract-value (irc-%cmpxchg ptr cmp new) (list 0) label))
+
 (defun irc-phi (return-type num-reserved-values &optional (label "phi"))
   (llvm-sys:create-phi *irbuilder* return-type num-reserved-values label))
 
