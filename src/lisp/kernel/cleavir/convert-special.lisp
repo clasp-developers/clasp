@@ -293,6 +293,13 @@
 (define-functionlike-special-form core::wrapped-stamp cc-ast:wrapped-stamp-ast (:arg))
 (define-functionlike-special-form core::derivable-stamp cc-ast:derivable-stamp-ast (:arg))
 
+(define-functionlike-special-form core::cas-car cc-ast:cas-car-ast
+  (:cons-ast :cmp-ast :value-ast))
+(define-functionlike-special-form core::cas-cdr cc-ast:cas-cdr-ast
+  (:cons-ast :cmp-ast :value-ast))
+(define-functionlike-special-form core::instance-cas cc-ast:slot-cas-ast
+  (:object-ast :slot-number-ast :cmp-ast :value-ast))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Converting CORE::HEADER-STAMP-CASE
