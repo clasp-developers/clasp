@@ -49,6 +49,7 @@
     (core::wrapped-stamp codegen-wrapped-stamp convert-wrapped-stamp)
     (core:instance-ref codegen-instance-ref convert-instance-ref)
     (core:instance-set codegen-instance-set convert-instance-set)
+    (core::instance-cas codegen-instance-cas convert-instance-cas)
     (llvm-inline codegen-llvm-inline convert-llvm-inline)
     (:gc-profiling codegen-gc-profiling convert-gc-profiling)
     (core::debug-message codegen-debug-message convert-debug-message)
@@ -1167,6 +1168,24 @@ jump to blocks within this tagbody."
     (codegen valuet value env)
     (irc-t*-result
      (gen-instance-set (irc-load instancet) (irc-load indext) (irc-load valuet))
+     result)))
+
+;;; CORE:INSTANCE-CAS
+
+(defun codegen-instance-cas (result rest env)
+  (let ((instance (first rest)) (index (second rest))
+        (old (third rest)) (new (fourth rest))
+        (instancet (alloca-t* "instance")) (indext (alloca-t* "index"))
+        (oldt (alloca-t* "old")) (newt (alloca-t* "new")))
+    (codegen instancet instance env)
+    (codegen indext index env)
+    (codegen oldt old env)
+    (codegen newt new env)
+    (irc-t*-result
+     (irc-cmpxchg
+      (irc-instance-slot-address (irc-load instancet) (irc-load indext))
+      (irc-load oldt)
+      (irc-load newt))
      result)))
 
 ;;; DBG-i32

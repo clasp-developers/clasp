@@ -257,6 +257,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
          ((eq sym 'core::rack-stamp) t)
          ((eq sym 'core:instance-ref) t)
          ((eq sym 'core:instance-set) t)
+         ((eq sym 'core::instance-cas) t)
          ((eq sym 'core:defcallback) t)
          (t (special-operator-p sym)))))
 
