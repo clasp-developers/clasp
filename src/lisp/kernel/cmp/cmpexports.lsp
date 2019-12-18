@@ -41,7 +41,9 @@
             *gv-source-namestring*
             *implicit-compile-hook*
             *irbuilder*
-            *llvm-context*
+            llvm-context
+            *thread-safe-context*
+            thread-local-llvm-context
             *load-time-value-holder-global-var*
             *low-level-trace*
             *low-level-trace-print*
@@ -194,6 +196,7 @@
             irc-phi-add-incoming
             irc-renv
             irc-ret-void
+            irc-ret-null-t*
             irc-ret
             irc-undef-value-get
             irc-store

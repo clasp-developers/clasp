@@ -306,8 +306,8 @@ when this is t a lot of graphs will be generated.")
              (cmp:*current-function-description* function-description)
              (entry-block (cmp:irc-basic-block-create "entry" the-function))
              (*function-current-multiple-value-array-address* nil)
-             (cmp:*irbuilder-function-alloca* (llvm-sys:make-irbuilder cmp:*llvm-context*))
-             (body-irbuilder (llvm-sys:make-irbuilder cmp:*llvm-context*))
+             (cmp:*irbuilder-function-alloca* (llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
+             (body-irbuilder (llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
              (body-block (cmp:irc-basic-block-create "body"))
              ;; The following was drawn from setup-function-scope-metadata to get the lineno
              (instruction (enter-instruction function-info))
@@ -316,10 +316,10 @@ when this is t a lot of graphs will be generated.")
              (lineno (core:source-pos-info-lineno source-pos-info))
              ;; The above should be changed to work with with-dbg-function
              )
-        (cmp:with-dbg-function (lambda-name :lineno lineno
-                                            :linkage-name llvm-function-name
-                                            :function-type llvm-function-type
-                                            :function the-function)
+        (cmp:with-dbg-function (:lineno lineno
+                                :linkage-name llvm-function-name
+                                :function-type llvm-function-type
+                                :function the-function)
           (setf (metadata function-info) cmp:*dbg-current-function-metadata*)
           (llvm-sys:set-personality-fn the-function (cmp:irc-personality-function))
           (llvm-sys:add-fn-attr the-function 'llvm-sys:attribute-uwtable)
@@ -364,7 +364,7 @@ when this is t a lot of graphs will be generated.")
             (layout-procedure enter lambda-name abi :linkage linkage))))
 
 (defun log-translate (initial-instruction)
-  (let ((mir-pathname (make-pathname :name (format nil "mir~a" (incf *debug-log-index*))
+  (let ((mir-pathname (make-pathname :name (sys:bformat nil "mir%d" (incf *debug-log-index*))
                                      :type "gml" :defaults (pathname *debug-log*))))
     (format *debug-log* "About to write mir to ~a~%" (namestring mir-pathname))
     (finish-output *debug-log*)
@@ -773,7 +773,8 @@ This works like compile-lambda-function in bclasp."
                   (hir->mir hir env)
                 (multiple-value-setq (function lambda-name)
                   (translate mir function-info-map go-indices
-                             :abi *abi-x86-64* :linkage linkage)))))))
+                             :abi *abi-x86-64*
+                             :linkage linkage)))))))
     (unless function
       (error "There was no function returned by translate-ast"))
     (cmp:cmp-log "fn --> %s%N" fn)

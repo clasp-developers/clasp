@@ -64,6 +64,7 @@ THE SOFTWARE.
 #include <llvm/ExecutionEngine/Orc/IRTransformLayer.h>
 #include <llvm/ExecutionEngine/Orc/LambdaResolver.h>
 #include <llvm/ExecutionEngine/Orc/RTDyldObjectLinkingLayer.h>
+#include <llvm/ExecutionEngine/Orc/LLJIT.h>
 //#include <llvm/ExecutionEngine/Orc/ObjectLinkingLayer.h>
 //#include "llvm/Support/IRBuilder.h"
 
@@ -140,9 +141,91 @@ namespace translate {
       return ((core::RP_Create_wrapped<llvmo::LLVMContext_O,llvm::LLVMContext*>(&lc)));
     };
   };
+  template <>
+    struct to_object<llvm::LLVMContext *> {
+    static core::T_sp convert(llvm::LLVMContext* lc) {
+      return ((core::RP_Create_wrapped<llvmo::LLVMContext_O,llvm::LLVMContext*>(lc)));
+    };
+  };
 };
     ;
 /* to_object translators */
+
+
+namespace llvmo {
+FORWARD(ThreadSafeContext);
+class ThreadSafeContext_O : public core::ExternalObject_O {
+  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::orc::ThreadSafeContext, ThreadSafeContext_O, "thread-safe-context", core::ExternalObject_O);
+  typedef llvm::orc::ThreadSafeContext ExternalType;
+  typedef llvm::orc::ThreadSafeContext *PointerToExternalType;
+
+protected:
+  PointerToExternalType _ptr;
+
+public:
+  virtual void *externalObject() const {
+    return this->_ptr;
+  };
+  PointerToExternalType wrappedPtr() const {
+    return this->_ptr;
+  }
+
+public:
+  void set_wrapped(PointerToExternalType ptr) {
+    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    this->_ptr = ptr;
+  }
+  static ThreadSafeContext_sp create_thread_safe_context();
+  llvm::LLVMContext* getContext();
+  ThreadSafeContext_O() : Base(), _ptr(NULL){};
+  ~ThreadSafeContext_O() {
+    if (_ptr != NULL) {
+      delete _ptr;
+      _ptr = NULL;
+    };
+  }
+
+}; // ThreadSafeContext_O
+
+};
+
+
+namespace llvmo {
+FORWARD(FunctionCallee);
+class FunctionCallee_O : public core::CxxObject_O {
+  LISP_CLASS(llvmo, LlvmoPkg, FunctionCallee_O, "FunctionCallee", core::CxxObject_O);
+ public:
+  llvm::FunctionCallee _Info;
+  CL_DEFMETHOD llvm::FunctionType * 	getFunctionType () {return this->_Info.getFunctionType();};
+  CL_DEFMETHOD llvm::Value * 	getCallee () {return this->_Info.getCallee(); };
+  FunctionCallee_O(llvm::FunctionType* ft, llvm::Value* v) : _Info(ft,v) {};
+};
+};
+
+namespace translate {
+template <>
+struct from_object<const llvm::FunctionCallee&, std::true_type> {
+  typedef llvm::FunctionCallee DeclareType;
+  DeclareType _v;
+  from_object(llvmo::FunctionCallee_sp object) : _v(object->getFunctionType(),object->getCallee()) {};
+};
+};
+
+/* to_object translators */
+
+namespace translate {
+template <>
+struct to_object<llvm::FunctionCallee> {
+  static core::T_sp convert(llvm::FunctionCallee fc) {
+    GC_ALLOCATE_VARIADIC(llvmo::FunctionCallee_O,ofc,fc.getFunctionType(),fc.getCallee());
+    return ofc;
+  }
+};
+};
+;
+
+
+  
 
 namespace llvmo {
 FORWARD(Linker);
@@ -190,6 +273,73 @@ struct from_object<llvm::Linker &, std::true_type> {
 };
     ;
 /* to_object translators */
+
+
+
+
+
+
+namespace llvmo {
+FORWARD(JITDylib);
+class JITDylib_O : public core::ExternalObject_O {
+  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::orc::JITDylib, JITDylib_O, "JITDylib", core::ExternalObject_O);
+  typedef llvm::orc::JITDylib ExternalType;
+  typedef llvm::orc::JITDylib *PointerToExternalType;
+
+protected:
+  PointerToExternalType _ptr;
+
+public:
+public:
+  virtual void *externalObject() const {
+    return this->_ptr;
+  };
+  PointerToExternalType wrappedPtr() const {
+    return this->_ptr;
+  }
+  void dump(core::T_sp stream);
+public:
+  void set_wrapped(PointerToExternalType ptr) {
+    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    this->_ptr = ptr;
+  }
+  JITDylib_O() : Base(), _ptr(NULL){};
+  ~JITDylib_O() {
+    if (_ptr != NULL) { /* delete _ptr;*/
+      _ptr = NULL;
+    };
+  }
+
+}; // JITDylib_O
+}; // llvmo
+
+
+namespace translate {
+template <>
+struct from_object<llvm::orc::JITDylib *, std::true_type> {
+  typedef llvm::orc::JITDylib *DeclareType;
+  DeclareType _v;
+  from_object(T_P object) : _v(gc::As<llvmo::JITDylib_sp>(object)->wrappedPtr()){};
+};
+};
+
+/* to_object translators */
+
+namespace translate {
+template <>
+struct to_object<llvm::orc::JITDylib *> {
+  static core::T_sp convert(llvm::orc::JITDylib *ptr) {
+    return ((core::RP_Create_wrapped<llvmo::JITDylib_O, llvm::orc::JITDylib *>(ptr)));
+  }
+};
+template <>
+struct to_object<llvm::orc::JITDylib&> {
+  static core::T_sp convert(llvm::orc::JITDylib& jd) {
+    return ((core::RP_Create_wrapped<llvmo::JITDylib_O, llvm::orc::JITDylib *>(&jd)));
+  }
+};
+};
+    ;
 
 namespace llvmo {
 FORWARD(Pass);
@@ -704,9 +854,13 @@ public:
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
     this->_ptr = ptr;
   }
+
+  core::ObjectFile_sp generate_object_file_from_module(PassManager_sp passManager, Module_sp module);
+  
   /*! Return (values CodeGenFileType-symbol) */
   void addPassesToEmitFileAndRunPassManager(PassManager_sp passManager,
                                             core::T_sp stream,
+                                            core::T_sp dwo_stream,
                                             llvm::TargetMachine::CodeGenFileType,
                                             Module_sp module);
 
@@ -1683,6 +1837,8 @@ public:
     if (this->_ptr != NULL && this->_PtrIsOwned)
       this->_ptr->deleteValue();
   }
+  void setUnnamedAddr(llvm::GlobalValue::UnnamedAddr unnamed_addr);
+  llvm::GlobalValue::UnnamedAddr getUnnamedAddr();
 
 }; // GlobalValue_O
 }; // llvmo
@@ -2098,7 +2254,7 @@ public:
   }
 CL_LISPIFY_NAME("error_string");
 CL_DEFMETHOD   string error_string() const { return this->_ErrorStr; };
- CL_DEFMETHOD void setUseOrcMCJITReplacement(bool use);
+// CL_DEFMETHOD void setUseOrcMCJITReplacement(bool use);
 
   EngineBuilder_O() : Base(), _ptr(NULL){};
   ~EngineBuilder_O() {
@@ -2643,10 +2799,32 @@ struct to_object<llvm::PHINode *> {
 };
     ;
 
+
+namespace llvmo {
+FORWARD(CallBase);
+class CallBase_O : public Instruction_O {
+  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::CallBase, CallBase_O, "CallBase", Instruction_O);
+  typedef llvm::CallBase ExternalType;
+  typedef llvm::CallBase *PointerToExternalType;
+
+public:
+  PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
+  void set_wrapped(PointerToExternalType ptr) {
+    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    this->_ptr = ptr;
+  }
+  CallBase_O() : Base(){};
+  ~CallBase_O() {}
+
+}; // CallBase_O
+}; // llvmo
+/* from_object translators */
+/* to_object translators */
+
 namespace llvmo {
 FORWARD(CallInst);
-class CallInst_O : public Instruction_O {
-  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::CallInst, CallInst_O, "CallInst", Instruction_O);
+class CallInst_O : public CallBase_O {
+  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::CallInst, CallInst_O, "CallInst", CallBase_O);
   typedef llvm::CallInst ExternalType;
   typedef llvm::CallInst *PointerToExternalType;
 
@@ -2872,31 +3050,11 @@ struct to_object<llvm::LoadInst *> {
 };
     ;
 
-namespace llvmo {
-FORWARD(TerminatorInst);
-class TerminatorInst_O : public Instruction_O {
-  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::TerminatorInst, TerminatorInst_O, "TerminatorInst", Instruction_O);
-  typedef llvm::TerminatorInst ExternalType;
-  typedef llvm::TerminatorInst *PointerToExternalType;
-
-public:
-  PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
-  void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
-    this->_ptr = ptr;
-  }
-  TerminatorInst_O() : Base(){};
-  ~TerminatorInst_O() {}
-
-}; // TerminatorInst_O
-}; // llvmo
-/* from_object translators */
-/* to_object translators */
 
 namespace llvmo {
 FORWARD(BranchInst);
-class BranchInst_O : public TerminatorInst_O {
-  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::BranchInst, BranchInst_O, "BranchInst", TerminatorInst_O);
+class BranchInst_O : public Instruction_O {
+  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::BranchInst, BranchInst_O, "BranchInst", Instruction_O);
   typedef llvm::BranchInst ExternalType;
   typedef llvm::BranchInst *PointerToExternalType;
 
@@ -2936,8 +3094,8 @@ struct to_object<llvm::BranchInst *> {
 
 namespace llvmo {
 FORWARD(SwitchInst);
-class SwitchInst_O : public TerminatorInst_O {
-  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::SwitchInst, SwitchInst_O, "SwitchInst", TerminatorInst_O);
+class SwitchInst_O : public Instruction_O {
+  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::SwitchInst, SwitchInst_O, "SwitchInst", Instruction_O);
   typedef llvm::SwitchInst ExternalType;
   typedef llvm::SwitchInst *PointerToExternalType;
 
@@ -2979,8 +3137,8 @@ struct to_object<llvm::SwitchInst *> {
 
 namespace llvmo {
 FORWARD(IndirectBrInst);
-class IndirectBrInst_O : public TerminatorInst_O {
-  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::IndirectBrInst, IndirectBrInst_O, "IndirectBrInst", TerminatorInst_O);
+class IndirectBrInst_O : public Instruction_O {
+  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::IndirectBrInst, IndirectBrInst_O, "IndirectBrInst", Instruction_O);
   typedef llvm::IndirectBrInst ExternalType;
   typedef llvm::IndirectBrInst *PointerToExternalType;
 
@@ -3020,8 +3178,8 @@ struct to_object<llvm::IndirectBrInst *> {
 
 namespace llvmo {
 FORWARD(InvokeInst);
-class InvokeInst_O : public TerminatorInst_O {
-  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::InvokeInst, InvokeInst_O, "InvokeInst", TerminatorInst_O);
+class InvokeInst_O : public CallBase_O {
+  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::InvokeInst, InvokeInst_O, "InvokeInst", CallBase_O);
   typedef llvm::InvokeInst ExternalType;
   typedef llvm::InvokeInst *PointerToExternalType;
 
@@ -3065,8 +3223,8 @@ struct to_object<llvm::InvokeInst *> {
 
 namespace llvmo {
 FORWARD(ResumeInst);
-class ResumeInst_O : public TerminatorInst_O {
-  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::ResumeInst, ResumeInst_O, "ResumeInst", TerminatorInst_O);
+class ResumeInst_O : public Instruction_O {
+  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::ResumeInst, ResumeInst_O, "ResumeInst", Instruction_O);
   typedef llvm::ResumeInst ExternalType;
   typedef llvm::ResumeInst *PointerToExternalType;
 
@@ -3106,8 +3264,8 @@ struct to_object<llvm::ResumeInst *> {
 
 namespace llvmo {
 FORWARD(UnreachableInst);
-class UnreachableInst_O : public TerminatorInst_O {
-  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::UnreachableInst, UnreachableInst_O, "UnreachableInst", TerminatorInst_O);
+class UnreachableInst_O : public Instruction_O {
+  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::UnreachableInst, UnreachableInst_O, "UnreachableInst", Instruction_O);
   typedef llvm::UnreachableInst ExternalType;
   typedef llvm::UnreachableInst *PointerToExternalType;
 
@@ -3147,8 +3305,8 @@ struct to_object<llvm::UnreachableInst *> {
 
 namespace llvmo {
 FORWARD(ReturnInst);
-class ReturnInst_O : public TerminatorInst_O {
-  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::ReturnInst, ReturnInst_O, "ReturnInst", TerminatorInst_O);
+class ReturnInst_O : public Instruction_O {
+  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::ReturnInst, ReturnInst_O, "ReturnInst", Instruction_O);
   typedef llvm::ReturnInst ExternalType;
   typedef llvm::ReturnInst *PointerToExternalType;
 
@@ -4299,73 +4457,23 @@ struct gctools::GCInfo<llvmo::ClaspJIT_O> {
 };
 
 namespace llvmo {
-  class ClaspJIT_O : public core::General_O {
-    LISP_CLASS(llvmo, LlvmoPkg, ClaspJIT_O, "clasp-jit", core::General_O);
-  private:
-    std::unique_ptr<llvm::TargetMachine> TM;
-    const llvm::DataLayout DL;
-//    NotifyObjectLoadedT NotifyObjectLoaded;
-    RTDyldObjectLinkingLayer ObjectLayer;
-    IRCompileLayer<decltype(ObjectLayer),SimpleCompiler> CompileLayer;
-    typedef std::function<std::shared_ptr<Module>(std::shared_ptr<Module>)> OptimizeFunction;
-    IRTransformLayer<decltype(CompileLayer), OptimizeFunction> OptimizeLayer;
-    JITEventListener* GDBEventListener;
-    core::List_sp ModuleHandles;
-  public:
-//    typedef decltype(OptimizeLayer)::ModuleSetHandleT ModuleHandle;
-    typedef decltype(CompileLayer)::ModuleHandleT ModuleHandle;
 
-    ClaspJIT_O();
-
-    TargetMachine& getTargetMachine();
-
-    ModuleHandle_sp addModule(Module_sp M);
-    core::Pointer_sp findSymbol(const std::string& Name);
-    core::Pointer_sp findSymbolIn(ModuleHandle_sp handle, const std::string& Name, bool exportedSymbolsOnly );
-    bool removeModule(ModuleHandle_sp H);
-
-//    std::shared_ptr<llvm::Module> optimizeModule(std::shared_ptr<llvm::Module> M);
-  };
-
-};
-
-template <>
-struct gctools::GCInfo<llvmo::ModuleHandle_O> {
-  static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = true;
-  static GCInfo_policy constexpr Policy = normal;
+class ClaspJIT_O : public core::General_O {
+  LISP_CLASS(llvmo, LlvmoPkg, ClaspJIT_O, "clasp-jit", core::General_O);
+public:
+  std::unique_ptr<LLJIT> _Jit;
+  void addIRModule(Module_sp cM,ThreadSafeContext_sp context);
+  core::T_sp lookup(const std::string& Name);
+  JITDylib& getMainJITDylib();
+  JITDylib& createJITDylib(const std::string& name);
+  
+  ClaspJIT_O(llvm::orc::LLJIT* jj) : _Jit(jj) {};
 };
 
 
-namespace llvmo {
-  class ModuleHandle_O : public core::General_O {
-    LISP_CLASS(llvmo, LlvmoPkg, ModuleHandle_O, "module-handle", core::General_O);
-  public:
-    core::ShutdownFunction_fptr_type _shutdownFunction;
-    ClaspJIT_O::ModuleHandle _Handle;
-  public:
-    static ModuleHandle_sp create(const ClaspJIT_O::ModuleHandle& val) {
-      GC_ALLOCATE_VARIADIC(ModuleHandle_O,mh,val);
-      return mh;
-    }
-  public:
-    void set_shutdown_function(core::ShutdownFunction_fptr_type fn) {
-      this->_shutdownFunction = fn;
-    }
-    void shutdown_module() {
-      if (this->_shutdownFunction) {
-        this->_shutdownFunction();
-      }
-    }
-  ModuleHandle_O(const ClaspJIT_O::ModuleHandle& handle) : _shutdownFunction(NULL), _Handle(handle) {};
-    // ModuleHandle's have finalizers installed to clean them up.
-    // The destructor calls cmp:jit-remove-module to achieve this
-    virtual ~ModuleHandle_O();
-  };
+core::T_sp llvm_sys__lookup_jit_symbol_info(void* ptr);
 
-  core::T_sp llvm_sys__lookup_jit_symbol_info(void* ptr);
 
-  std::shared_ptr<llvm::Module> optimizeModule(std::shared_ptr<llvm::Module> M);
 };
 
 namespace llvmo {
@@ -4407,6 +4515,8 @@ public:
 
     ;
 
+
+ENUM_TRANSLATOR(llvm::GlobalValue::UnnamedAddr,llvmo::_sym_STARGlobalValueUnnamedAddrSTAR);
 
 
 #endif //]

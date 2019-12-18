@@ -103,7 +103,7 @@
   "Run the discovered clang compiler on the arguments. This replaces a simpler version of run-clang."
   (unless clang
     (error "There is no clang compiler path defined!!!!"))
-  (let ((dsymutil (make-pathname :name "llvm-dsymutil" :type nil :defaults core:*clang-bin*)))
+  (let ((dsymutil (make-pathname :name "dsymutil" :type nil :defaults core:*clang-bin*)))
     (unless (probe-file dsymutil)
       (error "Could not find dsymutil at ~a" dsymutil))
     (when (member :debug-run-clang *features*)

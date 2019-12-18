@@ -151,6 +151,9 @@ void cc_initialize_gcroots_in_module(gctools::GCRootsInModule* holder,
                                      void** fdescs )
 {NO_UNWIND_BEGIN();
   initialize_gcroots_in_module(holder,root_address,num_roots,initial_data,transientAlloca,transient_entries, function_pointer_count, (void**)fptrs, fdescs );
+  if (llvmo::_sym_STARdebugObjectFilesSTAR->symbolValue().notnilp()) {
+    printf("%s:%d:%s holder@%p  root_address@%p  num_roots %lu\n", __FILE__, __LINE__, __FUNCTION__, (void*)holder, (void*)root_address, num_roots );
+  }
   NO_UNWIND_END();
 }
 

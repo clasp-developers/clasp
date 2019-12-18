@@ -819,6 +819,45 @@ namespace translate {
 
 
 
+namespace translate {
+template <>
+struct from_object<llvm::Optional<llvm::DIFile::ChecksumInfo<llvm::StringRef>>, std::true_type> {
+  typedef llvm::Optional<llvm::DIFile::ChecksumInfo<llvm::StringRef>> DeclareType;
+  DeclareType _v;
+  from_object(core::T_sp object) {
+    if (object.nilp()) {
+      this->_v = llvm::None;
+    } else if (core::Cons_sp so = object.asOrNull<core::Cons_O>()) {
+      core::SymbolToEnumConverter_sp converter = gc::As<core::SymbolToEnumConverter_sp>(llvmo::_sym_CSKEnum->symbolValue());
+      if (CONS_CAR(so).nilp()) {
+        // nothing
+      } else {
+        llvm::DIFile::ChecksumInfo<llvm::StringRef> checksum(converter->enumForSymbol<llvm::DIFile::ChecksumKind>(CONS_CAR(so)),gc::As<core::String_sp>(CONS_CDR(so))->get_std_string());
+        this->_v = checksum;
+      }
+    } else {
+      SIMPLE_ERROR_SPRINTF("You must pass a valid Checksum and string");
+    }
+  }
+};
+};
+
+namespace translate {
+template <>
+struct from_object<llvm::Optional<llvm::StringRef>, std::true_type> {
+  typedef llvm::Optional<llvm::StringRef> DeclareType;
+  DeclareType _v;
+  from_object(core::T_sp object) {
+    if (object.nilp()) {
+      // nothing
+    } else if (core::String_sp so = object.asOrNull<core::String_O>()) {
+        this->_v = gc::As<core::String_sp>(CONS_CDR(so))->get_std_string();
+    } else {
+      SIMPLE_ERROR_SPRINTF("You must pass nil or a String");
+    }
+  }
+};
+};
 
 
 // ------------------------------------------------------------
@@ -827,6 +866,7 @@ namespace translate {
 //
 
 ENUM_FROM_OBJECT_TRANSLATOR(llvm::DIFile::ChecksumKind,llvmo::_sym_CSKEnum);
+ENUM_FROM_OBJECT_TRANSLATOR(llvm::DICompileUnit::DebugNameTableKind,llvmo::_sym_DNTKEnum);
 
 
 #endif // debugInfo expose

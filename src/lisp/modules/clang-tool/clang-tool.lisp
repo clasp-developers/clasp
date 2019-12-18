@@ -670,8 +670,8 @@ Select a subset (or all) source file names from the compilation database and ret
          (context (match-result-context match))
          (source-manager (ast-tooling:source-manager match))
          (lang-options (get-lang-opts context))
-         (begin (get-loc-start node))
-         (_end (get-loc-end node))
+         (begin (get-begin-loc node))
+         (_end (get-end-loc node))
          (end (lexer-get-loc-for-end-of-token _end 0 source-manager lang-options))
          (token-range (new-char-source-range-get-char-range begin end)))
     (multiple-value-bind (source invalid)
@@ -814,8 +814,8 @@ Get the AST node that has been associated with the tag."
   "Get the source code for the current node
 This can only be run in the context set up by the code-match-callback::run method"
   (let* ((lang-options (get-lang-opts (ast-context match-info)))
-         (begin (get-loc-start node))
-         (_end (get-loc-end node))
+         (begin (get-begin-loc node))
+         (_end (get-end-loc node))
          (end (lexer-get-loc-for-end-of-token _end 0 (source-manager match-info) lang-options))
          (token-range (new-char-source-range-get-char-range begin end)))
     (multiple-value-bind (source invalid)
@@ -916,7 +916,7 @@ Return a string that describes the source location corresponding to sloc."
 * Description 
 Return a string that describes the start of a source location for the node indicated by the tag."
   (let* ((node (mtag-node match-info tag))
-         (begin-sloc (get-loc-start node)))
+         (begin-sloc (get-begin-loc node)))
     (source-loc-as-string match-info begin-sloc)))
 
 
@@ -965,8 +965,8 @@ for the node corresponding to tag in match-info."
         (replacements-gs (gensym)))
     `(let* ((,rep-src-gs (funcall ,replace-callback ,match-info ,tag))
 	    (,node-gs (mtag-node ,match-info ,tag)) ;; (id-to-node-map match-info)))
-	    (,begin-gs (get-loc-start ,node-gs))
-	    (,end-gs (get-loc-end ,node-gs))
+	    (,begin-gs (get-begin-loc ,node-gs))
+	    (,end-gs (get-end-loc ,node-gs))
 	    (,rep-range-gs (new-char-source-range-get-token-range ,begin-gs ,end-gs))
 	    (,rep-gs (new-replacement (source-manager ,match-info) ,rep-range-gs ,rep-src-gs)))
        (if *match-refactoring-tool*
@@ -991,8 +991,8 @@ Generates a string using fmt/fmt-args and accumulates internally so that they ca
         (rep-gs (gensym)))
   `(let* ((,rep-src-gs (format nil ,fmt ,@fmt-args))
           (,node-gs (gethash ,tag (id-to-node-map ,match-info)))
-          (,begin-gs (get-loc-start ,node-gs))
-          (,end-gs (get-loc-end ,node-gs))
+          (,begin-gs (get-begin-loc ,node-gs))
+          (,end-gs (get-end-loc ,node-gs))
           (,rep-range-gs (new-char-source-range-get-token-range ,begin-gs ,end-gs))
           (,rep-gs (new-replacement (source-manager match-info) ,rep-range-gs ,rep-src-gs)))
      (push ,rep-gs *match-results*))))

@@ -180,7 +180,7 @@ For sbcl
     rethrow-cleanup))
 
 (defun generate-ehcleanup-and-resume-code (function exn.slot ehselector.slot)
-  (let* ((ehbuilder       (llvm-sys:make-irbuilder *llvm-context*))
+  (let* ((ehbuilder       (llvm-sys:make-irbuilder (thread-local-llvm-context)))
          (ehcleanup       (irc-basic-block-create "TRY.ehcleanup" function))
          (ehresume        (irc-basic-block-create "TRY.ehresume" function))
          (_               (irc-set-insert-point-basic-block ehcleanup ehbuilder))

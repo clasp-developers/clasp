@@ -38,14 +38,15 @@
   (when *print-implicit-compile-form* 
     (bformat t "Compiling form: %s%N" form)
     (bformat t "*active-protection* --> %s%N" cmp::*active-protection*))
-  (funcall
-   (core:with-memory-ramp (:pattern 'gctools:ramp)
-     (compile-in-env `(lambda ()
-                        (declare (core:lambda-name from-bclasp-implicit-compile-repl-form))
-                        ,form)
-                     environment
-                     nil
-                     'llvm-sys:external-linkage))))
+  (let ((repl-name (intern (core:bformat nil "repl-form-%d" (core:next-number)) :core)))
+    (funcall
+     (core:with-memory-ramp (:pattern 'gctools:ramp)
+       (compile-in-env `(lambda ()
+                          (declare (core:lambda-name ,repl-name))
+                          ,form)
+                       environment
+                       nil
+                       *default-compile-linkage*)))))
 
 ;;;
 ;;; Don't install the bootstrapping compiler as the implicit compiler when compiling cleavir

@@ -176,7 +176,7 @@ Return files."
 (defun load-kernel-file (path type)
   (if (or (eq type :object) (eq type :bitcode))
       (progn
-        (cmp:load-bitcode path))
+        (cmp:load-bitcode path (cmp:thread-local-llvm-context)))
       (if (eq type :fasl)
           (if (probe-file (make-pathname :type "fasl" :defaults path))
               (load (make-pathname :type "fasl" :defaults path))

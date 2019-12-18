@@ -58,7 +58,7 @@ functionality but before any Common Lisp startup functions are invoked. */
 
 
   size_t startup_functions_are_waiting();
-  void startup_functions_invoke();
+core::T_O* startup_functions_invoke(T_O* literals_or_null);
 
 
   std::tuple< void *, string > do_dlopen(const string& str_path, const int n_mode);
@@ -88,7 +88,6 @@ namespace core {
 void expect_offset(T_sp key, T_sp alist, size_t expected);
 };
 
-typedef void*(*fnStartUp)();
 
 namespace core {
 void byte_code_interpreter(gctools::GCRootsInModule* roots, T_sp byte_code_stream, bool log);

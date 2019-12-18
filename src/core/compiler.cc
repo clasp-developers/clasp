@@ -192,25 +192,6 @@ void initializer_functions_invoke()
 
 namespace core {
 
-#define STARTUP_FUNCTION_CAPACITY_INIT 128
-#define STARTUP_FUNCTION_CAPACITY_MULTIPLIER 2
-size_t global_startup_capacity = 0;
-size_t global_startup_count = 0;
-#ifdef CLASP_THREADS
-mp::SharedMutex* global_startup_functions_mutex = NULL;
-#endif
-struct Startup {
-  size_t _Position;
-  fnStartUp _Function;
-  Startup() {};
-  Startup(size_t p, fnStartUp f) : _Position(p), _Function(f) {};
-  bool operator<(const Startup& other) {
-    return this->_Position < other._Position;
-  }
-};
-
-Startup* global_startup_functions = NULL;
-
 std::atomic<size_t> global_next_startup_position;
 
 CL_DEFUN size_t core__next_startup_position() {
@@ -222,67 +203,46 @@ void register_startup_function(size_t position, fnStartUp fptr)
 #ifdef DEBUG_STARTUP
   printf("%s:%d In register_startup_function --> %p\n", __FILE__, __LINE__, fptr);
 #endif
-#ifdef CLASP_THREADS
-  if (global_Started) {
-    if (global_startup_functions_mutex==NULL) {
-      global_startup_functions_mutex = new mp::SharedMutex(STRTFUNC_NAMEWORD);
-    }
-    (*global_startup_functions_mutex).lock();
-  }
-#endif
-  if ( global_startup_functions == NULL ) {
-    global_startup_capacity = STARTUP_FUNCTION_CAPACITY_INIT;
-    global_startup_count = 0;
-    global_startup_functions = (Startup*)malloc(global_startup_capacity*sizeof(Startup));
+  if ( my_thread->_startup_functions == NULL ) {
+    my_thread->_startup_capacity = STARTUP_FUNCTION_CAPACITY_INIT;
+    my_thread->_startup_count = 0;
+    my_thread->_startup_functions = (Startup*)malloc(my_thread->_startup_capacity*sizeof(Startup));
   } else {
-    if ( global_startup_count == global_startup_capacity ) {
-      global_startup_capacity = global_startup_capacity*STARTUP_FUNCTION_CAPACITY_MULTIPLIER;
-      global_startup_functions = (Startup*)realloc(global_startup_functions,global_startup_capacity*sizeof(Startup));
+    if ( my_thread->_startup_count == my_thread->_startup_capacity ) {
+      my_thread->_startup_capacity = my_thread->_startup_capacity*STARTUP_FUNCTION_CAPACITY_MULTIPLIER;
+      my_thread->_startup_functions = (Startup*)realloc(my_thread->_startup_functions,my_thread->_startup_capacity*sizeof(Startup));
     }
   }
   Startup startup(position,fptr);
-  global_startup_functions[global_startup_count] = startup;
-  global_startup_count++;
-#ifdef CLASP_THREADS
-  if (global_Started) {
-    (*global_startup_functions_mutex).unlock();
-  }
-#endif
+  my_thread->_startup_functions[my_thread->_startup_count] = startup;
+  my_thread->_startup_count++;
 };
 
 /*! Return the number of startup_functions that are waiting to be run*/
 size_t startup_functions_are_waiting()
 {
 #ifdef DEBUG_STARTUP
-  printf("%s:%d startup_functions_are_waiting returning %" PRu "\n", __FILE__, __LINE__, global_startup_count );
+  printf("%s:%d startup_functions_are_waiting returning %" PRu "\n", __FILE__, __LINE__, my_thread->_startup_count );
 #endif
-#ifdef CLASP_THREADS
-  if (global_startup_functions_mutex==NULL) {
-    global_startup_functions_mutex = new mp::SharedMutex(STRTFUNC_NAMEWORD);
-  }
-  WITH_READ_LOCK((*global_startup_functions_mutex));
-#endif
-  return global_startup_count;
+  return my_thread->_startup_count;
 };
 
 /*! Invoke the startup functions and clear the array of startup functions */
-void startup_functions_invoke()
+core::T_O* startup_functions_invoke(T_O* literals)
 {
   size_t startup_count = 0;
   Startup* startup_functions = NULL;
   {
-#ifdef CLASP_THREADS
-    WITH_READ_LOCK((*global_startup_functions_mutex));
-#endif
   // Save the current list
-    startup_count = global_startup_count;
-    startup_functions = global_startup_functions;
+    startup_count = my_thread->_startup_count;
+    startup_functions = my_thread->_startup_functions;
   // Prepare to accumulate a new list
-    global_startup_count = 0;
-    global_startup_capacity = 0;
-    global_startup_functions = NULL;
+    my_thread->_startup_count = 0;
+    my_thread->_startup_capacity = 0;
+    my_thread->_startup_functions = NULL;
   }
   // Invoke the current list
+  core::T_O* result = NULL;
   if (startup_count>0) {
     sort::quickSortMemory(startup_functions,0,startup_count);
 #ifdef DEBUG_STARTUP
@@ -304,13 +264,14 @@ void startup_functions_invoke()
       printf("%s:%d     About to invoke fn@%p\n", __FILE__, __LINE__, fn );
 #endif
 //      T_mv result = (fn)(LCC_PASS_MAIN());
-      (startup._Function)(); // invoke the startup function
+      result = (startup._Function)(literals); // invoke the startup function
     }
 #ifdef DEBUG_STARTUP
     printf("%s:%d Done with startup_functions_invoke()\n", __FILE__, __LINE__ );
 #endif
     free(startup_functions);
   }
+  return result;
 }
 
 
@@ -347,9 +308,9 @@ NOINLINE CL_DEFUN T_sp core__trigger_dtrace_stop()
   
 
 
-CL_DEFUN void core__startup_functions_invoke()
+CL_DEFUN void core__startup_functions_invoke(List_sp literals)
 {
-  startup_functions_invoke();
+  startup_functions_invoke((T_O*)literals.raw_());
   printf("%s:%d startup_functions_invoke returned -   this should never happen\n", __FILE__, __LINE__ );
   abort();
 };
@@ -560,13 +521,11 @@ LOAD:
   Pointer_sp handle_ptr = Pointer_O::create(handle);
   scope.pushSpecialVariableAndSet(_sym_STARcurrent_dlopen_handleSTAR, handle_ptr);
   if (startup_functions_are_waiting()) {
-    startup_functions_invoke();
+    startup_functions_invoke(NULL);
   } else {
     SIMPLE_ERROR(BF("This is not a proper FASL file - there were no global ctors - there have to be global ctors for load-bundle"));
   }
   T_mv result;
-//  cc_invoke_startup_functions();
-//  process_llvm_stackmaps();
   return (Values(Pointer_O::create(handle), _Nil<T_O>()));
 };
 
@@ -1383,6 +1342,85 @@ void byte_code_interpreter(gctools::GCRootsInModule* roots, T_sp fin, bool log)
  DONE:
   return;
 }
+
+#if 0
+// This is an attempt to use concatenated object files as fasl files
+// I'm not sure it's a good idea - but I may want to revisit this
+
+CL_DEFUN void core__write_fasl_file(T_sp stream, List_sp object_files) {
+  size_t dead_beef = 0xEFBEADDEEFBEADDE; // DEADBEEFDEADBEEF backwards
+  int filedes;
+  if (core::IOFileStream_sp fs = stream.asOrNull<core::IOFileStream_O>()) {
+    filedes = fs->fileDescriptor();
+  } else if (core::IOStreamStream_sp iostr = stream.asOrNull<core::IOStreamStream_O>()) {
+    FILE *f = iostr->file();
+    filedes = fileno(f);
+  } else {
+    SIMPLE_ERROR(BF("Illegal file type %s for write-fasl-file") % _rep_(stream).c_str());
+  }
+  write(filedes,"CLASP   ",8);
+  size_t num_object_files = cl__length(object_files);
+  write(filedes,&num_object_files,sizeof(num_object_files));
+  for ( auto cur : object_files ) {
+    ObjectFile_sp of = CONS_CAR(cur);
+    write(filedes,&dead_beef,8);
+    size_t object_file_size = of->_ObjectFileSize;
+    size_t word_aligned_object_file_size = ((object_file_size+sizeof(size_t))/sizeof(size_t))*sizeof(size_t);
+    write(filedes,&word_aligned_object_file_size,sizeof(word_aligned_object_file_size));
+    write(filedes,&object_file_size,sizeof(object_file_size));
+    write(filedes,of->_ObjectFilePtr,word_aligned_object_file_size);
+  }
+}
+
+
+#define TRAP_BAD_READ(sz,esz) if (sz!=esz) { SIMPLE_ERROR(BF("While reading fasl file hit end of file prematurely - the fasl file is corrupt"));}
+
+
+/*! Read a fasl file and return a list of ObjectFile_sp objects
+*/
+CL_DEFUN List_sp core__read_fasl_file(T_sp stream) {
+  int filedes;
+  if (core::IOFileStream_sp fs = stream.asOrNull<core::IOFileStream_O>()) {
+    filedes = fs->fileDescriptor();
+  } else if (core::IOStreamStream_sp iostr = stream.asOrNull<core::IOStreamStream_O>()) {
+    FILE *f = iostr->file();
+    filedes = fileno(f);
+  } else {
+    SIMPLE_ERROR(BF("Illegal file type %s for write-fasl-file") % _rep_(stream).c_str());
+  }
+  char header[8];
+  size_t num_read;
+  num_read = read(filedes,header,sizeof(header));
+  TRAP_BAD_READ(num_read,sizeof(header));
+  if (strncmp(header,"CLASP   ",8)!=0) {
+    SIMPLE_ERROR(BF("File %s is not a FASL file") % _rep_(stream));
+  }
+  size_t dead_beef = 0xEFBEADDEEFBEADDE; // DEADBEEFDEADBEEF backwards
+  size_t num_object_files;
+  num_read = read(filedes,&num_object_files,sizeof(size_t));
+  ql::list result;
+  for ( size_t idx=0; idx<num_object_files; ++idx ) {
+    size_t read_dead_beef;
+    num_read = read(filedes,&read_dead_beef,sizeof(read_dead_beef));
+    TRAP_BAD_READ(num_read,sizeof(read_dead_beef));
+    if (read_dead_beef!=dead_beef) {
+      SIMPLE_ERROR(BF("While reading fasl file the internal marker was not found - the fasl file is corrupt"));
+    }
+    size_t word_aligned_object_file_size;
+    num_read = read(filedes,&word_aligned_object_file_size,sizeof(word_aligned_object_file_size));
+    TRAP_BAD_READ(num_read,sizeof(word_aligned_object_file_size));
+    size_t object_file_size;
+    num_read = read(filedes,&object_file_size,sizeof(object_file_size));
+    TRAP_BAD_READ(num_read,sizeof(object_file_size));
+    char* buffer = (char*)malloc(word_aligned_object_file_size);
+    num_read = read(filedes,buffer,word_aligned_object_file_size);
+    TRAP_BAD_READ(num_read,word_aligned_object_file_size);
+    GC_ALLOCATE_VARIADIC(ObjectFile_O,of,buffer,object_file_size);
+    result << of;
+  }
+  return result.cons();
+}
+#endif
 
 void initialize_compiler_primitives(Lisp_sp lisp) {
 

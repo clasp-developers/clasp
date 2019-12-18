@@ -121,10 +121,10 @@ struct from_object<clang::tooling::ArgumentsAdjuster> {
     } else if (core::Function_sp func = o.asOrNull<core::Function_O>()) {
       void* function_address = (void*)func->entry.load();
       printf("%s:%d   intermediate from_object<clang::tooling::ArgumentsAdjuster> with Function arg: %s@%p - function_address: %p\n", __FILE__, __LINE__, _rep_(o).c_str(), (void*)o.tagged_(), function_address);
-      this->_v = [func,function_address](const clang::tooling::CommandLineArguments &args, StringRef filename ) -> clang::tooling::CommandLineArguments {
+      this->_v = [func,function_address](const clang::tooling::CommandLineArguments &args, llvm::StringRef filename ) -> clang::tooling::CommandLineArguments {
 			// Should resolve to vector<string>
           core::T_sp targs = translate::to_object<clang::tooling::CommandLineArguments>::convert(args);
-          core::T_sp tfilename = translate::to_object<StringRef>::convert(filename);
+          core::T_sp tfilename = translate::to_object<llvm::StringRef>::convert(filename);
           printf("%s:%d About to funcall %s[lineno=%d] with targs %s and tfilename %s - it should have function address: %p\n", __FILE__, __LINE__, _rep_(func).c_str(), func->lineNumber(), _rep_(targs).c_str(), _rep_(tfilename).c_str(), function_address);
           core::T_mv result = core::eval::funcall(func,targs,tfilename);;
           translate::from_object<const clang::tooling::CommandLineArguments&> cresult(result);
@@ -817,7 +817,7 @@ void initialize_clangTooling() {
      .def("clangToolRun", &clang::tooling::ClangTool::run)
      .def("buildASTs", &clang::tooling::ClangTool::buildASTs, policies<pureOutValue<1>>()),
      class_<clang::tooling::Replacement>("Replacement", no_default_constructor)
-     .def_constructor("newReplacement", constructor<clang::SourceManager &, const clang::CharSourceRange &, StringRef>())
+     .def_constructor("newReplacement", constructor<clang::SourceManager &, const clang::CharSourceRange &, llvm::StringRef>())
      .def("toString", &clang::tooling::Replacement::toString)
      .def("replacement-apply", &clang::tooling::Replacement::apply),
      class_<clang::tooling::Range>("Range", no_default_constructor),

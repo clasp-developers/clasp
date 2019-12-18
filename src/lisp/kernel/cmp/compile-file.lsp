@@ -152,7 +152,7 @@ and the pathname of the source file - this will also be used as the module initi
                      (data-layout (llvm-sys:create-data-layout target-machine)))
                 (llvm-sys:set-data-layout module data-layout)
                 (llvm-sys:pass-manager-add pm tli)
-                (llvm-sys:add-passes-to-emit-file-and-run-pass-manager target-machine pm output-stream file-type module))))))))
+                (llvm-sys:add-passes-to-emit-file-and-run-pass-manager target-machine pm output-stream nil #|<-dwo-stream|# file-type module))))))))
 
 (defvar *debug-compile-file* nil)
 (defvar *debug-compile-file-counter* 0)

@@ -15,7 +15,7 @@
   `(let* ((*the-module* ,module))
      (or *the-module* (error "with-module *the-module* is NIL"))
      (multiple-value-prog1
-         (with-irbuilder ((llvm-sys:make-irbuilder *llvm-context*))
+         (with-irbuilder ((llvm-sys:make-irbuilder (thread-local-llvm-context)))
            ,@body)
        (cmp-log "About to optimize-module%N")
        (when (and ,optimize ,optimize-level (null ,dry-run)) (funcall ,optimize ,module ,optimize-level )))))
@@ -59,7 +59,7 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
          (error "COMPILE doesn't know how to handle this type of function"))
         ((and (consp definition) (eq (car definition) 'lambda))
          (cmp-log "compile form: %s%N" definition)
-         (compile-in-env definition nil *cleavir-compile-hook* 'llvm-sys:external-linkage))
+         (compile-in-env definition nil *cleavir-compile-hook* 'llvm-sys:internal-linkage))
         ((null definition)
          (let ((func (cond ((fboundp name) (fdefinition name))
                            ((and (symbolp name) (macro-function name)))
@@ -70,7 +70,7 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
               (multiple-value-bind (lambda-expression wrapped-env)
                   (generate-lambda-expression-from-interpreted-function func)
                 (cmp-log "About to compile  name: %s  lambda-expression: %s wrapped-env: %s%N" name lambda-expression wrapped-env)
-                (compile-in-env lambda-expression wrapped-env *cleavir-compile-hook* 'llvm-sys:external-linkage)))
+                (compile-in-env lambda-expression wrapped-env *cleavir-compile-hook* 'llvm-sys:internal-linkage)))
              ((compiled-function-p func)
               (values func nil nil))
              ((core:instancep func) ; FIXME: funcallable-instance-p, probably

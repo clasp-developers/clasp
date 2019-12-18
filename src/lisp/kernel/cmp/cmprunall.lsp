@@ -49,15 +49,14 @@ load-time-value manager (true - in COMPILE-FILE) or not (false - in COMPILE)."
                                                     :argument-names +fn-start-up-argument-names+
                                                     :function-attributes (list* "optnone" *default-function-attributes*)
                                                     ))
-           (,irbuilder-alloca (llvm-sys:make-irbuilder *llvm-context*))
-           (,irbuilder-body (llvm-sys:make-irbuilder *llvm-context*)))
+           (,irbuilder-alloca (llvm-sys:make-irbuilder (thread-local-llvm-context)))
+           (,irbuilder-body (llvm-sys:make-irbuilder (thread-local-llvm-context))))
        (let* ((*run-all-function* ,run-all-fn)
               (*irbuilder-run-all-alloca* ,irbuilder-alloca)
               (*irbuilder-run-all-body* ,irbuilder-body)
               (*current-function* ,run-all-fn)
               (*run-all-objects* nil))
-         (cmp:with-dbg-function ("runAll-dummy-name"
-                                 :lineno 0
+         (cmp:with-dbg-function (:lineno 0
                                  :linkage-name (llvm-sys:get-name ,run-all-fn)
                                  :function ,run-all-fn
                                  :function-type cmp:%fn-prototype%)
@@ -72,7 +71,7 @@ load-time-value manager (true - in COMPILE-FILE) or not (false - in COMPILE)."
                  (irc-set-insert-point-instruction entry-branch ,irbuilder-alloca)
                  (with-irbuilder (,irbuilder-body)
                    (progn ,@body)
-                   (irc-ret-void)))))))
+                   (irc-ret-null-t*)))))))
        (values ,run-all-fn))))
 
 

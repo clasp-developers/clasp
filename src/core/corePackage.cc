@@ -174,7 +174,7 @@ SYMBOL_EXPORT_SC_(CorePkg,bt)
 SYMBOL_EXPORT_SC_(CorePkg,btcl)
 SYMBOL_EXPORT_SC_(CorePkg,STARdebug_fastgfSTAR);
 SYMBOL_EXPORT_SC_(CorePkg,cxx_method_source_location);
-SYMBOL_EXPORT_SC_(CompPkg, STARllvm_contextSTAR);
+SYMBOL_EXPORT_SC_(CompPkg, STARthread_safe_contextSTAR);
 SYMBOL_EXPORT_SC_(CompPkg, STARdebug_jitSTAR );
 SYMBOL_EXPORT_SC_(CompPkg, STARload_time_value_holder_nameSTAR);
 SYMBOL_EXPORT_SC_(CompPkg, STARoptimization_levelSTAR);
@@ -1122,7 +1122,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
 #endif
   comp::_sym_STARjit_saved_symbol_infoSTAR->defparameter(jit_save);
   //
-  comp::_sym_STARllvm_contextSTAR->defparameter(llvmo::LLVMContext_O::create_llvm_context());
+  comp::_sym_STARthread_safe_contextSTAR->defparameter(llvmo::ThreadSafeContext_O::create_thread_safe_context());
   comp::_sym_STARload_time_value_holder_nameSTAR->defparameter(core::SimpleBaseString_O::make("[VALUES-TABLE]"));
   List_sp hooks = _Nil<T_O>();
   hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("lfasl"), _sym_loadSource), hooks); // List of load commands

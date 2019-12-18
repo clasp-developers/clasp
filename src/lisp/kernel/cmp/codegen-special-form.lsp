@@ -1364,7 +1364,7 @@ jump to blocks within this tagbody."
                                                  *the-module*))
              (*current-function* new-func)
              (*current-function-name* c-name))
-        (with-irbuilder ((llvm-sys:make-irbuilder *llvm-context*))
+        (with-irbuilder ((llvm-sys:make-irbuilder (thread-local-llvm-context)))
           (let ((bb (irc-basic-block-create "entry" new-func)))
             (irc-set-insert-point-basic-block bb)
             (let* ((c-args (mapcar (lambda (arg argname)
