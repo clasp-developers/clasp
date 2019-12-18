@@ -413,6 +413,83 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; Class CAS-AST
+;;;
+;;; Abstract. Class for compare-and-swap ASTs.
+
+(defclass cas-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
+  (;; The "old" value being compared to the loaded one.
+   (%cmp-ast :initarg :cmp-ast :reader cmp-ast)
+   ;; The "new" value that's maybe being stored.
+   (%value-ast :initarg :value-ast :reader cleavir-ast:value-ast)))
+
+(cleavir-io:define-save-info cas-ast
+    (:cmp-ast cmp-ast) (:value-ast cleavir-ast:value-ast))
+
+(defmethod cleavir-ast:children ((ast cas-ast))
+  (list (cmp-ast ast) (cleavir-ast:value-ast ast)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Class CAS-CAR-AST
+;;;
+;;; Compare-and-swap a cons's car.
+;;; NOTE: Could be a child of CAR-AST? Except for CHILDREN methods.
+
+(defclass cas-car-ast (cas-ast)
+  ((%cons-ast :initarg :cons-ast :reader cleavir-ast:cons-ast)))
+
+(cleavir-io:define-save-info cas-car-ast
+    (:cons-ast cleavir-ast:cons-ast))
+
+(defmethod cleavir-ast-graphviz::label ((ast cas-car-ast))
+  "cas-car")
+
+(defmethod cleavir-ast:children ((ast cas-car-ast))
+  (list* (cleavir-ast:cons-ast ast) (call-next-method)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Class CAS-CDR-AST
+;;;
+;;; Compare-and-swap a cons's cdr.
+
+(defclass cas-cdr-ast (cas-ast)
+  ((%cons-ast :initarg :cons-ast :reader cleavir-ast:cons-ast)))
+
+(cleavir-io:define-save-info cas-cdr-ast
+    (:cons-ast cleavir-ast:cons-ast))
+
+(defmethod cleavir-ast-graphviz::label ((ast cas-cdr-ast))
+  "cas-cdr")
+
+(defmethod cleavir-ast:children ((ast cas-cdr-ast))
+  (list* (cleavir-ast:cons-ast ast) (call-next-method)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Class SLOT-CAS-AST
+;;;
+;;; Compare-and-swap an instance slot.
+
+(defclass slot-cas-ast (cas-ast)
+  ((%object-ast :initarg :object-ast :reader cleavir-ast:object-ast)
+   (%slot-number-ast :initarg :slot-number-ast :reader cleavir-ast:slot-number-ast)))
+
+(cleavir-io:define-save-info slot-cas-ast
+    (:object-ast cleavir-ast:object-ast)
+  (:slot-number-ast cleavir-ast:slot-number-ast))
+
+(defmethod cleavir-ast-graphviz::label ((ast slot-cas-ast))
+  "slot-cas")
+
+(defmethod cleavir-ast:children ((ast slot-cas-ast))
+  (list* (cleavir-ast:object-ast ast)
+         (cleavir-ast:slot-number-ast ast)
+         (call-next-method)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; Class PRECALC-VECTOR-FUNCTION-AST
 ;;;
 ;;; This AST is a subclass of FUNCTION-AST. It is used when an AST

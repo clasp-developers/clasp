@@ -477,17 +477,29 @@
        (first (cleavir-ir:outputs instruction))))
 
 (defmethod translate-simple-instruction
-    ((instruction cleavir-ir:slot-read-instruction) return-value abi function-infoO)
+    ((instruction cleavir-ir:slot-read-instruction) return-value abi function-info)
   (declare (ignore return-value abi function-info))
   (let ((inputs (cleavir-ir:inputs instruction)))
     (out (cmp::gen-instance-ref (in (first inputs)) (in (second inputs)))
          (first (cleavir-ir:outputs instruction)))))
 
 (defmethod translate-simple-instruction
-    ((instruction cleavir-ir:slot-write-instruction) return-value abi function-infoO)
+    ((instruction cleavir-ir:slot-write-instruction) return-value abi function-info)
   (declare (ignore return-value abi function-info))
   (let ((inputs (cleavir-ir:inputs instruction)))
     (cmp::gen-instance-set (in (first inputs)) (in (second inputs)) (in (third inputs)))))
+
+(defmethod translate-simple-instruction
+    ((instruction clasp-cleavir-hir:slot-cas-instruction) return-value abi function-info)
+  (declare (ignore return-value abi function-info))
+  (let ((inputs (cleavir-ir:inputs instruction)))
+    (out (cmp:irc-cmpxchg
+          (cmp::irc-instance-slot-address
+           (in (first inputs))
+           (in (second inputs)))
+          (in (third inputs))
+          (in (fourth inputs)))
+         (first (cleavir-ir:outputs instruction)))))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:memref2-instruction) return-value abi function-info)
@@ -505,6 +517,18 @@
      (in (second inputs) "memset2-val")
      (cmp::gen-memref-address (in (first inputs))
                               (cleavir-ir:offset instruction)))))
+
+(defmethod translate-simple-instruction
+    ((instruction cc-mir:memcas2-instruction) return-value abi function-info)
+  (declare (ignore return-value abi function-info))
+  (let* ((inputs (cleavir-ir:inputs instruction))
+         (cons (first inputs))
+         (old (second inputs))
+         (new (third inputs)))
+    (out (cmp:irc-cmpxchg
+          (cmp::gen-memref-address (in cons) (cleavir-ir:offset instruction))
+          (in old) (in new))
+         (first (cleavir-ir:outputs instruction)))))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:box-instruction) return-value abi function-info)

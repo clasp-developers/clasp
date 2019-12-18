@@ -214,6 +214,17 @@
     cc-ast:vaslist-length-ast clasp-cleavir-hir:vaslist-length-instruction
   (cleavir-ast:arg-ast))
 
+(cleavir-ast-to-hir::define-compile-functional-ast
+    cc-ast:cas-car-ast clasp-cleavir-hir:cas-car-instruction
+  (cleavir-ast:cons-ast clasp-cleavir-ast:cmp-ast cleavir-ast:value-ast))
+(cleavir-ast-to-hir::define-compile-functional-ast
+    cc-ast:cas-cdr-ast clasp-cleavir-hir:cas-cdr-instruction
+  (cleavir-ast:cons-ast clasp-cleavir-ast:cmp-ast cleavir-ast:value-ast))
+(cleavir-ast-to-hir::define-compile-functional-ast
+    cc-ast:slot-cas-ast clasp-cleavir-hir:slot-cas-instruction
+  (cleavir-ast:object-ast cleavir-ast:slot-number-ast
+                          clasp-cleavir-ast:cmp-ast cleavir-ast:value-ast))
+
 (defmethod cleavir-ast-to-hir:compile-ast ((ast cc-ast:bind-va-list-ast) context)
   (let ((temp (cleavir-ir:new-temporary)))
     (cleavir-ast-to-hir:compile-ast

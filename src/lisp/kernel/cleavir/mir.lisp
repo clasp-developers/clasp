@@ -89,6 +89,17 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; MEMCAS2-INSTRUCTION
+;;;
+;;; Like memset2, except does a compare-and-swap instead of just setting.
+;;; Inputs are: address, comparison value, new value.
+;;; Outputs are: loaded value.
+
+(defclass memcas2-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+  ((%offset :initarg :offset :reader cleavir-ir:offset)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; Assign a unique integer index to every instruction
 ;;; using the stealth mixin - see system.lisp
 ;;;

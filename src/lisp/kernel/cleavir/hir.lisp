@@ -398,6 +398,30 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; Instruction CAS-CAR-INSTRUCTION
+
+(defclass cas-car-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin) ())
+
+(defmethod cleavir-ir-graphviz:label ((instr cas-car-instruction)) "cas-car")
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Instruction CAS-CDR-INSTRUCTION
+
+(defclass cas-cdr-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin) ())
+
+(defmethod cleavir-ir-graphviz:label ((instr cas-cdr-instruction)) "cas-cdr")
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Instruction SLOT-CAS-INSTRUCTION
+
+(defclass slot-cas-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin) ())
+
+(defmethod cleavir-ir-graphviz:label ((instr slot-cas-instruction)) "slot-cas")
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; Instruction NAMED-ENTER-INSTRUCTION
 ;;;
 ;;; This instruction is an ENTER-INSTRUCTION that keeps
