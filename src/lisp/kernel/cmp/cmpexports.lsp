@@ -203,6 +203,7 @@
             irc-undef-value-get
             irc-store
             irc-store-atomic
+            irc-cmpxchg
             irc-struct-gep
             irc-read-slot
             irc-write-slot
