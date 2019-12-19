@@ -1953,7 +1953,7 @@ namespace llvmo {
 
 namespace llvmo {
 
-  static size_t global_NextModuleId;
+static std::atomic<size_t> global_NextModuleId;
 class Module_O : public core::ExternalObject_O {
   LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::Module, Module_O, "module", core::ExternalObject_O);
   typedef llvm::Module ExternalType;
