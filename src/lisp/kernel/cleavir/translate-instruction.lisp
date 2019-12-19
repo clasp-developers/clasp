@@ -493,12 +493,8 @@
     ((instruction clasp-cleavir-hir:slot-cas-instruction) return-value abi function-info)
   (declare (ignore return-value abi function-info))
   (let ((inputs (cleavir-ir:inputs instruction)))
-    (out (cmp:irc-cmpxchg
-          (cmp::irc-instance-slot-address
-           (in (first inputs))
-           (in (second inputs)))
-          (in (third inputs))
-          (in (fourth inputs)))
+    (out (cmp::gen-instance-cas (in (first inputs)) (in (second inputs))
+                                (in (third inputs)) (in (fourth inputs)))
          (first (cleavir-ir:outputs instruction)))))
 
 (defmethod translate-simple-instruction

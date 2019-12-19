@@ -1172,6 +1172,12 @@ jump to blocks within this tagbody."
 
 ;;; CORE:INSTANCE-CAS
 
+(defun gen-instance-cas (instance index old new)
+  (irc-cmpxchg
+   (irc-instance-slot-address
+    instance (irc-untag-fixnum index %size_t% "slot-location"))
+   old new))
+
 (defun codegen-instance-cas (result rest env)
   (let ((instance (first rest)) (index (second rest))
         (old (third rest)) (new (fourth rest))
@@ -1182,10 +1188,8 @@ jump to blocks within this tagbody."
     (codegen oldt old env)
     (codegen newt new env)
     (irc-t*-result
-     (irc-cmpxchg
-      (irc-instance-slot-address (irc-load instancet) (irc-load indext))
-      (irc-load oldt)
-      (irc-load newt))
+     (gen-instance-cas (irc-load instancet) (irc-load indext)
+                       (irc-load oldt) (irc-load newt))
      result)))
 
 ;;; DBG-i32
