@@ -500,6 +500,8 @@ representing a tagged fixnum."
          (dataN* (irc-gep data0* (list 0 index))))
     dataN*))
 
+
+
 (defun irc-read-slot (instance index)
   "Read a value from the rack of an instance"
   (let ((dataN* (irc-instance-slot-address instance index)))
@@ -704,9 +706,10 @@ the type LLVMContexts don't match - so they were defined in different threads!"
 (defun irc-%cmpxchg (ptr cmp new)
   ;; Sanity check I'm putting in when this is new that should maybe be removed, future reader
   (let ((cmp-type (llvm-sys:get-type cmp)))
-    (assert (llvm-sys:type-equal cmp-type (llvm-sys:get-type new)))
-    ;; check that ptr's type is pointer<old's type>
-    (assert (llvm-sys:type-equal cmp-type (llvm-sys:get-contained-type (llvm-sys:get-type ptr) 0))))
+    (unless (and (llvm-sys:type-equal cmp-type (llvm-sys:get-type new))
+                 (llvm-sys:type-equal cmp-type
+                                      (llvm-sys:get-contained-type (llvm-sys:get-type ptr) 0)))
+      (error "BUG: Type mismatch in IRC-%CMPXCHG")))
   ;; actual gen
   (llvm-sys:create-atomic-cmp-xchg *irbuilder*
                                    ptr cmp new
