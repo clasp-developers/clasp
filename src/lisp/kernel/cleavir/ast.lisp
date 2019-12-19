@@ -490,6 +490,33 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; Class ACAS-AST
+;;;
+;;; Compare-and-swap an array element.
+
+(defclass acas-ast (cas-ast)
+  ((%array-ast :initarg :array-ast :reader cleavir-ast:array-ast)
+   (%index-ast :initarg :index-ast :reader cleavir-ast:index-ast)
+   (%element-type :initarg :element-type :reader cleavir-ast:element-type)
+   (%simple-p :initarg :simple-p :reader cleavir-ast:simple-p)
+   (%boxed-p :initarg :boxed-p :reader cleavir-ast:boxed-p)))
+
+(cleavir-io:define-save-info acas-ast
+    (:array-ast cleavir-ast:array-ast)
+  (:index-ast cleavir-ast:index-ast)
+  (:element-type cleavir-ast:element-type)
+  (:simple-p cleavir-ast:simple-p)
+  (:boxed-p cleavir-ast:boxed-p))
+
+(defmethod cleavir-ast-graphviz::label ((ast acas-ast)) "acas")
+
+(defmethod cleavir-ast:children ((ast acas-ast))
+  (list* (cleavir-ast:array-ast ast)
+         (cleavir-ast:index-ast ast)
+         (call-next-method)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; Class PRECALC-VECTOR-FUNCTION-AST
 ;;;
 ;;; This AST is a subclass of FUNCTION-AST. It is used when an AST

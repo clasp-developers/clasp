@@ -412,6 +412,19 @@
                  (cmp:irc-store v addr)))))))
 
 (defmethod translate-simple-instruction
+    ((instruction clasp-cleavir-hir:acas-instruction) return-value abi function-info)
+  (declare (ignore return-value function-info))
+  (let ((et (cleavir-ir:element-type instruction))
+        (inputs (cleavir-ir:inputs instruction)))
+    (out
+     (cmp:irc-cmpxchg
+      ;; This will err if et = bit or the like.
+      (gen-vector-effective-address (in (first inputs)) (in (second inputs))
+                                    et (%default-int-type abi))
+      (in (third inputs)) (in (fourth inputs)))
+     (first (cleavir-ir:outputs instruction)))))
+
+(defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir:vector-length-instruction) return-value abi function-info)
   (declare (ignore return-value function-info))
   (out (cmp::gen-vector-length (in (first (cleavir-ir:inputs instruction))))

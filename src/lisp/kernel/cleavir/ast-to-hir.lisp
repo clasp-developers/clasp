@@ -241,6 +241,73 @@
          context)))
       (cleavir-ast-to-hir::invocation context)))))
 
+(defmethod cleavir-ast-to-hir:compile-ast ((ast cc-ast:acas-ast) context)
+  (cleavir-ast-to-hir::assert-context ast context 1 1)
+  (let* ((array-temp (cleavir-ir:new-temporary))
+         (index-temp (cleavir-ir:new-temporary))
+         (cmp-temp (cleavir-ir:new-temporary))
+         (new-temp (cleavir-ir:new-temporary))
+         (type (cleavir-ast:element-type ast))
+         (boxedp (cleavir-ast:boxed-p ast))
+         (invocation (cleavir-ast-to-hir:invocation context))
+         (unboxed (if boxedp
+                      (cleavir-ast-to-hir::results context)
+                      (list (cleavir-ir:new-temporary))))
+         (succ (if boxedp
+                   (cleavir-ast-to-hir::successors context)
+                   (list (cleavir-ast-to-hir::box-for-type type unboxed context))))
+         (acas (make-instance 'clasp-cleavir-hir:acas-instruction
+                              :element-type type
+                              :simple-p (cleavir-ast:simple-p ast)
+                              :boxed-p boxedp
+                              :inputs (list array-temp index-temp cmp-temp new-temp)
+                              :outputs unboxed
+                              :successors succ)))
+    (cleavir-ast-to-hir:compile-ast
+     (cleavir-ast:array-ast ast)
+     (cleavir-ast-to-hir:context
+      (list array-temp)
+      (list
+       (cleavir-ast-to-hir:compile-ast
+        (cleavir-ast:index-ast ast)
+        (cleavir-ast-to-hir:context
+         (list index-temp)
+         (list
+          (if boxedp
+              (cleavir-ast-to-hir:compile-ast
+               (cc-ast:cmp-ast ast)
+               (cleavir-ast-to-hir:context
+                (list cmp-temp)
+                (list
+                 (cleavir-ast-to-hir:compile-ast
+                  (cleavir-ast:value-ast ast)
+                  (cleavir-ast-to-hir:context
+                   (list new-temp)
+                   (list acas)
+                   invocation)))
+                invocation))
+              (let ((cmp-boxed-temp (cleavir-ir:new-temporary))
+                    (new-boxed-temp (cleavir-ir:new-temporary)))
+                (cleavir-ast-to-hir:compile-ast
+                 (cc-ast:cmp-ast ast)
+                 (cleavir-ast-to-hir:context
+                  (list cmp-boxed-temp)
+                  (list
+                   (cleavir-ast-to-hir::unbox-for-type
+                    type cmp-boxed-temp cmp-temp
+                    (cleavir-ast-to-hir:compile-ast
+                     (cleavir-ast:value-ast ast)
+                     (cleavir-ast-to-hir:context
+                      (list new-boxed-temp)
+                      (list
+                       (cleavir-ast-to-hir::unbox-for-type
+                        type new-boxed-temp new-temp
+                        acas))
+                      invocation))))
+                  invocation)))))
+         invocation)))
+      invocation))))           
+
 (defmethod cleavir-ast-to-hir:compile-ast ((ast clasp-cleavir-ast:precalc-value-reference-ast) context)
   (cleavir-ast-to-hir::assert-context ast context 1 1)
   (let ((index (clasp-cleavir-ast:precalc-value-reference-ast-index ast)))

@@ -96,7 +96,7 @@
    #:wrapped-stamp-ast #:derivable-stamp-ast
    #:bind-va-list-ast #:make-bind-va-list-ast #:va-list-ast
    #:cmp-ast
-   #:cas-car-ast #:cas-cdr-ast #:slot-cas-ast
+   #:cas-car-ast #:cas-cdr-ast #:slot-cas-ast #:acas-ast
    #:invoke-ast #:multiple-value-invoke-ast #:destinations
    #:introduce-invoke
    ))
@@ -153,6 +153,7 @@
    #:defcallback-instruction #:defcallback-args
    #:header-stamp-case-instruction #:make-header-stamp-case-instruction
    #:cas-car-instruction #:cas-cdr-instruction #:slot-cas-instruction
+   #:acas-instruction
    ))
 
 (defpackage #:clasp-cleavir-ast-to-hir
