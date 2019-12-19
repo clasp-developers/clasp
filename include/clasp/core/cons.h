@@ -155,20 +155,9 @@ namespace core {
 #endif
 
   public:
-    typedef T_O CarType_O;
-    typedef T_O CdrType_O;
-    typedef T_sp CarType_sp;
-    typedef T_sp CdrType_sp;
+    T_sp _Car;
+    T_sp _Cdr;
 
-  public:
-    CarType_sp _Car;
-    CdrType_sp _Cdr;
-  /*! Keep track of the length of the cons along the cdr chain
-	 * every time the cdr is set add 1 to the length of the cons
-	 * being added and store that here.  This will keep a running
-	 * tab of how many cons elements are in the list.
-	 */
-  //	uint		_CdrLength;	// Keep track of the length of the cons
   public:
     template <class T>
       static List_sp createFromVec0(const gctools::Vec0<T> &vec) {
@@ -243,8 +232,6 @@ namespace core {
 
     T_sp elt(cl_index index) const;
     T_sp setf_elt(cl_index index, T_sp value);
-
-    CdrType_sp *cdrPtr() { return &(this->_Cdr); };
 
   /* TODO:
 	   Remove the following member functions and replace them

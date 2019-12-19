@@ -116,16 +116,15 @@ void PASS_FUNCTION_REST(core::T_sp closure,
   if (restarg.VaRest) {
     scope.valist().set_from_other_Vaslist(&*arglist); // _change_nargs(&*arglist, n_args - arg_idx);
     scope.va_rest_binding(restarg);
+  } else if (arg_idx == PASS_ARGS_NUM) {
+    scope.new_binding(restarg, _Nil<T_O>());
   } else {
-    Cons_O::CdrType_sp rest = _Nil<Cons_O::CdrType_O>();
-    Cons_O::CdrType_sp *curP = &rest;
-    //        gctools::StackRootedPointerToSmartPtr<Cons_O::CdrType_O> cur(&rest);
-    for (int i(arg_idx), iEnd(PASS_ARGS_NUM); i < iEnd; ++i) {
-      T_sp obj = PASS_NEXT_ARG(arg_idx);
-      Cons_sp one = Cons_O::create(obj,_Nil<T_O>());
-      *curP = one;          // cur.setPointee(one);
-      curP = one->cdrPtr(); // cur.setPointer(one->cdrPtr());
-      ++arg_idx;
+    T_sp rest = Cons_O::create(PASS_NEXT_ARG(arg_idx), _Nil<T_O>());
+    T_sp cur = rest;
+    for (int i(arg_idx+1), iEnd(PASS_ARGS_NUM); i < iEnd; ++i) {
+      T_sp one = Cons_O::create(PASS_NEXT_ARG(i), _Nil<T_O>());
+      CONS_CDR(cur) = one;
+      cur = one;
     }
     scope.new_binding(restarg, rest);
   }

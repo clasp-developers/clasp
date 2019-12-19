@@ -1458,18 +1458,6 @@ string stringUpper(const char *s) {
   return ss.str();
 }
 
-T_sp lisp_ArgArrayToCons(int nargs, ArgArray args) {
-  Cons_O::CdrType_sp first = _Nil<Cons_O::CdrType_O>();
-  Cons_O::CdrType_sp *curP = &first;
-  //        gctools::StackRootedPointerToSmartPtr<Cons_O::CdrType_O> cur(&first);
-  for (int i(0); i < nargs; ++i) {
-    Cons_sp one = Cons_O::create(gctools::smart_ptr<core::T_O>((gctools::Tagged)(args[i])),_Nil<T_O>());
-    *curP = one;          // cur.setPointee(one); //*cur = one;
-    curP = one->cdrPtr(); // cur.setPointer(one->cdrPtr()); // cur = one->cdrPtr();
-  }
-  return first;
-}
-
 vector<string> split(const string &str, const string &delimiters) {
   vector<string> parts;
   tokenize(str, parts, delimiters);
