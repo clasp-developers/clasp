@@ -710,10 +710,18 @@ ClassWriteLock::~ClassWriteLock() {
 }
 
 
-CL_DEFMETHOD Instance_sp ClassHolder_O::class_get() const { return this->_Class.load(); };
-CL_DEFMETHOD void ClassHolder_O::class_set(Instance_sp cl) { this->_Class.store(cl); };
-void ClassHolder_O::class_mkunbound() { this->_Class.store(_Unbound<Instance_O>()); };
-bool ClassHolder_O::class_unboundp() const { return this->_Class.load().unboundp();};
+CL_DEFMETHOD Instance_sp ClassHolder_O::class_get() const {
+  return this->_Class.load(std::memory_order_relaxed);
+}
+CL_DEFMETHOD void ClassHolder_O::class_set(Instance_sp cl) {
+  this->_Class.store(cl, std::memory_order_relaxed);
+}
+void ClassHolder_O::class_mkunbound() {
+  this->_Class.store(_Unbound<Instance_O>(), std::memory_order_relaxed);
+}
+bool ClassHolder_O::class_unboundp() const {
+  return this->_Class.load(std::memory_order_relaxed).unboundp();
+}
 
 CL_DEFUN Instance_sp ext__class_get(ClassHolder_sp holder) {
   return holder->class_get();
