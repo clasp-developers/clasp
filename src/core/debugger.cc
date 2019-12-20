@@ -616,7 +616,7 @@ SymbolTable load_macho_symbol_table(bool is_executable, const char* filename, ui
     return symbol_table;
   }
   stringstream nm_cmd;
-  nm_cmd << "/usr/bin/nm -numeric-sort -defined-only \"" << filename << "\"";
+  nm_cmd << "/usr/bin/nm -p -numeric-sort -defined-only \"" << filename << "\"";
   FILE* fnm = popen( nm_cmd.str().c_str(), "r");
   if (fnm==NULL) {
     printf("%s:%d:%s  Could not popen %s\n", __FILE__, __LINE__, __FUNCTION__, nm_cmd.str().c_str());
@@ -624,16 +624,23 @@ SymbolTable load_macho_symbol_table(bool is_executable, const char* filename, ui
   }
 #define BUFLEN 2048
   {
-    char buf[BUFLEN+1];
+    char* buf = NULL;
+    size_t buf_len = 0;
     char type[BUFLEN+1];
     char name[BUFLEN+1];
+    size_t lineno = 0;
     while (!feof(fnm)) {
-      fgets(buf,BUFLEN,fnm);
+      int result = getline(&buf,&buf_len,fnm);
+      if (feof(fnm)) break;
+      if (result==-1) {
+        printf("%s:%d Error reading from %s line: %s\n", __FILE__, __LINE__, buf, filename);
+      }
       const char* cur = buf;
-//      printf("%s:%d:%s Read line: %s\n", __FILE__, __LINE__, __FUNCTION__, cur);
+      // printf("%s:%d:%s Read line: %s\n", __FILE__, __LINE__, __FUNCTION__, cur);
       // Read the address
       uintptr_t address = 0;
       uintptr_t digit;
+      ++lineno;
       // Read the hex address
       while (*cur != ' ') {
         char c = *cur;
@@ -645,7 +652,7 @@ SymbolTable load_macho_symbol_table(bool is_executable, const char* filename, ui
           digit = c-'a'+10;
         } else {
           if (baddigit<20) {
-            printf("%s:%d:%s In file: %s\n", __FILE__, __LINE__, __FUNCTION__, filename);
+            printf("%s:%d:%s In file: %s lineno: %lu\n", __FILE__, __LINE__, __FUNCTION__, filename, lineno);
             printf("%s:%d:%s Hit non-hex digit %c in line: %s\n", __FILE__,__LINE__,__FUNCTION__,c,buf);
             baddigit++;
           }
@@ -688,6 +695,7 @@ SymbolTable load_macho_symbol_table(bool is_executable, const char* filename, ui
       symbol_table.addSymbol(sname,real_address,type);
     }
 //    symbol_table.addSymbol("TERMINAL_SYMBOL",~0,'d');  // one symbol to end them all
+    free(buf);
     symbol_table.optimize();
     pclose(fnm);
   }
