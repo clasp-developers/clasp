@@ -94,37 +94,8 @@ GCS_NAMES = [ 'boehm',
               'mpsprep',
               'mps' ]
 
-CLANG_LIBRARIES = [
-            'clangASTMatchers',
-            'clangDynamicASTMatchers',
-            'clangIndex',
-            'clangTooling',
-            'clangFormat',
-            'clangToolingCore',
-            'clangToolingInclusions',
-            'clangBasic',
-            'clangCodeGen',
-            'clangDriver',
-            'clangFrontend',
-            'clangFrontendTool',
-            'clangCodeGen',
-            'clangRewriteFrontend',
-            'clangARCMigrate',
-            'clangStaticAnalyzerFrontend',
-            'clangFrontend',
-            'clangDriver',
-            'clangParse',
-            'clangSerialization',
-            'clangSema',
-            'clangEdit',
-            'clangStaticAnalyzerCheckers',
-            'clangStaticAnalyzerCore',
-            'clangAnalysis',
-            'clangAST',
-            'clangRewrite',
-            'clangLex',
-            'clangBasic',
- ]
+CLANG_LIBRARIES = [ 'clang-cpp' ]
+LLVM_LIBRARIES = [ 'LLVM' ]
 
 BOOST_LIBRARIES = [
             'boost_filesystem',
@@ -870,6 +841,9 @@ def configure(cfg):
     cfg.load('compiler_cxx')
     cfg.load('compiler_c')
 ### Without these checks the following error happens: AttributeError: 'BuildContext' object has no attribute 'variant_obj'
+    if (cfg.env['DEST_OS'] == DARWIN_OS ):
+        cfg.env.append_value('LINKFLAGS', "-L/usr/local/lib");
+        cfg.env.append_value('INCLUDES', "/usr/local/include" )
     cfg.check_cxx(lib='gmpxx gmp'.split(), cflags='-Wall', uselib_store='GMP')
     try:
         cfg.check_cxx(stlib='gc', cflags='-Wall', uselib_store='BOEHM')
@@ -927,11 +901,13 @@ def configure(cfg):
     llvm_lib_dir = run_llvm_config_for_libs(cfg, "--libdir")
     log.debug("llvm_lib_dir = %s", llvm_lib_dir)
     cfg.env.append_value('LINKFLAGS', ["-L%s" % llvm_lib_dir])
-    llvm_libraries = [ x[2:] for x in run_llvm_config_for_libs(cfg, "--libs").split()] # drop the '-l' prefixes
+    llvm_libraries = LLVM_LIBRARIES # [ x[2:] for x in run_llvm_config_for_libs(cfg, "--libs").split()] # drop the '-l' prefixes
 #dynamic llvm/clang
     cfg.check_cxx(lib=CLANG_LIBRARIES, cflags='-Wall', uselib_store='CLANG', libpath = llvm_lib_dir )
     cfg.check_cxx(lib=llvm_libraries, cflags = '-Wall', uselib_store = 'LLVM', libpath = llvm_lib_dir )
-#static llvm/clang
+
+
+    #static llvm/clang
 #    cfg.check_cxx(stlib=llvm_libraries, cflags = '-Wall', uselib_store = 'LLVM', stlibpath = llvm_lib_dir )
 #    cfg.check_cxx(stlib=CLANG_LIBRARIES, cflags='-Wall', uselib_store='CLANG', stlibpath = llvm_lib_dir )
     llvm_include_dir = run_llvm_config_for_libs(cfg, "--includedir")
@@ -1014,7 +990,7 @@ def configure(cfg):
         cfg.env.append_value('LINKFLAGS', ['-stdlib=libstdc++']) # libstdc++/GCC libc++/clang
         cfg.env.append_value('LINKFLAGS', ['-lstdc++']) # -lstdc++/GCC -lc++/clang
         cfg.env.append_value('LINKFLAGS', '-pthread')
-    elif (cfg.env['DEST_OS'] == FREEBSD_OS ):
+    if (cfg.env['DEST_OS'] == FREEBSD_OS ):
         #--lto-O0 is not effective for avoiding linker hangs
         # cfg.env.append_value('LINKFLAGS', ['-Wl,-export_dynamic,--lto-O0'])
         if (cfg.env['USE_LLD']):
@@ -1026,7 +1002,7 @@ def configure(cfg):
             cfg.env.append_value('LINKFLAGS', '-fuse-ld=gold')
         cfg.env.append_value('LINKFLAGS', '-pthread')
         cfg.env.append_value('LINKFLAGS', '-lexecinfo')
-    elif (cfg.env['DEST_OS'] == DARWIN_OS ):
+    if (cfg.env['DEST_OS'] == DARWIN_OS ):
         cfg.env.append_value('LINKFLAGS', ['-Wl,-export_dynamic'])
         lto_library_name = cfg.env.cxxshlib_PATTERN % "LTO"  # libLTO.<os-dep-extension>
         lto_library = "%s/%s" % ( llvm_liblto_dir, lto_library_name)
@@ -1040,6 +1016,11 @@ def configure(cfg):
     cfg.env.append_value('INCLUDES', [ run_llvm_config(cfg,"--includedir") ])
     cfg.env.append_value('INCLUDES', ['/usr/include'] )
     cfg.define("ENABLE_BACKTRACE_ARGS",1)
+
+
+
+
+    
 # --------------------------------------------------
 # --------------------------------------------------
 # --------------------------------------------------
