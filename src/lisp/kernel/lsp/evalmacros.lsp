@@ -124,7 +124,7 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
                  (list (funcall *defun-inline-hook* name global-function env)))
           ',name))))
 
-(defvar *compiler-macros* (make-hash-table :test #'equal))
+(defvar *compiler-macros* (make-hash-table :test #'equal :thread-safe t))
 
 (defun compiler-macro-function (name &optional environment)
   (declare (ignore environment))
