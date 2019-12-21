@@ -1273,6 +1273,10 @@ CL_DEFMETHOD bool Module_O::valid() const {
   return this->wrappedPtr() != NULL;
 }
 
+CL_DEFMETHOD llvm::DataLayout Module_O::getDataLayout() const {
+  return this->wrappedPtr()->getDataLayout ();
+}
+
 CL_LISPIFY_NAME("moduleDelete");
 CL_DEFMETHOD void Module_O::moduleDelete() {
   ASSERT(this->wrappedPtr() != NULL);
@@ -1541,6 +1545,13 @@ CL_EXTERN_DEFMETHOD(PassManager_O, &llvm::legacy::PassManager::run);;
 }; // llvmo
 
 namespace llvmo {
+
+string EngineBuilder_O::__repr__() const {
+  stringstream ss;
+  ss << "#<" << this->_instanceClass()->_classNameAsString() << " " << this->_ptr << " > ";
+  return ss.str();
+}
+
 CL_LAMBDA(module);
 CL_PKG_NAME(LlvmoPkg,"make-EngineBuilder");
 CL_DEFUN EngineBuilder_sp EngineBuilder_O::make(Module_sp module) {
@@ -1584,6 +1595,9 @@ CL_LISPIFY_NAME("create");
 CL_DEFMETHOD ExecutionEngine_sp EngineBuilder_O::createExecutionEngine() {
   llvm::ExecutionEngine *ee = this->wrappedPtr()->create();
   ExecutionEngine_sp eeo = core::RP_Create_wrapped<ExecutionEngine_O, llvm::ExecutionEngine *>(ee);
+  if (!eeo) {
+    SIMPLE_ERROR(BF("Could not create the execution-engine - got NULL"));
+  }
   return eeo;
 }
 

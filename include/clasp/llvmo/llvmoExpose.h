@@ -1569,6 +1569,15 @@ namespace translate {
       return val;
     }
   };
+  /*! This copies the DataLayout so it doesn't deal with pointers at all */
+  template <>
+    struct to_object<llvm::DataLayout, translate::dont_adopt_pointer> {
+    static core::T_sp convert(llvm::DataLayout orig) {
+      // Use the copy constructor to create a DataLayout_O
+      GC_ALLOCATE_VARIADIC(llvmo::DataLayout_O,val,orig);
+      return val;
+    }
+  };
 };
 
 
@@ -1994,6 +2003,8 @@ public:
   static Module_sp make(llvm::StringRef module_name, LLVMContext_sp context);
   /*! Return true if the wrapped Module is defined */
   bool valid() const;
+  llvm::DataLayout getDataLayout() const;
+  
   /*! Return a Cons of all the globals for this module */
   core::List_sp getGlobalList() const;
 
@@ -2239,6 +2250,7 @@ protected:
   PointerToExternalType _ptr;
   string _ErrorStr; // store creation errors here
 public:
+  string __repr__() const;
   virtual void *externalObject() const {
     return this->_ptr;
   };
