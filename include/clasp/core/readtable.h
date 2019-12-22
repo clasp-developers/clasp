@@ -94,8 +94,9 @@ public: // instance member functions here
 
   Character_sp convert_case_(Character_sp c);
 };
-
+T_sp cl__copy_readtable(T_sp fromReadTable, T_sp toReadTable);
 T_sp cl__readtable_case(T_sp);
+T_sp core__readtable_case_set(T_sp mode, T_sp readTable);
 T_sp core__syntax_type(T_sp, Character_sp);
 T_sp core__setf_syntax_type(T_sp syntax_type, T_sp readtable, Character_sp chr);
 T_sp core__reader_list_allow_consing_dot(T_sp sin, Character_sp ch); 
