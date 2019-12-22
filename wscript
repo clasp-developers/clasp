@@ -126,6 +126,8 @@ VALID_OPTIONS = [
     # Use lld only on Linux when CLASP_BUILD_MODE is "bitcode" - it's faster than ld
     # default = True
     "USE_LLD",
+    # Add additional CPPFLAGS
+    "CPPFLAGS",
     # Add additional includes 
     "INCLUDES",
     # Add additional link flags
