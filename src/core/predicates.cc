@@ -43,6 +43,7 @@ THE SOFTWARE.
 #include <clasp/core/lambdaListHandler.h>
 #include <clasp/core/singleDispatchGenericFunction.h>
 #include <clasp/core/numbers.h>
+#include <clasp/core/evaluator.h>
 #include <clasp/core/externalObject.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/fileSystem.h>
@@ -258,7 +259,9 @@ CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("readtablep");
 CL_DEFUN bool cl__readtablep(T_sp obj) {
-  return gc::IsA<ReadTable_sp>(obj);
+  if (gc::IsA<Readtable_sp>(obj)) return true;
+  T_sp result =  eval::funcall(eclector_readtable::_sym_readtablep,obj);
+  return result.notnilp();
 };
 
 CL_DEFUN bool core__arrayp(T_sp obj) {

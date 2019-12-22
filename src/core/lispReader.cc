@@ -216,8 +216,8 @@ void unread_ch(T_sp sin, Character_sp c) {
 
 /*! See SACLA reader.lisp::collect-escaped-lexemes */
 List_sp collect_escaped_lexemes(Character_sp c, T_sp sin) {
-  ReadTable_sp readTable = gc::As<ReadTable_sp>(_lisp->getCurrentReadTable());
-  Symbol_sp syntax_type = readTable->syntax_type(c);
+  T_sp readTable = _lisp->getCurrentReadTable();
+  Symbol_sp syntax_type = core__syntax_type(readTable,c);
   if (syntax_type == kw::_sym_invalid) {
     SIMPLE_ERROR(BF("invalid-character-error: %s") % _rep_(c));
   } else if (syntax_type == kw::_sym_multiple_escape) {
@@ -236,8 +236,8 @@ List_sp collect_escaped_lexemes(Character_sp c, T_sp sin) {
 List_sp collect_lexemes(/*Character_sp*/ T_sp tc, T_sp sin) {
   if (tc.notnilp()) {
     Character_sp c = gc::As<Character_sp>(tc);
-    ReadTable_sp readTable = gc::As<ReadTable_sp>(_lisp->getCurrentReadTable());
-    Symbol_sp syntax_type = readTable->syntax_type(c);
+    T_sp readTable = _lisp->getCurrentReadTable();
+    Symbol_sp syntax_type = core__syntax_type(readTable,c);
     if (syntax_type == kw::_sym_invalid) {
       SIMPLE_ERROR(BF("invalid-character-error: %s") % _rep_(c));
     } else if (syntax_type == kw::_sym_whitespace) {
@@ -358,8 +358,9 @@ void make_str_preserve_case(StrNs_sp sout, List_sp cur_char) {
 /*! Works like SACLA readtable::make-str but accumulates the characters
       into a stringstream */
 void make_str(StrNs_sp sout, List_sp cur_char) {
-  ReadTable_sp readtable = gc::As<ReadTable_sp>(_lisp->getCurrentReadTable());
-  if (readtable->_Case == kw::_sym_invert) {
+  T_sp readtable = _lisp->getCurrentReadTable();
+  Symbol_sp case_ = cl__readtable_case(readtable);
+  if (case_ == kw::_sym_invert) {
     UnEscapedCase strcase = check_case(cur_char,undefined);
     switch (strcase) {
       case undefined:
@@ -374,14 +375,14 @@ void make_str(StrNs_sp sout, List_sp cur_char) {
           return;
       }
     UNREACHABLE();
-  } else if (readtable->_Case == kw::_sym_upcase) {
+  } else if (case_ == kw::_sym_upcase) {
     make_str_upcase(sout,cur_char);
-  } else if (readtable->_Case == kw::_sym_downcase) {
+  } else if (case_ == kw::_sym_downcase) {
     make_str_downcase(sout,cur_char);
-  } else if (readtable->_Case == kw::_sym_preserve) {
+  } else if (case_ == kw::_sym_preserve) {
     make_str_preserve_case(sout,cur_char);
   } else {
-    SIMPLE_ERROR(BF("Bad readtable case %s") % _rep_(readtable->_Case));
+    SIMPLE_ERROR(BF("Bad readtable case %s") % _rep_(case_));
   }
 }
 
@@ -512,8 +513,9 @@ void token_downcase(Token& token, size_t start, size_t end) {
 
 
 void apply_readtable_case(Token& token, size_t start, size_t end) {
-  ReadTable_sp readtable = gc::As<ReadTable_sp>(_lisp->getCurrentReadTable());
-  if (readtable->_Case == kw::_sym_invert) {
+  T_sp readtable = _lisp->getCurrentReadTable();
+  Symbol_sp case_ = cl__readtable_case(readtable);
+  if (case_ == kw::_sym_invert) {
     UnEscapedCase strcase = token_check_case(token,start,end);
     switch (strcase) {
       case undefined:
@@ -527,14 +529,14 @@ void apply_readtable_case(Token& token, size_t start, size_t end) {
           return;
       }
     UNREACHABLE();
-  } else if (readtable->_Case == kw::_sym_upcase) {
+  } else if (case_ == kw::_sym_upcase) {
     token_upcase(token,start,end);
-  } else if (readtable->_Case == kw::_sym_downcase) {
+  } else if (case_ == kw::_sym_downcase) {
     token_downcase(token,start,end);
-  } else if (readtable->_Case == kw::_sym_preserve) {
+  } else if (case_ == kw::_sym_preserve) {
     return;
   } else {
-    SIMPLE_ERROR(BF("Bad readtable case %s") % _rep_(readtable->_Case));
+    SIMPLE_ERROR(BF("Bad readtable case %s") % _rep_(case_));
   }
 }
 
@@ -1064,7 +1066,7 @@ T_mv lisp_object_query(T_sp sin, bool eofErrorP, T_sp eofValue, bool recursiveP)
 #endif
   bool only_dots_ok = false;
   Token token;
-  ReadTable_sp readTable = gc::As<ReadTable_sp>(_lisp->getCurrentReadTable());
+  T_sp readTable = _lisp->getCurrentReadTable();
   Character_sp xxx, y, z, X, Y, Z;
 /* See the CLHS 2.2 Reader Algorithm  - continue has the effect of jumping to step 1 */
 step1:
@@ -1078,7 +1080,7 @@ step1:
   }
   xxx = gc::As<Character_sp>(tx);
   LOG_READ(BF("Read character x[%d/%s]") % (int)clasp_as_claspCharacter(xxx) % (char)clasp_as_claspCharacter(xxx));
-  Symbol_sp xxx_syntax_type = readTable->syntax_type(xxx);
+  Symbol_sp xxx_syntax_type = core__syntax_type(readTable,xxx);
   //    step2:
   if (xxx_syntax_type == kw::_sym_invalid) {
     LOG_READ(BF("step2 - invalid-character[%c]") % clasp_as_claspCharacter(xxx));
@@ -1095,7 +1097,7 @@ step1:
     _BLOCK_TRACEF(BF("Processing macro character x[%s]") % clasp_as_claspCharacter(xxx));
     LOG_READ(BF("step4 - terminating-macro-character or non-terminating-macro-character char[%c]") % clasp_as_claspCharacter(xxx));
     T_sp reader_macro;
-    reader_macro = readTable->get_macro_character(xxx);
+    reader_macro = cl__get_macro_character(xxx,readTable);
     ASSERT(reader_macro.notnilp());
     if (gc::IsA<Symbol_sp>(reader_macro)) {
       // At startup symbols that define reader macro functions aren't fbound yet
@@ -1160,7 +1162,7 @@ step8:
     }
     Character_sp y(gc::As_unsafe<Character_sp>(ty));
     LOG_READ(BF("Step8: Read y[%s/%c]") % clasp_as_claspCharacter(y) % (char)clasp_as_claspCharacter(y));
-    Symbol_sp y8_syntax_type = readTable->syntax_type(y);
+    Symbol_sp y8_syntax_type = core__syntax_type(readTable,y);
     LOG_READ(BF("y8_syntax_type=%s") % _rep_(y8_syntax_type));
     if ((y8_syntax_type == kw::_sym_constituent) || (y8_syntax_type == kw::_sym_non_terminating_macro)) {
       // Y = readTable->convert_case(y);
@@ -1204,7 +1206,7 @@ step9:
   LOG_READ(BF("step9"));
   {
     y = gc::As<Character_sp>(cl__read_char(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true()));
-    Symbol_sp y9_syntax_type = readTable->syntax_type(y);
+    Symbol_sp y9_syntax_type = core__syntax_type(readTable,y);
     LOG_READ(BF("Step9: Read y[%s] y9_syntax_type[%s]") % clasp_as_claspCharacter(y) % _rep_(y9_syntax_type));
     if ((y9_syntax_type == kw::_sym_constituent) || (y9_syntax_type == kw::_sym_non_terminating_macro) || (y9_syntax_type == kw::_sym_terminating_macro) || (y9_syntax_type == kw::_sym_whitespace)) {
       token.push_back(constituentChar(y, TRAIT_ALPHABETIC|TRAIT_ESCAPED));

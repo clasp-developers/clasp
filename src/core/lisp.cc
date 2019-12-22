@@ -529,7 +529,7 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
     initialize_Lisp_O();
     core::HashTableEql_sp ht = core::HashTableEql_O::create_default();
     core::_sym_STARcxxDocumentationSTAR->defparameter(ht);
-    ReadTable_sp readtable = ReadTable_O::create_standard_readtable();
+    Readtable_sp readtable = Readtable_O::create_standard_readtable();
     cl::_sym_STARreadtableSTAR->defparameter(readtable);
     initialize_functions();
     eval::defineSpecialOperatorsAndMacros(this->_Roots._CorePackage);

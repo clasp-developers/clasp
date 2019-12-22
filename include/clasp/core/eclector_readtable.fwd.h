@@ -1,9 +1,9 @@
 /*
-    File: readtable.fwd.h
+    File: eclector_readtable.fwd.h
 */
 
 /*
-Copyright (c) 2014, Christian E. Schafmeister
+Copyright (c) 2019, Christian E. Schafmeister
  
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
@@ -24,12 +24,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
+#ifndef eclector_readtable_fwd_H
+#define eclector_readtable_fwd_H
 
-#ifndef _readtable_fwd_H_
-#define _readtable_fwd_H_
+NAMESPACE_PACKAGE_ASSOCIATION(eclector_readtable, EclectorReadtablePkg, "ECLECTOR.READTABLE")
 
-namespace core {
-FORWARD(Readtable);
-};
-
-#endif /* _readtable_fwd_H_ */
+#endif
