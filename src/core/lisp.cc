@@ -418,11 +418,13 @@ CL_DEFUN void core__monitor_write(const std::string& msg) {
 void Lisp_O::startupLispEnvironment(Bundle *bundle) {
   MONITOR(BF("Starting lisp environment\n"));
   global_dump_functions = getenv("CLASP_DUMP_FUNCTIONS");
-  char* pause_startup = getenv("CLASP_PAUSE_STARTUP");
-  if (pause_startup) {
-      printf("%s:%d PID = %d  Paused at startup - press enter to continue: \n", __FILE__, __LINE__, getpid() );
+  {
+    char* pause_startup = getenv("CLASP_PAUSE_STARTUP");
+    if (pause_startup) {
+      printf("%s:%d PID = %d Paused at startup before all initialization - press enter to continue: \n", __FILE__, __LINE__, getpid() );
       fflush(stdout);
       getchar();
+    }
   }
   char* debug_byte_code = getenv("CLASP_DEBUG_BYTE_CODE");
   if (debug_byte_code) {
@@ -626,6 +628,15 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
   mpip::Mpi_O::initializeGlobals(_lisp);
   global_Started = true;
   startup_register_loaded_objects();
+  {
+    char* pause_startup = getenv("CLASP_PAUSE_STARTUP");
+    if (pause_startup) {
+      printf("%s:%d PID = %d Paused after initialization - press enter to continue: \n", __FILE__, __LINE__, getpid() );
+      fflush(stdout);
+      getchar();
+    }
+  }
+  
 //  process_llvm_stackmaps();
 }
 
@@ -2609,4 +2620,5 @@ SYMBOL_EXPORT_SC_(ClPkg, find_package);
 
 void initialize_Lisp_O() {
 };
+
 };

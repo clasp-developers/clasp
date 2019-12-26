@@ -279,6 +279,8 @@
                                         lineno
                                         type
                                         always-preserve)
+  (unless (> argno 0)
+    (error "The argno for ~a must start at 1 - got ~a" name argno))
   (llvm-sys:create-parameter-variable *the-module-dibuilder*
                                       scope
                                       name

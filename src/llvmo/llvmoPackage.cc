@@ -29,6 +29,7 @@ THE SOFTWARE.
 #include <stdint.h>
 
 #include <llvm/Support/raw_ostream.h>
+#include "llvm/Support/InitLLVM.h"
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/fileSystem.h>
@@ -488,6 +489,10 @@ void LlvmoExposer_O::expose(core::Lisp_sp lisp, core::Exposer_O::WhatToExpose wh
   case candoGlobals: {
     initialize_intrinsics(); //<< comment this out - symbols disappear
     initialize_link_intrinsics();
+    llvm::InitializeNativeTarget();
+    llvm::InitializeNativeTargetAsmPrinter();
+    llvm::InitializeNativeTargetAsmParser();
+    llvm::initializeScalarOpts(*llvm::PassRegistry::getPassRegistry());
     initialize_llvmo_expose();
     initialize_clbind_llvm_expose();
     initialize_dwarf_constants();
@@ -508,6 +513,14 @@ void LlvmoExposer_O::expose(core::Lisp_sp lisp, core::Exposer_O::WhatToExpose wh
   } break;
   }
 }
+
+
+
+void initialize_llvm(int argc, char **argv) {
+  printf("%s:%d initialize_llvm\n", __FILE__, __LINE__ );
+  InitLLVM X(argc,argv);
+}
+
 };
 
 #ifdef USE_MPS
