@@ -312,6 +312,10 @@ namespace core {
     static Integer_sp create( int32_t v );
     static Integer_sp create( uint32_t v );
 
+#if !defined(_TARGET_OS_LINUX) && !defined(_TARGET_OS_FREEBSD)
+    static Integer_sp create( uintptr_t v);
+#endif
+
 #if !defined( CLASP_FIXNUM_IS_INT64 )
     static Integer_sp create( int64_t v );
 #endif
