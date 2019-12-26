@@ -28,6 +28,7 @@ THE SOFTWARE.
 #include <limits.h>
 #include <float.h>
 #include <stdio.h>
+#include <sys/wait.h>
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>

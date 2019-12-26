@@ -824,7 +824,7 @@ def configure(cfg):
         cfg.env.CLASP_BUILD_MODE = 'fasl'
         cfg.env.LTO_FLAG = []
     else:
-        raise Exception("CLASP_BUILD_MODE can only be 'thinlto'(default), 'lto', or 'obj' - you provided %s" % cfg.env['CLASP_BUILD_MODE'])
+        raise Exception("CLASP_BUILD_MODE can only be 'thinlto'(default), 'lto', or 'object' - you provided %s" % cfg.env['CLASP_BUILD_MODE'])
     log.info("default cfg.env.CLASP_BUILD_MODE = %s, final cfg.env.LTO_FLAG = '%s'", cfg.env.CLASP_BUILD_MODE, cfg.env.LTO_FLAG)
 
     cur_clang_version = run_llvm_config(cfg, "--version")
