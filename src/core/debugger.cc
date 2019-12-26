@@ -632,6 +632,10 @@ SymbolTable load_macho_symbol_table(bool is_executable, const char* filename, ui
     while (!feof(fnm)) {
       int result = getline(&buf,&buf_len,fnm);
       if (feof(fnm)) break;
+      if (!buf) {
+        printf("%s:%d buf is 0x0 when reading output from %s\n", __FILE__, __LINE__, nm_cmd.str().c_str());
+        break;
+      }
       if (result==-1) {
         printf("%s:%d Error reading from %s line: %s\n", __FILE__, __LINE__, buf, filename);
       }
@@ -695,7 +699,7 @@ SymbolTable load_macho_symbol_table(bool is_executable, const char* filename, ui
       symbol_table.addSymbol(sname,real_address,type);
     }
 //    symbol_table.addSymbol("TERMINAL_SYMBOL",~0,'d');  // one symbol to end them all
-    free(buf);
+    if (buf) free(buf);
     symbol_table.optimize();
     pclose(fnm);
   }
