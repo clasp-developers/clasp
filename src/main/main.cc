@@ -83,6 +83,10 @@ THE SOFTWARE.
 #include <clasp/mpip/claspMpi.h>
 #endif
 
+namespace llvmo {
+void initialize_llvm(int argc, char **argv);
+
+};
 // ---------------------------------------------------------------------------
 // GLOBAL VARS
 // ---------------------------------------------------------------------------
@@ -409,6 +413,8 @@ int main( int argc, char *argv[] )
              exe_name().c_str(), __FILE__, __LINE__, EXIT_FAILURE, (unsigned long)rl_new.rlim_max );
   }
 
+  // initialize llvm
+  llvmo::initialize_llvm(argc,argv);
   
   // - COMMAND LINE OPTONS HANDLING
 
