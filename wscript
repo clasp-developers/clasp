@@ -94,8 +94,39 @@ GCS_NAMES = [ 'boehm',
               'mpsprep',
               'mps' ]
 
-CLANG_LIBRARIES = [ 'clang-cpp' ]
-LLVM_LIBRARIES = [ 'LLVM' ]
+CLANG_LIBRARIES = [
+            'clangASTMatchers',
+            'clangDynamicASTMatchers',
+            'clangIndex',
+            'clangTooling',
+            'clangFormat',
+    'clangToolingInclusions',
+            'clangToolingCore',
+            'clangBasic',
+            'clangCodeGen',
+            'clangDriver',
+            'clangFrontend',
+            'clangFrontendTool',
+            'clangCodeGen',
+            'clangRewriteFrontend',
+            'clangARCMigrate',
+            'clangStaticAnalyzerFrontend',
+            'clangFrontend',
+            'clangDriver',
+            'clangParse',
+            'clangSerialization',
+            'clangSema',
+            'clangEdit',
+            'clangStaticAnalyzerCheckers',
+            'clangStaticAnalyzerCore',
+            'clangAnalysis',
+            'clangAST',
+            'clangRewrite',
+            'clangLex',
+            'clangBasic'
+ ]
+#CLANG_LIBRARIES = [ 'clang-cpp' ]
+# LLVM_LIBRARIES = [ 'LLVM' ]
 
 BOOST_LIBRARIES = [
             'boost_filesystem',
@@ -903,7 +934,7 @@ def configure(cfg):
     llvm_lib_dir = run_llvm_config_for_libs(cfg, "--libdir")
     log.debug("llvm_lib_dir = %s", llvm_lib_dir)
     cfg.env.append_value('LINKFLAGS', ["-L%s" % llvm_lib_dir])
-    llvm_libraries = LLVM_LIBRARIES # [ x[2:] for x in run_llvm_config_for_libs(cfg, "--libs").split()] # drop the '-l' prefixes
+    llvm_libraries = [ x[2:] for x in run_llvm_config_for_libs(cfg, "--libs").split()] # drop the '-l' prefixes
 #dynamic llvm/clang
     cfg.check_cxx(lib=CLANG_LIBRARIES, cflags='-Wall', uselib_store='CLANG', libpath = llvm_lib_dir )
     cfg.check_cxx(lib=llvm_libraries, cflags = '-Wall', uselib_store = 'LLVM', libpath = llvm_lib_dir )
