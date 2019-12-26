@@ -64,6 +64,7 @@ templated_class_jump_table_index, jump_table_index, NULL
 #include <clasp/core/wrappers.h>
 #include <clasp/core/mpPackage.h>
 #include <clasp/gctools/gc_interface.fwd.h>
+#include <clasp/core/compiler.h>
 
 #ifdef USE_MPS
 
@@ -1079,6 +1080,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
     core::ThreadLocalState thread_local_state;
     my_thread_low_level = &thread_local_state_low_level;
     my_thread = &thread_local_state;
+    core::transfer_StartupInfo_to_my_thread();
     
   // Create the allocation points
     my_thread_allocation_points.initializeAllocationPoints();

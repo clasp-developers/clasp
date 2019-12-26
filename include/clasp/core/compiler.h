@@ -93,6 +93,7 @@ namespace core {
 void byte_code_interpreter(gctools::GCRootsInModule* roots, T_sp byte_code_stream, bool log);
 void core__throw_function(T_sp tag, T_sp result_form);
 void register_startup_function(size_t position, fnStartUp fptr);
+ void transfer_StartupInfo_to_my_thread();
 }
 
 #endif /* _compiler_H_ */

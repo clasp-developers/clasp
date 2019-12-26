@@ -192,10 +192,26 @@ void initializer_functions_invoke()
 
 namespace core {
 
+StartupInfo global_startup;
+
 std::atomic<size_t> global_next_startup_position;
 
 CL_DEFUN size_t core__next_startup_position() {
   return global_next_startup_position++;
+}
+
+/*! Static initializers will run and try to register startup functions.
+They will do this into the global_startup structure.
+Once the main code starts up - this startup info needs to be transfered
+to the my_thread thread-local storage.
+So right after the my_thread variable is initialized, this must be called for
+the main thread. */
+
+void transfer_StartupInfo_to_my_thread() {
+  if (!my_thread) {
+    printf("%s:%d my_thread is NULL - you cannot transfer StartupInfo\n", __FILE__, __LINE__ );
+  }
+  my_thread->_Startup = global_startup;
 }
 
 void register_startup_function(size_t position, fnStartUp fptr)
@@ -203,28 +219,38 @@ void register_startup_function(size_t position, fnStartUp fptr)
 #ifdef DEBUG_STARTUP
   printf("%s:%d In register_startup_function --> %p\n", __FILE__, __LINE__, fptr);
 #endif
-  if ( my_thread->_startup_functions == NULL ) {
-    my_thread->_startup_capacity = STARTUP_FUNCTION_CAPACITY_INIT;
-    my_thread->_startup_count = 0;
-    my_thread->_startup_functions = (Startup*)malloc(my_thread->_startup_capacity*sizeof(Startup));
+  StartupInfo* startup = NULL;
+  // if my_thread is defined - then use its startup info
+  // otherwise use the global_startup info.
+  // This will only happen in cclasp when startup functions
+  // are registered from static constructors.
+  if (my_thread) {
+    startup = &my_thread->_Startup;
   } else {
-    if ( my_thread->_startup_count == my_thread->_startup_capacity ) {
-      my_thread->_startup_capacity = my_thread->_startup_capacity*STARTUP_FUNCTION_CAPACITY_MULTIPLIER;
-      my_thread->_startup_functions = (Startup*)realloc(my_thread->_startup_functions,my_thread->_startup_capacity*sizeof(Startup));
+    startup = &global_startup;
+  }
+  if ( startup->_functions == NULL ) {
+    startup->_capacity = STARTUP_FUNCTION_CAPACITY_INIT;
+    startup->_count = 0;
+    startup->_functions = (Startup*)malloc(startup->_capacity*sizeof(Startup));
+  } else {
+    if ( startup->_count == startup->_capacity ) {
+      startup->_capacity = startup->_capacity*STARTUP_FUNCTION_CAPACITY_MULTIPLIER;
+      startup->_functions = (Startup*)realloc(startup->_functions,startup->_capacity*sizeof(Startup));
     }
   }
-  Startup startup(position,fptr);
-  my_thread->_startup_functions[my_thread->_startup_count] = startup;
-  my_thread->_startup_count++;
+  Startup one_startup(position,fptr);
+  startup->_functions[startup->_count] = one_startup;
+  startup->_count++;
 };
 
 /*! Return the number of startup_functions that are waiting to be run*/
 size_t startup_functions_are_waiting()
 {
 #ifdef DEBUG_STARTUP
-  printf("%s:%d startup_functions_are_waiting returning %" PRu "\n", __FILE__, __LINE__, my_thread->_startup_count );
+  printf("%s:%d startup_functions_are_waiting returning %" PRu "\n", __FILE__, __LINE__, my_thread->_Startup._count );
 #endif
-  return my_thread->_startup_count;
+  return my_thread->_Startup._count;
 };
 
 /*! Invoke the startup functions and clear the array of startup functions */
@@ -234,12 +260,12 @@ core::T_O* startup_functions_invoke(T_O* literals)
   Startup* startup_functions = NULL;
   {
   // Save the current list
-    startup_count = my_thread->_startup_count;
-    startup_functions = my_thread->_startup_functions;
+    startup_count = my_thread->_Startup._count;
+    startup_functions = my_thread->_Startup._functions;
   // Prepare to accumulate a new list
-    my_thread->_startup_count = 0;
-    my_thread->_startup_capacity = 0;
-    my_thread->_startup_functions = NULL;
+    my_thread->_Startup._count = 0;
+    my_thread->_Startup._capacity = 0;
+    my_thread->_Startup._functions = NULL;
   }
   // Invoke the current list
   core::T_O* result = NULL;
