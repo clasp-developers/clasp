@@ -916,11 +916,7 @@ void CoreExposer_O::expose(core::Lisp_sp lisp, WhatToExpose what) const {
     exposeCando_Numerics();
     exposeCore_lisp_reader();
     {
-      ReadTable_sp readtable = ReadTable_O::create_standard_readtable();
-      if (!readtable->_SyntaxTypes) {
-        printf("%s:%d The readtable->_SyntaxTypes is NULL\n", __FILE__, __LINE__ );
-        abort();
-      }
+      Readtable_sp readtable = Readtable_O::create_standard_readtable();
       cl::_sym_STARreadtableSTAR->defparameter(readtable);
     }
     break;

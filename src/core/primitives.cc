@@ -1425,8 +1425,8 @@ CL_DEFUN Symbol_mv core__type_to_symbol(T_sp x) {
   //    else if ( x.isA<BaseString_sp>() ) return(Values(_sym_BaseString_O));
     else if (gc::IsA<Stream_sp>(gx))
       return (Values(cl::_sym_Stream_O));
-    else if (gc::IsA<ReadTable_sp>(gx))
-      return (Values(cl::_sym_ReadTable_O));
+    else if (gc::IsA<Readtable_sp>(gx))
+      return (Values(cl::_sym_Readtable_O));
     return Values(gx->__class()->_className());
   }
   SIMPLE_ERROR(BF("Add core__type_to_symbol support for type: %s") % cl__class_of(x)->_classNameAsString());

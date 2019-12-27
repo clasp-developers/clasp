@@ -356,7 +356,9 @@ q (or Q):             quits the inspection.~%~
        (let ((c (find-class object nil)))
          (if c
              (documentation c t)
-             (si::get-documentation object doc-type))))
+             (if (ext:type-expander object)
+                 (documentation (ext:type-expander object) t)
+                 nil))))
       (function
        (if (fboundp object)
            (documentation (or (macro-function object)
@@ -365,8 +367,11 @@ q (or Q):             quits the inspection.~%~
            nil))
       (compiler-macro
        (if (compiler-macro-function object)
-           (documentation (compiler-macro-function object)
-                          doc-type)
+           (documentation (compiler-macro-function object) t)
+           nil))
+      (setf
+       (if (ext:setf-expander object)
+           (documentation (ext:setf-expander object) t)
            nil))
       (otherwise
        (si::get-documentation object doc-type)))))
@@ -381,7 +386,10 @@ q (or Q):             quits the inspection.~%~
                (si::set-documentation object 'type nil)
                (si::set-documentation object 'structure nil)
                (setf (documentation c t) new-value))
-             (si::set-documentation object doc-type new-value))))
+             (let ((exp (ext:type-expander object)))
+               (if exp
+                   (setf (documentation exp t) new-value)
+                   (si::set-documentation object doc-type new-value))))))
       (function
        (when (fboundp object)
          (setf (documentation (or (macro-function object)
@@ -391,8 +399,12 @@ q (or Q):             quits the inspection.~%~
       (compiler-macro
        (when (compiler-macro-function object)
          (setf (documentation (compiler-macro-function object)
-                              doc-type)
+                              t)
                new-value)))
+      (setf
+       (let ((exp (ext:setf-expander object)))
+         (when exp
+           (setf (documentation exp t) new-value))))
       (otherwise
        (si::set-documentation object doc-type new-value))))
   new-value)

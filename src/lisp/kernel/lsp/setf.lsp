@@ -15,7 +15,7 @@
 ;;;;                                setf routines
 
 ;;;; A SETF expander is a function. It is called, as seen in GET-SETF-EXPANSION,
-;;;; as (apply expander env (cdr place)), so it had better accept that.
+;;;; as (funcall expander place env), very similarly to a macro function.
 
 ;;; NOTE: At present, source info for setf expanders is simply obtained from the
 ;;; setf expander function (in source-location.lsp). This has the unintuitive
@@ -106,25 +106,27 @@ SETF doc and can be retrieved by (documentation 'SYMBOL 'setf)."
                                   (append ,storesvar ,tempsvar))
                           env-var doc (length stores))))))
       (let ((real-env-var (or env-var (gensym "ENV")))
-            (argssym (gensym "ARGS")))
+            (wholesym (gensym "WHOLE")))
         `(eval-when (:compile-toplevel :load-toplevel :execute)
            (funcall #'(setf ext:setf-expander)
-                    (lambda (,real-env-var &rest ,argssym)
+                    (lambda (,wholesym ,real-env-var)
+                      ,@(when doc (list doc))
                       (declare (core:lambda-name ,access-fn)
                                ,@(unless env-var `((ignore ,real-env-var))))
-                      (let ((,tempsvar (mapcar (lambda (f) (declare (ignore f)) (gensym)) ,argssym))
+                      (let ((,tempsvar (mapcar (lambda (f) (declare (ignore f)) (gensym))
+                                               (rest ,wholesym)))
                             (,storesvar (list ,@(make-list nstores :initial-element '(gensym "STORE")))))
-                        (values ,tempsvar ,argssym ,storesvar ,store-form-maker
+                        (values ,tempsvar (rest ,wholesym) ,storesvar ,store-form-maker
                                 (list* ',access-fn ,tempsvar))))
                     ',access-fn)
-           ,@(core::expand-set-documentation access-fn 'setf doc)
            ',access-fn)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Operators for general SETF expansions. Protocol explained at top of file.
 
-(defmacro define-setf-expander (access-fn args &rest lambda-body)
+(defmacro define-setf-expander (access-fn lambda-list &body body
+                                &environment env)
   "Syntax: (define-setf-expander symbol defmacro-lambda-list {decl | doc}*
           {form}*)
 Defines the SETF-method for generalized-variables (SYMBOL ...).
@@ -145,26 +147,11 @@ expanded into
 	  storing-form)
 The doc-string DOC, if supplied, is saved as a SETF doc and can be retrieved
 by (DOCUMENTATION 'SYMBOL 'SETF)."
-  (let ((env-part (member '&environment args :test #'eq)))
-    (if env-part
-	(setq args (cons (second env-part)
-			 (nconc (ldiff args env-part) (cddr env-part))))
-	(progn
-	  (setq env-part (gensym "env-define-setf-expander"))
-	  (setq args (cons env-part args))
-	  (push `(declare (ignore ,env-part)) lambda-body)))
-    (multiple-value-bind (decls body doc)
-	(core:process-declarations lambda-body t)
-      (let ((listdoc (when doc (list doc))))
-	`(eval-when (:compile-toplevel :load-toplevel :execute)
-           (funcall #'(setf ext:setf-expander)
-                    #'(lambda ,args ,@listdoc
-                        (declare (core:lambda-name ,access-fn)
-                                 ,@decls)
-                        (block ,access-fn ,@body))
-                    ',access-fn)
-	   ,@(si::expand-set-documentation access-fn 'setf doc)
-	   ',access-fn)))))
+  `(eval-when (:compile-toplevel :load-toplevel :execute)
+     (funcall #'(setf ext:setf-expander)
+              ,(ext:parse-define-setf-expander access-fn lambda-list body env)
+              ',access-fn)
+     ',access-fn))
 
 (defun get-setf-expansion (place &optional env &aux f)
   "Returns the 'five gangs' (see DEFINE-SETF-EXPANDER) for PLACE as five values."
@@ -183,7 +170,7 @@ by (DOCUMENTATION 'SYMBOL 'SETF)."
          (error "Invalid syntax: ~S is not a place." place))
         ;; Compound place. Check for SETF expander.
         ((setq f (ext:setf-expander (car place)))
-         (apply f env (cdr place)))
+         (funcall f place env))
         ;; Check for macro definition.
         ((and (setq f (macroexpand-1 place env)) (not (equal f place)))
          (get-setf-expansion f env))

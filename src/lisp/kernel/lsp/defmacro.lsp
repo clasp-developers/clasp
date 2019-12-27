@@ -313,4 +313,11 @@
   (declare (ignore env))
   (sys::expand-defmacro name lambda-list body 'cl:deftype))
 
-(export '(parse-macro parse-compiler-macro parse-deftype)) ; FIXME MOVE
+(defun parse-define-setf-expander (name lambda-list body &optional env)
+  (declare (ignore env))
+  ;; define-setf-expander uses macro lambda lists exactly.
+  (sys::expand-defmacro name lambda-list body 'cl:defmacro))
+
+;; FIXME: move
+(export '(parse-macro parse-compiler-macro parse-deftype
+          parse-define-setf-expander))

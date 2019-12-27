@@ -1,9 +1,10 @@
+
 /*
-    File: readtable.fwd.h
+    File: eclector_readtable.h
 */
 
 /*
-Copyright (c) 2014, Christian E. Schafmeister
+Copyright (c) 2019, Christian E. Schafmeister
  
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
@@ -24,12 +25,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
+#ifndef _eclector_readtable_H
+#define _eclector_readtable_H
 
-#ifndef _readtable_fwd_H_
-#define _readtable_fwd_H_
+#include <clasp/core/object.h>
+#include <clasp/core/eclector_readtable.fwd.h>
 
-namespace core {
-FORWARD(Readtable);
-};
-
-#endif /* _readtable_fwd_H_ */
+#endif
