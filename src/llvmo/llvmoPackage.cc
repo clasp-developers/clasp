@@ -517,8 +517,7 @@ void LlvmoExposer_O::expose(core::Lisp_sp lisp, core::Exposer_O::WhatToExpose wh
 
 
 void initialize_llvm(int argc, char **argv) {
-  printf("%s:%d initialize_llvm\n", __FILE__, __LINE__ );
-  InitLLVM X(argc,argv);
+//  InitLLVM X(argc,argv);
 }
 
 };
