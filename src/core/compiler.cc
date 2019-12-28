@@ -32,6 +32,7 @@ THE SOFTWARE.
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <dlfcn.h>
 #ifdef _TARGET_OS_DARWIN
 #import <mach-o/dyld.h>
 #endif
