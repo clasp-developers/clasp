@@ -60,6 +60,15 @@ THE SOFTWARE.
 
 namespace core {
 
+
+#ifdef CLASP_MS_WINDOWS_HOST
+#define clasp_mode_t int
+#else
+#define clasp_mode_t mode_t
+#endif
+
+  int safe_open(const char *filename, int flags, clasp_mode_t mode);
+
   enum StreamMode {                          /*  stream mode  */
       clasp_smm_input,         /*  input  */
       clasp_smm_input_file,    /*  input  */

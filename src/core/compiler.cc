@@ -30,7 +30,8 @@ THE SOFTWARE.
 //#define DEBUG_LEVEL_FULL
 
 #include <sys/stat.h>
-#include <dlfcn.h>
+#include <fcntl.h>
+#include <unistd.h>
 #ifdef _TARGET_OS_DARWIN
 #import <mach-o/dyld.h>
 #endif
@@ -70,6 +71,7 @@ THE SOFTWARE.
 #include <clasp/core/pointer.h>
 #include <clasp/core/environment.h>
 #include <clasp/llvmo/intrinsics.h>
+#include <clasp/llvmo/llvmoExpose.h>
 #include <clasp/core/wrappers.h>
 
 
@@ -449,6 +451,39 @@ CL_DEFUN T_sp core__startup_image_pathname(char stage) {
 };
 
 
+CL_DEFUN T_sp core__load_object(llvmo::ClaspJIT_sp jit, T_sp pathDesig, T_sp verbose, T_sp print, T_sp external_format) {
+  Pathname_sp path = cl__pathname(pathDesig);
+  String_sp fname = gc::As<String_sp>(cl__namestring(cl__probe_file(path)));
+  printf("%s:%d About to load-object %s\n", __FILE__, __LINE__, fname->get_std_string().c_str() );
+  mode_t mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH;
+  int fd = safe_open(fname->get_std_string().c_str(), O_RDONLY, mode);
+  size_t offset = lseek(fd, 0, SEEK_END);
+  char* rbuffer = (char*)malloc(offset);
+  size_t start = lseek(fd, 0, SEEK_SET);
+  size_t rd = read(fd,rbuffer,offset);
+  if (rd!=offset) {
+    printf("%s:%d Could only read %lu bytes but expected %lu bytes\n", __FILE__, __LINE__, rd, offset);
+  }
+  GC_ALLOCATE_VARIADIC(ObjectFile_O,of,(void*)rbuffer,offset);
+  close(fd);
+  llvm::StringRef sbuffer((const char*)rbuffer,offset);
+  llvm::StringRef name(fname->get_std_string());
+  std::unique_ptr<llvm::MemoryBuffer> mbuffer = llvm::MemoryBuffer::getMemBuffer(sbuffer,name,false);
+  auto erro = jit->_Jit->addObjectFile(std::move(mbuffer));
+  if (erro) {
+    printf("%s:%d Could not addObjectFile\n", __FILE__, __LINE__ );
+  }
+  printf("%s:%d About to run constructors\n", __FILE__, __LINE__ );
+  auto errr = jit->_Jit->runConstructors();
+  if (errr) {
+    printf("%s:%d Could not runConstructors\n", __FILE__, __LINE__ );
+  }
+  if (startup_functions_are_waiting()) {
+    printf("%s:%d startup functions were waiting - invoking\n", __FILE__, __LINE__ );
+    startup_functions_invoke(NULL);
+  }
+  return of;
+}
 
 
 
