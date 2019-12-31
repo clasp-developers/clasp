@@ -466,6 +466,7 @@ exec sbcl --noinform --dynamic-space-size 2048 --disable-ldb --lose-on-corruptio
          (let ((options (parse-cleanup-options (gethash "-O" args nil))))
            (cleanup-stacks in-stream out-stream options)))
         ((search "count-tips" cmd)
+         (format t "Usage: -i input.raw.stacks -o output-file.txt~%")
          (count-tips in-stream out-stream))
         ((search "count-calls" cmd)
          (count-calls in-stream out-stream))
