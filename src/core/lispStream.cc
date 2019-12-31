@@ -2717,14 +2717,7 @@ CL_DEFUN T_sp cl__synonym_stream_symbol(T_sp strm) {
  * UNINTERRUPTED OPERATIONS
  */
 
-#ifdef CLASP_MS_WINDOWS_HOST
-#define clasp_mode_t int
-#else
-#define clasp_mode_t mode_t
-#endif
-
-static int
-safe_open(const char *filename, int flags, clasp_mode_t mode) {
+int safe_open(const char *filename, int flags, clasp_mode_t mode) {
   const cl_env_ptr the_env = clasp_process_env();
   clasp_disable_interrupts_env(the_env);
   int output = open(filename, flags, mode);
