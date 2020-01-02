@@ -267,7 +267,7 @@ by (DOCUMENTATION 'SYMBOL 'SETF)."
             (subst `(THE ,type ,(first stores)) (first stores) store-form)
             `(THE ,type ,access-form))))
 
-(define-setf-expander apply (&environment env fn &rest rest)
+(define-setf-expander apply (fn &rest rest)
   (unless (and (consp fn)
                (eq (first fn) 'function)
                (symbolp (second fn))
