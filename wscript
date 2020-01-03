@@ -749,8 +749,12 @@ def configure(cfg):
                     llvm_config_binary = cfg.find_program('llvm-config-%s.0'%CLANG_VERSION)
                 except cfg.errors.ConfigurationError:
                     cfg.to_log('llvm-config-%s.0 was not found (ignoring)'%CLANG_VERSION)
-                    # Let's fail if no llvm-config binary has been found
-                    llvm_config_binary = cfg.find_program('llvm-config')
+                    try:
+                        llvm_config_binary = cfg.find_program('llvm-config-%s'%CLANG_VERSION)
+                    except cfg.errors.ConfigurationError:
+                        cfg.to_log('llvm-config-%s was not found (ignoring)'%CLANG_VERSION)
+                        # Let's fail if no llvm-config binary has been found
+                        llvm_config_binary = cfg.find_program('llvm-config')
                 llvm_config_binary = llvm_config_binary[0]
                 log.info("On %s looking for %s" % (cfg.env['DEST_OS'],llvm_config_binary))
             cfg.env["LLVM_CONFIG_BINARY"] = llvm_config_binary
