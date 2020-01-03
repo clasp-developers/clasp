@@ -100,7 +100,7 @@ CL_DEFUN T_sp cl__make_dispatch_macro_character(Character_sp ch, T_sp nonTermina
     gc::As_unsafe<Readtable_sp>(readtable)->make_dispatch_macro_character_(ch, nonTerminatingP);
     return _lisp->_true();
   }
-  return eval::funcall(eclector_readtable::_sym_make_dispatch_macro_character,ch,nonTerminatingP,readtable);
+  return eval::funcall(eclector_readtable::_sym_make_dispatch_macro_character,readtable,ch,nonTerminatingP);
 };
 
 CL_LAMBDA(char &optional (readtable *readtable*));
@@ -110,7 +110,7 @@ CL_DEFUN T_mv cl__get_macro_character(Character_sp chr, T_sp readtable) {
   if (gc::IsA<Readtable_sp>(readtable)) {
     return gc::As_unsafe<Readtable_sp>(readtable)->get_macro_character_(chr);
   }
-  return eval::funcall(eclector_readtable::_sym_get_macro_character,chr,readtable);
+  return eval::funcall(eclector_readtable::_sym_get_macro_character,readtable,chr);
 };
 
 CL_LAMBDA(&optional (from-readtable cl:*readtable*) to-readtable);
@@ -126,7 +126,10 @@ CL_DEFUN T_sp cl__copy_readtable(T_sp fromReadTable, T_sp toReadTable) {
     }
     return gc::As_unsafe<Readtable_sp>(fromReadTable)->copyReadtable_(toReadTable);
   }
-  return eval::funcall(eclector_readtable::_sym_copy_readtable,fromReadTable,toReadTable);
+  if (toReadTable.nilp())
+    return eval::funcall(eclector_readtable::_sym_copy_readtable,fromReadTable);
+  else
+    return eval::funcall(eclector_readtable::_sym_copy_readtable_into,fromReadTable, toReadTable);
 }
 
 CL_LAMBDA(readtable);
@@ -156,7 +159,7 @@ CL_DEFUN T_sp cl__set_dispatch_macro_character(Character_sp dispChar, Character_
   if (gc::IsA<Readtable_sp>(readtable)) {
     return gc::As_unsafe<Readtable_sp>(readtable)->set_dispatch_macro_character_(dispChar, subChar, newFunctionDesig);
   }
-    return eval::funcall(eclector_readtable::_sym_set_dispatch_macro_character,dispChar,subChar,newFunctionDesig,readtable);
+  return eval::funcall(eclector_readtable::_sym_set_dispatch_macro_character,readtable,dispChar,subChar,newFunctionDesig);
 };
 
 CL_LAMBDA(dispChar subChar &optional (readtable *readtable*));
@@ -165,7 +168,7 @@ CL_DOCSTRING("getDispatchMacroCharacter");
 CL_DEFUN T_sp cl__get_dispatch_macro_character(Character_sp dispChar, Character_sp subChar, T_sp readtable) {
   if (gc::IsA<Readtable_sp>(readtable)) 
     return gc::As_unsafe<Readtable_sp>(readtable)->get_dispatch_macro_character_(dispChar, subChar);
-  return eval::funcall(eclector_readtable::_sym_get_dispatch_macro_character,dispChar,subChar,readtable);
+  return eval::funcall(eclector_readtable::_sym_get_dispatch_macro_character,readtable,dispChar,subChar);
 };
 
 CL_LAMBDA(ch func-desig &optional non-terminating-p (readtable *readtable*));
@@ -174,7 +177,7 @@ CL_DOCSTRING("setMacroCharacter");
 CL_DEFUN T_sp cl__set_macro_character(Character_sp ch, T_sp func_desig, T_sp non_terminating_p, T_sp readtable) {
   if (gc::IsA<Readtable_sp>(readtable)) 
     return gc::As_unsafe<Readtable_sp>(readtable)->set_macro_character_(ch,func_desig,non_terminating_p);
-  return eval::funcall(eclector_readtable::_sym_set_macro_character,ch,func_desig,non_terminating_p,readtable);
+  return eval::funcall(eclector_readtable::_sym_set_macro_character,readtable,ch,func_desig,non_terminating_p);
 };
 
 CL_LAMBDA(readtable chr);
