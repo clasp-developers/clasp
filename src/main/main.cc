@@ -460,7 +460,7 @@ int main( int argc, char *argv[] )
 
   int exit_code;
   {
-    exit_code = gctools::startupGarbageCollectorAndSystem( &startup, argc, argv, rl.rlim_max, mpiEnabled, mpiRank, mpiSize );
+    exit_code = gctools::startupGarbageCollectorAndSystem( &startup, argc, argv, rl.rlim_cur, mpiEnabled, mpiRank, mpiSize );
   }
   
 #ifdef USE_MPI
