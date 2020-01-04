@@ -245,6 +245,10 @@ DEBUG_OPTIONS = [
     "CONFIG_VAR_COOL" # mps setting
 ]
 
+def macos_version(cfg):
+    result = get_macos_version(cfg)
+    print("result = %s" % result)
+    
 def build_extension(bld):
     log.pprint('BLUE', "build_extension()")
     bld.recurse("extensions")
@@ -819,7 +823,7 @@ def configure(cfg):
 
     cfg.load("why")
     cfg.check_waf_version(mini = '1.7.5')
-    cfg.env["DEST_OS"] = cfg.env["DEST_OS"] or Utils.unversioned_sys_platform()
+    cfg.env['DEST_OS'] = cfg.env['DEST_OS'] or Utils.unversioned_sys_platform()
     update_exe_search_path(cfg)
     run_llvm_config(cfg, "--version") # make sure we fail early
     check_externals_clasp_version(cfg)
