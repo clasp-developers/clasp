@@ -77,7 +77,7 @@ def macosx_sdk_path(cfg):
     log.debug("macosx_sdk_path: %s", result)
     return result
 
-def get_macos_version(cfg):
+def get_macosx_version(cfg):
     result = [0]
     dest_os = cfg.env["DEST_OS"]
     if ( dest_os == DARWIN_OS ):
