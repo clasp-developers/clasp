@@ -27,6 +27,8 @@ SRC_CORE_FILES = \
 #        'cxxClass',
         'record',
         'debugger',
+        'debug_unixes',
+        'debug_macosx',
         'smallMap',
         'smallMultimap',
         'hashTable',

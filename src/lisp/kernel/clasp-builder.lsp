@@ -458,8 +458,7 @@ Return files."
                (dolist (entry entries)
                  (one-compile-kernel-file entry))))
       (gctools:garbage-collect)
-      (let ((build-dir (pathname (core:mkdtemp "/tmp/clasp-builder")))
-            entries wpid status)
+      (let (entries wpid status)
         (tagbody
          top
            (setq batch-size (let ((remaining (length files)))
