@@ -29,6 +29,12 @@ if [ "$1" = configure ] && ! [ "${CLASP_BUILD_NO_UPDATES-}" = 1 ] ; then
     fi
 fi
 
+if [ "`uname`" = FreeBSD ] ; then
+    export MAKE=gmake
+#    export COMPILER_CC="clang-6.0"
+#    export COMPILER_CXX="clang++-6.0"
+fi
+
 # TODO:
 # - write /opt/clasp/bin/setenv-clasp (function in lib.sh)
 # - take quicklisp compilation entirely out of waf

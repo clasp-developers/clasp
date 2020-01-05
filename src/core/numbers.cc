@@ -1448,7 +1448,7 @@ Integer_sp Integer_O::create( unsigned long long v )
 }
 #endif
 
-#if !defined(_TARGET_OS_LINUX)
+#if !defined(_TARGET_OS_LINUX) && !defined(_TARGET_OS_LINUX)
 Integer_sp Integer_O::create( uintptr_t v) {
   if ( v <= gc::most_positive_fixnum ) {
     return clasp_make_fixnum((Fixnum)v);
