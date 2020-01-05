@@ -34,6 +34,7 @@ THE SOFTWARE.
 #ifdef USE_BOEHM // whole file #ifdef USE_BOEHM
 #include <clasp/gctools/boehmGarbageCollection.h>
 #include <clasp/core/debugger.h>
+#include <clasp/core/compiler.h>
 
 
 
@@ -265,6 +266,7 @@ int initializeBoehm(MainFunctionType startupFn, int argc, char *argv[], bool mpi
   core::ThreadLocalState thread_local_state;
   my_thread_low_level = &thread_local_state_low_level;
   my_thread = &thread_local_state;
+  core::transfer_StartupInfo_to_my_thread();
 #if 0
   // I'm not sure if this needs to be done for the main thread
   GC_stack_base gc_stack_base;

@@ -25,7 +25,7 @@
                                    return-value abi tags destinations frame info)
   (assert (not (null destinations)))
   ;; Bind a fresh IRBuilder so we don't fuck with whatever our caller's been doing.
-  (cmp:with-irbuilder ((llvm-sys:make-irbuilder cmp:*llvm-context*))
+  (cmp:with-irbuilder ((llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
     (let ((landing-pad-for-unwind-rethrow
             (cmp::generate-rethrow-landing-pad cmp:*current-function* not-unwind-block
                                                nil ; '(cmp::typeid-core-unwind)
@@ -74,7 +74,7 @@
       landing-pad-block)))
 
 (defun generate-resume-block (exn.slot ehselector.slot)
-  (let* ((ehbuilder       (llvm-sys:make-irbuilder cmp:*llvm-context*))
+  (let* ((ehbuilder       (llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
          (ehresume        (cmp:irc-basic-block-create "ehresume"))
          (_               (cmp:irc-set-insert-point-basic-block ehresume ehbuilder))
          (exn7            (llvm-sys:create-load-value-twine ehbuilder exn.slot "exn7"))

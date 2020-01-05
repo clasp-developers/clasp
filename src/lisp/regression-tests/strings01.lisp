@@ -103,8 +103,8 @@
       (equal (core:copy-to-simple-base-string #\C) "C"))
 
 
-(test closest-sequence-type0 (eq (core::closest-sequence-type 'simple-base-string) 'base-char))
-(test closest-sequence-type1 (eq (core::closest-sequence-type 'simple-string) 'character))
+(test closest-sequence-type0 (equal (core::sequence-type-maker-info 'simple-base-string) '(vector base-char)))
+(test closest-sequence-type1 (equal (core::sequence-type-maker-info 'simple-string) '(vector character)))
 
 ;;; These should not return t, but the first index, where it is different
 (test eql-1 (eql 0 (string/= "a" "b")))

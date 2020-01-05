@@ -99,7 +99,6 @@ typedef bool _Bool;
 #include <clasp/core/random.h>
 #include <clasp/core/mpPackage.h>
 #include <clasp/core/unixfsys.h>
-#include <clasp/core/weakKeyMapping.h>
 #include <clasp/core/weakHashTable.h>
 #include <clasp/core/smallMultimap.h>
 //#include "core/symbolVector.h"

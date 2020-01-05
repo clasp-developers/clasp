@@ -62,7 +62,11 @@ THE SOFTWARE.
 #define CONTAB_NAME "^CONTAB"
 #define INTPTR_BITS 64
 
-#define BIT_ARRAY_BYTE_SIZE 32
+typedef uint64_t   bit_array_word; // "word" for bit array purposes (see gcbitarray.h)
+#define BIT_ARRAY_WORD_BITS 64 // = sizeof(bit_array_word)*CHAR_BIT
+// NOTE: C++11 says long long is at least 64 bits, so this probably works.
+#define bit_array_word_popcount __builtin_popcountll
+#define bit_array_word_clz __builtin_clzll
 
 typedef int64_t    Fixnum; // Signed Fixnum immediate value
 #define CLASP_FIXNUM_IS_INT64 1  // == true

@@ -1,0 +1,3 @@
+#!/bin/bash
+
+sudo /opt/clasp/bin/clasp -f jit-log-symbols --eval '(loop for x below 100 do (compile-file "sys:kernel;lsp;foundation.lsp"))' --eval '(core:quit)'

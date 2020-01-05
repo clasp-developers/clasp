@@ -64,7 +64,6 @@ CL_DEFUN T_mv core__file_scope(T_sp sourceFile) {
     size_t idx = unbox_fixnum(fnSourceFile);
     if (idx >= _lisp->_Roots._SourceFiles.size()) {
       idx = 0;
-      //                SIMPLE_ERROR(BF("Illegal index %d for source file info") % fnSourceFile->get() );
     }
     return Values(_lisp->_Roots._SourceFiles[idx], fnSourceFile);
   } else if (cl__streamp(sourceFile)) {
@@ -208,7 +207,7 @@ void FileScope_O::fields(Record_sp node) {
   switch (node->stage()) {
   case Record_O::initializing:
   case Record_O::loading: {
-    FileScope_mv sfi = _lisp->getOrRegisterFileScope(gc::As<String_sp>(cl__namestring(this->_pathname))->get());
+    FileScope_mv sfi = _lisp->getOrRegisterFileScope(gc::As<String_sp>(cl__namestring(this->_pathname))->get_std_string());
     *this = *sfi;
   } break;
   case Record_O::patching: {

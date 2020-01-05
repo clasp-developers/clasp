@@ -818,11 +818,12 @@
   (debug-inline "length")
   (declaim (inline length))
   (defun length (sequence)
-    (etypecase sequence
+    (typecase sequence
       (cons (core:cons-length sequence))
       ;; note: vector-length returns the fill pointer if there is one.
       (vector (core::vector-length sequence))
-      (null 0))))
+      (null 0)
+      (t (sequence:length sequence)))))
 
 (progn
   (debug-inline "elt")
@@ -840,12 +841,13 @@
                 (error 'type-error :datum sequence :expected-type 'sequence)))))
       (vector (vector-read sequence index))
       (null (error 'core:sequence-out-of-bounds :datum index :expected-type '(integer 0 (0))
-                                                :object sequence))))
+                                                :object sequence))
+      (t (sequence:elt sequence index))))
 
   (debug-inline "core:setf-elt")
   (declaim (inline core:setf-elt))
   (defun core:setf-elt (sequence index new-value)
-    (etypecase sequence
+    (typecase sequence
       (cons
        (let ((cell (nthcdr index sequence)))
          (cond ((consp cell) (setf (car (the cons cell)) new-value))
@@ -857,17 +859,16 @@
                 (error 'type-error :datum sequence :expected-type 'sequence)))))
       (vector (vector-set sequence index new-value))
       (null (error 'core:sequence-out-of-bounds :datum index :expected-type '(integer 0 (0))
-                                                :object sequence)))))
+                                                :object sequence))
+      (t (setf (sequence:elt sequence index) new-value)))))
 
-;;; ------------------------------------------------------------
-;;;
-;;;  Copied from clasp/src/lisp/kernel/lsp/assorted.lsp
-;;;    and put here so that the inline definition is available
-;;;
-(declaim (inline core::coerce-fdesignator)
+;;; Redefinition of C++ function.
+;;; NOTE: This will be faster if we use a generic function or implement typecase
+;;;  in terms of generic function dispatch.
+(declaim (inline core:coerce-fdesignator)
          (ftype (function ((or function symbol)) function)
-                core::coerce-fdesignator))
-(defun core::coerce-fdesignator (fdesignator)
+                core:coerce-fdesignator))
+(defun core:coerce-fdesignator (fdesignator)
   "Take a CL function designator and spit out a function."
   (etypecase fdesignator
     (function fdesignator)
@@ -957,7 +958,7 @@
               (funcall *macroexpand-hook* cmf form env)
               `(cleavir-primop:funcall ,function ,@arguments))))))
   `(cleavir-primop:funcall
-    (core::coerce-fdesignator ,function)
+    (core:coerce-fdesignator ,function)
     ,@arguments))
 
 (define-cleavir-compiler-macro values (&whole form &rest values)

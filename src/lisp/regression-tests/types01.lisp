@@ -71,4 +71,74 @@
    (and subtype-p valid-p)))
 
 (test ARRAY.9.8
- (let () (TYPEP #2A((A B) (C D) (E F)) '(SIMPLE-ARRAY * (* 2)))))
+      (let () (TYPEP #2A((A B) (C D) (E F)) '(SIMPLE-ARRAY * (* 2)))))
+
+(TEST
+ types-classes-11-a
+ (multiple-value-bind
+       (subtype-p valid-p)
+     (subtypep 'string (find-class 'string))
+   (and subtype-p valid-p)))
+
+(TEST
+ types-classes-11-b
+ (multiple-value-bind
+       (subtype-p valid-p)
+     (subtypep (find-class 'string) 'string)
+   (and subtype-p valid-p)))
+
+(TEST
+ types-classes-12-a
+ (multiple-value-bind
+       (subtype-p valid-p)
+     (subtypep  'BASE-STRING (find-class 'BASE-STRING))
+   (and subtype-p valid-p)))
+
+(TEST
+ types-classes-12-b
+ (multiple-value-bind
+       (subtype-p valid-p)
+     (subtypep (find-class 'BASE-STRING)  'BASE-STRING )
+   (and subtype-p valid-p)))
+
+(TEST
+ types-classes-13-a
+ (multiple-value-bind
+       (subtype-p valid-p)
+     (subtypep 'string (find-class 'string))
+   (and subtype-p valid-p)))
+
+(TEST
+ types-classes-13-b
+ (multiple-value-bind
+       (subtype-p valid-p)
+     (subtypep   (find-class 'SIMPLE-STRING) 'SIMPLE-STRING)
+   (and subtype-p valid-p)))
+
+(TEST
+ types-classes-14-a
+ (multiple-value-bind
+       (subtype-p valid-p)
+     (subtypep  'SIMPLE-BASE-STRING (find-class 'SIMPLE-BASE-STRING))
+   (and subtype-p valid-p)))
+
+(TEST
+ types-classes-14-b
+ (multiple-value-bind
+       (subtype-p valid-p)
+     (subtypep  (find-class 'SIMPLE-BASE-STRING)  'SIMPLE-BASE-STRING)
+   (and subtype-p valid-p)))
+
+(TEST
+ types-classes-15-a
+ (multiple-value-bind
+       (subtype-p valid-p)
+     (subtypep  'bit-vector (find-class 'bit-vector))
+   (and subtype-p valid-p)))
+
+(TEST
+ types-classes-15-b
+ (multiple-value-bind
+       (subtype-p valid-p)
+     (subtypep (find-class 'bit-vector)  'bit-vector)
+   (and subtype-p valid-p)))

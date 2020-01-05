@@ -14,6 +14,10 @@
     ((character) (values 'core:make-simple-vector-character 'core:make-simple-mdarray-character))
     ((single-float) (values 'core:make-simple-vector-single-float 'core:make-simple-mdarray-single-float))
     ((double-float) (values 'core:make-simple-vector-double-float 'core:make-simple-mdarray-double-float))
+    ((ext:integer2) (values 'core:make-simple-vector-int2 'core:make-simple-mdarray-int2))
+    ((ext:byte2) (values 'core:make-simple-vector-byte2 'core:make-simple-mdarray-byte2))
+    ((ext:integer4) (values 'core:make-simple-vector-int4 'core:make-simple-mdarray-int4))
+    ((ext:byte4) (values 'core:make-simple-vector-byte4 'core:make-simple-mdarray-byte4))
     ((ext:integer8) (values 'core:make-simple-vector-int8 'core:make-simple-mdarray-int8))
     ((ext:byte8) (values 'core:make-simple-vector-byte8 'core:make-simple-mdarray-byte8))
     ((ext:integer16) (values 'core:make-simple-vector-int16 'core:make-simple-mdarray-int16))
@@ -77,4 +81,21 @@
                      (if icsp
                          `(core::fill-array-with-seq ,form ,initial-contents)
                          form))))))
+      form))
+
+(define-compiler-macro sys:make-vector
+    (&whole form element-type dimension
+            &optional (adjustable nil ap) (fill-pointer nil fp)
+            (displaced-to nil dp) (displaced-index-offset 0 diop)
+            initial-element iesp
+            &environment env)
+  ;; FIXME: This should do better for constant NIL adjustable, etc.
+  ;; As is, we won't expand if initial-element is provided.
+  (if (and (constantp element-type env)
+           (not (or ap fp dp diop)))
+      (let ((make-sv (uaet-info (ext:constant-form-value element-type env))))
+        (if make-sv
+            `(,make-sv ,dimension ,initial-element ,iesp)
+            ;; unknown uaet, give up
+            form))
       form))

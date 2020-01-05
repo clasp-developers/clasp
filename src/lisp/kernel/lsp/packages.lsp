@@ -52,6 +52,64 @@
   (export '( fundamental-character-output-stream
           )))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Export symbols in SEQUENCE package
+;;;
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (core:select-package "SEQUENCE"))
+
+;;; SEQUENCE does not :use CL, so qualify CL symbols.
+(cl:eval-when (:compile-toplevel :load-toplevel :execute)
+  (cl:export '(;; core protocol
+               adjust-sequence
+               elt
+               length
+               make-sequence-like
+               ;; iterator protocol
+               iterator-step
+               iterator-endp
+               iterator-element
+               iterator-index
+               iterator-copy
+               make-simple-sequence-iterator
+               make-sequence-iterator
+               ;; may be customized or derived
+               emptyp
+               ;; ditto, but are CL symbols too
+               count count-if count-if-not
+               copy-seq
+               delete delete-if delete-if-not
+               delete-duplicates
+               fill
+               find find-if find-if-not
+               mismatch
+               nsubstitute nsubstitute-if nsubstitute-if-not
+               nreverse
+               position position-if position-if-not
+               reduce
+               remove remove-if remove-if-not
+               remove-duplicates
+               replace
+               reverse
+               search
+               sort stable-sort
+               subseq
+               substitute substitute-if substitute-if-not
+               ;; helper macros
+               dosequence
+               with-sequence-iterator
+               with-simple-sequence-iterator
+               ;; clasp extensions
+               protocol-unimplemented
+               protocol-unimplemented-operation
+               make-sequence
+               define-random-access-sequence
+               make-random-access-iterator
+               define-iterative-sequence
+               ))
+  (core:select-package "CORE"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

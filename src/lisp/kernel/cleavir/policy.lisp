@@ -21,14 +21,14 @@
 (defmethod cleavir-policy:policy-qualities append ((env clasp-global-environment))
   '((save-register-args boolean t)
     (core::insert-array-bounds-checks boolean t)
-    (trust-type-declarations boolean nil)
+    (ext:assume-right-type boolean nil)
     (do-type-inference boolean t)
     (do-dx-analysis boolean t)))
 ;;; FIXME: Can't just punt like normal since it's an APPEND method combo.
 (defmethod cleavir-policy:policy-qualities append ((env null))
   '((save-register-args boolean t)
     (core::insert-array-bounds-checks boolean t)
-    (trust-type-declarations boolean nil)
+    (ext:assume-right-type boolean nil)
     (do-type-inference boolean t)
     (do-dx-analysis boolean t)))
 
@@ -88,7 +88,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; POLICY TRUST-TYPE-DECLARATIONS
+;;; POLICY EXT:ASSUME-RIGHT-TYPE
 ;;;
 ;;; Should type declarations be trusted for unsafe transforms?
 ;;; If this is true, crashes can result if type declarations
@@ -99,7 +99,7 @@
 ;;; once things are less broken.
 
 (defmethod cleavir-policy:compute-policy-quality
-    ((quality (eql 'trust-type-declarations))
+    ((quality (eql 'ext:assume-right-type))
      optimize
      (environment clasp-global-environment))
   (let ((safety (cleavir-policy:optimize-value optimize 'safety)))

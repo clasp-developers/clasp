@@ -6,6 +6,14 @@ at_least_one ()
     test "$1" "$2"
 }
 
+f_info ()
+{
+    echo CLASP_DEPLOY_S3_BUCKET=$CLASP_DEPLOY_S3_BUCKET
+    echo DISTFILES_TMP_DIR=$DISTFILES_TMP_DIR
+    find "${DISTFILES_TMP_DIR-ERROR}"/. "${CLASP_DEPLOY_S3_BUCKET-ERROR}"/. \
+        -type f -ls
+}
+
 ctime ()
 {
     gtime -f "${CTIME_PREFIX}%E %e real %U user %S sys %P CPU %F/%R faults${CTIME_POSTFIX}" "$@"
@@ -66,7 +74,7 @@ set_python_variables ()
         unset DEPLOY_PYTHONPATH
     fi
 
-    export PYTHONPATH="/opt/clasp/lib/python$PYTHON_VERSION/site-packages:$DEPLOY_PYTHONPATH"
+    export PYTHONPATH="/opt/clasp/lib/python$PYTHON_VERSION/site-packages:/opt/clasp/lib64/python$PYTHON_VERSION/site-packages:$DEPLOY_PYTHONPATH"
 }
 
 f_setenv_clasp ()
@@ -79,6 +87,7 @@ f_setenv_clasp ()
     echo '    export ACLOCAL_FLAGS="-I /opt/clasp/share/aclocal ${ACLOCAL_FLAGS-}"'
     echo '    export JUPYTERLAB_DIR=${JUPYTERLAB_DIR-/opt/clasp/jupyter/lab}'
     echo '    export JUPYTER_PATH=${JUPYTER_PATH-/opt/clasp/run}'
+    echo '    export SLIME_HOME=${SLIME_HOME-/opt/clasp/slime}'
     echo '    export XDG_CACHE_HOME="${XDG_CACHE_HOME-/opt/clasp/lib/cache}"'
     echo '    export ASDF_OUTPUT_TRANSLATIONS=${ASDF_OUTPUT_TRANSLATION-/:}'
     echo '    export CLASP_QUICKLISP_DIRECTORY=${CLASP_QUICKLISP_DIRECTORY-/opt/clasp/lib/clasp/src/lisp/modules/quicklisp}'
@@ -91,7 +100,7 @@ f_setenv_clasp ()
     fi
 
     echo '#fi'
-    echo 'export CRAENVPROMPT="clasp"'
+    echo 'export CRAENVPROMPT="\$clasp"'
 }
 
 f_write_setenv_clasp ()

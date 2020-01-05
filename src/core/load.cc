@@ -39,6 +39,7 @@ THE SOFTWARE.
 #include <clasp/core/pathname.h>
 #include <clasp/core/lispReader.h>
 #include <clasp/core/evaluator.h>
+#include <clasp/core/compiler.h>
 #include <clasp/gctools/gctoolsPackage.h>
 #include <clasp/core/predicates.h>
 #include <clasp/core/wrappers.h>
@@ -76,12 +77,17 @@ CL_DEFUN T_sp core__load_source(T_sp source, bool verbose, bool print, core::T_s
   if (source.nilp()) {
     SIMPLE_ERROR(BF("%s was called with NIL as the source filename") % __FUNCTION__);
   }
+  T_sp final_format;
+  if (externalFormat.nilp())
+    final_format = kw::_sym_default;
+  else
+    final_format = externalFormat;
   strm = cl__open(source,
                   kw::_sym_input,
                   cl::_sym_character,
                   _Nil<T_O>(), false,
                   _Nil<T_O>(), false,
-                   kw::_sym_default,
+                   final_format,
                   _Nil<T_O>());
   if (strm.nilp())
     return _Nil<T_O>();
@@ -142,16 +148,23 @@ CL_DEFUN T_sp core__load_no_package_set(T_sp lsource, T_sp verbose, T_sp print, 
       }
     }
   }
+  filename = core__coerce_to_file_pathname(pathname);
+  T_sp kind = core__file_kind(gc::As<Pathname_sp>(filename), true);
+  if (kind == kw::_sym_directory) {
+    ok = core__load_binary_directory(filename,verbose,print,external_format);
+    if (ok.nilp()) {
+      SIMPLE_ERROR(BF("LOAD: Could not load file %s") % _rep_(filename));
+    }
+    return _lisp->_true();
+  }
   if (!pntype.nilp() && (pntype != kw::_sym_wild)) {
     /* If filename already has an extension, make sure
 	       that the file exists */
-    T_sp kind;
     // Test if pathname is nil is above
     if (pathname.nilp()) {
       SIMPLE_ERROR(BF("In %s - about to pass NIL to core__coerce_to_file_pathname from %s") % __FUNCTION__ % _rep_(lsource));
     }
     filename = core__coerce_to_file_pathname(pathname);
-    kind = core__file_kind(gc::As<Pathname_sp>(filename), true);
     if (kind != kw::_sym_file && kind != kw::_sym_special) {
       filename = _Nil<T_O>();
     } else {

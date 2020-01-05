@@ -769,7 +769,7 @@ core::T_sp PERCENTdlclose( ForeignData_sp handle )
 core::T_sp PERCENTdlsym( core::String_sp name ) {
 
   ForeignData_sp sp_sym;
-  auto result = core::do_dlsym( RTLD_DEFAULT, name->get().c_str() );
+  auto result = core::do_dlsym( RTLD_DEFAULT, name->get_std_string().c_str() );
   void *p_sym = std::get<0>( result );
 
   if( ! p_sym )

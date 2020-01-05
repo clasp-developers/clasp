@@ -271,3 +271,25 @@
   (let ((*warnings-p* nil)
         (*failure-p* nil))
     (values (funcall thunk) *warnings-p* *failure-p*)))
+
+(defmacro with-atomic-file-rename ((temp-pathname final-pathname) &body body)
+  `(let ((,temp-pathname (core:mkstemp (namestring ,final-pathname))))
+     #+(or)(format t "Writing to ~s~%" ,temp-pathname)
+     (unwind-protect
+          (progn
+            ,@body)
+       (progn
+         #+(or)(format t "Renaming ~s to ~s~%" ,temp-pathname ,final-pathname)
+         (rename-file ,temp-pathname ,final-pathname :if-exists t)))))
+
+
+(defun write-bitcode (module output-path)
+  ;; Write bitcode as either .bc files or .ll files
+  (if *use-human-readable-bitcode*
+      (let* ((filename (make-pathname :type "ll" :defaults (pathname output-path))))
+        (with-atomic-file-rename (temp-pathname filename)
+          (with-open-file (fout temp-pathname :direction :output)
+            (llvm-sys:dump-module module fout))))
+      (with-atomic-file-rename (temp-pathname output-path)
+        (llvm-sys:write-bitcode-to-file module (namestring temp-pathname)))))
+

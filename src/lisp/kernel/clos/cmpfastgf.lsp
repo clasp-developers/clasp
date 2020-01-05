@@ -132,51 +132,40 @@
          (generate-custom reqargs outcome))
         (t (error "BUG: Bad thing to be an outcome: ~a" outcome))))
 
+(defun class-cell-form (slot-name class)
+  `(load-time-value
+    (slot-definition-location
+     (or (find ',slot-name (class-slots ,class) :key #'slot-definition-name)
+         (error "Probably a BUG: slot ~a in ~a stopped existing between compile and load"
+                ',slot-name ,class)))))
+
 (defun generate-slot-reader (arguments outcome)
-  (let ((location (optimized-slot-reader-index outcome))
-        (slot-name (optimized-slot-reader-slot-name outcome))
-        (class (optimized-slot-reader-class outcome)))
-    (cond ((fixnump location)
-           ;; instance location- easy
-           `(let* ((instance ,(first arguments))
-                   (value (core:instance-ref instance ',location)))
-              (if (cleavir-primop:eq value (load-time-value (core:unbound) t))
-                  (slot-unbound ,class instance ',slot-name)
-                  value)))
-          ((consp location)
-           ;; class location. we need to find the new cell at load time.
-           `(let* ((location
-                     (load-time-value
-                      (slot-definition-location
-                       (or (find ',slot-name (class-slots ,class) :key #'slot-definition-name)
-                           (error "Probably a BUG: slot ~a in ~a stopped existing between compile and load"
-                                  ',slot-name ,class)))))
-                   (value (car location)))
-              (if (cleavir-primop:eq value (core:unbound))
-                  (slot-unbound ,class ,(first arguments) ',slot-name)
-                  value)))
-          (t (error "BUG: Slot location ~a is not a fixnum or cons" location)))))
+  (let* ((location (optimized-slot-reader-index outcome))
+         (slot-name (optimized-slot-reader-slot-name outcome))
+         (class (optimized-slot-reader-class outcome))
+         (valuef
+           (cond ((fixnump location)
+                  ;; instance location- easy
+                  `(core:instance-ref ,(first arguments) ',location))
+                 ((consp location)
+                  ;; class location. we need to find the new cell at load time.
+                  `(car ,(class-cell-form slot-name class)))
+                 (t (error "BUG: Slot location ~a is not a fixnum or cons" location)))))
+    `(let ((value ,valuef))
+       (if (cleavir-primop:eq value (core:unbound))
+           (slot-unbound ,class ,(first arguments) ',slot-name)
+           value))))
 
 (defun generate-slot-writer (arguments outcome)
   (let ((location (optimized-slot-writer-index outcome)))
     (cond ((fixnump location)
-           `(let ((value ,(first arguments))
-                  (instance ,(second arguments)))
-              (si:instance-set instance ,location value)))
+           `(si:instance-set ,(second arguments) ,location ,(first arguments)))
           ((consp location)
-           ;; class location- annoying
+           ;; class location
            ;; Note we don't actually need the instance.
-           (let ((slot-name (optimized-slot-reader-slot-name outcome))
-                 (class (optimized-slot-reader-class outcome)))
-             `(let ((value ,(first arguments))
-                    (location
-                      (load-time-value
-                       (slot-definition-location
-                        (or (find ',slot-name (class-slots ,class) :key #'slot-definition-name)
-                            (error "Probably a BUG: slot ~a in ~a stopped existing between compile and load"
-                                   ',slot-name ,class))))))
-                (rplaca location value)
-                value)))
+           `(rplaca ,(class-cell-form (optimized-slot-reader-slot-name outcome)
+                                      (optimized-slot-reader-class outcome))
+                    ,(first arguments)))
           (t (error "BUG: Slot location ~a is not a fixnum or cons" location)))))
 
 (defun generate-fast-method-call (arguments outcome)

@@ -509,3 +509,6 @@
              (get-dispatch-macro-character #\# #\A new)
              (get-dispatch-macro-character #\# #\s new)
              (get-dispatch-macro-character #\# #\S new))))
+
+(test can-read-nil-bitarray-0 (zerop (row-major-aref #0A0 0)))
+(test can-read-nil-bitarray-1 (= 1 (row-major-aref #0A1 0)))

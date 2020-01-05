@@ -4,6 +4,34 @@
 #include <signal.h>
 #include <clasp/gctools/threadlocal.fwd.h>
 
+
+
+typedef core::T_O*(*fnStartUp)(core::T_O*);
+
+
+namespace core {
+
+#define STARTUP_FUNCTION_CAPACITY_INIT 128
+#define STARTUP_FUNCTION_CAPACITY_MULTIPLIER 2
+  struct Startup {
+    size_t _Position;
+    fnStartUp _Function;
+    Startup() {};
+  Startup(size_t p, fnStartUp f) : _Position(p), _Function(f) {};
+    bool operator<(const Startup& other) {
+      return this->_Position < other._Position;
+    }
+  };
+
+  struct StartupInfo {
+    size_t _capacity;
+    size_t _count;
+    Startup* _functions;
+
+  StartupInfo() : _capacity(0), _count(0), _functions(NULL) {};
+  };
+};
+
 namespace core {
 #define IHS_BACKTRACE_SIZE 16
   struct InvocationHistoryFrame;
@@ -31,6 +59,7 @@ namespace core {
     stack_t _original_stack;
     uintptr_t         _stackmap;
     size_t            _stackmap_size;
+    StartupInfo       _Startup;
 #ifdef DEBUG_IHS
     // Save the last return address before IHS screws up
     void*                    _IHSBacktrace[IHS_BACKTRACE_SIZE];

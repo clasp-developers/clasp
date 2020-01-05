@@ -9,7 +9,7 @@
         ;;; NREVERSE-1
         ;;; REVERSE-1
         ;;; ACCESSOR-TOO-MANY-ARGS-1
-        HELL-MDBIT-5A
+        ;;; HELL-MDBIT-5A
         ;;; LOAD-STREAM.1
         ;;; LISTEN-2
         ;;; BROADCAST-STREAM
@@ -32,7 +32,8 @@
         ;;; GENTEMP-1 SPECIAL-OPERATOR-P-1
 
         ;;; EQUALP-8 EQUALP-9
-        TYPES-CLASSES-9 TYPES-CLASSES-10
+        ;;; TYPES-CLASSES-9
+        TYPES-CLASSES-10
         HASH-TABLE-SIZE-WEAK-KEY
         #-cst BABEL-SIMPLE-STRINGS-1
         LISTEN-3
@@ -108,7 +109,7 @@
         NUMBER-COMPARISON-NUMBER-12A
         NUMBER-COMPARISON-NUMBER-13A
         NUMBER-COMPARISON-NUMBER-14A
-        NUMBER-UNARY-OPERATIONS-1-INLINE
+        ;;; NUMBER-UNARY-OPERATIONS-1-INLINE
         TEST-CHAR-0A
         TEST-CHAR-1A
 
@@ -118,5 +119,9 @@
 
         ;;; glsl-toolkit-grammar.lisp-1 errors while compiling in ast
         ;;; make-instance.error.5 the same
+
+        ;;; encoding-latin-2-plain
+        ;;; encoding-latin-2-lambda
+        ;;; encoding-iso-8859-2-lambda
         )
       )

@@ -485,6 +485,16 @@ CL_NAME("TWO-ARG-*");
 CL_DEFUN Number_sp contagen_mul(Number_sp na, Number_sp nb) {
   MATH_DISPATCH_BEGIN(na, nb) {
   case_Fixnum_v_Fixnum : {
+      // We want to detect when Fixnum * Fixnum multiplication will overflow and only then use bignum arithmetic.
+      // But C++ doesn't give us a way to do that - so we use the __builtin_mul_overflow clang builtin.
+      // It will return false if there is no overflow and the multiplication result will be in fr.
+      // The return value fr may over
+      // If it doesn't overflow - then this will be faster than always using bignum arithmetic.
+      Fixnum fa = na.unsafe_fixnum();
+      Fixnum fb = nb.unsafe_fixnum();
+      Fixnum fr;
+      bool overflow = __builtin_mul_overflow(fa,fb,&fr);
+      if (!overflow) return Integer_O::create(fr);
       mpz_class za(GMP_LONG(unbox_fixnum(gc::As<Fixnum_sp>(na))));
       mpz_class zb(GMP_LONG(unbox_fixnum(gc::As<Fixnum_sp>(nb))));
       mpz_class zc = za * zb;
@@ -706,53 +716,53 @@ CL_DEFUN Number_sp contagen_div(Number_sp na, Number_sp nb) {
 }
 
 CL_LAMBDA(&rest numbers);
-CL_DEFUN T_mv cl___PLUS_(List_sp numbers) {
+CL_DEFUN Number_sp cl___PLUS_(List_sp numbers) {
   if (numbers.nilp())
-    return (Values(make_fixnum(0)));
+    return make_fixnum(0);
   Number_sp result = gc::As<Number_sp>(oCar(numbers));
   for (auto cur : (List_sp)oCdr(numbers)) {
     result = contagen_add(result, gc::As<Number_sp>(oCar(cur)));
   }
-  return (Values(result));
+  return result;
 }
 
 CL_LAMBDA(&rest numbers);
 CL_DECLARE();
 CL_DOCSTRING("See CLHS: *");
-CL_DEFUN T_mv cl___TIMES_(List_sp numbers) {
+CL_DEFUN Number_sp cl___TIMES_(List_sp numbers) {
   if (numbers.nilp())
-    return (Values(make_fixnum(1)));
+    return make_fixnum(1);
   Number_sp result = gc::As<Number_sp>(oCar(numbers));
   for (auto cur : (List_sp)oCdr(numbers)) {
     result = contagen_mul(result, gc::As<Number_sp>(oCar(cur)));
   }
-  return (Values(result));
+  return result;
 }
 
 CL_LAMBDA(num &rest numbers);
 CL_DECLARE();
 CL_DOCSTRING("See CLHS: +");
-CL_DEFUN T_mv cl___MINUS_(Number_sp num, List_sp numbers) {
+CL_DEFUN Number_sp cl___MINUS_(Number_sp num, List_sp numbers) {
   if (numbers.nilp()) {
-    return (Values(clasp_negate(num)));
+    return clasp_negate(num);
   }
   Number_sp result = num;
   for (auto cur : (List_sp)(numbers)) {
     result = contagen_sub(result, gc::As<Number_sp>(oCar(cur)));
   }
-  return (Values(result));
+  return result;
 }
 
 CL_LAMBDA(num &rest numbers);
-CL_DEFUN T_sp cl___DIVIDE_(Number_sp num, List_sp numbers) {
+CL_DEFUN Number_sp cl___DIVIDE_(Number_sp num, List_sp numbers) {
   if (numbers.nilp()) {
-    return (clasp_reciprocal(num));
+    return clasp_reciprocal(num);
   }
   Number_sp result = num;
   for (auto cur : (List_sp)(numbers)) {
     result = contagen_div(result, gc::As<Number_sp>(oCar(cur)));
   }
-  return ((result));
+  return result;
 }
 
 /* ----------------------------------------------------------------------
@@ -1369,7 +1379,6 @@ Integer_sp Integer_O::create( gctools::Fixnum v )
   {
     return make_fixnum(v);
   }
-
   Bignum z(GMP_LONG(v));
   return Bignum_O::create( z );
 }
@@ -1448,7 +1457,7 @@ Integer_sp Integer_O::create( unsigned long long v )
 }
 #endif
 
-#if !defined(_TARGET_OS_LINUX) && !defined(_TARGET_OS_LINUX)
+#if !defined(_TARGET_OS_LINUX) && !defined(_TARGET_OS_FREEBSD)
 Integer_sp Integer_O::create( uintptr_t v) {
   if ( v <= gc::most_positive_fixnum ) {
     return clasp_make_fixnum((Fixnum)v);
@@ -2649,7 +2658,7 @@ Number_sp clasp_atan1(Number_sp y) {
 CL_LAMBDA(x &optional y);
 CL_DECLARE();
 CL_DOCSTRING("atan");
-CL_DEFUN T_sp cl__atan(Number_sp x, T_sp y) {
+CL_DEFUN Number_sp cl__atan(Number_sp x, T_sp y) {
   /* INV: type check in clasp_atan() & clasp_atan2() */
   /* FIXME clasp_atan() and clasp_atan2() produce generic errors
 	   without recovery and function information. */
@@ -3471,14 +3480,14 @@ CL_DEFUN DoubleFloat_sp core__double_float_from_bits(Integer_sp integer) {
 
 namespace core {
 
-CL_DEFUN T_sp cl__rational(T_sp num) {
+CL_DEFUN Number_sp cl__rational(Real_sp num) {
   if (num.fixnump()) return num;
   if (num.single_floatp()) return DoubleFloat_O::rational(num.unsafe_single_float());
   if (gc::IsA<Number_sp>(num)) return gc::As_unsafe<Number_sp>(num)->rational_();
-  TYPE_ERROR(num,cl::_sym_Number_O);
+  TYPE_ERROR(num,cl::_sym_Real_O);
 };
 
-CL_DEFUN T_sp cl__rationalize(T_sp num) {
+CL_DEFUN Number_sp cl__rationalize(Real_sp num) {
   return cl__rational(num);
 };
 

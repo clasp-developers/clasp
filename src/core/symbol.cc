@@ -217,7 +217,8 @@ void Symbol_O::finish_setup(Package_sp pkg, bool exportp, bool shadowp) {
     this->_GlobalValue = _Unbound<T_O>();
   this->fmakunbound();
   this->fmakunbound_setf();
-  pkg->bootstrap_add_symbol_to_package(this->symbolName()->get().c_str(), this->sharedThis<Symbol_O>(), exportp, shadowp);
+  pkg->bootstrap_add_symbol_to_package(this->symbolName()->get_std_string().c_str(),
+                                       this->sharedThis<Symbol_O>(), exportp, shadowp);
   this->_PropertyList = _Nil<T_O>();
 }
 
@@ -422,29 +423,29 @@ CL_DEFMETHOD void Symbol_O::setf_symbolFunction(Function_sp exec) {
 }
 
 string Symbol_O::symbolNameAsString() const {
-  return this->_Name->get();
+  return this->_Name->get_std_string();
 }
 
 string Symbol_O::formattedName(bool prefixAlways) const { //no guard
   stringstream ss;
   if (this->_HomePackage.load().nilp()) {
     ss << "#:";
-    ss << this->_Name->get();
+    ss << this->_Name->get_std_string();
   } else {
     T_sp tmyPackage = this->_HomePackage;
     if (!tmyPackage) {
-      ss << "<PKG-NULL>:" << this->_Name->get();
+      ss << "<PKG-NULL>:" << this->_Name->get_std_string();
       return ss.str();
     }
     Package_sp myPackage = gc::As<Package_sp>(tmyPackage);
     if (myPackage->isKeywordPackage()) {
-      ss << ":" << this->_Name->get();
+      ss << ":" << this->_Name->get_std_string();
     } else {
       Package_sp currentPackage = _lisp->getCurrentPackage();
       if (prefixAlways) {
-        ss << myPackage->getName() << "::" << this->_Name->get();
+        ss << myPackage->getName() << "::" << this->_Name->get_std_string();
       } else {
-        ss << this->_Name->get();
+        ss << this->_Name->get_std_string();
       }
     }
   }
@@ -528,7 +529,7 @@ void Symbol_O::dump() {
   stringstream ss;
   ss << "Symbol @" << (void *)this << " --->" << std::endl;
   {
-    ss << "Name: " << this->_Name->get() << std::endl;
+    ss << "Name: " << this->_Name->get_std_string() << std::endl;
     if (!this->_HomePackage.load()) {
       ss << "Package: UNDEFINED" << std::endl;
     } else {

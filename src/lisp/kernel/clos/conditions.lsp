@@ -883,6 +883,72 @@ This is due to either a problem in foreign code (e.g., C++), or a bug in Clasp i
 			collect (assert-prompt place-name value)))))))
 
 ;;; ----------------------------------------------------------------------
+;;; Unicode, initially forgotten in clasp
+
+#+unicode
+(define-condition ext:character-coding-error (error)
+  ((external-format :initarg :external-format :reader character-coding-error-external-format)))
+
+#+unicode
+(define-condition ext:character-encoding-error (ext:character-coding-error)
+  ((code :initarg :code :reader character-encoding-error-code)))
+
+#+unicode
+(define-condition ext:character-decoding-error (ext:character-coding-error)
+  ((octets :initarg :octets :reader character-decoding-error-octets)))
+
+#+unicode
+(define-condition ext:stream-encoding-error (stream-error ext:character-encoding-error)
+  ()
+  (:report
+   (lambda (c s)
+     (let ((stream (stream-error-stream c))
+           (code (character-encoding-error-code c)))
+       (format s "~@<encoding error on stream ~S (~S ~S): ~2I~_~
+                  the character with code ~D cannot be encoded.~@:>"
+               stream ':external-format
+               (character-coding-error-external-format c)
+               code)))))
+
+#+unicode
+(define-condition ext:stream-decoding-error (stream-error ext:character-decoding-error)
+  ()
+  (:report
+   (lambda (c s)
+     (let ((stream (stream-error-stream c))
+           (octets (character-decoding-error-octets c)))
+       (format s "~@<decoding error on stream ~S (~S ~S): ~2I~_~
+                  the octet sequence ~S cannot be decoded.~@:>"
+               stream ':external-format
+               (character-coding-error-external-format c)
+               octets)))))
+#+unicode
+(defun ext:encoding-error (stream external-format code)
+  (restart-case (error 'ext:stream-encoding-error
+                       :stream stream
+                       :external-format external-format
+                       :code code)
+    (continue ()
+      :report "Ignore character"
+      nil)
+    (use-value (c)
+      :report "Store a different character code."
+      (if (characterp c) c (code-char c)))))
+
+#+unicode
+(defun ext:decoding-error (stream external-format octets)
+  (restart-case (error 'ext:stream-decoding-error
+                       :stream stream
+                       :external-format external-format
+                       :octets octets)
+    (continue ()
+      :report "Read next character"
+      nil)
+    (use-value (c)
+      :report "Replace the bogus sequence with a character"
+      (if (characterp c) c (code-char c)))))
+
+;;; ----------------------------------------------------------------------
 ;;; ECL's interface to the toplevel and debugger
 
 ;;; This is a redefinition, clobbering core__universal_error_handler in lisp.cc.

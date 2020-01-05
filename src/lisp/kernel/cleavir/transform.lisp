@@ -42,9 +42,9 @@
         ((&rest) (third values-type))
         (t first))))
   
-  (defun function-type-result (type)
+  (defun function-type-result (type &optional env)
     ;; type is any type specifier
-    (multiple-value-bind (head args) (core::normalize-type type)
+    (multiple-value-bind (head args) (core::normalize-type type env)
       (if (eq head 'function)
           (let ((result (second args)))
             (cond ((null result) 't)
@@ -53,12 +53,24 @@
                   (t result)))
           't)))
 
+  ;;; Given a type, find what type (aref (the TYPE ...) ...) is.
+  (defun array-type-element-type (type env)
+    (let ((types
+            (loop for et in core::+upgraded-array-element-types+
+                  ;; Exclude any element type that is CERTAINLY not included.
+                  unless (subtypep `(and (array ,et) ,type) nil env)
+                    collect et)))
+      ;; Now simplify a bit for common stupid cases
+      (if (member t types)
+          't
+          (cons 'or (remove nil types)))))
+
   ;;; Because some transforms relying on type information are unsafe,
   ;;; we ignore type declarations unless the TRUST-TYPE-DECLARATIONS policy
   ;;; is in place (at low SAFETY). See policy.lisp.
   (defun form-type (form env)
     (let ((trust-type-decls-p
-            (environment-has-policy-p env 'trust-type-declarations)))
+            (environment-has-policy-p env 'ext:assume-right-type)))
       (cond ((constantp form env)
              `(eql ,(ext:constant-form-value form env)))
             ((consp form)
@@ -82,12 +94,20 @@
                                 (cleavir-env:type info)
                                 'function))
                           'function))
+                     ;; This is really KLUDGEy, but then this whole thing kind of is.
+                     ((aref)
+                      (if (and (consp form) (consp (cdr form)))
+                          (let* ((array-form (second form))
+                                 (array-form-type (form-type array-form env)))
+                            (array-type-element-type array-form-type env))
+                          ;; malformed
+                          't))
                      (otherwise
                       (if trust-type-decls-p
                           (let ((info (cleavir-env:function-info env operator)))
                             (if (typep info '(or cleavir-env:local-function-info
                                               cleavir-env:global-function-info))
-                                (function-type-result (cleavir-env:type info))
+                                (function-type-result (cleavir-env:type info) env)
                                 't))
                           't)))
                    't)))
@@ -144,6 +164,15 @@
 (deftransform car ((x cons)) 'cleavir-primop:car)
 (deftransform cdr ((x cons)) 'cleavir-primop:cdr)
 
+(deftransform rplaca ((cons cons) value)
+  '(lambda (cons value)
+    (cleavir-primop:rplaca cons value)
+    cons))
+(deftransform rplacd ((cons cons) value)
+  '(lambda (cons value)
+    (cleavir-primop:rplacd cons value)
+    cons))
+
 (deftransform primop:inlined-two-arg-+ ((x fixnum) (y fixnum))
   'core:two-arg-+-fixnum-fixnum)
 
@@ -171,11 +200,25 @@
   (def-float-op primop:inlined-two-arg-- cleavir-primop:float-sub)
   (def-float-op primop:inlined-two-arg-* cleavir-primop:float-mul)
   (def-float-op primop:inlined-two-arg-/ cleavir-primop:float-div)
-  (def-float-compare primop:inlined-two-arg-< cleavir-primop:float-less)
+  (def-float-compare primop:inlined-two-arg-<  cleavir-primop:float-less)
   (def-float-compare primop:inlined-two-arg-<= cleavir-primop:float-not-greater)
-  (def-float-compare primop:inlined-two-arg-= cleavir-primop:float-equal)
-  (def-float-compare primop:inlined-two-arg-> cleavir-primop:float-greater)
+  (def-float-compare primop:inlined-two-arg-=  cleavir-primop:float-equal)
+  (def-float-compare primop:inlined-two-arg->  cleavir-primop:float-greater)
   (def-float-compare primop:inlined-two-arg->= cleavir-primop:float-not-less))
+
+(macrolet ((def-fixnum-compare (name op)
+             `(deftransform ,name ((x fixnum) (y fixnum))
+                '(lambda (x y) (if (,op x y) t nil)))))
+  (def-fixnum-compare primop:inlined-two-arg-<  cleavir-primop:fixnum-less)
+  (def-fixnum-compare primop:inlined-two-arg-<= cleavir-primop:fixnum-not-greater)
+  (def-fixnum-compare primop:inlined-two-arg-=  cleavir-primop:fixnum-equal)
+  (def-fixnum-compare primop:inlined-two-arg->  cleavir-primop:fixnum-greater)
+  (def-fixnum-compare primop:inlined-two-arg->= cleavir-primop:fixnum-not-less))
+
+(deftransform minusp ((number fixnum))
+  '(lambda (n) (if (cleavir-primop:fixnum-less n 0) t nil)))
+(deftransform plusp ((number fixnum))
+  '(lambda (n) (if (cleavir-primop:fixnum-greater n 0) t nil)))
 
 (deftransform array-total-size ((a (simple-array * (*)))) 'core::vector-length)
 ;;(deftransform array-total-size ((a core:mdarray)) 'core::%array-total-size)
@@ -196,5 +239,5 @@
 (deftransform core:setf-elt (value (s vector) index)
   '(lambda (value sequence index) (vector-set sequence index new-value)))
 
-(deftransform core::coerce-fdesignator ((fd symbol)) 'fdefinition)
-(deftransform core::coerce-fdesignator ((fd function)) 'identity)
+(deftransform core:coerce-fdesignator ((fd symbol)) 'fdefinition)
+(deftransform core:coerce-fdesignator ((fd function)) 'identity)

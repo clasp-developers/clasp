@@ -69,11 +69,23 @@ def maybe_dump_command(cmd, kind = ''):
 #
 def macosx_sdk_path(cfg):
     result = ""
-    if ( cfg.env['DEST_OS'] == DARWIN_OS ):
+    dest_os = cfg.env["DEST_OS"]
+    if ( dest_os == DARWIN_OS ):
         result = run_program('xcrun', '--show-sdk-path')
         assert len(result) > 0
         result = result.strip()
     log.debug("macosx_sdk_path: %s", result)
+    return result
+
+def get_macosx_version(cfg):
+    result = [0]
+    dest_os = cfg.env["DEST_OS"]
+    if ( dest_os == DARWIN_OS ):
+        result = run_program("sw_vers","-productVersion");
+        assert len(result) > 0
+        result = result.strip().split(".")
+        result = [int(result[0]),int(result[1]),int(result[2])]
+    log.debug("macosx productVersion: %s", result)
     return result
 
 #

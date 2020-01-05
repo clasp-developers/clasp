@@ -132,7 +132,7 @@ Integer_sp clasp_gcd(Integer_sp x, Integer_sp y, int yidx) {
   Bignum_sp temp = gc::As<Bignum_sp>(_clasp_big_gcd(gc::As<Bignum_sp>(x), gc::As<Bignum_sp>(y)));
   if (temp->fits_sint_p())
     return clasp_make_fixnum(temp->as_int());
-  else return temp;                                 
+  else return temp;
 }
 
 CL_LAMBDA(&rest args);

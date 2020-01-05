@@ -29,6 +29,7 @@ THE SOFTWARE.
 #include <stdint.h>
 
 #include <llvm/Support/raw_ostream.h>
+#include "llvm/Support/InitLLVM.h"
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/fileSystem.h>
@@ -75,8 +76,8 @@ void redirect_llvm_interface_addSymbol() {
 
 
 CL_DOCSTRING("Load an llvm-ir file with either a bc extension or ll extension.");
-CL_LAMBDA(pathname &optional verbose print external_format);
-CL_DEFUN bool llvm_sys__load_ir(core::Pathname_sp filename, bool verbose, bool print, core::T_sp externalFormat )
+CL_LAMBDA(pathname context &optional verbose print external_format);
+CL_DEFUN bool llvm_sys__load_ir(core::Pathname_sp filename, LLVMContext_sp context, bool verbose, bool print, core::T_sp externalFormat )
 {
   core::Pathname_sp bc_file = core::Pathname_O::makePathname(_Nil<core::T_O>(),_Nil<core::T_O>(),_Nil<core::T_O>(),
                                                              _Nil<core::T_O>(),core::SimpleBaseString_O::make("bc"),
@@ -84,7 +85,7 @@ CL_DEFUN bool llvm_sys__load_ir(core::Pathname_sp filename, bool verbose, bool p
   bc_file = cl__merge_pathnames(bc_file,filename);
   T_sp found = cl__probe_file(bc_file);
   if (found.notnilp()) {
-    return llvm_sys__load_bitcode(bc_file,verbose,print,externalFormat);
+    return llvm_sys__load_bitcode(bc_file,context,verbose,print,externalFormat);
   }
   core::Pathname_sp ll_file = core::Pathname_O::makePathname(_Nil<core::T_O>(),_Nil<core::T_O>(),_Nil<core::T_O>(),
                                                              _Nil<core::T_O>(),core::SimpleBaseString_O::make("ll"),
@@ -92,14 +93,14 @@ CL_DEFUN bool llvm_sys__load_ir(core::Pathname_sp filename, bool verbose, bool p
   ll_file = cl__merge_pathnames(ll_file,filename);
   found = cl__probe_file(ll_file);
   if (found.notnilp()) {
-    return llvm_sys__load_bitcode_ll(ll_file,verbose,print,externalFormat);
+    return llvm_sys__load_bitcode_ll(ll_file,context,verbose,print,externalFormat);
   }
   SIMPLE_ERROR(BF("Could not find llvm-ir file %s with .bc or .ll extension") % _rep_(filename));
 }
 
   
-CL_LAMBDA(filename &optional verbose print external_format);
-CL_DEFUN bool llvm_sys__load_bitcode_ll(core::Pathname_sp filename, bool verbose, bool print, core::T_sp externalFormat )
+CL_LAMBDA(filename context &optional verbose print external_format);
+CL_DEFUN bool llvm_sys__load_bitcode_ll(core::Pathname_sp filename, LLVMContext_sp context, bool verbose, bool print, core::T_sp externalFormat )
 {
   core::DynamicScopeManager scope(::cl::_sym_STARpackageSTAR, ::cl::_sym_STARpackageSTAR->symbolValue());
   T_sp tn = cl__truename(filename);
@@ -110,13 +111,11 @@ CL_DEFUN bool llvm_sys__load_bitcode_ll(core::Pathname_sp filename, bool verbose
   if ( tnamestring.nilp() ) {
     SIMPLE_ERROR(BF("Could not create namestring for %s") % _rep_(filename));
   }
-  if (comp::_sym_STARllvm_contextSTAR->symbolValue().nilp()) {
-    SIMPLE_ERROR(BF("The cmp:*llvm-context* is NIL"));
-  }
   core::String_sp namestring = gctools::As<core::String_sp>(tnamestring);
-  Module_sp m = llvm_sys__parseIRFile(namestring,gc::As<LLVMContext_sp>(comp::_sym_STARllvm_contextSTAR->symbolValue()));
+  Module_sp m = llvm_sys__parseIRFile(namestring,context);
   EngineBuilder_sp engineBuilder = EngineBuilder_O::make(m);
-  engineBuilder->wrappedPtr()->setUseOrcMCJITReplacement(true);
+
+  SIMPLE_ERROR(BF("engineBuilder->wrappedPtr()->setUseOrcMCJITReplacement(true);"));
   TargetOptions_sp targetOptions = TargetOptions_O::make();
   engineBuilder->setTargetOptions(targetOptions);
   ExecutionEngine_sp executionEngine = engineBuilder->createExecutionEngine();
@@ -128,8 +127,8 @@ CL_DEFUN bool llvm_sys__load_bitcode_ll(core::Pathname_sp filename, bool verbose
 }
 
 
-CL_LAMBDA(filename &optional verbose print external_format);
-CL_DEFUN bool llvm_sys__load_bitcode(core::Pathname_sp filename, bool verbose, bool print, core::T_sp externalFormat )
+CL_LAMBDA(filename context &optional verbose print external_format);
+CL_DEFUN bool llvm_sys__load_bitcode(core::Pathname_sp filename, LLVMContext_sp context, bool verbose, bool print, core::T_sp externalFormat )
 {
   core::DynamicScopeManager scope(::cl::_sym_STARpackageSTAR, ::cl::_sym_STARpackageSTAR->symbolValue());
   T_sp tn = cl__truename(filename);
@@ -140,13 +139,10 @@ CL_DEFUN bool llvm_sys__load_bitcode(core::Pathname_sp filename, bool verbose, b
   if ( tnamestring.nilp() ) {
     SIMPLE_ERROR(BF("Could not create namestring for %s") % _rep_(filename));
   }
-  if (comp::_sym_STARllvm_contextSTAR->symbolValue().nilp()) {
-    SIMPLE_ERROR(BF("The cmp:*llvm-context* is NIL"));
-  }
   core::String_sp namestring = gctools::As<core::String_sp>(tnamestring);
-  Module_sp m = llvm_sys__parseBitcodeFile(namestring,gc::As<LLVMContext_sp>(comp::_sym_STARllvm_contextSTAR->symbolValue()));
+  Module_sp m = llvm_sys__parseBitcodeFile(namestring,context);
   EngineBuilder_sp engineBuilder = EngineBuilder_O::make(m);
-  engineBuilder->wrappedPtr()->setUseOrcMCJITReplacement(true);
+  SIMPLE_ERROR(BF("engineBuilder->wrappedPtr()->setUseOrcMCJITReplacement(true);"));
   TargetOptions_sp targetOptions = TargetOptions_O::make();
   engineBuilder->setTargetOptions(targetOptions);
   ExecutionEngine_sp executionEngine = engineBuilder->createExecutionEngine();
@@ -177,7 +173,7 @@ CL_DEFUN bool llvm_sys__load_module(Module_sp m, bool verbose, bool print, core:
 CL_DEFUN core::SimpleBaseString_sp llvm_sys__mangleSymbolName(core::String_sp name) {
   ASSERT(cl__stringp(name));
   stringstream sout;
-  const char *cur = name->get().c_str();
+  const char *cur = name->get_std_string().c_str();
   bool first = true;
   while (*cur) {
     if (((*cur) >= 'a' && (*cur) <= 'z') || ((*cur) >= 'A' && (*cur) <= 'Z') || ((*cur) == '_') || (!first && ((*cur) >= '0' && (*cur) <= '9'))) {
@@ -493,6 +489,10 @@ void LlvmoExposer_O::expose(core::Lisp_sp lisp, core::Exposer_O::WhatToExpose wh
   case candoGlobals: {
     initialize_intrinsics(); //<< comment this out - symbols disappear
     initialize_link_intrinsics();
+    llvm::InitializeNativeTarget();
+    llvm::InitializeNativeTargetAsmPrinter();
+    llvm::InitializeNativeTargetAsmParser();
+    llvm::initializeScalarOpts(*llvm::PassRegistry::getPassRegistry());
     initialize_llvmo_expose();
     initialize_clbind_llvm_expose();
     initialize_dwarf_constants();
@@ -513,6 +513,13 @@ void LlvmoExposer_O::expose(core::Lisp_sp lisp, core::Exposer_O::WhatToExpose wh
   } break;
   }
 }
+
+
+
+void initialize_llvm(int argc, char **argv) {
+//  InitLLVM X(argc,argv);
+}
+
 };
 
 #ifdef USE_MPS

@@ -246,7 +246,8 @@ List_sp TargetClassifier::finalClassifiedSymbols() {
 }
 
 void throw_if_not_destructuring_context(T_sp context) {
-  if (context == _sym_macro || context == cl::_sym_destructuring_bind)
+  if (context == cl::_sym_defmacro || cl::_sym_define_compiler_macro
+      || context == cl::_sym_destructuring_bind)
     return;
   SIMPLE_ERROR(BF("Lambda list is destructuring_bind but context does not support it context[%s]") % _rep_(context));
 }
@@ -288,7 +289,8 @@ CL_DEFMETHOD T_sp LambdaListHandler_O::lambdaList() {
     for (gctools::Vec0<KeywordArgument>::const_iterator it = this->_KeywordArguments.begin();
          it != this->_KeywordArguments.end(); it++) {
       T_sp keywordTarget = it->_ArgTarget;
-      if (gc::As<Symbol_sp>(it->_Keyword)->symbolName()->get() != gc::As<Symbol_sp>(keywordTarget)->symbolName()->get()) {
+      if (gc::As<Symbol_sp>(it->_Keyword)->symbolName()->get_std_string()
+          != gc::As<Symbol_sp>(keywordTarget)->symbolName()->get_std_string()) {
         keywordTarget = Cons_O::createList(it->_Keyword, keywordTarget);
       }
       if (it->_Sensor._ArgTarget.notnilp()) {
@@ -840,7 +842,8 @@ NEWMODE:
         goto ILLEGAL_MODE;
       break;
     case dot_rest:
-      if (!(context == _sym_macro || context == cl::_sym_destructuring_bind || context == cl::_sym_deftype))
+        if (!(context == cl::_sym_defmacro || cl::_sym_define_compiler_macro
+              || context == cl::_sym_destructuring_bind || context == cl::_sym_deftype))
         goto ILLEGAL_MODE;
       break;
     default:
@@ -853,7 +856,10 @@ ILLEGAL_MODE:
 }
 
 void throw_if_invalid_context(T_sp context) {
-  if (context == _sym_macro || context == cl::_sym_function || context == cl::_sym_method || context == cl::_sym_destructuring_bind || context == _lisp->_true())
+  if (context == cl::_sym_defmacro || context == cl::_sym_define_compiler_macro
+      || context == cl::_sym_function || context == cl::_sym_method
+      || context == cl::_sym_destructuring_bind || context == cl::_sym_deftype
+      || context == _lisp->_true())
     return;
   printf("%s:%d context.raw_= %p     cl::_sym_destructuring_bind.raw_=%p\n",
          __FILE__, __LINE__, context.raw_(), cl::_sym_destructuring_bind.raw_());
@@ -861,14 +867,17 @@ void throw_if_invalid_context(T_sp context) {
 }
 
 bool contextSupportsWhole(T_sp context) {
-  if (context == _sym_macro || context == cl::_sym_destructuring_bind || context == cl::_sym_deftype || context == cl::_sym_define_method_combination) {
+  if (context == cl::_sym_defmacro || context == cl::_sym_destructuring_bind
+      || context == cl::_sym_define_compiler_macro || context == cl::_sym_deftype
+      || context == cl::_sym_define_method_combination) {
     return true;
   }
   return false;
 }
 
 bool contextSupportsEnvironment(T_sp context) {
-  if (context == _sym_macro || context == cl::_sym_defsetf || context == cl::_sym_deftype) {
+  if (context == cl::_sym_defmacro || cl::_sym_define_compiler_macro
+      || context == cl::_sym_defsetf || context == cl::_sym_deftype) {
     return true;
   }
   return false;
@@ -923,6 +932,13 @@ bool parse_lambda_list(List_sp original_lambda_list,
   if (original_lambda_list.nilp())
     return false;
   throw_if_invalid_context(context);
+  T_sp defaultDefault;
+  // fix the default for &optional and &key that don't have a default specified
+  if (context == cl::_sym_deftype)
+    // Could stuff this list somewhere ahead of time to save a little consing,
+    // but if we're here we're parsing deftype so whatever.
+    defaultDefault = Cons_O::createList(cl::_sym_quote, cl::_sym__TIMES_);
+  else defaultDefault = _Nil<T_O>();
   List_sp arguments = cl__copy_list(original_lambda_list);
   LOG(BF("Argument handling mode starts in (required) - interpreting: %s") % _rep_(arguments));
   ArgumentMode add_argument_mode = required;
@@ -952,7 +968,7 @@ bool parse_lambda_list(List_sp original_lambda_list,
     }
     case optional: {
       T_sp sarg = _Nil<T_O>();
-      T_sp defaultValue = _Nil<T_O>();
+      T_sp defaultValue = defaultDefault;
       T_sp supplied = _Nil<T_O>();
       if ((oarg).consp()) {
         List_sp carg = oarg;
@@ -1000,7 +1016,7 @@ bool parse_lambda_list(List_sp original_lambda_list,
     case keyword: {
       Symbol_sp keySymbol = _Nil<Symbol_O>();
       T_sp localTarget = _Nil<T_O>();
-      T_sp defaultValue = _Nil<T_O>();
+      T_sp defaultValue = defaultDefault;
       T_sp sensorSymbol = _Nil<T_O>();
       if (cl__symbolp(oarg)) {
         localTarget = oarg;
@@ -1016,7 +1032,6 @@ bool parse_lambda_list(List_sp original_lambda_list,
           localTarget = head;
           keySymbol = gc::As<Symbol_sp>(localTarget)->asKeywordSymbol();
         }
-
         //
         // Is there a default value?
         //

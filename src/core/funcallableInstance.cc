@@ -401,6 +401,9 @@ std::string dtree_op_name(int dtree_op) {
 };
 
 SYMBOL_EXPORT_SC_(ClosPkg,interp_wrong_nargs);
+SYMBOL_EXPORT_SC_(ClosPkg, force_dispatcher);
+
+#define COMPILE_TRIGGER 1024 // completely arbitrary
 
 CL_LAMBDA(program gf args);
 CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generic_function,
@@ -411,6 +414,14 @@ CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generi
   for ( size_t i=0; i<program->length(); ++i ) {
     DTILOG(BF("[%3d] : %s\n") % i % _safe_rep_((*program)[i]));
   }
+  // Increment the call count, and if it's high enough, compile the thing
+  size_t calls = gc::As_unsafe<FuncallableInstance_sp>(generic_function)->increment_calls();
+  // Note we use ==. This ensures that if compilation of the dispatcher
+  // calls this function again, we won't initiate another compile.
+  if (calls == COMPILE_TRIGGER)
+    eval::funcall(clos::_sym_force_dispatcher, generic_function);
+  // Regardless of whether we triggered the compile, we next
+  // Dispatch
   Vaslist valist_copy(*args);
   VaList_sp dispatch_args(&valist_copy);
   DTILOG(BF("About to dump incoming args Vaslist\n"));
@@ -608,7 +619,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,generic_function_name);
 
   CL_DEFUN void core__verify_funcallable_instance_layout(size_t funcallableInstance_size, size_t funcallableInstance_rack_offset)
   {
-    if (funcallableInstance_size!=sizeof(FuncallableInstance_O)) SIMPLE_ERROR(BF("The cmpintrinsics.lsp funcallableInstance_size %lu does not match sizeof(FuncallableInstance_O)") % funcallableInstance_size % sizeof(FuncallableInstance_O));
+    if (funcallableInstance_size!=sizeof(FuncallableInstance_O)) SIMPLE_ERROR(BF("The cmpintrinsics.lsp funcallableInstance_size %lu does not match sizeof(FuncallableInstance_O) %lu") % funcallableInstance_size % sizeof(FuncallableInstance_O));
     if (funcallableInstance_rack_offset!=offsetof(FuncallableInstance_O,_Rack))
       SIMPLE_ERROR(BF("funcallableInstance_rack_offset %lu does not match offsetof(_Rack,FuncallableInstance_O) %lu") % funcallableInstance_rack_offset % offsetof(FuncallableInstance_O,_Rack));
   }

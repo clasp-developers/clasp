@@ -734,28 +734,41 @@ namespace gctools {
     // Uses the underlying constructor. Like, GC<SimpleVector_O>::allocate_container(...)
     // ends up passing the ... to the SimpleVector_O constructor.
     template <typename... ARGS>
-    static smart_pointer_type allocate_container( bool static_container_p, size_t length, /*const typename OT::value_type& initial_element,*/ ARGS &&... args) {
+    static smart_pointer_type allocate_container( bool static_container_p, size_t length, ARGS &&... args) {
       size_t capacity = length;
       size_t size = sizeof_container_with_header<OT>(capacity);
-      if (static_container_p) return GCObjectAllocator<OT>::static_allocate_kind(OT::static_HeaderValue,size,length,/*initial_element,*/std::forward<ARGS>(args)...);
-      return GCObjectAllocator<OT>::allocate_kind(OT::static_HeaderValue,size,length,/*initial_element,*/std::forward<ARGS>(args)...);
+      if (static_container_p) return GCObjectAllocator<OT>::static_allocate_kind(OT::static_HeaderValue,size,length,std::forward<ARGS>(args)...);
+      return GCObjectAllocator<OT>::allocate_kind(OT::static_HeaderValue,size,length,std::forward<ARGS>(args)...);
     }
 
-        template <typename... ARGS>
-      static smart_pointer_type allocate_container_null_terminated_string( size_t length, /*const typename OT::value_type& initial_element,*/ ARGS &&... args) {
+    template <typename... ARGS>
+    static smart_pointer_type allocate_container_null_terminated_string( bool static_container_p,
+                                                                         size_t length, ARGS &&... args) {
       size_t capacity = length+1;
       size_t size = sizeof_container_with_header<OT>(capacity);
-      return GCObjectAllocator<OT>::allocate_kind(OT::static_HeaderValue,size,length,/*initial_element,*/std::forward<ARGS>(args)...);
+      if (static_container_p)
+        return GCObjectAllocator<OT>::static_allocate_kind(OT::static_HeaderValue, size, length,
+                                                           std::forward<ARGS>(args)...);
+      else
+        return GCObjectAllocator<OT>::allocate_kind(OT::static_HeaderValue, size, length,
+                                                    std::forward<ARGS>(args)...);
     }
 
     
     template <typename... ARGS>
-      static smart_pointer_type allocate_bitunit_container( size_t length, ARGS &&... args) {
+    static smart_pointer_type allocate_bitunit_container(bool static_container_p,
+                                                         size_t length, ARGS &&... args) {
       size_t size = sizeof_bitunit_container_with_header<OT>(length);
 #ifdef DEBUG_BITUNIT_CONTAINER
       printf("%s:%d  In allocate_bitunit_container length = %lu  size= %lu\n", __FILE__, __LINE__, length, size );
 #endif
-      smart_pointer_type result = GCObjectAllocator<OT>::allocate_kind(Header_s::Value::make<OT>(),size,length,std::forward<ARGS>(args)...);
+      smart_pointer_type result;
+      if (static_container_p)
+        result = GCObjectAllocator<OT>::static_allocate_kind(Header_s::Value::make<OT>(),size,length,
+                                                             std::forward<ARGS>(args)...);
+      else
+        result = GCObjectAllocator<OT>::allocate_kind(Header_s::Value::make<OT>(),size,length,
+                                                      std::forward<ARGS>(args)...);
 #if DEBUG_BITUNIT_CONTAINER
       {
         printf("%s:%d allocate_bitunit_container \n", __FILE__, __LINE__ );

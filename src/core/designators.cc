@@ -55,8 +55,7 @@ Function_sp functionDesignator(T_sp obj) {
       SIMPLE_ERROR(BF("Function value for %s is unbound") % _rep_(sym));
     return sym->symbolFunction();
   }
-  // we expect a function (either already a function or an fboundp symbol)
-  TYPE_ERROR(obj,cl::_sym_function);
+  TYPE_ERROR(obj,Cons_O::createList(cl::_sym_or, cl::_sym_function, cl::_sym_Symbol_O));
 }
 
 // this very similar to functionDesignator, can we merge?
@@ -75,31 +74,15 @@ Closure_sp closureDesignator(T_sp obj) {
   SIMPLE_ERROR(BF("Illegal closure designator %s") % _rep_(obj));
 }
 
-#if 0
-core::Path_sp pathDesignator(core::T_sp obj) {
-  if (cl__string_p(obj)) {
-    return Path_O::create(gc::As<String_sp>(obj)->get_std_string());
-  } else if ( Pathname_sp pn = obj.asOrNull<Pathname_O>() ) {
-    String_sp spn = cl__namestring(pn);
-    return Path_O::create(spn->get());
-  }else if (gc::IsA<Path_sp>(obj)) {
-    return gc::As<Path_sp>(obj);
-  }
-  SIMPLE_ERROR(BF("Illegal path designator[%s]") % _rep_(obj));
-}
-#endif
 };
 };
 
-#if 0
 namespace core {
-CL_PKG_NAME(CorePkg,path-designator);
-CL_DEFUN core::Path_sp core__path_designator(core::T_sp obj) {
-  return coerce::pathDesignator(obj);
+CL_PKG_NAME(CorePkg,coerce-fdesignator);
+CL_DEFUN Function_sp coerce_fdesignator(T_sp obj) {
+  return coerce::functionDesignator(obj);
 }
 };
-#endif
-
 
 namespace core {
 namespace coerce {
@@ -123,7 +106,7 @@ core::Package_sp packageDesignator(core::T_sp obj) {
   }
   TYPE_ERROR(obj, Cons_O::createList(cl::_sym_or, cl::_sym_string, cl::_sym_Symbol_O, cl::_sym_character));
  PACKAGE_NAME:
-  T_sp tpkg = _lisp->findPackage(packageName->get(),false);
+  T_sp tpkg = _lisp->findPackage(packageName->get_std_string(),false);
   if (tpkg.notnilp()) {
     Package_sp pkg = gc::As<Package_sp>(tpkg);
     return pkg;

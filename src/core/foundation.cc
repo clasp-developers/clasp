@@ -377,7 +377,7 @@ CL_DECLARE();
 CL_DOCSTRING("lispifyName");
 CL_DEFUN String_sp core__lispify_name(String_sp name) {
   ASSERT(name.notnilp());
-  string lispified = lispify_symbol_name(name->get());
+  string lispified = lispify_symbol_name(name->get_std_string());
   return SimpleBaseString_O::make(lispified);
 };
 

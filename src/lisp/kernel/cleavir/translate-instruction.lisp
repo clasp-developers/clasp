@@ -364,11 +364,11 @@
 (defun translate-bit-aref (array index &optional (label ""))
   (let* ((untagged (cmp:irc-untag-fixnum index cmp:%size_t%))
          (bit (%intrinsic-call "cc_simpleBitVectorAref" (list array untagged) "bit-aref")))
-    (cmp:irc-tag-fixnum bit "bit")))
+    (cmp:irc-tag-fixnum (cmp:irc-sext bit) "bit")))
 
 (defun translate-bit-aset (value array index)
   (let ((offset (cmp:irc-untag-fixnum index cmp:%size_t% "untagged-offset"))
-        (untagged-value (cmp:irc-untag-fixnum value cmp::%uint% "untagged-value")))
+        (untagged-value (cmp:irc-untag-fixnum value cmp:%i8% "untagged-value")))
     ;; Note: We cannot label void calls, because then they'll get a variable
     (%intrinsic-call "cc_simpleBitVectorAset" (list array offset untagged-value))))
 

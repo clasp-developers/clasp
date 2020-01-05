@@ -33,6 +33,7 @@ THE SOFTWARE.
 #include <clasp/core/array.h>
 #include <clasp/core/sequence.h>
 #include <clasp/core/wrappers.h>
+#include <clasp/core/evaluator.h>
 namespace core {
 
 // ----------------------------------------------------------------------
@@ -54,7 +55,12 @@ CL_DEFUN size_t cl__length(T_sp arg) {
   } else if (ActivationFrame_sp af = arg.asOrNull<ActivationFrame_O>()) {
     return af->length();
   }
-  TYPE_ERROR(arg, cl::_sym_sequence);
+  else {
+    T_sp result = eval::funcall(seqext::_sym_length, arg);
+    if (result.fixnump())
+      return result.unsafe_fixnum();
+    else TYPE_ERROR(result, cl::_sym_fixnum);
+  }
 };
 
 CL_LAMBDA(seq);
@@ -68,7 +74,7 @@ CL_DEFUN T_sp cl__reverse(T_sp seq) {
   } else if (Array_sp arr = seq.asOrNull<Array_O>()) {
     return arr->reverse();
   }
-  TYPE_ERROR(seq, cl::_sym_sequence);
+  else return eval::funcall(seqext::_sym_reverse, seq);
 };
 
 CL_LAMBDA(seq);
@@ -82,7 +88,7 @@ CL_DEFUN T_sp cl__nreverse(T_sp seq) {
   } else if (Array_sp arr = seq.asOrNull<Array_O>()) {
     return arr->nreverse();
   }
-  TYPE_ERROR(seq, cl::_sym_sequence);
+  else return eval::funcall(seqext::_sym_nreverse, seq);
 };
 
 CL_LAMBDA(sequence start &optional end);
@@ -98,8 +104,10 @@ CL_DEFUN T_sp cl__subseq(T_sp seq, size_t start, T_sp end) {
     SIMPLE_ERROR(BF("Illegal arguments for subseq on NIL - they must be (subseq NIL 0 NIL)"));
   } else if (Vector_sp vseq = seq.asOrNull<Vector_O>()) {
     return vseq->subseq(start, end);
+  } else {
+    T_sp tstart = clasp_make_fixnum(start);
+    return eval::funcall(seqext::_sym_subseq, seq, tstart, end);
   }
-  TYPE_ERROR(seq, cl::_sym_sequence);
 };
 
 CL_LAMBDA(seq);
@@ -113,7 +121,7 @@ CL_DEFUN T_sp cl__copy_seq(T_sp seq) {
   } else if (Vector_sp vseq = seq.asOrNull<Vector_O>()) {
     return vseq->subseq(0, _Nil<T_O>());
   }
-  TYPE_ERROR(seq, cl::_sym_sequence);
+  else return eval::funcall(seqext::_sym_copy_seq, seq);
 };
 
 CL_LAMBDA(sequence index);
@@ -126,8 +134,10 @@ CL_DEFUN T_sp cl__elt(T_sp sequence, size_t index) {
     TYPE_ERROR(sequence, cl::_sym_sequence);
   } else if (Vector_sp vseq = sequence.asOrNull<Vector_O>()) {
     return vseq->rowMajorAref(index);
+  } else {
+    T_sp tindex = clasp_make_fixnum(index);
+    return eval::funcall(seqext::_sym_elt, sequence, tindex);
   }
-  TYPE_ERROR(sequence, cl::_sym_sequence);
 };
 
 
@@ -143,24 +153,12 @@ CL_DEFUN T_sp core__setf_elt(T_sp sequence, size_t index, T_sp value) {
   } else if (Vector_sp vsequence = sequence.asOrNull<Vector_O>()) {
     vsequence->rowMajorAset(index, value);
     return value;
+  } else {
+    // FIXME: Having setf elt cons - and for this reason - is completely stupid.
+    T_sp tindex = clasp_make_fixnum(index);
+    return eval::funcall(Cons_O::createList(cl::_sym_setf, seqext::_sym_elt),
+                         value, sequence, tindex);
   }
-  TYPE_ERROR(sequence, cl::_sym_sequence);
-};
-
-CL_LAMBDA(sequence start end subseq);
-CL_DECLARE();
-CL_DOCSTRING("setfSubseq");
-CL_DEFUN T_sp core__setf_subseq(T_sp sequence, size_t start, Fixnum_sp end, T_sp subseq) {
-  if (sequence.consp()) {
-    sequence.unsafe_cons()->setf_subseq(start, end, subseq);
-    return subseq;
-  } else if (sequence.nilp()) {
-    TYPE_ERROR(sequence, cl::_sym_sequence);
-  } else if (Vector_sp vsequence = sequence.asOrNull<Vector_O>()) {
-    vsequence->setf_subseq(start, end, subseq);
-    return subseq;
-  }
-  TYPE_ERROR(sequence, cl::_sym_sequence);
 };
 
   SYMBOL_EXPORT_SC_(CorePkg, setfElt);

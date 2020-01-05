@@ -10,7 +10,7 @@
 //
 // Set up macros for interop
 //
-typedef void (*fnStartUp)();
+typedef T_O* (*fnStartUp)();
 extern "C" void cc_register_startup_function(fnStartUp fn);
 
 struct clasp_register_startup {

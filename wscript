@@ -83,8 +83,8 @@ def options(ctx):
 top = '.'
 out = 'build'
 APP_NAME = 'clasp'
-CLANG_VERSION = 6
-CLANG_SPECIFIC_VERSION = "6.0.1"
+CLANG_VERSION = 9
+CLANG_SPECIFIC_VERSION = "9.0.0"
 
 STAGE_CHARS = [ 'r', 'i', 'a', 'b', 'f', 'c', 'd' ]
 # Full LTO  -flto
@@ -100,6 +100,7 @@ CLANG_LIBRARIES = [
             'clangIndex',
             'clangTooling',
             'clangFormat',
+    'clangToolingInclusions',
             'clangToolingCore',
             'clangBasic',
             'clangCodeGen',
@@ -122,8 +123,10 @@ CLANG_LIBRARIES = [
             'clangAST',
             'clangRewrite',
             'clangLex',
-            'clangBasic',
+            'clangBasic'
  ]
+#CLANG_LIBRARIES = [ 'clang-cpp' ]
+# LLVM_LIBRARIES = [ 'LLVM' ]
 
 BOOST_LIBRARIES = [
             'boost_filesystem',
@@ -154,6 +157,8 @@ VALID_OPTIONS = [
     # Use lld only on Linux when CLASP_BUILD_MODE is "bitcode" - it's faster than ld
     # default = True
     "USE_LLD",
+    # Add additional CPPFLAGS
+    "CPPFLAGS",
     # Add additional includes 
     "INCLUDES",
     # Add additional link flags
@@ -240,6 +245,10 @@ DEBUG_OPTIONS = [
     "CONFIG_VAR_COOL" # mps setting
 ]
 
+def macos_version(cfg):
+    result = get_macos_version(cfg)
+    print("result = %s" % result)
+    
 def build_extension(bld):
     log.pprint('BLUE', "build_extension()")
     bld.recurse("extensions")
@@ -262,7 +271,7 @@ def update_dependencies(cfg):
 #                       "master")
     fetch_git_revision("src/lisp/kernel/contrib/sicl",
                        "https://github.com/Bike/SICL.git",
-                       "a567fa466bbbc841e5473794a0828232085fc548")
+                       "bf49bb239950169e5153e01b4c1d400ff663558d")
     fetch_git_revision("src/lisp/kernel/contrib/Concrete-Syntax-Tree",
                        "https://github.com/robert-strandh/Concrete-Syntax-Tree.git",
                        "654cdbf1fdb0625d3c68144c8806704e2f97f34b")
@@ -290,8 +299,9 @@ def update_dependencies(cfg):
                        # David set up this branch/2018-08-18/exp-strategy-2 for clasp
                        "b8a05a3846430bc36c8200f24d248c8293801503")
     fetch_git_revision("src/lisp/modules/asdf",
-                       "https://gitlab.common-lisp.net/asdf/asdf.git",
-                       label = "master", revision = "3.3.1.2")
+                       "https://gitlab.common-lisp.net/kpoeck/asdf.git",
+                       "1cae71bdf0afb0f57405c5e8b7e8bf0aeee8eef8")
+#                       label = "master", revision = "3.3.3.3")
     os.system("(cd src/lisp/modules/asdf; ${MAKE-make} --quiet)")
 
 # run this from a completely cold system with:
@@ -743,8 +753,12 @@ def configure(cfg):
                     llvm_config_binary = cfg.find_program('llvm-config-%s.0'%CLANG_VERSION)
                 except cfg.errors.ConfigurationError:
                     cfg.to_log('llvm-config-%s.0 was not found (ignoring)'%CLANG_VERSION)
-                    # Let's fail if no llvm-config binary has been found
-                    llvm_config_binary = cfg.find_program('llvm-config')
+                    try:
+                        llvm_config_binary = cfg.find_program('llvm-config-%s'%CLANG_VERSION)
+                    except cfg.errors.ConfigurationError:
+                        cfg.to_log('llvm-config-%s was not found (ignoring)'%CLANG_VERSION)
+                        # Let's fail if no llvm-config binary has been found
+                        llvm_config_binary = cfg.find_program('llvm-config')
                 llvm_config_binary = llvm_config_binary[0]
                 log.info("On %s looking for %s" % (cfg.env['DEST_OS'],llvm_config_binary))
             cfg.env["LLVM_CONFIG_BINARY"] = llvm_config_binary
@@ -809,7 +823,7 @@ def configure(cfg):
 
     cfg.load("why")
     cfg.check_waf_version(mini = '1.7.5')
-    cfg.env["DEST_OS"] = cfg.env["DEST_OS"] or Utils.unversioned_sys_platform()
+    cfg.env['DEST_OS'] = cfg.env['DEST_OS'] or Utils.unversioned_sys_platform()
     update_exe_search_path(cfg)
     run_llvm_config(cfg, "--version") # make sure we fail early
     check_externals_clasp_version(cfg)
@@ -850,7 +864,7 @@ def configure(cfg):
         cfg.env.CLASP_BUILD_MODE = 'fasl'
         cfg.env.LTO_FLAG = []
     else:
-        raise Exception("CLASP_BUILD_MODE can only be 'thinlto'(default), 'lto', or 'obj' - you provided %s" % cfg.env['CLASP_BUILD_MODE'])
+        raise Exception("CLASP_BUILD_MODE can only be 'thinlto'(default), 'lto', or 'object' - you provided %s" % cfg.env['CLASP_BUILD_MODE'])
     log.info("default cfg.env.CLASP_BUILD_MODE = %s, final cfg.env.LTO_FLAG = '%s'", cfg.env.CLASP_BUILD_MODE, cfg.env.LTO_FLAG)
 
     cur_clang_version = run_llvm_config(cfg, "--version")
@@ -869,7 +883,11 @@ def configure(cfg):
     cfg.load('compiler_cxx')
     cfg.load('compiler_c')
 ### Without these checks the following error happens: AttributeError: 'BuildContext' object has no attribute 'variant_obj'
+    if (cfg.env['DEST_OS'] == DARWIN_OS ):
+        cfg.env.append_value('LINKFLAGS', "-L/usr/local/lib");
+        cfg.env.append_value('INCLUDES', "/usr/local/include" )
     cfg.check_cxx(lib='gmpxx gmp'.split(), cflags='-Wall', uselib_store='GMP')
+    cfg.check_cxx(lib='ffi', cflags='-Wall', uselib_store='FFI')
     try:
         cfg.check_cxx(stlib='gc', cflags='-Wall', uselib_store='BOEHM')
     except ConfigurationError:
@@ -926,11 +944,13 @@ def configure(cfg):
     llvm_lib_dir = run_llvm_config_for_libs(cfg, "--libdir")
     log.debug("llvm_lib_dir = %s", llvm_lib_dir)
     cfg.env.append_value('LINKFLAGS', ["-L%s" % llvm_lib_dir])
-    llvm_libraries = [ x[2:] for x in run_llvm_config_for_libs(cfg, "--libs").split()] # drop the '-l' prefixes
+    llvm_libraries = [ x[2:] for x in run_llvm_config_for_libs(cfg, "--link-static", "--libs").split()] # drop the '-l' prefixes
 #dynamic llvm/clang
     cfg.check_cxx(lib=CLANG_LIBRARIES, cflags='-Wall', uselib_store='CLANG', libpath = llvm_lib_dir )
     cfg.check_cxx(lib=llvm_libraries, cflags = '-Wall', uselib_store = 'LLVM', libpath = llvm_lib_dir )
-#static llvm/clang
+
+
+    #static llvm/clang
 #    cfg.check_cxx(stlib=llvm_libraries, cflags = '-Wall', uselib_store = 'LLVM', stlibpath = llvm_lib_dir )
 #    cfg.check_cxx(stlib=CLANG_LIBRARIES, cflags='-Wall', uselib_store='CLANG', stlibpath = llvm_lib_dir )
     llvm_include_dir = run_llvm_config_for_libs(cfg, "--includedir")
@@ -1013,7 +1033,7 @@ def configure(cfg):
         cfg.env.append_value('LINKFLAGS', ['-stdlib=libstdc++']) # libstdc++/GCC libc++/clang
         cfg.env.append_value('LINKFLAGS', ['-lstdc++']) # -lstdc++/GCC -lc++/clang
         cfg.env.append_value('LINKFLAGS', '-pthread')
-    elif (cfg.env['DEST_OS'] == FREEBSD_OS ):
+    if (cfg.env['DEST_OS'] == FREEBSD_OS ):
         #--lto-O0 is not effective for avoiding linker hangs
         # cfg.env.append_value('LINKFLAGS', ['-Wl,-export_dynamic,--lto-O0'])
         if (cfg.env['USE_LLD']):
@@ -1025,7 +1045,7 @@ def configure(cfg):
             cfg.env.append_value('LINKFLAGS', '-fuse-ld=gold')
         cfg.env.append_value('LINKFLAGS', '-pthread')
         cfg.env.append_value('LINKFLAGS', '-lexecinfo')
-    elif (cfg.env['DEST_OS'] == DARWIN_OS ):
+    if (cfg.env['DEST_OS'] == DARWIN_OS ):
         cfg.env.append_value('LINKFLAGS', ['-Wl,-export_dynamic'])
         lto_library_name = cfg.env.cxxshlib_PATTERN % "LTO"  # libLTO.<os-dep-extension>
         lto_library = "%s/%s" % ( llvm_liblto_dir, lto_library_name)
@@ -1039,6 +1059,11 @@ def configure(cfg):
     cfg.env.append_value('INCLUDES', [ run_llvm_config(cfg,"--includedir") ])
     cfg.env.append_value('INCLUDES', ['/usr/include'] )
     cfg.define("ENABLE_BACKTRACE_ARGS",1)
+
+
+
+
+    
 # --------------------------------------------------
 # --------------------------------------------------
 # --------------------------------------------------
@@ -1106,6 +1131,7 @@ def configure(cfg):
     cfg.env.append_value('LIB', cfg.env.LIB_NCURSES)
     cfg.env.append_value('LIB', cfg.env.LIB_M)
     cfg.env.append_value('LIB', cfg.env.LIB_GMP)
+    cfg.env.append_value('LIB', cfg.env.LIB_FFI)
     cfg.env.append_value('LIB', cfg.env.LIB_Z)
     log.debug("cfg.env.STLIB = %s", cfg.env.STLIB)
     log.debug("cfg.env.LIB = %s", cfg.env.LIB)
@@ -1241,8 +1267,6 @@ def build(bld):
 
     bld.bclasp_executable = bld.path.find_or_declare(variant.executable_name(stage='b'))
     bld.cclasp_executable = bld.path.find_or_declare(variant.executable_name(stage='c'))
-    bld.asdf_fasl_bclasp = bld.path.find_or_declare("%s/src/lisp/modules/asdf/asdf.fasl" % variant.fasl_dir(stage='b'))
-    bld.asdf_fasl_cclasp = bld.path.find_or_declare("%s/src/lisp/modules/asdf/asdf.fasl" % variant.fasl_dir(stage='c'))
     bld.bclasp_fasl = variant.fasl_name(bld,stage='b')
     bld.cclasp_fasl = variant.fasl_name(bld,stage='c')
     bld.iclasp_executable = bld.path.find_or_declare(variant.executable_name(stage='i'))
@@ -1403,12 +1427,6 @@ def build(bld):
             install('bin/%s' % bld.bclasp_executable.name, bld.bclasp_executable, chmod = Utils.O755)
             bld.symlink_as('${PREFIX}/bin/clasp', bld.bclasp_executable.name)
             os.symlink(bld.bclasp_executable.abspath(), bclasp_symlink_node.abspath())
-        # # Build ASDF for bclasp
-        # cmp_asdf = compile_module(env = bld.env)
-        # cmp_asdf.set_inputs([bld.iclasp_executable, bld.bclasp_fasl] + waf_nodes_for_lisp_files(bld, ["src/lisp/modules/asdf/build/asdf"]))
-        # cmp_asdf.set_outputs(bld.asdf_fasl_bclasp)
-        # bld.add_to_group(cmp_asdf)
-        # install_files('lib/clasp/', bld.asdf_fasl_bclasp)
     if (bld.stage_val >= 3):
         log.info("Creating compile_cclasp task")
         # Build cclasp fasl
@@ -1450,16 +1468,23 @@ def build(bld):
         task.set_outputs(serve_event_fasl)
         bld.add_to_group(task)
         install('lib/clasp/', serve_event_fasl)
+        if ( bld.env['DEST_OS'] == DARWIN_OS ):
+            serve_event_dwarf_file = bld.path.find_or_declare("%s/src/lisp/modules/serve-event/serve-event.fasl.dwarf" % variant.fasl_dir(stage = 'c'))
+            install('lib/clasp/', serve_event_dwarf_file)
+            
 
         # Build ASDF
+        cclasp_asdf_fasl = bld.path.find_or_declare("%s/src/lisp/modules/asdf/asdf.fasl" % variant.fasl_dir(stage='c'))
         task = compile_module(env=bld.env)
         task.set_inputs([bld.iclasp_executable,
                          bld.cclasp_fasl] +
                         waf_nodes_for_lisp_files(bld, ["src/lisp/modules/asdf/build/asdf"]))
-        task.set_outputs(bld.asdf_fasl_cclasp)
+        task.set_outputs(cclasp_asdf_fasl)
         bld.add_to_group(task)
-
-        install('lib/clasp/', bld.asdf_fasl_cclasp)
+        install('lib/clasp/', cclasp_asdf_fasl)
+        if ( bld.env['DEST_OS'] == DARWIN_OS ):
+            cclasp_asdf_dwarf_file = bld.path.find_or_declare("%s/src/lisp/modules/asdf/asdf.fasl.dwarf" % variant.fasl_dir(stage = 'c'))
+            install('lib/clasp/', cclasp_asdf_dwarf_file)
 
         clasp_symlink_node = out_dir_node.make_node("clasp")
         log.debug("clasp_symlink_node =  %s", clasp_symlink_node)

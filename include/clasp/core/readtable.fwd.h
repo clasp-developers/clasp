@@ -29,7 +29,7 @@ THE SOFTWARE.
 #define _readtable_fwd_H_
 
 namespace core {
-FORWARD(ReadTable);
+FORWARD(Readtable);
 };
 
 #endif /* _readtable_fwd_H_ */

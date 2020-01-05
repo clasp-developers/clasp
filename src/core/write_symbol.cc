@@ -190,7 +190,7 @@ forced_print_package(T_sp package) {
 }
 
 void clasp_write_symbol(Symbol_sp x, T_sp stream) {
-  ReadTable_sp readtable = gc::As<ReadTable_sp>(_lisp->getCurrentReadTable());
+  T_sp readtable = _lisp->getCurrentReadTable();
   T_sp print_case = clasp_print_case();
   bool print_readably = clasp_print_readably();
   bool forced_package = 0;

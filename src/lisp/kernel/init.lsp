@@ -135,6 +135,11 @@
     (make-package "C" :use '(:cl :core)))
 
 (eval-when (:execute :compile-toplevel :load-toplevel)
+  (if (find-package "SEQUENCE")
+      nil
+      (make-package "SEQUENCE" :use '())))
+
+(eval-when (:execute :compile-toplevel :load-toplevel)
   (if (find-package "LITERAL")
       nil
       (make-package "LITERAL" :use '(:cl :core))))
@@ -177,7 +182,13 @@
           assume-right-type
           assert-error
           float-nan-p
-          float-infinity-p))
+          float-infinity-p
+          character-coding-error
+          character-encoding-error
+          character-decoding-error
+          stream-encoding-error
+          stream-decoding-error
+          generate-encoding-hashtable))
 (core:*make-special '*module-provider-functions*)
 (core:*make-special '*source-location*)
 (setq *source-location* nil)

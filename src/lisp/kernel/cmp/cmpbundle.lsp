@@ -95,6 +95,136 @@
 
 (defparameter *link-options* nil)
 
+
+(defun bundle-to-library-file-name (bundle-pathname)
+  (let* ((bundle-pathname (pathname bundle-pathname))
+         (bundle-namestring (namestring bundle-pathname))
+         (name (pathname-name bundle-pathname))
+         (type (pathname-type bundle-pathname))
+         (temp-bundle-directory (sys:mkdtemp bundle-namestring))
+         (temp-bundle-file (make-pathname :name "fasl" :type type :defaults temp-bundle-directory))
+         (bundle-directory (make-pathname :directory (append (pathname-directory bundle-pathname)
+                                                                (list (format nil "~a.~a" name type))))))
+    (values temp-bundle-directory
+            (ensure-string temp-bundle-file)
+            bundle-directory)))
+
+(defun atomic-delete-fasl (fasl-dir fasl-file)
+  (if (and fasl-file (eq (core:file-kind fasl-file nil) :file))
+      (progn
+        (delete-file fasl-file))
+      (when (probe-file fasl-dir)
+        (let* ((remove-dir (core:mkdtemp "/tmp/remove"))
+               (temp-fasl-dir (merge-pathnames
+                               (make-pathname :name "remove" :defaults remove-dir))))
+          (ensure-directories-exist temp-fasl-dir)
+          #-cclasp(rename-file fasl-dir temp-fasl-dir)
+          #+cclasp
+          (handler-case
+              (progn
+                (rename-file fasl-dir temp-fasl-dir))
+            (file-error ()
+              ))
+          (let ((tree-name (namestring remove-dir)))
+            (when (char= (elt tree-name (1- (length tree-name))) #\/)
+              (setf tree-name (subseq tree-name 0 (1- (length tree-name)))))
+            (ext:rmtree tree-name))))))
+
+    
+#+(or)
+(defun execute-link-library (bundle-file in-all-names &key input-type (output-type :dynamic))
+  ;; options are a list of strings like (list "-v")
+  (let ((output-flag (cond
+                       ((member :target-os-darwin *features*)
+                        (case output-type
+                          (:dynamic "-bundle")
+                          (:static "-static")
+                          (otherwise (error "Unknown output-type ~a for darwin" output-type))))
+                       ((or (member :target-os-linux *features*)
+                            (member :target-os-freebsd *features*))
+                        (case output-type
+                          (:dynamic "-shared")
+                          (:static "-static")
+                          (otherwise (error "Unknown output-type ~a for linux or freebsd" output-type))))
+                       (t (error "Unknown system type")))))
+    (let ((options *link-options*)
+          (all-object-files (mapcar (lambda (n)
+                                      (ensure-string n))
+                                    (if (listp in-all-names)
+                                        in-all-names
+                                        (list in-all-names)))))
+      (multiple-value-bind (temp-bundle-directory temp-bundle-file bundle-directory)
+          (bundle-to-library-file-name bundle-file)
+        (let ((clang-args (cond
+                            ((member :target-os-darwin *features*)
+                             (let* ((object-lto-pathname (make-pathname :type "o"
+                                                                        :name (sys:bformat nil "%s-lto" (pathname-name bundle-file))
+                                                                        :defaults temp-bundle-directory))
+                                    (clang-args `( "-flto"
+                                                   ,(sys:bformat nil "-Wl,-object_path_lto,%s" (namestring object-lto-pathname))
+                                                   ,@options
+                                                   ;; Disable the BranchFolding optimization that
+                                                   ;; merges tails of branches as they join
+                                                   ;; and was messing up debug source location info.
+                                                   "-Wl,-mllvm,-enable-tail-merge=false"
+                                                   ,(core:bformat nil "-O%d" *optimization-level*)
+                                                   ,@all-object-files
+;;;                                 "-macosx_version_min" "10.10"
+                                                   "-flat_namespace"
+                                                   #+(or)"-fvisibility=default"
+                                                   "-undefined" "suppress"
+                                                   ,@*debug-link-options*
+                                                   #+(or)"-Wl,-save-temps"
+                                                   ,output-flag
+;;;                        ,@link-flags
+;;;                        ,(bformat nil "-Wl,-object_path_lto,%s.lto.o" exec-file)
+                                                   "-o"
+                                                   ,temp-bundle-file)))
+                               clang-args))
+                            ((or (member :target-os-linux *features*)
+                                 (member :target-os-freebsd *features*))
+                             ;; Linux needs to use clang to link
+                             ;; FreeBSD might
+                             (let ((clang-args `(#+(or)"-v"
+                                                   ,@options
+                                                   ,(core:bformat nil "-O%d" *optimization-level*) 
+                                                   ,@all-object-files
+                                                   "-flto"
+                                                   "-fuse-ld=gold"
+                                                   ,@*debug-link-options*
+                                                   #+(or)"-fvisibility=default"
+                                                   ,output-flag
+                                                   "-o"
+                                                   ,temp-bundle-file)))
+                               clang-args))
+                            (t (error "Add support for this operating system to cmp:generate-link-command")))))
+          (ext:run-clang clang-args :output-file-name temp-bundle-file)
+          (unless (probe-file temp-bundle-file)
+            ;; I hate what I'm about to do - but on macOS -flto=thin can sometimes crash the linker
+            ;; so get rid of that option (IT MUST BE THE FIRST ONE!!!!) and try again
+            (when (member :target-os-darwin *features*)
+              (warn "There was a HUGE problem in execute-link-fasl to generate ~a~% with the arguments: /path-to-clang ~a~%  I'm going to try removing the -flto=thin argument and try linking again~%" temp-bundle-file clang-args)
+              (ext:run-clang (cdr clang-args) :output-file-name temp-bundle-file)
+              (when (probe-file temp-bundle-file)
+                (warn "execute-link-fasl worked after removing ~a from the argument list --- FIGURE OUT WHAT IS GOING WRONG WITH THAT ARGUMENT!!!" (car clang-args))))
+            (unless (probe-file temp-bundle-file)
+              (error "~%!~%!~%! There is a HUGE problem - an execute-link-fasl command with the arguments:   /path-to-clang ~a~%~%!        failed to generate the output file ~a~%" clang-args temp-bundle-file)))
+          ;; Now rename the library to make compilation atomic
+          ;; Run dsymutil on darwin
+          #+target-os-darwin
+          (ext:run-dsymutil (list "-f" (namestring temp-bundle-file)))
+          ;; Now do a safe atomic rename of the temp-bundle-directory to bundle-directory
+          (progn
+            (atomic-delete-fasl bundle-directory bundle-file)
+            #-cclasp(rename-file temp-bundle-directory bundle-directory)
+            #+cclasp
+            (handler-case
+                (rename-file temp-bundle-directory bundle-directory)
+              (file-error ()
+                (warn "Another process compiled the file - dumping my compilation")
+                (atomic-delete-fasl temp-bundle-directory nil))))
+          bundle-file)))))
+
 (defun execute-link-library (in-bundle-file in-all-names &key input-type (output-type :dynamic))
   ;; options are a list of strings like (list "-v")
   (let ((output-flag (cond
@@ -116,68 +246,68 @@
                                      (if (listp in-all-names)
                                          in-all-names
                                          (list in-all-names))))
-           (bundle-file (ensure-string in-bundle-file))
-           (temp-bundle-file (ensure-string (core:mkstemp bundle-file))))
-      (let ((clang-args (cond
-                          ((member :target-os-darwin *features*)
-                           (let* ((object-lto-pathname (make-pathname :type "o"
-                                                                      :name (sys:bformat nil "%s-lto" (pathname-name bundle-file))
-                                                                      :defaults bundle-file))
-                                  (clang-args `( "-flto"
-                                                 ,(sys:bformat nil "-Wl,-object_path_lto,%s" (namestring object-lto-pathname))
-                                                 ,@options
-                                                 ;; Disable the BranchFolding optimization that
-                                                 ;; merges tails of branches as they join
-                                                 ;; and was messing up debug source location info.
-                                                 "-Wl,-mllvm,-enable-tail-merge=false"
-                                                 ,(core:bformat nil "-O%d" *optimization-level*)
-                                                 ,@all-object-files
+           (bundle-file (ensure-string in-bundle-file)))
+      (with-atomic-file-rename (temp-bundle-pathname bundle-file)
+        (let* ((temp-bundle-file (namestring temp-bundle-pathname))
+               (clang-args (cond
+                             ((member :target-os-darwin *features*)
+                              (let* ((object-lto-pathname (make-pathname :type "o"
+                                                                         :name (sys:bformat nil "%s-lto" (pathname-name bundle-file))
+                                                                         :defaults bundle-file))
+                                     (clang-args `( "-flto"
+                                                    ,(sys:bformat nil "-Wl,-object_path_lto,%s" (namestring object-lto-pathname))
+                                                    ,@options
+                                                    ;; Disable the BranchFolding optimization that
+                                                    ;; merges tails of branches as they join
+                                                    ;; and was messing up debug source location info.
+                                                    "-Wl,-mllvm,-enable-tail-merge=false"
+                                                    ,(core:bformat nil "-O%d" *optimization-level*)
+                                                    ,@all-object-files
 ;;;                                 "-macosx_version_min" "10.10"
-                                                 "-flat_namespace"
-                                                 #+(or)"-fvisibility=default"
-                                                 "-undefined" "suppress"
-                                                 ,@*debug-link-options*
-                                                 #+(or)"-Wl,-save-temps"
-                                                 ,output-flag
+                                                    "-flat_namespace"
+                                                    #+(or)"-fvisibility=default"
+                                                    "-undefined" "suppress"
+                                                    ,@*debug-link-options*
+                                                    #+(or)"-Wl,-save-temps"
+                                                    ,output-flag
 ;;;                        ,@link-flags
 ;;;                        ,(bformat nil "-Wl,-object_path_lto,%s.lto.o" exec-file)
-                                                 "-o"
-                                                 ,temp-bundle-file)))
-                             clang-args))
-                          ((or (member :target-os-linux *features*)
-                               (member :target-os-freebsd *features*))
-                           ;; Linux needs to use clang to link
-                           ;; FreeBSD might
-                           (let ((clang-args `(#+(or)"-v"
-                                                 ,@options
-                                                 ,(core:bformat nil "-O%d" *optimization-level*) 
-                                                 ,@all-object-files
-                                                 "-flto"
-                                                 "-fuse-ld=gold"
-                                                 ,@*debug-link-options*
-                                                 #+(or)"-fvisibility=default"
-                                                 ,output-flag
-                                                 "-o"
-                                                 ,temp-bundle-file)))
-                             clang-args))
-                          (t (error "Add support for this operating system to cmp:generate-link-command")))))
-        (ext:run-clang clang-args :output-file-name temp-bundle-file)
-        (unless (probe-file temp-bundle-file)
-          ;; I hate what I'm about to do - but on macOS -flto=thin can sometimes crash the linker
-          ;; so get rid of that option (IT MUST BE THE FIRST ONE!!!!) and try again
-          (when (member :target-os-darwin *features*)
-            (warn "There was a HUGE problem in execute-link-fasl to generate ~a~% with the arguments: /path-to-clang ~a~%  I'm going to try removing the -flto=thin argument and try linking again~%" temp-bundle-file clang-args)
-            (ext:run-clang (cdr clang-args) :output-file-name temp-bundle-file)
-            (when (probe-file temp-bundle-file)
-              (warn "execute-link-fasl worked after removing ~a from the argument list --- FIGURE OUT WHAT IS GOING WRONG WITH THAT ARGUMENT!!!" (car clang-args))))
+                                                    "-o"
+                                                    ,temp-bundle-file)))
+                                clang-args))
+                             ((or (member :target-os-linux *features*)
+                                  (member :target-os-freebsd *features*))
+                              ;; Linux needs to use clang to link
+                              ;; FreeBSD might
+                              (let ((clang-args `(#+(or)"-v"
+                                                    ,@options
+                                                    ,(core:bformat nil "-O%d" *optimization-level*) 
+                                                    ,@all-object-files
+                                                    "-flto"
+                                                    "-fuse-ld=gold"
+                                                    ,@*debug-link-options*
+                                                    #+(or)"-fvisibility=default"
+                                                    ,output-flag
+                                                    "-o"
+                                                    ,temp-bundle-file)))
+                                clang-args))
+                             (t (error "Add support for this operating system to cmp:generate-link-command")))))
+          (ext:run-clang clang-args :output-file-name temp-bundle-file)
           (unless (probe-file temp-bundle-file)
-            (error "~%!~%!~%! There is a HUGE problem - an execute-link-fasl command with the arguments:   /path-to-clang ~a~%~%!        failed to generate the output file ~a~%" clang-args temp-bundle-file)))
-        ;; Now rename the library to make compilation atomic
-        ;; Run dsymutil on darwin
-        (rename-file temp-bundle-file bundle-file :if-exists :supersede)
-        #+target-os-darwin
-        (ext:run-dsymutil (list "-f" (namestring bundle-file)))
-        (truename bundle-file)))))
+            ;; I hate what I'm about to do - but on macOS -flto=thin can sometimes crash the linker
+            ;; so get rid of that option (IT MUST BE THE FIRST ONE!!!!) and try again
+            (when (member :target-os-darwin *features*)
+              (warn "There was a HUGE problem in execute-link-fasl to generate ~a~% with the arguments: /path-to-clang ~a~%  I'm going to try removing the -flto=thin argument and try linking again~%" temp-bundle-file clang-args)
+              (ext:run-clang (cdr clang-args) :output-file-name temp-bundle-file)
+              (when (probe-file temp-bundle-file)
+                (warn "execute-link-fasl worked after removing ~a from the argument list --- FIGURE OUT WHAT IS GOING WRONG WITH THAT ARGUMENT!!!" (car clang-args))))
+            (unless (probe-file temp-bundle-file)
+              (error "~%!~%!~%! There is a HUGE problem - an execute-link-fasl command with the arguments:   /path-to-clang ~a~%~%!        failed to generate the output file ~a~%" clang-args temp-bundle-file)))))
+      ;; Now rename the library to make compilation atomic
+      ;; Run dsymutil on darwin
+      #+target-os-darwin
+      (ext:run-dsymutil (list "-f" (namestring bundle-file)))
+      (truename bundle-file))))
 
 (defun execute-link-fasl (in-bundle-file in-all-names &key input-type)
   (execute-link-library in-bundle-file in-all-names :input-type input-type :output-type :dynamic))
@@ -245,7 +375,7 @@
             (dolist (part-pn part-pathnames)
               (let* ((bc-file (make-pathname :type (if cmp::*use-human-readable-bitcode* "ll" "bc") :defaults part-pn)))
 ;;;                (bformat t "Linking %s%N" bc-file)
-                (let* ((part-module (parse-bitcode (namestring (truename bc-file)) *llvm-context*)))
+                (let* ((part-module (parse-bitcode (namestring (truename bc-file)) (thread-local-llvm-context))))
                   (incf part-index)
                   (multiple-value-bind (failure error-msg)
                       (llvm-sys:link-in-module linker part-module)
@@ -260,7 +390,7 @@
             ;; The following links in additional-bitcode-pathnames
             (dolist (part-pn additional-bitcode-pathnames)
               (let* ((bc-file part-pn)
-                     (part-module (llvm-sys:parse-bitcode-file (namestring (truename bc-file)) *llvm-context*)))
+                     (part-module (llvm-sys:parse-bitcode-file (namestring (truename bc-file)) (thread-local-llvm-context))))
                 (multiple-value-bind (failure error-msg)
                     (llvm-sys:link-in-module linker part-module)
                   (when failure
