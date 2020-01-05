@@ -43,3 +43,7 @@
       (let ((array (make-array nil)))
         (setf (aref array) 23)
         array))
+
+;;; gave segmentation violation print the error
+(test-expect-error fill-pointer-nil-array (fill-pointer #0anil) :type type-error)
+                   

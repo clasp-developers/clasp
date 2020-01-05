@@ -674,6 +674,9 @@ struct RecursivePrint {
   }
 
   bool advanceIndices(int level) {
+    // if this is a nil sized array, indices is empty, so already return false, otherwise we get EXC_BAD_ACCESS  
+    unlikely_if (this->indices.empty())
+        return false;
     this->indices[level]++;
     if (this->indices[level] < this->me->arrayDimension(level))
       return ((true));
