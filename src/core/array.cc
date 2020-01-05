@@ -687,6 +687,10 @@ struct RecursivePrint {
 
 string Array_O::__repr__() const {
   RecursivePrint rp(this->asSmartPtr());
+  unlikely_if (this->rank() == 0) {
+    rp.ss << "#0A" << this->rowMajorAref(0);
+    return rp.ss.str();
+  }
   rp.ss << "#" << this->rank() << "A(";
   rp.recurse(0);
   rp.ss << ")";
