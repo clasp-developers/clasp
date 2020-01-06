@@ -41,7 +41,7 @@ int PASS_FUNCTION_REQUIRED(core::T_sp closure,
                            gctools::Vec0<RequiredArgument> const &reqs,
                            PASS_ARGS,
                            int arg_idx,
-                           DynamicScopeManager &scope) {
+                           ScopeManager &scope) {
   // Fill required arguments
   LOG(BF("There are %d required arguments") % reqs.size());
   size_t length_args(PASS_ARGS_NUM);
@@ -70,7 +70,7 @@ int PASS_FUNCTION_OPTIONAL(core::T_sp closure,
                            gctools::Vec0<OptionalArgument> const &optionals,
                            PASS_ARGS,
                            int arg_idx,
-                           DynamicScopeManager &scope) {
+                           ScopeManager &scope) {
   int num_args(PASS_ARGS_NUM);
   // Fill required arguments
   LOG(BF("There are %d optional arguments") % optionals.size());
@@ -112,7 +112,7 @@ void PASS_FUNCTION_REST(core::T_sp closure,
                         RestArgument const &restarg,
                         PASS_ARGS,
                         int arg_idx,
-                        DynamicScopeManager &scope) {
+                        ScopeManager &scope) {
   if (restarg.VaRest) {
     scope.valist().set_from_other_Vaslist(&*arglist); // _change_nargs(&*arglist, n_args - arg_idx);
     scope.va_rest_binding(restarg);
@@ -135,7 +135,7 @@ void PASS_FUNCTION_REST(core::T_sp closure,
 void PASS_FUNCTION_VA_REST(RestArgument const &va_restarg,
                            PASS_ARGS,
                            int arg_idx,
-                           DynamicScopeManager &scope) {
+                           ScopeManager &scope) {
   Cons_O::CdrType_sp rest = _Nil<Cons_O::CdrType_O>();
   Cons_O::CdrType_sp *curP = &rest;
   scope.valist().set(&*arglist, n_args - arg_idx);
@@ -148,7 +148,7 @@ int PASS_FUNCTION_KEYWORD(T_sp closure,
                           T_sp allow_other_keys,
                           PASS_ARGS,
                           int arg_idx,
-                          DynamicScopeManager &scope) {
+                          ScopeManager &scope) {
   int num_args(PASS_ARGS_NUM);
   int num_keyed_arguments = keyed_args.size();
   bool passed_allow_other_keys = false;

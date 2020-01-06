@@ -114,12 +114,6 @@ ALWAYS_INLINE core::T_O** functionFrameReference(core::T_O* frameP, int idx) {
   return &cell.rawRef_();
 }
 
-ALWAYS_INLINE core::T_O** symbolValueReference(core::T_O *symbolP)
-{
-  core::Symbol_sp sym((gctools::Tagged)symbolP);
-  return &sym->valueReference(&sym->_GlobalValue)->rawRef_();
-}
-
 ALWAYS_INLINE core::T_O* symbolValueRead(const core::T_O* tsymP) {
   Symbol_sp sym((gctools::Tagged)(tsymP));
   T_sp sv = sym->symbolValueUnsafe();
@@ -138,7 +132,7 @@ ALWAYS_INLINE core::T_O* cc_ensure_valid_object(core::T_O* tagged_object)
 
 ALWAYS_INLINE T_O *cc_safe_symbol_value(core::T_O *sym) {
   core::Symbol_O *symP = reinterpret_cast<core::Symbol_O *>(gctools::untag_general<core::T_O *>(sym));
-  T_O *sv = symP->symbolValueRef().raw_();
+  T_O *sv = symP->symbolValueUnsafe().raw_();
   if (sv == gctools::global_tagged_Symbol_OP_unbound) {
     intrinsic_error(llvmo::unboundSymbolValue, gc::smart_ptr<core::Symbol_O>((gc::Tagged)sym));
   }

@@ -47,7 +47,8 @@ $for template_ [[
             INVOCATION_HISTORY_FRAME();
             $if numArgs>0 [[
               MAKE_STACK_FRAME(fargs,closure->asSmartPtr().raw_(),$numArgs);
-	      core::StackFrameDynamicScopeManager scope(fargs);
+              MAKE_SPECIAL_BINDINGS_HOLDER(numSpecialBindings, specialBindingsVLA, lisp_lambda_list_handler_number_of_specials(closure->_lambdaListHandler));
+	      core::StackFrameDynamicScopeManager scope(numSpecialBindings,specialBindingsVLA,fargs);
               lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
             ]]
             $if numArgs>0 [[

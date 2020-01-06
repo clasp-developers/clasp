@@ -150,8 +150,7 @@ static void write_array_basic(Array_sp array, std::vector<size_t> adims, T_sp st
   }
 
   if (print_level >= rank) { // We're writing all elements of the array.
-    DynamicScopeManager scope;
-    scope.pushSpecialVariableAndSet(cl::_sym_STARprint_levelSTAR, clasp_make_fixnum(print_level - rank));
+    DynamicScopeManager scope(cl::_sym_STARprint_levelSTAR, clasp_make_fixnum(print_level - rank));
     write_array_data(rank, adims, array, stream, print_length, true);
   }
   else // nope.

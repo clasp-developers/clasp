@@ -531,10 +531,9 @@ CL_LAMBDA(name &optional verbose print external-format);
 CL_DECLARE();
 CL_DOCSTRING("load-binary");
 CL_DEFUN T_mv core__load_binary(T_sp pathDesig, T_sp verbose, T_sp print, T_sp external_format) {
-  DynamicScopeManager scope;
-  scope.pushSpecialVariableAndSet(_sym_STARcurrentSourcePosInfoSTAR, SourcePosInfo_O::create(0, 0, 0, 0));
-  scope.pushSpecialVariableAndSet(cl::_sym_STARreadtableSTAR, cl::_sym_STARreadtableSTAR->symbolValue());
-  scope.pushSpecialVariableAndSet(cl::_sym_STARpackageSTAR, cl::_sym_STARpackageSTAR->symbolValue());
+  DynamicScopeManager scope(_sym_STARcurrentSourcePosInfoSTAR, SourcePosInfo_O::create(0, 0, 0, 0));
+  DynamicScopeManager scope2(cl::_sym_STARreadtableSTAR, cl::_sym_STARreadtableSTAR->symbolValue());
+  DynamicScopeManager scope3(cl::_sym_STARpackageSTAR, cl::_sym_STARpackageSTAR->symbolValue());
   if (pathDesig.nilp()) SIMPLE_ERROR(BF("load-binary was about to pass nil to pathname"));
   Pathname_sp path = cl__pathname(pathDesig);
   if (cl__probe_file(path).notnilp())
@@ -581,7 +580,7 @@ LOAD:
   }
   add_dynamic_library_using_handle(name,handle);
   Pointer_sp handle_ptr = Pointer_O::create(handle);
-  scope.pushSpecialVariableAndSet(_sym_STARcurrent_dlopen_handleSTAR, handle_ptr);
+  DynamicScopeManager scope4(_sym_STARcurrent_dlopen_handleSTAR, handle_ptr);
   if (startup_functions_are_waiting()) {
     startup_functions_invoke(NULL);
   } else {
@@ -1005,25 +1004,19 @@ CL_LAMBDA(symbols values func);
 CL_DECLARE();
 CL_DOCSTRING("progvFunction");
 CL_DEFUN T_mv core__progv_function(List_sp symbols, List_sp values, Function_sp func) {
-  DynamicScopeManager manager;
-  int lengthValues = cl__length(values);
-  int index = 0;
-  for (auto curSym : symbols) {
-    if (index < lengthValues) {
-      Symbol_sp symbol = gc::As<Symbol_sp>(oCar(curSym));
-      T_sp value = oCar(values);
-      manager.pushSpecialVariableAndSet(symbol, value);
-      values = oCdr(values);
+  if (symbols.consp()) {
+    if (values.consp()) {
+      DynamicScopeManager scope(gc::As<Symbol_sp>(CONS_CAR(symbols)),CONS_CAR(values));
+      return core__progv_function(CONS_CDR(symbols),oCdr(values),func);
     } else {
-      // Makunbound the symbol but only within the scope of this progv
-      Symbol_sp symbol = gc::As<Symbol_sp>(oCar(curSym));
-      manager.pushSpecialVariableAndSet(symbol, _Unbound<T_O>());
+      DynamicScopeManager scope(gc::As<Symbol_sp>(CONS_CAR(symbols)),_Unbound<core::T_O>());
+      return core__progv_function(CONS_CDR(symbols),_Nil<core::T_O>(),func);
     }
-    index++;
-  }
-  T_mv result = (func->entry.load())(LCC_PASS_ARGS0_ELLIPSIS(func.raw_()));
+  } else {
+    T_mv result = (func->entry.load())(LCC_PASS_ARGS0_ELLIPSIS(func.raw_()));
   // T_mv result = eval::funcall(func);
-  return result;
+    return result;
+  }
 }
 
  CL_DEFUN T_mv core__declared_global_inline_p(T_sp name)

@@ -29,22 +29,15 @@ namespace core {
 #pragma GCC visibility push(default)
   class DynamicBindingStack {
   public:
-    gctools::Vec0<DynamicBinding> _Bindings;
-    mutable gctools::Vec0<T_sp>           _ThreadLocalBindings;
+   mutable gctools::Vec0<T_sp>           _ThreadLocalBindings;
   public:
     size_t new_binding_index();
     void release_binding_index(size_t index);
-    inline size_t top() const { return this->_Bindings.size() - 1; }
-    Symbol_sp topSymbol() const { return this->_Bindings.back()._Var; };
-    Symbol_sp var(size_t i) const { return this->_Bindings[i]._Var; };
-    T_sp val(size_t i) const { return this->_Bindings[i]._Val; };
-    ATTR_WEAK void push_with_value_coming(Symbol_sp var,T_sp* globalValuePtr);
-    ATTR_WEAK void push_binding(Symbol_sp var, T_sp* globalValuePtr, T_sp value=_Unbound<T_O>());
+    ATTR_WEAK T_sp push_with_value_coming(Symbol_sp var,T_sp* globalValuePtr);
+    ATTR_WEAK T_sp push_binding(Symbol_sp var, T_sp* globalValuePtr, T_sp value=_Unbound<T_O>());
+    ATTR_WEAK void pop_binding(Symbol_sp oldVar, T_sp oldBinding);
     // Push the current value of the symbol onto the DynamicBindingStack
     //   The new value will follow immediately
-    ATTR_WEAK void pop_binding();
-    void reserve(size_t x) { this->_Bindings.reserve(x); };
-    size_t size() const { return this->_Bindings.size(); };
     void expandThreadLocalBindings(size_t index);
     // Dynamic symbol access
     /*! Return a pointer to the value slot for the symbol.  

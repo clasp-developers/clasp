@@ -1,5 +1,9 @@
 (in-package #:cmp)
 
+#+(or)
+(eval-when (:execute)
+  (setq core:*echo-repl-read* t))
+
 ;;;; Top level interface: COMPILE-FILE, etc.
 
 ;;; Use the *cleavir-compile-file-hook* to determine which compiler to use

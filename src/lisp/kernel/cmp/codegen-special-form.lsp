@@ -239,7 +239,9 @@
 
 ;;; SETQ
 
+#+(or)
 (defun codegen-special-var-reference (var &optional env)
+  (core::bformat t "In codegen-special-var-reference for %s%N" var)
   (irc-intrinsic "symbolValueReference" (irc-global-symbol var env) (bformat nil "<special-var:%s>" (symbol-name var) )))
 
 (defun codegen-setq (result setq-pairs env)
@@ -256,25 +258,31 @@
 		;; symbol was not macroexpanded use SETQ
 		(progn
 		  (cmp-log "The symbol[%s] was not macroexpanded - using SETQ to set it%N" cur-var)
-		  (let* ((classified (variable-info env cur-var))
-			 (target-ref
-                           (cond
-                             ((eq (car classified) 'ext:special-var)
-                              (codegen-special-var-reference cur-var env))
-                             ((eq (car classified) 'ext:lexical-var)
-                              (let ((symbol (cadr classified))
-                                    (depth (third classified))
-                                    (index (fourth classified))
-                                    (dest-env (fifth classified)))
-                                (codegen-lexical-var-reference symbol
-                                                               depth
-                                                               index
-                                                               env
-                                                               dest-env)))
-                             (t (error "Handle codegen-setq with ~s" classified)))
-                           ))
-		    (codegen temp-res cur-expr env)
-		    (irc-t*-result (irc-load temp-res) target-ref)))
+		  (let* ((classified (variable-info env cur-var)))
+                    (cond
+                      ((eq (car classified) 'ext:special-var)
+                       (codegen temp-res cur-expr env)
+                       (let* ((symbol-t* (irc-global-symbol cur-var env))
+                              (val (irc-load temp-res)))
+                         (irc-intrinsic "cc_setSymbolValue" symbol-t* val))
+                       #+(or)
+                       (let ((special-target-ref (codegen-special-var-reference cur-var env)))
+                         (codegen temp-res cur-expr env)
+                         (irc-t*-result (irc-load temp-res) special-target-ref)))
+                      ((eq (car classified) 'ext:lexical-var)
+                       (let ((symbol (cadr classified))
+                             (depth (third classified))
+                             (index (fourth classified))
+                             (dest-env (fifth classified)))
+                         (let ((lexical-target-ref (codegen-lexical-var-reference symbol
+                                                                                  depth
+                                                                                  index
+                                                                                  env
+                                                                                  dest-env)))
+                           (codegen temp-res cur-expr env)
+                           (irc-t*-result (irc-load temp-res) lexical-target-ref))))
+                      (t (error "Handle codegen-setq with ~s" classified)))
+                    ))
 		;; symbol was macroexpanded use SETF
 		(progn
 		  (cmp-log "The symbol[%s] was macroexpanded to result[%s] setting with SETF%N"
@@ -287,117 +295,119 @@
 
 ;;; LET, LET*
 
-(defun codegen-fill-let-environment (new-env lambda-list-handler
-				     exps parent-env evaluate-env)
+(defun codegen-fill-let-environment (new-env reqvars
+                                     exps parent-env evaluate-env)
   "Evaluate each of the exps in the evaluate-env environment
-and put the values into the activation frame for new-env.
-env is the parent environment of the (result-af) value frame"
-  (multiple-value-bind (reqvars)
-      (process-lambda-list-handler lambda-list-handler)
-    (let ((number-of-lexical-vars (number-of-lexical-variables lambda-list-handler))
-	  (result-af (irc-renv new-env)))
-;;      (dbg-set-activation-frame-for-ihs-top (irc-renv new-env))
-      (irc-make-value-frame-set-parent new-env number-of-lexical-vars parent-env) ;(irc-intrinsic "setParentOfActivationFrame" result-af (irc-renv parent-env))
-      ;; Save all special variables
-      (do* ((cur-req (cdr reqvars) (cdr cur-req))
-	    (classified-target (car cur-req) (car cur-req)))
-	   ((endp cur-req) nil)
-	(compile-save-if-special new-env classified-target))
-      ;;
-      ;; Generate allocas for all of the temporary values
-      ;;
-      (let ((temps (make-array (length reqvars) :adjustable t :fill-pointer 0)))
-	(do* ((cur-req (cdr reqvars) (cdr cur-req))
-	      (cur-exp exps (cdr cur-exp))
-	      (exp (car cur-exp) (car cur-exp))
-	      (temp (alloca-t* "let") (alloca-t* "let")))
-	     ((endp cur-req) nil)
-	  (vector-push-extend temp temps)
-	  (dbg-set-current-source-pos exp)
-	  (codegen temp exp evaluate-env))
-	;; Now generate code for let
-	(cmp-log "About to generate code for exps: %s%N" exps)
-	(do* ((cur-req (cdr reqvars) (cdr cur-req))
-	      (classified-target (car cur-req) (car cur-req))
-	      (tempidx 0 (1+ tempidx)))
-	     ((endp cur-req) nil)
-	  (let* ((target-head (car classified-target))
-		 (target-idx (cdr classified-target)))
-	    (with-target-reference-do (target-ref classified-target new-env)
-	      (irc-t*-result (irc-load (elt temps tempidx)) target-ref))))))))
+and put the values into the activation frame for new-env."
+  ;;
+  ;; Generate allocas for all of the temporary values
+  ;;
+  (let ((temps (make-array (length reqvars) :adjustable t :fill-pointer 0)))
+    (do* ((cur-req (cdr reqvars) (cdr cur-req))
+          (cur-exp exps (cdr cur-exp))
+          (exp (car cur-exp) (car cur-exp))
+          (temp (alloca-t* "let") (alloca-t* "let")))
+         ((endp cur-req) nil)
+      (vector-push-extend temp temps)
+      (dbg-set-current-source-pos exp)
+      (codegen temp exp evaluate-env))
+    ;; Now generate code for let
+    (cmp-log "About to generate code for exps: %s%N" exps)
+    (do* ((cur-req (cdr reqvars) (cdr cur-req))
+          (classified-target (car cur-req) (car cur-req))
+          (tempidx 0 (1+ tempidx)))
+         ((endp cur-req) nil)
+      (let* ((target-head (car classified-target))
+             (target-idx (cdr classified-target)))
+        (cond
+          ((eq (car classified-target) 'ext:special-var)
+           (let ((symbol-t* (irc-global-symbol (cdr classified-target) new-env))
+                 (val (irc-load (elt temps tempidx))))
+             (irc-intrinsic "cc_setSymbolValue" symbol-t* val)))
+          ((eq (car classified-target) 'ext:lexical-var) 
+           (with-target-reference-do (target-ref classified-target new-env)
+             (irc-t*-result (irc-load (elt temps tempidx)) target-ref)))
+          (t (error "Illegal target ~s" classified-target)))))))
 
-(defun codegen-fill-let*-environment (new-env lambda-list-handler
-				     exps parent-env evaluate-env)
+(defun codegen-fill-let*-environment (new-env reqvars
+                                      exps parent-env evaluate-env)
   "Evaluate each of the exps in the evaluate-env environment
-and put the values into the activation frame for new-env.
-env is the parent environment of the (result-af) value frame"
+and put the values into the activation frame for new-env."
   (cmp-log "entered codegen-fill-let*-environment%N")
   (cmp-log "   new-env -> %s%N" new-env)
   (cmp-log "   parent-env -> %s%N" parent-env)
   (cmp-log "   evaluate-env -> %s%N" evaluate-env)
-  (multiple-value-bind (reqvars)
-      (process-lambda-list-handler lambda-list-handler)
-    (let ((number-of-lexical-vars (number-of-lexical-variables lambda-list-handler))
-	  (result-af (irc-renv new-env)))
-;;      (dbg-set-activation-frame-for-ihs-top (irc-renv new-env))
-      (irc-make-value-frame-set-parent new-env number-of-lexical-vars parent-env)
-      ;; Save all special variables
-      (do* ((cur-req (cdr reqvars) (cdr cur-req))
-	    (classified-target (car cur-req) (car cur-req)))
-	   ((endp cur-req) nil)
-	(compile-save-if-special new-env classified-target))
-      ;; Now generate code for let
-      (cmp-log "About to generate code for exps: %s%N" exps)
-      (do* ((cur-req (cdr reqvars) (cdr cur-req))
-	    (classified-target (car cur-req) (car cur-req))
-	    (cur-exp exps (cdr cur-exp))
-	    (exp (car cur-exp) (car cur-exp)))
-	   ((endp cur-req) nil)
-	(let* ((target-head (car classified-target))
-	       (target-idx (cdr classified-target)))
-	  (with-target-reference-do (target-ref classified-target new-env)
-	    (dbg-set-current-source-pos exp)
-	    (codegen target-ref exp evaluate-env)))))))
+  ;; Now generate code for let
+  (cmp-log "About to generate code for exps: %s%N" exps)
+  (let ((temp-var (alloca-t* "special-save")))
+    (do* ((cur-req (cdr reqvars) (cdr cur-req))
+          (classified-target (car cur-req) (car cur-req))
+          (cur-exp exps (cdr cur-exp))
+          (exp (car cur-exp) (car cur-exp)))
+         ((endp cur-req) nil)
+      (let* ((target-head (car classified-target))
+             (target-idx (cdr classified-target)))
+        (cond
+          ((eq (car classified-target) 'ext:special-var)
+           (codegen temp-var exp evaluate-env)
+           (let* ((symbol-name (cdr classified-target))
+                  (symbol-t* (irc-global-symbol symbol-name new-env))
+                  (val (irc-load temp-var)))
+             (irc-intrinsic "cc_setSymbolValue" symbol-t* val)))
+          ((eq (car classified-target) 'ext:lexical-var)
+           (with-target-reference-do (target-ref classified-target new-env)
+             (codegen target-ref exp evaluate-env)))
+          (t (error "Illegal target ~s" classified-target)))))))
 
 (defun codegen-let/let* (operator-symbol result parts env)
   (with-dbg-lexical-block ()
     (let ((assignments (car parts))
-	  (body (cdr parts)))
+          (body (cdr parts)))
       (multiple-value-bind (variables expressions)
-	  (separate-pair-list assignments)
-	(multiple-value-bind (declares code docstring specials )
-	    (process-declarations body t)
-	  (cmp-log "About to create lambda-list-handler%N")
-	  (let* ((lambda-list-handler (make-lambda-list-handler variables declares 'core::function))
-		 (new-env (irc-new-unbound-value-environment-of-size
-			   env
-			   :number-of-arguments (number-of-lexical-variables lambda-list-handler) ;; lambda-list-handler lambda-list-handler
-			   :label (symbol-name operator-symbol)))
-		 (evaluate-env (cond
-				 ((eq operator-symbol 'let) env) ;;; This is a problem right here
-				 ((eq operator-symbol 'let*) new-env)
-				 (t (error "let/let* doesn't understand operator symbol[~a]" operator-symbol))))
-		 traceid)
-            (if (core:special-variables lambda-list-handler)
-                (with-try "TRY.let/let*"
-                  (progn
-                    (irc-branch-to-and-begin-block (irc-basic-block-create
-                                                    (bformat nil "%s-start" (symbol-name operator-symbol))))
-                    (if (eq operator-symbol 'let)
-                        (codegen-fill-let-environment new-env lambda-list-handler expressions env evaluate-env)
-                        (codegen-fill-let*-environment new-env lambda-list-handler expressions env evaluate-env))
-                    (cmp-log "About to evaluate codegen-progn%N")
-                    (codegen-progn result code new-env))
-	          ((cleanup)
-	           (irc-unwind-environment new-env)))
-                (progn
-                  (irc-branch-to-and-begin-block (irc-basic-block-create
-                                                  (bformat nil "%s-start" (symbol-name operator-symbol))))
-                  (if (eq operator-symbol 'let)
-                      (codegen-fill-let-environment new-env lambda-list-handler expressions env evaluate-env)
-                      (codegen-fill-let*-environment new-env lambda-list-handler expressions env evaluate-env))
-                  (cmp-log "About to evaluate codegen-progn%N")
-                  (codegen-progn result code new-env))))))))
+          (separate-pair-list assignments)
+        (multiple-value-bind (declares code docstring specials )
+            (process-declarations body t)
+          (cmp-log "About to create lambda-list-handler%N")
+          (let* ((lambda-list-handler (make-lambda-list-handler variables declares 'core::function))
+                 (new-env (irc-new-unbound-value-environment-of-size
+                           env
+                           :number-of-arguments (number-of-lexical-variables lambda-list-handler) ;; lambda-list-handler lambda-list-handler
+                           :label (symbol-name operator-symbol)))
+                 (evaluate-env (cond
+                                 ((eq operator-symbol 'let) env) ;;; This is a problem right here
+                                 ((eq operator-symbol 'let*) new-env)
+                                 (t (error "let/let* doesn't understand operator symbol[~a]" operator-symbol))))
+                 traceid)
+            (multiple-value-bind (reqvars)
+                (process-lambda-list-handler lambda-list-handler)
+              (let ((number-of-lexical-vars (number-of-lexical-variables lambda-list-handler)))
+                (if (core:special-variables lambda-list-handler)
+                    (with-try "TRY.let/let*"
+                      (progn
+                        (irc-branch-to-and-begin-block (irc-basic-block-create
+                                                        (bformat nil "%s-start" (symbol-name operator-symbol))))
+                        (irc-make-value-frame-set-parent new-env number-of-lexical-vars env)
+                        ;; Save all special variables
+                        (do* ((cur-req (cdr reqvars) (cdr cur-req))
+                              (classified-target (car cur-req) (car cur-req)))
+                             ((endp cur-req) nil)
+                          (compile-save-if-special new-env classified-target))
+                        (if (eq operator-symbol 'let)
+                            (codegen-fill-let-environment new-env reqvars expressions env evaluate-env)
+                            (codegen-fill-let*-environment new-env reqvars expressions env evaluate-env))
+                        (cmp-log "About to evaluate codegen-progn%N")
+                        (codegen-progn result code new-env))
+                      ((cleanup)
+                       (irc-unwind-environment new-env)))
+                    (progn
+                      (irc-branch-to-and-begin-block (irc-basic-block-create
+                                                      (bformat nil "%s-start" (symbol-name operator-symbol))))
+                      (irc-make-value-frame-set-parent new-env number-of-lexical-vars env)
+                      (if (eq operator-symbol 'let)
+                          (codegen-fill-let-environment new-env reqvars expressions env evaluate-env)
+                          (codegen-fill-let*-environment new-env reqvars expressions env evaluate-env))
+                      (cmp-log "About to evaluate codegen-progn%N")
+                      (codegen-progn result code new-env))))))))))
   (cmp-log "Done codegen-let/let*%N"))
 
 (defun codegen-let (result rest env)

@@ -1620,7 +1620,7 @@ void dbg_printTPtr(uintptr_t raw, bool print_pretty) {
   T_sp obj = gctools::smart_ptr<T_O>((gc::Tagged)raw);
   clasp_write_string((BF("dbg_printTPtr Raw pointer value: %p\n") % (void *)obj.raw_()).str(), sout);
   DynamicScopeManager scope(_sym_STARenablePrintPrettySTAR, _Nil<T_O>());
-  scope.pushSpecialVariableAndSet(cl::_sym_STARprint_readablySTAR, _lisp->_boolean(print_pretty));
+  DynamicScopeManager scope2(cl::_sym_STARprint_readablySTAR, _lisp->_boolean(print_pretty));
   clasp_write_string((BF("dbg_printTPtr object class --> %s\n") % _rep_(lisp_instance_class(obj)->_className())).str(), sout);
   fflush(stdout);
   write_ugly_object(obj, sout);

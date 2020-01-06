@@ -107,9 +107,8 @@ public:
     else this->_Flags = this->_Flags&(~IS_MACRO);
   }
   
-  
   /*! Return a pointer to the value cell */
-  inline T_sp *valueReference(T_sp* globalValuePtr) {
+  inline T_sp *valueReference_(T_sp* globalValuePtr) {
 #ifdef CLASP_THREADS
     return my_thread->_Bindings.reference_raw(this,globalValuePtr);
 #else
@@ -117,7 +116,7 @@ public:
 #endif
   };
 
-  inline const T_sp *valueReference(const T_sp* globalValuePtr) const {
+  inline const T_sp *valueReference_(const T_sp* globalValuePtr) const {
 #ifdef CLASP_THREADS
     return my_thread->_Bindings.reference_raw(this,globalValuePtr);
 #else
@@ -155,31 +154,33 @@ public:
   
   /*! Return the value slot of the symbol - throws if unbound */
   inline T_sp symbolValue() const {
-    T_sp val = *this->valueReference(&(this->_GlobalValue));
+    T_sp val = *this->valueReference_(&(this->_GlobalValue));
     if (val.unboundp()) this->symbolUnboundError();
     return val;
   }
 
   inline T_sp symbolValueFromCell(Cons_sp cell, T_sp unbound_marker) const {
-    T_sp val = *this->valueReference(&(CONS_CAR(cell)));
+    T_sp val = *this->valueReference_(&(CONS_CAR(cell)));
     // FIXME: SICL allows many unbound values, but we don't even pick one properly,
     // i.e. we just check for both rather than checking TLS.unboundp() and global.eq(marker).
     if (val.unboundp() || val == unbound_marker) this->symbolUnboundError();
     return val;
   }
 
+#if 0
   /*! Return the address of the value slot of the symbol */
   inline T_sp &symbolValueRef() { return *this->valueReference(&this->_GlobalValue);};
-
+#endif
+  
   /*! Return the value slot of the symbol or UNBOUND if unbound */
-  inline T_sp symbolValueUnsafe() const { return *this->valueReference(&this->_GlobalValue); };
+  inline T_sp symbolValueUnsafe() const { return *this->valueReference_(&this->_GlobalValue); };
 
   void makeSpecial();
 
-  inline bool boundP() const { return !(*this->valueReference(&this->_GlobalValue)).unboundp(); };
+  inline bool boundP() const { return !(*this->valueReference_(&this->_GlobalValue)).unboundp(); };
 
   inline bool boundPFomCell(Cons_sp cell) {
-    return !(*this->valueReference(&(CONS_CAR(cell)))).unboundp();
+    return !(*this->valueReference_(&(CONS_CAR(cell)))).unboundp();
   }
 
   Symbol_sp makunbound();
@@ -189,12 +190,12 @@ public:
   T_sp defconstant(T_sp obj);
 
   inline T_sp setf_symbolValue(T_sp obj) {
-    *this->valueReference(&this->_GlobalValue) = obj;
+    *this->valueReference_(&this->_GlobalValue) = obj;
     return obj;
   }
 
   inline T_sp setf_symbolValueFromCell(T_sp val, Cons_sp cell) {
-    *this->valueReference(&(CONS_CAR(cell))) = val;
+    *this->valueReference_(&(CONS_CAR(cell))) = val;
     return val;
   }
 

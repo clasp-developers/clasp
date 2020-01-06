@@ -103,6 +103,33 @@ struct SafeRegisterDeregisterProcessWithLisp {
   }
 };
 
+void do_start_thread_inner(Process_sp process, core::List_sp bindings) {
+  if (bindings.consp()) {
+    core::Cons_sp pair = gc::As<core::Cons_sp>(CONS_CAR(bindings));
+    core::DynamicScopeManager scope(pair->_Car,core::eval::evaluate(pair->_Cdr,_Nil<core::T_O>()));
+    do_start_thread_inner(process,CONS_CDR(bindings));
+  } else {
+    core::List_sp args = process->_Arguments;
+    process->_Phase = Active;
+    core::T_mv result_mv;
+    {
+      SafeRegisterDeregisterProcessWithLisp reg(process);
+      try {
+        result_mv = core::eval::applyLastArgsPLUSFirst(process->_Function,args);
+      } catch (ExitProcess& e) {
+      // Do nothing - exiting
+      }
+    }
+    process->_Phase = Exiting;
+    core::T_sp result0 = result_mv;
+    core::List_sp result_list = _Nil<core::T_O>();
+    for ( int i=result_mv.number_of_values(); i>0; --i ) {
+      result_list = core::Cons_O::create(result_mv.valueGet_(i),result_list);
+    }
+    result_list = core::Cons_O::create(result0,result_list);
+    process->_ReturnValuesList = result_list;
+  }
+}
 
 __attribute__((noinline))
 void start_thread_inner(Process_sp process, void* cold_end_of_stack) {
@@ -141,31 +168,7 @@ void start_thread_inner(Process_sp process, void* cold_end_of_stack) {
   // Set the mp:*current-process* variable to the current process
   core::DynamicScopeManager scope(_sym_STARcurrent_processSTAR,process);
   core::List_sp reversed_bindings = core::cl__reverse(process->_InitialSpecialBindings);
-  for ( auto cur : reversed_bindings ) {
-    core::Cons_sp pair = gc::As<core::Cons_sp>(oCar(cur));
-    scope.pushSpecialVariableAndSet(pair->_Car,core::eval::evaluate(pair->_Cdr,_Nil<core::T_O>()));
-  }
-  core::List_sp args = process->_Arguments;
-
-  process->_Phase = Active;
-  core::T_mv result_mv;
-  {
-    SafeRegisterDeregisterProcessWithLisp reg(process);
-    try {
-      result_mv = core::eval::applyLastArgsPLUSFirst(process->_Function,args);
-    } catch (ExitProcess& e) {
-      // Do nothing - exiting
-    }
-  }
-  process->_Phase = Exiting;
-  core::T_sp result0 = result_mv;
-  core::List_sp result_list = _Nil<core::T_O>();
-  for ( int i=result_mv.number_of_values(); i>0; --i ) {
-    result_list = core::Cons_O::create(result_mv.valueGet_(i),result_list);
-  }
-  result_list = core::Cons_O::create(result0,result_list);
-  process->_ReturnValuesList = result_list;
-
+  do_start_thread_inner(process,reversed_bindings);
 };
 
 // This is the function actually passed to pthread_create.
