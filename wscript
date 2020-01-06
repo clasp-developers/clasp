@@ -246,7 +246,7 @@ DEBUG_OPTIONS = [
 ]
 
 def macos_version(cfg):
-    result = get_macos_version(cfg)
+    result = get_macosx_version(cfg)
     print("result = %s" % result)
     
 def build_extension(bld):
@@ -1619,8 +1619,15 @@ class link_executable(clasp_task):
             lto_option_list = []
             lto_object_path_lto = []
         link_options = []
-        if (self.env['DEST_OS'] == DARWIN_OS ):
-            link_options = link_options + [ LTO_OPTION, "-v", '-Wl,-stack_size,0x1000000']
+        if (self.env['DEST_OS'] == DARWIN_OS):
+            # only extend link_options if osx < 10.14.xx, harms starting from 10.14
+            versionlist = get_macosx_version(self)
+            log.info("MACOSX VERSION = %s" % versionlist)
+            if ((versionlist[0] == 10) and (versionlist[1] < 14)):
+            	log.info("extend link_options") 
+            	link_options = link_options + [ LTO_OPTION, "-v", '-Wl,-stack_size,0x1000000']
+            else:
+            	log.info("Do no extend link_options") 
         cmd = [ self.env.CXX[0] ] + \
               waf_nodes_to_paths(self.inputs) + \
               self.env['LINKFLAGS'] + \
