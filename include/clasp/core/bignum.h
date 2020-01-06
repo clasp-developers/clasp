@@ -45,7 +45,6 @@ struct gctools::GCInfo<core::Bignum_O> {
 };
 
 namespace core {
-
 class Bignum_O : public Integer_O {
   LISP_CLASS(core, ClPkg, Bignum_O, "Bignum",Integer_O);
   //    DECLARE_ARCHIVE();
