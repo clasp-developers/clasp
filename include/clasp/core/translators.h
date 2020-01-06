@@ -199,7 +199,7 @@ template <>
     typedef int64_t DeclareType;
 
     DeclareType _v;
-  from_object( core::T_sp o ) : _v( o.fixnump() ? o.unsafe_fixnum() : clasp_to_int64( o ) ) {};
+  from_object( core::T_sp o ) : _v( o.fixnump() ? o.unsafe_fixnum() : clasp_to_int64_t( o ) ) {};
   };
 #endif
   
@@ -210,7 +210,7 @@ template <>
     typedef uint64_t DeclareType;
 
     DeclareType _v;
-  from_object( core::T_sp o ) : _v( o.fixnump() ? o.unsafe_fixnum() : clasp_to_uint64( o ) ) {};
+  from_object( core::T_sp o ) : _v( o.fixnump() ? o.unsafe_fixnum() : clasp_to_uint64_t( o ) ) {};
   };
 #endif
 
