@@ -24,19 +24,6 @@
   ast environment dynenv form-output-path form-index error current-source-pos-info startup-function-name)
 
 
-(defun add-llvm.used (module used-function)
-  (or used-function (error "used-function must not be NIL"))
-  (llvm-sys:make-global-variable
-   module
-   %i8*[1]%
-   nil
-   'llvm-sys:appending-linkage
-   (llvm-sys:constant-array-get
-    %i8*[1]%
-    (list
-     (irc-bit-cast used-function %i8*%)))
-   "llvm.used"))
-
 (defun compile-from-ast (job &key
                                optimize
                                optimize-level

@@ -664,7 +664,8 @@ The passed module is modified as a side-effect."
         (with-track-llvm-time
             (unwind-protect
                  (progn
-                   #+(or)(progn
+                   #+(or)
+                   (progn
                      #+(or)(core:bformat t "*jit-lock* -> %s    jit-engine -> %s   module -> %s   *thread-safe-context* -> %s%N"
                                          *jit-lock*
                                          jit-engine

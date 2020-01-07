@@ -3841,7 +3841,7 @@ void save_symbol_info(const llvm::object::ObjectFile& object_file, const llvm::R
           if ((!comp::_sym_jit_register_symbol.unboundp()) && comp::_sym_jit_register_symbol->fboundp()) {
             core::eval::funcall(comp::_sym_jit_register_symbol,core::SimpleBaseString_O::make(name),symbol_info);
 //            printf("%s:%d  Registering symbol -> %s : %s\n", __FILE__, __LINE__, name.c_str(), _rep_(symbol_info).c_str() );
-//        gc::As<core::HashTableEqual_sp>(comp::_sym_STARjit_saved_symbol_infoSTAR->symbolValue())->hash_table_setf_gethash(core::SimpleBaseString_O::make(name),symbol_info);
+//           gc::As<core::HashTableEqual_sp>(comp::_sym_STARjit_saved_symbol_infoSTAR->symbolValue())->hash_table_setf_gethash(core::SimpleBaseString_O::make(name),symbol_info);
           }
         }
       }
@@ -4077,6 +4077,7 @@ CL_DEFUN ClaspJIT_sp llvm_sys__make_clasp_jit()
 {
   llvm::ExitOnError ExitOnErr;
 //  printf("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__ );
+#if 0
   auto J = ExitOnErr( llvm::orc::LLJITBuilder()
                       .setObjectLinkingLayerCreator(
                                                    [&](ExecutionSession &ES) {
@@ -4092,29 +4093,110 @@ CL_DEFUN ClaspJIT_sp llvm_sys__make_clasp_jit()
   DJ.setGenerator(ExitOnErr(DynamicLibrarySearchGenerator::GetForCurrentProcess(J->getDataLayout().getGlobalPrefix())));
   GC_ALLOCATE_VARIADIC(ClaspJIT_O,cj,J.release());
   return cj;
+#endif
+  GC_ALLOCATE(ClaspJIT_O,cj);
+  return cj;
 }
+
+ClaspJIT_O::ClaspJIT_O() {
+  this->ES = new llvm::orc::ExecutionSession();
+  auto GetMemMgr = []() { return llvm::make_unique<llvm::SectionMemoryManager>(); };  
+  this->LinkLayer = new llvm::orc::RTDyldObjectLinkingLayer(*this->ES,GetMemMgr);
+  this->LinkLayer->setNotifyLoaded( [&] (VModuleKey, const llvm::object::ObjectFile &Obj, const llvm::RuntimeDyld::LoadedObjectInfo &loadedObjectInfo) {
+//                                      printf("%s:%d  NotifyLoaded ObjectFile@%p\n", __FILE__, __LINE__, &Obj);
+                                      save_symbol_info(Obj,loadedObjectInfo);
+                                    });
+  auto JTMB = llvm::orc::JITTargetMachineBuilder::detectHost();
+  this->Compiler = new llvm::orc::ConcurrentIRCompiler(*JTMB);
+  this->CompileLayer = new llvm::orc::IRCompileLayer(*this->ES,*this->LinkLayer,*this->Compiler);
+  this->ES->setDispatchMaterialization(
+                                       [](llvm::orc::JITDylib &JD, std::unique_ptr<llvm::orc::MaterializationUnit> MU) {
+                                         MU->doMaterialize(JD);
+                                       });
+  this->ES->getMainJITDylib().setGenerator(llvm::cantFail(DynamicLibrarySearchGenerator::GetForCurrentProcess('_')));
+}
+
+ClaspJIT_O::~ClaspJIT_O()
+{
+  printf("%s:%d Shutdown the ClaspJIT\n", __FILE__, __LINE__);
+}
+
 
 CL_DEFMETHOD core::T_sp ClaspJIT_O::lookup(const std::string& Name) {
 //  printf("%s:%d:%s Name = %s\n", __FILE__, __LINE__, __FUNCTION__, Name.c_str());
   llvm::ExitOnError ExitOnErr;
-  llvm::JITEvaluatedSymbol symbol = ExitOnErr(this->_Jit->lookup(Name));
-//  printf("%s:%d:%s symbol->getAddress() -> %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)symbol.getAddress());
-  return core::Pointer_O::create((void*)symbol.getAddress());
+//  llvm::ArrayRef<llvm::orc::JITDylib*>  dylibs(&this->ES->getMainJITDylib());
+  std::string mangledName = "_" + Name;
+  llvm::Expected<llvm::JITEvaluatedSymbol> symbol = this->ES->lookup(llvm::orc::JITDylibSearchList({{&this->ES->getMainJITDylib(),true}}),
+                                                                     this->ES->intern(mangledName)); // dylibs,Name);
+  if (!symbol) {
+    llvm::handleAllErrors(symbol.takeError(), [](const llvm::ErrorInfoBase &E) {
+                                                  errs() << "Symbolizer failed to get line: " << E.message() << "\n";
+                                                });
+#if 0
+    std::stringstream ss;
+    ss << __FILE__ <<":" <<__LINE__ << ":  " << symbol.takeError().message();
+    printf("%s\n", ss.str().c_str());
+    abort();
+#endif
+  }
+//  printf("%s:%d:%s !!symbol -> %d  symbol->getAddress() -> %p\n", __FILE__, __LINE__, __FUNCTION__, !!symbol, (void*)symbol->getAddress());
+  return core::Pointer_O::create((void*)symbol->getAddress());
 }
 
 CL_DEFMETHOD void ClaspJIT_O::addIRModule(Module_sp module, ThreadSafeContext_sp context) {
   std::unique_ptr<llvm::Module> umodule(module->wrappedPtr());
   llvm::ExitOnError ExitOnErr;
-  ExitOnErr(this->_Jit->addIRModule(llvm::orc::ThreadSafeModule(std::move(umodule),*context->wrappedPtr())));
+  ExitOnErr(this->CompileLayer->add(this->ES->getMainJITDylib(),llvm::orc::ThreadSafeModule(std::move(umodule),*context->wrappedPtr())));
 }
 
+void ClaspJIT_O::addObjectFile(core::ObjectFile_sp objectFile, core::T_sp startup_function_name)
+{
+  const char* rbuffer = (const char*)objectFile->_ObjectFilePtr;
+  size_t bytes = objectFile->_ObjectFileSize;
+  llvm::StringRef sbuffer((const char*)rbuffer,bytes);
+  llvm::StringRef name("fooob");
+  std::unique_ptr<llvm::MemoryBuffer> mbuffer = llvm::MemoryBuffer::getMemBuffer(sbuffer,name,false);
+  auto erro = this->LinkLayer->add(this->ES->getMainJITDylib(),std::move(mbuffer));
+  if (erro) {
+    printf("%s:%d Could not addObjectFile\n", __FILE__, __LINE__ );
+  }
+  printf("%s:%d If running static constructors worked we would be about to run constructors\n", __FILE__, __LINE__ );
+#if 0
+  auto errr = jit->_Jit->runConstructors();
+  if (errr) {
+    printf("%s:%d Could not runConstructors\n", __FILE__, __LINE__ );
+  }
+#endif
+
+#if 1
+  core::String_sp string_name = gc::As<core::String_sp>(startup_function_name);
+  llvm::orc::SymbolStringPtr foo = this->ES->intern(string_name->get_std_string());
+  core::Pointer_sp startupPtr = gc::As<core::Pointer_sp>(this->lookup(string_name->get_std_string()));
+  printf("%s:%d  ObjectFileStartUp ptr -> %s\n", __FILE__, __LINE__, _rep_(startupPtr).c_str());
+  if (startupPtr) {
+    printf("%s:%d  INVOKING ObjectFileStartUp ptr -> %s\n", __FILE__, __LINE__, _rep_(startupPtr).c_str());
+    fnStartUp startup = reinterpret_cast<fnStartUp>(gc::As_unsafe<core::Pointer_sp>(startupPtr)->ptr());
+    core::T_O* replPtrRaw = startup(NULL);
+  }
+  llvm::orc::SymbolNameSet remove_names({foo});
+  printf("%s:%d  Removing symbol %s\n", __FILE__, __LINE__, string_name->get_std_string().c_str());
+//  this->ES->getMainJITDylib().remove(remove_names);
+#endif
+  if (core::startup_functions_are_waiting()) {
+    printf("%s:%d startup functions were waiting - invoking\n", __FILE__, __LINE__ );
+    core::startup_functions_invoke(NULL);
+  } else {
+    printf("%s:%d NO startup functions were waiting\n", __FILE__, __LINE__ );
+  }
+}
 
 CL_DEFMETHOD JITDylib& ClaspJIT_O::getMainJITDylib() {
-  return this->_Jit->getMainJITDylib();
+  return this->ES->getMainJITDylib();
 }
 
 CL_DEFMETHOD JITDylib& ClaspJIT_O::createJITDylib(const std::string& name) {
-  return this->_Jit->createJITDylib(name);
+  return this->ES->createJITDylib(name);
 }
 
 

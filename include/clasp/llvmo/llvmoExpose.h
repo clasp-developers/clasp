@@ -64,8 +64,8 @@ THE SOFTWARE.
 #include <llvm/ExecutionEngine/Orc/IRTransformLayer.h>
 #include <llvm/ExecutionEngine/Orc/LambdaResolver.h>
 #include <llvm/ExecutionEngine/Orc/RTDyldObjectLinkingLayer.h>
-#include <llvm/ExecutionEngine/Orc/LLJIT.h>
-//#include <llvm/ExecutionEngine/Orc/ObjectLinkingLayer.h>
+//#include <llvm/ExecutionEngine/Orc/LLJIT.h>
+#include <llvm/ExecutionEngine/Orc/ObjectLinkingLayer.h>
 //#include "llvm/Support/IRBuilder.h"
 
 #include <stdio.h>
@@ -4464,7 +4464,7 @@ namespace llvmo {
 template <>
 struct gctools::GCInfo<llvmo::ClaspJIT_O> {
   static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = false;
+  static bool constexpr NeedsFinalization = true;
   static GCInfo_policy constexpr Policy = collectable_immobile;
 };
 
@@ -4473,13 +4473,18 @@ namespace llvmo {
 class ClaspJIT_O : public core::General_O {
   LISP_CLASS(llvmo, LlvmoPkg, ClaspJIT_O, "clasp-jit", core::General_O);
 public:
-  std::unique_ptr<LLJIT> _Jit;
   void addIRModule(Module_sp cM,ThreadSafeContext_sp context);
   core::T_sp lookup(const std::string& Name);
   JITDylib& getMainJITDylib();
   JITDylib& createJITDylib(const std::string& name);
-  
-  ClaspJIT_O(llvm::orc::LLJIT* jj) : _Jit(jj) {};
+  void addObjectFile(core::ObjectFile_sp objectFile,core::T_sp startup_function_name);
+  ClaspJIT_O();
+  ~ClaspJIT_O();
+public:
+  llvm::orc::ExecutionSession *ES;
+  llvm::orc::RTDyldObjectLinkingLayer *LinkLayer;
+  llvm::orc::ConcurrentIRCompiler *Compiler;
+  llvm::orc::IRCompileLayer *CompileLayer;
 };
 
 
