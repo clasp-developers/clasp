@@ -4150,18 +4150,59 @@ CL_DEFMETHOD void ClaspJIT_O::addIRModule(Module_sp module, ThreadSafeContext_sp
   ExitOnErr(this->CompileLayer->add(this->ES->getMainJITDylib(),llvm::orc::ThreadSafeModule(std::move(umodule),*context->wrappedPtr())));
 }
 
+void ClaspJIT_O::addObjectFile(core::ObjectFile_sp objectFile)
+{
+  // Create an llvm::MemoryBuffer for the ObjectFile bytes
+  const char* rbuffer = (const char*)objectFile->_ObjectFilePtr;
+  size_t bytes = objectFile->_ObjectFileSize;
+  llvm::StringRef sbuffer((const char*)rbuffer,bytes);
+  llvm::StringRef name("buffer-name");
+  std::unique_ptr<llvm::MemoryBuffer> mbuffer = llvm::MemoryBuffer::getMemBuffer(sbuffer,name,false);
+  // Force the object file to be linked using MaterializationUnit::doMaterialize(...)
+  auto K = llvm::orc::VModuleKey();
+  auto ObjMU = llvm::orc::BasicObjectLayerMaterializationUnit::Create(*this->LinkLayer,std::move(K),std::move(mbuffer));
+  if (!ObjMU) {
+    llvm::ExitOnError ExitOnErr;
+    ExitOnErr(ObjMU.takeError());
+  }
+  (*ObjMU)->doMaterialize(this->ES->getMainJITDylib());
+  // Lookup the address of the ObjectFileStartUp function and invoke it
+  core::Pointer_sp startupPtr = gc::As<core::Pointer_sp>(this->lookup("ObjectFileStartUp"));
+  if (startupPtr) {
+    fnStartUp startup = reinterpret_cast<fnStartUp>(gc::As_unsafe<core::Pointer_sp>(startupPtr)->ptr());
+    core::T_O* replPtrRaw = startup(NULL);
+  }
+  // Running the ObjectFileStartUp function registers the startup functions - now we can invoke them
+  if (core::startup_functions_are_waiting()) {
+    core::startup_functions_invoke(NULL);
+  } else {
+    printf("%s:%d NO startup functions were waiting\n", __FILE__, __LINE__ );
+  }
+}
+
+#if 0
 void ClaspJIT_O::addObjectFile(core::ObjectFile_sp objectFile, core::T_sp startup_function_name)
 {
   const char* rbuffer = (const char*)objectFile->_ObjectFilePtr;
   size_t bytes = objectFile->_ObjectFileSize;
   llvm::StringRef sbuffer((const char*)rbuffer,bytes);
-  llvm::StringRef name("fooob");
+  llvm::StringRef name("buffer-name");
   std::unique_ptr<llvm::MemoryBuffer> mbuffer = llvm::MemoryBuffer::getMemBuffer(sbuffer,name,false);
+#if 0
+  auto K = llvm::orc::VModuleKey();
+  auto ObjMU = llvm::orc::BasicObjectLayerMaterializationUnit::Create(*this->LinkLayer,std::move(K),std::move(mbuffer));
+  if (!ObjMU) {
+    llvm::ExitOnError ExitOnErr;
+    ExitOnErr(ObjMU.takeError());
+  }
+  (*ObjMU)->doMaterialize(this->ES->getMainJITDylib());
+#else
   auto erro = this->LinkLayer->add(this->ES->getMainJITDylib(),std::move(mbuffer));
   if (erro) {
     printf("%s:%d Could not addObjectFile\n", __FILE__, __LINE__ );
   }
-  printf("%s:%d If running static constructors worked we would be about to run constructors\n", __FILE__, __LINE__ );
+#endif
+//  printf("%s:%d If running static constructors worked we would be about to run constructors\n", __FILE__, __LINE__ );
 #if 0
   auto errr = jit->_Jit->runConstructors();
   if (errr) {
@@ -4169,7 +4210,6 @@ void ClaspJIT_O::addObjectFile(core::ObjectFile_sp objectFile, core::T_sp startu
   }
 #endif
 
-#if 1
   core::String_sp string_name = gc::As<core::String_sp>(startup_function_name);
   llvm::orc::SymbolStringPtr foo = this->ES->intern(string_name->get_std_string());
   core::Pointer_sp startupPtr = gc::As<core::Pointer_sp>(this->lookup(string_name->get_std_string()));
@@ -4179,6 +4219,7 @@ void ClaspJIT_O::addObjectFile(core::ObjectFile_sp objectFile, core::T_sp startu
     fnStartUp startup = reinterpret_cast<fnStartUp>(gc::As_unsafe<core::Pointer_sp>(startupPtr)->ptr());
     core::T_O* replPtrRaw = startup(NULL);
   }
+#if 0
   llvm::orc::SymbolNameSet remove_names({foo});
   printf("%s:%d  Removing symbol %s\n", __FILE__, __LINE__, string_name->get_std_string().c_str());
 //  this->ES->getMainJITDylib().remove(remove_names);
@@ -4190,6 +4231,8 @@ void ClaspJIT_O::addObjectFile(core::ObjectFile_sp objectFile, core::T_sp startu
     printf("%s:%d NO startup functions were waiting\n", __FILE__, __LINE__ );
   }
 }
+#endif
+
 
 CL_DEFMETHOD JITDylib& ClaspJIT_O::getMainJITDylib() {
   return this->ES->getMainJITDylib();

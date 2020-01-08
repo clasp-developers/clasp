@@ -4477,7 +4477,7 @@ public:
   core::T_sp lookup(const std::string& Name);
   JITDylib& getMainJITDylib();
   JITDylib& createJITDylib(const std::string& name);
-  void addObjectFile(core::ObjectFile_sp objectFile,core::T_sp startup_function_name);
+  void addObjectFile(core::ObjectFile_sp objectFile);
   ClaspJIT_O();
   ~ClaspJIT_O();
 public:

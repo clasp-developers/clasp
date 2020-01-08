@@ -452,10 +452,9 @@ CL_DEFUN T_sp core__startup_image_pathname(char stage) {
 };
 
 
-CL_DEFUN T_sp core__load_object(llvmo::ClaspJIT_sp jit, T_sp startup_function_name, T_sp pathDesig, T_sp verbose, T_sp print, T_sp external_format) {
+CL_DEFUN T_sp core__load_object(llvmo::ClaspJIT_sp jit, T_sp pathDesig, T_sp verbose, T_sp print, T_sp external_format) {
   Pathname_sp path = cl__pathname(pathDesig);
   String_sp fname = gc::As<String_sp>(cl__namestring(cl__probe_file(path)));
-  printf("%s:%d About to load-object %s\n", __FILE__, __LINE__, fname->get_std_string().c_str() );
   mode_t mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH;
   int fd = safe_open(fname->get_std_string().c_str(), O_RDONLY, mode);
   size_t bytes = lseek(fd, 0, SEEK_END);
@@ -467,7 +466,7 @@ CL_DEFUN T_sp core__load_object(llvmo::ClaspJIT_sp jit, T_sp startup_function_na
   }
   GC_ALLOCATE_VARIADIC(ObjectFile_O,of,(void*)rbuffer,bytes);
   close(fd);
-  jit->addObjectFile(of,startup_function_name);
+  jit->addObjectFile(of);
   return of;
 }
 

@@ -840,7 +840,7 @@ have it call the main-function"
                  (_                (irc-intrinsic "cc_register_startup_function" (jit-constant-size_t position) bc-main-function))
                  (_                (irc-ret-void))))))
       ;;(llvm-sys:dump fn)
-      (let* ((function-name (core:bformat nil "ObjectFileStartUp-%s" (core:next-number)))
+      (let* ((function-name "ObjectFileStartUp") ; (core:bformat nil "ObjectFileStartUp-%s" (core:next-number)))
              #+(or)(_ (core:bformat t "add-global-ctor-function name: %s%N" function-name))
              (outer-fn (irc-simple-function-create
                         function-name
