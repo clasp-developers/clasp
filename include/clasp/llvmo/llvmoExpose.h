@@ -858,11 +858,11 @@ public:
   core::ObjectFile_sp generate_object_file_from_module(PassManager_sp passManager, Module_sp module);
   
   /*! Return (values CodeGenFileType-symbol) */
-  void addPassesToEmitFileAndRunPassManager(PassManager_sp passManager,
-                                            core::T_sp stream,
-                                            core::T_sp dwo_stream,
-                                            llvm::TargetMachine::CodeGenFileType,
-                                            Module_sp module);
+  core::T_sp addPassesToEmitFileAndRunPassManager(PassManager_sp passManager,
+                                                  core::T_sp stream_or_symbol,
+                                                  core::T_sp dwo_stream,
+                                                  llvm::TargetMachine::CodeGenFileType,
+                                                  Module_sp module);
 
   TargetMachine_O() : Base(), _ptr(NULL){};
   ~TargetMachine_O() {
@@ -4477,7 +4477,7 @@ public:
   core::T_sp lookup(const std::string& Name);
   JITDylib& getMainJITDylib();
   JITDylib& createJITDylib(const std::string& name);
-  void addObjectFile(core::ObjectFile_sp objectFile);
+  void addObjectFile(const char* buffer, size_t bytes);
   ClaspJIT_O();
   ~ClaspJIT_O();
 public:

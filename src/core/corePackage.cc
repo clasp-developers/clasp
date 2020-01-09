@@ -424,6 +424,7 @@ SYMBOL_EXPORT_SC_(LlvmoPkg, load_bitcode);
 SYMBOL_EXPORT_SC_(LlvmoPkg, load_bitcode_ll);
 SYMBOL_EXPORT_SC_(CorePkg, loadSource);
 SYMBOL_EXPORT_SC_(CorePkg, load_binary);
+SYMBOL_EXPORT_SC_(CorePkg, load_faso);
 SYMBOL_EXPORT_SC_(ClPkg, STARloadPathnameSTAR);
 SYMBOL_EXPORT_SC_(ClPkg, STARloadTruenameSTAR);
 SYMBOL_EXPORT_SC_(KeywordPkg, none);
@@ -1124,6 +1125,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   List_sp hooks = _Nil<T_O>();
   hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("lfasl"), _sym_loadSource), hooks); // List of load commands
   hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("fasl"), _sym_load_binary), hooks);
+  hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("faso"), _sym_load_faso), hooks);
   hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("fasb"), _sym_load_binary), hooks);
   hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("bundle"), _sym_load_binary), hooks);
   hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("dylib"), _sym_load_binary), hooks);

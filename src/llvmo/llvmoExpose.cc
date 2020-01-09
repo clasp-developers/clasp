@@ -466,7 +466,7 @@ CL_DEFMETHOD core::ObjectFile_sp TargetMachine_O::generate_object_file_from_modu
 
 
 CL_LISPIFY_NAME("addPassesToEmitFileAndRunPassManager");
-CL_DEFMETHOD void TargetMachine_O::addPassesToEmitFileAndRunPassManager(PassManager_sp passManager,
+CL_DEFMETHOD core::T_sp TargetMachine_O::addPassesToEmitFileAndRunPassManager(PassManager_sp passManager,
                                                                         core::T_sp stream,
                                                                         core::T_sp dwo_stream,
                                                                         llvm::TargetMachine::CodeGenFileType FileType,
@@ -478,9 +478,11 @@ CL_DEFMETHOD void TargetMachine_O::addPassesToEmitFileAndRunPassManager(PassMana
   llvm::SmallString<1024> stringOutput;
   bool stringOutputStream = false;
   if (core::StringOutputStream_sp sos = stream.asOrNull<core::StringOutputStream_O>()) {
-    (void)sos;
     ostreamP = new llvm::raw_svector_ostream(stringOutput);
     stringOutputStream = true;
+  } else if ( stream == kw::_sym_simple_vector_byte8 ) {
+    (void)sos;
+    ostreamP = new llvm::raw_svector_ostream(stringOutput);
   } else if (core::IOFileStream_sp fs = stream.asOrNull<core::IOFileStream_O>()) {
     ostreamP = new llvm::raw_fd_ostream(fs->fileDescriptor(), false, true);
   } else if (core::IOStreamStream_sp iostr = stream.asOrNull<core::IOStreamStream_O>()) {
@@ -516,10 +518,18 @@ CL_DEFMETHOD void TargetMachine_O::addPassesToEmitFileAndRunPassManager(PassMana
   passManager->wrappedPtr()->run(*module->wrappedPtr());
   if (core::StringOutputStream_sp sos = stream.asOrNull<core::StringOutputStream_O>()) {
     sos->fill(stringOutput.c_str());
+  } else if (stream == kw::_sym_simple_vector_byte8) {
+    SYMBOL_EXPORT_SC_(KeywordPkg,simple_vector_byte8);
+    core::SimpleVector_byte8_t_sp vector_byte8 = core::SimpleVector_byte8_t_O::make(stringOutput.size(),0,false,stringOutput.size(),(const unsigned char*)stringOutput.data());
+    if (dwo_stream.notnilp()) {
+      SIMPLE_ERROR(BF("dwo_stream must be nil"));
+    }
+    return vector_byte8;
   }
   if (core::StringOutputStream_sp dwo_sos = dwo_stream.asOrNull<core::StringOutputStream_O>()) {
     dwo_sos->fill(dwo_stringOutput.c_str());
   }
+  return _Nil<core::T_O>();
 }
 
   CL_LISPIFY_NAME(createDataLayout);
@@ -4150,15 +4160,15 @@ CL_DEFMETHOD void ClaspJIT_O::addIRModule(Module_sp module, ThreadSafeContext_sp
   ExitOnErr(this->CompileLayer->add(this->ES->getMainJITDylib(),llvm::orc::ThreadSafeModule(std::move(umodule),*context->wrappedPtr())));
 }
 
-void ClaspJIT_O::addObjectFile(core::ObjectFile_sp objectFile)
+void ClaspJIT_O::addObjectFile(const char* rbuffer, size_t bytes)
 {
   // Create an llvm::MemoryBuffer for the ObjectFile bytes
-  const char* rbuffer = (const char*)objectFile->_ObjectFilePtr;
-  size_t bytes = objectFile->_ObjectFileSize;
+//  core::write_bf_stream(BF("%s:%d Adding object file at %p  %lu bytes\n")  % __FILE__ % __LINE__  % (void*)rbuffer % bytes );
   llvm::StringRef sbuffer((const char*)rbuffer,bytes);
   llvm::StringRef name("buffer-name");
   std::unique_ptr<llvm::MemoryBuffer> mbuffer = llvm::MemoryBuffer::getMemBuffer(sbuffer,name,false);
   // Force the object file to be linked using MaterializationUnit::doMaterialize(...)
+//  core::write_bf_stream(BF("%s:%d Materializing\n") % __FILE__ % __LINE__ );
   auto K = llvm::orc::VModuleKey();
   auto ObjMU = llvm::orc::BasicObjectLayerMaterializationUnit::Create(*this->LinkLayer,std::move(K),std::move(mbuffer));
   if (!ObjMU) {
@@ -4168,15 +4178,17 @@ void ClaspJIT_O::addObjectFile(core::ObjectFile_sp objectFile)
   (*ObjMU)->doMaterialize(this->ES->getMainJITDylib());
   // Lookup the address of the ObjectFileStartUp function and invoke it
   core::Pointer_sp startupPtr = gc::As<core::Pointer_sp>(this->lookup("ObjectFileStartUp"));
+//  core::write_bf_stream(BF("%s:%d startupPtr -> %p\n") % __FILE__ % __LINE__ % (void*)startupPtr->ptr() );
   if (startupPtr) {
     fnStartUp startup = reinterpret_cast<fnStartUp>(gc::As_unsafe<core::Pointer_sp>(startupPtr)->ptr());
     core::T_O* replPtrRaw = startup(NULL);
   }
   // Running the ObjectFileStartUp function registers the startup functions - now we can invoke them
   if (core::startup_functions_are_waiting()) {
+//    core::write_bf_stream(BF("%s:%d  startup functions are waiting - INVOKING\n") % __FILE__ % __LINE__ );
     core::startup_functions_invoke(NULL);
   } else {
-    printf("%s:%d NO startup functions were waiting\n", __FILE__, __LINE__ );
+    core::write_bf_stream(BF("%s:%d  No startup functions are waiting\n") % __FILE__ % __LINE__ );
   }
 }
 

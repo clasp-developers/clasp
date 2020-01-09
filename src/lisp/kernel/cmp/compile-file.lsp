@@ -87,7 +87,9 @@
   (cond
     ((eq output-type :bitcode) (if *use-human-readable-bitcode* "ll" "bc"))
     ((eq output-type :object) "o")
+    ((and *compile-file-parallel* (eq output-type :fasl)) "faso")
     ((eq output-type :fasl) "fasl")
+    ((eq output-type :faso) "faso")
     ((eq output-type :executable) #-windows "" #+windows "exe")
     (t (error "unsupported output-type ~a" output-type))))
 
@@ -128,35 +130,41 @@ and the pathname of the source file - this will also be used as the module initi
 ;;;
 ;;; Compile-file proper
 
+(defun generate-obj-asm-stream (module output-stream file-type reloc-model)
+  (with-track-llvm-time
+      (let* ((triple-string (llvm-sys:get-target-triple module))
+             (normalized-triple-string (llvm-sys:triple-normalize triple-string))
+             (triple (llvm-sys:make-triple normalized-triple-string))
+             (target-options (llvm-sys:make-target-options)))
+        (multiple-value-bind (target msg)
+            (llvm-sys:target-registry-lookup-target "" triple)
+          (unless target (error msg))
+          (let* ((target-machine (llvm-sys:create-target-machine target
+                                                                 (llvm-sys:get-triple triple)
+                                                                 ""
+                                                                 ""
+                                                                 target-options
+                                                                 reloc-model
+                                                                 *default-code-model*
+                                                                 'llvm-sys:code-gen-opt-default
+                                                                 NIL ; JIT?
+                                                                 ))
+                 (pm (llvm-sys:make-pass-manager))
+                 (target-pass-config (llvm-sys:create-pass-config target-machine pm))
+                 (_ (llvm-sys:set-enable-tail-merge target-pass-config nil))
+                 (tli (llvm-sys:make-target-library-info-wrapper-pass triple #||LLVM3.7||#))
+                 (data-layout (llvm-sys:create-data-layout target-machine)))
+            (llvm-sys:set-data-layout module data-layout)
+            (llvm-sys:pass-manager-add pm tli)
+            (llvm-sys:add-passes-to-emit-file-and-run-pass-manager target-machine pm output-stream nil #|<-dwo-stream|# file-type module))))))
+
+
 (defun generate-obj-asm (module output-pathname &key file-type (reloc-model 'llvm-sys:reloc-model-undefined))
   (with-atomic-file-rename (temp-output-pathname output-pathname)
     (with-open-file (output-stream temp-output-pathname :direction :output)
-      (with-track-llvm-time
-          (let* ((triple-string (llvm-sys:get-target-triple module))
-                 (normalized-triple-string (llvm-sys:triple-normalize triple-string))
-                 (triple (llvm-sys:make-triple normalized-triple-string))
-                 (target-options (llvm-sys:make-target-options)))
-            (multiple-value-bind (target msg)
-                (llvm-sys:target-registry-lookup-target "" triple)
-              (unless target (error msg))
-              (let* ((target-machine (llvm-sys:create-target-machine target
-                                                                     (llvm-sys:get-triple triple)
-                                                                     ""
-                                                                     ""
-                                                                     target-options
-                                                                     reloc-model
-                                                                     *default-code-model*
-                                                                     'llvm-sys:code-gen-opt-default
-                                                                     NIL ; JIT?
-                                                                     ))
-                     (pm (llvm-sys:make-pass-manager))
-                     (target-pass-config (llvm-sys:create-pass-config target-machine pm))
-                     (_ (llvm-sys:set-enable-tail-merge target-pass-config nil))
-                     (tli (llvm-sys:make-target-library-info-wrapper-pass triple #||LLVM3.7||#))
-                     (data-layout (llvm-sys:create-data-layout target-machine)))
-                (llvm-sys:set-data-layout module data-layout)
-                (llvm-sys:pass-manager-add pm tli)
-                (llvm-sys:add-passes-to-emit-file-and-run-pass-manager target-machine pm output-stream nil #|<-dwo-stream|# file-type module))))))))
+      (generate-obj-asm-stream module output-stream file-type reloc-model)
+      )))
+
 
 (defvar *debug-compile-file* nil)
 (defvar *debug-compile-file-counter* 0)
