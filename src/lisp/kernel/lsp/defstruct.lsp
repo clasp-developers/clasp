@@ -80,17 +80,19 @@
 
 (defmacro with-defstruct-delay ((slotds name include slots overwrites env) &body body)
   (declare (ignore env)) ;; see FIXME in environment access
-  `(cond ((null ,include) ; no include
-          (let ((,slotds ,slots)) ,@body))
-         ((names-structure-p ,include) ; normal include case
-          (let ((,slotds (append (overwrite-slot-descriptions
-                                  ,overwrites
-                                  (structure-slot-descriptions ,include))
-                                 ,slots)))
-            ,@body))
-         (t ; bad time
-          ;; FIXME: Figure out whatever eval crap should go here
-          (error-missing-include ,name ,include))))
+  `(let ((,slotds
+           (cond ((null ,include) ; no include
+                  ,slots)
+                 ((names-structure-p ,include) ; normal include case
+                  (append (overwrite-slot-descriptions
+                           ,overwrites
+                           (structure-slot-descriptions ,include))
+                          ,slots))
+                 (t ; include not defined yet
+                  ;; FIXME: It's nonconforming to err here -
+                  ;; the included class could be defined later.
+                  (error-missing-include ,name ,include)))))
+     ,@body))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
