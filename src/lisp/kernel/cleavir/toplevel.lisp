@@ -24,6 +24,7 @@
 ;;; The idea is we pick off some common cases and then fall back
 ;;; to a slower full evaluator, such as the compiler.
 ;;; FIXME: We should use this in bclasp, maybe?
+;;; FIXME: Replace ASSERT with more explicit errors.
 (defun simple-eval (form env default)
   (labels ((recurse (form env)
              (simple-eval form env default))
@@ -110,6 +111,106 @@
                  (default form env)))))))
         ;; constant
         (t form)))))
+
+;;; FIXME: duplicate code
+(defun simple-eval-cst (cst env default)
+  (labels ((recurse (cst env)
+             (simple-eval-cst cst env default))
+           (map-recurse (list-cst env)
+             (loop for cstl = list-cst then (cst:rest cstl)
+                   until (cst:null cstl)
+                   collect (recurse (cst:first cstl) env)))
+           (eval-progn (list-cst env)
+             (loop for cstl = list-cst then next
+                   for cst = (cst:first cstl)
+                   for next = (cst:rest cstl)
+                   if (not (cst:null next))
+                     do (recurse cst env)
+                   else return (recurse cst env)))
+           (cst-length (cst)
+             (loop for cstl = cst then (cst:rest cstl)
+                   until (cst:null cstl)
+                   summing 1))
+           (default (cst env)
+             (funcall default cst env)))
+    (multiple-value-bind (expansion expandedp)
+        (macroexpand (cst:raw cst) env)
+      (let ((cst (if expandedp
+                     (cst:reconstruct expansion cst *cst-client*)
+                     cst)))
+        (etypecase cst
+          (cst:atom-cst
+           (let ((raw (cst:raw cst)))
+             (if (symbolp raw)
+                 (symbol-value raw)
+                 ;; self-evaluating
+                 raw)))
+          (cst:cons-cst
+           (let* ((op (cst:first cst))
+                  (args (cst:rest cst))
+                  (arg-length (cst-length args)))
+             (if (not (typep op 'cst:atom-cst))
+                 ;; lambda form or invalid
+                 (default cst env)
+                 (let ((op (cst:raw op)))
+                   (case op
+                     ((quote)
+                      (assert (= arg-length 1))
+                      (cst:raw (cst:first args)))
+                     ((function)
+                      (assert (= arg-length 1))
+                      (let* ((name (cst:first args))
+                             (rname (cst:raw name)))
+                        (if (core:valid-function-name-p rname)
+                            (fdefinition rname)
+                            ;; lambda
+                            (default cst env))))
+                     ((if)
+                      (ecase arg-length
+                        ((2)
+                         (when (recurse (cst:first args) env)
+                           (recurse (cst:first (cst:rest args)) env)))
+                        ((3)
+                         (recurse (if (recurse (cst:first args) env)
+                                      (cst:first (cst:rest args))
+                                      (cst:first (cst:rest (cst:rest args))))
+                                  env))))
+                     ((setq)
+                      (when (oddp arg-length)
+                        (error "Expected an even number of arguments for setq"))
+                      (loop with result = nil
+                            for cstl = args then (cst:rest (cst:rest cstl))
+                            until (cst:null cstl)
+                            do (let* ((symbol-cst (cst:first cstl))
+                                      (symbol (cst:raw symbol-cst))
+                                      (value-cst (cst:first (cst:rest cstl)))
+                                      (value (recurse value-cst env)))
+                                 (setf result
+                                       (if (ext:specialp symbol)
+                                           (setf (symbol-value symbol) value)
+                                           (default (cst:cstify
+                                                     (list
+                                                      (make-instance 'cst:atom-cst
+                                                                   :raw 'setq)
+                                                      symbol-cst value-cst))
+                                                    env))))
+                            finally (return result)))
+                     ((progn) (eval-progn args env))
+                     ((eval-when) ; :execute only
+                      (assert (>= arg-length 1))
+                      (let ((situations (cst:raw (cst:first args)))
+                            (body (cst:rest args)))
+                        (assert (listp situations))
+                        (when (or (member :execute situations)
+                                  (member 'eval situations))
+                          (eval-progn body env))))
+                     ;; locally can't be handled as easily since it parses the body.
+                     ;; catch, throw, progv, unwind-protect macroexpand,
+                     ;; and also handling them worse is probably okay.
+                     (otherwise
+                      (if (and (fboundp op) (not (special-operator-p op)))
+                          (apply (fdefinition op) (map-recurse args env))
+                          (default cst env)))))))))))))
 
 (defgeneric cclasp-eval-with-env (form env))
 
