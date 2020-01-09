@@ -673,6 +673,7 @@ The passed module is modified as a side-effect."
                                          *thread-safe-context*)
                      (core:bformat t "About to dump module%N")
                      (llvm-sys:dump-module module)
+                     (core:bformat t "startup-name |%s|%N" startup-name)
                      (core:bformat t "Done dump module%N")
                      )
                    (mp:lock *jit-lock* t)

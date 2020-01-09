@@ -4052,13 +4052,17 @@ CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, co
     startupPtr = gc::As<core::Pointer_sp>(jit->lookup(startupName));
   }
   core::T_O* replPtrRaw = NULL;
-  if (startupPtr) {
+  if (startupPtr && startupPtr->ptr()) {
     fnStartUp startup = reinterpret_cast<fnStartUp>(gc::As_unsafe<core::Pointer_sp>(startupPtr)->ptr());
 //    printf("%s:%d:%s About to invoke startup @p=%p\n", __FILE__, __LINE__, __FUNCTION__, (void*)startup);
     replPtrRaw = startup(initialData.raw_());
+    if (replPtrRaw==NULL) {
+        printf("%s:%d The return repl function pointer is NULL - we won't be able to call it\n", __FILE__, __LINE__ );
+        abort();
+    }
   } else {
-    printf("%s:%d No startup functions were available!!!\n", __FILE__, __LINE__);
-    abort();
+      printf("%s:%d The startup function %s resolved to NULL - no code is available!!!\n", __FILE__, __LINE__, startupName.c_str());
+      abort();
   }    
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid;
   core::CompiledClosure_fptr_type lisp_funcPtr = (core::CompiledClosure_fptr_type)(replPtrRaw);
@@ -4123,7 +4127,15 @@ ClaspJIT_O::ClaspJIT_O() {
                                        [](llvm::orc::JITDylib &JD, std::unique_ptr<llvm::orc::MaterializationUnit> MU) {
                                          MU->doMaterialize(JD);
                                        });
+#ifdef _TARGET_OS_DARWIN
   this->ES->getMainJITDylib().setGenerator(llvm::cantFail(DynamicLibrarySearchGenerator::GetForCurrentProcess('_')));
+#endif
+#ifdef _TARGET_OS_LINUX
+  this->ES->getMainJITDylib().setGenerator(llvm::cantFail(DynamicLibrarySearchGenerator::GetForCurrentProcess('\0')));
+#endif
+#ifdef _TARGET_OS_FREEBSD
+  #error "Do one of the above for FreeBSD"
+#endif
 }
 
 ClaspJIT_O::~ClaspJIT_O()
@@ -4136,7 +4148,17 @@ CL_DEFMETHOD core::T_sp ClaspJIT_O::lookup(const std::string& Name) {
 //  printf("%s:%d:%s Name = %s\n", __FILE__, __LINE__, __FUNCTION__, Name.c_str());
   llvm::ExitOnError ExitOnErr;
 //  llvm::ArrayRef<llvm::orc::JITDylib*>  dylibs(&this->ES->getMainJITDylib());
+#ifdef _TARGET_OS_DARWIN
+  // gotta put a _ in front of the name on DARWIN but not Unixes? Why? Dunno.
   std::string mangledName = "_" + Name;
+#endif
+#ifdef _TARGET_OS_LINUX
+  std::string mangledName = Name;
+#endif
+#ifdef _TARGET_OS_FREEBSD
+  #error "Do one of the above for FreeBSD"
+#endif
+
   llvm::Expected<llvm::JITEvaluatedSymbol> symbol = this->ES->lookup(llvm::orc::JITDylibSearchList({{&this->ES->getMainJITDylib(),true}}),
                                                                      this->ES->intern(mangledName)); // dylibs,Name);
   if (!symbol) {
