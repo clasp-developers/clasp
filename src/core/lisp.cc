@@ -415,6 +415,12 @@ CL_DEFUN void core__monitor_write(const std::string& msg) {
   monitor_message(msg);
 }
 
+CL_DEFUN void core__set_debug_byte_code(T_sp on)
+{
+  global_debug_byte_code = on.notnilp();
+}
+
+
 void Lisp_O::startupLispEnvironment(Bundle *bundle) {
   MONITOR(BF("Starting lisp environment\n"));
   global_dump_functions = getenv("CLASP_DUMP_FUNCTIONS");
