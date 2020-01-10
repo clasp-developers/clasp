@@ -150,6 +150,9 @@
       (make-package "CLASP-CLEAVIR" :use '(:CL))))
 
 ;;; Setup a few things for the EXT package
+
+;;; Imports
+(import 'core:quit :ext)
 ;;; EXT exports
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (select-package :ext))
@@ -188,7 +191,8 @@
           character-decoding-error
           stream-encoding-error
           stream-decoding-error
-          generate-encoding-hashtable))
+          generate-encoding-hashtable
+          quit))
 (core:*make-special '*module-provider-functions*)
 (core:*make-special '*source-location*)
 (setq *source-location* nil)
