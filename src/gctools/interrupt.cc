@@ -333,10 +333,12 @@ void initialize_signals(int clasp_signal) {
 #ifdef SIGINFO
   INIT_SIGNAL(SIGINFO, (SA_NODEFER | SA_RESTART), handle_or_queue_signal);
 #endif
-  INIT_SIGNAL(SIGABRT, (SA_NODEFER | SA_RESTART), handle_or_queue_signal);
-  INIT_SIGNALI(SIGSEGV, (SA_NODEFER | SA_RESTART | SA_ONSTACK), handle_segv);
+  if (!getenv("CLASP_DONT_HANDLE_CRASH_SIGNALS")) {
+    INIT_SIGNAL(SIGABRT, (SA_NODEFER | SA_RESTART), handle_or_queue_signal);
+    INIT_SIGNALI(SIGSEGV, (SA_NODEFER | SA_RESTART | SA_ONSTACK), handle_segv);
+    INIT_SIGNAL(SIGBUS, (SA_NODEFER | SA_RESTART), handle_signal_now);
+  }
   INIT_SIGNALI(SIGFPE, (SA_NODEFER | SA_RESTART), handle_fpe);
-  INIT_SIGNAL(SIGBUS, (SA_NODEFER | SA_RESTART), handle_signal_now);
   INIT_SIGNAL(SIGILL, (SA_NODEFER | SA_RESTART), handle_signal_now);
   // FIXME: Move?
   init_float_traps();

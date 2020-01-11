@@ -4477,8 +4477,8 @@ public:
   core::T_sp lookup(const std::string& Name);
   JITDylib& getMainJITDylib();
   JITDylib& createJITDylib(const std::string& name);
-  void addObjectFile(const char* buffer, size_t bytes);
-  ClaspJIT_O();
+  void addObjectFile(const char* buffer, size_t bytes, bool print=false);
+  ClaspJIT_O(const llvm::DataLayout& data_layout);
   ~ClaspJIT_O();
 public:
   llvm::orc::ExecutionSession *ES;
