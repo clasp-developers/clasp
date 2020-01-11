@@ -29,7 +29,7 @@ THE SOFTWARE.
 
 //#define DEBUG_FRAME
 
-#include <alloca.h>
+#include <stdlib.h>
 #include <utility>
 #include <clasp/core/object.h>
 #include <clasp/core/activationFrame.fwd.h>
