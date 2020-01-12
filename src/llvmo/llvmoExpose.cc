@@ -4166,14 +4166,6 @@ ClaspJIT_O::ClaspJIT_O(const llvm::DataLayout& data_layout) {
                                        [](llvm::orc::JITDylib &JD, std::unique_ptr<llvm::orc::MaterializationUnit> MU) {
                                          MU->doMaterialize(JD);
                                        });
-#ifdef _TARGET_OS_DARWIN
-  this->ES->getMainJITDylib().setGenerator(llvm::cantFail(DynamicLibrarySearchGenerator::GetForCurrentProcess('_')));
-#endif
-#ifdef _TARGET_OS_LINUX
-  this->ES->getMainJITDylib().setGenerator(llvm::cantFail(DynamicLibrarySearchGenerator::GetForCurrentProcess('\0')));
-#endif
-#ifdef _TARGET_OS_FREEBSD
-  this->ES->getMainJITDylib().setGenerator(llvm::cantFail(DynamicLibrarySearchGenerator::GetForCurrentProcess('\0')));
 #endif
   printf("%s:%d Registering ClaspDynamicLibarySearchGenerator\n", __FILE__, __LINE__ );
   this->ES->getMainJITDylib().setGenerator(llvm::cantFail(ClaspDynamicLibrarySearchGenerator::GetForCurrentProcess(data_layout.getGlobalPrefix())));
@@ -4193,11 +4185,12 @@ CL_DEFMETHOD core::T_sp ClaspJIT_O::lookup(const std::string& Name) {
   // gotta put a _ in front of the name on DARWIN but not Unixes? Why? Dunno.
   std::string mangledName = "_" + Name;
 #endif
-#ifdef _TARGET_OS_LINUX
+#if defined(_TARGET_OS_LINUX) || defined(_TARGET_OS_FREEBSD)
   std::string mangledName = Name;
 #endif
-#ifdef _TARGET_OS_FREEBSD
-  std::string mangledName = Name;
+
+#if !defined(_TARGET_OS_LINUX) && !defined(_TARGET_OS_FREEBSD) && !defined(_TARGET_OS_DARWIN)
+#error You need to decide here
 #endif
 
   llvm::Expected<llvm::JITEvaluatedSymbol> symbol = this->ES->lookup(llvm::orc::JITDylibSearchList({{&this->ES->getMainJITDylib(),true}}),
