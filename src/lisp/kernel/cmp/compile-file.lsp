@@ -86,8 +86,9 @@
 (defun cfp-output-extension (output-type)
   (cond
     ((eq output-type :bitcode) (if *use-human-readable-bitcode* "ll" "bc"))
+    ((and *compile-file-parallel* (or (eq output-type :object))) "faso")
+    ((and *compile-file-parallel* (or (eq output-type :fasl))) "fasp")
     ((eq output-type :object) "o")
-    ((and *compile-file-parallel* (eq output-type :fasl)) "faso")
     ((eq output-type :fasl) "fasl")
     ((eq output-type :faso) "faso")
     ((eq output-type :executable) #-windows "" #+windows "exe")

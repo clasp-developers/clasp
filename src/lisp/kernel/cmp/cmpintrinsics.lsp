@@ -54,18 +54,6 @@ Set this to other IRBuilders to make code go where you want")
 ;; - ssize_t
 ;; - time_t
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (let* ((module (llvm-create-module (next-run-time-module-name)))
-#|         (engine-builder (llvm-sys:make-engine-builder module))
-         (target-options (llvm-sys:make-target-options))
-         (_ (llvm-sys:set-target-options engine-builder target-options))
-         (_ (core:bformat t "cmpintrinsics.lsp:63 engine-builder -> %s%N" engine-builder))
-         (execution-engine (llvm-sys:create engine-builder))
-         (_ (core:bformat t "cmpintrinsics.lsp:63 execution-engine -> %s%N" execution-engine))
-         (data-layout (llvm-sys:get-data-layout execution-engine))
-|#
-         (data-layout (llvm-sys:get-data-layout module)))
-    (defvar *system-data-layout* data-layout)))
 
 (defun llvm-print (msg)
   (irc-intrinsic "debugMessage" (irc-bit-cast (module-make-global-string msg) %i8*%)))

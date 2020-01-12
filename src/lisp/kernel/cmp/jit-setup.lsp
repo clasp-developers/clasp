@@ -98,6 +98,7 @@
       (setq *thread-local-builtins-module* thread-local-builtins-module)
       thread-local-builtins-module)))
 
+
 (defun get-builtin-target-triple-and-data-layout ()
   "Uses *features* to generate the target triple for the current machine
 using features defined in corePackage.cc"
@@ -106,12 +107,12 @@ using features defined in corePackage.cc"
 
 (defun llvm-create-module (name)
   (let ((m (llvm-sys:make-module (string name) (thread-local-llvm-context))))
-    (multiple-value-bind (target-triple data-layout)
-        (get-builtin-target-triple-and-data-layout)
-      (llvm-sys:set-target-triple m target-triple)
-      (llvm-sys:set-data-layout.string m data-layout)
-      (llvm-sys:emit-version-ident-metadata m)
-      m)))
+    (multiple-value-call (function (lambda (target-triple data-layout)
+                           (llvm-sys:set-target-triple m target-triple)
+                           (llvm-sys:set-data-layout.string m data-layout)
+                           (llvm-sys:emit-version-ident-metadata m)
+                           m))
+      (get-builtin-target-triple-and-data-layout))))
 
 (defvar *run-time-module-counter* 1)
 (defun next-run-time-module-name ()
@@ -120,6 +121,10 @@ using features defined in corePackage.cc"
       (bformat nil "module%s" *run-time-module-counter*)
     (setq *run-time-module-counter* (+ 1 *run-time-module-counter*))))
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (let* ((module (llvm-create-module (next-run-time-module-name)))
+         (data-layout (llvm-sys:get-data-layout module)))
+    (defvar *system-data-layout* data-layout)))
 
 (defun create-run-time-module-for-compile ()
   "Run time modules are used by COMPILE - a new one needs to be created for every COMPILE.
@@ -480,7 +485,7 @@ The passed module is modified as a side-effect."
   "Lazy initialize the *thread-local-jit-engine* and return it"
   (if *thread-local-jit-engine*
       *thread-local-jit-engine*
-      (setf *thread-local-jit-engine* (llvm-sys:make-clasp-jit))))
+      (setf *thread-local-jit-engine* (llvm-sys:make-clasp-jit *system-data-layout*))))
 
 (defvar *size-level* 1)
 

@@ -421,8 +421,10 @@ bool Pathname_O::equal(T_sp obj) const {
       return false;
     if (!cl__equal(this->_Type, other->_Type))
       return false;
+#if 0
     if (!cl__equal(this->_Version, other->_Version))
       return false;
+#endif
     return true;
   }
   return false;

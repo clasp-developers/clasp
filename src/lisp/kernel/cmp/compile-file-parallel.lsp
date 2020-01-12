@@ -21,7 +21,7 @@
   nil)
 
 (defstruct (ast-job (:type vector) :named)
-  ast environment dynenv output-stream form-output-path form-index error current-source-pos-info startup-function-name)
+  ast environment dynenv output-stream form-index error current-source-pos-info startup-function-name)
 
 
 (defun compile-from-ast (job &key
@@ -29,14 +29,14 @@
                                optimize-level
                                intermediate-output-type)
   (handler-case
-      (let ((module (cmp::llvm-create-module (namestring (ast-job-form-output-path job))))
+      (let ((module (cmp::llvm-create-module (format nil "module~a" (ast-job-form-index job))))
             (core:*current-source-pos-info* (ast-job-current-source-pos-info job)))
         (with-module (:module module
                       :optimize (when optimize #'optimize-module-for-compile-file)
                       :optimize-level optimize-level)
           (with-debug-info-generator (:module module
                                       :pathname *compile-file-truename*)
-            (with-make-new-run-all (run-all-function (namestring (ast-job-form-output-path job)))
+            (with-make-new-run-all (run-all-function (format nil "module~a" (ast-job-form-index job)))
               (with-literal-table
                   (core:with-memory-ramp (:pattern 'gctools:ramp)
                     (literal:with-top-level-form
@@ -62,7 +62,7 @@
           ;; ALWAYS link the builtins in, inline them and then remove them.
           #+(or)(link-inline-remove-builtins module))
         (cond
-          ((member intermediate-output-type ( :object :in-memory-object))
+          ((member intermediate-output-type '(:object :in-memory-object))
            (let ((reloc-model (cond
                                 ((or (member :target-os-linux *features*) (member :target-os-freebsd *features*))
                                  'llvm-sys:reloc-model-pic-)
@@ -83,6 +83,7 @@
                                    'llvm-sys:reloc-model-pic-)
                                   (t 'llvm-sys:reloc-model-undefined))))
                (generate-obj-asm module object-file-path :file-type 'llvm-sys:code-gen-file-type-object-file :reloc-model reloc-model))))
+          #+(or)
           ((eq intermediate-output-type :bitcode)
            (with-track-llvm-time
                (let ((bitcode-file (core:coerce-to-filename (cfp-output-file-default (ast-job-form-output-path job) :bitcode))))
@@ -115,7 +116,6 @@
                        optimize
                        optimize-level
                        output-path
-                       working-dir
                        (intermediate-output-type :in-memory-object) ; or :bitcode
                        ast-only)
   (let (result
@@ -155,10 +155,6 @@
              ;; FIXME: if :environment is provided we should probably use a different read somehow
              (let* ((current-source-pos-info (compile-file-source-pos-info source-sin))
                     (core:*current-source-pos-info* current-source-pos-info)
-                    (form-output-path
-                      (make-pathname
-                       :name (format nil "~a_~d" (pathname-name output-path) form-index)
-                       :defaults working-dir))
                     (dynenv (clasp-cleavir::make-dynenv environment))
                     #+cst
                     (cst (eclector.concrete-syntax-tree:cst-read source-sin nil eof-value))
@@ -178,12 +174,10 @@
                     (ast (if cmp::*debug-compile-file*
                              (clasp-cleavir::compiler-time (clasp-cleavir::generate-ast form dynenv))
                              (clasp-cleavir::generate-ast form dynenv))))
-               (push form-output-path result)
                (let ((ast-job (make-ast-job :ast ast
                                             :environment environment
                                             :dynenv dynenv
                                             :current-source-pos-info current-source-pos-info
-                                            :form-output-path form-output-path
                                             :output-stream (when (eq intermediate-output-type :in-memory-object)
                                                              :simple-vector-byte8)
                                             :form-index form-index)))
@@ -225,7 +219,6 @@
                                  compile-file-hook
                                  output-type
                                  output-path
-                                 working-dir
                                  environment
                                  (optimize t)
                                  (optimize-level *optimization-level*)
@@ -259,7 +252,6 @@ Compile a lisp source file into an LLVM module."
                       :dry-run dry-run
                       :optimize optimize
                       :optimize-level optimize-level
-                      :working-dir working-dir
                       :output-path output-path
                       :intermediate-output-type intermediate-output-type
                       :ast-only ast-only)))))
@@ -283,14 +275,14 @@ Compile a lisp source file into an LLVM module."
                               :link-type :bitcode))
      (llvm-link output-path :input-files (cfp-result-files result "o")
                             :input-type :object))
-    ((member output-type (:object :fasl))
-     (let ((output-path (compile-file-pathname output-path :output-type :fasl)))
+    ((member output-type '(:object :fasl))
+     (let ((output-path (compile-file-pathname output-path :output-type output-type)))
        #+(or)(format t "Output the object files in ast-jobs to ~s~%" output-path)
        (let* ((object-files (loop for ast-job in ast-jobs
                                   for index = (ast-job-form-index ast-job)
                                   collect (cons index (ast-job-output-stream ast-job))))
               (sorted-object-files (sort object-files #'< :key #'car)))
-         (format t "sorted-object-files length ~d~%" (length sorted-object-files))
+         (format t "sorted-object-files length ~d output-path: ~s~%" (length sorted-object-files) output-path)
          (core:write-faso output-path (mapcar #'cdr sorted-object-files)))))
     #+(or)
     ((eq output-type :object)
@@ -337,9 +329,6 @@ Compile a lisp source file into an LLVM module."
                                         :format-control "compile-file-to-module could not find the file ~s to open it"
                                         :format-arguments (list input-file))))
              (output-path (compile-file-pathname input-file :output-file output-file :output-type output-type))
-             (working-dir (if (eq output-type :fasl)
-                              nil
-                              (core:mkdtemp (namestring output-path))))
              (*compilation-module-index* 0)
              (*compile-file-pathname* (pathname (merge-pathnames input-file)))
              (*compile-file-truename* (translate-logical-pathname *compile-file-pathname*))
@@ -354,7 +343,6 @@ Compile a lisp source file into an LLVM module."
                 (compile-file-to-result input-pathname
                                         :output-type output-type
                                         :output-path output-path
-                                        :working-dir working-dir
                                         :compile-file-hook *cleavir-compile-file-hook*
                                         :environment environment
                                         :optimize optimize
@@ -367,8 +355,6 @@ Compile a lisp source file into an LLVM module."
                     ((null output-path)
                      (error "The output-file is nil for input filename ~a~%" input-file))
                     (t (output-cfp-result result ast-jobs output-path output-type)))
-              (when (and working-dir cleanup)
-                (ext:rmtree (namestring working-dir)))
               output-path)))))))
 
 (defvar *compile-file-parallel* nil)

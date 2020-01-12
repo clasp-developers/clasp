@@ -138,6 +138,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,linkage);
 SYMBOL_EXPORT_SC_(KeywordPkg, verbose);
 SYMBOL_EXPORT_SC_(KeywordPkg, pause_pid);
 SYMBOL_EXPORT_SC_(KeywordPkg, exit_backtrace);
+SYMBOL_EXPORT_SC_(CorePkg, STARdebug_symbol_lookupSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARcurrent_dlopen_handleSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARuseParallelBuildSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARuseBuildForkRedirectSTAR);
@@ -1127,6 +1128,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("lfasl"), _sym_loadSource), hooks); // List of load commands
   hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("fasl"), _sym_load_binary), hooks);
   hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("faso"), _sym_load_faso), hooks);
+  hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("fasp"), _sym_load_faso), hooks);
   hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("fasb"), _sym_load_binary), hooks);
   hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("bundle"), _sym_load_binary), hooks);
   hooks = Cons_O::create(Cons_O::create(SimpleBaseString_O::make("dylib"), _sym_load_binary), hooks);
@@ -1205,6 +1207,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARcache_macroexpandSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARdebugByteCodeSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARdebug_dtree_interpreterSTAR->defparameter(_Nil<core::T_O>());
+  _sym_STARdebug_symbol_lookupSTAR->defparameter(_Nil<core::T_O>());
 #if defined(__x86_64__)
   SYMBOL_EXPORT_SC_(KeywordPkg, address_model_64);
   Symbol_sp address_model = kw::_sym_address_model_64;
