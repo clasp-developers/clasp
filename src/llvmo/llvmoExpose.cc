@@ -4134,7 +4134,7 @@ ClaspJIT_O::ClaspJIT_O() {
   this->ES->getMainJITDylib().setGenerator(llvm::cantFail(DynamicLibrarySearchGenerator::GetForCurrentProcess('\0')));
 #endif
 #ifdef _TARGET_OS_FREEBSD
-  #error "Do one of the above for FreeBSD"
+  this->ES->getMainJITDylib().setGenerator(llvm::cantFail(DynamicLibrarySearchGenerator::GetForCurrentProcess('\0')));
 #endif
 }
 
@@ -4156,7 +4156,7 @@ CL_DEFMETHOD core::T_sp ClaspJIT_O::lookup(const std::string& Name) {
   std::string mangledName = Name;
 #endif
 #ifdef _TARGET_OS_FREEBSD
-  #error "Do one of the above for FreeBSD"
+  std::string mangledName = Name;
 #endif
 
   llvm::Expected<llvm::JITEvaluatedSymbol> symbol = this->ES->lookup(llvm::orc::JITDylibSearchList({{&this->ES->getMainJITDylib(),true}}),

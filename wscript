@@ -1041,7 +1041,7 @@ def configure(cfg):
         #--lto-O0 is not effective for avoiding linker hangs
         # cfg.env.append_value('LINKFLAGS', ['-Wl,-export_dynamic,--lto-O0'])
         if (cfg.env['USE_LLD']):
-            cfg.env.append_value('LINKFLAGS', '-fuse-ld=lld-%d.0' % CLANG_VERSION)
+            cfg.env.append_value('LINKFLAGS', '-fuse-ld=lld%d0' % CLANG_VERSION)
             log.info("Using the lld linker")
         else:
             #cfg.env.append_value('LINKFLAGS', '-fuse-ld=/opt/clasp/bin/ld.clasp')
