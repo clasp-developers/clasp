@@ -216,13 +216,23 @@
                    ,@(when initformp `(:initform ,initform))
                    ,@(when typep `(:type ,type))
                    ,@(cond
-                       (reader `(:reader ,accname))
-                       (accessor `(:accessor ,accname)))))))
+                       (reader
+                        ;; Bug #881 again.
+                        (unless (eq accname reader)
+                          `(:reader ,accname)))
+                       (accessor
+                        (unless (eq accname accessor)
+                          `(:accessor ,accname))))))))
 
 ;;; Given defstruct slot-descriptions from both the given defstruct
 ;;; and an included parent, return a final list of descriptions.
 ;;; This means removing redundant accessors, checking for duplicates,
 ;;; getting new accessor names, and just appending.
+;;; FIXME: An obscure point in DEFSTRUCT is not defining accessor functions
+;;; already defined by an :include-d definition. Bug #881 covers the case
+;;; when the same slot is implicated in both definitions, but it's possible
+;;; for an unrelated slot to imply the same accessor names as a parent
+;;; definition, and we don't handle that correctly.
 (defun final-slot-descriptions (conc-name new-slotds over-slotds old-slotds)
   (let ((output nil) (old-slotds (copy-list old-slotds)))
     ;; Apply overrides to old slots.
