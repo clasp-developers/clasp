@@ -106,7 +106,8 @@ public:
     if (m) this->_Flags = this->_Flags|IS_MACRO;
     else this->_Flags = this->_Flags&(~IS_MACRO);
   }
-  
+
+ private:
   /*! Return a pointer to the value cell */
   inline T_sp *valueReference_(T_sp* globalValuePtr) {
 #ifdef CLASP_THREADS
@@ -124,6 +125,7 @@ public:
 #endif
   };
 
+ public:
   void setf_name(SimpleString_sp nm) { this->_Name = nm; };
 
 #ifdef SYMBOL_CLASS
@@ -167,11 +169,6 @@ public:
     return val;
   }
 
-#if 0
-  /*! Return the address of the value slot of the symbol */
-  inline T_sp &symbolValueRef() { return *this->valueReference(&this->_GlobalValue);};
-#endif
-  
   /*! Return the value slot of the symbol or UNBOUND if unbound */
   inline T_sp symbolValueUnsafe() const { return *this->valueReference_(&this->_GlobalValue); };
 
