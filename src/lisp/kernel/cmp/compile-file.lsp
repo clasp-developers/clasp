@@ -131,7 +131,7 @@ and the pathname of the source file - this will also be used as the module initi
 ;;;
 ;;; Compile-file proper
 
-(defun generate-obj-asm-stream (module output-stream file-type reloc-model)
+(defun generate-obj-asm-stream (module output-stream file-type reloc-model &key (compile-file-parallel *compile-file-parallel*))
   (with-track-llvm-time
       (let* ((triple-string (llvm-sys:get-target-triple module))
              (normalized-triple-string (llvm-sys:triple-normalize triple-string))
@@ -146,7 +146,7 @@ and the pathname of the source file - this will also be used as the module initi
                                                                  ""
                                                                  target-options
                                                                  reloc-model
-                                                                 *default-code-model*
+                                                                 (code-model :jit nil :compile-file-parallel compile-file-parallel)
                                                                  'llvm-sys:code-gen-opt-default
                                                                  NIL ; JIT?
                                                                  ))
@@ -160,10 +160,11 @@ and the pathname of the source file - this will also be used as the module initi
             (llvm-sys:add-passes-to-emit-file-and-run-pass-manager target-machine pm output-stream nil #|<-dwo-stream|# file-type module))))))
 
 
-(defun generate-obj-asm (module output-pathname &key file-type (reloc-model 'llvm-sys:reloc-model-undefined))
+(defun compile-file-generate-obj-asm (module output-pathname &key file-type (reloc-model 'llvm-sys:reloc-model-undefined) (compile-file-parallel *compile-file-parallel*))
   (with-atomic-file-rename (temp-output-pathname output-pathname)
     (with-open-file (output-stream temp-output-pathname :direction :output)
-      (generate-obj-asm-stream module output-stream file-type reloc-model)
+      (generate-obj-asm-stream module output-stream file-type reloc-model
+                               :compile-file-parallel compile-file-parallel)
       )))
 
 
@@ -340,7 +341,7 @@ Compile a lisp source file into an LLVM module."
                                                 :image-startup-position image-startup-position
                                                 :optimize optimize
                                                 :optimize-level optimize-level)))
-            (output-module module output-file output-type output-path input-file type)
+            (compile-file-output-module module output-file output-type output-path input-file type)
             (when output-info-pathname (generate-info input-file output-info-pathname))
             output-path))))))
 
@@ -361,7 +362,7 @@ Compile a lisp source file into an LLVM module."
       (finish-output))
     (llvm-link fasl-output-file :input-files (list input-file) :input-type :bitcode)))
 
-(defun output-module (module output-file output-type output-path input-file type)
+(defun compile-file-output-module (module output-file output-type output-path input-file type)
   (when (null output-path)
     (error "The output-path is nil for input filename ~a~%" input-file))
   (ensure-directories-exist output-path)
@@ -374,9 +375,10 @@ Compile a lisp source file into an LLVM module."
            (ensure-directories-exist temp-bitcode-file)
            (output-bitcode module temp-bitcode-file)
            (prog1
-               (generate-obj-asm module output-path
-                                   :file-type 'llvm-sys:code-gen-file-type-object-file
-                                   :reloc-model (reloc-model))
+               (compile-file-generate-obj-asm module output-path
+                                              :file-type 'llvm-sys:code-gen-file-type-object-file
+                                              :reloc-model (reloc-model)
+                                              :compile-file-parallel nil)
              (when (eq type :kernel)
                (output-kernel-fasl output-file temp-bitcode-file :object)))))
         ((eq output-type :bitcode)

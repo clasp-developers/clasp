@@ -282,7 +282,7 @@ Compile a lisp source file into an LLVM module."
                                   for index = (ast-job-form-index ast-job)
                                   collect (cons index (ast-job-output-stream ast-job))))
               (sorted-object-files (sort object-files #'< :key #'car)))
-         (format t "sorted-object-files length ~d output-path: ~s~%" (length sorted-object-files) output-path)
+         #+(or)(format t "sorted-object-files length ~d output-path: ~s~%" (length sorted-object-files) output-path)
          (core:write-faso output-path (mapcar #'cdr sorted-object-files)))))
     #+(or)
     ((eq output-type :object)
@@ -319,7 +319,6 @@ Compile a lisp source file into an LLVM module."
                                 ;; Cleanup temporary files
                                 (cleanup nil))
   "See CLHS compile-file."
-  (format t "c-f-p input-file: ~a~%" input-file)
   (let ((*compile-file-parallel* t))
     (if (not output-file-p) (setq output-file (cfp-output-file-default input-file output-type)))
     (with-compiler-env ()
@@ -357,7 +356,7 @@ Compile a lisp source file into an LLVM module."
                     (t (output-cfp-result result ast-jobs output-path output-type)))
               output-path)))))))
 
-(defvar *compile-file-parallel* nil)
+(defvar *compile-file-parallel* t)
                               
 (defun cl:compile-file (input-file &rest args)
   (if *compile-file-parallel*

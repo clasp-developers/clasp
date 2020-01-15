@@ -214,6 +214,7 @@ ThreadLocalState::ThreadLocalState() :
 #ifdef DEBUG_RECURSIVE_ALLOCATIONS
   , _RecursiveAllocationCounter(0)
 #endif
+  , _ObjectFileStartUp(NULL)
 {
   my_thread = this;
 #ifdef _TARGET_OS_DARWIN

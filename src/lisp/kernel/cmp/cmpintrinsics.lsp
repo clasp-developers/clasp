@@ -828,12 +828,12 @@ have it call the main-function"
                  (_                (irc-intrinsic "cc_register_startup_function" (jit-constant-size_t position) bc-main-function))
                  (_                (irc-ret-void))))))
       ;;(llvm-sys:dump fn)
-      (let* ((function-name "ObjectFileStartUp") ; (core:bformat nil "ObjectFileStartUp-%s" (core:next-number)))
+      (let* ((function-name "_claspObjectFileStartUp") ; (core:bformat nil "ObjectFileStartUp-%s" (core:next-number)))
              #+(or)(_ (core:bformat t "add-global-ctor-function name: %s%N" function-name))
              (outer-fn (irc-simple-function-create
                         function-name
                         %fn-ctor%
-                        'llvm-sys:link-once-odrlinkage ; 'llvm-sys:internal-linkage
+                        'llvm-sys:internal-linkage
                         *the-module*
                         :argument-names +fn-ctor-argument-names+))
              (irbuilder-body (llvm-sys:make-irbuilder (thread-local-llvm-context)))

@@ -24,6 +24,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
+
+// #define USE_JITLINKER 1
+
+
 #ifndef llvmoExpose_H //[
 #define llvmoExpose_H
 
@@ -64,7 +68,6 @@ THE SOFTWARE.
 #include <llvm/ExecutionEngine/Orc/IRTransformLayer.h>
 #include <llvm/ExecutionEngine/Orc/LambdaResolver.h>
 #include <llvm/ExecutionEngine/Orc/RTDyldObjectLinkingLayer.h>
-//#include <llvm/ExecutionEngine/Orc/LLJIT.h>
 #include <llvm/ExecutionEngine/Orc/ObjectLinkingLayer.h>
 //#include "llvm/Support/IRBuilder.h"
 
@@ -4482,7 +4485,11 @@ public:
   ~ClaspJIT_O();
 public:
   llvm::orc::ExecutionSession *ES;
+#ifdef USE_JITLINKER
+  llvm::org::JITLinker* LinkLayer;
+#else
   llvm::orc::RTDyldObjectLinkingLayer *LinkLayer;
+#endif
   llvm::orc::ConcurrentIRCompiler *Compiler;
   llvm::orc::IRCompileLayer *CompileLayer;
 };
