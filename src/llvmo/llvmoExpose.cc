@@ -52,6 +52,7 @@ THE SOFTWARE.
 #include <llvm/Support/raw_ostream.h>
 #include <llvm/Support/MemoryBuffer.h>
 #include <llvm/Support/FileSystem.h>
+#include <llvm/Support/CodeGen.h>
 #include <llvm/Support/DynamicLibrary.h>
 #include <llvm/LTO/legacy/ThinLTOCodeGenerator.h>
 #include <llvm/Analysis/ModuleSummaryAnalysis.h>
@@ -3852,6 +3853,9 @@ void save_symbol_info(const llvm::object::ObjectFile& object_file, const llvm::R
           register_symbol_with_libunwind(name,section_address+address,size);
           if ((!comp::_sym_jit_register_symbol.unboundp()) && comp::_sym_jit_register_symbol->fboundp()) {
             core::eval::funcall(comp::_sym_jit_register_symbol,core::SimpleBaseString_O::make(name),symbol_info);
+            if (name == "__claspObjectFileStartUp") {
+              my_thread->_ObjectFileStartUp = (void*)((char*)section_address+address);
+            }
 //            printf("%s:%d  Registering symbol -> %s : %s\n", __FILE__, __LINE__, name.c_str(), _rep_(symbol_info).c_str() );
 //           gc::As<core::HashTableEqual_sp>(comp::_sym_STARjit_saved_symbol_infoSTAR->symbolValue())->hash_table_setf_gethash(core::SimpleBaseString_O::make(name),symbol_info);
           }
@@ -4151,22 +4155,50 @@ CL_DEFUN ClaspJIT_sp llvm_sys__make_clasp_jit(DataLayout_sp data_layout)
 
 
 ClaspJIT_O::ClaspJIT_O(const llvm::DataLayout& data_layout) {
+#if 0
+    // Detect the host and set code model to small.
+  llvm::ExitOnError ExitOnErr;
+  auto JTMB = ExitOnErr(llvm::orc::JITTargetMachineBuilder::detectHost());
+  core::SymbolToEnumConverter_sp converter = _sym_AttributeEnum->symbolValue().as<core::SymbolToEnumConverter_O>();
+  
+  JTMB.setCodeModel(CodeModel::Small);
+
+
+  // Create an LLJIT instance with an ObjectLinkingLayer as the base layer.
+  auto J = ExitOnErr(
+                     llvm::orc::LLJITBuilder()
+                     .setJITTargetMachineBuilder(std::move(JTMB))
+                     .setObjectLinkingLayerCreator(
+                                                   [&](llvm::orc::ExecutionSession &ES) {
+                                                     return make_unique<ObjectLinkingLayer>(
+                                                                                            ES, make_unique<llvm::jitlink::InProcessMemoryManager>());
+                                                   })
+                     .create());
+#endif
+  
   this->ES = new llvm::orc::ExecutionSession();
-  auto GetMemMgr = []() { return llvm::make_unique<llvm::SectionMemoryManager>(); };  
+  auto GetMemMgr = []() { return llvm::make_unique<llvm::SectionMemoryManager>(); };
+#ifdef USE_JITLINKER
+    #error "JITLinker support needed"
+#else
   this->LinkLayer = new llvm::orc::RTDyldObjectLinkingLayer(*this->ES,GetMemMgr);
   this->LinkLayer->setNotifyLoaded( [&] (VModuleKey, const llvm::object::ObjectFile &Obj, const llvm::RuntimeDyld::LoadedObjectInfo &loadedObjectInfo) {
 //                                      printf("%s:%d  NotifyLoaded ObjectFile@%p\n", __FILE__, __LINE__, &Obj);
                                       save_symbol_info(Obj,loadedObjectInfo);
                                     });
+#endif
   auto JTMB = llvm::orc::JITTargetMachineBuilder::detectHost();
+#if 0
+  // Don't set the code model - the default should work fine.
+  // If it doesn't - invoke the (cmp:code-model :jit xxx :compile-file-parallel yyy)
+  // function
+  core::SymbolToEnumConverter_sp converter = gc::As<core::SymbolToEnumConverter_sp>(llvmo::_sym_CodeModel->symbolValue());
+  core::T_sp code_model_symbol = llvmo::_sym_STARdefault_code_modelSTAR->symbolValue();
+  auto cm = converter->enumForSymbol<llvm::CodeModel::Model>(code_model_symbol);
+  JTMB->setCodeModel(cm);
+#endif
   this->Compiler = new llvm::orc::ConcurrentIRCompiler(*JTMB);
   this->CompileLayer = new llvm::orc::IRCompileLayer(*this->ES,*this->LinkLayer,*this->Compiler);
-#if 0
-  this->ES->setDispatchMaterialization(
-                                       [](llvm::orc::JITDylib &JD, std::unique_ptr<llvm::orc::MaterializationUnit> MU) {
-                                         MU->doMaterialize(JD);
-                                       });
-#endif
   printf("%s:%d Registering ClaspDynamicLibarySearchGenerator\n", __FILE__, __LINE__ );
   this->ES->getMainJITDylib().setGenerator(llvm::cantFail(ClaspDynamicLibrarySearchGenerator::GetForCurrentProcess(data_layout.getGlobalPrefix())));
 }
@@ -4194,7 +4226,7 @@ CL_DEFMETHOD core::T_sp ClaspJIT_O::lookup(const std::string& Name) {
 #endif
 
   llvm::Expected<llvm::JITEvaluatedSymbol> symbol = this->ES->lookup(llvm::orc::JITDylibSearchList({{&this->ES->getMainJITDylib(),true}}),
-                                                                     this->ES->intern(mangledName)); // dylibs,Name);
+                                                                     this->ES->intern(mangledName));   
   if (!symbol) {
     llvm::handleAllErrors(symbol.takeError(), [](const llvm::ErrorInfoBase &E) {
                                                   errs() << "Symbolizer failed to get line: " << E.message() << "\n";
@@ -4233,11 +4265,14 @@ void ClaspJIT_O::addObjectFile(const char* rbuffer, size_t bytes, bool print)
   }
   (*ObjMU)->doMaterialize(this->ES->getMainJITDylib());
   // Lookup the address of the ObjectFileStartUp function and invoke it
-  core::Pointer_sp startupPtr = gc::As<core::Pointer_sp>(this->lookup("ObjectFileStartUp"));
-  if (print) core::write_bf_stream(BF("%s:%d startupPtr -> %p\n") % __FILE__ % __LINE__ % (void*)startupPtr->ptr() );
-  if (startupPtr) {
-    fnStartUp startup = reinterpret_cast<fnStartUp>(gc::As_unsafe<core::Pointer_sp>(startupPtr)->ptr());
+  void* thread_local_startup = my_thread->_ObjectFileStartUp;
+  my_thread->_ObjectFileStartUp = NULL;
+  if (thread_local_startup) {
+    if (print) core::write_bf_stream(BF("%s:%d thread_local_startup -> %p\n") % __FILE__ % __LINE__ % (void*)thread_local_startup);
+    fnStartUp startup = reinterpret_cast<fnStartUp>(thread_local_startup);
     core::T_O* replPtrRaw = startup(NULL);
+  } else {
+    if (print) core::write_bf_stream(BF("No startup function was defined\n"));
   }
   // Running the ObjectFileStartUp function registers the startup functions - now we can invoke them
   if (core::startup_functions_are_waiting()) {

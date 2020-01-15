@@ -489,8 +489,10 @@ This is to ensure that the RUN-ALL functions are evaluated in the correct order.
 
 
 (defun build-faso-parallel (out-file &key lisp-files)
-  (format t "Linking ~s --> ~s~%" lisp-files out-file)
-  (format t "About to do link of ~s to ~s~%" lisp-files out-file)
+  #+(or)
+  (progn
+    (format t "Linking ~s --> ~s~%" lisp-files out-file)
+    (format t "About to do link of ~s to ~s~%" lisp-files out-file))
   (core:link-faso-files out-file lisp-files)
   (truename out-file))
 
