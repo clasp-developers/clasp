@@ -2461,21 +2461,31 @@ int Lisp_O::run() {
 };
 
 FileScope_mv Lisp_O::getOrRegisterFileScope(const string &fileName) {
-  WITH_READ_WRITE_LOCK(this->_Roots._SourceFilesMutex);
-  map<string, int>::iterator it = this->_Roots._SourceFileIndices.find(fileName);
-  if (it == this->_Roots._SourceFileIndices.end()) {
-    if (this->_Roots._SourceFiles.size() == 0) {
-      FileScope_sp unknown = FileScope_O::create("-unknown-file-", 0);
-      this->_Roots._SourceFiles.push_back(unknown);
+  {
+    WITH_READ_LOCK(this->_Roots._SourceFilesMutex);
+    map<string, int>::iterator it = this->_Roots._SourceFileIndices.find(fileName);
+    if (it != this->_Roots._SourceFileIndices.end()) {
+      FileScope_sp sfi = this->_Roots._SourceFiles[it->second];
+      return Values(sfi, make_fixnum(it->second));
     }
-    int idx = this->_Roots._SourceFiles.size();
-    this->_Roots._SourceFileIndices[fileName] = idx;
-    FileScope_sp sfi = FileScope_O::create(fileName, idx);
-    this->_Roots._SourceFiles.push_back(sfi);
-    return Values(sfi, make_fixnum(idx));
   }
-  FileScope_sp sfi = this->_Roots._SourceFiles[it->second];
-  return Values(sfi, make_fixnum(it->second));
+  {
+    WITH_READ_WRITE_LOCK(this->_Roots._SourceFilesMutex);
+    map<string, int>::iterator it = this->_Roots._SourceFileIndices.find(fileName);
+    if (it == this->_Roots._SourceFileIndices.end()) {
+      if (this->_Roots._SourceFiles.size() == 0) {
+        FileScope_sp unknown = FileScope_O::create("-unknown-file-", 0);
+        this->_Roots._SourceFiles.push_back(unknown);
+      }
+      int idx = this->_Roots._SourceFiles.size();
+      this->_Roots._SourceFileIndices[fileName] = idx;
+      FileScope_sp sfi = FileScope_O::create(fileName, idx);
+      this->_Roots._SourceFiles.push_back(sfi);
+      return Values(sfi, make_fixnum(idx));
+    }
+    FileScope_sp sfi = this->_Roots._SourceFiles[it->second];
+    return Values(sfi, make_fixnum(it->second));
+  }
 }
 
 CL_LAMBDA();
