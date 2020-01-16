@@ -31,8 +31,9 @@ namespace core {
   public:
    mutable gctools::Vec0<T_sp>           _ThreadLocalBindings;
   public:
-    size_t new_binding_index();
-    void release_binding_index(size_t index);
+    size_t new_binding_index() const;
+    void release_binding_index(size_t index) const;
+    uint32_t ensure_binding_index(const Symbol_O*) const;
     ATTR_WEAK T_sp push_with_value_coming(Symbol_sp var,T_sp* globalValuePtr);
     ATTR_WEAK T_sp push_binding(Symbol_sp var, T_sp* globalValuePtr, T_sp value=_Unbound<T_O>());
     ATTR_WEAK void pop_binding(Symbol_sp oldVar, T_sp oldBinding);
@@ -51,6 +52,11 @@ namespace core {
     const T_sp* reference(Symbol_sp var, T_sp* globalValuePtr) const { return this->reference_raw(&*var, globalValuePtr);};
     T_sp  value(Symbol_sp var, T_sp* globalValuePtr) const { return *this->reference(var,globalValuePtr);};
 //    void  setf_value(Symbol_sp var, T_sp value) { *this->reference(var) = value;};
+    // Specifically thread-local access
+    T_sp thread_local_value(const Symbol_O*) const;
+    void set_thread_local_value(const T_sp, const Symbol_O*);
+  private:
+    T_sp* thread_local_reference(const uint32_t) const;
   };
 #pragma GCC visibility pop
 
