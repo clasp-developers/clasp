@@ -171,6 +171,8 @@ VALID_OPTIONS = [
     #   This is good for development.
     # Default = "object"
     "CLASP_BUILD_MODE",
+    # Use compile-file-praallel once everything is built - by default this is True
+    "USE_COMPILE_FILE_PARALLEL",
     # Set the version name of clasp - this is used when building the docker image to give a predictable
     # version name.  Usually the version is calculated from the git hash
     "CLASP_VERSION",
@@ -362,6 +364,21 @@ def configure_common(cfg,variant):
     log.debug("cfg.env.LINKFLAGS = %s", cfg.env.LINKFLAGS)
     log.debug("cfg.env.LDFLAGS = %s", cfg.env.LDFLAGS)
     cfg.define("BUILD_LINKFLAGS", ' '.join(cfg.env.LINKFLAGS) + ' ' + ' '.join(cfg.env.LDFLAGS))
+
+def fasl_extension(bld,name):
+    if (bld.env.USE_COMPILE_FILE_PARALLEL):
+        return "%s.fasp" % name
+    else:
+        return "%s.fasl" % name
+
+def generate_dwarf(bld):
+    if (bld.env["DEST_OS"] == DARWIN_OS):
+        if (bld.env.USE_COMPILE_FILE_PARALLEL):
+            return False
+        else:
+            return True
+    else:
+        return False
 
 def setup_clang_compiler(cfg,variant):
     cfg.env.COMPILER_CC="clang"
@@ -870,6 +887,14 @@ def configure(cfg):
     else:
         raise Exception("CLASP_BUILD_MODE can only be 'thinlto'(default), 'lto', or 'object' - you provided %s" % cfg.env['CLASP_BUILD_MODE'])
     log.info("default cfg.env.CLASP_BUILD_MODE = %s, final cfg.env.LTO_FLAG = '%s'", cfg.env.CLASP_BUILD_MODE, cfg.env.LTO_FLAG)
+
+    log.debug("cfg.env['USE_COMPILE_FILE_PARALLEL'] = %s", cfg.env['USE_COMPILE_FILE_PARALLEL'])
+    if ((not 'USE_COMPILE_FILE_PARALLEL' in cfg.env) or cfg.env['USE_COMPILE_FILE_PARALLEL'] ):
+        cfg.define("USE_COMPILE_FILE_PARALLEL",1) 
+        cfg.env.USE_COMPILE_FILE_PARALLEL = True
+    else:
+        cfg.define("USE_COMPILE_FILE_PARALLEL",0) 
+        cfg.env.USE_COMPILE_FILE_PARALLEL = False
 
     cur_clang_version = run_llvm_config(cfg, "--version")
     log.debug("cur_clang_version = %s", cur_clang_version)
@@ -1464,7 +1489,8 @@ def build(bld):
         install('lib/clasp/', cclasp_common_lisp_output_name_list)
 
         # Build serve-event
-        serve_event_fasl = bld.path.find_or_declare("%s/src/lisp/modules/serve-event/serve-event.fasl" % variant.fasl_dir(stage = 'c'))
+        serve_event_fasl = bld.path.find_or_declare(fasl_extension(bld,"%s/src/lisp/modules/serve-event/serve-event" % variant.fasl_dir(stage = 'c')))
+        print("serve_event_fasl = %s\n" % serve_event_fasl.abspath())
         task = compile_module(env=bld.env)
         task.set_inputs([bld.iclasp_executable,
                          bld.cclasp_fasl] +
@@ -1472,13 +1498,14 @@ def build(bld):
         task.set_outputs(serve_event_fasl)
         bld.add_to_group(task)
         install('lib/clasp/', serve_event_fasl)
-        if ( bld.env['DEST_OS'] == DARWIN_OS ):
+        if ( generate_dwarf(bld) ):
             serve_event_dwarf_file = bld.path.find_or_declare("%s/src/lisp/modules/serve-event/serve-event.fasl.dwarf" % variant.fasl_dir(stage = 'c'))
             install('lib/clasp/', serve_event_dwarf_file)
             
 
         # Build ASDF
-        cclasp_asdf_fasl = bld.path.find_or_declare("%s/src/lisp/modules/asdf/asdf.fasl" % variant.fasl_dir(stage='c'))
+        cclasp_asdf_fasl = bld.path.find_or_declare(fasl_extension(bld,"%s/src/lisp/modules/asdf/asdf" % variant.fasl_dir(stage='c')))
+        print("cclasp_asdf_fasl = %s\n" % cclasp_asdf_fasl.abspath())
         task = compile_module(env=bld.env)
         task.set_inputs([bld.iclasp_executable,
                          bld.cclasp_fasl] +
@@ -1486,7 +1513,7 @@ def build(bld):
         task.set_outputs(cclasp_asdf_fasl)
         bld.add_to_group(task)
         install('lib/clasp/', cclasp_asdf_fasl)
-        if ( bld.env['DEST_OS'] == DARWIN_OS ):
+        if (generate_dwarf(bld)):
             cclasp_asdf_dwarf_file = bld.path.find_or_declare("%s/src/lisp/modules/asdf/asdf.fasl.dwarf" % variant.fasl_dir(stage = 'c'))
             install('lib/clasp/', cclasp_asdf_dwarf_file)
 
