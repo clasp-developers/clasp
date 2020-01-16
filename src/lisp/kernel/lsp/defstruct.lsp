@@ -384,13 +384,18 @@
                      (push slotd initialized-slots)))))))
     ;; OK, we have our lambda list set up... except anything with an :initform
     ;; that wasn't mentioned needs to be added (as &aux).
+    ;; meister added: And anything that wasn't mentioned and doesn't have an
+    ;; :initform needs to be added as well - but with no initform so that
+    ;; it is initialized to nil
     (let ((more-aux nil) (default (list nil)))
       (dolist (slotd (set-difference slot-descriptions mentioned-slots))
         (let ((slot-name (first slotd))
               (initform (getf (rest slotd) :initform default)))
-          (unless (eq default initform)
-            (push `(,slot-name ,initform) more-aux)
-            (push slotd initialized-slots))))
+          (push (if (eq default initform)
+                    slot-name
+                    `(,slot-name ,initform))
+                more-aux)
+          (push slotd initialized-slots)))
       ;; Actual return values!
       (values
        ;; The lambda list.
