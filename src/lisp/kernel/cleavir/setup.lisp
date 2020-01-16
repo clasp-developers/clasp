@@ -328,21 +328,36 @@ when this is t a lot of graphs will be generated.")
   "Evaluate the form in Clasp's top level environment"
   (cleavir-environment:eval form env *clasp-env*))
 
+(defvar *use-cst-eval* t)
+
 (defmethod cleavir-environment:cst-eval (cst env (dispatch-env clasp-global-environment)
                                          system)
   (declare (ignore system))
   ;; NOTE: We want the interpreter to deal with CSTs when we care about source info.
   ;; That is mainly when saving inline definitions.
-  ;; At the moment, only ast-interpret-cst actually deals with the CST, so we want to
-  ;; be using that case when saving definitions.
-  (cond (core:*use-interpreter-for-eval*
-         (core:interpret (cst:raw cst) (cleavir-env->interpreter env)))
-        (*use-ast-interpreter*
-         (handler-case
-             (ast-interpret-cst cst env)
-           (interpret-ast:cannot-interpret ()
-             (cclasp-eval-with-env (cst:raw cst) env))))
-        (t (cclasp-eval-with-env (cst:raw cst) env))))
+  ;; At the moment, only simple-eval-cst and ast-interpret-cst actually deal with the CST,
+  ;; so we want to be using one of those cases when saving definitions.
+  (if *use-cst-eval*
+      (simple-eval-cst cst env
+                       (cond (core:*use-interpreter-for-eval*
+                              (lambda (cst env)
+                                (core:interpret (cst:raw cst) (cleavir-env->interpreter env))))
+                             (*use-ast-interpreter*
+                              (lambda (cst env)
+                                (handler-case
+                                    (ast-interpret-cst cst env)
+                              (interpret-ast:cannot-interpret ()
+                                (cclasp-eval-with-env (cst:raw cst) env)))))
+                             (t (lambda (cst env)
+                                  (cclasp-eval-with-env (cst:raw cst) env)))))
+      (cond (core:*use-interpreter-for-eval*
+             (core:interpret (cst:raw cst) (cleavir-env->interpreter env)))
+            (*use-ast-interpreter*
+             (handler-case
+                 (ast-interpret-cst cst env)
+               (interpret-ast:cannot-interpret ()
+                 (cclasp-eval-with-env (cst:raw cst) env))))
+            (t (cclasp-eval-with-env (cst:raw cst) env)))))
 
 (defmethod cleavir-environment:cst-eval (cst env (dispatch-env null) system)
   (cleavir-environment:cst-eval cst env *clasp-env* system))

@@ -686,6 +686,7 @@ CL_DEFUN core::T_sp core__load_faso(T_sp pathDesig, T_sp verbose, T_sp print, T_
     close(fd);
     SIMPLE_ERROR(BF("Could not mmap %s because of %s") % _rep_(pathDesig) % strerror(errno));
   }
+  close(fd); // Ok to close file descriptor after mmap
   llvmo::ClaspJIT_sp jit = gc::As<llvmo::ClaspJIT_sp>(eval::funcall(comp::_sym_jit_engine));
   FasoHeader* header = (FasoHeader*)memory;
   for (size_t ofi = 0; ofi<header->_NumberOfObjectFiles; ++ofi) {

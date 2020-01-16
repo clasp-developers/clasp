@@ -1256,6 +1256,15 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #endif
   if (buildReport) ss << (BF("DISABLE_TYPE_INFERENCE = %s\n") % (disable_type_inference ? "**DEFINED**" : "undefined") ).str();
 
+  bool use_compile_file_parallel = true;
+#if USE_COMPILE_FILE_PARALLEL == 0
+  use_compile_file_parallel = false;
+  INTERN_(comp,STARuse_compile_file_parallelSTAR)->defparameter(_Nil<core::T_O>());
+#else
+  INTERN_(comp,STARuse_compile_file_parallelSTAR)->defparameter(_lisp->_true());
+#endif
+  if (buildReport) ss << (BF("USE_COMPILE_FILE_PARALLEL = %s") % USE_COMPILE_FILE_PARALLEL);
+  
   bool use_lto = false;
   // CLASP_BUILD_MODE == 0 means generate fasls
 #if CLASP_BUILD_MODE == 0

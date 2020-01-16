@@ -4213,15 +4213,16 @@ CL_DEFMETHOD core::T_sp ClaspJIT_O::lookup(const std::string& Name) {
 //  printf("%s:%d:%s Name = %s\n", __FILE__, __LINE__, __FUNCTION__, Name.c_str());
   llvm::ExitOnError ExitOnErr;
 //  llvm::ArrayRef<llvm::orc::JITDylib*>  dylibs(&this->ES->getMainJITDylib());
-#ifdef _TARGET_OS_DARWIN
+#if defined(_TARGET_OS_DARWIN)
   // gotta put a _ in front of the name on DARWIN but not Unixes? Why? Dunno.
   std::string mangledName = "_" + Name;
 #endif
-#ifdef _TARGET_OS_LINUX
+#if defined(_TARGET_OS_LINUX) || defined(_TARGET_OS_FREEBSD)
   std::string mangledName = Name;
 #endif
-#ifdef _TARGET_OS_FREEBSD
-  #error "Do one of the above for FreeBSD"
+
+#if !defined(_TARGET_OS_LINUX) && !defined(_TARGET_OS_FREEBSD) && !defined(_TARGET_OS_DARWIN)
+#error You need to decide here
 #endif
 
   llvm::Expected<llvm::JITEvaluatedSymbol> symbol = this->ES->lookup(llvm::orc::JITDylibSearchList({{&this->ES->getMainJITDylib(),true}}),

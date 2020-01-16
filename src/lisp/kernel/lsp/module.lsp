@@ -83,6 +83,8 @@ module."
                                           :name :wild
                                           :type :wild))))
 
+(defparameter *module-extensions* (list "fasl" "FASL" "fasp" "FASP" "lsp" "lisp" "LSP" "LISP"))
+
 (defun clasp-module-provider (module)
   (flet ((try-it (path)
            (when (member :debug-require *features*)
@@ -95,7 +97,7 @@ module."
                           #+(or)(list :relative name)
                           #+(or)(list :relative "kernel" name)
                           (list :relative "modules" name)))
-        (dolist (type (list "fasl" "FASL" "lsp" "lisp" "LSP" "LISP"))
+        (dolist (type *module-extensions*)
           (try-it (merge-pathnames
                    (translate-logical-pathname (make-pathname :name name :type type :directory directory))
                    (translate-logical-pathname (make-pathname :host "MODULES"))))
