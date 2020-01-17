@@ -141,14 +141,14 @@ string AuxArgument::asString() const {
 void ScopeManager::new_special_binding(Symbol_sp var, T_sp val)
 {
   this->_Bindings[this->_NextBindingIndex]._Var = var;
-  this->_Bindings[this->_NextBindingIndex]._Val = var->symbolValueUnsafe();
+  this->_Bindings[this->_NextBindingIndex]._Val = var->threadLocalSymbolValue();
   this->_NextBindingIndex++;
-  var->setf_symbolValue(val);
+  var->set_threadLocalSymbolValue(val);
 }
 
 ScopeManager::~ScopeManager() {
   for ( size_t ii = 0; ii<this->_NextBindingIndex; ++ii ) {
-    gc::As_unsafe<Symbol_sp>(this->_Bindings[ii]._Var)->setf_symbolValue(this->_Bindings[ii]._Val);
+    gc::As_unsafe<Symbol_sp>(this->_Bindings[ii]._Var)->set_threadLocalSymbolValue(this->_Bindings[ii]._Val);
   }
 }
 
