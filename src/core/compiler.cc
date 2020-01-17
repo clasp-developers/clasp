@@ -1146,26 +1146,11 @@ T_sp lexicalFrameLookup(T_sp fr, int depth, int index) {
   return val;
 }
 
-class SimpleDynamicScopeRAII : gctools::StackBoundClass {
-private:
-  Symbol_sp var;
-  T_sp old_value;
-public:
-  inline explicit SimpleDynamicScopeRAII(Symbol_sp sym, T_sp new_value) {
-    var = sym;
-    old_value = var->threadLocalSymbolValue();
-    var->set_threadLocalSymbolValue(new_value);
-  }
-  virtual ~SimpleDynamicScopeRAII() {
-    var->set_threadLocalSymbolValue(old_value);
-  }
-};
-
 CL_LAMBDA(symbol value thunk);
 CL_DECLARE();
 CL_DOCSTRING("Call THUNK with the given SYMBOL bound to to the given VALUE.");
 CL_DEFUN T_mv core__call_with_variable_bound(Symbol_sp sym, T_sp val, Function_sp thunk) {
-  SimpleDynamicScopeRAII scope(sym, val);
+  DynamicScopeManager scope(sym, val);
   return (thunk->entry.load())(LCC_PASS_ARGS0_ELLIPSIS(thunk.raw_()));
 }
 

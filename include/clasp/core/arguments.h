@@ -125,18 +125,13 @@ private:
   Symbol_sp _OldVar;
   T_sp _OldBinding;
 public:
-  inline void pushSpecialVariableAndSet_(Symbol_sp sym, T_sp val) {
-    this->_OldVar = sym;
-    this->_OldBinding = my_thread->bindings().push_binding(sym,&sym->_GlobalValue,val);
+  inline explicit DynamicScopeManager(Symbol_sp sym, T_sp val) {
+    _OldVar = sym;
+    _OldBinding = sym->threadLocalSymbolValue();
+    sym->set_threadLocalSymbolValue(val);
   }
-  
-  inline explicit DynamicScopeManager(Symbol_sp sym, T_sp newVal) {
-    this->pushSpecialVariableAndSet_(sym, newVal);
-  }
-
   virtual ~DynamicScopeManager() {
-    DynamicBindingStack &bindings = my_thread->bindings();
-    bindings.pop_binding(this->_OldVar,this->_OldBinding);
+    _OldVar->set_threadLocalSymbolValue(_OldBinding);
   }
 };
 
