@@ -125,20 +125,14 @@ private:
   Symbol_sp _OldVar;
   T_sp _OldBinding;
 public:
-  virtual void va_rest_binding(const Argument &argument) { N_A_(); };
-  virtual Vaslist &valist() { N_A_(); };
-  virtual bool lexicalElementBoundP(const Argument &argument) { N_A_(); };
   inline void pushSpecialVariableAndSet_(Symbol_sp sym, T_sp val) {
     this->_OldVar = sym;
     this->_OldBinding = my_thread->bindings().push_binding(sym,&sym->_GlobalValue,val);
-// NEW_DBS    sym->setf_symbolValue(val);
   }
   
   inline explicit DynamicScopeManager(Symbol_sp sym, T_sp newVal) {
     this->pushSpecialVariableAndSet_(sym, newVal);
   }
-
-  virtual T_sp lexenv() const;
 
   virtual ~DynamicScopeManager() {
     DynamicBindingStack &bindings = my_thread->bindings();

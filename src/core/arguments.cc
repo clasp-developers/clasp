@@ -152,11 +152,6 @@ ScopeManager::~ScopeManager() {
   }
 }
 
-T_sp DynamicScopeManager::lexenv() const {
-  SIMPLE_ERROR(BF("A ValueEnvironment was requested from a DynamicScopeManager - only ValueEnvironmentDynamicScopeManagers have those"));
-}
-
-
 bool ValueEnvironmentDynamicScopeManager::lexicalElementBoundP(const Argument &argument) {
   return ((this->_Environment->activationFrameElementBoundP(argument._ArgTargetFrameIndex)));
 }
