@@ -1008,9 +1008,6 @@ void pushDynamicBinding(core::T_O *tsymbolP, core::T_O** alloca)
 {NO_UNWIND_BEGIN();
   core::Symbol_sp sym((gctools::Tagged)tsymbolP);
   *alloca = sym->symbolValueUnsafe().raw_();
-#if 0 // temporary comment out
-  my_thread->bindings().push_with_value_coming(sym,&sym->_GlobalValue);
-#endif
   NO_UNWIND_END();
 }
 

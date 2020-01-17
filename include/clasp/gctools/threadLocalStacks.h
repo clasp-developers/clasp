@@ -34,11 +34,6 @@ namespace core {
     size_t new_binding_index() const;
     void release_binding_index(size_t index) const;
     uint32_t ensure_binding_index(const Symbol_O*) const;
-    ATTR_WEAK T_sp push_with_value_coming(Symbol_sp var,T_sp* globalValuePtr);
-    ATTR_WEAK T_sp push_binding(Symbol_sp var, T_sp* globalValuePtr, T_sp value=_Unbound<T_O>());
-    ATTR_WEAK void pop_binding(Symbol_sp oldVar, T_sp oldBinding);
-    // Push the current value of the symbol onto the DynamicBindingStack
-    //   The new value will follow immediately
     void expandThreadLocalBindings(size_t index);
     // Dynamic symbol access
     /*! Return a pointer to the value slot for the symbol.  
