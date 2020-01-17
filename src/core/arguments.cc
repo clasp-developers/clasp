@@ -152,16 +152,6 @@ ScopeManager::~ScopeManager() {
   }
 }
 
-/*! The frame_index is not used here - it is only used by ActivationFrameDynamicLexicalScopeManager */
-void DynamicScopeManager::new_binding(const Argument &arg, T_sp val) {
-  if (arg._ArgTargetFrameIndex == SPECIAL_TARGET) {
-    Symbol_sp sym = gc::As_unsafe<Symbol_sp>(arg._ArgTarget);
-    this->pushSpecialVariableAndSet_(sym, val);
-    return;
-  }
-  SIMPLE_ERROR(BF("DynamicScopeManager doesn't bind anything other than SPECIAL_TARGET bindings - you gave it a binding to[%s] index[%d]") % _rep_(arg._ArgTarget) % arg._ArgTargetFrameIndex);
-}
-
 T_sp DynamicScopeManager::lexenv() const {
   SIMPLE_ERROR(BF("A ValueEnvironment was requested from a DynamicScopeManager - only ValueEnvironmentDynamicScopeManagers have those"));
 }

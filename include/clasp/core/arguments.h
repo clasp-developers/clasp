@@ -125,7 +125,6 @@ private:
   Symbol_sp _OldVar;
   T_sp _OldBinding;
 public:
-  virtual void new_binding(const Argument &argument, T_sp val);
   virtual void va_rest_binding(const Argument &argument) { N_A_(); };
   virtual Vaslist &valist() { N_A_(); };
   virtual bool lexicalElementBoundP(const Argument &argument) { N_A_(); };
