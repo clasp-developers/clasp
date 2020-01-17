@@ -139,8 +139,6 @@ public:
     this->pushSpecialVariableAndSet_(sym, newVal);
   }
 
-  void dump() const;
-
   virtual T_sp lexenv() const;
 
   virtual ~DynamicScopeManager() {
@@ -188,22 +186,6 @@ public:
   virtual bool lexicalElementBoundP(const Argument &argument);
   virtual T_sp lexenv() const { return this->_Environment; };
 };
-
-#if 0
-class ActivationFrameDynamicScopeManager : public ScopeManager {
-private:
-  ActivationFrame_sp _Frame;
-
-public:
-  ActivationFrameDynamicScopeManager(ActivationFrame_sp frame) : _Frame(frame){};
-
-public:
-  virtual void new_binding(const Argument &argument, T_sp val);
-  virtual bool lexicalElementBoundP(const Argument &argument);
-  T_sp activationFrame() const { return this->_Frame; };
-  virtual T_sp lexenv() const;
-};
-#endif
 
 class StackFrameDynamicScopeManager : public ScopeManager {
 private:
