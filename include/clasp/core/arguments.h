@@ -134,13 +134,6 @@ public:
     this->_OldBinding = my_thread->bindings().push_binding(sym,&sym->_GlobalValue,val);
 // NEW_DBS    sym->setf_symbolValue(val);
   }
-#if 0
-  inline void bind(Symbol_sp sym, T_sp val) {
-    this->pushSpecialVariableAndSet(sym,val);
-  }
-  inline explicit DynamicScopeManager() {
-  }
-#endif
   
   inline explicit DynamicScopeManager(Symbol_sp sym, T_sp newVal) {
     this->pushSpecialVariableAndSet_(sym, newVal);

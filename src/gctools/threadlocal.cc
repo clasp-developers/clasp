@@ -116,8 +116,7 @@ uint32_t DynamicBindingStack::ensure_binding_index(const Symbol_O* var) const {
       this->release_binding_index(new_index);
     }
   }
-  uint32_t binding_index = var->_BindingIdx.load();
-  return binding_index;
+  return var->_BindingIdx.load();
 }
 
 T_sp* DynamicBindingStack::thread_local_reference(const uint32_t index) const {
@@ -132,7 +131,7 @@ T_sp DynamicBindingStack::thread_local_value(const Symbol_O* sym) const {
   return *thread_local_reference(ensure_binding_index(sym));
 }
 
-void DynamicBindingStack::set_thread_local_value(const T_sp value, const Symbol_O* sym) {
+void DynamicBindingStack::set_thread_local_value(T_sp value, const Symbol_O* sym) {
   *thread_local_reference(ensure_binding_index(sym)) = value;
 }
 

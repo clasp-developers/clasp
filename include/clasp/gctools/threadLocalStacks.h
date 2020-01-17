@@ -54,7 +54,7 @@ namespace core {
 //    void  setf_value(Symbol_sp var, T_sp value) { *this->reference(var) = value;};
     // Specifically thread-local access
     T_sp thread_local_value(const Symbol_O*) const;
-    void set_thread_local_value(const T_sp, const Symbol_O*);
+    void set_thread_local_value(T_sp, const Symbol_O*);
   private:
     T_sp* thread_local_reference(const uint32_t) const;
   };

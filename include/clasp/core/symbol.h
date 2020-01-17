@@ -153,6 +153,22 @@ public:
   bool isExported();
 
   void symbolUnboundError() const;
+
+  inline T_sp threadLocalSymbolValue() const {
+#ifdef CLASP_THREADS
+    return my_thread->_Bindings.thread_local_value(this);
+#else
+    return *globalValuePtr;
+#endif
+  }
+
+  inline void set_threadLocalSymbolValue(T_sp value) {
+#ifdef CLASP_THREADS
+    my_thread->_Bindings.set_thread_local_value(value, this);
+#else
+    *globalValuePtr = value;
+#endif
+  }
   
   /*! Return the value slot of the symbol - throws if unbound */
   inline T_sp symbolValue() const {

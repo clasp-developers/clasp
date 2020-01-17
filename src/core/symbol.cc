@@ -139,15 +139,6 @@ CL_DEFUN T_sp core__symbol_value_from_cell(Symbol_sp symbol, Cons_sp cell, T_sp 
   return symbol->symbolValueFromCell(cell, unbound_marker);
 }
 
-#if 0
-CL_LAMBDA(arg);
-CL_DECLARE();
-CL_DOCSTRING("symbolValueAddress");
-CL_DEFUN T_sp core__symbol_value_address(Symbol_sp arg) {
-  return Pointer_O::create(&arg->symbolValueRef());
-};
-#endif
-
 CL_LAMBDA(name);
 CL_DECLARE();
 CL_DOCSTRING("make_symbol");
