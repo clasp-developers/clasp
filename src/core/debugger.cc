@@ -188,7 +188,7 @@ struct Header {
 
 struct StkSizeRecord {
   uint64_t  FunctionAddress;
-  uint64_t  StackSize;
+  int64_t  StackSize;
   uint64_t  RecordCount;
 };
 
@@ -273,9 +273,9 @@ void parse_record(std::vector<BacktraceEntry>& backtrace, uintptr_t& address, si
     int32_t offsetOrSmallConstant = read_then_advance<int32_t>(address);
     if (backtrace.size() == 0 ) {
       if (library) {
-        WRITE_DEBUG_IO(BF("Stackmap-library function %p stack-size %lu patchPointId %u offset %d\n") % (void*)function.FunctionAddress % function.StackSize % patchPointID % offsetOrSmallConstant );
+        WRITE_DEBUG_IO(BF("Stackmap-library function %p stack-size %ld patchPointId %u frame-offset %d\n") % (void*)function.FunctionAddress % function.StackSize % patchPointID % offsetOrSmallConstant );
       } else {
-        WRITE_DEBUG_IO(BF("Stackmap-jit function %p stack-size %lu patchPointId %u offset %d\n") % (void*)function.FunctionAddress % function.StackSize % patchPointID % offsetOrSmallConstant );
+        WRITE_DEBUG_IO(BF("Stackmap-jit function %p stack-size %ld patchPointId %u frame-offset %d\n") % (void*)function.FunctionAddress % function.StackSize % patchPointID % offsetOrSmallConstant );
       }
     }
     if (patchPointID == 1234567 ) {
@@ -284,7 +284,7 @@ void parse_record(std::vector<BacktraceEntry>& backtrace, uintptr_t& address, si
         BT_LOG((buf,"comparing function#%lu @%p to %s\n", functionIndex, (void*)function.FunctionAddress, backtrace_frame(j,&backtrace[j]).c_str() ));
         if (function.FunctionAddress == backtrace[j]._FunctionStart) {
           backtrace[j]._Stage = lispFrame;  // anything with a stackmap is a lisp frame
-          backtrace[j]._FrameSize = function.StackSize;
+          backtrace[j]._FrameSize = (int)function.StackSize; // Sometimes the StackSize is (int64_t)-1 why???????
           backtrace[j]._FrameOffset = offsetOrSmallConstant;
           BT_LOG((buf,"Identified lispFrame frameOffset = %d\n", offsetOrSmallConstant));
         }
@@ -317,6 +317,9 @@ void parse_record(std::vector<BacktraceEntry>& backtrace, uintptr_t& address, si
   }
 }  
 
+/* ! Parse an llvm Stackmap
+     The format is described here: https://llvm.org/docs/StackMaps.html#stack-map-format
+*/
 
 void walk_one_llvm_stackmap(std::vector<BacktraceEntry>&backtrace, uintptr_t& address, uintptr_t end, bool library) {
   uintptr_t stackMapAddress = address;
@@ -376,6 +379,7 @@ void search_jitted_stackmaps(std::vector<BacktraceEntry>& backtrace)
 {
   BT_LOG((buf,"Starting search_jitted_stackmaps\n" ));
   size_t num = 0;
+  WRITE_DEBUG_IO(BF("search_jitted_stackmaps\n"));
   WITH_READ_LOCK(debugInfo()._StackMapsLock);
   DebugInfo& di = debugInfo();
   for ( auto entry : di._StackMaps ) {
@@ -1062,7 +1066,7 @@ CL_DEFUN void core__low_level_backtrace_with_args() {
 }
 
 
-void safe_backtrace(std::vector<BacktraceEntry>& backtrace_)
+void operating_system_backtrace(std::vector<BacktraceEntry>& backtrace_)
 {
 #define START_BACKTRACE_SIZE 512
   void** return_buffer;
@@ -1189,7 +1193,10 @@ void fill_in_interpreted_frames(std::vector<BacktraceEntry>& backtrace) {
 
 
 
-
+/*! If you pass a backtrace then it will be filled with symbol information.
+    If you pass an empty backtrace then symbol information will be printed.
+    eg: std::vector<BacktraceEntry> emptyBacktrace;  fill_backtrace_or_dump_info(emptyBacktrace) 
+*/
 void fill_backtrace_or_dump_info(std::vector<BacktraceEntry>& backtrace) {
 //  printf("walk symbol tables and stackmaps for DARWIN\n");
   size_t symbol_table_memory = 0;
@@ -1278,9 +1285,9 @@ void fill_backtrace(std::vector<BacktraceEntry>& backtrace) {
   char *funcname = (char *)malloc(1024);
   size_t funcnamesize = 1024;
   uintptr_t stackTop = (uintptr_t)my_thread_low_level->_StackTop;
-  BT_LOG((buf,"About to safe_backtrace\n" ));
+  BT_LOG((buf,"About to operatin_system_backtrace\n" ));
   //printf("%s:%s:%d\n", __FILE__, __FUNCTION__, __LINE__);
-  safe_backtrace(backtrace);
+  operating_system_backtrace(backtrace);
   size_t nptrs = backtrace.size()-2;
   nptrs -= 2; // drop the last two frames
     // Fill in the base pointers
