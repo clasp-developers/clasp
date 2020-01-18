@@ -24,6 +24,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
+// If you turn on SOURCE_DEBUG and uncomment the DEBUG_LEVEL_FULL define
+//    - it will slow the interpreter down a lot!!!!!!!!!
 //#define DEBUG_LEVEL_FULL
 //#include "core/foundation.h"
 #include <clasp/core/foundation.h>

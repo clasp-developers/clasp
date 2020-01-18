@@ -32,7 +32,7 @@ THE SOFTWARE.
 #endif
 
 
-#define DEBUG_LEVEL_FULL
+//#define DEBUG_LEVEL_FULL
 
 #include <limits>
 #include <clasp/core/foundation.h>

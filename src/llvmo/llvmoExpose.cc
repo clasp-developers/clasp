@@ -30,6 +30,17 @@ THE SOFTWARE.
 //#include <llvm/Support/system_error.h>
 #include <dlfcn.h>
 #include <clasp/core/foundation.h>
+//
+// The include for Debug.h must be first so we can force NDEBUG undefined
+// otherwise setCurrentDebugTypes will be an empty macro
+#ifdef NDEBUG
+#undef NDEBUG
+#include "llvm/Support/Debug.h"
+#define NDEBUG
+#else
+#include "llvm/Support/Debug.h"
+#endif
+
 #include <llvm/ExecutionEngine/GenericValue.h>
 #include <llvm/ExecutionEngine/SectionMemoryManager.h>
 #define private public
@@ -125,7 +136,6 @@ THE SOFTWARE.
 #include <clasp/core/external_wrappers.h>
 #include <clasp/core/wrappers.h>
 #include <clasp/core/symbolTable.h>
-
 
 
 
@@ -3699,10 +3709,15 @@ class ClaspSectionMemoryManager : public SectionMemoryManager {
                                 StringRef SectionName,
                                 bool isReadOnly) {
     uint8_t* ptr = this->SectionMemoryManager::allocateDataSection(Size,Alignment,SectionID,SectionName,isReadOnly);
-    // printf("%s:%d:%s Allocating section: %s\n", __FILE__, __LINE__, __FUNCTION__, SectionName.str().c_str());
+//    printf("%s:%d:%s allocateDataSection: %s\n", __FILE__, __LINE__, __FUNCTION__, SectionName.str().c_str());
     if (SectionName.str() == STACKMAPS_NAME) {
       my_thread->_stackmap = (uintptr_t)ptr;
       my_thread->_stackmap_size = (size_t)Size;
+#if 0
+      printf("%s:%d recorded __llvm_stackmap allocateDataSection Size: %lu  Alignment: %u SectionId: %u SectionName: %s isReadOnly: %d --> allocated at: %p\n" ,
+             __FILE__, __LINE__,
+             Size , Alignment, SectionID, SectionName.str().c_str(), isReadOnly, (void*)ptr );
+#endif
       LOG(BF("STACKMAP_LOG  recorded __llvm_stackmap allocateDataSection Size: %lu  Alignment: %u SectionId: %u SectionName: %s isReadOnly: %d --> allocated at: %p\n") %
           Size% Alignment% SectionID% SectionName.str().c_str() % isReadOnly% (void*)ptr);
     }
@@ -3789,6 +3804,7 @@ class ClaspSectionMemoryManager : public SectionMemoryManager {
   }
 
   bool finalizeMemory(std::string* ErrMsg = nullptr) {
+//    printf("%s:%d finalizeMemory\n", __FILE__, __LINE__);
     LOG(BF("STACKMAP_LOG %s entered\n") % __FUNCTION__ );
     bool result = this->SectionMemoryManager::finalizeMemory(ErrMsg);
     unsigned long section_size = 0;
@@ -3832,7 +3848,7 @@ void register_symbol_with_libunwind(const std::string& name, uint64_t start, siz
 #endif
 }
 
-void save_symbol_info(const llvm::object::ObjectFile& object_file, const llvm::RuntimeDyld::LoadedObjectInfo& loaded_object_info)
+void save_and_symbol_info(const llvm::object::ObjectFile& object_file, const llvm::RuntimeDyld::LoadedObjectInfo& loaded_object_info)
 {
   std::vector< std::pair< llvm::object::SymbolRef, uint64_t > > symbol_sizes = llvm::object::computeSymbolSizes(object_file);
   for ( auto p : symbol_sizes ) {
@@ -4177,14 +4193,15 @@ ClaspJIT_O::ClaspJIT_O(const llvm::DataLayout& data_layout) {
 #endif
   
   this->ES = new llvm::orc::ExecutionSession();
-  auto GetMemMgr = []() { return llvm::make_unique<llvm::SectionMemoryManager>(); };
+  auto GetMemMgr = []() { return llvm::make_unique<llvmo::ClaspSectionMemoryManager>(); };
 #ifdef USE_JITLINKER
     #error "JITLinker support needed"
 #else
   this->LinkLayer = new llvm::orc::RTDyldObjectLinkingLayer(*this->ES,GetMemMgr);
+  this->LinkLayer->setProcessAllSections(true);
   this->LinkLayer->setNotifyLoaded( [&] (VModuleKey, const llvm::object::ObjectFile &Obj, const llvm::RuntimeDyld::LoadedObjectInfo &loadedObjectInfo) {
 //                                      printf("%s:%d  NotifyLoaded ObjectFile@%p\n", __FILE__, __LINE__, &Obj);
-                                      save_symbol_info(Obj,loadedObjectInfo);
+                                      save_and_symbol_info(Obj,loadedObjectInfo);
                                     });
 #endif
   auto JTMB = llvm::orc::JITTargetMachineBuilder::detectHost();
@@ -4345,5 +4362,29 @@ CL_DEFMETHOD JITDylib& ClaspJIT_O::createJITDylib(const std::string& name) {
   return this->ES->createJITDylib(name);
 }
 
+CL_DOCSTRING(R"doc(Tell LLVM what LLVM_DEBUG messages to turn on. Pass a list of strings like \"dyld\" - which
+turns on messages from RuntimeDyld.cpp if NDEBUG is NOT defined for the llvm build.)doc");
+CL_DEFUN void llvm_sys__set_current_debug_types(core::List_sp types)
+{
+  using namespace llvm;
+  size_t numStrings = core::cl__length(types);
+  char** array = (char**)malloc(sizeof(char*)*numStrings);
+  size_t index = 0;
+  for ( auto cur : types ) {
+    core::String_sp name = gc::As<core::String_sp>(CONS_CAR(cur));
+    std::string sname(name->get_std_string());
+    char* oneName = (char*)malloc(sname.size()+1);
+    strncpy(oneName,sname.c_str(),sname.size());
+    oneName[sname.size()] = '\0';
+    array[index] = oneName;
+    index++;
+  };
+  // Call setCurrentDebugTypes
+  setCurrentDebugTypes((const char**)array,index);
+  for ( size_t idx = 0; idx<index; ++idx ) {
+    free(array[idx]);
+  }
+  free(array);
+};  
 
 };

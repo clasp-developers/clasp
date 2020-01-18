@@ -31,7 +31,7 @@ THE SOFTWARE.
 // this is not set
 #define USE_STATIC_CAST_FOR_ENVIRONMENT 1
 
-#define DEBUG_LEVEL_FULL
+//#define DEBUG_LEVEL_FULL
 
 #include <string.h>
 

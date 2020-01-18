@@ -311,39 +311,40 @@ Compile a lisp source file into an LLVM module."
                               environment)
   "See CLHS compile-file."
   #+debug-monitor(sys:monitor-message "compile-file ~a" input-file)
-  (if (not output-file-p) (setq output-file (cfp-output-file-default input-file output-type)))
-  (with-compiler-env ()
-    (let* ((output-path (compile-file-pathname input-file :output-file output-file :output-type output-type ))
-           (*track-inlined-functions* (make-hash-table :test #'equal))
-           (output-info-pathname (when output-info (make-pathname :type "info" :defaults output-path)))
-           (*compilation-module-index* 0) ; FIXME: necessary?
-           ;; KLUDGE: We could just bind these in the lambda list,
-           ;; except the interpreter can't handle that and will die messily.
-           (*compile-verbose* verbose)
-           (*compile-print* print)
-           (*compile-file-pathname* (pathname (merge-pathnames input-file)))
-           (*compile-file-truename* (translate-logical-pathname *compile-file-pathname*))
-           (*compile-file-source-debug-pathname*
-             (if cfsdpp source-debug-pathname *compile-file-truename*))
-           (*compile-file-file-scope*
-             (core:file-scope *compile-file-source-debug-pathname*))
-           (*compile-file-source-debug-lineno* source-debug-lineno)
-           (*compile-file-source-debug-offset* source-debug-offset)
-           (*compile-file-output-pathname* output-path)
-           (*compile-file-unique-symbol-prefix* unique-symbol-prefix))
-      (with-compiler-timer (:message "Compile-file" :report-link-time t :verbose *compile-verbose*)
-        (with-compilation-results ()
-          (let ((module (compile-file-to-module input-file
-                                                :type type
-                                                :output-type output-type
-                                                :compile-file-hook *cleavir-compile-file-hook*
-                                                :environment environment
-                                                :image-startup-position image-startup-position
-                                                :optimize optimize
-                                                :optimize-level optimize-level)))
-            (compile-file-output-module module output-file output-type output-path input-file type)
-            (when output-info-pathname (generate-info input-file output-info-pathname))
-            output-path))))))
+  (let ((*compile-file-parallel* nil))
+    (if (not output-file-p) (setq output-file (cfp-output-file-default input-file output-type)))
+    (with-compiler-env ()
+      (let* ((output-path (compile-file-pathname input-file :output-file output-file :output-type output-type ))
+             (*track-inlined-functions* (make-hash-table :test #'equal))
+             (output-info-pathname (when output-info (make-pathname :type "info" :defaults output-path)))
+             (*compilation-module-index* 0) ; FIXME: necessary?
+             ;; KLUDGE: We could just bind these in the lambda list,
+             ;; except the interpreter can't handle that and will die messily.
+             (*compile-verbose* verbose)
+             (*compile-print* print)
+             (*compile-file-pathname* (pathname (merge-pathnames input-file)))
+             (*compile-file-truename* (translate-logical-pathname *compile-file-pathname*))
+             (*compile-file-source-debug-pathname*
+               (if cfsdpp source-debug-pathname *compile-file-truename*))
+             (*compile-file-file-scope*
+               (core:file-scope *compile-file-source-debug-pathname*))
+             (*compile-file-source-debug-lineno* source-debug-lineno)
+             (*compile-file-source-debug-offset* source-debug-offset)
+             (*compile-file-output-pathname* output-path)
+             (*compile-file-unique-symbol-prefix* unique-symbol-prefix))
+        (with-compiler-timer (:message "Compile-file" :report-link-time t :verbose *compile-verbose*)
+          (with-compilation-results ()
+            (let ((module (compile-file-to-module input-file
+                                                  :type type
+                                                  :output-type output-type
+                                                  :compile-file-hook *cleavir-compile-file-hook*
+                                                  :environment environment
+                                                  :image-startup-position image-startup-position
+                                                  :optimize optimize
+                                                  :optimize-level optimize-level)))
+              (compile-file-output-module module output-file output-type output-path input-file type)
+              (when output-info-pathname (generate-info input-file output-info-pathname))
+              output-path)))))))
 
 (defun reloc-model ()
   (cond
