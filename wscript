@@ -889,7 +889,7 @@ def configure(cfg):
     log.info("default cfg.env.CLASP_BUILD_MODE = %s, final cfg.env.LTO_FLAG = '%s'", cfg.env.CLASP_BUILD_MODE, cfg.env.LTO_FLAG)
 
     # default for USE_COMPILE_FILE_PARALLEL for Darwin is True - otherwise False
-    if ((not 'USE_COMPILE_FILE_PARALLEL' in cfg.env):
+    if (not 'USE_COMPILE_FILE_PARALLEL' in cfg.env):
         if (cfg.env['DEST_OS'] == DARWIN_OS ):
             # by default only MacOS has USE_COMPILE_FILE_PARALLEL=True
             cfg.env['USE_COMPILE_FILE_PARALLEL'] = True
