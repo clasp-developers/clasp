@@ -888,6 +888,20 @@ def configure(cfg):
         raise Exception("CLASP_BUILD_MODE can only be 'thinlto'(default), 'lto', or 'object' - you provided %s" % cfg.env['CLASP_BUILD_MODE'])
     log.info("default cfg.env.CLASP_BUILD_MODE = %s, final cfg.env.LTO_FLAG = '%s'", cfg.env.CLASP_BUILD_MODE, cfg.env.LTO_FLAG)
 
+    # default for USE_COMPILE_FILE_PARALLEL for Darwin is True - otherwise False
+    if ((not 'USE_COMPILE_FILE_PARALLEL' in cfg.env):
+        if (cfg.env['DEST_OS'] == DARWIN_OS ):
+            # by default only MacOS has USE_COMPILE_FILE_PARALLEL=True
+            cfg.env['USE_COMPILE_FILE_PARALLEL'] = True
+        elif (cfg.env['DEST_OS'] == LINUX_OS ):
+            cfg.env['USE_COMPILE_FILE_PARALLEL'] = False
+        elif (cfg.env['DEST_OS'] == FREEBSD_OS ):
+            # Martin - turn this to False if it breaks FREEBSD builds
+            cfg.env['USE_COMPILE_FILE_PARALLEL'] = True
+        else:
+            raise Exception("Unknown OS %s"%cfg.env['DEST_OS'])
+        
+
     log.debug("cfg.env['USE_COMPILE_FILE_PARALLEL'] = %s", cfg.env['USE_COMPILE_FILE_PARALLEL'])
     if ((not 'USE_COMPILE_FILE_PARALLEL' in cfg.env) or cfg.env['USE_COMPILE_FILE_PARALLEL'] ):
         cfg.define("USE_COMPILE_FILE_PARALLEL",1) 
