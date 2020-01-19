@@ -804,6 +804,8 @@ def configure(cfg):
     log.pprint("BLUE", "cfg.options.enable_mpi = %s" % cfg.options.enable_mpi)
     log.pprint('BLUE', 'configure()')
 
+    linker_in_use = "not specifically specified"
+
     cfg.env["BUILD_ROOT"] = os.path.abspath(top) # KLUDGE there should be a better way than this
     load_local_config(cfg)
     
@@ -1025,10 +1027,12 @@ def configure(cfg):
         if (cfg.env['USE_LLD'] and cfg.env.CLASP_BUILD_MODE == 'bitcode'):
             # Only use lld if USE_LLD is set and CLASP_BUILD_MODE is bitcode
             cfg.env.append_value('LINKFLAGS', '-fuse-ld=lld-%d.0' % CLANG_VERSION)
-            log.info("Using the lld linker")
+            linker_in_use = '-fuse-ld=lld-%d.0' % CLANG_VERSION
+            log.info("Using the lld linker in bitcode mode")
         else:
 #            cfg.env.append_value('LINKFLAGS', '-fuse-ld=lld-%d.0' % CLANG_VERSION)
             cfg.env.append_value('LINKFLAGS', '-fuse-ld=gold')
+            linker_in_use = "gold"
             log.info("Using the gold linker")
         cfg.env.append_value('LINKFLAGS', ['-stdlib=libstdc++']) # libstdc++/GCC libc++/clang
         cfg.env.append_value('LINKFLAGS', ['-lstdc++']) # -lstdc++/GCC -lc++/clang
@@ -1038,11 +1042,13 @@ def configure(cfg):
         # cfg.env.append_value('LINKFLAGS', ['-Wl,-export_dynamic,--lto-O0'])
         if (cfg.env['USE_LLD']):
             cfg.env.append_value('LINKFLAGS', '-fuse-ld=lld-%d.0' % CLANG_VERSION)
+            linker_in_use = "lld"
             log.info("Using the lld linker")
         else:
             #cfg.env.append_value('LINKFLAGS', '-fuse-ld=/opt/clasp/bin/ld.clasp')
             #log.info("Using linker frontend /opt/clasp/bin/ld.clasp")
             cfg.env.append_value('LINKFLAGS', '-fuse-ld=gold')
+            linker_in_use = "gold"
         cfg.env.append_value('LINKFLAGS', '-pthread')
         cfg.env.append_value('LINKFLAGS', '-lexecinfo')
     if (cfg.env['DEST_OS'] == DARWIN_OS ):
@@ -1059,6 +1065,8 @@ def configure(cfg):
     cfg.env.append_value('INCLUDES', [ run_llvm_config(cfg,"--includedir") ])
     cfg.env.append_value('INCLUDES', ['/usr/include'] )
     cfg.define("ENABLE_BACKTRACE_ARGS",1)
+
+    log.info("Build mode '%s' linker in use '%s'" % (cfg.env.CLASP_BUILD_MODE, linker_in_use))
 
 
 
