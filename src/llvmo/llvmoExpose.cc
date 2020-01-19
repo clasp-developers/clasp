@@ -30,9 +30,22 @@ THE SOFTWARE.
 //#include <llvm/Support/system_error.h>
 #include <dlfcn.h>
 #include <clasp/core/foundation.h>
+//
+// The include for Debug.h must be first so we can force NDEBUG undefined
+// otherwise setCurrentDebugTypes will be an empty macro
+#ifdef NDEBUG
+#undef NDEBUG
+#include "llvm/Support/Debug.h"
+#define NDEBUG
+#else
+#include "llvm/Support/Debug.h"
+#endif
+
 #include <llvm/ExecutionEngine/GenericValue.h>
 #include <llvm/ExecutionEngine/SectionMemoryManager.h>
+#define private public
 #include <llvm/ExecutionEngine/Orc/ExecutionUtils.h>
+#undef private
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/CodeGen/LinkAllCodegenComponents.h>
 #include <llvm/Bitcode/BitcodeWriter.h>
@@ -50,6 +63,7 @@ THE SOFTWARE.
 #include <llvm/Support/raw_ostream.h>
 #include <llvm/Support/MemoryBuffer.h>
 #include <llvm/Support/FileSystem.h>
+#include <llvm/Support/CodeGen.h>
 #include <llvm/Support/DynamicLibrary.h>
 #include <llvm/LTO/legacy/ThinLTOCodeGenerator.h>
 #include <llvm/Analysis/ModuleSummaryAnalysis.h>
@@ -122,7 +136,6 @@ THE SOFTWARE.
 #include <clasp/core/external_wrappers.h>
 #include <clasp/core/wrappers.h>
 #include <clasp/core/symbolTable.h>
-
 
 
 
@@ -466,7 +479,7 @@ CL_DEFMETHOD core::ObjectFile_sp TargetMachine_O::generate_object_file_from_modu
 
 
 CL_LISPIFY_NAME("addPassesToEmitFileAndRunPassManager");
-CL_DEFMETHOD void TargetMachine_O::addPassesToEmitFileAndRunPassManager(PassManager_sp passManager,
+CL_DEFMETHOD core::T_sp TargetMachine_O::addPassesToEmitFileAndRunPassManager(PassManager_sp passManager,
                                                                         core::T_sp stream,
                                                                         core::T_sp dwo_stream,
                                                                         llvm::TargetMachine::CodeGenFileType FileType,
@@ -478,9 +491,11 @@ CL_DEFMETHOD void TargetMachine_O::addPassesToEmitFileAndRunPassManager(PassMana
   llvm::SmallString<1024> stringOutput;
   bool stringOutputStream = false;
   if (core::StringOutputStream_sp sos = stream.asOrNull<core::StringOutputStream_O>()) {
-    (void)sos;
     ostreamP = new llvm::raw_svector_ostream(stringOutput);
     stringOutputStream = true;
+  } else if ( stream == kw::_sym_simple_vector_byte8 ) {
+    (void)sos;
+    ostreamP = new llvm::raw_svector_ostream(stringOutput);
   } else if (core::IOFileStream_sp fs = stream.asOrNull<core::IOFileStream_O>()) {
     ostreamP = new llvm::raw_fd_ostream(fs->fileDescriptor(), false, true);
   } else if (core::IOStreamStream_sp iostr = stream.asOrNull<core::IOStreamStream_O>()) {
@@ -516,10 +531,18 @@ CL_DEFMETHOD void TargetMachine_O::addPassesToEmitFileAndRunPassManager(PassMana
   passManager->wrappedPtr()->run(*module->wrappedPtr());
   if (core::StringOutputStream_sp sos = stream.asOrNull<core::StringOutputStream_O>()) {
     sos->fill(stringOutput.c_str());
+  } else if (stream == kw::_sym_simple_vector_byte8) {
+    SYMBOL_EXPORT_SC_(KeywordPkg,simple_vector_byte8);
+    core::SimpleVector_byte8_t_sp vector_byte8 = core::SimpleVector_byte8_t_O::make(stringOutput.size(),0,false,stringOutput.size(),(const unsigned char*)stringOutput.data());
+    if (dwo_stream.notnilp()) {
+      SIMPLE_ERROR(BF("dwo_stream must be nil"));
+    }
+    return vector_byte8;
   }
   if (core::StringOutputStream_sp dwo_sos = dwo_stream.asOrNull<core::StringOutputStream_O>()) {
     dwo_sos->fill(dwo_stringOutput.c_str());
   }
+  return _Nil<core::T_O>();
 }
 
   CL_LISPIFY_NAME(createDataLayout);
@@ -3686,10 +3709,15 @@ class ClaspSectionMemoryManager : public SectionMemoryManager {
                                 StringRef SectionName,
                                 bool isReadOnly) {
     uint8_t* ptr = this->SectionMemoryManager::allocateDataSection(Size,Alignment,SectionID,SectionName,isReadOnly);
-    // printf("%s:%d:%s Allocating section: %s\n", __FILE__, __LINE__, __FUNCTION__, SectionName.str().c_str());
+//    printf("%s:%d:%s allocateDataSection: %s\n", __FILE__, __LINE__, __FUNCTION__, SectionName.str().c_str());
     if (SectionName.str() == STACKMAPS_NAME) {
       my_thread->_stackmap = (uintptr_t)ptr;
       my_thread->_stackmap_size = (size_t)Size;
+#if 0
+      printf("%s:%d recorded __llvm_stackmap allocateDataSection Size: %lu  Alignment: %u SectionId: %u SectionName: %s isReadOnly: %d --> allocated at: %p\n" ,
+             __FILE__, __LINE__,
+             Size , Alignment, SectionID, SectionName.str().c_str(), isReadOnly, (void*)ptr );
+#endif
       LOG(BF("STACKMAP_LOG  recorded __llvm_stackmap allocateDataSection Size: %lu  Alignment: %u SectionId: %u SectionName: %s isReadOnly: %d --> allocated at: %p\n") %
           Size% Alignment% SectionID% SectionName.str().c_str() % isReadOnly% (void*)ptr);
     }
@@ -3776,6 +3804,7 @@ class ClaspSectionMemoryManager : public SectionMemoryManager {
   }
 
   bool finalizeMemory(std::string* ErrMsg = nullptr) {
+//    printf("%s:%d finalizeMemory\n", __FILE__, __LINE__);
     LOG(BF("STACKMAP_LOG %s entered\n") % __FUNCTION__ );
     bool result = this->SectionMemoryManager::finalizeMemory(ErrMsg);
     unsigned long section_size = 0;
@@ -3822,6 +3851,15 @@ void register_symbol_with_libunwind(const std::string& name, uint64_t start, siz
 void save_symbol_info(const llvm::object::ObjectFile& object_file, const llvm::RuntimeDyld::LoadedObjectInfo& loaded_object_info)
 {
   std::vector< std::pair< llvm::object::SymbolRef, uint64_t > > symbol_sizes = llvm::object::computeSymbolSizes(object_file);
+#ifdef _TARGET_OS_DARWIN
+  std::string startup_name = "__claspObjectFileStartUp";
+#endif
+#ifdef _TARGET_OS_LINUX
+  std::string startup_name = "_claspObjectFileStartUp";
+#endif
+#ifdef _TARGET_OS_FREEBSD
+  #error "Add support for freebsd"
+#endif
   for ( auto p : symbol_sizes ) {
     llvm::object::SymbolRef symbol = p.first;
     Expected<StringRef> expected_symbol_name = symbol.getName();
@@ -3840,8 +3878,11 @@ void save_symbol_info(const llvm::object::ObjectFile& object_file, const llvm::R
           register_symbol_with_libunwind(name,section_address+address,size);
           if ((!comp::_sym_jit_register_symbol.unboundp()) && comp::_sym_jit_register_symbol->fboundp()) {
             core::eval::funcall(comp::_sym_jit_register_symbol,core::SimpleBaseString_O::make(name),symbol_info);
-//            printf("%s:%d  Registering symbol -> %s : %s\n", __FILE__, __LINE__, name.c_str(), _rep_(symbol_info).c_str() );
-//        gc::As<core::HashTableEqual_sp>(comp::_sym_STARjit_saved_symbol_infoSTAR->symbolValue())->hash_table_setf_gethash(core::SimpleBaseString_O::make(name),symbol_info);
+            if (name == startup_name) {
+              my_thread->_ObjectFileStartUp = (void*)((char*)section_address+address);
+            }
+//          printf("%s:%d  Registering symbol -> %s : %s\n", __FILE__, __LINE__, name.c_str(), _rep_(symbol_info).c_str() );
+//          gc::As<core::HashTableEqual_sp>(comp::_sym_STARjit_saved_symbol_infoSTAR->symbolValue())->hash_table_setf_gethash(core::SimpleBaseString_O::make(name),symbol_info);
           }
         }
       }
@@ -4042,13 +4083,17 @@ CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, co
     startupPtr = gc::As<core::Pointer_sp>(jit->lookup(startupName));
   }
   core::T_O* replPtrRaw = NULL;
-  if (startupPtr) {
+  if (startupPtr && startupPtr->ptr()) {
     fnStartUp startup = reinterpret_cast<fnStartUp>(gc::As_unsafe<core::Pointer_sp>(startupPtr)->ptr());
 //    printf("%s:%d:%s About to invoke startup @p=%p\n", __FILE__, __LINE__, __FUNCTION__, (void*)startup);
     replPtrRaw = startup(initialData.raw_());
+    if (replPtrRaw==NULL) {
+        printf("%s:%d The return repl function pointer is NULL - we won't be able to call it\n", __FILE__, __LINE__ );
+        abort();
+    }
   } else {
-    printf("%s:%d No startup functions were available!!!\n", __FILE__, __LINE__);
-    abort();
+      printf("%s:%d The startup function %s resolved to NULL - no code is available!!!\n", __FILE__, __LINE__, startupName.c_str());
+      abort();
   }    
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid;
   core::CompiledClosure_fptr_type lisp_funcPtr = (core::CompiledClosure_fptr_type)(replPtrRaw);
@@ -4063,6 +4108,58 @@ CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, co
 };
 
 
+namespace llvm {
+namespace orc {
+class ClaspDynamicLibrarySearchGenerator : public DynamicLibrarySearchGenerator {
+
+  ClaspDynamicLibrarySearchGenerator(sys::DynamicLibrary Dylib, char GlobalPrefix, SymbolPredicate Allow)
+    : DynamicLibrarySearchGenerator(Dylib,GlobalPrefix,Allow) {};
+
+  virtual Expected<SymbolNameSet> operator()(JITDylib &JD, const SymbolNameSet &Names) {
+    printf("%s:%d In operator ()\n", __FILE__, __LINE__ );
+    orc::SymbolNameSet Added;
+    orc::SymbolMap NewSymbols;
+ 
+    bool HasGlobalPrefix = (GlobalPrefix != '\0');
+ 
+    for (auto &Name : Names) {
+      if ((*Name).empty())
+        continue;
+ 
+      if (Allow && !Allow(Name))
+        continue;
+ 
+      if (HasGlobalPrefix && (*Name).front() != GlobalPrefix)
+        continue;
+ 
+      std::string Tmp((*Name).data() + HasGlobalPrefix,
+                      (*Name).size() - HasGlobalPrefix);
+      if (void *Addr = Dylib.getAddressOfSymbol(Tmp.c_str())) {
+        if (core::_sym_STARdebug_symbol_lookupSTAR->symbolValue().notnilp()) {
+          core::write_bf_stream(BF("Symbol |%s|  address: %p\n") % Tmp % Addr );
+        }
+        Added.insert(Name);
+        NewSymbols[Name] = JITEvaluatedSymbol(
+                                              static_cast<JITTargetAddress>(reinterpret_cast<uintptr_t>(Addr)),
+                                              JITSymbolFlags::Exported);
+      }
+    }
+ 
+   // Add any new symbols to JD. Since the generator is only called for symbols
+   // that are not already defined, this will never trigger a duplicate
+   // definition error, so we can wrap this call in a 'cantFail'.
+    if (!NewSymbols.empty())
+      cantFail(JD.define(absoluteSymbols(std::move(NewSymbols))));
+ 
+    return Added;
+  }
+};
+
+
+};
+};
+
+
 
 namespace llvmo {
 
@@ -4073,49 +4170,230 @@ void handleObjectEmitted(VModuleKey K, std::unique_ptr<MemoryBuffer> O) {
 
 
 
-CL_DEFUN ClaspJIT_sp llvm_sys__make_clasp_jit()
+
+
+CL_DEFUN ClaspJIT_sp llvm_sys__make_clasp_jit(DataLayout_sp data_layout)
 {
-  llvm::ExitOnError ExitOnErr;
-//  printf("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__ );
-  auto J = ExitOnErr( llvm::orc::LLJITBuilder()
-                      .setObjectLinkingLayerCreator(
-                                                   [&](ExecutionSession &ES) {
-                                                     auto GetMemMgr =
-                                                       []() { return llvm::make_unique<ClaspSectionMemoryManager>(); };
-                                                     auto ObjLayer =
-                                                       llvm::make_unique<llvm::orc::RTDyldObjectLinkingLayer>(ES, std::move(GetMemMgr));
-                                                     ObjLayer->setNotifyEmitted(handleObjectEmitted);
-                                                     return ObjLayer;
-                                                   })
-                      .create());
-  auto &DJ = J->getMainJITDylib();
-  DJ.setGenerator(ExitOnErr(DynamicLibrarySearchGenerator::GetForCurrentProcess(J->getDataLayout().getGlobalPrefix())));
-  GC_ALLOCATE_VARIADIC(ClaspJIT_O,cj,J.release());
+  GC_ALLOCATE_VARIADIC(ClaspJIT_O,cj,data_layout->dataLayout());
   return cj;
 }
+
+
+ClaspJIT_O::ClaspJIT_O(const llvm::DataLayout& data_layout) {
+#if 0
+    // Detect the host and set code model to small.
+  llvm::ExitOnError ExitOnErr;
+  auto JTMB = ExitOnErr(llvm::orc::JITTargetMachineBuilder::detectHost());
+  core::SymbolToEnumConverter_sp converter = _sym_AttributeEnum->symbolValue().as<core::SymbolToEnumConverter_O>();
+  
+  JTMB.setCodeModel(CodeModel::Small);
+
+
+  // Create an LLJIT instance with an ObjectLinkingLayer as the base layer.
+  auto J = ExitOnErr(
+                     llvm::orc::LLJITBuilder()
+                     .setJITTargetMachineBuilder(std::move(JTMB))
+                     .setObjectLinkingLayerCreator(
+                                                   [&](llvm::orc::ExecutionSession &ES) {
+                                                     return make_unique<ObjectLinkingLayer>(
+                                                                                            ES, make_unique<llvm::jitlink::InProcessMemoryManager>());
+                                                   })
+                     .create());
+#endif
+  
+  this->ES = new llvm::orc::ExecutionSession();
+  auto GetMemMgr = []() { return llvm::make_unique<llvmo::ClaspSectionMemoryManager>(); };
+#ifdef USE_JITLINKER
+    #error "JITLinker support needed"
+#else
+  this->LinkLayer = new llvm::orc::RTDyldObjectLinkingLayer(*this->ES,GetMemMgr);
+  this->LinkLayer->setProcessAllSections(true);
+  this->LinkLayer->setNotifyLoaded( [&] (VModuleKey, const llvm::object::ObjectFile &Obj, const llvm::RuntimeDyld::LoadedObjectInfo &loadedObjectInfo) {
+//                                      printf("%s:%d  NotifyLoaded ObjectFile@%p\n", __FILE__, __LINE__, &Obj);
+                                      save_symbol_info(Obj,loadedObjectInfo);
+                                    });
+#endif
+  auto JTMB = llvm::orc::JITTargetMachineBuilder::detectHost();
+#if 0
+  // Don't set the code model - the default should work fine.
+  // If it doesn't - invoke the (cmp:code-model :jit xxx :compile-file-parallel yyy)
+  // function
+  core::SymbolToEnumConverter_sp converter = gc::As<core::SymbolToEnumConverter_sp>(llvmo::_sym_CodeModel->symbolValue());
+  core::T_sp code_model_symbol = llvmo::_sym_STARdefault_code_modelSTAR->symbolValue();
+  auto cm = converter->enumForSymbol<llvm::CodeModel::Model>(code_model_symbol);
+  JTMB->setCodeModel(cm);
+#endif
+  this->Compiler = new llvm::orc::ConcurrentIRCompiler(*JTMB);
+  this->CompileLayer = new llvm::orc::IRCompileLayer(*this->ES,*this->LinkLayer,*this->Compiler);
+  printf("%s:%d Registering ClaspDynamicLibarySearchGenerator\n", __FILE__, __LINE__ );
+  this->ES->getMainJITDylib().setGenerator(llvm::cantFail(ClaspDynamicLibrarySearchGenerator::GetForCurrentProcess(data_layout.getGlobalPrefix())));
+}
+
+ClaspJIT_O::~ClaspJIT_O()
+{
+  printf("%s:%d Shutdown the ClaspJIT\n", __FILE__, __LINE__);
+}
+
 
 CL_DEFMETHOD core::T_sp ClaspJIT_O::lookup(const std::string& Name) {
 //  printf("%s:%d:%s Name = %s\n", __FILE__, __LINE__, __FUNCTION__, Name.c_str());
   llvm::ExitOnError ExitOnErr;
-  llvm::JITEvaluatedSymbol symbol = ExitOnErr(this->_Jit->lookup(Name));
-//  printf("%s:%d:%s symbol->getAddress() -> %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)symbol.getAddress());
-  return core::Pointer_O::create((void*)symbol.getAddress());
+//  llvm::ArrayRef<llvm::orc::JITDylib*>  dylibs(&this->ES->getMainJITDylib());
+#if defined(_TARGET_OS_DARWIN)
+  // gotta put a _ in front of the name on DARWIN but not Unixes? Why? Dunno.
+  std::string mangledName = "_" + Name;
+#endif
+#if defined(_TARGET_OS_LINUX) || defined(_TARGET_OS_FREEBSD)
+  std::string mangledName = Name;
+#endif
+
+#if !defined(_TARGET_OS_LINUX) && !defined(_TARGET_OS_FREEBSD) && !defined(_TARGET_OS_DARWIN)
+#error You need to decide here
+#endif
+
+  llvm::Expected<llvm::JITEvaluatedSymbol> symbol = this->ES->lookup(llvm::orc::JITDylibSearchList({{&this->ES->getMainJITDylib(),true}}),
+                                                                     this->ES->intern(mangledName));   
+  if (!symbol) {
+    llvm::handleAllErrors(symbol.takeError(), [](const llvm::ErrorInfoBase &E) {
+                                                  errs() << "Symbolizer failed to get line: " << E.message() << "\n";
+                                                });
+#if 0
+    std::stringstream ss;
+    ss << __FILE__ <<":" <<__LINE__ << ":  " << symbol.takeError().message();
+    printf("%s\n", ss.str().c_str());
+    abort();
+#endif
+  }
+//  printf("%s:%d:%s !!symbol -> %d  symbol->getAddress() -> %p\n", __FILE__, __LINE__, __FUNCTION__, !!symbol, (void*)symbol->getAddress());
+  return core::Pointer_O::create((void*)symbol->getAddress());
 }
 
 CL_DEFMETHOD void ClaspJIT_O::addIRModule(Module_sp module, ThreadSafeContext_sp context) {
   std::unique_ptr<llvm::Module> umodule(module->wrappedPtr());
   llvm::ExitOnError ExitOnErr;
-  ExitOnErr(this->_Jit->addIRModule(llvm::orc::ThreadSafeModule(std::move(umodule),*context->wrappedPtr())));
+  ExitOnErr(this->CompileLayer->add(this->ES->getMainJITDylib(),llvm::orc::ThreadSafeModule(std::move(umodule),*context->wrappedPtr())));
 }
+
+void ClaspJIT_O::addObjectFile(const char* rbuffer, size_t bytes, bool print)
+{
+  // Create an llvm::MemoryBuffer for the ObjectFile bytes
+  if (print) core::write_bf_stream(BF("%s:%d Adding object file at %p  %lu bytes\n")  % __FILE__ % __LINE__  % (void*)rbuffer % bytes );
+  llvm::StringRef sbuffer((const char*)rbuffer,bytes);
+  llvm::StringRef name("buffer-name");
+  std::unique_ptr<llvm::MemoryBuffer> mbuffer = llvm::MemoryBuffer::getMemBuffer(sbuffer,name,false);
+  // Force the object file to be linked using MaterializationUnit::doMaterialize(...)
+  if (print) core::write_bf_stream(BF("%s:%d Materializing\n") % __FILE__ % __LINE__ );
+  auto K = llvm::orc::VModuleKey();
+  auto ObjMU = llvm::orc::BasicObjectLayerMaterializationUnit::Create(*this->LinkLayer,std::move(K),std::move(mbuffer));
+  if (!ObjMU) {
+    llvm::ExitOnError ExitOnErr;
+    ExitOnErr(ObjMU.takeError());
+  }
+  (*ObjMU)->doMaterialize(this->ES->getMainJITDylib());
+  // Lookup the address of the ObjectFileStartUp function and invoke it
+  void* thread_local_startup = my_thread->_ObjectFileStartUp;
+  my_thread->_ObjectFileStartUp = NULL;
+  if (thread_local_startup) {
+    if (print) core::write_bf_stream(BF("%s:%d thread_local_startup -> %p\n") % __FILE__ % __LINE__ % (void*)thread_local_startup);
+    fnStartUp startup = reinterpret_cast<fnStartUp>(thread_local_startup);
+    core::T_O* replPtrRaw = startup(NULL);
+  } else {
+    if (print) core::write_bf_stream(BF("No startup function was defined\n"));
+  }
+  // Running the ObjectFileStartUp function registers the startup functions - now we can invoke them
+  if (core::startup_functions_are_waiting()) {
+    if (print) core::write_bf_stream(BF("%s:%d  startup functions are waiting - INVOKING\n") % __FILE__ % __LINE__ );
+    core::startup_functions_invoke(NULL);
+  } else {
+    core::write_bf_stream(BF("%s:%d  No startup functions are waiting\n") % __FILE__ % __LINE__ );
+  }
+}
+
+#if 0
+void ClaspJIT_O::addObjectFile(core::ObjectFile_sp objectFile, core::T_sp startup_function_name)
+{
+  const char* rbuffer = (const char*)objectFile->_ObjectFilePtr;
+  size_t bytes = objectFile->_ObjectFileSize;
+  llvm::StringRef sbuffer((const char*)rbuffer,bytes);
+  llvm::StringRef name("buffer-name");
+  std::unique_ptr<llvm::MemoryBuffer> mbuffer = llvm::MemoryBuffer::getMemBuffer(sbuffer,name,false);
+#if 0
+  auto K = llvm::orc::VModuleKey();
+  auto ObjMU = llvm::orc::BasicObjectLayerMaterializationUnit::Create(*this->LinkLayer,std::move(K),std::move(mbuffer));
+  if (!ObjMU) {
+    llvm::ExitOnError ExitOnErr;
+    ExitOnErr(ObjMU.takeError());
+  }
+  (*ObjMU)->doMaterialize(this->ES->getMainJITDylib());
+#else
+  auto erro = this->LinkLayer->add(this->ES->getMainJITDylib(),std::move(mbuffer));
+  if (erro) {
+    printf("%s:%d Could not addObjectFile\n", __FILE__, __LINE__ );
+  }
+#endif
+//  printf("%s:%d If running static constructors worked we would be about to run constructors\n", __FILE__, __LINE__ );
+#if 0
+  auto errr = jit->_Jit->runConstructors();
+  if (errr) {
+    printf("%s:%d Could not runConstructors\n", __FILE__, __LINE__ );
+  }
+#endif
+
+  core::String_sp string_name = gc::As<core::String_sp>(startup_function_name);
+  llvm::orc::SymbolStringPtr foo = this->ES->intern(string_name->get_std_string());
+  core::Pointer_sp startupPtr = gc::As<core::Pointer_sp>(this->lookup(string_name->get_std_string()));
+  printf("%s:%d  ObjectFileStartUp ptr -> %s\n", __FILE__, __LINE__, _rep_(startupPtr).c_str());
+  if (startupPtr) {
+    printf("%s:%d  INVOKING ObjectFileStartUp ptr -> %s\n", __FILE__, __LINE__, _rep_(startupPtr).c_str());
+    fnStartUp startup = reinterpret_cast<fnStartUp>(gc::As_unsafe<core::Pointer_sp>(startupPtr)->ptr());
+    core::T_O* replPtrRaw = startup(NULL);
+  }
+#if 0
+  llvm::orc::SymbolNameSet remove_names({foo});
+  printf("%s:%d  Removing symbol %s\n", __FILE__, __LINE__, string_name->get_std_string().c_str());
+//  this->ES->getMainJITDylib().remove(remove_names);
+#endif
+  if (core::startup_functions_are_waiting()) {
+    printf("%s:%d startup functions were waiting - invoking\n", __FILE__, __LINE__ );
+    core::startup_functions_invoke(NULL);
+  } else {
+    printf("%s:%d NO startup functions were waiting\n", __FILE__, __LINE__ );
+  }
+}
+#endif
 
 
 CL_DEFMETHOD JITDylib& ClaspJIT_O::getMainJITDylib() {
-  return this->_Jit->getMainJITDylib();
+  return this->ES->getMainJITDylib();
 }
 
 CL_DEFMETHOD JITDylib& ClaspJIT_O::createJITDylib(const std::string& name) {
-  return this->_Jit->createJITDylib(name);
+  return this->ES->createJITDylib(name);
 }
 
+CL_DOCSTRING(R"doc(Tell LLVM what LLVM_DEBUG messages to turn on. Pass a list of strings like \"dyld\" - which
+turns on messages from RuntimeDyld.cpp if NDEBUG is NOT defined for the llvm build.)doc");
+CL_DEFUN void llvm_sys__set_current_debug_types(core::List_sp types)
+{
+  using namespace llvm;
+  size_t numStrings = core::cl__length(types);
+  char** array = (char**)malloc(sizeof(char*)*numStrings);
+  size_t index = 0;
+  for ( auto cur : types ) {
+    core::String_sp name = gc::As<core::String_sp>(CONS_CAR(cur));
+    std::string sname(name->get_std_string());
+    char* oneName = (char*)malloc(sname.size()+1);
+    strncpy(oneName,sname.c_str(),sname.size());
+    oneName[sname.size()] = '\0';
+    array[index] = oneName;
+    index++;
+  };
+  // Call setCurrentDebugTypes
+  setCurrentDebugTypes((const char**)array,index);
+  for ( size_t idx = 0; idx<index; ++idx ) {
+    free(array[idx]);
+  }
+  free(array);
+};  
 
 };

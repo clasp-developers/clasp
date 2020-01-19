@@ -1,5 +1,9 @@
 (in-package #:cmp)
 
+#+(or)
+(eval-when (:execute)
+  (setq core:*echo-repl-read* t))
+
 ;;;; Top level interface: COMPILE-FILE, etc.
 
 ;;; Use the *cleavir-compile-file-hook* to determine which compiler to use
@@ -82,8 +86,11 @@
 (defun cfp-output-extension (output-type)
   (cond
     ((eq output-type :bitcode) (if *use-human-readable-bitcode* "ll" "bc"))
+    ((and *compile-file-parallel* (or (eq output-type :object))) "faso")
+    ((and *compile-file-parallel* (or (eq output-type :fasl))) "fasp")
     ((eq output-type :object) "o")
     ((eq output-type :fasl) "fasl")
+    ((eq output-type :faso) "faso")
     ((eq output-type :executable) #-windows "" #+windows "exe")
     (t (error "unsupported output-type ~a" output-type))))
 
@@ -124,35 +131,42 @@ and the pathname of the source file - this will also be used as the module initi
 ;;;
 ;;; Compile-file proper
 
-(defun generate-obj-asm (module output-pathname &key file-type (reloc-model 'llvm-sys:reloc-model-undefined))
+(defun generate-obj-asm-stream (module output-stream file-type reloc-model &key (compile-file-parallel *compile-file-parallel*))
+  (with-track-llvm-time
+      (let* ((triple-string (llvm-sys:get-target-triple module))
+             (normalized-triple-string (llvm-sys:triple-normalize triple-string))
+             (triple (llvm-sys:make-triple normalized-triple-string))
+             (target-options (llvm-sys:make-target-options)))
+        (multiple-value-bind (target msg)
+            (llvm-sys:target-registry-lookup-target "" triple)
+          (unless target (error msg))
+          (let* ((target-machine (llvm-sys:create-target-machine target
+                                                                 (llvm-sys:get-triple triple)
+                                                                 ""
+                                                                 ""
+                                                                 target-options
+                                                                 reloc-model
+                                                                 (code-model :jit nil :compile-file-parallel compile-file-parallel)
+                                                                 'llvm-sys:code-gen-opt-default
+                                                                 NIL ; JIT?
+                                                                 ))
+                 (pm (llvm-sys:make-pass-manager))
+                 (target-pass-config (llvm-sys:create-pass-config target-machine pm))
+                 (_ (llvm-sys:set-enable-tail-merge target-pass-config nil))
+                 (tli (llvm-sys:make-target-library-info-wrapper-pass triple #||LLVM3.7||#))
+                 (data-layout (llvm-sys:create-data-layout target-machine)))
+            (llvm-sys:set-data-layout module data-layout)
+            (llvm-sys:pass-manager-add pm tli)
+            (llvm-sys:add-passes-to-emit-file-and-run-pass-manager target-machine pm output-stream nil #|<-dwo-stream|# file-type module))))))
+
+
+(defun compile-file-generate-obj-asm (module output-pathname &key file-type (reloc-model 'llvm-sys:reloc-model-undefined) (compile-file-parallel *compile-file-parallel*))
   (with-atomic-file-rename (temp-output-pathname output-pathname)
     (with-open-file (output-stream temp-output-pathname :direction :output)
-      (with-track-llvm-time
-          (let* ((triple-string (llvm-sys:get-target-triple module))
-                 (normalized-triple-string (llvm-sys:triple-normalize triple-string))
-                 (triple (llvm-sys:make-triple normalized-triple-string))
-                 (target-options (llvm-sys:make-target-options)))
-            (multiple-value-bind (target msg)
-                (llvm-sys:target-registry-lookup-target "" triple)
-              (unless target (error msg))
-              (let* ((target-machine (llvm-sys:create-target-machine target
-                                                                     (llvm-sys:get-triple triple)
-                                                                     ""
-                                                                     ""
-                                                                     target-options
-                                                                     reloc-model
-                                                                     *default-code-model*
-                                                                     'llvm-sys:code-gen-opt-default
-                                                                     NIL ; JIT?
-                                                                     ))
-                     (pm (llvm-sys:make-pass-manager))
-                     (target-pass-config (llvm-sys:create-pass-config target-machine pm))
-                     (_ (llvm-sys:set-enable-tail-merge target-pass-config nil))
-                     (tli (llvm-sys:make-target-library-info-wrapper-pass triple #||LLVM3.7||#))
-                     (data-layout (llvm-sys:create-data-layout target-machine)))
-                (llvm-sys:set-data-layout module data-layout)
-                (llvm-sys:pass-manager-add pm tli)
-                (llvm-sys:add-passes-to-emit-file-and-run-pass-manager target-machine pm output-stream nil #|<-dwo-stream|# file-type module))))))))
+      (generate-obj-asm-stream module output-stream file-type reloc-model
+                               :compile-file-parallel compile-file-parallel)
+      )))
+
 
 (defvar *debug-compile-file* nil)
 (defvar *debug-compile-file-counter* 0)
@@ -236,6 +250,13 @@ Compile a lisp source file into an LLVM module."
           (quick-module-dump *the-module* "preoptimize")
           ;; (2) Add the CTOR next
           (make-boot-function-global-variable module run-all-name
+                                              :linkage
+                                              ; 'llvm-sys:internal-linkage
+                                              ;; works
+                                        ; 'llvm-sys:external-linkage
+                                        ; 'llvm-sys:internal-linkage
+                                              ;; broken
+                                              'llvm-sys:internal-linkage
                                               :position image-startup-position
                                               :register-library t))
         ;; Now at the end of with-module another round of optimization is done
@@ -290,39 +311,40 @@ Compile a lisp source file into an LLVM module."
                               environment)
   "See CLHS compile-file."
   #+debug-monitor(sys:monitor-message "compile-file ~a" input-file)
-  (if (not output-file-p) (setq output-file (cfp-output-file-default input-file output-type)))
-  (with-compiler-env ()
-    (let* ((output-path (compile-file-pathname input-file :output-file output-file :output-type output-type ))
-           (*track-inlined-functions* (make-hash-table :test #'equal))
-           (output-info-pathname (when output-info (make-pathname :type "info" :defaults output-path)))
-           (*compilation-module-index* 0) ; FIXME: necessary?
-           ;; KLUDGE: We could just bind these in the lambda list,
-           ;; except the interpreter can't handle that and will die messily.
-           (*compile-verbose* verbose)
-           (*compile-print* print)
-           (*compile-file-pathname* (pathname (merge-pathnames input-file)))
-           (*compile-file-truename* (translate-logical-pathname *compile-file-pathname*))
-           (*compile-file-source-debug-pathname*
-             (if cfsdpp source-debug-pathname *compile-file-truename*))
-           (*compile-file-file-scope*
-             (core:file-scope *compile-file-source-debug-pathname*))
-           (*compile-file-source-debug-lineno* source-debug-lineno)
-           (*compile-file-source-debug-offset* source-debug-offset)
-           (*compile-file-output-pathname* output-path)
-           (*compile-file-unique-symbol-prefix* unique-symbol-prefix))
-      (with-compiler-timer (:message "Compile-file" :report-link-time t :verbose *compile-verbose*)
-        (with-compilation-results ()
-          (let ((module (compile-file-to-module input-file
-                                                :type type
-                                                :output-type output-type
-                                                :compile-file-hook *cleavir-compile-file-hook*
-                                                :environment environment
-                                                :image-startup-position image-startup-position
-                                                :optimize optimize
-                                                :optimize-level optimize-level)))
-            (output-module module output-file output-type output-path input-file type)
-            (when output-info-pathname (generate-info input-file output-info-pathname))
-            output-path))))))
+  (let ((*compile-file-parallel* nil))
+    (if (not output-file-p) (setq output-file (cfp-output-file-default input-file output-type)))
+    (with-compiler-env ()
+      (let* ((output-path (compile-file-pathname input-file :output-file output-file :output-type output-type ))
+             (*track-inlined-functions* (make-hash-table :test #'equal))
+             (output-info-pathname (when output-info (make-pathname :type "info" :defaults output-path)))
+             (*compilation-module-index* 0) ; FIXME: necessary?
+             ;; KLUDGE: We could just bind these in the lambda list,
+             ;; except the interpreter can't handle that and will die messily.
+             (*compile-verbose* verbose)
+             (*compile-print* print)
+             (*compile-file-pathname* (pathname (merge-pathnames input-file)))
+             (*compile-file-truename* (translate-logical-pathname *compile-file-pathname*))
+             (*compile-file-source-debug-pathname*
+               (if cfsdpp source-debug-pathname *compile-file-truename*))
+             (*compile-file-file-scope*
+               (core:file-scope *compile-file-source-debug-pathname*))
+             (*compile-file-source-debug-lineno* source-debug-lineno)
+             (*compile-file-source-debug-offset* source-debug-offset)
+             (*compile-file-output-pathname* output-path)
+             (*compile-file-unique-symbol-prefix* unique-symbol-prefix))
+        (with-compiler-timer (:message "Compile-file" :report-link-time t :verbose *compile-verbose*)
+          (with-compilation-results ()
+            (let ((module (compile-file-to-module input-file
+                                                  :type type
+                                                  :output-type output-type
+                                                  :compile-file-hook *cleavir-compile-file-hook*
+                                                  :environment environment
+                                                  :image-startup-position image-startup-position
+                                                  :optimize optimize
+                                                  :optimize-level optimize-level)))
+              (compile-file-output-module module output-file output-type output-path input-file type)
+              (when output-info-pathname (generate-info input-file output-info-pathname))
+              output-path)))))))
 
 (defun reloc-model ()
   (cond
@@ -341,7 +363,7 @@ Compile a lisp source file into an LLVM module."
       (finish-output))
     (llvm-link fasl-output-file :input-files (list input-file) :input-type :bitcode)))
 
-(defun output-module (module output-file output-type output-path input-file type)
+(defun compile-file-output-module (module output-file output-type output-path input-file type)
   (when (null output-path)
     (error "The output-path is nil for input filename ~a~%" input-file))
   (ensure-directories-exist output-path)
@@ -354,9 +376,10 @@ Compile a lisp source file into an LLVM module."
            (ensure-directories-exist temp-bitcode-file)
            (output-bitcode module temp-bitcode-file)
            (prog1
-               (generate-obj-asm module output-path
-                                   :file-type 'llvm-sys:code-gen-file-type-object-file
-                                   :reloc-model (reloc-model))
+               (compile-file-generate-obj-asm module output-path
+                                              :file-type 'llvm-sys:code-gen-file-type-object-file
+                                              :reloc-model (reloc-model)
+                                              :compile-file-parallel nil)
              (when (eq type :kernel)
                (output-kernel-fasl output-file temp-bitcode-file :object)))))
         ((eq output-type :bitcode)

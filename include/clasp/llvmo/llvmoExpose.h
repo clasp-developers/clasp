@@ -24,6 +24,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
+
+// #define USE_JITLINKER 1
+
+
 #ifndef llvmoExpose_H //[
 #define llvmoExpose_H
 
@@ -64,8 +68,7 @@ THE SOFTWARE.
 #include <llvm/ExecutionEngine/Orc/IRTransformLayer.h>
 #include <llvm/ExecutionEngine/Orc/LambdaResolver.h>
 #include <llvm/ExecutionEngine/Orc/RTDyldObjectLinkingLayer.h>
-#include <llvm/ExecutionEngine/Orc/LLJIT.h>
-//#include <llvm/ExecutionEngine/Orc/ObjectLinkingLayer.h>
+#include <llvm/ExecutionEngine/Orc/ObjectLinkingLayer.h>
 //#include "llvm/Support/IRBuilder.h"
 
 #include <stdio.h>
@@ -858,11 +861,11 @@ public:
   core::ObjectFile_sp generate_object_file_from_module(PassManager_sp passManager, Module_sp module);
   
   /*! Return (values CodeGenFileType-symbol) */
-  void addPassesToEmitFileAndRunPassManager(PassManager_sp passManager,
-                                            core::T_sp stream,
-                                            core::T_sp dwo_stream,
-                                            llvm::TargetMachine::CodeGenFileType,
-                                            Module_sp module);
+  core::T_sp addPassesToEmitFileAndRunPassManager(PassManager_sp passManager,
+                                                  core::T_sp stream_or_symbol,
+                                                  core::T_sp dwo_stream,
+                                                  llvm::TargetMachine::CodeGenFileType,
+                                                  Module_sp module);
 
   TargetMachine_O() : Base(), _ptr(NULL){};
   ~TargetMachine_O() {
@@ -4464,7 +4467,7 @@ namespace llvmo {
 template <>
 struct gctools::GCInfo<llvmo::ClaspJIT_O> {
   static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = false;
+  static bool constexpr NeedsFinalization = true;
   static GCInfo_policy constexpr Policy = collectable_immobile;
 };
 
@@ -4473,13 +4476,22 @@ namespace llvmo {
 class ClaspJIT_O : public core::General_O {
   LISP_CLASS(llvmo, LlvmoPkg, ClaspJIT_O, "clasp-jit", core::General_O);
 public:
-  std::unique_ptr<LLJIT> _Jit;
   void addIRModule(Module_sp cM,ThreadSafeContext_sp context);
   core::T_sp lookup(const std::string& Name);
   JITDylib& getMainJITDylib();
   JITDylib& createJITDylib(const std::string& name);
-  
-  ClaspJIT_O(llvm::orc::LLJIT* jj) : _Jit(jj) {};
+  void addObjectFile(const char* buffer, size_t bytes, bool print=false);
+  ClaspJIT_O(const llvm::DataLayout& data_layout);
+  ~ClaspJIT_O();
+public:
+  llvm::orc::ExecutionSession *ES;
+#ifdef USE_JITLINKER
+  llvm::org::JITLinker* LinkLayer;
+#else
+  llvm::orc::RTDyldObjectLinkingLayer *LinkLayer;
+#endif
+  llvm::orc::ConcurrentIRCompiler *Compiler;
+  llvm::orc::IRCompileLayer *CompileLayer;
 };
 
 

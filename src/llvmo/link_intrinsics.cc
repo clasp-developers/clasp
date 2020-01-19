@@ -1004,28 +1004,21 @@ gctools::return_type restoreFromMultipleValue0()
 
 extern "C" {
 
-void pushDynamicBinding(core::T_O *tsymbolP)
+void pushDynamicBinding(core::T_O *tsymbolP, core::T_O** alloca)
 {NO_UNWIND_BEGIN();
   core::Symbol_sp sym((gctools::Tagged)tsymbolP);
+  *alloca = sym->symbolValueUnsafe().raw_();
+#if 0 // temporary comment out
   my_thread->bindings().push_with_value_coming(sym,&sym->_GlobalValue);
+#endif
   NO_UNWIND_END();
 }
 
-void popDynamicBinding(core::T_O *tsymbolP)
+void popDynamicBinding(core::T_O *tsymbolP, core::T_O** alloca)
 {NO_UNWIND_BEGIN();
   core::Symbol_sp sym((gctools::Tagged)tsymbolP);
-  core::Symbol_sp top = my_thread->bindings().topSymbol();
-  if (sym != my_thread->bindings().topSymbol()) {
-    stringstream ss;
-    ss << __FILE__ << ":" << __LINE__;
-    ss << " About  to DynamicBindingStack::pop_binding" << my_thread->bindings().top();
-    ss << " of " << sym->formattedName(true) << std::endl;
-    ss << "  mismatch with top of dynamic binding stack: " << top->formattedName(true) << std::endl;
-    ss << "  dumping stack: " << std::endl;
-    core::core__dynamic_binding_stack_dump(ss);
-    SIMPLE_ERROR(BF("Mismatch in popDynamicBinding:\n%s") % ss.str());
-  }
-  my_thread->bindings().pop_binding();
+  core::T_sp val((gctools::Tagged)*alloca);
+  sym->setf_symbolValue(val);
   NO_UNWIND_END();
 }
 };

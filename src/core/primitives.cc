@@ -1849,37 +1849,6 @@ CL_DEFUN int core__set_ihs_current_frame(int icf) {
   return icf;
 }
 
-CL_LAMBDA();
-CL_DECLARE();
-CL_DOCSTRING("bdsTop");
-CL_DEFUN int core__bds_top() {
-  return my_thread->bindings().top();
-};
-
-CL_LAMBDA(idx);
-CL_DECLARE();
-CL_DOCSTRING("bdsVar");
-CL_DEFUN Symbol_sp core__bds_var(int idx) {
-  return my_thread->bindings().var(idx);
-};
-
-CL_LAMBDA(idx);
-CL_DECLARE();
-CL_DOCSTRING("bdsVal");
-CL_DEFUN T_sp core__bds_val(int idx) {
-  return my_thread->bindings().val(idx);
-};
-
-CL_LAMBDA();
-CL_DECLARE();
-CL_DOCSTRING("dynamicBindingStackDump");
-CL_DEFUN void core__dynamic_binding_stack_dump(std::ostream &out) {
-  DynamicBindingStack &bd = my_thread->bindings();
-  out << "Top of binding stack element " << bd.size() << std::endl;
-  for (int i(bd.size()-1); i>=0; --i) {
-    out << "  dbstack[" << i << "] --> " << (bd.var(i))->formattedName(true) << std::endl;
-  };
-}
 
 CL_DEFUN VaList_sp core__vaslist_rewind(VaList_sp v)
 {

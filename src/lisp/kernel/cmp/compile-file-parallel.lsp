@@ -21,35 +21,22 @@
   nil)
 
 (defstruct (ast-job (:type vector) :named)
-  ast environment dynenv form-output-path form-index error current-source-pos-info startup-function-name)
+  ast environment dynenv output-stream form-index error current-source-pos-info startup-function-name)
 
-
-(defun add-llvm.used (module used-function)
-  (or used-function (error "used-function must not be NIL"))
-  (llvm-sys:make-global-variable
-   module
-   %i8*[1]%
-   nil
-   'llvm-sys:appending-linkage
-   (llvm-sys:constant-array-get
-    %i8*[1]%
-    (list
-     (irc-bit-cast used-function %i8*%)))
-   "llvm.used"))
 
 (defun compile-from-ast (job &key
                                optimize
                                optimize-level
                                intermediate-output-type)
   (handler-case
-      (let ((module (cmp::llvm-create-module (namestring (ast-job-form-output-path job))))
+      (let ((module (cmp::llvm-create-module (format nil "module~a" (ast-job-form-index job))))
             (core:*current-source-pos-info* (ast-job-current-source-pos-info job)))
         (with-module (:module module
                       :optimize (when optimize #'optimize-module-for-compile-file)
                       :optimize-level optimize-level)
           (with-debug-info-generator (:module module
                                       :pathname *compile-file-truename*)
-            (with-make-new-run-all (run-all-function (namestring (ast-job-form-output-path job)))
+            (with-make-new-run-all (run-all-function (format nil "module~a" (ast-job-form-index job)))
               (with-literal-table
                   (core:with-memory-ramp (:pattern 'gctools:ramp)
                     (literal:with-top-level-form
@@ -60,7 +47,7 @@
               (let ((startup-function (add-global-ctor-function module run-all-function
                                                                 :position (ast-job-form-index job)
                                                                 :linkage 'llvm-sys:external-linkage)))
-                (add-llvm.used module startup-function)
+;;;                (add-llvm.used module startup-function)
                 (setf (ast-job-startup-function-name job) (llvm-sys:get-name startup-function))
                 ;; The link-once-odrlinkage should keep the startup-function alive and that
                 ;; should keep everything else alive as well.
@@ -75,6 +62,15 @@
           ;; ALWAYS link the builtins in, inline them and then remove them.
           #+(or)(link-inline-remove-builtins module))
         (cond
+          ((member intermediate-output-type '(:object :in-memory-object))
+           (let ((reloc-model (cond
+                                ((or (member :target-os-linux *features*) (member :target-os-freebsd *features*))
+                                 'llvm-sys:reloc-model-pic-)
+                                (t 'llvm-sys:reloc-model-undefined))))
+             (let ((output (generate-obj-asm-stream module (ast-job-output-stream job) 'llvm-sys:code-gen-file-type-object-file reloc-model)))
+               (when output (setf (ast-job-output-stream job) output))
+               )))
+          #+(or)
           ((eq intermediate-output-type :object)
            (let ((object-file-path (make-pathname :type "o" :defaults (ast-job-form-output-path job))))
              (ensure-directories-exist object-file-path)
@@ -87,6 +83,7 @@
                                    'llvm-sys:reloc-model-pic-)
                                   (t 'llvm-sys:reloc-model-undefined))))
                (generate-obj-asm module object-file-path :file-type 'llvm-sys:code-gen-file-type-object-file :reloc-model reloc-model))))
+          #+(or)
           ((eq intermediate-output-type :bitcode)
            (with-track-llvm-time
                (let ((bitcode-file (core:coerce-to-filename (cfp-output-file-default (ast-job-form-output-path job) :bitcode))))
@@ -119,8 +116,7 @@
                        optimize
                        optimize-level
                        output-path
-                       working-dir
-                       (intermediate-output-type :object) ; or :bitcode
+                       (intermediate-output-type :in-memory-object) ; or :bitcode
                        ast-only)
   (let (result
         (form-index (core:next-startup-position))
@@ -159,10 +155,6 @@
              ;; FIXME: if :environment is provided we should probably use a different read somehow
              (let* ((current-source-pos-info (compile-file-source-pos-info source-sin))
                     (core:*current-source-pos-info* current-source-pos-info)
-                    (form-output-path
-                      (make-pathname
-                       :name (format nil "~a_~d" (pathname-name output-path) form-index)
-                       :defaults working-dir))
                     (dynenv (clasp-cleavir::make-dynenv environment))
                     #+cst
                     (cst (eclector.concrete-syntax-tree:cst-read source-sin nil eof-value))
@@ -182,12 +174,12 @@
                     (ast (if cmp::*debug-compile-file*
                              (clasp-cleavir::compiler-time (clasp-cleavir::generate-ast form dynenv))
                              (clasp-cleavir::generate-ast form dynenv))))
-               (push form-output-path result)
                (let ((ast-job (make-ast-job :ast ast
                                             :environment environment
                                             :dynenv dynenv
                                             :current-source-pos-info current-source-pos-info
-                                            :form-output-path form-output-path
+                                            :output-stream (when (eq intermediate-output-type :in-memory-object)
+                                                             :simple-vector-byte8)
                                             :form-index form-index)))
                  (when *compile-print* (cmp::describe-form form))
                  (unless ast-only
@@ -215,10 +207,11 @@
     ;; Now print the names of the startup ctor functions
     ;;     Next we need to compile a new module that declares these ctor functions and puts them in a ctor list
     ;;      then it should add this new module to the result list so it can be linked with the others.
+    #+(or)
     (dolist (job ast-jobs)
       (format t "ast-job ctor: ~a~%" (ast-job-startup-function-name job)))
     ;; Now return the results
-    (values (nreverse result))))
+    (values (nreverse result) ast-jobs)))
 
 
 (defun compile-file-to-result (given-input-pathname
@@ -226,7 +219,6 @@
                                  compile-file-hook
                                  output-type
                                  output-path
-                                 working-dir
                                  environment
                                  (optimize t)
                                  (optimize-level *optimization-level*)
@@ -252,14 +244,14 @@ Compile a lisp source file into an LLVM module."
       (when *compile-verbose*
         (bformat t "; Compiling file parallel: %s%N" (namestring given-input-pathname)))
       (let ((intermediate-output-type (case output-type
-                                        (:fasl :object)
-                                        (:object :object)
+                                        #+(or)(:fasl :object)
+                                        (:fasl :in-memory-object)
+                                        (:object :in-memory-object)
                                         (:bitcode :bitcode))))
         (cclasp-loop2 given-input-pathname source-sin environment
                       :dry-run dry-run
                       :optimize optimize
                       :optimize-level optimize-level
-                      :working-dir working-dir
                       :output-path output-path
                       :intermediate-output-type intermediate-output-type
                       :ast-only ast-only)))))
@@ -269,19 +261,30 @@ Compile a lisp source file into an LLVM module."
             (make-pathname :type extension :defaults name))
           result))
 
-(defun output-cfp-result (result output-path output-type)
+(defun output-cfp-result (result ast-jobs output-path output-type)
   (ensure-directories-exist output-path)
   (cond
     #+(or)
     ((eq output-type :bitcode)
      (cf2-log "output-type :bitcode  result -> ~s~%" result)
      (link-modules output-path result))
+    #+(or)
     ((eq output-type :fasl)
      (let ((output-path (make-pathname :type (bitcode-extension) :defaults output-path)))
        (llvm-link output-path :input-files (cfp-result-files result (bitcode-extension))
                               :link-type :bitcode))
      (llvm-link output-path :input-files (cfp-result-files result "o")
                             :input-type :object))
+    ((member output-type '(:object :fasl))
+     (let ((output-path (compile-file-pathname output-path :output-type output-type)))
+       #+(or)(format t "Output the object files in ast-jobs to ~s~%" output-path)
+       (let* ((object-files (loop for ast-job in ast-jobs
+                                  for index = (ast-job-form-index ast-job)
+                                  collect (cons index (ast-job-output-stream ast-job))))
+              (sorted-object-files (sort object-files #'< :key #'car)))
+         #+(or)(format t "sorted-object-files length ~d output-path: ~s~%" (length sorted-object-files) output-path)
+         (core:write-faso output-path (mapcar #'cdr sorted-object-files)))))
+    #+(or)
     ((eq output-type :object)
      (let ((output-path (make-pathname :type (bitcode-extension) :defaults output-path)))
        (llvm-link output-path :input-files (cfp-result-files result (bitcode-extension))
@@ -312,51 +315,51 @@ Compile a lisp source file into an LLVM module."
                                 ;; but passed to hook functions
                                 environment
                                 ;; Use as little llvm as possible for timing
-                                dry-run ast-only)
+                                dry-run ast-only
+                                ;; Cleanup temporary files
+                                (cleanup nil))
   "See CLHS compile-file."
-  (if (not output-file-p) (setq output-file (cfp-output-file-default input-file output-type)))
-  (with-compiler-env ()
-    (let* ((input-pathname (or (probe-file input-file)
-                               (error 'core:simple-file-error
-                                      :pathname input-file
-                                      :format-control "compile-file-to-module could not find the file ~s to open it"
-                                      :format-arguments (list input-file))))
-           (output-path (compile-file-pathname input-file :output-file output-file :output-type output-type))
-           (working-dir (core:mkdtemp (namestring output-path)))(*compilation-module-index* 0)
-           (*compile-file-pathname* (pathname (merge-pathnames input-file)))
-           (*compile-file-truename* (translate-logical-pathname *compile-file-pathname*))
-           (*compile-file-source-debug-pathname*
-             (if cfsdpp source-debug-pathname *compile-file-truename*))
-           (*compile-file-file-scope*
-             (core:file-scope *compile-file-source-debug-pathname*))
-           (*compile-file-output-pathname* output-path))
-      (with-compiler-timer (:message "Compile-file-parallel" :report-link-time t :verbose *compile-verbose*)
-        (with-compilation-results ()
-          (let ((result (compile-file-to-result input-pathname
-                                                :output-type output-type
-                                                :output-path output-path
-                                                :working-dir working-dir
-                                                :compile-file-hook *cleavir-compile-file-hook*
-                                                :environment environment
-                                                :optimize optimize
-                                                :optimize-level optimize-level
-                                                :ast-only ast-only
-                                                :dry-run dry-run)))
-            (cf2-log "Came out of compile-file-to-result with result: ~s~%" result)
+  (let ((*compile-file-parallel* t))
+    (if (not output-file-p) (setq output-file (cfp-output-file-default input-file output-type)))
+    (with-compiler-env ()
+      (let* ((input-pathname (or (probe-file input-file)
+                                 (error 'core:simple-file-error
+                                        :pathname input-file
+                                        :format-control "compile-file-to-module could not find the file ~s to open it"
+                                        :format-arguments (list input-file))))
+             (output-path (compile-file-pathname input-file :output-file output-file :output-type output-type))
+             (*compilation-module-index* 0)
+             (*compile-file-pathname* (pathname (merge-pathnames input-file)))
+             (*compile-file-truename* (translate-logical-pathname *compile-file-pathname*))
+             (*compile-file-source-debug-pathname*
+               (if cfsdpp source-debug-pathname *compile-file-truename*))
+             (*compile-file-file-scope*
+               (core:file-scope *compile-file-source-debug-pathname*))
+             (*compile-file-output-pathname* output-path))
+        (with-compiler-timer (:message "Compile-file-parallel" :report-link-time t :verbose *compile-verbose*)
+          (with-compilation-results ()
+            (multiple-value-bind (result ast-jobs)
+                (compile-file-to-result input-pathname
+                                        :output-type output-type
+                                        :output-path output-path
+                                        :compile-file-hook *cleavir-compile-file-hook*
+                                        :environment environment
+                                        :optimize optimize
+                                        :optimize-level optimize-level
+                                        :ast-only ast-only
+                                        :dry-run dry-run)
+              (cf2-log "Came out of compile-file-to-result with result: ~s~%" result)
 ;;;          (loop for one in result do (format t "Result: ~s~%" one))
-            (cond (dry-run (format t "Doing nothing further~%"))
-                  ((null output-path)
-                   (error "The output-file is nil for input filename ~a~%" input-file))
-                  (t (output-cfp-result result output-path output-type)))
-            (ext:rmtree (namestring working-dir))
-            output-path))))))
+              (cond (dry-run (format t "Doing nothing further~%"))
+                    ((null output-path)
+                     (error "The output-file is nil for input filename ~a~%" input-file))
+                    (t (output-cfp-result result ast-jobs output-path output-type)))
+              output-path)))))))
 
-(defvar *compile-file-parallel* nil)
-                              
 (defun cl:compile-file (input-file &rest args)
   (if *compile-file-parallel*
       (apply #'compile-file-parallel input-file args)
       (apply #'compile-file-serial input-file args)))
 
 (eval-when (:load-toplevel)
-  (setf *compile-file-parallel* nil))
+  (setf *compile-file-parallel* cmp:*use-compile-file-parallel*))

@@ -110,8 +110,6 @@
                                                          %t*% ; environment
                                                          ))
     
-         (primitive-unwinds "symbolValueRead" %t*% (list %t*%))
-         (primitive         "symbolValueReference" %t**% (list %t*%))
          (primitive         "lexicalValueReference" %t**% (list %size_t% %size_t% %t*%))
          (primitive         "cc_match" %t*% (list %t*% %t*%))
 ;;         (primitive         "registerReference" %t**% (list %t**%))
@@ -208,8 +206,8 @@
          (primitive         "cc_save_values" %void% (list %size_t% %t*% %t**%))
          (primitive         "cc_load_values" %return-type% (list %size_t% %t**%))
     
-         (primitive         "pushDynamicBinding" %void% (list %t*%))
-         (primitive         "popDynamicBinding" %void% (list %t*%))
+         (primitive         "pushDynamicBinding" %void% (list %t*% %t**%))
+         (primitive         "popDynamicBinding" %void% (list %t*% %t**%))
     
          ;; Primitives for Cleavir code
 

@@ -92,14 +92,13 @@ CL_DEFUN T_sp core__load_source(T_sp source, bool verbose, bool print, core::T_s
   if (strm.nilp())
     return _Nil<T_O>();
   
-  DynamicScopeManager scope;
   if (source.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
   Pathname_sp pathname = cl__pathname(source);
   ASSERTF(pathname.objectp(), BF("Problem getting pathname of [%s] in loadSource") % _rep_(source));
   Pathname_sp truename = cl__truename(source);
   ASSERTF(truename.objectp(), BF("Problem getting truename of [%s] in loadSource") % _rep_(source));
-  scope.pushSpecialVariableAndSet(cl::_sym_STARloadPathnameSTAR, pathname);
-  scope.pushSpecialVariableAndSet(cl::_sym_STARloadTruenameSTAR, truename);
+  DynamicScopeManager scope(cl::_sym_STARloadPathnameSTAR, pathname);
+  DynamicScopeManager scope2(cl::_sym_STARloadTruenameSTAR, truename);
   return load_stream(strm, print);
 }
 
@@ -204,7 +203,7 @@ CL_DEFUN T_sp core__load_no_package_set(T_sp lsource, T_sp verbose, T_sp print, 
      * being an exported function, has to bind them itself. */
     DynamicScopeManager scope(cl::_sym_STARloadPathnameSTAR, msource);
     T_sp truename = cl__truename(filename);
-    scope.pushSpecialVariableAndSet(cl::_sym_STARloadTruenameSTAR, truename);
+    DynamicScopeManager scope2(cl::_sym_STARloadTruenameSTAR, truename);
     ok = eval::funcall(function, filename, verbose, print, external_format);
   } else {
     ok = core__load_source(filename, verbose.isTrue(), print.isTrue(), external_format );
@@ -224,7 +223,7 @@ CL_DEFUN T_sp cl__load(T_sp source, T_sp verbose, T_sp print, T_sp if_does_not_e
     TYPE_ERROR(source,Cons_O::createList(cl::_sym_stream,cl::_sym_Pathname_O,cl::_sym_string));
   }
   DynamicScopeManager scope(cl::_sym_STARpackageSTAR, cl__symbol_value(cl::_sym_STARpackageSTAR));
-  scope.pushSpecialVariableAndSet(cl::_sym_STARreadtableSTAR, cl__symbol_value(cl::_sym_STARreadtableSTAR));
+  DynamicScopeManager scope2(cl::_sym_STARreadtableSTAR, cl__symbol_value(cl::_sym_STARreadtableSTAR));
   return core__load_no_package_set(source,verbose,print,if_does_not_exist,external_format,search_list);
 };
 

@@ -175,7 +175,7 @@ CL_DEFUN List_sp core__canonicalize_declarations(List_sp decls)
 }
 
 
-void lambdaListHandler_createBindings(Closure_sp closure, core::LambdaListHandler_sp llh, core::DynamicScopeManager &scope, LCC_ARGS_LLH) {
+void lambdaListHandler_createBindings(Closure_sp closure, core::LambdaListHandler_sp llh, core::ScopeManager &scope, LCC_ARGS_LLH) {
   if (llh->requiredLexicalArgumentsOnlyP()) {
     size_t numReq = llh->numberOfRequiredArguments();
     if (numReq <= LCC_ARGS_IN_REGISTERS && numReq == lcc_nargs) {
@@ -223,6 +223,12 @@ TargetClassifier::TargetClassifier(HashTableEq_sp specialSymbols, const std::set
   this->_LambdaListSpecials = HashTableEq_O::create_default();
   this->advanceLexicalIndex();
 };
+
+size_t TargetClassifier::numberOfSpecialVariables() const
+{
+  return this->_LambdaListSpecials->hashTableCount();
+};
+
 
 void TargetClassifier::advanceLexicalIndex() {
   while (true) {
@@ -589,7 +595,7 @@ void LambdaListHandler_O::recursively_build_handlers_count_arguments(List_sp dec
 #undef PASS_ARGS_NUM
 #undef PASS_NEXT_ARG
 
-void bind_aux(T_sp closure, gctools::Vec0<AuxArgument> const &auxs, DynamicScopeManager &scope) {
+void bind_aux(T_sp closure, gctools::Vec0<AuxArgument> const &auxs, ScopeManager &scope) {
   LOG(BF("There are %d aux variables") % auxs.size());
   gctools::Vec0<AuxArgument>::iterator ci;
   {
@@ -608,7 +614,7 @@ void bind_aux(T_sp closure, gctools::Vec0<AuxArgument> const &auxs, DynamicScope
 
 void LambdaListHandler_O::createBindingsInScopeVaList(core::T_sp closure,
                                                       size_t nargs, VaList_sp va,
-                                                      DynamicScopeManager &scope) {
+                                                      ScopeManager &scope) {
   if (UNLIKELY(!this->_CreatesBindings))
     return;
   Vaslist arglist_struct(*va);
@@ -1173,6 +1179,7 @@ LambdaListHandler_sp LambdaListHandler_O::create(List_sp lambda_list, List_sp de
   HashTableEq_sp specialSymbols(LambdaListHandler_O::identifySpecialSymbols(declares));
   TargetClassifier classifier(specialSymbols, skipFrameIndices);
   LambdaListHandler_sp ollh = LambdaListHandler_O::createRecursive_(lambda_list, declares, context, classifier);
+  ollh->_NumberOfSpecialVariables = classifier.numberOfSpecialVariables();
   ollh->_NumberOfLexicalVariables = classifier.totalLexicalVariables();
   ollh->_RequiredLexicalArgumentsOnly = ollh->requiredLexicalArgumentsOnlyP_();
   return ollh;
@@ -1206,6 +1213,7 @@ void LambdaListHandler_O::create_required_arguments(int num, const std::set<int>
   }
   this->_ClassifiedSymbolList = classifier.finalClassifiedSymbols();
   ASSERTF(this->_ClassifiedSymbolList.nilp() || (oCar(this->_ClassifiedSymbolList)).consp(), BF("LambdaListHandler _classifiedSymbols must contain only conses - it contains %s") % _rep_(this->_ClassifiedSymbolList));
+  this->_NumberOfSpecialVariables = classifier.numberOfSpecialVariables();
   this->_NumberOfLexicalVariables = classifier.totalLexicalVariables();
   this->_RequiredLexicalArgumentsOnly = this->requiredLexicalArgumentsOnlyP_();
 }

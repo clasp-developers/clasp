@@ -157,20 +157,20 @@ CL_DEFUN T_sp cl__write(T_sp x, T_sp strm, T_sp array, T_sp base,
               T_sp level, T_sp lines, T_sp miser_width, T_sp pprint_dispatch,
               T_sp pretty, T_sp radix, T_sp readably, T_sp right_margin) {
   DynamicScopeManager scope(cl::_sym_STARprint_arraySTAR, array);
-  scope.pushSpecialVariableAndSet(cl::_sym_STARprint_baseSTAR, base);
-  scope.pushSpecialVariableAndSet(cl::_sym_STARprint_caseSTAR, cas);
-  scope.pushSpecialVariableAndSet(cl::_sym_STARprint_circleSTAR, circle);
-  scope.pushSpecialVariableAndSet(cl::_sym_STARprint_escapeSTAR, escape);
-  scope.pushSpecialVariableAndSet(cl::_sym_STARprint_gensymSTAR, gensym);
-  scope.pushSpecialVariableAndSet(cl::_sym_STARprint_lengthSTAR, length);
-  scope.pushSpecialVariableAndSet(cl::_sym_STARprint_levelSTAR, level);
-  scope.pushSpecialVariableAndSet(cl::_sym_STARprint_linesSTAR, lines);
-  scope.pushSpecialVariableAndSet(cl::_sym_STARprint_miser_widthSTAR, miser_width);
-  scope.pushSpecialVariableAndSet(cl::_sym_STARprint_pprint_dispatchSTAR, pprint_dispatch);
-  scope.pushSpecialVariableAndSet(cl::_sym_STARprint_prettySTAR, pretty);
-  scope.pushSpecialVariableAndSet(cl::_sym_STARprint_radixSTAR, radix);
-  scope.pushSpecialVariableAndSet(cl::_sym_STARprint_readablySTAR, readably);
-  scope.pushSpecialVariableAndSet(cl::_sym_STARprint_right_marginSTAR, right_margin);
+  DynamicScopeManager scope1(cl::_sym_STARprint_baseSTAR, base);
+  DynamicScopeManager scope2(cl::_sym_STARprint_caseSTAR, cas);
+  DynamicScopeManager scope3(cl::_sym_STARprint_circleSTAR, circle);
+  DynamicScopeManager scope4(cl::_sym_STARprint_escapeSTAR, escape);
+  DynamicScopeManager scope5(cl::_sym_STARprint_gensymSTAR, gensym);
+  DynamicScopeManager scope6(cl::_sym_STARprint_lengthSTAR, length);
+  DynamicScopeManager scope7(cl::_sym_STARprint_levelSTAR, level);
+  DynamicScopeManager scope8(cl::_sym_STARprint_linesSTAR, lines);
+  DynamicScopeManager scope9(cl::_sym_STARprint_miser_widthSTAR, miser_width);
+  DynamicScopeManager scopeA(cl::_sym_STARprint_pprint_dispatchSTAR, pprint_dispatch);
+  DynamicScopeManager scopeB(cl::_sym_STARprint_prettySTAR, pretty);
+  DynamicScopeManager scopeC(cl::_sym_STARprint_radixSTAR, radix);
+  DynamicScopeManager scopeD(cl::_sym_STARprint_readablySTAR, readably);
+  DynamicScopeManager scopeE(cl::_sym_STARprint_right_marginSTAR, right_margin);
   T_sp ostrm = coerce::outputStreamDesignator(strm);
   write_object(x, ostrm);
   return Values(x);
@@ -218,7 +218,7 @@ CL_DECLARE();
 CL_DOCSTRING("pprint");
 CL_DEFUN void cl__pprint(T_sp obj, T_sp stream) {
   DynamicScopeManager scope(cl::_sym_STARprint_escapeSTAR, _lisp->_true());
-  scope.pushSpecialVariableAndSet(cl::_sym_STARprint_prettySTAR, _lisp->_true());
+  DynamicScopeManager scope1(cl::_sym_STARprint_prettySTAR, _lisp->_true());
   stream = coerce::outputStreamDesignator(stream);
   clasp_write_char('\n', stream);
   write_object(obj, stream);

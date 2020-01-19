@@ -89,6 +89,7 @@ struct TargetClassifier {
   List_sp finalClassifiedSymbols();
   void targetIsSubLambdaList(Argument &target, LambdaListHandler_sp subHandler);
   int totalLexicalVariables() const { return this->lexicalIndex; };
+  size_t numberOfSpecialVariables() const;
   void advanceLexicalIndex();
 };
 
@@ -111,6 +112,7 @@ public: // virtual functions inherited from Object
 GCPROTECTED: // instance variables
   /*! If _CreatesBindings is true then no bindings will be set by this
 	  LambdaListHandler */
+  size_t _NumberOfSpecialVariables;
   bool _CreatesBindings;
   List_sp _ClassifiedSymbolList;
   gc::Nilable<HashTableEq_sp> _SpecialSymbolSet;
@@ -162,6 +164,7 @@ public: // set up argument handling by hand
 	  (declare (single-dispatch-on {target-symbol})) - sets {target-symbol} as the argument to single dispatch on
 	*/
 
+  size_t numberOfSpecialVariables() const { return this->_NumberOfSpecialVariables; };
   void setComment(const string &s);
   string getComment() const;
 
@@ -198,7 +201,7 @@ public:
 
   void createBindingsInScopeVaList(core::T_sp closure,
                                    size_t n_args, VaList_sp argArray,
-                                   DynamicScopeManager &scope);
+                                   ScopeManager &scope);
 
   /*! Return a list of expressions that can be evaluated in (env) to generate a list of values that would
 	  be put into the classifiedSymbols */

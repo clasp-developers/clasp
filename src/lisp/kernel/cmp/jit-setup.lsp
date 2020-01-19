@@ -98,6 +98,7 @@
       (setq *thread-local-builtins-module* thread-local-builtins-module)
       thread-local-builtins-module)))
 
+
 (defun get-builtin-target-triple-and-data-layout ()
   "Uses *features* to generate the target triple for the current machine
 using features defined in corePackage.cc"
@@ -106,12 +107,12 @@ using features defined in corePackage.cc"
 
 (defun llvm-create-module (name)
   (let ((m (llvm-sys:make-module (string name) (thread-local-llvm-context))))
-    (multiple-value-bind (target-triple data-layout)
-        (get-builtin-target-triple-and-data-layout)
-      (llvm-sys:set-target-triple m target-triple)
-      (llvm-sys:set-data-layout.string m data-layout)
-      (llvm-sys:emit-version-ident-metadata m)
-      m)))
+    (multiple-value-call (function (lambda (target-triple data-layout)
+                           (llvm-sys:set-target-triple m target-triple)
+                           (llvm-sys:set-data-layout.string m data-layout)
+                           (llvm-sys:emit-version-ident-metadata m)
+                           m))
+      (get-builtin-target-triple-and-data-layout))))
 
 (defvar *run-time-module-counter* 1)
 (defun next-run-time-module-name ()
@@ -120,6 +121,10 @@ using features defined in corePackage.cc"
       (bformat nil "module%s" *run-time-module-counter*)
     (setq *run-time-module-counter* (+ 1 *run-time-module-counter*))))
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (let* ((module (llvm-create-module (next-run-time-module-name)))
+         (data-layout (llvm-sys:get-data-layout module)))
+    (defvar *system-data-layout* data-layout)))
 
 (defun create-run-time-module-for-compile ()
   "Run time modules are used by COMPILE - a new one needs to be created for every COMPILE.
@@ -476,11 +481,18 @@ The passed module is modified as a side-effect."
     (llvm-sys:link-in-module linker builtins-clone))
   module)
 
+(defun code-model (&key jit (compile-file-parallel cmp:*compile-file-parallel*))
+  "Return the code-model for the compilation mode"
+  (if (and compile-file-parallel (null jit))
+      'llvm-sys:code-model-large
+      'llvm-sys:code-model-small))
+(export 'code-model)
+
 (defun jit-engine ()
   "Lazy initialize the *thread-local-jit-engine* and return it"
   (if *thread-local-jit-engine*
       *thread-local-jit-engine*
-      (setf *thread-local-jit-engine* (llvm-sys:make-clasp-jit))))
+      (setf *thread-local-jit-engine* (llvm-sys:make-clasp-jit *system-data-layout*))))
 
 (defvar *size-level* 1)
 
@@ -664,7 +676,8 @@ The passed module is modified as a side-effect."
         (with-track-llvm-time
             (unwind-protect
                  (progn
-                   #+(or)(progn
+                   #+(or)
+                   (progn
                      #+(or)(core:bformat t "*jit-lock* -> %s    jit-engine -> %s   module -> %s   *thread-safe-context* -> %s%N"
                                          *jit-lock*
                                          jit-engine
@@ -672,6 +685,7 @@ The passed module is modified as a side-effect."
                                          *thread-safe-context*)
                      (core:bformat t "About to dump module%N")
                      (llvm-sys:dump-module module)
+                     (core:bformat t "startup-name |%s|%N" startup-name)
                      (core:bformat t "Done dump module%N")
                      )
                    (mp:lock *jit-lock* t)

@@ -907,6 +907,10 @@ List_sp lisp_parse_declares(const string &packageName, const string &declarestri
   return sscons;
 }
 
+size_t lisp_lambda_list_handler_number_of_specials(LambdaListHandler_sp lambda_list_handler)
+{
+  return lambda_list_handler->numberOfSpecialVariables();
+}
 LambdaListHandler_sp lisp_function_lambda_list_handler(List_sp lambda_list, List_sp declares, std::set<int> pureOutValues) {
   LambdaListHandler_sp llh = LambdaListHandler_O::create(lambda_list, declares, cl::_sym_function, pureOutValues);
   return llh;

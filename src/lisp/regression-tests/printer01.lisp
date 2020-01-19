@@ -376,5 +376,7 @@
          (string= c "ABC")
          (null d)
          (string= e "X"))))
+;;; Test c++ cl:format chokes on ~2% and returns "Could not format ..."
+(test lisp-format-works (null (search "Could" (format nil "Bar ~2%"))))
 
 

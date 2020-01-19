@@ -674,6 +674,9 @@ struct RecursivePrint {
   }
 
   bool advanceIndices(int level) {
+    // if this is a nil sized array, indices is empty, so already return false, otherwise we get EXC_BAD_ACCESS  
+    unlikely_if (this->indices.empty())
+        return false;
     this->indices[level]++;
     if (this->indices[level] < this->me->arrayDimension(level))
       return ((true));
@@ -684,6 +687,10 @@ struct RecursivePrint {
 
 string Array_O::__repr__() const {
   RecursivePrint rp(this->asSmartPtr());
+  unlikely_if (this->rank() == 0) {
+    rp.ss << "#0A" << this->rowMajorAref(0);
+    return rp.ss.str();
+  }
   rp.ss << "#" << this->rank() << "A(";
   rp.recurse(0);
   rp.ss << ")";

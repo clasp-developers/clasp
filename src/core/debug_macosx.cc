@@ -141,9 +141,13 @@ SymbolTable load_macho_symbol_table(bool is_executable, const char* filename, ui
   {
     char* buf = NULL;
     size_t buf_len = 0;
-    char type[BUFLEN+1];
     char name[BUFLEN+1];
     size_t lineno = 0;
+    char prev_type = '\0';
+    uintptr_t prev_real_address;
+    std::string prev_sname;
+    uintptr_t highest_code_address(0);
+    uintptr_t lowest_other_address(~0);
     while (!feof(fnm)) {
       int result = getline(&buf,&buf_len,fnm);
       if (feof(fnm)) break;
@@ -190,12 +194,16 @@ SymbolTable load_macho_symbol_table(bool is_executable, const char* filename, ui
       while (*cur==' ') ++cur;
       // Read the name
       size_t nameidx = 0;
-      while (*cur!='\0'&&*cur>' ') {
+      while (nameidx<(BUFLEN-1)&&*cur!='\0'&&*cur>' ') {
         name[nameidx] = *cur;
         ++cur;
         ++nameidx;
       }
       name[nameidx] = '\0';
+      if (nameidx>=BUFLEN) {
+        printf("%s:%d The buffer size needs to be increased beyond %d\n", __FILE__, __LINE__, BUFLEN);
+        abort();
+      }
       uintptr_t real_address;
       if (is_executable) {
         // The executable needs to be handled differently than libraries
@@ -211,8 +219,20 @@ SymbolTable load_macho_symbol_table(bool is_executable, const char* filename, ui
       }
 #endif
 //      printf("         address: %p  type: %c   name: %s\n", (void*)address, type, name);
-      symbol_table.addSymbol(sname,real_address,type);
+      if (type == 't' || type == 'T') {
+        symbol_table.addSymbol(sname,real_address,type);
+        if (real_address>highest_code_address) {
+          highest_code_address = real_address;
+        }
+      } else {
+        if (highest_code_address && real_address > highest_code_address) {
+          if (real_address < lowest_other_address) {
+            lowest_other_address = real_address;
+          }
+        }
+      }
     }
+    symbol_table.addSymbol("__TAIL_SYMBOL",lowest_other_address,'!'); // The last symbol is to define the size of the last code symbol
 //    symbol_table.addSymbol("TERMINAL_SYMBOL",~0,'d');  // one symbol to end them all
     if (buf) free(buf);
     symbol_table.optimize();
@@ -257,6 +277,68 @@ void startup_register_loaded_objects() {
     bool is_executable = (idx==0);
     add_dynamic_library_using_origin(is_executable,libname,library_origin);
   }
+}
+
+
+
+/*! Add a dynamic library.
+    If library_origin points to the start of the library then that address is used,
+    otherwise it uses handle to look up the start of the library. */
+void add_dynamic_library_impl(bool is_executable, const std::string& libraryName, bool use_origin, uintptr_t library_origin, void* handle) {
+  // printf("%s:%d:%s Looking for executable?(%d) library |%s|\n", __FILE__, __LINE__, __FUNCTION__, is_executable, libraryName.c_str());
+  BT_LOG((buf,"Starting to load library: %s\n", libraryName.c_str() ));
+#ifdef CLASP_THREADS
+  WITH_READ_WRITE_LOCK(debugInfo()._OpenDynamicLibraryMutex);
+#endif
+// Get the start of the library and the symbol_table
+  if (!use_origin) {
+//    printf("%s:%d:%s Looking for library %s with handle %p\n", __FILE__, __LINE__, __FUNCTION__, libraryName.c_str(), handle);
+    uint32_t num_loaded = _dyld_image_count();
+    for ( size_t idx = 0; idx<num_loaded; ++idx ) {
+      const char* filename = _dyld_get_image_name(idx);
+//      printf("%s:%d:%s Comparing to library: %s\n", __FILE__, __LINE__, __FUNCTION__, filename);
+      if (strcmp(filename,libraryName.c_str())==0) {
+//        printf("%s:%d:%s Found library: %s\n", __FILE__, __LINE__, __FUNCTION__, filename);
+        library_origin = (uintptr_t)_dyld_get_image_header(idx);
+        break;
+      }
+    }
+  }
+  uintptr_t exec_header;
+//  printf("%s:%d:%s library_origin %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)library_origin);
+  dlerror();
+  exec_header = (uintptr_t)dlsym(RTLD_DEFAULT,"_mh_execute_header");
+  const char* dle = dlerror();
+  if (dle) {
+    printf("Could not find the symbol _mh_execute_header\n");
+    abort();
+  }
+//  printf("%s:%d:%s Executable header _mh_execute_header %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)exec_header);
+  SymbolTable symbol_table;
+  if (library_origin!=0) {
+    if (is_executable) {
+      symbol_table = load_macho_symbol_table(is_executable,libraryName.c_str(),(uintptr_t)0x100000000,exec_header); // hard code origin
+    } else {
+      symbol_table = load_macho_symbol_table(is_executable,libraryName.c_str(),library_origin,exec_header);
+    }
+    symbol_table.optimize();
+    symbol_table.sort();
+    if (!symbol_table.is_sorted()) {
+      printf("%s:%d The symbol table for %s is not sorted\n", __FILE__, __LINE__, libraryName.c_str());
+    }
+  } else {
+    printf("%s:%d:%s Could not find start of library %s\n", __FILE__, __LINE__, __FUNCTION__, libraryName.c_str());
+  }
+  size_t section_size;
+//  printf("%s:%d:%s About to load_stackmap_info library_origin = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)library_origin );
+  uintptr_t p_section = load_stackmap_info(libraryName.c_str(),library_origin,section_size);
+  if (p_section) {
+    symbol_table._StackmapStart = p_section;
+    symbol_table._StackmapEnd = p_section+section_size;
+  }    
+  BT_LOG((buf,"OpenDynamicLibraryInfo libraryName: %s handle: %p library_origin: %p\n", libraryName.c_str(),(void*)handle,(void*)library_origin));
+  OpenDynamicLibraryInfo odli(libraryName,handle,symbol_table,library_origin);
+  debugInfo()._OpenDynamicLibraryHandles[libraryName] = odli;
 }
 
 #endif ////////////////////////////////////////////////// _TARGET_OS_DARWIN

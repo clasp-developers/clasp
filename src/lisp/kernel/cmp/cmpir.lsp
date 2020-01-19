@@ -314,8 +314,9 @@
       (let ((head (car cc)))
 	(cond
 	  ((eq head 'symbolValueRestore)
-	   (cmp-log "popDynamicBinding of %s%N" (cadr cc))
-	   (irc-intrinsic "popDynamicBinding" (irc-global-symbol (cadr cc) env)))
+           (destructuring-bind (cmd symbol alloca) cc
+             (cmp-log "popDynamicBinding of %s%N" symbol)
+             (irc-intrinsic "popDynamicBinding" (irc-global-symbol symbol env) alloca)))
 	  (t (error (bformat nil "Unknown cleanup code: %s" cc))))))))
 
 (defun irc-unwind-environment (env)

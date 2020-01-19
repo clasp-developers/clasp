@@ -56,80 +56,85 @@
 	   (setf name (class-name (the class type)) args nil))
 	  (t
 	   (setq name type args nil)))
-    (case name
-      ((LIST) (values 'list nil nil t))
-      ((VECTOR)
-       (values (list 'vector
-                     (if (or (endp args) (eq (first args) '*))
+    (flet ((fix-dim (tail)
+             (let ((o (car tail)))
+               (cond ((null tail) nil)
+                     ((eq o '*) nil)
+                     ((and (integerp o) (>= o 0)) o)
+                     (t (error "~a is not a valid sequence dimension" o))))))
+      (case name
+        ((LIST) (values 'list nil nil t))
+        ((VECTOR)
+         (values (list 'vector
+                       (if (or (endp args) (eq (first args) '*))
+                           't
+                           (upgraded-array-element-type (first args) env)))
+                 (fix-dim (rest args)) t t))
+        ((SIMPLE-VECTOR)
+         (values '(vector t) (fix-dim args) t t))
+        ;; Per the CLHS page on class string, when used "for object creation",
+        ;; string means (vector character) rather than its usual meaning as a
+        ;; union. And this function is for object creation.
+        ;; That said, no word on what a type like (and string ...) would mean.
+        ;; The standard is so bad with types...
+        ;; We similarly define simple-string to mean (simple-array character (*))
+        ;; here, which doesn't seem to be mandated, but it's nice.
+        #-unicode
+        ((STRING SIMPLE-STRING)
+         (values '(vector base-char) (fix-dim args) t t))
+        #+(or unicode clasp)
+        ((BASE-STRING SIMPLE-BASE-STRING)
+         (values '(vector base-char) (fix-dim args) t t))
+        #+(or unicode clasp)
+        ((STRING SIMPLE-STRING)
+         (values '(vector character) (fix-dim args) t t))
+        ((BIT-VECTOR SIMPLE-BIT-VECTOR)
+         (values '(vector bit) (fix-dim args) t t))
+        ((ARRAY SIMPLE-ARRAY)
+         ;; It's only a sequence if a rank is specified.
+         (let ((uaet (if (or (endp args) (eq (first args) '*))
                          't
                          (upgraded-array-element-type (first args) env)))
-               ;; will be NIL if there aren't enough arguments, correctly.
-               (second args) t t))
-      ((SIMPLE-VECTOR)
-       (values '(vector t) (first args) t t))
-      ;; Per the CLHS page on class string, when used "for object creation",
-      ;; string means (vector character) rather than its usual meaning as a
-      ;; union. And this function is for object creation.
-      ;; That said, no word on what a type like (and string ...) would mean.
-      ;; The standard is so bad with types...
-      ;; We similarly define simple-string to mean (simple-array character (*))
-      ;; here, which doesn't seem to be mandated, but it's nice.
-      #-unicode
-      ((STRING SIMPLE-STRING)
-       (values '(vector base-char) (first args) t t))
-      #+(or unicode clasp)
-      ((BASE-STRING SIMPLE-BASE-STRING)
-       (values '(vector base-char) (first args) t t))
-      #+(or unicode clasp)
-      ((STRING SIMPLE-STRING)
-       (values '(vector character) (first args) t t))
-      ((BIT-VECTOR SIMPLE-BIT-VECTOR)
-       (values '(vector bit) (first args) t t))
-      ((ARRAY SIMPLE-ARRAY)
-       ;; It's only a sequence if a rank is specified.
-       (let ((uaet (if (or (endp args) (eq (first args) '*))
-                       't
-                       (upgraded-array-element-type (first args) env)))
-             (dimension-spec (second args)))
-         (cond ((eql dimension-spec 1) (values `(vector ,uaet) nil nil t))
-               ((and (consp dimension-spec)
-                     (null (cdr dimension-spec)))
-                (values `(vector ,uaet) (car dimension-spec) t t))
-               (t (values nil nil nil nil)))))
-      ((null) (values 'list 0 t t))
-      ;; This is pretty dumb, but we are required to signal a length mismatch
-      ;; error in safe code, and this case will probably not come up often.
-      ((cons)
-       (if (and (consp args) (consp (cdr args))) ; we have (cons x y
-           (multiple-value-bind (et length exactp success)
-               (sequence-type-maker-info (second args) env)
-             (cond ((or (not success) ; can't figure out what cdr is
-                        (not (eq et 'list))) ; (a . #(...)) is not a sequence
-                    (values nil nil nil nil))
-                   (length
-                    (values 'list (1+ length) exactp success))
-                   (t ; length at least 1
-                    (values 'list 1 nil success))))
-           (values 'list 1 nil t)))
-      ((nil) (values nil nil nil t))
-      (t
-       ;; Might have a weird to parse vector or list type,
-       ;; e.g. incorporating OR/AND/NOT.
-       ;; If we make it this far we give up on determining a length.
-       (dolist (i '(nil list
-                    . #.(mapcar #'(lambda (i) `(VECTOR ,i))
-                         sys::+upgraded-array-element-types+)))
-         (when (subtypep type i env)
-           (return-from sequence-type-maker-info (values i nil nil t))))
-       ;; Might be a user sequence type.
-       (when (symbolp type)
-         (let ((class (find-class type nil env)))
-           (when (and class (core:subclassp
-                             class (find-class 'sequence t env)))
-             (return-from sequence-type-maker-info
-               (values class nil nil t)))))
-       ;; Dunno.
-       (values nil nil nil nil)))))
+               (dimension-spec (second args)))
+           (cond ((eql dimension-spec 1) (values `(vector ,uaet) nil nil t))
+                 ((and (consp dimension-spec)
+                       (null (cdr dimension-spec)))
+                  (values `(vector ,uaet) (fix-dim dimension-spec) t t))
+                 (t (values nil nil nil nil)))))
+        ((null) (values 'list 0 t t))
+        ;; This is pretty dumb, but we are required to signal a length mismatch
+        ;; error in safe code, and this case will probably not come up often.
+        ((cons)
+         (if (and (consp args) (consp (cdr args))) ; we have (cons x y
+             (multiple-value-bind (et length exactp success)
+                 (sequence-type-maker-info (second args) env)
+               (cond ((or (not success) ; can't figure out what cdr is
+                          (not (eq et 'list))) ; (a . #(...)) is not a sequence
+                      (values nil nil nil nil))
+                     (length
+                      (values 'list (1+ length) exactp success))
+                     (t ; length at least 1
+                      (values 'list 1 nil success))))
+             (values 'list 1 nil t)))
+        ((nil) (values nil nil nil t))
+        (t
+         ;; Might have a weird to parse vector or list type,
+         ;; e.g. incorporating OR/AND/NOT.
+         ;; If we make it this far we give up on determining a length.
+         (dolist (i '(nil list
+                      . #.(mapcar #'(lambda (i) `(VECTOR ,i))
+                           sys::+upgraded-array-element-types+)))
+           (when (subtypep type i env)
+             (return-from sequence-type-maker-info (values i nil nil t))))
+         ;; Might be a user sequence type.
+         (when (symbolp type)
+           (let ((class (find-class type nil env)))
+             (when (and class (core:subclassp
+                               class (find-class 'sequence t env)))
+               (return-from sequence-type-maker-info
+                 (values class nil nil t)))))
+         ;; Dunno.
+         (values nil nil nil nil))))))
 
 (defun make-sequence (type size	&key (initial-element nil iesp))
   "Args: (type length &key initial-element)

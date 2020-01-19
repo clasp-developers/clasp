@@ -24,6 +24,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
+// If you turn on SOURCE_DEBUG and uncomment the DEBUG_LEVEL_FULL define
+//    - it will slow the interpreter down a lot!!!!!!!!!
 //#define DEBUG_LEVEL_FULL
 //#include "core/foundation.h"
 #include <clasp/core/foundation.h>
@@ -918,14 +920,17 @@ T_mv core__classify_let_variables_and_declares(List_sp variables, List_sp declar
                                                                          DoubleFloat_O::create(1.0)));
   ql::list classified;
   size_t indicesSize = 0;
+  size_t totalSpecials = 0;
   for (auto cur : variables) {
     Symbol_sp sym = gc::As<Symbol_sp>(oCar(cur));
     if (specialsSet->contains(sym)) {
       classified << Cons_O::create(ext::_sym_specialVar, sym);
       specialInVariables->insert(sym);
+      totalSpecials++;
     } else if (sym->specialP()) {
       classified << Cons_O::create(ext::_sym_specialVar, sym);
       specialInVariables->insert(sym);
+      totalSpecials++;
     } else {
       Fixnum idx;
       T_sp fi = indices->gethash(sym, _Unbound<T_O>());
@@ -940,13 +945,14 @@ T_mv core__classify_let_variables_and_declares(List_sp variables, List_sp declar
                                    Cons_O::create(sym, make_fixnum(idx)));
     }
   }
-  specialsSet->maphash([&classified, &specialInVariables](T_sp s, T_sp val) {
+  specialsSet->maphash([&totalSpecials,&classified, &specialInVariables](T_sp s, T_sp val) {
       if ( !specialInVariables->contains(s) ) {
         classified << Cons_O::create(core::_sym_declaredSpecial,s);
+        totalSpecials++;
       }
     });
   T_sp tclassified = classified.cons();
-  return Values(tclassified, make_fixnum((int)indicesSize));
+  return Values(tclassified, make_fixnum((int)indicesSize), make_fixnum(totalSpecials));
 }
 
 CL_LAMBDA();
@@ -1284,18 +1290,25 @@ T_mv sp_loadTimeValue(List_sp args, T_sp environment) {
   return eval::evaluate(form, _Nil<T_O>());
 }
 
+T_mv do_progv(List_sp symbols, List_sp values, List_sp forms, T_sp environment)
+{
+  if (symbols.notnilp()) {
+    DynamicScopeManager scope (gc::As<Symbol_sp>(CONS_CAR(symbols)),CONS_CAR(values));
+    return do_progv(CONS_CDR(symbols),CONS_CDR(values),forms,environment);
+  } else {
+    return sp_progn(forms, environment);
+  }
+}
+    
 T_mv sp_progv(List_sp args, T_sp environment) {
   ASSERT(environment.generalp());
   List_sp symbols = eval::evaluate(oCar(args), environment);
   List_sp values = eval::evaluate(oCadr(args), environment);
-  DynamicScopeManager manager;
-  for (; symbols.notnilp(); symbols = oCdr(symbols), values = oCdr(values)) {
-    Symbol_sp symbol = gc::As<Symbol_sp>(oCar(symbols));
-    T_sp value = oCar(values);
-    manager.pushSpecialVariableAndSet(symbol, value);
+  if (cl__length(symbols) != cl__length(values)) {
+    SIMPLE_ERROR(BF("PROGV number of symbols don't match the number of values"));
   }
   List_sp forms = oCddr(args);
-  return sp_progn(forms, environment);
+  return do_progv(symbols,values,forms,environment);
 }
 
 T_mv sp_debug_message(List_sp args, T_sp env) {
@@ -1448,11 +1461,13 @@ T_mv sp_let(List_sp args, T_sp parentEnvironment) {
   extract_declares_docstring_code_specials(body, declares, false, docstring, code, declaredSpecials);
   LOG(BF("Assignment part=%s") % assignments->__repr__());
   T_mv classifiedAndCount = core__classify_let_variables_and_declares(variables, declaredSpecials);
+  size_t totalSpecials = classifiedAndCount.third().unsafe_fixnum();
   List_sp classified = coerce_to_list(classifiedAndCount);
   int numberOfLexicalVariables = unbox_fixnum(gc::As<Fixnum_sp>(classifiedAndCount.valueGet_(1)));
   ValueEnvironment_sp newEnvironment =
     ValueEnvironment_O::createForNumberOfEntries(numberOfLexicalVariables, parentEnvironment);
-  ValueEnvironmentDynamicScopeManager scope(newEnvironment);
+  MAKE_SPECIAL_BINDINGS_HOLDER(numSpecials,specialsVLA,totalSpecials);
+  ValueEnvironmentDynamicScopeManager scope(numSpecials,specialsVLA,newEnvironment);
   ValueFrame_sp valueFrame = gc::As<ValueFrame_sp>(newEnvironment->getActivationFrame());
   // Figure out which environment to evaluate in
   List_sp curExp = expressions;
@@ -1514,11 +1529,13 @@ T_mv sp_letSTAR(List_sp args, T_sp parentEnvironment) {
   extract_declares_docstring_code_specials(body, declares, false, docstring, code, declaredSpecials);
   LOG(BF("Assignment part=%s") % assignments->__repr__());
   T_mv classifiedAndCount = core__classify_let_variables_and_declares(variables, declaredSpecials);
+  size_t totalSpecials = classifiedAndCount.third().unsafe_fixnum();
   List_sp classified = coerce_to_list(classifiedAndCount);
   int numberOfLexicalVariables = unbox_fixnum(gc::As<Fixnum_sp>(classifiedAndCount.valueGet_(1)));
   ValueEnvironment_sp newEnvironment =
     ValueEnvironment_O::createForNumberOfEntries(numberOfLexicalVariables, parentEnvironment);
-  ValueEnvironmentDynamicScopeManager scope(newEnvironment);
+  MAKE_SPECIAL_BINDINGS_HOLDER(numSpecials,specialsVLA,totalSpecials);
+  ValueEnvironmentDynamicScopeManager scope(numSpecials,specialsVLA,newEnvironment);
   ValueFrame_sp valueFrame = gc::As<ValueFrame_sp>(newEnvironment->getActivationFrame());
   // Figure out which environment to evaluate in
   List_sp curExp = expressions;

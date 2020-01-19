@@ -54,18 +54,6 @@ Set this to other IRBuilders to make code go where you want")
 ;; - ssize_t
 ;; - time_t
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (let* ((module (llvm-create-module (next-run-time-module-name)))
-#|         (engine-builder (llvm-sys:make-engine-builder module))
-         (target-options (llvm-sys:make-target-options))
-         (_ (llvm-sys:set-target-options engine-builder target-options))
-         (_ (core:bformat t "cmpintrinsics.lsp:63 engine-builder -> %s%N" engine-builder))
-         (execution-engine (llvm-sys:create engine-builder))
-         (_ (core:bformat t "cmpintrinsics.lsp:63 execution-engine -> %s%N" execution-engine))
-         (data-layout (llvm-sys:get-data-layout execution-engine))
-|#
-         (data-layout (llvm-sys:get-data-layout module)))
-    (defvar *system-data-layout* data-layout)))
 
 (defun llvm-print (msg)
   (irc-intrinsic "debugMessage" (irc-bit-cast (module-make-global-string msg) %i8*%)))
@@ -801,6 +789,20 @@ eg:  (f closure-ptr nargs a b c d ...)
                                    "file-scope-handle"))
 |#
 
+(defun add-llvm.used (module used-function)
+  (or used-function (error "used-function must not be NIL"))
+  (llvm-sys:make-global-variable
+   module
+   %i8*[1]%
+   nil
+   'llvm-sys:appending-linkage
+   (llvm-sys:constant-array-get
+    %i8*[1]%
+    (list
+     (irc-bit-cast used-function %i8*%)))
+   "llvm.used"))
+
+
 (defun add-global-ctor-function (module main-function &key position register-library linkage)
   "Create a function with the name core:+clasp-ctor-function-name+ and
 have it call the main-function"
@@ -809,24 +811,42 @@ have it call the main-function"
   (unless linkage
     (error "You must specify the linkage for the global-ctor function"))
   (let* ((*the-module* module)
-         (function-name (core:bformat nil "%s_%d" core::+clasp-ctor-function-name+ (core:next-number)))
-         (fn (irc-simple-function-create
-              function-name
-              %fn-ctor%
-              linkage ; 'llvm-sys:link-once-odrlinkage ; 'llvm-sys:internal-linkage
-              *the-module*
-              :argument-names +fn-ctor-argument-names+)))
+         (function-name "StartUp" #+(or)(core:bformat nil "%s_%d" core::+clasp-ctor-function-name+ (core:next-number)))
+         (ctor-fn (irc-simple-function-create
+                   function-name
+                   %fn-ctor%
+                   'llvm-sys:internal-linkage ; 'llvm-sys:link-once-odrlinkage ; 'llvm-sys:internal-linkage
+                   *the-module*
+                   :argument-names +fn-ctor-argument-names+)))
     (let* ((irbuilder-body (llvm-sys:make-irbuilder (thread-local-llvm-context)))
-           (*current-function* fn)
-           (entry-bb (irc-basic-block-create "entry" fn)))
+           (*current-function* ctor-fn)
+           (entry-bb (irc-basic-block-create "entry" ctor-fn)))
       (irc-set-insert-point-basic-block entry-bb irbuilder-body)
       (with-landing-pad nil
         (with-irbuilder (irbuilder-body)
           (let* ((bc-main-function (irc-bit-cast main-function %fn-start-up*% "fnptr-pointer"))
                  (_                (irc-intrinsic "cc_register_startup_function" (jit-constant-size_t position) bc-main-function))
-                 (_                (irc-ret-void))))
-          ;;(llvm-sys:dump fn)
-          fn)))))
+                 (_                (irc-ret-void))))))
+      ;;(llvm-sys:dump fn)
+      (let* ((function-name "_claspObjectFileStartUp") ; (core:bformat nil "ObjectFileStartUp-%s" (core:next-number)))
+             #+(or)(_ (core:bformat t "add-global-ctor-function name: %s%N" function-name))
+             (outer-fn (irc-simple-function-create
+                        function-name
+                        %fn-ctor%
+                        'llvm-sys:internal-linkage
+                        *the-module*
+                        :argument-names +fn-ctor-argument-names+))
+             (irbuilder-body (llvm-sys:make-irbuilder (thread-local-llvm-context)))
+             (*current-function* outer-fn)
+             (entry-bb (irc-basic-block-create "entry" outer-fn)))
+        (irc-set-insert-point-basic-block entry-bb irbuilder-body)
+        (with-landing-pad nil
+          (with-irbuilder (irbuilder-body)
+            (let* ((bc-main-function (irc-bit-cast main-function %fn-start-up*% "fnptr-pointer"))
+                   (_                (irc-create-call ctor-fn nil))
+                   (_                (irc-ret-void))))))
+        (add-llvm.used *the-module* outer-fn)))
+    ctor-fn))
 
 (defun add-main-function (module run-all-function)
   "Create an external function with the name main have it call the run-all-function"

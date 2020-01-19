@@ -531,7 +531,7 @@ CL_DEFUN core::Str8Ns_sp ext__getcwd() {
   // TESTME :   Test this function with the new code
   const char *ok = ::getcwd(NULL,0);
   if (!ok) {
-    SIMPLE_ERROR(BF("There was an error in ext__getcwd - errno %d") % errno);
+    SIMPLE_ERROR(BF("There was an error in ext__getcwd - error: %s") % strerror(errno));
   }
     
   // Take into account what the shell, if any, might think about

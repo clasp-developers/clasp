@@ -171,6 +171,8 @@ VALID_OPTIONS = [
     #   This is good for development.
     # Default = "object"
     "CLASP_BUILD_MODE",
+    # Use compile-file-praallel once everything is built - by default this is True
+    "USE_COMPILE_FILE_PARALLEL",
     # Set the version name of clasp - this is used when building the docker image to give a predictable
     # version name.  Usually the version is calculated from the git hash
     "CLASP_VERSION",
@@ -299,8 +301,8 @@ def update_dependencies(cfg):
                        # David set up this branch/2018-08-18/exp-strategy-2 for clasp
                        "b8a05a3846430bc36c8200f24d248c8293801503")
     fetch_git_revision("src/lisp/modules/asdf",
-                       "https://gitlab.common-lisp.net/kpoeck/asdf.git",
-                       "1cae71bdf0afb0f57405c5e8b7e8bf0aeee8eef8")
+                       "https://gitlab.common-lisp.net/asdf/asdf.git",
+                       "56dc62d54a8f62e702f7442f8432d59fc2032127")
 #                       label = "master", revision = "3.3.3.3")
     os.system("(cd src/lisp/modules/asdf; ${MAKE-make} --quiet)")
 
@@ -362,6 +364,21 @@ def configure_common(cfg,variant):
     log.debug("cfg.env.LINKFLAGS = %s", cfg.env.LINKFLAGS)
     log.debug("cfg.env.LDFLAGS = %s", cfg.env.LDFLAGS)
     cfg.define("BUILD_LINKFLAGS", ' '.join(cfg.env.LINKFLAGS) + ' ' + ' '.join(cfg.env.LDFLAGS))
+
+def fasl_extension(bld,name):
+    if (bld.env.USE_COMPILE_FILE_PARALLEL):
+        return "%s.fasp" % name
+    else:
+        return "%s.fasl" % name
+
+def generate_dwarf(bld):
+    if (bld.env["DEST_OS"] == DARWIN_OS):
+        if (bld.env.USE_COMPILE_FILE_PARALLEL):
+            return False
+        else:
+            return True
+    else:
+        return False
 
 def setup_clang_compiler(cfg,variant):
     cfg.env.COMPILER_CC="clang"
@@ -757,8 +774,12 @@ def configure(cfg):
                         llvm_config_binary = cfg.find_program('llvm-config-%s'%CLANG_VERSION)
                     except cfg.errors.ConfigurationError:
                         cfg.to_log('llvm-config-%s was not found (ignoring)'%CLANG_VERSION)
-                        # Let's fail if no llvm-config binary has been found
-                        llvm_config_binary = cfg.find_program('llvm-config')
+                        try:
+                            llvm_config_binary = cfg.find_program('llvm-config%s0'%CLANG_VERSION)
+                        except cfg.errors.ConfigurationError:
+                            cfg.to_log('llvm-config%s0 was not found (ignoring)'%CLANG_VERSION)
+                            # Let's fail if no llvm-config binary has been found
+                            llvm_config_binary = cfg.find_program('llvm-config')
                 llvm_config_binary = llvm_config_binary[0]
                 log.info("On %s looking for %s" % (cfg.env['DEST_OS'],llvm_config_binary))
             cfg.env["LLVM_CONFIG_BINARY"] = llvm_config_binary
@@ -869,6 +890,28 @@ def configure(cfg):
         raise Exception("CLASP_BUILD_MODE can only be 'thinlto'(default), 'lto', or 'object' - you provided %s" % cfg.env['CLASP_BUILD_MODE'])
     log.info("default cfg.env.CLASP_BUILD_MODE = %s, final cfg.env.LTO_FLAG = '%s'", cfg.env.CLASP_BUILD_MODE, cfg.env.LTO_FLAG)
 
+    # default for USE_COMPILE_FILE_PARALLEL for Darwin is True - otherwise False
+    if (not 'USE_COMPILE_FILE_PARALLEL' in cfg.env):
+        if (cfg.env['DEST_OS'] == DARWIN_OS ):
+            # by default only MacOS has USE_COMPILE_FILE_PARALLEL=True
+            cfg.env['USE_COMPILE_FILE_PARALLEL'] = True
+        elif (cfg.env['DEST_OS'] == LINUX_OS ):
+            cfg.env['USE_COMPILE_FILE_PARALLEL'] = False
+        elif (cfg.env['DEST_OS'] == FREEBSD_OS ):
+            # Martin - turn this to False if it breaks FREEBSD builds
+            cfg.env['USE_COMPILE_FILE_PARALLEL'] = True
+        else:
+            raise Exception("Unknown OS %s"%cfg.env['DEST_OS'])
+        
+
+    log.debug("cfg.env['USE_COMPILE_FILE_PARALLEL'] = %s", cfg.env['USE_COMPILE_FILE_PARALLEL'])
+    if ((not 'USE_COMPILE_FILE_PARALLEL' in cfg.env) or cfg.env['USE_COMPILE_FILE_PARALLEL'] ):
+        cfg.define("USE_COMPILE_FILE_PARALLEL",1) 
+        cfg.env.USE_COMPILE_FILE_PARALLEL = True
+    else:
+        cfg.define("USE_COMPILE_FILE_PARALLEL",0) 
+        cfg.env.USE_COMPILE_FILE_PARALLEL = False
+
     cur_clang_version = run_llvm_config(cfg, "--version")
     log.debug("cur_clang_version = %s", cur_clang_version)
     if (int(cur_clang_version[0]) != CLANG_VERSION):
@@ -955,7 +998,8 @@ def configure(cfg):
     #static llvm/clang
 #    cfg.check_cxx(stlib=llvm_libraries, cflags = '-Wall', uselib_store = 'LLVM', stlibpath = llvm_lib_dir )
 #    cfg.check_cxx(stlib=CLANG_LIBRARIES, cflags='-Wall', uselib_store='CLANG', stlibpath = llvm_lib_dir )
-    llvm_include_dir = run_llvm_config_for_libs(cfg, "--includedir")
+# This was includes - but that doesn't put it in the right place when building home built llvm
+    llvm_include_dir = "%s/../include" % run_llvm_config_for_libs(cfg, "--bindir") 
     log.debug("llvm_include_dir = %s", llvm_include_dir)
     cfg.env.append_value('CXXFLAGS', ['-I./', '-I' + llvm_include_dir])
     cfg.env.append_value('CFLAGS', ['-I./'])
@@ -1041,8 +1085,7 @@ def configure(cfg):
         #--lto-O0 is not effective for avoiding linker hangs
         # cfg.env.append_value('LINKFLAGS', ['-Wl,-export_dynamic,--lto-O0'])
         if (cfg.env['USE_LLD']):
-            cfg.env.append_value('LINKFLAGS', '-fuse-ld=lld-%d.0' % CLANG_VERSION)
-            linker_in_use = "lld"
+            cfg.env.append_value('LINKFLAGS', '-fuse-ld=lld%d0' % CLANG_VERSION)
             log.info("Using the lld linker")
         else:
             #cfg.env.append_value('LINKFLAGS', '-fuse-ld=/opt/clasp/bin/ld.clasp')
@@ -1468,7 +1511,8 @@ def build(bld):
         install('lib/clasp/', cclasp_common_lisp_output_name_list)
 
         # Build serve-event
-        serve_event_fasl = bld.path.find_or_declare("%s/src/lisp/modules/serve-event/serve-event.fasl" % variant.fasl_dir(stage = 'c'))
+        serve_event_fasl = bld.path.find_or_declare(fasl_extension(bld,"%s/src/lisp/modules/serve-event/serve-event" % variant.fasl_dir(stage = 'c')))
+        print("serve_event_fasl = %s\n" % serve_event_fasl.abspath())
         task = compile_module(env=bld.env)
         task.set_inputs([bld.iclasp_executable,
                          bld.cclasp_fasl] +
@@ -1476,13 +1520,14 @@ def build(bld):
         task.set_outputs(serve_event_fasl)
         bld.add_to_group(task)
         install('lib/clasp/', serve_event_fasl)
-        if ( bld.env['DEST_OS'] == DARWIN_OS ):
+        if ( generate_dwarf(bld) ):
             serve_event_dwarf_file = bld.path.find_or_declare("%s/src/lisp/modules/serve-event/serve-event.fasl.dwarf" % variant.fasl_dir(stage = 'c'))
             install('lib/clasp/', serve_event_dwarf_file)
             
 
         # Build ASDF
-        cclasp_asdf_fasl = bld.path.find_or_declare("%s/src/lisp/modules/asdf/asdf.fasl" % variant.fasl_dir(stage='c'))
+        cclasp_asdf_fasl = bld.path.find_or_declare(fasl_extension(bld,"%s/src/lisp/modules/asdf/asdf" % variant.fasl_dir(stage='c')))
+        print("cclasp_asdf_fasl = %s\n" % cclasp_asdf_fasl.abspath())
         task = compile_module(env=bld.env)
         task.set_inputs([bld.iclasp_executable,
                          bld.cclasp_fasl] +
@@ -1490,7 +1535,7 @@ def build(bld):
         task.set_outputs(cclasp_asdf_fasl)
         bld.add_to_group(task)
         install('lib/clasp/', cclasp_asdf_fasl)
-        if ( bld.env['DEST_OS'] == DARWIN_OS ):
+        if (generate_dwarf(bld)):
             cclasp_asdf_dwarf_file = bld.path.find_or_declare("%s/src/lisp/modules/asdf/asdf.fasl.dwarf" % variant.fasl_dir(stage = 'c'))
             install('lib/clasp/', cclasp_asdf_dwarf_file)
 

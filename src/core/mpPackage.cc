@@ -55,38 +55,78 @@ void mutex_lock_return(char* nameword) {
 
 namespace mp {
 
-#ifdef DEBUG_THREADS
-void debug_mutex_lock(Mutex* m) {
-  if (core::_sym_STARdebug_threadsSTAR
-      && !core::_sym_STARdebug_threadsSTAR.unboundp()
-      && core::_sym_STARdebug_threadsSTAR->boundP()
-      && core::_sym_STARdebug_threadsSTAR->symbolValue().notnilp()) {
-    printf("%s:%d     LOCKING mutex@%p\n", __FILE__, __LINE__, (void*)m);
-    fflush(stdout);
-  }
-};
-void debug_mutex_unlock(Mutex* m) {
-  if (core::_sym_STARdebug_threadsSTAR
-      && !core::_sym_STARdebug_threadsSTAR.unboundp()
-      && core::_sym_STARdebug_threadsSTAR->boundP()
-      && core::_sym_STARdebug_threadsSTAR->symbolValue().notnilp()) {
-    printf("%s:%d   Unlocking mutex@%p\n", __FILE__, __LINE__, (void*)m);
-    fflush(stdout);
-  }
-};
-#endif
-
-};
-
-namespace mp {
-
 #ifdef CLASP_THREADS
 std::atomic<size_t> global_LastBindingIndex = ATOMIC_VAR_INIT(0);
 Mutex global_BindingIndexPoolMutex(BINDINDX_NAMEWORD,false);
 std::vector<size_t> global_BindingIndexPool;
 #endif
 
+#ifdef DEBUG_THREADS
+struct DebugThread {
+  DebugThread* _Next;
+  std::string  _Message;
+  size_t       _Tid;
+  DebugThread(DebugThread* next, const std::string& msg, size_t tid) : _Next(next), _Message(msg), _Tid(tid) {};
+};
 
+std::atomic<DebugThread*> global_DebugThreadList;
+
+void dump_debug_threads(const char* filename) {
+  FILE* fout = fopen(filename,"w");
+  DebugThread* cur = global_DebugThreadList.load();
+  while (cur) {
+    fprintf( fout, "Tid[%lu] %s\n", cur->_Tid, cur->_Message.c_str());
+    cur = cur->_Next;
+  }
+  fclose(fout);
+}
+#endif
+
+};
+namespace mp {
+
+#ifdef DEBUG_THREADS
+void debug_mutex_lock(Mutex* m) {
+  if (core::_sym_STARdebug_threadsSTAR
+      && !core::_sym_STARdebug_threadsSTAR.unboundp()
+      && core::_sym_STARdebug_threadsSTAR->boundP()
+      && core::_sym_STARdebug_threadsSTAR->symbolValue().notnilp()) {
+    stringstream ss;
+    ss << "lock " << (char*) &(m->_NameWord) << std::endl;
+    DebugThread* cur = new DebugThread(global_DebugThreadList.load(),ss.str(),my_thread->_Tid);
+    bool exchanged = false;
+    do {
+      exchanged = global_DebugThreadList.compare_exchange_strong(cur->_Next,cur);
+      if (!exchanged) {
+        cur->_Next = global_DebugThreadList.load();
+      }
+    } while (!exchanged);
+  }
+};
+
+void debug_mutex_unlock(Mutex* m) {
+  if (core::_sym_STARdebug_threadsSTAR
+      && !core::_sym_STARdebug_threadsSTAR.unboundp()
+      && core::_sym_STARdebug_threadsSTAR->boundP()
+      && core::_sym_STARdebug_threadsSTAR->symbolValue().notnilp()) {
+    stringstream ss;
+    ss << "UNlock " << (char*) &(m->_NameWord) << std::endl;
+    DebugThread* cur = new DebugThread(global_DebugThreadList.load(),ss.str(),my_thread->_Tid);
+    bool exchanged = false;
+    do {
+      exchanged = global_DebugThreadList.compare_exchange_strong(cur->_Next,cur);
+      if (!exchanged) {
+        cur->_Next = global_DebugThreadList.load();
+      }
+    } while (!exchanged);
+  }
+};
+#endif // DEBUG_THREADS
+
+};
+
+
+namespace mp {
 SYMBOL_SC_(MpPkg, aSingleMpSymbol);
 SYMBOL_EXPORT_SC_(MpPkg, STARcurrent_processSTAR);
 SYMBOL_EXPORT_SC_(MpPkg, roo);
@@ -103,6 +143,33 @@ struct SafeRegisterDeregisterProcessWithLisp {
   }
 };
 
+void do_start_thread_inner(Process_sp process, core::List_sp bindings) {
+  if (bindings.consp()) {
+    core::Cons_sp pair = gc::As<core::Cons_sp>(CONS_CAR(bindings));
+    core::DynamicScopeManager scope(pair->_Car,core::eval::evaluate(pair->_Cdr,_Nil<core::T_O>()));
+    do_start_thread_inner(process,CONS_CDR(bindings));
+  } else {
+    core::List_sp args = process->_Arguments;
+    process->_Phase = Active;
+    core::T_mv result_mv;
+    {
+      SafeRegisterDeregisterProcessWithLisp reg(process);
+      try {
+        result_mv = core::eval::applyLastArgsPLUSFirst(process->_Function,args);
+      } catch (ExitProcess& e) {
+      // Do nothing - exiting
+      }
+    }
+    process->_Phase = Exiting;
+    core::T_sp result0 = result_mv;
+    core::List_sp result_list = _Nil<core::T_O>();
+    for ( int i=result_mv.number_of_values(); i>0; --i ) {
+      result_list = core::Cons_O::create(result_mv.valueGet_(i),result_list);
+    }
+    result_list = core::Cons_O::create(result0,result_list);
+    process->_ReturnValuesList = result_list;
+  }
+}
 
 __attribute__((noinline))
 void start_thread_inner(Process_sp process, void* cold_end_of_stack) {
@@ -141,31 +208,7 @@ void start_thread_inner(Process_sp process, void* cold_end_of_stack) {
   // Set the mp:*current-process* variable to the current process
   core::DynamicScopeManager scope(_sym_STARcurrent_processSTAR,process);
   core::List_sp reversed_bindings = core::cl__reverse(process->_InitialSpecialBindings);
-  for ( auto cur : reversed_bindings ) {
-    core::Cons_sp pair = gc::As<core::Cons_sp>(oCar(cur));
-    scope.pushSpecialVariableAndSet(pair->_Car,core::eval::evaluate(pair->_Cdr,_Nil<core::T_O>()));
-  }
-  core::List_sp args = process->_Arguments;
-
-  process->_Phase = Active;
-  core::T_mv result_mv;
-  {
-    SafeRegisterDeregisterProcessWithLisp reg(process);
-    try {
-      result_mv = core::eval::applyLastArgsPLUSFirst(process->_Function,args);
-    } catch (ExitProcess& e) {
-      // Do nothing - exiting
-    }
-  }
-  process->_Phase = Exiting;
-  core::T_sp result0 = result_mv;
-  core::List_sp result_list = _Nil<core::T_O>();
-  for ( int i=result_mv.number_of_values(); i>0; --i ) {
-    result_list = core::Cons_O::create(result_mv.valueGet_(i),result_list);
-  }
-  result_list = core::Cons_O::create(result0,result_list);
-  process->_ReturnValuesList = result_list;
-
+  do_start_thread_inner(process,reversed_bindings);
 };
 
 // This is the function actually passed to pthread_create.

@@ -139,9 +139,8 @@ T_sp write_object(T_sp x, T_sp stream) {
                                                                           make_fixnum(1024),
                                                                           _lisp->rehashSize(),
                                                                           _lisp->rehashThreshold()));
-      DynamicScopeManager scope;
-      scope.pushSpecialVariableAndSet(_sym_STARcircle_counterSTAR, _lisp->_true());
-      scope.pushSpecialVariableAndSet(_sym_STARcircle_stackSTAR, hash);
+      DynamicScopeManager scope(_sym_STARcircle_counterSTAR, _lisp->_true());
+      DynamicScopeManager scope2(_sym_STARcircle_stackSTAR, hash);
       write_object(x, _lisp->nullStream());
       _sym_STARcircle_counterSTAR->setf_symbolValue(gc::make_tagged_fixnum<core::Fixnum_I>(0));
       write_object(x, stream);

@@ -469,7 +469,9 @@ Return the **output-pathname**."
 (export '(builder))
 
 
-(defun build-fasl (out-file &key lisp-files init-name)
+
+
+(defun build-fasl-serial (out-file &key lisp-files init-name)
   "Link the object files in lisp-files into a shared library in out-file.
 Note: 'object-files' would be a better name than 'lisp-files' - but 'lisp-files' is what asdf provides.
 Return the truename of the output file.
@@ -485,4 +487,20 @@ This is to ensure that the RUN-ALL functions are evaluated in the correct order.
       (link-bitcode-modules temp-bitcode-file bitcode-files)
       (execute-link-fasl out-file (list temp-bitcode-file)))))
 
+
+(defun build-faso-parallel (out-file &key lisp-files)
+  #+(or)
+  (progn
+    (format t "Linking ~s --> ~s~%" lisp-files out-file)
+    (format t "About to do link of ~s to ~s~%" lisp-files out-file))
+  (core:link-faso-files out-file lisp-files)
+  (truename out-file))
+
+(defun build-fasl (out-file &key lisp-files init-name)
+  (declare (ignore init-name))
+  (cond
+    (*compile-file-parallel*
+     (build-faso-parallel out-file :lisp-files lisp-files))
+    (t (build-fasl-serial out-file :lisp-files lisp-files))))
+           
 (export 'build-fasl)
