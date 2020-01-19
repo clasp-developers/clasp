@@ -306,7 +306,7 @@ void add_dynamic_library_impl(bool is_executable, const std::string& libraryName
   }
   symbol_table.optimize();
   symbol_table.sort();
-  if (!symbol_table.is_symbol_table_sorted()) {
+  if (!symbol_table.is_sorted()) {
     printf("%s:%d The symbol table for %s is not sorted\n", __FILE__, __LINE__, libraryName.c_str());
     abort();
   }
