@@ -3854,12 +3854,13 @@ void save_symbol_info(const llvm::object::ObjectFile& object_file, const llvm::R
 #ifdef _TARGET_OS_DARWIN
   std::string startup_name = "__claspObjectFileStartUp";
 #endif
-#ifdef _TARGET_OS_LINUX
+#if defined(_TARGET_OS_LINUX) || defined(_TARGET_OS_FREEBSD)
   std::string startup_name = "_claspObjectFileStartUp";
 #endif
-#ifdef _TARGET_OS_FREEBSD
-  #error "Add support for freebsd"
+#if !defined(_TARGET_OS_LINUX) && !defined(_TARGET_OS_FREEBSD) && !defined(_TARGET_OS_DARWIN)
+#error You need to decide here
 #endif
+
   for ( auto p : symbol_sizes ) {
     llvm::object::SymbolRef symbol = p.first;
     Expected<StringRef> expected_symbol_name = symbol.getName();
