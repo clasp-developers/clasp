@@ -996,7 +996,8 @@ def configure(cfg):
     #static llvm/clang
 #    cfg.check_cxx(stlib=llvm_libraries, cflags = '-Wall', uselib_store = 'LLVM', stlibpath = llvm_lib_dir )
 #    cfg.check_cxx(stlib=CLANG_LIBRARIES, cflags='-Wall', uselib_store='CLANG', stlibpath = llvm_lib_dir )
-    llvm_include_dir = run_llvm_config_for_libs(cfg, "--includedir")
+# This was includes - but that doesn't put it in the right place when building home built llvm
+    llvm_include_dir = "%s/../include" % run_llvm_config_for_libs(cfg, "--bindir") 
     log.debug("llvm_include_dir = %s", llvm_include_dir)
     cfg.env.append_value('CXXFLAGS', ['-I./', '-I' + llvm_include_dir])
     cfg.env.append_value('CFLAGS', ['-I./'])
