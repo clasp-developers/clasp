@@ -4210,7 +4210,7 @@ ClaspJIT_O::ClaspJIT_O(const llvm::DataLayout& data_layout) {
   this->LinkLayer->setProcessAllSections(true);
   this->LinkLayer->setNotifyLoaded( [&] (VModuleKey, const llvm::object::ObjectFile &Obj, const llvm::RuntimeDyld::LoadedObjectInfo &loadedObjectInfo) {
 //                                      printf("%s:%d  NotifyLoaded ObjectFile@%p\n", __FILE__, __LINE__, &Obj);
-                                      save_and_symbol_info(Obj,loadedObjectInfo);
+                                      save_symbol_info(Obj,loadedObjectInfo);
                                     });
 #endif
   auto JTMB = llvm::orc::JITTargetMachineBuilder::detectHost();
