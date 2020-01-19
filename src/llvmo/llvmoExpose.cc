@@ -3848,9 +3848,18 @@ void register_symbol_with_libunwind(const std::string& name, uint64_t start, siz
 #endif
 }
 
-void save_and_symbol_info(const llvm::object::ObjectFile& object_file, const llvm::RuntimeDyld::LoadedObjectInfo& loaded_object_info)
+void save_symbol_info(const llvm::object::ObjectFile& object_file, const llvm::RuntimeDyld::LoadedObjectInfo& loaded_object_info)
 {
   std::vector< std::pair< llvm::object::SymbolRef, uint64_t > > symbol_sizes = llvm::object::computeSymbolSizes(object_file);
+#ifdef _TARGET_OS_DARWIN
+  std::string startup_name = "__claspObjectFileStartUp";
+#endif
+#ifdef _TARGET_OS_LINUX
+  std::string startup_name = "_claspObjectFileStartUp";
+#endif
+#ifdef _TARGET_OS_FREEBSD
+  #error "Add support for freebsd"
+#endif
   for ( auto p : symbol_sizes ) {
     llvm::object::SymbolRef symbol = p.first;
     Expected<StringRef> expected_symbol_name = symbol.getName();
@@ -3869,11 +3878,11 @@ void save_and_symbol_info(const llvm::object::ObjectFile& object_file, const llv
           register_symbol_with_libunwind(name,section_address+address,size);
           if ((!comp::_sym_jit_register_symbol.unboundp()) && comp::_sym_jit_register_symbol->fboundp()) {
             core::eval::funcall(comp::_sym_jit_register_symbol,core::SimpleBaseString_O::make(name),symbol_info);
-            if (name == "__claspObjectFileStartUp") {
+            if (name == startup_name) {
               my_thread->_ObjectFileStartUp = (void*)((char*)section_address+address);
             }
-//            printf("%s:%d  Registering symbol -> %s : %s\n", __FILE__, __LINE__, name.c_str(), _rep_(symbol_info).c_str() );
-//           gc::As<core::HashTableEqual_sp>(comp::_sym_STARjit_saved_symbol_infoSTAR->symbolValue())->hash_table_setf_gethash(core::SimpleBaseString_O::make(name),symbol_info);
+//          printf("%s:%d  Registering symbol -> %s : %s\n", __FILE__, __LINE__, name.c_str(), _rep_(symbol_info).c_str() );
+//          gc::As<core::HashTableEqual_sp>(comp::_sym_STARjit_saved_symbol_infoSTAR->symbolValue())->hash_table_setf_gethash(core::SimpleBaseString_O::make(name),symbol_info);
           }
         }
       }
