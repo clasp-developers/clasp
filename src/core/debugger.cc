@@ -658,6 +658,10 @@ InvocationHistoryFrameIterator_sp LispDebugger::currentFrame() const {
 size_t global_low_level_debugger_depth = 0;
 
 T_sp LispDebugger::invoke() {
+  if (!isatty(0)) {
+    printf("The low-level debugger was entered but there is no terminal on fd0 - aborting\n");
+    abort();
+  }
   if ( cl::_sym_STARfeaturesSTAR
        && cl::_sym_STARfeaturesSTAR->symbolValue()
        && cl::_sym_STARfeaturesSTAR->symbolValue().consp()
