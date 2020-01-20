@@ -49,8 +49,7 @@
                                             (ast-job-dynenv job))))
                           (clasp-cleavir::translate-hoisted-ast hoisted-ast :env (ast-job-environment job))))))
               (let ((startup-function (add-global-ctor-function module run-all-function
-                                                                :position (ast-job-form-index job)
-                                                                :linkage 'llvm-sys:external-linkage)))
+                                                                :position (ast-job-form-counter job))))
 ;;;                (add-llvm.used module startup-function)
                 (setf (ast-job-startup-function-name job) (llvm-sys:get-name startup-function))
                 ;; The link-once-odrlinkage should keep the startup-function alive and that
@@ -58,7 +57,7 @@
                 )
               #+(or)(make-boot-function-global-variable module run-all-function
                                                         :position (ast-job-form-index job)
-                                                        :linkage 'llvm-sys:link-once-odrlinkage)))
+                                                        )))
           (cmp-log "About to verify the module%N")
           (cmp-log-dump-module module)
           (irc-verify-module-safe module)

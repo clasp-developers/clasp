@@ -250,13 +250,6 @@ Compile a lisp source file into an LLVM module."
           (quick-module-dump *the-module* "preoptimize")
           ;; (2) Add the CTOR next
           (make-boot-function-global-variable module run-all-name
-                                              :linkage
-                                              ; 'llvm-sys:internal-linkage
-                                              ;; works
-                                        ; 'llvm-sys:external-linkage
-                                        ; 'llvm-sys:internal-linkage
-                                              ;; broken
-                                              'llvm-sys:internal-linkage
                                               :position image-startup-position
                                               :register-library t))
         ;; Now at the end of with-module another round of optimization is done

@@ -803,13 +803,11 @@ eg:  (f closure-ptr nargs a b c d ...)
    "llvm.used"))
 
 
-(defun add-global-ctor-function (module main-function &key position register-library linkage)
+(defun add-global-ctor-function (module main-function &key position register-library)
   "Create a function with the name core:+clasp-ctor-function-name+ and
 have it call the main-function"
   #+(or)(unless (eql module (llvm-sys:get-parent main-function))
           (error "The parent of the func-ptr ~a (a module) does not match the module ~a" (llvm-sys:get-parent main-function) module))
-  (unless linkage
-    (error "You must specify the linkage for the global-ctor function"))
 ;;;  (core::bformat t "add-global-ctor-function position: %s%N" position)
   (multiple-value-bind (startup-function-name startup-function-linkage)
       (core:startup-function-name-and-linkage position)
@@ -903,7 +901,7 @@ have it call the main-function"
                                     (llvm-sys:constant-pointer-null-get %i8*%)))))
    "llvm.global_ctors"))
 
-(defun make-boot-function-global-variable (module func-designator &key position register-library (linkage 'llvm-sys:internal-linkage))
+(defun make-boot-function-global-variable (module func-designator &key position register-library)
   "* Arguments
 - module :: An llvm module
 - func-ptr :: An llvm function
@@ -922,7 +920,6 @@ and initialize it with an array consisting of one function pointer."
             (error "The parent of the func-ptr ~a (a module) does not match the module ~a" (llvm-sys:get-parent func-ptr) module))
     (let* ((global-ctor (add-global-ctor-function module startup-fn
                                                   :position position
-                                                  :linkage linkage
                                                   :register-library register-library)))
       (incf *compilation-module-index*)
       (multiple-value-bind (startup-name linkage)
