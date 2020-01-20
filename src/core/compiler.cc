@@ -759,7 +759,7 @@ CL_DEFUN core::T_sp core__unpack_faso(T_sp pathDesig, T_sp prefix)
     void* of_start = (void*)((char*)header + header->_ObjectFiles[ofi]._StartPage*header->_PageSize);
     size_t of_length = header->_ObjectFiles[ofi]._ObjectFileSize;
     stringstream sfilename;
-    sfilename << str_prefix << "-" << ofi << ".o";
+    sfilename << str_prefix << "-" << "-" << ofi << "-" << header->_ObjectFiles[ofi]._ObjectID << ".o";
     FILE* fout = fopen(sfilename.str().c_str(),"w");
     fwrite(of_start,of_length,1,fout);
     fclose(fout);
