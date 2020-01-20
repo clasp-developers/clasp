@@ -62,7 +62,8 @@
 	((eq (car list) key) (cadr list))
 	(t (search-keyword (cddr list) key))))
 
-(defun check-keyword (tail keywords &optional (allow-other-keys nil aok-flag))
+(defun check-keyword (tail keywords &optional (allow-other-keys nil aok-flag)
+                                      compiler-macro-p)
   (do (head
        arg
        (err nil))
@@ -79,6 +80,15 @@
            (when (not aok-flag)
              (setq allow-other-keys arg aok-flag t)))
           ((not (member head keywords))
+           ;; This condition is signaled so that it can be intercepted
+           ;; by cclasp much later. It will handle the condition by
+           ;; declining to expand (thus exiting from here).
+           ;; If the compiler macro is being used otherwise, SIGNAL will
+           ;; just return and we'll continue on the error path.
+           (when (and compiler-macro-p
+                      (not (keywordp head)))
+             (signal 'compiler-macro-key-not-self-evaluating
+                     :key head))
            (setq err head)))))
 
 (defun dm-too-many-arguments (current-form)
@@ -165,7 +175,8 @@
 		     (dm-v v init)))
 		 (cond (key-flag
 			(push `(check-keyword ,pointer ',all-keywords
-                                              ,@(if allow-other-keys '(t) '()))
+                                              ,@(if allow-other-keys '(t) '())
+                                              ',(eq context 'define-compiler-macro))
 			      arg-check))
 		       ((not no-check)
 			(push `(if ,pointer (dm-too-many-arguments ,basis-form))
