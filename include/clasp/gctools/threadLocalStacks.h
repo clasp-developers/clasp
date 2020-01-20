@@ -35,21 +35,10 @@ namespace core {
     void release_binding_index(size_t index) const;
     uint32_t ensure_binding_index(const Symbol_O*) const;
     void expandThreadLocalBindings(size_t index);
-    // Dynamic symbol access
-    /*! Return a pointer to the value slot for the symbol.  
-        USE THIS IMMEDIATELY AND THEN DISCARD.
-        DO NOT DO STORE THIS OR KEEP THIS FOR ANY LENGTH OF TIME. */
-    T_sp* reference_raw_(Symbol_O* varP, T_sp* globalValuePtr);
-    const T_sp* reference_raw_(const Symbol_O* varP, const T_sp* globalValuePtr) const;
-    const T_sp* reference_raw(const Symbol_O* varP, const T_sp* globalValuePtr) const { return const_cast<const T_sp*>(this->reference_raw_(const_cast<Symbol_O*>(varP),globalValuePtr));};
-    T_sp* reference_raw(Symbol_O* varP,T_sp* globalValuePtr) { return this->reference_raw_(varP,globalValuePtr);};
-    T_sp* reference(Symbol_sp var,T_sp* globalValuePtr) { return const_cast<T_sp*>(this->reference_raw(&*var,globalValuePtr));};
-    const T_sp* reference(Symbol_sp var, T_sp* globalValuePtr) const { return this->reference_raw(&*var, globalValuePtr);};
-    T_sp  value(Symbol_sp var, T_sp* globalValuePtr) const { return *this->reference(var,globalValuePtr);};
-//    void  setf_value(Symbol_sp var, T_sp value) { *this->reference(var) = value;};
-    // Specifically thread-local access
+    // Access
     T_sp thread_local_value(const Symbol_O*) const;
     void set_thread_local_value(T_sp, const Symbol_O*);
+    bool thread_local_boundp(const Symbol_O*) const;
   private:
     T_sp* thread_local_reference(const uint32_t) const;
   };

@@ -67,44 +67,6 @@ void DynamicBindingStack::release_binding_index(size_t index) const
 #endif
 };
 
-T_sp* DynamicBindingStack::reference_raw_(Symbol_O* var,T_sp* globalValuePtr) {
-#ifdef CLASP_THREADS
-  if ( var->_BindingIdx.load() == NO_THREAD_LOCAL_BINDINGS ) {
-    return globalValuePtr;
-  }
-  uintptr_t index = var->_BindingIdx.load();
-  // If it has a _Binding value but our table is not big enough, then expand the table.
-  unlikely_if (index >= this->_ThreadLocalBindings.size()) {
-    this->_ThreadLocalBindings.resize(index+1,_NoThreadLocalBinding<T_O>());
-  }
-  if (gctools::tagged_no_thread_local_bindingp(this->_ThreadLocalBindings[index].raw_())) {
-    return globalValuePtr;
-  }
-  return &this->_ThreadLocalBindings[index];
-#else
-  return globalValuePtr;
-#endif
-}
-
-const T_sp* DynamicBindingStack::reference_raw_(const Symbol_O* var, const T_sp* globalValuePtr) const {
-#ifdef CLASP_THREADS
-  if ( var->_BindingIdx.load() == NO_THREAD_LOCAL_BINDINGS ) {
-    return globalValuePtr;
-  }
-  uintptr_t index = var->_BindingIdx.load();
-  // If it has a _Binding value but our table is not big enough, then expand the table.
-  unlikely_if (index >= this->_ThreadLocalBindings.size()) {
-    this->_ThreadLocalBindings.resize(index+1,_NoThreadLocalBinding<T_O>());
-  }
-  if (gctools::tagged_no_thread_local_bindingp(this->_ThreadLocalBindings[index].raw_())) {
-    return globalValuePtr;
-  }
-  return &this->_ThreadLocalBindings[index];
-#else
-  return globalValuePtr;
-#endif
-}
-
 uint32_t DynamicBindingStack::ensure_binding_index(const Symbol_O* var) const {
   uint32_t no_binding = NO_THREAD_LOCAL_BINDINGS;
   if (var->_BindingIdx.load() == no_binding) {
@@ -133,6 +95,14 @@ T_sp DynamicBindingStack::thread_local_value(const Symbol_O* sym) const {
 
 void DynamicBindingStack::set_thread_local_value(T_sp value, const Symbol_O* sym) {
   *thread_local_reference(ensure_binding_index(sym)) = value;
+}
+
+bool DynamicBindingStack::thread_local_boundp(const Symbol_O* sym) const {
+  uint32_t index = sym->_BindingIdx.load();
+  if (index == NO_THREAD_LOCAL_BINDINGS) return false;
+  else if (gctools::tagged_no_thread_local_bindingp(_ThreadLocalBindings[index].raw_()))
+    return false;
+  else return true;
 }
 
 SYMBOL_EXPORT_SC_(CorePkg,STARwatchDynamicBindingStackSTAR);

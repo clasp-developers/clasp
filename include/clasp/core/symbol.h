@@ -107,24 +107,6 @@ public:
     else this->_Flags = this->_Flags&(~IS_MACRO);
   }
 
- private:
-  /*! Return a pointer to the value cell */
-  inline T_sp *valueReference_(T_sp* globalValuePtr) {
-#ifdef CLASP_THREADS
-    return my_thread->_Bindings.reference_raw(this,globalValuePtr);
-#else
-    return globalValuePtr;
-#endif
-  };
-
-  inline const T_sp *valueReference_(const T_sp* globalValuePtr) const {
-#ifdef CLASP_THREADS
-    return my_thread->_Bindings.reference_raw(this,globalValuePtr);
-#else
-    return globalValuePtr;
-#endif
-  };
-
  public:
   void setf_name(SimpleString_sp nm) { this->_Name = nm; };
 
@@ -158,7 +140,7 @@ public:
 #ifdef CLASP_THREADS
     return my_thread->_Bindings.thread_local_value(this);
 #else
-    return *globalValuePtr;
+    return _GlobalValue;
 #endif
   }
 
@@ -166,19 +148,20 @@ public:
 #ifdef CLASP_THREADS
     my_thread->_Bindings.set_thread_local_value(value, this);
 #else
-    *globalValuePtr = value;
+    _GlobalValue = value;
 #endif
   }
   
   /*! Return the value slot of the symbol - throws if unbound */
   inline T_sp symbolValue() const {
-    T_sp val = *this->valueReference_(&(this->_GlobalValue));
+    T_sp val = symbolValueUnsafe();
     if (val.unboundp()) this->symbolUnboundError();
     return val;
   }
 
   inline T_sp symbolValueFromCell(Cons_sp cell, T_sp unbound_marker) const {
-    T_sp val = *this->valueReference_(&(CONS_CAR(cell)));
+    T_sp val = symbolValueUnsafe();
+    if (val.unboundp()) val = CONS_CAR(cell);
     // FIXME: SICL allows many unbound values, but we don't even pick one properly,
     // i.e. we just check for both rather than checking TLS.unboundp() and global.eq(marker).
     if (val.unboundp() || val == unbound_marker) this->symbolUnboundError();
@@ -186,14 +169,23 @@ public:
   }
 
   /*! Return the value slot of the symbol or UNBOUND if unbound */
-  inline T_sp symbolValueUnsafe() const { return *this->valueReference_(&this->_GlobalValue); };
+  inline T_sp symbolValueUnsafe() const {
+#ifdef CLASP_THREADS
+    if (my_thread->_Bindings.thread_local_boundp(this))
+      return my_thread->_Bindings.thread_local_value(this);
+    else
+#endif
+      return _GlobalValue;
+  };
 
   void makeSpecial();
 
-  inline bool boundP() const { return !(*this->valueReference_(&this->_GlobalValue)).unboundp(); };
+  inline bool boundP() const { return !(symbolValueUnsafe().unboundp()); };
 
   inline bool boundPFomCell(Cons_sp cell) {
-    return !(*this->valueReference_(&(CONS_CAR(cell)))).unboundp();
+    T_sp val = symbolValueUnsafe();
+    if (val.unboundp()) val = CONS_CAR(cell);
+    return !(val.unboundp());
   }
 
   Symbol_sp makunbound();
@@ -203,12 +195,22 @@ public:
   T_sp defconstant(T_sp obj);
 
   inline T_sp setf_symbolValue(T_sp obj) {
-    *this->valueReference_(&this->_GlobalValue) = obj;
+#ifdef CLASP_THREADS
+    if (my_thread->_Bindings.thread_local_boundp(this))
+      set_threadLocalSymbolValue(obj);
+    else
+#endif
+      _GlobalValue = obj;
     return obj;
   }
 
   inline T_sp setf_symbolValueFromCell(T_sp val, Cons_sp cell) {
-    *this->valueReference_(&(CONS_CAR(cell))) = val;
+#ifdef CLASP_THREADS
+    if (my_thread->_Bindings.thread_local_boundp(this))
+      set_threadLocalSymbolValue(val);
+    else
+#endif
+      CONS_CAR(cell) = val;
     return val;
   }
 
