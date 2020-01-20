@@ -354,7 +354,7 @@ No DIBuilder is defined for the default module")
       (let ((lineno (core:source-pos-info-lineno *current-source-pos-info*)))
         (cond
           (*compile-file-pathname*
-           (core:bformat nil "%s.%s-%s^%d^TOP-COMPILE-FILE-%d"
+           (core:bformat nil "___LAMBDA___%s.%s-%s^%d^%d"
                          (pathname-name *compile-file-pathname*)
                          (pathname-type *compile-file-pathname*)
                          *compile-file-unique-symbol-prefix*
@@ -375,7 +375,8 @@ No DIBuilder is defined for the default module")
   (sys:bformat nil "JITREPL-%d" (sys:next-number)))
   
 (defun jit-startup-function-name ()
-  (sys:bformat nil "%s-%d" sys:*module-startup-function-name* (sys:next-number)))
+  (let ((next-id (sys:next-number)))
+    (values (sys:bformat nil "%s-%d" sys:*module-startup-function-name* next-id) next-id)))
 
 (defun jit-shutdown-function-name ()
   (sys:bformat nil "%s-%d" sys:*module-shutdown-function-name* (sys:next-number)))

@@ -3709,7 +3709,7 @@ class ClaspSectionMemoryManager : public SectionMemoryManager {
                                 StringRef SectionName,
                                 bool isReadOnly) {
     uint8_t* ptr = this->SectionMemoryManager::allocateDataSection(Size,Alignment,SectionID,SectionName,isReadOnly);
-//    printf("%s:%d:%s allocateDataSection: %s\n", __FILE__, __LINE__, __FUNCTION__, SectionName.str().c_str());
+//    printf("%s:%d:%s allocateDataSection: %s size: %lu ptr -> %p\n", __FILE__, __LINE__, __FUNCTION__, SectionName.str().c_str(), Size, ptr);
     if (SectionName.str() == STACKMAPS_NAME) {
       my_thread->_stackmap = (uintptr_t)ptr;
       my_thread->_stackmap_size = (size_t)Size;
@@ -4081,7 +4081,7 @@ CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, co
   // always unique 
   core::Pointer_sp startupPtr;
   if (startupName!="") {
-    startupPtr = gc::As<core::Pointer_sp>(jit->lookup(startupName));
+    startupPtr = gc::As<core::Pointer_sp>(jit->lookup(jit->ES->getMainJITDylib(),startupName));
   }
   core::T_O* replPtrRaw = NULL;
   if (startupPtr && startupPtr->ptr()) {
@@ -4180,7 +4180,7 @@ CL_DEFUN ClaspJIT_sp llvm_sys__make_clasp_jit(DataLayout_sp data_layout)
 }
 
 
-ClaspJIT_O::ClaspJIT_O(const llvm::DataLayout& data_layout) {
+ClaspJIT_O::ClaspJIT_O(const llvm::DataLayout& data_layout) :_DataLayout(data_layout) {
 #if 0
     // Detect the host and set code model to small.
   llvm::ExitOnError ExitOnErr;
@@ -4236,7 +4236,7 @@ ClaspJIT_O::~ClaspJIT_O()
 }
 
 
-CL_DEFMETHOD core::T_sp ClaspJIT_O::lookup(const std::string& Name) {
+CL_DEFMETHOD core::Pointer_sp ClaspJIT_O::lookup(JITDylib& dylib, const std::string& Name) {
 //  printf("%s:%d:%s Name = %s\n", __FILE__, __LINE__, __FUNCTION__, Name.c_str());
   llvm::ExitOnError ExitOnErr;
 //  llvm::ArrayRef<llvm::orc::JITDylib*>  dylibs(&this->ES->getMainJITDylib());
@@ -4252,12 +4252,12 @@ CL_DEFMETHOD core::T_sp ClaspJIT_O::lookup(const std::string& Name) {
 #error You need to decide here
 #endif
 
-  llvm::Expected<llvm::JITEvaluatedSymbol> symbol = this->ES->lookup(llvm::orc::JITDylibSearchList({{&this->ES->getMainJITDylib(),true}}),
+  llvm::Expected<llvm::JITEvaluatedSymbol> symbol = this->ES->lookup(llvm::orc::JITDylibSearchList({{&dylib,true}}),
                                                                      this->ES->intern(mangledName));   
   if (!symbol) {
     llvm::handleAllErrors(symbol.takeError(), [](const llvm::ErrorInfoBase &E) {
-                                                  errs() << "Symbolizer failed to get line: " << E.message() << "\n";
-                                                });
+                                                errs() << "Symbolizer failed to get line: " << E.message() << "\n";
+                                              });
 #if 0
     std::stringstream ss;
     ss << __FILE__ <<":" <<__LINE__ << ":  " << symbol.takeError().message();
@@ -4275,7 +4275,7 @@ CL_DEFMETHOD void ClaspJIT_O::addIRModule(Module_sp module, ThreadSafeContext_sp
   ExitOnErr(this->CompileLayer->add(this->ES->getMainJITDylib(),llvm::orc::ThreadSafeModule(std::move(umodule),*context->wrappedPtr())));
 }
 
-void ClaspJIT_O::addObjectFile(const char* rbuffer, size_t bytes, bool print)
+void ClaspJIT_O::addObjectFile(const char* rbuffer, size_t bytes,size_t startupID, JITDylib& dylib,  bool print )
 {
   // Create an llvm::MemoryBuffer for the ObjectFile bytes
   if (print) core::write_bf_stream(BF("%s:%d Adding object file at %p  %lu bytes\n")  % __FILE__ % __LINE__  % (void*)rbuffer % bytes );
@@ -4284,15 +4284,15 @@ void ClaspJIT_O::addObjectFile(const char* rbuffer, size_t bytes, bool print)
   std::unique_ptr<llvm::MemoryBuffer> mbuffer = llvm::MemoryBuffer::getMemBuffer(sbuffer,name,false);
   // Force the object file to be linked using MaterializationUnit::doMaterialize(...)
   if (print) core::write_bf_stream(BF("%s:%d Materializing\n") % __FILE__ % __LINE__ );
-  auto K = llvm::orc::VModuleKey();
-  auto ObjMU = llvm::orc::BasicObjectLayerMaterializationUnit::Create(*this->LinkLayer,std::move(K),std::move(mbuffer));
-  if (!ObjMU) {
-    llvm::ExitOnError ExitOnErr;
-    ExitOnErr(ObjMU.takeError());
+  auto erro = this->LinkLayer->add(dylib,std::move(mbuffer),this->ES->allocateVModule());
+  if (erro) {
+    printf("%s:%d Could not addObjectFile\n", __FILE__, __LINE__ );
   }
-  (*ObjMU)->doMaterialize(this->ES->getMainJITDylib());
+  core::T_mv startup_name_and_linkage = core::core__startup_function_name_and_linkage(startupID);
+  std::string startup_name = gc::As<core::String_sp>(startup_name_and_linkage)->get_std_string();
+  core::Pointer_sp startup = this->lookup(dylib,startup_name);
   // Lookup the address of the ObjectFileStartUp function and invoke it
-  void* thread_local_startup = my_thread->_ObjectFileStartUp;
+  void* thread_local_startup = startup->ptr();
   my_thread->_ObjectFileStartUp = NULL;
   if (thread_local_startup) {
     if (print) core::write_bf_stream(BF("%s:%d thread_local_startup -> %p\n") % __FILE__ % __LINE__ % (void*)thread_local_startup);
@@ -4368,8 +4368,23 @@ CL_DEFMETHOD JITDylib& ClaspJIT_O::getMainJITDylib() {
   return this->ES->getMainJITDylib();
 }
 
-CL_DEFMETHOD JITDylib& ClaspJIT_O::createJITDylib(const std::string& name) {
-  return this->ES->createJITDylib(name);
+CL_DEFMETHOD JITDylib_sp ClaspJIT_O::createAndRegisterJITDylib(const std::string& name) {
+  JITDylib& dylib(this->ES->createJITDylib(name));
+  dylib.setGenerator(llvm::cantFail(ClaspDynamicLibrarySearchGenerator::GetForCurrentProcess(this->_DataLayout.getGlobalPrefix())));
+  JITDylib_sp dylib_sp = core::RP_Create_wrapped<JITDylib_O>(&dylib);
+#if 0
+  Cons_sp cell = core::Cons_O::create(dylib_sp,_Nil<core::T_O>());
+  T_sp expected;
+  T_sp current;
+  // Use CAS to push the new JITDylib into the list of JITDylibs.
+  do {
+    current = _lisp->Roots._JITDylibs.load();
+    expected = current;
+    cell->rplacd(current);
+    _lisp->Roots._JITDylibs.compare_exchange_strong(expected,gc::As_unsafe<core::T_sp>(cell));
+  } while (expected != current);
+#endif
+  return dylib_sp;
 }
 
 CL_DOCSTRING(R"doc(Tell LLVM what LLVM_DEBUG messages to turn on. Pass a list of strings like \"dyld\" - which

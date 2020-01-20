@@ -209,6 +209,7 @@ class Lisp_O {
     gctools::Vec0<Instance_sp> staticClassesUnshiftedNowhere;
     gctools::Vec0<Symbol_sp> staticClassSymbolsUnshiftedNowhere;
     gctools::Vec0<Creator_sp> staticInstanceCreatorsUnshiftedNowhere;
+    std::atomic<T_sp>    _JITDylibs; // Maintain a list of loaded JITDylibs 
 //    DynamicBindingStack _Bindings;
     gctools::Vec0<FileScope_sp> _SourceFiles;
     map<string, int> _SourceFileIndices; // map<string,FileScope_sp> 	_SourceFiles;

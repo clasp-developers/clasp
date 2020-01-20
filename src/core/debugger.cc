@@ -1277,7 +1277,11 @@ CL_DEFUN T_mv core__call_with_backtrace(Function_sp closure, bool args_as_pointe
       T_sp entry;
       Symbol_sp stype;
       if (backtrace[i]._Stage == lispFrame) {
-        stype = INTERN_(kw,lisp);
+        if (backtrace[i]._SymbolName.find("___LAMBDA___")!=string::npos) {
+          stype = cl::_sym_lambda;
+        } else {
+          stype = INTERN_(kw,lisp);
+        }
       } else {
         stype = INTERN_(kw,c_PLUS__PLUS_);
       }
@@ -1332,6 +1336,7 @@ CL_DEFUN Fixnum_sp core__frame_pointer() {
 };
 
 
+CL_DOCSTRING(R"doc(Dump all symbols and stackmaps to *debug-io*.)doc");
 CL_DEFUN void core__dump_symbol_and_stackmap_info() {
   std::vector<BacktraceEntry> emptyBacktrace;
   fill_backtrace_or_dump_info(emptyBacktrace);

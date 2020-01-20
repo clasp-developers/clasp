@@ -311,6 +311,7 @@ Compile a lisp source file into an LLVM module."
                               environment)
   "See CLHS compile-file."
   #+debug-monitor(sys:monitor-message "compile-file ~a" input-file)
+  (core:bformat t "compile-file-serial image-startup-position: %s%N" image-startup-position)
   (let ((*compile-file-parallel* nil))
     (if (not output-file-p) (setq output-file (cfp-output-file-default input-file output-type)))
     (with-compiler-env ()

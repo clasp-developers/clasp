@@ -210,7 +210,10 @@ Lisp_O::GCRoots::GCRoots() :
   _NullStream(_Nil<T_O>()),
   _ThePathnameTranslations(_Nil<T_O>()),
   _Booted(false),
-  _UnixSignalHandlers(_Nil<T_O>()) {};
+  _UnixSignalHandlers(_Nil<T_O>())
+{
+  this->_JITDylibs.store(_Nil<core::T_O>());
+};
 
 Lisp_O::Lisp_O() : _StackWarnSize(gctools::_global_stack_max_size * 0.9), // 6MB default stack size before warnings
                    _StackSampleCount(0),

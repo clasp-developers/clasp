@@ -454,7 +454,7 @@ CL_DEFUN T_sp core__startup_image_pathname(char stage) {
 
 
 
-CL_DEFUN T_sp core__load_object(llvmo::ClaspJIT_sp jit, T_sp pathDesig, T_sp verbose, T_sp print, T_sp external_format) {
+CL_DEFUN T_sp core__load_object(llvmo::ClaspJIT_sp jit, llvmo::JITDylib& dylib, size_t startupID, T_sp pathDesig, T_sp verbose, T_sp print, T_sp external_format) {
   Pathname_sp path = cl__pathname(pathDesig);
   String_sp fname = gc::As<String_sp>(cl__namestring(cl__probe_file(path)));
   mode_t mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH;
@@ -470,13 +470,14 @@ CL_DEFUN T_sp core__load_object(llvmo::ClaspJIT_sp jit, T_sp pathDesig, T_sp ver
   close(fd);
   const char* bbuffer = (const char*)of->_ObjectFilePtr;
   size_t bbytes = of->_ObjectFileSize;
-  jit->addObjectFile(bbuffer,bbytes);
+  jit->addObjectFile(bbuffer,bbytes,startupID,dylib);
   return of;
 }
 
 struct FasoHeader;
 
 struct ObjectFileInfo {
+  size_t    _ObjectID;
   size_t    _StartPage;
   size_t    _NumberOfPages;
   size_t    _ObjectFileSize;
@@ -527,6 +528,7 @@ CL_DEFUN void core__write_faso(T_sp pathDesig, List_sp objectFiles)
   List_sp cur = objectFiles;
   size_t nextPage = header->_HeaderPageCount;
   for ( size_t ii=0; ii<cl__length(objectFiles); ++ii ) {
+    header->_ObjectFiles[ii]._ObjectID = ii;
     header->_ObjectFiles[ii]._StartPage = nextPage;
     Array_sp of = gc::As<Array_sp>(oCar(cur));
     cur = oCdr(cur);
@@ -582,10 +584,17 @@ struct MmapInfo {
   MmapInfo(int fd,void* mem, size_t start, size_t size) : _FileDescriptor(fd), _Memory(mem), _ObjectFileAreaStart(start), _ObjectFileAreaSize(size) {};
 };
 
+
+struct FasoObjectFileInfo {
+  size_t _ObjectID;
+  size_t _ObjectFileSize;
+  FasoObjectFileInfo(size_t oid, size_t ofs) : _ObjectID(oid), _ObjectFileSize(ofs) {};
+};
+  
 CL_LAMBDA(output-path-designator faso-files &optional (verbose nil))
 CL_DEFUN void core__link_faso_files(T_sp outputPathDesig, List_sp fasoFiles, bool verbose) {
 //  write_bf_stream(BF("Writing FASO file to %s for %d object files\n") % _rep_(pathDesig) % cl__length(objectFiles));
-  std::vector<size_t> allObjectFiles;
+  std::vector<FasoObjectFileInfo> allObjectFiles;
   std::vector<MmapInfo> mmaps;
   List_sp cur = fasoFiles;
   for ( size_t ii=0; ii<cl__length(fasoFiles); ++ii ) {
@@ -599,21 +608,17 @@ CL_DEFUN void core__link_faso_files(T_sp outputPathDesig, List_sp fasoFiles, boo
       close(fd);
       SIMPLE_ERROR(BF("Could not mmap %s because of %s") % _rep_(filename) % strerror(errno));
     }
+    close(fd);
     FasoHeader* header = (FasoHeader*)memory;
-    if (header->_Magic == MACHO_MAGIC_NUMBER ) { // machO object file
-      if (verbose) write_bf_stream(BF("MACHO file %lu bytes\n") % (size_t)fsize );
-      mmaps.emplace_back(MmapInfo(fd,memory,0,(size_t)fsize));
-    } else if (header->_Magic == ELF_MAGIC_NUMBER ) { // ELF object file
-      if (verbose) write_bf_stream(BF("ELF file %lu bytes\n") % (size_t)fsize );
-      mmaps.emplace_back(MmapInfo(fd,memory,0,(size_t)fsize));
-    } else if (header->_Magic == FASO_MAGIC_NUMBER) {
+    if (header->_Magic == FASO_MAGIC_NUMBER) {
       size_t object0_offset = (header->_HeaderPageCount*header->_PageSize);
       if (verbose) write_bf_stream(BF("object0_offset %lu  fsize-object0_offset %lu bytes\n") % object0_offset % ((size_t)fsize-object0_offset) );
       mmaps.emplace_back(MmapInfo(fd,memory,object0_offset,(size_t)fsize-object0_offset));
       for (size_t ofi = 0; ofi<header->_NumberOfObjectFiles; ++ofi) {
         size_t of_length = header->_ObjectFiles[ofi]._ObjectFileSize;
         if (verbose) write_bf_stream(BF("object file %lu   length: %lu\n") % ofi % of_length);
-        allObjectFiles.emplace_back(of_length);
+        FasoObjectFileInfo fofi(header->_ObjectFiles[ofi]._ObjectID,of_length);
+        allObjectFiles.emplace_back(fofi);
       }
     } else {
       SIMPLE_ERROR(BF("Illegal and unknown file type - magic number: %X\n") % (size_t)header->_Magic);
@@ -625,11 +630,12 @@ CL_DEFUN void core__link_faso_files(T_sp outputPathDesig, List_sp fasoFiles, boo
   header->_NumberOfObjectFiles = allObjectFiles.size();
   size_t nextPage = header->_HeaderPageCount;
   for (size_t ofi=0; ofi<allObjectFiles.size(); ofi++ ) {
+    header->_ObjectFiles[ofi]._ObjectID = allObjectFiles[ofi]._ObjectID;
     header->_ObjectFiles[ofi]._StartPage = nextPage;
-    size_t num_pages = header->calculateObjectFileNumberOfPages(allObjectFiles[ofi]);
+    size_t num_pages = header->calculateObjectFileNumberOfPages(allObjectFiles[ofi]._ObjectFileSize);
     header->_ObjectFiles[ofi]._NumberOfPages = num_pages;
     nextPage += num_pages;
-    header->_ObjectFiles[ofi]._ObjectFileSize = allObjectFiles[ofi];
+    header->_ObjectFiles[ofi]._ObjectFileSize = allObjectFiles[ofi]._ObjectFileSize;
     if (verbose) write_bf_stream(BF("object file %lu   _StartPage=%lu  _NumberOfPages=%lu   _ObjectFileSize=%lu\n")
                                  % ofi
                                  % header->_ObjectFiles[ofi]._StartPage
@@ -689,11 +695,18 @@ CL_DEFUN core::T_sp core__load_faso(T_sp pathDesig, T_sp verbose, T_sp print, T_
   close(fd); // Ok to close file descriptor after mmap
   llvmo::ClaspJIT_sp jit = gc::As<llvmo::ClaspJIT_sp>(eval::funcall(comp::_sym_jit_engine));
   FasoHeader* header = (FasoHeader*)memory;
+  llvmo::JITDylib_sp jitDylib;
   for (size_t ofi = 0; ofi<header->_NumberOfObjectFiles; ++ofi) {
+    if (header->_ObjectFiles[ofi]._ObjectID==0) {
+      jitDylib = jit->createAndRegisterJITDylib(filename->get_std_string());
+    }
     void* of_start = (void*)((char*)header + header->_ObjectFiles[ofi]._StartPage*header->_PageSize);
     size_t of_length = header->_ObjectFiles[ofi]._ObjectFileSize;
     if (print.notnilp()) write_bf_stream(BF("%s:%d Adding faso %s object file %d to jit\n") % __FILE__ % __LINE__ % _rep_(filename) % ofi);
-    jit->addObjectFile((const char*)of_start,of_length,print.notnilp());
+    jit->addObjectFile((const char*)of_start,of_length,
+                       header->_ObjectFiles[ofi]._ObjectID,
+                       *jitDylib->wrappedPtr(),
+                       print.notnilp());
   }
   return _lisp->_true();
 }
@@ -713,10 +726,15 @@ CL_DEFUN core::T_sp core__describe_faso(T_sp pathDesig)
   FasoHeader* header = (FasoHeader*)memory;
   write_bf_stream(BF("NumberOfObjectFiles %d\n") % header->_NumberOfObjectFiles);
   for (size_t ofi = 0; ofi<header->_NumberOfObjectFiles; ++ofi) {
+    size_t ofId =  header->_ObjectFiles[ofi]._ObjectID;
     void* of_start = (void*)((char*)header + header->_ObjectFiles[ofi]._StartPage*header->_PageSize);
     size_t of_length = header->_ObjectFiles[ofi]._ObjectFileSize;
 //    write_bf_stream(BF("Adding faso %s object file %d to jit\n") % _rep_(filename) % ofi);
-    write_bf_stream(BF("Object file %d  start-page: %lu  bytes: %lu pages: %lu\n") % ofi % header->_ObjectFiles[ofi]._StartPage % header->_ObjectFiles[ofi]._ObjectFileSize % header->_ObjectFiles[ofi]._NumberOfPages );
+    write_bf_stream(BF("Object file %d  ObjectID: %lu start-page: %lu  bytes: %lu pages: %lu\n")
+                    % ofi
+                    % header->_ObjectFiles[ofi]._ObjectID
+                    % header->_ObjectFiles[ofi]._StartPage
+                    % header->_ObjectFiles[ofi]._ObjectFileSize % header->_ObjectFiles[ofi]._NumberOfPages );
   }
   return _lisp->_true();
 }
@@ -789,6 +807,29 @@ CL_DEFUN T_mv core__load_binary_directory(T_sp pathDesig, T_sp verbose, T_sp pri
 
 
 
+CL_DOCSTRING(R"doc(Return the startup function name and the linkage based on the current dynamic environment.
+ The name contains the id as part of itself. )doc");
+CL_LAMBDA(&optional (id 0) prefix)
+CL_DEFUN T_mv core__startup_function_name_and_linkage(size_t id, core::T_sp prefix)
+{
+  stringstream ss;
+  if (prefix.nilp()) {
+    ss << "StartUp";
+  } else if (gc::IsA<String_sp>(prefix)) {
+    ss << gc::As<String_sp>(prefix)->get_std_string();
+  } else {
+    SIMPLE_ERROR(BF("Illegal prefix for startup function name: %s") % _rep_(prefix));
+  }
+  ss << "_";
+  ss << id;
+  Symbol_sp linkage_type;
+  if (comp::_sym_STARcompile_file_parallelSTAR->symbolValue().notnilp()) {
+    linkage_type = llvmo::_sym_ExternalLinkage;
+  } else {
+    linkage_type = llvmo::_sym_InternalLinkage;
+  }
+  return Values(core::SimpleBaseString_O::make(ss.str()),linkage_type);
+};
 
 
 CL_LAMBDA(name &optional verbose print external-format);
@@ -822,25 +863,22 @@ LOAD:
   String_sp nameStr = gc::As<String_sp>(cl__namestring(cl__probe_file(path)));
   string name = nameStr->get_std_string();
 
-#if 0
-  /* Look up the initialization function. */
-  string stem = cl__string_downcase(gc::As<String_sp>(path->_Name))->get_std_string();
-  size_t dsp = 0;
-  if ((dsp = stem.find("_d")) != string::npos)
-    stem = stem.substr(0, dsp);
-  else if ((dsp = stem.find("_o")) != string::npos)
-    stem = stem.substr(0, dsp);
-#endif
-  
-  int mode = RTLD_NOW | RTLD_GLOBAL; // | RTLD_FIRST;
   // Check if we already have this dynamic library loaded
   bool handleIt = if_dynamic_library_loaded_remove(name);
   //	printf("%s:%d Loading dynamic library: %s\n", __FILE__, __LINE__, name.c_str());
+  int mode = RTLD_NOW | RTLD_LOCAL; // | RTLD_FIRST;
   void *handle = dlopen(name.c_str(), mode);
   if (handle == NULL) {
     string error = dlerror();
     SIMPLE_ERROR(BF("Error in dlopen: %s") % error);
     //    return (Values(_Nil<T_O>(), SimpleBaseString_O::make(error)));
+  }
+  // Static constructors must be available and they were run by dlopen
+  //   and they registered startup_functions that we will now invoke
+  //   to run the top-level forms.
+  if (!startup_functions_are_waiting()) {
+      printf("%s:%d No static constructors were run - what do we do in this situation????\n", __FILE__, __LINE__ );
+      abort();
   }
   add_dynamic_library_using_handle(name,handle);
   Pointer_sp handle_ptr = Pointer_O::create(handle);
@@ -848,60 +886,12 @@ LOAD:
   if (startup_functions_are_waiting()) {
     startup_functions_invoke(NULL);
   } else {
-    SIMPLE_ERROR(BF("This is not a proper FASL file - there were no global ctors - there have to be global ctors for load-bundle"));
+    SIMPLE_ERROR(BF("This is not a proper FASL file - there are no startup functions waiting to be invoked"));
   }
   T_mv result;
   return (Values(Pointer_O::create(handle), _Nil<T_O>()));
 };
 
-#ifdef EXPOSE_DLLOAD
-CL_DOCSTRING("dlload - Open a dynamic library and evaluate the 'init_XXXX' extern C function. Returns (values returned-value error-message(or nil if no error)");
-CL_DEFUN T_mv core__dlload(T_sp pathDesig) {
-  string lib_extension;
-#ifdef _TARGET_OS_DARWIN
-  lib_extension = ".dylib";
-#endif
-#if defined( _TARGET_OS_LINUX) || defined( _TARGET_OS_FREEBSD)
-  lib_extension = ".so";
-#endif
-  int mode = RTLD_NOW | RTLD_GLOBAL;
-  Path_sp path = coerce::pathDesignator(pathDesig);
-  Path_sp pathWithProperExtension = path->replaceExtension(lib_extension);
-  string ts = pathWithProperExtension->asString();
-  printf("%s:%d Loading with core__dlload %s\n", __FILE__, __LINE__, ts.c_str());
-  void *handle = dlopen(ts.c_str(), mode);
-  if (handle == NULL) {
-    string error = dlerror();
-    return (Values(_Nil<T_O>(), SimpleBaseString_O::make(error)));
-  }
-  string stem = path->stem();
-  size_t dsp = 0;
-  if ((dsp = stem.find("_d")) != string::npos) {
-    stem = stem.substr(0, dsp);
-  }
-  stringstream ss;
-  ss << "___kernel_" << stem;
-  string initName;
-  string kernelInitName = ss.str();
-  initName = kernelInitName;
-  InitFnPtr mainFunctionPointer = (InitFnPtr)dlsym(handle, kernelInitName.c_str());
-  if (mainFunctionPointer == NULL) {
-    ss.str("");
-    ss << "___user_" << stem;
-    string userInitName = ss.str();
-    initName = userInitName;
-    mainFunctionPointer = (InitFnPtr)dlsym(handle, userInitName.c_str());
-    if (mainFunctionPointer == NULL) {
-      SIMPLE_ERROR(BF("Could not find initialization function %s or %s") % kernelInitName % userInitName);
-    }
-  }
-  //	printf("Found function %s at address %p\n", initName.c_str(), mainFunctionPointer);
-  T_mv result;
-  ActivationFrame_sp frame = _Nil<ActivationFrame_O>();
-  (*mainFunctionPointer)();
-  return (Values(Pointer_O::create(handle), _Nil<T_O>()));
-}
-#endif
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------

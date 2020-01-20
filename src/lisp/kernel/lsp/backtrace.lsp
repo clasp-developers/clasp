@@ -10,7 +10,7 @@
 (in-package :core)
 
 (defstruct (backtrace-frame (:type vector) :named)
-  type                                  ; 1 ( :lisp | :c++ | :unknown)
+  type                                  ; 1 ( :lisp | :c++ | :lambda | :unknown)
   return-address                        ; 2
   raw-name                              ; 3
   function-name                         ; 4
@@ -186,6 +186,7 @@ Set gather-all-frames to T and you can gather C++ and Common Lisp frames"
       ((gather-frames frames (lambda (frame) (eq :lisp (backtrace-frame-type frame))) :verbose verbose)) ; return all :LISP frames
       (t frames)))) ; return ALL frames
 
+(defvar *display-return-address-in-backtrace* nil)
 
 (defun dump-backtrace (raw-backtrace &key (stream *standard-output*) (args t) (all t))
     (let ((frames (common-lisp-backtrace-frames raw-backtrace))
@@ -196,6 +197,10 @@ Set gather-all-frames to T and you can gather C++ and Common Lisp frames"
            (if arguments
                (progn
                  (prin1 (prog1 index (incf index)) stream)
+                 (when *display-return-address-in-backtrace*
+                   (let ((*print-base* 16))
+                     (write-string " 0x")
+                     (prin1 (core:pointer-integer (backtrace-frame-return-address e)))))
                  (write-string ": (" stream)
                  (princ name stream)
                  (if (> (length arguments) 0)

@@ -21,13 +21,17 @@
   nil)
 
 (defstruct (ast-job (:type vector) :named)
-  ast environment dynenv output-stream form-index error current-source-pos-info startup-function-name)
+  ast environment dynenv output-stream
+  form-index   ; Uses (core:next-startup-position) to keep count
+  form-counter ; Counts from zero
+  error current-source-pos-info startup-function-name form-output-path)
 
 
 (defun compile-from-ast (job &key
                                optimize
                                optimize-level
-                               intermediate-output-type)
+                               intermediate-output-type
+                               write-bitcode)
   (handler-case
       (let ((module (cmp::llvm-create-module (format nil "module~a" (ast-job-form-index job))))
             (core:*current-source-pos-info* (ast-job-current-source-pos-info job)))
@@ -67,6 +71,9 @@
                                 ((or (member :target-os-linux *features*) (member :target-os-freebsd *features*))
                                  'llvm-sys:reloc-model-pic-)
                                 (t 'llvm-sys:reloc-model-undefined))))
+             (when write-bitcode
+               (let ((bitcode-filename (core:coerce-to-filename (cfp-output-file-default (ast-job-form-output-path job) :bitcode))))
+                 (write-bitcode module bitcode-filename)))
              (let ((output (generate-obj-asm-stream module (ast-job-output-stream job) 'llvm-sys:code-gen-file-type-object-file reloc-model)))
                (when output (setf (ast-job-output-stream job) output))
                )))
@@ -92,7 +99,7 @@
            (error "Only options for intermediate-output-type are :object or :bitcode - not ~a" intermediate-output-type))))
     (error (e) (setf (ast-job-error job) e))))
 
-(defun wait-for-ast-job (queue &key optimize optimize-level intermediate-output-type)
+(defun wait-for-ast-job (queue &key optimize optimize-level intermediate-output-type write-bitcode)
   (unwind-protect
        (loop for ast-job = (core:dequeue queue :timeout 1.0 :timeout-val nil)
              until (eq ast-job :quit)
@@ -102,7 +109,8 @@
                       (compile-from-ast ast-job
                                         :optimize optimize
                                         :optimize-level optimize-level
-                                        :intermediate-output-type intermediate-output-type)
+                                        :intermediate-output-type intermediate-output-type
+                                        :write-bitcode write-bitcode)
                       (cfp-log "Thread ~a done with form~%" (mp:process-name mp:*current-process*)))
                     (cfp-log "Thread ~a timed out during dequeue - trying again~%" (mp:process-name mp:*current-process*))))
     (cfp-log "Leaving thread ~a~%" (mp:process-name mp:*current-process*))))
@@ -116,10 +124,12 @@
                        optimize
                        optimize-level
                        output-path
+                       write-bitcode
                        (intermediate-output-type :in-memory-object) ; or :bitcode
                        ast-only)
   (let (result
         (form-index (core:next-startup-position))
+        (form-counter 0)
         (eof-value (gensym))
         #+cclasp(cleavir-generate-ast:*compiler* 'cl:compile-file)
         #+cclasp(core:*use-cleavir-compiler* t)
@@ -138,7 +148,8 @@
                     (lambda ()
                       (wait-for-ast-job ast-queue :optimize optimize
                                                   :optimize-level optimize-level
-                                                  :intermediate-output-type intermediate-output-type))
+                                                  :intermediate-output-type intermediate-output-type
+                                                  :write-bitcode write-bitcode))
                     `((*compile-print* . ',*compile-print*)
                       (*compile-verbose* . ',*compile-verbose*)
                       (*compile-file-output-pathname* . ',*compile-file-output-pathname*)
@@ -155,6 +166,10 @@
              ;; FIXME: if :environment is provided we should probably use a different read somehow
              (let* ((current-source-pos-info (compile-file-source-pos-info source-sin))
                     (core:*current-source-pos-info* current-source-pos-info)
+                    (form-output-path
+                      (make-pathname
+                       :name (format nil "~a_~d" (pathname-name output-path) form-counter)
+                       :defaults output-path))
                     (dynenv (clasp-cleavir::make-dynenv environment))
                     #+cst
                     (cst (eclector.concrete-syntax-tree:cst-read source-sin nil eof-value))
@@ -178,9 +193,11 @@
                                             :environment environment
                                             :dynenv dynenv
                                             :current-source-pos-info current-source-pos-info
+                                            :form-output-path form-output-path
                                             :output-stream (when (eq intermediate-output-type :in-memory-object)
                                                              :simple-vector-byte8)
-                                            :form-index form-index)))
+                                            :form-index form-index
+                                            :form-counter form-counter)))
                  (when *compile-print* (cmp::describe-form form))
                  (unless ast-only
                    (push ast-job ast-jobs)
@@ -190,6 +207,7 @@
                                    :optimize optimize
                                    :optimize-level optimize-level
                                    :intermediate-output-type intermediate-output-type))
+               (incf form-counter)
                (setf form-index (core:next-startup-position)))))
       (progn
         ;; Now send :quit messages to all threads
@@ -223,7 +241,8 @@
                                  (optimize t)
                                  (optimize-level *optimization-level*)
                                  ast-only
-                                 dry-run)
+                                 dry-run
+                                 write-bitcode)
   "* Arguments
 - given-input-pathname :: A pathname.
 - output-path :: A pathname.
@@ -254,7 +273,8 @@ Compile a lisp source file into an LLVM module."
                       :optimize-level optimize-level
                       :output-path output-path
                       :intermediate-output-type intermediate-output-type
-                      :ast-only ast-only)))))
+                      :ast-only ast-only
+                      :write-bitcode write-bitcode)))))
 
 (defun cfp-result-files (result extension)
   (mapcar (lambda (name)
@@ -295,6 +315,11 @@ Compile a lisp source file into an LLVM module."
     (t ;; unknown
      (error "Add support for output-type: ~a" output-type))))
 
+(defvar *compile-file-parallel-write-bitcode* nil
+  "Force compile-file-parallel to write out bitcode for each module. 
+Each bitcode filename will contain the form-index.")
+
+
 (defun compile-file-parallel (input-file
                               &key
                                 (output-file nil output-file-p)
@@ -317,7 +342,8 @@ Compile a lisp source file into an LLVM module."
                                 ;; Use as little llvm as possible for timing
                                 dry-run ast-only
                                 ;; Cleanup temporary files
-                                (cleanup nil))
+                                (cleanup nil)
+                                (write-bitcode *compile-file-parallel-write-bitcode*))
   "See CLHS compile-file."
   (let ((*compile-file-parallel* t))
     (if (not output-file-p) (setq output-file (cfp-output-file-default input-file output-type)))
@@ -347,7 +373,8 @@ Compile a lisp source file into an LLVM module."
                                         :optimize optimize
                                         :optimize-level optimize-level
                                         :ast-only ast-only
-                                        :dry-run dry-run)
+                                        :dry-run dry-run
+                                        :write-bitcode write-bitcode)
               (cf2-log "Came out of compile-file-to-result with result: ~s~%" result)
 ;;;          (loop for one in result do (format t "Result: ~s~%" one))
               (cond (dry-run (format t "Doing nothing further~%"))

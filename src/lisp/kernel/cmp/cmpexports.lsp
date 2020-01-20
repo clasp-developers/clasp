@@ -10,6 +10,7 @@
             *compile-file-debug-dump-module* ;; Dump intermediate modules
             *compile-debug-dump-module* ;; Dump intermediate modules
             *default-linkage*
+            *compile-file-parallel-write-bitcode*
             *default-compile-linkage*
             quick-module-dump
             write-bitcode

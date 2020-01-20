@@ -93,7 +93,8 @@ namespace core {
 void byte_code_interpreter(gctools::GCRootsInModule* roots, T_sp byte_code_stream, bool log);
 void core__throw_function(T_sp tag, T_sp result_form);
 void register_startup_function(size_t position, fnStartUp fptr);
- void transfer_StartupInfo_to_my_thread();
+void transfer_StartupInfo_to_my_thread();
+T_mv core__startup_function_name_and_linkage(size_t id=0, core::T_sp prefix=_Nil<core::T_O>());
 }
 
 #endif /* _compiler_H_ */

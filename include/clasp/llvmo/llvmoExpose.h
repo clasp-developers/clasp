@@ -4477,13 +4477,14 @@ class ClaspJIT_O : public core::General_O {
   LISP_CLASS(llvmo, LlvmoPkg, ClaspJIT_O, "clasp-jit", core::General_O);
 public:
   void addIRModule(Module_sp cM,ThreadSafeContext_sp context);
-  core::T_sp lookup(const std::string& Name);
+  core::Pointer_sp lookup(JITDylib& dylib, const std::string& Name);
   JITDylib& getMainJITDylib();
-  JITDylib& createJITDylib(const std::string& name);
-  void addObjectFile(const char* buffer, size_t bytes, bool print=false);
+  JITDylib_sp createAndRegisterJITDylib(const std::string& name);
+  void addObjectFile(const char* buffer, size_t bytes, size_t startupID, JITDylib& dylib, bool print=false);
   ClaspJIT_O(const llvm::DataLayout& data_layout);
   ~ClaspJIT_O();
 public:
+  llvm::DataLayout _DataLayout;
   llvm::orc::ExecutionSession *ES;
 #ifdef USE_JITLINKER
   llvm::org::JITLinker* LinkLayer;
