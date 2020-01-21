@@ -20,12 +20,6 @@ namespace core {
 
 
 namespace core {
-  class DynamicBinding {
-  public:
-    Symbol_sp _Var;
-    T_sp _Val;
-  DynamicBinding(Symbol_sp sym, T_sp val) : _Var(sym), _Val(val){};
-  };
 #pragma GCC visibility push(default)
   class DynamicBindingStack {
   public:
