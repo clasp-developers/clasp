@@ -1007,7 +1007,7 @@ extern "C" {
 void pushDynamicBinding(core::T_O *tsymbolP, core::T_O** alloca)
 {NO_UNWIND_BEGIN();
   core::Symbol_sp sym((gctools::Tagged)tsymbolP);
-  *alloca = sym->symbolValueUnsafe().raw_();
+  *alloca = sym->threadLocalSymbolValue().raw_();
   NO_UNWIND_END();
 }
 
@@ -1015,7 +1015,7 @@ void popDynamicBinding(core::T_O *tsymbolP, core::T_O** alloca)
 {NO_UNWIND_BEGIN();
   core::Symbol_sp sym((gctools::Tagged)tsymbolP);
   core::T_sp val((gctools::Tagged)*alloca);
-  sym->setf_symbolValue(val);
+  sym->set_threadLocalSymbolValue(val);
   NO_UNWIND_END();
 }
 };
@@ -1061,6 +1061,13 @@ void cc_setSymbolValue(core::T_O *sym, core::T_O *val)
   //	core::Symbol_sp s = gctools::smart_ptr<core::Symbol_O>(reinterpret_cast<core::Symbol_O*>(sym));
   core::Symbol_sp s = gctools::smart_ptr<core::Symbol_O>((gc::Tagged)sym);
   s->setf_symbolValue(gctools::smart_ptr<core::T_O>((gc::Tagged)val));
+  NO_UNWIND_END();
+}
+
+void cc_setTLSymbolValue(core::T_O* sym, core::T_O *val)
+{NO_UNWIND_BEGIN();
+  core::Symbol_sp s = gctools::smart_ptr<core::Symbol_O>((gc::Tagged)sym);
+  s->set_threadLocalSymbolValue(gctools::smart_ptr<core::T_O>((gc::Tagged)val));
   NO_UNWIND_END();
 }
 
