@@ -7,7 +7,13 @@ FRAMES=${4:-6000}
 
 sudo rm -f /tmp/out-$PID.*
 sudo perf record -p $PID -F $RATE -g -d -b -R --call-graph dwarf,65528 -o /tmp/out-$PID.data -- sleep $TIME
-sudo perf script -i /tmp/out-$PID.data --demangle --demangle-kernel --max-stack=600000 > /tmp/out-$PID.perf
+echo Done record - now running script to build backtraces - this will take tens of minutes - its really slow
+sudo chown $USER /tmp/out-$PID.data
+chmod go+r /tmp/out-$PID.data
+perf script -i /tmp/out-$PID.data --demangle --demangle-kernel --max-stack=60000 > /tmp/out-$PID.perf
+echo Done script
 $FLAME_GRAPH_HOME/stackcollapse-perf.pl /tmp/out-$PID.perf > /tmp/out-$PID.folded
+echo Done stackcollapse
 $FLAME_GRAPH_HOME/flamegraph.pl --color=clasp /tmp/out-$PID.folded > /tmp/out-$PID.svg
+echo done flamegraph
 echo /tmp/out-$PID.svg
