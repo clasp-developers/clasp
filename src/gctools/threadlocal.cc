@@ -67,6 +67,10 @@ void DynamicBindingStack::release_binding_index(size_t index) const
 #endif
 };
 
+// Ensure that a symbol's binding index is set to something coherent.
+// NOTE: We can use memory_order_relaxed because (a) this is the only code in
+// the system that deals with the _BindingIdx, and (b) the only guarantee we
+// should need for this structure is modification order consistency.
 uint32_t DynamicBindingStack::ensure_binding_index(const Symbol_O* var) const {
   uint32_t no_binding = NO_THREAD_LOCAL_BINDINGS;
   uint32_t binding_index = var->_BindingIdx.load(std::memory_order_relaxed);
