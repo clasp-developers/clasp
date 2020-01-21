@@ -4,7 +4,7 @@
 
 (defpackage #:clasp-analyzer
   (:shadow #:function-info #:function-type)
-  (:use #:common-lisp #:core #:ast-tooling #:clang-ast)
+  (:use #:common-lisp #:ast-tooling #:clang-ast)
   (:shadow #:dump #:get-string #:size #:type)
   (:export
    #:setup-clasp-analyzer-compilation-tool-database
@@ -141,7 +141,7 @@
 
 (defstruct stamp
   key
-  value
+  value%
   root-cclass
   cclass
   species ;; can be nil
@@ -225,7 +225,7 @@
   (setf (analysis-stamp-value-generator analysis) (make-instance 'stamp-value-generator)))
 
 (defun assign-stamp-value (analysis stamp operation)
-  (let ((stamp-value (stamp-value stamp))
+  (let ((stamp-value (stamp-value% stamp))
         (generator (analysis-stamp-value-generator analysis))
         (stamp-name (get-stamp-name stamp)))
     (if stamp-value
@@ -318,7 +318,7 @@
                     (error "Could not find stamp for ~a" name))
                   stamp))
          (stamp-value (funcall assign-stamp-value-function analysis stamp operation)))
-    (setf (stamp-value stamp) stamp-value)
+    (setf (stamp-value% stamp) stamp-value)
     (setf (stamp-root-cclass stamp) root-cclass)
     (setf (stamp-in-hierarchy stamp) t)
     (dolist (child (gethash stamp (analysis-stamp-children analysis)))
@@ -332,7 +332,7 @@
   (setf (analysis-stamp-children analysis) (make-hash-table))
   (setf (analysis-stamp-roots analysis) nil)
   (build-hierarchy analysis)
-  (maphash (lambda (k v) (setf (stamp-value v) nil)) (analysis-stamps analysis))
+  (maphash (lambda (k v) (setf (stamp-value% v) nil)) (analysis-stamps analysis))
   (reset-stamp-value-generator analysis))
 
 (defun assign-stamp-values-to-hierarchy (analysis)
@@ -354,9 +354,9 @@
 
 (defun assign-stamp-values-to-those-without (analysis operation)
   (maphash (lambda (name stamp)
-             (when (eq (stamp-value stamp) :unassigned)
+             (when (eq (stamp-value% stamp) :unassigned)
                (let ((stamp-value (assign-stamp-value analysis stamp)))
-                 (setf (stamp-value stamp) stamp-value
+                 (setf (stamp-value% stamp) stamp-value
                        (stamp-in-hierarchy stamp) nil))))
            (analysis-stamps analysis)))
 
@@ -369,11 +369,11 @@
 (defun accumulate-stamp-values (stamp analysis)
   "Recursively walk the tree of children (analysis-stamp-children analysis)
    and accumulate the stamp values into a list in *accumulate-stamps*"
-  (push (cons (stamp-value stamp) stamp) *accumulate-stamps*)
+  (push (cons (stamp-value% stamp) stamp) *accumulate-stamps*)
   (let ((child-stamps (gethash stamp (analysis-stamp-children analysis))))
     (loop for child-stamp-name in child-stamps
           for child-stamp = (gethash child-stamp-name (analysis-stamps analysis))
-          when (not (eq (stamp-value child-stamp) :no-stamp-value))
+          when (not (eq (stamp-value% child-stamp) :no-stamp-value))
             do (accumulate-stamp-values child-stamp analysis))))
 
 (defun verify-stamp-values-are-contiguous-return-range (stamp-values)
@@ -409,29 +409,30 @@
 (defconstant +header-wtag+    #B11)
 (defconstant +max-wtag+       #B11)
 
+#+(or)
 (defmethod stamp-value ((class gc-managed-type) &optional stamp)
   (if stamp
       (logior (ash stamp +stamp-shift+) +max-wtag+)
       (logior (ash (stamp% class) +stamp-shift+) +header-wtag+)))
 
 
-(defmethod stamp-value ((class t) &optional stamp)
+(defmethod stamp-value ((class cclass) &optional stamp)
   "This could change the value of stamps for specific classes - but that would break quick typechecks like (typeq x Number)"
 ;;;  (format t "Assigning stamp-value for class ~s~%" (class-key% class))
   (if stamp
       (logior (ash stamp +stamp-shift+) +max-wtag+) ;; Cover the entire range
-      (cond ((member (class-key% class) '("core::Instance_O" "core::FuncallableInstance_O" "clbind::ClassRep_O") :test #'string=)
+      (cond ((member (cclass-key% class) '("core::Instance_O" "core::FuncallableInstance_O" "clbind::ClassRep_O") :test #'string=)
 ;;;         (format t "---> stamp in rack~%")
-             (logior (ash (stamp% class) +stamp-shift+) +rack-wtag+))
-            ((member (class-key% class) '("core::WrappedPointer_O") :test #'string=)
+             (logior (ash (cclass-stamp% class) +stamp-shift+) +rack-wtag+))
+            ((member (cclass-key% class) '("core::WrappedPointer_O") :test #'string=)
 ;;;         (format t "---> stamp in wrapped~%")
-             (logior (ash (stamp% class) +stamp-shift+) +wrapped-wtag+))
-            ((member (class-key% class) '("core::DerivableCxxObject_O") :test #'string=)
+             (logior (ash (cclass-stamp% class) +stamp-shift+) +wrapped-wtag+))
+            ((member (cclass-key% class) '("core::DerivableCxxObject_O") :test #'string=)
 ;;;         (format t "---> stamp in derivable~%")
-             (logior (ash (stamp% class) +stamp-shift+) +derivable-wtag+))
+             (logior (ash (cclass-stamp% class) +stamp-shift+) +derivable-wtag+))
             (t
 ;;;         (format t "---> stamp in header~%")
-             (logior (ash (stamp% class) +stamp-shift+) +header-wtag+)))))
+             (logior (ash (cclass-stamp% class) +stamp-shift+) +header-wtag+)))))
 
 
 
@@ -440,7 +441,7 @@
              (declare (core:lambda-name generate-dynamic-cast-code.lambda))
              (when (and (not (abstract-species-stamp-p stamp analysis))
                         (stamp-in-hierarchy stamp)
-                        (not (eq (stamp-value stamp) :no-stamp-value)))
+                        (not (eq (stamp-value% stamp) :no-stamp-value)))
                (format fout "// ~a~%" (get-stamp-name stamp))
                (format fout "template <typename FP> struct Cast<~a*,FP> {~%" key )
                (format fout "  inline static bool isA(FP client) {~%" key)
@@ -472,7 +473,7 @@
   (maphash (lambda (key stamp)
              (declare (core:lambda-name generate-typeq-code.lambda))
              (when (and (not (abstract-species-stamp-p stamp analysis))
-                        (not (eq (stamp-value stamp) :no-stamp-value))
+                        (not (eq (stamp-value% stamp) :no-stamp-value))
                         (stamp-in-hierarchy stamp)
                         (derived-from-cclass key "core::T_O" (analysis-project analysis)))
                (multiple-value-bind (contig low high high-stamp)
@@ -2301,7 +2302,7 @@ so that they don't have to be constantly recalculated"
 	    (,label-gs (format nil "~a_~a" (destination-label-prefix ,dest)
                                (get-stamp-name ,stamp)))
             (,jump-table-index (length (destination-label-list ,dest))))
-       (push (cons (stamp-value ,stamp) ,label-gs) (destination-label-list ,dest))
+       (push (cons (stamp-value% ,stamp) ,label-gs) (destination-label-list ,dest))
        (format ,fout "~a:~%" ,label-gs)
        (format ,fout "{~%")
        ,@body
@@ -2331,13 +2332,13 @@ so that they don't have to be constantly recalculated"
 
 (defun finalizer-for-abstract-species (dest stamp anal)
   (with-jump-table (fout jti dest stamp)
-    (format fout "     // do nothing stamp value ~a~%" (stamp-value stamp))
+    (format fout "     // do nothing stamp value ~a~%" (stamp-value% stamp))
     (format fout "    THROW_HARD_ERROR(BF(\"Should never finalize object ~a\"));~%" (stamp-key stamp)))
   nil)
 
 (defun deallocator-for-abstract-species (dest stamp anal)
   (with-jump-table (fout jti dest stamp)
-    (format fout "     // do nothing stamp value ~a~%" (stamp-value stamp))
+    (format fout "     // do nothing stamp value ~a~%" (stamp-value% stamp))
     (format fout "    THROW_HARD_ERROR(BF(\"Should never deallocate object ~a\"));~%" (stamp-key stamp)))
   nil)
 
@@ -2371,7 +2372,7 @@ so that they don't have to be constantly recalculated"
          (cn (strip-all-namespaces-from-name ns-cn)))
     (with-jump-table (fout jti dest stamp)
       (gclog "build-mps-finalize-for-one-family -> inheritance key[~a]  value[~a]~%" key value)
-      (format fout "     // stamp value ~a~%" (stamp-value stamp))
+      (format fout "     // stamp value ~a~%" (stamp-value% stamp))
       (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
       ;;    (format fout "    ~A* ~A = BasePtrToMostDerivedPtr<~A>(base);~%" key +ptr-name+ key)
       (format fout "    ~A->~~~A();~%" +ptr-name+ cn)
@@ -2387,7 +2388,7 @@ so that they don't have to be constantly recalculated"
          (cn (strip-all-namespaces-from-name ns-cn)))
     (with-jump-table (fout jti dest stamp)
       (gclog "build-mps-deallocator-for-one-family -> inheritance key[~a]  value[~a]~%" key value)
-      (format fout "     // stamp value ~a~%" (stamp-value stamp))
+      (format fout "     // stamp value ~a~%" (stamp-value% stamp))
       (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
       ;;    (format fout "    ~A* ~A = BasePtrToMostDerivedPtr<~A>(base);~%" key +ptr-name+ key)
       (format fout "    GC<~A>::deallocate_unmanaged_instance(~A);~%" key +ptr-name+)
@@ -2431,7 +2432,7 @@ so that they don't have to be constantly recalculated"
          (ns-cn key)
          (cn (strip-all-namespaces-from-name ns-cn)))
     (with-jump-table (fout jti dest stamp)
-      (format fout "     // stamp value ~a~%" (stamp-value stamp))
+      (format fout "     // stamp value ~a~%" (stamp-value% stamp))
       (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
       ;;    (format fout "    ~A* ~A = BasePtrToMostDerivedPtr<~A>(base);~%" key +ptr-name+ key)
       (format fout "    ~A->~~~A();~%" +ptr-name+ cn)
@@ -2444,7 +2445,7 @@ so that they don't have to be constantly recalculated"
          (ns-cn key)
          (cn (strip-all-namespaces-from-name ns-cn)))
     (with-jump-table (fout jti dest stamp)
-      (format fout "     // stamp value ~a~%" (stamp-value stamp))
+      (format fout "     // stamp value ~a~%" (stamp-value% stamp))
       (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
       ;;    (format fout "    ~A* ~A = BasePtrToMostDerivedPtr<~A>(base);~%" key +ptr-name+ key)
       (format fout "    GC<~A>::deallocate_unmanaged_instance(~A);~%" key +ptr-name+)
@@ -2500,13 +2501,13 @@ so that they don't have to be constantly recalculated"
 ;;    (format fout "// processing ~a~%" alloc)
     (if (cxxrecord-ctype-p decl)
         (progn
-          (format fout "     // stamp value ~a~%" (stamp-value stamp))
+          (format fout "     // stamp value ~a~%" (stamp-value% stamp))
           (format fout "    THROW_HARD_ERROR(BF(\"Should never finalize ~a\"));~%" (record-ctype-key decl)))
         (let* ((parms (class-template-specialization-ctype-arguments decl))
                (parm0 (car parms))
                (parm0-ctype (gc-template-argument-ctype parm0)))
 ;;          (format fout "// parm0-ctype = ~a~%" parm0-ctype)
-          (format fout "     // stamp value ~a~%" (stamp-value stamp))
+          (format fout "     // stamp value ~a~%" (stamp-value% stamp))
           (format fout "    THROW_HARD_ERROR(BF(\"Should never finalize containers ~a\"));" (record-ctype-key decl)))))))
 
 (defun deallocator-for-gccontainer (dest stamp anal)
@@ -2517,7 +2518,7 @@ so that they don't have to be constantly recalculated"
          (stamp-name (get-stamp-name stamp)))
     (with-jump-table (fout jti dest stamp)
       ;;    (format fout "// processing ~a~%" alloc)
-      (format fout "     // stamp value ~a~%" (stamp-value stamp))
+      (format fout "     // stamp value ~a~%" (stamp-value% stamp))
       (if (cxxrecord-ctype-p decl)
           (progn
             (format fout "    THROW_HARD_ERROR(BF(\"Should never deallocate ~a\"));~%" (record-ctype-key decl)))
@@ -2570,13 +2571,13 @@ so that they don't have to be constantly recalculated"
 ;;    (format fout "// processing ~a~%" alloc)
     (if (cxxrecord-ctype-p decl)
         (progn
-          (format fout "     // stamp value ~a~%" (stamp-value stamp))
+          (format fout "     // stamp value ~a~%" (stamp-value% stamp))
           (format fout "    THROW_HARD_ERROR(BF(\"Should never finalize ~a\"));~%" (record-ctype-key decl)))
         (let* ((parms (class-template-specialization-ctype-arguments decl))
                (parm0 (car parms))
                (parm0-ctype (gc-template-argument-ctype parm0)))
 ;;          (format fout "// parm0-ctype = ~a~%" parm0-ctype)
-          (format fout "     // stamp value ~a~%" (stamp-value stamp))
+          (format fout "     // stamp value ~a~%" (stamp-value% stamp))
           (format fout "    THROW_HARD_ERROR(BF(\"Should never finalize gcstrings ~a\"));" (record-ctype-key decl)))))))
 
 (defun deallocator-for-gcstring (dest stamp anal)
@@ -2587,7 +2588,7 @@ so that they don't have to be constantly recalculated"
          (stamp-name (get-stamp-name stamp)))
     (with-jump-table (fout jti dest stamp)
       ;;    (format fout "// processing ~a~%" alloc)
-      (format fout "     // stamp value ~a~%" (stamp-value stamp))
+      (format fout "     // stamp value ~a~%" (stamp-value% stamp))
       (if (cxxrecord-ctype-p decl)
           (progn
             (format fout "    THROW_HARD_ERROR(BF(\"Should never deallocate ~a\"));~%" (record-ctype-key decl)))
@@ -2637,7 +2638,7 @@ so that they don't have to be constantly recalculated"
          (key (alloc-key alloc))
          (stamp-name (get-stamp-name stamp)))
     (with-jump-table (fout jti dest stamp)
-      (format fout "     // stamp value ~a~%" (stamp-value stamp))
+      (format fout "     // stamp value ~a~%" (stamp-value% stamp))
       (format fout "    THROW_HARD_ERROR(BF(\"Should never finalize ~a\"));~%" (record-ctype-key decl)))))
 
 (defun deallocator-for-gcbitunit (dest stamp anal)
@@ -2647,7 +2648,7 @@ so that they don't have to be constantly recalculated"
          (key (alloc-key alloc))
          (stamp-name (get-stamp-name stamp)))
     (with-jump-table (fout jti dest stamp)
-      (format fout "     // stamp value ~a~%" (stamp-value stamp))
+      (format fout "     // stamp value ~a~%" (stamp-value% stamp))
       (format fout "    THROW_HARD_ERROR(BF(\"Should never deallocate gcbitunits ~a\"));" (record-ctype-key decl)))))
 
 
@@ -2740,8 +2741,8 @@ so that they don't have to be constantly recalculated"
 (defun sort-stamps-by-value (analysis)
   (let (names)
     (maphash #'(lambda (k stamp)
-                 (when (not (eq (stamp-value stamp) :no-stamp-value))
-                   (push (cons (stamp-value stamp) stamp) names)))
+                 (when (not (eq (stamp-value% stamp) :no-stamp-value))
+                   (push (cons (stamp-value% stamp) stamp) names)))
              (analysis-stamps analysis))
     (setf (analysis-sorted-stamps analysis)
           (mapcar #'(lambda (val-stamp)
@@ -2865,7 +2866,7 @@ so that they don't have to be constantly recalculated"
 
 (defun generate-gckind-for-stamps (fout anal)
   (maphash (lambda (key stamp)
-             (when (and (not (eq (stamp-value stamp) :no-stamp-value))
+             (when (and (not (eq (stamp-value% stamp) :no-stamp-value))
                         (not (abstract-species-stamp-p stamp anal)))
                (generate-one-gckind-for-stamp fout stamp)))
            (analysis-stamps anal)))
@@ -3276,7 +3277,7 @@ Recursively analyze x and return T if x contains fixable pointers."
     #+(or)(let ((hardwired-kinds (core:hardwired-kinds)))
             (mapc (lambda (kv) (format fout "STAMP_~a = ADJUST_STAMP(~a), ~%" (car kv) (cdr kv))) hardwired-kinds))
     (mapc (lambda (stamp)
-            (format fout "~A = ~A,~%" (get-stamp-name stamp) (stamp-value stamp))
+            (format fout "~A = ~A,~%" (get-stamp-name stamp) (stamp-value% stamp))
             #+(or)(when (and (eq (stamp-value-source stamp) :from-static-analyzer)
                        (null (cclass-template-specializer (stamp-cclass stamp)))
                        (not (inherits-from-multiple-classes (stamp-cclass stamp)))
@@ -3285,8 +3286,8 @@ Recursively analyze x and return T if x contains fixable pointers."
               (let ((*print-pretty* nil))
                 (format fout "// Class record: ~a~%" (stamp-cclass stamp)))
               )
-            (when (> (stamp-value stamp) maxstamp)
-              (setq maxstamp (stamp-value stamp))))
+            (when (> (stamp-value% stamp) maxstamp)
+              (setq maxstamp (stamp-value% stamp))))
           (analysis-sorted-stamps analysis))
     (maphash (lambda (stamp-name value)
                (format fout "// Unused ~a = ~a, ~%" stamp-name value))
@@ -3297,7 +3298,7 @@ Recursively analyze x and return T if x contains fixable pointers."
 (defun generate-register-stamp-names (&optional (fout t) (analysis *analysis*))
   (format fout "register_stamp_name(\"STAMP_null\",0); ~%")
   (mapc (lambda (stamp)
-          (format fout "register_stamp_name(\"~A\", ADJUST_STAMP(~A));~%" (get-stamp-name stamp) (stamp-value stamp)))
+          (format fout "register_stamp_name(\"~A\", ADJUST_STAMP(~A));~%" (get-stamp-name stamp) (stamp-value% stamp)))
         (analysis-sorted-stamps analysis))
   (format fout "~%" ))
 
@@ -3446,7 +3447,7 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
       :jump-table-index-function 'scanner-jump-table-index-for-stamp-name
       :generator (lambda (dest anal)
                    (dolist (stamp (analysis-sorted-stamps anal))
-                     (format (destination-helper-stream dest) "// Stamp = ~a/~a~%" (stamp-key stamp) (stamp-value stamp))
+                     (format (destination-helper-stream dest) "// Stamp = ~a/~a~%" (stamp-key stamp) (stamp-value% stamp))
                      (funcall (species-scan (stamp-species stamp)) dest stamp anal))))
     (do-generator stream analysis
                   :table-name "OBJ_FINALIZE"
@@ -3646,8 +3647,8 @@ Run searches in *tools* on the source files in the compilation database."
          (*standard-output* log-file))
     (format t "Starting process ~a~%" jobid)
     (clang-tool:with-compilation-tool-database compilation-tool-database
-      (loop while (> (mp:queue-size-approximate job-queue) 0)
-         do (let ((one-job (mp:queue-dequeue job-queue)))
+      (loop while (> (core:queue-count job-queue) 0)
+         do (let ((one-job (core:dequeue job-queue)))
               (when one-job
                 (format t "Running search on ~a ~a~%" (parallel-job-id one-job) (parallel-job-filename one-job))
                 (clang-tool:batch-run-multitool tools compilation-tool-database :source-namestrings (list (parallel-job-filename one-job)))))))
@@ -3666,14 +3667,14 @@ Run searches in *tools* on the source files in the compilation database."
   (format t "serial-search-all --> getcwd: ~a~%" (ext:getcwd))
   (let ((tools (setup-tools compilation-tool-database))
         (all-jobs source-namestrings)
-        (job-queue (make-cxx-object 'mp:concurrent-queue)))
+        (job-queue (core:make-queue :analyze-queue)))
     (setf (clang-tool:multitool-results tools) (make-project))
     (save-data all-jobs (make-pathname :type "lst" :defaults output-file))
     (format t "compilation-tool-database: ~a~%" compilation-tool-database)
     (format t "all-jobs: ~a~%" all-jobs)
     (loop for job in all-jobs
        for id from 0
-       do (mp:queue-enqueue job-queue (make-parallel-job :id id :filename job)))
+       do (core:atomic-enqueue job-queue (make-parallel-job :id id :filename job)))
     (format t "Starting processes~%")
     (let ((processes (loop for x from 0 below jobs
                         do (format t "loop for process ~a~%" x)
