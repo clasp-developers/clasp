@@ -312,7 +312,7 @@ def update_dependencies(cfg):
 # ./waf analyze_clasp
 # This is the static analyzer - formerly called 'redeye'
 def analyze_clasp(cfg):
-    run_program_echo("build/boehm/cclasp-boehm",
+    run_program_echo("build/boehm/iclasp-boehm",
                      "--feature", "ignore-extensions",
                      "--load",    "sys:modules;clasp-analyzer;run-serial-analyzer.lisp",
                      "--eval",    "(core:quit)")

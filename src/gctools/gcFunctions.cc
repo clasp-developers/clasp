@@ -469,8 +469,8 @@ size_t dumpMPSResults(const std::string &name, const std::string &shortName, vec
   });
   size_t idx = 0;
   vector<std::string> stampNames;
-  stampNames.resize(gctools::global_NextStamp.load());
-  for ( auto it : global_stamp_name_map ) {
+  stampNames.resize(gctools::global_NextUnshiftedStamp.load());
+  for ( auto it : global_unshifted_nowhere_stamp_name_map ) {
     stampNames[it.second] = it.first;
   }
   for (auto it : values) {
@@ -590,7 +590,7 @@ CL_DEFUN core::T_mv cl__room(core::T_sp x) {
   size_t arena_committed = mps_arena_committed(global_arena);
   size_t arena_reserved = mps_arena_reserved(global_arena);
   vector<ReachableMPSObject> reachables;
-  for (int i = 0; i < global_NextStamp.load(); ++i) {
+  for (int i = 0; i < global_NextUnshiftedStamp.load(); ++i) {
     reachables.push_back(ReachableMPSObject(i));
   }
   mps_amc_apply(global_amc_pool, amc_apply_stepper, &reachables, 0);

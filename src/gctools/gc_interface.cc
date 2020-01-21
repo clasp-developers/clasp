@@ -353,7 +353,7 @@ mps_addr_t obj_skip(mps_addr_t client) {
 #ifdef DEBUG_VALIDATE_GUARD
     header->validate();
 #endif
-    gctools::GCStampEnum stamp = header_value.stamp();
+    gctools::GCStampEnum stamp = header.stamp();
     if ( stamp == STAMP_core__DerivableCxxObject_O ) {
         // If this is true then I think we need to call virtual functions on the client
         // to determine the Instance_O offset and the total size of the object.
@@ -427,7 +427,7 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
 #ifdef DEBUG_VALIDATE_GUARD
         header->validate();
 #endif
-        stamp = header_value.stamp();
+        stamp = header.stamp();
         const Stamp_layout& stamp_layout = global_stamp_layout[stamp];
         if ( stamp == STAMP_core__DerivableCxxObject_O ) {
         // If this is true then I think we need to call virtual functions on the client

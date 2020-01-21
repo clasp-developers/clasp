@@ -212,7 +212,7 @@ extern void bad_general_mps_reserve_error(mps_ap_t* allocation_point);
     { RAII_DISABLE_INTERRUPTS(); 
       do {
         mps_res_t res = mps_reserve(&addr, allocation_point, true_size);
-        if ( res != MPS_RES_OK ) bad_general_mps_reserve_error(&ap_name);
+        if ( res != MPS_RES_OK ) bad_general_mps_reserve_error(&allocation_point);
         header = reinterpret_cast<HeadT *>(addr);
 #ifdef DEBUG_GUARD
         memset(header,0x00,true_size);
