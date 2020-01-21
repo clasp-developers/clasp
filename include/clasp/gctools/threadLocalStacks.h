@@ -28,7 +28,6 @@ namespace core {
     size_t new_binding_index() const;
     void release_binding_index(size_t index) const;
     uint32_t ensure_binding_index(const Symbol_O*) const;
-    void expandThreadLocalBindings(size_t index);
     // Access
     T_sp thread_local_value(const Symbol_O*) const;
     void set_thread_local_value(T_sp, const Symbol_O*);
