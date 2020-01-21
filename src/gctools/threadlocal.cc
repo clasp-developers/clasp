@@ -69,16 +69,17 @@ void DynamicBindingStack::release_binding_index(size_t index) const
 
 uint32_t DynamicBindingStack::ensure_binding_index(const Symbol_O* var) const {
   uint32_t no_binding = NO_THREAD_LOCAL_BINDINGS;
-  if (var->_BindingIdx.load() == no_binding) {
+  uint32_t binding_index = var->_BindingIdx.load();
+  if (binding_index == no_binding) {
     // Get a new index and try to exchange it in.
     uint32_t new_index = this->new_binding_index();
     if (!(var->_BindingIdx.compare_exchange_strong(no_binding, new_index))) {
       // Some other thread has beat us. That's fine - just use theirs (which is
       // now in no_binding), and release the one we just grabbed.
       this->release_binding_index(new_index);
-    }
-  }
-  return var->_BindingIdx.load();
+      return no_binding;
+    } else return new_index;
+  } else return binding_index;
 }
 
 T_sp* DynamicBindingStack::thread_local_reference(const uint32_t index) const {
