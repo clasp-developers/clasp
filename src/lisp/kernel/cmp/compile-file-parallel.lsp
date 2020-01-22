@@ -24,46 +24,17 @@
   ast environment dynenv output-stream
   form-index   ; Uses (core:next-startup-position) to keep count
   form-counter ; Counts from zero
+  module
   error current-source-pos-info startup-function-name form-output-path)
 
 
-(defun compile-from-ast (job &key
+(defun compile-from-module (job &key
                                optimize
                                optimize-level
                                intermediate-output-type
                                write-bitcode)
   (handler-case
-      (let ((module (cmp::llvm-create-module (format nil "module~a" (ast-job-form-index job))))
-            (core:*current-source-pos-info* (ast-job-current-source-pos-info job)))
-        (with-module (:module module
-                      :optimize (when optimize #'optimize-module-for-compile-file)
-                      :optimize-level optimize-level)
-          (with-debug-info-generator (:module module
-                                      :pathname *compile-file-truename*)
-            (with-make-new-run-all (run-all-function (format nil "module~a" (ast-job-form-index job)))
-              (with-literal-table
-                  (core:with-memory-ramp (:pattern 'gctools:ramp)
-                    (literal:with-top-level-form
-                        (let ((hoisted-ast (clasp-cleavir::hoist-ast
-                                            (ast-job-ast job)
-                                            (ast-job-dynenv job))))
-                          (clasp-cleavir::translate-hoisted-ast hoisted-ast :env (ast-job-environment job))))))
-              (let ((startup-function (add-global-ctor-function module run-all-function
-                                                                :position (ast-job-form-counter job))))
-;;;                (add-llvm.used module startup-function)
-                (setf (ast-job-startup-function-name job) (llvm-sys:get-name startup-function))
-                ;; The link-once-odrlinkage should keep the startup-function alive and that
-                ;; should keep everything else alive as well.
-                )
-              #+(or)(make-boot-function-global-variable module run-all-function
-                                                        :position (ast-job-form-index job)
-                                                        )))
-          (cmp-log "About to verify the module%N")
-          (cmp-log-dump-module module)
-          (irc-verify-module-safe module)
-          (quick-module-dump module (format nil "preoptimize~a" (ast-job-form-index job)))
-          ;; ALWAYS link the builtins in, inline them and then remove them.
-          #+(or)(link-inline-remove-builtins module))
+      (let ((module (ast-job-module job)))
         (cond
           ((member intermediate-output-type '(:object :in-memory-object))
            (let ((reloc-model (cond
@@ -98,18 +69,64 @@
            (error "Only options for intermediate-output-type are :object or :bitcode - not ~a" intermediate-output-type))))
     (error (e) (setf (ast-job-error job) e))))
 
-(defun wait-for-ast-job (queue &key optimize optimize-level intermediate-output-type write-bitcode)
+
+(defun ast-job-to-module (job &key optimize optimize-level)
+  (let ((module (cmp::llvm-create-module (format nil "module~a" (ast-job-form-index job))))
+        (core:*current-source-pos-info* (ast-job-current-source-pos-info job)))
+    (with-module (:module module
+                  :optimize (when optimize #'optimize-module-for-compile-file)
+                  :optimize-level optimize-level)
+      (with-debug-info-generator (:module module
+                                  :pathname *compile-file-truename*)
+        (with-make-new-run-all (run-all-function (format nil "module~a" (ast-job-form-index job)))
+          (with-literal-table
+              (core:with-memory-ramp (:pattern 'gctools:ramp)
+                (literal:with-top-level-form
+                    (let ((hoisted-ast (clasp-cleavir::hoist-ast
+                                        (ast-job-ast job)
+                                        (ast-job-dynenv job))))
+                      (clasp-cleavir::translate-hoisted-ast hoisted-ast :env (ast-job-environment job))))))
+          (let ((startup-function (add-global-ctor-function module run-all-function
+                                                            :position (ast-job-form-counter job))))
+;;;                (add-llvm.used module startup-function)
+            (setf (ast-job-startup-function-name job) (llvm-sys:get-name startup-function))
+            ;; The link-once-odrlinkage should keep the startup-function alive and that
+            ;; should keep everything else alive as well.
+            )
+          #+(or)(make-boot-function-global-variable module run-all-function
+                                                    :position (ast-job-form-index job)
+                                                    )))
+      (cmp-log "About to verify the module%N")
+      (cmp-log-dump-module module)
+      (irc-verify-module-safe module)
+      (quick-module-dump module (format nil "preoptimize~a" (ast-job-form-index job)))
+      ;; ALWAYS link the builtins in, inline them and then remove them.
+      #+(or)(link-inline-remove-builtins module)
+      module)))
+
+(defun compile-from-ast (job &key
+                               optimize
+                               optimize-level
+                               intermediate-output-type
+                               write-bitcode)
+  (let ((module (ast-job-to-module job :optimize optimize :optimize-level optimize-level)))
+    (setf (ast-job-module job) module))
+  (compile-from-module job :optimize optimize :optimize-level optimize-level
+                           :intermediate-output-type intermediate-output-type
+                           :write-bitcode write-bitcode))
+
+(defun wait-for-ast-job (queue &key compile-func optimize optimize-level intermediate-output-type write-bitcode)
   (unwind-protect
        (loop for ast-job = (core:dequeue queue :timeout 1.0 :timeout-val nil)
              until (eq ast-job :quit)
              do (if ast-job
                     (progn
                       (cfp-log "Thread ~a compiling form~%" (mp:process-name mp:*current-process*))
-                      (compile-from-ast ast-job
-                                        :optimize optimize
-                                        :optimize-level optimize-level
-                                        :intermediate-output-type intermediate-output-type
-                                        :write-bitcode write-bitcode)
+                      (funcall compile-func ast-job
+                               :optimize optimize
+                               :optimize-level optimize-level
+                               :intermediate-output-type intermediate-output-type
+                               :write-bitcode write-bitcode)
                       (cfp-log "Thread ~a done with form~%" (mp:process-name mp:*current-process*)))
                     (cfp-log "Thread ~a timed out during dequeue - trying again~%" (mp:process-name mp:*current-process*))))
     (cfp-log "Leaving thread ~a~%" (mp:process-name mp:*current-process*))))
@@ -119,13 +136,27 @@
                      source-sin
                      environment
                      &key
+                       (compile-from-module nil) ; If nil - then compile from the ast in threads
                        dry-run
                        optimize
                        optimize-level
                        output-path
                        write-bitcode
                        (intermediate-output-type :in-memory-object) ; or :bitcode
+
                        ast-only)
+  "The loop that creates parallel jobs (ast-job).  The jobs can be setup
+to build the source->AST->HIR->LLVM-IR in serial mode and then compile the Module in parallel threads.
+This is controlled using the :compile-from-module option.   When it is T then 
+AST->HIR->LLVM-IR is done in serial and in parallel it compiles LLVM-IR->Object files.
+Or it can go from source->AST and then compile the AST->HIR->LLVM-IR->ObjectFiles
+in parallel threads. The reason for the two methods is that the AST->HIR uses the 
+garbage collector heavily and Boehm doesn't work well in multithreaded mode.
+So as an experiment I tried doing AST->HIR and HIR->LLVM-IR in serial and 
+then leave the LLVM stuff to be done in parallel.   That slows down so much
+that it's not worth it either.   It would be better to improve the garbage collector (MPS)
+to work better in a multithreaded way.  There are also options for Boehm to improve
+multithreaded performance that we should explore."
   (let (result
         (form-index (core:next-startup-position))
         (form-counter 0)
@@ -136,7 +167,10 @@
         ast-jobs)
     (cfp-log "Starting the pool of threads~%")
     (finish-output)
-    (let* ((number-of-threads (core:num-logical-processors))
+    (let* ((number-of-threads (if (and (member :use-boehm *features*)
+                                       (member :target-os-linux *features*))
+                                  3 ; limit to 3 cores for linux/boehm
+                                  (core:num-logical-processors)))
            (ast-queue (core:make-queue 'compile-file-parallel))
            ;; Setup a pool of threads
            (ast-threads
@@ -145,10 +179,14 @@
                    (mp:process-run-function
                     (format nil "compile-file-parallel-~a" thread-num)
                     (lambda ()
-                      (wait-for-ast-job ast-queue :optimize optimize
-                                                  :optimize-level optimize-level
-                                                  :intermediate-output-type intermediate-output-type
-                                                  :write-bitcode write-bitcode))
+                      (wait-for-ast-job ast-queue
+                                        :compile-func (if compile-from-module
+                                                          'compile-from-module
+                                                          'compile-from-ast)
+                                        :optimize optimize
+                                        :optimize-level optimize-level
+                                        :intermediate-output-type intermediate-output-type
+                                        :write-bitcode write-bitcode))
                     `((*compile-print* . ',*compile-print*)
                       (*compile-verbose* . ',*compile-verbose*)
                       (*compile-file-output-pathname* . ',*compile-file-output-pathname*)
@@ -197,6 +235,9 @@
                                                              :simple-vector-byte8)
                                             :form-index form-index
                                             :form-counter form-counter)))
+                 (when compile-from-module
+                   (let ((module (ast-job-to-module ast-job :optimize optimize :optimize-level optimize-level)))
+                     (setf (ast-job-module ast-job) module)))
                  (when *compile-print* (cmp::describe-form form))
                  (unless ast-only
                    (push ast-job ast-jobs)
