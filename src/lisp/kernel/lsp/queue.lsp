@@ -50,7 +50,7 @@
                    (not-empty (mp:make-condition-variable :name (format nil "~A-NOT-EMPTY" name)))))
             (:copier nil)
             (:predicate queuep))
-  name head tail lock not-empty)
+  name (head nil) (tail nil) lock not-empty)
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (setf (documentation 'make-queue 'function) "
