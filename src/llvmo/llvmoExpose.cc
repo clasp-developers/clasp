@@ -4228,7 +4228,7 @@ ClaspJIT_O::ClaspJIT_O(const llvm::DataLayout& data_layout) :_DataLayout(data_la
 #endif
   this->Compiler = new llvm::orc::ConcurrentIRCompiler(*JTMB);
   this->CompileLayer = new llvm::orc::IRCompileLayer(*this->ES,*this->LinkLayer,*this->Compiler);
-  printf("%s:%d Registering ClaspDynamicLibarySearchGenerator\n", __FILE__, __LINE__ );
+  //  printf("%s:%d Registering ClaspDynamicLibarySearchGenerator\n", __FILE__, __LINE__ );
   this->ES->getMainJITDylib().setGenerator(llvm::cantFail(ClaspDynamicLibrarySearchGenerator::GetForCurrentProcess(data_layout.getGlobalPrefix())));
 }
 
