@@ -86,12 +86,16 @@ void build_stamp_field_layout_tables()
   size_t cur_container_info_idx = 0;
   int cur_stamp=0;
   idx = 0;
+#define DUMP_GC_BOOT 1
+#define STAMP(_stamp_wtag_mtag_) (_stamp_wtag_mtag_>>(Header_s::wtag_shift))
   for ( idx=0; idx<num_codes; ++idx ) {
-//    printf("%s:%d idx = %d\n", __FILE__, __LINE__, idx);
+    printf("%s:%d idx = %d\n", __FILE__, __LINE__, idx);
     switch (codes[idx].cmd) {
     case class_kind:
-        cur_stamp = codes[idx].data0;
-//        printf("%s:%d  cur_stamp = %d\n", __FILE__, __LINE__, cur_stamp);
+        cur_stamp = STAMP(codes[idx].data0);
+#ifdef DUMP_GC_BOOT
+        printf("%s:%d  class_kind cur_stamp = %d\n", __FILE__, __LINE__, cur_stamp);
+#endif
         global_stamp_layout[cur_stamp].layout_op = class_container_op;
         global_stamp_layout[cur_stamp].field_layout_start = NULL;
         global_stamp_layout[cur_stamp].container_layout = NULL;
@@ -102,10 +106,13 @@ void build_stamp_field_layout_tables()
         global_stamp_info[cur_stamp].container_info_ptr = NULL;
         break;
     case fixed_field:
-        if ( !(codes[idx].data0 == SMART_PTR_OFFSET
-               || codes[idx].data0 == TAGGED_POINTER_OFFSET
-               || codes[idx].data0 == POINTER_OFFSET )) continue;
+        if ( !((codes[idx].data0) == SMART_PTR_OFFSET
+               || (codes[idx].data0) == TAGGED_POINTER_OFFSET
+               || (codes[idx].data0) == POINTER_OFFSET )) continue;
         GCTOOLS_ASSERT(cur_field_layout<max_field_layout);
+#ifdef DUMP_GC_BOOT
+        printf("%s:%d   fixed_field  cur_stamp = %d\n", __FILE__, __LINE__, cur_stamp);
+#endif
         if ( global_stamp_layout[cur_stamp].field_layout_start == NULL )
           global_stamp_layout[cur_stamp].field_layout_start = cur_field_layout;
         ++global_stamp_layout[cur_stamp].number_of_fields;
@@ -118,7 +125,10 @@ void build_stamp_field_layout_tables()
         ++cur_field_info;
         break;
     case container_kind:
-        cur_stamp = codes[idx].data0;
+        cur_stamp = STAMP(codes[idx].data0);
+#ifdef DUMP_GC_BOOT
+        printf("%s:%d   container_kind  cur_stamp = %d\n", __FILE__, __LINE__, cur_stamp);
+#endif
         global_stamp_layout[cur_stamp].layout_op = class_container_op;
         global_stamp_layout[cur_stamp].number_of_fields = 0;
         global_stamp_layout[cur_stamp].size = codes[idx].data1;
@@ -129,7 +139,10 @@ void build_stamp_field_layout_tables()
         global_stamp_info[cur_stamp].container_info_ptr = NULL;
         break;
     case bitunit_container_kind:
-        cur_stamp = codes[idx].data0;
+        cur_stamp = STAMP(codes[idx].data0);
+#ifdef DUMP_GC_BOOT
+        printf("%s:%d   bitunit_container_kind  cur_stamp = %d\n", __FILE__, __LINE__, cur_stamp);
+#endif
         global_stamp_layout[cur_stamp].layout_op = bitunit_container_op;
         global_stamp_layout[cur_stamp].number_of_fields = 0;
         global_stamp_layout[cur_stamp].size = codes[idx].data1;
@@ -141,17 +154,26 @@ void build_stamp_field_layout_tables()
         global_stamp_info[cur_stamp].container_info_ptr = NULL;
         break;
     case variable_array0:
+#ifdef DUMP_GC_BOOT
+        printf("%s:%d   variable_array0 cur_stamp = %d\n", __FILE__, __LINE__, cur_stamp);
+#endif
         global_stamp_layout[cur_stamp].container_layout = &global_container_layout[cur_container_layout_idx++];
         GCTOOLS_ASSERT(cur_container_layout_idx<=number_of_containers);
         global_stamp_layout[cur_stamp].data_offset = codes[idx].data2;
         break;
     case variable_bit_array0:
+#ifdef DUMP_GC_BOOT
+        printf("%s:%d   variable_bit_array0 cur_stamp = %d\n", __FILE__, __LINE__, cur_stamp);
+#endif
         global_stamp_layout[cur_stamp].container_layout = &global_container_layout[cur_container_layout_idx++];
         GCTOOLS_ASSERT(cur_container_layout_idx<=number_of_containers);
         global_stamp_layout[cur_stamp].data_offset = codes[idx].data2;
         global_stamp_layout[cur_stamp].bits_per_bitunit = codes[idx].data0;
         break;
     case variable_capacity:
+#ifdef DUMP_GC_BOOT
+        printf("%s:%d   variable_capacity cur_stamp = %d\n", __FILE__, __LINE__, cur_stamp);
+#endif
         global_stamp_layout[cur_stamp].container_layout->field_layout_start = cur_field_layout;
         global_stamp_layout[cur_stamp].element_size = codes[idx].data0;
         global_stamp_layout[cur_stamp].container_layout->number_of_fields = 0;
@@ -159,9 +181,12 @@ void build_stamp_field_layout_tables()
         global_stamp_layout[cur_stamp].capacity_offset = codes[idx].data2;
         break;
     case variable_field:
-        if ( !(codes[idx].data0 == SMART_PTR_OFFSET
-               || codes[idx].data0 == TAGGED_POINTER_OFFSET
-               || codes[idx].data0 == POINTER_OFFSET )) continue;
+        if ( !((codes[idx].data0) == SMART_PTR_OFFSET
+               || (codes[idx].data0) == TAGGED_POINTER_OFFSET
+               || (codes[idx].data0) == POINTER_OFFSET )) continue;
+#ifdef DUMP_GC_BOOT
+        printf("%s:%d   variable_field cur_stamp = %d\n", __FILE__, __LINE__, cur_stamp);
+#endif
         GCTOOLS_ASSERT(cur_field_layout<max_field_layout);
         cur_field_layout->field_offset = codes[idx].data2;
         ++cur_field_layout;
@@ -172,7 +197,10 @@ void build_stamp_field_layout_tables()
         global_stamp_info[cur_stamp].container_info_ptr->field_name = codes[idx].description;
         break;
     case templated_kind:
-        cur_stamp = codes[idx].data0;
+        cur_stamp = STAMP(codes[idx].data0);
+#ifdef DUMP_GC_BOOT
+        printf("%s:%d   templated_kind cur_stamp = %d\n", __FILE__, __LINE__, cur_stamp);
+#endif
         global_stamp_layout[cur_stamp].layout_op = templated_op;
         global_stamp_layout[cur_stamp].field_layout_start = NULL;
         global_stamp_layout[cur_stamp].container_layout = NULL;
@@ -183,8 +211,14 @@ void build_stamp_field_layout_tables()
         global_stamp_info[cur_stamp].container_info_ptr = NULL;
         break;
     case templated_class_jump_table_index:
+#ifdef DUMP_GC_BOOT
+        printf("%s:%d   templated_class_jump_table_index\n", __FILE__, __LINE__);
+#endif
         break;
     case container_jump_table_index:
+#ifdef DUMP_GC_BOOT
+        printf("%s:%d   container_jump_table_index\n", __FILE__, __LINE__);
+#endif
         break;
     default:
         printf("%s:%d Illegal Layout_code table command: %d\n", __FILE__, __LINE__, codes[idx].cmd);

@@ -22,7 +22,7 @@
 ;;;
 ;;; Set *echo-repl-read* to t to print each repl form
 ;;;
-(setq *echo-repl-read* nil)
+(setq *echo-repl-read* t)
 
 (setq *echo-repl-tpl-read* (member :emacs-inferior-lisp *features*))
 (setq *load-print* nil)

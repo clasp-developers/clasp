@@ -67,7 +67,6 @@ namespace core{
     _RehashThreshold(maybeFixRehashThreshold(0.7)),
     _HashTableCount(0)
     {};
-    virtual ~HashTable_O(){};
   //	DEFAULT_CTOR_DTOR(HashTable_O);
     friend class HashTableEq_O;
     friend class HashTableEql_O;

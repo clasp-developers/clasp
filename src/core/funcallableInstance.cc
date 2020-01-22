@@ -60,7 +60,7 @@ namespace core {
 
 
 void FuncallableInstance_O::initializeSlots(gctools::ShiftedStamp stamp, size_t numberOfSlots) {
-  ASSERT(gctools::Header_s::Value::is_rack_shifted_stamp(stamp));
+  ASSERT(gctools::Header_s::StampWtagMtag::is_rack_shifted_stamp(stamp));
   this->_Rack = Rack_O::make(numberOfSlots,_Unbound<T_O>());
   this->stamp_set(stamp);
 #ifdef DEBUG_GUARD_VALIDATE
@@ -69,7 +69,7 @@ void FuncallableInstance_O::initializeSlots(gctools::ShiftedStamp stamp, size_t 
 }
 
 void FuncallableInstance_O::initializeClassSlots(Creator_sp creator, gctools::ShiftedStamp stamp) {
-  ASSERT(gctools::Header_s::Value::is_rack_shifted_stamp(stamp));
+  ASSERT(gctools::Header_s::StampWtagMtag::is_rack_shifted_stamp(stamp));
   DEPRECATED();
 }
 

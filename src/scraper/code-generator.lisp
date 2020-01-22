@@ -630,7 +630,7 @@ Convert colons to underscores"
           (dolist (exposed-class sorted-classes)
             (let ((class-tag (class-tag% exposed-class)))
               (format sout "namespace ~a { ~%" (tags:namespace% class-tag))
-              (format sout "  gctools::Header_s::Value ~a::static_HeaderValue;~%" (tags:name% class-tag))
+              (format sout "  gctools::Header_s::StampWtagMtag ~a::static_StampWtagMtag;~%" (tags:name% class-tag))
               (format sout "};~%")))
           (format sout "#endif // EXPOSE_STATIC_CLASS_VARIABLES~%"))
         (progn

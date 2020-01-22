@@ -257,7 +257,7 @@ ALWAYS_INLINE core::T_O *cc_stack_enclose(void* closure_address,
 {NO_UNWIND_BEGIN();
   ASSERT(((uintptr_t)(closure_address)&0x7)==0); //
   gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(closure_address);
-  const gctools::Header_s::Value closure_header = gctools::Header_s::Value::make<core::ClosureWithSlots_O>();
+  const gctools::Header_s::StampWtagMtag closure_header = gctools::Header_s::StampWtagMtag::make<core::ClosureWithSlots_O>();
   size_t size = gctools::sizeof_container_with_header<core::ClosureWithSlots_O>(numCells);
 
 //  gctools::global_stack_closure_bytes_allocated += size;
@@ -917,7 +917,7 @@ gctools::ShiftedStamp cc_read_derivable_cxx_stamp_untagged_object(core::T_O* unt
 {
   core::DerivableCxxObject_O* derivable_cxx_object_ptr = reinterpret_cast<core::DerivableCxxObject_O*>(untagged_object);
   gctools::ShiftedStamp stamp = (gctools::ShiftedStamp)derivable_cxx_object_ptr->get_stamp_();
-  ASSERT(gctools::Header_s::Value::is_derivable_shifted_stamp(stamp));
+  ASSERT(gctools::Header_s::StampWtagMtag::is_derivable_shifted_stamp(stamp));
   printf("%s:%d:%s returning stamp %lu - check if it is correct\n", __FILE__, __LINE__, __FUNCTION__, stamp);
   return stamp;
 }

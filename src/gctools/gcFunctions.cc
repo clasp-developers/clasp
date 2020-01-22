@@ -251,7 +251,7 @@ CL_DEFUN core::T_sp core__header_value(core::T_sp obj) {
   if (obj.generalp()) {
     void *mostDerived = gctools::untag_general<void *>(obj.raw_());
     const gctools::Header_s *header = reinterpret_cast<const gctools::Header_s *>(gctools::ClientPtrToBasePtr(mostDerived));
-    return core::clasp_make_integer(header->header._value);
+    return core::clasp_make_integer(header->_stamp_wtag_mtag._value);
   }
   SIMPLE_ERROR(BF("The object %s is not a general object and doesn't have a header-value") % _rep_(obj));
 }
@@ -282,7 +282,7 @@ CL_DEFUN Fixnum core__header_kind(core::T_sp obj) {
   } else if (obj.generalp()) {
     void *mostDerived = gctools::untag_general<void *>(obj.raw_());
     const gctools::Header_s *header = reinterpret_cast<const gctools::Header_s *>(gctools::ClientPtrToBasePtr(mostDerived));
-    gctools::GCStampEnum stamp = header->stamp();
+    gctools::GCStampEnum stamp = header->stamp_();
     return (Fixnum)stamp;
   } else if (obj.single_floatp()) {
     return gctools::STAMP_SINGLE_FLOAT;
@@ -387,11 +387,11 @@ static size_t invalidHeaderTotalSize = 0;
 extern "C" {
 void boehm_callback_reachable_object(void *ptr, size_t sz, void *client_data) {
   gctools::Header_s *h = reinterpret_cast<gctools::Header_s *>(ptr);
-    ReachableClassMap::iterator it = static_ReachableClassKinds->find(h->stamp());
+    ReachableClassMap::iterator it = static_ReachableClassKinds->find(h->stamp_());
     if (it == static_ReachableClassKinds->end()) {
-      ReachableClass reachableClass(h->stamp());
+      ReachableClass reachableClass(h->stamp_());
       reachableClass.update(sz);
-      (*static_ReachableClassKinds)[h->stamp()] = reachableClass;
+      (*static_ReachableClassKinds)[h->stamp_()] = reachableClass;
     } else {
       it->second.update(sz);
     }
@@ -451,7 +451,7 @@ void amc_apply_stepper(mps_addr_t client, void *p, size_t s) {
   const gctools::Header_s *header = reinterpret_cast<const gctools::Header_s *>(gctools::ClientPtrToBasePtr(client));
   vector<ReachableMPSObject> *reachablesP = reinterpret_cast<vector<ReachableMPSObject> *>(p);
   if (header->stampP()) {
-    ReachableMPSObject &obj = (*reachablesP)[header->stamp()];
+    ReachableMPSObject &obj = (*reachablesP)[header->stamp_()];
     ++obj.instances;
     size_t sz = (char *)(obj_skip(client)) - (char *)client;
     obj.totalMemory += sz;
@@ -861,7 +861,6 @@ CL_DEFUN void gctools__register_stamp_name(const std::string& name,size_t stamp_
 }
 
 CL_DEFUN core::T_sp gctools__get_stamp_name_map() {
-  DEPRECATED();
   core::List_sp l = _Nil<core::T_O>();
   for ( auto it : global_unshifted_nowhere_stamp_name_map ) {
     l = core::Cons_O::create(core::Cons_O::create(core::SimpleBaseString_O::make(it.first),core::make_fixnum(it.second)),l);
@@ -967,7 +966,7 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   bool debug_mps_underscanning = false;
 #ifdef DEBUG_MPS_UNDERSCANNING
   debug_mps_underscanning = true;
-  bool debug_mps_underscanning_initial = DEBUG_MPS_UNDERSCANNING_INITIAL;
+  bool debug_mps_underscanning_initial = true;
   debugging = true;
 #else
   bool debug_mps_underscanning_initial = false;

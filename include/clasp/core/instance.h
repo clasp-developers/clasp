@@ -66,11 +66,11 @@ FORWARD(Rack);
       return this->_Slots[idx];
     };
     inline void stamp_set(gctools::ShiftedStamp stamp) {
-      ASSERT(stamp==0||gctools::Header_s::Value::is_rack_shifted_stamp(stamp));
+      ASSERT(stamp==0||gctools::Header_s::StampWtagMtag::is_rack_shifted_stamp(stamp));
       this->_ShiftedStamp = stamp;
     };
     inline gctools::ShiftedStamp stamp_get() {
-      ASSERT(gctools::Header_s::Value::is_rack_shifted_stamp(this->_ShiftedStamp));
+      ASSERT(gctools::Header_s::StampWtagMtag::is_rack_shifted_stamp(this->_ShiftedStamp));
       return this->_ShiftedStamp;
     };
   };
@@ -147,7 +147,7 @@ namespace core {
     bool CLASS_has_creator() const { return (bool)(!this->instanceRef(REF_CLASS_CREATOR).unboundp()); };
     gctools::ShiftedStamp CLASS_stamp_for_instances() const {
       gctools::ShiftedStamp result = (gctools::ShiftedStamp)this->instanceRef(REF_CLASS_STAMP_FOR_INSTANCES_).raw_();
-      ASSERT(gctools::Header_s::Value::is_shifted_stamp(result));
+      ASSERT(gctools::Header_s::StampWtagMtag::is_shifted_stamp(result));
       return result;
     };
     void CLASS_set_stamp_for_instances(gctools::UnshiftedStamp s);

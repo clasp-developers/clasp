@@ -82,7 +82,7 @@ CL_DEFUN T_sp core__copy_instance(T_sp obj) {
 };
 
 void Instance_O::initializeSlots(gctools::ShiftedStamp stamp, size_t numberOfSlots) {
-  ASSERT(stamp==0||gctools::Header_s::Value::is_rack_shifted_stamp(stamp));
+  ASSERT(stamp==0||gctools::Header_s::StampWtagMtag::is_rack_shifted_stamp(stamp));
   this->_Rack = Rack_O::make(numberOfSlots,_Unbound<T_O>());
   this->stamp_set(stamp);
 #ifdef DEBUG_GUARD_VALIDATE
@@ -112,7 +112,7 @@ void Instance_O::CLASS_call_history_generic_functions_push_new(T_sp generic_func
 }
 
 void Instance_O::CLASS_set_stamp_for_instances(gctools::ShiftedStamp s) {
-  ASSERT(gctools::Header_s::Value::is_shifted_stamp(s));
+  ASSERT(gctools::Header_s::StampWtagMtag::is_shifted_stamp(s));
   T_sp stamp((gctools::Tagged)s);
   this->instanceSet(REF_CLASS_STAMP_FOR_INSTANCES_,stamp); // write shifted stamp - it's automatically a fixnum
 };
@@ -120,7 +120,7 @@ void Instance_O::CLASS_set_stamp_for_instances(gctools::ShiftedStamp s) {
 // NOT called by regular CL allocate instance. FIXME, find a way to remove this if possible.
 void Instance_O::initializeClassSlots(Creator_sp creator, gctools::ShiftedStamp stamp) {
   // Should match clos/hierarchy.lsp
-  ASSERT(gctools::Header_s::Value::is_shifted_stamp(stamp));
+  ASSERT(gctools::Header_s::StampWtagMtag::is_shifted_stamp(stamp));
   this->instanceSet(REF_SPECIALIZER_CALL_HISTORY_GENERIC_FUNCTIONS, _Nil<T_O>());
   this->instanceSet(REF_CLASS_DIRECT_SUBCLASSES, _Nil<T_O>());
   this->instanceSet(REF_CLASS_DIRECT_SUPERCLASSES, _Nil<T_O>());
@@ -210,7 +210,7 @@ Fixnum Instance_O::stamp() const {
 };
 
 void Instance_O::stamp_set(gctools::ShiftedStamp s) {
-  ASSERT(s==0||gctools::Header_s::Value::is_rack_shifted_stamp(s));
+  ASSERT(s==0||gctools::Header_s::StampWtagMtag::is_rack_shifted_stamp(s));
   this->_Rack->stamp_set(s);
 };
 
@@ -383,7 +383,7 @@ Instance_sp Instance_O::create(Symbol_sp symbol, Instance_sp metaClass, Creator_
 };
 
 Instance_sp Instance_O::createClassUncollectable(gctools::ShiftedStamp stamp, Instance_sp metaClass, size_t number_of_slots, Creator_sp creator ) {
-  ASSERT(gctools::Header_s::Value::is_shifted_stamp(stamp));
+  ASSERT(gctools::Header_s::StampWtagMtag::is_shifted_stamp(stamp));
 #if 0  
   printf("%s:%d:%s stamp -> %llu\n", __FILE__, __LINE__, __FUNCTION__, stamp);
   if (!metaClass.unboundp()) {
@@ -397,7 +397,7 @@ Instance_sp Instance_O::createClassUncollectable(gctools::ShiftedStamp stamp, In
   gctools::ShiftedStamp class_stamp = 0;
   if (!metaClass.unboundp()) {
     class_stamp = metaClass->CLASS_stamp_for_instances();
-    ASSERT(gctools::Header_s::Value::is_shifted_stamp(class_stamp));
+    ASSERT(gctools::Header_s::StampWtagMtag::is_shifted_stamp(class_stamp));
   }
   // class_stamp may be 0 if metaClass.unboundp();
   oclass->initializeSlots(class_stamp,number_of_slots);
@@ -638,7 +638,7 @@ CL_DEFUN List_sp clos__direct_superclasses(Instance_sp c) {
 CL_LAMBDA(class_ &optional (name nil name-p));
 CL_DEFUN void core__class_new_stamp(Instance_sp c, T_sp name, T_sp namep) {
 //  printf("%s:%d Something is whacked here - I'm calling NextStamp twice for class %s!!!!\n", __FILE__, __LINE__, _safe_rep_(name).c_str() );
-  gctools::ShiftedStamp stamp = gctools::NextShiftedStampMergeWhere(gctools::Header_s::rack_wtag);
+  gctools::ShiftedStamp stamp = gctools::NextStampWtag(gctools::Header_s::rack_wtag);
   c->CLASS_set_stamp_for_instances(stamp); // Was gctools::NextStamp());
   std::string sname;
   if (namep.notnilp()) {
@@ -652,14 +652,14 @@ CL_DEFUN void core__class_new_stamp(Instance_sp c, T_sp name, T_sp namep) {
     sname = c->_className()->formattedName(true);
   }
 //  printf("%s:%d Registering %s with stamp %lld\n", __FILE__, __LINE__, sname.c_str(), stamp);
-  register_stamp_name(sname,gctools::Header_s::Value::unshift_shifted_stamp(stamp));
+  register_stamp_name(sname,gctools::Header_s::StampWtagMtag::unshift_shifted_stamp(stamp));
 }
 
 CL_DEFUN T_sp core__class_stamp_for_instances(Instance_sp c) {
   if (c->_Class->isSubClassOf(_lisp->_Roots._TheClass)) {
     // DONT convert this to an integer - it is already a shifted stamp and
     // it can be treated like a fixnum
-    ASSERT(gctools::Header_s::Value::is_shifted_stamp(c->CLASS_stamp_for_instances()));
+    ASSERT(gctools::Header_s::StampWtagMtag::is_shifted_stamp(c->CLASS_stamp_for_instances()));
     T_sp stamp((gctools::Tagged)c->CLASS_stamp_for_instances());
     return stamp;
   }

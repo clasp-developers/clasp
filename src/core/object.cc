@@ -552,11 +552,11 @@ SYMBOL_EXPORT_SC_(ClPkg, equalp);
 
 namespace core {
 
-void lisp_setStaticClass(gctools::Header_s::Value header, Instance_sp value)
+void lisp_setStaticClass(gctools::Header_s::StampWtagMtag header, Instance_sp value)
 {
   if (_lisp->_Roots.staticClassesUnshiftedNowhere.size() == 0) {
-    ASSERT(gctools::Header_s::Value::is_unshifted_stamp(gctools::STAMP_max));
-    size_t unstamp = gctools::Header_s::Value::make_nowhere_stamp(gctools::STAMP_max);
+    ASSERT(gctools::Header_s::StampWtagMtag::is_unshifted_stamp(gctools::STAMP_max));
+    size_t unstamp = gctools::Header_s::StampWtagMtag::make_nowhere_stamp(gctools::STAMP_max);
     _lisp->_Roots.staticClassesUnshiftedNowhere.resize(unstamp+1);
   }
 //  printf("%s:%d:%s stamp: %u  value: %s\n", __FILE__, __LINE__, __FUNCTION__, header.stamp(), _rep_(value).c_str());
@@ -564,20 +564,20 @@ void lisp_setStaticClass(gctools::Header_s::Value header, Instance_sp value)
   _lisp->_Roots.staticClassesUnshiftedNowhere[unstamp] = value;
 }
 
-void lisp_setStaticClassSymbol(gctools::Header_s::Value header, Symbol_sp value)
+void lisp_setStaticClassSymbol(gctools::Header_s::StampWtagMtag header, Symbol_sp value)
 {
   if (_lisp->_Roots.staticClassSymbolsUnshiftedNowhere.size() == 0) {
-    ASSERT(gctools::Header_s::Value::is_unshifted_stamp(gctools::STAMP_max));
-    size_t unstamp = gctools::Header_s::Value::make_nowhere_stamp(gctools::STAMP_max);
+    ASSERT(gctools::Header_s::StampWtagMtag::is_unshifted_stamp(gctools::STAMP_max));
+    size_t unstamp = gctools::Header_s::StampWtagMtag::make_nowhere_stamp(gctools::STAMP_max);
     _lisp->_Roots.staticClassSymbolsUnshiftedNowhere.resize(unstamp+1);
   }
   size_t unstamp = header.nowhere_stamp();
 //  printf("%s:%d:%s unstamp: %lu  value: %s\n", __FILE__, __LINE__, __FUNCTION__, unstamp, _safe_rep_(value).c_str());
   _lisp->_Roots.staticClassSymbolsUnshiftedNowhere[unstamp] = value;
 }
-Symbol_sp lisp_getStaticClassSymbol(gctools::Header_s::Value header)
+Symbol_sp lisp_getStaticClassSymbol(gctools::Header_s::StampWtagMtag header)
 {
-  ASSERT(gctools::Header_s::Value::is_unshifted_stamp(header.unshifted_stamp()));
+  ASSERT(gctools::Header_s::StampWtagMtag::is_unshifted_stamp(header.unshifted_stamp()));
   size_t unstamp = header.nowhere_stamp();
   T_sp value = _lisp->_Roots.staticClassSymbolsUnshiftedNowhere[unstamp];
 //  printf("%s:%d:%s unstamp: %lu  value: %s\n", __FILE__, __LINE__, __FUNCTION__, unstamp, _safe_rep_(value).c_str());
@@ -585,26 +585,26 @@ Symbol_sp lisp_getStaticClassSymbol(gctools::Header_s::Value header)
 }
 
 
-void lisp_setStaticInstanceCreator(gctools::Header_s::Value header, Creator_sp value)
+void lisp_setStaticInstanceCreator(gctools::Header_s::StampWtagMtag header, Creator_sp value)
 { 
   if (_lisp->_Roots.staticInstanceCreatorsUnshiftedNowhere.size() == 0) {
-    ASSERT(gctools::Header_s::Value::is_unshifted_stamp(gctools::STAMP_max));
-    size_t unstamp = gctools::Header_s::Value::make_nowhere_stamp(gctools::STAMP_max);
+    ASSERT(gctools::Header_s::StampWtagMtag::is_unshifted_stamp(gctools::STAMP_max));
+    size_t unstamp = gctools::Header_s::StampWtagMtag::make_nowhere_stamp(gctools::STAMP_max);
     _lisp->_Roots.staticInstanceCreatorsUnshiftedNowhere.resize(unstamp+1);
   }
   size_t unstamp = header.nowhere_stamp();
   _lisp->_Roots.staticInstanceCreatorsUnshiftedNowhere[unstamp] = value;
 }
 
-Instance_sp lisp_getStaticClass(gctools::Header_s::Value header)
+Instance_sp lisp_getStaticClass(gctools::Header_s::StampWtagMtag header)
 {
-  ASSERT(gctools::Header_s::Value::is_unshifted_stamp(header.unshifted_stamp()));
+  ASSERT(gctools::Header_s::StampWtagMtag::is_unshifted_stamp(header.unshifted_stamp()));
   size_t unstamp = header.nowhere_stamp();
   return _lisp->_Roots.staticClassesUnshiftedNowhere[unstamp];
 }
-Creator_sp lisp_getStaticInstanceCreator(gctools::Header_s::Value header)
+Creator_sp lisp_getStaticInstanceCreator(gctools::Header_s::StampWtagMtag header)
 {
-  ASSERT(gctools::Header_s::Value::is_unshifted_stamp(header.unshifted_stamp()));
+  ASSERT(gctools::Header_s::StampWtagMtag::is_unshifted_stamp(header.unshifted_stamp()));
   size_t unstamp = header.nowhere_stamp();
   return _lisp->_Roots.staticInstanceCreatorsUnshiftedNowhere[unstamp];
 }

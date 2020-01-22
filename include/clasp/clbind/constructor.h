@@ -59,19 +59,19 @@ public:
   typedef ConstructorCreator_O TemplatedBase;
 public:
   typedef Wrapper<T, Pointer> WrapperType;
-  gctools::Header_s::Value _HeaderValue;
+  gctools::Header_s::StampWtagMtag _HeaderValue;
   int _duplicationLevel;
 public:
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 public:
  DefaultConstructorCreator_O() : ConstructorCreator_O(reg::lisp_classSymbol<T>()) 
 #ifndef USE_CXX_DYNAMIC_CAST
-    , _HeaderValue(gctools::Header_s::Value::make<WrapperType>())
+    , _HeaderValue(gctools::Header_s::StampWtagMtag::make<WrapperType>())
 #endif
     , _duplicationLevel(0){
 //    printf("%s:%d  Constructing DefaultConstructorCreator_O with kind: %u\n", __FILE__, __LINE__, gctools::GCStamp<WrapperType>::Kind);
   };
- DefaultConstructorCreator_O(core::Symbol_sp cn, const gctools::Header_s::Value headerValue, int dupnum)
+ DefaultConstructorCreator_O(core::Symbol_sp cn, const gctools::Header_s::StampWtagMtag headerValue, int dupnum)
    : ConstructorCreator_O(cn), _HeaderValue(headerValue), _duplicationLevel(dupnum){
 //    printf("%s:%d  Constructing non trivial DefaultConstructorCreator_O with kind: %u\n", __FILE__, __LINE__, gctools::GCStamp<WrapperType>::Kind);
   };
@@ -106,7 +106,7 @@ class DerivableDefaultConstructorCreator_O : public ConstructorCreator_O {
 public:
   typedef ConstructorCreator_O TemplatedBase;
 public:
-  gctools::Header_s::Value _Header;
+  gctools::Header_s::StampWtagMtag _Header;
   int _duplicationLevel;
 public:
 public:
@@ -114,10 +114,10 @@ public:
 public:
   DerivableDefaultConstructorCreator_O() : ConstructorCreator_O(reg::lisp_classSymbol<T>())
 #ifdef USE_CXX_DYNAMIC_CAST
-    , _Header(gctools::Header_s::Value::make<T>())
+    , _Header(gctools::Header_s::StampWtagMtag::make<T>())
 #endif
     , _duplicationLevel(0){};
- DerivableDefaultConstructorCreator_O(core::Symbol_sp cn, const gctools::Header_s::Value& header, int dupnum)
+ DerivableDefaultConstructorCreator_O(core::Symbol_sp cn, const gctools::Header_s::StampWtagMtag& header, int dupnum)
       : ConstructorCreator_O(cn), _Header(header), _duplicationLevel(dupnum){};
 
   /*! If this is the allocator for the original Adapter class return true - otherwise false */

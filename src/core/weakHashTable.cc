@@ -35,7 +35,7 @@ THE SOFTWARE.
 
 namespace core {
 
-WeakKeyHashTable_O::WeakKeyHashTable_O() : _HashTable(16, DoubleFloat_O::create(2.0),0.5) {};
+    WeakKeyHashTable_O::WeakKeyHashTable_O() : _HashTable(16, core::make_single_float(2.0),0.5) {};
   
 void WeakKeyHashTable_O::initialize() {
   this->_HashTable.initialize();

@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
+#define DEBUG_LEVEL_FULL
 typedef bool _Bool;
 #ifndef SCRAPING // #endif at bottom
 #include <clasp/core/foundation.h>
@@ -268,13 +269,13 @@ using namespace gctools;
 size_t obj_kind( core::T_O *tagged_ptr) {
   const core::T_O *client = untag_object<const core::T_O *>(tagged_ptr);
   const Header_s *header = reinterpret_cast<const Header_s *>(ClientPtrToBasePtr(client));
-  return (size_t)(header->stamp());
+  return (size_t)(header->stamp_());
 }
 
 const char *obj_kind_name(core::T_O *tagged_ptr) {
   core::T_O *client = untag_object<core::T_O *>(tagged_ptr);
   const Header_s *header = reinterpret_cast<const Header_s *>(ClientPtrToBasePtr(client));
-  return obj_name(header->stamp());
+  return obj_name(header->stamp_());
 }
 
 const char *obj_name(gctools::stamp_t stamp) {
@@ -304,7 +305,7 @@ void obj_deallocate_unmanaged_instance(gctools::smart_ptr<core::T_O> obj ) {
 
   const gctools::Header_s *header = reinterpret_cast<const gctools::Header_s *>(ClientPtrToBasePtr(client));
   ASSERTF(header->stampP(), BF("obj_deallocate_unmanaged_instance called without a valid object"));
-  gctools::GCStampEnum stamp = (GCStampEnum)(header->stamp());
+  gctools::GCStampEnum stamp = (GCStampEnum)(header->stamp_());
 #ifndef RUNNING_GC_BUILDER
   #ifdef USE_MPS
   size_t jump_table_index = (size_t)stamp; // - stamp_first_general;
@@ -346,26 +347,27 @@ mps_addr_t obj_skip(mps_addr_t client) {
   size_t size = 0;
   const gctools::Header_s* header_ptr = reinterpret_cast<const gctools::Header_s *>(ClientPtrToBasePtr(client));
   const gctools::Header_s& header = *header_ptr;
-  const Header_s::Value& header_value = header.header;
-  tagged_stamp_t tag = header_value.tag();
-  switch (tag) {
+  const Header_s::StampWtagMtag& header_value = header._stamp_wtag_mtag;
+  tagged_stamp_t mtag = header_value.mtag();
+  switch (mtag) {
   case gctools::Header_s::stamp_tag: {
 #ifdef DEBUG_VALIDATE_GUARD
     header->validate();
 #endif
-    gctools::GCStampEnum stamp = header.stamp();
-    if ( stamp == STAMP_core__DerivableCxxObject_O ) {
+    gctools::GCStampEnum stamp_wtag = header.stamp_wtag();
+    size_t stamp_index = header.stamp_();
+    if ( stamp_wtag == STAMP_core__DerivableCxxObject_O ) {
         // If this is true then I think we need to call virtual functions on the client
         // to determine the Instance_O offset and the total size of the object.
       printf("%s:%d Handle STAMP_core__DerivableCxxObject_O\n", __FILE__, __LINE__ );
     }
-    const Stamp_layout& stamp_layout = global_stamp_layout[stamp];
-    if ( stamp == STAMP_core__SimpleBitVector_O ) {
+    const Stamp_layout& stamp_layout = global_stamp_layout[stamp_index];
+    if ( stamp_wtag == STAMP_core__SimpleBitVector_O ) {
       size_t capacity = *(size_t*)((const char*)client + stamp_layout.capacity_offset);
       size = core::SimpleBitVector_O::bitunit_array_type::sizeof_for_length(capacity) + stamp_layout.data_offset;
       goto STAMP_CONTINUE;
         // Do other bitunit vectors here
-    } else if (stamp == gctools::STAMP_core__SimpleBaseString_O) {
+    } else if (stamp_wtag == gctools::STAMP_core__SimpleBaseString_O) {
           // Account for the SimpleBaseString additional byte for \0
       size_t capacity = *(size_t*)((const char*)client + stamp_layout.capacity_offset) + 1;
       size = stamp_layout.element_size*capacity + stamp_layout.data_offset;
@@ -412,24 +414,27 @@ mps_addr_t obj_skip(mps_addr_t client) {
 #ifdef USE_MPS
 extern "C" {
 GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
+    LOG(BF("obj_scan client=%p limit=%p\n") % (void*)client % (void*)limit );
   mps_addr_t oldClient;
   size_t size = 0;  // Used to store the size of the object
-  GCStampEnum stamp;
+  size_t stamp_index;
   MPS_SCAN_BEGIN(GC_SCAN_STATE) {
     while (client < limit) {
       oldClient = (mps_addr_t)client;
       // The client must have a valid header
       const gctools::Header_s& header = *reinterpret_cast<const gctools::Header_s *>(ClientPtrToBasePtr(client));
-      const Header_s::Value& header_value = header.header;
-      tagged_stamp_t tag = header_value.tag();
-      switch (tag) {
+      const Header_s::StampWtagMtag& header_value = header._stamp_wtag_mtag;
+      stamp_index = header.stamp_();
+      LOG(BF("obj_scan client=%p stamp-index=%lu\n") % (void*)client % stamp_index );
+      tagged_stamp_t mtag = header_value.mtag();
+      switch (mtag) {
       case gctools::Header_s::stamp_tag: {
 #ifdef DEBUG_VALIDATE_GUARD
         header->validate();
 #endif
-        stamp = header.stamp();
-        const Stamp_layout& stamp_layout = global_stamp_layout[stamp];
-        if ( stamp == STAMP_core__DerivableCxxObject_O ) {
+        gctools::GCStampEnum stamp_wtag = header.stamp_wtag();
+        const Stamp_layout& stamp_layout = global_stamp_layout[stamp_index];
+        if ( stamp_wtag == STAMP_core__DerivableCxxObject_O ) {
         // If this is true then I think we need to call virtual functions on the client
         // to determine the Instance_O offset and the total size of the object.
           printf("%s:%d Handle STAMP_core__DerivableCxxObject_O\n", __FILE__, __LINE__ );
@@ -471,7 +476,7 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
           size_t skip_size = ((char*)obj_skip(oldClient)-(char*)oldClient);
           if (scan_size != skip_size) {
             printf("%s:%d The size of the object with stamp %u will not be calculated properly - obj_scan -> %lu  obj_skip -> %lu\n",
-                   __FILE__, __LINE__, header.stamp(), scan_size, skip_size);
+                   __FILE__, __LINE__, header.stamp_(), scan_size, skip_size);
           }
         }
 #endif
@@ -537,7 +542,7 @@ void obj_finalize(mps_addr_t client) {
   #endif // ifndef RUNNING_GC_BUILDER
   gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(const_cast<void*>(ClientPtrToBasePtr(client)));
   ASSERTF(header->stampP(), BF("obj_finalized called without a valid object"));
-  gctools::GCStampEnum stamp = (GCStampEnum)(header->stamp());
+  gctools::GCStampEnum stamp = (GCStampEnum)(header->stamp_());
   #ifndef RUNNING_GC_BUILDER
   size_t table_index = (size_t)stamp;
   goto *(OBJ_FINALIZE_table[table_index]);
@@ -651,11 +656,11 @@ void allocate_symbols(core::BootStrapCoreSymbolMap* symbols)
 
 template <class TheClass>
 NOINLINE void set_one_static_class_Header() {
-  ShiftedStamp the_stamp = gctools::NextShiftedStampMergeWhere(0 /* Get from the Stamp */,gctools::GCStamp<TheClass>::Stamp);
+  ShiftedStamp the_stamp = gctools::NextStampWtag(0 /* Get from the Stamp */,gctools::GCStamp<TheClass>::Stamp);
   if (gctools::GCStamp<TheClass>::Stamp!=0) {
-    TheClass::static_HeaderValue = gctools::Header_s::Value::make<TheClass>();
+    TheClass::static_StampWtagMtag = gctools::Header_s::StampWtagMtag::make<TheClass>();
   } else {
-    TheClass::static_HeaderValue = gctools::Header_s::Value::make_unknown(the_stamp);
+    TheClass::static_StampWtagMtag = gctools::Header_s::StampWtagMtag::make_unknown(the_stamp);
   }
 }
 
@@ -680,7 +685,7 @@ NOINLINE  gc::smart_ptr<core::Instance_O> allocate_one_class(core::Instance_sp m
 {
   core::Creator_sp cb = gc::As<core::Creator_sp>(gctools::GC<core::BuiltInObjectCreator<TheClass>>::allocate());
   TheClass::set_static_creator(cb);
-  gc::smart_ptr<core::Instance_O> class_val = core::Instance_O::createClassUncollectable(TheClass::static_HeaderValue.shifted_stamp(),metaClass,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS,cb);
+  gc::smart_ptr<core::Instance_O> class_val = core::Instance_O::createClassUncollectable(TheClass::static_StampWtagMtag.shifted_stamp(),metaClass,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS,cb);
   class_val->__setup_stage1_with_sharedPtr_lisp_sid(class_val,TheClass::static_classSymbol());
   reg::lisp_associateClassIdWithClassSymbol(reg::registered_class<TheClass>::id,TheClass::static_classSymbol());
   TheClass::setStaticClass(class_val);
@@ -702,9 +707,9 @@ std::vector<size_t> global_unshifted_nowhere_stamp_where_map;
 size_t _global_last_stamp = 0;
 
 void register_stamp_name(const std::string& stamp_name, UnshiftedStamp unshifted_stamp) {
-  ASSERT(gctools::Header_s::Value::is_unshifted_stamp(unshifted_stamp));
-  size_t stamp_where = gctools::Header_s::Value::get_stamp_where(unshifted_stamp);
-  size_t stamp_num = gctools::Header_s::Value::make_nowhere_stamp(unshifted_stamp);
+  if (unshifted_stamp==0) return;
+  size_t stamp_where = gctools::Header_s::StampWtagMtag::get_stamp_where(unshifted_stamp);
+  size_t stamp_num = gctools::Header_s::StampWtagMtag::make_nowhere_stamp(unshifted_stamp);
   global_unshifted_nowhere_stamp_name_map[stamp_name] = stamp_num;
   if (stamp_num>=global_unshifted_nowhere_stamp_names.size()) {
     global_unshifted_nowhere_stamp_names.resize(stamp_num+1,"");
@@ -758,28 +763,28 @@ void calculate_class_precedence_lists()
 
 template <typename TSingle>
 void add_single_typeq_test(const string& cname, core::HashTable_sp theMap) {
-  Fixnum header_val = gctools::Header_s::Value::GenerateHeaderValue<TSingle>();
+  Fixnum header_val = gctools::Header_s::StampWtagMtag::GenerateHeaderValue<TSingle>();
 //  printf("%s:%d Header value for type %s -> %lld    stamp: %u  flags: %zu\n", __FILE__, __LINE__, _rep_(TSingle::static_class_symbol).c_str(), header_val, gctools::GCStamp<TSingle>::Stamp, gctools::GCStamp<TSingle>::Flags);
-  theMap->setf_gethash(TSingle::static_classSymbol(),core::make_fixnum(gctools::Header_s::Value::GenerateHeaderValue<TSingle>()));
+  theMap->setf_gethash(TSingle::static_classSymbol(),core::make_fixnum(gctools::Header_s::StampWtagMtag::GenerateHeaderValue<TSingle>()));
 }
 
 template <typename TRangeFirst,typename TRangeLast>
 void add_range_typeq_test(const string& cname, core::HashTable_sp theMap) {
   
   theMap->setf_gethash(TRangeFirst::static_classSymbol(),
-                       core::Cons_O::create(core::make_fixnum(gctools::Header_s::Value::GenerateHeaderValue<TRangeFirst>()),
-                                            core::make_fixnum(gctools::Header_s::Value::GenerateHeaderValue<TRangeLast>())));
+                       core::Cons_O::create(core::make_fixnum(gctools::Header_s::StampWtagMtag::GenerateHeaderValue<TRangeFirst>()),
+                                            core::make_fixnum(gctools::Header_s::StampWtagMtag::GenerateHeaderValue<TRangeLast>())));
 }
 template <typename TSingle>
 void add_single_typeq_test_instance(core::HashTable_sp theMap) {
-  theMap->setf_gethash(TSingle::static_classSymbol(),core::make_fixnum(gctools::Header_s::Value::GenerateHeaderValue<TSingle>()));
+  theMap->setf_gethash(TSingle::static_classSymbol(),core::make_fixnum(gctools::Header_s::StampWtagMtag::GenerateHeaderValue<TSingle>()));
 }
 
 template <typename TRangeFirst,typename TRangeLast>
 void add_range_typeq_test_instance(core::HashTable_sp theMap) {
   theMap->setf_gethash(TRangeFirst::static_classSymbol(),
-                       core::Cons_O::create(core::make_fixnum(gctools::Header_s::Value::GenerateHeaderValue<TRangeFirst>()),
-                                            core::make_fixnum(gctools::Header_s::Value::GenerateHeaderValue<TRangeLast>())));
+                       core::Cons_O::create(core::make_fixnum(gctools::Header_s::StampWtagMtag::GenerateHeaderValue<TRangeFirst>()),
+                                            core::make_fixnum(gctools::Header_s::StampWtagMtag::GenerateHeaderValue<TRangeLast>())));
 }
   
 void initialize_typeq_map() {
@@ -787,23 +792,23 @@ void initialize_typeq_map() {
   core::HashTableEq_sp theTypeqMap = core::HashTableEq_O::create_default();
 #define ADD_SINGLE_TYPEQ_TEST(type,stamp) { \
     classNameToLispName->setf_gethash(core::SimpleBaseString_O::make(#type),type::static_classSymbol()); \
-    theTypeqMap->setf_gethash(type::static_classSymbol(),core::make_fixnum(gctools::Header_s::Value::GenerateHeaderValue<type>())); \
+    theTypeqMap->setf_gethash(type::static_classSymbol(),core::make_fixnum(gctools::Header_s::StampWtagMtag::GenerateHeaderValue<type>())); \
   }
 #define ADD_RANGE_TYPEQ_TEST(type_low,type_high,stamp_low,stamp_high) { \
     classNameToLispName->setf_gethash(core::SimpleBaseString_O::make(#type_low),type_low::static_classSymbol()); \
     theTypeqMap->setf_gethash(type_low::static_classSymbol(), \
-                              core::Cons_O::create(core::make_fixnum(gctools::Header_s::Value::GenerateHeaderValue<type_low>()), \
-                                                   core::make_fixnum(gctools::Header_s::Value::GenerateHeaderValue<type_high>()))); \
+                              core::Cons_O::create(core::make_fixnum(gctools::Header_s::StampWtagMtag::GenerateHeaderValue<type_low>()), \
+                                                   core::make_fixnum(gctools::Header_s::StampWtagMtag::GenerateHeaderValue<type_high>()))); \
   }
 #define ADD_SINGLE_TYPEQ_TEST_INSTANCE(type,stamp) { \
     classNameToLispName->setf_gethash(core::SimpleBaseString_O::make(#type),type::static_classSymbol()); \
-    theTypeqMap->setf_gethash(type::static_classSymbol(),core::make_fixnum(gctools::Header_s::Value::GenerateHeaderValue<type>())); \
+    theTypeqMap->setf_gethash(type::static_classSymbol(),core::make_fixnum(gctools::Header_s::StampWtagMtag::GenerateHeaderValue<type>())); \
   }
 #define ADD_RANGE_TYPEQ_TEST_INSTANCE(type_low,type_high,stamp_low,stamp_high) { \
     classNameToLispName->setf_gethash(core::SimpleBaseString_O::make(#type_low),type_low::static_classSymbol()); \
     theTypeqMap->setf_gethash(type_low::static_classSymbol(), \
-                              core::Cons_O::create(core::make_fixnum(gctools::Header_s::Value::GenerateHeaderValue<type_low>()), \
-                                                   core::make_fixnum(gctools::Header_s::Value::GenerateHeaderValue<type_high>()))); \
+                              core::Cons_O::create(core::make_fixnum(gctools::Header_s::StampWtagMtag::GenerateHeaderValue<type_low>()), \
+                                                   core::make_fixnum(gctools::Header_s::StampWtagMtag::GenerateHeaderValue<type_high>()))); \
   }
 #ifndef SCRAPING
  #ifdef USE_BOEHM
@@ -893,18 +898,18 @@ void initialize_clasp()
   MPS_LOG("initialize_clasp set_static_class_symbols");
   set_static_class_symbols(&bootStrapCoreSymbolMap);
 
-  ShiftedStamp TheClass_stamp = gctools::NextShiftedStampMergeWhere(gctools::Header_s::rack_wtag);
-  ASSERT(Header_s::Value::is_rack_shifted_stamp(TheClass_stamp));
-  ShiftedStamp TheBuiltInClass_stamp = gctools::NextShiftedStampMergeWhere(gctools::Header_s::rack_wtag);
-  ASSERT(Header_s::Value::is_rack_shifted_stamp(TheBuiltInClass_stamp));
-  ShiftedStamp TheStandardClass_stamp = gctools::NextShiftedStampMergeWhere(gctools::Header_s::rack_wtag);
-  ASSERT(Header_s::Value::is_rack_shifted_stamp(TheStandardClass_stamp));
-  ShiftedStamp TheStructureClass_stamp = gctools::NextShiftedStampMergeWhere(gctools::Header_s::rack_wtag);
-  ASSERT(Header_s::Value::is_rack_shifted_stamp(TheStructureClass_stamp));
-  ShiftedStamp TheDerivableCxxClass_stamp = gctools::NextShiftedStampMergeWhere(gctools::Header_s::rack_wtag);
-  ASSERT(Header_s::Value::is_rack_shifted_stamp(TheDerivableCxxClass_stamp));
-  ShiftedStamp TheClbindCxxClass_stamp = gctools::NextShiftedStampMergeWhere(gctools::Header_s::rack_wtag);
-  ASSERT(Header_s::Value::is_rack_shifted_stamp(TheClbindCxxClass_stamp));
+  ShiftedStamp TheClass_stamp = gctools::NextStampWtag(gctools::Header_s::rack_wtag);
+  ASSERT(Header_s::StampWtagMtag::is_rack_shifted_stamp(TheClass_stamp));
+  ShiftedStamp TheBuiltInClass_stamp = gctools::NextStampWtag(gctools::Header_s::rack_wtag);
+  ASSERT(Header_s::StampWtagMtag::is_rack_shifted_stamp(TheBuiltInClass_stamp));
+  ShiftedStamp TheStandardClass_stamp = gctools::NextStampWtag(gctools::Header_s::rack_wtag);
+  ASSERT(Header_s::StampWtagMtag::is_rack_shifted_stamp(TheStandardClass_stamp));
+  ShiftedStamp TheStructureClass_stamp = gctools::NextStampWtag(gctools::Header_s::rack_wtag);
+  ASSERT(Header_s::StampWtagMtag::is_rack_shifted_stamp(TheStructureClass_stamp));
+  ShiftedStamp TheDerivableCxxClass_stamp = gctools::NextStampWtag(gctools::Header_s::rack_wtag);
+  ASSERT(Header_s::StampWtagMtag::is_rack_shifted_stamp(TheDerivableCxxClass_stamp));
+  ShiftedStamp TheClbindCxxClass_stamp = gctools::NextStampWtag(gctools::Header_s::rack_wtag);
+  ASSERT(Header_s::StampWtagMtag::is_rack_shifted_stamp(TheClbindCxxClass_stamp));
 //  global_TheClassRep_stamp = gctools::GCStamp<clbind::ClassRep_O>::Stamp;
   _lisp->_Roots._TheClass = allocate_one_metaclass<core::StandardClassCreator_O>(TheClass_stamp,cl::_sym_class,_Unbound<core::Instance_O>());
   _lisp->_Roots._TheBuiltInClass = allocate_one_metaclass<core::StandardClassCreator_O>(TheBuiltInClass_stamp,cl::_sym_built_in_class,_Unbound<core::Instance_O>());

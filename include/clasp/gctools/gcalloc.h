@@ -91,7 +91,7 @@ class root_allocator : public traceable_allocator<T> {};
 
 namespace gctools {
 #ifdef USE_BOEHM
-  inline Header_s* do_boehm_atomic_allocation(const Header_s::Value& the_header, size_t size) 
+  inline Header_s* do_boehm_atomic_allocation(const Header_s::StampWtagMtag& the_header, size_t size) 
   {
     RAII_DISABLE_INTERRUPTS();
     size_t true_size = size;
@@ -109,7 +109,7 @@ namespace gctools {
 #endif
     return header;
   };
-  inline Header_s* do_boehm_normal_allocation(const Header_s::Value& the_header, size_t size) 
+  inline Header_s* do_boehm_normal_allocation(const Header_s::StampWtagMtag& the_header, size_t size) 
   {
     RAII_DISABLE_INTERRUPTS();
     size_t true_size = size;
@@ -127,7 +127,7 @@ namespace gctools {
 #endif
     return header;
   };
-  inline Header_s* do_boehm_uncollectable_allocation(const Header_s::Value& the_header, size_t size) 
+  inline Header_s* do_boehm_uncollectable_allocation(const Header_s::StampWtagMtag& the_header, size_t size) 
   {
     RAII_DISABLE_INTERRUPTS();
     size_t true_size = size;
@@ -193,7 +193,7 @@ extern void bad_general_mps_reserve_error(mps_ap_t* allocation_point);
 #else
     inline
 #endif
-     PTR_TYPE general_mps_allocation(const Header_s::Value& the_header,
+     PTR_TYPE general_mps_allocation(const Header_s::StampWtagMtag& the_header,
                                       size_t size,
                                       mps_ap_t& allocation_point,
                                       ARGS &&... args) {
@@ -203,42 +203,42 @@ extern void bad_general_mps_reserve_error(mps_ap_t* allocation_point);
     RAII_DEBUG_RECURSIVE_ALLOCATIONS();
     PTR_TYPE tagged_obj;
     T* obj;
-    size_t true_size = size;
+    size_t allocate_size = size;
 #ifdef DEBUG_GUARD
     size_t tail_size = ((rand()%8)+1)*Alignment();
-    true_size += tail_size;
+    allocate_size += tail_size;
 #endif
     HeadT *header;
     { RAII_DISABLE_INTERRUPTS(); 
       do {
-        mps_res_t res = mps_reserve(&addr, allocation_point, true_size);
+        mps_res_t res = mps_reserve(&addr, allocation_point, allocate_size);
         if ( res != MPS_RES_OK ) bad_general_mps_reserve_error(&allocation_point);
         header = reinterpret_cast<HeadT *>(addr);
 #ifdef DEBUG_GUARD
-        memset(header,0x00,true_size);
-        new (header) HeadT(the_header,size,tail_size, true_size);
+        memset(header,0x00,allocate_size);
+        new (header) HeadT(the_header,size,tail_size, allocate_size);
 #else
         new (header) HeadT(the_header);
 #endif
         obj = BasePtrToMostDerivedPtr<typename PTR_TYPE::Type>(addr);
         new (obj) (typename PTR_TYPE::Type)(std::forward<ARGS>(args)...);
         tagged_obj = PTR_TYPE(obj);
-      } while (!mps_commit(allocation_point, addr, true_size));
-      my_thread_low_level->_Allocations.registerAllocation(the_header.unshifted_stamp(),true_size);
+      } while (!mps_commit(allocation_point, addr, allocate_size));
+      my_thread_low_level->_Allocations.registerAllocation(the_header.unshifted_stamp(),allocate_size);
     }
 #ifdef DEBUG_VALIDATE_GUARD
     header->validate();
 #endif
     DEBUG_MPS_UNDERSCANNING_TESTS();
     handle_all_queued_interrupts();
-    globalMpsMetrics.totalMemoryAllocated += true_size;
+    globalMpsMetrics.totalMemoryAllocated += allocate_size;
 #ifdef DEBUG_MPS_SIZE
     {
       mps_addr_t nextClient = obj_skip((mps_addr_t)obj);
       int skip_size = (int)((char*)nextClient-(char*)obj);
-      if (skip_size != true_size) {
-        printf("%s:%d Bad size calc obj_skip(stamp %u) - true_size -> %lu  obj_skip -> %d delta -> %d\n",
-               __FILE__, __LINE__, header->stamp(), true_size, skip_size, ((int)true_size-(int)skip_size) );
+      if (skip_size != allocate_size) {
+        printf("%s:%d Bad size calc header@%p header->stamp_wtag_mtag._value(%lu) obj_skip(stamp %u) allocate_size -> %lu  obj_skip -> %d delta -> %d\n",
+               __FILE__, __LINE__, (void*)header, (size_t)header->_stamp_wtag_mtag._value, header->stamp_(), allocate_size, skip_size, ((int)allocate_size-(int)skip_size) );
         mps_addr_t againNextClient = obj_skip((mps_addr_t)obj);
 #ifdef DEBUG_GUARD
         printf("      header-size= %lu size= %zu tail_size=%lu \n", sizeof(HeadT), size, tail_size );
@@ -293,11 +293,11 @@ extern void bad_general_mps_reserve_error(mps_ap_t* allocation_point);
     struct RootClassAllocator {
       template <class... ARGS>
       static gctools::tagged_pointer<T> allocate( ARGS &&... args) {
-        return allocate_kind(Header_s::Value::make<T>(),sizeof_with_header<T>(),std::forward<ARGS>(args)...);
+        return allocate_kind(Header_s::StampWtagMtag::make<T>(),sizeof_with_header<T>(),std::forward<ARGS>(args)...);
       };
 
       template <class... ARGS>
-      static gctools::tagged_pointer<T> allocate_kind(const Header_s::Value& the_header, size_t size, ARGS &&... args) {
+      static gctools::tagged_pointer<T> allocate_kind(const Header_s::StampWtagMtag& the_header, size_t size, ARGS &&... args) {
 #ifdef USE_BOEHM
         Header_s* base = do_boehm_uncollectable_allocation(the_header,size);
         T *obj = BasePtrToMostDerivedPtr<T>(base);
@@ -382,7 +382,7 @@ namespace gctools {
       typedef OT *pointer_type;
       typedef smart_ptr<OT> smart_pointer_type;
       template <typename... ARGS>
-      static smart_pointer_type allocate_in_appropriate_pool_kind(const Header_s::Value& the_header, size_t size, ARGS &&... args) {
+      static smart_pointer_type allocate_in_appropriate_pool_kind(const Header_s::StampWtagMtag& the_header, size_t size, ARGS &&... args) {
 #ifdef USE_BOEHM
         Header_s* base = do_boehm_normal_allocation(the_header,size);
         pointer_type ptr = BasePtrToMostDerivedPtr<OT>(base);
@@ -411,7 +411,7 @@ namespace gctools {
     typedef OT *pointer_type;
     typedef smart_ptr<OT> smart_pointer_type;
     template <typename... ARGS>
-      static smart_pointer_type allocate_in_appropriate_pool_kind( const Header_s::Value& the_header, size_t size, ARGS &&... args) {
+      static smart_pointer_type allocate_in_appropriate_pool_kind( const Header_s::StampWtagMtag& the_header, size_t size, ARGS &&... args) {
 #ifdef USE_BOEHM
     // Atomic objects (do not contain pointers) are allocated in separate pool
       Header_s* base = do_boehm_atomic_allocation(the_header,size);
@@ -445,7 +445,7 @@ When would I ever want the GC to automatically collect objects but not move them
     typedef OT *pointer_type;
     typedef /*gctools::*/ smart_ptr<OT> smart_pointer_type;
     template <typename... ARGS>
-      static smart_pointer_type allocate_in_appropriate_pool_kind( const Header_s::Value& the_header, size_t size, ARGS &&... args) {
+      static smart_pointer_type allocate_in_appropriate_pool_kind( const Header_s::StampWtagMtag& the_header, size_t size, ARGS &&... args) {
 #ifdef USE_BOEHM
       Header_s* base = do_boehm_normal_allocation(the_header,size);
       pointer_type ptr = BasePtrToMostDerivedPtr<OT>(base);
@@ -478,7 +478,7 @@ should not be managed by the GC */
     typedef OT *pointer_type;
     typedef /*gctools::*/ smart_ptr<OT> smart_pointer_type;
     template <typename... ARGS>
-      static smart_pointer_type allocate_in_appropriate_pool_kind( const Header_s::Value& the_header, size_t size, ARGS &&... args) {
+      static smart_pointer_type allocate_in_appropriate_pool_kind( const Header_s::StampWtagMtag& the_header, size_t size, ARGS &&... args) {
 #ifdef USE_BOEHM
       Header_s* base = do_boehm_uncollectable_allocation(the_header,size);
       OT *obj = BasePtrToMostDerivedPtr<OT>(base);
@@ -574,7 +574,7 @@ namespace gctools {
       return root_allocate_kind(GCStamp<OT>::Stamp,sizeof_with_header<OT>(),std::forward<ARGS>(args)...);
     }
     template <typename... ARGS>
-      static smart_pointer_type root_allocate_kind( const Header_s::Value& the_header, size_t size, ARGS &&... args) {
+      static smart_pointer_type root_allocate_kind( const Header_s::StampWtagMtag& the_header, size_t size, ARGS &&... args) {
 #ifdef USE_BOEHM
       Header_s* base = do_boehm_uncollectable_allocation(the_header,size);
       pointer_type ptr = BasePtrToMostDerivedPtr<OT>(base);
@@ -594,7 +594,7 @@ namespace gctools {
     };
 
     template <typename... ARGS>
-      static smart_pointer_type allocate_kind(const Header_s::Value& the_header, size_t size, ARGS &&... args) {
+      static smart_pointer_type allocate_kind(const Header_s::StampWtagMtag& the_header, size_t size, ARGS &&... args) {
 #ifdef USE_BOEHM
       smart_pointer_type sp = GCObjectAppropriatePoolAllocator<OT, GCInfo<OT>::Policy>::allocate_in_appropriate_pool_kind(the_header,size,std::forward<ARGS>(args)...);
       GCObjectInitializer<OT, /*gctools::*/ GCInfo<OT>::NeedsInitialization>::initializeIfNeeded(sp);
@@ -614,7 +614,7 @@ namespace gctools {
     };
 
     template <typename... ARGS>
-    static smart_pointer_type static_allocate_kind(const Header_s::Value& the_header, size_t size, ARGS &&... args) {
+    static smart_pointer_type static_allocate_kind(const Header_s::StampWtagMtag& the_header, size_t size, ARGS &&... args) {
 #ifdef USE_BOEHM
       smart_pointer_type sp = GCObjectAppropriatePoolAllocator<OT, unmanaged>::allocate_in_appropriate_pool_kind(the_header,size,std::forward<ARGS>(args)...);
       GCObjectInitializer<OT, GCInfo<OT>::NeedsInitialization>::initializeIfNeeded(sp);
@@ -637,7 +637,7 @@ namespace gctools {
     static smart_pointer_type register_class_with_redeye() {
       throw_hard_error("Never call this - it's only used to register with the redeye static analyzer");
     }
-    static smart_pointer_type copy_kind(const Header_s::Value& the_header, size_t size, const OT &that) {
+    static smart_pointer_type copy_kind(const Header_s::StampWtagMtag& the_header, size_t size, const OT &that) {
 #ifdef USE_BOEHM
     // Copied objects must be allocated in the appropriate pool
       smart_pointer_type sp = GCObjectAppropriatePoolAllocator<OT, GCInfo<OT>::Policy>::allocate_in_appropriate_pool_kind(  the_header, size, that);
@@ -666,7 +666,7 @@ namespace gctools {
 
   template <class OT>
     struct GCObjectDefaultConstructorAllocator<OT,true> {
-    static smart_ptr<OT> allocate(const Header_s::Value& kind) {
+    static smart_ptr<OT> allocate(const Header_s::StampWtagMtag& kind) {
       // FIXSTAMP
       return GCObjectAllocator<OT>::allocate_kind(kind, sizeof_with_header<OT>());
     }
@@ -674,7 +674,7 @@ namespace gctools {
 
   template <class OT>
     struct GCObjectDefaultConstructorAllocator<OT,false> {
-    [[noreturn]] static smart_ptr<OT> allocate(const Header_s::Value& kind) {
+    [[noreturn]] static smart_ptr<OT> allocate(const Header_s::StampWtagMtag& kind) {
       lisp_errorCannotAllocateInstanceWithMissingDefaultConstructor(OT::static_classSymbol());
     }
   };
@@ -691,12 +691,12 @@ namespace gctools {
   public:
     template <typename... ARGS>
       static smart_pointer_type root_allocate(ARGS &&... args) {
-      return GCObjectAllocator<OT>::root_allocate_kind(Header_s::Value::make<OT>(),sizeof_with_header<OT>(),std::forward<ARGS>(args)...);
+      return GCObjectAllocator<OT>::root_allocate_kind(Header_s::StampWtagMtag::make<OT>(),sizeof_with_header<OT>(),std::forward<ARGS>(args)...);
     }
 
     template <typename... ARGS>
       static smart_pointer_type root_allocate_with_stamp(ARGS &&... args) {
-      return GCObjectAllocator<OT>::root_allocate_kind(Header_s::Value::make<OT>(),sizeof_with_header<OT>(),std::forward<ARGS>(args)...);
+      return GCObjectAllocator<OT>::root_allocate_kind(Header_s::StampWtagMtag::make<OT>(),sizeof_with_header<OT>(),std::forward<ARGS>(args)...);
     }
 
     template <typename... ARGS>
@@ -706,26 +706,26 @@ namespace gctools {
     }
 
     template <typename... ARGS>
-      static smart_pointer_type allocate_kind( const Header_s::Value& kind, ARGS &&... args) {
+      static smart_pointer_type allocate_kind( const Header_s::StampWtagMtag& kind, ARGS &&... args) {
       size_t size = sizeof_with_header<OT>();
       return GCObjectAllocator<OT>::allocate_kind(kind,size, std::forward<ARGS>(args)...);
     }
 
     template <typename... ARGS>
-      static smart_pointer_type allocate_instance(const Header_s::Value& kind, size_t size, ARGS &&... args) {
+      static smart_pointer_type allocate_instance(const Header_s::StampWtagMtag& kind, size_t size, ARGS &&... args) {
       return GCObjectAllocator<OT>::allocate_kind(kind,size, std::forward<ARGS>(args)...);
     }
 
     template <typename... ARGS>
       static smart_pointer_type allocate( ARGS &&... args) {
-      auto kind = OT::static_HeaderValue;
+      auto kind = OT::static_StampWtagMtag;
       size_t size = sizeof_with_header<OT>();
       return GCObjectAllocator<OT>::allocate_kind(kind,size, std::forward<ARGS>(args)...);
     }
 
 
     static smart_pointer_type allocate_with_default_constructor() {
-      return GCObjectDefaultConstructorAllocator<OT,std::is_default_constructible<OT>::value>::allocate(OT::static_HeaderValue);
+      return GCObjectDefaultConstructorAllocator<OT,std::is_default_constructible<OT>::value>::allocate(OT::static_StampWtagMtag);
     }
 
     /*! Allocate enough space for capacity elements, but set the length to length */
@@ -737,8 +737,8 @@ namespace gctools {
     static smart_pointer_type allocate_container( bool static_container_p, size_t length, ARGS &&... args) {
       size_t capacity = length;
       size_t size = sizeof_container_with_header<OT>(capacity);
-      if (static_container_p) return GCObjectAllocator<OT>::static_allocate_kind(OT::static_HeaderValue,size,length,std::forward<ARGS>(args)...);
-      return GCObjectAllocator<OT>::allocate_kind(OT::static_HeaderValue,size,length,std::forward<ARGS>(args)...);
+      if (static_container_p) return GCObjectAllocator<OT>::static_allocate_kind(OT::static_StampWtagMtag,size,length,std::forward<ARGS>(args)...);
+      return GCObjectAllocator<OT>::allocate_kind(OT::static_StampWtagMtag,size,length,std::forward<ARGS>(args)...);
     }
 
     template <typename... ARGS>
@@ -747,10 +747,10 @@ namespace gctools {
       size_t capacity = length+1;
       size_t size = sizeof_container_with_header<OT>(capacity);
       if (static_container_p)
-        return GCObjectAllocator<OT>::static_allocate_kind(OT::static_HeaderValue, size, length,
+        return GCObjectAllocator<OT>::static_allocate_kind(OT::static_StampWtagMtag, size, length,
                                                            std::forward<ARGS>(args)...);
       else
-        return GCObjectAllocator<OT>::allocate_kind(OT::static_HeaderValue, size, length,
+        return GCObjectAllocator<OT>::allocate_kind(OT::static_StampWtagMtag, size, length,
                                                     std::forward<ARGS>(args)...);
     }
 
@@ -764,10 +764,10 @@ namespace gctools {
 #endif
       smart_pointer_type result;
       if (static_container_p)
-        result = GCObjectAllocator<OT>::static_allocate_kind(Header_s::Value::make<OT>(),size,length,
+        result = GCObjectAllocator<OT>::static_allocate_kind(Header_s::StampWtagMtag::make<OT>(),size,length,
                                                              std::forward<ARGS>(args)...);
       else
-        result = GCObjectAllocator<OT>::allocate_kind(Header_s::Value::make<OT>(),size,length,
+        result = GCObjectAllocator<OT>::allocate_kind(Header_s::StampWtagMtag::make<OT>(),size,length,
                                                       std::forward<ARGS>(args)...);
 #if DEBUG_BITUNIT_CONTAINER
       {
@@ -780,7 +780,7 @@ namespace gctools {
     }
     
     static smart_pointer_type copy(const OT &that) {
-      return GCObjectAllocator<OT>::copy_kind(Header_s::Value::make<OT>(),sizeof_with_header<OT>(),that);
+      return GCObjectAllocator<OT>::copy_kind(Header_s::StampWtagMtag::make<OT>(),sizeof_with_header<OT>(),that);
     }
 
     static void deallocate_unmanaged_instance(OT* obj) {
@@ -820,11 +820,11 @@ public:
 
     // allocate but don't initialize num elements of type value_type
   gc::tagged_pointer<container_type> allocate(size_type num, const void * = 0) {
-    return allocate_kind(Header_s::Value::make<TY>(),num);
+    return allocate_kind(Header_s::StampWtagMtag::make<TY>(),num);
   }
 
   // allocate but don't initialize num elements of type value_type
-  gc::tagged_pointer<container_type> allocate_kind(const Header_s::Value& the_header, size_type num, const void * = 0) {
+  gc::tagged_pointer<container_type> allocate_kind(const Header_s::StampWtagMtag& the_header, size_type num, const void * = 0) {
 #ifdef USE_BOEHM
     size_t size = sizeof_container_with_header<TY>(num);
     Header_s* base = do_boehm_normal_allocation(the_header,size);
@@ -928,7 +928,7 @@ public:
   }
 
   // allocate but don't initialize num elements of type value_type
-  gctools::tagged_pointer<container_type> allocate_kind( const Header_s::Value& the_header, size_type num, const void * = 0) {
+  gctools::tagged_pointer<container_type> allocate_kind( const Header_s::StampWtagMtag& the_header, size_type num, const void * = 0) {
 #ifdef USE_BOEHM
     size_t size = sizeof_container_with_header<TY>(num);
     // prepend a one pointer header with a pointer to the typeinfo.name

@@ -214,7 +214,8 @@ namespace core {
     typedef simple_element_type* iterator;
     typedef const simple_element_type* const_iterator;
   public:
-  Str8Ns_O(size_t dimension,
+      Str8Ns_O(size_t rank1,
+               size_t dimension,
            T_sp fillPointer,
            Array_sp data,
            bool displacedToP,
@@ -224,7 +225,7 @@ namespace core {
       LIKELY_if (dataOrDisplacedTo.nilp()) {
         dataOrDisplacedTo = SimpleBaseString_O::make(dimension,initElement,initialElementSuppliedP);
       }
-      auto s = gctools::GC<Str8Ns_O>::allocate_container(false,dimension,fillPointer,gc::As<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
+      auto s = gctools::GC<Str8Ns_O>::allocate_container(false,1/*CRANK*/,dimension,fillPointer,gc::As<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
       return s;
     }
     static Str8Ns_sp make(size_t dimension, claspChar initElement/*='\0'*/, bool initialElementSuppliedP/*=false*/, T_sp fillPointer/*=_Nil<T_O>()*/) {
@@ -278,7 +279,8 @@ namespace core {
     typedef simple_element_type* iterator;
     typedef const simple_element_type* const_iterator;
   public:
-  StrWNs_O(size_t dimension,
+      StrWNs_O(size_t rank1,
+               size_t dimension,
            T_sp fillPointer,
            Array_sp data,
            bool displacedToP,
@@ -288,7 +290,7 @@ namespace core {
       LIKELY_if (dataOrDisplacedTo.nilp()) {
         dataOrDisplacedTo = SimpleCharacterString_O::make(dimension,initElement,initialElementSuppliedP);
       }
-      auto s = gctools::GC<StrWNs_O>::allocate_container(false,dimension,fillPointer,gc::As<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
+      auto s = gctools::GC<StrWNs_O>::allocate_container(false,1/*CRANK*/,dimension,fillPointer,gc::As<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
       return s;
     }
     static StrWNs_sp make(size_t dimension, claspCharacter initElement/*='\0'*/, bool initialElementSuppliedP/*=false*/, T_sp fillPointer/*=_Nil<T_O>()*/) {

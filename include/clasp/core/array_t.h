@@ -85,11 +85,12 @@ class ComplexVector_T_O : public template_Vector<ComplexVector_T_O, SimpleVector
 public:
   typedef template_Vector<ComplexVector_T_O, SimpleVector_O, ComplexVector_O> TemplatedBase;
 public: // make vector
-  ComplexVector_T_O(size_t dimension,
-                    T_sp fillPointer,
-                    Array_sp data,
-                    bool displacedToP,
-                    Fixnum_sp displacedIndexOffset) : TemplatedBase(dimension, fillPointer, data,displacedToP, displacedIndexOffset ) {};
+    ComplexVector_T_O(size_t rank1,
+                      size_t dimension,
+                      T_sp fillPointer,
+                      Array_sp data,
+                      bool displacedToP,
+                      Fixnum_sp displacedIndexOffset) : TemplatedBase(dimension, fillPointer, data,displacedToP, displacedIndexOffset ) {};
 
   static ComplexVector_T_sp make( size_t dimension,
                                   T_sp initialElement /* =_Nil<T_O>() */,
@@ -100,12 +101,16 @@ public: // make vector
   {
     LIKELY_if (dataOrDisplacedTo.nilp())
       dataOrDisplacedTo = SimpleVector_O::make(dimension,initialElement,true);
-    ComplexVector_T_sp array = gctools::GC<ComplexVector_T_O>::allocate_container(false,dimension,fillPointer,gc::As_unsafe<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
+    ComplexVector_T_sp array = gctools::GC<ComplexVector_T_O>::allocate_container(false,1/*CRANK*/,dimension,fillPointer,gc::As_unsafe<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
     return array;
   }
-  static smart_ptr_type make(size_t dimension, simple_element_type initialElement,
-                             bool initialElementSuppliedP, T_sp fillPointer, T_sp dataOrDisplacedTo,
-                             bool displacedToP, Fixnum_sp displacedIndexOffset) {
+  static smart_ptr_type make(size_t dimension,
+                             simple_element_type initialElement,
+                             bool initialElementSuppliedP,
+                             T_sp fillPointer,
+                             T_sp dataOrDisplacedTo,
+                             bool displacedToP,
+                             Fixnum_sp displacedIndexOffset) {
     (void)initialElementSuppliedP;
     return make(dimension, initialElement, fillPointer, dataOrDisplacedTo, displacedToP, displacedIndexOffset);
   }

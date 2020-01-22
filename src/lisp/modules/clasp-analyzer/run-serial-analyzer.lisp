@@ -3,3 +3,9 @@
 (defparameter *compile-commands* "build/mpsprep/compile_commands.json")
 (time (clasp-analyzer:serial-search/generate-code (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database (pathname *compile-commands*))))
 (core:quit)
+
+#|
+
+(clasp-analyzer::generate-code clasp-analyzer::*analysis* :output-file "/tmp/project.cc")
+
+|#

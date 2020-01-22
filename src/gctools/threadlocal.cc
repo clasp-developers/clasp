@@ -198,6 +198,10 @@ namespace gctools {
 ThreadLocalStateLowLevel::ThreadLocalStateLowLevel(void* stack_top) :
   _DisableInterrupts(false)
   ,  _StackTop(stack_top)
+#ifdef DEBUG_RECURSIVE_ALLOCATIONS
+  , _RecursiveAllocationCounter(0)
+#endif
+  
 {};
 
 ThreadLocalStateLowLevel::~ThreadLocalStateLowLevel()
@@ -211,9 +215,6 @@ ThreadLocalState::ThreadLocalState() :
   _stackmap_size(0),
   _PendingInterrupts(_Nil<core::T_O>()),
   _CatchTags(_Nil<core::T_O>())
-#ifdef DEBUG_RECURSIVE_ALLOCATIONS
-  , _RecursiveAllocationCounter(0)
-#endif
   , _ObjectFileStartUp(NULL)
 {
   my_thread = this;

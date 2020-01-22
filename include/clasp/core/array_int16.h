@@ -83,7 +83,8 @@ namespace core {
   public:
     typedef template_Vector<ComplexVector_byte16_t_O,SimpleVector_byte16_t_O,ComplexVector_O> TemplatedBase;
   public: // make vector
-  ComplexVector_byte16_t_O(size_t dimension,
+      ComplexVector_byte16_t_O(size_t rank1,
+                               size_t dimension,
                           T_sp fillPointer,
                           Array_sp data,
                           bool displacedToP,
@@ -92,7 +93,7 @@ namespace core {
       LIKELY_if (dataOrDisplacedTo.nilp()) {
         dataOrDisplacedTo = simple_type::make(dimension,initialElement,true);
       }
-      return gctools::GC<my_type>::allocate_container(false,dimension,fillPointer,gc::As_unsafe<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
+      return gctools::GC<my_type>::allocate_container(false,1/*CRANK*/,dimension,fillPointer,gc::As_unsafe<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
     }
     static smart_ptr_type make_vector(size_t dimension) {
       return make_vector(dimension,0,_Nil<T_O>(),_Nil<T_O>(),false,clasp_make_fixnum(0));
@@ -194,7 +195,8 @@ namespace core {
   public:
     typedef template_Vector<ComplexVector_int16_t_O,SimpleVector_int16_t_O,ComplexVector_O> TemplatedBase;
   public: // make vector
-    ComplexVector_int16_t_O(size_t dimension,
+      ComplexVector_int16_t_O(size_t rank1,
+                              size_t dimension,
                            T_sp fillPointer,
                            Array_sp data,
                            bool displacedToP,
@@ -203,7 +205,7 @@ namespace core {
       LIKELY_if (dataOrDisplacedTo.nilp()) {
         dataOrDisplacedTo = simple_type::make(dimension,initialElement,true);
       }
-      return gctools::GC<my_type>::allocate_container(false,dimension,fillPointer,gc::As_unsafe<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
+      return gctools::GC<my_type>::allocate_container(false,1/*CRANK*/,dimension,fillPointer,gc::As_unsafe<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
     }
     static smart_ptr_type make_vector(size_t dimension) {
       return make_vector(dimension,0,_Nil<T_O>(),_Nil<T_O>(),false,clasp_make_fixnum(0));

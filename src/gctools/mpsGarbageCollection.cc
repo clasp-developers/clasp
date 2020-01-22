@@ -147,7 +147,7 @@ MpsMetrics globalMpsMetrics;
 */
 
 #ifdef DEBUG_MPS_UNDERSCANNING
-bool global_underscanning = DEBUG_MPS_UNDERSCANNING_INITIAL;
+    bool global_underscanning = true;
 #else
 bool global_underscanning = false;
 #endif
@@ -663,7 +663,7 @@ size_t processMpsMessages(size_t& finalizations) {
 #endif
         if (!invoked_finalizer && obj.generalp()) obj_finalize(ref_o);
       } else {
-        printf("%s:%d No finalization message for %p reconstituted tagged ptr = %p stamp->%u  - it's a dead_object - I can't figure out what pool it belonged to (unknown if it is a General_O object or a Cons_O)\n", __FILE__, __LINE__, (void*)ref_o, (void*)obj.tagged_(), gctools::header_pointer(ref_o)->stamp());
+        printf("%s:%d No finalization message for %p reconstituted tagged ptr = %p stamp->%u  - it's a dead_object - I can't figure out what pool it belonged to (unknown if it is a General_O object or a Cons_O)\n", __FILE__, __LINE__, (void*)ref_o, (void*)obj.tagged_(), gctools::header_pointer(ref_o)->stamp_());
       }
         
     } else {

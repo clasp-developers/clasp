@@ -72,7 +72,8 @@ namespace core {
   public:
     typedef template_Vector<ComplexVector_byte2_t_O,SimpleVector_byte2_t_O,ComplexVector_O> TemplatedBase;
   public: // make vector
-  ComplexVector_byte2_t_O(size_t dimension,
+      ComplexVector_byte2_t_O(size_t rank1,
+                              size_t dimension,
                           T_sp fillPointer,
                           Array_sp data,
                           bool displacedToP,
@@ -82,7 +83,7 @@ namespace core {
                                bool displacedToP, Fixnum_sp displacedIndexOffset) {
       LIKELY_if (dataOrDisplacedTo.nilp())
         dataOrDisplacedTo = simple_type::make(dimension, initialElement, initialElementSuppliedP);
-      return gctools::GC<my_type>::allocate_container(false,dimension,fillPointer,gc::As_unsafe<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
+      return gctools::GC<my_type>::allocate_container(false,1/*CRANK*/,dimension,fillPointer,gc::As_unsafe<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
     }
   };
 };
@@ -161,7 +162,8 @@ namespace core {
   public:
     typedef template_Vector<ComplexVector_int2_t_O,SimpleVector_int2_t_O,ComplexVector_O> TemplatedBase;
   public: // make vector
-  ComplexVector_int2_t_O(size_t dimension,
+      ComplexVector_int2_t_O(size_t rank1,
+                             size_t dimension,
                           T_sp fillPointer,
                           Array_sp data,
                           bool displacedToP,
@@ -171,7 +173,7 @@ namespace core {
                                bool displacedToP, Fixnum_sp displacedIndexOffset) {
       LIKELY_if (dataOrDisplacedTo.nilp())
         dataOrDisplacedTo = simple_type::make(dimension, initialElement, initialElementSuppliedP);
-      return gctools::GC<my_type>::allocate_container(false,dimension,fillPointer,gc::As_unsafe<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
+      return gctools::GC<my_type>::allocate_container(false,1/*CRANK*/,dimension,fillPointer,gc::As_unsafe<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
     }
   };
 };

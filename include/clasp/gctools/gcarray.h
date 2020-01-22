@@ -133,7 +133,7 @@ public:
   void allocate(const value_type &initial_element, size_t length,bool initElementSupplied=true) {
     GCTOOLS_ASSERTF(!(this->_Contents), "GCArray allocate called and array is already defined");
     allocator_type alloc;
-    tagged_pointer_to_moveable implAddress = alloc.allocate_kind(Header_s::Value::make<impl_type>(),length);
+    tagged_pointer_to_moveable implAddress = alloc.allocate_kind(Header_s::StampWtagMtag::make<impl_type>(),length);
     new (&*implAddress) GCArray_moveable<value_type>(length,initial_element,initElementSupplied );
 #if 0
     for (size_t i(sizeof...(ARGS)); i < (sizeof...(ARGS)+numExtraArgs); ++i) {
@@ -149,7 +149,7 @@ public:
     void allocate(const value_type &initial_element, size_t length), ARGS &&... args) {
     GCTOOLS_ASSERTF(!(this->_Contents), BF("GCArray allocate called and array is already defined"));
     allocator_type alloc;
-    tagged_pointer_to_moveable implAddress = alloc.allocate_kind(Header_s::Value::make<impl_type>(),length);
+    tagged_pointer_to_moveable implAddress = alloc.allocate_kind(Header_s::StampWtagMtag::make<impl_type>(),length);
     new (&*implAddress) GCArray_moveable<value_type>(initial_element, length, std::forward<ARGS>(args)...);
 #if 0
     for (size_t i(sizeof...(ARGS)); i < (sizeof...(ARGS)+numExtraArgs); ++i) {

@@ -224,6 +224,39 @@
 (defun reset-stamp-value-generator (analysis)
   (setf (analysis-stamp-value-generator analysis) (make-instance 'stamp-value-generator)))
 
+
+(defconstant +wtag-shift+    2)
+(defconstant +derivable-wtag+ #B00)
+(defconstant +rack-wtag+      #B01)
+(defconstant +wrapped-wtag+   #B10)
+(defconstant +header-wtag+    #B11)
+(defconstant +max-wtag+       #B11)
+
+#+(or)
+(defmethod stamp-value ((class gc-managed-type) &optional stamp)
+  (if stamp
+      (logior (ash stamp +wtag-shift+) +max-wtag+)
+      (logior (ash (stamp% class) +wtag-shift+) +header-wtag+)))
+
+
+(defmethod calculate-stamp-where-unshifted (stamp-value cclass)
+  "Shift the stamp-value by +wtag-shift+ and or in the where tag based
+on the cclass. 
+This could change the value of stamps for specific classes - but that would break quick typechecks like (typeq x Number)"
+;;;  (format t "Assigning stamp-value for class ~s~%" (class-key% class))
+  (cond ((member (cclass-key cclass) '("core::Instance_O" "core::FuncallableInstance_O" "clbind::ClassRep_O") :test #'string=)
+;;;         (format t "---> stamp in rack~%")
+         (logior (ash stamp-value +wtag-shift+) +rack-wtag+))
+        ((member (cclass-key cclass) '("core::WrappedPointer_O") :test #'string=)
+;;;         (format t "---> stamp in wrapped~%")
+         (logior (ash stamp-value +wtag-shift+) +wrapped-wtag+))
+        ((member (cclass-key cclass) '("core::DerivableCxxObject_O") :test #'string=)
+;;;         (format t "---> stamp in derivable~%")
+         (logior (ash stamp-value +wtag-shift+) +derivable-wtag+))
+        (t
+;;;         (format t "---> stamp in header~%")
+         (logior (ash stamp-value +wtag-shift+) +header-wtag+))))
+
 (defun assign-stamp-value (analysis stamp operation)
   (let ((stamp-value (stamp-value% stamp))
         (generator (analysis-stamp-value-generator analysis))
@@ -239,7 +272,9 @@
             (remhash stamp-name (unused-builtin-stamps generator))
             (setf (gethash stamp-name (used-builtin-stamps generator)) scraper-stamp))
           (setf stamp-value (incf (next-stamp-value generator)))))
-    stamp-value))
+    (if (integerp stamp-value)
+        (calculate-stamp-where-unshifted stamp-value (stamp-cclass stamp))
+        stamp-value)))
 
 (defmethod print-object ((object analysis) stream)
   (format stream "#<analysis>"))
@@ -313,6 +348,8 @@
   :no-stamp-value)
 
 (defun traverse-inheritance-tree (name analysis operation root-cclass assign-stamp-value-function)
+  (unless  (member assign-stamp-value-function '(assign-stamp-value no-stamp-value))
+          (error "bad assign-stamp-function"))
   (let* ((stamp (let ((stamp (gethash name (analysis-stamps analysis))))
                   (unless stamp
                     (error "Could not find stamp for ~a" name))
@@ -385,8 +422,12 @@
             for x = (first cur)
             for y = (second cur)
             while y
-            if (/= (- (car y) (car x)) 1)
-              do (return-from verify (values nil)))
+            do (let* ((stamp-where-x (car x))
+                      (stamp-x (ash stamp-where-x (- +wtag-shift+)))
+                      (stamp-where-y (car y))
+                      (stamp-y (ash stamp-where-y (- +wtag-shift+))))
+                 (if (/= (- stamp-y stamp-x) 1)
+                     (return-from verify (values nil)))))
       (let* ((first-stamp-value (car (first sorted-stamp-values)))
              (last-pair (car (last sorted-stamp-values)))
              (last-stamp-value (car last-pair))
@@ -399,42 +440,6 @@
     (verify-stamp-values-are-contiguous-return-range *accumulate-stamps*)))
 
 
-(defgeneric stamp-value (class &optional stamp))
-
-
-(defconstant +stamp-shift+    2)
-(defconstant +derivable-wtag+ #B00)
-(defconstant +rack-wtag+      #B01)
-(defconstant +wrapped-wtag+   #B10)
-(defconstant +header-wtag+    #B11)
-(defconstant +max-wtag+       #B11)
-
-#+(or)
-(defmethod stamp-value ((class gc-managed-type) &optional stamp)
-  (if stamp
-      (logior (ash stamp +stamp-shift+) +max-wtag+)
-      (logior (ash (stamp% class) +stamp-shift+) +header-wtag+)))
-
-
-(defmethod stamp-value ((class cclass) &optional stamp)
-  "This could change the value of stamps for specific classes - but that would break quick typechecks like (typeq x Number)"
-;;;  (format t "Assigning stamp-value for class ~s~%" (class-key% class))
-  (if stamp
-      (logior (ash stamp +stamp-shift+) +max-wtag+) ;; Cover the entire range
-      (cond ((member (cclass-key% class) '("core::Instance_O" "core::FuncallableInstance_O" "clbind::ClassRep_O") :test #'string=)
-;;;         (format t "---> stamp in rack~%")
-             (logior (ash (cclass-stamp% class) +stamp-shift+) +rack-wtag+))
-            ((member (cclass-key% class) '("core::WrappedPointer_O") :test #'string=)
-;;;         (format t "---> stamp in wrapped~%")
-             (logior (ash (cclass-stamp% class) +stamp-shift+) +wrapped-wtag+))
-            ((member (cclass-key% class) '("core::DerivableCxxObject_O") :test #'string=)
-;;;         (format t "---> stamp in derivable~%")
-             (logior (ash (cclass-stamp% class) +stamp-shift+) +derivable-wtag+))
-            (t
-;;;         (format t "---> stamp in header~%")
-             (logior (ash (cclass-stamp% class) +stamp-shift+) +header-wtag+)))))
-
-
 
 (defun generate-dynamic-cast-code (fout analysis)
   (maphash (lambda (key stamp) 
@@ -444,7 +449,7 @@
                         (not (eq (stamp-value% stamp) :no-stamp-value)))
                (format fout "// ~a~%" (get-stamp-name stamp))
                (format fout "template <typename FP> struct Cast<~a*,FP> {~%" key )
-               (format fout "  inline static bool isA(FP client) {~%" key)
+               (format fout "  inline static bool isA(FP client) {~%")
                (format fout "      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));~%")
                (format fout "      int kindVal = header->shifted_stamp();~%")
                (multiple-value-bind (contig stamp-value-low stamp-value-high)
@@ -772,7 +777,7 @@ to expose."
                         (offset-type-c++-identifier one)
                         (maybe-fixup-type (ctype-key (element-type array)) (offset-base-ctype array))
                         ;;                      (maybe-fixup-type (ctype-key (offset-type one)) (ctype-key (base one)))
-                        (ctype-key (base one))))))))))
+                        #+(or)(ctype-key (base one))))))))))
 
 
 (defun expose-fixed-field-type (type-name)
@@ -786,13 +791,13 @@ to expose."
            (public (mapcar (lambda (iv) (eq (instance-field-access iv) 'ast-tooling:as-public)) (fields one)))
            (all-public (every #'identity public))
            (good-name (not (is-bad-special-case-variable-name (layout-offset-field-names one))))
-           (expose-it (and (or all-public fixable)
+           (expose-it (and (and all-public fixable)
 			   good-name
 			   (expose-fixed-field-type (offset-type-c++-identifier one))))
            (base (base one)) ;; The outermost class that contains this offset
            (*print-pretty* nil))
       (format stream "~a {  fixed_field, ~a, sizeof(~a), offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), \"~{~a~}\" }, // public: ~a fixable: ~a good-name: ~a~%"
-              (if expose-it "" "// not-exposing")
+              (if expose-it   "" "// not-exposing")
               (offset-type-c++-identifier one)
               (or (offset-ctype one) "UnknownType")
               (offset-base-ctype one)
@@ -854,12 +859,14 @@ to expose to C++.
   (let ((nodes (call-next-method)))
     (format t "linearize-class-layout-impl for gcbitunitarray-moveable-ctype  nodes -> ~a~%" nodes)
     (let* ((arguments (gcbitunitarray-moveable-ctype-arguments x))
+           (_ (format t "gccbitunitarray-moveable-ctype-arguments: ~s~%" arguments))
            (arg0 (find 0 arguments :test #'eql :key #'gc-template-argument-index))
            (arg0-integral-value (gc-template-argument-integral-value arg0))
            (arg1 (find 1 arguments :test #'eql :key #'gc-template-argument-index))
            (arg1-ctype (gc-template-argument-ctype arg1))
-           (arg2 (find 2 arguments :test #'eql :key #'gc-template-argument-index))
-           (arg2-ctype (gc-template-argument-ctype arg2)))
+           #+(or)(arg2 (find 2 arguments :test #'eql :key #'gc-template-argument-index))
+           #+(or)(arg2-ctype (gc-template-argument-ctype arg2))
+           )
       (unless (member arg0-integral-value '("1" "2" "4") :test #'string=)
         (error "The argument ~s, which describes the bit width of a bitunit, must be a positive integer 1,2, or 4 - it is not" arg0-integral-value))
       (list (make-instance 'gcbitunitarray-offset
@@ -869,7 +876,7 @@ to expose to C++.
                            :elements-base nil
                            :elements (make-bitunit-ctype :bitunit-width (parse-integer arg0-integral-value)
                                                          :unsigned-type arg1-ctype
-                                                         :signed-type arg2-ctype))))))
+                                                         #|:signed-type arg2-ctype|#))))))
 
 (defmethod linearize-class-layout-impl ((x cclass) base analysis)
   (let* ((project (analysis-project analysis))
@@ -1255,9 +1262,9 @@ can be saved and reloaded within the project for later analysis"
   (let ((element-type (classify-ctype (cast:get-type-ptr-or-null (cast:get-element-type x)))))
     (make-incomplete-array-ctype :key (record-key x) :element-type element-type)))
 
-
 (defmethod classify-ctype ((x cast:paren-type))
-  (make-paren-ctype :inner (classify-ctype (cast:get-type-ptr-or-null (cast:get-inner-type x)))))
+  (error "Should not be called")
+  #+(or)(make-paren-ctype :inner (classify-ctype (cast:get-type-ptr-or-null (cast:get-inner-type x)))))
 
 (defmethod classify-ctype ((x builtin-type))
   (make-builtin-ctype :key (record-key x)))
@@ -1895,6 +1902,7 @@ and the inheritance hierarchy that the garbage collector will need"
     (:has-name "GCInfo"))
   )
 
+#+(or)
 (defun setup-gcinfo-search (mtool)
   "Setup the TOOL (multitool) to look for instance variables that we want to garbage collect
 and the inheritance hierarchy that the garbage collector will need"
@@ -2186,6 +2194,7 @@ so that they don't have to be constantly recalculated"
         (push species hits)))
     (cond
       ((> (length hits) 1)
+       (format t "Identifies as multiple species: ~s~%" (mapcar #'species-name hits))p
        (error "The class ~a could not be uniquely distinguished between the species: ~a" aclass hits))
       ((eql (length hits) 1)
        (car hits))
@@ -2249,7 +2258,7 @@ so that they don't have to be constantly recalculated"
                                  (warn "Since ~a is templated it must be a templated-stamp - but there is already a simple-stamp defined with this key - this error happened probably because you tried to allocate the TemplateBase of templated classes - don't do that!!" key))
                                (setf (gethash key (analysis-stamps analysis))
                                      (make-templated-stamp :key key
-                                                          :value :unassigned
+                                                          :value% :unassigned
                                                           :cclass single-base
                                                           :species species)))))))
            ;; save every alloc associated with this templated-stamp
@@ -2260,7 +2269,7 @@ so that they don't have to be constantly recalculated"
            (setq class (make-cclass :key class-key)))
          (setf (gethash class-key (analysis-stamps analysis))
                (make-simple-stamp :key class-key
-                                 :value :unassigned
+                                 :value% :unassigned
                                  :cclass class
                                  :alloc alloc
                                  :species species)))))))
@@ -2720,17 +2729,24 @@ so that they don't have to be constantly recalculated"
                                        :dump 'dumper-for-templated-lispallocs
                                        :finalize 'finalizer-for-templated-lispallocs
                                        :deallocator 'deallocator-for-templated-lispallocs))
-    (add-species manager (make-species :name (intern (format nil "GCBITUNITCONTAINER~a" 1) :keyword)
-                                       :discriminator (lambda (x)
-                                                        (let* ((match-string (format nil "gctools::GCBitUnitArray_moveable<~a," 1))
-                                                               (containeralloc (containeralloc-p x))
-                                                               (key-match (search match-string (alloc-key x))))
-                                                          (and containeralloc key-match)))
-                                       :bitwidth 1
-                                       :scan 'scanner-for-gcbitunit ;; don't need to scan but do need to calculate size
-                                       :dump 'dumper-for-gcbitunit
-                                       :finalize 'finalizer-for-gcbitunit
-                                       :deallocator 'deallocator-for-gcbitunit)) 
+    (loop for cur-bitwidth in '(1 2 4)
+          for cur-species-name = (intern (format nil "GCBITUNITCONTAINER~a" cur-bitwidth) :keyword)
+          do (add-species manager (make-species :name cur-species-name
+                                                :discriminator (let ((bitwidth cur-bitwidth)
+                                                                     (species-name cur-species-name))
+                                                                 (lambda (x)
+                                                                   (let* ((match-string (format nil "gctools::GCBitUnitArray_moveable<~a," bitwidth))
+                                                                          (containeralloc (containeralloc-p x))
+                                                                          (key-match (search match-string (alloc-key x))))
+                                                                     (when (and containeralloc key-match)
+                                                                       (format t "Matched a match-string: ~s with (alloc-key x): ~s~%" match-string (alloc-key x))
+                                                                       (format t "      species-name: ~s~%" species-name)
+                                                                       t))))
+                                                :bitwidth cur-bitwidth
+                                                :scan 'scanner-for-gcbitunit ;; don't need to scan but do need to calculate size
+                                                :dump 'dumper-for-gcbitunit
+                                                :finalize 'finalizer-for-gcbitunit
+                                                :deallocator 'deallocator-for-gcbitunit)))
     manager))
 
 
@@ -3273,11 +3289,15 @@ Recursively analyze x and return T if x contains fixable pointers."
 
 (defun generate-alloc-stamp (&optional (fout t) (analysis *analysis*))
   (let ((maxstamp 0))
-    (format fout "STAMP_null = 0, ~%")
+    (format fout "STAMP_null = ADJUST_STAMP(0), ~%")
     #+(or)(let ((hardwired-kinds (core:hardwired-kinds)))
             (mapc (lambda (kv) (format fout "STAMP_~a = ADJUST_STAMP(~a), ~%" (car kv) (cdr kv))) hardwired-kinds))
     (mapc (lambda (stamp)
-            (format fout "~A = ~A,~%" (get-stamp-name stamp) (stamp-value% stamp))
+            (format fout "~A = ADJUST_STAMP(~A), // Stamp(~a)  wtag(~a)~%"
+                    (get-stamp-name stamp)
+                    (stamp-value% stamp)
+                    (ash (stamp-value% stamp) (- +wtag-shift+))
+                    (logand (stamp-value% stamp) +max-wtag+))
             #+(or)(when (and (eq (stamp-value-source stamp) :from-static-analyzer)
                        (null (cclass-template-specializer (stamp-cclass stamp)))
                        (not (inherits-from-multiple-classes (stamp-cclass stamp)))
@@ -3593,7 +3613,8 @@ Setup all of the ASTMatcher tools for the clasp-analyzer."
       ;;        (:is-definition)
       ;;        (:is-template-instantiation)
       (:matches-name ".*GCInfo.*")))
-  (match-count *test-matcher*
+  (error "match-count is undefined")
+  #+(or)(match-count *test-matcher*
                :limit 100
                ;;              :tag :point
                :match-comments '( ".*mytest.*" )
@@ -3615,9 +3636,11 @@ Setup all of the ASTMatcher tools for the clasp-analyzer."
 
 
 
+#+(or)
 (defun serial-search-only (&key test arguments-adjuster)
     (setup-*tools*)
     (serial-search-all :test test :arguments-adjuster arguments-adjuster))
+#+(or)
 (export 'serial-search-only)
 
 (defun serial-search-all (compilation-tool-database &key (output-file (merge-pathnames #P"project.dat" (clang-tool:main-pathname compilation-tool-database))) (save-project t))
@@ -3733,12 +3756,14 @@ If the source location of a match contains the string source-path-identifier the
 (defvar *analysis*)
 (defun serial-search/generate-code (compilation-tool-database &key (output-file (merge-pathnames #P"project.dat" (clang-tool:main-pathname compilation-tool-database))))
   (clang-tool:with-compilation-tool-database
-   compilation-tool-database
+    compilation-tool-database
     (setf *project* (serial-search-all compilation-tool-database :output-file output-file))
-    (let ((analysis (analyze-project *project*)))
+    (let ((analysis (analyze-project *project*))
+          (output-pathname (make-pathname :type "cc" :defaults output-file)))
       (setq *analysis* analysis)
       (setf (analysis-inline analysis) '("core::Cons_O"))
-      (generate-code analysis :output-file (make-pathname :type "cc" :defaults output-file)))
+      (generate-code analysis :output-file output-pathname)
+      (format t "!~%!~%!   Search done - code generated to ~a~%" output-pathname))
     *project*))
 
 (defun analyze-only (compilation-tool-database &key (output-file (merge-pathnames #P"project.dat" (clang-tool:main-pathname compilation-tool-database))))
@@ -3748,6 +3773,7 @@ If the source location of a match contains the string source-path-identifier the
       (generate-code analysis :output-file (make-pathname :type "cc" :defaults output-file)))
     *project*))
 
+#+(or)
 (defun parallel-search/generate-code (compilation-tool-database
                                       &key (output-file (merge-pathnames #P"project.dat" (clang-tool:main-pathname compilation-tool-database)))
                                         pjobs)
