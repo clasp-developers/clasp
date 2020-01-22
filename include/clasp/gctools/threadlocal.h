@@ -57,6 +57,8 @@ namespace core {
     gctools::GCRootsInModule*  _GCRoots;
     void* _sigaltstack_buffer;
     stack_t _original_stack;
+    void*             _text_segment_start; // Temporarily store text segment start
+    size_t            _text_segment_size; // store text segment size
     uintptr_t         _stackmap;
     size_t            _stackmap_size;
     StartupInfo       _Startup;

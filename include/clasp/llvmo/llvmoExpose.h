@@ -4473,8 +4473,22 @@ struct gctools::GCInfo<llvmo::ClaspJIT_O> {
 
 namespace llvmo {
 
+
+struct ObjectFileInfo {
+  void*     _object_file_start;
+  size_t    _object_file_size;
+  void*     _text_segment_start;
+  size_t    _text_segment_size;
+  void*     _stackmap_start;
+  size_t    _stackmap_size;
+  ObjectFileInfo* _next;
+};
+
 class ClaspJIT_O : public core::General_O {
   LISP_CLASS(llvmo, LlvmoPkg, ClaspJIT_O, "clasp-jit", core::General_O);
+public:
+  void saveObjectFileInfo(const char* buffer, size_t bytes);
+  size_t numberOfObjectFiles();
 public:
   void addIRModule(Module_sp cM,ThreadSafeContext_sp context);
   core::Pointer_sp lookup(JITDylib& dylib, const std::string& Name);
@@ -4484,6 +4498,7 @@ public:
   ClaspJIT_O(const llvm::DataLayout& data_layout);
   ~ClaspJIT_O();
 public:
+  std::atomic<ObjectFileInfo*> _ObjectFiles;
   llvm::DataLayout _DataLayout;
   llvm::orc::ExecutionSession *ES;
 #ifdef USE_JITLINKER
