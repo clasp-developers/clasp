@@ -457,27 +457,6 @@ CL_EXTERN_DEFMETHOD(TargetPassConfig_O, &llvm::TargetPassConfig::setEnableTailMe
 
 namespace llvmo {
 
-CL_LISPIFY_NAME("generate-object-file-from-module");
-CL_DEFMETHOD core::ObjectFile_sp TargetMachine_O::generate_object_file_from_module(PassManager_sp passManager, Module_sp module) {
-  llvm::SmallString<1024> bufferOutput;
-  llvm::raw_svector_ostream ostream(bufferOutput);
-//  ostreamP = new llvm::raw_svector_ostream(stringOutput);
-  if (this->wrappedPtr()->addPassesToEmitFile(*passManager->wrappedPtr(), ostream, NULL, llvm::TargetMachine::CGFT_ObjectFile, true, nullptr)) {
-    SIMPLE_ERROR(BF("Could not generate object file"));
-  }
-  passManager->wrappedPtr()->run(*module->wrappedPtr());
-  unsigned char* memory_buffer = (unsigned char*)malloc(bufferOutput.size_in_bytes());
-  if (!memory_buffer) {
-    printf("%s:%d:%s Could not allocate memory buffer for ObjectFile\n", __FILE__, __LINE__, __FUNCTION__);
-    abort();
-  }
-  std::memcpy( memory_buffer, bufferOutput.data(), bufferOutput.size_in_bytes());
-  GC_ALLOCATE_VARIADIC(core::ObjectFile_O, objectFile, memory_buffer, bufferOutput.size_in_bytes());
-  return objectFile;
-}
-
-
-
 CL_LISPIFY_NAME("addPassesToEmitFileAndRunPassManager");
 CL_DEFMETHOD core::T_sp TargetMachine_O::addPassesToEmitFileAndRunPassManager(PassManager_sp passManager,
                                                                         core::T_sp stream,
@@ -4371,60 +4350,6 @@ void ClaspJIT_O::addObjectFile(const char* rbuffer, size_t bytes,size_t startupI
     core::write_bf_stream(BF("%s:%d  No startup functions are waiting\n") % __FILE__ % __LINE__ );
   }
 }
-
-#if 0
-void ClaspJIT_O::addObjectFile(core::ObjectFile_sp objectFile, core::T_sp startup_function_name)
-{
-  const char* rbuffer = (const char*)objectFile->_ObjectFilePtr;
-  size_t bytes = objectFile->_ObjectFileSize;
-  llvm::StringRef sbuffer((const char*)rbuffer,bytes);
-  llvm::StringRef name("buffer-name");
-  std::unique_ptr<llvm::MemoryBuffer> mbuffer = llvm::MemoryBuffer::getMemBuffer(sbuffer,name,false);
-#if 0
-  auto K = llvm::orc::VModuleKey();
-  auto ObjMU = llvm::orc::BasicObjectLayerMaterializationUnit::Create(*this->LinkLayer,std::move(K),std::move(mbuffer));
-  if (!ObjMU) {
-    llvm::ExitOnError ExitOnErr;
-    ExitOnErr(ObjMU.takeError());
-  }
-  (*ObjMU)->doMaterialize(this->ES->getMainJITDylib());
-#else
-  auto erro = this->LinkLayer->add(this->ES->getMainJITDylib(),std::move(mbuffer));
-  if (erro) {
-    printf("%s:%d Could not addObjectFile\n", __FILE__, __LINE__ );
-  }
-#endif
-//  printf("%s:%d If running static constructors worked we would be about to run constructors\n", __FILE__, __LINE__ );
-#if 0
-  auto errr = jit->_Jit->runConstructors();
-  if (errr) {
-    printf("%s:%d Could not runConstructors\n", __FILE__, __LINE__ );
-  }
-#endif
-
-  core::String_sp string_name = gc::As<core::String_sp>(startup_function_name);
-  llvm::orc::SymbolStringPtr foo = this->ES->intern(string_name->get_std_string());
-  core::Pointer_sp startupPtr = gc::As<core::Pointer_sp>(this->lookup(string_name->get_std_string()));
-  printf("%s:%d  ObjectFileStartUp ptr -> %s\n", __FILE__, __LINE__, _rep_(startupPtr).c_str());
-  if (startupPtr) {
-    printf("%s:%d  INVOKING ObjectFileStartUp ptr -> %s\n", __FILE__, __LINE__, _rep_(startupPtr).c_str());
-    fnStartUp startup = reinterpret_cast<fnStartUp>(gc::As_unsafe<core::Pointer_sp>(startupPtr)->ptr());
-    core::T_O* replPtrRaw = startup(NULL);
-  }
-#if 0
-  llvm::orc::SymbolNameSet remove_names({foo});
-  printf("%s:%d  Removing symbol %s\n", __FILE__, __LINE__, string_name->get_std_string().c_str());
-//  this->ES->getMainJITDylib().remove(remove_names);
-#endif
-  if (core::startup_functions_are_waiting()) {
-    printf("%s:%d startup functions were waiting - invoking\n", __FILE__, __LINE__ );
-    core::startup_functions_invoke(NULL);
-  } else {
-    printf("%s:%d NO startup functions were waiting\n", __FILE__, __LINE__ );
-  }
-}
-#endif
-
 
 CL_DEFMETHOD JITDylib& ClaspJIT_O::getMainJITDylib() {
   return this->ES->getMainJITDylib();

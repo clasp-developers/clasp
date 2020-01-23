@@ -22,13 +22,6 @@ namespace core {
 };
 
 template <>
-struct gctools::GCInfo<core::ObjectFile_O> {
-  static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = true;
-  static GCInfo_policy constexpr Policy = normal;
-};
-
-template <>
 struct gctools::GCInfo<core::Function_O> {
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
@@ -85,25 +78,6 @@ FunctionDescription* makeFunctionDescription(T_sp functionName, T_sp lambda_list
 void validateFunctionDescription(const char* filename, size_t lineno, Function_sp function);
 
 };
-
-
-namespace core {
-
-FORWARD(ObjectFile);
-class ObjectFile_O : public General_O {
-  LISP_ABSTRACT_CLASS(core,CorePkg,ObjectFile_O,"OBJECT-FILE",General_O);
-public:
-  void*   _ObjectFilePtr;
-  size_t  _ObjectFileSize;
-  ObjectFile_O(void* ptr, size_t sz) : _ObjectFilePtr(ptr), _ObjectFileSize(sz) {};
-  ObjectFile_O() : _ObjectFilePtr(NULL), _ObjectFileSize(0) {};
-  ~ObjectFile_O();
-  virtual string __repr__() const;
-};
-
-};
-
-
 
 namespace core {
   /*! Function_O is a Funcallable object that adds no fields to anything that inherits from it
@@ -182,9 +156,6 @@ namespace core {
     Pointer_sp function_description_address() const;
     void setf_function_description_address(Pointer_sp address);
     
-    virtual ObjectFile_sp objectFile() const;
-    virtual void setf_objectFile(ObjectFile_sp address);
-    
     T_mv function_description() const;
     virtual void __write__(T_sp) const;
     
@@ -231,14 +202,11 @@ class Closure_O : public Function_O {
     LISP_CLASS(core,CorePkg,Closure_O,"Closure",Function_O);
   public:
     FunctionDescription* _FunctionDescription;
-    ObjectFile_sp                 _ObjectFile;
   public:
   Closure_O(claspFunction fptr, FunctionDescription* fdesc ) : Base(fptr), _FunctionDescription(fdesc) {
       describeFunction();
     };
   public:
-  virtual ObjectFile_sp objectFile() const { return this->_ObjectFile; };
-  virtual void setf_objectFile(ObjectFile_sp address) { this->_ObjectFile = address;};
     virtual FunctionDescription* fdesc() const { return this->_FunctionDescription; };
     virtual void set_fdesc(FunctionDescription* fdesc) { this->_FunctionDescription = fdesc; };
     virtual const char *describe() const { return "Closure"; };

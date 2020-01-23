@@ -452,28 +452,6 @@ CL_DEFUN T_sp core__startup_image_pathname(char stage) {
   return pn;
 };
 
-
-
-CL_DEFUN T_sp core__load_object(llvmo::ClaspJIT_sp jit, llvmo::JITDylib& dylib, size_t startupID, T_sp pathDesig, T_sp verbose, T_sp print, T_sp external_format) {
-  Pathname_sp path = cl__pathname(pathDesig);
-  String_sp fname = gc::As<String_sp>(cl__namestring(cl__probe_file(path)));
-  mode_t mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH;
-  int fd = safe_open(fname->get_std_string().c_str(), O_RDONLY, mode);
-  size_t bytes = lseek(fd, 0, SEEK_END);
-  char* rbuffer = (char*)malloc(bytes);
-  size_t start = lseek(fd, 0, SEEK_SET);
-  size_t rd = read(fd,rbuffer,bytes);
-  if (rd!=bytes) {
-    printf("%s:%d Could only read %lu bytes but expected %lu bytes\n", __FILE__, __LINE__, rd, bytes);
-  }
-  GC_ALLOCATE_VARIADIC(ObjectFile_O,of,(void*)rbuffer,bytes);
-  close(fd);
-  const char* bbuffer = (const char*)of->_ObjectFilePtr;
-  size_t bbytes = of->_ObjectFileSize;
-  jit->addObjectFile(bbuffer,bbytes,startupID,dylib);
-  return of;
-}
-
 struct FasoHeader;
 
 struct ObjectFileInfo {
@@ -1651,85 +1629,6 @@ void byte_code_interpreter(gctools::GCRootsInModule* roots, T_sp fin, bool log)
  DONE:
   return;
 }
-
-#if 0
-// This is an attempt to use concatenated object files as fasl files
-// I'm not sure it's a good idea - but I may want to revisit this
-
-CL_DEFUN void core__write_fasl_file(T_sp stream, List_sp object_files) {
-  size_t dead_beef = 0xEFBEADDEEFBEADDE; // DEADBEEFDEADBEEF backwards
-  int filedes;
-  if (core::IOFileStream_sp fs = stream.asOrNull<core::IOFileStream_O>()) {
-    filedes = fs->fileDescriptor();
-  } else if (core::IOStreamStream_sp iostr = stream.asOrNull<core::IOStreamStream_O>()) {
-    FILE *f = iostr->file();
-    filedes = fileno(f);
-  } else {
-    SIMPLE_ERROR(BF("Illegal file type %s for write-fasl-file") % _rep_(stream).c_str());
-  }
-  write(filedes,"CLASP   ",8);
-  size_t num_object_files = cl__length(object_files);
-  write(filedes,&num_object_files,sizeof(num_object_files));
-  for ( auto cur : object_files ) {
-    ObjectFile_sp of = CONS_CAR(cur);
-    write(filedes,&dead_beef,8);
-    size_t object_file_size = of->_ObjectFileSize;
-    size_t word_aligned_object_file_size = ((object_file_size+sizeof(size_t))/sizeof(size_t))*sizeof(size_t);
-    write(filedes,&word_aligned_object_file_size,sizeof(word_aligned_object_file_size));
-    write(filedes,&object_file_size,sizeof(object_file_size));
-    write(filedes,of->_ObjectFilePtr,word_aligned_object_file_size);
-  }
-}
-
-
-#define TRAP_BAD_READ(sz,esz) if (sz!=esz) { SIMPLE_ERROR(BF("While reading fasl file hit end of file prematurely - the fasl file is corrupt"));}
-
-
-/*! Read a fasl file and return a list of ObjectFile_sp objects
-*/
-CL_DEFUN List_sp core__read_fasl_file(T_sp stream) {
-  int filedes;
-  if (core::IOFileStream_sp fs = stream.asOrNull<core::IOFileStream_O>()) {
-    filedes = fs->fileDescriptor();
-  } else if (core::IOStreamStream_sp iostr = stream.asOrNull<core::IOStreamStream_O>()) {
-    FILE *f = iostr->file();
-    filedes = fileno(f);
-  } else {
-    SIMPLE_ERROR(BF("Illegal file type %s for write-fasl-file") % _rep_(stream).c_str());
-  }
-  char header[8];
-  size_t num_read;
-  num_read = read(filedes,header,sizeof(header));
-  TRAP_BAD_READ(num_read,sizeof(header));
-  if (strncmp(header,"CLASP   ",8)!=0) {
-    SIMPLE_ERROR(BF("File %s is not a FASL file") % _rep_(stream));
-  }
-  size_t dead_beef = 0xEFBEADDEEFBEADDE; // DEADBEEFDEADBEEF backwards
-  size_t num_object_files;
-  num_read = read(filedes,&num_object_files,sizeof(size_t));
-  ql::list result;
-  for ( size_t idx=0; idx<num_object_files; ++idx ) {
-    size_t read_dead_beef;
-    num_read = read(filedes,&read_dead_beef,sizeof(read_dead_beef));
-    TRAP_BAD_READ(num_read,sizeof(read_dead_beef));
-    if (read_dead_beef!=dead_beef) {
-      SIMPLE_ERROR(BF("While reading fasl file the internal marker was not found - the fasl file is corrupt"));
-    }
-    size_t word_aligned_object_file_size;
-    num_read = read(filedes,&word_aligned_object_file_size,sizeof(word_aligned_object_file_size));
-    TRAP_BAD_READ(num_read,sizeof(word_aligned_object_file_size));
-    size_t object_file_size;
-    num_read = read(filedes,&object_file_size,sizeof(object_file_size));
-    TRAP_BAD_READ(num_read,sizeof(object_file_size));
-    char* buffer = (char*)malloc(word_aligned_object_file_size);
-    num_read = read(filedes,buffer,word_aligned_object_file_size);
-    TRAP_BAD_READ(num_read,word_aligned_object_file_size);
-    GC_ALLOCATE_VARIADIC(ObjectFile_O,of,buffer,object_file_size);
-    result << of;
-  }
-  return result.cons();
-}
-#endif
 
 void initialize_compiler_primitives(Lisp_sp lisp) {
 
