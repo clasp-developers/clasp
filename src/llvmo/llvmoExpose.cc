@@ -3691,7 +3691,7 @@ class ClaspSectionMemoryManager : public SectionMemoryManager {
     uint8_t* ptr = this->SectionMemoryManager::allocateCodeSection(Size,Alignment,SectionID,SectionName);
     my_thread->_text_segment_start = (void*)ptr;
     my_thread->_text_segment_size = Size;
-    my_thread->_text_segment_ID = SectionID;
+    my_thread->_text_segment_SectionID = SectionID;
     if (llvmo::_sym_STARdebugObjectFilesSTAR->symbolValue().notnilp()) {
       printf("%s", ( BF("%s:%d  allocateCodeSection Size: %lu  Alignment: %u SectionId: %u SectionName: %s --> allocated at: %p\n") % __FILE__% __LINE__% Size% Alignment% SectionID% SectionName.str() % (void*)ptr ).str().c_str());
     }
