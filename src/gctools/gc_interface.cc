@@ -424,6 +424,16 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
       // The client must have a valid header
       const gctools::Header_s& header = *reinterpret_cast<const gctools::Header_s *>(ClientPtrToBasePtr(client));
       const Header_s::StampWtagMtag& header_value = header._stamp_wtag_mtag;
+#if 0
+      if (reinterpret_cast<size_t>(header._stamp_wtag_mtag._value) == (size_t)(gctools::STAMP_gctools__GCVector_moveable_core__Cons_O_<<gctools::Header_s::mtag_shift)) {
+          printf("%s:%d obj_scan of STAMP_gctools__GCVector_moveable_core__Cons_O client = %p seek = %p\n", __FILE__, __LINE__, client,
+                 &_lisp->_Roots._SpecialForms->_Table);
+          gctools::Vec0<core::Cons_O>* foo = (gctools::Vec0<core::Cons_O>*)client;
+          if (foo == &_lisp->_Roots._SpecialForms->_Table) {
+              printf("%s:%d     Found SpecialForms\n", __FILE__, __LINE__ );
+          }
+      }
+#endif
       stamp_index = header.stamp_();
       LOG(BF("obj_scan client=%p stamp-index=%lu\n") % (void*)client % stamp_index );
       tagged_stamp_t mtag = header_value.mtag();

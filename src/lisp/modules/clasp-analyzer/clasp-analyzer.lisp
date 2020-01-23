@@ -676,7 +676,7 @@ Convert the string into a C++ identifier, convert spaces, dashes and colons to u
 * Description
 Generate a list of strings that represent nested field names for the offset."
   (let ((fields (if drop-last
-                    (subseq (fields off) 0 (1- (length fields)))
+                    (subseq (fields off) 0 (1- (length (fields off))))
                     (fields off))))
     (loop :for x :in fields
           :for index :below (length fields)
@@ -760,17 +760,22 @@ to expose."
           (if field-names
               (let* ((fixable (fixable-instance-variables (car (last (fields one))) analysis))
                      (public (mapcar (lambda (iv) (eq (instance-field-access iv) 'ast-tooling:as-public)) (fields one)))
-                     (is-std-atomic (is-atomic one))
+                     (is-std-atomic (is-atomic one stream))
                      (good-name (not (is-bad-special-case-variable-name (layout-offset-field-names one))))
                      (expose-it (and fixable good-name))
                      (*print-pretty* nil))
-                (format stream "~a    {    variable_field, ~a, sizeof(~a), offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), \"~{~a~}\" }, // public: ~a fixable: ~a good-name: ~a~%"
+      (dolist (iv (fields one))
+        (format stream "// (instance-field-access iv) -> ~s   (instance-field-ctype iv) -> ~s~%"
+                (instance-field-access iv)
+                (instance-field-ctype iv)))
+                (format stream "~a    {    variable_field, ~a, sizeof(~a), offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), \"~{~a~}\" }, // atomic: ~a public: ~a fixable: ~a good-name: ~a~%"
                         (if expose-it "" "// not-exposed-yet ")
                         (offset-type-c++-identifier one)
                         (maybe-fixup-type (ctype-key (offset-type one)) (ctype-key (base one)))
                         (ctype-key (base one))
                         (layout-offset-field-names one :drop-last is-std-atomic)
                         (layout-offset-field-names one :drop-last is-std-atomic)
+                        is-std-atomic
                         public
                         fixable
                         good-name))
@@ -789,19 +794,21 @@ to expose."
       nil
       t))
 
-(defun is-atomic (one)
+(defun is-atomic (one &optional (stream *standard-output*))
   "Return T if the field in ONE is a std::atomic<Foo> type."
   (let* ((second-last-field (car (last (fields one) 2)))
          (second-last-field-type (instance-field-ctype second-last-field))
-         (is-std-atomic (when (and (class-template-specialization-ctype-p second-last-field-type)
-                                   (string= "atomic" (class-template-specialization-name second-last-field-type))))))
+         (name (and (class-template-specialization-ctype-p second-last-field-type)
+                    (class-template-specialization-ctype-name second-last-field-type)))
+         (is-std-atomic (and name (string= "atomic" name))))
+    (format stream "// second-last-field is-atomic atomic: ~s  name: ~s~%" is-std-atomic name)
     is-std-atomic))
 
 (defun codegen-full (stream layout analysis)
   (dolist (one (fixed-part layout))
     (let* ((fixable (fixable-instance-variables (car (last (fields one))) analysis))
            (public (mapcar (lambda (iv) (eq (instance-field-access iv) 'ast-tooling:as-public)) (fields one)))
-           (is-std-atomic (is-atomic one))
+           (is-std-atomic (is-atomic one stream))
            (good-name (not (is-bad-special-case-variable-name (layout-offset-field-names one))))
            (expose-it (and fixable
                            good-name
@@ -819,7 +826,7 @@ to expose."
               (offset-base-ctype one)
               (layout-offset-field-names one :drop-last is-std-atomic)
               (layout-offset-field-names one :drop-last is-std-atomic)
-              atomic
+              is-std-atomic
               public
               fixable
               good-name)))

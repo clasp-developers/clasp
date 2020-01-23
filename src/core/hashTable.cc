@@ -660,12 +660,17 @@ List_sp HashTable_O::tableRef_no_read_lock(T_sp key, bool under_write_lock, cl_i
   // Location dependency test if key is stale
   if (key.objectp()) {
     void *blockAddr = &(*key);
+    DEBUG_HASH_TABLE({core::write_bf_stream(BF("%s:%d checking mps_ld_isstale\n") % __FILE__ % __LINE__);});
     if (mps_ld_isstale(const_cast<mps_ld_t>(&(this->_LocationDependency)), global_arena, blockAddr)) {
-      if (under_write_lock) {
-        return this->rehash_no_lock(false /*expandTable*/, key);
-      } else {
-        return this->rehash_upgrade_write_lock(false /*expandTable*/, key);
-      }
+        DEBUG_HASH_TABLE({core::write_bf_stream(BF("%s:%d  mps_ld_isstale returned TRUE\n") % __FILE__ % __LINE__);});
+        if (under_write_lock) {
+            return this->rehash_no_lock(false /*expandTable*/, key);
+        } else {
+            return this->rehash_upgrade_write_lock(false /*expandTable*/, key);
+        }
+    } else {
+        DEBUG_HASH_TABLE({core::write_bf_stream(BF("%s:%d  mps_ld_isstale returned FALSE\n") % __FILE__ % __LINE__);});
+        // mps_ld_isstale returned false - so we haven't seen this block before - proceed to fail to find the key
     }
   }
 #endif
@@ -750,7 +755,12 @@ T_sp HashTable_O::setf_gethash_no_write_lock(T_sp key, T_sp value)
     return value;
   }
   // not found
-  // index = this->sxhashKey(key, this->_Table.size(), true /*will-add-key*/);
+#ifdef USE_MPS  
+  // DO NOT! I repeat DO NOT comment out the following line because you see we calculate index above
+  // The one below has "true /*will-add-key*/ - this means it will add to the MPS location dependency
+  // object - this is essential if this is to work with MPS
+  index = this->sxhashKey(key, this->_Table.size(), true /*will-add-key*/);
+#endif
   DEBUG_HASH_TABLE({core::write_bf_stream(BF("%s:%d Looking for empty slot index = %ld\n")  % __FILE__ % __LINE__ % index);});
   Cons_O* entryP = nullptr;
   entryP = &this->_Table[index];
@@ -799,6 +809,7 @@ CL_DEFUN T_sp core__hash_table_setf_gethash(HashTableBase_sp hash_table, T_sp ke
 
 List_sp HashTable_O::rehash_no_lock(bool expandTable, T_sp findKey) {
   //        printf("%s:%d rehash of hash-table@%p\n", __FILE__, __LINE__,  this );
+    DEBUG_HASH_TABLE({core::write_bf_stream(BF("%s:%d rehash_no_lock\n") % __FILE__ % __LINE__ );});
   ASSERTF(!clasp_zerop(this->_RehashSize), BF("RehashSize is zero - it shouldn't be"));
   ASSERTF(this->_Table.size() != 0, BF("HashTable is empty in expandHashTable - this shouldn't be"));
   List_sp foundKeyValuePair(_Nil<T_O>());

@@ -631,21 +631,21 @@ size_t processMpsMessages(size_t& finalizations) {
       //   and replaced with a PAD tag - if so - skip the whole finalization process
       mps_pool_t pool = clasp_pool_of_addr(ref_o);
       core::T_sp obj;
-      bool dead_object = false;
+      bool live_object = true;
       if (pool) {
         if (pool == gctools::global_amc_cons_pool) {
           obj = gctools::smart_ptr<core::Cons_O>((gctools::Tagged)gctools::tag_cons<core::T_O*>(reinterpret_cast<core::T_O*>(ref_o)));
         } else {
           gctools::Header_s* header = (gctools::Header_s*)((char*)ref_o - sizeof(gctools::Header_s));
-          dead_object = !(header->stampP());
+          live_object = (header->stampP());
           obj = gctools::smart_ptr<core::T_O>((gctools::Tagged)gctools::tag_general<core::T_O*>(reinterpret_cast<core::T_O*>(ref_o)));
         }
       } else {
         printf("%s:%d   MPS could not figure out what pool the pointer %p belongs to - treating it like a dead object and no finalizer will be invoked\n", __FILE__, __LINE__, ref_o);
-        dead_object = true;
+        live_object = false;
       }
 #if 1
-      if (!dead_object) {
+      if (live_object) {
         bool invoked_finalizer = false;
         auto ht = gctools::As<core::WeakKeyHashTable_sp>(gctools::_sym_STARfinalizersSTAR->symbolValue());
         core::T_mv res = ht->gethash(obj);
@@ -663,7 +663,7 @@ size_t processMpsMessages(size_t& finalizations) {
 #endif
         if (!invoked_finalizer && obj.generalp()) obj_finalize(ref_o);
       } else {
-        printf("%s:%d No finalization message for %p reconstituted tagged ptr = %p stamp->%u  - it's a dead_object - I can't figure out what pool it belonged to (unknown if it is a General_O object or a Cons_O)\n", __FILE__, __LINE__, (void*)ref_o, (void*)obj.tagged_(), gctools::header_pointer(ref_o)->stamp_());
+        printf("%s:%d Got finalization message for %p reconstituted tagged ptr = %p stamp->%u  - it's a dead_object so I'm ignoring it - maybe get rid of this message\n", __FILE__, __LINE__, (void*)ref_o, (void*)obj.tagged_(), gctools::header_pointer(ref_o)->stamp_());
       }
         
     } else {
@@ -1052,6 +1052,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
 
 //#define USE_main_thread_roots_scan
 #ifdef USE_main_thread_roots_scan
+  printf("%s:%d USE_main_thread_roots_scan\n", __FILE__, __LINE__ );
   mps_root_t global_scan_root;
   res = mps_root_create(&global_scan_root,
                         global_arena,
@@ -1066,6 +1067,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   mps_register_roots((void*)&_lisp,1);
   mps_register_roots((void*)&global_core_symbols[0],NUMBER_OF_CORE_SYMBOLS);
   mps_register_roots((void*)&global_symbols[0],global_symbol_count);
+  printf("%s:%d UNDEF USE_main_thread_roots_scan NUMBER_OF_CORE_SYMBOLS[%d] global_symbol_count[%d]\n", __FILE__, __LINE__, NUMBER_OF_CORE_SYMBOLS, global_symbol_count );
 #endif  
 //  mps_register_root(reinterpret_cast<gctools::Tagged*>(&globalTaggedRunTimeValues));
 #ifdef RUNNING_GC_BUILDER
