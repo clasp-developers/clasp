@@ -3691,6 +3691,7 @@ class ClaspSectionMemoryManager : public SectionMemoryManager {
     uint8_t* ptr = this->SectionMemoryManager::allocateCodeSection(Size,Alignment,SectionID,SectionName);
     my_thread->_text_segment_start = (void*)ptr;
     my_thread->_text_segment_size = Size;
+    my_thread->_text_segment_ID = SectionID;
     if (llvmo::_sym_STARdebugObjectFilesSTAR->symbolValue().notnilp()) {
       printf("%s", ( BF("%s:%d  allocateCodeSection Size: %lu  Alignment: %u SectionId: %u SectionName: %s --> allocated at: %p\n") % __FILE__% __LINE__% Size% Alignment% SectionID% SectionName.str() % (void*)ptr ).str().c_str());
     }
@@ -4284,6 +4285,7 @@ void ClaspJIT_O::saveObjectFileInfo(const char* objectFileStart, size_t objectFi
   ofi->_object_file_size = objectFileSize;
   ofi->_text_segment_start = my_thread->_text_segment_start;
   ofi->_text_segment_size = my_thread->_text_segment_size;
+  ofi->_text_segment_SectionID = my_thread->_text_segment_SectionID;
   ofi->_stackmap_start = (void*)my_thread->_stackmap;
   ofi->_stackmap_size = my_thread->_stackmap_size;
   ObjectFileInfo* expected;
@@ -4305,10 +4307,15 @@ CL_DEFMETHOD core::T_mv ClaspJIT_O::objectFileForInstructionPointer(core::Pointe
   char* ptr = (char*)instruction_pointer->ptr();
   while (cur) {
     if (ptr>=(char*)cur->_text_segment_start&&ptr<((char*)cur->_text_segment_start+cur->_text_segment_size)) {
-      // make an object file and return it
+      // Here is the info for the SectionedAddress
+      uintptr_t sectionID = cur->_text_segment_SectionID;
       uintptr_t offset = (ptr - (char*)cur->_text_segment_start);
-      core::T_sp object_file = _Nil<core::T_O>();
-      return Values(core::Integer_O::create(offset),object_file);
+      core::T_sp sectioned_address = _Nil<core::T_O>(); // make a wrapped SectionedAddress
+      // and here is the object file start and size
+      // cur->_object_segment_start
+      // cur->_object_file_size
+      core::T_sp object_file = _Nil<core::T_O>(); // make a wrapped llvm::object::ObjectFile
+      return Values(sectioned_address,object_file);
     }
     cur = cur->_next;
     count++;

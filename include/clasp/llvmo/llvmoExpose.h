@@ -4479,6 +4479,7 @@ struct ObjectFileInfo {
   size_t    _object_file_size;
   void*     _text_segment_start;
   size_t    _text_segment_size;
+  size_t    _text_segment_SectionID;
   void*     _stackmap_start;
   size_t    _stackmap_size;
   ObjectFileInfo* _next;
