@@ -586,7 +586,13 @@ CL_DEFUN void core__symbol_global_value_set(Symbol_sp symbol, T_sp value) {
   symbol->_GlobalValue = value;
 }
 
+CL_DEFUN T_sp core__symbol_thread_local_value(Symbol_sp s) {
+  return s->threadLocalSymbolValue();
+}
 
+CL_DEFUN bool core__no_thread_local_bindingp(T_sp object) {
+  return gctools::tagged_no_thread_local_bindingp(object.raw_());
+}
 
 
 SYMBOL_EXPORT_SC_(KeywordPkg,vtable);
