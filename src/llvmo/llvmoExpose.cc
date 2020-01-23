@@ -4296,6 +4296,25 @@ void ClaspJIT_O::saveObjectFileInfo(const char* objectFileStart, size_t objectFi
   } while (expected!=current);
 }
 
+CL_DOCSTRING(R"doc(Identify the object file whose generated code range containss the instruction-pointer.
+Return NIL if none or (values offset-from-start object-file). The index-from-start is the number of bytes of the instruction-pointer from the start of the code range.)doc");
+CL_DEFMETHOD core::T_mv ClaspJIT_O::objectFileForInstructionPointer(core::Pointer_sp instruction_pointer)
+{
+  ObjectFileInfo* cur = this->_ObjectFiles.load();
+  size_t count;
+  char* ptr = (char*)instruction_pointer->ptr();
+  while (cur) {
+    if (ptr>=(char*)cur->_text_segment_start&&ptr<((char*)cur->_text_segment_start+cur->_text_segment_size)) {
+      // make an object file and return it
+      uintptr_t offset = (ptr - (char*)cur->_text_segment_start);
+      core::T_sp object_file = _Nil<core::T_O>();
+      return Values(core::Integer_O::create(offset),object_file);
+    }
+    cur = cur->_next;
+    count++;
+  }
+  return Values(_Nil<core::T_O>());
+}
 
 CL_DEFMETHOD size_t ClaspJIT_O::numberOfObjectFiles() {
   ObjectFileInfo* cur = this->_ObjectFiles.load();

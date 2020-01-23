@@ -4495,6 +4495,8 @@ public:
   JITDylib& getMainJITDylib();
   JITDylib_sp createAndRegisterJITDylib(const std::string& name);
   void addObjectFile(const char* buffer, size_t bytes, size_t startupID, JITDylib& dylib, bool print=false);
+  core::T_mv objectFileForInstructionPointer(core::Pointer_sp instruction_pointer);
+  
   ClaspJIT_O(const llvm::DataLayout& data_layout);
   ~ClaspJIT_O();
 public:
