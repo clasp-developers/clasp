@@ -2190,10 +2190,15 @@ T_mv t1Evaluate(T_sp exp, T_sp environment) {
   return eval::funcall(comp::_sym_STARimplicit_compile_hookSTAR->symbolValue(), exp, environment);
 }
 
+    //#define DEBUG_EVALUATE 1
+    
 DONT_OPTIMIZE_WHEN_DEBUG_RELEASE
 T_mv evaluate(T_sp exp, T_sp environment) {
-  //	    Environment_sp localEnvironment = environment;
-  //            printf("%s:%d evaluate %s environment@%p\n", __FILE__, __LINE__, _rep_(exp).c_str(), environment.raw_());
+#ifdef DEBUG_EVALUATE
+    printf("%s:%d evaluate %s\n", __FILE__, __LINE__, _rep_(exp).c_str());
+    //    	    Environment_sp localEnvironment = environment;
+    //            printf("%s:%d evaluate %s environment@%p\n", __FILE__, __LINE__, _rep_(exp).c_str(), environment.raw_());
+#endif
   //            printf("    environment: %s\n", _rep_(environment).c_str() );
   ASSERT(environment.generalp());
   T_mv result;
@@ -2220,12 +2225,22 @@ T_mv evaluate(T_sp exp, T_sp environment) {
   if (head.consp()) {
     Cons_sp chead((gctools::Tagged)head.raw_());
     if (CONS_CAR(chead)==cl::_sym_lambda) {
+#ifdef DEBUG_EVALUATE
+        printf("%s:%d %s is lambda\n", __FILE__, __LINE__, _rep_(chead).c_str());
+#endif
       return core::eval::evaluate(Cons_O::create(cl::_sym_funcall,exp),environment);
     }
     SIMPLE_ERROR(BF("Illegal head of form %s") % _rep_(head));
   } else if (Symbol_sp headSym = head.asOrNull<Symbol_O>()) {
     T_sp specialForm = _lisp->specialFormOrNil(headSym);
+    if (headSym == cl::_sym_setq) return sp_setq(oCdr(form),environment);
+    else if (headSym == cl::_sym_let) return sp_let(oCdr(form),environment);
+    else if (headSym == cl::_sym_quote) return sp_quote(oCdr(form),environment);
+    else if (headSym == cl::_sym_letSTAR) return sp_letSTAR(oCdr(form),environment);
     if (!specialForm.nilp()) {
+#ifdef DEBUG_EVALUATE
+        printf("%s:%d %s is special form\n", __FILE__, __LINE__, _rep_(headSym).c_str());
+#endif
       return evaluate_specialForm(gc::As_unsafe<SpecialForm_sp>(specialForm), form, environment);
     }
 
@@ -2241,6 +2256,9 @@ T_mv evaluate(T_sp exp, T_sp environment) {
 
     T_sp theadFunc = af_interpreter_lookup_macro(headSym, environment);
     if (theadFunc.notnilp()) {
+#ifdef DEBUG_EVALUATE
+        printf("%s:%d %s is macro\n", __FILE__, __LINE__, _rep_(headSym).c_str());
+#endif
       T_sp expanded;
       /* macros are expanded again and again and again */
       if (_sym_STARcache_macroexpandSTAR->symbolValue().notnilp()) {
@@ -2263,6 +2281,9 @@ T_mv evaluate(T_sp exp, T_sp environment) {
     // evaluate the arguments and apply the function bound to the head to them
     //
     //		LOG(BF("Symbol[%s] is a normal form - evaluating arguments") % head->__repr__() );
+#ifdef DEBUG_EVALUATE
+        printf("%s:%d %s is function\n", __FILE__, __LINE__, _rep_(headSym).c_str());
+#endif
     size_t nargs = cl__length(oCdr(form));
     T_sp headFunc = theadFunc;
     MAKE_STACK_FRAME(callArgs, headFunc.raw_(), nargs);
