@@ -4556,6 +4556,88 @@ public:
 
     ;
 
+// ObjectFile_O
+namespace llvmo {
+FORWARD(ObjectFile);
+class ObjectFile_O : public core::ExternalObject_O {
+  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::object::ObjectFile, ObjectFile_O, "ObjectFile", core::ExternalObject_O);
+  typedef llvm::object::ObjectFile ExternalType;
+  typedef llvm::object::ObjectFile *PointerToExternalType;
+
+protected:
+  PointerToExternalType _ptr;
+
+public:
+  virtual void *externalObject() const { return this->_ptr; };
+  PointerToExternalType wrappedPtr() const { return this->_ptr; }
+  void set_wrapped(PointerToExternalType ptr) {
+    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    this->_ptr = ptr;
+  }
+ public:
+  static ObjectFile_sp create(PointerToExternalType);
+ ObjectFile_O(PointerToExternalType ptr) : Base(), _ptr(ptr){};
+ ObjectFile_O() : Base(), _ptr(NULL){};
+  ~ObjectFile_O() {
+    if (_ptr != NULL) { /* delete _ptr;*/
+      _ptr = NULL;
+    };
+  }
+}; // ObjectFile_O class def
+}; // llvmo
+/* from_object translators */
+
+namespace translate {
+template <>
+struct from_object<llvm::object::ObjectFile *, std::true_type> {
+  typedef llvm::object::ObjectFile *DeclareType;
+  DeclareType _v;
+  from_object(T_P object) : _v(gc::As<llvmo::ObjectFile_sp>(object)->wrappedPtr()){};
+};
+
+};
+
+/* to_object translators */
+
+namespace translate {
+template <>
+struct to_object<llvm::object::ObjectFile *> {
+  static core::T_sp convert(llvm::object::ObjectFile *ptr) {
+    return core::RP_Create_wrapped<llvmo::ObjectFile_O, llvm::object::ObjectFile *>(ptr);
+  }
+};
+}; // namespace llvmo - ObjectFile_O done
+
+// SectionedAddress_O
+namespace llvmo {
+FORWARD(SectionedAddress);
+class SectionedAddress_O : public core::ExternalObject_O {
+  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::object::SectionedAddress, SectionedAddress_O, "SectionedAddress",
+                      core::ExternalObject_O);
+
+public:
+  typedef llvm::object::SectionedAddress ExternalType;
+  ExternalType _value;
+
+public:
+  static SectionedAddress_sp create(uint64_t SectionIndex, uint64_t Address);
+
+public:
+ SectionedAddress_O(uint64_t SectionIndex, uint64_t Address) : Base() {
+    _value.SectionIndex = SectionIndex;
+    _value.Address = Address;
+  }
+  ~SectionedAddress_O(){};
+}; // SectionedAddress_O
+}; // llvmo
+namespace translate {
+template <>
+  struct from_object<const llvm::object::SectionedAddress &, std::true_type> {
+  typedef llvm::object::SectionedAddress DeclareType;
+  DeclareType _v;
+  from_object(T_P object) : _v(gc::As<llvmo::SectionedAddress_sp>(object)->_value){};
+};
+}; // namespace llvmo - SectionedAddress_O done
 
 ENUM_TRANSLATOR(llvm::GlobalValue::UnnamedAddr,llvmo::_sym_STARGlobalValueUnnamedAddrSTAR);
 

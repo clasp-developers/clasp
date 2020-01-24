@@ -4289,11 +4289,16 @@ CL_DEFMETHOD core::T_mv ClaspJIT_O::objectFileForInstructionPointer(core::Pointe
       // Here is the info for the SectionedAddress
       uintptr_t sectionID = cur->_text_segment_SectionID;
       uintptr_t offset = (ptr - (char*)cur->_text_segment_start);
-      core::T_sp sectioned_address = _Nil<core::T_O>(); // make a wrapped SectionedAddress
-      // and here is the object file start and size
-      // cur->_object_segment_start
-      // cur->_object_file_size
-      core::T_sp object_file = _Nil<core::T_O>(); // make a wrapped llvm::object::ObjectFile
+      core::T_sp sectioned_address = SectionedAddress_O::create(sectionID, offset);
+      // now the object file
+      llvm::StringRef sbuffer((const char*)cur->_object_file_start, cur->_object_file_size);
+      llvm::StringRef name("object-file-buffer");
+      std::unique_ptr<llvm::MemoryBuffer> mbuf = llvm::MemoryBuffer::getMemBuffer(sbuffer, name, false);
+      llvm::MemoryBufferRef mbuf_ref(*mbuf);
+      auto eom = llvm::object::ObjectFile::createObjectFile(mbuf_ref);
+      if (!eom)
+        SIMPLE_ERROR(BF("Problem in objectFileForInstructionPointer"));
+      ObjectFile_sp object_file = ObjectFile_O::create(eom->release());
       return Values(sectioned_address,object_file);
     }
     cur = cur->_next;
@@ -4399,4 +4404,20 @@ CL_DEFUN void llvm_sys__set_current_debug_types(core::List_sp types)
   free(array);
 };  
 
-};
+}; // namespace llvmo
+
+namespace llvmo { // ObjectFile_O
+
+ObjectFile_sp ObjectFile_O::create(llvm::object::ObjectFile *ptr) {
+  return core::RP_Create_wrapped<llvmo::ObjectFile_O, llvm::object::ObjectFile *>(ptr);
+}
+
+}; // namespace llvmo, ObjectFile_O
+
+namespace llvmo { // SectionedAddress_O
+
+SectionedAddress_sp SectionedAddress_O::create(uint64_t SectionIndex, uint64_t Address) {
+  GC_ALLOCATE_VARIADIC(SectionedAddress_O, sa, SectionIndex, Address);
+  return sa;
+}
+}; // namespace llvmo, SectionedAddress_O
