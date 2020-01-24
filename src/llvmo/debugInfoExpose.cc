@@ -362,3 +362,15 @@ CL_DEFMETHOD DITypeRefArray_sp DIBuilder_O::getOrCreateTypeArray(core::List_sp e
 
 
 }; // llvmo
+
+namespace llvmo { // DWARFContext_O
+
+CL_LAMBDA(object-file);
+CL_LISPIFY_NAME(createDwarfContext);
+CL_DEFUN DWARFContext_sp DWARFContext_O::createDwarfContext(ObjectFile_sp of) {
+  llvm::object::ObjectFile* ofptr = of->wrappedPtr();
+  std::unique_ptr<llvm::DWARFContext> uptr = llvm::DWARFContext::create(*ofptr);
+  return core::RP_Create_wrapped<llvmo::DWARFContext_O, llvm::DWARFContext *>(uptr.release());
+}
+
+}; // llvmo, DWARFContext_O
