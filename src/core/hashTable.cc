@@ -896,6 +896,15 @@ List_sp HashTable_O::rehash_no_lock(bool expandTable, T_sp findKey) {
           % this->_HashTableCount);
 #endif
   VERIFY_HASH_TABLE(this);
+  if (foundKeyValuePair.consp()) {
+      // Return the foundKeyValuePair in the latest table
+      Cons_sp pair = gc::As_unsafe<Cons_sp>(foundKeyValuePair);
+      T_sp key = CONS_CAR(pair);
+      HashGenerator hg;
+      cl_index index = this->sxhashKey(key, this->_Table.size(), hg );
+      foundKeyValuePair = this->tableRef_no_read_lock(CONS_CAR(pair),true,index,hg);
+  }
+  DEBUG_HASH_TABLE({core::write_bf_stream(BF("%s:%d:%s  Returning foundKeyValuePair: %s at %p \n") % __FILE__ % __LINE__ % __FUNCTION__ % _rep_(foundKeyValuePair) % &*foundKeyValuePair);});
   return foundKeyValuePair;
 }
 
