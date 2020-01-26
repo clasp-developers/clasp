@@ -545,7 +545,7 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
     Readtable_sp readtable = Readtable_O::create_standard_readtable();
     cl::_sym_STARreadtableSTAR->defparameter(readtable);
     initialize_functions();
-    eval::defineSpecialOperatorsAndMacros(this->_Roots._CorePackage);
+    //    eval::defineSpecialOperatorsAndMacros(this->_Roots._CorePackage);
 #ifdef DEBUG_PROGRESS
     printf("%s:%d startupLispEnvironment initialize_classes_and_methods\n", __FILE__, __LINE__ );
 #endif
@@ -853,7 +853,7 @@ Symbol_sp Lisp_O::defineSpecialOperator(const string &packageName, const string 
 T_sp Lisp_O::specialFormOrNil(Symbol_sp sym) {
   if (sym.nilp())
     return _Nil<T_O>();
-  if (aclasp_special_operator_p(sym)) {
+  if (eval::aclasp_special_operator_p(sym)) {
     return _lisp->_true();
   }
   return _Nil<T_O>();
