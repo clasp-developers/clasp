@@ -900,6 +900,14 @@ List_sp HashTable_O::rehash_no_lock(bool expandTable, T_sp findKey) {
           % this->_HashTableCount);
 #endif
   VERIFY_HASH_TABLE(this);
+  //
+  // The following lookup is important for (setf (gethash key ht) val) when using MPS
+  // If the lookup of a reference for the key failed because of a stale pointer
+  // then that triggers a rehash and rehash searches for the key/value
+  // in the OLD table as it rehashes.  So we can't return that reference
+  // because setf will then write into the OLD table!  So below
+  // we lookup the reference again with tableRef_no_read_lock because
+  // it is guaranteed to return a reference to the current table of the hash-table.
   if (foundKeyValuePair.consp()) {
       // Return the foundKeyValuePair in the latest table
       Cons_sp pair = gc::As_unsafe<Cons_sp>(foundKeyValuePair);
