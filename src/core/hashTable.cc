@@ -25,7 +25,7 @@ THE SOFTWARE.
 */
 /* -^- */
 
-#if 1
+#if 0
 /**/ #if 1
 /**/   #define DEBUG_HASH_TABLE(expr) if (core::_sym_STARdebug_hash_tableSTAR.boundp()&&core::_sym_STARdebug_hash_tableSTAR->boundP()&&core::_sym_STARdebug_hash_tableSTAR->symbolValue().notnilp()) expr
 /**/ #else
@@ -81,6 +81,9 @@ void verifyHashTable(bool print, std::ostream& ss, HashTable_O* ht, const char* 
   for (size_t it(0), itEnd(ht->_Table.size()); it < itEnd; ++it) {
     Cons_O& entry = ht->_Table[it];
     if (!entry._Car.no_keyp()&&!entry._Car.deletedp()) {
+        if (print) {
+            ss << "Entry["<<it<<"] at " << (void*)&entry << "   key: " << _rep_(entry._Car) << " value: " << (entry._Cdr) << "\n";
+        }
       keys->vectorPushExtend(entry._Car);
     }
   }
@@ -645,7 +648,7 @@ CL_DEFUN T_mv core__gethash3(T_sp key, T_sp hashTable, T_sp default_value) {
 };
 
 List_sp HashTable_O::tableRef_no_read_lock(T_sp key, bool under_write_lock, cl_index index, HashGenerator& hg) {
-  DEBUG_HASH_TABLE({core::write_bf_stream(BF("%s:%d index = %ld\n") % __FILE__ % __LINE__ % index , T_sp());});
+    DEBUG_HASH_TABLE({core::write_bf_stream(BF("%s:%d key = %s  index = %ld\n") % __FILE__ % __LINE__ % _rep_(key) % index , T_sp());});
   VERIFY_HASH_TABLE(this);
   for (size_t cur = index, curEnd(this->_Table.size()); cur<curEnd; ++cur ) {
     Cons_O& entry = this->_Table[cur];
@@ -760,6 +763,7 @@ bool HashTable_O::remhash(T_sp key) {
 
 T_sp HashTable_O::setf_gethash_no_write_lock(T_sp key, T_sp value)
 {
+    DEBUG_HASH_TABLE({core::write_bf_stream(BF("%s:%d:%s   key->%s  value->%s\n")  % __FILE__ % __LINE__ % __FUNCTION__ % _rep_(key) % _rep_(value), T_sp());});
   if (key.no_keyp()) {
     SIMPLE_ERROR(BF("Do not use %s as a key!!") % _rep_(key));
   }
@@ -771,7 +775,7 @@ T_sp HashTable_O::setf_gethash_no_write_lock(T_sp key, T_sp value)
     // rewrite value
     pair->rplacd(value);
     DEBUG_HASH_TABLE({core::write_bf_stream(BF("%s:%d Found key/value pair: %s\n") % __FILE__ % __LINE__ % _rep_(keyValuePair), T_sp());});
-    DEBUG_HASH_TABLE({core::write_bf_stream(BF("%s:%d  Did rplacd value: %s\n") % __FILE__ % __LINE__ % _rep_(value), T_sp());});
+    DEBUG_HASH_TABLE({core::write_bf_stream(BF("%s:%d  Did rplacd value: %s to cons at %p\n") % __FILE__ % __LINE__ % _rep_(value) % &*pair, T_sp());});
     DEBUG_HASH_TABLE({core::write_bf_stream(BF("%s:%d  After rplacd value: %s\n") % __FILE__ % __LINE__ % _rep_(pair->_Cdr), T_sp());});
     VERIFY_HASH_TABLE(this);
     return value;
