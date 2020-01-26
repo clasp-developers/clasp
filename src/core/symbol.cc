@@ -303,10 +303,10 @@ void Symbol_O::sxhash_(HashGenerator &hg) const {
   if (hg.isFilling()) this->_Name->sxhash_(hg);
 }
 
-void Symbol_O::sxhash_equal(HashGenerator &hg,LocationDependencyPtrT ld) const
+void Symbol_O::sxhash_equal(HashGenerator &hg) const
 {
-  if (hg.isFilling()) HashTable_O::sxhash_equal(hg,this->_HomePackage,ld);
-  if (hg.isFilling()) HashTable_O::sxhash_equal(hg,this->_Name,ld);
+  if (hg.isFilling()) HashTable_O::sxhash_equal(hg,this->_HomePackage);
+  if (hg.isFilling()) HashTable_O::sxhash_equal(hg,this->_Name);
 }
 
 

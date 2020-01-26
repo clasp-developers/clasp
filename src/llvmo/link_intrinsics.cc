@@ -727,7 +727,7 @@ void debugInspectTPtr_detailed(core::T_O *tP) {
   printf("%s:%d Insert breakpoint here if you want to inspect object\n", __FILE__, __LINE__);
   core::T_sp val((gctools::Tagged)tP);
   if (core::HashTable_sp htval = val.asOrNull<core::HashTable_O>() ) {
-    htval->hash_table_dump(core::make_fixnum(0),_Nil<core::T_O>());
+    htval->hash_table_dump();
   }
 }
 

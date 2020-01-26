@@ -289,6 +289,7 @@ void Lisp_O::setupSpecialSymbols() {
   Null_sp symbol_nil = Null_O::create_at_boot("NIL");
   Symbol_sp symbol_unbound = Symbol_O::create_at_boot("UNBOUND");
   Symbol_sp symbol_no_thread_local_binding = Symbol_O::create_at_boot("NO-THREAD-LOCAL-BINDING");
+  Symbol_sp symbol_no_key = Symbol_O::create_at_boot("NO_KEY");
   Symbol_sp symbol_deleted = Symbol_O::create_at_boot("DELETED");
   Symbol_sp symbol_sameAsKey = Symbol_O::create_at_boot("SAME-AS-KEY");
   //TODO: Ensure that these globals are updated by the garbage collector
@@ -296,6 +297,7 @@ void Lisp_O::setupSpecialSymbols() {
   gctools::global_tagged_Symbol_OP_unbound = reinterpret_cast<Symbol_O *>(symbol_unbound.raw_());
   gctools::global_tagged_Symbol_OP_no_thread_local_binding = reinterpret_cast<Symbol_O *>(symbol_no_thread_local_binding.raw_());
   gctools::global_tagged_Symbol_OP_deleted = reinterpret_cast<Symbol_O *>(symbol_deleted.raw_());
+  gctools::global_tagged_Symbol_OP_no_key = reinterpret_cast<Symbol_O *>(symbol_no_key.raw_());
   gctools::global_tagged_Symbol_OP_sameAsKey = reinterpret_cast<Symbol_O *>(symbol_sameAsKey.raw_());
   symbol_unbound->_HomePackage = symbol_nil;
   symbol_no_thread_local_binding->_HomePackage = symbol_nil;
@@ -833,6 +835,8 @@ Symbol_sp Lisp_O::errorUndefinedSymbol(const char *sym) {
 
 Symbol_sp Lisp_O::defineSpecialOperator(const string &packageName, const string &rawFormName, SpecialFormCallback cb, const string &argstring, const string &docstring) {
   _OF();
+  SIMPLE_ERROR(BF("Don't use this - hardcode special operators"));
+#if 0  
   string formName = lispify_symbol_name(rawFormName);
   Symbol_sp sym = _lisp->internWithPackageName(packageName, formName);
   sym->exportYourself();
@@ -843,16 +847,19 @@ Symbol_sp Lisp_O::defineSpecialOperator(const string &packageName, const string 
   }
   this->_Roots._SpecialForms->setf_gethash(sym, special);
   return sym;
+#endif
 }
 
 T_sp Lisp_O::specialFormOrNil(Symbol_sp sym) {
   if (sym.nilp())
     return _Nil<T_O>();
-  return this->_Roots._SpecialForms->gethash(sym);
+  if (aclasp_special_operator_p(sym)) {
+    return _lisp->_true();
+  }
+  return _Nil<T_O>();
 }
 
-CL_LAMBDA();
-CL_DECLARE();
+#if 0
 CL_DOCSTRING("listOfAllSpecialOperators");
 CL_DEFUN T_sp core__list_of_all_special_operators() {
   List_sp sos(_Nil<T_O>());
@@ -861,6 +868,7 @@ CL_DEFUN T_sp core__list_of_all_special_operators() {
     });
   return sos;
 }
+#endif
 
 void Lisp_O::installPackage(const Exposer_O *pkg) {
   _OF();

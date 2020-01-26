@@ -2222,6 +2222,7 @@ T_mv evaluate(T_sp exp, T_sp environment) {
   form = cform;
   ASSERTNOTNULL(form);
   head = CONS_CAR(form);
+  T_sp tail = CONS_CDR(form);
   if (head.consp()) {
     Cons_sp chead((gctools::Tagged)head.raw_());
     if (CONS_CAR(chead)==cl::_sym_lambda) {
@@ -2232,18 +2233,46 @@ T_mv evaluate(T_sp exp, T_sp environment) {
     }
     SIMPLE_ERROR(BF("Illegal head of form %s") % _rep_(head));
   } else if (Symbol_sp headSym = head.asOrNull<Symbol_O>()) {
-    T_sp specialForm = _lisp->specialFormOrNil(headSym);
-    if (headSym == cl::_sym_setq) return sp_setq(oCdr(form),environment);
-    else if (headSym == cl::_sym_let) return sp_let(oCdr(form),environment);
-    else if (headSym == cl::_sym_quote) return sp_quote(oCdr(form),environment);
-    else if (headSym == cl::_sym_letSTAR) return sp_letSTAR(oCdr(form),environment);
-    if (!specialForm.nilp()) {
-#ifdef DEBUG_EVALUATE
-        printf("%s:%d %s is special form\n", __FILE__, __LINE__, _rep_(headSym).c_str());
-#endif
-      return evaluate_specialForm(gc::As_unsafe<SpecialForm_sp>(specialForm), form, environment);
-    }
+    // ------------------------------------------------------------
+    //
+    // These must EXACTLY match the special operators defined in evaluator.cc::defineSpecialOperatorsAndMacros(...)
+    //
+    if (headSym == cl::_sym_progn) return sp_progn(tail,environment);
+    else if (headSym == cl::_sym_block) return sp_block(tail,environment);
+    else if (headSym == cl::_sym_catch) return sp_catch(tail,environment);
+    else if (headSym == cl::_sym_eval_when) return sp_eval_when(tail,environment);
+    else if (headSym == cl::_sym_flet) return sp_flet(tail,environment);
+    else if (headSym == cl::_sym_function) return sp_function(tail,environment);
+    else if (headSym == cl::_sym_the) return sp_the(tail,environment);
+    else if (headSym == cl::_sym_go) return sp_go(tail,environment);
+    else if (headSym == cl::_sym_if) return sp_if(tail,environment);
+    else if (headSym == cl::_sym_labels) return sp_labels(tail,environment);
+    else if (headSym == cl::_sym_let) return sp_let(tail,environment);
+    else if (headSym == cl::_sym_letSTAR) return sp_letSTAR(tail,environment);
+    else if (headSym == cl::_sym_locally) return sp_locally(tail,environment);
+    else if (headSym == cl::_sym_macrolet) return sp_macrolet(tail,environment);
+    else if (headSym == cl::_sym_multiple_value_prog1) return sp_multipleValueProg1(tail,environment);
+    else if (headSym == cl::_sym_multiple_value_call) return sp_multipleValueCall(tail,environment);
+    else if (headSym == core::_sym_debug_message) return sp_debug_message(tail,environment);
+    else if (headSym == core::_sym_multiple_value_foreign_call) return sp_multipleValueForeignCall(tail,environment);
+    else if (headSym == core::_sym_foreign_call) return sp_foreignCall(tail,environment);
+    else if (headSym == core::_sym_foreign_call_pointer) return sp_foreignCallPointer(tail,environment);
+    else if (headSym == cl::_sym_progv) return sp_progv(tail,environment);
+    else if (headSym == cl::_sym_quote) return sp_quote(tail,environment);
+    else if (headSym == cl::_sym_return_from) return sp_returnFrom(tail,environment);
+    else if (headSym == cl::_sym_setq) return sp_setq(tail,environment);
+    else if (headSym == cl::_sym_tagbody) return sp_tagbody(tail,environment);
+    else if (headSym == cl::_sym_throw) return sp_throw(tail,environment);
+    else if (headSym == cl::_sym_unwind_protect) return sp_unwindProtect(tail,environment);
+    else if (headSym == cl::_sym_symbol_macrolet) return sp_symbolMacrolet(tail,environment);
+    else if (headSym == cl::_sym_load_time_value) return sp_loadTimeValue(tail,environment);
+    else if (headSym == ext::_sym_specialVar) return sp_specialVar(tail,environment);
+    else if (headSym == ext::_sym_lexicalVar) return sp_lexicalVar(tail,environment);
+// ------------------------------------------------------------
 
+    //
+    // The following speeds up a couple of other forms
+    //
     if (headSym == cl::_sym_cond) {
       return evaluate_cond(form, environment);
     } else if (headSym == cl::_sym_case) {
@@ -2380,47 +2409,85 @@ T_mv evaluateListReturnLast(List_sp args, T_sp environment) {
   return outObj;
 }
 
-void defineSpecialOperatorsAndMacros(Package_sp pkg) {
-  SYMBOL_EXPORT_SC_(ClPkg, block);
+SYMBOL_EXPORT_SC_(ClPkg, block);
   SYMBOL_EXPORT_SC_(ClPkg, quote);
   SYMBOL_EXPORT_SC_(ClPkg, progn);
   SYMBOL_EXPORT_SC_(ClPkg, throw);
-  _lisp->defineSpecialOperator(ClPkg, "progn", &sp_progn);
-  _lisp->defineSpecialOperator(ClPkg, "block", &sp_block);
-  _lisp->defineSpecialOperator(ClPkg, "catch", &sp_catch);
-  _lisp->defineSpecialOperator(ClPkg, "eval-when", &sp_eval_when);
-  _lisp->defineSpecialOperator(CorePkg, "debug-message", &sp_debug_message);
-  _lisp->defineSpecialOperator(ClPkg, "flet", &sp_flet);
-  _lisp->defineSpecialOperator(ClPkg, "function", &sp_function);
-  _lisp->defineSpecialOperator(ClPkg, "the", &sp_the);
-  _lisp->defineSpecialOperator(ClPkg, "go", &sp_go);
-  _lisp->defineSpecialOperator(ClPkg, "if", &sp_if);
-  _lisp->defineSpecialOperator(ClPkg, "labels", &sp_labels);
-  _lisp->defineSpecialOperator(ClPkg, "let", &sp_let);
-  _lisp->defineSpecialOperator(ClPkg, "let*", &sp_letSTAR);
-  _lisp->defineSpecialOperator(ClPkg, "locally", &sp_locally);
-  _lisp->defineSpecialOperator(ClPkg, "macrolet", &sp_macrolet);
-  _lisp->defineSpecialOperator(ClPkg, "multipleValueProg1", &sp_multipleValueProg1);
-  _lisp->defineSpecialOperator(ClPkg, "multipleValueCall", &sp_multipleValueCall);
-  _lisp->defineSpecialOperator(CorePkg, "multiple-value-foreign-call", &sp_multipleValueForeignCall);
-  _lisp->defineSpecialOperator(CorePkg, "foreign-call", &sp_foreignCall);
-  _lisp->defineSpecialOperator(CorePkg, "foreign-call-pointer", &sp_foreignCallPointer);
-  _lisp->defineSpecialOperator(ClPkg, "progv", &sp_progv);
-  _lisp->defineSpecialOperator(ClPkg, "quote", &sp_quote);
-  _lisp->defineSpecialOperator(ClPkg, "return-from", &sp_returnFrom);
-  _lisp->defineSpecialOperator(ClPkg, "setq", &sp_setq);
-  _lisp->defineSpecialOperator(ClPkg, "tagbody", &sp_tagbody);
-  _lisp->defineSpecialOperator(ClPkg, "throw", &sp_throw);
-  _lisp->defineSpecialOperator(ClPkg, "unwind-protect", &sp_unwindProtect);
-  _lisp->defineSpecialOperator(ClPkg, "symbol-macrolet", &sp_symbolMacrolet);
-  _lisp->defineSpecialOperator(ClPkg, "load-time-value", &sp_loadTimeValue);
-  _lisp->defineSpecialOperator(ExtPkg, "special-var", &sp_specialVar);
-  _lisp->defineSpecialOperator(ExtPkg, "lexical-var", &sp_lexicalVar);
-  // missing special operator load-time-value
-  // missing progv
 
-  // These need to be converted to macros
-  //	    _lisp->defineSpecialOperator(ExtPkg,"step",&sp_step);
+bool aclasp_special_operator_p(Symbol_sp headSym) {
+  //
+  // IMPORTANT!!!! These all need to be tested in evaluator.cc::evaluate(...)
+  //
+  if (headSym == cl::_sym_progn) return true;
+  else if (headSym == cl::_sym_block) return true;
+  else if (headSym == cl::_sym_catch) return true;
+  else if (headSym == cl::_sym_eval_when) return true;
+  else if (headSym == cl::_sym_flet) return true;
+  else if (headSym == cl::_sym_function) return true;
+  else if (headSym == cl::_sym_the) return true;
+  else if (headSym == cl::_sym_go) return true;
+  else if (headSym == cl::_sym_if) return true;
+  else if (headSym == cl::_sym_labels) return true;
+  else if (headSym == cl::_sym_let) return true;
+  else if (headSym == cl::_sym_letSTAR) return true;
+  else if (headSym == cl::_sym_locally) return true;
+  else if (headSym == cl::_sym_macrolet) return true;
+  else if (headSym == cl::_sym_multiple_value_prog1) return true;
+  else if (headSym == cl::_sym_multiple_value_call) return true;
+  else if (headSym == core::_sym_debug_message) return true;
+  else if (headSym == core::_sym_multiple_value_foreign_call) return true;
+  else if (headSym == core::_sym_foreign_call) return true;
+  else if (headSym == core::_sym_foreign_call_pointer) return true;
+  else if (headSym == cl::_sym_progv) return true;
+  else if (headSym == cl::_sym_quote) return true;
+  else if (headSym == cl::_sym_return_from) return true;
+  else if (headSym == cl::_sym_setq) return true;
+  else if (headSym == cl::_sym_tagbody) return true;
+  else if (headSym == cl::_sym_throw) return true;
+  else if (headSym == cl::_sym_unwind_protect) return true;
+  else if (headSym == cl::_sym_symbol_macrolet) return true;
+  else if (headSym == cl::_sym_load_time_value) return true;
+  else if (headSym == ext::_sym_specialVar) return true;
+  else if (headSym == ext::_sym_lexicalVar) return true;
+  return false;
+};
+
+
+List_sp core__aclasp_list_of_all_special_operators() {
+  ql::list l;
+  l << cl::_sym_progn;
+  l << cl::_sym_block;
+  l << cl::_sym_catch;
+  l << cl::_sym_eval_when;
+  l << cl::_sym_flet;
+  l << cl::_sym_function;
+  l << cl::_sym_the;
+  l << cl::_sym_go;
+  l << cl::_sym_if;
+  l << cl::_sym_labels;
+  l << cl::_sym_let;
+  l << cl::_sym_letSTAR;
+  l << cl::_sym_locally;
+  l << cl::_sym_macrolet;
+  l << cl::_sym_multiple_value_prog1;
+  l << cl::_sym_multiple_value_call;
+  l << core::_sym_debug_message;
+  l << core::_sym_multiple_value_foreign_call;
+  l << core::_sym_foreign_call;
+  l << core::_sym_foreign_call_pointer;
+  l << cl::_sym_progv;
+  l << cl::_sym_quote;
+  l << cl::_sym_return_from;
+  l << cl::_sym_setq;
+  l << cl::_sym_tagbody;
+  l << cl::_sym_throw;
+  l << cl::_sym_unwind_protect;
+  l << cl::_sym_symbol_macrolet;
+  l << cl::_sym_load_time_value;
+  l << ext::_sym_specialVar;
+  l << ext::_sym_lexicalVar;
+  return l.cons();
+}
 
   SYMBOL_SC_(CorePkg, processDeclarations);
   SYMBOL_EXPORT_SC_(ClPkg, eval);
@@ -2433,9 +2500,7 @@ void defineSpecialOperatorsAndMacros(Package_sp pkg) {
   SYMBOL_EXPORT_SC_(ClPkg, funcall);
   SYMBOL_EXPORT_SC_(CorePkg, STAReval_with_env_hookSTAR);
   SYMBOL_EXPORT_SC_(CorePkg, interpret_eval_with_env);
-//  af_def(CorePkg, "eval_with_env_default", &core__eval_with_env_default);
-  core::_sym_STAReval_with_env_hookSTAR->defparameter(core::_sym_interpret_eval_with_env->symbolFunction());
-};
+
 };
 };
 

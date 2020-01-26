@@ -427,6 +427,12 @@ not_output_write_char(T_sp strm, claspCharacter c) {
   return c;
 }
 
+static claspCharacter
+startup_write_char(T_sp strm, claspCharacter c) {
+  putchar(c);
+  return c;
+}
+
 static void
 not_input_unread_char(T_sp strm, claspCharacter c) {
   not_an_input_stream(strm);
@@ -1516,6 +1522,100 @@ static T_sp
 clos_stream_close(T_sp strm) {
   return eval::funcall(gray::_sym_close, strm);
 }
+
+
+static int
+illegal_op_int__T_sp(T_sp strm) {
+  printf("%s:%d Illegal op\n", __FILE__, __LINE__ );
+  abort();
+}
+
+static cl_index
+illegal_op_cl_index__T_sp_char_cl_index(T_sp strm, unsigned char *c, cl_index n) {
+  printf("%s:%d Illegal op\n", __FILE__, __LINE__ );
+  abort();
+}
+
+static T_sp
+illegal_op_T_sp__T_sp(T_sp strm) {
+  printf("%s:%d Illegal op\n", __FILE__, __LINE__ );
+  abort();
+}
+
+static void
+illegal_op_void__T_sp(T_sp strm) {
+  printf("%s:%d Illegal op\n", __FILE__, __LINE__ );
+  abort();
+}
+
+static void
+illegal_op_void__T_sp_T_sp(T_sp strm, T_sp c) {
+  printf("%s:%d Illegal op\n", __FILE__, __LINE__ );
+  abort();
+}
+
+static T_sp
+illegal_op_T_sp__T_sp_T_sp(T_sp strm, T_sp c) {
+  printf("%s:%d Illegal op\n", __FILE__, __LINE__ );
+  abort();
+}
+
+static void
+illegal_op_void__T_sp_char(T_sp strm, claspCharacter c) {
+  printf("%s:%d Illegal op\n", __FILE__, __LINE__ );
+  abort();
+}
+
+static cl_index
+illegal_op_vector(T_sp strm, T_sp data, cl_index start, cl_index end) {
+  printf("%s:%d Illegal op\n", __FILE__, __LINE__ );
+  abort();
+}
+
+static T_sp
+illegal_op_T_sp__T_sp(T_sp strm, T_sp c) {
+  printf("%s:%d Illegal op\n", __FILE__, __LINE__ );
+  abort();
+}
+
+
+static claspCharacter
+illegal_op_char__T_sp(T_sp strm) {
+  printf("%s:%d Illegal op\n", __FILE__, __LINE__ );
+  abort();
+}
+
+const FileOps startup_stream_ops = {
+    illegal_op_cl_index__T_sp_char_cl_index,
+    illegal_op_cl_index__T_sp_char_cl_index,
+
+    illegal_op_void__T_sp_T_sp,
+    illegal_op_T_sp__T_sp,
+
+    illegal_op_char__T_sp,
+    startup_write_char,
+    illegal_op_void__T_sp_char,
+    illegal_op_char__T_sp,
+
+    illegal_op_vector,
+    illegal_op_vector,
+
+    illegal_op_int__T_sp,
+    illegal_op_void__T_sp,
+    illegal_op_void__T_sp,
+    illegal_op_void__T_sp,
+    illegal_op_void__T_sp,
+
+    illegal_op_int__T_sp,
+    illegal_op_int__T_sp,
+    illegal_op_int__T_sp,
+    illegal_op_T_sp__T_sp,
+
+    illegal_op_T_sp__T_sp,
+    illegal_op_T_sp__T_sp,
+    illegal_op_T_sp__T_sp_T_sp,
+    illegal_op_int__T_sp,
+    illegal_op_T_sp__T_sp };
 
 const FileOps clos_stream_ops = {
     clos_stream_write_byte8,
@@ -4315,10 +4415,13 @@ stream_dispatch_table(T_sp strm) {
   if (AnsiStreamP(strm)) {
     return StreamOps(strm);
   }
-  if (!gc::IsA<Instance_sp>(strm)) {
-    ERROR_WRONG_TYPE_ONLY_ARG(core::_sym_dispatchTable, strm, cl::_sym_Stream_O);
+  if (gc::IsA<Instance_sp>(strm)) {
+    return clos_stream_ops;
   }
-  return clos_stream_ops;
+  if (!strm) {
+    return startup_stream_ops;
+  }
+  ERROR_WRONG_TYPE_ONLY_ARG(core::_sym_dispatchTable, strm, cl::_sym_Stream_O);
 }
 
 cl_index

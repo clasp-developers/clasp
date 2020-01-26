@@ -65,7 +65,7 @@ unsigned long long Bignum_O::as_unsigned_long_long_() const {
 }
 
 void Bignum_O::sxhash_(HashGenerator &hg) const {
-  hg.addPart(this->_value);
+  hg.addValue(this->_value);
 }
 
 gc::Fixnum Bignum_O::as_int_() const {

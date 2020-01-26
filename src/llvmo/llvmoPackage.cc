@@ -218,7 +218,17 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("VALUE-FRAME-ELEMENT-SIZE"), make_fixnum((int)sizeof(core::ValueFrame_O::value_type))),list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("LCC-ARGS-IN-REGISTERS"), make_fixnum((int)sizeof(LCC_ARGS_IN_REGISTERS))), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("FIXNUM-MASK"), make_fixnum((int)gctools::fixnum_mask)), list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("TAG-MASK"), make_fixnum((int)gctools::tag_mask)), list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("PTAG-MASK"), make_fixnum((int)gctools::ptag_mask)), list);
+
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("MTAG-MASK"), make_fixnum((int)gctools::Header_s::mtag_mask)), list);
+    list = Cons_O::create(Cons_O::create(lisp_internKeyword("DERIVABLE-WTAG"), make_fixnum((int)gctools::Header_s::Header_s::derivable_wtag)), list);
+    list = Cons_O::create(Cons_O::create(lisp_internKeyword("RACK-WTAG"), make_fixnum((int)gctools::Header_s::Header_s::rack_wtag)), list);
+    list = Cons_O::create(Cons_O::create(lisp_internKeyword("WRAPPED-WTAG"), make_fixnum((int)gctools::Header_s::Header_s::wrapped_wtag)), list);
+    list = Cons_O::create(Cons_O::create(lisp_internKeyword("HEADER-WTAG"), make_fixnum((int)gctools::Header_s::Header_s::header_wtag)), list);
+    list = Cons_O::create(Cons_O::create(lisp_internKeyword("MTAG-WIDTH"), make_fixnum((int)gctools::Header_s::Header_s::mtag_width)), list);
+    list = Cons_O::create(Cons_O::create(lisp_internKeyword("WTAG-WIDTH"), make_fixnum((int)gctools::Header_s::Header_s::wtag_width)), list);
+    list = Cons_O::create(Cons_O::create(lisp_internKeyword("STAMP-SHIFT"), make_fixnum((int)gctools::Header_s::Header_s::stamp_shift)), list);
+  
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("IMMEDIATE-MASK"), make_fixnum((int)gctools::immediate_mask)), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("GENERAL-TAG"), make_fixnum((int)gctools::general_tag)), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("UNUSED-TAG"), make_fixnum((int)gctools::unused_tag)), list);

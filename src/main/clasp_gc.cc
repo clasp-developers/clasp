@@ -16419,7 +16419,6 @@ obj_finalize_STAMP_core__HashTableBase_O:
 {
      // stamp value 1467
     core::HashTableBase_O* obj_gc_safe = reinterpret_cast<core::HashTableBase_O*>(client);
-    obj_gc_safe->~HashTableBase_O();
     goto finalize_done;
 }
 obj_finalize_STAMP_core__WeakKeyHashTable_O:

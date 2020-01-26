@@ -1529,7 +1529,7 @@ CL_DEFUN Fixnum_sp cl__sxhash(T_sp obj) {
     return make_fixnum(1);
   HashGenerator hg;
   clasp_sxhash(obj, hg);
-  gc::Fixnum hash = MOST_POSITIVE_FIXNUM&hg.hash();
+  gc::Fixnum hash = MOST_POSITIVE_FIXNUM&hg.rawhash();
   return clasp_make_fixnum(hash);
 }
 

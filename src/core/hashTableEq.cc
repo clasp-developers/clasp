@@ -80,23 +80,23 @@ HashTableEq_sp HashTableEq_O::createFromPList(List_sp plist, Symbol_sp nilTermin
 
 List_sp HashTableEq_O::tableRef_no_read_lock(T_sp key, bool under_write_lock) {
   cl_index length = this->_Table.size();
-  cl_index index = this->sxhashKey(key, length, false /*will-add-key*/);
+  HashGenerator hg;
+  cl_index index = this->sxhashKey(key, length, hg );
   for (size_t cur = index, curEnd(this->_Table.size()); cur<curEnd; ++cur ) {
     Cons_O& entry = this->_Table[cur];
     if (entry._Car == key) return gc::smart_ptr<Cons_O>((Cons_O*)&entry);
-    if (entry._Car.unboundp()) goto NOT_FOUND;
+    if (entry._Car.no_keyp()) goto NOT_FOUND;
   }
   for (size_t cur = 0, curEnd(index); cur<curEnd; ++cur ) {
     Cons_O& entry = this->_Table[cur];
     if (entry._Car == key) return gc::smart_ptr<Cons_O>((Cons_O*)&entry);
-    if (entry._Car.unboundp()) goto NOT_FOUND;
+    if (entry._Car.no_keyp()) goto NOT_FOUND;
   }
  NOT_FOUND:
 #if defined(USE_MPS)
   // Location dependency test if key is stale
   if (key.objectp()) {
-    void *blockAddr = &(*key);
-    if (mps_ld_isstale(const_cast<mps_ld_t>(&(this->_LocationDependency)), global_arena, blockAddr)) {
+    if (hg.isstale(&this->_LocationDependency)) {
       if (under_write_lock) {
         return this->rehash_no_lock(false /*expandTable*/, key);
       } else {
@@ -112,14 +112,8 @@ bool HashTableEq_O::keyTest(T_sp entryKey, T_sp searchKey) const {
   return cl__eq(entryKey, searchKey);
 }
 
-gc::Fixnum HashTableEq_O::sxhashKey(T_sp obj, gc::Fixnum bound, bool willAddKey) const {
-  Hash1Generator hg;
-#ifdef USE_MPS
-  HashTable_O::sxhash_eq(hg, obj, willAddKey ? const_cast<mps_ld_t>(&(this->_LocationDependency)) : NULL);
-#endif
-#ifdef USE_BOEHM
-  HashTable_O::sxhash_eq(hg, obj, NULL);
-#endif
+gc::Fixnum HashTableEq_O::sxhashKey(T_sp obj, gc::Fixnum bound, HashGenerator& hg ) const {
+  HashTable_O::sxhash_eq(hg, obj);
   return hg.hashBound(bound);
 }
 

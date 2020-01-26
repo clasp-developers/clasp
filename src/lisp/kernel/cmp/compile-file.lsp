@@ -131,7 +131,7 @@ and the pathname of the source file - this will also be used as the module initi
 ;;;
 ;;; Compile-file proper
 
-(defun generate-obj-asm-stream (module output-stream file-type reloc-model &key (compile-file-parallel *compile-file-parallel*))
+(defun generate-obj-asm-stream (module output-stream file-type reloc-model &key (target-faso-file *compile-file-parallel*))
   (with-track-llvm-time
       (let* ((triple-string (llvm-sys:get-target-triple module))
              (normalized-triple-string (llvm-sys:triple-normalize triple-string))
@@ -146,7 +146,7 @@ and the pathname of the source file - this will also be used as the module initi
                                                                  ""
                                                                  target-options
                                                                  reloc-model
-                                                                 (code-model :jit nil :compile-file-parallel compile-file-parallel)
+                                                                 (code-model :jit nil :target-faso-file target-faso-file)
                                                                  'llvm-sys:code-gen-opt-default
                                                                  NIL ; JIT?
                                                                  ))
@@ -160,13 +160,10 @@ and the pathname of the source file - this will also be used as the module initi
             (llvm-sys:add-passes-to-emit-file-and-run-pass-manager target-machine pm output-stream nil #|<-dwo-stream|# file-type module))))))
 
 
-(defun compile-file-generate-obj-asm (module output-pathname &key file-type (reloc-model 'llvm-sys:reloc-model-undefined) (compile-file-parallel *compile-file-parallel*))
+(defun compile-file-generate-obj-asm (module output-pathname &key file-type (reloc-model 'llvm-sys:reloc-model-undefined))
   (with-atomic-file-rename (temp-output-pathname output-pathname)
     (with-open-file (output-stream temp-output-pathname :direction :output)
-      (generate-obj-asm-stream module output-stream file-type reloc-model
-                               :compile-file-parallel compile-file-parallel)
-      )))
-
+      (generate-obj-asm-stream module output-stream file-type reloc-model :target-faso-file nil))))
 
 (defvar *debug-compile-file* nil)
 (defvar *debug-compile-file-counter* 0)
@@ -289,7 +286,7 @@ Compile a lisp source file into an LLVM module."
                               (source-debug-lineno 0)
                               (source-debug-offset 0)
                               ;; output-type can be (or :fasl :bitcode :object)
-                              (output-type :fasl)
+                              (output-type (if *generate-faso* :faso :fasl))
                               ;; type can be either :kernel or :user
                               (type :user)
                               ;; A unique prefix for symbols of compile-file'd files that
@@ -305,7 +302,8 @@ Compile a lisp source file into an LLVM module."
   "See CLHS compile-file."
   #+debug-monitor(sys:monitor-message "compile-file ~a" input-file)
   (core:bformat t "compile-file-serial image-startup-position: %s%N" image-startup-position)
-  (let ((*compile-file-parallel* nil))
+  (let ((*compile-file-parallel* nil)
+        (*generate-faso* (eq output-type :faso)))
     (if (not output-file-p) (setq output-file (cfp-output-file-default input-file output-type)))
     (with-compiler-env ()
       (let* ((output-path (compile-file-pathname input-file :output-file output-file :output-type output-type ))
@@ -336,7 +334,8 @@ Compile a lisp source file into an LLVM module."
                                                   :image-startup-position image-startup-position
                                                   :optimize optimize
                                                   :optimize-level optimize-level)))
-              (compile-file-output-module module output-file output-type output-path input-file type)
+              (compile-file-output-module module output-file output-type output-path input-file type
+                                          :position image-startup-position)
               (when output-info-pathname (generate-info input-file output-info-pathname))
               output-path)))))))
 
@@ -357,7 +356,8 @@ Compile a lisp source file into an LLVM module."
       (finish-output))
     (llvm-link fasl-output-file :input-files (list input-file) :input-type :bitcode)))
 
-(defun compile-file-output-module (module output-file output-type output-path input-file type)
+(defun compile-file-output-module (module output-file output-type output-path input-file type
+                                   &key position)
   (when (null output-path)
     (error "The output-path is nil for input filename ~a~%" input-file))
   (ensure-directories-exist output-path)
@@ -372,8 +372,7 @@ Compile a lisp source file into an LLVM module."
            (prog1
                (compile-file-generate-obj-asm module output-path
                                               :file-type 'llvm-sys:code-gen-file-type-object-file
-                                              :reloc-model (reloc-model)
-                                              :compile-file-parallel nil)
+                                              :reloc-model (reloc-model))
              (when (eq type :kernel)
                (output-kernel-fasl output-file temp-bitcode-file :object)))))
         ((eq output-type :bitcode)
@@ -382,6 +381,20 @@ Compile a lisp source file into an LLVM module."
          (prog1 (output-bitcode module (core:coerce-to-filename output-path))
            (when (eq type :kernel)
              (output-kernel-fasl output-file output-path :bitcode))))
+        ((eq output-type :faso)
+         (let ((temp-bitcode-file (compile-file-pathname input-file
+                                                         :output-file output-file :output-type :bitcode)))
+           (ensure-directories-exist temp-bitcode-file)
+           (when *compile-verbose*
+             (bformat t "Writing temporary bitcode file to: %s%N" temp-bitcode-file))
+           (output-bitcode module (core:coerce-to-filename temp-bitcode-file))
+           (when *compile-verbose*
+             (bformat t "Writing fasl file to: %s%N" output-file)
+             (finish-output))
+           (let ((stream (generate-obj-asm-stream module :simple-vector-byte8
+                                                  'llvm-sys:code-gen-file-type-object-file
+                                                  (reloc-model))))
+             (core:write-faso output-file (list stream) :start-object-id position))))
         ((eq output-type :fasl)
          (let ((temp-bitcode-file (compile-file-pathname input-file
                                                          :output-file output-file :output-type :bitcode)))

@@ -252,7 +252,7 @@ void mps_register_roots(void* roots_begin, size_t num_roots) {
                                     roots_begin,
                                     roots_end,
                                     clasp_scan_area_tagged,
-                                    gctools::tag_mask,  // #b111
+                                    gctools::ptag_mask,  // #b111
                                     0 ); // DLM says this will be ignored
   if ( res != MPS_RES_OK ) {
     SIMPLE_ERROR(BF("Could not mps_root_create_area_tagged - error: %d") % res );
@@ -582,6 +582,7 @@ extern "C" {
 
 std::atomic<size_t> global_finalization_requests;
 void my_mps_finalize(void* client) {
+//  printf("%s:%d   mps_finalize of %p\n", __FILE__, __LINE__, client);
   mps_finalize(global_arena,&client);
   ++gctools::globalMpsMetrics.finalizationRequests;
   ++global_finalization_requests;
@@ -610,21 +611,22 @@ size_t processMpsMessages(size_t& finalizations) {
     } else if (type == mps_message_type_gc()) {
       ++mGc;
 #if 0
-                printf("Message: mps_message_type_gc()\n");
-                size_t live = mps_message_gc_live_size(global_arena, message);
-                size_t condemned = mps_message_gc_condemned_size(global_arena, message);
-                size_t not_condemned = mps_message_gc_not_condemned_size(global_arena, message);
-                printf("Collection finished.\n");
-                printf("    live %" PRu "\n", (unsigned long)live);
-                printf("    condemned %" PRu "\n", (unsigned long)condemned);
-                printf("    not_condemned %" PRu "\n", (unsigned long)not_condemned);
-                printf("    clock: %" PRu "\n", (unsigned long)mps_message_clock(global_arena, message));
+      printf("Message: mps_message_type_gc()\n");
+      size_t live = mps_message_gc_live_size(global_arena, message);
+      size_t condemned = mps_message_gc_condemned_size(global_arena, message);
+      size_t not_condemned = mps_message_gc_not_condemned_size(global_arena, message);
+      printf("Collection finished.\n");
+      printf("    live %" PRu "\n", (unsigned long)live);
+      printf("    condemned %" PRu "\n", (unsigned long)condemned);
+      printf("    not_condemned %" PRu "\n", (unsigned long)not_condemned);
+      printf("    clock: %" PRu "\n", (unsigned long)mps_message_clock(global_arena, message));
 #endif
     } else if (type == mps_message_type_finalization()) {
       ++finalizations;
       //                printf("%s:%d mps_message_type_finalization received\n", __FILE__, __LINE__);
       mps_addr_t ref_o;
       mps_message_finalization_ref(&ref_o, global_arena, message);
+//      printf("%s:%d finalization message for %p\n", __FILE__, __LINE__, ref_o);
       // Figure out what pool the pointer belonged to and recreate the
       //   original tagged object pointer
       //   For general objects the object may already have been destructed (dead_object)
@@ -633,34 +635,36 @@ size_t processMpsMessages(size_t& finalizations) {
       core::T_sp obj;
       bool live_object = true;
       if (pool) {
+//        printf("%s:%d  ---- In pool %p\n", __FILE__, __LINE__, pool );
         if (pool == gctools::global_amc_cons_pool) {
+//          printf("%s:%d    in CONS pool %p\n", __FILE__, __LINE__, ref_o);
           obj = gctools::smart_ptr<core::Cons_O>((gctools::Tagged)gctools::tag_cons<core::T_O*>(reinterpret_cast<core::T_O*>(ref_o)));
         } else {
+//          printf("%s:%d    in General pool %p\n", __FILE__, __LINE__, ref_o);
           gctools::Header_s* header = (gctools::Header_s*)((char*)ref_o - sizeof(gctools::Header_s));
           live_object = (header->stampP());
+//          printf("%s:%d    in General pool %p  stamp_wtag_mtag %lu  live_object -> %d\n", __FILE__, __LINE__, ref_o, (size_t)header->_stamp_wtag_mtag._value, live_object);
           obj = gctools::smart_ptr<core::T_O>((gctools::Tagged)gctools::tag_general<core::T_O*>(reinterpret_cast<core::T_O*>(ref_o)));
         }
       } else {
         printf("%s:%d   MPS could not figure out what pool the pointer %p belongs to - treating it like a dead object and no finalizer will be invoked\n", __FILE__, __LINE__, ref_o);
         live_object = false;
       }
-#if 1
       if (live_object) {
         bool invoked_finalizer = false;
         auto ht = gctools::As<core::WeakKeyHashTable_sp>(gctools::_sym_STARfinalizersSTAR->symbolValue());
         core::T_mv res = ht->gethash(obj);
         if (res.second().notnilp()) {
-          printf("%s:%d           Trying to pass object %p to finalizer at %p\n", __FILE__, __LINE__, (void*)obj.tagged_(), (void*)res.tagged_());
+//          printf("%s:%d           Trying to pass object %p to finalizer at %p\n", __FILE__, __LINE__, (void*)obj.tagged_(), (void*)res.tagged_());
           core::List_sp finalizers = res;
           for ( auto cur : finalizers ) {
             core::T_sp finalizer = oCar(cur);
             core::eval::funcall(finalizer,obj);
-            printf("%s:%d Ran finalizer callback.\n", __FILE__, __LINE__ );
+//            printf("%s:%d Ran finalizer callback.\n", __FILE__, __LINE__ );
           }
           ht->remhash(obj);
           invoked_finalizer = true;
         }
-#endif
         if (!invoked_finalizer && obj.generalp()) obj_finalize(ref_o);
       } else {
         printf("%s:%d Got finalization message for %p reconstituted tagged ptr = %p stamp->%u  - it's a dead_object so I'm ignoring it - maybe get rid of this message\n", __FILE__, __LINE__, (void*)ref_o, (void*)obj.tagged_(), gctools::header_pointer(ref_o)->stamp_());
@@ -673,11 +677,11 @@ size_t processMpsMessages(size_t& finalizations) {
   }
 #if 0
 //        printf("%s:%d Leaving processMpsMessages\n",__FILE__,__LINE__);
-        core::Number_sp endTime = core::cl__get_internal_run_time().as<core::Number_O>();
-        core::Number_sp deltaTime = core::contagen_mul(core::contagen_sub(endTime,startTime),core::make_fixnum(1000));
-        core::Number_sp deltaSeconds = core::contagen_div(deltaTime,cl::_sym_internalTimeUnitsPerSecond->symbolValue().as<core::Number_O>());
-        printf("%s:%d [processMpsMessages %s millisecs for  %d finalization/ %d gc-start/ %d gc messages]\n", __FILE__, __LINE__, _rep_(deltaSeconds).c_str(), mFinalize, mGcStart, mGc );
-        fflush(stdout);
+  core::Number_sp endTime = core::cl__get_internal_run_time().as<core::Number_O>();
+  core::Number_sp deltaTime = core::contagen_mul(core::contagen_sub(endTime,startTime),core::make_fixnum(1000));
+  core::Number_sp deltaSeconds = core::contagen_div(deltaTime,cl::_sym_internalTimeUnitsPerSecond->symbolValue().as<core::Number_O>());
+  printf("%s:%d [processMpsMessages %s millisecs for  %d finalization/ %d gc-start/ %d gc messages]\n", __FILE__, __LINE__, _rep_(deltaSeconds).c_str(), mFinalize, mGcStart, mGc );
+  fflush(stdout);
 #endif
   return messages;
 };

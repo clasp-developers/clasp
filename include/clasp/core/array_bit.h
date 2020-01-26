@@ -66,7 +66,7 @@ namespace core {
           simple_element_type c = (*this)[i];
           hash = ((hash << 5) + hash) + c;
         }
-        hg.addPart(hash);
+        hg.addValue(hash);
       }
     }
   };

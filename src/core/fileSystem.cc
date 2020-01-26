@@ -158,7 +158,7 @@ void Path_O::sxhash_(HashGenerator &hg) const {
   _OF();
   string ts = this->_Path.string();
   Bignum bn = CStrToBignum(ts.c_str());
-  hg.addPart(bn);
+  hg.addValue(bn);
 }
 
 CL_LISPIFY_NAME("last_write_time");

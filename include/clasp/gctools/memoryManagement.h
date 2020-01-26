@@ -40,7 +40,6 @@ THE SOFTWARE.
 #endif
 #include <gc/gc.h>
 #include <gc/gc_allocator.h>
-typedef void *LocationDependencyPtrT;
 #endif // USE_BOEHM
 
 #ifdef USE_MPS
@@ -48,7 +47,6 @@ extern "C" {
 #include <clasp/mps/code/mps.h>
 #include <clasp/mps/code/mpsavm.h>
 };
-typedef mps_ld_t LocationDependencyPtrT;
 #endif
 
 typedef int (*MainFunctionType)(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &mpiSize);
@@ -312,7 +310,7 @@ namespace gctools {
   class Header_s {
   public:
     static const tagged_stamp_t mtag_mask      =  BOOST_BINARY(0011);
-      static const size_t mtag_shift = 2;
+      static const size_t mtag_width = 2;
     static const tagged_stamp_t where_mask     =  BOOST_BINARY(1100);
 // Must match the number of bits to describe where_mask from the 0th bit
     // This is the width of integer that llvm needs to represent the masked off part of a header stamp
@@ -322,7 +320,7 @@ namespace gctools {
     static const tagged_stamp_t rack_wtag      =  BOOST_BINARY(0100);
     static const tagged_stamp_t wrapped_wtag   =  BOOST_BINARY(1000);
     static const tagged_stamp_t header_wtag    =  BOOST_BINARY(1100);
-    static const tagged_stamp_t wtag_shift     = 2;
+    static const tagged_stamp_t wtag_width     = 2;
     
     static const tagged_stamp_t invalid_tag=  INVALID_MTAG; // indicates not header
     // stamp_tag MUST be 00 so that stamps look like FIXNUMs
@@ -333,8 +331,8 @@ namespace gctools {
     static const int pad_shift = 3; // 3 bits for pad tag
     static const tagged_stamp_t pad_tag    = BOOST_BINARY(011);
     static const tagged_stamp_t pad1_tag   = BOOST_BINARY(111);
-    static const tagged_stamp_t fwd_ptr_mask = ~tag_mask;
-    static const tagged_stamp_t stamp_mask    = ~tag_mask; // BOOST_BINARY(11...11111111111100);
+    static const tagged_stamp_t fwd_ptr_mask = ~mtag_mask;
+    static const tagged_stamp_t stamp_mask    = ~mtag_mask; // BOOST_BINARY(11...11111111111100);
     static const int stamp_shift = STAMP_SHIFT;
     static const tagged_stamp_t largest_possible_stamp = stamp_mask>>stamp_shift;
   public:
@@ -503,22 +501,22 @@ namespace gctools {
 #endif
     static GCStampEnum value_to_stamp(Fixnum value) { return (GCStampEnum)(StampWtagMtag::unshift_shifted_stamp(value)); };
   public:
-    size_t tag() const { return (size_t)(this->_stamp_wtag_mtag._value & tag_mask);};
+    size_t mtag() const { return (size_t)(this->_stamp_wtag_mtag._value & mtag_mask);};
 #ifdef DEBUG_GUARD
     size_t tail_size() const { return this->_tail_size; };
 #else
     constexpr size_t tail_size() const { return 0; };
 #endif
-    bool invalidP() const { return (this->_stamp_wtag_mtag._value & tag_mask) == invalid_tag; };
-    bool stampP() const { return (this->_stamp_wtag_mtag._value & tag_mask) == stamp_tag; };
-    bool fwdP() const { return (this->_stamp_wtag_mtag._value & tag_mask) == fwd_tag; };
+    bool invalidP() const { return (this->_stamp_wtag_mtag._value & mtag_mask) == invalid_tag; };
+    bool stampP() const { return (this->_stamp_wtag_mtag._value & mtag_mask) == stamp_tag; };
+    bool fwdP() const { return (this->_stamp_wtag_mtag._value & mtag_mask) == fwd_tag; };
     bool anyPadP() const { return (this->_stamp_wtag_mtag._value & pad_test) == pad_tag; };
     bool padP() const { return (this->_stamp_wtag_mtag._value & pad_mask) == pad_tag; };
     bool pad1P() const { return (this->_stamp_wtag_mtag._value & pad_mask) == pad1_tag; };
   /*! No sanity checking done - this function assumes kindP == true */
     ShiftedStamp shifted_stamp() const { return (ShiftedStamp)(this->_stamp_wtag_mtag._value); };
       GCStampEnum stamp_wtag() const { return (GCStampEnum)(value_to_stamp(this->_stamp_wtag_mtag._value)); };
-      GCStampEnum stamp_() const { return (GCStampEnum)(value_to_stamp(this->_stamp_wtag_mtag._value)>>wtag_shift); };
+    GCStampEnum stamp_() const { return (GCStampEnum)(value_to_stamp(this->_stamp_wtag_mtag._value)>>(mtag_width)); };
   /*! No sanity checking done - this function assumes fwdP == true */
     void *fwdPointer() const { return reinterpret_cast<void *>(this->_stamp_wtag_mtag._value & fwd_ptr_mask); };
   /*! Return the size of the fwd block - without the header. This reaches into the client area to get the size */

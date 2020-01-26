@@ -988,7 +988,7 @@ mps_res_t weak_obj_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit) {
         core::T_O *p = reinterpret_cast<core::T_O *>(obj->dependent.raw_());
         if (gctools::tagged_objectp(p) && MPS_FIX1(ss, p)) {
           core::T_O *pobj = gctools::untag_object<core::T_O *>(p);
-          core::T_O *tag = gctools::tag<core::T_O *>(p);
+          core::T_O *tag = gctools::ptag<core::T_O *>(p);
           mps_res_t res = MPS_FIX2(ss, reinterpret_cast<mps_addr_t *>(&pobj));
           if (res != MPS_RES_OK)
             return res;
@@ -999,7 +999,7 @@ mps_res_t weak_obj_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit) {
           core::T_O *p = reinterpret_cast<core::T_O *>(obj->bucket[i].raw_());
           if (gctools::tagged_objectp(p) && MPS_FIX1(ss, p)) {
             core::T_O *pobj = gctools::untag_object<core::T_O *>(p);
-            core::T_O *tag = gctools::tag<core::T_O *>(p);
+            core::T_O *tag = gctools::ptag<core::T_O *>(p);
             mps_res_t res = MPS_FIX2(ss, reinterpret_cast<mps_addr_t *>(&pobj));
             if (res != MPS_RES_OK)
               return res;
@@ -1020,7 +1020,7 @@ mps_res_t weak_obj_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit) {
         core::T_O *p = reinterpret_cast<core::T_O *>(obj->dependent.raw_());
         if (gctools::tagged_objectp(p) && MPS_FIX1(ss, p)) {
           core::T_O *pobj = gctools::untag_object<core::T_O *>(p);
-          core::T_O *tag = gctools::tag<core::T_O *>(p);
+          core::T_O *tag = gctools::ptag<core::T_O *>(p);
           mps_res_t res = MPS_FIX2(ss, reinterpret_cast<mps_addr_t *>(&pobj));
           if (res != MPS_RES_OK)
             return res;
@@ -1032,7 +1032,7 @@ mps_res_t weak_obj_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit) {
           core::T_O *p = reinterpret_cast<core::T_O *>(obj->bucket[i].raw_());
           if (gctools::tagged_objectp(p) && MPS_FIX1(ss, p)) {
             core::T_O *pobj = gctools::untag_object<core::T_O *>(p);
-            core::T_O *tag = gctools::tag<core::T_O *>(p);
+            core::T_O *tag = gctools::ptag<core::T_O *>(p);
             mps_res_t res = MPS_FIX2(ss, reinterpret_cast<mps_addr_t *>(&pobj));
             if (res != MPS_RES_OK)
               return res;
@@ -1049,7 +1049,7 @@ mps_res_t weak_obj_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit) {
           core::T_O *p = reinterpret_cast<core::T_O *>(obj->dependent.raw_());
           if (gctools::tagged_objectp(p) && MPS_FIX1(ss, p)) {
             core::T_O *pobj = gctools::untag_object<core::T_O *>(p);
-            core::T_O *tag = gctools::tag<core::T_O *>(p);
+            core::T_O *tag = gctools::ptag<core::T_O *>(p);
             mps_res_t res = MPS_FIX2(ss, reinterpret_cast<mps_addr_t *>(&pobj));
             if (res != MPS_RES_OK)
               return res;
@@ -1060,7 +1060,7 @@ mps_res_t weak_obj_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit) {
         core::T_O *p = reinterpret_cast<core::T_O *>(obj->bucket.raw_());
         if (gctools::tagged_objectp(p) && MPS_FIX1(ss, p)) {
           core::T_O *pobj = gctools::untag_object<core::T_O *>(p);
-          core::T_O *tag = gctools::tag<core::T_O *>(p);
+          core::T_O *tag = gctools::ptag<core::T_O *>(p);
           mps_res_t res = MPS_FIX2(ss, reinterpret_cast<mps_addr_t *>(&pobj));
           if (res != MPS_RES_OK)
             return res;
@@ -1081,7 +1081,7 @@ mps_res_t weak_obj_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit) {
           core::T_O *p = reinterpret_cast<core::T_O *>(obj->dependent.raw_());
           if (gctools::tagged_objectp(p) && MPS_FIX1(ss, p)) {
             core::T_O *pobj = gctools::untag_object<core::T_O *>(p);
-            core::T_O *tag = gctools::tag<core::T_O *>(p);
+            core::T_O *tag = gctools::ptag<core::T_O *>(p);
             mps_res_t res = MPS_FIX2(ss, reinterpret_cast<mps_addr_t *>(&pobj));
             if (res != MPS_RES_OK)
               return res;
@@ -1093,7 +1093,7 @@ mps_res_t weak_obj_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit) {
         core::T_O *p = reinterpret_cast<core::T_O *>(obj->bucket.raw_());
         if (gctools::tagged_objectp(p) && MPS_FIX1(ss, p)) {
           core::T_O *pobj = gctools::untag_object<core::T_O *>(p);
-          core::T_O *tag = gctools::tag<core::T_O *>(p);
+          core::T_O *tag = gctools::ptag<core::T_O *>(p);
           mps_res_t res = MPS_FIX2(ss, reinterpret_cast<mps_addr_t *>(&pobj));
           if (res != MPS_RES_OK)
             return res;
@@ -1108,7 +1108,7 @@ mps_res_t weak_obj_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit) {
         core::T_O *p = reinterpret_cast<core::T_O *>(obj->value.raw_());
         if (gctools::tagged_objectp(p) && MPS_FIX1(ss, p)) {
           core::T_O *pobj = gctools::untag_object<core::T_O *>(p);
-          core::T_O *tag = gctools::tag<core::T_O *>(p);
+          core::T_O *tag = gctools::ptag<core::T_O *>(p);
           mps_res_t res = MPS_FIX2(ss, reinterpret_cast<mps_addr_t *>(&pobj));
           if (res != MPS_RES_OK)
             return res;

@@ -482,9 +482,9 @@ The passed module is modified as a side-effect."
     (llvm-sys:link-in-module linker builtins-clone))
   module)
 
-(defun code-model (&key jit (compile-file-parallel cmp:*compile-file-parallel*))
+(defun code-model (&key jit (target-faso-file cmp:*compile-file-parallel*))
   "Return the code-model for the compilation mode"
-  (if (and compile-file-parallel (null jit))
+  (if (and target-faso-file (null jit))
       'llvm-sys:code-model-large
       'llvm-sys:code-model-small))
 (export 'code-model)

@@ -94,7 +94,7 @@ namespace core {
           const value_type& c = (*this)[i];
           hash = ((hash << 5) + hash) + c;
         }
-        hg.addPart(hash);
+        hg.addValue(hash);
       }
     }
   };
@@ -168,7 +168,7 @@ namespace core {
           const value_type& c = (*this)[i];
           hash = ((hash << 5) + hash) + c;
         }
-        hg.addPart(hash);
+        hg.addValue(hash);
       }
     }
   };

@@ -139,12 +139,12 @@ namespace core {
 //
 //
 
-void Array_O::sxhash_equalp(HashGenerator &hg,LocationDependencyPtrT ld) const {
+void Array_O::sxhash_equalp(HashGenerator &hg) const {
   // TODO:  Write optimized versions for different array types
   for (size_t i = 0; i < this->length(); ++i) {
     if (!hg.isFilling()) break;
     T_sp obj = this->rowMajorAref(i);
-    HashTable_O::sxhash_equalp(hg,obj,ld);
+    HashTable_O::sxhash_equalp(hg,obj);
   }
 }
 

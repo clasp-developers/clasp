@@ -354,15 +354,15 @@ bool Instance_O::equalp(T_sp obj) const {
 }
 
 // also only for structure-objects.
-void Instance_O::sxhash_equalp(HashGenerator &hg, LocationDependencyPtrT ld) const {
+void Instance_O::sxhash_equalp(HashGenerator &hg) const {
   if (this->_Class->_Class != _lisp->_Roots._TheStructureClass ) {
-    HashTable_O::sxhash_eq(hg,this->asSmartPtr(),ld);
+    HashTable_O::sxhash_eq(hg,this->asSmartPtr());
     return;
   }
-  if (hg.isFilling()) HashTable_O::sxhash_equalp(hg, this->_Class->_className(), ld);
+  if (hg.isFilling()) HashTable_O::sxhash_equalp(hg, this->_Class->_className());
   for (size_t i(0), iEnd(this->numberOfSlots()); i < iEnd; ++i) {
     if (!this->instanceRef(i).unboundp() && hg.isFilling())
-      HashTable_O::sxhash_equalp(hg, this->instanceRef(i), ld);
+      HashTable_O::sxhash_equalp(hg, this->instanceRef(i));
   }
 }
 

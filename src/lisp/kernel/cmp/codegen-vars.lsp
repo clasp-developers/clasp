@@ -133,9 +133,11 @@
           (setf (lexical-variable-reference-ref-env ref) ref-env)
           (let ((key (binding-key ref-env index symbol)))
             (unless (eq :closure-allocate (gethash key variable-map))
-              (setf (gethash key variable-map) (if crosses-function
-                                                   :closure-allocate
-                                                   :register-allocate)))))))
+              (let ((kind-of-allocate (if crosses-function
+                                          :closure-allocate
+                                          :register-allocate)))
+                (core:bformat t "DDD step 1 In optimize-value-environments  key: %s crosses-function: %s  kind-of-allocate: %s%N" key crosses-function kind-of-allocate)
+                (setf (gethash key variable-map) kind-of-allocate)))))))
     ;; Now every variable (env . index) that is referenced is either in variable-map
     ;;    with the value :closure-allocate or :register-allocate
     (cv-log-do
@@ -143,13 +145,26 @@
                 (cv-log "(ENV@%s %s %s) -> %s%N"
                         (core:environment-address (car k)) (second k) (third k) v))
               variable-map))
-    (maphash (lambda (register-key option)
-               (when (eq option :register-allocate)
-                 (multiple-value-bind (env index symbol)
-                     (destructure-binding-key register-key)
-                   (let ((register (generate-register-alloca symbol env)))
-                     (setf (gethash register-key variable-map) register)))))
-             variable-map)
+    #+(or)(progn
+      (core:bformat t "DDD About to update hash-table%N")
+      (core:hash-table-dump variable-map))
+    (let ((core:*debug-hash-table* t))
+      (maphash (lambda (register-key kind-of-allocate)
+                 (core:bformat t "DDD -------- step 2 register-key: %s   kind-of-allocate: %s%N" register-key kind-of-allocate)
+                 (when (eq kind-of-allocate :register-allocate)
+                   (multiple-value-bind (env index symbol)
+                       (destructure-binding-key register-key)
+                     (let ((register (generate-register-alloca symbol env)))
+                       (core:bformat t "DDD Writing into the hash-table the register: %s%N" register)
+                       (setf (gethash register-key variable-map) register)
+                       (let ((read (gethash register-key variable-map)))
+                         (if (eq read register)
+                             (core:bformat t "DDD Write was SUCCESSFUL%N")
+                             (progn
+                               (core:bformat t "DDD The value wasn't written to the hash-table!!!!!!! key: %s%N      wrote: %s%N      read: %s%N" register-key register read)
+                               (core:bformat t "%s%N" (core:hash-table-dump variable-map))
+                               (error "The value wasn't written to the hash table"))))))))
+               variable-map))
     (cv-log-do
      (maphash (lambda (k v)
                 (cv-log "(ENV@%s %s %s) -> %s%N"
@@ -182,7 +197,11 @@
            (ref-env (lexical-variable-reference-ref-env var))
            (register-key (binding-key ref-env index symbol))
            (register (gethash register-key variable-map)))
+      (format t "Dumping variable-map~%")
+      (core:bformat t "%s%N" (core:hash-table-dump variable-map))
       (when (symbolp register)
+        (format t "Got a symbol!!!!!~%")
+        (core:bformat t "%s%N" (core:hash-table-dump variable-map))
         (error "Expected an llvm::Value but got ~s variable-map -> ~d register-key ~s" register variable-map register-key))
       (when (not (closure-cell-p register))
         (convert-to-register-access register var)))))

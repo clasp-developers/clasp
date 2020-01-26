@@ -177,6 +177,7 @@ SYMBOL_EXPORT_SC_(CorePkg,btcl)
 SYMBOL_EXPORT_SC_(CorePkg,STARdebug_fastgfSTAR);
 SYMBOL_EXPORT_SC_(CorePkg,cxx_method_source_location);
 SYMBOL_EXPORT_SC_(CompPkg, STARcompile_file_parallelSTAR);
+SYMBOL_EXPORT_SC_(CompPkg, STARgenerate_fasoSTAR);
 SYMBOL_EXPORT_SC_(CompPkg, STARthread_safe_contextSTAR);
 SYMBOL_EXPORT_SC_(CompPkg, STARdebug_jitSTAR );
 SYMBOL_EXPORT_SC_(CompPkg, STARload_time_value_holder_nameSTAR);
@@ -792,6 +793,7 @@ SYMBOL_EXPORT_SC_(ClPkg, STARpackageSTAR);
 //SYMBOL_SC_(CorePkg, STARcurrent_working_directorySTAR);
 SYMBOL_EXPORT_SC_(ClPkg, STARmodulesSTAR);
 SYMBOL_EXPORT_SC_(ClPkg, progn);
+SYMBOL_EXPORT_SC_(ClPkg,multipleValueCall);
 SYMBOL_SC_(CorePkg, backquote);
 SYMBOL_SC_(CorePkg, double_backquote);
 SYMBOL_SC_(CorePkg, unquote);
@@ -1183,7 +1185,9 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARdebug_valuesSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARdebug_hash_tableSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARforeign_data_reader_callbackSTAR->defparameter(_Nil<core::T_O>());
+  core::_sym_STAReval_with_env_hookSTAR->defparameter(core::_sym_interpret_eval_with_env->symbolFunction());
   comp::_sym_STARcompile_file_parallelSTAR->defparameter(_Nil<core::T_O>());
+  comp::_sym_STARgenerate_fasoSTAR->defparameter(_Nil<core::T_O>());
   gctools::_sym_STARdebug_gcrootsSTAR->defparameter(_Nil<core::T_O>());
   int optimization_level = 3;
   const char* optLevel = getenv("CLASP_OPTIMIZATION_LEVEL");

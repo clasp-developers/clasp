@@ -518,9 +518,23 @@ void setup_FasoHeader(FasoHeader* header)
   header->_Version = 0;
   header->_PageSize = getpagesize();
 }
-CL_DEFUN void core__write_faso(T_sp pathDesig, List_sp objectFiles)
+
+CL_LAMBDA(path-desig object-files &key (start-object-id 0));
+CL_DOCSTRING(R"doc(Concatenate object files in OBJECT-FILES into a faso file and write it out to PATH-DESIG.
+You can set the starting objectID using the keyword START-OBJECT-ID argument.)doc");
+CL_DEFUN void core__write_faso(T_sp pathDesig, List_sp objectFiles, T_sp tstart_object_id)
 {
 //  write_bf_stream(BF("Writing FASO file to %s for %d object files\n") % _rep_(pathDesig) % cl__length(objectFiles));
+  size_t start_object_id = 0;
+  if (tstart_object_id.fixnump()) {
+    if (tstart_object_id.unsafe_fixnum()>=0) {
+      start_object_id = tstart_object_id.unsafe_fixnum();
+      printf("%s:%d assigned start_object_id = %lu\n", __FILE__, __LINE__, start_object_id );
+    } else {
+      SIMPLE_ERROR(BF("start-object-id must be a positive integer - got: %s") % _rep_(tstart_object_id).c_str());
+    }
+  }
+  printf("%s:%d start_object_id = %lu\n", __FILE__, __LINE__, start_object_id );
   FasoHeader* header = (FasoHeader*)malloc(FasoHeader::calculateSize(cl__length(objectFiles)));
   setup_FasoHeader(header);
   header->_HeaderPageCount = FasoHeader::calculateHeaderNumberOfPages(cl__length(objectFiles),getpagesize());
@@ -528,7 +542,7 @@ CL_DEFUN void core__write_faso(T_sp pathDesig, List_sp objectFiles)
   List_sp cur = objectFiles;
   size_t nextPage = header->_HeaderPageCount;
   for ( size_t ii=0; ii<cl__length(objectFiles); ++ii ) {
-    header->_ObjectFiles[ii]._ObjectID = ii;
+    header->_ObjectFiles[ii]._ObjectID = ii+start_object_id;
     header->_ObjectFiles[ii]._StartPage = nextPage;
     Array_sp of = gc::As<Array_sp>(oCar(cur));
     cur = oCdr(cur);
@@ -823,7 +837,7 @@ CL_DEFUN T_mv core__startup_function_name_and_linkage(size_t id, core::T_sp pref
   ss << "_";
   ss << id;
   Symbol_sp linkage_type;
-  if (comp::_sym_STARcompile_file_parallelSTAR->symbolValue().notnilp()) {
+  if (comp::_sym_STARgenerate_fasoSTAR->symbolValue().notnilp()) {
     linkage_type = llvmo::_sym_ExternalLinkage;
   } else {
     linkage_type = llvmo::_sym_InternalLinkage;

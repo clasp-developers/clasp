@@ -368,18 +368,13 @@ string General_O::className() const {
 
 void General_O::sxhash_(HashGenerator &hg) const {
   if (hg.isFilling()) {
-    Fixnum res = (Fixnum)((((uintptr_t)this) >> gctools::tag_shift));
-    hg.addPart(res);
+    hg.addAddress((void*)this);
   }
 }
 
-void General_O::sxhash_equal(HashGenerator &hg,LocationDependencyPtrT ld) const {
+void General_O::sxhash_equal(HashGenerator &hg) const {
   if (!hg.isFilling()) return;
-  volatile void* address = (void*)this;
-#ifdef USE_MPS
-  if (ld) mps_ld_add(ld, global_arena, (mps_addr_t)address );
-#endif
-  hg.addPart((Fixnum)(((uintptr_t)address)>>gctools::tag_shift));
+  hg.addAddress((void*)this);
   return;
 }
 
@@ -411,40 +406,30 @@ void HashGenerator::hashObject(T_sp obj) {
   this->_Depth = depth;
 }
 
-static BignumExportBuffer static_HashGenerator_addPart_buffer;
-
-bool HashGenerator::addPart(const mpz_class &bignum) {
-  unsigned int *buffer = static_HashGenerator_addPart_buffer.getOrAllocate(bignum, 0);
-  size_t count(0);
+Fixnum bignum_hash(const mpz_class &bignum) {
+  auto bn = bignum.get_mpz_t();
+  unsigned int size = bn->_mp_size;
+  if (size<0) size = -size;
 #ifdef DEBUG_HASH_GENERATOR
   if (this->_debug) {
     printf("%s:%d Adding hash bignum\n", __FILE__, __LINE__);
   }
 #endif
-  buffer = (unsigned int *)::mpz_export(buffer, &count,
-                                        _lisp->integer_ordering()._mpz_import_word_order,
-                                        _lisp->integer_ordering()._mpz_import_size,
-                                        _lisp->integer_ordering()._mpz_import_endian,
-                                        0,
-                                        bignum.get_mpz_t());
-  if (buffer != NULL) {
-    for (int i = 0; i < (int)count; i++) {
-      this->addPart(buffer[i]);
-      if (this->isFull())
-        return false;
-    }
-  } else {
-    this->addPart(0);
+  gc::Fixnum hash(5381);
+  for (int i = 0; i < (int)size; i++) {
+    hash = (gc::Fixnum)hash_word(hash,(uintptr_t)bn->_mp_d[i]);
   }
-  return this->isFilling();
+  return hash;
 }
 
+bool Hash1Generator::addValue(const mpz_class &bignum) {
+  gc::Fixnum hash = bignum_hash(bignum);
+  return this->addValue(hash);
+}
 
-bool Hash1Generator::addPart(const mpz_class &bignum) {
-  HashGenerator hg;
-  hg.addPart(bignum);
-  this->_Part = hg.hash(0);
-  return this->isFilling();
+bool HashGenerator::addValue(const mpz_class &bignum) {
+  gc::Fixnum hash = bignum_hash(bignum);
+  return this->addValue(hash);
 }
 
 CL_LAMBDA(arg);

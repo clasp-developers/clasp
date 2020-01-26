@@ -118,18 +118,18 @@ namespace core {
     uintptr_t& rawRef(int idx) const {return *(uintptr_t*)((uintptr_t*)this+idx);};
     
     bool hasGcTag() const {
-      return ((((uintptr_t)(this->rawRef(0))&gctools::tag_mask) == gctools::gc_tag));
+      return ((((uintptr_t)(this->rawRef(0))&gctools::ptag_mask) == gctools::gc_tag));
     }
     bool fwdP() const {
-      return ((((uintptr_t)(this->rawRef(0))&gctools::tag_mask) == gctools::gc_tag)
-              && (((uintptr_t)(this->rawRef(1))&gctools::tag_mask) == gctools::Header_s::fwd_tag));
+      return ((((uintptr_t)(this->rawRef(0))&gctools::ptag_mask) == gctools::gc_tag)
+              && (((uintptr_t)(this->rawRef(1))&gctools::ptag_mask) == gctools::Header_s::fwd_tag));
     }
     bool pad1P() const {
       return ((uintptr_t)(this->rawRef(0)) == gctools::gc_tag);
     }
     bool padP() const {
-      return ((((uintptr_t)(this->rawRef(0))&gctools::tag_mask) == gctools::gc_tag)
-              && (((uintptr_t)(this->rawRef(1))&gctools::tag_mask) == gctools::Header_s::pad_tag));
+      return ((((uintptr_t)(this->rawRef(0))&gctools::ptag_mask) == gctools::gc_tag)
+              && (((uintptr_t)(this->rawRef(1))&gctools::ptag_mask) == gctools::Header_s::pad_tag));
     }
     size_t padSize() const {
       size_t sz = (size_t)(((uintptr_t)this->rawRef(1)) >> gctools::tag_shift);

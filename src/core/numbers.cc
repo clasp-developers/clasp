@@ -1561,7 +1561,7 @@ Number_sp ShortFloat_O::abs_() const {
 
 void ShortFloat_O::sxhash_(HashGenerator &hg) const {
   _OF();
-  hg.addPart(std::abs(::floor(this->_Value)));
+  hg.addValue(std::abs(::floor(this->_Value)));
 }
 
 bool ShortFloat_O::eql_(T_sp obj) const {
@@ -1615,7 +1615,7 @@ Number_sp DoubleFloat_O::signum_() const {
 
 void DoubleFloat_O::sxhash_(HashGenerator &hg) const {
   _OF();
-  hg.addPart(std::abs(::floor(this->_Value)));
+  hg.addValue(std::abs(::floor(this->_Value)));
 }
 
 bool DoubleFloat_O::eql_(T_sp obj) const {
@@ -1693,7 +1693,7 @@ Number_sp LongFloat_O::abs() const {
 }
 
 void LongFloat_O::sxhash(HashGenerator &hg) const {
-  hg.addPart(std::abs(::floor(this->_Value)));
+  hg.addValue(std::abs(::floor(this->_Value)));
 }
 
 bool LongFloat_O::eql(T_sp obj) const {

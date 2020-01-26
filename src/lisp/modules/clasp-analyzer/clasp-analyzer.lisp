@@ -225,12 +225,12 @@
   (setf (analysis-stamp-value-generator analysis) (make-instance 'stamp-value-generator)))
 
 
-(defconstant +wtag-shift+    2)
-(defconstant +derivable-wtag+ #B00)
-(defconstant +rack-wtag+      #B01)
-(defconstant +wrapped-wtag+   #B10)
-(defconstant +header-wtag+    #B11)
-(defconstant +max-wtag+       #B11)
+(defconstant +wtag-shift+    cmp::+wtag-width+)
+(defconstant +derivable-wtag+ cmp::+derivable-wtag+)
+(defconstant +rack-wtag+      cmp::+rack-wtag+)
+(defconstant +wrapped-wtag+   cmp::+wrapped-wtag+)
+(defconstant +header-wtag+    cmp::+header-wtag+)
+(defconstant +max-wtag+       cmp::+max-wtag+)
 
 #+(or)
 (defmethod stamp-value ((class gc-managed-type) &optional stamp)

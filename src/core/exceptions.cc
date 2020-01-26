@@ -605,6 +605,8 @@ void af_wrongTypeOnlyArg(const string &sourceFile, int lineno, Symbol_sp functio
                   kw::_sym_expected_type, type,
                   kw::_sym_datum, value);
   }
+  printf("%s:%d This should never be reached\n", __FILE__, __LINE__ );
+  abort();
 };
 
 CL_DOCSTRING("functionWrongTypeArgument");

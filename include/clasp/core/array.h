@@ -275,7 +275,7 @@ namespace core {
     }
     void fillInitialContents(T_sp initialContents);
     virtual void sxhash_(HashGenerator& hg) const = 0;
-    virtual void sxhash_equalp(HashGenerator &hg,LocationDependencyPtrT ptr) const;
+    virtual void sxhash_equalp(HashGenerator &hg) const;
   // --------------------------------------------------
   // Ranged operations with explicit limits
     virtual Array_sp unsafe_subseq(size_t start, size_t end) const = 0;

@@ -174,7 +174,7 @@ namespace gctools {
 /*! Pointer and immediate value tagging is set up here */
 /* FIXNUM's have the lsb x00 set to zero - this allows addition and comparison to be fast */
 /* The rest of the bits are the fixnum */
-  static const uintptr_t tag_mask    = ZERO_TAG_MASK; // BOOST_BINARY(111);
+  static const uintptr_t ptag_mask    = ZERO_TAG_MASK; // BOOST_BINARY(111);
   static const uintptr_t fixnum0_tag  = FIXNUM0_TAG; // x00 means fixnum
   static const uintptr_t fixnum1_tag  = FIXNUM1_TAG; // x100 means fixnum odd
   static const uintptr_t fixnum_mask =  FIXNUM_MASK;
@@ -242,28 +242,28 @@ ABI's  */
   static const char * tagged_general_str = "GENERAL";
 
   template <class T>
-    T tag(T ptr) { return reinterpret_cast<T>(reinterpret_cast<uintptr_t>(ptr) & tag_mask); };
+    T ptag(T ptr) { return reinterpret_cast<T>(reinterpret_cast<uintptr_t>(ptr) & ptag_mask); };
 
   template <class T>
     inline bool tagged_consp(T ptr) {
-    return (reinterpret_cast<uintptr_t>(tag(ptr)) == cons_tag);
+    return (reinterpret_cast<uintptr_t>(ptag(ptr)) == cons_tag);
   };
 
   template <class T>
     inline T tag_cons(T p) {
-    GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(p) & tag_mask) == 0);
+    GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(p) & ptag_mask) == 0);
     return reinterpret_cast<T>(reinterpret_cast<uintptr_t>(p) + cons_tag);
   }
 
   template <class T>
     inline T untag_cons(T ptr) {
-    GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr) & tag_mask) == cons_tag);
+    GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr) & ptag_mask) == cons_tag);
     return reinterpret_cast<T>(reinterpret_cast<uintptr_t>(ptr) - cons_tag);
   }
 
   template <class T>
     inline T tag_general(T p) {
-    GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(p) & tag_mask) == 0);
+    GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(p) & ptag_mask) == 0);
     return reinterpret_cast<T>(&reinterpret_cast<char*>(p)[general_tag]);
   }
 
@@ -292,7 +292,11 @@ template <class T>
     inline bool tagged_deletedp(T ptr) {
     return (reinterpret_cast<void *>(ptr) == global_tagged_Symbol_OP_deleted);
   }
-  template <class T>
+template <class T>
+    inline bool tagged_no_keyp(T ptr) {
+    return (reinterpret_cast<void *>(ptr) == global_tagged_Symbol_OP_no_key);
+  }
+template <class T>
     inline bool tagged_sameAsKeyP(T ptr) {
     return (reinterpret_cast<void *>(ptr) == global_tagged_Symbol_OP_sameAsKey);
   }
@@ -318,20 +322,25 @@ template <class T>
     return reinterpret_cast<T>(global_tagged_Symbol_OP_deleted);
   }
   template <class T>
+    inline T tag_no_key() {
+    GCTOOLS_ASSERT(tagged_no_keyp(global_tagged_Symbol_OP_no_key));
+    return reinterpret_cast<T>(global_tagged_Symbol_OP_no_key);
+  }
+  template <class T>
     inline T tag_vaslist(core::Vaslist *p) {
-    GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(p) & tag_mask) == 0);
+    GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(p) & ptag_mask) == 0);
     return reinterpret_cast<T>(reinterpret_cast<uintptr_t>(p) + valist_tag);
   }
 
 
   template <class T>
     inline T untag_general(T ptr) {
-    GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr) & tag_mask) == general_tag);
+    GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr) & ptag_mask) == general_tag);
     return reinterpret_cast<T>(&reinterpret_cast<char*>(ptr)[-general_tag]);
   }
   template <class T>
     inline core::Vaslist* untag_vaslist(T ptr) {
-    GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr) & tag_mask) == valist_tag);
+    GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr) & ptag_mask) == valist_tag);
     return reinterpret_cast<core::Vaslist*>(reinterpret_cast<uintptr_t>(ptr) - valist_tag);
   }
 
@@ -392,11 +401,11 @@ template <class T>
 
   template <class T>
     inline bool tagged_generalp(T ptr) {
-    return ((uintptr_t)(ptr) & tag_mask) == general_tag;
+    return ((uintptr_t)(ptr) & ptag_mask) == general_tag;
   }
   template <class T>
     inline bool tagged_vaslistp(T ptr) {
-    return ((reinterpret_cast<uintptr_t>(ptr) & tag_mask) == valist_tag);
+    return ((reinterpret_cast<uintptr_t>(ptr) & ptag_mask) == valist_tag);
   };
 
   template <class T>

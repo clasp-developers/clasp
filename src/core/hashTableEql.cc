@@ -77,13 +77,8 @@ bool HashTableEql_O::keyTest(T_sp entryKey, T_sp searchKey) const {
   return cl__eql(entryKey, searchKey);
 }
 
-gc::Fixnum HashTableEql_O::sxhashKey(T_sp obj, gc::Fixnum bound, bool willAddKey) const {
-  Hash1Generator hg;
-#ifdef USE_MPS
-  HashTable_O::sxhash_eql(hg, obj, willAddKey ? const_cast<mps_ld_t>(&(this->_LocationDependency)) : NULL);
-#else
-  HashTable_O::sxhash_eql(hg, obj, NULL);
-#endif
+gc::Fixnum HashTableEql_O::sxhashKey(T_sp obj, gc::Fixnum bound, HashGenerator& hg) const {
+  HashTable_O::sxhash_eql(hg, obj);
   gc::Fixnum hash = hg.hashBound(bound);
   LOG(BF("HashTableEql_O::sxhashKey obj[%s] raw_hash[%s] bound[%d] hash[%d]") % _rep_(obj) % hg.asString() % bound % hash);
   return hash;

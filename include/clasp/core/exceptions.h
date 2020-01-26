@@ -642,7 +642,7 @@ void af_wrongTypeKeyArg(const string &sourceFile, int lineno, Symbol_sp function
 
 void core__wrong_type_nth_arg(const string &sourceFile, int lineno, Symbol_sp function, int narg, T_sp value, T_sp type);
 
-void af_wrongTypeOnlyArg(const string &sourceFile, int lineno, Symbol_sp function, T_sp value, T_sp type);
+[[noreturn]] void af_wrongTypeOnlyArg(const string &sourceFile, int lineno, Symbol_sp function, T_sp value, T_sp type);
 
 void core__wrong_index(const string &sourceFile, int lineno, Symbol_sp function, T_sp array, int which, T_sp index, int noninc_index);
 

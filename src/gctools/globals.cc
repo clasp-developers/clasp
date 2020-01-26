@@ -37,8 +37,10 @@ core::Symbol_O*& global_tagged_Symbol_OP_nil = global_core_symbols[0];
 core::Symbol_O*& global_tagged_Symbol_OP_unbound = global_core_symbols[1];
  /*! No thread local binding */
 core::Symbol_O*& global_tagged_Symbol_OP_no_thread_local_binding = global_core_symbols[2];
+/*! Tagged pointer to the global NO_KEY - used in hash tables */
+core::Symbol_O*& global_tagged_Symbol_OP_no_key = global_core_symbols[3];
 /*! Tagged pointer to the global DELETED - used in weak hash tables */
-core::Symbol_O*& global_tagged_Symbol_OP_deleted = global_core_symbols[3];
+core::Symbol_O*& global_tagged_Symbol_OP_deleted = global_core_symbols[4];
 /*! Tagged pointer to the global SAME-AS-KEY - used in weak hash tables */
-core::Symbol_O*& global_tagged_Symbol_OP_sameAsKey = global_core_symbols[4];
+core::Symbol_O*& global_tagged_Symbol_OP_sameAsKey = global_core_symbols[5];
 };

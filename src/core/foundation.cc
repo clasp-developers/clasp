@@ -826,8 +826,8 @@ DebugStream *lisp_debugLog() {
 
 uint lisp_hash(uintptr_t x) {
   HashGenerator hg;
-  hg.addPart(x);
-  return hg.hash();
+  hg.addValue(x);
+  return static_cast<uint>(hg.rawhash());
 }
 
 T_sp lisp_true() {

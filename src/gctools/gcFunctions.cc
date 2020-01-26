@@ -298,7 +298,7 @@ CL_DEFUN Fixnum core__header_kind(core::T_sp obj) {
 CL_DOCSTRING("Return the index part of the stamp.  Stamp indices are adjacent to each other.");
 CL_DEFUN size_t core__stamp_index(size_t stamp)
 {
-  return stamp>>gctools::Header_s::wtag_shift;
+  return stamp>>(gctools::Header_s::wtag_width+gctools::Header_s::mtag_width);
 }
 
 CL_DOCSTRING("Shift an unshifted stamp so that it can be put into code in a form where it can be directly matched to a stamp read from an object header with no further shifting");

@@ -86,8 +86,8 @@ void build_stamp_field_layout_tables()
   size_t cur_container_info_idx = 0;
   int cur_stamp=0;
   idx = 0;
-//#define DUMP_GC_BOOT 1
-#define STAMP(_stamp_wtag_mtag_) (_stamp_wtag_mtag_>>(Header_s::wtag_shift))
+// #define DUMP_GC_BOOT 1
+#define STAMP(_stamp_wtag_) (_stamp_wtag_>>(Header_s::wtag_width))
   for ( idx=0; idx<num_codes; ++idx ) {
 #ifdef DUMP_GC_BOOT
     printf("%s:%d idx = %d\n", __FILE__, __LINE__, idx);

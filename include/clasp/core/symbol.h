@@ -95,8 +95,8 @@ public:
   string formattedName(bool prefixAlways) const;
 public:
   void sxhash_(HashGenerator &hg) const;
-  void sxhash_equal(HashGenerator &hg,LocationDependencyPtrT ptr) const;
-  void sxhash_equalp(HashGenerator &hg,LocationDependencyPtrT ptr) const {this->sxhash_equal(hg,ptr);};
+  void sxhash_equal(HashGenerator &hg) const;
+  void sxhash_equalp(HashGenerator &hg) const {this->sxhash_equal(hg);};
   
   bool isKeywordSymbol();
   Symbol_sp asKeywordSymbol();
