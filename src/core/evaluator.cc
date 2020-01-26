@@ -2452,8 +2452,8 @@ bool aclasp_special_operator_p(Symbol_sp headSym) {
   return false;
 };
 
-
-List_sp core__aclasp_list_of_all_special_operators() {
+CL_DOCSTRING("Return a list of all special operators as defined in aclasp");
+    CL_DEFUN core::List_sp core__aclasp_list_of_all_special_operators() {
   ql::list l;
   l << cl::_sym_progn;
   l << cl::_sym_block;

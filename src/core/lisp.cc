@@ -545,6 +545,7 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
     Readtable_sp readtable = Readtable_O::create_standard_readtable();
     cl::_sym_STARreadtableSTAR->defparameter(readtable);
     initialize_functions();
+    core::_sym_STAReval_with_env_hookSTAR->defparameter(core::_sym_interpret_eval_with_env->symbolFunction());
     //    eval::defineSpecialOperatorsAndMacros(this->_Roots._CorePackage);
 #ifdef DEBUG_PROGRESS
     printf("%s:%d startupLispEnvironment initialize_classes_and_methods\n", __FILE__, __LINE__ );
@@ -858,17 +859,6 @@ T_sp Lisp_O::specialFormOrNil(Symbol_sp sym) {
   }
   return _Nil<T_O>();
 }
-
-#if 0
-CL_DOCSTRING("listOfAllSpecialOperators");
-CL_DEFUN T_sp core__list_of_all_special_operators() {
-  List_sp sos(_Nil<T_O>());
-  _lisp->_Roots._SpecialForms->maphash([&sos](T_sp key, T_sp val) {
-      sos = Cons_O::create(key,sos);
-    });
-  return sos;
-}
-#endif
 
 void Lisp_O::installPackage(const Exposer_O *pkg) {
   _OF();
