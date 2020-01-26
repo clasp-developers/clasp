@@ -10,10 +10,6 @@
 ;; Trivial stuff is copied from SBCL's SB-BSD-SOCKETS, which is also
 ;; in the public domain.
 
-(eval-when (:compile-toplevel :execute)
-  (setq *echo-repl-read* t))
-
-
 (in-package "SB-BSD-SOCKETS")
 
 #+clasp
