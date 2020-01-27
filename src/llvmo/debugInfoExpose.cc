@@ -363,6 +363,40 @@ CL_DEFMETHOD DITypeRefArray_sp DIBuilder_O::getOrCreateTypeArray(core::List_sp e
 
 }; // llvmo
 
+namespace llvmo { // DIContext_O
+
+core::T_mv getLineInfoForAddressInner(llvm::DIContext* dicontext, llvm::object::SectionedAddress addr) {
+  core::T_sp source;
+
+  llvm::DILineInfoSpecifier lispec;
+  lispec.FNKind = llvm::DILineInfoSpecifier::FunctionNameKind::LinkageName;
+  lispec.FLIKind = llvm::DILineInfoSpecifier::FileLineInfoKind::AbsoluteFilePath;
+
+  llvm::DILineInfo info = dicontext->getLineInfoForAddress(addr, lispec);
+
+  if (info.Source.hasValue())
+    source = core::SimpleBaseString_O::make(info.Source.getPointer()->str());
+  else source = _Nil<core::T_O>();
+
+  return Values(core::SimpleBaseString_O::make(info.FileName),
+                core::SimpleBaseString_O::make(info.FunctionName),
+                source,
+                core::Integer_O::create(info.Line),
+                core::Integer_O::create(info.Column),
+                core::Integer_O::create(info.StartLine),
+                core::Integer_O::create(info.Discriminator));
+}
+
+// We can't translate a DWARFContext_sp into a DIContext* directly, apparently.
+// The SectionedAddress translation is also a bust.
+CL_LAMBDA(dwarfcontext sectioned-address);
+CL_LISPIFY_NAME(getLineInfoForAddress);
+CL_DEFUN core::T_mv getLineInfoForAddress(DWARFContext_sp dc, SectionedAddress_sp addr) {
+  return getLineInfoForAddressInner(dc->wrappedPtr(), addr->_value);
+}
+
+}; // llvmo, DIContext_O
+
 namespace llvmo { // DWARFContext_O
 
 CL_LAMBDA(object-file);
