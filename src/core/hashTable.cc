@@ -74,7 +74,7 @@ size_t next_hash_table_id() {
   return global_next_hash_table_id++;
 }
 
-Vector_sp core__hash_table_pairs(HashTable_sp hash_table)
+CL_DEFUN Vector_sp core__hash_table_pairs(HashTable_sp hash_table)
 {
   SimpleVector_sp keyvalues = SimpleVector_O::make(hash_table->_HashTableCount*2);
   size_t idx(0);
