@@ -44,7 +44,6 @@ namespace core {
     
     uint64_t   _BytesAllocated;
     mp::Process_sp _Process;
-    ObjectFile_sp  _ObjectFile; // Capture jitted object-file's with this
     uint64_t  _Tid;
     uintptr_t           _BacktraceBasePointer;
     DynamicBindingStack _Bindings;

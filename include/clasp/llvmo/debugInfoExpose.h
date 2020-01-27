@@ -50,6 +50,8 @@ THE SOFTWARE.
 #include <llvm/IR/IRBuilder.h>
 #include <llvm/IR/Constants.h>
 //#include "llvm/Support/IRBuilder.h"
+#include <llvm/DebugInfo/DIContext.h>
+#include <llvm/DebugInfo/DWARF/DWARFContext.h>
 
 #include <stdio.h>
 #include <string>
@@ -859,6 +861,107 @@ struct from_object<llvm::Optional<llvm::StringRef>, std::true_type> {
 };
 };
 
+// DIContext_O
+namespace llvmo {
+FORWARD(DIContext);
+class DIContext_O : public core::ExternalObject_O {
+  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::DIContext, DIContext_O, "DIContext", core::ExternalObject_O);
+  typedef llvm::DIContext ExternalType;
+  typedef llvm::DIContext *PointerToExternalType;
+
+protected:
+  PointerToExternalType _ptr;
+
+public:
+  virtual void *externalObject() const { return this->_ptr; };
+  PointerToExternalType wrappedPtr() const { return this->_ptr; }
+
+public:
+  void set_wrapped(PointerToExternalType ptr) {
+    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    this->_ptr = ptr;
+  }
+  DIContext_O() : Base(), _ptr(NULL){};
+  ~DIContext_O() {
+    if (_ptr != NULL) { /* delete _ptr;*/
+      _ptr = NULL;
+    };
+  }
+}; // DIContext_O class def
+}; // llvmo
+/* from_object translators */
+
+namespace translate {
+template <>
+struct from_object<llvm::DIContext *, std::true_type> {
+  typedef llvm::DIContext *DeclareType;
+  DeclareType _v;
+  from_object(T_P object) : _v(gc::As<llvmo::DIContext_sp>(object)->wrappedPtr()){};
+};
+
+};
+    ;
+/* to_object translators */
+
+namespace translate {
+template <>
+struct to_object<llvm::DIContext *> {
+  static core::T_sp convert(llvm::DIContext *ptr) {
+    return core::RP_Create_wrapped<llvmo::DIContext_O, llvm::DIContext *>(ptr);
+  }
+};
+}; // namespace llvmo - DIContext_O done
+
+// DWARFContext_O
+namespace llvmo {
+FORWARD(DWARFContext);
+class DWARFContext_O : public core::ExternalObject_O {
+  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::DWARFContext, DWARFContext_O, "DWARFContext", core::ExternalObject_O);
+  typedef llvm::DWARFContext ExternalType;
+  typedef llvm::DWARFContext *PointerToExternalType;
+
+protected:
+  PointerToExternalType _ptr;
+
+public:
+  virtual void *externalObject() const { return this->_ptr; };
+  PointerToExternalType wrappedPtr() const { return this->_ptr; }
+  void set_wrapped(PointerToExternalType ptr) {
+    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    this->_ptr = ptr;
+  }
+ public:
+  static DWARFContext_sp createDwarfContext(ObjectFile_sp);
+  DWARFContext_O() : Base(), _ptr(NULL){};
+  ~DWARFContext_O() {
+    if (_ptr != NULL) { /* delete _ptr;*/
+      _ptr = NULL;
+    };
+  }
+}; // DWARFContext_O class def
+}; // llvmo
+/* from_object translators */
+
+namespace translate {
+template <>
+struct from_object<llvm::DWARFContext *, std::true_type> {
+  typedef llvm::DWARFContext *DeclareType;
+  DeclareType _v;
+  from_object(T_P object) : _v(gc::As<llvmo::DWARFContext_sp>(object)->wrappedPtr()){};
+};
+
+};
+
+/* to_object translators */
+
+namespace translate {
+template <>
+struct to_object<llvm::DWARFContext *> {
+  static core::T_sp convert(llvm::DWARFContext *ptr) {
+    return core::RP_Create_wrapped<llvmo::DWARFContext_O, llvm::DWARFContext *>(ptr);
+  }
+};
+}; // namespace llvmo - DWARFContext_O done
 
 // ------------------------------------------------------------
 //
