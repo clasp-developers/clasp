@@ -351,12 +351,13 @@
 
 (defun irc-set-insert-point-basic-block (theblock &optional (irbuilder *irbuilder*))
   "Set the current insert point.  Signal an error if *irbuilder* jumps to a different function."
-  (when (llvm-sys:get-insert-block irbuilder)
-    (let* ((irbuilder-cur-basic-block (llvm-sys:get-insert-block irbuilder))
-           (irbuilder-cur-function    (llvm-sys:get-parent irbuilder-cur-basic-block))
-           (theblock-function         (llvm-sys:get-parent theblock)))
-      (unless (llvm-sys:function-equal irbuilder-cur-function theblock-function)
-        (error "The IRBuilder ~a that is currently in function ~a is being told to jump functions when its insert point is being set to ~a in ~a" irbuilder irbuilder-cur-function theblock theblock-function))))
+  #+debug-compiler
+  (let ((irbuilder-cur-basic-block (llvm-sys:get-insert-block irbuilder)))
+    (when irbuilder-cur-basic-block
+      (let* ((irbuilder-cur-function    (llvm-sys:get-parent irbuilder-cur-basic-block))
+             (theblock-function         (llvm-sys:get-parent theblock)))
+        (unless (llvm-sys:function-equal irbuilder-cur-function theblock-function)
+          (error "The IRBuilder ~a that is currently in function ~a is being told to jump functions when its insert point is being set to ~a in ~a" irbuilder irbuilder-cur-function theblock theblock-function)))))
   (llvm-sys:set-insert-point-basic-block irbuilder theblock))
 
 
