@@ -74,6 +74,21 @@ size_t next_hash_table_id() {
   return global_next_hash_table_id++;
 }
 
+Vector_sp core__hash_table_pairs(HashTable_sp hash_table)
+{
+  SimpleVector_sp keyvalues = SimpleVector_O::make(hash_table->_HashTableCount*2);
+  size_t idx(0);
+  for (size_t it(0), itEnd(hash_table->_Table.size()); it < itEnd; ++it) {
+    Cons_O& entry = hash_table->_Table[it];
+    if (!entry._Car.no_keyp()&&!entry._Car.deletedp()) {
+      (*keyvalues)[idx++] = entry._Car;
+      (*keyvalues)[idx++] = entry._Cdr;
+    }
+  }
+  return keyvalues;
+}
+  
+
 void verifyHashTable(bool print, std::ostream& ss, HashTable_O* ht, const char* filename, size_t line, size_t index=0, T_sp key=_Nil<core::T_O>() )
 {
   size_t cnt = 0;

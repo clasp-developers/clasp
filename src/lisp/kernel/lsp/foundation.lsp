@@ -244,6 +244,18 @@ the corresponding VAR.  Returns NIL."
 
 
 (defun hash-table-iterator (hash-table)
+  (let ((pairs (core:hash-table-pairs hash-table))
+        (hash-index 0))
+    (function (lambda ()
+      (if (>= hash-index (length pairs))
+          nil
+          (let* ((key (elt pairs hash-index))
+                 (val (elt pairs (incf hash-index))))
+            (incf hash-index)
+            (values t key val)))))))
+
+#+(or)
+(defun hash-table-iterator (hash-table)
   (let ((number-of-buckets (hash-table-number-of-hashes hash-table))
         (hash 0))
     (labels ((advance-hash-table-iterator ()
