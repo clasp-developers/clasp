@@ -3854,7 +3854,7 @@ void register_symbol_with_libunwind(const std::string& name, uint64_t start, siz
 void save_symbol_info(const llvm::object::ObjectFile& object_file, const llvm::RuntimeDyld::LoadedObjectInfo& loaded_object_info)
 {
   std::vector< std::pair< llvm::object::SymbolRef, uint64_t > > symbol_sizes = llvm::object::computeSymbolSizes(object_file);
-#ifdef _TARGET_OS_DARWIN
+#if defined(_TARGET_OS_DARWIN)
   std::string startup_name = "__claspObjectFileStartUp";
 #endif
 #if defined(_TARGET_OS_LINUX) || defined(_TARGET_OS_FREEBSD)
