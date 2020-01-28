@@ -1162,6 +1162,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARextension_startup_loadsSTAR->defparameter(_Nil<T_O>());
   SimpleBaseString_sp sbsr1 = SimpleBaseString_O::make("SYSPMNR");
   SimpleBaseString_sp sbsw1 = SimpleBaseString_O::make("SYSPMNW");
+  _lisp->_Roots._Finalizers = WeakKeyHashTable_O::create();
   _lisp->_Roots._Sysprop = gc::As<HashTableEql_sp>(HashTable_O::create_thread_safe(cl::_sym_eql,sbsr1,sbsw1));
   _sym_STARdebug_accessorsSTAR->defparameter(_Nil<T_O>());
   _sym_STARmodule_startup_function_nameSTAR->defparameter(SimpleBaseString_O::make(std::string(MODULE_STARTUP_FUNCTION_NAME)));
