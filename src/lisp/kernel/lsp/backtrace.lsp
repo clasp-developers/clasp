@@ -335,18 +335,34 @@ Set gather-all-frames to T and you can gather C++ and Common Lisp frames"
                 (ext:vfork-execvp cmd t)
               (parse-llvm-dwarfdump stream)))))))
 
+(defun object-file-address-information (addr)
+  (multiple-value-bind (sectioned-address object-file)
+      (llvm-sys:object-file-for-instruction-pointer cmp::*thread-local-jit-engine* addr)
+    (unless (null sectioned-address)
+      (llvm-sys:get-line-info-for-address
+       (llvm-sys:create-dwarf-context object-file)
+       sectioned-address))))
+
 (defparameter *debug-code-source-position* nil)
 (defun code-source-position (return-address)
-  (let ((address (1- (core:pointer-integer return-address))))
-    (let* ((address (core:pointer-increment return-address -1))
-           (address-int (core:pointer-integer address)))
-      (multiple-value-bind (symbol start end type library-name library-origin offset-from-start-of-library)
-          (core:lookup-address address)
-        (multiple-value-bind (source-pathname line-number column)
-            (run-llvm-dwarfdump offset-from-start-of-library library-name)
+  (let ((address (core:pointer-increment return-address -1)))
+    ;; First, if it's an object file try that.
+    (multiple-value-bind (source-path function-name source line column start-line discriminator)
+        (object-file-address-information address)
+      (declare (ignore function-name source start-line discriminator))
+      (when source-path ; success, it was in an object file
+        (return-from code-source-position
           (make-code-source-line
-           :source-pathname source-pathname
-           :line-number line-number
-           :column column))))))
+           :source-pathname source-path
+           :line-number line :column column))))
+    ;; OK no good, so try it as an address from a library.
+    (multiple-value-bind (symbol start end type library-name library-origin offset-from-start-of-library)
+        (core:lookup-address address)
+      (multiple-value-bind (source-pathname line-number column)
+          (run-llvm-dwarfdump offset-from-start-of-library library-name)
+        (make-code-source-line
+         :source-pathname source-pathname
+         :line-number line-number
+         :column column)))))
 
 (export 'code-source-position)

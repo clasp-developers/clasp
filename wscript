@@ -898,8 +898,8 @@ def configure(cfg):
         elif (cfg.env['DEST_OS'] == LINUX_OS ):
             cfg.env['USE_COMPILE_FILE_PARALLEL'] = False
         elif (cfg.env['DEST_OS'] == FREEBSD_OS ):
-            # Martin - turn this to False if it breaks FREEBSD builds
-            cfg.env['USE_COMPILE_FILE_PARALLEL'] = True
+            # cracauer todo
+            cfg.env['USE_COMPILE_FILE_PARALLEL'] = False
         else:
             raise Exception("Unknown OS %s"%cfg.env['DEST_OS'])
         

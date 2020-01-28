@@ -152,7 +152,6 @@ CL_DEFUN void core__verify_closure_with_slots(T_sp alist)
 {
   expect_offset(comp::_sym_entry,alist,offsetof(ClosureWithSlots_O,entry)-gctools::general_tag);
   expect_offset(comp::_sym_function_description,alist,offsetof(ClosureWithSlots_O,_FunctionDescription)-gctools::general_tag);
-  expect_offset(core::_sym_object_file,alist,offsetof(ClosureWithSlots_O,_ObjectFile)-gctools::general_tag);
   expect_offset(comp::_sym_closure_type,alist,offsetof(ClosureWithSlots_O,closureType)-gctools::general_tag);
   expect_offset(comp::_sym_data_length,alist,offsetof(ClosureWithSlots_O,_Slots._Length)-gctools::general_tag);
   expect_offset(comp::_sym_data0,alist,offsetof(ClosureWithSlots_O,_Slots._Data)-gctools::general_tag);
@@ -274,34 +273,6 @@ string Function_O::__repr__() const {
   
   ss << ">";
   return ss.str();
-}
-
-
-string ObjectFile_O::__repr__() const {
-  stringstream ss;
-  ss << "#<OBJECT-FILE :ptr ";
-  ss << (void*)this->_ObjectFilePtr;
-  ss << " :size ";
-  ss << (void*)this->_ObjectFileSize;
-  ss << ">";
-  return ss.str();
-}
-    
-ObjectFile_O::~ObjectFile_O() {
-  if (this->_ObjectFilePtr!=NULL) {
-    free(this->_ObjectFilePtr);
-    this->_ObjectFilePtr = NULL;
-  }
-}
-
-ObjectFile_sp Function_O::objectFile() const
-{
-  SUBCLASS_MUST_IMPLEMENT();
-}
-
-void Function_O::setf_objectFile(ObjectFile_sp of)
-{
-  SUBCLASS_MUST_IMPLEMENT();
 }
 
 CL_DEFMETHOD Pointer_sp Function_O::function_description_address() const {
