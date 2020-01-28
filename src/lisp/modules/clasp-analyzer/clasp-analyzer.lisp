@@ -423,9 +423,9 @@ This could change the value of stamps for specific classes - but that would brea
             for y = (second cur)
             while y
             do (let* ((stamp-where-x (car x))
-                      (stamp-x (ash stamp-where-x (- +wtag-shift+)))
+                      (stamp-x (ash stamp-where-x (- *wtag-shift*)))
                       (stamp-where-y (car y))
-                      (stamp-y (ash stamp-where-y (- +wtag-shift+))))
+                      (stamp-y (ash stamp-where-y (- *wtag-shift*))))
                  (if (/= (- stamp-y stamp-x) 1)
                      (return-from verify (values nil)))))
       (let* ((first-stamp-value (car (first sorted-stamp-values)))
