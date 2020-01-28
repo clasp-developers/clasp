@@ -193,6 +193,7 @@ Lisp_O::GCRoots::GCRoots() :
   _DefaultSpecialBindings(_Nil<T_O>()),
   _DefaultSpecialBindingsMutex(SPCLBIND_NAMEWORD),
   _SyspropMutex(SYSPROC__NAMEWORD),
+  _FinalizersMutex(MPSMESSG_NAMEWORD),
   _ClassTableMutex(CLASSTBL_NAMEWORD),
   _SourceFilesMutex(SRCFILES_NAMEWORD),
   _PackagesMutex(PKGSMUTX_NAMEWORD),

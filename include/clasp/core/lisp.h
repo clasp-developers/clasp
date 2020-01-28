@@ -194,7 +194,9 @@ class Lisp_O {
     //        and its not needed
 #ifdef CLASP_THREADS
     mutable mp::SharedMutex _SyspropMutex;
+    mutable mp::SharedMutex _FinalizersMutex;
 #endif
+    WeakKeyHashTable_sp _Finalizers;
     HashTable_sp _Sysprop;
     // ---------
     //! Associate class names with classes

@@ -593,7 +593,16 @@ void my_mps_finalize(void* client) {
   }
 }
 
+
+#ifdef CLASP_THREADS
+mp::Mutex* global_mps_messages_mutex = NULL;
+#endif
+
 size_t processMpsMessages(size_t& finalizations) {
+  if (global_mps_messages_mutex == NULL) {
+    global_mps_messages_mutex = new mp::Mutex(MPSMESSG_NAMEWORD);
+  }
+  WITH_READ_WRITE_LOCK(*global_mps_messages_mutex);
   size_t messages(0);
   finalizations = 0;
   int mGcStart(0);
@@ -652,7 +661,16 @@ size_t processMpsMessages(size_t& finalizations) {
       }
       if (live_object) {
         bool invoked_finalizer = false;
-        auto ht = gctools::As<core::WeakKeyHashTable_sp>(gctools::_sym_STARfinalizersSTAR->symbolValue());
+        // Ok, I'm super worried about a deadlock here.
+        // What if (1) someone was doing an allocation and that registered a finalizer.
+        // Then (2) while registering the finalizer the allocator adds it to the _lisp->_Roots._Finalizers,which
+        // will (3) grab the WITH_READ_WRITE_LOCK(_lisp->_Roots._FinalizersMutex)
+        // and (4) start allocating objects with MPS and something gets allocated with a finalizer...
+        // THEN (5) processMpsMessages gets called and (6) it grabs the WITH_READ_LOCK(_lisp->_Roots._FinalizersMutex)
+        // ... I think that will dead lock!!!!!!!!
+        // Hmmm, can anything be allocated with a finalizer in (4)?????  Maybe not.
+        WITH_READ_LOCK(_lisp->_Roots._FinalizersMutex);
+        auto ht = _lisp->_Roots._Finalizers;
         core::T_mv res = ht->gethash(obj);
         if (res.second().notnilp()) {
 //          printf("%s:%d           Trying to pass object %p to finalizer at %p\n", __FILE__, __LINE__, (void*)obj.tagged_(), (void*)res.tagged_());

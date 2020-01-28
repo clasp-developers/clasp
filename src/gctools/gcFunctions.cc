@@ -740,11 +740,11 @@ CL_DEFUN void gctools__function_call_count_profiler(core::T_sp func) {
 #endif // DEBUG_FUNCTION_CALL_COUNTER
 
 namespace gctools {
-SYMBOL_EXPORT_SC_(GcToolsPkg,STARfinalizersSTAR);
 /*! Call finalizer_callback with no arguments when object is finalized.*/
 CL_DEFUN void gctools__finalize(core::T_sp object, core::T_sp finalizer_callback) {
   //printf("%s:%d making a finalizer for %p calling %p\n", __FILE__, __LINE__, (void*)object.tagged_(), (void*)finalizer_callback.tagged_());
-  core::WeakKeyHashTable_sp ht = As<core::WeakKeyHashTable_sp>(_sym_STARfinalizersSTAR->symbolValue());
+  WITH_READ_WRITE_LOCK(_lisp->_Roots._FinalizersMutex);
+  core::WeakKeyHashTable_sp ht = _lisp->_Roots._Finalizers;
   core::List_sp orig_finalizers = ht->gethash(object,_Nil<core::T_O>());
   core::List_sp finalizers = core::Cons_O::create(finalizer_callback,orig_finalizers);
 //  printf("%s:%d      Adding finalizer to list new length --> %d   list head %p\n", __FILE__, __LINE__, core::cl__length(finalizers), (void*)finalizers.tagged_());
@@ -762,10 +762,9 @@ CL_DEFUN void gctools__finalize(core::T_sp object, core::T_sp finalizer_callback
 
 CL_DEFUN void gctools__definalize(core::T_sp object) {
 //  printf("%s:%d erasing finalizers for %p\n", __FILE__, __LINE__, (void*)object.tagged_());
-  core::WeakKeyHashTable_sp ht = As<core::WeakKeyHashTable_sp>(_sym_STARfinalizersSTAR->symbolValue());
-  if (ht->gethash(object)) {
-    ht->remhash(object);
-  }
+  WITH_READ_WRITE_LOCK(_lisp->_Roots._FinalizersMutex);
+  core::WeakKeyHashTable_sp ht = _lisp->_Roots._Finalizers;
+  if (ht->gethash(object)) ht->remhash(object);
 #ifdef USE_BOEHM
   boehm_clear_finalizer_list(object.tagged_());
 #endif
