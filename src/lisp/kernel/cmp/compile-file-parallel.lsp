@@ -188,6 +188,8 @@ multithreaded performance that we should explore."
                                         :intermediate-output-type intermediate-output-type
                                         :write-bitcode write-bitcode))
                     `((*compile-print* . ',*compile-print*)
+                      (*compile-file-parallel* . ',*compile-file-parallel*)
+                      (*generate-faso* . ',*generate-faso*)
                       (*compile-verbose* . ',*compile-verbose*)
                       (*compile-file-output-pathname* . ',*compile-file-output-pathname*)
                       (*package* . ',*package*)
