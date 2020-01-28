@@ -40,6 +40,7 @@
 (defvar +RACK-WTAG+ (get-cxx-data-structure-info :RACK-WTAG))
 (defvar +WRAPPED-WTAG+ (get-cxx-data-structure-info :WRAPPED-WTAG))
 (defvar +HEADER-WTAG+ (get-cxx-data-structure-info :HEADER-WTAG))
+(defvar +MAX-WTAG+ (get-cxx-data-structure-info :MAX-WTAG))
 (defvar +MTAG-WIDTH+ (get-cxx-data-structure-info :MTAG-WIDTH))
 (defvar +WTAG-WIDTH+ (get-cxx-data-structure-info :WTAG-WIDTH))
 (defvar +STAMP-SHIFT+ (get-cxx-data-structure-info :STAMP-SHIFT))

@@ -320,6 +320,7 @@ namespace gctools {
     static const tagged_stamp_t rack_wtag      =  BOOST_BINARY(0100);
     static const tagged_stamp_t wrapped_wtag   =  BOOST_BINARY(1000);
     static const tagged_stamp_t header_wtag    =  BOOST_BINARY(1100);
+    static const tagged_stamp_t max_wtag       =  BOOST_BINARY(1100);
     static const tagged_stamp_t wtag_width     = 2;
     
     static const tagged_stamp_t invalid_tag=  INVALID_MTAG; // indicates not header

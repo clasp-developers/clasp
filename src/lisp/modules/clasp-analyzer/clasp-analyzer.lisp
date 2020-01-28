@@ -226,11 +226,11 @@
 
 
 (defconstant +wtag-shift+    cmp::+wtag-width+)
-(defconstant +derivable-wtag+ cmp::+derivable-wtag+)
-(defconstant +rack-wtag+      cmp::+rack-wtag+)
-(defconstant +wrapped-wtag+   cmp::+wrapped-wtag+)
-(defconstant +header-wtag+    cmp::+header-wtag+)
-(defconstant +max-wtag+       cmp::+max-wtag+)
+(defconstant +derivable-wtag+ (ash cmp::+derivable-wtag+ cmp::+mtag-width+))
+(defconstant +rack-wtag+      (ash cmp::+rack-wtag+ cmp::+mtag-width+))
+(defconstant +wrapped-wtag+   (ash cmp::+wrapped-wtag+ cmp::+mtag-width+))
+(defconstant +header-wtag+    (ash cmp::+header-wtag+ cmp::+mtag-width+))
+(defconstant +max-wtag+       (ash cmp::+max-wtag+ cmp::+mtag-width+))
 
 #+(or)
 (defmethod stamp-value ((class gc-managed-type) &optional stamp)
