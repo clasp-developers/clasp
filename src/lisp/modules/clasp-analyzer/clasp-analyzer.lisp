@@ -225,37 +225,37 @@
   (setf (analysis-stamp-value-generator analysis) (make-instance 'stamp-value-generator)))
 
 
-(defconstant +wtag-shift+    cmp::+wtag-width+)
-(defconstant +derivable-wtag+ (ash cmp::+derivable-wtag+ cmp::+mtag-width+))
-(defconstant +rack-wtag+      (ash cmp::+rack-wtag+ cmp::+mtag-width+))
-(defconstant +wrapped-wtag+   (ash cmp::+wrapped-wtag+ cmp::+mtag-width+))
-(defconstant +header-wtag+    (ash cmp::+header-wtag+ cmp::+mtag-width+))
-(defconstant +max-wtag+       (ash cmp::+max-wtag+ cmp::+mtag-width+))
+(defparameter *wtag-shift*    cmp::+wtag-width+)
+(defparameter *derivable-wtag* (ash cmp::+derivable-wtag+ (- cmp::+mtag-width+)))
+(defparameter *rack-wtag*      (ash cmp::+rack-wtag+ (- cmp::+mtag-width+)))
+(defparameter *wrapped-wtag*   (ash cmp::+wrapped-wtag+ (- cmp::+mtag-width+)))
+(defparameter *header-wtag*    (ash cmp::+header-wtag+ (- cmp::+mtag-width+)))
+(defparameter *max-wtag*       (ash cmp::+max-wtag+ (- cmp::+mtag-width+)))
 
 #+(or)
 (defmethod stamp-value ((class gc-managed-type) &optional stamp)
   (if stamp
-      (logior (ash stamp +wtag-shift+) +max-wtag+)
-      (logior (ash (stamp% class) +wtag-shift+) +header-wtag+)))
+      (logior (ash stamp *wtag-shift*) *max-wtag*)
+      (logior (ash (stamp% class) *wtag-shift*) *header-wtag*)))
 
 
 (defmethod calculate-stamp-where-unshifted (stamp-value cclass)
-  "Shift the stamp-value by +wtag-shift+ and or in the where tag based
+  "Shift the stamp-value by *wtag-shift* and or in the where tag based
 on the cclass. 
 This could change the value of stamps for specific classes - but that would break quick typechecks like (typeq x Number)"
 ;;;  (format t "Assigning stamp-value for class ~s~%" (class-key% class))
   (cond ((member (cclass-key cclass) '("core::Instance_O" "core::FuncallableInstance_O" "clbind::ClassRep_O") :test #'string=)
 ;;;         (format t "---> stamp in rack~%")
-         (logior (ash stamp-value +wtag-shift+) +rack-wtag+))
+         (logior (ash stamp-value *wtag-shift*) *rack-wtag*))
         ((member (cclass-key cclass) '("core::WrappedPointer_O") :test #'string=)
 ;;;         (format t "---> stamp in wrapped~%")
-         (logior (ash stamp-value +wtag-shift+) +wrapped-wtag+))
+         (logior (ash stamp-value *wtag-shift*) *wrapped-wtag*))
         ((member (cclass-key cclass) '("core::DerivableCxxObject_O") :test #'string=)
 ;;;         (format t "---> stamp in derivable~%")
-         (logior (ash stamp-value +wtag-shift+) +derivable-wtag+))
+         (logior (ash stamp-value *wtag-shift*) *derivable-wtag*))
         (t
 ;;;         (format t "---> stamp in header~%")
-         (logior (ash stamp-value +wtag-shift+) +header-wtag+))))
+         (logior (ash stamp-value *wtag-shift*) *header-wtag*))))
 
 (defun assign-stamp-value (analysis stamp operation)
   (let ((stamp-value (stamp-value% stamp))
@@ -3319,8 +3319,8 @@ Recursively analyze x and return T if x contains fixable pointers."
             (format fout "~A = ADJUST_STAMP(~A), // Stamp(~a)  wtag(~a)~%"
                     (get-stamp-name stamp)
                     (stamp-value% stamp)
-                    (ash (stamp-value% stamp) (- +wtag-shift+))
-                    (logand (stamp-value% stamp) +max-wtag+))
+                    (ash (stamp-value% stamp) (- *wtag-shift*))
+                    (logand (stamp-value% stamp) *max-wtag*))
             #+(or)(when (and (eq (stamp-value-source stamp) :from-static-analyzer)
                        (null (cclass-template-specializer (stamp-cclass stamp)))
                        (not (inherits-from-multiple-classes (stamp-cclass stamp)))
