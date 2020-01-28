@@ -261,6 +261,8 @@
             with-dbg-lexical-block
             dbg-set-current-source-pos
             compile-file-source-pos-info
+            compile-file-serial
+            compile-file-parallel
             c++-field-offset
             c++-field-index
             c++-struct-type
