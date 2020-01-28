@@ -151,6 +151,16 @@ public:
     _GlobalValue = value;
 #endif
   }
+
+  /*! Return the value slot of the symbol or UNBOUND if unbound */
+  inline T_sp symbolValueUnsafe() const {
+#ifdef CLASP_THREADS
+    if (my_thread->_Bindings.thread_local_boundp(this))
+      return my_thread->_Bindings.thread_local_value(this);
+    else
+#endif
+      return _GlobalValue;
+  };
   
   /*! Return the value slot of the symbol - throws if unbound */
   inline T_sp symbolValue() const {
@@ -167,16 +177,6 @@ public:
     if (val.unboundp() || val == unbound_marker) this->symbolUnboundError();
     return val;
   }
-
-  /*! Return the value slot of the symbol or UNBOUND if unbound */
-  inline T_sp symbolValueUnsafe() const {
-#ifdef CLASP_THREADS
-    if (my_thread->_Bindings.thread_local_boundp(this))
-      return my_thread->_Bindings.thread_local_value(this);
-    else
-#endif
-      return _GlobalValue;
-  };
 
   void makeSpecial();
 
