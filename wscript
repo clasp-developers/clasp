@@ -894,7 +894,7 @@ def configure(cfg):
     if (not 'USE_COMPILE_FILE_PARALLEL' in cfg.env):
         if (cfg.env['DEST_OS'] == DARWIN_OS ):
             # by default only MacOS has USE_COMPILE_FILE_PARALLEL=True
-            cfg.env['USE_COMPILE_FILE_PARALLEL'] = True
+            cfg.env['USE_COMPILE_FILE_PARALLEL'] = False
         elif (cfg.env['DEST_OS'] == LINUX_OS ):
             cfg.env['USE_COMPILE_FILE_PARALLEL'] = False
         elif (cfg.env['DEST_OS'] == FREEBSD_OS ):
