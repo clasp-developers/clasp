@@ -140,8 +140,7 @@ inline bool interrupts_disabled_by_C() {
 }
 
 inline bool interrupts_disabled_by_lisp() {
-  return my_thread->_Bindings.value(core::_sym_STARinterrupts_enabledSTAR,
-                                    &core::_sym_STARinterrupts_enabledSTAR->_GlobalValue).notnilp();
+  return core::_sym_STARinterrupts_enabledSTAR->symbolValue().notnilp();
 }
 
 // SIGNAL QUEUE

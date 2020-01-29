@@ -245,6 +245,7 @@
                                                             %size_t% ) :varargs t)
          (primitive-unwinds "cc_safe_symbol_value" %t*% (list %t*%))
          (primitive         "cc_setSymbolValue" %void% (list %t*% %t*%))
+         (primitive         "cc_setTLSymbolValue" %void% (list %t*% %t*%))
 
          (primitive         "cc_rewind_va_list" %void% (list %va_list*% %register-save-area*%))
          (primitive-unwinds "cc_call_multipleValueOneFormCallWithRet0" %return-type% (list %t*% %return-type%))

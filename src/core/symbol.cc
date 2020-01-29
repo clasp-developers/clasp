@@ -139,15 +139,6 @@ CL_DEFUN T_sp core__symbol_value_from_cell(Symbol_sp symbol, Cons_sp cell, T_sp 
   return symbol->symbolValueFromCell(cell, unbound_marker);
 }
 
-#if 0
-CL_LAMBDA(arg);
-CL_DECLARE();
-CL_DOCSTRING("symbolValueAddress");
-CL_DEFUN T_sp core__symbol_value_address(Symbol_sp arg) {
-  return Pointer_O::create(&arg->symbolValueRef());
-};
-#endif
-
 CL_LAMBDA(name);
 CL_DECLARE();
 CL_DOCSTRING("make_symbol");
@@ -260,7 +251,7 @@ Symbol_sp Symbol_O::makunbound() {
   if (this->getReadOnly())
     // would be a nice extension to make this a continuable error
     SIMPLE_ERROR(BF("Cannot make constant %s unbound") % this->__repr__());
-  *my_thread->_Bindings.reference_raw(this,&this->_GlobalValue) = _Unbound<T_O>();
+  setf_symbolValue(_Unbound<T_O>());
   return this->asSmartPtr();
 }
 
@@ -595,7 +586,13 @@ CL_DEFUN void core__symbol_global_value_set(Symbol_sp symbol, T_sp value) {
   symbol->_GlobalValue = value;
 }
 
+CL_DEFUN T_sp core__symbol_thread_local_value(Symbol_sp s) {
+  return s->threadLocalSymbolValue();
+}
 
+CL_DEFUN bool core__no_thread_local_bindingp(T_sp object) {
+  return gctools::tagged_no_thread_local_bindingp(object.raw_());
+}
 
 
 SYMBOL_EXPORT_SC_(KeywordPkg,vtable);

@@ -1129,19 +1129,12 @@ T_sp lexicalFrameLookup(T_sp fr, int depth, int index) {
   return val;
 }
 
-CL_LAMBDA(sym val thunk);
+CL_LAMBDA(symbol value thunk);
 CL_DECLARE();
-CL_DOCSTRING("callWithVariableBound");
-CL_DEFUN T_mv core__call_with_variable_bound(Symbol_sp sym, T_sp val, T_sp thunk) {
+CL_DOCSTRING("Call THUNK with the given SYMBOL bound to to the given VALUE.");
+CL_DEFUN T_mv core__call_with_variable_bound(Symbol_sp sym, T_sp val, Function_sp thunk) {
   DynamicScopeManager scope(sym, val);
-  if (!gc::IsA<Function_sp>(thunk)) {
-    printf("%s:%d:%s  The thunk is NOT a Function object!!!!! thunk.raw_() = %p\n",
-           __FILE__, __LINE__, __FUNCTION__, (void*)thunk.raw_());
-    fflush(stdout);
-  }
-  Function_sp func = gc::As_unsafe<Function_sp>(thunk);
-  return (func->entry.load())(LCC_PASS_ARGS0_ELLIPSIS(func.raw_()));
-  // Don't put anything in here - don't mess up the MV return
+  return (thunk->entry.load())(LCC_PASS_ARGS0_ELLIPSIS(thunk.raw_()));
 }
 
 }

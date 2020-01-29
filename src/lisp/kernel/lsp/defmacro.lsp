@@ -62,7 +62,8 @@
 	((eq (car list) key) (cadr list))
 	(t (search-keyword (cddr list) key))))
 
-(defun check-keyword (tail keywords &optional (allow-other-keys nil aok-flag))
+(defun check-keyword (tail keywords &optional (allow-other-keys nil aok-flag)
+                                      compiler-macro-p)
   (do (head
        arg
        (err nil))
@@ -165,7 +166,8 @@
 		     (dm-v v init)))
 		 (cond (key-flag
 			(push `(check-keyword ,pointer ',all-keywords
-                                              ,@(if allow-other-keys '(t) '()))
+                                              ,@(if allow-other-keys '(t) '())
+                                              ',(eq context 'define-compiler-macro))
 			      arg-check))
 		       ((not no-check)
 			(push `(if ,pointer (dm-too-many-arguments ,basis-form))

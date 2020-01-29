@@ -44,7 +44,7 @@ unsigned int *BignumExportBuffer::getOrAllocate(const mpz_class &bignum, int nai
 
 namespace core {
 
-size_t DynamicBindingStack::new_binding_index()
+size_t DynamicBindingStack::new_binding_index() const
 {
 #ifdef CLASP_THREADS
   RAIILock<mp::Mutex> mutex(mp::global_BindingIndexPoolMutex);
@@ -59,7 +59,7 @@ size_t DynamicBindingStack::new_binding_index()
 #endif
 };
 
-void DynamicBindingStack::release_binding_index(size_t index)
+void DynamicBindingStack::release_binding_index(size_t index) const
 {
 #ifdef CLASP_THREADS
   RAIILock<mp::Mutex> mutex(mp::global_BindingIndexPoolMutex);
@@ -67,130 +67,52 @@ void DynamicBindingStack::release_binding_index(size_t index)
 #endif
 };
 
-T_sp* DynamicBindingStack::reference_raw_(Symbol_O* var,T_sp* globalValuePtr) {
-#ifdef CLASP_THREADS
-  if ( var->_BindingIdx.load() == NO_THREAD_LOCAL_BINDINGS ) {
-    return globalValuePtr;
-  }
-  uintptr_t index = var->_BindingIdx.load();
-  // If it has a _Binding value but our table is not big enough, then expand the table.
-  unlikely_if (index >= this->_ThreadLocalBindings.size()) {
-    this->_ThreadLocalBindings.resize(index+1,_NoThreadLocalBinding<T_O>());
-  }
-  if (gctools::tagged_no_thread_local_bindingp(this->_ThreadLocalBindings[index].raw_())) {
-    return globalValuePtr;
-  }
-  return &this->_ThreadLocalBindings[index];
-#else
-  return globalValuePtr;
-#endif
+// Ensure that a symbol's binding index is set to something coherent.
+// NOTE: We can use memory_order_relaxed because (a) this is the only code in
+// the system that deals with the _BindingIdx, and (b) the only guarantee we
+// should need for this structure is modification order consistency.
+uint32_t DynamicBindingStack::ensure_binding_index(const Symbol_O* var) const {
+  uint32_t no_binding = NO_THREAD_LOCAL_BINDINGS;
+  uint32_t binding_index = var->_BindingIdx.load(std::memory_order_relaxed);
+  if (binding_index == no_binding) {
+    // Get a new index and try to exchange it in.
+    uint32_t new_index = this->new_binding_index();
+    if (!(var->_BindingIdx.compare_exchange_strong(no_binding, new_index,
+                                                   std::memory_order_relaxed))) {
+      // Some other thread has beat us. That's fine - just use theirs (which is
+      // now in no_binding), and release the one we just grabbed.
+      this->release_binding_index(new_index);
+      return no_binding;
+    } else return new_index;
+  } else return binding_index;
 }
 
-const T_sp* DynamicBindingStack::reference_raw_(const Symbol_O* var,const T_sp* globalValuePtr) const{
-#ifdef CLASP_THREADS
-  if ( var->_BindingIdx.load() == NO_THREAD_LOCAL_BINDINGS ) {
-    return globalValuePtr;
-  }
-  uintptr_t index = var->_BindingIdx.load();
-  // If it has a _Binding value but our table is not big enough, then expand the table.
-  unlikely_if (index >= this->_ThreadLocalBindings.size()) {
+T_sp* DynamicBindingStack::thread_local_reference(const uint32_t index) const {
+  unlikely_if (index >= this->_ThreadLocalBindings.size())
     this->_ThreadLocalBindings.resize(index+1,_NoThreadLocalBinding<T_O>());
-  }
-  if (gctools::tagged_no_thread_local_bindingp(this->_ThreadLocalBindings[index].raw_())) {
-    return globalValuePtr;
-  }
-  return &this->_ThreadLocalBindings[index];
-#else
-  return globalValuePtr;
-#endif
+  return &(this->_ThreadLocalBindings[index]);
+}
+
+T_sp DynamicBindingStack::thread_local_value(const Symbol_O* sym) const {
+  // TODO: Rearrange this - in all cases, ensure_binding_index has already been called,
+  // and should not be necessary.
+  return *thread_local_reference(ensure_binding_index(sym));
+}
+
+void DynamicBindingStack::set_thread_local_value(T_sp value, const Symbol_O* sym) {
+  *thread_local_reference(ensure_binding_index(sym)) = value;
+}
+
+bool DynamicBindingStack::thread_local_boundp(const Symbol_O* sym) const {
+  uint32_t index = sym->_BindingIdx.load(std::memory_order_relaxed);
+  if (index == NO_THREAD_LOCAL_BINDINGS) return false;
+  else if (index >= this->_ThreadLocalBindings.size()) return false;
+  else if (gctools::tagged_no_thread_local_bindingp(_ThreadLocalBindings[index].raw_()))
+    return false;
+  else return true;
 }
 
 SYMBOL_EXPORT_SC_(CorePkg,STARwatchDynamicBindingStackSTAR);
-T_sp DynamicBindingStack::push_with_value_coming(Symbol_sp var, T_sp* globalValuePtr) {
-  T_sp* current_value_ptr = this->reference(var,globalValuePtr);
-#ifdef CLASP_THREADS
-  uint32_t no_binding = NO_THREAD_LOCAL_BINDINGS;
-  if ( var->_BindingIdx.load() == no_binding ) {
-    // Get a new index and if we cant exchange it in to _Binding then another
-    // thread got to it before us and we release the index
-    size_t new_index = this->new_binding_index();
-    if (!var->_BindingIdx.compare_exchange_strong(no_binding,new_index)) {
-      this->release_binding_index(new_index);
-    }
-  }
-  uint32_t index = var->_BindingIdx.load();
-  // If it has a _Binding value but our table is not big enough, then expand the table.
-  unlikely_if (index >= this->_ThreadLocalBindings.size()) {
-    this->_ThreadLocalBindings.resize(index+1,_NoThreadLocalBinding<T_O>());
-  }
-#ifdef DEBUG_DYNAMIC_BINDING_STACK // debugging
-  if (  _sym_STARwatchDynamicBindingStackSTAR &&
-       _sym_STARwatchDynamicBindingStackSTAR->boundP() &&
-       _sym_STARwatchDynamicBindingStackSTAR->symbolValue().notnilp() ) {
-    printf("%s:%d  DynamicBindingStack::push_with_value_coming of %s\n", __FILE__, __LINE__, var->formattedName(true).c_str());
-  }
-#endif
-  core::T_sp oldBinding(this->_ThreadLocalBindings[index]);
-  this->_ThreadLocalBindings[index] = *current_value_ptr;
-  return oldBinding;
-#else
-  core::T_sp oldBinding(var->symbolValueUnsafe());
-  return oldBinding;
-#endif
-}
-
-
-T_sp DynamicBindingStack::push_binding(Symbol_sp var, T_sp* globalValuePtr, T_sp value) {
-#ifdef CLASP_THREADS
-  uint32_t no_binding = NO_THREAD_LOCAL_BINDINGS;
-  if ( var->_BindingIdx.load() == no_binding ) {
-    // Get a new index and if we cant exchange it in to _Binding then another
-    // thread got to it before us and we release the index
-    uint32_t new_index = this->new_binding_index();
-    if (!var->_BindingIdx.compare_exchange_strong(no_binding,new_index)) {
-      this->release_binding_index(new_index);
-    }
-  }
-  uint32_t index = var->_BindingIdx.load();
-  // If it has a _Binding value but our table is not big enough, then expand the table.
-  unlikely_if (index >= this->_ThreadLocalBindings.size()) {
-    this->_ThreadLocalBindings.resize(index+1,_NoThreadLocalBinding<T_O>());
-  }
-#ifdef DEBUG_DYNAMIC_BINDING_STACK // debugging
-  if (  _sym_STARwatchDynamicBindingStackSTAR &&
-       _sym_STARwatchDynamicBindingStackSTAR->boundP() &&
-       _sym_STARwatchDynamicBindingStackSTAR->symbolValue().notnilp() ) {
-    printf("%s:%d  DynamicBindingStack::push_binding of %s\n", __FILE__, __LINE__, var->formattedName(true).c_str());
-  }
-#endif
-  core::T_sp oldBinding(this->_ThreadLocalBindings[index]);
-  this->_ThreadLocalBindings[index] = value;
-  return oldBinding;
-#else
-  core::T_sp oldBinding(var->symbolValueUnsafe());
-  this->_GlobalValue = value;
-  return oldBinding;
-#endif
-}
-
-
-
-void DynamicBindingStack::pop_binding(Symbol_sp oldVar, T_sp oldBinding) {
-#ifdef DEBUG_DYNAMIC_BINDING_STACK // debugging
-  if (  _sym_STARwatchDynamicBindingStackSTAR &&
-       _sym_STARwatchDynamicBindingStackSTAR->boundP() &&
-       _sym_STARwatchDynamicBindingStackSTAR->symbolValue().notnilp() ) {
-    printf("%s:%d  DynamicBindingStack::pop_binding[%lu]  %s\n", __FILE__, __LINE__, this->_Bindings.size(),bind._Var->formattedName(true).c_str());
-  }
-#endif
-#ifdef CLASP_THREADS
-  ASSERT(this->_ThreadLocalBindings.size()>oldVar->_BindingIdx.load()); 
-  this->_ThreadLocalBindings[oldVar->_BindingIdx.load()] = oldBinding;
-#else
-  bind._Var->setf_symbolValue(oldBinding);
-#endif
-}
-
 
 };
 

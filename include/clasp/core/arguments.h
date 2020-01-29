@@ -125,34 +125,13 @@ private:
   Symbol_sp _OldVar;
   T_sp _OldBinding;
 public:
-  virtual void new_binding(const Argument &argument, T_sp val);
-  virtual void va_rest_binding(const Argument &argument) { N_A_(); };
-  virtual Vaslist &valist() { N_A_(); };
-  virtual bool lexicalElementBoundP(const Argument &argument) { N_A_(); };
-  inline void pushSpecialVariableAndSet_(Symbol_sp sym, T_sp val) {
-    this->_OldVar = sym;
-    this->_OldBinding = my_thread->bindings().push_binding(sym,&sym->_GlobalValue,val);
-// NEW_DBS    sym->setf_symbolValue(val);
+  inline explicit DynamicScopeManager(Symbol_sp sym, T_sp val) {
+    _OldVar = sym;
+    _OldBinding = sym->threadLocalSymbolValue();
+    sym->set_threadLocalSymbolValue(val);
   }
-#if 0
-  inline void bind(Symbol_sp sym, T_sp val) {
-    this->pushSpecialVariableAndSet(sym,val);
-  }
-  inline explicit DynamicScopeManager() {
-  }
-#endif
-  
-  inline explicit DynamicScopeManager(Symbol_sp sym, T_sp newVal) {
-    this->pushSpecialVariableAndSet_(sym, newVal);
-  }
-
-  void dump() const;
-
-  virtual T_sp lexenv() const;
-
   virtual ~DynamicScopeManager() {
-    DynamicBindingStack &bindings = my_thread->bindings();
-    bindings.pop_binding(this->_OldVar,this->_OldBinding);
+    _OldVar->set_threadLocalSymbolValue(_OldBinding);
   }
 };
 
@@ -195,22 +174,6 @@ public:
   virtual bool lexicalElementBoundP(const Argument &argument);
   virtual T_sp lexenv() const { return this->_Environment; };
 };
-
-#if 0
-class ActivationFrameDynamicScopeManager : public ScopeManager {
-private:
-  ActivationFrame_sp _Frame;
-
-public:
-  ActivationFrameDynamicScopeManager(ActivationFrame_sp frame) : _Frame(frame){};
-
-public:
-  virtual void new_binding(const Argument &argument, T_sp val);
-  virtual bool lexicalElementBoundP(const Argument &argument);
-  T_sp activationFrame() const { return this->_Frame; };
-  virtual T_sp lexenv() const;
-};
-#endif
 
 class StackFrameDynamicScopeManager : public ScopeManager {
 private:
