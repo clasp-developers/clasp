@@ -959,10 +959,10 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   };
   /* Set the values of some essential global symbols */
   cl::_sym_nil = gctools::smart_ptr<core::Symbol_O>((gctools::Tagged)gctools::global_tagged_Symbol_OP_nil); //->initialize();
-  cl::_sym_nil->_Name = SimpleBaseString_O::make("NIL");
+  cl::_sym_nil->setf_name(SimpleBaseString_O::make("NIL"));
   //        printf("%s:%d About to add NIL to the COMMON-LISP package - is it defined at this point\n", __FILE__, __LINE__ );
   //	_lisp->_Roots._CommonLispPackage->add_symbol_to_package("NIL"cl::_sym_nil);
-  cl::_sym_nil->_HomePackage = _lisp->_Roots._CommonLispPackage;
+  cl::_sym_nil->setPackage(_lisp->_Roots._CommonLispPackage);
   cl::_sym_nil->setf_symbolValue(_Nil<T_O>());
   cl::_sym_nil->makeSpecial();
   cl::_sym_nil->exportYourself();

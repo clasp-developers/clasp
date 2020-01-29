@@ -56,8 +56,8 @@ class Symbol_O : public General_O {
   struct metadata_bootstrap_class {};
   struct metadata_gc_do_not_move {};
 
-public:
-  // This MUST match the layout for %sym% in cmpintrinsics.lsp and the sanity check core__symbol_layout_sanity_check
+ public: // FIXME: Probably oughta be private.
+  // This MUST match the layout for %sym% in cmpintrinsics.lsp and the sanity check core__verify_symbol_layout
   SimpleString_sp _Name;
   std::atomic<T_sp> _HomePackage; // NIL or Package
   T_sp _GlobalValue;
@@ -67,10 +67,10 @@ public:
   uint32_t  _Flags;
   List_sp   _PropertyList;
 
-private:
   friend class Instance_O;
   friend class Package_O;
   friend class CoreExposer;
+  friend void core__verify_symbol_layout(T_sp);
   LISP_CLASS(core, ClPkg, Symbol_O, "Symbol",General_O);
 
 public:
@@ -97,7 +97,8 @@ public:
   void sxhash_(HashGenerator &hg) const;
   void sxhash_equal(HashGenerator &hg) const;
   void sxhash_equalp(HashGenerator &hg) const {this->sxhash_equal(hg);};
-  
+
+ public: // Flags and miscellaneous
   bool isKeywordSymbol();
   Symbol_sp asKeywordSymbol();
 
@@ -107,7 +108,6 @@ public:
     else this->_Flags = this->_Flags&(~IS_MACRO);
   }
 
- public:
   void setf_name(SimpleString_sp nm) { this->_Name = nm; };
 
 #ifdef SYMBOL_CLASS
@@ -115,8 +115,8 @@ public:
   T_sp find_class();
   ClassHolder_sp find_class_holder();
 #endif
-  List_sp plist() const { return this->_PropertyList; };
-  void setf_plist(List_sp plist);
+  List_sp plist() const { return _PropertyList; }
+  void setf_plist(List_sp plist) { _PropertyList = plist; }
   
   bool getReadOnly() const { return !!(this->_Flags&IS_CONSTANT);};
   void setReadOnly(bool m) {
@@ -130,12 +130,18 @@ public:
     if (m) this->_Flags = this->_Flags|IS_SPECIAL;
     else this->_Flags = this->_Flags&(~IS_SPECIAL);
   }
+  void makeSpecial(); // TODO: Redundant, remove?
 
   Symbol_sp copy_symbol(T_sp copy_properties) const;
   bool isExported();
 
   void symbolUnboundError() const;
 
+ public: // value slot access
+
+  inline T_sp globalValue() const { return _GlobalValue; }
+  inline void set_globalValue(T_sp val) { _GlobalValue = val; }
+  
   inline T_sp threadLocalSymbolValue() const {
 #ifdef CLASP_THREADS
     return my_thread->_Bindings.thread_local_value(this);
@@ -178,8 +184,6 @@ public:
     return val;
   }
 
-  void makeSpecial();
-
   inline bool boundP() const { return !(symbolValueUnsafe().unboundp()); };
 
   inline bool boundPFomCell(Cons_sp cell) {
@@ -214,6 +218,8 @@ public:
     return val;
   }
 
+ public: // function value slots access
+
   void fmakunbound();
   
   void setSetfFdefinition(Function_sp fn) { this->_SetfFunction = fn; };
@@ -230,6 +236,8 @@ public:
 
   /*! Return true if the symbol has a function bound*/
   bool fboundp() const;
+
+ public: // packages, the name, misc
 
   string symbolNameAsString() const;
 

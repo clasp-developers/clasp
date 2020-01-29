@@ -70,7 +70,7 @@ CL_LAMBDA(sym indicator &optional default);
 CL_DECLARE();
 CL_DOCSTRING("Return the value of a plist property");
 CL_DEFUN T_sp cl__get(Symbol_sp sym, T_sp indicator, T_sp defval) {
-  return cl__getf(sym->_PropertyList, indicator, defval);
+  return cl__getf(sym->plist(), indicator, defval);
 }
 
 CL_LISPIFY_NAME("cl:get")
@@ -79,7 +79,7 @@ CL_DECLARE();
 CL_DOCSTRING("Set the value of a plist property");
 CL_DEFUN_SETF T_sp core__putprop(T_sp val, Symbol_sp sym, T_sp indicator, T_sp defval) {
   (void)(defval); // unused
-  sym->_PropertyList = core__put_f(sym->_PropertyList, val, indicator);
+  sym->setf_plist(core__put_f(sym->plist(), val, indicator));
   return val;
 }
 
@@ -283,10 +283,6 @@ void Symbol_O::fmakunbound_setf()
 
 __attribute__((optnone)) void Symbol_O::symbolUnboundError() const {
   UNBOUND_VARIABLE_ERROR(this->asSmartPtr());
-}
-
-void Symbol_O::setf_plist(List_sp plist) {
-  this->_PropertyList = plist;
 }
 
 void Symbol_O::sxhash_(HashGenerator &hg) const {
@@ -576,14 +572,14 @@ void Symbol_O::remove_package(Package_sp pkg)
 };
 
 CL_DEFUN T_sp core__symbol_global_value(Symbol_sp s) {
-  return s->_GlobalValue;
+  return s->globalValue();
 }
 
 CL_DOCSTRING(R"(Set the value slot of the symbol to the value.
 This bypasses thread local storage of symbol value slots and any threads that start
 after this has been set will start with the value set here.)");
 CL_DEFUN void core__symbol_global_value_set(Symbol_sp symbol, T_sp value) {
-  symbol->_GlobalValue = value;
+  symbol->set_globalValue(value);
 }
 
 CL_DEFUN T_sp core__symbol_thread_local_value(Symbol_sp s) {
