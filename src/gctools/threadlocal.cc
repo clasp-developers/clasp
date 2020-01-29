@@ -112,8 +112,6 @@ bool DynamicBindingStack::thread_local_boundp(const Symbol_O* sym) const {
   else return true;
 }
 
-SYMBOL_EXPORT_SC_(CorePkg,STARwatchDynamicBindingStackSTAR);
-
 };
 
 namespace gctools {

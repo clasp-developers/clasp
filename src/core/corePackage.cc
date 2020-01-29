@@ -1087,7 +1087,6 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARserializerArchiveSTAR->defparameter(_Nil<T_O>());
   _sym_STARcommandLineLoadSTAR->defparameter(_Nil<T_O>());
   _sym_STARdebugMonitorSTAR->defparameter(_Nil<T_O>());
-  _sym_STARwatchDynamicBindingStackSTAR->defparameter(_Nil<T_O>());
   _sym_STARdebugLoadTimeValuesSTAR->defparameter(_Nil<T_O>());
   _sym_STARdebugEvalSTAR->defparameter(_Nil<T_O>());
   _sym_STARdebugStartupSTAR->defparameter(_Nil<T_O>());

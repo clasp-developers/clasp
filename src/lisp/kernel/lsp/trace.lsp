@@ -373,16 +373,3 @@ for Stepper mode commands."
 
 (defun step-quit ()
   (throw *step-tag* t))
-
-(defparameter core:*watch-dynamic-binding-stack* nil)
-(defun ensure-trace-dynamic (symbol &optional func)
-  (let ((as (assoc symbol core:*watch-dynamic-binding-stack*)))
-    (if as
-        (setf (cdr as) func)
-        (setf core:*watch-dynamic-binding-stack*
-              (acons symbol func core:*watch-dynamic-binding-stack*)))))
-(export 'ensure-trace-dynamic)
-
-(defmacro watch (var &optional fn)
-  `(ensure-trace-dynamic ',var ,fn))
-(export 'watch)
