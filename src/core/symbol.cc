@@ -205,14 +205,14 @@ void Symbol_O::finish_setup(Package_sp pkg, bool exportp, bool shadowp) {
   ASSERTF(pkg, BF("The package is UNDEFINED"));
   this->_HomePackage = pkg;
   if (pkg->actsLikeKeywordPackage())
-    this->_GlobalValue = this->asSmartPtr();
+    this->set_globalValue(this->asSmartPtr());
   else
-    this->_GlobalValue = _Unbound<T_O>();
+    this->set_globalValue(_Unbound<T_O>());
   this->fmakunbound();
   this->fmakunbound_setf();
   pkg->bootstrap_add_symbol_to_package(this->symbolName()->get_std_string().c_str(),
                                        this->sharedThis<Symbol_O>(), exportp, shadowp);
-  this->_PropertyList = _Nil<T_O>();
+  this->setf_plist(_Nil<T_O>());
 }
 
 Symbol_sp Symbol_O::create_at_boot(const string &nm) {
@@ -263,21 +263,21 @@ CL_DEFUN Symbol_sp cl__makunbound(Symbol_sp functionName) {
 }
 
 bool Symbol_O::fboundp() const {
-  return this->_Function->entry.load() != unboundFunctionEntryPoint;
+  return symbolFunction()->entry.load() != unboundFunctionEntryPoint;
 };
 
 void Symbol_O::fmakunbound()
 {
-  this->_Function = make_unbound_symbol_function(this->asSmartPtr());
+  setf_symbolFunction(make_unbound_symbol_function(this->asSmartPtr()));
 }
 
 bool Symbol_O::fboundp_setf() const {
-  return this->_SetfFunction->entry.load() != unboundSetfFunctionEntryPoint;
+  return getSetfFdefinition()->entry.load() != unboundSetfFunctionEntryPoint;
 };
 
 void Symbol_O::fmakunbound_setf()
 {
-  this->_SetfFunction = make_unbound_setf_symbol_function(this->asSmartPtr());
+  setSetfFdefinition(make_unbound_setf_symbol_function(this->asSmartPtr()));
 }
 
 
@@ -286,13 +286,13 @@ __attribute__((optnone)) void Symbol_O::symbolUnboundError() const {
 }
 
 void Symbol_O::sxhash_(HashGenerator &hg) const {
-  if (hg.isFilling()) this->_HomePackage.load().unsafe_general()->sxhash_(hg);
+  if (hg.isFilling()) this->getPackage().unsafe_general()->sxhash_(hg);
   if (hg.isFilling()) this->_Name->sxhash_(hg);
 }
 
 void Symbol_O::sxhash_equal(HashGenerator &hg) const
 {
-  if (hg.isFilling()) HashTable_O::sxhash_equal(hg,this->_HomePackage);
+  if (hg.isFilling()) HashTable_O::sxhash_equal(hg,this->getPackage());
   if (hg.isFilling()) HashTable_O::sxhash_equal(hg,this->_Name);
 }
 
@@ -303,12 +303,12 @@ CL_DEFMETHOD Symbol_sp Symbol_O::copy_symbol(T_sp copy_properties) const {
   Symbol_sp new_symbol = Symbol_O::create(this->_Name);
   if (copy_properties.isTrue()) {
     if (this->boundP())
-      new_symbol->_GlobalValue = this->symbolValue();
+      new_symbol->set_globalValue(this->symbolValue());
     new_symbol->setReadOnly(this->getReadOnly());
-    new_symbol->_PropertyList = cl__copy_list(this->_PropertyList);
-    if (this->fboundp()) new_symbol->_Function = this->_Function;
+    new_symbol->setf_plist(cl__copy_list(this->plist()));
+    if (this->fboundp()) new_symbol->setf_symbolFunction(this->symbolFunction());
     else new_symbol->fmakunbound();
-    if (this->fboundp_setf()) new_symbol->_SetfFunction = this->_SetfFunction;
+    if (this->fboundp_setf()) new_symbol->setSetfFdefinition(this->getSetfFdefinition());
     else new_symbol->fmakunbound_setf();
   }
   return new_symbol;
@@ -317,7 +317,7 @@ CL_DEFMETHOD Symbol_sp Symbol_O::copy_symbol(T_sp copy_properties) const {
 
 bool Symbol_O::isKeywordSymbol() {
   if (this->homePackage().nilp()) return false;
-  Package_sp pkg = gc::As<Package_sp>(this->_HomePackage.load()); //
+  Package_sp pkg = gc::As<Package_sp>(this->getPackage());
   return pkg->isKeywordPackage();
 };
 
@@ -345,8 +345,8 @@ void Symbol_O::archiveBase(ArchiveP node) {
 
 CL_LISPIFY_NAME("core:asKeywordSymbol");
 CL_DEFMETHOD Symbol_sp Symbol_O::asKeywordSymbol() {
-  if (this->_HomePackage.load().notnilp()) {
-    Package_sp pkg = gc::As<Package_sp>(this->_HomePackage.load());
+  if (this->getPackage().notnilp()) {
+    Package_sp pkg = gc::As<Package_sp>(this->getPackage());
     if (pkg->isKeywordPackage())
       return this->asSmartPtr();
   }
@@ -408,7 +408,7 @@ T_sp Symbol_O::defparameter(T_sp val) {
 
 CL_LISPIFY_NAME("core:setf_symbolFunction");
 CL_DEFMETHOD void Symbol_O::setf_symbolFunction(Function_sp exec) {
-  this->_Function = exec;
+  _Function.store(exec, std::memory_order_relaxed);
 }
 
 string Symbol_O::symbolNameAsString() const {
@@ -417,11 +417,11 @@ string Symbol_O::symbolNameAsString() const {
 
 string Symbol_O::formattedName(bool prefixAlways) const { //no guard
   stringstream ss;
-  if (this->_HomePackage.load().nilp()) {
+  if (this->getPackage().nilp()) {
     ss << "#:";
     ss << this->_Name->get_std_string();
   } else {
-    T_sp tmyPackage = this->_HomePackage;
+    T_sp tmyPackage = this->getPackage();
     if (!tmyPackage) {
       ss << "<PKG-NULL>:" << this->_Name->get_std_string();
       return ss.str();
@@ -465,7 +465,7 @@ bool Symbol_O::isExported() {
 Symbol_sp Symbol_O::exportYourself(bool doit) {
   if (doit) {
     if (!this->isExported()) {
-      if (this->_HomePackage.load().nilp())
+      if (this->getPackage().nilp())
         SIMPLE_ERROR(BF("Cannot export - no package"));
       Package_sp pkg = gc::As<Package_sp>(this->getPackage());
       if (!pkg->isKeywordPackage()) {
@@ -493,7 +493,7 @@ CL_DEFMETHOD string Symbol_O::fullName() const {
 }
 
 T_sp Symbol_O::getPackage() const {
-  T_sp pkg = this->_HomePackage.load();
+  T_sp pkg = this->_HomePackage.load(std::memory_order_relaxed);
   if (!pkg) return _Nil<T_O>();
   return pkg;
 }
@@ -501,7 +501,7 @@ T_sp Symbol_O::getPackage() const {
 void Symbol_O::setPackage(T_sp p) {
   ASSERTF(p, BF("The package is UNDEFINED"));
   ASSERT(p.nilp() || gc::IsA<Package_sp>(p));
-  this->_HomePackage = p;
+  this->_HomePackage.store(p, std::memory_order_relaxed);
 }
 
 SYMBOL_EXPORT_SC_(ClPkg, make_symbol);
@@ -519,11 +519,11 @@ void Symbol_O::dump() {
   ss << "Symbol @" << (void *)this << " --->" << std::endl;
   {
     ss << "Name: " << this->_Name->get_std_string() << std::endl;
-    if (!this->_HomePackage.load()) {
+    if (!this->getPackage()) {
       ss << "Package: UNDEFINED" << std::endl;
     } else {
       ss << "Package: ";
-      ss << _rep_(this->_HomePackage) << std::endl;
+      ss << _rep_(this->getPackage()) << std::endl;
     }
     T_sp val = this->symbolValueUnsafe();
     if (!val) {
@@ -536,18 +536,13 @@ void Symbol_O::dump() {
       ss << "Value: " << _rep_(val) << std::endl;
     }
     if (this->fboundp()) {
-      ss << "Function: " << _rep_(this->_Function) << std::endl;
+      ss << "Function: " << _rep_(this->symbolFunction()) << std::endl;
     } else {
       ss << "Function: UNBOUND" << std::endl;
     }
     ss << "IsSpecial: " << this->specialP() << std::endl;
     ss << "IsConstant: " << this->getReadOnly() << std::endl;
-    ss << "PropertyList: ";
-    if (this->_PropertyList) {
-      ss << _rep_(this->_PropertyList) << std::endl;
-    } else {
-      ss << "UNDEFINED" << std::endl;
-    }
+    ss << "PropertyList: " << _rep_(this->plist()) << std::endl;
   }
   printf("%s", ss.str().c_str());
 }
@@ -566,7 +561,7 @@ void Symbol_O::remove_package(Package_sp pkg)
     if ((home_package == pkg) &&
         !home_package->getSystemLockedP() &&
         !home_package->getUserLockedP()) {
-      this->_HomePackage = _Nil<T_O>();
+      this->setPackage(_Nil<T_O>());
     }
   }
 };

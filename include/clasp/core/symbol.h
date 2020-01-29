@@ -60,12 +60,12 @@ class Symbol_O : public General_O {
   // This MUST match the layout for %sym% in cmpintrinsics.lsp and the sanity check core__verify_symbol_layout
   SimpleString_sp _Name;
   std::atomic<T_sp> _HomePackage; // NIL or Package
-  T_sp _GlobalValue;
-  Function_sp _Function;
-  Function_sp _SetfFunction;
+  std::atomic<T_sp> _GlobalValue;
+  std::atomic<Function_sp> _Function;
+  std::atomic<Function_sp> _SetfFunction;
   mutable std::atomic<uint32_t> _BindingIdx;
-  uint32_t  _Flags;
-  List_sp   _PropertyList;
+  std::atomic<uint32_t>  _Flags;
+  std::atomic<T_sp>   _PropertyList;
 
   friend class Instance_O;
   friend class Package_O;
@@ -91,22 +91,30 @@ public:
 //    ASSERTF(nm != "", BF("You cannot create a symbol without a name"));
     return n;
   };
-public:
+ public:
   string formattedName(bool prefixAlways) const;
-public:
+ private:
+  inline uint32_t getFlags() const { return _Flags.load(std::memory_order_relaxed); }
+  inline void setFlag(bool flag, uint32_t n) {
+    if (flag) _Flags.fetch_or(n, std::memory_order_relaxed);
+    else _Flags.fetch_and(~n, std::memory_order_relaxed);
+  }
+ public: // Flags access
+  bool macroP() const { return !!(getFlags() & IS_MACRO);};
+  void setf_macroP(bool m) { setFlag(m, IS_MACRO); }
+  bool getReadOnly() const { return !!(getFlags() & IS_CONSTANT); }
+  void setReadOnly(bool m) { setFlag(m, IS_CONSTANT); }
+  bool specialP() const { return !!(getFlags() & IS_SPECIAL);};
+  void setf_specialP(bool m) { setFlag(m, IS_SPECIAL); }
+  void makeSpecial(); // TODO: Redundant, remove?
+ public: // Hashing
   void sxhash_(HashGenerator &hg) const;
   void sxhash_equal(HashGenerator &hg) const;
   void sxhash_equalp(HashGenerator &hg) const {this->sxhash_equal(hg);};
 
- public: // Flags and miscellaneous
+ public: // Miscellaneous
   bool isKeywordSymbol();
   Symbol_sp asKeywordSymbol();
-
-  bool macroP() const { return !!(this->_Flags&IS_MACRO);};
-  void setf_macroP(bool m) {
-    if (m) this->_Flags = this->_Flags|IS_MACRO;
-    else this->_Flags = this->_Flags&(~IS_MACRO);
-  }
 
   void setf_name(SimpleString_sp nm) { this->_Name = nm; };
 
@@ -115,23 +123,13 @@ public:
   T_sp find_class();
   ClassHolder_sp find_class_holder();
 #endif
-  List_sp plist() const { return _PropertyList; }
-  void setf_plist(List_sp plist) { _PropertyList = plist; }
+  List_sp plist() const {
+    return gc::As_unsafe<List_sp>(_PropertyList.load(std::memory_order_relaxed));
+  }
+  void setf_plist(List_sp plist) {
+    _PropertyList.store(plist, std::memory_order_relaxed);
+  }
   
-  bool getReadOnly() const { return !!(this->_Flags&IS_CONSTANT);};
-  void setReadOnly(bool m) {
-    if (m) this->_Flags = this->_Flags|IS_CONSTANT;
-    else this->_Flags = this->_Flags&(~IS_CONSTANT);
-  }
-
-  /*! Return true if the symbol is dynamic/special */
-  bool specialP() const { return !!(this->_Flags&IS_SPECIAL);};
-  void setf_specialP(bool m) {
-    if (m) this->_Flags = this->_Flags|IS_SPECIAL;
-    else this->_Flags = this->_Flags&(~IS_SPECIAL);
-  }
-  void makeSpecial(); // TODO: Redundant, remove?
-
   Symbol_sp copy_symbol(T_sp copy_properties) const;
   bool isExported();
 
@@ -139,14 +137,14 @@ public:
 
  public: // value slot access
 
-  inline T_sp globalValue() const { return _GlobalValue; }
-  inline void set_globalValue(T_sp val) { _GlobalValue = val; }
+  inline T_sp globalValue() const { return _GlobalValue.load(std::memory_order_relaxed); }
+  inline void set_globalValue(T_sp val) { _GlobalValue.store(val, std::memory_order_relaxed); }
   
   inline T_sp threadLocalSymbolValue() const {
 #ifdef CLASP_THREADS
     return my_thread->_Bindings.thread_local_value(this);
 #else
-    return _GlobalValue;
+    return globalValue();
 #endif
   }
 
@@ -154,7 +152,7 @@ public:
 #ifdef CLASP_THREADS
     my_thread->_Bindings.set_thread_local_value(value, this);
 #else
-    _GlobalValue = value;
+    set_globalValue(value);
 #endif
   }
 
@@ -165,7 +163,7 @@ public:
       return my_thread->_Bindings.thread_local_value(this);
     else
 #endif
-      return _GlobalValue;
+      return globalValue();
   };
   
   /*! Return the value slot of the symbol - throws if unbound */
@@ -204,7 +202,7 @@ public:
       set_threadLocalSymbolValue(obj);
     else
 #endif
-      _GlobalValue = obj;
+      set_globalValue(obj);
     return obj;
   }
 
@@ -222,17 +220,16 @@ public:
 
   void fmakunbound();
   
-  void setSetfFdefinition(Function_sp fn) { this->_SetfFunction = fn; };
-  inline Function_sp getSetfFdefinition() { return this->_SetfFunction; };
+  void setSetfFdefinition(Function_sp fn) { _SetfFunction.store(fn, std::memory_order_relaxed); }
+  inline Function_sp getSetfFdefinition() const { return _SetfFunction.load(std::memory_order_relaxed); }
   bool fboundp_setf() const;
   void fmakunbound_setf();
   
-
   /*! Set the global function value of this symbol */
   void setf_symbolFunction(Function_sp exec);
 
   /*! Return the global bound function */
-  inline Function_sp symbolFunction() const { return this->_Function; };
+  inline Function_sp symbolFunction() const { return _Function.load(std::memory_order_relaxed); }
 
   /*! Return true if the symbol has a function bound*/
   bool fboundp() const;
@@ -244,7 +241,7 @@ public:
   SimpleString_sp symbolName() const { return this->_Name; };
 
   T_sp getPackage() const;
-  T_sp homePackage() const { return this->getPackage(); };
+  T_sp homePackage() const { return this->getPackage(); }
   void setPackage(T_sp p);
 
   /*! Return the name of the symbol with the package prefix
@@ -291,7 +288,7 @@ public: // ctor/dtor for classes with shared virtual base
 public:
   explicit Symbol_O();
   virtual ~Symbol_O(){
-#ifdef CLASP_THREAD
+#ifdef CLASP_THREADS
     if (this->_BindingIdx.load() != NO_THREAD_LOCAL_BINDINGS) {
       my_thread->_Bindings.release_binding_index(this->_BindingIdx.load());
     }
