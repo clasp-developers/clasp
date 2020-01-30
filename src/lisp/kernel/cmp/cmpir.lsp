@@ -559,21 +559,21 @@ representing a tagged fixnum."
 ;;;
 
 (defun irc-real-array-displacement (tarray)
-  (irc-load (c++-field-ptr info.%mdarray% tarray :data) "real-array-displacement"))
+  (irc-load-atomic (c++-field-ptr info.%mdarray% tarray :data) "real-array-displacement"))
 
 (defun irc-real-array-index-offset (tarray)
-  (irc-load (c++-field-ptr info.%mdarray% tarray :displaced-index-offset) "real-array-displaced-index"))
+  (irc-load-atomic (c++-field-ptr info.%mdarray% tarray :displaced-index-offset) "real-array-displaced-index"))
 
 (defun irc-array-total-size (tarray)
-  (irc-load (c++-field-ptr info.%mdarray% tarray :array-total-size) "array-total-size"))
+  (irc-load-atomic (c++-field-ptr info.%mdarray% tarray :array-total-size) "array-total-size"))
 
 (defun irc-array-rank (tarray)
-  (irc-load (c++-field-ptr info.%mdarray% tarray :rank) "array-rank"))
+  (irc-load-atomic (c++-field-ptr info.%mdarray% tarray :rank) "array-rank"))
 
 (defun irc-array-dimension (tarray axis)
   (let* ((dims (c++-field-ptr info.%mdarray% tarray :dimensions))
          (axisN* (irc-gep dims (list 0 axis))))
-    (irc-load axisN*)))
+    (irc-load-atomic axisN*)))
 
 (defun irc-header-stamp (object)
   (let* ((object* (irc-untag-general object))
