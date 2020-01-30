@@ -683,6 +683,13 @@ Otherwise do a variable shift."
 (defun irc-load (source &optional (label ""))
   (llvm-sys:create-load-value-twine *irbuilder* source label))
 
+(defun irc-load-atomic (source &optional (label ""))
+  (let ((inst (irc-load source label)))
+    (llvm-sys:set-atomic inst
+                         'llvm-sys:monotonic
+                         1 #+(or)'llvm-sys:system)
+    inst))
+
 (defun irc-store (val destination &optional (label "") (is-volatile nil))
   ;; Mismatch in store type sis a very common bug we hit when rewriting codegen.
   ;; LLVM doesn't deal with it gracefully except with a debug build, so we just
@@ -702,6 +709,13 @@ Otherwise do a variable shift."
            (error "BUG: Mismatch in irc-store involving the val type ~a and destination type ~a -
 the type LLVMContexts don't match - so they were defined in different threads!"
                   val-type dest-contained-type)))))
+
+(defun irc-store-atomic (val destination &optional (label "") (is-volatile nil))
+  (let ((inst (irc-store val destination label is-volatile)))
+    (llvm-sys:set-atomic inst
+                         'llvm-sys:monotonic
+                         1 #+(or)'llvm-sys:system)
+    inst))
 
 (defun irc-%cmpxchg (ptr cmp new)
   ;; Sanity check I'm putting in when this is new that should maybe be removed, future reader
