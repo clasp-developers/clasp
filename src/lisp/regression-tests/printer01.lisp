@@ -379,4 +379,75 @@
 ;;; Test c++ cl:format chokes on ~2% and returns "Could not format ..."
 (test lisp-format-works (null (search "Could" (format nil "Bar ~2%"))))
 
+(defun print-symbol-with-prefix (stream symbol &optional colon at)
+  "For use with ~/: Write SYMBOL to STREAM as if it is not accessible from
+  the current package."
+  (declare (ignore colon at))
+  (let ((*package* (find-package :keyword)))
+    (write symbol :stream stream :escape t)))
+
+(test issue-911
+ (let ((count 42)
+       (function 'print))
+   (format t
+           "~@<~@(~D~) call~:P to ~
+               ~/clasp-tests::print-symbol-with-prefix/ ~
+               ~2:*~[~;was~:;were~] compiled before a compiler-macro ~
+               was defined for it. A declaration of NOTINLINE at the ~
+               call site~:P will eliminate this warning, as will ~
+               defining the compiler-macro before its first potential ~
+               use.~@:>"
+           count
+           function)
+   t))
+
+(test format.justify.37
+      ;; no padding, output fits
+      (string-equal
+       (format nil "AA~4T~8,,,'*<~%BBBB~,12:;CCCC~;DDDD~>")
+       "AA  CCCCDDDD"))
+
+(test format.justify.38
+      ;; no padding, output doesn't fit
+      (string-equal
+       (format nil "AA~4T~8,,,'*<~%BBBB~,11:;CCCC~;DDDD~>")
+       "AA  
+BBBBCCCCDDDD"))
+
+(test format.justify.39
+      ;; one padding character per segment, output fits
+      (string-equal
+       (format nil "AA~4T~10,,,'*<~%BBBB~,14:;CCCC~;DDDD~>")
+       "AA  CCCC**DDDD"))
+
+(test format.justify.40
+      ;; one padding character per segment, output doesn't fit
+      (string-equal
+       (format nil "AA~4T~10,,,'*<~%BBBB~,13:;CCCC~;DDDD~>")
+       "AA  
+BBBBCCCC**DDDD"))
+
+(test format.justify.41
+      ;; Same with ~@T
+      (string-equal
+       (format nil "AA~1,2@T~8,,,'*<~%BBBB~,12:;CCCC~;DDDD~>")
+       "AA  CCCCDDDD"))
+
+(test format.justify.42
+      (string-equal
+       (format nil "AA~1,2@T~8,,,'*<~%BBBB~,11:;CCCC~;DDDD~>")
+       "AA  
+BBBBCCCCDDDD"))
+
+(test format.justify.43
+      (string-equal
+       (format nil "AA~1,2@T~10,,,'*<~%BBBB~,14:;CCCC~;DDDD~>")
+       "AA  CCCC**DDDD"))
+
+(test format.justify.44
+      (string-equal
+       (format nil "AA~1,2@T~10,,,'*<~%BBBB~,13:;CCCC~;DDDD~>")
+       "AA  
+BBBBCCCC**DDDD"))
+
 
