@@ -1737,27 +1737,29 @@
 ;;;; Tab and simple pretty-printing noise.
 
 (def-format-directive #\T (colonp atsignp params)
-  (check-output-layout-mode 1)
-  (if colonp
-      (expand-bind-defaults ((n 1) (m 1)) params
-	`(pprint-tab ,(if atsignp :section-relative :section)
-		     ,n ,m stream))
-      (if atsignp
-	  (expand-bind-defaults ((colrel 1) (colinc 1)) params
-	    `(format-relative-tab stream ,colrel ,colinc))
-	  (expand-bind-defaults ((colnum 1) (colinc 1)) params
-	    `(format-absolute-tab stream ,colnum ,colinc)))))
+  (cond (colonp
+         (check-output-layout-mode 1)
+         (expand-bind-defaults ((n 1) (m 1)) params
+                               `(pprint-tab ,(if atsignp :section-relative :section)
+                                            ,n ,m stream)))
+        (atsignp
+         (expand-bind-defaults ((colrel 1) (colinc 1)) params
+                               `(format-relative-tab stream ,colrel ,colinc)))
+        (t
+         (expand-bind-defaults ((colnum 1) (colinc 1)) params
+                               `(format-absolute-tab stream ,colnum ,colinc)))))
 
 (def-format-interpreter #\T (colonp atsignp params)
-  (check-output-layout-mode 1)
-  (if colonp
-      (interpret-bind-defaults ((n 1) (m 1)) params
-	(pprint-tab (if atsignp :section-relative :section) n m stream))
-      (if atsignp
-	  (interpret-bind-defaults ((colrel 1) (colinc 1)) params
-	    (format-relative-tab stream colrel colinc))
-	  (interpret-bind-defaults ((colnum 1) (colinc 1)) params
-	    (format-absolute-tab stream colnum colinc)))))
+  (cond (colonp
+         (check-output-layout-mode 1)
+         (interpret-bind-defaults ((n 1) (m 1)) params
+                                  (pprint-tab (if atsignp :section-relative :section) n m stream)))
+        (atsignp
+         (interpret-bind-defaults ((colrel 1) (colinc 1)) params
+                                  (format-relative-tab stream colrel colinc)))
+        (t
+         (interpret-bind-defaults ((colnum 1) (colinc 1)) params
+                                  (format-absolute-tab stream colnum colinc)))))
 
 (defun output-spaces (stream n)
   (let ((spaces #.(make-string 100 :initial-element #\space)))
@@ -2749,7 +2751,7 @@
 	 (block nil
 	   ,@(let ((*expander-next-arg-macro* 'expander-pprint-next-arg)
 		   (*only-simple-args* nil)
-		   (*orig-args-available* t))
+		   (*orig-args-available* (if atsignp *orig-args-available* t)))
 	       (expand-directive-list insides)))))))
 
 (defun interpret-format-logical-block
