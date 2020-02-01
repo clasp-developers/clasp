@@ -17,6 +17,8 @@ GTAGS
 *.dylib
 \#*\#
 *.fasl
+*.fasp
+*.faso
 *.dwarf
 *.info
 *.bundle
