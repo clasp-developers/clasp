@@ -291,7 +291,7 @@ Compile a lisp source file into an LLVM module."
                               (source-debug-lineno 0)
                               (source-debug-offset 0)
                               ;; output-type can be (or :fasl :bitcode :object)
-                              (output-type :fasl output-type-p)
+                              (output-type (if *generate-faso* :faso :fasl) output-type-p)
                               ;; type can be either :kernel or :user
                               (type :user)
                               ;; A unique prefix for symbols of compile-file'd files that
