@@ -4155,14 +4155,13 @@ void handleObjectEmitted(VModuleKey K, std::unique_ptr<MemoryBuffer> O) {
 
 
 
-CL_DEFUN ClaspJIT_sp llvm_sys__make_clasp_jit(DataLayout_sp data_layout)
+CL_DEFUN ClaspJIT_sp llvm_sys__make_clasp_jit()
 {
-  GC_ALLOCATE_VARIADIC(ClaspJIT_O,cj,data_layout->dataLayout());
+  GC_ALLOCATE_VARIADIC(ClaspJIT_O,cj);
   return cj;
 }
 
-
-ClaspJIT_O::ClaspJIT_O(const llvm::DataLayout& data_layout) :_DataLayout(data_layout) {
+ClaspJIT_O::ClaspJIT_O() {
 #if 0
     // Detect the host and set code model to small.
   llvm::ExitOnError ExitOnErr;
@@ -4197,6 +4196,12 @@ ClaspJIT_O::ClaspJIT_O(const llvm::DataLayout& data_layout) :_DataLayout(data_la
                                     });
 #endif
   auto JTMB = llvm::orc::JITTargetMachineBuilder::detectHost();
+  auto edl = JTMB->getDefaultDataLayoutForTarget();
+  if (!edl) {
+    printf("%s:%d Could not getDefaultDataLayoutForTarget()\n", __FILE__, __LINE__ );
+    abort();
+  }
+  this->_DataLayout = new llvm::DataLayout(*edl);
 #if 0
   // Don't set the code model - the default should work fine.
   // If it doesn't - invoke the (cmp:code-model :jit xxx :compile-file-parallel yyy)
@@ -4209,7 +4214,7 @@ ClaspJIT_O::ClaspJIT_O(const llvm::DataLayout& data_layout) :_DataLayout(data_la
   this->Compiler = new llvm::orc::ConcurrentIRCompiler(*JTMB);
   this->CompileLayer = new llvm::orc::IRCompileLayer(*this->ES,*this->LinkLayer,*this->Compiler);
   //  printf("%s:%d Registering ClaspDynamicLibarySearchGenerator\n", __FILE__, __LINE__ );
-  this->ES->getMainJITDylib().setGenerator(llvm::cantFail(ClaspDynamicLibrarySearchGenerator::GetForCurrentProcess(data_layout.getGlobalPrefix())));
+  this->ES->getMainJITDylib().setGenerator(llvm::cantFail(ClaspDynamicLibrarySearchGenerator::GetForCurrentProcess(this->_DataLayout->getGlobalPrefix())));
 }
 
 ClaspJIT_O::~ClaspJIT_O()
@@ -4333,7 +4338,9 @@ void ClaspJIT_O::addObjectFile(const char* rbuffer, size_t bytes,size_t startupI
   }
   core::T_mv startup_name_and_linkage = core::core__startup_function_name_and_linkage(startupID);
   std::string startup_name = gc::As<core::String_sp>(startup_name_and_linkage)->get_std_string();
+  if (print) core::write_bf_stream(BF("%s:%d startup_name is %s\n") % __FILE__ % __LINE__ % startup_name);
   core::Pointer_sp startup = this->lookup(dylib,startup_name);
+  if (print) core::write_bf_stream(BF("%s:%d startup address %p\n") % __FILE__ % __LINE__ % _rep_(startup));
   // Now the my_thread thread local data structure will contain information about the new linked object file.
   this->saveObjectFileInfo(rbuffer,bytes);
   
@@ -4362,7 +4369,7 @@ CL_DEFMETHOD JITDylib& ClaspJIT_O::getMainJITDylib() {
 
 CL_DEFMETHOD JITDylib_sp ClaspJIT_O::createAndRegisterJITDylib(const std::string& name) {
   JITDylib& dylib(this->ES->createJITDylib(name));
-  dylib.setGenerator(llvm::cantFail(ClaspDynamicLibrarySearchGenerator::GetForCurrentProcess(this->_DataLayout.getGlobalPrefix())));
+  dylib.setGenerator(llvm::cantFail(ClaspDynamicLibrarySearchGenerator::GetForCurrentProcess(this->_DataLayout->getGlobalPrefix())));
   JITDylib_sp dylib_sp = core::RP_Create_wrapped<JITDylib_O>(&dylib);
 #if 0
   Cons_sp cell = core::Cons_O::create(dylib_sp,_Nil<core::T_O>());

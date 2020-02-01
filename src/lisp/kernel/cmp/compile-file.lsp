@@ -286,7 +286,7 @@ Compile a lisp source file into an LLVM module."
                               (source-debug-lineno 0)
                               (source-debug-offset 0)
                               ;; output-type can be (or :fasl :bitcode :object)
-                              (output-type (if *generate-faso* :faso :fasl))
+                              (output-type (if *generate-faso* :fasp :fasl))
                               ;; type can be either :kernel or :user
                               (type :user)
                               ;; A unique prefix for symbols of compile-file'd files that
@@ -368,6 +368,8 @@ Compile a lisp source file into an LLVM module."
          (let ((temp-bitcode-file
                  (compile-file-pathname input-file :output-file output-file :output-type :bitcode)))
            (ensure-directories-exist temp-bitcode-file)
+           (when *compile-verbose*
+             (bformat t "Writing temporary bitcode file to: %s%N" temp-bitcode-file))
            (output-bitcode module temp-bitcode-file)
            (prog1
                (compile-file-generate-obj-asm module output-path
@@ -375,12 +377,6 @@ Compile a lisp source file into an LLVM module."
                                               :reloc-model (reloc-model))
              (when (eq type :kernel)
                (output-kernel-fasl output-file temp-bitcode-file :object)))))
-        ((eq output-type :bitcode)
-         (when *compile-verbose*
-           (bformat t "Writing bitcode to: %s%N" (core:coerce-to-filename output-path)))
-         (prog1 (output-bitcode module (core:coerce-to-filename output-path))
-           (when (eq type :kernel)
-             (output-kernel-fasl output-file output-path :bitcode))))
         ((eq output-type :faso)
          (let ((temp-bitcode-file (compile-file-pathname input-file
                                                          :output-file output-file :output-type :bitcode)))
@@ -389,12 +385,18 @@ Compile a lisp source file into an LLVM module."
              (bformat t "Writing temporary bitcode file to: %s%N" temp-bitcode-file))
            (output-bitcode module (core:coerce-to-filename temp-bitcode-file))
            (when *compile-verbose*
-             (bformat t "Writing fasl file to: %s%N" output-file)
+             (bformat t "Writing faso file to: %s%N" output-file)
              (finish-output))
            (let ((stream (generate-obj-asm-stream module :simple-vector-byte8
                                                   'llvm-sys:code-gen-file-type-object-file
                                                   (reloc-model))))
              (core:write-faso output-file (list stream) :start-object-id position))))
+        ((eq output-type :bitcode)
+         (when *compile-verbose*
+           (bformat t "Writing bitcode to: %s%N" (core:coerce-to-filename output-path)))
+         (prog1 (output-bitcode module (core:coerce-to-filename output-path))
+           (when (eq type :kernel)
+             (output-kernel-fasl output-file output-path :bitcode))))
         ((eq output-type :fasl)
          (let ((temp-bitcode-file (compile-file-pathname input-file
                                                          :output-file output-file :output-type :bitcode)))

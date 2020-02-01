@@ -4496,11 +4496,11 @@ public:
   void addObjectFile(const char* buffer, size_t bytes, size_t startupID, JITDylib& dylib, bool print=false);
   core::T_mv objectFileForInstructionPointer(core::Pointer_sp instruction_pointer);
   
-  ClaspJIT_O(const llvm::DataLayout& data_layout);
+  ClaspJIT_O();
   ~ClaspJIT_O();
 public:
   std::atomic<ObjectFileInfo*> _ObjectFiles;
-  llvm::DataLayout _DataLayout;
+  llvm::DataLayout* _DataLayout;
   llvm::orc::ExecutionSession *ES;
 #ifdef USE_JITLINKER
   llvm::org::JITLinker* LinkLayer;

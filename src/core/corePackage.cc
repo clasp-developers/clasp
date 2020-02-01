@@ -133,6 +133,7 @@ SYMBOL_EXPORT_SC_(CorePkg, STARstack_top_hintSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_contab_name_PLUS_);
 SYMBOL_EXPORT_SC_(KeywordPkg,object);
 SYMBOL_EXPORT_SC_(KeywordPkg,fasl);
+SYMBOL_EXPORT_SC_(KeywordPkg,faso);
 SYMBOL_EXPORT_SC_(KeywordPkg,bitcode);
 SYMBOL_EXPORT_SC_(KeywordPkg,linkage);
 SYMBOL_EXPORT_SC_(KeywordPkg, verbose);

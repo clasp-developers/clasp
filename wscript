@@ -168,6 +168,7 @@ VALID_OPTIONS = [
     #   this gives the fastest product but linking takes a long time.
     # If "object" then C++ and CL produce object files and regular linking is used.
     #   This is probably not as fast as bitcode (maybe a few percent slower) but it links fast.
+    # If "faso" then CL generates faso files.
     #   This is good for development.
     # Default = "object"
     "CLASP_BUILD_MODE",
@@ -424,6 +425,8 @@ class variant(object):
             raise Exception("Bad stage: %s"% use_stage)
         if (build.env.CLASP_BUILD_MODE == 'fasl'):
             return build.path.find_or_declare('fasl/%s%s-%s%s%s-image.lfasl' % (use_stage,APP_NAME,self.gc_name,self.mpi_extension(),self.debug_extension()))
+        elif (build.env.CLASP_BUILD_MODE == 'faso'):
+            return build.path.find_or_declare('fasl/%s%s-%s%s%s-image.fasp' % (use_stage,APP_NAME,self.gc_name,self.mpi_extension(),self.debug_extension()))
         else:
             return build.path.find_or_declare('fasl/%s%s-%s%s%s-image.fasl' % (use_stage,APP_NAME,self.gc_name,self.mpi_extension(),self.debug_extension()))
     def fasl_dir(self, stage=None):
@@ -881,6 +884,10 @@ def configure(cfg):
     elif (cfg.env['CLASP_BUILD_MODE']==[] or cfg.env['CLASP_BUILD_MODE']=='object'):
         cfg.define("CLASP_BUILD_MODE",1) # object files
         cfg.env.CLASP_BUILD_MODE = 'object'
+        cfg.env.LTO_FLAG = []
+    elif (cfg.env['CLASP_BUILD_MODE']=='faso'):
+        cfg.define("CLASP_BUILD_MODE",3) # object files
+        cfg.env.CLASP_BUILD_MODE = 'faso'
         cfg.env.LTO_FLAG = []
     elif (cfg.env['CLASP_BUILD_MODE']=='fasl'):
         cfg.define("CLASP_BUILD_MODE",0) # object files
@@ -1415,21 +1422,28 @@ def build(bld):
                          intrinsics_bitcode_node,
                          builtins_bitcode_node] +
                         waf_nodes_for_lisp_files(bld, bld.clasp_aclasp))
-        aclasp_common_lisp_output_name_list = variant.common_lisp_output_name_list(bld, bld.clasp_aclasp, stage = 'a')
+        if (bld.env.CLASP_BUILD_MODE == "faso"):
+            aclasp_common_lisp_output_name_list = [ variant.fasl_name(bld,stage = 'a') ]
+        else:
+            aclasp_common_lisp_output_name_list = variant.common_lisp_output_name_list(bld, bld.clasp_aclasp, stage = 'a')
         log.debug("find_or_declare aclasp_common_lisp_output_name_list = %s", aclasp_common_lisp_output_name_list)
         task.set_outputs(aclasp_common_lisp_output_name_list)
         bld.add_to_group(task)
 
-        aclasp_link_product = variant.fasl_name(bld,stage = 'a')
-        task = link_fasl(env=bld.env)
-        task.set_inputs([builtins_bitcode_node,
-                         intrinsics_bitcode_node] +
-                         aclasp_common_lisp_output_name_list)
-        task.set_outputs([aclasp_link_product])
-        bld.add_to_group(task)
-
-        install('lib/clasp/', aclasp_link_product)
-        install('lib/clasp/', aclasp_common_lisp_output_name_list)
+        if ( bld.env.CLASP_BUILD_MODE!='faso'):
+            aclasp_link_product = variant.fasl_name(bld,stage = 'a')
+            task = link_fasl(env=bld.env)
+            task.set_inputs([builtins_bitcode_node,
+                             intrinsics_bitcode_node] +
+                            aclasp_common_lisp_output_name_list)
+            task.set_outputs([aclasp_link_product])
+            bld.add_to_group(task)
+            install('lib/clasp/', aclasp_link_product)
+            install('lib/clasp/', aclasp_common_lisp_output_name_list)
+        else:
+            aclasp_link_product = aclasp_common_lisp_output_name_list[0]
+            install('lib/clasp/', aclasp_link_product)
+            
     if (bld.stage_val >= 2):
         log.info("Creating compile_bclasp task")
 

@@ -438,7 +438,9 @@ CL_DEFUN T_sp core__startup_image_pathname(char stage) {
   stringstream ss;
   ss << "app-fasl:" << stage << "clasp-" << VARIANT_NAME << "-image";
   T_sp mode = core::_sym_STARclasp_build_modeSTAR->symbolValue();
-  if (mode == kw::_sym_object) {
+  if (mode == kw::_sym_faso) {
+    ss << ".fasp";
+  } else if (mode == kw::_sym_object) {
     ss << ".fasl";
   } else if (mode == kw::_sym_bitcode) {
     ss << ".fasl";
@@ -636,7 +638,14 @@ CL_DEFUN void core__link_faso_files(T_sp outputPathDesig, List_sp fasoFiles, boo
 
   }
   String_sp filename = gc::As<String_sp>(cl__namestring(outputPathDesig));
+  
   FILE* fout = fopen(filename->get_std_string().c_str(),"w");
+  if (!fout) {
+    SIMPLE_ERROR(BF("Could not open file %s") % _rep_(filename));
+  }
+  if (verbose) {
+    write_bf_stream(BF("Writing file: %s\n") % _rep_(filename));
+  }
   // Write header
   size_t header_bytes = FasoHeader::calculateSize(header->_NumberOfObjectFiles);
   if (verbose) write_bf_stream(BF("Writing %lu bytes of header\n") % header_bytes );
@@ -665,12 +674,11 @@ CL_DEFUN void core__link_faso_files(T_sp outputPathDesig, List_sp fasoFiles, boo
     if (res!=0) {
       SIMPLE_ERROR(BF("Could not munmap memory"));
     }
-    close(mmaps[mmi]._FileDescriptor);
   }
+  if (verbose) write_bf_stream(BF("Closing %s\n") % _rep_(filename));
   fclose(fout);
+  if (verbose) write_bf_stream(BF("Returning %s\n") % _rep_(filename));
 }
-
-SYMBOL_EXPORT_SC_(CompPkg, jit_engine);
 
 CL_LAMBDA(path-designator &optional (verbose *load-verbose*) (print t) (external-format :default))
 CL_DEFUN core::T_sp core__load_faso(T_sp pathDesig, T_sp verbose, T_sp print, T_sp external_format)
@@ -685,11 +693,11 @@ CL_DEFUN core::T_sp core__load_faso(T_sp pathDesig, T_sp verbose, T_sp print, T_
     SIMPLE_ERROR(BF("Could not mmap %s because of %s") % _rep_(pathDesig) % strerror(errno));
   }
   close(fd); // Ok to close file descriptor after mmap
-  llvmo::ClaspJIT_sp jit = gc::As<llvmo::ClaspJIT_sp>(eval::funcall(comp::_sym_jit_engine));
+  llvmo::ClaspJIT_sp jit = gc::As<llvmo::ClaspJIT_sp>(llvmo::_sym_STARjit_engineSTAR->symbolValue());
   FasoHeader* header = (FasoHeader*)memory;
   llvmo::JITDylib_sp jitDylib;
   for (size_t ofi = 0; ofi<header->_NumberOfObjectFiles; ++ofi) {
-    if (header->_ObjectFiles[ofi]._ObjectID==0) {
+    if (!jitDylib || header->_ObjectFiles[ofi]._ObjectID==0) {
       jitDylib = jit->createAndRegisterJITDylib(filename->get_std_string());
     }
     void* of_start = (void*)((char*)header + header->_ObjectFiles[ofi]._StartPage*header->_PageSize);
@@ -714,7 +722,7 @@ CL_DEFUN core::T_sp core__describe_faso(T_sp pathDesig)
     close(fd);
     SIMPLE_ERROR(BF("Could not mmap %s because of %s") % _rep_(pathDesig) % strerror(errno));
   }
-  llvmo::ClaspJIT_sp jit = gc::As<llvmo::ClaspJIT_sp>(eval::funcall(comp::_sym_jit_engine));
+  llvmo::ClaspJIT_sp jit = gc::As<llvmo::ClaspJIT_sp>(llvmo::_sym_STARjit_engineSTAR->symbolValue());
   FasoHeader* header = (FasoHeader*)memory;
   write_bf_stream(BF("NumberOfObjectFiles %d\n") % header->_NumberOfObjectFiles);
   for (size_t ofi = 0; ofi<header->_NumberOfObjectFiles; ++ofi) {
@@ -744,7 +752,7 @@ CL_DEFUN core::T_sp core__unpack_faso(T_sp pathDesig, T_sp prefix)
   }
   String_sp sprefix = gc::As<String_sp>(prefix);
   string str_prefix = sprefix->get_std_string();
-  llvmo::ClaspJIT_sp jit = gc::As<llvmo::ClaspJIT_sp>(eval::funcall(comp::_sym_jit_engine));
+  llvmo::ClaspJIT_sp jit = gc::As<llvmo::ClaspJIT_sp>(llvmo::_sym_STARjit_engineSTAR->symbolValue());
   FasoHeader* header = (FasoHeader*)memory;
   write_bf_stream(BF("NumberOfObjectFiles %d\n") % header->_NumberOfObjectFiles);
   for (size_t ofi = 0; ofi<header->_NumberOfObjectFiles; ++ofi) {

@@ -41,8 +41,6 @@
 ;;; Bound thread-local when the builtins module is needed
 (defvar *thread-local-builtins-module* nil)
 
-(defvar *thread-local-jit-engine* nil)
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Thread-local special variables to support the LLVM compiler
@@ -57,7 +55,6 @@
   (mp:push-default-special-binding 'core::*restart-clusters* nil)
   (mp:push-default-special-binding 'core::*condition-restarts* nil)
   (mp:push-default-special-binding 'cmp::*thread-local-builtins-module* nil)
-;;;  (mp:push-default-special-binding 'cmp::*thread-local-jit-engine* nil)
   ;;; more thread-local special variables may be added in the future
   )
 
@@ -72,19 +69,23 @@
 (export 'dump-function)
 
 
-(defun load-bitcode (filename)
+(defun load-bitcode (filename &key print)
   (if *use-human-readable-bitcode*
       (let* ((input-name (make-pathname :type "ll" :defaults (pathname filename))))
+        (if print (core:bformat t "Loading %s%N" input-name))
         (llvm-sys:load-bitcode-ll input-name (thread-local-llvm-context)))
       (let ((input-name (make-pathname :type "bc" :defaults (pathname filename))))
+        (if print (core:bformat t "Loading %s%N" input-name))
         (llvm-sys:load-bitcode input-name (thread-local-llvm-context)))))
 
-(defun parse-bitcode (filename context)
+(defun parse-bitcode (filename context &key print)
   ;; Load a module from a bitcode or .ll file
   (if *use-human-readable-bitcode*
       (let ((input-name (make-pathname :type "ll" :defaults (pathname filename))))
+        (if print (core:bformat t "Loading %s%N" input-name))
         (llvm-sys:parse-irfile input-name context))
       (let ((input-name (make-pathname :type "bc" :defaults (pathname filename))))
+        (if print (core:bformat t "Loading %s%N" input-name))
         (llvm-sys:parse-bitcode-file input-name context))))
 
 (export '(write-bitcode load-bitcode parse-bitcode))
@@ -489,12 +490,6 @@ The passed module is modified as a side-effect."
       'llvm-sys:code-model-small))
 (export 'code-model)
 
-(defun jit-engine ()
-  "Lazy initialize the *thread-local-jit-engine* and return it"
-  (if *thread-local-jit-engine*
-      *thread-local-jit-engine*
-      (setf *thread-local-jit-engine* (llvm-sys:make-clasp-jit *system-data-layout*))))
-
 (defvar *size-level* 1)
 
 (defun optimize-module-for-compile-file (module &optional (optimize-level *optimization-level*) (size-level *size-level*))
@@ -553,7 +548,7 @@ The passed module is modified as a side-effect."
       (if (llvm-sys:has-fn-attribute f 'llvm-sys:attribute-always-inline)
           (progn
             (llvm-sys:remove-fn-attr f 'llvm-sys:attribute-always-inline)
-            (setf inline-functions (cons f inline-functions)))))
+            (setq inline-functions (cons f inline-functions)))))
     inline-functions))
 
 (defun do-track-llvm-time (closure)
@@ -591,7 +586,7 @@ The passed module is modified as a side-effect."
           (progn
             (llvm-sys:remove-fn-attr f 'llvm-sys:attribute-always-inline)
             (llvm-sys:add-fn-attr f 'llvm-sys:attribute-inline-hint)
-            (setf inline-functions (cons f inline-functions)))))
+            (setq inline-functions (cons f inline-functions)))))
     inline-functions))
 
 
@@ -632,7 +627,7 @@ The passed module is modified as a side-effect."
              (cond
                ;; If this is the first process to generate a symbol then create the master symbol file
                ((not (boundp '*jit-pid*))
-                (setf *jit-pid* (core:getpid))
+                (setq *jit-pid* (core:getpid))
                 (let ((filename (core:bformat nil "/tmp/perf-%s.map" (core:getpid))))
                   (core:bformat *error-output* "Writing jitted symbols to %s%N" filename)
                   (setq *jit-log-stream* (open filename :direction :output))))
@@ -641,15 +636,16 @@ The passed module is modified as a side-effect."
                ((and *jit-log-stream* (not (= *jit-pid* (core:getpid))))
                 (close *jit-log-stream*) ; Shut down symbols for forked children
                 (setq *jit-log-stream* nil)))
-             (when *jit-log-stream*
-               (write (core:pointer-integer (cadr symbol-info)) :base 16 :stream *jit-log-stream*)
-               (write-char #\space *jit-log-stream*)
-               ;; car of symbol-info is a fixnum
-               (write (car symbol-info) :base 16 :stream *jit-log-stream* :pretty nil)
-               (write-char #\space *jit-log-stream*)
-               (write-string symbol-name-string *jit-log-stream*)
-               (terpri *jit-log-stream*)
-               (finish-output *jit-log-stream*)))
+             (if *jit-log-stream*
+                 (progn
+                   (write (core:pointer-integer (cadr symbol-info)) :base 16 :stream *jit-log-stream*)
+                   (write-char #\space *jit-log-stream*)
+                   ;; car of symbol-info is a fixnum
+                   (write (car symbol-info) :base 16 :stream *jit-log-stream* :pretty nil)
+                   (write-char #\space *jit-log-stream*)
+                   (write-string symbol-name-string *jit-log-stream*)
+                   (terpri *jit-log-stream*)
+                   (finish-output *jit-log-stream*))))
         (progn
           #+threads(mp:unlock *jit-log-lock*)))))
 
@@ -666,13 +662,13 @@ The passed module is modified as a side-effect."
     (quick-module-dump original-module "module-before-optimize")
     (let ((module original-module))
       (irc-verify-module-safe module)
-      (let ((jit-engine (jit-engine))
+      (let ((jit-engine llvm-sys:*jit-engine*)
             (repl-name (if main-fn (llvm-sys:get-name main-fn) nil))
             (startup-name (if startup-fn (llvm-sys:get-name startup-fn) nil))
             (shutdown-name (if shutdown-fn (llvm-sys:get-name shutdown-fn) nil)))
-        (when (or (null repl-name) (string= repl-name ""))
+        (if (or (null repl-name) (string= repl-name ""))
           (error "Could not obtain the name of the repl function ~s - got ~s" main-fn repl-name))
-        (when (or (null startup-name) (string= startup-name ""))
+        (if (or (null startup-name) (string= startup-name ""))
           (error "Could not obtain the name of the startup function ~s - got ~s" startup-fn startup-name))
         (with-track-llvm-time
             (unwind-protect
