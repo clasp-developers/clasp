@@ -397,6 +397,20 @@ Compile a lisp source file into an LLVM module."
          (prog1 (output-bitcode module (core:coerce-to-filename output-path))
            (when (eq type :kernel)
              (output-kernel-fasl output-file output-path :bitcode))))
+        ((eq output-type :fasp)
+         (let ((temp-bitcode-file (compile-file-pathname input-file
+                                                         :output-file output-file :output-type :bitcode)))
+           (ensure-directories-exist temp-bitcode-file)
+           (when *compile-verbose*
+             (bformat t "Writing temporary bitcode file to: %s%N" temp-bitcode-file))
+           (output-bitcode module (core:coerce-to-filename temp-bitcode-file))
+           (when *compile-verbose*
+             (bformat t "Writing faso file to: %s%N" output-file)
+             (finish-output))
+           (let ((stream (generate-obj-asm-stream module :simple-vector-byte8
+                                                  'llvm-sys:code-gen-file-type-object-file
+                                                  (reloc-model))))
+             (core:write-faso (make-pathname :type "fasp" :defaults output-file) (list stream) :start-object-id position))))
         ((eq output-type :fasl)
          (let ((temp-bitcode-file (compile-file-pathname input-file
                                                          :output-file output-file :output-type :bitcode)))

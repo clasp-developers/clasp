@@ -272,8 +272,18 @@ def waf_nodes_for_lisp_files(bld, paths):
 
 def waf_nodes_for_object_files(bld, paths, fasl_dir):
     nodes = []
+    extension = ""
+    if (bld.env.CLASP_BUILD_MODE=="object"):
+        extension = "o"
+    elif (bld.env.CLASP_BUILD_MODE=="faso"):
+        extension = "faso"
+    elif (bld.env.CLASP_BUILD_MODE=="bitcode"):
+        if (bld.use_human_readable_bitcode):
+            extension = "ll"
+        else:
+            extension = "bc"
     for path in paths:
-        waf_node = bld.path.find_or_declare("%s/%s.o" % (fasl_dir,path))
+        waf_node = bld.path.find_or_declare("%s/%s.%s" % (fasl_dir,path,extension))
         nodes.append(waf_node)
     return nodes
 

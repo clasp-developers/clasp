@@ -402,7 +402,7 @@ Return files."
                (let* ((filename (entry-filename entry))
                       (source-path (build-pathname filename :lisp))
                       (output-path (build-pathname filename output-type)))
-                 (format t "Compiling [~d of ~d (child-pid: ~d)] ~a~%    to ~a~%" (1+ (entry-position entry)) total child-pid source-path output-path)))
+                 (format t "Compiling [~d of ~d (child-pid: ~d)] ~a~%    to ~a ~a~%" (1+ (entry-position entry)) total child-pid source-path output-type output-path)))
              (started-some (entries child-pid)
                (dolist (entry entries)
                  (started-one entry child-pid)))
@@ -697,7 +697,7 @@ Return files."
     (t (error "Unsupported value for core:*clasp-build-mode* -> ~a" core:*clasp-build-mode*))))
 
     
-(export '(compile-aclasp))
+(export '(compile-aclasp link-faso))
 (defun compile-aclasp (&key clean
                          (output-file (build-common-lisp-bitcode-pathname))
                          (target-backend (default-target-backend))
@@ -726,10 +726,13 @@ Return files."
               (if epilogue-files (compile-system epilogue-files
                                                  :reload nil
                                                  :total-files (length system)
-                                                 :file-order file-order))
-              (let ((all-output (output-object-pathnames #P"src/lisp/kernel/tag/min-start" #P"src/lisp/kernel/tag/min-end" :system system)))
-                (if (out-of-date-target output-file all-output)
-                    (link-modules output-file all-output)))))))))
+                                                 :file-order file-order))))))))
+
+(defun link-faso (&key clean
+                      (output-file (build-common-lisp-bitcode-pathname))
+                      (target-backend (default-target-backend))
+                    (system (command-line-arguments-as-list)))
+  (core:link-faso-files output-file system t))
 
 (export '(bclasp-features with-bclasp-features))
 (defun bclasp-features()
