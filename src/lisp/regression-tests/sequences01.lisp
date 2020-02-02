@@ -514,4 +514,14 @@
 (test-expect-error
  some.error.14
  (some #'null '(a b . c))
-  :type type-error)
+ :type type-error)
+
+(test sequence-clx-compile-notinline
+      (let ()
+        (declare (notinline make-sequence))
+        (make-sequence '(array char (*)) 0)))
+
+(test sequence-clx-compile-inline
+      (let ()
+        (declare (inline make-sequence))
+      (make-sequence '(array char (*)) 0)))
