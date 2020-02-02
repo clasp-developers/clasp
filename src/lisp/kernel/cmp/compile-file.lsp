@@ -111,7 +111,7 @@
 ;;; at the level of e.g. whether it returns logical pathname or a
 ;;; physical pathname. Patches to make it more correct are welcome.
 (defun compile-file-pathname (input-file &key (output-file nil output-file-p)
-                                           (output-type :fasl)
+                                           (output-type :fasl output-type-p)
 					   type
 					   target-backend
                                            &allow-other-keys)
@@ -120,7 +120,9 @@
 		 (merge-pathnames output-file (translate-logical-pathname (cfp-output-file-default input-file output-type :target-backend target-backend)))
 		 (cfp-output-file-default input-file output-type :target-backend target-backend)))
          (ext (cfp-output-extension output-type)))
-    (make-pathname :type ext :defaults pn)))
+    (if (or output-type-p (not output-file-p))
+        (make-pathname :type ext :defaults pn)
+        pn)))
 
 (defun cf-module-name (type pathname)
   "Create a module name from the TYPE (either :user or :kernel)
@@ -286,7 +288,7 @@ Compile a lisp source file into an LLVM module."
                               (source-debug-lineno 0)
                               (source-debug-offset 0)
                               ;; output-type can be (or :fasl :bitcode :object)
-                              (output-type (if *generate-faso* :faso :fasl))
+                              (output-type (if *generate-faso* :faso :fasl) output-type-p)
                               ;; type can be either :kernel or :user
                               (type :user)
                               ;; A unique prefix for symbols of compile-file'd files that
@@ -301,12 +303,15 @@ Compile a lisp source file into an LLVM module."
                               environment)
   "See CLHS compile-file."
   #+debug-monitor(sys:monitor-message "compile-file ~a" input-file)
-  (core:bformat t "compile-file-serial image-startup-position: %s%N" image-startup-position)
+  (when verbose
+    (core:bformat t "compile-file-serial image-startup-position: %s%N" image-startup-position))
   (let ((*compile-file-parallel* nil)
         (*generate-faso* (eq output-type :faso)))
     (if (not output-file-p) (setq output-file (cfp-output-file-default input-file output-type)))
     (with-compiler-env ()
-      (let* ((output-path (compile-file-pathname input-file :output-file output-file :output-type output-type ))
+      (let* ((output-path (if output-type-p
+                              (compile-file-pathname input-file :output-file output-file :output-type output-type)
+                              (compile-file-pathname input-file :output-file output-file)))
              (*track-inlined-functions* (make-hash-table :test #'equal))
              (output-info-pathname (when output-info (make-pathname :type "info" :defaults output-path)))
              (*compilation-module-index* 0) ; FIXME: necessary?
