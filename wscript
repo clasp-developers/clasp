@@ -275,8 +275,8 @@ def update_dependencies(cfg):
                        "https://github.com/Bike/SICL.git",
                        "bf49bb239950169e5153e01b4c1d400ff663558d")
     fetch_git_revision("src/lisp/kernel/contrib/Concrete-Syntax-Tree",
-                       "https://github.com/robert-strandh/Concrete-Syntax-Tree.git",
-                       "654cdbf1fdb0625d3c68144c8806704e2f97f34b")
+                       "https://github.com/s-expressionists/Concrete-Syntax-Tree.git",
+                       "28dbbdd70dcc222062dadb156d8af305746cc1a8")
     fetch_git_revision("src/lisp/kernel/contrib/closer-mop",
                        "https://github.com/pcostanza/closer-mop.git",
                        "d4d1c7aa6aba9b4ac8b7bb78ff4902a52126633f")
@@ -302,8 +302,8 @@ def update_dependencies(cfg):
                        "b8a05a3846430bc36c8200f24d248c8293801503")
     fetch_git_revision("src/lisp/modules/asdf",
                        "https://gitlab.common-lisp.net/asdf/asdf.git",
-                       "56dc62d54a8f62e702f7442f8432d59fc2032127")
-#                       label = "master", revision = "3.3.3.3")
+#                       "1cae71bdf0afb0f57405c5e8b7e8bf0aeee8eef8")
+                        label = "master", revision = "3.3.3.5")
     os.system("(cd src/lisp/modules/asdf; ${MAKE-make} --quiet)")
 
 # run this from a completely cold system with:
