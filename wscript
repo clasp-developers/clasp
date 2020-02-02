@@ -15,7 +15,7 @@
 #    ./waf build_iboehm      # useful to build C++ without rebuilding CL code -
 #                            # If done carefully this can be used to quickly test C++ code
 #
-#   ./waf --jobs 2 install_cboehm  # will build and install cclasp
+
 #   to run with low priority, you can prefix with:
 #     nice -n 19 ionice --class 3 ./waf --jobs 2 ...
 #
@@ -1517,7 +1517,14 @@ def build(bld):
             if (os.path.islink(clasp_symlink_node.abspath())):
                 os.unlink(clasp_symlink_node.abspath())
     if (bld.stage == 'rebuild' or bld.stage_val >= 4):
-        if (bld.env.CLASP_BUILD_MODE!='faso'):   # build cclasp executable
+        log.debug("building bld.stage = %s  bld.stage_val = %d", bld.stage, bld.stage_val )
+        if (bld.env.CLASP_BUILD_MODE=='faso'):   # build cclasp executable
+            task = symlink_executable(env=bld.env)
+            task.set_inputs(bld.iclasp_executable)
+            task.set_outputs(bld.cclasp_executable)
+            bld.add_to_group(task)
+            #raise Exception("build executable for faso mode = %s" % bld.cclasp_executable)
+        else:
             task = link_executable(env = bld.env)
             task.set_inputs(cclasp_common_lisp_output_name_list +
                             [cxx_all_bitcode_node])
@@ -1640,6 +1647,14 @@ class link_fasl(clasp_task):
 
     def display(self):
         return "link_fasl.display() would be VERY long - remove display() to display\n"
+
+class symlink_executable(clasp_task):
+    def run(self):
+        cmd = [ 'ln', '-s',
+                self.inputs[0].abspath(),
+                self.outputs[0].abspath()
+        ];
+        return self.exec_command(cmd)
 
 class link_executable(clasp_task):
     def run(self):
