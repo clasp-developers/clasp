@@ -350,47 +350,6 @@ Cons_O::Cons_O() : _Car(_Nil<T_O>()), _Cdr(_Nil<T_O>()) // , _CdrLength(0)
   ASSERTNOTNULL(this->_Cdr);
 }
 
-/*! Write out all of the elements of this list as a list to
- * avoid excessive nesting
- */
-#if 0
-void Cons_O::archiveBase(ArchiveP node) {
-#if 1
-  if (node->saving()) {
-    core__stack_monitor(); // make sure the stack isn't exhausted.
-    // Convert the the list that this Cons points to into a vector of elements where
-    // the last element is the very last CDR
-    T_sp cur = this->asSmartPtr();
-    // TODO: Fix this loop - it will go into an infinite loop
-    for (; cur.notnilp(); cur = oCdr(cur)) {
-      if ((cur).consp()) {
-        T_sp obj = oCar(cur);
-        node->pushVector(obj); // A Cons - push the car
-      } else {
-        node->pushVector(cur); // improper list - last element not nil
-        return;
-      }
-    }
-    node->pushVector(_Nil<T_O>()); // proper list - last element nil
-  } else {                         // loading
-    Vector_sp vec = node->getVectorSNodes();
-    int len = vec->length();
-    Cons_sp cur = Cons_O::create(gc::As<SNode_sp>((*vec)[len - 2])->object(), gc::As<SNode_sp>((*vec)[len - 1])->object());
-    for (int i(len - 3); i >= 0; --i) {
-      Cons_sp one = Cons_O::create(gc::As<SNode_sp>((*vec)[i])->object(), cur);
-      cur = one;
-    }
-    this->_Car = cur->_Car;
-    this->_Cdr = cur->_Cdr;
-  }
-#else
-  node->attributeIfNotNil("A", this->_Car); // use attributeIfNotNil
-  node->attributeIfNotNil("D", this->_Cdr); // use attributeIfNotNil
-#endif
-}
-#endif
-
-
 SYMBOL_EXPORT_SC_(ClPkg, getf);
 T_sp Cons_O::getf(T_sp key, T_sp defVal) const {
   _OF();
@@ -702,9 +661,6 @@ string Cons_O::__repr__() const {
   } else {
     sout << ")";
   }
-#if 0 // also checkout Cons_O::
-        sout <<"@" << (void*)(this) << " ";
-#endif
   return ((sout.str()));
 }
 
