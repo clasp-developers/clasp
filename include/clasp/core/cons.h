@@ -444,12 +444,12 @@ CL_DEFUN inline T_sp oCaar(T_sp o) { return oCar(oCar(o)); };
  CL_DEFUN inline T_sp oTenth(T_sp o) { return oCar(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(o)))))))))); };
 
 
- inline T_sp cons_car(T_sp x) {ASSERT(x.consp());return gctools::reinterpret_cast_smart_ptr<Cons_O>(x)->_Car;};
- inline T_sp cons_cdr(T_sp x) {ASSERT(x.consp());return gctools::reinterpret_cast_smart_ptr<Cons_O>(x)->_Cdr;};
- inline T_sp cons_car(Cons_sp x) {ASSERT(x.consp());return x->_Car;};
- inline T_sp cons_cdr(Cons_sp x) {ASSERT(x.consp());return x->_Cdr;};
- inline T_sp cons_car(Cons_O* x) {return x->_Car;};
- inline T_sp cons_cdr(Cons_O* x) {return x->_Cdr;};
+ inline T_sp cons_car(T_sp x) {ASSERT(x.consp());return gctools::reinterpret_cast_smart_ptr<Cons_O>(x)->ocar();};
+ inline T_sp cons_cdr(T_sp x) {ASSERT(x.consp());return gctools::reinterpret_cast_smart_ptr<Cons_O>(x)->cdr();};
+ inline T_sp cons_car(Cons_sp x) {ASSERT(x.consp());return x->ocar();};
+ inline T_sp cons_cdr(Cons_sp x) {ASSERT(x.consp());return x->cdr();};
+ inline T_sp cons_car(Cons_O* x) {return x->ocar();};
+ inline T_sp cons_cdr(Cons_O* x) {return x->cdr();};
 
 };
 
