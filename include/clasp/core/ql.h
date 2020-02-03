@@ -45,41 +45,14 @@ namespace ql {
 class list {
  private:
   core::T_sp _Head;
-  core::T_sp* _Tail;  // ROOT
+  core::T_sp _Tail;  // ROOT
  public:
   /*! ctor sets up _Lisp and the first element of the Cons */
   list() {
     this->_Head = _Nil<core::T_O>();
-    this->_Tail = &this->_Head;
+    this->_Tail = this->_Head;
   }
-
-#if 0
-  /*! Point _First of this list to the _Tail of another list */
-  void point_to_tail(ql::list const &other) {
-    _G();
-    this->_First = other._Tail;
-    this->_Tail = this->_First;
-  }
-
-  void clear() {
-    _G();
-    this->_First = core::Cons_O::create(_Nil<core::T_O>());
-    this->_Tail = this->_First;
-  }
-#endif
   
-  void create_from_cons(core::List_sp other) {
-    for (auto cur : other) {
-      this->operator<<(CONS_CAR(cur));
-    }
-  }
-
-#if 0
-  core::Cons_sp tail() const {
-    return this->_Tail;
-  }
-#endif
-
   int length() const {
     LIKELY_if (this->_Head.consp()) return this->_Head.unsafe_cons()->proper_list_length();
     return 0;
@@ -87,13 +60,13 @@ class list {
 
   inline list &operator<<(core::T_sp const &obj) {
     core::Cons_sp one = core::Cons_O::create(obj,_Nil<core::T_O>());
-    if (!this->_Head.consp()) {
+    if (!this->_Head.consp())
       this->_Head = one;
-      this->_Tail = &CONS_CDR(this->_Head);
-    } else {
-      (*this->_Tail) = one;
-      this->_Tail = &CONS_CDR(one);
+    else {
+      core::Cons_sp ctail = gc::As_unsafe<core::Cons_sp>(this->_Tail);
+      ctail->rplacd(one);
     }
+    this->_Tail = one;
     return *this;
   }
 
@@ -105,9 +78,16 @@ class list {
     return *this;
   }
 
-  /*! dot the list argument to the end of the list */
+  /*! dot the list argument to the end of the list
+   *  NOTE: After calling this, trying to add more elements is not allowed and will have
+   *        bad consequences. */
   inline list &dot(core::T_sp arg) {
-    (*this->_Tail) = arg;
+    if (this->_Tail.consp()) {
+      core::Cons_sp ctail = gc::As_unsafe<core::Cons_sp>(this->_Tail);
+      ctail->rplacd(arg);
+    } else { // no elements have been accumulated yet, so
+      this->_Head = arg;
+    }
     return *this;
   }
 
