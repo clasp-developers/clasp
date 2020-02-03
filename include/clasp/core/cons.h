@@ -230,10 +230,6 @@ namespace core {
     T_sp elt(cl_index index) const;
     T_sp setf_elt(cl_index index, T_sp value);
 
-  /* TODO:
-	   Remove the following member functions and replace them
-	   with the real functions  oCar, oCdr, cCdr etc */
-
     inline T_sp cdr() const { return this->_Cdr; };
     inline T_sp ocar() const { return this->_Car; };
     inline T_sp ocadr() const {
