@@ -438,10 +438,10 @@
   (llvm-sys:create-ptr-to-int *irbuilder* val int-type label))
 
 (defun irc-fdefinition (symbol &optional (label ""))
-  (irc-load (c++-field-ptr info.%symbol% symbol :function)))
+  (irc-load-atomic (c++-field-ptr info.%symbol% symbol :function)))
 
 (defun irc-setf-fdefinition (symbol &optional (label ""))
-  (irc-load (c++-field-ptr info.%symbol% symbol :setf-function)))
+  (irc-load-atomic (c++-field-ptr info.%symbol% symbol :setf-function)))
 
 (defun irc-untag-general (tagged-ptr &optional (type %t**%))
   #+(or)(let* ((ptr-i8* (irc-bit-cast tagged-ptr %i8*%))
@@ -489,7 +489,7 @@ representing a tagged fixnum."
 
 (defun irc-rack (instance-tagged)
   (let* ((instance* (irc-untag-general instance-tagged %instance*%))
-         (rack (irc-load (irc-struct-gep %instance% instance* +instance.rack-index+) "rack-tagged")))
+         (rack (irc-load-atomic (irc-struct-gep %instance% instance* +instance.rack-index+) "rack-tagged")))
     rack))
 
 (defun irc-instance-slot-address (instance index)
@@ -505,7 +505,7 @@ representing a tagged fixnum."
 (defun irc-read-slot (instance index)
   "Read a value from the rack of an instance"
   (let ((dataN* (irc-instance-slot-address instance index)))
-    (irc-load dataN*)))
+    (irc-load-atomic dataN*)))
 
 (defun irc-write-slot (instance index value)
   "Write a value into the rack of an instance"
