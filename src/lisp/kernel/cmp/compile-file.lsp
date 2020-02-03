@@ -86,11 +86,12 @@
 (defun cfp-output-extension (output-type)
   (cond
     ((eq output-type :bitcode) (if *use-human-readable-bitcode* "ll" "bc"))
-    ((and *compile-file-parallel* (or (eq output-type :object))) "faso")
-    ((and *compile-file-parallel* (or (eq output-type :fasl))) "fasp")
+    ((and *generate-faso* (or (eq output-type :object))) "faso")
+    ((and *generate-faso* (or (eq output-type :fasl))) "fasp")
     ((eq output-type :object) "o")
     ((eq output-type :fasl) "fasl")
     ((eq output-type :faso) "faso")
+    ((eq output-type :fasp) "fasp")
     ((eq output-type :executable) #-windows "" #+windows "exe")
     (t (error "unsupported output-type ~a" output-type))))
 
@@ -286,7 +287,8 @@ Compile a lisp source file into an LLVM module."
                               (source-debug-lineno 0)
                               (source-debug-offset 0)
                               ;; output-type can be (or :fasl :bitcode :object)
-                              (output-type (if *generate-faso* :fasp :fasl))
+                              (output-type (if (or *generate-faso* (eq *clasp-build-mode* :faso))
+                                               :fasp :fasl))
                               ;; type can be either :kernel or :user
                               (type :user)
                               ;; A unique prefix for symbols of compile-file'd files that
@@ -302,8 +304,7 @@ Compile a lisp source file into an LLVM module."
   "See CLHS compile-file."
   #+debug-monitor(sys:monitor-message "compile-file ~a" input-file)
   (core:bformat t "compile-file-serial image-startup-position: %s%N" image-startup-position)
-  (let ((*compile-file-parallel* nil)
-        (*generate-faso* (eq output-type :faso)))
+  (let* ((*compile-file-parallel* nil))
     (if (not output-file-p) (setq output-file (cfp-output-file-default input-file output-type)))
     (with-compiler-env ()
       (let* ((output-path (compile-file-pathname input-file :output-file output-file :output-type output-type ))

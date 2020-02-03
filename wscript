@@ -1650,7 +1650,7 @@ class link_fasl(clasp_task):
 
 class symlink_executable(clasp_task):
     def run(self):
-        cmd = [ 'ln', '-s',
+        cmd = [ 'ln', '-s', '-f',
                 self.inputs[0].abspath(),
                 self.outputs[0].abspath()
         ];
@@ -1789,12 +1789,13 @@ class compile_module(clasp_task):
         fasl_file = self.outputs[0].abspath()
         log.debug("In compile_module %s --image %s, %s -> %s", executable, image_file, source_file, fasl_file)
         output_type = ":fasl"
-        if (self.bld.env.CLASP_BUILD_TYPE=="faso"):
-            output_type = ":faso"
+        if (self.env.CLASP_BUILD_MODE == "faso"):
+            output_type = ":fasp"
         cmd = self.clasp_command_line(executable,
                                       image = image_file,
                                       features = ['ignore-extensions'],
-                                      forms = ['(compile-file #P"%s" :output-file #P"%s" :output-type %s)' % (source_file, fasl_file, output_type),
+                                      forms = [ '(format t "startup-function-name-and-linkage -> ~s~%" (multiple-value-list (core:startup-function-name-and-linkage)))',
+                                          '(compile-file #P"%s" :output-file #P"%s" :output-type %s)' % (source_file, fasl_file, output_type),
                                                '(core:quit)'])
         return self.exec_command(cmd)
 

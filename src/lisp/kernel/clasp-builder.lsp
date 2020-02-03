@@ -772,10 +772,7 @@ Return files."
           (progn
             (load-system (select-source-files #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/pre-epilogue-bclasp" :system system))
             (let ((files (out-of-date-bitcodes #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/bclasp" :system system)))
-              (compile-system files :file-order file-order :total-files (length system))
-              (let ((all-output (output-object-pathnames #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/bclasp" :system system)))
-                (if (out-of-date-target output-file all-output)
-                    (link-modules output-file all-output)))))))))
+              (compile-system files :file-order file-order :total-files (length system))))))))
 
 (export '(compile-cclasp recompile-cclasp))
 
@@ -810,10 +807,7 @@ Return files."
         (progn
           (setq files (maybe-move-to-front files #P"src/lisp/kernel/lsp/fli"))
           (setq files (maybe-move-to-front files #P"src/lisp/kernel/cleavir/inline"))))
-    (compile-system files :reload nil :file-order file-order :total-files (length system))
-    (let ((all-output (output-object-pathnames #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/cclasp" :system system)))
-      (if (out-of-date-target output-file all-output)
-          (link-modules output-file all-output)))))
+    (compile-system files :reload nil :file-order file-order :total-files (length system))))
   
 (defun recompile-cclasp (&key clean (output-file (build-common-lisp-bitcode-pathname)) (system (command-line-arguments-as-list)))
   (if clean (clean-system #P"src/lisp/kernel/tag/start" :no-prompt t))

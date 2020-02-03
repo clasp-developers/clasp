@@ -587,7 +587,7 @@ struct FasoObjectFileInfo {
   
 CL_LAMBDA(output-path-designator faso-files &optional (verbose nil))
 CL_DEFUN void core__link_faso_files(T_sp outputPathDesig, List_sp fasoFiles, bool verbose) {
-//  write_bf_stream(BF("Writing FASO file to %s for %d object files\n") % _rep_(pathDesig) % cl__length(objectFiles));
+    if (verbose) write_bf_stream(BF("Writing FASO file to %s for %d object files\n") % _rep_(outputPathDesig) % cl__length(fasoFiles));
   std::vector<FasoObjectFileInfo> allObjectFiles;
   std::vector<MmapInfo> mmaps;
   List_sp cur = fasoFiles;
@@ -595,6 +595,7 @@ CL_DEFUN void core__link_faso_files(T_sp outputPathDesig, List_sp fasoFiles, boo
     String_sp filename = gc::As<String_sp>(cl__namestring(oCar(cur)));
     cur = oCdr(cur);
     int fd = open(filename->get_std_string().c_str(),O_RDONLY);
+    if (verbose) write_bf_stream(BF("mmap'ing file[%lu] %s\n") % ii % _rep_(filename)); 
     off_t fsize = lseek(fd, 0, SEEK_END);
     lseek(fd,0,SEEK_SET);
     void* memory = mmap(NULL, fsize, PROT_READ, MAP_SHARED|MAP_FILE, fd, 0);
@@ -610,9 +611,10 @@ CL_DEFUN void core__link_faso_files(T_sp outputPathDesig, List_sp fasoFiles, boo
       mmaps.emplace_back(MmapInfo(fd,memory,object0_offset,(size_t)fsize-object0_offset));
       for (size_t ofi = 0; ofi<header->_NumberOfObjectFiles; ++ofi) {
         size_t of_length = header->_ObjectFiles[ofi]._ObjectFileSize;
-        if (verbose) write_bf_stream(BF("object file %lu   length: %lu\n") % ofi % of_length);
+        if (verbose) write_bf_stream(BF("%s:%d object file %lu id: %lu  length: %lu\n") % __FILE__ % __LINE__ % ofi % header->_ObjectFiles[ofi]._ObjectID % of_length);
         FasoObjectFileInfo fofi(header->_ObjectFiles[ofi]._ObjectID,of_length);
         allObjectFiles.emplace_back(fofi);
+        if (verbose) write_bf_stream(BF("allObjectFiles.size() = %lu\n") % allObjectFiles.size());
       }
     } else {
       SIMPLE_ERROR(BF("Illegal and unknown file type - magic number: %X\n") % (size_t)header->_Magic);
@@ -622,6 +624,7 @@ CL_DEFUN void core__link_faso_files(T_sp outputPathDesig, List_sp fasoFiles, boo
   setup_FasoHeader(header);
   header->_HeaderPageCount = FasoHeader::calculateHeaderNumberOfPages(allObjectFiles.size(),getpagesize());
   header->_NumberOfObjectFiles = allObjectFiles.size();
+  if (verbose) write_bf_stream(BF("Writing out all object files %lu\n") % allObjectFiles.size());
   size_t nextPage = header->_HeaderPageCount;
   for (size_t ofi=0; ofi<allObjectFiles.size(); ofi++ ) {
     header->_ObjectFiles[ofi]._ObjectID = allObjectFiles[ofi]._ObjectID;

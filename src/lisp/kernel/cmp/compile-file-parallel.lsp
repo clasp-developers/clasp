@@ -307,8 +307,11 @@ Compile a lisp source file into an LLVM module."
       (let ((intermediate-output-type (case output-type
                                         #+(or)(:fasl :object)
                                         (:fasl :in-memory-object)
+                                        (:faso :in-memory-object)
+                                        (:fasp :in-memory-object)
                                         (:object :in-memory-object)
-                                        (:bitcode :bitcode))))
+                                        (:bitcode :bitcode)
+                                        (otherwise (error "Figure out intermediate-output-type for output-type ~s" output-type)))))
         (cclasp-loop2 given-input-pathname source-sin environment
                       :dry-run dry-run
                       :optimize optimize
@@ -337,7 +340,7 @@ Compile a lisp source file into an LLVM module."
                               :link-type :bitcode))
      (llvm-link output-path :input-files (cfp-result-files result "o")
                             :input-type :object))
-    ((member output-type '(:object :fasl))
+    ((member output-type '(:object :fasl :faso :fasp))
      (let ((output-path (compile-file-pathname output-path :output-type output-type)))
        #+(or)(format t "Output the object files in ast-jobs to ~s~%" output-path)
        (let* ((object-files (loop for ast-job in ast-jobs
@@ -426,10 +429,16 @@ Each bitcode filename will contain the form-index.")
                     (t (output-cfp-result result ast-jobs output-path output-type)))
               output-path)))))))
 
-(defun cl:compile-file (input-file &rest args)
+(defun cl:compile-file (input-file &rest args &key (output-type :fasl) &allow-other-keys)
+  (when *generate-faso*
+    (remf args :output-type)
+    (setq output-type (case output-type
+                        (:object :faso)
+                        (:fasl :fasp)
+                        (otherwise output-type))))
   (if *compile-file-parallel*
-      (apply #'compile-file-parallel input-file args)
-      (apply #'compile-file-serial input-file args)))
+      (apply #'compile-file-parallel input-file :output-type output-type args)
+      (apply #'compile-file-serial input-file :output-type output-type args)))
 
 (eval-when (:load-toplevel)
   (setf *compile-file-parallel* cmp:*use-compile-file-parallel*))

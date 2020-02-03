@@ -499,7 +499,7 @@ This is to ensure that the RUN-ALL functions are evaluated in the correct order.
 (defun build-fasl (out-file &key lisp-files init-name)
   (declare (ignore init-name))
   (cond
-    (*compile-file-parallel*
+    (*generate-faso*
      (build-faso-parallel out-file :lisp-files lisp-files))
     (t (build-fasl-serial out-file :lisp-files lisp-files))))
            
