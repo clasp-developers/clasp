@@ -4288,9 +4288,10 @@ void ClaspJIT_O::saveObjectFileInfo(const char* objectFileStart, size_t objectFi
   } while (expected!=current);
 }
 
+CL_LAMBDA(intruction-pointer &key verbose);
 CL_DOCSTRING(R"doc(Identify the object file whose generated code range containss the instruction-pointer.
 Return NIL if none or (values offset-from-start object-file). The index-from-start is the number of bytes of the instruction-pointer from the start of the code range.)doc");
-CL_DEFMETHOD core::T_mv ClaspJIT_O::objectFileForInstructionPointer(core::Pointer_sp instruction_pointer)
+CL_DEFMETHOD core::T_mv ClaspJIT_O::objectFileForInstructionPointer(core::Pointer_sp instruction_pointer, bool verbose)
 {
   ObjectFileInfo* cur = this->_ObjectFiles.load();
   size_t count;
@@ -4310,6 +4311,10 @@ CL_DEFMETHOD core::T_mv ClaspJIT_O::objectFileForInstructionPointer(core::Pointe
       if (!eom)
         SIMPLE_ERROR(BF("Problem in objectFileForInstructionPointer"));
       ObjectFile_sp object_file = ObjectFile_O::create(eom->release());
+      if (verbose) {
+        core::write_bf_stream(BF("faso-file: %s  object-file-position: %lu  objectID: %lu\n") % cur->_faso_filename % cur->_faso_index % cur->_objectID);
+        core::write_bf_stream(BF("SectionID: %lu    memory offset: %lu\n") % sectionID % offset );
+      }
       return Values(sectioned_address,object_file);
     }
     cur = cur->_next;

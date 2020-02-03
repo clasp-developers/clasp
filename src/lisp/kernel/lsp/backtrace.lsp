@@ -335,20 +335,20 @@ Set gather-all-frames to T and you can gather C++ and Common Lisp frames"
                 (ext:vfork-execvp cmd t)
               (parse-llvm-dwarfdump stream)))))))
 
-(defun object-file-address-information (addr)
+(defun object-file-address-information (addr &key verbose)
   (multiple-value-bind (sectioned-address object-file)
-      (llvm-sys:object-file-for-instruction-pointer llvm-sys:*jit-engine* addr)
+      (llvm-sys:object-file-for-instruction-pointer llvm-sys:*jit-engine* addr :verbose verbose)
     (unless (null sectioned-address)
       (llvm-sys:get-line-info-for-address
        (llvm-sys:create-dwarf-context object-file)
        sectioned-address))))
 
 (defparameter *debug-code-source-position* nil)
-(defun code-source-position (return-address)
+(defun code-source-position (return-address &key verbose)
   (let ((address (core:pointer-increment return-address -1)))
     ;; First, if it's an object file try that.
     (multiple-value-bind (source-path function-name source line column start-line discriminator)
-        (object-file-address-information address)
+        (object-file-address-information address :verbose verbose)
       (declare (ignore function-name source start-line discriminator))
       (when source-path ; success, it was in an object file
         (return-from code-source-position
