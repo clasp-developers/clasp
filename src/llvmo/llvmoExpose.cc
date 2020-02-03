@@ -4262,9 +4262,15 @@ CL_DEFMETHOD void ClaspJIT_O::addIRModule(Module_sp module, ThreadSafeContext_sp
   ExitOnErr(this->CompileLayer->add(this->ES->getMainJITDylib(),llvm::orc::ThreadSafeModule(std::move(umodule),*context->wrappedPtr())));
 }
 
-void ClaspJIT_O::saveObjectFileInfo(const char* objectFileStart, size_t objectFileSize)
+void ClaspJIT_O::saveObjectFileInfo(const char* objectFileStart, size_t objectFileSize,
+                                    const char* faso_filename,
+                                    size_t faso_index,
+                                    size_t objectID )
 {
   ObjectFileInfo* ofi = new ObjectFileInfo();
+  ofi->_faso_filename = faso_filename;
+  ofi->_faso_index = faso_index;
+  ofi->_objectID = objectID;
   ofi->_object_file_start = (void*)objectFileStart;
   ofi->_object_file_size = objectFileSize;
   ofi->_text_segment_start = my_thread->_text_segment_start;
@@ -4323,7 +4329,9 @@ CL_DEFMETHOD size_t ClaspJIT_O::numberOfObjectFiles() {
 }
 
 
-void ClaspJIT_O::addObjectFile(const char* rbuffer, size_t bytes,size_t startupID, JITDylib& dylib,  bool print )
+void ClaspJIT_O::addObjectFile(const char* rbuffer, size_t bytes,size_t startupID, JITDylib& dylib,
+                               const char* faso_filename, size_t faso_index,
+                               bool print)
 {
   // Create an llvm::MemoryBuffer for the ObjectFile bytes
   if (print) core::write_bf_stream(BF("%s:%d Adding object file at %p  %lu bytes\n")  % __FILE__ % __LINE__  % (void*)rbuffer % bytes );
@@ -4342,7 +4350,7 @@ void ClaspJIT_O::addObjectFile(const char* rbuffer, size_t bytes,size_t startupI
   core::Pointer_sp startup = this->lookup(dylib,startup_name);
   if (print) core::write_bf_stream(BF("%s:%d startup address %p\n") % __FILE__ % __LINE__ % _rep_(startup));
   // Now the my_thread thread local data structure will contain information about the new linked object file.
-  this->saveObjectFileInfo(rbuffer,bytes);
+  this->saveObjectFileInfo(rbuffer,bytes,faso_filename,faso_index,startupID);
   
   // Lookup the address of the ObjectFileStartUp function and invoke it
   void* thread_local_startup = startup->ptr();

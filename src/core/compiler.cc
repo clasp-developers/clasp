@@ -687,6 +687,9 @@ CL_LAMBDA(path-designator &optional (verbose *load-verbose*) (print t) (external
 CL_DEFUN core::T_sp core__load_faso(T_sp pathDesig, T_sp verbose, T_sp print, T_sp external_format)
 {
   String_sp filename = gc::As<String_sp>(cl__namestring(pathDesig));
+  char* name_buffer = (char*)malloc(filename->get_std_string().size()+1);
+  strncpy(name_buffer,filename->get_std_string().c_str(),filename->get_std_string().size());
+  name_buffer[filename->get_std_string().size()] = '\0';
   int fd = open(filename->get_std_string().c_str(),O_RDONLY);
   off_t fsize = lseek(fd, 0, SEEK_END);
   lseek(fd,0,SEEK_SET);
@@ -709,7 +712,9 @@ CL_DEFUN core::T_sp core__load_faso(T_sp pathDesig, T_sp verbose, T_sp print, T_
     jit->addObjectFile((const char*)of_start,of_length,
                        header->_ObjectFiles[ofi]._ObjectID,
                        *jitDylib->wrappedPtr(),
-                       print.notnilp());
+                       name_buffer,
+                       ofi,
+                       print.notnilp() );
   }
   return _lisp->_true();
 }
