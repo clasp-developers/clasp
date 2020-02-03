@@ -189,13 +189,11 @@ namespace core {
       return ll;
     };
   public:
-    inline static int car_offset() {
-      Cons_O x;
-      return (int)(reinterpret_cast<char *>(&x._Car) - reinterpret_cast<char *>(&x));
+    inline static size_t car_offset() {
+      return offsetof(Cons_O, _Car);
     }
-    inline static int cdr_offset() {
-      Cons_O x;
-      return (int)(reinterpret_cast<char *>(&x._Cdr) - reinterpret_cast<char *>(&x));
+    inline static size_t cdr_offset() {
+      return offsetof(Cons_O, _Cdr);
     }
 
   public:
