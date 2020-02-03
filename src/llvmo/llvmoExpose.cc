@@ -4313,7 +4313,7 @@ CL_DEFMETHOD core::T_mv ClaspJIT_O::objectFileForInstructionPointer(core::Pointe
       ObjectFile_sp object_file = ObjectFile_O::create(eom->release());
       if (verbose) {
         core::write_bf_stream(BF("faso-file: %s  object-file-position: %lu  objectID: %lu\n") % cur->_faso_filename % cur->_faso_index % cur->_objectID);
-        core::write_bf_stream(BF("SectionID: %lu    memory offset: %lu\n") % spectionID % offset );
+        core::write_bf_stream(BF("SectionID: %lu    memory offset: %lu\n") % sectionID % offset );
       }
       return Values(sectioned_address,object_file);
     }
