@@ -4499,7 +4499,7 @@ public:
   void addObjectFile(const char* buffer, size_t bytes, size_t startupID, JITDylib& dylib, 
                      const char* faso_filename, size_t faso_index,
                      bool print=false);
-  core::T_mv objectFileForInstructionPointer(core::Pointer_sp instruction_pointer);
+  core::T_mv objectFileForInstructionPointer(core::Pointer_sp instruction_pointer, bool verbose);
   
   ClaspJIT_O();
   ~ClaspJIT_O();
