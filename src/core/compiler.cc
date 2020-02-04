@@ -747,9 +747,21 @@ CL_DEFUN core::T_sp core__describe_faso(T_sp pathDesig)
   return _lisp->_true();
 }
 
-CL_DEFUN core::T_sp core__unpack_faso(T_sp pathDesig, T_sp prefix)
+CL_DOCSTRING(R"doc(Unpack the faso/fasp file into individual object files.)doc");
+CL_DEFUN core::T_sp core__unpack_faso(T_sp pathDesig)
 {
-  String_sp filename = gc::As<String_sp>(cl__namestring(pathDesig));
+  Pathname_sp pn_filename = cl__pathname(pathDesig);
+  Pathname_sp pn_prefix = cl__make_pathname(_Nil<T_O>(), false,
+                                            _Nil<T_O>(), false,
+                                            _Nil<T_O>(), false,
+                                            _Nil<T_O>(), false,
+                                            _Nil<T_O>(), true,
+                                            _Nil<T_O>(), false,
+                                            kw::_sym_local,
+                                            pn_filename);
+  T_sp prefix = cl__namestring(pn_prefix);
+  String_sp filename = gc::As<String_sp>(cl__namestring(pn_filename));
+  
   int fd = open(filename->get_std_string().c_str(),O_RDONLY);
   off_t fsize = lseek(fd, 0, SEEK_END);
   lseek(fd,0,SEEK_SET);
@@ -767,7 +779,7 @@ CL_DEFUN core::T_sp core__unpack_faso(T_sp pathDesig, T_sp prefix)
     void* of_start = (void*)((char*)header + header->_ObjectFiles[ofi]._StartPage*header->_PageSize);
     size_t of_length = header->_ObjectFiles[ofi]._ObjectFileSize;
     stringstream sfilename;
-    sfilename << str_prefix << "-" << "-" << ofi << "-" << header->_ObjectFiles[ofi]._ObjectID << ".o";
+    sfilename << str_prefix << "-" << ofi << "-" << header->_ObjectFiles[ofi]._ObjectID << ".o";
     FILE* fout = fopen(sfilename.str().c_str(),"w");
     fwrite(of_start,of_length,1,fout);
     fclose(fout);
