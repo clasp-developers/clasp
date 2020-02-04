@@ -186,26 +186,6 @@ Cons_sp Cons_O::createList(T_sp o1, T_sp o2, T_sp o3, T_sp o4, T_sp o5, T_sp o6,
   return Cons_O::create(o1, Cons_O::createList(o2, o3, o4, o5, o6, o7, o8, o9, o10));
 }
 
-/*! Copied from ecl append_into
-     This copies the CAR's in l into new CONS nodes
-    that are appended to the list pointed to by **tailPP
-    which is advanced with every element.
-    **tailPP is at the end of the list pointed to by head
-    */
-void Cons_O::appendInto(T_sp head, T_sp *&tailP, T_sp l) {
-  if (!(*tailP).nilp()) {
-    /* (APPEND '(1 . 2) 3) */
-    TYPE_ERROR_PROPER_LIST(head);
-  }
-  while ((l).consp()) {
-    Cons_sp cons = Cons_O::create(cons_car(l),_Nil<T_O>());
-    *tailP = cons;
-    tailP = &(cons->_Cdr);
-    l = cons_cdr(l);
-  }
-  *tailP = l;
-}
-
 CL_LAMBDA(l1 l2);
 CL_DECLARE();
 CL_DOCSTRING("append2 - append l2 to l1 by copying l1 and pointing the end of it to l2");
@@ -214,17 +194,13 @@ CL_DEFUN T_sp core__append2(List_sp x, List_sp y) {
 };
 
 T_sp Cons_O::append(List_sp x, List_sp y) {
-  T_sp head(_Nil<T_O>()); // This will root the new list
-  T_sp *tailP = &head;    // This will keep track of the end of the new list
-  if (x.notnilp()) {
-    Cons_O::appendInto(head, tailP, x);
+  ql::list result;
+  while (x.notnilp()) {
+    result << cons_car(x);
+    x = cons_cdr(x);
   }
-  if ((*tailP).notnilp()) {
-    TYPE_ERROR_PROPER_LIST(head);
-  }
-  /* I WAS DOING THIS WHY??? head = y; */
-  *tailP = y;
-  return head;
+  result.dot(y);
+  return result.result();
 }
 
 struct Tester {

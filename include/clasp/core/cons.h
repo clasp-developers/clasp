@@ -196,7 +196,6 @@ namespace core {
     }
 
   public:
-    static void appendInto(T_sp head, T_sp *&tailP, T_sp l);
     static T_sp append(List_sp x, List_sp y);
 
   public:
