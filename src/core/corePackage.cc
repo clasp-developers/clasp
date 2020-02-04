@@ -848,7 +848,7 @@ void testConses() {
     fastTimer.start();
     for (int i = 0; i < times; ++i) {
       for (auto c : l.full()) {
-        T_sp t = c->_Car;
+        T_sp t = c->ocar();
         fastCount += unbox_fixnum(gc::As<Fixnum_sp>(t));
       }
     }
@@ -860,7 +860,7 @@ void testConses() {
     normalTimer.start();
     for (int i = 0; i < times; ++i) {
       for (auto c : l) {
-        T_sp t = c->_Car;
+        T_sp t = c->ocar();
         normalCount += unbox_fixnum(gc::As<Fixnum_sp>(t));
       }
     }

@@ -589,7 +589,7 @@ gctools::return_type fast_apply_general(T_O* func_tagged, T_O* args_tagged) {
   int front_nargs = 0;
   Cons_O* cur = cons_args;
   for ( ; cur->_Cdr.consp(); cur = reinterpret_cast<Cons_O*>(gctools::untag_cons(cur->_Cdr.raw_()))) ++front_nargs;
-  T_O* tail_tagged = cur->_Car.raw_();
+  T_O* tail_tagged = cur->ocar().raw_();
   if (gctools::tagged_consp(tail_tagged)) {
     Cons_O* cons_tail = reinterpret_cast<Cons_O*>(gctools::untag_cons(tail_tagged));
     int tail_nargs = 1+cons_tail->length();
@@ -597,12 +597,12 @@ gctools::return_type fast_apply_general(T_O* func_tagged, T_O* args_tagged) {
     MAKE_STACK_FRAME( frame, func_tagged, nargs );
     Cons_O* front_cur = cons_args;
     for (int i=0; i<front_nargs; ++i ) {
-      (*frame)[i] = front_cur->_Car.raw_();
+      (*frame)[i] = front_cur->ocar().raw_();
       front_cur = reinterpret_cast<Cons_O*>(gctools::untag_cons(front_cur->_Cdr.raw_()));
     }
     Cons_O* tail_cur = cons_tail;
     for (int j=front_nargs; j<nargs; ++j ) {
-      (*frame)[j] = tail_cur->_Car.raw_();
+      (*frame)[j] = tail_cur->ocar().raw_();
       tail_cur = reinterpret_cast<Cons_O*>(gctools::untag_cons(tail_cur->_Cdr.raw_()));
     }
     Vaslist valist_struct(frame);
@@ -614,7 +614,7 @@ gctools::return_type fast_apply_general(T_O* func_tagged, T_O* args_tagged) {
   MAKE_STACK_FRAME( frame, func_tagged, nargs );
   Cons_O* front_cur = cons_args;
   for (int i=0; i<front_nargs; ++i ) {
-    (*frame)[i] = front_cur->_Car.raw_();
+    (*frame)[i] = front_cur->ocar().raw_();
     front_cur = reinterpret_cast<Cons_O*>(gctools::untag_cons(front_cur->_Cdr.raw_()));
   }
   Vaslist valist_struct(frame);

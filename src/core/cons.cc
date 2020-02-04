@@ -346,7 +346,7 @@ List_sp Cons_O::subseq(cl_index start, T_sp end) const {
 //
 Cons_O::Cons_O() : _Car(_Nil<T_O>()), _Cdr(_Nil<T_O>()) // , _CdrLength(0)
 {
-  ASSERTNOTNULL(this->_Car);
+  ASSERTNOTNULL(this->ocar());
   ASSERTNOTNULL(this->_Cdr);
 }
 
@@ -365,7 +365,7 @@ T_sp Cons_O::getf(T_sp key, T_sp defVal) const {
 void Cons_O::serialize(serialize::SNode node) {
   _OF();
   node->attribute("cdrl", this->_CdrLength);
-  node->attributeIfNotNil("car", this->_Car);
+  node->attributeIfNotNil("car", this->ocar());
   node->attributeIfNotNil("cdr", this->_Cdr);
 }
 #endif
@@ -374,7 +374,7 @@ bool Cons_O::equal(T_sp obj) const {
   if (!obj.consp()) return false;
   if (this == obj.unsafe_cons()) return true;
   List_sp other = obj;
-  if (!cl__equal(this->_Car, CONS_CAR(other))) return false;
+  if (!cl__equal(this->ocar(), CONS_CAR(other))) return false;
   T_sp this_cdr = this->_Cdr;
   T_sp other_cdr = cons_cdr(other);
   return cl__equal(this_cdr, other_cdr);
@@ -384,7 +384,7 @@ bool Cons_O::equalp(T_sp obj) const {
   if (!obj.consp()) return false;
   if (this == obj.unsafe_cons()) return true;
   List_sp other = obj;
-  if (!cl__equalp(this->_Car, oCar(other)))
+  if (!cl__equalp(this->ocar(), oCar(other)))
     return false;
   T_sp this_cdr = this->_Cdr;
   T_sp other_cdr = oCdr(other);
@@ -600,7 +600,7 @@ List_sp Cons_O::copyTree() const {
 
 List_sp Cons_O::copyTreeCar() const {
   _OF();
-  T_sp obj = this->_Car;
+  T_sp obj = this->ocar();
   ASSERTNOTNULL(obj);
   Cons_sp rootCopy = Cons_O::create(_Nil<T_O>(), _Nil<T_O>());
   List_sp cobj;
@@ -646,13 +646,13 @@ void Cons_O::describe(T_sp stream)
 
 string Cons_O::__repr__() const {
   Cons_sp start = this->asSmartPtr();
-  T_sp car = start->_Car;
+  T_sp car = start->ocar();
   T_sp cdr = start->_Cdr;
   stringstream sout;
   sout << "(" << _rep_(car);
   while (cdr.consp()) {
     Cons_sp p = gc::As<Cons_sp>(cdr);
-    car = p->_Car;
+    car = p->ocar();
     sout << " " << _rep_(car);
     cdr = oCdr(p);
   }
