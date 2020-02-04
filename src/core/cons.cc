@@ -323,7 +323,7 @@ List_sp Cons_O::subseq(cl_index start, T_sp end) const {
 Cons_O::Cons_O() : _Car(_Nil<T_O>()), _Cdr(_Nil<T_O>()) // , _CdrLength(0)
 {
   ASSERTNOTNULL(this->ocar());
-  ASSERTNOTNULL(this->_Cdr);
+  ASSERTNOTNULL(this->cdr());
 }
 
 SYMBOL_EXPORT_SC_(ClPkg, getf);
@@ -342,7 +342,7 @@ void Cons_O::serialize(serialize::SNode node) {
   _OF();
   node->attribute("cdrl", this->_CdrLength);
   node->attributeIfNotNil("car", this->ocar());
-  node->attributeIfNotNil("cdr", this->_Cdr);
+  node->attributeIfNotNil("cdr", this->cdr());
 }
 #endif
 
@@ -351,7 +351,7 @@ bool Cons_O::equal(T_sp obj) const {
   if (this == obj.unsafe_cons()) return true;
   List_sp other = obj;
   if (!cl__equal(this->ocar(), CONS_CAR(other))) return false;
-  T_sp this_cdr = this->_Cdr;
+  T_sp this_cdr = this->cdr();
   T_sp other_cdr = cons_cdr(other);
   return cl__equal(this_cdr, other_cdr);
 }
@@ -362,7 +362,7 @@ bool Cons_O::equalp(T_sp obj) const {
   List_sp other = obj;
   if (!cl__equalp(this->ocar(), oCar(other)))
     return false;
-  T_sp this_cdr = this->_Cdr;
+  T_sp this_cdr = this->cdr();
   T_sp other_cdr = oCdr(other);
   return cl__equalp(this_cdr, other_cdr);
 }
@@ -497,7 +497,7 @@ T_sp Cons_O::onthcdr(cl_index idx) const {
   T_sp cur = this->asSmartPtr();
   for (cl_index i = 0; i < idx; i++) {
     LIKELY_if (cur.consp()) {
-      cur = cur.unsafe_cons()->_Cdr;
+      cur = cur.unsafe_cons()->cdr();
     } else if (cur.nilp()) {
       return cur;
     } else {
@@ -593,7 +593,7 @@ List_sp Cons_O::copyTreeCar() const {
 CL_DEFUN size_t core__cons_length(Cons_sp cons) {
   size_t sz = 1;
   T_sp cur;
-  for (cur = oCdr(cons); cur.consp(); cur = gc::As_unsafe<Cons_sp>(cur)->_Cdr) ++sz;
+  for (cur = oCdr(cons); cur.consp(); cur = gc::As_unsafe<Cons_sp>(cur)->cdr()) ++sz;
   if (cur.notnilp()) {
     TYPE_ERROR_PROPER_LIST(cur->asSmartPtr());
   }
@@ -604,16 +604,12 @@ CL_DEFUN size_t core__cons_length(Cons_sp cons) {
 size_t Cons_O::length() const {
   size_t sz = 1;
   T_sp cur;
-  for (cur = this->_Cdr; cur.consp(); cur = gc::As_unsafe<Cons_sp>(cur)->_Cdr) ++sz;
+  for (cur = this->cdr(); cur.consp(); cur = gc::As_unsafe<Cons_sp>(cur)->cdr()) ++sz;
   if (cur.notnilp()) {
     TYPE_ERROR_PROPER_LIST(cur->asSmartPtr());
   }
   return sz;
 };
-
-void Cons_O::setCdr(T_sp c) {
-  this->_Cdr = c;
-}
 
 void Cons_O::describe(T_sp stream)
 {
@@ -623,7 +619,7 @@ void Cons_O::describe(T_sp stream)
 string Cons_O::__repr__() const {
   Cons_sp start = this->asSmartPtr();
   T_sp car = start->ocar();
-  T_sp cdr = start->_Cdr;
+  T_sp cdr = start->cdr();
   stringstream sout;
   sout << "(" << _rep_(car);
   while (cdr.consp()) {

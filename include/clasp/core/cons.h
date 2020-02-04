@@ -195,30 +195,24 @@ namespace core {
       return offsetof(Cons_O, _Cdr);
     }
 
-  public:
-    static T_sp append(List_sp x, List_sp y);
+  public: // basic access
+    inline T_sp ocar() const { return this->_Car; }
+    inline T_sp cdr() const { return this->_Cdr; }
+    inline void setCar(T_sp o) { this->_Car = o; }
+    inline void setCdr(T_sp o) { this->_Cdr = o; }
 
   public:
-  /*! Recursively hash the car and cdr parts - until the HashGenerator fills up */
-    inline void sxhash_(HashGenerator &hg) const {
-      if (hg.isFilling())
-        hg.hashObject(this->_Car);
-      if (hg.isFilling())
-        hg.hashObject(this->_Cdr);
-    }
-
-
     inline Cons_sp rplaca(T_sp o) {
-      this->_Car = o;
+      setCar(o);
 #ifdef DEBUG_VALIDATE_GUARD
-      client_validate(this->_Car.raw_());
+      client_validate(this->ocar().raw_());
 #endif
       return this->asSmartPtr();
-    };
+    }
     inline Cons_sp rplacd(T_sp o) {
-      this->_Cdr = o;
+      setCdr(o);
 #ifdef DEBUG_VALIDATE_GUARD
-      client_validate(this->_Cdr.raw_());
+      client_validate(this->cdr().raw_());
 #endif
       return this->asSmartPtr();
     };
@@ -229,39 +223,39 @@ namespace core {
     T_sp elt(cl_index index) const;
     T_sp setf_elt(cl_index index, T_sp value);
 
-    inline T_sp cdr() const { return this->_Cdr; };
-    inline T_sp ocar() const { return this->_Car; };
     inline T_sp ocadr() const {
-      T_sp cdr = this->_Cdr;
-      if (UNLIKELY(!this->_Cdr.consp()))
+      T_sp cdr = this->cdr();
+      if (UNLIKELY(!cdr.consp()))
         return _Nil<T_O>();
-      return this->_Cdr.unsafe_cons()->ocar();
-    // return this->cdr()->ocar(); };
+      return cdr.unsafe_cons()->ocar();
     }
-    T_sp ocaddr() const {
-      TESTING();
-      if (UNLIKELY(!this->_Cdr.consp()))
-        return _Nil<T_O>();
-      return this->_Cdr.unsafe_cons()->ocadr();
-    //return this->cdr()->cdr()->ocar();
-    }
-
-  /*! Set the data for this element */
-    inline void setCar(T_sp o) {
-      this->_Car = o;
-    };
 
   /*! Get the data for the first element */
     template <class o_class>
       gctools::smart_ptr<o_class> car() {
-      ASSERTNOTNULL(this->_Car);
-      return gc::As<gc::smart_ptr<o_class>>(this->_Car);
+      ASSERTNOTNULL(this->ocar());
+      return gc::As<gc::smart_ptr<o_class>>(this->ocar());
     };
+    T_sp setf_nth(cl_index index, T_sp val);
+  /*! Return the last cons (not the last element) of list.
+	  If we are nil then return nil */
+    T_sp last(cl_index idx = 1) const;
 
+  public:
+    static T_sp append(List_sp x, List_sp y);
+
+  public:
+  /*! Recursively hash the car and cdr parts - until the HashGenerator fills up */
+    inline void sxhash_(HashGenerator &hg) const {
+      if (hg.isFilling())
+        hg.hashObject(this->ocar());
+      if (hg.isFilling())
+        hg.hashObject(this->cdr());
+    }
+    
     bool equal(T_sp obj) const;
     bool equalp(T_sp obj) const;
 
-    T_sp setf_nth(cl_index index, T_sp val);
 
   /*! Return a new list by combinding the given list of elements to our list
 	 */
@@ -270,18 +264,11 @@ namespace core {
     List_sp revappend(T_sp tail);
     List_sp nreconc(T_sp tail);
 
-  /*! Set the next pointer for this element */
-    void setCdr(T_sp o);
-
     CL_LISPIFY_NAME("core:cons-setf-cdr");
     CL_DEFMETHOD   T_sp setf_cdr(T_sp o) {
       this->setCdr(o);
       return o;
     };
-  /*! Return the last cons (not the last element) of list.
-	  If we are nil then return nil */
-    T_sp last(cl_index idx = 1) const;
-
   /*! Like Common Lisp copy-list */
     List_sp copyList() const;
 
@@ -309,8 +296,6 @@ namespace core {
     List_sp reverse();
     List_sp nreverse();
 
-    
-    
     List_sp memberEq(T_sp item) const;
     List_sp memberEql(T_sp item) const;
 
@@ -347,7 +332,7 @@ namespace core {
  CL_PKG_NAME(ClPkg,car);
 CL_DEFUN inline core::T_sp oCar(T_sp obj) {
    if (obj.consp())
-     return obj.unsafe_cons()->_Car;
+     return obj.unsafe_cons()->ocar();
    if (obj.nilp())
      return obj;
    TYPE_ERROR(obj, cl::_sym_Cons_O);
@@ -355,7 +340,7 @@ CL_DEFUN inline core::T_sp oCar(T_sp obj) {
  CL_PKG_NAME(ClPkg,cdr);
  CL_DEFUN inline T_sp oCdr(T_sp obj) {
   if (obj.consp())
-    return obj.unsafe_cons()->_Cdr;
+    return obj.unsafe_cons()->cdr();
   if (obj.nilp())
     return obj;
   TYPE_ERROR(obj, cl::_sym_Cons_O);
@@ -501,7 +486,7 @@ template <class T>
 void fillVec0(core::List_sp c, gctools::Vec0<T> &vec) {
   vec.clear();
   for (auto me : (List_sp)(c)) {
-    vec.emplace_back(gc::As<T>(me->_Car));
+    vec.emplace_back(gc::As<T>(me->ocar()));
   }
 }
 
