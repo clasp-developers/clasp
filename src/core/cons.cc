@@ -376,7 +376,7 @@ bool Cons_O::equal(T_sp obj) const {
   List_sp other = obj;
   if (!cl__equal(this->_Car, CONS_CAR(other))) return false;
   T_sp this_cdr = this->_Cdr;
-  T_sp other_cdr = CONS_CDR(other);
+  T_sp other_cdr = cons_cdr(other);
   return cl__equal(this_cdr, other_cdr);
 }
 
@@ -502,7 +502,7 @@ T_sp Cons_O::onth(cl_index idx) const {
   T_sp cur = this->asSmartPtr();
   for (cl_index i = 0; i < idx; i++) {
     LIKELY_if (cur.consp()) {
-      cur = CONS_CDR(cur);
+      cur = cons_cdr(cur);
     } else if (cur.nilp()) {
       return cur;
     } else {

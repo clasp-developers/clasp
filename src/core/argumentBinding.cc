@@ -123,7 +123,7 @@ void PASS_FUNCTION_REST(core::T_sp closure,
     T_sp cur = rest;
     for (int i(arg_idx+1), iEnd(PASS_ARGS_NUM); i < iEnd; ++i) {
       T_sp one = Cons_O::create(PASS_NEXT_ARG(i), _Nil<T_O>());
-      CONS_CDR(cur) = one;
+      gc::As_unsafe<Cons_sp>(cur)->rplacd(one);
       cur = one;
     }
     scope.new_binding(restarg, rest);
