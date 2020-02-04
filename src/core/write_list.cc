@@ -53,45 +53,45 @@ void Cons_O::__write__(T_sp stream) const {
   SYMBOL_EXPORT_SC_(CorePkg, _SHARP__BANG_);
   if (this->ocar() == _sym__SHARP__BANG_) {
     clasp_write_string("#!", stream);
-    x = this->_Cdr;
+    x = this->cdr();
     write_object(x, stream);
     return;
   }
-  if ((this->_Cdr).consp() && oCdr(this->_Cdr).nilp()) {
+  if ((this->cdr()).consp() && oCdr(this->cdr()).nilp()) {
     if (this->ocar() == cl::_sym_quote) {
       clasp_write_char('\'', stream);
-      x = oCar(this->_Cdr);
+      x = oCar(this->cdr());
       write_object(x, stream);
       return;
     }
     if (this->ocar() == cl::_sym_function) {
       clasp_write_char('#', stream);
       clasp_write_char('\'', stream);
-      x = oCar(this->_Cdr);
+      x = oCar(this->cdr());
       write_object(x, stream);
       return;
     }
     if (this->ocar() == _sym_quasiquote) {
       clasp_write_char('`', stream);
-      x = oCar(this->_Cdr);
+      x = oCar(this->cdr());
       write_object(x, stream);
       return;
     }
     if (this->ocar() == _sym_unquote) {
       clasp_write_char(',', stream);
-      x = oCar(this->_Cdr);
+      x = oCar(this->cdr());
       write_object(x, stream);
       return;
     }
     if (this->ocar() == _sym_unquote_splice) {
       clasp_write_string(",@", stream);
-      x = oCar(this->_Cdr);
+      x = oCar(this->cdr());
       write_object(x, stream);
       return;
     }
     if (this->ocar() == _sym_unquote_nsplice) {
       clasp_write_string(",.", stream);
-      x = oCar(this->_Cdr);
+      x = oCar(this->cdr());
       write_object(x, stream);
       return;
     }

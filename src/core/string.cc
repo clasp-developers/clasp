@@ -5,6 +5,7 @@
 #include <clasp/core/designators.h>
 #include <clasp/core/array.h>
 #include <clasp/core/character.h>
+#include <clasp/core/ql.h>
 
 // ----------------------------------------------------------------------
 //
@@ -1445,14 +1446,10 @@ CL_DEFUN T_sp core__search_string(String_sp sub, size_t sub_start, size_t sub_en
 CL_LISPIFY_NAME("core:split");
 CL_DEFUN List_sp core__split(const string& all, const string &chars) {
   vector<string> parts = split(all, chars);
-  T_sp first = _Nil<T_O>();
-  T_sp* cur = &first;
-  for (vector<string>::iterator it = parts.begin(); it != parts.end(); it++) {
-    Cons_sp cons = Cons_O::create(Str_O::create(*it), _Nil<T_O>());
-    *cur = cons;
-    cur = &(cons->_Cdr);
-  }
-  return first;
+  ql::list result;
+  for (vector<string>::iterator it = parts.begin(); it != parts.end(); it++)
+    result << Str_O::create(*it);
+  return result.result();
 }
 
 CL_DEFUN T_sp core__copy_to_simple_base_string(T_sp x)

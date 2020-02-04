@@ -82,7 +82,7 @@ CL_DEFUN Vector_sp core__hash_table_pairs(HashTable_sp hash_table)
     Cons_O& entry = hash_table->_Table[it];
     if (!entry.ocar().no_keyp()&&!entry.ocar().deletedp()) {
       (*keyvalues)[idx++] = entry.ocar();
-      (*keyvalues)[idx++] = entry._Cdr;
+      (*keyvalues)[idx++] = entry.cdr();
     }
   }
   return keyvalues;
@@ -97,7 +97,7 @@ void verifyHashTable(bool print, std::ostream& ss, HashTable_O* ht, const char* 
     Cons_O& entry = ht->_Table[it];
     if (!entry.ocar().no_keyp()&&!entry.ocar().deletedp()) {
         if (print) {
-            ss << "Entry["<<it<<"] at " << (void*)&entry << "   key: " << _rep_(entry.ocar()) << " value: " << (entry._Cdr) << "\n";
+            ss << "Entry["<<it<<"] at " << (void*)&entry << "   key: " << _rep_(entry.ocar()) << " value: " << (entry.cdr()) << "\n";
         }
       keys->vectorPushExtend(entry.ocar());
     }
@@ -300,7 +300,7 @@ void HashTable_O::maphash(T_sp function_desig) {
   for (size_t it(0), itEnd(tableCopy.size()); it < itEnd; ++it) {
     Cons_O& entry = tableCopy[it];
     if (!entry.ocar().no_keyp()&&!entry.ocar().deletedp()) {
-      eval::funcall(func,entry.ocar(),entry._Cdr);
+      eval::funcall(func,entry.ocar(),entry.cdr());
     }
   }
   //        printf("%s:%d finished maphash on hash-table@%p\n", __FILE__, __LINE__, hash_table.raw_());
@@ -791,7 +791,7 @@ T_sp HashTable_O::setf_gethash_no_write_lock(T_sp key, T_sp value)
     pair->rplacd(value);
     DEBUG_HASH_TABLE({core::write_bf_stream(BF("%s:%d Found key/value pair: %s\n") % __FILE__ % __LINE__ % _rep_(keyValuePair), T_sp());});
     DEBUG_HASH_TABLE({core::write_bf_stream(BF("%s:%d  Did rplacd value: %s to cons at %p\n") % __FILE__ % __LINE__ % _rep_(value) % &*pair, T_sp());});
-    DEBUG_HASH_TABLE({core::write_bf_stream(BF("%s:%d  After rplacd value: %s\n") % __FILE__ % __LINE__ % _rep_(pair->_Cdr), T_sp());});
+    DEBUG_HASH_TABLE({core::write_bf_stream(BF("%s:%d  After rplacd value: %s\n") % __FILE__ % __LINE__ % _rep_(pair->cdr()), T_sp());});
     VERIFY_HASH_TABLE(this);
     return value;
   }
@@ -818,7 +818,7 @@ T_sp HashTable_O::setf_gethash_no_write_lock(T_sp key, T_sp value)
   goto NO_ROOM;
  ADD_KEY_VALUE:
   entryP->rplaca(key);
-  entryP->_Cdr = value;
+  entryP->rplacd(value);
   this->_HashTableCount++;
   DEBUG_HASH_TABLE({core::write_bf_stream(BF("%s:%d Found empty slot at index = %ld\n")  % __FILE__ % __LINE__ % cur , T_sp());});
   VERIFY_HASH_TABLE_VA(this,cur,key);
@@ -885,7 +885,7 @@ List_sp HashTable_O::rehash_no_lock(bool expandTable, T_sp findKey) {
   for (size_t it(0), itEnd(oldSize); it < itEnd; ++it) {
     Cons_O& entry = oldTable[it];
     T_sp key = entry.ocar();
-    T_sp value = entry._Cdr;
+    T_sp value = entry.cdr();
     if (!key.no_keyp()&&!key.deletedp()) {
           // key/value represent a valid entry in the hash table
           //
@@ -968,7 +968,7 @@ List_sp HashTable_O::rehash_upgrade_write_lock(bool expandTable, T_sp findKey) {
 
   void dump_one_entry(HashTable_sp ht, size_t it, stringstream &ss, Cons_O entry) {
     T_sp key = entry.ocar();
-    T_sp value = entry._Cdr;
+    T_sp value = entry.cdr();
 #ifdef DUMP_LOW_LEVEL
     ss << "     ( ";
     size_t hi = ht->hashIndex(key);
@@ -983,7 +983,7 @@ List_sp HashTable_O::rehash_upgrade_write_lock(bool expandTable, T_sp findKey) {
     }
     ss << ", " << value.raw_() << ")" << " " << std::endl;
 #else
-    ss << "     " << _rep_(entry.ocar()) << " " << _rep_(entry._Cdr) << std::endl;
+    ss << "     " << _rep_(entry.ocar()) << " " << _rep_(entry.cdr()) << std::endl;
 #endif
   };
 
@@ -1046,7 +1046,7 @@ CL_DEFMETHOD string HashTable_O::hash_table_dump() {
     for (size_t it(0), itEnd(tableCopy.size()); it < itEnd; ++it) {
       Cons_O& entry = tableCopy[it];
       T_sp key = entry.ocar();
-      T_sp value = entry._Cdr;
+      T_sp value = entry.cdr();
       if (!entry.ocar().no_keyp()&&!entry.ocar().deletedp()) {
         fn(key, value);
       }
@@ -1066,7 +1066,7 @@ CL_DEFMETHOD string HashTable_O::hash_table_dump() {
     for (size_t it(0), itEnd(tableCopy.size()); it < itEnd; ++it) {
       const Cons_O& entry = tableCopy[it];
       T_sp key = entry.ocar();
-      T_sp value = entry._Cdr;
+      T_sp value = entry.cdr();
       if (!entry.ocar().no_keyp()&&!entry.ocar().deletedp()) {
         bool cont = fn(key, value);
         if (!cont)
@@ -1088,7 +1088,7 @@ CL_DEFMETHOD string HashTable_O::hash_table_dump() {
     for (size_t it(0), itEnd(tableCopy.size()); it < itEnd; ++it) {
       const Cons_O& entry = tableCopy[it];
       T_sp key = entry.ocar();
-      T_sp value = entry._Cdr;
+      T_sp value = entry.cdr();
       if (!entry.ocar().no_keyp()&&!entry.ocar().deletedp()) {
         if (!mapper->mapKeyValue(key, value))
           goto DONE;

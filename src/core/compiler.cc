@@ -1581,8 +1581,8 @@ void ltvc_fill_list_varargs(gctools::GCRootsInModule* roots, T_O* list, size_t l
     Cons_sp cur_cons = gc::As<Cons_sp>(cur);
     Cons_sp cur_vargs = gc::As<Cons_sp>(vargs);
     cur_cons->rplaca(cur_vargs->ocar());
-    cur = cur_cons->_Cdr;
-    vargs = cur_vargs->_Cdr;
+    cur = cur_cons->cdr();
+    vargs = cur_vargs->cdr();
   }
 }
 
