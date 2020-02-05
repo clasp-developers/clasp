@@ -31,6 +31,7 @@ THE SOFTWARE.
 #include <string>
 #include <vector>
 #include <set>
+#include <atomic>
 #include <clasp/core/cons.fwd.h>
 //#include <clasp/core/lispList.h>
 
@@ -154,8 +155,8 @@ namespace core {
 #endif
 
   public:
-    T_sp _Car;
-    T_sp _Cdr;
+    std::atomic<T_sp> _Car;
+    std::atomic<T_sp> _Cdr;
 
   public:
     template <class T>
@@ -196,10 +197,10 @@ namespace core {
     }
 
   public: // basic access
-    inline T_sp ocar() const { return this->_Car; }
-    inline T_sp cdr() const { return this->_Cdr; }
-    inline void setCar(T_sp o) { this->_Car = o; }
-    inline void setCdr(T_sp o) { this->_Cdr = o; }
+    inline T_sp ocar() const { return _Car.load(std::memory_order_relaxed); }
+    inline T_sp cdr() const { return _Cdr.load(std::memory_order_relaxed); }
+    inline void setCar(T_sp o) { _Car.store(o, std::memory_order_relaxed); }
+    inline void setCdr(T_sp o) { _Cdr.store(o, std::memory_order_relaxed); }
 
   public:
     inline Cons_sp rplaca(T_sp o) {
@@ -326,7 +327,18 @@ namespace core {
     T_sp getf(T_sp key, T_sp defValue) const;
 
     explicit Cons_O();
-    explicit Cons_O(T_sp car, T_sp cdr) : _Car(car), _Cdr(cdr){};
+    explicit Cons_O(T_sp car, T_sp cdr) : _Car(car), _Cdr(cdr){}
+    // These are necessary because atomics are not copyable.
+    // More specifically they are necessary if you want to store conses in vectors,
+    // which the hash table code does.
+  Cons_O(const Cons_O& other) : _Car(other.ocar()), _Cdr(other.cdr()) {}
+    Cons_O& operator=(const Cons_O& other) {
+        if (this != &other) {
+            setCar(other.ocar());
+            setCdr(other.cdr());
+        }
+        return *this;
+    }
   };
 
  CL_PKG_NAME(ClPkg,car);
