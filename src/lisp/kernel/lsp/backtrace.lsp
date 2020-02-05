@@ -337,7 +337,7 @@ Set gather-all-frames to T and you can gather C++ and Common Lisp frames"
 
 (defun object-file-address-information (addr &key verbose)
   (multiple-value-bind (sectioned-address object-file)
-      (llvm-sys:object-file-for-instruction-pointer llvm-sys:*jit-engine* addr :verbose verbose)
+      (llvm-sys:object-file-for-instruction-pointer llvm-sys:*jit-engine* addr verbose)
     (unless (null sectioned-address)
       (llvm-sys:get-line-info-for-address
        (llvm-sys:create-dwarf-context object-file)

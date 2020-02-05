@@ -265,6 +265,12 @@ def fetch_git_revision(path, url, revision = "", label = "master"):
     if ( ret != 0 ):
         raise Exception("Failed to fetch git url %s" % url)
 
+def generate_output_filename(names):
+    if (names==[]):
+        return "source-dir:src;main;clasp_gc.cc"
+    else:
+        return "source-dir:src;main;clasp_gc_cando.cc"
+
 def update_dependencies(cfg):
     # Specifying only label = "some-tag" will check out that tag into a "detached head", but
     # specifying both label = "master" and revision = "some-tag" will stay on master and reset to that revision.
@@ -313,9 +319,17 @@ def update_dependencies(cfg):
 # ./waf analyze_clasp
 # This is the static analyzer - formerly called 'redeye'
 def analyze_clasp(cfg):
+    cfg.extensions_clasp_gc_names = []
+    log.debug("analyze_clasp about to recurse\n")
+    cfg.recurse('extensions')
+    print("In analyze_clasp cfg.extensions_clasp_gc_names = %s" % cfg.extensions_clasp_gc_names)
+    log.debug("cfg.extensions_clasp_gc_names = %s\n", cfg.extensions_clasp_gc_names)
+    output_file = generate_output_filename(cfg.extensions_clasp_gc_names)
+    run_search = '(run-search "%s")' % output_file
     run_program_echo("build/boehm/iclasp-boehm",
                      "--feature", "ignore-extensions",
                      "--load",    "sys:modules;clasp-analyzer;run-serial-analyzer.lisp",
+                     "--eval", run_search,
                      "--eval",    "(core:quit)")
     print("\n\n\n----------------- proceeding with static analysis --------------------")
 
@@ -975,6 +989,7 @@ def configure(cfg):
     cfg.extensions_stlib = []
     cfg.extensions_lib = []
     cfg.extensions_names = []
+    cfg.extensions_clasp_gc_names = []
     cfg.recurse('extensions')
     log.debug("cfg.extensions_names before sort = %s", cfg.extensions_names)
     cfg.extensions_names = sorted(cfg.extensions_names)

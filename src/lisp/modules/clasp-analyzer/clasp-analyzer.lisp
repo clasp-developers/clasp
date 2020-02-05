@@ -3778,6 +3778,7 @@ If the source location of a match contains the string source-path-identifier the
 
 (defvar *analysis*)
 (defun serial-search/generate-code (compilation-tool-database &key (output-file (merge-pathnames #P"project.dat" (clang-tool:main-pathname compilation-tool-database))))
+  (format t "Generating output-file: ~s~%" output-file)
   (clang-tool:with-compilation-tool-database
     compilation-tool-database
     (setf *project* (serial-search-all compilation-tool-database :output-file output-file))

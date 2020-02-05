@@ -33,3 +33,5 @@ def options(bld):
 def build(bld):
     bld.recurse(" ".join(subdirectories()))
 
+def analyze_clasp(bld):
+    bld.recurse(" ".join(subdirectories()))

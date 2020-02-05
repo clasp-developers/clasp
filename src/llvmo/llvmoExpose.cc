@@ -4288,7 +4288,6 @@ void ClaspJIT_O::saveObjectFileInfo(const char* objectFileStart, size_t objectFi
   } while (expected!=current);
 }
 
-CL_LAMBDA(intruction-pointer &key verbose);
 CL_DOCSTRING(R"doc(Identify the object file whose generated code range containss the instruction-pointer.
 Return NIL if none or (values offset-from-start object-file). The index-from-start is the number of bytes of the instruction-pointer from the start of the code range.)doc");
 CL_DEFMETHOD core::T_mv ClaspJIT_O::objectFileForInstructionPointer(core::Pointer_sp instruction_pointer, bool verbose)
