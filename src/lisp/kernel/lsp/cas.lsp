@@ -8,8 +8,8 @@
 (defmacro cas (place old new &environment env)
   "(CAS place old new)
 Atomically store NEW in PLACE if OLD matches the current value of PLACE.
-Matching is as if by EQL.
-Returns the previous value of PLACE; if it's EQL to OLD the swap happened.
+Matching is as if by EQ.
+Returns the previous value of PLACE; if it's EQ to OLD the swap happened.
 Only the swap is atomic. Evaluation of PLACE's subforms, OLD, and NEW is
 not guaranteed to be in any sense atomic with the swap, and likely won't be.
 PLACE must be a CAS-able place. CAS-able places are either symbol macros,
