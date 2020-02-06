@@ -129,6 +129,12 @@ public:
   void setf_plist(List_sp plist) {
     _PropertyList.store(plist, std::memory_order_relaxed);
   }
+  List_sp cas_plist(List_sp cmp, List_sp new_plist) {
+    T_sp tcmp = cmp;
+    T_sp tnew_plist = new_plist;
+    this->_PropertyList.compare_exchange_strong(tcmp, tnew_plist);
+    return gc::As<List_sp>(tcmp);
+  }
   
   Symbol_sp copy_symbol(T_sp copy_properties) const;
   bool isExported();

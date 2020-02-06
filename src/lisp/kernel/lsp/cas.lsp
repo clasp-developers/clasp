@@ -122,6 +122,18 @@ Docstrings are accessible with doc-type MP:CAS."
            ,(ext:parse-macro name lambda-list body env))
      ',name))
 
+;;; Internal, but kind of like DEFSETF.
+(defmacro define-simple-cas-expander (name cas-op (&rest params))
+  (let ((scmp (gensym "CMP")) (snew (gensym "NEW"))
+        (stemps (loop repeat (length params) collect (gensym))))
+    `(define-cas-expander ,name (,@params)
+       (let ((,scmp (gensym "CMP")) (,snew (gensym "NEW"))
+             ,@(loop for st in stemps
+                     collect `(,st (gensym "TEMP"))))
+         (values (list ,@stemps) (list ,@params) ,scmp ,snew
+                 (list ',cas-op ,scmp ,snew ,@stemps)
+                 (list ',name ,@stemps))))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Documentation support
@@ -152,9 +164,5 @@ Docstrings are accessible with doc-type MP:CAS."
                ,cas)
             `(the ,type ,read))))
 
-(define-cas-expander symbol-value (symbol)
-  (let ((cmp (gensym "CMP")) (new (gensym "NEW"))
-        (stemp (gensym "SYMBOL")))
-    (values (list stemp) (list symbol) cmp new
-            `(core:cas-symbol-value ,cmp ,new ,stemp)
-            `(symbol-value ,stemp))))
+(define-simple-cas-expander symbol-value core:cas-symbol-value (symbol))
+(define-simple-cas-expander symbol-plist core:cas-symbol-plist (symbol))
