@@ -132,6 +132,13 @@ CL_DEFUN T_sp cl__symbol_value(Symbol_sp arg) {
   return arg->symbolValue();
 };
 
+CL_LAMBDA(cmp new-value symbol);
+CL_DECLARE();
+CL_DOCSTRING("Compare-and-swap of SYMBOL-VALUE.");
+CL_DEFUN T_sp core__cas_symbol_value(T_sp cmp, T_sp new_value, Symbol_sp sym) {
+  return sym->casSymbolValue(cmp, new_value);
+}
+
 CL_LAMBDA(symbol cell unbound);
 CL_DECLARE();
 CL_DOCSTRING("Get the value of a symbol from TLS or from the given CELL");
