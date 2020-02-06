@@ -501,7 +501,7 @@
     ((instruction cleavir-ir:memset2-instruction) return-value abi function-info)
   (declare (ignore return-value abi function-info))
   (let ((inputs (cleavir-ir:inputs instruction)))
-    (cmp:irc-store
+    (cmp:irc-store-atomic
      (in (second inputs) "memset2-val")
      (cmp::gen-memref-address (in (first inputs))
                               (cleavir-ir:offset instruction)))))
