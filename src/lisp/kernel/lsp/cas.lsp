@@ -166,3 +166,11 @@ Docstrings are accessible with doc-type MP:CAS."
 
 (define-simple-cas-expander symbol-value core:cas-symbol-value (symbol))
 (define-simple-cas-expander symbol-plist core:cas-symbol-plist (symbol))
+
+(define-simple-cas-expander car core:cas-car (cons))
+(define-simple-cas-expander cdr core:cas-cdr (cons))
+
+(define-cas-expander first (cons &environment env)
+  (get-cas-expansion `(car ,cons) env))
+(define-cas-expander rest (cons &environment env)
+  (get-cas-expansion `(cdr cons) env))

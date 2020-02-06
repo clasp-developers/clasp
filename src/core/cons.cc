@@ -124,6 +124,17 @@ CL_DEFUN Cons_sp cl__rplaca(Cons_sp c, T_sp o) {
   return c->rplaca(o);
 };
 
+CL_LAMBDA(cmp newv cons);
+CL_DEFUN T_sp core__cas_car(T_sp cmp, T_sp newv, Cons_sp cons) {
+  cons->_Car.compare_exchange_strong(cmp, newv);
+  return cmp;
+};
+CL_LAMBDA(cmp newv cons);
+CL_DEFUN T_sp core__cas_cdr(T_sp cmp, T_sp newv, Cons_sp cons) {
+  cons->_Cdr.compare_exchange_strong(cmp, newv);
+  return cmp;
+};
+
 CL_LAMBDA(c o);
 CL_DECLARE();
 CL_DOCSTRING("");
