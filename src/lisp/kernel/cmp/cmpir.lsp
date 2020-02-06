@@ -710,8 +710,9 @@ Otherwise do a variable shift."
 the type LLVMContexts don't match - so they were defined in different threads!"
                   val-type dest-contained-type)))))
 
-(defun irc-store-atomic (val destination &optional (label "") (is-volatile nil))
+(defun irc-store-atomic (val destination &optional (label "") (is-volatile nil) (align 8))
   (let ((inst (irc-store val destination label is-volatile)))
+    (llvm-sys:set-alignment inst align) ; atomic stores require an explicit alignment.
     (llvm-sys:set-atomic inst
                          'llvm-sys:monotonic
                          1 #+(or)'llvm-sys:system)

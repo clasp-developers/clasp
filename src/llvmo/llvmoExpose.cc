@@ -2005,8 +2005,12 @@ namespace llvmo {
 
 CL_LISPIFY_NAME(set_atomic);
 CL_EXTERN_DEFMETHOD(StoreInst_O, &StoreInst_O::ExternalType::setAtomic);
+CL_LISPIFY_NAME(setAlignment);
+CL_EXTERN_DEFMETHOD(StoreInst_O, &StoreInst_O::ExternalType::setAlignment);
 CL_LISPIFY_NAME(set_atomic);
 CL_EXTERN_DEFMETHOD(LoadInst_O, &LoadInst_O::ExternalType::setAtomic);
+CL_LISPIFY_NAME(setAlignment);
+CL_EXTERN_DEFMETHOD(LoadInst_O, &LoadInst_O::ExternalType::setAlignment);
 
 };
 
