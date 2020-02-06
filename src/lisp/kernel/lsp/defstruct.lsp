@@ -516,13 +516,12 @@
        `(set-documentation ',structure-name 'structure
                            ',(second option))))))
 
-(defun named-slot-description-p (structure-name slot-description)
-  (let* ((nsd (named-slot-description structure-name))
-         (sym1 (first slot-description))
-         (sym2 (first nsd)))
-    (and (symbolp sym1)(symbolp sym2)(string= (symbol-name sym1)(symbol-name sym2))
-         (equalp (rest nsd) (rest slot-description)))))
-                                 
+(defun list-of-length-at-least (list n)
+  (dotimes (i n)
+    (unless (consp list) (return-from list-of-length-at-least nil))
+    (setf list (cdr list)))
+  (listp list))
+
 (defun defstruct-list-option-expander
     (structure-name included-size slot-descriptions)
   (lambda (option)
@@ -530,24 +529,15 @@
       ((:constructor :kw-constructor)
        ;; FIXME: inefficient
        (defstruct-dispatch-constructor-def
-        option slot-descriptions
-        `(make-list ,(length slot-descriptions))
-        (lambda (obj var loc)
-          `(setf (nth ,loc ,obj) ,var))))
+           option slot-descriptions
+         `(make-list ,(length slot-descriptions))
+         (lambda (obj var loc)
+           `(setf (nth ,loc ,obj) ,var))))
       ((:predicate)
        `(defun ,(second option) (object)
-          (and
-           (consp object)
-           ;; need to test before object is changed with setf below
-           ;; FIXME: inefficient
-           (eq (nth ,(+ (third option) included-size) object)
-               ',structure-name)
-           ,@(let (forms)
-               (dolist (sd slot-descriptions forms)
-                 ;;; if the structure is :named, the first slot-decription is for the name and should not enter the following list
-                 ;;; need to recognize a named-slot-description
-                 (unless (named-slot-description-p structure-name sd)
-                   (push '(consp (setf object (cdr object))) forms)))))))
+          (and (list-of-length-at-least object ,(length slot-descriptions))
+               (eq (nth ,(+ (third option) included-size) object)
+                   ',structure-name))))
       ((:copier)
        `(defun ,(second option) (instance) (copy-list instance)))
       ((:documentation)
