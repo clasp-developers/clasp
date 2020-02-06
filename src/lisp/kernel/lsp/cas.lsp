@@ -14,7 +14,8 @@ Only the swap is atomic. Evaluation of PLACE's subforms, OLD, and NEW is
 not guaranteed to be in any sense atomic with the swap, and likely won't be.
 PLACE must be a CAS-able place. CAS-able places are either symbol macros,
 or accessor forms with a CAR of
-SYMBOL-VALUE,
+SYMBOL-VALUE, SYMBOL-PLIST,
+CAR, CDR, FIRST, REST,
 or a macro,
 or an accessor defined with DEFINE-CAS-EXPANDER.
 Some CAS accessors have additional semantic constraints.
