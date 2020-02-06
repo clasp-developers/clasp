@@ -510,7 +510,7 @@ representing a tagged fixnum."
 (defun irc-write-slot (instance index value)
   "Write a value into the rack of an instance"
   (let ((dataN* (irc-instance-slot-address instance index)))
-    (irc-store value dataN*)
+    (irc-store-atomic value dataN*)
     value))
 
 (defun irc-value-frame-parent (renv)
