@@ -779,7 +779,7 @@ CL_DOCSTRING(R"doc(Unpack the faso/fasp file into individual object files.)doc")
 CL_DEFUN void core__unpack_faso(T_sp path_designator)
 {
   Pathname_sp pn_filename = cl__pathname(path_designator);
-  String_sp sname = cl__namestring(pn_filename);
+  String_sp sname = gc::As<String_sp>(cl__namestring(pn_filename));
   clasp_unpack_faso(sname->get_std_string());
 }
 
