@@ -303,7 +303,6 @@ Compile a lisp source file into an LLVM module."
                               environment)
   "See CLHS compile-file."
   #+debug-monitor(sys:monitor-message "compile-file ~a" input-file)
-  (core:bformat t "compile-file-serial image-startup-position: %s%N" image-startup-position)
   (let* ((*compile-file-parallel* nil))
     (if (not output-file-p) (setq output-file (cfp-output-file-default input-file output-type)))
     (with-compiler-env ()
@@ -325,6 +324,7 @@ Compile a lisp source file into an LLVM module."
              (*compile-file-source-debug-offset* source-debug-offset)
              (*compile-file-output-pathname* output-path)
              (*compile-file-unique-symbol-prefix* unique-symbol-prefix))
+        (when print (format t "compile-file-serial ~a image-startup-position: ~a~%" output-path image-startup-position))
         (with-compiler-timer (:message "Compile-file" :report-link-time t :verbose *compile-verbose*)
           (with-compilation-results ()
             (let ((module (compile-file-to-module input-file
