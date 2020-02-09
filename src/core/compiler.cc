@@ -747,46 +747,40 @@ CL_DEFUN core::T_sp core__describe_faso(T_sp pathDesig)
   return _lisp->_true();
 }
 
-CL_DOCSTRING(R"doc(Unpack the faso/fasp file into individual object files.)doc");
-CL_DEFUN core::T_sp core__unpack_faso(T_sp pathDesig)
-{
-  Pathname_sp pn_filename = cl__pathname(pathDesig);
-  Pathname_sp pn_prefix = cl__make_pathname(_Nil<T_O>(), false,
-                                            _Nil<T_O>(), false,
-                                            _Nil<T_O>(), false,
-                                            _Nil<T_O>(), false,
-                                            _Nil<T_O>(), true,
-                                            _Nil<T_O>(), false,
-                                            kw::_sym_local,
-                                            pn_filename);
-  T_sp prefix = cl__namestring(pn_prefix);
-  String_sp filename = gc::As<String_sp>(cl__namestring(pn_filename));
-  
-  int fd = open(filename->get_std_string().c_str(),O_RDONLY);
+void clasp_unpack_faso(const std::string& path_designator) {
+  size_t pos = path_designator.find_last_of('.');
+  if (pos==std::string::npos) {
+    SIMPLE_ERROR(BF("Could not find extension in path: %s") % path_designator);
+  }
+  std::string prefix = path_designator.substr(0,pos-1);
+  int fd = open(path_designator.c_str(),O_RDONLY);
   off_t fsize = lseek(fd, 0, SEEK_END);
   lseek(fd,0,SEEK_SET);
   void* memory = mmap(NULL, fsize, PROT_READ, MAP_SHARED|MAP_FILE, fd, 0);
   if (memory==MAP_FAILED) {
     close(fd);
-    SIMPLE_ERROR(BF("Could not mmap %s because of %s") % _rep_(pathDesig) % strerror(errno));
+    SIMPLE_ERROR(BF("Could not mmap %s because of %s") % path_designator % strerror(errno));
   }
-  String_sp sprefix = gc::As<String_sp>(prefix);
-  string str_prefix = sprefix->get_std_string();
-  llvmo::ClaspJIT_sp jit = gc::As<llvmo::ClaspJIT_sp>(llvmo::_sym_STARjit_engineSTAR->symbolValue());
   FasoHeader* header = (FasoHeader*)memory;
   write_bf_stream(BF("NumberOfObjectFiles %d\n") % header->_NumberOfObjectFiles);
   for (size_t ofi = 0; ofi<header->_NumberOfObjectFiles; ++ofi) {
     void* of_start = (void*)((char*)header + header->_ObjectFiles[ofi]._StartPage*header->_PageSize);
     size_t of_length = header->_ObjectFiles[ofi]._ObjectFileSize;
     stringstream sfilename;
-    sfilename << str_prefix << "-" << ofi << "-" << header->_ObjectFiles[ofi]._ObjectID << ".o";
+    sfilename << prefix << "-" << ofi << "-" << header->_ObjectFiles[ofi]._ObjectID << ".o";
     FILE* fout = fopen(sfilename.str().c_str(),"w");
     fwrite(of_start,of_length,1,fout);
     fclose(fout);
-//    write_bf_stream(BF("Adding faso %s object file %d to jit\n") % _rep_(filename) % ofi);
     write_bf_stream(BF("Object file %d  start-page: %lu  bytes: %lu pages: %lu\n") % ofi % header->_ObjectFiles[ofi]._StartPage % header->_ObjectFiles[ofi]._ObjectFileSize % header->_ObjectFiles[ofi]._NumberOfPages );
   }
-  return _lisp->_true();
+}
+    
+CL_DOCSTRING(R"doc(Unpack the faso/fasp file into individual object files.)doc");
+CL_DEFUN void core__unpack_faso(T_sp path_designator)
+{
+  Pathname_sp pn_filename = cl__pathname(path_designator);
+  String_sp sname = cl__namestring(pn_filename);
+  clasp_unpack_faso(sname->get_std_string());
 }
 
 

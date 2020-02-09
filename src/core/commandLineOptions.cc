@@ -29,6 +29,7 @@ THE SOFTWARE.
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <boost/program_options.hpp>
+#include "clasp/core/compiler.h"
 #include <clasp/core/commandLineOptions.h>
 
 namespace core {
@@ -106,19 +107,25 @@ void process_clasp_arguments(CommandLineOptions* options)
              "# to control MPS\n"
              "export CLASP_MPS_CONFIG=\"32 32 16 80 32 80 64\" # for lots of GC's\n");
       exit(0);
-    }
-      else if (arg == "-v" || arg == "--version") {
-        std::cout << program_name();
+    } else if (arg == "-U" || arg == "--unpack-faso") {
+      if (iarg+1<endArg) {
+        std::string faso_name = options->_RawArguments[iarg+1];
+        clasp_unpack_faso(faso_name);
+      }
+      iarg++;
+      exit(0);
+    } else if (arg == "-v" || arg == "--version") {
+      std::cout << program_name();
 #ifdef USE_MPS
-        std::cout << "-mps-";
+      std::cout << "-mps-";
 #endif
 #ifdef USE_BOEHM
-        std::cout << "-boehm-";
+      std::cout << "-boehm-";
 #endif
-        std::cout << CLASP_VERSION << std::endl;
-        exit(0);
-      }
-      else if (arg == "-I" || arg == "--ignore-image") {
+      std::cout << CLASP_VERSION << std::endl;
+      exit(0);
+    }
+    else if (arg == "-I" || arg == "--ignore-image") {
       options->_DontLoadImage = true;
     } else if (arg == "-N" || arg == "--non-interactive") {
       options->_Interactive = false;
