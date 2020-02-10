@@ -57,6 +57,7 @@ void process_clasp_arguments(CommandLineOptions* options)
              "-I/--ignore-image    - Don't load the boot image/start with init.lsp\n"
              "-i/--image file      - Use the file as the boot image\n"
              "-t/--stage (a|b|c)   - Start the specified stage of clasp 'c' is default\n"
+             "-U/--unpack-faso (faso-file) - Unpack the faso file into separate object files\n"
              "-N/--non-interactive - Suppress all repls\n"
              "-m/--disable-mpi     - Don't use mpi even if built with mpi\n"
              "-v/--version         - Print version\n"
