@@ -691,7 +691,7 @@ Return files."
      )
     ((eq core:*clasp-build-mode* :faso)
      ;; Do nothing - faso files are the result
-     (core:link-faso-files output-file all-modules t))
+     (core:link-faso-files output-file all-modules nil))
     ((eq core:*clasp-build-mode* :fasl)
      (generate-loader output-file all-modules))
     (t (error "Unsupported value for core:*clasp-build-mode* -> ~a" core:*clasp-build-mode*))))
@@ -732,7 +732,7 @@ Return files."
                       (output-file (build-common-lisp-bitcode-pathname))
                       (target-backend (default-target-backend))
                     (system (command-line-arguments-as-list)))
-  (core:link-faso-files output-file system t))
+  (core:link-faso-files output-file system nil))
 
 (export '(bclasp-features with-bclasp-features))
 (defun bclasp-features()
