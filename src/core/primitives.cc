@@ -411,8 +411,9 @@ CL_DEFUN void core__dump_tagged_fixnum(T_sp val) {
 }
 
 CL_DOCSTRING(R"doc(Return a string representing the llvm version (eg: 3.6.0))doc");
-CL_DEFUN T_sp ext__llvm_version() {
-  return core::SimpleBaseString_O::make(LLVM_VERSION);
+CL_DEFUN T_mv ext__llvm_version() {
+#define CXX_MACRO_STRING(var) #var
+  return Values(core::SimpleBaseString_O::make(CXX_MACRO_STRING(LLVM_VERSION)),clasp_make_single_float(LLVM_VERSION));
 }
 
 
