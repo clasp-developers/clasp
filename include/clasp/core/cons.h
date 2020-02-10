@@ -31,6 +31,7 @@ THE SOFTWARE.
 #include <string>
 #include <vector>
 #include <set>
+#include <atomic>
 #include <clasp/core/cons.fwd.h>
 //#include <clasp/core/lispList.h>
 
@@ -87,11 +88,10 @@ T_sp oEighth(T_sp o);
 T_sp oNinth(T_sp o);
 T_sp oTenth(T_sp o);
 
-#define CONS_CAR(x) (gctools::reinterpret_cast_smart_ptr<::core::Cons_O>(x)->_Car)
-#define CONS_CDR(x) (gctools::reinterpret_cast_smart_ptr<::core::Cons_O>(x)->_Cdr)
+#define CONS_CAR(x) (gctools::reinterpret_cast_smart_ptr<::core::Cons_O>(x)->ocar())
+#define CONS_CDR(x) (gctools::reinterpret_cast_smart_ptr<::core::Cons_O>(x)->cdr())
 #define CAR(x) oCar(x)
 #define CDR(x) oCdr(x)
-#define CONSP(x) ((x).consp())
 };
 
 namespace core {
@@ -155,8 +155,8 @@ namespace core {
 #endif
 
   public:
-    T_sp _Car;
-    T_sp _Cdr;
+    std::atomic<T_sp> _Car;
+    std::atomic<T_sp> _Cdr;
 
   public:
     template <class T>
@@ -189,40 +189,31 @@ namespace core {
       return ll;
     };
   public:
-    inline static int car_offset() {
-      Cons_O x;
-      return (int)(reinterpret_cast<char *>(&x._Car) - reinterpret_cast<char *>(&x));
+    inline static size_t car_offset() {
+      return offsetof(Cons_O, _Car);
     }
-    inline static int cdr_offset() {
-      Cons_O x;
-      return (int)(reinterpret_cast<char *>(&x._Cdr) - reinterpret_cast<char *>(&x));
+    inline static size_t cdr_offset() {
+      return offsetof(Cons_O, _Cdr);
     }
+
+  public: // basic access
+    inline T_sp ocar() const { return _Car.load(std::memory_order_relaxed); }
+    inline T_sp cdr() const { return _Cdr.load(std::memory_order_relaxed); }
+    inline void setCar(T_sp o) { _Car.store(o, std::memory_order_relaxed); }
+    inline void setCdr(T_sp o) { _Cdr.store(o, std::memory_order_relaxed); }
 
   public:
-    static void appendInto(T_sp head, T_sp *&tailP, T_sp l);
-    static T_sp append(List_sp x, List_sp y);
-
-  public:
-  /*! Recursively hash the car and cdr parts - until the HashGenerator fills up */
-    inline void sxhash_(HashGenerator &hg) const {
-      if (hg.isFilling())
-        hg.hashObject(this->_Car);
-      if (hg.isFilling())
-        hg.hashObject(this->_Cdr);
-    }
-
-
     inline Cons_sp rplaca(T_sp o) {
-      this->_Car = o;
+      setCar(o);
 #ifdef DEBUG_VALIDATE_GUARD
-      client_validate(this->_Car.raw_());
+      client_validate(this->ocar().raw_());
 #endif
       return this->asSmartPtr();
-    };
+    }
     inline Cons_sp rplacd(T_sp o) {
-      this->_Cdr = o;
+      setCdr(o);
 #ifdef DEBUG_VALIDATE_GUARD
-      client_validate(this->_Cdr.raw_());
+      client_validate(this->cdr().raw_());
 #endif
       return this->asSmartPtr();
     };
@@ -233,43 +224,39 @@ namespace core {
     T_sp elt(cl_index index) const;
     T_sp setf_elt(cl_index index, T_sp value);
 
-  /* TODO:
-	   Remove the following member functions and replace them
-	   with the real functions  oCar, oCdr, cCdr etc */
-
-    inline T_sp cdr() const { return this->_Cdr; };
-    inline T_sp ocar() const { return this->_Car; };
     inline T_sp ocadr() const {
-      T_sp cdr = this->_Cdr;
-      if (UNLIKELY(!this->_Cdr.consp()))
+      T_sp cdr = this->cdr();
+      if (UNLIKELY(!cdr.consp()))
         return _Nil<T_O>();
-      return this->_Cdr.unsafe_cons()->ocar();
-    // return this->cdr()->ocar(); };
+      return cdr.unsafe_cons()->ocar();
     }
-    T_sp ocaddr() const {
-      TESTING();
-      if (UNLIKELY(!this->_Cdr.consp()))
-        return _Nil<T_O>();
-      return this->_Cdr.unsafe_cons()->ocadr();
-    //return this->cdr()->cdr()->ocar();
-    }
-
-  /*! Set the data for this element */
-    inline void setCar(T_sp o) {
-      this->_Car = o;
-    };
 
   /*! Get the data for the first element */
     template <class o_class>
       gctools::smart_ptr<o_class> car() {
-      ASSERTNOTNULL(this->_Car);
-      return gc::As<gc::smart_ptr<o_class>>(this->_Car);
+      ASSERTNOTNULL(this->ocar());
+      return gc::As<gc::smart_ptr<o_class>>(this->ocar());
     };
+    T_sp setf_nth(cl_index index, T_sp val);
+  /*! Return the last cons (not the last element) of list.
+	  If we are nil then return nil */
+    T_sp last(cl_index idx = 1) const;
 
+  public:
+    static T_sp append(List_sp x, List_sp y);
+
+  public:
+  /*! Recursively hash the car and cdr parts - until the HashGenerator fills up */
+    inline void sxhash_(HashGenerator &hg) const {
+      if (hg.isFilling())
+        hg.hashObject(this->ocar());
+      if (hg.isFilling())
+        hg.hashObject(this->cdr());
+    }
+    
     bool equal(T_sp obj) const;
     bool equalp(T_sp obj) const;
 
-    T_sp setf_nth(cl_index index, T_sp val);
 
   /*! Return a new list by combinding the given list of elements to our list
 	 */
@@ -278,18 +265,11 @@ namespace core {
     List_sp revappend(T_sp tail);
     List_sp nreconc(T_sp tail);
 
-  /*! Set the next pointer for this element */
-    void setCdr(T_sp o);
-
     CL_LISPIFY_NAME("core:cons-setf-cdr");
     CL_DEFMETHOD   T_sp setf_cdr(T_sp o) {
       this->setCdr(o);
       return o;
     };
-  /*! Return the last cons (not the last element) of list.
-	  If we are nil then return nil */
-    T_sp last(cl_index idx = 1) const;
-
   /*! Like Common Lisp copy-list */
     List_sp copyList() const;
 
@@ -317,8 +297,6 @@ namespace core {
     List_sp reverse();
     List_sp nreverse();
 
-    
-    
     List_sp memberEq(T_sp item) const;
     List_sp memberEql(T_sp item) const;
 
@@ -349,13 +327,24 @@ namespace core {
     T_sp getf(T_sp key, T_sp defValue) const;
 
     explicit Cons_O();
-    explicit Cons_O(T_sp car, T_sp cdr) : _Car(car), _Cdr(cdr){};
+    explicit Cons_O(T_sp car, T_sp cdr) : _Car(car), _Cdr(cdr){}
+    // These are necessary because atomics are not copyable.
+    // More specifically they are necessary if you want to store conses in vectors,
+    // which the hash table code does.
+  Cons_O(const Cons_O& other) : _Car(other.ocar()), _Cdr(other.cdr()) {}
+    Cons_O& operator=(const Cons_O& other) {
+        if (this != &other) {
+            setCar(other.ocar());
+            setCdr(other.cdr());
+        }
+        return *this;
+    }
   };
 
  CL_PKG_NAME(ClPkg,car);
 CL_DEFUN inline core::T_sp oCar(T_sp obj) {
    if (obj.consp())
-     return obj.unsafe_cons()->_Car;
+     return obj.unsafe_cons()->ocar();
    if (obj.nilp())
      return obj;
    TYPE_ERROR(obj, cl::_sym_Cons_O);
@@ -363,7 +352,7 @@ CL_DEFUN inline core::T_sp oCar(T_sp obj) {
  CL_PKG_NAME(ClPkg,cdr);
  CL_DEFUN inline T_sp oCdr(T_sp obj) {
   if (obj.consp())
-    return obj.unsafe_cons()->_Cdr;
+    return obj.unsafe_cons()->cdr();
   if (obj.nilp())
     return obj;
   TYPE_ERROR(obj, cl::_sym_Cons_O);
@@ -451,12 +440,12 @@ CL_DEFUN inline T_sp oCaar(T_sp o) { return oCar(oCar(o)); };
  CL_DEFUN inline T_sp oTenth(T_sp o) { return oCar(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(o)))))))))); };
 
 
- inline T_sp cons_car(T_sp x) {ASSERT(x.consp());return gctools::reinterpret_cast_smart_ptr<Cons_O>(x)->_Car;};
- inline T_sp cons_cdr(T_sp x) {ASSERT(x.consp());return gctools::reinterpret_cast_smart_ptr<Cons_O>(x)->_Cdr;};
- inline T_sp cons_car(Cons_sp x) {ASSERT(x.consp());return x->_Car;};
- inline T_sp cons_cdr(Cons_sp x) {ASSERT(x.consp());return x->_Cdr;};
- inline T_sp cons_car(Cons_O* x) {return x->_Car;};
- inline T_sp cons_cdr(Cons_O* x) {return x->_Cdr;};
+ inline T_sp cons_car(T_sp x) {ASSERT(x.consp());return gctools::reinterpret_cast_smart_ptr<Cons_O>(x)->ocar();};
+ inline T_sp cons_cdr(T_sp x) {ASSERT(x.consp());return gctools::reinterpret_cast_smart_ptr<Cons_O>(x)->cdr();};
+ inline T_sp cons_car(Cons_sp x) {ASSERT(x.consp());return x->ocar();};
+ inline T_sp cons_cdr(Cons_sp x) {ASSERT(x.consp());return x->cdr();};
+ inline T_sp cons_car(Cons_O* x) {return x->ocar();};
+ inline T_sp cons_cdr(Cons_O* x) {return x->cdr();};
 
 };
 
@@ -509,7 +498,7 @@ template <class T>
 void fillVec0(core::List_sp c, gctools::Vec0<T> &vec) {
   vec.clear();
   for (auto me : (List_sp)(c)) {
-    vec.emplace_back(gc::As<T>(me->_Car));
+    vec.emplace_back(gc::As<T>(me->ocar()));
   }
 }
 

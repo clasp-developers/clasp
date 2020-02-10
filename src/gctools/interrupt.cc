@@ -158,12 +158,12 @@ static void queue_signal_or_interrupt(core::ThreadLocalState* thread, core::T_sp
   } else {
     record = thread->_SparePendingInterruptRecords;
     if (record.consp()) {
-      thread->_SparePendingInterruptRecords = record.unsafe_cons()->_Cdr;
+      thread->_SparePendingInterruptRecords = record.unsafe_cons()->cdr();
     }
   }
   if (record.consp()) {
-    record.unsafe_cons()->_Car = thing;
-    record.unsafe_cons()->_Cdr = _Nil<core::T_O>();
+    record.unsafe_cons()->rplaca(thing);
+    record.unsafe_cons()->rplacd(_Nil<core::T_O>());
     thread->_PendingInterrupts = clasp_nconc(thread->_PendingInterrupts,record);
   }
 }
@@ -180,12 +180,12 @@ core::T_sp pop_signal_or_interrupt(core::ThreadLocalState* thread) {
   { // <---- brace for spinlock scope
     mp::SafeSpinLock spinlock(thread->_SparePendingInterruptRecordsSpinLock);
     record = gc::As<core::Cons_sp>(thread->_PendingInterrupts);
-    value = record->_Car;
-    thread->_PendingInterrupts = record->_Cdr;
+    value = record->ocar();
+    thread->_PendingInterrupts = record->cdr();
     if (value.fixnump() || gc::IsA<core::Symbol_sp>(value)) {
       // Conses that contain fixnum or symbol values are recycled onto the
       // _SparePendingInterruptRecords stack
-      record->_Cdr = thread->_SparePendingInterruptRecords;
+      record->rplacd(thread->_SparePendingInterruptRecords);
       thread->_SparePendingInterruptRecords = record;
     }
   }

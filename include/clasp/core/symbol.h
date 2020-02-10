@@ -129,6 +129,12 @@ public:
   void setf_plist(List_sp plist) {
     _PropertyList.store(plist, std::memory_order_relaxed);
   }
+  List_sp cas_plist(List_sp cmp, List_sp new_plist) {
+    T_sp tcmp = cmp;
+    T_sp tnew_plist = new_plist;
+    this->_PropertyList.compare_exchange_strong(tcmp, tnew_plist);
+    return gc::As<List_sp>(tcmp);
+  }
   
   Symbol_sp copy_symbol(T_sp copy_properties) const;
   bool isExported();
@@ -139,7 +145,11 @@ public:
 
   inline T_sp globalValue() const { return _GlobalValue.load(std::memory_order_relaxed); }
   inline void set_globalValue(T_sp val) { _GlobalValue.store(val, std::memory_order_relaxed); }
-  
+  inline T_sp cas_globalValue(T_sp cmp, T_sp new_value) {
+    _GlobalValue.compare_exchange_strong(cmp, new_value);
+    return cmp;
+  }
+
   inline T_sp threadLocalSymbolValue() const {
 #ifdef CLASP_THREADS
     return my_thread->_Bindings.thread_local_value(this);
@@ -154,6 +164,17 @@ public:
 #else
     set_globalValue(value);
 #endif
+  }
+
+  // As of now this is a sham operation in that it doesn't do anything atomically,
+  // since bindings are thread-local anyway.
+  // However, if like SBCL we were to make local special bindings accessible from other
+  // threads at some point, we would need to do an actual CAS.
+  inline T_sp cas_threadLocalSymbolValue(T_sp cmp, T_sp new_value) {
+    T_sp old = threadLocalSymbolValue();
+    if (old == cmp)
+      set_threadLocalSymbolValue(new_value);
+    return old;
   }
 
   /*! Return the value slot of the symbol or UNBOUND if unbound */
@@ -171,6 +192,15 @@ public:
     T_sp val = symbolValueUnsafe();
     if (val.unboundp()) this->symbolUnboundError();
     return val;
+  }
+
+  inline T_sp casSymbolValue(T_sp cmp, T_sp new_value) {
+#ifdef CLASP_THREADS
+    if (my_thread->_Bindings.thread_local_boundp(this))
+      return cas_threadLocalSymbolValue(cmp, new_value);
+    else
+#endif
+      return cas_globalValue(cmp, new_value);
   }
 
   inline T_sp symbolValueFromCell(Cons_sp cell, T_sp unbound_marker) const {

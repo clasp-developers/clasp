@@ -246,14 +246,9 @@ LtvcReturn ltvc_make_list(gctools::GCRootsInModule* holder, char tag, size_t ind
 {NO_UNWIND_BEGIN();
   // Makes a list of length LEN where all elements are NIL.
   // (ltvc_fill_list will be immediately after, so they could be undefined just as well.)
-  core::T_sp first;
-  core::T_sp* cur = &first;
-  for (; len != 0; --len) {
-    Cons_sp one = Cons_O::create(_Nil<core::T_O>(), _Nil<core::T_O>());
-    *cur = one;
-    cur = &one->_Cdr;
-  }
-  LTVCRETURN holder->setTaggedIndex(tag, index, first.tagged_());
+  ql::list result;
+  for (; len != 0; --len) result << _Nil<core::T_O>();
+  LTVCRETURN holder->setTaggedIndex(tag, index, result.result().tagged_());
   NO_UNWIND_END();
 }
 
@@ -265,7 +260,7 @@ LtvcReturn ltvc_fill_list(gctools::GCRootsInModule* holder, core::T_O* list, siz
   for (; len != 0; --len) {
     core::Cons_sp cons = gc::As<core::Cons_sp>(cur);
     cons->rplaca(core::T_sp(va_arg(va, T_O*)));
-    cur = cons->_Cdr;
+    cur = cons->cdr();
   }
   NO_UNWIND_END();
 }
@@ -598,15 +593,13 @@ __attribute__((visibility("default"))) core::T_O *cc_gatherRestArguments(va_list
 {NO_UNWIND_BEGIN();
   va_list rargs;
   va_copy(rargs, vargs); // the original valist is needed for &key processing elsewhere.
-  core::List_sp result = _Nil<core::T_O>();
-  core::Cons_sp *cur = reinterpret_cast<Cons_sp *>(&result);
-  for (int i = 0; i<nargs; ++i ) {
+  ql::list result;
+  for (int i = 0; i < nargs; ++i) {
     core::T_O* tagged_obj = ENSURE_VALID_OBJECT(va_arg(rargs,core::T_O*));
-    *cur = core::Cons_O::create(gc::smart_ptr<core::T_O>((gc::Tagged)tagged_obj), _Nil<core::T_O>());
-    cur = reinterpret_cast<Cons_sp *>(&(*cur)->_Cdr);
+    result << gc::smart_ptr<core::T_O>((gc::Tagged)tagged_obj);
   }
   va_end(rargs);
-  return result.raw_();
+  return result.result().raw_();
   NO_UNWIND_END();
 }
 

@@ -124,6 +124,17 @@ CL_DEFUN Cons_sp cl__rplaca(Cons_sp c, T_sp o) {
   return c->rplaca(o);
 };
 
+CL_LAMBDA(cmp newv cons);
+CL_DEFUN T_sp core__cas_car(T_sp cmp, T_sp newv, Cons_sp cons) {
+  cons->_Car.compare_exchange_strong(cmp, newv);
+  return cmp;
+};
+CL_LAMBDA(cmp newv cons);
+CL_DEFUN T_sp core__cas_cdr(T_sp cmp, T_sp newv, Cons_sp cons) {
+  cons->_Cdr.compare_exchange_strong(cmp, newv);
+  return cmp;
+};
+
 CL_LAMBDA(c o);
 CL_DECLARE();
 CL_DOCSTRING("");
@@ -186,26 +197,6 @@ Cons_sp Cons_O::createList(T_sp o1, T_sp o2, T_sp o3, T_sp o4, T_sp o5, T_sp o6,
   return Cons_O::create(o1, Cons_O::createList(o2, o3, o4, o5, o6, o7, o8, o9, o10));
 }
 
-/*! Copied from ecl append_into
-     This copies the CAR's in l into new CONS nodes
-    that are appended to the list pointed to by **tailPP
-    which is advanced with every element.
-    **tailPP is at the end of the list pointed to by head
-    */
-void Cons_O::appendInto(T_sp head, T_sp *&tailP, T_sp l) {
-  if (!(*tailP).nilp()) {
-    /* (APPEND '(1 . 2) 3) */
-    TYPE_ERROR_PROPER_LIST(head);
-  }
-  while ((l).consp()) {
-    Cons_sp cons = Cons_O::create(cons_car(l),_Nil<T_O>());
-    *tailP = cons;
-    tailP = &(cons->_Cdr);
-    l = cons_cdr(l);
-  }
-  *tailP = l;
-}
-
 CL_LAMBDA(l1 l2);
 CL_DECLARE();
 CL_DOCSTRING("append2 - append l2 to l1 by copying l1 and pointing the end of it to l2");
@@ -214,17 +205,13 @@ CL_DEFUN T_sp core__append2(List_sp x, List_sp y) {
 };
 
 T_sp Cons_O::append(List_sp x, List_sp y) {
-  T_sp head(_Nil<T_O>()); // This will root the new list
-  T_sp *tailP = &head;    // This will keep track of the end of the new list
-  if (x.notnilp()) {
-    Cons_O::appendInto(head, tailP, x);
+  ql::list result;
+  while (x.notnilp()) {
+    result << cons_car(x);
+    x = cons_cdr(x);
   }
-  if ((*tailP).notnilp()) {
-    TYPE_ERROR_PROPER_LIST(head);
-  }
-  /* I WAS DOING THIS WHY??? head = y; */
-  *tailP = y;
-  return head;
+  result.dot(y);
+  return result.result();
 }
 
 struct Tester {
@@ -346,50 +333,9 @@ List_sp Cons_O::subseq(cl_index start, T_sp end) const {
 //
 Cons_O::Cons_O() : _Car(_Nil<T_O>()), _Cdr(_Nil<T_O>()) // , _CdrLength(0)
 {
-  ASSERTNOTNULL(this->_Car);
-  ASSERTNOTNULL(this->_Cdr);
+  ASSERTNOTNULL(this->ocar());
+  ASSERTNOTNULL(this->cdr());
 }
-
-/*! Write out all of the elements of this list as a list to
- * avoid excessive nesting
- */
-#if 0
-void Cons_O::archiveBase(ArchiveP node) {
-#if 1
-  if (node->saving()) {
-    core__stack_monitor(); // make sure the stack isn't exhausted.
-    // Convert the the list that this Cons points to into a vector of elements where
-    // the last element is the very last CDR
-    T_sp cur = this->asSmartPtr();
-    // TODO: Fix this loop - it will go into an infinite loop
-    for (; cur.notnilp(); cur = oCdr(cur)) {
-      if ((cur).consp()) {
-        T_sp obj = oCar(cur);
-        node->pushVector(obj); // A Cons - push the car
-      } else {
-        node->pushVector(cur); // improper list - last element not nil
-        return;
-      }
-    }
-    node->pushVector(_Nil<T_O>()); // proper list - last element nil
-  } else {                         // loading
-    Vector_sp vec = node->getVectorSNodes();
-    int len = vec->length();
-    Cons_sp cur = Cons_O::create(gc::As<SNode_sp>((*vec)[len - 2])->object(), gc::As<SNode_sp>((*vec)[len - 1])->object());
-    for (int i(len - 3); i >= 0; --i) {
-      Cons_sp one = Cons_O::create(gc::As<SNode_sp>((*vec)[i])->object(), cur);
-      cur = one;
-    }
-    this->_Car = cur->_Car;
-    this->_Cdr = cur->_Cdr;
-  }
-#else
-  node->attributeIfNotNil("A", this->_Car); // use attributeIfNotNil
-  node->attributeIfNotNil("D", this->_Cdr); // use attributeIfNotNil
-#endif
-}
-#endif
-
 
 SYMBOL_EXPORT_SC_(ClPkg, getf);
 T_sp Cons_O::getf(T_sp key, T_sp defVal) const {
@@ -406,8 +352,8 @@ T_sp Cons_O::getf(T_sp key, T_sp defVal) const {
 void Cons_O::serialize(serialize::SNode node) {
   _OF();
   node->attribute("cdrl", this->_CdrLength);
-  node->attributeIfNotNil("car", this->_Car);
-  node->attributeIfNotNil("cdr", this->_Cdr);
+  node->attributeIfNotNil("car", this->ocar());
+  node->attributeIfNotNil("cdr", this->cdr());
 }
 #endif
 
@@ -415,9 +361,9 @@ bool Cons_O::equal(T_sp obj) const {
   if (!obj.consp()) return false;
   if (this == obj.unsafe_cons()) return true;
   List_sp other = obj;
-  if (!cl__equal(this->_Car, CONS_CAR(other))) return false;
-  T_sp this_cdr = this->_Cdr;
-  T_sp other_cdr = CONS_CDR(other);
+  if (!cl__equal(this->ocar(), CONS_CAR(other))) return false;
+  T_sp this_cdr = this->cdr();
+  T_sp other_cdr = cons_cdr(other);
   return cl__equal(this_cdr, other_cdr);
 }
 
@@ -425,9 +371,9 @@ bool Cons_O::equalp(T_sp obj) const {
   if (!obj.consp()) return false;
   if (this == obj.unsafe_cons()) return true;
   List_sp other = obj;
-  if (!cl__equalp(this->_Car, oCar(other)))
+  if (!cl__equalp(this->ocar(), oCar(other)))
     return false;
-  T_sp this_cdr = this->_Cdr;
+  T_sp this_cdr = this->cdr();
   T_sp other_cdr = oCdr(other);
   return cl__equalp(this_cdr, other_cdr);
 }
@@ -543,7 +489,7 @@ T_sp Cons_O::onth(cl_index idx) const {
   T_sp cur = this->asSmartPtr();
   for (cl_index i = 0; i < idx; i++) {
     LIKELY_if (cur.consp()) {
-      cur = CONS_CDR(cur);
+      cur = cons_cdr(cur);
     } else if (cur.nilp()) {
       return cur;
     } else {
@@ -562,7 +508,7 @@ T_sp Cons_O::onthcdr(cl_index idx) const {
   T_sp cur = this->asSmartPtr();
   for (cl_index i = 0; i < idx; i++) {
     LIKELY_if (cur.consp()) {
-      cur = cur.unsafe_cons()->_Cdr;
+      cur = cur.unsafe_cons()->cdr();
     } else if (cur.nilp()) {
       return cur;
     } else {
@@ -641,7 +587,7 @@ List_sp Cons_O::copyTree() const {
 
 List_sp Cons_O::copyTreeCar() const {
   _OF();
-  T_sp obj = this->_Car;
+  T_sp obj = this->ocar();
   ASSERTNOTNULL(obj);
   Cons_sp rootCopy = Cons_O::create(_Nil<T_O>(), _Nil<T_O>());
   List_sp cobj;
@@ -658,7 +604,7 @@ List_sp Cons_O::copyTreeCar() const {
 CL_DEFUN size_t core__cons_length(Cons_sp cons) {
   size_t sz = 1;
   T_sp cur;
-  for (cur = oCdr(cons); cur.consp(); cur = gc::As_unsafe<Cons_sp>(cur)->_Cdr) ++sz;
+  for (cur = oCdr(cons); cur.consp(); cur = gc::As_unsafe<Cons_sp>(cur)->cdr()) ++sz;
   if (cur.notnilp()) {
     TYPE_ERROR_PROPER_LIST(cur->asSmartPtr());
   }
@@ -669,16 +615,12 @@ CL_DEFUN size_t core__cons_length(Cons_sp cons) {
 size_t Cons_O::length() const {
   size_t sz = 1;
   T_sp cur;
-  for (cur = this->_Cdr; cur.consp(); cur = gc::As_unsafe<Cons_sp>(cur)->_Cdr) ++sz;
+  for (cur = this->cdr(); cur.consp(); cur = gc::As_unsafe<Cons_sp>(cur)->cdr()) ++sz;
   if (cur.notnilp()) {
     TYPE_ERROR_PROPER_LIST(cur->asSmartPtr());
   }
   return sz;
 };
-
-void Cons_O::setCdr(T_sp c) {
-  this->_Cdr = c;
-}
 
 void Cons_O::describe(T_sp stream)
 {
@@ -687,13 +629,13 @@ void Cons_O::describe(T_sp stream)
 
 string Cons_O::__repr__() const {
   Cons_sp start = this->asSmartPtr();
-  T_sp car = start->_Car;
-  T_sp cdr = start->_Cdr;
+  T_sp car = start->ocar();
+  T_sp cdr = start->cdr();
   stringstream sout;
   sout << "(" << _rep_(car);
   while (cdr.consp()) {
     Cons_sp p = gc::As<Cons_sp>(cdr);
-    car = p->_Car;
+    car = p->ocar();
     sout << " " << _rep_(car);
     cdr = oCdr(p);
   }
@@ -702,9 +644,6 @@ string Cons_O::__repr__() const {
   } else {
     sout << ")";
   }
-#if 0 // also checkout Cons_O::
-        sout <<"@" << (void*)(this) << " ";
-#endif
   return ((sout.str()));
 }
 

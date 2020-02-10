@@ -54,6 +54,7 @@ THE SOFTWARE.
 #include <clasp/core/primitives.h>
 #include <clasp/core/array.h>
 #include <clasp/core/wrappers.h>
+#include <clasp/core/ql.h>
 
 namespace cl {
 extern core::Symbol_sp& _sym_or;
@@ -588,8 +589,8 @@ gctools::return_type fast_apply_general(T_O* func_tagged, T_O* args_tagged) {
   Cons_O* cons_args = reinterpret_cast<Cons_O*>(gctools::untag_cons(args_tagged));
   int front_nargs = 0;
   Cons_O* cur = cons_args;
-  for ( ; cur->_Cdr.consp(); cur = reinterpret_cast<Cons_O*>(gctools::untag_cons(cur->_Cdr.raw_()))) ++front_nargs;
-  T_O* tail_tagged = cur->_Car.raw_();
+  for ( ; cur->cdr().consp(); cur = reinterpret_cast<Cons_O*>(gctools::untag_cons(cur->cdr().raw_()))) ++front_nargs;
+  T_O* tail_tagged = cur->ocar().raw_();
   if (gctools::tagged_consp(tail_tagged)) {
     Cons_O* cons_tail = reinterpret_cast<Cons_O*>(gctools::untag_cons(tail_tagged));
     int tail_nargs = 1+cons_tail->length();
@@ -597,13 +598,13 @@ gctools::return_type fast_apply_general(T_O* func_tagged, T_O* args_tagged) {
     MAKE_STACK_FRAME( frame, func_tagged, nargs );
     Cons_O* front_cur = cons_args;
     for (int i=0; i<front_nargs; ++i ) {
-      (*frame)[i] = front_cur->_Car.raw_();
-      front_cur = reinterpret_cast<Cons_O*>(gctools::untag_cons(front_cur->_Cdr.raw_()));
+      (*frame)[i] = front_cur->ocar().raw_();
+      front_cur = reinterpret_cast<Cons_O*>(gctools::untag_cons(front_cur->cdr().raw_()));
     }
     Cons_O* tail_cur = cons_tail;
     for (int j=front_nargs; j<nargs; ++j ) {
-      (*frame)[j] = tail_cur->_Car.raw_();
-      tail_cur = reinterpret_cast<Cons_O*>(gctools::untag_cons(tail_cur->_Cdr.raw_()));
+      (*frame)[j] = tail_cur->ocar().raw_();
+      tail_cur = reinterpret_cast<Cons_O*>(gctools::untag_cons(tail_cur->cdr().raw_()));
     }
     Vaslist valist_struct(frame);
     VaList_sp valist(&valist_struct); // = frame.setupVaList(valist_struct);;
@@ -614,8 +615,8 @@ gctools::return_type fast_apply_general(T_O* func_tagged, T_O* args_tagged) {
   MAKE_STACK_FRAME( frame, func_tagged, nargs );
   Cons_O* front_cur = cons_args;
   for (int i=0; i<front_nargs; ++i ) {
-    (*frame)[i] = front_cur->_Car.raw_();
-    front_cur = reinterpret_cast<Cons_O*>(gctools::untag_cons(front_cur->_Cdr.raw_()));
+    (*frame)[i] = front_cur->ocar().raw_();
+    front_cur = reinterpret_cast<Cons_O*>(gctools::untag_cons(front_cur->cdr().raw_()));
   }
   Vaslist valist_struct(frame);
   VaList_sp valist(&valist_struct); // = frame.setupVaList(valist_struct);;
@@ -1718,28 +1719,22 @@ namespace core {
             } else {
                 func = gc::As_unsafe<Function_sp>(funcdesig);
             }
-            List_sp resultList = _Nil<T_O>();
-            Cons_sp *cur = reinterpret_cast<Cons_sp *>(&resultList);
+            MAKE_STACK_FRAME(fargs, func.raw_(), MultipleValues::MultipleValuesLimit);
+            size_t idx = 0;
             core::MultipleValues& mv = core::lisp_multipleValues();
             for (auto forms : (List_sp)oCdr(args)) {
                 T_sp oneForm = oCar(forms);
                 T_mv retval = eval::evaluate(oneForm, env);
                 if (retval.number_of_values()>0) {
-                    *cur = Cons_O::create(retval, _Nil<T_O>());
-                    cur = reinterpret_cast<Cons_sp *>(&(*cur)->_Cdr);
-                    for (int i(1); i < retval.number_of_values(); i++) {
-                        *cur = Cons_O::create(T_sp((gctools::Tagged)mv._Values[i]), _Nil<T_O>());
-                        cur = reinterpret_cast<Cons_sp *>(&(*cur)->_Cdr);
-                    }
+                  (*fargs)[idx] = retval.raw_();
+                  ++idx;
+                  for (size_t i = 1; i < retval.number_of_values(); ++i) {
+                    (*fargs)[idx] = mv._Values[i];
+                    ++idx;
+                  }
                 }
             }
-            size_t sz = cl__length(resultList);
-            MAKE_STACK_FRAME( fargs, func.raw_(), sz);
-            size_t i(0);
-            for (auto c : resultList) {
-                (*fargs)[i] = oCar(c).raw_();
-                ++i;
-            }
+            fargs->set_number_of_arguments(idx);
             Vaslist valist_struct(fargs);
             VaList_sp valist(&valist_struct); // = valist_struct.fargs.setupVaList(valist_struct);
             return funcall_consume_valist_<core::Function_O>(func.tagged_(), valist);

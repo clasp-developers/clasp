@@ -993,18 +993,18 @@ jump to blocks within this tagbody."
   (let ((cons-form (first rest))
         (cons-alloca (alloca-t* "cons")))
     (codegen cons-alloca cons-form env)
-    (irc-t*-result (irc-load (gen-memref-address
-                              (irc-load cons-alloca)
-                              (- +cons-car-offset+ +cons-tag+)))
+    (irc-t*-result (irc-load-atomic (gen-memref-address
+                                     (irc-load cons-alloca)
+                                     (- +cons-car-offset+ +cons-tag+)))
                    result)))
 
 (defun codegen-cdr (result rest env)
   (let ((cons-form (first rest))
         (cons-alloca (alloca-t* "cons")))
     (codegen cons-alloca cons-form env)
-    (irc-t*-result (irc-load (gen-memref-address
-                              (irc-load cons-alloca)
-                              (- +cons-cdr-offset+ +cons-tag+)))
+    (irc-t*-result (irc-load-atomic (gen-memref-address
+                                     (irc-load cons-alloca)
+                                     (- +cons-cdr-offset+ +cons-tag+)))
                    result)))
 
 ;;; CLEAVIR-PRIMOP:FUNCALL

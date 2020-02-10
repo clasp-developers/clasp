@@ -377,10 +377,10 @@ GC_RESULT cons_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
       core::Cons_O* cons = reinterpret_cast<core::Cons_O*>(client);
       if ( !cons->hasGcTag() ) {
 #if DEBUG_VALIDATE_GUARD
-        client_validate(cons->_Car.raw_());
-        client_validate(cons->_Cdr.raw_());
+        client_validate(cons->ocar().raw_());
+        client_validate(cons->cdr().raw_());
 #endif
-        core::T_O* old_car = cons->_Car.raw_();
+        core::T_O* old_car = cons->ocar().raw_();
         SMART_PTR_FIX(cons->_Car);
         SMART_PTR_FIX(cons->_Cdr);
         client = reinterpret_cast<mps_addr_t>((char*)client+sizeof(core::Cons_O));
@@ -391,7 +391,7 @@ GC_RESULT cons_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
       } else if (cons->padP()) {
         client = (char *)(client) + cons->padSize();
       } else {
-        printf("%s:%d CONS in cons_scan (it's not a CONS or any of MPS fwd/pad1/pad2 car=%p cdr=%p\n", __FILE__, __LINE__, cons->_Car.raw_(), cons->_Cdr.raw_());
+        printf("%s:%d CONS in cons_scan (it's not a CONS or any of MPS fwd/pad1/pad2 car=%p cdr=%p\n", __FILE__, __LINE__, cons->ocar().raw_(), cons->cdr().raw_());
         abort();
       }
     };

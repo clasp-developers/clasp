@@ -2002,6 +2002,19 @@ namespace llvmo {
 }; // llvmo
 
 namespace llvmo {
+
+CL_LISPIFY_NAME(set_atomic);
+CL_EXTERN_DEFMETHOD(StoreInst_O, &StoreInst_O::ExternalType::setAtomic);
+CL_LISPIFY_NAME(setAlignment);
+CL_EXTERN_DEFMETHOD(StoreInst_O, &StoreInst_O::ExternalType::setAlignment);
+CL_LISPIFY_NAME(set_atomic);
+CL_EXTERN_DEFMETHOD(LoadInst_O, &LoadInst_O::ExternalType::setAtomic);
+CL_LISPIFY_NAME(setAlignment);
+CL_EXTERN_DEFMETHOD(LoadInst_O, &LoadInst_O::ExternalType::setAlignment);
+
+};
+
+namespace llvmo {
 ConstantFP_sp ConstantFP_O::create(llvm::ConstantFP *ptr) {
   return core::RP_Create_wrapped<ConstantFP_O, llvm::ConstantFP *>(ptr);
 };
@@ -3375,6 +3388,14 @@ CL_LISPIFY_NAME(createLICMPass);
       //	.value(_sym_AquireRelease,llvm::AtomicOrdering::AquireRelease)
   CL_VALUE_ENUM(_sym_SequentiallyConsistent, llvm::AtomicOrdering::SequentiallyConsistent);;
   CL_END_ENUM(_sym_STARatomic_orderingSTAR);
+
+  SYMBOL_EXPORT_SC_(LlvmoPkg, STARsync_scopeSTAR);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, SingleThread);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, System);
+  CL_BEGIN_ENUM(llvm::SyncScope::ID, _sym_STARsync_scopeSTAR, "llvm::SyncScope::ID");
+  CL_VALUE_ENUM(_sym_SingleThread, llvm::SyncScope::SingleThread);
+  CL_VALUE_ENUM(_sym_System, llvm::SyncScope::System);
+  CL_END_ENUM(_sym_STARsync_scopeSTAR);
 
   SYMBOL_EXPORT_SC_(LlvmoPkg, STARAtomicRMWInstBinOpSTAR);
   SYMBOL_EXPORT_SC_(LlvmoPkg, Xchg);
