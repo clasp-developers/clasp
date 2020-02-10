@@ -132,7 +132,7 @@ and the pathname of the source file - this will also be used as the module initi
 ;;;
 ;;; Compile-file proper
 
-(defun generate-obj-asm-stream (module output-stream file-type reloc-model &key (target-faso-file *compile-file-parallel*))
+(defun generate-obj-asm-stream (module output-stream file-type reloc-model &key (target-faso-file (or *generate-faso* *compile-file-parallel*)))
   (with-track-llvm-time
       (let* ((triple-string (llvm-sys:get-target-triple module))
              (normalized-triple-string (llvm-sys:triple-normalize triple-string))
