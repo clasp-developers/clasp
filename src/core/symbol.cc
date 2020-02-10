@@ -66,6 +66,13 @@ CL_DEFUN_SETF List_sp core__set_symbol_plist(List_sp plist, Symbol_sp sym) {
   return plist;
 }
 
+CL_LAMBDA(cmp newv sym);
+CL_DECLARE();
+CL_DOCSTRING("Compare-and-swap the symbol-plist");
+CL_DEFUN List_sp core__cas_symbol_plist(List_sp cmp, List_sp newv, Symbol_sp sym) {
+  return sym->cas_plist(cmp, newv);
+}
+
 CL_LAMBDA(sym indicator &optional default);
 CL_DECLARE();
 CL_DOCSTRING("Return the value of a plist property");
@@ -131,6 +138,13 @@ CL_DEFUN T_sp cl__symbol_value(Symbol_sp arg) {
   if (!arg->boundP()) arg->symbolUnboundError();
   return arg->symbolValue();
 };
+
+CL_LAMBDA(cmp new-value symbol);
+CL_DECLARE();
+CL_DOCSTRING("Compare-and-swap of SYMBOL-VALUE.");
+CL_DEFUN T_sp core__cas_symbol_value(T_sp cmp, T_sp new_value, Symbol_sp sym) {
+  return sym->casSymbolValue(cmp, new_value);
+}
 
 CL_LAMBDA(symbol cell unbound);
 CL_DECLARE();

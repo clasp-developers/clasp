@@ -185,4 +185,10 @@
                  (file-string-length broadcast "jd")
                  (file-string-length last-stream "jd")))))))
 
+;;; did trap ../../src/core/lispStream.cc:1541 Illegal op Abort trap: 6
+(test stream-element-type.error.3.simplified
+      (handler-case
+          (stream-element-type 0)
+        (error (e) e)))
+
 

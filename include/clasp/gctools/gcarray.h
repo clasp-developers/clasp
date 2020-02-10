@@ -84,105 +84,6 @@ class GCArray_moveable : public GCContainer {
  const_iterator end() const { return &this->_Data[this->_Length]; };
 };
 
-template <class T, typename Allocator>
-class GCArray {
-#if defined(USE_MPS) && !defined(RUNNING_GC_BUILDER)
-  friend GC_RESULT(::obj_scan)(mps_ss_t ss, mps_addr_t base, mps_addr_t limit);
-#endif
-public:
-  // Only this instance variable is allowed
-  gctools::tagged_pointer<GCArray_moveable<T>> _Contents;
-
-public:
-  typedef Allocator allocator_type;
-  typedef T value_type;
-  typedef T *pointer_type;
-  typedef pointer_type iterator;
-  typedef T const *const_iterator;
-  typedef T &reference;
-  typedef GCArray<T, Allocator> my_type;
-  typedef GCArray_moveable<T> impl_type;
-  typedef GCArray_moveable<T> *pointer_to_moveable;
-  typedef gctools::tagged_pointer<GCArray_moveable<T>> tagged_pointer_to_moveable;
-
-private:
-  GCArray<T, Allocator>(const GCArray<T, Allocator> &other);       // disable copy ctor
-  GCArray<T, Allocator> &operator=(const GCArray<T, Allocator> &); // disable assignment
-public:
-  void swap(my_type &other) {
-    pointer_to_moveable op = other._Contents;
-    other._Contents = this->_Contents;
-    this->_Contents = op;
-  }
-
-  pointer_to_moveable contents() const { return this->_Contents; };
-
-private:
-  T &errorEmpty() {
-    throw_hard_error("GCArray had no contents");
-  };
-  const T &errorEmpty() const {
-    throw_hard_error("GCArray had no contents");
-  };
-
-public:
- GCArray() : _Contents() {};
-  void clear() { this->_Contents = NULL; };
-
-#if 1
-  void allocate(const value_type &initial_element, size_t length,bool initElementSupplied=true) {
-    GCTOOLS_ASSERTF(!(this->_Contents), "GCArray allocate called and array is already defined");
-    allocator_type alloc;
-    tagged_pointer_to_moveable implAddress = alloc.allocate_kind(Header_s::StampWtagMtag::make<impl_type>(),length);
-    new (&*implAddress) GCArray_moveable<value_type>(length,initial_element,initElementSupplied );
-#if 0
-    for (size_t i(sizeof...(ARGS)); i < (sizeof...(ARGS)+numExtraArgs); ++i) {
-      T *p = &((*implAddress)[i]);
-      alloc.construct(p, initialElement);
-    }
-#endif
-    this->_Contents = implAddress;
-  }
-
-#else
-  template <typename... ARGS>
-    void allocate(const value_type &initial_element, size_t length), ARGS &&... args) {
-    GCTOOLS_ASSERTF(!(this->_Contents), BF("GCArray allocate called and array is already defined"));
-    allocator_type alloc;
-    tagged_pointer_to_moveable implAddress = alloc.allocate_kind(Header_s::StampWtagMtag::make<impl_type>(),length);
-    new (&*implAddress) GCArray_moveable<value_type>(initial_element, length, std::forward<ARGS>(args)...);
-#if 0
-    for (size_t i(sizeof...(ARGS)); i < (sizeof...(ARGS)+numExtraArgs); ++i) {
-      T *p = &((*implAddress)[i]);
-      alloc.construct(p, initialElement);
-    }
-#endif
-    this->_Contents = implAddress;
-  }
-#endif
-  size_t size() const { return this->length(); };
-  size_t length() const { return this->_Contents ? this->_Contents->_Length : 0; };
-  bool alivep() const { return true; };
-
-  T &operator[](size_t n) { return this->_Contents ? (*this->_Contents)[n] : this->errorEmpty(); };
-   const T &operator[](size_t n) const { return this->_Contents ? (*this->_Contents)[n] : this->errorEmpty(); };
-
-  pointer_type data() const { return this->_Contents ? this->_Contents->data() : NULL; };
-
-  iterator begin() { return this->_Contents ? &(*this->_Contents)[0] : NULL; }
-  iterator end() { return this->_Contents ? &(*this->_Contents)[this->_Contents->_Length] : NULL; };
-
-  const_iterator begin() const { return this->_Contents ? &(*this->_Contents)[0] : NULL; }
-  const_iterator end() const { return this->_Contents ? &(*this->_Contents)[this->_Contents->_Length] : NULL; }
-
-
-    /*! Resize the vector so that it contains AT LEAST n elements */
-  void resize(size_t n, const value_type &x = value_type()) {
-    printf("%s:%d How do I resize an array\n", __FILE__, __LINE__ );
-  }
-
-};
-
 template <typename Array>
 void Array0_dump(const Array &v, const char *head = "") {
   printf("%s Array0@%p _C[%zu]", head, v.contents(), v.length());
@@ -193,10 +94,6 @@ void Array0_dump(const Array &v, const char *head = "") {
   }
   printf("\n");
 }
-
-
- typedef gctools::GCArray<uintptr_t, gctools::GCContainerAllocator<gctools::GCArray_moveable<uintptr_t> > > gcbitvector;
-
 
 } // namespace gctools
 

@@ -391,22 +391,6 @@ CL_DEFUN Fixnum core__rdtsc(){
   return ((uint64_t)hi << 32) | lo;
 }
 
-T_sp varArgsList(int n_args, ...) {
-  DEPRECATED();
-  va_list ap;
-  va_start(ap, n_args);
-  Cons_O::CdrType_sp first = _Nil<Cons_O::CdrType_O>();
-  Cons_O::CdrType_sp *curP = &first; // gctools::StackRootedPointerToSmartPtr<Cons_O::CdrType_O> cur(&first);
-  for (int i = 1; i <= n_args; ++i) {
-    T_sp obj = *(va_arg(ap, const T_sp *));
-    Cons_sp one = Cons_O::create(obj,_Nil<T_O>());
-    *curP = one;          // cur.setPointee(one); // *cur = one;
-    curP = one->cdrPtr(); // cur.setPointer(one->cdrPtr()); // cur = one->cdrPtr();
-  }
-  va_end(ap);
-  return first;
-}
-
 CL_LAMBDA(object &optional is-function);
 CL_DECLARE();
 CL_DOCSTRING("mangleName");
@@ -1618,9 +1602,9 @@ void ltvc_fill_list_varargs(gctools::GCRootsInModule* roots, T_O* list, size_t l
   for (; len != 0; --len) {
     Cons_sp cur_cons = gc::As<Cons_sp>(cur);
     Cons_sp cur_vargs = gc::As<Cons_sp>(vargs);
-    cur_cons->rplaca(cur_vargs->_Car);
-    cur = cur_cons->_Cdr;
-    vargs = cur_vargs->_Cdr;
+    cur_cons->rplaca(cur_vargs->ocar());
+    cur = cur_cons->cdr();
+    vargs = cur_vargs->cdr();
   }
 }
 

@@ -80,9 +80,9 @@ CL_DEFUN Vector_sp core__hash_table_pairs(HashTable_sp hash_table)
   size_t idx(0);
   for (size_t it(0), itEnd(hash_table->_Table.size()); it < itEnd; ++it) {
     Cons_O& entry = hash_table->_Table[it];
-    if (!entry._Car.no_keyp()&&!entry._Car.deletedp()) {
-      (*keyvalues)[idx++] = entry._Car;
-      (*keyvalues)[idx++] = entry._Cdr;
+    if (!entry.ocar().no_keyp()&&!entry.ocar().deletedp()) {
+      (*keyvalues)[idx++] = entry.ocar();
+      (*keyvalues)[idx++] = entry.cdr();
     }
   }
   return keyvalues;
@@ -95,11 +95,11 @@ void verifyHashTable(bool print, std::ostream& ss, HashTable_O* ht, const char* 
   Vector_sp keys = core__make_vector(_lisp->_true(),ht->_HashTableCount+16, true, make_fixnum(0));
   for (size_t it(0), itEnd(ht->_Table.size()); it < itEnd; ++it) {
     Cons_O& entry = ht->_Table[it];
-    if (!entry._Car.no_keyp()&&!entry._Car.deletedp()) {
+    if (!entry.ocar().no_keyp()&&!entry.ocar().deletedp()) {
         if (print) {
-            ss << "Entry["<<it<<"] at " << (void*)&entry << "   key: " << _rep_(entry._Car) << " value: " << (entry._Cdr) << "\n";
+            ss << "Entry["<<it<<"] at " << (void*)&entry << "   key: " << _rep_(entry.ocar()) << " value: " << (entry.cdr()) << "\n";
         }
-      keys->vectorPushExtend(entry._Car);
+      keys->vectorPushExtend(entry.ocar());
     }
   }
   gctools::gctools__garbage_collect();
@@ -299,8 +299,8 @@ void HashTable_O::maphash(T_sp function_desig) {
   }
   for (size_t it(0), itEnd(tableCopy.size()); it < itEnd; ++it) {
     Cons_O& entry = tableCopy[it];
-    if (!entry._Car.no_keyp()&&!entry._Car.deletedp()) {
-      eval::funcall(func,entry._Car,entry._Cdr);
+    if (!entry.ocar().no_keyp()&&!entry.ocar().deletedp()) {
+      eval::funcall(func,entry.ocar(),entry.cdr());
     }
   }
   //        printf("%s:%d finished maphash on hash-table@%p\n", __FILE__, __LINE__, hash_table.raw_());
@@ -651,7 +651,7 @@ uint HashTable_O::calculateHashTableCount() const {
   uint cnt = 0;
   for (size_t it(0), itEnd(this->_Table.size()); it < itEnd; ++it) {
     const Cons_O& entry = this->_Table[it];
-    if (!entry._Car.no_keyp()&&!entry._Car.deletedp()) ++cnt;
+    if (!entry.ocar().no_keyp()&&!entry.ocar().deletedp()) ++cnt;
   }
   return cnt;
 }
@@ -693,11 +693,11 @@ List_sp HashTable_O::tableRef_no_read_lock(T_sp key, bool under_write_lock, cl_i
   VERIFY_HASH_TABLE(this);
   for (size_t cur = index, curEnd(this->_Table.size()); cur<curEnd; ++cur ) {
     Cons_O& entry = this->_Table[cur];
-    if (entry._Car.no_keyp()) goto NOT_FOUND;
-    if (!entry._Car.deletedp()) {
+    if (entry.ocar().no_keyp()) goto NOT_FOUND;
+    if (!entry.ocar().deletedp()) {
       DEBUG_HASH_TABLE({core::write_bf_stream(BF("%s:%d search-end !deletedp index = %ld\n") % __FILE__ % __LINE__ % cur , T_sp());});
-      if (this->keyTest(entry._Car, key)) {
-        DEBUG_HASH_TABLE({core::write_bf_stream(BF("%s:%d search-end found key index = %ld entry._Car->%p\n .... %s\n  key->%p\n .... %s\n") % __FILE__ % __LINE__ % cur % (void*)entry._Car.raw_() % dbg_safe_repr((uintptr_t)(void*)entry._Car.raw_()).c_str() % (void*)key.raw_() % dbg_safe_repr((uintptr_t)(void*)key.raw_()).c_str() , T_sp());});
+      if (this->keyTest(entry.ocar(), key)) {
+        DEBUG_HASH_TABLE({core::write_bf_stream(BF("%s:%d search-end found key index = %ld entry.ocar()->%p\n .... %s\n  key->%p\n .... %s\n") % __FILE__ % __LINE__ % cur % (void*)entry.ocar().raw_() % dbg_safe_repr((uintptr_t)(void*)entry.ocar().raw_()).c_str() % (void*)key.raw_() % dbg_safe_repr((uintptr_t)(void*)key.raw_()).c_str() , T_sp());});
         
         return gc::smart_ptr<Cons_O>((Cons_O*)&entry);
       }
@@ -705,10 +705,10 @@ List_sp HashTable_O::tableRef_no_read_lock(T_sp key, bool under_write_lock, cl_i
   }
   for (size_t cur = 0, curEnd(index); cur<curEnd; ++cur ) {
     Cons_O& entry = this->_Table[cur];
-    if (entry._Car.no_keyp()) goto NOT_FOUND;
-    if (!entry._Car.deletedp()) {
+    if (entry.ocar().no_keyp()) goto NOT_FOUND;
+    if (!entry.ocar().deletedp()) {
       DEBUG_HASH_TABLE({core::write_bf_stream(BF("%s:%d search-begin !deletedp index = %ld\n") % __FILE__ % __LINE__ % cur , T_sp());});
-      if (this->keyTest(entry._Car, key)) {
+      if (this->keyTest(entry.ocar(), key)) {
         DEBUG_HASH_TABLE({core::write_bf_stream(BF("%s:%d search-begin found key index = %ld\n") % __FILE__ % __LINE__ % cur , T_sp());});
         return gc::smart_ptr<Cons_O>((Cons_O*)&entry);
       }
@@ -817,7 +817,7 @@ T_sp HashTable_O::setf_gethash_no_write_lock(T_sp key, T_sp value)
     pair->rplacd(value);
     DEBUG_HASH_TABLE({core::write_bf_stream(BF("%s:%d Found key/value pair: %s\n") % __FILE__ % __LINE__ % _rep_(keyValuePair), T_sp());});
     DEBUG_HASH_TABLE({core::write_bf_stream(BF("%s:%d  Did rplacd value: %s to cons at %p\n") % __FILE__ % __LINE__ % _rep_(value) % &*pair, T_sp());});
-    DEBUG_HASH_TABLE({core::write_bf_stream(BF("%s:%d  After rplacd value: %s\n") % __FILE__ % __LINE__ % _rep_(pair->_Cdr), T_sp());});
+    DEBUG_HASH_TABLE({core::write_bf_stream(BF("%s:%d  After rplacd value: %s\n") % __FILE__ % __LINE__ % _rep_(pair->cdr()), T_sp());});
     VERIFY_HASH_TABLE(this);
     return value;
   }
@@ -835,16 +835,16 @@ T_sp HashTable_O::setf_gethash_no_write_lock(T_sp key, T_sp value)
   size_t cur;
   size_t curEnd = this->_Table.size();
   for (cur = index; cur<curEnd; ++cur, ++entryP ) {
-    if (entryP->_Car.no_keyp()||entryP->_Car.deletedp()) goto ADD_KEY_VALUE;
+    if (entryP->ocar().no_keyp()||entryP->ocar().deletedp()) goto ADD_KEY_VALUE;
   }
   entryP = &this->_Table[0]; // wrap around
   for (cur = 0; cur<index; ++cur, ++entryP ) {
-    if (entryP->_Car.no_keyp()||entryP->_Car.deletedp()) goto ADD_KEY_VALUE;
+    if (entryP->ocar().no_keyp()||entryP->ocar().deletedp()) goto ADD_KEY_VALUE;
   }
   goto NO_ROOM;
  ADD_KEY_VALUE:
-  entryP->_Car = key;
-  entryP->_Cdr = value;
+  entryP->rplaca(key);
+  entryP->rplacd(value);
   this->_HashTableCount++;
   DEBUG_HASH_TABLE({core::write_bf_stream(BF("%s:%d Found empty slot at index = %ld\n")  % __FILE__ % __LINE__ % cur , T_sp());});
   VERIFY_HASH_TABLE_VA(this,cur,key);
@@ -910,8 +910,8 @@ List_sp HashTable_O::rehash_no_lock(bool expandTable, T_sp findKey) {
   size_t oldSize = oldTable.size();
   for (size_t it(0), itEnd(oldSize); it < itEnd; ++it) {
     Cons_O& entry = oldTable[it];
-    T_sp key = entry._Car;
-    T_sp value = entry._Cdr;
+    T_sp key = entry.ocar();
+    T_sp value = entry.cdr();
     if (!key.no_keyp()&&!key.deletedp()) {
           // key/value represent a valid entry in the hash table
           //
@@ -993,8 +993,8 @@ List_sp HashTable_O::rehash_upgrade_write_lock(bool expandTable, T_sp findKey) {
 #define DUMP_LOW_LEVEL 1
 
   void dump_one_entry(HashTable_sp ht, size_t it, stringstream &ss, Cons_O entry) {
-    T_sp key = entry._Car;
-    T_sp value = entry._Cdr;
+    T_sp key = entry.ocar();
+    T_sp value = entry.cdr();
 #ifdef DUMP_LOW_LEVEL
     ss << "     ( ";
     size_t hi = ht->hashIndex(key);
@@ -1009,7 +1009,7 @@ List_sp HashTable_O::rehash_upgrade_write_lock(bool expandTable, T_sp findKey) {
     }
     ss << ", " << value.raw_() << ")" << " " << std::endl;
 #else
-    ss << "     " << _rep_(entry._Car) << " " << _rep_(entry._Cdr) << std::endl;
+    ss << "     " << _rep_(entry.ocar()) << " " << _rep_(entry.cdr()) << std::endl;
 #endif
   };
 
@@ -1017,7 +1017,7 @@ List_sp HashTable_O::rehash_upgrade_write_lock(bool expandTable, T_sp findKey) {
 CL_DEFMETHOD List_sp HashTable_O::hash_table_bucket(size_t index)
 {
   Cons_O& entry = this->_Table[index];
-  if (!entry._Car.no_keyp()&&!entry._Car.deletedp()) {
+  if (!entry.ocar().no_keyp()&&!entry.ocar().deletedp()) {
     T_sp result = gctools::smart_ptr<Cons_O>((Cons_O*)&entry);
     return result;
   }
@@ -1033,9 +1033,9 @@ CL_DEFMETHOD T_sp HashTable_O::hash_table_average_search_length()
   gc::Fixnum count = 0;
   for (gc::Fixnum it(0), itEnd(iend); it < itEnd; ++it) {
     const Cons_O& entry = this->_Table[it];
-    if (!(entry._Car.no_keyp()||entry._Car.deletedp())) {
+    if (!(entry.ocar().no_keyp()||entry.ocar().deletedp())) {
       HashGenerator hg;
-      gc::Fixnum index = this->sxhashKey(entry._Car, this->_Table.size(), hg );
+      gc::Fixnum index = this->sxhashKey(entry.ocar(), this->_Table.size(), hg );
       gc::Fixnum delta;
       if (index > it) {
         delta = (it+iend)-index;
@@ -1071,9 +1071,9 @@ CL_DEFMETHOD string HashTable_O::hash_table_dump() {
     }
     for (size_t it(0), itEnd(tableCopy.size()); it < itEnd; ++it) {
       Cons_O& entry = tableCopy[it];
-      T_sp key = entry._Car;
-      T_sp value = entry._Cdr;
-      if (!entry._Car.no_keyp()&&!entry._Car.deletedp()) {
+      T_sp key = entry.ocar();
+      T_sp value = entry.cdr();
+      if (!entry.ocar().no_keyp()&&!entry.ocar().deletedp()) {
         fn(key, value);
       }
     }
@@ -1091,9 +1091,9 @@ CL_DEFMETHOD string HashTable_O::hash_table_dump() {
     }
     for (size_t it(0), itEnd(tableCopy.size()); it < itEnd; ++it) {
       const Cons_O& entry = tableCopy[it];
-      T_sp key = entry._Car;
-      T_sp value = entry._Cdr;
-      if (!entry._Car.no_keyp()&&!entry._Car.deletedp()) {
+      T_sp key = entry.ocar();
+      T_sp value = entry.cdr();
+      if (!entry.ocar().no_keyp()&&!entry.ocar().deletedp()) {
         bool cont = fn(key, value);
         if (!cont)
           return false;
@@ -1113,9 +1113,9 @@ CL_DEFMETHOD string HashTable_O::hash_table_dump() {
     }
     for (size_t it(0), itEnd(tableCopy.size()); it < itEnd; ++it) {
       const Cons_O& entry = tableCopy[it];
-      T_sp key = entry._Car;
-      T_sp value = entry._Cdr;
-      if (!entry._Car.no_keyp()&&!entry._Car.deletedp()) {
+      T_sp key = entry.ocar();
+      T_sp value = entry.cdr();
+      if (!entry.ocar().no_keyp()&&!entry.ocar().deletedp()) {
         if (!mapper->mapKeyValue(key, value))
           goto DONE;
       }

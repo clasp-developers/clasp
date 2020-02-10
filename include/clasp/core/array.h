@@ -488,8 +488,8 @@ namespace core {
     typedef ValueType  /*eg: T_sp*/ simple_element_type;
     typedef gctools::smart_ptr<leaf_type> leaf_smart_ptr_type;
     typedef gctools::GCArray_moveable<value_type> vector_type;
-    typedef value_type* iterator;
-    typedef const value_type* const_iterator;
+    typedef typename vector_type::iterator iterator;
+    typedef typename vector_type::const_iterator const_iterator;
     /* These two are necessary because of bit unit vectors, see below */
     typedef value_type& reference_type;
     typedef const value_type& const_reference_type;
@@ -509,10 +509,10 @@ namespace core {
     // NULL terminated strings use this - so the ASSERT needs to accept it
     reference_type operator[](size_t index) { BOUNDS_ASSERT_LT(index,this->length());return this->_Data[index];};
     const_reference_type operator[](size_t index) const { BOUNDS_ASSERT_LT(index,this->length());return this->_Data[index];};
-    iterator begin() { return &this->_Data[0];};
-    iterator end() { return &this->_Data[this->_Data._Length]; }
-    const_iterator begin() const { return &this->_Data[0];};
-    const_iterator end() const { return &this->_Data[this->_Data._Length]; }
+    iterator begin() { return _Data.begin(); }
+    iterator end() { return _Data.end(); }
+    const_iterator begin() const { return _Data.begin(); }
+    const_iterator end() const { return _Data.end(); }
     virtual size_t elementSizeInBytes() const override {return sizeof(value_type); };
     virtual void* rowMajorAddressOfElement_(size_t i) const override {return (void*)&(this->_Data[i]);};
     virtual void unsafe_fillArrayWithElt(T_sp initialElement, size_t start, size_t end) override {
@@ -552,6 +552,9 @@ namespace core {
     typedef gctools::GCBitUnitArray_moveable<BitUnitBitWidth, signedp> bitunit_array_type;
     typedef typename bitunit_array_type::value_type value_type;
     typedef value_type simple_element_type;
+    // Iterators very hacky.
+    typedef value_type* iterator;
+    typedef const value_type* const_iterator;
     /* See GCBitUnitArray_moveable - short version is, we don't have pointers into
      * sub-byte arrays for obvious reasons, so we use proxies. */
     typedef typename bitunit_array_type::reference reference_type;
@@ -663,6 +666,8 @@ namespace core {
     typedef typename simple_type::simple_element_type /*eg: T_sp*/ simple_element_type;
     typedef typename simple_type::reference_type /* e.g. T_sp& */ reference_type;
     typedef typename simple_type::const_reference_type /* e.g. const T_sp & */ const_reference_type;
+    typedef typename simple_type::iterator iterator;
+    typedef typename simple_type::const_iterator const_iterator;
     typedef gctools::smart_ptr<my_array_type> my_smart_ptr_type;
     typedef gctools::smart_ptr<my_simple_array_type> my_simple_smart_ptr_type;
     typedef gctools::GCArray_moveable<simple_element_type> simple_vector_type;
@@ -717,10 +722,10 @@ namespace core {
     }
   public:
     // Iterators
-    simple_element_type* begin() { return &(*this)[0]; };
-    simple_element_type* end() { return &(*this)[this->length()]; };
-    const simple_element_type* begin() const { return &(*this)[0]; };
-    const simple_element_type* end() const { return &(*this)[this->length()]; };
+    iterator begin() { return &(*this)[0]; };
+    iterator end() { return &(*this)[this->length()]; };
+    const_iterator begin() const { return &(*this)[0]; };
+    const_iterator end() const { return &(*this)[this->length()]; };
   public:
     void asAbstractSimpleVectorRange(AbstractSimpleVector_sp& sv, size_t& start, size_t& end) const final {
       unlikely_if (gc::IsA<my_smart_ptr_type>(this->_Data)) {
@@ -767,6 +772,8 @@ namespace core {
     typedef typename simple_type::simple_element_type /*eg: T_sp*/ simple_element_type;
     typedef typename simple_type::reference_type /* e.g. T_sp& */ reference_type;
     typedef typename simple_type::const_reference_type /* e.g. const T_sp & */ const_reference_type;
+    typedef typename simple_type::iterator iterator;
+    typedef typename simple_type::const_iterator const_iterator;
     typedef gctools::smart_ptr<my_array_type> my_smart_ptr_type;
     typedef gctools::GCArray_moveable<simple_element_type> simple_vector_type;
     typedef typename MDArray_O::value_type dimension_element_type;
@@ -807,10 +814,10 @@ namespace core {
     }
   public:
     // Iterators
-    simple_element_type* begin() { return &(*this)[0]; };
-    simple_element_type* end() { return &(*this)[this->length()]; };
-    const simple_element_type* begin() const { return &(*this)[0]; };
-    const simple_element_type* end() const { return &(*this)[this->length()]; };
+    iterator begin() { return &(*this)[0]; };
+    iterator end() { return &(*this)[this->length()]; };
+    const_iterator begin() const { return &(*this)[0]; };
+    const_iterator end() const { return &(*this)[this->length()]; };
   public:
     void asAbstractSimpleVectorRange(AbstractSimpleVector_sp& sv, size_t& start, size_t& end) const final {
       unlikely_if (gc::IsA<my_smart_ptr_type>(this->_Data)) {
@@ -878,6 +885,8 @@ namespace core {
     typedef typename simple_type::simple_element_type /*eg: T_sp*/ simple_element_type;
     typedef typename simple_type::reference_type /* e.g. T_sp& */ reference_type;
     typedef typename simple_type::const_reference_type /* e.g. const T_sp & */ const_reference_type;
+    typedef typename simple_type::iterator iterator;
+    typedef typename simple_type::const_iterator const_iterator;
     typedef gctools::smart_ptr<my_array_type> my_smart_ptr_type;
     typedef gctools::GCArray_moveable<simple_element_type> simple_vector_type;
     typedef typename MDArray_O::value_type dimension_element_type;
@@ -909,10 +918,10 @@ namespace core {
     }
   public:
     // Iterators
-    simple_element_type* begin() { return &(*this)[0]; };
-    simple_element_type* end() { return &(*this)[this->length()]; };
-    const simple_element_type* begin() const { return &(*this)[0]; };
-    const simple_element_type* end() const { return &(*this)[this->length()]; };
+    iterator begin() { return &(*this)[0]; };
+    iterator end() { return &(*this)[this->length()]; };
+    const_iterator begin() const { return &(*this)[0]; };
+    const_iterator end() const { return &(*this)[this->length()]; };
   public:
     virtual Array_sp reverse() const final { return templated_reverse_VectorNs(*this); };
     virtual Array_sp nreverse() final { templated_nreverse_VectorNs(*this); return this->asSmartPtr(); };
