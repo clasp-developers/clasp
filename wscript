@@ -83,7 +83,7 @@ def options(ctx):
 top = '.'
 out = 'build'
 APP_NAME = 'clasp'
-CLANG_VERSION = 9
+LLVM_VERSION = 9
 CLANG_SPECIFIC_VERSION = "9.0.0"
 
 STAGE_CHARS = [ 'r', 'i', 'a', 'b', 'f', 'c', 'd' ]
@@ -137,7 +137,7 @@ BOOST_LIBRARIES = [
 
 VALID_OPTIONS = [
     # point to the llvm-config executable - this tells the build system which clang to use
-    # Default on macOS = /usr/local/opt/llvm@%s/bin/llvm-config'%CLANG_VERSION   - brew installed
+    # Default on macOS = /usr/local/opt/llvm@%s/bin/llvm-config'%LLVM_VERSION   - brew installed
     # Default on linux = it searches your path
     "LLVM_CONFIG_BINARY",
     # To link to the debug versions of the LLVM libraries, set a path here to the llvm-config binary of the LLVM debug build
@@ -776,17 +776,17 @@ def configure(cfg):
                 log.info("On darwin looking for %s" % llvm_config_binary)
             else:
                 try:
-                    llvm_config_binary = cfg.find_program('llvm-config-%s.0'%CLANG_VERSION)
+                    llvm_config_binary = cfg.find_program('llvm-config-%s.0'%LLVM_VERSION)
                 except cfg.errors.ConfigurationError:
-                    cfg.to_log('llvm-config-%s.0 was not found (ignoring)'%CLANG_VERSION)
+                    cfg.to_log('llvm-config-%s.0 was not found (ignoring)'%LLVM_VERSION)
                     try:
-                        llvm_config_binary = cfg.find_program('llvm-config-%s'%CLANG_VERSION)
+                        llvm_config_binary = cfg.find_program('llvm-config-%s'%LLVM_VERSION)
                     except cfg.errors.ConfigurationError:
-                        cfg.to_log('llvm-config-%s was not found (ignoring)'%CLANG_VERSION)
+                        cfg.to_log('llvm-config-%s was not found (ignoring)'%LLVM_VERSION)
                         try:
-                            llvm_config_binary = cfg.find_program('llvm-config%s0'%CLANG_VERSION)
+                            llvm_config_binary = cfg.find_program('llvm-config%s0'%LLVM_VERSION)
                         except cfg.errors.ConfigurationError:
-                            cfg.to_log('llvm-config%s0 was not found (ignoring)'%CLANG_VERSION)
+                            cfg.to_log('llvm-config%s0 was not found (ignoring)'%LLVM_VERSION)
                             # Let's fail if no llvm-config binary has been found
                             llvm_config_binary = cfg.find_program('llvm-config')
                 llvm_config_binary = llvm_config_binary[0]
@@ -903,6 +903,12 @@ def configure(cfg):
         raise Exception("CLASP_BUILD_MODE can only be 'thinlto'(default), 'lto', or 'object' - you provided %s" % cfg.env['CLASP_BUILD_MODE'])
     log.info("default cfg.env.CLASP_BUILD_MODE = %s, final cfg.env.LTO_FLAG = '%s'", cfg.env.CLASP_BUILD_MODE, cfg.env.LTO_FLAG)
 
+    if (cfg.env['CLASP_BUILD_MODE'] == 'object'):
+        if ( 'USE_COMPILE_FILE_PARALLEL' in cfg.env):
+            if (cfg.env['USE_COMPILE_FILE_PARALLEL'] == True):
+                raise Exception("You cannot have CLASP_BUILD_MODE of object and USE_COMPILE_FILE_PARALLEL == True")
+        cfg.env['USE_COMPILE_FILE_PARALLEL'] = False
+        
     # default for USE_COMPILE_FILE_PARALLEL for Darwin is True - otherwise False
     if (not 'USE_COMPILE_FILE_PARALLEL' in cfg.env):
         if (cfg.env['DEST_OS'] == DARWIN_OS ):
@@ -927,8 +933,8 @@ def configure(cfg):
 
     cur_clang_version = run_llvm_config(cfg, "--version")
     log.debug("cur_clang_version = %s", cur_clang_version)
-    if (int(cur_clang_version[0]) != CLANG_VERSION):
-        raise Exception("You must have clang/llvm version %d installed" % CLANG_VERSION )
+    if (int(cur_clang_version[0]) != LLVM_VERSION):
+        raise Exception("You must have clang/llvm version %d installed" % LLVM_VERSION )
     # find a lisp for the scraper
     if not cfg.env.SCRAPER_LISP:
         cfg.env["SBCL"] = cfg.find_program("sbcl", var = "SBCL")[0]
@@ -1055,8 +1061,8 @@ def configure(cfg):
 #    cfg.define("EXPAT",1)
     cfg.define("INCLUDED_FROM_CLASP",1)
     cfg.define("INHERITED_FROM_SRC",1)
-    cfg.define("LLVM_VERSION_X100",600)
-    cfg.define("LLVM_VERSION","6.0")
+    cfg.define("LLVM_VERSION_X100",(LLVM_VERSION*100))
+    cfg.define("LLVM_VERSION",float(LLVM_VERSION))
     cfg.define("NDEBUG",1)
 #    cfg.define("READLINE",1)
 #    cfg.define("USE_EXPENSIVE_BACKTRACE",1)
@@ -1084,11 +1090,11 @@ def configure(cfg):
     if (cfg.env['DEST_OS'] == LINUX_OS ):
         if (cfg.env['USE_LLD'] and cfg.env.CLASP_BUILD_MODE == 'bitcode'):
             # Only use lld if USE_LLD is set and CLASP_BUILD_MODE is bitcode
-            cfg.env.append_value('LINKFLAGS', '-fuse-ld=lld-%d.0' % CLANG_VERSION)
-            linker_in_use = '-fuse-ld=lld-%d.0' % CLANG_VERSION
+            cfg.env.append_value('LINKFLAGS', '-fuse-ld=lld-%d.0' % LLVM_VERSION)
+            linker_in_use = '-fuse-ld=lld-%d.0' % LLVM_VERSION
             log.info("Using the lld linker in bitcode mode")
         else:
-#            cfg.env.append_value('LINKFLAGS', '-fuse-ld=lld-%d.0' % CLANG_VERSION)
+#            cfg.env.append_value('LINKFLAGS', '-fuse-ld=lld-%d.0' % LLVM_VERSION)
             cfg.env.append_value('LINKFLAGS', '-fuse-ld=gold')
             linker_in_use = "gold"
             log.info("Using the gold linker")
@@ -1099,7 +1105,7 @@ def configure(cfg):
         #--lto-O0 is not effective for avoiding linker hangs
         # cfg.env.append_value('LINKFLAGS', ['-Wl,-export_dynamic,--lto-O0'])
         if (cfg.env['USE_LLD']):
-            cfg.env.append_value('LINKFLAGS', '-fuse-ld=lld%d0' % CLANG_VERSION)
+            cfg.env.append_value('LINKFLAGS', '-fuse-ld=lld%d0' % LLVM_VERSION)
             log.info("Using the lld linker")
         else:
             #cfg.env.append_value('LINKFLAGS', '-fuse-ld=/opt/clasp/bin/ld.clasp')
@@ -1634,7 +1640,7 @@ class link_fasl(clasp_task):
                                           forms = [ '(setq *features* (cons :aclasp *features*))',
                                                     '(load "sys:kernel;clasp-builder.lsp")',
                                                     '(core:link-faso :output-file #P"%s")' % output_file,
-                                                    '(core:quit)'],
+                                                    '(core:exit)'],
                                           *faso_files)
             log.debug("link_fasl = %s\n", cmd)
         else:
@@ -1730,7 +1736,7 @@ class compile_aclasp(clasp_task):
                                                #'(load-aclasp)',
                                                '(setq core::*number-of-jobs* %d)' % self.bld.jobs,
                                                '(core:compile-aclasp :output-file #P"%s")' % output_file,
-                                               '(core:quit)'],
+                                               '(core:exit)'],
                                       *self.bld.clasp_aclasp)
         print("The cmd = %s\n" % cmd)
         return self.exec_command(cmd)
@@ -1748,7 +1754,7 @@ class compile_bclasp(clasp_task):
                                                '(load "sys:kernel;clasp-builder.lsp")',
                                                '(setq core::*number-of-jobs* %d)' % self.bld.jobs,
                                                '(core:compile-bclasp :output-file #P"%s")' % output_file,
-                                               '(core:quit)'],
+                                               '(core:exit)'],
                                       *self.bld.clasp_bclasp)
 
         return self.exec_command(cmd)
@@ -1766,7 +1772,7 @@ class compile_cclasp(clasp_task):
             forms += ['(load-cclasp)']
         else:
             forms += ['(core:compile-cclasp :output-file #P"%s")' % output_file,
-                      '(core:quit)']
+                      '(core:exit)']
         cmd = self.clasp_command_line(executable,
                                       image = image_file,
                                       features = [],
