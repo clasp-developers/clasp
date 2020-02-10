@@ -483,11 +483,21 @@ The passed module is modified as a side-effect."
     (llvm-sys:link-in-module linker builtins-clone))
   module)
 
-(defun code-model (&key jit (target-faso-file cmp:*compile-file-parallel*))
+(defun code-model (&key jit (target-faso-file (or cmp:*generate-faso* cmp:*compile-file-parallel*)))
   "Return the code-model for the compilation mode"
-  (if (and target-faso-file (null jit))
-      'llvm-sys:code-model-large
-      'llvm-sys:code-model-small))
+  (multiple-value-bind (llvm-version-string llvm-version-val)
+      (ext:llvm-version)
+    (if (and target-faso-file (null jit))
+        (progn
+          (if (>= llvm-version-val 10)
+              (warn "By llvm-version 10 we should not need to use the code-model-large"))
+          #+(or)(format t "llvm-version-val ~a Using llvm-sys:code-model-large cmp:*generate-faso* -> ~a   cmp:*compile-file-parallel* -> ~a~%" llvm-version-val *generate-faso* *compile-file-parallel*)
+          'llvm-sys:code-model-large
+          )
+        (progn
+          #+(or)(format t "Using llvm-sys:code-model-small cmp:*generate-faso* -> ~a   cmp:*compile-file-parallel* -> ~a~%" *generate-faso* *compile-file-parallel*)
+          'llvm-sys:code-model-small))))
+
 (export 'code-model)
 
 (defvar *size-level* 1)
