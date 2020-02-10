@@ -752,7 +752,7 @@ void clasp_unpack_faso(const std::string& path_designator) {
   if (pos==std::string::npos) {
     SIMPLE_ERROR(BF("Could not find extension in path: %s") % path_designator);
   }
-  std::string prefix = path_designator.substr(0,pos-1);
+  std::string prefix = path_designator.substr(0,pos);
   int fd = open(path_designator.c_str(),O_RDONLY);
   off_t fsize = lseek(fd, 0, SEEK_END);
   lseek(fd,0,SEEK_SET);
