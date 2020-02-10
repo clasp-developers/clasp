@@ -53,7 +53,7 @@ PREFIX = '/opt/clasp/'
 # This controls if object files are generated and linked (fast build time)
 # or bitcode is generated and lto linked (slow build time).
 #
-# CLASP_BUILD_MODE = "bitcode"
+# CLASP_BUILD_MODE = "faso"
 
 # Turn on debug options that slow down clasp while checking for various things.
 # info on the various options is in wscript

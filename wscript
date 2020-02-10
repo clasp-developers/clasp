@@ -883,11 +883,14 @@ def configure(cfg):
 #    cfg.env["LLVM_AR_BINARY"] = cfg.find_program("llvm-ar", var = "LLVM_AR")[0]
     cfg.env["GIT_BINARY"] = cfg.find_program("git", var = "GIT")[0]
     log.debug("cfg.env['CLASP_BUILD_MODE'] = %s", cfg.env['CLASP_BUILD_MODE'])
+    # apply the default
+    if (cfg.env['CLASP_BUILD_MODE']==[]):
+        cfg.env['CLASP_BUILD_MODE'] = 'faso'
     if ((cfg.env['CLASP_BUILD_MODE'] =='bitcode')):
         cfg.define("CLASP_BUILD_MODE",2) # thin-lto
         cfg.env.CLASP_BUILD_MODE = 'bitcode'
         cfg.env.LTO_FLAG = LTO_OPTION
-    elif (cfg.env['CLASP_BUILD_MODE']==[] or cfg.env['CLASP_BUILD_MODE']=='object'):
+    elif ( cfg.env['CLASP_BUILD_MODE']=='object'):
         cfg.define("CLASP_BUILD_MODE",1) # object files
         cfg.env.CLASP_BUILD_MODE = 'object'
         cfg.env.LTO_FLAG = []
@@ -913,12 +916,12 @@ def configure(cfg):
     if (not 'USE_COMPILE_FILE_PARALLEL' in cfg.env):
         if (cfg.env['DEST_OS'] == DARWIN_OS ):
             # by default only MacOS has USE_COMPILE_FILE_PARALLEL=True
-            cfg.env['USE_COMPILE_FILE_PARALLEL'] = False
+            cfg.env['USE_COMPILE_FILE_PARALLEL'] = True
         elif (cfg.env['DEST_OS'] == LINUX_OS ):
-            cfg.env['USE_COMPILE_FILE_PARALLEL'] = False
+            cfg.env['USE_COMPILE_FILE_PARALLEL'] = True
         elif (cfg.env['DEST_OS'] == FREEBSD_OS ):
             # cracauer todo
-            cfg.env['USE_COMPILE_FILE_PARALLEL'] = False
+            cfg.env['USE_COMPILE_FILE_PARALLEL'] = True
         else:
             raise Exception("Unknown OS %s"%cfg.env['DEST_OS'])
         
