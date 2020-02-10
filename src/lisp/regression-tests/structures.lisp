@@ -144,20 +144,16 @@
 ;;; tests with include
 (defstruct node tail-p)
 ;;; must not define node-tail-p in valued-node, since it would override the function from the parent
+;;; Fdefinition tip from Bike
 (test include-level-2
-      (not (find-if #'(lambda(form)
-                   (and (listp form)
-                        (eql (first form) 'cl:defun)
-                        (eql (second form) 'node-tail-p)))
-                    (macroexpand '(defstruct (valued-node (:conc-name node-) (:include node)))))))
+      (let ((before (fdefinition 'node-tail-p)))
+        (eval '(defstruct (valued-node (:conc-name node-) (:include node))))
+        (eql before (fdefinition 'node-tail-p))))
 
 ;;; Should find it , if conc-name leads to different accessor name
+(defstruct (valued-nodea (:conc-name nodea-) (:include node)))
 (test include-level-2a
-      (find-if #'(lambda(form)
-                   (and (listp form)
-                        (eql (first form) 'cl:defun)
-                        (eql (second form) 'nodea-tail-p)))
-                    (macroexpand '(defstruct (valued-nodea (:conc-name nodea-) (:include node))))))
+      (fboundp 'nodea-tail-p))
 
 (defstruct (valued-node (:conc-name node-) (:include node)))
 
@@ -175,18 +171,14 @@
 ;;; so it is not enough to look at the immediate parent
 ;;; ccl check in sd-refname-in-included-struct-p all the chain up
 (test include-level-3
-      (not (find-if #'(lambda(form)
-                   (and (listp form)
-                        (or (eql (first form) 'cl:defun) #+sbcl (eql (first form) 'SB-C:XDEFUN))
-                        (eql (second form) 'bar0-a)))
-                    (macroexpand '(defstruct (bar2 (:include bar1)(:conc-name bar0-)) c)))))
+      (let ((before (fdefinition 'bar0-a)))
+        (eval '(defstruct (bar2 (:include bar1)(:conc-name bar0-)) c))
+        (eql before (fdefinition 'bar0-a))))
 
+(defstruct (bar2 (:include bar1)(:conc-name bar0-)) c)
 (test include-level-3a
-      (find-if #'(lambda(form)
-                   (and (listp form)
-                        (or (eql (first form) 'cl:defun) #+sbcl (eql (first form) 'SB-C:XDEFUN))
-                        (eql (second form) 'bar0-b)))
-               (macroexpand '(defstruct (bar2 (:include bar1)(:conc-name bar0-)) c))))
+      (and (fboundp 'bar0-b)
+           (fboundp 'bar0-c)))
  
 (defstruct blah a)
 (defstruct (sub-blah (:include blah)) b)
