@@ -45,15 +45,17 @@ Builds a new function which accepts any number of arguments but always outputs N
     (error "Symbol ~s is a declaration specifier and cannot be used to name a new type" name)))
 (export 'create-type-name)
 
+(defvar *type-expanders* (make-hash-table :test #'eq :thread-safe t))
+
 (export 'ext::type-expander "EXT")
 (defun ext:type-expander (name)
-  (get-sysprop name 'deftype-definition))
+  (values (gethash name *type-expanders*)))
 
 (defun (setf ext:type-expander) (function name)
   (unless (symbolp name)
     (error "~s is not a valid type specifier" name))
   (create-type-name name)
-  (put-sysprop name 'DEFTYPE-DEFINITION function)
+  (core:hash-table-setf-gethash *type-expanders* name function)
   (subtypep-clear-cache)
   function)
 

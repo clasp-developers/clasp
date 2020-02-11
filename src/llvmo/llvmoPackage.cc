@@ -70,7 +70,7 @@ SYMBOL_EXPORT_SC_(LlvmoPkg, STARrunTimeExecutionEngineSTAR);
 SYMBOL_EXPORT_SC_(LlvmoPkg, STARdebugObjectFilesSTAR);
 SYMBOL_EXPORT_SC_(LlvmoPkg, STARdumpObjectFilesSTAR);
 SYMBOL_EXPORT_SC_(LlvmoPkg, STARdefault_code_modelSTAR);
-
+SYMBOL_EXPORT_SC_(LlvmoPkg, STARjit_engineSTAR);
 
 void redirect_llvm_interface_addSymbol() {
   //	llvm_interface::addSymbol = &addSymbolAsGlobal;
@@ -518,6 +518,8 @@ void LlvmoExposer_O::expose(core::Lisp_sp lisp, core::Exposer_O::WhatToExpose wh
 #else
     llvmo::_sym_STARdefault_code_modelSTAR->defparameter(llvmo::_sym_CodeModel_Large);
 #endif
+    GC_ALLOCATE(ClaspJIT_O,jit_engine);
+    llvmo::_sym_STARjit_engineSTAR->defparameter(jit_engine);
     llvmo::_sym_STARdebugObjectFilesSTAR->defparameter(_Nil<core::T_O>());
     llvmo::_sym_STARdumpObjectFilesSTAR->defparameter(_Nil<core::T_O>());
     SYMBOL_EXPORT_SC_(LlvmoPkg, _PLUS_globalBootFunctionsName_PLUS_);

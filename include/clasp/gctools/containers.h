@@ -173,53 +173,7 @@ public:
   SmallOrderedSet() : Base(){};
 };
 
-template <class T>
-class Array0 : public Array0_impl<GCArray<T, GCContainerAllocator<GCArray_moveable<T>>>> {
-public:
-  typedef Array0_impl<GCArray<T, GCContainerAllocator<GCArray_moveable<T>>>> Base;
-  //        template <typename...ARGS> Array0(size_t numExtraArgs,const T& val, ARGS&&...args) : Base(numExtraArgs,val,std::forward<ARGS>(args)...) {};
-  Array0() : Base(){};
-};
-
-//
-// Use these for ActivationFrames to distinguish them from GCArray
-//
-template <class T>
-class Frame0 : public Array0_impl<GCArray<T, GCContainerAllocator<GCArray_moveable<T>>>> {
-public:
-  typedef Array0_impl<GCArray<T, GCContainerAllocator<GCArray_moveable<T>>>> Base;
-  //        template <typename...ARGS> Frame0(size_t numExtraArgs,const T& val, ARGS&&...args) : Base(numExtraArgs,val,std::forward<ARGS>(args)...) {};
-  Frame0() : Base(){};
-};
 #endif
-
-#ifdef USE_MPS_OLD
-template <class T>
-class Vec0 : public Vec0_impl<GCVector<T, GCContainerAllocator_mps<GCVector_moveable<T>>>> {
-public:
-  typedef Vec0_impl<GCVector<T, GCContainerAllocator_mps<GCVector_moveable<T>>>> Base;
-  Vec0() : Base(){};
-};
-
-template <class T>
-class Array0 : public Array0_impl<GCArray<T, GCContainerAllocator_mps<GCArray_moveable<T>>>> {
-public:
-  typedef Array0_impl<GCArray<T, GCContainerAllocator_mps<GCArray_moveable<T>>>> Base;
-  //        template <typename...ARGS> Array0(size_t numExtraArgs,const T& val, ARGS&&...args) : Base(numExtraArgs,val,std::forward<ARGS>(args)...) {};
-  Array0() : Base(){};
-};
-
-//
-// Use these for ActivationFrames to distinguish them from GCArray
-//
-template <class T>
-class Frame0 : public Array0_impl<GCArray<T, GCContainerAllocator_mps<GCArray_moveable<T>>>> {
-public:
-  typedef Array0_impl<GCArray<T, GCContainerAllocator_mps<GCArray_moveable<T>>>> Base;
-  //        template <typename...ARGS> Frame0(size_t numExtraArgs,const T& val, ARGS&&...args) : Base(numExtraArgs,val,std::forward<ARGS>(args)...) {};
-  Frame0() : Base(){};
-};
-#endif // USE_MPS
 
 }; // namespace gctools
 #endif

@@ -759,39 +759,29 @@ void Lisp_O::add_process(mp::Process_sp process) {
 void Lisp_O::remove_process(mp::Process_sp process) {
   {
     WITH_READ_WRITE_LOCK(this->_Roots._ActiveThreadsMutex);
-    T_sp* cur = reinterpret_cast<T_sp*>(&this->_Roots._ActiveThreads);
-#ifdef DEBUG_ADD_PROCESS
-    printf("%s:%d remove_process %s this->_Roots._ActiveThreads=@%p  from: %s\n", __FILE__, __LINE__, _rep_(process).c_str(), (void*)this->_Roots._ActiveThreads.raw_(), _rep_(this->_Roots._ActiveThreads).c_str());
-    dbg_lowLevelDescribe(this->_Roots._ActiveThreads);
-#endif
-    while ((*cur).consp()) {
-      mp::Process_sp p = gc::As<mp::Process_sp>(oCar(*cur));
-#ifdef DEBUG_ADD_PROCESS
-      printf("        cur->%p   comparing to process: %s @%p\n", (void*)cur, _rep_(p).c_str(), (void*)p.raw_());
-#endif
-      if (p == process) {
-        *cur = oCdr(*cur);
-#ifdef DEBUG_ADD_PROCESS
-        printf("         MATCHED to process: %s @%p\n", _rep_(p).c_str(), (void*)p.raw_());
-#endif
-        goto DONE;
+    T_sp cur = this->_Roots._ActiveThreads;
+    mp::Process_sp p;
+    if (cur.consp()) {
+      p = gc::As<mp::Process_sp>(cons_car(cur));
+      if (process == p) {
+        // If the process is the first in the list, just set the ActiveThreads to the cdr.
+        this->_Roots._ActiveThreads = cons_cdr(cur);
+        return;
+      } else {
+        // Iterate through to find the process and rplacd it out.
+        T_sp next = cons_cdr(cur);
+        while (next.consp()) {
+          p = gc::As<mp::Process_sp>(cons_car(next));
+          if (p == process) {
+            gc::As_unsafe<Cons_sp>(cur)->rplacd(cons_cdr(next));
+            return;
+          }
+          cur = next;
+          next = cons_cdr(next);
+        }
       }
-      cur = &(gctools::reinterpret_cast_smart_ptr<Cons_O>(*cur))->_Cdr;
-#ifdef DEBUG_ADD_PROCESS
-      printf("          Advanced cur to %p (*cur).raw_()->%p  (*cur).consp() -> %d\n", (void*)cur, (void*)(*cur).raw_(), (*cur).consp());
-#endif
     }
-  DONE:
-#ifdef DEBUG_ADD_PROCESS
-    printf("%s:%d  Leaving remove_process this->_Roots._ActiveThreads=%p  threads: %s\n", __FILE__, __LINE__, (void*)this->_Roots._ActiveThreads.raw_(), _rep_(this->_Roots._ActiveThreads).c_str());
-    fflush(stdout);
-#endif
-    return;
-  }
-#ifdef DEBUG_ADD_PROCESS
-  printf("%s:%d Fell through the bottom of remove_process\n",__FILE__,__LINE__);
-  fflush(stdout);
-#endif
+  } // lock release
   SIMPLE_ERROR(BF("Could not find process %s") % process);
 }
 

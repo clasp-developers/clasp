@@ -136,7 +136,8 @@
                        (if seen-read-only
                            (error-defstruct-slot-syntax slot-description)
                            (setq seen-read-only t
-                                 read-only t)))
+                                 ;;; treat :read-only nil correctly
+                                 read-only (cadr os))))
                       (otherwise
                        (error-defstruct-slot-syntax slot-description)))))
                  (t (error-defstruct-slot-syntax slot-description))))
@@ -184,8 +185,9 @@
     (let ((old-reader (getf old-plist :reader))
           (old-accessor (getf old-plist :accessor)))
       (when (and accessor old-reader)
-        (error "Mutable slot ~a cannot override read-only included slot."
-               slot-name))
+        #+(or)(error "Mutable slot ~a cannot override read-only included slot."
+                     slot-name)
+        (setq reader accessor accessor nil))
       `(,slot-name
         ;; We always have an initarg for any non-:NAMED slot.
         :initarg ,initarg
@@ -255,9 +257,11 @@
           (error "Cannot override nonexistent slot ~a" slot-name))))
     ;; Signal an error for any duplicate slot.
     (dolist (new-slotd new-slotds)
-      (let ((slot-name (first new-slotd)))
-        (when (member slot-name old-slotds :key #'first)
-          (error "Duplicate slot ~a" slot-name))))
+      ;;; check for "dummy" slotdescriptions coming from :initial-offset
+      (unless (null new-slotd)
+        (let ((slot-name (first new-slotd)))
+          (when (member slot-name old-slotds :key #'first)
+            (error "Duplicate slot ~a" slot-name)))))
     ;; Done.
     (append old-slotds new-slotds)))
 
@@ -512,6 +516,12 @@
        `(set-documentation ',structure-name 'structure
                            ',(second option))))))
 
+(defun list-of-length-at-least (list n)
+  (dotimes (i n)
+    (unless (consp list) (return-from list-of-length-at-least nil))
+    (setf list (cdr list)))
+  (listp list))
+
 (defun defstruct-list-option-expander
     (structure-name included-size slot-descriptions)
   (lambda (option)
@@ -519,20 +529,15 @@
       ((:constructor :kw-constructor)
        ;; FIXME: inefficient
        (defstruct-dispatch-constructor-def
-        option slot-descriptions
-        `(make-list ,(length slot-descriptions))
-        (lambda (obj var loc)
-          `(setf (nth ,loc ,obj) ,var))))
+           option slot-descriptions
+         `(make-list ,(length slot-descriptions))
+         (lambda (obj var loc)
+           `(setf (nth ,loc ,obj) ,var))))
       ((:predicate)
        `(defun ,(second option) (object)
-          (and
-           (consp object)
-           ,@(let (forms)
-               (dotimes (i (length slot-descriptions) forms)
-                 (push '(consp (setf object (cdr object))) forms)))
-           ;; FIXME: inefficient
-           (eq (nth ,(+ (third option) included-size) object)
-               ',structure-name))))
+          (and (list-of-length-at-least object ,(length slot-descriptions))
+               (eq (nth ,(+ (third option) included-size) object)
+                   ',structure-name))))
       ((:copier)
        `(defun ,(second option) (instance) (copy-list instance)))
       ((:documentation)
@@ -772,7 +777,7 @@
                   ((:conc-name)
                    (if seen-conc-name
                        (error "Specified ~a more than once" :conc-name)
-                       (setq conc-name nil)))
+                       (setq conc-name nil seen-conc-name t)))
                   ((:copier)
                    (if seen-copier
                        (error-defstruct-option-duplicated :copier)
@@ -808,7 +813,12 @@
           (when predicate
             (error "Cannot specify :TYPE and a PREDICATE but not :NAMED, in structure definition for ~a"
                    name))
-          (unless predicate
+          ;;; This option takes one argument, which specifies the name of the type predicate. 
+          ;;; If the argument is provided and is nil, no predicate is defined.
+          ;;; If the argument is not supplied or if the option itself is not supplied,
+          ;;; the name of the predicate is made by concatenating the name of the structure to the string "-P",
+          ;;; interning the name in whatever package is current at the time defstruct is expanded. 
+          (unless (or predicate seen-predicate)
             (setq predicate (default-predicate-name name))))
       ;; default conc-name
       (unless seen-conc-name

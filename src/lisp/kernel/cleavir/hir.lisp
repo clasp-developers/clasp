@@ -398,6 +398,43 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; Instruction CAS-CAR-INSTRUCTION
+
+(defclass cas-car-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin) ())
+
+(defmethod cleavir-ir-graphviz:label ((instr cas-car-instruction)) "cas-car")
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Instruction CAS-CDR-INSTRUCTION
+
+(defclass cas-cdr-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin) ())
+
+(defmethod cleavir-ir-graphviz:label ((instr cas-cdr-instruction)) "cas-cdr")
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Instruction SLOT-CAS-INSTRUCTION
+
+(defclass slot-cas-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin) ())
+
+(defmethod cleavir-ir-graphviz:label ((instr slot-cas-instruction)) "slot-cas")
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Instruction ACAS-INSTRUCTION
+;;;
+;;; Compare-and-swap an array.
+
+(defclass acas-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+  ((%element-type :initarg :element-type :reader cleavir-ir:element-type)
+   (%simple-p :initarg :simple-p :reader cleavir-ir:simple-p)
+   (%boxed-p :initarg :boxed-p :reader cleavir-ir:boxed-p)))
+
+(defmethod cleavir-ir-graphviz:label ((instr acas-instruction)) "acas")
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; Instruction NAMED-ENTER-INSTRUCTION
 ;;;
 ;;; This instruction is an ENTER-INSTRUCTION that keeps

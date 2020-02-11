@@ -2002,6 +2002,19 @@ namespace llvmo {
 }; // llvmo
 
 namespace llvmo {
+
+CL_LISPIFY_NAME(set_atomic);
+CL_EXTERN_DEFMETHOD(StoreInst_O, &StoreInst_O::ExternalType::setAtomic);
+CL_LISPIFY_NAME(setAlignment);
+CL_EXTERN_DEFMETHOD(StoreInst_O, &StoreInst_O::ExternalType::setAlignment);
+CL_LISPIFY_NAME(set_atomic);
+CL_EXTERN_DEFMETHOD(LoadInst_O, &LoadInst_O::ExternalType::setAtomic);
+CL_LISPIFY_NAME(setAlignment);
+CL_EXTERN_DEFMETHOD(LoadInst_O, &LoadInst_O::ExternalType::setAlignment);
+
+};
+
+namespace llvmo {
 ConstantFP_sp ConstantFP_O::create(llvm::ConstantFP *ptr) {
   return core::RP_Create_wrapped<ConstantFP_O, llvm::ConstantFP *>(ptr);
 };
@@ -3376,6 +3389,14 @@ CL_LISPIFY_NAME(createLICMPass);
   CL_VALUE_ENUM(_sym_SequentiallyConsistent, llvm::AtomicOrdering::SequentiallyConsistent);;
   CL_END_ENUM(_sym_STARatomic_orderingSTAR);
 
+  SYMBOL_EXPORT_SC_(LlvmoPkg, STARsync_scopeSTAR);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, SingleThread);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, System);
+  CL_BEGIN_ENUM(llvm::SyncScope::ID, _sym_STARsync_scopeSTAR, "llvm::SyncScope::ID");
+  CL_VALUE_ENUM(_sym_SingleThread, llvm::SyncScope::SingleThread);
+  CL_VALUE_ENUM(_sym_System, llvm::SyncScope::System);
+  CL_END_ENUM(_sym_STARsync_scopeSTAR);
+
   SYMBOL_EXPORT_SC_(LlvmoPkg, STARAtomicRMWInstBinOpSTAR);
   SYMBOL_EXPORT_SC_(LlvmoPkg, Xchg);
   SYMBOL_EXPORT_SC_(LlvmoPkg, Add);
@@ -4117,7 +4138,9 @@ class ClaspDynamicLibrarySearchGenerator : public DynamicLibrarySearchGenerator 
  
       std::string Tmp((*Name).data() + HasGlobalPrefix,
                       (*Name).size() - HasGlobalPrefix);
+      //      core::write_bf_stream(BF("%s:%d Looking for symbol %s\n") % __FILE__ % __LINE__ % Tmp);
       if (void *Addr = Dylib.getAddressOfSymbol(Tmp.c_str())) {
+        //        core::write_bf_stream(BF("%s:%d       found address %p\n") % __FILE__ % __LINE__ % Addr);
         if (core::_sym_STARdebug_symbol_lookupSTAR->symbolValue().notnilp()) {
           core::write_bf_stream(BF("Symbol |%s|  address: %p\n") % Tmp % Addr );
         }
@@ -4125,6 +4148,8 @@ class ClaspDynamicLibrarySearchGenerator : public DynamicLibrarySearchGenerator 
         NewSymbols[Name] = JITEvaluatedSymbol(
                                               static_cast<JITTargetAddress>(reinterpret_cast<uintptr_t>(Addr)),
                                               JITSymbolFlags::Exported);
+      } else {
+        //        core::write_bf_stream(BF("%s:%d        Could not find address\n") % __FILE__ % __LINE__ );
       }
     }
  
@@ -4155,14 +4180,13 @@ void handleObjectEmitted(VModuleKey K, std::unique_ptr<MemoryBuffer> O) {
 
 
 
-CL_DEFUN ClaspJIT_sp llvm_sys__make_clasp_jit(DataLayout_sp data_layout)
+CL_DEFUN ClaspJIT_sp llvm_sys__make_clasp_jit()
 {
-  GC_ALLOCATE_VARIADIC(ClaspJIT_O,cj,data_layout->dataLayout());
+  GC_ALLOCATE_VARIADIC(ClaspJIT_O,cj);
   return cj;
 }
 
-
-ClaspJIT_O::ClaspJIT_O(const llvm::DataLayout& data_layout) :_DataLayout(data_layout) {
+ClaspJIT_O::ClaspJIT_O() {
 #if 0
     // Detect the host and set code model to small.
   llvm::ExitOnError ExitOnErr;
@@ -4197,6 +4221,12 @@ ClaspJIT_O::ClaspJIT_O(const llvm::DataLayout& data_layout) :_DataLayout(data_la
                                     });
 #endif
   auto JTMB = llvm::orc::JITTargetMachineBuilder::detectHost();
+  auto edl = JTMB->getDefaultDataLayoutForTarget();
+  if (!edl) {
+    printf("%s:%d Could not getDefaultDataLayoutForTarget()\n", __FILE__, __LINE__ );
+    abort();
+  }
+  this->_DataLayout = new llvm::DataLayout(*edl);
 #if 0
   // Don't set the code model - the default should work fine.
   // If it doesn't - invoke the (cmp:code-model :jit xxx :compile-file-parallel yyy)
@@ -4209,7 +4239,7 @@ ClaspJIT_O::ClaspJIT_O(const llvm::DataLayout& data_layout) :_DataLayout(data_la
   this->Compiler = new llvm::orc::ConcurrentIRCompiler(*JTMB);
   this->CompileLayer = new llvm::orc::IRCompileLayer(*this->ES,*this->LinkLayer,*this->Compiler);
   //  printf("%s:%d Registering ClaspDynamicLibarySearchGenerator\n", __FILE__, __LINE__ );
-  this->ES->getMainJITDylib().setGenerator(llvm::cantFail(ClaspDynamicLibrarySearchGenerator::GetForCurrentProcess(data_layout.getGlobalPrefix())));
+  this->ES->getMainJITDylib().setGenerator(llvm::cantFail(ClaspDynamicLibrarySearchGenerator::GetForCurrentProcess(this->_DataLayout->getGlobalPrefix())));
 }
 
 ClaspJIT_O::~ClaspJIT_O()
@@ -4257,9 +4287,15 @@ CL_DEFMETHOD void ClaspJIT_O::addIRModule(Module_sp module, ThreadSafeContext_sp
   ExitOnErr(this->CompileLayer->add(this->ES->getMainJITDylib(),llvm::orc::ThreadSafeModule(std::move(umodule),*context->wrappedPtr())));
 }
 
-void ClaspJIT_O::saveObjectFileInfo(const char* objectFileStart, size_t objectFileSize)
+void ClaspJIT_O::saveObjectFileInfo(const char* objectFileStart, size_t objectFileSize,
+                                    const char* faso_filename,
+                                    size_t faso_index,
+                                    size_t objectID )
 {
   ObjectFileInfo* ofi = new ObjectFileInfo();
+  ofi->_faso_filename = faso_filename;
+  ofi->_faso_index = faso_index;
+  ofi->_objectID = objectID;
   ofi->_object_file_start = (void*)objectFileStart;
   ofi->_object_file_size = objectFileSize;
   ofi->_text_segment_start = my_thread->_text_segment_start;
@@ -4279,7 +4315,7 @@ void ClaspJIT_O::saveObjectFileInfo(const char* objectFileStart, size_t objectFi
 
 CL_DOCSTRING(R"doc(Identify the object file whose generated code range containss the instruction-pointer.
 Return NIL if none or (values offset-from-start object-file). The index-from-start is the number of bytes of the instruction-pointer from the start of the code range.)doc");
-CL_DEFMETHOD core::T_mv ClaspJIT_O::objectFileForInstructionPointer(core::Pointer_sp instruction_pointer)
+CL_DEFMETHOD core::T_mv ClaspJIT_O::objectFileForInstructionPointer(core::Pointer_sp instruction_pointer, bool verbose)
 {
   ObjectFileInfo* cur = this->_ObjectFiles.load();
   size_t count;
@@ -4299,6 +4335,10 @@ CL_DEFMETHOD core::T_mv ClaspJIT_O::objectFileForInstructionPointer(core::Pointe
       if (!eom)
         SIMPLE_ERROR(BF("Problem in objectFileForInstructionPointer"));
       ObjectFile_sp object_file = ObjectFile_O::create(eom->release());
+      if (verbose) {
+        core::write_bf_stream(BF("faso-file: %s  object-file-position: %lu  objectID: %lu\n") % cur->_faso_filename % cur->_faso_index % cur->_objectID);
+        core::write_bf_stream(BF("SectionID: %lu    memory offset: %lu\n") % sectionID % offset );
+      }
       return Values(sectioned_address,object_file);
     }
     cur = cur->_next;
@@ -4318,7 +4358,9 @@ CL_DEFMETHOD size_t ClaspJIT_O::numberOfObjectFiles() {
 }
 
 
-void ClaspJIT_O::addObjectFile(const char* rbuffer, size_t bytes,size_t startupID, JITDylib& dylib,  bool print )
+void ClaspJIT_O::addObjectFile(const char* rbuffer, size_t bytes,size_t startupID, JITDylib& dylib,
+                               const char* faso_filename, size_t faso_index,
+                               bool print)
 {
   // Create an llvm::MemoryBuffer for the ObjectFile bytes
   if (print) core::write_bf_stream(BF("%s:%d Adding object file at %p  %lu bytes\n")  % __FILE__ % __LINE__  % (void*)rbuffer % bytes );
@@ -4333,9 +4375,11 @@ void ClaspJIT_O::addObjectFile(const char* rbuffer, size_t bytes,size_t startupI
   }
   core::T_mv startup_name_and_linkage = core::core__startup_function_name_and_linkage(startupID);
   std::string startup_name = gc::As<core::String_sp>(startup_name_and_linkage)->get_std_string();
+  if (print) core::write_bf_stream(BF("%s:%d startup_name is %s\n") % __FILE__ % __LINE__ % startup_name);
   core::Pointer_sp startup = this->lookup(dylib,startup_name);
+  if (print) core::write_bf_stream(BF("%s:%d startup address %p\n") % __FILE__ % __LINE__ % _rep_(startup));
   // Now the my_thread thread local data structure will contain information about the new linked object file.
-  this->saveObjectFileInfo(rbuffer,bytes);
+  this->saveObjectFileInfo(rbuffer,bytes,faso_filename,faso_index,startupID);
   
   // Lookup the address of the ObjectFileStartUp function and invoke it
   void* thread_local_startup = startup->ptr();
@@ -4362,7 +4406,7 @@ CL_DEFMETHOD JITDylib& ClaspJIT_O::getMainJITDylib() {
 
 CL_DEFMETHOD JITDylib_sp ClaspJIT_O::createAndRegisterJITDylib(const std::string& name) {
   JITDylib& dylib(this->ES->createJITDylib(name));
-  dylib.setGenerator(llvm::cantFail(ClaspDynamicLibrarySearchGenerator::GetForCurrentProcess(this->_DataLayout.getGlobalPrefix())));
+  dylib.setGenerator(llvm::cantFail(ClaspDynamicLibrarySearchGenerator::GetForCurrentProcess(this->_DataLayout->getGlobalPrefix())));
   JITDylib_sp dylib_sp = core::RP_Create_wrapped<JITDylib_O>(&dylib);
 #if 0
   Cons_sp cell = core::Cons_O::create(dylib_sp,_Nil<core::T_O>());

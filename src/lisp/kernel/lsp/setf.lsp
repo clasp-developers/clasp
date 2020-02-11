@@ -30,10 +30,12 @@
   (format t "~%~%~%~% Turning on cmp::*compile-debug-dump-module* ~%~%~%")
   (setq cmp::*compile-debug-dump-module* t))
 
+(defvar *setf-expanders* (make-hash-table :test #'eq :thread-safe t))
+
 (defun setf-expander (symbol)
-  (core:get-sysprop symbol 'setf-method))
+  (values (gethash symbol *setf-expanders*)))
 (defun (setf setf-expander) (expander symbol)
-  (core:put-sysprop symbol 'setf-method expander))
+  (core:hash-table-setf-gethash *setf-expanders* symbol expander))
 (export 'setf-expander)
 
 (in-package "SYSTEM")

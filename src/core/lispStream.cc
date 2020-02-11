@@ -4418,7 +4418,9 @@ stream_dispatch_table(T_sp strm) {
   if (gc::IsA<Instance_sp>(strm)) {
     return clos_stream_ops;
   }
-  if (!strm) {
+  // Use this only when the system is starting up so that we
+  // can use stream writing functions to print to the terminal
+  if (!global_Started&&!strm) {
     return startup_stream_ops;
   }
   ERROR_WRONG_TYPE_ONLY_ARG(core::_sym_dispatchTable, strm, cl::_sym_Stream_O);
