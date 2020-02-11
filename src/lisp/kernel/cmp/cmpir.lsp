@@ -683,11 +683,12 @@ Otherwise do a variable shift."
 (defun irc-load (source &optional (label ""))
   (llvm-sys:create-load-value-twine *irbuilder* source label))
 
-(defun irc-load-atomic (source &optional (label ""))
+(defun irc-load-atomic (source &optional (label "") (align 8))
   (let ((inst (irc-load source label)))
+    (llvm-sys:set-alignment inst align) ; atomic loads require an explicit alignment.
     (llvm-sys:set-atomic inst
-                         'llvm-sys:monotonic
-                         1 #+(or)'llvm-sys:system)
+                               'llvm-sys:monotonic
+                               1 #+(or)'llvm-sys:system)
     inst))
 
 (defun irc-store (val destination &optional (label "") (is-volatile nil))

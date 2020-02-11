@@ -133,6 +133,7 @@ SYMBOL_EXPORT_SC_(CorePkg, STARstack_top_hintSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_contab_name_PLUS_);
 SYMBOL_EXPORT_SC_(KeywordPkg,object);
 SYMBOL_EXPORT_SC_(KeywordPkg,fasl);
+SYMBOL_EXPORT_SC_(KeywordPkg,faso);
 SYMBOL_EXPORT_SC_(KeywordPkg,bitcode);
 SYMBOL_EXPORT_SC_(KeywordPkg,linkage);
 SYMBOL_EXPORT_SC_(KeywordPkg, verbose);
@@ -1098,7 +1099,8 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym__PLUS_class_name_to_lisp_name_PLUS_->defparameter(_Nil<T_O>());
   _sym__PLUS_type_header_value_map_PLUS_->defparameter(_Nil<T_O>());
   initialize_typeq_map();
-  _sym_STARllvmVersionSTAR->defparameter(SimpleBaseString_O::make(LLVM_VERSION));
+#define CXX_MACRO_STRING(var) #var
+  _sym_STARllvmVersionSTAR->defparameter(SimpleBaseString_O::make(CXX_MACRO_STRING(LLVM_VERSION)));
 #ifdef USE_PARALLEL_BUILD
   _sym_STARuseParallelBuildSTAR->defparameter(_lisp->_true());
 #else

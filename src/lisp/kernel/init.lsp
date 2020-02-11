@@ -32,6 +32,15 @@
 (sys:*make-special 'core::*clang-bin*)
 (export 'core::*clang-bin*)
 
+(setq cmp:*generate-faso* (if (eq core:*clasp-build-mode* :faso)
+                              t
+                              (if (member :generate-faso *features*)
+                                  t
+                                  nil)))
+(if (member :generate-faso *features*)
+    (setq core:*clasp-build-mode* :faso))
+                                  
+
 ;;; ------------------------------------------------------------
 ;;;
 ;;;   Turn on flow tracker
@@ -430,8 +439,8 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
   "Args: (decl-spec)
 Gives a global declaration.  See DECLARE for possible DECL-SPECs."
   ;;decl must be a proper list
-  (unless (core:proper-list-p decl)
-    (error "decl must be a proper list: ~a" decl)) 
+  (if (not (core:proper-list-p decl))
+      (error "decl must be a proper list: ~a" decl)) 
   (cond
     ((eq (car decl) 'SPECIAL)
      (mapc #'sys::*make-special (cdr decl)))
@@ -596,7 +605,9 @@ a relative path from there."
               "ll"
               (if (eq type :object)
                   "o"
-                  (error "Unsupported build-extension type ~a" type))))))
+                  (if (eq type :faso)
+                      "faso"
+                      (error "Unsupported build-extension type ~a" type)))))))
 
 (defun build-pathname (partial-pathname &optional (type :lisp) stage)
   "If partial-pathname is nil and type is :fasl or :executable then construct the name using
@@ -631,6 +642,10 @@ the stage, the +application-name+ and the +bitcode-name+"
                                                    (make-pathname :directory (list :relative target-dir) :type (build-extension type)))
                                   (translate-logical-pathname (make-pathname :host target-host))))
                 ((and partial-pathname (eq type :object))
+                 (merge-pathnames (merge-pathnames (ensure-relative-pathname partial-pathname)
+                                                   (make-pathname :directory (list :relative target-dir) :type (build-extension type)))
+                                  (translate-logical-pathname (make-pathname :host target-host))))
+                ((and partial-pathname (eq type :faso))
                  (merge-pathnames (merge-pathnames (ensure-relative-pathname partial-pathname)
                                                    (make-pathname :directory (list :relative target-dir) :type (build-extension type)))
                                   (translate-logical-pathname (make-pathname :host target-host))))

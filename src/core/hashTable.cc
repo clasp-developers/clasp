@@ -405,11 +405,27 @@ void HashTable_O::setup(uint sz, Number_sp rehashSize, double rehashThreshold) {
 }
 
 void HashTable_O::sxhash_eq(HashGenerator &hg, T_sp obj) {
-  hg.addAddress((void*)obj.unsafe_general());
+  if (obj.generalp()) {
+    hg.addAddress((void*)obj.unsafe_general());
+    return;
+  } else if (obj.consp()) {
+    hg.addAddress((void*)obj.unsafe_cons());
+    return;
+  } else {
+    hg.addValue((uintptr_t)obj.raw_());
+  }
 }
 
 void HashTable_O::sxhash_eq(Hash1Generator &hg, T_sp obj) {
-  hg.addAddress((void*)obj.unsafe_general());
+  if (obj.generalp()) {
+    hg.addAddress((void*)obj.unsafe_general());
+    return;
+  } else if (obj.consp()) {
+    hg.addAddress((void*)obj.unsafe_cons());
+    return;
+  } else {
+    hg.addValue((uintptr_t)obj.raw_());
+  }
 }
 
 void HashTable_O::sxhash_eql(HashGenerator &hg, T_sp obj) {
@@ -437,12 +453,18 @@ void HashTable_O::sxhash_eql(HashGenerator &hg, T_sp obj) {
         hg.hashObject(obj);
         return;
       }
+      hg.addAddress((void*)(obj.unsafe_general()));
+      return;
+    }
+  case gctools::cons_tag:
+    {
+      hg.addAddress((void*)(obj.unsafe_cons()));
+      return;
     }
   default:
       break;
   }
-  hg.addAddress((void*)(obj.unsafe_general()));
-  return;
+  SIMPLE_ERROR(BF("Illegal object for eql hash %s") % _rep_(obj));
 }
 
 void HashTable_O::sxhash_eql(Hash1Generator &hg, T_sp obj) {
@@ -463,9 +485,13 @@ void HashTable_O::sxhash_eql(Hash1Generator &hg, T_sp obj) {
       hg.hashObject(obj);
       return;
     }
+    hg.addAddress((void*)(obj.unsafe_general()));
+    return;
+  } else if (obj.consp()) {
+    hg.addAddress((void*)(obj.unsafe_cons()));
+    return;
   }
-  hg.addAddress((void*)obj.unsafe_general());
-  return;
+  SIMPLE_ERROR(BF("Illegal object for eql hash %s") % _rep_(obj));
 }
 
 void HashTable_O::sxhash_equal(HashGenerator &hg, T_sp obj) {
