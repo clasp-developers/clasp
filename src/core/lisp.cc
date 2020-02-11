@@ -777,6 +777,7 @@ void Lisp_O::remove_process(mp::Process_sp process) {
             return;
           }
           cur = next;
+          next = cons_cdr(next);
         }
       }
     }
