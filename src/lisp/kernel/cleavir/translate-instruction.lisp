@@ -381,7 +381,7 @@
     (out
      (if (eq et 'bit) ; have to special case due to the layout.
          (translate-bit-aref (in (first inputs)) (in (second inputs)) label)
-         (cmp:irc-load-atomic
+         (cmp:irc-load
           (gen-vector-effective-address (in (first inputs)) (in (second inputs))
                                         (cleavir-ir:element-type instruction)
                                         (%default-int-type abi))
