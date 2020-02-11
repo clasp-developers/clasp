@@ -53,6 +53,16 @@
   (put-sysprop name 'structure-constructor constructor))
 (defun names-structure-p (name)
   (structure-type name))
+(defun structure-include (name)
+  (get-sysprop name 'include))
+(defun (setf structure-include) (include name)
+  (put-sysprop name 'include include))
+
+(defun all-includes (struct-name)
+  (let ((include (structure-include struct-name)))
+    (if include
+        (cons include (all-includes include))
+        nil)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -177,7 +187,7 @@
           `(,slot-name ,initform :read-only ,read-only :type ,type)))))
 
 ;;; Apply an :INCLUDE slot override.
-(defun override-slotd (slot-name over-plist old-plist)
+(defun override-slotd (slot-name over-plist old-plist include)
   (destructuring-bind (&key (initform nil initformp)
                          (type t typep) initarg
                          reader accessor)
@@ -201,17 +211,17 @@
         ,@(cond
             (reader
              ;; Bug #881: Don't define accessor functions redundantly.
-             (unless (eq reader (or old-reader old-accessor))
+             (unless (duplicate-acc-name slot-name reader (or old-reader old-accessor) include)
                `(:reader ,reader)))
             (accessor
-             (unless (eq accessor old-accessor)
+             (unless (duplicate-acc-name slot-name accessor old-accessor include)
                `(:accessor ,accessor))))))))
 
 ;;; Replace the :reader or :accessor in an old slotd with a new name.
-(defun fix-old-slotd (conc-name old-slotd)
+(defun fix-old-slotd (conc-name old-slotd include)
   (destructuring-bind (slot-name &key (initform nil initformp)
-                                   (type t typep) initarg
-                                   reader accessor)
+                                 (type t typep) initarg
+                                 reader accessor)
       old-slotd
     (let ((accname (defstruct-accessor-name conc-name slot-name)))
       `(,slot-name :initarg ,initarg
@@ -220,11 +230,50 @@
                    ,@(cond
                        (reader
                         ;; Bug #881 again.
-                        (unless (eq accname reader)
+                        (unless (duplicate-acc-name slot-name accname reader include)
                           `(:reader ,accname)))
                        (accessor
-                        (unless (eq accname accessor)
-                          `(:accessor ,accname))))))))
+                        (unless (duplicate-acc-name slot-name accname accessor include)
+                          `(:accessor ,accname)))
+                       (t ;;; old slot-description had neither reader nor accessor for slot
+                          ;;; must be somewhere upper the include chain
+                          ;;; or is a "named" slot w/o accessors
+                        (let ((parent (structure-include include)))
+                          (if parent 
+                              (get-inherited-description slot-name accname parent)
+                              nil)))
+                       )))))
+
+(defun duplicate-acc-name (slot new-name old-name include)
+  (if (eq new-name old-name)
+      t
+      (let ((parent (structure-include include)))
+        (if parent
+            (let ((slotd (assoc slot (structure-slot-descriptions parent))))
+              (if slotd
+              (destructuring-bind
+               (slot-name &key initform type initarg reader accessor)
+               slotd
+                (duplicate-acc-name slot new-name (or reader accessor) parent))
+              nil))
+            nil))))
+
+(defun get-inherited-description (slot-name accname structure-name)
+  (let ((slotds (assoc slot-name (structure-slot-descriptions structure-name))))
+    (if slotds
+        (destructuring-bind
+              (slot-name &key initform type initarg reader accessor)
+            slotds
+          (cond (reader
+                 `(:reader ,accname))
+                (accessor
+                 `(:accessor ,accname))
+                (t ;; higher up? 
+                 (let ((parent (structure-include structure-name)))
+                   (if parent
+                       (get-inherited-description slot-name accname parent)
+                       nil)))))
+        nil)))
 
 ;;; Given defstruct slot-descriptions from both the given defstruct
 ;;; and an included parent, return a final list of descriptions.
@@ -235,7 +284,7 @@
 ;;; when the same slot is implicated in both definitions, but it's possible
 ;;; for an unrelated slot to imply the same accessor names as a parent
 ;;; definition, and we don't handle that correctly.
-(defun final-slot-descriptions (conc-name new-slotds over-slotds old-slotds)
+(defun final-slot-descriptions (conc-name new-slotds over-slotds old-slotds include)
   (let ((output nil) (old-slotds (copy-list old-slotds)))
     ;; Apply overrides to old slots.
     (do ((old-slotds old-slotds (rest old-slotds)))
@@ -248,8 +297,8 @@
               (cond ((null old-slotd) nil)
                     (over-slotd
                      (override-slotd
-                      slot-name (rest over-slotd) (rest old-slotd)))
-                    (t (fix-old-slotd conc-name old-slotd))))))
+                      slot-name (rest over-slotd) (rest old-slotd) include))
+                    (t (fix-old-slotd conc-name old-slotd include))))))
     ;; Signal an error for any override wtih nothing to override.
     (dolist (over-slotd over-slotds)
       (let ((slot-name (first over-slotd)))
@@ -573,7 +622,8 @@
     `(progn
        (eval-when (:compile-toplevel :load-toplevel :execute)
          (setf (structure-type ',name) ',type-base
-               (structure-slot-descriptions ',name) ',slot-descriptions))
+               (structure-slot-descriptions ',name) ',slot-descriptions
+               (structure-include ',name) ',include))
        ,@(when (eq type-base 'structure-object)
            `((defclass ,name ,(if include (list include) nil)
                (,@(mapcar #'defstruct-slotd->defclass-slotd slot-descriptions))
@@ -633,7 +683,8 @@
                 (slotds (final-slot-descriptions
                          conc-name slot-descriptions
                          overriding-slot-descriptions
-                         old)))
+                         old
+                         include)))
            `(%%defstruct ,name ,type (,include ,(length old))
                          (,@slotds)
                          ,@options)))
