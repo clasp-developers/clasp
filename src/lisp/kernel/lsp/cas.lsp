@@ -14,13 +14,13 @@ Only the swap is atomic. Evaluation of PLACE's subforms, OLD, and NEW is
 not guaranteed to be in any sense atomic with the swap, and likely won't be.
 PLACE must be a CAS-able place. CAS-able places are either symbol macros,
 or accessor forms with a CAR of
-SYMBOL-VALUE, SYMBOL-PLIST,
-CAR, CDR, FIRST, REST,
+SYMBOL-VALUE, SYMBOL-PLIST, SVREF, CLOS:STANDARD-INSTANCE-ACCESS, THE,
+SLOT-VALUE, CLOS:SLOT-VALUE-USING-CLASS, CAR, CDR, FIRST, REST,
 or a macro,
 or an accessor defined with DEFINE-CAS-EXPANDER.
 Some CAS accessors have additional semantic constraints.
 You can see their documentation with e.g. (documentation 'slot-value 'mp:cas)
-This is planned to be expanded to include SVREF, SYMBOL-VALUE, variables,
+This is planned to be expanded to include variables,
 possibly other simple vectors, and slot accessors.
 Experimental."
   (multiple-value-bind (temps values oldvar newvar cas read)
@@ -109,7 +109,7 @@ Experimental."
             `(funcall #'(cas ,op) ,@temps)
             `(,op ,@temps))))
 
-(defmacro define-cas-expander (name lambda-list &body body
+(defmacro define-cas-expander (accessor lambda-list &body body
                                &environment env)
   "Analogous to DEFINE-SETF-EXPANDER, defines a CAS expander for ACCESSOR.
 The body must return the six values for GET-CAS-EXPANSION.
@@ -119,15 +119,17 @@ This means you will almost certainly need Clasp's synchronization operators
 
 Docstrings are accessible with doc-type MP:CAS."
   `(eval-when (:compile-toplevel :load-toplevel :execute)
-     (setf (cas-expander ',name)
-           ,(ext:parse-macro name lambda-list body env))
-     ',name))
+     (setf (cas-expander ',accessor)
+           ,(ext:parse-macro accessor lambda-list body env))
+     ',accessor))
 
 ;;; Internal, but kind of like DEFSETF.
-(defmacro define-simple-cas-expander (name cas-op (&rest params))
+(defmacro define-simple-cas-expander (name cas-op (&rest params)
+                                      &optional documentation)
   (let ((scmp (gensym "CMP")) (snew (gensym "NEW"))
         (stemps (loop repeat (length params) collect (gensym))))
     `(define-cas-expander ,name (,@params)
+       ,@(when documentation (list documentation))
        (let ((,scmp (gensym "CMP")) (,snew (gensym "NEW"))
              ,@(loop for st in stemps
                      collect `(,st (gensym "TEMP"))))
@@ -165,7 +167,10 @@ Docstrings are accessible with doc-type MP:CAS."
                ,cas)
             `(the ,type ,read))))
 
-(define-simple-cas-expander symbol-value core:cas-symbol-value (symbol))
+(define-simple-cas-expander symbol-value core:cas-symbol-value (symbol)
+  "Because special variable bindings are always thread-local, the symbol-value
+of a symbol can only be used for synchronization through this accessor if there
+are no bindings (in which case the global, thread-shared value is used.")
 (define-simple-cas-expander symbol-plist core:cas-symbol-plist (symbol))
 
 (define-simple-cas-expander car core:cas-car (cons))
@@ -192,7 +197,12 @@ Docstrings are accessible with doc-type MP:CAS."
             `(cleavir-primop::aref ,vtemp2 ,itemp t t t))))
 
 (define-simple-cas-expander clos:standard-instance-access core::instance-cas
-  (instance location))
+  (instance location)
+  "The requirements of the normal STANDARD-INSTANCE-ACCESS writer
+must be met, including that the slot has allocation :instance, and is
+bound before the operation.
+If there is a CHANGE-CLASS concurrent with this operation the
+consequences are not defined.")
 
 ;;; FIXME: When practical, these ought to be moved to clos/.
 ;;; FIXME: (cas slot-value-using-class) would be a better name
@@ -215,7 +225,12 @@ Docstrings are accessible with doc-type MP:CAS."
 
 (define-simple-cas-expander clos:slot-value-using-class
   cas-slot-value-using-class
-  (class instance slotd))
+  (class instance slotd)
+  "Same requirements as STANDARD-INSTANCE-ACCESS, except the slot can
+have allocation :class.
+Also, methods on SLOT-VALUE-USING-CLASS, SLOT-BOUNDP-USING-CLASS, and
+(SETF SLOT-VALUE-USING-CLASS) are ignored (not invoked).
+In the future, this may be customizable with a generic function.")
 
 ;;; Largely copied from slot-value.
 ;;; FIXME: Ditto above comment about CAS functions.
@@ -236,4 +251,8 @@ Docstrings are accessible with doc-type MP:CAS."
               (slot-missing class object slot-name
                             'cas (list old new)))))))
 
-(define-simple-cas-expander slot-value cas-slot-value (object slot-name))
+(define-simple-cas-expander slot-value cas-slot-value (object slot-name)
+  "See SLOT-VALUE-USING-CLASS documentation for constraints.
+If no slot with the given SLOT-NAME exists, SLOT-MISSING will be called,
+with operation = mp:cas, and new-value a list of OLD and NEW.
+If SLOT-MISSING returns, its primary value is returned.")
