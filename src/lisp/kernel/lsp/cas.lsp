@@ -193,3 +193,47 @@ Docstrings are accessible with doc-type MP:CAS."
 
 (define-simple-cas-expander clos:standard-instance-access core::instance-cas
   (instance location))
+
+;;; FIXME: When practical, these ought to be moved to clos/.
+;;; FIXME: (cas slot-value-using-class) would be a better name
+;;; and make the define-cas-expander unnecessary.
+;;; And we could expose it for customization.
+(defgeneric cas-slot-value-using-class (old new class object slotd)
+  (:argument-precedence-order class object slotd old new))
+
+(defmethod cas-slot-value-using-class
+    (old new
+     (class core:std-class) object
+     (slotd clos:standard-effective-slot-definition))
+  (let ((loc (clos:slot-definition-location slotd)))
+    (ecase (clos:slot-definition-allocation slotd)
+      ((:instance) (core::instance-cas old new object loc))
+      ((:class) (core::cas-car old new object loc)))))
+(defmethod cas-slot-value-using-class
+    (old new (class built-in-class) object slotd)
+  (error "Cannot modify slots of object with built-in-class"))
+
+(define-simple-cas-expander clos:slot-value-using-class
+  cas-slot-value-using-class
+  (class instance slotd))
+
+;;; Largely copied from slot-value.
+;;; FIXME: Ditto above comment about CAS functions.
+(defun cas-slot-value (old new object slot-name)
+  (let* ((class (class-of object))
+         (location-table (clos::class-location-table class)))
+    (if location-table
+        (let ((location (gethash slot-name location-table)))
+          (if location
+              (core::instance-cas object location old new)
+              (slot-missing class object slot-name
+                            'cas (list old new))))
+        (let ((slotd (find slot-name (clos:class-slots class)
+                           :key #'clos:slot-definition-name)))
+          (if slotd
+              (cas (clos:slot-value-using-class class object slotd)
+                   old new)
+              (slot-missing class object slot-name
+                            'cas (list old new)))))))
+
+(define-simple-cas-expander slot-value cas-slot-value (object slot-name))
