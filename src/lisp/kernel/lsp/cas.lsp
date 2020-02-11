@@ -176,5 +176,20 @@ Docstrings are accessible with doc-type MP:CAS."
 (define-cas-expander rest (cons &environment env)
   (get-cas-expansion `(cdr cons) env))
 
+(define-cas-expander svref (vector index)
+  (let ((old (gensym "OLD")) (new (gensym "NEW"))
+        (itemp (gensym "INDEX"))
+        (vtemp1 (gensym "VECTOR")) (vtemp2 (gensym "VECTOR")))
+    (values (list vtemp1 itemp vtemp2)
+            (list vector index
+                  `(if (simple-vector-p ,vtemp1)
+                       ,vtemp1
+                       (error 'type-error :datum ,vtemp1
+                                          :expected-type 'simple-vector)))
+            old new
+            `(core::acas ,vtemp2 ,itemp ,old ,new t t t)
+            ;; Two colons is a KLUDGE to allow loading this earlier.
+            `(cleavir-primop::aref ,vtemp2 ,itemp t t t))))
+
 (define-simple-cas-expander clos:standard-instance-access core::instance-cas
   (instance location))
