@@ -379,26 +379,37 @@
          (output (first (cleavir-ir:outputs instruction)))
          (label (datum-name-as-string output)))
     (out
-     (if (eq et 'bit) ; have to special case due to the layout.
-         (translate-bit-aref (in (first inputs)) (in (second inputs)) label)
-         (cmp:irc-load
-          (gen-vector-effective-address (in (first inputs)) (in (second inputs))
-                                        (cleavir-ir:element-type instruction)
-                                        (%default-int-type abi))
-          label))
+     (cond ((eq et 'bit) ; have to special case due to the layout.
+            (translate-bit-aref (in (first inputs)) (in (second inputs)) label))
+           ((member et '(ext:byte2 ext:integer2 ext:byte4 ext:integer4))
+            (error "BUG: Inline array access for 2/4-bit arrays has not been implemented"))
+           (t
+            (let ((addr
+                    (gen-vector-effective-address (in (first inputs)) (in (second inputs))
+                                                  et (%default-int-type abi))))
+              ;; FIXME: To do atomic loads with other types, we need to know alignment.
+              (if (eq et 't)
+                  (cmp:irc-load-atomic addr label)
+                  (cmp:irc-load addr label)))))
      output)))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:aset-instruction) return-value abi function-info)
   (let ((et (cleavir-ir:element-type instruction))
         (inputs (cleavir-ir:inputs instruction)))
-    (if (eq et 'bit) ; ditto above
-        (translate-bit-aset (in (third inputs)) (in (first inputs)) (in (second inputs)))
-        (cmp:irc-store
-         (in (third inputs))
-         (gen-vector-effective-address (in (first inputs)) (in (second inputs))
-                                       (cleavir-ir:element-type instruction)
-                                       (%default-int-type abi))))))
+    (cond ((eq et 'bit) ; have to special case due to the layout.
+           (translate-bit-aset (in (third inputs)) (in (first inputs)) (in (second inputs))))
+          ((member et '(ext:byte2 ext:integer2 ext:byte4 ext:integer4))
+           (error "BUG: Inline array access for 2/4-bit arrays has not been implemented"))
+          (t
+           (let ((addr
+                   (gen-vector-effective-address (in (first inputs)) (in (second inputs))
+                                                 et (%default-int-type abi)))
+                 (v (in (third inputs))))
+             ;; FIXME: To do atomic stores with other types, we need to know alignment.
+             (if (eq et 't)
+                 (cmp:irc-store-atomic v addr)
+                 (cmp:irc-store v addr)))))))
 
 (defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir:vector-length-instruction) return-value abi function-info)
