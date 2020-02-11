@@ -687,8 +687,8 @@ Otherwise do a variable shift."
   (let ((inst (irc-load source label)))
     (llvm-sys:set-alignment inst align) ; atomic loads require an explicit alignment.
     (llvm-sys:set-atomic inst
-                               'llvm-sys:monotonic
-                               1 #+(or)'llvm-sys:system)
+                         'llvm-sys:monotonic
+                         1 #+(or)'llvm-sys:system)
     inst))
 
 (defun irc-store (val destination &optional (label "") (is-volatile nil))
@@ -1354,18 +1354,12 @@ and then the irbuilder-alloca, irbuilder-body."
 
 (defun irc-verify-module-safe (module)
   (when *verify-llvm-modules*
-    (core:bformat t "Entered irc-verify-module-safe%N")
-    (llvm-sys:dump-module module)
     (multiple-value-bind (found-errors error-message)
-        (progn
-          (cmp-log "About to verify module prior to writing bitcode%N")
-          (irc-verify-module *the-module* 'llvm-sys::return-status-action))
-      (cmp-log "Done verify module%N")
-      (core:bformat t "irc-verify-module-safe found-errors: %s  message: %s%N" found-errors error-message)
-      (if found-errors
-          (progn
-            (format t "Module error: ~a~%" error-message)
-            (error "Verify module found errors"))))))
+        (irc-verify-module module 'llvm-sys::return-status-action)
+      (when found-errors
+        (llvm-sys:dump-module module)
+        (format t "Module error: ~a~%" error-message)
+        (error "Verify module found errors")))))
 
 (defun irc-verify-function (fn &optional (continue t))
   (when *verify-llvm-functions*
