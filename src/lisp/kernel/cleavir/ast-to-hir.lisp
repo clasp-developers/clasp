@@ -216,14 +216,14 @@
 
 (cleavir-ast-to-hir::define-compile-functional-ast
     cc-ast:cas-car-ast clasp-cleavir-hir:cas-car-instruction
-  (cleavir-ast:cons-ast clasp-cleavir-ast:cmp-ast cleavir-ast:value-ast))
+  (clasp-cleavir-ast:cmp-ast cleavir-ast:value-ast cleavir-ast:cons-ast))
 (cleavir-ast-to-hir::define-compile-functional-ast
     cc-ast:cas-cdr-ast clasp-cleavir-hir:cas-cdr-instruction
-  (cleavir-ast:cons-ast clasp-cleavir-ast:cmp-ast cleavir-ast:value-ast))
+  (clasp-cleavir-ast:cmp-ast cleavir-ast:value-ast cleavir-ast:cons-ast))
 (cleavir-ast-to-hir::define-compile-functional-ast
     cc-ast:slot-cas-ast clasp-cleavir-hir:slot-cas-instruction
-  (cleavir-ast:object-ast cleavir-ast:slot-number-ast
-                          clasp-cleavir-ast:cmp-ast cleavir-ast:value-ast))
+  (clasp-cleavir-ast:cmp-ast cleavir-ast:value-ast
+                             cleavir-ast:object-ast cleavir-ast:slot-number-ast))
 
 (defmethod cleavir-ast-to-hir:compile-ast ((ast cc-ast:bind-va-list-ast) context)
   (let ((temp (cleavir-ir:new-temporary)))
