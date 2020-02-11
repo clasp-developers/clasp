@@ -4138,7 +4138,9 @@ class ClaspDynamicLibrarySearchGenerator : public DynamicLibrarySearchGenerator 
  
       std::string Tmp((*Name).data() + HasGlobalPrefix,
                       (*Name).size() - HasGlobalPrefix);
+      //      core::write_bf_stream(BF("%s:%d Looking for symbol %s\n") % __FILE__ % __LINE__ % Tmp);
       if (void *Addr = Dylib.getAddressOfSymbol(Tmp.c_str())) {
+        //        core::write_bf_stream(BF("%s:%d       found address %p\n") % __FILE__ % __LINE__ % Addr);
         if (core::_sym_STARdebug_symbol_lookupSTAR->symbolValue().notnilp()) {
           core::write_bf_stream(BF("Symbol |%s|  address: %p\n") % Tmp % Addr );
         }
@@ -4146,6 +4148,8 @@ class ClaspDynamicLibrarySearchGenerator : public DynamicLibrarySearchGenerator 
         NewSymbols[Name] = JITEvaluatedSymbol(
                                               static_cast<JITTargetAddress>(reinterpret_cast<uintptr_t>(Addr)),
                                               JITSymbolFlags::Exported);
+      } else {
+        //        core::write_bf_stream(BF("%s:%d        Could not find address\n") % __FILE__ % __LINE__ );
       }
     }
  
