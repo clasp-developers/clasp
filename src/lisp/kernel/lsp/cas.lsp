@@ -175,3 +175,6 @@ Docstrings are accessible with doc-type MP:CAS."
   (get-cas-expansion `(car ,cons) env))
 (define-cas-expander rest (cons &environment env)
   (get-cas-expansion `(cdr cons) env))
+
+(define-simple-cas-expander clos:standard-instance-access core::instance-cas
+  (instance location))
