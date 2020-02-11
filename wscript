@@ -1547,6 +1547,10 @@ def build(bld):
             task.set_inputs(bld.iclasp_executable)
             task.set_outputs(bld.cclasp_executable)
             bld.add_to_group(task)
+            task = symlink_executable(env=bld.env)
+            task.set_inputs(bld.iclasp_executable)
+            task.set_outputs(clasp_symlink_node)
+            bld.add_to_group(task)
             #raise Exception("build executable for faso mode = %s" % bld.cclasp_executable)
         else:
             task = link_executable(env = bld.env)
