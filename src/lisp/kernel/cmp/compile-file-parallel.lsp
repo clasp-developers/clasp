@@ -431,16 +431,20 @@ Each bitcode filename will contain the form-index.")
                     (t (output-cfp-result result ast-jobs output-path output-type)))
               output-path)))))))
 
-(defun cl:compile-file (input-file &rest args &key (output-type :fasl) &allow-other-keys)
+(defun cl:compile-file (input-file &rest args &key (output-type :fasl output-type-p) output-file  &allow-other-keys)
   (when *generate-faso*
     (remf args :output-type)
     (setq output-type (case output-type
                         (:object :faso)
                         (:fasl :fasp)
                         (otherwise output-type))))
-  (if *compile-file-parallel*
-      (apply #'compile-file-parallel input-file :output-type output-type args)
-      (apply #'compile-file-serial input-file :output-type output-type args)))
+  (cond ((or output-type-p (null output-file))
+         (if *compile-file-parallel*
+             (apply #'compile-file-parallel input-file :output-type output-type args)
+             (apply #'compile-file-serial input-file :output-type output-type args)))
+        (t (if *compile-file-parallel*
+               (apply #'compile-file-parallel input-file args)
+               (apply #'compile-file-serial input-file args)))))
 
 (eval-when (:load-toplevel)
   (setf *compile-file-parallel* cmp:*use-compile-file-parallel*))

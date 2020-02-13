@@ -34,6 +34,7 @@
     (cmp::cfp-output-extension :bitcode)
     (pathname-type (compile-file-pathname "test.lisp" :output-file "test.newfasl" :output-type :bitcode)))))
 
+;;; if output-file is passed, repsect the extension and don't overwrite it 
 (test
  compile-file-parallel
  (let ((cmp::*compile-file-parallel* t)
