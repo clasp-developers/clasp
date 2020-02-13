@@ -43,6 +43,7 @@
 (load-if-compiled-correctly "sys:regression-tests;numbers-core.lisp")
 #+unicode
 (load-if-compiled-correctly "sys:regression-tests;encodings.lisp")
+(load-if-compiled-correctly "sys:regression-tests;system-construction.lisp")
 
 (progn
   (note-test-finished)

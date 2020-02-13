@@ -341,14 +341,14 @@ Compile a lisp source file into an LLVM module."
      (llvm-link output-path :input-files (cfp-result-files result "o")
                             :input-type :object))
     ((member output-type '(:object :fasl :faso :fasp))
-     (let ((output-path (compile-file-pathname output-path :output-type output-type)))
+     (let (#+(or)(output-path (compile-file-pathname output-path :output-type output-type)))
        #+(or)(format t "Output the object files in ast-jobs to ~s~%" output-path)
        (let* ((object-files (loop for ast-job in ast-jobs
-                                  for index = (ast-job-form-index ast-job)
-                                  collect (cons index (ast-job-output-stream ast-job))))
+                               for index = (ast-job-form-index ast-job)
+                               collect (cons index (ast-job-output-stream ast-job))))
               (sorted-object-files (sort object-files #'< :key #'car)))
          #+(or)(format t "sorted-object-files length ~d output-path: ~s~%" (length sorted-object-files) output-path)
-         (core:write-faso output-path (mapcar #'cdr sorted-object-files)))))
+         (core:write-faso (translate-logical-pathname output-path) (mapcar #'cdr sorted-object-files)))))
     #+(or)
     ((eq output-type :object)
      (let ((output-path (make-pathname :type (bitcode-extension) :defaults output-path)))
@@ -378,7 +378,7 @@ Each bitcode filename will contain the form-index.")
                                 ((:source-debug-offset *compile-file-source-debug-offset*) 0)
                                 ((:source-debug-lineno *compile-file-source-debug-lineno*) 0)
                                 ;; output-type can be (or :fasl :bitcode :object)
-                                (output-type :fasl)
+                                (output-type :fasl output-type-p)
                                 ;; type can be either :kernel or :user (FIXME? unused)
                                 (type :user)
                                 ;; ignored by bclasp
@@ -399,7 +399,9 @@ Each bitcode filename will contain the form-index.")
                                         :pathname input-file
                                         :format-control "compile-file-to-module could not find the file ~s to open it"
                                         :format-arguments (list input-file))))
-             (output-path (compile-file-pathname input-file :output-file output-file :output-type output-type))
+             (output-path (if output-type-p
+                              (compile-file-pathname input-file :output-file output-file :output-type output-type)
+                              (compile-file-pathname input-file :output-file output-file)))
              (*compilation-module-index* 0)
              (*compile-file-pathname* (pathname (merge-pathnames input-file)))
              (*compile-file-truename* (translate-logical-pathname *compile-file-pathname*))
@@ -429,16 +431,20 @@ Each bitcode filename will contain the form-index.")
                     (t (output-cfp-result result ast-jobs output-path output-type)))
               output-path)))))))
 
-(defun cl:compile-file (input-file &rest args &key (output-type :fasl) &allow-other-keys)
+(defun cl:compile-file (input-file &rest args &key (output-type :fasl output-type-p) output-file  &allow-other-keys)
   (when *generate-faso*
     (remf args :output-type)
     (setq output-type (case output-type
                         (:object :faso)
                         (:fasl :fasp)
                         (otherwise output-type))))
-  (if *compile-file-parallel*
-      (apply #'compile-file-parallel input-file :output-type output-type args)
-      (apply #'compile-file-serial input-file :output-type output-type args)))
+  (cond ((or output-type-p (null output-file))
+         (if *compile-file-parallel*
+             (apply #'compile-file-parallel input-file :output-type output-type args)
+             (apply #'compile-file-serial input-file :output-type output-type args)))
+        (t (if *compile-file-parallel*
+               (apply #'compile-file-parallel input-file args)
+               (apply #'compile-file-serial input-file args)))))
 
 (eval-when (:load-toplevel)
   (setf *compile-file-parallel* cmp:*use-compile-file-parallel*))
