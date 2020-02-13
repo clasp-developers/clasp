@@ -158,7 +158,8 @@ void do_start_thread_inner(Process_sp process, core::List_sp bindings) {
       try {
         result_mv = core::eval::applyLastArgsPLUSFirst(process->_Function,args);
       } catch (ExitProcess& e) {
-        // Exiting specially. Don't touch _ReturnValuesList - it's initialized to NIL just fine.
+        // Exiting specially. Don't touch _ReturnValuesList - it's initialized to NIL just fine,
+        // and may have been set by mp:exit-process.
         return;
       }
     }
@@ -416,7 +417,10 @@ CL_DEFUN core::T_sp mp__process_kill(Process_sp process)
   return mp__interrupt_process(process, _sym_exit_process);
 }
 
-CL_DEFUN void mp__exit_process() {
+CL_LAMBDA(&rest values);
+CL_DEFUN void mp__exit_process(core::List_sp values) {
+  Process_sp this_process = gc::As<Process_sp>(_sym_STARcurrent_processSTAR->symbolValue());
+  this_process->_ReturnValuesList = values;
   throw ExitProcess();
 };
 
