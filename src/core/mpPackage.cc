@@ -132,6 +132,7 @@ SYMBOL_EXPORT_SC_(MpPkg, STARcurrent_processSTAR);
 SYMBOL_EXPORT_SC_(MpPkg, roo);
 
 // This keeps track of a process on the list of active threads.
+// Also makes sure its phase is set as it exits.
 struct SafeRegisterDeregisterProcessWithLisp {
   Process_sp _Process;
   SafeRegisterDeregisterProcessWithLisp(Process_sp p) : _Process(p)
@@ -139,6 +140,7 @@ struct SafeRegisterDeregisterProcessWithLisp {
     _lisp->add_process(_Process);
   }
   ~SafeRegisterDeregisterProcessWithLisp() {
+    _Process->_Phase = Exiting;
     _lisp->remove_process(_Process);
   }
 };
@@ -157,17 +159,19 @@ void do_start_thread_inner(Process_sp process, core::List_sp bindings) {
       try {
         result_mv = core::eval::applyLastArgsPLUSFirst(process->_Function,args);
       } catch (ExitProcess& e) {
-      // Do nothing - exiting
+        // Exiting specially. Don't touch _ReturnValuesList - it's initialized to NIL just fine.
+        return;
       }
     }
-    process->_Phase = Exiting;
-    core::T_sp result0 = result_mv;
-    core::List_sp result_list = _Nil<core::T_O>();
-    for ( int i=result_mv.number_of_values(); i>0; --i ) {
-      result_list = core::Cons_O::create(result_mv.valueGet_(i),result_list);
+    ql::list return_values;
+    int nv = result_mv.number_of_values();
+    if (nv > 0) {
+      core::T_sp result0 = result_mv;
+      return_values << result0;
+      for (int i = 1; i < nv; ++i)
+        return_values << result_mv.valueGet_(i);
     }
-    result_list = core::Cons_O::create(result0,result_list);
-    process->_ReturnValuesList = result_list;
+    process->_ReturnValuesList = return_values.result();
   }
 }
 
