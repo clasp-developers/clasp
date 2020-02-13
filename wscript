@@ -172,7 +172,7 @@ VALID_OPTIONS = [
     #   This is good for development.
     # Default = "object"
     "CLASP_BUILD_MODE",
-    # Use compile-file-praallel once everything is built - by default this is True
+    # Use compile-file-praallel once everything is built - by default this is False
     "USE_COMPILE_FILE_PARALLEL",
     # Set the version name of clasp - this is used when building the docker image to give a predictable
     # version name.  Usually the version is calculated from the git hash
@@ -918,10 +918,10 @@ def configure(cfg):
             # by default only MacOS has USE_COMPILE_FILE_PARALLEL=True
             cfg.env['USE_COMPILE_FILE_PARALLEL'] = True
         elif (cfg.env['DEST_OS'] == LINUX_OS ):
-            cfg.env['USE_COMPILE_FILE_PARALLEL'] = True
+            cfg.env['USE_COMPILE_FILE_PARALLEL'] = False
         elif (cfg.env['DEST_OS'] == FREEBSD_OS ):
             # cracauer todo
-            cfg.env['USE_COMPILE_FILE_PARALLEL'] = True
+            cfg.env['USE_COMPILE_FILE_PARALLEL'] = False
         else:
             raise Exception("Unknown OS %s"%cfg.env['DEST_OS'])
         
