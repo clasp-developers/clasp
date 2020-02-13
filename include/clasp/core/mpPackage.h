@@ -272,7 +272,7 @@ namespace mp {
   class ConditionVariable_O : public core::CxxObject_O {
     LISP_CLASS(mp, MpPkg, ConditionVariable_O, "ConditionVariable",core::CxxObject_O);
   public:
-    CL_LAMBDA(&optional name)
+    CL_LAMBDA(&optional name);
     CL_DEF_CLASS_METHOD static ConditionVariable_sp make_ConditionVariable(core::T_sp name) {
       GC_ALLOCATE_VARIADIC(ConditionVariable_O,l,name);
       return l;
@@ -285,6 +285,10 @@ namespace mp {
     bool timed_wait(Mutex_sp m,double timeout) {return this->_ConditionVariable.timed_wait(m->_Mutex,timeout);};
     void signal() { this->_ConditionVariable.signal();};
     void broadcast() { this->_ConditionVariable.broadcast();};
+    CL_DEFMETHOD core::T_sp condition_variable_name() {
+      return _Name;
+    }
+    string __repr__() const;
   };
   core::T_sp mp__interrupt_process(Process_sp process, core::T_sp func);
 };

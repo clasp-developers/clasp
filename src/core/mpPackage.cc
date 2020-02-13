@@ -485,6 +485,14 @@ CL_DEFUN void mp__condition_variable_broadcast(ConditionVariable_sp cv) {
   cv->broadcast();
 };
 
+string ConditionVariable_O::__repr__() const {
+  stringstream ss;
+  ss << "#<CONDITION-VARIABLE ";
+  ss << _rep_(this->_Name);
+  ss << ">";
+  return ss.str();
+}
+
 CL_DEFUN void mp__push_default_special_binding(core::Symbol_sp symbol, core::T_sp form)
 {
   _lisp->push_default_special_binding(symbol,form);
