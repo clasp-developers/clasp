@@ -89,7 +89,7 @@ namespace mp {
   public:
     CL_LISPIFY_NAME("make_process");
     CL_LAMBDA(name function &optional arguments special_bindings (stack-size 0));
-    CL_DOCSTRING("doc(Create a process that evaluates the function with arguments. The special-bindings are bound in reverse so that earlier bindings override later ones.)doc");
+    CL_DOCSTRING("Make and return a new process object. The new process is inactive; it can be started with PROCESS-ENABLE.\n\nNAME is the name of the process for display purposes. FUNCTION is the function that the process should execute. ARGUMENTS is a list of arguments that will be passed to the function when the process is enabled; the default is NIL. SPECIAL-BINDINGS is an alist of (symbol . form): the forms will be evaluated in a null lexical environment, and their values bound to the symbols (as if by PROGV) when the process is started.");
     CL_DEF_CLASS_METHOD static Process_sp make_process(core::T_sp name, core::T_sp function, core::T_sp arguments, core::T_sp special_bindings, size_t stack_size) {
       core::List_sp passed_bindings = core::cl__reverse(special_bindings);
       core::List_sp all_bindings = core::lisp_copy_default_special_bindings();
@@ -152,6 +152,7 @@ namespace mp {
     LISP_CLASS(mp, MpPkg, Mutex_O, "Mutex",core::CxxObject_O);
   public:
     CL_LISPIFY_NAME("make-lock");
+    CL_DOCSTRING("Create and return a fresh mutex with the given name.");
     CL_LAMBDA(&key name)
       CL_DEF_CLASS_METHOD static Mutex_sp make_mutex(core::T_sp name) {
       GC_ALLOCATE_VARIADIC(Mutex_O,l,name,false);
@@ -197,7 +198,8 @@ namespace mp {
     LISP_CLASS(mp, MpPkg, SharedMutex_O, "SharedMutex",core::CxxObject_O);
   public:
     CL_LISPIFY_NAME("make-shared-mutex");
-    CL_LAMBDA(&optional name)
+    CL_LAMBDA(&optional name);
+    CL_DOCSTRING("Create and return a fresh shared mutex with the given name.");
     CL_DEF_CLASS_METHOD static SharedMutex_sp make_shared_mutex(core::T_sp readName,core::T_sp writeLockName) {
       GC_ALLOCATE_VARIADIC(SharedMutex_O,l,readName,writeLockName);
       return l;
@@ -250,6 +252,7 @@ namespace mp {
     LISP_CLASS(mp, MpPkg, RecursiveMutex_O, "RecursiveMutex",Mutex_O);
   public:
     CL_LAMBDA(&optional name);
+    CL_DOCSTRING("Create and return a recursive mutex with the given name.");
     CL_DEF_CLASS_METHOD static RecursiveMutex_sp make_recursive_mutex(core::T_sp name) {
       GC_ALLOCATE_VARIADIC(RecursiveMutex_O,l, name);
       return l;
@@ -284,12 +287,13 @@ namespace mp {
     bool timed_wait(Mutex_sp m,double timeout) {return this->_ConditionVariable.timed_wait(m->_Mutex,timeout);};
     void signal() { this->_ConditionVariable.signal();};
     void broadcast() { this->_ConditionVariable.broadcast();};
+    CL_DOCSTRING("Return the name of the condition variable.");
     CL_DEFMETHOD core::T_sp condition_variable_name() {
       return _Name;
     }
     string __repr__() const;
   };
-  core::T_sp mp__interrupt_process(Process_sp process, core::T_sp func);
+  void mp__interrupt_process(Process_sp process, core::T_sp func);
 };
 
 #endif
