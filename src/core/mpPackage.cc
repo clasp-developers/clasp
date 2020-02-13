@@ -355,16 +355,6 @@ CL_DEFUN core::T_sp mp__thread_id(Process_sp p) {
   return core::Integer_O::create((uintptr_t)tid);
 }
 
-
-
-CL_LAMBDA(&key name recursive)
-CL_DEFUN core::T_sp mp__make_lock(core::T_sp name, bool recursive) {
-  if (!recursive) {
-    return Mutex_O::make_mutex(name);
-  }
-  return RecursiveMutex_O::make_recursive_mutex(name);
-}
-  
 CL_DEFUN core::T_sp mp__process_active_p(Process_sp p) {
   return (p->_Phase == Active) ? _lisp->_true() : _Nil<core::T_O>();
 }
@@ -444,20 +434,18 @@ CL_DEFUN core::T_sp mp__mutex_name(Mutex_sp m) {
   return m->_Name;
 }
 
-CL_LAMBDA(m &optional (waitp t));
+CL_LAMBDA(mutex &optional (waitp t));
 CL_DEFUN bool mp__get_lock(Mutex_sp m, bool waitp) {
   return m->lock(waitp);
 }
 
+CL_LAMBDA(mutex);
+CL_DEFUN void mp__giveup_lock(Mutex_sp m) {
+  m->unlock();
+}
 
 CL_DEFUN bool mp__recursive_lock_p(Mutex_sp m) {
   return gc::IsA<RecursiveMutex_sp>(m);
-}
-
-
-CL_DEFUN bool mp__giveup_lock(Mutex_sp m) {
-  m->unlock();
-  return true;
 }
 
 CL_DEFUN core::Fixnum_sp mp__lock_count(Mutex_sp m) {

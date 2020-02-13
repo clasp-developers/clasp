@@ -623,7 +623,7 @@ The passed module is modified as a side-effect."
 ;;;
 
 ;;; jit-register-symbol is a call
-#+threads(defvar *jit-log-lock* (mp:make-lock :name 'jit-log-lock :recursive t))
+#+threads(defvar *jit-log-lock* (mp:make-recursive-mutex 'jit-log-lock))
 (defvar *jit-log-stream*)
 (defvar *jit-pid*)
 
@@ -633,7 +633,7 @@ The passed module is modified as a side-effect."
   (if (member :jit-log-symbols *features*)
       (unwind-protect
            (progn
-             #+threads(mp:lock *jit-log-lock* t)
+             #+threads(mp:get-lock *jit-log-lock*)
              (cond
                ;; If this is the first process to generate a symbol then create the master symbol file
                ((not (boundp '*jit-pid*))
@@ -657,11 +657,11 @@ The passed module is modified as a side-effect."
                    (terpri *jit-log-stream*)
                    (finish-output *jit-log-stream*))))
         (progn
-          #+threads(mp:unlock *jit-log-lock*)))))
+          #+threads(mp:giveup-lock *jit-log-lock*)))))
 
 (progn
   (export '(jit-add-module-return-function jit-add-module-return-dispatch-function jit-remove-module))
-  (defparameter *jit-lock* (mp:make-lock :name 'jit-lock :recursive t))
+  (defparameter *jit-lock* (mp:make-recursive-mutex 'jit-lock))
   (defun jit-add-module-return-function (original-module main-fn startup-fn shutdown-fn literals-list
                                          &key output-path)
     ;; Link the builtins into the module and optimize them
@@ -695,7 +695,7 @@ The passed module is modified as a side-effect."
                      (core:bformat t "startup-name |%s|%N" startup-name)
                      (core:bformat t "Done dump module%N")
                      )
-                   (mp:lock *jit-lock* t)
+                   (mp:get-lock *jit-lock*)
                    (llvm-sys:add-irmodule jit-engine module *thread-safe-context*)
                    (llvm-sys:jit-finalize-repl-function jit-engine repl-name startup-name shutdown-name literals-list))
-              (mp:unlock *jit-lock*)))))))
+              (mp:giveup-lock *jit-lock*)))))))

@@ -151,8 +151,8 @@ namespace mp {
   class Mutex_O : public core::CxxObject_O {
     LISP_CLASS(mp, MpPkg, Mutex_O, "Mutex",core::CxxObject_O);
   public:
-    CL_LISPIFY_NAME("make_mutex");
-    CL_LAMBDA(&optional name)
+    CL_LISPIFY_NAME("make-lock");
+    CL_LAMBDA(&key name)
       CL_DEF_CLASS_METHOD static Mutex_sp make_mutex(core::T_sp name) {
       GC_ALLOCATE_VARIADIC(Mutex_O,l,name,false);
       return l;
@@ -162,12 +162,12 @@ namespace mp {
     core::T_sp  _Owner;
     Mutex _Mutex;
     Mutex_O(core::T_sp name, bool recursive) : _Name(name), _Owner(_Nil<T_O>()), _Mutex(lisp_nameword(name),recursive) {};
-    CL_DEFMETHOD bool lock(bool waitp) {
+    bool lock(bool waitp) {
       bool locked = this->_Mutex.lock(waitp);
       if (locked) this->_Owner = my_thread->_Process;
       return locked;
     };
-    CL_DEFMETHOD void unlock() {
+    void unlock() {
       if (this->_Mutex.counter()==1) {
         this->_Owner = _Nil<T_O>();
       }

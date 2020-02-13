@@ -39,9 +39,9 @@
 (defun incf-value-table-id-value ()
   #+threads(unwind-protect
                 (progn
-                  (mp:lock *value-table-id-lock* t)
+                  (mp:get-lock *value-table-id-lock*)
                   (incf *value-table-id*))
-             (mp:unlock *value-table-id-lock*))
+             (mp:giveup-lock *value-table-id-lock*))
   #-threads (incf *value-table-id*))
 
 (defun next-value-table-holder-name (&optional suffix)
