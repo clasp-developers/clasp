@@ -272,8 +272,7 @@ namespace mp {
   class ConditionVariable_O : public core::CxxObject_O {
     LISP_CLASS(mp, MpPkg, ConditionVariable_O, "ConditionVariable",core::CxxObject_O);
   public:
-    CL_LAMBDA(&optional name);
-    CL_DEF_CLASS_METHOD static ConditionVariable_sp make_ConditionVariable(core::T_sp name) {
+    static ConditionVariable_sp make_ConditionVariable(core::T_sp name) {
       GC_ALLOCATE_VARIADIC(ConditionVariable_O,l,name);
       return l;
     };
