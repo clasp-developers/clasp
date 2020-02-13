@@ -127,9 +127,8 @@ void debug_mutex_unlock(Mutex* m) {
 
 
 namespace mp {
-SYMBOL_SC_(MpPkg, aSingleMpSymbol);
+
 SYMBOL_EXPORT_SC_(MpPkg, STARcurrent_processSTAR);
-SYMBOL_EXPORT_SC_(MpPkg, roo);
 
 // This keeps track of a process on the list of active threads.
 // Also makes sure its phase is set as it exits.
