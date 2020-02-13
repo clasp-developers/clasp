@@ -254,27 +254,19 @@ string Mutex_O::__repr__() const {
   return ss.str();
 }
 
-CL_LAMBDA(m &optional (upgrade nil))
+CL_LAMBDA(mutex &optional (upgrade nil))
 CL_DEFUN void mp__write_lock(SharedMutex_sp m, bool upgrade) {
   m->write_lock(upgrade);
 }
 
-CL_LAMBDA(m &optional (upgrade nil))
+CL_LAMBDA(mutex &optional (upgrade nil))
 CL_DEFUN bool mp__write_try_lock(SharedMutex_sp m, bool upgrade) {
   return m->write_try_lock(upgrade);
 }
 
-CL_LAMBDA(m &optional (release_read_lock nil))
+CL_LAMBDA(mutex &optional (release_read_lock nil))
 CL_DEFUN void mp__write_unlock(SharedMutex_sp m, bool release_read_lock) {
   m->write_unlock(release_read_lock);
-}
-
-CL_DEFUN void mp__read_lock(SharedMutex_sp m) {
-  m->read_lock();
-}
-
-CL_DEFUN void mp__read_unlock(SharedMutex_sp m) {
-  m->read_unlock();
 }
 
 CL_DEFUN void mp__shared_lock(SharedMutex_sp m) {
@@ -423,7 +415,6 @@ CL_DEFUN core::T_sp mp__process_kill(Process_sp process)
 {
   return mp__interrupt_process(process, _sym_exit_process);
 }
-
 
 CL_DEFUN void mp__exit_process() {
   throw ExitProcess();
