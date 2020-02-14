@@ -348,7 +348,7 @@ Compile a lisp source file into an LLVM module."
                                collect (cons index (ast-job-output-stream ast-job))))
               (sorted-object-files (sort object-files #'< :key #'car)))
          #+(or)(format t "sorted-object-files length ~d output-path: ~s~%" (length sorted-object-files) output-path)
-         (core:write-faso (translate-logical-pathname output-path) (mapcar #'cdr sorted-object-files)))))
+         (core:write-faso output-path (mapcar #'cdr sorted-object-files)))))
     #+(or)
     ((eq output-type :object)
      (let ((output-path (make-pathname :type (bitcode-extension) :defaults output-path)))
