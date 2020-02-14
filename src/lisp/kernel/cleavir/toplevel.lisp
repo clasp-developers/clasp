@@ -121,7 +121,13 @@
                    until (cst:null cstl)
                    collect (recurse (cst:first cstl) env)))
            (eval-progn (list-cst env)
-             (loop for cstl = list-cst then next
+             (loop with result = nil
+                   for cstl = list-cst
+                     then (cst:rest cstl)
+                   until (cst:null cstl)
+                   do (setf result (recurse (cst:first cstl) env))
+                   finally (return result))
+             #+(or)(loop for cstl = list-cst then next
                    for cst = (cst:first cstl)
                    for next = (cst:rest cstl)
                    if (not (cst:null next))
