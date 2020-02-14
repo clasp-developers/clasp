@@ -489,6 +489,7 @@ You can set the starting objectID using the keyword START-OBJECT-ID argument.)do
 CL_DEFUN void core__write_faso(T_sp pathDesig, List_sp objectFiles, T_sp tstart_object_id)
 {
   //  write_bf_stream(BF("Writing FASO file to %s for %d object files\n") % _rep_(pathDesig) % cl__length(objectFiles));
+  pathDesig = cl__translate_logical_pathname(pathDesig);
   size_t start_object_id = 0;
   if (tstart_object_id.fixnump()) {
     if (tstart_object_id.unsafe_fixnum()>=0) {
