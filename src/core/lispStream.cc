@@ -1949,6 +1949,19 @@ T_sp clasp_make_string_input_stream(T_sp strng, cl_index istart, cl_index iend) 
   return strm;
 }
 
+CL_LAMBDA(file_descriptor &key direction);
+CL_DOCSTRING("Create a file from a file descriptor and direction");
+CL_DEFUN T_sp core__make_fd_stream(int fd, Symbol_sp direction)
+{
+  if (direction == kw::_sym_input) {
+    return IOFileStream_O::makeInput("InputIOFileStreamFromFD",fd);
+  } else if (direction == kw::_sym_output) {
+    return IOFileStream_O::makeOutput("OutputIOFileStreamFromFD",fd);
+  } else {
+    SIMPLE_ERROR(BF("Could not create IOFileStream with direction %s") % _rep_(direction));
+  }
+}
+  
 CL_LAMBDA(strng &optional (istart 0) iend);
 CL_DECLARE();
 CL_DOCSTRING("make_string_input_stream");

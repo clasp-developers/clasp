@@ -429,6 +429,12 @@ CL_DEFUN bool core__wifexited(Fixnum_sp fstatus) {
   return WIFEXITED(status);
 };
 
+CL_DOCSTRING("Wraps the WEXITSTATUS(status) macro of the posix wait function.")
+CL_DEFUN int core__wexitstatus(Fixnum_sp fstatus) {
+  int status = fstatus.unsafe_fixnum();
+  return (int)WEXITSTATUS(status);
+};
+
 CL_DOCSTRING("Wraps the WTERMSIG(status) macro of the posix wait function.")
 CL_DEFUN int core__wtermsig(Fixnum_sp fstatus) {
   int status = fstatus.unsafe_fixnum();
@@ -441,13 +447,16 @@ CL_DEFUN bool core__wifsignaled(Fixnum_sp fstatus) {
   return WIFSIGNALED(status);
 };
 
-CL_LAMBDA(pid options);
+CL_LAMBDA(&key pid nohang untraced continued);
 CL_DECLARE();
 CL_DOCSTRING("waitpid - see unix waitpid - returns status");
-CL_DEFUN T_mv core__waitpid(Fixnum_sp pid, Fixnum_sp options) {
+CL_DEFUN T_mv core__waitpid(Fixnum_sp pid, bool nohang, bool untraced, bool continued ) {
   pid_t p = unbox_fixnum(pid);
   int status(0);
-  int iopts = unbox_fixnum(options);
+  int iopts = 0;
+  if (nohang) iopts |= WNOHANG;
+  if (untraced) iopts |= WUNTRACED;
+  if (continued) iopts |= WCONTINUED;
   int wpid = waitpid(p, &status, iopts);
   return Values(make_fixnum(wpid),make_fixnum(status));
 };
@@ -1869,6 +1878,24 @@ CL_DEFUN T_mv ext__system(String_sp cmd) {
   }
 }
 
+CL_DOCSTRING("Invoke unix setpgrp()");
+CL_DEFUN int core__setpgrp()
+{
+  int pid = setpgrp();
+  return pid;
+}
+
+CL_DOCSTRING("Return (values pipe0 pipe1). Signal an error if pipe failed.");
+CL_DEFUN T_mv core__pipe()
+{
+  int pipes[2];
+  int ret = pipe(pipes);
+  if (ret==0) {
+    return Values(make_fixnum(pipes[0]),make_fixnum(pipes[1]));
+  }
+  SIMPLE_ERROR(BF("Could not create pipe - error: %s") % strerror(errno));
+}
+  
 CL_LAMBDA(call-and-arguments &optional return-stream);
 CL_DECLARE();
 CL_DOCSTRING(R"(vfork_execvp - pass optional return-stream value of T if you want the output stream of the child.
