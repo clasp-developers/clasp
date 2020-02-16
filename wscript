@@ -920,10 +920,10 @@ def configure(cfg):
             # by default only MacOS has USE_COMPILE_FILE_PARALLEL=True
             cfg.env['USE_COMPILE_FILE_PARALLEL'] = True
         elif (cfg.env['DEST_OS'] == LINUX_OS ):
-            cfg.env['USE_COMPILE_FILE_PARALLEL'] = False
+            cfg.env['USE_COMPILE_FILE_PARALLEL'] = True
         elif (cfg.env['DEST_OS'] == FREEBSD_OS ):
             # cracauer todo
-            cfg.env['USE_COMPILE_FILE_PARALLEL'] = False
+            cfg.env['USE_COMPILE_FILE_PARALLEL'] = True
         else:
             raise Exception("Unknown OS %s"%cfg.env['DEST_OS'])
         
