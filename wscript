@@ -174,6 +174,8 @@ VALID_OPTIONS = [
     "CLASP_BUILD_MODE",
     # Use compile-file-praallel once everything is built - by default this is False
     "USE_COMPILE_FILE_PARALLEL",
+    # Tell clasp that GC_enumerate_reachable_objects_inner is available
+    "BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE",
     # Set the version name of clasp - this is used when building the docker image to give a predictable
     # version name.  Usually the version is calculated from the git hash
     "CLASP_VERSION",
@@ -918,7 +920,7 @@ def configure(cfg):
             # by default only MacOS has USE_COMPILE_FILE_PARALLEL=True
             cfg.env['USE_COMPILE_FILE_PARALLEL'] = True
         elif (cfg.env['DEST_OS'] == LINUX_OS ):
-            cfg.env['USE_COMPILE_FILE_PARALLEL'] = False
+            cfg.env['USE_COMPILE_FILE_PARALLEL'] = True
         elif (cfg.env['DEST_OS'] == FREEBSD_OS ):
             # cracauer todo
             cfg.env['USE_COMPILE_FILE_PARALLEL'] = False
@@ -1038,7 +1040,9 @@ def configure(cfg):
 # Check if GC_enumerate_reachable_objects_inner is available
 # If so define  BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE
 #
-    if (cfg.env["BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE"] == True):
+    if (cfg.env["BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE"] == False):
+        cfg.define("BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE",0)
+    else:
         cfg.define("BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE",1)
     cfg.define("USE_CLASP_DYNAMIC_CAST",1)
     cfg.define("BUILDING_CLASP",1)
