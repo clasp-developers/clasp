@@ -1,3 +1,4 @@
+//#define DEBUG_DTORS
 /*
     File: llvmoExpose.h
 */
@@ -832,6 +833,13 @@ struct from_object<llvm::TargetMachine::CodeGenFileType, std::true_type> {
 
 
 
+template <>
+struct gctools::GCInfo<llvmo::TargetMachine_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = true;
+  static GCInfo_policy constexpr Policy = normal;
+};
+
 
 namespace llvmo {
 FORWARD(TargetMachine);
@@ -867,7 +875,11 @@ public:
 
   TargetMachine_O() : Base(), _ptr(NULL){};
   ~TargetMachine_O() {
-    if (_ptr != NULL) { /* delete _ptr;*/
+#ifdef DEBUG_DTORS
+    printf("%s:%d dtor for TargetMachine@%p size: %lu\n", __FILE__, __LINE__, _ptr, sizeof(*_ptr));
+#endif
+    if (_ptr != NULL) {
+      delete _ptr;
       _ptr = NULL;
     };
   }
@@ -1155,6 +1167,15 @@ struct to_object<llvm::ImmutablePass *> {
 };
     ;
 
+
+template <>
+struct gctools::GCInfo<llvmo::PassManagerBase_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = true;
+  static GCInfo_policy constexpr Policy = normal;
+};
+
+
 namespace llvmo {
 FORWARD(PassManagerBase);
 class PassManagerBase_O : public core::ExternalObject_O {
@@ -1180,7 +1201,10 @@ public:
     this->_ptr = ptr;
   }
   PassManagerBase_O() : Base(), _ptr(NULL){};
-  ~PassManagerBase_O() {
+  virtual ~PassManagerBase_O() {
+#ifdef DEBUG_DTORS
+    printf("%s:%d dtor for PassManagerBase_O@%p\n", __FILE__, __LINE__, _ptr);
+#endif
     if (_ptr != NULL) {
       delete _ptr;
       _ptr = NULL;
@@ -1509,6 +1533,14 @@ struct to_object<llvm::Attribute> {
 };
     ;
 
+
+template <>
+struct gctools::GCInfo<llvmo::DataLayout_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = true;
+  static GCInfo_policy constexpr Policy = normal;
+};
+
 namespace llvmo {
 FORWARD(DataLayout);
 FORWARD(StructLayout);
@@ -1533,7 +1565,12 @@ public:
   };
   /*! Delete the default constructor because llvm::DataLayout doesn't have one */
   DataLayout_O() = delete;
-  ~DataLayout_O() {delete this->_DataLayout;}
+  ~DataLayout_O() {
+#ifdef DEBUG_DTORS
+    printf("%s:%d dtor for DataLayout@%p\n", __FILE__, __LINE__, this->_DataLayout);
+#endif
+    delete this->_DataLayout;
+  }
   DataLayout_sp copy() const;
 
 }; // DataLayout_O
@@ -2192,6 +2229,13 @@ template <>
 };
     ;
 
+template <>
+struct gctools::GCInfo<llvmo::PassManager_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = true;
+  static GCInfo_policy constexpr Policy = normal;
+};
+
 namespace llvmo {
 FORWARD(PassManager);
 class PassManager_O : public PassManagerBase_O {
@@ -2210,8 +2254,11 @@ public:
     this->_ptr = ptr;
   }
   PassManager_O() : Base(){};
-  ~PassManager_O() {
-    //	    if ( this->_ptr!=NULL ) { delete this->_ptr; this->_ptr = NULL; };
+  virtual ~PassManager_O() {
+#ifdef DEBUG_DTORS
+    printf("%s:%d dtor for PassManager_O@%p\n", __FILE__, __LINE__, _ptr);
+#endif
+    // if ( this->_ptr!=NULL ) { delete this->_ptr; this->_ptr = NULL; };
   }
 
 public:
