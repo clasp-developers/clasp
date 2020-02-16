@@ -37,6 +37,7 @@ int gcFunctions_after;
 #include <clasp/gctools/gctoolsPackage.h>
 #include <clasp/gctools/gcFunctions.h>
 #include <clasp/llvmo/intrinsics.h>
+#include <clasp/llvmo/llvmoExpose.h>
 #include <clasp/gctools/gc_interface.h>
 #include <clasp/gctools/threadlocal.h>
 #include <clasp/core/wrappers.h>
@@ -362,21 +363,27 @@ struct ReachableClass {
     core::Fixnum k = this->_Kind;
     stringstream className;
     if (k <= gctools::STAMP_max) {
+//      printf("%s:%d searching for name for this->_Kind: %u\n", __FILE__, __LINE__, this->_Kind);
       const char* nm = obj_name(k);
       if (!nm) {
         className << "NULL-NAME";
       } else {
         className << nm;
       }
-    } else {
-      className << "??CONS??";
-    }
       clasp_write_string((BF("%s: total_size: %10d count: %8d avg.sz: %8d kind: %s/%d\n")
                           % shortName % this->totalSize % this->instances
                           % (this->totalSize / this->instances) % className.str().c_str() % k).str()
                          ,cl::_sym_STARstandard_outputSTAR->symbolValue());
       core::clasp_finish_output_t();
       return this->totalSize;
+    } else {
+      clasp_write_string((BF("%s: total_size: %10d count: %8d avg.sz: %8d kind: %s/%d\n")
+                          % shortName % this->totalSize % this->instances
+                          % (this->totalSize / this->instances) % "UNKNOWN" % k).str()
+                         ,cl::_sym_STARstandard_outputSTAR->symbolValue());
+      core::clasp_finish_output_t();
+      return this->totalSize;
+    }
   }
 };
 
@@ -387,14 +394,29 @@ static size_t invalidHeaderTotalSize = 0;
 extern "C" {
 void boehm_callback_reachable_object(void *ptr, size_t sz, void *client_data) {
   gctools::Header_s *h = reinterpret_cast<gctools::Header_s *>(ptr);
-    ReachableClassMap::iterator it = static_ReachableClassKinds->find(h->stamp_());
-    if (it == static_ReachableClassKinds->end()) {
-      ReachableClass reachableClass(h->stamp_());
-      reachableClass.update(sz);
-      (*static_ReachableClassKinds)[h->stamp_()] = reachableClass;
+  gctools::GCStampEnum stamp = h->stamp_();
+  if (!valid_stamp(stamp)) {
+    if (sz==32) {
+      stamp = (gctools::GCStampEnum)(gctools::STAMP_core__Cons_O>>gctools::Header_s::wtag_width);
+//      printf("%s:%d cons stamp address: %p sz: %lu stamp: %lu\n", __FILE__, __LINE__, (void*)h, sz, stamp);
     } else {
-      it->second.update(sz);
+      stamp = (gctools::GCStampEnum)0; // unknown uses 0
     }
+  }
+  ReachableClassMap::iterator it = static_ReachableClassKinds->find(stamp);
+  if (it == static_ReachableClassKinds->end()) {
+    ReachableClass reachableClass(stamp);
+    reachableClass.update(sz);
+    (*static_ReachableClassKinds)[stamp] = reachableClass;
+  } else {
+    it->second.update(sz);
+  }
+#if 0
+  if (stamp==(gctools::GCStampEnum)(gctools::STAMP_core__Symbol_O>>gctools::Header_s::wtag_width)) {
+    core::Symbol_O* sym = (core::Symbol_O*)ptr;
+    printf("%s:%d symbol %s\n", __FILE__, __LINE__, sym->formattedName(true).c_str());
+  }
+#endif
 }
 };
 
@@ -407,9 +429,11 @@ size_t dumpResults(const std::string &name, const std::string &shortName, T *dat
   }
   size_t totalSize(0);
   sort(values.begin(), values.end(), [](const value_type &x, const value_type &y) {
-            return (x.totalSize > y.totalSize);
-  });
+                                       return (x.totalSize > y.totalSize);
+                                     });
   size_t idx = 0;
+  size_t totalCons = 0;
+  size_t numCons = 0;
   for (auto it : values) {
     // Does that print? If so should go to the OutputStream
     size_t sz = it.print(shortName);
@@ -618,7 +642,7 @@ CL_DEFUN core::T_mv cl__room(core::T_sp x) {
 #ifdef USE_BOEHM
   static_ReachableClassKinds = new (ReachableClassMap);
   invalidHeaderTotalSize = 0;
-#ifdef BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE
+#if BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE==1
   GC_enumerate_reachable_objects_inner(boehm_callback_reachable_object, NULL);
   #else
   OutputStream <<  __FILE__ << ":" << __LINE__ <<  "The boehm function GC_enumerate_reachable_objects_inner is not available\n";
@@ -642,7 +666,10 @@ CL_DEFUN core::T_mv cl__room(core::T_sp x) {
 
   delete static_ReachableClassKinds;
 #endif
-
+  if (llvmo::_sym_STARjit_engineSTAR->symbolValue().boundp()) {
+    llvmo::ClaspJIT_sp jit = gc::As<llvmo::ClaspJIT_sp>(llvmo::_sym_STARjit_engineSTAR->symbolValue());
+    OutputStream << "Number of object files: " << jit->numberOfObjectFiles() << "   total memory: " << jit->totalMemoryAllocatedForObjectFiles() << std::endl;
+  }
   clasp_write_string(OutputStream.str(),cl::_sym_STARstandard_outputSTAR->symbolValue());
   return Values(_Nil<core::T_O>());
 };
@@ -697,7 +724,7 @@ CL_DEFUN void gctools__function_call_count_profiler(core::T_sp func) {
   mps_amc_apply(global_amc_pool, amc_apply_function_call_counter, &*func_counters_start, 0);
 #endif
 #ifdef USE_BOEHM
-#ifdef BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE
+#if BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE==1
   GC_enumerate_reachable_objects_inner(boehm_callback_function_call_counter, &*func_counters_start);
 #endif
 #endif
@@ -706,7 +733,7 @@ CL_DEFUN void gctools__function_call_count_profiler(core::T_sp func) {
   mps_amc_apply(global_amc_pool, amc_apply_function_call_counter, &*func_counters_end, 0);
 #endif
 #ifdef USE_BOEHM
-#ifdef BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE
+#if BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE==1
   GC_enumerate_reachable_objects_inner(boehm_callback_function_call_counter, &*func_counters_end);
 #endif
 #endif

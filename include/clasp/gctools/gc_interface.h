@@ -126,6 +126,7 @@ namespace gctools {
 };
 
 extern "C" {
+bool valid_stamp(gctools::stamp_t kind);
 const char *obj_name(gctools::stamp_t kind);
 extern void obj_dump_base(void *base);
 extern void obj_deallocate_unmanaged_instance(gctools::smart_ptr<core::T_O> obj);

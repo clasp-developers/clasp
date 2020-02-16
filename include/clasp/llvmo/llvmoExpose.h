@@ -4486,11 +4486,13 @@ struct ObjectFileInfo {
   ObjectFileInfo* _next;
 };
 
+FORWARD(ClaspJIT);
 class ClaspJIT_O : public core::General_O {
   LISP_CLASS(llvmo, LlvmoPkg, ClaspJIT_O, "clasp-jit", core::General_O);
 public:
   void saveObjectFileInfo(const char* buffer, size_t bytes, const char* faso_filename, size_t faso_index, size_t objectID);
   size_t numberOfObjectFiles();
+  size_t totalMemoryAllocatedForObjectFiles();
 public:
   void addIRModule(Module_sp cM,ThreadSafeContext_sp context);
   core::Pointer_sp lookup(JITDylib& dylib, const std::string& Name);

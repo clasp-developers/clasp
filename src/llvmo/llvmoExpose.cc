@@ -4349,12 +4349,22 @@ CL_DEFMETHOD core::T_mv ClaspJIT_O::objectFileForInstructionPointer(core::Pointe
 
 CL_DEFMETHOD size_t ClaspJIT_O::numberOfObjectFiles() {
   ObjectFileInfo* cur = this->_ObjectFiles.load();
-  size_t count;
+  size_t count=0;
   while (cur) {
-    cur = cur->_next;
     count++;
+    cur = cur->_next;
   }
   return count;
+}
+
+CL_DEFMETHOD size_t ClaspJIT_O::totalMemoryAllocatedForObjectFiles() {
+  ObjectFileInfo* cur = this->_ObjectFiles.load();
+  size_t sz = 0;
+  while (cur) {
+    sz += cur->_object_file_size;
+    cur = cur->_next;
+  }
+  return sz;
 }
 
 

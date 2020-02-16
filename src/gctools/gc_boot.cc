@@ -70,6 +70,7 @@ void build_stamp_field_layout_tables()
   // Now malloc memory for the tables
   // now that we know the size of everything
   global_stamp_info = (Stamp_info*)malloc(sizeof(Stamp_info)*(global_stamp_max+1));
+  memset(global_stamp_info,0,sizeof(Stamp_info)*(global_stamp_max+1));
   global_stamp_layout = (Stamp_layout*)malloc(sizeof(Stamp_layout)*(global_stamp_max+1));
   global_field_layout = (Field_layout*)malloc(sizeof(Field_layout)*number_of_fixable_fields);
   Field_layout* cur_field_layout= global_field_layout;
@@ -86,7 +87,7 @@ void build_stamp_field_layout_tables()
   size_t cur_container_info_idx = 0;
   int cur_stamp=0;
   idx = 0;
-// #define DUMP_GC_BOOT 1
+//#define DUMP_GC_BOOT 1
 #define STAMP(_stamp_wtag_) (_stamp_wtag_>>(Header_s::wtag_width))
   for ( idx=0; idx<num_codes; ++idx ) {
 #ifdef DUMP_GC_BOOT

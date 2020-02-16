@@ -278,7 +278,21 @@ const char *obj_kind_name(core::T_O *tagged_ptr) {
   return obj_name(header->stamp_());
 }
 
+bool valid_stamp(gctools::stamp_t stamp) {
+#ifdef USE_MPS
+  size_t stamp_index = (size_t)stamp;
+  if (stamp_index<global_stamp_max) return true;
+  return false;
+#endif
+#ifdef USE_BOEHM
+  if (stamp<=global_unshifted_nowhere_stamp_names.size()) {
+    return true;
+  }
+  return false;
+#endif
+}
 const char *obj_name(gctools::stamp_t stamp) {
+#ifdef USE_MPS
   if (stamp == (gctools::stamp_t)STAMP_null) {
     return "UNDEFINED";
   }
@@ -287,6 +301,16 @@ const char *obj_name(gctools::stamp_t stamp) {
   ASSERT(stamp_index<=global_stamp_max);
 //  printf("%s:%d obj_name stamp= %d  stamp_index = %d\n", __FILE__, __LINE__, stamp, stamp_index);
   return global_stamp_info[stamp_index].name;
+  #endif
+#ifdef USE_BOEHM
+  if (stamp<=global_unshifted_nowhere_stamp_names.size()) {
+//    printf("%s:%d obj_name stamp= %lu\n", __FILE__, __LINE__, stamp);
+    return global_unshifted_nowhere_stamp_names[stamp].c_str();
+  }
+  printf("%s:%d obj_name stamp = %lu is out of bounds - max is %lu\n", __FILE__, __LINE__, stamp, global_unshifted_nowhere_stamp_names.size());
+  return NULL;
+#endif
+  
 }
 
 /*! I'm using a format_header so MPS gives me the object-pointer */
@@ -716,10 +740,15 @@ std::vector<std::string> global_unshifted_nowhere_stamp_names;
 std::vector<size_t> global_unshifted_nowhere_stamp_where_map;
 size_t _global_last_stamp = 0;
 
+//#define DUMP_NAMES 1
+
 void register_stamp_name(const std::string& stamp_name, UnshiftedStamp unshifted_stamp) {
   if (unshifted_stamp==0) return;
   size_t stamp_where = gctools::Header_s::StampWtagMtag::get_stamp_where(unshifted_stamp);
   size_t stamp_num = gctools::Header_s::StampWtagMtag::make_nowhere_stamp(unshifted_stamp);
+#ifdef DUMP_NAMES
+  printf("%s:%d  stamp_num=%u  name=%s\n", __FILE__, __LINE__, stamp_num,stamp_name.c_str());
+#endif
   global_unshifted_nowhere_stamp_name_map[stamp_name] = stamp_num;
   if (stamp_num>=global_unshifted_nowhere_stamp_names.size()) {
     global_unshifted_nowhere_stamp_names.resize(stamp_num+1,"");
