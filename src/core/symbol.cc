@@ -232,7 +232,7 @@ void Symbol_O::finish_setup(Package_sp pkg, bool exportp, bool shadowp) {
 Symbol_sp Symbol_O::create_at_boot(const string &nm) {
   // This is used to allocate roots that are pointed
   // to by global variable _sym_XXX  and will never be collected
-  Symbol_sp n = gctools::GC<Symbol_O>::root_allocate();
+  Symbol_sp n = gctools::GC<Symbol_O>::allocate(); // root_allocate();
   ASSERTF(nm != "", BF("You cannot create a symbol without a name"));
 #if VERBOSE_SYMBOLS
   if (nm.find("/dyn") != string::npos) {
@@ -246,7 +246,7 @@ Symbol_sp Symbol_O::create_at_boot(const string &nm) {
 Symbol_sp Symbol_O::create_from_string(const string &nm) {
   // This is used to allocate roots that are pointed
   // to by global variable _sym_XXX  and will never be collected
-  Symbol_sp n = gctools::GC<Symbol_O>::root_allocate(true);
+  Symbol_sp n = gctools::GC<Symbol_O>::allocate(true); // root_allocate(true)
   SimpleString_sp snm = SimpleBaseString_O::make(nm);
   n->setf_name(snm);
   // The following are done in finish_setup
@@ -440,16 +440,20 @@ string Symbol_O::formattedName(bool prefixAlways) const { //no guard
       ss << "<PKG-NULL>:" << this->_Name->get_std_string();
       return ss.str();
     }
-    Package_sp myPackage = gc::As<Package_sp>(tmyPackage);
-    if (myPackage->isKeywordPackage()) {
-      ss << ":" << this->_Name->get_std_string();
-    } else {
-      Package_sp currentPackage = _lisp->getCurrentPackage();
-      if (prefixAlways) {
-        ss << myPackage->getName() << "::" << this->_Name->get_std_string();
+    if (gc::IsA<Package_sp>(tmyPackage)) {
+      Package_sp myPackage = gc::As_unsafe<Package_sp>(tmyPackage);
+      if (myPackage->isKeywordPackage()) {
+        ss << ":" << this->_Name->get_std_string();
       } else {
-        ss << this->_Name->get_std_string();
+        Package_sp currentPackage = _lisp->getCurrentPackage();
+        if (prefixAlways) {
+          ss << myPackage->getName() << "::" << this->_Name->get_std_string();
+        } else {
+          ss << this->_Name->get_std_string();
+        }
       }
+    } else {
+      ss << "BAD_PACKAGE::" << this->_Name->get_std_string();
     }
   }
 // Sometimes its useful to add the address of the symbol to

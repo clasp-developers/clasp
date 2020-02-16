@@ -84,7 +84,7 @@ public:
   static Symbol_sp create(SimpleString_sp snm) {
   // This is used to allocate roots that are pointed
   // to by global variable _sym_XXX  and will never be collected
-    Symbol_sp n = gctools::GC<Symbol_O>::root_allocate(true);
+    Symbol_sp n = gctools::GC<Symbol_O>::allocate(true);
     n->setf_name(snm);
     n->fmakunbound();
     n->fmakunbound_setf();
