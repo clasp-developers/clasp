@@ -3657,7 +3657,7 @@ void register_object_file_with_gdb(void* object_file, size_t size)
     }
     __jit_debug_descriptor.action_flag = JIT_REGISTER_FN;
     __jit_debug_register_code();
-    printf("%s:%d Registered object file at %p size: %lu\n", __FILE__, __LINE__, object_file, size );
+//    printf("%s:%d Registered object file at %p size: %lu\n", __FILE__, __LINE__, object_file, size );
     global_jit_descriptor->unlock();
 };
 
@@ -4301,7 +4301,7 @@ void ClaspJIT_O::saveObjectFileInfo(const char* objectFileStart, size_t objectFi
                                     size_t faso_index,
                                     size_t objectID )
 {
-  register_object_file_with_gdb(objectFileStart,objectFileSize);
+  register_object_file_with_gdb((void*)objectFileStart,objectFileSize);
   ObjectFileInfo* ofi = new ObjectFileInfo();
   ofi->_faso_filename = faso_filename;
   ofi->_faso_index = faso_index;
