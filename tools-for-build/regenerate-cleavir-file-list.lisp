@@ -56,7 +56,8 @@
     ;; replace CL functions like CONSP, CAR, CDR, RPLACA etc
     ;;#P"src/lisp/kernel/tags/pre-auto"
     "src/lisp/kernel/cleavir/auto-compile"
-    "src/lisp/kernel/cleavir/inline")))
+    "src/lisp/kernel/cleavir/inline"
+    "src/lisp/kernel/cleavir/transform")))
 
 (save-file-list-as-python
  (merge-pathnames #P"cleavir_file_list.py"
