@@ -4301,6 +4301,7 @@ void ClaspJIT_O::saveObjectFileInfo(const char* objectFileStart, size_t objectFi
                                     size_t faso_index,
                                     size_t objectID )
 {
+  register_object_file_with_gdb(objectFileStart,objectFileSize);
   ObjectFileInfo* ofi = new ObjectFileInfo();
   ofi->_faso_filename = faso_filename;
   ofi->_faso_index = faso_index;
