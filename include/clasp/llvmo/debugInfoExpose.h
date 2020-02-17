@@ -692,6 +692,12 @@ namespace translate {
   };
 };
 
+template <>
+struct gctools::GCInfo<llvmo::DIBuilder_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = true;
+  static GCInfo_policy constexpr Policy = normal;
+};
 
 
 namespace llvmo {

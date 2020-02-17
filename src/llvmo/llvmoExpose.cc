@@ -457,6 +457,19 @@ CL_EXTERN_DEFMETHOD(TargetPassConfig_O, &llvm::TargetPassConfig::setEnableTailMe
 
 namespace llvmo {
 
+struct Safe_raw_pwrite_stream {
+  llvm::raw_pwrite_stream* ostreamP;
+  Safe_raw_pwrite_stream() : ostreamP(NULL) {};
+  void set_stream(llvm::raw_pwrite_stream* s) { ostreamP = s;};
+  llvm::raw_pwrite_stream* get_stream() const { return ostreamP; };
+  ~Safe_raw_pwrite_stream() {
+    if (ostreamP) {
+      delete ostreamP;
+      ostreamP = NULL;
+    }
+  }
+};
+
 CL_LISPIFY_NAME("addPassesToEmitFileAndRunPassManager");
 CL_DEFMETHOD core::T_sp TargetMachine_O::addPassesToEmitFileAndRunPassManager(PassManager_sp passManager,
                                                                         core::T_sp stream,
@@ -466,45 +479,41 @@ CL_DEFMETHOD core::T_sp TargetMachine_O::addPassesToEmitFileAndRunPassManager(Pa
   if (stream.nilp()) {
     SIMPLE_ERROR(BF("You must pass a valid stream"));
   }
-  llvm::raw_pwrite_stream *ostreamP;
+  Safe_raw_pwrite_stream ostream;
   llvm::SmallString<1024> stringOutput;
   bool stringOutputStream = false;
   if (core::StringOutputStream_sp sos = stream.asOrNull<core::StringOutputStream_O>()) {
-    ostreamP = new llvm::raw_svector_ostream(stringOutput);
+    ostream.set_stream(new llvm::raw_svector_ostream(stringOutput));
     stringOutputStream = true;
   } else if ( stream == kw::_sym_simple_vector_byte8 ) {
     (void)sos;
-    ostreamP = new llvm::raw_svector_ostream(stringOutput);
+    ostream.set_stream(new llvm::raw_svector_ostream(stringOutput));
   } else if (core::IOFileStream_sp fs = stream.asOrNull<core::IOFileStream_O>()) {
-    ostreamP = new llvm::raw_fd_ostream(fs->fileDescriptor(), false, true);
+    ostream.set_stream(new llvm::raw_fd_ostream(fs->fileDescriptor(), false, true));
   } else if (core::IOStreamStream_sp iostr = stream.asOrNull<core::IOStreamStream_O>()) {
     FILE *f = iostr->file();
-    ostreamP = new llvm::raw_fd_ostream(fileno(f), false, true);
+    ostream.set_stream(new llvm::raw_fd_ostream(fileno(f), false, true));
   } else {
     SIMPLE_ERROR(BF("Illegal file type %s for addPassesToEmitFileAndRunPassManager") % _rep_(stream));
   }
   llvm::SmallString<1024> dwo_stringOutput;
-  llvm::raw_pwrite_stream *dwo_ostreamP;
+  Safe_raw_pwrite_stream dwo_ostream;
   bool dwo_stringOutputStream = false;
   if (core::StringOutputStream_sp sos = dwo_stream.asOrNull<core::StringOutputStream_O>()) {
     (void)sos;
-    dwo_ostreamP = new llvm::raw_svector_ostream(dwo_stringOutput);
+    dwo_ostream.set_stream(new llvm::raw_svector_ostream(dwo_stringOutput));
     dwo_stringOutputStream = true;
   } else if (core::IOFileStream_sp fs = dwo_stream.asOrNull<core::IOFileStream_O>()) {
-    dwo_ostreamP = new llvm::raw_fd_ostream(fs->fileDescriptor(), false, true);
+    dwo_ostream.set_stream(new llvm::raw_fd_ostream(fs->fileDescriptor(), false, true));
   } else if (core::IOStreamStream_sp iostr = dwo_stream.asOrNull<core::IOStreamStream_O>()) {
     FILE *f = iostr->file();
-    dwo_ostreamP = new llvm::raw_fd_ostream(fileno(f), false, true);
+    dwo_ostream.set_stream(new llvm::raw_fd_ostream(fileno(f), false, true));
   } else if (dwo_stream.nilp()) {
-    dwo_ostreamP = NULL;
+    // nothing
   } else {
     SIMPLE_ERROR(BF("Illegal file type %s for addPassesToEmitFileAndRunPassManager") % _rep_(dwo_stream));
   }
-  if (this->wrappedPtr()->addPassesToEmitFile(*passManager->wrappedPtr(), *ostreamP, dwo_ostreamP, FileType, true, nullptr)) {
-    delete ostreamP;
-    if (dwo_ostreamP) {
-      delete dwo_ostreamP;
-    }
+  if (this->wrappedPtr()->addPassesToEmitFile(*passManager->wrappedPtr(), *ostream.get_stream(), dwo_ostream.get_stream(), FileType, true, nullptr)) {
     SIMPLE_ERROR(BF("Could not generate file type"));
   }
   passManager->wrappedPtr()->run(*module->wrappedPtr());

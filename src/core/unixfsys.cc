@@ -565,6 +565,7 @@ CL_DEFUN core::Str8Ns_sp ext__getcwd() {
           ::free((void*)ok);
           ok = strdup(spwd);
         }
+        ::free((void*)nowpwd);
       }
     }
   } else {
