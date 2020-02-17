@@ -10,7 +10,9 @@
 (in-package :cl-user)
 
 (format t "Loading asdf~%")
-(load "sys:modules;asdf;build;asdf.lisp")
+#+(or) (load "sys:modules;asdf;build;asdf.lisp")
+(require :asdf)
+
 
 (defun save-file-list-as-python (filename file-list)
   "Save the list of files in FILE-LIST to FILENAME as a python file."

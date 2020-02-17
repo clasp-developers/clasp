@@ -1032,6 +1032,8 @@ CL_DEFUN List_sp cl__read_delimited_list(Character_sp chr, T_sp input_stream_des
   return result;
 }
 
+SYMBOL_EXPORT_SC_(CorePkg, STARread_hookSTAR);
+
 CL_LAMBDA(&optional input-stream-designator (eof-error-p t) eof-value recursive-p);
 CL_DECLARE();
 CL_DOCSTRING("read an object from a stream - see CLHS");
@@ -1044,9 +1046,14 @@ CL_DEFUN T_sp cl__read(T_sp input_stream_designator, T_sp eof_error_p, T_sp eof_
   }
   DynamicScopeManager scope(_sym_STARpreserve_whitespace_pSTAR, _lisp->_boolean(preserve_whitespace));
   T_sp sin = coerce::inputStreamDesignator(input_stream_designator);
-  return read_lisp_object(sin, eof_error_p.isTrue(), eof_value, recursive_p.notnilp());
+  if (_sym_STARread_hookSTAR->boundP() &&
+      _sym_STARread_hookSTAR->symbolValue().notnilp())
+    return eval::funcall(_sym_STARread_hookSTAR->symbolValue(), sin ,eof_error_p, eof_value, recursive_p);
+  else
+    return read_lisp_object(sin, eof_error_p.isTrue(), eof_value, recursive_p.notnilp());
 }
 
+SYMBOL_EXPORT_SC_(CorePkg, STARread_preserving_whitespace_hookSTAR);
 CL_LAMBDA(&optional input-stream-designator (eof-error-p t) eof-value recursive-p);
 CL_DECLARE();
 CL_DOCSTRING("read an object from a stream while preserving whitespace - see CLHS");
@@ -1059,7 +1066,11 @@ CL_DEFUN T_sp cl__read_preserving_whitespace(T_sp input_stream_designator, T_sp 
   }
   DynamicScopeManager scope(_sym_STARpreserve_whitespace_pSTAR, _lisp->_boolean(preserve_whitespace));
   T_sp sin = coerce::inputStreamDesignator(input_stream_designator);
-  return read_lisp_object(sin, eof_error_p.isTrue(), eof_value, recursive_p.isTrue());
+  if (_sym_STARread_preserving_whitespace_hookSTAR->boundP() &&
+      _sym_STARread_preserving_whitespace_hookSTAR->symbolValue().notnilp())
+    return eval::funcall(_sym_STARread_preserving_whitespace_hookSTAR->symbolValue(), sin ,eof_error_p, eof_value, recursive_p);
+  else
+    return read_lisp_object(sin, eof_error_p.isTrue(), eof_value, recursive_p.isTrue());
 }
 
 /* -------------------------------------------------------- */

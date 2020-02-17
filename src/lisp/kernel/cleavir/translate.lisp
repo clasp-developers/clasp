@@ -887,6 +887,7 @@ This works like compile-lambda-function in bclasp."
 (defun cclasp-loop-read-and-compile-file-forms (source-sin environment)
   (let ((eof-value (gensym))
         (eclector.reader:*client* *cst-client*)
+        (eclector.readtable:*readtable* cl:*readtable*)
         (cleavir-generate-ast:*compiler* 'cl:compile-file)
         (core:*use-cleavir-compiler* t))
     (loop
