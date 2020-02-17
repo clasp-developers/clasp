@@ -381,8 +381,12 @@ GC_RESULT cons_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
         client_validate(cons->cdr().raw_());
 #endif
         core::T_O* old_car = cons->ocar().raw_();
+        POINTER_FIX(&cons->_Car);
+        POINTER_FIX(&cons->_Cdr);
+#if 0
         SMART_PTR_FIX(cons->_Car);
         SMART_PTR_FIX(cons->_Cdr);
+#endif
         client = reinterpret_cast<mps_addr_t>((char*)client+sizeof(core::Cons_O));
       } else if (cons->fwdP()) {
         client = (char *)(client) + sizeof(core::Cons_O);
