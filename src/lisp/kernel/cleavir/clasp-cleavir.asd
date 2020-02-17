@@ -48,7 +48,7 @@
                (:file "closure-optimize")
                (:file "translate")
                (:file "translate-instruction")
-               (:file "satiation")
+               ;;                (:file "satiation")
                (:file "fixup-eclector-readtables")
                (:file "activate-clasp-readtables-for-eclector")
                (:file "inline-prep")

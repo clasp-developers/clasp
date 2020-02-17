@@ -312,7 +312,6 @@
  "src/lisp/kernel/cleavir/landing-pad"
  "src/lisp/kernel/cleavir/closure-optimize" "src/lisp/kernel/cleavir/translate"
  "src/lisp/kernel/cleavir/translate-instruction"
- "src/lisp/kernel/cleavir/satiation"
  "src/lisp/kernel/cleavir/fixup-eclector-readtables"
  "src/lisp/kernel/cleavir/activate-clasp-readtables-for-eclector"
  "src/lisp/kernel/cleavir/inline-prep" "src/lisp/kernel/cleavir/auto-compile"
