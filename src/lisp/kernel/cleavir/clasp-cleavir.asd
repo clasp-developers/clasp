@@ -49,6 +49,8 @@
                (:file "translate")
                (:file "translate-instruction")
                (:file "satiation")
+               (:file "fixup-eclector-readtables")
+               (:file "activate-clasp-readtables-for-eclector")
                (:file "inline-prep")
                ;;                 (:file "auto-compile")
                ;;                 (:file "inline")
