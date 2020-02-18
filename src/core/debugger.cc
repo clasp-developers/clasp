@@ -428,18 +428,16 @@ void search_jitted_objects(std::vector<BacktraceEntry>& backtrace, bool searchFu
           backtrace[j]._FunctionEnd = entry._ObjectPointer+entry._Size;
           backtrace[j]._SymbolName = entry._Name;
           BT_LOG((buf,"MATCHED!!!\n"));
-//          break;
         }
       }
       if (searchFunctionDescriptions) { // searching for function descriptions
-        stringstream ss;
-        ss << backtrace[j]._SymbolName;
-        ss << "^DESC";
-        if (ss.str() == entry._Name) {
-          backtrace[j]._Stage = lispFrame; // Anything with a FunctionDescription is a lispFrame
-          backtrace[j]._FunctionDescription = entry._ObjectPointer;
-          BT_LOG((buf,"MATCHED!!!\n"));
-//          break;
+        size_t btlen = backtrace[j]._SymbolName.size();
+        if (entry._Name.compare(0,btlen,backtrace[j]._SymbolName)==0) {
+          if (entry._Name.compare(btlen,5,"^DESC")==0) {
+            backtrace[j]._Stage = lispFrame; // Anything with a FunctionDescription is a lispFrame
+            backtrace[j]._FunctionDescription = entry._ObjectPointer;
+            BT_LOG((buf,"MATCHED!!!\n"));
+          }
         }
       }
     }
