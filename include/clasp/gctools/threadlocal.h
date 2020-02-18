@@ -2,6 +2,7 @@
 #define gctools_threadlocal_H
 
 #include <signal.h>
+#include <functional>
 #include <clasp/gctools/threadlocal.fwd.h>
 
 
