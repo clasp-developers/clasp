@@ -29,10 +29,10 @@
 
 
 (defun compile-from-module (job &key
-                               optimize
-                               optimize-level
-                               intermediate-output-type
-                               write-bitcode)
+                                  optimize
+                                  optimize-level
+                                  intermediate-output-type
+                                  write-bitcode)
   (handler-case
       (let ((module (ast-job-module job)))
         (cond
@@ -66,7 +66,9 @@
                (let ((bitcode-file (core:coerce-to-filename (cfp-output-file-default (ast-job-form-output-path job) :bitcode))))
                  (write-bitcode module bitcode-file))))
           (t ;; fasl
-           (error "Only options for intermediate-output-type are :object or :bitcode - not ~a" intermediate-output-type))))
+           (error "Only options for intermediate-output-type are :object or :bitcode - not ~a" intermediate-output-type)))
+        (gctools:thread-local-cleanup)
+        )
     (error (e) (setf (ast-job-error job) e))))
 
 
@@ -111,9 +113,10 @@
                                write-bitcode)
   (let ((module (ast-job-to-module job :optimize optimize :optimize-level optimize-level)))
     (setf (ast-job-module job) module))
-  (compile-from-module job :optimize optimize :optimize-level optimize-level
-                           :intermediate-output-type intermediate-output-type
-                           :write-bitcode write-bitcode))
+  (let ((result (compile-from-module job :optimize optimize :optimize-level optimize-level
+                                         :intermediate-output-type intermediate-output-type
+                                         :write-bitcode write-bitcode)))
+    result))
 
 (defun wait-for-ast-job (queue &key compile-func optimize optimize-level intermediate-output-type write-bitcode)
   (unwind-protect

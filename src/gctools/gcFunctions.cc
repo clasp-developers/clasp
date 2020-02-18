@@ -1368,6 +1368,11 @@ CL_DEFUN void gctools__configuration()
   core::clasp_writeln_string(ss.str());
 }
 
+CL_DEFUN void gctools__thread_local_cleanup()
+{
+  core::thread_local_invoke_and_clear_cleanup();
+}
+
 
 void initialize_gc_functions() {
   _sym_STARallocPatternStackSTAR->defparameter(_Nil<core::T_O>());

@@ -33,6 +33,16 @@ namespace core {
 };
 
 namespace core {
+struct CleanupFunctionNode {
+  std::function<void(void)> _CleanupFunction;
+  CleanupFunctionNode*      _Next;
+  CleanupFunctionNode(const std::function<void(void)>& cleanup, CleanupFunctionNode* next)
+    : _CleanupFunction(cleanup), _Next(next) {};
+  
+};
+};
+
+namespace core {
 #define IHS_BACKTRACE_SIZE 16
   struct InvocationHistoryFrame;
   struct ThreadLocalState {
@@ -73,6 +83,7 @@ namespace core {
     Fixnum                 _BacktraceStamp;
     int                    _BacktraceFd;
 #endif
+    CleanupFunctionNode*   _CleanupFunctions;
 #ifdef DEBUG_MONITOR_SUPPORT
     // When enabled, maintain a thread-local map of strings to FILE*
     // used for logging. This is so that per-thread log files can be
@@ -118,6 +129,9 @@ struct CatchTagPusher {
   ~CatchTagPusher() { mthread->setCatchTags(this->catch_tag_state); }
 };
 
+
+void thread_local_register_cleanup(const std::function<void(void)>& cleanup);
+void thread_local_invoke_and_clear_cleanup();
 
 }; // namespace core
 

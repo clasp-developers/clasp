@@ -131,11 +131,12 @@ ThreadLocalStateLowLevel::~ThreadLocalStateLowLevel()
 namespace core {
 
 ThreadLocalState::ThreadLocalState() :
-  _stackmap(0),
-  _stackmap_size(0),
-  _PendingInterrupts(_Nil<core::T_O>()),
-  _CatchTags(_Nil<core::T_O>())
+  _stackmap(0)
+  , _stackmap_size(0)
+  , _PendingInterrupts(_Nil<core::T_O>())
+  , _CatchTags(_Nil<core::T_O>())
   , _ObjectFileStartUp(NULL)
+  , _CleanupFunctions(NULL)
 {
   my_thread = this;
 #ifdef _TARGET_OS_DARWIN
@@ -149,6 +150,25 @@ ThreadLocalState::ThreadLocalState() :
 }
 
 ThreadLocalState::~ThreadLocalState() {
+}
+
+
+void thread_local_register_cleanup(const std::function<void(void)>& cleanup)
+{
+  CleanupFunctionNode* node = new CleanupFunctionNode(cleanup,my_thread->_CleanupFunctions);
+  my_thread->_CleanupFunctions = node;
+}
+
+
+void thread_local_invoke_and_clear_cleanup() {
+  CleanupFunctionNode* node = my_thread->_CleanupFunctions;
+  while (node) {
+    node->_CleanupFunction();
+    CleanupFunctionNode* next = node->_Next;
+    delete node;
+    node = next;
+  }
+  my_thread->_CleanupFunctions = NULL;
 }
 
 // Need to use LTO to inline this.

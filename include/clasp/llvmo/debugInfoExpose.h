@@ -1,3 +1,4 @@
+//#define DEBUG_DTORS 1
 /*
     File: debugInfoExpose.h
 */
@@ -728,7 +729,13 @@ public:
   DIBuilder_O() : Base(), _ptr(NULL){};
   virtual ~DIBuilder_O() {
     if (_ptr != NULL) {
-      delete _ptr;
+      auto ptr = this->_ptr;
+      core::thread_local_register_cleanup([ptr] (void) {
+#ifdef DEBUG_DTORS
+                                            printf("%s:%d dtor %p\n", __FILE__, __LINE__, ptr);
+#endif
+                                            delete ptr;
+                                          });
       _ptr = NULL;
     };
   }

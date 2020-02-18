@@ -348,6 +348,7 @@ Compile a lisp source file into an LLVM module."
               (compile-file-output-module module output-file output-type output-path input-file type
                                           :position image-startup-position)
               (when output-info-pathname (generate-info input-file output-info-pathname))
+              (gctools:thread-local-cleanup)
               output-path)))))))
 
 (defun reloc-model ()

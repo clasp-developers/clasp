@@ -677,9 +677,9 @@ The passed module is modified as a side-effect."
             (startup-name (if startup-fn (llvm-sys:get-name startup-fn) nil))
             (shutdown-name (if shutdown-fn (llvm-sys:get-name shutdown-fn) nil)))
         (if (or (null repl-name) (string= repl-name ""))
-          (error "Could not obtain the name of the repl function ~s - got ~s" main-fn repl-name))
+            (error "Could not obtain the name of the repl function ~s - got ~s" main-fn repl-name))
         (if (or (null startup-name) (string= startup-name ""))
-          (error "Could not obtain the name of the startup function ~s - got ~s" startup-fn startup-name))
+            (error "Could not obtain the name of the startup function ~s - got ~s" startup-fn startup-name))
         (with-track-llvm-time
             (unwind-protect
                  (progn
@@ -698,4 +698,6 @@ The passed module is modified as a side-effect."
                    (mp:lock *jit-lock* t)
                    (llvm-sys:add-irmodule jit-engine module *thread-safe-context*)
                    (llvm-sys:jit-finalize-repl-function jit-engine repl-name startup-name shutdown-name literals-list))
-              (mp:unlock *jit-lock*)))))))
+              (progn
+                (gctools:thread-local-cleanup)
+                (mp:unlock *jit-lock*))))))))

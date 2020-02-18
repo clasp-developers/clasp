@@ -460,7 +460,7 @@ struct from_object<llvm::ArrayRef<llvm::Attribute::AttrKind>> {
 template <>
 struct gctools::GCInfo<llvmo::Triple_O> {
   static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = false;
+  static bool constexpr NeedsFinalization = true;
   static GCInfo_policy constexpr Policy = normal;
 };
 
@@ -494,10 +494,13 @@ public:
   Triple_O() : Base(), _ptr(NULL){};
   ~Triple_O() {
     if (_ptr != NULL) {
+      auto ptr = this->_ptr;
+      core::thread_local_register_cleanup([ptr] (void) {
 #ifdef DEBUG_DTORS
-      printf("%s:%d dtor Triple@%p\n", __FILE__, __LINE__, _ptr);
+                                            printf("%s:%d dtor %p\n", __FILE__, __LINE__, ptr);
 #endif
-      delete _ptr;
+                                            delete ptr;
+                                          });
       _ptr = NULL;
     };
   }
@@ -537,7 +540,7 @@ struct to_object<llvm::Triple *> {
 template <>
 struct gctools::GCInfo<llvmo::TargetOptions_O> {
   static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = false;
+  static bool constexpr NeedsFinalization = true;
   static GCInfo_policy constexpr Policy = normal;
 };
 
@@ -585,10 +588,13 @@ public:
   TargetOptions_O() : Base(), _ptr(NULL){};
   ~TargetOptions_O() {
     if (_ptr != NULL) {
+      auto ptr = this->_ptr;
+      core::thread_local_register_cleanup([ptr] (void) {
 #ifdef DEBUG_DTORS
-      printf("%s:%d dtor TargetOptions@%p\n", __FILE__, __LINE__, _ptr);
+                                            printf("%s:%d dtor %p\n", __FILE__, __LINE__, ptr);
 #endif
-      delete _ptr;
+                                            delete ptr;
+                                          });
       _ptr = NULL;
     };
   }
@@ -899,11 +905,14 @@ public:
 
   TargetMachine_O() : Base(), _ptr(NULL){};
   ~TargetMachine_O() {
-#ifdef DEBUG_DTORS
-    printf("%s:%d dtor for TargetMachine@%p size: %lu\n", __FILE__, __LINE__, _ptr, sizeof(*_ptr));
-#endif
     if (_ptr != NULL) {
-      delete _ptr;
+      auto ptr = this->_ptr;
+      core::thread_local_register_cleanup([ptr] (void) {
+#ifdef DEBUG_DTORS
+                                            printf("%s:%d dtor %p\n", __FILE__, __LINE__, ptr);
+#endif
+                                            delete ptr;
+                                          });
       _ptr = NULL;
     };
   }
@@ -1043,7 +1052,7 @@ struct to_object<llvm::FunctionPass *> {
 template <>
 struct gctools::GCInfo<llvmo::TargetPassConfig_O> {
   static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = false;
+  static bool constexpr NeedsFinalization = true;
   static GCInfo_policy constexpr Policy = normal;
 };
 
@@ -1076,7 +1085,13 @@ public:
   TargetPassConfig_O() : Base(), _ptr(NULL){};
   ~TargetPassConfig_O() {
     if (_ptr != NULL) {
-      delete _ptr;
+      auto ptr = this->_ptr;
+      core::thread_local_register_cleanup([ptr] (void) {
+#ifdef DEBUG_DTORS
+                                            printf("%s:%d dtor %p\n", __FILE__, __LINE__, ptr);
+#endif
+                                            delete ptr;
+                                          });
       _ptr = NULL;
     };
   }
@@ -1235,11 +1250,14 @@ public:
   }
   PassManagerBase_O() : Base(), _ptr(NULL){};
   virtual ~PassManagerBase_O() {
-#ifdef DEBUG_DTORS
-    printf("%s:%d dtor for PassManagerBase_O@%p\n", __FILE__, __LINE__, _ptr);
-#endif
     if (_ptr != NULL) {
-      delete _ptr;
+      auto ptr = this->_ptr;
+      core::thread_local_register_cleanup([ptr] (void) {
+#ifdef DEBUG_DTORS
+                                            printf("%s:%d dtor %p\n", __FILE__, __LINE__, ptr);
+#endif
+                                            delete ptr;
+                                          });
       _ptr = NULL;
     };
   }
@@ -1599,10 +1617,16 @@ public:
   /*! Delete the default constructor because llvm::DataLayout doesn't have one */
   DataLayout_O() = delete;
   ~DataLayout_O() {
+    if (this->_DataLayout) {
+      auto ptr = this->_DataLayout;
+      core::thread_local_register_cleanup([ptr] (void) {
 #ifdef DEBUG_DTORS
-    printf("%s:%d dtor for DataLayout@%p\n", __FILE__, __LINE__, this->_DataLayout);
+                                            printf("%s:%d dtor %p\n", __FILE__, __LINE__, ptr);
 #endif
-    delete this->_DataLayout;
+                                            delete ptr;
+                                          });
+      this->_DataLayout=NULL;
+    }
   }
   DataLayout_sp copy() const;
 
@@ -2212,7 +2236,7 @@ struct to_object<const llvm::TargetLibraryInfoWrapperPass *> {
 template <>
 struct gctools::GCInfo<llvmo::FunctionPassManager_O> {
   static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = false;
+  static bool constexpr NeedsFinalization = true;
   static GCInfo_policy constexpr Policy = normal;
 };
 
@@ -2235,7 +2259,16 @@ public:
   }
   FunctionPassManager_O() : Base(){};
   ~FunctionPassManager_O() {
-    if ( this->_ptr!=NULL ) delete this->_ptr;
+    if ( this->_ptr!=NULL ) {
+      auto ptr = this->_ptr;
+      core::thread_local_register_cleanup([ptr] (void) {
+#ifdef DEBUG_DTORS
+                                            printf("%s:%d dtor %p\n", __FILE__, __LINE__, ptr);
+#endif
+                                            delete ptr;
+                                          });
+      this->_ptr = NULL;
+    }
   }
 
 public:
@@ -2296,10 +2329,16 @@ public:
   }
   PassManager_O() : Base(){};
   virtual ~PassManager_O() {
+    if (this->_ptr) {
+      auto ptr = this->_ptr;
+      core::thread_local_register_cleanup([ptr] (void) {
 #ifdef DEBUG_DTORS
-    printf("%s:%d dtor for PassManager_O@%p\n", __FILE__, __LINE__, _ptr);
+                                            printf("%s:%d dtor %p\n", __FILE__, __LINE__, ptr);
 #endif
-    // if ( this->_ptr!=NULL ) { delete this->_ptr; this->_ptr = NULL; };
+                                            delete ptr;
+                                          });
+      this->_ptr = NULL;
+    }
   }
 
 public:
@@ -2400,7 +2439,7 @@ struct from_object<llvm::EngineBuilder *, std::true_type> {
 template <>
 struct gctools::GCInfo<llvmo::PassManagerBuilder_O> {
   static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = false;
+  static bool constexpr NeedsFinalization = true;
   static GCInfo_policy constexpr Policy = normal;
 };
 
@@ -2433,7 +2472,13 @@ public:
   PassManagerBuilder_O() : Base(), _ptr(NULL){};
   ~PassManagerBuilder_O() {
     if (_ptr != NULL) {
-      delete _ptr;
+      auto ptr = this->_ptr;
+      core::thread_local_register_cleanup([ptr] (void) {
+#ifdef DEBUG_DTORS
+                                            printf("%s:%d dtor %p\n", __FILE__, __LINE__, ptr);
+#endif
+                                            delete ptr;
+                                          });
       _ptr = NULL;
     };
   }
@@ -2581,10 +2626,13 @@ public:
   IRBuilderBase_O() : Base(), _ptr(NULL), _CurrentDebugLocationSet(false){};
   ~IRBuilderBase_O() {
     if (_ptr != NULL) {
+      auto ptr = this->_ptr;
+      core::thread_local_register_cleanup([ptr] (void) {
 #ifdef DEBUG_DTORS
-      printf("%s:%d:%s dtor @%p\n", __FILE__, __LINE__, __FUNCTION__, _ptr);
+                                            printf("%s:%d dtor %p\n", __FILE__, __LINE__, ptr);
 #endif
-      delete _ptr;
+                                            delete ptr;
+                                          });
       _ptr = NULL;
     };
   }
@@ -4649,7 +4697,7 @@ class MDBuilder_O;
 template <>
 struct gctools::GCInfo<llvmo::MDBuilder_O> {
   static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = false;
+  static bool constexpr NeedsFinalization = true;
   static GCInfo_policy constexpr Policy = normal;
 };
 
