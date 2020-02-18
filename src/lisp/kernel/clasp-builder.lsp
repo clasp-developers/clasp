@@ -189,7 +189,7 @@ Return files."
                 (if silent
                     nil
                     (core:bformat t "Loading %s%N" filename))
-                (load filename :print t :verbose t))
+                (load filename :print nil :verbose nil))
               (error "Illegal type ~a for load-kernel-file ~a" type path))))
   path)
 
