@@ -3605,7 +3605,7 @@ void dumpObjectFile(size_t num, const char* start, size_t size) {
 //
 // Using interface described here:
 //     https://sourceware.org/gdb/current/onlinedocs/gdb/JIT-Interface.html#JIT-Interface
-
+#if 0
 typedef enum
 {
   JIT_NOACTION = 0,
@@ -3637,8 +3637,24 @@ void __attribute__((noinline)) __jit_debug_register_code () { }
 /* Make sure to specify the version statically, because the
    debugger may check the version before we can set it.  */
 struct jit_descriptor __jit_debug_descriptor = { 1, 0, 0, 0 };
+#endif
+
 mp::Mutex* global_jit_descriptor = NULL;
 
+
+void register_object_file_with_gdb(const llvm::object::ObjectFile& Obj, const llvm::RuntimeDyld::LoadedObjectInfo &loadedObjectInfo) {
+//  printf("%s:%d:%s  ObjectFile@%p\n", __FILE__, __LINE__, __FUNCTION__, &Obj);
+  uint64_t Key =
+    static_cast<uint64_t>(reinterpret_cast<uintptr_t>(Obj.getData().data()));
+  if (global_jit_descriptor==NULL) {
+    global_jit_descriptor = new mp::Mutex(JITGDBIF_NAMEWORD);
+  }
+  mp::RAIIReadWriteLock<mp::Mutex> safe_lock(*global_jit_descriptor);
+  llvm::JITEventListener* listener = JITEventListener::createGDBRegistrationListener();
+  listener->notifyObjectLoaded(Key, Obj, loadedObjectInfo);
+}
+
+#if 0
 void register_object_file_with_gdb(void* object_file, size_t size)
 {
     if (global_jit_descriptor==NULL) {
@@ -3660,6 +3676,9 @@ void register_object_file_with_gdb(void* object_file, size_t size)
 //    printf("%s:%d Registered object file at %p size: %lu\n", __FILE__, __LINE__, object_file, size );
     global_jit_descriptor->unlock();
 };
+#endif
+
+
 
 };
 SYMBOL_EXPORT_SC_(LlvmoPkg,make_StkSizeRecord);
@@ -4227,6 +4246,7 @@ ClaspJIT_O::ClaspJIT_O() {
   this->LinkLayer->setNotifyLoaded( [&] (VModuleKey, const llvm::object::ObjectFile &Obj, const llvm::RuntimeDyld::LoadedObjectInfo &loadedObjectInfo) {
 //                                      printf("%s:%d  NotifyLoaded ObjectFile@%p\n", __FILE__, __LINE__, &Obj);
                                       save_symbol_info(Obj,loadedObjectInfo);
+                                      register_object_file_with_gdb(Obj,loadedObjectInfo);
                                     });
 #endif
   auto JTMB = llvm::orc::JITTargetMachineBuilder::detectHost();
@@ -4301,7 +4321,7 @@ void ClaspJIT_O::saveObjectFileInfo(const char* objectFileStart, size_t objectFi
                                     size_t faso_index,
                                     size_t objectID )
 {
-  register_object_file_with_gdb((void*)objectFileStart,objectFileSize);
+//  register_object_file_with_gdb((void*)objectFileStart,objectFileSize);
   ObjectFileInfo* ofi = new ObjectFileInfo();
   ofi->_faso_filename = faso_filename;
   ofi->_faso_index = faso_index;
