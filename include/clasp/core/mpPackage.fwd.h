@@ -157,13 +157,6 @@ struct Mutex {
   };
 };
 
-  
-
-  struct RecursiveMutex : public Mutex {
-    RecursiveMutex(uint64_t nameword) : Mutex(nameword,true) {};
-  };
-
-  
   struct SharedMutex {
     mp::Mutex _r;
     mp::Mutex _g;

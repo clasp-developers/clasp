@@ -274,22 +274,22 @@
 
 ;;; Keeps track of the number of dispatchers that were compiled and
 ;;;   is used to give the roots array in each dispatcher a unique name.
-#+threads(defvar *dispatcher-count-lock* (mp:make-lock :name '*dispatcher-count-lock* ))
+#+threads(defvar *dispatcher-count-lock* (mp:make-lock :name '*dispatcher-count-lock*))
 (defvar *dispatcher-count* 0)
 (defun increment-dispatcher-count ()
   #-threads(incf *dispatcher-count*)
   #+threads(unwind-protect
        (progn
-         (mp:lock *dispatcher-count-lock* t)
+         (mp:get-lock *dispatcher-count-lock*)
          (incf *dispatcher-count*))
-    (mp:unlock *dispatcher-count-lock*)))
+    (mp:giveup-lock *dispatcher-count-lock*)))
 (defun dispatcher-count ()
   #-threads *dispatcher-count*
   #+threads(unwind-protect
                 (progn
-                  (mp:lock *dispatcher-count-lock* t)
+                  (mp:get-lock *dispatcher-count-lock*)
                   *dispatcher-count*)
-             (mp:unlock *dispatcher-count-lock*)))
+             (mp:giveup-lock *dispatcher-count-lock*)))
 
 (defvar *fastgf-use-compiler* nil)
 (defvar *fastgf-timer-start*)
