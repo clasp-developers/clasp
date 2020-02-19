@@ -362,23 +362,7 @@ CL_DEFMETHOD T_mv Environment_O::localMetadata(Symbol_sp key) const {
 
 string Environment_O::__repr__() const {
   stringstream ss;
-  ss << "#<(" << lisp_classNameAsString(cl__class_of(this->asSmartPtr())) << "@" << ((void*)this->asSmartPtr().raw_()) ;
-#if 0
-  int tab = gc::As<Fixnum_sp>(_sym_STARenvironmentPrintingTabSTAR->symbolValue()).unsafe_fixnum();
-  {
-    ss << "-----------" << std::endl;
-    tab += gc::As<Fixnum_sp>(_sym_STARenvironmentPrintingTabIncrementSTAR->symbolValue()).unsafe_fixnum();
-    Fixnum_sp fntab = make_fixnum(tab);
-    DynamicScopeManager scope(_sym_STARenvironmentPrintingTabSTAR,fntab);
-    ss <<this->summaryOfContents();
-    if ( this->getParentEnvironment().notnilp() )
-    {
-      ss << string(tab,' ') << " :parent ";
-      ss << _rep_(this->getParentEnvironment());
-    }
-    ss << string(tab,' ') << " )" << std::endl;
-  }
-#endif
+  ss << "#<" << lisp_classNameAsString(cl__class_of(this->asSmartPtr())) << " @" << ((void*)this->asSmartPtr().raw_()) ;
   ss << ">";
   return ss.str();
 }
