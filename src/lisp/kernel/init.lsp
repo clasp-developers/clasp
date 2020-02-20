@@ -172,10 +172,8 @@
           source-location
           source-location-pathname
           source-location-offset
-          where
           compiled-function-name
           compiled-function-file
-          check-arguments-type
           array-index
           byte8
           integer8
