@@ -1919,7 +1919,10 @@ SYMBOL_EXPORT_SC_(CorePkg,generic_function_lambda_lists);
 CL_LISPIFY_NAME("ext:function-lambda-list");
 CL_LAMBDA(function);
 CL_DECLARE();
-CL_DOCSTRING("Return the lambda-list of a function");
+CL_DOCSTRING("Return the lambda-list of a function designator. Note that "
+             "this is intended for human consumption and so may not "
+             "literally describe the function; e.g. macro and type expander "
+             "functions will have the defmacro/deftype lambda list.");
 CL_DEFUN T_mv ext__function_lambda_list(T_sp obj) {
   if (obj.nilp()) {
     return Values(_Nil<T_O>(),_Nil<T_O>());
