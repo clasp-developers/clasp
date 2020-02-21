@@ -39,12 +39,12 @@
 
 (defun time-ctak-c++ (nthreads &optional allocate (num 0))
   (loop repeat nthreads
-        collect (mp:process-run-function 'test (lambda () (core::ctak 22 12 8 :times num :allocate allocate))) into threads
+        collect (mp:process-run-function 'test (lambda () (core:ctak 22 12 8 :times num :allocate allocate))) into threads
         finally (time (mapc #'mp:process-join threads))))
 
 (defun time-tak-c++ (nthreads &optional allocate (num 0))
   (loop repeat nthreads
-        collect (mp:process-run-function 'test (lambda () (core::tak 22 12 8 :times num :allocate allocate))) into threads
+        collect (mp:process-run-function 'test (lambda () (core:tak 22 12 8 :times num :allocate allocate))) into threads
         finally (time (mapc #'mp:process-join threads))))
 
 (defun run-all ()
