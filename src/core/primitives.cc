@@ -2125,6 +2125,102 @@ void print_add_two_numbers(int x, int y) {
   SYMBOL_SC_(CorePkg, bdsVar);
   SYMBOL_SC_(CorePkg, bdsVal);
 
+
+
+
+namespace core {
+
+
+
+
+int tak_aux(int x, int y, int z, bool allocate)
+{
+  if (y < x) {
+    return tak_aux(tak_aux(x-1,y,z,allocate),tak_aux(y-1,z,x,allocate),tak_aux(z-1,x,y,allocate),allocate);
+  } else {
+    if (allocate) {
+      GC_MALLOC(128);
+    }
+    return z;
+  }
+}
+
+int tak(int x, int y, int z, bool allocate, int times) {
+  int ret;
+  for ( int ii=0; ii<times; ++ii ) {
+    ret = tak_aux(x,y,z,allocate);
+  }
+  return ret;
+}
+
+struct Ctak {
+  int val;
+  Ctak(int v) : val(v) {};
+};
+
+int ctak_aux(int x, int y, int z, bool allocate)
+{
+  if (!(y < x)) {
+    Ctak ret(z);
+    if (allocate) {
+      GC_MALLOC(128);
+    }
+    throw ret;
+  } else {
+    int rx;
+    try {
+      ctak_aux(x-1,y,z,allocate);
+    } catch (Ctak& val) {
+      rx = val.val;
+    }
+    int ry;
+    try {
+      ctak_aux(y-1,z,x,allocate);
+    } catch (Ctak& val) {
+      ry = val.val;
+    }
+    int rz;
+    try {
+      ctak_aux(z-1,x,y,allocate);
+    } catch (Ctak& val) {
+      rz = val.val;
+    }
+    return ctak_aux(rx,ry,rz,allocate);
+  }
+}
+
+int ctak(int x, int y, int z, bool allocate,int times) {
+  int ret;
+  for (int ii=0; ii<times; ++ii) {
+    try {
+      ctak_aux(x,y,z,allocate);
+    } catch (Ctak& val) {
+      ret = val.val;
+    }
+  }
+  return ret;
+}
+
+
+CL_DOCSTRING("Run the ctak test function (google 'tak function' - this is a try/catch/throw version)");
+CL_LAMBDA(x y z &key allocate (times 1));
+CL_DEFUN void core__ctak(int x, int y, int z, bool allocate, int times)
+{
+  ctak(x,y,z,allocate,times);
+}
+
+CL_DOCSTRING("Run the tak test function (google 'tak function')");
+CL_LAMBDA(x y z &key allocate (times 1));
+CL_DEFUN void core__tak(int x, int y, int z, bool allocate,int times)
+{
+  tak(x,y,z,allocate,times);
+}
+
+};
+
+
+
+
 namespace core {
 void initialize_primitives() {
   //
