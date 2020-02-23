@@ -933,7 +933,7 @@ Use special code 0 to cancel this operation.")
 
 (defun ihs-fname (i)
   (let ((function (ihs-fun i)))
-    (cond ((null function) "Unkown")
+    (cond ((null function) '#:unknown)
           ((symbolp function) function)
           ((compiled-function-p function)
            (or (ext:compiled-function-name function) 'lambda))
