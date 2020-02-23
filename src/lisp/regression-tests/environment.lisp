@@ -183,16 +183,40 @@ documentation (x symbol) (doc-type (eql 'variable))
 (describe (CLOS::SEARCH-METHOD-COMBINATION 'test1))
 |#
 
-(test describe-others
+(test describe-alltogether
       (with-output-to-string (*standard-output*)
-        (describe #\newline)
-        (describe (code-char 256))
-        (describe "234987234iuziuz")
-        (describe most-positive-fixnum)
-        (describe (1+ most-positive-fixnum))
-        (describe pi)
-        (describe (/ 3 23))
-        (describe (complex .4 .5))
-        (describe (vector 1 2 3))
-        (describe (make-array (list 2 2) :initial-contents '((1 2)(3 4))))
-        (describe (make-hash-table))))
+        (let ((objects-to-describe
+               (list
+                'foo-test-describe
+                'core:function-lambda-list
+                'cl:defconstant
+                'stupid-function
+                'progn
+                'a-silly-constant
+                '*a-silly-var*
+                'a-silly-type
+                'silly-struct-normal 
+                'silly-struct-vector 
+                'silly-struct-list
+                '(setf nada)
+                'setf-access-fn
+                'setf-access-fn-for-long-setf
+                (find-class 'describe-class)
+                (make-instance 'describe-class)
+                (find-package :nonsense-for-describe)
+                #'blah-blah
+                (find-method #'blah-blah nil (list (find-class 'describe-class)(find-class 'string)(find-class t)))
+                #\newline
+                (code-char 256)
+                "234987234iuziuz"
+                most-positive-fixnum
+                (1+ most-positive-fixnum)
+                pi
+                (/ 3 23)
+                (complex .4 .5)
+                (vector 1 2 3)
+                (make-array (list 2 2) :initial-contents '((1 2)(3 4)))
+                (make-hash-table))))
+          (dolist (object objects-to-describe)
+            (describe object)))))
+
