@@ -16,9 +16,11 @@
   (if (and xfunction (functionp xfunction))
       (multiple-value-bind (src-pathname pos lineno)
           (core:function-source-pos xfunction)
-        (when (null src-pathname)
+        (when (or (null src-pathname)
+                  (and (stringp src-pathname)
+                       (string-equal src-pathname "-unknown-file-")))
           ;; e.g., a repl function - no source location.
-          (return-from compiled-function-file nil))
+          (return-from compiled-function-file (values nil 0 0)))
         ;; FIXME: This indicates an internal bookkeeping problem, i.e., a bug.
         (unless (typep src-pathname 'pathname)
           (error "The source-debug-pathname for ~a was ~a - it needs to be a pathname"
@@ -26,7 +28,7 @@
         (let ((src-directory (pathname-directory src-pathname))
               (src-name (pathname-name src-pathname))
               (src-type (pathname-type src-pathname))
-          (filepos pos))
+              (filepos pos))
           (let ((pn (if (eq (car src-directory) :relative)
                         (merge-pathnames src-pathname (translate-logical-pathname "source-dir:"))
                         src-pathname)))
