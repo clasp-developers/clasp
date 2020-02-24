@@ -888,11 +888,13 @@ Use special code 0 to cancel this operation.")
   #+threads (format t " In: ~A.~%" mp:*current-process*)
   (let ((fun (ihs-fun *ihs-current*)))
     (when (and (symbolp fun) (fboundp fun))
-      (setf fun (fdefinition fun)))
-    (multiple-value-bind (file position)
-	(ext:compiled-function-file fun)
-      (when file
-	(format t " File: ~S (Position #~D)~%" file position))))
+      (setf fun (fdefinition fun))
+      ;;; to avoid ;;; Warning: compiled-function-file expected a function as argument
+      ;;; - but it got NIL - there may not be any backtrace available
+      (multiple-value-bind (file position)
+          (ext:compiled-function-file fun)
+        (when file
+          (format t " File: ~S (Position #~D)~%" file position)))))
   (values))
 
 (defun tpl-hide (fname)
@@ -931,7 +933,8 @@ Use special code 0 to cancel this operation.")
 
 (defun ihs-fname (i)
   (let ((function (ihs-fun i)))
-    (cond ((symbolp function) function)
+    (cond ((null function) '#:unknown)
+          ((symbolp function) function)
           ((compiled-function-p function)
            (or (ext:compiled-function-name function) 'lambda))
 	  #+clos
