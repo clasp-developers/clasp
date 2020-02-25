@@ -208,17 +208,18 @@
       `(block ,block-tag
 	 (let ((,temp-var nil))
 	   (tagbody
-	     (restart-bind
-	       ,(mapcar #'(lambda (datum)
-			    (let*((name (nth 0 datum))
-				  (tag  (nth 1 datum))
-				  (keys (nth 2 datum)))
-			      `(,name #'(lambda (&rest temp)
-					  (setq ,temp-var temp)
-					  (go ,tag))
-				,@keys)))
-			data)
-	       (return-from ,block-tag ,expression))
+              (return-from ,block-tag
+                (restart-bind
+                    ,(mapcar #'(lambda (datum)
+                                 (let*((name (nth 0 datum))
+                                       (tag  (nth 1 datum))
+                                       (keys (nth 2 datum)))
+                                   `(,name #'(lambda (&rest temp)
+                                               (setq ,temp-var temp)
+                                               (go ,tag))
+                                           ,@keys)))
+                      data)
+                  ,expression))
 	     ,@(mapcan #'(lambda (datum)
 			   (let*((tag  (nth 1 datum))
 				 (bvl  (nth 3 datum))
