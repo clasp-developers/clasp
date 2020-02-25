@@ -887,7 +887,7 @@ def configure(cfg):
     log.debug("cfg.env['CLASP_BUILD_MODE'] = %s", cfg.env['CLASP_BUILD_MODE'])
     # apply the default
     if (cfg.env['CLASP_BUILD_MODE']==[]):
-        if (cfg.env['DEST_OS' == DARWIN_OS ):
+        if (cfg.env['DEST_OS'] == DARWIN_OS ):
             cfg.env['CLASP_BUILD_MODE'] = 'faso'
         else:
             cfg.env['CLASP_BUILD_MODE'] = 'object'
