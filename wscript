@@ -84,7 +84,7 @@ top = '.'
 out = 'build'
 APP_NAME = 'clasp'
 LLVM_VERSION = 9
-CLANG_SPECIFIC_VERSION = "9.0.0"
+CLANG_SPECIFIC_VERSION = "9.0.0_1"
 
 STAGE_CHARS = [ 'r', 'i', 'a', 'b', 'f', 'c', 'd' ]
 # Full LTO  -flto
