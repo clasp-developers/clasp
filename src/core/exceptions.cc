@@ -97,9 +97,7 @@ CL_DEFUN List_sp core__active_catch_tags() {
     }
   }
   if (!found) CONTROL_ERROR();
-#ifdef DEBUG_TRACK_UNWINDS
-  global_CatchThrow_count++;
-#endif
+  my_thread->_unwinds++;
   throw CatchThrow(tag);
 }
 

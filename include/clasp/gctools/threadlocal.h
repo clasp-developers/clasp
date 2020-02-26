@@ -66,6 +66,7 @@ namespace core {
     const InvocationHistoryFrame* _InvocationHistoryStackTop;
     gctools::GCRootsInModule*  _GCRoots;
     void* _sigaltstack_buffer;
+    size_t  _unwinds;
     stack_t _original_stack;
     void*             _text_segment_start; // Temporarily store text segment start
     size_t            _text_segment_size; // store text segment size

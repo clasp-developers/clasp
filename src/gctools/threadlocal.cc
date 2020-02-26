@@ -131,7 +131,8 @@ ThreadLocalStateLowLevel::~ThreadLocalStateLowLevel()
 namespace core {
 
 ThreadLocalState::ThreadLocalState() :
-  _stackmap(0)
+  _unwinds(0)
+  , _stackmap(0)
   , _stackmap_size(0)
   , _PendingInterrupts(_Nil<core::T_O>())
   , _CatchTags(_Nil<core::T_O>())

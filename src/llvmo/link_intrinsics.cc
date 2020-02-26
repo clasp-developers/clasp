@@ -854,9 +854,7 @@ void debugPrint_size_t(size_t v)
 }
 
 void throwReturnFrom(size_t depth, core::ActivationFrame_O* frameP) {
-#ifdef DEBUG_TRACK_UNWINDS
-  global_ReturnFrom_count++;
-#endif
+  my_thread->_unwinds++;
   core::ActivationFrame_sp af((gctools::Tagged)(frameP));
   core::T_sp handle = *const_cast<core::T_sp *>(&core::value_frame_lookup_reference(af, depth, 0));
   core::ReturnFrom returnFrom(handle.raw_());
@@ -942,9 +940,7 @@ void throwIllegalSwitchValue(size_t val, size_t max) {
 
 
 void throwDynamicGo(size_t depth, size_t index, core::T_O *afP) {
-#ifdef DEBUG_TRACK_UNWINDS
-  global_DynamicGo_count++;
-#endif
+  my_thread->_unwinds++;
   T_sp af((gctools::Tagged)afP);
   ValueFrame_sp tagbody = gc::As<ValueFrame_sp>(core::tagbody_frame_lookup(gc::As_unsafe<ValueFrame_sp>(af),depth,index));
   T_O* handle = tagbody->operator[](0).raw_();
@@ -1166,15 +1162,13 @@ T_O **cc_multipleValuesArrayAddress()
 }
 
 void cc_unwind(T_O *targetFrame, size_t index) {
-#ifdef DEBUG_TRACK_UNWINDS
-  global_unwind_count++;
-#endif
   // Signal an error if the frame we're trying to return to is no longer on the stack.
   // FIXME: This is kind of a kludge. It iterates through the stack frame. But c++ throw
   // does so as well - twice - so we end up iterating three times.
   // The correct thing to do would probably be to use the Itanium EH ABI (which we already
   // rely on the C++ part of) and write our own throw, that signals an error instead of
   // calling std::terminate in the event no handler is present.
+  my_thread->_unwinds++;
   core::frame_check((uintptr_t)targetFrame);
   core::Unwind unwind(targetFrame, index);
   throw unwind;
