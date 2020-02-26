@@ -260,7 +260,7 @@ exec sbcl --noinform --dynamic-space-size 2048 --disable-ldb --lose-on-corruptio
 (defun invert-backtrace (backtrace depth)
   (declare (optimize (debug 3)))
   (if (integerp depth)
-      (setf (dtrace-backtrace-frames backtrace) (nreverse (subseq (dtrace-backtrace-frames backtrace) 0 depth)))
+      (setf (dtrace-backtrace-frames backtrace) (nreverse (subseq (dtrace-backtrace-frames backtrace) 0 (min depth (length (dtrace-backtrace-frames backtrace))))))
       (setf (dtrace-backtrace-frames backtrace) (nreverse (dtrace-backtrace-frames backtrace))))
   backtrace)
 
