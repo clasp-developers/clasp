@@ -1,0 +1,35 @@
+#! /bin/bash
+PID=$1
+TIME=${2:-10s}
+FRAMES=${3:-4000}
+## in case there is no symbols file
+#sudo rm -f /tmp/out-$1.user_stacks && sudo dtrace -p $PID -x ustackframes=${FRAMES} -n  "profile-$RATE /pid == $PID && arg1 / { @[ustack()] = count(); } tick-$TIME { exit(0); }" -o /tmp/out-$1.user_stacks
+#if [ -f /tmp/clasp-symbols-$1 ]; then
+#   ./symbolicate.lisp -i /tmp/out-$1.user_stacks -o /tmp/out-symbol-$1.user_stacks -s /tmp/perf-$1.map
+#else
+#   cp /tmp/out-$1.user_stacks /tmp/out-symbol-$1.user_stacks
+#fi
+if [[ "$OSTYPE" == "darwin"* ]]; then
+
+scripts/profile_interp $PID $TIME $FRAMES
+
+elif [[ "$OSTYPE" == "linux-gnu" ]]; then
+
+exec ./do-perf $PID $TIME $RATE $FRAMES
+fi
+
+if [ -f /tmp/perf-$PID.map ]; then
+   ./symbolicate.lisp -i /tmp/out-script-$PID.raw.stacks -o /tmp/out-script-$PID.sym.stacks -s /tmp/perf-$PID.map
+else
+   cp /tmp/out-script-$PID.raw.stacks /tmp/out-script-$PID.sym.stacks
+fi
+./cleanup-stacks -i /tmp/out-script-$PID.sym.stacks -o /tmp/out-script-$PID.stacks
+./invert -i /tmp/out-script-$PID.stacks -o /tmp/out-script-$PID.invstacks -m 20
+# PRUNE_OUTFILE=${OUTFILE%.prune_stacks}
+# ./prune-trace.lisp $OUTFILE $PRUNE_OUTFILE
+echo /tmp/out-script-$PID.invstacks
+
+./collapse -i /tmp/out-script-$1.invstacks -o /tmp/out-script-$1.folded -m 400
+
+$FLAME_GRAPH_HOME/flamegraph.pl -color clasp /tmp/out-script-$1.folded >/tmp/out-script-$1.svg
+echo /tmp/out-script-$1.svg
