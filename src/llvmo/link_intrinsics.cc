@@ -861,6 +861,7 @@ void throwReturnFrom(size_t depth, core::ActivationFrame_O* frameP) {
 #if defined(DEBUG_FLOW_TRACKER)
   flow_tracker_about_to_throw(CONS_CAR(handle).unsafe_fixnum());
 #endif
+  my_thread_low_level->_start_unwind = std::chrono::high_resolution_clock::now();
   throw returnFrom;
 }
 };
@@ -872,6 +873,8 @@ gctools::return_type blockHandleReturnFrom_or_rethrow(unsigned char *exceptionP,
   if (returnFrom.getHandle() == handle) {
     core::MultipleValues &mv = core::lisp_multipleValues();
     gctools::return_type result(mv.operator[](0),mv.getSize());
+    std::chrono::time_point<std::chrono::high_resolution_clock> now = std::chrono::high_resolution_clock::now();
+    my_thread_low_level->_unwind_time += (now - my_thread_low_level->_start_unwind);
     return result;
   }
 #if defined(DEBUG_FLOW_TRACKER)
@@ -951,12 +954,15 @@ void throwDynamicGo(size_t depth, size_t index, core::T_O *afP) {
   Fixnum throwFlowCounter = CONS_CAR(throwHandleCons).unsafe_fixnum();
   flow_tracker_about_to_throw(throwFlowCounter);
 #endif
+  my_thread_low_level->_start_unwind = std::chrono::high_resolution_clock::now();
   throw dgo;
 }
 
 size_t tagbodyHandleDynamicGoIndex_or_rethrow(char *exceptionP, T_O* handle) {
   core::DynamicGo& goException = *reinterpret_cast<core::DynamicGo *>(exceptionP);
   if (goException.getHandle() == handle) {
+    std::chrono::time_point<std::chrono::high_resolution_clock> now = std::chrono::high_resolution_clock::now();
+    my_thread_low_level->_unwind_time += (now - my_thread_low_level->_start_unwind);
     return goException.index();
   }
   throw;
@@ -1161,19 +1167,6 @@ T_O **cc_multipleValuesArrayAddress()
   NO_UNWIND_END();
 }
 
-void cc_unwind(T_O *targetFrame, size_t index) {
-  // Signal an error if the frame we're trying to return to is no longer on the stack.
-  // FIXME: This is kind of a kludge. It iterates through the stack frame. But c++ throw
-  // does so as well - twice - so we end up iterating three times.
-  // The correct thing to do would probably be to use the Itanium EH ABI (which we already
-  // rely on the C++ part of) and write our own throw, that signals an error instead of
-  // calling std::terminate in the event no handler is present.
-  my_thread->_unwinds++;
-  core::frame_check((uintptr_t)targetFrame);
-  core::Unwind unwind(targetFrame, index);
-  throw unwind;
-}
-
 void cc_saveMultipleValue0(core::T_mv result)
 {NO_UNWIND_BEGIN();
   result.saveToMultipleValue0();
@@ -1211,9 +1204,25 @@ T_O *cc_pushLandingPadFrame()
   NO_UNWIND_END();
 }
 
+void cc_unwind(T_O *targetFrame, size_t index) {
+  // Signal an error if the frame we're trying to return to is no longer on the stack.
+  // FIXME: This is kind of a kludge. It iterates through the stack frame. But c++ throw
+  // does so as well - twice - so we end up iterating three times.
+  // The correct thing to do would probably be to use the Itanium EH ABI (which we already
+  // rely on the C++ part of) and write our own throw, that signals an error instead of
+  // calling std::terminate in the event no handler is present.
+  my_thread->_unwinds++;
+  my_thread_low_level->_start_unwind = std::chrono::high_resolution_clock::now();
+  core::frame_check((uintptr_t)targetFrame);
+  core::Unwind unwind(targetFrame, index);
+  throw unwind;
+}
+
 size_t cc_landingpadUnwindMatchFrameElseRethrow(char *exceptionP, core::T_O *thisFrame) {
   core::Unwind *unwindP = reinterpret_cast<core::Unwind *>(exceptionP);
   if (unwindP->getFrame() == thisFrame) {
+    std::chrono::time_point<std::chrono::high_resolution_clock> now = std::chrono::high_resolution_clock::now();
+    my_thread_low_level->_unwind_time += (now - my_thread_low_level->_start_unwind);
     return unwindP->index();
   }
   // throw * unwindP;

@@ -235,6 +235,8 @@ public:
     if (catchThrow.getTag() != tg)                             \
       throw catchThrow;                                        \
     else {                                                     \
+      std::chrono::time_point<std::chrono::high_resolution_clock> now = std::chrono::high_resolution_clock::now(); \
+      my_thread_low_level->_unwind_time += (now - my_thread_low_level->_start_unwind); \
       res = gctools::multiple_values<T_O>::createFromValues(); \
     }                                                          \
   }}

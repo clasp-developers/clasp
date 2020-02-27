@@ -56,6 +56,7 @@ successfully, T is returned, else error."
   (let* ((real-start (get-internal-real-time))
 	 (run-start (get-internal-run-time))
          (start-unwinds (gctools:thread-local-unwind-counter))
+         (start-unwind-time (gctools:unwind-time-nanoseconds))
          end-unwinds
 	 clang-link-time-end
 	 clang-link-number-end
@@ -79,26 +80,30 @@ successfully, T is returned, else error."
             interpreted-calls-end (core:interpreted-closure-calls)
             )
       (setf end-unwinds (gctools:thread-local-unwind-counter))
-      (if (= interpreted-calls-end interpreted-calls-start)
-          (core:bformat *trace-output*
-                        "Time real(%.3f secs) run(%.3f secs) consed(%d bytes) unwinds(%d)%N"
-                        (float (/ (- real-end real-start) internal-time-units-per-second))
-                        (float (/ (- run-end run-start) internal-time-units-per-second))
-                        (- clasp-bytes-end clasp-bytes-start)
-                        (- end-unwinds start-unwinds))
-          (core:bformat *trace-output*
-                        "Time real(%.3f secs) run(%.3f secs) consed(%d bytes) interps(%d) unwinds(%d)%N"
-                        (float (/ (- real-end real-start) internal-time-units-per-second))
-                        (float (/ (- run-end run-start) internal-time-units-per-second))
-                        (- clasp-bytes-end clasp-bytes-start)
-                        (- interpreted-calls-end interpreted-calls-start)
-                        (- end-unwinds start-unwinds)))
-      #+(and debug-track-unwinds)
-      (core:bformat *trace-output*
-                    "ReturnFrom(%d) DynamicGo(%d) CatchThrow(%d)%N"
-                    (- end-return-from start-return-from)
-                    (- end-dynamic-go start-dynamic-go)
-                    (- end-catch-throw start-catch-throw))))
+      (let* ((end-unwind-time (gctools:unwind-time-nanoseconds))
+             (unwind-time (float (/ (- end-unwind-time start-unwind-time) 1000000000.0))))
+        (if (= interpreted-calls-end interpreted-calls-start)
+            (core:bformat *trace-output*
+                          "Time real(%.3f secs) run(%.3f secs) consed(%d bytes) unwinds(%d/%.3f secs)%N"
+                          (float (/ (- real-end real-start) internal-time-units-per-second))
+                          (float (/ (- run-end run-start) internal-time-units-per-second))
+                          (- clasp-bytes-end clasp-bytes-start)
+                          (- end-unwinds start-unwinds)
+                          unwind-time)
+            (core:bformat *trace-output*
+                          "Time real(%.3f secs) run(%.3f secs) consed(%d bytes) interps(%d) unwinds(%d/%.3f secs)%N"
+                          (float (/ (- real-end real-start) internal-time-units-per-second))
+                          (float (/ (- run-end run-start) internal-time-units-per-second))
+                          (- clasp-bytes-end clasp-bytes-start)
+                          (- interpreted-calls-end interpreted-calls-start)
+                          (- end-unwinds start-unwinds)
+                          unwind-time))
+        #+(and debug-track-unwinds)
+        (core:bformat *trace-output*
+                      "ReturnFrom(%d) DynamicGo(%d) CatchThrow(%d)%N"
+                      (- end-return-from start-return-from)
+                      (- end-dynamic-go start-dynamic-go)
+                      (- end-catch-throw start-catch-throw)))))
   #+boehm-gc
   (let* ((*do-time-level* (1+ *do-time-level*))
          real-start

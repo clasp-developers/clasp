@@ -1348,6 +1348,10 @@ CL_DEFUN void gctools__thread_local_cleanup()
   core::thread_local_invoke_and_clear_cleanup();
 }
 
+CL_DEFUN core::Integer_sp gctools__unwind_time_nanoseconds() {
+  core::Integer_sp is = core::Integer_O::create(my_thread_low_level->_unwind_time.count());
+  return is;
+}
 
 void initialize_gc_functions() {
   _sym_STARallocPatternStackSTAR->defparameter(_Nil<core::T_O>());
