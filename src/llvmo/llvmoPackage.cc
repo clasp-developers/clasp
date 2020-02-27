@@ -516,7 +516,16 @@ void LlvmoExposer_O::expose(core::Lisp_sp lisp, core::Exposer_O::WhatToExpose wh
 #ifdef USE_JITLINKER
     #error "Define a different code-model"
 #else
+    #ifdef _TARGET_OS_DARWIN
+  // This is from Lang Hames who said on Discord #llvm channel:
+  // @drmeister Regarding code models: I would switch your code model and custom linking layer together:
+  // If Darwin then use ObjectLinkingLayer and Small, otherwise RTDyldObjectLinkingLayer and Large.
+  // Also see llvmoExpose.cc
+  //     llvmo::_sym_STARdefault_code_modelSTAR->defparameter(llvmo::_sym_CodeModel_Large);
+    llvmo::_sym_STARdefault_code_modelSTAR->defparameter(llvmo::_sym_CodeModel_Small);
+    #else
     llvmo::_sym_STARdefault_code_modelSTAR->defparameter(llvmo::_sym_CodeModel_Large);
+    #endif
 #endif
     GC_ALLOCATE(ClaspJIT_O,jit_engine);
     llvmo::_sym_STARjit_engineSTAR->defparameter(jit_engine);

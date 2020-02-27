@@ -4237,11 +4237,21 @@ ClaspJIT_O::ClaspJIT_O() {
 #endif
   
   this->ES = new llvm::orc::ExecutionSession();
-  auto GetMemMgr = []() { return llvm::make_unique<llvmo::ClaspSectionMemoryManager>(); };
 #ifdef USE_JITLINKER
     #error "JITLinker support needed"
 #else
+  #ifdef _TARGET_OS_DARWIN
+  // This is from Lang Hames who said on Discord #llvm channel:
+  // @drmeister Regarding code models: I would switch your code model and custom linking layer together:
+  // If Darwin then use ObjectLinkingLayer and Small, otherwise RTDyldObjectLinkingLayer and Large.
+  // Also see llvmoPackage.cc
+  //     llvmo::_sym_STARdefault_code_modelSTAR->defparameter(llvmo::_sym_CodeModel_Large);
+  auto ipmm =  new llvm::jitlink::InProcessMemoryManager();
+  this->LinkLayer = new llvm::orc::ObjectLinkingLayer(*this->ES,ipmm);
+  #else
+  auto GetMemMgr = []() { return llvm::make_unique<llvmo::ClaspSectionMemoryManager>(); };
   this->LinkLayer = new llvm::orc::RTDyldObjectLinkingLayer(*this->ES,GetMemMgr);
+  #endif
   this->LinkLayer->setProcessAllSections(true);
   this->LinkLayer->setNotifyLoaded( [&] (VModuleKey, const llvm::object::ObjectFile &Obj, const llvm::RuntimeDyld::LoadedObjectInfo &loadedObjectInfo) {
 //                                      printf("%s:%d  NotifyLoaded ObjectFile@%p\n", __FILE__, __LINE__, &Obj);

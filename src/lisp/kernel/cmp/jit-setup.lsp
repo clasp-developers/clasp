@@ -492,7 +492,11 @@ The passed module is modified as a side-effect."
           (if (>= llvm-version-val 10)
               (warn "By llvm-version 10 we should not need to use the code-model-large"))
           #+(or)(format t "llvm-version-val ~a Using llvm-sys:code-model-large cmp:*generate-faso* -> ~a   cmp:*compile-file-parallel* -> ~a~%" llvm-version-val *generate-faso* *compile-file-parallel*)
-          'llvm-sys:code-model-large
+          (if (member :darwin *features*)
+              'llvm-sys:code-model-small ; This is from Lang Hames who said on Discord #llvm channel:
+                                        ; @drmeister Regarding code models: I would switch your code model and custom linking layer together:
+                                        ; If Darwin then use ObjectLinkingLayer and Small, otherwise RTDyldObjectLinkingLayer and Large.
+              'llvm-sys:code-model-large)
           )
         (progn
           #+(or)(format t "Using llvm-sys:code-model-small cmp:*generate-faso* -> ~a   cmp:*compile-file-parallel* -> ~a~%" *generate-faso* *compile-file-parallel*)
