@@ -170,7 +170,7 @@
 (defun unparse-slot-description (list)
   (let ((slot-name (car list)) (plist (cdr list)) (default (list nil)))
     (let ((initform (getf plist :initform default))
-          (read-only (getf plist :reader nil))
+          (read-only (getf plist :read-only nil))
           (type (getf plist :type t)))
       (if (eq initform default) ; no initform; simple specification
           slot-name
@@ -467,20 +467,20 @@
     (case (car option)
       ((:constructor :kw-constructor)
        (defstruct-dispatch-constructor-def
-        option slot-descriptions
-        `(allocate-instance
-          ;; The class is not immediately available at l-t-v time-
-          ;; because the defclass form must be evaluated first.
-          ;; Thus, bullshit.
-          (let ((class (load-time-value (list nil))))
-            (or (car class)
-                (car (rplaca class (find-class ',structure-name))))))
-        (lambda (obj var loc) `(si:instance-set ,obj ,loc ,var))))
+           option slot-descriptions
+         `(allocate-instance
+           ;; The class is not immediately available at l-t-v time-
+           ;; because the defclass form must be evaluated first.
+           ;; Thus, bullshit.
+           (let ((class (load-time-value (list nil))))
+             (or (car class)
+                 (car (rplaca class (find-class ',structure-name))))))
+         (lambda (obj var loc) `(si:instance-set ,obj ,loc ,var))))
       ((:print-function :print-object)
        (let ((obj (gensym "OBJ")) (stream (gensym "STREAM")))
          `(defmethod print-object ((,obj ,structure-name) ,stream)
             (,(second option) ,obj ,stream
-             ,@(when (eq (car option) :print-function) '(0))))))
+              ,@(when (eq (car option) :print-function) '(0))))))
       ((:predicate)
        `(defgeneric ,(second option) (object)
           (:method (object) nil)
@@ -490,7 +490,9 @@
        ;; a fixed number of slots - but CLHS is clear that the copier
        ;; must be COPY-STRUCTURE, and so it has to deal correctly with subclasses.
        `(defun ,(second option) (instance) (copy-structure instance)))
-      ((:documentation)))))
+      ((:documentation)
+        `(set-documentation ',structure-name 'structure
+                            ',(second option))))))
 
 (defun defstruct-vector-option-expander
     (structure-name element-type included-size slot-descriptions)
