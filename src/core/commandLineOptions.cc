@@ -29,6 +29,7 @@ THE SOFTWARE.
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <boost/program_options.hpp>
+#include "clasp/core/compiler.h"
 #include <clasp/core/commandLineOptions.h>
 
 namespace core {
@@ -56,6 +57,7 @@ void process_clasp_arguments(CommandLineOptions* options)
              "-I/--ignore-image    - Don't load the boot image/start with init.lsp\n"
              "-i/--image file      - Use the file as the boot image\n"
              "-t/--stage (a|b|c)   - Start the specified stage of clasp 'c' is default\n"
+             "-U/--unpack-faso (faso-file) - Unpack the faso file into separate object files\n"
              "-N/--non-interactive - Suppress all repls\n"
              "-m/--disable-mpi     - Don't use mpi even if built with mpi\n"
              "-v/--version         - Print version\n"
@@ -86,6 +88,7 @@ void process_clasp_arguments(CommandLineOptions* options)
              "Environment variables:\n"
              "export CLASP_DEBUG=<file-names-space-or-comma-separated>  Define files that\n"
              "                        generate log info when DEBUG_LEVEL_FULL is set at top of file.\n"
+             "export CLASP_DONT_HANDLE_CRASH_SIGNALS=1  Don't insert signal handlers for crash signals.\n"
              "export CLASP_HOME=<dir>   Define where clasp source code lives\n"
              "export CLASP_OPTIMIZATION_LEVEL=0|1|2|3 Set the llvm optimization level for compiled code\n"
              "export CLASP_TRAP_INTERN=PKG:SYMBOL Trap the intern of the symbol\n"
@@ -105,19 +108,25 @@ void process_clasp_arguments(CommandLineOptions* options)
              "# to control MPS\n"
              "export CLASP_MPS_CONFIG=\"32 32 16 80 32 80 64\" # for lots of GC's\n");
       exit(0);
-    }
-      else if (arg == "-v" || arg == "--version") {
-        std::cout << program_name();
+    } else if (arg == "-U" || arg == "--unpack-faso") {
+      if (iarg+1<endArg) {
+        std::string faso_name = options->_RawArguments[iarg+1];
+        clasp_unpack_faso(faso_name);
+      }
+      iarg++;
+      exit(0);
+    } else if (arg == "-v" || arg == "--version") {
+      std::cout << program_name();
 #ifdef USE_MPS
-        std::cout << "-mps-";
+      std::cout << "-mps-";
 #endif
 #ifdef USE_BOEHM
-        std::cout << "-boehm-";
+      std::cout << "-boehm-";
 #endif
-        std::cout << CLASP_VERSION << std::endl;
-        exit(0);
-      }
-      else if (arg == "-I" || arg == "--ignore-image") {
+      std::cout << CLASP_VERSION << std::endl;
+      exit(0);
+    }
+    else if (arg == "-I" || arg == "--ignore-image") {
       options->_DontLoadImage = true;
     } else if (arg == "-N" || arg == "--non-interactive") {
       options->_Interactive = false;

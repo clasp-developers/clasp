@@ -1,9 +1,9 @@
 /*
-    File: enums_translators.h
+    File: seqPackage.fwd.h
 */
 
 /*
-Copyright (c) 2014, Christian E. Schafmeister
+Copyright (c) 2019, Christian E. Schafmeister
  
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
@@ -24,10 +24,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
+#ifndef seqPackage_fwd_H
+#define seqPackage_fwd_H
 
-#ifndef enums_translators_h
-#define enums_translators_h
+NAMESPACE_PACKAGE_ASSOCIATION(seqext, SequencePkg, "SEQUENCE")
 
-namespace core {
-};
 #endif

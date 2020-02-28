@@ -312,6 +312,10 @@ namespace core {
     static Integer_sp create( int32_t v );
     static Integer_sp create( uint32_t v );
 
+#if !defined(_TARGET_OS_LINUX) && !defined(_TARGET_OS_FREEBSD)
+    static Integer_sp create( uintptr_t v);
+#endif
+
 #if !defined( CLASP_FIXNUM_IS_INT64 )
     static Integer_sp create( int64_t v );
 #endif
@@ -332,9 +336,6 @@ namespace core {
 #endif
 #if !defined( CLASP_UNSIGNED_LONG_LONG_IS_UINT64 )
     static Integer_sp create( unsigned long long v );
-#endif
-#if !defined(_TARGET_OS_LINUX)
-    static Integer_sp create( uintptr_t v );
 #endif
     static Integer_sp create( float f );
     static Integer_sp create( double f );
@@ -888,9 +889,6 @@ namespace core {
   unsigned char clasp_toUint8(T_sp n);
   signed char clasp_toSignedInt8(T_sp n);
   cl_index clasp_toSize(T_sp f);
-
-  Integer_sp cl__logior(List_sp integers);
-  Integer_sp cl__logand(List_sp integers);
 
   gctools::Fixnum fixint(T_sp x);
 

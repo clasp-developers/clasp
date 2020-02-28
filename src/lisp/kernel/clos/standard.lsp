@@ -219,7 +219,7 @@
   ;; Now this removes the class from all generic function fast paths. This ensures that
   ;; if a generic function is specialized where an obsolete instance is, it will go to
   ;; the slow path, which will call MAYBE-UPDATE-INSTANCES.
-  (clos:invalidate-generic-functions-with-class-selector class)
+  (invalidate-generic-functions-with-class-selector class)
   class)
 
 (defmethod initialize-instance ((class class) &rest initargs &key direct-slots)
@@ -313,14 +313,21 @@ argument was supplied for metaclass ~S." (class-of class))))))))
   supplied-superclasses)
 
 (defmethod validate-superclass ((class class) (superclass class))
-  (or (eq superclass +the-t-class+)
-      (let ((c1 (class-of class))
+  (or (let ((c1 (class-of class))
 	    (c2 (class-of superclass)))
 	(or (eq c1 c2)
 	    (and (eq c1 +the-standard-class+) (eq c2 +the-funcallable-standard-class+))
 	    (and (eq c2 +the-standard-class+) (eq c1 +the-funcallable-standard-class+))))
       (or (forward-referenced-class-p class)
           (forward-referenced-class-p superclass))))
+
+;;; NOTE: SBCL defines its own "SYSTEM-CLASS" to mean classes that are like
+;;; built-in-classes but also subclassable. This may be worth consideration.
+(defmethod validate-superclass ((class class) (superclass built-in-class))
+  (or (eq superclass +the-t-class+) ; FIXME: necessary?
+      ;; FIXME: Should gray streams go here?
+      ;; Extensible sequences
+      (eq superclass (find-class 'sequence))))
 
 ;;; Should it be standard-class only?
 (defmethod validate-superclass ((class class) (superclass core:derivable-cxx-class)) t)

@@ -4,6 +4,9 @@
 
 (in-package #:clasp-cleavir)
 
+#| cracauer disabled this 20200123
+
+
 ;;; Initialization stuff.
 ;;; Note that we'll include some abstract classes that are never actually instantiated.
 ;;; Just putting them in the call history is no problem, though.
@@ -531,3 +534,5 @@
   (clos:satiate #'%ssub.with-overflow '(llvm-sys:value llvm-sys:value abi-x86-64))
   )
 ;  (clos:satiate #'cclasp-eval-with-env '(cons null)
+
+|#

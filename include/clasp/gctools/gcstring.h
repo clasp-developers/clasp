@@ -168,7 +168,7 @@ public:
       }
       if ((bool)that._Contents) {
         allocator_type alloc;
-        tagged_pointer_to_moveable vec = alloc.allocate_kind(Header_s::Value::make<impl_type>(),that._Contents->_Capacity);
+        tagged_pointer_to_moveable vec = alloc.allocate_kind(Header_s::StampWtagMtag::make<impl_type>(),that._Contents->_Capacity);
         memcpy(vec->_Data, that._Contents->_Data, that._Contents->_End * sizeof(value_type));
         vec->_End = that._Contents->_End;
         this->_Contents = vec;
@@ -219,7 +219,7 @@ public:
     if (!this->_Contents) {
       tagged_pointer_to_moveable vec;
       size_t newCapacity = (n == 0 ? GCStringPad : n);
-      vec = alloc.allocate_kind(Header_s::Value::make<impl_type>(),newCapacity);
+      vec = alloc.allocate_kind(Header_s::StampWtagMtag::make<impl_type>(),newCapacity);
       vec->_End = 0;
       this->_Contents = vec;
       GCTOOLS_ASSERT(newCapacity == this->_Contents->_Capacity);
@@ -230,7 +230,7 @@ public:
     if (n > this->_Contents->_Capacity) {
       tagged_pointer_to_moveable vec(this->_Contents);
       size_t newCapacity = n;
-      vec = alloc.allocate_kind(Header_s::Value::make<impl_type>(),newCapacity);
+      vec = alloc.allocate_kind(Header_s::StampWtagMtag::make<impl_type>(),newCapacity);
       memcpy(vec->_Data, this->_Contents->_Data, this->_Contents->_End * sizeof(value_type));
       vec->_End = this->_Contents->_End;
       //                pointer_to_moveable oldVec(this->_Contents);
@@ -258,7 +258,7 @@ public:
     if (!this->_Contents) {
       tagged_pointer_to_moveable vec;
       size_t newCapacity = (n == 0 ? GCStringPad : n * GCStringGrow);
-      vec = alloc.allocate_kind(Header_s::Value::make<impl_type>(),newCapacity);
+      vec = alloc.allocate_kind(Header_s::StampWtagMtag::make<impl_type>(),newCapacity);
       // the array at newAddress is undefined - placement new to copy
       for (size_t i(0); i < n; ++i)
         (*vec)[i] = x;
@@ -278,7 +278,7 @@ public:
       if (n > this->_Contents->_Capacity) {
         // We need to expand
         size_t newCapacity = n * GCStringGrow;
-        vec = alloc.allocate_kind(Header_s::Value::make<impl_type>(),newCapacity);
+        vec = alloc.allocate_kind(Header_s::StampWtagMtag::make<impl_type>(),newCapacity);
         new (&*vec) GCString_moveable<T>(newCapacity);
         memcpy(vec->_Data, this->_Contents->_Data, this->_Contents->_End * sizeof(value_type));
         // fill the new elements with x

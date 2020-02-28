@@ -31,6 +31,7 @@ THE SOFTWARE.
 
 namespace core {
 
+CL_DOCSTRING(R"doc(Create a core:pointer using a fixnum as the address.)doc");
 CL_DEFUN Pointer_sp core__make_pointer(T_sp address)
 {
   if (address.fixnump()) {

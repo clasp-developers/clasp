@@ -41,9 +41,6 @@
 ;;; Bound thread-local when the builtins module is needed
 (defvar *thread-local-builtins-module* nil)
 
-(defvar *thread-local-jit-engine* nil)
-
-;;;(defvar *llvm-context* (llvm-sys:create-llvm-context))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Thread-local special variables to support the LLVM compiler
@@ -51,46 +48,44 @@
 ;;; To allow LLVM to run in different threads, certain things need to be thread local
 ;;;
 (eval-when (:load-toplevel :execute)
-  (mp:push-default-special-binding 'cmp:*llvm-context* '(llvm-sys:create-llvm-context))
+  (mp:push-default-special-binding 'cmp:*thread-safe-context* '(llvm-sys:create-thread-safe-context))
   (mp:push-default-special-binding 'cmp:*primitives* nil)
   (mp:push-default-special-binding '*debugger-hook* nil)
   (mp:push-default-special-binding 'core::*handler-clusters* nil)
   (mp:push-default-special-binding 'core::*restart-clusters* nil)
   (mp:push-default-special-binding 'core::*condition-restarts* nil)
   (mp:push-default-special-binding 'cmp::*thread-local-builtins-module* nil)
-;;;  (mp:push-default-special-binding 'cmp::*thread-local-jit-engine* nil)
   ;;; more thread-local special variables may be added in the future
   )
+
+(defun thread-local-llvm-context ()
+  ;; (core:bformat t "*thread-safe-context* -> %s%N" *thread-safe-context*)
+  (llvm-sys:get-context *thread-safe-context*))
+(export 'thread-local-llvm-context)
+
 
 (defun dump-function (func)
   (warn "Do something with dump-function"))
 (export 'dump-function)
 
-(defun write-bitcode (module output-path)
-  ;; Write bitcode as either .bc files or .ll files
-  (if *use-human-readable-bitcode*
-      (let* ((filename (make-pathname :type "ll" :defaults (pathname output-path)))
-             (output-name (or (namestring filename)
-                              (error "In write-bitcode the output file for ~a could not be coerced to a namestring" output-path)))
-             (fout (open output-name :direction :output)))
-        (unwind-protect
-             (llvm-sys:dump-module module fout)
-          (close fout)))
-      (llvm-sys:write-bitcode-to-file module (namestring output-path))))
 
-(defun load-bitcode (filename)
+(defun load-bitcode (filename &key print)
   (if *use-human-readable-bitcode*
       (let* ((input-name (make-pathname :type "ll" :defaults (pathname filename))))
-        (llvm-sys:load-bitcode-ll input-name))
+        (if print (core:bformat t "Loading %s%N" input-name))
+        (llvm-sys:load-bitcode-ll input-name (thread-local-llvm-context)))
       (let ((input-name (make-pathname :type "bc" :defaults (pathname filename))))
-        (llvm-sys:load-bitcode input-name))))
+        (if print (core:bformat t "Loading %s%N" input-name))
+        (llvm-sys:load-bitcode input-name (thread-local-llvm-context)))))
 
-(defun parse-bitcode (filename context)
+(defun parse-bitcode (filename context &key print)
   ;; Load a module from a bitcode or .ll file
   (if *use-human-readable-bitcode*
       (let ((input-name (make-pathname :type "ll" :defaults (pathname filename))))
+        (if print (core:bformat t "Loading %s%N" input-name))
         (llvm-sys:parse-irfile input-name context))
       (let ((input-name (make-pathname :type "bc" :defaults (pathname filename))))
+        (if print (core:bformat t "Loading %s%N" input-name))
         (llvm-sys:parse-bitcode-file input-name context))))
 
 (export '(write-bitcode load-bitcode parse-bitcode))
@@ -99,10 +94,11 @@
   (if *thread-local-builtins-module*
       *thread-local-builtins-module*
     (let* ((builtins-bitcode-name (namestring (truename (build-inline-bitcode-pathname :compile :builtins))))
-           (thread-local-builtins-module (llvm-sys:parse-bitcode-file builtins-bitcode-name *llvm-context*)))
+           (thread-local-builtins-module (llvm-sys:parse-bitcode-file builtins-bitcode-name (thread-local-llvm-context))))
       (llvm-sys:remove-useless-global-ctors thread-local-builtins-module)
       (setq *thread-local-builtins-module* thread-local-builtins-module)
       thread-local-builtins-module)))
+
 
 (defun get-builtin-target-triple-and-data-layout ()
   "Uses *features* to generate the target triple for the current machine
@@ -111,13 +107,13 @@ using features defined in corePackage.cc"
     (values (llvm-sys:get-target-triple builtins-module) (llvm-sys:get-data-layout-str builtins-module))))
 
 (defun llvm-create-module (name)
-  (let ((m (llvm-sys:make-module (string name) *llvm-context*)))
-    (multiple-value-bind (target-triple data-layout)
-        (get-builtin-target-triple-and-data-layout)
-      (llvm-sys:set-target-triple m target-triple)
-      (llvm-sys:set-data-layout.string m data-layout)
-      (llvm-sys:emit-version-ident-metadata m)
-      m)))
+  (let ((m (llvm-sys:make-module (string name) (thread-local-llvm-context))))
+    (multiple-value-call (function (lambda (target-triple data-layout)
+                           (llvm-sys:set-target-triple m target-triple)
+                           (llvm-sys:set-data-layout.string m data-layout)
+                           (llvm-sys:emit-version-ident-metadata m)
+                           m))
+      (get-builtin-target-triple-and-data-layout))))
 
 (defvar *run-time-module-counter* 1)
 (defun next-run-time-module-name ()
@@ -126,6 +122,10 @@ using features defined in corePackage.cc"
       (bformat nil "module%s" *run-time-module-counter*)
     (setq *run-time-module-counter* (+ 1 *run-time-module-counter*))))
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (let* ((module (llvm-create-module (next-run-time-module-name)))
+         (data-layout (llvm-sys:get-data-layout module)))
+    (defvar *system-data-layout* data-layout)))
 
 (defun create-run-time-module-for-compile ()
   "Run time modules are used by COMPILE - a new one needs to be created for every COMPILE.
@@ -149,41 +149,41 @@ No DIBuilder is defined for the default module")
   (llvm-sys:constant-pointer-null-get type))
 
 (defun jit-constant-true ()
-  (llvm-sys:get-true *llvm-context*))
+  (llvm-sys:get-true (thread-local-llvm-context)))
 
 (defun jit-constant-false ()
-  (llvm-sys:get-false *llvm-context*))
+  (llvm-sys:get-false (thread-local-llvm-context)))
 
 (defun jit-constant-i<bit-width> (val &key bit-width)
   "Create an i<numbits> constant in the current context"
   (unless bit-width (error "You must provide a bit-width"))
   (let ((ap-arg (llvm-sys:make-apint-width val bit-width nil)))
-    (llvm-sys:constant-int-get *llvm-context* ap-arg)))
+    (llvm-sys:constant-int-get (thread-local-llvm-context) ap-arg)))
 
 (defun jit-constant-i1 (val)
   "Create an i1 constant in the current context"
   (let ((ap-arg (llvm-sys:make-apint1 val)))
-    (llvm-sys:constant-int-get *llvm-context* ap-arg)))
+    (llvm-sys:constant-int-get (thread-local-llvm-context) ap-arg)))
 
 
 (defun jit-constant-i3 (val)
   "Create an i3 constant in the current context"
     (let ((ap-arg (llvm-sys:make-apint-width val 3 nil)))
-      (llvm-sys:constant-int-get *llvm-context* ap-arg)))
+      (llvm-sys:constant-int-get (thread-local-llvm-context) ap-arg)))
  
 (defun jit-constant-i8 (val)
   "Create an i1 constant in the current context"
   (let ((ap-arg (llvm-sys:make-apint-width val 8 nil)))
-    (llvm-sys:constant-int-get *llvm-context* ap-arg)))
+    (llvm-sys:constant-int-get (thread-local-llvm-context) ap-arg)))
 
 (defun jit-constant-i32 (val)
   "Create a signed i32 constant in the current context"
   (let ((ap-arg (llvm-sys:make-apint-width val 32 t)))
-    (llvm-sys:constant-int-get *llvm-context* ap-arg)))
+    (llvm-sys:constant-int-get (thread-local-llvm-context) ap-arg)))
 
 
 (defun jit-constant-i32-vector-ptr (vals)
-  (let* ((constant-data-array (llvm-sys:constant-data-array-get-uint32 *llvm-context* vals))
+  (let* ((constant-data-array (llvm-sys:constant-data-array-get-uint32 (thread-local-llvm-context) vals))
 	 (constant-data-array-type (llvm-sys:get-type constant-data-array))
 	 (global-var-for-constant-array (llvm-sys:make-global-variable *the-module*
 								       constant-data-array-type
@@ -201,24 +201,24 @@ No DIBuilder is defined for the default module")
 (defun jit-constant-i64 (val)
   "Create an i64 constant in the current context"
   (let ((ap-arg (llvm-sys:make-apint-width val 64 t)))
-    (llvm-sys:constant-int-get *llvm-context* ap-arg)))
+    (llvm-sys:constant-int-get (thread-local-llvm-context) ap-arg)))
 
 (defun ensure-jit-constant-i64 (val)
   "Create an i64 constant in the current context if the val is a fixnum - otherwise it should already be a value"
   (if (fixnump val)
       (let ((ap-arg (llvm-sys:make-apint-width val 64 t)))
-        (llvm-sys:constant-int-get *llvm-context* ap-arg))
+        (llvm-sys:constant-int-get (thread-local-llvm-context) ap-arg))
       val))
 
 (defun jit-constant-ui32 (val)
   "Create an unsigned i32 constant in the current context"
   (let ((ap-arg (llvm-sys:make-apint-width val 32 nil)))
-    (llvm-sys:constant-int-get *llvm-context* ap-arg)))
+    (llvm-sys:constant-int-get (thread-local-llvm-context) ap-arg)))
 
 (defun jit-constant-ui64 (val)
   "Create an unsigned i64 constant in the current context"
   (let ((ap-arg (llvm-sys:make-apint-width val 64 nil)))
-    (llvm-sys:constant-int-get *llvm-context* ap-arg)))
+    (llvm-sys:constant-int-get (thread-local-llvm-context) ap-arg)))
 
 
 (defun jit-constant-size_t (val)
@@ -257,7 +257,7 @@ No DIBuilder is defined for the default module")
   (let* ((unique-string-global-variable
           (llvm-sys:get-or-create-uniqued-string-global-variable
            *the-module* str (bformat nil ":::global-str-%s" str)))
-         (string-type (llvm-sys:array-type-get (llvm-sys:type-get-int8-ty *llvm-context*) (1+ (length str)))))
+         (string-type (llvm-sys:array-type-get (llvm-sys:type-get-int8-ty (thread-local-llvm-context)) (1+ (length str)))))
     unique-string-global-variable))
 #|
     (let ((gep (llvm-sys:constant-expr-get-in-bounds-get-element-ptr
@@ -355,20 +355,34 @@ No DIBuilder is defined for the default module")
       (let ((lineno (core:source-pos-info-lineno *current-source-pos-info*)))
         (cond
           (*compile-file-pathname*
-           (core:bformat nil "%s.%s-%s^%d^TOP-COMPILE-FILE"
+           (core:bformat nil "___LAMBDA___%s.%s-%s^%d^%d"
                          (pathname-name *compile-file-pathname*)
                          (pathname-type *compile-file-pathname*)
                          *compile-file-unique-symbol-prefix*
-                         lineno))
+                         lineno
+                         (sys:next-number)))
           ;; Is this even possible?
           (*load-pathname*
-           (core:bformat nil "%s.%s^%d^TOP-LOAD"
+           (core:bformat nil "%s.%s^%d^TOP-LOAD-%d"
                          (pathname-name *load-pathname*)
                          (pathname-type *load-pathname*)
-                         lineno))
+                         lineno
+                         (sys:next-number)))
           (t
            (core:bformat nil "UNKNOWN^%d^TOP-UNKNOWN" lineno))))
       "UNKNOWN??LINE^TOP-UNKNOWN"))
+
+(defun jit-repl-function-name ()
+  (sys:bformat nil "JITREPL-%d" (sys:next-number)))
+  
+(defun jit-startup-function-name ()
+  (let ((next-id (sys:next-number)))
+    (values (sys:bformat nil "%s-%d" sys:*module-startup-function-name* next-id) next-id)))
+
+(defun jit-shutdown-function-name ()
+  (sys:bformat nil "%s-%d" sys:*module-shutdown-function-name* (sys:next-number)))
+
+(export '(jit-startup-function-name jit-shutdown-function-name jit-repl-function-name))
 
 (defun jit-function-name (lname &key (compile-file-unique-symbol-prefix *compile-file-unique-symbol-prefix*))
   "Depending on the type of LNAME an actual LLVM name is generated"
@@ -385,8 +399,7 @@ No DIBuilder is defined for the default module")
        ((string= lname "lambda") lname)         ; this one is ok
        ((string= lname "ltv-literal") lname)    ; this one is ok
        ((string= lname "disassemble") lname)    ; this one is ok
-       (t (bformat t "jit-function-name lname = %s%N" lname)
-          (break "Always pass symbol as name") lname)))
+       (t lname)))
     ((symbolp lname)
      (cond ((eq lname 'core::top-level)
             (function-name-from-source-info lname))
@@ -470,11 +483,22 @@ The passed module is modified as a side-effect."
     (llvm-sys:link-in-module linker builtins-clone))
   module)
 
-(defun jit-engine ()
-  "Lazy initialize the *thread-local-jit-engine* and return it"
-  (if *thread-local-jit-engine*
-      *thread-local-jit-engine*
-      (setf *thread-local-jit-engine* (make-cxx-object 'llvm-sys:clasp-jit))))
+(defun code-model (&key jit (target-faso-file (or cmp:*generate-faso* cmp:*compile-file-parallel*)))
+  "Return the code-model for the compilation mode"
+  (multiple-value-bind (llvm-version-string llvm-version-val)
+      (ext:llvm-version)
+    (if (and target-faso-file (null jit))
+        (progn
+          (if (>= llvm-version-val 10)
+              (warn "By llvm-version 10 we should not need to use the code-model-large"))
+          #+(or)(format t "llvm-version-val ~a Using llvm-sys:code-model-large cmp:*generate-faso* -> ~a   cmp:*compile-file-parallel* -> ~a~%" llvm-version-val *generate-faso* *compile-file-parallel*)
+          'llvm-sys:code-model-large
+          )
+        (progn
+          #+(or)(format t "Using llvm-sys:code-model-small cmp:*generate-faso* -> ~a   cmp:*compile-file-parallel* -> ~a~%" *generate-faso* *compile-file-parallel*)
+          'llvm-sys:code-model-small))))
+
+(export 'code-model)
 
 (defvar *size-level* 1)
 
@@ -534,7 +558,7 @@ The passed module is modified as a side-effect."
       (if (llvm-sys:has-fn-attribute f 'llvm-sys:attribute-always-inline)
           (progn
             (llvm-sys:remove-fn-attr f 'llvm-sys:attribute-always-inline)
-            (setf inline-functions (cons f inline-functions)))))
+            (setq inline-functions (cons f inline-functions)))))
     inline-functions))
 
 (defun do-track-llvm-time (closure)
@@ -572,7 +596,7 @@ The passed module is modified as a side-effect."
           (progn
             (llvm-sys:remove-fn-attr f 'llvm-sys:attribute-always-inline)
             (llvm-sys:add-fn-attr f 'llvm-sys:attribute-inline-hint)
-            (setf inline-functions (cons f inline-functions)))))
+            (setq inline-functions (cons f inline-functions)))))
     inline-functions))
 
 
@@ -599,7 +623,7 @@ The passed module is modified as a side-effect."
 ;;;
 
 ;;; jit-register-symbol is a call
-#+threads(defvar *jit-log-lock* (mp:make-lock :name 'jit-log-lock :recursive t))
+#+threads(defvar *jit-log-lock* (mp:make-recursive-mutex 'jit-log-lock))
 (defvar *jit-log-stream*)
 (defvar *jit-pid*)
 
@@ -609,11 +633,11 @@ The passed module is modified as a side-effect."
   (if (member :jit-log-symbols *features*)
       (unwind-protect
            (progn
-             #+threads(mp:lock *jit-log-lock* t)
+             #+threads(mp:get-lock *jit-log-lock*)
              (cond
                ;; If this is the first process to generate a symbol then create the master symbol file
                ((not (boundp '*jit-pid*))
-                (setf *jit-pid* (core:getpid))
+                (setq *jit-pid* (core:getpid))
                 (let ((filename (core:bformat nil "/tmp/perf-%s.map" (core:getpid))))
                   (core:bformat *error-output* "Writing jitted symbols to %s%N" filename)
                   (setq *jit-log-stream* (open filename :direction :output))))
@@ -622,21 +646,22 @@ The passed module is modified as a side-effect."
                ((and *jit-log-stream* (not (= *jit-pid* (core:getpid))))
                 (close *jit-log-stream*) ; Shut down symbols for forked children
                 (setq *jit-log-stream* nil)))
-             (when *jit-log-stream*
-               (write (core:pointer-integer (cadr symbol-info)) :base 16 :stream *jit-log-stream*)
-               (write-char #\space *jit-log-stream*)
-               ;; car of symbol-info is a fixnum
-               (write (car symbol-info) :base 16 :stream *jit-log-stream* :pretty nil)
-               (write-char #\space *jit-log-stream*)
-               (write-string symbol-name-string *jit-log-stream*)
-               (terpri *jit-log-stream*)
-               (finish-output *jit-log-stream*)))
+             (if *jit-log-stream*
+                 (progn
+                   (write (core:pointer-integer (cadr symbol-info)) :base 16 :stream *jit-log-stream*)
+                   (write-char #\space *jit-log-stream*)
+                   ;; car of symbol-info is a fixnum
+                   (write (car symbol-info) :base 16 :stream *jit-log-stream* :pretty nil)
+                   (write-char #\space *jit-log-stream*)
+                   (write-string symbol-name-string *jit-log-stream*)
+                   (terpri *jit-log-stream*)
+                   (finish-output *jit-log-stream*))))
         (progn
-          #+threads(mp:unlock *jit-log-lock*)))))
+          #+threads(mp:giveup-lock *jit-log-lock*)))))
 
 (progn
   (export '(jit-add-module-return-function jit-add-module-return-dispatch-function jit-remove-module))
-  (defparameter *jit-lock* (mp:make-lock :name 'jit-lock :recursive t))
+  (defparameter *jit-lock* (mp:make-recursive-mutex 'jit-lock))
   (defun jit-add-module-return-function (original-module main-fn startup-fn shutdown-fn literals-list
                                          &key output-path)
     ;; Link the builtins into the module and optimize them
@@ -647,19 +672,32 @@ The passed module is modified as a side-effect."
     (quick-module-dump original-module "module-before-optimize")
     (let ((module original-module))
       (irc-verify-module-safe module)
-      (let ((jit-engine (jit-engine))
+      (let ((jit-engine llvm-sys:*jit-engine*)
             (repl-name (if main-fn (llvm-sys:get-name main-fn) nil))
             (startup-name (if startup-fn (llvm-sys:get-name startup-fn) nil))
             (shutdown-name (if shutdown-fn (llvm-sys:get-name shutdown-fn) nil)))
-        (when (or (null repl-name) (string= repl-name ""))
-          (error "Could not obtain the name of the repl function ~s - got ~s" main-fn repl-name))
-        (when (or (null startup-name) (string= startup-name ""))
-          (error "Could not obtain the name of the startup function ~s - got ~s" startup-fn startup-name))
+        (if (or (null repl-name) (string= repl-name ""))
+            (error "Could not obtain the name of the repl function ~s - got ~s" main-fn repl-name))
+        (if (or (null startup-name) (string= startup-name ""))
+            (error "Could not obtain the name of the startup function ~s - got ~s" startup-fn startup-name))
         (with-track-llvm-time
             (unwind-protect
                  (progn
-                   (mp:lock *jit-lock* t)
-                   (core:increment-jit-compile-counter)
-                   (let ((handle (llvm-sys:clasp-jit-add-module jit-engine module)))
-                     (llvm-sys:jit-finalize-repl-function jit-engine handle repl-name startup-name shutdown-name literals-list)))
-              (mp:unlock *jit-lock*)))))))
+                   #+(or)
+                   (progn
+                     #+(or)(core:bformat t "*jit-lock* -> %s    jit-engine -> %s   module -> %s   *thread-safe-context* -> %s%N"
+                                         *jit-lock*
+                                         jit-engine
+                                         module
+                                         *thread-safe-context*)
+                     (core:bformat t "About to dump module%N")
+                     (llvm-sys:dump-module module)
+                     (core:bformat t "startup-name |%s|%N" startup-name)
+                     (core:bformat t "Done dump module%N")
+                     )
+                   (mp:get-lock *jit-lock*)
+                   (llvm-sys:add-irmodule jit-engine module *thread-safe-context*)
+                   (llvm-sys:jit-finalize-repl-function jit-engine repl-name startup-name shutdown-name literals-list))
+              (progn
+                (gctools:thread-local-cleanup)
+                (mp:giveup-lock *jit-lock*))))))))

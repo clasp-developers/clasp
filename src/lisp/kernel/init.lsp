@@ -32,6 +32,15 @@
 (sys:*make-special 'core::*clang-bin*)
 (export 'core::*clang-bin*)
 
+(setq cmp:*generate-faso* (if (eq core:*clasp-build-mode* :faso)
+                              t
+                              (if (member :generate-faso *features*)
+                                  t
+                                  nil)))
+(if (member :generate-faso *features*)
+    (setq core:*clasp-build-mode* :faso))
+                                  
+
 ;;; ------------------------------------------------------------
 ;;;
 ;;;   Turn on flow tracker
@@ -124,7 +133,7 @@
     nil
     (setq *compile-debug-dump-module* nil))
 (setq *debug-compile-file* (member :debug-compile-file *features*))
-(export '(*compile-file-debug-dump-module* *compile-debug-dump-module*))
+(export '(*compile-file-debug-dump-module* *compile-debug-dump-module* *use-human-readable-bitcode*))
 (use-package :core)
 
 (eval-when (:execute :compile-toplevel :load-toplevel)
@@ -133,6 +142,11 @@
 (if (find-package "C")
     nil
     (make-package "C" :use '(:cl :core)))
+
+(eval-when (:execute :compile-toplevel :load-toplevel)
+  (if (find-package "SEQUENCE")
+      nil
+      (make-package "SEQUENCE" :use '())))
 
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (if (find-package "LITERAL")
@@ -145,6 +159,9 @@
       (make-package "CLASP-CLEAVIR" :use '(:CL))))
 
 ;;; Setup a few things for the EXT package
+
+;;; Imports
+(import 'core:quit :ext)
 ;;; EXT exports
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (select-package :ext))
@@ -155,10 +172,8 @@
           source-location
           source-location-pathname
           source-location-offset
-          where
           compiled-function-name
           compiled-function-file
-          check-arguments-type
           array-index
           byte8
           integer8
@@ -175,17 +190,16 @@
           load-encoding
           make-encoding
           assume-right-type
-          short-float-positive-infinity
-          short-float-negative-infinity
-          single-float-positive-infinity
-          single-float-negative-infinity
-          double-float-positive-infinity
-          double-float-negative-infinity
-          long-float-positive-infinity
-          long-float-negative-infinity
           assert-error
           float-nan-p
-          float-infinity-p))
+          float-infinity-p
+          character-coding-error
+          character-encoding-error
+          character-decoding-error
+          stream-encoding-error
+          stream-decoding-error
+          generate-encoding-hashtable
+          quit))
 (core:*make-special '*module-provider-functions*)
 (core:*make-special '*source-location*)
 (setq *source-location* nil)
@@ -423,8 +437,8 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
   "Args: (decl-spec)
 Gives a global declaration.  See DECLARE for possible DECL-SPECs."
   ;;decl must be a proper list
-  (unless (core:proper-list-p decl)
-    (error "decl must be a proper list: ~a" decl)) 
+  (if (not (core:proper-list-p decl))
+      (error "decl must be a proper list: ~a" decl)) 
   (cond
     ((eq (car decl) 'SPECIAL)
      (mapc #'sys::*make-special (cdr decl)))
@@ -589,7 +603,9 @@ a relative path from there."
               "ll"
               (if (eq type :object)
                   "o"
-                  (error "Unsupported build-extension type ~a" type))))))
+                  (if (eq type :faso)
+                      "faso"
+                      (error "Unsupported build-extension type ~a" type)))))))
 
 (defun build-pathname (partial-pathname &optional (type :lisp) stage)
   "If partial-pathname is nil and type is :fasl or :executable then construct the name using
@@ -624,6 +640,10 @@ the stage, the +application-name+ and the +bitcode-name+"
                                                    (make-pathname :directory (list :relative target-dir) :type (build-extension type)))
                                   (translate-logical-pathname (make-pathname :host target-host))))
                 ((and partial-pathname (eq type :object))
+                 (merge-pathnames (merge-pathnames (ensure-relative-pathname partial-pathname)
+                                                   (make-pathname :directory (list :relative target-dir) :type (build-extension type)))
+                                  (translate-logical-pathname (make-pathname :host target-host))))
+                ((and partial-pathname (eq type :faso))
                  (merge-pathnames (merge-pathnames (ensure-relative-pathname partial-pathname)
                                                    (make-pathname :directory (list :relative target-dir) :type (build-extension type)))
                                   (translate-logical-pathname (make-pathname :host target-host))))

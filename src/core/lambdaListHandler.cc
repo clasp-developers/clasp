@@ -39,27 +39,14 @@ THE SOFTWARE.
 #include <clasp/core/evaluator.h>
 #include <clasp/core/hashTableEq.h>
 #include <clasp/core/wrappers.h>
+
 namespace core {
 
-
 SYMBOL_EXPORT_SC_(KeywordPkg, calledFunction);
-SYMBOL_EXPORT_SC_(KeywordPkg, givenNumberOfArguments);
-SYMBOL_EXPORT_SC_(KeywordPkg, requiredNumberOfArguments);
+SYMBOL_EXPORT_SC_(KeywordPkg, givenNargs);
+SYMBOL_EXPORT_SC_(KeywordPkg, minNargs);
+SYMBOL_EXPORT_SC_(KeywordPkg, maxNargs);
 SYMBOL_EXPORT_SC_(KeywordPkg, unrecognizedKeyword);
-
-void handleArgumentHandlingExceptions(Closure_sp closure) {
-  Function_sp func = closure;
-  try {
-    throw;
-  } catch (TooManyArgumentsError &error) {
-    lisp_error(core::_sym_tooManyArgumentsError, lisp_createList(kw::_sym_calledFunction, func, kw::_sym_givenNumberOfArguments, make_fixnum(error.givenNumberOfArguments), kw::_sym_requiredNumberOfArguments, make_fixnum(error.requiredNumberOfArguments)));
-  } catch (TooFewArgumentsError &error) {
-    lisp_error(core::_sym_tooFewArgumentsError, lisp_createList(kw::_sym_calledFunction, func, kw::_sym_givenNumberOfArguments, make_fixnum(error.givenNumberOfArguments), kw::_sym_requiredNumberOfArguments, make_fixnum(error.requiredNumberOfArguments)));
-  } catch (UnrecognizedKeywordArgumentError &error) {
-    lisp_error(core::_sym_unrecognizedKeywordArgumentError, lisp_createList(kw::_sym_calledFunction, func, kw::_sym_unrecognizedKeyword, error.argument));
-  }
-}
-
 
 /*! Return true if the form represents a type
 */
@@ -188,7 +175,7 @@ CL_DEFUN List_sp core__canonicalize_declarations(List_sp decls)
 }
 
 
-void lambdaListHandler_createBindings(Closure_sp closure, core::LambdaListHandler_sp llh, core::DynamicScopeManager &scope, LCC_ARGS_LLH) {
+void lambdaListHandler_createBindings(Closure_sp closure, core::LambdaListHandler_sp llh, core::ScopeManager &scope, LCC_ARGS_LLH) {
   if (llh->requiredLexicalArgumentsOnlyP()) {
     size_t numReq = llh->numberOfRequiredArguments();
     if (numReq <= LCC_ARGS_IN_REGISTERS && numReq == lcc_nargs) {
@@ -215,12 +202,8 @@ void lambdaListHandler_createBindings(Closure_sp closure, core::LambdaListHandle
       return;
     }
   }
-  try {
-    LOG(BF("About to createBindingsInScopeVaList with\n llh->%s\n    VaList->%s") % _rep_(llh) % _rep_(lcc_vargs));
-    llh->createBindingsInScopeVaList(lcc_nargs, lcc_vargs, scope);
-  } catch (...) {
-    handleArgumentHandlingExceptions(closure);
-  }
+  LOG(BF("About to createBindingsInScopeVaList with\n llh->%s\n    VaList->%s") % _rep_(llh) % _rep_(lcc_vargs));
+  llh->createBindingsInScopeVaList(closure,lcc_nargs, lcc_vargs, scope);
   return;
 }
 
@@ -240,6 +223,12 @@ TargetClassifier::TargetClassifier(HashTableEq_sp specialSymbols, const std::set
   this->_LambdaListSpecials = HashTableEq_O::create_default();
   this->advanceLexicalIndex();
 };
+
+size_t TargetClassifier::numberOfSpecialVariables() const
+{
+  return this->_LambdaListSpecials->hashTableCount();
+};
+
 
 void TargetClassifier::advanceLexicalIndex() {
   while (true) {
@@ -263,7 +252,8 @@ List_sp TargetClassifier::finalClassifiedSymbols() {
 }
 
 void throw_if_not_destructuring_context(T_sp context) {
-  if (context == _sym_macro || context == cl::_sym_destructuring_bind)
+  if (context == cl::_sym_defmacro || cl::_sym_define_compiler_macro
+      || context == cl::_sym_destructuring_bind)
     return;
   SIMPLE_ERROR(BF("Lambda list is destructuring_bind but context does not support it context[%s]") % _rep_(context));
 }
@@ -305,7 +295,8 @@ CL_DEFMETHOD T_sp LambdaListHandler_O::lambdaList() {
     for (gctools::Vec0<KeywordArgument>::const_iterator it = this->_KeywordArguments.begin();
          it != this->_KeywordArguments.end(); it++) {
       T_sp keywordTarget = it->_ArgTarget;
-      if (gc::As<Symbol_sp>(it->_Keyword)->symbolName()->get() != gc::As<Symbol_sp>(keywordTarget)->symbolName()->get()) {
+      if (gc::As<Symbol_sp>(it->_Keyword)->symbolName()->get_std_string()
+          != gc::As<Symbol_sp>(keywordTarget)->symbolName()->get_std_string()) {
         keywordTarget = Cons_O::createList(it->_Keyword, keywordTarget);
       }
       if (it->_Sensor._ArgTarget.notnilp()) {
@@ -588,8 +579,6 @@ void LambdaListHandler_O::recursively_build_handlers_count_arguments(List_sp dec
   }
 }
 
-SYMBOL_SC_(CorePkg, tooFewArguments);
-
 #define PASS_FUNCTION_REQUIRED bind_required_va_list
 #define PASS_FUNCTION_OPTIONAL bind_optional_va_list
 #define PASS_FUNCTION_REST bind_rest_va_list
@@ -606,7 +595,7 @@ SYMBOL_SC_(CorePkg, tooFewArguments);
 #undef PASS_ARGS_NUM
 #undef PASS_NEXT_ARG
 
-void bind_aux(gctools::Vec0<AuxArgument> const &auxs, DynamicScopeManager &scope) {
+void bind_aux(T_sp closure, gctools::Vec0<AuxArgument> const &auxs, ScopeManager &scope) {
   LOG(BF("There are %d aux variables") % auxs.size());
   gctools::Vec0<AuxArgument>::iterator ci;
   {
@@ -623,32 +612,32 @@ void bind_aux(gctools::Vec0<AuxArgument> const &auxs, DynamicScopeManager &scope
   }
 }
 
-void LambdaListHandler_O::createBindingsInScopeVaList(size_t nargs, VaList_sp va,
-                                                      DynamicScopeManager &scope) {
+void LambdaListHandler_O::createBindingsInScopeVaList(core::T_sp closure,
+                                                      size_t nargs, VaList_sp va,
+                                                      ScopeManager &scope) {
   if (UNLIKELY(!this->_CreatesBindings))
     return;
   Vaslist arglist_struct(*va);
   VaList_sp arglist(&arglist_struct);
   int arg_idx = 0;
-  arg_idx = bind_required_va_list(this->_RequiredArguments, nargs, arglist, arg_idx, scope);
+  arg_idx = bind_required_va_list(closure,this->_RequiredArguments, nargs, arglist, arg_idx, scope);
   if (UNLIKELY(this->_OptionalArguments.size() != 0)) {
-    arg_idx = bind_optional_va_list(this->_OptionalArguments, nargs, arglist, arg_idx, scope);
+    arg_idx = bind_optional_va_list(closure,this->_OptionalArguments, nargs, arglist, arg_idx, scope);
   }
   if (UNLIKELY(arg_idx < nargs && !(this->_RestArgument.isDefined()) && (this->_KeywordArguments.size() == 0))) {
-    throwTooManyArgumentsError(nargs, this->numberOfLexicalVariables());
-    //	    TOO_MANY_ARGUMENTS_ERROR();
+    throwTooManyArgumentsError(closure,nargs, this->numberOfLexicalVariables());
   }
   if (UNLIKELY(this->_RestArgument.isDefined())) {
     // Make and use a copy of the arglist so that keyword processing can parse the args as well
     Vaslist copy_arglist(*arglist);
     VaList_sp copy_arglist_sp(&copy_arglist);
-    bind_rest_va_list(this->_RestArgument, nargs, copy_arglist_sp, arg_idx, scope);
+    bind_rest_va_list(closure,this->_RestArgument, nargs, copy_arglist_sp, arg_idx, scope);
   }
   if (UNLIKELY(this->_KeywordArguments.size() != 0)) {
-    bind_keyword_va_list(this->_KeywordArguments, this->_AllowOtherKeys, nargs, arglist, arg_idx, scope);
+    bind_keyword_va_list(closure,this->_KeywordArguments, this->_AllowOtherKeys, nargs, arglist, arg_idx, scope);
   }
   if (UNLIKELY(this->_AuxArguments.size() != 0))
-    bind_aux(this->_AuxArguments, scope);
+    bind_aux(closure,this->_AuxArguments, scope);
 }
 
 void LambdaListHandler_O::dump_keywords()
@@ -859,7 +848,8 @@ NEWMODE:
         goto ILLEGAL_MODE;
       break;
     case dot_rest:
-      if (!(context == _sym_macro || context == cl::_sym_destructuring_bind || context == cl::_sym_deftype))
+        if (!(context == cl::_sym_defmacro || cl::_sym_define_compiler_macro
+              || context == cl::_sym_destructuring_bind || context == cl::_sym_deftype))
         goto ILLEGAL_MODE;
       break;
     default:
@@ -872,7 +862,10 @@ ILLEGAL_MODE:
 }
 
 void throw_if_invalid_context(T_sp context) {
-  if (context == _sym_macro || context == cl::_sym_function || context == cl::_sym_method || context == cl::_sym_destructuring_bind || context == _lisp->_true())
+  if (context == cl::_sym_defmacro || context == cl::_sym_define_compiler_macro
+      || context == cl::_sym_function || context == cl::_sym_method
+      || context == cl::_sym_destructuring_bind || context == cl::_sym_deftype
+      || context == _lisp->_true())
     return;
   printf("%s:%d context.raw_= %p     cl::_sym_destructuring_bind.raw_=%p\n",
          __FILE__, __LINE__, context.raw_(), cl::_sym_destructuring_bind.raw_());
@@ -880,14 +873,17 @@ void throw_if_invalid_context(T_sp context) {
 }
 
 bool contextSupportsWhole(T_sp context) {
-  if (context == _sym_macro || context == cl::_sym_destructuring_bind || context == cl::_sym_deftype || context == cl::_sym_define_method_combination) {
+  if (context == cl::_sym_defmacro || context == cl::_sym_destructuring_bind
+      || context == cl::_sym_define_compiler_macro || context == cl::_sym_deftype
+      || context == cl::_sym_define_method_combination) {
     return true;
   }
   return false;
 }
 
 bool contextSupportsEnvironment(T_sp context) {
-  if (context == _sym_macro || context == cl::_sym_defsetf || context == cl::_sym_deftype) {
+  if (context == cl::_sym_defmacro || cl::_sym_define_compiler_macro
+      || context == cl::_sym_defsetf || context == cl::_sym_deftype) {
     return true;
   }
   return false;
@@ -942,6 +938,13 @@ bool parse_lambda_list(List_sp original_lambda_list,
   if (original_lambda_list.nilp())
     return false;
   throw_if_invalid_context(context);
+  T_sp defaultDefault;
+  // fix the default for &optional and &key that don't have a default specified
+  if (context == cl::_sym_deftype)
+    // Could stuff this list somewhere ahead of time to save a little consing,
+    // but if we're here we're parsing deftype so whatever.
+    defaultDefault = Cons_O::createList(cl::_sym_quote, cl::_sym__TIMES_);
+  else defaultDefault = _Nil<T_O>();
   List_sp arguments = cl__copy_list(original_lambda_list);
   LOG(BF("Argument handling mode starts in (required) - interpreting: %s") % _rep_(arguments));
   ArgumentMode add_argument_mode = required;
@@ -971,7 +974,7 @@ bool parse_lambda_list(List_sp original_lambda_list,
     }
     case optional: {
       T_sp sarg = _Nil<T_O>();
-      T_sp defaultValue = _Nil<T_O>();
+      T_sp defaultValue = defaultDefault;
       T_sp supplied = _Nil<T_O>();
       if ((oarg).consp()) {
         List_sp carg = oarg;
@@ -1019,7 +1022,7 @@ bool parse_lambda_list(List_sp original_lambda_list,
     case keyword: {
       Symbol_sp keySymbol = _Nil<Symbol_O>();
       T_sp localTarget = _Nil<T_O>();
-      T_sp defaultValue = _Nil<T_O>();
+      T_sp defaultValue = defaultDefault;
       T_sp sensorSymbol = _Nil<T_O>();
       if (cl__symbolp(oarg)) {
         localTarget = oarg;
@@ -1035,7 +1038,6 @@ bool parse_lambda_list(List_sp original_lambda_list,
           localTarget = head;
           keySymbol = gc::As<Symbol_sp>(localTarget)->asKeywordSymbol();
         }
-
         //
         // Is there a default value?
         //
@@ -1177,6 +1179,7 @@ LambdaListHandler_sp LambdaListHandler_O::create(List_sp lambda_list, List_sp de
   HashTableEq_sp specialSymbols(LambdaListHandler_O::identifySpecialSymbols(declares));
   TargetClassifier classifier(specialSymbols, skipFrameIndices);
   LambdaListHandler_sp ollh = LambdaListHandler_O::createRecursive_(lambda_list, declares, context, classifier);
+  ollh->_NumberOfSpecialVariables = classifier.numberOfSpecialVariables();
   ollh->_NumberOfLexicalVariables = classifier.totalLexicalVariables();
   ollh->_RequiredLexicalArgumentsOnly = ollh->requiredLexicalArgumentsOnlyP_();
   return ollh;
@@ -1210,6 +1213,7 @@ void LambdaListHandler_O::create_required_arguments(int num, const std::set<int>
   }
   this->_ClassifiedSymbolList = classifier.finalClassifiedSymbols();
   ASSERTF(this->_ClassifiedSymbolList.nilp() || (oCar(this->_ClassifiedSymbolList)).consp(), BF("LambdaListHandler _classifiedSymbols must contain only conses - it contains %s") % _rep_(this->_ClassifiedSymbolList));
+  this->_NumberOfSpecialVariables = classifier.numberOfSpecialVariables();
   this->_NumberOfLexicalVariables = classifier.totalLexicalVariables();
   this->_RequiredLexicalArgumentsOnly = this->requiredLexicalArgumentsOnlyP_();
 }

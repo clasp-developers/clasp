@@ -109,7 +109,25 @@ THE SOFTWARE.
 #include <clasp/core/wrappers.h>
 
 
+
 namespace llvmo {
+
+CL_LAMBDA(llvm-context line col scope &optional inlined-at);
+CL_LISPIFY_NAME(get-dilocation);
+CL_DEFUN DILocation_sp DILocation_O::make(llvm::LLVMContext& context,
+                                          unsigned int line, unsigned int col,
+                                          DINode_sp scope, core::T_sp inlinedAt) {
+  llvm::Metadata* realScope = scope->operator llvm::Metadata *();
+  llvm::Metadata* realInlinedAt;
+  if (inlinedAt.nilp()) realInlinedAt = nullptr;
+  else {
+    DILocation_sp temp = gc::As<DILocation_sp>(inlinedAt);
+    realInlinedAt = temp->operator llvm::Metadata *();
+  }
+  GC_ALLOCATE(DILocation_O, ret);
+  ret->set_wrapped(llvm::DILocation::get(context, line, col, realScope, realInlinedAt));
+  return ret;
+}
 
 CL_LAMBDA(module);
 CL_LISPIFY_NAME(make-dibuilder);
@@ -172,12 +190,44 @@ CL_VALUE_ENUM(_sym_DIFlagsBitField,llvm::DINode::FlagBitField);
 CL_VALUE_ENUM(_sym_DIFlagsNoReturn,llvm::DINode::FlagNoReturn);
 CL_END_ENUM(_sym_DIFlagsEnum);
 
+
+
+
+SYMBOL_EXPORT_SC_(LlvmoPkg, DISPFlagZero); // Use it as zero value.
+SYMBOL_EXPORT_SC_(LlvmoPkg, DISPFlagVirtual);
+SYMBOL_EXPORT_SC_(LlvmoPkg, DISPFlagPureVirtual);
+SYMBOL_EXPORT_SC_(LlvmoPkg, DISPFlagLocalToUnit);
+SYMBOL_EXPORT_SC_(LlvmoPkg, DISPFlagDefinition);
+SYMBOL_EXPORT_SC_(LlvmoPkg, DISPFlagOptimized);
+SYMBOL_EXPORT_SC_(LlvmoPkg, DISPFlagPure);
+SYMBOL_EXPORT_SC_(LlvmoPkg, DISPFlagElemental);
+SYMBOL_EXPORT_SC_(LlvmoPkg, DISPFlagRecursive);
+SYMBOL_EXPORT_SC_(LlvmoPkg, DISPFlagMainSubprogram);
+SYMBOL_EXPORT_SC_(LlvmoPkg, DISPFlagNonvirtual);
+SYMBOL_EXPORT_SC_(LlvmoPkg, DISPFlagVirtuality);
+SYMBOL_EXPORT_SC_(LlvmoPkg, DISPFlagEnum);
+CL_BEGIN_ENUM(llvm::DISubprogram::DISPFlags,_sym_DISPFlagEnum,"DISPFlagEnum");
+CL_VALUE_ENUM(_sym_DISPFlagZero,llvm::DISubprogram::SPFlagZero); // Use it as zero value.
+CL_VALUE_ENUM(_sym_DISPFlagVirtual,llvm::DISubprogram::SPFlagVirtual);
+CL_VALUE_ENUM(_sym_DISPFlagPureVirtual,llvm::DISubprogram::SPFlagPureVirtual);
+CL_VALUE_ENUM(_sym_DISPFlagLocalToUnit,llvm::DISubprogram::SPFlagLocalToUnit);
+CL_VALUE_ENUM(_sym_DISPFlagDefinition,llvm::DISubprogram::SPFlagDefinition);
+CL_VALUE_ENUM(_sym_DISPFlagOptimized,llvm::DISubprogram::SPFlagOptimized);
+CL_VALUE_ENUM(_sym_DISPFlagPure,llvm::DISubprogram::SPFlagPure);
+CL_VALUE_ENUM(_sym_DISPFlagElemental,llvm::DISubprogram::SPFlagElemental);
+CL_VALUE_ENUM(_sym_DISPFlagRecursive,llvm::DISubprogram::SPFlagRecursive);
+CL_VALUE_ENUM(_sym_DISPFlagMainSubprogram,llvm::DISubprogram::SPFlagMainSubprogram);
+CL_VALUE_ENUM(_sym_DISPFlagNonvirtual,llvm::DISubprogram::SPFlagNonvirtual);
+CL_VALUE_ENUM(_sym_DISPFlagVirtuality,llvm::DISubprogram::SPFlagVirtuality);
+CL_END_ENUM(_sym_DISPFlagEnum);
+
+
+
 SYMBOL_EXPORT_SC_(KeywordPkg, CSK_None);
 SYMBOL_EXPORT_SC_(KeywordPkg, CSK_MD5);
 SYMBOL_EXPORT_SC_(KeywordPkg, CSK_SHA1);
 SYMBOL_EXPORT_SC_(LlvmoPkg, CSKEnum);
 CL_BEGIN_ENUM(llvm::DIFile::ChecksumKind,_sym_CSKEnum,"CSKEnum");
-CL_VALUE_ENUM(kw::_sym_CSK_None,llvm::DIFile::CSK_None); // Use it as zero value.
 CL_VALUE_ENUM(kw::_sym_CSK_MD5,llvm::DIFile::CSK_MD5); // Use it as zero value.
 CL_VALUE_ENUM(kw::_sym_CSK_SHA1,llvm::DIFile::CSK_SHA1); // Use it as zero value.
 CL_END_ENUM(_sym_CSKEnum);
@@ -191,28 +241,39 @@ CL_DEFUN llvm::DIExpression* llvm_sys__createExpressionNone(DIBuilder_sp dib) {
   return dib->wrappedPtr()->createExpression();
 }
   
+
+SYMBOL_EXPORT_SC_(KeywordPkg, DNTK_Default);
+SYMBOL_EXPORT_SC_(KeywordPkg, DNTK_GNU);
+SYMBOL_EXPORT_SC_(KeywordPkg, DNTK_None);
+SYMBOL_EXPORT_SC_(LlvmoPkg, DNTKEnum);
+CL_BEGIN_ENUM(llvm::DICompileUnit::DebugNameTableKind,_sym_DNTKEnum,"DNTKEnum");
+CL_VALUE_ENUM(kw::_sym_DNTK_Default,llvm::DICompileUnit::DebugNameTableKind::Default); // Use it as zero value.
+CL_VALUE_ENUM(kw::_sym_DNTK_GNU,llvm::DICompileUnit::DebugNameTableKind::GNU);
+CL_VALUE_ENUM(kw::_sym_DNTK_None,llvm::DICompileUnit::DebugNameTableKind::None);
+CL_END_ENUM(_sym_DNTKEnum);
+
+
 CL_LISPIFY_NAME(createCompileUnit);
 CL_EXTERN_DEFMETHOD(DIBuilder_O,&llvm::DIBuilder::createCompileUnit);
 CL_LISPIFY_NAME(createFile);
 CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::createFile);
 CL_LISPIFY_NAME(createFunction);
 CL_EXTERN_DEFMETHOD(DIBuilder_O,
-                    (llvm::DISubprogram* (llvm::DIBuilder::*)
-                     (llvm::DIScope*,    // Scope
-                      llvm::StringRef,       // Name
-                      llvm::StringRef,       // LinkageName
-                      llvm::DIFile*,          // File
-                      unsigned,        // lineno
-                      llvm::DISubroutineType*, // Ty
-                      bool, //isLocalToUnit
-                      bool, //isDefinition
-                      unsigned, // scopeLine
-                      unsigned, //flags
-                      bool, // isOptimized
-                      llvm::DITemplateParameterArray, // TParams
-                      llvm::DISubprogram *, // decl
-                      llvm::DITypeArray
-))&llvm::DIBuilder::createFunction );
+                    (llvm::DISubprogram *
+                    (llvm::DIBuilder::*)
+                     (llvm::DIScope *Scope,
+                      llvm::StringRef Name,
+                      llvm::StringRef LinkageName,
+                      llvm::DIFile *File,
+                      unsigned LineNo,
+                      llvm::DISubroutineType *Ty,
+                      unsigned ScopeLine,
+                      llvm::DINode::DIFlags Flags,
+                      llvm::DISubprogram::DISPFlags SPFlags,
+                      llvm::DITemplateParameterArray TParams,
+                      llvm::DISubprogram *Decl,
+                      llvm::DITypeArray ThrownTypes))
+                    &llvm::DIBuilder::createFunction );
 CL_LISPIFY_NAME(createLexicalBlock);
 CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::createLexicalBlock);
 CL_LISPIFY_NAME(createBasicType);
@@ -244,6 +305,8 @@ CL_EXTERN_DEFMETHOD(DIBuilder_O,
 
 CL_LISPIFY_NAME(finalize);
 CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::finalize);;
+CL_LISPIFY_NAME(finalizeSubprogram);
+CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::finalizeSubprogram);;
 
 
 
@@ -299,3 +362,49 @@ CL_DEFMETHOD DITypeRefArray_sp DIBuilder_O::getOrCreateTypeArray(core::List_sp e
 
 
 }; // llvmo
+
+namespace llvmo { // DIContext_O
+
+core::T_mv getLineInfoForAddressInner(llvm::DIContext* dicontext, llvm::object::SectionedAddress addr) {
+  core::T_sp source;
+
+  llvm::DILineInfoSpecifier lispec;
+  lispec.FNKind = llvm::DILineInfoSpecifier::FunctionNameKind::LinkageName;
+  lispec.FLIKind = llvm::DILineInfoSpecifier::FileLineInfoKind::AbsoluteFilePath;
+
+  llvm::DILineInfo info = dicontext->getLineInfoForAddress(addr, lispec);
+
+  if (info.Source.hasValue())
+    source = core::SimpleBaseString_O::make(info.Source.getPointer()->str());
+  else source = _Nil<core::T_O>();
+
+  return Values(core::SimpleBaseString_O::make(info.FileName),
+                core::SimpleBaseString_O::make(info.FunctionName),
+                source,
+                core::Integer_O::create(info.Line),
+                core::Integer_O::create(info.Column),
+                core::Integer_O::create(info.StartLine),
+                core::Integer_O::create(info.Discriminator));
+}
+
+// We can't translate a DWARFContext_sp into a DIContext* directly, apparently.
+// The SectionedAddress translation is also a bust.
+CL_LAMBDA(dwarfcontext sectioned-address);
+CL_LISPIFY_NAME(getLineInfoForAddress);
+CL_DEFUN core::T_mv getLineInfoForAddress(DWARFContext_sp dc, SectionedAddress_sp addr) {
+  return getLineInfoForAddressInner(dc->wrappedPtr(), addr->_value);
+}
+
+}; // llvmo, DIContext_O
+
+namespace llvmo { // DWARFContext_O
+
+CL_LAMBDA(object-file);
+CL_LISPIFY_NAME(createDwarfContext);
+CL_DEFUN DWARFContext_sp DWARFContext_O::createDwarfContext(ObjectFile_sp of) {
+  llvm::object::ObjectFile* ofptr = of->wrappedPtr();
+  std::unique_ptr<llvm::DWARFContext> uptr = llvm::DWARFContext::create(*ofptr);
+  return core::RP_Create_wrapped<llvmo::DWARFContext_O, llvm::DWARFContext *>(uptr.release());
+}
+
+}; // llvmo, DWARFContext_O

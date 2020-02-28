@@ -37,16 +37,10 @@ int gcFunctions_after;
 #include <clasp/gctools/gctoolsPackage.h>
 #include <clasp/gctools/gcFunctions.h>
 #include <clasp/llvmo/intrinsics.h>
+#include <clasp/llvmo/llvmoExpose.h>
 #include <clasp/gctools/gc_interface.h>
 #include <clasp/gctools/threadlocal.h>
 #include <clasp/core/wrappers.h>
-
-#ifdef DEBUG_TRACK_UNWINDS
-std::atomic<size_t> global_unwind_count;
-std::atomic<size_t> global_ReturnFrom_count;
-std::atomic<size_t> global_DynamicGo_count;
-std::atomic<size_t> global_CatchThrow_count;
-#endif
 
 
 extern "C" {
@@ -194,20 +188,9 @@ CL_DEFUN core::T_sp gctools__bootstrap_kind_p(const string &name) {
   return _Nil<core::T_O>();
 }
 
-#ifdef DEBUG_TRACK_UNWINDS
-CL_DEFUN size_t gctools__unwind_counter() {
-  return global_unwind_count;
+CL_DEFUN size_t gctools__thread_local_unwind_counter() {
+  return my_thread->_unwinds;
 }
-CL_DEFUN size_t gctools__dynamic_go_counter() {
-  return global_DynamicGo_count;
-}
-CL_DEFUN size_t gctools__return_from_counter() {
-  return global_ReturnFrom_count;
-}
-CL_DEFUN size_t gctools__catch_throw_counter() {
-  return global_CatchThrow_count;
-}
-#endif
 
 CL_DEFUN void gctools__change_sigchld_sigport_handlers()
 {
@@ -251,7 +234,7 @@ CL_DEFUN core::T_sp core__header_value(core::T_sp obj) {
   if (obj.generalp()) {
     void *mostDerived = gctools::untag_general<void *>(obj.raw_());
     const gctools::Header_s *header = reinterpret_cast<const gctools::Header_s *>(gctools::ClientPtrToBasePtr(mostDerived));
-    return core::clasp_make_integer(header->header._value);
+    return core::clasp_make_integer(header->_stamp_wtag_mtag._value);
   }
   SIMPLE_ERROR(BF("The object %s is not a general object and doesn't have a header-value") % _rep_(obj));
 }
@@ -282,7 +265,7 @@ CL_DEFUN Fixnum core__header_kind(core::T_sp obj) {
   } else if (obj.generalp()) {
     void *mostDerived = gctools::untag_general<void *>(obj.raw_());
     const gctools::Header_s *header = reinterpret_cast<const gctools::Header_s *>(gctools::ClientPtrToBasePtr(mostDerived));
-    gctools::GCStampEnum stamp = header->stamp();
+    gctools::GCStampEnum stamp = header->stamp_();
     return (Fixnum)stamp;
   } else if (obj.single_floatp()) {
     return gctools::STAMP_SINGLE_FLOAT;
@@ -298,14 +281,14 @@ CL_DEFUN Fixnum core__header_kind(core::T_sp obj) {
 CL_DOCSTRING("Return the index part of the stamp.  Stamp indices are adjacent to each other.");
 CL_DEFUN size_t core__stamp_index(size_t stamp)
 {
-  return stamp>>gctools::Header_s::wtag_shift;
+  return stamp>>(gctools::Header_s::wtag_width+gctools::Header_s::mtag_width);
 }
 
 CL_DOCSTRING("Shift an unshifted stamp so that it can be put into code in a form where it can be directly matched to a stamp read from an object header with no further shifting");
-CL_DEFUN core::Integer_sp core__shift_stamp_for_compiled_code(core::Integer_sp unshifted_stamp)
+CL_DEFUN core::Integer_sp core__shift_stamp_for_compiled_code(size_t unshifted_stamp)
 {
-  core::Integer_sp shifted_stamp = core::cl__logior(core::Cons_O::createList(core::clasp_ash(unshifted_stamp,gctools::Header_s::stamp_shift),core::make_fixnum(gctools::Header_s::stamp_tag)));
-  return shifted_stamp;
+  return core::make_fixnum((unshifted_stamp << gctools::Header_s::stamp_shift)
+                           | gctools::Header_s::stamp_tag);
 }
 
 CL_DOCSTRING("Return the stamp for the object, the flags and the header stamp");
@@ -314,6 +297,12 @@ CL_DEFUN core::T_sp core__instance_stamp(core::T_sp obj)
   core::T_sp stamp((gctools::Tagged)cx_read_stamp(obj.raw_(),0));
   if (stamp.fixnump()) return stamp;
   SIMPLE_ERROR(BF("core:instance-stamp was about to return a non-fixnum %p") % (void*)stamp.raw_());
+}
+
+CL_DOCSTRING("Determine if stamp A is immediately less than stamp B, so that they can be merged into a range.");
+CL_DEFUN bool core__stamps_adjacent_p(size_t stamp_a, size_t stamp_b) {
+  return (((stamp_a >> gctools::Header_s::stamp_shift) + 1)
+          == (stamp_b >> gctools::Header_s::stamp_shift));
 }
 
 CL_DOCSTRING("Set the header stamp for the object");
@@ -356,21 +345,27 @@ struct ReachableClass {
     core::Fixnum k = this->_Kind;
     stringstream className;
     if (k <= gctools::STAMP_max) {
+//      printf("%s:%d searching for name for this->_Kind: %u\n", __FILE__, __LINE__, this->_Kind);
       const char* nm = obj_name(k);
       if (!nm) {
         className << "NULL-NAME";
       } else {
         className << nm;
       }
-    } else {
-      className << "??CONS??";
-    }
       clasp_write_string((BF("%s: total_size: %10d count: %8d avg.sz: %8d kind: %s/%d\n")
                           % shortName % this->totalSize % this->instances
                           % (this->totalSize / this->instances) % className.str().c_str() % k).str()
                          ,cl::_sym_STARstandard_outputSTAR->symbolValue());
       core::clasp_finish_output_t();
       return this->totalSize;
+    } else {
+      clasp_write_string((BF("%s: total_size: %10d count: %8d avg.sz: %8d kind: %s/%d\n")
+                          % shortName % this->totalSize % this->instances
+                          % (this->totalSize / this->instances) % "UNKNOWN" % k).str()
+                         ,cl::_sym_STARstandard_outputSTAR->symbolValue());
+      core::clasp_finish_output_t();
+      return this->totalSize;
+    }
   }
 };
 
@@ -378,22 +373,32 @@ struct ReachableClass {
 typedef map<gctools::GCStampEnum, ReachableClass> ReachableClassMap;
 static ReachableClassMap *static_ReachableClassKinds;
 static size_t invalidHeaderTotalSize = 0;
-int globalSearchMarker = 0;
 extern "C" {
 void boehm_callback_reachable_object(void *ptr, size_t sz, void *client_data) {
   gctools::Header_s *h = reinterpret_cast<gctools::Header_s *>(ptr);
-//  if (h->markerMatches(globalSearchMarker)) {
-    ReachableClassMap::iterator it = static_ReachableClassKinds->find(h->stamp());
-    if (it == static_ReachableClassKinds->end()) {
-      ReachableClass reachableClass(h->stamp());
-      reachableClass.update(sz);
-      (*static_ReachableClassKinds)[h->stamp()] = reachableClass;
+  gctools::GCStampEnum stamp = h->stamp_();
+  if (!valid_stamp(stamp)) {
+    if (sz==32) {
+      stamp = (gctools::GCStampEnum)(gctools::STAMP_core__Cons_O>>gctools::Header_s::wtag_width);
+//      printf("%s:%d cons stamp address: %p sz: %lu stamp: %lu\n", __FILE__, __LINE__, (void*)h, sz, stamp);
     } else {
-      it->second.update(sz);
+      stamp = (gctools::GCStampEnum)0; // unknown uses 0
     }
-//  } else {
-//    invalidHeaderTotalSize += sz;
-//  }
+  }
+  ReachableClassMap::iterator it = static_ReachableClassKinds->find(stamp);
+  if (it == static_ReachableClassKinds->end()) {
+    ReachableClass reachableClass(stamp);
+    reachableClass.update(sz);
+    (*static_ReachableClassKinds)[stamp] = reachableClass;
+  } else {
+    it->second.update(sz);
+  }
+#if 0
+  if (stamp==(gctools::GCStampEnum)(gctools::STAMP_core__Symbol_O>>gctools::Header_s::wtag_width)) {
+    core::Symbol_O* sym = (core::Symbol_O*)ptr;
+    printf("%s:%d symbol %s\n", __FILE__, __LINE__, sym->formattedName(true).c_str());
+  }
+#endif
 }
 };
 
@@ -406,9 +411,11 @@ size_t dumpResults(const std::string &name, const std::string &shortName, T *dat
   }
   size_t totalSize(0);
   sort(values.begin(), values.end(), [](const value_type &x, const value_type &y) {
-            return (x.totalSize > y.totalSize);
-  });
+                                       return (x.totalSize > y.totalSize);
+                                     });
   size_t idx = 0;
+  size_t totalCons = 0;
+  size_t numCons = 0;
   for (auto it : values) {
     // Does that print? If so should go to the OutputStream
     size_t sz = it.print(shortName);
@@ -450,7 +457,7 @@ void amc_apply_stepper(mps_addr_t client, void *p, size_t s) {
   const gctools::Header_s *header = reinterpret_cast<const gctools::Header_s *>(gctools::ClientPtrToBasePtr(client));
   vector<ReachableMPSObject> *reachablesP = reinterpret_cast<vector<ReachableMPSObject> *>(p);
   if (header->stampP()) {
-    ReachableMPSObject &obj = (*reachablesP)[header->stamp()];
+    ReachableMPSObject &obj = (*reachablesP)[header->stamp_()];
     ++obj.instances;
     size_t sz = (char *)(obj_skip(client)) - (char *)client;
     obj.totalMemory += sz;
@@ -468,8 +475,8 @@ size_t dumpMPSResults(const std::string &name, const std::string &shortName, vec
   });
   size_t idx = 0;
   vector<std::string> stampNames;
-  stampNames.resize(gctools::global_NextStamp.load());
-  for ( auto it : global_stamp_name_map ) {
+  stampNames.resize(gctools::global_NextUnshiftedStamp.load());
+  for ( auto it : global_unshifted_nowhere_stamp_name_map ) {
     stampNames[it.second] = it.first;
   }
   for (auto it : values) {
@@ -579,22 +586,17 @@ CL_DEFUN core::Symbol_sp gctools__alloc_pattern_end() {
   return pattern;
 };
 
-CL_LAMBDA(&optional x (marker 0) msg);
+CL_LAMBDA(&optional x);
 CL_DECLARE();
-CL_DOCSTRING("room - Return info about the reachable objects.  x can be T, nil, :default - as in ROOM.  marker can be a fixnum (0 - matches everything, any other number/only objects with that marker)");
-CL_DEFUN core::T_mv cl__room(core::T_sp x, core::Fixnum_sp marker, core::T_sp tmsg) {
+CL_DOCSTRING("room - Return info about the reachable objects in memory. x can be T, nil, :default.");
+CL_DEFUN core::T_mv cl__room(core::T_sp x) {
   std::ostringstream OutputStream;
-  string smsg = "Total";
-  if (cl__stringp(tmsg)) {
-    core::String_sp msg = gc::As_unsafe<core::String_sp>(tmsg);
-    smsg = msg->get();
-  }
 #ifdef USE_MPS
   mps_word_t numCollections = mps_collections(global_arena);
   size_t arena_committed = mps_arena_committed(global_arena);
   size_t arena_reserved = mps_arena_reserved(global_arena);
   vector<ReachableMPSObject> reachables;
-  for (int i = 0; i < global_NextStamp.load(); ++i) {
+  for (int i = 0; i < global_NextUnshiftedStamp.load(); ++i) {
     reachables.push_back(ReachableMPSObject(i));
   }
   mps_amc_apply(global_amc_pool, amc_apply_stepper, &reachables, 0);
@@ -620,10 +622,9 @@ CL_DEFUN core::T_mv cl__room(core::T_sp x, core::Fixnum_sp marker, core::T_sp tm
                                                                 
 #endif
 #ifdef USE_BOEHM
-  globalSearchMarker = core::unbox_fixnum(marker);
   static_ReachableClassKinds = new (ReachableClassMap);
   invalidHeaderTotalSize = 0;
-#ifdef BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE
+#if BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE==1
   GC_enumerate_reachable_objects_inner(boehm_callback_reachable_object, NULL);
   #else
   OutputStream <<  __FILE__ << ":" << __LINE__ <<  "The boehm function GC_enumerate_reachable_objects_inner is not available\n";
@@ -635,19 +636,22 @@ CL_DEFUN core::T_mv cl__room(core::T_sp x, core::Fixnum_sp marker, core::T_sp tm
   OutputStream << "Skipping objects with less than 96 total_size\n";
   OutputStream << "Done walk of memory  " << static_cast<uintptr_t>(static_ReachableClassKinds->size()) << " ClassKinds\n";
 #if USE_CXX_DYNAMIC_CAST
-  OutputStream << smsg << " live memory total size = " << std::setw(12) << invalidHeaderTotalSize << '\n';
+  OutputStream << "Total live memory total size = " << std::setw(12) << invalidHeaderTotalSize << '\n';
 #else
-  OutputStream << smsg << " invalidHeaderTotalSize = " << std::setw(12) << invalidHeaderTotalSize << '\n';
+  OutputStream << "Total invalidHeaderTotalSize = " << std::setw(12) << invalidHeaderTotalSize << '\n';
 #endif
-  OutputStream << smsg << " memory usage (bytes):    " << std::setw(12) << totalSize << '\n';
-  OutputStream << smsg << " GC_get_heap_size()       " << std::setw(12) << GC_get_heap_size() << '\n';
-  OutputStream << smsg << " GC_get_free_bytes()      " << std::setw(12) << GC_get_free_bytes() << '\n';
-  OutputStream << smsg << " GC_get_bytes_since_gc()  " <<  std::setw(12) << GC_get_bytes_since_gc() << '\n';
-  OutputStream << smsg << " GC_get_total_bytes()     " <<  std::setw(12) << GC_get_total_bytes() << '\n';
+  OutputStream << "Total memory usage (bytes):    " << std::setw(12) << totalSize << '\n';
+  OutputStream << "Total GC_get_heap_size()       " << std::setw(12) << GC_get_heap_size() << '\n';
+  OutputStream << "Total GC_get_free_bytes()      " << std::setw(12) << GC_get_free_bytes() << '\n';
+  OutputStream << "Total GC_get_bytes_since_gc()  " <<  std::setw(12) << GC_get_bytes_since_gc() << '\n';
+  OutputStream << "Total GC_get_total_bytes()     " <<  std::setw(12) << GC_get_total_bytes() << '\n';
 
   delete static_ReachableClassKinds;
 #endif
-
+  if (llvmo::_sym_STARjit_engineSTAR->symbolValue().boundp()) {
+    llvmo::ClaspJIT_sp jit = gc::As<llvmo::ClaspJIT_sp>(llvmo::_sym_STARjit_engineSTAR->symbolValue());
+    OutputStream << "Number of object files: " << jit->numberOfObjectFiles() << "   total memory: " << jit->totalMemoryAllocatedForObjectFiles() << std::endl;
+  }
   clasp_write_string(OutputStream.str(),cl::_sym_STARstandard_outputSTAR->symbolValue());
   return Values(_Nil<core::T_O>());
 };
@@ -702,7 +706,7 @@ CL_DEFUN void gctools__function_call_count_profiler(core::T_sp func) {
   mps_amc_apply(global_amc_pool, amc_apply_function_call_counter, &*func_counters_start, 0);
 #endif
 #ifdef USE_BOEHM
-#ifdef BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE
+#if BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE==1
   GC_enumerate_reachable_objects_inner(boehm_callback_function_call_counter, &*func_counters_start);
 #endif
 #endif
@@ -711,7 +715,7 @@ CL_DEFUN void gctools__function_call_count_profiler(core::T_sp func) {
   mps_amc_apply(global_amc_pool, amc_apply_function_call_counter, &*func_counters_end, 0);
 #endif
 #ifdef USE_BOEHM
-#ifdef BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE
+#if BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE==1
   GC_enumerate_reachable_objects_inner(boehm_callback_function_call_counter, &*func_counters_end);
 #endif
 #endif
@@ -745,11 +749,11 @@ CL_DEFUN void gctools__function_call_count_profiler(core::T_sp func) {
 #endif // DEBUG_FUNCTION_CALL_COUNTER
 
 namespace gctools {
-SYMBOL_EXPORT_SC_(GcToolsPkg,STARfinalizersSTAR);
 /*! Call finalizer_callback with no arguments when object is finalized.*/
 CL_DEFUN void gctools__finalize(core::T_sp object, core::T_sp finalizer_callback) {
   //printf("%s:%d making a finalizer for %p calling %p\n", __FILE__, __LINE__, (void*)object.tagged_(), (void*)finalizer_callback.tagged_());
-  core::WeakKeyHashTable_sp ht = As<core::WeakKeyHashTable_sp>(_sym_STARfinalizersSTAR->symbolValue());
+  WITH_READ_WRITE_LOCK(_lisp->_Roots._FinalizersMutex);
+  core::WeakKeyHashTable_sp ht = _lisp->_Roots._Finalizers;
   core::List_sp orig_finalizers = ht->gethash(object,_Nil<core::T_O>());
   core::List_sp finalizers = core::Cons_O::create(finalizer_callback,orig_finalizers);
 //  printf("%s:%d      Adding finalizer to list new length --> %d   list head %p\n", __FILE__, __LINE__, core::cl__length(finalizers), (void*)finalizers.tagged_());
@@ -767,10 +771,9 @@ CL_DEFUN void gctools__finalize(core::T_sp object, core::T_sp finalizer_callback
 
 CL_DEFUN void gctools__definalize(core::T_sp object) {
 //  printf("%s:%d erasing finalizers for %p\n", __FILE__, __LINE__, (void*)object.tagged_());
-  core::WeakKeyHashTable_sp ht = As<core::WeakKeyHashTable_sp>(_sym_STARfinalizersSTAR->symbolValue());
-  if (ht->gethash(object)) {
-    ht->remhash(object);
-  }
+  WITH_READ_WRITE_LOCK(_lisp->_Roots._FinalizersMutex);
+  core::WeakKeyHashTable_sp ht = _lisp->_Roots._Finalizers;
+  if (ht->gethash(object)) ht->remhash(object);
 #ifdef USE_BOEHM
   boehm_clear_finalizer_list(object.tagged_());
 #endif
@@ -783,13 +786,6 @@ CL_DEFUN void gctools__definalize(core::T_sp object) {
 
 };
 
-
-
-extern "C" {
-void dbg_room() {
-  cl__room(_Nil<core::T_O>(), core::make_fixnum(0), _Nil<core::T_O>());
-}
-}
 namespace gctools {
 
 #ifdef DEBUG_COUNT_ALLOCATIONS
@@ -873,7 +869,6 @@ CL_DEFUN void gctools__register_stamp_name(const std::string& name,size_t stamp_
 }
 
 CL_DEFUN core::T_sp gctools__get_stamp_name_map() {
-  DEPRECATED();
   core::List_sp l = _Nil<core::T_O>();
   for ( auto it : global_unshifted_nowhere_stamp_name_map ) {
     l = core::Cons_O::create(core::Cons_O::create(core::SimpleBaseString_O::make(it.first),core::make_fixnum(it.second)),l);
@@ -979,7 +974,7 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   bool debug_mps_underscanning = false;
 #ifdef DEBUG_MPS_UNDERSCANNING
   debug_mps_underscanning = true;
-  bool debug_mps_underscanning_initial = DEBUG_MPS_UNDERSCANNING_INITIAL;
+  bool debug_mps_underscanning_initial = true;
   debugging = true;
 #else
   bool debug_mps_underscanning_initial = false;
@@ -1154,13 +1149,6 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #endif
   if (buildReport) ss << (BF("DEBUG_FLOW_TRACKER = %s\n") % (debug_flow_tracker ? "**DEFINED**" : "undefined") ).str();
 
-    bool debug_track_unwinds = false;
-#ifdef DEBUG_TRACK_UNWINDS
-  debug_track_unwinds = true;
-  debugging = true;
-  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-TRACK-UNWINDS"),features);
-#endif
-  if (buildReport) ss << (BF("DEBUG_TRACK_UNWINDS = %s\n") % (debug_track_unwinds ? "**DEFINED**" : "undefined") ).str();
 
   bool track_allocations = false;
 #ifdef DEBUG_TRACK_ALLOCATIONS
@@ -1268,6 +1256,15 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #endif
   if (buildReport) ss << (BF("DISABLE_TYPE_INFERENCE = %s\n") % (disable_type_inference ? "**DEFINED**" : "undefined") ).str();
 
+  bool use_compile_file_parallel = true;
+#if USE_COMPILE_FILE_PARALLEL == 0
+  use_compile_file_parallel = false;
+  INTERN_(comp,STARuse_compile_file_parallelSTAR)->defparameter(_Nil<core::T_O>());
+#else
+  INTERN_(comp,STARuse_compile_file_parallelSTAR)->defparameter(_lisp->_true());
+#endif
+  if (buildReport) ss << (BF("USE_COMPILE_FILE_PARALLEL = %s") % USE_COMPILE_FILE_PARALLEL);
+  
   bool use_lto = false;
   // CLASP_BUILD_MODE == 0 means generate fasls
 #if CLASP_BUILD_MODE == 0
@@ -1284,6 +1281,10 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   use_lto = true;
   debugging = false;
   INTERN_(core,STARclasp_build_modeSTAR)->defparameter(kw::_sym_bitcode);
+#elif CLASP_BUILD_MODE == 3
+  use_lto = false;
+  debugging = false;
+  INTERN_(core,STARclasp_build_modeSTAR)->defparameter(kw::_sym_faso);
 #endif
   if (buildReport) ss << (BF("CLASP_BUILD_MODE = %s") % CLASP_BUILD_MODE);
   
@@ -1294,6 +1295,14 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   if (setFeatures)  features = core::Cons_O::create(_lisp->internKeyword("USE-HUMAN-READABLE-BITCODE"),features);
 #endif
   if (buildReport) ss << (BF("USE_HUMAN_READABLE_BITCODE = %s\n") % (use_human_readable_bitcode ? "**DEFINED**" : "undefined") ).str();
+
+  bool debug_compile_file_output_info = false;
+#if DEBUG_COMPILE_FILE_OUTPUT_INFO==1
+  debug_compile_file_output_info = true;
+  debugging = true;
+  if (setFeatures)  features = core::Cons_O::create(_lisp->internKeyword("DEBUG-COMPILE-FILE-OUTPUT-INFO"),features);
+#endif
+  if (buildReport) ss << (BF("DEBUG_COMPILE_FILE_OUTPUT_INFO = %s\n") % (debug_compile_file_output_info ? "**DEFINED**" : "undefined") ).str();
 
   //
   // DEBUG_MONITOR must be last - other options turn this on
@@ -1334,6 +1343,15 @@ CL_DEFUN void gctools__configuration()
   core::clasp_writeln_string(ss.str());
 }
 
+CL_DEFUN void gctools__thread_local_cleanup()
+{
+  core::thread_local_invoke_and_clear_cleanup();
+}
+
+CL_DEFUN core::Integer_sp gctools__unwind_time_nanoseconds() {
+  core::Integer_sp is = core::Integer_O::create(my_thread_low_level->_unwind_time.count());
+  return is;
+}
 
 void initialize_gc_functions() {
   _sym_STARallocPatternStackSTAR->defparameter(_Nil<core::T_O>());

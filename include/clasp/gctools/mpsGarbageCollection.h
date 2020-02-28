@@ -185,7 +185,7 @@ class smart_ptr;
       gctools::Tagged tagged_obj = *taggedP;\
       if (MPS_FIX1(ss, tagged_obj)) {\
         gctools::Tagged obj = gctools::untag_object<gctools::Tagged>(tagged_obj);\
-        gctools::Tagged tag = gctools::tag<gctools::Tagged>(tagged_obj);\
+        gctools::Tagged tag = gctools::ptag<gctools::Tagged>(tagged_obj);\
         mps_res_t res = MPS_FIX2(ss, reinterpret_cast<mps_addr_t *>(&obj));\
         if (res != MPS_RES_OK) return res;\
         obj = obj | tag;\

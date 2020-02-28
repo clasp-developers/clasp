@@ -51,10 +51,7 @@ Could return more functions that provide lambda-list for swank for example"
                                                         :docstring docstring
                                                         :declares declares
                                                         :form code
-                                                        :lineno (core:source-pos-info-lineno core:*current-source-pos-info*)
-                                                        :column (core:source-pos-info-column core:*current-source-pos-info*)
-                                                        :filepos (core:source-pos-info-filepos core:*current-source-pos-info*))
-                                        )
+                                                        :spi core:*current-source-pos-info*))
                    (cmp-log "Starting new function name: %s%N" name)
                    ;; The following injects a debugInspectT_sp at the start of the body
                    ;; it will print the address of the literal which must correspond to an entry in the
@@ -109,7 +106,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
 	(docstring (function-docstring fn))
 	(code (interpreted-source-code fn))
 	(env (closed-environment fn)))
-    (generate-llvm-function-from-code nil lambda-list #|declares|# nil docstring code env :linkage 'llvm-sys:external-linkage)))
+    (generate-llvm-function-from-code nil lambda-list #|declares|# nil docstring code env :linkage 'llvm-sys:internal-linkage)))
 
 (defun generate-lambda-expression-from-interpreted-function (fn)
   (let* ((lambda-list-handler (function-lambda-list-handler fn))
@@ -133,12 +130,12 @@ then compile it and return (values compiled-llvm-function lambda-name)"
       ((consp name) (bformat nil "%s" name))
       (t (error "Add support for function-name-from-lambda with ~a as arg" name))))
 
-(defun compile-to-module (form env pathname &key (linkage 'llvm-sys:internal-linkage))
+(defun compile-to-module (&key definition env pathname (linkage 'llvm-sys:internal-linkage) linkage-name)
   (with-lexical-variable-optimizer (t)
       (multiple-value-bind (fn function-kind wrapped-env lambda-name)
           (with-debug-info-generator (:module *the-module* :pathname pathname)
             (multiple-value-bind (llvm-function-from-lambda lambda-name)
-                (compile-lambda-function form env :linkage linkage)
+                (compile-lambda-function definition env :linkage linkage)
               (or llvm-function-from-lambda (error "There was no function returned by compile-lambda-function inner: ~a" llvm-function-from-lambda))
               (or lambda-name (error "Inner lambda-name is nil - this shouldn't happen"))
               (values llvm-function-from-lambda :function env lambda-name)))
@@ -148,18 +145,29 @@ then compile it and return (values compiled-llvm-function lambda-name)"
         (cmp-log-dump-module *the-module*)
         (values fn function-kind wrapped-env lambda-name))))
 
-(defun compile-to-module-with-run-time-table (definition env pathname &key (linkage 'llvm-sys:internal-linkage))
+(defun compile-to-module-with-run-time-table (&key definition env pathname (linkage 'llvm-sys:internal-linkage) linkage-name)
   (let* (fn function-kind wrapped-env lambda-name)
     (multiple-value-bind (ordered-raw-constants-list constants-table startup-fn shutdown-fn)
         (literal:with-rtv
             (multiple-value-setq (fn function-kind wrapped-env lambda-name)
-              (compile-to-module definition env pathname :linkage linkage)))
+              (compile-to-module
+               :definition definition
+               :env env
+               :pathname pathname
+               :linkage linkage
+               :linkage-name linkage-name)))
       (values fn function-kind wrapped-env lambda-name ordered-raw-constants-list constants-table startup-fn shutdown-fn))))
 
-(defun bclasp-compile* (definition env pathname &key (linkage 'llvm-sys:internal-linkage))
+(defun bclasp-compile* (definition env pathname &key (linkage 'llvm-sys:internal-linkage)
+                                                  linkage-name)
   "Compile the definition"
   (multiple-value-bind (fn function-kind wrapped-env lambda-name ordered-raw-constants-list constants-table startup-fn shutdown-fn)
-      (compile-to-module-with-run-time-table definition env pathname :linkage linkage)
+      (compile-to-module-with-run-time-table
+       :definition definition
+       :env env
+       :pathname pathname
+       :linkage linkage
+       :linkage-name linkage-name)
     (quick-module-dump *the-module* "preoptimize")
     (let ((compiled-function (jit-add-module-return-function *the-module* fn startup-fn shutdown-fn ordered-raw-constants-list)))
       compiled-function)))
@@ -237,7 +245,9 @@ then compile it and return (values compiled-llvm-function lambda-name)"
          ((eq sym 'cleavir-primop:car) t)
          ((eq sym 'cleavir-primop:cdr) t)
          ((eq sym 'cleavir-primop:funcall) t)
+         ((eq sym 'cleavir-primop:unreachable) t)
          ((eq sym 'core:vaslist-pop) t)
+         ((eq sym 'core:vaslist-length) t)
          ((eq sym 'core::local-block) t)
          ((eq sym 'core::local-tagbody) t)
          ((eq sym 'core::header-stamp-case) t)
@@ -247,6 +257,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
          ((eq sym 'core::rack-stamp) t)
          ((eq sym 'core:instance-ref) t)
          ((eq sym 'core:instance-set) t)
+         ((eq sym 'core::instance-cas) t)
          ((eq sym 'core:defcallback) t)
          (t (special-operator-p sym)))))
 
@@ -316,10 +327,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
                                                               :docstring nil
                                                               :declares nil
                                                               :form form
-                                                              :lineno (core:source-pos-info-lineno core:*current-source-pos-info*)
-                                                              :column 0
-                                                              :filepos (core:source-pos-info-filepos core:*current-source-pos-info*))
-                                              )
+                                                              :spi core:*current-source-pos-info*))
                             (let* ((given-name (llvm-sys:get-name fn)))
                               ;; Map the function argument names
                               (cmp-log "Creating repl function with name: %s%N" given-name)

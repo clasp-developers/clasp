@@ -150,7 +150,7 @@ CL_DEFUN T_mv cl__make_package(T_sp package_name_desig, List_sp nick_names, List
     Package_sp pkg = coerce::packageDesignator(oCar(uc));
     lup.push_front(pkg->packageName());
   }
-  return (Values(_lisp->makePackage(package_name->get(), lnn, lup)));
+  return (Values(_lisp->makePackage(package_name->get_std_string(), lnn, lup)));
 }
 
 /*
@@ -321,7 +321,7 @@ CL_DEFUN T_mv cl__gentemp(T_sp prefix, T_sp package_designator) {
     TYPE_ERROR(prefix,cl::_sym_string);
   } else if (cl__stringp(prefix)) {
     String_sp sprefix = gc::As_unsafe<String_sp>(prefix);
-    ss = gc::As_unsafe<StrNs_sp>(core__make_vector(sprefix->arrayElementType(),sprefix->length()+8,true,clasp_make_fixnum(sprefix->length())));
+    ss = gc::As_unsafe<StrNs_sp>(core__make_vector(sprefix->element_type(),sprefix->length()+8,true,clasp_make_fixnum(sprefix->length())));
     ss->unsafe_setf_subseq(0,sprefix->length(),sprefix);
   } else {
     TYPE_ERROR(prefix,cl::_sym_string);

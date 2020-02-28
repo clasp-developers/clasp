@@ -133,9 +133,10 @@
           (setf (lexical-variable-reference-ref-env ref) ref-env)
           (let ((key (binding-key ref-env index symbol)))
             (unless (eq :closure-allocate (gethash key variable-map))
-              (setf (gethash key variable-map) (if crosses-function
-                                                   :closure-allocate
-                                                   :register-allocate)))))))
+              (let ((kind-of-allocate (if crosses-function
+                                          :closure-allocate
+                                          :register-allocate)))
+                (setf (gethash key variable-map) kind-of-allocate)))))))
     ;; Now every variable (env . index) that is referenced is either in variable-map
     ;;    with the value :closure-allocate or :register-allocate
     (cv-log-do
@@ -143,8 +144,8 @@
                 (cv-log "(ENV@%s %s %s) -> %s%N"
                         (core:environment-address (car k)) (second k) (third k) v))
               variable-map))
-    (maphash (lambda (register-key option)
-               (when (eq option :register-allocate)
+    (maphash (lambda (register-key kind-of-allocate)
+               (when (eq kind-of-allocate :register-allocate)
                  (multiple-value-bind (env index symbol)
                      (destructure-binding-key register-key)
                    (let ((register (generate-register-alloca symbol env)))
@@ -493,7 +494,7 @@
   (if (eq sym 'nil)
       (codegen-literal result nil env)
       (let* ((global-symbol (irc-global-symbol sym env))
-             (val (irc-intrinsic "symbolValueRead" global-symbol)))
+             (val (irc-intrinsic "cc_safe_symbol_value" global-symbol)))
         (irc-t*-result val result))))
 
 
@@ -611,7 +612,7 @@
   (if (keywordp symbol)
       (progn
         (cmp-log "codegen-symbol-value - %s is a keyword%N" symbol)
-        (irc-t*-result (irc-intrinsic "symbolValueRead" (irc-global-symbol symbol env)) result))
+        (irc-t*-result (irc-intrinsic "cc_safe_symbol_value" (irc-global-symbol symbol env)) result))
       (progn
         (cmp-log "About to macroexpand%N")
         (let ((expanded (macroexpand symbol env)))
@@ -623,15 +624,14 @@
               (codegen result expanded env)
               )))))
 
-(defun compile-save-if-special (env target &key make-unbound)
+(defun compile-save-if-special (env target)
   (when (eq (car target) 'ext:special-var)
     (cmp-log "compile-save-if-special - the target: %s is special - so I'm saving it%N" target)
     (let* ((target-symbol (cdr target))
-	   (irc-target (irc-global-symbol target-symbol env)))
-      (irc-intrinsic "pushDynamicBinding" irc-target) ; was (irc-load irc-target)
-      (when make-unbound
-	(irc-intrinsic "makeUnboundTsp" (irc-intrinsic "symbolValueReference" irc-target)))
-      (irc-push-unwind env `(symbolValueRestore ,target-symbol))
+           (irc-target (irc-global-symbol target-symbol env))
+           (save-old-binding (alloca-t* "special")))
+      (irc-intrinsic "pushDynamicBinding" irc-target save-old-binding)
+      (irc-push-unwind env `(symbolValueRestore ,target-symbol ,save-old-binding))
       ;; Make the variable locally special
       (value-environment-define-special-binding env target-symbol))))
 
@@ -663,12 +663,6 @@ You don't want to only write into the target-reference because
 you need to also bind the target in the compile-time environment "
   (cmp-log "compile-target-reference target[%s]%N" target)
   (cond
-    ((eq (car target) 'ext:special-var)
-     (cmp-log "compiling as a special-var%N")
-     (values (irc-intrinsic "symbolValueReference" (irc-global-symbol (cdr target) env))
-	     (car target)		; target-type --> 'special-var
-	     (cdr target)		; target-symbol
-	     ))
     ((eq (car target) 'ext:lexical-var)
      (cmp-log "compiling as a ext:lexical-var%N")
      (values (codegen-lexical-var-reference (second target) 0 #|<-depth|# (cddr target) env env)

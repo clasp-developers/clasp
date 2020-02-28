@@ -1,0 +1,10 @@
+#!/bin/bash
+# Usage:  $0 <pid> <time>
+echo PID $1  time: $2
+PID=$1
+TIME=${2:-10s}
+FRAMES=${3:-4000}
+echo profile_interp $PID $TIME $FRAMES
+sudo dtrace -p $1 -x ustackframes=${FRAMES} -n "pid$PID::*interpretedClosureEntryPoint*:entry / pid == $PID / {@[ustack()] = count();}   tick-$TIME { exit(0); }" -o /tmp/out-script-$PID.raw.stacks
+echo Wrote to /tmp/out-script-$PID.raw.stacks
+

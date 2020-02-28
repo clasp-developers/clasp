@@ -17,6 +17,19 @@
 (TEST-EXPECT-ERROR TEST-CHAR-10 (CHAR-NOT-GREATERP) :TYPE PROGRAM-ERROR)
 (TEST-EXPECT-ERROR TEST-CHAR-11 (CHAR-NOT-EQUAL) :TYPE PROGRAM-ERROR)
 
+(TEST-EXPECT-ERROR TEST-CHAR-0a (CHAR= (make-hash-table)) :TYPE type-error)
+(TEST-EXPECT-ERROR TEST-CHAR-1a (CHAR/= (make-hash-table)) :TYPE type-error)
+(TEST-EXPECT-ERROR TEST-CHAR-2a (CHAR< (make-hash-table)) :TYPE type-error)
+(TEST-EXPECT-ERROR TEST-CHAR-3a (CHAR> (make-hash-table)) :TYPE type-error)
+(TEST-EXPECT-ERROR TEST-CHAR-4a (CHAR<= (make-hash-table)) :TYPE type-error)
+(TEST-EXPECT-ERROR TEST-CHAR-5a (CHAR>= (make-hash-table)) :TYPE type-error)
+(TEST-EXPECT-ERROR TEST-CHAR-6a (CHAR-LESSP (make-hash-table)) :TYPE type-error)
+(TEST-EXPECT-ERROR TEST-CHAR-7a (CHAR-GREATERP (make-hash-table)) :TYPE type-error)
+(TEST-EXPECT-ERROR TEST-CHAR-8a (CHAR-EQUAL (make-hash-table)) :TYPE type-error)
+(TEST-EXPECT-ERROR TEST-CHAR-9a (CHAR-NOT-LESSP (make-hash-table)) :TYPE type-error)
+(TEST-EXPECT-ERROR TEST-CHAR-10a (CHAR-NOT-GREATERP (make-hash-table)) :TYPE type-error)
+(TEST-EXPECT-ERROR TEST-CHAR-11a (CHAR-NOT-EQUAL (make-hash-table)) :TYPE type-error)
+
 (test TEST-CHAR-12
       (char= #\RETURN
              (name-char 
@@ -26,6 +39,8 @@
       (char= #\U80
              (name-char 
               (char-name (code-char 128)))))
+
+#+(or) (test-expect-error test-unicode-out-of-range #\U110000)
 
 (test TEST-CHAR-13
       (typep  
@@ -106,3 +121,25 @@
 
 (test test-char-17 (char/= #\a #\b #\c #\d))
 (test test-char-18 (let ()(char/= #\a #\b #\c #\d)))
+
+(test test-char-19 (eql #\Rubout #\Del))
+
+;;; https://en.wikipedia.org/wiki/C0_and_C1_control_codes
+(test test-char-c0
+      (list #\NUL #\SOH #\STX #\ETX
+            #\EOT #\ENQ #\ACK #\BEL
+            #\BS #\HT #\LF #\VT
+            #\FF #\CR #\SO #\SI
+            #\DLE #\DC1 #\DC2 #\DC3
+            #\DC4 #\NAK #\SYN #\ETB
+            #\CAN #\EM #\SUB #\ESC
+            #\FS #\GS #\RS #\US
+            #\SP #\DEL))
+
+(test test-char-standard-names
+      (list #\Backspace #\Tab #\Newline #\Linefeed #\Page #\Return #\Space
+            #\BACKSPACE #\TAB #\NEWLINE #\LINEFEED #\PAGE #\RETURN #\SPACE))
+
+(TEST test-char-semistandard-names
+      (list #\Null #\Bell #\Escape #\Rubout
+            #\NULL #\BELL #\ESCAPE #\RUBOUT))

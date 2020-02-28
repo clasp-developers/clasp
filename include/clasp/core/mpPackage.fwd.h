@@ -106,24 +106,19 @@ void debug_mutex_unlock(Mutex* m);
 #define OPENDYLB_NAMEWORD 0x004c59444e45504f
 #define STCKMAPS_NAMEWORD 0x0050414d4b435453
 #define JITDOBJS_NAMEWORD 0x004a424f4454494a
-#define EXITBARR_NAMEWORD 0x0052414254495845
+#define SUSPBARR_NAMEWORD 0x0052424250535553
 #define DISSASSM_NAMEWORD 0x0053534153534944
 #define JITGDBIF_NAMEWORD 0x004942444754494a
+#define MPSMESSG_NAMEWORD 0x005353454d53504d     // MPSMESSG
 
 struct Mutex {
   uint64_t _NameWord;
   pthread_mutex_t _Mutex;
   gctools::Fixnum _Counter;
   bool _Recursive;
-#if 0
-  Mutex() : _Counter(0), _Recursive(false) {
-    pthread_mutex_init(&this->_Mutex,NULL);
-  }
-#endif
   Mutex(uint64_t nameword, bool recursive=false) : _NameWord(nameword), _Counter(0), _Recursive(recursive) {
     
     if (!recursive) {
-//      printf("%s:%d Creating Mutex@%p\n", __FILE__, __LINE__, (void*)&this->_Mutex);
       pthread_mutex_init(&this->_Mutex,NULL);
     } else {
       pthread_mutexattr_t Attr;
@@ -134,7 +129,6 @@ struct Mutex {
     }
   };
   bool lock(bool waitp=true) {
-//      printf("%s:%d locking Mutex@%p\n", __FILE__, __LINE__, (void*)&this->_Mutex); fflush(stdout);
 #ifdef DEBUG_THREADS
     debug_mutex_lock(this);
 #endif
@@ -149,7 +143,6 @@ struct Mutex {
     return pthread_mutex_trylock(&this->_Mutex)==0;
   };
   void unlock() {
-//      printf("%s:%d unlocking Mutex@%p\n", __FILE__, __LINE__, (void*)&this->_Mutex); fflush(stdout);
 #ifdef DEBUG_THREADS
     debug_mutex_unlock(this);
 #endif
@@ -164,13 +157,6 @@ struct Mutex {
   };
 };
 
-  
-
-  struct RecursiveMutex : public Mutex {
-    RecursiveMutex(uint64_t nameword) : Mutex(nameword,true) {};
-  };
-
-  
   struct SharedMutex {
     mp::Mutex _r;
     mp::Mutex _g;
@@ -302,21 +288,13 @@ struct Mutex {
       size_t timeout_nsec = static_cast<size_t>((timeout-dtimeout_sec)*1000000000.0);
       timeToWait.tv_sec = now.tv_sec;
       timeToWait.tv_nsec = (now.tv_usec*1000UL);
-#if 0
-      printf("%s:%d pthread_cond_timedwait    timeout = %lf\n",  __FILE__, __LINE__, timeout);
-      printf("%s:%d pthread_cond_timedwait    timeout_sec = %lu  timeout_nsec = %lu\n", __FILE__, __LINE__, timeout_sec, timeout_nsec );
-      printf("%s:%d pthread_cond_timedwait    now.tv_sec = %lu  now.tv_nsec = %lu\n", __FILE__, __LINE__, timeToWait.tv_sec, timeToWait.tv_nsec );
-#endif
       timeToWait.tv_sec += timeout_sec;
       timeToWait.tv_nsec += timeout_nsec;
       if (timeToWait.tv_nsec>1000000000) {
         timeToWait.tv_sec++;
         timeToWait.tv_nsec -= 1000000000;
       }
-//      printf("%s:%d pthread_cond_timedwait    timeToWait.tv_sec = %lu  timeToWait.tv_nsec = %lu\n", __FILE__, __LINE__, timeToWait.tv_sec, timeToWait.tv_nsec );
-//      m.lock();
       int rt = pthread_cond_timedwait(&this->_ConditionVariable,&m._Mutex,&timeToWait);
-//      m.unlock();
       return rt==0;
     }
     bool signal() {

@@ -66,11 +66,18 @@ CL_DEFUN_SETF List_sp core__set_symbol_plist(List_sp plist, Symbol_sp sym) {
   return plist;
 }
 
+CL_LAMBDA(cmp newv sym);
+CL_DECLARE();
+CL_DOCSTRING("Compare-and-swap the symbol-plist");
+CL_DEFUN List_sp core__cas_symbol_plist(List_sp cmp, List_sp newv, Symbol_sp sym) {
+  return sym->cas_plist(cmp, newv);
+}
+
 CL_LAMBDA(sym indicator &optional default);
 CL_DECLARE();
 CL_DOCSTRING("Return the value of a plist property");
 CL_DEFUN T_sp cl__get(Symbol_sp sym, T_sp indicator, T_sp defval) {
-  return cl__getf(sym->_PropertyList, indicator, defval);
+  return cl__getf(sym->plist(), indicator, defval);
 }
 
 CL_LISPIFY_NAME("cl:get")
@@ -79,7 +86,7 @@ CL_DECLARE();
 CL_DOCSTRING("Set the value of a plist property");
 CL_DEFUN_SETF T_sp core__putprop(T_sp val, Symbol_sp sym, T_sp indicator, T_sp defval) {
   (void)(defval); // unused
-  sym->_PropertyList = core__put_f(sym->_PropertyList, val, indicator);
+  sym->setf_plist(core__put_f(sym->plist(), val, indicator));
   return val;
 }
 
@@ -132,19 +139,19 @@ CL_DEFUN T_sp cl__symbol_value(Symbol_sp arg) {
   return arg->symbolValue();
 };
 
+CL_LAMBDA(cmp new-value symbol);
+CL_DECLARE();
+CL_DOCSTRING("Compare-and-swap of SYMBOL-VALUE.");
+CL_DEFUN T_sp core__cas_symbol_value(T_sp cmp, T_sp new_value, Symbol_sp sym) {
+  return sym->casSymbolValue(cmp, new_value);
+}
+
 CL_LAMBDA(symbol cell unbound);
 CL_DECLARE();
 CL_DOCSTRING("Get the value of a symbol from TLS or from the given CELL");
 CL_DEFUN T_sp core__symbol_value_from_cell(Symbol_sp symbol, Cons_sp cell, T_sp unbound_marker) {
   return symbol->symbolValueFromCell(cell, unbound_marker);
 }
-
-CL_LAMBDA(arg);
-CL_DECLARE();
-CL_DOCSTRING("symbolValueAddress");
-CL_DEFUN T_sp core__symbol_value_address(Symbol_sp arg) {
-  return Pointer_O::create(&arg->symbolValueRef());
-};
 
 CL_LAMBDA(name);
 CL_DECLARE();
@@ -212,19 +219,20 @@ void Symbol_O::finish_setup(Package_sp pkg, bool exportp, bool shadowp) {
   ASSERTF(pkg, BF("The package is UNDEFINED"));
   this->_HomePackage = pkg;
   if (pkg->actsLikeKeywordPackage())
-    this->_GlobalValue = this->asSmartPtr();
+    this->set_globalValue(this->asSmartPtr());
   else
-    this->_GlobalValue = _Unbound<T_O>();
+    this->set_globalValue(_Unbound<T_O>());
   this->fmakunbound();
   this->fmakunbound_setf();
-  pkg->bootstrap_add_symbol_to_package(this->symbolName()->get().c_str(), this->sharedThis<Symbol_O>(), exportp, shadowp);
-  this->_PropertyList = _Nil<T_O>();
+  pkg->bootstrap_add_symbol_to_package(this->symbolName()->get_std_string().c_str(),
+                                       this->sharedThis<Symbol_O>(), exportp, shadowp);
+  this->setf_plist(_Nil<T_O>());
 }
 
 Symbol_sp Symbol_O::create_at_boot(const string &nm) {
   // This is used to allocate roots that are pointed
   // to by global variable _sym_XXX  and will never be collected
-  Symbol_sp n = gctools::GC<Symbol_O>::root_allocate();
+  Symbol_sp n = gctools::GC<Symbol_O>::allocate(); // root_allocate();
   ASSERTF(nm != "", BF("You cannot create a symbol without a name"));
 #if VERBOSE_SYMBOLS
   if (nm.find("/dyn") != string::npos) {
@@ -238,7 +246,7 @@ Symbol_sp Symbol_O::create_at_boot(const string &nm) {
 Symbol_sp Symbol_O::create_from_string(const string &nm) {
   // This is used to allocate roots that are pointed
   // to by global variable _sym_XXX  and will never be collected
-  Symbol_sp n = gctools::GC<Symbol_O>::root_allocate(true);
+  Symbol_sp n = gctools::GC<Symbol_O>::allocate(true); // root_allocate(true)
   SimpleString_sp snm = SimpleBaseString_O::make(nm);
   n->setf_name(snm);
   // The following are done in finish_setup
@@ -257,7 +265,7 @@ Symbol_sp Symbol_O::makunbound() {
   if (this->getReadOnly())
     // would be a nice extension to make this a continuable error
     SIMPLE_ERROR(BF("Cannot make constant %s unbound") % this->__repr__());
-  *my_thread->_Bindings.reference_raw(this,&this->_GlobalValue) = _Unbound<T_O>();
+  setf_symbolValue(_Unbound<T_O>());
   return this->asSmartPtr();
 }
 
@@ -269,21 +277,21 @@ CL_DEFUN Symbol_sp cl__makunbound(Symbol_sp functionName) {
 }
 
 bool Symbol_O::fboundp() const {
-  return this->_Function->entry.load() != unboundFunctionEntryPoint;
+  return symbolFunction()->entry.load() != unboundFunctionEntryPoint;
 };
 
 void Symbol_O::fmakunbound()
 {
-  this->_Function = make_unbound_symbol_function(this->asSmartPtr());
+  setf_symbolFunction(make_unbound_symbol_function(this->asSmartPtr()));
 }
 
 bool Symbol_O::fboundp_setf() const {
-  return this->_SetfFunction->entry.load() != unboundSetfFunctionEntryPoint;
+  return getSetfFdefinition()->entry.load() != unboundSetfFunctionEntryPoint;
 };
 
 void Symbol_O::fmakunbound_setf()
 {
-  this->_SetfFunction = make_unbound_setf_symbol_function(this->asSmartPtr());
+  setSetfFdefinition(make_unbound_setf_symbol_function(this->asSmartPtr()));
 }
 
 
@@ -291,19 +299,15 @@ __attribute__((optnone)) void Symbol_O::symbolUnboundError() const {
   UNBOUND_VARIABLE_ERROR(this->asSmartPtr());
 }
 
-void Symbol_O::setf_plist(List_sp plist) {
-  this->_PropertyList = plist;
-}
-
 void Symbol_O::sxhash_(HashGenerator &hg) const {
-  if (hg.isFilling()) this->_HomePackage.load().unsafe_general()->sxhash_(hg);
+  if (hg.isFilling()) this->getPackage().unsafe_general()->sxhash_(hg);
   if (hg.isFilling()) this->_Name->sxhash_(hg);
 }
 
-void Symbol_O::sxhash_equal(HashGenerator &hg,LocationDependencyPtrT ld) const
+void Symbol_O::sxhash_equal(HashGenerator &hg) const
 {
-  if (hg.isFilling()) HashTable_O::sxhash_equal(hg,this->_HomePackage,ld);
-  if (hg.isFilling()) HashTable_O::sxhash_equal(hg,this->_Name,ld);
+  if (hg.isFilling()) HashTable_O::sxhash_equal(hg,this->getPackage());
+  if (hg.isFilling()) HashTable_O::sxhash_equal(hg,this->_Name);
 }
 
 
@@ -313,12 +317,12 @@ CL_DEFMETHOD Symbol_sp Symbol_O::copy_symbol(T_sp copy_properties) const {
   Symbol_sp new_symbol = Symbol_O::create(this->_Name);
   if (copy_properties.isTrue()) {
     if (this->boundP())
-      new_symbol->_GlobalValue = this->symbolValue();
+      new_symbol->set_globalValue(this->symbolValue());
     new_symbol->setReadOnly(this->getReadOnly());
-    new_symbol->_PropertyList = cl__copy_list(this->_PropertyList);
-    if (this->fboundp()) new_symbol->_Function = this->_Function;
+    new_symbol->setf_plist(cl__copy_list(this->plist()));
+    if (this->fboundp()) new_symbol->setf_symbolFunction(this->symbolFunction());
     else new_symbol->fmakunbound();
-    if (this->fboundp_setf()) new_symbol->_SetfFunction = this->_SetfFunction;
+    if (this->fboundp_setf()) new_symbol->setSetfFdefinition(this->getSetfFdefinition());
     else new_symbol->fmakunbound_setf();
   }
   return new_symbol;
@@ -327,7 +331,7 @@ CL_DEFMETHOD Symbol_sp Symbol_O::copy_symbol(T_sp copy_properties) const {
 
 bool Symbol_O::isKeywordSymbol() {
   if (this->homePackage().nilp()) return false;
-  Package_sp pkg = gc::As<Package_sp>(this->_HomePackage.load()); //
+  Package_sp pkg = gc::As<Package_sp>(this->getPackage());
   return pkg->isKeywordPackage();
 };
 
@@ -355,8 +359,8 @@ void Symbol_O::archiveBase(ArchiveP node) {
 
 CL_LISPIFY_NAME("core:asKeywordSymbol");
 CL_DEFMETHOD Symbol_sp Symbol_O::asKeywordSymbol() {
-  if (this->_HomePackage.load().notnilp()) {
-    Package_sp pkg = gc::As<Package_sp>(this->_HomePackage.load());
+  if (this->getPackage().notnilp()) {
+    Package_sp pkg = gc::As<Package_sp>(this->getPackage());
     if (pkg->isKeywordPackage())
       return this->asSmartPtr();
   }
@@ -418,34 +422,38 @@ T_sp Symbol_O::defparameter(T_sp val) {
 
 CL_LISPIFY_NAME("core:setf_symbolFunction");
 CL_DEFMETHOD void Symbol_O::setf_symbolFunction(Function_sp exec) {
-  this->_Function = exec;
+  _Function.store(exec, std::memory_order_relaxed);
 }
 
 string Symbol_O::symbolNameAsString() const {
-  return this->_Name->get();
+  return this->_Name->get_std_string();
 }
 
 string Symbol_O::formattedName(bool prefixAlways) const { //no guard
   stringstream ss;
-  if (this->_HomePackage.load().nilp()) {
+  if (this->getPackage().nilp()) {
     ss << "#:";
-    ss << this->_Name->get();
+    ss << this->_Name->get_std_string();
   } else {
-    T_sp tmyPackage = this->_HomePackage;
+    T_sp tmyPackage = this->getPackage();
     if (!tmyPackage) {
-      ss << "<PKG-NULL>:" << this->_Name->get();
+      ss << "<PKG-NULL>:" << this->_Name->get_std_string();
       return ss.str();
     }
-    Package_sp myPackage = gc::As<Package_sp>(tmyPackage);
-    if (myPackage->isKeywordPackage()) {
-      ss << ":" << this->_Name->get();
-    } else {
-      Package_sp currentPackage = _lisp->getCurrentPackage();
-      if (prefixAlways) {
-        ss << myPackage->getName() << "::" << this->_Name->get();
+    if (gc::IsA<Package_sp>(tmyPackage)) {
+      Package_sp myPackage = gc::As_unsafe<Package_sp>(tmyPackage);
+      if (myPackage->isKeywordPackage()) {
+        ss << ":" << this->_Name->get_std_string();
       } else {
-        ss << this->_Name->get();
+        Package_sp currentPackage = _lisp->getCurrentPackage();
+        if (prefixAlways) {
+          ss << myPackage->getName() << "::" << this->_Name->get_std_string();
+        } else {
+          ss << this->_Name->get_std_string();
+        }
       }
+    } else {
+      ss << "BAD_PACKAGE::" << this->_Name->get_std_string();
     }
   }
 // Sometimes its useful to add the address of the symbol to
@@ -475,7 +483,7 @@ bool Symbol_O::isExported() {
 Symbol_sp Symbol_O::exportYourself(bool doit) {
   if (doit) {
     if (!this->isExported()) {
-      if (this->_HomePackage.load().nilp())
+      if (this->getPackage().nilp())
         SIMPLE_ERROR(BF("Cannot export - no package"));
       Package_sp pkg = gc::As<Package_sp>(this->getPackage());
       if (!pkg->isKeywordPackage()) {
@@ -503,7 +511,7 @@ CL_DEFMETHOD string Symbol_O::fullName() const {
 }
 
 T_sp Symbol_O::getPackage() const {
-  T_sp pkg = this->_HomePackage.load();
+  T_sp pkg = this->_HomePackage.load(std::memory_order_relaxed);
   if (!pkg) return _Nil<T_O>();
   return pkg;
 }
@@ -511,7 +519,7 @@ T_sp Symbol_O::getPackage() const {
 void Symbol_O::setPackage(T_sp p) {
   ASSERTF(p, BF("The package is UNDEFINED"));
   ASSERT(p.nilp() || gc::IsA<Package_sp>(p));
-  this->_HomePackage = p;
+  this->_HomePackage.store(p, std::memory_order_relaxed);
 }
 
 SYMBOL_EXPORT_SC_(ClPkg, make_symbol);
@@ -528,12 +536,12 @@ void Symbol_O::dump() {
   stringstream ss;
   ss << "Symbol @" << (void *)this << " --->" << std::endl;
   {
-    ss << "Name: " << this->_Name->get() << std::endl;
-    if (!this->_HomePackage.load()) {
+    ss << "Name: " << this->_Name->get_std_string() << std::endl;
+    if (!this->getPackage()) {
       ss << "Package: UNDEFINED" << std::endl;
     } else {
       ss << "Package: ";
-      ss << _rep_(this->_HomePackage) << std::endl;
+      ss << _rep_(this->getPackage()) << std::endl;
     }
     T_sp val = this->symbolValueUnsafe();
     if (!val) {
@@ -546,18 +554,13 @@ void Symbol_O::dump() {
       ss << "Value: " << _rep_(val) << std::endl;
     }
     if (this->fboundp()) {
-      ss << "Function: " << _rep_(this->_Function) << std::endl;
+      ss << "Function: " << _rep_(this->symbolFunction()) << std::endl;
     } else {
       ss << "Function: UNBOUND" << std::endl;
     }
     ss << "IsSpecial: " << this->specialP() << std::endl;
     ss << "IsConstant: " << this->getReadOnly() << std::endl;
-    ss << "PropertyList: ";
-    if (this->_PropertyList) {
-      ss << _rep_(this->_PropertyList) << std::endl;
-    } else {
-      ss << "UNDEFINED" << std::endl;
-    }
+    ss << "PropertyList: " << _rep_(this->plist()) << std::endl;
   }
   printf("%s", ss.str().c_str());
 }
@@ -576,23 +579,29 @@ void Symbol_O::remove_package(Package_sp pkg)
     if ((home_package == pkg) &&
         !home_package->getSystemLockedP() &&
         !home_package->getUserLockedP()) {
-      this->_HomePackage = _Nil<T_O>();
+      this->setPackage(_Nil<T_O>());
     }
   }
 };
 
 CL_DEFUN T_sp core__symbol_global_value(Symbol_sp s) {
-  return s->_GlobalValue;
+  return s->globalValue();
 }
 
 CL_DOCSTRING(R"(Set the value slot of the symbol to the value.
 This bypasses thread local storage of symbol value slots and any threads that start
 after this has been set will start with the value set here.)");
 CL_DEFUN void core__symbol_global_value_set(Symbol_sp symbol, T_sp value) {
-  symbol->_GlobalValue = value;
+  symbol->set_globalValue(value);
 }
 
+CL_DEFUN T_sp core__symbol_thread_local_value(Symbol_sp s) {
+  return s->threadLocalSymbolValue();
+}
 
+CL_DEFUN bool core__no_thread_local_bindingp(T_sp object) {
+  return gctools::tagged_no_thread_local_bindingp(object.raw_());
+}
 
 
 SYMBOL_EXPORT_SC_(KeywordPkg,vtable);

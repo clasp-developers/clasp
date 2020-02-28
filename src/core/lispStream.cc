@@ -73,6 +73,7 @@ THE SOFTWARE.
 #include <clasp/core/sequence.h>
 #include <clasp/core/fileSystem.h>
 #include <clasp/core/wrappers.h>
+#include <clasp/core/bits.h>
 namespace core {
 FileOps &StreamOps(T_sp strm) {
   Stream_sp stream = gc::As<Stream_sp>(strm);
@@ -209,11 +210,15 @@ CL_DEFUN StringOutputStream_sp core__thread_local_write_to_string_output_stream(
 CL_DEFUN String_sp core__get_thread_local_write_to_string_output_stream_string(StringOutputStream_sp my_stream)
 {
   // This is like get-string-output-stream-string but it checks the size of the
-  // buffer string and if it is too large it knocks it down to 128 characters
+  // buffer string and if it is too large it knocks it down to STRING_OUTPUT_STREAM_DEFAULT_SIZE characters
   String_sp& buffer = StringOutputStreamOutputString(my_stream);
   String_sp result = gc::As_unsafe<String_sp>(cl__copy_seq(buffer));
   if (buffer->length()>1024) {
-    StringOutputStreamOutputString(my_stream) = Str8Ns_O::createBufferString(128);
+#ifdef CLASP_UNICODE
+    StringOutputStreamOutputString(my_stream) = StrWNs_O::createBufferString(STRING_OUTPUT_STREAM_DEFAULT_SIZE);
+#else
+    StringOutputStreamOutputString(my_stream) = Str8Ns_O::createBufferString(STRING_OUTPUT_STREAM_DEFAULT_SIZE);
+#endif
   } else {
     SetStringFillp(buffer,core::make_fixnum(0));
   }
@@ -358,8 +363,8 @@ static void unread_error(T_sp strm);
 static void unread_twice(T_sp strm);
 static void io_error(T_sp strm) NO_RETURN;
 #ifdef CLASP_UNICODE
-cl_index ext__encoding_error(T_sp strm, unsigned char *buffer, claspCharacter c);
-claspCharacter ext__decoding_error(T_sp strm, unsigned char *buffer, int length);
+cl_index encoding_error(T_sp strm, unsigned char *buffer, claspCharacter c);
+claspCharacter decoding_error(T_sp strm, unsigned char *buffer, int length);
 #endif
 static void wrong_file_handler(T_sp strm) NO_RETURN;
 #if defined(ECL_WSOCK)
@@ -419,6 +424,12 @@ not_input_read_char(T_sp strm) {
 static claspCharacter
 not_output_write_char(T_sp strm, claspCharacter c) {
   not_an_output_stream(strm);
+  return c;
+}
+
+static claspCharacter
+startup_write_char(T_sp strm, claspCharacter c) {
+  putchar(c);
   return c;
 }
 
@@ -724,7 +735,7 @@ generic_write_vector(T_sp strm, T_sp data, cl_index start, cl_index end) {
     return start;
   const FileOps &ops = stream_dispatch_table(strm);
   Vector_sp vec = gc::As<Vector_sp>(data);
-  T_sp elementType = vec->arrayElementType();
+  T_sp elementType = vec->element_type();
   if (elementType == cl::_sym_base_char ||
 #ifdef CLASP_UNICODE
       elementType == cl::_sym_character ||
@@ -916,7 +927,7 @@ static int
 passthrough_encoder(T_sp stream, unsigned char *buffer, claspCharacter c) {
 #ifdef CLASP_UNICODE
   unlikely_if(c > 0xFF) {
-    return ext__encoding_error(stream, buffer, c);
+    return encoding_error(stream, buffer, c);
   }
 #endif
   buffer[0] = c;
@@ -934,7 +945,7 @@ ascii_decoder(T_sp stream) {
   if (clasp_read_byte8(stream, &aux, 1) < 1) {
     return EOF;
   } else if (aux > 127) {
-    return ext__decoding_error(stream, &aux, 1);
+    return decoding_error(stream, &aux, 1);
   } else {
     return aux;
   }
@@ -943,7 +954,7 @@ ascii_decoder(T_sp stream) {
 static int
 ascii_encoder(T_sp stream, unsigned char *buffer, claspCharacter c) {
   unlikely_if(c > 127) {
-    return ext__encoding_error(stream, buffer, c);
+    return encoding_error(stream, buffer, c);
   }
   buffer[0] = c;
   return 1;
@@ -1052,7 +1063,7 @@ ucs_2be_decoder(T_sp stream) {
       } else {
         claspCharacter aux = ((claspCharacter)buffer[0] << 8) | buffer[1];
         if ((buffer[0] & 0xF8) != 0xDC) {
-          return ext__decoding_error(stream, buffer, 1);
+          return decoding_error(stream, buffer, 1);
         }
         return ((c & 0x3FFF) << 10) + (aux & 0x3FFF) + 0x10000;
       }
@@ -1093,7 +1104,7 @@ ucs_2le_decoder(T_sp stream) {
       } else {
         claspCharacter aux = ((claspCharacter)buffer[1] << 8) | buffer[0];
         if ((buffer[1] & 0xF8) != 0xDC) {
-          return ext__decoding_error(stream, buffer, 2);
+          return decoding_error(stream, buffer, 2);
         }
         return ((c & 0x3FFF) << 10) + (aux & 0x3FFF) + 0x10000;
       }
@@ -1165,7 +1176,7 @@ user_decoder(T_sp tstream) {
   }
   character = clasp_gethash_safe(clasp_make_fixnum(buffer[0]), table, _Nil<T_O>());
   unlikely_if(character.nilp()) {
-    return ext__decoding_error(stream, buffer, 1);
+    return decoding_error(stream, buffer, 1);
   }
   if (character == _lisp->_true()) {
     if (clasp_read_byte8(stream, buffer + 1, 1) < 1) {
@@ -1174,7 +1185,7 @@ user_decoder(T_sp tstream) {
       gctools::Fixnum byte = (buffer[0] << 8) + buffer[1];
       character = clasp_gethash_safe(clasp_make_fixnum(byte), table, _Nil<T_O>());
       unlikely_if(character.nilp()) {
-        return ext__decoding_error(stream, buffer, 2);
+        return decoding_error(stream, buffer, 2);
       }
     }
   }
@@ -1186,7 +1197,7 @@ user_encoder(T_sp tstream, unsigned char *buffer, claspCharacter c) {
   Stream_sp stream = gc::As<Stream_sp>(tstream);
   T_sp byte = clasp_gethash_safe(clasp_make_character(c), stream->_FormatTable, _Nil<T_O>());
   if (byte.nilp()) {
-    return ext__encoding_error(stream, buffer, c);
+    return encoding_error(stream, buffer, c);
   } else {
     gctools::Fixnum code = byte.unsafe_fixnum();
     if (code > 0xFF) {
@@ -1223,7 +1234,7 @@ user_multistate_decoder(T_sp tstream) {
       return character.unsafe_character();
     }
     unlikely_if(character.nilp()) {
-      return ext__decoding_error(stream, buffer, i);
+      return decoding_error(stream, buffer, i);
     }
     if (character == _lisp->_true()) {
       /* Need more characters */
@@ -1277,7 +1288,7 @@ user_multistate_encoder(T_sp tstream, unsigned char *buffer, claspCharacter c) {
     p = oCdr(p);
   } while (p != table_list);
   /* Exhausted all lists */
-  return ext__encoding_error(stream, buffer, c);
+  return encoding_error(stream, buffer, c);
 }
 
 /*
@@ -1298,7 +1309,7 @@ utf_8_decoder(T_sp stream) {
   if ((buffer[0] & 0x80) == 0) {
     return buffer[0];
   }
-  unlikely_if((buffer[0] & 0x40) == 0) return ext__decoding_error(stream, buffer, 1);
+  unlikely_if((buffer[0] & 0x40) == 0) return decoding_error(stream, buffer, 1);
   if ((buffer[0] & 0x20) == 0) {
     cum = buffer[0] & 0x1F;
     nbytes = 1;
@@ -1309,20 +1320,20 @@ utf_8_decoder(T_sp stream) {
     cum = buffer[0] & 0x07;
     nbytes = 3;
   } else {
-    return ext__decoding_error(stream, buffer, 1);
+    return decoding_error(stream, buffer, 1);
   }
   if (clasp_read_byte8(stream, buffer + 1, nbytes) < nbytes)
     return EOF;
   for (i = 1; i <= nbytes; i++) {
     unsigned char c = buffer[i];
     /*printf(": %04x :", c);*/
-    unlikely_if((c & 0xC0) != 0x80) return ext__decoding_error(stream, buffer, nbytes + 1);
+    unlikely_if((c & 0xC0) != 0x80) return decoding_error(stream, buffer, nbytes + 1);
     cum = (cum << 6) | (c & 0x3F);
-    unlikely_if(cum == 0) return ext__decoding_error(stream, buffer, nbytes + 1);
+    unlikely_if(cum == 0) return decoding_error(stream, buffer, nbytes + 1);
   }
   if (cum >= 0xd800) {
-    unlikely_if(cum <= 0xdfff) return ext__decoding_error(stream, buffer, nbytes + 1);
-    unlikely_if(cum >= 0xFFFE && cum <= 0xFFFF) return ext__decoding_error(stream, buffer, nbytes + 1);
+    unlikely_if(cum <= 0xdfff) return decoding_error(stream, buffer, nbytes + 1);
+    unlikely_if(cum >= 0xFFFE && cum <= 0xFFFF) return decoding_error(stream, buffer, nbytes + 1);
   }
   /*printf("; %04x ;", cum);*/
   return cum;
@@ -1512,6 +1523,100 @@ clos_stream_close(T_sp strm) {
   return eval::funcall(gray::_sym_close, strm);
 }
 
+
+static int
+illegal_op_int__T_sp(T_sp strm) {
+  printf("%s:%d Illegal op\n", __FILE__, __LINE__ );
+  abort();
+}
+
+static cl_index
+illegal_op_cl_index__T_sp_char_cl_index(T_sp strm, unsigned char *c, cl_index n) {
+  printf("%s:%d Illegal op\n", __FILE__, __LINE__ );
+  abort();
+}
+
+static T_sp
+illegal_op_T_sp__T_sp(T_sp strm) {
+  printf("%s:%d Illegal op\n", __FILE__, __LINE__ );
+  abort();
+}
+
+static void
+illegal_op_void__T_sp(T_sp strm) {
+  printf("%s:%d Illegal op\n", __FILE__, __LINE__ );
+  abort();
+}
+
+static void
+illegal_op_void__T_sp_T_sp(T_sp strm, T_sp c) {
+  printf("%s:%d Illegal op\n", __FILE__, __LINE__ );
+  abort();
+}
+
+static T_sp
+illegal_op_T_sp__T_sp_T_sp(T_sp strm, T_sp c) {
+  printf("%s:%d Illegal op\n", __FILE__, __LINE__ );
+  abort();
+}
+
+static void
+illegal_op_void__T_sp_char(T_sp strm, claspCharacter c) {
+  printf("%s:%d Illegal op\n", __FILE__, __LINE__ );
+  abort();
+}
+
+static cl_index
+illegal_op_vector(T_sp strm, T_sp data, cl_index start, cl_index end) {
+  printf("%s:%d Illegal op\n", __FILE__, __LINE__ );
+  abort();
+}
+
+static T_sp
+illegal_op_T_sp__T_sp(T_sp strm, T_sp c) {
+  printf("%s:%d Illegal op\n", __FILE__, __LINE__ );
+  abort();
+}
+
+
+static claspCharacter
+illegal_op_char__T_sp(T_sp strm) {
+  printf("%s:%d Illegal op\n", __FILE__, __LINE__ );
+  abort();
+}
+
+const FileOps startup_stream_ops = {
+    illegal_op_cl_index__T_sp_char_cl_index,
+    illegal_op_cl_index__T_sp_char_cl_index,
+
+    illegal_op_void__T_sp_T_sp,
+    illegal_op_T_sp__T_sp,
+
+    illegal_op_char__T_sp,
+    startup_write_char,
+    illegal_op_void__T_sp_char,
+    illegal_op_char__T_sp,
+
+    illegal_op_vector,
+    illegal_op_vector,
+
+    illegal_op_int__T_sp,
+    illegal_op_void__T_sp,
+    illegal_op_void__T_sp,
+    illegal_op_void__T_sp,
+    illegal_op_void__T_sp,
+
+    illegal_op_int__T_sp,
+    illegal_op_int__T_sp,
+    illegal_op_int__T_sp,
+    illegal_op_T_sp__T_sp,
+
+    illegal_op_T_sp__T_sp,
+    illegal_op_T_sp__T_sp,
+    illegal_op_T_sp__T_sp_T_sp,
+    illegal_op_int__T_sp,
+    illegal_op_T_sp__T_sp };
+
 const FileOps clos_stream_ops = {
     clos_stream_write_byte8,
     clos_stream_read_byte8,
@@ -1566,7 +1671,7 @@ static T_sp
 str_out_element_type(T_sp strm) {
   T_sp tstring = StringOutputStreamOutputString(strm);
   ASSERT(cl__stringp(tstring));
-  return gc::As_unsafe<String_sp>(tstring)->arrayElementType();
+  return gc::As_unsafe<String_sp>(tstring)->element_type();
 }
 
 T_sp str_out_get_position(T_sp strm) {
@@ -1697,7 +1802,7 @@ CL_DEFUN T_sp cl__make_string_output_stream(Symbol_sp elementType) {
     FEerror("In MAKE-STRING-OUTPUT-STREAM, the argument :ELEMENT-TYPE (~A) must be a subtype of character",
             1, elementType.raw_());
   }
-  return clasp_make_string_output_stream(128, extended);
+  return clasp_make_string_output_stream(STRING_OUTPUT_STREAM_DEFAULT_SIZE, extended);
 }
 
 CL_LAMBDA(strm);
@@ -1762,7 +1867,7 @@ static T_sp
 str_in_element_type(T_sp strm) {
   T_sp tstring = StringInputStreamInputString(strm);
   ASSERT(cl__stringp(tstring));
-  return gc::As_unsafe<String_sp>(tstring)->arrayElementType();
+  return gc::As_unsafe<String_sp>(tstring)->element_type();
 }
 
 static T_sp
@@ -1844,6 +1949,19 @@ T_sp clasp_make_string_input_stream(T_sp strng, cl_index istart, cl_index iend) 
   return strm;
 }
 
+CL_LAMBDA(file_descriptor &key direction);
+CL_DOCSTRING("Create a file from a file descriptor and direction");
+CL_DEFUN T_sp core__make_fd_stream(int fd, Symbol_sp direction)
+{
+  if (direction == kw::_sym_input) {
+    return IOFileStream_O::makeInput("InputIOFileStreamFromFD",fd);
+  } else if (direction == kw::_sym_output) {
+    return IOFileStream_O::makeOutput("OutputIOFileStreamFromFD",fd);
+  } else {
+    SIMPLE_ERROR(BF("Could not create IOFileStream with direction %s") % _rep_(direction));
+  }
+}
+  
 CL_LAMBDA(strng &optional (istart 0) iend);
 CL_DECLARE();
 CL_DOCSTRING("make_string_input_stream");
@@ -2712,14 +2830,7 @@ CL_DEFUN T_sp cl__synonym_stream_symbol(T_sp strm) {
  * UNINTERRUPTED OPERATIONS
  */
 
-#ifdef CLASP_MS_WINDOWS_HOST
-#define clasp_mode_t int
-#else
-#define clasp_mode_t mode_t
-#endif
-
-static int
-safe_open(const char *filename, int flags, clasp_mode_t mode) {
+int safe_open(const char *filename, int flags, clasp_mode_t mode) {
   const cl_env_ptr the_env = clasp_process_env();
   clasp_disable_interrupts_env(the_env);
   int output = open(filename, flags, mode);
@@ -4317,10 +4428,15 @@ stream_dispatch_table(T_sp strm) {
   if (AnsiStreamP(strm)) {
     return StreamOps(strm);
   }
-  if (!gc::IsA<Instance_sp>(strm)) {
-    ERROR_WRONG_TYPE_ONLY_ARG(core::_sym_dispatchTable, strm, cl::_sym_Stream_O);
+  if (gc::IsA<Instance_sp>(strm)) {
+    return clos_stream_ops;
   }
-  return clos_stream_ops;
+  // Use this only when the system is starting up so that we
+  // can use stream writing functions to print to the terminal
+  if (!global_Started&&!strm) {
+    return startup_stream_ops;
+  }
+  ERROR_WRONG_TYPE_ONLY_ARG(core::_sym_dispatchTable, strm, cl::_sym_Stream_O);
 }
 
 cl_index
@@ -5318,7 +5434,7 @@ wrong_file_handler(T_sp strm) {
 
 #ifdef CLASP_UNICODE
 SYMBOL_EXPORT_SC_(ExtPkg,encoding_error);
-CL_DEFUN cl_index ext__encoding_error(T_sp stream, unsigned char *buffer, claspCharacter c) {
+cl_index encoding_error(T_sp stream, unsigned char *buffer, claspCharacter c) {
   T_sp code = eval::funcall(ext::_sym_encoding_error, stream,
                             StreamExternalFormat(stream),
                             Integer_O::create((Fixnum)c));
@@ -5332,7 +5448,7 @@ CL_DEFUN cl_index ext__encoding_error(T_sp stream, unsigned char *buffer, claspC
 }
 
 SYMBOL_EXPORT_SC_(ExtPkg,decoding_error);
-CL_DEFUN claspCharacter ext__decoding_error(T_sp stream, unsigned char *buffer, int length) {
+claspCharacter decoding_error(T_sp stream, unsigned char *buffer, int length) {
   T_sp octets = _Nil<T_O>(), code;
   while (length > 0) {
     octets = Cons_O::create(make_fixnum(buffer[--length]), octets);
@@ -5448,10 +5564,22 @@ int clasp_input_column(T_sp strm) {
   return 0;
 }
 
-CL_LAMBDA(arg);
+CL_LAMBDA(stream file line-offset positional-offset);
 CL_DECLARE();
 CL_DOCSTRING("sourcePosInfo");
-CL_DEFUN SourcePosInfo_sp core__input_stream_source_pos_info(T_sp strm) {
+CL_DEFUN SourcePosInfo_sp core__input_stream_source_pos_info(T_sp strm, FileScope_sp sfi,
+                                                             size_t line_offset, size_t pos_offset) {
+  strm = coerce::inputStreamDesignator(strm);
+  size_t filePos = clasp_input_filePos(strm) + pos_offset;
+  uint lineno, column;
+  lineno = clasp_input_lineno(strm) + line_offset;
+  column = clasp_input_column(strm);
+  SourcePosInfo_sp spi = SourcePosInfo_O::create(sfi->fileHandle(), filePos, lineno, column);
+  return spi;
+}
+
+// Called from LOAD
+SourcePosInfo_sp clasp_simple_input_stream_source_pos_info(T_sp strm) {
   strm = coerce::inputStreamDesignator(strm);
   FileScope_sp sfi = clasp_input_source_file_info(strm);
   size_t filePos = clasp_input_filePos(strm);
@@ -5467,23 +5595,6 @@ FileScope_sp clasp_input_source_file_info(T_sp strm) {
   FileScope_sp sfi = gc::As<FileScope_sp>(core__file_scope(filename));
   return sfi;
 }
-};
-
-namespace core {
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 };
 
 namespace core {
@@ -5530,7 +5641,8 @@ void StringOutputStream_O::fill(const string &data) {
 /*! Get the contents and reset them */
 String_sp StringOutputStream_O::getAndReset() {
   String_sp contents = this->_Contents;
-  StringOutputStreamOutputString(this->asSmartPtr()) = Str8Ns_O::createBufferString(128);
+  // This is not unicode safe
+  StringOutputStreamOutputString(this->asSmartPtr()) = Str8Ns_O::createBufferString(STRING_OUTPUT_STREAM_DEFAULT_SIZE);
   StreamOutputColumn(this->asSmartPtr()) = 0;
   return contents;
 };
@@ -5705,10 +5817,10 @@ CL_DEFUN T_mv cl__read_from_string(String_sp content, T_sp eof_error_p, T_sp eof
   int istart = clasp_to_int(start);
   int iend;
   if (end.nilp())
-    iend = content->get().size();
+    iend = content->get_std_string().size();
   else
     iend = clasp_to_int(gc::As<Fixnum_sp>(end));
-  StringInputStream_sp sin = gc::As_unsafe<StringInputStream_sp>(StringInputStream_O::make(content->get().substr(istart, iend - istart)));
+  StringInputStream_sp sin = gc::As_unsafe<StringInputStream_sp>(StringInputStream_O::make(content->get_std_string().substr(istart, iend - istart)));
   if (iend - istart == 0) {
     if (eofErrorP) {
       ERROR_END_OF_FILE(sin);
@@ -5796,15 +5908,15 @@ CL_DEFUN T_mv cl__read_line(T_sp sin, T_sp eof_error_p, T_sp eof_value, T_sp rec
           _lisp->put_Str8Ns_buffer_string(sbuf_small);
         }
         // actually put in the wide character
-        sbuf_wide->vectorPushExtend_claspCharacter(cc);
+        sbuf_wide->vectorPushExtend(cc);
       } else if (cc == '\n') break; // hit a newline, get ready to return a result
       else if (cc == '\r') {
         // Treat a CR or CRLF as a newline.
         if (peek_char(sin) == '\n') read_char(sin); // lose any LF first tho
         break;
       } else { // ok, we have a real non-newline character. accumulate.
-        if (small) sbuf_small->vectorPushExtend_claspChar(cc);
-        else sbuf_wide->vectorPushExtend_claspCharacter(cc);
+        if (small) sbuf_small->vectorPushExtend(cc);
+        else sbuf_wide->vectorPushExtend(cc);
       }
     }
   } // while(1)

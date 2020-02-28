@@ -113,3 +113,12 @@
 (test last-ansi-7 (equal (cons 'a 'b) (last '(a . b) 1)))
 (test last-ansi-8 (equal (cons 'a 'b) (last '(a . b) 2)))
 (test ACONS.3 (acons :a :b :c))
+
+(test APPEND.7
+      (not
+      (LET ((X (LIST 'A 'B 'C 'D)))
+        (EQ (APPEND X NIL) X))))
+
+(test-expect-error  MEMBER-IF.ERROR.8 (MEMBER-IF #'IDENTITY 'A) :type type-error)
+(test-expect-error  ASSOC-IF.ERROR.12 (ASSOC-IF #'NULL '((A . B) :BAD (C . D))) :type type-error)
+(test-expect-error  ASSOC-IF-NOT.ERROR.12 (ASSOC-IF-NOT #'IDENTITY '((A . B) :BAD (C . D))) :type type-error)

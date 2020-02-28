@@ -36,6 +36,7 @@ THE SOFTWARE.
 #include <clasp/core/primitives.h>
 #include <clasp/core/instance.h>
 #include <clasp/core/compiler.h>
+#include <clasp/core/lispStream.h>
 #include <clasp/core/sourceFileInfo.h>
 #include <clasp/core/activationFrame.h>
 #include <clasp/core/lambdaListHandler.h>
@@ -102,16 +103,16 @@ void validateFunctionDescription(const char* filename, size_t lineno, Function_s
 extern "C" void dumpFunctionDescription(void* vfdesc)
 {
   core::FunctionDescription* fdesc = (core::FunctionDescription*)vfdesc;
-  printf("FunctionDescription @%p\n", fdesc);
+  core::write_bf_stream(BF("FunctionDescription @%p\n") % (void*)fdesc);
   core::Cons_sp sourcePathname_functionName((gctools::Tagged)fdesc->gcrootsInModule->getTaggedIndex(LITERAL_TAG_CHAR,fdesc->sourcePathname_functionName_Index));
   core::Cons_sp lambdaList_docstring((gctools::Tagged)fdesc->gcrootsInModule->getTaggedIndex(LITERAL_TAG_CHAR,fdesc->lambdaList_docstring_Index));
-  printf("sourcePathname CAR[%lu] = %s\n", fdesc->sourcePathname_functionName_Index, _rep_(CONS_CAR(sourcePathname_functionName)).c_str());
-  printf("functionName CDR[%lu] = %s\n", fdesc->sourcePathname_functionName_Index, _rep_(CONS_CDR(sourcePathname_functionName)).c_str());
-  printf("lambdaList CAR[%lu] = %s\n", fdesc->lambdaList_docstring_Index, _rep_(CONS_CAR(lambdaList_docstring)).c_str());
-  printf("docstring CDR[%lu] = %s\n", fdesc->lambdaList_docstring_Index, _rep_(CONS_CDR(lambdaList_docstring)).c_str());
-  printf("lineno = %d\n", fdesc->lineno);
-  printf("column = %d\n", fdesc->column);
-  printf("filepos = %d\n", fdesc->filepos);
+  core::write_bf_stream(BF("sourcePathname CAR[%lu] = %s\n") % fdesc->sourcePathname_functionName_Index % _rep_(CONS_CAR(sourcePathname_functionName)));
+  core::write_bf_stream(BF("functionName CDR[%lu] = %s\n") % fdesc->sourcePathname_functionName_Index % _rep_(CONS_CDR(sourcePathname_functionName)));
+  core::write_bf_stream(BF("lambdaList CAR[%lu] = %s\n") % fdesc->lambdaList_docstring_Index % _rep_(CONS_CAR(lambdaList_docstring)));
+  core::write_bf_stream(BF("docstring CDR[%lu] = %s\n") % fdesc->lambdaList_docstring_Index % _rep_(CONS_CDR(lambdaList_docstring)));
+  core::write_bf_stream(BF("lineno = %d\n") % fdesc->lineno);
+  core::write_bf_stream(BF("column = %d\n") % fdesc->column);
+  core::write_bf_stream(BF("filepos = %d\n") % fdesc->filepos);
 };
 
 namespace core {
@@ -151,7 +152,6 @@ CL_DEFUN void core__verify_closure_with_slots(T_sp alist)
 {
   expect_offset(comp::_sym_entry,alist,offsetof(ClosureWithSlots_O,entry)-gctools::general_tag);
   expect_offset(comp::_sym_function_description,alist,offsetof(ClosureWithSlots_O,_FunctionDescription)-gctools::general_tag);
-  expect_offset(core::_sym_object_file,alist,offsetof(ClosureWithSlots_O,_ObjectFile)-gctools::general_tag);
   expect_offset(comp::_sym_closure_type,alist,offsetof(ClosureWithSlots_O,closureType)-gctools::general_tag);
   expect_offset(comp::_sym_data_length,alist,offsetof(ClosureWithSlots_O,_Slots._Length)-gctools::general_tag);
   expect_offset(comp::_sym_data0,alist,offsetof(ClosureWithSlots_O,_Slots._Data)-gctools::general_tag);
@@ -273,34 +273,6 @@ string Function_O::__repr__() const {
   
   ss << ">";
   return ss.str();
-}
-
-
-string ObjectFile_O::__repr__() const {
-  stringstream ss;
-  ss << "#<OBJECT-FILE :ptr ";
-  ss << (void*)this->_ObjectFilePtr;
-  ss << " :size ";
-  ss << (void*)this->_ObjectFileSize;
-  ss << ">";
-  return ss.str();
-}
-    
-ObjectFile_O::~ObjectFile_O() {
-  if (this->_ObjectFilePtr!=NULL) {
-    free(this->_ObjectFilePtr);
-    this->_ObjectFilePtr = NULL;
-  }
-}
-
-ObjectFile_sp Function_O::objectFile() const
-{
-  SUBCLASS_MUST_IMPLEMENT();
-}
-
-void Function_O::setf_objectFile(ObjectFile_sp of)
-{
-  SUBCLASS_MUST_IMPLEMENT();
 }
 
 CL_DEFMETHOD Pointer_sp Function_O::function_description_address() const {
@@ -450,9 +422,11 @@ DONT_OPTIMIZE_WHEN_DEBUG_RELEASE LCC_RETURN interpretedClosureEntryPoint(LCC_ARG
   ValueEnvironment_sp newValueEnvironment = ValueEnvironment_O::createForLambdaListHandler(gc::As<LambdaListHandler_sp>((*closure)[INTERPRETED_CLOSURE_LAMBDA_LIST_HANDLER_SLOT]), (*closure)[INTERPRETED_CLOSURE_ENVIRONMENT_SLOT]);
 //  printf("%s:%d ValueEnvironment_O:createForLambdaListHandler llh: %s\n", __FILE__, __LINE__, _rep_(this->_lambdaListHandler).c_str());
 //  newValueEnvironment->dump();
-  ValueEnvironmentDynamicScopeManager scope(newValueEnvironment);
+  LambdaListHandler_sp llh = gc::As_unsafe<LambdaListHandler_sp>((*closure)[INTERPRETED_CLOSURE_LAMBDA_LIST_HANDLER_SLOT]);
+  MAKE_SPECIAL_BINDINGS_HOLDER(numSpecials,specialsVLA,llh->numberOfSpecialVariables());
+  ValueEnvironmentDynamicScopeManager scope(numSpecials,specialsVLA,newValueEnvironment);
   ALWAYS_INVOCATION_HISTORY_FRAME(); // InvocationHistoryFrame _frame(&lcc_arglist_s._Args);
-  lambdaListHandler_createBindings(closure->asSmartPtr(), gc::As<LambdaListHandler_sp>((*closure)[INTERPRETED_CLOSURE_LAMBDA_LIST_HANDLER_SLOT]), scope, LCC_PASS_ARGS_LLH);
+  lambdaListHandler_createBindings(closure->asSmartPtr(), llh, scope, LCC_PASS_ARGS_LLH);
 //  printf("%s:%d     after lambdaListHandler_createbindings\n", __FILE__, __LINE__);
 //  newValueEnvironment->dump();
   ValueFrame_sp newActivationFrame = gc::As<ValueFrame_sp>(newValueEnvironment->getActivationFrame());

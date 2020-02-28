@@ -29,6 +29,10 @@ THE SOFTWARE.
 // #define EXPOSE_DLLOAD
 //#define DEBUG_LEVEL_FULL
 
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/mman.h>
 #include <dlfcn.h>
 #ifdef _TARGET_OS_DARWIN
 #import <mach-o/dyld.h>
@@ -69,6 +73,7 @@ THE SOFTWARE.
 #include <clasp/core/pointer.h>
 #include <clasp/core/environment.h>
 #include <clasp/llvmo/intrinsics.h>
+#include <clasp/llvmo/llvmoExpose.h>
 #include <clasp/core/wrappers.h>
 
 
@@ -123,41 +128,6 @@ MaybeDebugStartup::~MaybeDebugStartup() {
   }
 }
 
-
-#ifdef CLASP_THREADS
-mp::SharedMutex global_internal_functions_mutex(INTRFUNC_NAMEWORD);
-#endif
-struct InternalFunctions {
-  const claspFunction* _InternalFunctions;
-  const char** _InternalFunctionNames;
-  size_t       _Length;
-  InternalFunctions(const claspFunction* funcs, const char** names, size_t len) : _InternalFunctions(funcs), _InternalFunctionNames(names), _Length(len) {};
-};
-  std::map<uintptr_t,InternalFunctions> global_internal_functions;
-
-void register_internal_functions(uintptr_t handle, const claspFunction* funcs, const char** names, size_t len) {
-//  printf("%s:%d:%s handle -> %p  funcs -> %p  names -> %p  len: %lu\n", __FILE__, __LINE__, __FUNCTION__, (void*)handle, (void*)funcs, (void*)names, len);
-  WITH_READ_WRITE_LOCK(global_internal_functions_mutex);
-  global_internal_functions.emplace(std::make_pair(handle,InternalFunctions(funcs,names,len)));
-}
-
-
-claspFunction lookup_internal_functions(uintptr_t handle, const char* name) {
-  WITH_READ_LOCK(global_internal_functions_mutex);
-  std::map<uintptr_t,InternalFunctions>::iterator fi = global_internal_functions.find(handle);
-  if (fi == global_internal_functions.end()) {
-    SIMPLE_ERROR(BF("Could not find the library with handle %lu") % handle);
-  }
-  for ( size_t num=0; num< fi->second._Length; ++num ) {
-    const char* lookup_name = fi->second._InternalFunctionNames[num];
-    if (strcmp(lookup_name,name)==0) {
-      return fi->second._InternalFunctions[num];
-    }
-  }
-  SIMPLE_ERROR(BF("Could not find internal function %s") % name);
-};
-
-  
 };
 
 
@@ -226,24 +196,7 @@ void initializer_functions_invoke()
 
 namespace core {
 
-#define STARTUP_FUNCTION_CAPACITY_INIT 128
-#define STARTUP_FUNCTION_CAPACITY_MULTIPLIER 2
-size_t global_startup_capacity = 0;
-size_t global_startup_count = 0;
-#ifdef CLASP_THREADS
-mp::SharedMutex* global_startup_functions_mutex = NULL;
-#endif
-struct Startup {
-  size_t _Position;
-  fnStartUp _Function;
-  Startup() {};
-  Startup(size_t p, fnStartUp f) : _Position(p), _Function(f) {};
-  bool operator<(const Startup& other) {
-    return this->_Position < other._Position;
-  }
-};
-
-Startup* global_startup_functions = NULL;
+StartupInfo global_startup;
 
 std::atomic<size_t> global_next_startup_position;
 
@@ -251,72 +204,75 @@ CL_DEFUN size_t core__next_startup_position() {
   return global_next_startup_position++;
 }
 
+/*! Static initializers will run and try to register startup functions.
+They will do this into the global_startup structure.
+Once the main code starts up - this startup info needs to be transfered
+to the my_thread thread-local storage.
+So right after the my_thread variable is initialized, this must be called for
+the main thread. */
+
+void transfer_StartupInfo_to_my_thread() {
+  if (!my_thread) {
+    printf("%s:%d my_thread is NULL - you cannot transfer StartupInfo\n", __FILE__, __LINE__ );
+  }
+  my_thread->_Startup = global_startup;
+}
+
 void register_startup_function(size_t position, fnStartUp fptr)
 {
 #ifdef DEBUG_STARTUP
   printf("%s:%d In register_startup_function --> %p\n", __FILE__, __LINE__, fptr);
 #endif
-#ifdef CLASP_THREADS
-  if (global_Started) {
-    if (global_startup_functions_mutex==NULL) {
-      global_startup_functions_mutex = new mp::SharedMutex(STRTFUNC_NAMEWORD);
-    }
-    (*global_startup_functions_mutex).lock();
-  }
-#endif
-  if ( global_startup_functions == NULL ) {
-    global_startup_capacity = STARTUP_FUNCTION_CAPACITY_INIT;
-    global_startup_count = 0;
-    global_startup_functions = (Startup*)malloc(global_startup_capacity*sizeof(Startup));
+  StartupInfo* startup = NULL;
+  // if my_thread is defined - then use its startup info
+  // otherwise use the global_startup info.
+  // This will only happen in cclasp when startup functions
+  // are registered from static constructors.
+  if (my_thread) {
+    startup = &my_thread->_Startup;
   } else {
-    if ( global_startup_count == global_startup_capacity ) {
-      global_startup_capacity = global_startup_capacity*STARTUP_FUNCTION_CAPACITY_MULTIPLIER;
-      global_startup_functions = (Startup*)realloc(global_startup_functions,global_startup_capacity*sizeof(Startup));
+    startup = &global_startup;
+  }
+  if ( startup->_functions == NULL ) {
+    startup->_capacity = STARTUP_FUNCTION_CAPACITY_INIT;
+    startup->_count = 0;
+    startup->_functions = (Startup*)malloc(startup->_capacity*sizeof(Startup));
+  } else {
+    if ( startup->_count == startup->_capacity ) {
+      startup->_capacity = startup->_capacity*STARTUP_FUNCTION_CAPACITY_MULTIPLIER;
+      startup->_functions = (Startup*)realloc(startup->_functions,startup->_capacity*sizeof(Startup));
     }
   }
-  Startup startup(position,fptr);
-  global_startup_functions[global_startup_count] = startup;
-  global_startup_count++;
-#ifdef CLASP_THREADS
-  if (global_Started) {
-    (*global_startup_functions_mutex).unlock();
-  }
-#endif
+  Startup one_startup(position,fptr);
+  startup->_functions[startup->_count] = one_startup;
+  startup->_count++;
 };
 
 /*! Return the number of startup_functions that are waiting to be run*/
 size_t startup_functions_are_waiting()
 {
 #ifdef DEBUG_STARTUP
-  printf("%s:%d startup_functions_are_waiting returning %" PRu "\n", __FILE__, __LINE__, global_startup_count );
+  printf("%s:%d startup_functions_are_waiting returning %" PRu "\n", __FILE__, __LINE__, my_thread->_Startup._count );
 #endif
-#ifdef CLASP_THREADS
-  if (global_startup_functions_mutex==NULL) {
-    global_startup_functions_mutex = new mp::SharedMutex(STRTFUNC_NAMEWORD);
-  }
-  WITH_READ_LOCK((*global_startup_functions_mutex));
-#endif
-  return global_startup_count;
+  return my_thread->_Startup._count;
 };
 
 /*! Invoke the startup functions and clear the array of startup functions */
-void startup_functions_invoke()
+core::T_O* startup_functions_invoke(T_O* literals)
 {
   size_t startup_count = 0;
   Startup* startup_functions = NULL;
   {
-#ifdef CLASP_THREADS
-    WITH_READ_LOCK((*global_startup_functions_mutex));
-#endif
   // Save the current list
-    startup_count = global_startup_count;
-    startup_functions = global_startup_functions;
+    startup_count = my_thread->_Startup._count;
+    startup_functions = my_thread->_Startup._functions;
   // Prepare to accumulate a new list
-    global_startup_count = 0;
-    global_startup_capacity = 0;
-    global_startup_functions = NULL;
+    my_thread->_Startup._count = 0;
+    my_thread->_Startup._capacity = 0;
+    my_thread->_Startup._functions = NULL;
   }
   // Invoke the current list
+  core::T_O* result = NULL;
   if (startup_count>0) {
     sort::quickSortMemory(startup_functions,0,startup_count);
 #ifdef DEBUG_STARTUP
@@ -338,13 +294,14 @@ void startup_functions_invoke()
       printf("%s:%d     About to invoke fn@%p\n", __FILE__, __LINE__, fn );
 #endif
 //      T_mv result = (fn)(LCC_PASS_MAIN());
-      (startup._Function)(); // invoke the startup function
+      result = (startup._Function)(literals); // invoke the startup function
     }
 #ifdef DEBUG_STARTUP
     printf("%s:%d Done with startup_functions_invoke()\n", __FILE__, __LINE__ );
 #endif
     free(startup_functions);
   }
+  return result;
 }
 
 
@@ -381,9 +338,9 @@ NOINLINE CL_DEFUN T_sp core__trigger_dtrace_stop()
   
 
 
-CL_DEFUN void core__startup_functions_invoke()
+CL_DEFUN void core__startup_functions_invoke(List_sp literals)
 {
-  startup_functions_invoke();
+  startup_functions_invoke((T_O*)literals.raw_());
   printf("%s:%d startup_functions_invoke returned -   this should never happen\n", __FILE__, __LINE__ );
   abort();
 };
@@ -429,68 +386,9 @@ CL_DEFUN void core__help_booting() {
 
 CL_DOCSTRING("Return the rdtsc performance timer value");
 CL_DEFUN Fixnum core__rdtsc(){
-    unsigned int lo,hi;
-    __asm__ __volatile__ ("rdtsc" : "=a" (lo), "=d" (hi));
-    return ((uint64_t)hi << 32) | lo;
-}
-
-
-CL_LAMBDA(pow2);
-CL_DECLARE();
-CL_DOCSTRING("Evaluate a TaggedCast 2^pow2 times");
-CL_DEFUN Fixnum_sp core__test_tagged_cast(Fixnum_sp pow2) __attribute__((optnone)) {
-  Fixnum fpow2 = pow2.unsafe_fixnum();
-  Fixnum times = 1;
-  times = times << fpow2;
-  printf("%s:%d  fpow2 = %" PRF " times = %" PRF "\n", __FILE__, __LINE__, fpow2, times);
-  Environment_sp env = ValueEnvironment_O::createForNumberOfEntries(5, _Nil<T_O>());
-  Fixnum i;
-  Fixnum v = 0;
-  for (i = 0; i < times; ++i) {
-    f(env);
-    Environment_sp e = env.asOrNull<Environment_O>();
-    if (!e) {
-      SIMPLE_ERROR(BF("e is NULL!"));
-    }
-    v += f(e);
-  }
-  return Integer_O::create(v);
-}
-
-CL_LAMBDA(reps num);
-CL_DECLARE();
-CL_DOCSTRING("Calculate the num Fibonacci number reps times");
-CL_DEFUN Integer_sp core__cxx_fibn(Fixnum_sp reps, Fixnum_sp num) {
-  long int freps = reps.unsafe_fixnum();
-  long int fnum = num.unsafe_fixnum();
-  long int p1, p2, z;
-  for (long int r = 0; r < freps; ++r) {
-    p1 = 1;
-    p2 = 1;
-    long int rnum = fnum - 2;
-    for (long int i = 0; i < rnum; ++i) {
-      z = p1 + p2;
-      p2 = p1;
-      p1 = z;
-    }
-  }
-  return Integer_O::create((gctools::Fixnum)z);
-}
-
-T_sp varArgsList(int n_args, ...) {
-  DEPRECATED();
-  va_list ap;
-  va_start(ap, n_args);
-  Cons_O::CdrType_sp first = _Nil<Cons_O::CdrType_O>();
-  Cons_O::CdrType_sp *curP = &first; // gctools::StackRootedPointerToSmartPtr<Cons_O::CdrType_O> cur(&first);
-  for (int i = 1; i <= n_args; ++i) {
-    T_sp obj = *(va_arg(ap, const T_sp *));
-    Cons_sp one = Cons_O::create(obj,_Nil<T_O>());
-    *curP = one;          // cur.setPointee(one); // *cur = one;
-    curP = one->cdrPtr(); // cur.setPointer(one->cdrPtr()); // cur = one->cdrPtr();
-  }
-  va_end(ap);
-  return first;
+  unsigned int lo,hi;
+  __asm__ __volatile__ ("rdtsc" : "=a" (lo), "=d" (hi));
+  return ((uint64_t)hi << 32) | lo;
 }
 
 CL_LAMBDA(object &optional is-function);
@@ -505,7 +403,7 @@ CL_DEFUN T_mv core__mangle_name(Symbol_sp sym, bool is_function) {
       name = SimpleBaseString_O::make("CLASP_T");
     else {
       stringstream ss;
-      ss << "SYM(" << sym->symbolName()->get() << ")";
+      ss << "SYM(" << sym->symbolName()->get_std_string() << ")";
       name = SimpleBaseString_O::make(ss.str());
     }
     return Values(_Nil<T_O>(), name, make_fixnum(0), make_fixnum(CALL_ARGUMENTS_LIMIT));
@@ -524,7 +422,9 @@ CL_DEFUN T_sp core__startup_image_pathname(char stage) {
   stringstream ss;
   ss << "app-fasl:" << stage << "clasp-" << VARIANT_NAME << "-image";
   T_sp mode = core::_sym_STARclasp_build_modeSTAR->symbolValue();
-  if (mode == kw::_sym_object) {
+  if (mode == kw::_sym_faso) {
+    ss << ".fasp";
+  } else if (mode == kw::_sym_object) {
     ss << ".fasl";
   } else if (mode == kw::_sym_bitcode) {
     ss << ".fasl";
@@ -538,14 +438,406 @@ CL_DEFUN T_sp core__startup_image_pathname(char stage) {
   return pn;
 };
 
+struct FasoHeader;
+
+struct ObjectFileInfo {
+  size_t    _ObjectID;
+  size_t    _StartPage;
+  size_t    _NumberOfPages;
+  size_t    _ObjectFileSize;
+};
+
+struct FasoHeader {
+  uint32_t  _Magic;
+  uint32_t  _Version;
+  size_t    _PageSize;
+  size_t    _HeaderPageCount;
+  size_t    _NumberOfObjectFiles;
+  ObjectFileInfo     _ObjectFiles[0];
+
+  static size_t calculateSize(size_t numberOfObjectFiles) {
+    size_t header = sizeof(FasoHeader);
+    size_t entries = numberOfObjectFiles*sizeof(ObjectFileInfo);
+    return header+entries;
+  }
+  static size_t calculateHeaderNumberOfPages(size_t numberOfObjectFiles, size_t pageSize) {
+    size_t size = FasoHeader::calculateSize(numberOfObjectFiles);
+    size_t numberOfPages = (size+pageSize)/pageSize;
+    return numberOfPages;
+  }
+
+  size_t calculateObjectFileNumberOfPages(size_t objectFileSize) const {
+    size_t numberOfPages = (objectFileSize+this->_PageSize)/this->_PageSize;
+    return numberOfPages;
+  }
+};
+
+#define FASO_MAGIC_NUMBER 0xDEDEBEBE
+#define ELF_MAGIC_NUMBER 0x464c457f
+#define MACHO_MAGIC_NUMBER 0xfeedfacf
+
+void setup_FasoHeader(FasoHeader* header)
+{
+  header->_Magic = 0xDEDEBEBE;
+  header->_Version = 0;
+  header->_PageSize = getpagesize();
+}
+
+CL_LAMBDA(path-desig object-files &key (start-object-id 0));
+CL_DOCSTRING(R"doc(Concatenate object files in OBJECT-FILES into a faso file and write it out to PATH-DESIG.
+You can set the starting objectID using the keyword START-OBJECT-ID argument.)doc");
+CL_DEFUN void core__write_faso(T_sp pathDesig, List_sp objectFiles, T_sp tstart_object_id)
+{
+  //  write_bf_stream(BF("Writing FASO file to %s for %d object files\n") % _rep_(pathDesig) % cl__length(objectFiles));
+  pathDesig = cl__translate_logical_pathname(pathDesig);
+  size_t start_object_id = 0;
+  if (tstart_object_id.fixnump()) {
+    if (tstart_object_id.unsafe_fixnum()>=0) {
+      start_object_id = tstart_object_id.unsafe_fixnum();
+      //      printf("%s:%d assigned start_object_id = %lu\n", __FILE__, __LINE__, start_object_id );
+    } else {
+      SIMPLE_ERROR(BF("start-object-id must be a positive integer - got: %s") % _rep_(tstart_object_id).c_str());
+    }
+  }
+  //  printf("%s:%d start_object_id = %lu\n", __FILE__, __LINE__, start_object_id );
+  FasoHeader* header = (FasoHeader*)malloc(FasoHeader::calculateSize(cl__length(objectFiles)));
+  setup_FasoHeader(header);
+  header->_HeaderPageCount = FasoHeader::calculateHeaderNumberOfPages(cl__length(objectFiles),getpagesize());
+  header->_NumberOfObjectFiles = cl__length(objectFiles);
+  List_sp cur = objectFiles;
+  size_t nextPage = header->_HeaderPageCount;
+  for ( size_t ii=0; ii<cl__length(objectFiles); ++ii ) {
+    header->_ObjectFiles[ii]._ObjectID = ii+start_object_id;
+    header->_ObjectFiles[ii]._StartPage = nextPage;
+    Array_sp of = gc::As<Array_sp>(oCar(cur));
+    cur = oCdr(cur);
+    size_t num_pages = header->calculateObjectFileNumberOfPages(cl__length(of));
+    header->_ObjectFiles[ii]._NumberOfPages = num_pages;
+    nextPage += num_pages;
+    header->_ObjectFiles[ii]._ObjectFileSize = cl__length(of);
+#if 0
+    write_bf_stream(BF("Object-file %d StartPage = %lu    _NumberOfPages: %lu  _ObjectFileSize: %lu\n")
+                    % ii
+                    % header->_ObjectFiles[ii]._StartPage
+                    % header->_ObjectFiles[ii]._NumberOfPages
+                    % header->_ObjectFiles[ii]._ObjectFileSize);
+#endif
+  }
+  String_sp filename = gc::As<String_sp>(cl__namestring(pathDesig));
+  FILE* fout = fopen(filename->get_std_string().c_str(),"w");
+  // Write header
+  size_t header_bytes = FasoHeader::calculateSize(header->_NumberOfObjectFiles);
+  fwrite( (const void*)header,header_bytes,1,fout);
+  //  write_bf_stream(BF("Writing header %lu bytes\n") % header_bytes );
+
+  // Fill out to the end of the page
+  size_t pad_bytes = FasoHeader::calculateHeaderNumberOfPages(header->_NumberOfObjectFiles,header->_PageSize)*header->_PageSize-header_bytes;
+  //  write_bf_stream(BF("Padding header %lu bytes\n") % pad_bytes );
+  char empty_byte(0xcc);
+  for ( size_t ii=0; ii<pad_bytes; ++ii) {
+    fwrite( (const void*)&empty_byte,1,1,fout);
+  }
+  // Write out each object file
+  List_sp ocur = objectFiles;
+  for (size_t ofindex=0; ofindex<header->_NumberOfObjectFiles; ofindex++) {
+    size_t of_bytes = header->_ObjectFiles[ofindex]._ObjectFileSize;
+    //    write_bf_stream(BF("Writing object file %d with %lu bytes\n") % ofindex % of_bytes );
+    Array_sp of = gc::As<Array_sp>(oCar(ocur));
+    ocur = oCdr(ocur);
+    fwrite( (const void*)of->rowMajorAddressOfElement_(0),of_bytes,1,fout);
+    size_t of_pad_bytes = header->_ObjectFiles[ofindex]._NumberOfPages*header->_PageSize-of_bytes;
+    //    write_bf_stream(BF("Padding object file %d with %lu bytes\n") % ofindex % of_pad_bytes );
+    for (size_t of_padi=0; of_padi<of_pad_bytes; ++of_padi) {
+      fwrite( (const void*)&empty_byte,1,1,fout);
+    }
+  }
+  fclose(fout);
+};
+
+
+struct MmapInfo {
+  int  _FileDescriptor;
+  void* _Memory;
+  size_t _ObjectFileAreaStart;
+  size_t _ObjectFileAreaSize;
+  MmapInfo(int fd,void* mem, size_t start, size_t size) : _FileDescriptor(fd), _Memory(mem), _ObjectFileAreaStart(start), _ObjectFileAreaSize(size) {};
+};
+
+
+struct FasoObjectFileInfo {
+  size_t _ObjectID;
+  size_t _ObjectFileSize;
+  FasoObjectFileInfo(size_t oid, size_t ofs) : _ObjectID(oid), _ObjectFileSize(ofs) {};
+};
+  
+CL_LAMBDA(output-path-designator faso-files &optional (verbose nil))
+CL_DEFUN void core__link_faso_files(T_sp outputPathDesig, List_sp fasoFiles, bool verbose) {
+  if (verbose) write_bf_stream(BF("Writing FASO file to %s for %d object files\n") % _rep_(outputPathDesig) % cl__length(fasoFiles));
+  std::vector<FasoObjectFileInfo> allObjectFiles;
+  std::vector<MmapInfo> mmaps;
+  List_sp cur = fasoFiles;
+  for ( size_t ii=0; ii<cl__length(fasoFiles); ++ii ) {
+    String_sp filename = gc::As<String_sp>(cl__namestring(oCar(cur)));
+    cur = oCdr(cur);
+    int fd = open(filename->get_std_string().c_str(),O_RDONLY);
+    if (verbose) write_bf_stream(BF("mmap'ing file[%lu] %s\n") % ii % _rep_(filename)); 
+    off_t fsize = lseek(fd, 0, SEEK_END);
+    lseek(fd,0,SEEK_SET);
+    void* memory = mmap(NULL, fsize, PROT_READ, MAP_SHARED|MAP_FILE, fd, 0);
+    if (memory==MAP_FAILED) {
+      close(fd);
+      SIMPLE_ERROR(BF("Could not mmap %s because of %s") % _rep_(filename) % strerror(errno));
+    }
+    close(fd);
+    FasoHeader* header = (FasoHeader*)memory;
+    if (header->_Magic == FASO_MAGIC_NUMBER) {
+      size_t object0_offset = (header->_HeaderPageCount*header->_PageSize);
+      if (verbose) write_bf_stream(BF("object0_offset %lu  fsize-object0_offset %lu bytes\n") % object0_offset % ((size_t)fsize-object0_offset) );
+      mmaps.emplace_back(MmapInfo(fd,memory,object0_offset,(size_t)fsize-object0_offset));
+      for (size_t ofi = 0; ofi<header->_NumberOfObjectFiles; ++ofi) {
+        size_t of_length = header->_ObjectFiles[ofi]._ObjectFileSize;
+        if (verbose) write_bf_stream(BF("%s:%d object file %lu id: %lu  length: %lu\n") % __FILE__ % __LINE__ % ofi % header->_ObjectFiles[ofi]._ObjectID % of_length);
+        FasoObjectFileInfo fofi(header->_ObjectFiles[ofi]._ObjectID,of_length);
+        allObjectFiles.emplace_back(fofi);
+        if (verbose) write_bf_stream(BF("allObjectFiles.size() = %lu\n") % allObjectFiles.size());
+      }
+    } else {
+      SIMPLE_ERROR(BF("Illegal and unknown file type - magic number: %X\n") % (size_t)header->_Magic);
+    }
+  }
+  FasoHeader* header = (FasoHeader*)malloc(FasoHeader::calculateSize(allObjectFiles.size()));
+  setup_FasoHeader(header);
+  header->_HeaderPageCount = FasoHeader::calculateHeaderNumberOfPages(allObjectFiles.size(),getpagesize());
+  header->_NumberOfObjectFiles = allObjectFiles.size();
+  if (verbose) write_bf_stream(BF("Writing out all object files %lu\n") % allObjectFiles.size());
+  size_t nextPage = header->_HeaderPageCount;
+  for (size_t ofi=0; ofi<allObjectFiles.size(); ofi++ ) {
+    header->_ObjectFiles[ofi]._ObjectID = allObjectFiles[ofi]._ObjectID;
+    header->_ObjectFiles[ofi]._StartPage = nextPage;
+    size_t num_pages = header->calculateObjectFileNumberOfPages(allObjectFiles[ofi]._ObjectFileSize);
+    header->_ObjectFiles[ofi]._NumberOfPages = num_pages;
+    nextPage += num_pages;
+    header->_ObjectFiles[ofi]._ObjectFileSize = allObjectFiles[ofi]._ObjectFileSize;
+    if (verbose) write_bf_stream(BF("object file %lu   _StartPage=%lu  _NumberOfPages=%lu   _ObjectFileSize=%lu\n")
+                                 % ofi
+                                 % header->_ObjectFiles[ofi]._StartPage
+                                 % header->_ObjectFiles[ofi]._NumberOfPages
+                                 % header->_ObjectFiles[ofi]._ObjectFileSize);
+
+  }
+  String_sp filename = gc::As<String_sp>(cl__namestring(outputPathDesig));
+  
+  FILE* fout = fopen(filename->get_std_string().c_str(),"w");
+  if (!fout) {
+    SIMPLE_ERROR(BF("Could not open file %s") % _rep_(filename));
+  }
+  if (verbose) {
+    write_bf_stream(BF("Writing file: %s\n") % _rep_(filename));
+  }
+  // Write header
+  size_t header_bytes = FasoHeader::calculateSize(header->_NumberOfObjectFiles);
+  if (verbose) write_bf_stream(BF("Writing %lu bytes of header\n") % header_bytes );
+  fwrite( (const void*)header,header_bytes,1,fout);
+  
+  //  write_bf_stream(BF("Writing header %lu bytes\n") % header_bytes );
+  // Fill out to the end of the page
+  size_t pad_bytes = FasoHeader::calculateHeaderNumberOfPages(header->_NumberOfObjectFiles,header->_PageSize)*header->_PageSize-header_bytes;
+  if (verbose) write_bf_stream(BF("Writing %lu bytes of header for padding\n") % pad_bytes );
+  char empty_byte(0xcc);
+  for ( size_t ii=0; ii<pad_bytes; ++ii) {
+    fwrite( (const void*)&empty_byte,1,1,fout);
+  }
+  unsigned char pad(0xcc);
+  for ( size_t mmi=0; mmi<mmaps.size(); mmi++ ) {
+    size_t bytes_to_write = mmaps[mmi]._ObjectFileAreaSize;
+    size_t page_size = getpagesize();
+    size_t padding = (((size_t)(bytes_to_write+page_size-1)/page_size)*page_size - bytes_to_write);
+    if (verbose) write_bf_stream(BF("Writing %lu bytes of object files\n") % bytes_to_write );
+    fwrite( (const void*)((const char*)mmaps[mmi]._Memory+mmaps[mmi]._ObjectFileAreaStart), bytes_to_write,1,fout);
+    if (verbose) write_bf_stream(BF("Writing %lu bytes of padding\n") % padding );
+    for ( size_t pi=0; pi<padding; ++pi ) {
+      fwrite(&pad,1,1,fout);
+    }
+    int res = munmap(mmaps[mmi]._Memory,mmaps[mmi]._ObjectFileAreaSize);
+    if (res!=0) {
+      SIMPLE_ERROR(BF("Could not munmap memory"));
+    }
+  }
+  if (verbose) write_bf_stream(BF("Closing %s\n") % _rep_(filename));
+  fclose(fout);
+  if (verbose) write_bf_stream(BF("Returning %s\n") % _rep_(filename));
+}
+
+CL_LAMBDA(path-designator &optional (verbose *load-verbose*) (print t) (external-format :default))
+CL_DEFUN core::T_sp core__load_faso(T_sp pathDesig, T_sp verbose, T_sp print, T_sp external_format)
+{
+  String_sp filename = gc::As<String_sp>(cl__namestring(pathDesig));
+  char* name_buffer = (char*)malloc(filename->get_std_string().size()+1);
+  strncpy(name_buffer,filename->get_std_string().c_str(),filename->get_std_string().size());
+  name_buffer[filename->get_std_string().size()] = '\0';
+  int fd = open(filename->get_std_string().c_str(),O_RDONLY);
+  off_t fsize = lseek(fd, 0, SEEK_END);
+  lseek(fd,0,SEEK_SET);
+  void* memory = mmap(NULL, fsize, PROT_READ, MAP_SHARED|MAP_FILE, fd, 0);
+  if (memory==MAP_FAILED) {
+    close(fd);
+    SIMPLE_ERROR(BF("Could not mmap %s because of %s") % _rep_(pathDesig) % strerror(errno));
+  }
+  close(fd); // Ok to close file descriptor after mmap
+  llvmo::ClaspJIT_sp jit = gc::As<llvmo::ClaspJIT_sp>(llvmo::_sym_STARjit_engineSTAR->symbolValue());
+  FasoHeader* header = (FasoHeader*)memory;
+  llvmo::JITDylib_sp jitDylib;
+  for (size_t ofi = 0; ofi<header->_NumberOfObjectFiles; ++ofi) {
+    if (!jitDylib || header->_ObjectFiles[ofi]._ObjectID==0) {
+      jitDylib = jit->createAndRegisterJITDylib(filename->get_std_string());
+    }
+    void* of_start = (void*)((char*)header + header->_ObjectFiles[ofi]._StartPage*header->_PageSize);
+    size_t of_length = header->_ObjectFiles[ofi]._ObjectFileSize;
+    if (print.notnilp()) write_bf_stream(BF("%s:%d Adding faso %s object file %d to jit\n") % __FILE__ % __LINE__ % _rep_(filename) % ofi);
+    jit->addObjectFile((const char*)of_start,of_length,
+                       header->_ObjectFiles[ofi]._ObjectID,
+                       *jitDylib->wrappedPtr(),
+                       name_buffer,
+                       ofi,
+                       print.notnilp() );
+  }
+  return _lisp->_true();
+}
+
+CL_DEFUN core::T_sp core__describe_faso(T_sp pathDesig)
+{
+  String_sp filename = gc::As<String_sp>(cl__namestring(pathDesig));
+  int fd = open(filename->get_std_string().c_str(),O_RDONLY);
+  off_t fsize = lseek(fd, 0, SEEK_END);
+  lseek(fd,0,SEEK_SET);
+  void* memory = mmap(NULL, fsize, PROT_READ, MAP_SHARED|MAP_FILE, fd, 0);
+  if (memory==MAP_FAILED) {
+    close(fd);
+    SIMPLE_ERROR(BF("Could not mmap %s because of %s") % _rep_(pathDesig) % strerror(errno));
+  }
+  llvmo::ClaspJIT_sp jit = gc::As<llvmo::ClaspJIT_sp>(llvmo::_sym_STARjit_engineSTAR->symbolValue());
+  FasoHeader* header = (FasoHeader*)memory;
+  write_bf_stream(BF("NumberOfObjectFiles %d\n") % header->_NumberOfObjectFiles);
+  for (size_t ofi = 0; ofi<header->_NumberOfObjectFiles; ++ofi) {
+    size_t ofId =  header->_ObjectFiles[ofi]._ObjectID;
+    void* of_start = (void*)((char*)header + header->_ObjectFiles[ofi]._StartPage*header->_PageSize);
+    size_t of_length = header->_ObjectFiles[ofi]._ObjectFileSize;
+    //    write_bf_stream(BF("Adding faso %s object file %d to jit\n") % _rep_(filename) % ofi);
+    write_bf_stream(BF("Object file %d  ObjectID: %lu start-page: %lu  bytes: %lu pages: %lu\n")
+                    % ofi
+                    % header->_ObjectFiles[ofi]._ObjectID
+                    % header->_ObjectFiles[ofi]._StartPage
+                    % header->_ObjectFiles[ofi]._ObjectFileSize % header->_ObjectFiles[ofi]._NumberOfPages );
+  }
+  return _lisp->_true();
+}
+
+void clasp_unpack_faso(const std::string& path_designator) {
+  size_t pos = path_designator.find_last_of('.');
+  if (pos==std::string::npos) {
+    SIMPLE_ERROR(BF("Could not find extension in path: %s") % path_designator);
+  }
+  std::string prefix = path_designator.substr(0,pos);
+  int fd = open(path_designator.c_str(),O_RDONLY);
+  off_t fsize = lseek(fd, 0, SEEK_END);
+  lseek(fd,0,SEEK_SET);
+  void* memory = mmap(NULL, fsize, PROT_READ, MAP_SHARED|MAP_FILE, fd, 0);
+  if (memory==MAP_FAILED) {
+    close(fd);
+    SIMPLE_ERROR(BF("Could not mmap %s because of %s") % path_designator % strerror(errno));
+  }
+  FasoHeader* header = (FasoHeader*)memory;
+  write_bf_stream(BF("NumberOfObjectFiles %d\n") % header->_NumberOfObjectFiles);
+  for (size_t ofi = 0; ofi<header->_NumberOfObjectFiles; ++ofi) {
+    void* of_start = (void*)((char*)header + header->_ObjectFiles[ofi]._StartPage*header->_PageSize);
+    size_t of_length = header->_ObjectFiles[ofi]._ObjectFileSize;
+    stringstream sfilename;
+    sfilename << prefix << "-" << ofi << "-" << header->_ObjectFiles[ofi]._ObjectID << ".o";
+    FILE* fout = fopen(sfilename.str().c_str(),"w");
+    fwrite(of_start,of_length,1,fout);
+    fclose(fout);
+    write_bf_stream(BF("Object file %d  start-page: %lu  bytes: %lu pages: %lu\n") % ofi % header->_ObjectFiles[ofi]._StartPage % header->_ObjectFiles[ofi]._ObjectFileSize % header->_ObjectFiles[ofi]._NumberOfPages );
+  }
+}
+    
+CL_DOCSTRING(R"doc(Unpack the faso/fasp file into individual object files.)doc");
+CL_DEFUN void core__unpack_faso(T_sp path_designator)
+{
+  Pathname_sp pn_filename = cl__pathname(path_designator);
+  String_sp sname = gc::As<String_sp>(cl__namestring(pn_filename));
+  clasp_unpack_faso(sname->get_std_string());
+}
+
+
+CL_LAMBDA(name &optional verbose print external-format);
+CL_DOCSTRING("load-binary-directory - load a binary file inside the directory");
+CL_DEFUN T_mv core__load_binary_directory(T_sp pathDesig, T_sp verbose, T_sp print, T_sp external_format) {
+  T_sp tpath;
+  String_sp nameStr = gc::As<String_sp>(cl__namestring(cl__probe_file(pathDesig)));
+  string name = nameStr->get_std_string();
+  if (name[name.size()-1]=='/') {
+    // strip last slash
+    name = name.substr(0,name.size()-1);
+  }
+  struct stat stat_path;
+  stat(name.c_str(),&stat_path);
+  if (S_ISDIR(stat_path.st_mode) != 0) {
+    //
+    // If the fasl name is a directory it has the structure...
+    //  /foo/bar/baz.fasl  change this to...
+    //  /foo/bar/baz.fasl/baz.fasl
+    size_t slash_pos = name.find_last_of('/',name.size()-1);
+    if (slash_pos != std::string::npos) {
+      name = name + "/fasl.fasl";
+      SimpleBaseString_sp sbspath = SimpleBaseString_O::make(name);
+      tpath = cl__pathname(sbspath);
+      if (cl__probe_file(tpath).nilp()) {
+        SIMPLE_ERROR(BF("Could not find bundle %s") % _rep_(sbspath));
+      }
+    } else {
+      SIMPLE_ERROR(BF("Could not open %s as a fasl file") % name);
+    }
+  } else {
+    SIMPLE_ERROR(BF("Could not find bundle %s") % _rep_(pathDesig));
+  }
+  return core__load_binary(tpath,verbose,print,external_format);
+}
+
+
+
+
+CL_DOCSTRING(R"doc(Return the startup function name and the linkage based on the current dynamic environment.
+ The name contains the id as part of itself. )doc");
+CL_LAMBDA(&optional (id 0) prefix)
+CL_DEFUN T_mv core__startup_function_name_and_linkage(size_t id, core::T_sp prefix)
+{
+  stringstream ss;
+  if (prefix.nilp()) {
+    ss << "StartUp";
+  } else if (gc::IsA<String_sp>(prefix)) {
+    ss << gc::As<String_sp>(prefix)->get_std_string();
+  } else {
+    SIMPLE_ERROR(BF("Illegal prefix for startup function name: %s") % _rep_(prefix));
+  }
+  ss << "_";
+  ss << id;
+  Symbol_sp linkage_type;
+  if (comp::_sym_STARgenerate_fasoSTAR->symbolValue().notnilp()) {
+    linkage_type = llvmo::_sym_ExternalLinkage;
+  } else {
+    linkage_type = llvmo::_sym_InternalLinkage;
+  }
+  return Values(core::SimpleBaseString_O::make(ss.str()),linkage_type);
+};
+
+
 CL_LAMBDA(name &optional verbose print external-format);
 CL_DECLARE();
 CL_DOCSTRING("load-binary");
 CL_DEFUN T_mv core__load_binary(T_sp pathDesig, T_sp verbose, T_sp print, T_sp external_format) {
-  DynamicScopeManager scope;
-  scope.pushSpecialVariableAndSet(_sym_STARcurrentSourcePosInfoSTAR, SourcePosInfo_O::create(0, 0, 0, 0));
-  scope.pushSpecialVariableAndSet(cl::_sym_STARreadtableSTAR, cl::_sym_STARreadtableSTAR->symbolValue());
-  scope.pushSpecialVariableAndSet(cl::_sym_STARpackageSTAR, cl::_sym_STARpackageSTAR->symbolValue());
+  DynamicScopeManager scope(_sym_STARcurrentSourcePosInfoSTAR, SourcePosInfo_O::create(0, 0, 0, 0));
+  DynamicScopeManager scope2(cl::_sym_STARreadtableSTAR, cl::_sym_STARreadtableSTAR->symbolValue());
+  DynamicScopeManager scope3(cl::_sym_STARpackageSTAR, cl::_sym_STARpackageSTAR->symbolValue());
   if (pathDesig.nilp()) SIMPLE_ERROR(BF("load-binary was about to pass nil to pathname"));
   Pathname_sp path = cl__pathname(pathDesig);
   if (cl__probe_file(path).notnilp())
@@ -566,90 +858,39 @@ CL_DEFUN T_mv core__load_binary(T_sp pathDesig, T_sp verbose, T_sp print, T_sp e
   if (cl__probe_file(path).notnilp())
     goto LOAD;
   SIMPLE_ERROR(BF("Could not find bundle %s") % _rep_(pathDesig));
-LOAD:
+ LOAD:
   String_sp nameStr = gc::As<String_sp>(cl__namestring(cl__probe_file(path)));
-  string name = nameStr->get();
+  string name = nameStr->get_std_string();
 
-  /* Look up the initialization function. */
-  string stem = cl__string_downcase(gc::As<String_sp>(path->_Name))->get();
-  size_t dsp = 0;
-  if ((dsp = stem.find("_d")) != string::npos)
-    stem = stem.substr(0, dsp);
-  else if ((dsp = stem.find("_o")) != string::npos)
-    stem = stem.substr(0, dsp);
-
-  int mode = RTLD_NOW | RTLD_GLOBAL; // | RTLD_FIRST;
   // Check if we already have this dynamic library loaded
   bool handleIt = if_dynamic_library_loaded_remove(name);
   //	printf("%s:%d Loading dynamic library: %s\n", __FILE__, __LINE__, name.c_str());
+  int mode = RTLD_NOW | RTLD_LOCAL; // | RTLD_FIRST;
   void *handle = dlopen(name.c_str(), mode);
   if (handle == NULL) {
     string error = dlerror();
     SIMPLE_ERROR(BF("Error in dlopen: %s") % error);
     //    return (Values(_Nil<T_O>(), SimpleBaseString_O::make(error)));
   }
+  // Static constructors must be available and they were run by dlopen
+  //   and they registered startup_functions that we will now invoke
+  //   to run the top-level forms.
+  if (!startup_functions_are_waiting()) {
+    printf("%s:%d No static constructors were run - what do we do in this situation????\n", __FILE__, __LINE__ );
+    abort();
+  }
   add_dynamic_library_using_handle(name,handle);
   Pointer_sp handle_ptr = Pointer_O::create(handle);
-  scope.pushSpecialVariableAndSet(_sym_STARcurrent_dlopen_handleSTAR, handle_ptr);
+  DynamicScopeManager scope4(_sym_STARcurrent_dlopen_handleSTAR, handle_ptr);
   if (startup_functions_are_waiting()) {
-    startup_functions_invoke();
+    startup_functions_invoke(NULL);
   } else {
-    SIMPLE_ERROR(BF("This is not a proper FASL file - there were no global ctors - there have to be global ctors for load-bundle"));
+    SIMPLE_ERROR(BF("This is not a proper FASL file - there are no startup functions waiting to be invoked"));
   }
   T_mv result;
-//  cc_invoke_startup_functions();
-//  process_llvm_stackmaps();
   return (Values(Pointer_O::create(handle), _Nil<T_O>()));
 };
 
-#ifdef EXPOSE_DLLOAD
-CL_DOCSTRING("dlload - Open a dynamic library and evaluate the 'init_XXXX' extern C function. Returns (values returned-value error-message(or nil if no error)");
-CL_DEFUN T_mv core__dlload(T_sp pathDesig) {
-  string lib_extension;
-#ifdef _TARGET_OS_DARWIN
-  lib_extension = ".dylib";
-#endif
-#if defined( _TARGET_OS_LINUX) || defined( _TARGET_OS_FREEBSD)
-  lib_extension = ".so";
-#endif
-  int mode = RTLD_NOW | RTLD_GLOBAL;
-  Path_sp path = coerce::pathDesignator(pathDesig);
-  Path_sp pathWithProperExtension = path->replaceExtension(lib_extension);
-  string ts = pathWithProperExtension->asString();
-  printf("%s:%d Loading with core__dlload %s\n", __FILE__, __LINE__, ts.c_str());
-  void *handle = dlopen(ts.c_str(), mode);
-  if (handle == NULL) {
-    string error = dlerror();
-    return (Values(_Nil<T_O>(), SimpleBaseString_O::make(error)));
-  }
-  string stem = path->stem();
-  size_t dsp = 0;
-  if ((dsp = stem.find("_d")) != string::npos) {
-    stem = stem.substr(0, dsp);
-  }
-  stringstream ss;
-  ss << "___kernel_" << stem;
-  string initName;
-  string kernelInitName = ss.str();
-  initName = kernelInitName;
-  InitFnPtr mainFunctionPointer = (InitFnPtr)dlsym(handle, kernelInitName.c_str());
-  if (mainFunctionPointer == NULL) {
-    ss.str("");
-    ss << "___user_" << stem;
-    string userInitName = ss.str();
-    initName = userInitName;
-    mainFunctionPointer = (InitFnPtr)dlsym(handle, userInitName.c_str());
-    if (mainFunctionPointer == NULL) {
-      SIMPLE_ERROR(BF("Could not find initialization function %s or %s") % kernelInitName % userInitName);
-    }
-  }
-  //	printf("Found function %s at address %p\n", initName.c_str(), mainFunctionPointer);
-  T_mv result;
-  ActivationFrame_sp frame = _Nil<ActivationFrame_O>();
-  (*mainFunctionPointer)();
-  return (Values(Pointer_O::create(handle), _Nil<T_O>()));
-}
-#endif
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
@@ -689,7 +930,7 @@ std::tuple< int, string > do_dlclose(void * p_handle) {
     if ( n_rc != 0 ) {
       str_error = dlerror();
       fprintf( stderr, "%s:%d Could not close dynamic library (handle %p) - error: %s !\n",
-             __FILE__, __LINE__, p_handle, str_error.c_str());
+               __FILE__, __LINE__, p_handle, str_error.c_str());
     }
   }
 
@@ -741,23 +982,23 @@ CL_DEFUN T_sp core__dlsym(T_sp ohandle, String_sp name) {
   } else if (Pointer_sp phandle = ohandle.asOrNull<Pointer_O>()) {
     handle = phandle->ptr();
   } else if (Symbol_sp sym = ohandle.asOrNull<Symbol_O>() ) {
-//    printf("%s:%d handle is symbol: %s\n", __FILE__, __LINE__, _rep_(sym).c_str());
+    //    printf("%s:%d handle is symbol: %s\n", __FILE__, __LINE__, _rep_(sym).c_str());
     SYMBOL_EXPORT_SC_(KeywordPkg, rtld_default);
     SYMBOL_EXPORT_SC_(KeywordPkg, rtld_next);
     SYMBOL_EXPORT_SC_(KeywordPkg, rtld_self);
     SYMBOL_EXPORT_SC_(KeywordPkg, rtld_main_only);
     if (sym == kw::_sym_rtld_default) {
-//      printf("%s:%d handle is RDLD_DEFAULT\n", __FILE__, __LINE__ );
+      //      printf("%s:%d handle is RDLD_DEFAULT\n", __FILE__, __LINE__ );
       handle = RTLD_DEFAULT;
-//      printf("%s:%d RTLD_DEFAULT = %p\n", __FILE__, __LINE__, RTLD_DEFAULT);
-//      printf("%s:%d handle = %p\n", __FILE__, __LINE__, handle);
+      //      printf("%s:%d RTLD_DEFAULT = %p\n", __FILE__, __LINE__, RTLD_DEFAULT);
+      //      printf("%s:%d handle = %p\n", __FILE__, __LINE__, handle);
     } else if (sym == kw::_sym_rtld_next) {
       handle = RTLD_NEXT;
 #ifdef _TARGET_OS_DARWIN
     } else if (sym == kw::_sym_rtld_self) //NOT PORTABLE TO LINUX
-    {
-      handle = RTLD_SELF;
-    } else if (sym == kw::_sym_rtld_main_only) {
+      {
+        handle = RTLD_SELF;
+      } else if (sym == kw::_sym_rtld_main_only) {
       handle = RTLD_MAIN_ONLY;
 #endif
     } else {
@@ -766,7 +1007,7 @@ CL_DEFUN T_sp core__dlsym(T_sp ohandle, String_sp name) {
   } else {
     SIMPLE_ERROR(BF("Illegal handle argument[%s] for dlsym only a pointer or :rtld-next :rtld-self :rtld-default :rtld-main-only are allowed") % _rep_(ohandle));
   }
-//  printf("%s:%d handle = %p\n", __FILE__, __LINE__, handle);
+  //  printf("%s:%d handle = %p\n", __FILE__, __LINE__, handle);
   string ts = name->get_std_string();
   auto result = do_dlsym(handle, ts.c_str());
   void * p_sym = std::get<0>( result );
@@ -816,50 +1057,50 @@ CL_DEFUN T_mv compiler__implicit_compile_hook_default(T_sp form, T_sp env) {
                                                                         code, env, SOURCE_POS_INFO_FIELDS(sourcePosInfo));
   Function_sp thunk = ic;
   return (thunk->entry.load())(LCC_PASS_ARGS0_ELLIPSIS(thunk.raw_()));
-//  return eval::funcall(thunk);
+  //  return eval::funcall(thunk);
 };
 
 };
 
 extern "C" {
-__attribute__((noinline)) int callByValue(core::T_sp v1, core::T_sp v2, core::T_sp v3, core::T_sp v4) {
-  ASSERT(v1.fixnump());
-  ASSERT(v2.fixnump());
-  ASSERT(v3.fixnump());
-  ASSERT(v4.fixnump());
-  int f1 = v1.unsafe_fixnum();
-  int f2 = v2.unsafe_fixnum();
-  int f3 = v3.unsafe_fixnum();
-  int f4 = v4.unsafe_fixnum();
-  int res = f1 + f2 + f3 + f4;
-  return res;
-}
+  __attribute__((noinline)) int callByValue(core::T_sp v1, core::T_sp v2, core::T_sp v3, core::T_sp v4) {
+    ASSERT(v1.fixnump());
+    ASSERT(v2.fixnump());
+    ASSERT(v3.fixnump());
+    ASSERT(v4.fixnump());
+    int f1 = v1.unsafe_fixnum();
+    int f2 = v2.unsafe_fixnum();
+    int f3 = v3.unsafe_fixnum();
+    int f4 = v4.unsafe_fixnum();
+    int res = f1 + f2 + f3 + f4;
+    return res;
+  }
 
-__attribute__((noinline)) int callByPointer(core::T_O *v1, core::T_O *v2, core::T_O *v3, core::T_O *v4) {
-  ASSERT(gctools::tagged_fixnump(v1));
-  ASSERT(gctools::tagged_fixnump(v2));
-  ASSERT(gctools::tagged_fixnump(v3));
-  ASSERT(gctools::tagged_fixnump(v4));
-  int f1 = gctools::untag_fixnum(v1);
-  int f2 = gctools::untag_fixnum(v2);
-  int f3 = gctools::untag_fixnum(v3);
-  int f4 = gctools::untag_fixnum(v4);
-  int res = f1 + f2 + f3 + f4;
-  return res;
-}
+  __attribute__((noinline)) int callByPointer(core::T_O *v1, core::T_O *v2, core::T_O *v3, core::T_O *v4) {
+    ASSERT(gctools::tagged_fixnump(v1));
+    ASSERT(gctools::tagged_fixnump(v2));
+    ASSERT(gctools::tagged_fixnump(v3));
+    ASSERT(gctools::tagged_fixnump(v4));
+    int f1 = gctools::untag_fixnum(v1);
+    int f2 = gctools::untag_fixnum(v2);
+    int f3 = gctools::untag_fixnum(v3);
+    int f4 = gctools::untag_fixnum(v4);
+    int res = f1 + f2 + f3 + f4;
+    return res;
+  }
 
-__attribute__((noinline)) int callByConstRef(const core::T_sp &v1, const core::T_sp &v2, const core::T_sp &v3, const core::T_sp &v4) {
-  ASSERT(v1.fixnump());
-  ASSERT(v2.fixnump());
-  ASSERT(v3.fixnump());
-  ASSERT(v4.fixnump());
-  int f1 = v1.unsafe_fixnum();
-  int f2 = v2.unsafe_fixnum();
-  int f3 = v3.unsafe_fixnum();
-  int f4 = v4.unsafe_fixnum();
-  int res = f1 + f2 + f3 + f4;
-  return res;
-}
+  __attribute__((noinline)) int callByConstRef(const core::T_sp &v1, const core::T_sp &v2, const core::T_sp &v3, const core::T_sp &v4) {
+    ASSERT(v1.fixnump());
+    ASSERT(v2.fixnump());
+    ASSERT(v3.fixnump());
+    ASSERT(v4.fixnump());
+    int f1 = v1.unsafe_fixnum();
+    int f2 = v2.unsafe_fixnum();
+    int f3 = v3.unsafe_fixnum();
+    int f4 = v4.unsafe_fixnum();
+    int res = f1 + f2 + f3 + f4;
+    return res;
+  }
 };
 
 namespace core {
@@ -895,19 +1136,12 @@ T_sp lexicalFrameLookup(T_sp fr, int depth, int index) {
   return val;
 }
 
-CL_LAMBDA(sym val thunk);
+CL_LAMBDA(symbol value thunk);
 CL_DECLARE();
-CL_DOCSTRING("callWithVariableBound");
-CL_DEFUN T_mv core__call_with_variable_bound(Symbol_sp sym, T_sp val, T_sp thunk) {
+CL_DOCSTRING("Call THUNK with the given SYMBOL bound to to the given VALUE.");
+CL_DEFUN T_mv core__call_with_variable_bound(Symbol_sp sym, T_sp val, Function_sp thunk) {
   DynamicScopeManager scope(sym, val);
-  if (!gc::IsA<Function_sp>(thunk)) {
-    printf("%s:%d:%s  The thunk is NOT a Function object!!!!! thunk.raw_() = %p\n",
-           __FILE__, __LINE__, __FUNCTION__, (void*)thunk.raw_());
-    fflush(stdout);
-  }
-  Function_sp func = gc::As_unsafe<Function_sp>(thunk);
-  return (func->entry.load())(LCC_PASS_ARGS0_ELLIPSIS(func.raw_()));
-  // Don't put anything in here - don't mess up the MV return
+  return (thunk->entry.load())(LCC_PASS_ARGS0_ELLIPSIS(thunk.raw_()));
 }
 
 }
@@ -940,7 +1174,7 @@ CL_DEFUN T_mv core__funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
     // Save return values, then cleanup, then continue exit
     size_t nvals = lisp_multipleValues().getSize();
     T_O* mv_temp[nvals];
-    multipleValuesSaveToTemp(mv_temp);
+    multipleValuesSaveToTemp(nvals, mv_temp);
     {
       Closure_sp closure = gc::As_unsafe<Closure_sp>(cleanup_fn);
       closure->entry.load()(LCC_PASS_ARGS0_ELLIPSIS(closure.raw_()));
@@ -994,61 +1228,41 @@ CL_DECLARE();
 CL_DOCSTRING("catchFunction");
 CL_DEFUN T_mv core__catch_function(T_sp tag, Function_sp thunk) {
   T_mv result;
-  int frame = my_thread->exceptionStack().push(CatchFrame, tag);
-  try {
+  CLASP_BEGIN_CATCH(tag) {
     result = thunk->entry.load()(LCC_PASS_ARGS0_ELLIPSIS(thunk.raw_()));
-  } catch (CatchThrow &catchThrow) {
-    if (catchThrow.getFrame() != frame) {
-      throw catchThrow;
-    }
-    result = gctools::multiple_values<T_O>::createFromValues();
-  }
-  my_thread->exceptionStack().unwind(frame);
+  } CLASP_END_CATCH(tag, result);
   return result;
 }
 
 CL_LAMBDA(tag result);
 CL_DECLARE();
-CL_DOCSTRING("throwFunction TODO: The semantics are not followed here - only the first return value is returned!!!!!!!!");
+CL_DOCSTRING("Like CL:THROW, but takes a thunk");
 CL_DEFUN void core__throw_function(T_sp tag, T_sp result_form) {
-  int frame = my_thread->exceptionStack().findKey(CatchFrame, tag);
-  if (frame < 0) {
-    CONTROL_ERROR();
-  }
   T_mv result;
   Closure_sp closure = result_form.asOrNull<Closure_O>();
   ASSERT(closure);
   result = closure->entry.load()(LCC_PASS_ARGS0_ELLIPSIS(closure.raw_()));
   result.saveToMultipleValue0();
-#ifdef DEBUG_TRACK_UNWINDS
-  global_CatchThrow_count++;
-#endif
-  throw CatchThrow(frame);
+  clasp_throw(tag);
 }
 
 CL_LAMBDA(symbols values func);
 CL_DECLARE();
 CL_DOCSTRING("progvFunction");
 CL_DEFUN T_mv core__progv_function(List_sp symbols, List_sp values, Function_sp func) {
-  DynamicScopeManager manager;
-  int lengthValues = cl__length(values);
-  int index = 0;
-  for (auto curSym : symbols) {
-    if (index < lengthValues) {
-      Symbol_sp symbol = gc::As<Symbol_sp>(oCar(curSym));
-      T_sp value = oCar(values);
-      manager.pushSpecialVariableAndSet(symbol, value);
-      values = oCdr(values);
+  if (symbols.consp()) {
+    if (values.consp()) {
+      DynamicScopeManager scope(gc::As<Symbol_sp>(CONS_CAR(symbols)),CONS_CAR(values));
+      return core__progv_function(CONS_CDR(symbols),oCdr(values),func);
     } else {
-      // Makunbound the symbol but only within the scope of this progv
-      Symbol_sp symbol = gc::As<Symbol_sp>(oCar(curSym));
-      manager.pushSpecialVariableAndSet(symbol, _Unbound<T_O>());
+      DynamicScopeManager scope(gc::As<Symbol_sp>(CONS_CAR(symbols)),_Unbound<core::T_O>());
+      return core__progv_function(CONS_CDR(symbols),_Nil<core::T_O>(),func);
     }
-    index++;
-  }
-  T_mv result = (func->entry.load())(LCC_PASS_ARGS0_ELLIPSIS(func.raw_()));
+  } else {
+    T_mv result = (func->entry.load())(LCC_PASS_ARGS0_ELLIPSIS(func.raw_()));
   // T_mv result = eval::funcall(func);
-  return result;
+    return result;
+  }
 }
 
  CL_DEFUN T_mv core__declared_global_inline_p(T_sp name)
@@ -1070,12 +1284,8 @@ CL_DEFUN T_sp core__run_function( T_sp object ) {
   if (thandle.notnilp() && gc::IsA<Pointer_sp>(thandle)) {
     handle = (uintptr_t)gc::As_unsafe<Pointer_sp>(thandle)->ptr();
   }
-#if 1
   claspFunction func = (claspFunction)dlsym((void*)handle,name.c_str());
 //  printf("%s:%d:%s running function %s  at %p\n", __FILE__, __LINE__, __FUNCTION__, name.c_str(), (void*)func);
-#else
-  claspFunction func = lookup_internal_functions(handle, name.c_str());
-#endif
 #ifdef DEBUG_SLOW
   MaybeDebugStartup startup((void*)func);
 #endif
@@ -1393,9 +1603,9 @@ void ltvc_fill_list_varargs(gctools::GCRootsInModule* roots, T_O* list, size_t l
   for (; len != 0; --len) {
     Cons_sp cur_cons = gc::As<Cons_sp>(cur);
     Cons_sp cur_vargs = gc::As<Cons_sp>(vargs);
-    cur_cons->rplaca(cur_vargs->_Car);
-    cur = cur_cons->_Cdr;
-    vargs = cur_vargs->_Cdr;
+    cur_cons->rplaca(cur_vargs->ocar());
+    cur = cur_cons->cdr();
+    vargs = cur_vargs->cdr();
   }
 }
 

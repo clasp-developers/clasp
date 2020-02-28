@@ -21,12 +21,14 @@
 (defmethod cleavir-policy:policy-qualities append ((env clasp-global-environment))
   '((save-register-args boolean t)
     (core::insert-array-bounds-checks boolean t)
+    (ext:assume-right-type boolean nil)
     (do-type-inference boolean t)
     (do-dx-analysis boolean t)))
 ;;; FIXME: Can't just punt like normal since it's an APPEND method combo.
 (defmethod cleavir-policy:policy-qualities append ((env null))
   '((save-register-args boolean t)
     (core::insert-array-bounds-checks boolean t)
+    (ext:assume-right-type boolean nil)
     (do-type-inference boolean t)
     (do-dx-analysis boolean t)))
 
@@ -75,6 +77,7 @@
 ;;;
 ;;; Policy CORE::INSERT-ARRAY-BOUNDS-CHECKS
 
+;;; Should calls to aref and such do a bounds check?
 ;;; In CORE package so we can use it in earlier code.
 
 (defmethod cleavir-policy:compute-policy-quality
@@ -82,6 +85,28 @@
      optimize
      (environment clasp-global-environment))
   (> (cleavir-policy:optimize-value optimize 'safety) 0))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; POLICY EXT:ASSUME-RIGHT-TYPE
+;;;
+;;; Should type declarations be trusted for unsafe transforms?
+;;; If this is true, crashes can result if type declarations
+;;; are wrong, so per the definition of "safe code" it must be
+;;; false at safety 3.
+;;; NOTE: This is only really necessary because of our non
+;;; existent type inference. Policies need a FIXME rethink
+;;; once things are less broken.
+
+(defmethod cleavir-policy:compute-policy-quality
+    ((quality (eql 'ext:assume-right-type))
+     optimize
+     (environment clasp-global-environment))
+  (let ((safety (cleavir-policy:optimize-value optimize 'safety)))
+    (and (zerop safety)
+         (> (cleavir-policy:optimize-value optimize 'speed) safety))))
+
+;;;
 
 (defun has-policy-p (instruction quality)
   (cleavir-policy:policy-value (cleavir-ir:policy instruction) quality))

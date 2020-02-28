@@ -69,42 +69,27 @@ namespace mp {
     core::T_sp old = slot;
     slot = _Nil<core::T_O>();
     return old;
-#if 0 // old code
-      core::T_sp old;
-      do {
-        old = slot.load();
-      } while (!slot.compare_exchange_weak(old,_Nil<core::T_O>()));
-      return old;
-#endif
-    }
+  }
   inline void atomic_push(mp::SpinLock& spinlock, core::T_sp& slot, core::T_sp object) {
     core::Cons_sp cons = core::Cons_O::create(object,_Nil<core::T_O>());
     mp::SafeSpinLock l(spinlock);
     core::T_sp car = slot;
     cons->rplacd(car);
     slot = cons;
-#if 0 // old code
-      core::T_sp tcons = cons;
-      core::T_sp car;
-      do {
-        car = slot.load();
-        cons->rplacd(car);
-      } while (!slot.compare_exchange_weak(car,tcons));
-#endif
-    }
+  }
 };
 
 #define DEFAULT_THREAD_STACK_SIZE 8388608
 namespace mp {
 
-  typedef enum {Inactive=0,Booting,Active,Exiting} ProcessPhase;
+  typedef enum {Inactive=0,Booting,Active,Suspended,Exiting} ProcessPhase;
   
   class Process_O : public core::CxxObject_O {
     LISP_CLASS(mp, MpPkg, Process_O, "Process",core::CxxObject_O);
   public:
     CL_LISPIFY_NAME("make_process");
-    CL_LAMBDA(name function &optional arguments special_bindings (stack-size 0))
-      CL_DOCSTRING("doc(Create a process that evaluates the function with arguments. The special-bindings are bound in reverse so that earlier bindings override later ones.)doc");
+    CL_LAMBDA(name function &optional arguments special_bindings (stack-size 0));
+    CL_DOCSTRING("Make and return a new process object. The new process is inactive; it can be started with PROCESS-ENABLE.\n\nNAME is the name of the process for display purposes. FUNCTION is the function that the process should execute. ARGUMENTS is a list of arguments that will be passed to the function when the process is enabled; the default is NIL. SPECIAL-BINDINGS is an alist of (symbol . form): the forms will be evaluated in a null lexical environment, and their values bound to the symbols (as if by PROGV) when the process is started.");
     CL_DEF_CLASS_METHOD static Process_sp make_process(core::T_sp name, core::T_sp function, core::T_sp arguments, core::T_sp special_bindings, size_t stack_size) {
       core::List_sp passed_bindings = core::cl__reverse(special_bindings);
       core::List_sp all_bindings = core::lisp_copy_default_special_bindings();
@@ -123,16 +108,16 @@ namespace mp {
     core::List_sp  _ReturnValuesList;
     core::ThreadLocalState* _ThreadInfo;
     std::atomic<ProcessPhase>  _Phase;
+    Mutex _SuspensionMutex;
+    ConditionVariable _SuspensionCV;
     size_t _StackSize;
     pthread_t _Thread;
-    ConditionVariable _Active;
-    Mutex _ExitBarrier;
 #ifdef USE_MPS
     mps_thr_t thr_o;
     mps_root_t root;
 #endif
   public:
-    Process_O(core::T_sp name, core::T_sp function, core::List_sp arguments, core::List_sp initialSpecialBindings=_Nil<core::T_O>(), size_t stack_size=8*1024*1024) : _Name(name), _Function(function), _Arguments(arguments), _InitialSpecialBindings(initialSpecialBindings), _ThreadInfo(NULL), _ReturnValuesList(_Nil<core::T_O>()), _StackSize(stack_size), _Phase(Booting), _ExitBarrier(EXITBARR_NAMEWORD) {
+  Process_O(core::T_sp name, core::T_sp function, core::List_sp arguments, core::List_sp initialSpecialBindings=_Nil<core::T_O>(), size_t stack_size=8*1024*1024) : _Name(name), _Function(function), _Arguments(arguments), _InitialSpecialBindings(initialSpecialBindings), _ThreadInfo(NULL), _ReturnValuesList(_Nil<core::T_O>()), _StackSize(stack_size), _Phase(Booting), _SuspensionMutex(SUSPBARR_NAMEWORD) {
       if (!function) {
         printf("%s:%d Trying to create a process and the function is NULL\n", __FILE__, __LINE__ );
       }
@@ -144,15 +129,8 @@ namespace mp {
       result = pthread_attr_init(&attr);
       result = pthread_attr_setstacksize(&attr,this->_StackSize);
       if (result!=0) return result;
-      this->_ExitBarrier.lock();
-      // I'm not sure what to do with the this->_Phase variable - if anything.
-      // Does the mutex this->_ExitBarrier and the condition variable this->_Active
-      // take care of all aspects of the synchronization?
       this->_Phase = Booting;
       result = pthread_create(&this->_Thread, &attr, start_thread, (void*)this );
-      this->_Active.wait(this->_ExitBarrier);
-      this->_ExitBarrier.unlock();
-//      while (this->_Phase == Booting) {};
       pthread_attr_destroy(&attr);
       return result;
     }
@@ -173,8 +151,9 @@ namespace mp {
   class Mutex_O : public core::CxxObject_O {
     LISP_CLASS(mp, MpPkg, Mutex_O, "Mutex",core::CxxObject_O);
   public:
-    CL_LISPIFY_NAME("make_mutex");
-    CL_LAMBDA(&optional name)
+    CL_LISPIFY_NAME("make-lock");
+    CL_DOCSTRING("Create and return a fresh mutex with the given name.");
+    CL_LAMBDA(&key name)
       CL_DEF_CLASS_METHOD static Mutex_sp make_mutex(core::T_sp name) {
       GC_ALLOCATE_VARIADIC(Mutex_O,l,name,false);
       return l;
@@ -184,12 +163,12 @@ namespace mp {
     core::T_sp  _Owner;
     Mutex _Mutex;
     Mutex_O(core::T_sp name, bool recursive) : _Name(name), _Owner(_Nil<T_O>()), _Mutex(lisp_nameword(name),recursive) {};
-    CL_DEFMETHOD bool lock(bool waitp) {
+    bool lock(bool waitp) {
       bool locked = this->_Mutex.lock(waitp);
       if (locked) this->_Owner = my_thread->_Process;
       return locked;
     };
-    CL_DEFMETHOD void unlock() {
+    void unlock() {
       if (this->_Mutex.counter()==1) {
         this->_Owner = _Nil<T_O>();
       }
@@ -219,7 +198,8 @@ namespace mp {
     LISP_CLASS(mp, MpPkg, SharedMutex_O, "SharedMutex",core::CxxObject_O);
   public:
     CL_LISPIFY_NAME("make-shared-mutex");
-    CL_LAMBDA(&optional name)
+    CL_LAMBDA(&optional name);
+    CL_DOCSTRING("Create and return a fresh shared mutex with the given name.");
     CL_DEF_CLASS_METHOD static SharedMutex_sp make_shared_mutex(core::T_sp readName,core::T_sp writeLockName) {
       GC_ALLOCATE_VARIADIC(SharedMutex_O,l,readName,writeLockName);
       return l;
@@ -272,6 +252,7 @@ namespace mp {
     LISP_CLASS(mp, MpPkg, RecursiveMutex_O, "RecursiveMutex",Mutex_O);
   public:
     CL_LAMBDA(&optional name);
+    CL_DOCSTRING("Create and return a recursive mutex with the given name.");
     CL_DEF_CLASS_METHOD static RecursiveMutex_sp make_recursive_mutex(core::T_sp name) {
       GC_ALLOCATE_VARIADIC(RecursiveMutex_O,l, name);
       return l;
@@ -294,8 +275,7 @@ namespace mp {
   class ConditionVariable_O : public core::CxxObject_O {
     LISP_CLASS(mp, MpPkg, ConditionVariable_O, "ConditionVariable",core::CxxObject_O);
   public:
-    CL_LAMBDA(&optional name)
-    CL_DEF_CLASS_METHOD static ConditionVariable_sp make_ConditionVariable(core::T_sp name) {
+    static ConditionVariable_sp make_ConditionVariable(core::T_sp name) {
       GC_ALLOCATE_VARIADIC(ConditionVariable_O,l,name);
       return l;
     };
@@ -307,8 +287,13 @@ namespace mp {
     bool timed_wait(Mutex_sp m,double timeout) {return this->_ConditionVariable.timed_wait(m->_Mutex,timeout);};
     void signal() { this->_ConditionVariable.signal();};
     void broadcast() { this->_ConditionVariable.broadcast();};
+    CL_DOCSTRING("Return the name of the condition variable.");
+    CL_DEFMETHOD core::T_sp condition_variable_name() {
+      return _Name;
+    }
+    string __repr__() const;
   };
-  core::T_sp mp__interrupt_process(Process_sp process, core::T_sp func);
+  void mp__interrupt_process(Process_sp process, core::T_sp func);
 };
 
 #endif

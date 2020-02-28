@@ -44,7 +44,7 @@ unsigned int *BignumExportBuffer::getOrAllocate(const mpz_class &bignum, int nai
 
 namespace core {
 
-size_t DynamicBindingStack::new_binding_index()
+size_t DynamicBindingStack::new_binding_index() const
 {
 #ifdef CLASP_THREADS
   RAIILock<mp::Mutex> mutex(mp::global_BindingIndexPoolMutex);
@@ -59,7 +59,7 @@ size_t DynamicBindingStack::new_binding_index()
 #endif
 };
 
-void DynamicBindingStack::release_binding_index(size_t index)
+void DynamicBindingStack::release_binding_index(size_t index) const
 {
 #ifdef CLASP_THREADS
   RAIILock<mp::Mutex> mutex(mp::global_BindingIndexPoolMutex);
@@ -67,129 +67,50 @@ void DynamicBindingStack::release_binding_index(size_t index)
 #endif
 };
 
-T_sp* DynamicBindingStack::reference_raw_(Symbol_O* var,T_sp* globalValuePtr) {
-#ifdef CLASP_THREADS
-  if ( var->_BindingIdx.load() == NO_THREAD_LOCAL_BINDINGS ) {
-    return globalValuePtr;
-  }
-  uintptr_t index = var->_BindingIdx.load();
-  // If it has a _Binding value but our table is not big enough, then expand the table.
-  unlikely_if (index >= this->_ThreadLocalBindings.size()) {
-    this->_ThreadLocalBindings.resize(index+1,_NoThreadLocalBinding<T_O>());
-  }
-  if (gctools::tagged_no_thread_local_bindingp(this->_ThreadLocalBindings[index].raw_())) {
-    return globalValuePtr;
-  }
-  return &this->_ThreadLocalBindings[index];
-#else
-  return globalValuePtr;
-#endif
-}
-
-const T_sp* DynamicBindingStack::reference_raw_(const Symbol_O* var,const T_sp* globalValuePtr) const{
-#ifdef CLASP_THREADS
-  if ( var->_BindingIdx.load() == NO_THREAD_LOCAL_BINDINGS ) {
-    return globalValuePtr;
-  }
-  uintptr_t index = var->_BindingIdx.load();
-  // If it has a _Binding value but our table is not big enough, then expand the table.
-  unlikely_if (index >= this->_ThreadLocalBindings.size()) {
-    this->_ThreadLocalBindings.resize(index+1,_NoThreadLocalBinding<T_O>());
-  }
-  if (gctools::tagged_no_thread_local_bindingp(this->_ThreadLocalBindings[index].raw_())) {
-    return globalValuePtr;
-  }
-  return &this->_ThreadLocalBindings[index];
-#else
-  return globalValuePtr;
-#endif
-}
-
-SYMBOL_EXPORT_SC_(CorePkg,STARwatchDynamicBindingStackSTAR);
-void DynamicBindingStack::push_with_value_coming(Symbol_sp var, T_sp* globalValuePtr) {
-  T_sp* current_value_ptr = this->reference(var,globalValuePtr);
-#ifdef CLASP_THREADS
+// Ensure that a symbol's binding index is set to something coherent.
+// NOTE: We can use memory_order_relaxed because (a) this is the only code in
+// the system that deals with the _BindingIdx, and (b) the only guarantee we
+// should need for this structure is modification order consistency.
+uint32_t DynamicBindingStack::ensure_binding_index(const Symbol_O* var) const {
   uint32_t no_binding = NO_THREAD_LOCAL_BINDINGS;
-  if ( var->_BindingIdx.load() == no_binding ) {
-    // Get a new index and if we cant exchange it in to _Binding then another
-    // thread got to it before us and we release the index
-    size_t new_index = this->new_binding_index();
-    if (!var->_BindingIdx.compare_exchange_strong(no_binding,new_index)) {
-      this->release_binding_index(new_index);
-    }
-  }
-  uint32_t index = var->_BindingIdx.load();
-  // If it has a _Binding value but our table is not big enough, then expand the table.
-  unlikely_if (index >= this->_ThreadLocalBindings.size()) {
-    this->_ThreadLocalBindings.resize(index+1,_NoThreadLocalBinding<T_O>());
-  }
-#ifdef DEBUG_DYNAMIC_BINDING_STACK // debugging
-  if (  _sym_STARwatchDynamicBindingStackSTAR &&
-       _sym_STARwatchDynamicBindingStackSTAR->boundP() &&
-       _sym_STARwatchDynamicBindingStackSTAR->symbolValue().notnilp() ) {
-    printf("%s:%d  DynamicBindingStack::push_with_value_coming[%zu] of %s\n", __FILE__, __LINE__, this->_Bindings.size(), var->formattedName(true).c_str());
-  }
-#endif
-  this->_Bindings.emplace_back(var,this->_ThreadLocalBindings[index]);
-  this->_ThreadLocalBindings[index] = *current_value_ptr;
-#else
-  this->_Bindings.emplace_back(var,var->symbolValueUnsafe());
-#endif
-}
-
-
-void DynamicBindingStack::push_binding(Symbol_sp var, T_sp* globalValuePtr, T_sp value) {
-#ifdef CLASP_THREADS
-  uint32_t no_binding = NO_THREAD_LOCAL_BINDINGS;
-  if ( var->_BindingIdx.load() == no_binding ) {
-    // Get a new index and if we cant exchange it in to _Binding then another
-    // thread got to it before us and we release the index
+  uint32_t binding_index = var->_BindingIdx.load(std::memory_order_relaxed);
+  if (binding_index == no_binding) {
+    // Get a new index and try to exchange it in.
     uint32_t new_index = this->new_binding_index();
-    if (!var->_BindingIdx.compare_exchange_strong(no_binding,new_index)) {
+    if (!(var->_BindingIdx.compare_exchange_strong(no_binding, new_index,
+                                                   std::memory_order_relaxed))) {
+      // Some other thread has beat us. That's fine - just use theirs (which is
+      // now in no_binding), and release the one we just grabbed.
       this->release_binding_index(new_index);
-    }
-  }
-  uint32_t index = var->_BindingIdx.load();
-  // If it has a _Binding value but our table is not big enough, then expand the table.
-  unlikely_if (index >= this->_ThreadLocalBindings.size()) {
+      return no_binding;
+    } else return new_index;
+  } else return binding_index;
+}
+
+T_sp* DynamicBindingStack::thread_local_reference(const uint32_t index) const {
+  unlikely_if (index >= this->_ThreadLocalBindings.size())
     this->_ThreadLocalBindings.resize(index+1,_NoThreadLocalBinding<T_O>());
-  }
-#ifdef DEBUG_DYNAMIC_BINDING_STACK // debugging
-  if (  _sym_STARwatchDynamicBindingStackSTAR &&
-       _sym_STARwatchDynamicBindingStackSTAR->boundP() &&
-       _sym_STARwatchDynamicBindingStackSTAR->symbolValue().notnilp() ) {
-    printf("%s:%d  DynamicBindingStack::push_binding[%zu] of %s\n", __FILE__, __LINE__, this->_Bindings.size(), var->formattedName(true).c_str());
-  }
-#endif
-  this->_Bindings.emplace_back(var,this->_ThreadLocalBindings[index]);
-  this->_ThreadLocalBindings[index] = value;
-#else
-  this->_Bindings.emplace_back(var,var->symbolValueUnsafe());
-  this->_GlobalValue = value;
-#endif
+  return &(this->_ThreadLocalBindings[index]);
 }
 
-
-
-void DynamicBindingStack::pop_binding() {
-  DynamicBinding &bind = this->_Bindings.back();
-#ifdef DEBUG_DYNAMIC_BINDING_STACK // debugging
-  if (  _sym_STARwatchDynamicBindingStackSTAR &&
-       _sym_STARwatchDynamicBindingStackSTAR->boundP() &&
-       _sym_STARwatchDynamicBindingStackSTAR->symbolValue().notnilp() ) {
-    printf("%s:%d  DynamicBindingStack::pop_binding[%lu]  %s\n", __FILE__, __LINE__, this->_Bindings.size(),bind._Var->formattedName(true).c_str());
-  }
-#endif
-#ifdef CLASP_THREADS
-  ASSERT(this->_ThreadLocalBindings.size()>bind._Var->_BindingIdx.load()); 
-  this->_ThreadLocalBindings[bind._Var->_BindingIdx.load()] = bind._Val;
-  this->_Bindings.pop_back();
-#else
-  bind._Var->setf_symbolValue(bind._Val);
-  this->_Bindings.pop_back();
-#endif
+T_sp DynamicBindingStack::thread_local_value(const Symbol_O* sym) const {
+  // TODO: Rearrange this - in all cases, ensure_binding_index has already been called,
+  // and should not be necessary.
+  return *thread_local_reference(ensure_binding_index(sym));
 }
 
+void DynamicBindingStack::set_thread_local_value(T_sp value, const Symbol_O* sym) {
+  *thread_local_reference(ensure_binding_index(sym)) = value;
+}
+
+bool DynamicBindingStack::thread_local_boundp(const Symbol_O* sym) const {
+  uint32_t index = sym->_BindingIdx.load(std::memory_order_relaxed);
+  if (index == NO_THREAD_LOCAL_BINDINGS) return false;
+  else if (index >= this->_ThreadLocalBindings.size()) return false;
+  else if (gctools::tagged_no_thread_local_bindingp(_ThreadLocalBindings[index].raw_()))
+    return false;
+  else return true;
+}
 
 };
 
@@ -197,6 +118,10 @@ namespace gctools {
 ThreadLocalStateLowLevel::ThreadLocalStateLowLevel(void* stack_top) :
   _DisableInterrupts(false)
   ,  _StackTop(stack_top)
+#ifdef DEBUG_RECURSIVE_ALLOCATIONS
+  , _RecursiveAllocationCounter(0)
+#endif
+  
 {};
 
 ThreadLocalStateLowLevel::~ThreadLocalStateLowLevel()
@@ -205,14 +130,14 @@ ThreadLocalStateLowLevel::~ThreadLocalStateLowLevel()
 };
 namespace core {
 
-
 ThreadLocalState::ThreadLocalState() :
-  _stackmap(0),
-  _stackmap_size(0),
-_PendingInterrupts(_Nil<core::T_O>())
-#ifdef DEBUG_RECURSIVE_ALLOCATIONS
-  , _RecursiveAllocationCounter(0)
-#endif
+  _unwinds(0)
+  , _stackmap(0)
+  , _stackmap_size(0)
+  , _PendingInterrupts(_Nil<core::T_O>())
+  , _CatchTags(_Nil<core::T_O>())
+  , _ObjectFileStartUp(NULL)
+  , _CleanupFunctions(NULL)
 {
   my_thread = this;
 #ifdef _TARGET_OS_DARWIN
@@ -228,6 +153,25 @@ _PendingInterrupts(_Nil<core::T_O>())
 ThreadLocalState::~ThreadLocalState() {
 }
 
+
+void thread_local_register_cleanup(const std::function<void(void)>& cleanup)
+{
+  CleanupFunctionNode* node = new CleanupFunctionNode(cleanup,my_thread->_CleanupFunctions);
+  my_thread->_CleanupFunctions = node;
+}
+
+
+void thread_local_invoke_and_clear_cleanup() {
+  CleanupFunctionNode* node = my_thread->_CleanupFunctions;
+  while (node) {
+    node->_CleanupFunction();
+    CleanupFunctionNode* next = node->_Next;
+    delete node;
+    node = next;
+  }
+  my_thread->_CleanupFunctions = NULL;
+}
+
 // Need to use LTO to inline this.
 inline void registerTypesAllocated(size_t bytes) {
   my_thread->_BytesAllocated += bytes;
@@ -239,41 +183,35 @@ void ThreadLocalState::initialize_thread(mp::Process_sp process, bool initialize
     this->_GCRoots = new gctools::GCRootsInModule();
   }
 //  printf("%s:%d Initialize all ThreadLocalState things this->%p\n",__FILE__, __LINE__, (void*)this);
-  this->_Bindings.reserve(1024);
   this->_Process = process;
   process->_ThreadInfo = this;
   this->_BFormatStringOutputStream = gc::As<StringOutputStream_sp>(clasp_make_string_output_stream());
-  this->_WriteToStringOutputStream = gc::As<StringOutputStream_sp>(clasp_make_string_output_stream());
+#ifdef CLASP_UNICODE
+  this->_WriteToStringOutputStream = gc::As<StringOutputStream_sp>(clasp_make_string_output_stream(STRING_OUTPUT_STREAM_DEFAULT_SIZE,1));
+#else
+   this->_WriteToStringOutputStream = gc::As<StringOutputStream_sp>(clasp_make_string_output_stream());
+#endif
   this->_BignumRegister0 = Bignum_O::create( (gc::Fixnum) 0);
   this->_BignumRegister1 = Bignum_O::create( (gc::Fixnum) 0);
   this->_BignumRegister2 = Bignum_O::create( (gc::Fixnum) 0);
   this->_SingleDispatchMethodCachePtr = gc::GC<Cache_O>::allocate();
   this->_SingleDispatchMethodCachePtr->setup(2, Lisp_O::SingleDispatchMethodCacheSize);
   this->_PendingInterrupts = _Nil<T_O>();
+  this->_CatchTags = _Nil<T_O>();
   this->_SparePendingInterruptRecords = cl__make_list(clasp_make_fixnum(16),_Nil<T_O>());
 };
 
 void ThreadLocalState::create_sigaltstack() {
-#if 0
-  // Set up a sigaltstack
-  stack_t sigstk;
-  size_t size = SIGNAL_STACK_SIZE+SIGSTKSZ;
-  my_thread->_sigaltstack_buffer = (void*)malloc(size);
-  if (!my_thread->_sigaltstack_buffer) perror("Could not allocate signal stack");
-  sigstk.ss_size = SIGNAL_STACK_SIZE+SIGSTKSZ;
-  sigstk.ss_flags = 0;
-  if (sigaltstack(&sigstk,&my_thread->_original_stack) < 0) perror("sigaltstack problem");
-#endif
 }
 
 void ThreadLocalState::destroy_sigaltstack()
 {
-#if 0
-  if (sigaltstack(&my_thread->_original_stack, (stack_t *)0) < 0) perror("sigaltstack problem");
-  free(my_thread->_sigaltstack_buffer);
-#endif
 }
 
+// Push a tag onto the list of active catches.
+void ThreadLocalState::pushCatchTag(T_sp tag) {
+  this->_CatchTags = Cons_O::create(tag, this->_CatchTags);
+}
 
 };
 

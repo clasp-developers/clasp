@@ -67,7 +67,6 @@ namespace core{
     _RehashThreshold(maybeFixRehashThreshold(0.7)),
     _HashTableCount(0)
     {};
-    virtual ~HashTable_O(){};
   //	DEFAULT_CTOR_DTOR(HashTable_O);
     friend class HashTableEq_O;
     friend class HashTableEql_O;
@@ -98,12 +97,12 @@ namespace core{
     static HashTable_sp create_thread_safe(T_sp test, SimpleBaseString_sp readLockName, SimpleBaseString_sp writeLockName); // set everything up with defaults
 
   public:
-    static void sxhash_eq(Hash1Generator &running_hash, T_sp obj, LocationDependencyPtrT);
-    static void sxhash_eql(Hash1Generator &running_hash, T_sp obj, LocationDependencyPtrT);
-    static void sxhash_eq(HashGenerator &running_hash, T_sp obj, LocationDependencyPtrT);
-    static void sxhash_eql(HashGenerator &running_hash, T_sp obj, LocationDependencyPtrT);
-    static void sxhash_equal(HashGenerator &running_hash, T_sp obj, LocationDependencyPtrT);
-    static void sxhash_equalp(HashGenerator &running_hash, T_sp obj, LocationDependencyPtrT);
+    static void sxhash_eq(Hash1Generator &running_hash, T_sp obj );
+    static void sxhash_eql(Hash1Generator &running_hash, T_sp obj );
+    static void sxhash_eq(HashGenerator &running_hash, T_sp obj );
+    static void sxhash_eql(HashGenerator &running_hash, T_sp obj );
+    static void sxhash_equal(HashGenerator &running_hash, T_sp obj );
+    static void sxhash_equalp(HashGenerator &running_hash, T_sp obj );
 
   private:
     void setup(uint sz, Number_sp rehashSize, double rehashThreshold);
@@ -121,6 +120,7 @@ namespace core{
     CL_DEFMETHOD T_sp hash_table_shared_mutex() const { if (this->_Mutex) return this->_Mutex; else return _Nil<T_O>(); };
 //    void set_thread_safe(bool thread_safe);
   public: // Functions here
+    virtual bool is_eq_hashtable() const { return false;}
     virtual bool equalp(T_sp other) const;
 
   /*! See CLHS */
@@ -131,13 +131,13 @@ namespace core{
     size_t hashTableSize() const;
     size_t size() { return this->hashTableCount(); };
 
-    virtual gc::Fixnum sxhashKey(T_sp key, gc::Fixnum bound, bool willAddKey) const;
+    virtual gc::Fixnum sxhashKey(T_sp key, gc::Fixnum bound, HashGenerator& hg) const;
     virtual bool keyTest(T_sp entryKey, T_sp searchKey) const;
 
   /*! I'm not sure I need this and tableRef */
     List_sp bucketsFind_no_lock(T_sp key) const;
   /*! I'm not sure I need this and bucketsFind */
-    virtual List_sp tableRef_no_read_lock(T_sp key,bool under_write_lock, cl_index index);
+    virtual List_sp tableRef_no_read_lock(T_sp key,bool under_write_lock, cl_index index, HashGenerator& hg);
 //    List_sp findAssoc_no_lock(gc::Fixnum index, T_sp searchKey) const;
 
     T_sp hash_table_average_search_length();
@@ -165,7 +165,7 @@ namespace core{
 
     string __repr__() const;
 
-    string hash_table_dump(Fixnum start, T_sp end) const;
+    string hash_table_dump();
 
     void lowLevelMapHash(KeyValueMapper *mapper) const;
 

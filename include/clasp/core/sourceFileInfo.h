@@ -50,8 +50,8 @@ class FileScope_O : public Scope_O {
   bool fieldsp() const { return true; };
   void fields(Record_sp node);
 public:
-  static FileScope_sp create(Pathname_sp path, int handle, T_sp truename = _Nil<T_O>(), size_t offset = 0, bool useLineno = true);
-  static FileScope_sp create(const string &fileNamePath, int handle, T_sp truename = _Nil<T_O>(), size_t offset = 0, bool useLineno = true);
+  static FileScope_sp create(Pathname_sp path, int handle);
+  static FileScope_sp create(const string &fileNamePath, int handle);
 
 public: // ctor/dtor for classes with shared virtual base
   explicit FileScope_O();
@@ -63,19 +63,9 @@ GCPRIVATE: // instance variables here
   char *_PermanentPathName;
   char *_PermanentFileName;
   int _FileHandle;
-  /* These next two are used for compiling from a temp file like SLIME does.
-   * In that case, the actual tempfile is the pathname, but the file it's
-   * excerpted from has its namestring stored here. The offset is the offset
-   * of the tempfile in that file.
-   */
-  T_sp _SourceDebugPathname;
-  size_t _SourceDebugOffset;
-  bool _TrackLineno;
 
 public: // Functions here
   int fileHandle() const { return this->_FileHandle; };
-  /*! Return the value of _SourceDebugPathname unless nil then return _pathname */
-  Pathname_sp sourceDebugPathname() const;
   string fileName() const;
   string parentPathName() const;
   string namestring() const;
@@ -83,11 +73,6 @@ CL_LISPIFY_NAME("FileScope-pathname");
 CL_DEFMETHOD   Pathname_sp pathname() const { return this->_pathname; };
   const char *permanentPathName();
   const char *permanentFileName();
-
-CL_LISPIFY_NAME("FileScope-useLineno");
-CL_DEFMETHOD   bool useLineno() const { return this->_TrackLineno; };
-CL_LISPIFY_NAME("FileScope-sourceDebugOffset");
-CL_DEFMETHOD   size_t sourceDebugOffset() const { return this->_SourceDebugOffset; };
   string __repr__() const;
 }; // FileScope class
 
@@ -99,20 +84,21 @@ CL_DEFMETHOD   size_t sourceDebugOffset() const { return this->_SourceDebugOffse
 
 FORWARD(SourcePosInfo);
 class SourcePosInfo_O : public General_O {
-  friend T_mv core__file_scope(T_sp sourceFile, T_sp truename, size_t offset, bool useLineno);
+  friend T_mv core__file_scope(T_sp sourceFile);
 
   LISP_CLASS(core, CorePkg, SourcePosInfo_O, "SourcePosInfo",General_O);
  public:
   bool fieldsp() const { return true; };
   void fields(Record_sp node);
 public:                                                                                    // ctor/dtor for classes with shared virtual base
-  explicit SourcePosInfo_O() : _FileId(UNDEF_UINT), _Filepos(0), _Lineno(0), _Column(0), _InlinedAt(_Nil<T_O>()){}; //, _Filepos(0) {};
+  explicit SourcePosInfo_O() : _FileId(UNDEF_UINT), _Filepos(0), _Lineno(0), _Column(0), _FunctionScope(_Nil<T_O>()), _InlinedAt(_Nil<T_O>()){}; //, _Filepos(0) {};
 public:                                                                                    // instance variables here
   SourcePosInfo_O(uint spf, size_t filepos, uint spln, uint spc)                           // , Function_sp expander=_Nil<Function_O>())
       : _FileId(spf),
         _Filepos(filepos),
         _Lineno(spln),
         _Column(spc), //, _Expander(expander) {}
+        _FunctionScope(_Nil<T_O>()), 
         _InlinedAt(_Nil<T_O>())
         {};
 
@@ -128,12 +114,13 @@ public:
   size_t filepos() const { return this->_Filepos; };
   uint lineno() const { return this->_Lineno; };
   int column() const { return this->_Column; };
-  bool equalp(T_sp obj) const;
+//  bool equalp(T_sp obj) const;
 public:
   uint _FileId;
   size_t _Filepos;
   uint _Lineno;
   uint _Column;
+  T_sp _FunctionScope;
   T_sp _InlinedAt;
   //	Function_sp 	_Expander;
   CL_DEFMETHOD size_t source_file_pos_filepos() const { return this->_Filepos;}
@@ -142,6 +129,8 @@ public:
   SourcePosInfo_sp source_pos_info_copy() const;
   T_sp setf_source_pos_info_inlined_at(T_sp inlinedAt);
   T_sp source_pos_info_inlined_at() const;
+  T_sp setf_source_pos_info_function_scope(T_sp function_scope);
+  T_sp source_pos_info_function_scope() const;
 };
 inline core::Fixnum safe_fileId(T_sp spi) {
   if (spi.nilp())
@@ -178,7 +167,7 @@ struct gctools::GCInfo<core::SourcePosInfo_O> {
 
 namespace core {
 
-T_mv core__file_scope(T_sp sourceFile, T_sp truename = _Nil<T_O>(), size_t offset = 0, bool useLineno = true);
+T_mv core__file_scope(T_sp sourceFile);
 
 }; // core namespace
 

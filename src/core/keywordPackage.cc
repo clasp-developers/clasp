@@ -37,6 +37,7 @@ THE SOFTWARE.
 namespace kw {
 
 SYMBOL_EXPORT_SC_(KeywordPkg, eof);
+SYMBOL_EXPORT_SC_(KeywordPkg, axis); // initarg for conditions
 
 core::Package_sp initialize_keywordPackage() {
   list<string> lnicknames = {"KW"};

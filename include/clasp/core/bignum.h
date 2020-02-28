@@ -33,8 +33,18 @@ THE SOFTWARE.
 #include <clasp/core/bignum.fwd.h>
 
 namespace core {
+class Bignum_O;
+}
 
+template <>
+struct gctools::GCInfo<core::Bignum_O> {
+  static bool constexpr CanAllocateWithNoArguments = true;
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = true;
+  static GCInfo_policy constexpr Policy = normal;
+};
 
+namespace core {
 class Bignum_O : public Integer_O {
   LISP_CLASS(core, ClPkg, Bignum_O, "Bignum",Integer_O);
   //    DECLARE_ARCHIVE();

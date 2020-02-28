@@ -105,7 +105,7 @@ void derivable_class_registration::register_() const {
   } else {
     creator = gctools::GC<DummyCreator_O>::allocate(classNameString);
   }
-  crep->initializeClassSlots(creator,gctools::NextShiftedStampMergeWhere(gctools::Header_s::derivable_wtag));
+  crep->initializeClassSlots(creator,gctools::NextStampWtag(gctools::Header_s::derivable_wtag));
   core::Symbol_sp className = core::lispify_intern(classNameString, _lisp->getCurrentPackage()->packageName());
   className->exportYourself();
   crep->_setClassName(className);

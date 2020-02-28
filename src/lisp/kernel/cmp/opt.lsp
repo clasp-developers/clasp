@@ -15,6 +15,11 @@
 
 (in-package #:cmp)
 
+(defun gensym-list (list &optional x)
+  (loop
+    :for _ :in list
+    :collect (if x (gensym x) (gensym))))
+
 ;; If a form refers to a function we can use as the head of a form, return something suitable
 ;; as head of form. Else NIL.
 (defun constant-function-expression (form env)

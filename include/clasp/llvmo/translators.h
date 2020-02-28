@@ -43,8 +43,8 @@ struct from_object<llvm::StringRef, std::true_type> {
   typedef llvm::StringRef DeclareType;
   string _Storage; // Store the string here so it won't get wiped out before its used by the callee
   DeclareType _v;
-  ;
-  from_object(T_P o) : _Storage(gc::As<core::String_sp>(o)->get()), _v(llvm::StringRef(this->_Storage)){};
+  from_object(T_P o) : _Storage(gc::As<core::String_sp>(o)->get_std_string()),
+    _v(llvm::StringRef(this->_Storage)) {};
 };
 
 template <>
@@ -52,8 +52,8 @@ struct from_object<const llvm::Twine &> {
   typedef llvm::Twine DeclareType;
   string _Storage; // Store the string here so it won't get wiped out before its used by the callee
   DeclareType _v;
-  ;
-  from_object(T_P o) : _Storage(gc::As<core::String_sp>(o)->get()), _v(llvm::Twine(this->_Storage)){};
+  from_object(T_P o) : _Storage(gc::As<core::String_sp>(o)->get_std_string()),
+    _v(llvm::Twine(this->_Storage)) {};
 };
 
 template <>
@@ -85,6 +85,20 @@ struct to_object<llvm::StringRef> {
        return;
      }
      SIMPLE_ERROR_SPRINTF("Only fixnums can be converted to llvm::DINode::DIFlags");
+   }
+ };
+
+ template <>
+ struct from_object<llvm::DISubprogram::DISPFlags> {
+   typedef llvm::DISubprogram::DISPFlags DeclareType;
+   DeclareType _v;
+   from_object(core::T_sp o) {
+     if (o.fixnump()) {
+       llvm::DISubprogram::DISPFlags f = static_cast<llvm::DISubprogram::DISPFlags>(o.unsafe_fixnum());
+       this->_v = f;
+       return;
+     }
+     SIMPLE_ERROR_SPRINTF("Only fixnums can be converted to llvm::DISubprogram::DISPFlags");
    }
  };
 
@@ -143,13 +157,13 @@ struct from_object<llvm::ArrayRef<std::string>> {
     } else if (core::List_sp lcstrs = o.asOrNull<core::Cons_O>()) {
       for (auto cstrs : lcstrs) {
         core::String_sp s = gc::As<core::String_sp>(core::oCar(cstrs));
-        _v.push_back(s->get());
+        _v.push_back(s->get_std_string());
       }
       return;
     } else if (core::Vector_sp vstrs = o.asOrNull<core::Vector_O>()) {
       _v.resize(vstrs->length());
       for (int i(0), iEnd(vstrs->length()); i < iEnd; ++i) {
-        _v[i] = gc::As<core::String_sp>(vstrs->rowMajorAref(i))->get();
+        _v[i] = gc::As<core::String_sp>(vstrs->rowMajorAref(i))->get_std_string();
       }
       return;
     }

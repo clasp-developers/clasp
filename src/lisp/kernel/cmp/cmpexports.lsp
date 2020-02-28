@@ -4,10 +4,13 @@
             with-debug-info-source-position
             with-interpreter
             module-report
+            *track-inlined-functions*
+            *track-inlinee-name*
             *debug-link-options* ;; A list of strings to inject into link commands
             *compile-file-debug-dump-module* ;; Dump intermediate modules
             *compile-debug-dump-module* ;; Dump intermediate modules
             *default-linkage*
+            *compile-file-parallel-write-bitcode*
             *default-compile-linkage*
             quick-module-dump
             write-bitcode
@@ -39,7 +42,9 @@
             *gv-source-namestring*
             *implicit-compile-hook*
             *irbuilder*
-            *llvm-context*
+            llvm-context
+            *thread-safe-context*
+            thread-local-llvm-context
             *load-time-value-holder-global-var*
             *low-level-trace*
             *low-level-trace-print*
@@ -138,6 +143,7 @@
             analyze-top-level-form
             safe-system
             jit-constant-uintptr_t
+            irc-sext
             irc-int-to-ptr
             irc-ptr-to-int
             irc-verify-module-safe
@@ -185,15 +191,19 @@
             irc-icmp-slt
             irc-intrinsic
             irc-load
+            irc-load-atomic
             irc-low-level-trace
             irc-phi
             irc-personality-function
             irc-phi-add-incoming
             irc-renv
             irc-ret-void
+            irc-ret-null-t*
             irc-ret
             irc-undef-value-get
             irc-store
+            irc-store-atomic
+            irc-cmpxchg
             irc-struct-gep
             irc-read-slot
             irc-write-slot
@@ -224,6 +234,7 @@
             irc-vaslist-va_list-address
             irc-vaslist-remaining-nargs-address
             gen-vaslist-pop
+            gen-vaslist-length
             jit-constant-i1
             jit-constant-i8
             jit-constant-i32
@@ -242,7 +253,6 @@
             initialize-calling-convention
             treat-as-special-operator-p
             typeid-core-unwind
-            walk-form-for-source-info
             with-begin-end-catch
             preserve-exception-info
             *dbg-generate-dwarf*
@@ -252,9 +262,10 @@
             with-new-function
             with-dbg-function
             with-dbg-lexical-block
-            dbg-clear-irbuilder-source-location-impl
-            dbg-set-irbuilder-source-location-impl
             dbg-set-current-source-pos
+            compile-file-source-pos-info
+            compile-file-serial
+            compile-file-parallel
             c++-field-offset
             c++-field-index
             c++-struct-type
@@ -282,8 +293,6 @@
             compile-throw-if-excess-keyword-arguments
             *irbuilder-function-alloca*
             irc-constant-string-ptr
-            *source-debug-pathname*
-            *source-debug-offset*
             irc-get-terminate-landing-pad-block
             irc-function-cleanup-and-return
             %RUN-AND-LOAD-TIME-VALUE-HOLDER-GLOBAL-VAR-TYPE%

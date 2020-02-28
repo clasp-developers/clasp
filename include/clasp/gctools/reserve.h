@@ -60,8 +60,8 @@ THE SOFTWARE.
   poll_signals()
 
 #define GC_RESERVE_BEGIN(_class_, _obj_) _GC_RESERVE_BEGIN_BASE(_class_, _obj_)
-#define GC_RESERVE_GET(_class_, _obj_) _GC_RESERVE_GET_BASE(_class_, _class_::static_HeaderValue, _obj_) _class_();
-#define GC_RESERVE_GET_VARIADIC(_class_, _obj_, ...) _GC_RESERVE_GET_BASE(_class_, _class_::static_HeaderValue, _obj_) _class_(__VA_ARGS__);
+#define GC_RESERVE_GET(_class_, _obj_) _GC_RESERVE_GET_BASE(_class_, _class_::static_StampWtagMtag, _obj_) _class_();
+#define GC_RESERVE_GET_VARIADIC(_class_, _obj_, ...) _GC_RESERVE_GET_BASE(_class_, _class_::static_StampWtagMtag, _obj_) _class_(__VA_ARGS__);
 #define GC_RESERVE_END(_class_, _obj_) _GC_RESERVE_END_FINALyes_INITyes(_class_, _obj_)
 
 #define GC_RESERVE(_class_, _obj_) GC_RESERVE_BEGIN(_class_, _obj_) GC_RESERVE_GET(_class_, _obj_) GC_RESERVE_END(_class_, _obj_)

@@ -37,7 +37,6 @@ namespace core {
   class Closure_O;
   class Creator_O;
   class Iterator_O;
-  class SequenceStepper_O;
 };
 namespace asttooling {
 namespace internal {
@@ -126,9 +125,8 @@ namespace gctools {
 #endif
 };
 
-#include <clasp/gctools/other_tagged_casts.h>
-
 extern "C" {
+bool valid_stamp(gctools::stamp_t kind);
 const char *obj_name(gctools::stamp_t kind);
 extern void obj_dump_base(void *base);
 extern void obj_deallocate_unmanaged_instance(gctools::smart_ptr<core::T_O> obj);

@@ -74,18 +74,9 @@ bool HashTableEqual_O::keyTest(T_sp entryKey, T_sp searchKey) const {
   return cl__equal(entryKey, searchKey);
 }
 
-gc::Fixnum HashTableEqual_O::sxhashKey(T_sp obj, gc::Fixnum bound, bool willAddKey) const {
-#if defined(DEBUG_HASH_TABLE) && defined(DEBUG_HASH_GENERATOR)
-  HashGenerator hg(this->_DebugHashTable);
-#else
-  HashGenerator hg;
-#endif
-#ifdef USE_MPS
-  HashTable_O::sxhash_equal(hg, obj, willAddKey ? const_cast<mps_ld_t>(&(this->_LocationDependency)) : NULL);
-#else
-  HashTable_O::sxhash_equal(hg, obj, NULL);
-#endif
-  return hg.hash(bound);
+gc::Fixnum HashTableEqual_O::sxhashKey(T_sp obj, gc::Fixnum bound, HashGenerator& hg) const {
+  HashTable_O::sxhash_equal(hg, obj);
+  return hg.hashBound(bound);
 }
 
 }; /* core */

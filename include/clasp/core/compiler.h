@@ -31,10 +31,9 @@ THE SOFTWARE.
 
 namespace core {
 
-T_sp varArgsList(int numArgs, ...);
-
 T_sp core__startup_image_pathname(char stage);
-T_mv core__load_bundle(T_sp pathDesig, T_sp verbose = _Nil<T_O>(), T_sp print = _Nil<T_O>(), T_sp external_format = kw::_sym_default);
+T_mv core__load_binary_directory(T_sp pathDesig, T_sp verbose = _Nil<T_O>(), T_sp print = _Nil<T_O>(), T_sp external_format = kw::_sym_default);
+T_mv core__load_binary(T_sp pathDesig, T_sp verbose = _Nil<T_O>(), T_sp print = _Nil<T_O>(), T_sp external_format = kw::_sym_default);
 
 T_mv compiler__implicit_compile_hook_default(T_sp form, T_sp env);
 
@@ -57,7 +56,7 @@ functionality but before any Common Lisp startup functions are invoked. */
 
 
   size_t startup_functions_are_waiting();
-  void startup_functions_invoke();
+core::T_O* startup_functions_invoke(T_O* literals_or_null);
 
 
   std::tuple< void *, string > do_dlopen(const string& str_path, const int n_mode);
@@ -87,13 +86,14 @@ namespace core {
 void expect_offset(T_sp key, T_sp alist, size_t expected);
 };
 
-typedef void*(*fnStartUp)();
 
 namespace core {
 void byte_code_interpreter(gctools::GCRootsInModule* roots, T_sp byte_code_stream, bool log);
 void core__throw_function(T_sp tag, T_sp result_form);
 void register_startup_function(size_t position, fnStartUp fptr);
-void register_internal_functions(uintptr_t handle, const claspFunction* funcs, const char** names, size_t len);
+void transfer_StartupInfo_to_my_thread();
+T_mv core__startup_function_name_and_linkage(size_t id=0, core::T_sp prefix=_Nil<core::T_O>());
+void clasp_unpack_faso(const std::string& path_designator);
 }
 
 #endif /* _compiler_H_ */

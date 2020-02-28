@@ -122,54 +122,48 @@ public:
 // this will be a problem because some of the have smart_ptr's in them
 class DynamicScopeManager : gctools::StackBoundClass {
 private:
-  int _beginTop;
-  int _endTop;
-
+  Symbol_sp _OldVar;
+  T_sp _OldBinding;
 public:
-  virtual void new_binding(const Argument &argument, T_sp val);
-  virtual void va_rest_binding(const Argument &argument) { N_A_(); };
-  virtual Vaslist &valist() { N_A_(); };
-  virtual bool lexicalElementBoundP(const Argument &argument) { N_A_(); };
-  inline void pushSpecialVariableAndSet(Symbol_sp sym, T_sp val) {
-    my_thread->bindings().push_binding(sym,&sym->_GlobalValue,val);
-    this->_endTop = my_thread->bindings().top();
-// NEW_DBS    sym->setf_symbolValue(val);
+  inline explicit DynamicScopeManager(Symbol_sp sym, T_sp val) {
+    _OldVar = sym;
+    _OldBinding = sym->threadLocalSymbolValue();
+    sym->set_threadLocalSymbolValue(val);
   }
-  inline void bind(Symbol_sp sym, T_sp val) {
-    this->pushSpecialVariableAndSet(sym,val);
-  }
-  inline explicit DynamicScopeManager() {
-    int top = my_thread->bindings().top();
-    this->_beginTop = top;
-    this->_endTop = top;
-  }
-
-  inline explicit DynamicScopeManager(Symbol_sp sym, T_sp newVal) {
-    int top = my_thread->bindings().top();
-    this->_beginTop = top;
-    this->_endTop = top;
-    this->pushSpecialVariableAndSet(sym, newVal);
-  }
-
-  void dump() const;
-
-  virtual T_sp lexenv() const;
-
   virtual ~DynamicScopeManager() {
-    DynamicBindingStack &bindings = my_thread->bindings();
-    int numBindings = this->_endTop - this->_beginTop;
-    for (int i = 0; i < numBindings; ++i) {
-      bindings.pop_binding();
-    }
+    _OldVar->set_threadLocalSymbolValue(_OldBinding);
   }
 };
 
-class ValueEnvironmentDynamicScopeManager : public DynamicScopeManager {
+struct SpecialBinding {
+  T_sp _Var;
+  T_sp _Val;
+};
+
+#define MAKE_SPECIAL_BINDINGS_HOLDER(_newnum_,_vla_,_num_) \
+  size_t _newnum_ = _num_; \
+  core::SpecialBinding _vla_[_num_];
+
+struct ScopeManager {
+  size_t          _NumberOfBindings;
+  size_t          _NextBindingIndex;
+  SpecialBinding* _Bindings;
+  ScopeManager(size_t numberOfBindings, SpecialBinding* bindings) : _NumberOfBindings(numberOfBindings), _NextBindingIndex(0), _Bindings(bindings) {};
+  ~ScopeManager();
+  void new_special_binding(Symbol_sp var, T_sp val);
+  virtual void new_binding(const Argument &argument, T_sp val) = 0;
+  virtual T_sp lexenv() const = 0;
+  virtual Vaslist &valist() { N_A_(); };
+  virtual void va_rest_binding(const Argument &argument) { N_A_(); };
+  virtual bool lexicalElementBoundP(const Argument &argument) { N_A_(); };
+};
+
+class ValueEnvironmentDynamicScopeManager : public ScopeManager {
 private:
   ValueEnvironment_sp _Environment;
   Vaslist _VaRest;
 public:
-  ValueEnvironmentDynamicScopeManager(ValueEnvironment_sp env) : _Environment(env){};
+  ValueEnvironmentDynamicScopeManager(size_t numberOfBindings, SpecialBinding* bindings, ValueEnvironment_sp env) : ScopeManager(numberOfBindings,bindings), _Environment(env){};
 public:
   /*! This is used for creating binds for lambda lists */
   virtual Vaslist &valist() { return this->_VaRest; };
@@ -181,21 +175,7 @@ public:
   virtual T_sp lexenv() const { return this->_Environment; };
 };
 
-class ActivationFrameDynamicScopeManager : public DynamicScopeManager {
-private:
-  ActivationFrame_sp _Frame;
-
-public:
-  ActivationFrameDynamicScopeManager(ActivationFrame_sp frame) : _Frame(frame){};
-
-public:
-  virtual void new_binding(const Argument &argument, T_sp val);
-  virtual bool lexicalElementBoundP(const Argument &argument);
-  T_sp activationFrame() const { return this->_Frame; };
-  virtual T_sp lexenv() const;
-};
-
-class StackFrameDynamicScopeManager : public DynamicScopeManager {
+class StackFrameDynamicScopeManager : public ScopeManager {
 private:
   gc::Frame &frame;
 
@@ -203,8 +183,7 @@ public:
   Vaslist VaRest;
 
 public:
-  StackFrameDynamicScopeManager(gc::Frame* fP) : frame(*fP){};
-
+  StackFrameDynamicScopeManager(size_t numberOfBindings, SpecialBinding* bindings, gc::Frame* fP) : ScopeManager(numberOfBindings,bindings), frame(*fP) {};
 public:
   virtual Vaslist &valist() { return this->VaRest; };
   virtual void va_rest_binding(const Argument &argument);

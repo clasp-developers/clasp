@@ -368,18 +368,13 @@ string General_O::className() const {
 
 void General_O::sxhash_(HashGenerator &hg) const {
   if (hg.isFilling()) {
-    Fixnum res = (Fixnum)((((uintptr_t)this) >> gctools::tag_shift));
-    hg.addPart(res);
+    hg.addAddress((void*)this);
   }
 }
 
-void General_O::sxhash_equal(HashGenerator &hg,LocationDependencyPtrT ld) const {
+void General_O::sxhash_equal(HashGenerator &hg) const {
   if (!hg.isFilling()) return;
-  volatile void* address = (void*)this;
-#ifdef USE_MPS
-  if (ld) mps_ld_add(ld, global_arena, (mps_addr_t)address );
-#endif
-  hg.addPart((Fixnum)(((uintptr_t)address)>>gctools::tag_shift));
+  hg.addAddress((void*)this);
   return;
 }
 
@@ -411,40 +406,30 @@ void HashGenerator::hashObject(T_sp obj) {
   this->_Depth = depth;
 }
 
-static BignumExportBuffer static_HashGenerator_addPart_buffer;
-
-bool HashGenerator::addPart(const mpz_class &bignum) {
-  unsigned int *buffer = static_HashGenerator_addPart_buffer.getOrAllocate(bignum, 0);
-  size_t count(0);
+Fixnum bignum_hash(const mpz_class &bignum) {
+  auto bn = bignum.get_mpz_t();
+  unsigned int size = bn->_mp_size;
+  if (size<0) size = -size;
 #ifdef DEBUG_HASH_GENERATOR
   if (this->_debug) {
     printf("%s:%d Adding hash bignum\n", __FILE__, __LINE__);
   }
 #endif
-  buffer = (unsigned int *)::mpz_export(buffer, &count,
-                                        _lisp->integer_ordering()._mpz_import_word_order,
-                                        _lisp->integer_ordering()._mpz_import_size,
-                                        _lisp->integer_ordering()._mpz_import_endian,
-                                        0,
-                                        bignum.get_mpz_t());
-  if (buffer != NULL) {
-    for (int i = 0; i < (int)count; i++) {
-      this->addPart(buffer[i]);
-      if (this->isFull())
-        return false;
-    }
-  } else {
-    this->addPart(0);
+  gc::Fixnum hash(5381);
+  for (int i = 0; i < (int)size; i++) {
+    hash = (gc::Fixnum)hash_word(hash,(uintptr_t)bn->_mp_d[i]);
   }
-  return this->isFilling();
+  return hash;
 }
 
+bool Hash1Generator::addValue(const mpz_class &bignum) {
+  gc::Fixnum hash = bignum_hash(bignum);
+  return this->addValue(hash);
+}
 
-bool Hash1Generator::addPart(const mpz_class &bignum) {
-  HashGenerator hg;
-  hg.addPart(bignum);
-  this->_Part = hg.hash(0);
-  return this->isFilling();
+bool HashGenerator::addValue(const mpz_class &bignum) {
+  gc::Fixnum hash = bignum_hash(bignum);
+  return this->addValue(hash);
 }
 
 CL_LAMBDA(arg);
@@ -552,11 +537,11 @@ SYMBOL_EXPORT_SC_(ClPkg, equalp);
 
 namespace core {
 
-void lisp_setStaticClass(gctools::Header_s::Value header, Instance_sp value)
+void lisp_setStaticClass(gctools::Header_s::StampWtagMtag header, Instance_sp value)
 {
   if (_lisp->_Roots.staticClassesUnshiftedNowhere.size() == 0) {
-    ASSERT(gctools::Header_s::Value::is_unshifted_stamp(gctools::STAMP_max));
-    size_t unstamp = gctools::Header_s::Value::make_nowhere_stamp(gctools::STAMP_max);
+    ASSERT(gctools::Header_s::StampWtagMtag::is_unshifted_stamp(gctools::STAMP_max));
+    size_t unstamp = gctools::Header_s::StampWtagMtag::make_nowhere_stamp(gctools::STAMP_max);
     _lisp->_Roots.staticClassesUnshiftedNowhere.resize(unstamp+1);
   }
 //  printf("%s:%d:%s stamp: %u  value: %s\n", __FILE__, __LINE__, __FUNCTION__, header.stamp(), _rep_(value).c_str());
@@ -564,20 +549,20 @@ void lisp_setStaticClass(gctools::Header_s::Value header, Instance_sp value)
   _lisp->_Roots.staticClassesUnshiftedNowhere[unstamp] = value;
 }
 
-void lisp_setStaticClassSymbol(gctools::Header_s::Value header, Symbol_sp value)
+void lisp_setStaticClassSymbol(gctools::Header_s::StampWtagMtag header, Symbol_sp value)
 {
   if (_lisp->_Roots.staticClassSymbolsUnshiftedNowhere.size() == 0) {
-    ASSERT(gctools::Header_s::Value::is_unshifted_stamp(gctools::STAMP_max));
-    size_t unstamp = gctools::Header_s::Value::make_nowhere_stamp(gctools::STAMP_max);
+    ASSERT(gctools::Header_s::StampWtagMtag::is_unshifted_stamp(gctools::STAMP_max));
+    size_t unstamp = gctools::Header_s::StampWtagMtag::make_nowhere_stamp(gctools::STAMP_max);
     _lisp->_Roots.staticClassSymbolsUnshiftedNowhere.resize(unstamp+1);
   }
   size_t unstamp = header.nowhere_stamp();
 //  printf("%s:%d:%s unstamp: %lu  value: %s\n", __FILE__, __LINE__, __FUNCTION__, unstamp, _safe_rep_(value).c_str());
   _lisp->_Roots.staticClassSymbolsUnshiftedNowhere[unstamp] = value;
 }
-Symbol_sp lisp_getStaticClassSymbol(gctools::Header_s::Value header)
+Symbol_sp lisp_getStaticClassSymbol(gctools::Header_s::StampWtagMtag header)
 {
-  ASSERT(gctools::Header_s::Value::is_unshifted_stamp(header.unshifted_stamp()));
+  ASSERT(gctools::Header_s::StampWtagMtag::is_unshifted_stamp(header.unshifted_stamp()));
   size_t unstamp = header.nowhere_stamp();
   T_sp value = _lisp->_Roots.staticClassSymbolsUnshiftedNowhere[unstamp];
 //  printf("%s:%d:%s unstamp: %lu  value: %s\n", __FILE__, __LINE__, __FUNCTION__, unstamp, _safe_rep_(value).c_str());
@@ -585,26 +570,26 @@ Symbol_sp lisp_getStaticClassSymbol(gctools::Header_s::Value header)
 }
 
 
-void lisp_setStaticInstanceCreator(gctools::Header_s::Value header, Creator_sp value)
+void lisp_setStaticInstanceCreator(gctools::Header_s::StampWtagMtag header, Creator_sp value)
 { 
   if (_lisp->_Roots.staticInstanceCreatorsUnshiftedNowhere.size() == 0) {
-    ASSERT(gctools::Header_s::Value::is_unshifted_stamp(gctools::STAMP_max));
-    size_t unstamp = gctools::Header_s::Value::make_nowhere_stamp(gctools::STAMP_max);
+    ASSERT(gctools::Header_s::StampWtagMtag::is_unshifted_stamp(gctools::STAMP_max));
+    size_t unstamp = gctools::Header_s::StampWtagMtag::make_nowhere_stamp(gctools::STAMP_max);
     _lisp->_Roots.staticInstanceCreatorsUnshiftedNowhere.resize(unstamp+1);
   }
   size_t unstamp = header.nowhere_stamp();
   _lisp->_Roots.staticInstanceCreatorsUnshiftedNowhere[unstamp] = value;
 }
 
-Instance_sp lisp_getStaticClass(gctools::Header_s::Value header)
+Instance_sp lisp_getStaticClass(gctools::Header_s::StampWtagMtag header)
 {
-  ASSERT(gctools::Header_s::Value::is_unshifted_stamp(header.unshifted_stamp()));
+  ASSERT(gctools::Header_s::StampWtagMtag::is_unshifted_stamp(header.unshifted_stamp()));
   size_t unstamp = header.nowhere_stamp();
   return _lisp->_Roots.staticClassesUnshiftedNowhere[unstamp];
 }
-Creator_sp lisp_getStaticInstanceCreator(gctools::Header_s::Value header)
+Creator_sp lisp_getStaticInstanceCreator(gctools::Header_s::StampWtagMtag header)
 {
-  ASSERT(gctools::Header_s::Value::is_unshifted_stamp(header.unshifted_stamp()));
+  ASSERT(gctools::Header_s::StampWtagMtag::is_unshifted_stamp(header.unshifted_stamp()));
   size_t unstamp = header.nowhere_stamp();
   return _lisp->_Roots.staticInstanceCreatorsUnshiftedNowhere[unstamp];
 }

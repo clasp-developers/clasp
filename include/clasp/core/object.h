@@ -135,33 +135,20 @@ namespace core {
 
   /* A lighter weight hash generator for EQ and EQL tests. 
      It has only a single part. */
-class Hash1Generator {
+
+class HashGeneratorBase {
+};
+
+typedef enum { hashEmpty, hashFilling, hashFull } FillingType;
+class Hash1Generator : public HashGeneratorBase {
  public:
-  Fixnum _Part;
+  uint64_t _Part;
+  bool     _PartIsPointer;
  public:
-  gc::Fixnum hash(gc::Fixnum bound = 0) const {
-    gc::Fixnum hash = 5381;
-    hash = (gc::Fixnum)hash_word((uintptr_t)5381,(uintptr_t)this->_Part);
-    if (bound) return ((uintptr_t)hash) % bound;
-#ifdef DEBUG_HASH_GENERATOR
-    if (this->_debug) {
-      printf("%s:%d  final hash = %lu\n", __FILE__, __LINE__, hash);
-    }
-#endif
-    return hash;
-  }
-  gc::Fixnum hashBound(gc::Fixnum bound) const {
-    gc::Fixnum hash = 5381;
-    hash = (gc::Fixnum)hash_word((uintptr_t)5381,(uintptr_t)this->_Part);
-#ifdef DEBUG_HASH_GENERATOR
-    if (this->_debug) {
-      printf("%s:%d  final hash = %lu\n", __FILE__, __LINE__, hash);
-    }
-#endif
-    return ((uintptr_t)hash) % bound;
-  }
-  bool addPart(Fixnum part) {
+  // Add a value  
+  bool addValue(Fixnum part) {
     this->_Part = part;
+    this->_PartIsPointer = false;
 #ifdef DEBUG_HASH_GENERATOR
     if (this->_debug) {
       printf("%s:%d Added part --> %ld\n", __FILE__, __LINE__, part);
@@ -169,105 +156,196 @@ class Hash1Generator {
 #endif
     return true;
   }
+  /* Add the limbs of the bignum - the value*/
+  bool addValue(const mpz_class &bignum);
+
+  // Add an address - this may need to work with location dependency
+  bool addAddress(void* part) {
+    ASSERT(!(((uintptr_t)part)&gctools::ptag_mask));
+    this->_Part = (uintptr_t)part;
+    this->_PartIsPointer = true;
+#ifdef DEBUG_HASH_GENERATOR
+    if (this->_debug) {
+      printf("%s:%d Added part --> %ld\n", __FILE__, __LINE__, part);
+    }
+#endif
+    return true;
+  }
+  // Hash1Generator is always filling
   bool isFilling() const { return true; };
-  /*Add the bignum across multiple parts, return true if everything was added */
-  bool addPart(const mpz_class &bignum);
   void hashObject(T_sp obj);
+  
+  gc::Fixnum rawhash() const {
+    gc::Fixnum hash(5381);
+    hash = (gc::Fixnum)hash_word(hash,(uintptr_t)this->_Part);
+    return hash;
+  }
+  
+  gc::Fixnum hash() const {
+    return rawhash();
+  }
+  
+  gc::Fixnum hashBound(gc::Fixnum bound) const {
+    gc::Fixnum hash = rawhash();
+#ifdef DEBUG_HASH_GENERATOR
+    if (this->_debug) {
+      printf("%s:%d  final hash = %lu\n", __FILE__, __LINE__, hash);
+    }
+#endif
+    return ((uintptr_t)hash) % bound;
+  }
+
+#ifdef USE_MPS
+  void addAddressesToLocationDependency(mps_ld_t ld) {
+    if (this->_PartIsPointer) {
+      mps_ld_add(ld,global_arena,(mps_addr_t)this->_Part);
+    }
+  };
+  bool isstale(mps_ld_t ld) {
+    if (this->_PartIsPointer) {
+      return mps_ld_isstale(ld,global_arena,(mps_addr_t)this->_Part);
+    }
+    return false;
+  }
+#endif
 };
  
 //#define DEBUG_HASH_GENERATOR
-  class HashGenerator {
-    static const int MaxParts = 32;
-    static const int MaxDepth = 8;
-  private:
-    int _Depth;
-    int _NextPartIndex;
-    Fixnum _Parts[MaxParts];
+class HashGenerator : public HashGeneratorBase {
+  static const int MaxParts = 32;
+  static const int MaxDepth = 8;
+private:
+  int _Depth;
+  int _NextPartIndex;
+  int _NextAddressIndex;
+  Fixnum _Parts[MaxParts];
 #ifdef DEBUG_HASH_GENERATOR
-    bool _debug;
+  bool _debug;
 #endif
-  public:
-  HashGenerator(bool debug = false) : _Depth(0), _NextPartIndex(0)
+public:
+  HashGenerator(bool debug = false) : _Depth(0), _NextPartIndex(0), _NextAddressIndex(MaxParts-1)
 #ifdef DEBUG_HASH_GENERATOR
-      ,
-      _debug(debug)
+                                    , _debug(debug)
 #endif
-      {};
+  {};
 
-    bool addPart(Fixnum part) {
-      if (this->_NextPartIndex >= MaxParts)
-        return false;
-      this->_Parts[this->_NextPartIndex] = part;
-#ifdef DEBUG_HASH_GENERATOR
-      if (this->_debug) {
-        printf("%s:%d Added part[%d] --> %ld\n", __FILE__, __LINE__, this->_NextPartIndex, part);
-      }
-#endif
-      ++this->_NextPartIndex;
-      return true;
-    }
-
-    bool addPart0(Fixnum part) {
-      this->_Parts[0] = part;
-      this->_NextPartIndex=1;
-      return true;
-    }
-
-  /*Add the bignum across multiple parts, return true if everything was added */
-    bool addPart(const mpz_class &bignum);
+    /*! Return true if can still accept parts */
+  bool isFilling() const {
+    return (this->_NextPartIndex <= this->_NextAddressIndex) || (this->_Depth>= MaxDepth);
+  }
 
   /*! Return true if not accepting any more parts */
-    bool isFull() const {
-      return this->_NextPartIndex >= MaxParts;
-    }
+  bool isFull() const {
+    return this->_NextPartIndex > this->_NextAddressIndex;
+  }
 
-  /*! Return true if can still accept parts */
-    bool isFilling() const {
-      return (this->_NextPartIndex < MaxParts) || (this->_Depth>= MaxDepth);
+  bool addValue(Fixnum part) {
+    if (this->isFull()) {
+      return false;
     }
-
-    gc::Fixnum hash(gc::Fixnum bound = 0) const {
-      gc::Fixnum hash = 5381;
-      for (int i = 0; i < this->_NextPartIndex; i++) {
-        hash = (gc::Fixnum)hash_word((uintptr_t)hash, (uintptr_t) this->_Parts[i]);
+    this->_Parts[this->_NextPartIndex] = part;
 #ifdef DEBUG_HASH_GENERATOR
-        if (this->_debug) {
-          printf("%s:%d  calculated hash = %lu with part[%d] --> %lu\n", __FILE__, __LINE__, hash, i, this->_Parts[i]);
-        }
+    if (this->_debug) {
+      printf("%s:%d Added part[%d] --> %ld\n", __FILE__, __LINE__, this->_NextPartIndex, part);
+    }
 #endif
-      }
-      if (bound)
-        return ((uintptr_t)hash) % bound;
+    ++this->_NextPartIndex;
+    return true;
+  }
+
+  bool addValue0(Fixnum part) {
+    this->_Parts[0] = part;
+    this->_NextPartIndex=1;
+    return true;
+  }
+
+  bool addAddress(void* part) {
+    ASSERT(!(((uintptr_t)part)&gctools::ptag_mask));
+    if (this->isFull()) {
+      return false;
+    }
+    this->_Parts[this->_NextAddressIndex] = (uintptr_t)part;
+    this->_NextAddressIndex--;
+    return true;
+  }
+
+  /*Add the bignum across multiple parts, return true if everything was added */
+  bool addValue(const mpz_class &bignum);
+
+  gc::Fixnum rawhash() const {
+    gc::Fixnum hash = 5381;
+    for (int i = 0; i < this->_NextPartIndex; i++) {
+      hash = (gc::Fixnum)hash_word((uintptr_t)hash, (uintptr_t) this->_Parts[i]);
 #ifdef DEBUG_HASH_GENERATOR
       if (this->_debug) {
-        printf("%s:%d  final hash = %lu\n", __FILE__, __LINE__, hash);
+        printf("%s:%d  calculated hash = %lu with part[%d] --> %lu\n", __FILE__, __LINE__, hash, i, this->_Parts[i]);
       }
 #endif
-      return hash;
     }
-
-    string asString() const {
-      std::stringstream ss;
-      ss << "#<HashGenerator ";
-      for (int i = 0; i < this->_NextPartIndex; i++) {
-        ss << this->_Parts[i] << "-";
+    for (int ia = this->_NextAddressIndex+1; ia < MaxParts; ia++) {
+      hash = (gc::Fixnum)hash_word((uintptr_t)hash, (uintptr_t) this->_Parts[ia]);
+#ifdef DEBUG_HASH_GENERATOR
+      if (this->_debug) {
+        printf("%s:%d  calculated hash = %lu with part[%d] --> %lu\n", __FILE__, __LINE__, hash, i, this->_Parts[ia]);
       }
-      ss << ">";
-      return ss.str();
+#endif
     }
+    return hash;
+  }
 
-    void hashObject(T_sp obj);
+  gc::Fixnum hashBound(gc::Fixnum bound = 0) const {
+    gc::Fixnum hash = this->rawhash();
+    if (bound)
+      return ((uintptr_t)hash) % bound;
+#ifdef DEBUG_HASH_GENERATOR
+    if (this->_debug) {
+      printf("%s:%d  final hash = %lu\n", __FILE__, __LINE__, hash);
+    }
+#endif
+    return hash;
+  }
+
+  string asString() const {
+    std::stringstream ss;
+    ss << "#<HashGenerator ";
+    for (int i = 0; i < this->_NextPartIndex; i++) {
+      ss << this->_Parts[i] << "-";
+    }
+    ss << "|-";
+    for (int i = this->_NextAddressIndex+1; i < MaxParts; i++) {
+      ss << this->_Parts[i] << "-";
+    }
+    ss << ">";
+    return ss.str();
+  }
+
+  void hashObject(T_sp obj);
+
+#ifdef USE_MPS
+  void addAddressesToLocationDependency(mps_ld_t ld) {
+    for (int ia = this->_NextAddressIndex+1; ia < MaxParts; ia++) {
+      mps_ld_add(ld,global_arena,(mps_addr_t)this->_Parts[ia]);
+    }
   };
+  bool isstale(mps_ld_t ld) {
+    for (int ia = this->_NextAddressIndex+1; ia < MaxParts; ia++) {
+      if (mps_ld_isstale(ld,global_arena,(mps_addr_t)this->_Parts[ia])) return true;
+    }
+    return false;
+  }
+#endif
+
+};
 };
 
 
 namespace core {
-Instance_sp lisp_getStaticClass(gctools::Header_s::Value);
-void lisp_setStaticClass(gctools::Header_s::Value value, Instance_sp class_);
-Symbol_sp lisp_getStaticClassSymbol(gctools::Header_s::Value value);
-void lisp_setStaticClassSymbol(gctools::Header_s::Value value, Symbol_sp class_);
-Creator_sp lisp_getStaticInstanceCreator(gctools::Header_s::Value value);
-void lisp_setStaticInstanceCreator(gctools::Header_s::Value value, Creator_sp creator);
+Instance_sp lisp_getStaticClass(gctools::Header_s::StampWtagMtag);
+void lisp_setStaticClass(gctools::Header_s::StampWtagMtag value, Instance_sp class_);
+Symbol_sp lisp_getStaticClassSymbol(gctools::Header_s::StampWtagMtag value);
+void lisp_setStaticClassSymbol(gctools::Header_s::StampWtagMtag value, Symbol_sp class_);
+Creator_sp lisp_getStaticInstanceCreator(gctools::Header_s::StampWtagMtag value);
+void lisp_setStaticInstanceCreator(gctools::Header_s::StampWtagMtag value, Creator_sp creator);
 };
 
 
@@ -287,26 +365,26 @@ void lisp_setStaticInstanceCreator(gctools::Header_s::Value value, Creator_sp cr
   gctools::smart_ptr<oClass> asSmartPtr()                               \
   { return this->sharedThis<oClass>(); };                               \
   static core::Creator_sp staticCreator()                               \
-    { return core::lisp_getStaticInstanceCreator(oClass::static_HeaderValue);} \
+    { return core::lisp_getStaticInstanceCreator(oClass::static_StampWtagMtag);} \
   static void setStaticClass(core::Instance_sp ci)                         \
-  { return core::lisp_setStaticClass(oClass::static_HeaderValue,ci);} \
+  { return core::lisp_setStaticClass(oClass::static_StampWtagMtag,ci);} \
   static core::Instance_sp staticClass()                                  \
-    { return core::lisp_getStaticClass(oClass::static_HeaderValue);} \
+    { return core::lisp_getStaticClass(oClass::static_StampWtagMtag);} \
  public:                                                                \
   typedef oClass my_type;                                               \
   typedef gctools::smart_ptr<oClass> smart_ptr_type;                 \
  public:                                                                \
-  static gctools::Header_s::Value static_HeaderValue;                   \
+  static gctools::Header_s::StampWtagMtag static_StampWtagMtag;                   \
  public:                                                                \
  static void set_static_class_symbol(core::Symbol_sp symbol)                \
- { core::lisp_setStaticClassSymbol(oClass::static_HeaderValue,symbol); }; \
+ { core::lisp_setStaticClassSymbol(oClass::static_StampWtagMtag,symbol); }; \
  static void set_static_creator(gctools::smart_ptr<core::Creator_O> al) \
- { core::lisp_setStaticInstanceCreator(oClass::static_HeaderValue,al); }; \
+ { core::lisp_setStaticInstanceCreator(oClass::static_StampWtagMtag,al); }; \
   static string static_packageName() { return oPackage; };              \
   static string static_className()                                      \
   { return core::lispify_symbol_name(oclassName); };                    \
   static core::Symbol_sp static_classSymbol()                           \
-  { return core::lisp_getStaticClassSymbol(oClass::static_HeaderValue);};     \
+  { return core::lisp_getStaticClassSymbol(oClass::static_StampWtagMtag);};     \
   static string Package() { return oClass::static_packageName(); };     \
   static string Pkg() { return Package(); };                            \
   static void register_class_with_redeye() {                            \
@@ -329,7 +407,7 @@ void lisp_setStaticInstanceCreator(gctools::Header_s::Value value, Creator_sp cr
       return gctools::GC<aClass>::allocate_with_default_constructor();  \
     };                                                                  \
   virtual core::Instance_sp __class() const {                           \
-    return core::lisp_getStaticClass(aClass::static_HeaderValue);       \
+    return core::lisp_getStaticClass(aClass::static_StampWtagMtag);       \
   }                                                                     \
   /* end LISP_CLASS */
     
@@ -385,8 +463,8 @@ namespace core {
   public:
 
     virtual void sxhash_(HashGenerator &hg) const;
-    virtual void sxhash_equal(HashGenerator &hg,LocationDependencyPtrT ptr) const;
-    virtual void sxhash_equalp(HashGenerator &hg,LocationDependencyPtrT ptr) const {return this->sxhash_equal(hg,ptr);};
+    virtual void sxhash_equal(HashGenerator &hg) const;
+    virtual void sxhash_equalp(HashGenerator &hg) const {return this->sxhash_equal(hg);};
     
     virtual size_t templatedSizeof() const { return 0; };
 
@@ -558,13 +636,13 @@ namespace core {
 namespace core {
   inline void clasp_sxhash(T_sp obj, HashGenerator &hg) {
     if (obj.fixnump()) {
-      hg.addPart(obj.unsafe_fixnum());
+      hg.addValue(obj.unsafe_fixnum());
       return;
     } else if (obj.single_floatp()) {
-      hg.addPart((gc::Fixnum)::std::abs((int)::floor(obj.unsafe_single_float())));
+      hg.addValue((gc::Fixnum)::std::abs((int)::floor(obj.unsafe_single_float())));
       return;
     } else if (obj.characterp()) {
-      hg.addPart(obj.unsafe_character());
+      hg.addValue(obj.unsafe_character());
       return;
     } else if (obj.consp() ) {
       Cons_O* cons = obj.unsafe_cons();
@@ -579,21 +657,21 @@ namespace core {
   };
   inline void clasp_sxhash(T_sp obj, Hash1Generator &hg) {
     if (obj.fixnump()) {
-      hg.addPart(obj.unsafe_fixnum());
+      hg.addValue(obj.unsafe_fixnum());
       return;
     } else if (obj.single_floatp()) {
-      hg.addPart((gc::Fixnum)::std::abs((int)::floor(obj.unsafe_single_float())));
+      hg.addValue((gc::Fixnum)::std::abs((int)::floor(obj.unsafe_single_float())));
       return;
     } else if (obj.characterp()) {
-      hg.addPart(obj.unsafe_character());
+      hg.addValue(obj.unsafe_character());
       return;
     } else if (obj.consp() ) {
       Cons_O* cons = obj.unsafe_cons();
-      hg.addPart((gc::Fixnum)cons);
+      hg.addAddress((void*)cons);
       return;
     } else if ( obj.generalp() ) {
       General_O* general = obj.unsafe_general();
-      hg.addPart((gc::Fixnum)general);
+      hg.addAddress((void*)general);
       return;
     }
     SIMPLE_ERROR_SPRINTF("Handle sxhash_ for object");

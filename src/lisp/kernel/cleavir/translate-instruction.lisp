@@ -235,7 +235,19 @@
 (defmethod translate-simple-instruction
     ((instruction cc-mir:save-frame-instruction) return-value abi function-info)
   (setf (frame-value function-info)
-        (%intrinsic-call "cc_pushLandingPadFrame" nil "FRAME")))
+        ;; NOTE: Considered as a T_O*, the frame address could, hypothetically, have nonzero
+        ;; low bits (though that's pretty unlikely given how machines work), and therefore be
+        ;; some invalid object instead of a fixnum. But that's okay, since we only use this
+        ;; for pointer equality anyway.
+        ;; FIXME: The frame address is not adequate as a frame identifier. If a BLOCK extent
+        ;; ends but a closure returning to it survives, a new frame could be established that
+        ;; happens to have the same stack frame address as the disestablished one. If the
+        ;; closure was then called, we'd "return" to that new frame, but the IP would be
+        ;; deranged and bad things would happen. There should be an additional value to
+        ;; distinguish frames - some arbitrary integer, like a counter or the time.
+        (cmp:irc-bit-cast
+         (%intrinsic-call "llvm.frameaddress" (list (%i32 0)) "frame")
+         cmp:%t*%)))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:create-cell-instruction) return-value abi function-info)
@@ -352,11 +364,11 @@
 (defun translate-bit-aref (array index &optional (label ""))
   (let* ((untagged (cmp:irc-untag-fixnum index cmp:%size_t%))
          (bit (%intrinsic-call "cc_simpleBitVectorAref" (list array untagged) "bit-aref")))
-    (cmp:irc-tag-fixnum bit "bit")))
+    (cmp:irc-tag-fixnum (cmp:irc-sext bit) "bit")))
 
 (defun translate-bit-aset (value array index)
   (let ((offset (cmp:irc-untag-fixnum index cmp:%size_t% "untagged-offset"))
-        (untagged-value (cmp:irc-untag-fixnum value cmp::%uint% "untagged-value")))
+        (untagged-value (cmp:irc-untag-fixnum value cmp:%i8% "untagged-value")))
     ;; Note: We cannot label void calls, because then they'll get a variable
     (%intrinsic-call "cc_simpleBitVectorAset" (list array offset untagged-value))))
 
@@ -367,25 +379,50 @@
          (output (first (cleavir-ir:outputs instruction)))
          (label (datum-name-as-string output)))
     (out
-     (if (eq et 'bit) ; have to special case due to the layout.
-         (translate-bit-aref (in (first inputs)) (in (second inputs)) label)
-         (cmp:irc-load (gen-vector-effective-address (in (first inputs)) (in (second inputs))
-                                                     (cleavir-ir:element-type instruction)
-                                                     (%default-int-type abi))
-                       label))
+     (cond ((eq et 'bit) ; have to special case due to the layout.
+            (translate-bit-aref (in (first inputs)) (in (second inputs)) label))
+           ((member et '(ext:byte2 ext:integer2 ext:byte4 ext:integer4))
+            (error "BUG: Inline array access for 2/4-bit arrays has not been implemented"))
+           (t
+            (let ((addr
+                    (gen-vector-effective-address (in (first inputs)) (in (second inputs))
+                                                  et (%default-int-type abi))))
+              ;; FIXME: To do atomic loads with other types, we need to know alignment.
+              (if (eq et 't)
+                  (cmp:irc-load-atomic addr label)
+                  (cmp:irc-load addr label)))))
      output)))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:aset-instruction) return-value abi function-info)
   (let ((et (cleavir-ir:element-type instruction))
         (inputs (cleavir-ir:inputs instruction)))
-    (if (eq et 'bit) ; ditto above
-        (translate-bit-aset (in (third inputs)) (in (first inputs)) (in (second inputs)))
-        (cmp:irc-store
-         (in (third inputs))
-         (gen-vector-effective-address (in (first inputs)) (in (second inputs))
-                                       (cleavir-ir:element-type instruction)
-                                       (%default-int-type abi))))))
+    (cond ((eq et 'bit) ; have to special case due to the layout.
+           (translate-bit-aset (in (third inputs)) (in (first inputs)) (in (second inputs))))
+          ((member et '(ext:byte2 ext:integer2 ext:byte4 ext:integer4))
+           (error "BUG: Inline array access for 2/4-bit arrays has not been implemented"))
+          (t
+           (let ((addr
+                   (gen-vector-effective-address (in (first inputs)) (in (second inputs))
+                                                 et (%default-int-type abi)))
+                 (v (in (third inputs))))
+             ;; FIXME: To do atomic stores with other types, we need to know alignment.
+             (if (eq et 't)
+                 (cmp:irc-store-atomic v addr)
+                 (cmp:irc-store v addr)))))))
+
+(defmethod translate-simple-instruction
+    ((instruction clasp-cleavir-hir:acas-instruction) return-value abi function-info)
+  (declare (ignore return-value function-info))
+  (let ((et (cleavir-ir:element-type instruction))
+        (inputs (cleavir-ir:inputs instruction)))
+    (out
+     (cmp:irc-cmpxchg
+      ;; This will err if et = bit or the like.
+      (gen-vector-effective-address (in (first inputs)) (in (second inputs))
+                                    et (%default-int-type abi))
+      (in (third inputs)) (in (fourth inputs)))
+     (first (cleavir-ir:outputs instruction)))))
 
 (defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir:vector-length-instruction) return-value abi function-info)
@@ -458,22 +495,36 @@
        (first (cleavir-ir:outputs instruction))))
 
 (defmethod translate-simple-instruction
-    ((instruction cleavir-ir:slot-read-instruction) return-value abi function-infoO)
+    ((instruction clasp-cleavir-hir:vaslist-length-instruction) return-value abi function-info)
+  (declare (ignore return-value function-info))
+  (out (cmp:gen-vaslist-length (in (first (cleavir-ir:inputs instruction))))
+       (first (cleavir-ir:outputs instruction))))
+
+(defmethod translate-simple-instruction
+    ((instruction cleavir-ir:slot-read-instruction) return-value abi function-info)
   (declare (ignore return-value abi function-info))
   (let ((inputs (cleavir-ir:inputs instruction)))
     (out (cmp::gen-instance-ref (in (first inputs)) (in (second inputs)))
          (first (cleavir-ir:outputs instruction)))))
 
 (defmethod translate-simple-instruction
-    ((instruction cleavir-ir:slot-write-instruction) return-value abi function-infoO)
+    ((instruction cleavir-ir:slot-write-instruction) return-value abi function-info)
   (declare (ignore return-value abi function-info))
   (let ((inputs (cleavir-ir:inputs instruction)))
     (cmp::gen-instance-set (in (first inputs)) (in (second inputs)) (in (third inputs)))))
 
 (defmethod translate-simple-instruction
+    ((instruction clasp-cleavir-hir:slot-cas-instruction) return-value abi function-info)
+  (declare (ignore return-value abi function-info))
+  (let ((inputs (cleavir-ir:inputs instruction)))
+    (out (cmp::gen-instance-cas (in (first inputs)) (in (second inputs))
+                                (in (third inputs)) (in (fourth inputs)))
+         (first (cleavir-ir:outputs instruction)))))
+
+(defmethod translate-simple-instruction
     ((instruction cleavir-ir:memref2-instruction) return-value abi function-info)
   (declare (ignore return-value abi function-info))
-  (out (cmp:irc-load
+  (out (cmp:irc-load-atomic
         (cmp::gen-memref-address (in (first (cleavir-ir:inputs instruction)))
                                  (cleavir-ir:offset instruction)))
        (first (cleavir-ir:outputs instruction))))
@@ -482,10 +533,22 @@
     ((instruction cleavir-ir:memset2-instruction) return-value abi function-info)
   (declare (ignore return-value abi function-info))
   (let ((inputs (cleavir-ir:inputs instruction)))
-    (cmp:irc-store
+    (cmp:irc-store-atomic
      (in (second inputs) "memset2-val")
      (cmp::gen-memref-address (in (first inputs))
                               (cleavir-ir:offset instruction)))))
+
+(defmethod translate-simple-instruction
+    ((instruction cc-mir:memcas2-instruction) return-value abi function-info)
+  (declare (ignore return-value abi function-info))
+  (let* ((inputs (cleavir-ir:inputs instruction))
+         (cons (first inputs))
+         (old (second inputs))
+         (new (third inputs)))
+    (out (cmp:irc-cmpxchg
+          (cmp::gen-memref-address (in cons) (cleavir-ir:offset instruction))
+          (in old) (in new))
+         (first (cleavir-ir:outputs instruction)))))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:box-instruction) return-value abi function-info)

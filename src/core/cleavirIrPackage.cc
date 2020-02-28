@@ -64,7 +64,7 @@ T_sp register_last_if_unvisited(T_sp visited, T_sp instruction, T_sp instruction
       instructions_to_process = Cons_O::create(instruction,_Nil<T_O>());
     } else {
       Cons_sp last = gc::As_unsafe<Cons_sp>(gc::As_unsafe<Cons_sp>(instructions_to_process)->last());
-      last->_Cdr = Cons_O::create(instruction,_Nil<T_O>());
+      last->rplacd(Cons_O::create(instruction,_Nil<T_O>()));
     }
   }
   return instructions_to_process;

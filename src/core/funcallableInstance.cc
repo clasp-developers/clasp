@@ -60,7 +60,7 @@ namespace core {
 
 
 void FuncallableInstance_O::initializeSlots(gctools::ShiftedStamp stamp, size_t numberOfSlots) {
-  ASSERT(gctools::Header_s::Value::is_rack_shifted_stamp(stamp));
+  ASSERT(gctools::Header_s::StampWtagMtag::is_rack_shifted_stamp(stamp));
   this->_Rack = Rack_O::make(numberOfSlots,_Unbound<T_O>());
   this->stamp_set(stamp);
 #ifdef DEBUG_GUARD_VALIDATE
@@ -69,7 +69,7 @@ void FuncallableInstance_O::initializeSlots(gctools::ShiftedStamp stamp, size_t 
 }
 
 void FuncallableInstance_O::initializeClassSlots(Creator_sp creator, gctools::ShiftedStamp stamp) {
-  ASSERT(gctools::Header_s::Value::is_rack_shifted_stamp(stamp));
+  ASSERT(gctools::Header_s::StampWtagMtag::is_rack_shifted_stamp(stamp));
   DEPRECATED();
 }
 
@@ -400,6 +400,10 @@ std::string dtree_op_name(int dtree_op) {
   };
 };
 
+SYMBOL_EXPORT_SC_(ClosPkg,interp_wrong_nargs);
+SYMBOL_EXPORT_SC_(ClosPkg, force_dispatcher);
+
+#define COMPILE_TRIGGER 1024 // completely arbitrary
 
 CL_LAMBDA(program gf args);
 CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generic_function,
@@ -410,6 +414,14 @@ CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generi
   for ( size_t i=0; i<program->length(); ++i ) {
     DTILOG(BF("[%3d] : %s\n") % i % _safe_rep_((*program)[i]));
   }
+  // Increment the call count, and if it's high enough, compile the thing
+  size_t calls = gc::As_unsafe<FuncallableInstance_sp>(generic_function)->increment_calls();
+  // Note we use ==. This ensures that if compilation of the dispatcher
+  // calls this function again, we won't initiate another compile.
+  if (calls == COMPILE_TRIGGER)
+    eval::funcall(clos::_sym_force_dispatcher, generic_function);
+  // Regardless of whether we triggered the compile, we next
+  // Dispatch
   Vaslist valist_copy(*args);
   VaList_sp dispatch_args(&valist_copy);
   DTILOG(BF("About to dump incoming args Vaslist\n"));
@@ -418,7 +430,8 @@ CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generi
   DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*dispatch_args));
   T_sp arg;
   uintptr_t stamp;
-  size_t ip = 0;
+  size_t ip = 0; // instruction pointer
+  size_t nargs = dispatch_args->remaining_nargs(); // used in error signalling
   while (1) {
     size_t op = (*program)[ip].unsafe_fixnum();
     DTILOG(BF("ip[%lu]: %lu/%s\n") % ip % op % dtree_op_name(op));
@@ -430,8 +443,9 @@ CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generi
         DTILOG(BF("About to dump dispatch_args Vaslist\n"));
         DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*dispatch_args));
         if (dispatch_args->remaining_nargs() == 0)
-          SIMPLE_ERROR(BF("Not enough arguments to generic function: %s")
-                       % generic_function);
+          // we use an intermediate function, in lisp, to get a nice error message.
+          return core::eval::funcall(clos::_sym_interp_wrong_nargs,
+                                     generic_function, make_fixnum(nargs));
         arg = dispatch_args->next_arg();
         DTILOG(BF("Got arg@%p %s\n") % arg.raw_() % _safe_rep_(arg));
         ++ip;
@@ -596,7 +610,7 @@ CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generi
   }
  DISPATCH_MISS:
   DTILOG(BF("dispatch miss. arg %s stamp %s\n") % arg % stamp);
-  return core::eval::funcall(clos::_sym_dispatch_miss,generic_function,args);
+  return core::eval::funcall(clos::_sym_dispatch_miss_va,generic_function,args);
 }
 
 SYMBOL_EXPORT_SC_(ClosPkg,codegen_dispatcher);
@@ -605,7 +619,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,generic_function_name);
 
   CL_DEFUN void core__verify_funcallable_instance_layout(size_t funcallableInstance_size, size_t funcallableInstance_rack_offset)
   {
-    if (funcallableInstance_size!=sizeof(FuncallableInstance_O)) SIMPLE_ERROR(BF("The cmpintrinsics.lsp funcallableInstance_size %lu does not match sizeof(FuncallableInstance_O)") % funcallableInstance_size % sizeof(FuncallableInstance_O));
+    if (funcallableInstance_size!=sizeof(FuncallableInstance_O)) SIMPLE_ERROR(BF("The cmpintrinsics.lsp funcallableInstance_size %lu does not match sizeof(FuncallableInstance_O) %lu") % funcallableInstance_size % sizeof(FuncallableInstance_O));
     if (funcallableInstance_rack_offset!=offsetof(FuncallableInstance_O,_Rack))
       SIMPLE_ERROR(BF("funcallableInstance_rack_offset %lu does not match offsetof(_Rack,FuncallableInstance_O) %lu") % funcallableInstance_rack_offset % offsetof(FuncallableInstance_O,_Rack));
   }

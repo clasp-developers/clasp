@@ -32,6 +32,7 @@
              (lambda-name-info (find 'core:lambda-name dspecs :key (lambda (cst) (cst:raw (cst:first cst)))))
              (lambda-name (if lambda-name-info
                               (car (cdr (cst:raw lambda-name-info)))))
+             (cmp:*track-inlinee-name* (cons lambda-name cmp:*track-inlinee-name*))
              (original-lambda-list (if lambda-list (cst:raw lambda-list) nil))
              (rest-position (position '&rest original-lambda-list))
              ;; ditto FIXME in c-g-a version
@@ -40,10 +41,10 @@
         (unless lambda-name (setq lambda-name 'lambda))
         ;; Define the function-scope-info object and bind it to
         ;; the *current-function-scope-info* object
-        (let ((origin (or (and (cst:source body)
-                               (let ((source (cst:source body)))
-                                 (if (consp source) (car source) source)))
-                          core:*current-source-pos-info*))
+        (let ((origin (let ((source (cst:source body)))
+                        (cond ((consp source) (car source))
+                              ((null source) core:*current-source-pos-info*)
+                              (t source))))
               (function-ast (call-next-method)))
             ;; Make the change here to a named-function-ast with lambda-name
             (change-class function-ast 'clasp-cleavir-ast:named-function-ast

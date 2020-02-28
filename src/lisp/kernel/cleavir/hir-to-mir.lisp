@@ -39,6 +39,23 @@
                 :outputs nil))
 
 
+(defmethod cleavir-hir-to-mir:specialize ((instr clasp-cleavir-hir:cas-car-instruction)
+                                          (impl clasp-cleavir:clasp) proc os)
+  (declare (ignore proc os))
+  (change-class instr 'cc-mir:memcas2-instruction
+                :inputs (cleavir-ir:inputs instr)
+                :offset (- cmp:+cons-car-offset+ cmp:+cons-tag+)
+                :outputs (cleavir-ir:outputs instr)))
+
+(defmethod cleavir-hir-to-mir:specialize ((instr clasp-cleavir-hir:cas-cdr-instruction)
+                                          (impl clasp-cleavir:clasp) proc os)
+  (declare (ignore proc os))
+  (change-class instr 'cc-mir:memcas2-instruction
+                :inputs (cleavir-ir:inputs instr)
+                :offset (- cmp:+cons-cdr-offset+ cmp:+cons-tag+)
+                :outputs (cleavir-ir:outputs instr)))
+
+
 (defmethod cleavir-hir-to-mir:specialize ((instr cleavir-ir:fetch-instruction)
                                           (impl clasp-cleavir:clasp) proc os)
   (let ((env (first (cleavir-ir:inputs instr)))

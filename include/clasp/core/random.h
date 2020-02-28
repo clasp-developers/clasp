@@ -28,6 +28,8 @@ THE SOFTWARE.
 #define _core_random_H_
 
 #include <boost/multiprecision/gmp.hpp>
+// bug from lack of sync sync between GMP and boost versions
+#define _mp_size mp11::mp_size
 #include <boost/multiprecision/random.hpp>
 #include <boost/random.hpp>
 

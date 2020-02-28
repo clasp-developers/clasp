@@ -56,9 +56,8 @@
       (let ((csi (core:file-scope
                   (core:source-pos-info-file-handle csp))))
         (make-source-location
-         :pathname (core:file-scope-source-debug-pathname csi)
-         :offset (+ (core:file-scope-source-debug-offset csi)
-                    (core:source-pos-info-filepos csp)))))))
+         :pathname (core:file-scope-pathname csi)
+         :offset (core:source-pos-info-filepos csp))))))
 
 ;;; Method combinations don't have source positions. In fact,
 ;;; they don't even exist as objects globally. The only global

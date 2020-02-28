@@ -56,21 +56,21 @@ class Symbol_O : public General_O {
   struct metadata_bootstrap_class {};
   struct metadata_gc_do_not_move {};
 
-public:
-  // This MUST match the layout for %sym% in cmpintrinsics.lsp and the sanity check core__symbol_layout_sanity_check
+ public: // FIXME: Probably oughta be private.
+  // This MUST match the layout for %sym% in cmpintrinsics.lsp and the sanity check core__verify_symbol_layout
   SimpleString_sp _Name;
   std::atomic<T_sp> _HomePackage; // NIL or Package
-  T_sp _GlobalValue;
-  Function_sp _Function;
-  Function_sp _SetfFunction;
+  std::atomic<T_sp> _GlobalValue;
+  std::atomic<Function_sp> _Function;
+  std::atomic<Function_sp> _SetfFunction;
   mutable std::atomic<uint32_t> _BindingIdx;
-  uint32_t  _Flags;
-  List_sp   _PropertyList;
+  std::atomic<uint32_t>  _Flags;
+  std::atomic<T_sp>   _PropertyList;
 
-private:
   friend class Instance_O;
   friend class Package_O;
   friend class CoreExposer;
+  friend void core__verify_symbol_layout(T_sp);
   LISP_CLASS(core, ClPkg, Symbol_O, "Symbol",General_O);
 
 public:
@@ -84,46 +84,37 @@ public:
   static Symbol_sp create(SimpleString_sp snm) {
   // This is used to allocate roots that are pointed
   // to by global variable _sym_XXX  and will never be collected
-    Symbol_sp n = gctools::GC<Symbol_O>::root_allocate(true);
+    Symbol_sp n = gctools::GC<Symbol_O>::allocate(true);
     n->setf_name(snm);
     n->fmakunbound();
     n->fmakunbound_setf();
 //    ASSERTF(nm != "", BF("You cannot create a symbol without a name"));
     return n;
   };
-public:
+ public:
   string formattedName(bool prefixAlways) const;
-public:
+ private:
+  inline uint32_t getFlags() const { return _Flags.load(std::memory_order_relaxed); }
+  inline void setFlag(bool flag, uint32_t n) {
+    if (flag) _Flags.fetch_or(n, std::memory_order_relaxed);
+    else _Flags.fetch_and(~n, std::memory_order_relaxed);
+  }
+ public: // Flags access
+  bool macroP() const { return !!(getFlags() & IS_MACRO);};
+  void setf_macroP(bool m) { setFlag(m, IS_MACRO); }
+  bool getReadOnly() const { return !!(getFlags() & IS_CONSTANT); }
+  void setReadOnly(bool m) { setFlag(m, IS_CONSTANT); }
+  bool specialP() const { return !!(getFlags() & IS_SPECIAL);};
+  void setf_specialP(bool m) { setFlag(m, IS_SPECIAL); }
+  void makeSpecial(); // TODO: Redundant, remove?
+ public: // Hashing
   void sxhash_(HashGenerator &hg) const;
-  void sxhash_equal(HashGenerator &hg,LocationDependencyPtrT ptr) const;
-  void sxhash_equalp(HashGenerator &hg,LocationDependencyPtrT ptr) const {this->sxhash_equal(hg,ptr);};
-  
+  void sxhash_equal(HashGenerator &hg) const;
+  void sxhash_equalp(HashGenerator &hg) const {this->sxhash_equal(hg);};
+
+ public: // Miscellaneous
   bool isKeywordSymbol();
   Symbol_sp asKeywordSymbol();
-
-  bool macroP() const { return !!(this->_Flags&IS_MACRO);};
-  void setf_macroP(bool m) {
-    if (m) this->_Flags = this->_Flags|IS_MACRO;
-    else this->_Flags = this->_Flags&(~IS_MACRO);
-  }
-  
-  
-  /*! Return a pointer to the value cell */
-  inline T_sp *valueReference(T_sp* globalValuePtr) {
-#ifdef CLASP_THREADS
-    return my_thread->_Bindings.reference_raw(this,globalValuePtr);
-#else
-    return globalValuePtr;
-#endif
-  };
-
-  inline const T_sp *valueReference(const T_sp* globalValuePtr) const {
-#ifdef CLASP_THREADS
-    return my_thread->_Bindings.reference_raw(this,globalValuePtr);
-#else
-    return globalValuePtr;
-#endif
-  };
 
   void setf_name(SimpleString_sp nm) { this->_Name = nm; };
 
@@ -132,54 +123,101 @@ public:
   T_sp find_class();
   ClassHolder_sp find_class_holder();
 #endif
-  List_sp plist() const { return this->_PropertyList; };
-  void setf_plist(List_sp plist);
+  List_sp plist() const {
+    return gc::As_unsafe<List_sp>(_PropertyList.load(std::memory_order_relaxed));
+  }
+  void setf_plist(List_sp plist) {
+    _PropertyList.store(plist, std::memory_order_relaxed);
+  }
+  List_sp cas_plist(List_sp cmp, List_sp new_plist) {
+    T_sp tcmp = cmp;
+    T_sp tnew_plist = new_plist;
+    this->_PropertyList.compare_exchange_strong(tcmp, tnew_plist);
+    return gc::As<List_sp>(tcmp);
+  }
   
-  bool getReadOnly() const { return !!(this->_Flags&IS_CONSTANT);};
-  void setReadOnly(bool m) {
-    if (m) this->_Flags = this->_Flags|IS_CONSTANT;
-    else this->_Flags = this->_Flags&(~IS_CONSTANT);
-  }
-
-  /*! Return true if the symbol is dynamic/special */
-  bool specialP() const { return !!(this->_Flags&IS_SPECIAL);};
-  void setf_specialP(bool m) {
-    if (m) this->_Flags = this->_Flags|IS_SPECIAL;
-    else this->_Flags = this->_Flags&(~IS_SPECIAL);
-  }
-
   Symbol_sp copy_symbol(T_sp copy_properties) const;
   bool isExported();
 
   void symbolUnboundError() const;
+
+ public: // value slot access
+
+  inline T_sp globalValue() const { return _GlobalValue.load(std::memory_order_relaxed); }
+  inline void set_globalValue(T_sp val) { _GlobalValue.store(val, std::memory_order_relaxed); }
+  inline T_sp cas_globalValue(T_sp cmp, T_sp new_value) {
+    _GlobalValue.compare_exchange_strong(cmp, new_value);
+    return cmp;
+  }
+
+  inline T_sp threadLocalSymbolValue() const {
+#ifdef CLASP_THREADS
+    return my_thread->_Bindings.thread_local_value(this);
+#else
+    return globalValue();
+#endif
+  }
+
+  inline void set_threadLocalSymbolValue(T_sp value) {
+#ifdef CLASP_THREADS
+    my_thread->_Bindings.set_thread_local_value(value, this);
+#else
+    set_globalValue(value);
+#endif
+  }
+
+  // As of now this is a sham operation in that it doesn't do anything atomically,
+  // since bindings are thread-local anyway.
+  // However, if like SBCL we were to make local special bindings accessible from other
+  // threads at some point, we would need to do an actual CAS.
+  inline T_sp cas_threadLocalSymbolValue(T_sp cmp, T_sp new_value) {
+    T_sp old = threadLocalSymbolValue();
+    if (old == cmp)
+      set_threadLocalSymbolValue(new_value);
+    return old;
+  }
+
+  /*! Return the value slot of the symbol or UNBOUND if unbound */
+  inline T_sp symbolValueUnsafe() const {
+#ifdef CLASP_THREADS
+    if (my_thread->_Bindings.thread_local_boundp(this))
+      return my_thread->_Bindings.thread_local_value(this);
+    else
+#endif
+      return globalValue();
+  };
   
   /*! Return the value slot of the symbol - throws if unbound */
   inline T_sp symbolValue() const {
-    T_sp val = *this->valueReference(&(this->_GlobalValue));
+    T_sp val = symbolValueUnsafe();
     if (val.unboundp()) this->symbolUnboundError();
     return val;
   }
 
+  inline T_sp casSymbolValue(T_sp cmp, T_sp new_value) {
+#ifdef CLASP_THREADS
+    if (my_thread->_Bindings.thread_local_boundp(this))
+      return cas_threadLocalSymbolValue(cmp, new_value);
+    else
+#endif
+      return cas_globalValue(cmp, new_value);
+  }
+
   inline T_sp symbolValueFromCell(Cons_sp cell, T_sp unbound_marker) const {
-    T_sp val = *this->valueReference(&(CONS_CAR(cell)));
+    T_sp val = symbolValueUnsafe();
+    if (val.unboundp()) val = CONS_CAR(cell);
     // FIXME: SICL allows many unbound values, but we don't even pick one properly,
     // i.e. we just check for both rather than checking TLS.unboundp() and global.eq(marker).
     if (val.unboundp() || val == unbound_marker) this->symbolUnboundError();
     return val;
   }
 
-  /*! Return the address of the value slot of the symbol */
-  inline T_sp &symbolValueRef() { return *this->valueReference(&this->_GlobalValue);};
-
-  /*! Return the value slot of the symbol or UNBOUND if unbound */
-  inline T_sp symbolValueUnsafe() const { return *this->valueReference(&this->_GlobalValue); };
-
-  void makeSpecial();
-
-  inline bool boundP() const { return !(*this->valueReference(&this->_GlobalValue)).unboundp(); };
+  inline bool boundP() const { return !(symbolValueUnsafe().unboundp()); };
 
   inline bool boundPFomCell(Cons_sp cell) {
-    return !(*this->valueReference(&(CONS_CAR(cell)))).unboundp();
+    T_sp val = symbolValueUnsafe();
+    if (val.unboundp()) val = CONS_CAR(cell);
+    return !(val.unboundp());
   }
 
   Symbol_sp makunbound();
@@ -189,38 +227,51 @@ public:
   T_sp defconstant(T_sp obj);
 
   inline T_sp setf_symbolValue(T_sp obj) {
-    *this->valueReference(&this->_GlobalValue) = obj;
+#ifdef CLASP_THREADS
+    if (my_thread->_Bindings.thread_local_boundp(this))
+      set_threadLocalSymbolValue(obj);
+    else
+#endif
+      set_globalValue(obj);
     return obj;
   }
 
   inline T_sp setf_symbolValueFromCell(T_sp val, Cons_sp cell) {
-    *this->valueReference(&(CONS_CAR(cell))) = val;
+#ifdef CLASP_THREADS
+    if (my_thread->_Bindings.thread_local_boundp(this))
+      set_threadLocalSymbolValue(val);
+    else
+#endif
+      CONS_CAR(cell) = val;
     return val;
   }
 
+ public: // function value slots access
+
   void fmakunbound();
   
-  void setSetfFdefinition(Function_sp fn) { this->_SetfFunction = fn; };
-  inline Function_sp getSetfFdefinition() { return this->_SetfFunction; };
+  void setSetfFdefinition(Function_sp fn) { _SetfFunction.store(fn, std::memory_order_relaxed); }
+  inline Function_sp getSetfFdefinition() const { return _SetfFunction.load(std::memory_order_relaxed); }
   bool fboundp_setf() const;
   void fmakunbound_setf();
   
-
   /*! Set the global function value of this symbol */
   void setf_symbolFunction(Function_sp exec);
 
   /*! Return the global bound function */
-  inline Function_sp symbolFunction() const { return this->_Function; };
+  inline Function_sp symbolFunction() const { return _Function.load(std::memory_order_relaxed); }
 
   /*! Return true if the symbol has a function bound*/
   bool fboundp() const;
+
+ public: // packages, the name, misc
 
   string symbolNameAsString() const;
 
   SimpleString_sp symbolName() const { return this->_Name; };
 
   T_sp getPackage() const;
-  T_sp homePackage() const { return this->getPackage(); };
+  T_sp homePackage() const { return this->getPackage(); }
   void setPackage(T_sp p);
 
   /*! Return the name of the symbol with the package prefix
@@ -267,7 +318,7 @@ public: // ctor/dtor for classes with shared virtual base
 public:
   explicit Symbol_O();
   virtual ~Symbol_O(){
-#ifdef CLASP_THREAD
+#ifdef CLASP_THREADS
     if (this->_BindingIdx.load() != NO_THREAD_LOCAL_BINDINGS) {
       my_thread->_Bindings.release_binding_index(this->_BindingIdx.load());
     }

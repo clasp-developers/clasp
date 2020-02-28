@@ -59,6 +59,7 @@ contiguous block."
              (error "MAKE-ARRAY: Cannot supply both :INITIAL-ELEMENT and :INITIAL-CONTENTS"))
            #| initial element was filled on construction|#)
           (initial-contents-supplied-p
+           ;; Defined in seqlib.lsp, later.
            (fill-array-with-seq x initial-contents)))
     x))
 
@@ -104,35 +105,7 @@ contiguous block."
        (when (and displaced-to initial-element-supplied-p)
          (fill-array-with-elt x initial-element 0 nil))
        x))
-    (t (error "Illegal dimensions ~a for make-array" dimensions ))))
-
-(defun fill-array-with-seq (array initial-contents)
-  (declare (array array)
-           (sequence initial-contents)
-           (optimize (safety 0)))
-  (labels ((iterate-over-contents (array contents dims written)
-	     (declare (fixnum written)
-		      (array array)
-		      (optimize (safety 0)))
-	     (when (/= (length contents) (first dims))
-	       (error "In MAKE-ARRAY: the elements in :INITIAL-CONTENTS do not match the array dimensions"))
-	     (if (= (length dims) 1)
-		 (do* ((it (make-seq-iterator contents) (seq-iterator-next contents it)))
-		      ((null it))
-		   (sys:row-major-aset array written (seq-iterator-ref contents it))
-		   (incf written))
-		 (do* ((it (make-seq-iterator contents) (seq-iterator-next contents it)))
-		      ((null it))
-		   (setf written (iterate-over-contents array
-							(seq-iterator-ref contents it)
-							(rest dims)
-							written))))
-	     written))
-    (let ((dims (array-dimensions array)))
-      (if dims
-	  (iterate-over-contents array initial-contents dims 0)
-	  (setf (aref array) initial-contents))))
-  array)
+    (t (error "Illegal dimensions ~a for make-array" dimensions))))
 
 (defun array-in-bounds-p (array &rest indices)
   "Args: (array &rest indexes)
@@ -203,147 +176,122 @@ Returns the specified bit in SIMPLE-BIT-ARRAY."
   (check-type bit-array (simple-array bit))
   (row-major-aref bit-array (row-major-index-inner bit-array indices)))
 
-(defun handle-empty-bitarrray (empty-bitarray-1 empty-bitarray-2 result-bit-array operation)
-  (let* ((bit1 (row-major-aref empty-bitarray-1 0))
-         (bit2 (if empty-bitarray-2
-                   (row-major-aref empty-bitarray-2 0)
-                   nil))
-         (initial-element
-          (ecase operation
-            (bit-not (if (= bit1 0)
-                         1
-                         0))
-            (bit-and (if (or (= bit1 0)(= bit2 0))
-                         0
-                         1))
-            (bit-ior (if (and (= bit1 0)(= bit2 0))
-                         0
-                         1))
-            (bit-xor (if (or (and (= bit1 0)(= bit2 0))
-                             (and (= bit1 1)(= bit2 1)))
-                         0
-                         1))
-            (bit-eqv (if (or (and (= bit1 0)(= bit2 0))
-                             (and (= bit1 1)(= bit2 1)))
-                         1
-                         0))
-            (bit-nand (if (and (= bit1 1)(= bit2 1))
-                          0
-                          1))
-            (bit-nor (if (and (= bit1 0)(= bit2 0))
-                         1
-                         0))
-            (bit-andc1 (if (and (= bit1 0)(= bit2 1))
-                           1
-                           0))
-            (bit-andc2 (if (and (= bit1 1)(= bit2 0))
-                           1
-                           0))
-            (bit-orc1 (if (and (= bit1 1)(= bit2 0))
-                          0
-                          1))
-            (bit-orc2 (if (and (= bit1 0)(= bit2 1))
-                          0
-                          1))
-            )))
-    (cond ((null result-bit-array)
-           (make-array  nil :element-type 'bit :initial-element initial-element))
-          ((eql result-bit-array t)
-           (setf (row-major-aref empty-bitarray-1 0) initial-element)
-           empty-bitarray-1)
-          ((and (typep result-bit-array '(SIMPLE-ARRAY BIT NIL))
-                (zerop (array-rank result-bit-array)))
-           (setf (row-major-aref result-bit-array 0) initial-element)
-           result-bit-array)
-          (t (error 'SIMPLE-TYPE-ERROR
-                    :DATUM result-bit-array
-                    :EXPECTED-TYPE '(SIMPLE-ARRAY BIT NIL)
-                    :FORMAT-CONTROL "Bad argument ~S to bit operation ~S"
-                    :FORMAT-ARGUMENTS (list result-bit-array operation))))))
+(defmacro with-array-data (((vectorname vector) indexname) &body body)
+  `(let ((,vectorname ,vector) (,indexname 0))
+     (cond ((core:data-vector-p ,vectorname))
+           ((arrayp ,vectorname)
+            (tagbody loop
+               (setq ,indexname
+                     (+ ,indexname (%displaced-index-offset ,vectorname))
+                     ,vectorname (%displacement ,vectorname))
+               (if (core:data-vector-p ,vectorname) (go done) (go loop))
+             done))
+           (t (signal-type-error ,vectorname 'array)))
+     ,@body))
 
-(defmacro generate-bit-array-function (bit-array1 bit-array2 bit-operation boole-operation &optional result-bit-array)
-  `(if (and (zerop (array-rank ,bit-array1)) (zerop (array-rank ,bit-array2)))
-      (handle-empty-bitarrray ,bit-array1 ,bit-array2 ,result-bit-array (quote ,bit-operation))
-      (bit-array-op ,boole-operation ,bit-array1 ,bit-array2 ,result-bit-array)))
+;;; (equal (array-dimensions a1) (array-dimensions a2)), but without consing
+(defun check-array-dims-match (array1 array2)
+  (let ((r1 (array-rank array1)) (r2 (array-rank array2)))
+    ;; This exits the function early if dimensions match.
+    (when (= r1 r2)
+      (dotimes (i r1 (return-from check-array-dims-match))
+        (unless (= (array-dimension array1 i) (array-dimension array2 i))
+          (return))))
+    (error "~s and ~s don't have the same dimensions." array1 array2)))
 
-(defun bit-and (bit-array1 bit-array2 &optional result-bit-array)
+;;; Handle the optional argument to bit-and et al.
+(defun pick-result-array (result array1)
+  (cond ((null result)
+         (make-array (array-dimensions array1) :element-type 'bit))
+        ((eq result t) array1)
+        ((typep result '(array bit))
+         (check-array-dims-match result array1)
+         result)))
+
+(defmacro def-bit-array-function (name simple-name logop doc)
+  `(defun ,name (bit-array1 bit-array2 &optional opt-arg)
+     ,doc
+     (let ((result (pick-result-array opt-arg bit-array1))
+           (length (array-total-size bit-array1)))
+       (check-array-dims-match bit-array1 bit-array2)
+       (with-array-data ((b1 bit-array1) b1o)
+         (with-array-data ((b2 bit-array2) b2o)
+           (with-array-data ((r result) ro)
+             (if (and (zerop b1o) (zerop b2o) (zerop ro))
+                 (,simple-name b1 b2 r length)
+                 (dotimes (i length)
+                   (setf (sbit r (+ i ro))
+                         (logand #b1 ; get the low bit only
+                                 (,logop (sbit b1 (+ i b1o)) (sbit b2 (+ i b2o))))))))))
+       result)))
+
+;; FIXME: Docstring is redundant, but we don't have FORMAT or CONCATENATE yet.
+(def-bit-array-function bit-and core:sbv-bit-and logand
   "Args: (bit-array1 bit-array2 &optional (result nil))
 Returns the element-wise AND of BIT-ARRAY1 and BIT-ARRAY2.  Puts the results
 into a new bit-array if RESULT is NIL, into BIT-ARRAY1 if RESULT is T, or into
-RESULT if RESULT is a bit-array."
-  (generate-bit-array-function bit-array1 bit-array2 bit-and boole-and result-bit-array))
-
-(defun bit-ior (bit-array1 bit-array2 &optional result-bit-array)
+RESULT if RESULT is a bit-array.")
+(def-bit-array-function bit-ior core:sbv-bit-ior logior
   "Args: (bit-array1 bit-array2 &optional (result nil))
 Returns the element-wise INCLUSIVE OR of BIT-ARRAY1 and BIT-ARRAY2.  Puts the
 results into a new bit-array if RESULT is NIL, into BIT-ARRAY1 if RESULT is T,
-or into RESULT if RESULT is a bit-array."
-  (generate-bit-array-function bit-array1 bit-array2 bit-ior boole-ior result-bit-array))
-
-(defun bit-xor (bit-array1 bit-array2 &optional result-bit-array)
+or into RESULT if RESULT is a bit-array.")
+(def-bit-array-function bit-xor core:sbv-bit-xor logxor
   "Args: (bit-array1 bit-array2 &optional (result nil))
 Returns the element-wise EXCLUSIVE OR of BIT-ARRAY1 and BIT-ARRAY2.  Puts the
 results into a new bit-array if RESULT is NIL, into BIT-ARRAY1 if RESULT is T,
-or into RESULT if RESULT is a bit-array."
-  (generate-bit-array-function bit-array1 bit-array2 bit-xor boole-xor result-bit-array))
-
-(defun bit-eqv (bit-array1 bit-array2 &optional result-bit-array)
+or into RESULT if RESULT is a bit-array.")
+(def-bit-array-function bit-eqv core:sbv-bit-eqv logeqv
   "Args: (bit-array1 bit-array2 &optional (result nil))
 Returns the element-wise EQUIVALENCE of BIT-ARRAY1 and BIT-ARRAY2.  Puts the
 results into a new bit-array if RESULT is NIL, into BIT-ARRAY1 if RESULT is T,
-or into RESULT if RESULT is a bit-array."
-  (generate-bit-array-function bit-array1 bit-array2 bit-eqv boole-eqv result-bit-array))
-
-(defun bit-nand (bit-array1 bit-array2 &optional result-bit-array)
+or into RESULT if RESULT is a bit-array.")
+(def-bit-array-function bit-nand core:sbv-bit-nand lognand
   "Args: (bit-array1 bit-array2 &optional (result nil))
 Returns the element-wise NOT of {the element-wise AND of BIT-ARRAY1 and BIT-
 ARRAY2}.  Puts the results into a new bit-array if RESULT is NIL, into BIT-
-ARRAY1 if RESULT is T, or into RESULT if RESULT is a bit-array."
-  (generate-bit-array-function bit-array1 bit-array2 bit-nand boole-nand result-bit-array))
-
-(defun bit-nor (bit-array1 bit-array2 &optional result-bit-array)
+ARRAY1 if RESULT is T, or into RESULT if RESULT is a bit-array.")
+(def-bit-array-function bit-nor core:sbv-bit-nor lognor
   "Args: (bit-array1 bit-array2 &optional (result nil))
 Returns the element-wise NOT of {the element-wise INCLUSIVE OR of BIT-ARRAY1
 and BIT-ARRAY2}.  Puts the results into a new bit-array if RESULT is NIL, into
-BIT-ARRAY1 if RESULT is T, or into RESULT if RESULT is a bit-array."
-  (generate-bit-array-function bit-array1 bit-array2 bit-nor boole-nor result-bit-array))
-
-(defun bit-andc1 (bit-array1 bit-array2 &optional result-bit-array)
+BIT-ARRAY1 if RESULT is T, or into RESULT if RESULT is a bit-array.")
+(def-bit-array-function bit-andc1 core:sbv-bit-andc1 logandc1
   "Args: (bit-array1 bit-array2 &optional (result nil))
 Returns the element-wise AND of {the element-wise NOT of BIT-ARRAY1} and BIT-
 ARRAY2.  Puts the results into a new bit-array if RESULT is NIL, into BIT-
-ARRAY1 if RESULT is T, or into RESULT if RESULT is a bit-array."
-  (generate-bit-array-function bit-array1 bit-array2 bit-andc1 boole-andc1 result-bit-array))
-
-(defun bit-andc2 (bit-array1 bit-array2 &optional result-bit-array)
+ARRAY1 if RESULT is T, or into RESULT if RESULT is a bit-array.")
+(def-bit-array-function bit-andc2 core:sbv-bit-andc2 logandc2
   "Args: (bit-array1 bit-array2 &optional (result nil))
 Returns the element-wise AND of BIT-ARRAY1 and {the element-wise NOT of BIT-
 ARRAY2}.  Puts the results into a new bit-array if RESULT is NIL, into BIT-
-ARRAY1 if RESULT is T, or into RESULT if RESULT is a bit-array."
-  (generate-bit-array-function bit-array1 bit-array2 bit-andc2 boole-andc2 result-bit-array))
-
-(defun bit-orc1 (bit-array1 bit-array2 &optional result-bit-array)
+ARRAY1 if RESULT is T, or into RESULT if RESULT is a bit-array.")
+(def-bit-array-function bit-orc1 core:sbv-bit-orc1 logorc1
   "Args: (bit-array1 bit-array2 &optional (result nil))
 Returns the element-wise INCLUSIVE OR of {the element-wise NOT of BIT-ARRAY1}
 and BIT-ARRAY2.  Puts the results into a new bit-array if RESULT is NIL, into
-BIT-ARRAY1 if RESULT is T, or into RESULT if RESULT is a bit-array."
-  (generate-bit-array-function bit-array1 bit-array2 bit-orc1 boole-orc1 result-bit-array))
-
-(defun bit-orc2 (bit-array1 bit-array2 &optional result-bit-array)
+BIT-ARRAY1 if RESULT is T, or into RESULT if RESULT is a bit-array.")
+(def-bit-array-function bit-orc2 core:sbv-bit-orc2 logorc2
   "Args: (bit-array1 bit-array2 &optional (result nil))
 Returns the element-wise INCLUSIVE OR of BIT-ARRAY1 and {the element-wise NOT
 of BIT-ARRAY2}.  Puts the results into a new bit-array if RESULT is NIL, into
-BIT-ARRAY1 if RESULT is T, or into RESULT if RESULT is a bit-array."
-  (generate-bit-array-function bit-array1 bit-array2 bit-orc2 boole-orc2 result-bit-array))
+BIT-ARRAY1 if RESULT is T, or into RESULT if RESULT is a bit-array.")
 
 (defun bit-not (bit-array &optional result-bit-array)
   "Args: (bit-array &optional (result nil))
 Returns the element-wise NOT of BIT-ARRAY.  Puts the results into a new bit-
 array if RESULT is NIL, into BIT-ARRAY if RESULT is T, or into RESULT if
 RESULT is a bit-array."
-  (if (zerop (array-rank bit-array))
-      (handle-empty-bitarrray bit-array nil result-bit-array 'bit-not)
-      (bit-array-op boole-c1 bit-array bit-array result-bit-array)))
+  (let ((result (pick-result-array result-bit-array bit-array))
+        (length (array-total-size bit-array)))
+    (with-array-data ((b bit-array) bo)
+      (with-array-data ((r result) ro)
+        (if (and (zerop bo) (zerop ro))
+            (core:sbv-bit-not b r length)
+            (dotimes (i length)
+              (setf (sbit r (+ i ro))
+                    (logand #b1 (lognot (sbit b (+ i bo)))))))))
+    result))
 
 (defun vector-pop (vector)
   "Args: (vector)

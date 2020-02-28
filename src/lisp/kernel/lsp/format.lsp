@@ -556,29 +556,53 @@
   `#',(%formatter control-string))
 
 (defun %formatter (control-string)
-  (block nil
-    (catch 'need-orig-args
-      (let* ((*simple-args* nil)
-	     (*only-simple-args* t)
-	     (guts (expand-control-string control-string))
-	     (args nil))
-	(dolist (arg *simple-args*)
-	  (push `(,(car arg)
-		  (error
-		   'format-error
-		   :complaint "Required argument missing"
-		   :control-string ,control-string
-		   :offset ,(cdr arg)))
-		args))
-	(return `(lambda (stream &optional ,@args &rest args)
-		   ,guts
-		   args))))
-    (let ((*orig-args-available* t)
-	  (*only-simple-args* nil))
+  (multiple-value-bind (guts variables)
+      (%formatter-guts control-string)
+    (%formatter-lambda control-string guts variables)))
+
+(defun %formatter-lambda (control-string guts variables)
+  (if (eq variables 't)
+      ;; need the original args
       `(lambda (stream &rest orig-args)
-	 (let ((args orig-args))
-	   ,(expand-control-string control-string)
-	   args)))))
+         (let ((args orig-args))
+           ,guts
+           args))
+      ;; happy day, we can use simple args
+      `(lambda (stream
+                &optional ,@(simple-formatter-params
+                             control-string variables)
+                &rest args)
+         ,guts
+         args)))
+
+;;; Return (values form variables), where variables is either
+;;; a list of (symbol . offset) entries, or T if orig-args are required.
+(defun %formatter-guts (control-string)
+  ;; First try without the original args.
+  (catch 'need-orig-args
+    (let* ((*simple-args* nil) (*only-simple-args* t)
+           (guts (expand-control-string control-string)))
+      (return-from %formatter-guts
+        (values guts (nreverse *simple-args*)))))
+  ;; Failing that,
+  (let ((*orig-args-available* t)
+        (*only-simple-args* nil))
+    (values (expand-control-string control-string) t)))
+
+(defun simple-formatter-params (control-string args)
+  (mapcar (lambda (arg) (simple-formatter-param control-string arg))
+          args))
+
+;;; Return an optional parameter corresponding to a simple arg.
+(defun simple-formatter-param (control-string arg)
+  `(,(car arg)
+    ,(simple-formatter-param-err-form control-string (cdr arg))))
+
+(defun simple-formatter-param-err-form (control-string offset)
+  `(error 'format-error
+          :complaint "Required argument missing"
+          :control-string ,control-string
+          :offset ,offset))
 
 (defun expand-control-string (string)
   (let* ((string (etypecase string
@@ -1713,27 +1737,29 @@
 ;;;; Tab and simple pretty-printing noise.
 
 (def-format-directive #\T (colonp atsignp params)
-  (check-output-layout-mode 1)
-  (if colonp
-      (expand-bind-defaults ((n 1) (m 1)) params
-	`(pprint-tab ,(if atsignp :section-relative :section)
-		     ,n ,m stream))
-      (if atsignp
-	  (expand-bind-defaults ((colrel 1) (colinc 1)) params
-	    `(format-relative-tab stream ,colrel ,colinc))
-	  (expand-bind-defaults ((colnum 1) (colinc 1)) params
-	    `(format-absolute-tab stream ,colnum ,colinc)))))
+  (cond (colonp
+         (check-output-layout-mode 1)
+         (expand-bind-defaults ((n 1) (m 1)) params
+                               `(pprint-tab ,(if atsignp :section-relative :section)
+                                            ,n ,m stream)))
+        (atsignp
+         (expand-bind-defaults ((colrel 1) (colinc 1)) params
+                               `(format-relative-tab stream ,colrel ,colinc)))
+        (t
+         (expand-bind-defaults ((colnum 1) (colinc 1)) params
+                               `(format-absolute-tab stream ,colnum ,colinc)))))
 
 (def-format-interpreter #\T (colonp atsignp params)
-  (check-output-layout-mode 1)
-  (if colonp
-      (interpret-bind-defaults ((n 1) (m 1)) params
-	(pprint-tab (if atsignp :section-relative :section) n m stream))
-      (if atsignp
-	  (interpret-bind-defaults ((colrel 1) (colinc 1)) params
-	    (format-relative-tab stream colrel colinc))
-	  (interpret-bind-defaults ((colnum 1) (colinc 1)) params
-	    (format-absolute-tab stream colnum colinc)))))
+  (cond (colonp
+         (check-output-layout-mode 1)
+         (interpret-bind-defaults ((n 1) (m 1)) params
+                                  (pprint-tab (if atsignp :section-relative :section) n m stream)))
+        (atsignp
+         (interpret-bind-defaults ((colrel 1) (colinc 1)) params
+                                  (format-relative-tab stream colrel colinc)))
+        (t
+         (interpret-bind-defaults ((colnum 1) (colinc 1)) params
+                                  (format-absolute-tab stream colnum colinc)))))
 
 (defun output-spaces (stream n)
   (let ((spaces #.(make-string 100 :initial-element #\space)))
@@ -2725,7 +2751,7 @@
 	 (block nil
 	   ,@(let ((*expander-next-arg-macro* 'expander-pprint-next-arg)
 		   (*only-simple-args* nil)
-		   (*orig-args-available* t))
+		   (*orig-args-available* (if atsignp *orig-args-available* t)))
 	       (expand-directive-list insides)))))))
 
 (defun interpret-format-logical-block
@@ -2824,28 +2850,71 @@
     (if (stringp control-string)
         (let ((fun-sym (gensym "FUN"))
               (out-sym (gensym "OUT"))
-              (dest-sym (gensym "DEST"))
-              ;; We call %formatter early because it has the side effect
+              (dest-sym (gensym "DEST")))
+          (multiple-value-bind (guts variables)
+              ;; We call %formatter-guts here because it has the side effect
               ;; of signaling an error if the control string is invalid.
-              (formatter (%formatter control-string)))
-          (check-min/max-format-arguments control-string (length args))
-          `(let ((,fun-sym ,formatter)
-                 (,dest-sym ,destination))
-             (cond
-               ((eq ,dest-sym t)
-                (funcall ,fun-sym *standard-output* ,@args)
-                nil)
-               ((null ,dest-sym)
-                (with-output-to-string (,out-sym)
-                  (funcall ,fun-sym ,out-sym ,@args)))
-               ((stringp ,dest-sym)
-                (with-output-to-string (,out-sym ,dest-sym)
-                  (funcall ,fun-sym ,out-sym ,@args))
-                nil)
-               (t
-                (funcall ,fun-sym ,dest-sym ,@args)
-                nil))))
+              ;; We want to do that before check-min/max-format-arguments.
+              (%formatter-guts control-string)
+            (check-min/max-format-arguments control-string (length args))
+            (let* ((body
+                     (if (eq variables 't)
+                         `(,(%formatter-lambda control-string guts variables)
+                           stream ,@args)
+                         (gen-inline-format control-string guts variables args)))
+                   (dest-constantp (constantp destination env))
+                   (dest (and dest-constantp
+                              (ext:constant-form-value destination env))))
+              ;; If the destination is constant T or NIL, avoid bothering with it
+              ;; at runtime.
+              ;; NOTE: With constant propagation this would be unnecessary.
+              (cond ((and dest-constantp (eq dest nil))
+                     `(with-output-to-string (stream) ,body))
+                    ((eq dest 't) ; must be constant
+                     `(let ((stream *standard-output*)) ,body))
+                    (t
+                     ;; no dice - runtime dispatch
+                     ;; NOTE: If the body exits abnormally, which it can because of
+                     ;; ~// or just argument evaluations, the string stream is not
+                     ;; closed. However unlike normal with-output-to-string, nothing
+                     ;; can refer to it, so hopefully it'll just be GC'd normally.
+                     `(let* ((,dest-sym ,destination)
+                             (stream (cond ((null ,dest-sym)
+                                            (make-string-output-stream))
+                                           ((eq ,dest-sym t) *standard-output*)
+                                           ((stringp ,dest-sym)
+                                            (core:make-string-output-stream-from-string
+                                             ,dest-sym))
+                                           (t ,dest-sym))))
+                        ,body
+                        (if (null ,dest-sym)
+                            (get-output-stream-string stream)
+                            nil)))))))
         whole)))
+
+;;; Given a formatter form that doesn't do anything fancy with arguments,
+;;; expand into some code to execute it with the given args.
+;;; NOTE: If we could inline functions with &optional &rest, this would be
+;;; redundant. At the moment we can't.
+(defun gen-inline-format (control-string guts variables args)
+  (if (> (length variables) (length args))
+      ;; not enough args is special cased.
+      ;; note check-min/max-format-arguments already issued a warning.
+      (let* ((nargs (length args))
+             (first-unsupplied-offset (cdr (nth nargs variables)))
+             (varsyms (mapcar #'car variables))
+             (bound-vars (subseq varsyms 0 nargs)))
+        `(let (,@(mapcar #'list bound-vars args))
+           (declare (ignore ,@bound-vars))
+           ,(simple-formatter-param-err-form control-string
+                                             first-unsupplied-offset)))
+      ;; Normal case
+      (let* ((varsyms (mapcar #'car variables)))
+        `(let (,@(mapcar #'list varsyms args)
+               ;; Remaining arguments are collected in a list.
+               ;; They can be used by e.g. ~@{
+               (args (list ,@(nthcdr (length variables) args))))
+           ,guts))))
 
 ;;;; Compile-time checking of format arguments and control string
 

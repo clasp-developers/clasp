@@ -24,17 +24,6 @@
 (in-package "MP")
 
 #+threads
-(progn
-  (defvar *debug-print-lock* (mp:make-lock :name :debug-print-lock))
-  (defmacro debug-mp (fmt &rest args)
-    `(unwind-protect
-          (progn
-            (get-lock *debug-print-lock*)
-            (format t ,fmt ,@args))
-       (giveup-lock *debug-print-lock*))))
-                   
-
-#+threads
 (defmacro without-interrupts (&body body)
   "Executes BODY with all deferrable interrupts disabled. Deferrable
 interrupts arriving during execution of the BODY take effect after BODY has
@@ -130,8 +119,7 @@ by ALLOW-WITH-INTERRUPTS."
             (progn
               (mp:get-lock ,lock)
               (locally ,@body))
-         (progn
-           (mp:giveup-lock ,lock))))))
+         (mp:giveup-lock ,lock)))))
 
 #+ecl-read-write-lock
 (defmacro with-rwlock ((lock op) &body body)

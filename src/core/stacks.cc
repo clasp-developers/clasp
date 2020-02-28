@@ -116,53 +116,6 @@ void error_InvocationHistoryStack(const InvocationHistoryFrame* frame, const Inv
   abort();
 };
 
-
-
-/*! Return the index of the stack entry with the matching key.
-      If return -1 then the key wasn't found */
-int ExceptionStack::findKey(FrameKind kind, T_sp key) {
-  for (int i(this->_Stack.size() - 1); i >= 0; --i) {
-    if (this->_Stack[i]._FrameKind == kind && this->_Stack[i]._Key == key)
-      return i;
-  }
-  return -1;
-}
-
-Vector_sp ExceptionStack::backtrace() {
-  if (this->_Stack.size() == 0) {
-    return _Nil<Vector_O>();
-  }
-  printf("%s:%d ExceptionStack::backtrace stack size = %zu\n", __FILE__, __LINE__, this->_Stack.size());
-  Vector_sp result = core__make_vector(_Nil<T_O>(), this->_Stack.size(), false, make_fixnum((int)(this->_Stack.size())));
-  for (int i(0), iEnd(this->_Stack.size()); i < iEnd; ++i) {
-    Symbol_sp kind;
-    SYMBOL_EXPORT_SC_(KeywordPkg, catchFrame);
-    SYMBOL_EXPORT_SC_(KeywordPkg, blockFrame);
-    SYMBOL_EXPORT_SC_(KeywordPkg, tagbodyFrame);
-    SYMBOL_EXPORT_SC_(KeywordPkg, landingPadFrame);
-    switch (this->_Stack[i]._FrameKind) {
-    case NullFrame:
-      kind = _Nil<Symbol_O>();
-      break;
-    case CatchFrame:
-      kind = kw::_sym_catchFrame;
-      break;
-    case BlockFrame:
-      kind = kw::_sym_blockFrame;
-      break;
-    case TagbodyFrame:
-      kind = kw::_sym_tagbodyFrame;
-      break;
-    case LandingPadFrame:
-      kind = kw::_sym_landingPadFrame;
-      break;
-    };
-    result->rowMajorAset(i, Cons_O::create(kind, this->_Stack[i]._Key));
-  }
-  return result;
-}
-
-
 void InvocationHistoryFrame::validate() const {
 #if 0
   T_sp res((gctools::Tagged)(((core::T_O**)(this->_args->reg_save_area))[LCC_CLOSURE_REGISTER]));
@@ -229,9 +182,9 @@ string InvocationHistoryFrame::argumentsAsString(int maxWidth) const {
   }
   String_sp strres = gc::As<String_sp>(cl__get_output_stream_string(sout));
   if (cl__length(strres) > maxWidth) {
-    return strres->get().substr(0, maxWidth) + "...";
+    return strres->get_std_string().substr(0, maxWidth) + "...";
   }
-  return strres->get();
+  return strres->get_std_string();
 }
 
 string InvocationHistoryFrame::asStringLowLevel(Closure_sp closure,int index) const {

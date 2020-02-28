@@ -27,6 +27,7 @@ NOINLINE void define_source_info(source_info_kind kind,
     core::Function_sp func = core::coerce::functionDesignator(sym);
     func->setSourcePosInfo(sourceFile, character_offset, line, 0 );
     if (gotdocs) {
+      func->setf_docstring(docs);
       ext__annotate(sym,cl::_sym_documentation,cl::_sym_function, docs);
       ext__annotate(func,cl::_sym_documentation,cl::_sym_function, docs);
     };

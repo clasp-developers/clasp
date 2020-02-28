@@ -16,6 +16,11 @@ GTAGS
 *.a
 *.dylib
 \#*\#
+*.fasl
+*.fasp
+*.faso
+*.dwarf
+*.info
 *.bundle
 *.out
 boost_build_v2/b2

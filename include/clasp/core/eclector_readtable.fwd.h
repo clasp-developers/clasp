@@ -1,9 +1,9 @@
 /*
-    File: useBoostRegex.h
+    File: eclector_readtable.fwd.h
 */
 
 /*
-Copyright (c) 2014, Christian E. Schafmeister
+Copyright (c) 2019, Christian E. Schafmeister
  
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
@@ -24,19 +24,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef _core_useBoostRegex_h
-#define _core_useBoostRegex_h
+#ifndef eclector_readtable_fwd_H
+#define eclector_readtable_fwd_H
 
-// If you need boost::regex, include this file,  it has all the pragmas to suppress warnings set up
+NAMESPACE_PACKAGE_ASSOCIATION(eclector_readtable, EclectorReadtablePkg, "ECLECTOR.READTABLE")
 
-#pragma clang diagnostic push
-#pragma GCC diagnostic ignored "-Wparentheses"
-#pragma GCC diagnostic ignored "-Wchar-subscripts"
-#pragma GCC diagnostic ignored "-Wunused-function"
-// For some reason boost regex uses "tolower" which conflicts with macro
-#undef tolower
-#undef toupper
-#include <boost/regex.hpp>
-#pragma clang diagnostic pop
-
-#endif // _core_useBoostRegex_H
+#endif

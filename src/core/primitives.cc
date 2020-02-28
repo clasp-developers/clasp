@@ -411,8 +411,9 @@ CL_DEFUN void core__dump_tagged_fixnum(T_sp val) {
 }
 
 CL_DOCSTRING(R"doc(Return a string representing the llvm version (eg: 3.6.0))doc");
-CL_DEFUN T_sp ext__llvm_version() {
-  return core::SimpleBaseString_O::make(LLVM_VERSION);
+CL_DEFUN T_mv ext__llvm_version() {
+#define CXX_MACRO_STRING(var) #var
+  return Values(core::SimpleBaseString_O::make(CXX_MACRO_STRING(LLVM_VERSION)),clasp_make_single_float(LLVM_VERSION));
 }
 
 
@@ -543,11 +544,11 @@ CL_DEFUN Symbol_sp core__function_block_name(T_sp functionName) {
 CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("validFunctionNameP");
-CL_DEFUN T_mv core__valid_function_name_p(T_sp arg) {
+CL_DEFUN T_sp core__valid_function_name_p(T_sp arg) {
   T_sp name = functionBlockName(arg);
   if (name.nilp())
-    return (Values(_Nil<T_O>()));
-  return (Values(_lisp->_true()));
+    return _Nil<T_O>();
+  return _lisp->_true();
 };
 
 CL_LAMBDA(listOfPairs);
@@ -650,7 +651,7 @@ CL_DEFUN_SETF T_sp setf_macro_function(Function_sp function, Symbol_sp symbol, T
 CL_LAMBDA(symbol);
 CL_DECLARE();
 CL_DOCSTRING("See CLHS: special-operator-p");
-CL_DEFUN T_mv cl__special_operator_p(Symbol_sp sym) {
+CL_DEFUN T_sp cl__special_operator_p(Symbol_sp sym) {
   // should signal type-error if its argument is not a symbol.
   SYMBOL_EXPORT_SC_(ClPkg, let);
   SYMBOL_EXPORT_SC_(ClPkg, letSTAR);
@@ -697,7 +698,7 @@ CL_DEFUN T_mv cl__special_operator_p(Symbol_sp sym) {
       (sym == cl::_sym_throw) ||
       (sym == cl::_sym_progv) ||
       (sym == cl::_sym_quote)) {
-    return (Values(_lisp->_true()));
+    return _lisp->_true();
   }
   // Now check the special operators hash table because
   // there may be a few more there.
@@ -790,7 +791,7 @@ CL_DOCSTRING("hook to invoke gdb");
 CL_DEFUN void core__gdb_inspect(String_sp msg, T_sp o) {
   ASSERT(cl__stringp(msg));
   printf("gdbInspect object: %s\n", _rep_(o).c_str());
-  dbg_hook(msg->get().c_str());
+  dbg_hook(msg->get_std_string().c_str());
   core__invoke_internal_debugger(_Nil<core::T_O>());
 };
 
@@ -841,17 +842,17 @@ CL_DEFUN bool cl__constantp(T_sp obj, T_sp env) {
 CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("identity");
-CL_DEFUN T_mv cl__identity(T_sp arg) {
-  return (Values(arg));
+CL_DEFUN T_sp cl__identity(T_sp arg) {
+  return arg;
 };
 
 CL_LAMBDA(obj);
 CL_DECLARE();
 CL_DOCSTRING("null test - return true if the object is the empty list otherwise return nil");
-CL_DEFUN T_mv cl__null(T_sp obj) {
+CL_DEFUN T_sp cl__null(T_sp obj) {
   if (obj.nilp())
-    return (Values(_lisp->_true()));
-  return (Values(_Nil<T_O>()));
+    return _lisp->_true();
+  return _Nil<T_O>();
 };
 
 CL_LAMBDA(obj);
@@ -992,19 +993,19 @@ CL_DEFUN bool cl__fboundp(T_sp functionName) {
 CL_LAMBDA(function-name);
 CL_DECLARE();
 CL_DOCSTRING("fmakunbound");
-CL_DEFUN T_mv cl__fmakunbound(T_sp functionName) {
+CL_DEFUN T_sp cl__fmakunbound(T_sp functionName) {
   if ((functionName).consp()) {
     List_sp cname = functionName;
     if (oCar(cname) == cl::_sym_setf) {
       Symbol_sp name = gc::As<Symbol_sp>(oCadr(cname));
       if (name.notnilp()) {
         name->fmakunbound_setf();
-        return (Values(functionName));
+        return functionName;
       }
     }
   } else if (Symbol_sp sym = functionName.asOrNull<Symbol_O>() ) {
     sym->fmakunbound();
-    return (Values(sym));
+    return sym;
   }
   TYPE_ERROR(functionName, // type of function names
              Cons_O::createList(cl::_sym_or, cl::_sym_symbol,
@@ -1015,7 +1016,7 @@ CL_DEFUN T_mv cl__fmakunbound(T_sp functionName) {
 CL_LAMBDA(char &optional input-stream-designator recursive-p);
 CL_DECLARE();
 CL_DOCSTRING("read a list up to a specific character - see CLHS");
-CL_DEFUN T_mv cl__read_delimited_list(Character_sp chr, T_sp input_stream_designator, T_sp recursive_p) {
+CL_DEFUN List_sp cl__read_delimited_list(Character_sp chr, T_sp input_stream_designator, T_sp recursive_p) {
   T_sp sin = coerce::inputStreamDesignator(input_stream_designator);
 #if 0
 	// I think it is safe to ignore recursive_p
@@ -1024,11 +1025,11 @@ CL_DEFUN T_mv cl__read_delimited_list(Character_sp chr, T_sp input_stream_design
     SIMPLE_ERROR(BF("Currently I don't handle recursive-p[true] for read_delimited_list"));
   }
 #endif
-  T_sp result = read_list(sin, clasp_as_claspCharacter(chr), true);
+  List_sp result = read_list(sin, clasp_as_claspCharacter(chr), true);
   if (cl::_sym_STARread_suppressSTAR->symbolValue().isTrue()) {
-    return (Values(_Nil<T_O>()));
+    return _Nil<T_O>();
   }
-  return (Values(result));
+  return result;
 }
 
 CL_LAMBDA(&optional input-stream-designator (eof-error-p t) eof-value recursive-p);
@@ -1063,76 +1064,6 @@ CL_DEFUN T_sp cl__read_preserving_whitespace(T_sp input_stream_designator, T_sp 
 
 /* -------------------------------------------------------- */
 /*     Sequence primitives                                  */
-
-
-ListOfSequenceSteppers::ListOfSequenceSteppers(List_sp sequences) {
-  this->_AtEnd = false;
-  for (auto cur : sequences) {
-    T_sp obj = oCar(cur);
-    if (Vector_sp vobj = obj.asOrNull<Vector_O>()) {
-      if (cl__length(vobj) == 0)
-        goto EMPTY;
-      VectorStepper_sp  vP(gc::GC<VectorStepper_O>::allocate(vobj));
-      this->_Steppers.push_back(vP);
-    } else if (Cons_sp cobj = obj.asOrNull<Cons_O>()) {
-      ConsStepper_sp cP(gc::GC<ConsStepper_O>::allocate(cobj));
-      this->_Steppers.push_back(cP);
-    } else if (obj.nilp()) {
-      goto EMPTY;
-    } else if (obj.generalp()) {
-      General_sp gobj((gctools::Tagged)obj.raw_());
-      SIMPLE_ERROR(BF("Illegal object for stepper[%s] class[%s]") % _rep_(gobj) % gobj->_instanceClass()->_classNameAsString());
-    }
-  }
-  this->_AtEnd = false;
-  return;
- EMPTY:
-  this->_AtEnd = true;
-}
-
-void ListOfSequenceSteppers::fillValueFrameUsingCurrentSteppers(ActivationFrame_sp frame) const {
-  if (this->_AtEnd)
-    SIMPLE_ERROR(BF("Tried to make list of ended stepper"));
-  int idx = 0;
-  ValueFrame_sp vframe = frame.as<ValueFrame_O>();
-  for (auto rit = this->_Steppers.begin(); rit != this->_Steppers.end(); rit++) {
-    vframe->set_entry(idx, (*rit)->element());
-    ++idx;
-  }
-}
-
-bool ListOfSequenceSteppers::advanceSteppers() {
-  _OF();
-  if (this->_AtEnd)
-    SIMPLE_ERROR(BF("Tried to advance ended stepper"));
-  for (auto it = this->_Steppers.begin(); it != this->_Steppers.end(); it++) {
-    this->_AtEnd |= (*it)->advance();
-  }
-  return !this->_AtEnd;
-}
-
-class ListOfListSteppers : public ListOfSequenceSteppers {
-public:
-  ListOfListSteppers(List_sp lists);
-  virtual ~ListOfListSteppers(){};
-};
-
-ListOfListSteppers::ListOfListSteppers(List_sp sequences) {
-  for (auto cur : sequences) {
-    T_sp obj = oCar(cur);
-    if (Cons_sp cobj = obj.asOrNull<Cons_O>()) {
-      ConsStepper_sp  cP(gc::GC<ConsStepper_O>::allocate(cobj));
-      this->_Steppers.push_back(cP);
-    } else {
-      goto EMPTY;
-    }
-  }
-  this->_AtEnd = false;
-  return;
- EMPTY:
-  this->_AtEnd = true;
-  return;
-}
 
 /* Only works on lists of lists - used to support macroexpansion backquote */
 bool test_every_some_notevery_notany(Function_sp predicate, List_sp sequences, bool elementTest, bool elementReturn, bool fallThroughReturn, T_sp &retVal) {
@@ -1330,19 +1261,19 @@ CL_DEFUN T_sp cl__mapl(T_sp func_desig, List_sp lists) {
 CL_LAMBDA(op &rest lists);
 CL_DECLARE();
 CL_DOCSTRING("mapcon");
-CL_DEFUN T_mv cl__mapcon(T_sp op, List_sp lists) {
+CL_DEFUN T_sp cl__mapcon(T_sp op, List_sp lists) {
   List_sp parts = cl__maplist(op, lists);
   T_sp result = cl__nconc(parts);
-  return Values(result);
+  return result;
 };
 
 CL_LAMBDA(op &rest lists);
 CL_DECLARE();
 CL_DOCSTRING("mapcan");
-CL_DEFUN T_mv cl__mapcan(T_sp op, List_sp lists) {
+CL_DEFUN T_sp cl__mapcan(T_sp op, List_sp lists) {
   List_sp parts = cl__mapcar(op, lists);
   T_sp result = cl__nconc(parts);
-  return Values(result);
+  return result;
 };
 
 
@@ -1418,7 +1349,7 @@ CL_DEFUN Symbol_sp cl__gensym(T_sp x) {
     TYPE_ERROR(x,Cons_O::createList(cl::_sym_or,cl::_sym_string,cl::_sym_UnsignedByte));
   if (cl__stringp(x)) {
     String_sp sx = gc::As_unsafe<String_sp>(x);
-    StrNs_sp ss = gc::As_unsafe<StrNs_sp>(core__make_vector(sx->arrayElementType(),16,true,clasp_make_fixnum(0)));
+    StrNs_sp ss = gc::As_unsafe<StrNs_sp>(core__make_vector(sx->element_type(),16,true,clasp_make_fixnum(0)));
     StringPushString(ss,sx);
     core__integer_to_string(ss,gc::As<Integer_sp>(cl::_sym_STARgensym_counterSTAR->symbolValue()),clasp_make_fixnum(10));
     // If and only if no explicit suffix is supplied, *gensym-counter* is incremented after it is used.
@@ -1443,7 +1374,7 @@ CL_DEFUN Symbol_sp cl__gensym(T_sp x) {
   }
   if ((x.fixnump() || gc::IsA<Integer_sp>(x)) && (!(clasp_minusp(gc::As_unsafe<Integer_sp>(x))))) {
     SafeBufferStr8Ns ss;
-    ss.string()->vectorPushExtend_claspChar('G');
+    ss.string()->vectorPushExtend('G');
     core__integer_to_string(ss.string(),gc::As_unsafe<Integer_sp>(x),clasp_make_fixnum(10));
     Symbol_sp sym = Symbol_O::create(ss.string()->asMinimalSimpleString());
     sym->setPackage(_Nil<T_O>());
@@ -1495,8 +1426,8 @@ CL_DEFUN Symbol_mv core__type_to_symbol(T_sp x) {
   //    else if ( x.isA<BaseString_sp>() ) return(Values(_sym_BaseString_O));
     else if (gc::IsA<Stream_sp>(gx))
       return (Values(cl::_sym_Stream_O));
-    else if (gc::IsA<ReadTable_sp>(gx))
-      return (Values(cl::_sym_ReadTable_O));
+    else if (gc::IsA<Readtable_sp>(gx))
+      return (Values(cl::_sym_Readtable_O));
     return Values(gx->__class()->_className());
   }
   SIMPLE_ERROR(BF("Add core__type_to_symbol support for type: %s") % cl__class_of(x)->_classNameAsString());
@@ -1599,7 +1530,7 @@ CL_DEFUN Fixnum_sp cl__sxhash(T_sp obj) {
     return make_fixnum(1);
   HashGenerator hg;
   clasp_sxhash(obj, hg);
-  gc::Fixnum hash = MOST_POSITIVE_FIXNUM&hg.hash();
+  gc::Fixnum hash = MOST_POSITIVE_FIXNUM&hg.rawhash();
   return clasp_make_fixnum(hash);
 }
 
@@ -1919,71 +1850,6 @@ CL_DEFUN int core__set_ihs_current_frame(int icf) {
   return icf;
 }
 
-CL_LAMBDA();
-CL_DECLARE();
-CL_DOCSTRING("bdsTop");
-CL_DEFUN int core__bds_top() {
-  return my_thread->bindings().top();
-};
-
-CL_LAMBDA(idx);
-CL_DECLARE();
-CL_DOCSTRING("bdsVar");
-CL_DEFUN Symbol_sp core__bds_var(int idx) {
-  return my_thread->bindings().var(idx);
-};
-
-CL_LAMBDA(idx);
-CL_DECLARE();
-CL_DOCSTRING("bdsVal");
-CL_DEFUN T_sp core__bds_val(int idx) {
-  return my_thread->bindings().val(idx);
-};
-
-CL_LAMBDA();
-CL_DECLARE();
-CL_DOCSTRING("exceptionStack");
-CL_DEFUN Vector_sp core__exception_stack() {
-  return my_thread->exceptionStack().backtrace();
-}
-
-CL_LAMBDA();
-CL_DECLARE();
-CL_DOCSTRING("exceptionStackDump");
-CL_DEFUN void core__exception_stack_dump() {
-  ExceptionStack &stack = my_thread->exceptionStack();
-  printf("Exception stack size: %zu members\n", stack.size());
-  for (int i(0); i < stack.size(); ++i) {
-    string kind;
-    switch (stack[i]._FrameKind) {
-    case CatchFrame:
-      kind = "catch";
-      break;
-    case BlockFrame:
-      kind = "block";
-      break;
-    case TagbodyFrame:
-      kind = "tagbody";
-      break;
-    default:
-      kind = "unknown";
-      break;
-    };
-    printf("Exception exceptionstack[%2d] = %8s %s@%p\n", i, kind.c_str(), _rep_(stack[i]._Key).c_str(), stack[i]._Key.raw_());
-  }
-  printf("----Done----\n");
-};
-
-CL_LAMBDA();
-CL_DECLARE();
-CL_DOCSTRING("dynamicBindingStackDump");
-CL_DEFUN void core__dynamic_binding_stack_dump(std::ostream &out) {
-  DynamicBindingStack &bd = my_thread->bindings();
-  out << "Top of binding stack element " << bd.size() << std::endl;
-  for (int i(bd.size()-1); i>=0; --i) {
-    out << "  dbstack[" << i << "] --> " << (bd.var(i))->formattedName(true) << std::endl;
-  };
-}
 
 CL_DEFUN VaList_sp core__vaslist_rewind(VaList_sp v)
 {
@@ -2053,7 +1919,10 @@ SYMBOL_EXPORT_SC_(CorePkg,generic_function_lambda_lists);
 CL_LISPIFY_NAME("ext:function-lambda-list");
 CL_LAMBDA(function);
 CL_DECLARE();
-CL_DOCSTRING("Return the lambda-list of a function");
+CL_DOCSTRING("Return the lambda-list of a function designator. Note that "
+             "this is intended for human consumption and so may not "
+             "literally describe the function; e.g. macro and type expander "
+             "functions will have the defmacro/deftype lambda list.");
 CL_DEFUN T_mv ext__function_lambda_list(T_sp obj) {
   if (obj.nilp()) {
     return Values(_Nil<T_O>(),_Nil<T_O>());
@@ -2081,64 +1950,6 @@ CL_DEFUN T_sp core__function_source_pos_info(T_sp functionDesignator) {
 };
 
 namespace core {
-CL_DEFUN T_sp core__unsigned_short_round_trip(T_sp num) {
-  unsigned short x = translate::from_object<unsigned short>(num)._v;
-  printf("%s:%d   unsigned short value: %u\n", __FILE__, __LINE__, x );
-  T_sp result = translate::to_object<unsigned short>::convert(x);
-  return result;
-}
-
-CL_DEFUN T_sp core__short_round_trip(T_sp num) {
-  short x = translate::from_object<short>(num)._v;
-  printf("%s:%d   short value: %d\n", __FILE__, __LINE__, x );
-  T_sp result = translate::to_object<short>::convert(x);
-  return result;
-}
-
-CL_DEFUN T_sp core__unsigned_int_round_trip(T_sp num) {
-  unsigned int x = translate::from_object<unsigned int>(num)._v;
-  printf("%s:%d   unsigned int value: %u\n", __FILE__, __LINE__, x );
-  T_sp result = translate::to_object<unsigned int>::convert(x);
-  return result;
-}
-
-CL_DEFUN T_sp core__int_round_trip(T_sp num) {
-  int x = translate::from_object<int>(num)._v;
-  printf("%s:%d   int value: %d\n", __FILE__, __LINE__, x );
-  T_sp result = translate::to_object<int>::convert(x);
-  return result;
-}
-
-CL_DEFUN T_sp core__unsigned_long_round_trip(T_sp num) {
-  unsigned long x = translate::from_object<unsigned long>(num)._v;
-  printf("%s:%d   unsigned long value: %lu\n", __FILE__, __LINE__, x );
-  T_sp result = translate::to_object<unsigned long>::convert(x);
-  return result;
-}
-
-CL_DEFUN T_sp core__long_round_trip(T_sp num) {
-  long x = translate::from_object<long>(num)._v;
-  printf("%s:%d   long value: %ld\n", __FILE__, __LINE__, x );
-  T_sp result = translate::to_object<long>::convert(x);
-  return result;
-}
-
-CL_DEFUN T_sp core__unsigned_long_long_round_trip(T_sp num) {
-  unsigned long long x = translate::from_object<unsigned long long>(num)._v;
-  printf("%s:%d   unsigned long long value: %llu\n", __FILE__, __LINE__, x );
-  T_sp result = translate::to_object<unsigned long long>::convert(x);
-  return result;
-}
-
-CL_DEFUN T_sp core__long_long_round_trip(T_sp num) {
-  long long x = translate::from_object< long long>(num)._v;
-  printf("%s:%d   num.raw_() -> %p\n", __FILE__, __LINE__, num.raw_());
-  printf("%s:%d   num.fixnump() -> %d\n", __FILE__, __LINE__, num.fixnump());
-  printf("%s:%d   long long value: %lld\n", __FILE__, __LINE__, x );
-  T_sp result = translate::to_object<long long>::convert(x);
-  return result;
-}
-
 CL_DEFUN T_sp core__hash256_hex_string(T_sp string)
 {
   String_sp sarg = gc::As<String_sp>(string);
@@ -2313,6 +2124,102 @@ void print_add_two_numbers(int x, int y) {
   SYMBOL_SC_(CorePkg, bdsTop);
   SYMBOL_SC_(CorePkg, bdsVar);
   SYMBOL_SC_(CorePkg, bdsVal);
+
+
+
+
+namespace core {
+
+
+
+
+int tak_aux(int x, int y, int z, bool allocate)
+{
+  if (y < x) {
+    return tak_aux(tak_aux(x-1,y,z,allocate),tak_aux(y-1,z,x,allocate),tak_aux(z-1,x,y,allocate),allocate);
+  } else {
+    if (allocate) {
+      GC_MALLOC(128);
+    }
+    return z;
+  }
+}
+
+int tak(int x, int y, int z, bool allocate, int times) {
+  int ret;
+  for ( int ii=0; ii<times; ++ii ) {
+    ret = tak_aux(x,y,z,allocate);
+  }
+  return ret;
+}
+
+struct Ctak {
+  int val;
+  Ctak(int v) : val(v) {};
+};
+
+int ctak_aux(int x, int y, int z, bool allocate)
+{
+  if (!(y < x)) {
+    Ctak ret(z);
+    if (allocate) {
+      GC_MALLOC(128);
+    }
+    throw ret;
+  } else {
+    int rx;
+    try {
+      ctak_aux(x-1,y,z,allocate);
+    } catch (Ctak& val) {
+      rx = val.val;
+    }
+    int ry;
+    try {
+      ctak_aux(y-1,z,x,allocate);
+    } catch (Ctak& val) {
+      ry = val.val;
+    }
+    int rz;
+    try {
+      ctak_aux(z-1,x,y,allocate);
+    } catch (Ctak& val) {
+      rz = val.val;
+    }
+    return ctak_aux(rx,ry,rz,allocate);
+  }
+}
+
+int ctak(int x, int y, int z, bool allocate,int times) {
+  int ret;
+  for (int ii=0; ii<times; ++ii) {
+    try {
+      ctak_aux(x,y,z,allocate);
+    } catch (Ctak& val) {
+      ret = val.val;
+    }
+  }
+  return ret;
+}
+
+
+CL_DOCSTRING("Run the ctak test function (google 'tak function' - this is a try/catch/throw version)");
+CL_LAMBDA(x y z &key allocate (times 1));
+CL_DEFUN void core__ctak(int x, int y, int z, bool allocate, int times)
+{
+  ctak(x,y,z,allocate,times);
+}
+
+CL_DOCSTRING("Run the tak test function (google 'tak function')");
+CL_LAMBDA(x y z &key allocate (times 1));
+CL_DEFUN void core__tak(int x, int y, int z, bool allocate,int times)
+{
+  tak(x,y,z,allocate,times);
+}
+
+};
+
+
+
 
 namespace core {
 void initialize_primitives() {

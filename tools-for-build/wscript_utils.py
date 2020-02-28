@@ -69,11 +69,23 @@ def maybe_dump_command(cmd, kind = ''):
 #
 def macosx_sdk_path(cfg):
     result = ""
-    if ( cfg.env['DEST_OS'] == DARWIN_OS ):
+    dest_os = cfg.env["DEST_OS"]
+    if ( dest_os == DARWIN_OS ):
         result = run_program('xcrun', '--show-sdk-path')
         assert len(result) > 0
         result = result.strip()
     log.debug("macosx_sdk_path: %s", result)
+    return result
+
+def get_macosx_version(cfg):
+    result = [0]
+    dest_os = cfg.env["DEST_OS"]
+    if ( dest_os == DARWIN_OS ):
+        result = run_program("sw_vers","-productVersion");
+        assert len(result) > 0
+        result = result.strip().split(".")
+        result = [int(result[0]),int(result[1]),int(result[2])]
+    log.debug("macosx productVersion: %s", result)
     return result
 
 #
@@ -260,8 +272,25 @@ def waf_nodes_for_lisp_files(bld, paths):
 
 def waf_nodes_for_object_files(bld, paths, fasl_dir):
     nodes = []
+    extension = ""
+    if (bld.env.CLASP_BUILD_MODE=="object"):
+        extension = "o"
+    elif (bld.env.CLASP_BUILD_MODE=="faso"):
+        extension = "faso"
+    elif (bld.env.CLASP_BUILD_MODE=="bitcode"):
+        if (bld.use_human_readable_bitcode):
+            extension = "ll"
+        else:
+            extension = "bc"
     for path in paths:
-        waf_node = bld.path.find_or_declare("%s/%s.o" % (fasl_dir,path))
+        waf_node = bld.path.find_or_declare("%s/%s.%s" % (fasl_dir,path,extension))
+        nodes.append(waf_node)
+    return nodes
+
+def waf_nodes_for_faso_files(bld, paths, fasl_dir):
+    nodes = []
+    for path in paths:
+        waf_node = bld.path.find_or_declare("%s/%s.faso" % (fasl_dir,path))
         nodes.append(waf_node)
     return nodes
 

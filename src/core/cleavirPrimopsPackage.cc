@@ -44,6 +44,7 @@ SYMBOL_EXPORT_SC_(CleavirPrimopsPkg, fixnumEqual);
 SYMBOL_EXPORT_SC_(CleavirPrimopsPkg, car);
 SYMBOL_EXPORT_SC_(CleavirPrimopsPkg, cdr);
 SYMBOL_EXPORT_SC_(CleavirPrimopsPkg, funcall);
+SYMBOL_EXPORT_SC_(CleavirPrimopsPkg, unreachable);
 
 void initialize_cleavirPrimopsPackage() {
   list<string> lnicknames;

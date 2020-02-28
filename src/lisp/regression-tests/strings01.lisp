@@ -1,5 +1,5 @@
+(in-package #:clasp-tests)
 
-(test read-from-string0 (eq (read-from-string (concatenate 'string "abc" (string #\nul) "AA")) (intern (concatenate 'string "ABC" (string #\nul) "AA"))))
 (test reverse-string (let ((s "abc")) (string= (reverse s) "cba")))
 (test-expect-error subseq-oob (subseq "abc" 0 5))
 (test strings-with-nul0
@@ -77,7 +77,8 @@
        (multiple-value-bind (val pos)
            (parse-integer "" :junk-allowed t))))
 
-(test type-of-string (subtypep (type-of "abc") '(simple-array base-char (3))))
+(test type-of-string (or (subtypep (type-of "abc") '(simple-array base-char (3)))
+                         (subtypep (type-of "abc") '(simple-array character (3)))))
 
 
 (test copy-to-simple-base-string0
@@ -102,9 +103,22 @@
       (equal (core:copy-to-simple-base-string #\C) "C"))
 
 
-(test closest-sequence-type0 (eq (core::closest-sequence-type 'simple-base-string) 'base-char))
-(test closest-sequence-type1 (eq (core::closest-sequence-type 'simple-string) 'character))
+(test closest-sequence-type0 (equal (core::sequence-type-maker-info 'simple-base-string) '(vector base-char)))
+(test closest-sequence-type1 (equal (core::sequence-type-maker-info 'simple-string) '(vector character)))
 
 ;;; These should not return t, but the first index, where it is different
 (test eql-1 (eql 0 (string/= "a" "b")))
 (test eql-2 (eql 0 (string-not-equal "a" "b")))
+
+(test babel-simple-strings-1
+      (string-equal
+       (make-array 4 :element-type 'character :initial-contents (list #\? (code-char 256) #\? #\? ))
+       (let ((var (copy-seq "????")))
+         (setf (char var 1) (code-char 256))
+         var)))
+
+;;; What does the file-compiler do with a real unicode
+(test babel-simple-strings-2
+      (equal
+       (type-of "zażółć gęślą jaźń")
+       '(SIMPLE-ARRAY CHARACTER (17))))

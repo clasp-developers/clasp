@@ -65,14 +65,128 @@
 
 (export 'code-walk-using-cleavir)
 
+;;; Given a FUNCTION-AST, return the function-scope-info to insert into its body ASTs.
+;;; or NIL if there's no source info.
+(defun compute-fsi (ast)
+  (let ((orig (let ((orig (cleavir-ast:origin ast)))
+                (cond ((consp orig) (car orig))
+                      ((null orig)
+                       ;; KLUDGE: If no source info, make one up
+                       (core:make-source-pos-info "no-source-info-available" 0 0 0))
+                      (t orig)))))
+    ;; See usage in cmp/debuginfo.lsp
+    (list (cmp:jit-function-name (clasp-cleavir-ast:lambda-name ast))
+          (core:source-pos-info-lineno orig)
+          (core:source-pos-info-file-handle orig))))
+
+;;; Stuff to put function scope infos into inline ast SPIs.
+(defun insert-function-scope-info-into-spi (spi fsi)
+  ;; If something already has an FSI, we're in a nested inline AST
+  ;; and don't want to interfere with it, but need to hit the one that
+  ;; doesn't deeper in.
+  (if (core:source-pos-info-function-scope spi)
+      (let ((next (core:source-pos-info-inlined-at spi)))
+        (when next
+          (insert-function-scope-info-into-spi next fsi)))
+      (core:setf-source-pos-info-function-scope spi fsi)))
+(defun insert-function-scope-info-into-ast (ast fsi)
+  (let ((orig (cleavir-ast:origin ast)))
+    (cond ((consp orig)
+           (insert-function-scope-info-into-spi (car orig) fsi)
+           (insert-function-scope-info-into-spi (cdr orig) fsi))
+          ((null orig)
+           (return-from insert-function-scope-info-into-ast ast))
+          (t
+           (insert-function-scope-info-into-spi orig fsi)))))
+(defun fix-inline-ast (ast)
+  (check-type ast cleavir-ast:function-ast)
+  (let ((fsi (compute-fsi ast)))
+    (unless (null fsi)
+      (cleavir-ast:map-ast-depth-first-preorder
+       (lambda (ast)
+         (insert-function-scope-info-into-ast ast fsi))
+       ast)))
+  ast)
+
+;;; Incorporated into DEFUN expansion (see lsp/evalmacros.lsp)
 (defun defun-inline-hook (name function-form env)
   (when (core:declared-global-inline-p name)
     `(eval-when (:compile-toplevel :load-toplevel :execute)
        (when (core:declared-global-inline-p ',name)
          (setf (inline-ast ',name)
-               (cleavir-primop:cst-to-ast ,function-form))))))
+               (fix-inline-ast
+                (cleavir-primop:cst-to-ast ,function-form)))))))
 
 (export '(*code-walker*))
 
 (eval-when (:compile-toplevel :execute :load-toplevel)
   (setq core:*proclaim-hook* 'proclaim-hook))
+
+;;; The following code sets up the chain of inlined-at info in AST origins.
+#+cst
+(progn
+
+;;; Basically we want to recurse until we hit a SPI with no inlined-at,
+;;; and set its inlined-at to the provided value. Also we clone everything,
+;;; and memoize to avoid cloning too much.
+(defun fix-inline-source-position (spi inlined-at table)
+  (or (gethash spi table)
+      (setf (gethash spi table)
+            (let ((clone (core:source-pos-info-copy spi)))
+              (core:setf-source-pos-info-inlined-at
+               clone
+               (let ((next (core:source-pos-info-inlined-at clone)))
+                 (if next
+                     (fix-inline-source-position next inlined-at table)
+                     inlined-at)))
+              clone))))
+
+(defun fix-inline-source-positions (ast inlined-at)
+  (let ((new-origins (make-hash-table :test #'eq)))
+    ;; NEW-ORIGINS is a memoization table.
+    (cleavir-ast:map-ast-depth-first-preorder
+     (lambda (ast)
+       (let ((orig (cleavir-ast:origin ast)))
+         (setf (cleavir-ast:origin ast)
+               (cond ((consp orig)
+                      (cons (fix-inline-source-position
+                             (car orig) inlined-at new-origins)
+                            (fix-inline-source-position
+                             (cdr orig) inlined-at new-origins)))
+                     ((null orig) nil)
+                     (t (fix-inline-source-position
+                         orig inlined-at new-origins))))))
+     ast))
+  ast)
+
+(defun track-inline-counts (inlinee-names inlined-name)
+  (let (inlinee-name)
+    (loop for iname in inlinee-names
+          when iname
+            do (setf inlinee-name iname))
+    (let ((inlinee-ht (gethash inlinee-name cmp:*track-inlined-functions*)))
+      (unless inlinee-ht
+        (setf inlinee-ht (make-hash-table :test #'equal))
+        (setf (gethash inlinee-name cmp:*track-inlined-functions*) inlinee-ht))
+      (incf (gethash inlined-name inlinee-ht 0))
+      (when (core:global-inline-status inlinee-name)
+        (setf (gethash :inline inlinee-ht) t)))))
+
+(defmethod cleavir-cst-to-ast:convert-called-function-reference (cst info env (system clasp-64bit))
+  (declare (ignore env))
+  ;; FIXME: Duplicates cleavir.
+  (when (not (eq (cleavir-env:inline info) 'cl:notinline))
+    (let ((ast (cleavir-env:ast info)))
+      (when ast
+        (when (hash-table-p cmp:*track-inlined-functions*)
+          (track-inline-counts cmp:*track-inlinee-name* (cleavir-environment:name info)))
+        (return-from cleavir-cst-to-ast:convert-called-function-reference
+          (fix-inline-source-positions
+           (cleavir-ast-transformations:clone-ast ast)
+           (let ((source (cst:source cst)))
+             (cond ((consp source) (car source))
+                   ((null source) core:*current-source-pos-info*)
+                   (t source))))))))
+  (call-next-method))
+
+) ; #+cst (progn...)

@@ -297,11 +297,32 @@
 (test equalp-1
       (equalp "1234567890" (make-array 15 :element-type 'character :initial-contents "123456789012345" :fill-pointer 10)))
 
-;;; fails
+;;; fails no longer
 (test equalp-2
       (equalp
        (make-array 12 :element-type 'character :initial-contents "123456789012" :fill-pointer 10)
        (make-array 15 :element-type 'character :initial-contents "123456789012345" :fill-pointer 10)))
+
+(test equalp-2a
+      (equalp
+       (make-array 15 :element-type 'base-char :initial-contents "123456789012345" :fill-pointer 10)
+       (make-array 12 :element-type 'base-char :initial-contents "123456789012" :fill-pointer 10)))
+
+(test equalp-2b
+      (equalp
+       (make-array 3 :element-type 'base-char :initial-contents "abc" :fill-pointer 2)
+       (vector #\a #\B)))
+
+(test equalp-2c
+      (equalp
+       (make-array 3 :element-type 'character :initial-contents "abc" :fill-pointer 2)
+       (vector #\a #\B)))
+
+(test equalp-2d
+      (not (equalp
+            (make-array 3 :element-type 'character :initial-contents "abc" :fill-pointer 2)
+            23)))
+
 
 ;;; from clhs Fill-pointer in the second array seem to be respected
 (test equalp-clhs-1
@@ -312,11 +333,20 @@
                                 :fill-pointer 6)))
         (equalp array1 array2)))
 
-;;; from clhs Fill-pointer in the first array not, although I assume that (equalp a b) implies (equalp b a)
-(test equalp-clhs-2
+;;; from clhs 5.3.36 equalp
+;;; If two arrays have the same number of dimensions, the dimensions match, and the corresponding active elements are equalp.
+(test equalp-clhs-2a
       (Let ((array1 (make-array 6 :element-type 'integer
                                 :initial-contents '(1 1 1 3 5 7)))
             (array2 (make-array 8 :element-type 'integer
+                                :initial-contents '(1 1 1 3 5 7 2 6)
+                                :fill-pointer 6)))
+        (equalp array2 array1)))
+
+(test equalp-clhs-2b
+      (Let ((array2 (make-array 6 :element-type 'integer
+                                :initial-contents '(1 1 1 3 5 7)))
+            (array1 (make-array 8 :element-type 'integer
                                 :initial-contents '(1 1 1 3 5 7 2 6)
                                 :fill-pointer 6)))
         (equalp array2 array1)))
@@ -341,6 +371,12 @@
       (let ((vector (make-array 3 :fill-pointer 2 :initial-contents (list 1 2 3))))
         (equalp vector (copy-seq vector))))
 
+;;; COERCE.6
+(test equalp-8 (equalp #* #()))
+
+;;; COERCE.7 + 8
+(test equalp-9 (equalp #*10 #(1 0)))
+
 (test nreverse-1
       (let ((array (MAKE-ARRAY 10 :INITIAL-CONTENTS '(1 2 3 4 5 6 7 8 9 10) :FILL-POINTER 5)))
         (let ((new (nreverse array)))
@@ -349,6 +385,13 @@
 (test reverse-1
       (equalp #(3 2 1)
               (reverse
+               (make-array 3 :displaced-to
+                           (make-array 5 :initial-contents (list 0 1 2 3 4))
+                           :displaced-index-offset 1))))
+
+(test nreverse-2
+      (equalp #(3 2 1)
+              (nreverse
                (make-array 3 :displaced-to
                            (make-array 5 :initial-contents (list 0 1 2 3 4))
                            :displaced-index-offset 1))))
@@ -387,7 +430,7 @@
 ;;; fixed in the function and  in the compiler-macro
 (test-expect-error make-sequence-3
                    (locally (declare (notinline make-sequence))
-                     (MAKE-sequence 'cons 0) :type type-error))
+                     (MAKE-sequence 'cons 0)) :type type-error)
 (test-expect-error make-sequence-3a (let ()
                                       (MAKE-sequence 'cons 0)) :type type-error)
 ;;; find
@@ -399,3 +442,86 @@
 (test-expect-error find-2a
                    (locally (declare (notinline find))
                      (find 5 '(1 2 3 . 4))) :type type-error)
+
+(test remove-if-1
+      (string= "123def4"
+               (let ((s (make-array 10 :element-type 'base-char
+                                    :displaced-to (make-array 15
+                                                              :initial-contents "XXab1c23def4YYY"
+                                                              :element-type 'base-char)
+                                    :displaced-index-offset 2)))
+                 (remove-if #'ALPHA-CHAR-P s :count 3))))
+
+(test position-1
+      (= 2
+         (LET* ((S1 (COPY-SEQ "xxxabcdyyyyy"))
+             (S2
+              (MAKE-ARRAY '(4)
+                          :DISPLACED-TO
+                          S1
+                          :DISPLACED-INDEX-OFFSET
+                          3
+                          :ELEMENT-TYPE
+                          (ARRAY-ELEMENT-TYPE S1))))
+           (POSITION #\c S2))))
+
+(test position-2
+      (= 6
+         (LET* ((S1 (COPY-SEQ "xxxabcdabcdyyyyyyyy"))
+                (S2
+                 (MAKE-ARRAY '(8)
+                             :DISPLACED-TO
+                             S1
+                             :DISPLACED-INDEX-OFFSET
+                             3
+                             :ELEMENT-TYPE
+                             (ARRAY-ELEMENT-TYPE S1))))
+           (POSITION #\c S2 :FROM-END T))))
+
+
+(test-expect-error stable-sort.error.11
+                   (funcall #'(lambda (x) (stable-sort x #'<)) #'position)
+                   :type type-error)
+
+(test nreverse-bit-vector.2-a
+      (equalp #*1100 (nreverse (copy-seq #*0011))))
+
+(test nreverse-bit-vector.2-b
+      (equalp #*1011011000 (NREVERSE (COPY-SEQ #*0001101101))))
+
+(test nreverse-bit-vector.2-c
+      (equalp #*011011011000 (NREVERSE (COPY-SEQ #*000110110110))))
+
+(test nreverse-bit-vector.3
+      (equalp #*11000
+              (let* ((x (make-array 10 :initial-contents '(0 0 0 1 1 0 1 0 1 0)
+                                    :fill-pointer 5
+                                    :element-type 'bit))
+                     (y (nreverse x)))
+                y)))
+
+(test nreverse-vector.8
+      (equalp
+       #(-1 0 -1 -1 0 -1 0 0)
+       (nreverse 
+        (MAKE-ARRAY 8 :ELEMENT-TYPE '(INTEGER -1 0) :INITIAL-CONTENTS #(0 0 -1 0 -1 -1 0 -1)))))
+
+(test-expect-error
+ every.error.14
+ (every #'identity '(1 2 3 . 4))
+ :type type-error)
+
+(test-expect-error
+ some.error.14
+ (some #'null '(a b . c))
+ :type type-error)
+
+(test sequence-clx-compile-notinline
+      (let ()
+        (declare (notinline make-sequence))
+        (make-sequence '(array char (*)) 0)))
+
+(test sequence-clx-compile-inline
+      (let ()
+        (declare (inline make-sequence))
+      (make-sequence '(array char (*)) 0)))

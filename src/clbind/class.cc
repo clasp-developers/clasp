@@ -101,7 +101,7 @@ void class_registration::register_() const {
   } else {
     creator = gctools::GC<DummyCreator_O>::allocate(classNameString);
   }
-  crep->initializeClassSlots(creator,gctools::NextShiftedStampMergeWhere(where));
+  crep->initializeClassSlots(creator,gctools::NextStampWtag(where));
   core::Symbol_sp className = core::lispify_intern(classNameString, _lisp->getCurrentPackage()->packageName());
   className->exportYourself();
   crep->_setClassName(className);

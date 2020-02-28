@@ -77,51 +77,98 @@ object's representation."
         (values (read stream eof-error-p eof-value)
                 (file-position stream)))))
 
-#+(or)
-(defun write-to-string (object &rest rest
-                        &aux (stream (make-string-output-stream)))
-  "Args: (object &key (escape *print-escape*) (radix *print-radix*)
-                   (base *print-base*) (circle *print-circle*)
-                   (pretty *print-pretty*) (level *print-level*)
-                   (length *print-length*) (case *print-case*)
-                   (array *print-array*) (gensym *print-gensym*))
-Returns as a string the printed representation of OBJECT in the specified
-mode.  See the variable docs of *PRINT-...* for the mode."
-  (apply #'write object :stream stream rest)
-  (get-output-stream-string stream))
+;;; This function does what write-to-string does to a symbol name,
+;;; when printer escaping is off.
+;;; It's over five times as far as write-to-string.
+(defun printcasify (symbol-name readtable-case print-case)
+  (let ((result (copy-seq symbol-name))
+        (len (length symbol-name)))
+    (case readtable-case
+      ((:preserve) result)
+      ((:invert)
+       (dotimes (i len result)
+         (let ((c (aref result i)))
+           (setf (aref result i)
+                 (cond ((upper-case-p c)
+                        (char-downcase c))
+                       ((lower-case-p c)
+                        (char-upcase c))
+                       (t c))))))
+      ((:upcase)
+       (let ((capitalize t))
+         (dotimes (i len result)
+           (let ((c (aref result i)))
+             (setf (aref result i)
+                   (if (and (upper-case-p c)
+                            (or (eq print-case :downcase)
+                                (and (eq print-case :capitalize)
+                                     (not capitalize))))
+                       (char-downcase c)
+                       c)
+                   capitalize (not (alphanumericp c)))))))
+      ((:downcase)
+       (let ((capitalize t))
+         (dotimes (i len result)
+           (let ((c (aref result i)))
+             (setf (aref result i)
+                   (if (and (lower-case-p c)
+                            (or (eq print-case :downcase)
+                                (and (eq print-case :capitalize)
+                                     capitalize)))
+                       (char-downcase c)
+                       c)
+                   capitalize (not (alphanumericp c))))))))))
 
-;;;
-;;; Christian Schafmeister - June 24 2018
-;;; Use a thread-local string-output-stream for write-to-string
-;;; I get almost a 2x speedup with this.
-;;; kpoeck, might be fast, but does not work, see issue 609
-(defun write-to-string (object core:&va-rest rest ; only used for apply, so no problem.
-                        &aux (stream (core:thread-local-write-to-string-output-stream)))
-  "Args: (object &key (escape *print-escape*) (radix *print-radix*)
-                   (base *print-base*) (circle *print-circle*)
-                   (pretty *print-pretty*) (level *print-level*)
-                   (length *print-length*) (case *print-case*)
-                   (array *print-array*) (gensym *print-gensym*))
-Returns as a string the printed representation of OBJECT in the specified
-mode.  See the variable docs of *PRINT-...* for the mode."
-  (apply #'write object :stream stream rest)
-  (core:get-thread-local-write-to-string-output-stream-string stream))
+(defun stringify (object)
+  (when (and (not *print-escape*) (not *print-readably*) (not *print-pretty*))
+    (typecase object
+      (symbol
+       (return-from stringify
+         (printcasify (symbol-name object)
+                      (readtable-case *readtable*)
+                      *print-case*)))
+      (string (return-from stringify (copy-seq object)))
+      (character (return-from stringify (string object)))))
+  ;; By not making a fresh stream every time, we save some time.
+  (let ((stream (core:thread-local-write-to-string-output-stream)))
+    (write-object object stream)
+    (core:get-thread-local-write-to-string-output-stream-string stream)))
 
-(defun prin1-to-string (object
-                        &aux (stream (make-string-output-stream)))
+(defun write-to-string (object &key ((:escape *print-escape*) *print-escape*)
+                                 ((:radix *print-radix*) *print-radix*)
+                                 ((:base *print-base*) *print-base*)
+                                 ((:circle *print-circle*) *print-circle*)
+                                 ((:pretty *print-pretty*) *print-pretty*)
+                                 ((:level *print-level*) *print-level*)
+                                 ((:length *print-length*) *print-length*)
+                                 ((:case *print-case*) *print-case*)
+                                 ((:array *print-array*) *print-array*)
+                                 ((:gensym *print-gensym*) *print-gensym*)
+                                 ((:readably *print-readably*) *print-readably*)
+                                 ((:right-margin *print-right-margin*)
+                                  *print-right-margin*)
+                                 ((:miser-width *print-miser-width*)
+                                  *print-miser-width*)
+                                 ((:lines *print-lines*) *print-lines*)
+                                 ((:pprint-dispatch *print-pprint-dispatch*)
+                                  *print-pprint-dispatch*))
+  "Returns as a string the printed representation of OBJECT in the specified
+mode.  See the variable docs of *PRINT-...* for the mode."
+  (stringify object))
+
+(defun prin1-to-string (object)
   "Args: (object)
 PRIN1s OBJECT to a new string and returns the result.  Equivalent to
-(WRITE-TO-STRING OBJECT :ESCAPE T)."
-   (prin1 object stream)
-   (get-output-stream-string stream))
+ (WRITE-TO-STRING OBJECT :ESCAPE T)."
+  (let ((*print-escape* t))
+    (stringify object)))
 
-(defun princ-to-string (object
-                        &aux (stream (make-string-output-stream)))
+(defun princ-to-string (object)
   "Args: (object)
 PRINCs OBJECT to a new string and returns the result.  Equivalent to
-(WRITE-TO-STRING OBJECT :ESCAPE NIL)."
-  (princ object stream)
-  (get-output-stream-string stream))
+ (WRITE-TO-STRING OBJECT :ESCAPE NIL :READABLY NIL)."
+  (let ((*print-escape* nil) (*print-readably* nil))
+    (stringify object)))
 
 (defmacro with-open-file ((stream . filespec) &rest body)
   "Syntax: (with-open-file (var filespec-form {options}*) {decl}* {form}*)
@@ -272,73 +319,3 @@ the one used internally by ECL compiled files."
 	 (print-unreadable-object-function
 	   ,object ,stream ,type ,identity #'.print-unreadable-object-body.))
     `(print-unreadable-object-function ,object ,stream ,type ,identity nil)))
-
-(let* ((basic-encodings
-        #+unicode
-         '(:UTF-8 :UCS-2 :UCS-2BE :UCS-2LE :UCS-4 :UCS-4BE
-           :ISO-8859-1 :LATIN-1 :US-ASCII :DEFAULT)
-         #-unicode
-         '(:DEFAULT))
-       (ext:all-encodings nil))
-  (defun ext:all-encodings ()
-    (or ext:all-encodings
-        (progn
-          (setf ext:all-encodings basic-encodings)
-          #+unicode
-          (dolist (i (directory "sys:encodings;*"))
-            (push (intern (pathname-name i) "KEYWORD") ext:all-encodings))
-          ext:all-encodings))))
-(export 'ext:all-encodings :ext)
-
-(defun ext:load-encoding (name)
-  #-unicode
-  (warn "EXT:LOAD-ENCODING not available when clasp is built without support for Unicode")
-  #+unicode
-  (let ((filename (make-pathname :name (symbol-name name) :defaults "sys:encodings;")))
-    (cond ((probe-file filename)
-	   (load filename :verbose nil)
-	   name)
-	  ((probe-file (setf filename (make-pathname :type "BIN" :defaults filename)))
-	   (with-open-file (in filename :element-type '(unsigned-byte 16)
-			       :external-format :big-endian)
-	     (let* ((l (read-byte in))
-		    (s (make-array l :element-type '(unsigned-byte 16) :initial-element 0)))
-	       (read-sequence s in)
-	       s)))
-	  (t
-	   (error "Unable to find mapping file ~A for encoding ~A" filename name)))))
-
-(defun ext:make-encoding (mapping)
-  #-unicode
-  (error "Not a valid external format ~A" mapping)
-  #+unicode
-  (cond
-    ((symbolp mapping)
-     (let ((var (intern (symbol-name mapping) (find-package "EXT"))))
-       (unless (boundp var)
-         (setf (symbol-value var) (ext:make-encoding (ext:load-encoding mapping))))
-       (symbol-value var)))
-    ((consp mapping)
-     (let ((output (make-hash-table :size 512 :test 'eq)))
-       (dolist (record mapping output)
-	 (let* ((byte (car record))
-		(unicode (cdr record))
-		(unicode-char (code-char unicode)))
-	   (when (> byte #xFF)
-	     (setf (gethash (ash byte -8) output) t))
-	   (setf (gethash byte output) unicode-char)
-	   (setf (gethash unicode-char output) byte)))))
-    ((arrayp mapping)
-      (do* ((l (array-total-size mapping))
-	    (output (make-hash-table :size (floor (* 1.5 l)) :test 'eq))
-	    (i 0 (+ 2 i)))
-	   ((>= i l) output)
-	(let* ((byte (aref mapping i))
-	       (unicode (aref mapping (1+ i)))
-	       (unicode-char (code-char unicode)))
-	  (when (> byte #xFF)
-	    (setf (gethash (ash byte -8) output) t))
-	  (setf (gethash byte output) unicode-char)
-	  (setf (gethash unicode-char output) byte))))
-    (t
-     (error "Not a valid external format ~A" mapping))))

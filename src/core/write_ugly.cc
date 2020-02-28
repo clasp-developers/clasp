@@ -152,7 +152,7 @@ void Ratio_O::__write__(T_sp stream) const {
                        make_fixnum(print_base),
                        cl::_sym_STARprint_radixSTAR->symbolValue().isTrue(),
                        false);
-  buffer._Buffer->vectorPushExtend(clasp_make_character('/'));
+  buffer._Buffer->vectorPushExtend('/');
   core__integer_to_string(buffer._Buffer, this->den(),
                        make_fixnum(print_base),
                        false,
@@ -217,7 +217,7 @@ void write_character(T_sp strm, T_sp chr) {
     clasp_write_string("#\\", strm);
     if (i < 32 || i >= 127) {
       SimpleBaseString_sp name = cl__char_name(clasp_make_character(i));
-      clasp_write_string(name->get(), strm);
+      clasp_write_string(name->get_std_string(), strm);
     } else {
       clasp_write_char(i, strm);
     }

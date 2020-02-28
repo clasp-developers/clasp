@@ -62,6 +62,14 @@
                             0)
                 :READABLY NIL :ARRAY T :PRETTY NIL)))
 
+(test print-5a
+      (string= "#(1 2 3)"
+               (let ((*print-pretty* nil)
+                     (*print-array* t)
+                     (*print-readably* nil))
+                 (write-to-string
+                  (make-array 3 :initial-contents '(1 2 3) :fill-pointer t)))))
+
 ;;; fails to write readably
 ;;; http://www.lispworks.com/documentation/HyperSpec/Body/t_rnd_st.htm#random-state
 ;;; It can be printed out and successfully read back in by the same implementation, 
@@ -198,4 +206,248 @@
                      (number -0.0))
                  (LET ((*READ-DEFAULT-FLOAT-FORMAT* type))
                    (PRIN1-TO-STRING number)))))
+
+(test print-15
+      (stringp
+       (write-to-string 
+        (LET ((S
+               (OPEN "foo.txt"
+                     :DIRECTION
+                     :OUTPUT
+                     :IF-EXISTS
+                     :SUPERSEDE
+                     :ELEMENT-TYPE
+                     '(UNSIGNED-BYTE 8))))
+          (CLOSE S)
+          s)))
+      )
+
+(test
+ PRINT.RATIOS.RANDOM.root-cause
+ (string= "#22r-1212B0C39/13K5KA78B"
+          (let ((*PRINT-BASE* 22)
+                (*print-radix* t))
+            (write-to-string -59990859179/64657108615))))
+
+
+(test PRINT.BIT-VECTOR.RANDOM.root-cause
+      (string=
+       "#*011010001010000010001110110110100000000011000100001111100000000000101111010100011100110001010100001"
+       (let ((*PRINT-READABLY* t)
+             (*PRINT-ARRAY* NIL)
+             )
+         (write-to-string
+          #*011010001010000010001110110110100000000011000100001111100000000000101111010100011100110001010100001
+          ))))
+
+(test PRINT.RATIOS.RANDOM.root-cause.2
+      (string=
+       "#10r-7/16"
+       (let ((num -7/16)
+             (*PRINT-READABLY* T)
+             (*PRINT-ARRAY* NIL) (*PRINT-BASE* 10) (*PRINT-RADIX* T)
+             (*PRINT-CASE* :CAPITALIZE) (*PRINT-CIRCLE* NIL)
+             (*PRINT-ESCAPE* NIL) (*PRINT-GENSYM* NIL) (*PRINT-LEVEL* 47)
+             (*PRINT-LENGTH* 25) (*PRINT-LINES* 48) (*PRINT-MISER-WIDTH* NIL)
+             (*PRINT-PRETTY* NIL) (*PRINT-RIGHT-MARGIN* NIL)
+             (*READ-DEFAULT-FLOAT-FORMAT* 'DOUBLE-FLOAT)
+             )
+         (write-to-string num))))
+
+;;; e.g. not "#A#1=(T (3) #1#)" since there is no circle
+(test PRINT.VECTOR.RANDOM.1.take.1
+      (null
+       (search
+       "#1="
+       (let ((vector (vector 25 26 27))
+              (*PRINT-READABLY* T)
+              (*PRINT-CIRCLE* t)
+              (*PRINT-PRETTY* T)
+              )
+         (write-to-string vector)))))
+
+;;; "#1=#(25 26 #1#)"
+(test PRINT.VECTOR.RANDOM.1.take.2
+      (zerop
+       (search
+        "#1="
+        (let ((vector (vector 25 26 27))
+              (*PRINT-READABLY* T)
+              (*PRINT-CIRCLE* t)
+              (*PRINT-PRETTY* T)
+              )
+          (setf (aref vector 2) vector)
+          (write-to-string vector)))))
+
+;;; e.g. not "#A#1=(T (2 2) #1#)"
+(test PRINT.array.RANDOM.1.take.1
+      (null
+       (search
+        "#1="
+        (let ((array (make-array (list 2 2) :initial-contents '((5 6)(7 8))))
+              (*PRINT-READABLY* T)
+              (*PRINT-CIRCLE* t)
+              (*PRINT-PRETTY* T)
+              )
+          (write-to-string array)))))
+
+(test PRINT.array.RANDOM.1.take.2
+      (zerop
+       (search
+        "#1="
+        (let ((array (make-array (list 2 2) :initial-contents '((5 6)(7 8))))
+              (*PRINT-READABLY* T)
+              (*PRINT-CIRCLE* t)
+              (*PRINT-PRETTY* T)
+              )
+          (setf (aref array 1 1) array)
+          (write-to-string array)))))
+
+(test PRINT.cons.RANDOM.1.take.2
+     (zerop
+       (search
+        "#1="
+          (let ((a (list 1 2 3)))
+            (setf (cdddr a) a)
+            (let ((*print-circle* t))
+              (write-to-string a))))))
+
+(test-expect-error
+ type-errors-safety>speed
+ (locally (declare (optimize (safety 3)(speed 0)))
+   (copy-pprint-dispatch 0))
+ :type type-error)
+
+(test read-print-consistency-arrays
+      (with-standard-io-syntax
+        (let ((*PRINT-CIRCLE* T)
+              (*PRINT-READABLY* T)
+              (*PRINT-PRETTY* T))
+          (arrayp 
+           (read-from-string
+            (with-output-to-string (s)
+              (write #2A((3 4 5)) :stream s)))))))
+
+(test write-to-string.1.simplified
+      (let ((unicode-string (make-array 4 :element-type 'character
+                                        :initial-contents (mapcar #'code-char (list 40340 25579 40824 28331)))))
+        (string=
+         (with-output-to-string (s)(write unicode-string :stream s))
+         (write-to-string unicode-string))))
+
+(test drmeister-fep-problem
+      (string=
+       (format nil "!~36,3,'0r" 1)
+       "!001"))
+
+(test PPRINT-DISPATCH.6-simplified
+      (string= "ABC"
+               (WITH-STANDARD-IO-SYNTAX
+                 (LET ((*PRINT-PPRINT-DISPATCH* (COPY-PPRINT-DISPATCH NIL))
+                       (*PRINT-READABLY* NIL)
+                       (*PRINT-ESCAPE* NIL)
+                       (*PRINT-PRETTY* T))
+                   (LET ((F
+                          #'(LAMBDA (STREAM OBJ)
+                              (DECLARE (IGNORE OBJ))
+                              (WRITE "ABC" :STREAM STREAM))))
+                     (SET-PPRINT-DISPATCH '(EQL X) F)
+                     (WRITE-TO-STRING 'X))))))
+
+(test PPRINT-DISPATCH.6
+      (multiple-value-bind (a b c d e)
+          (WITH-STANDARD-IO-SYNTAX
+            (LET ((*PRINT-PPRINT-DISPATCH* (COPY-PPRINT-DISPATCH NIL))
+                  (*PRINT-READABLY* NIL)
+                  (*PRINT-ESCAPE* NIL)
+                  (*PRINT-PRETTY* T))
+              (LET ((F
+                     #'(LAMBDA (STREAM OBJ)
+                         (DECLARE (IGNORE OBJ))
+                         (WRITE "ABC" :STREAM STREAM))))
+                (VALUES (WRITE-TO-STRING 'X)
+                        (SET-PPRINT-DISPATCH '(EQL X) F)
+                        (WRITE-TO-STRING 'X)
+                        (SET-PPRINT-DISPATCH '(EQL X) NIL)
+                        (WRITE-TO-STRING 'X)))))
+        (and
+         (string= a "X")
+         (null b)
+         (string= c "ABC")
+         (null d)
+         (string= e "X"))))
+;;; Test c++ cl:format chokes on ~2% and returns "Could not format ..."
+(test lisp-format-works (null (search "Could" (format nil "Bar ~2%"))))
+
+(defun print-symbol-with-prefix (stream symbol &optional colon at)
+  "For use with ~/: Write SYMBOL to STREAM as if it is not accessible from
+  the current package."
+  (declare (ignore colon at))
+  (let ((*package* (find-package :keyword)))
+    (write symbol :stream stream :escape t)))
+
+(test issue-911
+ (let ((count 42)
+       (function 'print))
+   (format t
+           "~@<~@(~D~) call~:P to ~
+               ~/clasp-tests::print-symbol-with-prefix/ ~
+               ~2:*~[~;was~:;were~] compiled before a compiler-macro ~
+               was defined for it. A declaration of NOTINLINE at the ~
+               call site~:P will eliminate this warning, as will ~
+               defining the compiler-macro before its first potential ~
+               use.~@:>"
+           count
+           function)
+   t))
+
+(test format.justify.37
+      ;; no padding, output fits
+      (string-equal
+       (format nil "AA~4T~8,,,'*<~%BBBB~,12:;CCCC~;DDDD~>")
+       "AA  CCCCDDDD"))
+
+(test format.justify.38
+      ;; no padding, output doesn't fit
+      (string-equal
+       (format nil "AA~4T~8,,,'*<~%BBBB~,11:;CCCC~;DDDD~>")
+       "AA  
+BBBBCCCCDDDD"))
+
+(test format.justify.39
+      ;; one padding character per segment, output fits
+      (string-equal
+       (format nil "AA~4T~10,,,'*<~%BBBB~,14:;CCCC~;DDDD~>")
+       "AA  CCCC**DDDD"))
+
+(test format.justify.40
+      ;; one padding character per segment, output doesn't fit
+      (string-equal
+       (format nil "AA~4T~10,,,'*<~%BBBB~,13:;CCCC~;DDDD~>")
+       "AA  
+BBBBCCCC**DDDD"))
+
+(test format.justify.41
+      ;; Same with ~@T
+      (string-equal
+       (format nil "AA~1,2@T~8,,,'*<~%BBBB~,12:;CCCC~;DDDD~>")
+       "AA  CCCCDDDD"))
+
+(test format.justify.42
+      (string-equal
+       (format nil "AA~1,2@T~8,,,'*<~%BBBB~,11:;CCCC~;DDDD~>")
+       "AA  
+BBBBCCCCDDDD"))
+
+(test format.justify.43
+      (string-equal
+       (format nil "AA~1,2@T~10,,,'*<~%BBBB~,14:;CCCC~;DDDD~>")
+       "AA  CCCC**DDDD"))
+
+(test format.justify.44
+      (string-equal
+       (format nil "AA~1,2@T~10,,,'*<~%BBBB~,13:;CCCC~;DDDD~>")
+       "AA  
+BBBBCCCC**DDDD"))
+
 

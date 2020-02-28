@@ -1,47 +1,42 @@
 ;;; ------------------------------------------------------------
 ;;;
 ;;; Generic function dispatch compiler
-;;;   This implements the algorithm described by Robert Strandh for fast generic function dispatch
-;;;
-;;;   generic-function-call-history is an alist of (past-call-signature . outcome)
-;;;      Outcome is either a function, or one of the outcome structures defined below.
-;;;        Functions must have lambda-list (vaslist ignore), and will be passed the arguments and NIL.
-;;;      The past-call-signature is a simple-vector of class specializers or (list eql-spec)
-;;;        for eql-specializers. The CAR of eql-spec is the EQL value.
+;;;   This implements the algorithm described by Robert Strandh for fast generic function dispatch.
+;;;   See dtree.lsp for an explanation of dtrees.
 
 (in-package :clos)
-
-#+(or)
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (setf *echo-repl-read* t))
 
 (defvar *log-gf* nil)
 (defvar *debug-cmpfastgf-trace* nil)
 (defvar *message-counter* nil)
 
-;;; ------------------------------------------------------------
-;;;
-;;; Generate Common Lisp code for a fastgf dispatcher given a
-;;;   DTREE internal representation
-
 (defvar *generate-outcomes*) ; alist (outcome . tag)
 
-;;; main entry point
-(defun generate-dispatcher-from-dtree (generic-function dtree
+;;; Basic entry point for codegen (bottom of this file)
+(defun generate-dispatcher (generic-function dtree &key generic-function-name)
+  (multiple-value-bind (min max)
+      (generic-function-min-max-args generic-function)
+    (generate-dispatcher-from-dtree dtree
+                                    :nreq min
+                                    :max-nargs max
+                                    :generic-function-name generic-function-name
+                                    :generic-function-form generic-function)))
+
+;;; Actual code generator
+;;; It's written to not need an actual generic-function object.
+;;; This is useful during satiation (because with some work, we could do it without
+;;;  actually having a gf) and for non-generic discriminators, like typeq or vref.
+(defun generate-dispatcher-from-dtree (dtree
                                        &key extra-bindings generic-function-name
-                                         (generic-function-form generic-function))
+                                         nreq max-nargs generic-function-form
+                                         (miss-operator 'dispatch-miss))
   ;; GENERIC-FUNCTION-FORM is used when we want to feed this form to COMPILE-FILE,
   ;; in which case it can't have literal generic functions in it.
   ;; If we're doing this at runtime, though, we should put the actual GF in, so that
   ;; things don't break if we have an anonymous GF or suchlike.
   ;; EXTRA-BINDINGS is also used in the compile-file case, and gets methods and stuff
   ;; with load-time-value.
-  (let* (;; We need to know the number of arguments to dispatch on, and to have
-         ;; to the discriminating function if we can manage that.
-         ;; FIXME: This will work, due to how the s-profile is initialized,
-         ;; but it's weird and indirect.
-         (nreq (length (generic-function-specializer-profile generic-function)))
-         ;; and we need this to see if we can manage that
+  (let* (;; Can we use just required parameters?
          ;; NOTE: We used to use the call history here. This won't work:
          ;; During compile time satiation, the dtree may be artificially produced
          ;; i.e. out of sync with the call history. Or in a multithreaded environment,
@@ -54,31 +49,62 @@
          ;; List of gensyms, one for each required argument
          (required-args (let ((res nil))
                           (dotimes (i nreq res)
-                            (push (gensym "DISPATCH-ARG") res))))
-         (*generate-outcomes* nil))
+                            (push (gensym "DISPATCH-ARG") res)))))
     `(lambda ,(if need-vaslist-p
                   `(core:&va-rest .method-args.)
                   required-args)
-       (let (,@extra-bindings
-             (.generic-function. ,generic-function-form)
-             ,@(if need-vaslist-p
-                   (mapcar (lambda (req)
-                             `(,req (core:vaslist-pop .method-args.)))
-                           required-args)
-                   nil))
-         (declare (ignorable ,@required-args))
-         (core::local-block ,block-name
-           (core::local-tagbody
-              ,(generate-node required-args dtree)
-              ;; note: we need generate-node to run to fill *generate-outcomes*.
-              ,@(generate-tagged-outcomes *generate-outcomes* block-name required-args)
-            dispatch-miss
-              ,@(if need-vaslist-p
-                    `((core:vaslist-rewind .method-args.)
-                      (return-from ,block-name
-                        (dispatch-miss .generic-function. .method-args.)))
-                    `((return-from ,block-name
-                        (dispatch-miss-with-args .generic-function. ,@required-args))))))))))
+       ,@(when generic-function-name
+           `((declare (core:lambda-name ,generic-function-name))))
+       (let ((.generic-function. ,generic-function-form))
+         ,(when need-vaslist-p
+            ;; Our discriminating function ll is just (&va-rest r), so we need
+            ;; to check argument counts. What we really need to check is the minimum,
+            ;; since vaslist-pop has undefined behavior if there's nothing to pop,
+            ;; but we ought to do both, really.
+            ;; FIXME: Should be possible to not check, on low safety.
+            ;; Remember that argument checking by methods is disabled (see method.lsp)
+            `(let ((nargs (core:vaslist-length .method-args.)))
+               ;; stupid tagbody to avoid redundant error signaling code
+               (core::local-tagbody
+                (if (cleavir-primop:fixnum-less nargs ,nreq)
+                    (go err))
+                ,@(when max-nargs
+                    `((if (cleavir-primop:fixnum-less ,max-nargs nargs)
+                          (go err))))
+                (go done)
+                err
+                (error 'core:wrong-number-of-arguments
+                       :called-function .generic-function.
+                       :given-nargs nargs
+                       :min-nargs ,nreq :max-nargs ,max-nargs)
+                done)))
+         (let (,@extra-bindings
+               ,@(if need-vaslist-p
+                     (mapcar (lambda (req)
+                               `(,req (core:vaslist-pop .method-args.)))
+                             required-args)
+                     nil))
+           (declare (ignorable ,@required-args))
+           ,(generate-dispatch
+             dtree required-args
+             (if need-vaslist-p
+                 `(progn
+                    (core:vaslist-rewind .method-args.)
+                    (apply #',miss-operator .generic-function. .method-args.))
+                 `(,miss-operator .generic-function. ,@required-args))
+             block-name))))))
+
+;;; code generator part two
+;;; This generates the actual dispatch code. MISS is the form to return the value
+;;; of if the dtree hits a dispatch-miss. BLOCK-NAME is internal.
+(defun generate-dispatch (dtree dispatch-args miss &optional block-name)
+  (let ((*generate-outcomes* nil))
+    `(core::local-block ,block-name
+       (core::local-tagbody
+          ,(generate-node dispatch-args dtree)
+          ,@(generate-tagged-outcomes *generate-outcomes* block-name dispatch-args)
+        dispatch-miss
+          (return-from ,block-name ,miss)))))
 
 ;;; outcomes
 ;;; we cache them to avoid generating calls/whatever more than once
@@ -102,53 +128,44 @@
          (generate-fast-method-call reqargs outcome))
         ((effective-method-outcome-p outcome)
          (generate-effective-method-call outcome))
+        ((custom-outcome-p outcome)
+         (generate-custom reqargs outcome))
         (t (error "BUG: Bad thing to be an outcome: ~a" outcome))))
 
+(defun class-cell-form (slot-name class)
+  `(load-time-value
+    (slot-definition-location
+     (or (find ',slot-name (class-slots ,class) :key #'slot-definition-name)
+         (error "Probably a BUG: slot ~a in ~a stopped existing between compile and load"
+                ',slot-name ,class)))))
+
 (defun generate-slot-reader (arguments outcome)
-  (let ((location (optimized-slot-reader-index outcome))
-        (slot-name (optimized-slot-reader-slot-name outcome))
-        (class (optimized-slot-reader-class outcome)))
-    (cond ((fixnump location)
-           ;; instance location- easy
-           `(let* ((instance ,(first arguments))
-                   (value (core:instance-ref instance ',location)))
-              (if (cleavir-primop:eq value (load-time-value (core:unbound) t))
-                  (slot-unbound ,class instance ',slot-name)
-                  value)))
-          ((consp location)
-           ;; class location. we need to find the new cell at load time.
-           `(let* ((location
-                     (load-time-value
-                      (slot-definition-location
-                       (or (find ',slot-name (class-slots ,class) :key #'slot-definition-name)
-                           (error "Probably a BUG: slot ~a in ~a stopped existing between compile and load"
-                                  ',slot-name ,class)))))
-                   (value (car location)))
-              (if (cleavir-primop:eq value (core:unbound))
-                  (slot-unbound ,class ,(first arguments) ',slot-name)
-                  value)))
-          (t (error "BUG: Slot location ~a is not a fixnum or cons" location)))))
+  (let* ((location (optimized-slot-reader-index outcome))
+         (slot-name (optimized-slot-reader-slot-name outcome))
+         (class (optimized-slot-reader-class outcome))
+         (valuef
+           (cond ((fixnump location)
+                  ;; instance location- easy
+                  `(core:instance-ref ,(first arguments) ',location))
+                 ((consp location)
+                  ;; class location. we need to find the new cell at load time.
+                  `(car ,(class-cell-form slot-name class)))
+                 (t (error "BUG: Slot location ~a is not a fixnum or cons" location)))))
+    `(let ((value ,valuef))
+       (if (cleavir-primop:eq value (core:unbound))
+           (slot-unbound ,class ,(first arguments) ',slot-name)
+           value))))
 
 (defun generate-slot-writer (arguments outcome)
   (let ((location (optimized-slot-writer-index outcome)))
     (cond ((fixnump location)
-           `(let ((value ,(first arguments))
-                  (instance ,(second arguments)))
-              (si:instance-set instance ,location value)))
+           `(si:instance-set ,(second arguments) ,location ,(first arguments)))
           ((consp location)
-           ;; class location- annoying
+           ;; class location
            ;; Note we don't actually need the instance.
-           (let ((slot-name (optimized-slot-reader-slot-name outcome))
-                 (class (optimized-slot-reader-class outcome)))
-             `(let ((value ,(first arguments))
-                    (location
-                      (load-time-value
-                       (slot-definition-location
-                        (or (find ',slot-name (class-slots ,class) :key #'slot-definition-name)
-                            (error "Probably a BUG: slot ~a in ~a stopped existing between compile and load"
-                                   ',slot-name ,class))))))
-                (rplaca location value)
-                value)))
+           `(rplaca ,(class-cell-form (optimized-slot-reader-slot-name outcome)
+                                      (optimized-slot-reader-class outcome))
+                    ,(first arguments)))
           (t (error "BUG: Slot location ~a is not a fixnum or cons" location)))))
 
 (defun generate-fast-method-call (arguments outcome)
@@ -168,6 +185,13 @@
              `(cleavir-primop:funcall
                ,(effective-method-outcome-function outcome) .method-args. nil))
             (t (error "BUG: Outcome ~a is messed up" outcome)))))
+
+(defun generate-custom (reqargs outcome)
+  `(progn
+     ,@(when (custom-outcome-requires-vaslist-p outcome)
+         '((core:vaslist-rewind .method-args.)))
+     ,(funcall (custom-outcome-generator outcome)
+               reqargs (custom-outcome-data outcome))))
 
 ;;; discrimination
 
@@ -250,22 +274,22 @@
 
 ;;; Keeps track of the number of dispatchers that were compiled and
 ;;;   is used to give the roots array in each dispatcher a unique name.
-#+threads(defvar *dispatcher-count-lock* (mp:make-lock :name '*dispatcher-count-lock* ))
+#+threads(defvar *dispatcher-count-lock* (mp:make-lock :name '*dispatcher-count-lock*))
 (defvar *dispatcher-count* 0)
 (defun increment-dispatcher-count ()
   #-threads(incf *dispatcher-count*)
   #+threads(unwind-protect
        (progn
-         (mp:lock *dispatcher-count-lock* t)
+         (mp:get-lock *dispatcher-count-lock*)
          (incf *dispatcher-count*))
-    (mp:unlock *dispatcher-count-lock*)))
+    (mp:giveup-lock *dispatcher-count-lock*)))
 (defun dispatcher-count ()
   #-threads *dispatcher-count*
   #+threads(unwind-protect
                 (progn
-                  (mp:lock *dispatcher-count-lock* t)
+                  (mp:get-lock *dispatcher-count-lock*)
                   *dispatcher-count*)
-             (mp:unlock *dispatcher-count-lock*)))
+             (mp:giveup-lock *dispatcher-count-lock*)))
 
 (defvar *fastgf-use-compiler* nil)
 (defvar *fastgf-timer-start*)
@@ -276,7 +300,7 @@
          (compiled (calculate-dtree call-history specializer-profile)))
     (unwind-protect
          (if (or force-compile *fastgf-use-compiler*)
-             (cmp:bclasp-compile nil (generate-dispatcher-from-dtree
+             (cmp:bclasp-compile nil (generate-dispatcher
                                       generic-function compiled
                                       :generic-function-name generic-function-name))
              (let ((program (coerce (linearize compiled) 'vector)))

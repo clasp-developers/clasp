@@ -10,7 +10,7 @@
 (in-package :core)
 
 (defstruct (backtrace-frame (:type vector) :named)
-  type                                  ; 1 ( :lisp | :c++ | :unknown)
+  type                                  ; 1 ( :lisp | :c++ | :lambda | :unknown)
   return-address                        ; 2
   raw-name                              ; 3
   function-name                         ; 4
@@ -186,6 +186,7 @@ Set gather-all-frames to T and you can gather C++ and Common Lisp frames"
       ((gather-frames frames (lambda (frame) (eq :lisp (backtrace-frame-type frame))) :verbose verbose)) ; return all :LISP frames
       (t frames)))) ; return ALL frames
 
+(defvar *display-return-address-in-backtrace* nil)
 
 (defun dump-backtrace (raw-backtrace &key (stream *standard-output*) (args t) (all t))
     (let ((frames (common-lisp-backtrace-frames raw-backtrace))
@@ -196,6 +197,10 @@ Set gather-all-frames to T and you can gather C++ and Common Lisp frames"
            (if arguments
                (progn
                  (prin1 (prog1 index (incf index)) stream)
+                 (when *display-return-address-in-backtrace*
+                   (let ((*print-base* 16))
+                     (write-string " 0x")
+                     (prin1 (core:pointer-integer (backtrace-frame-return-address e)))))
                  (write-string ": (" stream)
                  (princ name stream)
                  (if (> (length arguments) 0)
@@ -219,8 +224,26 @@ Set gather-all-frames to T and you can gather C++ and Common Lisp frames"
      (dump-backtrace raw-backtrace :stream stream :args args :all all)))
   (finish-output stream))
 
+(defun bt-argument (frame-index argument-index)
+  "Get argument argument-index (or all if argument-index is not a number) from frame frame-index in current backtrace"
+  (core:call-with-backtrace
+   #'(lambda (raw-backtrace)
+       (let ((frames (common-lisp-backtrace-frames raw-backtrace))
+             (index 0))
+         (dolist (frame frames)
+           (when (= index frame-index)
+             (let ((arguments-vector (backtrace-frame-arguments frame)))
+               (return-from bt-argument
+                 (if (numberp argument-index)
+                     (if (> (length arguments-vector) argument-index)
+                         (aref arguments-vector argument-index)
+                         :invalid-argument-index)
+                     arguments-vector))))
+           (incf index)))
+       (return-from bt-argument :invalid-frame-index))))
+
 (export '(btcl dump-backtrace common-lisp-backtrace-frames
-          backtrace-frame-function-name backtrace-frame-arguments))
+          backtrace-frame-function-name backtrace-frame-arguments bt-argument))
 
 (defmacro with-dtrace-trigger (&body body)
   `(unwind-protect
@@ -236,42 +259,110 @@ Set gather-all-frames to T and you can gather C++ and Common Lisp frames"
 (in-package :ext)
 
 (defstruct (code-source-line (:type vector) :named)
-  source-pathname line-number)
+  source-pathname line-number column)
 
 (export '(code-source-line code-source-line-source-pathname code-source-line-line-number))
 
+
+
+(defun parse-llvm-dwarfdump (stream)
+  (let (info)
+    (tagbody
+     top
+       (let ((line (read-line stream nil :eof)))
+         (when (eq line :eof) (go done))
+         (cond
+           ((search "DW_AT_comp_dir" line)
+            (let* ((open-paren-pos (position #\( line))
+                   (close-paren-pos (position #\) line :from-end t))
+                   (data (read-from-string line nil :eof :start (1+ open-paren-pos) :end close-paren-pos)))
+              (push (cons :comp-dir data) info)))
+           ((search "DW_AT_name" line)
+            (let* ((open-paren-pos (position #\( line))
+                   (close-paren-pos (position #\) line :from-end t))
+                   (data (read-from-string line nil :eof :start (1+ open-paren-pos) :end close-paren-pos)))
+              (push (cons :name data) info)))
+           ((search "DW_TAG_inlined_subroutine" line)
+            (push (cons :inlined-subroutine t) info))
+           ((search "DW_AT_call_file" line)
+            (let* ((open-paren-pos (position #\( line))
+                   (close-paren-pos (position #\) line :from-end t))
+                   (call-file (read-from-string line nil :eof :start (1+ open-paren-pos) :end close-paren-pos)))
+              (push (cons :call-file call-file) info)))
+           ((search "DW_AT_call_line" line)
+            (let* ((open-paren-pos (position #\( line))
+                   (close-paren-pos (position #\) line :from-end t))
+                   (call-line (parse-integer line :start (1+ open-paren-pos) :end close-paren-pos)))
+              (push (cons :call-line call-line) info)))
+           ((search "Line info:" line)
+            ;; Parse lines like: "Line info: file '-unknown-file-', line 231, column 12, start line 226"
+            (let* ((line-start (search ", line " line))
+                   (line-pos (+ line-start (length ", line ")))
+                   (column-start (search ", column " line))
+                   (column-pos (+ column-start (length ", column ")))
+                   (start-line-start (search ", start line" line))
+                   (line-no (parse-integer line :start line-pos :end column-start))
+                   (column (parse-integer line :start column-pos :end start-line-start)))
+              (push (cons :line-info-line line-no) info)
+              (go done)))))
+       (go top)
+     done)
+    (close stream)
+    (let ((info (reverse info)))
+      (cond
+        ((assoc :inlined-subroutine info)
+         (let ((file-name (cdr (assoc :call-file info)))
+               (line-no (cdr (assoc :call-line info)))
+               (column 0))
+           (values file-name line-no column)))
+        (t
+         (let ((file-name (concatenate 'string (cdr (assoc :comp-dir info)) "/" (cdr (assoc :name info))))
+               (line-no (cdr (assoc :line-info-line info)))
+               (column (cdr (assoc :line-info-column info))))
+           (values file-name line-no column)))))))
+
+(defun run-llvm-dwarfdump (address file)
+  (let ((pathname #+target-os-darwin (pathname (format nil "~a.dwarf" file))
+                  #+target-os-linux (pathname file)))
+    (if (null (probe-file pathname))
+        (values)
+        (let ((llvm-dwarfdump (namestring (make-pathname :name "llvm-dwarfdump" :type nil :defaults core:*clang-bin*))))
+          (let ((cmd (list llvm-dwarfdump
+                           "-lookup"
+                           (format nil "0x~x" address)
+                           (namestring pathname))))
+            (multiple-value-bind (err error-msg stream)
+                (ext:vfork-execvp cmd t)
+              (parse-llvm-dwarfdump stream)))))))
+
+(defun object-file-address-information (addr &key verbose)
+  (multiple-value-bind (sectioned-address object-file)
+      (llvm-sys:object-file-for-instruction-pointer llvm-sys:*jit-engine* addr verbose)
+    (unless (null sectioned-address)
+      (llvm-sys:get-line-info-for-address
+       (llvm-sys:create-dwarf-context object-file)
+       sectioned-address))))
+
 (defparameter *debug-code-source-position* nil)
-(defun code-source-position (return-address)
-  (let ((address (1- (core:pointer-integer return-address))))
-    (when *debug-code-source-position*
-      (let* ((address (core:pointer-increment return-address -1))
-             (address-int (core:pointer-integer address)))
-        (multiple-value-bind (symbol start end type library-name library-origin offset-from-start-of-library)
-            (core:lookup-address address)
-          (format t "Lookup of address 0x~x 0x~x ~s ~s~%" address-int offset-from-start-of-library library-name symbol)
-          )))
-    #+target-os-darwin
-    (multiple-value-bind (err error-msg stream)
-        (ext:vfork-execvp (list "atos" "-fullPath" "-p" (format nil "~a" (core:getpid))
-                                (format nil "0x~x" address)) t)
-      (let ((result (read-line stream)))
-        (close stream)
-        (let* ((open-paren (position #\( result :from-end t))
-               (close-paren (position #\) result :from-end t))
-               (source-info (subseq result (1+ open-paren) close-paren))
-               (colon-pos (position #\: source-info))
-               (source-file-name (subseq source-info 0 colon-pos))
-               (source-pathname (pathname source-file-name))
-               (line-number-string (subseq source-info (1+ colon-pos)))
-               (line-number (parse-integer line-number-string :junk-allowed t))
-               )
-          (format t "The code-source-position function will return ~s : ~s~%" source-file-name line-number)
+(defun code-source-position (return-address &key verbose)
+  (let ((address (core:pointer-increment return-address -1)))
+    ;; First, if it's an object file try that.
+    (multiple-value-bind (source-path function-name source line column start-line discriminator)
+        (object-file-address-information address :verbose verbose)
+      (declare (ignore function-name source start-line discriminator))
+      (when source-path ; success, it was in an object file
+        (return-from code-source-position
           (make-code-source-line
-           :source-pathname source-pathname
-           :line-number line-number))))
-    #+target-os-linux
-    (progn
-      (warn "Add support for ext:code-source-position for linux"))
-    ))
+           :source-pathname source-path
+           :line-number line :column column))))
+    ;; OK no good, so try it as an address from a library.
+    (multiple-value-bind (symbol start end type library-name library-origin offset-from-start-of-library)
+        (core:lookup-address address)
+      (multiple-value-bind (source-pathname line-number column)
+          (run-llvm-dwarfdump offset-from-start-of-library library-name)
+        (make-code-source-line
+         :source-pathname source-pathname
+         :line-number line-number
+         :column column)))))
 
 (export 'code-source-position)

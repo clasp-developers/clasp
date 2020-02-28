@@ -3,6 +3,13 @@
 
 (in-package #:cmp)
 
+(define-compiler-macro list (&whole form &rest elements)
+  (case (length elements)
+    (0 'nil)
+    ;; This is a little bit faster and doesn't really involve more code.
+    (1 `(cons ,(first elements) nil))
+    (t form)))
+
 (defconstant +nthcdr-inline-limit+ 8) ; totally arbitrary
 
 (define-compiler-macro nthcdr (&whole whole index list &environment env)

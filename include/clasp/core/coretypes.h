@@ -70,13 +70,11 @@ class SourcePosInfo_O;
 class FileScope_O;
 class WeakKeyHashTable_O;
 class StrongKeyHashTable_O;
-class WeakKeyMapping_O;
 class DynamicScopeManager;
 
 class Function_O;
  class Closure_O;
 class Closure_O;
-class ObjectFile_O;
 class BuiltinClosure_O;
 };
 
@@ -87,7 +85,6 @@ typedef T_sp LIST_sp;
  typedef gctools::smart_ptr<Pointer_O> Pointer_sp;
 typedef gctools::smart_ptr<Cons_O> Cons_sp;
 typedef gctools::smart_ptr<Function_O> Function_sp;
-typedef gctools::smart_ptr<ObjectFile_O> ObjectFile_sp;
 typedef gctools::smart_ptr<Package_O> Package_sp;
 typedef gctools::smart_ptr<Stream_O> Stream_sp;
 typedef gctools::smart_ptr<SourcePosInfo_O> SourcePosInfo_sp;

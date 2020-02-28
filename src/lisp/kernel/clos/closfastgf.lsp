@@ -525,20 +525,15 @@ FIXME!!!! This code will have problems with multithreading if a generic function
         finally (return (coerce key 'simple-vector))))
 
 (defun do-dispatch-miss (generic-function vaslist-arguments arguments)
-  "This effectively does what compute-discriminator-function does and maybe memoizes the result 
+  "This effectively does what compute-discriminating-function does and maybe memoizes the result
 and calls the effective-method-function that is calculated.
 It takes the arguments in two forms, as a vaslist and as a list of arguments."
   (multiple-value-bind (min max) (generic-function-min-max-args generic-function)
-    (cond ((< (length arguments) min)
-           (error 'simple-program-error
-                  :format-control "Not enough arguments when calling ~a - you provided ~d and ~d are required"
-                  :format-arguments (list (generic-function-name generic-function)
-                                          (length arguments) min)))
-          ((and max (> (length arguments) max))
-           (error 'simple-program-error
-                  :format-control "Too many arguments when calling ~a - you provided ~d and ~d are allowed"
-                  :format-arguments (list (generic-function-name generic-function)
-                                          (length arguments) max)))))
+    (let ((nargs (length arguments)))
+      (when (or (< nargs min) (and max (> nargs max)))
+        (error 'core:wrong-number-of-arguments
+               :called-function generic-function :given-nargs nargs
+               :min-nargs min :max-nargs max))))
   (let ((argument-classes (mapcar #'class-of arguments))
         #+debug-fastgf
         (*dispatch-miss-start-time* (get-internal-real-time)))
@@ -610,13 +605,13 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
         #-debug-fastgf
         (perform-outcome outcome arguments vaslist-arguments)))))
 
-(defun dispatch-miss (generic-function valist-args)
-  (core:stack-monitor (lambda () (format t "In clos::dispatch-miss with generic function ~a~%" (clos::generic-function-name generic-function))))
-  ;; update instances
-  ;; Update any invalid instances
-  (unwind-protect
+(defun dispatch-miss (generic-function core:&va-rest valist-args)
+  (core:stack-monitor (lambda () (format t "In clos::dispatch-miss with generic function ~a~%"
+                                         (clos::generic-function-name generic-function))))
+  (#+debug-fastgf unwind-protect #-debug-fastgf multiple-value-prog1
        (progn
          (incf-debug-fastgf-indent)
+         ;; Update any invalid instances
          (let* ((arguments (core:list-from-va-list valist-args))
                 (invalid-instance (maybe-update-instances arguments)))
            (if invalid-instance
@@ -631,14 +626,12 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
                  (do-dispatch-miss generic-function valist-args arguments)))))
     (decf-debug-fastgf-indent)))
 
-;; (apply #'dispatch-miss-with-args gf vaslist) = (dispatch-miss gf vaslist)
-;; TODO: Make APPLY good enough that we can lose one.
-(defun dispatch-miss-with-args (generic-function core:&va-rest valist-args)
-  (dispatch-miss generic-function valist-args))
+;;; Called from the dtree interpreter, because APPLY from C++ is kind of annoying.
+(defun dispatch-miss-va (generic-function valist-args)
+  (apply #'dispatch-miss generic-function valist-args))
 
 ;;; change-class requires removing call-history entries involving the class
 ;;; and invalidating the generic functions
-
 (defun update-specializer-profile (generic-function specializers)
   (if (vectorp (generic-function-specializer-profile generic-function))
       (loop for vec = (generic-function-specializer-profile generic-function)
@@ -722,7 +715,7 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
       (progn
         (force-dispatcher generic-function)
         (apply generic-function valist-args))
-      (dispatch-miss generic-function valist-args)))
+      (apply #'dispatch-miss generic-function valist-args)))
 
 ;;; I don't believe the following few functions are called from anywhere, but they may be useful for debugging.
 
@@ -844,4 +837,10 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
                        (set-funcallable-instance-function gf discriminating-function))
                      (invalidate-discriminating-function gf)))))))
 
-(export '(invalidate-generic-functions-with-class-selector))
+;;; This is called by the dtree interpreter when it doesn't get enough arguments,
+;;; because computing this stuff in C++ would be needlessly annoying.
+(defun interp-wrong-nargs (generic-function given-nargs)
+  (multiple-value-bind (min max) (generic-function-min-max-args generic-function)
+    (error 'core:wrong-number-of-arguments
+           :called-function generic-function :given-nargs given-nargs
+           :min-nargs min :max-nargs max)))

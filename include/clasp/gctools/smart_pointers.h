@@ -41,15 +41,6 @@
 
 #include <iostream>
 #include <cstring>
-//#include "tagged_ptr.h"
-//#define TAGGED_PTR_BASE tagged_ptr
-
-//#define	IsUndefined(x) (x)
-//#define	NotUndefined(x) (!(x))
-
-//#define	_FWPLock(x)	(x)
-
-//#define	TAGGED_PTR core::T_O*
 
 namespace gctools {
 template <class T>
@@ -65,7 +56,7 @@ public:
   explicit inline tagged_ptr(Tagged ptr) : theObject(reinterpret_cast<Type *>(ptr)){};
 
   explicit inline tagged_ptr(Type *ptr) : theObject(ptr ? tag_general<Type *>(ptr) : NULL) {
-    GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr) & tag_mask) == 0);
+    GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr) & ptag_mask) == 0);
   };
 
   inline tagged_ptr(const tagged_ptr<Type> &obj) : theObject(obj.theObject){};
@@ -74,7 +65,7 @@ public:
   inline tagged_ptr(tagged_ptr<From> const &rhs) : theObject(rhs.raw_()){};
 
 public:
-  uintptr_t tag() const { return reinterpret_cast<uintptr_t>(this->theObject) & tag_mask; };
+  uintptr_t tag() const { return reinterpret_cast<uintptr_t>(this->theObject) & ptag_mask; };
 
   /*! Get the pointer typcast to an integer quantity for hashing */
   uintptr_t intptr() const { return ((uintptr_t)(this->theObject)); };
@@ -139,6 +130,7 @@ public:
   bool unboundp() const { return tagged_unboundp(this->theObject); };
   bool boundp() const { return !tagged_unboundp(this->theObject); };
   bool deletedp() const { return tagged_deletedp(this->theObject); };
+  bool no_keyp() const { return tagged_no_keyp(this->theObject); };
   bool sameAsKeyP() const { return tagged_sameAsKeyP(this->theObject); };
   bool characterp() const { return tagged_characterp<Type *>(this->theObject); };
   int unsafe_character() const { return untag_character(this->theObject); };
@@ -225,7 +217,7 @@ class base_ptr /*: public tagged_ptr<T>*/ {
   /*! Create a smart pointer from an existing tagged pointer */
   explicit inline base_ptr(Tagged ptr) : theObject(reinterpret_cast<Type *>(ptr)){};
   explicit inline base_ptr(Type *ptr) : theObject(ptr ? tag_general<Type *>(ptr) : NULL) {
-    GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr) & tag_mask) == 0);
+    GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr) & ptag_mask) == 0);
   };
   inline base_ptr(const return_type &rt) : theObject((Type *)rt.ret0[0]){};
 #ifdef BASE_PTR_COPY_CTOR
@@ -248,7 +240,7 @@ class base_ptr /*: public tagged_ptr<T>*/ {
   #endif
 #endif
 
-  uintptr_t tag() const { return reinterpret_cast<uintptr_t>(this->theObject) & tag_mask; };
+  uintptr_t ptag() const { return reinterpret_cast<uintptr_t>(this->theObject) & ptag_mask; };
 
  public:
   /*! Get the pointer typcast to an integer quantity for hashing */
@@ -364,6 +356,7 @@ class base_ptr /*: public tagged_ptr<T>*/ {
   bool consp() const { return tagged_consp<Type *>(this->theObject); };
   bool unboundp() const { return tagged_unboundp(this->theObject); };
   bool boundp() const { return !tagged_unboundp(this->theObject); };
+  bool no_keyp() const { return tagged_no_keyp(this->theObject); };
   bool deletedp() const { return tagged_deletedp(this->theObject); };
   bool sameAsKeyP() const { return tagged_sameAsKeyP(this->theObject); };
   bool fixnump() const { return tagged_fixnump(this->theObject); };
@@ -505,6 +498,8 @@ template <typename Type>
 inline static smart_ptr<Type> make_tagged_unbound() { return smart_ptr<Type>((Tagged)global_tagged_Symbol_OP_unbound); };
 template <typename Type>
 inline static smart_ptr<Type> make_tagged_deleted() { return smart_ptr<Type>((Tagged)global_tagged_Symbol_OP_deleted); };
+template <typename Type>
+inline static smart_ptr<Type> make_tagged_no_key() { return smart_ptr<Type>((Tagged)global_tagged_Symbol_OP_no_key); };
 template <typename Type>
 inline static smart_ptr<Type> make_tagged_sameAsKey() { return smart_ptr<Type>((Tagged)global_tagged_Symbol_OP_sameAsKey); };
 };
@@ -675,6 +670,7 @@ public:
   int number_of_values() const { return this->theObject == NULL ? 0 : 1; };
   bool unboundp() const { return tagged_unboundp(this->theObject); };
   bool boundp() const { return !tagged_unboundp(this->theObject); };
+  bool no_keyp() const { return tagged_no_keyp(this->theObject); };
   bool deletedp() const { return tagged_deletedp(this->theObject); };
   bool sameAsKeyP() const { return tagged_sameAsKeyP(this->theObject); };
   inline bool nilp() const { return tagged_nilp(this->theObject); }
@@ -809,7 +805,7 @@ public:
     }
   }
 
-  uintptr_t tag() const { return reinterpret_cast<uintptr_t>(this->theObject) & tag_mask; };
+  uintptr_t ptag() const { return reinterpret_cast<uintptr_t>(this->theObject) & ptag_mask; };
 
 public:
   //----------------------------------------------------------------------
@@ -886,6 +882,7 @@ public:
   Fixnum unsafe_fixnum() const { return untag_fixnum(this->theObject); };
   inline bool unboundp() const { return tagged_unboundp(this->theObject); };
   bool boundp() const { return !tagged_unboundp(this->theObject); };
+  bool no_keyp() const { return tagged_no_keyp(this->theObject); };
   bool deletedp() const { return tagged_deletedp(this->theObject); };
   bool sameAsKeyP() const { return tagged_sameAsKeyP(this->theObject); };
   bool characterp() const { return tagged_characterp<Type *>(this->theObject); };
@@ -970,7 +967,7 @@ public:
   smart_ptr() noexcept : theObject(NULL){};
   // Constructor that takes Cons_O* assumes its untagged
   explicit inline smart_ptr(core::Cons_O *ptr) : theObject(ptr ? tag_cons<core::Cons_O *>(ptr) : NULL) {
-    GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr) & tag_mask) == 0);
+    GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr) & ptag_mask) == 0);
   };
   /*! Constructor that takes Tagged assumes that the pointer is tagged.
 	  Any ptr passed to this constructor must have the CONS tag.
@@ -1083,11 +1080,11 @@ public:
   // Constructor that takes Cons_O* assumes its untagged
   explicit inline smart_ptr(core::Cons_O *ptr)
       : theObject(tag_cons<Type *>(reinterpret_cast<core::T_O *>(ptr))) {
-    GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr) & tag_mask) == 0);
+    GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr) & ptag_mask) == 0);
   };
   explicit inline smart_ptr(core::Symbol_O *ptr)
       : theObject(tag_general<Type *>(reinterpret_cast<core::T_O *>(ptr))) {
-    GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr) & tag_mask) == 0);
+    GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr) & ptag_mask) == 0);
   };
   /*! Constructor that takes Tagged assumes that the pointer is tagged.
 	  Any ptr passed to this constructor must have the CONS tag.
@@ -1310,6 +1307,12 @@ gctools::smart_ptr<T> _Unbound() {
 }
 
 template <class T>
+gctools::smart_ptr<T> _NoKey() {
+  gctools::smart_ptr<T> x((gctools::Tagged)gctools::tag_no_key<T *>());
+  return x;
+}
+
+template <class T>
 gctools::smart_ptr<T> _NoThreadLocalBinding() {
   gctools::smart_ptr<T> x((gctools::Tagged)gctools::tag_no_thread_local_binding<T *>());
   return x;
@@ -1320,14 +1323,6 @@ gctools::smart_ptr<T> _Deleted() {
   gctools::smart_ptr<T> x((gctools::Tagged)gctools::tag_deleted<T *>());
   return x;
 }
-
-template <class T>
-gctools::smart_ptr<T> _SameAsKey() {
-  gctools::smart_ptr<T> x((gctools::Tagged)gctools::tag_sameAsKey<T *>());
-  return x;
-}
-
-//template <class T> inline bool Null(const gctools::smart_ptr<T>& ptr) { return ptr.nilp();};
 
 namespace gctools {
 

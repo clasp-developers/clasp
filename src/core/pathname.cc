@@ -421,8 +421,10 @@ bool Pathname_O::equal(T_sp obj) const {
       return false;
     if (!cl__equal(this->_Type, other->_Type))
       return false;
+#if 0
     if (!cl__equal(this->_Version, other->_Version))
       return false;
+#endif
     return true;
   }
   return false;
@@ -443,34 +445,34 @@ void Pathname_O::sxhash_(HashGenerator &hg) const {
     hg.hashObject(this->_Version);
 }
 
-void Pathname_O::sxhash_equal(HashGenerator &hg,LocationDependencyPtrT ld) const {
+void Pathname_O::sxhash_equal(HashGenerator &hg) const {
   if (hg.isFilling())
-    HashTable_O::sxhash_equal(hg, this->_Host, ld);
+    HashTable_O::sxhash_equal(hg, this->_Host);
   if (hg.isFilling())
-    HashTable_O::sxhash_equal(hg, this->_Device, ld);
+    HashTable_O::sxhash_equal(hg, this->_Device);
   if (hg.isFilling())
-    HashTable_O::sxhash_equal(hg, this->_Directory, ld);
+    HashTable_O::sxhash_equal(hg, this->_Directory);
   if (hg.isFilling())
-    HashTable_O::sxhash_equal(hg, this->_Name, ld);
+    HashTable_O::sxhash_equal(hg, this->_Name);
   if (hg.isFilling())
-    HashTable_O::sxhash_equal(hg, this->_Type, ld);
+    HashTable_O::sxhash_equal(hg, this->_Type);
   if (hg.isFilling())
-    HashTable_O::sxhash_equal(hg, this->_Version, ld);
+    HashTable_O::sxhash_equal(hg, this->_Version);
 }
  
-void Pathname_O::sxhash_equalp(HashGenerator &hg,LocationDependencyPtrT ld) const {
+void Pathname_O::sxhash_equalp(HashGenerator &hg) const {
   if (hg.isFilling())
-    HashTable_O::sxhash_equalp(hg, this->_Host, ld);
+    HashTable_O::sxhash_equalp(hg, this->_Host);
   if (hg.isFilling())
-    HashTable_O::sxhash_equalp(hg, this->_Device, ld);
+    HashTable_O::sxhash_equalp(hg, this->_Device);
   if (hg.isFilling())
-    HashTable_O::sxhash_equalp(hg, this->_Directory, ld);
+    HashTable_O::sxhash_equalp(hg, this->_Directory);
   if (hg.isFilling())
-    HashTable_O::sxhash_equalp(hg, this->_Name, ld);
+    HashTable_O::sxhash_equalp(hg, this->_Name);
   if (hg.isFilling())
-    HashTable_O::sxhash_equalp(hg, this->_Type, ld);
+    HashTable_O::sxhash_equalp(hg, this->_Type);
   if (hg.isFilling())
-    HashTable_O::sxhash_equalp(hg, this->_Version, ld);
+    HashTable_O::sxhash_equalp(hg, this->_Version);
 }
 
 

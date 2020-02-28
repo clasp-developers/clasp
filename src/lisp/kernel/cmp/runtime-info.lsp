@@ -33,6 +33,18 @@
 (defvar +c++-stamp-max+ (get-cxx-data-structure-info :c++-stamp-max))
 (defvar +header-size+ (get-cxx-data-structure-info :header-size))
 (defvar +where-tag-mask+ (get-cxx-data-structure-info :where-tag-mask))
+
+(defvar +ptag-mask+ (get-cxx-data-structure-info :ptag-mask))
+(defvar +mtag-mask+ (get-cxx-data-structure-info :mtag-mask))
+(defvar +DERIVABLE-WTAG+ (get-cxx-data-structure-info :DERIVABLE-WTAG))
+(defvar +RACK-WTAG+ (get-cxx-data-structure-info :RACK-WTAG))
+(defvar +WRAPPED-WTAG+ (get-cxx-data-structure-info :WRAPPED-WTAG))
+(defvar +HEADER-WTAG+ (get-cxx-data-structure-info :HEADER-WTAG))
+(defvar +MAX-WTAG+ (get-cxx-data-structure-info :MAX-WTAG))
+(defvar +MTAG-WIDTH+ (get-cxx-data-structure-info :MTAG-WIDTH))
+(defvar +WTAG-WIDTH+ (get-cxx-data-structure-info :WTAG-WIDTH))
+(defvar +STAMP-SHIFT+ (get-cxx-data-structure-info :STAMP-SHIFT))
+
 (defvar +derivable-where-tag+ (get-cxx-data-structure-info :derivable-where-tag))
 (defvar +rack-where-tag+ (get-cxx-data-structure-info :rack-where-tag))
 (defvar +wrapped-where-tag+ (get-cxx-data-structure-info :wrapped-where-tag))
@@ -43,7 +55,6 @@
 #+(or)(defvar +stamp-shift+ (get-cxx-data-structure-info :stamp-shift))
 #+(or)(defvar +stamp-in-rack-mask+ (get-cxx-data-structure-info :stamp-in-rack-mask))
 #+(or)(defvar +stamp-needs-call-mask+ (get-cxx-data-structure-info :stamp-needs-call-mask))
-(defvar +tag-mask+ (get-cxx-data-structure-info :tag-mask))
 (defvar +immediate-mask+ (get-cxx-data-structure-info :immediate-mask))
 (defvar +cons-tag+ (get-cxx-data-structure-info :cons-tag))
 (defvar +vaslist-tag+ (get-cxx-data-structure-info :valist-tag))
@@ -59,7 +70,7 @@
 (defvar +void*-size+ (get-cxx-data-structure-info :void*-size))
 (defvar +alignment+ (get-cxx-data-structure-info :alignment))
 (defvar +args-in-registers+ (get-cxx-data-structure-info :lcc-args-in-registers))
-(export '(+fixnum-mask+ +tag-mask+ +immediate-mask+
+(export '(+fixnum-mask+ +ptag-mask+ +immediate-mask+
           +cons-tag+ +fixnum-tag+ +character-tag+ +single-float-tag+
           +general-tag+ +vaslist-size+ +void*-size+ +alignment+ ))
 (defvar +cons-car-offset+ (get-cxx-data-structure-info :cons-car-offset))

@@ -24,20 +24,23 @@ last FORM.  If not, simply returns NIL."
 
 (defmacro defmacro (name lambda-list &body body &environment env)
   `(eval-when (:compile-toplevel :load-toplevel :execute)
-     ;; TODO: Move this LET into a function- %DEFMACRO or sth.
-     ;; Then the compiler won't have to compile an extra let at compile-time.
-     ;; I'm only not doing this now because there are, as usual,
-     ;; issues with bootstrapping (%DEFMACRO must be defined very early).
-     (let ((macro-function #',(ext:parse-macro name lambda-list body env)))
-       (funcall #'(setf macro-function) macro-function ',name)
-       (setf-lambda-list macro-function ',lambda-list))
+     ;; NOTE: Written in this funny way because LET binding would force an
+     ;; extra compile at compile-file time
+     ;; (as the eval-when :compile-toplevel is executed)
+     ;; Need a more comprehensive solution though, since the actual macro
+     ;; lambda will be compiled twice anyway.
+     (setf-lambda-list
+      (funcall #'(setf macro-function)
+               #',(ext:parse-macro name lambda-list body env)
+               ',name)
+      ',lambda-list)
      ',name))
 
 (defmacro destructuring-bind (vl list &body body)
   (multiple-value-bind (decls body)
       (find-declarations body)
     (multiple-value-bind (whole dl arg-check ignorables)
-        (destructure vl nil)
+        (destructure vl 'destructuring-bind)
       `(let* ((,whole ,list) ,@dl)
 	 (declare (ignorable ,@ignorables))
          ,@decls
@@ -124,7 +127,7 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
                  (list (funcall *defun-inline-hook* name global-function env)))
           ',name))))
 
-(defvar *compiler-macros* (make-hash-table :test #'equal))
+(defvar *compiler-macros* (make-hash-table :test #'equal :thread-safe t))
 
 (defun compiler-macro-function (name &optional environment)
   (declare (ignore environment))

@@ -21,8 +21,10 @@
              `(progn
                 (defparameter ,map-name
                   ',(loop for element-type in
-                          '(bit fixnum ext:byte8 ext:byte16 ext:byte32 ext:byte64
-                            ext:integer8 ext:integer16 ext:integer32 ext:integer64
+                          '(bit fixnum ext:byte2 ext:byte4 ext:byte8
+                            ext:byte16 ext:byte32 ext:byte64 ext:integer2
+                            ext:integer4 ext:integer8 ext:integer16
+                            ext:integer32 ext:integer64
                             single-float double-float base-char character t)
                           for uaet in types
                           collect (cons element-type uaet)))
@@ -32,14 +34,18 @@
                       (let ((pair (assoc uaet ,map-name)))
                         (if pair
                             (cdr pair)
-                            (error "BUT: Unknown UAET ~a in ~a" uaet ',name))))))))
+                            (error "BUG: Unknown UAET ~a in ~a" uaet ',name))))))))
   (def simple-vector-type +simple-vector-type-map+ core:abstract-simple-vector
     simple-bit-vector
     core:simple-vector-fixnum
+    core:simple-vector-byte2-t
+    core:simple-vector-byte4-t
     core:simple-vector-byte8-t
     core:simple-vector-byte16-t
     core:simple-vector-byte32-t
     core:simple-vector-byte64-t
+    core:simple-vector-int2-t
+    core:simple-vector-int4-t
     core:simple-vector-int8-t
     core:simple-vector-int16-t
     core:simple-vector-int32-t
@@ -52,10 +58,14 @@
   (def complex-vector-type +complex-vector-type-map+ core:complex-vector
     core:bit-vector-ns
     core:complex-vector-fixnum
+    core:complex-vector-byte2-t
+    core:complex-vector-byte4-t
     core:complex-vector-byte8-t
     core:complex-vector-byte16-t
     core:complex-vector-byte32-t
     core:complex-vector-byte64-t
+    core:complex-vector-int2-t
+    core:complex-vector-int4-t
     core:complex-vector-int8-t
     core:complex-vector-int16-t
     core:complex-vector-int32-t
@@ -68,10 +78,14 @@
   (def simple-mdarray-type +simple-mdarray-type-map+ core:simple-mdarray
     core:simple-mdarray-bit
     core:simple-mdarray-fixnum
+    core:simple-mdarray-byte2-t
+    core:simple-mdarray-byte4-t
     core:simple-mdarray-byte8-t
     core:simple-mdarray-byte16-t
     core:simple-mdarray-byte32-t
     core:simple-mdarray-byte64-t
+    core:simple-mdarray-int2-t
+    core:simple-mdarray-int4-t
     core:simple-mdarray-int8-t
     core:simple-mdarray-int16-t
     core:simple-mdarray-int32-t
@@ -84,10 +98,14 @@
   (def complex-mdarray-type +complex-mdarray-type-map+ core:mdarray
     core:mdarray-bit
     core:mdarray-fixnum
+    core:mdarray-byte2-t
+    core:mdarray-byte4-t
     core:mdarray-byte8-t
     core:mdarray-byte16-t
     core:mdarray-byte32-t
     core:mdarray-byte64-t
+    core:mdarray-int2-t
+    core:mdarray-int4-t
     core:mdarray-int8-t
     core:mdarray-int16-t
     core:mdarray-int32-t
@@ -151,6 +169,7 @@
                             nil nil '(return nil))
             ;; Now, it is an mdarray, so check dimensions.
             (and
+             (= (core::%array-rank object) ',rank)
              ,@(loop for dim in dims
                      for i from 0
                      unless (eq dim '*)
@@ -398,7 +417,7 @@
                ,obj
                ,(flet ((da (form) `(the (values ,type &rest nil) ,form)))
                   (multiple-value-bind (head tail)
-                      (normalize-type type)
+                      (normalize-type type env)
                     (case head
                       ((t) (da obj))
                       ((character base-char) (da `(character ,obj)))
@@ -425,26 +444,25 @@
                          (if (= (length tail) 0)
                              `(the t ,obj)
                              (aux obj tail))))
-                      (t ; a sequence type, we figure
-                       (multiple-value-bind (uaet length validp)
-                           (closest-sequence-type type env)
-                         (cond
-                           (validp
-                            (if (eq uaet 'list)
-                                (da `(coerce-to-list ,obj))
-                                (da `(make-array (length ,obj)
-                                                 :element-type ',uaet
-                                                 :initial-contents ,obj))))
-                           (t ; Dunno what's going on. Punt to runtime.
-                            ;; COERCE is actually defined for any type, provided
-                            ;; that type exists: if the object is of the given
-                            ;; type, it is returned, and otherwise a type-error
-                            ;; is signaled. Nonetheless, if we reach here with a
-                            ;; constant type, it's either undefined or does not
-                            ;; have a coercion defined (e.g. INTEGER), which would
-                            ;; be a weird thing to do. So we signal a style-warning.
-                            ;; FIXME: We should differentiate "not defined" and
-                            ;; "no coercion behavior", though.
-                            (cmp:warn-cannot-coerce nil type)
-                            (return-from coerce form)))))))))))
+                      (t
+                       ;; Might be a sequence type.
+                       (cond
+                         ((subtypep type 'list env)
+                          `(coerce-to-list ,obj))
+                         ((subtypep type 'sequence env)
+                          `(replace (make-sequence ',type (length ,obj)) ,obj))
+                         (t ; Dunno what's going on. Punt to runtime.
+                          ;; COERCE is actually defined for any type, provided
+                          ;; that type exists: if the object is of the given
+                          ;; type, it is returned, and otherwise a type-error
+                          ;; is signaled. Nonetheless, if we reach here with a
+                          ;; constant type, it's either undefined or does not
+                          ;; have a coercion defined (e.g. INTEGER), which would
+                          ;; be a weird thing to do. So we signal a style-warning.
+                          ;; FIXME: We should differentiate "not defined" and
+                          ;; "no coercion behavior", though.
+                          ;; And maybe "can't figure it out at compile time but
+                          ;; will at runtime".
+                          (cmp:warn-cannot-coerce nil type)
+                          (return-from coerce form))))))))))
       form))

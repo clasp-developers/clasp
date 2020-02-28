@@ -64,6 +64,7 @@ templated_class_jump_table_index, jump_table_index, NULL
 #include <clasp/core/wrappers.h>
 #include <clasp/core/mpPackage.h>
 #include <clasp/gctools/gc_interface.fwd.h>
+#include <clasp/core/compiler.h>
 
 #ifdef USE_MPS
 
@@ -146,7 +147,7 @@ MpsMetrics globalMpsMetrics;
 */
 
 #ifdef DEBUG_MPS_UNDERSCANNING
-bool global_underscanning = DEBUG_MPS_UNDERSCANNING_INITIAL;
+    bool global_underscanning = true;
 #else
 bool global_underscanning = false;
 #endif
@@ -251,7 +252,7 @@ void mps_register_roots(void* roots_begin, size_t num_roots) {
                                     roots_begin,
                                     roots_end,
                                     clasp_scan_area_tagged,
-                                    gctools::tag_mask,  // #b111
+                                    gctools::ptag_mask,  // #b111
                                     0 ); // DLM says this will be ignored
   if ( res != MPS_RES_OK ) {
     SIMPLE_ERROR(BF("Could not mps_root_create_area_tagged - error: %d") % res );
@@ -376,12 +377,16 @@ GC_RESULT cons_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
       core::Cons_O* cons = reinterpret_cast<core::Cons_O*>(client);
       if ( !cons->hasGcTag() ) {
 #if DEBUG_VALIDATE_GUARD
-        client_validate(cons->_Car.raw_());
-        client_validate(cons->_Cdr.raw_());
+        client_validate(cons->ocar().raw_());
+        client_validate(cons->cdr().raw_());
 #endif
-        core::T_O* old_car = cons->_Car.raw_();
+        core::T_O* old_car = cons->ocar().raw_();
+        POINTER_FIX(&cons->_Car);
+        POINTER_FIX(&cons->_Cdr);
+#if 0
         SMART_PTR_FIX(cons->_Car);
         SMART_PTR_FIX(cons->_Cdr);
+#endif
         client = reinterpret_cast<mps_addr_t>((char*)client+sizeof(core::Cons_O));
       } else if (cons->fwdP()) {
         client = (char *)(client) + sizeof(core::Cons_O);
@@ -390,7 +395,7 @@ GC_RESULT cons_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
       } else if (cons->padP()) {
         client = (char *)(client) + cons->padSize();
       } else {
-        printf("%s:%d CONS in cons_scan (it's not a CONS or any of MPS fwd/pad1/pad2 car=%p cdr=%p\n", __FILE__, __LINE__, cons->_Car.raw_(), cons->_Cdr.raw_());
+        printf("%s:%d CONS in cons_scan (it's not a CONS or any of MPS fwd/pad1/pad2 car=%p cdr=%p\n", __FILE__, __LINE__, cons->ocar().raw_(), cons->cdr().raw_());
         abort();
       }
     };
@@ -581,6 +586,7 @@ extern "C" {
 
 std::atomic<size_t> global_finalization_requests;
 void my_mps_finalize(void* client) {
+//  printf("%s:%d   mps_finalize of %p\n", __FILE__, __LINE__, client);
   mps_finalize(global_arena,&client);
   ++gctools::globalMpsMetrics.finalizationRequests;
   ++global_finalization_requests;
@@ -591,7 +597,16 @@ void my_mps_finalize(void* client) {
   }
 }
 
+
+#ifdef CLASP_THREADS
+mp::Mutex* global_mps_messages_mutex = NULL;
+#endif
+
 size_t processMpsMessages(size_t& finalizations) {
+  if (global_mps_messages_mutex == NULL) {
+    global_mps_messages_mutex = new mp::Mutex(MPSMESSG_NAMEWORD);
+  }
+  WITH_READ_WRITE_LOCK(*global_mps_messages_mutex);
   size_t messages(0);
   finalizations = 0;
   int mGcStart(0);
@@ -609,60 +624,72 @@ size_t processMpsMessages(size_t& finalizations) {
     } else if (type == mps_message_type_gc()) {
       ++mGc;
 #if 0
-                printf("Message: mps_message_type_gc()\n");
-                size_t live = mps_message_gc_live_size(global_arena, message);
-                size_t condemned = mps_message_gc_condemned_size(global_arena, message);
-                size_t not_condemned = mps_message_gc_not_condemned_size(global_arena, message);
-                printf("Collection finished.\n");
-                printf("    live %" PRu "\n", (unsigned long)live);
-                printf("    condemned %" PRu "\n", (unsigned long)condemned);
-                printf("    not_condemned %" PRu "\n", (unsigned long)not_condemned);
-                printf("    clock: %" PRu "\n", (unsigned long)mps_message_clock(global_arena, message));
+      printf("Message: mps_message_type_gc()\n");
+      size_t live = mps_message_gc_live_size(global_arena, message);
+      size_t condemned = mps_message_gc_condemned_size(global_arena, message);
+      size_t not_condemned = mps_message_gc_not_condemned_size(global_arena, message);
+      printf("Collection finished.\n");
+      printf("    live %" PRu "\n", (unsigned long)live);
+      printf("    condemned %" PRu "\n", (unsigned long)condemned);
+      printf("    not_condemned %" PRu "\n", (unsigned long)not_condemned);
+      printf("    clock: %" PRu "\n", (unsigned long)mps_message_clock(global_arena, message));
 #endif
     } else if (type == mps_message_type_finalization()) {
       ++finalizations;
       //                printf("%s:%d mps_message_type_finalization received\n", __FILE__, __LINE__);
       mps_addr_t ref_o;
       mps_message_finalization_ref(&ref_o, global_arena, message);
+//      printf("%s:%d finalization message for %p\n", __FILE__, __LINE__, ref_o);
       // Figure out what pool the pointer belonged to and recreate the
       //   original tagged object pointer
       //   For general objects the object may already have been destructed (dead_object)
       //   and replaced with a PAD tag - if so - skip the whole finalization process
       mps_pool_t pool = clasp_pool_of_addr(ref_o);
       core::T_sp obj;
-      bool dead_object = false;
+      bool live_object = true;
       if (pool) {
+//        printf("%s:%d  ---- In pool %p\n", __FILE__, __LINE__, pool );
         if (pool == gctools::global_amc_cons_pool) {
+//          printf("%s:%d    in CONS pool %p\n", __FILE__, __LINE__, ref_o);
           obj = gctools::smart_ptr<core::Cons_O>((gctools::Tagged)gctools::tag_cons<core::T_O*>(reinterpret_cast<core::T_O*>(ref_o)));
         } else {
+//          printf("%s:%d    in General pool %p\n", __FILE__, __LINE__, ref_o);
           gctools::Header_s* header = (gctools::Header_s*)((char*)ref_o - sizeof(gctools::Header_s));
-          dead_object = !(header->stampP());
+          live_object = (header->stampP());
+//          printf("%s:%d    in General pool %p  stamp_wtag_mtag %lu  live_object -> %d\n", __FILE__, __LINE__, ref_o, (size_t)header->_stamp_wtag_mtag._value, live_object);
           obj = gctools::smart_ptr<core::T_O>((gctools::Tagged)gctools::tag_general<core::T_O*>(reinterpret_cast<core::T_O*>(ref_o)));
         }
       } else {
         printf("%s:%d   MPS could not figure out what pool the pointer %p belongs to - treating it like a dead object and no finalizer will be invoked\n", __FILE__, __LINE__, ref_o);
-        dead_object = true;
+        live_object = false;
       }
-#if 1
-      if (!dead_object) {
+      if (live_object) {
         bool invoked_finalizer = false;
-        auto ht = gctools::As<core::WeakKeyHashTable_sp>(gctools::_sym_STARfinalizersSTAR->symbolValue());
+        // Ok, I'm super worried about a deadlock here.
+        // What if (1) someone was doing an allocation and that registered a finalizer.
+        // Then (2) while registering the finalizer the allocator adds it to the _lisp->_Roots._Finalizers,which
+        // will (3) grab the WITH_READ_WRITE_LOCK(_lisp->_Roots._FinalizersMutex)
+        // and (4) start allocating objects with MPS and something gets allocated with a finalizer...
+        // THEN (5) processMpsMessages gets called and (6) it grabs the WITH_READ_LOCK(_lisp->_Roots._FinalizersMutex)
+        // ... I think that will dead lock!!!!!!!!
+        // Hmmm, can anything be allocated with a finalizer in (4)?????  Maybe not.
+        WITH_READ_LOCK(_lisp->_Roots._FinalizersMutex);
+        auto ht = _lisp->_Roots._Finalizers;
         core::T_mv res = ht->gethash(obj);
         if (res.second().notnilp()) {
-          printf("%s:%d           Trying to pass object %p to finalizer at %p\n", __FILE__, __LINE__, (void*)obj.tagged_(), (void*)res.tagged_());
+//          printf("%s:%d           Trying to pass object %p to finalizer at %p\n", __FILE__, __LINE__, (void*)obj.tagged_(), (void*)res.tagged_());
           core::List_sp finalizers = res;
           for ( auto cur : finalizers ) {
             core::T_sp finalizer = oCar(cur);
             core::eval::funcall(finalizer,obj);
-            printf("%s:%d Ran finalizer callback.\n", __FILE__, __LINE__ );
+//            printf("%s:%d Ran finalizer callback.\n", __FILE__, __LINE__ );
           }
           ht->remhash(obj);
           invoked_finalizer = true;
         }
-#endif
         if (!invoked_finalizer && obj.generalp()) obj_finalize(ref_o);
       } else {
-        printf("%s:%d No finalization message for %p reconstituted tagged ptr = %p stamp->%u  - it's a dead_object - I can't figure out what pool it belonged to (unknown if it is a General_O object or a Cons_O)\n", __FILE__, __LINE__, (void*)ref_o, (void*)obj.tagged_(), gctools::header_pointer(ref_o)->stamp());
+        printf("%s:%d Got finalization message for %p reconstituted tagged ptr = %p stamp->%u  - it's a dead_object so I'm ignoring it - maybe get rid of this message\n", __FILE__, __LINE__, (void*)ref_o, (void*)obj.tagged_(), gctools::header_pointer(ref_o)->stamp_());
       }
         
     } else {
@@ -672,11 +699,11 @@ size_t processMpsMessages(size_t& finalizations) {
   }
 #if 0
 //        printf("%s:%d Leaving processMpsMessages\n",__FILE__,__LINE__);
-        core::Number_sp endTime = core::cl__get_internal_run_time().as<core::Number_O>();
-        core::Number_sp deltaTime = core::contagen_mul(core::contagen_sub(endTime,startTime),core::make_fixnum(1000));
-        core::Number_sp deltaSeconds = core::contagen_div(deltaTime,cl::_sym_internalTimeUnitsPerSecond->symbolValue().as<core::Number_O>());
-        printf("%s:%d [processMpsMessages %s millisecs for  %d finalization/ %d gc-start/ %d gc messages]\n", __FILE__, __LINE__, _rep_(deltaSeconds).c_str(), mFinalize, mGcStart, mGc );
-        fflush(stdout);
+  core::Number_sp endTime = core::cl__get_internal_run_time().as<core::Number_O>();
+  core::Number_sp deltaTime = core::contagen_mul(core::contagen_sub(endTime,startTime),core::make_fixnum(1000));
+  core::Number_sp deltaSeconds = core::contagen_div(deltaTime,cl::_sym_internalTimeUnitsPerSecond->symbolValue().as<core::Number_O>());
+  printf("%s:%d [processMpsMessages %s millisecs for  %d finalization/ %d gc-start/ %d gc messages]\n", __FILE__, __LINE__, _rep_(deltaSeconds).c_str(), mFinalize, mGcStart, mGc );
+  fflush(stdout);
 #endif
   return messages;
 };
@@ -1051,6 +1078,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
 
 //#define USE_main_thread_roots_scan
 #ifdef USE_main_thread_roots_scan
+  printf("%s:%d USE_main_thread_roots_scan\n", __FILE__, __LINE__ );
   mps_root_t global_scan_root;
   res = mps_root_create(&global_scan_root,
                         global_arena,
@@ -1065,6 +1093,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   mps_register_roots((void*)&_lisp,1);
   mps_register_roots((void*)&global_core_symbols[0],NUMBER_OF_CORE_SYMBOLS);
   mps_register_roots((void*)&global_symbols[0],global_symbol_count);
+  printf("%s:%d UNDEF USE_main_thread_roots_scan NUMBER_OF_CORE_SYMBOLS[%d] global_symbol_count[%d]\n", __FILE__, __LINE__, NUMBER_OF_CORE_SYMBOLS, global_symbol_count );
 #endif  
 //  mps_register_root(reinterpret_cast<gctools::Tagged*>(&globalTaggedRunTimeValues));
 #ifdef RUNNING_GC_BUILDER
@@ -1079,6 +1108,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
     core::ThreadLocalState thread_local_state;
     my_thread_low_level = &thread_local_state_low_level;
     my_thread = &thread_local_state;
+    core::transfer_StartupInfo_to_my_thread();
     
   // Create the allocation points
     my_thread_allocation_points.initializeAllocationPoints();

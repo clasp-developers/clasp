@@ -29,6 +29,7 @@ THE SOFTWARE.
 #include <stdint.h>
 
 #include <llvm/Support/raw_ostream.h>
+#include "llvm/Support/InitLLVM.h"
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/fileSystem.h>
@@ -68,6 +69,8 @@ namespace llvmo {
 SYMBOL_EXPORT_SC_(LlvmoPkg, STARrunTimeExecutionEngineSTAR);
 SYMBOL_EXPORT_SC_(LlvmoPkg, STARdebugObjectFilesSTAR);
 SYMBOL_EXPORT_SC_(LlvmoPkg, STARdumpObjectFilesSTAR);
+SYMBOL_EXPORT_SC_(LlvmoPkg, STARdefault_code_modelSTAR);
+SYMBOL_EXPORT_SC_(LlvmoPkg, STARjit_engineSTAR);
 
 void redirect_llvm_interface_addSymbol() {
   //	llvm_interface::addSymbol = &addSymbolAsGlobal;
@@ -75,8 +78,8 @@ void redirect_llvm_interface_addSymbol() {
 
 
 CL_DOCSTRING("Load an llvm-ir file with either a bc extension or ll extension.");
-CL_LAMBDA(pathname &optional verbose print external_format);
-CL_DEFUN bool llvm_sys__load_ir(core::Pathname_sp filename, bool verbose, bool print, core::T_sp externalFormat )
+CL_LAMBDA(pathname context &optional verbose print external_format);
+CL_DEFUN bool llvm_sys__load_ir(core::Pathname_sp filename, LLVMContext_sp context, bool verbose, bool print, core::T_sp externalFormat )
 {
   core::Pathname_sp bc_file = core::Pathname_O::makePathname(_Nil<core::T_O>(),_Nil<core::T_O>(),_Nil<core::T_O>(),
                                                              _Nil<core::T_O>(),core::SimpleBaseString_O::make("bc"),
@@ -84,7 +87,7 @@ CL_DEFUN bool llvm_sys__load_ir(core::Pathname_sp filename, bool verbose, bool p
   bc_file = cl__merge_pathnames(bc_file,filename);
   T_sp found = cl__probe_file(bc_file);
   if (found.notnilp()) {
-    return llvm_sys__load_bitcode(bc_file,verbose,print,externalFormat);
+    return llvm_sys__load_bitcode(bc_file,context,verbose,print,externalFormat);
   }
   core::Pathname_sp ll_file = core::Pathname_O::makePathname(_Nil<core::T_O>(),_Nil<core::T_O>(),_Nil<core::T_O>(),
                                                              _Nil<core::T_O>(),core::SimpleBaseString_O::make("ll"),
@@ -92,14 +95,14 @@ CL_DEFUN bool llvm_sys__load_ir(core::Pathname_sp filename, bool verbose, bool p
   ll_file = cl__merge_pathnames(ll_file,filename);
   found = cl__probe_file(ll_file);
   if (found.notnilp()) {
-    return llvm_sys__load_bitcode_ll(ll_file,verbose,print,externalFormat);
+    return llvm_sys__load_bitcode_ll(ll_file,context,verbose,print,externalFormat);
   }
   SIMPLE_ERROR(BF("Could not find llvm-ir file %s with .bc or .ll extension") % _rep_(filename));
 }
 
   
-CL_LAMBDA(filename &optional verbose print external_format);
-CL_DEFUN bool llvm_sys__load_bitcode_ll(core::Pathname_sp filename, bool verbose, bool print, core::T_sp externalFormat )
+CL_LAMBDA(filename context &optional verbose print external_format);
+CL_DEFUN bool llvm_sys__load_bitcode_ll(core::Pathname_sp filename, LLVMContext_sp context, bool verbose, bool print, core::T_sp externalFormat )
 {
   core::DynamicScopeManager scope(::cl::_sym_STARpackageSTAR, ::cl::_sym_STARpackageSTAR->symbolValue());
   T_sp tn = cl__truename(filename);
@@ -110,13 +113,11 @@ CL_DEFUN bool llvm_sys__load_bitcode_ll(core::Pathname_sp filename, bool verbose
   if ( tnamestring.nilp() ) {
     SIMPLE_ERROR(BF("Could not create namestring for %s") % _rep_(filename));
   }
-  if (comp::_sym_STARllvm_contextSTAR->symbolValue().nilp()) {
-    SIMPLE_ERROR(BF("The cmp:*llvm-context* is NIL"));
-  }
   core::String_sp namestring = gctools::As<core::String_sp>(tnamestring);
-  Module_sp m = llvm_sys__parseIRFile(namestring,gc::As<LLVMContext_sp>(comp::_sym_STARllvm_contextSTAR->symbolValue()));
+  Module_sp m = llvm_sys__parseIRFile(namestring,context);
   EngineBuilder_sp engineBuilder = EngineBuilder_O::make(m);
-  engineBuilder->wrappedPtr()->setUseOrcMCJITReplacement(true);
+
+  SIMPLE_ERROR(BF("engineBuilder->wrappedPtr()->setUseOrcMCJITReplacement(true);"));
   TargetOptions_sp targetOptions = TargetOptions_O::make();
   engineBuilder->setTargetOptions(targetOptions);
   ExecutionEngine_sp executionEngine = engineBuilder->createExecutionEngine();
@@ -128,8 +129,8 @@ CL_DEFUN bool llvm_sys__load_bitcode_ll(core::Pathname_sp filename, bool verbose
 }
 
 
-CL_LAMBDA(filename &optional verbose print external_format);
-CL_DEFUN bool llvm_sys__load_bitcode(core::Pathname_sp filename, bool verbose, bool print, core::T_sp externalFormat )
+CL_LAMBDA(filename context &optional verbose print external_format);
+CL_DEFUN bool llvm_sys__load_bitcode(core::Pathname_sp filename, LLVMContext_sp context, bool verbose, bool print, core::T_sp externalFormat )
 {
   core::DynamicScopeManager scope(::cl::_sym_STARpackageSTAR, ::cl::_sym_STARpackageSTAR->symbolValue());
   T_sp tn = cl__truename(filename);
@@ -140,13 +141,10 @@ CL_DEFUN bool llvm_sys__load_bitcode(core::Pathname_sp filename, bool verbose, b
   if ( tnamestring.nilp() ) {
     SIMPLE_ERROR(BF("Could not create namestring for %s") % _rep_(filename));
   }
-  if (comp::_sym_STARllvm_contextSTAR->symbolValue().nilp()) {
-    SIMPLE_ERROR(BF("The cmp:*llvm-context* is NIL"));
-  }
   core::String_sp namestring = gctools::As<core::String_sp>(tnamestring);
-  Module_sp m = llvm_sys__parseBitcodeFile(namestring,gc::As<LLVMContext_sp>(comp::_sym_STARllvm_contextSTAR->symbolValue()));
+  Module_sp m = llvm_sys__parseBitcodeFile(namestring,context);
   EngineBuilder_sp engineBuilder = EngineBuilder_O::make(m);
-  engineBuilder->wrappedPtr()->setUseOrcMCJITReplacement(true);
+  SIMPLE_ERROR(BF("engineBuilder->wrappedPtr()->setUseOrcMCJITReplacement(true);"));
   TargetOptions_sp targetOptions = TargetOptions_O::make();
   engineBuilder->setTargetOptions(targetOptions);
   ExecutionEngine_sp executionEngine = engineBuilder->createExecutionEngine();
@@ -177,7 +175,7 @@ CL_DEFUN bool llvm_sys__load_module(Module_sp m, bool verbose, bool print, core:
 CL_DEFUN core::SimpleBaseString_sp llvm_sys__mangleSymbolName(core::String_sp name) {
   ASSERT(cl__stringp(name));
   stringstream sout;
-  const char *cur = name->get().c_str();
+  const char *cur = name->get_std_string().c_str();
   bool first = true;
   while (*cur) {
     if (((*cur) >= 'a' && (*cur) <= 'z') || ((*cur) >= 'A' && (*cur) <= 'Z') || ((*cur) == '_') || (!first && ((*cur) >= '0' && (*cur) <= '9'))) {
@@ -220,7 +218,18 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("VALUE-FRAME-ELEMENT-SIZE"), make_fixnum((int)sizeof(core::ValueFrame_O::value_type))),list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("LCC-ARGS-IN-REGISTERS"), make_fixnum((int)sizeof(LCC_ARGS_IN_REGISTERS))), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("FIXNUM-MASK"), make_fixnum((int)gctools::fixnum_mask)), list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("TAG-MASK"), make_fixnum((int)gctools::tag_mask)), list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("PTAG-MASK"), make_fixnum((int)gctools::ptag_mask)), list);
+
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("MTAG-MASK"), make_fixnum((int)gctools::Header_s::mtag_mask)), list);
+    list = Cons_O::create(Cons_O::create(lisp_internKeyword("DERIVABLE-WTAG"), make_fixnum((int)gctools::Header_s::Header_s::derivable_wtag)), list);
+    list = Cons_O::create(Cons_O::create(lisp_internKeyword("RACK-WTAG"), make_fixnum((int)gctools::Header_s::Header_s::rack_wtag)), list);
+    list = Cons_O::create(Cons_O::create(lisp_internKeyword("WRAPPED-WTAG"), make_fixnum((int)gctools::Header_s::Header_s::wrapped_wtag)), list);
+    list = Cons_O::create(Cons_O::create(lisp_internKeyword("HEADER-WTAG"), make_fixnum((int)gctools::Header_s::Header_s::header_wtag)), list);
+    list = Cons_O::create(Cons_O::create(lisp_internKeyword("MAX-WTAG"), make_fixnum((int)gctools::Header_s::Header_s::max_wtag)), list);
+    list = Cons_O::create(Cons_O::create(lisp_internKeyword("MTAG-WIDTH"), make_fixnum((int)gctools::Header_s::Header_s::mtag_width)), list);
+    list = Cons_O::create(Cons_O::create(lisp_internKeyword("WTAG-WIDTH"), make_fixnum((int)gctools::Header_s::Header_s::wtag_width)), list);
+    list = Cons_O::create(Cons_O::create(lisp_internKeyword("STAMP-SHIFT"), make_fixnum((int)gctools::Header_s::Header_s::stamp_shift)), list);
+  
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("IMMEDIATE-MASK"), make_fixnum((int)gctools::immediate_mask)), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("GENERAL-TAG"), make_fixnum((int)gctools::general_tag)), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("UNUSED-TAG"), make_fixnum((int)gctools::unused_tag)), list);
@@ -493,6 +502,10 @@ void LlvmoExposer_O::expose(core::Lisp_sp lisp, core::Exposer_O::WhatToExpose wh
   case candoGlobals: {
     initialize_intrinsics(); //<< comment this out - symbols disappear
     initialize_link_intrinsics();
+    llvm::InitializeNativeTarget();
+    llvm::InitializeNativeTargetAsmPrinter();
+    llvm::InitializeNativeTargetAsmParser();
+    llvm::initializeScalarOpts(*llvm::PassRegistry::getPassRegistry());
     initialize_llvmo_expose();
     initialize_clbind_llvm_expose();
     initialize_dwarf_constants();
@@ -500,6 +513,13 @@ void LlvmoExposer_O::expose(core::Lisp_sp lisp, core::Exposer_O::WhatToExpose wh
     llvm::InitializeAllTargetMCs();
     llvm::InitializeAllAsmParsers();
     llvm::InitializeAllDisassemblers();
+#ifdef USE_JITLINKER
+    #error "Define a different code-model"
+#else
+    llvmo::_sym_STARdefault_code_modelSTAR->defparameter(llvmo::_sym_CodeModel_Large);
+#endif
+    GC_ALLOCATE(ClaspJIT_O,jit_engine);
+    llvmo::_sym_STARjit_engineSTAR->defparameter(jit_engine);
     llvmo::_sym_STARdebugObjectFilesSTAR->defparameter(_Nil<core::T_O>());
     llvmo::_sym_STARdumpObjectFilesSTAR->defparameter(_Nil<core::T_O>());
     SYMBOL_EXPORT_SC_(LlvmoPkg, _PLUS_globalBootFunctionsName_PLUS_);
@@ -513,6 +533,13 @@ void LlvmoExposer_O::expose(core::Lisp_sp lisp, core::Exposer_O::WhatToExpose wh
   } break;
   }
 }
+
+
+
+void initialize_llvm(int argc, char **argv) {
+//  InitLLVM X(argc,argv);
+}
+
 };
 
 #ifdef USE_MPS

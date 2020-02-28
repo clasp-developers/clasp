@@ -39,6 +39,7 @@ THE SOFTWARE.
 #include <clasp/core/pathname.h>
 #include <clasp/core/lispReader.h>
 #include <clasp/core/evaluator.h>
+#include <clasp/core/compiler.h>
 #include <clasp/gctools/gctoolsPackage.h>
 #include <clasp/core/predicates.h>
 #include <clasp/core/wrappers.h>
@@ -50,7 +51,7 @@ T_sp load_stream(T_sp strm, bool print) {
     // Required to get source position correct. FIXME
     cl__peek_char(_lisp->_true(), strm, _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>());
     DynamicScopeManager scope(_sym_STARcurrentSourcePosInfoSTAR,
-                              core__input_stream_source_pos_info(strm));
+                              clasp_simple_input_stream_source_pos_info(strm));
     bool echoReplRead = _sym_STARechoReplReadSTAR->symbolValue().isTrue();
     T_sp x = cl__read(strm, _Nil<T_O>(), _Unbound<T_O>(), _Nil<T_O>());
     if (x.unboundp())
@@ -60,7 +61,7 @@ T_sp load_stream(T_sp strm, bool print) {
     }
     if (x.number_of_values() > 0) {
       if (print)
-        write_bf_stream(BF(";; -read- %s") % _rep_(x));
+        write_bf_stream(BF(";; -read- %s\n") % _rep_(x));
       eval::funcall(core::_sym_STAReval_with_env_hookSTAR->symbolValue(), x, _Nil<T_O>());
     }
   }
@@ -73,29 +74,31 @@ CL_DECLARE();
 CL_DOCSTRING("loadSource");
 CL_DEFUN T_sp core__load_source(T_sp source, bool verbose, bool print, core::T_sp externalFormat) {
   T_sp strm;
-  void *strmPointer;
   if (source.nilp()) {
     SIMPLE_ERROR(BF("%s was called with NIL as the source filename") % __FUNCTION__);
   }
+  T_sp final_format;
+  if (externalFormat.nilp())
+    final_format = kw::_sym_default;
+  else
+    final_format = externalFormat;
   strm = cl__open(source,
                   kw::_sym_input,
                   cl::_sym_character,
                   _Nil<T_O>(), false,
                   _Nil<T_O>(), false,
-                   kw::_sym_default,
+                   final_format,
                   _Nil<T_O>());
   if (strm.nilp())
     return _Nil<T_O>();
-  strmPointer = &(*strm);
   
-  DynamicScopeManager scope;
   if (source.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
   Pathname_sp pathname = cl__pathname(source);
   ASSERTF(pathname.objectp(), BF("Problem getting pathname of [%s] in loadSource") % _rep_(source));
   Pathname_sp truename = cl__truename(source);
   ASSERTF(truename.objectp(), BF("Problem getting truename of [%s] in loadSource") % _rep_(source));
-  scope.pushSpecialVariableAndSet(cl::_sym_STARloadPathnameSTAR, pathname);
-  scope.pushSpecialVariableAndSet(cl::_sym_STARloadTruenameSTAR, truename);
+  DynamicScopeManager scope(cl::_sym_STARloadPathnameSTAR, pathname);
+  DynamicScopeManager scope2(cl::_sym_STARloadTruenameSTAR, truename);
   return load_stream(strm, print);
 }
 
@@ -144,16 +147,23 @@ CL_DEFUN T_sp core__load_no_package_set(T_sp lsource, T_sp verbose, T_sp print, 
       }
     }
   }
+  filename = core__coerce_to_file_pathname(pathname);
+  T_sp kind = core__file_kind(gc::As<Pathname_sp>(filename), true);
+  if (kind == kw::_sym_directory) {
+    ok = core__load_binary_directory(filename,verbose,print,external_format);
+    if (ok.nilp()) {
+      SIMPLE_ERROR(BF("LOAD: Could not load file %s") % _rep_(filename));
+    }
+    return _lisp->_true();
+  }
   if (!pntype.nilp() && (pntype != kw::_sym_wild)) {
     /* If filename already has an extension, make sure
 	       that the file exists */
-    T_sp kind;
     // Test if pathname is nil is above
     if (pathname.nilp()) {
       SIMPLE_ERROR(BF("In %s - about to pass NIL to core__coerce_to_file_pathname from %s") % __FUNCTION__ % _rep_(lsource));
     }
     filename = core__coerce_to_file_pathname(pathname);
-    kind = core__file_kind(gc::As<Pathname_sp>(filename), true);
     if (kind != kw::_sym_file && kind != kw::_sym_special) {
       filename = _Nil<T_O>();
     } else {
@@ -193,7 +203,7 @@ CL_DEFUN T_sp core__load_no_package_set(T_sp lsource, T_sp verbose, T_sp print, 
      * being an exported function, has to bind them itself. */
     DynamicScopeManager scope(cl::_sym_STARloadPathnameSTAR, msource);
     T_sp truename = cl__truename(filename);
-    scope.pushSpecialVariableAndSet(cl::_sym_STARloadTruenameSTAR, truename);
+    DynamicScopeManager scope2(cl::_sym_STARloadTruenameSTAR, truename);
     ok = eval::funcall(function, filename, verbose, print, external_format);
   } else {
     ok = core__load_source(filename, verbose.isTrue(), print.isTrue(), external_format );
@@ -213,7 +223,7 @@ CL_DEFUN T_sp cl__load(T_sp source, T_sp verbose, T_sp print, T_sp if_does_not_e
     TYPE_ERROR(source,Cons_O::createList(cl::_sym_stream,cl::_sym_Pathname_O,cl::_sym_string));
   }
   DynamicScopeManager scope(cl::_sym_STARpackageSTAR, cl__symbol_value(cl::_sym_STARpackageSTAR));
-  scope.pushSpecialVariableAndSet(cl::_sym_STARreadtableSTAR, cl__symbol_value(cl::_sym_STARreadtableSTAR));
+  DynamicScopeManager scope2(cl::_sym_STARreadtableSTAR, cl__symbol_value(cl::_sym_STARreadtableSTAR));
   return core__load_no_package_set(source,verbose,print,if_does_not_exist,external_format,search_list);
 };
 

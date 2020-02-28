@@ -37,17 +37,17 @@ THE SOFTWARE.
   PASS_NEXT_ARG(arg_idx) 		'gctools::smart_ptr<T_O>(va_arg(ap,TAGGED_PTR))' 	'args->entry(arg_idx)'
 */
 
-int PASS_FUNCTION_REQUIRED(gctools::Vec0<RequiredArgument> const &reqs,
+int PASS_FUNCTION_REQUIRED(core::T_sp closure,
+                           gctools::Vec0<RequiredArgument> const &reqs,
                            PASS_ARGS,
                            int arg_idx,
-                           DynamicScopeManager &scope) {
+                           ScopeManager &scope) {
   // Fill required arguments
   LOG(BF("There are %d required arguments") % reqs.size());
   size_t length_args(PASS_ARGS_NUM);
   size_t reqs_size(reqs.size());
   if (length_args < reqs_size) {
-    throwTooFewArgumentsError(length_args, reqs_size);
-    //	TOO_FEW_ARGUMENTS_ERROR();
+    throwTooFewArgumentsError(closure,length_args, reqs_size);
   }
   if (reqs.size()>0) {
     _BLOCK_TRACE("Assigning required arguments");
@@ -66,10 +66,11 @@ int PASS_FUNCTION_REQUIRED(gctools::Vec0<RequiredArgument> const &reqs,
   The optional arguments passed are in (args) starting at (arg_idx).
   If default values are evaluated, they are evaluated in the lambda-list-handlers (closed_env).
 */
-int PASS_FUNCTION_OPTIONAL(gctools::Vec0<OptionalArgument> const &optionals,
+int PASS_FUNCTION_OPTIONAL(core::T_sp closure,
+                           gctools::Vec0<OptionalArgument> const &optionals,
                            PASS_ARGS,
                            int arg_idx,
-                           DynamicScopeManager &scope) {
+                           ScopeManager &scope) {
   int num_args(PASS_ARGS_NUM);
   // Fill required arguments
   LOG(BF("There are %d optional arguments") % optionals.size());
@@ -107,23 +108,23 @@ int PASS_FUNCTION_OPTIONAL(gctools::Vec0<OptionalArgument> const &optionals,
   return arg_idx;
 }
 
-void PASS_FUNCTION_REST(RestArgument const &restarg,
+void PASS_FUNCTION_REST(core::T_sp closure,
+                        RestArgument const &restarg,
                         PASS_ARGS,
                         int arg_idx,
-                        DynamicScopeManager &scope) {
+                        ScopeManager &scope) {
   if (restarg.VaRest) {
     scope.valist().set_from_other_Vaslist(&*arglist); // _change_nargs(&*arglist, n_args - arg_idx);
     scope.va_rest_binding(restarg);
+  } else if (arg_idx == PASS_ARGS_NUM) {
+    scope.new_binding(restarg, _Nil<T_O>());
   } else {
-    Cons_O::CdrType_sp rest = _Nil<Cons_O::CdrType_O>();
-    Cons_O::CdrType_sp *curP = &rest;
-    //        gctools::StackRootedPointerToSmartPtr<Cons_O::CdrType_O> cur(&rest);
-    for (int i(arg_idx), iEnd(PASS_ARGS_NUM); i < iEnd; ++i) {
-      T_sp obj = PASS_NEXT_ARG(arg_idx);
-      Cons_sp one = Cons_O::create(obj,_Nil<T_O>());
-      *curP = one;          // cur.setPointee(one);
-      curP = one->cdrPtr(); // cur.setPointer(one->cdrPtr());
-      ++arg_idx;
+    T_sp rest = Cons_O::create(PASS_NEXT_ARG(arg_idx), _Nil<T_O>());
+    T_sp cur = rest;
+    for (int i(arg_idx+1), iEnd(PASS_ARGS_NUM); i < iEnd; ++i) {
+      T_sp one = Cons_O::create(PASS_NEXT_ARG(i), _Nil<T_O>());
+      gc::As_unsafe<Cons_sp>(cur)->rplacd(one);
+      cur = one;
     }
     scope.new_binding(restarg, rest);
   }
@@ -133,7 +134,7 @@ void PASS_FUNCTION_REST(RestArgument const &restarg,
 void PASS_FUNCTION_VA_REST(RestArgument const &va_restarg,
                            PASS_ARGS,
                            int arg_idx,
-                           DynamicScopeManager &scope) {
+                           ScopeManager &scope) {
   Cons_O::CdrType_sp rest = _Nil<Cons_O::CdrType_O>();
   Cons_O::CdrType_sp *curP = &rest;
   scope.valist().set(&*arglist, n_args - arg_idx);
@@ -141,11 +142,12 @@ void PASS_FUNCTION_VA_REST(RestArgument const &va_restarg,
 }
 #endif
 
-int PASS_FUNCTION_KEYWORD(gctools::Vec0<KeywordArgument> const &keyed_args,
+int PASS_FUNCTION_KEYWORD(T_sp closure,
+                          gctools::Vec0<KeywordArgument> const &keyed_args,
                           T_sp allow_other_keys,
                           PASS_ARGS,
                           int arg_idx,
-                          DynamicScopeManager &scope) {
+                          ScopeManager &scope) {
   int num_args(PASS_ARGS_NUM);
   int num_keyed_arguments = keyed_args.size();
   bool passed_allow_other_keys = false;
@@ -185,7 +187,7 @@ int PASS_FUNCTION_KEYWORD(gctools::Vec0<KeywordArgument> const &keyed_args,
     }
   }
   if (first_illegal_keyword.notnilp() && !passed_allow_other_keys && allow_other_keys.nilp()) {
-    throwUnrecognizedKeywordArgumentError(first_illegal_keyword);
+    throwUnrecognizedKeywordArgumentError(closure,first_illegal_keyword);
     //	UNRECOGNIZED_KEYWORD_ARGUMENTS_ERROR(first_illegal_keyword);
   }
   // Now fill in the default values for the missing parameters

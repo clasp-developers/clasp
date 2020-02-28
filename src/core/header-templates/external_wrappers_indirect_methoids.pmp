@@ -53,7 +53,8 @@ $for isConst [[
           //if ( lcc_nargs != $numArgs ) core::wrongNumberOfArguments(lcc_nargs,$numArgs);
           $if numArgs>0 [[
             MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),$numArgs);
-            core::StackFrameDynamicScopeManager scope(frame);
+            MAKE_SPECIAL_BINDINGS_HOLDER(numSpecialBindings, specialBindingsVLA, lisp_lambda_list_handler_number_of_specials(closure->_lambdaListHandler));
+	    core::StackFrameDynamicScopeManager scope(numSpecialBindings,specialBindingsVLA,frame);
             lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
           ]]
           $for Args_ [[translate::from_object<ARG$Args_> a$Args_(frame->arg($Args_));

@@ -314,8 +314,9 @@
       (let ((head (car cc)))
 	(cond
 	  ((eq head 'symbolValueRestore)
-	   (cmp-log "popDynamicBinding of %s%N" (cadr cc))
-	   (irc-intrinsic "popDynamicBinding" (irc-global-symbol (cadr cc) env)))
+           (destructuring-bind (cmd symbol alloca) cc
+             (cmp-log "popDynamicBinding of %s%N" symbol)
+             (irc-intrinsic "popDynamicBinding" (irc-global-symbol symbol env) alloca)))
 	  (t (error (bformat nil "Unknown cleanup code: %s" cc))))))))
 
 (defun irc-unwind-environment (env)
@@ -334,7 +335,7 @@
 
 (defun irc-basic-block-create (name &optional (function *current-function*))
   "Create a llvm::BasicBlock with (name) in the (function)"
-  (llvm-sys:basic-block-create *llvm-context* name function))
+  (llvm-sys:basic-block-create (thread-local-llvm-context) name function))
 
 (defun irc-get-insert-block ()
   (llvm-sys:get-insert-block *irbuilder*))
@@ -350,12 +351,13 @@
 
 (defun irc-set-insert-point-basic-block (theblock &optional (irbuilder *irbuilder*))
   "Set the current insert point.  Signal an error if *irbuilder* jumps to a different function."
-  (when (llvm-sys:get-insert-block irbuilder)
-    (let* ((irbuilder-cur-basic-block (llvm-sys:get-insert-block irbuilder))
-           (irbuilder-cur-function    (llvm-sys:get-parent irbuilder-cur-basic-block))
-           (theblock-function         (llvm-sys:get-parent theblock)))
-      (unless (llvm-sys:function-equal irbuilder-cur-function theblock-function)
-        (error "The IRBuilder ~a that is currently in function ~a is being told to jump functions when its insert point is being set to ~a in ~a" irbuilder irbuilder-cur-function theblock theblock-function))))
+  #+debug-compiler
+  (let ((irbuilder-cur-basic-block (llvm-sys:get-insert-block irbuilder)))
+    (when irbuilder-cur-basic-block
+      (let* ((irbuilder-cur-function    (llvm-sys:get-parent irbuilder-cur-basic-block))
+             (theblock-function         (llvm-sys:get-parent theblock)))
+        (unless (llvm-sys:function-equal irbuilder-cur-function theblock-function)
+          (error "The IRBuilder ~a that is currently in function ~a is being told to jump functions when its insert point is being set to ~a in ~a" irbuilder irbuilder-cur-function theblock theblock-function)))))
   (llvm-sys:set-insert-point-basic-block irbuilder theblock))
 
 
@@ -429,18 +431,17 @@
 (defun irc-icmp-eq (lhs rhs &optional (name ""))
   (llvm-sys:create-icmp-eq *irbuilder* lhs rhs name))
 
-
-(defun irc-cond-br (icond true false &optional branchWeights)
-  (llvm-sys:create-cond-br *irbuilder* icond true false branchWeights))
+(defun irc-cond-br (icond true false &optional branchWeights unpredictable)
+  (llvm-sys:create-cond-br *irbuilder* icond true false branchWeights unpredictable))
 
 (defun irc-ptr-to-int (val int-type &optional (label "ptrtoint"))
   (llvm-sys:create-ptr-to-int *irbuilder* val int-type label))
 
 (defun irc-fdefinition (symbol &optional (label ""))
-  (irc-load (c++-field-ptr info.%symbol% symbol :function)))
+  (irc-load-atomic (c++-field-ptr info.%symbol% symbol :function)))
 
 (defun irc-setf-fdefinition (symbol &optional (label ""))
-  (irc-load (c++-field-ptr info.%symbol% symbol :setf-function)))
+  (irc-load-atomic (c++-field-ptr info.%symbol% symbol :setf-function)))
 
 (defun irc-untag-general (tagged-ptr &optional (type %t**%))
   #+(or)(let* ((ptr-i8* (irc-bit-cast tagged-ptr %i8*%))
@@ -458,20 +459,24 @@
 (defun irc-int-to-ptr (val ptr-type &optional (label "inttoptr"))
   (llvm-sys:create-int-to-ptr *irbuilder* val ptr-type label))
 
+(defun irc-sext (val &optional (destty %fixnum%) (label "sext"))
+  (llvm-sys:create-sext *irbuilder* val destty label))
+
 (defun irc-untag-fixnum (t* fixnum-type &optional (label "fixnum"))
   "Given a T* fixnum llvm::Value, returns a Value of the given type
 representing the fixnum with the tag shaved off."
-  (irc-lshr (irc-ptr-to-int t* fixnum-type) +fixnum-shift+
+  (irc-ashr (irc-ptr-to-int t* fixnum-type) +fixnum-shift+
             :exact t ; fixnum tag is zero.
             :label label))
 
 (defun irc-tag-fixnum (int &optional (label "fixnum"))
   "Given an llvm::Value of integer type, returns a T* value
 representing a tagged fixnum."
-  ;; :NUW T tells LLVM the top bits are zero, i.e. no overflow is possible.
+  ;; :NSW T tells LLVM that the bits shifted out will match the sign bit,
+  ;; which is true for fixnums.
   ;; NOTE: It's okay if the int is short (e.g. a bit) as inttoptr zexts.
   ;; (If the int is too long, it truncates - don't think we ever do that, though)
-  (irc-int-to-ptr (irc-shl int +fixnum-shift+ :nuw t) %t*% label))
+  (irc-int-to-ptr (irc-shl int +fixnum-shift+ :nsw t) %t*% label))
 
 (defun irc-maybe-cast-integer-to-t* (val &optional (label "fixnum-to-t*"))
   "If it's a fixnum then cast it - otherwise just return it - it should already be a t*"
@@ -484,7 +489,7 @@ representing a tagged fixnum."
 
 (defun irc-rack (instance-tagged)
   (let* ((instance* (irc-untag-general instance-tagged %instance*%))
-         (rack (irc-load (irc-struct-gep %instance% instance* +instance.rack-index+) "rack-tagged")))
+         (rack (irc-load-atomic (irc-struct-gep %instance% instance* +instance.rack-index+) "rack-tagged")))
     rack))
 
 (defun irc-instance-slot-address (instance index)
@@ -495,15 +500,17 @@ representing a tagged fixnum."
          (dataN* (irc-gep data0* (list 0 index))))
     dataN*))
 
+
+
 (defun irc-read-slot (instance index)
   "Read a value from the rack of an instance"
   (let ((dataN* (irc-instance-slot-address instance index)))
-    (irc-load dataN*)))
+    (irc-load-atomic dataN*)))
 
 (defun irc-write-slot (instance index value)
   "Write a value into the rack of an instance"
   (let ((dataN* (irc-instance-slot-address instance index)))
-    (irc-store value dataN*)
+    (irc-store-atomic value dataN*)
     value))
 
 (defun irc-value-frame-parent (renv)
@@ -533,7 +540,7 @@ representing a tagged fixnum."
     (irc-value-frame-reference depth-value-frame index)))
 
 (defun irc-make-irbuilder-insert-before-instruction (instruction)
-  (let ((irbuilder (llvm-sys:make-irbuilder *llvm-context*)))
+  (let ((irbuilder (llvm-sys:make-irbuilder (thread-local-llvm-context))))
     (if instruction
         (progn
           (irc-set-insert-point-instruction instruction irbuilder)
@@ -552,21 +559,21 @@ representing a tagged fixnum."
 ;;;
 
 (defun irc-real-array-displacement (tarray)
-  (irc-load (c++-field-ptr info.%mdarray% tarray :data) "real-array-displacement"))
+  (irc-load-atomic (c++-field-ptr info.%mdarray% tarray :data) "real-array-displacement"))
 
 (defun irc-real-array-index-offset (tarray)
-  (irc-load (c++-field-ptr info.%mdarray% tarray :displaced-index-offset) "real-array-displaced-index"))
+  (irc-load-atomic (c++-field-ptr info.%mdarray% tarray :displaced-index-offset) "real-array-displaced-index"))
 
 (defun irc-array-total-size (tarray)
-  (irc-load (c++-field-ptr info.%mdarray% tarray :array-total-size) "array-total-size"))
+  (irc-load-atomic (c++-field-ptr info.%mdarray% tarray :array-total-size) "array-total-size"))
 
 (defun irc-array-rank (tarray)
-  (irc-load (c++-field-ptr info.%mdarray% tarray :rank) "array-rank"))
+  (irc-load-atomic (c++-field-ptr info.%mdarray% tarray :rank) "array-rank"))
 
 (defun irc-array-dimension (tarray axis)
   (let* ((dims (c++-field-ptr info.%mdarray% tarray :dimensions))
          (axisN* (irc-gep dims (list 0 axis))))
-    (irc-load axisN*)))
+    (irc-load-atomic axisN*)))
 
 (defun irc-header-stamp (object)
   (let* ((object* (irc-untag-general object))
@@ -606,6 +613,9 @@ representing a tagged fixnum."
 
 (defun irc-ret (val)
   (llvm-sys:create-ret *irbuilder* val))
+
+(defun irc-ret-null-t* ()
+  (llvm-sys:create-ret *irbuilder* (llvm-sys:constant-pointer-null-get %t*%)))
 
 (defun irc-undef-value-get (type)
   (llvm-sys:undef-value-get type))
@@ -661,8 +671,25 @@ Otherwise do a variable shift."
       (llvm-sys:create-lshr-value-value
        cmp:*irbuilder* value shift label exact)))
 
+(defun irc-ashr (value shift &key (label "") exact)
+  "If shift is an integer, generate ashr with a constant uint64.
+Otherwise do a variable shift."
+  (if (integerp shift)
+      (llvm-sys:create-ashr-value-uint64
+       cmp:*irbuilder* value shift label exact)
+      (llvm-sys:create-ashr-value-value
+       cmp:*irbuilder* value shift label exact)))
+
 (defun irc-load (source &optional (label ""))
   (llvm-sys:create-load-value-twine *irbuilder* source label))
+
+(defun irc-load-atomic (source &optional (label "") (align 8))
+  (let ((inst (irc-load source label)))
+    (llvm-sys:set-alignment inst align) ; atomic loads require an explicit alignment.
+    (llvm-sys:set-atomic inst
+                         'llvm-sys:monotonic
+                         1 #+(or)'llvm-sys:system)
+    inst))
 
 (defun irc-store (val destination &optional (label "") (is-volatile nil))
   ;; Mismatch in store type sis a very common bug we hit when rewriting codegen.
@@ -683,6 +710,36 @@ Otherwise do a variable shift."
            (error "BUG: Mismatch in irc-store involving the val type ~a and destination type ~a -
 the type LLVMContexts don't match - so they were defined in different threads!"
                   val-type dest-contained-type)))))
+
+(defun irc-store-atomic (val destination &optional (label "") (is-volatile nil) (align 8))
+  (let ((inst (irc-store val destination label is-volatile)))
+    (llvm-sys:set-alignment inst align) ; atomic stores require an explicit alignment.
+    (llvm-sys:set-atomic inst
+                         'llvm-sys:monotonic
+                         1 #+(or)'llvm-sys:system)
+    inst))
+
+(defun irc-%cmpxchg (ptr cmp new)
+  ;; Sanity check I'm putting in when this is new that should maybe be removed, future reader
+  (let ((cmp-type (llvm-sys:get-type cmp)))
+    (unless (and (llvm-sys:type-equal cmp-type (llvm-sys:get-type new))
+                 (llvm-sys:type-equal cmp-type
+                                      (llvm-sys:get-contained-type (llvm-sys:get-type ptr) 0)))
+      (error "BUG: Type mismatch in IRC-%CMPXCHG")))
+  ;; actual gen
+  (llvm-sys:create-atomic-cmp-xchg *irbuilder*
+                                   ptr cmp new
+                                   'llvm-sys:sequentially-consistent
+                                   'llvm-sys:sequentially-consistent
+                                   1 #+(or)'llvm-sys:system))
+
+(defun irc-cmpxchg (ptr cmp new &optional (label ""))
+  ;; cmpxchg returns [value, flag] where flag is true iff the swap was done.
+  ;; since we're doing a strong exchange, value = cmp iff the swap was done too,
+  ;; so we don't really need the flag.
+  ;; Of course we might want to work with the flag directly instead, but that's
+  ;; a reorganization at a higher level.
+  (irc-extract-value (irc-%cmpxchg ptr cmp new) (list 0) label))
 
 (defun irc-phi (return-type num-reserved-values &optional (label "phi"))
   (llvm-sys:create-phi *irbuilder* return-type num-reserved-values label))
@@ -716,7 +773,7 @@ the type LLVMContexts don't match - so they were defined in different threads!"
                                               ("no-frame-pointer-elim" "true")
                                               "no-frame-pointer-elim-non-leaf"))
 (defmacro with-new-function
-    (( ;; FN is bound to the function being created
+    ((;; FN is bound to the function being created
       fn
       ;; FN-ENV is bound to the function environment
       fn-env
@@ -774,16 +831,16 @@ the type LLVMContexts don't match - so they were defined in different threads!"
               (*gv-current-function-name* (module-make-global-string *current-function-name* "fn-name")))
          (with-irbuilder (*irbuilder-function-body*)
            (with-new-function-prepare-for-try (,fn)
-             (with-dbg-function (,function-name
-                                 :lineno (core:source-pos-info-lineno core:*current-source-pos-info*)
+             (with-dbg-function (:lineno (core:source-pos-info-lineno core:*current-source-pos-info*)
                                  :linkage-name *current-function-name*
                                  :function ,fn
                                  :function-type ,function-type)
                (with-dbg-lexical-block (:lineno (core:source-pos-info-lineno core:*current-source-pos-info*))
                  (when core:*current-source-pos-info*
-                   (let ((lineno (core:source-pos-info-lineno core:*current-source-pos-info*)))
-                     (dbg-set-irbuilder-source-location-impl ,irbuilder-alloca lineno 0 *dbg-current-scope*)
-                     (dbg-set-irbuilder-source-location-impl ,irbuilder-body lineno 0 *dbg-current-scope*)))
+                   (dbg-set-irbuilder-source-location ,irbuilder-alloca
+                                                      core:*current-source-pos-info*)
+                   (dbg-set-irbuilder-source-location ,irbuilder-body
+                                                      core:*current-source-pos-info*))
                  (with-irbuilder (*irbuilder-function-body*)
                    (or *the-module* (error "with-new-function *the-module* is NIL"))
                    (cmp-log "with-landing-pad around body%N")
@@ -798,12 +855,21 @@ the type LLVMContexts don't match - so they were defined in different threads!"
   (let ((function-name (llvm-sys:get-name function)))
     (core:bformat nil "%s^DESC" function-name)))
 
-(defun irc-function-create (function-type linkage llvm-function-name module
+(defun irc-function-create (function-type linkage function-name module
                             &key
                               (function-attributes *default-function-attributes* function-attributes-p ))
+  #+(or)(progn
+    (core:bformat t "irc-function-create name: %s  linkage: %s%N"
+                  function-name linkage)
+    (if (and (string= "LAMBDA" function-name :start2 0 :end2 6)
+             (eq linkage 'llvm-sys:external-linkage))
+        (progn
+          (core::bformat t "Dumping backtrace%N")
+          (core:btcl)
+          (core:gdb "Exiting"))))
   (let* ((fn (llvm-sys:function-create function-type
                                        linkage
-                                       llvm-function-name
+                                       function-name
                                        module)))
     (dolist (temp function-attributes)
       (cond
@@ -815,7 +881,7 @@ the type LLVMContexts don't match - so they were defined in different threads!"
     fn))
 
 
-(defun irc-simple-function-create (llvm-function-name function-type linkage module
+(defun irc-simple-function-create (function-name function-type linkage module
                                    &key (function-attributes *default-function-attributes* function-attributes-p )
                                      argument-names ;;; '("result-ptr" "activation-frame-ptr") argument-names-p))
                                      )
@@ -823,7 +889,7 @@ the type LLVMContexts don't match - so they were defined in different threads!"
 But no irbuilders or basic-blocks. Return the fn."
   (let ((fn (irc-function-create function-type
                                  linkage
-                                 llvm-function-name
+                                 function-name
                                  module
                                  :function-attributes function-attributes)))
     (llvm-sys:set-personality-fn fn (irc-personality-function))
@@ -848,13 +914,18 @@ But no irbuilders or basic-blocks. Return the fn."
   lambda-list docstring declares form
   source-pathname lineno column filepos)
 
-(defun make-function-info (&key function-name lambda-list docstring declares form
-                             lineno column filepos)
-  ;; FIXME: *current-source-pos-info* could be installed already knowing about offsets
-  ;; and such, thus leaving the handling waaaaay up in compile-file.
-  (%make-function-info function-name lambda-list docstring declares form
-                       *source-debug-pathname* lineno column
-                       (+ filepos *source-debug-offset*)))
+(defun make-function-info (&key function-name lambda-list docstring declares form spi)
+  (let ((lineno 0) (column 0) (filepos 0) (source-pathname "-unknown-file-"))
+    (when spi
+      (setf source-pathname (core:file-scope-pathname
+                             (core:file-scope
+                              (core:source-pos-info-file-handle spi)))
+            lineno (core:source-pos-info-lineno spi)
+            ;; FIXME: Why 1+?
+            column (1+ (core:source-pos-info-column spi))
+            filepos (core:source-pos-info-filepos spi)))
+    (%make-function-info function-name lambda-list docstring declares form
+                         source-pathname lineno column filepos)))
 
 (defconstant +maxi32+ 4294967295)
 
@@ -957,9 +1028,9 @@ and then the irbuilder-alloca, irbuilder-body."
          (*current-function* fn)
 	 (func-env (make-function-container-environment env (car (llvm-sys:get-argument-list fn)) fn))
 	 cleanup-block traceid
-	 (irbuilder-cur (llvm-sys:make-irbuilder *llvm-context*))
-	 (irbuilder-alloca (llvm-sys:make-irbuilder *llvm-context*))
-	 (irbuilder-body (llvm-sys:make-irbuilder *llvm-context*)))
+	 (irbuilder-cur (llvm-sys:make-irbuilder (thread-local-llvm-context)))
+	 (irbuilder-alloca (llvm-sys:make-irbuilder (thread-local-llvm-context)))
+	 (irbuilder-body (llvm-sys:make-irbuilder (thread-local-llvm-context))))
     (let ((entry-bb (irc-basic-block-create "entry" fn)))
       (irc-set-insert-point-basic-block entry-bb irbuilder-cur))
     ;; Setup exception handling and cleanup landing pad
@@ -1283,18 +1354,12 @@ and then the irbuilder-alloca, irbuilder-body."
 
 (defun irc-verify-module-safe (module)
   (when *verify-llvm-modules*
-    (core:bformat t "Entered irc-verify-module-safe%N")
-    (llvm-sys:dump-module module)
     (multiple-value-bind (found-errors error-message)
-        (progn
-          (cmp-log "About to verify module prior to writing bitcode%N")
-          (irc-verify-module *the-module* 'llvm-sys::return-status-action))
-      (cmp-log "Done verify module%N")
-      (core:bformat t "irc-verify-module-safe found-errors: %s  message: %s%N" found-errors error-message)
-      (if found-errors
-          (progn
-            (format t "Module error: ~a~%" error-message)
-            (error "Verify module found errors"))))))
+        (irc-verify-module module 'llvm-sys::return-status-action)
+      (when found-errors
+        (llvm-sys:dump-module module)
+        (format t "Module error: ~a~%" error-message)
+        (error "Verify module found errors")))))
 
 (defun irc-verify-function (fn &optional (continue t))
   (when *verify-llvm-functions*
@@ -1326,7 +1391,7 @@ and then the irbuilder-alloca, irbuilder-body."
     (when does-not-return (push 'llvm-sys:attribute-no-return fnattrs))
     (push '("no-frame-pointer-elim" "true") fnattrs)
     (push "no-frame-pointer-elim-non-leaf" fnattrs)
-    (let ((function (cmp:irc-function-create (llvm-sys:function-type-get return-ty argument-types varargs)
+    (let ((function (irc-function-create (llvm-sys:function-type-get return-ty argument-types varargs)
                                              'llvm-sys::External-linkage
                                              dispatch-name
                                              module

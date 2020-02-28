@@ -44,27 +44,26 @@ THE SOFTWARE.
 
 namespace core {
 
-CL_LAMBDA(name &optional source-debug-pathname (source-debug-offset 0) (use-lineno t));
+CL_LAMBDA(name);
 CL_DECLARE();
 CL_DOCSTRING("sourceFileInfo given a source name (string) or pathname or integer, return the source-file-info structure and the integer index");
-CL_DEFUN T_mv core__file_scope(T_sp sourceFile, T_sp sourceDebugPathname, size_t sourceDebugOffset, bool useLineno) {
+CL_DEFUN T_mv core__file_scope(T_sp sourceFile) {
   if (sourceFile.nilp()) {
     return core__file_scope(make_fixnum(0));
   } else if (cl__stringp(sourceFile)) {
-    return _lisp->getOrRegisterFileScope(gc::As<String_sp>(sourceFile)->get_std_string(), sourceDebugPathname, sourceDebugOffset, useLineno);
+    return _lisp->getOrRegisterFileScope(gc::As<String_sp>(sourceFile)->get_std_string());
   } else if (Pathname_sp pnSourceFile = sourceFile.asOrNull<Pathname_O>()) {
     T_sp ns = cl__namestring(pnSourceFile);
     if (ns.nilp()) {
       SIMPLE_ERROR(BF("No namestring could be generated for %s") % _rep_(pnSourceFile));
     }
-    return _lisp->getOrRegisterFileScope(gc::As<String_sp>(ns)->get_std_string(), sourceDebugPathname, sourceDebugOffset, useLineno);
+    return _lisp->getOrRegisterFileScope(gc::As<String_sp>(ns)->get_std_string());
   } else if (sourceFile.fixnump()) {
     WITH_READ_LOCK(_lisp->_Roots._SourceFilesMutex);
     Fixnum_sp fnSourceFile(gc::As<Fixnum_sp>(sourceFile));
     size_t idx = unbox_fixnum(fnSourceFile);
     if (idx >= _lisp->_Roots._SourceFiles.size()) {
       idx = 0;
-      //                SIMPLE_ERROR(BF("Illegal index %d for source file info") % fnSourceFile->get() );
     }
     return Values(_lisp->_Roots._SourceFiles[idx], fnSourceFile);
   } else if (cl__streamp(sourceFile)) {
@@ -72,7 +71,7 @@ CL_DEFUN T_mv core__file_scope(T_sp sourceFile, T_sp sourceDebugPathname, size_t
     T_sp sfi = clasp_input_source_file_info(so);
     return core__file_scope(sfi);
   } else if (FileScope_sp sfi = sourceFile.asOrNull<FileScope_O>()) {
-    return _lisp->getOrRegisterFileScope(sfi->namestring(), sourceDebugPathname, sourceDebugOffset, useLineno);
+    return _lisp->getOrRegisterFileScope(sfi->namestring());
   } else if (SourcePosInfo_sp spi = sourceFile.asOrNull<SourcePosInfo_O>()) {
     return core__file_scope(make_fixnum(spi->_FileId));
   }
@@ -196,13 +195,10 @@ void FileScope_O::initialize() {
   this->Base::initialize();
 }
 
-FileScope_sp FileScope_O::create(Pathname_sp path, int handle, T_sp sourceDebugPathname, size_t sourceDebugOffset, bool useLineno) {
+FileScope_sp FileScope_O::create(Pathname_sp path, int handle) {
   GC_ALLOCATE(FileScope_O, sfi);
   sfi->_pathname = path;
   sfi->_FileHandle = handle;
-  sfi->_SourceDebugPathname = sourceDebugPathname;
-  sfi->_SourceDebugOffset = sourceDebugOffset;
-  sfi->_TrackLineno = useLineno;
   return sfi;
 }
 
@@ -211,7 +207,7 @@ void FileScope_O::fields(Record_sp node) {
   switch (node->stage()) {
   case Record_O::initializing:
   case Record_O::loading: {
-    FileScope_mv sfi = _lisp->getOrRegisterFileScope(gc::As<String_sp>(cl__namestring(this->_pathname))->get());
+    FileScope_mv sfi = _lisp->getOrRegisterFileScope(gc::As<String_sp>(cl__namestring(this->_pathname))->get_std_string());
     *this = *sfi;
   } break;
   case Record_O::patching: {
@@ -224,9 +220,9 @@ void FileScope_O::fields(Record_sp node) {
 }
       
   
-FileScope_sp FileScope_O::create(const string &str, int handle, T_sp truename, size_t offset, bool useLineno) {
+FileScope_sp FileScope_O::create(const string &str, int handle) {
   Pathname_sp pn = cl__pathname(SimpleBaseString_O::make(str));
-  return FileScope_O::create(pn, handle, truename, offset, useLineno);
+  return FileScope_O::create(pn, handle);
 }
 
 string FileScope_O::__repr__() const {
@@ -234,19 +230,8 @@ string FileScope_O::__repr__() const {
   ss << "#<" << this->_instanceClass()->_classNameAsString();
   ss << " " << _rep_(this->_pathname);
   ss << " :file-handle " << this->_FileHandle;
-  ss << " :source-debug-pathname " << _rep_(this->_SourceDebugPathname);
-  ss << " :source-debug-offset " << this->_SourceDebugOffset;
-  ss << " :trackLineno " << this->_TrackLineno;
   ss << " >";
   return ss.str();
-}
-
-CL_LISPIFY_NAME("FileScope-sourceDebugPathname");
-CL_DEFMETHOD Pathname_sp FileScope_O::sourceDebugPathname() const {
-  if (this->_SourceDebugPathname.notnilp()) {
-    return gc::As<Pathname_sp>(this->_SourceDebugPathname);
-  }
-  return this->_pathname;
 }
 
 string FileScope_O::fileName() const {
@@ -314,6 +299,17 @@ CL_DEFMETHOD T_sp SourcePosInfo_O::setf_source_pos_info_inlined_at(T_sp inlinedA
 
 
 
+CL_DEFMETHOD T_sp SourcePosInfo_O::source_pos_info_function_scope() const {
+  return this->_FunctionScope;
+}
+
+CL_DEFMETHOD T_sp SourcePosInfo_O::setf_source_pos_info_function_scope(T_sp function_scope) {
+  this->_FunctionScope = function_scope;
+  return function_scope;
+}
+
+
+
 void SourcePosInfo_O::fields(Record_sp node)
 {
   node->field(INTERN_(kw,fp),this->_Filepos);
@@ -355,6 +351,7 @@ string SourcePosInfo_O::__repr__() const {
   return ss.str();
 }
 
+#if 0
 bool SourcePosInfo_O::equalp(T_sp other) const {
   if (this == &*other) { return true; };
   if (!gc::IsA<SourcePosInfo_sp>(other)) return false;
@@ -365,6 +362,7 @@ bool SourcePosInfo_O::equalp(T_sp other) const {
   if (this->_Column != spi_other->_Column) return false;
   return true;
 }
+#endif
 
 SYMBOL_EXPORT_SC_(CorePkg, lookupFileScope);
 

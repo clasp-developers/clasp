@@ -91,9 +91,12 @@
    #:array-rank-ast
    #:array-dimension-ast
    #:vaslist-pop-ast
+   #:vaslist-length-ast
    #:header-stamp-ast #:rack-stamp-ast
    #:wrapped-stamp-ast #:derivable-stamp-ast
    #:bind-va-list-ast #:make-bind-va-list-ast #:va-list-ast
+   #:cmp-ast
+   #:cas-car-ast #:cas-cdr-ast #:slot-cas-ast #:acas-ast
    #:invoke-ast #:multiple-value-invoke-ast #:destinations
    #:introduce-invoke
    ))
@@ -145,9 +148,12 @@
    #:header-stamp-instruction #:rack-stamp-instruction
    #:wrapped-stamp-instruction #:derivable-stamp-instruction
    #:vaslist-pop-instruction #:make-vaslist-pop-instruction
+   #:vaslist-length-instruction #:make-vaslist-length-instruction
    #:bind-va-list-instruction #:make-bind-va-list-instruction
    #:defcallback-instruction #:defcallback-args
    #:header-stamp-case-instruction #:make-header-stamp-case-instruction
+   #:cas-car-instruction #:cas-cdr-instruction #:slot-cas-instruction
+   #:acas-instruction
    ))
 
 (defpackage #:clasp-cleavir-ast-to-hir
@@ -180,6 +186,7 @@
    #:make-headerq-instruction
    #:save-frame-instruction
    #:make-save-frame-instruction
+   #:memcas2-instruction
    #:enter-instruction
    #:typed-lexical-location #:lexical-location-type
    #:closure-pointer-dynamic-lexical-location

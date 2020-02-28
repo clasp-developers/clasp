@@ -151,6 +151,9 @@ void cc_initialize_gcroots_in_module(gctools::GCRootsInModule* holder,
                                      void** fdescs )
 {NO_UNWIND_BEGIN();
   initialize_gcroots_in_module(holder,root_address,num_roots,initial_data,transientAlloca,transient_entries, function_pointer_count, (void**)fptrs, fdescs );
+  if (llvmo::_sym_STARdebugObjectFilesSTAR->symbolValue().notnilp()) {
+    printf("%s:%d:%s holder@%p  root_address@%p  num_roots %lu\n", __FILE__, __LINE__, __FUNCTION__, (void*)holder, (void*)root_address, num_roots );
+  }
   NO_UNWIND_END();
 }
 
@@ -163,19 +166,6 @@ void cc_finish_gcroots_in_module(gctools::GCRootsInModule* holder)
 void cc_remove_gcroots_in_module(gctools::GCRootsInModule* holder)
 {NO_UNWIND_BEGIN();
   shutdown_gcroots_in_module(holder);
-  NO_UNWIND_END();
-}
-
-
-void ltvc_assign_source_file_info_handle(const char *moduleName, const char *sourceDebugPathname, size_t sourceDebugOffset, int useLineno, int *sourceFileInfoHandleP) {
-  NO_UNWIND_BEGIN();
-  //	printf("%s:%d assignFileScopeHandle %s\n", __FILE__, __LINE__, moduleName );
-  core::SimpleBaseString_sp mname = core::SimpleBaseString_O::make(moduleName);
-  core::SimpleBaseString_sp struename = core::SimpleBaseString_O::make(sourceDebugPathname);
-  T_mv sfi_mv = core::core__file_scope(mname, struename, sourceDebugOffset, useLineno ? true : false);
-  FileScope_sp sfi = gc::As<FileScope_sp>(sfi_mv);
-  int sfindex = unbox_fixnum(gc::As<core::Fixnum_sp>(sfi_mv.valueGet_(1)));
-  *sourceFileInfoHandleP = sfindex;
   NO_UNWIND_END();
 }
 
@@ -256,14 +246,9 @@ LtvcReturn ltvc_make_list(gctools::GCRootsInModule* holder, char tag, size_t ind
 {NO_UNWIND_BEGIN();
   // Makes a list of length LEN where all elements are NIL.
   // (ltvc_fill_list will be immediately after, so they could be undefined just as well.)
-  core::T_sp first;
-  core::T_sp* cur = &first;
-  for (; len != 0; --len) {
-    Cons_sp one = Cons_O::create(_Nil<core::T_O>(), _Nil<core::T_O>());
-    *cur = one;
-    cur = &one->_Cdr;
-  }
-  LTVCRETURN holder->setTaggedIndex(tag, index, first.tagged_());
+  ql::list result;
+  for (; len != 0; --len) result << _Nil<core::T_O>();
+  LTVCRETURN holder->setTaggedIndex(tag, index, result.result().tagged_());
   NO_UNWIND_END();
 }
 
@@ -275,7 +260,7 @@ LtvcReturn ltvc_fill_list(gctools::GCRootsInModule* holder, core::T_O* list, siz
   for (; len != 0; --len) {
     core::Cons_sp cons = gc::As<core::Cons_sp>(cur);
     cons->rplaca(core::T_sp(va_arg(va, T_O*)));
-    cur = cons->_Cdr;
+    cur = cons->cdr();
   }
   NO_UNWIND_END();
 }
@@ -328,7 +313,7 @@ LtvcReturn ltvc_make_fixnum(gctools::GCRootsInModule* holder, char tag, size_t i
 LtvcReturn ltvc_make_bignum(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* bignum_string_t)
 {NO_UNWIND_BEGIN();
   core::SimpleBaseString_sp bignum_string = gctools::As<core::SimpleBaseString_sp>(core::T_sp(bignum_string_t));
-  core::T_sp val = core::Bignum_O::make(bignum_string->get());
+  core::T_sp val = core::Bignum_O::make(bignum_string->get_std_string());
   LTVCRETURN holder->setTaggedIndex(tag,index,val.tagged_());
   NO_UNWIND_END();
 }
@@ -336,7 +321,7 @@ LtvcReturn ltvc_make_bignum(gctools::GCRootsInModule* holder, char tag, size_t i
 LtvcReturn ltvc_make_bitvector(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* bitvector_string_t)
 {NO_UNWIND_BEGIN();
   core::SimpleBaseString_sp bitvector_string = gctools::As<core::SimpleBaseString_sp>(core::T_sp(bitvector_string_t));
-  core::T_sp val = core::SimpleBitVector_O::make(bitvector_string->get());
+  core::T_sp val = core::SimpleBitVector_O::make(bitvector_string->get_std_string());
   LTVCRETURN holder->setTaggedIndex(tag,index,val.tagged_());
   NO_UNWIND_END();
 }
@@ -392,11 +377,12 @@ LtvcReturn ltvc_make_package(gctools::GCRootsInModule* holder, char tag, size_t 
 {
   NO_UNWIND_BEGIN();
   core::SimpleBaseString_sp package_name((gctools::Tagged)package_name_t);
-  core::T_sp tpkg = _lisp->findPackage(package_name->get(),false);
+  core::T_sp tpkg = _lisp->findPackage(package_name->get_std_string(),false);
   if ( tpkg.nilp() ) {
     // If we don't find the package - just make it
     // a more comprehensive defpackage should be coming
-    tpkg = _lisp->makePackage(package_name->get(),std::list<std::string>(), std::list<std::string>());
+    tpkg = _lisp->makePackage(package_name->get_std_string(),
+                              std::list<std::string>(), std::list<std::string>());
   }
   core::T_sp val = tpkg;
   LTVCRETURN holder->setTaggedIndex(tag,index,val.tagged_());
@@ -407,7 +393,7 @@ LtvcReturn ltvc_make_random_state(gctools::GCRootsInModule* holder, char tag, si
 {NO_UNWIND_BEGIN();
   core::SimpleBaseString_sp random_state_string((gctools::Tagged)random_state_string_t);
   core::RandomState_sp rs = core::RandomState_O::create();
-  rs->random_state_set(random_state_string->get());
+  rs->random_state_set(random_state_string->get_std_string());
   core::T_sp val = rs;
   LTVCRETURN holder->setTaggedIndex(tag,index,val.tagged_());
   NO_UNWIND_END();
@@ -517,7 +503,6 @@ LispCallingConventionPtr lccGlobalFunction(core::Symbol_sp sym) {
 extern "C" {
 
 const std::type_info &typeidCoreCatchThrow = typeid(core::CatchThrow);
-const std::type_info &typeidCoreLexicalGo = typeid(core::LexicalGo);
 const std::type_info &typeidCoreDynamicGo = typeid(core::DynamicGo);
 const std::type_info &typeidCoreReturnFrom = typeid(core::ReturnFrom);
 const std::type_info &typeidCoreUnwind = typeid(core::Unwind);
@@ -571,27 +556,28 @@ void dumpLowLevelTrace(int numLowLevels) {
 
 extern "C" {
 
-[[noreturn]] NOINLINE void cc_wrong_number_of_arguments(core::T_O* tfunction, std::size_t nargs,
+// FIXME: This should be [[noreturn]], but I'm not sure how to communicate to clang that the
+// error calls won't return, so it complains if that's declared.
+NOINLINE void cc_wrong_number_of_arguments(core::T_O* tfunction, std::size_t nargs,
                                                         std::size_t min, std::size_t max) {
   Function_sp function((gctools::Tagged)tfunction);
-  if (min == max) {
-    SIMPLE_ERROR(BF("Calling %s - got %d arguments, but expected exactly %d")
-                 % _rep_(function->functionName())
-                 % nargs % min);
-  } else if (min < max) {
-    SIMPLE_ERROR(BF("Calling %s - got %d arguments, but expected between %d and %d")
-                 % _rep_(function->functionName())
-                 % nargs % min % max);
-  } else {
-    // This is kind of a KLUDGE, but basically we use smaller max to indicate
-    // there is no limit on the number of arguments.
-    // Check how this function is called in arguments.lsp.
-    SIMPLE_ERROR(BF("Calling %s - got %d arguments, but expected at least %d")
-                 % _rep_(function->functionName())
-                 % nargs % min);
-  }
+  /* This is kind of a KLUDGE, but we use a smaller max to indicate there is no
+   * limit on the number of arguments (i.e., &rest or &key).
+   * Check how calls to this function are generated in cmp/arguments.lsp. */
+  if (max < min)
+    core::eval::funcall(cl::_sym_error,
+                        core::_sym_wrongNumberOfArguments,
+                        kw::_sym_calledFunction, function,
+                        kw::_sym_givenNargs, core::make_fixnum(nargs),
+                        kw::_sym_minNargs, core::make_fixnum(min));
+  else
+    core::eval::funcall(cl::_sym_error,
+                        core::_sym_wrongNumberOfArguments,
+                        kw::_sym_calledFunction, function,
+                        kw::_sym_givenNargs, core::make_fixnum(nargs),
+                        kw::_sym_minNargs, core::make_fixnum(min),
+                        kw::_sym_maxNargs, core::make_fixnum(max));
 }
-
 
 ALWAYS_INLINE T_O *va_lexicalFunction(size_t depth, size_t index, core::T_O* evaluateFrameP)
 {NO_UNWIND_BEGIN();
@@ -607,15 +593,13 @@ __attribute__((visibility("default"))) core::T_O *cc_gatherRestArguments(va_list
 {NO_UNWIND_BEGIN();
   va_list rargs;
   va_copy(rargs, vargs); // the original valist is needed for &key processing elsewhere.
-  core::List_sp result = _Nil<core::T_O>();
-  core::Cons_sp *cur = reinterpret_cast<Cons_sp *>(&result);
-  for (int i = 0; i<nargs; ++i ) {
+  ql::list result;
+  for (int i = 0; i < nargs; ++i) {
     core::T_O* tagged_obj = ENSURE_VALID_OBJECT(va_arg(rargs,core::T_O*));
-    *cur = core::Cons_O::create(gc::smart_ptr<core::T_O>((gc::Tagged)tagged_obj), _Nil<core::T_O>());
-    cur = reinterpret_cast<Cons_sp *>(&(*cur)->_Cdr);
+    result << gc::smart_ptr<core::T_O>((gc::Tagged)tagged_obj);
   }
   va_end(rargs);
-  return result.raw_();
+  return result.result().raw_();
   NO_UNWIND_END();
 }
 
@@ -736,7 +720,7 @@ void debugInspectTPtr_detailed(core::T_O *tP) {
   printf("%s:%d Insert breakpoint here if you want to inspect object\n", __FILE__, __LINE__);
   core::T_sp val((gctools::Tagged)tP);
   if (core::HashTable_sp htval = val.asOrNull<core::HashTable_O>() ) {
-    htval->hash_table_dump(core::make_fixnum(0),_Nil<core::T_O>());
+    htval->hash_table_dump();
   }
 }
 
@@ -870,15 +854,14 @@ void debugPrint_size_t(size_t v)
 }
 
 void throwReturnFrom(size_t depth, core::ActivationFrame_O* frameP) {
-#ifdef DEBUG_TRACK_UNWINDS
-  global_ReturnFrom_count++;
-#endif
+  my_thread->_unwinds++;
   core::ActivationFrame_sp af((gctools::Tagged)(frameP));
   core::T_sp handle = *const_cast<core::T_sp *>(&core::value_frame_lookup_reference(af, depth, 0));
   core::ReturnFrom returnFrom(handle.raw_());
 #if defined(DEBUG_FLOW_TRACKER)
   flow_tracker_about_to_throw(CONS_CAR(handle).unsafe_fixnum());
 #endif
+  my_thread_low_level->_start_unwind = std::chrono::high_resolution_clock::now();
   throw returnFrom;
 }
 };
@@ -890,6 +873,8 @@ gctools::return_type blockHandleReturnFrom_or_rethrow(unsigned char *exceptionP,
   if (returnFrom.getHandle() == handle) {
     core::MultipleValues &mv = core::lisp_multipleValues();
     gctools::return_type result(mv.operator[](0),mv.getSize());
+    std::chrono::time_point<std::chrono::high_resolution_clock> now = std::chrono::high_resolution_clock::now();
+    my_thread_low_level->_unwind_time += (now - my_thread_low_level->_start_unwind);
     return result;
   }
 #if defined(DEBUG_FLOW_TRACKER)
@@ -950,15 +935,6 @@ core::T_O* initializeTagbodyClosure(core::T_O *afP)
 }
 };
 
-core::T_mv proto_ifCatchFrameMatchesStoreResultElseRethrow(size_t catchFrame, unsigned char *exceptionP) {
-  core::CatchThrow *ctExceptionP = reinterpret_cast<core::CatchThrow *>(exceptionP);
-  if (catchFrame == ctExceptionP->getFrame()) {
-    return gctools::multiple_values<core::T_O>::createFromValues(); // ctExceptionP->getReturnedObject();
-  }
-// rethrow the exception
-  throw * ctExceptionP;
-}
-
 extern "C" {
 
 void throwIllegalSwitchValue(size_t val, size_t max) {
@@ -967,9 +943,7 @@ void throwIllegalSwitchValue(size_t val, size_t max) {
 
 
 void throwDynamicGo(size_t depth, size_t index, core::T_O *afP) {
-#ifdef DEBUG_TRACK_UNWINDS
-  global_DynamicGo_count++;
-#endif
+  my_thread->_unwinds++;
   T_sp af((gctools::Tagged)afP);
   ValueFrame_sp tagbody = gc::As<ValueFrame_sp>(core::tagbody_frame_lookup(gc::As_unsafe<ValueFrame_sp>(af),depth,index));
   T_O* handle = tagbody->operator[](0).raw_();
@@ -980,12 +954,15 @@ void throwDynamicGo(size_t depth, size_t index, core::T_O *afP) {
   Fixnum throwFlowCounter = CONS_CAR(throwHandleCons).unsafe_fixnum();
   flow_tracker_about_to_throw(throwFlowCounter);
 #endif
+  my_thread_low_level->_start_unwind = std::chrono::high_resolution_clock::now();
   throw dgo;
 }
 
 size_t tagbodyHandleDynamicGoIndex_or_rethrow(char *exceptionP, T_O* handle) {
   core::DynamicGo& goException = *reinterpret_cast<core::DynamicGo *>(exceptionP);
   if (goException.getHandle() == handle) {
+    std::chrono::time_point<std::chrono::high_resolution_clock> now = std::chrono::high_resolution_clock::now();
+    my_thread_low_level->_unwind_time += (now - my_thread_low_level->_start_unwind);
     return goException.index();
   }
   throw;
@@ -1022,28 +999,18 @@ gctools::return_type restoreFromMultipleValue0()
 
 extern "C" {
 
-void pushDynamicBinding(core::T_O *tsymbolP)
+void pushDynamicBinding(core::T_O *tsymbolP, core::T_O** alloca)
 {NO_UNWIND_BEGIN();
   core::Symbol_sp sym((gctools::Tagged)tsymbolP);
-  my_thread->bindings().push_with_value_coming(sym,&sym->_GlobalValue);
+  *alloca = sym->threadLocalSymbolValue().raw_();
   NO_UNWIND_END();
 }
 
-void popDynamicBinding(core::T_O *tsymbolP)
+void popDynamicBinding(core::T_O *tsymbolP, core::T_O** alloca)
 {NO_UNWIND_BEGIN();
   core::Symbol_sp sym((gctools::Tagged)tsymbolP);
-  core::Symbol_sp top = my_thread->bindings().topSymbol();
-  if (sym != my_thread->bindings().topSymbol()) {
-    stringstream ss;
-    ss << __FILE__ << ":" << __LINE__;
-    ss << " About  to DynamicBindingStack::pop_binding" << my_thread->bindings().top();
-    ss << " of " << sym->formattedName(true) << std::endl;
-    ss << "  mismatch with top of dynamic binding stack: " << top->formattedName(true) << std::endl;
-    ss << "  dumping stack: " << std::endl;
-    core::core__dynamic_binding_stack_dump(ss);
-    SIMPLE_ERROR(BF("Mismatch in popDynamicBinding:\n%s") % ss.str());
-  }
-  my_thread->bindings().pop_binding();
+  core::T_sp val((gctools::Tagged)*alloca);
+  sym->set_threadLocalSymbolValue(val);
   NO_UNWIND_END();
 }
 };
@@ -1089,6 +1056,13 @@ void cc_setSymbolValue(core::T_O *sym, core::T_O *val)
   //	core::Symbol_sp s = gctools::smart_ptr<core::Symbol_O>(reinterpret_cast<core::Symbol_O*>(sym));
   core::Symbol_sp s = gctools::smart_ptr<core::Symbol_O>((gc::Tagged)sym);
   s->setf_symbolValue(gctools::smart_ptr<core::T_O>((gc::Tagged)val));
+  NO_UNWIND_END();
+}
+
+void cc_setTLSymbolValue(core::T_O* sym, core::T_O *val)
+{NO_UNWIND_BEGIN();
+  core::Symbol_sp s = gctools::smart_ptr<core::Symbol_O>((gc::Tagged)sym);
+  s->set_threadLocalSymbolValue(gctools::smart_ptr<core::T_O>((gc::Tagged)val));
   NO_UNWIND_END();
 }
 
@@ -1193,14 +1167,6 @@ T_O **cc_multipleValuesArrayAddress()
   NO_UNWIND_END();
 }
 
-void cc_unwind(T_O *targetFrame, size_t index) {
-#ifdef DEBUG_TRACK_UNWINDS
-  global_unwind_count++;
-#endif
-  core::Unwind unwind(targetFrame, index);
-    throw unwind;
-}
-
 void cc_saveMultipleValue0(core::T_mv result)
 {NO_UNWIND_BEGIN();
   result.saveToMultipleValue0();
@@ -1238,9 +1204,25 @@ T_O *cc_pushLandingPadFrame()
   NO_UNWIND_END();
 }
 
+void cc_unwind(T_O *targetFrame, size_t index) {
+  // Signal an error if the frame we're trying to return to is no longer on the stack.
+  // FIXME: This is kind of a kludge. It iterates through the stack frame. But c++ throw
+  // does so as well - twice - so we end up iterating three times.
+  // The correct thing to do would probably be to use the Itanium EH ABI (which we already
+  // rely on the C++ part of) and write our own throw, that signals an error instead of
+  // calling std::terminate in the event no handler is present.
+  my_thread->_unwinds++;
+  my_thread_low_level->_start_unwind = std::chrono::high_resolution_clock::now();
+  core::frame_check((uintptr_t)targetFrame);
+  core::Unwind unwind(targetFrame, index);
+  throw unwind;
+}
+
 size_t cc_landingpadUnwindMatchFrameElseRethrow(char *exceptionP, core::T_O *thisFrame) {
   core::Unwind *unwindP = reinterpret_cast<core::Unwind *>(exceptionP);
   if (unwindP->getFrame() == thisFrame) {
+    std::chrono::time_point<std::chrono::high_resolution_clock> now = std::chrono::high_resolution_clock::now();
+    my_thread_low_level->_unwind_time += (now - my_thread_low_level->_start_unwind);
     return unwindP->index();
   }
   // throw * unwindP;

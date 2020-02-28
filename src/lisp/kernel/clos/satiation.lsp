@@ -428,13 +428,15 @@
 (defun compile-time-discriminator (generic-function &rest lists-of-specializer-names)
   (multiple-value-bind (call-history fmf-binds mf-binds)
       (apply #'compile-time-call-history generic-function lists-of-specializer-names)
-    (let ((name (generic-function-name generic-function)))
-      (generate-dispatcher-from-dtree
-       generic-function
-       (calculate-dtree call-history (generic-function-specializer-profile generic-function))
-       :extra-bindings (compile-time-bindings-junk fmf-binds mf-binds)
-       :generic-function-name name
-       :generic-function-form `(load-time-value (fdefinition ',name) t)))))
+    (multiple-value-bind (min max)
+        (generic-function-min-max-args generic-function)
+      (let ((name (generic-function-name generic-function)))
+        (generate-dispatcher-from-dtree
+         (calculate-dtree call-history (generic-function-specializer-profile generic-function))
+         :extra-bindings (compile-time-bindings-junk fmf-binds mf-binds)
+         :nreq min :max-nargs max
+         :generic-function-name name
+         :generic-function-form `(load-time-value (fdefinition ',name) t))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -445,6 +447,13 @@
 ;;; Possible improvement: Put in some handler-case stuff to reduce any errors to
 ;;; warnings, given that this is just for optimization.
 (defun satiate (generic-function &rest lists-of-specializer-designators)
+  "Prepare a generic function so that its discriminating function will not have
+to be recompiled very much when called with pre-specified specializers.
+GENERIC-FUNCTION is a generic function. LISTS-OF-SPECIALIZER-DESIGNATORS is a
+list of lists of specializer designator. Each inner list should have as many
+elements as the generic function has specializable (i.e. required) arguments.
+A specializer designator is either a specializer, or a symbol naming a class, or
+a list (EQL object) - just like DEFMETHOD."
   (flet ((coerce-specializer-designator (specializer-designator)
            ;; The fake EQL specializers fastgf uses.
            ;; (It's getting annoying. FIXME?)
@@ -475,6 +484,9 @@
 ;;; At the moment, it also requires that the generic function and all relevant methods are defined
 ;;; at compile time. If we store information about DEFMETHODs in the environment at compile time,
 ;;; though, that shouldn't be required. (EQL specializers will be a bit weird, though.)
+;;; NOTE: As of now we dump with class stamps anyway. This is okay for system code where the
+;;; stamps work out identically, but for library code it would be bad. Might want to make a
+;;; separate macro or something.
 
 (define-compiler-macro satiate (&whole form generic-function &rest lists &environment env)
   (if (and (consp generic-function)

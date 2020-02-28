@@ -121,10 +121,8 @@ the corresponding VAR.  Returns NIL."
       t)
 
 
-
-
-
-(fset 'cons-cdr #'(lambda (def env) `(cdr ,(cadr def))) t)
+(fset 'cons-car #'(lambda (def env) `(car (the cons ,(cadr def)))) t)
+(fset 'cons-cdr #'(lambda (def env) `(cdr (the cons ,(cadr def)))) t)
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (select-package :ext))
@@ -246,6 +244,18 @@ the corresponding VAR.  Returns NIL."
 
 
 (defun hash-table-iterator (hash-table)
+  (let ((pairs (core:hash-table-pairs hash-table))
+        (hash-index 0))
+    (function (lambda ()
+      (if (>= hash-index (length pairs))
+          nil
+          (let* ((key (elt pairs hash-index))
+                 (val (elt pairs (incf hash-index))))
+            (incf hash-index)
+            (values t key val)))))))
+
+#+(or)
+(defun hash-table-iterator (hash-table)
   (let ((number-of-buckets (hash-table-number-of-hashes hash-table))
         (hash 0))
     (labels ((advance-hash-table-iterator ()
@@ -317,10 +327,6 @@ the corresponding VAR.  Returns NIL."
 
 (defun inform (fmt &rest args)
   (apply #'bformat t fmt args))
-
-(si::fset 'cons-car #'(lambda (w e)
-                        `(car ,(cadr w)))
-          t)
 
 (in-package :cl)
 

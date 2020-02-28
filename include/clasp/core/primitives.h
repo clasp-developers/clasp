@@ -42,7 +42,7 @@ extern Symbol_sp core__function_block_name(T_sp functionName);
 
 //extern void af_ensure_single_dispatch_generic_function(Symbol_sp gfname, LambdaListHandler_sp llh);
 
-extern T_mv cl__read_delimited_list(Character_sp chr, T_sp input_stream_designator, T_sp recursive_p);
+extern List_sp cl__read_delimited_list(Character_sp chr, T_sp input_stream_designator, T_sp recursive_p);
 
 T_sp cl__read(T_sp input_stream_designator, T_sp eof_error_p = _Nil<T_O>(), T_sp eof_value = _Nil<T_O>(), T_sp recursive_p = _Nil<T_O>());
 T_sp cl__read_preserving_whitespace(T_sp input_stream_designator, T_sp eof_error_p = _Nil<T_O>(), T_sp eof_value = _Nil<T_O>(), T_sp recursive_p = _Nil<T_O>());
@@ -72,106 +72,6 @@ T_sp cl__append(VaList_sp lists);
 
 };
 
-
-namespace core {
-  class SequenceStepper_O;
-  class VectorStepper_O;
-  class ConsStepper_O;
-  FORWARD(SequenceStepper);
-  FORWARD(VectorStepper);
-  FORWARD(ConsStepper);
-};
-
-template <>
-  struct gctools::GCInfo<core::SequenceStepper_O> {
-  static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = false;
-  static GCInfo_policy constexpr Policy = normal;
-};
-
-namespace core {
- class SequenceStepper_O : public General_O {
-   LISP_ABSTRACT_CLASS(core,CorePkg,SequenceStepper_O,"SequenceStepper",General_O);
-public:
-  virtual bool advance() = 0;
-  virtual T_sp element() const = 0;
-  virtual ~SequenceStepper_O(){};
-};
-};
-
-template <>
-  struct gctools::GCInfo<core::VectorStepper_O> {
-  static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = false;
-  static GCInfo_policy constexpr Policy = normal;
-};
-
-namespace core {
-class VectorStepper_O : public SequenceStepper_O {
-  LISP_CLASS(core,CorePkg,VectorStepper_O,"VectorStepper",SequenceStepper_O);
-private:
-  Vector_sp _Domain;
-  int _Index;
-public:
-  VectorStepper_O(Vector_sp domain) : _Domain(domain), _Index(0){};
-  virtual bool advance() {
-    this->_Index++;
-    return (this->_Index >= cl__length(this->_Domain));
-  };
-  virtual T_sp element() const {
-    if (this->_Index < cl__length(this->_Domain)) {
-      return this->_Domain->rowMajorAref(this->_Index);
-    } else {
-      return _Nil<T_O>();
-    }
-  };
-};
-};
-template <>
-  struct gctools::GCInfo<core::ConsStepper_O> {
-  static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = false;
-  static GCInfo_policy constexpr Policy = normal;
-};
-
-namespace core {
-class ConsStepper_O : public SequenceStepper_O {
-  LISP_CLASS(core,CorePkg,ConsStepper_O,"ConsStepper",SequenceStepper_O);
-public: //private
-  List_sp _Cur;
-public:
-  ConsStepper_O(List_sp first) : _Cur(first){};
-  virtual bool advance() {
-    this->_Cur = oCdr(this->_Cur);
-    return this->_Cur.nilp();
-  };
-  virtual T_sp element() const { return oCar(this->_Cur); };
-};
-
-/*! A class that generates lists of elements drawn from a list of sequences.
-      Given (a1 a2 a3) (b1 b2 b3) (c1 c2 c3)
-      Will successively generate (a1 b1 c1) (a2 b2 c2) (a3 b3 c3) */
-class ListOfSequenceSteppers
-    {
-  friend class ListOfListSteppers;
-
-private:
-  gctools::Vec0<SequenceStepper_sp> _Steppers;
-  bool _AtEnd;
-
-public:
-  ListOfSequenceSteppers(){};
-  ListOfSequenceSteppers(List_sp sequences);
-  virtual ~ListOfSequenceSteppers(){};
-  bool atEnd() const { return this->_AtEnd; };
-  //	List_sp makeListFromCurrentSteppers() const;
-  void fillValueFrameUsingCurrentSteppers(ActivationFrame_sp frame) const;
-  /* Advance all of the steppers - return false if the end is hit otherwise true */
-  bool advanceSteppers();
-  int size() { return this->_Steppers.size(); };
-};
-};
-
 namespace core {
 T_sp cl__mapc(T_sp op, List_sp lists);
 T_sp cl__mapcar(T_sp op, List_sp lists);
@@ -179,13 +79,6 @@ T_sp cl__mapcar(T_sp op, List_sp lists);
 
 namespace core {
 
-  CL_LAMBDA(x y);
-  CL_DECLARE();
-  CL_DOCSTRING(R"doc(add two numbers)doc");
-  inline CL_DEFUN int core__test_add(int x, int y) {
-    return x + y;
-  }
-  
 /*! Return the FileScope for the obj - if obj is nil then return 
       one for anonymous */
 
@@ -255,20 +148,20 @@ namespace core {
 /*! Set the current core:*ihs-current* value.
       If the idx is out of bounds then return a valid value */
 void core__gdb(T_sp msg);
-  T_mv core__valid_function_name_p(T_sp arg);
+  T_sp core__valid_function_name_p(T_sp arg);
   int core__set_ihs_current_frame(int idx);
   void core__exception_stack_dump();
   T_sp core__create_tagged_immediate_value_or_nil(T_sp object);
   bool cl__constantp(T_sp obj, T_sp env = _Nil<T_O>());
   T_mv cl__values_list(List_sp list);
-  T_mv cl__compiler_macro_function(core::T_sp name, core::T_sp env);
+  T_sp cl__compiler_macro_function(core::T_sp name, core::T_sp env);
   bool cl__fboundp(T_sp functionName);
   T_sp core__get_global_inline_status(core::T_sp name, core::T_sp env);
   void core__setf_global_inline_statis(core::T_sp name, bool status, core::T_sp env);
   T_sp cl__fdefinition(T_sp functionName);
-  T_mv cl__special_operator_p(Symbol_sp sym);
+  T_sp cl__special_operator_p(Symbol_sp sym);
   T_sp cl__sleep(Real_sp oseconds);
-List_sp core__list_from_va_list(VaList_sp valist);
+  List_sp core__list_from_va_list(VaList_sp valist);
 
 T_sp core__next_number();
 };

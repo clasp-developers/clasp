@@ -24,15 +24,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
+
 #define DEBUG_LEVEL_FULL
-
-
-#if 0
-// If you turn this on it takes a LOT of stack memory!!! and it runs even if DEBUG_SOURCE IS ON!!!!
-#define BT_LOG(msg) {char buf[1024]; sprintf msg; LOG(BF("%s") % buf);}
-#else
-#define BT_LOG(msg)
-#endif
 
 #include <csignal>
 #include <execinfo.h>
@@ -87,137 +80,100 @@ THE SOFTWARE.
 //#include <bsd/vis.h>
 #endif
 
+
+#ifdef _TARGET_OS_DARWIN
 namespace core {
-//////////////////////////////////////////////////////////////////////
-//
-// Define backtrace
-//
+core::SymbolTable load_macho_symbol_table(bool is_executable, const char* filename, uintptr_t header, uintptr_t exec_header);
+};
+#endif
 
-// ------------------------------------------------------------------
-//
-// Write messages to cl:*debug-io*
-//
-#define WRITE_DEBUG_IO(fmt) core::write_bf_stream(fmt, cl::_sym_STARdebug_ioSTAR->symbolValue());
+#if defined(_TARGET_OS_LINUX) || defined(_TARGET_OS_FREEBSD)
+namespace core {
+void* find_base_of_loaded_object(const char* name);
+core::SymbolTable load_linux_symbol_table(const char* filename, uintptr_t start, uintptr_t& stackmap_start, size_t& stackmap_size);
+};
+#endif
 
-typedef void(*scan_callback)(std::vector<BacktraceEntry>&backtrace, const std::string& filename, uintptr_t start);
+namespace core {
 
 
-struct SymbolEntry {
-  uintptr_t    _Address;
-  char         _Type;
-  uint         _SymbolOffset;
-  SymbolEntry() {};
-  SymbolEntry(uintptr_t start, char type, int symbolOffset) : _Address(start), _Type(type), _SymbolOffset(symbolOffset) {};
-  bool operator<(const SymbolEntry& other) {
-    return this->_Address < other._Address;
+DebugInfo* global_DebugInfo = NULL;
+
+DebugInfo& debugInfo() {
+  if (!global_DebugInfo) {
+    global_DebugInfo = new DebugInfo();
   }
-  const char* symbol(const char* symbol_names) {
-    return symbol_names+this->_SymbolOffset;
+  return *global_DebugInfo;
+}
+
+
+
+bool SymbolTable::findSymbolForAddress(uintptr_t address,const char*& symbol, uintptr_t& startAddress, uintptr_t& endAddress, char& type, size_t& index) {
+  if (this->_Symbols.size() == 0) return false;
+  SymbolEntry& lastSymbol = this->_Symbols[this->_Symbols.size()-1];
+  BT_LOG((buf,"findSymbolForAddress %p   symbol_table startAddress %p  endAddress %p #symbols %lu, address<first->%d address>=last->%d\n",
+          (void*)address,
+          (void*)this->_SymbolsLowAddress,
+          (void*)this->_SymbolsHighAddress,
+          this->_Symbols.size(),
+          (address<this->_SymbolsLowAddress),
+          (address>= this->_SymbolsHighAddress)
+          ));
+  if (address < this->_SymbolsLowAddress) return false;
+  if (address >= this->_SymbolsHighAddress) return false;
+  {
+    size_t l = 0;
+    size_t r = this->_Symbols.size()-1;
+    while (true) {
+      if (l>=r) {
+        index = l-1;
+        goto DONE;
+      }
+      size_t m = (l+r)/2;
+      if (this->_Symbols[m]._Address<=address) {
+        l = m+1;
+      } else if (this->_Symbols[m]._Address>address) {
+        r = m;
+      } else {
+        index = l;
+        goto DONE;
+      }
+    }
+  DONE:
+    symbol = this->_SymbolNames+this->_Symbols[index]._SymbolOffset;
+    startAddress = this->_Symbols[index]._Address;
+    endAddress = this->_Symbols[index+1]._Address;
+    type = this->_Symbols[index]._Type;
+    BT_LOG((buf,"findSymbolForAddress returning index %zu max %u name: %s startAddress: %p endAddress: %p type|%c|\n", index, this->_End-1, symbol, (void*)startAddress, (void*)endAddress, type));
+    return true;
   }
 };
 
+void SymbolTable::addSymbol(std::string symbol, uintptr_t start, char type) {
+  BT_LOG((buf,"name: %s start: %p  type |%c|\n",symbol.c_str(),(void*)start,type));
+  if (start < this->_SymbolsLowAddress) this->_SymbolsLowAddress = start;
+  if (this->_SymbolsHighAddress < start ) this->_SymbolsHighAddress = start;
+  if ((this->_End+symbol.size()+1)>= this->_Capacity) {
+    this->_SymbolNames = (char*)realloc(this->_SymbolNames,this->_Capacity*2);
+    if (this->_SymbolNames == NULL ) {
+      printf("%s:%d:%s Could not realloc to size %u\n", __FILE__, __LINE__, __FUNCTION__, this->_Capacity*2);
+      abort();
+    }
+    this->_Capacity *= 2;
+  }
+  uint str = this->_End;
+  strncpy(this->_SymbolNames+str,symbol.c_str(),symbol.size());
+  this->_SymbolNames[str+symbol.size()] = '\0';
+  this->_End += symbol.size()+1;
+  this->_Symbols.emplace_back(start,type,str);
+  BT_LOG((buf,"Wrote symbol index %lu |%s| to %u type |%c|\n",this->_Symbols.size()-1,this->_Symbols[this->_Symbols.size()-1].symbol(this->_SymbolNames),str,type));
+}
 
-struct SymbolTable {
-  char* _SymbolNames;
-  uint   _End;
-  uint   _Capacity;
-  uintptr_t _StackmapStart;
-  uintptr_t _StackmapEnd;
-  std::vector<SymbolEntry> _Symbols;
-  SymbolTable() : _End(0), _Capacity(1024), _StackmapStart(0), _StackmapEnd(0) {
-    this->_SymbolNames = (char*)malloc(this->_Capacity);
-  }
-  ~SymbolTable() {
-  };
-  void addSymbol(std::string symbol, uintptr_t start, char type) {
-    BT_LOG((buf,"name: %s start: %p  type |%c|\n",symbol.c_str(),(void*)start,type));
-    if ((this->_End+symbol.size()+1)>= this->_Capacity) {
-      this->_SymbolNames = (char*)realloc(this->_SymbolNames,this->_Capacity*2);
-      if (this->_SymbolNames == NULL ) {
-        printf("%s:%d:%s Could not realloc to size %u\n", __FILE__, __LINE__, __FUNCTION__, this->_Capacity*2);
-        abort();
-      }
-      this->_Capacity *= 2;
-    }
-    uint str = this->_End;
-    strncpy(this->_SymbolNames+str,symbol.c_str(),symbol.size());
-    this->_SymbolNames[str+symbol.size()] = '\0';
-    this->_End += symbol.size()+1;
-    this->_Symbols.emplace_back(start,type,str);
-    BT_LOG((buf,"Wrote symbol index %lu |%s| to %u type |%c|\n",this->_Symbols.size()-1,this->_Symbols[this->_Symbols.size()-1].symbol(this->_SymbolNames),str,type));
-  }
-  // Shrink the symbol table to the minimimum size
-  void optimize() {
-    if (this->_End>0) {
-      size_t newCapacity = this->_End+16&(~0x7);
-      this->_SymbolNames = (char*)realloc(this->_SymbolNames,newCapacity);
-      this->_Capacity = newCapacity;
-    } else {
-      if (this->_SymbolNames) free(this->_SymbolNames);
-      this->_SymbolNames = 0;
-      this->_Capacity = 0;
-    }
-  }
-  // Return true if a symbol is found that matches the address
-  bool findSymbolForAddress(uintptr_t address,const char*& symbol, uintptr_t& startAddress, uintptr_t& endAddress, char& type, size_t& index) {
-    if (this->_Symbols.size() == 0) return false;
-    SymbolEntry& lastSymbol = this->_Symbols[this->_Symbols.size()-1];
-    BT_LOG((buf,"findSymbolForAddress %p   symbol_table startAddress %p  endAddress %p #symbols %lu, address<first->%d address>=last->%d\n",
-            (void*)address,
-            (void*)this->_Symbols[0]._Address,
-            (void*)this->_Symbols[this->_Symbols.size()-1]._Address,
-            this->_Symbols.size(),
-            (address<this->_Symbols[0]._Address),
-            (address>= lastSymbol._Address)
-            ));
-    if (address<this->_Symbols[0]._Address) return false;
-    if (address>= lastSymbol._Address) return false;
-    {
-      size_t l = 0;
-      size_t r = this->_Symbols.size()-1;
-      while (true) {
-        if (l>=r) {
-          index = l-1;
-          goto DONE;
-        }
-        size_t m = (l+r)/2;
-        if (this->_Symbols[m]._Address<=address) {
-          l = m+1;
-        } else if (this->_Symbols[m]._Address>address) {
-          r = m;
-        } else {
-          index = l;
-          goto DONE;
-        }
-      }
-    DONE:
-      symbol = this->_SymbolNames+this->_Symbols[index]._SymbolOffset;
-      startAddress = this->_Symbols[index]._Address;
-      endAddress = this->_Symbols[index+1]._Address;
-      type = this->_Symbols[index]._Type;
-      BT_LOG((buf,"findSymbolForAddress returning index %zu max %u name: %s startAddress: %p endAddress: %p type|%c|\n", index, this->_End-1, symbol, (void*)startAddress, (void*)endAddress, type));
-      return true;
-    }
-  };
-  void sort() {
+void SymbolTable::sort() {
     // printf("%s:%d:%s Sort the SymbolTable here\n", __FILE__, __LINE__, __FUNCTION__ );
-    sort::quickSortMemory<SymbolEntry>(&this->_Symbols[0],0,this->_Symbols.size());
-  }
-  
-  std::vector<SymbolEntry>::iterator begin() { return this->_Symbols.begin(); };
-  std::vector<SymbolEntry>::iterator end() { return this->_Symbols.end(); };
-  std::vector<SymbolEntry>::const_iterator begin() const { return this->_Symbols.begin(); };
-  std::vector<SymbolEntry>::const_iterator end() const { return this->_Symbols.end(); };
-};
+  sort::quickSortMemory<SymbolEntry>(&this->_Symbols[0],0,this->_Symbols.size());
+}
 
-  
-struct ScanInfo {
-  size_t  _Index;
-  std::vector<BacktraceEntry>* _Backtrace;
-  scan_callback _Callback;
-  size_t _symbol_table_memory;
-  ScanInfo() : _Index(0), _symbol_table_memory(0) {};
-};
 
 std::string backtrace_frame(size_t index, BacktraceEntry* frame)
 {
@@ -231,74 +187,6 @@ std::string backtrace_frame(size_t index, BacktraceEntry* frame)
   return ss.str();
 }
 
-struct JittedObject {
-  std::string _Name;
-  uintptr_t _ObjectPointer;
-  int       _Size;
-  JittedObject() {};
-  JittedObject(const std::string& name, uintptr_t fp, int fs) : _Name(name), _ObjectPointer(fp), _Size(fs) {};
-};
-
-
-struct FrameMap {
-  uintptr_t _FunctionPointer;
-  int   _FrameOffset;
-  int   _FrameSize;
-  FrameMap() {};
-  FrameMap(uintptr_t fp, int fo, int fs) : _FunctionPointer(fp), _FrameOffset(fo), _FrameSize(fs) {};
-  FrameMap(const FrameMap& o) {
-    this->_FunctionPointer = o._FunctionPointer;
-    this->_FrameOffset = o._FrameOffset;
-    this->_FrameSize = o._FrameSize;
-  }
-};
-
-
-struct OpenDynamicLibraryInfo {
-  std::string    _Filename;
-  void*          _Handle;
-  SymbolTable    _SymbolTable;
-  uintptr_t      _LibraryOrigin;
-  OpenDynamicLibraryInfo(const std::string& f, void* h, const SymbolTable& symbol_table, uintptr_t liborig) : _Filename(f), _Handle(h), _SymbolTable(symbol_table), _LibraryOrigin(liborig) {};
-  OpenDynamicLibraryInfo() {};
-};
-
-struct StackMapRange {
-  uintptr_t _StartAddress;
-  uintptr_t _EndAddress;
-  size_t _Number;
-  StackMapRange(uintptr_t s, uintptr_t e, size_t number) : _StartAddress(s), _EndAddress(e), _Number(number) {};
-  StackMapRange() : _StartAddress(0), _EndAddress(0), _Number(0) {};
-};
-
-struct DebugInfo {
-#ifdef CLASP_THREADS
-  mutable mp::SharedMutex _OpenDynamicLibraryMutex;
-#endif
-  map<std::string, OpenDynamicLibraryInfo> _OpenDynamicLibraryHandles;
-  mp::SharedMutex                   _StackMapsLock;
-  std::map<uintptr_t,StackMapRange> _StackMaps;
-  mp::SharedMutex                   _JittedObjectsLock;
-  std::vector<JittedObject>         _JittedObjects;
-  DebugInfo() : _OpenDynamicLibraryMutex(OPENDYLB_NAMEWORD),
-                _StackMapsLock(STCKMAPS_NAMEWORD),
-                _JittedObjectsLock(JITDOBJS_NAMEWORD)
-  {};
-};
-
-DebugInfo* global_DebugInfo = NULL;
-
-DebugInfo& debugInfo() {
-  if (!global_DebugInfo) {
-    global_DebugInfo = new DebugInfo();
-  }
-  return *global_DebugInfo;
-}
-
-
-uintptr_t load_stackmap_info(const char* filename, uintptr_t header, size_t& section_size);
-void search_symbol_table(std::vector<BacktraceEntry>& backtrace, const char* filename, size_t& symbol_table_size);
-void walk_loaded_objects(std::vector<BacktraceEntry>& backtrace, size_t& symbol_table_memory);
 
 struct Header {
   uint8_t  version;
@@ -308,7 +196,7 @@ struct Header {
 
 struct StkSizeRecord {
   uint64_t  FunctionAddress;
-  uint64_t  StackSize;
+  int64_t  StackSize;
   uint64_t  RecordCount;
 };
 
@@ -393,9 +281,9 @@ void parse_record(std::vector<BacktraceEntry>& backtrace, uintptr_t& address, si
     int32_t offsetOrSmallConstant = read_then_advance<int32_t>(address);
     if (backtrace.size() == 0 ) {
       if (library) {
-        WRITE_DEBUG_IO(BF("Stackmap-library function %p stack-size %lu patchPointId %u offset %d\n") % (void*)function.FunctionAddress % function.StackSize % patchPointID % offsetOrSmallConstant );
+        WRITE_DEBUG_IO(BF("Stackmap-library function %p stack-size %ld patchPointId %u frame-offset %d\n") % (void*)function.FunctionAddress % function.StackSize % patchPointID % offsetOrSmallConstant );
       } else {
-        WRITE_DEBUG_IO(BF("Stackmap-jit function %p stack-size %lu patchPointId %u offset %d\n") % (void*)function.FunctionAddress % function.StackSize % patchPointID % offsetOrSmallConstant );
+        WRITE_DEBUG_IO(BF("Stackmap-jit function %p stack-size %ld patchPointId %u frame-offset %d\n") % (void*)function.FunctionAddress % function.StackSize % patchPointID % offsetOrSmallConstant );
       }
     }
     if (patchPointID == 1234567 ) {
@@ -404,7 +292,7 @@ void parse_record(std::vector<BacktraceEntry>& backtrace, uintptr_t& address, si
         BT_LOG((buf,"comparing function#%lu @%p to %s\n", functionIndex, (void*)function.FunctionAddress, backtrace_frame(j,&backtrace[j]).c_str() ));
         if (function.FunctionAddress == backtrace[j]._FunctionStart) {
           backtrace[j]._Stage = lispFrame;  // anything with a stackmap is a lisp frame
-          backtrace[j]._FrameSize = function.StackSize;
+          backtrace[j]._FrameSize = (int)function.StackSize; // Sometimes the StackSize is (int64_t)-1 why???????
           backtrace[j]._FrameOffset = offsetOrSmallConstant;
           BT_LOG((buf,"Identified lispFrame frameOffset = %d\n", offsetOrSmallConstant));
         }
@@ -437,6 +325,9 @@ void parse_record(std::vector<BacktraceEntry>& backtrace, uintptr_t& address, si
   }
 }  
 
+/* ! Parse an llvm Stackmap
+     The format is described here: https://llvm.org/docs/StackMaps.html#stack-map-format
+*/
 
 void walk_one_llvm_stackmap(std::vector<BacktraceEntry>&backtrace, uintptr_t& address, uintptr_t end, bool library) {
   uintptr_t stackMapAddress = address;
@@ -451,7 +342,7 @@ void walk_one_llvm_stackmap(std::vector<BacktraceEntry>&backtrace, uintptr_t& ad
     abort();
   }
   if (header.version!=3 || header.reserved0 !=0 || header.reserved1 !=0) {
-    printf("%s:%d:%s stackmap header @%p is out of alignment\n", __FILE__, __LINE__, __FUNCTION__, (void*)stackMapAddress );
+    printf("%s:%d:%s stackmap header @%p is out of alignment header.version=%d header.reserved0=%d header.reserved1=%d\n", __FILE__, __LINE__, __FUNCTION__, (void*)stackMapAddress, (int)header.version, (int)header.reserved0, (int)header.reserved1 );
     abort();
   }
   uintptr_t functionAddress = address;
@@ -485,6 +376,7 @@ There may be 0, 1 or any number of adjacent stackmaps.
 Pass (size_t)~0 if you don't know how many and want to rely on the memory range.
 Stop parsing them when read numStackmaps or if curAddress >= endAddress */
 void register_llvm_stackmaps(uintptr_t startAddress, uintptr_t endAddress, size_t numStackmaps ) {
+//  printf("%s:%d register_llvm_stackmaps %p - %p num: %lu\n", __FILE__, __LINE__, (void*)startAddress, (void*)endAddress, numStackmaps);
   BT_LOG((buf,"register_llvm_stackmaps  startAddress: %p  endAddress: %p\n", (void*)startAddress, (void*)endAddress));
   WITH_READ_WRITE_LOCK(debugInfo()._StackMapsLock);
   StackMapRange range(startAddress,endAddress,numStackmaps);
@@ -496,6 +388,7 @@ void search_jitted_stackmaps(std::vector<BacktraceEntry>& backtrace)
 {
   BT_LOG((buf,"Starting search_jitted_stackmaps\n" ));
   size_t num = 0;
+  WRITE_DEBUG_IO(BF("search_jitted_stackmaps\n"));
   WITH_READ_LOCK(debugInfo()._StackMapsLock);
   DebugInfo& di = debugInfo();
   for ( auto entry : di._StackMaps ) {
@@ -535,487 +428,22 @@ void search_jitted_objects(std::vector<BacktraceEntry>& backtrace, bool searchFu
           backtrace[j]._FunctionEnd = entry._ObjectPointer+entry._Size;
           backtrace[j]._SymbolName = entry._Name;
           BT_LOG((buf,"MATCHED!!!\n"));
-//          break;
         }
       }
       if (searchFunctionDescriptions) { // searching for function descriptions
-        stringstream ss;
-        ss << backtrace[j]._SymbolName;
-        ss << "^DESC";
-        if (ss.str() == entry._Name) {
-          backtrace[j]._Stage = lispFrame; // Anything with a FunctionDescription is a lispFrame
-          backtrace[j]._FunctionDescription = entry._ObjectPointer;
-          BT_LOG((buf,"MATCHED!!!\n"));
-//          break;
-        }
-      }
-    }
-  }
-}
-
-//////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////
-#if defined(_TARGET_OS_DARWIN)
-
-uint8_t * 
-mygetsectiondata(
-                 void* vmhp,
-                 const char *segname,
-                 const char *sectname,
-                 unsigned long *size)
-{
-  const struct mach_header_64* mhp = (const struct mach_header_64*)vmhp;
-  struct segment_command_64 *sgp;
-  struct section_64 *sp;
-  uint32_t i, j;
-  intptr_t slide;
-    
-  slide = 0;
-  sp = 0;
-  sgp = (struct segment_command_64 *)
-    ((char *)mhp + sizeof(struct mach_header_64));
-  for(i = 0; i < mhp->ncmds; i++){
-    if(sgp->cmd == LC_SEGMENT_64){
-      if(strcmp(sgp->segname, "__TEXT") == 0){
-        slide = (uintptr_t)mhp - sgp->vmaddr;
-      }
-      if(strncmp(sgp->segname, segname, sizeof(sgp->segname)) == 0){
-        sp = (struct section_64 *)((char *)sgp +
-                                   sizeof(struct segment_command_64));
-        for(j = 0; j < sgp->nsects; j++){
-          if(strncmp(sp->sectname, sectname,
-                     sizeof(sp->sectname)) == 0 &&
-             strncmp(sp->segname, segname,
-                     sizeof(sp->segname)) == 0){
-            *size = sp->size;
-//   return (uint8_t*)sp;
-            uint8_t* addr = ((uint8_t *)(sp->addr) + slide);
-            return addr;
+        size_t btlen = backtrace[j]._SymbolName.size();
+        if (entry._Name.compare(0,btlen,backtrace[j]._SymbolName)==0) {
+          if (entry._Name.compare(btlen,5,"^DESC")==0) {
+            backtrace[j]._Stage = lispFrame; // Anything with a FunctionDescription is a lispFrame
+            backtrace[j]._FunctionDescription = entry._ObjectPointer;
+            BT_LOG((buf,"MATCHED!!!\n"));
           }
-          sp = (struct section_64 *)((char *)sp +
-                                     sizeof(struct section_64));
         }
       }
     }
-    sgp = (struct segment_command_64 *)((char *)sgp + sgp->cmdsize);
-  }
-  return(0);
-}
-
-SymbolTable load_macho_symbol_table(bool is_executable, const char* filename, uintptr_t header, uintptr_t exec_header) {
-//  printf("%s:%d:%s is_executable(%d) header = %p  exec_header = %p\n", __FILE__, __LINE__, __FUNCTION__, is_executable, (void*)header, (void*)exec_header);
-  int baddigit = 0;
-  SymbolTable symbol_table;
-  struct stat buf;
-  if (stat(filename,&buf)!=0) {
-    return symbol_table;
-  }
-  stringstream nm_cmd;
-  nm_cmd << "/usr/bin/nm -numeric-sort -defined-only \"" << filename << "\"";
-  FILE* fnm = popen( nm_cmd.str().c_str(), "r");
-  if (fnm==NULL) {
-    printf("%s:%d:%s  Could not popen %s\n", __FILE__, __LINE__, __FUNCTION__, nm_cmd.str().c_str());
-    return symbol_table;
-  }
-#define BUFLEN 2048
-  {
-    char buf[BUFLEN+1];
-    char type[BUFLEN+1];
-    char name[BUFLEN+1];
-    while (!feof(fnm)) {
-      fgets(buf,BUFLEN,fnm);
-      const char* cur = buf;
-//      printf("%s:%d:%s Read line: %s\n", __FILE__, __LINE__, __FUNCTION__, cur);
-      // Read the address
-      uintptr_t address = 0;
-      uintptr_t digit;
-      // Read the hex address
-      while (*cur != ' ') {
-        char c = *cur;
-        if (c>='A'&&c<='Z') {
-          digit = c-'A'+10;
-        } else if (c>='0'&&c<='9') {
-          digit = c-'0';
-        } else if (c>='a'&&c<='z') {
-          digit = c-'a'+10;
-        } else {
-          if (baddigit<20) {
-            printf("%s:%d:%s In file: %s\n", __FILE__, __LINE__, __FUNCTION__, filename);
-            printf("%s:%d:%s Hit non-hex digit %c in line: %s\n", __FILE__,__LINE__,__FUNCTION__,c,buf);
-            baddigit++;
-          }
-          digit = 0;
-        }
-        address = address*16+digit;
-//        printf("cur: %p c: %c digit: %lu   address: %p\n", cur, c, digit, (void*)address);
-        ++cur;
-      }
-      // skip spaces
-      while (*cur==' ') ++cur;
-      // Read the type
-      char type = *cur;
-      cur++;
-      // skip spaces
-      while (*cur==' ') ++cur;
-      // Read the name
-      size_t nameidx = 0;
-      while (*cur!='\0'&&*cur>' ') {
-        name[nameidx] = *cur;
-        ++cur;
-        ++nameidx;
-      }
-      name[nameidx] = '\0';
-      uintptr_t real_address;
-      if (is_executable) {
-        // The executable needs to be handled differently than libraries
-        real_address = (uintptr_t)address - header;
-        real_address += exec_header;
-      } else {
-        real_address = (uintptr_t)address + (uintptr_t)header;
-      }
-      std::string sname(name);
-#if 0
-      if (is_executable) {
-        printf("%s:%d         address: %p  real_address: %p  type: %c   name: %s\n", __FILE__, __LINE__, (void*)address, (void*)real_address, type, name);
-      }
-#endif
-//      printf("         address: %p  type: %c   name: %s\n", (void*)address, type, name);
-      symbol_table.addSymbol(sname,real_address,type);
-    }
-//    symbol_table.addSymbol("TERMINAL_SYMBOL",~0,'d');  // one symbol to end them all
-    symbol_table.optimize();
-    pclose(fnm);
-  }
-  return symbol_table;
-}
-
-
-uintptr_t load_stackmap_info(const char* filename, uintptr_t header, size_t& section_size)
-{
-  // Use mygetsectiondata to walk the library because stackmaps are mmap'd
-  // in places that I am not able to calculate using otool
-  uint8_t* p_section =  mygetsectiondata( (void*)header,
-                                          "__LLVM_STACKMAPS",
-                                          "__llvm_stackmaps",
-                                          &section_size );
-  return (uintptr_t)p_section;
-}
-
-void walk_loaded_objects(std::vector<BacktraceEntry>& backtrace, size_t& symbol_table_memory) {
-//    printf("Add support to walk symbol tables and stackmaps for DARWIN\n");
-  uint32_t num_loaded = _dyld_image_count();
-  for ( size_t idx = 0; idx<num_loaded; ++idx ) {
-    const char* filename = _dyld_get_image_name(idx);
-    if (backtrace.size()==0) {
-      WRITE_DEBUG_IO(BF("Library %s\n") % filename );
-    }
-    search_symbol_table(backtrace,filename,symbol_table_memory);
   }
 }
 
-
-void startup_register_loaded_objects() {
-// printf("%s:%d:%s handle macos\n", __FILE__, __LINE__, __FUNCTION__);
-//    printf("Add support to walk symbol tables and stackmaps for DARWIN\n");
-  uint32_t num_loaded = _dyld_image_count();
-  for ( size_t idx = 0; idx<num_loaded; ++idx ) {
-    const char* filename = _dyld_get_image_name(idx);
-    std::string libname(filename);
-    uintptr_t library_origin = (uintptr_t)_dyld_get_image_header(idx);
-    bool is_executable = (idx==0);
-    add_dynamic_library_using_origin(is_executable,libname,library_origin);
-  }
-}
-
-#endif ////////////////////////////////////////////////// _TARGET_OS_DARWIN
-
-
-
-
-#if defined(_TARGET_OS_LINUX) || defined(_TARGET_OS_FREEBSD)
-
-
-std::atomic<bool> global_elf_initialized;
-void ensure_libelf_initialized() {
-  if (!global_elf_initialized) {
-    if (elf_version(EV_CURRENT) == EV_NONE) SIMPLE_ERROR(BF("ELF library initializtion failed %s") % elf_errmsg(-1));
-    global_elf_initialized = true;
-  }
-}
-
-SymbolTable load_linux_symbol_table(const char* filename, uintptr_t start, uintptr_t& stackmap_start, size_t& stackmap_size)
-{
-  stackmap_start = 0;
-  SymbolTable symbol_table;
-  BT_LOG((buf,"Searching symbol table %s memory-start %p\n", filename, (void*)start ));
-  Elf         *elf;
-  GElf_Shdr   shdr;
-  Elf_Data    *data;
-  int         fd, ii, count;
-  ensure_libelf_initialized();
-  elf_version(EV_CURRENT);
-  fd = open(filename, O_RDONLY);
-  if (fd < 0) {
-    BT_LOG((buf,"Could not open %s", filename));
-    return symbol_table;
-  }
-  if ((elf = elf_begin(fd, ELF_C_READ, NULL)) == NULL) {
-    close(fd);
-    SIMPLE_ERROR(BF("Error with elf_begin for file %s - %s") % filename % elf_errmsg(-1));
-  }
-  Elf_Scn     *scn = NULL;
-  // Search the symbol tables for functions that contain the return address
-  scn = NULL;
-  while ((scn = elf_nextscn(elf, scn)) != NULL) {
-    gelf_getshdr(scn, &shdr);
-    BT_LOG((buf,"Looking at section\n" ));
-    if (shdr.sh_type == SHT_SYMTAB) {
-      data = elf_getdata(scn, NULL);
-      count = shdr.sh_size / shdr.sh_entsize;
-      BT_LOG((buf,"Found SYMTAB count: %d\n", count ));
-	/* Search the symbol names */
-      for (ii = 0; ii < count; ++ii) {
-        GElf_Sym sym;
-        gelf_getsym(data, ii, &sym);
-        uintptr_t symbol_start = (uintptr_t)sym.st_value+start;
-        uintptr_t symbol_end = symbol_start+sym.st_size;
-        char type = '?';
-        if (ELF64_ST_TYPE(sym.st_info) == STT_FUNC) {
-          if (ELF64_ST_BIND(sym.st_info) == STB_GLOBAL) type = 'T';
-          else type = 't';
-        } else if (ELF64_ST_TYPE(sym.st_info) == STT_OBJECT) {
-          if (ELF64_ST_BIND(sym.st_info) == STB_GLOBAL) type = 'D';
-          else type = 'd';
-        }
-        BT_LOG((buf,"Looking at symbol %s type: %d\n", elf_strptr(elf,shdr.sh_link , (size_t)sym.st_name), ELF64_ST_TYPE(sym.st_info)));
-        std::string sname(elf_strptr(elf,shdr.sh_link , (size_t)sym.st_name));
-        symbol_table.addSymbol(sname,symbol_start,type);
-      }
-    }
-  }
-//  printf("%s:%d:%s Looking at library: %s\n", __FILE__, __LINE__, __FUNCTION__, filename);
-  scn = NULL ;
-  const char * name , *p;
-  size_t n , shstrndx , sz ;
-  if ( elf_getshdrstrndx (elf, &shstrndx ) != 0)
-    SIMPLE_ERROR(BF("elf_getshdrstrndx () failed : %s.") % elf_errmsg ( -1));
-  while (( scn = elf_nextscn (elf, scn )) != NULL ) { 
-    if ( gelf_getshdr ( scn, &shdr ) != & shdr )
-      SIMPLE_ERROR(BF("getshdr() failed : %s.") % elf_errmsg ( -1));
-    name = elf_strptr (elf, shstrndx, shdr.sh_name );
-    if ( name == NULL ) SIMPLE_ERROR(BF("stackmaps elf_strptr() failed : %s.") % elf_errmsg ( -1));
-//    printf("%s:%d:%s Looking at section: %s\n", __FILE__, __LINE__, __FUNCTION__, name);
-    if (strncmp(name,".llvm_stackmaps",strlen(".llvm_stackmaps"))==0) {
-      stackmap_start = shdr.sh_addr;
-      stackmap_size = shdr.sh_size;
-//      printf("%s:%d:%s Found a stackmap! shdr.sh_addr = %p shdr.sh_size=%lu\n", __FILE__, __LINE__, __FUNCTION__, (void*)shdr.sh_addr, (size_t)shdr.sh_size);
-    }
-  }
-  elf_end(elf);
-  close(fd);
-  return symbol_table;
-}
-
-const char* progname_full = NULL;
-
-struct SearchInfo {
-  const char* _Name;
-  void* _Address;
-  size_t _Index;
-  SearchInfo(const char* name) : _Name(name), _Address(NULL), _Index(0) {};
-};
-
-int elf_search_loaded_object_callback(struct dl_phdr_info *info, size_t size, void* data)
-{
-  SearchInfo* search_callback_info = (SearchInfo*)data;
-  const char* libname;
-  if (search_callback_info->_Index==0 && strlen(info->dlpi_name) == 0 ) {
-    if (progname_full == NULL) {
-      progname_full = getprogname();
-    }
-    libname = progname_full;
-  } else {
-    libname = info->dlpi_name;
-  }
-  BT_LOG((buf,"Name: \"%s\" address: %p (%d segments)\n", libname.c_str(), (void*)info->dlpi_addr, info->dlpi_phnum));
-  if (strcmp(libname,search_callback_info->_Name)==0) {
-    search_callback_info->_Address = (void*)info->dlpi_addr;
-  }
-  search_callback_info->_Index++;
-  return 0;
-}
-
-int elf_loaded_object_callback(struct dl_phdr_info *info, size_t size, void* data)
-{
-  ScanInfo* scan_callback_info = (ScanInfo*)data;
-  const char *type;
-  int p_type, j;
-  std::string libname;
-  if (scan_callback_info->_Index==0 && strlen(info->dlpi_name) == 0 ) {
-    if (progname_full == NULL) {
-      progname_full = getprogname();
-    }
-    libname = progname_full;
-  } else {
-    libname = info->dlpi_name;
-  }
-  BT_LOG((buf,"Name: \"%s\" address: %p (%d segments)\n", libname.c_str(), (void*)info->dlpi_addr, info->dlpi_phnum));
-  search_symbol_table(*(scan_callback_info->_Backtrace),libname.c_str(),scan_callback_info->_symbol_table_memory);
-  scan_callback_info->_Index++;
-  return 0;
-}
-
-int elf_startup_loaded_object_callback(struct dl_phdr_info *info, size_t size, void* data)
-{
-//  printf("%s:%d:%s Startup registering loaded object %s\n", __FILE__, __LINE__, __FUNCTION__, info->dlpi_name);
-  ScanInfo* scan_callback_info = (ScanInfo*)data;
-  bool is_executable;
-  std::string libname;
-  if (scan_callback_info->_Index==0 && strlen(info->dlpi_name) == 0 ) {
-    if (progname_full == NULL) {
-      progname_full = getprogname();
-    }
-    libname = progname_full;
-    is_executable = true;
-  } else {
-    libname = info->dlpi_name;
-    is_executable = false;
-  }
-  add_dynamic_library_using_origin(is_executable,libname.c_str(),(uintptr_t)info->dlpi_addr);
-  scan_callback_info->_Index++;
-  return 0;
-}
-
-
-void walk_loaded_objects(std::vector<BacktraceEntry>& backtrace, size_t& symbol_table_memory)
-{
-  ScanInfo scan;
-  scan._Backtrace = &backtrace;
-    // Search the symbol tables and stackmaps
-  dl_iterate_phdr(elf_loaded_object_callback,&scan);
-  symbol_table_memory += scan._symbol_table_memory;
-}
-
-void* find_base_of_loaded_object(const char* name)
-{
-  SearchInfo search(name);
-  dl_iterate_phdr(elf_search_loaded_object_callback,&search);
-  return search._Address;
-}
-
-void startup_register_loaded_objects()
-{
-  ScanInfo scan;
-  dl_iterate_phdr(elf_startup_loaded_object_callback,&scan);
-}
-
-#endif ////////////////////////////////////////////////// _TARGET_OS_LINUX || FREEBSD
-
-/*! Add a dynamic library.
-    If library_origin points to the start of the library then that address is used,
-    otherwise it uses handle to look up the start of the library. */
-void add_dynamic_library_impl(bool is_executable, const std::string& libraryName, bool use_origin, uintptr_t library_origin, void* handle) {
-//  printf("%s:%d:%s Looking for executable?(%d) library |%s|\n", __FILE__, __LINE__, __FUNCTION__, is_executable, libraryName.c_str());
-  BT_LOG((buf,"Starting to load library: %s\n", libraryName.c_str() ));
-#ifdef CLASP_THREADS
-  WITH_READ_WRITE_LOCK(debugInfo()._OpenDynamicLibraryMutex);
-#endif
-// Get the start of the library and the symbol_table
-#ifdef _TARGET_OS_DARWIN
-  if (!use_origin) {
-//    printf("%s:%d:%s Looking for library %s with handle %p\n", __FILE__, __LINE__, __FUNCTION__, libraryName.c_str(), handle);
-    uint32_t num_loaded = _dyld_image_count();
-    for ( size_t idx = 0; idx<num_loaded; ++idx ) {
-      const char* filename = _dyld_get_image_name(idx);
-//      printf("%s:%d:%s Comparing to library: %s\n", __FILE__, __LINE__, __FUNCTION__, filename);
-      if (strcmp(filename,libraryName.c_str())==0) {
-//        printf("%s:%d:%s Found library: %s\n", __FILE__, __LINE__, __FUNCTION__, filename);
-        library_origin = (uintptr_t)_dyld_get_image_header(idx);
-        break;
-      }
-    }
-  }
-  uintptr_t exec_header;
-//  printf("%s:%d:%s library_origin %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)library_origin);
-  dlerror();
-  exec_header = (uintptr_t)dlsym(RTLD_DEFAULT,"_mh_execute_header");
-  const char* dle = dlerror();
-  if (dle) {
-    printf("Could not find the symbol _mh_execute_header\n");
-    abort();
-  }
-//  printf("%s:%d:%s Executable header _mh_execute_header %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)exec_header);
-  SymbolTable symbol_table;
-  if (library_origin!=0) {
-    if (is_executable) {
-      symbol_table = load_macho_symbol_table(is_executable,libraryName.c_str(),(uintptr_t)0x100000000,exec_header); // hard code origin
-    } else {
-      symbol_table = load_macho_symbol_table(is_executable,libraryName.c_str(),library_origin,exec_header);
-    }
-    symbol_table.optimize();
-  } else {
-    printf("%s:%d:%s Could not find start of library %s\n", __FILE__, __LINE__, __FUNCTION__, libraryName.c_str());
-  }
-  size_t section_size;
-//  printf("%s:%d:%s About to load_stackmap_info library_origin = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)library_origin );
-  uintptr_t p_section = load_stackmap_info(libraryName.c_str(),library_origin,section_size);
-  if (p_section) {
-    symbol_table._StackmapStart = p_section;
-    symbol_table._StackmapEnd = p_section+section_size;
-  }    
-#endif
-#if defined(_TARGET_OS_LINUX) || defined(_TARGET_OS_FREEBSD)
-  if (!use_origin) {
-    // Walk all objects looking for the one we just loaded
-    library_origin = (uintptr_t)find_base_of_loaded_object(libraryName.c_str());
-    if (library_origin==0) {
-      // Try looking for _init symbol
-      void* lorigin;
-      Dl_info data;
-      dlerror();
-      void* addr = dlsym(handle,"_init");
-      const char* error = dlerror();
-      if (error) {
-        printf("%s:%d:%s Could not find library by walking objects or by searching for external symbol '_init' - library %s dlerror = %s\n", __FILE__, __LINE__, __FUNCTION__, error, libraryName.c_str());
-        abort();
-      }
-      int ret = dladdr(addr,&data);
-      if (ret==0) {
-        printf("%s:%d:%s Could not use dladdr to get start of library %s dlerror = %s\n", __FILE__, __LINE__, __FUNCTION__, libraryName.c_str(), error);
-        abort();
-      }
-      library_origin = (uintptr_t)data.dli_fbase;
-    }
-  }
-//  printf("%s:%d:%s data.dli_fbase = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)data.dli_fbase);
-  uintptr_t stackmap_start;
-  size_t section_size;
-  SymbolTable symbol_table = load_linux_symbol_table(libraryName.c_str(),library_origin,stackmap_start,section_size);
-  if (is_executable) {
-    symbol_table._StackmapStart = stackmap_start;
-    symbol_table._StackmapEnd = stackmap_start+section_size;
-  } else {
-    if (stackmap_start) {
-      symbol_table._StackmapStart = stackmap_start+library_origin;
-      symbol_table._StackmapEnd = stackmap_start+section_size+library_origin;
-    }
-  }
-#if 0
-  printf("%s:%d:%s symbol_table._StackmapStart = %p  symbol_table._StackmapEnd = %p\n",
-         __FILE__, __LINE__, __FUNCTION__, (void*)symbol_table._StackmapStart, (void*)symbol_table._StackmapEnd);
-#endif    
-  symbol_table.optimize();
-  symbol_table.sort();
-#endif
-  BT_LOG((buf,"OpenDynamicLibraryInfo libraryName: %s handle: %p library_origin: %p\n", libraryName.c_str(),(void*)handle,(void*)library_origin));
-  OpenDynamicLibraryInfo odli(libraryName,handle,symbol_table,library_origin);
-  debugInfo()._OpenDynamicLibraryHandles[libraryName] = odli;
-}
 
 void add_dynamic_library_using_handle(const std::string& libraryName, void* handle) {
   add_dynamic_library_impl(false,libraryName, false, 0, handle);
@@ -1118,8 +546,13 @@ void search_symbol_table(std::vector<BacktraceEntry>& backtrace, const char* fil
                      % (void*)symbol_table._StackmapStart % (void*)symbol_table._StackmapEnd );
     }
     if (backtrace.size() == 0) {
+      uintptr_t prev_address = 0;
       for (auto entry : symbol_table ) {
         WRITE_DEBUG_IO(BF("Symbol start %p type %c name %s\n") % (void*)entry._Address % entry._Type % entry.symbol(symbol_table._SymbolNames));
+        if (prev_address>= entry._Address) {
+          WRITE_DEBUG_IO(BF("Error: PREVIOUS-SYMBOL-OUT-OF-ORDER\n"));
+        }
+        prev_address = entry._Address;
       }
     } else {
       if (symbol_table._Symbols.size()>0) {
@@ -1172,6 +605,20 @@ void search_symbol_table(std::vector<BacktraceEntry>& backtrace, const char* fil
 }
 
 
+
+bool SymbolTable::is_sorted() const
+{
+  uintptr_t prev_address = 0;
+  bool bad_order = false;
+  for (auto entry : *this ) {
+    if (prev_address> entry._Address) {
+      return false;
+    }
+    prev_address = entry._Address;
+  }
+  return true;
+}
+
 void start_debugger() {
   LispDebugger dbg(_Nil<T_O>());
   dbg.invoke();
@@ -1209,6 +656,10 @@ InvocationHistoryFrameIterator_sp LispDebugger::currentFrame() const {
 size_t global_low_level_debugger_depth = 0;
 
 T_sp LispDebugger::invoke() {
+  if (!isatty(0)) {
+    printf("The low-level debugger was entered but there is no terminal on fd0 - aborting\n");
+    abort();
+  }
   if ( cl::_sym_STARfeaturesSTAR
        && cl::_sym_STARfeaturesSTAR->symbolValue()
        && cl::_sym_STARfeaturesSTAR->symbolValue().consp()
@@ -1545,7 +996,7 @@ CL_DEFUN void core__low_level_backtrace_with_args() {
 }
 
 
-void safe_backtrace(std::vector<BacktraceEntry>& backtrace_)
+void operating_system_backtrace(std::vector<BacktraceEntry>& backtrace_)
 {
 #define START_BACKTRACE_SIZE 512
   void** return_buffer;
@@ -1591,6 +1042,29 @@ CL_DEFUN T_sp core__maybe_demangle(core::String_sp s)
     if (funcname) free(funcname);
     return _Nil<T_O>();
   }
+}
+
+bool check_for_frame(uintptr_t frame) {
+  // We only actually do a check if we have libunwind capabilities.
+#ifdef USE_LIBUNWIND
+  unw_context_t context; unw_cursor_t cursor;
+  unw_word_t sp;
+  unw_word_t csp = (unw_word_t)frame;
+  unw_getcontext(&context);
+  unw_init_local(&cursor, &context);
+  while (unw_step(&cursor) > 0) {
+    unw_get_reg(&cursor, UNW_X86_64_RBP, &sp);
+    if (sp == csp) return true;
+  }
+  return false;
+#else
+  return true;
+#endif
+}
+
+void frame_check(uintptr_t frame) {
+  if (!check_for_frame(frame))
+    NO_INITIALIZERS_ERROR(core::_sym_outOfExtentUnwind);
 }
 
 CL_DEFUN T_sp core__libunwind_backtrace_as_list() {
@@ -1649,7 +1123,10 @@ void fill_in_interpreted_frames(std::vector<BacktraceEntry>& backtrace) {
 
 
 
-
+/*! If you pass a backtrace then it will be filled with symbol information.
+    If you pass an empty backtrace then symbol information will be printed.
+    eg: std::vector<BacktraceEntry> emptyBacktrace;  fill_backtrace_or_dump_info(emptyBacktrace) 
+*/
 void fill_backtrace_or_dump_info(std::vector<BacktraceEntry>& backtrace) {
 //  printf("walk symbol tables and stackmaps for DARWIN\n");
   size_t symbol_table_memory = 0;
@@ -1684,7 +1161,7 @@ uintptr_t get_raw_argument_from_stack(uintptr_t functionAddress, uintptr_t baseP
   T_O** register_save_area;
   if (invocationHistoryFrameAddress) {
     // this is an interpreted function - use the invocationHistoryFrameAddress to get the register save area
-    printf("%s:%d Using the invocationHistoryFrameAddress@%p to get the register save area of interpreted function\n", __FILE__, __LINE__, (void*)invocationHistoryFrameAddress);
+    // printf("%s:%d Using the invocationHistoryFrameAddress@%p to get the register save area of interpreted function\n", __FILE__, __LINE__, (void*)invocationHistoryFrameAddress);
     InvocationHistoryFrame* ihf = (InvocationHistoryFrame*)invocationHistoryFrameAddress;
     register_save_area = (core::T_O**)ihf->_args->reg_save_area;
   } else {
@@ -1734,39 +1211,13 @@ core::T_mv capture_arguments(uintptr_t functionAddress, uintptr_t basePointer, i
 }
 
 
-#if 0
-CL_DOCSTRING("Return the arguments and the closure for the frame at base-pointer/frame-offset. If you pass as-pointers as T then pointers to the objects will be returned.");
-CL_LAMBDA(function-address base-pointer frame-offset &optional as-pointers)
-CL_DEFUN core::T_mv core__capture_arguments(Pointer_sp functionAddressP, Pointer_sp basePointerP, int frameOffset, bool asPointers)
-{
-  uintptr_t functionAddress = (uintptr_t)functionAddressP->ptr();
-  uintptr_t basePointer = (uintptr_t)basePointerP->ptr();
-  return capture_arguments(functionAddress,basePointer,frameOffset,asPointers);
-}
-#endif
-
-#if 0
-CL_DEFUN core::T_mv core__get_raw_arguments_from_stack(Pointer_sp functionAddressP, Pointer_sp basePointerP, int frameOffset) {
-  uintptr_t functionAddress = (uintptr_t)functionAddressP->ptr();
-  uintptr_t basePointer = (uintptr_t)basePointerP->ptr();
-  core::Pointer_sp closure = Pointer_O::create((void*)core::get_raw_argument_from_stack(functionAddress,basePointer,frameOffset,0));
-  size_t nargs = core::get_raw_argument_from_stack(functionAddress,basePointer,frameOffset,1);
-  ql::list rest;
-  for (int i=0; i<nargs; ++i ) {
-    rest << Pointer_O::create((void*)core::get_raw_argument_from_stack(functionAddress,basePointer,frameOffset,2+i));
-  }
-  return Values(closure, core::make_fixnum(nargs), rest.cons());
-}
-#endif
-
-
 void fill_backtrace(std::vector<BacktraceEntry>& backtrace) {
   char *funcname = (char *)malloc(1024);
   size_t funcnamesize = 1024;
   uintptr_t stackTop = (uintptr_t)my_thread_low_level->_StackTop;
-  BT_LOG((buf,"About to safe_backtrace\n" ));
+  BT_LOG((buf,"About to operatin_system_backtrace\n" ));
   //printf("%s:%s:%d\n", __FILE__, __FUNCTION__, __LINE__);
-  safe_backtrace(backtrace);
+  operating_system_backtrace(backtrace);
   size_t nptrs = backtrace.size()-2;
   nptrs -= 2; // drop the last two frames
     // Fill in the base pointers
@@ -1824,7 +1275,11 @@ CL_DEFUN T_mv core__call_with_backtrace(Function_sp closure, bool args_as_pointe
       T_sp entry;
       Symbol_sp stype;
       if (backtrace[i]._Stage == lispFrame) {
-        stype = INTERN_(kw,lisp);
+        if (backtrace[i]._SymbolName.find("___LAMBDA___")!=string::npos) {
+          stype = cl::_sym_lambda;
+        } else {
+          stype = INTERN_(kw,lisp);
+        }
       } else {
         stype = INTERN_(kw,c_PLUS__PLUS_);
       }
@@ -1857,74 +1312,29 @@ CL_DEFUN T_mv core__call_with_backtrace(Function_sp closure, bool args_as_pointe
         entry = core::Cons_O::create(_sym_make_backtrace_frame,args.cons());
       }
       result << entry;
+    } else {
+#if 0
+      printf("%s:%d Skipping frame %lu name %s\n", __FILE__, __LINE__, i, backtrace[i]._SymbolName.c_str());
+      printf("%s:%d bp<backtrace[i]._BasePointer -> %d\n", __FILE__, __LINE__, bp<backtrace[i]._BasePointer);
+      printf("%s:%d backtrace[i]._BasePointer!=0 -> %d\n", __FILE__, __LINE__, backtrace[i]._BasePointer!=0);
+      printf("%s:%d backtrace[i]._BasePointer<stack_top_hint -> %d\n", __FILE__, __LINE__, backtrace[i]._BasePointer<stack_top_hint);
+#endif
     }
   }
   return eval::funcall(closure,result.cons());
 }
 
 
-#if 0
-CL_LAMBDA(&optional (depth 0));
-CL_DECLARE();
-CL_DOCSTRING("backtrace");
-CL_DEFUN void core__clib_backtrace(int depth) {
-    // Play with Unix backtrace(3)
-#define BACKTRACE_SIZE 1024
-  printf("Entered core__clib_backtrace - symbol: %s\n", _rep_(INTERN_(core, theClibBacktraceFunctionSymbol)).c_str());
-  void *buffer[BACKTRACE_SIZE];
-  char *funcname = (char *)malloc(1024);
-  size_t funcnamesize = 1024;
-  int nptrs;
-  nptrs = backtrace(buffer, BACKTRACE_SIZE);
-  char **strings = backtrace_symbols(buffer, nptrs);
-  if (strings == NULL) {
-    printf("No backtrace available\n");
-    return;
-  } else {
-    for (int i = 0; i < nptrs; ++i) {
-      if (depth && i >= depth)
-        break;
-      std::string front = std::string(strings[i], 57);
-      char *fnName = &strings[i][59];
-      char *fnCur = fnName;
-      int len = 0;
-      for (; *fnCur; ++fnCur) {
-        if (*fnCur == ' ')
-          break;
-        ++len;
-      }
-      int status;
-      fnName[len] = '\0';
-      char *rest = &fnName[len + 1];
-      char *ret = abi::__cxa_demangle(fnName, funcname, &funcnamesize, &status);
-      if (status == 0) {
-        funcname = ret; // use possibly realloc()-ed string
-        printf("  %s %s %s\n", front.c_str(), funcname, rest);
-      } else {
-	  // demangling failed. Output function name as a C function with
-	  // no arguments.
-        printf("  %s\n", strings[i]);
-      }
-    }
-  }
-  if (strings)
-    free(strings);
-  if (funcname)
-    free(funcname);
-};
-
-#endif
-
 CL_LAMBDA();
 CL_DECLARE();
-CL_DOCSTRING("framePointers");
-CL_DEFUN void core__frame_pointers() {
+CL_DOCSTRING("framePointer");
+CL_DEFUN Fixnum_sp core__frame_pointer() {
   void *fp = __builtin_frame_address(0); // Constant integer only
-  if (fp != NULL)
-    printf("Frame pointer --> %p\n", fp);
+  return make_fixnum((uintptr_t)fp);
 };
 
 
+CL_DOCSTRING(R"doc(Dump all symbols and stackmaps to *debug-io*.)doc");
 CL_DEFUN void core__dump_symbol_and_stackmap_info() {
   std::vector<BacktraceEntry> emptyBacktrace;
   fill_backtrace_or_dump_info(emptyBacktrace);
@@ -2152,7 +1562,7 @@ void dbg_printTPtr(uintptr_t raw, bool print_pretty) {
   T_sp obj = gctools::smart_ptr<T_O>((gc::Tagged)raw);
   clasp_write_string((BF("dbg_printTPtr Raw pointer value: %p\n") % (void *)obj.raw_()).str(), sout);
   DynamicScopeManager scope(_sym_STARenablePrintPrettySTAR, _Nil<T_O>());
-  scope.pushSpecialVariableAndSet(cl::_sym_STARprint_readablySTAR, _lisp->_boolean(print_pretty));
+  DynamicScopeManager scope2(cl::_sym_STARprint_readablySTAR, _lisp->_boolean(print_pretty));
   clasp_write_string((BF("dbg_printTPtr object class --> %s\n") % _rep_(lisp_instance_class(obj)->_className())).str(), sout);
   fflush(stdout);
   write_ugly_object(obj, sout);
@@ -2333,10 +1743,6 @@ extern "C" {
 void tprint(void* ptr)
 {
   core::dbg_printTPtr((uintptr_t) ptr,false);
-}
-
-void c_ehs() {
-  printf("%s:%d ExceptionStack summary\n%s\n", __FILE__, __LINE__, my_thread->exceptionStack().summary().c_str());
 }
 
 void c_bt() {

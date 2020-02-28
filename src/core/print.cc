@@ -56,21 +56,27 @@ cl_index clasp_print_base(void) {
 cl_index clasp_print_level(void) {
   T_sp object = cl::_sym_STARprint_levelSTAR->symbolValue();
   gctools::Fixnum level;
+  // See note about fixnumness in clasp_print_length.
   if (object.nilp()) {
     level = MOST_POSITIVE_FIXNUM;
   } else if (core__fixnump(object)) {
     level = unbox_fixnum(gc::As<Fixnum_sp>(object));
     if (level < 0) {
     ERROR:
-      cl::_sym_STARprint_levelSTAR->setf_symbolValue(_Nil<T_O>());
-      SIMPLE_ERROR(BF("The value of *PRINT-LEVEL*\n %s\n"
-                      "is not of the expected type (or NULL (INTEGER 0 %s))")
-                   % _rep_(object) % MOST_POSITIVE_FIXNUM);
+      {
+        // Bind *print-level* to something valid so that we don't get
+        // recursive errors while printing error messages.
+        DynamicScopeManager scope(cl::_sym_STARprint_levelSTAR, _Nil<T_O>());
+        SIMPLE_ERROR(BF("The value of *PRINT-LEVEL*\n %s\n"
+                        "is not of the expected type (OR NULL (INTEGER 0))")
+                     % _rep_(object));
+      }
     }
   } else if (core__bignump(object)) {
-    goto ERROR;
-  } else {
+    // FIXME?: We could check if it's negative here to be really scrupulous.
     level = MOST_POSITIVE_FIXNUM;
+  } else {
+    goto ERROR;
   }
   return level;
 }
@@ -81,21 +87,26 @@ cl_index clasp_print_level(void) {
 cl_index clasp_print_length(void) {
   T_sp object = cl::_sym_STARprint_lengthSTAR->symbolValue();
   gctools::Fixnum length;
+  // We pretty much assume we'll never have a sequence with a bignum count of elements.
+  // This is standardly true with vectors, but lists could hypothetically have any
+  // number of elements. Hypothetically. Still, keep this in mind.
   if (object.nilp()) {
     length = MOST_POSITIVE_FIXNUM;
   } else if (core__fixnump(object)) {
     length = unbox_fixnum(gc::As<Fixnum_sp>(object));
     if (length < 0) {
     ERROR:
-      cl::_sym_STARprint_lengthSTAR->setf_symbolValue(_Nil<T_O>());
-      SIMPLE_ERROR(BF("The value of *PRINT-LENGTH*\n %s\n"
-                      "is not of the expected type (or NULL (INTEGER 0 %s))")
-                   % _rep_(object) % MOST_POSITIVE_FIXNUM);
+      {
+        DynamicScopeManager scope(cl::_sym_STARprint_lengthSTAR, _Nil<T_O>());
+        SIMPLE_ERROR(BF("The value of *PRINT-LENGTH*\n %s\n"
+                        "is not of the expected type (OR NULL (INTEGER 0))")
+                     % _rep_(object));
+      }
     }
   } else if (core__bignump(object)) {
-    goto ERROR;
-  } else {
     length = MOST_POSITIVE_FIXNUM;
+  } else {
+    goto ERROR;
   }
   return length;
 }
@@ -146,23 +157,22 @@ CL_DEFUN T_sp cl__write(T_sp x, T_sp strm, T_sp array, T_sp base,
               T_sp level, T_sp lines, T_sp miser_width, T_sp pprint_dispatch,
               T_sp pretty, T_sp radix, T_sp readably, T_sp right_margin) {
   DynamicScopeManager scope(cl::_sym_STARprint_arraySTAR, array);
-  scope.pushSpecialVariableAndSet(cl::_sym_STARprint_baseSTAR, base);
-  scope.pushSpecialVariableAndSet(cl::_sym_STARprint_caseSTAR, cas);
-  scope.pushSpecialVariableAndSet(cl::_sym_STARprint_circleSTAR, circle);
-  scope.pushSpecialVariableAndSet(cl::_sym_STARprint_escapeSTAR, escape);
-  scope.pushSpecialVariableAndSet(cl::_sym_STARprint_gensymSTAR, gensym);
-  scope.pushSpecialVariableAndSet(cl::_sym_STARprint_lengthSTAR, length);
-  scope.pushSpecialVariableAndSet(cl::_sym_STARprint_levelSTAR, level);
-  scope.pushSpecialVariableAndSet(cl::_sym_STARprint_linesSTAR, lines);
-  scope.pushSpecialVariableAndSet(cl::_sym_STARprint_miser_widthSTAR, miser_width);
-  scope.pushSpecialVariableAndSet(cl::_sym_STARprint_pprint_dispatchSTAR, pprint_dispatch);
-  scope.pushSpecialVariableAndSet(cl::_sym_STARprint_prettySTAR, pretty);
-  scope.pushSpecialVariableAndSet(cl::_sym_STARprint_radixSTAR, radix);
-  scope.pushSpecialVariableAndSet(cl::_sym_STARprint_readablySTAR, readably);
-  scope.pushSpecialVariableAndSet(cl::_sym_STARprint_right_marginSTAR, right_margin);
+  DynamicScopeManager scope1(cl::_sym_STARprint_baseSTAR, base);
+  DynamicScopeManager scope2(cl::_sym_STARprint_caseSTAR, cas);
+  DynamicScopeManager scope3(cl::_sym_STARprint_circleSTAR, circle);
+  DynamicScopeManager scope4(cl::_sym_STARprint_escapeSTAR, escape);
+  DynamicScopeManager scope5(cl::_sym_STARprint_gensymSTAR, gensym);
+  DynamicScopeManager scope6(cl::_sym_STARprint_lengthSTAR, length);
+  DynamicScopeManager scope7(cl::_sym_STARprint_levelSTAR, level);
+  DynamicScopeManager scope8(cl::_sym_STARprint_linesSTAR, lines);
+  DynamicScopeManager scope9(cl::_sym_STARprint_miser_widthSTAR, miser_width);
+  DynamicScopeManager scopeA(cl::_sym_STARprint_pprint_dispatchSTAR, pprint_dispatch);
+  DynamicScopeManager scopeB(cl::_sym_STARprint_prettySTAR, pretty);
+  DynamicScopeManager scopeC(cl::_sym_STARprint_radixSTAR, radix);
+  DynamicScopeManager scopeD(cl::_sym_STARprint_readablySTAR, readably);
+  DynamicScopeManager scopeE(cl::_sym_STARprint_right_marginSTAR, right_margin);
   T_sp ostrm = coerce::outputStreamDesignator(strm);
   write_object(x, ostrm);
-  clasp_force_output(ostrm);
   return Values(x);
 };
 
@@ -208,11 +218,10 @@ CL_DECLARE();
 CL_DOCSTRING("pprint");
 CL_DEFUN void cl__pprint(T_sp obj, T_sp stream) {
   DynamicScopeManager scope(cl::_sym_STARprint_escapeSTAR, _lisp->_true());
-  scope.pushSpecialVariableAndSet(cl::_sym_STARprint_prettySTAR, _lisp->_true());
+  DynamicScopeManager scope1(cl::_sym_STARprint_prettySTAR, _lisp->_true());
   stream = coerce::outputStreamDesignator(stream);
   clasp_write_char('\n', stream);
   write_object(obj, stream);
-  clasp_force_output(stream);
 }
 
 CL_LAMBDA(obj &optional output-stream-desig);
@@ -245,7 +254,6 @@ CL_DEFUN T_sp cl__print(T_sp obj, T_sp output_stream_desig) {
   clasp_write_string("\n", sout);
   cl__prin1(obj, sout);
   clasp_write_string(" ", sout);
-  clasp_force_output(sout);
   return obj;
 }
 

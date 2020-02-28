@@ -83,7 +83,7 @@ public:                                                                         
     return gctools::GC<aClass>::allocate_with_default_constructor();                                    \
   };                                                                                                    \
   virtual core::Instance_sp __class() const {                           \
-    return core::lisp_getStaticClass(aClass::static_HeaderValue);       \
+    return core::lisp_getStaticClass(aClass::static_StampWtagMtag);       \
   }                                                                     \
   typedef wrappedClass WrappedClass;                                                                    \
                                                                                                         \

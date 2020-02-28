@@ -110,8 +110,6 @@
                                                          %t*% ; environment
                                                          ))
     
-         (primitive-unwinds "symbolValueRead" %t*% (list %t*%))
-         (primitive         "symbolValueReference" %t**% (list %t*%))
          (primitive         "lexicalValueReference" %t**% (list %size_t% %size_t% %t*%))
          (primitive         "cc_match" %t*% (list %t*% %t*%))
 ;;         (primitive         "registerReference" %t**% (list %t**%))
@@ -208,8 +206,8 @@
          (primitive         "cc_save_values" %void% (list %size_t% %t*% %t**%))
          (primitive         "cc_load_values" %return-type% (list %size_t% %t**%))
     
-         (primitive         "pushDynamicBinding" %void% (list %t*%))
-         (primitive         "popDynamicBinding" %void% (list %t*%))
+         (primitive         "pushDynamicBinding" %void% (list %t*% %t**%))
+         (primitive         "popDynamicBinding" %void% (list %t*% %t**%))
     
          ;; Primitives for Cleavir code
 
@@ -219,8 +217,8 @@
          (primitive         "cc_ensure_valid_object" %t*% (list %t*%))
          (primitive         "cc_getPointer" %i8*% (list %t*%))
          (primitive-unwinds "cc_makeCell" %t*% nil)
-         (primitive         "cc_simpleBitVectorAref" %uint% (list %t*% %size_t%))
-         (primitive         "cc_simpleBitVectorAset" %void% (list %t*% %size_t% %uint%))
+         (primitive         "cc_simpleBitVectorAref" %i8% (list %t*% %size_t%))
+         (primitive         "cc_simpleBitVectorAset" %void% (list %t*% %size_t% %i8%))
          (primitive         "cc_initialize_gcroots_in_module" %void% (list %gcroots-in-module*% ; holder
                                                                       %t**% ; root_address
                                                                       %size_t% ; num_roots
@@ -247,6 +245,7 @@
                                                             %size_t% ) :varargs t)
          (primitive-unwinds "cc_safe_symbol_value" %t*% (list %t*%))
          (primitive         "cc_setSymbolValue" %void% (list %t*% %t*%))
+         (primitive         "cc_setTLSymbolValue" %void% (list %t*% %t*%))
 
          (primitive         "cc_rewind_va_list" %void% (list %va_list*% %register-save-area*%))
          (primitive-unwinds "cc_call_multipleValueOneFormCallWithRet0" %return-type% (list %t*% %return-type%))
@@ -256,6 +255,7 @@
          (primitive-unwinds "cc_throw" %void% (list %t*%) :does-not-return t)
          (primitive         "cc_saveMultipleValue0" %void% (list %tmv%))
          (primitive         "cc_restoreMultipleValue0" %return-type% nil)
+         (primitive         "llvm.frameaddress" %t*% (list %i32%))
          (primitive         "cc_pushLandingPadFrame" %t*% nil)
          (primitive         "cc_popLandingPadFrame" %void% (list %t*%))
          (primitive-unwinds "cc_landingpadUnwindMatchFrameElseRethrow" %size_t% (list %i8*% %t*%))

@@ -377,7 +377,7 @@ CL_DECLARE();
 CL_DOCSTRING("lispifyName");
 CL_DEFUN String_sp core__lispify_name(String_sp name) {
   ASSERT(name.notnilp());
-  string lispified = lispify_symbol_name(name->get());
+  string lispified = lispify_symbol_name(name->get_std_string());
   return SimpleBaseString_O::make(lispified);
 };
 
@@ -826,8 +826,8 @@ DebugStream *lisp_debugLog() {
 
 uint lisp_hash(uintptr_t x) {
   HashGenerator hg;
-  hg.addPart(x);
-  return hg.hash();
+  hg.addValue(x);
+  return static_cast<uint>(hg.rawhash());
 }
 
 T_sp lisp_true() {
@@ -907,6 +907,10 @@ List_sp lisp_parse_declares(const string &packageName, const string &declarestri
   return sscons;
 }
 
+size_t lisp_lambda_list_handler_number_of_specials(LambdaListHandler_sp lambda_list_handler)
+{
+  return lambda_list_handler->numberOfSpecialVariables();
+}
 LambdaListHandler_sp lisp_function_lambda_list_handler(List_sp lambda_list, List_sp declares, std::set<int> pureOutValues) {
   LambdaListHandler_sp llh = LambdaListHandler_O::create(lambda_list, declares, cl::_sym_function, pureOutValues);
   return llh;
@@ -1333,7 +1337,7 @@ T_sp lisp_createList(T_sp a1, T_sp a2, T_sp a3, T_sp a4, T_sp a5, T_sp a6, T_sp 
 [[noreturn]] void lisp_error_no_stamp(void* ptr)
 {
   gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(gctools::ClientPtrToBasePtr(ptr));
-  SIMPLE_ERROR(BF("This General_O object %p does not return a stamp because its subclass should overload get_stamp_() and return one  - the subclass header stamp value is %lu") % ((void*)ptr) % header->stamp());
+  SIMPLE_ERROR(BF("This General_O object %p does not return a stamp because its subclass should overload get_stamp_() and return one  - the subclass header stamp value is %lu") % ((void*)ptr) % header->stamp_());
 }
 
 void lisp_errorCannotAllocateInstanceWithMissingDefaultConstructor(T_sp aclass_symbol)
@@ -1452,18 +1456,6 @@ string stringUpper(const char *s) {
   }
   LOG(BF("Returning stringUpper(%s)") % ss.str());
   return ss.str();
-}
-
-T_sp lisp_ArgArrayToCons(int nargs, ArgArray args) {
-  Cons_O::CdrType_sp first = _Nil<Cons_O::CdrType_O>();
-  Cons_O::CdrType_sp *curP = &first;
-  //        gctools::StackRootedPointerToSmartPtr<Cons_O::CdrType_O> cur(&first);
-  for (int i(0); i < nargs; ++i) {
-    Cons_sp one = Cons_O::create(gctools::smart_ptr<core::T_O>((gctools::Tagged)(args[i])),_Nil<T_O>());
-    *curP = one;          // cur.setPointee(one); //*cur = one;
-    curP = one->cdrPtr(); // cur.setPointer(one->cdrPtr()); // cur = one->cdrPtr();
-  }
-  return first;
 }
 
 vector<string> split(const string &str, const string &delimiters) {

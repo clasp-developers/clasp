@@ -2,6 +2,7 @@
 #define gctools_threadlocal_fwd_H
 
 #include <signal.h>
+#include <chrono>
 
 namespace gctools {
 
@@ -80,6 +81,9 @@ namespace gctools {
     void*                  _StackTop;
     int                    _DisableInterrupts;
     GlobalAllocationProfiler _Allocations;
+    // Time unwinds
+    std::chrono::time_point<std::chrono::high_resolution_clock> _start_unwind;
+    std::chrono::duration<size_t,std::nano>   _unwind_time;
 #ifdef DEBUG_COUNT_ALLOCATIONS
     std::vector<size_t>    _CountAllocations;
     bool                   _BacktraceAllocationsP;

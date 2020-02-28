@@ -83,6 +83,10 @@ THE SOFTWARE.
 #include <clasp/mpip/claspMpi.h>
 #endif
 
+namespace llvmo {
+void initialize_llvm(int argc, char **argv);
+
+};
 // ---------------------------------------------------------------------------
 // GLOBAL VARS
 // ---------------------------------------------------------------------------
@@ -387,28 +391,44 @@ int main( int argc, char *argv[] )
 
   set_program_name();
 
+#if 0 // Stop trying to change the stack size
+  {
   // - SET STACK SIZE
 
+    rlimit rl;
+    rlimit rl_new;
+    size_t rlm = 9;
+    rl.rlim_max = (rlm+1) * 1024 * 1024; // 16 MB
+    rl.rlim_cur = rlm * 1024 * 1024; // 15 MB
+
+    getrlimit( RLIMIT_STACK, &rl_new );
+    fprintf( stderr, "rl_new.rlim_cur -> %lu     rl_new.rlim_max -> %lu\n", (unsigned long)rl_new.rlim_cur, (unsigned long)rl_new.rlim_max );
+    fprintf( stderr, "rl.rlim_cur -> %lu     rl.rlim_max -> %lu\n", (unsigned long)rl.rlim_cur, (unsigned long)rl.rlim_max );
+    if (rl_new.rlim_cur < rl.rlim_cur) {
+
+      int rc = setrlimit( RLIMIT_STACK, &rl );
+      if ( rc != 0 )
+      {
+        fprintf( stderr, "*** %s (%s:%d): WARNING: Could not set stack size as requested (error code %d / rl.rlim_max = %lu) !\n",
+                 exe_name().c_str(), __FILE__, __LINE__, rc, (unsigned long)rl.rlim_max );
+        fprintf( stderr, "  strerror(errno) -> %s\n", strerror(errno));
+      }
+    
+      getrlimit( RLIMIT_STACK, &rl_new );
+      if( rl.rlim_cur != rl_new.rlim_cur )
+      {
+        fprintf( stderr, "*** %s (%s:%d): WARNING: Could not set stack size as requested (rl.rlim_cur(%lu) != rl_new.rlim_cur(%lu)) !\n",
+                 exe_name().c_str(), __FILE__, __LINE__, (unsigned long)rl.rlim_cur, (unsigned long)rl_new.rlim_cur );
+      }
+    }
+  }
+#else
   rlimit rl;
-  rlimit rl_new;
+  getrlimit( RLIMIT_STACK, &rl );
+#endif
 
-  rl.rlim_max = 16 * 1024 * 1024; // 16 MB
-  rl.rlim_cur = 15 * 1024 * 1024; // 15 MB
-
-  int rc = setrlimit( RLIMIT_STACK, &rl );
-  if ( rc != 0 )
-  {
-    fprintf( stderr, "*** %s (%s:%d): WARNING: Could not set stack size as requested (error code %d - rlim_max = %lu) !\n",
-             exe_name().c_str(), __FILE__, __LINE__, rc, (unsigned long)rl.rlim_max );
-  }
-
-  getrlimit( RLIMIT_STACK, &rl_new );
-  if( rl.rlim_max != rl_new.rlim_max )
-  {
-    fprintf( stderr, "*** %s (%s:%d): WARNING: Could not set stack size as requested (error code %d - rlim_max = %lu) !\n",
-             exe_name().c_str(), __FILE__, __LINE__, EXIT_FAILURE, (unsigned long)rl_new.rlim_max );
-  }
-
+  // initialize llvm
+  llvmo::initialize_llvm(argc,argv);
   
   // - COMMAND LINE OPTONS HANDLING
 
@@ -440,7 +460,7 @@ int main( int argc, char *argv[] )
 
   int exit_code;
   {
-    exit_code = gctools::startupGarbageCollectorAndSystem( &startup, argc, argv, rl.rlim_max, mpiEnabled, mpiRank, mpiSize );
+    exit_code = gctools::startupGarbageCollectorAndSystem( &startup, argc, argv, rl.rlim_cur, mpiEnabled, mpiRank, mpiSize );
   }
   
 #ifdef USE_MPI

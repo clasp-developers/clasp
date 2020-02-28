@@ -114,12 +114,6 @@ ALWAYS_INLINE core::T_O** functionFrameReference(core::T_O* frameP, int idx) {
   return &cell.rawRef_();
 }
 
-ALWAYS_INLINE core::T_O** symbolValueReference(core::T_O *symbolP)
-{
-  core::Symbol_sp sym((gctools::Tagged)symbolP);
-  return &sym->valueReference(&sym->_GlobalValue)->rawRef_();
-}
-
 ALWAYS_INLINE core::T_O* symbolValueRead(const core::T_O* tsymP) {
   Symbol_sp sym((gctools::Tagged)(tsymP));
   T_sp sv = sym->symbolValueUnsafe();
@@ -138,7 +132,7 @@ ALWAYS_INLINE core::T_O* cc_ensure_valid_object(core::T_O* tagged_object)
 
 ALWAYS_INLINE T_O *cc_safe_symbol_value(core::T_O *sym) {
   core::Symbol_O *symP = reinterpret_cast<core::Symbol_O *>(gctools::untag_general<core::T_O *>(sym));
-  T_O *sv = symP->symbolValueRef().raw_();
+  T_O *sv = symP->symbolValueUnsafe().raw_();
   if (sv == gctools::global_tagged_Symbol_OP_unbound) {
     intrinsic_error(llvmo::unboundSymbolValue, gc::smart_ptr<core::Symbol_O>((gc::Tagged)sym));
   }
@@ -263,7 +257,7 @@ ALWAYS_INLINE core::T_O *cc_stack_enclose(void* closure_address,
 {NO_UNWIND_BEGIN();
   ASSERT(((uintptr_t)(closure_address)&0x7)==0); //
   gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(closure_address);
-  const gctools::Header_s::Value closure_header = gctools::Header_s::Value::make<core::ClosureWithSlots_O>();
+  const gctools::Header_s::StampWtagMtag closure_header = gctools::Header_s::StampWtagMtag::make<core::ClosureWithSlots_O>();
   size_t size = gctools::sizeof_container_with_header<core::ClosureWithSlots_O>(numCells);
 
 //  gctools::global_stack_closure_bytes_allocated += size;
@@ -923,7 +917,7 @@ gctools::ShiftedStamp cc_read_derivable_cxx_stamp_untagged_object(core::T_O* unt
 {
   core::DerivableCxxObject_O* derivable_cxx_object_ptr = reinterpret_cast<core::DerivableCxxObject_O*>(untagged_object);
   gctools::ShiftedStamp stamp = (gctools::ShiftedStamp)derivable_cxx_object_ptr->get_stamp_();
-  ASSERT(gctools::Header_s::Value::is_derivable_shifted_stamp(stamp));
+  ASSERT(gctools::Header_s::StampWtagMtag::is_derivable_shifted_stamp(stamp));
   printf("%s:%d:%s returning stamp %lu - check if it is correct\n", __FILE__, __LINE__, __FUNCTION__, stamp);
   return stamp;
 }
@@ -944,14 +938,14 @@ void cc_rewind_va_list(va_list va_args, void** register_save_areaP)
   LCC_REWIND_VA_LIST(va_args,register_save_areaP);
 }
 
-uint cc_simpleBitVectorAref(core::T_O* tarray, size_t index) {
+unsigned char cc_simpleBitVectorAref(core::T_O* tarray, size_t index) {
   core::SimpleBitVector_O* array = reinterpret_cast<core::SimpleBitVector_O*>(gctools::untag_general<core::T_O*>(tarray));
-  return array->testBit(index);
+  return (*array)[index];
 }
 
-void cc_simpleBitVectorAset(core::T_O* tarray, size_t index, uint v) {
+void cc_simpleBitVectorAset(core::T_O* tarray, size_t index, unsigned char v) {
   core::SimpleBitVector_O* array = reinterpret_cast<core::SimpleBitVector_O*>(gctools::untag_general<core::T_O*>(tarray));
-  array->setBit(index, v);
+  (*array)[index] = v;
 }
 
 core::T_O** activationFrameReferenceFromClosure(core::T_O* closureRaw)

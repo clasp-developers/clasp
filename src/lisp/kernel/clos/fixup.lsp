@@ -459,13 +459,21 @@ and cannot be added to ~A." method other-gf gf)))
 ;;; Most MAKE-LOAD-FORMs are in print.lsp.
 
 (defmethod make-load-form ((object core:source-pos-info) &optional environment)
-  `(core:make-cxx-object 'core:source-pos-info
-                         :sfi (core:decode (core:make-cxx-object 'core:file-scope)
-                                           ',(core:encode (core:file-scope
-                                                           (core:source-pos-info-file-handle object))))
-                         :fp ,(core:source-pos-info-filepos object)
-                         :l ,(core:source-pos-info-lineno object)
-                         :c ,(core:source-pos-info-column object)))
+  (values
+   `(core:make-cxx-object 'core:source-pos-info
+                          :sfi (core:decode (core:make-cxx-object 'core:file-scope)
+                                            ',(core:encode (core:file-scope
+                                                            (core:source-pos-info-file-handle object))))
+                          :fp ,(core:source-pos-info-filepos object)
+                          :l ,(core:source-pos-info-lineno object)
+                          :c ,(core:source-pos-info-column object))
+   `(progn
+      (core:setf-source-pos-info-inlined-at
+       ',object
+       ',(core:source-pos-info-inlined-at object))
+      (core:setf-source-pos-info-function-scope
+       ',object
+       ',(core:source-pos-info-function-scope object)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

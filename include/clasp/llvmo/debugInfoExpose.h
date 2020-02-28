@@ -1,3 +1,4 @@
+//#define DEBUG_DTORS 1
 /*
     File: debugInfoExpose.h
 */
@@ -50,6 +51,8 @@ THE SOFTWARE.
 #include <llvm/IR/IRBuilder.h>
 #include <llvm/IR/Constants.h>
 //#include "llvm/Support/IRBuilder.h"
+#include <llvm/DebugInfo/DIContext.h>
+#include <llvm/DebugInfo/DWARF/DWARFContext.h>
 
 #include <stdio.h>
 #include <string>
@@ -67,6 +70,48 @@ THE SOFTWARE.
 #include <clasp/llvmo/llvmoExpose.h>
 
 namespace llvmo {
+FORWARD(DILocation);
+class DILocation_O : public MDNode_O {
+  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::DILocation, DILocation_O, "DILocation", MDNode_O );
+  typedef llvm::DILocation ExternalType;
+  typedef ExternalType* PointerToExternalType;
+public:
+  typedef llvm::DILocation OtherType;
+public:
+  static DILocation_sp make(llvm::LLVMContext&, unsigned int, unsigned int, DINode_sp, core::T_sp);
+  virtual operator llvm::DILocation *() { return reinterpret_cast<llvm::DILocation*>(this->_ptr); };
+  virtual operator llvm::MDNode *() { return reinterpret_cast<llvm::MDNode*>(this->_ptr); };
+  virtual operator llvm::Metadata *() { return reinterpret_cast<llvm::Metadata*>(this->_ptr); }
+  PointerToExternalType wrappedPtr() const { return static_cast<PointerToExternalType>(this->_ptr); };
+  void set_wrapped(PointerToExternalType ptr) {
+    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    this->_ptr = ptr;
+  }
+ 
+  //	virtual llvm::DILocation* operator ->() const { return (llvm::DILocation*)(this);};
+ DILocation_O() : Base() {};
+  virtual ~DILocation_O(){};
+}; // DILocation_O
+}; // llvmo
+TRANSLATE(llvmo::DILocation_O);
+
+namespace translate {
+  template <>
+    struct from_object<llvm::DILocation*,std::true_type> {
+    typedef llvm::DILocation* DeclareType;
+    DeclareType _v;
+  from_object(core::T_sp o) : _v(o.nilp() ? NULL : gc::As<llvmo::DILocation_sp>(o)->wrappedPtr()) {};
+  };
+  template <>
+    struct to_object<llvm::DILocation*> {
+    static core::T_sp convert(const llvm::DILocation* ptr) {
+      return (core::RP_Create_wrapped<llvmo::DILocation_O, llvm::DILocation*>(const_cast<llvm::DILocation*>(ptr)));
+    };
+  };
+};
+
+
+namespace llvmo {
 FORWARD(DINode);
 class DINode_O : public MDNode_O {
   LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::DINode, DINode_O, "DINode", MDNode_O );
@@ -77,6 +122,7 @@ public:
 public:
   virtual operator llvm::DINode *() { return reinterpret_cast<llvm::DINode*>(this->_ptr); };
   virtual operator llvm::MDNode *() { return reinterpret_cast<llvm::MDNode*>(this->_ptr); };
+  virtual operator llvm::Metadata *() { return reinterpret_cast<llvm::Metadata*>(this->_ptr); }
   PointerToExternalType wrappedPtr() const { return static_cast<PointerToExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
@@ -117,6 +163,7 @@ public:
 public:
   virtual operator llvm::DIExpression *() { return reinterpret_cast<llvm::DIExpression*>(this->_ptr); };
   virtual operator llvm::MDNode *() { return reinterpret_cast<llvm::MDNode*>(this->_ptr); };
+  virtual operator llvm::Metadata *() { return reinterpret_cast<llvm::Metadata*>(this->_ptr); }
   PointerToExternalType wrappedPtr() const { return static_cast<PointerToExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
@@ -646,6 +693,12 @@ namespace translate {
   };
 };
 
+template <>
+struct gctools::GCInfo<llvmo::DIBuilder_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = true;
+  static GCInfo_policy constexpr Policy = normal;
+};
 
 
 namespace llvmo {
@@ -676,7 +729,13 @@ public:
   DIBuilder_O() : Base(), _ptr(NULL){};
   virtual ~DIBuilder_O() {
     if (_ptr != NULL) {
-      delete _ptr;
+      auto ptr = this->_ptr;
+      core::thread_local_register_cleanup([ptr] (void) {
+#ifdef DEBUG_DTORS
+                                            printf("%s:%d dtor %p\n", __FILE__, __LINE__, ptr);
+#endif
+                                            delete ptr;
+                                          });
       _ptr = NULL;
     };
   }
@@ -775,7 +834,147 @@ namespace translate {
 
 
 
+namespace translate {
+template <>
+struct from_object<llvm::Optional<llvm::DIFile::ChecksumInfo<llvm::StringRef>>, std::true_type> {
+  typedef llvm::Optional<llvm::DIFile::ChecksumInfo<llvm::StringRef>> DeclareType;
+  DeclareType _v;
+  from_object(core::T_sp object) {
+    if (object.nilp()) {
+      this->_v = llvm::None;
+    } else if (core::Cons_sp so = object.asOrNull<core::Cons_O>()) {
+      core::SymbolToEnumConverter_sp converter = gc::As<core::SymbolToEnumConverter_sp>(llvmo::_sym_CSKEnum->symbolValue());
+      if (CONS_CAR(so).nilp()) {
+        // nothing
+      } else {
+        llvm::DIFile::ChecksumInfo<llvm::StringRef> checksum(converter->enumForSymbol<llvm::DIFile::ChecksumKind>(CONS_CAR(so)),gc::As<core::String_sp>(CONS_CDR(so))->get_std_string());
+        this->_v = checksum;
+      }
+    } else {
+      SIMPLE_ERROR_SPRINTF("You must pass a valid Checksum and string");
+    }
+  }
+};
+};
 
+namespace translate {
+template <>
+struct from_object<llvm::Optional<llvm::StringRef>, std::true_type> {
+  typedef llvm::Optional<llvm::StringRef> DeclareType;
+  DeclareType _v;
+  from_object(core::T_sp object) {
+    if (object.nilp()) {
+      // nothing
+    } else if (core::String_sp so = object.asOrNull<core::String_O>()) {
+        this->_v = gc::As<core::String_sp>(CONS_CDR(so))->get_std_string();
+    } else {
+      SIMPLE_ERROR_SPRINTF("You must pass nil or a String");
+    }
+  }
+};
+};
+
+// DIContext_O
+namespace llvmo {
+FORWARD(DIContext);
+class DIContext_O : public core::ExternalObject_O {
+  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::DIContext, DIContext_O, "DIContext", core::ExternalObject_O);
+  typedef llvm::DIContext ExternalType;
+  typedef llvm::DIContext *PointerToExternalType;
+
+protected:
+  PointerToExternalType _ptr;
+
+public:
+  virtual void *externalObject() const { return this->_ptr; };
+  PointerToExternalType wrappedPtr() const { return this->_ptr; }
+
+public:
+  void set_wrapped(PointerToExternalType ptr) {
+    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    this->_ptr = ptr;
+  }
+  DIContext_O() : Base(), _ptr(NULL){};
+  ~DIContext_O() {
+    if (_ptr != NULL) { /* delete _ptr;*/
+      _ptr = NULL;
+    };
+  }
+}; // DIContext_O class def
+}; // llvmo
+/* from_object translators */
+
+namespace translate {
+template <>
+struct from_object<llvm::DIContext *, std::true_type> {
+  typedef llvm::DIContext *DeclareType;
+  DeclareType _v;
+  from_object(T_P object) : _v(gc::As<llvmo::DIContext_sp>(object)->wrappedPtr()){};
+};
+
+};
+    ;
+/* to_object translators */
+
+namespace translate {
+template <>
+struct to_object<llvm::DIContext *> {
+  static core::T_sp convert(llvm::DIContext *ptr) {
+    return core::RP_Create_wrapped<llvmo::DIContext_O, llvm::DIContext *>(ptr);
+  }
+};
+}; // namespace llvmo - DIContext_O done
+
+// DWARFContext_O
+namespace llvmo {
+FORWARD(DWARFContext);
+class DWARFContext_O : public core::ExternalObject_O {
+  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::DWARFContext, DWARFContext_O, "DWARFContext", core::ExternalObject_O);
+  typedef llvm::DWARFContext ExternalType;
+  typedef llvm::DWARFContext *PointerToExternalType;
+
+protected:
+  PointerToExternalType _ptr;
+
+public:
+  virtual void *externalObject() const { return this->_ptr; };
+  PointerToExternalType wrappedPtr() const { return this->_ptr; }
+  void set_wrapped(PointerToExternalType ptr) {
+    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    this->_ptr = ptr;
+  }
+ public:
+  static DWARFContext_sp createDwarfContext(ObjectFile_sp);
+  DWARFContext_O() : Base(), _ptr(NULL){};
+  ~DWARFContext_O() {
+    if (_ptr != NULL) { /* delete _ptr;*/
+      _ptr = NULL;
+    };
+  }
+}; // DWARFContext_O class def
+}; // llvmo
+/* from_object translators */
+
+namespace translate {
+template <>
+struct from_object<llvm::DWARFContext *, std::true_type> {
+  typedef llvm::DWARFContext *DeclareType;
+  DeclareType _v;
+  from_object(T_P object) : _v(gc::As<llvmo::DWARFContext_sp>(object)->wrappedPtr()){};
+};
+
+};
+
+/* to_object translators */
+
+namespace translate {
+template <>
+struct to_object<llvm::DWARFContext *> {
+  static core::T_sp convert(llvm::DWARFContext *ptr) {
+    return core::RP_Create_wrapped<llvmo::DWARFContext_O, llvm::DWARFContext *>(ptr);
+  }
+};
+}; // namespace llvmo - DWARFContext_O done
 
 // ------------------------------------------------------------
 //
@@ -783,6 +982,7 @@ namespace translate {
 //
 
 ENUM_FROM_OBJECT_TRANSLATOR(llvm::DIFile::ChecksumKind,llvmo::_sym_CSKEnum);
+ENUM_FROM_OBJECT_TRANSLATOR(llvm::DICompileUnit::DebugNameTableKind,llvmo::_sym_DNTKEnum);
 
 
 #endif // debugInfo expose

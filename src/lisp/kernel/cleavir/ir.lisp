@@ -242,7 +242,7 @@ And convert everything to JIT constants."
                          (varargs nil))
                      (cmp:irc-function-create
                       (llvm-sys:function-type-get cmp:%return-type% arg-types varargs)
-                      'llvm-sys::External-linkage
+                      'llvm-sys::external-linkage
                       intrinsic-name
                       cmp:*the-module*))))
          (result-in-registers

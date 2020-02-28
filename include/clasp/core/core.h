@@ -857,7 +857,6 @@ uint64_t lisp_nameword(T_sp name);
   string lisp_classNameAsString(Instance_sp c);
   void lisp_throwUnexpectedType(T_sp offendingObject, Symbol_sp expectedTypeId);
   core::T_sp lisp_false();
-  T_sp lisp_ArgArrayToCons(int nargs, ArgArray args);
   T_sp lisp_va_list_toCons(va_list vargs);
 //bool lisp_fixnumP(core::T_sp obj);
 //gctools::Fixnum lisp_asFixnum(core::T_sp obj);
@@ -909,6 +908,7 @@ uint64_t lisp_nameword(T_sp name);
   List_sp lisp_parse_arguments(const string &packageName, const string &args);
   List_sp lisp_parse_declares(const string &packageName, const string &declarestring);
   LambdaListHandler_sp lisp_function_lambda_list_handler(List_sp lambda_list, List_sp declares, std::set<int> pureOutValues = std::set<int>());
+size_t lisp_lambda_list_handler_number_of_specials(LambdaListHandler_sp lambda_list_handler);
 
   void lisp_defineSingleDispatchMethod(T_sp name,
                                        Symbol_sp classSymbol,

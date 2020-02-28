@@ -430,6 +430,7 @@ q (or Q):             quits the inspection.~%~
                ((hash-table-p object) (inspect-hashtable object))
 	       #+clos
 	       ((sys:instancep object) (inspect-instance object))
+               ((sys:cxx-object-p object) (describe-object object *standard-output*))
                (t (format t "~S - ~S" object (type-of object))))))
 
 (defun default-inspector (object)

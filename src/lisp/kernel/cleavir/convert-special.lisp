@@ -83,9 +83,9 @@
   ;;; Technically we could convert the 0-forms case to FUNCALL, but it's
   ;;; probably not a big deal.
   (if (eql (length forms) 1)
-      `(cleavir-primop:multiple-value-call (core::coerce-fdesignator ,function-form) ,@forms)
+      `(cleavir-primop:multiple-value-call (core:coerce-fdesignator ,function-form) ,@forms)
       `(core:multiple-value-funcall
-        (core::coerce-fdesignator ,function-form)
+        (core:coerce-fdesignator ,function-form)
         ,@(mapcar (lambda (x) `#'(lambda () (progn ,x))) forms))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -285,11 +285,39 @@
   (:mdarray :axis))
 (define-functionlike-special-form core:vaslist-pop cc-ast:vaslist-pop-ast
   (:vaslist))
+(define-functionlike-special-form core:vaslist-length cc-ast:vaslist-length-ast
+  (:vaslist))
 
 (define-functionlike-special-form core::header-stamp cc-ast:header-stamp-ast (:arg))
 (define-functionlike-special-form core::rack-stamp cc-ast:rack-stamp-ast (:arg))
 (define-functionlike-special-form core::wrapped-stamp cc-ast:wrapped-stamp-ast (:arg))
 (define-functionlike-special-form core::derivable-stamp cc-ast:derivable-stamp-ast (:arg))
+
+(define-functionlike-special-form core:cas-car cc-ast:cas-car-ast
+  (:cmp-ast :value-ast :cons-ast))
+(define-functionlike-special-form core:cas-cdr cc-ast:cas-cdr-ast
+  (:cmp-ast :value-ast :cons-ast))
+(define-functionlike-special-form core::instance-cas cc-ast:slot-cas-ast
+  (:cmp-ast :value-ast :object-ast :slot-number-ast))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Converting CORE::ACAS
+;;;
+
+(defmethod cleavir-cst-to-ast:convert-special
+    ((symbol (eql 'core::acas)) cst env (system clasp-cleavir:clasp))
+  (cst:db origin (acas array index cmp value type simple-p boxed-p) cst
+    (declare (ignore acas))
+    (make-instance 'cc-ast:acas-ast
+      :array-ast (cleavir-cst-to-ast:convert array env system)
+      :index-ast (cleavir-cst-to-ast:convert index env system)
+      :cmp-ast   (cleavir-cst-to-ast:convert cmp env system)
+      :value-ast (cleavir-cst-to-ast:convert value env system)
+      :element-type (cst:raw type)
+      :simple-p (cst:raw simple-p)
+      :boxed-p (cst:raw boxed-p)
+      :origin origin)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -452,6 +480,7 @@
                (canonicalized-dspecs
                  (cst:canonicalize-declaration-specifiers
                   system
+                  (cleavir-env:declarations environment)
                   declaration-specifiers)))
           (multiple-value-bind (idspecs rdspecs)
               (cleavir-cst-to-ast::itemize-declaration-specifiers-by-parameter-group

@@ -80,7 +80,7 @@
   (let ((fn (restart-report-function restart)))
     (if fn
 	(funcall fn stream)
-	(format stream "~s" (or (restart-name restart) restart)))))
+        (prin1 (or (restart-name restart) restart) stream))))
 
 (defmacro restart-bind (bindings &body forms)
   `(let ((*restart-clusters*
@@ -208,17 +208,18 @@
       `(block ,block-tag
 	 (let ((,temp-var nil))
 	   (tagbody
-	     (restart-bind
-	       ,(mapcar #'(lambda (datum)
-			    (let*((name (nth 0 datum))
-				  (tag  (nth 1 datum))
-				  (keys (nth 2 datum)))
-			      `(,name #'(lambda (&rest temp)
-					  (setq ,temp-var temp)
-					  (go ,tag))
-				,@keys)))
-			data)
-	       (return-from ,block-tag ,expression))
+              (return-from ,block-tag
+                (restart-bind
+                    ,(mapcar #'(lambda (datum)
+                                 (let*((name (nth 0 datum))
+                                       (tag  (nth 1 datum))
+                                       (keys (nth 2 datum)))
+                                   `(,name #'(lambda (&rest temp)
+                                               (setq ,temp-var temp)
+                                               (go ,tag))
+                                           ,@keys)))
+                      data)
+                  ,expression))
 	     ,@(mapcan #'(lambda (datum)
 			   (let*((tag  (nth 1 datum))
 				 (bvl  (nth 3 datum))
@@ -341,10 +342,10 @@
 	(let* ((normal-return (make-symbol "NORMAL-RETURN"))
 	       (error-return  (make-symbol "ERROR-RETURN")))
 	  `(block ,error-return
-	    (multiple-value-call #'(lambda ,@(cdr no-error-clause))
-	      (block ,normal-return
-		(return-from ,error-return
-		  (handler-case (return-from ,normal-return ,form)
+             (multiple-value-call #'(lambda ,@(cdr no-error-clause))
+               (block ,normal-return
+                 (return-from ,error-return
+                   (handler-case (return-from ,normal-return ,form)
 		     ,@(remove no-error-clause cases)))))))
 	(let* ((tag (gensym))
 	       (var (gensym))
@@ -354,27 +355,28 @@
 	     (let ((,var nil))
 	       (declare (ignorable ,var))
 	       (tagbody
-		 (handler-bind ,(mapcar #'(lambda (annotated-case)
-					    (list (cadr annotated-case)
-						  `#'(lambda (temp)
-                                (declare (ignorable temp))
-						       ,@(if (caddr annotated-case)
-							     `((setq ,var temp)))
-						       (go ,(car annotated-case)))))
-					annotated-cases)
-			       (return-from ,tag ,form))
-		 ,@(mapcan #'(lambda (annotated-case)
-			       (list (car annotated-case)
-				     (let ((body (cdddr annotated-case)))
-				       `(return-from ,tag
-					  ,(if (caddr annotated-case)
-					       `(let ((,(caaddr annotated-case)
-						       ,var))
-						 ,@body)
-					       ;; We must allow declarations!
-					       `(locally ,@body))))))
-			   annotated-cases))))))))
-			   
+                  (return-from ,tag
+                    (handler-bind ,(mapcar #'(lambda (annotated-case)
+                                               (list (cadr annotated-case)
+                                                     `#'(lambda (temp)
+                                                          (declare (ignorable temp))
+                                                          ,@(if (caddr annotated-case)
+                                                                `((setq ,var temp)))
+                                                          (go ,(car annotated-case)))))
+                                    annotated-cases)
+                      ,form))
+                  ,@(mapcan #'(lambda (annotated-case)
+                                (list (car annotated-case)
+                                      (let ((body (cdddr annotated-case)))
+                                        `(return-from ,tag
+                                           ,(if (caddr annotated-case)
+                                                `(let ((,(caaddr annotated-case)
+                                                         ,var))
+                                                   ,@body)
+                                                ;; We must allow declarations!
+                                                `(locally ,@body))))))
+                            annotated-cases))))))))
+
 			   
 ;;; COERCE-TO-CONDITION
 ;;;  Internal routine used in ERROR, CERROR, BREAK, and WARN for parsing the
@@ -413,13 +415,18 @@ If FORMAT-STRING is non-NIL, it is used as the format string to be output to
 *ERROR-OUTPUT* before entering the break loop.  ARGs are arguments to the
 format string."
   (let ((*debugger-hook* nil))
-    (core:call-with-stack-top-hint
-     (lambda ()
-       (with-simple-restart (continue "Return from BREAK.")
-         (invoke-debugger
-          (make-condition 'SIMPLE-CONDITION
-                          :FORMAT-CONTROL format-control
-                          :FORMAT-ARGUMENTS format-arguments))))))
+    #+(or)(core:call-with-stack-top-hint
+           (lambda ()
+             (with-simple-restart (continue "Return from BREAK.")
+               (invoke-debugger
+                (make-condition 'SIMPLE-CONDITION
+                                :FORMAT-CONTROL format-control
+                                :FORMAT-ARGUMENTS format-arguments))))))
+  (with-simple-restart (continue "Return from BREAK.")
+    (invoke-debugger
+     (make-condition 'SIMPLE-CONDITION
+                     :FORMAT-CONTROL format-control
+                     :FORMAT-ARGUMENTS format-arguments)))
   nil)
 
 (defun warn (datum &rest arguments)
@@ -477,8 +484,17 @@ returns with NIL."
 (define-condition storage-condition (serious-condition) ())
 
 (define-condition ext:segmentation-violation (storage-condition)
-  ()
-  (:REPORT "Detected access to an invalid or protected memory address."))
+  ((address :initarg :address :accessor memory-condition-address))
+  (:REPORT
+   (lambda (condition stream)
+     (format stream "Segmentation fault. Attempted to access resticted memory address #x~x.
+
+This is due either to a problem in foreign code (e.g., C++), or a bug in Clasp itself."
+             (memory-condition-address condition)))))
+
+;; Called by signal handlers in gctools/interrupt.cc.
+(defun ext:segmentation-violation (address)
+  (error 'ext:segmentation-violation :address address))
 
 (define-condition ext:stack-overflow (storage-condition)
   ((size :initarg :size :initform 0 :reader ext:stack-overflow-size)
@@ -498,9 +514,24 @@ or return to an outer frame, undoing all the function calls so far."
   (:REPORT "Memory limit reached. Please jump to an outer pointer, quit program and enlarge the
 memory limits before executing the program again."))
 
-(define-condition ext:illegal-instruction (serious-condition)
+(define-condition ext:illegal-instruction (error)
   ()
-  (:REPORT "Illegal instruction."))
+  (:REPORT "Illegal instruction.
+
+No information available on cause. This may be a bug in Clasp."))
+
+;; Called by signal handlers
+(defun ext:illegal-instruction () (error 'ext:illegal-instruction))
+
+(define-condition ext:bus-error (error)
+  ((address :initarg :address :accessor memory-condition-address))
+  (:report
+   (lambda (condition stream)
+     (format stream "Bus error. Attempted to access invalid memory address #x~x.
+
+This is due to either a problem in foreign code (e.g., C++), or a bug in Clasp itself."
+             (memory-condition-address condition)))))
+(defun ext:bus-error (address) (error 'ext:bus-error :address address))
 
 (define-condition ext:unix-signal-received ()
   ((code :type fixnum
@@ -523,14 +554,40 @@ memory limits before executing the program again."))
 	     (type-error-datum condition)
 	     (type-error-expected-type condition)))))
 
-(define-condition array-out-of-bounds (type-error)
-  ((array :INITARG :ARRAY :READER array-out-of-bounds-array))
+(define-condition out-of-bounds (type-error)
+  ;; the type-error DATUM is the index, and its EXPECTED-TYPE is the range.
+  ;; This is the sequence and/or array.
+  ;; We don't generally display it because it could be huge,
+  ;; but it might be nice to have.
+  ((object :INITARG :object :READER out-of-bounds-object)))
+
+;; for row-major-aref
+(define-condition row-major-out-of-bounds (out-of-bounds)
+  ()
+  (:report
+   (lambda (condition stream)
+     (format stream "Row-major array index ~d is out of bounds ~s."
+             (type-error-datum condition)
+             (type-error-expected-type condition)))))
+
+;; for aref
+(define-condition array-out-of-bounds (out-of-bounds)
+  ((axis :initarg :axis :reader out-of-bounds-axis))
   (:REPORT
    (lambda (condition stream)
-     (format stream "array index ~S is out of bounds ~s for array ~S."
+     (format stream "Array index ~d is out of bounds ~s on axis ~d."
              (type-error-datum condition)
              (type-error-expected-type condition)
-             (array-out-of-bounds-array condition)))))
+             (out-of-bounds-axis condition)))))
+
+;; for elt
+(define-condition sequence-out-of-bounds (out-of-bounds)
+  ()
+  (:report
+   (lambda (condition stream)
+     (format stream "Sequence index ~d is out of bounds ~s."
+             (type-error-datum condition)
+             (type-error-expected-type condition)))))
 
 (define-condition simple-type-error (simple-condition type-error) ())
 
@@ -560,24 +617,15 @@ memory limits before executing the program again."))
 
 (define-condition core:simple-program-error (simple-condition program-error) ())
 
-(define-condition core:argument-number-error (program-error)
-  ((supplied :initarg :supplied :reader argument-number-error-supplied)
-   (min :initarg :min :reader argument-number-error-min)
-   (max :initarg :max :reader argument-number-error-max))
-  (:report
-   (lambda (condition stream)
-     (let ((supplied (argument-number-error-supplied condition))
-           (max (argument-number-error-max condition))
-           (min (argument-number-error-min condition)))
-       (if (and max (> supplied max))
-           (format stream "No more than ~s argument~:p allowed, ~s argument~:p supplied."
-                   max supplied)
-           (format stream "At least ~s argument~:p required, ~s argument~:p supplied."
-                   min supplied))))))
-
 (define-condition control-error (error) ())
 
 (define-condition core:simple-control-error (simple-condition control-error) ())
+
+;; FIXME: We could probably try to at least include the name of the block or
+;; tag that was supposed to be returned to.
+(define-condition core:out-of-extent-unwind (control-error)
+  ()
+  (:report "Attempted to return or go to an expired block or tagbody tag."))
 
 (define-condition stream-error (error)
   ((stream :initarg :stream :reader stream-error-stream)))
@@ -640,8 +688,11 @@ memory limits before executing the program again."))
                      (cell-error-name condition)))))
 
 (define-condition arithmetic-error (error)
-  ((operation :INITARG :OPERATION :READER arithmetic-error-operation)
-   (operands :INITARG :OPERANDS :INITFORM '() :READER arithmetic-error-operands)))
+  (;; NOTE/FIXME: Sometimes we have the OPERATION be NIL - if we can't determine what
+   ;; it was, as happens with floating point traps sometimes (currently all the time).
+   ;; This is probably nonconforming.
+   (operation :initform nil :INITARG :OPERATION :READER arithmetic-error-operation)
+   (operands :initform nil :INITARG :OPERANDS :READER arithmetic-error-operands)))
 
 (define-condition division-by-zero (arithmetic-error) ())
 
@@ -659,32 +710,38 @@ memory limits before executing the program again."))
              (format stream "Cannot call special operator as function: ~s"
                      (operator condition)))))
 
-(define-condition core:too-few-arguments-error (error)
-  ((called-function :initarg :called-function :reader called-function)
-   (given-number-of-arguments :initarg :given-number-of-arguments :reader given-number-of-arguments)
-   (required-number-of-arguments :initarg :required-number-of-arguments :reader required-number-of-arguments))
+(define-condition core:wrong-number-of-arguments (program-error)
+  (;; may be NIL if this is called from the interpreter and we don't know anything
+   ;; (KLUDGE, FIXME?)
+   (called-function :initform nil :initarg :called-function :reader called-function)
+   (given-nargs :initarg :given-nargs :reader given-nargs)
+   ;; also may be NIL, same reason (KLUDGE, FIXME?)
+   (min-nargs :initarg :min-nargs :reader min-nargs :initform nil)
+   ;; may be NIL to indicate no maximum.
+   (max-nargs :initarg :max-nargs :reader max-nargs :initform nil))
   (:report (lambda (condition stream)
-             (format stream "Too few arguments for ~S, given ~S - required ~S."
-                     (core:function-name (called-function condition))
-                     (given-number-of-arguments condition)
-                     (required-number-of-arguments condition)))))
-
-(define-condition core:too-many-arguments-error (error)
-  ((called-function :initarg :called-function :reader called-function)
-   (given-number-of-arguments :initarg :given-number-of-arguments :reader given-number-of-arguments)
-   (required-number-of-arguments :initarg :required-number-of-arguments :reader required-number-of-arguments))
-  (:report (lambda (condition stream)
-             (format stream "Too many arguments for ~S, given ~S - required ~S."
-                     (core:function-name (called-function condition))
-                     (given-number-of-arguments condition)
-                     (required-number-of-arguments condition)))))
+             (let* ((min (min-nargs condition))
+                    (max (max-nargs condition))
+                    (function (called-function condition))
+                    (name (and function (core:function-name function)))
+                    (dname (if (eq name 'cl:lambda) "anonymous function" name)))
+               (format stream "~@[Calling ~a - ~]Got ~d arguments, but expected ~@?"
+                       dname (given-nargs condition)
+                       (cond ((null max)  "at least ~d")
+                             ((null min)  "at most ~*~d")
+                             ;; I think "exactly 0" is better than "at most 0", thus duplication
+                             ((= min max) "exactly ~d")
+                             ((zerop min) "at most ~*~d")
+                             (t           "between ~d and ~d"))
+                       min max)))))
 
 (define-condition core:unrecognized-keyword-argument-error (error)
-  ((called-function :initarg :called-function :reader called-function)
+  ((called-function :initarg :called-function :reader called-function :initform nil)
    (unrecognized-keyword :initarg :unrecognized-keyword :reader unrecognized-keyword))
   (:report (lambda (condition stream)
-             (format stream "Unrecognized keyword argument ~S for ~S."
+             (format stream "Unrecognized keyword argument ~S~[~; for ~S~]."
                      (unrecognized-keyword condition)
+                     (called-function condition)
                      (core:function-name (called-function condition))))))
 
 (define-condition print-not-readable (error)
@@ -826,6 +883,72 @@ memory limits before executing the program again."))
 	(values-list (loop for place-name in place-names
 			for value in values
 			collect (assert-prompt place-name value)))))))
+
+;;; ----------------------------------------------------------------------
+;;; Unicode, initially forgotten in clasp
+
+#+unicode
+(define-condition ext:character-coding-error (error)
+  ((external-format :initarg :external-format :reader character-coding-error-external-format)))
+
+#+unicode
+(define-condition ext:character-encoding-error (ext:character-coding-error)
+  ((code :initarg :code :reader character-encoding-error-code)))
+
+#+unicode
+(define-condition ext:character-decoding-error (ext:character-coding-error)
+  ((octets :initarg :octets :reader character-decoding-error-octets)))
+
+#+unicode
+(define-condition ext:stream-encoding-error (stream-error ext:character-encoding-error)
+  ()
+  (:report
+   (lambda (c s)
+     (let ((stream (stream-error-stream c))
+           (code (character-encoding-error-code c)))
+       (format s "~@<encoding error on stream ~S (~S ~S): ~2I~_~
+                  the character with code ~D cannot be encoded.~@:>"
+               stream ':external-format
+               (character-coding-error-external-format c)
+               code)))))
+
+#+unicode
+(define-condition ext:stream-decoding-error (stream-error ext:character-decoding-error)
+  ()
+  (:report
+   (lambda (c s)
+     (let ((stream (stream-error-stream c))
+           (octets (character-decoding-error-octets c)))
+       (format s "~@<decoding error on stream ~S (~S ~S): ~2I~_~
+                  the octet sequence ~S cannot be decoded.~@:>"
+               stream ':external-format
+               (character-coding-error-external-format c)
+               octets)))))
+#+unicode
+(defun ext:encoding-error (stream external-format code)
+  (restart-case (error 'ext:stream-encoding-error
+                       :stream stream
+                       :external-format external-format
+                       :code code)
+    (continue ()
+      :report "Ignore character"
+      nil)
+    (use-value (c)
+      :report "Store a different character code."
+      (if (characterp c) c (code-char c)))))
+
+#+unicode
+(defun ext:decoding-error (stream external-format octets)
+  (restart-case (error 'ext:stream-decoding-error
+                       :stream stream
+                       :external-format external-format
+                       :octets octets)
+    (continue ()
+      :report "Read next character"
+      nil)
+    (use-value (c)
+      :report "Replace the bogus sequence with a character"
+      (if (characterp c) c (code-char c)))))
 
 ;;; ----------------------------------------------------------------------
 ;;; ECL's interface to the toplevel and debugger

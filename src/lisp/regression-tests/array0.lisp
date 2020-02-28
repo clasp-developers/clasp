@@ -8,8 +8,10 @@
       (subtypep (type-of (make-sequence 'simple-base-string 10)) '(simple-array base-char (10))))
 (test typep-make-simple-array (typep (make-array '(10 10)) 'simple-array))
 (test typep-make-fill-pointer-vector-nonsimple (not (typep (make-array 10 :fill-pointer 3) 'simple-array)))
+(test typep-make-fill-pointer-vector-nonsimple-vector (not (typep (make-array 10 :fill-pointer 3) 'simple-vector)))
 (test typep-make-adjustable-array (typep (make-array '(10 10) :adjustable t) 'array))
 (test typep-make-adjustable-array-nonsimple (not (typep (make-array '(10 10) :adjustable t) 'simple-array)))
+(test typep-make-adjustable-array-non-simple-vector (not (typep (make-array '(10 10) :adjustable t) 'simple-vector)))
 (test adjust-array0 (equalp (adjust-array #2A((1 2) (3 4)) '(3 3)) #2A((1 2 nil) (3 4 nil) (nil nil nil))))
 (test make-array-0 (null (array-displacement (make-array 5 :element-type 'CHARACTER :initial-element #\a :adjustable t))))
 (test make-array-1 (null (array-displacement (make-array 5 :element-type 'BASE-CHAR :initial-element #\a :adjustable t))))
@@ -20,7 +22,7 @@
 (test make-array-3 (let ((array (handler-case
                                     (list (make-array '(0) :element-type nil))
                                   (error () nil))))
-                     (or (null array)(arrrayp array))))
+                     (or (null array)(arrayp array))))
 
 (test make-array-4 (let ((please-inline (MAKE-ARRAY '(2 3) :INITIAL-ELEMENT #\a :ELEMENT-TYPE 'character)))
                      (char= #\a (aref please-inline 0 0))))
@@ -31,3 +33,17 @@
 (test-expect-error make-array-6
                    (make-array 5 :element-type (array-element-type "") :displaced-index-offset 2 :displaced-to "")
                    :type simple-error)
+
+(test aref-nil-array
+      (let ((array (make-array nil)))
+        (aref array)
+        array))
+
+(test setf-aref-nil-array
+      (let ((array (make-array nil)))
+        (setf (aref array) 23)
+        array))
+
+;;; gave segmentation violation print the error
+(test-expect-error fill-pointer-nil-array (fill-pointer #0anil) :type type-error)
+                   

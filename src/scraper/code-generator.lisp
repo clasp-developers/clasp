@@ -7,6 +7,18 @@
   (:report (lambda (condition stream)
              (format stream "Bad C++ function name: ~a" (name condition)))))
 
+(defun validate-va-rest (lambda-list function-name)
+  (unless (stringp lambda-list)
+    (error "Expected lambda-list ~s to be a string" lambda-list))
+  (when (search "&va-rest" lambda-list)
+    (unless (search "VaList_" function-name)
+      (error "Possible core:&va-rest consistency problem!!!!!~% A lambda list ~s contains &va-rest but the function ~s doesn't take VaList_sp as an argument"
+             lambda-list function-name)))
+  (when (search "VaList_" function-name)
+    (when (search "&rest" lambda-list)
+      (error "Possible core:&va-rest consistency problem!!!!!~% A function-name ~s contains VaList_sp but the function takes a &rest argument"
+             function-name))))
+
 (defun group-expose-functions-by-namespace (functions)
   (declare (optimize (speed 3)))
   (let ((ns-hashes (make-hash-table :test #'equal)))
@@ -216,6 +228,7 @@ Convert colons to underscores"
             (format cl-code-info ";;;            Found at ~a:~a~%----------~%" (file% func) (line% func))
             (let* ((raw-lisp-name (lisp-name% func))
                    (maybe-fixed-magic-name (maybe-fix-magic-name raw-lisp-name)))
+              (validate-va-rest (lambda-list% func) wrapped-name)
               (format cl-code "(wrap-c++-function ~a (~a) (~a) ~s )~%" maybe-fixed-magic-name (declare% func) (lambda-list% func) wrapped-name ))))
         (call-next-method))))
 
@@ -237,6 +250,7 @@ Convert colons to underscores"
       (format cl-code-info ";;;            Found at ~a:~a~%----------~%" (file% func) (line% func))
       (let* ((raw-lisp-name (lisp-name% func))
              (maybe-fixed-magic-name (maybe-fix-magic-name raw-lisp-name)))
+        (validate-va-rest (lambda-list% func) wrapped-name)
         (format cl-code "(wrap-c++-function ~a (~a) (~a) ~s )~%" maybe-fixed-magic-name (declare% func) (lambda-list% func) wrapped-name )))))
 
 (defmethod direct-call-function (c-code cl-code (func expose-defun-setf) c-code-info cl-code-info)
@@ -257,6 +271,7 @@ Convert colons to underscores"
       (format cl-code-info ";;;            Found at ~a:~a~%----------~%" (file% func) (line% func))
       (let* ((raw-lisp-name (lisp-name% func))
              (maybe-fixed-magic-name (maybe-fix-magic-name raw-lisp-name)))
+        (validate-va-rest (lambda-list% func) wrapped-name)
         (format cl-code "(wrap-c++-function-setf ~a (~a) (~a) ~s )~%" maybe-fixed-magic-name (declare% func) (lambda-list% func) wrapped-name )))))
 
 (defun generate-code-for-direct-call-functions (functions classes)
@@ -615,7 +630,7 @@ Convert colons to underscores"
           (dolist (exposed-class sorted-classes)
             (let ((class-tag (class-tag% exposed-class)))
               (format sout "namespace ~a { ~%" (tags:namespace% class-tag))
-              (format sout "  gctools::Header_s::Value ~a::static_HeaderValue;~%" (tags:name% class-tag))
+              (format sout "  gctools::Header_s::StampWtagMtag ~a::static_StampWtagMtag;~%" (tags:name% class-tag))
               (format sout "};~%")))
           (format sout "#endif // EXPOSE_STATIC_CLASS_VARIABLES~%"))
         (progn

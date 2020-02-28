@@ -52,11 +52,12 @@ public:
   static int sxhash_eq(T_sp obj);
 
 public: // Functions here
+  virtual bool is_eq_hashtable() const { return true;}
   virtual T_sp hashTableTest() const { return cl::_sym_eq; };
   virtual List_sp tableRef_no_read_lock(T_sp key,bool under_write_lock);
   bool keyTest(T_sp entryKey, T_sp searchKey) const;
 
-  gc::Fixnum sxhashKey(T_sp key, gc::Fixnum bound, bool willAddKey) const;
+  gc::Fixnum sxhashKey(T_sp key, gc::Fixnum bound, HashGenerator& hg) const;
 };
 
 }; /* core */
