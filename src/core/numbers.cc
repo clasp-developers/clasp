@@ -1744,7 +1744,7 @@ float Ratio_O::as_float_() const {
 
 #define prepare_ratio_to_float_iterations 50
 /* adapted from ecl */
-__attribute__((optnone)) static Integer_sp prepare_ratio_to_float(Bignum_sp num, Bignum_sp den, int digits, gc::Fixnum *scaleout) {
+static Integer_sp prepare_ratio_to_float(Bignum_sp num, Bignum_sp den, int digits, gc::Fixnum *scaleout) {
   /* We have to cook our own routine because GMP does not round.
    * The recipe is simple: we multiply the numberator by a large
    * enough number so that the division by the denominator fits
