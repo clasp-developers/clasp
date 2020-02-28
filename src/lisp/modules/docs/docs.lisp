@@ -111,7 +111,5 @@ To use
              "CLBIND"
              "AST-TOOLING")))
 
-(find-if-not #'find-package clasp-docs::*default-packages*)
-
 (time (staple:generate :clasp :if-exists :supersede))
 |#
