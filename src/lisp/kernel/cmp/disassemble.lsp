@@ -78,10 +78,10 @@ Return T if disassembly was achieved - otherwise NIL"
   (let* ((*save-module-for-disassemble* t)
          (cmp:*saved-module-from-clasp-jit* nil))
     (compile nil thing)
-    (let ((module cmp:*saved-module-from-clasp-jit*))
-      (if module
-          (llvm-sys:dump-module module)
-          (error "Could not recover jitted module -> ~a" module)))))
+    (if cmp:*saved-module-from-clasp-jit*
+        (format t "Disassembly: ~a~%" cmp:*saved-module-from-clasp-jit*)
+        (error "Could not recover jitted module for ~a" thing)))
+  (values))
 
 (defun disassemble (desig &key (type :asm))
   "If type is :ASM (the default) then disassemble to machine assembly language.

@@ -130,6 +130,12 @@ then compile it and return (values compiled-llvm-function lambda-name)"
       ((consp name) (bformat nil "%s" name))
       (t (error "Add support for function-name-from-lambda with ~a as arg" name))))
 
+(defun potentially-save-module ()
+  (when *save-module-for-disassemble*
+    (setq *saved-module-from-clasp-jit*
+          (with-output-to-string (*standard-output*)
+            (llvm-sys:dump-module *the-module* *standard-output*)))))
+
 (defun compile-to-module (&key definition env pathname (linkage 'llvm-sys:internal-linkage) linkage-name)
   (with-lexical-variable-optimizer (t)
       (multiple-value-bind (fn function-kind wrapped-env lambda-name)
@@ -141,6 +147,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
               (values llvm-function-from-lambda :function env lambda-name)))
         (or lambda-name (error "lambda-name is nil - this shouldn't happen"))
         (or fn (error "There was no function returned by compile-lambda-function outer: ~a" fn))
+        (potentially-save-module)
         (cmp-log "fn --> %s%N" fn)
         (cmp-log-dump-module *the-module*)
         (values fn function-kind wrapped-env lambda-name))))
