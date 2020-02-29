@@ -49,14 +49,21 @@
 ;;; to avoid eclector.parse-result::*stack* being unbound, when *client* is bound to a parse-result-client
 ;;; Not sure whether this a a fortunate design in eclector
 
+(defclass clasp-non-cst-elector-client () ())
+(defvar *clasp-normal-eclector-client* (make-instance 'clasp-non-cst-elector-client))
+
+(defmethod eclector.reader:find-character ((client clasp-non-cst-elector-client) name)
+  (or (call-next-method)
+      (gethash name clasp-cleavir::*additional-clasp-character-names*)
+      (clasp-cleavir::simple-unicode-name name)))
+
 (defun read-with-readtable-synced (&optional
                                       (input-stream *standard-input*)
                                       (eof-error-p t)
                                       (eof-value nil)
                                       (recursive-p nil))
   (let ((eclector.readtable:*readtable* cl:*readtable*)
-        (ECLECTOR.READER:*CLIENT* nil))
-    #+(or)(format t "stream ~a eof-p ~a eofv ~a recur ~a~%" input-stream eof-error-p eof-value recursive-p)
+        (eclector.reader:*client* *clasp-normal-eclector-client*))
     (eclector.reader:read input-stream eof-error-p eof-value recursive-p)))
 
 ;;; to avoid th cl:*readtable* and eclector.readtable:*readtable* get out of sync
@@ -66,7 +73,7 @@
                                                            (eof-value nil)
                                                            (recursive-p nil))
   (let ((eclector.readtable:*readtable* cl:*readtable*)
-        (ECLECTOR.READER:*CLIENT* nil))
+        (eclector.reader:*client* *clasp-normal-eclector-client*))
     (eclector.reader:read-preserving-whitespace input-stream eof-error-p eof-value recursive-p)))
 
 ;;; need also sync in clasp-cleavir::cclasp-loop-read-and-compile-file-forms
@@ -76,8 +83,8 @@
                             &optional (eof-error-p t) eof-value
                             &key (start 0) (end (length string))
                               preserve-whitespace)
-  (let ((ECLECTOR.READER:*CLIENT* nil))
-    (ECLECTOR.READER:READ-FROM-STRING string eof-error-p eof-value
+  (let ((eclector.reader:*client* *clasp-normal-eclector-client*))
+    (eclector.reader:read-from-string string eof-error-p eof-value
                                       :start start :end end :preserve-whitespace preserve-whitespace)))
 
 (defun init-clasp-as-eclector-reader ()
