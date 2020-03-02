@@ -175,6 +175,7 @@
          (primitive-unwinds "blockHandleReturnFrom_or_rethrow" %return-type% (list %i8*% %t*%))
          (primitive-unwinds "tagbodyHandleDynamicGoIndex_or_rethrow" %size_t% (list %i8*% %t*%))
          (primitive-unwinds "throwIllegalSwitchValue" %void% (list %size_t% %size_t%) :does-not-return t)
+         (primitive-unwinds "cc_error_bugged_catch" %void% (list %size_t%) :does-not-return t)
     
          (primitive         "__gxx_personality_v0" %i32% nil :varargs t)
          (primitive         "__cxa_begin_catch" %i8*% (list %i8*%) )
@@ -245,6 +246,7 @@
                                                             %size_t% ) :varargs t)
          (primitive-unwinds "cc_safe_symbol_value" %t*% (list %t*%))
          (primitive         "cc_setSymbolValue" %void% (list %t*% %t*%))
+         (primitive         "cc_TLSymbolValue" %t*% (list %t*%))
          (primitive         "cc_setTLSymbolValue" %void% (list %t*% %t*%))
 
          (primitive         "cc_rewind_va_list" %void% (list %va_list*% %register-save-area*%))

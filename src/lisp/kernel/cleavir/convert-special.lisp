@@ -568,3 +568,75 @@
     ((head (eql 'core:instance-set)) form)
   (cleavir-code-utilities:check-form-proper-list form)
   (cleavir-code-utilities:check-argcount form 3 3))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; WELCOME TO THE CWVB FUCK ZONE
+;;;
+
+(defclass cc-ast::bind-ast (cleavir-ast:ast cleavir-ast:dynamic-environment-output-ast-mixin)
+  ((%name :initarg :name-ast :reader cleavir-ast:name-ast)
+   (%value :initarg :value-ast :reader cleavir-ast:value-ast)
+   (%body :initarg :body-ast :reader cleavir-ast:body-ast)))
+
+(defclass clasp-cleavir-hir::bind-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin cleavir-ir:side-effect-mixin) ())
+(defclass clasp-cleavir-hir::unbind-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin cleavir-ir:side-effect-mixin) ())
+
+#|
+
+(defmethod cleavir-cst-to-ast:convert-special-binding
+    (variable-cst value-ast next-thunk env (system clasp-cleavir:clasp))
+  (let ((new-dynenv (cleavir-ast:make-dynamic-environment-ast '#:bind-dynamic-environment)))
+    (make-instance 'cc-ast:bind-ast
+                   :name-ast (make-instance 'cleavir-ast:constant-ast
+                                            :value (cst:raw variable-cst))
+                   :value-ast value-ast
+                   :dynamic-environment-out new-dynenv
+                   :body-ast (let ((cleavir-ast:*dynamic-environment* new-dynenv))
+                               (funcall next-thunk)))))
+
+|#
+
+(defmethod cleavir-ast-to-hir:compile-ast ((ast cc-ast::bind-ast) context)
+  (let* ((sym (cleavir-ir:new-temporary))
+         (old (cleavir-ir:new-temporary))
+         (new (cleavir-ir:new-temporary))
+         (dynenv-out (cleavir-ast-to-hir::find-or-create-location
+                      (cleavir-ast:dynamic-environment-out-ast ast)))
+         ;; Normal paths out.
+         (unbinds (loop for succ in (cleavir-ast-to-hir::successors context)
+                        collect (make-instance 'clasp-cleavir-hir::unbind-instruction
+                                               :inputs (list sym old)
+                                               :successors (list succ))))
+         (body
+           (let ((cleavir-ast-to-hir::*local-dynenv-stack*
+                   (list ast sym old))
+                 ;; probably not necessary
+                 (cleavir-ir:*dynamic-environment* dynenv-out))
+             (cleavir-ast-to-hir:compile-ast (cleavir-ast:body-ast ast)
+                                             (cleavir-ast-to-hir:context
+                                              (cleavir-ast-to-hir::results context)
+                                              unbinds
+                                              (cleavir-ast-to-hir:invocation context)))))
+         (wrapped-body (make-instance 'clasp-cleavir-hir::bind-instruction
+                                      :inputs (list sym new)
+                                      :outputs (list old dynenv-out)
+                                      :successors (list body))))
+    (cleavir-ast-to-hir:compile-ast
+     (cleavir-ast:name-ast ast)
+     (cleavir-ast-to-hir:context
+      (list sym)
+      (list
+       (cleavir-ast-to-hir:compile-ast
+        (cleavir-ast:value-ast ast)
+        (cleavir-ast-to-hir:context
+         (list new)
+         (list wrapped-body)
+         (cleavir-ast-to-hir:invocation context))))
+      (cleavir-ast-to-hir:invocation context)))))
+
+(defmethod cleavir-ast-to-hir::create-unbind ((ast cc-ast::bind-ast) data instruction)
+  (destructuring-bind (sym old) data
+    (make-instance 'clasp-cleavir-hir::unbind-instruction
+                   :inputs (list sym old)
+                   :successors (list instruction))))

@@ -34,7 +34,14 @@ when this is t a lot of graphs will be generated.")
                  (ssablep (first (cleavir-ir:outputs instruction))))
         (format *error-output* "   but it doesn't matter because both input and output are ssablep~%")))
     (cmp:with-debug-info-source-position ((ensure-origin origin 999993))
-      (call-next-method))))
+      ;; KLUDGE: These instructions are generated with bad dynamic environments.
+      ;; However, they never unwind, so this should probably be okay, at least temporarily.
+      (cmp:with-landing-pad (if (typep instruction '(or cleavir-ir:assignment-instruction
+                                                     cleavir-ir:fixed-to-multiple-instruction))
+                                nil
+                                (never-entry-landing-pad
+                                 (cleavir-ir:dynamic-environment instruction)))
+        (call-next-method)))))
 
 (defgeneric translate-branch-instruction
     (instruction return-value successors abi current-function-info))
@@ -45,7 +52,8 @@ when this is t a lot of graphs will be generated.")
     (when (and *trap-null-origin* (null (cleavir-ir:origin instruction)))
       (format *error-output* "Instruction with nil origin: ~a  origin: ~a~%" instruction (cleavir-ir:origin instruction)))
     (cmp:with-debug-info-source-position ((ensure-origin origin 9995))
-      (call-next-method))))
+      (cmp:with-landing-pad (never-entry-landing-pad (cleavir-ir:dynamic-environment instruction))
+        (call-next-method)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -281,6 +289,31 @@ when this is t a lot of graphs will be generated.")
       (t (error "layout-procedure enter is not a known type of enter-instruction - it is ~a"
                 enter)))))
 
+(defun check-ir-dynenvs-well-formed (enter)
+  (cleavir-ir:reinitialize-data enter)
+  (let ((bad-insts nil) (bad-dynenvs nil))
+    (cleavir-ir:map-instructions-with-owner
+     (lambda (instruction owner)
+       (let ((owner-dyn (cleavir-ir:dynamic-environment-output owner)))
+         (loop for dyn = (cleavir-ir:dynamic-environment instruction)
+                 then (cleavir-ir:dynamic-environment definer)
+               for definers = (cleavir-ir:defining-instructions dyn)
+               for definer = (first definers)
+               do (unless (= (length definers) 1)
+                    (pushnew (list* dyn definers) bad-dynenvs :test #'equal)
+                    (loop-finish))
+               when (typep definer 'cleavir-ir:enter-instruction)
+                 do (unless (eq definer owner)
+                      (push (list* owner-dyn instruction
+                                   (cleavir-ir:dynamic-environment definer))
+                            bad-insts))
+                    (loop-finish))))
+     enter)
+    #+(or)
+    (when (or bad-insts bad-dynenvs)
+      (cleavir-ir-graphviz:draw-flowchart enter "/tmp/fucked.dot"))
+    (append bad-insts bad-dynenvs)))
+
 (defun layout-procedure (enter lambda-name abi &key (linkage 'llvm-sys:internal-linkage))
   (let* ((function-info (gethash enter *map-enter-to-function-info*))
          ;; Gather the basic blocks of this procedure in basic-blocks
@@ -493,8 +526,18 @@ when this is t a lot of graphs will be generated.")
   ;; or an object needing a make-load-form.
   ;; That shouldn't actually happen, but it's a little ambiguous in Cleavir right now.
   (quick-draw-hir init-instr "hir-before-transformations")
+  #+(or)
+  (let ((pre-fails (check-ir-dynenvs-well-formed init-instr)))
+    (when pre-fails
+      (error "Instructions have bad dynamic environment BEFORE inlining:~% ~a"
+             pre-fails)))
   #+cst
   (cleavir-partial-inlining:do-inlining init-instr)
+  #+(or)
+  (let ((post-fails (check-ir-dynenvs-well-formed init-instr)))
+    (when post-fails
+      (error "Instructions have bad dynamic environment AFTER inlining:~% ~a"
+             post-fails)))
   #+cst
   (quick-draw-hir init-instr "hir-after-inlining")
   ;; required by most of the below

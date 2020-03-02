@@ -220,7 +220,7 @@
          (function (first inputs))
          (dynamic-environment (cleavir-ir:dynamic-environment instruction))
          (arguments (cdr inputs)))
-    (cmp:with-landing-pad (landing-pad dynamic-environment return-value abi *tags* function-info)
+    (cmp:with-landing-pad (maybe-entry-landing-pad dynamic-environment return-value *tags* function-info)
       (closure-call-or-invoke (in function) return-value (mapcar #'in arguments)))))
 
 (defmethod translate-simple-instruction
@@ -296,6 +296,29 @@
     (%intrinsic-invoke-if-landing-pad-or-call "cc_setSymbolValue" (list sym val))))
 
 (defmethod translate-simple-instruction
+    ((instruction clasp-cleavir-hir::bind-instruction) return-value abi function-info)
+  (let* ((inputs (cleavir-ir:inputs instruction))
+         (outputs (cleavir-ir:outputs instruction))
+         (sym (in (first inputs) "sym-name"))
+         (val (in (second inputs) "value"))
+         (old (first outputs)) (dynenv-out (second outputs)))
+    ;; Neither of these intrinsics can signal.
+    (out (%intrinsic-call "cc_TLSymbolValue" (list sym)
+                                                   (datum-name-as-string old))
+         old)
+    (%intrinsic-call "cc_setTLSymbolValue" (list sym val))
+    (out (cleavir-ir:dynamic-environment instruction)
+         dynenv-out
+         "sham-dynamic-environment")))
+
+(defmethod translate-simple-instruction
+    ((instruction clasp-cleavir-hir::unbind-instruction) return-value abi function-info)
+  (let* ((inputs (cleavir-ir:inputs instruction))
+         (sym (in (first inputs) "sym-name"))
+         (val (in (second inputs) "value")))
+    (%intrinsic-call "cc_setTLSymbolValue" (list sym val))))
+
+(defmethod translate-simple-instruction
     ((instruction cleavir-ir:enclose-instruction) return-value abi function-info)
   (let* ((enter-instruction (cleavir-ir:code instruction))
          (lambda-name (get-or-create-lambda-name enter-instruction))
@@ -338,8 +361,8 @@
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:multiple-value-call-instruction) return-value abi function-info)
   ;; second input is the dynamic-environment argument.
-  (cmp:with-landing-pad (landing-pad (cleavir-ir:dynamic-environment instruction)
-                                     return-value abi *tags* function-info)
+  (cmp:with-landing-pad (maybe-entry-landing-pad (cleavir-ir:dynamic-environment instruction)
+                                                 return-value *tags* function-info)
     (let ((call-result (%intrinsic-invoke-if-landing-pad-or-call
                         "cc_call_multipleValueOneFormCallWithRet0" 
                         (list (in (first (cleavir-ir:inputs instruction)))

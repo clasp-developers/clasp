@@ -458,6 +458,10 @@
                                               :docstring docstring
                                               :rest-alloc rest-alloc)))
 
+(defmethod print-object ((object named-enter-instruction) stream)
+  (print-unreadable-object (object stream :type t)
+    (write (lambda-name object) :stream stream)))
+
 (defmethod cleavir-ir-graphviz:label ((instr named-enter-instruction))
   (with-output-to-string (s)
     (format s "named-enter(~a)" (lambda-name instr))))
