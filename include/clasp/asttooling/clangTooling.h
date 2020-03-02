@@ -147,10 +147,11 @@ class DerivableFrontendActionFactory : public clbind::Derivable<clang::tooling::
   typedef clang::tooling::FrontendActionFactory Base;
 
 public:
-  virtual clang::FrontendAction *create() {
+  virtual std::unique_ptr<clang::FrontendAction> create() {
     core::T_sp obj = core::eval::funcall(_sym_create, this->asSmartPtr());
     translate::from_object<clang::FrontendAction *> result(obj);
-    return result._v;
+    std::unique_ptr<clang::FrontendAction> ret(result._v);
+    return ret;
   }
 
   clang::FrontendAction *default_create() {

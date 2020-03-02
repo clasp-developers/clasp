@@ -843,14 +843,14 @@ struct from_object<llvm::CodeModel::Model, std::true_type> {
   }
 };
 template <>
-struct from_object<llvm::TargetMachine::CodeGenFileType, std::true_type> {
-  typedef llvm::TargetMachine::CodeGenFileType DeclareType;
+struct from_object<llvm::CodeGenFileType, std::true_type> {
+  typedef llvm::CodeGenFileType DeclareType;
   DeclareType _v;
-  from_object(T_P object) : _v(llvm::TargetMachine::CGFT_ObjectFile) {
+  from_object(T_P object) : _v(llvm::CGFT_ObjectFile) {
     if (object.notnilp()) {
       if (core::Symbol_sp so = object.asOrNull<core::Symbol_O>()) {
         core::SymbolToEnumConverter_sp converter = gc::As<core::SymbolToEnumConverter_sp>(llvmo::_sym_CodeGenFileType->symbolValue());
-        this->_v = converter->enumForSymbol<llvm::TargetMachine::CodeGenFileType>(so);
+        this->_v = converter->enumForSymbol<llvm::CodeGenFileType>(so);
         return;
       }
     }
@@ -900,7 +900,7 @@ public:
   core::T_sp addPassesToEmitFileAndRunPassManager(PassManager_sp passManager,
                                                   core::T_sp stream_or_symbol,
                                                   core::T_sp dwo_stream,
-                                                  llvm::TargetMachine::CodeGenFileType,
+                                                  llvm::CodeGenFileType,
                                                   Module_sp module);
 
   TargetMachine_O() : Base(), _ptr(NULL){};
@@ -2786,6 +2786,7 @@ public:
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
     this->_ptr = ptr;
   }
+  void setAlignment(core::T_sp align);
   StoreInst_O() : Base(){};
   ~StoreInst_O() {}
 
@@ -3120,6 +3121,8 @@ public:
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
     this->_ptr = ptr;
   }
+  void setAlignment(core::T_sp align);
+  
   AllocaInst_O() : Base(){};
   ~AllocaInst_O() {}
 }; // AllocaInst_O
@@ -3201,6 +3204,7 @@ public:
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
     this->_ptr = ptr;
   }
+  void setAlignment(core::T_sp align);
   LoadInst_O() : Base(){};
   ~LoadInst_O() {}
 
@@ -3882,7 +3886,7 @@ public:
   uint getNumOperands() { return this->_ptr->getNumOperands(); };
 CL_LISPIFY_NAME("addOperand");
 CL_DEFMETHOD   void addOperand(llvm::MDNode *m) { this->_ptr->addOperand(m); };
-  string getName() { return this->_ptr->getName(); };
+  string getName() { return this->_ptr->getName().str(); };
 
 }; // NamedMDNode_O
 }; // llvmo
@@ -4675,12 +4679,16 @@ public:
   std::atomic<ObjectFileInfo*> _ObjectFiles;
   llvm::DataLayout* _DataLayout;
   llvm::orc::ExecutionSession *ES;
+  llvm::orc::JITDylib          *MainJD;
 #ifdef USE_JITLINKER
   llvm::org::JITLinker* LinkLayer;
 #else
+  #if _TARGET_OS_DARWIN
+  llvm::orc::ObjectLinkingLayer *LinkLayer;
+  #else
   llvm::orc::RTDyldObjectLinkingLayer *LinkLayer;
+  #endif
 #endif
-  llvm::orc::ConcurrentIRCompiler *Compiler;
   llvm::orc::IRCompileLayer *CompileLayer;
 };
 

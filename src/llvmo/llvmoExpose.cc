@@ -474,7 +474,7 @@ CL_LISPIFY_NAME("addPassesToEmitFileAndRunPassManager");
 CL_DEFMETHOD core::T_sp TargetMachine_O::addPassesToEmitFileAndRunPassManager(PassManager_sp passManager,
                                                                         core::T_sp stream,
                                                                         core::T_sp dwo_stream,
-                                                                        llvm::TargetMachine::CodeGenFileType FileType,
+                                                                        llvm::CodeGenFileType FileType,
                                                                         Module_sp module) {
   if (stream.nilp()) {
     SIMPLE_ERROR(BF("You must pass a valid stream"));
@@ -546,10 +546,10 @@ CL_EXTERN_DEFMETHOD(TargetMachine_O, &llvm::TargetMachine::setFastISel);
   SYMBOL_EXPORT_SC_(LlvmoPkg, CodeGenFileType_Null);
   SYMBOL_EXPORT_SC_(LlvmoPkg, CodeGenFileType_AssemblyFile);
   SYMBOL_EXPORT_SC_(LlvmoPkg, CodeGenFileType_ObjectFile);
-  CL_BEGIN_ENUM(llvm::TargetMachine::CodeGenFileType,_sym_CodeGenFileType, "CodeGenFileType");
-  CL_VALUE_ENUM(_sym_CodeGenFileType_Null, llvm::TargetMachine::CGFT_Null);
-  CL_VALUE_ENUM(_sym_CodeGenFileType_AssemblyFile, llvm::TargetMachine::CGFT_AssemblyFile);
-  CL_VALUE_ENUM(_sym_CodeGenFileType_ObjectFile, llvm::TargetMachine::CGFT_ObjectFile);;
+  CL_BEGIN_ENUM(llvm::CodeGenFileType,_sym_CodeGenFileType, "CodeGenFileType");
+  CL_VALUE_ENUM(_sym_CodeGenFileType_Null, llvm::CGFT_Null);
+  CL_VALUE_ENUM(_sym_CodeGenFileType_AssemblyFile, llvm::CGFT_AssemblyFile);
+  CL_VALUE_ENUM(_sym_CodeGenFileType_ObjectFile, llvm::CGFT_ObjectFile);;
   CL_END_ENUM(_sym_CodeGenFileType);
 
   SYMBOL_EXPORT_SC_(LlvmoPkg, CodeGenOpt);
@@ -993,7 +993,7 @@ CL_DEFUN Module_sp llvm_sys__parseIRFile(core::T_sp tfilename, LLVMContext_sp co
     llvm::parseIR(eo_membuf.get()->getMemBufferRef(), smd, *(context->wrappedPtr()));
   llvm::Module* m = module.release();
   if (!m) {
-    std::string message = smd.getMessage();
+    std::string message = smd.getMessage().str();
     SIMPLE_ERROR(BF("Could not load bitcode for file %s - error: %s") % spathname->get_std_string() % message );
   }
   Module_sp omodule = core::RP_Create_wrapped<Module_O,llvm::Module*>(m);
@@ -1971,12 +1971,16 @@ namespace llvmo {
 
 }; // llvmo
 
+namespace translate {
+template <>
+struct from_object< llvm::MaybeAlign, std::true_type> {
+  typedef llvm::MaybeAlign DeclareType;
+  DeclareType _v;
+  from_object(core::T_sp object) : _v((size_t)core::clasp_to_fixnum(object)) {};
+};
+};
+
 namespace llvmo {
-
-
-  CL_LISPIFY_NAME(setAlignment);
-  CL_EXTERN_DEFMETHOD(AllocaInst_O, &AllocaInst_O::ExternalType::setAlignment);;
-
 CL_DEFUN llvm::AllocaInst* llvm_sys__insert_alloca_before_terminator(llvm::Type* type, const llvm::Twine& name, llvm::BasicBlock* block)
 {
 //  printf("%s:%d   llvm-sys::insert-alloca\n", __FILE__, __LINE__ );
@@ -1984,7 +1988,21 @@ CL_DEFUN llvm::AllocaInst* llvm_sys__insert_alloca_before_terminator(llvm::Type*
   llvm::AllocaInst* alloca = new llvm::AllocaInst(type,0,name,insertBefore);
   return alloca;
 }
-;
+
+/*! I can't seem to get from_object working for MaybeAlign type */
+CL_DEFMETHOD void AllocaInst_O::setAlignment(core::T_sp align) {
+  if (align.nilp()) {
+    llvm::MaybeAlign a;
+    this->wrappedPtr()->setAlignment(a);
+    return;
+  } else if (align.fixnump()) {
+    llvm::MaybeAlign a(align.unsafe_fixnum());
+    this->wrappedPtr()->setAlignment(a);
+    return;
+  }
+  SIMPLE_ERROR(BF("%s is an invalid argument for setAlignment") % _rep_(align) );
+}
+
 
 }; // llvmo
 
@@ -2014,12 +2032,37 @@ namespace llvmo {
 
 CL_LISPIFY_NAME(set_atomic);
 CL_EXTERN_DEFMETHOD(StoreInst_O, &StoreInst_O::ExternalType::setAtomic);
-CL_LISPIFY_NAME(setAlignment);
-CL_EXTERN_DEFMETHOD(StoreInst_O, &StoreInst_O::ExternalType::setAlignment);
+
+/*! I can't seem to get from_object working for MaybeAlign type */
+CL_DEFMETHOD void StoreInst_O::setAlignment(core::T_sp align) {
+  if (align.nilp()) {
+    llvm::MaybeAlign a;
+    this->wrappedPtr()->setAlignment(a);
+    return;
+  } else if (align.fixnump()) {
+    llvm::MaybeAlign a(align.unsafe_fixnum());
+    this->wrappedPtr()->setAlignment(a);
+    return;
+  }
+  SIMPLE_ERROR(BF("%s is an invalid argument for setAlignment") % _rep_(align) );
+}
 CL_LISPIFY_NAME(set_atomic);
 CL_EXTERN_DEFMETHOD(LoadInst_O, &LoadInst_O::ExternalType::setAtomic);
-CL_LISPIFY_NAME(setAlignment);
-CL_EXTERN_DEFMETHOD(LoadInst_O, &LoadInst_O::ExternalType::setAlignment);
+
+/*! I can't seem to get from_object working for MaybeAlign type */
+CL_DEFMETHOD void LoadInst_O::setAlignment(core::T_sp align) {
+  if (align.nilp()) {
+    llvm::MaybeAlign a;
+    this->wrappedPtr()->setAlignment(a);
+    return;
+  } else if (align.fixnump()) {
+    llvm::MaybeAlign a(align.unsafe_fixnum());
+    this->wrappedPtr()->setAlignment(a);
+    return;
+  }
+  SIMPLE_ERROR(BF("%s is an invalid argument for setAlignment") % _rep_(align) );
+}
+
 
 };
 
@@ -2432,273 +2475,273 @@ string IRBuilder_O::__repr__() const {
 
 CL_LAMBDA (irbuilder cond true-branch false-branch &optional branch-weights unpred);
 CL_LISPIFY_NAME(CreateCondBr);
-CL_EXTERN_DEFMETHOD(IRBuilder_O, (llvm::BranchInst * (IRBuilder_O::ExternalType::*)(llvm::Value *, llvm::BasicBlock *, llvm::BasicBlock *, llvm::MDNode *, llvm::MDNode *))&IRBuilder_O::ExternalType::CreateCondBr);
+CL_EXTERN_DEFMETHOD(IRBuilderBase_O, (llvm::BranchInst * (IRBuilderBase_O::ExternalType::*)(llvm::Value *, llvm::BasicBlock *, llvm::BasicBlock *, llvm::MDNode *, llvm::MDNode *))&IRBuilderBase_O::ExternalType::CreateCondBr);
 CL_LAMBDA("irbuilder lhs rhs &optional (name \"\") has-nuw has-nsw");
 CL_LISPIFY_NAME(CreateAdd);
-CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateAdd);
+CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateAdd);
 
   CL_LISPIFY_NAME(CreateRet);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateRet);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateRet);
   CL_LISPIFY_NAME(CreateRetVoid);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateRetVoid);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateRetVoid);
   CL_LISPIFY_NAME(CreateBr);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateBr);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateBr);
   CL_LISPIFY_NAME(CreateSwitch);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateSwitch);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateSwitch);
   CL_LISPIFY_NAME(CreateIndirectBr);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateIndirectBr);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateIndirectBr);
   CL_LISPIFY_NAME(CreateResume);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateResume);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateResume);
   CL_LISPIFY_NAME(CreateUnreachable);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateUnreachable);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateUnreachable);
   CL_LISPIFY_NAME(CreateNSWAdd);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateNSWAdd);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateNSWAdd);
   CL_LISPIFY_NAME(CreateNUWAdd);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateNUWAdd);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateNUWAdd);
   CL_LISPIFY_NAME(CreateFAdd);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateFAdd);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateFAdd);
   CL_LISPIFY_NAME(CreateSub);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateSub);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateSub);
   CL_LISPIFY_NAME(CreateNSWSub);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateNSWSub);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateNSWSub);
   CL_LISPIFY_NAME(CreateNUWSub);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateNUWSub);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateNUWSub);
   CL_LISPIFY_NAME(CreateFSub);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateFSub);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateFSub);
   CL_LISPIFY_NAME(CreateMul);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateMul);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateMul);
   CL_LISPIFY_NAME(CreateNSWMul);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateNSWMul);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateNSWMul);
   CL_LISPIFY_NAME(CreateNUWMul);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateNUWMul);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateNUWMul);
   CL_LISPIFY_NAME(CreateFMul);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateFMul);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateFMul);
   CL_LISPIFY_NAME(CreateUDiv);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateUDiv);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateUDiv);
   CL_LISPIFY_NAME(CreateExactUDiv);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateExactUDiv);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateExactUDiv);
   CL_LISPIFY_NAME(CreateSDiv);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateSDiv);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateSDiv);
   CL_LISPIFY_NAME(CreateExactSDiv);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateExactSDiv);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateExactSDiv);
   CL_LISPIFY_NAME(CreateFDiv);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateFDiv);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateFDiv);
   CL_LISPIFY_NAME(CreateURem);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateURem);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateURem);
   CL_LISPIFY_NAME(CreateSRem);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateSRem);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateSRem);
   CL_LISPIFY_NAME(CreateFRem);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateFRem);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateFRem);
   CL_LISPIFY_NAME(CreateNeg);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateNeg);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateNeg);
   CL_LISPIFY_NAME(CreateNSWNeg);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateNSWNeg);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateNSWNeg);
   CL_LISPIFY_NAME(CreateNUWNeg);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateNUWNeg);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateNUWNeg);
   CL_LISPIFY_NAME(CreateFNeg);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateFNeg);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateFNeg);
   CL_LISPIFY_NAME(CreateNot);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateNot);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateNot);
   CL_LISPIFY_NAME(CreateAlloca);
-CL_EXTERN_DEFMETHOD(IRBuilder_O, (AllocaInst* (IRBuilder_O::ExternalType::*)(llvm::Type *, llvm::Value *,
-                           const Twine &))&IRBuilder_O::ExternalType::CreateAlloca);
+CL_EXTERN_DEFMETHOD(IRBuilderBase_O, (AllocaInst* (IRBuilderBase_O::ExternalType::*)(llvm::Type *, llvm::Value *,
+                           const Twine &))&IRBuilderBase_O::ExternalType::CreateAlloca);
   CL_LISPIFY_NAME(CreateStore);
-CL_EXTERN_DEFMETHOD(IRBuilder_O, (llvm::StoreInst* (llvm::IRBuilder<llvm::ConstantFolder, llvm::IRBuilderDefaultInserter>::*)(llvm::Value *Val, llvm::Value *Ptr, bool isVolatile)) &IRBuilder_O::ExternalType::CreateStore);
+CL_EXTERN_DEFMETHOD(IRBuilderBase_O, (llvm::StoreInst* (llvm::IRBuilderBase::*)(llvm::Value *Val, llvm::Value *Ptr, bool isVolatile)) &IRBuilderBase_O::ExternalType::CreateStore);
   CL_LISPIFY_NAME(CreateFence);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateFence);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateFence);
   CL_LISPIFY_NAME(CreateAtomicCmpXchg);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateAtomicCmpXchg);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateAtomicCmpXchg);
   CL_LISPIFY_NAME(CreateAtomicRMW);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateAtomicRMW);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateAtomicRMW);
 CL_LISPIFY_NAME(CreateConstGEP1-32);
-CL_EXTERN_DEFMETHOD(IRBuilder_O, (llvm::Value *(IRBuilder_O::ExternalType::*)(llvm::Value *Ptr, unsigned Idx0, const llvm::Twine &Name )) &IRBuilder_O::ExternalType::CreateConstGEP1_32);
+CL_EXTERN_DEFMETHOD(IRBuilderBase_O, (llvm::Value *(IRBuilderBase_O::ExternalType::*)(llvm::Value *Ptr, unsigned Idx0, const llvm::Twine &Name )) &IRBuilderBase_O::ExternalType::CreateConstGEP1_32);
   CL_LISPIFY_NAME(CreateConstInBoundsGEP1-32);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateConstInBoundsGEP1_32);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateConstInBoundsGEP1_32);
   CL_LISPIFY_NAME(CreateConstGEP2-32);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateConstGEP2_32);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateConstGEP2_32);
   CL_LISPIFY_NAME(CreateConstInBoundsGEP2-32);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateConstInBoundsGEP2_32);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateConstInBoundsGEP2_32);
   CL_LISPIFY_NAME(CreateConstGEP1-64);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, (llvm::Value* (IRBuilder_O::ExternalType::*)(llvm::Value *, uint64_t, const llvm::Twine &))&IRBuilder_O::ExternalType::CreateConstGEP1_64);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, (llvm::Value* (IRBuilderBase_O::ExternalType::*)(llvm::Value *, uint64_t, const llvm::Twine &))&IRBuilderBase_O::ExternalType::CreateConstGEP1_64);
   CL_LISPIFY_NAME(CreateConstInBoundsGEP1-64);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, (llvm::Value* (IRBuilder_O::ExternalType::*)(llvm::Value *, uint64_t, const llvm::Twine &))&IRBuilder_O::ExternalType::CreateConstInBoundsGEP1_64);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, (llvm::Value* (IRBuilderBase_O::ExternalType::*)(llvm::Value *, uint64_t, const llvm::Twine &))&IRBuilderBase_O::ExternalType::CreateConstInBoundsGEP1_64);
 //  CL_LISPIFY_NAME(CreateConstGEP2-64);
-//  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateConstGEP2_64);
+//  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateConstGEP2_64);
   CL_LISPIFY_NAME(CreateConstInBoundsGEP2-64);
-CL_EXTERN_DEFMETHOD(IRBuilder_O,(llvm::Value* (IRBuilder_O::ExternalType::*)(llvm::Value *, uint64_t, uint64_t, const llvm::Twine &))&IRBuilder_O::ExternalType::CreateConstInBoundsGEP2_64);
+CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::Value* (IRBuilderBase_O::ExternalType::*)(llvm::Value *, uint64_t, uint64_t, const llvm::Twine &))&IRBuilderBase_O::ExternalType::CreateConstInBoundsGEP2_64);
   CL_LISPIFY_NAME(CreateStructGEP);
-CL_EXTERN_DEFMETHOD(IRBuilder_O, (llvm::Value *(IRBuilder_O::ExternalType::*)(llvm::Type* Type, llvm::Value *Ptr, unsigned Idx0, const llvm::Twine &Name )) &IRBuilder_O::ExternalType::CreateStructGEP);
-CL_EXTERN_DEFMETHOD(IRBuilder_O, (llvm::Value* (IRBuilder_O::ExternalType::*)(llvm::Value *Ptr, unsigned Idx, const llvm::Twine&))&IRBuilder_O::ExternalType::CreateStructGEP);
+CL_EXTERN_DEFMETHOD(IRBuilderBase_O, (llvm::Value *(IRBuilderBase_O::ExternalType::*)(llvm::Type* Type, llvm::Value *Ptr, unsigned Idx0, const llvm::Twine &Name )) &IRBuilderBase_O::ExternalType::CreateStructGEP);
+CL_EXTERN_DEFMETHOD(IRBuilderBase_O, (llvm::Value* (IRBuilderBase_O::ExternalType::*)(llvm::Value *Ptr, unsigned Idx, const llvm::Twine&))&IRBuilderBase_O::ExternalType::CreateStructGEP);
   CL_LISPIFY_NAME(CreateGlobalStringPtr);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateGlobalStringPtr);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateGlobalStringPtr);
   CL_LISPIFY_NAME(CreateTrunc);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateTrunc);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateTrunc);
   CL_LISPIFY_NAME(CreateZExt);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateZExt);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateZExt);
   CL_LISPIFY_NAME(CreateSExt);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateSExt);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateSExt);
   CL_LISPIFY_NAME(CreateFPToUI);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateFPToUI);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateFPToUI);
   CL_LISPIFY_NAME(CreateFPToSI);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateFPToSI);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateFPToSI);
   CL_LISPIFY_NAME(CreateUIToFP);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateUIToFP);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateUIToFP);
   CL_LISPIFY_NAME(CreateSIToFP);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateSIToFP);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateSIToFP);
   CL_LISPIFY_NAME(CreateFPTrunc);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateFPTrunc);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateFPTrunc);
   CL_LISPIFY_NAME(CreateFPExt);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateFPExt);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateFPExt);
   CL_LISPIFY_NAME(CreatePtrToInt);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreatePtrToInt);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreatePtrToInt);
   CL_LISPIFY_NAME(CreateIntToPtr);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateIntToPtr);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateIntToPtr);
   CL_LISPIFY_NAME(CreateBitCast);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateBitCast);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateBitCast);
   CL_LISPIFY_NAME(CreateZExtOrBitCast);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateZExtOrBitCast);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateZExtOrBitCast);
   CL_LISPIFY_NAME(CreateSExtOrBitCast);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateSExtOrBitCast);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateSExtOrBitCast);
   CL_LISPIFY_NAME(CreateTruncOrBitCast);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateTruncOrBitCast);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateTruncOrBitCast);
   CL_LISPIFY_NAME(CreateCast);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateCast);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateCast);
   CL_LISPIFY_NAME(CreatePointerCast);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreatePointerCast);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreatePointerCast);
   CL_LISPIFY_NAME(CreateFPCast);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateFPCast);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateFPCast);
   CL_LISPIFY_NAME(CreateICmpEQ);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateICmpEQ);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateICmpEQ);
   CL_LISPIFY_NAME(CreateICmpNE);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateICmpNE);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateICmpNE);
   CL_LISPIFY_NAME(CreateICmpUGT);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateICmpUGT);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateICmpUGT);
   CL_LISPIFY_NAME(CreateICmpUGE);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateICmpUGE);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateICmpUGE);
   CL_LISPIFY_NAME(CreateICmpULT);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateICmpULT);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateICmpULT);
   CL_LISPIFY_NAME(CreateICmpULE);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateICmpULE);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateICmpULE);
   CL_LISPIFY_NAME(CreateICmpSGT);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateICmpSGT);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateICmpSGT);
   CL_LISPIFY_NAME(CreateICmpSGE);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateICmpSGE);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateICmpSGE);
   CL_LISPIFY_NAME(CreateICmpSLT);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateICmpSLT);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateICmpSLT);
   CL_LISPIFY_NAME(CreateICmpSLE);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateICmpSLE);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateICmpSLE);
   CL_LISPIFY_NAME(CreateFCmpOEQ);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateFCmpOEQ);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateFCmpOEQ);
   CL_LISPIFY_NAME(CreateFCmpOGT);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateFCmpOGT);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateFCmpOGT);
   CL_LISPIFY_NAME(CreateFCmpOGE);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateFCmpOGE);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateFCmpOGE);
   CL_LISPIFY_NAME(CreateFCmpOLT);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateFCmpOLT);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateFCmpOLT);
   CL_LISPIFY_NAME(CreateFCmpOLE);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateFCmpOLE);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateFCmpOLE);
   CL_LISPIFY_NAME(CreateFCmpONE);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateFCmpONE);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateFCmpONE);
   CL_LISPIFY_NAME(CreateFCmpORD);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateFCmpORD);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateFCmpORD);
   CL_LISPIFY_NAME(CreateFCmpUNO);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateFCmpUNO);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateFCmpUNO);
   CL_LISPIFY_NAME(CreateFCmpUEQ);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateFCmpUEQ);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateFCmpUEQ);
   CL_LISPIFY_NAME(CreateFCmpUGT);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateFCmpUGT);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateFCmpUGT);
   CL_LISPIFY_NAME(CreateFCmpUGE);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateFCmpUGE);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateFCmpUGE);
   CL_LISPIFY_NAME(CreateFCmpULT);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateFCmpULT);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateFCmpULT);
   CL_LISPIFY_NAME(CreateFCmpULE);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateFCmpULE);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateFCmpULE);
   CL_LISPIFY_NAME(CreateFCmpUNE);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateFCmpUNE);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateFCmpUNE);
   CL_LISPIFY_NAME(CreateICmp);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateICmp);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateICmp);
   CL_LISPIFY_NAME(CreateFCmp);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateFCmp);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateFCmp);
   CL_LISPIFY_NAME(CreatePHI);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreatePHI);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreatePHI);
 CL_LISPIFY_NAME(CreateCallArrayRef);
 CL_LAMBDA(irbuilder callee args name &optional (fpmathtag nil));
-CL_EXTERN_DEFMETHOD(IRBuilder_O, (llvm::CallInst *(IRBuilder_O::ExternalType::*)(llvm::Value *Callee, llvm::ArrayRef<llvm::Value *> Args, const llvm::Twine &Name, llvm::MDNode* FPMathTag ))&IRBuilder_O::ExternalType::CreateCall);
+CL_EXTERN_DEFMETHOD(IRBuilderBase_O, (llvm::CallInst *(IRBuilderBase_O::ExternalType::*)(llvm::Value *Callee, llvm::ArrayRef<llvm::Value *> Args, const llvm::Twine &Name, llvm::MDNode* FPMathTag ))&IRBuilderBase_O::ExternalType::CreateCall);
 
 
 // (llvm::FunctionType *FTy, Value *Callee, ArrayRef< Value * > Args, const Twine &Name="", MDNode *FPMathTag=nullptr)
 CL_LISPIFY_NAME(CreateCallFunctionPointer);
 CL_LAMBDA(irbuilder function_type callee args name &optional (fpmathtag nil));
-CL_EXTERN_DEFMETHOD(IRBuilder_O, (llvm::CallInst *(IRBuilder_O::ExternalType::*)(llvm::FunctionType *FTy, llvm::Value *Callee, llvm::ArrayRef<llvm::Value *> Args, const llvm::Twine &Name, llvm::MDNode* FPMathTag ))&IRBuilder_O::ExternalType::CreateCall);
+CL_EXTERN_DEFMETHOD(IRBuilderBase_O, (llvm::CallInst *(IRBuilderBase_O::ExternalType::*)(llvm::FunctionType *FTy, llvm::Value *Callee, llvm::ArrayRef<llvm::Value *> Args, const llvm::Twine &Name, llvm::MDNode* FPMathTag ))&IRBuilderBase_O::ExternalType::CreateCall);
 
 
 CL_LISPIFY_NAME(CreateSelect);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateSelect);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateSelect);
   CL_LISPIFY_NAME(CreateVAArg);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateVAArg);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateVAArg);
   CL_LISPIFY_NAME(CreateExtractElement);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, (llvm::Value*(IRBuilder_O::ExternalType::*) (llvm::Value *Vec, llvm::Value* Idx, const llvm::Twine &Name) )&IRBuilder_O::ExternalType::CreateExtractElement);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, (llvm::Value*(IRBuilderBase_O::ExternalType::*) (llvm::Value *Vec, llvm::Value* Idx, const llvm::Twine &Name) )&IRBuilderBase_O::ExternalType::CreateExtractElement);
   CL_LISPIFY_NAME(CreateInsertElement);
-CL_EXTERN_DEFMETHOD(IRBuilder_O, (llvm::Value*(IRBuilder_O::ExternalType::*) (llvm::Value *Vec, llvm::Value *NewElt, llvm::Value* Idx, const llvm::Twine &Name) )&IRBuilder_O::ExternalType::CreateInsertElement);
+CL_EXTERN_DEFMETHOD(IRBuilderBase_O, (llvm::Value*(IRBuilderBase_O::ExternalType::*) (llvm::Value *Vec, llvm::Value *NewElt, llvm::Value* Idx, const llvm::Twine &Name) )&IRBuilderBase_O::ExternalType::CreateInsertElement);
 CL_LISPIFY_NAME(CreateShuffleVector);
-CL_EXTERN_DEFMETHOD(IRBuilder_O, (llvm::Value*(IRBuilder_O::ExternalType::*) (llvm::Value *V1, llvm::Value *V2, llvm::Value *Mask, const llvm::Twine &Name) ) &IRBuilder_O::ExternalType::CreateShuffleVector);
+CL_EXTERN_DEFMETHOD(IRBuilderBase_O, (llvm::Value*(IRBuilderBase_O::ExternalType::*) (llvm::Value *V1, llvm::Value *V2, llvm::Value *Mask, const llvm::Twine &Name) ) &IRBuilderBase_O::ExternalType::CreateShuffleVector);
 CL_LISPIFY_NAME(CreateLandingPad);
-CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateLandingPad);
+CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateLandingPad);
   CL_LISPIFY_NAME(CreateIsNull);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateIsNull);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateIsNull);
   CL_LISPIFY_NAME(CreateIsNotNull);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateIsNotNull);
-  CL_LISPIFY_NAME(CreatePtrDiff);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreatePtrDiff);
-  CL_LISPIFY_NAME(CreateBinOp);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateBinOp);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateIsNotNull);
+CL_LISPIFY_NAME(CreatePtrDiff);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreatePtrDiff);
+CL_LISPIFY_NAME(CreateBinOp);
+  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateBinOp);
 CL_LISPIFY_NAME(CreateShl_value_value);
- CL_EXTERN_DEFMETHOD(IRBuilder_O,(llvm::Value *(IRBuilder_O::ExternalType::*) (llvm::Value *, llvm::Value *, const llvm::Twine &, bool, bool) )&IRBuilder_O::ExternalType::CreateShl);
+ CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::Value *(IRBuilderBase_O::ExternalType::*) (llvm::Value *, llvm::Value *, const llvm::Twine &, bool, bool) )&IRBuilderBase_O::ExternalType::CreateShl);
 CL_LISPIFY_NAME(CreateShl_value_apint);
- CL_EXTERN_DEFMETHOD(IRBuilder_O,(llvm::Value *(IRBuilder_O::ExternalType::*) (llvm::Value *, llvm::APInt const &, const llvm::Twine &, bool, bool) )&IRBuilder_O::ExternalType::CreateShl);
+ CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::Value *(IRBuilderBase_O::ExternalType::*) (llvm::Value *, llvm::APInt const &, const llvm::Twine &, bool, bool) )&IRBuilderBase_O::ExternalType::CreateShl);
 CL_LISPIFY_NAME(CreateShl_value_uint64);
- CL_EXTERN_DEFMETHOD(IRBuilder_O,(llvm::Value *(IRBuilder_O::ExternalType::*) (llvm::Value *, uint64_t, const llvm::Twine &, bool, bool) )&IRBuilder_O::ExternalType::CreateShl);
+ CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::Value *(IRBuilderBase_O::ExternalType::*) (llvm::Value *, uint64_t, const llvm::Twine &, bool, bool) )&IRBuilderBase_O::ExternalType::CreateShl);
 CL_LISPIFY_NAME(CreateLShr_value_value);
- CL_EXTERN_DEFMETHOD(IRBuilder_O,(llvm::Value *(IRBuilder_O::ExternalType::*) (llvm::Value *, llvm::Value *, const llvm::Twine &, bool) )&IRBuilder_O::ExternalType::CreateLShr);
+ CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::Value *(IRBuilderBase_O::ExternalType::*) (llvm::Value *, llvm::Value *, const llvm::Twine &, bool) )&IRBuilderBase_O::ExternalType::CreateLShr);
 CL_LISPIFY_NAME(CreateLShr_value_apint);
- CL_EXTERN_DEFMETHOD(IRBuilder_O,(llvm::Value *(IRBuilder_O::ExternalType::*) (llvm::Value *, llvm::APInt const &, const llvm::Twine &, bool) )&IRBuilder_O::ExternalType::CreateLShr);
+ CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::Value *(IRBuilderBase_O::ExternalType::*) (llvm::Value *, llvm::APInt const &, const llvm::Twine &, bool) )&IRBuilderBase_O::ExternalType::CreateLShr);
 CL_LISPIFY_NAME(CreateLShr_value_uint64);
- CL_EXTERN_DEFMETHOD(IRBuilder_O,(llvm::Value *(IRBuilder_O::ExternalType::*) (llvm::Value *, uint64_t, const llvm::Twine &, bool) )&IRBuilder_O::ExternalType::CreateLShr);
+ CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::Value *(IRBuilderBase_O::ExternalType::*) (llvm::Value *, uint64_t, const llvm::Twine &, bool) )&IRBuilderBase_O::ExternalType::CreateLShr);
 CL_LISPIFY_NAME(CreateAShr_value_value);
- CL_EXTERN_DEFMETHOD(IRBuilder_O,(llvm::Value *(IRBuilder_O::ExternalType::*) (llvm::Value *, llvm::Value *, const llvm::Twine &, bool) )&IRBuilder_O::ExternalType::CreateAShr);
+ CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::Value *(IRBuilderBase_O::ExternalType::*) (llvm::Value *, llvm::Value *, const llvm::Twine &, bool) )&IRBuilderBase_O::ExternalType::CreateAShr);
 CL_LISPIFY_NAME(CreateAShr_value_apint);
- CL_EXTERN_DEFMETHOD(IRBuilder_O,(llvm::Value *(IRBuilder_O::ExternalType::*) (llvm::Value *, llvm::APInt const &, const llvm::Twine &, bool) )&IRBuilder_O::ExternalType::CreateAShr);
+ CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::Value *(IRBuilderBase_O::ExternalType::*) (llvm::Value *, llvm::APInt const &, const llvm::Twine &, bool) )&IRBuilderBase_O::ExternalType::CreateAShr);
 CL_LISPIFY_NAME(CreateAShr_value_uint64);
- CL_EXTERN_DEFMETHOD(IRBuilder_O,(llvm::Value *(IRBuilder_O::ExternalType::*) (llvm::Value *, uint64_t, const llvm::Twine &, bool) )&IRBuilder_O::ExternalType::CreateAShr);
+ CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::Value *(IRBuilderBase_O::ExternalType::*) (llvm::Value *, uint64_t, const llvm::Twine &, bool) )&IRBuilderBase_O::ExternalType::CreateAShr);
 CL_LISPIFY_NAME(CreateAnd_value_value);
- CL_EXTERN_DEFMETHOD(IRBuilder_O,(llvm::Value *(IRBuilder_O::ExternalType::*) (llvm::Value *, llvm::Value *, const llvm::Twine &) )&IRBuilder_O::ExternalType::CreateAnd);
+ CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::Value *(IRBuilderBase_O::ExternalType::*) (llvm::Value *, llvm::Value *, const llvm::Twine &) )&IRBuilderBase_O::ExternalType::CreateAnd);
 CL_LISPIFY_NAME(CreateAnd_value_apint);
- CL_EXTERN_DEFMETHOD(IRBuilder_O,(llvm::Value *(IRBuilder_O::ExternalType::*) (llvm::Value *, llvm::APInt const &, const llvm::Twine &) )&IRBuilder_O::ExternalType::CreateAnd);
+ CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::Value *(IRBuilderBase_O::ExternalType::*) (llvm::Value *, llvm::APInt const &, const llvm::Twine &) )&IRBuilderBase_O::ExternalType::CreateAnd);
 CL_LISPIFY_NAME(CreateAnd_value_uint64);
- CL_EXTERN_DEFMETHOD(IRBuilder_O,(llvm::Value *(IRBuilder_O::ExternalType::*) (llvm::Value *, uint64_t, const llvm::Twine &) )&IRBuilder_O::ExternalType::CreateAnd);
+ CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::Value *(IRBuilderBase_O::ExternalType::*) (llvm::Value *, uint64_t, const llvm::Twine &) )&IRBuilderBase_O::ExternalType::CreateAnd);
 CL_LISPIFY_NAME(CreateOr_value_value);
- CL_EXTERN_DEFMETHOD(IRBuilder_O,(llvm::Value *(IRBuilder_O::ExternalType::*) (llvm::Value *, llvm::Value *, const llvm::Twine &) )&IRBuilder_O::ExternalType::CreateOr);
+ CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::Value *(IRBuilderBase_O::ExternalType::*) (llvm::Value *, llvm::Value *, const llvm::Twine &) )&IRBuilderBase_O::ExternalType::CreateOr);
 CL_LISPIFY_NAME(CreateOr_value_apint);
- CL_EXTERN_DEFMETHOD(IRBuilder_O,(llvm::Value *(IRBuilder_O::ExternalType::*) (llvm::Value *, llvm::APInt const &, const llvm::Twine &) )&IRBuilder_O::ExternalType::CreateOr);
+ CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::Value *(IRBuilderBase_O::ExternalType::*) (llvm::Value *, llvm::APInt const &, const llvm::Twine &) )&IRBuilderBase_O::ExternalType::CreateOr);
 CL_LISPIFY_NAME(CreateOr_value_uint64);
- CL_EXTERN_DEFMETHOD(IRBuilder_O,(llvm::Value *(IRBuilder_O::ExternalType::*) (llvm::Value *, uint64_t, const llvm::Twine &) )&IRBuilder_O::ExternalType::CreateOr);
+ CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::Value *(IRBuilderBase_O::ExternalType::*) (llvm::Value *, uint64_t, const llvm::Twine &) )&IRBuilderBase_O::ExternalType::CreateOr);
 CL_LISPIFY_NAME(CreateXor_value_value);
- CL_EXTERN_DEFMETHOD(IRBuilder_O,(llvm::Value *(IRBuilder_O::ExternalType::*) (llvm::Value *, llvm::Value *, const llvm::Twine &) )&IRBuilder_O::ExternalType::CreateXor);
+ CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::Value *(IRBuilderBase_O::ExternalType::*) (llvm::Value *, llvm::Value *, const llvm::Twine &) )&IRBuilderBase_O::ExternalType::CreateXor);
 CL_LISPIFY_NAME(CreateXor_value_apint);
- CL_EXTERN_DEFMETHOD(IRBuilder_O,(llvm::Value *(IRBuilder_O::ExternalType::*) (llvm::Value *, llvm::APInt const &, const llvm::Twine &) )&IRBuilder_O::ExternalType::CreateXor);
+ CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::Value *(IRBuilderBase_O::ExternalType::*) (llvm::Value *, llvm::APInt const &, const llvm::Twine &) )&IRBuilderBase_O::ExternalType::CreateXor);
 CL_LISPIFY_NAME(CreateXor_value_uint64);
- CL_EXTERN_DEFMETHOD(IRBuilder_O,(llvm::Value *(IRBuilder_O::ExternalType::*) (llvm::Value *, uint64_t, const llvm::Twine &) )&IRBuilder_O::ExternalType::CreateXor);
+ CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::Value *(IRBuilderBase_O::ExternalType::*) (llvm::Value *, uint64_t, const llvm::Twine &) )&IRBuilderBase_O::ExternalType::CreateXor);
 CL_LISPIFY_NAME(CreateLoad_value_twine);
- CL_EXTERN_DEFMETHOD(IRBuilder_O,(llvm::LoadInst *(IRBuilder_O::ExternalType::*) (llvm::Value *, const llvm::Twine &) )&IRBuilder_O::ExternalType::CreateLoad);
+ CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::LoadInst *(IRBuilderBase_O::ExternalType::*) (llvm::Value *, const llvm::Twine &) )&IRBuilderBase_O::ExternalType::CreateLoad);
 CL_LISPIFY_NAME(CreateLoad_value_bool_twine);
- CL_EXTERN_DEFMETHOD(IRBuilder_O,(llvm::LoadInst *(IRBuilder_O::ExternalType::*) (llvm::Value *, bool, const llvm::Twine &) )&IRBuilder_O::ExternalType::CreateLoad);
+ CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::LoadInst *(IRBuilderBase_O::ExternalType::*) (llvm::Value *, bool, const llvm::Twine &) )&IRBuilderBase_O::ExternalType::CreateLoad);
 CL_LISPIFY_NAME(CreateGEP0);
- CL_EXTERN_DEFMETHOD(IRBuilder_O,(llvm::Value *(IRBuilder_O::ExternalType::*) (llvm::Value *, llvm::Value *, const llvm::Twine &) )&IRBuilder_O::ExternalType::CreateGEP);
+ CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::Value *(IRBuilderBase_O::ExternalType::*) (llvm::Value *, llvm::Value *, const llvm::Twine &) )&IRBuilderBase_O::ExternalType::CreateGEP);
 CL_LISPIFY_NAME(CreateGEPArray);
- CL_EXTERN_DEFMETHOD(IRBuilder_O,(llvm::Value *(IRBuilder_O::ExternalType::*) (llvm::Value *, llvm::ArrayRef<llvm::Value *>, const llvm::Twine &) )&IRBuilder_O::ExternalType::CreateGEP);
+ CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::Value *(IRBuilderBase_O::ExternalType::*) (llvm::Value *, llvm::ArrayRef<llvm::Value *>, const llvm::Twine &) )&IRBuilderBase_O::ExternalType::CreateGEP);
 
 CL_LISPIFY_NAME(CreateInBoundsGEPType);
-CL_EXTERN_DEFMETHOD(IRBuilder_O,(llvm::Value *(IRBuilder_O::ExternalType::*) (llvm::Type *, llvm::Value *, llvm::ArrayRef<llvm::Value *>, const llvm::Twine &) )&IRBuilder_O::ExternalType::CreateInBoundsGEP);
+CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::Value *(IRBuilderBase_O::ExternalType::*) (llvm::Type *, llvm::Value *, llvm::ArrayRef<llvm::Value *>, const llvm::Twine &) )&IRBuilderBase_O::ExternalType::CreateInBoundsGEP);
 
 ;
 
@@ -3332,7 +3375,7 @@ CL_EXTERN_DEFUN( &llvm::createMemDepPrinter);
   CL_LISPIFY_NAME(createIndVarSimplifyPass);
   CL_EXTERN_DEFUN( &llvm::createIndVarSimplifyPass);
   CL_LISPIFY_NAME(createInstructionCombiningPass);
-  CL_EXTERN_DEFUN( &llvm::createInstructionCombiningPass);
+CL_EXTERN_DEFUN( (llvm::FunctionPass* (*)(bool))&llvm::createInstructionCombiningPass);
   CL_LISPIFY_NAME(createJumpThreadingPass);
   CL_EXTERN_DEFUN( &llvm::createJumpThreadingPass);
 #if 0
@@ -3711,6 +3754,18 @@ SYMBOL_EXPORT_SC_(LlvmoPkg,library);
     
 namespace llvmo {
 
+
+class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
+  llvm::Error notifyEmitted(llvm::orc::MaterializationResponsibility& mr) {
+    printf("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__ );
+    return llvm::orc::ObjectLinkingLayer::Plugin::notifyEmitted(mr);
+  }
+};
+
+void ClaspReturnObjectBuffer(std::unique_ptr<llvm::MemoryBuffer> buffer) {
+  printf("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__ );
+}
+
 class ClaspSectionMemoryManager : public SectionMemoryManager {
 
   uint8_t* allocateCodeSection( uintptr_t Size, unsigned Alignment,
@@ -4012,7 +4067,7 @@ std::shared_ptr<llvm::Module> optimizeModule(std::shared_ptr<llvm::Module> M) {
   if (comp::_sym_STARoptimization_levelSTAR->symbolValue().fixnump() &&
       comp::_sym_STARoptimization_levelSTAR->symbolValue().unsafe_fixnum() >= 2) {
   // Create a function pass manager.
-    auto FPM = llvm::make_unique<llvm::legacy::FunctionPassManager>(M.get());
+    auto FPM = std::make_unique<llvm::legacy::FunctionPassManager>(M.get());
 
   // Add some optimizations.
     printf("%s:%d Creating optimization passes - some of these have gone missing\n", __FILE__, __LINE__ );
@@ -4112,7 +4167,7 @@ CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, co
   // always unique 
   core::Pointer_sp startupPtr;
   if (startupName!="") {
-    startupPtr = gc::As<core::Pointer_sp>(jit->lookup(jit->ES->getMainJITDylib(),startupName));
+    startupPtr = gc::As<core::Pointer_sp>(jit->lookup(*jit->MainJD,startupName));
   }
   core::T_O* replPtrRaw = NULL;
   if (startupPtr && startupPtr->ptr()) {
@@ -4237,6 +4292,7 @@ ClaspJIT_O::ClaspJIT_O() {
 #endif
   
   this->ES = new llvm::orc::ExecutionSession();
+  this->MainJD = &this->ES->createBareJITDylib("<main>");
 #ifdef USE_JITLINKER
     #error "JITLinker support needed"
 #else
@@ -4246,18 +4302,21 @@ ClaspJIT_O::ClaspJIT_O() {
   // If Darwin then use ObjectLinkingLayer and Small, otherwise RTDyldObjectLinkingLayer and Large.
   // Also see llvmoPackage.cc
   //     llvmo::_sym_STARdefault_code_modelSTAR->defparameter(llvmo::_sym_CodeModel_Large);
-  auto ipmm =  new llvm::jitlink::InProcessMemoryManager();
-  this->LinkLayer = new llvm::orc::ObjectLinkingLayer(*this->ES,ipmm);
+  auto ipmm =  std::unique_ptr<llvm::jitlink::JITLinkMemoryManager>(new llvm::jitlink::InProcessMemoryManager());
+  this->LinkLayer = new llvm::orc::ObjectLinkingLayer(*this->ES,std::move(ipmm));
+  auto plugin = std::unique_ptr<llvm::orc::ObjectLinkingLayer::Plugin>(new ClaspPlugin());
+  this->LinkLayer->addPlugin(std::move(plugin));
+  this->LinkLayer->setReturnObjectBuffer(ClaspReturnObjectBuffer);
   #else
   auto GetMemMgr = []() { return llvm::make_unique<llvmo::ClaspSectionMemoryManager>(); };
   this->LinkLayer = new llvm::orc::RTDyldObjectLinkingLayer(*this->ES,GetMemMgr);
-  #endif
   this->LinkLayer->setProcessAllSections(true);
   this->LinkLayer->setNotifyLoaded( [&] (VModuleKey, const llvm::object::ObjectFile &Obj, const llvm::RuntimeDyld::LoadedObjectInfo &loadedObjectInfo) {
 //                                      printf("%s:%d  NotifyLoaded ObjectFile@%p\n", __FILE__, __LINE__, &Obj);
                                       save_symbol_info(Obj,loadedObjectInfo);
                                       register_object_file_with_gdb(Obj,loadedObjectInfo);
                                     });
+  #endif
 #endif
   auto JTMB = llvm::orc::JITTargetMachineBuilder::detectHost();
   auto edl = JTMB->getDefaultDataLayoutForTarget();
@@ -4275,10 +4334,10 @@ ClaspJIT_O::ClaspJIT_O() {
   auto cm = converter->enumForSymbol<llvm::CodeModel::Model>(code_model_symbol);
   JTMB->setCodeModel(cm);
 #endif
-  this->Compiler = new llvm::orc::ConcurrentIRCompiler(*JTMB);
-  this->CompileLayer = new llvm::orc::IRCompileLayer(*this->ES,*this->LinkLayer,*this->Compiler);
+  auto compiler = std::unique_ptr<llvm::orc::ConcurrentIRCompiler>(new llvm::orc::ConcurrentIRCompiler(*JTMB));
+  this->CompileLayer = new llvm::orc::IRCompileLayer(*this->ES,*this->LinkLayer,std::move(compiler));
   //  printf("%s:%d Registering ClaspDynamicLibarySearchGenerator\n", __FILE__, __LINE__ );
-  this->ES->getMainJITDylib().setGenerator(llvm::cantFail(ClaspDynamicLibrarySearchGenerator::GetForCurrentProcess(this->_DataLayout->getGlobalPrefix())));
+  this->MainJD->addGenerator(llvm::cantFail(ClaspDynamicLibrarySearchGenerator::GetForCurrentProcess(this->_DataLayout->getGlobalPrefix())));
 }
 
 ClaspJIT_O::~ClaspJIT_O()
@@ -4303,7 +4362,7 @@ CL_DEFMETHOD core::Pointer_sp ClaspJIT_O::lookup(JITDylib& dylib, const std::str
 #error You need to decide here
 #endif
 
-  llvm::Expected<llvm::JITEvaluatedSymbol> symbol = this->ES->lookup(llvm::orc::JITDylibSearchList({{&dylib,true}}),
+  llvm::Expected<llvm::JITEvaluatedSymbol> symbol = this->ES->lookup(llvm::orc::makeJITDylibSearchOrder({&dylib}),
                                                                      this->ES->intern(mangledName));   
   if (!symbol) {
     llvm::handleAllErrors(symbol.takeError(), [](const llvm::ErrorInfoBase &E) {
@@ -4323,7 +4382,7 @@ CL_DEFMETHOD core::Pointer_sp ClaspJIT_O::lookup(JITDylib& dylib, const std::str
 CL_DEFMETHOD void ClaspJIT_O::addIRModule(Module_sp module, ThreadSafeContext_sp context) {
   std::unique_ptr<llvm::Module> umodule(module->wrappedPtr());
   llvm::ExitOnError ExitOnErr;
-  ExitOnErr(this->CompileLayer->add(this->ES->getMainJITDylib(),llvm::orc::ThreadSafeModule(std::move(umodule),*context->wrappedPtr())));
+  ExitOnErr(this->CompileLayer->add(*this->MainJD,llvm::orc::ThreadSafeModule(std::move(umodule),*context->wrappedPtr())));
 }
 
 void ClaspJIT_O::saveObjectFileInfo(const char* objectFileStart, size_t objectFileSize,
@@ -4451,12 +4510,12 @@ void ClaspJIT_O::addObjectFile(const char* rbuffer, size_t bytes,size_t startupI
 }
 
 CL_DEFMETHOD JITDylib& ClaspJIT_O::getMainJITDylib() {
-  return this->ES->getMainJITDylib();
+  return *this->MainJD;
 }
 
 CL_DEFMETHOD JITDylib_sp ClaspJIT_O::createAndRegisterJITDylib(const std::string& name) {
-  JITDylib& dylib(this->ES->createJITDylib(name));
-  dylib.setGenerator(llvm::cantFail(ClaspDynamicLibrarySearchGenerator::GetForCurrentProcess(this->_DataLayout->getGlobalPrefix())));
+  JITDylib& dylib(*this->ES->createJITDylib(name));
+  dylib.addGenerator(llvm::cantFail(ClaspDynamicLibrarySearchGenerator::GetForCurrentProcess(this->_DataLayout->getGlobalPrefix())));
   JITDylib_sp dylib_sp = core::RP_Create_wrapped<JITDylib_O>(&dylib);
 #if 0
   Cons_sp cell = core::Cons_O::create(dylib_sp,_Nil<core::T_O>());

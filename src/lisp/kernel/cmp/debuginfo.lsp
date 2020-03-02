@@ -99,6 +99,7 @@
                                        nil ; 12 DebugInfoForProfiling
                                        :dntk-default ; 13 DebugNameTableKind
                                        nil ; 14 RangesBaseAddress
+                                       "" ; 15 SysRoot (-isysroot value)
                                        )))
              (cmp-log "with-dbg-compile-unit *dbg-compile-unit*: %s%N" *dbg-compile-unit*)
              (cmp-log "with-dbg-compile-unit source-pathname: %s%N" ,source-pathname)

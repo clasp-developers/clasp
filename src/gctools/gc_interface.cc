@@ -50,6 +50,7 @@ typedef bool _Bool;
 #include <llvm/IR/BasicBlock.h>
 #include <llvm/IR/Instructions.h>
 #include <llvm/Transforms/Instrumentation.h>
+//#include <llvm/Transforms/InstCombine.h>
 #include <llvm/Transforms/IPO.h>
 #include <llvm/IR/InlineAsm.h>
 #include <llvm/CodeGen/TargetPassConfig.h>

@@ -30,6 +30,7 @@ THE SOFTWARE.
 
 #include <llvm/Support/raw_ostream.h>
 #include "llvm/Support/InitLLVM.h"
+#include "llvm/InitializePasses.h"
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/fileSystem.h>
@@ -175,7 +176,8 @@ CL_DEFUN bool llvm_sys__load_module(Module_sp m, bool verbose, bool print, core:
 CL_DEFUN core::SimpleBaseString_sp llvm_sys__mangleSymbolName(core::String_sp name) {
   ASSERT(cl__stringp(name));
   stringstream sout;
-  const char *cur = name->get_std_string().c_str();
+  std::string stdstr = name->get_std_string();
+  const char *cur = stdstr.c_str();
   bool first = true;
   while (*cur) {
     if (((*cur) >= 'a' && (*cur) <= 'z') || ((*cur) >= 'A' && (*cur) <= 'Z') || ((*cur) == '_') || (!first && ((*cur) >= '0' && (*cur) <= '9'))) {

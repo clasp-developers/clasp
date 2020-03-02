@@ -598,7 +598,8 @@ Pathname_sp homedirPathname(T_sp tuser) {
 #ifdef HAVE_PWD_H
     struct passwd *pwent = NULL;
 #endif
-    const char *p = user->get_std_string().c_str();
+    std::string users = user->get_std_string();
+    const char *p = users.c_str();
     i = user->length();
     if (i > 0 && *p == '~') {
       p++;

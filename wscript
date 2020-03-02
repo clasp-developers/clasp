@@ -83,8 +83,8 @@ def options(ctx):
 top = '.'
 out = 'build'
 APP_NAME = 'clasp'
-LLVM_VERSION = 9
-CLANG_SPECIFIC_VERSION = "9.0.0"
+LLVM_VERSION = 1
+CLANG_SPECIFIC_VERSION = "11.0.0git"
 
 STAGE_CHARS = [ 'r', 'i', 'a', 'b', 'f', 'c', 'd' ]
 # Full LTO  -flto
@@ -828,7 +828,7 @@ def configure(cfg):
                     raise Exception("%s is an INVALID wscript.config option - valid options are: %s" % (key, VALID_OPTIONS))
                 else:
                     log.info("wscript.config option %s = %s", key, local_environment[key])
-                cfg.env.update(local_environment)
+            cfg.env.update(local_environment)
 
     #
     # This is where configure(cfg) starts
@@ -939,7 +939,7 @@ def configure(cfg):
     cur_clang_version = run_llvm_config(cfg, "--version")
     log.debug("cur_clang_version = %s", cur_clang_version)
     if (int(cur_clang_version[0]) != LLVM_VERSION):
-        raise Exception("You must have clang/llvm version %d installed" % LLVM_VERSION )
+        raise Exception("You must have clang/llvm version %d installed - you have %s" % (LLVM_VERSION, cur_clang_version[0]))
     # find a lisp for the scraper
     if not cfg.env.SCRAPER_LISP:
         cfg.env["SBCL"] = cfg.find_program("sbcl", var = "SBCL")[0]
@@ -1088,7 +1088,8 @@ def configure(cfg):
 #    cfg.env.append_value('CXXFLAGS', includes_from_build_dir )
 #    cfg.env.append_value('CFLAGS', includes_from_build_dir )
 #    log.debug("DEBUG includes_from_build_dir = %s", includes_from_build_dir)
-    cfg.env.append_value('CXXFLAGS', [ '-std=c++11'])
+#    cfg.env.append_value('CXXFLAGS', [ '-std=c++14'])
+    cfg.env.append_value('CXXFLAGS', run_llvm_config(cfg, "--bindir"))
 #    cfg.env.append_value('CXXFLAGS', ["-D_GLIBCXX_USE_CXX11_ABI=1"])
     if (cfg.env.LTO_FLAG):
         cfg.env.append_value('CXXFLAGS', cfg.env.LTO_FLAG )

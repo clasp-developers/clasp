@@ -726,6 +726,7 @@ CL_DEFUN core::T_mv ast_tooling__wrapped_JSONCompilationDatabase_loadFromFile(co
 }
 
 
+
 void initialize_clangTooling() {
 
   initialize_matchers();
@@ -874,7 +875,7 @@ void initialize_clangTooling() {
      .def("addDynamicMatcher", &clang::ast_matchers::MatchFinder::addDynamicMatcher) // TODO: Add a nurse/patient relationship for argument and object
      .def("matchAST", &clang::ast_matchers::MatchFinder::matchAST),
      def("match", &ast_tooling__match, policies<>(), ARGS_ast_tooling__match, DECL_ast_tooling__match, DOCS_ast_tooling__match),
-     def("runToolOnCode", &clang::tooling::runToolOnCode),
+//     def("runToolOnCode", &clang::tooling::runToolOnCode),
      class_<clang::ast_matchers::MatchFinder::MatchCallback>("MatchCallback-abstract", no_default_constructor),
      derivable_class_<DerivableMatchCallback, clang::ast_matchers::MatchFinder::MatchCallback>("MatchCallback")
      .def("run", &DerivableMatchCallback::default_run)
@@ -911,9 +912,10 @@ void initialize_clangTooling() {
 
 CL_DEFUN core::T_sp ast_tooling__parse_dynamic_matcher(const string& matcher)
 {
+  llvm::StringRef matchersr(matcher);
   clang::ast_matchers::dynamic::Diagnostics error;
   llvm::Optional<clang::ast_matchers::dynamic::DynTypedMatcher> Matcher =
-    clang::ast_matchers::dynamic::Parser::parseMatcherExpression(matcher, NULL, NULL, &error);
+    clang::ast_matchers::dynamic::Parser::parseMatcherExpression(matchersr, NULL, NULL, &error);
   if (!Matcher) {
     SIMPLE_ERROR(BF("Could not parse expression %s") % matcher);
   }
