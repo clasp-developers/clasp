@@ -42,13 +42,6 @@ int gcFunctions_after;
 #include <clasp/gctools/threadlocal.h>
 #include <clasp/core/wrappers.h>
 
-#ifdef DEBUG_TRACK_UNWINDS
-std::atomic<size_t> global_unwind_count;
-std::atomic<size_t> global_ReturnFrom_count;
-std::atomic<size_t> global_DynamicGo_count;
-std::atomic<size_t> global_CatchThrow_count;
-#endif
-
 
 extern "C" {
 
@@ -195,20 +188,9 @@ CL_DEFUN core::T_sp gctools__bootstrap_kind_p(const string &name) {
   return _Nil<core::T_O>();
 }
 
-#ifdef DEBUG_TRACK_UNWINDS
-CL_DEFUN size_t gctools__unwind_counter() {
-  return global_unwind_count;
+CL_DEFUN size_t gctools__thread_local_unwind_counter() {
+  return my_thread->_unwinds;
 }
-CL_DEFUN size_t gctools__dynamic_go_counter() {
-  return global_DynamicGo_count;
-}
-CL_DEFUN size_t gctools__return_from_counter() {
-  return global_ReturnFrom_count;
-}
-CL_DEFUN size_t gctools__catch_throw_counter() {
-  return global_CatchThrow_count;
-}
-#endif
 
 CL_DEFUN void gctools__change_sigchld_sigport_handlers()
 {
@@ -1167,13 +1149,6 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #endif
   if (buildReport) ss << (BF("DEBUG_FLOW_TRACKER = %s\n") % (debug_flow_tracker ? "**DEFINED**" : "undefined") ).str();
 
-    bool debug_track_unwinds = false;
-#ifdef DEBUG_TRACK_UNWINDS
-  debug_track_unwinds = true;
-  debugging = true;
-  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-TRACK-UNWINDS"),features);
-#endif
-  if (buildReport) ss << (BF("DEBUG_TRACK_UNWINDS = %s\n") % (debug_track_unwinds ? "**DEFINED**" : "undefined") ).str();
 
   bool track_allocations = false;
 #ifdef DEBUG_TRACK_ALLOCATIONS
@@ -1373,6 +1348,10 @@ CL_DEFUN void gctools__thread_local_cleanup()
   core::thread_local_invoke_and_clear_cleanup();
 }
 
+CL_DEFUN core::Integer_sp gctools__unwind_time_nanoseconds() {
+  core::Integer_sp is = core::Integer_O::create(my_thread_low_level->_unwind_time.count());
+  return is;
+}
 
 void initialize_gc_functions() {
   _sym_STARallocPatternStackSTAR->defparameter(_Nil<core::T_O>());

@@ -97,9 +97,8 @@ CL_DEFUN List_sp core__active_catch_tags() {
     }
   }
   if (!found) CONTROL_ERROR();
-#ifdef DEBUG_TRACK_UNWINDS
-  global_CatchThrow_count++;
-#endif
+  my_thread->_unwinds++;
+  my_thread_low_level->_start_unwind = std::chrono::high_resolution_clock::now();
   throw CatchThrow(tag);
 }
 

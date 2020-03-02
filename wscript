@@ -33,6 +33,8 @@
 
 import os, sys, logging
 import time, datetime
+import glob
+
 
 try:
     from StringIO import StringIO
@@ -282,7 +284,7 @@ def update_dependencies(cfg):
 #                       "master")
     fetch_git_revision("src/lisp/kernel/contrib/sicl",
                        "https://github.com/Bike/SICL.git",
-                       "bf49bb239950169e5153e01b4c1d400ff663558d")
+                       "52376ab0679d3dcc0e8093dc2cffe28100d97ddb")
     fetch_git_revision("src/lisp/kernel/contrib/Concrete-Syntax-Tree",
                        "https://github.com/robert-strandh/Concrete-Syntax-Tree.git",
                        "654cdbf1fdb0625d3c68144c8806704e2f97f34b")
@@ -382,7 +384,7 @@ def configure_common(cfg,variant):
     log.debug("cfg.env.LDFLAGS = %s", cfg.env.LDFLAGS)
     cfg.define("BUILD_LINKFLAGS", ' '.join(cfg.env.LINKFLAGS) + ' ' + ' '.join(cfg.env.LDFLAGS))
 
-def fasl_extension(bld,name):
+def module_fasl_extension(bld,name):
     if (bld.env.USE_COMPILE_FILE_PARALLEL or bld.env.CLASP_BUILD_MODE=='faso'):
         return "%s.fasp" % name
     else:
@@ -774,8 +776,13 @@ def configure(cfg):
         llvm_config_binary = cfg.env.LLVM_CONFIG_BINARY
         if (len(llvm_config_binary) == 0):
             if (cfg.env['DEST_OS'] == DARWIN_OS ):
-                llvm_config_binary = '/usr/local/Cellar/llvm/%s/bin/llvm-config'%CLANG_SPECIFIC_VERSION
+                llvm_paths = glob.glob("/usr/local/Cellar/llvm/%s*" % LLVM_VERSION)
+                if (len(llvm_paths) >= 1):
+                    llvm_config_binary = "%s/bin/llvm-config" % llvm_paths[0]
+                else:
+                    raise Exception("You need to install llvm@%s" % LLVM_VERSION)
                 log.info("On darwin looking for %s" % llvm_config_binary)
+                print("On darwin looking for %s" % llvm_config_binary)
             else:
                 try:
                     llvm_config_binary = cfg.find_program('llvm-config-%s.0'%LLVM_VERSION)
@@ -887,7 +894,10 @@ def configure(cfg):
     log.debug("cfg.env['CLASP_BUILD_MODE'] = %s", cfg.env['CLASP_BUILD_MODE'])
     # apply the default
     if (cfg.env['CLASP_BUILD_MODE']==[]):
-        cfg.env['CLASP_BUILD_MODE'] = 'faso'
+        if (cfg.env['DEST_OS'] == DARWIN_OS ):
+            cfg.env['CLASP_BUILD_MODE'] = 'faso'
+        else:
+            cfg.env['CLASP_BUILD_MODE'] = 'object'
     if ((cfg.env['CLASP_BUILD_MODE'] =='bitcode')):
         cfg.define("CLASP_BUILD_MODE",2) # thin-lto
         cfg.env.CLASP_BUILD_MODE = 'bitcode'
@@ -908,12 +918,6 @@ def configure(cfg):
         raise Exception("CLASP_BUILD_MODE can only be 'thinlto'(default), 'lto', or 'object' - you provided %s" % cfg.env['CLASP_BUILD_MODE'])
     log.info("default cfg.env.CLASP_BUILD_MODE = %s, final cfg.env.LTO_FLAG = '%s'", cfg.env.CLASP_BUILD_MODE, cfg.env.LTO_FLAG)
 
-    if (cfg.env['CLASP_BUILD_MODE'] == 'object'):
-        if ( 'USE_COMPILE_FILE_PARALLEL' in cfg.env):
-            if (cfg.env['USE_COMPILE_FILE_PARALLEL'] == True):
-                raise Exception("You cannot have CLASP_BUILD_MODE of object and USE_COMPILE_FILE_PARALLEL == True")
-        cfg.env['USE_COMPILE_FILE_PARALLEL'] = False
-        
     # default for USE_COMPILE_FILE_PARALLEL for Darwin is True - otherwise False
     if (not 'USE_COMPILE_FILE_PARALLEL' in cfg.env):
         if (cfg.env['DEST_OS'] == DARWIN_OS ):
@@ -1106,8 +1110,13 @@ def configure(cfg):
             cfg.env.append_value('LINKFLAGS', '-fuse-ld=gold')
             linker_in_use = "gold"
             log.info("Using the gold linker")
-        cfg.env.append_value('LINKFLAGS', ['-stdlib=libstdc++']) # libstdc++/GCC libc++/clang
-        cfg.env.append_value('LINKFLAGS', ['-lstdc++']) # -lstdc++/GCC -lc++/clang
+        if (True):
+            cfg.env.append_value('CXXFLAGS', ['-stdlib=libstdc++']) # libstdc++/GCC libc++/clang
+            cfg.env.append_value('LINKFLAGS', ['-stdlib=libstdc++']) # libstdc++/GCC libc++/clang
+            cfg.env.append_value('LINKFLAGS', ['-lstdc++']) # -lstdc++/GCC -lc++/clang
+        else:
+            cfg.env.append_value('LINKFLAGS', ['-stdlib=libc++','-lc++', '-lc++abi'])
+            cfg.env.append_value('CXXFLAGS', ['-stdlib=libc++'])
         cfg.env.append_value('LINKFLAGS', '-pthread')
     if (cfg.env['DEST_OS'] == FREEBSD_OS ):
         #--lto-O0 is not effective for avoiding linker hangs
@@ -1514,7 +1523,7 @@ def build(bld):
                 # Build serve-event
             print("bld.iclasp_executable = %s" % bld.iclasp_executable)
             print("cclasp_link_product = %s" % cclasp_link_product)
-            serve_event_fasl = bld.path.find_or_declare(fasl_extension(bld,"%s/src/lisp/modules/serve-event/serve-event" % variant.fasl_dir(stage = 'c')))
+            serve_event_fasl = bld.path.find_or_declare(module_fasl_extension(bld,"%s/src/lisp/modules/serve-event/serve-event" % variant.fasl_dir(stage = 'c')))
             print("serve_event_fasl = %s\n" % serve_event_fasl.abspath())
             task = compile_module(env=bld.env)
             task.set_inputs([bld.iclasp_executable,
@@ -1528,7 +1537,7 @@ def build(bld):
                 install('lib/clasp/', serve_event_dwarf_file)
 
             # Build ASDF
-            cclasp_asdf_fasl = bld.path.find_or_declare(fasl_extension(bld,"%s/src/lisp/modules/asdf/asdf" % variant.fasl_dir(stage='c')))
+            cclasp_asdf_fasl = bld.path.find_or_declare(module_fasl_extension(bld,"%s/src/lisp/modules/asdf/asdf" % variant.fasl_dir(stage='c')))
             print("cclasp_asdf_fasl = %s\n" % cclasp_asdf_fasl.abspath())
             task = compile_module(env=bld.env)
             task.set_inputs([bld.iclasp_executable,
