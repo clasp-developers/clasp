@@ -4265,9 +4265,9 @@ ClaspJIT_O::ClaspJIT_O() {
   // If Darwin then use ObjectLinkingLayer and Small, otherwise RTDyldObjectLinkingLayer and Large.
   // Also see llvmoPackage.cc
   //     llvmo::_sym_STARdefault_code_modelSTAR->defparameter(llvmo::_sym_CodeModel_Large);
-  auto ipmm =  std::unique_ptr<llvm::jitlink::JITLinkMemoryManager>(new llvm::jitlink::InProcessMemoryManager());
+  auto ipmm =  std::make_unique<llvm::jitlink::JITLinkMemoryManager>();
   this->LinkLayer = new llvm::orc::ObjectLinkingLayer(*this->ES,std::move(ipmm));
-  auto plugin = std::unique_ptr<llvm::orc::ObjectLinkingLayer::Plugin>(new ClaspPlugin());
+  auto plugin = std::make_unique<ClaspPlugin>(); 
   this->LinkLayer->addPlugin(std::move(plugin));
   this->LinkLayer->setReturnObjectBuffer(ClaspReturnObjectBuffer);
   auto JTMB = llvm::orc::JITTargetMachineBuilder::detectHost();
