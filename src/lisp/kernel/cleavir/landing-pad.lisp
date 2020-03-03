@@ -77,6 +77,7 @@
              location definers))
     (first definers)))
 
+;;; There's also gen-unbind. Don't look at me like that.
 (defun generate-unbind (bind-instruction next)
   (cmp:with-irbuilder ((llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
     (let ((bb (cmp:irc-basic-block-create "unbind-special-variable")))
