@@ -28,11 +28,9 @@
   (let ((cleavir-ir:*policy* (cleavir-ast:policy ast))
         (cleavir-ir:*origin* (cleavir-ast:origin ast))
         (cleavir-ir:*dynamic-environment*
-          (cleavir-ast-to-hir::find-or-create-location
-           (cleavir-ast:dynamic-environment ast))))
+          (cleavir-ast-to-hir::dynamic-environment context)))
     (with-accessors ((results cleavir-ast-to-hir::results)
-                     (successors cleavir-ast-to-hir::successors)
-                     (invocation cleavir-ast-to-hir::invocation))
+                     (successors cleavir-ast-to-hir::successors))
         context
       (cond ((null (cleavir-ast:form-asts ast)) ; trivial case
              (cleavir-ast-to-hir:compile-ast (cleavir-ast:first-form-ast ast) context))
@@ -52,8 +50,11 @@
                                 for form-ast in (reverse (cleavir-ast:form-asts ast))
                                 do (setf successor
                                          (cleavir-ast-to-hir:compile-ast
-                                          form-ast (cleavir-ast-to-hir:context
-                                                    () (list successor) invocation)))
+                                          form-ast
+                                          (cleavir-ast-to-hir:clone-context
+                                           context
+                                           :results '()
+                                           :successors (list successor))))
                                 finally (return successor)))
                     ;; This instruction stores the result(s) of the first form into the temporaries.
                     (store (clasp-cleavir-hir:make-save-values-instruction
@@ -61,7 +62,10 @@
                ;; Finally, we can compile the first form.
                (cleavir-ast-to-hir:compile-ast
                 (cleavir-ast:first-form-ast ast)
-                (cleavir-ast-to-hir:context mv (list store) invocation))))
+                (cleavir-ast-to-hir:clone-context
+                 context
+                 :results mv
+                 :successors (list store)))))
             (t ; simple case - results are just lexical locations - no special effort needed
              (call-next-method))))))
 
@@ -93,7 +97,7 @@
                                       values-temp results (first successors)))))))
 	 (2
 	  (error "MULTIPLE-VALUE-FOREIGN-CALL-AST appears in a Boolean context.")))
-       (cleavir-ast-to-hir::invocation context)))))
+       context))))
 
 (defmethod cleavir-ast-to-hir:compile-ast ((ast clasp-cleavir-ast:foreign-call-ast) context)
   (cleavir-ast-to-hir::assert-context ast context 1 1)
@@ -123,7 +127,7 @@
                                :successors successors))))
 	 (2
 	  (error "FOREIGN-call-AST appears in a Boolean context.")))
-       (cleavir-ast-to-hir::invocation context)))))
+       context))))
 
 (defmethod cleavir-ast-to-hir:compile-ast ((ast clasp-cleavir-ast:foreign-call-pointer-ast) context)
   (cleavir-ast-to-hir::assert-context ast context 1 1)
@@ -151,19 +155,20 @@
                                :successors successors))))
 	 (2
 	  (error "foreign-call-pointer-AST appears in a Boolean context.")))
-       (cleavir-ast-to-hir::invocation context)))))
+       context))))
 
 (defmethod cleavir-ast-to-hir:compile-ast ((ast cc-ast:defcallback-ast) context)
   (let ((closure-temp (cleavir-ir:new-temporary)))
     (cleavir-ast-to-hir:compile-ast
      (cleavir-ast:callee-ast ast)
-     (cleavir-ast-to-hir:context
-      (list closure-temp)
+     (cleavir-ast-to-hir:clone-context
+      context
+      :results (list closure-temp)
+      :successors
       (list (make-instance 'clasp-cleavir-hir:defcallback-instruction
               :args (cc-ast:defcallback-args ast)
               :inputs (list closure-temp)
-              :successors (cleavir-ast-to-hir::successors context)))
-      (cleavir-ast-to-hir:invocation context)))))
+              :successors (cleavir-ast-to-hir::successors context)))))))
 
 (defmethod cleavir-ast-to-hir:compile-ast ((ast cc-ast:header-stamp-case-ast) context)
   (let ((derivable (cleavir-ast-to-hir:compile-ast (cc-ast:derivable-ast ast) context))
@@ -173,11 +178,12 @@
         (temp (cleavir-ir:new-temporary)))
     (cleavir-ast-to-hir:compile-ast
      (cc-ast:stamp-ast ast)
-     (cleavir-ast-to-hir:context
-      (list temp)
+     (cleavir-ast-to-hir:clone-context
+      context
+      :results (list temp)
+      :successors
       (list (clasp-cleavir-hir:make-header-stamp-case-instruction
-             temp derivable rack wrapped header))
-      (cleavir-ast-to-hir:invocation context)))))
+             temp derivable rack wrapped header))))))
 
 ;; FIXME: export names, deexport make-, have macroexpansion assert context
 (cleavir-ast-to-hir::define-compile-functional-ast
@@ -234,8 +240,10 @@
   (let ((temp (cleavir-ir:new-temporary)))
     (cleavir-ast-to-hir:compile-ast
      (cc-ast:va-list-ast ast)
-     (cleavir-ast-to-hir::context
-      (list temp)
+     (cleavir-ast-to-hir:clone-context
+      context
+      :results (list temp)
+      :successors
       (list
        (clasp-cleavir-hir:make-bind-va-list-instruction
         (cleavir-ast-to-hir:translate-lambda-list (cleavir-ast:lambda-list ast))
@@ -243,8 +251,7 @@
         (clasp-cleavir-ast:rest-alloc ast)
         (cleavir-ast-to-hir:compile-ast
          (cleavir-ast:body-ast ast)
-         context)))
-      (cleavir-ast-to-hir::invocation context)))))
+         context)))))))
 
 (defmethod cleavir-ast-to-hir:compile-ast ((ast cc-ast:acas-ast) context)
   (cleavir-ast-to-hir::assert-context ast context 1 1)
@@ -254,7 +261,6 @@
          (new-temp (cleavir-ir:new-temporary))
          (type (cleavir-ast:element-type ast))
          (boxedp (cleavir-ast:boxed-p ast))
-         (invocation (cleavir-ast-to-hir:invocation context))
          (unboxed (if boxedp
                       (cleavir-ast-to-hir::results context)
                       (list (cleavir-ir:new-temporary))))
@@ -270,48 +276,53 @@
                               :successors succ)))
     (cleavir-ast-to-hir:compile-ast
      (cleavir-ast:array-ast ast)
-     (cleavir-ast-to-hir:context
-      (list array-temp)
+     (cleavir-ast-to-hir:clone-context
+      context
+      :results (list array-temp)
+      :successors
       (list
        (cleavir-ast-to-hir:compile-ast
         (cleavir-ast:index-ast ast)
-        (cleavir-ast-to-hir:context
-         (list index-temp)
+        (cleavir-ast-to-hir:clone-context
+         context
+         :results (list index-temp)
+         :successors
          (list
           (if boxedp
               (cleavir-ast-to-hir:compile-ast
                (cc-ast:cmp-ast ast)
-               (cleavir-ast-to-hir:context
-                (list cmp-temp)
+               (cleavir-ast-to-hir:clone-context
+                context
+                :results (list cmp-temp)
+                :successors
                 (list
                  (cleavir-ast-to-hir:compile-ast
                   (cleavir-ast:value-ast ast)
-                  (cleavir-ast-to-hir:context
-                   (list new-temp)
-                   (list acas)
-                   invocation)))
-                invocation))
+                  (cleavir-ast-to-hir:clone-context
+                   context
+                   :results (list new-temp)
+                   :successors (list acas))))))
               (let ((cmp-boxed-temp (cleavir-ir:new-temporary))
                     (new-boxed-temp (cleavir-ir:new-temporary)))
                 (cleavir-ast-to-hir:compile-ast
                  (cc-ast:cmp-ast ast)
-                 (cleavir-ast-to-hir:context
-                  (list cmp-boxed-temp)
+                 (cleavir-ast-to-hir:clone-context
+                  context
+                  :results (list cmp-boxed-temp)
+                  :successors
                   (list
                    (cleavir-ast-to-hir::unbox-for-type
                     type cmp-boxed-temp cmp-temp
                     (cleavir-ast-to-hir:compile-ast
                      (cleavir-ast:value-ast ast)
-                     (cleavir-ast-to-hir:context
-                      (list new-boxed-temp)
+                     (cleavir-ast-to-hir:clone-context
+                      context
+                      :results (list new-boxed-temp)
+                      :successors
                       (list
                        (cleavir-ast-to-hir::unbox-for-type
                         type new-boxed-temp new-temp
-                        acas))
-                      invocation))))
-                  invocation)))))
-         invocation)))
-      invocation))))           
+                        acas))))))))))))))))))
 
 (defmethod cleavir-ast-to-hir:compile-ast ((ast clasp-cleavir-ast:precalc-value-reference-ast) context)
   (cleavir-ast-to-hir::assert-context ast context 1 1)
@@ -333,34 +344,32 @@
   (let ((temp (cleavir-ast-to-hir::make-temp)))
     (cleavir-ast-to-hir:compile-ast
      (cleavir-ast:name-ast ast)
-     (cleavir-ast-to-hir::context
-      (list temp)
+     (cleavir-ast-to-hir:clone-context
+      context
+      :results (list temp)
+      :successors
       (list
        (clasp-cleavir-hir:make-setf-fdefinition-instruction
 	temp
 	(first (cleavir-ast-to-hir::results context))
-	(first (cleavir-ast-to-hir::successors context))))
-      (cleavir-ast-to-hir::invocation context)))))
-
+	(first (cleavir-ast-to-hir::successors context))))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Generate a THROW-INSTRUCTION
 ;;;
 (defmethod cleavir-ast-to-hir:compile-ast ((ast clasp-cleavir-ast:throw-ast) context)
-  (with-accessors ((results cleavir-ast-to-hir::results)
-		   (successors cleavir-ast-to-hir::successors)
-		   (invocation cleavir-ast-to-hir::invocation))
+  (with-accessors ((successors cleavir-ast-to-hir::successors))
       context
     (let* ((tag-temp (cleavir-ast-to-hir::make-temp))
 	   (result-successor 
 	    (let* ((new-successor (clasp-cleavir-hir:make-throw-instruction tag-temp))
-		   (new-context (cleavir-ast-to-hir::context 
-				 results
-				 (list new-successor)
-				 (cleavir-ast-to-hir::invocation context))))
+		   (new-context (cleavir-ast-to-hir:clone-context
+                                 context
+				 :successors (list new-successor))))
 	      (cleavir-ast-to-hir:compile-ast (clasp-cleavir-ast:result-ast ast) new-context))))
       (cleavir-ast-to-hir:compile-ast (clasp-cleavir-ast:tag-ast ast)
-				      (cleavir-ast-to-hir::context (list tag-temp)
-					       (list result-successor)
-					       (cleavir-ast-to-hir::invocation context))))))
+				      (cleavir-ast-to-hir:clone-context
+                                       context
+                                       :results (list tag-temp)
+                                       :successors (list result-successor))))))

@@ -536,14 +536,13 @@
 (defclass precalc-vector-function-ast (cleavir-ast:top-level-function-ast)
   ((%precalc-asts :initarg :precalc-asts :reader precalc-asts)))
 
-(defun make-precalc-vector-function-ast (body-ast precalc-asts forms dynenv policy
+(defun make-precalc-vector-function-ast (body-ast precalc-asts forms policy
                                          &key origin)
   (make-instance 'precalc-vector-function-ast
                  :body-ast body-ast
                  :lambda-list nil
                  :precalc-asts precalc-asts
                  :forms forms
-                 :dynamic-environment-out dynenv
                  :policy policy
                  :origin origin))
 
@@ -659,7 +658,7 @@ precalculated-vector and returns the index."
            (literal:codegen-rtv-cclasp value)
          (values index-or-immediate (not index-p)))))))
 
-(defun hoist-load-time-value (ast dynenv env)
+(defun hoist-load-time-value (ast env)
   (let ((ltvs nil)
         (forms nil))
     (cleavir-ast:map-ast-depth-first-preorder
@@ -679,7 +678,6 @@ precalculated-vector and returns the index."
                             :origin (clasp-cleavir::ensure-origin (cleavir-ast:origin ltv) 9999912)
                             :original-object form)))
         (push form forms)))
-    (let ((cleavir-ast:*dynamic-environment* dynenv))
-      (clasp-cleavir-ast:make-precalc-vector-function-ast
-       ast ltvs forms dynenv (cleavir-ast:policy ast)
-       :origin (cleavir-ast:origin ast)))))
+    (clasp-cleavir-ast:make-precalc-vector-function-ast
+     ast ltvs forms (cleavir-ast:policy ast)
+     :origin (cleavir-ast:origin ast))))
