@@ -65,6 +65,7 @@ THE SOFTWARE.
 #include <llvm/IR/Instructions.h>
 #include <llvm/IR/IRBuilder.h>
 #include <llvm/IR/Constants.h>
+#include <llvm/ExecutionEngine/Orc/LLJIT.h>
 #include <llvm/ExecutionEngine/Orc/CompileUtils.h>
 #include <llvm/ExecutionEngine/Orc/IRCompileLayer.h>
 #include <llvm/ExecutionEngine/Orc/IRTransformLayer.h>
@@ -4677,19 +4678,23 @@ public:
   ~ClaspJIT_O();
 public:
   std::atomic<ObjectFileInfo*> _ObjectFiles;
-  llvm::DataLayout* _DataLayout;
-  llvm::orc::ExecutionSession *ES;
-  llvm::orc::JITDylib          *MainJD;
+#if 1
+  std::unique_ptr<llvm::orc::LLJIT>    _LLJIT;
+#else
+  ExecutionSession *ES;
 #ifdef USE_JITLINKER
   llvm::org::JITLinker* LinkLayer;
 #else
   #if _TARGET_OS_DARWIN
   llvm::orc::ObjectLinkingLayer *LinkLayer;
+
+  
   #else
   llvm::orc::RTDyldObjectLinkingLayer *LinkLayer;
   #endif
 #endif
   llvm::orc::IRCompileLayer *CompileLayer;
+#endif
 };
 
 
