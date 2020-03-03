@@ -4258,27 +4258,6 @@ CL_DEFUN ClaspJIT_sp llvm_sys__make_clasp_jit()
 }
 
 ClaspJIT_O::ClaspJIT_O() {
-#if 0
-    // Detect the host and set code model to small.
-  llvm::ExitOnError ExitOnErr;
-  auto JTMB = ExitOnErr(llvm::orc::JITTargetMachineBuilder::detectHost());
-  core::SymbolToEnumConverter_sp converter = _sym_AttributeEnum->symbolValue().as<core::SymbolToEnumConverter_O>();
-  
-  JTMB.setCodeModel(CodeModel::Small);
-
-
-  // Create an LLJIT instance with an ObjectLinkingLayer as the base layer.
-  auto J = ExitOnErr(
-                     llvm::orc::LLJITBuilder()
-                     .setJITTargetMachineBuilder(std::move(JTMB))
-                     .setObjectLinkingLayerCreator(
-                                                   [&](llvm::orc::ExecutionSession &ES) {
-                                                     return make_unique<ObjectLinkingLayer>(
-                                                                                            ES, make_unique<llvm::jitlink::InProcessMemoryManager>());
-                                                   })
-                     .create());
-#endif
-  
   this->ES = new llvm::orc::ExecutionSession();
   this->MainJD = &this->ES->createBareJITDylib("<main>");
   // This is from Lang Hames who said on Discord #llvm channel:
@@ -4298,15 +4277,6 @@ ClaspJIT_O::ClaspJIT_O() {
     abort();
   }
   this->_DataLayout = new llvm::DataLayout(*edl);
-#if 0
-  // Don't set the code model - the default should work fine.
-  // If it doesn't - invoke the (cmp:code-model :jit xxx :compile-file-parallel yyy)
-  // function
-  core::SymbolToEnumConverter_sp converter = gc::As<core::SymbolToEnumConverter_sp>(llvmo::_sym_CodeModel->symbolValue());
-  core::T_sp code_model_symbol = llvmo::_sym_STARdefault_code_modelSTAR->symbolValue();
-  auto cm = converter->enumForSymbol<llvm::CodeModel::Model>(code_model_symbol);
-  JTMB->setCodeModel(cm);
-#endif
   auto compiler = std::unique_ptr<llvm::orc::ConcurrentIRCompiler>(new llvm::orc::ConcurrentIRCompiler(*JTMB));
   this->CompileLayer = new llvm::orc::IRCompileLayer(*this->ES,*this->LinkLayer,std::move(compiler));
   //  printf("%s:%d Registering ClaspDynamicLibarySearchGenerator\n", __FILE__, __LINE__ );
