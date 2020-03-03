@@ -70,6 +70,7 @@
 
 
 (defun load-bitcode (filename &key print)
+  (format t "load-bitcode ~a~%" filename)
   (if *use-human-readable-bitcode*
       (let* ((input-name (make-pathname :type "ll" :defaults (pathname filename))))
         (if print (core:bformat t "Loading %s%N" input-name))
@@ -80,6 +81,7 @@
 
 (defun parse-bitcode (filename context &key print)
   ;; Load a module from a bitcode or .ll file
+  (format t "parse-bitcode ~a~%" filename)
   (if *use-human-readable-bitcode*
       (let ((input-name (make-pathname :type "ll" :defaults (pathname filename))))
         (if print (core:bformat t "Loading %s%N" input-name))

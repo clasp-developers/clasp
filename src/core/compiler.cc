@@ -822,11 +822,15 @@ CL_DEFUN T_mv core__startup_function_name_and_linkage(size_t id, core::T_sp pref
   ss << "_";
   ss << id;
   Symbol_sp linkage_type;
+#if 1
+  linkage_type = llvmo::_sym_InternalLinkage;
+#else
   if (comp::_sym_STARgenerate_fasoSTAR->symbolValue().notnilp()) {
     linkage_type = llvmo::_sym_ExternalLinkage;
   } else {
     linkage_type = llvmo::_sym_InternalLinkage;
   }
+#endif
   return Values(core::SimpleBaseString_O::make(ss.str()),linkage_type);
 };
 
@@ -883,6 +887,9 @@ CL_DEFUN T_mv core__load_binary(T_sp pathDesig, T_sp verbose, T_sp print, T_sp e
   Pointer_sp handle_ptr = Pointer_O::create(handle);
   DynamicScopeManager scope4(_sym_STARcurrent_dlopen_handleSTAR, handle_ptr);
   if (startup_functions_are_waiting()) {
+    if (print.notnilp()) {
+      write_bf_stream(BF("Running startup_functions\n"));
+    }
     startup_functions_invoke(NULL);
   } else {
     SIMPLE_ERROR(BF("This is not a proper FASL file - there are no startup functions waiting to be invoked"));

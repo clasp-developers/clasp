@@ -55,8 +55,8 @@ void af_addAllSymbolsToExecutionEngine(llvmo::ExecutionEngine_sp engine, llvmo::
 void redirect_llvm_interface_addSymbol();
 
 
-bool llvm_sys__load_bitcode_ll(core::Pathname_sp filename, LLVMContext_sp context, bool verbose, bool print, core::T_sp externalFormat );
- bool llvm_sys__load_bitcode(core::Pathname_sp filename, LLVMContext_sp context, bool verbose, bool print, core::T_sp externalFormat );
+bool llvm_sys__load_bitcode_ll(core::Pathname_sp filename, bool verbose, bool print, core::T_sp externalFormat );
+ bool llvm_sys__load_bitcode(core::Pathname_sp filename, bool verbose, bool print, core::T_sp externalFormat );
 
 
 };

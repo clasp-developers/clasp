@@ -68,6 +68,9 @@ namespace core {
     void* _sigaltstack_buffer;
     size_t  _unwinds;
     stack_t _original_stack;
+    std::string       _initializer_symbol;
+    void*             _object_file_start;
+    size_t            _object_file_size;
     void*             _text_segment_start; // Temporarily store text segment start
     size_t            _text_segment_size; // store text segment size
     size_t            _text_segment_SectionID;   // store text segment SectionID
