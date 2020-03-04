@@ -81,6 +81,7 @@
                         (function-name% f)
                         (maybe-wrap-lambda-list (lambda-list% f))))
                (expose-extern-defun
+                (format sout "  // ~a:~a~%" (file% f) (line% f))
                 (format sout "  /* expose-extern-defun */ expose_function(~a,~a,~s);~%"
                         (lisp-name% f)
                         (pointer% f)
@@ -639,6 +640,7 @@ Convert colons to underscores"
             (let ((class-tag (class-tag% exposed-class)))
               (format sout "namespace ~a {~%" (tags:namespace% class-tag))
               (format sout "void ~a::expose_to_clasp() {~%" (tags:name% class-tag))
+              (format sout "// ~a:~a~%" (file% exposed-class) (line% exposed-class))
               (format sout "    ~a<~a>()~%"
                       (if (typep exposed-class 'exposed-external-class)
                           "core::externalClass_"
@@ -651,6 +653,7 @@ Convert colons to underscores"
                            (method-name (method-name% method))
                            (lambda-list (lambda-list% method))
                            (declare-form (declare% method)))
+                      (format sout "// ~a:~a~%" (file% method) (line% method))
                       (format sout "        .def(~a,&~a::~a,R\"lambda(~a)lambda\",R\"decl(~a)decl\")~%"
                               lisp-name
                               class-name
@@ -663,6 +666,7 @@ Convert colons to underscores"
                            (pointer (pointer% method))
                            (lambda-list (lambda-list% method))
                            (declare-form (declare% method)))
+                      (format sout "// ~a:~a~%" (file% method) (line% method))
                       (format sout "        .def(~a,~a,R\"lambda(~a)lambda\",R\"decl(~a)decl\")~%"
                               lisp-name
                               pointer
