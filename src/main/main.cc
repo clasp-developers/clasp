@@ -53,6 +53,9 @@ THE SOFTWARE.
 #include <boost/mpi.hpp>
 #endif
 
+
+#include "llvm/Support/CommandLine.h"
+
 // ---------------------------------------------------------------------------
 //  CLASP INCLUDES
 // ---------------------------------------------------------------------------
@@ -369,6 +372,9 @@ void* to_fixnum(int8_t v) {
 
 int main( int argc, char *argv[] )
 {
+  const char* bogus_args[3] = {"clasp","-debug-only","orc"};
+  llvm::cl::ParseCommandLineOptions(3,bogus_args,"clasp");
+  
   // Do not touch debug log until after MPI init
 
   bool mpiEnabled = false;
