@@ -248,6 +248,7 @@
          (primitive         "cc_setSymbolValue" %void% (list %t*% %t*%))
          (primitive         "cc_TLSymbolValue" %t*% (list %t*%))
          (primitive         "cc_setTLSymbolValue" %void% (list %t*% %t*%))
+         (primitive         "cc_resetTLSymbolValue" %void% (list %t*% %t*%))
 
          (primitive         "cc_rewind_va_list" %void% (list %va_list*% %register-save-area*%))
          (primitive-unwinds "cc_call_multipleValueOneFormCallWithRet0" %return-type% (list %t*% %return-type%))

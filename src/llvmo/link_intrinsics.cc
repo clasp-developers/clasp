@@ -1063,6 +1063,14 @@ void cc_setTLSymbolValue(core::T_O* sym, core::T_O *val)
   NO_UNWIND_END();
 }
 
+// identical to above, but used so bindings are readable as read->set->reset
+void cc_resetTLSymbolValue(core::T_O* sym, core::T_O *val)
+{NO_UNWIND_BEGIN();
+  core::Symbol_sp s = gctools::smart_ptr<core::Symbol_O>((gc::Tagged)sym);
+  s->set_threadLocalSymbolValue(gctools::smart_ptr<core::T_O>((gc::Tagged)val));
+  NO_UNWIND_END();
+}
+
 core::T_O *cc_TLSymbolValue(core::T_O* sym)
 {NO_UNWIND_BEGIN();
   core::Symbol_sp s = gctools::smart_ptr<core::Symbol_O>((gc::Tagged)sym);
