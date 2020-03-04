@@ -432,7 +432,7 @@ namespace llvmo {
 
 
 CL_LISPIFY_NAME(createTargetMachine);
-CL_EXTERN_DEFMETHOD(Target_O, &llvm::Target::createTargetMachine);
+CL_EXTERN_DEFMETHOD(Target_O, (llvm::TargetMachine *(llvm::Target::*)(llvm::StringRef, llvm::StringRef, llvm::StringRef, const llvm::TargetOptions &, Optional<Reloc::Model>, Optional<CodeModel::Model>, CodeGenOpt::Level, bool) const)&llvm::Target::createTargetMachine);
 
 
 CL_DEFUN TargetPassConfig_sp llvm_sys__createPassConfig(TargetMachine_sp targetMachine, PassManagerBase_sp pmb) {
