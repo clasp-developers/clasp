@@ -358,6 +358,7 @@
 ;;;
 ;;; Generate a THROW-INSTRUCTION
 ;;;
+
 (defmethod cleavir-ast-to-hir:compile-ast ((ast clasp-cleavir-ast:throw-ast) context)
   (with-accessors ((successors cleavir-ast-to-hir::successors))
       context
@@ -373,3 +374,49 @@
                                        context
                                        :results (list tag-temp)
                                        :successors (list result-successor))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Generate a special variable binding.
+;;;
+
+(defmethod cleavir-ast-to-hir:compile-ast ((ast cc-ast:bind-ast) context)
+  (let* ((sym (cleavir-ir:new-temporary))
+         (old (cleavir-ir:new-temporary))
+         (new (cleavir-ir:new-temporary))
+         (dynenv-out (cleavir-ir:make-lexical-location '#:bind-dynenv))
+         ;; Normal paths out.
+         (unbinds (loop for succ in (cleavir-ast-to-hir::successors context)
+                        collect (make-instance 'clasp-cleavir-hir:unbind-instruction
+                                               :inputs (list sym old)
+                                               :successors (list succ)
+                                               ;; Before this instruction is executed,
+                                               ;; the binding is still in place.
+                                               ;; So if we, for example, unwind
+                                               ;; to this instruction, we don't want
+                                               ;; the unwinder to undo the binding-
+                                               ;; the instruction will do it fine.
+                                               :dynamic-environment dynenv-out)))
+         (body
+           (cleavir-ast-to-hir:compile-ast (cleavir-ast:body-ast ast)
+                                           (cleavir-ast-to-hir:clone-context
+                                            context
+                                            :successors unbinds
+                                            :dynamic-environment dynenv-out)))
+         (wrapped-body (make-instance 'clasp-cleavir-hir:bind-instruction
+                                      :inputs (list sym new)
+                                      :outputs (list old dynenv-out)
+                                      :successors (list body))))
+    (cleavir-ast-to-hir:compile-ast
+     (cleavir-ast:name-ast ast)
+     (cleavir-ast-to-hir:clone-context
+      context
+      :results (list sym)
+      :successors
+      (list
+       (cleavir-ast-to-hir:compile-ast
+        (cleavir-ast:value-ast ast)
+        (cleavir-ast-to-hir:clone-context
+         context
+         :results (list new)
+         :successors (list wrapped-body))))))))

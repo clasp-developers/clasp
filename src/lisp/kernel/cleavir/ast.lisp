@@ -549,7 +549,29 @@
 (cleavir-io:define-save-info precalc-vector-function-ast
     (:precalc-asts precalc-asts))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Class BIND-AST
+;;;
+;;; Represents a special variable binding.
+;;;
 
+(defclass bind-ast (cleavir-ast:ast)
+  ((%name :initarg :name-ast :reader cleavir-ast:name-ast)
+   (%value :initarg :value-ast :reader cleavir-ast:value-ast)
+   (%body :initarg :body-ast :reader cleavir-ast:body-ast)))
+
+(cleavir-io:define-save-info bind-ast
+    (:name-ast cleavir-ast:name-ast)
+  (:value-ast cleavir-ast:value-ast)
+  (:body-ast cleavir-ast:body-ast))
+
+(defmethod cleavir-ast-graphviz::label ((ast bind-ast)) "bind")
+
+(defmethod cleavir-ast:children ((ast bind-ast))
+  (list (cleavir-ast:name-ast ast)
+        (cleavir-ast:value-ast ast)
+        (cleavir-ast:body-ast ast)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
