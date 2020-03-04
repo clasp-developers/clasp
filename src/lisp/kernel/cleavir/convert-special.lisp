@@ -594,7 +594,7 @@
 (defclass clasp-cleavir-hir::bind-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin cleavir-ir:side-effect-mixin) ())
 (defclass clasp-cleavir-hir::unbind-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin cleavir-ir:side-effect-mixin) ())
 
-#+(or)
+;;#+(or)
 (defmethod cleavir-cst-to-ast:convert-special-binding
     (variable-cst value-ast next-thunk env (system clasp-cleavir:clasp))
   (make-instance 'cc-ast::bind-ast
@@ -611,7 +611,8 @@
          (unbinds (loop for succ in (cleavir-ast-to-hir::successors context)
                         collect (make-instance 'clasp-cleavir-hir::unbind-instruction
                                                :inputs (list sym old)
-                                               :successors (list succ))))
+                                               :successors (list succ)
+                                               :dynamic-environment dynenv-out)))
          (body
            (cleavir-ast-to-hir:compile-ast (cleavir-ast:body-ast ast)
                                            (cleavir-ast-to-hir:clone-context
