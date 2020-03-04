@@ -234,19 +234,19 @@
 ;;; FIXME: Hey this is confusing with generate-unbind existing and all.
 (defun gen-unbind (symbol old-value)
   ;; This function cannot throw, so no landing pad needed
-  (%intrinsic-call "cc_setTLSymbolValue" (list symbol old-value)))
+  (%intrinsic-call "cc_resetTLSymbolValue" (list symbol old-value)))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:local-unwind-instruction) return-value abi function-info)
   (declare (ignore return-value inputs outputs abi function-info))
   ;; FIXME: Move this into... somewhere. Separate pass maybe.
-  #+(or)
   (let* ((succ (first (cleavir-ir:successors instruction)))
          (outer-dynenv (cleavir-ir:dynamic-environment succ)))
     (loop for dynenv = (cleavir-ir:dynamic-environment instruction)
           ;; Note that this is the definer from the previous loop iteration.
             then (cleavir-ir:dynamic-environment definer)
           for definer = (dynenv-definer dynenv)
+          until (eq dynenv outer-dynenv)
           do (etypecase definer
                ((or cleavir-ir:catch-instruction cleavir-ir:assignment-instruction))
                (clasp-cleavir-hir::bind-instruction
@@ -255,8 +255,7 @@
                   (gen-unbind symbol old-value)))
                (cleavir-ir:enter-instruction
                 (unless (eq dynenv outer-dynenv)
-                  (error "BUG: Fucked up the dynenvs yet again. succ = ~a" succ))))
-          until (eq dynenv outer-dynenv))))
+                  (error "BUG: Fucked up the dynenvs yet again. succ = ~a" succ)))))))
 
 ;;; Again, note that the frame-value is in the function-info rather than an actual location.
 (defmethod translate-simple-instruction
