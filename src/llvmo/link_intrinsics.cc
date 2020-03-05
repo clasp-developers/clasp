@@ -1234,6 +1234,11 @@ size_t cc_landingpadUnwindMatchFrameElseRethrow(char *exceptionP, core::T_O *thi
   if (unwindP->getFrame() == thisFrame) {
     return unwindP->index();
   }
+  if ((uintptr_t)unwindP->getFrame() < (uintptr_t)thisFrame) {
+      printf("%s:%d:%s You blew past the frame unwindP->getFrame()->%p  thisFrame->%p\n",
+             __FILE__, __LINE__, __FUNCTION__, (void*)unwindP->getFrame(), (void*)thisFrame);
+      abort();
+  }
   // throw * unwindP;
   throw;
 }
