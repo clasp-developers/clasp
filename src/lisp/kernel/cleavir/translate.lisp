@@ -34,13 +34,8 @@ when this is t a lot of graphs will be generated.")
                  (ssablep (first (cleavir-ir:outputs instruction))))
         (format *error-output* "   but it doesn't matter because both input and output are ssablep~%")))
     (cmp:with-debug-info-source-position ((ensure-origin origin 999993))
-      ;; KLUDGE: These instructions are generated with bad dynamic environments.
-      ;; However, they never unwind, so this should probably be okay, at least temporarily.
-      (cmp:with-landing-pad (if (typep instruction '(or cleavir-ir:assignment-instruction
-                                                     cleavir-ir:fixed-to-multiple-instruction))
-                                nil
-                                (never-entry-landing-pad
-                                 (cleavir-ir:dynamic-environment instruction)))
+      (cmp:with-landing-pad (never-entry-landing-pad
+                             (cleavir-ir:dynamic-environment instruction))
         (call-next-method)))))
 
 (defgeneric translate-branch-instruction
