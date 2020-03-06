@@ -580,3 +580,17 @@
 (defclass unbind-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin
                               cleavir-ir:side-effect-mixin)
   ())
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;: Instruction UNWIND-PROTECT-INSTRUCTION
+;;;
+;;; The one input is the cleanup thunk. It is not actually "used" by the instruction
+;;; per se, but should be there because the thunk is needed in the landing pad code
+;;; (landing-pad.lisp) which is not otherwise represented in HIR.
+;;; The one output is the new dynamic environment.
+;;;
+
+(defclass unwind-protect-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin
+                                      cleavir-ir:side-effect-mixin)
+  ())

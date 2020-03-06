@@ -427,6 +427,35 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; Converting UNWIND-PROTECT
+;;;
+
+(defmethod cleavir-generate-ast:convert-special
+    ((symbol (eql 'cl:unwind-protect)) form env (system clasp-cleavir:clasp))
+  (destructuring-bind (protected &rest cleanup) (rest form)
+    (make-instance 'cc-ast:unwind-protect-ast
+      :body-ast (cleavir-generate-ast:convert protected env system)
+      :cleanup-ast (cleavir-generate-ast:convert `(lambda () ,@cleanup) env system))))
+
+(defmethod cleavir-cst-to-ast:convert-special
+    ((symbol (eql 'cl:unwind-protect)) cst env (system clasp-cleavir:clasp))
+  (cst:db origin (protected . cleanup) (cst:rest cst)
+    (make-instance 'cc-ast:unwind-protect-ast
+      :body-ast (cleavir-cst-to-ast:convert protected env system)
+      :cleanup-ast (let ((cleanup-source (cst:source cleanup)))
+                     (cleavir-cst-to-ast:convert
+                      (cst:cons
+                       (make-instance 'cst:atom-cst
+                         :raw 'lambda :source cleanup-source)
+                       (cst:cons (make-instance 'cst:atom-cst
+                                   :raw nil :source cleanup-source)
+                                 cleanup
+                                 :source cleanup-source)
+                       :source cleanup-source)
+                      env system)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; Converting CORE::BIND-VA-LIST
 ;;;
 

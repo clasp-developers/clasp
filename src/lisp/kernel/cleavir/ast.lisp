@@ -575,6 +575,33 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; Class UNWIND-PROTECT-AST
+;;;
+;;; Represents CL:UNWIND-PROTECT.
+;;;
+;;; NOTE: The cleanup forms are stored as a thunk. This could be changed
+;;; so that the actual code is run, avoiding the overhead of allocating a
+;;; closure, and calling and so on. For now I'm assuming it's unimportant.
+;;;
+
+(defclass unwind-protect-ast (cleavir-ast:ast)
+  ((%body :initarg :body-ast :reader cleavir-ast:body-ast)
+   ;; This will be a FUNCTION-AST.
+   (%cleanup :initarg :cleanup-ast :reader cleanup-ast)))
+
+(cleavir-io:define-save-info unwind-protect-ast
+    (:body-ast cleavir-ast:body-ast)
+  (:cleanup-ast cleanup-ast))
+
+(defmethod cleavir-ast-graphviz::label ((ast unwind-protect-ast))
+  "unwind-protect")
+
+(defmethod cleavir-ast:children ((ast unwind-protect-ast))
+  (list (cleavir-ast:body-ast ast)
+        (cleanup-ast ast)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; Class PRECALC-VALUE-REFERENCE-AST
 ;;;
 ;;; This class represents a reference to a value that is precalculated

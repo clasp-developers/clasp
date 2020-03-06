@@ -89,6 +89,28 @@
         (cmp:irc-br next))
       bb)))
 
+(defun lp-generate-protect (u-p-instruction next return-value function-info)
+  (cmp:with-irbuilder ((llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
+    (let ((bb (cmp:irc-basic-block-create "execute-protection")))
+      (cmp:irc-begin-block bb)
+      (let ((thunk (in (first (cleavir-ir:inputs u-p-instruction))))
+            (protection-dynenv (cleavir-ir:dynamic-environment u-p-instruction)))
+        ;; There is a subtle point here with regard to unwinding out of a cleanup
+        ;; form. CLHS 5.2 specifies that when unwinding begins, exit points between
+        ;; the unwind point and the destination are "abandoned" and can no longer be
+        ;; exited to - doing so is undefined behavior. For example, the code
+        ;; (block nil (unwind-protect (throw something) (return)))
+        ;; has undefined consequences - the (return) effectively quits the throw
+        ;; before it can finish.
+        ;; An alternate X3J13 proposal, EXIT-EXTENT:MEDIUM, would have allowed this
+        ;; behavior. And we do too - no reason not to really. We do not abandon
+        ;; intervening exit points. And we indicate that by using for the call
+        ;; to the protected thunk the same dynamic-environment that was in place
+        ;; upon entry to the unwind-protect.
+        (gen-protect thunk protection-dynenv return-value function-info))
+      (cmp:irc-br next)
+      bb)))
+
 ;;; maybe-entry landing pads, for when we may be nonlocally entering this function.
 
 (defun generate-maybe-entry-landing-pad (next cleanup-block cleanup-lp return-value frame)
@@ -119,25 +141,28 @@
         (cmp:irc-br next))
       lp-block)))
 
-(defun maybe-entry-processor (instruction tags)
+(defun maybe-entry-processor (instruction return-value tags function-info)
   (or (gethash instruction *maybe-entry-processors*)
       (setf (gethash instruction *maybe-entry-processors*)
-            (compute-maybe-entry-processor instruction tags))))
+            (compute-maybe-entry-processor instruction return-value tags function-info))))
 
-(defgeneric compute-maybe-entry-processor (instruction tags))
+(defgeneric compute-maybe-entry-processor (instruction return-value tags function-info))
 
-(defmethod compute-maybe-entry-processor ((instruction cleavir-ir:assignment-instruction) tags)
+(defmethod compute-maybe-entry-processor ((instruction cleavir-ir:assignment-instruction)
+                                          return-value tags function-info)
   ;; Proxy - go up
-  (maybe-entry-processor (dynenv-definer (first (cleavir-ir:inputs instruction))) tags))
+  (maybe-entry-processor (dynenv-definer (first (cleavir-ir:inputs instruction)))
+                         return-value tags function-info))
 
-(defmethod compute-maybe-entry-processor ((instruction cleavir-ir:catch-instruction) tags)
+(defmethod compute-maybe-entry-processor ((instruction cleavir-ir:catch-instruction)
+                                          return-value tags function-info)
   ;; Jump into this function based on the go index.
   ;; If the index doesn't match anything in this catch, go onto the next block.
   (cmp:with-irbuilder ((llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
     (let* ((destinations (rest (cleavir-ir:successors instruction)))
            (next (maybe-entry-processor
                   (dynenv-definer (cleavir-ir:dynamic-environment instruction))
-                  tags))
+                  return-value tags function-info))
            (bb (cmp:irc-basic-block-create "catch"))
            (_ (cmp:irc-begin-block bb))
            (go-index (cmp:irc-load *go-index.slot*))
@@ -158,13 +183,26 @@
                  (llvm-sys:add-case sw (%size_t jump-id) tag-block)))
       bb)))
 
-(defmethod compute-maybe-entry-processor ((instruction clasp-cleavir-hir::bind-instruction) tags)
+(defmethod compute-maybe-entry-processor ((instruction clasp-cleavir-hir:bind-instruction)
+                                          return-value tags function-info)
   ;; Unbind.
   (generate-unbind instruction
                    (maybe-entry-processor
-                    (dynenv-definer (cleavir-ir:dynamic-environment instruction)) tags)))
+                    (dynenv-definer (cleavir-ir:dynamic-environment instruction))
+                    return-value tags function-info)))
 
-(defmethod compute-maybe-entry-processor ((instruction cleavir-ir:enter-instruction) tags)
+(defmethod compute-maybe-entry-processor
+    ((instruction clasp-cleavir-hir:unwind-protect-instruction)
+     return-value tags function-info)
+  (lp-generate-protect instruction
+                       (maybe-entry-processor
+                        (dynenv-definer (cleavir-ir:dynamic-environment instruction))
+                        return-value tags function-info)
+                       return-value function-info))
+
+(defmethod compute-maybe-entry-processor ((instruction cleavir-ir:enter-instruction)
+                                          return-value tags function-info)
+  (declare (ignore return-value function-info))
   ;; We found in the landing pad that we were supposed to jump into this frame.
   ;; However, no relevant catch has transferred control.
   ;; This is a bug in the compiler.
@@ -184,7 +222,7 @@
   ;; with no catches, and in this case we should signal an error rather than
   ;; do whatever weird thing.
   (if (null (catches function-info))
-      (never-entry-landing-pad location)
+      (never-entry-landing-pad location return-value function-info)
       (let ((definer (dynenv-definer location)))
         (etypecase definer
           (cleavir-ir:assignment-instruction
@@ -192,12 +230,13 @@
            (maybe-entry-landing-pad (first (cleavir-ir:inputs definer))
                                     return-value tags function-info))
           ((or cleavir-ir:catch-instruction
-               clasp-cleavir-hir::bind-instruction
+               clasp-cleavir-hir:bind-instruction
+               clasp-cleavir-hir:unwind-protect-instruction
                cleavir-ir:enter-instruction)
            (generate-maybe-entry-landing-pad
-            (maybe-entry-processor definer tags)
-            (never-entry-processor definer)
-            (never-entry-landing-pad location)
+            (maybe-entry-processor definer return-value tags function-info)
+            (never-entry-processor definer return-value function-info)
+            (never-entry-landing-pad location return-value function-info)
             return-value (frame-value function-info)))))))
 
 ;;; never-entry landing pads, for when we always end with a resume.
@@ -215,41 +254,55 @@
         (cmp:irc-br next))
       lp-block)))
 
-(defun never-entry-processor (instruction)
+(defun never-entry-processor (instruction return-value function-info)
   (or (gethash instruction *never-entry-processors*)
       (setf (gethash instruction *never-entry-processors*)
-            (compute-never-entry-processor instruction))))
+            (compute-never-entry-processor instruction return-value function-info))))
 
-(defgeneric compute-never-entry-processor (instruction))
+(defgeneric compute-never-entry-processor (instruction return-value function-info))
 
-(defun c-n-e-p-next (next-dynenv)
-  (never-entry-processor (dynenv-definer next-dynenv)))
+(defun c-n-e-p-next (next-dynenv return-value function-info)
+  (never-entry-processor (dynenv-definer next-dynenv) return-value function-info))
 
-(defmethod compute-never-entry-processor ((instruction cleavir-ir:enter-instruction))
-  (declare (ignore return-value abi tags function-info))
+(defmethod compute-never-entry-processor
+    ((instruction cleavir-ir:enter-instruction) return-value function-info)
+  (declare (ignore return-value function-info))
   (generate-resume-block *exn.slot* *ehselector.slot*))
 
-(defmethod compute-never-entry-processor ((instruction cleavir-ir:assignment-instruction))
-  (c-n-e-p-next (first (cleavir-ir:inputs instruction))))
+(defmethod compute-never-entry-processor
+    ((instruction cleavir-ir:assignment-instruction) return-value function-info)
+  (c-n-e-p-next (first (cleavir-ir:inputs instruction)) return-value function-info))
 
-(defmethod compute-never-entry-processor ((instruction cleavir-ir:catch-instruction))
-  (c-n-e-p-next (cleavir-ir:dynamic-environment instruction)))
+(defmethod compute-never-entry-processor
+    ((instruction cleavir-ir:catch-instruction) return-value function-info)
+  (c-n-e-p-next (cleavir-ir:dynamic-environment instruction) return-value function-info))
 
-(defmethod compute-never-entry-processor ((instruction clasp-cleavir-hir::bind-instruction))
+(defmethod compute-never-entry-processor
+    ((instruction clasp-cleavir-hir:bind-instruction) return-value function-info)
   (generate-unbind instruction
-                   (c-n-e-p-next (cleavir-ir:dynamic-environment instruction))))
+                   (c-n-e-p-next (cleavir-ir:dynamic-environment instruction)
+                                 return-value function-info)))
 
-(defun compute-never-entry-landing-pad (location)
+(defmethod compute-never-entry-processor
+    ((instruction clasp-cleavir-hir:unwind-protect-instruction) return-value function-info)
+  (lp-generate-protect instruction
+                       (c-n-e-p-next (cleavir-ir:dynamic-environment instruction)
+                                     return-value function-info)
+                       return-value function-info))
+
+(defun compute-never-entry-landing-pad (location return-value function-info)
   (let ((definer (dynenv-definer location)))
     (etypecase definer
       (cleavir-ir:assignment-instruction
        ;; Proxy: Just check higher
-       (never-entry-landing-pad (first (cleavir-ir:inputs definer))))
+       (never-entry-landing-pad (first (cleavir-ir:inputs definer)) return-value function-info))
       (cleavir-ir:catch-instruction
        ;; We never catch, so just keep going up.
-       (never-entry-landing-pad (cleavir-ir:dynamic-environment definer)))
-      (clasp-cleavir-hir::bind-instruction
-       (generate-never-entry-landing-pad (never-entry-processor definer)))
+       (never-entry-landing-pad (cleavir-ir:dynamic-environment definer)
+                                return-value function-info))
+      ((or clasp-cleavir-hir:bind-instruction clasp-cleavir-hir:unwind-protect-instruction)
+       (generate-never-entry-landing-pad
+        (never-entry-processor definer return-value function-info)))
       (cleavir-ir:enter-instruction
        ;; Nothing to do
        nil))))
@@ -272,7 +325,7 @@
             (compute-maybe-entry-landing-pad
              location return-value tags function-info))))
 
-(defun never-entry-landing-pad (location)
+(defun never-entry-landing-pad (location return-value function-info)
   (or (gethash location *never-entry-landing-pads*)
       (setf (gethash location *never-entry-landing-pads*)
-            (compute-never-entry-landing-pad location))))
+            (compute-never-entry-landing-pad location return-value function-info))))

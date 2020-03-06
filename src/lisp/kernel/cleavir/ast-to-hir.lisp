@@ -420,3 +420,59 @@
          context
          :results (list new)
          :successors (list wrapped-body))))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; UNWIND-PROTECT
+;;;
+
+(defmethod cleavir-ast-to-hir:compile-ast ((ast cc-ast:unwind-protect-ast) context)
+  (let* ((thunk (cleavir-ir:new-temporary))
+         ;; Because of how Clasp works with values, calling the cleanup thunk will
+         ;; trash the one values location that exists. As such we need to store
+         ;; values from the function explicitly.
+         ;; This works similarly to m-v-prog1, higher up in this file.
+         (results (cleavir-ast-to-hir::results context))
+         (mv (if (typep results 'cleavir-ir:values-location)
+                 (cleavir-ir:make-values-location)
+                 nil))
+         (nvals-temp (when mv (cleavir-ir:new-temporary)))
+         (values-temp (when mv (cleavir-ir:new-temporary)))
+         (dynenv-out (cleavir-ir:make-lexical-location
+                      '#:unwind-protect-dynenv))
+         ;; Normal paths out
+         (restores (if mv
+                       (loop for succ in (cleavir-ast-to-hir::successors context)
+                             collect (clasp-cleavir-hir:make-load-values-instruction
+                                      (list nvals-temp values-temp) results succ))
+                       (cleavir-ast-to-hir::successors context)))
+         (protects (loop for succ in restores
+                         collect (make-instance 'cleavir-ir:funcall-instruction
+                                   :inputs (list thunk)
+                                   ;; Discard return values.
+                                   :outputs (list (cleavir-ir:make-values-location))
+                                   :successors (list succ)
+                                   :dynamic-environment dynenv-out)))
+         (stores (if mv
+                     (loop for succ in protects
+                           collect (clasp-cleavir-hir:make-save-values-instruction
+                                    mv (list nvals-temp values-temp) succ))
+                     protects))
+                                    
+         (body
+           (cleavir-ast-to-hir:compile-ast (cleavir-ast:body-ast ast)
+                                           (cleavir-ast-to-hir:clone-context
+                                            context
+                                            :successors stores
+                                            :results (or mv results)
+                                            :dynamic-environment dynenv-out)))
+         (wrapped-body (make-instance 'clasp-cleavir-hir:unwind-protect-instruction
+                                      :inputs (list thunk)
+                                      :outputs (list dynenv-out)
+                                      :successors (list body))))
+    (cleavir-ast-to-hir:compile-ast
+     (cc-ast:cleanup-ast ast)
+     (cleavir-ast-to-hir:clone-context
+      context
+      :results (list thunk)
+      :successors (list wrapped-body)))))

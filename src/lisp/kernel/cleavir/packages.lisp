@@ -98,6 +98,7 @@
    #:cmp-ast
    #:cas-car-ast #:cas-cdr-ast #:slot-cas-ast #:acas-ast
    #:bind-ast
+   #:unwind-protect-ast #:cleanup-ast
    #:invoke-ast #:multiple-value-invoke-ast #:destinations
    #:introduce-invoke
    ))
@@ -156,6 +157,7 @@
    #:cas-car-instruction #:cas-cdr-instruction #:slot-cas-instruction
    #:acas-instruction
    #:bind-instruction #:unbind-instruction
+   #:unwind-protect-instruction
    ))
 
 (defpackage #:clasp-cleavir-ast-to-hir

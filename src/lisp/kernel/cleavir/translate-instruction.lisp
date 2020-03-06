@@ -214,14 +214,19 @@
      (fifth args) (sixth args) (seventh args) (eighth args)
      closure)))
 
-;;; shared between funcall and funcall-no-return
+;;; shared between funcall and funcall-no-return and some unwind-protect stuff
+(defun gen-call (function arguments dynamic-environment return-value function-info)
+  (cmp:with-landing-pad (maybe-entry-landing-pad
+                         dynamic-environment return-value *tags* function-info)
+    (closure-call-or-invoke function return-value arguments)))
+
 (defun translate-funcall (instruction return-value abi function-info)
   (let* ((inputs (cleavir-ir:inputs instruction))
          (function (first inputs))
          (dynamic-environment (cleavir-ir:dynamic-environment instruction))
          (arguments (cdr inputs)))
-    (cmp:with-landing-pad (maybe-entry-landing-pad dynamic-environment return-value *tags* function-info)
-      (closure-call-or-invoke (in function) return-value (mapcar #'in arguments)))))
+    (gen-call (in function) (mapcar #'in arguments)
+              dynamic-environment return-value function-info)))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:funcall-instruction) return-value (abi abi-x86-64) function-info)
@@ -236,9 +241,30 @@
   ;; This function cannot throw, so no landing pad needed
   (%intrinsic-call "cc_resetTLSymbolValue" (list symbol old-value)))
 
+(defun gen-protect (thunk dynamic-environment return-value function-info)
+  ;; We basically do save-values, funcall, load-values, except we generate these
+  ;; from landing pads so there's no HIR... FIXME??
+  ;; NOTE that this is kind of really dumb. We save the values, i.e. alloca
+  ;; a VLA, for every unwind protect executed. We could at least merge unwind
+  ;; protects in the same frame - but what would be really smart would be
+  ;; just having the exception object carry the values, so we can fuck with the
+  ;; global (thread-local) values with impunity while unwinding.
+  ;; Probably challenging to arrange in C++, though.
+  (with-return-values (return-value abi nvalsl return-regs)
+    (let* ((nvals (cmp:irc-load nvalsl))
+           (primary (cmp:irc-load (return-value-elt return-regs 0)))
+           (mv-temp (cmp:alloca-temp-values nvals)))
+      (%intrinsic-call "cc_save_values" (list nvals primary mv-temp))
+      ;; Values saved, now do the call
+      (gen-call thunk nil dynamic-environment return-value function-info)
+      ;; Now load the values
+      (store-tmv
+       (%intrinsic-call "cc_load_values" (list nvals mv-temp))
+       return-value))))
+
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:local-unwind-instruction) return-value abi function-info)
-  (declare (ignore return-value inputs outputs abi function-info))
+  (declare (ignore inputs outputs abi))
   ;; FIXME: Move this into... somewhere. Separate pass maybe.
   (let* ((succ (first (cleavir-ir:successors instruction)))
          (outer-dynenv (cleavir-ir:dynamic-environment succ)))
@@ -249,10 +275,16 @@
           until (eq dynenv outer-dynenv)
           do (etypecase definer
                ((or cleavir-ir:catch-instruction cleavir-ir:assignment-instruction))
-               (clasp-cleavir-hir::bind-instruction
+               (clasp-cleavir-hir:bind-instruction
                 (let ((symbol (in (first (cleavir-ir:inputs definer))))
                       (old-value (in (first (cleavir-ir:outputs definer)))))
                   (gen-unbind symbol old-value)))
+               (clasp-cleavir-hir:unwind-protect-instruction
+                (let ((thunk (in (first (cleavir-ir:inputs definer))))
+                      ;; NOTE: Using this means we're doing EXIT-EXTENT:MEDIUM.
+                      ;; See more extensive note in generate-protect (landing-pad.lisp).
+                      (protection-dynenv (cleavir-ir:dynamic-environment definer)))
+                  (gen-protect thunk protection-dynenv return-value function-info)))
                (cleavir-ir:enter-instruction
                 (unless (eq dynenv outer-dynenv)
                   (error "BUG: Fucked up the dynenvs yet again. succ = ~a" succ)))))))
@@ -322,7 +354,7 @@
     (%intrinsic-invoke-if-landing-pad-or-call "cc_setSymbolValue" (list sym val))))
 
 (defmethod translate-simple-instruction
-    ((instruction clasp-cleavir-hir::bind-instruction) return-value abi function-info)
+    ((instruction clasp-cleavir-hir:bind-instruction) return-value abi function-info)
   (let* ((inputs (cleavir-ir:inputs instruction))
          (outputs (cleavir-ir:outputs instruction))
          (sym (in (first inputs) "sym-name"))
@@ -338,11 +370,19 @@
          "sham-dynamic-environment")))
 
 (defmethod translate-simple-instruction
-    ((instruction clasp-cleavir-hir::unbind-instruction) return-value abi function-info)
+    ((instruction clasp-cleavir-hir:unbind-instruction) return-value abi function-info)
   (let* ((inputs (cleavir-ir:inputs instruction))
          (sym (in (first inputs) "sym-name"))
          (val (in (second inputs) "value")))
     (gen-unbind sym val)))
+
+(defmethod translate-simple-instruction
+    ((instruction clasp-cleavir-hir:unwind-protect-instruction) return-value abi function-info)
+  (declare (ignore return-value abi function-info))
+  ;; This is basically a NOP except we do need to keep up the dynamic environment.
+  (out (cleavir-ir:dynamic-environment instruction)
+       (first (cleavir-ir:outputs instruction))
+       "sham-dynamic-environment"))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:enclose-instruction) return-value abi function-info)
