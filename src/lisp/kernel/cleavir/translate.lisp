@@ -34,7 +34,10 @@ when this is t a lot of graphs will be generated.")
                  (ssablep (first (cleavir-ir:outputs instruction))))
         (format *error-output* "   but it doesn't matter because both input and output are ssablep~%")))
     (cmp:with-debug-info-source-position ((ensure-origin origin 999993))
-      (call-next-method))))
+      (cmp:with-landing-pad (never-entry-landing-pad
+                             (cleavir-ir:dynamic-environment instruction)
+                             return-value current-function-info)
+        (call-next-method)))))
 
 (defgeneric translate-branch-instruction
     (instruction return-value successors abi current-function-info))
@@ -45,7 +48,9 @@ when this is t a lot of graphs will be generated.")
     (when (and *trap-null-origin* (null (cleavir-ir:origin instruction)))
       (format *error-output* "Instruction with nil origin: ~a  origin: ~a~%" instruction (cleavir-ir:origin instruction)))
     (cmp:with-debug-info-source-position ((ensure-origin origin 9995))
-      (call-next-method))))
+      (cmp:with-landing-pad (never-entry-landing-pad (cleavir-ir:dynamic-environment instruction)
+                                                     return-value current-function-info)
+        (call-next-method)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -281,6 +286,31 @@ when this is t a lot of graphs will be generated.")
       (t (error "layout-procedure enter is not a known type of enter-instruction - it is ~a"
                 enter)))))
 
+(defun check-ir-dynenvs-well-formed (enter)
+  (cleavir-ir:reinitialize-data enter)
+  (let ((bad-insts nil) (bad-dynenvs nil))
+    (cleavir-ir:map-instructions-with-owner
+     (lambda (instruction owner)
+       (let ((owner-dyn (cleavir-ir:dynamic-environment-output owner)))
+         (loop for dyn = (cleavir-ir:dynamic-environment instruction)
+                 then (cleavir-ir:dynamic-environment definer)
+               for definers = (cleavir-ir:defining-instructions dyn)
+               for definer = (first definers)
+               do (unless (= (length definers) 1)
+                    (pushnew (list* dyn definers) bad-dynenvs :test #'equal)
+                    (loop-finish))
+               when (typep definer 'cleavir-ir:enter-instruction)
+                 do (unless (eq definer owner)
+                      (push (list* owner-dyn instruction
+                                   (cleavir-ir:dynamic-environment definer))
+                            bad-insts))
+                    (loop-finish))))
+     enter)
+    #+(or)
+    (when (or bad-insts bad-dynenvs)
+      (cleavir-ir-graphviz:draw-flowchart enter "/tmp/fucked.dot"))
+    (append bad-insts bad-dynenvs)))
+
 (defun layout-procedure (enter lambda-name abi &key (linkage 'llvm-sys:internal-linkage))
   (let* ((function-info (gethash enter *map-enter-to-function-info*))
          ;; Gather the basic blocks of this procedure in basic-blocks
@@ -494,8 +524,17 @@ when this is t a lot of graphs will be generated.")
   ;; or an object needing a make-load-form.
   ;; That shouldn't actually happen, but it's a little ambiguous in Cleavir right now.
   (quick-draw-hir init-instr "hir-before-transformations")
+  (let ((pre-fails (check-ir-dynenvs-well-formed init-instr)))
+    (when pre-fails
+      (error "Instructions have bad dynamic environment BEFORE inlining:~% ~a"
+             pre-fails)))
   #+cst
   (cleavir-partial-inlining:do-inlining init-instr)
+  #+(or)
+  (let ((post-fails (check-ir-dynenvs-well-formed init-instr)))
+    (when post-fails
+      (error "Instructions have bad dynamic environment AFTER inlining:~% ~a"
+             post-fails)))
   #+cst
   (quick-draw-hir init-instr "hir-after-inlining")
   ;; required by most of the below
@@ -557,12 +596,6 @@ when this is t a lot of graphs will be generated.")
 
 (defvar *interactive-debug* nil)
 
-;;; needed to coordinate dynamic environments between asts and hoisting.
-(defun make-dynenv (&optional (env *clasp-env*))
-  (cleavir-ast:make-dynamic-environment-ast
-   'loader-dynamic-environment
-   :policy (cleavir-env:environment-policy env)))
-
 #+cst
 (defun conversion-error-handler (condition)
   ;; Resignal the condition to see if anything higher up wants to handle it.
@@ -588,7 +621,7 @@ when this is t a lot of graphs will be generated.")
                      cst clasp-cleavir:*clasp-system* :default-source origin))))
 
 #+cst
-(defun cst->ast (cst dynenv &optional (env *clasp-env*))
+(defun cst->ast (cst &optional (env *clasp-env*))
   "Compile a cst into an AST and return it.
 Does not hoist.
 COMPILE might call this with an environment in ENV.
@@ -614,14 +647,14 @@ COMPILE-FILE will use the default *clasp-env*."
              ;; signal- we can't recover and keep compiling.
              (not cleavir-cst-to-ast:eval-error))
          #'conversion-error-handler))
-    (let ((ast (cleavir-cst-to-ast:cst-to-ast cst env *clasp-system* dynenv)))
+    (let ((ast (cleavir-cst-to-ast:cst-to-ast cst env *clasp-system*)))
       (when *interactive-debug* (draw-ast ast))
       (cc-dbg-when *debug-log* (log-cst-to-ast ast))
       (setf *ct-generate-ast* (compiler-timer-elapsed))
       ast)))
 
 #-cst
-(defun generate-ast (form dynenv &optional (env *clasp-env*))
+(defun generate-ast (form &optional (env *clasp-env*))
   "Compile a form into an AST and return it.
 Does not hoist."
   (handler-bind
@@ -634,15 +667,15 @@ Does not hoist."
          (lambda (condition)
            (cmp:register-global-function-ref (cleavir-environment:name condition))
            (invoke-restart 'cleavir-generate-ast:consider-global))))
-    (let ((ast (cleavir-generate-ast:generate-ast form env *clasp-system* dynenv)))
+    (let ((ast (cleavir-generate-ast:generate-ast form env *clasp-system*)))
       (when *interactive-debug* (draw-ast ast))
       (cc-dbg-when *debug-log* (log-cst-to-ast ast))
       (setf *ct-generate-ast* (compiler-timer-elapsed))
       ast)))
 
-(defun hoist-ast (ast dynenv &optional (env *clasp-env*))
+(defun hoist-ast (ast &optional (env *clasp-env*))
   (prog1
-      (clasp-cleavir-ast:hoist-load-time-value ast dynenv env)
+      (clasp-cleavir-ast:hoist-load-time-value ast env)
     (setf *ct-hoist-ast* (compiler-timer-elapsed))))
 
 
@@ -709,23 +742,22 @@ and go-indices as third."
                  :abi abi :linkage linkage))))
 
 
-(defun translate-ast (ast dynenv &key (abi *abi-x86-64*) (linkage 'llvm-sys:internal-linkage)
-                                   (env *clasp-env*))
-  (let ((hoisted-ast (hoist-ast ast dynenv env)))
+(defun translate-ast (ast  &key (abi *abi-x86-64*) (linkage 'llvm-sys:internal-linkage)
+                             (env *clasp-env*))
+  (let ((hoisted-ast (hoist-ast ast env)))
     (translate-hoisted-ast hoisted-ast
                            :abi abi :linkage linkage :env env)))
 
 (defun translate-lambda-expression-to-llvm-function (lambda-expression)
   "Compile a lambda expression into an llvm-function and return it.
 This works like compile-lambda-function in bclasp."
-  (let* ((dynenv (make-dynenv))
-         #+cst
+  (let* (#+cst
          (cst (cst:cst-from-expression lambda-expression))
          #+cst
-         (ast (cst->ast cst dynenv))
+         (ast (cst->ast cst))
          #-cst
-         (ast (generate-ast lambda-expression dynenv))
-         (hir (ast->hir (hoist-ast ast dynenv))))
+         (ast (generate-ast lambda-expression))
+         (hir (ast->hir (hoist-ast ast))))
     (multiple-value-bind (mir function-info-map go-indices)
         (hir->mir hir)
       (let ((function-enter-instruction
@@ -758,17 +790,16 @@ This works like compile-lambda-function in bclasp."
   (let* (function lambda-name
          ordered-raw-constants-list constants-table startup-fn shutdown-fn
          (cleavir-generate-ast:*compiler* 'cl:compile)
-         (dynenv (make-dynenv env))
          #+cst
          (cst (cst:cst-from-expression form))
          #+cst
-         (ast (cst->ast cst dynenv env))
+         (ast (cst->ast cst env))
          #-cst
-         (ast (generate-ast form dynenv env)))
+         (ast (generate-ast form env)))
     (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
       (multiple-value-setq (ordered-raw-constants-list constants-table startup-fn shutdown-fn)
         (literal:with-rtv
-            (let* ((ast (hoist-ast ast dynenv env))
+            (let* ((ast (hoist-ast ast env))
                    (hir (ast->hir ast)))
               (multiple-value-bind (mir function-info-map go-indices)
                   (hir->mir hir env)
@@ -789,34 +820,30 @@ This works like compile-lambda-function in bclasp."
 (defun compile-form (form &optional (env *clasp-env*))
   (setf *ct-start* (compiler-timer-elapsed))
   #+cst
-  (let* ((dynenv (make-dynenv env))
-         (cst (cst:cst-from-expression form))
-         (ast (cst->ast cst dynenv env)))
-    (translate-ast ast dynenv :env env))
+  (let* ((cst (cst:cst-from-expression form))
+         (ast (cst->ast cst env)))
+    (translate-ast ast :env env))
   #-cst
-  (let* ((dynenv (make-dynenv env))
-         (ast (generate-ast form dynenv env)))
-    (translate-ast ast dynenv :env env)))
+  (let ((ast (generate-ast form env)))
+    (translate-ast ast :env env)))
 
 #+cst
 (defun cleavir-compile-file-cst (cst &optional (env *clasp-env*))
   (literal:with-top-level-form
-      (let ((dynenv (make-dynenv env)))
-        (if cmp::*debug-compile-file*
-            (compiler-time (let ((ast (cst->ast cst dynenv env)))
-                             (translate-ast ast dynenv :env env :linkage cmp:*default-linkage*)))
-            (let ((ast (cst->ast cst dynenv env)))
-              (translate-ast ast dynenv :env env :linkage cmp:*default-linkage*))))))
+      (if cmp::*debug-compile-file*
+          (compiler-time (let ((ast (cst->ast cst env)))
+                           (translate-ast ast :env env :linkage cmp:*default-linkage*)))
+          (let ((ast (cst->ast cst env)))
+            (translate-ast ast :env env :linkage cmp:*default-linkage*)))))
 
 #-cst
 (defun cleavir-compile-file-form (form &optional (env *clasp-env*))
   (literal:with-top-level-form
-      (let ((dynenv (make-dynenv env)))
-        (if cmp:*debug-compile-file*
-            (compiler-time (let ((ast (generate-ast form dynenv env)))
-                             (translate-ast ast dynenv :env env cmp:*default-linkage*)))
-            (let ((ast (generate-ast form dynenv env)))
-              (translate-ast ast dynenv :env env :linkage cmp:*default-linkage*))))))
+      (if cmp:*debug-compile-file*
+          (compiler-time (let ((ast (generate-ast form env)))
+                           (translate-ast ast :env env cmp:*default-linkage*)))
+          (let ((ast (generate-ast form env)))
+            (translate-ast ast :env env :linkage cmp:*default-linkage*)))))
 
 (defclass clasp-cst-client (eclector.concrete-syntax-tree:cst-client) ())
 

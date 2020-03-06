@@ -941,6 +941,9 @@ void throwIllegalSwitchValue(size_t val, size_t max) {
   SIMPLE_ERROR(BF("Illegal switch value %d - max value is %d") % val % max);
 }
 
+void cc_error_bugged_catch(size_t id) {
+  SIMPLE_ERROR(BF("BUG: Nonlocal entry frame could not match go-index %d") % id);
+}
 
 void throwDynamicGo(size_t depth, size_t index, core::T_O *afP) {
   my_thread->_unwinds++;
@@ -1063,6 +1066,21 @@ void cc_setTLSymbolValue(core::T_O* sym, core::T_O *val)
 {NO_UNWIND_BEGIN();
   core::Symbol_sp s = gctools::smart_ptr<core::Symbol_O>((gc::Tagged)sym);
   s->set_threadLocalSymbolValue(gctools::smart_ptr<core::T_O>((gc::Tagged)val));
+  NO_UNWIND_END();
+}
+
+// identical to above, but used so bindings are readable as read->set->reset
+void cc_resetTLSymbolValue(core::T_O* sym, core::T_O *val)
+{NO_UNWIND_BEGIN();
+  core::Symbol_sp s = gctools::smart_ptr<core::Symbol_O>((gc::Tagged)sym);
+  s->set_threadLocalSymbolValue(gctools::smart_ptr<core::T_O>((gc::Tagged)val));
+  NO_UNWIND_END();
+}
+
+core::T_O *cc_TLSymbolValue(core::T_O* sym)
+{NO_UNWIND_BEGIN();
+  core::Symbol_sp s = gctools::smart_ptr<core::Symbol_O>((gc::Tagged)sym);
+  return s->threadLocalSymbolValue().raw_();
   NO_UNWIND_END();
 }
 
@@ -1224,6 +1242,11 @@ size_t cc_landingpadUnwindMatchFrameElseRethrow(char *exceptionP, core::T_O *thi
     std::chrono::time_point<std::chrono::high_resolution_clock> now = std::chrono::high_resolution_clock::now();
     my_thread_low_level->_unwind_time += (now - my_thread_low_level->_start_unwind);
     return unwindP->index();
+  }
+  if ((uintptr_t)unwindP->getFrame() < (uintptr_t)thisFrame) {
+      printf("%s:%d:%s You blew past the frame unwindP->getFrame()->%p  thisFrame->%p\n",
+             __FILE__, __LINE__, __FUNCTION__, (void*)unwindP->getFrame(), (void*)thisFrame);
+      abort();
   }
   // throw * unwindP;
   throw;

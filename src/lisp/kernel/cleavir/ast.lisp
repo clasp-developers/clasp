@@ -536,21 +536,69 @@
 (defclass precalc-vector-function-ast (cleavir-ast:top-level-function-ast)
   ((%precalc-asts :initarg :precalc-asts :reader precalc-asts)))
 
-(defun make-precalc-vector-function-ast (body-ast precalc-asts forms dynenv policy
+(defun make-precalc-vector-function-ast (body-ast precalc-asts forms policy
                                          &key origin)
   (make-instance 'precalc-vector-function-ast
                  :body-ast body-ast
                  :lambda-list nil
                  :precalc-asts precalc-asts
                  :forms forms
-                 :dynamic-environment-out dynenv
                  :policy policy
                  :origin origin))
 
 (cleavir-io:define-save-info precalc-vector-function-ast
     (:precalc-asts precalc-asts))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Class BIND-AST
+;;;
+;;; Represents a special variable binding.
+;;;
 
+(defclass bind-ast (cleavir-ast:ast)
+  ((%name :initarg :name-ast :reader cleavir-ast:name-ast)
+   (%value :initarg :value-ast :reader cleavir-ast:value-ast)
+   (%body :initarg :body-ast :reader cleavir-ast:body-ast)))
+
+(cleavir-io:define-save-info bind-ast
+    (:name-ast cleavir-ast:name-ast)
+  (:value-ast cleavir-ast:value-ast)
+  (:body-ast cleavir-ast:body-ast))
+
+(defmethod cleavir-ast-graphviz::label ((ast bind-ast)) "bind")
+
+(defmethod cleavir-ast:children ((ast bind-ast))
+  (list (cleavir-ast:name-ast ast)
+        (cleavir-ast:value-ast ast)
+        (cleavir-ast:body-ast ast)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Class UNWIND-PROTECT-AST
+;;;
+;;; Represents CL:UNWIND-PROTECT.
+;;;
+;;; NOTE: The cleanup forms are stored as a thunk. This could be changed
+;;; so that the actual code is run, avoiding the overhead of allocating a
+;;; closure, and calling and so on. For now I'm assuming it's unimportant.
+;;;
+
+(defclass unwind-protect-ast (cleavir-ast:ast)
+  ((%body :initarg :body-ast :reader cleavir-ast:body-ast)
+   ;; This will be a FUNCTION-AST.
+   (%cleanup :initarg :cleanup-ast :reader cleanup-ast)))
+
+(cleavir-io:define-save-info unwind-protect-ast
+    (:body-ast cleavir-ast:body-ast)
+  (:cleanup-ast cleanup-ast))
+
+(defmethod cleavir-ast-graphviz::label ((ast unwind-protect-ast))
+  "unwind-protect")
+
+(defmethod cleavir-ast:children ((ast unwind-protect-ast))
+  (list (cleavir-ast:body-ast ast)
+        (cleanup-ast ast)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -659,7 +707,7 @@ precalculated-vector and returns the index."
            (literal:codegen-rtv-cclasp value)
          (values index-or-immediate (not index-p)))))))
 
-(defun hoist-load-time-value (ast dynenv env)
+(defun hoist-load-time-value (ast env)
   (let ((ltvs nil)
         (forms nil))
     (cleavir-ast:map-ast-depth-first-preorder
@@ -679,7 +727,6 @@ precalculated-vector and returns the index."
                             :origin (clasp-cleavir::ensure-origin (cleavir-ast:origin ltv) 9999912)
                             :original-object form)))
         (push form forms)))
-    (let ((cleavir-ast:*dynamic-environment* dynenv))
-      (clasp-cleavir-ast:make-precalc-vector-function-ast
-       ast ltvs forms dynenv (cleavir-ast:policy ast)
-       :origin (cleavir-ast:origin ast)))))
+    (clasp-cleavir-ast:make-precalc-vector-function-ast
+     ast ltvs forms (cleavir-ast:policy ast)
+     :origin (cleavir-ast:origin ast))))

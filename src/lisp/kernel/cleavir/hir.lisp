@@ -458,6 +458,10 @@
                                               :docstring docstring
                                               :rest-alloc rest-alloc)))
 
+(defmethod print-object ((object named-enter-instruction) stream)
+  (print-unreadable-object (object stream :type t)
+    (write (lambda-name object) :stream stream)))
+
 (defmethod cleavir-ir-graphviz:label ((instr named-enter-instruction))
   (with-output-to-string (s)
     (format s "named-enter(~a)" (lambda-name instr))))
@@ -559,3 +563,34 @@
 
 (defmethod cl:print-object ((instr throw-instruction) stream)
   (format stream "#<throw>"))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Instructions BIND- and UNBIND-INSTRUCTION.
+;;; Represent special variable (un)bindings.
+;;; The inputs of bind- are the name and new value;
+;;; the outputs are the old value and the new dynamic environment.
+;;; The inputs of unbind- are the name and old value.
+;;; They both just fiddle with the thread-local symbol-value.
+;;;
+
+(defclass bind-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin
+                            cleavir-ir:side-effect-mixin)
+  ())
+(defclass unbind-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin
+                              cleavir-ir:side-effect-mixin)
+  ())
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;: Instruction UNWIND-PROTECT-INSTRUCTION
+;;;
+;;; The one input is the cleanup thunk. It is not actually "used" by the instruction
+;;; per se, but should be there because the thunk is needed in the landing pad code
+;;; (landing-pad.lisp) which is not otherwise represented in HIR.
+;;; The one output is the new dynamic environment.
+;;;
+
+(defclass unwind-protect-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin
+                                      cleavir-ir:side-effect-mixin)
+  ())

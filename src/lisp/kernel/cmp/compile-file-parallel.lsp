@@ -21,7 +21,7 @@
   nil)
 
 (defstruct (ast-job (:type vector) :named)
-  ast environment dynenv output-stream
+  ast environment output-stream
   form-index   ; Uses (core:next-startup-position) to keep count
   form-counter ; Counts from zero
   module
@@ -85,8 +85,7 @@
               (core:with-memory-ramp (:pattern 'gctools:ramp)
                 (literal:with-top-level-form
                     (let ((hoisted-ast (clasp-cleavir::hoist-ast
-                                        (ast-job-ast job)
-                                        (ast-job-dynenv job))))
+                                        (ast-job-ast job))))
                       (clasp-cleavir::translate-hoisted-ast hoisted-ast :env (ast-job-environment job))))))
           (let ((startup-function (add-global-ctor-function module run-all-function
                                                             :position (ast-job-form-counter job))))
@@ -212,7 +211,6 @@ multithreaded performance that we should explore."
                       (make-pathname
                        :name (format nil "~a_~d" (pathname-name output-path) form-counter)
                        :defaults output-path))
-                    (dynenv (clasp-cleavir::make-dynenv environment))
                     #+cst
                     (cst (eclector.concrete-syntax-tree:cst-read source-sin nil eof-value))
                     #+cst
@@ -221,19 +219,18 @@ multithreaded performance that we should explore."
                     (form (cst:raw cst))
                     #+cst
                     (ast (if cmp::*debug-compile-file*
-                             (clasp-cleavir::compiler-time (clasp-cleavir::cst->ast cst dynenv))
-                             (clasp-cleavir::cst->ast cst dynenv)))
+                             (clasp-cleavir::compiler-time (clasp-cleavir::cst->ast cst))
+                             (clasp-cleavir::cst->ast cst)))
                     #-cst
                     (form (read source-sin nil eof-value))
                     #-cst
                     (_ (when (eq form eof-value) (return nil)))
                     #-cst
                     (ast (if cmp::*debug-compile-file*
-                             (clasp-cleavir::compiler-time (clasp-cleavir::generate-ast form dynenv))
-                             (clasp-cleavir::generate-ast form dynenv))))
+                             (clasp-cleavir::compiler-time (clasp-cleavir::generate-ast form))
+                             (clasp-cleavir::generate-ast form))))
                (let ((ast-job (make-ast-job :ast ast
                                             :environment environment
-                                            :dynenv dynenv
                                             :current-source-pos-info current-source-pos-info
                                             :form-output-path form-output-path
                                             :output-stream (when (eq intermediate-output-type :in-memory-object)
