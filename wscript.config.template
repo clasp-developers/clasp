@@ -5,63 +5,59 @@
 ### This file has to be named `wscript.config` to be
 ### recognised by the build system.
 
-# Define where the llvm/clang is that will be used for building clasp.
-# LLVM_CONFIG_BINARY = '/path/to/llvm-config-4.0'
-
-# To link to the debug versions of the LLVM libraries, set a path here to the llvm-config binary of the LLVM debug build
-# LLVM_CONFIG_BINARY_FOR_LIBS = "/full/path/externals-clasp/build/debug/bin/llvm-config"
-
-# Use Parallel building
-#  COMPILE-FILE during Clasp building will run in fork'd children
-#  You can specify the number of children that can run in parallel using -j #
-#
-#  This option requires a special build of the Boehm garbage collector
-#  built with the option --enable-handle-fork
-#
-USE_PARALLEL_BUILD = True
-
-# Use lld linker
-#  The llvm linker is supposed to be faster than ld
-#  Currently this option only works on linux
-USE_LLD = True
+# It contains some external dependencies for clasp. The end
+# goal is that it won't be needed anymore and the default
+# packages of the host OS are found and utilized. Unfortunately
+# version constraints make that ideal sometimes unreachable.
+#LLVM_CONFIG_BINARY = '/usr/local/Cellar/llvm/9.0.0_1/bin/llvm-config'
+LLVM_CONFIG_BINARY = '/opt/llvm-project-tot/bin/llvm-config'
 
 # Where to install clasp. Defaults to '/usr/local/'.
 PREFIX = '/opt/clasp/'
+
+# This controls how whether LTO is used and what kind ("lto" or "thinlto"(default) or "obj" (no lto))
+# LTO_OPTION = 'thinlto'
 
 # SBCL is used at build time. Defaults to 'sbcl'.
 #SBCL                = '/path/sbcl/run-sbcl.sh'
 
 # Optional clasp binary. It is used only when rebuilding
 # clasp, e.g. with the './waf rebuild_cboehm' command.
-#CLASP               = '/path/cclasp-boehm'
+# CLASP               = '/Users/meister/local/cando/MacOS/clasp'
+# USE_PARALLEL_BUILD = True
 
+#DEBUG_GUARD = 1
+#DEBUG_GUARD_EXHAUSTIVE_VALIDATE = 1
 # This is how you can specify non-standard locations
 #INCLUDES = "/opt/boost_1_62_0/include"
 #LINKFLAGS = ["-L/opt/boost_1_62_0/lib", "-Wl,-rpath=/opt/boost_1_62_0/lib"]
 
-# This turns on build with address sanitizer
-# ADDRESS_SANITIZER = True
+CPPFLAGS = [ "-isystem", "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1",  "-Wno-nullability-completeness", "-Wno-nonnull"]
+INCLUDES = [  "/opt/llvm-project-tot/include", "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1" ]
 
-# Set if on macOS libffi is required.   On macOS we can build with brew installed llvm
-# but brew installed llvm has libffi as a dependency and doesn't report that when you invoke llvm-config --libs!!!
-# This is a bug in llvm-config and has to be fixed upstream.
-# Default = True
-# REQUIRE_LIBFFI = True
+# default
+CLASP_BUILD_MODE = "faso"
+# default
+USE_COMPILE_FILE_PARALLEL = True
 
+BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE = True
 
-# CLASP_BUILD_MODE (which replaced LTO_OPTION) can be "bitcode" or "object" (default)
-# This controls if object files are generated and linked (fast build time)
-# or bitcode is generated and lto linked (slow build time).
-#
-# CLASP_BUILD_MODE = "faso"
-
-# Turn on debug options that slow down clasp while checking for various things.
-# info on the various options is in wscript
-DEBUG_OPTIONS = [ "DEBUG_RELEASE",
-                  "DEBUG_BCLASP_LISP",
-                  "DEBUG_CCLASP_LISP",
-                  # other useful options for debugging
-                  # "DEBUG_SLOW",
-                  # "DEBUG_JIT_LOG_SYMBOLS",
-                  # "DEBUG_ASSERT_TYPE_CAST",
+DEBUG_OPTIONS = [
+#                  "SOURCE_DEBUG",
+#                  "CST",
+                  "DEBUG_JIT_LOG_SYMBOLS",
+                  "DEBUG_SLOW",
+                  "DEBUG_ASSERT_TYPE_CAST",
+                  "DEBUG_RELEASE",
+    "DEBUG_CCLASP_LISP",
+    "DEBUG_BCLASP_LISP",
+    "DEBUG_MONITOR",
+                  "USE_HUMAN_READABLE_BITCODE",
+#    "SOURCE_DEBUG",
+#                  "DEBUG_MPS_SIZE",
+#                  "CONFIG_VAR_COOL",
+#                  "DEBUG_GUARD",
+#                  "DEBUG_GUARD_VALIDATE",
+#                  "DEBUG_GUARD_EXHAUSTIVE_VALIDATE",
+#                  "DEBUG_RECURSIVE_ALLOCATIONS",
                   ]
