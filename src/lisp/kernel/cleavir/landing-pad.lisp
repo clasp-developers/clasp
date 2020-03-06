@@ -113,7 +113,7 @@
 
 ;;; maybe-entry landing pads, for when we may be nonlocally entering this function.
 
-(defun generate-maybe-entry-landing-pad (next cleanup-block cleanup-lp return-value frame)
+(defun generate-maybe-entry-landing-pad (next cleanup-block cleanup-p return-value frame)
   (cmp:with-irbuilder ((llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
     (let ((lp-block (cmp:irc-basic-block-create "never-entry-landing-pad"))
           (is-unwind-block (cmp:irc-basic-block-create "is-unwind")))
@@ -122,7 +122,7 @@
              (exception-structure (cmp:irc-extract-value lpad (list 0) "exception-structure"))
              (exception-selector (cmp:irc-extract-value lpad (list 1) "exception-selector")))
         (cmp:irc-add-clause lpad (cmp:irc-exception-typeid* 'cmp:typeid-core-unwind))
-        (when cleanup-lp (llvm-sys:set-cleanup lpad t))
+        (when cleanup-p (llvm-sys:set-cleanup lpad t))
         (cmp:irc-store exception-structure *exn.slot*)
         (cmp:irc-store exception-selector *ehselector.slot*)
         (let* ((typeid (%intrinsic-call "llvm.eh.typeid.for"
@@ -135,10 +135,27 @@
       ;; and get the go index. Also restore multiple values.
       (cmp:irc-begin-block is-unwind-block)
       (let ((go-index (generate-match-unwind
-                       return-value frame cleanup-lp *exn.slot*)))
+                       return-value frame (generate-end-catch-landing-pad cleanup-block)
+                       *exn.slot*)))
         (cmp:irc-store go-index *go-index.slot*)
         (restore-multiple-value-0 return-value)
         (cmp:irc-br next))
+      lp-block)))
+
+(defun generate-end-catch-landing-pad (cleanup-block)
+  (cmp:with-irbuilder ((llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
+    (let ((lp-block (cmp:irc-basic-block-create "end-catch-landing-pad")))
+      (cmp:irc-begin-block lp-block)
+      (let* ((lpad (cmp:irc-create-landing-pad 0 "lp"))
+             (exception-structure (cmp:irc-extract-value lpad (list 0) "exception-structure"))
+             (exception-selector (cmp:irc-extract-value lpad (list 1) "exception-selector")))
+        (llvm-sys:set-cleanup lpad t)
+        (cmp:irc-store exception-structure *exn.slot*)
+        (cmp:irc-store exception-selector *ehselector.slot*)
+        ;; FIXME: Check if end_catch ever actually unwinds. I think no.
+        (cmp:with-landing-pad nil
+          (%intrinsic-invoke-if-landing-pad-or-call "__cxa_end_catch" nil))
+        (cmp:irc-br cleanup-block))
       lp-block)))
 
 (defun maybe-entry-processor (instruction return-value tags function-info)
@@ -236,7 +253,7 @@
            (generate-maybe-entry-landing-pad
             (maybe-entry-processor definer return-value tags function-info)
             (never-entry-processor definer return-value function-info)
-            (never-entry-landing-pad location return-value function-info)
+            (definer-needs-cleanup-p definer)
             return-value (frame-value function-info)))))))
 
 ;;; never-entry landing pads, for when we always end with a resume.
@@ -289,6 +306,22 @@
                        (c-n-e-p-next (cleavir-ir:dynamic-environment instruction)
                                      return-value function-info)
                        return-value function-info))
+
+;;; Used above. Should match compute-never-entry-landing-pad
+(defun definer-needs-cleanup-p (definer)
+  (etypecase definer
+    ;; Proxy
+    (cleavir-ir:assignment-instruction
+     (definer-needs-cleanup-p
+      (dynenv-definer (first (cleavir-ir:inputs definer)))))
+    ;; Next might need a cleanup
+    (cleavir-ir:catch-instruction
+     (definer-needs-cleanup-p
+      (dynenv-definer (cleavir-ir:dynamic-environment definer))))
+    ;; Definitive answers
+    (cleavir-ir:enter-instruction nil)
+    ((or clasp-cleavir-hir:bind-instruction clasp-cleavir-hir:unwind-protect-instruction)
+     t)))
 
 (defun compute-never-entry-landing-pad (location return-value function-info)
   (let ((definer (dynenv-definer location)))
