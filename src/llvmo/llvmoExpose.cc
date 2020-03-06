@@ -43,6 +43,13 @@ THE SOFTWARE.
 
 #include <llvm/ExecutionEngine/GenericValue.h>
 #include <llvm/ExecutionEngine/SectionMemoryManager.h>
+//#include <llvm/ExecutionEngine/Orc/MachOPlatform.h>
+
+namespace llvm {
+namespace orc {
+Error enableObjCRegistration(const char *PathToLibObjC);
+}
+};
 #define private public
 #include <llvm/ExecutionEngine/Orc/ExecutionUtils.h>
 #undef private
@@ -3774,13 +3781,13 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
     Config.PrePrunePasses.push_back([this](jitlink::LinkGraph &G) -> Error {
                                       printf("%s:%d:%s PrePrunePasses\n", __FILE__, __LINE__, __FUNCTION__);
                                       keepAliveStackmap(G);
-                                      //printLinkGraph(G, "After fixup:");
+                                      //printLinkGraph(G, "PrePrune:");
                                       return Error::success();
                                     });
     Config.PostFixupPasses.push_back([this](jitlink::LinkGraph &G) -> Error {
                                       printf("%s:%d:%s PostFixupPasses\n", __FILE__, __LINE__, __FUNCTION__);
                                        parseLinkGraph(G);
-                                       // printLinkGraph(G, "After fixup:");
+                                       printLinkGraph(G, "PostFixup:");
                                        return Error::success();
                                      });
   }
@@ -4260,52 +4267,20 @@ CL_DEFUN ClaspJIT_sp llvm_sys__make_clasp_jit()
 }
 
 ClaspJIT_O::ClaspJIT_O() {
-#if 1
   llvm::ExitOnError ExitOnErr;
   auto JTMB = ExitOnErr(JITTargetMachineBuilder::detectHost());
   JTMB.setCodeModel(CodeModel::Small);
+//  orc::enableObjCRegistration("libobjc.dylib");
   auto J = ExitOnErr(
-      LLJITBuilder()
-          .setJITTargetMachineBuilder(std::move(JTMB))
-          .setObjectLinkingLayerCreator(
-              [&](ExecutionSession &ES, const Triple &TT) {
-                return std::make_unique<ObjectLinkingLayer>(
-                    ES, std::make_unique<jitlink::InProcessMemoryManager>());
-              })
-          .create());
-
+                     LLJITBuilder()
+                     .setJITTargetMachineBuilder(std::move(JTMB))
+                     .setPlatformSetUp(orc::setUpMachOPlatform)
+                     .setObjectLinkingLayerCreator([&](ExecutionSession &ES, const Triple &TT) {
+                                                     return std::make_unique<ObjectLinkingLayer>(ES, std::make_unique<jitlink::InProcessMemoryManager>());
+                                                   })
+                     .create());
   this->_LLJIT =  std::move(J);
   this->getMainJITDylib().addGenerator(llvm::cantFail(ClaspDynamicLibrarySearchGenerator::GetForCurrentProcess(this->_LLJIT->getDataLayout().getGlobalPrefix())));
-#else
-  this->ES = new llvm::orc::ExecutionSession();
-  this->MainJD = &this->ES->createBareJITDylib("<main>");
-  // This is from Lang Hames who said on Discord #llvm channel:
-  // @drmeister Regarding code models: I would switch your code model and custom linking layer together:
-  // If Darwin then use ObjectLinkingLayer and Small, otherwise RTDyldObjectLinkingLayer and Large.
-  // Also see llvmoPackage.cc
-  //     llvmo::_sym_STARdefault_code_modelSTAR->defparameter(llvmo::_sym_CodeModel_Large);
-  auto ipmm =  std::unique_ptr<llvm::jitlink::JITLinkMemoryManager>(new llvm::jitlink::InProcessMemoryManager());
-  this->LinkLayer = new llvm::orc::ObjectLinkingLayer(*this->ES,std::move(ipmm));
-  auto plugin = std::make_unique<ClaspPlugin>(); 
-  this->LinkLayer->addPlugin(std::move(plugin));
-  this->LinkLayer->setReturnObjectBuffer(ClaspReturnObjectBuffer);
-#ifdef _TARGET_OS_DARWIN
-  this->ES->setPlatform(std::make_unique<llvm::orc::MachOPlatform>());
-#else
-  #error "Handle other OS"
-#endif
-  auto JTMB = llvm::orc::JITTargetMachineBuilder::detectHost();
-  auto edl = JTMB->getDefaultDataLayoutForTarget();
-  if (!edl) {
-    printf("%s:%d Could not getDefaultDataLayoutForTarget()\n", __FILE__, __LINE__ );
-    abort();
-  }
-  this->_DataLayout = new llvm::DataLayout(*edl);
-  auto compiler = std::unique_ptr<llvm::orc::ConcurrentIRCompiler>(new llvm::orc::ConcurrentIRCompiler(*JTMB));
-  this->CompileLayer = new llvm::orc::IRCompileLayer(*this->ES,*this->LinkLayer,std::move(compiler));
-  //  printf("%s:%d Registering ClaspDynamicLibarySearchGenerator\n", __FILE__, __LINE__ );
-  this->MainJD->addGenerator(llvm::cantFail(ClaspDynamicLibrarySearchGenerator::GetForCurrentProcess(this->_LLJIT->getDataLayout().getGlobalPrefix())));
-#endif
 }
 
 ClaspJIT_O::~ClaspJIT_O()
