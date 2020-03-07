@@ -4116,7 +4116,7 @@ CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, co
   }
   core::T_O* replPtrRaw = NULL;
   if (startupPtr && startupPtr->ptr()) {
-    fnStartUp startup = reinterpret_cast<fnStartUp>(gc::As_unsafe<core::Pointer_sp>(startupPtr)->ptr());
+    T_OStartUp startup = reinterpret_cast<T_OStartUp>(gc::As_unsafe<core::Pointer_sp>(startupPtr)->ptr());
 //    printf("%s:%d:%s About to invoke startup @p=%p\n", __FILE__, __LINE__, __FUNCTION__, (void*)startup);
     replPtrRaw = startup(initialData.raw_());
     if (replPtrRaw==NULL) {
@@ -4426,7 +4426,7 @@ void ClaspJIT_O::addObjectFile(const char* rbuffer, size_t bytes,size_t startupI
   my_thread->_ObjectFileStartUp = NULL;
   if (thread_local_startup) {
     if (print) core::write_bf_stream(BF("%s:%d thread_local_startup -> %p\n") % __FILE__ % __LINE__ % (void*)thread_local_startup);
-    fnStartUp startup = reinterpret_cast<fnStartUp>(thread_local_startup);
+    T_OStartUp startup = reinterpret_cast<T_OStartUp>(thread_local_startup);
     core::T_O* replPtrRaw = startup(NULL);
   } else {
     if (print) core::write_bf_stream(BF("No startup function was defined\n"));

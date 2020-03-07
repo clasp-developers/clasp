@@ -142,6 +142,7 @@ VALID_OPTIONS = [
     # Default on macOS = /usr/local/opt/llvm@%s/bin/llvm-config'%LLVM_VERSION   - brew installed
     # Default on linux = it searches your path
     "LLVM_CONFIG_BINARY",
+    "LLVM_VERSION_OVERRIDE",
     # To link to the debug versions of the LLVM libraries, set a path here to the llvm-config binary of the LLVM debug build
     
     "LLVM_CONFIG_BINARY_FOR_LIBS",
@@ -942,8 +943,9 @@ def configure(cfg):
 
     cur_clang_version = run_llvm_config(cfg, "--version")
     log.debug("cur_clang_version = %s", cur_clang_version)
-    if (int(cur_clang_version[0]) != LLVM_VERSION):
-        raise Exception("You must have clang/llvm version %d installed" % LLVM_VERSION )
+    llvm_version_test = not ("LLVM_VERSION_OVERRIDE" in cfg.env)
+    if (llvm_version_test and (int(cur_clang_version[0]) != LLVM_VERSION)):
+        raise Exception("You must have clang/llvm version %d installed - you have %s" % (LLVM_VERSION, cur_clang_version[0]) )
     # find a lisp for the scraper
     if not cfg.env.SCRAPER_LISP:
         cfg.env["SBCL"] = cfg.find_program("sbcl", var = "SBCL")[0]

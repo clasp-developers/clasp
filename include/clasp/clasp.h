@@ -2,6 +2,8 @@
 #define CLASP_CXX_INTEROP_H
 
 #include <clasp/core/foundation.h>
+#include <clasp/gctools/threadlocal.h>
+#include <clasp/core/compiler.h>
 #include <clasp/clbind/clbind.h>
 #include <clasp/core/lambdaListHandler.h>
 
@@ -10,12 +12,12 @@
 //
 // Set up macros for interop
 //
-typedef T_O* (*fnStartUp)();
-extern "C" void cc_register_startup_function(fnStartUp fn);
+typedef void (*voidStartUp)(void);
 
 struct clasp_register_startup {
-  clasp_register_startup(fnStartUp startup_function) {
-    cc_register_startup_function(startup_function);
+  clasp_register_startup(voidStartUp startup_function) {
+    core::StartUp su(core::StartUp::void_function,0,(void*)startup_function);
+    core::register_startup_function(su);
   }
 };
 

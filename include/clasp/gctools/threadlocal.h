@@ -7,19 +7,22 @@
 
 
 
-typedef core::T_O*(*fnStartUp)(core::T_O*);
+typedef core::T_O*(*T_OStartUp)(core::T_O*);
+typedef void(*voidStartUp)(void);
 
 
 namespace core {
 
 #define STARTUP_FUNCTION_CAPACITY_INIT 128
 #define STARTUP_FUNCTION_CAPACITY_MULTIPLIER 2
-  struct Startup {
-    size_t _Position;
-    fnStartUp _Function;
-    Startup() {};
-  Startup(size_t p, fnStartUp f) : _Position(p), _Function(f) {};
-    bool operator<(const Startup& other) {
+  struct StartUp {
+    typedef enum {T_O_function, void_function} FunctionEnum;
+    FunctionEnum _Type;
+    size_t       _Position;
+    void*        _Function;
+    StartUp() {};
+    StartUp(FunctionEnum type, size_t p, void* f) : _Type(type), _Position(p), _Function(f) {};
+    bool operator<(const StartUp& other) {
       return this->_Position < other._Position;
     }
   };
@@ -27,7 +30,7 @@ namespace core {
   struct StartupInfo {
     size_t _capacity;
     size_t _count;
-    Startup* _functions;
+    StartUp* _functions;
 
   StartupInfo() : _capacity(0), _count(0), _functions(NULL) {};
   };

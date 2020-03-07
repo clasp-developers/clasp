@@ -27,7 +27,7 @@ THE SOFTWARE.
 #ifndef clbind_wrappers_H
 #define clbind_wrappers_H
 
-#include <llvm/ADT/Optional.h>
+//#include <llvm/ADT/Optional.h>
 #include <clasp/core/wrappedPointer.h>
 #include <clasp/core/instance.h>
 #include <clasp/clbind/adapter.fwd.h>
@@ -531,49 +531,6 @@ struct from_object<std::unique_ptr<T>> {
 };
 
 
-
- template <typename T>
-struct from_object<llvm::Optional<T>> {
-   typedef llvm::Optional<T> DeclareType;
-   DeclareType _v;
-   from_object(core::T_sp o) {
-     if (o.unboundp()) {
-       return;
-     }
-     llvm::Optional<T> val(from_object<T>(o)._v);
-     this->_v = val;
-     return;
-   }
- };
-
-#if 0
- template <typename T>
-   struct from_object<clbind::Derivable<T>*> {
-  typedef T *DeclareType;
-  DeclareType _v;
-  from_object(core::T_sp o) {
-    int*** i = clbind::Derivable<T>();
-    if (o.generalp()) {
-      clbind::Derivable<T> *dp = dynamic_cast<clbind::Derivable<T> *>(o.unsafe_general());
-      this->_v = dp->pointerToAlienWithin();
-      return;
-    }
-    printf("%s:%d  A problem was encountered while trying to convert the Common Lisp value: %s  into  a C++ object that can be passed to a C++ function/method\nYou need to write a from_object translator for the destination type\n",
-           __FILE__, __LINE__, _rep_(o).c_str());
-    printf("%s:%d In from_object<T*>(core::T_sp o)\n", __FILE__, __LINE__);
-    if ( o.generalp() ) {
-      core::General_sp go = o.as<core::General_O>();
-      printf("dynamic_cast<clbind::Derivable<T>*>(go.px_ref()) = %p (SHOULD NOT BE NULL!!!)\n", dynamic_cast<clbind::Derivable<T> *>(&(*go)));
-      printf("o.px_ref() = %p\n", go.raw_());
-      printf("typeid(T*)@%p  typeid(T*).name=%s\n", &typeid(T *), typeid(T *).name());
-      printf("typeid(clbind::Derivable<T>*)@%p   typeid(clbind::Derivable<T>*).name() = %s\n", &typeid(clbind::Derivable<T> *), typeid(clbind::Derivable<T> *).name());
-      SIMPLE_ERROR_SPRINTF("Could not convert %s of RTTI type %s to %s\n", _rep_(go).c_str(), typeid(go).name(), typeid(T *).name());
-    } else {
-      printf("%s:%d Not a General object\n", __FILE__, __LINE__ );
-    }
-  }
-};
-#endif
 
 template <typename T>
 struct from_object<T *> {

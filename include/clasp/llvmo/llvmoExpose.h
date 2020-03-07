@@ -4815,4 +4815,22 @@ template <>
 ENUM_TRANSLATOR(llvm::GlobalValue::UnnamedAddr,llvmo::_sym_STARGlobalValueUnnamedAddrSTAR);
 
 
+
+
+namespace translate {
+ template <typename T>
+struct from_object<llvm::Optional<T>> {
+   typedef llvm::Optional<T> DeclareType;
+   DeclareType _v;
+   from_object(core::T_sp o) {
+     if (o.unboundp()) {
+       return;
+     }
+     llvm::Optional<T> val(from_object<T>(o)._v);
+     this->_v = val;
+     return;
+   }
+ };
+}
+
 #endif //]

@@ -827,7 +827,7 @@ namespace core {
 //  Lisp class access functions for when we only have a forward
 //  definition for the Lisp_O class and for any other object
 //
-extern "C" string _safe_rep_(core::T_sp obj);
+//extern "C" string _safe_rep_(core::T_sp obj);
   string _rep_(T_sp obj);
 /*! Convert underscores to "-" and "STAR" to "*" and "AMP" to "&"
       to convert a C++ name to a lisp symbol */

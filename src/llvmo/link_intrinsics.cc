@@ -670,8 +670,9 @@ extern "C" {
 /*! Invoke the main functions from the main function array.
 If isNullTerminatedArray is 1 then there is a NULL terminated array of functions to call.
 Otherwise there is just one. */
-void cc_register_startup_function(size_t index, fnStartUp fptr) {
-  register_startup_function(index,fptr);
+void cc_register_startup_function(size_t index, T_OStartUp fptr) {
+  core::StartUp su(core::StartUp::T_O_function,index,(void*)fptr);
+  register_startup_function(su);
 }
 /*! Call this with an alloca pointer to keep the alloca from 
 being optimized away */
