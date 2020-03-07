@@ -1572,10 +1572,15 @@ void dbg_printTPtr(uintptr_t raw, bool print_pretty) {
 
 }
 
+std::string dbg_safe_repr(uintptr_t raw);
+
+string _safe_rep_(core::T_sp obj) {
+  return dbg_safe_repr((uintptr_t)obj.raw_());
+}
 
 /*! Generate text representation of a objects without using the lisp printer!
 This code MUST be bulletproof!  It must work under the most memory corrupted conditions */
-__attribute__((optnone)) std::string dbg_safe_repr(uintptr_t raw) {
+std::string dbg_safe_repr(uintptr_t raw) {
   stringstream ss;
   core::T_sp obj((gc::Tagged)raw);
   if (gc::tagged_generalp((gc::Tagged)raw) ||gc::tagged_consp((gc::Tagged)raw)) {
@@ -1641,10 +1646,6 @@ __attribute__((optnone)) std::string dbg_safe_repr(uintptr_t raw) {
 }
 
 extern "C" {
-
-string _safe_rep_(core::T_sp obj) {
-  return dbg_safe_repr((uintptr_t)obj.raw_());
-}
 
 
 void dbg_safe_print(uintptr_t raw) {
