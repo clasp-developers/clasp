@@ -57,13 +57,26 @@
       (gethash name clasp-cleavir::*additional-clasp-character-names*)
       (clasp-cleavir::simple-unicode-name name)))
 
+;;; From eclector macro functions:
+;;; So we need a way for readers for lists and vectors to explicitly
+;;; allow for backquote and comma, whereas BY DEFAULT, they should not
+;;; be allowed.  We solve this by introducing two variables:
+;;; *BACKQUOTE-ALLOWED-P* and *BACKQUOTE-IN-SUBFORMS-ALLOWED-P*.
+;;; Initially the two are TRUE.  Whenever READ is called, it binds the
+;;; variable *BACKQUOTE-ALLOWED-P* to the value of
+;;; *BACKQUOTE-IN-SUBFORMS-ALLOWED-P*, and it binds
+;;; *BACKQUOTE-IN-SUBFORMS-ALLOWED-P* to FALSE.  If no special action
+;;; is taken, when READ is called recursively from a reader macro,
+;;; the value of *BACKQUOTE-ALLOWED-P* will be FALSE.
+
 (defun read-with-readtable-synced (&optional
                                       (input-stream *standard-input*)
                                       (eof-error-p t)
                                       (eof-value nil)
                                       (recursive-p nil))
   (let ((eclector.readtable:*readtable* cl:*readtable*)
-        (eclector.reader:*client* *clasp-normal-eclector-client*))
+        (eclector.reader:*client* *clasp-normal-eclector-client*)
+        (eclector.reader::*backquote-in-subforms-allowed-p* t))
     (eclector.reader:read input-stream eof-error-p eof-value recursive-p)))
 
 ;;; to avoid th cl:*readtable* and eclector.readtable:*readtable* get out of sync
@@ -73,7 +86,8 @@
                                                            (eof-value nil)
                                                            (recursive-p nil))
   (let ((eclector.readtable:*readtable* cl:*readtable*)
-        (eclector.reader:*client* *clasp-normal-eclector-client*))
+        (eclector.reader:*client* *clasp-normal-eclector-client*)
+        (eclector.reader::*backquote-in-subforms-allowed-p* t))
     (eclector.reader:read-preserving-whitespace input-stream eof-error-p eof-value recursive-p)))
 
 ;;; need also sync in clasp-cleavir::cclasp-loop-read-and-compile-file-forms
