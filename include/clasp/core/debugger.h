@@ -134,8 +134,9 @@ struct BacktraceEntry {
 
 };
 
+std::string dbg_safe_repr(uintptr_t raw);
+
 extern "C" {
-//std::string dbg_safe_repr(uintptr_t raw);
 void dbg_safe_print(uintptr_t raw);
 void dbg_safe_println(uintptr_t raw);
 void dbg_safe_backtrace();

@@ -1572,7 +1572,6 @@ void dbg_printTPtr(uintptr_t raw, bool print_pretty) {
 
 }
 
-extern "C" {
 
 /*! Generate text representation of a objects without using the lisp printer!
 This code MUST be bulletproof!  It must work under the most memory corrupted conditions */
@@ -1640,6 +1639,8 @@ __attribute__((optnone)) std::string dbg_safe_repr(uintptr_t raw) {
   }
   return ss.str();
 }
+
+extern "C" {
 
 string _safe_rep_(core::T_sp obj) {
   return dbg_safe_repr((uintptr_t)obj.raw_());
