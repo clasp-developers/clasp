@@ -69,4 +69,16 @@
 (test-expect-error flet-too-few (flet ((%f (a) a)) (%f)) :type program-error)
 (test-expect-error flet-too-many (flet ((%f (a) a)) (%f 1 2)) :type program-error)
 
+(test issue-930
+      (let ()
+        (eq :good
+            (handler-case
+                (progn
+                  (FUNCALL 'PROGN 1)
+                  :bad)
+              (undefined-function (uf)
+                (if (eq (cell-error-name uf) 'progn)
+                    :good
+                    :bad))))))
+
 
