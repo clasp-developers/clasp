@@ -4,6 +4,8 @@
 #include <clasp/core/foundation.h>
 #include <clasp/gctools/threadlocal.h>
 #include <clasp/core/compiler.h>
+#include <clasp/core/evaluator.h>
+#include <clasp/core/lispStream.h>
 #include <clasp/clbind/clbind.h>
 #include <clasp/core/lambdaListHandler.h>
 
