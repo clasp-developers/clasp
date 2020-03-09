@@ -408,7 +408,7 @@ std::string dtree_op_name(int dtree_op) {
 SYMBOL_EXPORT_SC_(ClosPkg,interp_wrong_nargs);
 SYMBOL_EXPORT_SC_(ClosPkg, force_dispatcher);
 
-#define COMPILE_TRIGGER 256 // completely arbitrary
+#define COMPILE_TRIGGER 1024 // completely arbitrary
 
 CL_LAMBDA(program gf args);
 CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generic_function,
