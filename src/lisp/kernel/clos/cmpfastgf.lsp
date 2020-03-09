@@ -306,6 +306,9 @@
              (let ((program (coerce (linearize compiled) 'vector)))
                (lambda (core:&va-rest args)
                  (declare (core:lambda-name interpreted-discriminating-function))
+                 (unless (vectorp program)
+                   (error "interpret-dtree-program needs 'program' to be a vector but it's about to get ~s of type ~a for generic-function: ~s"
+                          program (class-of program) generic-function))
                  (clos:interpret-dtree-program program generic-function args))))
       (let ((delta-seconds (/ (float (- (get-internal-real-time) *fastgf-timer-start*) 1d0)
                               internal-time-units-per-second)))
