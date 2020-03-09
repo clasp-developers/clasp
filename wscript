@@ -133,7 +133,6 @@ CLANG_LIBRARIES = [
 BOOST_LIBRARIES = [
             'boost_filesystem',
             'boost_date_time',
-            'boost_program_options',
             'boost_system',
             'boost_iostreams']
 
