@@ -42,6 +42,7 @@ THE SOFTWARE.
 #include <clasp/core/hashTableEqual.h>
 #include <clasp/core/bignum.h>
 #include <clasp/core/array.h>
+#include <clasp/core/debugger.h>
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/evaluator.h> // for eval::funcall
 
@@ -400,9 +401,14 @@ Package_sp Package_O::create(const string &name) {
 void Package_O::initialize() {
   WITH_PACKAGE_READ_WRITE_LOCK(this);
   this->Base::initialize();
-  this->_InternalSymbols = gc::As<HashTableEqual_sp>(cl__make_HashTableEqual_O(cl::_sym_equal,make_fixnum(128),make_single_float(2.0),make_single_float(0.7),_Nil<core::T_O>(),_Nil<core::T_O>(),_lisp->_true());
-  this->_ExternalSymbols = gc::As<HashTableEqual_sp>(cl__make_HashTableEqual_O(cl::_sym_equal,make_fixnum(128),make_single_float(2.0),make_single_float(0.7),_Nil<core::T_O>(),_Nil<core::T_O>(),_lisp->_true());
-  this->_Shadowing = gc::As<HashTableEqual_sp>(cl__make_HashTableEqual_O(cl::_sym_eq,make_fixnum(128),make_single_float(2.0),make_single_float(0.7),_Nil<core::T_O>(),_Nil<core::T_O>(),_lisp->_true());
+  this->_InternalSymbols = HashTableEqual_O::create_default();
+  this->_ExternalSymbols = HashTableEqual_O::create_default();
+  this->_Shadowing = HashTableEq_O::create_default();
+#if 1
+  this->_InternalSymbols->setupThreadSafeHashTable();
+  this->_ExternalSymbols->setupThreadSafeHashTable();
+  this->_Shadowing->setupThreadSafeHashTable();
+#endif
   this->_KeywordPackage = false;
   this->_AmpPackage = false;
 }

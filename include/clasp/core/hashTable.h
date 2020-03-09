@@ -103,6 +103,7 @@ namespace core{
     static void sxhash_eql(HashGenerator &running_hash, T_sp obj );
     static void sxhash_equal(HashGenerator &running_hash, T_sp obj );
     static void sxhash_equalp(HashGenerator &running_hash, T_sp obj );
+    void setupThreadSafeHashTable();
 
   private:
     void setup(uint sz, Number_sp rehashSize, double rehashThreshold);

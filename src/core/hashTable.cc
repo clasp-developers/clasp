@@ -249,14 +249,18 @@ CL_DEFUN T_sp cl__make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_si
   } else {
     SIMPLE_ERROR(BF("Illegal test[%s] for make-hash-table") % _rep_(test));
   }
-#ifdef CLASP_THREADS
   if (thread_safe.notnilp()) {
-    SimpleBaseString_sp sbsread = SimpleBaseString_O::make("USRHSHR");
-    SimpleBaseString_sp sbswrite = SimpleBaseString_O::make("USRHSHW");
-    table->_Mutex = mp::SharedMutex_O::make_shared_mutex(sbsread,sbswrite);
+    table->setupThreadSafeHashTable();
   }
-#endif
   return table;
+}
+
+void HashTable_O::setupThreadSafeHashTable() {
+#ifdef CLASP_THREADS
+  SimpleBaseString_sp sbsread = SimpleBaseString_O::make("USRHSHR");
+  SimpleBaseString_sp sbswrite = SimpleBaseString_O::make("USRHSHW");
+  this->_Mutex = mp::SharedMutex_O::make_shared_mutex(sbsread,sbswrite);
+#endif
 }
 
 CL_LAMBDA(ht);
