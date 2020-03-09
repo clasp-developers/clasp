@@ -133,8 +133,7 @@ CLANG_LIBRARIES = [
 BOOST_LIBRARIES = [
             'boost_filesystem',
             'boost_date_time',
-            'boost_system',
-            'boost_iostreams']
+            'boost_system']
 
 VALID_OPTIONS = [
     # point to the llvm-config executable - this tells the build system which clang to use
