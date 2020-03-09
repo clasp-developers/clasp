@@ -31,14 +31,17 @@ when this is t a lot of graphs will be generated.")
                                                               default-source
                                                               (cst:source cst))))
 
+#-cst
 (defmethod cleavir-generate-ast:convert-constant-to-immediate ((n integer) environment (system clasp))
   ;; convert fixnum into immediate but bignums return nil
  (core:create-tagged-immediate-value-or-nil n))
 
+#-cst
 (defmethod cleavir-generate-ast:convert-constant-to-immediate ((n character) environment (system clasp))
   ;; convert character to an immediate
   (core:create-tagged-immediate-value-or-nil n))
 
+#-cst
 (defmethod cleavir-generate-ast:convert-constant-to-immediate ((n float) environment (system clasp))
   ;; single-float's can be converted to immediates, anything else will return nil
   (core:create-tagged-immediate-value-or-nil n))
@@ -46,14 +49,17 @@ when this is t a lot of graphs will be generated.")
 ;;; ------------------------------------------------------------
 ;;;
 ;;; cst-to-ast methods for convert-constant-to-immediate
+#+cst
 (defmethod cleavir-cst-to-ast:convert-constant-to-immediate ((n integer) environment (system clasp))
   ;; convert fixnum into immediate but bignums return nil
   (core:create-tagged-immediate-value-or-nil n))
 
+#+cst
 (defmethod cleavir-cst-to-ast:convert-constant-to-immediate ((n character) environment (system clasp))
   ;; convert character to an immediate
   (core:create-tagged-immediate-value-or-nil n))
 
+#+cst
 (defmethod cleavir-cst-to-ast:convert-constant-to-immediate ((n float) environment (system clasp))
   ;; single-float's can be converted to immediates, anything else will return nil
   (core:create-tagged-immediate-value-or-nil n))
@@ -400,7 +406,7 @@ when this is t a lot of graphs will be generated.")
                            :optimize nil)
           (cmp:with-debug-info-generator (:module module :pathname "dummy-file")
             (literal:with-rtv
-                (let* ((cleavir-generate-ast:*compiler* 'cl:compile)
+                (let* ((cleavir-cst-to-ast:*compiler* 'cl:compile)
                        (cst (cst:cst-from-expression form))
                        (ast (cleavir-cst-to-ast:cst-to-ast cst nil clasp-cleavir::*clasp-system*))
                        (hoisted-ast (clasp-cleavir::hoist-ast ast))
@@ -409,6 +415,7 @@ when this is t a lot of graphs will be generated.")
                   (clasp-cleavir::draw-hir hir "/tmp/foo.dot")))))))
     result))
 
+#-cst
 (defun draw-form-ast-hir (form)
   "Generate a HIR graph for the form using the ast compiler"
   (cmp::with-compiler-env ()

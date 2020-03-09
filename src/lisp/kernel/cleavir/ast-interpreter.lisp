@@ -482,7 +482,9 @@
 
 (defun ast-interpret-form (form env)
   (interpret-ast:interpret
-   (let ((cleavir-generate-ast:*compiler* 'cl:eval))
+   (let ((#-cst cleavir-generate-ast:*compiler*
+          #+cst cleavir-cst-to-ast:*compiler*
+          'cl:eval))
      (handler-bind
          ((cleavir-env:no-variable-info
             (lambda (condition)
@@ -502,9 +504,10 @@
         (cst:cst-from-expression form)
         env clasp-cleavir:*clasp-system*)))))
 
+#+cst
 (defun ast-interpret-cst (cst env)
   (interpret-ast:interpret
-   (let ((cleavir-generate-ast:*compiler* 'cl:eval))
+   (let ((cleavir-cst-to-ast:*compiler* 'cl:eval))
      (handler-bind
          ((cleavir-env:no-variable-info
             (lambda (condition)

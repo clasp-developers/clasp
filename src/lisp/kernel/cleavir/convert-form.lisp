@@ -1,6 +1,6 @@
 (in-package :cc-generate-ast)
 
-
+#-cst
 (defmethod cleavir-generate-ast:convert-code (lambda-list body env (system clasp-cleavir:clasp) &key block-name )
   (let ((function-ast (call-next-method)))
     (multiple-value-bind (declarations documentation forms)
@@ -22,6 +22,7 @@
                       :docstring documentation
                       :rest-alloc rest-alloc)))))
 
+#+cst
 (defmethod cleavir-cst-to-ast:convert-code (lambda-list body
                                             env (system clasp-cleavir:clasp) &key block-name-cst origin)
   (let ((cst:*ordinary-lambda-list-grammar* clasp-cleavir:*clasp-ordinary-lambda-list-grammar*))

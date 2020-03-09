@@ -8,7 +8,6 @@
   :depends-on (:concrete-syntax-tree
                :eclector-concrete-syntax-tree
                :eclector
-               :cleavir-generate-ast
                :cleavir-cst-to-ast
                :cleavir-ir
                :cleavir-compilation-policy
@@ -20,8 +19,7 @@
                :cleavir-partial-inlining
                :cleavir-remove-useless-instructions
                :cleavir-hir-to-mir
-               :cleavir-basic-blocks
-               :sicl-additional-conditions)
+               :cleavir-basic-blocks)
   :serial t
   :components ((:file "packages")
                  ;;                 (:file "compile-cclasp")

@@ -163,7 +163,9 @@ multithreaded performance that we should explore."
         (form-index (core:next-startup-position))
         (form-counter 0)
         (eof-value (gensym))
-        #+cclasp(cleavir-generate-ast:*compiler* 'cl:compile-file)
+        #+cclasp (#-cst cleavir-generate-ast:*compiler*
+                  #+cst cleavir-cst-to-ast:*compiler*
+                  'cl:compile-file)
         #+cclasp(core:*use-cleavir-compiler* t)
         #+cclasp(eclector.reader:*client* clasp-cleavir::*cst-client*)
         ast-jobs)
@@ -197,7 +199,10 @@ multithreaded performance that we should explore."
                       (*package* . ',*package*)
                       (*compile-file-pathname* . ',*compile-file-pathname*)
                       (*compile-file-truename* . ',*compile-file-truename*)
-                      #+cclasp(cleavir-generate-ast:*compiler* . ',cleavir-generate-ast:*compiler*)
+                      #+cclasp(#-cst cleavir-generate-ast:*compiler*
+                               #+cst cleavir-cst-to-ast:*compiler*
+                               . #-cst ',cleavir-generate-ast:*compiler*
+                                 #+cst ',cleavir-cst-to-ast:*compiler*)
                       #+cclasp(core:*use-cleavir-compiler* . ',core:*use-cleavir-compiler*)
                       (cmp::*global-function-refs* . ',cmp::*global-function-refs*))))))
       (unwind-protect
