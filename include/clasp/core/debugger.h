@@ -134,6 +134,7 @@ struct BacktraceEntry {
 
 };
 
+std::string _safe_rep_(core::T_sp obj);
 std::string dbg_safe_repr(uintptr_t raw);
 
 extern "C" {
