@@ -400,9 +400,9 @@ Package_sp Package_O::create(const string &name) {
 void Package_O::initialize() {
   WITH_PACKAGE_READ_WRITE_LOCK(this);
   this->Base::initialize();
-  this->_InternalSymbols = HashTableEqual_O::create_default();
-  this->_ExternalSymbols = HashTableEqual_O::create_default();
-  this->_Shadowing = HashTableEq_O::create_default();
+  this->_InternalSymbols = gc::As<HashTableEqual_sp>(cl__make_HashTableEqual_O(cl::_sym_equal,make_fixnum(128),make_single_float(2.0),make_single_float(0.7),_Nil<core::T_O>(),_Nil<core::T_O>(),_lisp->_true());
+  this->_ExternalSymbols = gc::As<HashTableEqual_sp>(cl__make_HashTableEqual_O(cl::_sym_equal,make_fixnum(128),make_single_float(2.0),make_single_float(0.7),_Nil<core::T_O>(),_Nil<core::T_O>(),_lisp->_true());
+  this->_Shadowing = gc::As<HashTableEqual_sp>(cl__make_HashTableEqual_O(cl::_sym_eq,make_fixnum(128),make_single_float(2.0),make_single_float(0.7),_Nil<core::T_O>(),_Nil<core::T_O>(),_lisp->_true());
   this->_KeywordPackage = false;
   this->_AmpPackage = false;
 }
