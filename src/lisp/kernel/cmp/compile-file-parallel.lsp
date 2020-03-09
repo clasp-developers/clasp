@@ -154,6 +154,7 @@ AST->HIR->LLVM-IR is done in serial and in parallel it compiles LLVM-IR->Object 
 Or it can go from source->AST and then compile the AST->HIR->LLVM-IR->ObjectFiles
 in parallel threads. The reason for the two methods is that the AST->HIR uses the 
 garbage collector heavily and Boehm doesn't work well in multithreaded mode.
+Boehm has a mutex and stack unwinding involves a mutex on linux.
 So as an experiment I tried doing AST->HIR and HIR->LLVM-IR in serial and 
 then leave the LLVM stuff to be done in parallel.   That slows down so much
 that it's not worth it either.   It would be better to improve the garbage collector (MPS)
