@@ -232,14 +232,26 @@
       (cmp:irc-unreachable)
       err)))
 
+;;; Returns T iff calls in this dynamic environment may nonlocal return to this
+;;; function, i.e. there is a catch instruction up the way somewhere.
+(defun location-may-enter-p (location)
+  (let ((definer (dynenv-definer location)))
+    (etypecase definer
+      (cleavir-ir:enter-instruction nil)
+      (cleavir-ir:assignment-instruction
+       (location-may-enter-p (first (cleavir-ir:inputs definer))))
+      ((or clasp-cleavir-hir:bind-instruction
+           clasp-cleavir-hir:unwind-protect-instruction)
+       (location-may-enter-p (cleavir-ir:dynamic-environment definer)))
+      (cleavir-ir:catch-instruction t))))
+
 (defun compute-maybe-entry-landing-pad (location return-value tags function-info)
   ;; KLUDGE: If there are no catches we just use the never-entry pad.
   ;; This is bad in that, if there's some weird generation bug or coincidental
   ;; out of extent return, we could hypothetically end up unwinding to a frame
   ;; with no catches, and in this case we should signal an error rather than
   ;; do whatever weird thing.
-  (if (null (catches function-info))
-      (never-entry-landing-pad location return-value function-info)
+  (if (location-may-enter-p location)
       (let ((definer (dynenv-definer location)))
         (etypecase definer
           (cleavir-ir:assignment-instruction
@@ -254,7 +266,8 @@
             (maybe-entry-processor definer return-value tags function-info)
             (never-entry-processor definer return-value function-info)
             (definer-needs-cleanup-p definer)
-            return-value (frame-value function-info)))))))
+            return-value (frame-value function-info)))))
+      (never-entry-landing-pad location return-value function-info)))
 
 ;;; never-entry landing pads, for when we always end with a resume.
 
