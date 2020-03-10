@@ -156,8 +156,7 @@
    #:header-stamp-case-instruction #:make-header-stamp-case-instruction
    #:cas-car-instruction #:cas-cdr-instruction #:slot-cas-instruction
    #:acas-instruction
-   #:bind-instruction #:unbind-instruction
-   #:unwind-protect-instruction
+   #:bind-instruction #:unwind-protect-instruction
    ))
 
 (defpackage #:clasp-cleavir-ast-to-hir

@@ -566,19 +566,15 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Instructions BIND- and UNBIND-INSTRUCTION.
-;;; Represent special variable (un)bindings.
+;;; Instructions BIND-INSTRUCTION.
+;;; Represents special variable binding.
 ;;; The inputs of bind- are the name and new value;
 ;;; the outputs are the old value and the new dynamic environment.
-;;; The inputs of unbind- are the name and old value.
-;;; They both just fiddle with the thread-local symbol-value.
+;;; It doesn't read or write the global symbol value.
 ;;;
 
 (defclass bind-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin
                             cleavir-ir:side-effect-mixin)
-  ())
-(defclass unbind-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin
-                              cleavir-ir:side-effect-mixin)
   ())
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

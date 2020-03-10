@@ -370,13 +370,6 @@
          "sham-dynamic-environment")))
 
 (defmethod translate-simple-instruction
-    ((instruction clasp-cleavir-hir:unbind-instruction) return-value abi function-info)
-  (let* ((inputs (cleavir-ir:inputs instruction))
-         (sym (in (first inputs) "sym-name"))
-         (val (in (second inputs) "value")))
-    (gen-unbind sym val)))
-
-(defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir:unwind-protect-instruction) return-value abi function-info)
   (declare (ignore return-value abi function-info))
   ;; This is basically a NOP except we do need to keep up the dynamic environment.
