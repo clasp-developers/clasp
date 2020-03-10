@@ -167,7 +167,6 @@
     
          (primitive         "initializeBlockClosure" %t*% (list %t**%))
          (primitive         "initializeTagbodyClosure" %t*% (list %t**%))
-         (primitive         "pushTagbodyFrame" %size_t% (list %t*%))
     
          (primitive-unwinds "throwReturnFrom" %void% (list %size_t% %t*%) :does-not-return t)
          (primitive-unwinds "throwDynamicGo" %void% (list %size_t% %size_t% %t*%) :does-not-return t)
@@ -180,7 +179,6 @@
          (primitive         "__gxx_personality_v0" %i32% nil :varargs t)
          (primitive         "__cxa_begin_catch" %i8*% (list %i8*%) )
          (primitive-unwinds "__cxa_end_catch" %void% nil)
-         (primitive-unwinds "__cxa_rethrow" %void% nil)
          (primitive         "llvm.eh.typeid.for" %i32% (list %i8*%))
     
          (primitive         "llvm.sadd.with.overflow.i32" %{i32.i1}% (list %i32% %i32%))
@@ -199,8 +197,6 @@
 
          (primitive         "llvm.lifetime.start" %void% (list %i64% %i8*%))
          (primitive         "llvm.lifetime.end" %void% (list %i64% %i8*%))
-         
-         (primitive         "debugSourceFileInfoHandle" %void% (list %i32*%))
     
          (primitive         "saveToMultipleValue0" %void% (list %tmv*%))
          (primitive         "restoreFromMultipleValue0" %return-type% nil)
@@ -259,8 +255,6 @@
          (primitive         "cc_saveMultipleValue0" %void% (list %tmv%))
          (primitive         "cc_restoreMultipleValue0" %return-type% nil)
          (primitive         "llvm.frameaddress" %t*% (list %i32%))
-         (primitive         "cc_pushLandingPadFrame" %t*% nil)
-         (primitive         "cc_popLandingPadFrame" %void% (list %t*%))
          (primitive-unwinds "cc_landingpadUnwindMatchFrameElseRethrow" %size_t% (list %i8*% %t*%))
 
          ;; === CLASP-FFI TRANSLATORS ===

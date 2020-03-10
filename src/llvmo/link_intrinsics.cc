@@ -1212,17 +1212,6 @@ gctools::return_type cc_load_values(size_t nvals, T_O** vector)
   NO_UNWIND_END();
 }
 
-T_O *cc_pushLandingPadFrame()
-{NO_UNWIND_BEGIN();
-#ifdef DEBUG_FLOW_TRACKER
-  Cons_sp unique = Cons_O::create(make_fixnum(next_flow_tracker_counter()),_Nil<T_O>());
-#else
-  Cons_sp unique = Cons_O::create(_Nil<T_O>(),_Nil<T_O>());
-#endif
-  return unique.raw_();
-  NO_UNWIND_END();
-}
-
 void cc_unwind(T_O *targetFrame, size_t index) {
   // Signal an error if the frame we're trying to return to is no longer on the stack.
   // FIXME: This is kind of a kludge. It iterates through the stack frame. But c++ throw
