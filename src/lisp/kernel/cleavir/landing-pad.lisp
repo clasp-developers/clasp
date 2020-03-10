@@ -3,20 +3,25 @@
 ;;; When we perform an invocation, we can guess whether there is any possibility that we
 ;;; will actually handle any exception, or if we just need to clean up (if there is any cleanup).
 ;;; This is because the only exceptions we need to handle are the ones for BLOCK/TAGBODY.
-;;; For example, if we call an intrinsic, we know it's not return-from-ing, so we will not handle
-;;; any exceptions. (This is also true of cc_unwind, since we don't return to the frame from which
-;;; we are unwinding.)
 ;;; So we have two kinds of landing pads - one that checks the exception, and one that ignores it
 ;;; and cleans up and finally resumes.
-;;; The second kind is easy to organize. The landing pad stores the exn.slot and ehselector.slot
-;;; and branches to an appropriate cleanup block. That block then branches to other cleanup blocks,
-;;; etc., until the resume block is reached.
+;;; The second kind of pad is easy to organize. The landing pad stores the exn.slot and
+;;; ehselector.slot and branches to an appropriate cleanup block. That block then branches to
+;;; other cleanup blocks, etc., until the resume block is reached.
 ;;; For the first kind, we organize as follows. Each landing pad checks if the exception is our
 ;;; exception and if the frame is correct. If it isn't, we divert to the cleanup path. If it is,
 ;;; we follow a separate path. If the landing-pad is for a catch-instruction, it switches on the
 ;;; ID, transfers control if one matches, otherwise goes to the processor for the next landing
 ;;; pad. If the landing-pad is for a bind-instruction, it cleans up and then proceeds. At the end,
 ;;; rather than resuming, we signal an error (bug).
+;;; We can use the ignorant, second type pads in several cases:
+;;; 1) There are no nonlocal entrances (BLOCK/TAGBODYs) around the call in the function.
+;;; 2) We have already caught an exception and determined it's not ours, or not for this frame.
+;;; 3) The compiler knows the function being invoked will never return to this frame.
+;;; The third is kind of hard - intrinsics can call ERROR and get a handler, for example - so
+;;; we underutilize (FIXME) this optimization at the moment.
+
+;;;; See unwind-notes.txt for more background on this system.
 
 ;; HT from dynenv locations to maybe-entry landing pad blocks (or NIL for no cleanup)
 (defvar *maybe-entry-landing-pads*)

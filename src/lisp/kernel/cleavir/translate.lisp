@@ -34,9 +34,9 @@ when this is t a lot of graphs will be generated.")
                  (ssablep (first (cleavir-ir:outputs instruction))))
         (format *error-output* "   but it doesn't matter because both input and output are ssablep~%")))
     (cmp:with-debug-info-source-position ((ensure-origin origin 999993))
-      (cmp:with-landing-pad (never-entry-landing-pad
+      (cmp:with-landing-pad (maybe-entry-landing-pad
                              (cleavir-ir:dynamic-environment instruction)
-                             return-value current-function-info)
+                             return-value *tags* current-function-info)
         (call-next-method)))))
 
 (defgeneric translate-branch-instruction
@@ -48,8 +48,9 @@ when this is t a lot of graphs will be generated.")
     (when (and *trap-null-origin* (null (cleavir-ir:origin instruction)))
       (format *error-output* "Instruction with nil origin: ~a  origin: ~a~%" instruction (cleavir-ir:origin instruction)))
     (cmp:with-debug-info-source-position ((ensure-origin origin 9995))
-      (cmp:with-landing-pad (never-entry-landing-pad (cleavir-ir:dynamic-environment instruction)
-                                                     return-value current-function-info)
+      (cmp:with-landing-pad (maybe-entry-landing-pad
+                             (cleavir-ir:dynamic-environment instruction)
+                             return-value *tags* current-function-info)
         (call-next-method)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
