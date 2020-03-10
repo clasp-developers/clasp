@@ -286,6 +286,12 @@ when this is t a lot of graphs will be generated.")
       (t (error "layout-procedure enter is not a known type of enter-instruction - it is ~a"
                 enter)))))
 
+;;; This function can be used to determine if the dynamic environments in
+;;; given IR fulfill basic well formedness properties: that all instructions'
+;;; dynamic environments have a linear def-use chain (that is, every dynamic
+;;; environment has exactly one definer), and that these chains eventually
+;;; terminate with the instruction's owner. It doesn't check that the dynamic
+;;; environments match the source or anything, though.
 (defun check-ir-dynenvs-well-formed (enter)
   (cleavir-ir:reinitialize-data enter)
   (let ((bad-insts nil) (bad-dynenvs nil))
@@ -306,9 +312,6 @@ when this is t a lot of graphs will be generated.")
                             bad-insts))
                     (loop-finish))))
      enter)
-    #+(or)
-    (when (or bad-insts bad-dynenvs)
-      (cleavir-ir-graphviz:draw-flowchart enter "/tmp/fucked.dot"))
     (append bad-insts bad-dynenvs)))
 
 (defun layout-procedure (enter lambda-name abi &key (linkage 'llvm-sys:internal-linkage))
@@ -524,17 +527,8 @@ when this is t a lot of graphs will be generated.")
   ;; or an object needing a make-load-form.
   ;; That shouldn't actually happen, but it's a little ambiguous in Cleavir right now.
   (quick-draw-hir init-instr "hir-before-transformations")
-  (let ((pre-fails (check-ir-dynenvs-well-formed init-instr)))
-    (when pre-fails
-      (error "Instructions have bad dynamic environment BEFORE inlining:~% ~a"
-             pre-fails)))
   #+cst
   (cleavir-partial-inlining:do-inlining init-instr)
-  #+(or)
-  (let ((post-fails (check-ir-dynenvs-well-formed init-instr)))
-    (when post-fails
-      (error "Instructions have bad dynamic environment AFTER inlining:~% ~a"
-             post-fails)))
   #+cst
   (quick-draw-hir init-instr "hir-after-inlining")
   ;; required by most of the below
