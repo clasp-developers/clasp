@@ -370,7 +370,7 @@
 
 (defun parse-compiler-macro (name lambda-list body &optional env)
   (declare (ignore env)) ; also for now
-  (sys::expand-defmacro name lambda-list body 'cl:define-compiler-macro))
+  (sys::expand-define-compiler-macro name lambda-list body))
 
 (defun parse-deftype (name lambda-list body &optional env)
   (declare (ignore env))
