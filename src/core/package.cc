@@ -404,7 +404,7 @@ void Package_O::initialize() {
   this->_InternalSymbols = HashTableEqual_O::create_default();
   this->_ExternalSymbols = HashTableEqual_O::create_default();
   this->_Shadowing = HashTableEq_O::create_default();
-#if 1
+#if 0
   this->_InternalSymbols->setupThreadSafeHashTable();
   this->_ExternalSymbols->setupThreadSafeHashTable();
   this->_Shadowing->setupThreadSafeHashTable();
