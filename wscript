@@ -1092,7 +1092,7 @@ def configure(cfg):
 #    cfg.env.append_value('CXXFLAGS', includes_from_build_dir )
 #    cfg.env.append_value('CFLAGS', includes_from_build_dir )
 #    log.debug("DEBUG includes_from_build_dir = %s", includes_from_build_dir)
-    cfg.env.append_value('CXXFLAGS', [ '-std=c++11'])
+    cfg.env.append_value('CXXFLAGS', [ '-std=c++14'])
 #    cfg.env.append_value('CXXFLAGS', ["-D_GLIBCXX_USE_CXX11_ABI=1"])
     if (cfg.env.LTO_FLAG):
         cfg.env.append_value('CXXFLAGS', cfg.env.LTO_FLAG )
