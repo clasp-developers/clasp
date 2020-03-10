@@ -987,9 +987,12 @@ List_sp HashTable_O::rehash_upgrade_write_lock(bool expandTable, T_sp findKey) {
 
   string HashTable_O::__repr__() const {
     stringstream ss;
-    ss << "#<" << this->_instanceClass()->_classNameAsString() << " :HashTableCount " << this->_HashTableCount;
-    ss << " :calculated-entries " << this->calculateHashTableCount();
-    ss << " :size " << this->_Table.size();
+    ss << "#<" << this->_instanceClass()->_classNameAsString();
+    ss << " :COUNT " << this->_HashTableCount;
+    // the calculator is only useful to check that the count is consistent;
+    // uncomment this if you need to debug, but otherwise it's redundant.
+//    ss << " :calculated-entries " << this->calculateHashTableCount();
+    ss << " :SIZE " << this->_Table.size();
     ss << " @" << (void *)(this) << ">";
     return ss.str();
   }
