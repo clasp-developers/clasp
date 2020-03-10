@@ -170,10 +170,7 @@ multithreaded performance that we should explore."
         ast-jobs)
     (cfp-log "Starting the pool of threads~%")
     (finish-output)
-    (let* ((number-of-threads (if (and (member :use-boehm *features*)
-                                       (member :target-os-linux *features*))
-                                  3 ; limit to 3 cores for linux/boehm
-                                  (core:num-logical-processors)))
+    (let* ((number-of-threads (core:num-logical-processors))
            (ast-queue (core:make-queue 'compile-file-parallel))
            ;; Setup a pool of threads
            (ast-threads
