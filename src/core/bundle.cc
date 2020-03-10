@@ -420,7 +420,7 @@ string Bundle::describe() {
 }
 
 
-Pathname_sp generate_pathname(const boost::filesystem::path& path)
+Pathname_sp generate_pathname(const boost_filesystem::path& path)
 {
   stringstream ss;
   ss << path.string();
