@@ -105,7 +105,7 @@ MaybeDebugStartup::MaybeDebugStartup(void* fp, const char* n) : fptr(fp), start_
   }
 };
 
-MaybeDebugStartup::~MaybeDebugStartup() {
+__attribute__((optnone)) MaybeDebugStartup::~MaybeDebugStartup() {
   if (core::_sym_STARdebugStartupSTAR->symbolValue().notnilp()
       && this->start) {
     PosixTime_sp end = PosixTime_O::createNow();
@@ -121,8 +121,12 @@ MaybeDebugStartup::~MaybeDebugStartup() {
     stringstream name_;
     if (this->name!="") name_ << this->name << " ";
     Dl_info di;
-    dladdr((void*)this->fptr,&di);
-    name_ << di.dli_sname;
+    int found = dladdr((void*)this->fptr,&di);
+    if (found && di.dli_sname) {
+      name_ << di.dli_sname;
+    } else {
+      name_ << "NONAME";
+    }
     if (name_.str() == "") name_ << (void*)this->fptr;
     printf("%s us %zu gfds %zu jits: %s\n", _rep_(Integer_O::create(ms)).c_str(), dispatcher_delta, (global_jit_compile_counter-this->start_jit_compile_counter),name_.str().c_str());
   }
