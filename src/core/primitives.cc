@@ -2150,7 +2150,9 @@ int tak_aux(int x, int y, int z, bool allocate)
     return tak_aux(tak_aux(x-1,y,z,allocate),tak_aux(y-1,z,x,allocate),tak_aux(z-1,x,y,allocate),allocate);
   } else {
     if (allocate) {
+#ifdef USE_BOEHM      
       GC_MALLOC(128);
+#endif
     }
     return z;
   }
@@ -2174,7 +2176,9 @@ int ctak_aux(int x, int y, int z, bool allocate)
   if (!(y < x)) {
     Ctak ret(z);
     if (allocate) {
+#ifdef USE_BOEHM
       GC_MALLOC(128);
+#endif
     }
     throw ret;
   } else {
