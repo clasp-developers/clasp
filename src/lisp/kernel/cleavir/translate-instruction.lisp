@@ -178,32 +178,47 @@
 (defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir:multiple-value-foreign-call-instruction) return-value (abi abi-x86-64) function-info)
   (check-type (clasp-cleavir-hir:function-name instruction) string)
-  (clasp-cleavir:unsafe-multiple-value-foreign-call
-   (clasp-cleavir-hir:function-name instruction)
-   return-value (mapcar #'in (cleavir-ir:inputs instruction)) abi))
+  ;; NOTE: We use a maybe entry pad instead of a never entry one because a few foreign
+  ;; calls may return to this function by calling a Lisp closure - for example,
+  ;; cc_error_type_error, which calls ERROR and therefore handler closures.
+  ;; See bug #935.
+  ;; In the future, it may be worthwhile to statically list or determine which functions
+  ;; can or can't return in this way, and thereby save a bit of processing.
+  (cmp:with-landing-pad (maybe-entry-landing-pad
+                         (cleavir-ir:dynamic-environment instruction)
+                         return-value *tags* function-info)
+    (clasp-cleavir:unsafe-multiple-value-foreign-call
+     (clasp-cleavir-hir:function-name instruction)
+     return-value (mapcar #'in (cleavir-ir:inputs instruction)) abi)))
 
 (defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir:foreign-call-instruction) return-value (abi abi-x86-64) function-info)
-  ;; FIXME:  If this function has cleanup forms then this needs to be an INVOKE
-  (let ((output (first (cleavir-ir:outputs instruction))))
-    (out
-     (clasp-cleavir:unsafe-foreign-call :call (clasp-cleavir-hir:foreign-types instruction)
-                                        (clasp-cleavir-hir:function-name instruction)
-                                        (mapcar #'in (cleavir-ir:inputs instruction)) abi
-                                        :label (datum-name-as-string output))
-     output)))
+  ;; NOTE: See landing pad note in multiple-value-foreign-call-instruction
+  (cmp:with-landing-pad (maybe-entry-landing-pad
+                         (cleavir-ir:dynamic-environment instruction)
+                         return-value *tags* function-info)
+    (let ((output (first (cleavir-ir:outputs instruction))))
+      (out
+       (clasp-cleavir:unsafe-foreign-call :call (clasp-cleavir-hir:foreign-types instruction)
+                                          (clasp-cleavir-hir:function-name instruction)
+                                          (mapcar #'in (cleavir-ir:inputs instruction)) abi
+                                          :label (datum-name-as-string output))
+       output))))
 
 (defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir:foreign-call-pointer-instruction) return-value (abi abi-x86-64) function-info)
-  ;; FIXME:  If this function has cleanup forms then this needs to be an INVOKE
-  (let ((inputs (cleavir-ir:inputs instruction))
-        (output (first (cleavir-ir:outputs instruction))))
-    (out
-     (clasp-cleavir:unsafe-foreign-call-pointer
-      :call (clasp-cleavir-hir:foreign-types instruction) (in (first inputs))
-      (mapcar #'in (rest inputs)) abi
-      :label (datum-name-as-string output))
-     output)))
+  ;; NOTE: See landing pad note in multiple-value-foreign-call-instruction
+  (cmp:with-landing-pad (maybe-entry-landing-pad
+                         (cleavir-ir:dynamic-environment instruction)
+                         return-value *tags* function-info)
+    (let ((inputs (cleavir-ir:inputs instruction))
+          (output (first (cleavir-ir:outputs instruction))))
+      (out
+       (clasp-cleavir:unsafe-foreign-call-pointer
+        :call (clasp-cleavir-hir:foreign-types instruction) (in (first inputs))
+        (mapcar #'in (rest inputs)) abi
+        :label (datum-name-as-string output))
+       output))))
 
 (defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir:defcallback-instruction) return-value (abi abi-x86-64) function-info)
