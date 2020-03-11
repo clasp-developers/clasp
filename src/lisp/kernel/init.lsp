@@ -220,7 +220,8 @@
 (if (boundp '*variable-source-infos*)
     nil
     (set '*variable-source-infos*
-         (make-hash-table :test #'eq :thread-safe t)))
+         (make-hash-table :test #'eq :thread-safe t
+                          :weakness :key)))
 
 (si:fset 'core::defvar #'(lambda (whole env)
 			     (let ((var (cadr whole))
