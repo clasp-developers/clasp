@@ -59,6 +59,13 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
     ,@(when form-sp
 	  `((UNLESS (BOUNDP ',var)
 	      (SETQ ,var ,form))))
+    ,@(when (and core:*current-source-pos-info*
+                 ;; KLUDGE so that we can bootstrap this.
+                 ;; The function is defined in clos/print.lsp.
+                 ;; FIXME: Special case source pos infos in the literal
+                 ;; compiler, maybe?
+                 (fboundp 'variable-source-info-saver))
+        (variable-source-info-saver var core:*current-source-pos-info*))
     ,@(si::expand-set-documentation var 'variable doc-string)
     ',var))
 
@@ -71,6 +78,9 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
      (eval-when (:compile-toplevel :load-toplevel :execute)
        (SYS:*MAKE-SPECIAL ',var))
      (SETQ ,var ,form)
+    ,@(when (and core:*current-source-pos-info*
+                 (fboundp 'variable-source-info-saver))
+        (variable-source-info-saver var core:*current-source-pos-info*))
      ,@(si::expand-set-documentation var 'variable doc-string)
      ',var))
 
@@ -90,6 +100,9 @@ existing value."
                   (error "Cannot redefine special variable ~a as constant" ',var))
                  (t (set ',var ,value)
                     (funcall #'(setf core:symbol-constantp) t ',var)))))
+       ,@(when (and core:*current-source-pos-info*
+                    (fboundp 'variable-source-info-saver))
+           (variable-source-info-saver var core:*current-source-pos-info*))
        ,@(si::expand-set-documentation var 'variable doc-string)
        ',var)))
 
@@ -388,9 +401,13 @@ values of the last FORM.  If no FORM is given, returns NIL."
 	 (error "DEFINE-SYMBOL-MACRO: cannot redefine a special variable, ~A"
 		symbol))
 	(t
-	 `(eval-when (:compile-toplevel :load-toplevel :execute)
-            (funcall #'(setf ext:symbol-macro) ',expansion ',symbol)
-	   ',symbol))))
+	 `(progn
+            (eval-when (:compile-toplevel :load-toplevel :execute)
+              (funcall #'(setf ext:symbol-macro) ',expansion ',symbol))
+            ,@(when (and core:*current-source-pos-info*
+                         (fboundp 'variable-source-info-saver))
+                (variable-source-info-saver symbol core:*current-source-pos-info*))
+            ',symbol))))
 
 (defmacro nth-value (n expr)
   `(nth ,n (multiple-value-list ,expr)))

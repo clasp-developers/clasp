@@ -49,17 +49,20 @@
         (list (make-source-location :pathname file :offset pos))
         nil)))
 
+;; FIXME: Move this source debug stuff to an interface
+;; (in SPI, probably)
+(defun source-position-info->source-location (source-position-info)
+  (let ((csi (core:file-scope
+              (core:source-pos-info-file-handle source-position-info))))
+    (make-source-location
+     :pathname (core:file-scope-pathname csi)
+     :offset (core:source-pos-info-filepos source-position-info))))
+
 ;;; Class source positions are just stored in a slot.
 (defun class-source-location (class)
   (let ((csp (clos:class-source-position class)))
     (when csp
-      ;; FIXME: Move this source debug stuff to an interface
-      ;; (in SPI, probably)
-      (let ((csi (core:file-scope
-                  (core:source-pos-info-file-handle csp))))
-        (make-source-location
-         :pathname (core:file-scope-pathname csi)
-         :offset (core:source-pos-info-filepos csp))))))
+      (source-position-info->source-location csp))))
 
 ;;; Method combinations don't have source positions. In fact,
 ;;; they don't even exist as objects globally. The only global
@@ -111,7 +114,7 @@ Return the source-location for the name/kind pair"
                  ((typep func 'generic-function)
                   (generic-function-source-locations func))
                  (t ; normal function
-                  (function-source-locations (fdefinition name)))))))
+                  (function-source-locations func))))))
       (:compiler-macro
        (when (fboundp name)
          (let ((cmf (compiler-macro-function name)))
@@ -130,15 +133,21 @@ Return the source-location for the name/kind pair"
        ;; We use the source location of the expander function.
        (let ((expander (ext:type-expander name)))
          (when expander
-           (source-location expander t)))))))
+           (source-location expander t))))
+      (:variable
+       (let ((spi (core::variable-source-info name)))
+         (when spi
+           (list 
+            (source-position-info->source-location spi))))))))
 
 (defparameter *source-location-kinds* '(:class :method :function :compiler-macro
-                                        :method-combination :type :setf-expander))
+                                        :method-combination :type :setf-expander
+                                        :variable))
 
 (defun source-location (obj kind)
   "* Arguments
 - obj : A symbol or object.
-- kind : A symbol (:function :method :class t)
+- kind : A symbol - either T or one of those listed in *source-location-kinds*
 Return the source-location for the name/kind pair"
   (cond
     ((eq kind t)

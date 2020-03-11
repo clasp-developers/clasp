@@ -214,6 +214,13 @@
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (core:select-package :core))
 
+;;; Have to do this early so all defvars are ok.
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (sys:*make-special '*variable-source-infos*))
+(if (boundp '*variable-source-infos*)
+    nil
+    (set '*variable-source-infos*
+         (make-hash-table :test #'eq :thread-safe t)))
 
 (si:fset 'core::defvar #'(lambda (whole env)
 			     (let ((var (cadr whole))
