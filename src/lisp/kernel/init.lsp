@@ -172,6 +172,8 @@
           source-location
           source-location-pathname
           source-location-offset
+          source-location-definer
+          source-location-description
           compiled-function-name
           compiled-function-file
           array-index
