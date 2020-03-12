@@ -435,7 +435,7 @@ Right now the only such information is that it exists. In the future I'd like to
 (This is early on here because bootstrapping sucks)
 |#
 
-(defvar *class-infos* (make-hash-table :test #'eq))
+(defvar *class-infos* (make-hash-table :test #'eq :thread-safe t))
 
 (defun class-info (name &optional env)
   (or (find-class name nil env)
