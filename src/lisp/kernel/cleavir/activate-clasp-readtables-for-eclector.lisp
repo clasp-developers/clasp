@@ -97,7 +97,8 @@
                             &optional (eof-error-p t) eof-value
                             &key (start 0) (end (length string))
                               preserve-whitespace)
-  (let ((eclector.reader:*client* *clasp-normal-eclector-client*))
+  (let ((eclector.readtable:*readtable* cl:*readtable*)
+        (eclector.reader:*client* *clasp-normal-eclector-client*))
     (eclector.reader:read-from-string string eof-error-p eof-value
                                       :start start :end end :preserve-whitespace preserve-whitespace)))
 
