@@ -1109,6 +1109,8 @@ CL_LAMBDA(x);
 CL_DECLARE();
 CL_DOCSTRING("integer_decode_float");
 CL_DEFUN Real_mv cl__integer_decode_float(Float_sp x) {
+  unlikely_if (clasp_float_infinity_p(x))
+    ARITHMETIC_ERROR(cl::_sym_integer_decode_float, core::lisp_createList(x));
   int e = 0, s = 1;
   Real_sp rx(_Nil<Real_O>());
   switch (clasp_t_of(x)) {

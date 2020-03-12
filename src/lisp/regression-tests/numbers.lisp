@@ -600,3 +600,43 @@
       (labels ((factorial (n)(if (<= n 1) 1 (* n (factorial (1- n))))))
         (loop for x from 1 to 500 collect
              (log (factorial x)))))
+
+(test-expect-error
+ integer_decode_float_infinity_short_positive
+ (integer-decode-float #.ext:short-float-positive-infinity)
+ :type arithmetic-error)
+
+(test-expect-error
+ integer_decode_float_infinity_single_positive
+ (integer-decode-float #.ext:single-float-positive-infinity)
+ :type arithmetic-error)
+
+(test-expect-error
+ integer_decode_float_infinity_double_positive
+ (integer-decode-float #.ext:double-float-positive-infinity)
+ :type arithmetic-error)
+
+(test-expect-error
+ integer_decode_float_infinity_long_positive
+ (integer-decode-float #.ext:long-float-positive-infinity)
+ :type arithmetic-error)
+
+(test-expect-error
+ integer_decode_float_infinity_short_negative
+ (integer-decode-float #.ext:short-float-negative-infinity)
+ :type arithmetic-error)
+
+(test-expect-error
+ integer_decode_float_infinity_single_negative
+ (integer-decode-float #.ext:single-float-negative-infinity)
+ :type arithmetic-error)
+
+(test-expect-error
+ integer_decode_float_infinity_double_negative
+ (integer-decode-float #.ext:double-float-negative-infinity)
+ :type arithmetic-error)
+
+(test-expect-error
+ integer_decode_float_infinity_long_negative
+ (integer-decode-float #.ext:long-float-negative-infinity)
+ :type arithmetic-error)
