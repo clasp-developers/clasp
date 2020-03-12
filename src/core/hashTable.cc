@@ -226,7 +226,12 @@ CL_DEFUN T_sp cl__make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_si
   SYMBOL_EXPORT_SC_(KeywordPkg, key);
   if (weakness.notnilp()) {
     if (weakness == INTERN_(kw, key)) {
-      return core__make_weak_key_hash_table(clasp_make_fixnum(size));
+      if (thread_safe.nilp()
+          && (test == cl::_sym_eq || test == cl::_sym_eq->symbolFunction())) {
+        return core__make_weak_key_hash_table(clasp_make_fixnum(size));
+      } else {
+        SIMPLE_ERROR(BF("Weak hash tables with thread safety or non-EQ tests are not yet supported"));
+      }
     }
     SIMPLE_ERROR(BF("Only :weakness :key (weak-key hash tables) are currently supported"));
   }
