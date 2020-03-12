@@ -164,7 +164,11 @@ namespace core {
 //
 // Write messages to cl:*debug-io*
 //
+#if 0
 #define WRITE_DEBUG_IO(fmt) core::write_bf_stream(fmt, cl::_sym_STARdebug_ioSTAR->symbolValue());
+#else
+#define WRITE_DEBUG_IO(fmt)
+#endif
 
 typedef void(*scan_callback)(std::vector<BacktraceEntry>&backtrace, const std::string& filename, uintptr_t start);
 
