@@ -76,33 +76,33 @@
 (test-expect-error hash-table-test-nil (HASH-TABLE-TEST nil) :type type-error)
 
 ;;weak tables: weakness :key
-(test hash-table-count-weak-key (zerop (hash-table-count (make-hash-table :weakness :key))))
+(test hash-table-count-weak-key (zerop (hash-table-count (make-hash-table :test #'eq :weakness :key))))
 (test hash-table-count-2-weak-key
       (= 2
-         (let ((table (make-hash-table :weakness :key)))
+         (let ((table (make-hash-table :test #'eq :weakness :key)))
            (setf (gethash :key table) 23)
            (setf (gethash :key1 table) 22)
            (setf (gethash :key table) 25)
            (hash-table-count table))))
 
-(test hash-table-size-weak-key (= 128 (hash-table-size (make-hash-table :size 128 :weakness :key))))
-(test hash-table-rehash-size-weak-key (HASH-TABLE-REHASH-SIZE (make-hash-table :weakness :key)))
-(test hash-table-rehash-THRESHOLD-weak-key (HASH-TABLE-REHASH-THRESHOLD (make-hash-table :weakness :key)))
-(test hash-table-test-weak-key (HASH-TABLE-TEST (make-hash-table :weakness :key)))
-(test gethash-weak-key (let ((table (make-hash-table :weakness :key)))
+(test hash-table-size-weak-key (= 128 (hash-table-size (make-hash-table :size 128 :test #'eq :weakness :key))))
+(test hash-table-rehash-size-weak-key (HASH-TABLE-REHASH-SIZE (make-hash-table :test #'eq :weakness :key)))
+(test hash-table-rehash-THRESHOLD-weak-key (HASH-TABLE-REHASH-THRESHOLD (make-hash-table :test #'eq :weakness :key)))
+(test hash-table-test-weak-key (HASH-TABLE-TEST (make-hash-table :test #'eq :weakness :key)))
+(test gethash-weak-key (let ((table (make-hash-table :test #'eq :weakness :key)))
                          (gethash :key table)
                          t))
 (test setf-gethash-weak-key (= 23
-                               (let ((table (make-hash-table :weakness :key)))
+                               (let ((table (make-hash-table :test #'eq :weakness :key)))
                                  (setf (gethash :key table) 23)
                                  (gethash :key table))))
-(test clrhash-weak-key (clrhash (make-hash-table :weakness :key)))
+(test clrhash-weak-key (clrhash (make-hash-table :test #'eq :weakness :key)))
 (test maphash-weak-key (progn
                          (maphash #'(lambda(a b))
-                                  (make-hash-table :weakness :key))
+                                  (make-hash-table :test #'eq :weakness :key))
                          t))
 (test remhash-weak-key (progn
-                         (remhash :key (make-hash-table  :weakness :key))
+                         (remhash :key (make-hash-table :test #'eq  :weakness :key))
                          t))
 
 (test hash-table-classes
