@@ -140,8 +140,7 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
                  (list (funcall *defun-inline-hook* name global-function env)))
           ',name))))
 
-(defvar *compiler-macros* (make-hash-table :test #'equal :thread-safe t
-                                           :weakness :key))
+(defvar *compiler-macros* (make-hash-table :test #'equal :thread-safe t))
 
 (defun compiler-macro-function (name &optional environment)
   (declare (ignore environment))
@@ -436,7 +435,7 @@ Right now the only such information is that it exists. In the future I'd like to
 (This is early on here because bootstrapping sucks)
 |#
 
-(defvar *class-infos* (make-hash-table :test #'eq :thread-safe t :weakness :key))
+(defvar *class-infos* (make-hash-table :test #'eq))
 
 (defun class-info (name &optional env)
   (or (find-class name nil env)

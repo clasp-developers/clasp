@@ -45,8 +45,7 @@ Builds a new function which accepts any number of arguments but always outputs N
     (error "Symbol ~s is a declaration specifier and cannot be used to name a new type" name)))
 (export 'create-type-name)
 
-(defvar *type-expanders* (make-hash-table :test #'eq :thread-safe t
-                                          :weakness :key))
+(defvar *type-expanders* (make-hash-table :test #'eq :thread-safe t))
 
 (export 'ext::type-expander "EXT")
 (defun ext:type-expander (name)
