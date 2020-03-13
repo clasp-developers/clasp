@@ -1319,6 +1319,19 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], const CommandLine
   } else {
     seedRandomNumberGenerators(this->mpiRank());
   }
+  if (options._HasDescribeFile) {
+#ifdef USE_MPS 
+    FILE* fout = fopen(options._DescribeFile.c_str(),"w");
+    gctools::walk_stamp_field_layout_tables(gctools::lldb_info,fout);
+    fclose(fout);
+    printf("Wrote class layouts for lldb interface to %s\n", options._DescribeFile.c_str());
+    exit(0);
+#else
+    printf("%s:%d Only MPS can describe datastructures\n", __FILE__, __LINE__ );
+    abort();
+#endif
+  }
+    
   if (options._HasImageFile) {
     SYMBOL_EXPORT_SC_(CorePkg, STARcommandLineImageSTAR);
     _sym_STARcommandLineImageSTAR->defparameter(cl__pathname(SimpleBaseString_O::make(options._ImageFile)));

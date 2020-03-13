@@ -50,6 +50,8 @@ struct CommandLineOptions {
   std::vector<std::string> _Features;
   std::vector<pair<LoadEvalEnum, std::string>> _LoadEvalList;
   bool _HasImageFile;
+  bool _HasDescribeFile;
+  std::string _DescribeFile;
   char _Stage;
   std::string _ImageFile;
   bool _GotRandomNumberSeed;

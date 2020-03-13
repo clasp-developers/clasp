@@ -56,6 +56,7 @@ void process_clasp_arguments(CommandLineOptions* options)
       printf("clasp options\n"
              "-I/--ignore-image    - Don't load the boot image/start with init.lsp\n"
              "-i/--image file      - Use the file as the boot image\n"
+             "-d/--describe file   - Describe the clasp data structures for lldb Python API\n"
              "-t/--stage (a|b|c)   - Start the specified stage of clasp 'c' is default\n"
              "-U/--unpack-faso (faso-file) - Unpack the faso file into separate object files\n"
              "-N/--non-interactive - Suppress all repls\n"
@@ -154,6 +155,11 @@ void process_clasp_arguments(CommandLineOptions* options)
       options->_HasImageFile = true;
       options->_ImageFile = options->_RawArguments[iarg + 1];
       iarg++;
+    } else if (arg == "-d" || arg == "--describe") {
+      ASSERTF(iarg < (endArg + 1), BF("Missing argument for --describe,-d"));
+      options->_HasDescribeFile = true;
+      options->_DescribeFile = options->_RawArguments[iarg + 1];
+      iarg++;
     } else if (arg == "-t" || arg == "--stage") {
       ASSERTF(iarg < (endArg + 1), BF("Missing argument for --stage,-t"));
       options->_Stage = options->_RawArguments[iarg + 1][0];
@@ -185,6 +191,7 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
       _DontLoadInitLsp(false),
       _DisableMpi(false),
       _HasImageFile(false),
+    _HasDescribeFile(false),
       _Stage('c'),
       _ImageFile(""),
       _GotRandomNumberSeed(false),

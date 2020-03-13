@@ -641,7 +641,7 @@ int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char 
     printf("%s:%d global_alignup_sizeof_header = %" PRu "\n", __FILE__, __LINE__, global_alignup_sizeof_header );
 #endif
   }
-  build_stamp_field_layout_tables();
+  walk_stamp_field_layout_tables(mps_info);
 #ifdef SIGRTMIN
 # define DEFAULT_THREAD_INTERRUPT_SIGNAL SIGRTMIN + 2
 #else

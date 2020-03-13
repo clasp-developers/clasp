@@ -123,7 +123,8 @@ namespace gctools {
   extern Field_layout*    global_field_layout;
 
 
-  void build_stamp_field_layout_tables();
+typedef enum { mps_info, lldb_info } WalkKind;
+void walk_stamp_field_layout_tables(WalkKind walk, FILE* fout=NULL);
 
 
 #define FRIEND_GC_INTERFACE() friend gctools::Layout_code* gctools::get_stamp_layout_codes()
