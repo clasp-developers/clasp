@@ -45,6 +45,14 @@ THE SOFTWARE.
 #define IS_CONSTANT 0x02
 #define IS_MACRO    0x04
 
+
+template <>
+struct gctools::GCInfo<core::Symbol_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = false;
+  static GCInfo_policy constexpr Policy = normal;
+};
+
 namespace core {
 #define NO_THREAD_LOCAL_BINDINGS std::numeric_limits<uint32_t>::max()
 SMART(Package);
@@ -333,6 +341,7 @@ Function_sp cl__symbol_function(Symbol_sp sym);
 bool cl__boundp(Symbol_sp sym);
 };
 
+
 namespace core {
 /*! This is used for SmallMultiMap<core::Symbol_sp,XXXX> */
 struct SymbolComparer {
@@ -347,11 +356,5 @@ struct SymbolComparer {
 };
 };
 
-template <>
-struct gctools::GCInfo<core::Symbol_O> {
-  static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = false;
-  static GCInfo_policy constexpr Policy = normal;
-};
 
 #endif //]
