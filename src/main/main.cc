@@ -372,8 +372,10 @@ void* to_fixnum(int8_t v) {
 
 int main( int argc, char *argv[] )
 {
+#if 0
   const char* bogus_args[3] = {"clasp","-debug-only","jitlink"};
   llvm::cl::ParseCommandLineOptions(3,bogus_args,"clasp");
+#endif
   
   // Do not touch debug log until after MPI init
 
