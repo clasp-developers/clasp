@@ -4157,7 +4157,7 @@ CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, co
     abort();
   }
   if (my_thread->_object_file_start) {
-    save_object_file_info(my_thread->_object_file_start, my_thread->_object_file_size, "REPL", 0, 0 );
+    save_object_file_info((char*)my_thread->_object_file_start, my_thread->_object_file_size, "REPL", 0, 0 );
     my_thread->_object_file_start = NULL;
   } else {
     printf("%s:%d There is no object file info to register\n", __FILE__, __LINE__ );
