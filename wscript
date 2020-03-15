@@ -191,6 +191,8 @@ VALID_OPTIONS = [
     "DEBUG_OPTIONS",
     # Turn on address sanitizer
     "ADDRESS_SANITIZER",
+    # Turn on address sanitizer
+    "THREAD_SANITIZER",
     # Link libraries statically vs dynamically
     "LINK_STATIC"
 ]
@@ -961,10 +963,11 @@ def configure(cfg):
         cfg.env.append_value('INCLUDES', "/usr/local/include" )
     cfg.check_cxx(lib='gmpxx gmp'.split(), cflags='-Wall', uselib_store='GMP')
     cfg.check_cxx(lib='ffi', cflags='-Wall', uselib_store='FFI')
-    try:
-        cfg.check_cxx(stlib='gc', cflags='-Wall', uselib_store='BOEHM')
-    except ConfigurationError:
-        cfg.check_cxx(lib='gc', cflags='-Wall', uselib_store='BOEHM')
+#    try:
+#        cfg.check_cxx(stlib='gc', cflags='-Wall', uselib_store='BOEHM')
+#    except ConfigurationError:
+#        cfg.check_cxx(lib='gc', cflags='-Wall', uselib_store='BOEHM')
+    cfg.check_cxx(lib='gc', cflags='-Wall', uselib_store='BOEHM')
     #libz
     cfg.check_cxx(lib='z', cflags='-Wall', uselib_store='Z')
     if (cfg.env['DEST_OS'] == LINUX_OS or cfg.env['DEST_OS'] == FREEBSD_OS):
@@ -1161,6 +1164,9 @@ def configure(cfg):
     if (cfg.env.ADDRESS_SANITIZER):
         cfg.env.append_value('CXXFLAGS', ['-fsanitize=address'] )
         cfg.env.append_value('LINKFLAGS', ['-fsanitize=address'])
+    if (cfg.env.THREAD_SANITIZER):
+        cfg.env.append_value('CXXFLAGS', ['-fsanitize=thread'] )
+        cfg.env.append_value('LINKFLAGS', ['-fsanitize=thread'])
     if (cfg.env.DEBUG_GUARD):
         cfg.define("DEBUG_GUARD",1)
         cfg.define("DEBUG_GUARD_VALIDATE",1)

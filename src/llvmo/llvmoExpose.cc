@@ -80,6 +80,7 @@ THE SOFTWARE.
 #include <llvm/IR/IntrinsicInst.h>
 #include <llvm/IR/Mangler.h>
 #include <llvm/Transforms/Instrumentation.h>
+#include <llvm/Transforms/Instrumentation/ThreadSanitizer.h>
 #include <llvm/Transforms/Utils/BasicBlockUtils.h>
 #include <llvm/Transforms/IPO.h>
 #include <llvm/Transforms/InstCombine/InstCombine.h>
@@ -3321,6 +3322,8 @@ CL_EXTERN_DEFUN( &llvm::createMemDepPrinter);
   CL_LISPIFY_NAME(InitializeNativeTarget);
   CL_EXTERN_DEFUN( &llvm::InitializeNativeTarget);
 
+CL_LISPIFY_NAME(createThreadSanitizerLegacyPassPass);
+CL_EXTERN_DEFUN(&llvm::createThreadSanitizerLegacyPassPass);
   CL_LISPIFY_NAME(createAggressiveDCEPass);
   CL_EXTERN_DEFUN( &llvm::createAggressiveDCEPass);
   CL_LISPIFY_NAME(createCFGSimplificationPass);
