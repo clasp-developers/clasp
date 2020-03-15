@@ -44,6 +44,7 @@
 #+unicode
 (load-if-compiled-correctly "sys:regression-tests;encodings.lisp")
 (load-if-compiled-correctly "sys:regression-tests;system-construction.lisp")
+(load-if-compiled-correctly "sys:regression-tests;environment.lisp")
 
 (progn
   (note-test-finished)

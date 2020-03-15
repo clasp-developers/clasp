@@ -4661,9 +4661,6 @@ FORWARD(ClaspJIT);
 class ClaspJIT_O : public core::General_O {
   LISP_CLASS(llvmo, LlvmoPkg, ClaspJIT_O, "clasp-jit", core::General_O);
 public:
-  void saveObjectFileInfo(const char* buffer, size_t bytes, const char* faso_filename, size_t faso_index, size_t objectID);
-  size_t numberOfObjectFiles();
-  size_t totalMemoryAllocatedForObjectFiles();
 public:
   void addIRModule(Module_sp cM,ThreadSafeContext_sp context);
   core::Pointer_sp lookup(JITDylib& dylib, const std::string& Name);
@@ -4672,16 +4669,10 @@ public:
   void addObjectFile(const char* buffer, size_t bytes, size_t startupID, JITDylib& dylib, 
                      const char* faso_filename, size_t faso_index,
                      bool print=false);
-  core::T_mv objectFileForInstructionPointer(core::Pointer_sp instruction_pointer, bool verbose);
-  
   ClaspJIT_O();
   ~ClaspJIT_O();
 public:
-  std::atomic<ObjectFileInfo*> _ObjectFiles;
-#if 1
   std::unique_ptr<llvm::orc::LLJIT>    _LLJIT;
-#else
-  ExecutionSession *ES;
 #ifdef USE_JITLINKER
   llvm::org::JITLinker* LinkLayer;
 #else
@@ -4827,5 +4818,23 @@ template <>
 
 ENUM_TRANSLATOR(llvm::GlobalValue::UnnamedAddr,llvmo::_sym_STARGlobalValueUnnamedAddrSTAR);
 
+
+
+
+namespace translate {
+ template <typename T>
+struct from_object<llvm::Optional<T>> {
+   typedef llvm::Optional<T> DeclareType;
+   DeclareType _v;
+   from_object(core::T_sp o) {
+     if (o.unboundp()) {
+       return;
+     }
+     llvm::Optional<T> val(from_object<T>(o)._v);
+     this->_v = val;
+     return;
+   }
+ };
+}
 
 #endif //]

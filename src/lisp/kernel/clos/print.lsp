@@ -258,6 +258,19 @@ printer and we should rather use MAKE-LOAD-FORM."
     (cdr record)))
 
 ;;; ----------------------------------------------------------------------
+;;; Variable source info
+;;; ----------------------------------------------------------------------
+;;; Cooperates with code in lsp/evalmacros.lsp because of bootstrapping.
+;;; (Specifically, being able to dump SPIs with make-load-form.)
+;;; FIXME: Move if possible, export?
+
+(defun core::variable-source-info-saver (var cspi)
+  `((setf (gethash ',var core::*variable-source-infos*) ',cspi)))
+
+(defun core::variable-source-info (var)
+  (gethash var core::*variable-source-infos*))
+
+;;; ----------------------------------------------------------------------
 ;;; Describe
 ;;; ----------------------------------------------------------------------
 

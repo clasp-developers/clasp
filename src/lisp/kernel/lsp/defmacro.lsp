@@ -62,14 +62,13 @@
 	((eq (car list) key) (cadr list))
 	(t (search-keyword (cddr list) key))))
 
-(defun check-keyword (tail keywords &optional (allow-other-keys nil aok-flag)
-                                      compiler-macro-p)
+(defun check-keywords (tail keywords &optional (allow-other-keys nil aok-flag))
   (do (head
        arg
        (err nil))
       ((null tail)
        (when (and err (not allow-other-keys))
-	 (error "The key ~s is not allowed" err)))
+	 (error "The keys ~s are not allowed" err)))
     (if (atom tail)
       (error "keyword list is not a proper list")
       (setq head (car tail) tail (cdr tail)))
@@ -80,7 +79,36 @@
            (when (not aok-flag)
              (setq allow-other-keys arg aok-flag t)))
           ((not (member head keywords))
-           (setq err head)))))
+           (push head err)))))
+
+(defun check-compiler-macro-keywords
+    (tail keywords &optional (allow-other-keys nil aok-flag))
+  (do (head
+       arg
+       ;; List of keywords not allowed by the lambda list.
+       (err nil)
+       ;; List of keywords that are variable forms, like in
+       ;; (defun foo (&key ...) ...) (foo (if a :x :y) ...)
+       (variable nil))
+      ((null tail)
+       (when (and err (not allow-other-keys))
+	 (error "The keys ~s are not allowed" err))
+       variable)
+    (if (atom tail)
+      (error "keyword list is not a proper list")
+      (setq head (car tail) tail (cdr tail)))
+    (if (atom tail)
+      (error "keyword list is not a proper list")
+      (setq arg (car tail) tail (cdr tail)))
+    (cond ((eq head :allow-other-keys)
+           (when (not aok-flag)
+             (setq allow-other-keys arg aok-flag t)))
+          ;; FIXME: Constants should also be okay, but we don't have
+          ;; ext:constant-form-value yet.
+          ((not (keywordp head))
+           (push head variable))
+          ((not (member head keywords))
+           (push head err)))))
 
 (defun dm-too-many-arguments (current-form)
   (error "Too many arguments supplied to a macro or a destructuring-bind form:~%~s"
@@ -165,10 +193,13 @@
 			  (init (second l)))
 		     (dm-v v init)))
 		 (cond (key-flag
-			(push `(check-keyword ,pointer ',all-keywords
-                                              ,@(if allow-other-keys '(t) '())
-                                              ',(eq context 'define-compiler-macro))
-			      arg-check))
+			(push
+                         (if (eq context 'define-compiler-macro)
+                             `(check-compiler-macro-keywords ,pointer ',all-keywords
+                                                            ,(if allow-other-keys t nil))
+                             `(check-keywords ,pointer ',all-keywords
+                                              ,(if allow-other-keys 't 'nil)))
+                         arg-check))
 		       ((not no-check)
 			(push `(if ,pointer (dm-too-many-arguments ,basis-form))
 			      arg-check))))))
@@ -253,8 +284,8 @@
     (values (if decls `((declare ,@decls)) nil)
 	    body doc)))
 
-;; Optional argument context can be 'cl:define-compiler-macro or 'cl:defmacro (default)
-(defun sys::expand-defmacro (name vl body &optional (context 'cl:defmacro))
+;; Optional argument CONTEXT can be deftype or defmacro (default)
+(defun expand-defmacro (name vl body &optional (context 'cl:defmacro))
   (multiple-value-bind (decls body doc)
       (find-declarations body)
     ;; We turn (a . b) into (a &rest b)
@@ -262,7 +293,7 @@
     (let ((cell (last vl)))
       (when (rest cell)
         (setq vl (nconc (butlast vl 0) (list '&rest (rest cell))))))
-    ;; If we find an &environment variable in the lambda list, we take not of the
+    ;; If we find an &environment variable in the lambda list, we take note of the
     ;; name and remove it from the list so that DESTRUCTURE does not get confused
     (let ((env-part (member '&environment vl :test #'eq)))
       (if env-part
@@ -272,7 +303,7 @@
                 decls (list* `(declare (ignore ,env-part)) decls)))
       (multiple-value-bind (whole dl arg-check ignorables)
           (destructure vl context name)
-        (values 
+        (values
          `(lambda (,whole ,env-part &aux ,@dl)
             (declare (ignorable ,@ignorables) (core:lambda-name ,name))
             ,@decls
@@ -300,6 +331,36 @@
                              ))))
 	  t)
 
+;;; Like EXPAND-DEFMACRO, but is slightly nicer about invalid arguments.
+(defun expand-define-compiler-macro (name vl body)
+  (multiple-value-bind (decls body doc)
+      (find-declarations body)
+    (let ((cell (last vl)))
+      (when (rest cell)
+        (setq vl (nconc (butlast vl 0) (list '&rest (rest cell))))))
+    (let ((block-name (function-block-name name))
+          (env-part (member '&environment vl :test #'eq)))
+      (if env-part
+          (setq vl (nconc (ldiff vl env-part) (cddr env-part))
+                env-part (second env-part))
+          (setq env-part (gensym)
+                decls (list* `(declare (ignore ,env-part)) decls)))
+      (multiple-value-bind (whole dl arg-check ignorables)
+          (destructure vl 'cl:define-compiler-macro name)
+        (values
+         `(lambda (,whole ,env-part &aux ,@dl)
+            (declare (ignorable ,@ignorables) (core:lambda-name ,name))
+            ,@decls
+            ,@(when doc (list doc))
+            (block ,block-name
+              (when (or ,@arg-check)
+                ;; If we're here, there's been a non-constant keyword.
+                ;; We can't parse that, so abandon ship.
+                ;; TODO: Signal a note or something here.
+                (return-from ,block-name ,whole))
+              ,@body))
+         doc)))))
+
 ;; This is what the final macros actually use, for cleanliness.
 (in-package "EXT")
 
@@ -309,7 +370,7 @@
 
 (defun parse-compiler-macro (name lambda-list body &optional env)
   (declare (ignore env)) ; also for now
-  (sys::expand-defmacro name lambda-list body 'cl:define-compiler-macro))
+  (sys::expand-define-compiler-macro name lambda-list body))
 
 (defun parse-deftype (name lambda-list body &optional env)
   (declare (ignore env))

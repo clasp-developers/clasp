@@ -16,9 +16,11 @@
   (if (and xfunction (functionp xfunction))
       (multiple-value-bind (src-pathname pos lineno)
           (core:function-source-pos xfunction)
-        (when (null src-pathname)
+        (when (or (null src-pathname)
+                  (and (stringp src-pathname)
+                       (string-equal src-pathname "-unknown-file-")))
           ;; e.g., a repl function - no source location.
-          (return-from compiled-function-file nil))
+          (return-from compiled-function-file (values nil 0 0)))
         ;; FIXME: This indicates an internal bookkeeping problem, i.e., a bug.
         (unless (typep src-pathname 'pathname)
           (error "The source-debug-pathname for ~a was ~a - it needs to be a pathname"
@@ -26,7 +28,7 @@
         (let ((src-directory (pathname-directory src-pathname))
               (src-name (pathname-name src-pathname))
               (src-type (pathname-type src-pathname))
-          (filepos pos))
+              (filepos pos))
           (let ((pn (if (eq (car src-directory) :relative)
                         (merge-pathnames src-pathname (translate-logical-pathname "source-dir:"))
                         src-pathname)))
@@ -38,26 +40,40 @@
 ;;; This happens to be the first non-:TYPE defstruct during build.
 ;;; But FIXME: It's redundant to core:source-pos-info and should be vaporized.
 (defstruct source-location
-  pathname offset)
+  pathname offset
+  ;; A symbol like DEFVAR, DEFUN, etc for display.
+  (definer nil :type symbol)
+  ;; Any other metadata, mostly for user display. E.g. specializers of a method.
+  (description nil :type list))
+
+(defun source-locations-set-info (source-locations definer &optional description)
+  (loop for sl in source-locations
+        do (setf (source-location-definer sl) definer
+                 (source-location-description sl) description))
+  source-locations)
 
 (defun function-source-locations (function)
   (multiple-value-bind (file pos)
       (compiled-function-file function)
     (if file
-        (list (make-source-location :pathname file :offset pos))
+        (list (make-source-location :pathname file :offset pos :definer 'defun))
         nil)))
+
+;; FIXME: Move this source debug stuff to an interface
+;; (in SPI, probably)
+(defun source-position-info->source-location (source-position-info definer)
+  (let ((csi (core:file-scope
+              (core:source-pos-info-file-handle source-position-info))))
+    (make-source-location
+     :pathname (core:file-scope-pathname csi)
+     :offset (core:source-pos-info-filepos source-position-info)
+     :definer definer)))
 
 ;;; Class source positions are just stored in a slot.
 (defun class-source-location (class)
   (let ((csp (clos:class-source-position class)))
     (when csp
-      ;; FIXME: Move this source debug stuff to an interface
-      ;; (in SPI, probably)
-      (let ((csi (core:file-scope
-                  (core:source-pos-info-file-handle csp))))
-        (make-source-location
-         :pathname (core:file-scope-pathname csi)
-         :offset (core:source-pos-info-filepos csp))))))
+      (source-position-info->source-location csp 'defclass))))
 
 ;;; Method combinations don't have source positions. In fact,
 ;;; they don't even exist as objects globally. The only global
@@ -68,11 +84,22 @@
 ;;; Note that due to this, when provided a name, we don't go through
 ;;; this function- check source-location-impl.
 (defun method-combination-source-location (method-combination)
-  (source-location (clos::method-combination-compiler method-combination) t))
+  (source-locations-set-info
+   (source-location (clos::method-combination-compiler method-combination) t)
+   'define-method-combination))
 
 (defun method-source-location (method)
   ;; NOTE: Because we return this to MAPCON, make sure the lists are fresh.
-  (source-location (clos:method-function method) t))
+  (let ((sls (source-location (clos:method-function method) t))
+        (description
+          (ignore-errors
+           (append (method-qualifiers method)
+                   ;; FIXME: Move this into CLOS probably
+                   (loop for spec in (clos:method-specializers method)
+                         collect (if (typep spec 'clos:eql-specializer)
+                                     `(eql ,(clos:eql-specializer-object spec))
+                                     (class-name spec)))))))
+    (source-locations-set-info sls 'defmethod description)))
 
 (defun generic-function-source-locations (gf)
   ;; FIXME: Include the actual defgeneric's location too.
@@ -90,7 +117,9 @@ Return the source-location for the name/kind pair"
                          (let ((dir (first dir-pos))
                                (pos (second dir-pos)))
                            (make-source-location :pathname (merge-pathnames dir source-dir)
-                                                 :offset pos)))
+                                                 :offset pos
+                                                 ;; FIXME
+                                                 :definer 'defmethod)))
                        rels))))
     (case kind
       (:class
@@ -109,34 +138,47 @@ Return the source-location for the name/kind pair"
                  ((typep func 'generic-function)
                   (generic-function-source-locations func))
                  (t ; normal function
-                  (function-source-locations (fdefinition name)))))))
+                  (function-source-locations func))))))
       (:compiler-macro
        (when (fboundp name)
          (let ((cmf (compiler-macro-function name)))
            (when cmf
-             (source-location cmf t)))))
+             (source-locations-set-info (source-location cmf t)
+                                        'define-compiler-macro)))))
       (:setf-expander
        (let ((expander (ext:setf-expander name)))
          (when expander
-           (source-location expander t))))
+           (source-locations-set-info (source-location expander t)
+                                      'define-setf-expander))))
       (:method-combination
        ;; See comment on method-combination-source-position
        (let ((method-combination-compiler (clos::search-method-combination name)))
          (when method-combination-compiler
-           (source-location method-combination-compiler t))))
+           (source-locations-set-info (source-location method-combination-compiler t)
+                                      'define-method-combination))))
       (:type
        ;; We use the source location of the expander function.
        (let ((expander (ext:type-expander name)))
          (when expander
-           (source-location expander t)))))))
+           (source-locations-set-info (source-location expander t)
+                                      'deftype))))
+      (:variable
+       (let ((spi (core::variable-source-info name))
+             (definer (cond ((ext:specialp name) 'defvar)
+                            ((constantp name) 'defconstant)
+                            (t 'define-symbol-macro))))
+         (when spi
+           (list
+            (source-position-info->source-location spi definer))))))))
 
 (defparameter *source-location-kinds* '(:class :method :function :compiler-macro
-                                        :method-combination :type :setf-expander))
+                                        :method-combination :type :setf-expander
+                                        :variable))
 
 (defun source-location (obj kind)
   "* Arguments
 - obj : A symbol or object.
-- kind : A symbol (:function :method :class t)
+- kind : A symbol - either T or one of those listed in *source-location-kinds*
 Return the source-location for the name/kind pair"
   (cond
     ((eq kind t)

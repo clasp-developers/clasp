@@ -31,6 +31,7 @@ THE SOFTWARE.
 #include <llvm/ExecutionEngine/GenericValue.h>
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/Bitcode/BitcodeReader.h>
+
 #/*
     File: debugInfoExpose.cc
 */
@@ -97,6 +98,7 @@ THE SOFTWARE.
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/environment.h>
 #include <clasp/core/loadTimeValues.h>
+#include <clasp/core/lispStream.h>
 #include <clasp/core/bignum.h>
 #include <clasp/core/pointer.h>
 #include <clasp/core/array.h>
@@ -397,6 +399,102 @@ CL_DEFUN core::T_mv getLineInfoForAddress(DWARFContext_sp dc, SectionedAddress_s
 
 }; // llvmo, DIContext_O
 
+
+
+namespace llvmo {
+
+std::atomic<ObjectFileInfo*> global_object_files;
+
+
+void save_object_file_info(const char* objectFileStart, size_t objectFileSize,
+                           const char* faso_filename,
+                           size_t faso_index,
+                           size_t objectID )
+{
+//  register_object_file_with_gdb((void*)objectFileStart,objectFileSize);
+//  printf("%s:%d:%s register object file %s\n", __FILE__, __LINE__, __FUNCTION__, faso_filename);
+  ObjectFileInfo* ofi = new ObjectFileInfo();
+  ofi->_faso_filename = faso_filename;
+  ofi->_faso_index = faso_index;
+  ofi->_objectID = objectID;
+  ofi->_object_file_start = (void*)objectFileStart;
+  ofi->_object_file_size = objectFileSize;
+  ofi->_text_segment_start = my_thread->_text_segment_start;
+  ofi->_text_segment_size = my_thread->_text_segment_size;
+  ofi->_text_segment_SectionID = my_thread->_text_segment_SectionID;
+  ofi->_stackmap_start = (void*)my_thread->_stackmap;
+  ofi->_stackmap_size = my_thread->_stackmap_size;
+  ObjectFileInfo* expected;
+  ObjectFileInfo* current;
+  do {
+    current = global_object_files.load();
+    ofi->_next = current;
+    expected = current;
+    global_object_files.compare_exchange_strong(expected,ofi);
+  } while (expected!=current);
+}
+
+CL_DOCSTRING(R"doc(Identify the object file whose generated code range containss the instruction-pointer.
+Return NIL if none or (values offset-from-start object-file). The index-from-start is the number of bytes of the instruction-pointer from the start of the code range.)doc");
+CL_LISPIFY_NAME(object_file_for_instruction_pointer);
+CL_DEFUN core::T_mv object_file_for_instruction_pointer(core::Pointer_sp instruction_pointer, bool verbose)
+{
+  ObjectFileInfo* cur = global_object_files.load();
+  size_t count;
+  char* ptr = (char*)instruction_pointer->ptr();
+  if (!cur) {
+    core::write_bf_stream(BF("No object files registered - cannot find object file for address %p\n") % (void*)ptr);
+  }
+  while (cur) {
+    if (ptr>=(char*)cur->_text_segment_start&&ptr<((char*)cur->_text_segment_start+cur->_text_segment_size)) {
+      // Here is the info for the SectionedAddress
+      uintptr_t sectionID = cur->_text_segment_SectionID;
+      uintptr_t offset = (ptr - (char*)cur->_text_segment_start);
+      core::T_sp sectioned_address = SectionedAddress_O::create(sectionID, offset);
+      // now the object file
+      llvm::StringRef sbuffer((const char*)cur->_object_file_start, cur->_object_file_size);
+      llvm::StringRef name("object-file-buffer");
+      std::unique_ptr<llvm::MemoryBuffer> mbuf = llvm::MemoryBuffer::getMemBuffer(sbuffer, name, false);
+      llvm::MemoryBufferRef mbuf_ref(*mbuf);
+      auto eom = llvm::object::ObjectFile::createObjectFile(mbuf_ref);
+      if (!eom)
+        SIMPLE_ERROR(BF("Problem in objectFileForInstructionPointer"));
+      ObjectFile_sp object_file = ObjectFile_O::create(eom->release());
+      if (verbose) {
+        core::write_bf_stream(BF("faso-file: %s  object-file-position: %lu  objectID: %lu\n") % cur->_faso_filename % cur->_faso_index % cur->_objectID);
+        core::write_bf_stream(BF("SectionID: %lu    memory offset: %lu\n") % sectionID % offset );
+      }
+      return Values(sectioned_address,object_file);
+    }
+    cur = cur->_next;
+    count++;
+  }
+  return Values(_Nil<core::T_O>());
+}
+
+CL_LISPIFY_NAME(number_of_object_files);
+CL_DEFUN size_t number_of_object_files() {
+  ObjectFileInfo* cur = global_object_files.load();
+  size_t count=0;
+  while (cur) {
+    count++;
+    cur = cur->_next;
+  }
+  return count;
+}
+
+CL_LISPIFY_NAME(total_memory_allocated_for_object_files);
+CL_DEFUN size_t total_memory_allocated_for_object_files() {
+  ObjectFileInfo* cur = global_object_files.load();
+  size_t sz = 0;
+  while (cur) {
+    sz += cur->_object_file_size;
+    cur = cur->_next;
+  }
+  return sz;
+}
+};
+
 namespace llvmo { // DWARFContext_O
 
 CL_LAMBDA(object-file);
@@ -407,4 +505,21 @@ CL_DEFUN DWARFContext_sp DWARFContext_O::createDwarfContext(ObjectFile_sp of) {
   return core::RP_Create_wrapped<llvmo::DWARFContext_O, llvm::DWARFContext *>(uptr.release());
 }
 
+
+CL_LAMBDA(address &key verbose);
+CL_DEFUN core::T_mv llvm_sys__address_information(void* address, bool verbose)
+{
+  core::Pointer_sp instruction_pointer = core::Pointer_O::create(address);
+  core::T_mv object_info = object_file_for_instruction_pointer(instruction_pointer,verbose);
+  if (object_info.notnilp()) {
+    SectionedAddress_sp sectioned_address = gc::As<SectionedAddress_sp>(object_info);
+    ObjectFile_sp object_file = gc::As<ObjectFile_sp>(object_info.second());
+    DWARFContext_sp context = DWARFContext_O::createDwarfContext(object_file);
+    return getLineInfoForAddress(context,sectioned_address);
+  }
+  return Values(_Nil<core::T_O>());
+}
+
+  
 }; // llvmo, DWARFContext_O
+

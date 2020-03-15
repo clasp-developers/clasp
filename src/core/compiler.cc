@@ -105,7 +105,7 @@ MaybeDebugStartup::MaybeDebugStartup(void* fp, const char* n) : fptr(fp), start_
   }
 };
 
-MaybeDebugStartup::~MaybeDebugStartup() {
+__attribute__((optnone)) MaybeDebugStartup::~MaybeDebugStartup() {
   if (core::_sym_STARdebugStartupSTAR->symbolValue().notnilp()
       && this->start) {
     PosixTime_sp end = PosixTime_O::createNow();
@@ -121,8 +121,12 @@ MaybeDebugStartup::~MaybeDebugStartup() {
     stringstream name_;
     if (this->name!="") name_ << this->name << " ";
     Dl_info di;
-    dladdr((void*)this->fptr,&di);
-    name_ << di.dli_sname;
+    int found = dladdr((void*)this->fptr,&di);
+    if (found && di.dli_sname) {
+      name_ << di.dli_sname;
+    } else {
+      name_ << "NONAME";
+    }
     if (name_.str() == "") name_ << (void*)this->fptr;
     printf("%s us %zu gfds %zu jits: %s\n", _rep_(Integer_O::create(ms)).c_str(), dispatcher_delta, (global_jit_compile_counter-this->start_jit_compile_counter),name_.str().c_str());
   }
@@ -218,10 +222,10 @@ void transfer_StartupInfo_to_my_thread() {
   my_thread->_Startup = global_startup;
 }
 
-void register_startup_function(size_t position, fnStartUp fptr)
+void register_startup_function(const StartUp& one_startup)
 {
 #ifdef DEBUG_STARTUP
-  printf("%s:%d In register_startup_function --> %p\n", __FILE__, __LINE__, fptr);
+  printf("%s:%d In register_startup_function type: %d at %p\n", __FILE__, __LINE__, startup._Type, startup._Function);
 #endif
   StartupInfo* startup = NULL;
   // if my_thread is defined - then use its startup info
@@ -236,14 +240,13 @@ void register_startup_function(size_t position, fnStartUp fptr)
   if ( startup->_functions == NULL ) {
     startup->_capacity = STARTUP_FUNCTION_CAPACITY_INIT;
     startup->_count = 0;
-    startup->_functions = (Startup*)malloc(startup->_capacity*sizeof(Startup));
+    startup->_functions = (StartUp*)malloc(startup->_capacity*sizeof(StartUp));
   } else {
     if ( startup->_count == startup->_capacity ) {
       startup->_capacity = startup->_capacity*STARTUP_FUNCTION_CAPACITY_MULTIPLIER;
-      startup->_functions = (Startup*)realloc(startup->_functions,startup->_capacity*sizeof(Startup));
+      startup->_functions = (StartUp*)realloc(startup->_functions,startup->_capacity*sizeof(StartUp));
     }
   }
-  Startup one_startup(position,fptr);
   startup->_functions[startup->_count] = one_startup;
   startup->_count++;
 };
@@ -261,7 +264,7 @@ size_t startup_functions_are_waiting()
 core::T_O* startup_functions_invoke(T_O* literals)
 {
   size_t startup_count = 0;
-  Startup* startup_functions = NULL;
+  StartUp* startup_functions = NULL;
   {
   // Save the current list
     startup_count = my_thread->_Startup._count;
@@ -283,9 +286,9 @@ core::T_O* startup_functions_invoke(T_O* literals)
     }
     printf("%s:%d Starting to call the startup functions\n", __FILE__, __LINE__ );
 #endif
-    Startup previous(~0,NULL);
+    StartUp previous;
     for ( size_t i = 0; i<startup_count; ++i ) {
-      Startup& startup = startup_functions[i];
+      StartUp& startup = startup_functions[i];
       if (startup._Position == previous._Position) {
         printf("%s:%d At startup there were two adjacent startup functions with the same position value %lu - this could mean a startup order catastrophe\n", __FILE__, __LINE__, startup._Position);
       }
@@ -294,7 +297,14 @@ core::T_O* startup_functions_invoke(T_O* literals)
       printf("%s:%d     About to invoke fn@%p\n", __FILE__, __LINE__, fn );
 #endif
 //      T_mv result = (fn)(LCC_PASS_MAIN());
-      result = (startup._Function)(literals); // invoke the startup function
+      switch (startup._Type) {
+      case StartUp::T_O_function:
+          result = ((T_OStartUp)startup._Function)(literals); // invoke the startup function
+          break;
+      case StartUp::void_function:
+          ((voidStartUp)startup._Function)();
+          result = NULL;
+      }
     }
 #ifdef DEBUG_STARTUP
     printf("%s:%d Done with startup_functions_invoke()\n", __FILE__, __LINE__ );

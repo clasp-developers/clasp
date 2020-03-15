@@ -93,6 +93,7 @@ when this is t a lot of graphs will be generated.")
   (cond
     ((cmp:treat-as-special-operator-p name) t)
     ((eq name 'cleavir-primop::call-with-variable-bound) nil)
+    ((eq name 'unwind-protect) t)
     ((eq name 'core::vector-length) t)
     ((eq name 'core::%displacement) t)
     ((eq name 'core::%displaced-index-offset) t)

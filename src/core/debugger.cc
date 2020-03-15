@@ -34,25 +34,6 @@ THE SOFTWARE.
 #ifdef USE_LIBUNWIND
 #include <libunwind.h>
 #endif
-#include <clasp/core/object.h>
-#include <clasp/core/lisp.h>
-#include <clasp/core/arguments.h>
-#include <clasp/core/myReadLine.h>
-#include <clasp/core/symbolTable.h>
-#include <clasp/core/sourceFileInfo.h>
-#include <clasp/core/evaluator.h>
-#include <clasp/core/pathname.h>
-#include <clasp/core/debugger.h>
-#include <clasp/core/funcallableInstance.h>
-#include <clasp/core/hashTableEqual.h>
-#include <clasp/core/primitives.h>
-#include <clasp/core/array.h>
-#include <clasp/core/bformat.h>
-#include <clasp/core/write_ugly.h>
-#include <clasp/core/sort.h>
-#include <clasp/core/lispStream.h>
-#include <clasp/llvmo/llvmoExpose.h>
-#include <clasp/core/wrappers.h>
 #ifdef _TARGET_OS_DARWIN
 #import <mach-o/dyld.h>
 #import <mach-o/nlist.h>
@@ -81,6 +62,29 @@ THE SOFTWARE.
 #endif
 
 
+#include <clasp/core/object.h>
+#include <clasp/core/lisp.h>
+#include <clasp/core/arguments.h>
+#include <clasp/core/myReadLine.h>
+#include <clasp/core/symbolTable.h>
+#include <clasp/core/sourceFileInfo.h>
+#include <clasp/core/evaluator.h>
+#include <clasp/core/pathname.h>
+#include <clasp/core/debugger.h>
+#include <clasp/core/funcallableInstance.h>
+#include <clasp/core/hashTableEqual.h>
+#include <clasp/core/primitives.h>
+#include <clasp/core/array.h>
+#include <clasp/core/bformat.h>
+#include <clasp/core/write_ugly.h>
+#include <clasp/core/sort.h>
+#include <clasp/core/lispStream.h>
+#include <clasp/core/designators.h>
+#include <clasp/llvmo/llvmoExpose.h>
+#include <clasp/llvmo/debugInfoExpose.fwd.h>
+#include <clasp/core/wrappers.h>
+
+
 #ifdef _TARGET_OS_DARWIN
 namespace core {
 core::SymbolTable load_macho_symbol_table(bool is_executable, const char* filename, uintptr_t header, uintptr_t exec_header);
@@ -93,6 +97,425 @@ void* find_base_of_loaded_object(const char* name);
 core::SymbolTable load_linux_symbol_table(const char* filename, uintptr_t start, uintptr_t& stackmap_start, size_t& stackmap_size);
 };
 #endif
+
+SYMBOL_EXPORT_SC_(CorePkg,backtrace_frame);
+
+
+namespace core {
+T_sp core__make_backtrace_frame(T_sp stype,
+                                T_sp return_address,
+                                T_sp raw_name,
+                                T_sp base_pointer,
+                                T_sp frame_offset,
+                                T_sp frame_size,
+                                T_sp function_start_address,
+                                T_sp function_end_address,
+                                T_sp function_description,
+                                T_sp arguments,
+                                T_sp closure )
+{
+  SimpleVector_sp frame = SimpleVector_O::make(BACKTRACE_FRAME_NUMBER_OF_SLOTS);
+  (*frame)[BACKTRACE_FRAME_CLASS] = _sym_backtrace_frame;
+  (*frame)[BACKTRACE_FRAME_TYPE] = stype;
+  (*frame)[BACKTRACE_FRAME_RETURN_ADDRESS] = return_address;
+  (*frame)[BACKTRACE_FRAME_RAW_NAME] = raw_name;
+  (*frame)[BACKTRACE_FRAME_BASE_POINTER] = base_pointer;
+  (*frame)[BACKTRACE_FRAME_FRAME_OFFSET] = frame_offset;
+  (*frame)[BACKTRACE_FRAME_FRAME_SIZE] = frame_size;
+  (*frame)[BACKTRACE_FRAME_FUNCTION_START_ADDRESS] = function_start_address;
+  (*frame)[BACKTRACE_FRAME_FUNCTION_END_ADDRESS] = function_end_address;
+  (*frame)[BACKTRACE_FRAME_FUNCTION_DESCRIPTION] = function_description;
+  (*frame)[BACKTRACE_FRAME_ARGUMENTS] = arguments;
+  (*frame)[BACKTRACE_FRAME_CLOSURE ] = closure;
+  return frame;
+}
+
+
+CL_DEFUN bool core__backtrace_frame_visible(T_sp frame)
+{
+  if (frame.nilp()) {
+    return true;
+  }
+  if (_sym_STARihs_modeSTAR->symbolValue() == _sym_ihs_common_lisp) {
+    T_sp stype = core__backtrace_frame_type(frame);
+    if (stype == kw::_sym_lisp) {
+      return true;
+    }
+    return false;
+  }
+  return true;
+}
+
+CL_DEFUN T_sp core__backtrace_frame_type(T_sp frame)
+{
+  SimpleVector_sp vframe = gc::As<SimpleVector_sp>(frame);
+  ASSERT(cl__length(vframe)==BACKTRACE_FRAME_NUMBER_OF_SLOTS);
+  return (*vframe)[BACKTRACE_FRAME_TYPE];
+}
+
+CL_DEFUN T_sp core__backtrace_frame_return_address(T_sp frame) {
+  SimpleVector_sp vframe = gc::As<SimpleVector_sp>(frame);
+  ASSERT(cl__length(vframe)==BACKTRACE_FRAME_NUMBER_OF_SLOTS);
+  return (*vframe)[BACKTRACE_FRAME_RETURN_ADDRESS];
+}
+
+CL_DEFUN T_sp core__backtrace_frame_raw_name(T_sp frame) {
+  SimpleVector_sp vframe = gc::As<SimpleVector_sp>(frame);
+  ASSERT(cl__length(vframe)==BACKTRACE_FRAME_NUMBER_OF_SLOTS);
+  return (*vframe)[BACKTRACE_FRAME_RAW_NAME];
+}
+
+CL_DEFUN T_sp core__backtrace_frame_function_name(T_sp frame) {
+  SimpleVector_sp vframe = gc::As<SimpleVector_sp>(frame);
+  ASSERT(cl__length(vframe)==BACKTRACE_FRAME_NUMBER_OF_SLOTS);
+  return (*vframe)[BACKTRACE_FRAME_FUNCTION_NAME];
+}
+
+CL_LISPIFY_NAME("backtrace-frame-function-name");
+CL_DEFUN_SETF T_sp core__backtrace_frame_function_name_set(T_sp name, T_sp frame ){
+  SimpleVector_sp vframe = gc::As<SimpleVector_sp>(frame);
+  ASSERT(cl__length(vframe)==BACKTRACE_FRAME_NUMBER_OF_SLOTS);
+  (*vframe)[BACKTRACE_FRAME_FUNCTION_NAME] = name;
+  return name;
+}
+
+CL_DEFUN T_sp core__backtrace_frame_print_name(T_sp frame) {
+  SimpleVector_sp vframe = gc::As<SimpleVector_sp>(frame);
+  ASSERT(cl__length(vframe)==BACKTRACE_FRAME_NUMBER_OF_SLOTS);
+  return (*vframe)[BACKTRACE_FRAME_PRINT_NAME];
+}
+CL_LISPIFY_NAME("backtrace-frame-print-name");
+CL_DEFUN_SETF T_sp core__backtrace_frame_print_name_setf(T_sp name, T_sp frame) {
+  SimpleVector_sp vframe = gc::As<SimpleVector_sp>(frame);
+  ASSERT(cl__length(vframe)==BACKTRACE_FRAME_NUMBER_OF_SLOTS);
+  (*vframe)[BACKTRACE_FRAME_PRINT_NAME] = name;
+  return name;
+}
+
+CL_DEFUN T_sp core__backtrace_frame_base_pointer(T_sp frame) {
+  SimpleVector_sp vframe = gc::As<SimpleVector_sp>(frame);
+  ASSERT(cl__length(vframe)==BACKTRACE_FRAME_NUMBER_OF_SLOTS);
+  return (*vframe)[BACKTRACE_FRAME_BASE_POINTER];
+}
+
+CL_DEFUN T_sp core__backtrace_frame_offset(T_sp frame) {
+  SimpleVector_sp vframe = gc::As<SimpleVector_sp>(frame);
+  ASSERT(cl__length(vframe)==BACKTRACE_FRAME_NUMBER_OF_SLOTS);
+  return (*vframe)[BACKTRACE_FRAME_FRAME_OFFSET];
+}
+
+CL_DEFUN T_sp core__backtrace_frame_size(T_sp frame) {
+  SimpleVector_sp vframe = gc::As<SimpleVector_sp>(frame);
+  ASSERT(cl__length(vframe)==BACKTRACE_FRAME_NUMBER_OF_SLOTS);
+  return (*vframe)[BACKTRACE_FRAME_FRAME_SIZE];
+}
+
+CL_DEFUN T_sp core__backtrace_frame_function_start_address(T_sp frame) {
+  SimpleVector_sp vframe = gc::As<SimpleVector_sp>(frame);
+  ASSERT(cl__length(vframe)==BACKTRACE_FRAME_NUMBER_OF_SLOTS);
+  return (*vframe)[BACKTRACE_FRAME_FUNCTION_START_ADDRESS];
+}
+
+CL_DEFUN T_sp core__backtrace_frame_function_end_address(T_sp frame) {
+  SimpleVector_sp vframe = gc::As<SimpleVector_sp>(frame);
+  ASSERT(cl__length(vframe)==BACKTRACE_FRAME_NUMBER_OF_SLOTS);
+  return (*vframe)[BACKTRACE_FRAME_FUNCTION_END_ADDRESS];
+}
+
+CL_DEFUN T_sp core__backtrace_frame_function_description(T_sp frame) {
+  SimpleVector_sp vframe = gc::As<SimpleVector_sp>(frame);
+  ASSERT(cl__length(vframe)==BACKTRACE_FRAME_NUMBER_OF_SLOTS);
+  return (*vframe)[BACKTRACE_FRAME_FUNCTION_DESCRIPTION];
+}
+
+CL_DEFUN T_sp core__backtrace_frame_arguments(T_sp frame) {
+  SimpleVector_sp vframe = gc::As<SimpleVector_sp>(frame);
+  ASSERT(cl__length(vframe)==BACKTRACE_FRAME_NUMBER_OF_SLOTS);
+  return (*vframe)[BACKTRACE_FRAME_ARGUMENTS];
+}
+
+CL_DEFUN T_sp core__backtrace_frame_closure(T_sp frame) {
+  SimpleVector_sp vframe = gc::As<SimpleVector_sp>(frame);
+  ASSERT(cl__length(vframe)==BACKTRACE_FRAME_NUMBER_OF_SLOTS);
+  return (*vframe)[BACKTRACE_FRAME_CLOSURE ];
+}
+
+};
+
+
+
+namespace core {
+
+CL_DEFUN int core__ihs_bounded(int idx)
+{
+  Fixnum base = _sym_STARihs_baseSTAR->symbolValue().unsafe_fixnum();
+  Fixnum top = _sym_STARihs_topSTAR->symbolValue().unsafe_fixnum();
+  if (idx < base) idx = base;
+  if (idx >= top) idx = top-1;
+  return idx;
+}
+
+CL_DEFUN T_sp core__ihs_backtrace_frame(int idx)
+{
+  idx = core__ihs_bounded(idx);
+  T_sp backtrace = _sym_STARbacktraceSTAR->symbolValue();
+  if (backtrace.nilp()) return _Nil<T_O>();
+  T_sp frame = cl__elt(backtrace,idx);
+  return frame;
+}
+
+CL_DEFUN T_mv core__ihs_source_information(int idx) {
+  T_sp frame = core__ihs_backtrace_frame(idx);
+  T_sp address = core__backtrace_frame_return_address(frame);
+  if (gc::IsA<Pointer_sp>(address)) {
+    Pointer_sp paddr = gc::As_unsafe<Pointer_sp>(address);
+    return llvmo::llvm_sys__address_information(paddr->ptr(),false);
+  }
+  return Values(_Nil<core::T_O>());
+}
+
+CL_DEFUN T_sp core__ihs_return_address(int idx) {
+  T_sp frame = core__ihs_backtrace_frame(idx);
+  T_sp address = core__backtrace_frame_return_address(frame);
+  return address;
+}
+
+CL_LAMBDA(index frame &key (stream *debug-io*) (args t) (source-info t));
+CL_DEFUN void core__backtrace_frame_to_stream(int idx, T_sp frame ,T_sp stream, bool args, bool do_source_info)
+{
+  T_sp name = core__backtrace_frame_print_name(frame);
+  if (name.nilp()) {
+    name = core__backtrace_frame_function_name(frame);
+    if (name.nilp()) {
+      name = core__backtrace_frame_raw_name(frame);
+    }
+  }
+  T_sp arguments = core__backtrace_frame_arguments(frame);
+  stringstream num;
+  num << std::setw(4);
+  num << idx;
+  clasp_write_string(num.str(),stream);
+  if (args && arguments.notnilp()) {
+    clasp_write_string(": (",stream);
+    clasp_write_string(_rep_(name),stream);
+    if (cl__length(arguments)>0) {
+      for (size_t i=0; i< cl__length(arguments); ++i ) {
+        clasp_write_string(" ",stream);
+        clasp_write_string(_rep_(cl__elt(arguments,i)),stream);
+      }
+    }
+    clasp_write_string(")",stream);
+  } else {
+    clasp_write_string(": ",stream);
+    clasp_write_string(_rep_(name),stream);
+  }
+  clasp_write_string("\n",stream);
+  if (do_source_info) {
+    T_mv source_info = core__ihs_source_information(idx);
+    T_sp filename = source_info;
+    if (filename.notnilp()) {
+      T_sp lineno = source_info.valueGet_(3);
+      ASSERT(lineno.fixnump());
+      if (lineno.unsafe_fixnum()==0) {
+        lineno = source_info.valueGet_(5);
+      }
+      stringstream info;
+      info << _rep_(filename);
+      info << ":";
+      info << lineno.unsafe_fixnum();
+      clasp_write_string(info.str(),stream);
+      clasp_write_string("\n",stream);
+    }
+  }
+}
+
+CL_LAMBDA(backtrace &key (stream *debug-io*) (args t) all source_info);
+CL_DEFUN void core__dump_backtrace( List_sp backtrace, T_sp stream, bool args, bool all, bool source_info)
+{
+  for ( int idx = 0; idx<cl__length(backtrace); idx++ ) {
+    T_sp frame = cl__elt(backtrace,idx);
+    if (all || core__backtrace_frame_visible(frame)) {
+      core__backtrace_frame_to_stream(idx, frame, stream, args, source_info );
+    }
+  }
+}
+    
+    
+
+
+CL_DEFUN bool core__ihs_visible(int idx)
+{
+  idx = core__ihs_bounded(idx);
+  T_sp frame = core__ihs_backtrace_frame(idx);
+  if (frame.nilp()) {
+    return true;
+  }
+  if (_sym_STARihs_modeSTAR->symbolValue() == _sym_ihs_common_lisp) {
+    T_sp stype = core__backtrace_frame_type(frame);
+    if (stype == kw::_sym_lisp) {
+      return true;
+    }
+    return false;
+  }
+  return true;
+}
+
+CL_DEFUN void core__ihs_backtrace_no_args() {
+  c_btcl();
+};
+
+CL_DEFUN int core__ihs_top() {
+  return _sym_STARihs_topSTAR->symbolValue().unsafe_fixnum();
+};
+
+CL_DEFUN int core__ihs_search_for_next_visible(int idx, int dir)
+{
+  int cur = idx;
+  while (true) {
+    cur += dir;
+    int bounded_cur = core__ihs_bounded(cur);
+    if (bounded_cur != cur) {
+      // We are at one end of the range
+      if (core__ihs_visible(bounded_cur)) {
+        return bounded_cur;
+      }
+      return core__ihs_bounded(idx);
+    }
+    if (core__ihs_visible(cur)) {
+      return core__ihs_bounded(cur);
+    }
+  }
+}
+
+CL_DEFUN int core__ihs_prev(int idx) {
+  return core__ihs_search_for_next_visible(idx,+1);
+}
+
+
+CL_LAMBDA(cur);
+CL_DECLARE();
+CL_DOCSTRING("ihsNext");
+CL_DEFUN int core__ihs_next(int idx) {
+  return core__ihs_search_for_next_visible(idx,-1);
+}
+
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("Return the function for the stack frame.");
+CL_DEFUN T_sp core__ihs_fun(int idx) {
+  return _Nil<core::T_O>();
+};
+
+CL_LAMBDA(&optional (frame_index *ihs-current*));
+CL_DOCSTRING("Return the arguments to the function in the frame");
+CL_DEFUN T_sp core__ihs_arguments(int idx) {
+  idx = core__ihs_bounded(idx);
+  T_sp frame = core__ihs_backtrace_frame(idx);
+  return core__backtrace_frame_arguments(frame);
+};
+
+CL_LAMBDA(arg_index &optional (frame_index *ihs-current*));
+CL_DOCSTRING("Return the arguments to the function in the frame");
+CL_DEFUN T_sp core__ihs_argument(int arg_index, int idx) {
+  idx = core__ihs_bounded(idx);
+  T_sp frame = core__ihs_backtrace_frame(idx);
+  T_sp arguments = core__backtrace_frame_arguments(frame);
+  if (arg_index<0 || arg_index>=cl__length(arguments)) {
+    SIMPLE_ERROR(BF("Illegal argument index %d - there are only %lu arguments") % arg_index % cl__length(arguments));
+  }
+  return cl__elt(arguments,arg_index);
+};
+
+CL_LAMBDA(cur);
+CL_DECLARE();
+CL_DOCSTRING("ihsEnv");
+CL_DEFUN T_sp core__ihs_env(int idx) {
+  return _Nil<core::T_O>();
+};
+
+
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("ihs_currentFrame");
+CL_DEFUN int core__ihs_current_frame() {
+  T_sp cf = _sym_STARihs_currentSTAR->symbolValue();
+  if (!cf.fixnump()) {
+    ASSERT(_sym_STARihs_baseSTAR.fixnump());
+    int icf = _sym_STARihs_baseSTAR->symbolValue().unsafe_fixnum();
+    return core__set_ihs_current_frame(icf);
+  }
+  int icf = cf.unsafe_fixnum();
+  icf = core__ihs_bounded(icf);
+  return icf;
+}
+
+CL_DEFUN int core__set_ihs_current_frame(int icf) {
+  icf = core__ihs_bounded(icf);
+  _sym_STARihs_currentSTAR->setf_symbolValue(make_fixnum(icf));
+  return icf;
+}
+
+
+CL_DEFUN VaList_sp core__vaslist_rewind(VaList_sp v)
+{
+  Vaslist* vaslist0 = &*v;
+  Vaslist* vaslist1 = &vaslist0[1];
+  memcpy(vaslist0,vaslist1,sizeof(Vaslist));
+  return v;
+}
+
+CL_DEFUN size_t core__vaslist_length(VaList_sp v)
+{
+//  printf("%s:%d va_list length %" PRu "\n", __FILE__, __LINE__, v->remaining_nargs());
+  return v->remaining_nargs();
+}
+
+CL_DEFUN T_sp core__vaslist_pop(VaList_sp v)
+{
+  return v->next_arg();
+}
+
+CL_DEFUN bool core__vaslistp(T_sp o)
+{
+  return o.valistp();
+}
+
+CL_DEFUN List_sp core__list_from_va_list(VaList_sp vorig)
+{
+  Vaslist valist_copy(*vorig);
+  VaList_sp valist(&valist_copy);
+
+  ql::list l;
+  size_t nargs = valist->remaining_nargs();
+//  printf("%s:%d in %s  nargs=%zu\n", __FILE__, __LINE__, __FUNCTION__, nargs);
+  for ( size_t i=0; i<nargs; ++i ) {
+    T_sp one = valist->next_arg();
+    l << one;
+  }
+  T_sp result = l.cons();
+  return result;
+}
+
+CL_LAMBDA(&optional (out t) msg);
+CL_DECLARE();
+CL_DOCSTRING("ihsBacktrace");
+CL_DEFUN T_sp core__ihs_backtrace(T_sp outputDesignator, T_sp msg) {
+  T_sp ss;
+  if (outputDesignator.nilp()) {
+    ss = clasp_make_string_output_stream();
+  } else {
+    ss = coerce::outputStreamDesignator(outputDesignator);
+  }
+  if (!msg.nilp()) {
+    clasp_writeln_string(((BF("\n%s") % _rep_(msg)).str()), ss);
+  }
+  c_btcl();
+  return _Nil<T_O>();
+};
+};
+
+
+
 
 namespace core {
 
@@ -619,32 +1042,28 @@ bool SymbolTable::is_sorted() const
   return true;
 }
 
-void start_debugger() {
+SYMBOL_EXPORT_SC_(CorePkg,start_debugger_with_backtrace);
+CL_DEFUN void core__start_debugger_with_backtrace(T_sp backtrace) {
+  DynamicScopeManager scope(_sym_STARbacktraceSTAR,backtrace);
   LispDebugger dbg(_Nil<T_O>());
   dbg.invoke();
 }
 
 LispDebugger::LispDebugger(T_sp condition) : _CanContinue(false), _Condition(condition) {
   _lisp->incrementDebuggerLevel();
-  af_gotoIhsTop();
+  core__gotoIhsTop();
 }
 
 LispDebugger::LispDebugger() : _CanContinue(true) {
   this->_Condition = _Nil<T_O>();
   _lisp->incrementDebuggerLevel();
-  af_gotoIhsTop();
+  core__gotoIhsTop();
 }
 
-void LispDebugger::printExpression() {
+void LispDebugger::printExpression(T_sp stream) {
   int index = core__ihs_current_frame();
-  InvocationHistoryFrameIterator_sp frame = this->currentFrame();
-  if (frame->isValid()) {
-    stringstream ss;
-    ss << frame->frame()->asString(index);
-    write_bf_stream(BF("%s\n") % ss.str());
-  } else {
-    write_bf_stream(BF("No frame.\n"));
-  }
+  T_sp frame = core__ihs_backtrace_frame(index);
+  core__backtrace_frame_to_stream(index,frame,stream,true,true);
 }
 
 InvocationHistoryFrameIterator_sp LispDebugger::currentFrame() const {
@@ -676,7 +1095,7 @@ T_sp LispDebugger::invoke() {
   if (this->_Condition.notnilp()) {
     write_bf_stream(BF("Debugger entered with condition: %s") % _rep_(this->_Condition));
   }
-  this->printExpression();
+  this->printExpression(cl::_sym_STARstandard_outputSTAR->symbolValue());
   write_bf_stream(BF("The following restarts are available:\n"));
   write_bf_stream(BF("ABORT      a    Abort to REPL\n"));
   while (1) {
@@ -703,20 +1122,20 @@ T_sp LispDebugger::invoke() {
     switch (cmd) {
     case '?':
     case 'h': {
-      write_bf_stream(BF(":?      - help"));
-      write_bf_stream(BF(":h      - help"));
-      write_bf_stream(BF("sexp - evaluate sexp"));
-      write_bf_stream(BF(":c sexp - continue - return values of evaluating sexp"));
-      write_bf_stream(BF(":v      - list local environment"));
-      write_bf_stream(BF(":x      - print current expression"));
-      write_bf_stream(BF(":e      - evaluate an expression with interpreter"));
-      write_bf_stream(BF(":b      - print backtrace"));
-      write_bf_stream(BF(":p      - goto previous frame"));
-      write_bf_stream(BF(":n      - goto next frame"));
-      write_bf_stream(BF(":D      - dissasemble current function"));
-      write_bf_stream(BF(":a      - abort and return to top repl"));
-      write_bf_stream(BF(":l      - invoke debugger by calling core::dbg_hook (set break point in gdb"));
-      write_bf_stream(BF(":g ##   - jump to frame ##"));
+      write_bf_stream(BF(":?      - help\n"));
+      write_bf_stream(BF(":h      - help\n"));
+      write_bf_stream(BF("sexp - evaluate sexp\n"));
+      write_bf_stream(BF(":c sexp - continue - return values of evaluating sexp\n"));
+      write_bf_stream(BF(":v      - list local environment\n"));
+      write_bf_stream(BF(":x      - print current expression\n"));
+      write_bf_stream(BF(":e      - evaluate an expression with interpreter\n"));
+      write_bf_stream(BF(":b      - print backtrace\n"));
+      write_bf_stream(BF(":u      - goto previous frame\n"));
+      write_bf_stream(BF(":d      - goto next frame\n"));
+      write_bf_stream(BF(":D      - dissasemble current function\n"));
+      write_bf_stream(BF(":a      - abort and return to top repl\n"));
+      write_bf_stream(BF(":l      - invoke debugger by calling core::dbg_hook (set break point in gdb\n"));
+      write_bf_stream(BF(":g ##   - jump to frame ##\n"));
       break;
     }
     case 'l':
@@ -738,19 +1157,19 @@ T_sp LispDebugger::invoke() {
         }
         write_bf_stream(BF("Switching to frame: %d") % frameIdx);
         core__set_ihs_current_frame(frameIdx);
-        this->printExpression();
+        this->printExpression(cl::_sym_STARstandard_outputSTAR->symbolValue());
       } else {
         write_bf_stream(BF("You must provide a frame number\n"));
       }
       break;
     }
-    case 'p':
-	af_gotoIhsPrev();
-	this->printExpression();
+    case 'u':
+	core__gotoIhsPrev();
+        this->printExpression(cl::_sym_STARstandard_outputSTAR->symbolValue());
 	break;
-    case 'n':
-	af_gotoIhsNext();
-	this->printExpression();
+    case 'd':
+	core__gotoIhsNext();
+        this->printExpression(cl::_sym_STARstandard_outputSTAR->symbolValue());
 	break;
     case 'D': {
       T_sp func = core__ihs_fun(core__ihs_current_frame());
@@ -763,11 +1182,11 @@ T_sp LispDebugger::invoke() {
       break;
     }
     case 'x': {
-      this->printExpression();
+      this->printExpression(cl::_sym_STARstandard_outputSTAR->symbolValue());
       break;
     }
     case 'v': {
-      this->printExpression();
+      this->printExpression(cl::_sym_STARstandard_outputSTAR->symbolValue());
       T_sp env = core__ihs_env(core__ihs_current_frame());
       write_bf_stream(BF("activationFrame->%p    .nilp()->%d  .nilp()->%d") % env.raw_() % env.nilp() % env.nilp());
       if (env.notnilp()) {
@@ -1244,6 +1663,7 @@ void fill_backtrace(std::vector<BacktraceEntry>& backtrace) {
   fill_in_interpreted_frames(backtrace);
 };
 
+SYMBOL_EXPORT_SC_(CorePkg,backtrace_frame_fix_names);
 CL_DOCSTRING("Call the thunk after setting core:*stack-top-hint* to somewhere in the current stack frame.");
 CL_DEFUN T_mv core__call_with_stack_top_hint(Function_sp thunk)
 {
@@ -1295,22 +1715,18 @@ CL_DEFUN T_mv core__call_with_backtrace(Function_sp closure, bool args_as_pointe
         arguments = args_closure;
         closure = args_closure.second();
       }
-      args << INTERN_(kw,type) << stype
-           << INTERN_(kw,return_address) << Pointer_O::create((void*)backtrace[i]._ReturnAddress)
-           << INTERN_(kw,raw_name) <<  SimpleBaseString_O::make(backtrace[i]._SymbolName)
-           << INTERN_(kw,base_pointer) << Pointer_O::create((void*)backtrace[i]._BasePointer)
-           << INTERN_(kw,frame_offset) << core::make_fixnum(backtrace[i]._FrameOffset)
-           << INTERN_(kw,frame_size) << core::make_fixnum(backtrace[i]._FrameSize)
-           << INTERN_(kw,function_start_address) << Pointer_O::create((void*)backtrace[i]._FunctionStart)
-           << INTERN_(kw,function_end_address) << Pointer_O::create((void*)backtrace[i]._FunctionEnd)
-           << INTERN_(kw,function_description) << funcDesc
-           << INTERN_(kw,arguments) << arguments
-           << INTERN_(kw,closure) << closure;
-      if (_sym_make_backtrace_frame->fboundp()) {
-        entry = core__apply0(_sym_make_backtrace_frame->symbolFunction(),args.cons());
-      } else {
-        entry = core::Cons_O::create(_sym_make_backtrace_frame,args.cons());
-      }
+      entry = core__make_backtrace_frame(stype,
+                                         Pointer_O::create((void*)backtrace[i]._ReturnAddress),
+                                         SimpleBaseString_O::make(backtrace[i]._SymbolName),
+                                         Pointer_O::create((void*)backtrace[i]._BasePointer),
+                                         core::make_fixnum(backtrace[i]._FrameOffset),
+                                         core::make_fixnum(backtrace[i]._FrameSize),
+                                         Pointer_O::create((void*)backtrace[i]._FunctionStart),
+                                         Pointer_O::create((void*)backtrace[i]._FunctionEnd),
+                                         funcDesc,
+                                         arguments,
+                                         closure);
+      core::eval::funcall(_sym_backtrace_frame_fix_names,entry);
       result << entry;
     } else {
 #if 0
@@ -1321,6 +1737,11 @@ CL_DEFUN T_mv core__call_with_backtrace(Function_sp closure, bool args_as_pointe
 #endif
     }
   }
+  DynamicScopeManager scope(_sym_STARbacktraceSTAR,result.cons());
+  DynamicScopeManager scope1(_sym_STARihs_topSTAR,make_fixnum(cl__length(result.cons())));
+  DynamicScopeManager scope2(_sym_STARihs_baseSTAR,make_fixnum(0));
+  DynamicScopeManager scope3(_sym_STARihs_modeSTAR,_sym_ihs_common_lisp);
+  DynamicScopeManager scope4(_sym_STARihs_currentSTAR,make_fixnum(core__ihs_prev(-1)));
   return eval::funcall(closure,result.cons());
 }
 
@@ -1343,52 +1764,36 @@ CL_DEFUN void core__dump_symbol_and_stackmap_info() {
 
 namespace core {
 
-#define ARGS_af_gotoIhsTop "()"
-#define DECL_af_gotoIhsTop ""
-#define DOCS_af_gotoIhsTop "gotoIhsTop"
-void af_gotoIhsTop() {
-  _sym_STARihsCurrentSTAR->setf_symbolValue(make_fixnum(core__ihs_top()));
+CL_DEFUN void core__gotoIhsTop() {
+  _sym_STARihs_currentSTAR->setf_symbolValue(make_fixnum(core__ihs_top()));
 };
 
-#define ARGS_af_gotoIhsPrev "()"
-#define DECL_af_gotoIhsPrev ""
-#define DOCS_af_gotoIhsPrev "gotoIhsPrev"
-void af_gotoIhsPrev() {
+CL_DEFUN void core__gotoIhsPrev() {
   int ihsCur = core__ihs_current_frame();
-  _sym_STARihsCurrentSTAR->setf_symbolValue(make_fixnum(core__ihs_prev(ihsCur)));
+  _sym_STARihs_currentSTAR->setf_symbolValue(make_fixnum(core__ihs_prev(ihsCur)));
 };
 
-#define ARGS_af_gotoIhsNext "()"
-#define DECL_af_gotoIhsNext ""
-#define DOCS_af_gotoIhsNext "gotoIhsNext"
-void af_gotoIhsNext() {
+CL_DEFUN void core__gotoIhsNext() {
   int ihsCur = core__ihs_current_frame();
-  _sym_STARihsCurrentSTAR->setf_symbolValue(make_fixnum(core__ihs_next(ihsCur)));
+  _sym_STARihs_currentSTAR->setf_symbolValue(make_fixnum(core__ihs_next(ihsCur)));
 };
 
-#define ARGS_af_gotoIhsFrame "(frame-index)"
-#define DECL_af_gotoIhsFrame ""
-#define DOCS_af_gotoIhsFrame "gotoIhsFrame"
-void af_gotoIhsFrame(int frame_index) {
+CL_DEFUN void core__gotoIhsFrame(int frame_index) {
   if (frame_index < 0)
     frame_index = 0;
   if (frame_index >= core__ihs_top())
     frame_index = core__ihs_top() - 1;
   int ihsCur = frame_index;
-  _sym_STARihsCurrentSTAR->setf_symbolValue(make_fixnum(ihsCur));
+  _sym_STARihs_currentSTAR->setf_symbolValue(make_fixnum(ihsCur));
 };
 
-#define ARGS_af_printCurrentIhsFrame "()"
-#define DECL_af_printCurrentIhsFrame ""
-#define DOCS_af_printCurrentIhsFrame "printCurrentIhsFrame"
-void af_printCurrentIhsFrame() {
+CL_DEFUN void core__printCurrentIhsFrame() {
   int ihsCur = core__ihs_current_frame();
   T_sp fun = core__ihs_fun(ihsCur);
   printf("Frame[%d] %s\n", ihsCur, _rep_(fun).c_str());
 };
 
-CL_LAMBDA();
-CL_DECLARE();
+
 CL_DOCSTRING("printCurrentIhsFrameEnvironment");
 CL_DEFUN void core__print_current_ihs_frame_environment() {
   T_sp args = core__ihs_arguments(core__ihs_current_frame());
@@ -1408,12 +1813,12 @@ CL_DEFUN void core__print_current_ihs_frame_environment() {
   }
 }
 
-#define ARGS_af_evalPrint "(arg)"
-#define DECL_af_evalPrint ""
-#define DOCS_af_evalPrint "evalPrint"
-void af_evalPrint(const string &expr) {
+#define ARGS_core__evalPrint "(arg)"
+#define DECL_core__evalPrint ""
+#define DOCS_core__evalPrint "evalPrint"
+void core__evalPrint(const string &expr) {
   printf("If this locks up then there was an error in the evaluation\n");
-  printf("Figure out how to make debugger.cc>>af_evalPrint always return\n");
+  printf("Figure out how to make debugger.cc>>core__evalPrint always return\n");
   int ihsCur = core__ihs_current_frame();
   T_sp env = core__ihs_env(ihsCur);
   _lisp->readEvalPrintString(expr, env, true);
@@ -1572,11 +1977,15 @@ void dbg_printTPtr(uintptr_t raw, bool print_pretty) {
 
 }
 
-extern "C" {
+std::string dbg_safe_repr(uintptr_t raw);
+
+string _safe_rep_(core::T_sp obj) {
+  return dbg_safe_repr((uintptr_t)obj.raw_());
+}
 
 /*! Generate text representation of a objects without using the lisp printer!
 This code MUST be bulletproof!  It must work under the most memory corrupted conditions */
-__attribute__((optnone)) std::string dbg_safe_repr(uintptr_t raw) {
+std::string dbg_safe_repr(uintptr_t raw) {
   stringstream ss;
   core::T_sp obj((gc::Tagged)raw);
   if (gc::tagged_generalp((gc::Tagged)raw) ||gc::tagged_consp((gc::Tagged)raw)) {
@@ -1641,9 +2050,7 @@ __attribute__((optnone)) std::string dbg_safe_repr(uintptr_t raw) {
   return ss.str();
 }
 
-string _safe_rep_(core::T_sp obj) {
-  return dbg_safe_repr((uintptr_t)obj.raw_());
-}
+extern "C" {
 
 
 void dbg_safe_print(uintptr_t raw) {

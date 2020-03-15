@@ -670,8 +670,9 @@ extern "C" {
 /*! Invoke the main functions from the main function array.
 If isNullTerminatedArray is 1 then there is a NULL terminated array of functions to call.
 Otherwise there is just one. */
-void cc_register_startup_function(size_t index, fnStartUp fptr) {
-  register_startup_function(index,fptr);
+void cc_register_startup_function(size_t index, T_OStartUp fptr) {
+  core::StartUp su(core::StartUp::T_O_function,index,(void*)fptr);
+  register_startup_function(su);
 }
 /*! Call this with an alloca pointer to keep the alloca from 
 being optimized away */
@@ -941,6 +942,9 @@ void throwIllegalSwitchValue(size_t val, size_t max) {
   SIMPLE_ERROR(BF("Illegal switch value %d - max value is %d") % val % max);
 }
 
+void cc_error_bugged_catch(size_t id) {
+  SIMPLE_ERROR(BF("BUG: Nonlocal entry frame could not match go-index %d") % id);
+}
 
 void throwDynamicGo(size_t depth, size_t index, core::T_O *afP) {
   my_thread->_unwinds++;
@@ -1063,6 +1067,21 @@ void cc_setTLSymbolValue(core::T_O* sym, core::T_O *val)
 {NO_UNWIND_BEGIN();
   core::Symbol_sp s = gctools::smart_ptr<core::Symbol_O>((gc::Tagged)sym);
   s->set_threadLocalSymbolValue(gctools::smart_ptr<core::T_O>((gc::Tagged)val));
+  NO_UNWIND_END();
+}
+
+// identical to above, but used so bindings are readable as read->set->reset
+void cc_resetTLSymbolValue(core::T_O* sym, core::T_O *val)
+{NO_UNWIND_BEGIN();
+  core::Symbol_sp s = gctools::smart_ptr<core::Symbol_O>((gc::Tagged)sym);
+  s->set_threadLocalSymbolValue(gctools::smart_ptr<core::T_O>((gc::Tagged)val));
+  NO_UNWIND_END();
+}
+
+core::T_O *cc_TLSymbolValue(core::T_O* sym)
+{NO_UNWIND_BEGIN();
+  core::Symbol_sp s = gctools::smart_ptr<core::Symbol_O>((gc::Tagged)sym);
+  return s->threadLocalSymbolValue().raw_();
   NO_UNWIND_END();
 }
 
@@ -1193,17 +1212,6 @@ gctools::return_type cc_load_values(size_t nvals, T_O** vector)
   NO_UNWIND_END();
 }
 
-T_O *cc_pushLandingPadFrame()
-{NO_UNWIND_BEGIN();
-#ifdef DEBUG_FLOW_TRACKER
-  Cons_sp unique = Cons_O::create(make_fixnum(next_flow_tracker_counter()),_Nil<T_O>());
-#else
-  Cons_sp unique = Cons_O::create(_Nil<T_O>(),_Nil<T_O>());
-#endif
-  return unique.raw_();
-  NO_UNWIND_END();
-}
-
 void cc_unwind(T_O *targetFrame, size_t index) {
   // Signal an error if the frame we're trying to return to is no longer on the stack.
   // FIXME: This is kind of a kludge. It iterates through the stack frame. But c++ throw
@@ -1224,6 +1232,11 @@ size_t cc_landingpadUnwindMatchFrameElseRethrow(char *exceptionP, core::T_O *thi
     std::chrono::time_point<std::chrono::high_resolution_clock> now = std::chrono::high_resolution_clock::now();
     my_thread_low_level->_unwind_time += (now - my_thread_low_level->_start_unwind);
     return unwindP->index();
+  }
+  if ((uintptr_t)unwindP->getFrame() < (uintptr_t)thisFrame) {
+      printf("%s:%d:%s You blew past the frame unwindP->getFrame()->%p  thisFrame->%p\n",
+             __FILE__, __LINE__, __FUNCTION__, (void*)unwindP->getFrame(), (void*)thisFrame);
+      abort();
   }
   // throw * unwindP;
   throw;

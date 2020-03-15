@@ -4167,7 +4167,7 @@ CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, co
   }
   core::T_O* replPtrRaw = NULL;
   if (startupPtr && startupPtr->ptr()) {
-    fnStartUp startup = reinterpret_cast<fnStartUp>(gc::As_unsafe<core::Pointer_sp>(startupPtr)->ptr());
+    T_OStartUp startup = reinterpret_cast<T_OStartUp>(gc::As_unsafe<core::Pointer_sp>(startupPtr)->ptr());
 //    printf("%s:%d:%s About to invoke startup @p=%p\n", __FILE__, __LINE__, __FUNCTION__, (void*)startup);
     replPtrRaw = startup(initialData.raw_());
     if (replPtrRaw==NULL) {
@@ -4327,87 +4327,6 @@ CL_DEFMETHOD void ClaspJIT_O::addIRModule(Module_sp module, ThreadSafeContext_sp
   ExitOnErr(this->_LLJIT->addIRModule(this->_LLJIT->getMainJITDylib(),llvm::orc::ThreadSafeModule(std::move(umodule),*context->wrappedPtr())));
 }
 
-void ClaspJIT_O::saveObjectFileInfo(const char* objectFileStart, size_t objectFileSize,
-                                    const char* faso_filename,
-                                    size_t faso_index,
-                                    size_t objectID )
-{
-//  register_object_file_with_gdb((void*)objectFileStart,objectFileSize);
-  ObjectFileInfo* ofi = new ObjectFileInfo();
-  ofi->_faso_filename = faso_filename;
-  ofi->_faso_index = faso_index;
-  ofi->_objectID = objectID;
-  ofi->_object_file_start = (void*)objectFileStart;
-  ofi->_object_file_size = objectFileSize;
-  ofi->_text_segment_start = my_thread->_text_segment_start;
-  ofi->_text_segment_size = my_thread->_text_segment_size;
-  ofi->_text_segment_SectionID = my_thread->_text_segment_SectionID;
-  ofi->_stackmap_start = (void*)my_thread->_stackmap;
-  ofi->_stackmap_size = my_thread->_stackmap_size;
-  ObjectFileInfo* expected;
-  ObjectFileInfo* current;
-  do {
-    current = this->_ObjectFiles.load();
-    ofi->_next = current;
-    expected = current;
-    this->_ObjectFiles.compare_exchange_strong(expected,ofi);
-  } while (expected!=current);
-}
-
-CL_DOCSTRING(R"doc(Identify the object file whose generated code range containss the instruction-pointer.
-Return NIL if none or (values offset-from-start object-file). The index-from-start is the number of bytes of the instruction-pointer from the start of the code range.)doc");
-CL_DEFMETHOD core::T_mv ClaspJIT_O::objectFileForInstructionPointer(core::Pointer_sp instruction_pointer, bool verbose)
-{
-  ObjectFileInfo* cur = this->_ObjectFiles.load();
-  size_t count;
-  char* ptr = (char*)instruction_pointer->ptr();
-  while (cur) {
-    if (ptr>=(char*)cur->_text_segment_start&&ptr<((char*)cur->_text_segment_start+cur->_text_segment_size)) {
-      // Here is the info for the SectionedAddress
-      uintptr_t sectionID = cur->_text_segment_SectionID;
-      uintptr_t offset = (ptr - (char*)cur->_text_segment_start);
-      core::T_sp sectioned_address = SectionedAddress_O::create(sectionID, offset);
-      // now the object file
-      llvm::StringRef sbuffer((const char*)cur->_object_file_start, cur->_object_file_size);
-      llvm::StringRef name("object-file-buffer");
-      std::unique_ptr<llvm::MemoryBuffer> mbuf = llvm::MemoryBuffer::getMemBuffer(sbuffer, name, false);
-      llvm::MemoryBufferRef mbuf_ref(*mbuf);
-      auto eom = llvm::object::ObjectFile::createObjectFile(mbuf_ref);
-      if (!eom)
-        SIMPLE_ERROR(BF("Problem in objectFileForInstructionPointer"));
-      ObjectFile_sp object_file = ObjectFile_O::create(eom->release());
-      if (verbose) {
-        core::write_bf_stream(BF("faso-file: %s  object-file-position: %lu  objectID: %lu\n") % cur->_faso_filename % cur->_faso_index % cur->_objectID);
-        core::write_bf_stream(BF("SectionID: %lu    memory offset: %lu\n") % sectionID % offset );
-      }
-      return Values(sectioned_address,object_file);
-    }
-    cur = cur->_next;
-    count++;
-  }
-  return Values(_Nil<core::T_O>());
-}
-
-CL_DEFMETHOD size_t ClaspJIT_O::numberOfObjectFiles() {
-  ObjectFileInfo* cur = this->_ObjectFiles.load();
-  size_t count=0;
-  while (cur) {
-    count++;
-    cur = cur->_next;
-  }
-  return count;
-}
-
-CL_DEFMETHOD size_t ClaspJIT_O::totalMemoryAllocatedForObjectFiles() {
-  ObjectFileInfo* cur = this->_ObjectFiles.load();
-  size_t sz = 0;
-  while (cur) {
-    sz += cur->_object_file_size;
-    cur = cur->_next;
-  }
-  return sz;
-}
-
 
 void ClaspJIT_O::addObjectFile(const char* rbuffer, size_t bytes,size_t startupID, JITDylib& dylib,
                                const char* faso_filename, size_t faso_index,
@@ -4424,7 +4343,7 @@ void ClaspJIT_O::addObjectFile(const char* rbuffer, size_t bytes,size_t startupI
   if (erro) printf("%s:%d Could not addObjectFile\n", __FILE__, __LINE__ );
   llvm::ExitOnError ExitOnErr;
   ExitOnErr(this->_LLJIT->initialize(dylib));
-  this->saveObjectFileInfo(rbuffer,bytes,faso_filename,faso_index,startupID);
+  save_object_file_info(rbuffer,bytes,faso_filename,faso_index,startupID);
   // Running the ObjectFileStartUp function registers the startup functions - now we can invoke them
   if (core::startup_functions_are_waiting()) {
     if (print) core::write_bf_stream(BF("%s:%d  startup functions are waiting - INVOKING\n") % __FILE__ % __LINE__ );

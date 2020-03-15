@@ -9,21 +9,9 @@
 
 (in-package :core)
 
-(defstruct (backtrace-frame (:type vector) :named)
-  type                                  ; 1 ( :lisp | :c++ | :lambda | :unknown)
-  return-address                        ; 2
-  raw-name                              ; 3
-  function-name                         ; 4
-  print-name                            ; 5
-  frame-size                            ; 6
-  frame-offset                          ; 7
-  function-start-address                ; 8
-  function-end-address                  ; 9
-  base-pointer                          ; 10
-  arguments                             ; 11
-  closure                               ; 12
-  function-description                  ; 13
-  )
+;;;
+;;; backtrace-frame struct is now defined in C++ in debugger.h and debugger.cc
+;;;
 
 
 (defun dump-jit-symbol-info ()
@@ -117,32 +105,29 @@ For C/C++ frames - return (list 'c-function name)."
           :unknown-lisp-function)))))
 
 ;;; Return the backtrace as a list of backtrace-frame
-(defun backtrace-as-list (clib-backtrace &optional verbose)
-  (dolist (frame clib-backtrace)
-    (let ((common-lisp-name (backtrace-frame-raw-name frame)))
-      (if (and common-lisp-name (search "^^" common-lisp-name))
-          (let* ((name-with-parts #+target-os-linux common-lisp-name
-                                  ;; fixme cracauer.  Find out what FreeBSD actually needs here
-                                  #+target-os-freebsd common-lisp-name
-                                  #+target-os-darwin (if (char= (char common-lisp-name 0) #\_)
-                                                         (subseq common-lisp-name 1 (length common-lisp-name)) ; strip preceeding "_"
-                                                         common-lisp-name))
-                 (parts (cmp:unescape-and-split-jit-name name-with-parts))
-                 (symbol-name (first parts))
-                 (package-name (second parts))
-                 (maybe-fn-or-specializers (third parts))
-                 (maybe-method (fourth parts))
-                 (name (intern symbol-name (or package-name :keyword)))
-                 (print-name (cond
-                               ((string= maybe-method "METHOD")
-                                (format nil "(METHOD ~a ~a)" name maybe-fn-or-specializers))
-                               (t name))))
-            (setf (backtrace-frame-function-name frame) name
-                  (backtrace-frame-print-name frame) print-name))
-          (setf (backtrace-frame-function-name frame) common-lisp-name
-                (backtrace-frame-print-name frame) common-lisp-name))))
-  clib-backtrace)
-
+(defun backtrace-frame-fix-names (frame)
+  (let ((common-lisp-name (backtrace-frame-raw-name frame)))
+    (if (and common-lisp-name (search "^^" common-lisp-name))
+        (let* ((name-with-parts #+target-os-linux common-lisp-name
+                                ;; fixme cracauer.  Find out what FreeBSD actually needs here
+                                #+target-os-freebsd common-lisp-name
+                                #+target-os-darwin (if (char= (char common-lisp-name 0) #\_)
+                                                       (subseq common-lisp-name 1 (length common-lisp-name)) ; strip preceeding "_"
+                                                       common-lisp-name))
+               (parts (cmp:unescape-and-split-jit-name name-with-parts))
+               (symbol-name (first parts))
+               (package-name (second parts))
+               (maybe-fn-or-specializers (third parts))
+               (maybe-method (fourth parts))
+               (name (intern symbol-name (or package-name :keyword)))
+               (print-name (cond
+                             ((string= maybe-method "METHOD")
+                              (format nil "(METHOD ~a ~a)" name maybe-fn-or-specializers))
+                             (t name))))
+          (setf (backtrace-frame-function-name frame) name
+                (backtrace-frame-print-name frame) print-name))
+        (setf (backtrace-frame-function-name frame) common-lisp-name
+              (backtrace-frame-print-name frame) common-lisp-name))))
 
 (defun gather-frames (frames start-trigger &key verbose)
   (let ((state (if start-trigger
@@ -180,14 +165,13 @@ that takes one argument (the backtrace-frame-function-name) and returns T it sho
 recording backtrace frames for Common Lisp.   Looking for the 'UNIVERSAL-ERROR-HANDLER' string
 is one way to eliminate frames that aren't interesting to the user.
 Set gather-all-frames to T and you can gather C++ and Common Lisp frames"
-  (let ((frames (backtrace-as-list backtrace)))
+  (let ((frames backtrace))
     (cond
       ((gather-frames frames gather-start-trigger :verbose verbose)) ; Start gathering on a specific frame
       ((gather-frames frames (lambda (frame) (eq :lisp (backtrace-frame-type frame))) :verbose verbose)) ; return all :LISP frames
       (t frames)))) ; return ALL frames
 
-(defvar *display-return-address-in-backtrace* nil)
-
+#+(or)
 (defun dump-backtrace (raw-backtrace &key (stream *standard-output*) (args t) (all t))
     (let ((frames (common-lisp-backtrace-frames raw-backtrace))
            (index 0))
@@ -197,10 +181,6 @@ Set gather-all-frames to T and you can gather C++ and Common Lisp frames"
            (if arguments
                (progn
                  (prin1 (prog1 index (incf index)) stream)
-                 (when *display-return-address-in-backtrace*
-                   (let ((*print-base* 16))
-                     (write-string " 0x")
-                     (prin1 (core:pointer-integer (backtrace-frame-return-address e)))))
                  (write-string ": (" stream)
                  (princ name stream)
                  (if (> (length arguments) 0)
@@ -219,9 +199,7 @@ Set gather-all-frames to T and you can gather C++ and Common Lisp frames"
 
 (defun btcl (&key all (args t) (stream *standard-output*))
   "Print backtrace of just common lisp frames.  Set args to nil if you don't want arguments printed"
-  (core:call-with-backtrace
-   (lambda (raw-backtrace)
-     (dump-backtrace raw-backtrace :stream stream :args args :all all)))
+  (dump-backtrace core:*backtrace* :stream stream :args args :all all)
   (finish-output stream))
 
 (defun bt-argument (frame-index argument-index)
@@ -337,7 +315,7 @@ Set gather-all-frames to T and you can gather C++ and Common Lisp frames"
 
 (defun object-file-address-information (addr &key verbose)
   (multiple-value-bind (sectioned-address object-file)
-      (llvm-sys:object-file-for-instruction-pointer llvm-sys:*jit-engine* addr verbose)
+      (llvm-sys:object-file-for-instruction-pointer addr verbose)
     (unless (null sectioned-address)
       (llvm-sys:get-line-info-for-address
        (llvm-sys:create-dwarf-context object-file)

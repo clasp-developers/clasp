@@ -47,22 +47,20 @@
 
 (export '(with-locked-hash-table))
 
-(in-package :cl)
+(in-package :core)
 
-(defmacro unwind-protect (protected-form &rest cleanup-forms)
+(defmacro cl:unwind-protect (protected-form &rest cleanup-forms)
   `(core:funwind-protect (lambda () ,protected-form) (lambda () ,@cleanup-forms)))
 
-(defmacro catch (tag &rest forms)
+(defmacro cl:catch (tag &rest forms)
   `(core:catch-function ,tag (lambda () (declare (core:lambda-name catch-lambda)) ,@forms)))
 
-(defmacro throw (tag result-form)
+(defmacro cl:throw (tag result-form)
   `(core:throw-function ,tag (lambda () (declare (core::lambda-name throw-result-lambda)) ,result-form)))
   
 #+(or)
-(defmacro progv (symbols values &rest forms)
+(defmacro cl:progv (symbols values &rest forms)
   `(core:progv-function ,symbols ,values #'(lambda () ,@forms)))
-
-(in-package :core)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

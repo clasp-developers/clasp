@@ -226,7 +226,12 @@ CL_DEFUN T_sp cl__make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_si
   SYMBOL_EXPORT_SC_(KeywordPkg, key);
   if (weakness.notnilp()) {
     if (weakness == INTERN_(kw, key)) {
-      return core__make_weak_key_hash_table(clasp_make_fixnum(size));
+      if (thread_safe.nilp()
+          && (test == cl::_sym_eq || test == cl::_sym_eq->symbolFunction())) {
+        return core__make_weak_key_hash_table(clasp_make_fixnum(size));
+      } else {
+        SIMPLE_ERROR(BF("Weak hash tables with thread safety or non-EQ tests are not yet supported"));
+      }
     }
     SIMPLE_ERROR(BF("Only :weakness :key (weak-key hash tables) are currently supported"));
   }
@@ -249,14 +254,18 @@ CL_DEFUN T_sp cl__make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_si
   } else {
     SIMPLE_ERROR(BF("Illegal test[%s] for make-hash-table") % _rep_(test));
   }
-#ifdef CLASP_THREADS
   if (thread_safe.notnilp()) {
-    SimpleBaseString_sp sbsread = SimpleBaseString_O::make("USRHSHR");
-    SimpleBaseString_sp sbswrite = SimpleBaseString_O::make("USRHSHW");
-    table->_Mutex = mp::SharedMutex_O::make_shared_mutex(sbsread,sbswrite);
+    table->setupThreadSafeHashTable();
   }
-#endif
   return table;
+}
+
+void HashTable_O::setupThreadSafeHashTable() {
+#ifdef CLASP_THREADS
+  SimpleBaseString_sp sbsread = SimpleBaseString_O::make("USRHSHR");
+  SimpleBaseString_sp sbswrite = SimpleBaseString_O::make("USRHSHW");
+  this->_Mutex = mp::SharedMutex_O::make_shared_mutex(sbsread,sbswrite);
+#endif
 }
 
 CL_LAMBDA(ht);
@@ -983,9 +992,12 @@ List_sp HashTable_O::rehash_upgrade_write_lock(bool expandTable, T_sp findKey) {
 
   string HashTable_O::__repr__() const {
     stringstream ss;
-    ss << "#<" << this->_instanceClass()->_classNameAsString() << " :HashTableCount " << this->_HashTableCount;
-    ss << " :calculated-entries " << this->calculateHashTableCount();
-    ss << " :size " << this->_Table.size();
+    ss << "#<" << this->_instanceClass()->_classNameAsString();
+    ss << " :COUNT " << this->_HashTableCount;
+    // the calculator is only useful to check that the count is consistent;
+    // uncomment this if you need to debug, but otherwise it's redundant.
+//    ss << " :calculated-entries " << this->calculateHashTableCount();
+    ss << " :SIZE " << this->_Table.size();
     ss << " @" << (void *)(this) << ">";
     return ss.str();
   }

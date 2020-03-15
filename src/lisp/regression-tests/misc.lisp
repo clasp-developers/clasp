@@ -54,6 +54,11 @@
                       (disassemble '(lambda()) :type :ir)
                       t))
 
+(test disassemble-5-bclasp
+      (let ((cmp:*CLEAVIR-COMPILE-HOOK* nil))
+        (disassemble '(lambda()) :type :ir)
+        t))
+
 (defun %foo% (n)(* n n))
 
 (test disassemble-6 (progn

@@ -42,10 +42,8 @@
 
 ;; interface
 
-(defun interpret (ast dynenv)
+(defun interpret (ast)
   (let ((env (empty-environment)))
-    ;; the dynamic environment is unused, but must be bound (e.g. for assignments)
-    (setf (variable dynenv env) nil)
     ;; Do actual work
     (interpret-ast ast env)))
 
@@ -181,7 +179,6 @@
 (defcan cleavir-ast:function-ast)
 (defmethod interpret-ast ((ast cleavir-ast:function-ast) env)
   (let ((body (cleavir-ast:body-ast ast))
-        (dynenv-out (cleavir-ast:dynamic-environment-out-ast ast))
         (ll (cleavir-ast:lambda-list ast)))
     ;; KLUDGE: If the closure has ASTs we can't interpret, we have
     ;; to give up now, and there's no way to only compile this
@@ -196,7 +193,6 @@
       (lambda (core:&va-rest arguments)
         (declare (core:lambda-name ast-interpreted-closure))
         (let ((env (augment-environment env)))
-          (setf (variable dynenv-out env) nil)
           (bind-list arguments env
                      required optional rest va-rest-p keyp key aok-p)
           ;; ok body now
@@ -217,7 +213,6 @@
   ;; We need to disambiguate things if the block is entered
   ;; more than once. Storing things in the environment
   ;; lets it work with closures.
-  (setf (variable (cleavir-ast:dynamic-environment-out-ast ast) env) nil)
   (let ((catch-tag (gensym)))
     (setf (variable ast env) catch-tag)
     (catch catch-tag
@@ -250,7 +245,6 @@
 
 (defcan cleavir-ast:tagbody-ast)
 (defmethod interpret-ast ((ast cleavir-ast:tagbody-ast) env)
-  (setf (variable (cleavir-ast:dynamic-environment-out-ast ast) env) nil)
   ;; We loop through the item-asts interpreting them.
   ;; If we hit a GO, the GO throws a new list of ASTs to interpret, set up
   ;; beforehand. We catch that and set it as the new to-interpret list.
@@ -487,48 +481,44 @@
 (in-package #:clasp-cleavir)
 
 (defun ast-interpret-form (form env)
-  (let ((dynenv (make-dynenv env)))
-    (interpret-ast:interpret
-     (let ((cleavir-generate-ast:*compiler* 'cl:eval))
-       (handler-bind
-           ((cleavir-env:no-variable-info
-              (lambda (condition)
-                (declare (ignore condition))
-                (invoke-restart #+cst 'cleavir-cst-to-ast:consider-special
-                                #-cst 'cleavir-generate-ast:consider-special)))
-            (cleavir-env:no-function-info
-              (lambda (condition)
-                (declare (ignore condition))
-                (invoke-restart #+cst 'cleavir-cst-to-ast:consider-global
-                                #-cst 'cleavir-generate-ast:consider-global))))
-         #-cst
-         (cleavir-generate-ast:generate-ast
-          form env clasp-cleavir:*clasp-system* dynenv)
-         #+cst
-         (cleavir-cst-to-ast:cst-to-ast
-          (cst:cst-from-expression form)
-          env clasp-cleavir:*clasp-system* dynenv)))
-     dynenv)))
-
-(defun ast-interpret-cst (cst env)
-  (let ((dynenv (make-dynenv env)))
-    (interpret-ast:interpret
-     (let ((cleavir-generate-ast:*compiler* 'cl:eval))
-       (handler-bind
-           ((cleavir-env:no-variable-info
-              (lambda (condition)
-                (declare (ignore condition))
-                (invoke-restart #+cst 'cleavir-cst-to-ast:consider-special
-                                #-cst 'cleavir-generate-ast:consider-special)))
-            (cleavir-env:no-function-info
-              (lambda (condition)
-                (declare (ignore condition))
-                (invoke-restart #+cst 'cleavir-cst-to-ast:consider-global
-                                #-cst 'cleavir-generate-ast:consider-global))))
+  (interpret-ast:interpret
+   (let ((cleavir-generate-ast:*compiler* 'cl:eval))
+     (handler-bind
+         ((cleavir-env:no-variable-info
+            (lambda (condition)
+              (declare (ignore condition))
+              (invoke-restart #+cst 'cleavir-cst-to-ast:consider-special
+                              #-cst 'cleavir-generate-ast:consider-special)))
+          (cleavir-env:no-function-info
+            (lambda (condition)
+              (declare (ignore condition))
+              (invoke-restart #+cst 'cleavir-cst-to-ast:consider-global
+                              #-cst 'cleavir-generate-ast:consider-global))))
        #-cst
        (cleavir-generate-ast:generate-ast
-        (cst:raw cst) env clasp-cleavir:*clasp-system* dynenv)
+        form env clasp-cleavir:*clasp-system*)
        #+cst
        (cleavir-cst-to-ast:cst-to-ast
-        cst env clasp-cleavir:*clasp-system* dynenv)))
-     dynenv)))
+        (cst:cst-from-expression form)
+        env clasp-cleavir:*clasp-system*)))))
+
+(defun ast-interpret-cst (cst env)
+  (interpret-ast:interpret
+   (let ((cleavir-generate-ast:*compiler* 'cl:eval))
+     (handler-bind
+         ((cleavir-env:no-variable-info
+            (lambda (condition)
+              (declare (ignore condition))
+              (invoke-restart #+cst 'cleavir-cst-to-ast:consider-special
+                              #-cst 'cleavir-generate-ast:consider-special)))
+          (cleavir-env:no-function-info
+            (lambda (condition)
+              (declare (ignore condition))
+              (invoke-restart #+cst 'cleavir-cst-to-ast:consider-global
+                              #-cst 'cleavir-generate-ast:consider-global))))
+       #-cst
+       (cleavir-generate-ast:generate-ast
+        (cst:raw cst) env clasp-cleavir:*clasp-system*)
+       #+cst
+       (cleavir-cst-to-ast:cst-to-ast
+        cst env clasp-cleavir:*clasp-system*)))))

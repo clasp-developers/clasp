@@ -134,22 +134,8 @@ InvocationHistoryFrameIterator_sp core__get_invocation_history_frame_prev(int id
 namespace core {
   int clasp_musleep(double dsec, bool alertable);
   void core__dynamic_binding_stack_dump(std::ostream &out);
-  core::T_sp core__ihs_backtrace(core::T_sp outDesignator, core::T_sp msg);
-  int core__ihs_top();
-  void core__ihs_topSetLineColumn(int lineno, int column);
-  int core__ihs_prev(int idx);
-  int core__ihs_next(int idx);
-  core::T_sp core__ihs_fun(int idx);
-  core::T_sp core__ihs_arguments(int idx);
-  core::T_sp core__ihs_env(int idx);
-/*! Return the current frame index stored in core:*ihs-current*
-      Update core:*ihs-current* to a valid value */
-  int core__ihs_current_frame();
-/*! Set the current core:*ihs-current* value.
-      If the idx is out of bounds then return a valid value */
-void core__gdb(T_sp msg);
-  T_sp core__valid_function_name_p(T_sp arg);
-  int core__set_ihs_current_frame(int idx);
+
+T_sp core__valid_function_name_p(T_sp arg);
   void core__exception_stack_dump();
   T_sp core__create_tagged_immediate_value_or_nil(T_sp object);
   bool cl__constantp(T_sp obj, T_sp env = _Nil<T_O>());

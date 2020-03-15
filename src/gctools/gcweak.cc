@@ -403,7 +403,7 @@ core::T_mv WeakKeyHashTable::gethash(core::T_sp tkey, core::T_sp defaultValue) {
 		if (result) { // WeakKeyHashTable::find(this->_Keys,key,false,pos)) { //buckets_find(tbl, this->keys, key, NULL, &b)) {
 		    value_type& k = (*this->_Keys)[pos];
 		    GCWEAK_LOG(BF("gethash find successful pos = %d  k= %p k.unboundp()=%d k.base_ref().deletedp()=%d k.NULLp()=%d") % pos % k.raw_() % k.unboundp() % k.deletedp() % (bool)k );
-		    if ( !k.unboundp() && !k.deletedp() ) {
+		    if ( k.raw_() && !k.unboundp() && !k.deletedp() ) {
 			GCWEAK_LOG(BF("Returning success!"));
 			core::T_sp value = smart_ptr<core::T_O>((*this->_Values)[pos]);
 			if ( value.sameAsKeyP() ) {
@@ -451,7 +451,7 @@ void WeakKeyHashTable::maphash(std::function<void(core::T_sp, core::T_sp)> const
 		size_t length = this->_Keys->length();
 		for (int i = 0; i < length; ++i) {
 		    value_type& old_key = (*this->_Keys)[i];
-		    if (!old_key.unboundp() && !old_key.deletedp()) {
+		    if (old_key.raw_() && !old_key.unboundp() && !old_key.deletedp()) {
 			core::T_sp tkey(old_key);
 			core::T_sp tval((*this->_Values)[i]);
 			fn(tkey,tval);
@@ -466,7 +466,7 @@ void WeakKeyHashTable::maphashFn(core::T_sp fn) {
 		size_t length = this->_Keys->length();
 		for (int i = 0; i < length; ++i) {
 		    value_type& old_key = (*this->_Keys)[i];
-		    if (!old_key.unboundp() && !old_key.deletedp()) {
+		    if (old_key.raw_() && !old_key.unboundp() && !old_key.deletedp()) {
 			core::T_sp tkey(old_key);
 			core::T_sp tval((*this->_Values)[i]);
                         core::eval::funcall(fn,tkey,tval);
@@ -487,6 +487,7 @@ bool WeakKeyHashTable::remhash(core::T_sp tkey) {
 		size_t result = gctools::WeakKeyHashTable::find(this->_Keys, key, b);
 #endif
 		if( ! result ||
+                    !((*this->_Keys)[b]).raw_() ||
 		    (*this->_Keys)[b].unboundp() ||
 		    (*this->_Keys)[b].deletedp() )
 		    {
@@ -501,7 +502,8 @@ bool WeakKeyHashTable::remhash(core::T_sp tkey) {
                         return;
                       }
 		    }
-		if( !(*this->_Keys)[b].unboundp() &&
+		if( (*this->_Keys)[b].raw_() &&
+                    !(*this->_Keys)[b].unboundp() &&
 		    !(*this->_Keys)[b].deletedp() )
 		    {
                       auto deleted = value_type(gctools::make_tagged_deleted<core::T_O*>());

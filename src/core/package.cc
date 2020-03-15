@@ -42,6 +42,7 @@ THE SOFTWARE.
 #include <clasp/core/hashTableEqual.h>
 #include <clasp/core/bignum.h>
 #include <clasp/core/array.h>
+#include <clasp/core/debugger.h>
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/evaluator.h> // for eval::funcall
 
@@ -403,6 +404,11 @@ void Package_O::initialize() {
   this->_InternalSymbols = HashTableEqual_O::create_default();
   this->_ExternalSymbols = HashTableEqual_O::create_default();
   this->_Shadowing = HashTableEq_O::create_default();
+#if 0
+  this->_InternalSymbols->setupThreadSafeHashTable();
+  this->_ExternalSymbols->setupThreadSafeHashTable();
+  this->_Shadowing->setupThreadSafeHashTable();
+#endif
   this->_KeywordPackage = false;
   this->_AmpPackage = false;
 }

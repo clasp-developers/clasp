@@ -989,6 +989,8 @@ FILE* monitor_file(const std::string& filename_prefix);
 #define MONITOR(x)
 #endif
 extern bool global_Started;
+
+T_mv cl__intern(String_sp symbol_name, T_sp package_desig);
 };
 
 

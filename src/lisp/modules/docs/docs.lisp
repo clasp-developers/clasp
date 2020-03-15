@@ -6,7 +6,7 @@
 
 (defvar *here* #.(make-pathname :name NIL :type NIL :defaults (or *compile-file-truename* *load-truename*)))
 (defvar *default-output-directory* (merge-pathnames "../../../docs/" *here*))
-(defvar *default-packages* '(:ext))
+(defparameter *default-packages* (list "EXT" "CORE"))
 
 (defclass main-page (staple:templated-page)
   ((staple:document-package :initarg :document-package :initform NIL :accessor staple:document-package)
@@ -36,16 +36,16 @@
 (defclass package-page (staple:definitions-index-page)
   ())
 
-(defmethod definition-wanted-p ((definition definitions:definition) (page package-page))
+(defmethod staple:definition-wanted-p ((definition definitions:definition) (page package-page))
   (eql :external (definitions:visibility definition)))
 
-(defmethod definition-wanted-p ((definition definitions:method) (page package-page))
+(defmethod staple:definition-wanted-p ((definition definitions:method) (page package-page))
   NIL)
 
-(defmethod definition-wanted-p ((definition definitions:package) (page package-page))
+(defmethod staple:definition-wanted-p ((definition definitions:package) (page package-page))
   NIL)
 
-(defmethod definition-wanted-p ((definition definitions:compiler-macro) (page package-page))
+(defmethod staple:definition-wanted-p ((definition definitions:compiler-macro) (page package-page))
   NIL)
 
 (defun make-package-page (package project)
@@ -70,5 +70,46 @@
           do (push (make-package-page package project) (staple:pages project)))
     project))
 
-;; (asdf:load-system :clasp-docs)
-;; (staple:generate :clasp :if-exists :supersede)
+#|
+To use
+(require :asdf)
+(load "~/quicklisp/setup.lisp")
+(asdf:load-asd (pathname "sys:modules;docs;clasp-docs.asd"))
+(asdf:register-immutable-system :eclector)
+(asdf:register-immutable-system :eclector-concrete-syntax-tree)
+(asdf:register-immutable-system :closer-mop)
+(asdf:register-immutable-system :alexandria)
+(ql:quickload :clasp-docs :verbose t)
+(time (staple:generate :clasp :if-exists :supersede))
+
+;;; "CL" "CLOS" "GRAY" 
+(setq clasp-docs::*default-packages* 
+      (union 
+       clasp-docs::*default-packages* 
+       (list "MP" "GCTOOLS"
+             "CCLASP-BUILD"
+             "CLASP-CLEAVIR"
+             "CC-GENERATE-AST"
+             "CLASP-CLEAVIR-AST"
+             "CLASP-CLEAVIR-HIR"
+             "CLASP-CLEAVIR-AST-TO-HIR"
+             "CC-GENERATE-AST"
+             "CC-HIR-TO-MIR"
+             "CC-MIR"
+             "CLEAVIR-IR-GML"
+             "LISP-EXECUTABLE.CREATION"
+             "INTERPRET-AST"
+             "LLVM" 
+             "LLVM-SYS" 
+             "CLOS"
+             "COMPILER"
+             "LITERAL"
+             "PRIMOP"
+             "STATIC-GFS"
+             "SB-BSD-SOCKETS"
+             "C"
+             "CLBIND"
+             "AST-TOOLING")))
+
+(time (staple:generate :clasp :if-exists :supersede))
+|#

@@ -49,6 +49,7 @@ THE SOFTWARE.
 #include <clasp/core/instance.h>
 #include <clasp/core/funcallableInstance.h>
 #include <clasp/core/pathname.h>
+#include <clasp/core/evaluator.h>
 #include <clasp/core/loadTimeValues.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/unixfsys.h>
@@ -73,6 +74,8 @@ SYMBOL_EXPORT_SC_(LlvmoPkg, STARdebugObjectFilesSTAR);
 SYMBOL_EXPORT_SC_(LlvmoPkg, STARdumpObjectFilesSTAR);
 SYMBOL_EXPORT_SC_(LlvmoPkg, STARdefault_code_modelSTAR);
 SYMBOL_EXPORT_SC_(LlvmoPkg, STARjit_engineSTAR);
+
+SYMBOL_EXPORT_SC_(CompPkg, thread_local_llvm_context);
 
 void redirect_llvm_interface_addSymbol() {
   //	llvm_interface::addSymbol = &addSymbolAsGlobal;
@@ -118,6 +121,7 @@ CL_DEFUN bool llvm_sys__load_bitcode_ll(core::Pathname_sp filename, bool verbose
     SIMPLE_ERROR(BF("Could not create namestring for %s") % _rep_(filename));
   }
   core::String_sp namestring = gctools::As<core::String_sp>(tnamestring);
+  LLVMContext_sp context = getLLVMContext();
   Module_sp m = llvm_sys__parseIRFile(namestring,context);
   ClaspJIT_sp jit = gc::As<ClaspJIT_sp>(_sym_STARjit_engineSTAR->symbolValue());
   jit->addIRModule(m,tsc);
@@ -152,14 +156,7 @@ CL_LAMBDA(filename &optional verbose print external_format);
 CL_DEFUN bool llvm_sys__load_module(Module_sp m, bool verbose, bool print, core::T_sp externalFormat )
 {
   core::DynamicScopeManager scope(::cl::_sym_STARpackageSTAR, ::cl::_sym_STARpackageSTAR->symbolValue());
-  EngineBuilder_sp engineBuilder = EngineBuilder_O::make(m);
-  TargetOptions_sp targetOptions = TargetOptions_O::make();
-  engineBuilder->setTargetOptions(targetOptions);
-  ExecutionEngine_sp executionEngine = engineBuilder->createExecutionEngine();
-  if (comp::_sym_STARload_time_value_holder_nameSTAR->symbolValue().nilp() ) {
-    SIMPLE_ERROR(BF("The cmp:*load-time-value-holder-name* is nil"));
-  }
-  finalizeEngineAndRegisterWithGcAndRunMainFunctions(executionEngine);
+  loadModule(m);
   return true;
 }
 

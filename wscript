@@ -133,15 +133,14 @@ CLANG_LIBRARIES = [
 BOOST_LIBRARIES = [
             'boost_filesystem',
             'boost_date_time',
-            'boost_program_options',
-            'boost_system',
-            'boost_iostreams']
+            'boost_system']
 
 VALID_OPTIONS = [
     # point to the llvm-config executable - this tells the build system which clang to use
     # Default on macOS = /usr/local/opt/llvm@%s/bin/llvm-config'%LLVM_VERSION   - brew installed
     # Default on linux = it searches your path
     "LLVM_CONFIG_BINARY",
+    "LLVM_VERSION_OVERRIDE",
     # To link to the debug versions of the LLVM libraries, set a path here to the llvm-config binary of the LLVM debug build
     
     "LLVM_CONFIG_BINARY_FOR_LIBS",
@@ -253,7 +252,7 @@ DEBUG_OPTIONS = [
 ]
 
 def macos_version(cfg):
-    result = get_macos_version(cfg)
+    result = get_macosx_version(cfg)
     print("result = %s" % result)
     
 def build_extension(bld):
@@ -284,10 +283,10 @@ def update_dependencies(cfg):
 #                       "master")
     fetch_git_revision("src/lisp/kernel/contrib/sicl",
                        "https://github.com/Bike/SICL.git",
-                       "52376ab0679d3dcc0e8093dc2cffe28100d97ddb")
+                       "a662d3761505a1d4c9b1fc71ebeebad641760b5c")
     fetch_git_revision("src/lisp/kernel/contrib/Concrete-Syntax-Tree",
-                       "https://github.com/robert-strandh/Concrete-Syntax-Tree.git",
-                       "654cdbf1fdb0625d3c68144c8806704e2f97f34b")
+                       "https://github.com/s-expressionists/Concrete-Syntax-Tree.git",
+                       "28dbbdd70dcc222062dadb156d8af305746cc1a8")
     fetch_git_revision("src/lisp/kernel/contrib/closer-mop",
                        "https://github.com/pcostanza/closer-mop.git",
                        "d4d1c7aa6aba9b4ac8b7bb78ff4902a52126633f")
@@ -313,8 +312,8 @@ def update_dependencies(cfg):
                        "b8a05a3846430bc36c8200f24d248c8293801503")
     fetch_git_revision("src/lisp/modules/asdf",
                        "https://gitlab.common-lisp.net/asdf/asdf.git",
-                       "56dc62d54a8f62e702f7442f8432d59fc2032127")
-#                       label = "master", revision = "3.3.3.3")
+#                       "1cae71bdf0afb0f57405c5e8b7e8bf0aeee8eef8")
+                        label = "master", revision = "3.3.3.5")
     os.system("(cd src/lisp/modules/asdf; ${MAKE-make} --quiet)")
 
 # run this from a completely cold system with:
@@ -942,8 +941,9 @@ def configure(cfg):
 
     cur_clang_version = run_llvm_config(cfg, "--version")
     log.debug("cur_clang_version = %s", cur_clang_version)
-    if (int(cur_clang_version[0]) != LLVM_VERSION):
-        raise Exception("You must have clang/llvm version %d installed - you have %s" % (LLVM_VERSION, cur_clang_version[0]))
+    llvm_version_test = not ("LLVM_VERSION_OVERRIDE" in cfg.env)
+    if (llvm_version_test and (int(cur_clang_version[0]) != LLVM_VERSION)):
+        raise Exception("You must have clang/llvm version %d installed - you have %s" % (LLVM_VERSION, cur_clang_version[0]) )
     # find a lisp for the scraper
     if not cfg.env.SCRAPER_LISP:
         cfg.env["SBCL"] = cfg.find_program("sbcl", var = "SBCL")[0]
@@ -1092,8 +1092,7 @@ def configure(cfg):
 #    cfg.env.append_value('CXXFLAGS', includes_from_build_dir )
 #    cfg.env.append_value('CFLAGS', includes_from_build_dir )
 #    log.debug("DEBUG includes_from_build_dir = %s", includes_from_build_dir)
-#    cfg.env.append_value('CXXFLAGS', [ '-std=c++14'])
-    cfg.env.append_value('CXXFLAGS', run_llvm_config(cfg, "--bindir"))
+    cfg.env.append_value('CXXFLAGS', [ '-std=c++14'])
 #    cfg.env.append_value('CXXFLAGS', ["-D_GLIBCXX_USE_CXX11_ABI=1"])
     if (cfg.env.LTO_FLAG):
         cfg.env.append_value('CXXFLAGS', cfg.env.LTO_FLAG )
@@ -1710,8 +1709,15 @@ class link_executable(clasp_task):
             lto_option_list = []
             lto_object_path_lto = []
         link_options = []
-        if (self.env['DEST_OS'] == DARWIN_OS ):
-            link_options = link_options + [ LTO_OPTION, "-v", '-Wl,-stack_size,0x1000000']
+        if (self.env['DEST_OS'] == DARWIN_OS):
+            # only extend link_options if osx < 10.14.xx, harms starting from 10.14
+            versionlist = get_macosx_version(self)
+            log.info("MACOSX VERSION = %s" % versionlist)
+            if ((versionlist[0] == 10) and (versionlist[1] < 14)):
+            	log.info("extend link_options") 
+            	link_options = link_options + [ LTO_OPTION, "-v", '-Wl,-stack_size,0x1000000']
+            else:
+            	log.info("Do no extend link_options") 
         cmd = [ self.env.CXX[0] ] + \
               waf_nodes_to_paths(self.inputs) + \
               self.env['LINKFLAGS'] + \

@@ -37,5 +37,8 @@ FORWARD(DILexicalBlock);
 FORWARD(DICompileUnit);
 FORWARD(DINameSpace);
 FORWARD(DIBuilder);
+
+core::T_mv llvm_sys__address_information(void* address, bool verbose);
+
 };
 #endif

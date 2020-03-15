@@ -21,7 +21,7 @@
   nil)
 
 (defstruct (ast-job (:type vector) :named)
-  ast environment dynenv output-stream
+  ast environment output-stream
   form-index   ; Uses (core:next-startup-position) to keep count
   form-counter ; Counts from zero
   module
@@ -85,8 +85,7 @@
               (core:with-memory-ramp (:pattern 'gctools:ramp)
                 (literal:with-top-level-form
                     (let ((hoisted-ast (clasp-cleavir::hoist-ast
-                                        (ast-job-ast job)
-                                        (ast-job-dynenv job))))
+                                        (ast-job-ast job))))
                       (clasp-cleavir::translate-hoisted-ast hoisted-ast :env (ast-job-environment job))))))
           (let ((startup-function (add-global-ctor-function module run-all-function
                                                             :position (ast-job-form-counter job))))
@@ -155,6 +154,7 @@ AST->HIR->LLVM-IR is done in serial and in parallel it compiles LLVM-IR->Object 
 Or it can go from source->AST and then compile the AST->HIR->LLVM-IR->ObjectFiles
 in parallel threads. The reason for the two methods is that the AST->HIR uses the 
 garbage collector heavily and Boehm doesn't work well in multithreaded mode.
+Boehm has a mutex and stack unwinding involves a mutex on linux.
 So as an experiment I tried doing AST->HIR and HIR->LLVM-IR in serial and 
 then leave the LLVM stuff to be done in parallel.   That slows down so much
 that it's not worth it either.   It would be better to improve the garbage collector (MPS)
@@ -170,10 +170,7 @@ multithreaded performance that we should explore."
         ast-jobs)
     (cfp-log "Starting the pool of threads~%")
     (finish-output)
-    (let* ((number-of-threads (if (and (member :use-boehm *features*)
-                                       (member :target-os-linux *features*))
-                                  3 ; limit to 3 cores for linux/boehm
-                                  (core:num-logical-processors)))
+    (let* ((number-of-threads (core:num-logical-processors))
            (ast-queue (core:make-queue 'compile-file-parallel))
            ;; Setup a pool of threads
            (ast-threads
@@ -212,7 +209,6 @@ multithreaded performance that we should explore."
                       (make-pathname
                        :name (format nil "~a_~d" (pathname-name output-path) form-counter)
                        :defaults output-path))
-                    (dynenv (clasp-cleavir::make-dynenv environment))
                     #+cst
                     (cst (eclector.concrete-syntax-tree:cst-read source-sin nil eof-value))
                     #+cst
@@ -221,19 +217,18 @@ multithreaded performance that we should explore."
                     (form (cst:raw cst))
                     #+cst
                     (ast (if cmp::*debug-compile-file*
-                             (clasp-cleavir::compiler-time (clasp-cleavir::cst->ast cst dynenv))
-                             (clasp-cleavir::cst->ast cst dynenv)))
+                             (clasp-cleavir::compiler-time (clasp-cleavir::cst->ast cst))
+                             (clasp-cleavir::cst->ast cst)))
                     #-cst
                     (form (read source-sin nil eof-value))
                     #-cst
                     (_ (when (eq form eof-value) (return nil)))
                     #-cst
                     (ast (if cmp::*debug-compile-file*
-                             (clasp-cleavir::compiler-time (clasp-cleavir::generate-ast form dynenv))
-                             (clasp-cleavir::generate-ast form dynenv))))
+                             (clasp-cleavir::compiler-time (clasp-cleavir::generate-ast form))
+                             (clasp-cleavir::generate-ast form))))
                (let ((ast-job (make-ast-job :ast ast
                                             :environment environment
-                                            :dynenv dynenv
                                             :current-source-pos-info current-source-pos-info
                                             :form-output-path form-output-path
                                             :output-stream (when (eq intermediate-output-type :in-memory-object)
@@ -434,7 +429,8 @@ Each bitcode filename will contain the form-index.")
                     (t (output-cfp-result result ast-jobs output-path output-type)))
               output-path)))))))
 
-(defun cl:compile-file (input-file &rest args &key (output-type :fasl output-type-p) output-file  &allow-other-keys)
+(defun cl:compile-file (input-file &rest args &key (output-type :fasl output-type-p)
+                                                output-file (verbose *compile-verbose*) &allow-other-keys)
   (when *generate-faso*
     (remf args :output-type)
     (setq output-type (case output-type
@@ -449,9 +445,8 @@ Each bitcode filename will contain the form-index.")
                  (t (if *compile-file-parallel*
                         (apply #'compile-file-parallel input-file args)
                         (apply #'compile-file-serial input-file args))))))
-    (if (or (getf args :print) *compile-print*)
-        (let ((*trace-output* *standard-output*))
-          (time (do-compile-file)))
+    (if verbose
+        (time (do-compile-file))
         (do-compile-file))))
 
 (eval-when (:load-toplevel)

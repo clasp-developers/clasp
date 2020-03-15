@@ -97,6 +97,8 @@
    #:bind-va-list-ast #:make-bind-va-list-ast #:va-list-ast
    #:cmp-ast
    #:cas-car-ast #:cas-cdr-ast #:slot-cas-ast #:acas-ast
+   #:bind-ast
+   #:unwind-protect-ast #:cleanup-ast
    #:invoke-ast #:multiple-value-invoke-ast #:destinations
    #:introduce-invoke
    ))
@@ -154,6 +156,7 @@
    #:header-stamp-case-instruction #:make-header-stamp-case-instruction
    #:cas-car-instruction #:cas-cdr-instruction #:slot-cas-instruction
    #:acas-instruction
+   #:bind-instruction #:unwind-protect-instruction
    ))
 
 (defpackage #:clasp-cleavir-ast-to-hir

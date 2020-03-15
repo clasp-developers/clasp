@@ -705,10 +705,10 @@ This is due to either a problem in foreign code (e.g., C++), or a bug in Clasp i
 (define-condition floating-point-invalid-operation (arithmetic-error) ())
 
 (define-condition core:do-not-funcall-special-operator (undefined-function)
-  ((operator :initarg :operator :reader operator))
+  ((operator :initarg :operator :reader cell-error-name))
   (:report (lambda (condition stream)
              (format stream "Cannot call special operator as function: ~s"
-                     (operator condition)))))
+                     (cell-error-name condition)))))
 
 (define-condition core:wrong-number-of-arguments (program-error)
   (;; may be NIL if this is called from the interpreter and we don't know anything

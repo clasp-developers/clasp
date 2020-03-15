@@ -56,7 +56,6 @@ successfully, T is returned, else error."
   (let* ((real-start (get-internal-real-time))
 	 (run-start (get-internal-run-time))
          (start-unwinds (gctools:thread-local-unwind-counter))
-         (start-unwind-time (gctools:unwind-time-nanoseconds))
          end-unwinds
 	 clang-link-time-end
 	 clang-link-number-end
@@ -80,65 +79,20 @@ successfully, T is returned, else error."
             interpreted-calls-end (core:interpreted-closure-calls)
             )
       (setf end-unwinds (gctools:thread-local-unwind-counter))
-      (let* ((end-unwind-time (gctools:unwind-time-nanoseconds))
-             (unwind-time (float (/ (- end-unwind-time start-unwind-time) 1000000000.0))))
-        (if (= interpreted-calls-end interpreted-calls-start)
-            (core:bformat *trace-output*
-                          "Time real(%.3f secs) run(%.3f secs) consed(%d bytes) unwinds(%d/%.3f secs)%N"
-                          (float (/ (- real-end real-start) internal-time-units-per-second))
-                          (float (/ (- run-end run-start) internal-time-units-per-second))
-                          (- clasp-bytes-end clasp-bytes-start)
-                          (- end-unwinds start-unwinds)
-                          unwind-time)
-            (core:bformat *trace-output*
-                          "Time real(%.3f secs) run(%.3f secs) consed(%d bytes) interps(%d) unwinds(%d/%.3f secs)%N"
-                          (float (/ (- real-end real-start) internal-time-units-per-second))
-                          (float (/ (- run-end run-start) internal-time-units-per-second))
-                          (- clasp-bytes-end clasp-bytes-start)
-                          (- interpreted-calls-end interpreted-calls-start)
-                          (- end-unwinds start-unwinds)
-                          unwind-time))
-        #+(and debug-track-unwinds)
-        (core:bformat *trace-output*
-                      "ReturnFrom(%d) DynamicGo(%d) CatchThrow(%d)%N"
-                      (- end-return-from start-return-from)
-                      (- end-dynamic-go start-dynamic-go)
-                      (- end-catch-throw start-catch-throw)))))
-  #+boehm-gc
-  (let* ((*do-time-level* (1+ *do-time-level*))
-         real-start
-	 run-start
-	 consed-start
-	 gc-no-start
-	 real-end
-	 run-end
-	 consed-end
-	 gc-no-end)
-    ;; Garbage collection forces the value of counters to be updated
-    (si::gc t)
-    ;; If there are no nested calls, we just reset the counters
-    (when (zerop *do-time-level*) (si::gc-stats 0))
-    ;; but in general we copy the previous values.
-    (multiple-value-setq (consed-start gc-no-start) (gc-stats t))
-    (setq real-start (get-internal-real-time)
-	  run-start (get-internal-run-time))
-    (multiple-value-prog1
-	(funcall closure)
-      (setq run-end (get-internal-run-time)
-	    real-end (get-internal-real-time))
-      ;; Garbage collection forces the value of counters to be updated
-      (si::gc t)
-      (multiple-value-setq (consed-end gc-no-end) (gc-stats nil))
-      (fresh-line *trace-output*)
-      (format *trace-output*
-	      "real time : ~,3F secs~%~
-              run time  : ~,3F secs~%~
-              gc count  : ~D times~%~
-              consed    : ~D bytes~%"
-	      (/ (- real-end real-start) internal-time-units-per-second)
-	      (/ (- run-end run-start) internal-time-units-per-second)
-	      (- gc-no-end gc-no-start)
-	      (- consed-end consed-start)))))
+      (if (= interpreted-calls-end interpreted-calls-start)
+          (core:bformat *trace-output*
+                        "Time real(%.3f secs) run(%.3f secs) consed(%d bytes) unwinds(%d)%N"
+                        (float (/ (- real-end real-start) internal-time-units-per-second))
+                        (float (/ (- run-end run-start) internal-time-units-per-second))
+                        (- clasp-bytes-end clasp-bytes-start)
+                        (- end-unwinds start-unwinds))
+          (core:bformat *trace-output*
+                        "Time real(%.3f secs) run(%.3f secs) consed(%d bytes) interps(%d) unwinds(%d)%N"
+                        (float (/ (- real-end real-start) internal-time-units-per-second))
+                        (float (/ (- run-end run-start) internal-time-units-per-second))
+                        (- clasp-bytes-end clasp-bytes-start)
+                        (- interpreted-calls-end interpreted-calls-start)
+                        (- end-unwinds start-unwinds))))))
 
 (defmacro time (form)
   "Syntax: (time form)

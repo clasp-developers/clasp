@@ -32,30 +32,35 @@
  :type unbound-variable)
 
 (test progv-3
-       (= 1 (let ((a 1))(declare (special a))(progv '(a) nil) (symbol-value 'a))))
+      (= 1 (let ((a 1))(declare (special a))(progv '(a) nil) (symbol-value 'a))))
+
+(defun dummy (a) a)
+(defun (setf dummy) (new old)
+  "asdjhaskdhj"
+  (list new old))
 
 (test-expect-error FBOUNDP.ERROR.3 (FBOUNDP '(setf)) :type type-error)
-(test-expect-error FBOUNDP.ERROR.4 (FBOUNDP '(SETF aref . BAR)) :type type-error)
-(test-expect-error FBOUNDP.ERROR.5 (FBOUNDP '(SETF aref BAR)) :type type-error)
-(test-expect-error FBOUNDP.ERROR.9 (FBOUNDP '(SETF . aref)) :type type-error)
+(test-expect-error FBOUNDP.ERROR.4 (FBOUNDP '(SETF dummy . BAR)) :type type-error)
+(test-expect-error FBOUNDP.ERROR.5 (FBOUNDP '(SETF dummy BAR)) :type type-error)
+(test-expect-error FBOUNDP.ERROR.9 (FBOUNDP '(SETF . dummy)) :type type-error)
 
 (test-expect-error fmakunbound.1 (fmakunbound '(setf)) :type type-error)
-(test-expect-error fmakunbound.2 (fmakunbound '(SETF aref . BAR)) :type type-error)
-(test-expect-error fmakunbound.3 (fmakunbound '(SETF aref BAR)) :type type-error)
-(test-expect-error fmakunbound.4 (fmakunbound '(SETF . aref)) :type type-error)
+(test-expect-error fmakunbound.2 (fmakunbound '(SETF dummy . BAR)) :type type-error)
+(test-expect-error fmakunbound.3 (fmakunbound '(SETF dummy BAR)) :type type-error)
+(test-expect-error fmakunbound.4 (fmakunbound '(SETF . dummy)) :type type-error)
 
 (test-expect-error fdefinition.1 (fdefinition '(setf)) :type type-error)
-(test-expect-error fdefinition.2 (fdefinition '(SETF aref . BAR)) :type type-error)
-(test-expect-error fdefinition.3 (fdefinition '(SETF aref BAR)) :type type-error)
-(test-expect-error fdefinition.4 (fdefinition '(SETF . aref)) :type type-error)
-(test              fdefinition.5 (fdefinition '(SETF aref)))
+(test-expect-error fdefinition.2 (fdefinition '(SETF dummy . BAR)) :type type-error)
+(test-expect-error fdefinition.3 (fdefinition '(SETF dummy BAR)) :type type-error)
+(test-expect-error fdefinition.4 (fdefinition '(SETF . dummy)) :type type-error)
+(test              fdefinition.5 (fdefinition '(SETF dummy)))
 (test-expect-error fdefinition.6 (fdefinition '(SETF  %%%nada%%%)) :type undefined-function)
 (test-expect-error fdefinition.7 (fdefinition '%%%nada%%%) :type undefined-function)
 
 (test-expect-error setf-fdefinition.1 (setf (fdefinition '(SETF)) #'(lambda(&rest was) nil)) :type type-error)
-(test-expect-error setf-fdefinition.2 (setf (fdefinition '(SETF aref . BAR)) #'(lambda(&rest was))) :type type-error)
-(test-expect-error setf-fdefinition.3 (setf (fdefinition '(SETF aref BAR)) #'(lambda(&rest was))) :type type-error)
-(test-expect-error setf-fdefinition.4 (setf (fdefinition '(SETF . aref)) #'(lambda(&rest was))) :type type-error)
+(test-expect-error setf-fdefinition.2 (setf (fdefinition '(SETF dummy . BAR)) #'(lambda(&rest was))) :type type-error)
+(test-expect-error setf-fdefinition.3 (setf (fdefinition '(SETF dummy BAR)) #'(lambda(&rest was))) :type type-error)
+(test-expect-error setf-fdefinition.4 (setf (fdefinition '(SETF . dummy)) #'(lambda(&rest was))) :type type-error)
 (test              setf-fdefinition.5 (setf (fdefinition '%%%nada%%%) #'(lambda(&rest was))))
 
 (test equalp-babel
@@ -68,5 +73,17 @@
 
 (test-expect-error flet-too-few (flet ((%f (a) a)) (%f)) :type program-error)
 (test-expect-error flet-too-many (flet ((%f (a) a)) (%f 1 2)) :type program-error)
+
+(test issue-930
+      (let ()
+        (eq :good
+            (handler-case
+                (progn
+                  (FUNCALL 'PROGN 1)
+                  :bad)
+              (undefined-function (uf)
+                (if (eq (cell-error-name uf) 'progn)
+                    :good
+                    :bad))))))
 
 

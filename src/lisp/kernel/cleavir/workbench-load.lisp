@@ -1,7 +1,6 @@
 ;;; Set up everything to start cleavir
 
 ;;; Do you want CST?
-#+(or)
 (pushnew :cst *features*)
 
 

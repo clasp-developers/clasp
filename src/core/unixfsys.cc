@@ -1879,10 +1879,18 @@ CL_DEFUN T_mv ext__system(String_sp cmd) {
   }
 }
 
-CL_DOCSTRING("Invoke unix setpgid()");
+CL_DOCSTRING("Invoke unix setpgid(p1, p2)");
 CL_DEFUN int core__setpgid(pid_t p1, pid_t p2)
 {
   int pid = setpgid(p1, p2);
+  return pid;
+}
+
+CL_DOCSTRING("Invoke unix setpgrp()");
+CL_DEFUN int core__setpgrp()
+{
+  // not a typo in the function name.  This is the portable version
+  int pid = setpgid(0, 0);
   return pid;
 }
 

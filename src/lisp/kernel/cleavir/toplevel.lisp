@@ -48,7 +48,7 @@
               (default form env))
              ;; function call
              ((and (fboundp op)
-                   (not (special-operator-p op)))
+                   (not (treat-as-special-operator-p op)))
               (apply op (map-recurse args env)))
              ;; operation
              (t
@@ -214,7 +214,7 @@
                      ;; catch, throw, progv, unwind-protect macroexpand,
                      ;; and also handling them worse is probably okay.
                      (otherwise
-                      (if (and (fboundp op) (not (special-operator-p op)))
+                      (if (and (fboundp op) (not (treat-as-special-operator-p op)))
                           (apply (fdefinition op) (map-recurse args env))
                           (default cst env)))))))))))))
 

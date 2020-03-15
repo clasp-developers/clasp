@@ -184,7 +184,6 @@
 
 (defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir:foreign-call-instruction) return-value (abi abi-x86-64) function-info)
-  ;; FIXME:  If this function has cleanup forms then this needs to be an INVOKE
   (let ((output (first (cleavir-ir:outputs instruction))))
     (out
      (clasp-cleavir:unsafe-foreign-call :call (clasp-cleavir-hir:foreign-types instruction)
@@ -195,7 +194,6 @@
 
 (defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir:foreign-call-pointer-instruction) return-value (abi abi-x86-64) function-info)
-  ;; FIXME:  If this function has cleanup forms then this needs to be an INVOKE
   (let ((inputs (cleavir-ir:inputs instruction))
         (output (first (cleavir-ir:outputs instruction))))
     (out
@@ -214,14 +212,16 @@
      (fifth args) (sixth args) (seventh args) (eighth args)
      closure)))
 
-;;; shared between funcall and funcall-no-return
+;;; Used by unwind protect stuff that doesn't have a normal dynamic environment
+(defun gen-call (function arguments dynamic-environment return-value function-info)
+  (cmp:with-landing-pad (maybe-entry-landing-pad
+                         dynamic-environment return-value *tags* function-info)
+    (closure-call-or-invoke function return-value arguments)))
+
 (defun translate-funcall (instruction return-value abi function-info)
   (let* ((inputs (cleavir-ir:inputs instruction))
-         (function (first inputs))
-         (dynamic-environment (cleavir-ir:dynamic-environment instruction))
-         (arguments (cdr inputs)))
-    (cmp:with-landing-pad (landing-pad dynamic-environment return-value abi *tags* function-info)
-      (closure-call-or-invoke (in function) return-value (mapcar #'in arguments)))))
+         (function (first inputs)) (arguments (cdr inputs)))
+    (closure-call-or-invoke (in function) return-value (mapcar #'in arguments))))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:funcall-instruction) return-value (abi abi-x86-64) function-info)
@@ -230,6 +230,59 @@
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:nop-instruction) return-value abi function-info)
   (declare (ignore return-value inputs outputs abi function-info)))
+
+;;; FIXME: Hey this is confusing with generate-unbind existing and all.
+(defun gen-unbind (symbol old-value)
+  ;; This function cannot throw, so no landing pad needed
+  (%intrinsic-call "cc_resetTLSymbolValue" (list symbol old-value)))
+
+(defun gen-protect (thunk dynamic-environment return-value function-info)
+  ;; We basically do save-values, funcall, load-values, except we generate these
+  ;; from landing pads so there's no HIR... FIXME??
+  ;; NOTE that this is kind of really dumb. We save the values, i.e. alloca
+  ;; a VLA, for every unwind protect executed. We could at least merge unwind
+  ;; protects in the same frame - but what would be really smart would be
+  ;; just having the exception object carry the values, so we can fuck with the
+  ;; global (thread-local) values with impunity while unwinding.
+  ;; Probably challenging to arrange in C++, though.
+  (with-return-values (return-value abi nvalsl return-regs)
+    (let* ((nvals (cmp:irc-load nvalsl))
+           (primary (cmp:irc-load (return-value-elt return-regs 0)))
+           (mv-temp (cmp:alloca-temp-values nvals)))
+      (%intrinsic-call "cc_save_values" (list nvals primary mv-temp))
+      ;; Values saved, now do the call
+      (gen-call thunk nil dynamic-environment return-value function-info)
+      ;; Now load the values
+      (store-tmv
+       (%intrinsic-call "cc_load_values" (list nvals mv-temp))
+       return-value))))
+
+(defmethod translate-simple-instruction
+    ((instruction cleavir-ir:local-unwind-instruction) return-value abi function-info)
+  (declare (ignore inputs outputs abi))
+  ;; FIXME: Move this into... somewhere. Separate pass maybe.
+  (let* ((succ (first (cleavir-ir:successors instruction)))
+         (outer-dynenv (cleavir-ir:dynamic-environment succ)))
+    (loop for dynenv = (cleavir-ir:dynamic-environment instruction)
+          ;; Note that this is the definer from the previous loop iteration.
+            then (cleavir-ir:dynamic-environment definer)
+          for definer = (dynenv-definer dynenv)
+          until (eq dynenv outer-dynenv)
+          do (etypecase definer
+               ((or cleavir-ir:catch-instruction cleavir-ir:assignment-instruction))
+               (clasp-cleavir-hir:bind-instruction
+                (let ((symbol (in (first (cleavir-ir:inputs definer))))
+                      (old-value (in (first (cleavir-ir:outputs definer)))))
+                  (gen-unbind symbol old-value)))
+               (clasp-cleavir-hir:unwind-protect-instruction
+                (let ((thunk (in (first (cleavir-ir:inputs definer))))
+                      ;; NOTE: Using this means we're doing EXIT-EXTENT:MEDIUM.
+                      ;; See more extensive note in generate-protect (landing-pad.lisp).
+                      (protection-dynenv (cleavir-ir:dynamic-environment definer)))
+                  (gen-protect thunk protection-dynenv return-value function-info)))
+               (cleavir-ir:enter-instruction
+                (unless (eq dynenv outer-dynenv)
+                  (error "BUG: Fucked up the dynenvs yet again. succ = ~a" succ)))))))
 
 ;;; Again, note that the frame-value is in the function-info rather than an actual location.
 (defmethod translate-simple-instruction
@@ -296,6 +349,30 @@
     (%intrinsic-invoke-if-landing-pad-or-call "cc_setSymbolValue" (list sym val))))
 
 (defmethod translate-simple-instruction
+    ((instruction clasp-cleavir-hir:bind-instruction) return-value abi function-info)
+  (let* ((inputs (cleavir-ir:inputs instruction))
+         (outputs (cleavir-ir:outputs instruction))
+         (sym (in (first inputs) "sym-name"))
+         (val (in (second inputs) "value"))
+         (old (first outputs)) (dynenv-out (second outputs)))
+    ;; Neither of these intrinsics can signal.
+    (out (%intrinsic-call "cc_TLSymbolValue" (list sym)
+                                                   (datum-name-as-string old))
+         old)
+    (%intrinsic-call "cc_setTLSymbolValue" (list sym val))
+    (out (cleavir-ir:dynamic-environment instruction)
+         dynenv-out
+         "sham-dynamic-environment")))
+
+(defmethod translate-simple-instruction
+    ((instruction clasp-cleavir-hir:unwind-protect-instruction) return-value abi function-info)
+  (declare (ignore return-value abi function-info))
+  ;; This is basically a NOP except we do need to keep up the dynamic environment.
+  (out (cleavir-ir:dynamic-environment instruction)
+       (first (cleavir-ir:outputs instruction))
+       "sham-dynamic-environment"))
+
+(defmethod translate-simple-instruction
     ((instruction cleavir-ir:enclose-instruction) return-value abi function-info)
   (let* ((enter-instruction (cleavir-ir:code instruction))
          (lambda-name (get-or-create-lambda-name enter-instruction))
@@ -337,20 +414,17 @@
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:multiple-value-call-instruction) return-value abi function-info)
-  ;; second input is the dynamic-environment argument.
-  (cmp:with-landing-pad (landing-pad (cleavir-ir:dynamic-environment instruction)
-                                     return-value abi *tags* function-info)
-    (let ((call-result (%intrinsic-invoke-if-landing-pad-or-call
-                        "cc_call_multipleValueOneFormCallWithRet0" 
-                        (list (in (first (cleavir-ir:inputs instruction)))
-                              (load-return-value return-value)))))
-      ;; call-result is a T_mv, and return-valuea  T_mv*
-      (store-tmv call-result return-value)
-      (cc-dbg-when *debug-log*
-                   (format *debug-log*
-                           "    translate-simple-instruction multiple-value-call-instruction: ~a~%" 
-                           (cc-mir:describe-mir instruction))
-                   (format *debug-log* "     instruction --> ~a~%" call-result)))))
+  (let ((call-result (%intrinsic-invoke-if-landing-pad-or-call
+                      "cc_call_multipleValueOneFormCallWithRet0" 
+                      (list (in (first (cleavir-ir:inputs instruction)))
+                            (load-return-value return-value)))))
+    ;; call-result is a T_mv, and return-valuea  T_mv*
+    (store-tmv call-result return-value)
+    (cc-dbg-when *debug-log*
+                 (format *debug-log*
+                         "    translate-simple-instruction multiple-value-call-instruction: ~a~%" 
+                         (cc-mir:describe-mir instruction))
+                 (format *debug-log* "     instruction --> ~a~%" call-result))))
 
 (defun gen-vector-effective-address (array index element-type fixnum-type)
   (let* ((type (llvm-sys:type-get-pointer-to (cmp::simple-vector-llvm-type element-type)))
