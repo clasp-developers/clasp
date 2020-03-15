@@ -37,6 +37,7 @@ THE SOFTWARE.
 #include <clasp/core/instance.h>
 #include <clasp/core/mpPackage.h>
 #include <clasp/core/primitives.h>
+#include <clasp/core/debugger.h>
 #include <clasp/core/sourceFileInfo.h>
 #include <clasp/core/write_ugly.h>
 #include <clasp/core/symbol.h>

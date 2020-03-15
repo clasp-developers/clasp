@@ -38,6 +38,7 @@ int gcFunctions_after;
 #include <clasp/gctools/gcFunctions.h>
 #include <clasp/llvmo/intrinsics.h>
 #include <clasp/llvmo/llvmoExpose.h>
+#include <clasp/llvmo/debugInfoExpose.h>
 #include <clasp/gctools/gc_interface.h>
 #include <clasp/gctools/threadlocal.h>
 #include <clasp/core/wrappers.h>
@@ -650,7 +651,7 @@ CL_DEFUN core::T_mv cl__room(core::T_sp x) {
 #endif
   if (llvmo::_sym_STARjit_engineSTAR->symbolValue().boundp()) {
     llvmo::ClaspJIT_sp jit = gc::As<llvmo::ClaspJIT_sp>(llvmo::_sym_STARjit_engineSTAR->symbolValue());
-    OutputStream << "Number of object files: " << jit->numberOfObjectFiles() << "   total memory: " << jit->totalMemoryAllocatedForObjectFiles() << std::endl;
+    OutputStream << "Number of object files: " << llvmo::number_of_object_files() << "   total memory: " << llvmo::total_memory_allocated_for_object_files() << std::endl;
   }
   clasp_write_string(OutputStream.str(),cl::_sym_STARstandard_outputSTAR->symbolValue());
   return Values(_Nil<core::T_O>());

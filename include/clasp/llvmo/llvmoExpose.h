@@ -4656,9 +4656,6 @@ FORWARD(ClaspJIT);
 class ClaspJIT_O : public core::General_O {
   LISP_CLASS(llvmo, LlvmoPkg, ClaspJIT_O, "clasp-jit", core::General_O);
 public:
-  void saveObjectFileInfo(const char* buffer, size_t bytes, const char* faso_filename, size_t faso_index, size_t objectID);
-  size_t numberOfObjectFiles();
-  size_t totalMemoryAllocatedForObjectFiles();
 public:
   void addIRModule(Module_sp cM,ThreadSafeContext_sp context);
   core::Pointer_sp lookup(JITDylib& dylib, const std::string& Name);
@@ -4667,12 +4664,9 @@ public:
   void addObjectFile(const char* buffer, size_t bytes, size_t startupID, JITDylib& dylib, 
                      const char* faso_filename, size_t faso_index,
                      bool print=false);
-  core::T_mv objectFileForInstructionPointer(core::Pointer_sp instruction_pointer, bool verbose);
-  
   ClaspJIT_O();
   ~ClaspJIT_O();
 public:
-  std::atomic<ObjectFileInfo*> _ObjectFiles;
   llvm::DataLayout* _DataLayout;
   llvm::orc::ExecutionSession *ES;
 #ifdef USE_JITLINKER

@@ -199,32 +199,24 @@
 	becomes the environment for evaluating user input forms.~@
 	~@
 	See also: :backtrace, :next, previous, :disassemble, :variables.~%")
-      ((:p :previous) tpl-previous nil
-       ":p(revious)	Go to previous function"
-       ":previous &optional (n 1)			[Break command]~@
-	:p &optional (n 1)				[Abbreviation]~@
+    ((:u :up) tpl-previous nil
+     ":u(p)	Go to previous frame"
+     ":up &optional (n 1)			[Break command]~@
+	:u &optional (n 1)				[Abbreviation]~@
 	~@
 	Move to the nth previous visible function in the backtrace.~@
  	It becomes the new current function.~@
 	~@
 	See also: :backtrace, :function, :go, :next.~%")
-      ((:d :down) tpl-previous nil
-       ":d(own)         Alias to :previous"
-       ""
-       )
-      ((:n :next) tpl-next nil
-       ":n(ext)		Go to next function"
-       ":next &optional (n 1)				[Break command]~@
-	:n &optional (n 1)				[Abbreviation]~@
+      ((:d :down) tpl-next nil
+       ":d(own)		Go to next frame"
+       ":down &optional (n 1)				[Break command]~@
+	:d &optional (n 1)				[Abbreviation]~@
 	~@
 	Move to the nth next visible function in the backtrace.  It becomes~@
 	the new current function.~@
 	~@
 	See also: :backtrace, :function, :go, :previous.~%")
-      ((:u :up) tpl-next nil
-       ":u(p)           Alias to :next"
-       ""
-       )
       ((:g :go) tpl-go nil
        ":g(o)		Go to next function"
        ":go &optional (n 1)				[Break command]~@
@@ -523,9 +515,9 @@ Use special code 0 to cancel this operation.")
 	      ((:prompt-hook *tpl-prompt-hook*) *tpl-prompt-hook*)
 	      (broken-at nil)
 	      (quiet nil))
-  (let* ((*ihs-base* *ihs-top*)
-	 (*ihs-top* (if broken-at (ihs-search t broken-at) (ihs-top)))
-	 (*ihs-current* (if broken-at (ihs-prev *ihs-top*) *ihs-top*))
+  (let* (#+(or)(*ihs-base* *ihs-top*)
+           #+(or)(*ihs-top* (if broken-at (ihs-search t broken-at) (ihs-top)))
+           #+(or)(*ihs-current* (if broken-at (ihs-prev *ihs-top*) *ihs-top*))
 	 (*quit-tags* (cons *quit-tag* *quit-tags*))
 	 (*quit-tag* *quit-tags*)	; any unique new value
 	 (*tpl-level* (1+ *tpl-level*))
@@ -720,26 +712,21 @@ Use special code 0 to cancel this operation.")
       (throw x x)))
   (tpl-print-current))
 
+(defun tpl-print-current ()
+  (let* ((idx core:*ihs-current*)
+         (frame (core:ihs-backtrace-frame idx)))
+    (sys:backtrace-frame-to-stream idx frame)))
+
 (defun tpl-previous (&optional (n 1))
-  (do ((i (si::ihs-prev *ihs-current*) (si::ihs-prev i)))
-      ((or (< i *ihs-base*) (<= n 0)))
-    (when (ihs-visible i)
-      (setq *ihs-current* i)
-      (decf n)))
-  (set-break-env)
+  (sys:goto-ihs-prev)
   (tpl-print-current))
 
 (defun tpl-next (&optional (n 1))
-  (do ((i (si::ihs-next *ihs-current*) (si::ihs-next i)))
-      ((or (> i *ihs-top*) (<= n 0)))
-    (when (ihs-visible i)
-      (setq *ihs-current* i)
-      (decf n)))
-  (set-break-env)
+  (sys:goto-ihs-next)
   (tpl-print-current))
 
 (defun tpl-go (ihs-index)
-  (setq *ihs-current* (min (max ihs-index *ihs-base*) *ihs-top*))
+  (setq *ihs-current* (core:ihs-bounded ihs-index))
   (if (ihs-visible *ihs-current*)
       (progn (set-break-env) (tpl-print-current))
       (tpl-previous)))
@@ -926,10 +913,6 @@ Use special code 0 to cancel this operation.")
     (unless (ihs-visible *ihs-current*)
       (set-current-ihs)))
   (values))
-
-(defun ihs-visible (i)
-  ;; every frame with an environment is visible in clasp
-  (ihs-env i))
 
 (defun ihs-fname (i)
   (let ((function (ihs-fun i)))

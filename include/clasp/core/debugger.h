@@ -31,6 +31,72 @@ THE SOFTWARE.
 #include <clasp/core/lisp.h>
 #include <clasp/core/stacks.h>
 
+
+
+namespace core {
+#define BACKTRACE_FRAME_CLASS                           0
+#define BACKTRACE_FRAME_TYPE                            1 // ( :lisp | :c++ | :lambda | :unknown)
+#define BACKTRACE_FRAME_RETURN_ADDRESS                  2
+#define BACKTRACE_FRAME_RAW_NAME                        3
+#define BACKTRACE_FRAME_FUNCTION_NAME                   4
+#define BACKTRACE_FRAME_PRINT_NAME                      5
+#define BACKTRACE_FRAME_FRAME_SIZE                      6
+#define BACKTRACE_FRAME_FRAME_OFFSET                    7
+#define BACKTRACE_FRAME_FUNCTION_START_ADDRESS          8
+#define BACKTRACE_FRAME_FUNCTION_END_ADDRESS            9
+#define BACKTRACE_FRAME_BASE_POINTER                    10
+#define BACKTRACE_FRAME_ARGUMENTS                       11
+#define BACKTRACE_FRAME_CLOSURE                         12
+#define BACKTRACE_FRAME_FUNCTION_DESCRIPTION            13
+#define BACKTRACE_FRAME_NUMBER_OF_SLOTS                 14
+
+T_sp core__make_backtrace_frame(T_sp stype,
+                                T_sp return_address,
+                                T_sp raw_name,
+                                T_sp base_pointer,
+                                T_sp frame_offset,
+                                T_sp frame_size,
+                                T_sp function_start_address,
+                                T_sp function_end_address,
+                                T_sp function_description,
+                                T_sp arguments,
+                                T_sp closure );
+T_sp core__backtrace_frame_type(T_sp frame);
+T_sp core__backtrace_frame_return_address(T_sp frame);
+T_sp core__backtrace_frame_raw_name(T_sp frame);
+T_sp core__backtrace_frame_function_name(T_sp frame);
+T_sp core__backtrace_frame_print_name(T_sp frame);
+T_sp core__backtrace_frame_base_pointer(T_sp frame);
+T_sp core__backtrace_frame_offset(T_sp frame);
+T_sp core__backtrace_frame_offset(T_sp frame);
+T_sp core__backtrace_frame_size(T_sp frame);
+T_sp core__backtrace_frame_function_start_address(T_sp frame);
+T_sp core__backtrace_frame_function_end_address(T_sp frame);
+T_sp core__backtrace_frame_function_description(T_sp frame);
+T_sp core__backtrace_frame_arguments(T_sp frame);
+T_sp core__backtrace_frame_closure (T_sp frame);
+
+core::T_sp core__ihs_backtrace(core::T_sp outDesignator, core::T_sp msg);
+int core__ihs_top();
+void core__ihs_topSetLineColumn(int lineno, int column);
+int core__ihs_prev(int idx);
+int core__ihs_next(int idx);
+core::T_sp core__ihs_fun(int idx);
+core::T_sp core__ihs_arguments(int idx);
+core::T_sp core__ihs_env(int idx);
+/*! Return the current frame index stored in core:*ihs-current*
+      Update core:*ihs-current* to a valid value */
+int core__ihs_current_frame();
+/*! Set the current core:*ihs-current* value.
+      If the idx is out of bounds then return a valid value */
+void core__gdb(T_sp msg);
+int core__set_ihs_current_frame(int idx);
+
+
+};
+
+
+
 namespace core {
 /*! This class controls the single-step state of the Lisp interpreter
   in an exception safe way.
@@ -59,7 +125,7 @@ public:
 
 public:
   /*! Print the current expression */
-  void printExpression();
+  void printExpression(T_sp stream);
 
   /*! Invoke the debugger,
 	  If the user is allowed to resume and opts to resume then return the resume object 
@@ -77,8 +143,6 @@ public:
   };
 };
 
-void af_backtrace();
-
 
 void dbg_lowLevelDescribe(T_sp obj);
 void dbg_describe_tagged_T_Optr(T_O *p);
@@ -86,17 +150,12 @@ void dbg_describe_tagged_T_Optr(T_O *p);
  bool check_for_frame(uintptr_t);
  void frame_check(uintptr_t);
 
-extern "C" {
-void af_gotoIhsTop();
-void af_gotoIhsNext();
-void af_gotoIhsPrev();
-void af_printCurrentIhsFrame();
-void af_evalPrint(const string &expr);
 
-// Generate a backtrace with JIT symbols resolved 
-void c_bt();
-void c_btcl();
-};
+void core__gotoIhsTop();
+void core__gotoIhsNext();
+void core__gotoIhsPrev();
+void core__printCurrentIhsFrame();
+void core__evalPrint(const string &expr);
 
 int safe_backtrace(void**& return_buffer);
 
@@ -293,6 +352,9 @@ struct DebugInfo {
   {};
 };
 
+void core__start_debugger_with_backtrace(T_sp backtrace);
+T_mv core__call_with_backtrace(Function_sp closure, bool args_as_pointers);
+
 
 void startup_register_loaded_objects();
 
@@ -306,5 +368,12 @@ DebugInfo& debugInfo();
 
 };
 
+extern "C" {
+// Generate a backtrace with JIT symbols resolved 
+void c_bt();
+void c_btcl();
+
+
+};
 
 #endif
