@@ -105,12 +105,28 @@ CL_DEFUN bool llvm_sys__load_ir(core::Pathname_sp filename, bool verbose, bool p
   SIMPLE_ERROR(BF("Could not find llvm-ir file %s with .bc or .ll extension") % _rep_(filename));
 }
 
-SYMBOL_EXPORT_SC_(CompPkg,thread_local_llvm_context);  
-CL_LAMBDA(filename &optional verbose print external_format);
+LLVMContext_sp getLLVMContext()
+{
+  LLVMContext_sp context = gc::As<LLVMContext_sp>(core::eval::funcall(comp::_sym_thread_local_llvm_context));
+  return context;
+}
+
+void loadModule(llvmo::Module_sp module)
+{
+  EngineBuilder_sp engineBuilder = EngineBuilder_O::make(module);
+  engineBuilder->wrappedPtr()->setUseOrcMCJITReplacement(true);
+  TargetOptions_sp targetOptions = TargetOptions_O::make();
+  engineBuilder->setTargetOptions(targetOptions);
+  ExecutionEngine_sp executionEngine = engineBuilder->createExecutionEngine();
+  if (comp::_sym_STARload_time_value_holder_nameSTAR->symbolValue().nilp() ) {
+    SIMPLE_ERROR(BF("The cmp:*load-time-value-holder-name* is nil"));
+  }
+  finalizeEngineAndRegisterWithGcAndRunMainFunctions(executionEngine);
+}
+  
+CL_LAMBDA(filename context &optional verbose print external_format);
 CL_DEFUN bool llvm_sys__load_bitcode_ll(core::Pathname_sp filename, bool verbose, bool print, core::T_sp externalFormat )
 {
-  ThreadSafeContext_sp tsc = gc::As<ThreadSafeContext_sp>(comp::_sym_STARthread_safe_contextSTAR->symbolValue());
-  LLVMContext_sp context = gc::As<LLVMContext_sp>(core::eval::funcall(comp::_sym_thread_local_llvm_context));
   core::DynamicScopeManager scope(::cl::_sym_STARpackageSTAR, ::cl::_sym_STARpackageSTAR->symbolValue());
   T_sp tn = cl__truename(filename);
   if ( tn.nilp() ) {
@@ -123,8 +139,7 @@ CL_DEFUN bool llvm_sys__load_bitcode_ll(core::Pathname_sp filename, bool verbose
   core::String_sp namestring = gctools::As<core::String_sp>(tnamestring);
   LLVMContext_sp context = getLLVMContext();
   Module_sp m = llvm_sys__parseIRFile(namestring,context);
-  ClaspJIT_sp jit = gc::As<ClaspJIT_sp>(_sym_STARjit_engineSTAR->symbolValue());
-  jit->addIRModule(m,tsc);
+  loadModule(m);
   return true;
 }
 
@@ -132,8 +147,6 @@ CL_DEFUN bool llvm_sys__load_bitcode_ll(core::Pathname_sp filename, bool verbose
 CL_LAMBDA(filename &optional verbose print external_format);
 CL_DEFUN bool llvm_sys__load_bitcode(core::Pathname_sp filename, bool verbose, bool print, core::T_sp externalFormat )
 {
-  ThreadSafeContext_sp tsc = gc::As<ThreadSafeContext_sp>(comp::_sym_STARthread_safe_contextSTAR->symbolValue());
-  LLVMContext_sp context = gc::As<LLVMContext_sp>(core::eval::funcall(comp::_sym_thread_local_llvm_context));
   core::DynamicScopeManager scope(::cl::_sym_STARpackageSTAR, ::cl::_sym_STARpackageSTAR->symbolValue());
   T_sp tn = cl__truename(filename);
   if ( tn.nilp() ) {
@@ -144,9 +157,9 @@ CL_DEFUN bool llvm_sys__load_bitcode(core::Pathname_sp filename, bool verbose, b
     SIMPLE_ERROR(BF("Could not create namestring for %s") % _rep_(filename));
   }
   core::String_sp namestring = gctools::As<core::String_sp>(tnamestring);
-  Module_sp m = llvm_sys__parseBitcodeFile(namestring,context); 
-  ClaspJIT_sp jit = gc::As<ClaspJIT_sp>(_sym_STARjit_engineSTAR->symbolValue());
-  jit->addIRModule(m,tsc);
+  LLVMContext_sp context = getLLVMContext();
+  Module_sp m = llvm_sys__parseBitcodeFile(namestring,context);
+  loadModule(m);
   return true;
 }
 
@@ -163,8 +176,7 @@ CL_DEFUN bool llvm_sys__load_module(Module_sp m, bool verbose, bool print, core:
 CL_DEFUN core::SimpleBaseString_sp llvm_sys__mangleSymbolName(core::String_sp name) {
   ASSERT(cl__stringp(name));
   stringstream sout;
-  std::string stdstr = name->get_std_string();
-  const char *cur = stdstr.c_str();
+  const char *cur = name->get_std_string().c_str();
   bool first = true;
   while (*cur) {
     if (((*cur) >= 'a' && (*cur) <= 'z') || ((*cur) >= 'A' && (*cur) <= 'Z') || ((*cur) == '_') || (!first && ((*cur) >= '0' && (*cur) <= '9'))) {

@@ -3785,7 +3785,7 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
                                       return Error::success();
                                     });
     Config.PostFixupPasses.push_back([this](jitlink::LinkGraph &G) -> Error {
-                                      printf("%s:%d:%s PostFixupPasses\n", __FILE__, __LINE__, __FUNCTION__);
+                                       printf("%s:%d:%s PostFixupPasses\n", __FILE__, __LINE__, __FUNCTION__);
                                        parseLinkGraph(G);
                                        printLinkGraph(G, "PostFixup:");
                                        return Error::success();
@@ -3870,38 +3870,38 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
     constexpr llvm::JITTargetAddress LineWidth = 16;
     stringstream ss;
     ss << "--- " << Title.str() << "---\n";
-            for (auto &S : G.sections()) {
-              ss << "  section: " << S.getName().str() << "\n";
-              for (auto *B : S.blocks()) {
-                ss << "    block@";
-                ss << formatv("{0:x16}", B->getAddress()).str();
-                ss << ":\n";
-                if (B->isZeroFill())
-                  continue;
-                llvm::JITTargetAddress InitAddr = B->getAddress() & ~(LineWidth - 1);
-                llvm::JITTargetAddress StartAddr = B->getAddress();
-                llvm::JITTargetAddress EndAddr = B->getAddress() + B->getSize();
-                auto *Data = reinterpret_cast<const uint8_t *>(B->getContent().data());
-                for (llvm::JITTargetAddress CurAddr = InitAddr; CurAddr != EndAddr;
-                     ++CurAddr) {
-                  if (CurAddr % LineWidth == 0)
-                    ss << "    " << formatv("{0:x16}", CurAddr).str() << ": ";
-                  if (CurAddr < StartAddr)
-                    ss << "   ";
-                  else
-                    ss << formatv("{0:x-2}", Data[CurAddr - StartAddr]).str() << " ";
-                  if (CurAddr % LineWidth == LineWidth - 1)
-                    ss << "\n";
-                }
-                if (EndAddr % LineWidth != 0)
-                  ss << "\n";
-                ss << "\n";
-              }
-            }
-            printf("%s\n", ss.str().c_str());
-          }
+    for (auto &S : G.sections()) {
+      ss << "  section: " << S.getName().str() << "\n";
+      for (auto *B : S.blocks()) {
+        ss << "    block@";
+        ss << formatv("{0:x16}", B->getAddress()).str();
+        ss << ":\n";
+        if (B->isZeroFill())
+          continue;
+        llvm::JITTargetAddress InitAddr = B->getAddress() & ~(LineWidth - 1);
+        llvm::JITTargetAddress StartAddr = B->getAddress();
+        llvm::JITTargetAddress EndAddr = B->getAddress() + B->getSize();
+        auto *Data = reinterpret_cast<const uint8_t *>(B->getContent().data());
+        for (llvm::JITTargetAddress CurAddr = InitAddr; CurAddr != EndAddr;
+             ++CurAddr) {
+          if (CurAddr % LineWidth == 0)
+            ss << "    " << formatv("{0:x16}", CurAddr).str() << ": ";
+          if (CurAddr < StartAddr)
+            ss << "   ";
+          else
+            ss << formatv("{0:x-2}", Data[CurAddr - StartAddr]).str() << " ";
+          if (CurAddr % LineWidth == LineWidth - 1)
+            ss << "\n";
+        }
+        if (EndAddr % LineWidth != 0)
+          ss << "\n";
+        ss << "\n";
+      }
+    }
+    printf("%s\n", ss.str().c_str());
+  }
 
-        };
+};
 
 void ClaspReturnObjectBuffer(std::unique_ptr<llvm::MemoryBuffer> buffer) {
   printf("%s:%d:%s You OWN MemoryBuffer @%p  size: %lu\n", __FILE__, __LINE__, __FUNCTION__, buffer->getBufferStart(), buffer->getBufferSize() );
@@ -4127,7 +4127,6 @@ CL_DEFUN llvm::Module* llvm_sys__optimizeModule(llvm::Module* module)
 SYMBOL_EXPORT_SC_(CorePkg,repl);
 
 CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, const string& replName, const string& startupName, const string& shutdownName, core::T_sp initialData) {
-  // Stuff to support MCJIT
 #ifdef DEBUG_MONITOR  
   if (core::_sym_STARdebugStartupSTAR->symbolValue().notnilp()) {
     MONITOR(BF("startup llvm_sys__jitFinalizeReplFunction replName-> %s\n") % replName);
@@ -4135,7 +4134,6 @@ CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, co
 #endif
   // As of May 2019 we use a static ctor to register the startup function
   // 
-#if 1
   // Run the static constructors
   // The static constructor should call the startup function
   //  but ORC doesn't seem to do this as of llvm9
@@ -4158,35 +4156,12 @@ CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, co
     printf("%s:%d No startup functions were available!!!\n", __FILE__, __LINE__);
     abort();
   }
-#else
-  // So the startupName is of an external linkage function that is
-  // always unique 
-  core::Pointer_sp startupPtr;
-  if (startupName!="") {
-    startupPtr = gc::As<core::Pointer_sp>(jit->lookup(*jit->MainJD,startupName));
-  }
-  core::T_O* replPtrRaw = NULL;
-  if (startupPtr && startupPtr->ptr()) {
-    T_OStartUp startup = reinterpret_cast<T_OStartUp>(gc::As_unsafe<core::Pointer_sp>(startupPtr)->ptr());
-//    printf("%s:%d:%s About to invoke startup @p=%p\n", __FILE__, __LINE__, __FUNCTION__, (void*)startup);
-    replPtrRaw = startup(initialData.raw_());
-    if (replPtrRaw==NULL) {
-        printf("%s:%d The return repl function pointer is NULL - we won't be able to call it\n", __FILE__, __LINE__ );
-        abort();
-    }
+  if (my_thread->_object_file_start) {
+    save_object_file_info(my_thread->_object_file_start, my_thread->_object_file_size, "REPL", 0, 0 );
+    my_thread->_object_file_start = NULL;
   } else {
-      printf("%s:%d The startup function %s resolved to NULL - no code is available!!!\n", __FILE__, __LINE__, startupName.c_str());
-      abort();
-  }    
-  gctools::smart_ptr<core::ClosureWithSlots_O> functoid;
-  core::CompiledClosure_fptr_type lisp_funcPtr = (core::CompiledClosure_fptr_type)(replPtrRaw);
-  functoid = core::ClosureWithSlots_O::make_bclasp_closure( core::_sym_repl,
-                                                            lisp_funcPtr,
-                                                            kw::_sym_function,
-                                                            _Nil<core::T_O>(),
-                                                            _Nil<core::T_O>() );
-#endif
-  jit->saveObjectFileInfo((const char*)my_thread->_object_file_start, my_thread->_object_file_size, "REPL", 0, 0 );
+    printf("%s:%d There is no object file info to register\n", __FILE__, __LINE__ );
+  }
   return functoid;
 }
 };

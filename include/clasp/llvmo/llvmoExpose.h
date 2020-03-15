@@ -4684,8 +4684,6 @@ public:
   llvm::orc::RTDyldObjectLinkingLayer *LinkLayer;
   #endif
 #endif
-  llvm::orc::IRCompileLayer *CompileLayer;
-#endif
 };
 
 
