@@ -264,6 +264,7 @@ CL_DEFUN T_sp core__ihs_backtrace_frame(int idx)
   return frame;
 }
 
+CL_LAMBDA(&optional (frame_index *ihs-current*));
 CL_DEFUN T_mv core__ihs_source_information(int idx) {
   T_sp frame = core__ihs_backtrace_frame(idx);
   T_sp address = core__backtrace_frame_return_address(frame);
@@ -274,6 +275,7 @@ CL_DEFUN T_mv core__ihs_source_information(int idx) {
   return Values(_Nil<core::T_O>());
 }
 
+CL_LAMBDA(&optional (frame_index *ihs-current*));
 CL_DEFUN T_sp core__ihs_return_address(int idx) {
   T_sp frame = core__ihs_backtrace_frame(idx);
   T_sp address = core__backtrace_frame_return_address(frame);
@@ -399,8 +401,8 @@ CL_DEFUN int core__ihs_next(int idx) {
   return core__ihs_search_for_next_visible(idx,-1);
 }
 
-CL_LAMBDA(arg);
-CL_DECLARE();
+
+CL_LAMBDA(&optional (frame_index *ihs-current*));
 CL_DOCSTRING("Return the function for the stack frame.");
 CL_DEFUN T_sp core__ihs_fun(int idx) {
   T_sp frame = core__ihs_backtrace_frame(idx);
