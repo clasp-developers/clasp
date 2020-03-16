@@ -167,6 +167,7 @@ multithreaded performance that we should explore."
         #+cclasp(cleavir-generate-ast:*compiler* 'cl:compile-file)
         #+cclasp(core:*use-cleavir-compiler* t)
         #+cclasp(eclector.reader:*client* clasp-cleavir::*cst-client*)
+        #+cclasp(eclector.readtable:*readtable* cl:*readtable*)
         ast-jobs)
     (cfp-log "Starting the pool of threads~%")
     (finish-output)
