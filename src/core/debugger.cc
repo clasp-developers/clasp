@@ -403,7 +403,8 @@ CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("Return the function for the stack frame.");
 CL_DEFUN T_sp core__ihs_fun(int idx) {
-  return _Nil<core::T_O>();
+  T_sp frame = core__ihs_backtrace_frame(idx);
+  return core__backtrace_frame_closure(frame);
 };
 
 CL_LAMBDA(&optional (frame_index *ihs-current*));
