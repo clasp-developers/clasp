@@ -91,6 +91,7 @@ Error enableObjCRegistration(const char *PathToLibObjC);
 #include <llvm/Transforms/IPO.h>
 #include <llvm/Transforms/InstCombine/InstCombine.h>
 #include <llvm/Transforms/Utils.h>
+#include <llvm/ExecutionEngine/JITLink/EHFrameSupport.h>
 #include <llvm/IR/InlineAsm.h>
 #include <llvm/CodeGen/TargetPassConfig.h>
 #include <llvm/Support/FormattedStream.h>
@@ -3779,22 +3780,23 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
   void modifyPassConfig(llvm::orc::MaterializationResponsibility &MR, const llvm::Triple &TT,
                         llvm::jitlink::PassConfiguration &Config) override {
     Config.PrePrunePasses.push_back([this](jitlink::LinkGraph &G) -> Error {
-                                      printf("%s:%d:%s PrePrunePasses\n", __FILE__, __LINE__, __FUNCTION__);
+//                                      printf("%s:%d:%s PrePrunePasses\n", __FILE__, __LINE__, __FUNCTION__);
                                       keepAliveStackmap(G);
                                       //printLinkGraph(G, "PrePrune:");
                                       return Error::success();
                                     });
     Config.PostFixupPasses.push_back([this](jitlink::LinkGraph &G) -> Error {
-                                       printf("%s:%d:%s PostFixupPasses\n", __FILE__, __LINE__, __FUNCTION__);
+//                                       printf("%s:%d:%s PostFixupPasses\n", __FILE__, __LINE__, __FUNCTION__);
                                        parseLinkGraph(G);
-                                       printLinkGraph(G, "PostFixup:");
+                                       // printLinkGraph(G, "PostFixup:");
                                        return Error::success();
                                      });
+//    printf("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__);
   }
 
   void notifyLoaded(llvm::orc::MaterializationResponsibility& MR) {
     auto init_symbol = MR.getInitializerSymbol();
-    printf("%s:%d:%s  getInitializerSymbol->|%s|\n", __FILE__, __LINE__, __FUNCTION__, (*init_symbol).str().c_str());
+//    printf("%s:%d:%s  getInitializerSymbol->|%s|\n", __FILE__, __LINE__, __FUNCTION__, (*init_symbol).str().c_str());
     my_thread->_initializer_symbol = (*init_symbol).str();
   }
   
@@ -3814,7 +3816,7 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
   
   void keepAliveStackmap(llvm::jitlink::LinkGraph &G) {
     for (auto &S : G.sections()) {
-      printf("%s:%d:%s   section: %s getOrdinal->%u\n", __FILE__, __LINE__, __FUNCTION__, S.getName().str().c_str(), S.getOrdinal());
+//      printf("%s:%d:%s   section: %s getOrdinal->%u\n", __FILE__, __LINE__, __FUNCTION__, S.getName().str().c_str(), S.getOrdinal());
       if (S.getName().str() == STACKMAPS_NAME) {
         for ( auto& sym : S.symbols() ) {
           sym->setLive(true);
@@ -3835,7 +3837,7 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
 
   void parseLinkGraph(llvm::jitlink::LinkGraph &G) {
     for (auto &S : G.sections()) {
-      printf("%s:%d:%s   section: %s getOrdinal->%u\n", __FILE__, __LINE__, __FUNCTION__, S.getName().str().c_str(), S.getOrdinal());
+//      printf("%s:%d:%s   section: %s getOrdinal->%u\n", __FILE__, __LINE__, __FUNCTION__, S.getName().str().c_str(), S.getOrdinal());
       if (S.getName().str() == TEXT_NAME) {
         llvm::jitlink::SectionRange range(S);
         my_thread->_text_segment_start = (void*)range.getStart();
@@ -3904,7 +3906,7 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
 };
 
 void ClaspReturnObjectBuffer(std::unique_ptr<llvm::MemoryBuffer> buffer) {
-  printf("%s:%d:%s You OWN MemoryBuffer @%p  size: %lu\n", __FILE__, __LINE__, __FUNCTION__, buffer->getBufferStart(), buffer->getBufferSize() );
+//  printf("%s:%d:%s You OWN MemoryBuffer @%p  size: %lu\n", __FILE__, __LINE__, __FUNCTION__, buffer->getBufferStart(), buffer->getBufferSize() );
   my_thread->_object_file_start = (void*)const_cast<char*>(buffer->getBufferStart());
   my_thread->_object_file_size = buffer->getBufferSize();
 }
@@ -4139,12 +4141,15 @@ CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, co
   //  but ORC doesn't seem to do this as of llvm9
   //    So use the code below
   llvm::ExitOnError ExitOnErr;
-  core::Pointer_sp startupPtr;
   // This should run the static constructors
-  startupPtr = gc::As<core::Pointer_sp>(jit->lookup(jit->_LLJIT->getMainJITDylib(),my_thread->_initializer_symbol));
+  ExitOnErr(jit->_LLJIT->initialize(jit->_LLJIT->getMainJITDylib()));
+  // The static initializers registered a callback with the startup_functions facility
+  // at this point core::startup_functions_are_waiting() should return true and when we
+  // call core::startup_functions_invoke(initialData.raw_() - they should evaluate using
+  // the data in initialData.
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid;
   if (core::startup_functions_are_waiting()) {
-    printf("%s:%d:%s startup_functions_are_waiting\n", __FILE__, __LINE__, __FUNCTION__ );
+//    printf("%s:%d:%s startup_functions_are_waiting\n", __FILE__, __LINE__, __FUNCTION__ );
     core::T_O* replPtrRaw = core::startup_functions_invoke(initialData.raw_());
     core::CompiledClosure_fptr_type lisp_funcPtr = (core::CompiledClosure_fptr_type)(replPtrRaw);
     functoid = core::ClosureWithSlots_O::make_bclasp_closure( core::_sym_repl,
@@ -4153,7 +4158,7 @@ CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, co
                                                               _Nil<core::T_O>(),
                                                               _Nil<core::T_O>() );
   } else {
-    printf("%s:%d No startup functions were available!!!\n", __FILE__, __LINE__);
+    printf("%s:%d No startup functions were available the my_thread->_initialize_symbol -> |%s|!!!\n", __FILE__, __LINE__, my_thread->_initializer_symbol.c_str());
     abort();
   }
   if (my_thread->_object_file_start) {
@@ -4245,13 +4250,19 @@ ClaspJIT_O::ClaspJIT_O() {
   llvm::ExitOnError ExitOnErr;
   auto JTMB = ExitOnErr(JITTargetMachineBuilder::detectHost());
   JTMB.setCodeModel(CodeModel::Small);
+  JTMB.setRelocationModel(Reloc::Model::PIC_);
 //  orc::enableObjCRegistration("libobjc.dylib");
   auto J = ExitOnErr(
                      LLJITBuilder()
                      .setJITTargetMachineBuilder(std::move(JTMB))
                      .setPlatformSetUp(orc::setUpMachOPlatform)
                      .setObjectLinkingLayerCreator([&](ExecutionSession &ES, const Triple &TT) {
-                                                     return std::make_unique<ObjectLinkingLayer>(ES, std::make_unique<jitlink::InProcessMemoryManager>());
+//                                                     printf("%s:%d setting ObjectLinkingLayerCreator\n", __FILE__, __LINE__ );
+                                                     auto ObjLinkingLayer = std::make_unique<ObjectLinkingLayer>(ES, std::make_unique<jitlink::InProcessMemoryManager>());
+                                                     ObjLinkingLayer->addPlugin(std::make_unique<EHFrameRegistrationPlugin>(jitlink::InProcessEHFrameRegistrar::getInstance()));
+                                                     ObjLinkingLayer->addPlugin(std::make_unique<ClaspPlugin>());
+                                                     ObjLinkingLayer->setReturnObjectBuffer(ClaspReturnObjectBuffer); // <<< Capture the ObjectBuffer after JITting code
+                                                     return ObjLinkingLayer;
                                                    })
                      .create());
   this->_LLJIT =  std::move(J);
@@ -4268,6 +4279,8 @@ CL_DEFMETHOD core::Pointer_sp ClaspJIT_O::lookup(JITDylib& dylib, const std::str
 //  printf("%s:%d:%s Name = %s\n", __FILE__, __LINE__, __FUNCTION__, Name.c_str());
   llvm::ExitOnError ExitOnErr;
 //  llvm::ArrayRef<llvm::orc::JITDylib*>  dylibs(&this->ES->getMainJITDylib());
+  std::string mangledName = Name;
+#if 0 
 #if defined(_TARGET_OS_DARWIN)
   // gotta put a _ in front of the name on DARWIN but not Unixes? Why? Dunno.
   std::string mangledName = "_" + Name;
@@ -4279,7 +4292,8 @@ CL_DEFMETHOD core::Pointer_sp ClaspJIT_O::lookup(JITDylib& dylib, const std::str
 #if !defined(_TARGET_OS_LINUX) && !defined(_TARGET_OS_FREEBSD) && !defined(_TARGET_OS_DARWIN)
 #error You need to decide here
 #endif
-
+#endif
+  
   llvm::Expected<llvm::JITEvaluatedSymbol> symbol = this->_LLJIT->lookup(dylib,mangledName);
   if (!symbol) {
     llvm::handleAllErrors(symbol.takeError(), [](const llvm::ErrorInfoBase &E) {
@@ -4299,10 +4313,11 @@ CL_DEFMETHOD core::Pointer_sp ClaspJIT_O::lookup(JITDylib& dylib, const std::str
 CL_DEFMETHOD void ClaspJIT_O::addIRModule(Module_sp module, ThreadSafeContext_sp context) {
   std::unique_ptr<llvm::Module> umodule(module->wrappedPtr());
   llvm::ExitOnError ExitOnErr;
+//  printf("%s:%d:%s  module added\n", __FILE__, __LINE__, __FUNCTION__ );
   ExitOnErr(this->_LLJIT->addIRModule(this->_LLJIT->getMainJITDylib(),llvm::orc::ThreadSafeModule(std::move(umodule),*context->wrappedPtr())));
 }
 
-
+std::atomic<size_t> global_objectFileCounter;
 void ClaspJIT_O::addObjectFile(const char* rbuffer, size_t bytes,size_t startupID, JITDylib& dylib,
                                const char* faso_filename, size_t faso_index,
                                bool print)
@@ -4310,19 +4325,34 @@ void ClaspJIT_O::addObjectFile(const char* rbuffer, size_t bytes,size_t startupI
   // Create an llvm::MemoryBuffer for the ObjectFile bytes
   if (print) core::write_bf_stream(BF("%s:%d Adding object file at %p  %lu bytes\n")  % __FILE__ % __LINE__  % (void*)rbuffer % bytes );
   llvm::StringRef sbuffer((const char*)rbuffer,bytes);
-  llvm::StringRef name("buffer-name");
+  stringstream sname;
+  sname << "of" << global_objectFileCounter++;
+  llvm::StringRef name(sname.str());
   std::unique_ptr<llvm::MemoryBuffer> mbuffer = llvm::MemoryBuffer::getMemBuffer(sbuffer,name,false);
   // Force the object file to be linked using MaterializationUnit::doMaterialize(...)
   if (print) core::write_bf_stream(BF("%s:%d Materializing\n") % __FILE__ % __LINE__ );
-  auto erro = this->_LLJIT->addObjectFile(dylib,std::move(mbuffer));
-  if (erro) printf("%s:%d Could not addObjectFile\n", __FILE__, __LINE__ );
+  llvm::ExitOnError ExitOnErr;
+  ExitOnErr(this->_LLJIT->addObjectFile(dylib,std::move(mbuffer)));
+//  printf("%s:%d Added object file %s:%zu:%zu\n", __FILE__, __LINE__, faso_filename, startupID, faso_index );
+#if 0
+  if (erro) {
+    printf("%s:%d Could not addObjectFile\n", __FILE__, __LINE__ );
+  } else {
+    printf("%s:%d Added object file %s:%zu:%zu\n", __FILE__, __LINE__, faso_filename, startupID, faso_index );
+  }
+#endif
+  save_object_file_info(rbuffer,bytes,faso_filename,faso_index,startupID);
+}
+
+
+void ClaspJIT_O::runInitializers(JITDylib& dylib)
+{
   llvm::ExitOnError ExitOnErr;
   ExitOnErr(this->_LLJIT->initialize(dylib));
-  save_object_file_info(rbuffer,bytes,faso_filename,faso_index,startupID);
   // Running the ObjectFileStartUp function registers the startup functions - now we can invoke them
   if (core::startup_functions_are_waiting()) {
-    if (print) core::write_bf_stream(BF("%s:%d  startup functions are waiting - INVOKING\n") % __FILE__ % __LINE__ );
     core::startup_functions_invoke(NULL);
+//    core::write_bf_stream(BF("%s:%d  startup functions were INVOKED\n") % __FILE__ % __LINE__ );
   } else {
     core::write_bf_stream(BF("%s:%d  No startup functions are waiting\n") % __FILE__ % __LINE__ );
   }
@@ -4332,8 +4362,13 @@ CL_DEFMETHOD JITDylib& ClaspJIT_O::getMainJITDylib() {
   return this->_LLJIT->getMainJITDylib();
 }
 
+std::atomic<size_t> global_JITDylibCounter;
 CL_DEFMETHOD JITDylib_sp ClaspJIT_O::createAndRegisterJITDylib(const std::string& name) {
-  auto dy = this->_LLJIT->createJITDylib(name);
+  stringstream sname;
+  sname << name << "-" << global_JITDylibCounter;
+  global_JITDylibCounter++;
+//  printf("%s:%d:%s  name -> %s\n", __FILE__, __LINE__, __FUNCTION__, sname.str().c_str());
+  auto dy = this->_LLJIT->createJITDylib(sname.str());
   JITDylib& dylib(*dy);
   dylib.addGenerator(llvm::cantFail(ClaspDynamicLibrarySearchGenerator::GetForCurrentProcess(this->_LLJIT->getDataLayout().getGlobalPrefix())));
   JITDylib_sp dylib_sp = core::RP_Create_wrapped<JITDylib_O>(&dylib);

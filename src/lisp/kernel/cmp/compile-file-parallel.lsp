@@ -90,11 +90,13 @@
           (let ((startup-function (add-global-ctor-function module run-all-function
                                                             :position (ast-job-form-counter job))))
 ;;;                (add-llvm.used module startup-function)
+            (add-llvm.global_ctors module 15360 startup-function)
             (setf (ast-job-startup-function-name job) (llvm-sys:get-name startup-function))
             ;; The link-once-odrlinkage should keep the startup-function alive and that
             ;; should keep everything else alive as well.
             )
-          #+(or)(make-boot-function-global-variable module run-all-function
+          #+(or)
+          (make-boot-function-global-variable module run-all-function
                                                     :position (ast-job-form-index job)
                                                     )))
       (cmp-log "About to verify the module%N")

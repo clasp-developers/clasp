@@ -509,7 +509,8 @@ CL_DEFUN void core__write_faso(T_sp pathDesig, List_sp objectFiles, T_sp tstart_
       SIMPLE_ERROR(BF("start-object-id must be a positive integer - got: %s") % _rep_(tstart_object_id).c_str());
     }
   }
-  //  printf("%s:%d start_object_id = %lu\n", __FILE__, __LINE__, start_object_id );
+//  printf("%s:%d start_object_id = %lu\n", __FILE__, __LINE__, start_object_id );
+//  printf("%s:%d Number of object files: %lu\n", __FILE__, __LINE__, cl__length(objectFiles));
   FasoHeader* header = (FasoHeader*)malloc(FasoHeader::calculateSize(cl__length(objectFiles)));
   setup_FasoHeader(header);
   header->_HeaderPageCount = FasoHeader::calculateHeaderNumberOfPages(cl__length(objectFiles),getpagesize());
@@ -699,6 +700,9 @@ CL_DEFUN core::T_sp core__load_faso(T_sp pathDesig, T_sp verbose, T_sp print, T_
   llvmo::JITDylib_sp jitDylib;
   for (size_t ofi = 0; ofi<header->_NumberOfObjectFiles; ++ofi) {
     if (!jitDylib || header->_ObjectFiles[ofi]._ObjectID==0) {
+      if (jitDylib) {
+        jit->runInitializers(*jitDylib->wrappedPtr());
+      }
       jitDylib = jit->createAndRegisterJITDylib(filename->get_std_string());
     }
     void* of_start = (void*)((char*)header + header->_ObjectFiles[ofi]._StartPage*header->_PageSize);
@@ -711,6 +715,7 @@ CL_DEFUN core::T_sp core__load_faso(T_sp pathDesig, T_sp verbose, T_sp print, T_
                        ofi,
                        print.notnilp() );
   }
+  jit->runInitializers(*jitDylib->wrappedPtr());
   return _lisp->_true();
 }
 

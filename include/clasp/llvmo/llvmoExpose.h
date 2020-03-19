@@ -4669,6 +4669,7 @@ public:
   void addObjectFile(const char* buffer, size_t bytes, size_t startupID, JITDylib& dylib, 
                      const char* faso_filename, size_t faso_index,
                      bool print=false);
+  void runInitializers(JITDylib& dylib);
   ClaspJIT_O();
   ~ClaspJIT_O();
 public:
