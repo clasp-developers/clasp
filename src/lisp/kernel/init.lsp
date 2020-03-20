@@ -162,6 +162,8 @@
 
 ;;; Imports
 (import 'core:quit :ext)
+(import 'core:btcl :ext)
+(import 'core:ihs-argument :ext)
 ;;; EXT exports
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (select-package :ext))
@@ -201,7 +203,9 @@
           stream-encoding-error
           stream-decoding-error
           generate-encoding-hashtable
-          quit))
+          quit
+          btcl
+          ihs-argument))
 (core:*make-special '*module-provider-functions*)
 (core:*make-special '*source-location*)
 (setq *source-location* nil)
