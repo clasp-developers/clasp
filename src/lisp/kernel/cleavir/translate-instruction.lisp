@@ -239,12 +239,6 @@
 (defun gen-protect (thunk dynamic-environment return-value function-info)
   ;; We basically do save-values, funcall, load-values, except we generate these
   ;; from landing pads so there's no HIR... FIXME??
-  ;; NOTE that this is kind of really dumb. We save the values, i.e. alloca
-  ;; a VLA, for every unwind protect executed. We could at least merge unwind
-  ;; protects in the same frame - but what would be really smart would be
-  ;; just having the exception object carry the values, so we can fuck with the
-  ;; global (thread-local) values with impunity while unwinding.
-  ;; Probably challenging to arrange in C++, though.
   (with-return-values (return-value abi nvalsl return-regs)
     (let* ((nvals (cmp:irc-load nvalsl))
            (primary (cmp:irc-load (return-value-elt return-regs 0)))
@@ -277,7 +271,7 @@
                (clasp-cleavir-hir:unwind-protect-instruction
                 (let ((thunk (in (first (cleavir-ir:inputs definer))))
                       ;; NOTE: Using this means we're doing EXIT-EXTENT:MEDIUM.
-                      ;; See more extensive note in generate-protect (landing-pad.lisp).
+                      ;; See more extensive note in lp-generate-protect (landing-pad.lisp).
                       (protection-dynenv (cleavir-ir:dynamic-environment definer)))
                   (gen-protect thunk protection-dynenv return-value function-info)))
                (cleavir-ir:enter-instruction

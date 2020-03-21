@@ -112,7 +112,17 @@
         ;; intervening exit points. And we indicate that by using for the call
         ;; to the protected thunk the same dynamic-environment that was in place
         ;; upon entry to the unwind-protect.
-        (gen-protect thunk protection-dynenv return-value function-info))
+        (let* ((nvals (%intrinsic-call "cc_nvalues" nil "nvals"))
+               ;; NOTE that this is kind of really dumb. We save the values, i.e. alloca
+               ;; a VLA, for every unwind protect executed. We could at least merge unwind
+               ;; protects in the same frame - but what would be really smart would be
+               ;; just having the exception object carry the values, so we can fuck with the
+               ;; global (thread-local) values with impunity while unwinding.
+               ;; Probably challenging to arrange in C++, though.
+               (mv-temp (cmp:alloca-temp-values nvals)))
+          (%intrinsic-call "cc_save_all_values" (list nvals mv-temp))
+          (gen-call thunk nil protection-dynenv return-value function-info)
+          (%intrinsic-call "cc_load_all_values" (list nvals mv-temp))))
       (cmp:irc-br next)
       bb)))
 
