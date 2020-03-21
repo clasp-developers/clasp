@@ -135,7 +135,6 @@ CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("symbolValue");
 CL_DEFUN T_sp cl__symbol_value(Symbol_sp arg) {
-  if (!arg->boundP()) arg->symbolUnboundError();
   return arg->symbolValue();
 };
 
