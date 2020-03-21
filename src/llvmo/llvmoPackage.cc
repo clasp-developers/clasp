@@ -81,7 +81,7 @@ void redirect_llvm_interface_addSymbol() {
 
 
 CL_DOCSTRING("Load an llvm-ir file with either a bc extension or ll extension.");
-CL_LAMBDA(pathname context &optional verbose print external_format);
+CL_LAMBDA(pathname &optional verbose print external_format);
 CL_DEFUN bool llvm_sys__load_ir(core::Pathname_sp filename, bool verbose, bool print, core::T_sp externalFormat )
 {
   core::Pathname_sp bc_file = core::Pathname_O::makePathname(_Nil<core::T_O>(),_Nil<core::T_O>(),_Nil<core::T_O>(),
@@ -122,7 +122,7 @@ void loadModule(llvmo::Module_sp module)
   finalizeEngineAndRegisterWithGcAndRunMainFunctions(executionEngine);
 }
   
-CL_LAMBDA(filename context &optional verbose print external_format);
+CL_LAMBDA(filename &optional verbose print external_format);
 CL_DEFUN bool llvm_sys__load_bitcode_ll(core::Pathname_sp filename, bool verbose, bool print, core::T_sp externalFormat )
 {
   core::DynamicScopeManager scope(::cl::_sym_STARpackageSTAR, ::cl::_sym_STARpackageSTAR->symbolValue());
@@ -142,7 +142,7 @@ CL_DEFUN bool llvm_sys__load_bitcode_ll(core::Pathname_sp filename, bool verbose
 }
 
 
-CL_LAMBDA(filename context &optional verbose print external_format);
+CL_LAMBDA(filename &optional verbose print external_format);
 CL_DEFUN bool llvm_sys__load_bitcode(core::Pathname_sp filename, bool verbose, bool print, core::T_sp externalFormat )
 {
   core::DynamicScopeManager scope(::cl::_sym_STARpackageSTAR, ::cl::_sym_STARpackageSTAR->symbolValue());
