@@ -140,4 +140,12 @@
               (gethash key-2 ht))
           (and value present-p))))
 
+(test test-issue-946
+      (and
+       (hash-table-p (make-hash-table))
+       (hash-table-p (make-hash-table :test #'eq :weakness :key))
+       (every #'(lambda(object)
+                  (not (hash-table-p object)))
+              (list 1 1.0 "weruz" #\a #'car (find-class 'number)))))
+
 
