@@ -49,8 +49,10 @@
   (core:select-package "GRAY"))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (export '( fundamental-character-output-stream
-          )))
+  (export '(fundamental-character-input-stream
+            fundamental-character-output-stream
+            fundamental-binary-input-stream
+            fundamental-binary-output-stream)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
