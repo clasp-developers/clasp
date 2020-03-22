@@ -958,16 +958,17 @@ def configure(cfg):
     cfg.load('compiler_cxx')
     cfg.load('compiler_c')
 ### Without these checks the following error happens: AttributeError: 'BuildContext' object has no attribute 'variant_obj'
+    cfg.env.append_value('LINKFLAGS', "-L/opt/clasp-support/lib")
+    cfg.env.append_value('INCLUDES', "/opt/clasp-support/include")
     if (cfg.env['DEST_OS'] == DARWIN_OS ):
         cfg.env.append_value('LINKFLAGS', "-L/usr/local/lib");
         cfg.env.append_value('INCLUDES', "/usr/local/include" )
     cfg.check_cxx(lib='gmpxx gmp'.split(), cflags='-Wall', uselib_store='GMP')
     cfg.check_cxx(lib='ffi', cflags='-Wall', uselib_store='FFI')
-#    try:
-#        cfg.check_cxx(stlib='gc', cflags='-Wall', uselib_store='BOEHM')
-#    except ConfigurationError:
-#        cfg.check_cxx(lib='gc', cflags='-Wall', uselib_store='BOEHM')
-    cfg.check_cxx(lib='gc', cflags='-Wall', uselib_store='BOEHM')
+    try:
+        cfg.check_cxx(stlib='gc', cflags='-Wall', uselib_store='BOEHM')
+    except ConfigurationError:
+        cfg.check_cxx(lib='gc', cflags='-Wall', uselib_store='BOEHM')
     #libz
     cfg.check_cxx(lib='z', cflags='-Wall', uselib_store='Z')
     if (cfg.env['DEST_OS'] == LINUX_OS or cfg.env['DEST_OS'] == FREEBSD_OS):
