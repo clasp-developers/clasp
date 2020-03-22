@@ -1,12 +1,7 @@
-# This wscript.config works on OSX when llvm6 is installed via brew
-# (as opposed to Macports).  At the time of this writing 20190705
-# Macports is broken for Clasp since the llvm6 port missed files (that
-# the llvm5 and llvm7 ports do not miss.  Anyway, all is well if you
-# use brew.
+# This wscript.config works on OSX when llvm9 is installed via brew
+# (as opposed to Macports).
 
-LLVM_CONFIG_BINARY = '/usr/local/Cellar/llvm@6/6.0.1_1/bin/llvm-config'
+LLVM_CONFIG_BINARY = '/usr/local/Cellar/llvm/9.0.1/bin/llvm-config'
 PREFIX = '/opt/clasp/'
-# set this to false if you have 8 GB of RAM
+# set this to false if you have less than 16 GB of RAM
 USE_PARALLEL_BUILD = True
-
-INSTALL_PATH_PREFIX = '/opt/clasp/'
