@@ -293,7 +293,7 @@ void fatal_error_handler(void *user_data, const std::string &reason, bool gen_cr
 
 void wake_up_thread(int sig)
 {
-  const char* msg = "In wake_up_thread interrupt.cc\n";
+  const char* msg = "In wake_up_thread interrupt.cc:296\n";
   int len = strlen(msg);
   write(1,msg,len);
 }
