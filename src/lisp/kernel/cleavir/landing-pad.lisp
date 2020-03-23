@@ -147,13 +147,12 @@
           ;; Otherwise we go to the cleanup, or perhaps directly to the resume.
           (cmp:irc-cond-br matches-type is-unwind-block cleanup-block)))
       ;; Now that we know it's the right type of exception, see if we're in the right frame,
-      ;; and get the go index. Also restore multiple values.
+      ;; and get the go index.
       (cmp:irc-begin-block is-unwind-block)
       (let ((go-index (generate-match-unwind
                        return-value frame (generate-end-catch-landing-pad cleanup-block)
                        *exn.slot*)))
         (cmp:irc-store go-index *go-index.slot*)
-        (restore-multiple-value-0 return-value)
         (cmp:irc-br next))
       lp-block)))
 
@@ -197,6 +196,10 @@
                   return-value tags function-info))
            (bb (cmp:irc-basic-block-create "catch"))
            (_ (cmp:irc-begin-block bb))
+           ;; Restore multiple values.
+           ;; Note that we do this late, after any unwind-protect cleanups,
+           ;; so that we get the correct values.
+           (_ (restore-multiple-value-0 return-value))
            (go-index (cmp:irc-load *go-index.slot*))
            (sw (cmp:irc-switch go-index next (length destinations))))
       (declare (ignore _))
