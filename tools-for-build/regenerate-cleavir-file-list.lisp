@@ -10,7 +10,17 @@
 (in-package :cl-user)
 
 (format t "Loading asdf~%")
-#+(or) (load "sys:modules;asdf;build;asdf.lisp")
+#+bclasp
+(defpackage "CLEAVIR-ENV" (:use :common-lisp))
+#+bclasp
+(progn
+  (defun cleavir-env::optimize (arg) nil)
+  (defun cleavir-env::optimize-info (arg) nil)
+  (defparameter clasp-cleavir::*clasp-env* nil)
+  (export '(cleavir-env::optimize cleavir-env::optimize-info) :cleavir-env)
+  (export 'clasp-cleavir::*clasp-env* :clasp-cleavir)
+  (load "sys:modules;asdf;build;asdf.lisp"))
+#+cclasp
 (require :asdf)
 
 
