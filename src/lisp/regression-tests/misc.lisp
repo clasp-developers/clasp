@@ -215,10 +215,10 @@
              (return-from here (values :value))))
       (do-call #'local-fun))))
 
-(test-issue-948-a
+(test test-issue-948-a
  (not (null (multiple-value-list (reproduce)))))
 
-(test-issue-948-b
+(test test-issue-948-b
  (let ((lock (mp:make-lock :name "Foo")))
    (= 4
       (block nil
