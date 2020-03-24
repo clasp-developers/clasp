@@ -35,7 +35,7 @@
 
 (test-expect-error read-4 (READ-FROM-STRING ")") :type reader-error)
 (test-expect-error read-5 (READ-FROM-STRING ",1") :type reader-error)
-(test-expect-error read-6 (READ-FROM-STRING ",") :type reader-error)
+(test-expect-error read-6 (READ-FROM-STRING ",") :type error)
 (test-expect-error read-7 (READ-FROM-STRING "#)" NIL NIL) :type reader-error)
 
 (test read-8
