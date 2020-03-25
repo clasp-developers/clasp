@@ -67,8 +67,13 @@
 		 (readers readers) (writers writers))
 	slotd
       (multiple-value-bind (reader writer) (std-class-accessors name)
-	(let* ((options (list :slot-definition slotd
-                              :leaf-method-p t))
+	(let* ((options (list* :slot-definition slotd
+                               :leaf-method-p t
+                               (if (boundp '*early-methods*)
+                                   nil
+                                   (list
+                                    :source-position (class-source-position
+                                                      standard-class)))))
 	       (reader-args (list* :function reader
 				   :generic-function nil
 				   :qualifiers nil

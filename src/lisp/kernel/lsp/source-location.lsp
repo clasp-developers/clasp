@@ -90,15 +90,21 @@
 
 (defun method-source-location (method)
   ;; NOTE: Because we return this to MAPCON, make sure the lists are fresh.
-  (let ((sls (source-location (clos:method-function method) t))
-        (description
-          (ignore-errors
-           (append (method-qualifiers method)
-                   ;; FIXME: Move this into CLOS probably
-                   (loop for spec in (clos:method-specializers method)
-                         collect (if (typep spec 'clos:eql-specializer)
-                                     `(eql ,(clos:eql-specializer-object spec))
-                                     (class-name spec)))))))
+  (let* ((method-spi (clos::method-source-position method))
+         (method-sls (if method-spi
+                         (list
+                          (source-position-info->source-location method-spi
+                                                                 'defmethod))
+                         nil))
+         (sls (or method-sls (source-location (clos:method-function method) t)))
+         (description
+           (ignore-errors
+            (append (method-qualifiers method)
+                    ;; FIXME: Move this into CLOS probably
+                    (loop for spec in (clos:method-specializers method)
+                          collect (if (typep spec 'clos:eql-specializer)
+                                      `(eql ,(clos:eql-specializer-object spec))
+                                      (class-name spec)))))))
     (source-locations-set-info sls 'defmethod description)))
 
 (defun generic-function-source-locations (gf)

@@ -173,6 +173,12 @@
       (qualifiers :initform nil :initarg :qualifiers :accessor method-qualifiers)
       (the-function :initarg :function :accessor method-function)
       (docstring :initarg :documentation :initform nil)
+      ;; Usually we just use the function's source position, but
+      ;; sometimes this is inadequate, e.g. for accessors, which share
+      ;; a method-function.
+      ;; So for those we use this - but not normal DEFMETHOD.
+      (source-position :initform nil :initarg :source-position
+                       :accessor method-source-position)
       (plist :initform nil :initarg :plist :accessor method-plist)
       ;; these are the precomputed results of cl:function-keywords.
       (keywords :initform nil :initarg :keywords :accessor method-keywords)
