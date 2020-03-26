@@ -426,7 +426,10 @@
 
 (defun %get-callback (sym-name)
   (if sym-name
-      (%dlsym (mangled-callback-name sym-name))
+      (let ((jit-ptr (llvm-sys:lookup-all-dylibs llvm-sys:*jit-engine* "clasp_ffi_cb_SUM-UNSIGNED-CHAR")))
+        (if jit-ptr
+            jit-ptr
+            (%dlsym (mangled-callback-name sym-name))))
       nil))
 
 ;;;----------------------------------------------------------------------------

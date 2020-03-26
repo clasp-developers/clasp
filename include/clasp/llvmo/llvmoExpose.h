@@ -4658,7 +4658,9 @@ class ClaspJIT_O : public core::General_O {
 public:
 public:
   void addIRModule(Module_sp cM,ThreadSafeContext_sp context);
+  bool do_lookup(JITDylib& dylib, const std::string& Name, void*& pointer);
   core::Pointer_sp lookup(JITDylib& dylib, const std::string& Name);
+  core::T_sp lookup_all_dylibs(const std::string& Name);
   JITDylib& getMainJITDylib();
   JITDylib_sp createAndRegisterJITDylib(const std::string& name);
   void addObjectFile(const char* buffer, size_t bytes, size_t startupID, JITDylib& dylib, 
