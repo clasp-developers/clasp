@@ -14,7 +14,7 @@
              (origin (or (cleavir-ast:origin function-ast) ; should be nil, but just in case.
                          core:*current-source-pos-info*)))
         (unless lambda-name
-          (setq lambda-name (list 'cl:lambda (lambda-list-for-name lambda-list))))
+          (setq lambda-name (list 'cl:lambda (cmp::lambda-list-for-name lambda-list))))
         ;; Make the change here to a named-function-ast with lambda-name
         (change-class function-ast 'clasp-cleavir-ast:named-function-ast
                       :lambda-name lambda-name
@@ -40,7 +40,7 @@
              (restvar (and rest-position (elt original-lambda-list (1+ rest-position))))
              (rest-alloc (cmp:compute-rest-alloc restvar dspecs)))
         (unless lambda-name
-          (setq lambda-name (list 'lambda (lambda-list-for-name original-lambda-list))))
+          (setq lambda-name (list 'lambda (cmp::lambda-list-for-name original-lambda-list))))
         ;; Define the function-scope-info object and bind it to
         ;; the *current-function-scope-info* object
         (let ((origin (let ((source (cst:source body)))
@@ -55,20 +55,3 @@
                           :original-lambda-list original-lambda-list
                           :docstring (when documentation (cst:raw documentation))
                           :rest-alloc rest-alloc))))))
-
-;;; Given a lambda list, return a lambda list suitable for display purposes.
-;;; This means only the external interface is required.
-;;; No default values, no -p variables, no &aux.
-;;; FIXME?: Move to Cleavir, probably
-(defun lambda-list-for-name (raw-lambda-list)
-  (multiple-value-bind (req opt rest keyflag keys aok-p)
-      (core:process-lambda-list raw-lambda-list 'function)
-    `(,@(rest req)
-      ,@(unless (zerop (first opt)) '(&optional))
-      ,@(loop for (opt init flag) on (rest opt) by #'cdddr
-              collect opt)
-      ,@(when rest `(&rest ,rest))
-      ,@(when keyflag '(&key))
-      ,@(loop for (key var init flag) on (rest keys) by #'cddddr
-              collect key)
-      ,@(when aok-p '(&allow-other-keys)))))
