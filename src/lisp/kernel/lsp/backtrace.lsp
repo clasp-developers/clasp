@@ -121,6 +121,9 @@ For C/C++ frames - return (list 'c-function name)."
                (maybe-method (fourth parts))
                (name (intern symbol-name (or package-name :keyword)))
                (print-name (cond
+                             ((backtrace-frame-closure frame)
+                              (function-name
+                               (backtrace-frame-closure frame)))
                              ((string= maybe-method "METHOD")
                               (format nil "(METHOD ~a ~a)" name maybe-fn-or-specializers))
                              (t name))))
