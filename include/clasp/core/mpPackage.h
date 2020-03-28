@@ -153,7 +153,7 @@ namespace mp {
   public:
     CL_LISPIFY_NAME("make-lock");
     CL_DOCSTRING("Create and return a fresh mutex with the given name.");
-    CL_LAMBDA(&key name)
+    CL_LAMBDA(&key (name "Anonymous Mutex"))
       CL_DEF_CLASS_METHOD static Mutex_sp make_mutex(core::T_sp name) {
       GC_ALLOCATE_VARIADIC(Mutex_O,l,name,false);
       return l;
@@ -198,7 +198,7 @@ namespace mp {
     LISP_CLASS(mp, MpPkg, SharedMutex_O, "SharedMutex",core::CxxObject_O);
   public:
     CL_LISPIFY_NAME("make-shared-mutex");
-    CL_LAMBDA(&optional name);
+    CL_LAMBDA(&optional (name "Anonymous Shared Mutex"));
     CL_DOCSTRING("Create and return a fresh shared mutex with the given name.");
     CL_DEF_CLASS_METHOD static SharedMutex_sp make_shared_mutex(core::T_sp readName,core::T_sp writeLockName) {
       GC_ALLOCATE_VARIADIC(SharedMutex_O,l,readName,writeLockName);
