@@ -335,7 +335,7 @@ void initialize_signals(int clasp_signal) {
   if (!getenv("CLASP_DONT_HANDLE_CRASH_SIGNALS")) {
     INIT_SIGNAL(SIGABRT, (SA_NODEFER | SA_RESTART), handle_or_queue_signal);
     INIT_SIGNALI(SIGSEGV, (SA_NODEFER | SA_RESTART | SA_ONSTACK), handle_segv);
-    INIT_SIGNAL(SIGBUS, (SA_NODEFER | SA_RESTART), handle_signal_now);
+    INIT_SIGNALI(SIGBUS, (SA_NODEFER | SA_RESTART), handle_bus);
   }
   INIT_SIGNALI(SIGFPE, (SA_NODEFER | SA_RESTART), handle_fpe);
   INIT_SIGNAL(SIGILL, (SA_NODEFER | SA_RESTART), handle_signal_now);
