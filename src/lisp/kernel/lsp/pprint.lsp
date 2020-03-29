@@ -721,7 +721,7 @@
 	((eql 'NULL (setf code (gethash object *circle-stack* 'NULL)))
 	 ;; We visit this part of the list for the first time and thus we must
 	 ;; register it in the hash, or we are on the second pass and have
-     ;; found a completely new list. This should not happen, but anyway
+         ;; found a completely new list. This should not happen, but anyway
 	 ;; we try to print it.
 	 (search-print-circle object)
 	 t)
