@@ -179,10 +179,10 @@ when this is t a lot of graphs will be generated.")
                  #-stealth-gids(format *debug-log* "- - - -  END layout-basic-block  owner: ~a   -->  ~a~%" (cleavir-ir-gml::label owner) basic-block))))
 
 (defun get-or-create-lambda-name (instr)
-  (if (typep instr 'clasp-cleavir-hir:named-enter-instruction)
-      (clasp-cleavir-hir:lambda-name instr)
-      'TOP-LEVEL))
-
+  (or (cleavir-ir:name instr)
+      (if (typep instr 'clasp-cleavir-hir:named-enter-instruction)
+          (clasp-cleavir-hir:lambda-name instr)
+          'TOP-LEVEL)))
 
 (defun ensure-origin (origin &optional (num 99999))
   (if origin
