@@ -460,6 +460,11 @@ No DIBuilder is defined for the default module")
     ;; (LAMBDA lambda-list): an anonymous function
     ((and (consp lname) (eq (car lname) 'cl:lambda))
      (jit-function-name 'cl:lambda))
+    ;; (FLET name) or (LABELS name): a local function
+    ((and (consp lname) (eq (car lname) 'cl:flet))
+     (jit-function-name (second lname)))
+    ((and (consp lname) (eq (car lname) 'cl:labels))
+     (jit-function-name (second lname)))
     #+(or) ;; uncomment this to be more forgiving
     ((consp lname)
      (core:bformat t "jit-function-name handling UNKNOWN: %s%N" lname)
