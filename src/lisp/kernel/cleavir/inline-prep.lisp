@@ -75,7 +75,7 @@
                        (core:make-source-pos-info "no-source-info-available" 0 0 0))
                       (t orig)))))
     ;; See usage in cmp/debuginfo.lsp
-    (list (cmp:jit-function-name (clasp-cleavir-ast:lambda-name ast))
+    (list (cmp:jit-function-name (cleavir-ast:name ast))
           (core:source-pos-info-lineno orig)
           (core:source-pos-info-file-handle orig))))
 

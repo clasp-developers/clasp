@@ -56,8 +56,6 @@
    #:precalculated-value-ast
    #:make-precalc-vector-function-ast
    #:named-function-ast
-   #:original-lambda-list
-   #:docstring
    #:rest-alloc
    #:debug-message-ast
    #:debug-break-ast
@@ -73,7 +71,6 @@
    #:make-throw-ast
    #:cleanup-ast
    #:make-setf-fdefinition-ast
-   #:lambda-name
    #:debug-message
    #:debug-break
    #:precalc-value-reference-ast
@@ -112,8 +109,6 @@
    #:landing-pad
    #:jump-id
    #:lambda-list
-   #:original-lambda-list
-   #:docstring
    #:rest-alloc
    #:make-named-enter-instruction
    #:debug-message-instruction
@@ -132,7 +127,6 @@
    #:invoke-instruction
    #:make-setf-fdefinition-instruction
    #:make-throw-instruction
-   #:lambda-name
    #:precalc-value-instruction #:precalc-value-instruction-p
    #:debug-message
    #:debug-break
