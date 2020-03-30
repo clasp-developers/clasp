@@ -339,6 +339,14 @@ def analyze_clasp(cfg):
                      "--eval",    "(core:quit)")
     print("\n\n\n----------------- proceeding with static analysis --------------------")
 
+def regression_tests(cfg):
+    log.debug("Execute regression tests\n")
+    run_program_echo("build/clasp",
+                     "--feature", "ignore-extensions",
+                     "--load",    "sys:regression-tests;run-all.lisp",
+                     "--eval",    "(progn (format t \"~%Test done~%\")(core:quit))")
+    log.debug("Done regression tests\n")
+    
 def stage_value(ctx,s):
     if ( s == 'r' ):
         sval = -1
@@ -1597,6 +1605,10 @@ def build(bld):
 
             install('bin/%s' % bld.cclasp_executable.name, bld.cclasp_executable, chmod = Utils.O755)
             bld.symlink_as('${PREFIX}/bin/clasp', bld.cclasp_executable.name)
+            task = symlink_executable(env=bld.env)
+            task.set_inputs(bld.cclasp_executable)
+            task.set_outputs(clasp_symlink_node)
+            bld.add_to_group(task)
 #            os.symlink(bld.cclasp_executable.abspath(), clasp_symlink_node.abspath())
 #        else:
 #            os.symlink(bld.iclasp_executable.abspath(), clasp_symlink_node.abspath())
