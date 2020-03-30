@@ -339,13 +339,16 @@ def analyze_clasp(cfg):
                      "--eval",    "(core:quit)")
     print("\n\n\n----------------- proceeding with static analysis --------------------")
 
-def regression_tests(cfg):
+def test(cfg):
     log.debug("Execute regression tests\n")
     run_program_echo("build/clasp",
                      "--feature", "ignore-extensions",
                      "--load",    "sys:regression-tests;run-all.lisp",
                      "--eval",    "(progn (format t \"~%Test done~%\")(core:quit))")
     log.debug("Done regression tests\n")
+
+def tests(cfg):
+    test(cfg)
     
 def stage_value(ctx,s):
     if ( s == 'r' ):
