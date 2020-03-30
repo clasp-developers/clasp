@@ -523,7 +523,7 @@ Symbol_sp functionBlockName(T_sp functionName) {
     return gc::As<Symbol_sp>(functionName);
   if ((functionName).consp()) {
     List_sp cfn = functionName;
-    if (oCar(cfn) == cl::_sym_setf && cl__symbolp(oCadr(cfn)) & oCadr(cfn).notnilp()) {
+    if (oCar(cfn) == cl::_sym_setf && oCdr(cfn).consp() && oCadr(cfn).notnilp() && cl__symbolp(oCadr(cfn)) && oCddr(cfn).nilp())  {
       return gc::As<Symbol_sp>(oCadr(cfn));
     }
   }
@@ -897,10 +897,7 @@ CL_DEFUN T_sp core__fset(T_sp functionName, Function_sp functor, T_sp is_macro, 
       return functor;
     }
   }
-  TYPE_ERROR(functionName, // type of function names
-             Cons_O::createList(cl::_sym_or, cl::_sym_symbol,
-                                Cons_O::createList(cl::_sym_cons,
-                                                   Cons_O::createList(cl::_sym_eql, cl::_sym_setf))));
+  TYPE_ERROR(functionName, Cons_O::createList(cl::_sym_satisfies, core::_sym_validFunctionNameP));
 };
 
 CL_LAMBDA(function-name);
@@ -910,22 +907,24 @@ CL_DEFUN T_sp cl__fdefinition(T_sp functionName) {
   if ((functionName).consp()) {
     List_sp cname = functionName;
     if (oCar(cname) == cl::_sym_setf) {
-      Symbol_sp name = gc::As<Symbol_sp>(oCadr(cname));
-      if (name.notnilp()) {
-        if (!name->fboundp_setf())
-          ERROR_UNDEFINED_FUNCTION(functionName);
-        return name->getSetfFdefinition();
+     // take care of (setf . bar) or (setf bar foo) or (setf bar .foo)
+     // so don't go directly for the cadr
+      T_sp dname = oCdr(cname);
+      if (dname.consp()) {
+        Symbol_sp name = gc::As<Symbol_sp>(oCar(dname));
+        if (name.notnilp() && oCdr(dname).nilp()) {
+          if (!name->fboundp_setf())
+            ERROR_UNDEFINED_FUNCTION(functionName);
+          return name->getSetfFdefinition();
+        }
       }
     }
-  } else if ( Symbol_sp sym = functionName.asOrNull<Symbol_O>() ) {
+  } else if (Symbol_sp sym = functionName.asOrNull<Symbol_O>() ) {
     if (!sym->fboundp())
       ERROR_UNDEFINED_FUNCTION(functionName);
     return sym->symbolFunction();
   }
-  TYPE_ERROR(functionName, // type of function names
-             Cons_O::createList(cl::_sym_or, cl::_sym_symbol,
-                                Cons_O::createList(cl::_sym_cons,
-                                                   Cons_O::createList(cl::_sym_eql, cl::_sym_setf))));
+  TYPE_ERROR(functionName, Cons_O::createList(cl::_sym_satisfies, core::_sym_validFunctionNameP));
 }
 
 CL_LISPIFY_NAME("cl:fdefinition")
@@ -942,15 +941,17 @@ CL_DEFUN_SETF T_sp setf_fdefinition(Function_sp function, T_sp name) {
   } else if (name.consp()) {
     List_sp cur = name;
     if (oCar(cur) == cl::_sym_setf) {
-      symbol = gc::As<Symbol_sp>(oCadr(cur));
-      symbol->setSetfFdefinition(function);
-      return function;
+      T_sp cur2 = oCdr(cur);
+      if (cur2.consp()) {
+        symbol = gc::As<Symbol_sp>(oCar(cur2));
+        if (symbol.notnilp() && oCdr(cur2).nilp()) {
+          symbol->setSetfFdefinition(function);
+          return function;
+        }
+      }
     }
   }
-  TYPE_ERROR(name, // type of function names
-             Cons_O::createList(cl::_sym_or, cl::_sym_symbol,
-                                Cons_O::createList(cl::_sym_cons,
-                                                   Cons_O::createList(cl::_sym_eql, cl::_sym_setf))));
+  TYPE_ERROR(name, Cons_O::createList(cl::_sym_satisfies, core::_sym_validFunctionNameP));
 }
 
 // reader in symbol.cc; this additionally involves function properties, so it's here
@@ -972,22 +973,21 @@ CL_DEFUN bool cl__fboundp(T_sp functionName) {
   if ((functionName).consp()) {
     List_sp cname = functionName;
     if (oCar(cname) == cl::_sym_setf) {
-      Symbol_sp name = gc::As<Symbol_sp>(oCadr(cname));
-      if (name.notnilp())
-        return name->fboundp_setf();
-      else
-        return false;
+      T_sp dname = oCdr(cname);
+      if (dname.consp()) {
+        Symbol_sp name = gc::As<Symbol_sp>(oCar(dname));
+        // (setf function <whatever>) is also a type error
+        if (name.notnilp() && oCdr(dname).nilp())
+          return name->fboundp_setf();
+      // else is a type_error, so continue execution
+      }
     }
   } else if (Symbol_sp sym = functionName.asOrNull<Symbol_O>() ) {
     return sym->fboundp();
   } else if (functionName.nilp()) {
     return false;
   }
-  TYPE_ERROR(functionName,
-             // This is the type of function names, which may be defined as a macro somewhere.
-             Cons_O::createList(cl::_sym_or, cl::_sym_symbol,
-                                Cons_O::createList(cl::_sym_cons,
-                                                   Cons_O::createList(cl::_sym_eql, cl::_sym_setf))));
+  TYPE_ERROR(functionName, Cons_O::createList(cl::_sym_satisfies, core::_sym_validFunctionNameP));
 }
 
 CL_LAMBDA(function-name);
@@ -997,20 +997,20 @@ CL_DEFUN T_sp cl__fmakunbound(T_sp functionName) {
   if ((functionName).consp()) {
     List_sp cname = functionName;
     if (oCar(cname) == cl::_sym_setf) {
-      Symbol_sp name = gc::As<Symbol_sp>(oCadr(cname));
-      if (name.notnilp()) {
-        name->fmakunbound_setf();
-        return functionName;
+      T_sp dname = oCdr(cname);
+      if (dname.consp()) {
+        Symbol_sp name = gc::As<Symbol_sp>(oCar(dname));
+        if (name.notnilp()  && oCdr(dname).nilp()){
+          name->fmakunbound_setf();
+          return functionName;
+        }
       }
     }
   } else if (Symbol_sp sym = functionName.asOrNull<Symbol_O>() ) {
     sym->fmakunbound();
     return sym;
   }
-  TYPE_ERROR(functionName, // type of function names
-             Cons_O::createList(cl::_sym_or, cl::_sym_symbol,
-                                Cons_O::createList(cl::_sym_cons,
-                                                   Cons_O::createList(cl::_sym_eql, cl::_sym_setf))));
+  TYPE_ERROR(functionName, Cons_O::createList(cl::_sym_satisfies, core::_sym_validFunctionNameP));
 }
 
 CL_LAMBDA(char &optional input-stream-designator recursive-p);
