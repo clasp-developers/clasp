@@ -903,29 +903,29 @@ CL_DEFUN T_sp core__fset(T_sp functionName, Function_sp functor, T_sp is_macro, 
 CL_LAMBDA(function-name);
 CL_DECLARE();
 CL_DOCSTRING("fdefinition");
- CL_DEFUN T_sp cl__fdefinition(T_sp functionName) {
-   if ((functionName).consp()) {
-     List_sp cname = functionName;
-     if (oCar(cname) == cl::_sym_setf) {
-      // take care of (setf . bar) or (setf bar foo) or (setf bar .foo)
-      // so don't go directly for the cadr
-       T_sp dname = oCdr(cname);
-       if (dname.consp()) {
-         Symbol_sp name = gc::As<Symbol_sp>(oCar(dname));
-         if (name.notnilp() && oCdr(dname).nilp()) {
-           if (!name->fboundp_setf())
-             ERROR_UNDEFINED_FUNCTION(functionName);
-           return name->getSetfFdefinition();
-         }
-       }
-     }
-   } else if (Symbol_sp sym = functionName.asOrNull<Symbol_O>() ) {
-     if (!sym->fboundp())
-       ERROR_UNDEFINED_FUNCTION(functionName);
-     return sym->symbolFunction();
-   }
-   TYPE_ERROR(functionName, Cons_O::createList(cl::_sym_satisfies, core::_sym_validFunctionNameP));
- }
+CL_DEFUN T_sp cl__fdefinition(T_sp functionName) {
+  if ((functionName).consp()) {
+    List_sp cname = functionName;
+    if (oCar(cname) == cl::_sym_setf) {
+     // take care of (setf . bar) or (setf bar foo) or (setf bar .foo)
+     // so don't go directly for the cadr
+      T_sp dname = oCdr(cname);
+      if (dname.consp()) {
+        Symbol_sp name = gc::As<Symbol_sp>(oCar(dname));
+        if (name.notnilp() && oCdr(dname).nilp()) {
+          if (!name->fboundp_setf())
+            ERROR_UNDEFINED_FUNCTION(functionName);
+          return name->getSetfFdefinition();
+        }
+      }
+    }
+  } else if (Symbol_sp sym = functionName.asOrNull<Symbol_O>() ) {
+    if (!sym->fboundp())
+      ERROR_UNDEFINED_FUNCTION(functionName);
+    return sym->symbolFunction();
+  }
+  TYPE_ERROR(functionName, Cons_O::createList(cl::_sym_satisfies, core::_sym_validFunctionNameP));
+}
 
 CL_LISPIFY_NAME("cl:fdefinition")
 CL_LAMBDA(function name);
