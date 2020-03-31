@@ -11,12 +11,11 @@
                               (cleavir-ast:name function-ast)))
              (origin (or (cleavir-ast:origin function-ast) ; should be nil, but just in case.
                          core:*current-source-pos-info*)))
-        (unless lambda-name
-          (setq lambda-name (list 'cl:lambda (cmp::lambda-list-for-name lambda-list))))
-        ;; Make the change here to a named-function-ast with lambda-name
-        (change-class function-ast 'clasp-cleavir-ast:named-function-ast
-                      :name lambda-name
-                      :origin origin)))))
+        (setf (cleavir-ast:origin function-ast) origin
+              (cleavir-ast:name function-ast)
+              (or lambda-name
+                  (list 'cl:lambda (cmp::lambda-list-for-name lambda-list))))
+        function-ast))))
 
 (defmethod cleavir-cst-to-ast:convert-code (lambda-list body
                                             env (system clasp-cleavir:clasp) &key block-name-cst origin)
@@ -26,7 +25,8 @@
       (declare (ignore documentation)) ; handled by cleavir
       (let* ((dspecs (loop for declaration-cst in declaration-csts
                            append (cdr (cst:listify declaration-cst))))
-             (lambda-name-info (find 'core:lambda-name dspecs :key (lambda (cst) (cst:raw (cst:first cst)))))
+             (lambda-name-info (find 'core:lambda-name dspecs
+                                     :key (lambda (cst) (cst:raw (cst:first cst)))))
              (lambda-name (when lambda-name-info
                             (car (cdr (cst:raw lambda-name-info)))))
              (cmp:*track-inlinee-name* (cons lambda-name cmp:*track-inlinee-name*))
@@ -38,11 +38,9 @@
                               ((null source) core:*current-source-pos-info*)
                               (t source))))
               (function-ast (call-next-method)))
-          (setf lambda-name
+          (setf (cleavir-ast:origin function-ast) origin
+                (cleavir-ast:name function-ast)
                 (or lambda-name ; from declaration
                     (cleavir-ast:name function-ast) ; local functions named by cleavir
                     (list 'lambda (cmp::lambda-list-for-name original-lambda-list))))
-          ;; Make the change here to a named-function-ast with lambda-name
-          (change-class function-ast 'clasp-cleavir-ast:named-function-ast
-                        :name lambda-name
-                        :origin origin))))))
+          function-ast)))))

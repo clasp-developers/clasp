@@ -1,8 +1,5 @@
 (in-package :clasp-cleavir-ast-to-hir)
 
-(defmethod cleavir-ast-to-hir:compile-function :around ((ast clasp-cleavir-ast:named-function-ast))
-  (change-class (call-next-method) 'clasp-cleavir-hir:named-enter-instruction))
-
 (defmethod cleavir-ast-to-hir:compile-ast ((ast clasp-cleavir-ast:debug-message-ast) context)
   (cleavir-ast-to-hir::assert-context ast context 1 1)
   (format t "cleavir-ast-to-hir:compile-ast on debug-message-ast successors: ~a~%" (cleavir-ast-to-hir::successors context))

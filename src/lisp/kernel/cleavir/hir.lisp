@@ -435,21 +435,8 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Instruction NAMED-ENTER-INSTRUCTION
+;;; Compute &rest argument allocation based on declarations.
 ;;;
-;;; This instruction is an ENTER-INSTRUCTION that keeps
-;;; track of the rest-alloc.
-
-(defclass named-enter-instruction (cleavir-ir:enter-instruction) ())
-
-(defun make-named-enter-instruction
-    (lambda-list lambda-name &key (successor nil successor-p) origin original-lambda-list docstring)
-  (let ((oe (if successor-p
-		(cleavir-ir:make-enter-instruction lambda-list :successor successor :origin origin)
-		(cleavir-ir:make-enter-instruction lambda-list :origin origin))))
-    (change-class oe 'named-enter-instruction :name lambda-name
-                                              :original-lambda-list original-lambda-list
-                                              :docstring docstring)))
 
 (defmethod rest-alloc ((self cleavir-ir:enter-instruction))
   (let ((rest (member '&rest (cleavir-ir:lambda-list self))))

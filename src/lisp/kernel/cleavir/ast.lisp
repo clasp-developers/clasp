@@ -17,22 +17,6 @@
 (defmethod cleavir-ast:children ((ast setf-fdefinition-ast))
   (list (cleavir-ast:name-ast ast)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Class NAMED-FUNCTION-AST
-;;;
-;;; This AST is a subclass of FUNCTION-AST. It is used to pass the REST-ALLOC down.
-
-(defclass named-function-ast (cleavir-ast:function-ast)
-  (;; We can avoid or dx-allocate the &rest list sometimes- controlled here,
-   ;; and set up from declarations in convert-form.lisp.
-   ;; NIL indicates the general case (i.e. full heap allocation).
-   (%rest-alloc :initarg :rest-alloc :initform nil :reader rest-alloc
-                     :type (member nil ignore dynamic-extent))))
-
-(cleavir-io:define-save-info named-function-ast
-  (:rest-alloc rest-alloc))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Class THROW-AST
@@ -633,7 +617,9 @@
   ((%lambda-list :initarg :lambda-list :reader cleavir-ast:lambda-list)
    (%va-list-ast :initarg :va-list :reader va-list-ast)
    (%body-ast :initarg :body-ast :reader cleavir-ast:body-ast)
-   ;; as for named-function-ast
+   ;; Either NIL, indicating normal allocation,
+   ;; or DYNAMIC-EXTENT, indicating dynamic extent (stack) allocation,
+   ;; or IGNORE, indicating no allocation.
    (%rest-alloc :initarg :rest-alloc :reader rest-alloc)))
 
 (defun make-bind-va-list-ast (lambda-list va-list-ast body-ast rest-alloc

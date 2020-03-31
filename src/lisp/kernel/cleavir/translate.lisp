@@ -267,17 +267,10 @@ when this is t a lot of graphs will be generated.")
   (let* ((origin (cleavir-ir:origin enter))
          (source-pos-info (origin-spi origin)))
     (cond
-      ((typep enter 'clasp-cleavir-hir:named-enter-instruction)
+      ((typep enter 'cleavir-ir:enter-instruction)
        (cmp:make-function-info :function-name llvm-function-name
                                :lambda-list (cleavir-ir:original-lambda-list enter)
                                :docstring (cleavir-ir:docstring enter)
-                               :declares nil
-                               :form nil
-                               :spi source-pos-info))
-      ((typep enter 'cleavir-ir:enter-instruction)
-       (cmp:make-function-info :function-name llvm-function-name
-                               :lambda-list nil
-                               :docstring nil
                                :declares nil
                                :form nil
                                :spi source-pos-info))
