@@ -435,51 +435,18 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Instruction NAMED-ENTER-INSTRUCTION
+;;; Compute &rest argument allocation based on declarations.
 ;;;
-;;; This instruction is an ENTER-INSTRUCTION that keeps
-;;; track of the lambda-name
 
-
-(defclass named-enter-instruction (cleavir-ir:enter-instruction)
-  ((%lambda-name :initarg :lambda-name :initform "lambda" :accessor lambda-name)
-   (%original-lambda-list :initarg :original-lambda-list :initform nil :reader original-lambda-list)
-   (%docstring :initarg :docstring :initform nil :reader docstring)
-   (%rest-alloc :initarg :rest-alloc :initform nil :reader rest-alloc
-                :type (member nil ignore dynamic-extent))))
-
-(defun make-named-enter-instruction
-    (lambda-list lambda-name &key (successor nil successor-p) origin original-lambda-list docstring rest-alloc)
-  (let ((oe (if successor-p
-		(cleavir-ir:make-enter-instruction lambda-list :successor successor :origin origin)
-		(cleavir-ir:make-enter-instruction lambda-list :origin origin))))
-    (change-class oe 'named-enter-instruction :lambda-name lambda-name
-                                              :original-lambda-list original-lambda-list
-                                              :docstring docstring
-                                              :rest-alloc rest-alloc)))
-
-(defmethod print-object ((object named-enter-instruction) stream)
-  (print-unreadable-object (object stream :type t)
-    (write (lambda-name object) :stream stream)))
-
-(defmethod cleavir-ir-graphviz:label ((instr named-enter-instruction))
-  (with-output-to-string (s)
-    (format s "named-enter(~a)" (lambda-name instr))))
-
-(defmethod cleavir-ir:clone-initargs append ((instruction named-enter-instruction))
-  (list :lambda-name (lambda-name instruction)
-        :original-lambda-list (original-lambda-list instruction)
-        :docstring (docstring instruction)
-        :rest-alloc (rest-alloc instruction)))
-
-(defmethod original-lambda-list ((self cleavir-ir:top-level-enter-instruction))
-  nil)
-
-;;; We need this one for when an enter-instruction makes it to translate.
-;;; This will happen if generate-ast or cst-to-ast make a function-ast without
-;;; going through convert-code. Right now that means dynamic bindings.
 (defmethod rest-alloc ((self cleavir-ir:enter-instruction))
-  nil)
+  (let ((rest (member '&rest (cleavir-ir:lambda-list self))))
+    (if rest
+        (let* ((restloc (second rest))
+               (decls (cdr (assoc restloc (cleavir-ir:bound-declarations self)))))
+          (cond ((find 'ignore decls :key #'car) 'ignore)
+                ((find 'dynamic-extent decls :key #'car) 'dynamic-extent)
+                (t nil)))
+        nil)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

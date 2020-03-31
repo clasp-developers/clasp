@@ -17,33 +17,6 @@
 (defmethod cleavir-ast:children ((ast setf-fdefinition-ast))
   (list (cleavir-ast:name-ast ast)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Class NAMED-FUNCTION-AST
-;;;
-;;; This AST is a subclass of FUNCTION-AST. It is used to pass the LAMBDA-NAME declaration
-;;; down to the HIR->MIR.
-
-(defclass named-function-ast (cleavir-ast:function-ast)
-  ((%lambda-name :initarg :lambda-name :initform "lambda-ast" :reader lambda-name)
-   (%original-lambda-list :initarg :original-lambda-list :initform nil :reader original-lambda-list)
-   (%docstring :initarg :docstring :initform nil :reader docstring)
-   ;; We can avoid or dx-allocate the &rest list sometimes- controlled here,
-   ;; and set up from declarations in convert-form.lisp.
-   ;; NIL indicates the general case (i.e. full heap allocation).
-   (%rest-alloc :initarg :rest-alloc :initform nil :reader rest-alloc
-                     :type (member nil ignore dynamic-extent))))
-
-(cleavir-io:define-save-info named-function-ast
-    (:lambda-name lambda-name)
-  (:original-lambda-list original-lambda-list)
-  (:docstring docstring)
-  (:rest-alloc rest-alloc))
-
-(defmethod cleavir-ast-graphviz::label ((ast named-function-ast))
-  (with-output-to-string (s)
-    (format s "named-function (~a)" (lambda-name ast))))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Class THROW-AST
@@ -644,7 +617,9 @@
   ((%lambda-list :initarg :lambda-list :reader cleavir-ast:lambda-list)
    (%va-list-ast :initarg :va-list :reader va-list-ast)
    (%body-ast :initarg :body-ast :reader cleavir-ast:body-ast)
-   ;; as for named-function-ast
+   ;; Either NIL, indicating normal allocation,
+   ;; or DYNAMIC-EXTENT, indicating dynamic extent (stack) allocation,
+   ;; or IGNORE, indicating no allocation.
    (%rest-alloc :initarg :rest-alloc :reader rest-alloc)))
 
 (defun make-bind-va-list-ast (lambda-list va-list-ast body-ast rest-alloc
