@@ -440,28 +440,26 @@
 ;;; This instruction is an ENTER-INSTRUCTION that keeps
 ;;; track of the rest-alloc.
 
-(defclass named-enter-instruction (cleavir-ir:enter-instruction)
-  ((%rest-alloc :initarg :rest-alloc :initform nil :reader rest-alloc
-                :type (member nil ignore dynamic-extent))))
+(defclass named-enter-instruction (cleavir-ir:enter-instruction) ())
 
 (defun make-named-enter-instruction
-    (lambda-list lambda-name &key (successor nil successor-p) origin original-lambda-list docstring rest-alloc)
+    (lambda-list lambda-name &key (successor nil successor-p) origin original-lambda-list docstring)
   (let ((oe (if successor-p
 		(cleavir-ir:make-enter-instruction lambda-list :successor successor :origin origin)
 		(cleavir-ir:make-enter-instruction lambda-list :origin origin))))
     (change-class oe 'named-enter-instruction :name lambda-name
                                               :original-lambda-list original-lambda-list
-                                              :docstring docstring
-                                              :rest-alloc rest-alloc)))
+                                              :docstring docstring)))
 
-(defmethod cleavir-ir:clone-initargs append ((instruction named-enter-instruction))
-  (list :rest-alloc (rest-alloc instruction)))
-
-;;; We need this one for when an enter-instruction makes it to translate.
-;;; This will happen if generate-ast or cst-to-ast make a function-ast without
-;;; going through convert-code. Right now that means dynamic bindings.
 (defmethod rest-alloc ((self cleavir-ir:enter-instruction))
-  nil)
+  (let ((rest (member '&rest (cleavir-ir:lambda-list self))))
+    (if rest
+        (let* ((restloc (second rest))
+               (decls (cdr (assoc restloc (cleavir-ir:bound-declarations self)))))
+          (cond ((find 'ignore decls :key #'car) 'ignore)
+                ((find 'dynamic-extent decls :key #'car) 'dynamic-extent)
+                (t nil)))
+        nil)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

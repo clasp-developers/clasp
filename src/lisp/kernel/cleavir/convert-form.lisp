@@ -9,10 +9,6 @@
       (let* ((dspecs (reduce #'append (mapcar #'cdr declarations)))
              (lambda-name (or (cadr (find 'core:lambda-name dspecs :key #'car))
                               (cleavir-ast:name function-ast)))
-             (rest-position (position '&rest lambda-list))
-             ;; FIXME? for an invalid lambda list like (foo &rest) this could cause a weird error
-             (restvar (and rest-position (elt lambda-list (1+ rest-position))))
-             (rest-alloc (cmp:compute-rest-alloc restvar dspecs))
              (origin (or (cleavir-ast:origin function-ast) ; should be nil, but just in case.
                          core:*current-source-pos-info*)))
         (unless lambda-name
@@ -20,8 +16,7 @@
         ;; Make the change here to a named-function-ast with lambda-name
         (change-class function-ast 'clasp-cleavir-ast:named-function-ast
                       :name lambda-name
-                      :origin origin
-                      :rest-alloc rest-alloc)))))
+                      :origin origin)))))
 
 (defmethod cleavir-cst-to-ast:convert-code (lambda-list body
                                             env (system clasp-cleavir:clasp) &key block-name-cst origin)
@@ -35,11 +30,7 @@
              (lambda-name (when lambda-name-info
                             (car (cdr (cst:raw lambda-name-info)))))
              (cmp:*track-inlinee-name* (cons lambda-name cmp:*track-inlinee-name*))
-             (original-lambda-list (if lambda-list (cst:raw lambda-list) nil))
-             (rest-position (position '&rest original-lambda-list))
-             ;; ditto FIXME in c-g-a version
-             (restvar (and rest-position (elt original-lambda-list (1+ rest-position))))
-             (rest-alloc (cmp:compute-rest-alloc restvar dspecs)))
+             (original-lambda-list (if lambda-list (cst:raw lambda-list) nil)))
         ;; Define the function-scope-info object and bind it to
         ;; the *current-function-scope-info* object
         (let ((origin (let ((source (cst:source body)))
@@ -54,5 +45,4 @@
           ;; Make the change here to a named-function-ast with lambda-name
           (change-class function-ast 'clasp-cleavir-ast:named-function-ast
                         :name lambda-name
-                        :origin origin
-                        :rest-alloc rest-alloc))))))
+                        :origin origin))))))

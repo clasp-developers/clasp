@@ -1,9 +1,7 @@
 (in-package :clasp-cleavir-ast-to-hir)
 
-;;; Method to just set the name of the thing.
 (defmethod cleavir-ast-to-hir:compile-function :around ((ast clasp-cleavir-ast:named-function-ast))
-  (change-class (call-next-method) 'clasp-cleavir-hir:named-enter-instruction
-                :rest-alloc (clasp-cleavir-ast:rest-alloc ast)))
+  (change-class (call-next-method) 'clasp-cleavir-hir:named-enter-instruction))
 
 (defmethod cleavir-ast-to-hir:compile-ast ((ast clasp-cleavir-ast:debug-message-ast) context)
   (cleavir-ast-to-hir::assert-context ast context 1 1)
