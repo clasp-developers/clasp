@@ -5,7 +5,25 @@
 (defmacro ext::lexical-var (name depth index)
   `(ext::lexical-var ,name ,depth ,index))
 
+;;; to work with fpe-exceptions
+(defun ext::get-fpe-parameters (traps all-traps)
+;;; (loop for trap in all-traps collect trap collect (if (find trap traps) nil t))
+  (let ((result nil))
+    (dolist (trap all-traps)
+      (push trap result)
+      (push (if (find trap traps) nil t) result))
+    (reverse result)))
 
+(defmacro ext:with-float-traps-masked (traps &body body)
+  (let ((previous (gensym "PREVIOUS"))
+        (all-traps '(:underflow :overflow :inexact :invalid :divide-by-zero :denormalized-operand)))
+    `(let ((,previous (core::get-current-fpe-mask)))
+       (unwind-protect
+            (progn
+              (core::enable-fpe-masks
+               ,@(ext::get-fpe-parameters traps all-traps))
+               ,@body)
+              (core::set-current-fpe-mask ,previous)))))
 
 ;;
 ;; Some helper macros for working with iterators
@@ -230,4 +248,3 @@
               (error 'type-error :datum ,fun :expected-type '(or symbol function))))
       ,args)))
 |#
-

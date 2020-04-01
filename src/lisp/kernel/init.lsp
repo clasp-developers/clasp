@@ -205,7 +205,8 @@
           generate-encoding-hashtable
           quit
           btcl
-          ihs-argument))
+          ihs-argument
+          with-float-traps-masked))
 (core:*make-special '*module-provider-functions*)
 (core:*make-special '*source-location*)
 (setq *source-location* nil)
