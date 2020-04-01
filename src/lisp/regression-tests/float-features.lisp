@@ -1,12 +1,13 @@
 (in-package #:clasp-tests)
 
-(test float-features-1
+(test float-features-1a
       (ext:float-infinity-p
        (flet ((foo () (if (> 10 (random 20)) 0.0 0.0))
               (bar () (if (> 10 (random 20)) 23 24)))
          (ext:with-float-traps-masked (:divide-by-zero)
            (/ (bar) (foo))))))
-(test float-features-1
+
+(test float-features-1b
       (handler-case
           (flet ((foo () (if (> 10 (random 20)) 0.0 0.0))
                  (bar () (if (> 10 (random 20)) 23 24)))
