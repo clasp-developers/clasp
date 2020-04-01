@@ -57,7 +57,8 @@
                     collect `(cleavir-generate-ast:convert ,s env system)))))
        (defmethod cleavir-cst-to-ast:convert-special
            ((head (eql ',name)) cst env (system clasp-cleavir:clasp))
-         (cst:db origin (,@syms) (cst:rest cst)
+         (cst:db origin (op ,@syms) cst
+           (declare (ignore op))
            (make-instance
             ',ast
             ,@(loop for i in initargs
@@ -608,4 +609,5 @@
   (make-instance 'cc-ast:bind-ast
     :name-ast (cleavir-cst-to-ast:convert-constant variable-cst env system)
     :value-ast value-ast
-    :body-ast (funcall next-thunk)))
+    :body-ast (funcall next-thunk)
+    :origin (cst:source variable-cst)))
