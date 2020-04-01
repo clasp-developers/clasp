@@ -1,4 +1,5 @@
 #include <signal.h>
+#include <xmmintrin.h>
 #include <llvm/Support/ErrorHandling.h>
 #include <clasp/core/foundation.h>
 #include <clasp/core/symbol.h>
@@ -253,6 +254,41 @@ int global_pollTicksPerCleanup = INITIAL_GLOBAL_POLL_TICKS_PER_CLEANUP;
 int global_signalTrap = 0;
 int global_pollTicksGC = INITIAL_GLOBAL_POLL_TICKS_PER_CLEANUP;
 
+CL_DEFUN void core__disable_all_fpe_masks() {
+  _MM_SET_EXCEPTION_MASK(_MM_MASK_MASK);
+}
+
+CL_LAMBDA(&key underflow overflow inexact invalid divide-by-zero denormalized-operand);
+CL_DECLARE();
+CL_DOCSTRING("zerop");
+CL_DEFUN void core__enable_fpe_masks(core::T_sp underflow, core::T_sp overflow, core::T_sp inexact, core::T_sp invalid, core::T_sp divide_by_zero, core::T_sp denormalized_operand) {
+  // See https://doc.rust-lang.org/stable/core/arch/x86_64/fn._mm_setcsr.html
+  // mask all -> no fpe-exceptions
+  _MM_SET_EXCEPTION_MASK(_MM_MASK_MASK);
+  if (underflow.notnilp())
+    _mm_setcsr(_mm_getcsr() & (~ _MM_MASK_UNDERFLOW));
+  if (overflow.notnilp())
+    _mm_setcsr(_mm_getcsr() & (~ _MM_MASK_OVERFLOW));
+  if (inexact.notnilp())
+    _mm_setcsr(_mm_getcsr() & (~ _MM_MASK_INEXACT));
+  if (invalid.notnilp())
+    _mm_setcsr(_mm_getcsr() & (~ _MM_MASK_INVALID));
+  if (divide_by_zero.notnilp())
+    _mm_setcsr(_mm_getcsr() & (~ _MM_MASK_DIV_ZERO));
+  if (denormalized_operand.notnilp())
+    _mm_setcsr(_mm_getcsr() & (~ _MM_MASK_DENORM));
+}
+
+CL_DEFUN core::Fixnum_sp core__get_current_fpe_mask() {
+  unsigned int before = _MM_GET_EXCEPTION_MASK ();
+  return core::clasp_make_fixnum(before);
+}
+
+CL_DEFUN void core__set_current_fpe_mask(core::Fixnum_sp mask) {
+  Fixnum value = core::unbox_fixnum(mask);
+  _MM_SET_EXCEPTION_MASK(value);
+}
+  
 void handle_fpe(int signo, siginfo_t* info, void* context) {
   (void)context; // unused
   // printf("Enter handle_fpe Signo: %d Errno:%d Code:%d\n", (info->si_signo), (info->si_errno), (info->si_code));
@@ -348,6 +384,7 @@ void initialize_signals(int clasp_signal) {
   INIT_SIGNAL(SIGILL, (SA_NODEFER | SA_RESTART), handle_signal_now);
   // FIXME: Move?
   init_float_traps();
+  // core__disable_fpe_masks();
   llvm::install_fatal_error_handler(fatal_error_handler, NULL);
 }
 
