@@ -512,3 +512,12 @@
 
 (test can-read-nil-bitarray-0 (zerop (row-major-aref #0A0 0)))
 (test can-read-nil-bitarray-1 (= 1 (row-major-aref #0A1 0)))
+
+(test all-char-names-can-be-read
+      (dotimes (x 256 t)
+        (let ((char (code-char x)))
+          (unless (char= char
+                         (handler-case
+                             (read-from-string (format nil "#\\~a" (char-name char)))
+                           (error (e)(values "" e))))
+            (return nil)))))
