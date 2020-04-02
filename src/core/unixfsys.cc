@@ -2221,5 +2221,79 @@ CL_DEFUN FdSet_sp core__make_fd_set() {
   return fdset;
 }
 
+CL_LAMBDA(filedescriptor);
+CL_DECLARE();
+CL_DOCSTRING("Fstat-size for a file-descriptor, nil on error");
+CL_DEFUN T_sp core__fstat_size(int filedescriptor) {
+  struct stat sb;
+  if (fstat(filedescriptor, &sb) == -1)
+    return _Nil<T_O>();
+  else
+    return Integer_O::create(sb.st_size);
+};
 
+CL_LAMBDA(filedescriptor);
+CL_DECLARE();
+CL_DOCSTRING("Fstat-mtime for a file-descriptor, nil on error");
+CL_DEFUN T_sp core__fstat_mtime(int filedescriptor) {
+  struct stat sb;
+  if (fstat(filedescriptor, &sb) == -1)
+    return _Nil<T_O>();
+  else
+    return Integer_O::create((gctools::Fixnum) sb.st_mtime);
+};
+
+CL_LAMBDA(filedescriptor);
+CL_DECLARE();
+CL_DOCSTRING("fstat-mode for a filedescriptor, nil on error");
+CL_DEFUN T_sp core__fstat_mode(int filedescriptor) {
+  struct stat sb;
+  if (fstat(filedescriptor, &sb) == -1)
+    return _Nil<T_O>();
+  else
+    return Integer_O::create((gctools::Fixnum) sb.st_mode);
+};
+
+CL_LAMBDA(pathname);
+CL_DECLARE();
+CL_DOCSTRING("stat-size for a pathname, nil on error");
+CL_DEFUN T_sp core__stat_size(T_sp pathname) {
+  struct stat sb;
+  String_sp filename = gc::As<String_sp>(cl__namestring(pathname));
+  if (stat(filename->get_std_string().c_str(), &sb) == -1)
+    return _Nil<T_O>();
+  else
+    return Integer_O::create(sb.st_size);
+};
+
+CL_LAMBDA(pathname);
+CL_DECLARE();
+CL_DOCSTRING("stat-mtime for a pathname, nil on error");
+CL_DEFUN T_sp core__stat_mtime(T_sp pathname) {
+  struct stat sb;
+  String_sp filename = gc::As<String_sp>(cl__namestring(pathname));
+  if (stat(filename->get_std_string().c_str(), &sb) == -1)
+    return _Nil<T_O>();
+  else
+    return Integer_O::create((gctools::Fixnum) sb.st_mtime);
+};
+
+CL_LAMBDA(pathname);
+CL_DECLARE();
+CL_DOCSTRING("stat-mode for a pathname, nil on error");
+CL_DEFUN T_sp core__stat_mode(T_sp pathname) {
+  struct stat sb;
+  String_sp filename = gc::As<String_sp>(cl__namestring(pathname));
+  if (stat(filename->get_std_string().c_str(), &sb) == -1)
+    return _Nil<T_O>();
+  else
+    return Integer_O::create((gctools::Fixnum) sb.st_mode);
+};
+
+SYMBOL_EXPORT_SC_(CorePkg, fstat_size);
+SYMBOL_EXPORT_SC_(CorePkg, fstat_mtime);
+SYMBOL_EXPORT_SC_(CorePkg, fstat_mode);
+SYMBOL_EXPORT_SC_(CorePkg, stat_size);
+SYMBOL_EXPORT_SC_(CorePkg, stat_mtime);
+SYMBOL_EXPORT_SC_(CorePkg, stat_mode);
 }; // namespace core
