@@ -1210,13 +1210,39 @@ package."
 
 (defun core::debugger-disabled-hook (condition old-hook)
   (declare (ignore old-hook))
-  (format *error-output*
-          "~&Received error of type: ~A~%~A~%~
+  (core:call-with-backtrace (lambda (&rest backtrace-frames)
+                              (format *error-output*
+                                      "~&The debugger has been disabled - in core::debugger-disabled-hook~%Received error of type: ~A~%~A~%~
              Debugger disabled - exiting.~%"
-          (type-of condition) condition)
-  (format *error-output* "~&------- Backtrace: ~%")
-  (core:btcl)
+                                      (type-of condition) condition)
+                              (format *error-output* "~&------- Backtrace: ~%")
+                              (core:btcl :all t :source-info t)
+                              ))
   (core:quit 1))
+
+;;; --------------------------------------------------
+;;; Test code for backtraces
+;;;
+
+(defun backtrace-test-aaa (x)
+  (flet ((inner-backtrace-test-aaa (x)
+           (funcall (lambda (x)
+                      (declare (core:lambda-name lambda-backtrace-test-aaa))
+                      (error "In backtrace-test-aaa"))
+                    x)))
+    (format t "Entered backtrace-test-aaa~%")
+    (inner-backtrace-test-aaa x)))
+
+(defun backtrace-test-bbb (x)
+  (format t "Entered backtrace-test-bbb~%")
+  (backtrace-test-aaa x))
+
+(defun backtrace-test-ccc (x)
+  (format t "Entered backtrace-test-ccc~%")
+  (loop for count below 10
+        do (backtrace-test-bbb x))
+  (format t "We should never leave backtrace-test-ccc~%"))
+
 
 (eval-when (:execute :load-toplevel)
   (when (null (core:is-interactive-lisp))

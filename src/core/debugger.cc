@@ -325,13 +325,14 @@ CL_DEFUN void core__backtrace_frame_to_stream(int idx, T_sp frame ,T_sp stream, 
       info << _rep_(filename);
       info << ":";
       info << lineno.unsafe_fixnum();
+      clasp_write_string("    |---> ");
       clasp_write_string(info.str(),stream);
       clasp_write_string("\n",stream);
     }
   }
 }
 
-CL_LAMBDA(backtrace &key (stream *debug-io*) (args t) all source_info);
+CL_LAMBDA(backtrace &key (stream *error-output*) (args t) all source_info);
 CL_DEFUN void core__dump_backtrace( List_sp backtrace, T_sp stream, bool args, bool all, bool source_info)
 {
   for ( int idx = 0; idx<cl__length(backtrace); idx++ ) {
@@ -342,9 +343,20 @@ CL_DEFUN void core__dump_backtrace( List_sp backtrace, T_sp stream, bool args, b
   }
 }
     
-    
+CL_DOCSTRING(R"doc(Dump a backtrace containing only Common Lisp frames by default but includes C++ frames if all is T.
+If args is T then print arguments, otherwise don't.  If source-info is T then dump source-info after every frame.)doc");
+CL_LAMBDA(&key (stream *error-output*) all (args t) source-info);
+CL_DEFUN void core__btcl(T_sp stream, bool all, bool args, bool source_info)
+{
+    core::T_sp backtrace = _sym_STARbacktraceSTAR->symbolValue();
+    core__dump_backtrace(backtrace,stream,args,all,source_info);
+    clasp_finish_output(stream);
+}
 
-
+CL_DOCSTRING(R"doc(Return true if the indicated frame is visible. 
+core:*ihs-mode* is used to determine if a particular frame is visible.
+If core:*ihs-mode* is 'core:ihs-common-lisp then only common lisp frames are
+visible. Any other value and all frames are visible.)doc");
 CL_DEFUN bool core__ihs_visible(int idx)
 {
   idx = core__ihs_bounded(idx);
@@ -2156,7 +2168,8 @@ void tprint(void* ptr)
 }
 
 void c_bt() {
-  core::eval::funcall(core::_sym_bt->symbolFunction());
+    core::eval::funcall(core::_sym_btcl->symbolFunction(),
+                        INTERN_(kw,all),_lisp->_true());
 };
 
 void c_btcl() {
