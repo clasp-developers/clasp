@@ -282,6 +282,21 @@ CL_DEFUN T_sp core__ihs_return_address(int idx) {
   return address;
 }
 
+std::string thing_as_string(T_sp obj)
+{
+    if (gc::IsA<SimpleBaseString_sp>(obj)) {
+        return gc::As_unsafe<SimpleBaseString_sp>(obj)->get_std_string();
+    } else if (gc::IsA<SimpleCharacterString_sp>(obj)) {
+        return gc::As_unsafe<SimpleBaseString_sp>(obj)->get_std_string();
+    } else if (gc::IsA<Str8Ns_sp>(obj)) {
+        return gc::As_unsafe<Str8Ns_sp>(obj)->get_std_string();
+    } else if (gc::IsA<StrWNs_sp>(obj)) {
+        return gc::As_unsafe<StrWNs_sp>(obj)->get_std_string();
+    }
+    return _rep_(obj);
+}
+
+
 CL_LAMBDA(index frame &key (stream *debug-io*) (args t) (source-info t));
 CL_DEFUN void core__backtrace_frame_to_stream(int idx, T_sp frame ,T_sp stream, bool args, bool do_source_info)
 {
@@ -299,17 +314,18 @@ CL_DEFUN void core__backtrace_frame_to_stream(int idx, T_sp frame ,T_sp stream, 
   clasp_write_string(num.str(),stream);
   if (args && arguments.notnilp()) {
     clasp_write_string(": (",stream);
-    clasp_write_string(_rep_(name),stream);
+    clasp_write_string(thing_as_string(name),stream);
     if (cl__length(arguments)>0) {
       for (size_t i=0; i< cl__length(arguments); ++i ) {
         clasp_write_string(" ",stream);
-        clasp_write_string(_rep_(cl__elt(arguments,i)),stream);
+        T_sp arg = cl__elt(arguments,i);
+        clasp_write_string(_rep_(arg),stream);
       }
     }
     clasp_write_string(")",stream);
   } else {
     clasp_write_string(": ",stream);
-    clasp_write_string(_rep_(name),stream);
+    clasp_write_string(thing_as_string(name),stream);
   }
   clasp_write_string("\n",stream);
   if (do_source_info) {
@@ -322,7 +338,7 @@ CL_DEFUN void core__backtrace_frame_to_stream(int idx, T_sp frame ,T_sp stream, 
         lineno = source_info.valueGet_(5);
       }
       stringstream info;
-      info << _rep_(filename);
+      info << thing_as_string(filename);
       info << ":";
       info << lineno.unsafe_fixnum();
       clasp_write_string("    |---> ");
