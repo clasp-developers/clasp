@@ -513,8 +513,8 @@
 (test can-read-nil-bitarray-0 (zerop (row-major-aref #0A0 0)))
 (test can-read-nil-bitarray-1 (= 1 (row-major-aref #0A1 0)))
 
-(test all-char-names-can-be-read
-      (dotimes (x 256 t)
+(test all-char-names-can-be-read-again
+      (dotimes (x (min 65535 char-code-limit) t)
         (let ((char (code-char x)))
           (unless (char= char
                          (handler-case

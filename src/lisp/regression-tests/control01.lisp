@@ -86,4 +86,9 @@
                     :good
                     :bad))))))
 
+(test issue-780
+      (equalp '(2 1)
+              (macrolet ((%m (&key ((:a (b c)))) `(quote (,c ,b))))
+    (%m :a (1 2)))))
+
 
