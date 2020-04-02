@@ -36,19 +36,6 @@
         TYPES-CLASSES-10
         HASH-TABLE-SIZE-WEAK-KEY
         #-cst BABEL-SIMPLE-STRINGS-1
-        ;;; LISTEN-3
-        ;;; what is correct syntax for a function name
-        FBOUNDP.ERROR.3
-        FBOUNDP.ERROR.4
-        FBOUNDP.ERROR.5
-        FMAKUNBOUND.2
-        FMAKUNBOUND.3
-        FDEFINITION.2
-        FDEFINITION.3
-        FDEFINITION.5
-        SETF-FDEFINITION.1
-        SETF-FDEFINITION.2
-        SETF-FDEFINITION.3
         ;;; printer
         PRINT.ARRAY.RANDOM.1.TAKE.1
         PRINT.ARRAY.RANDOM.1.TAKE.2
