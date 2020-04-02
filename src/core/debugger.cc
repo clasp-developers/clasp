@@ -351,6 +351,10 @@ CL_DEFUN void core__backtrace_frame_to_stream(int idx, T_sp frame ,T_sp stream, 
 CL_LAMBDA(backtrace &key (stream *error-output*) (args t) all source_info);
 CL_DEFUN void core__dump_backtrace( List_sp backtrace, T_sp stream, bool args, bool all, bool source_info)
 {
+    if (backtrace.nilp()) {
+        clasp_write_string("The core:*backtrace* is empty - you must always be within a core:call-with-backtrace call when generating a backtrace\n");
+        return;
+    }
   for ( int idx = 0; idx<cl__length(backtrace); idx++ ) {
     T_sp frame = cl__elt(backtrace,idx);
     if (all || core__backtrace_frame_visible(frame)) {
