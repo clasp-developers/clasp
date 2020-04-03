@@ -627,6 +627,36 @@ This is due to either a problem in foreign code (e.g., C++), or a bug in Clasp i
   ()
   (:report "Attempted to return or go to an expired block or tagbody tag."))
 
+#+threads
+(define-condition mp:process-error (error)
+  ((process :initarg :process :reader mp:process-error-process)))
+
+#+threads
+(define-condition mp:process-join-error (mp:process-error)
+  ((original-condition :initarg :original-condition :initform nil
+                       :reader mp:process-join-error-original-condition))
+  (:report
+   (lambda (condition stream)
+     (format stream "Failed to join process: Process ~s aborted~:[.~; ~
+due to error:~%  ~:*~a~]"
+             (mp:process-error-process condition)
+             (mp:process-join-error-original-condition condition)))))
+
+#+threads
+(progn
+  ;; Somewhat KLUDGE-y way to add an ABORT restart to every new thread.
+  ;; FIXME: Actually pass the damn condition to abort-thread.
+  ;; The normal ABORT restart doesn't work for this since it takes no
+  ;; arguments. Annoying.
+  (mp:push-default-special-binding
+   '*restart-clusters*
+   '(list (list (make-restart
+                 :name 'abort
+                 :function #'mp:abort-process
+                 :report-function (lambda (stream)
+                                    (format stream "Abort the process (~s)"
+                                            mp:*current-process*)))))))
+
 (define-condition stream-error (error)
   ((stream :initarg :stream :reader stream-error-stream)))
 

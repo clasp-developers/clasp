@@ -40,7 +40,8 @@ namespace mp {
 
 namespace mp {
   struct ExitProcess {};
-  
+  struct AbortProcess {};
+
 #ifdef CLASP_THREADS
   /*! Keep track of binding indices for symbols */
   extern Mutex global_BindingIndexPoolMutex;
@@ -106,6 +107,8 @@ namespace mp {
     core::List_sp  _Arguments;
     core::List_sp  _InitialSpecialBindings;
     core::List_sp  _ReturnValuesList;
+    bool _Aborted;
+    core::T_sp _AbortCondition;
     core::ThreadLocalState* _ThreadInfo;
     std::atomic<ProcessPhase>  _Phase;
     Mutex _SuspensionMutex;
@@ -117,7 +120,14 @@ namespace mp {
     mps_root_t root;
 #endif
   public:
-  Process_O(core::T_sp name, core::T_sp function, core::List_sp arguments, core::List_sp initialSpecialBindings=_Nil<core::T_O>(), size_t stack_size=8*1024*1024) : _Name(name), _Function(function), _Arguments(arguments), _InitialSpecialBindings(initialSpecialBindings), _ThreadInfo(NULL), _ReturnValuesList(_Nil<core::T_O>()), _StackSize(stack_size), _Phase(Booting), _SuspensionMutex(SUSPBARR_NAMEWORD) {
+    Process_O(core::T_sp name, core::T_sp function, core::List_sp arguments,
+              core::List_sp initialSpecialBindings=_Nil<core::T_O>(),
+              size_t stack_size=8*1024*1024)
+      : _Name(name), _Function(function), _Arguments(arguments),
+        _InitialSpecialBindings(initialSpecialBindings), _ThreadInfo(NULL),
+        _ReturnValuesList(_Nil<core::T_O>()), _Aborted(false),
+        _AbortCondition(_Nil<core::T_O>()), _StackSize(stack_size), _Phase(Booting),
+        _SuspensionMutex(SUSPBARR_NAMEWORD) {
       if (!function) {
         printf("%s:%d Trying to create a process and the function is NULL\n", __FILE__, __LINE__ );
       }
