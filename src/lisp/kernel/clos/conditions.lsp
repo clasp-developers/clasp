@@ -31,11 +31,6 @@
 (in-package "SYSTEM")
 
 ;;; ----------------------------------------------------------------------
-;;; Unique Ids
-
-(defmacro unique-id (obj)
-  "Generates a unique integer ID for its argument."
-  `(sys:pointer ,obj))
 
 
 ;;; Restarts
@@ -64,7 +59,8 @@
 (defun restart-print (restart stream depth)
   (declare (ignore depth))
   (if *print-escape*
-      (format stream "#<~s.~d>" (type-of restart) (unique-id restart))
+      (print-unreadable-object (restart stream :type t :identity t)
+        (write (restart-name restart) :stream stream))
       (restart-report restart stream))
   restart)
 
