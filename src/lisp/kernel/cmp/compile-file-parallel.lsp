@@ -261,7 +261,10 @@ multithreaded performance that we should explore."
                (cfp-log "Process-join of thread ~a~%" (mp:process-name thread))))
     (dolist (job ast-jobs)
       (when (ast-job-error job)
-        (error "Compile-error ~a ~%" (ast-job-error job))))
+        ;; NOTE: We could wrap this resignaled condition with an explanation
+        ;; of the truncated backtrace. This would inhibit handlers trying to
+        ;; handle any particular condition types, though.
+        (error (ast-job-error job))))
     ;; Now print the names of the startup ctor functions
     ;;     Next we need to compile a new module that declares these ctor functions and puts them in a ctor list
     ;;      then it should add this new module to the result list so it can be linked with the others.
