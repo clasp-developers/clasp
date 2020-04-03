@@ -434,13 +434,6 @@ CL_DEFUN void core__describe_cxx_object(T_sp obj, T_sp stream)
 
 CL_LAMBDA(arg);
 CL_DECLARE();
-CL_DOCSTRING("Return the value of the pointer - used by conditions.lsp");
-CL_DEFUN int core__pointer(T_sp obj) {
-  return obj.intptr();
-};
-
-CL_LAMBDA(arg);
-CL_DECLARE();
 CL_DOCSTRING("isTrue");
 CL_DEFUN bool core__is_true(T_sp arg) {
   return arg.isTrue();
