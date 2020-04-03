@@ -25,7 +25,7 @@
   form-index   ; Uses (core:next-startup-position) to keep count
   form-counter ; Counts from zero
   module
-  error current-source-pos-info startup-function-name form-output-path)
+  (error nil) current-source-pos-info startup-function-name form-output-path)
 
 
 (defun compile-from-module (job &key
@@ -33,43 +33,40 @@
                                   optimize-level
                                   intermediate-output-type
                                   write-bitcode)
-  (handler-case
-      (let ((module (ast-job-module job)))
-        (cond
-          ((member intermediate-output-type '(:object :in-memory-object))
-           (let ((reloc-model (cond
-                                ((or (member :target-os-linux *features*) (member :target-os-freebsd *features*))
-                                 'llvm-sys:reloc-model-pic-)
-                                (t 'llvm-sys:reloc-model-undefined))))
-             (when write-bitcode
-               (let ((bitcode-filename (core:coerce-to-filename (cfp-output-file-default (ast-job-form-output-path job) :bitcode))))
-                 (write-bitcode module bitcode-filename)))
-             (let ((output (generate-obj-asm-stream module (ast-job-output-stream job) 'llvm-sys:code-gen-file-type-object-file reloc-model)))
-               (when output (setf (ast-job-output-stream job) output))
-               )))
-          #+(or)
-          ((eq intermediate-output-type :object)
-           (let ((object-file-path (make-pathname :type "o" :defaults (ast-job-form-output-path job))))
-             (ensure-directories-exist object-file-path)
-             ;; Save the bitcode so we can take a look at it
-             (with-track-llvm-time
-                 (let ((bitcode-file (core:coerce-to-filename (cfp-output-file-default object-file-path :bitcode))))
-                   (write-bitcode module bitcode-file)))
-             (let ((reloc-model (cond
-                                  ((or (member :target-os-linux *features*) (member :target-os-freebsd *features*))
-                                   'llvm-sys:reloc-model-pic-)
-                                  (t 'llvm-sys:reloc-model-undefined))))
-               (generate-obj-asm module object-file-path :file-type 'llvm-sys:code-gen-file-type-object-file :reloc-model reloc-model))))
-          #+(or)
-          ((eq intermediate-output-type :bitcode)
-           (with-track-llvm-time
-               (let ((bitcode-file (core:coerce-to-filename (cfp-output-file-default (ast-job-form-output-path job) :bitcode))))
-                 (write-bitcode module bitcode-file))))
-          (t ;; fasl
-           (error "Only options for intermediate-output-type are :object or :bitcode - not ~a" intermediate-output-type)))
-        (gctools:thread-local-cleanup)
-        )
-    (error (e) (setf (ast-job-error job) e))))
+  (let ((module (ast-job-module job)))
+    (cond
+      ((member intermediate-output-type '(:object :in-memory-object))
+       (let ((reloc-model (cond
+                            ((or (member :target-os-linux *features*) (member :target-os-freebsd *features*))
+                             'llvm-sys:reloc-model-pic-)
+                            (t 'llvm-sys:reloc-model-undefined))))
+         (when write-bitcode
+           (let ((bitcode-filename (core:coerce-to-filename (cfp-output-file-default (ast-job-form-output-path job) :bitcode))))
+             (write-bitcode module bitcode-filename)))
+         (let ((output (generate-obj-asm-stream module (ast-job-output-stream job) 'llvm-sys:code-gen-file-type-object-file reloc-model)))
+           (when output (setf (ast-job-output-stream job) output))
+           )))
+      #+(or)
+      ((eq intermediate-output-type :object)
+       (let ((object-file-path (make-pathname :type "o" :defaults (ast-job-form-output-path job))))
+         (ensure-directories-exist object-file-path)
+         ;; Save the bitcode so we can take a look at it
+         (with-track-llvm-time
+             (let ((bitcode-file (core:coerce-to-filename (cfp-output-file-default object-file-path :bitcode))))
+               (write-bitcode module bitcode-file)))
+         (let ((reloc-model (cond
+                              ((or (member :target-os-linux *features*) (member :target-os-freebsd *features*))
+                               'llvm-sys:reloc-model-pic-)
+                              (t 'llvm-sys:reloc-model-undefined))))
+           (generate-obj-asm module object-file-path :file-type 'llvm-sys:code-gen-file-type-object-file :reloc-model reloc-model))))
+      #+(or)
+      ((eq intermediate-output-type :bitcode)
+       (with-track-llvm-time
+           (let ((bitcode-file (core:coerce-to-filename (cfp-output-file-default (ast-job-form-output-path job) :bitcode))))
+             (write-bitcode module bitcode-file))))
+      (t ;; fasl
+       (error "Only options for intermediate-output-type are :object or :bitcode - not ~a" intermediate-output-type)))
+    (gctools:thread-local-cleanup)))
 
 
 (defun ast-job-to-module (job &key optimize optimize-level)
@@ -124,11 +121,14 @@
              do (if ast-job
                     (progn
                       (cfp-log "Thread ~a compiling form~%" (mp:process-name mp:*current-process*))
-                      (funcall compile-func ast-job
-                               :optimize optimize
-                               :optimize-level optimize-level
-                               :intermediate-output-type intermediate-output-type
-                               :write-bitcode write-bitcode)
+                      (handler-case
+                          (funcall compile-func ast-job
+                                   :optimize optimize
+                                   :optimize-level optimize-level
+                                   :intermediate-output-type intermediate-output-type
+                                   :write-bitcode write-bitcode)
+                        (error (e)
+                          (setf (ast-job-error ast-job) e)))
                       (cfp-log "Thread ~a done with form~%" (mp:process-name mp:*current-process*)))
                     (cfp-log "Thread ~a timed out during dequeue - trying again~%" (mp:process-name mp:*current-process*))))
     (cfp-log "Leaving thread ~a~%" (mp:process-name mp:*current-process*))))
@@ -250,16 +250,15 @@ multithreaded performance that we should explore."
                                    :intermediate-output-type intermediate-output-type))
                (incf form-counter)
                (setf form-index (core:next-startup-position)))))
-      (progn
-        ;; Now send :quit messages to all threads
-        (loop for thread in ast-threads
-              do (cfp-log "Sending two :quit (why not?) for thread ~a~%" (mp:process-name thread))
-              do (core:atomic-enqueue ast-queue :quit)
-                 (core:atomic-enqueue ast-queue :quit))
-        ;; Now wait for all threads to join
-        (loop for thread in ast-threads
-              do (mp:process-join thread)
-                 (cfp-log "Process-join of thread ~a~%" (mp:process-name thread)))))
+      ;; Now send :quit messages to all threads
+      (loop for thread in ast-threads
+            do (cfp-log "Sending two :quit (why not?) for thread ~a~%" (mp:process-name thread))
+            do (core:atomic-enqueue ast-queue :quit)
+               (core:atomic-enqueue ast-queue :quit))
+      ;; Now wait for all threads to join
+      (loop for thread in ast-threads
+            do (mp:process-join thread)
+               (cfp-log "Process-join of thread ~a~%" (mp:process-name thread))))
     (dolist (job ast-jobs)
       (when (ast-job-error job)
         (error "Compile-error ~a ~%" (ast-job-error job))))
