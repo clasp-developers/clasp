@@ -1481,21 +1481,41 @@ void operating_system_backtrace(std::vector<BacktraceEntry>& backtrace_)
 }
 
 
-CL_DEFUN T_sp core__maybe_demangle(core::String_sp s)
+bool maybe_demangle(const std::string& fnName, std::string& output)
 {
   char *funcname = (char *)malloc(1024);
   size_t funcnamesize = 1024;
-  std::string fnName = s->get_std_string();
   int status;
   char *ret = abi::__cxa_demangle(fnName.c_str(), funcname, &funcnamesize, &status);
   if (status == 0) {
     std::string demangled(funcname);
     free(ret);
-    return core__ever_so_slightly_mangle_cxx_names(demangled);
-  } else {
-    if (funcname) free(funcname);
-    return _Nil<T_O>();
+    output = demangled;
+    return true;
   }
+  if (fnName[0] == '_') {
+      // try stripping off the first underscore
+    std::string shortFnName = fnName.substr(1,std::string::npos);
+    char *ret = abi::__cxa_demangle(shortFnName.c_str(), funcname, &funcnamesize, &status);
+    if (status == 0) {
+      std::string demangled(funcname);
+      free(ret);
+      output = demangled;
+      return true;
+    }
+  }
+  if (funcname) free(funcname);
+  return false;
+}
+
+
+CL_DEFUN T_sp core__maybe_demangle(core::String_sp s)
+{
+  std::string result;
+  std::string fnName = s->get_std_string();
+  bool demangled = maybe_demangle(fnName,result);
+  if (demangled) return core__ever_so_slightly_mangle_cxx_names(result);
+  return _Nil<T_O>();
 }
 
 bool check_for_frame(uintptr_t frame) {
@@ -2101,7 +2121,14 @@ void dbg_print_frame(FILE* fout, const std::vector<core::BacktraceEntry>& backtr
   stringstream ss;
   fprintf(fout,"%lu: ", idx);
   fflush(fout);
-  fprintf(fout,"(%s ", backtrace[idx]._SymbolName.c_str());
+  std::string fname = backtrace[idx]._SymbolName;
+  std::string dname;
+  bool demangled = core::maybe_demangle(fname,dname);
+  if (demangled) {
+    fprintf(fout,"(%s ", dname.c_str());
+  } else {
+    fprintf(fout,"(%s ", backtrace[idx]._SymbolName.c_str());
+  }
   fflush(fout);
   if (printArgs&&((backtrace[idx]._BasePointer!=0&&backtrace[idx]._FrameOffset!=0)||backtrace[idx]._InvocationHistoryFrameAddress!=0)) {
     uintptr_t invocationHistoryFrameAddress = backtrace[idx]._InvocationHistoryFrameAddress;
