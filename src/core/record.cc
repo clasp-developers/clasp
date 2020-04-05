@@ -40,11 +40,15 @@ THE SOFTWARE.
 
 namespace core {
 
-
-
-T_sp record_circle_subst(T_sp replacement_table, T_sp tree) {
+T_sp record_circle_subst(Record_sp record, T_sp tree) {
   RECORD_LOG(BF("Checking record_circle_subst orig@%p: %s\n") % (void *)(tree.raw_()) %  _rep_(tree) );
-  T_sp result = eval::funcall(_sym_circle_subst, replacement_table, tree);
+  T_sp result;
+  T_sp patching_callback = record->_patching_callback;
+  if (patching_callback.notnilp()) {
+    result = eval::funcall(patching_callback, tree);
+  } else {
+    SIMPLE_ERROR(BF("The patching-callback is nil"));
+  }
 #ifdef DEBUG_RECORD
   if (result.raw_() != tree.raw_()) {
     RECORD_LOG(BF("  YES!!! record_circle_subst tree@%p subst@%p: %s\n") % (void*)(tree.raw_()) % (void *)(result.raw_()) %  _rep_(result) );
@@ -53,7 +57,7 @@ T_sp record_circle_subst(T_sp replacement_table, T_sp tree) {
   return result;
 }
 
-Record_O::Record_O(RecordStage stage, bool dummy, List_sp data) : _stage(stage), _alist(data), _Seen(_Nil<T_O>()) {}
+Record_O::Record_O(RecordStage stage, bool dummy, List_sp data) : _stage(stage), _alist(data), _patching_callback(_Nil<T_O>()), _Seen(_Nil<T_O>()) {}
 
 void Record_O::initialize() {
   if (this->_stage == initializing) {
@@ -89,9 +93,10 @@ void Record_O::errorIfInvalidArguments() {
   }
 }
 
-CL_DEFUN Record_sp core__make_record_patcher(HashTable_sp circle_table)
+CL_LAMBDA(&optional patcher-callback);
+CL_DEFUN Record_sp core__make_record_patcher(T_sp patcher_callback)
 {
-  return Record_O::create_patcher(circle_table);
+  return Record_O::create_patcher(patcher_callback);
 }
 
 CL_DEFUN void core__patch_object(General_sp tree, Record_sp record) {
