@@ -363,15 +363,6 @@ CL_DEFUN void core__dump_backtrace( List_sp backtrace, T_sp stream, bool args, b
   }
 }
     
-CL_DOCSTRING(R"doc(Dump a backtrace containing only Common Lisp frames by default but includes C++ frames if all is T.
-If args is T then print arguments, otherwise don't.  If source-info is T then dump source-info after every frame.)doc");
-CL_LAMBDA(&key (stream *error-output*) all (args t) source-info);
-CL_DEFUN void core__btcl(T_sp stream, bool all, bool args, bool source_info)
-{
-    core::T_sp backtrace = _sym_STARbacktraceSTAR->symbolValue();
-    core__dump_backtrace(backtrace,stream,args,all,source_info);
-    clasp_finish_output(stream);
-}
 
 CL_DOCSTRING(R"doc(Return true if the indicated frame is visible. 
 core:*ihs-mode* is used to determine if a particular frame is visible.
@@ -1727,13 +1718,10 @@ CL_DEFUN T_mv core__call_with_stack_top_hint(Function_sp thunk)
   return eval::funcall(thunk);
 }
 
-CL_LAMBDA(closure &optional args-as-pointers);
-CL_DECLARE();
-CL_DOCSTRING(R"doc(Generate a backtrace and pass it to the closure for printing or debugging.
- If args-as-pointers is T then arguments and the closure are wrapped in Pointer_O objects.)doc");
-CL_DEFUN T_mv core__call_with_backtrace(Function_sp closure, bool args_as_pointers) {
-  std::vector<BacktraceEntry> backtrace;
-  fill_backtrace(backtrace);
+
+
+List_sp fill_backtrace_frames(std::vector<BacktraceEntry>& backtrace, bool args_as_pointers)
+{
   uintptr_t stack_top_hint = ~0;
   if (_sym_STARstack_top_hintSTAR->symbolValue().notnilp()) {
     if (gc::IsA<Pointer_sp>(_sym_STARstack_top_hintSTAR->symbolValue())) {
@@ -1792,12 +1780,51 @@ CL_DEFUN T_mv core__call_with_backtrace(Function_sp closure, bool args_as_pointe
 #endif
     }
   }
-  DynamicScopeManager scope(_sym_STARbacktraceSTAR,result.cons());
-  DynamicScopeManager scope1(_sym_STARihs_topSTAR,make_fixnum(cl__length(result.cons())));
+  return result.cons();
+}
+
+
+
+CL_LAMBDA(closure &optional args-as-pointers);
+CL_DECLARE();
+CL_DOCSTRING(R"doc(Generate a backtrace and pass it to the closure for printing or debugging.
+ If args-as-pointers is T then arguments and the closure are wrapped in Pointer_O objects.)doc");
+CL_DEFUN T_mv core__call_with_backtrace(Function_sp closure, bool args_as_pointers) {
+  std::vector<BacktraceEntry> backtrace;
+  fill_backtrace(backtrace);
+  List_sp frames = fill_backtrace_frames(backtrace,args_as_pointers);
+  DynamicScopeManager scope(_sym_STARbacktraceSTAR,frames);
+  DynamicScopeManager scope1(_sym_STARihs_topSTAR,make_fixnum(cl__length(frames)));
   DynamicScopeManager scope2(_sym_STARihs_baseSTAR,make_fixnum(0));
   DynamicScopeManager scope3(_sym_STARihs_modeSTAR,_sym_ihs_common_lisp);
   DynamicScopeManager scope4(_sym_STARihs_currentSTAR,make_fixnum(core__ihs_prev(-1)));
-  return eval::funcall(closure,result.cons());
+  return eval::funcall(closure,frames);
+}
+
+
+CL_DOCSTRING(R"doc(Dump a backtrace containing only Common Lisp frames by default but includes C++ frames if all is T.
+If args is T then print arguments, otherwise don't.  If source-info is T then dump source-info after every frame.)doc");
+CL_LAMBDA(&key (stream *error-output*) all (args t) source-info);
+CL_DEFUN void core__btcl(T_sp stream, bool all, bool args, bool source_info)
+{
+  std::vector<BacktraceEntry> backtrace;
+  fill_backtrace(backtrace);
+  List_sp frames = fill_backtrace_frames(backtrace,false);
+  write_bf_stream(BF("Dumping backtrace\n"),stream);
+  T_sp cur = frames;
+  while (cur.consp()) {
+    Vector_sp frame = gc::As<Vector_sp>(CONS_CAR(cur));
+    if (core__backtrace_frame_type(frame)==kw::_sym_lisp &&
+        core__backtrace_frame_function_name(frame) == _sym_universalErrorHandler) {
+      cur = CONS_CDR(cur); // skip this one
+      goto DUMP;
+    }
+    cur = CONS_CDR(cur);
+  }
+  cur = frames;
+ DUMP:
+  core__dump_backtrace(cur,stream,args,all,source_info);
+  clasp_finish_output(stream);
 }
 
 
