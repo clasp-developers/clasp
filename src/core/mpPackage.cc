@@ -319,9 +319,34 @@ string Process_O::__repr__() const {
 #ifdef USE_BOEHM // things don't move in boehm
   ss << " @" << (void*)(this->asSmartPtr().raw_());
 #endif
+  ss << " Phase:";
+  switch (this->_Phase) {
+  case Inactive:
+      ss  << "Inactive";
+      break;
+  case Booting:
+      ss  << "Booting";
+      break;
+  case Active:
+      ss  << "Active";
+      break;
+  case Suspended:
+      ss  << "Suspended";
+      break;
+  case Exiting:
+      ss  << "Exiting";
+      break;
+  default:
+      ss  << "Unknown Phase";
+  }
   ss << ">";
   return ss.str();
 }
+
+CL_DOCSTRING("Current Phase of the process Inactive=0,Booting=1,Active=2,Suspended=3,Exiting=4");
+CL_DEFUN int mp__process_phase(Process_sp process) {
+  return process->_Phase;
+};
 
 CL_DOCSTRING("Return the owner of the lock - this may be NIL if it's not locked.");
 CL_DEFUN core::T_sp mp__lock_owner(Mutex_sp m) {
