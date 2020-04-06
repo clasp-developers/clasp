@@ -35,7 +35,11 @@
 
 ;;; Restarts
 
+;;; Current restarts available. A list of lists of restarts.
+;;; Each RESTART-BIND adds another list of restarts to this list.
 (defparameter *restart-clusters* ())
+;;; Current condition-restarts associations, made by WITH-CONDITION-RESTARTS.
+;;; A list of (condition . restarts) lists.
 (defparameter *condition-restarts* ())
 
 (defun compute-restarts (&optional condition)
@@ -52,29 +56,46 @@
 	(when (and (or (not condition)
 		       (member restart assoc-restart)
 		       (not (member restart other)))
-		   (funcall (restart-test-function restart) condition))
+		   (funcall (ext:restart-test-function restart) condition))
 	  (push restart output))))
     (nreverse output)))
 
+;;; Not used here, but can be useful to debuggers
+(defun ext:restart-associated-conditions (restart)
+  (let ((conditions ()))
+    (dolist (i *condition-restarts* conditions)
+      (when (member restart (rest i))
+        (pushnew (first i) conditions :test #'eq)))))
+
 (defclass restart ()
   ((%name :initarg :name :reader restart-name)
-   (%function :initarg :function :reader restart-function)
+   (%function :initarg :function :reader ext:restart-function
+              :type function)
    (%report-function :initarg :report-function
-                     :reader restart-report-function)
+                     :reader ext:restart-report-function
+                     :type (function (stream)))
    (%interactive-function :initarg :interactive-function
-                          :reader restart-interactive-function)
+                          :reader ext:restart-interactive-function
+                          :initform (constantly ())
+                          :type (function () list))
    (%test-function :initarg :test-function
-                   :reader restart-test-function
-                   :initform (constantly t))))
+                   :reader ext:restart-test-function
+                   :initform (constantly t)
+                   :type (function (condition) t))))
 
 ;;; This is necessary for bootstrapping reasons: assert.lsp, at least,
 ;;; uses restart-bind before CLOS and static-gfs are up.
-(defun make-restart (&key name function report-function
-                       interactive-function (test-function (constantly t)))
+(defun make-restart (&key name function
+                       (report-function
+                        (lambda (stream) (prin1 name stream)))
+                       (interactive-function (constantly ()))
+                       (test-function (constantly t)))
   (declare (notinline make-instance))
   (make-instance 'restart
-    :name name :function function :report-function report-function
-    :interactive-function interactive-function :test-function test-function))
+    :name name :function function
+    :report-function report-function
+    :interactive-function interactive-function
+    :test-function test-function))
 
 (defun restart-p (object) (typep object 'restart))
 
@@ -82,14 +103,8 @@
   (if *print-escape*
       (print-unreadable-object (restart stream :type t :identity t)
         (write (restart-name restart) :stream stream))
-      (restart-report restart stream))
+      (funcall (ext:restart-report-function restart) stream))
   restart)
-
-(defun restart-report (restart stream)
-  (let ((fn (restart-report-function restart)))
-    (if fn
-	(funcall fn stream)
-        (prin1 (or (restart-name restart) restart) stream))))
 
 (defmacro restart-bind (bindings &body forms)
   `(let ((*restart-clusters*
@@ -132,16 +147,13 @@
 
 (defun invoke-restart (restart &rest values)
   (let ((real-restart (coerce-restart-designator restart)))
-    (apply (restart-function real-restart) values)))
+    (apply (ext:restart-function real-restart) values)))
 
 (defun invoke-restart-interactively (restart)
   (let ((real-restart (coerce-restart-designator restart)))
-    (apply (restart-function real-restart)
-	   (let ((interactive-function
-		   (restart-interactive-function real-restart)))
-	     (if interactive-function
-		 (funcall interactive-function)
-		 '())))))
+    (apply (ext:restart-function real-restart)
+           (funcall
+            (ext:restart-interactive-function real-restart)))))
 
 
 (defun munge-with-condition-restarts-form (original-form env)

@@ -180,6 +180,10 @@
             remove-package-local-nickname
             package-locally-nicknamed-by-list
             keep-old change-nick ; restarts for add-package-local-nicknames
+            ;; Readers of RESTART objects
+            restart-function restart-report-function
+            restart-interactive-function restart-test-function
+            restart-associated-conditions
             )))
 
 
