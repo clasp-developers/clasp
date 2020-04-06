@@ -56,21 +56,34 @@
 	  (push restart output))))
     (nreverse output)))
 
-(defun restart-print (restart stream depth)
-  (declare (ignore depth))
+(defclass restart ()
+  ((%name :initarg :name :reader restart-name)
+   (%function :initarg :function :reader restart-function)
+   (%report-function :initarg :report-function
+                     :reader restart-report-function)
+   (%interactive-function :initarg :interactive-function
+                          :reader restart-interactive-function)
+   (%test-function :initarg :test-function
+                   :reader restart-test-function
+                   :initform (constantly t))))
+
+;;; This is necessary for bootstrapping reasons: assert.lsp, at least,
+;;; uses restart-bind before CLOS and static-gfs are up.
+(defun make-restart (&key name function report-function
+                       interactive-function (test-function (constantly t)))
+  (declare (notinline make-instance))
+  (make-instance 'restart
+    :name name :function function :report-function report-function
+    :interactive-function interactive-function :test-function test-function))
+
+(defun restart-p (object) (typep object 'restart))
+
+(defmethod print-object ((restart restart) stream)
   (if *print-escape*
       (print-unreadable-object (restart stream :type t :identity t)
         (write (restart-name restart) :stream stream))
       (restart-report restart stream))
   restart)
-
-(defstruct (restart (:print-function restart-print))
-  name
-  function
-  report-function
-  interactive-function
-  (test-function (constantly t)))
-
 
 (defun restart-report (restart stream)
   (let ((fn (restart-report-function restart)))
@@ -82,9 +95,9 @@
   `(let ((*restart-clusters*
 	  (cons (list ,@(mapcar #'(lambda (binding)
 				    `(make-restart
-				      :NAME     ',(car binding)
-				      :FUNCTION ,(cadr binding)
-				      ,@(cddr binding)))
+                                       :NAME     ',(car binding)
+                                       :FUNCTION ,(cadr binding)
+                                       ,@(cddr binding)))
 				bindings))
 		*restart-clusters*)))
      ,@forms))
@@ -647,11 +660,11 @@ due to error:~%  ~:*~a~]"
   (mp:push-default-special-binding
    '*restart-clusters*
    '(list (list (make-restart
-                 :name 'abort
-                 :function #'mp:abort-process
-                 :report-function (lambda (stream)
-                                    (format stream "Abort the process (~s)"
-                                            mp:*current-process*)))))))
+                  :name 'abort
+                  :function #'mp:abort-process
+                  :report-function (lambda (stream)
+                                     (format stream "Abort the process (~s)"
+                                             mp:*current-process*)))))))
 
 (define-condition stream-error (error)
   ((stream :initarg :stream :reader stream-error-stream)))
