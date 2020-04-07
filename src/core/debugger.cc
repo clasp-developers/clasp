@@ -102,34 +102,6 @@ SYMBOL_EXPORT_SC_(CorePkg,backtrace_frame);
 
 
 namespace core {
-T_sp core__make_backtrace_frame(T_sp stype,
-                                T_sp return_address,
-                                T_sp raw_name,
-                                T_sp base_pointer,
-                                T_sp frame_offset,
-                                T_sp frame_size,
-                                T_sp function_start_address,
-                                T_sp function_end_address,
-                                T_sp function_description,
-                                T_sp arguments,
-                                T_sp closure )
-{
-  SimpleVector_sp frame = SimpleVector_O::make(BACKTRACE_FRAME_NUMBER_OF_SLOTS);
-  (*frame)[BACKTRACE_FRAME_CLASS] = _sym_backtrace_frame;
-  (*frame)[BACKTRACE_FRAME_TYPE] = stype;
-  (*frame)[BACKTRACE_FRAME_RETURN_ADDRESS] = return_address;
-  (*frame)[BACKTRACE_FRAME_RAW_NAME] = raw_name;
-  (*frame)[BACKTRACE_FRAME_BASE_POINTER] = base_pointer;
-  (*frame)[BACKTRACE_FRAME_FRAME_OFFSET] = frame_offset;
-  (*frame)[BACKTRACE_FRAME_FRAME_SIZE] = frame_size;
-  (*frame)[BACKTRACE_FRAME_FUNCTION_START_ADDRESS] = function_start_address;
-  (*frame)[BACKTRACE_FRAME_FUNCTION_END_ADDRESS] = function_end_address;
-  (*frame)[BACKTRACE_FRAME_FUNCTION_DESCRIPTION] = function_description;
-  (*frame)[BACKTRACE_FRAME_ARGUMENTS] = arguments;
-  (*frame)[BACKTRACE_FRAME_CLOSURE ] = closure;
-  return frame;
-}
-
 
 CL_DEFUN bool core__backtrace_frame_visible(T_sp frame)
 {
@@ -146,98 +118,63 @@ CL_DEFUN bool core__backtrace_frame_visible(T_sp frame)
   return true;
 }
 
-CL_DEFUN T_sp core__backtrace_frame_type(T_sp frame)
+CL_DEFUN T_sp core__backtrace_frame_type(Frame_sp frame)
 {
-  SimpleVector_sp vframe = gc::As<SimpleVector_sp>(frame);
-  ASSERT(cl__length(vframe)==BACKTRACE_FRAME_NUMBER_OF_SLOTS);
-  return (*vframe)[BACKTRACE_FRAME_TYPE];
+  return frame->stype;
 }
 
-CL_DEFUN T_sp core__backtrace_frame_return_address(T_sp frame) {
-  SimpleVector_sp vframe = gc::As<SimpleVector_sp>(frame);
-  ASSERT(cl__length(vframe)==BACKTRACE_FRAME_NUMBER_OF_SLOTS);
-  return (*vframe)[BACKTRACE_FRAME_RETURN_ADDRESS];
+CL_DEFUN T_sp core__backtrace_frame_return_address(Frame_sp frame) {
+  return frame->return_address;
 }
 
-CL_DEFUN T_sp core__backtrace_frame_raw_name(T_sp frame) {
-  SimpleVector_sp vframe = gc::As<SimpleVector_sp>(frame);
-  ASSERT(cl__length(vframe)==BACKTRACE_FRAME_NUMBER_OF_SLOTS);
-  return (*vframe)[BACKTRACE_FRAME_RAW_NAME];
+CL_DEFUN T_sp core__backtrace_frame_raw_name(Frame_sp frame) {
+  return frame->raw_name;
 }
 
-CL_DEFUN T_sp core__backtrace_frame_function_name(T_sp frame) {
-  SimpleVector_sp vframe = gc::As<SimpleVector_sp>(frame);
-  ASSERT(cl__length(vframe)==BACKTRACE_FRAME_NUMBER_OF_SLOTS);
-  return (*vframe)[BACKTRACE_FRAME_FUNCTION_NAME];
+CL_DEFUN T_sp core__backtrace_frame_function_name(Frame_sp frame) {
+  return frame->function_name;
 }
-
 CL_LISPIFY_NAME("backtrace-frame-function-name");
-CL_DEFUN_SETF T_sp core__backtrace_frame_function_name_set(T_sp name, T_sp frame ){
-  SimpleVector_sp vframe = gc::As<SimpleVector_sp>(frame);
-  ASSERT(cl__length(vframe)==BACKTRACE_FRAME_NUMBER_OF_SLOTS);
-  (*vframe)[BACKTRACE_FRAME_FUNCTION_NAME] = name;
+CL_DEFUN_SETF T_sp core__backtrace_frame_function_name_set(T_sp name, Frame_sp frame) {
+  frame->function_name = name;
   return name;
 }
 
-CL_DEFUN T_sp core__backtrace_frame_print_name(T_sp frame) {
-  SimpleVector_sp vframe = gc::As<SimpleVector_sp>(frame);
-  ASSERT(cl__length(vframe)==BACKTRACE_FRAME_NUMBER_OF_SLOTS);
-  return (*vframe)[BACKTRACE_FRAME_PRINT_NAME];
+CL_DEFUN T_sp core__backtrace_frame_print_name(Frame_sp frame) {
+  return frame->print_name;
 }
 CL_LISPIFY_NAME("backtrace-frame-print-name");
-CL_DEFUN_SETF T_sp core__backtrace_frame_print_name_setf(T_sp name, T_sp frame) {
-  SimpleVector_sp vframe = gc::As<SimpleVector_sp>(frame);
-  ASSERT(cl__length(vframe)==BACKTRACE_FRAME_NUMBER_OF_SLOTS);
-  (*vframe)[BACKTRACE_FRAME_PRINT_NAME] = name;
+CL_DEFUN_SETF T_sp core__backtrace_frame_print_name_setf(T_sp name, Frame_sp frame) {
+  frame->print_name = name;
   return name;
 }
 
-CL_DEFUN T_sp core__backtrace_frame_base_pointer(T_sp frame) {
-  SimpleVector_sp vframe = gc::As<SimpleVector_sp>(frame);
-  ASSERT(cl__length(vframe)==BACKTRACE_FRAME_NUMBER_OF_SLOTS);
-  return (*vframe)[BACKTRACE_FRAME_BASE_POINTER];
+CL_DEFUN T_sp core__backtrace_frame_base_pointer(Frame_sp frame) {
+  return frame->base_pointer;
 }
 
-CL_DEFUN T_sp core__backtrace_frame_offset(T_sp frame) {
-  SimpleVector_sp vframe = gc::As<SimpleVector_sp>(frame);
-  ASSERT(cl__length(vframe)==BACKTRACE_FRAME_NUMBER_OF_SLOTS);
-  return (*vframe)[BACKTRACE_FRAME_FRAME_OFFSET];
+CL_DEFUN T_sp core__backtrace_frame_offset(Frame_sp frame) {
+  return frame->frame_offset;
 }
 
-CL_DEFUN T_sp core__backtrace_frame_size(T_sp frame) {
-  SimpleVector_sp vframe = gc::As<SimpleVector_sp>(frame);
-  ASSERT(cl__length(vframe)==BACKTRACE_FRAME_NUMBER_OF_SLOTS);
-  return (*vframe)[BACKTRACE_FRAME_FRAME_SIZE];
+CL_DEFUN T_sp core__backtrace_frame_function_start_address(Frame_sp frame) {
+  return frame->function_start_address;
 }
 
-CL_DEFUN T_sp core__backtrace_frame_function_start_address(T_sp frame) {
-  SimpleVector_sp vframe = gc::As<SimpleVector_sp>(frame);
-  ASSERT(cl__length(vframe)==BACKTRACE_FRAME_NUMBER_OF_SLOTS);
-  return (*vframe)[BACKTRACE_FRAME_FUNCTION_START_ADDRESS];
+CL_DEFUN T_sp core__backtrace_frame_function_end_address(Frame_sp frame) {
+  return frame->function_end_address;
 }
 
-CL_DEFUN T_sp core__backtrace_frame_function_end_address(T_sp frame) {
-  SimpleVector_sp vframe = gc::As<SimpleVector_sp>(frame);
-  ASSERT(cl__length(vframe)==BACKTRACE_FRAME_NUMBER_OF_SLOTS);
-  return (*vframe)[BACKTRACE_FRAME_FUNCTION_END_ADDRESS];
+CL_DEFUN T_sp core__backtrace_frame_function_description(Frame_sp frame) {
+  return frame->function_description;
 }
 
-CL_DEFUN T_sp core__backtrace_frame_function_description(T_sp frame) {
-  SimpleVector_sp vframe = gc::As<SimpleVector_sp>(frame);
-  ASSERT(cl__length(vframe)==BACKTRACE_FRAME_NUMBER_OF_SLOTS);
-  return (*vframe)[BACKTRACE_FRAME_FUNCTION_DESCRIPTION];
+CL_DEFUN T_sp core__backtrace_frame_arguments(Frame_sp frame) {
+  return frame->arguments;
 }
 
-CL_DEFUN T_sp core__backtrace_frame_arguments(T_sp frame) {
-  SimpleVector_sp vframe = gc::As<SimpleVector_sp>(frame);
-  ASSERT(cl__length(vframe)==BACKTRACE_FRAME_NUMBER_OF_SLOTS);
-  return (*vframe)[BACKTRACE_FRAME_ARGUMENTS];
-}
-
-CL_DEFUN T_sp core__backtrace_frame_closure(T_sp frame) {
-  SimpleVector_sp vframe = gc::As<SimpleVector_sp>(frame);
-  ASSERT(cl__length(vframe)==BACKTRACE_FRAME_NUMBER_OF_SLOTS);
-  return (*vframe)[BACKTRACE_FRAME_CLOSURE ];
+CL_DEFUN T_sp core__backtrace_frame_closure(Frame_sp frame) {
+  return frame->closure;
 }
 
 };
@@ -1609,7 +1546,6 @@ void fill_backtrace_or_dump_info(std::vector<BacktraceEntry>& backtrace) {
 }
 
 
-SYMBOL_EXPORT_SC_(CorePkg,make_backtrace_frame);
 SYMBOL_EXPORT_SC_(KeywordPkg,function_name);
 SYMBOL_EXPORT_SC_(KeywordPkg,arguments);
 SYMBOL_EXPORT_SC_(KeywordPkg,closure);
@@ -1735,7 +1671,7 @@ List_sp fill_backtrace_frames(std::vector<BacktraceEntry>& backtrace, bool args_
   ql::list result;
   for ( size_t i=1; i<backtrace.size(); ++i ) {
     if (bp<backtrace[i]._BasePointer && backtrace[i]._BasePointer!=0 && backtrace[i]._BasePointer<stack_top_hint) {
-      T_sp entry;
+      Frame_sp entry;
       Symbol_sp stype;
       if (backtrace[i]._Stage == lispFrame) {
         if (backtrace[i]._SymbolName.find("___LAMBDA___")!=string::npos) {
@@ -1758,17 +1694,17 @@ List_sp fill_backtrace_frames(std::vector<BacktraceEntry>& backtrace, bool args_
         arguments = args_closure;
         closure = args_closure.second();
       }
-      entry = core__make_backtrace_frame(stype,
-                                         Pointer_O::create((void*)backtrace[i]._ReturnAddress),
-                                         SimpleBaseString_O::make(backtrace[i]._SymbolName),
-                                         Pointer_O::create((void*)backtrace[i]._BasePointer),
-                                         core::make_fixnum(backtrace[i]._FrameOffset),
-                                         core::make_fixnum(backtrace[i]._FrameSize),
-                                         Pointer_O::create((void*)backtrace[i]._FunctionStart),
-                                         Pointer_O::create((void*)backtrace[i]._FunctionEnd),
-                                         funcDesc,
-                                         arguments,
-                                         closure);
+      entry = Frame_O::make(stype,
+                            Pointer_O::create((void*)backtrace[i]._ReturnAddress),
+                            SimpleBaseString_O::make(backtrace[i]._SymbolName),
+                            Pointer_O::create((void*)backtrace[i]._BasePointer),
+                            core::make_fixnum(backtrace[i]._FrameOffset),
+                            core::make_fixnum(backtrace[i]._FrameSize),
+                            Pointer_O::create((void*)backtrace[i]._FunctionStart),
+                            Pointer_O::create((void*)backtrace[i]._FunctionEnd),
+                            funcDesc,
+                            arguments,
+                            closure);
       core::eval::funcall(_sym_backtrace_frame_fix_names,entry);
       result << entry;
     } else {

@@ -34,47 +34,64 @@ THE SOFTWARE.
 
 
 namespace core {
-#define BACKTRACE_FRAME_CLASS                           0
-#define BACKTRACE_FRAME_TYPE                            1 // ( :lisp | :c++ | :lambda | :unknown)
-#define BACKTRACE_FRAME_RETURN_ADDRESS                  2
-#define BACKTRACE_FRAME_RAW_NAME                        3
-#define BACKTRACE_FRAME_FUNCTION_NAME                   4
-#define BACKTRACE_FRAME_PRINT_NAME                      5
-#define BACKTRACE_FRAME_FRAME_SIZE                      6
-#define BACKTRACE_FRAME_FRAME_OFFSET                    7
-#define BACKTRACE_FRAME_FUNCTION_START_ADDRESS          8
-#define BACKTRACE_FRAME_FUNCTION_END_ADDRESS            9
-#define BACKTRACE_FRAME_BASE_POINTER                    10
-#define BACKTRACE_FRAME_ARGUMENTS                       11
-#define BACKTRACE_FRAME_CLOSURE                         12
-#define BACKTRACE_FRAME_FUNCTION_DESCRIPTION            13
-#define BACKTRACE_FRAME_NUMBER_OF_SLOTS                 14
 
-T_sp core__make_backtrace_frame(T_sp stype,
-                                T_sp return_address,
-                                T_sp raw_name,
-                                T_sp base_pointer,
-                                T_sp frame_offset,
-                                T_sp frame_size,
-                                T_sp function_start_address,
-                                T_sp function_end_address,
-                                T_sp function_description,
-                                T_sp arguments,
-                                T_sp closure );
-T_sp core__backtrace_frame_type(T_sp frame);
-T_sp core__backtrace_frame_return_address(T_sp frame);
-T_sp core__backtrace_frame_raw_name(T_sp frame);
-T_sp core__backtrace_frame_function_name(T_sp frame);
-T_sp core__backtrace_frame_print_name(T_sp frame);
-T_sp core__backtrace_frame_base_pointer(T_sp frame);
-T_sp core__backtrace_frame_offset(T_sp frame);
-T_sp core__backtrace_frame_offset(T_sp frame);
-T_sp core__backtrace_frame_size(T_sp frame);
-T_sp core__backtrace_frame_function_start_address(T_sp frame);
-T_sp core__backtrace_frame_function_end_address(T_sp frame);
-T_sp core__backtrace_frame_function_description(T_sp frame);
-T_sp core__backtrace_frame_arguments(T_sp frame);
-T_sp core__backtrace_frame_closure (T_sp frame);
+// Class for representing a backtrace frame in Lisp.
+FORWARD(Frame);
+class Frame_O : public General_O {
+  LISP_CLASS(core, CorePkg, Frame_O, "frame", General_O);
+  virtual ~Frame_O() {};
+public:
+  Frame_O(T_sp a_stype, T_sp a_return_address, T_sp a_raw_name,
+          T_sp a_base_pointer, T_sp a_frame_offset, T_sp a_frame_size,
+          T_sp a_function_start_address, T_sp a_function_end_address,
+          T_sp a_function_description, T_sp a_arguments, T_sp a_closure)
+    : stype(a_stype), return_address(a_return_address),
+      raw_name(a_raw_name), base_pointer(a_base_pointer),
+      frame_offset(a_frame_offset), frame_size(a_frame_size),
+      function_start_address(a_function_start_address),
+      function_end_address(a_function_end_address),
+      function_description(a_function_description),
+      arguments(a_arguments), closure(a_closure) {}
+  static Frame_sp make(T_sp stype, T_sp return_address, T_sp raw_name,
+                       T_sp base_pointer, T_sp frame_offset,
+                       T_sp frame_size, T_sp function_start_address,
+                       T_sp function_end_address, T_sp function_description,
+                       T_sp arguments, T_sp closure) {
+    GC_ALLOCATE_VARIADIC(Frame_O, ret,
+                         stype, return_address, raw_name,
+                         base_pointer, frame_offset, frame_size,
+                         function_start_address, function_end_address,
+                         function_description, arguments, closure);
+    return ret;
+  }
+public: // NOTE: Use the accessors. Non-public only for GC reasons.
+  T_sp stype;
+  T_sp return_address;
+  T_sp raw_name;
+  T_sp function_name; // initialized later
+  T_sp print_name; // initialized later
+  T_sp base_pointer;
+  T_sp frame_offset;
+  T_sp frame_size;
+  T_sp function_start_address;
+  T_sp function_end_address;
+  T_sp function_description;
+  T_sp arguments;
+  T_sp closure;
+};
+
+T_sp core__backtrace_frame_type(Frame_sp frame);
+T_sp core__backtrace_frame_return_address(Frame_sp frame);
+T_sp core__backtrace_frame_raw_name(Frame_sp frame);
+T_sp core__backtrace_frame_function_name(Frame_sp frame);
+T_sp core__backtrace_frame_print_name(Frame_sp frame);
+T_sp core__backtrace_frame_base_pointer(Frame_sp frame);
+T_sp core__backtrace_frame_offset(Frame_sp frame);
+T_sp core__backtrace_frame_function_start_address(Frame_sp frame);
+T_sp core__backtrace_frame_function_end_address(Frame_sp frame);
+T_sp core__backtrace_frame_function_description(Frame_sp frame);
+T_sp core__backtrace_frame_arguments(Frame_sp frame);
+T_sp core__backtrace_frame_closure (Frame_sp frame);
 
 core::T_sp core__ihs_backtrace(core::T_sp outDesignator, core::T_sp msg);
 int core__ihs_top();
@@ -93,9 +110,7 @@ void core__gdb(T_sp msg);
 int core__set_ihs_current_frame(int idx);
 
 
-};
-
-
+}; // namespace core
 
 namespace core {
 /*! This class controls the single-step state of the Lisp interpreter
