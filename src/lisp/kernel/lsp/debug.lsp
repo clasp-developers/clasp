@@ -1,5 +1,6 @@
 (defpackage #:clasp-debug
   (:use #:cl)
+  ;; low level
   (:export #:code-source-line
            #:code-source-line-pathname
            #:code-source-line-line-number
@@ -12,7 +13,10 @@
            #:frame-function-source-position
            #:frame-function-form
            #:frame-function-documentation)
-  (:export #:disassemble-frame))
+  (:export #:disassemble-frame)
+  ;; frame selection
+  (:export #:with-truncated-stack #:truncation-frame-p
+           #:with-capped-stack #:cap-frame-p))
 
 (in-package #:clasp-debug)
 
@@ -78,6 +82,32 @@
   (let ((f (frame-function frame)))
     (when f (disassemble f))))
 
+;;; Frame selection
+
+;;; This is not the most inspired way to do it, but should work.
+;;; More efficient would be to keep frame pointers around and compare
+;;; them. I think the current code does this but only kinda?
+
+(declaim (notinline call-with-truncated-stack))
+(defun call-with-truncated-stack (function) (funcall function))
+
+(defmacro with-truncated-stack ((&key) &body body)
+  ;; progn to avoid declarations
+  `(call-with-truncated-stack (lambda () (progn ,@body))))
+
+(defun truncation-frame-p (frame)
+  (eq (frame-function-name frame) 'call-with-truncated-stack))
+
+(declaim (notinline call-with-capped-stack))
+(defun call-with-capped-stack (function) (funcall function))
+
+(defmacro with-capped-stack ((&key) &body body)
+  `(call-with-capped-stack (lambda () (progn ,@body))))
+
+(defun cap-frame-p (frame)
+  (eq (frame-function-name frame) 'call-with-capped-stack))
+
 ;;; Miscellaneous. Called by SIGINFO handler, see gctools/interrupt.cc
+
 (defun information-interrupt (&rest args)
   (core:safe-backtrace))
