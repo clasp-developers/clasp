@@ -177,6 +177,20 @@ CL_DEFUN T_sp core__backtrace_frame_closure(Frame_sp frame) {
   return frame->closure;
 }
 
+CL_DEFUN T_sp core__backtrace_frame_down(Frame_sp frame) {
+  return frame->down;
+}
+void backtrace_frame_down_set(Frame_sp frame, T_sp down) {
+  frame->down = down;
+}
+
+CL_DEFUN T_sp core__backtrace_frame_up(Frame_sp frame) {
+  return frame->up;
+}
+void backtrace_frame_up_set(Frame_sp frame, T_sp up) {
+  frame->up = up;
+}
+
 };
 
 
@@ -1668,6 +1682,7 @@ List_sp fill_backtrace_frames(std::vector<BacktraceEntry>& backtrace, bool args_
   BT_LOG((buf," building backtrace as list\n" ));
     // Move the frames into Common Lisp
   uintptr_t bp = (uintptr_t)__builtin_frame_address(0);
+  T_sp prev_entry = _Nil<T_O>();
   ql::list result;
   for ( size_t i=1; i<backtrace.size(); ++i ) {
     if (bp<backtrace[i]._BasePointer && backtrace[i]._BasePointer!=0 && backtrace[i]._BasePointer<stack_top_hint) {
@@ -1705,6 +1720,13 @@ List_sp fill_backtrace_frames(std::vector<BacktraceEntry>& backtrace, bool args_
                             funcDesc,
                             arguments,
                             closure);
+      // Link up frames
+      if (prev_entry.notnilp()) {
+        backtrace_frame_down_set(entry, prev_entry);
+        backtrace_frame_up_set(gc::As_unsafe<Frame_sp>(prev_entry), entry);
+      }
+      prev_entry = entry;
+      // Fix name (TODO: Get function names from function description instead)
       core::eval::funcall(_sym_backtrace_frame_fix_names,entry);
       result << entry;
     } else {

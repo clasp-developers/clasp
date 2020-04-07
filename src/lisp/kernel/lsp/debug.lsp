@@ -5,6 +5,7 @@
            #:code-source-line-pathname
            #:code-source-line-line-number
            #:code-source-line-column)
+  (:export #:frame-up #:frame-down)
   (:export #:frame-function #:frame-arguments
            #:frame-locals #:frame-source-position
            #:frame-language)
@@ -27,6 +28,12 @@
 ;;; we don't have an offset into the file.
 (defstruct (code-source-line (:type vector) :named)
   pathname line-number column)
+
+(defun frame-up (frame)
+  (core:backtrace-frame-up frame))
+
+(defun frame-down (frame)
+  (core:backtrace-frame-down frame))
 
 (defun frame-function (frame)
   (core:backtrace-frame-closure frame))

@@ -51,7 +51,9 @@ public:
       function_start_address(a_function_start_address),
       function_end_address(a_function_end_address),
       function_description(a_function_description),
-      arguments(a_arguments), closure(a_closure) {}
+      arguments(a_arguments), closure(a_closure),
+      up(_Nil<T_O>()), down(_Nil<T_O>())
+  {}
   static Frame_sp make(T_sp stype, T_sp return_address, T_sp raw_name,
                        T_sp base_pointer, T_sp frame_offset,
                        T_sp frame_size, T_sp function_start_address,
@@ -78,6 +80,8 @@ public: // NOTE: Use the accessors. Non-public only for GC reasons.
   T_sp function_description;
   T_sp arguments;
   T_sp closure;
+  T_sp up;
+  T_sp down;
 };
 
 T_sp core__backtrace_frame_type(Frame_sp frame);
@@ -91,7 +95,11 @@ T_sp core__backtrace_frame_function_start_address(Frame_sp frame);
 T_sp core__backtrace_frame_function_end_address(Frame_sp frame);
 T_sp core__backtrace_frame_function_description(Frame_sp frame);
 T_sp core__backtrace_frame_arguments(Frame_sp frame);
-T_sp core__backtrace_frame_closure (Frame_sp frame);
+T_sp core__backtrace_frame_closure(Frame_sp frame);
+T_sp core__backtrace_frame_down(Frame_sp frame);
+T_sp core__backtrace_frame_up(Frame_sp frame);
+void backtrace_frame_down_set(Frame_sp frame, T_sp down);
+void backtrace_frame_up_set(Frame_sp frame, T_sp up);
 
 core::T_sp core__ihs_backtrace(core::T_sp outDesignator, core::T_sp msg);
 int core__ihs_top();
