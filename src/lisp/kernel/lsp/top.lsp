@@ -153,8 +153,8 @@
 (defparameter *tpl-commands* tpl-commands)
 
 (defconstant-equal break-commands
-  '("Break commands"
-     ((:q :quit) tpl-quit-command nil
+    '("Break commands"
+      ((:q :quit) tpl-quit-command nil
        ":q(uit)		Return to some previous break level"
        ":quit &optional n				[Break command]~@
 	:q &optional n					[Abbreviation]~@
@@ -199,9 +199,9 @@
 	becomes the environment for evaluating user input forms.~@
 	~@
 	See also: :backtrace, :next, previous, :disassemble, :variables.~%")
-    ((:u :up) tpl-previous nil
-     ":u(p)	Go to previous frame"
-     ":up &optional (n 1)			[Break command]~@
+      ((:u :up) tpl-previous nil
+       ":u(p)	Go to previous frame"
+       ":up &optional (n 1)			[Break command]~@
 	:u &optional (n 1)				[Abbreviation]~@
 	~@
 	Move to the nth previous visible function in the backtrace.~@
