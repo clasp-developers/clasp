@@ -2666,19 +2666,19 @@ int unicodeHex2int (std::string aString){
 CL_LAMBDA(sname);
 CL_DECLARE();
 CL_DOCSTRING("name_char");
-CL_DEFUN T_mv cl__name_char(T_sp sname) {
+CL_DEFUN T_sp cl__name_char(T_sp sname) {
   String_sp name = coerce::stringDesignator(sname);
   string upname = stringUpper(name->get_std_string());
   map<string, int>::const_iterator it = _lisp->characterInfo().gNamesToCharacterIndex.find(upname);
   if (it != _lisp->characterInfo().gNamesToCharacterIndex.end()) {
-    return (Values(_lisp->characterInfo().gIndexedCharacters[it->second]));
+    return _lisp->characterInfo().gIndexedCharacters[it->second];
   }
   // The upper exclusive bound on the value returned by the function char-code.
   // Treat U100 until U110000 -1 to be consistent with char-name
   claspCharacter conversion = unicodeHex2int(upname);
   if ((conversion >= 0) && (conversion < CHAR_CODE_LIMIT))
     return (Values (clasp_make_standard_character(conversion)));
-    else return (Values(_Nil<T_O>()));
+    else return _Nil<T_O>();
 };
 
 CL_LAMBDA(och);
