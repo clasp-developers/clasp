@@ -1030,7 +1030,19 @@ This works like compile-lambda-function in bclasp."
   ;;; now need to store the mappings for the chars with code < #XA0
   (dolist (pair *additional-clasp-character-mappings-alist*)
     (setf (gethash (cdr pair) *mapping-char-code-to-char-names*)
-          (car pair))))
+          (car pair)))
+  ;;; assure the offical names from clhs
+  (dolist (pair '(("Backspace" . #.(code-char 8))
+                  ("Tab"       . #.(code-char 9))
+                  ("Newline"   . #.(code-char 10))
+                  ("Page"      . #.(code-char 12))
+                  ("Return"    . #.(code-char 13))
+                  ("Space"     . #.(code-char 32))
+                  ("Rubout"    . #.(code-char 127))))
+    (setf (gethash (cdr pair) *mapping-char-code-to-char-names*)
+          (car pair))
+    (setf (gethash (car pair) *additional-clasp-character-names*)
+        (cdr pair))))
 
 (defun ensure-unicode-table-loaded ()
   (unless *unicode-file-read*
@@ -1043,9 +1055,13 @@ This works like compile-lambda-function in bclasp."
       (gethash name *additional-clasp-character-names*)
       (simple-unicode-name name)))
 
-(defun cl:name-char (name)
-  (ensure-unicode-table-loaded)
-  (eclector.reader:find-character *cst-client* name))
+(defun cl:name-char (string-designator)
+  (let ((name (string-upcase (etypecase string-designator
+                               (string string-designator)
+                               (symbol (symbol-name string-designator))
+                               (character (string string-designator))))))
+    (ensure-unicode-table-loaded)
+    (eclector.reader:find-character *cst-client* name)))
 
 (defun cl:char-name (char)
   (ensure-unicode-table-loaded)
