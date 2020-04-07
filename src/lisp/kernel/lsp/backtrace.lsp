@@ -181,16 +181,6 @@ Set gather-all-frames to T and you can gather C++ and Common Lisp frames"
              ,@body)))
      (core:trigger-dtrace-stop)))
 
-(defun ext:information-interrupt (&rest args)
-  (core:safe-backtrace))
-
-(in-package :ext)
-
-(defstruct (code-source-line (:type vector) :named)
-  source-pathname line-number column)
-
-(export '(code-source-line code-source-line-source-pathname code-source-line-line-number))
-
 (defun parse-llvm-dwarfdump (stream)
   (let (info)
     (tagbody
@@ -270,6 +260,7 @@ Set gather-all-frames to T and you can gather C++ and Common Lisp frames"
        sectioned-address))))
 
 (defparameter *debug-code-source-position* nil)
+
 (defun code-source-position (return-address &key verbose)
   (let ((address (core:pointer-increment return-address -1)))
     ;; First, if it's an object file try that.
@@ -278,17 +269,10 @@ Set gather-all-frames to T and you can gather C++ and Common Lisp frames"
       (declare (ignore function-name source start-line discriminator))
       (when source-path ; success, it was in an object file
         (return-from code-source-position
-          (make-code-source-line
-           :source-pathname source-path
-           :line-number line :column column))))
+          (values source-path line column))))
     ;; OK no good, so try it as an address from a library.
     (multiple-value-bind (symbol start end type library-name library-origin offset-from-start-of-library)
         (core:lookup-address address)
       (multiple-value-bind (source-pathname line-number column)
           (run-llvm-dwarfdump offset-from-start-of-library library-name)
-        (make-code-source-line
-         :source-pathname source-pathname
-         :line-number line-number
-         :column column)))))
-
-(export 'code-source-position)
+        (values source-pathname line-number column)))))
