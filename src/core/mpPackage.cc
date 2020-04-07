@@ -420,7 +420,7 @@ SYMBOL_EXPORT_SC_(MpPkg,process_join_error);
 SYMBOL_EXPORT_SC_(MpPkg,process_join_error_original_condition);
 SYMBOL_EXPORT_SC_(KeywordPkg,original_condition);
 
-CL_DOCSTRING("Wait for the given process to finish executing. If the process's function returns normally, those values are returned. If the process exited due to EXIT-PROCESS, the values provided to that function are returned. Otherwise, the return values are undefined.");
+CL_DOCSTRING("Wait for the given process to finish executing. If the process's function returns normally, those values are returned. If the process exited due to EXIT-PROCESS, the values provided to that function are returned. If the process was aborted by ABORT-PROCESS or a control transfer, an error of type PROCESS-JOIN-ERROR is signaled.");
 CL_DEFUN core::T_mv mp__process_join(Process_sp process) {
   // ECL has a much more complicated process_join function
   if (process->_Phase>0) {

@@ -650,7 +650,8 @@ This is due to either a problem in foreign code (e.g., C++), or a bug in Clasp i
 
 #+threads
 (define-condition mp:process-error (error)
-  ((process :initarg :process :reader mp:process-error-process)))
+  ((process :initarg :process :reader mp:process-error-process))
+  (:documentation "Superclass of errors relating to processes."))
 
 #+threads
 (define-condition mp:process-join-error (mp:process-error)
@@ -661,7 +662,8 @@ This is due to either a problem in foreign code (e.g., C++), or a bug in Clasp i
      (format stream "Failed to join process: Process ~s aborted~:[.~; ~
 due to error:~%  ~:*~a~]"
              (mp:process-error-process condition)
-             (mp:process-join-error-original-condition condition)))))
+             (mp:process-join-error-original-condition condition))))
+  (:documentation "PROCESS-JOIN signals a condition of this type when the thread being joined ended abnormally."))
 
 #+threads
 (progn
