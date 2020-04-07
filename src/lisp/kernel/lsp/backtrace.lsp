@@ -43,28 +43,6 @@ For C/C++ frames - return (list 'c-function name)."
     ((stringp name) (list :c-function name))
     (t (error "Illegal name for function ~a" name))))
 
-(defconstant-equal +interpreted-closure-entry-point+ "core::interpretedClosureEntryPoint")
-(defconstant +interpreted-closure-entry-point-length+ (length +interpreted-closure-entry-point+))
-;;; Interpreted closures have their shadow stack frames merged in a different way
-#+(or)
-(defun add-interpreter-frames (frames)
-  (let (new-frames)
-    (dolist (frame frames)
-      (when (backtrace-frame-shadow-frame frame)
-        (when (and (stringp (backtrace-frame-function-name frame))
-                   (string= +interpreted-closure-entry-point+ (backtrace-frame-function-name frame)
-                            :start2 0 :end2 +interpreted-closure-entry-point-length+))
-          (let* ((shadow-frame (backtrace-frame-shadow-frame frame))
-                 (interpreted-frame (make-backtrace-frame :type :lisp
-                                                          :return-address nil 
-                                                          :raw-name (shadow-backtrace-frame-function-name shadow-frame)
-                                                          :function-name (ensure-function-name (shadow-backtrace-frame-function-name shadow-frame))
-                                                          :print-name (shadow-backtrace-frame-function-name shadow-frame)
-                                                          :arguments (shadow-backtrace-frame-arguments shadow-frame))))
-            (push interpreted-frame new-frames))))
-      (push frame new-frames))
-    new-frames))
-
 ;;; This is messy - backtrace_symbols for macOS and Linux return different strings
 ;;; Extracting the name and the return address from the strings handled differently
 ;;; depending on the operating system.
@@ -174,32 +152,6 @@ Set gather-all-frames to T and you can gather C++ and Common Lisp frames"
       ((gather-frames frames (lambda (frame) (eq :lisp (backtrace-frame-type frame))) :verbose verbose)) ; return all :LISP frames
       (t frames)))) ; return ALL frames
 
-#+(or)
-(defun dump-backtrace (raw-backtrace &key (stream *standard-output*) (args t) (all t))
-    (let ((frames (common-lisp-backtrace-frames raw-backtrace))
-           (index 0))
-       (dolist (e frames)
-         (let ((name (backtrace-frame-print-name e))
-               (arguments (backtrace-frame-arguments e)))
-           (if arguments
-               (progn
-                 (prin1 (prog1 index (incf index)) stream)
-                 (write-string ": (" stream)
-                 (princ name stream)
-                 (if (> (length arguments) 0)
-                     (progn
-                       (if args 
-                           (dotimes (i (length arguments))
-                             (princ #\space stream)
-                             (prin1 (aref arguments i) stream))
-                           (prin1 " -args-suppressed-" stream))))
-                 (princ ")" stream))
-               (progn
-                 (prin1 (prog1 index (incf index)) stream)
-                 (write-string ": " stream)
-                 (princ name stream)))
-           (terpri stream)))))
-
 (defun bt-argument (frame-index argument-index)
   "Get argument argument-index (or all if argument-index is not a number) from frame frame-index in current backtrace"
   (core:call-with-backtrace
@@ -238,8 +190,6 @@ Set gather-all-frames to T and you can gather C++ and Common Lisp frames"
   source-pathname line-number column)
 
 (export '(code-source-line code-source-line-source-pathname code-source-line-line-number))
-
-
 
 (defun parse-llvm-dwarfdump (stream)
   (let (info)

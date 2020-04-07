@@ -1895,18 +1895,6 @@ CL_DEFUN void core__print_current_ihs_frame_environment() {
   }
 }
 
-#define ARGS_core__evalPrint "(arg)"
-#define DECL_core__evalPrint ""
-#define DOCS_core__evalPrint "evalPrint"
-void core__evalPrint(const string &expr) {
-  printf("If this locks up then there was an error in the evaluation\n");
-  printf("Figure out how to make debugger.cc>>core__evalPrint always return\n");
-  int ihsCur = core__ihs_current_frame();
-  T_sp env = core__ihs_env(ihsCur);
-  _lisp->readEvalPrintString(expr, env, true);
-};
-
-
 CL_DEFUN void core__lowLevelDescribe(T_sp obj) {
   dbg_lowLevelDescribe(obj);
 }

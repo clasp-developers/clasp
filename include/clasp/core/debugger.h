@@ -155,7 +155,6 @@ void core__gotoIhsTop();
 void core__gotoIhsNext();
 void core__gotoIhsPrev();
 void core__printCurrentIhsFrame();
-void core__evalPrint(const string &expr);
 
 int safe_backtrace(void**& return_buffer);
 
