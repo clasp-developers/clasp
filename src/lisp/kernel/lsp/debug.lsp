@@ -162,7 +162,7 @@
             (*stack-top* (find-top-frame *stack-bot*)))
        (funcall function *stack-bot*)))))
 
-(defvar *frame-filters* nil)
+(defvar *frame-filters* (list 'non-lisp-frame-p))
 
 (defun frame-visible-p (frame)
   (notany (lambda (f) (funcall f frame)) *frame-filters*))
@@ -222,7 +222,8 @@
 (defun non-lisp-frame-p (frame)
   (not (eq (frame-language frame) :lisp)))
 
-;;; Miscellaneous. Called by SIGINFO handler, see gctools/interrupt.cc
+;;; Miscellaneous.
 
+;;; Called by SIGINFO handler, see gctools/interrupt.cc
 (defun information-interrupt (&rest args)
   (core:safe-backtrace))
