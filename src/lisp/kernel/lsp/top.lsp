@@ -730,10 +730,13 @@ Use special code 0 to cancel this operation.")
       #+threads (format t "~&Top level in: ~A.~%" mp:*current-process*)
     (tpl-print-current)))
 
+(defun set-current-frame ()
+  (setf *break-frame* (clasp-debug:visible *break-frame*))
+  (tpl-print-current))
+
 (defun tpl-hide (fname)
   (clasp-debug:hide fname)
-  (set-current-frame)
-  (values))
+  (set-current-frame))
 
 (defun tpl-unhide (fname)
   (clasp-debug:unhide fname)
@@ -741,7 +744,7 @@ Use special code 0 to cancel this operation.")
 
 (defun tpl-hide-package (package-designator)
   (clasp-debug:hide-package package-designator)
-  (values))
+  (set-current-frame))
 
 (defun tpl-unhide-package (package-designator)
   (clasp-debug:unhide-package package-designator)
