@@ -24,11 +24,12 @@
   (:export #:*frame-filters*)
   ;; mid level
   (:export #:call-with-stack #:with-stack)
-  (:export #:up #:down)
+  (:export #:up #:down #:visible)
   (:export #:map-frames #:list-frames)
   ;; defined later in conditions.lsp
   (:export #:safe-prin1 #:prin1-frame-call)
   ;; high level
+  (:export #:map-frames-ids #:goto)
   (:export #:hide-package #:unhide-package
            #:hide #:unhide #:unhide-all)
   ;; misc
@@ -207,14 +208,14 @@
   frame)
 
 ;; Return the frame if it's visible, or else the next
-;; visible frame up
-(defun up0 (frame)
+;; visible frame up if it's not.
+(defun visible (frame)
   (if (frame-visible-p frame)
       frame
       (up frame)))
 
 (defun map-frames (function frame &key count)
-  (loop for f = (up0 frame) then (up f)
+  (loop for f = (visible frame) then (up f)
         for i from 0
         when (or (and count (= i count))
                  ;; This is a bit inefficient, but interactive
@@ -232,6 +233,31 @@
      frame
      :count count)
     (nreverse l)))
+
+;;; Navigating a coherent backtrace
+
+;;; Call the function on each visible frame.
+;;; The function receives two arguments: the base frame,
+;;; and an ID number. These numbers are assigned from
+;;; zero, increase monotonically, and are not affected by
+;;; visibility. If all frames are visible these IDs will
+;;; be contiguous as well. If COUNT is provided, at most
+;;; that many visible frames have the function called on them.
+(defun map-frames-ids (function base &key count)
+  (loop for f = frame then (frame-up f)
+        for i from 0
+        with c = 0
+        when (frame-visible-p f)
+          do (funcall function f i)
+             (incf c)
+        until (eq (frame-up f) *stack-top*)
+        until (and count (= c count))))
+
+(defun goto (base i)
+  (loop repeat i
+        if (eq (frame-up base) *stack-top*) return base
+        else do (setf base (frame-up base)))
+  base)
 
 ;;; Some filters
 
