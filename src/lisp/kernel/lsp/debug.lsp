@@ -25,7 +25,7 @@
   ;; mid level
   (:export #:call-with-stack)
   (:export #:up #:down)
-  (:export #:map-frames))
+  (:export #:map-frames #:list-frames))
 
 (in-package #:clasp-debug)
 
@@ -206,6 +206,16 @@
                  (eq (up f) f))
           return (values)
         do (funcall function f)))
+
+(defun list-frames (frame &key count)
+  (let ((l nil))
+    (map-frames
+     (lambda (frame)
+       (declare (core:lambda-name list-frames-lambda))
+       (push frame l))
+     frame
+     :count count)
+    (nreverse l)))
 
 ;;; Some filters
 
