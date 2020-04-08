@@ -199,8 +199,15 @@
   (loop repeat n do (setf frame (down1 frame *stack-bot*)))
   frame)
 
+;; Return the frame if it's visible, or else the next
+;; visible frame up
+(defun up0 (frame)
+  (if (frame-visible-p frame)
+      frame
+      (up frame)))
+
 (defun map-frames (function frame &key count)
-  (loop for f = frame then (up f)
+  (loop for f = (up0 frame) then (up f)
         for i from 0
         when (or (and count (= i count))
                  ;; This is a bit inefficient, but interactive
