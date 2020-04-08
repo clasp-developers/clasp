@@ -1040,3 +1040,46 @@ bstrings."
         (t
          (%signal condition)
          (invoke-debugger condition))))))
+
+;;; Now that the condition system is up, define a few more things for
+;;; the sake of the debugger
+
+(in-package #:clasp-debug)
+
+(defun safe-prin1 (object &optional output-stream-designator)
+  (let ((string
+          (handler-case
+              ;; First just try it.
+              (prin1-to-string object)
+            (serious-condition ()
+              (handler-case
+                  ;; OK, print type.
+                  ;; FIXME: Should print a pointer too but I don't actually
+                  ;; know how to get that from Lisp.
+                  (let ((type (type-of object)))
+                    (concatenate 'string
+                                 "#<error printing "
+                                 (prin1-to-string type)
+                                 ">"))
+                (serious-condition ()
+                  ;; Couldn't print the type. Give up entirely.
+                  "#<error printing object>"))))))
+    (write-string string output-stream-designator)))
+
+(defun display-fname (fname &optional output-stream-designator)
+  (if (stringp fname) ; C/C++ frame
+      (write-string fname output-stream-designator)
+      (safe-prin1 fname output-stream-designator)))
+
+(defun prin1-frame-call (frame &optional output-stream-designator)
+  (let ((fname (clasp-debug:frame-function-name frame))
+        (args (clasp-debug:frame-arguments frame)))
+    (if (null args)
+        (display-fname fname output-stream-designator)
+        (progn (write-char #\( output-stream-designator)
+               (display-fname fname output-stream-designator)
+               (loop for arg in args
+                     do (write-char #\Space output-stream-designator)
+                        (safe-prin1 arg output-stream-designator))
+               (write-char #\) output-stream-designator))))
+  frame)

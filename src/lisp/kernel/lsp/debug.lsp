@@ -26,6 +26,8 @@
   (:export #:call-with-stack #:with-stack)
   (:export #:up #:down)
   (:export #:map-frames #:list-frames)
+  ;; defined later in conditions.lsp
+  (:export #:safe-prin1 #:prin1-frame-call)
   ;; high level
   (:export #:hide-package #:unhide-package
            #:hide #:unhide #:unhide-all)
