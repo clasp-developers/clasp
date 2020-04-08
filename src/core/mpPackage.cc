@@ -313,20 +313,20 @@ string SharedMutex_O::__repr__() const {
 string Process_O::phase_as_string() const {
   switch (this->_Phase) {
   case Inactive:
-      return "Not yet started";
+      return "(Not yet started)";
   case Booting:
-      return "Running (not enabled)";
+      return "(Running, not active)";
   case Active:
-      return "Running (enabled)";
+      return "(Running, active)";
   case Suspended:
-      return "Suspended";
+      return "(Suspended)";
   case Exiting:
       if (this->_Aborted)
-        return "Aborted";
+        return "(Aborted)";
       else
-        return "Completed";
+        return "(Completed)";
   default:
-      return "Unknown Phase";
+      return "(Unknown Phase)";
   }
 }
 
@@ -337,7 +337,7 @@ string Process_O::__repr__() const {
 #ifdef USE_BOEHM // things don't move in boehm
   ss << " @" << (void*)(this->asSmartPtr().raw_());
 #endif
-  ss << " Phase:" << this->phase_as_string();
+  ss << " " << this->phase_as_string();
   ss << ">";
   return ss.str();
 }
