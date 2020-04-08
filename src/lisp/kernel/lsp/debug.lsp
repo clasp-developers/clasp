@@ -167,15 +167,6 @@
 (defun frame-visible-p (frame)
   (notany (lambda (f) (funcall f frame)) *frame-filters*))
 
-(defun nav1 (frame nextfun &optional limit)
-  (declare (type function nextfun))
-  (do* ((prev frame next)
-        (next (funcall nextfun prev)
-              (funcall nextfun prev)))
-       (nil)
-    (when (eq next limit) (return prev))
-    (when (frame-visible-p next) (return next))))
-
 (defun up1 (frame &optional limit)
   (do* ((prev frame next)
         (next (frame-up prev) (frame-up prev)))
