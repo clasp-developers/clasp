@@ -169,7 +169,7 @@
 	~@
 	Continue execution.  Return from current break level to the caller.~@
 	This command is only available when the break level is continuable~@
-	(e.g., called from a correctable error or the function break).~%")
+	(i.e., the CONTINUE restart is available).~%")
       ((:b :backtrace) tpl-backtrace nil
        ":b(acktrace)	Print backtrace"
        ":backtrace &optional count			[Break command]~@
@@ -315,7 +315,7 @@
        ":help-stack                                     [Break command]~@
         :hs                                             [Abbreviation]~@
         ~@
-        Lists the functions to access the LISP system stacks.~%")
+        Lists the functions to access backtrace information more directly.~%")
       #+(or)
       ((:i :inspect) tpl-inspect-command nil
        ":i(nspect)      Inspect value of local variable"
@@ -677,6 +677,12 @@ Use special code 0 to cancel this operation.")
   (clasp-debug:prin1-frame-call (tpl-frame))
   (terpri)
   (values))
+
+(defun tpl-argument (n)
+  (nth n (clasp-debug:frame-arguments *break-frame*)))
+
+(defun tpl-arguments ()
+  (clasp-debug:frame-arguments *break-frame*))
 
 (defun tpl-previous (&optional (n 1))
   (setf *break-frame* (clasp-debug:up *break-frame* n))
