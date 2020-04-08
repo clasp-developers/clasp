@@ -45,6 +45,7 @@
 (defvar *break-base*) ; Lowest frame available to debugger.
 (defvar *break-frame*) ; Current frame being examined in debugger.
 
+;;; A command is a list (commands function nature short-help long-help).
 (defconstant-equal tpl-commands
   '(("Top level commands"
      ((:cf :compile-file) tpl-compile-command :string
@@ -179,6 +180,13 @@
 	in-line or explicitly hidden are not displayed.  If a count is~@
         provided, only up to that many frames are displayed.~@
 	See also: :function, :previous, :next.~%")
+      ((:r :restarts) tpl-restarts nil
+       ":r(estarts)   Print available restarts"
+       ":restarts                                       [Break command]~@
+        :r                                              [Abbreviation]~@
+        Display the list of available restarts again. A restart can be~@
+        invoked by using the :rN command, where N is the displayed~@
+        numerical identifier for that restart.~%")
       ((:f :frame) tpl-print-current nil
        ":f(rame)	Show current frame"
        ":frame					[Break command]~@
@@ -573,6 +581,8 @@ Use special code 0 to cancel this operation.")
       (t
        (return (read))))))
 
+;;; Set to true if a command is signaling an error
+;;; and you want that to invoke the debugger so you can fix it.
 (defparameter *debug-tpl-commands* nil)
 
 (defun harden-command (cmd-form)
@@ -815,9 +825,10 @@ Use special code 0 to cancel this operation.")
   (let ((restarts (compute-restarts condition))
 	(restart-commands (list "Restart commands")))
     (when display
-      (format display (if restarts
-			  "~&Available restarts:~&(use :r1 to invoke restart 1)~2%"
-			  "~&No restarts available.~%")))
+      (format display
+              (if restarts
+                  "~&Available restarts:~&(use :r1 to invoke restart 1, etc.)~2%"
+                  "~&No restarts available.~%")))
     (loop for restart in restarts
        and i from 1
        do (let ((user-command (format nil "r~D" i))
@@ -838,12 +849,26 @@ Use special code 0 to cancel this operation.")
 (defun update-debug-commands (restart-commands)
   (let ((commands (copy-list *tpl-commands*)))
     (unless (member break-commands commands)
-      (setq commands (nconc commands (list break-commands)))
-      )
+      (setq commands (nconc commands (list break-commands))))
     (delete-if
      #'(lambda (x) (string= "Restart commands" (car x)))
      commands)
     (nconc commands (list restart-commands))))
+
+(defun tpl-restarts ()
+  ;; Make sure this displays consistently with compute-restart-commands.
+  (let ((restart-commands (cdr (assoc "Restart commands" *tpl-commands*
+                                      :test #'string=))))
+    (format t (if restart-commands
+                  "~&Available restarts:~&(use :r1 to invoke restart 1, etc.)~2%"
+                  "~&No restarts available.~%"))
+    (loop for command in restart-commands
+          for restart = (second command)
+          for i from 1
+          do (format t "~d. ~@[(~a)~] ~a~%"
+                     i (restart-name restart) restart)))
+  (terpri)
+  (values))
 
 (defparameter *default-debugger-maximum-depth* 16)
 
@@ -934,7 +959,6 @@ Use special code 0 to cancel this operation.")
 	;; restarts.
 	(let* ((restart-commands (compute-restart-commands condition :display t))
 	       (debug-commands
-		 ;;(adjoin restart-commands (adjoin break-commands *tpl-commands*))
 		 (update-debug-commands restart-commands)))
           (clasp-debug:with-stack (*break-base*)
             (let ((*break-frame* (clasp-debug:visible *break-base*)))
