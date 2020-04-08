@@ -282,6 +282,7 @@
         ((symbolp function-name) (symbol-package function-name))
         ((and (consp function-name)
               (consp (cdr function-name))
+              (symbolp (second function-name))
               (null (cddr function-name))
               ;; Standard SETF name, or one of our FLET or LABELS names.
               (member (second function-name) '(setf flet labels)))
