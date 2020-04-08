@@ -5,6 +5,9 @@
            #:code-source-line-pathname
            #:code-source-line-line-number
            #:code-source-line-column)
+  (:export #:call-with-frame)
+  (:import-from #:core #:frame)
+  (:export #:frame)
   (:export #:frame-up #:frame-down)
   (:export #:frame-function #:frame-arguments
            #:frame-locals #:frame-source-position
@@ -17,7 +20,11 @@
   (:export #:disassemble-frame)
   ;; frame selection
   (:export #:with-truncated-stack #:truncation-frame-p
-           #:with-capped-stack #:cap-frame-p))
+           #:with-capped-stack #:cap-frame-p)
+  ;; mid level
+  (:export #:call-with-stack)
+  (:export #:up #:down)
+  (:export #:map-frames))
 
 (in-package #:clasp-debug)
 
@@ -28,6 +35,13 @@
 ;;; we don't have an offset into the file.
 (defstruct (code-source-line (:type vector) :named)
   pathname line-number column)
+
+;;; FIXME: Consing up the whole list only to discard it is silly.
+(defun call-with-frame (function)
+  (core:call-with-backtrace
+   (lambda (bt)
+     (declare (core:lambda-name call-with-frame-lambda))
+     (funcall function (first bt)))))
 
 (defun frame-up (frame)
   (core:backtrace-frame-up frame))
@@ -113,6 +127,86 @@
 
 (defun cap-frame-p (frame)
   (eq (frame-function-name frame) 'call-with-capped-stack))
+
+;;; Mid level interface: Navigate frames nicely
+
+;; The frame one beyond the selected stack (i.e. exclusive limit)
+(defvar *stack-top*)
+;; The frame beginning the selected stack (i.e. inclusive limit)
+(defvar *stack-bot*)
+
+(defun find-bottom-frame (start)
+  ;; Look for a frame truncation marker.
+  ;; If none is found, use the start.
+  ;; If a cap is found, don't look for a bottom beyond that.
+  (do ((f start (frame-up f)))
+      ((or (null f) (cap-frame-p f)) start)
+    (when (truncation-frame-p f)
+      ;; A truncation frame is a call to call-with-truncated-stack,
+      ;; and we don't really want to keep that around, so.
+      ;; If truncated-frame-p does something else later we should
+      ;; maybe do something else here too.
+      (return (frame-up f)))))
+
+(defun find-top-frame (start)
+  ;; Look for a frame cap.
+  (do ((f start (frame-up f)))
+      ((or (null f) (cap-frame-p f)) f)))
+
+(defun call-with-stack (function &key)
+  (call-with-frame
+   (lambda (frame)
+     (declare (core:lambda-name call-with-stack-lambda))
+     (let* ((*stack-bot* (find-bottom-frame frame))
+            (*stack-top* (find-top-frame *stack-bot*)))
+       (funcall function *stack-bot*)))))
+
+(defvar *frame-filters* nil)
+
+(defun frame-visible-p (frame)
+  (notany (lambda (f) (funcall f frame)) *frame-filters*))
+
+(defun nav1 (frame nextfun &optional limit)
+  (declare (type function nextfun))
+  (do* ((prev frame next)
+        (next (funcall nextfun prev)
+              (funcall nextfun prev)))
+       (nil)
+    (when (eq next limit) (return prev))
+    (when (frame-visible-p next) (return next))))
+
+(defun up1 (frame &optional limit)
+  (do* ((prev frame next)
+        (next (frame-up prev) (frame-up prev)))
+       (nil)
+    ;; limit is exclusive
+    (when (eq next limit) (return prev))
+    (when (frame-visible-p next) (return next))))
+(defun down1 (frame &optional limit)
+  (do* ((prev frame next)
+        (next (frame-down prev) (frame-down prev)))
+       (nil)
+    ;; limit is inclusive
+    (when (eq next limit) (return next))
+    (when (frame-visible-p next) (return next))))
+
+(defun up (frame &optional (n 1))
+  (loop repeat n do (setf frame (up1 frame *stack-top*)))
+  frame)
+
+(defun down (frame &optional (n 1))
+  (loop repeat n do (setf frame (down1 frame *stack-bot*)))
+  frame)
+
+(defun map-frames (function frame &key count)
+  (loop for f = frame then (up f)
+        for i from 0
+        when (or (and count (= i count))
+                 ;; This is a bit inefficient, but interactive
+                 ;; debuggers aren't usually fast path
+                 (eq (up f) f))
+          return (values)
+        do (funcall function f)))
 
 ;;; Miscellaneous. Called by SIGINFO handler, see gctools/interrupt.cc
 
