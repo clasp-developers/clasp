@@ -244,7 +244,7 @@
 ;;; be contiguous as well. If COUNT is provided, at most
 ;;; that many visible frames have the function called on them.
 (defun map-frames-ids (function base &key count)
-  (loop for f = frame then (frame-up f)
+  (loop for f = base then (frame-up f)
         for i from 0
         with c = 0
         when (frame-visible-p f)
