@@ -21,6 +21,7 @@
   ;; frame selection
   (:export #:with-truncated-stack #:truncation-frame-p
            #:with-capped-stack #:cap-frame-p)
+  (:export #:*frame-filters*)
   ;; mid level
   (:export #:call-with-stack)
   (:export #:up #:down)
@@ -207,6 +208,11 @@
                  (eq (up f) f))
           return (values)
         do (funcall function f)))
+
+;;; Some filters
+
+(defun non-lisp-frame-p (frame)
+  (not (eq (frame-language frame) :lisp)))
 
 ;;; Miscellaneous. Called by SIGINFO handler, see gctools/interrupt.cc
 
