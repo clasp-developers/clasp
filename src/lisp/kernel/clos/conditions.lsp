@@ -435,19 +435,13 @@
 If FORMAT-STRING is non-NIL, it is used as the format string to be output to
 *ERROR-OUTPUT* before entering the break loop.  ARGs are arguments to the
 format string."
-  (let ((*debugger-hook* nil))
-    #+(or)(core:call-with-stack-top-hint
-           (lambda ()
-             (with-simple-restart (continue "Return from BREAK.")
-               (invoke-debugger
-                (make-condition 'SIMPLE-CONDITION
-                                :FORMAT-CONTROL format-control
-                                :FORMAT-ARGUMENTS format-arguments))))))
-  (with-simple-restart (continue "Return from BREAK.")
-    (invoke-debugger
-     (make-condition 'SIMPLE-CONDITION
-                     :FORMAT-CONTROL format-control
-                     :FORMAT-ARGUMENTS format-arguments)))
+  (clasp-debug:with-truncated-stack ()
+    (with-simple-restart (continue "Return from BREAK.")
+      (let ((*debugger-hook* nil))
+        (invoke-debugger
+         (make-condition 'SIMPLE-CONDITION
+                         :FORMAT-CONTROL format-control
+                         :FORMAT-ARGUMENTS format-arguments)))))
   nil)
 
 (defun warn (datum &rest arguments)
@@ -1020,28 +1014,29 @@ error and NIL for a fatal error.  FUNCTION-NAME is the name of the function
 that caused the error.  CONTINUE-FORMAT-STRING and ERROR-FORMAT-STRING are the
 format strings of the error message.  ARGS are the arguments to the format
 bstrings."
-  (let ((condition (coerce-to-condition datum args 'simple-error 'error)))
-    (cond
-      ((eq t continue-string)
-       ; from CEerror; mostly allocation errors
-       (with-simple-restart (ignore "Ignore the error, and try the operation again")
-	 (%signal condition)
-	 (invoke-debugger condition)))
-      ((stringp continue-string)
-       (with-simple-restart (continue "~?" continue-string args)
-	 (%signal condition)
-	 (invoke-debugger condition)))
-      ((and continue-string (symbolp continue-string))
-       ; from CEerror
-       (with-simple-restart (accept "Accept the error, returning NIL")
-	 (multiple-value-bind (rv used-restart)
-	   (with-simple-restart (ignore "Ignore the error, and try the operation again")
-	     (multiple-value-bind (rv used-restart)
-	       (with-simple-restart (continue "Continue, using ~S" continue-string)
-		 (%signal condition)
-		 (invoke-debugger condition))
-	       (if used-restart continue-string rv)))
-	   (if used-restart t rv))))
-      (t
-       (%signal condition)
-       (invoke-debugger condition)))))
+  (clasp-debug:with-truncated-stack ()
+    (let ((condition (coerce-to-condition datum args 'simple-error 'error)))
+      (cond
+        ((eq t continue-string)
+                                        ; from CEerror; mostly allocation errors
+         (with-simple-restart (ignore "Ignore the error, and try the operation again")
+           (%signal condition)
+           (invoke-debugger condition)))
+        ((stringp continue-string)
+         (with-simple-restart (continue "~?" continue-string args)
+           (%signal condition)
+           (invoke-debugger condition)))
+        ((and continue-string (symbolp continue-string))
+                                        ; from CEerror
+         (with-simple-restart (accept "Accept the error, returning NIL")
+           (multiple-value-bind (rv used-restart)
+               (with-simple-restart (ignore "Ignore the error, and try the operation again")
+                 (multiple-value-bind (rv used-restart)
+                     (with-simple-restart (continue "Continue, using ~S" continue-string)
+                       (%signal condition)
+                       (invoke-debugger condition))
+                   (if used-restart continue-string rv)))
+             (if used-restart t rv))))
+        (t
+         (%signal condition)
+         (invoke-debugger condition))))))
