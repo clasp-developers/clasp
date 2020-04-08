@@ -1771,7 +1771,7 @@ CL_DEFUN void core__btcl(T_sp stream, bool all, bool args, bool source_info)
   write_bf_stream(BF("Dumping backtrace\n"),stream);
   T_sp cur = frames;
   while (cur.consp()) {
-    Vector_sp frame = gc::As<Vector_sp>(CONS_CAR(cur));
+    Frame_sp frame = gc::As<Frame_sp>(CONS_CAR(cur));
     if (core__backtrace_frame_type(frame)==kw::_sym_lisp &&
         core__backtrace_frame_function_name(frame) == _sym_universalErrorHandler) {
       cur = CONS_CDR(cur); // skip this one
