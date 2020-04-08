@@ -5,7 +5,7 @@
            #:code-source-line-pathname
            #:code-source-line-line-number
            #:code-source-line-column)
-  (:export #:call-with-frame)
+  (:export #:call-with-frame #:with-frame)
   (:import-from #:core #:frame)
   (:export #:frame)
   (:export #:frame-up #:frame-down)
@@ -23,7 +23,7 @@
            #:with-capped-stack #:cap-frame-p)
   (:export #:*frame-filters*)
   ;; mid level
-  (:export #:call-with-stack)
+  (:export #:call-with-stack #:with-stack)
   (:export #:up #:down)
   (:export #:map-frames #:list-frames)
   ;; high level
@@ -48,6 +48,9 @@
    (lambda (bt)
      (declare (core:lambda-name call-with-frame-lambda))
      (funcall function (first bt)))))
+
+(defmacro with-frame ((frame) &body body)
+  `(call-with-frame (lambda (,frame) ,@body)))
 
 (defun frame-up (frame)
   (core:backtrace-frame-up frame))
@@ -166,6 +169,10 @@
      (let* ((*stack-bot* (find-bottom-frame frame))
             (*stack-top* (find-top-frame *stack-bot*)))
        (funcall function *stack-bot*)))))
+
+(defmacro with-stack ((stack &rest kwargs &key &allow-other-keys)
+                      &body body)
+  `(call-with-stack (lambda (,stack) ,@body) ,@kwargs))
 
 (defvar *frame-filters* (list 'non-lisp-frame-p
                               'package-hider
