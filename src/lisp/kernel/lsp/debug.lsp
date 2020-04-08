@@ -25,7 +25,9 @@
   ;; mid level
   (:export #:call-with-stack)
   (:export #:up #:down)
-  (:export #:map-frames #:list-frames))
+  (:export #:map-frames #:list-frames)
+  ;; misc
+  (:export #:function-name-package))
 
 (in-package #:clasp-debug)
 
@@ -223,6 +225,25 @@
   (not (eq (frame-language frame) :lisp)))
 
 ;;; Miscellaneous.
+
+;;; Return the package a function name conceptually belongs to.
+;;; Used by top.lsp and SLDB. FIXME: Robustness
+(defun function-name-package (function-name)
+  (cond ((null function-name) nil) ; information is lacking
+        ((stringp function-name) nil) ; C/C++ frame, inapplicable
+        ((eq function-name 'cl:lambda) nil) ; anonymous
+        ((symbolp function-name) (symbol-package function-name))
+        ((and (consp function-name)
+              (consp (cdr function-name))
+              (null (cddr function-name))
+              ;; Standard SETF name, or one of our FLET or LABELS names.
+              (member (second function-name) '(setf flet labels)))
+         (symbol-package (second function-name)))
+        ((and (consp function-name)
+              (eq (car function-name) 'cl:lambda))
+         nil)
+        ;; shrug.
+        (t nil)))
 
 ;;; Called by SIGINFO handler, see gctools/interrupt.cc
 (defun information-interrupt (&rest args)
