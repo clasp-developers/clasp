@@ -26,6 +26,9 @@
   (:export #:call-with-stack)
   (:export #:up #:down)
   (:export #:map-frames #:list-frames)
+  ;; high level
+  (:export #:hide-package #:unhide-package
+           #:hide #:unhide #:unhide-all)
   ;; misc
   (:export #:function-name-package))
 
@@ -164,7 +167,9 @@
             (*stack-top* (find-top-frame *stack-bot*)))
        (funcall function *stack-bot*)))))
 
-(defvar *frame-filters* (list 'non-lisp-frame-p))
+(defvar *frame-filters* (list 'non-lisp-frame-p
+                              'package-hider
+                              'fname-hider))
 
 (defun frame-visible-p (frame)
   (notany (lambda (f) (funcall f frame)) *frame-filters*))
@@ -224,10 +229,45 @@
 (defun non-lisp-frame-p (frame)
   (not (eq (frame-language frame) :lisp)))
 
+(defvar *hidden-packages* nil)
+
+(defun hide-package (package-designator)
+  (pushnew (find-package package-designator) *hidden-packages*
+           :test #'eq)
+  *hidden-packages*)
+
+(defun unhide-package (package-designator)
+  (setq *hidden-packages*
+        (delete (find-package package-designator) *hidden-packages*
+                :test #'eq))
+  *hidden-packages*)
+
+(defun package-hider (frame)
+  (member (function-name-package (frame-function-name frame))
+          *hidden-packages*))
+
+(defvar *hidden-fnames* nil)
+
+(defun hide (function-name)
+  (pushnew function-name *hidden-fnames* :test #'equal)
+  *hidden-fnames*)
+
+(defun unhide (function-name)
+  (setq *hidden-fnames*
+        (delete function-name *hidden-fnames* :test #'equal))
+  *hidden-fnames*)
+
+(defun fname-hider (frame)
+  (member (frame-function-name frame) *hidden-fnames*
+          :test #'equal))
+
+(defun unhide-all ()
+  (setq *hidden-packages* nil *hidden-fnames* nil))
+
 ;;; Miscellaneous.
 
 ;;; Return the package a function name conceptually belongs to.
-;;; Used by top.lsp and SLDB. FIXME: Robustness
+;;; Used above and by SLDB. FIXME: Robustness
 (defun function-name-package (function-name)
   (cond ((null function-name) nil) ; information is lacking
         ((stringp function-name) nil) ; C/C++ frame, inapplicable
