@@ -103,11 +103,8 @@ SYMBOL_EXPORT_SC_(CorePkg,backtrace_frame);
 
 namespace core {
 
-CL_DEFUN bool core__backtrace_frame_visible(T_sp frame)
+CL_DEFUN bool core__backtrace_frame_visible(Frame_sp frame)
 {
-  if (frame.nilp()) {
-    return true;
-  }
   if (_sym_STARihs_modeSTAR->symbolValue() == _sym_ihs_common_lisp) {
     T_sp stype = core__backtrace_frame_type(frame);
     if (stype == kw::_sym_lisp) {
@@ -206,18 +203,17 @@ CL_DEFUN int core__ihs_bounded(int idx)
   return idx;
 }
 
-CL_DEFUN T_sp core__ihs_backtrace_frame(int idx)
+CL_DEFUN Frame_sp core__ihs_backtrace_frame(int idx)
 {
   idx = core__ihs_bounded(idx);
   T_sp backtrace = _sym_STARbacktraceSTAR->symbolValue();
-  if (backtrace.nilp()) return _Nil<T_O>();
-  T_sp frame = cl__elt(backtrace,idx);
+  Frame_sp frame = gc::As<Frame_sp>(cl__elt(backtrace,idx));
   return frame;
 }
 
 CL_LAMBDA(&optional (frame_index *ihs-current*));
 CL_DEFUN T_mv core__ihs_source_information(int idx) {
-  T_sp frame = core__ihs_backtrace_frame(idx);
+  Frame_sp frame = core__ihs_backtrace_frame(idx);
   T_sp address = core__backtrace_frame_return_address(frame);
   if (gc::IsA<Pointer_sp>(address)) {
     Pointer_sp paddr = gc::As_unsafe<Pointer_sp>(address);
@@ -228,7 +224,7 @@ CL_DEFUN T_mv core__ihs_source_information(int idx) {
 
 CL_LAMBDA(&optional (frame_index *ihs-current*));
 CL_DEFUN T_sp core__ihs_return_address(int idx) {
-  T_sp frame = core__ihs_backtrace_frame(idx);
+  Frame_sp frame = core__ihs_backtrace_frame(idx);
   T_sp address = core__backtrace_frame_return_address(frame);
   return address;
 }
@@ -249,7 +245,7 @@ std::string thing_as_string(T_sp obj)
 
 
 CL_LAMBDA(index frame &key (stream *debug-io*) (args t) (source-info t));
-CL_DEFUN void core__backtrace_frame_to_stream(int idx, T_sp frame ,T_sp stream, bool args, bool do_source_info)
+CL_DEFUN void core__backtrace_frame_to_stream(int idx, Frame_sp frame, T_sp stream, bool args, bool do_source_info)
 {
   T_sp name = core__backtrace_frame_print_name(frame);
   if (name.nilp()) {
@@ -307,7 +303,7 @@ CL_DEFUN void core__dump_backtrace( List_sp backtrace, T_sp stream, bool args, b
         return;
     }
   for ( int idx = 0; idx<cl__length(backtrace); idx++ ) {
-    T_sp frame = cl__elt(backtrace,idx);
+    Frame_sp frame = gc::As<Frame_sp>(cl__elt(backtrace,idx));
     if (all || core__backtrace_frame_visible(frame)) {
       core__backtrace_frame_to_stream(idx, frame, stream, args, source_info );
     }
@@ -322,10 +318,7 @@ visible. Any other value and all frames are visible.)doc");
 CL_DEFUN bool core__ihs_visible(int idx)
 {
   idx = core__ihs_bounded(idx);
-  T_sp frame = core__ihs_backtrace_frame(idx);
-  if (frame.nilp()) {
-    return true;
-  }
+  Frame_sp frame = core__ihs_backtrace_frame(idx);
   if (_sym_STARihs_modeSTAR->symbolValue() == _sym_ihs_common_lisp) {
     T_sp stype = core__backtrace_frame_type(frame);
     if (stype == kw::_sym_lisp) {
@@ -379,7 +372,7 @@ CL_DEFUN int core__ihs_next(int idx) {
 CL_LAMBDA(&optional (frame_index *ihs-current*));
 CL_DOCSTRING("Return the function for the stack frame.");
 CL_DEFUN T_sp core__ihs_fun(int idx) {
-  T_sp frame = core__ihs_backtrace_frame(idx);
+  Frame_sp frame = core__ihs_backtrace_frame(idx);
   return core__backtrace_frame_closure(frame);
 };
 
@@ -387,7 +380,7 @@ CL_LAMBDA(&optional (frame_index *ihs-current*));
 CL_DOCSTRING("Return the arguments to the function in the frame");
 CL_DEFUN T_sp core__ihs_arguments(int idx) {
   idx = core__ihs_bounded(idx);
-  T_sp frame = core__ihs_backtrace_frame(idx);
+  Frame_sp frame = core__ihs_backtrace_frame(idx);
   return core__backtrace_frame_arguments(frame);
 };
 
@@ -395,7 +388,7 @@ CL_LAMBDA(arg_index &optional (frame_index *ihs-current*));
 CL_DOCSTRING("Return the arguments to the function in the frame");
 CL_DEFUN T_sp core__ihs_argument(int arg_index, int idx) {
   idx = core__ihs_bounded(idx);
-  T_sp frame = core__ihs_backtrace_frame(idx);
+  Frame_sp frame = core__ihs_backtrace_frame(idx);
   T_sp arguments = core__backtrace_frame_arguments(frame);
   if (arg_index<0 || arg_index>=cl__length(arguments)) {
     SIMPLE_ERROR(BF("Illegal argument index %d - there are only %lu arguments") % arg_index % cl__length(arguments));
@@ -1039,7 +1032,7 @@ LispDebugger::LispDebugger() : _CanContinue(true) {
 
 void LispDebugger::printExpression(T_sp stream) {
   int index = core__ihs_current_frame();
-  T_sp frame = core__ihs_backtrace_frame(index);
+  Frame_sp frame = core__ihs_backtrace_frame(index);
   core__backtrace_frame_to_stream(index,frame,stream,true,true);
 }
 
