@@ -68,9 +68,28 @@
   (coerce (core:backtrace-frame-arguments frame) 'list))
 
 (defun frame-locals (frame)
-  ;; TODO
-  (declare (ignore frame))
-  nil)
+  ;; TODO: This is not a real solution, at all.
+  (let* ((fname (clasp-debug:frame-function-name frame))
+         (args (clasp-debug:frame-arguments frame)))
+    ;; KLUDGE (on top of a kludge) to do better with method arguments
+    ;; We have two kinds of method functions - fast and not - but we
+    ;; name them the same. The former we can treat normally, but the
+    ;; latter have a vaslist of the real arguments as their first, and
+    ;; the next method list as the second.
+    (if (and (consp fname)
+             (eq (first fname) 'cl:method)
+             (= (length args) 2)
+             (core:vaslistp (first args)))
+        (let ((method-args (core:list-from-va-list (first args)))
+              (next-methods (second args)))
+          (append
+           (loop for arg in method-args for i from 0
+                 collect (cons (intern (format nil "ARG~d" i) :cl-user)
+                               arg))
+           (list (cons 'cl-user::next-methods next-methods))))
+        (loop for arg in args for i from 0
+              collect (cons (intern (format nil "ARG~d" i) :cl-user)
+                            arg)))))
 
 (defun frame-source-position (frame)
   (multiple-value-bind (pathname line-number column)
