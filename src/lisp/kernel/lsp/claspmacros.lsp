@@ -67,15 +67,20 @@
 
 (in-package :core)
 
+;;; We use progn in these expansions so that the programmer can't DECLARE anything.
 (defmacro cl:unwind-protect (protected-form &rest cleanup-forms)
-  `(core:funwind-protect (lambda () ,protected-form) (lambda () ,@cleanup-forms)))
+  `(core:funwind-protect
+    (lambda () (declare (core:lambda-name unwind-protected-lambda)) (progn ,protected-form))
+    (lambda () (declare (core:lambda-name unwind-cleanup-lambda)) (progn ,@cleanup-forms))))
 
 (defmacro cl:catch (tag &rest forms)
-  `(core:catch-function ,tag (lambda () (declare (core:lambda-name catch-lambda)) ,@forms)))
+  `(core:catch-function
+    ,tag (lambda () (declare (core:lambda-name catch-lambda)) (progn ,@forms))))
 
 (defmacro cl:throw (tag result-form)
-  `(core:throw-function ,tag (lambda () (declare (core::lambda-name throw-result-lambda)) ,result-form)))
-  
+  `(core:throw-function
+    ,tag (lambda () (declare (core:lambda-name throw-lambda)) (progn ,result-form))))
+
 #+(or)
 (defmacro cl:progv (symbols values &rest forms)
   `(core:progv-function ,symbols ,values #'(lambda () ,@forms)))
