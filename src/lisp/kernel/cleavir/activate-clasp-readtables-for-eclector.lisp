@@ -57,7 +57,7 @@
       (gethash name clasp-cleavir::*additional-clasp-character-names*)
       (clasp-cleavir::simple-unicode-name name)))
 
-(defmethod eclector.reader:make-structure-instance ((client  clasp-non-cst-elector-client) name initargs)
+(defmethod eclector.reader:make-structure-instance ((client clasp-non-cst-elector-client) name initargs)
   (core::make-structure name initargs))
 
 ;;; From eclector macro functions:
