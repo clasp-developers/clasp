@@ -145,6 +145,7 @@ namespace mp {
       return result;
     }
     string __repr__() const;
+    string phase_as_string() const;
   };
 };
 

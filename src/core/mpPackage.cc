@@ -310,7 +310,24 @@ string SharedMutex_O::__repr__() const {
   return ss.str();
 }
 
-
+string Process_O::phase_as_string() const {
+  switch (this->_Phase) {
+  case Inactive:
+  case Booting:
+      return "(Not yet started)";
+  case Active:
+      return "(Running)";
+  case Suspended:
+      return "(Suspended)";
+  case Exiting:
+      if (this->_Aborted)
+        return "(Aborted)";
+      else
+        return "(Completed)";
+  default:
+      return "(Unknown Phase)";
+  }
+}
 
 string Process_O::__repr__() const {
   stringstream ss;
@@ -319,9 +336,20 @@ string Process_O::__repr__() const {
 #ifdef USE_BOEHM // things don't move in boehm
   ss << " @" << (void*)(this->asSmartPtr().raw_());
 #endif
+  ss << " " << this->phase_as_string();
   ss << ">";
   return ss.str();
 }
+
+CL_DOCSTRING("Current Phase of the process as String (Not yet started, Running, Suspended, Aborted, Completed)");
+CL_DEFUN core::SimpleBaseString_sp mp__process_phase_string(Process_sp process) {
+   return core::SimpleBaseString_O::make(process->phase_as_string());
+};
+ 
+CL_DOCSTRING("Current Phase of the process Inactive=0,Booting=1,Active=2,Suspended=3,Exiting=4");
+CL_DEFUN int mp__process_phase(Process_sp process) {
+  return process->_Phase;
+};
 
 CL_DOCSTRING("Return the owner of the lock - this may be NIL if it's not locked.");
 CL_DEFUN core::T_sp mp__lock_owner(Mutex_sp m) {
