@@ -660,8 +660,6 @@ Use special code 0 to cancel this operation.")
   (format t "Unknown top level command: ~s~%" command)
   (values))
 
-(defun tpl-frame () *break-frame*)
-
 (defun tpl-pop-command (&rest any)
   (declare (ignore any))
   (throw (pop *quit-tags*) t))
@@ -674,14 +672,20 @@ Use special code 0 to cancel this operation.")
 
 (defun tpl-print-current ()
   (fresh-line)
-  (clasp-debug:prin1-frame-call (tpl-frame))
+  (clasp-debug:prin1-frame-call *break-frame*)
   (terpri)
   (values))
 
-(defun tpl-argument (n)
+(defun ext:tpl-frame ()
+  "In Clasp's debugger, return the CLASP-DEBUG:FRAME object for the frame under examination."
+  *break-frame*)
+
+(defun ext:tpl-argument (n)
+  "In Clasp's debugger, return the nth argument in the current frame."
   (nth n (clasp-debug:frame-arguments *break-frame*)))
 
-(defun tpl-arguments ()
+(defun ext:tpl-arguments ()
+  "In Clasp's debugger, return the list of arguments in the current frame."
   (clasp-debug:frame-arguments *break-frame*))
 
 (defun tpl-previous (&optional (n 1))
@@ -705,18 +709,18 @@ Use special code 0 to cancel this operation.")
   (values))
 
 (defun tpl-disassemble-command ()
-  (clasp-debug:disassemble-frame (tpl-frame))
+  (clasp-debug:disassemble-frame *break-frame*)
   (values))
 
 (defun tpl-lambda-expression-command ()
-  (let ((form (clasp-debug:frame-function-form (tpl-frame))))
+  (let ((form (clasp-debug:frame-function-form *break-frame*)))
     (if form
         (pprint form)
         (format t " No source code available for this function.~%")))
   (values))
 
 (defun tpl-variables-command (&optional no-values)
-  (let ((locals (clasp-debug:frame-locals (tpl-frame))))
+  (let ((locals (clasp-debug:frame-locals *break-frame*)))
     (if (null locals)
         (format t "none")
         (if no-values
@@ -825,6 +829,16 @@ Use special code 0 to cancel this operation.")
 		  (terpri)))))
 	(t
 	 (format t "Not a valid help topic: ~s~%" topic)))
+  (values))
+
+(defun tpl-help-stack-command ()
+  (format t "Use the following functions to access backtrace info more directly.
+
+(EXT:TPL-FRAME) Return the FRAME object for the current frame.
+(EXT:TPL-ARGUMENT n) Return the nth argument in the current frame.
+(EXT:TPL-ARGUMENTS) Return the list of arguments in the current frame.
+
+See the CLASP-DEBUG package for more information about FRAME objects.")
   (values))
 
 (defun compute-restart-commands (condition &key display)
