@@ -313,11 +313,10 @@ string SharedMutex_O::__repr__() const {
 string Process_O::phase_as_string() const {
   switch (this->_Phase) {
   case Inactive:
-      return "(Not yet started)";
   case Booting:
-      return "(Running, not active)";
+      return "(Not yet started)";
   case Active:
-      return "(Running, active)";
+      return "(Running)";
   case Suspended:
       return "(Suspended)";
   case Exiting:
