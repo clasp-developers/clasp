@@ -998,14 +998,10 @@ Use special code 0 to cancel this operation.")
 
 (defun core::debugger-disabled-hook (condition old-hook)
   (declare (ignore old-hook))
-  (core:call-with-backtrace (lambda (&rest backtrace-frames)
-                              (format *error-output*
-                                      "~&The debugger has been disabled - in core::debugger-disabled-hook~%Received error of type: ~A~%~A~%~
-             Debugger disabled - exiting.~%"
-                                      (type-of condition) condition)
-                              (format *error-output* "~&------- Backtrace: ~%")
-                              (core:btcl :all t :source-info t)
-                              ))
+  (format *error-output* "~&Condition of type: ~a~%~a~%"
+          (type-of condition) condition)
+  (ext:btcl :all t :source-info t)
+  (format *error-output* "~&Unhandled condition with debugger disabled, quitting~%")
   (core:quit 1))
 
 (eval-when (:execute :load-toplevel)
