@@ -177,9 +177,9 @@
                       &body body)
   `(call-with-stack (lambda (,stack) ,@body) ,@kwargs))
 
-(defvar *frame-filters* (list 'non-lisp-frame-p
-                              'package-hider
-                              'fname-hider))
+(defparameter *frame-filters* (list 'non-lisp-frame-p
+                                    'package-hider
+                                    'fname-hider))
 
 (defun frame-visible-p (frame)
   (notany (lambda (f) (funcall f frame)) *frame-filters*))
@@ -264,7 +264,7 @@
 (defun non-lisp-frame-p (frame)
   (not (eq (frame-language frame) :lisp)))
 
-(defvar *hidden-packages* nil)
+(defparameter *hidden-packages* nil)
 
 (defun hide-package (package-designator)
   (pushnew (find-package package-designator) *hidden-packages*
@@ -281,7 +281,18 @@
   (member (function-name-package (frame-function-name frame))
           *hidden-packages*))
 
-(defvar *hidden-fnames* nil)
+(defparameter *hidden-fnames*
+  '(error cerror apply funcall invoke-debugger
+    core:universal-error-handler
+    core:apply0 core:apply1 core:apply2 core:apply3 core:apply4
+    core::catch-lambda core::throw-lambda
+    core::unwind-protected-lambda core::unwind-cleanup-lambda
+    core::mvc-argument-lambda core::progv-lambda
+    clos::perform-outcome clos::do-dispatch-miss
+    clos::dispatch-miss clos::invalidated-dispatch-function
+    clos::invalidated-discriminating-function
+    clos::combine-method-functions.lambda
+    clos::interpreted-discriminating-function))
 
 (defun hide (function-name)
   (pushnew function-name *hidden-fnames* :test #'equal)
